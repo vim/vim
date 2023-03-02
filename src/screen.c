@@ -4655,13 +4655,14 @@ get_encoded_char_adv(char_u **p)
 
 /*
  * Handle setting 'listchars' or 'fillchars'.
- * "varp" points to either the global or the window-local value.
+ * "val" points to either the global or the window-local value.
+ * "opt_lcs" is TRUE for "listchars" and FALSE for "fillchars".
  * When "apply" is FALSE do not store the flags, only check for errors.
  * Assume monocell characters.
  * Returns error message, NULL if it's OK.
  */
-    char *
-set_chars_option(win_T *wp, char_u **varp, int apply)
+    static char *
+set_chars_option(win_T *wp, char_u *val, int opt_lcs, int apply)
 {
     int	    round, i, len, len2, entries;
     char_u  *p, *s;
@@ -4670,8 +4671,8 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
     char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
-    int	    is_listchars = (varp == &p_lcs || varp == &wp->w_p_lcs);
-    char_u  *value = *varp;
+    int	    is_listchars = opt_lcs;
+    char_u  *value = val;
 
     struct charstab
     {
@@ -4718,14 +4719,14 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
 	tab = lcstab;
 	CLEAR_FIELD(lcs_chars);
 	entries = ARRAY_LENGTH(lcstab);
-	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
-	    value = p_lcs;  // local value is empty, us the global value
+	if (opt_lcs && wp->w_p_lcs[0] == NUL)
+	    value = p_lcs;  // local value is empty, use the global value
     }
     else
     {
 	tab = filltab;
 	entries = ARRAY_LENGTH(filltab);
-	if (varp == &wp->w_p_fcs && wp->w_p_fcs[0] == NUL)
+	if (!opt_lcs && wp->w_p_fcs[0] == NUL)
 	    value = p_fcs;  // local value is empty, us the global value
     }
 
@@ -4935,6 +4936,24 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
 }
 
 /*
+ * Handle the new value of 'fillchars'.
+ */
+    char *
+set_fillchars_option(win_T *wp, char_u *val, int apply)
+{
+    return set_chars_option(wp, val, FALSE, apply);
+}
+
+/*
+ * Handle the new value of 'listchars'.
+ */
+    char *
+set_listchars_option(win_T *wp, char_u *val, int apply)
+{
+    return set_chars_option(wp, val, TRUE, apply);
+}
+
+/*
  * Check all global and local values of 'listchars' and 'fillchars'.
  * Return an untranslated error messages if any of them is invalid, NULL
  * otherwise.
@@ -4945,15 +4964,15 @@ check_chars_options(void)
     tabpage_T   *tp;
     win_T	    *wp;
 
-    if (set_chars_option(curwin, &p_lcs, FALSE) != NULL)
+    if (set_listchars_option(curwin, p_lcs, FALSE) != NULL)
 	return e_conflicts_with_value_of_listchars;
-    if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
+    if (set_fillchars_option(curwin, p_fcs, FALSE) != NULL)
 	return e_conflicts_with_value_of_fillchars;
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
-	if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
+	if (set_listchars_option(wp, wp->w_p_lcs, FALSE) != NULL)
 	    return e_conflicts_with_value_of_listchars;
-	if (set_chars_option(wp, &wp->w_p_fcs, FALSE) != NULL)
+	if (set_fillchars_option(wp, wp->w_p_fcs, FALSE) != NULL)
 	    return e_conflicts_with_value_of_fillchars;
     }
     return NULL;
