@@ -10,4 +10,5 @@ void python3_window_free(win_T *win);
 void python3_tabpage_free(tabpage_T *tab);
 void do_py3eval(char_u *str, typval_T *rettv);
 int set_ref_in_python3(int copyID);
+int python3_version();
 /* vim: set ft=c : */

@@ -2048,3 +2048,13 @@ set_ref_in_python3(int copyID)
 {
     return set_ref_in_py(copyID);
 }
+
+    int
+python3_version()
+{
+#ifdef USE_LIMITED_API
+    return Py_LIMITED_API;
+#else
+    return PY_VERSION_HEX;
+#endif
+}
