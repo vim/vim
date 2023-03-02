@@ -264,6 +264,15 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
 
     class_T *cl = type->tt_class;
+    if (cl == NULL)
+    {
+	    // TODO: Possibly related to #12089? Might handle as part of
+	    //	     dynamic method resolution for class hierarchy?
+	    //	     Otherwise: emsg(_(e_using_null_object));
+	    semsg(_(e_internal_error_str),
+				"compile untyped object method reference");
+	    return FAIL;
+    }
     int is_super = type->tt_flags & TTFLAG_SUPER;
     if (type == &t_super)
     {

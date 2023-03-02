@@ -256,6 +256,24 @@ def Test_object_not_set()
   lines =<< trim END
       vim9script
 
+      class Class
+          this.id: string
+          def Method1()
+              echo 'Method1' .. this.id
+          enddef
+      endclass
+
+      var obj = null_object
+      def Func()
+          obj.Method1()
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E685:')
+
+  lines =<< trim END
+      vim9script
+
       class Background
         this.background = 'dark'
       endclass
