@@ -862,7 +862,7 @@ static struct vimoption options[] =
 			    {(char_u *)TRUE, (char_u *)0L}
 			    SCTX_INIT},
     {"encoding",    "enc",  P_STRING|P_VI_DEF|P_RCLR|P_NO_ML,
-			    (char_u *)&p_enc, PV_NONE, NULL,
+			    (char_u *)&p_enc, PV_NONE, did_set_encoding,
 			    {(char_u *)ENC_DFLT, (char_u *)0L}
 			    SCTX_INIT},
     {"endoffile",   "eof",  P_BOOL|P_NO_MKRC|P_VI_DEF|P_RSTAT,
@@ -914,7 +914,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"fileencoding","fenc", P_STRING|P_ALLOCED|P_VI_DEF|P_RSTAT|P_RBUF
 								   |P_NO_MKRC,
-			    (char_u *)&p_fenc, PV_FENC, NULL,
+			    (char_u *)&p_fenc, PV_FENC, did_set_encoding,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"fileencodings","fencs", P_STRING|P_VI_DEF|P_ONECOMMA,
@@ -1606,7 +1606,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"makeencoding","menc", P_STRING|P_VI_DEF,
-			    (char_u *)&p_menc, PV_MENC, NULL,
+			    (char_u *)&p_menc, PV_MENC, did_set_encoding,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"makeprg",	    "mp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
@@ -2516,7 +2516,7 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"termencoding", "tenc", P_STRING|P_VI_DEF|P_RCLR,
-			    (char_u *)&p_tenc, PV_NONE, NULL,
+			    (char_u *)&p_tenc, PV_NONE, did_set_encoding,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"termguicolors", "tgc", P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
@@ -2901,7 +2901,7 @@ static struct vimoption options[] =
 // terminal output codes
 #define p_term(sss, vvv) \
 			    {sss, NULL, P_STRING|P_VI_DEF|P_RALL|P_SECURE, \
-			    (char_u *)&vvv, PV_NONE, NULL, \
+			    (char_u *)&vvv, PV_NONE, did_set_term_option, \
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
 
     p_term("t_AB", T_CAB)

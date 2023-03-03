@@ -4655,14 +4655,14 @@ get_encoded_char_adv(char_u **p)
 
 /*
  * Handle setting 'listchars' or 'fillchars'.
- * "val" points to either the global or the window-local value.
+ * "value" points to either the global or the window-local value.
  * "opt_lcs" is TRUE for "listchars" and FALSE for "fillchars".
  * When "apply" is FALSE do not store the flags, only check for errors.
  * Assume monocell characters.
  * Returns error message, NULL if it's OK.
  */
     static char *
-set_chars_option(win_T *wp, char_u *val, int opt_lcs, int apply)
+set_chars_option(win_T *wp, char_u *value, int opt_lcs, int apply)
 {
     int	    round, i, len, len2, entries;
     char_u  *p, *s;
@@ -4672,7 +4672,6 @@ set_chars_option(win_T *wp, char_u *val, int opt_lcs, int apply)
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
     int	    is_listchars = opt_lcs;
-    char_u  *value = val;
 
     struct charstab
     {

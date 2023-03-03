@@ -4797,8 +4797,11 @@ typedef struct {
  */
 typedef struct
 {
+    // Pointer to the option variable.  The variable can be a long (numeric
+    // option), an int (boolean option) or a char pointer (string option).
+    char_u	*os_varp;
+    int		os_idx;
     int		os_flags;
-    char_u	*os_varp;		// pointer to the option variable
 
     // old value of the option (can be a string, number or a boolean)
     union
@@ -4830,6 +4833,11 @@ typedef struct
     // Set to TRUE if the character table is modified when processing the
     // option and need to be restored because of a failure.
     int		os_restore_chartab;
+
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+    // Used by the 't_xxx' terminal options on MS-Windows.
+    int		os_did_swaptcap;
+#endif
 
     // If the value specified for an option is not valid and the error message
     // is parameterized, then the "os_errbuf" buffer is used to store the error
