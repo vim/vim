@@ -1928,7 +1928,7 @@ do_put(
 		ptr += yanklen;
 
 		// insert block's trailing spaces only if there's text behind
-		if ((j < count - 1 || !shortline) && spaces)
+		if ((j < count - 1 || !shortline) && spaces > 0)
 		{
 		    vim_memset(ptr, ' ', (size_t)spaces);
 		    ptr += spaces;
@@ -2283,6 +2283,15 @@ error:
 
     msgmore(nr_lines);
     curwin->w_set_curswant = TRUE;
+
+    // Make sure the cursor is not after the NUL.
+    int len = (int)STRLEN(ml_get_curline());
+    if (curwin->w_cursor.col > len)
+    {
+	if (cur_ve_flags == VE_ALL)
+	    curwin->w_cursor.coladd = curwin->w_cursor.col - len;
+	curwin->w_cursor.col = len;
+    }
 
 end:
     if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
