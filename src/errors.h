@@ -3452,4 +3452,6 @@ EXTERN char e_cannot_use_color_none_did_you_mean_none[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_non_null_object[]
 	INIT(= N_("E1362: Cannot use a non-null object"));
+EXTERN char e_incomplete_type[]
+	INIT(= N_("E1363: Incomplete type"));
 #endif

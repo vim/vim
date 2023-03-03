@@ -293,6 +293,13 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	}
     }
 
+    if (cl == NULL)
+    {
+	// TODO: this should not give an error but be handled at runtime
+	emsg(_(e_incomplete_type));
+	return FAIL;
+    }
+
     ++*arg;
     char_u *name = *arg;
     char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);

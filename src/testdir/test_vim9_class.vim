@@ -272,6 +272,25 @@ def Test_object_not_set()
       echo Colorscheme.new(bg).GetBackground()
   END
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<Background> but got object<Unknown>')
+
+  # TODO: this should not give an error but be handled at runtime
+  lines =<< trim END
+      vim9script
+
+      class Class
+          this.id: string
+          def Method1()
+              echo 'Method1' .. this.id
+          enddef
+      endclass
+
+      var obj = null_object
+      def Func()
+          obj.Method1()
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1363:')
 enddef
 
 def Test_class_member_initializer()
