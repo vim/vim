@@ -683,11 +683,11 @@ did_set_opt_strings(char_u *val, char **values, int list)
  * An option which is a list of flags is set.  Valid values are in 'flags'.
  */
     static char *
-did_set_option_listflag(char_u *varp, char_u *flags, char *errbuf)
+did_set_option_listflag(char_u *val, char_u *flags, char *errbuf)
 {
     char_u	*s;
 
-    for (s = varp; *s; ++s)
+    for (s = val; *s; ++s)
 	if (vim_strchr(flags, *s) == NULL)
 	    return illegal_char(errbuf, *s);
 
@@ -946,17 +946,17 @@ did_set_global_listfillchars(char_u *val, int opt_lcs, int opt_flags)
     char *
 did_set_chars_option(optset_T *args)
 {
+    char_u **varp = (char_u **)args->os_varp;
     char *errmsg = NULL;
 
-    if (   args->os_varp == p_lcs		// global 'listchars'
-	|| args->os_varp == p_fcs)		// global 'fillchars'
-	errmsg = did_set_global_listfillchars(args->os_varp,
-					args->os_varp == p_lcs,
-					args->os_flags);
-    else if (args->os_varp == curwin->w_p_lcs)	// local 'listchars'
-	errmsg = set_listchars_option(curwin, args->os_varp, TRUE);
-    else if (args->os_varp == curwin->w_p_fcs)	// local 'fillchars'
-	errmsg = set_fillchars_option(curwin, args->os_varp, TRUE);
+    if (   varp == &p_lcs		// global 'listchars'
+	|| varp == &p_fcs)		// global 'fillchars'
+	errmsg = did_set_global_listfillchars(*varp, varp == &p_lcs,
+							args->os_flags);
+    else if (varp == &curwin->w_p_lcs)	// local 'listchars'
+	errmsg = set_listchars_option(curwin, *varp, TRUE);
+    else if (varp == &curwin->w_p_fcs)	// local 'fillchars'
+	errmsg = set_fillchars_option(curwin, *varp, TRUE);
 
     return errmsg;
 }
@@ -990,10 +990,11 @@ did_set_colorcolumn(optset_T *args UNUSED)
     char *
 did_set_comments(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*s;
     char	*errmsg = NULL;
 
-    for (s = args->os_varp; *s; )
+    for (s = *varp; *s; )
     {
 	while (*s && *s != ':')
 	{
@@ -1030,7 +1031,9 @@ did_set_comments(optset_T *args)
     char *
 did_set_commentstring(optset_T *args)
 {
-    if (*args->os_varp != NUL && strstr((char *)args->os_varp, "%s") == NULL)
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (**varp != NUL && strstr((char *)*varp, "%s") == NULL)
 	return e_commentstring_must_be_empty_or_contain_str;
 
     return NULL;
@@ -1043,10 +1046,11 @@ did_set_commentstring(optset_T *args)
     char *
 did_set_complete(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*s;
 
     // check if it is a valid value for 'complete' -- Acevedo
-    for (s = args->os_varp; *s;)
+    for (s = *varp; *s;)
     {
 	while (*s == ',' || *s == ' ')
 	    s++;
@@ -1132,8 +1136,9 @@ did_set_completeslash(optset_T *args UNUSED)
     char *
 did_set_concealcursor(optset_T *args)
 {
-    return did_set_option_listflag(args->os_varp, (char_u *)COCU_ALL,
-							args->os_errbuf);
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_option_listflag(*varp, (char_u *)COCU_ALL, args->os_errbuf);
 }
 #endif
 
@@ -1143,8 +1148,9 @@ did_set_concealcursor(optset_T *args)
     char *
 did_set_cpoptions(optset_T *args)
 {
-    return did_set_option_listflag(args->os_varp, (char_u *)CPO_ALL,
-							args->os_errbuf);
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_option_listflag(*varp, (char_u *)CPO_ALL, args->os_errbuf);
 }
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
@@ -1268,8 +1274,9 @@ did_set_cscopequickfix(optset_T *args UNUSED)
     char *
 did_set_cursorlineopt(optset_T *args)
 {
-    if (*args->os_varp == NUL
-	    || fill_culopt_flags(args->os_varp, curwin) != OK)
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (**varp == NUL || fill_culopt_flags(*varp, curwin) != OK)
 	return e_invalid_argument;
 
     return NULL;
@@ -1325,15 +1332,21 @@ did_set_eadirection(optset_T *args UNUSED)
  * One of the 'encoding', 'fileencoding', 'termencoding' or 'makeencoding'
  * options is changed.
  */
-    static char *
-did_set_encoding(char_u **varp, char_u **gvarp, int opt_flags)
+    char *
+did_set_encoding(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
+    char_u	**gvarp;
     char	*errmsg = NULL;
     char_u	*p;
 
+    // Get the global option to compare with, otherwise we would have to check
+    // two values for all local options.
+    gvarp = (char_u **)get_option_varp_scope(args->os_idx, OPT_GLOBAL);
+
     if (gvarp == &p_fenc)
     {
-	if (!curbuf->b_p_ma && opt_flags != OPT_GLOBAL)
+	if (!curbuf->b_p_ma && args->os_flags != OPT_GLOBAL)
 	    errmsg = e_cannot_make_changes_modifiable_is_off;
 	else if (vim_strchr(*varp, ',') != NULL)
 	    // No comma allowed in 'fileencoding'; catches confusing it
@@ -1425,9 +1438,11 @@ did_set_eventignore(optset_T *args UNUSED)
     char *
 did_set_fileformat(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
+
     if (!curbuf->b_p_ma && !(args->os_flags & OPT_GLOBAL))
 	return e_cannot_make_changes_modifiable_is_off;
-    else if (check_opt_strings(args->os_varp, p_ff_values, FALSE) != OK)
+    else if (check_opt_strings(*varp, p_ff_values, FALSE) != OK)
 	return e_invalid_argument;
 
     // may also change 'textmode'
@@ -1470,11 +1485,12 @@ did_set_fileformats(optset_T *args UNUSED)
     char *
 did_set_filetype_or_syntax(optset_T *args)
 {
-    if (!valid_filetype(args->os_varp))
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (!valid_filetype(*varp))
 	return e_invalid_argument;
 
-    args->os_value_changed =
-			STRCMP(args->os_oldval.string, args->os_varp) != 0;
+    args->os_value_changed = STRCMP(args->os_oldval.string, *varp) != 0;
 
     // Since we check the value, there is no need to set P_INSECURE,
     // even when the value comes from a modeline.
@@ -1526,12 +1542,13 @@ did_set_foldignore(optset_T *args UNUSED)
     char *
 did_set_foldmarker(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*p;
 
-    p = vim_strchr(args->os_varp, ',');
+    p = vim_strchr(*varp, ',');
     if (p == NULL)
 	return e_comma_required;
-    else if (p == args->os_varp || p[1] == NUL)
+    else if (p == *varp || p[1] == NUL)
 	return e_invalid_argument;
     else if (foldmethodIsMarker(curwin))
 	foldUpdateAll(curwin);
@@ -1545,7 +1562,9 @@ did_set_foldmarker(optset_T *args)
     char *
 did_set_foldmethod(optset_T *args)
 {
-    if (check_opt_strings(args->os_varp, p_fdm_values, FALSE) != OK
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (check_opt_strings(*varp, p_fdm_values, FALSE) != OK
 	    || *curwin->w_p_fdm == NUL)
 	return e_invalid_argument;
 
@@ -1571,8 +1590,9 @@ did_set_foldopen(optset_T *args UNUSED)
     char *
 did_set_formatoptions(optset_T *args)
 {
-    return did_set_option_listflag(args->os_varp, (char_u *)FO_ALL,
-							args->os_errbuf);
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_option_listflag(*varp, (char_u *)FO_ALL, args->os_errbuf);
 }
 
 #if defined(CURSOR_SHAPE) || defined(PROTO)
@@ -1683,10 +1703,10 @@ did_set_guiligatures(optset_T *args UNUSED)
     char *
 did_set_guioptions(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char *errmsg;
 
-    errmsg = did_set_option_listflag(args->os_varp, (char_u *)GO_ALL,
-							args->os_errbuf);
+    errmsg = did_set_option_listflag(*varp, (char_u *)GO_ALL, args->os_errbuf);
     if (errmsg != NULL)
 	return errmsg;
 
@@ -1765,9 +1785,10 @@ did_set_highlight(optset_T *args UNUSED)
 parse_titleiconstring(optset_T *args UNUSED, int flagval UNUSED)
 {
 #ifdef FEAT_STL_OPT
+    char_u	**varp = (char_u **)args->os_varp;
+
     // NULL => statusline syntax
-    if (vim_strchr(args->os_varp, '%')
-				    && check_stl_option(args->os_varp) == NULL)
+    if (vim_strchr(*varp, '%') && check_stl_option(*varp) == NULL)
 	stl_syntax |= flagval;
     else
 	stl_syntax &= ~flagval;
@@ -1831,9 +1852,10 @@ did_set_isopt(optset_T *args)
     char *
 did_set_keymap(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char *errmsg = NULL;
 
-    if (!valid_filetype(args->os_varp))
+    if (!valid_filetype(*varp))
 	errmsg = e_invalid_argument;
     else
     {
@@ -1914,9 +1936,11 @@ did_set_keyprotocol(optset_T *args UNUSED)
     char *
 did_set_lispoptions(optset_T *args)
 {
-    if (*args->os_varp != NUL
-	    && STRCMP(args->os_varp, "expr:0") != 0
-	    && STRCMP(args->os_varp, "expr:1") != 0)
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (**varp != NUL
+	    && STRCMP(*varp, "expr:0") != 0
+	    && STRCMP(*varp, "expr:1") != 0)
 	return e_invalid_argument;
 
     return NULL;
@@ -1928,11 +1952,12 @@ did_set_lispoptions(optset_T *args)
     char *
 did_set_matchpairs(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*p;
 
     if (has_mbyte)
     {
-	for (p = args->os_varp; *p != NUL; ++p)
+	for (p = *varp; *p != NUL; ++p)
 	{
 	    int x2 = -1;
 	    int x3 = -1;
@@ -1954,7 +1979,7 @@ did_set_matchpairs(optset_T *args)
     else
     {
 	// Check for "x:y,x:y"
-	for (p = args->os_varp; *p != NUL; p += 4)
+	for (p = *varp; *p != NUL; p += 4)
 	{
 	    if (p[1] != ':' || p[2] == NUL || (p[3] != NUL && p[3] != ','))
 		return e_invalid_argument;
@@ -1986,7 +2011,9 @@ did_set_mkspellmem(optset_T *args UNUSED)
     char *
 did_set_mouse(optset_T *args)
 {
-    return did_set_option_listflag(args->os_varp, (char_u *)MOUSE_ALL,
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_option_listflag(*varp, (char_u *)MOUSE_ALL,
 							args->os_errbuf);
 }
 
@@ -2027,44 +2054,12 @@ did_set_mouseshape(optset_T *args UNUSED)
     char *
 did_set_nrformats(optset_T *args)
 {
-    return did_set_opt_strings(args->os_varp, p_nf_values, TRUE);
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_opt_strings(*varp, p_nf_values, TRUE);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-/*
- * Returns TRUE if the option pointed by "varp" or "gvarp" is one of the
- * '*expr' options: 'balloonexpr', 'diffexpr', 'foldexpr', 'foldtext',
- * 'formatexpr', 'includeexpr', 'indentexpr', 'patchexpr', 'printexpr' or
- * 'charconvert'.
- */
-    static int
-is_expr_option(char_u **varp, char_u **gvarp)
-{
-    return (
-# ifdef FEAT_BEVAL
-	varp == &p_bexpr ||			// 'balloonexpr'
-# endif
-# ifdef FEAT_DIFF
-	varp == &p_dex ||			// 'diffexpr'
-# endif
-# ifdef FEAT_FOLDING
-	gvarp == &curwin->w_allbuf_opt.wo_fde ||	// 'foldexpr'
-	gvarp == &curwin->w_allbuf_opt.wo_fdt ||	// 'foldtext'
-# endif
-	gvarp == &p_fex ||			// 'formatexpr'
-# ifdef FEAT_FIND_ID
-	gvarp == &p_inex ||			// 'includeexpr'
-# endif
-	gvarp == &p_inde ||			// 'indentexpr'
-# ifdef FEAT_DIFF
-	varp == &p_pex ||			// 'patchexpr'
-# endif
-# ifdef FEAT_POSTSCRIPT
-	varp == &p_pexpr ||			// 'printexpr'
-# endif
-	varp == &p_ccv);			// 'charconvert'
-}
-
 /*
  * One of the '*expr' options is changed: 'balloonexpr', 'diffexpr',
  * 'foldexpr', 'foldtext', 'formatexpr', 'includeexpr', 'indentexpr',
@@ -2074,13 +2069,15 @@ is_expr_option(char_u **varp, char_u **gvarp)
     char *
 did_set_optexpr(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
+
     // If the option value starts with <SID> or s:, then replace that with
     // the script identifier.
-    char_u *name = get_scriptlocal_funcname(args->os_varp);
+    char_u *name = get_scriptlocal_funcname(*varp);
     if (name != NULL)
     {
-	free_string_option(args->os_varp);
-	args->os_varp = name;
+	free_string_option(*varp);
+	*varp = name;
     }
 
     return NULL;
@@ -2164,13 +2161,14 @@ did_set_printencoding(optset_T *args UNUSED)
     static char *
 parse_statustabline_rulerformat(optset_T *args, int rulerformat)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*s;
     char	*errmsg = NULL;
     int		wid;
 
     if (rulerformat)	// reset ru_wid first
 	ru_wid = 0;
-    s = args->os_varp;
+    s = *varp;
     if (rulerformat && *s == '%')
     {
 	// set ru_wid if 'ruf' starts with "%99("
@@ -2213,8 +2211,10 @@ did_set_renderoptions(optset_T *args UNUSED)
     char *
 did_set_rightleftcmd(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
+
     // Currently only "search" is a supported value.
-    if (*args->os_varp != NUL && STRCMP(args->os_varp, "search") != 0)
+    if (**varp != NUL && STRCMP(*varp, "search") != 0)
 	return e_invalid_argument;
 
     return NULL;
@@ -2290,8 +2290,9 @@ did_set_sessionoptions(optset_T *args)
     char *
 did_set_shortmess(optset_T *args)
 {
-    return did_set_option_listflag(args->os_varp, (char_u *)SHM_ALL,
-							args->os_errbuf);
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_option_listflag(*varp, (char_u *)SHM_ALL, args->os_errbuf);
 }
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
@@ -2301,9 +2302,10 @@ did_set_shortmess(optset_T *args)
     char *
 did_set_showbreak(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u	*s;
 
-    for (s = args->os_varp; *s; )
+    for (s = *varp; *s; )
     {
 	if (ptr2cells(s) != 1)
 	    return e_showbreak_contains_unprintable_or_wide_character;
@@ -2330,7 +2332,9 @@ did_set_showcmdloc(optset_T *args UNUSED)
     char *
 did_set_signcolumn(optset_T *args)
 {
-    if (check_opt_strings(args->os_varp, p_scl_values, FALSE) != OK)
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (check_opt_strings(*varp, p_scl_values, FALSE) != OK)
 	return e_invalid_argument;
     // When changing the 'signcolumn' to or from 'number', recompute the
     // width of the number column if 'number' or 'relativenumber' is set.
@@ -2360,7 +2364,9 @@ did_set_spellcapcheck(optset_T *args UNUSED)
     char *
 did_set_spellfile(optset_T *args)
 {
-    if (!valid_spellfile(args->os_varp))
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (!valid_spellfile(*varp))
 	return e_invalid_argument;
 
     // If there is a window for this buffer in which 'spell' is set load the
@@ -2374,7 +2380,9 @@ did_set_spellfile(optset_T *args)
     char *
 did_set_spelllang(optset_T *args)
 {
-    if (!valid_spelllang(args->os_varp))
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (!valid_spelllang(*varp))
 	return e_invalid_argument;
 
     // If there is a window for this buffer in which 'spell' is set load the
@@ -2388,7 +2396,9 @@ did_set_spelllang(optset_T *args)
     char *
 did_set_spelloptions(optset_T *args)
 {
-    if (*args->os_varp != NUL && STRCMP("camel", args->os_varp) != 0)
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (**varp != NUL && STRCMP("camel", *varp) != 0)
 	return e_invalid_argument;
 
     return NULL;
@@ -2522,9 +2532,14 @@ did_set_term(int *opt_idx, long_u *free_oldval)
 /*
  * Some terminal option (t_xxx) is changed
  */
-    static void
-did_set_term_option(char_u **varp, int *did_swaptcap UNUSED)
+    char *
+did_set_term_option(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
+
+    if (!full_screen)
+	return NULL;
+
     // ":set t_Co=0" and ":set t_Co=1" do ":set t_Co="
     if (varp == &T_CCO)
     {
@@ -2545,7 +2560,7 @@ did_set_term_option(char_u **varp, int *did_swaptcap UNUSED)
 	    if (is_term_win32())
 	    {
 		swap_tcap();
-		*did_swaptcap = TRUE;
+		args->os_did_swaptcap = TRUE;
 	    }
 #endif
 	    // We now have a different color setup, initialize it again.
@@ -2578,6 +2593,8 @@ did_set_term_option(char_u **varp, int *did_swaptcap UNUSED)
 	else
 	    out_str(T_BE);
     }
+
+    return NULL;
 }
 
 #if defined(FEAT_TERMINAL) || defined(PROTO)
@@ -2705,9 +2722,10 @@ did_set_ttymouse(optset_T *args UNUSED)
     char *
 did_set_varsofttabstop(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u *cp;
 
-    if (!(args->os_varp[0]) || (args->os_varp[0] == '0' && !(args->os_varp[1])))
+    if (!((*varp)[0]) || ((*varp)[0] == '0' && !((*varp)[1])))
     {
 	if (curbuf->b_p_vsts_array)
 	{
@@ -2717,17 +2735,17 @@ did_set_varsofttabstop(optset_T *args)
     }
     else
     {
-	for (cp = args->os_varp; *cp; ++cp)
+	for (cp = *varp; *cp; ++cp)
 	{
 	    if (vim_isdigit(*cp))
 		continue;
-	    if (*cp == ',' && cp > args->os_varp && *(cp-1) != ',')
+	    if (*cp == ',' && cp > *varp && *(cp-1) != ',')
 		continue;
 	    return e_invalid_argument;
 	}
 
 	int *oldarray = curbuf->b_p_vsts_array;
-	if (tabstop_set(args->os_varp, &(curbuf->b_p_vsts_array)) == OK)
+	if (tabstop_set(*varp, &(curbuf->b_p_vsts_array)) == OK)
 	{
 	    if (oldarray)
 		vim_free(oldarray);
@@ -2745,9 +2763,10 @@ did_set_varsofttabstop(optset_T *args)
     char *
 did_set_vartabstop(optset_T *args)
 {
+    char_u	**varp = (char_u **)args->os_varp;
     char_u *cp;
 
-    if (!(args->os_varp[0]) || (args->os_varp[0] == '0' && !(args->os_varp[1])))
+    if (!((*varp)[0]) || ((*varp)[0] == '0' && !((*varp)[1])))
     {
 	if (curbuf->b_p_vts_array)
 	{
@@ -2757,18 +2776,18 @@ did_set_vartabstop(optset_T *args)
     }
     else
     {
-	for (cp = args->os_varp; *cp; ++cp)
+	for (cp = *varp; *cp; ++cp)
 	{
 	    if (vim_isdigit(*cp))
 		continue;
-	    if (*cp == ',' && cp > args->os_varp && *(cp-1) != ',')
+	    if (*cp == ',' && cp > *varp && *(cp-1) != ',')
 		continue;
 	    return e_invalid_argument;
 	}
 
 	int *oldarray = curbuf->b_p_vts_array;
 
-	if (tabstop_set(args->os_varp, &(curbuf->b_p_vts_array)) == OK)
+	if (tabstop_set(*varp, &(curbuf->b_p_vts_array)) == OK)
 	{
 	    vim_free(oldarray);
 # ifdef FEAT_FOLDING
@@ -2918,8 +2937,9 @@ did_set_virtualedit(optset_T *args)
     char *
 did_set_whichwrap(optset_T *args)
 {
-    return did_set_option_listflag(args->os_varp, (char_u *)WW_ALL,
-							args->os_errbuf);
+    char_u	**varp = (char_u **)args->os_varp;
+
+    return did_set_option_listflag(*varp, (char_u *)WW_ALL, args->os_errbuf);
 }
 
 /*
@@ -3078,15 +3098,12 @@ did_set_string_option(
 {
     char	*errmsg = NULL;
     int		restore_chartab = FALSE;
-    char_u	**gvarp;
     long_u	free_oldval = (get_option_flags(opt_idx) & P_ALLOCED);
     int		value_changed = FALSE;
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
     int		did_swaptcap = FALSE;
+#endif
     opt_did_set_cb_T did_set_cb = get_option_did_set_cb(opt_idx);
-
-    // Get the global option to compare with, otherwise we would have to check
-    // two values for all local options.
-    gvarp = (char_u **)get_option_varp_scope(opt_idx, OPT_GLOBAL);
 
     // Disallow changing some options from secure mode
     if ((secure
@@ -3102,24 +3119,22 @@ did_set_string_option(
     {
 	optset_T   args;
 
-	args.os_varp = *varp;
+	args.os_varp = (char_u *)varp;
+	args.os_idx = opt_idx;
 	args.os_flags = opt_flags;
 	args.os_oldval.string = oldval;
 	args.os_newval.string = value;
 	args.os_value_checked = FALSE;
 	args.os_value_changed = FALSE;
 	args.os_restore_chartab = FALSE;
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+	args.os_did_swaptcap = FALSE;
+#endif
 	args.os_errbuf = errbuf;
 	// Invoke the option specific callback function to validate and apply
 	// the new option value.
 	errmsg = did_set_cb(&args);
 
-#ifdef FEAT_EVAL
-	// The '*expr' option (e.g. diffexpr, foldexpr, etc.), callback
-	// functions may modify '*varp'.
-	if (errmsg == NULL && is_expr_option(varp, gvarp))
-	    *varp = args.os_varp;
-#endif
 	// The 'filetype' and 'syntax' option callback functions may change
 	// the os_value_changed field.
 	value_changed = args.os_value_changed;
@@ -3129,17 +3144,13 @@ did_set_string_option(
 	// The 'isident', 'iskeyword', 'isprint' and 'isfname' options may
 	// change the character table.  On failure, this needs to be restored.
 	restore_chartab = args.os_restore_chartab;
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+	// The 't_xxx' terminal options may swap the termcap entries.
+	did_swaptcap = args.os_did_swaptcap;
+#endif
     }
     else if (varp == &T_NAME)			// 'term'
 	errmsg = did_set_term(&opt_idx, &free_oldval);
-    else if (  varp == &p_enc			// 'encoding'
-	    || gvarp == &p_fenc			// 'fileencoding'
-	    || varp == &p_tenc			// 'termencoding'
-	    || gvarp == &p_menc)		// 'makeencoding'
-	errmsg = did_set_encoding(varp, gvarp, opt_flags);
-    // terminal options
-    else if (istermoption_idx(opt_idx) && full_screen)
-	did_set_term_option(varp, &did_swaptcap);
 
     // If an error is detected, restore the previous value.
     if (errmsg != NULL)
