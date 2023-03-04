@@ -1687,7 +1687,7 @@ init_static_list(staticList10_T *sl)
     list_T  *l = &sl->sl_list;
     int	    i;
 
-    memset(sl, 0, sizeof(staticList10_T));
+    CLEAR_POINTER(sl);
     l->lv_first = &sl->sl_items[0];
     l->lv_u.mat.lv_last = &sl->sl_items[9];
     l->lv_refcount = DO_NOT_FREE_CNT;

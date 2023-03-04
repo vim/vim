@@ -3764,8 +3764,7 @@ mch_dirname(
 	if (STRLEN(p) >= (size_t)len)
 	{
 	    // long path name is too long, fall back to short one
-	    vim_free(p);
-	    p = NULL;
+	    VIM_CLEAR(p);
 	}
     }
     if (p == NULL)
@@ -8073,8 +8072,7 @@ copy_extattr(char_u *from, char_u *to)
 	    if (pNtQueryEaFile(h, &iosb, ea, eainfo.EaSize, FALSE,
 			NULL, 0, NULL, TRUE) != STATUS_SUCCESS)
 	    {
-		vim_free(ea);
-		ea = NULL;
+		VIM_CLEAR(ea);
 	    }
 	}
     }

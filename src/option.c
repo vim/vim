@@ -7147,7 +7147,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    {
 		buf->b_p_isk = save_p_isk;
 #ifdef FEAT_VARTABS
-		if (p_vts && p_vts != empty_option && !buf->b_p_vts_array)
+		if (p_vts && *p_vts != NUL && !buf->b_p_vts_array)
 		    (void)tabstop_set(p_vts, &buf->b_p_vts_array);
 		else
 		    buf->b_p_vts_array = NULL;
@@ -7163,7 +7163,7 @@ buf_copy_options(buf_T *buf, int flags)
 #ifdef FEAT_VARTABS
 		buf->b_p_vts = vim_strsave(p_vts);
 		COPY_OPT_SCTX(buf, BV_VTS);
-		if (p_vts && p_vts != empty_option && !buf->b_p_vts_array)
+		if (p_vts && *p_vts != NUL && !buf->b_p_vts_array)
 		    (void)tabstop_set(p_vts, &buf->b_p_vts_array);
 		else
 		    buf->b_p_vts_array = NULL;

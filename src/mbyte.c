@@ -5634,8 +5634,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     if (l->lv_len == 0)
     {
 	// Clearing the table.
-	vim_free(cw_table);
-	cw_table = NULL;
+	VIM_CLEAR(cw_table);
 	cw_table_size = 0;
 	return;
     }

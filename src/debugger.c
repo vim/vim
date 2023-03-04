@@ -97,14 +97,12 @@ do_debug(char_u *cmd)
     if (debug_oldval != NULL)
     {
 	smsg(_("Oldval = \"%s\""), debug_oldval);
-	vim_free(debug_oldval);
-	debug_oldval = NULL;
+	VIM_CLEAR(debug_oldval);
     }
     if (debug_newval != NULL)
     {
 	smsg(_("Newval = \"%s\""), debug_newval);
-	vim_free(debug_newval);
-	debug_newval = NULL;
+	VIM_CLEAR(debug_newval);
     }
     sname = estack_sfile(ESTACK_NONE);
     if (sname != NULL)

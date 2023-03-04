@@ -8387,7 +8387,7 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
     TOOLINFOW	*pti;
     RECT	rect;
 
-    pti = alloc(sizeof(TOOLINFOW));
+    pti = ALLOC_ONE(TOOLINFOW);
     if (pti == NULL)
 	return;
 

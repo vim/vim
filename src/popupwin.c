@@ -3569,8 +3569,7 @@ popup_update_mask(win_T *wp, int width, int height)
 
     if (wp->w_popup_mask == NULL || width == 0 || height == 0)
     {
-	vim_free(wp->w_popup_mask_cells);
-	wp->w_popup_mask_cells = NULL;
+	VIM_CLEAR(wp->w_popup_mask_cells);
 	return;
     }
     if (wp->w_popup_mask_cells != NULL
