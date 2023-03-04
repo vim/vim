@@ -878,6 +878,13 @@ func Test_highlight_start_stop()
   call assert_match("stop=^[[27h;^[[ r;", HighlightArgs('HlGrp2'))
   hi HlGrp2 stop=NONE
   call assert_notmatch("stop=", HighlightArgs('HlGrp2'))
+  set t_xy=^[foo;
+  set t_xz=^[bar;
+  hi HlGrp3 start=t_xy stop=t_xz
+  let d = hlget('HlGrp3')
+  call assert_equal('^[foo;', d[0].start)
+  call assert_equal('^[bar;', d[0].stop)
+  set t_xy= t_xz=
   hi clear
 endfunc
 

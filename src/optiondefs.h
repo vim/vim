@@ -2506,7 +2506,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"term",	    NULL,   P_STRING|P_EXPAND|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RALL,
-			    (char_u *)&T_NAME, PV_NONE, NULL,
+			    (char_u *)&T_NAME, PV_NONE, did_set_term,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"termbidi", "tbidi",   P_BOOL|P_VI_DEF,
 #ifdef FEAT_ARABIC
@@ -2662,7 +2662,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ttyscroll, PV_NONE, NULL,
 			    {(char_u *)999L, (char_u *)0L} SCTX_INIT},
     {"ttytype",	    "tty",  P_STRING|P_EXPAND|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RALL,
-			    (char_u *)&T_NAME, PV_NONE, NULL,
+			    (char_u *)&T_NAME, PV_NONE, did_set_term,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"undodir",     "udir", P_STRING|P_EXPAND|P_ONECOMMA|P_NODUP|P_SECURE
 								    |P_VI_DEF,
