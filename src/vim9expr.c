@@ -263,7 +263,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     }
 
-    class_T *cl = (class_T *)type->tt_member;
+    class_T *cl = type->tt_class;
     int is_super = type->tt_flags & TTFLAG_SUPER;
     if (type == &t_super)
     {
@@ -291,6 +291,13 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		vim_free(isn->isn_arg.script.scriptref);
 	    }
 	}
+    }
+
+    if (cl == NULL)
+    {
+	// TODO: this should not give an error but be handled at runtime
+	emsg(_(e_incomplete_type));
+	return FAIL;
     }
 
     ++*arg;
@@ -919,7 +926,6 @@ compile_call(
     char_u	namebuf[MAX_FUNC_NAME_LEN];
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
-    int		error = FCERR_NONE;
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
@@ -990,6 +996,7 @@ compile_call(
     if (generate_ppconst(cctx, ppconst) == FAIL)
 	return FAIL;
 
+    funcerror_T	error;
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
     // We handle the "skip" argument of searchpair() and searchpairpos()

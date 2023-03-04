@@ -230,7 +230,8 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
     void
 ex_class(exarg_T *eap)
 {
-    int is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+    int	    is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+    long    start_lnum = SOURCING_LNUM;
 
     char_u *arg = eap->arg;
     int is_abstract = eap->cmdidx == CMD_abstract;
@@ -990,7 +991,7 @@ early_ret:
 		if (nf->uf_ret_type != NULL)
 		{
 		    nf->uf_ret_type->tt_type = VAR_OBJECT;
-		    nf->uf_ret_type->tt_member = (type_T *)cl;
+		    nf->uf_ret_type->tt_class = cl;
 		    nf->uf_ret_type->tt_argcount = 0;
 		    nf->uf_ret_type->tt_args = NULL;
 		}
@@ -1083,9 +1084,9 @@ early_ret:
 	}
 
 	cl->class_type.tt_type = VAR_CLASS;
-	cl->class_type.tt_member = (type_T *)cl;
+	cl->class_type.tt_class = cl;
 	cl->class_object_type.tt_type = VAR_OBJECT;
-	cl->class_object_type.tt_member = (type_T *)cl;
+	cl->class_object_type.tt_class = cl;
 	cl->class_type_list = type_list;
 
 	// TODO:
@@ -1097,8 +1098,9 @@ early_ret:
 	tv.v_type = VAR_CLASS;
 	tv.vval.v_class = cl;
 	is_export = class_export;
+	SOURCING_LNUM = start_lnum;
 	set_var_const(cl->class_name, current_sctx.sc_sid,
-					     NULL, &tv, FALSE, ASSIGN_DECL, 0);
+						       NULL, &tv, FALSE, 0, 0);
 	return;
     }
 
@@ -1234,9 +1236,6 @@ class_object_index(
     evalarg_T	*evalarg,
     int		verbose UNUSED)	// give error messages
 {
-    // int		evaluate = evalarg != NULL
-    //				      && (evalarg->eval_flags & EVAL_EVALUATE);
-
     if (VIM_ISWHITE((*arg)[1]))
     {
 	semsg(_(e_no_white_space_allowed_after_str_str), ".", *arg);
@@ -1250,8 +1249,19 @@ class_object_index(
 	return FAIL;
     size_t len = name_end - name;
 
-    class_T *cl = rettv->v_type == VAR_CLASS ? rettv->vval.v_class
-					     : rettv->vval.v_object->obj_class;
+    class_T *cl;
+    if (rettv->v_type == VAR_CLASS)
+	cl = rettv->vval.v_class;
+    else // VAR_OBJECT
+    {
+	if (rettv->vval.v_object == NULL)
+	{
+	    emsg(_(e_using_null_object));
+	    return FAIL;
+	}
+	cl = rettv->vval.v_object->obj_class;
+    }
+
     if (*name_end == '(')
     {
 	int on_class = rettv->v_type == VAR_CLASS;

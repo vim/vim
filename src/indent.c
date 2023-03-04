@@ -1161,7 +1161,7 @@ preprocs_left(void)
  * Return TRUE if the conditions are OK for smart indenting.
  */
     int
-may_do_si()
+may_do_si(void)
 {
     return curbuf->b_p_si
 	&& !curbuf->b_p_cin

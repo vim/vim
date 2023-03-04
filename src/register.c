@@ -977,7 +977,7 @@ cmdline_paste_reg(
  * Shift the delete registers: "9 is cleared, "8 becomes "9, etc.
  */
     void
-shift_delete_registers()
+shift_delete_registers(void)
 {
     int		n;
 
@@ -1928,7 +1928,7 @@ do_put(
 		ptr += yanklen;
 
 		// insert block's trailing spaces only if there's text behind
-		if ((j < count - 1 || !shortline) && spaces)
+		if ((j < count - 1 || !shortline) && spaces > 0)
 		{
 		    vim_memset(ptr, ' ', (size_t)spaces);
 		    ptr += spaces;
@@ -2284,6 +2284,15 @@ error:
     msgmore(nr_lines);
     curwin->w_set_curswant = TRUE;
 
+    // Make sure the cursor is not after the NUL.
+    int len = (int)STRLEN(ml_get_curline());
+    if (curwin->w_cursor.col > len)
+    {
+	if (cur_ve_flags == VE_ALL)
+	    curwin->w_cursor.coladd = curwin->w_cursor.col - len;
+	curwin->w_cursor.col = len;
+    }
+
 end:
     if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
     {
@@ -2328,7 +2337,7 @@ get_register_name(int num)
  * Return the index of the register "" points to.
  */
     int
-get_unname_register()
+get_unname_register(void)
 {
     return y_previous == NULL ? -1 : y_previous - &y_regs[0];
 }

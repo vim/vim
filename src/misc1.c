@@ -1311,6 +1311,32 @@ free_users(void)
 }
 #endif
 
+#if defined(MSWIN) || defined(PROTO)
+/*
+ * Initialize $VIM and $VIMRUNTIME when 'enc' is updated.
+ */
+    void
+init_vimdir(void)
+{
+    int	    mustfree;
+    char_u  *p;
+
+    mch_get_exe_name();
+
+    mustfree = FALSE;
+    didset_vim = FALSE;
+    p = vim_getenv((char_u *)"VIM", &mustfree);
+    if (mustfree)
+	vim_free(p);
+
+    mustfree = FALSE;
+    didset_vimruntime = FALSE;
+    p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
+    if (mustfree)
+	vim_free(p);
+}
+#endif
+
 /*
  * Call expand_env() and store the result in an allocated string.
  * This is not very memory efficient, this expects the result to be freed
@@ -1696,7 +1722,7 @@ vim_version_dir(char_u *vimdir)
  * Vim's version of getenv().
  * Special handling of $HOME, $VIM and $VIMRUNTIME.
  * Also does ACP to 'enc' conversion for Win32.
- * "mustfree" is set to TRUE when returned is allocated, it must be
+ * "mustfree" is set to TRUE when the returned string is allocated.  It must be
  * initialized to FALSE by the caller.
  */
     char_u *
@@ -2751,7 +2777,7 @@ restore_v_event(dict_T *v_event, save_v_event_T *sve)
  * Fires a ModeChanged autocmd event if appropriate.
  */
     void
-may_trigger_modechanged()
+may_trigger_modechanged(void)
 {
 #ifdef FEAT_EVAL
     dict_T	    *v_event;

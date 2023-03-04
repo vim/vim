@@ -180,7 +180,7 @@ showmap(
     len = msg_outtrans_special(mp->m_keys, TRUE, 0);
     do
     {
-	msg_putchar(' ');		// padd with blanks
+	msg_putchar(' ');		// pad with blanks
 	++len;
     } while (len < 12);
 
@@ -1445,7 +1445,7 @@ ExpandMappings(
 	    mp = maphash[hash];
 	for (; mp; mp = mp->m_next)
 	{
-	    if (!(mp->m_mode & expand_mapmodes))
+	    if (mp->m_simplified || !(mp->m_mode & expand_mapmodes))
 		continue;
 
 	    p = translate_mapping(mp->m_keys);
@@ -3034,8 +3034,8 @@ langmap_init(void)
  * Called when langmap option is set; the language map can be
  * changed at any time!
  */
-    void
-langmap_set(void)
+    char *
+did_set_langmap(optset_T *args UNUSED)
 {
     char_u  *p;
     char_u  *p2;
@@ -3088,9 +3088,10 @@ langmap_set(void)
 	    }
 	    if (to == NUL)
 	    {
-		semsg(_(e_langmap_matching_character_missing_for_str),
-							     transchar(from));
-		return;
+		sprintf(args->os_errbuf,
+			_(e_langmap_matching_character_missing_for_str),
+			transchar(from));
+		return args->os_errbuf;
 	    }
 
 	    if (from >= 256)
@@ -3110,8 +3111,10 @@ langmap_set(void)
 		    {
 			if (p[0] != ',')
 			{
-			    semsg(_(e_langmap_extra_characters_after_semicolon_str), p);
-			    return;
+			    sprintf(args->os_errbuf,
+				    _(e_langmap_extra_characters_after_semicolon_str),
+				    p);
+			    return args->os_errbuf;
 			}
 			++p;
 		    }
@@ -3120,6 +3123,8 @@ langmap_set(void)
 	    }
 	}
     }
+
+    return NULL;
 }
 #endif
 

@@ -2270,6 +2270,29 @@ typedef enum {
     KEYPROTOCOL_FAIL
 } keyprot_T;
 
+// errors for when calling a function
+typedef enum {
+    FCERR_NONE,		// no error
+    FCERR_UNKNOWN,	// unknown function
+    FCERR_TOOMANY,	// too many arguments
+    FCERR_TOOFEW,	// too few arguments
+    FCERR_SCRIPT,	// missing script context
+    FCERR_DICT,		// missing dict
+    FCERR_OTHER,	// another kind of error
+    FCERR_DELETED,	// function was deleted
+    FCERR_NOTMETHOD,	// function cannot be used as a method
+    FCERR_FAILED,	// error while executing the function
+} funcerror_T;
+
+/*
+ * Type for the callback function that is invoked after an option value is
+ * changed to validate and apply the new value.
+ *
+ * Returns NULL if the option value is valid is successfully applied.
+ * Otherwise returns an error message.
+ */
+typedef char *(*opt_did_set_cb_T)(optset_T *args);
+
 // Flags for assignment functions.
 #define ASSIGN_VAR	0     // ":var" (nothing special)
 #define ASSIGN_FINAL	0x01  // ":final"
@@ -2699,20 +2722,10 @@ typedef enum {
 #define GLV_NO_DECL	TFN_NO_DECL	// assignment without :var or :let
 #define GLV_COMPILING	TFN_COMPILING	// variable may be defined later
 #define GLV_ASSIGN_WITH_OP TFN_ASSIGN_WITH_OP // assignment with operator
+#define GLV_PREFER_FUNC	0x10000		// prefer function above variable
 
 #define DO_NOT_FREE_CNT 99999	// refcount for dict or list that should not
 				// be freed.
-
-// errors for when calling a function
-#define FCERR_UNKNOWN	0
-#define FCERR_TOOMANY	1
-#define FCERR_TOOFEW	2
-#define FCERR_SCRIPT	3
-#define FCERR_DICT	4
-#define FCERR_NONE	5
-#define FCERR_OTHER	6
-#define FCERR_DELETED	7
-#define FCERR_NOTMETHOD	8   // function cannot be used as a method
 
 // fixed buffer length for fname_trans_sid()
 #define FLEN_FIXED 40

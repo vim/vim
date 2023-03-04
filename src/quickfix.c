@@ -4534,7 +4534,7 @@ qf_find_buf(qf_info_T *qi)
  * Returns OK or FAIL.
  */
     char *
-qf_process_qftf_option(void)
+did_set_quickfixtextfunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(p_qftf, &qftf_cb) == FAIL)
 	return e_invalid_argument;
@@ -8448,7 +8448,7 @@ ex_helpgrep(exarg_T *eap)
 
 # if defined(EXITFREE) || defined(PROTO)
     void
-free_quickfix()
+free_quickfix(void)
 {
     win_T	*win;
     tabpage_T	*tab;

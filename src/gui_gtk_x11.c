@@ -463,7 +463,7 @@ alloc_resize_hist(int width, int height)
  * This list is empty when there are no outstanding resize requests.
  */
     static void
-clear_resize_hists()
+clear_resize_hists(void)
 {
 # ifdef ENABLE_RESIZE_HISTORY_LOG
     int		    i = 0;
@@ -516,7 +516,7 @@ match_stale_width_height(int width, int height)
 
 # if defined(EXITFREE)
     static void
-free_all_resize_hist()
+free_all_resize_hist(void)
 {
     clear_resize_hists();
     vim_free(latest_resize_hist);

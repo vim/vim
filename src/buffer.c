@@ -1953,7 +1953,7 @@ enter_buffer(buf_T *buf)
     maketitle();
 	// when autocmds didn't change it
     if (curwin->w_topline == 1 && !curwin->w_topline_was_set)
-	scroll_cursor_halfway(FALSE);	// redisplay at correct position
+	scroll_cursor_halfway(FALSE, FALSE);	// redisplay at correct position
 
 #ifdef FEAT_NETBEANS_INTG
     // Send fileOpened event because we've changed buffers.
@@ -1971,7 +1971,7 @@ enter_buffer(buf_T *buf)
     // May need to set the spell language.  Can only do this after the buffer
     // has been properly setup.
     if (!curbuf->b_help && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
-	(void)did_set_spelllang(curwin);
+	(void)parse_spelllang(curwin);
 #endif
 #ifdef FEAT_VIMINFO
     curbuf->b_last_used = vim_time();
@@ -5401,6 +5401,10 @@ ex_buffer_all(exarg_T *eap)
 	all = FALSE;
     else
 	all = TRUE;
+
+    // Stop Visual mode, the cursor and "VIsual" may very well be invalid after
+    // switching to another buffer.
+    reset_VIsual_and_resel();
 
     setpcmark();
 

@@ -339,7 +339,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 
     static HWND
-sound_window()
+sound_window(void)
 {
     if (g_hWndSound == NULL)
     {

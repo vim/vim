@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Jan 17
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -469,16 +469,16 @@ interface, which is often done in many languages, especially Java.
 
 Items in a class ~
 						*E1318* *E1325* *E1326*
-Inside a class, in betweeen `:class` and `:endclass`, these items can appear:
+Inside a class, in between `:class` and `:endclass`, these items can appear:
 - An object member declaration: >
-  	this._memberName: memberType
-  	this.memberName: memberType
+	this._memberName: memberType
+	this.memberName: memberType
 	public this.memberName: memberType
 - A constructor method: >
-  	def new(arguments)
-  	def newName(arguments)
+	def new(arguments)
+	def newName(arguments)
 - An object method: >
-  	def SomeMethod(arguments)
+	def SomeMethod(arguments)
 <							*E1329*
 For the object member the type must be specified.  The best way is to do this
 explicitly with ": {type}".  For simple types you can also use an initializer,
@@ -518,6 +518,15 @@ An interface name must start with an uppercase letter. *E1343*
 The "Has" prefix can be used to make it easier to guess this is an interface
 name, with a hint about what it provides.
 An interface can only be defined in a |Vim9| script file.  *E1342*
+
+
+null object ~
+
+When a variable is declared to have the type of an object, but it is not
+initialized, the value is null.  When trying to use this null object Vim often
+does not know what class was supposed to be used.  Vim then cannot check if
+a member name is correct and you will get an "Using a null object" error,
+even when the member name is invalid. *E1360* *E1362*
 
 
 Default constructor ~

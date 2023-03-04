@@ -656,6 +656,35 @@ generate_SETTYPE(
 }
 
 /*
+ * Generate an ISN_PUSHOBJ instruction.  Object is always NULL.
+ */
+    static int
+generate_PUSHOBJ(cctx_T *cctx)
+{
+    RETURN_OK_IF_SKIP(cctx);
+    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_any) == NULL)
+	return FAIL;
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHCLASS instruction.  "class" can be NULL.
+ */
+    static int
+generate_PUSHCLASS(cctx_T *cctx, class_T *class)
+{
+    RETURN_OK_IF_SKIP(cctx);
+    isn_T *isn = generate_instr_type(cctx, ISN_PUSHCLASS,
+				  class == NULL ? &t_any : &class->class_type);
+    if (isn == NULL)
+	return FAIL;
+    isn->isn_arg.classarg = class;
+    if (class != NULL)
+	++class->class_refcount;
+    return OK;
+}
+
+/*
  * Generate a PUSH instruction for "tv".
  * "tv" will be consumed or cleared.
  */
@@ -717,6 +746,17 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_STRING:
 	    generate_PUSHS(cctx, &tv->vval.v_string);
 	    tv->vval.v_string = NULL;
+	    break;
+	case VAR_OBJECT:
+	    if (tv->vval.v_object != NULL)
+	    {
+		emsg(_(e_cannot_use_non_null_object));
+		return FAIL;
+	    }
+	    generate_PUSHOBJ(cctx);
+	    break;
+	case VAR_CLASS:
+	    generate_PUSHCLASS(cctx, tv->vval.v_class);
 	    break;
 	default:
 	    siemsg("constant type %d not supported", tv->v_type);
@@ -1937,7 +1977,8 @@ generate_PCALL(
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
-	if (check_func_args_from_type(cctx, type, argcount, at_top, name) == FAIL)
+	if (check_func_args_from_type(cctx, type, argcount, at_top, name)
+								       == FAIL)
 	    return FAIL;
 
 	ret_type = type->tt_member;
@@ -2467,6 +2508,10 @@ delete_instr(isn_T *isn)
 	    blob_unref(isn->isn_arg.blob);
 	    break;
 
+	case ISN_PUSHCLASS:
+	    class_unref(isn->isn_arg.classarg);
+	    break;
+
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
@@ -2659,6 +2704,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHF:
 	case ISN_PUSHJOB:
 	case ISN_PUSHNR:
+	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
 	case ISN_REDIREND:

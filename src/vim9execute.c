@@ -1283,7 +1283,7 @@ call_ufunc(
 {
     typval_T	argvars[MAX_FUNC_ARGS];
     funcexe_T   funcexe;
-    int		error;
+    funcerror_T	error;
     int		idx;
     int		did_emsg_before = did_emsg;
     compiletype_T compile_type = get_compile_type(ufunc);
@@ -1464,10 +1464,10 @@ call_partial(
 	name = tv->vval.v_string;
     if (name != NULL)
     {
-	char_u	fname_buf[FLEN_FIXED + 1];
-	char_u	*tofree = NULL;
-	int	error = FCERR_NONE;
-	char_u	*fname;
+	char_u	    fname_buf[FLEN_FIXED + 1];
+	char_u	    *tofree = NULL;
+	funcerror_T error = FCERR_NONE;
+	char_u	    *fname;
 
 	// May need to translate <SNR>123_ to K_SNR.
 	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
@@ -1944,8 +1944,7 @@ exec_command(isn_T *iptr)
     source_cookie_T cookie;
 
     SOURCING_LNUM = iptr->isn_lnum;
-    // Pass getsourceline to get an error for a missing ":end"
-    // command.
+    // Pass getsourceline to get an error for a missing ":end" command.
     CLEAR_FIELD(cookie);
     cookie.sourcing_lnum = iptr->isn_lnum - 1;
     if (do_cmdline(iptr->isn_arg.string,
@@ -2126,8 +2125,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     vartype_T	dest_type = iptr->isn_arg.storeindex.si_vartype;
     typval_T	*tv;
     typval_T	*tv_idx = STACK_TV_BOT(-2);
+    long	lidx = 0;
     typval_T	*tv_dest = STACK_TV_BOT(-1);
     int		status = OK;
+
+    if (tv_idx->v_type == VAR_NUMBER)
+	lidx = (long)tv_idx->vval.v_number;
 
     // Stack contains:
     // -3 value to be stored
@@ -2140,7 +2143,41 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	dest_type = tv_dest->v_type;
 	if (dest_type == VAR_DICT)
 	    status = do_2string(tv_idx, TRUE, FALSE);
-	else if (dest_type == VAR_LIST && tv_idx->v_type != VAR_NUMBER)
+	else if (dest_type == VAR_OBJECT && tv_idx->v_type == VAR_STRING)
+	{
+	    // Need to get the member index now that the class is known.
+	    object_T *obj = tv_dest->vval.v_object;
+	    class_T *cl = obj->obj_class;
+	    char_u  *member = tv_idx->vval.v_string;
+
+	    ocmember_T *m = NULL;
+	    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	    {
+		m = &cl->class_obj_members[i];
+		if (STRCMP(member, m->ocm_name) == 0)
+		{
+		    if (*member == '_')
+		    {
+			semsg(_(e_cannot_access_private_member_str),
+								  m->ocm_name);
+			status = FAIL;
+		    }
+
+		    lidx = i;
+		    break;
+		}
+		m = NULL;
+	    }
+
+	    if (m == NULL)
+	    {
+		semsg(_(e_member_not_found_on_object_str_str),
+						       cl->class_name, member);
+		status = FAIL;
+	    }
+	}
+	else if ((dest_type == VAR_LIST || dest_type == VAR_OBJECT)
+		&& tv_idx->v_type != VAR_NUMBER)
 	{
 	    emsg(_(e_number_expected));
 	    status = FAIL;
@@ -2151,7 +2188,6 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     {
 	if (dest_type == VAR_LIST)
 	{
-	    long	    lidx = (long)tv_idx->vval.v_number;
 	    list_T	    *list = tv_dest->vval.v_list;
 
 	    if (list == NULL)
@@ -2224,7 +2260,6 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	}
 	else if (dest_type == VAR_BLOB)
 	{
-	    long	    lidx = (long)tv_idx->vval.v_number;
 	    blob_T	    *blob = tv_dest->vval.v_blob;
 	    varnumber_T	    nr;
 	    int		    error = FALSE;
@@ -2255,18 +2290,17 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	}
 	else if (dest_type == VAR_CLASS || dest_type == VAR_OBJECT)
 	{
-	    long	    idx = (long)tv_idx->vval.v_number;
 	    object_T	    *obj = tv_dest->vval.v_object;
 	    typval_T	    *otv = (typval_T *)(obj + 1);
 
 	    class_T	    *itf = iptr->isn_arg.storeindex.si_class;
 	    if (itf != NULL)
 		// convert interface member index to class member index
-		idx = object_index_from_itf_index(itf, FALSE,
-							  idx, obj->obj_class);
+		lidx = object_index_from_itf_index(itf, FALSE,
+							 lidx, obj->obj_class);
 
-	    clear_tv(&otv[idx]);
-	    otv[idx] = *tv;
+	    clear_tv(&otv[lidx]);
+	    otv[lidx] = *tv;
 	}
 	else
 	{
@@ -3983,6 +4017,8 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHFUNC:
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
+	    case ISN_PUSHOBJ:
+	    case ISN_PUSHCLASS:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
@@ -4028,6 +4064,14 @@ exec_instructions(ectx_T *ectx)
 			tv->v_type = VAR_JOB;
 			tv->vval.v_job = NULL;
 #endif
+			break;
+		    case ISN_PUSHOBJ:
+			tv->v_type = VAR_OBJECT;
+			tv->vval.v_object = NULL;
+			break;
+		    case ISN_PUSHCLASS:
+			tv->v_type = VAR_CLASS;
+			tv->vval.v_class = iptr->isn_arg.classarg;
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -5277,6 +5321,13 @@ exec_instructions(ectx_T *ectx)
 		    }
 
 		    object_T *obj = tv->vval.v_object;
+		    if (obj == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_using_null_object));
+			goto on_error;
+		    }
+
 		    int idx;
 		    if (iptr->isn_type == ISN_GET_OBJ_MEMBER)
 			idx = iptr->isn_arg.number;
@@ -6626,6 +6677,14 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 #ifdef FEAT_JOB_CHANNEL
 		smsg("%s%4d PUSHJOB \"no process\"", pfx, current);
 #endif
+		break;
+	    case ISN_PUSHOBJ:
+		smsg("%s%4d PUSHOBJ null", pfx, current);
+		break;
+	    case ISN_PUSHCLASS:
+		smsg("%s%4d PUSHCLASS %s", pfx, current,
+			iptr->isn_arg.classarg == NULL ? "null"
+				 : (char *)iptr->isn_arg.classarg->class_name);
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);

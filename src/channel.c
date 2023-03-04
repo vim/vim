@@ -4180,7 +4180,7 @@ channel_handle_events(int only_keep_open)
  * Return TRUE when there is any channel with a keep_open flag.
  */
     int
-channel_any_keep_open()
+channel_any_keep_open(void)
 {
     channel_T	*channel;
 

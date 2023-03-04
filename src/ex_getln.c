@@ -4366,7 +4366,7 @@ get_list_range(char_u **str, int *num1, int *num2)
  * Returns NULL if value is OK, error message otherwise.
  */
     char *
-check_cedit(void)
+did_set_cedit(optset_T *args UNUSED)
 {
     int n;
 

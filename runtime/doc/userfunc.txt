@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2023 Jan 09
+*userfunc.txt*	For Vim version 9.0.  Last change: 2023 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -211,7 +211,8 @@ See |:verbose-cmd| for more information.
 
 						*function-argument* *a:var*
 An argument can be defined by giving its name.  In the function this can then
-be used as "a:name" ("a:" for argument).
+be used as "a:name" ("a:" for argument) (in a `:def` function "a:" is not
+used).
 					*a:0* *a:1* *a:000* *E740* *...*
 Up to 20 arguments can be given, separated by commas.  After the named
 arguments an argument "..." can be specified, which means that more arguments
@@ -246,9 +247,10 @@ Example: >
   call Something('key', 20)	"key: 20"
 
 The argument default expressions are evaluated at the time of the function
-call, not definition.  Thus it is possible to use an expression which is
-invalid the moment the function is defined.  The expressions are also only
-evaluated when arguments are not specified during a call.
+call, not when the function is defined.  Thus it is possible to use an
+expression which is invalid the moment the function is defined.  The
+expressions are also only evaluated when arguments are not specified during a
+call.
 						*none-function_argument*
 You can pass |v:none| to use the default expression.  Note that this means you
 cannot pass v:none as an ordinary value when an argument has a default

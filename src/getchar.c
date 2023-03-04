@@ -3974,23 +3974,30 @@ getcmdkeycmd(
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * If there was a mapping put info about it in the redo buffer, so that "."
- * will use the same script context.  We only need the SID.
+ * If there was a mapping we get its SID.  Otherwise, use "last_used_sid", it
+ * is set when redo'ing.
+ * Put this SID in the redo buffer, so that "." will use the same script
+ * context.
  */
     void
 may_add_last_used_map_to_redobuff(void)
 {
-    char_u buf[3 + 20];
+    char_u  buf[3 + 20];
+    int	    sid = -1;
 
-    if (last_used_map == NULL || last_used_map->m_script_ctx.sc_sid < 0)
+    if (last_used_map != NULL)
+	sid = last_used_map->m_script_ctx.sc_sid;
+    if (sid < 0)
+	sid = last_used_sid;
+
+    if (sid < 0)
 	return;
 
     // <K_SID>{nr};
     buf[0] = K_SPECIAL;
     buf[1] = KS_EXTRA;
     buf[2] = KE_SID;
-    vim_snprintf((char *)buf + 3, 20, "%d;",
-					   last_used_map->m_script_ctx.sc_sid);
+    vim_snprintf((char *)buf + 3, 20, "%d;", sid);
     add_buff(&redobuff, buf, -1L);
 }
 #endif

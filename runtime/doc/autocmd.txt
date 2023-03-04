@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.0.  Last change: 2022 Dec 12
+*autocmd.txt*   For Vim version 9.0.  Last change: 2023 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -64,7 +64,7 @@ Example in Vim9 script: >
 In legacy script: >
    call autocmd_add(#{replace: v:true,
 		    \ group: 'DemoGroup',
-   		    \ event: 'BufEnter',
+		    \ event: 'BufEnter',
 		    \ pattern: '*.txt',
 		    \ cmd: 'call DemoBufEnter()'
 		    \ })
@@ -398,7 +398,7 @@ Name			triggered by ~
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
 |InsertLeave|		when leaving Insert mode
-|InsertLeavePre| 	just before leaving Insert mode
+|InsertLeavePre|	just before leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
 
@@ -611,9 +611,11 @@ CmdlineEnter			After moving the cursor to the command line,
 				where the user can type a command or search
 				string; including non-interactive use of ":"
 				in a mapping, but not when using |<Cmd>|.
+				The pattern is matched against the character
+				representing the type of command-line.
+				|cmdwin-char|
 				<afile> is set to a single character,
 				indicating the type of command-line.
-				|cmdwin-char|
 							*CmdlineLeave*
 CmdlineLeave			Before leaving the command line; including
 				non-interactive use of ":" in a mapping, but

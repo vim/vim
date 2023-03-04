@@ -24,7 +24,7 @@ get the latest versions of scripts listed therein from http://vim.sf.net/.
 
 ==============================================================================
 1. Contents				*glvs-contents* *glvs* *getscript*
-   					*GetLatestVimScripts*
+					*GetLatestVimScripts*
 
 	1. Contents........................................: |glvs-contents|
 	2. GetLatestVimScripts -- Getting Started..........: |glvs-install|
@@ -116,7 +116,7 @@ reflect the latest version of script(s) so downloaded.
 
 ==============================================================================
 4. GetLatestVimScripts Data File		*getscript-data* *glvs-data*
- 						*:GetLatestVimScripts_dat*
+						*:GetLatestVimScripts_dat*
 The data file <GetLatestVimScripts.dat> must have for its first two lines
 the following text:
 >
@@ -330,7 +330,7 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 		This variable holds the options to be used with the
 		g:GetLatestVimScripts_wget command.
 >
- 	g:GetLatestVimScripts_allowautoinstall
+	g:GetLatestVimScripts_allowautoinstall
 <	default= 1
 		This variable indicates whether GetLatestVimScripts is allowed
 		to attempt to automatically install scripts.  Furthermore, the

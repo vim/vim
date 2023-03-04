@@ -1182,6 +1182,8 @@ EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+EXTERN char e_invalid_command_str_expected_str[]
+	INIT(= N_("E476: Invalid command: %s, expected %s"));
 EXTERN char e_no_bang_allowed[]
 	INIT(= N_("E477: No ! allowed"));
 EXTERN char e_dont_panic[]
@@ -3442,6 +3444,14 @@ EXTERN char e_using_super_not_in_child_class[]
 	INIT(= N_("E1358: Using \"super\" not in a child class"));
 EXTERN char e_cannot_define_new_function_in_abstract_class[]
 	INIT(= N_("E1359: Cannot define a \"new\" function in an abstract class"));
-EXTERN char e_invalid_command_str_expected_str[]
-	INIT(= N_("E476: Invalid command: %s, expected %s"));
+EXTERN char e_using_null_object[]
+	INIT(= N_("E1360: Using a null object"));
+#endif
+EXTERN char e_cannot_use_color_none_did_you_mean_none[]
+	INIT(= N_("E1361: Cannot use color \"none\", did you mean \"NONE\"?"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_non_null_object[]
+	INIT(= N_("E1362: Cannot use a non-null object"));
+EXTERN char e_incomplete_type[]
+	INIT(= N_("E1363: Incomplete type"));
 #endif

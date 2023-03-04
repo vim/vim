@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 9.0.  Last change: 2022 Apr 09
+*filetype.txt*  For Vim version 9.0.  Last change: 2023 Feb 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -679,7 +679,10 @@ MARKDOWN                                                *ft-markdown-plugin*
 
 To enable folding use this: >
 	let g:markdown_folding = 1
-<
+
+'expandtab' will be set by default.  If you do not want that use this: >
+	let g:markdown_recommended_style = 0
+
 
 PDF							*ft-pdf-plugin*
 

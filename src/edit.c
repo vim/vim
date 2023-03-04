@@ -3524,6 +3524,10 @@ ins_ctrl_g(void)
 		  dont_sync_undo = MAYBE;
 		  break;
 
+	case ESC:
+		  // Esc after CTRL-G cancels it.
+		  break;
+
 	// Unknown CTRL-G command, reserved for future expansion.
 	default:  vim_beep(BO_CTRLG);
     }
@@ -4607,7 +4611,7 @@ ins_end(int c)
 }
 
     static void
-ins_s_left()
+ins_s_left(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
@@ -4676,7 +4680,7 @@ ins_right(void)
 }
 
     static void
-ins_s_right()
+ins_s_right(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING

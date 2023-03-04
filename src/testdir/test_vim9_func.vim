@@ -166,6 +166,31 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+def Test_break_in_skipped_block()
+  var lines =<< trim END
+      vim9script
+
+      def FixStackFrame(): string
+          for _ in [2]
+              var path = 'xxx'
+              if !!path
+                  if false
+                      break
+                  else
+                      return 'foo'
+                  endif
+              endif
+          endfor
+          return 'xxx'
+      enddef
+
+      disas FixStackFrame
+
+      FixStackFrame()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_autoload_name_mismatch()
   var dir = 'Xnamedir/autoload'
   mkdir(dir, 'pR')

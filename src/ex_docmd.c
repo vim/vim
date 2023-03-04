@@ -1386,7 +1386,7 @@ do_cmdline(
  * Handle when "did_throw" is set after executing commands.
  */
     void
-handle_did_throw()
+handle_did_throw(void)
 {
     char	*p = NULL;
     msglist_T	*messages = NULL;
@@ -1570,7 +1570,7 @@ getline_cookie(
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROT)
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get the next line source line without advancing.
  */

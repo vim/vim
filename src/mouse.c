@@ -2234,7 +2234,7 @@ nv_mouse(cmdarg_T *cap)
 static int	held_button = MOUSE_RELEASE;
 
     void
-reset_held_button()
+reset_held_button(void)
 {
     held_button = MOUSE_RELEASE;
 }

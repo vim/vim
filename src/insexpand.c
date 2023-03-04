@@ -2333,9 +2333,9 @@ ins_compl_prep(int c)
     if (c != Ctrl_R && vim_is_ctrl_x_key(c))
 	edit_submode_extra = NULL;
 
-    // Ignore end of Select mode mapping and mouse scroll buttons.
+    // Ignore end of Select mode mapping and mouse scroll/movement.
     if (c == K_SELECT || c == K_MOUSEDOWN || c == K_MOUSEUP
-	    || c == K_MOUSELEFT || c == K_MOUSERIGHT
+	    || c == K_MOUSELEFT || c == K_MOUSERIGHT || c == K_MOUSEMOVE
 	    || c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	return retval;
 
@@ -2546,7 +2546,7 @@ copy_global_to_buflocal_cb(callback_T *globcb, callback_T *bufcb)
  * lambda expression.
  */
     char *
-set_completefunc_option(void)
+did_set_completefunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(curbuf->b_p_cfu, &cfu_cb) == FAIL)
 	return e_invalid_argument;
@@ -2575,7 +2575,7 @@ set_buflocal_cfu_callback(buf_T *buf UNUSED)
  * lambda expression.
  */
     char *
-set_omnifunc_option(void)
+did_set_omnifunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(curbuf->b_p_ofu, &ofu_cb) == FAIL)
 	return e_invalid_argument;
@@ -2603,7 +2603,7 @@ set_buflocal_ofu_callback(buf_T *buf UNUSED)
  * lambda expression.
  */
     char *
-set_thesaurusfunc_option(void)
+did_set_thesaurusfunc(optset_T *args UNUSED)
 {
     int	retval;
 
@@ -2994,7 +2994,7 @@ ins_compl_mode(void)
  * one assigned yet.
  */
     static void
-ins_compl_update_sequence_numbers()
+ins_compl_update_sequence_numbers(void)
 {
     int		number = 0;
     compl_T	*match;
@@ -3457,7 +3457,7 @@ get_next_filename_completion(void)
  * Get the next set of command-line completions matching "compl_pattern".
  */
     static void
-get_next_cmdline_completion()
+get_next_cmdline_completion(void)
 {
     char_u	**matches;
     int		num_matches;
@@ -3491,7 +3491,7 @@ get_next_spell_completion(linenr_T lnum UNUSED)
  * "cur_match_pos" for completion.  The length of the match is set in "len".
  */
     static char_u *
-ins_comp_get_next_word_or_line(
+ins_compl_get_next_word_or_line(
 	buf_T	*ins_buf,		// buffer being scanned
 	pos_T	*cur_match_pos,		// current match position
 	int	*match_len,
@@ -3675,8 +3675,8 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 		&& start_pos->col  == st->cur_match_pos->col)
 	    continue;
 
-	ptr = ins_comp_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
-							&len, &cont_s_ipos);
+	ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
+							   &len, &cont_s_ipos);
 	if (ptr == NULL)
 	    continue;
 

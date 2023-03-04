@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Feb 02
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,18 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Crash when splitting window: #11961.  Set RedrawingDisabled in
+win_split_ins().
+
+CI: include #12008 end of February.
+
+In runtime/autoload/dist/script.vim change "set ft=" to "setlocal ft=" ?
+
+CTRL-J mapping is not used if halfway another mapping. #12002
+Is simplified mapping not used but escape code has been simplified?
+
+Include #11952 after a runtime files update.
+
 Errors when running tests with valgrind:
 - test_codestyle.vim:  e.g.:
     command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[569]..function RunTheTest[52]..Test_test_files line 6: keycode_check.vim: space before tab: Expected 0 but got 7
@@ -63,18 +75,24 @@ Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes
   - Change access: public by default, private by prefixing "_".
 	Check for error: can't have same name twice (ignoring "_" prefix).
+  - Make ":defcompile ClassName" compile all functions and methods in the
+    class.
   - Private methods?
 	either: private def Func()
 	    or: def _Func()
     Perhaps use "private" keyword instead of "_" prefix?
   - "final" object members - can only be set in the constructor.
+  - accept line breaks in member initialization.  #11957
   - object empty(), len() - can class define a method to be used for them?
+  - add to help: when using a default new() method then reordering object
+    members may cause trouble.  Can define new() without arguments to avoid.
+  - TODO items: check types for "implements" - members and methods
   - how about lock/unlock?
   - When checking "implements" also check types of members and function args.
   - For chaining, allow using the class name as type for function return
     value.
   - Implement generics
-  - Add "instanceof"
+  - Add "instanceof" (exact class name).  And "assignable" (class or child)?
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
@@ -82,6 +100,7 @@ Further Vim9 improvements, possibly after launch:
     this at runtime.
 - implement :type
 - implement :enum
+- Promise class, could be used to wait on a popup close callback?
 - class local to a function
 - Use Vim9 for more runtime files.
 - Inline call to map() and filter(), better type checking.
@@ -90,6 +109,8 @@ Further Vim9 improvements, possibly after launch:
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 Information missing in terminfo:
+- Accept "hyper" and "meta" modifiers (16 and 32) from Kitty like Meta?
+    8 is actually "super".
 - t_RV	request terminal version string; xterm:	"\033[>c"
     change in terminfo for "RV" uses the wrong escape sequence 7 - 14 Jan only
 Codes used for focus gained and lost (currently using use_xterm_like_mouse())
@@ -101,7 +122,6 @@ Codes used for focus gained and lost (currently using use_xterm_like_mouse())
 - t_fe	enable focus-event tracking
 - t_fd	disable focus-event tracking
 Modifiers for various keys
-- Decode kitty key protocol Meta and use MOD_MASK_META.  Document <T-k>
 - flag to indicate "xterm compatible modifiers" ?
 Underline and similar:
 - t_AU - Set underline color: like "AF" and "AB" entries.
@@ -145,8 +165,6 @@ Probably Vim internal, not in terminfo:
 - t_RK	request terminal keyboard protocol state; sent after |t_TI|
 Already working, not properly documented:
 - t_u7	request cursor position
-Also, with Alt-b we get â, with Alt-Shift-b we should bet another character.
-That does not appear to work with Kitty.  #11913
 
 Popup windows:
 - Add a function to redraw a specific popup window.  Esp. to be used when
@@ -301,11 +319,15 @@ Can we not request XT key sequences, or reduce them drastically?
 Issue #10512: Dynamic loading broken with Perl 5.36
 Damien has a patch (2022 Dec 4)
 
+Request #11965: Allow severaql "%=" items in 'statusline', makes it possible
+to have text in the center.
+
 Add some kind of ":whathappend" command and functions to make visible what the
 last few typed keys and executed commands are.  To be used when the user
-wonders what went wrong.
+wonders what went wrong.  Could also be used for statistics #12046.
 - typed keys - Normal mode command - like what is recorded in a register and
   displayed by 'showcmd'.
+- register used - #12063
 - executed command lines
 - with more verbosity: what scripts/functions/autocommands were executed
 
@@ -340,7 +362,7 @@ Better terminal emulator support:
     "xterm" and then add "kitty" entries.
 
 Using "A" and "o" in manually created fold (in empty buffer) does not behave
-consistenly (James McCoy, #10698)
+consistently (James McCoy, #10698)
 
 In a timer callback, when using ":echo" and then input() the message is
 overwritten.  Could use ":echowin" and call redraw_cmd() in get_user_input().
@@ -384,8 +406,6 @@ need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
 IDEA: when drawing the text, store the text byte index in ScreenLinesIdx[].
 When converting screen column to text position use this.
 The line number can be obtained from win->w_lines[].
-
-MS-Windows: did path modifier :p:8 stop working?  #8600
 
 Version of getchar() that does not move the cursor - #10603 Use a separate
 argument for the new flag.
@@ -467,6 +487,9 @@ Any way to convert "$" back by using a special value? (#6901)
 
 Can we detect true color support?  https://gist.github.com/XVilka/8346728
 Try setting a color then request the current color, like using t_u7.
+
+Add a v:register_used variable, which has the name of the register used for
+the last command, e.g. put.  #12003
 
 Make the jumplist behave like a tag stack. (#7738)  Should there be a more
 time bound navigation, like with undo?
@@ -683,6 +706,7 @@ Added tests (James McCoy, 2016 Aug 3, #958).  Still needs more work.
 
 Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
 t:diffexpr_option t:diffopt_option? (#4782)
+Also make 'scrollopt' tab-local, remove "hor" only for the current tab page.
 
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
@@ -1173,9 +1197,6 @@ Avoids exceptions, e.g. when using the b: namespace as a dict.
 Patch to make v:shell_error writable. (Christian Brabandt, 2016 Sep 27)
 Useful to restore it.  Is there another solution?
 
-"ci[" does not look for next [ like ci" does look for next ".
-(J.F. 2017 Jan 7)
-
 Patch for wrong cursor position on wrapped line, involving breakindent.
 (Ozaki Kiichi, 2016 Nov 25)
 
@@ -1198,9 +1219,6 @@ separator. (Toffanim, 2016 Nov 24, #1274)
 Should :vmap in matchit.vim be :xmap?  (Tony Mechelynck)
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
-
-Add "unicode true" to NSIS installer.  Doesn't work with Windows 95, which we
-no longer support.
 
 Support sort(l, 'F'), convert strings to float. (#7857)
 
@@ -1386,9 +1404,6 @@ Do not include the linebreak at the start?
 
 Feature request: add the "al" text object, to manipulate a screen line.
 Especially useful when using 'linebreak'
-
-":cd C:\Windows\System32\drivers\etc*" does not work, even though the
-directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
@@ -2974,10 +2989,6 @@ Win32 GUI known bugs:
     console, go back to Vim and click "reload" in the dialog for the changed
     file: Window moves with the cursor!
     Put focus event in input buffer and let generic Vim code handle it?
-8   Win32 GUI: With maximized window, ":set go-=r" doesn't use the space that
-    comes available. (Poucet)  It works OK on Win 98 but doesn't work on Win
-    NT 4.0.  Leaves a grey area where the scrollbar was.  ":set go+=r" also
-    doesn't work properly.
 8   When Vim is minimized and when maximizing it a file-changed dialog pops
     up, Vim isn't maximized.  It should be done before the dialog, so that it
     appears in the right position. (Webb)
@@ -3501,8 +3512,6 @@ Problems that will (probably) not be solved:
     input method called from GDK code.  Without Perl it doesn't crash.
 -   VMS: Vimdiff doesn't work with the VMS diff, because the output looks
     different.  This makes test 47 fail.  Install a Unix-compatible diff.
--   Win32 GUI: mouse wheel always scrolls rightmost window.  The events arrive
-    in Vim as if the rightmost scrollbar was used.
 -   GTK with Gnome: Produces an error message when starting up:
 	Gdk-WARNING **: locale not supported by C library
     This is caused by the gnome library gnome_init() setting $LC_CTYPE to
@@ -4459,8 +4468,6 @@ Tags:
 Win32 GUI:
 8   Make debug mode work while starting up (vim -D).  Open console window for
     the message and input?
-7   GvimExt: when there are several existing Vims, move the list to a submenu.
-    (Mike McCollister)
 8   When using "Edit with Vim" for one file it changes directory, when several
     files are selected and using "Edit with single Vim" the directory isn't
     changed.  At least change directory when the path is the same for all
@@ -6005,7 +6012,7 @@ Various improvements:
     many percent down the windows).
 -   Make it possible for the 'showbreak' to be displayed at the end of the
     line.  Use a comma to separate the part at the end and the start of the
-    line?  Highlight the linebreak characters, add flag in 'highlight'.
+    line?  #754  Highlight the linebreak characters, add flag in 'highlight'.
     Make 'showbreak' local to a window.
 -   Some string options should be expanded if they have wildcards, e.g.
     'dictionary' when it is "*.h".

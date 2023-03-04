@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Jan 12
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1372,7 +1372,7 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr10(expr1, ...)	|Funcref| function call  	*E1085*
+expr10(expr1, ...)	|Funcref| function call		*E1085*
 
 When expr10 is a |Funcref| type variable, invoke the function it refers to.
 
@@ -1654,7 +1654,7 @@ See below |functions|.
 
 lambda expression				*expr-lambda* *lambda*
 -----------------
-{args -> expr1}		legacy lambda expression 		*E451*
+{args -> expr1}		legacy lambda expression		*E451*
 (args) => expr1		|Vim9| lambda expression
 
 A lambda expression creates a new unnamed function which returns the result of
@@ -4581,10 +4581,10 @@ The input is in the variable "line", the results in the variables "file",
 
 getting the scriptnames in a Dictionary ~
 						*scriptnames-dictionary*
-The |:scriptnames| command can be used to get a list of all script files that
-have been sourced.  There is no equivalent function or variable for this
-(because it's rarely needed).  In case you need to manipulate the list this
-code can be used: >
+The `:scriptnames` command can be used to get a list of all script files that
+have been sourced.  There is also the `getscriptinfo()` function, but the
+information returned is not exactly the same.  In case you need to manipulate
+the output of `scriptnames` this code can be used: >
     " Get the output of ":scriptnames" in the scriptnames_output variable.
     let scriptnames_output = ''
     redir => scriptnames_output

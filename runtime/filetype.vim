@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 Feb 02
+" Last Change:	2023 Feb 25
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -205,6 +205,9 @@ au BufNewFile,BufRead *.mch,*.ref,*.imp		setf b
 au BufNewFile,BufRead *.bas			call dist#ft#FTbas()
 au BufNewFile,BufRead *.bi,*.bm			call dist#ft#FTbas()
 
+" Bass
+au BufNewFile,BufRead *.bass			setf bass
+
 " Visual Basic Script (close to Visual Basic) or Visual Basic .NET
 au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
 
@@ -309,6 +312,9 @@ au BufNewFile,BufRead *.cdl			setf cdl
 
 " Conary Recipe
 au BufNewFile,BufRead *.recipe			setf conaryrecipe
+
+" ChainPack Object Notation (CPON)
+au BufNewFile,BufRead *.cpon			setf cpon
 
 " Controllable Regex Mutilator
 au BufNewFile,BufRead *.crm			setf crm
@@ -436,6 +442,9 @@ au BufNewFile,BufRead *.csv			setf csv
 " CUDA Compute Unified Device Architecture
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
+" Cue
+au BufNewFile,BufRead *.cue			setf cue
+
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
 au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile	setf dockerfile
@@ -518,6 +527,9 @@ au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
+
+" Dhall
+au BufNewFile,BufRead *.dhall			setf dhall
 
 " dnsmasq(8) configuration files
 au BufNewFile,BufRead */etc/dnsmasq.conf	setf dnsmasq
@@ -1029,7 +1041,7 @@ au BufNewFile,BufRead *.ipynb			setf json
 au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
 " JSONC (JSON with comments)
-au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc 	setf jsonc
+au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc	setf jsonc
 au BufNewFile,BufRead .jshintrc,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
 
 " JSON
@@ -1632,7 +1644,7 @@ au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 au BufRead,BufNewFile *.ql,*.qll		setf ql
 
 " Quarto
-au BufRead,BufNewFile *.qmd     setf quarto
+au BufRead,BufNewFile *.qmd			setf quarto
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
@@ -2008,6 +2020,9 @@ au BufNewFile,BufRead *.sql			call dist#ft#SQL()
 " SQLJ
 au BufNewFile,BufRead *.sqlj			setf sqlj
 
+" PRQL
+au BufNewFile,BufRead *.prql			setf prql
+
 " SQR
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
@@ -2021,6 +2036,9 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config			setf sshdconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
+
+" Starlark
+au BufNewFile,BufRead *.ipd,*.star,*.starlark	setf starlark
 
 " OpenVPN configuration
 au BufNewFile,BufRead *.ovpn			setf openvpn
@@ -2201,6 +2219,9 @@ au BufNewFile,BufRead */etc/udev/permissions.d/*.permissions setf udevperm
 "
 " Udev symlinks config
 au BufNewFile,BufRead */etc/udev/cdsymlinks.conf	setf sh
+
+" Ungrammar, AKA Un-grammar
+au BufNewFile,BufRead *.ungram			setf ungrammar
 
 " UnrealScript
 au BufNewFile,BufRead *.uc			setf uc
@@ -2437,6 +2458,9 @@ au BufNewFile,BufRead */etc/yum.conf		setf dosini
 
 " YANG
 au BufRead,BufNewFile *.yang			setf yang
+
+" Yuck
+au BufNewFile,BufRead *.yuck			setf yuck
 
 " Zimbu
 au BufNewFile,BufRead *.zu			setf zimbu

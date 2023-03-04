@@ -469,7 +469,7 @@ init_highlight(
  * the user to override the color values. Only loaded once.
  */
     static void
-load_default_colors_lists()
+load_default_colors_lists(void)
 {
     // Lacking a default color list isn't the end of the world but it is likely
     // an inconvenience so users should know when it is missing.

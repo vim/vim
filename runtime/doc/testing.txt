@@ -197,7 +197,7 @@ test_gui_event({event}, {args})
 		  Inject an event to select a tabline menu entry. The
 		  supported items in {args} are:
 		    tabnr:	tab page number
-		    item: 	tab page menu item number. 1 for the first
+		    item:	tab page menu item number. 1 for the first
 				menu item, 2 for the second item and so on.
 
 		After injecting the GUI events you probably should call
@@ -369,7 +369,7 @@ test_override({name}, {val})				*test_override()*
 			     string is detected
 		ui_delay     time in msec to use in ui_delay(); overrules a
 			     wait time of up to 3 seconds for messages
-		uptime 	     overrules sysinfo.uptime
+		uptime	     overrules sysinfo.uptime
 		vterm_title  setting the window title by a job running in a
 			     terminal window
 		ALL	     clear all overrides, except alloc_lines ({val} is

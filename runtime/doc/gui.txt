@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.0.  Last change: 2022 Nov 17
+*gui.txt*       For Vim version 9.0.  Last change: 2023 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -95,11 +95,11 @@ terminal version.
 
 Recommended place for your personal GUI initializations:
 	Unix		    $HOME/.gvimrc or $HOME/.vim/gvimrc
-	Win32    	    $HOME/_gvimrc, $HOME/vimfiles/gvimrc
+	Win32		    $HOME/_gvimrc, $HOME/vimfiles/gvimrc
 			    or $VIM/_gvimrc
 	Amiga		    s:.gvimrc, home:.gvimrc, home:vimfiles:gvimrc
 			    or $VIM/.gvimrc
-	Haiku	            $HOME/config/settings/vim/gvimrc
+	Haiku		    $HOME/config/settings/vim/gvimrc
 
 The personal initialization files are searched in the order specified above
 and only the first one that is found is read.
@@ -856,7 +856,7 @@ Example for debugger tools: >
 	nnoremenu 1.20 WinBar.Next :Next<CR>
 	nnoremenu 1.30 WinBar.Finish :Finish<CR>
 	nnoremenu 1.40 WinBar.Cont :Continue<CR>
-<
+<					*hl-ToolbarLine* *hl-ToolbarButton*
 The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
 
 When splitting the window the window toolbar is not copied to the new window.
@@ -1181,7 +1181,7 @@ When 'guifont' is set and a valid font is found in it and 'guifontwide' is
 empty Vim will attempt to find a matching double-width font and set
 'guifontwide' to it.
 
-GTK+ GUI only:  		    	*guifontwide_gtk*
+GTK+ GUI only:				*guifontwide_gtk*
 
 If set and valid, 'guifontwide' is always used for double width characters,
 even if 'encoding' is not set to "utf-8".

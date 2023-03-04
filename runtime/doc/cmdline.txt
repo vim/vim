@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 9.0.  Last change: 2022 Nov 11
+*cmdline.txt*   For Vim version 9.0.  Last change: 2023 Feb 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -617,6 +617,7 @@ followed by another Vim command:
     :read !
     :scscope
     :sign
+    :tabdo
     :tcl
     :tcldo
     :tclfile

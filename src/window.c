@@ -824,7 +824,7 @@ cmd_with_count(
  * Otherwise return OK.
  */
     static int
-check_split_disallowed()
+check_split_disallowed(void)
 {
     if (split_disallowed > 0)
     {
@@ -5273,15 +5273,15 @@ win_enter_ext(win_T *wp, int flags)
     int		curwin_invalid = (flags & WEE_CURWIN_INVALID);
     int		did_decrement = FALSE;
 
-    if (wp == curwin && !curwin_invalid)	// nothing to do
+    if (wp == curwin && curwin_invalid == 0)	// nothing to do
 	return FALSE;
 
 #ifdef FEAT_JOB_CHANNEL
-    if (!curwin_invalid)
+    if (curwin_invalid == 0)
 	leaving_window(curwin);
 #endif
 
-    if (!curwin_invalid && (flags & WEE_TRIGGER_LEAVE_AUTOCMDS))
+    if (curwin_invalid == 0 && (flags & WEE_TRIGGER_LEAVE_AUTOCMDS))
     {
 	/*
 	 * Be careful: If autocommands delete the window, return now.
@@ -5309,13 +5309,13 @@ win_enter_ext(win_T *wp, int flags)
 
     // Might need to scroll the old window before switching, e.g., when the
     // cursor was moved.
-    if (*p_spk == 'c')
+    if (*p_spk == 'c' && curwin_invalid == 0)
 	update_topline();
 
     // may have to copy the buffer options when 'cpo' contains 'S'
     if (wp->w_buffer != curbuf)
 	buf_copy_options(wp->w_buffer, BCO_ENTER | BCO_NOHELP);
-    if (!curwin_invalid)
+    if (curwin_invalid == 0)
     {
 	prevwin = curwin;	// remember for CTRL-W p
 	curwin->w_redr_status = TRUE;
@@ -5328,7 +5328,10 @@ win_enter_ext(win_T *wp, int flags)
     if (*p_spk == 'c')		// assume cursor position needs updating
 	changed_line_abv_curs();
     else
-	win_fix_cursor(TRUE);
+	// Make sure the cursor position is valid, either by moving the cursor
+	// or by scrolling the text.
+	win_fix_cursor(
+		get_real_state() & (MODE_NORMAL|MODE_CMDLINE|MODE_TERMINAL));
 
     // Now it is OK to parse messages again, which may be needed in
     // autocommands.
@@ -6011,7 +6014,7 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
  * Make the current window show at least one line and one column.
  */
     void
-win_ensure_size()
+win_ensure_size(void)
 {
     if (curwin->w_height == 0)
 	win_setheight(1);
@@ -6782,7 +6785,8 @@ win_fix_scroll(int resize)
 /*
  * Make sure the cursor position is valid for 'splitkeep'.
  * If it is not, put the cursor position in the jumplist and move it.
- * If we are not in normal mode, scroll to make valid instead.
+ * If we are not in normal mode ("normal" is zero), make it valid by scrolling
+ * instead.
  */
     static void
 win_fix_cursor(int normal)
@@ -7353,7 +7357,7 @@ check_lnums_nested(int do_curwin)
  * check_lnums() must have been called first!
  */
     void
-reset_lnums()
+reset_lnums(void)
 {
     win_T	*wp;
     tabpage_T	*tp;

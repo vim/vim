@@ -3309,7 +3309,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
  * Return FALSE when the job has ended.
  */
     int
-error_if_term_popup_window()
+error_if_term_popup_window(void)
 {
     if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL
 					   && term_job_running(curbuf->b_term))
@@ -3543,7 +3543,7 @@ popup_no_mapping(void)
  * cursor moved far enough.
  */
     void
-popup_check_cursor_pos()
+popup_check_cursor_pos(void)
 {
     win_T *wp;
 

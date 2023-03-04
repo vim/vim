@@ -3006,4 +3006,44 @@ def Test_disassemble_defer()
         instr)
 enddef
 
+def Test_disassemble_class_function()
+  var lines =<< trim END
+      vim9script
+
+      class Cl
+          static def Fc(): string
+            return "x"
+          enddef
+      endclass
+
+      g:instr = execute('disassemble Cl.Fc')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('Fc\_s*' ..
+        'return "x"\_s*' ..
+        '\d PUSHS "x"\_s*' ..
+        '\d RETURN\_s*',
+        g:instr)
+
+  lines =<< trim END
+      vim9script
+
+      class Cl
+          def Fo(): string
+            return "y"
+          enddef
+      endclass
+
+      g:instr = execute('disassemble Cl.Fo')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('Fo\_s*' ..
+        'return "y"\_s*' ..
+        '\d PUSHS "y"\_s*' ..
+        '\d RETURN\_s*',
+        g:instr)
+
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -2736,7 +2736,7 @@ set_ref_in_lua(int copyID)
 }
 
     void
-update_package_paths_in_lua()
+update_package_paths_in_lua(void)
 {
     if (!lua_isopen())
 	return;
@@ -2776,11 +2776,11 @@ luaV_call_lua_func(
     if (lua_pcall(funcstate->L, luaargcount, 1, 0))
     {
 	luaV_emsg(funcstate->L);
-	return FCERR_OTHER;
+	return (int)FCERR_OTHER;
     }
 
     luaV_checktypval(funcstate->L, -1, rettv, "get return value");
-    return FCERR_NONE;
+    return (int)FCERR_NONE;
 }
 
 /*

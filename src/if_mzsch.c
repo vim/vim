@@ -886,16 +886,20 @@ remove_timer(void)
     timer_id = 0;
 }
 
-    void
-mzvim_reset_timer(void)
+#endif // MZSCHEME_GUI_THREADS
+
+    char *
+did_set_mzquantum(optset_T *args UNUSED)
 {
+#if defined(MZSCHEME_GUI_THREADS)
+    // reset timer
     if (timer_id != 0)
 	remove_timer();
     if (mz_threads_allow && p_mzq > 0 && gui.in_use)
 	setup_timer();
+#endif
+    return NULL;
 }
-
-#endif // MZSCHEME_GUI_THREADS
 
     static void
 notify_multithread(int on)
