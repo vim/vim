@@ -540,7 +540,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 		    nr = 0;
 		    len = 0;
 		    vim_str2nr(p + 2, NULL, &len,
-			     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4, TRUE);
+			     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4, TRUE, NULL);
 		    if (len == 0)
 		    {
 			if (res != NULL)
@@ -556,8 +556,8 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 
 			// decode surrogate pair: \ud812\u3456
 			len = 0;
-			vim_str2nr(p + 2, NULL, &len,
-			     STR2NR_HEX + STR2NR_FORCE, &nr2, NULL, 4, TRUE);
+			vim_str2nr(p + 2, NULL, &len, STR2NR_HEX + STR2NR_FORCE,
+						    &nr2, NULL, 4, TRUE, NULL);
 			if (len == 0)
 			{
 			    if (res != NULL)
@@ -882,7 +882,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 
 			    vim_str2nr(reader->js_buf + reader->js_used,
 				    NULL, &len, 0, // what
-				    &nr, NULL, 0, TRUE);
+				    &nr, NULL, 0, TRUE, NULL);
 			    if (len == 0)
 			    {
 				semsg(_(e_json_decode_error_at_str), p);

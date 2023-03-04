@@ -64,7 +64,7 @@ char_u *skiptowhite_esc(char_u *p);
 long getdigits(char_u **pp);
 long getdigits_quoted(char_u **pp);
 int vim_isblankline(char_u *lbuf);
-void vim_str2nr(char_u *start, int *prep, int *len, int what, varnumber_T *nptr, uvarnumber_T *unptr, int maxlen, int strict);
+void vim_str2nr(char_u *start, int *prep, int *len, int what, varnumber_T *nptr, uvarnumber_T *unptr, int maxlen, int strict, int *overflow);
 int hex2nr(int c);
 int hexhex2nr(char_u *p);
 int rem_backslash(char_u *str);

@@ -217,7 +217,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    }
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-					    STR2NR_ALL, &n, NULL, 0, FALSE);
+					 STR2NR_ALL, &n, NULL, 0, FALSE, NULL);
 	    return n;
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_number));
@@ -2230,7 +2230,7 @@ eval_number(
 	// decimal, hex or octal number
 	vim_str2nr(*arg, NULL, &len, skip_quotes
 		      ? STR2NR_NO_OCT + STR2NR_QUOTE
-		      : STR2NR_ALL, &n, NULL, 0, TRUE);
+		      : STR2NR_ALL, &n, NULL, 0, TRUE, NULL);
 	if (len == 0)
 	{
 	    if (evaluate)

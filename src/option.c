@@ -2157,7 +2157,7 @@ do_set_option_numeric(
     else if (*arg == '-' || VIM_ISDIGIT(*arg))
     {
 	// Allow negative (for 'undolevels'), octal and hex numbers.
-	vim_str2nr(arg, NULL, &i, STR2NR_ALL, &value, NULL, 0, TRUE);
+	vim_str2nr(arg, NULL, &i, STR2NR_ALL, &value, NULL, 0, TRUE, NULL);
 	if (i == 0 || (arg[i] != NUL && !VIM_ISWHITE(arg[i])))
 	{
 	    errmsg = e_number_required_after_equal;
