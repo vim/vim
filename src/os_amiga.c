@@ -691,7 +691,7 @@ mch_get_user_name(char_u *s, int len)
     void
 mch_get_host_name(char_u *s, int len)
 {
-#if defined(__amigaos4__) && defined(__CLIB2__)
+#if !defined(__AROS__)
     gethostname(s, len);
 #else
     vim_strncpy(s, "Amiga", len - 1);
