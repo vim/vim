@@ -8,6 +8,7 @@
 # TRANSLATORS
 #   lilydjwg <lilydjwg@gmail.com>
 #   Ada (Haowen) Yu <me@yuhaowen.com>
+#   Luke Luo <njlyf2011@hotmail.com>
 #
 # Original translations.
 #   Edyfox <edyfox@gmail.com>
@@ -19,7 +20,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-06-24 13:26+0800\n"
 "PO-Revision-Date: 2006-04-21 14:00+0800\n"
-"Last-Translator: lilydjwg, Ada (Haowen) Yu\n"
+"Last-Translator: lilydjwg, Ada (Haowen) Yu,Luke Luo\n"
 "Language-Team: Simplified Chinese\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -3544,7 +3545,7 @@ msgid "Vim is open source and freely distributable"
 msgstr "Vim 是可自由分发的开放源代码软件"
 
 msgid "Help poor children in Uganda!"
-msgstr "帮助乌干达的可怜儿童！"
+msgstr "帮助可怜的乌干达孩子！"
 
 msgid "type  :help iccf<Enter>       for information "
 msgstr "输入  :help iccf<Enter>       查看说明        "

@@ -8,6 +8,7 @@
 # TRANSLATORS
 #   lilydjwg <lilydjwg@gmail.com>
 #   Ada (Haowen) Yu <me@yuhaowen.com>
+#   Luke Luo <njlyf2011@hotmail.com>
 #
 # Generated from zh_CN.UTF-8.po, DO NOT EDIT.
 #   Edyfox <edyfox@gmail.com>
@@ -3544,7 +3545,7 @@ msgid "Vim is open source and freely distributable"
 msgstr "Vim 是可自由分发的开放源代码软件"
 
 msgid "Help poor children in Uganda!"
-msgstr "帮助乌干达的可怜儿童！"
+msgstr "帮助可怜的乌干达孩子！"
 
 msgid "type  :help iccf<Enter>       for information "
 msgstr "输入  :help iccf<Enter>       查看说明        "
