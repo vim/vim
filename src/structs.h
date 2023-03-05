@@ -1469,9 +1469,9 @@ typedef struct {
 #define TTFLAG_SUPER	    0x40    // object from "super".
 
 typedef enum {
-    ACCESS_PRIVATE,	// read/write only inside th class
-    ACCESS_READ,	// read everywhere, write only inside th class
-    ACCESS_ALL		// read/write everywhere
+    VIM_ACCESS_PRIVATE,	// read/write only inside th class
+    VIM_ACCESS_READ,	// read everywhere, write only inside th class
+    VIM_ACCESS_ALL	// read/write everywhere
 } omacc_T;
 
 /*

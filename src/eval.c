@@ -1576,11 +1576,11 @@ get_lval(
 			{
 			    switch (om->ocm_access)
 			    {
-				case ACCESS_PRIVATE:
+				case VIM_ACCESS_PRIVATE:
 					semsg(_(e_cannot_access_private_member_str),
 								 om->ocm_name);
 					return NULL;
-				case ACCESS_READ:
+				case VIM_ACCESS_READ:
 					if ((flags & GLV_READ_ONLY) == 0)
 					{
 					    semsg(_(e_member_is_not_writable_str),
@@ -1588,7 +1588,7 @@ get_lval(
 					    return NULL;
 					}
 					break;
-				case ACCESS_ALL:
+				case VIM_ACCESS_ALL:
 					break;
 			    }
 
