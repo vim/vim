@@ -7124,7 +7124,7 @@ fun! s:NetrwMarkFileCopy(islocal,...)
    endif
 
    " copy marked files while within the same directory (ie. allow renaming)
-   if simplify(s:netrwmftgt) == simplify(b:netrw_curdir)
+   if netrw#StripTrailingSlash( simplify(s:netrwmftgt) ) == netrw#StripTrailingSlash( simplify(b:netrw_curdir) )
     if len(s:netrwmarkfilelist_{bufnr('%')}) == 1
      " only one marked file
 "     call Decho("case: only one marked file",'~'.expand("<slnum>"))
@@ -7201,7 +7201,7 @@ fun! s:NetrwMarkFileCopy(islocal,...)
 "   call Decho("system(".copycmd." '".args."' '".tgt."')",'~'.expand("<slnum>"))
    call system(copycmd.g:netrw_localcopycmdopt." '".args."' '".tgt."'")
    if v:shell_error != 0
-    if exists("b:netrw_curdir") && b:netrw_curdir != getcwd() && !g:netrw_keepdir
+    if exists("b:netrw_curdir") && b:netrw_curdir != getcwd() && g:netrw_keepdir
      call netrw#ErrorMsg(s:ERROR,"copy failed; perhaps due to vim's current directory<".getcwd()."> not matching netrw's (".b:netrw_curdir.") (see :help netrw-cd)",101)
     else
      call netrw#ErrorMsg(s:ERROR,"tried using g:netrw_localcopycmd<".g:netrw_localcopycmd.">; it doesn't work!",80)
@@ -11564,6 +11564,17 @@ fun! netrw#WinPath(path)
 "  call Dret("netrw#WinPath <".path.">")
   return path
 endfun
+
+" ---------------------------------------------------------------------
+" netrw#StripTrailingSlash: removes trailing slashes from a path
+fun! netrw#StripTrailingSlash(path)
+"  call Dfunc("netrw#StripTrailingSlash(path<".a:path.">)")
+   " remove trailing slash
+   let path = substitute(a:path, '\(\\\|/\)$', '', 'g')
+"  call Dret("netrw#StripTrailingSlash <".path.">")
+  return path
+endfun
+
 
 " ---------------------------------------------------------------------
 " s:NetrwBadd: adds marked files to buffer list or vice versa {{{2
