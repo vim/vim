@@ -4323,7 +4323,7 @@ syn_clear_keyword(int id, hashtab_T *ht)
 
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -4371,7 +4371,7 @@ clear_keywtab(hashtab_T *ht)
     keyentry_T	*kp_next;
 
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

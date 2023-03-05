@@ -5737,7 +5737,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 
     if (env != NULL)
     {
-	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&env->dv_hashtab, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {

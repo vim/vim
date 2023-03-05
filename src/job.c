@@ -140,7 +140,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	return OK;
 
     todo = (int)dict->dv_hashtab.ht_used;
-    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    item = &dict_lookup(hi)->di_tv;

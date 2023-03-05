@@ -5622,7 +5622,7 @@ win_free(
 		// If there already is an entry with "wi_win" set to NULL it
 		// must be removed, it would never be used.
 		// Skip "wip" itself, otherwise Coverity complains.
-		for (wip2 = buf->b_wininfo; wip2 != NULL; wip2 = wip2->wi_next)
+		FOR_ALL_BUF_WININFO(buf, wip2)
 		    if (wip2 != wip && wip2->wi_win == NULL)
 		    {
 			if (wip2->wi_next != NULL)

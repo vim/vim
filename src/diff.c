@@ -2650,7 +2650,7 @@ valid_diff(diff_T *diff)
 {
     diff_T	*dp;
 
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (dp == diff)
 	    return TRUE;
     return FALSE;

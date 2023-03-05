@@ -181,7 +181,7 @@ fill_assert_error(
 		return;
 
 	    todo = (int)exp_d->dv_hashtab.ht_used;
-	    for (hi = exp_d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&exp_d->dv_hashtab, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{
@@ -204,7 +204,7 @@ fill_assert_error(
 
 	    // Add items only present in got_d.
 	    todo = (int)got_d->dv_hashtab.ht_used;
-	    for (hi = got_d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&got_d->dv_hashtab, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

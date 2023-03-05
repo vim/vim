@@ -2317,7 +2317,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 		{
 		    // recursive: lock/unlock the items the List contains
 		    todo = (int)d->dv_hashtab.ht_used;
-		    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+		    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
 		    {
 			if (!HASHITEM_EMPTY(hi))
 			{
@@ -3571,7 +3571,7 @@ vars_clear_ext(hashtab_T *ht, int free_val)
 
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

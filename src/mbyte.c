@@ -5647,7 +5647,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     // Check that all entries are a list with three numbers, the range is
     // valid and the cell width is valid.
     item = 0;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	listitem_T *lili;
 	varnumber_T n1;

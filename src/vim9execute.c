@@ -1052,7 +1052,7 @@ invoke_defer_funcs(ectx_T *ectx)
 
     if (defer_tv->v_type != VAR_LIST)
 	return;	 // no function added
-    for (li = defer_tv->vval.v_list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(defer_tv->vval.v_list, li)
     {
 	list_T	    *l = li->li_tv.vval.v_list;
 	typval_T    rettv;

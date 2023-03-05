@@ -933,7 +933,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
 	if (*array == NULL)
 	    return NULL;
 	todo = (long)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -2021,7 +2021,7 @@ list_types(hashtab_T *ht, list_T *l)
     hashitem_T	*hi;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -2074,7 +2074,7 @@ clear_ht_prop_types(hashtab_T *ht)
 	return;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

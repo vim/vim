@@ -2313,7 +2313,7 @@ cleanup_function_call(funccall_T *fc)
 
 	// Make a copy of the a: variables, since we didn't do that above.
 	todo = (int)fc->fc_l_avars.dv_hashtab.ht_used;
-	for (hi = fc->fc_l_avars.dv_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&fc->fc_l_avars.dv_hashtab, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -3296,7 +3296,7 @@ delete_script_functions(int sid)
     while (todo > 0)
     {
 	todo = func_hashtab.ht_used;
-	for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&func_hashtab, hi, todo)
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		fp = HI2UF(hi);
@@ -3353,7 +3353,7 @@ free_all_functions(void)
     while (todo > 0)
     {
 	todo = func_hashtab.ht_used;
-	for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&func_hashtab, hi, todo)
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		// clear the def function index now
@@ -3385,7 +3385,7 @@ free_all_functions(void)
     while (func_hashtab.ht_used > skipped)
     {
 	todo = func_hashtab.ht_used;
-	for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&func_hashtab, hi, todo)
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		--todo;

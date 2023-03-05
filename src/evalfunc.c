@@ -7825,7 +7825,7 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 	if (d != NULL)
 	{
 	    todo = (int)d->dv_hashtab.ht_used;
-	    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

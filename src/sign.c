@@ -2058,7 +2058,7 @@ get_nth_sign_group_name(int idx)
     // Complete with name of sign groups already defined
     current_idx = 0;
     todo = (int)sg_table.ht_used;
-    for (hi = sg_table.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&sg_table, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

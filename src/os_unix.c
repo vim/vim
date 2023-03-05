@@ -5654,7 +5654,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    hashitem_T	*hi;
 	    int		todo = (int)dict->dv_hashtab.ht_used;
 
-	    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
