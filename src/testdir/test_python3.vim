@@ -375,6 +375,7 @@ func Test_python3_opt_reset_local_to_global()
         \ ['include', 'ginc', 'linc', ''],
         \ ['dict', 'gdict', 'ldict', ''],
         \ ['thesaurus', 'gtsr', 'ltsr', ''],
+        \ ['thesaurusfunc', 'Gtsrfu', 'Ltsrfu', ''],
         \ ['formatprg', 'gfprg', 'lfprg', ''],
         \ ['errorformat', '%f:%l:%m', '%s-%l-%m', ''],
         \ ['grepprg', 'ggprg', 'lgprg', ''],
@@ -408,9 +409,13 @@ func Test_python3_opt_reset_local_to_global()
   " Set the global and window-local option values and then clear the
   " window-local option value.
   let wopts = [
+        \ ['fillchars', 'fold:>', 'fold:+', ''],
+        \ ['listchars', 'tab:>>', 'tab:--', ''],
         \ ['scrolloff', 5, 10, -1],
+        \ ['showbreak', '>>', '++', ''],
         \ ['sidescrolloff', 6, 12, -1],
-        \ ['statusline', '%<%f', '%<%F', '']]
+        \ ['statusline', '%<%f', '%<%F', ''],
+        \ ['virtualedit', 'block', 'insert', '']]
   for opt in wopts
     py3 << trim
       pyopt = vim.bindeval("opt")

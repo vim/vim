@@ -2247,8 +2247,7 @@ did_set_scrollopt(optset_T *args UNUSED)
     char *
 did_set_selection(optset_T *args UNUSED)
 {
-    if (*p_sel == NUL
-	    || check_opt_strings(p_sel, p_sel_values, FALSE) != OK)
+    if (*p_sel == NUL || check_opt_strings(p_sel, p_sel_values, FALSE) != OK)
 	return e_invalid_argument;
 
     return NULL;
@@ -2398,7 +2397,7 @@ did_set_spelloptions(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
 
-    if (**varp != NUL && STRCMP("camel", *varp) != 0)
+    if (**varp != NUL && STRCMP(*varp, "camel") != 0)
 	return e_invalid_argument;
 
     return NULL;
@@ -2499,34 +2498,24 @@ did_set_tagcase(optset_T *args)
 /*
  * The 'term' option is changed.
  */
-    static char *
-did_set_term(int *opt_idx, long_u *free_oldval)
+    char *
+did_set_term(optset_T *args UNUSED)
 {
-    char *errmsg = NULL;
-
     if (T_NAME[0] == NUL)
-	errmsg = e_cannot_set_term_to_empty_string;
+	return e_cannot_set_term_to_empty_string;
 #ifdef FEAT_GUI
-    else if (gui.in_use)
-	errmsg = e_cannot_change_term_in_GUI;
-    else if (term_is_gui(T_NAME))
-	errmsg = e_use_gui_to_start_GUI;
+    if (gui.in_use)
+	return e_cannot_change_term_in_GUI;
+    if (term_is_gui(T_NAME))
+	return e_use_gui_to_start_GUI;
 #endif
-    else if (set_termname(T_NAME) == FAIL)
-	errmsg = e_not_found_in_termcap;
-    else
-    {
-	// Screen colors may have changed.
-	redraw_later_clear();
+    if (set_termname(T_NAME) == FAIL)
+	return e_not_found_in_termcap;
 
-	// Both 'term' and 'ttytype' point to T_NAME, only set the
-	// P_ALLOCED flag on 'term'.
-	*opt_idx = findoption((char_u *)"term");
-	if (*opt_idx >= 0)
-	    *free_oldval = (get_option_flags(*opt_idx) & P_ALLOCED);
-    }
+    // Screen colors may have changed.
+    redraw_later_clear();
 
-    return errmsg;
+    return NULL;
 }
 
 /*
@@ -2604,8 +2593,7 @@ did_set_term_option(optset_T *args)
     char *
 did_set_termwinkey(optset_T *args UNUSED)
 {
-    if (*curwin->w_p_twk != NUL
-	    && string_to_key(curwin->w_p_twk, TRUE) == 0)
+    if (*curwin->w_p_twk != NUL && string_to_key(curwin->w_p_twk, TRUE) == 0)
 	return e_invalid_argument;
 
     return NULL;
@@ -2664,8 +2652,8 @@ did_set_titlestring(optset_T *args)
     char *
 did_set_toolbar(optset_T *args UNUSED)
 {
-    if (opt_strings_flags(p_toolbar, p_toolbar_values,
-		&toolbar_flags, TRUE) != OK)
+    if (opt_strings_flags(p_toolbar, p_toolbar_values, &toolbar_flags,
+								TRUE) != OK)
 	return e_invalid_argument;
 
     out_flush();
@@ -2971,8 +2959,7 @@ did_set_winaltkeys(optset_T *args UNUSED)
 {
     char *errmsg = NULL;
 
-    if (*p_wak == NUL
-	    || check_opt_strings(p_wak, p_wak_values, FALSE) != OK)
+    if (*p_wak == NUL || check_opt_strings(p_wak, p_wak_values, FALSE) != OK)
 	errmsg = e_invalid_argument;
 # ifdef FEAT_MENU
 #  if defined(FEAT_GUI_MOTIF)
@@ -3097,13 +3084,24 @@ did_set_string_option(
 					// need to set P_INSECURE
 {
     char	*errmsg = NULL;
-    int		restore_chartab = FALSE;
     long_u	free_oldval = (get_option_flags(opt_idx) & P_ALLOCED);
-    int		value_changed = FALSE;
-#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
-    int		did_swaptcap = FALSE;
-#endif
     opt_did_set_cb_T did_set_cb = get_option_did_set_cb(opt_idx);
+    optset_T	args;
+
+    // 'ttytype' is an alias for 'term'.  Both 'term' and 'ttytype' point to
+    // T_NAME.  If 'term' or 'ttytype' is modified, then use the index for the
+    // 'term' option.  Only set the P_ALLOCED flag on 'term'.
+    if (varp == &T_NAME)
+    {
+	opt_idx = findoption((char_u *)"term");
+	if (opt_idx >= 0)
+	{
+	    free_oldval = (get_option_flags(opt_idx) & P_ALLOCED);
+	    did_set_cb = get_option_did_set_cb(opt_idx);
+	}
+    }
+
+    CLEAR_FIELD(args);
 
     // Disallow changing some options from secure mode
     if ((secure
@@ -3117,9 +3115,6 @@ did_set_string_option(
 	errmsg = e_invalid_argument;
     else if (did_set_cb != NULL)
     {
-	optset_T   args;
-
-	CLEAR_FIELD(args);
 	args.os_varp = (char_u *)varp;
 	args.os_idx = opt_idx;
 	args.os_flags = opt_flags;
@@ -3130,22 +3125,10 @@ did_set_string_option(
 	// the new option value.
 	errmsg = did_set_cb(&args);
 
-	// The 'filetype' and 'syntax' option callback functions may change
-	// the os_value_changed field.
-	value_changed = args.os_value_changed;
 	// The 'keymap', 'filetype' and 'syntax' option callback functions
 	// may change the os_value_checked field.
 	*value_checked = args.os_value_checked;
-	// The 'isident', 'iskeyword', 'isprint' and 'isfname' options may
-	// change the character table.  On failure, this needs to be restored.
-	restore_chartab = args.os_restore_chartab;
-#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
-	// The 't_xxx' terminal options may swap the termcap entries.
-	did_swaptcap = args.os_did_swaptcap;
-#endif
     }
-    else if (varp == &T_NAME)			// 'term'
-	errmsg = did_set_term(&opt_idx, &free_oldval);
 
     // If an error is detected, restore the previous value.
     if (errmsg != NULL)
@@ -3153,7 +3136,7 @@ did_set_string_option(
 	free_string_option(*varp);
 	*varp = oldval;
 	// When resetting some values, need to act on it.
-	if (restore_chartab)
+	if (args.os_restore_chartab)
 	    (void)init_chartab();
 	if (varp == &p_hl)
 	    (void)highlight_changed();
@@ -3188,10 +3171,10 @@ did_set_string_option(
 	// Trigger the autocommand only after setting the flags.
 #ifdef FEAT_SYN_HL
 	if (varp == &(curbuf->b_p_syn))
-	    do_syntax_autocmd(value_changed);
+	    do_syntax_autocmd(args.os_value_changed);
 #endif
 	else if (varp == &(curbuf->b_p_ft))
-	    do_filetype_autocmd(varp, opt_flags, value_changed);
+	    do_filetype_autocmd(varp, opt_flags, args.os_value_changed);
 #ifdef FEAT_SPELL
 	if (varp == &(curwin->w_s->b_p_spl))
 	    do_spelllang_source();
@@ -3252,7 +3235,7 @@ did_set_string_option(
     }
 
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
-    if (did_swaptcap)
+    if (args.os_did_swaptcap)
     {
 	set_termname((char_u *)"win32");
 	init_highlight(TRUE, FALSE);

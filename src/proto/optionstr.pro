@@ -100,6 +100,7 @@ char *did_set_swapsync(optset_T *args);
 char *did_set_switchbuf(optset_T *args);
 char *did_set_tabline(optset_T *args);
 char *did_set_tagcase(optset_T *args);
+char *did_set_term(optset_T *args);
 char *did_set_term_option(optset_T *args);
 char *did_set_termwinkey(optset_T *args);
 char *did_set_termwinsize(optset_T *args);

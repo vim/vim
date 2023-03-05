@@ -4338,7 +4338,7 @@ get_list_range(char_u **str, int *num1, int *num2)
     *str = skipwhite(*str);
     if (**str == '-' || vim_isdigit(**str))  // parse "from" part of range
     {
-	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE);
+	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE, NULL);
 	*str += len;
 	*num1 = (int)num;
 	first = TRUE;
@@ -4347,7 +4347,7 @@ get_list_range(char_u **str, int *num1, int *num2)
     if (**str == ',')			// parse "to" part of range
     {
 	*str = skipwhite(*str + 1);
-	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE);
+	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE, NULL);
 	if (len > 0)
 	{
 	    *num2 = (int)num;

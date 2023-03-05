@@ -3830,7 +3830,7 @@ vim_rename(char_u *from, char_u *to)
      * original file will be somewhere else so the backup isn't really
      * important. If autoscripting is off the rename may fail.
      */
-    flock = Lock((UBYTE *)from, (long)ACCESS_READ);
+    flock = Lock((UBYTE *)from, (long)VIM_ACCESS_READ);
 #endif
     mch_remove(to);
 #ifdef AMIGA

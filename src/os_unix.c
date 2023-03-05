@@ -5863,10 +5863,17 @@ mch_job_status(job_T *job)
 # endif
     if (wait_pid == -1)
     {
+	int waitpid_errno = errno;
+	if (waitpid_errno == ECHILD && mch_process_running(job->jv_pid))
+	    // The process is alive, but it was probably reparented (for
+	    // example by ptrace called by a debugger like lldb or gdb).
+	    // Note: This assumes that process IDs are not reused.
+	    return "run";
+
 	// process must have exited
 	if (job->jv_status < JOB_ENDED)
 	    ch_log(job->jv_channel, "Job no longer exists: %s",
-							      strerror(errno));
+						      strerror(waitpid_errno));
 	goto return_dead;
     }
     if (wait_pid == 0)
