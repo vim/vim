@@ -4286,8 +4286,8 @@ def Test_strptime()
   if exists_compiled('*strptime')
     v9.CheckDefAndScriptFailure(['strptime(10, "2021")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
     v9.CheckDefAndScriptFailure(['strptime("%Y", 2021)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
-    assert_true(strptime('%Y', '2021') != 0)
-    assert_true(strptime('%Y', '') == 0)
+    assert_notequal(0, strptime('%Y', '2021'))
+    assert_equal(0, strptime('%Y', ''))
   endif
 enddef
 
