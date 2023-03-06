@@ -424,7 +424,14 @@ pum_redraw(void)
     int		attr_select = highlight_attr[HLF_PSI];
     int		attr_scroll = highlight_attr[HLF_PSB];
     int		attr_thumb = highlight_attr[HLF_PST];
+    int		attrK_norm = highlight_attr[HLF_PNK];
+    int		attrK_select = highlight_attr[HLF_PSK];
+    int		attrX_norm = highlight_attr[HLF_PNX];
+    int		attrX_select = highlight_attr[HLF_PSX];
     int		attr;
+    int		attrW; // highlight for "word"
+    int		attrK; // highlight for "kind"
+    int		attrX; // highlight for "menu" (extra text)
     int		i;
     int		idx;
     char_u	*s;
@@ -468,7 +475,18 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
-	attr = (idx == pum_selected) ? attr_select : attr_norm;
+	if (idx == pum_selected) {
+	    attrW = attr_select;
+	    attrK = attrK_select;
+	    attrX = attrX_select;
+	}
+	else
+	{
+	    attrW = attr_norm;
+	    attrK = attrK_norm;
+	    attrX = attrX_norm;
+	}
+	attr = attrW; // start with "word" highlight
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -488,6 +506,7 @@ pum_redraw(void)
 	totwidth = 0;
 	for (round = 1; round <= 3; ++round)
 	{
+	    attr = round == 1 ? attrW : round == 2 ? attrK : attrX;
 	    width = 0;
 	    s = NULL;
 	    switch (round)
