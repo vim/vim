@@ -475,7 +475,8 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
-	if (idx == pum_selected) {
+	if (idx == pum_selected)
+	{
 	    attrW = attr_select;
 	    attrK = attrK_select;
 	    attrX = attrX_select;
