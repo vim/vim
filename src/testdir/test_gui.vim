@@ -718,8 +718,11 @@ func Test_set_guioptions()
 endfunc
 
 func Test_scrollbars()
-  new
+  " this test sometimes fails on CI
+  let g:test_is_flaky = 1
+
   " buffer with 200 lines
+  new
   call setline(1, repeat(['one', 'two'], 100))
   set guioptions+=rlb
 
