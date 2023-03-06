@@ -899,7 +899,7 @@ normal_cmd(
 
     State = MODE_NORMAL;
 
-    if (ca.nchar == ESC)
+    if (ca.nchar == ESC || ca.extra_char == ESC)
     {
 	clearop(oap);
 	if (restart_edit == 0 && goto_im())
@@ -984,7 +984,8 @@ normal_end:
 #ifdef CURSOR_SHAPE
     // Redraw the cursor with another shape, if we were in Operator-pending
     // mode or did a replace command.
-    if (prev_finish_op || ca.cmdchar == 'r')
+    if (prev_finish_op || ca.cmdchar == 'r'
+				     || (ca.cmdchar == 'g' && ca.nchar == 'r'))
     {
 	ui_cursor_shape();		// may show different cursor shape
 # ifdef FEAT_MOUSESHAPE
@@ -5025,7 +5026,7 @@ nv_vreplace(cmdarg_T *cap)
 	return;
     }
 
-    if (checkclearopq(cap->oap) || cap->extra_char == ESC)
+    if (checkclearopq(cap->oap))
 	return;
 
     if (!curbuf->b_p_ma)
@@ -5903,7 +5904,7 @@ nv_g_cmd(cmdarg_T *cap)
 	else
 #endif
     // "g^A/g^X": sequentially increment visually selected region
-	     if (VIsual_active)
+	if (VIsual_active)
 	{
 	    cap->arg = TRUE;
 	    cap->cmdchar = cap->nchar;

@@ -837,7 +837,8 @@ main(int argc, char *argv[])
 	{
 	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
 				  ((unsigned long)(n + seekoff + displayoff)));
-	  for (c = addrlen; c < LLEN; l[c++] = ' ');
+	  for (c = addrlen; c < LLEN; l[c++] = ' ')
+	    ;
 	}
       x = hextype == HEX_LITTLEENDIAN ? p ^ (octspergrp-1) : p;
       c = addrlen + 1 + (grplen * x) / octspergrp;
@@ -857,7 +858,12 @@ main(int argc, char *argv[])
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      c = addrlen + 3 + (grplen * cols - 1)/octspergrp + p;
+      if (hextype == HEX_LITTLEENDIAN)
+	/* last group will be fully used, round up */
+	c = grplen * ((cols + octspergrp - 1) / octspergrp);
+      else
+	c = (grplen * cols - 1) / octspergrp;
+      c += addrlen + 3 + p;
       l[c++] =
 #ifdef __MVS__
 	  (e >= 64)

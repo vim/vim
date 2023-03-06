@@ -299,8 +299,6 @@ jobs:
 
       - name: Install packages
         if: matrix.features == 'huge'
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
