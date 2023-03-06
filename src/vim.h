@@ -1419,7 +1419,7 @@ typedef enum auto_event event_T;
 /*
  * Values for index in highlight_attr[].
  * When making changes, also update HL_FLAGS below!
- * And update the default value of 'highlight': HIGHLIGHT_INIT in optionsdef.h
+ * And update the default value of 'highlight': HIGHLIGHT_INIT in optiondefs.h
  */
 typedef enum
 {
