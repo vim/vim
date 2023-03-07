@@ -210,5 +210,37 @@ func Test_multibyte_op_end_mark()
   bwipe!
 endfunc
 
+" this was putting a mark before the start of a line
+func Test_put_empty_register()
+  new
+  norm yy
+  norm [Pi00ggv)s0
+  sil! norm [P
+  bwipe!
+endfunc
+
+" this was putting the end mark after the end of the line
+func Test_put_visual_mode()
+  edit! SomeNewBuffer
+  set selection=exclusive
+  exe "norm o\t"
+  m0
+  sil! norm pp
+
+  bwipe!
+  set selection&
+endfunc
+
+func Test_put_visual_block_mode()
+  enew
+  exe "norm 0R\<CR>\<C-C>V"
+  sil exe "norm \<C-V>c	\<MiddleDrag>"
+  set ve=all
+  sil norm vz=p
+
+  bwipe!
+  set ve=
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

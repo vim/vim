@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Apr 12
+*starting.txt*  For Vim version 9.0.  Last change: 2022 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -346,9 +346,9 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 <
 --log {filename}					*--log*
 		Start logging and write entries to {filename}.
-		This works like calling `ch_logfile({filename}, 'a')` very
+		This works like calling `ch_logfile({filename}, 'ao')` very
 		early during startup.
-		{only available with the +channel feature}
+		{only available with the |+eval| feature}
 
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
@@ -430,6 +430,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		the two second delay that would happen.
 		Also avoids the "Reading from stdin..." message.
 		Also avoids the "N files to edit" message.
+
+--gui-dialog-file {name}				*--gui-dialog-file*
+		When using the GUI, instead of showing a dialog, write the
+		title and message of the dialog to file {name}.  The file is
+		created or appended to.  Only useful for testing, to avoid
+		that the test gets stuck on a dialog that can't be seen.
+		Without the GUI the argument is ignored.
 
 							*--ttyfail*
 --ttyfail	When the stdin or stdout is not a terminal (tty) then exit
@@ -737,6 +744,7 @@ In Evim these options are changed from their default value:
 	:set guioptions-=a	non-Unix only: don't do auto-select
 
 Key mappings:
+	<CTRL-Q>	quit, using `:confirm` prompt if there are changes
 	<Down>		moves by screen lines rather than file lines
 	<Up>		idem
 	Q		does "gq", formatting, instead of Ex mode
@@ -747,7 +755,6 @@ Key mappings:
 	<C-Insert>	idem
 	CTRL-V		Pastes from the clipboard (in any mode)
 	<S-Insert>	idem
-	CTRL-Q		do what CTRL-V used to do
 	CTRL-Z		undo
 	CTRL-Y		redo
 	<M-Space>	system menu
@@ -763,6 +770,8 @@ Additionally:
 
 One hint: If you want to go to Normal mode to be able to type a sequence of
 commands, use CTRL-L. |i_CTRL-L|
+
+There is no way to stop "easy mode", you need to exit Vim.
 
 ==============================================================================
 4. Initialization				*initialization* *startup*

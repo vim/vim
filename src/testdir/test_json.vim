@@ -21,16 +21,14 @@ let s:jsonmb = '"s¢cĴgё"'
 let s:varmb = "s¢cĴgё"
 let s:jsonnr = '1234'
 let s:varnr = 1234
-if has('float')
-  let s:jsonfl = '12.34'
-  let s:varfl = 12.34
-  let s:jsonneginf = '-Infinity'
-  let s:jsonposinf = 'Infinity'
-  let s:varneginf = -1.0 / 0.0
-  let s:varposinf = 1.0 / 0.0
-  let s:jsonnan = 'NaN'
-  let s:varnan = 0.0 / 0.0
-endif
+let s:jsonfl = '12.34'
+let s:varfl = 12.34
+let s:jsonneginf = '-Infinity'
+let s:jsonposinf = 'Infinity'
+let s:varneginf = -1.0 / 0.0
+let s:varposinf = 1.0 / 0.0
+let s:jsonnan = 'NaN'
+let s:varnan = 0.0 / 0.0
 
 let s:jsonl1 = '[1,"a",3]'
 let s:varl1 = [1, "a", 3]
@@ -82,12 +80,10 @@ func Test_json_encode()
   " no test for surrogate pair, json_encode() doesn't create them.
 
   call assert_equal(s:jsonnr, json_encode(s:varnr))
-  if has('float')
-    call assert_equal(s:jsonfl, json_encode(s:varfl))
-    call assert_equal(s:jsonneginf, json_encode(s:varneginf))
-    call assert_equal(s:jsonposinf, json_encode(s:varposinf))
-    call assert_equal(s:jsonnan, json_encode(s:varnan))
-  endif
+  call assert_equal(s:jsonfl, json_encode(s:varfl))
+  call assert_equal(s:jsonneginf, json_encode(s:varneginf))
+  call assert_equal(s:jsonposinf, json_encode(s:varposinf))
+  call assert_equal(s:jsonnan, json_encode(s:varnan))
 
   call assert_equal(s:jsonl1, json_encode(s:varl1))
   call assert_equal(s:jsonl2, json_encode(s:varl2))
@@ -133,9 +129,7 @@ func Test_json_decode()
   call assert_equal(s:varsp2, json_decode(s:jsonsp2))
 
   call assert_equal(s:varnr, json_decode(s:jsonnr))
-  if has('float')
-    call assert_equal(s:varfl, json_decode(s:jsonfl))
-  endif
+  call assert_equal(s:varfl, json_decode(s:jsonfl))
 
   call assert_equal(s:varl1, json_decode(s:jsonl1))
   call assert_equal(s:varl2x, json_decode(s:jsonl2))
@@ -189,9 +183,7 @@ func Test_json_decode()
   call assert_fails('call json_decode("{\"n\":1,")', "E491:")
   call assert_fails('call json_decode("{\"n\",1}")', "E491:")
   call assert_fails('call json_decode("{-}")', "E491:")
-  if has('float')
-    call assert_fails('call json_decode("{3.14:1}")', "E806:")
-  endif
+  call assert_fails('call json_decode("{3.14:1}")', "E806:")
 
   call assert_fails('call json_decode("[foobar]")', "E491:")
   call assert_fails('call json_decode("[")', "E491:")
@@ -230,12 +222,10 @@ func Test_js_encode()
   " no test for surrogate pair, js_encode() doesn't create them.
 
   call assert_equal(s:jsonnr, js_encode(s:varnr))
-  if has('float')
-    call assert_equal(s:jsonfl, js_encode(s:varfl))
-    call assert_equal(s:jsonneginf, js_encode(s:varneginf))
-    call assert_equal(s:jsonposinf, js_encode(s:varposinf))
-    call assert_equal(s:jsonnan, js_encode(s:varnan))
-  endif
+  call assert_equal(s:jsonfl, js_encode(s:varfl))
+  call assert_equal(s:jsonneginf, js_encode(s:varneginf))
+  call assert_equal(s:jsonposinf, js_encode(s:varposinf))
+  call assert_equal(s:jsonnan, js_encode(s:varnan))
 
   call assert_equal(s:jsonl1, js_encode(s:varl1))
   call assert_equal(s:jsonl2, js_encode(s:varl2))
@@ -270,12 +260,10 @@ func Test_js_decode()
   call assert_equal(s:varsp2, js_decode(s:jsonsp2))
 
   call assert_equal(s:varnr, js_decode(s:jsonnr))
-  if has('float')
-    call assert_equal(s:varfl, js_decode(s:jsonfl))
-    call assert_equal(s:varneginf, js_decode(s:jsonneginf))
-    call assert_equal(s:varposinf, js_decode(s:jsonposinf))
-    call assert_true(isnan(js_decode(s:jsonnan)))
-  endif
+  call assert_equal(s:varfl, js_decode(s:jsonfl))
+  call assert_equal(s:varneginf, js_decode(s:jsonneginf))
+  call assert_equal(s:varposinf, js_decode(s:jsonposinf))
+  call assert_true(isnan(js_decode(s:jsonnan)))
 
   call assert_equal(s:varl1, js_decode(s:jsonl1))
   call assert_equal(s:varl2x, js_decode(s:jsonl2))

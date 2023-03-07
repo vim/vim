@@ -26,6 +26,7 @@ void vim_beep(unsigned val);
 void init_homedir(void);
 void free_homedir(void);
 void free_users(void);
+void init_vimdir(void);
 char_u *expand_env_save(char_u *src);
 char_u *expand_env_save_opt(char_u *src, int one);
 void expand_env(char_u *src, char_u *dst, int dstlen);

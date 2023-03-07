@@ -1,62 +1,72 @@
-" cfilter.vim: Plugin to filter entries from a quickfix/location list
-" Last Change: Aug 23, 2018
-" Maintainer: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Version: 1.1
-"
-" Commands to filter the quickfix list:
-"   :Cfilter[!] /{pat}/
-"       Create a new quickfix list from entries matching {pat} in the current
-"       quickfix list. Both the file name and the text of the entries are
-"       matched against {pat}. If ! is supplied, then entries not matching
-"       {pat} are used. The pattern can be optionally enclosed using one of
-"       the following characters: ', ", /. If the pattern is empty, then the
-"       last used search pattern is used.
-"   :Lfilter[!] /{pat}/
-"       Same as :Cfilter but operates on the current location list.
-"
-if exists("loaded_cfilter")
-    finish
-endif
-let loaded_cfilter = 1
+vim9script
 
-func s:Qf_filter(qf, searchpat, bang)
-    if a:qf
-	let Xgetlist = function('getqflist')
-	let Xsetlist = function('setqflist')
-	let cmd = ':Cfilter' . a:bang
-    else
-	let Xgetlist = function('getloclist', [0])
-	let Xsetlist = function('setloclist', [0])
-	let cmd = ':Lfilter' . a:bang
-    endif
+# cfilter.vim: Plugin to filter entries from a quickfix/location list
+# Last Change: Jun 30, 2022
+# Maintainer: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
+# Version: 2.0
+#
+# Commands to filter the quickfix list:
+#   :Cfilter[!] /{pat}/
+#       Create a new quickfix list from entries matching {pat} in the current
+#       quickfix list. Both the file name and the text of the entries are
+#       matched against {pat}. If ! is supplied, then entries not matching
+#       {pat} are used. The pattern can be optionally enclosed using one of
+#       the following characters: ', ", /. If the pattern is empty, then the
+#       last used search pattern is used.
+#   :Lfilter[!] /{pat}/
+#       Same as :Cfilter but operates on the current location list.
+#
 
-    let firstchar = a:searchpat[0]
-    let lastchar = a:searchpat[-1:]
-    if firstchar == lastchar &&
-		\ (firstchar == '/' || firstchar == '"' || firstchar == "'")
-	let pat = a:searchpat[1:-2]
-	if pat == ''
-	    " Use the last search pattern
-	    let pat = @/
-	endif
-    else
-	let pat = a:searchpat
-    endif
+def Qf_filter(qf: bool, searchpat: string, bang: string)
+  var Xgetlist: func
+  var Xsetlist: func
+  var cmd: string
+  var firstchar: string
+  var lastchar: string
+  var pat: string
+  var title: string
+  var Cond: func
+  var items: list<any>
 
+  if qf
+    Xgetlist = function('getqflist')
+    Xsetlist = function('setqflist')
+    cmd = ':Cfilter' .. bang
+  else
+    Xgetlist = function('getloclist', [0])
+    Xsetlist = function('setloclist', [0])
+    cmd = ':Lfilter' .. bang
+  endif
+
+  firstchar = searchpat[0]
+  lastchar = searchpat[-1 :]
+  if firstchar == lastchar &&
+              (firstchar == '/' || firstchar == '"' || firstchar == "'")
+    pat = searchpat[1 : -2]
     if pat == ''
-	return
+      # Use the last search pattern
+      pat = @/
     endif
+  else
+    pat = searchpat
+  endif
 
-    if a:bang == '!'
-	let cond = 'v:val.text !~# pat && bufname(v:val.bufnr) !~# pat'
-    else
-	let cond = 'v:val.text =~# pat || bufname(v:val.bufnr) =~# pat'
-    endif
+  if pat == ''
+    return
+  endif
 
-    let items = filter(Xgetlist(), cond)
-    let title = cmd . ' /' . pat . '/'
-    call Xsetlist([], ' ', {'title' : title, 'items' : items})
-endfunc
+  if bang == '!'
+    Cond = (_, val) => val.text !~# pat && bufname(val.bufnr) !~# pat
+  else
+    Cond = (_, val) => val.text =~# pat || bufname(val.bufnr) =~# pat
+  endif
 
-com! -nargs=+ -bang Cfilter call s:Qf_filter(1, <q-args>, <q-bang>)
-com! -nargs=+ -bang Lfilter call s:Qf_filter(0, <q-args>, <q-bang>)
+  items = filter(Xgetlist(), Cond)
+  title = cmd .. ' /' .. pat .. '/'
+  Xsetlist([], ' ', {title: title, items: items})
+enddef
+
+command! -nargs=+ -bang Cfilter Qf_filter(true, <q-args>, <q-bang>)
+command! -nargs=+ -bang Lfilter Qf_filter(false, <q-args>, <q-bang>)
+
+# vim: shiftwidth=2 sts=2 expandtab

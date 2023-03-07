@@ -1,6 +1,7 @@
 " Test for :global and :vglobal
 
 source check.vim
+source term_util.vim
 
 func Test_yank_put_clipboard()
   new
@@ -91,6 +92,18 @@ func Test_global_print()
   close!
 endfunc
 
+func Test_global_empty_pattern()
+  " populate history
+  silent g/hello/
+
+  redir @a
+  g//
+  redir END
+
+  call assert_match('Pattern not found: hello', @a)
+  "                                     ^~~~~ this was previously empty
+endfunc
+
 " Test for global command with newline character
 func Test_global_newline()
   new
@@ -105,6 +118,33 @@ endfunc
 
 func Test_wrong_delimiter()
   call assert_fails('g x^bxd', 'E146:')
+endfunc
+
+" Test for interrupting :global using Ctrl-C
+func Test_interrupt_global()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    cnoremap ; <Cmd>sleep 10<CR>
+    call setline(1, repeat(['foo'], 5))
+  END
+  call writefile(lines, 'Xtest_interrupt_global', 'D')
+  let buf = RunVimInTerminal('-S Xtest_interrupt_global', {'rows': 6})
+
+  call term_sendkeys(buf, ":g/foo/norm :\<C-V>;\<CR>")
+  " Wait for :sleep to start
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, "\<C-C>")
+  call WaitForAssert({-> assert_match('Interrupted', term_getline(buf, 6))}, 1000)
+
+  " Also test in Ex mode
+  call term_sendkeys(buf, "gQg/foo/norm :\<C-V>;\<CR>")
+  " Wait for :sleep to start
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, "\<C-C>")
+  call WaitForAssert({-> assert_match('Interrupted', term_getline(buf, 5))}, 1000)
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

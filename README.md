@@ -1,6 +1,6 @@
 [![Vim Logo](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
 
-[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Travis Build Status](https://travis-ci.com/vim/vim.svg?branch=master)](https://travis-ci.com/github/vim/vim) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
+[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
 
 <sub>For translations of this README see the end.</sub>
 
@@ -28,10 +28,10 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
-Vim runs under MS-Windows (XP, Vista, 7, 8, 10), macOS, Haiku, VMS and almost
-all flavours of UNIX.  Porting to other systems should not be very difficult.
-Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000, Amiga DOS,
-Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
+Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS and almost all
+flavours of UNIX.  Porting to other systems should not be very difficult.
+Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000/XP/Vista,
+Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
 
 For Vim9 script see [README_VIM9](README_VIM9.md).
 
@@ -101,7 +101,7 @@ for details (do `:help uganda` inside Vim).
 
 Summary of the license: There are no restrictions on using or distributing an
 unmodified copy of Vim.  Parts of Vim may also be distributed, but the license
-text must always be included.  For modified versions a few restrictions apply.
+text must always be included.  For modified versions, a few restrictions apply.
 The license is GPL compatible, you may compile Vim with GPL libraries and
 distribute it.
 
@@ -122,11 +122,13 @@ For the most recent information about sponsoring look on the Vim web site:
 
 ## Contributing ##
 
-If you would like to help making Vim better, see the
+If you would like to help make Vim better, see the
 [CONTRIBUTING.md](/CONTRIBUTING.md) file.
 
 
 ## Information ##
+
+If you are on macOS, you can use [Macvim](https://macvim-dev.github.io/macvim/).
 
 The latest news about Vim can be found on the Vim home page:
 	https://www.vim.org/
@@ -149,9 +151,4 @@ Send any other comments, patches, flowers and suggestions to:
 	Bram Moolenaar <Bram@vim.org>
 
 
-This is `README.md` for version 8.2 of Vim: Vi IMproved.
-
-
-## Translations of this README ##
-
-[Korean](https://github.com/cjw1359/opensource/blob/master/Vim/README_ko.md)
+This is `README.md` for version 9.0 of Vim: Vi IMproved.

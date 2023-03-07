@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if (defined(FEAT_EVAL) && defined(FEAT_FLOAT)) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(PROTO)
 
 #ifdef VMS
 # include <float.h>
@@ -54,12 +54,11 @@ string2float(
     if (skip_quotes && vim_strchr((char_u *)s, '\'') != NULL)
     {
 	char_u	    buf[100];
-	char_u	    *p = buf;
+	char_u	    *p;
 	int	    quotes = 0;
 
 	vim_strncpy(buf, (char_u *)s, 99);
-	p = buf;
-	for (;;)
+	for (p = buf; ; p = skipdigits(p))
 	{
 	    // remove single quotes between digits, not in the exponent
 	    if (*p == '\'')
@@ -69,7 +68,6 @@ string2float(
 	    }
 	    if (!vim_isdigit(*p))
 		break;
-	    p = skipdigits(p);
 	}
 	s = (char *)buf;
 	f = strtod(s, &s);
@@ -290,15 +288,15 @@ f_float2nr(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_float_or_nr_arg(argvars, 0) == FAIL)
 	return;
 
-    if (get_float_arg(argvars, &f) == OK)
-    {
-	if (f <= (float_T)-VARNUM_MAX + DBL_EPSILON)
-	    rettv->vval.v_number = -VARNUM_MAX;
-	else if (f >= (float_T)VARNUM_MAX - DBL_EPSILON)
-	    rettv->vval.v_number = VARNUM_MAX;
-	else
-	    rettv->vval.v_number = (varnumber_T)f;
-    }
+    if (get_float_arg(argvars, &f) != OK)
+	return;
+
+    if (f <= (float_T)-VARNUM_MAX + DBL_EPSILON)
+	rettv->vval.v_number = -VARNUM_MAX;
+    else if (f >= (float_T)VARNUM_MAX - DBL_EPSILON)
+	rettv->vval.v_number = VARNUM_MAX;
+    else
+	rettv->vval.v_number = (varnumber_T)f;
 }
 
 /*

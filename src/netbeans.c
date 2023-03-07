@@ -116,7 +116,7 @@ netbeans_close(void)
     // remove all signs and update the screen after gutter removal
     coloncmd(":sign unplace *");
     changed_window_setting();
-    update_screen(CLEAR);
+    update_screen(UPD_CLEAR);
     setcursor();
     cursor_on();
     out_flush_cursor(TRUE, FALSE);
@@ -938,13 +938,13 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
     if (lastbyte >= oldlen)
 	lastbyte = oldlen - 1;
     newtext = alloc(oldlen - (int)(lastbyte - first));
-    if (newtext != NULL)
-    {
-	mch_memmove(newtext, oldtext, first);
-	STRMOVE(newtext + first, oldtext + lastbyte + 1);
-	nbdebug(("    NEW LINE %ld: %s\n", lnum, newtext));
-	ml_replace(lnum, newtext, FALSE);
-    }
+    if (newtext == NULL)
+	return;
+
+    mch_memmove(newtext, oldtext, first);
+    STRMOVE(newtext + first, oldtext + lastbyte + 1);
+    nbdebug(("    NEW LINE %ld: %s\n", lnum, newtext));
+    ml_replace(lnum, newtext, FALSE);
 }
 
 /*
@@ -960,12 +960,12 @@ nb_joinlines(linenr_T first, linenr_T other)
     len_first = (int)STRLEN(ml_get(first));
     len_other = (int)STRLEN(ml_get(other));
     p = alloc(len_first + len_other + 1);
-    if (p != NULL)
-    {
-      mch_memmove(p, ml_get(first), len_first);
-      mch_memmove(p + len_first, ml_get(other), len_other + 1);
-      ml_replace(first, p, FALSE);
-    }
+    if (p == NULL)
+	return;
+
+    mch_memmove(p, ml_get(first), len_first);
+    mch_memmove(p + len_first, ml_get(other), len_other + 1);
+    ml_replace(first, p, FALSE);
 }
 
 #define SKIP_STOP 2
@@ -1835,9 +1835,9 @@ nb_do_cmd(
 	    }
 
 	    // gui_update_cursor(TRUE, FALSE);
-	    // update_curbuf(NOT_VALID);
+	    // update_curbuf(UPD_NOT_VALID);
 	    update_topline();		// scroll to show the line
-	    update_screen(VALID);
+	    update_screen(UPD_VALID);
 	    setcursor();
 	    cursor_on();
 	    out_flush_cursor(TRUE, FALSE);
@@ -2027,7 +2027,7 @@ nb_do_cmd(
 	    args = (char_u *)cp;
 	    coloncmd(":sign unplace %d buffer=%d",
 		     serNum, buf->bufp->b_fnum);
-	    redraw_buf_later(buf->bufp, NOT_VALID);
+	    redraw_buf_later(buf->bufp, UPD_NOT_VALID);
 #endif
 // =====================================================================
 	}
@@ -2113,7 +2113,7 @@ nb_do_cmd(
 			}
 		    }
 #endif
-		    redraw_buf_later(buf->bufp, NOT_VALID);
+		    redraw_buf_later(buf->bufp, UPD_NOT_VALID);
 		}
 	    }
 // =====================================================================
@@ -2152,10 +2152,7 @@ nb_do_cmd(
 		if (p_write
 			&& !buf->bufp->b_p_ro
 			&& buf->bufp->b_ffname != NULL
-#ifdef FEAT_QUICKFIX
-			&& !bt_dontwrite(buf->bufp)
-#endif
-			)
+			&& !bt_dontwrite(buf->bufp))
 		{
 		    bufref_T bufref;
 
@@ -2223,7 +2220,7 @@ nb_do_cmd(
      */
     if (buf != NULL && buf->initDone && do_update)
     {
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 	setcursor();
 	cursor_on();
 	out_flush_cursor(TRUE, FALSE);
@@ -2250,13 +2247,14 @@ nb_do_cmd(
     static void
 nb_set_curbuf(buf_T *buf)
 {
-    if (curbuf != buf) {
-	if (buf_jump_open_win(buf) != NULL)
-	    return;
-	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf) != NULL)
-	    return;
-	set_curbuf(buf, DOBUF_GOTO);
-    }
+    if (curbuf == buf)
+	return;
+
+    if (buf_jump_open_win(buf) != NULL)
+	return;
+    if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf) != NULL)
+	return;
+    set_curbuf(buf, DOBUF_GOTO);
 }
 
 /*
@@ -2323,7 +2321,7 @@ special_keys(char_u *args)
 	    strcpy(&keybuf[i], tok);
 	    vim_snprintf(cmdbuf, sizeof(cmdbuf),
 				 "<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
-	    do_map(0, (char_u *)cmdbuf, MODE_NORMAL, FALSE);
+	    do_map(MAPTYPE_MAP, (char_u *)cmdbuf, MODE_NORMAL, FALSE);
 	}
 	tok = strtok(NULL, " ");
     }
@@ -2367,14 +2365,14 @@ nb_init_graphics(void)
 {
     static int did_init = FALSE;
 
-    if (!did_init)
-    {
-	coloncmd(":highlight NBGuarded guibg=Cyan guifg=Black"
-			    " ctermbg=LightCyan ctermfg=Black");
-	coloncmd(":sign define %d linehl=NBGuarded", GUARDED);
+    if (did_init)
+	return;
 
-	did_init = TRUE;
-    }
+    coloncmd(":highlight NBGuarded guibg=Cyan guifg=Black"
+	    " ctermbg=LightCyan ctermfg=Black");
+    coloncmd(":sign define %d linehl=NBGuarded", GUARDED);
+
+    did_init = TRUE;
 }
 
 /*
@@ -2471,29 +2469,29 @@ netbeans_beval_cb(
     if (!can_use_beval() || !NETBEANS_OPEN)
 	return;
 
-    if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) == OK)
+    if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) != OK)
+	return;
+
+    // Send debugger request.  Only when the text is of reasonable
+    // length.
+    if (text != NULL && text[0] != NUL && STRLEN(text) < MAXPATHL)
     {
-	// Send debugger request.  Only when the text is of reasonable
-	// length.
-	if (text != NULL && text[0] != NUL && STRLEN(text) < MAXPATHL)
+	buf = alloc(MAXPATHL * 2 + 25);
+	if (buf != NULL)
 	{
-	    buf = alloc(MAXPATHL * 2 + 25);
-	    if (buf != NULL)
+	    p = nb_quote(text);
+	    if (p != NULL)
 	    {
-		p = nb_quote(text);
-		if (p != NULL)
-		{
-		    vim_snprintf(buf, MAXPATHL * 2 + 25,
-				     "0:balloonText=%d \"%s\"\n", r_cmdno, p);
-		    vim_free(p);
-		}
-		nbdebug(("EVT: %s", buf));
-		nb_send(buf, "netbeans_beval_cb");
-		vim_free(buf);
+		vim_snprintf(buf, MAXPATHL * 2 + 25,
+			"0:balloonText=%d \"%s\"\n", r_cmdno, p);
+		vim_free(p);
 	    }
+	    nbdebug(("EVT: %s", buf));
+	    nb_send(buf, "netbeans_beval_cb");
+	    vim_free(buf);
 	}
-	vim_free(text);
     }
+    vim_free(text);
 }
 #endif
 
@@ -2528,7 +2526,7 @@ netbeans_open(char *params, int doabort)
 
     // update the screen after having added the gutter
     changed_window_setting();
-    update_screen(CLEAR);
+    update_screen(UPD_CLEAR);
     setcursor();
     cursor_on();
     out_flush_cursor(TRUE, FALSE);
@@ -2558,12 +2556,12 @@ set_ref_in_nb_channel(int copyID)
     int abort = FALSE;
     typval_T tv;
 
-    if (nb_channel != NULL)
-    {
-	tv.v_type = VAR_CHANNEL;
-	tv.vval.v_channel = nb_channel;
-	abort = set_ref_in_item(&tv, copyID, NULL, NULL);
-    }
+    if (nb_channel == NULL)
+	return FALSE;
+
+    tv.v_type = VAR_CHANNEL;
+    tv.vval.v_channel = nb_channel;
+    abort = set_ref_in_item(&tv, copyID, NULL, NULL);
     return abort;
 }
 #endif
@@ -2741,13 +2739,15 @@ netbeans_inserted(
     if (nbbuf->insertDone)
 	nbbuf->modified = 1;
 
+    // send the "insert" EVT
+    newtxt = alloc(newlen + 1);
+    vim_strncpy(newtxt, txt, newlen);
+
+    // Note: this may make "txt" invalid
     pos.lnum = linenr;
     pos.col = col;
     off = pos2off(bufp, &pos);
 
-    // send the "insert" EVT
-    newtxt = alloc(newlen + 1);
-    vim_strncpy(newtxt, txt, newlen);
     p = nb_quote(newtxt);
     if (p != NULL)
     {
@@ -2828,22 +2828,22 @@ netbeans_button_release(int button)
 
     bufno = nb_getbufno(curbuf);
 
-    if (bufno >= 0 && curwin != NULL && curwin->w_buffer == curbuf)
-    {
-	int col = mouse_col - curwin->w_wincol
-			      - ((curwin->w_p_nu || curwin->w_p_rnu) ? 9 : 1);
-	long off = pos2off(curbuf, &curwin->w_cursor);
+    if (bufno < 0 || curwin == NULL || curwin->w_buffer != curbuf)
+	return;
 
-	// sync the cursor position
-	sprintf(buf, "%d:newDotAndMark=%d %ld %ld\n", bufno, r_cmdno, off, off);
-	nbdebug(("EVT: %s", buf));
-	nb_send(buf, "netbeans_button_release[newDotAndMark]");
+    int col = mouse_col - curwin->w_wincol
+	- ((curwin->w_p_nu || curwin->w_p_rnu) ? 9 : 1);
+    long off = pos2off(curbuf, &curwin->w_cursor);
 
-	sprintf(buf, "%d:buttonRelease=%d %d %ld %d\n", bufno, r_cmdno,
-				    button, (long)curwin->w_cursor.lnum, col);
-	nbdebug(("EVT: %s", buf));
-	nb_send(buf, "netbeans_button_release");
-    }
+    // sync the cursor position
+    sprintf(buf, "%d:newDotAndMark=%d %ld %ld\n", bufno, r_cmdno, off, off);
+    nbdebug(("EVT: %s", buf));
+    nb_send(buf, "netbeans_button_release[newDotAndMark]");
+
+    sprintf(buf, "%d:buttonRelease=%d %d %ld %d\n", bufno, r_cmdno,
+	    button, (long)curwin->w_cursor.lnum, col);
+    nbdebug(("EVT: %s", buf));
+    nb_send(buf, "netbeans_button_release");
 }
 
 
@@ -3309,29 +3309,27 @@ get_buf_size(buf_T *bufp)
 
     if (bufp->b_ml.ml_flags & ML_EMPTY)
 	return 0;
+
+    if (get_fileformat(bufp) == EOL_DOS)
+	eol_size = 2;
     else
+	eol_size = 1;
+    for (lnum = 1; lnum <= bufp->b_ml.ml_line_count; ++lnum)
     {
-	if (get_fileformat(bufp) == EOL_DOS)
-	    eol_size = 2;
-	else
-	    eol_size = 1;
-	for (lnum = 1; lnum <= bufp->b_ml.ml_line_count; ++lnum)
+	char_count += (long)STRLEN(ml_get_buf(bufp, lnum, FALSE))
+	    + eol_size;
+	// Check for a CTRL-C every 100000 characters
+	if (char_count > last_check)
 	{
-	    char_count += (long)STRLEN(ml_get_buf(bufp, lnum, FALSE))
-								   + eol_size;
-	    // Check for a CTRL-C every 100000 characters
-	    if (char_count > last_check)
-	    {
-		ui_breakcheck();
-		if (got_int)
-		    return char_count;
-		last_check = char_count + 100000L;
-	    }
+	    ui_breakcheck();
+	    if (got_int)
+		return char_count;
+	    last_check = char_count + 100000L;
 	}
-	// Correction for when last line doesn't have an EOL.
-	if (!bufp->b_p_eol && (bufp->b_p_bin || !bufp->b_p_fixeol))
-	    char_count -= eol_size;
     }
+    // Correction for when last line doesn't have an EOL.
+    if (!bufp->b_p_eol && (bufp->b_p_bin || !bufp->b_p_fixeol))
+	char_count -= eol_size;
 
     return char_count;
 }
@@ -3394,12 +3392,12 @@ pos2off(buf_T *buf, pos_T *pos)
 {
     long	 offset = 0;
 
-    if (!(buf->b_ml.ml_flags & ML_EMPTY))
-    {
-	if ((offset = ml_find_line_or_offset(buf, pos->lnum, 0)) < 0)
-	    return 0;
-	offset += pos->col;
-    }
+    if (buf->b_ml.ml_flags & ML_EMPTY)
+	return 0;
+
+    if ((offset = ml_find_line_or_offset(buf, pos->lnum, 0)) < 0)
+	return 0;
+    offset += pos->col;
 
     return offset;
 }

@@ -144,6 +144,16 @@ func Test_lisp_indent()
   close!
 endfunc
 
+func Test_lisp_indent_quoted()
+  " This was going past the end of the line
+  new
+  setlocal lisp autoindent
+  call setline(1, ['"[', '='])
+  normal Gvk=
+
+  bwipe!
+endfunc
+
 " Test for setting the 'indentexpr' from a modeline
 func Test_modeline_indent_expr()
   let modeline = &modeline
@@ -151,9 +161,9 @@ func Test_modeline_indent_expr()
   func GetIndent()
     return line('.') * 2
   endfunc
-  call writefile(['# vim: indentexpr=GetIndent()'], 'Xfile.txt')
+  call writefile(['# vim: indentexpr=GetIndent()'], 'Xmlfile.txt', 'D')
   set modelineexpr
-  new Xfile.txt
+  new Xmlfile.txt
   call assert_equal('GetIndent()', &indentexpr)
   exe "normal Oa\nb\n"
   call assert_equal(['  a', '    b'], getline(1, 2))
@@ -162,11 +172,10 @@ func Test_modeline_indent_expr()
   delfunc GetIndent
   let &modeline = modeline
   close!
-  call delete('Xfile.txt')
 endfunc
 
 func Test_indent_func_with_gq()
-  
+
   function GetTeXIndent()
     " Sample indent expression for TeX files
     let lnum = prevnonblank(v:lnum - 1)
@@ -177,7 +186,7 @@ func Test_indent_func_with_gq()
     let line = getline(lnum)
     let ind = indent(lnum)
     " Add a 'shiftwidth' after beginning of environments.
-    if line =~ '\\begin{center}' 
+    if line =~ '\\begin{center}'
       let ind = ind + shiftwidth()
     endif
     return ind
@@ -239,7 +248,7 @@ func Test_indent_func_with_gq()
 
   bwipe!
   delmark ab
-  delfunction GetTeXIndent 
+  delfunction GetTeXIndent
 endfu
 
 func Test_formatting_keeps_first_line_indent()

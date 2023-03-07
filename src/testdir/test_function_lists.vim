@@ -1,22 +1,20 @@
-" Test to verify that the three function lists,
+" Test to verify that the three function lists:
 "
-"   global_functions[] in src/evalfunc.c
-"   *functions* in runtime/doc/builtin.txt
-"   *function-list* in runtime/doc/usr_41.txt
+"  - global_functions[] in src/evalfunc.c
+"  - *functions* in runtime/doc/builtin.txt
+"  - *function-list* in runtime/doc/usr_41.txt
 "
-" contain the same functions and that the global_functions and ":help
-" functions" lists are in ASCII order.
+" contain the same functions and that the global_functions and
+" ":help functions" lists are in ASCII order.
 
 func Test_function_lists()
 
   " Delete any files left over from an earlier run of this test.
-
   call delete("Xglobal_functions.diff")
   call delete("Xfunctions.diff")
   call delete("Xfunction-list.diff")
 
   " Create a file of the functions in evalfunc.c:global_functions[].
-
   enew!
   read ../evalfunc.c
   1,/^static funcentry_T global_functions\[\] =$/d
@@ -28,7 +26,6 @@ func Test_function_lists()
   w! Xglobal_functions
 
   " Verify that those functions are in ASCII order.
-
   sort u
   w! Xsorted_global_functions
   let l:unequal = assert_equalfile("Xsorted_global_functions", "Xglobal_functions",
@@ -39,7 +36,6 @@ func Test_function_lists()
 
   " Create a file of the functions in evalfunc.c:global_functions[] that are
   " not obsolete, sorted in ASCII order.
-
   enew!
   read ../evalfunc.c
   1,/^static funcentry_T global_functions\[\] =$/d
@@ -53,7 +49,6 @@ func Test_function_lists()
   w! ++ff=unix Xsorted_current_global_functions
 
   " Verify that the ":help functions" list is complete and in ASCII order.
-
   enew!
   if filereadable('../../doc/builtin.txt')
     " unpacked MS-Windows zip archive
@@ -77,7 +72,6 @@ func Test_function_lists()
   endif
 
   " Verify that the ":help function-list" list is complete.
-
   enew!
   if filereadable('../../doc/usr_41.txt')
     " unpacked MS-Windows zip archive

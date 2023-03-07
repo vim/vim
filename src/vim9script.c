@@ -140,7 +140,8 @@ ex_vim9script(exarg_T *eap UNUSED)
 					 0L, (char_u *)CPO_VIM, OPT_NO_REDRAW);
     }
 #else
-    // No check for this being the first command, it doesn't matter.
+    // No check for this being the first command, the information is not
+    // available.
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
 #endif
 }
@@ -176,7 +177,8 @@ not_in_vim9(exarg_T *eap)
 }
 
 /*
- * Give an error message if "p" points at "#{" and return TRUE.
+ * Return TRUE if "p" points at "#{", not "#{{".
+ * Give an error message if not done already.
  * This avoids that using a legacy style #{} dictionary leads to difficult to
  * understand errors.
  */
@@ -185,7 +187,8 @@ vim9_bad_comment(char_u *p)
 {
     if (p[0] == '#' && p[1] == '{' && p[2] != '{')
     {
-	emsg(_(e_cannot_use_hash_curly_to_start_comment));
+	if (!did_emsg)
+	    emsg(_(e_cannot_use_hash_curly_to_start_comment));
 	return TRUE;
     }
     return FALSE;
@@ -194,12 +197,17 @@ vim9_bad_comment(char_u *p)
 
 /*
  * Return TRUE if "p" points at a "#" not followed by one '{'.
+ * Gives an error for using "#{", not for "#{{".
  * Does not check for white space.
  */
     int
 vim9_comment_start(char_u *p)
 {
+#ifdef FEAT_EVAL
+    return p[0] == '#' && !vim9_bad_comment(p);
+#else
     return p[0] == '#' && (p[1] != '{' || p[2] == '{');
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -238,49 +246,13 @@ ex_incdec(exarg_T *eap)
 }
 
 /*
- * ":export let Name: type"
- * ":export const Name: type"
- * ":export def Name(..."
- * ":export class Name ..."
+ * ":export cmd"
  */
     void
-ex_export(exarg_T *eap)
+ex_export(exarg_T *eap UNUSED)
 {
-    int	    prev_did_emsg = did_emsg;
-
-    if (!in_vim9script())
-    {
-	emsg(_(e_export_can_only_be_used_in_vim9script));
-	return;
-    }
-
-    eap->cmd = eap->arg;
-    (void)find_ex_command(eap, NULL, lookup_scriptitem, NULL);
-    switch (eap->cmdidx)
-    {
-	case CMD_var:
-	case CMD_final:
-	case CMD_const:
-	case CMD_def:
-	case CMD_function:
-	// case CMD_class:
-	    is_export = TRUE;
-	    do_cmdline(eap->cmd, eap->getline, eap->cookie,
-						DOCMD_VERBOSE + DOCMD_NOWAIT);
-
-	    // The command will reset "is_export" when exporting an item.
-	    if (is_export)
-	    {
-		if (did_emsg == prev_did_emsg)
-		    emsg(_(e_export_with_invalid_argument));
-		is_export = FALSE;
-	    }
-	    break;
-	default:
-	    if (did_emsg == prev_did_emsg)
-		emsg(_(e_invalid_command_after_export));
-	    break;
-    }
+    // can only get here when "export" wasn't caught in do_cmdline()
+    emsg(_(e_export_can_only_be_used_in_vim9script));
 }
 
 /*
@@ -309,7 +281,7 @@ free_all_script_vars(scriptitem_T *si)
 
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -690,6 +662,20 @@ ex_import(exarg_T *eap)
 }
 
 /*
+ * When a script is a symlink it may be imported with one name and sourced
+ * under another name.  Adjust the import script ID if needed.
+ * "*sid" must be a valid script ID.
+ */
+    void
+import_check_sourced_sid(int *sid)
+{
+    scriptitem_T *script = SCRIPT_ITEM(*sid);
+
+    if (script->sn_sourced_sid > 0)
+	*sid = script->sn_sourced_sid;
+}
+
+/*
  * Find an exported item in "sid" matching "name".
  * Either "cctx" or "cstack" is NULL.
  * When it is a variable return the index.
@@ -804,7 +790,7 @@ find_exported(
 }
 
 /*
- * Declare a script-local variable without init: "let var: type".
+ * Declare a script-local variable without init: "var name: type".
  * "const" is an error since the value is missing.
  * Returns a pointer to after the type.
  */
@@ -852,7 +838,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL || check_reserved_name(name) == FAIL)
+    if (type == NULL || check_reserved_name(name, NULL) == FAIL)
     {
 	vim_free(name);
 	return p;
@@ -936,7 +922,7 @@ update_vim9_script_var(
 	    // svar_T and create a new sallvar_T.
 	    sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
 	    newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(name));
+			      offsetof(sallvar_T, sav_key) + STRLEN(name) + 1);
 	    if (newsav == NULL)
 		return;
 
@@ -948,14 +934,16 @@ update_vim9_script_var(
 		sv->sv_flags |= SVFLAG_ASSIGNED;
 	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	    ++si->sn_var_vals.ga_len;
-	    STRCPY(&newsav->sav_key, name);
+	    // a pointer to the first char avoids a FORTIFY_SOURCE problem
+	    STRCPY(&newsav->sav_key[0], name);
 	    sv->sv_name = newsav->sav_key;
 	    newsav->sav_di = di;
 	    newsav->sav_block_id = si->sn_current_block_id;
 
 	    if (HASHITEM_EMPTY(hi))
 		// new variable name
-		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key,
+							       "add variable");
 	    else if (sav != NULL)
 		// existing name in a new block, append to the list
 		sav->sav_next = newsav;
@@ -1019,42 +1007,43 @@ hide_script_var(scriptitem_T *si, int idx, int func_defined)
     // The typval is moved into the sallvar_T.
     script_hi = hash_find(script_ht, sv->sv_name);
     all_hi = hash_find(all_ht, sv->sv_name);
-    if (!HASHITEM_EMPTY(script_hi) && !HASHITEM_EMPTY(all_hi))
-    {
-	dictitem_T	*di = HI2DI(script_hi);
-	sallvar_T	*sav = HI2SAV(all_hi);
-	sallvar_T	*sav_prev = NULL;
 
-	// There can be multiple entries with the same name in different
-	// blocks, find the right one.
-	while (sav != NULL && sav->sav_var_vals_idx != idx)
-	{
-	    sav_prev = sav;
-	    sav = sav->sav_next;
-	}
-	if (sav != NULL)
-	{
-	    if (func_defined)
-	    {
-		// move the typval from the dictitem to the sallvar
-		sav->sav_tv = di->di_tv;
-		di->di_tv.v_type = VAR_UNKNOWN;
-		sav->sav_flags = di->di_flags;
-		sav->sav_di = NULL;
-		sv->sv_tv = &sav->sav_tv;
-	    }
-	    else
-	    {
-		if (sav_prev == NULL)
-		    hash_remove(all_ht, all_hi);
-		else
-		    sav_prev->sav_next = sav->sav_next;
-		sv->sv_name = NULL;
-		vim_free(sav);
-	    }
-	    delete_var(script_ht, script_hi);
-	}
+    if (HASHITEM_EMPTY(script_hi) || HASHITEM_EMPTY(all_hi))
+	return;
+
+    dictitem_T	*di = HI2DI(script_hi);
+    sallvar_T	*sav = HI2SAV(all_hi);
+    sallvar_T	*sav_prev = NULL;
+
+    // There can be multiple entries with the same name in different
+    // blocks, find the right one.
+    while (sav != NULL && sav->sav_var_vals_idx != idx)
+    {
+	sav_prev = sav;
+	sav = sav->sav_next;
     }
+    if (sav == NULL)
+	return;
+
+    if (func_defined)
+    {
+	// move the typval from the dictitem to the sallvar
+	sav->sav_tv = di->di_tv;
+	di->di_tv.v_type = VAR_UNKNOWN;
+	sav->sav_flags = di->di_flags;
+	sav->sav_di = NULL;
+	sv->sv_tv = &sav->sav_tv;
+    }
+    else
+    {
+	if (sav_prev == NULL)
+	    hash_remove(all_ht, all_hi, "hide variable");
+	else
+	    sav_prev->sav_next = sav->sav_next;
+	sv->sv_name = NULL;
+	vim_free(sav);
+    }
+    delete_var(script_ht, script_hi);
 }
 
 /*
@@ -1138,14 +1127,19 @@ static char *reserved[] = {
 };
 
     int
-check_reserved_name(char_u *name)
+check_reserved_name(char_u *name, cctx_T *cctx)
 {
     int idx;
 
     for (idx = 0; reserved[idx] != NULL; ++idx)
-	if (STRCMP(reserved[idx], name) == 0)
+	if (STRCMP(reserved[idx], name) == 0
+		// "this" can be used in an object method
+		&& !(STRCMP("this", name) == 0
+		    && cctx != NULL
+		    && cctx->ctx_ufunc != NULL
+		    && (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW))))
 	{
-	    semsg(_(e_cannot_use_reserved_name), name);
+	    semsg(_(e_cannot_use_reserved_name_str), name);
 	    return FAIL;
 	}
     return OK;

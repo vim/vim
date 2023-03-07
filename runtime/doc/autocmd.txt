@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Apr 17
+*autocmd.txt*   For Vim version 9.0.  Last change: 2023 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -47,6 +47,28 @@ effects.  Be careful not to destroy your text.
   It's a good idea to use the same autocommands for the File* and Buf* events
   when possible.
 
+Recommended use:
+- Always use a group, so that it's easy to delete the autocommand.
+- Keep the command itself short, call a function to do more work.
+- Make it so that the script it is defined in can be sourced several times
+  without the autocommand being repeated.
+
+Example in Vim9 script: >
+   autocmd_add({replace: true,
+		group:   'DemoGroup',
+		event:   'BufEnter',
+		pattern: '*.txt',
+		cmd:     'call DemoBufEnter()'
+		})
+
+In legacy script: >
+   call autocmd_add(#{replace: v:true,
+		    \ group: 'DemoGroup',
+		    \ event: 'BufEnter',
+		    \ pattern: '*.txt',
+		    \ cmd: 'call DemoBufEnter()'
+		    \ })
+
 ==============================================================================
 2. Defining autocommands				*autocmd-define*
 
@@ -75,12 +97,16 @@ If the `:autocmd` is in Vim9 script (a script that starts with `:vim9script`
 and in a `:def` function) then {cmd} will be executed as in Vim9
 script.  Thus this depends on where the autocmd is defined, not where it is
 triggered.
-
+							*:autocmd-block*
 {cmd} can be a block, like with `:command`, see |:command-repl|.  Example: >
 	au BufReadPost *.xml {
 		  setlocal matchpairs+=<:>
 		  /<start
 		}
+
+The |autocmd_add()| function can be used to add a list of autocmds and autocmd
+groups from a Vim script.  It is preferred if you have anything that would
+require using `:execute` with `:autocmd`.
 
 Note: The ":autocmd" command can only be followed by another command when the
 '|' appears where the pattern is expected.  This works: >
@@ -146,6 +172,9 @@ prompt.  When one command outputs two messages this can happen anyway.
 ==============================================================================
 3. Removing autocommands				*autocmd-remove*
 
+In addition to the below described commands, the |autocmd_delete()| function can
+be used to remove a list of autocmds and autocmd groups from a Vim script.
+
 :au[tocmd]! [group] {event} {aupat} [++once] [++nested] {cmd}
 			Remove all autocommands associated with {event} and
 			{aupat}, and add the command {cmd}.
@@ -197,6 +226,9 @@ argument behavior differs from that for defining and removing autocommands.
 
 In order to list buffer-local autocommands, use a pattern in the form <buffer>
 or <buffer=N>.  See |autocmd-buflocal|.
+
+The |autocmd_get()| function can be used from a Vim script to get a list of
+autocmds.
 
 							*:autocmd-verbose*
 When 'verbose' is non-zero, listing an autocommand will also display where it
@@ -366,7 +398,7 @@ Name			triggered by ~
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
 |InsertLeave|		when leaving Insert mode
-|InsertLeavePre| 	just before leaving Insert mode
+|InsertLeavePre|	just before leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
 
@@ -377,6 +409,7 @@ Name			triggered by ~
 			when popup menu is not visible
 |TextChangedP|		after a change was made to the text in Insert mode
 			when popup menu visible
+|TextChangedT|		after a change was made to the text in Terminal mode
 |TextYankPost|		after text has been yanked or deleted
 
 |SafeState|		nothing pending, going to wait for the user to type a
@@ -578,9 +611,11 @@ CmdlineEnter			After moving the cursor to the command line,
 				where the user can type a command or search
 				string; including non-interactive use of ":"
 				in a mapping, but not when using |<Cmd>|.
+				The pattern is matched against the character
+				representing the type of command-line.
+				|cmdwin-char|
 				<afile> is set to a single character,
 				indicating the type of command-line.
-				|cmdwin-char|
 							*CmdlineLeave*
 CmdlineLeave			Before leaving the command line; including
 				non-interactive use of ":" in a mapping, but
@@ -608,6 +643,8 @@ CmdwinLeave			Before leaving the command-line window.
 				|cmdwin-char|
 							*ColorScheme*
 ColorScheme			After loading a color scheme. |:colorscheme|
+				Not triggered if the color scheme is not
+				found.
 				The pattern is matched against the
 				colorscheme name. <afile> can be used for the
 				name of the actual file where this option was
@@ -1023,8 +1060,8 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
 				location. For |:cfile| and |:lfile| commands
-				it is run after error file is read and before
-				moving to the first error.
+				it is run after the error file is read and
+				before moving to the first error.
 				See |QuickFixCmdPost-example|.
 							*QuitPre*
 QuitPre				When using `:quit`, `:wq` or `:qall`, before
@@ -1203,6 +1240,10 @@ TextChangedP			After a change was made to the text in the
 				current buffer in Insert mode, only when the
 				popup menu is visible.  Otherwise the same as
 				TextChanged.
+							*TextChangedT*
+TextChangedT			After a change was made to the text in the
+				current buffer in Terminal mode.
+				Otherwise the same as TextChanged.
 							*TextYankPost*
 TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
@@ -1243,7 +1284,7 @@ User				Never executed automatically.  To be used for
 				    if exists('#User#MyEvent')
 					doautocmd User MyEvent
 				    endif
-
+<
 							*SigUSR1*
 SigUSR1				After the SIGUSR1 signal has been detected.
 				Could be used if other ways of notifying Vim
@@ -1303,8 +1344,9 @@ VimSuspend			When the Vim instance is suspended.  Only when
 				CTRL-Z was typed inside Vim, or when the SIGTSTP
 				signal was sent to Vim, but not for SIGSTOP.
 							*WinClosed*
-WinClosed			After closing a window.  The pattern is
-				matched against the |window-ID|.  Both
+WinClosed			When closing a window, just before it is
+				removed from the window layout.  The pattern
+				is matched against the |window-ID|.  Both
 				<amatch> and <afile> are set to the
 				|window-ID|.  Non-recursive (event cannot
 				trigger itself).
@@ -1332,17 +1374,42 @@ WinNew				When a new window was created.  Not done for
 				Before a WinEnter event.
 
 							*WinScrolled*
-WinScrolled			After scrolling the content of a window or
-				resizing a window.
-				The pattern is matched against the
-				|window-ID|.  Both <amatch> and <afile> are
-				set to the |window-ID|.
-				Non-recursive (the event cannot trigger
-				itself).  However, if the command causes the
-				window to scroll or change size another
+WinScrolled			After any window in the current tab page
+				scrolled the text (horizontally or vertically)
+				or changed width or height.  See
+				|win-scrolled-resized|.
+
+				The pattern is matched against the |window-ID|
+				of the first window that scrolled or resized.
+				Both <amatch> and <afile> are set to the
+				|window-ID|.
+
+				|v:event| is set with information about size
+				and scroll changes. |WinScrolled-event|
+
+				Only starts triggering after startup finished
+				and the first screen redraw was done.
+				Does not trigger when defining the first
+				WinScrolled or WinResized event, but may
+				trigger when adding more.
+
+				Non-recursive: the event will not trigger
+				while executing commands for the WinScrolled
+				event.  However, if the command causes a
+				window to scroll or change size, then another
 				WinScrolled event will be triggered later.
-				Does not trigger when the command is added,
-				only after the first scroll or resize.
+
+
+							*WinResized*
+WinResized			After a window in the current tab page changed
+				width or height.
+				See |win-scrolled-resized|.
+
+				|v:event| is set with information about size
+				changes. |WinResized-event|
+
+				Same behavior as |WinScrolled| for the
+				pattern, triggering and recursiveness.
 
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{aupat}*

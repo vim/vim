@@ -119,7 +119,12 @@ diff_buf_delete(buf_T *buf)
 	    tp->tp_diffbuf[i] = NULL;
 	    tp->tp_diff_invalid = TRUE;
 	    if (tp == curtab)
-		diff_redraw(TRUE);
+	    {
+		// don't redraw right away, more might change or buffer state
+		// is invalid right now
+		need_diff_redraw = TRUE;
+		redraw_later(UPD_VALID);
+	    }
 	}
     }
 }
@@ -398,9 +403,9 @@ diff_mark_adjust_tp(
 		// 2. 3. 4. 5.: inserted/deleted lines touching this diff.
 		if (deleted > 0)
 		{
+		    off = 0;
 		    if (dp->df_lnum[idx] >= line1)
 		    {
-			off = dp->df_lnum[idx] - lnum_deleted;
 			if (last <= line2)
 			{
 			    // 4. delete all lines of diff
@@ -421,6 +426,7 @@ diff_mark_adjust_tp(
 			else
 			{
 			    // 5. delete lines at or just before top of diff
+			    off = dp->df_lnum[idx] - lnum_deleted;
 			    n = off;
 			    dp->df_count[idx] -= line2 - dp->df_lnum[idx] + 1;
 			    check_unchanged = TRUE;
@@ -429,7 +435,6 @@ diff_mark_adjust_tp(
 		    }
 		    else
 		    {
-			off = 0;
 			if (last < line2)
 			{
 			    // 2. delete at end of diff
@@ -459,7 +464,10 @@ diff_mark_adjust_tp(
 		    for (i = 0; i < DB_COUNT; ++i)
 			if (tp->tp_diffbuf[i] != NULL && i != idx)
 			{
-			    dp->df_lnum[i] -= off;
+			    if (dp->df_lnum[i] > off)
+				dp->df_lnum[i] -= off;
+			    else
+				dp->df_lnum[i] = 1;
 			    dp->df_count[i] += n;
 			}
 		}
@@ -551,14 +559,14 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
     diff_T	*dnew;
 
     dnew = ALLOC_ONE(diff_T);
-    if (dnew != NULL)
-    {
-	dnew->df_next = dp;
-	if (dprev == NULL)
-	    tp->tp_first_diff = dnew;
-	else
-	    dprev->df_next = dnew;
-    }
+    if (dnew == NULL)
+	return NULL;
+
+    dnew->df_next = dp;
+    if (dprev == NULL)
+	tp->tp_first_diff = dnew;
+    else
+	dprev->df_next = dnew;
     return dnew;
 }
 
@@ -670,33 +678,36 @@ diff_redraw(
 
     need_diff_redraw = FALSE;
     FOR_ALL_WINDOWS(wp)
-	if (wp->w_p_diff)
-	{
-	    redraw_win_later(wp, SOME_VALID);
-	    if (wp != curwin)
-		wp_other = wp;
+    {
+	// when closing windows or wiping buffers skip invalid window
+	if (!wp->w_p_diff || !buf_valid(wp->w_buffer))
+	    continue;
+
+	redraw_win_later(wp, UPD_SOME_VALID);
+	if (wp != curwin)
+	    wp_other = wp;
 #ifdef FEAT_FOLDING
-	    if (dofold && foldmethodIsDiff(wp))
-		foldUpdateAll(wp);
+	if (dofold && foldmethodIsDiff(wp))
+	    foldUpdateAll(wp);
 #endif
-	    // A change may have made filler lines invalid, need to take care
-	    // of that for other windows.
-	    n = diff_check(wp, wp->w_topline);
-	    if ((wp != curwin && wp->w_topfill > 0) || n > 0)
+	// A change may have made filler lines invalid, need to take care of
+	// that for other windows.
+	n = diff_check(wp, wp->w_topline);
+	if ((wp != curwin && wp->w_topfill > 0) || n > 0)
+	{
+	    if (wp->w_topfill > n)
+		wp->w_topfill = (n < 0 ? 0 : n);
+	    else if (n > 0 && n > wp->w_topfill)
 	    {
-		if (wp->w_topfill > n)
-		    wp->w_topfill = (n < 0 ? 0 : n);
-		else if (n > 0 && n > wp->w_topfill)
-		{
-		    wp->w_topfill = n;
-		    if (wp == curwin)
-			used_max_fill_curwin = TRUE;
-		    else if (wp_other != NULL)
-			used_max_fill_other = TRUE;
-		}
-		check_topfill(wp, FALSE);
+		wp->w_topfill = n;
+		if (wp == curwin)
+		    used_max_fill_curwin = TRUE;
+		else if (wp_other != NULL)
+		    used_max_fill_other = TRUE;
 	    }
+	    check_topfill(wp, FALSE);
 	}
+    }
 
     if (wp_other != NULL && curwin->w_p_scb)
     {
@@ -715,10 +726,7 @@ diff_redraw(
 clear_diffin(diffin_T *din)
 {
     if (din->din_fname == NULL)
-    {
-	vim_free(din->din_mmfile.ptr);
-	din->din_mmfile.ptr = NULL;
-    }
+	VIM_CLEAR(din->din_mmfile.ptr);
     else
 	mch_remove(din->din_fname);
 }
@@ -1169,44 +1177,40 @@ diff_file(diffio_T *dio)
 #endif
     // Use xdiff for generating the diff.
     if (dio->dio_internal)
-    {
 	return diff_file_internal(dio);
-    }
-    else
-    {
-	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
-				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
-	cmd = alloc(len);
-	if (cmd == NULL)
-	    return FAIL;
 
-	// We don't want $DIFF_OPTIONS to get in the way.
-	if (getenv("DIFF_OPTIONS"))
-	    vim_setenv((char_u *)"DIFF_OPTIONS", (char_u *)"");
+    len = STRLEN(tmp_orig) + STRLEN(tmp_new)
+				+ STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
+    cmd = alloc(len);
+    if (cmd == NULL)
+	return FAIL;
 
-	// Build the diff command and execute it.  Always use -a, binary
-	// differences are of no use.  Ignore errors, diff returns
-	// non-zero when differences have been found.
-	vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s%s%s%s %s",
-		diff_a_works == FALSE ? "" : "-a ",
+    // We don't want $DIFF_OPTIONS to get in the way.
+    if (getenv("DIFF_OPTIONS"))
+	vim_setenv((char_u *)"DIFF_OPTIONS", (char_u *)"");
+
+    // Build the diff command and execute it.  Always use -a, binary
+    // differences are of no use.  Ignore errors, diff returns
+    // non-zero when differences have been found.
+    vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s%s%s%s %s",
+	    diff_a_works == FALSE ? "" : "-a ",
 #if defined(MSWIN)
-		diff_bin_works == TRUE ? "--binary " : "",
+	    diff_bin_works == TRUE ? "--binary " : "",
 #else
-		"",
+	    "",
 #endif
-		(diff_flags & DIFF_IWHITE) ? "-b " : "",
-		(diff_flags & DIFF_IWHITEALL) ? "-w " : "",
-		(diff_flags & DIFF_IWHITEEOL) ? "-Z " : "",
-		(diff_flags & DIFF_IBLANK) ? "-B " : "",
-		(diff_flags & DIFF_ICASE) ? "-i " : "",
-		tmp_orig, tmp_new);
-	append_redir(cmd, (int)len, p_srr, tmp_diff);
-	block_autocmds();	// avoid ShellCmdPost stuff
-	(void)call_shell(cmd, SHELL_FILTER|SHELL_SILENT|SHELL_DOOUT);
-	unblock_autocmds();
-	vim_free(cmd);
-	return OK;
-    }
+	    (diff_flags & DIFF_IWHITE) ? "-b " : "",
+	    (diff_flags & DIFF_IWHITEALL) ? "-w " : "",
+	    (diff_flags & DIFF_IWHITEEOL) ? "-Z " : "",
+	    (diff_flags & DIFF_IBLANK) ? "-B " : "",
+	    (diff_flags & DIFF_ICASE) ? "-i " : "",
+	    tmp_orig, tmp_new);
+    append_redir(cmd, (int)len, p_srr, tmp_diff);
+    block_autocmds();	// avoid ShellCmdPost stuff
+    (void)call_shell(cmd, SHELL_FILTER|SHELL_SILENT|SHELL_DOOUT);
+    unblock_autocmds();
+    vim_free(cmd);
+    return OK;
 }
 
 /*
@@ -1325,7 +1329,7 @@ ex_diffpatch(exarg_T *eap)
 #endif
 
     // patch probably has written over the screen
-    redraw_later(CLEAR);
+    redraw_later(UPD_CLEAR);
 
     // Delete any .orig or .rej file created.
     STRCPY(buf, tmp_new);
@@ -1421,31 +1425,31 @@ ex_diffsplit(exarg_T *eap)
     // don't use a new tab page, each tab page has its own diffs
     cmdmod.cmod_tab = 0;
 
-    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) != FAIL)
+    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) == FAIL)
+	return;
+
+    // Pretend it was a ":split fname" command
+    eap->cmdidx = CMD_split;
+    curwin->w_p_diff = TRUE;
+    do_exedit(eap, old_curwin);
+
+    if (curwin == old_curwin)		// split didn't work
+	return;
+
+    // Set 'diff', 'scrollbind' on and 'wrap' off.
+    diff_win_options(curwin, TRUE);
+    if (win_valid(old_curwin))
     {
-	// Pretend it was a ":split fname" command
-	eap->cmdidx = CMD_split;
-	curwin->w_p_diff = TRUE;
-	do_exedit(eap, old_curwin);
+	diff_win_options(old_curwin, TRUE);
 
-	if (curwin != old_curwin)		// split must have worked
-	{
-	    // Set 'diff', 'scrollbind' on and 'wrap' off.
-	    diff_win_options(curwin, TRUE);
-	    if (win_valid(old_curwin))
-	    {
-		diff_win_options(old_curwin, TRUE);
-
-		if (bufref_valid(&old_curbuf))
-		    // Move the cursor position to that of the old window.
-		    curwin->w_cursor.lnum = diff_get_corresponding_line(
-			    old_curbuf.br_buf, old_curwin->w_cursor.lnum);
-	    }
-	    // Now that lines are folded scroll to show the cursor at the same
-	    // relative position.
-	    scroll_to_fraction(curwin, curwin->w_height);
-	}
+	if (bufref_valid(&old_curbuf))
+	    // Move the cursor position to that of the old window.
+	    curwin->w_cursor.lnum = diff_get_corresponding_line(
+		    old_curbuf.br_buf, old_curwin->w_cursor.lnum);
     }
+    // Now that lines are folded scroll to show the cursor at the same
+    // relative position.
+    scroll_to_fraction(curwin, curwin->w_height);
 }
 
 /*
@@ -1533,7 +1537,7 @@ diff_win_options(
 
     if (addbuf)
 	diff_buf_add(wp->w_buffer);
-    redraw_win_later(wp, NOT_VALID);
+    redraw_win_later(wp, UPD_NOT_VALID);
 }
 
 /*
@@ -1673,9 +1677,8 @@ diff_read(
     {
 	if (dio->dio_internal)
 	{
-	    if (line_idx >= dout->dout_ga.ga_len) {
+	    if (line_idx >= dout->dout_ga.ga_len)
 		break;      // did last line
-	    }
 	    hunk = ((diffhunk_T **)dout->dout_ga.ga_data)[line_idx++];
 	}
 	else
@@ -2637,6 +2640,20 @@ nv_diffgetput(int put, long count)
 }
 
 /*
+ * Return TRUE if "diff" appears in the list of diff blocks of the current tab.
+ */
+    static int
+valid_diff(diff_T *diff)
+{
+    diff_T	*dp;
+
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
+	if (dp == diff)
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * ":diffget"
  * ":diffput"
  */
@@ -2761,8 +2778,12 @@ ex_diffgetput(exarg_T *eap)
 	idx_to = idx_other;
 	// Need to make the other buffer the current buffer to be able to make
 	// changes in it.
-	// set curwin/curbuf to buf and save a few things
+	// Set curwin/curbuf to buf and save a few things.
 	aucmd_prepbuf(&aco, curtab->tp_diffbuf[idx_other]);
+	if (curbuf != curtab->tp_diffbuf[idx_other])
+	    // Could not find a window for this buffer, the rest is likely to
+	    // fail.
+	    goto theend;
     }
 
     // May give the warning for a changed buffer here, which can trigger the
@@ -2843,8 +2864,8 @@ ex_diffgetput(exarg_T *eap)
 	    {
 		// remember deleting the last line of the buffer
 		buf_empty = curbuf->b_ml.ml_line_count == 1;
-		ml_delete(lnum);
-		--added;
+		if (ml_delete(lnum) == OK)
+		    --added;
 	    }
 	    for (i = 0; i < dp->df_count[idx_from] - start_skip - end_skip; ++i)
 	    {
@@ -2893,9 +2914,9 @@ ex_diffgetput(exarg_T *eap)
 		}
 	    }
 
-	    // Adjust marks.  This will change the following entries!
 	    if (added != 0)
 	    {
+		// Adjust marks.  This will change the following entries!
 		mark_adjust(lnum, lnum + count - 1, (long)MAXLNUM, (long)added);
 		if (curwin->w_cursor.lnum >= lnum)
 		{
@@ -2917,7 +2938,13 @@ ex_diffgetput(exarg_T *eap)
 #endif
 		vim_free(dfree);
 	    }
-	    else
+
+	    // mark_adjust() may have made "dp" invalid.  We don't know where
+	    // to continue then, bail out.
+	    if (added != 0 && !valid_diff(dp))
+		break;
+
+	    if (dfree == NULL)
 		// mark_adjust() may have changed the count in a wrong way
 		dp->df_count[idx_to] = new_count;
 

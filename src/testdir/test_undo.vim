@@ -3,6 +3,9 @@
 " undo-able pieces.  Do that by setting 'undolevels'.
 " Also tests :earlier and :later.
 
+source check.vim
+source screendump.vim
+
 func Test_undotree()
   new
 
@@ -335,11 +338,16 @@ func Test_insert_expr()
 endfunc
 
 func Test_undofile_earlier()
+  if has('win32')
+    " FIXME: This test is flaky on MS-Windows.
+    let g:test_is_flaky = 1
+  endif
+
   " Issue #1254
   " create undofile with timestamps older than Vim startup time.
   let t0 = localtime() - 43200
   call test_settime(t0)
-  new Xfile
+  new XfileEarlier
   call feedkeys("ione\<Esc>", 'xt')
   set ul=100
   call test_settime(t0 + 1)
@@ -353,12 +361,12 @@ func Test_undofile_earlier()
   bwipe!
   " restore normal timestamps.
   call test_settime(0)
-  new Xfile
+  new XfileEarlier
   rundo Xundofile
   earlier 1d
   call assert_equal('', getline(1))
   bwipe!
-  call delete('Xfile')
+  call delete('XfileEarlier')
   call delete('Xundofile')
 endfunc
 
@@ -379,21 +387,18 @@ func Test_undofile_truncated()
 
   " try several sizes
   for size in range(20, 500, 33)
-    call writefile(contents[0:size], 'Xundofile')
+    call writefile(contents[0:size], 'Xundofile', 'D')
     call assert_fails('rundo Xundofile', 'E825:')
   endfor
 
   bwipe!
-  call delete('Xundofile')
 endfunc
 
 func Test_rundo_errors()
   call assert_fails('rundo XfileDoesNotExist', 'E822:')
 
-  call writefile(['abc'], 'Xundofile')
+  call writefile(['abc'], 'Xundofile', 'D')
   call assert_fails('rundo Xundofile', 'E823:')
-
-  call delete('Xundofile')
 endfunc
 
 func Test_undofile_next()
@@ -755,5 +760,48 @@ func Test_redo_multibyte_in_insert_mode()
   call assert_equal("He\ufb05llo", getline(1))
   bwipe!
 endfunc
+
+func Test_undo_mark()
+  new
+  " The undo is applied to the only line.
+  call setline(1, 'hello')
+  call feedkeys("ggyiw$p", 'xt')
+  undo
+  call assert_equal([0, 1, 1, 0], getpos("'["))
+  call assert_equal([0, 1, 1, 0], getpos("']"))
+  " The undo removes the last line.
+  call feedkeys("Goaaaa\<Esc>", 'xt')
+  call feedkeys("obbbb\<Esc>", 'xt')
+  undo
+  call assert_equal([0, 2, 1, 0], getpos("'["))
+  call assert_equal([0, 2, 1, 0], getpos("']"))
+  bwipe!
+endfunc
+
+func Test_undo_after_write()
+  " use a terminal to make undo work like when text is typed
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      edit Xtestfile.txt
+      set undolevels=100 undofile
+      imap . <Cmd>write<CR>
+      write
+  END
+  call writefile(lines, 'Xtest_undo_after_write', 'D')
+  let buf = RunVimInTerminal('-S Xtest_undo_after_write', #{rows: 6})
+
+  call term_sendkeys(buf, "Otest.\<CR>boo!!!\<Esc>")
+  sleep 100m
+  call term_sendkeys(buf, "u")
+  call VerifyScreenDump(buf, 'Test_undo_after_write_1', {})
+
+  call term_sendkeys(buf, "u")
+  call VerifyScreenDump(buf, 'Test_undo_after_write_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xtestfile.txt')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

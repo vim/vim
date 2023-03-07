@@ -88,21 +88,10 @@
 // have an argument???
 #define SIGHASARG
 
-// List 3 arg systems here. I guess __sgi, please test and correct me. jw.
-#if defined(__sgi) && defined(HAVE_SIGCONTEXT)
-# define SIGHAS3ARGS
-#endif
-
 #ifdef SIGHASARG
-# ifdef SIGHAS3ARGS
-#  define SIGPROTOARG	(int, int, struct sigcontext *)
-#  define SIGDEFARG(s)	(int s, int sig2, struct sigcontext *scont)
-#  define SIGDUMMYARG	0, 0, (struct sigcontext *)0
-# else
-#  define SIGPROTOARG	(int)
-#  define SIGDEFARG(s)	(int s UNUSED)
-#  define SIGDUMMYARG	0
-# endif
+# define SIGPROTOARG	(int)
+# define SIGDEFARG(s)	(int s UNUSED)
+# define SIGDUMMYARG	0
 #else
 # define SIGPROTOARG   (void)
 # define SIGDEFARG(s)  ()
@@ -128,10 +117,7 @@
 # endif
 #endif
 
-// on some systems time.h should not be included together with sys/time.h
-#if !defined(HAVE_SYS_TIME_H) || defined(TIME_WITH_SYS_TIME)
-# include <time.h>
-#endif
+#include <time.h>
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif

@@ -86,6 +86,10 @@
 #endif
 #ifndef PROTO
 # include <windows.h>
+
+// Weird: rpcndr.h defines "small" to "char", which causes trouble
+#undef small
+
 # ifndef SM_CXPADDEDBORDER
 #  define SM_CXPADDEDBORDER     92
 # endif
@@ -198,7 +202,7 @@ Trace(char *pszFormat, ...);
 
   // These macros should all compile away to nothing
 # define ASSERT(f)		((void)0)
-# define TRACE			1 ? (void)0 : printf
+# define TRACE			1 ? (void)0 : (void)printf
 # define TRACE0(sz)
 # define TRACE1(sz, p1)
 # define TRACE2(sz, p1, p2)

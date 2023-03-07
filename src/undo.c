@@ -331,9 +331,9 @@ undo_allowed(void)
 
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textwinlock != 0 || textlock != 0)
+    if (textlock != 0)
     {
-	emsg(_(e_not_allowed_to_change_text_here));
+	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
     }
 
@@ -1164,21 +1164,21 @@ read_string_decrypt(bufinfo_T *bi, int len)
 {
     char_u  *ptr = alloc(len + 1);
 
-    if (ptr != NULL)
+    if (ptr == NULL)
+	return NULL;
+
+    if (len > 0 && undo_read(bi, ptr, len) == FAIL)
     {
-	if (len > 0 && undo_read(bi, ptr, len) == FAIL)
-	{
-	    vim_free(ptr);
-	    return NULL;
-	}
-	// In case there are text properties there already is a NUL, but
-	// checking for that is more expensive than just adding a dummy byte.
-	ptr[len] = NUL;
-#ifdef FEAT_CRYPT
-	if (bi->bi_state != NULL && bi->bi_buffer == NULL)
-	    crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
-#endif
+	vim_free(ptr);
+	return NULL;
     }
+    // In case there are text properties there already is a NUL, but
+    // checking for that is more expensive than just adding a dummy byte.
+    ptr[len] = NUL;
+#ifdef FEAT_CRYPT
+    if (bi->bi_state != NULL && bi->bi_buffer == NULL)
+	crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
+#endif
     return ptr;
 }
 
@@ -1923,7 +1923,8 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
-	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file), file_name);
+	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file_str),
+								    file_name);
 	    goto error;
 	}
 	bi.bi_state = crypt_create_from_file(fp, curbuf->b_p_key);
@@ -2326,6 +2327,12 @@ undo_time(
     int		    dofile = file;
     int		    above = FALSE;
     int		    did_undo = TRUE;
+
+    if (text_locked())
+    {
+	text_locked_msg();
+	return;
+    }
 
     // First make sure the current undoable change is synced.
     if (curbuf->b_u_synced == FALSE)
@@ -2829,11 +2836,21 @@ u_undoredo(int undo)
 		curbuf->b_op_end.lnum += newsize - oldsize;
 	}
 	if (oldsize > 0 || newsize > 0)
+	{
 	    changed_lines(top + 1, 0, bot, newsize - oldsize);
+#ifdef FEAT_SPELL
+	    // When text has been changed, possibly the start of the next line
+	    // may have SpellCap that should be removed or it needs to be
+	    // displayed.  Schedule the next line for redrawing just in case.
+	    if (spell_check_window(curwin) && bot <= curbuf->b_ml.ml_line_count)
+		redrawWinline(curwin, bot);
+#endif
+	}
 
-	// set '[ and '] mark
+	// Set the '[ mark.
 	if (top + 1 < curbuf->b_op_start.lnum)
 	    curbuf->b_op_start.lnum = top + 1;
+	// Set the '] mark.
 	if (newsize == 0 && top + 1 > curbuf->b_op_end.lnum)
 	    curbuf->b_op_end.lnum = top + 1;
 	else if (top + newsize > curbuf->b_op_end.lnum)
@@ -2852,6 +2869,12 @@ u_undoredo(int undo)
 	uep->ue_next = newlist;
 	newlist = uep;
     }
+
+    // Ensure the '[ and '] marks are within bounds.
+    if (curbuf->b_op_start.lnum > curbuf->b_ml.ml_line_count)
+	 curbuf->b_op_start.lnum = curbuf->b_ml.ml_line_count;
+    if (curbuf->b_op_end.lnum > curbuf->b_ml.ml_line_count)
+	 curbuf->b_op_end.lnum = curbuf->b_ml.ml_line_count;
 
     // Set the cursor to the desired position.  Check that the line is valid.
     curwin->w_cursor = new_curpos;
@@ -3025,7 +3048,7 @@ u_undo_end(
 	FOR_ALL_WINDOWS(wp)
 	{
 	    if (wp->w_buffer == curbuf && wp->w_p_cole > 0)
-		redraw_win_later(wp, NOT_VALID);
+		redraw_win_later(wp, UPD_NOT_VALID);
 	}
     }
 #endif
@@ -3487,12 +3510,12 @@ u_saveline(linenr_T lnum)
     void
 u_clearline(void)
 {
-    if (curbuf->b_u_line_ptr.ul_line != NULL)
-    {
-	VIM_CLEAR(curbuf->b_u_line_ptr.ul_line);
-	curbuf->b_u_line_ptr.ul_len = 0;
-	curbuf->b_u_line_lnum = 0;
-    }
+    if (curbuf->b_u_line_ptr.ul_line == NULL)
+	return;
+
+    VIM_CLEAR(curbuf->b_u_line_ptr.ul_line);
+    curbuf->b_u_line_ptr.ul_len = 0;
+    curbuf->b_u_line_lnum = 0;
 }
 
 /*
@@ -3561,7 +3584,7 @@ u_blockfree(buf_T *buf)
 bufIsChanged(buf_T *buf)
 {
 #ifdef FEAT_TERMINAL
-    if (term_job_running(buf->b_term))
+    if (term_job_running_not_none(buf->b_term))
 	return TRUE;
 #endif
     return bufIsChangedNotTerm(buf);
@@ -3703,24 +3726,24 @@ u_undofile_reset_and_delete(buf_T *buf)
     void
 f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    if (rettv_dict_alloc(rettv) == OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    dict_T *dict = rettv->vval.v_dict;
+    list_T *list;
+
+    dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
+    dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
+    dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
+    dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
+    dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
+    dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
+
+    list = list_alloc();
+    if (list != NULL)
     {
-	dict_T *dict = rettv->vval.v_dict;
-	list_T *list;
-
-	dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
-	dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
-	dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
-	dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
-	dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
-	dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
-
-	list = list_alloc();
-	if (list != NULL)
-	{
-	    u_eval_tree(curbuf->b_u_oldhead, list);
-	    dict_add_list(dict, "entries", list);
-	}
+	u_eval_tree(curbuf->b_u_oldhead, list);
+	dict_add_list(dict, "entries", list);
     }
 }
 

@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 8.2.  Last change: 2021 Jul 07
+*sponsor.txt*   For Vim version 9.0.  Last change: 2022 May 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

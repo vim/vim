@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.2.  Last change: 2022 Feb 17
+*remote.txt*    For Vim version 9.0.  Last change: 2022 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -64,7 +64,7 @@ The following command line arguments are available:
 				below).  The name used will be uppercase.
 								*--remote-send*
    --remote-send {keys}		Send {keys} to server and exit.  The {keys}
-   				are not mapped.  Special key names are
+				are not mapped.  Special key names are
 				recognized, e.g., "<CR>" results in a CR
 				character.
 								*--remote-expr*

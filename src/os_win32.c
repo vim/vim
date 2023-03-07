@@ -100,6 +100,8 @@ typedef char * LPCSTR;
 typedef char * LPWSTR;
 typedef int ACCESS_MASK;
 typedef int BOOL;
+typedef int BOOLEAN;
+typedef int CALLBACK;
 typedef int COLORREF;
 typedef int CONSOLE_CURSOR_INFO;
 typedef int COORD;
@@ -175,6 +177,24 @@ static void gotoxy(unsigned x, unsigned y);
 static void standout(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
+// The 'input_record_buffer' is an internal dynamic fifo queue of MS-Windows
+// console INPUT_RECORD events that are normally read from the console input
+// buffer.  This provides an injection point for testing the low-level handling
+// of INPUT_RECORDs.
+typedef struct input_record_buffer_node_S
+{
+    INPUT_RECORD ir;
+    struct input_record_buffer_node_S *next;
+} input_record_buffer_node_T;
+typedef struct input_record_buffer_S
+{
+    input_record_buffer_node_T *head;
+    input_record_buffer_node_T *tail;
+    int length;
+} input_record_buffer_T;
+static input_record_buffer_T input_record_buffer;
+static int read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
+static int write_input_record_buffer(INPUT_RECORD* irEvents, int nLength);
 #endif
 #ifdef FEAT_GUI_MSWIN
 static int s_dont_use_vimrun = TRUE;
@@ -200,22 +220,20 @@ static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
 
 static int wt_working = 0;
-static void wt_init();
-
-static guicolor_T save_console_bg_rgb;
-static guicolor_T save_console_fg_rgb;
-static guicolor_T store_console_bg_rgb;
-static guicolor_T store_console_fg_rgb;
+static void wt_init(void);
 
 static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
 
 # ifdef FEAT_TERMGUICOLORS
+static guicolor_T save_console_bg_rgb;
+static guicolor_T save_console_fg_rgb;
+static guicolor_T store_console_bg_rgb;
+static guicolor_T store_console_fg_rgb;
+static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
-# endif
-
-# ifdef FEAT_TERMGUICOLORS
-#  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_VTP		(vtp_working && is_term_win32() \
+						 && (p_tgc || t_colors >= 256))
 #  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
@@ -225,7 +243,7 @@ static int default_console_color_fg = 0xc0c0c0; // white
 static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
 static void restore_console_color_rgb(void);
-#endif
+#endif  // !FEAT_GUI_MSWIN || VIMDLL
 
 // This flag is newly created from Windows 10
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -236,29 +254,12 @@ static void restore_console_color_rgb(void);
 static int suppress_winsize = 1;	// don't fiddle with console
 #endif
 
-static char_u *exe_path = NULL;
+static WCHAR *exe_pathw = NULL;
 
 static BOOL win8_or_later = FALSE;
-
+static BOOL win10_22H2_or_later = FALSE;
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-// Dynamic loading for portability
-typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
-{
-    ULONG cbSize;
-    COORD dwSize;
-    COORD dwCursorPosition;
-    WORD wAttributes;
-    SMALL_RECT srWindow;
-    COORD dwMaximumWindowSize;
-    WORD wPopupAttributes;
-    BOOL bFullscreenSupported;
-    COLORREF ColorTable[16];
-} DYN_CONSOLE_SCREEN_BUFFER_INFOEX, *PDYN_CONSOLE_SCREEN_BUFFER_INFOEX;
-typedef BOOL (WINAPI *PfnGetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
-typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
-static BOOL has_csbiex = FALSE;
+static BOOL use_alternate_screen_buffer = FALSE;
 #endif
 
 /*
@@ -271,21 +272,22 @@ typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
     static DWORD
 get_build_number(void)
 {
-    OSVERSIONINFOW	osver = {sizeof(OSVERSIONINFOW)};
+    OSVERSIONINFOW	osver;
     HMODULE		hNtdll;
     PfnRtlGetVersion	pRtlGetVersion;
     DWORD		ver = MAKE_VER(0, 0, 0);
 
+    osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
     hNtdll = GetModuleHandle("ntdll.dll");
-    if (hNtdll != NULL)
-    {
-	pRtlGetVersion =
-	    (PfnRtlGetVersion)GetProcAddress(hNtdll, "RtlGetVersion");
-	pRtlGetVersion(&osver);
-	ver = MAKE_VER(min(osver.dwMajorVersion, 255),
-		       min(osver.dwMinorVersion, 255),
-		       min(osver.dwBuildNumber, 32767));
-    }
+    if (hNtdll == NULL)
+	return ver;
+
+    pRtlGetVersion =
+	(PfnRtlGetVersion)GetProcAddress(hNtdll, "RtlGetVersion");
+    pRtlGetVersion(&osver);
+    ver = MAKE_VER(min(osver.dwMajorVersion, 255),
+	    min(osver.dwMinorVersion, 255),
+	    min(osver.dwBuildNumber, 32767));
     return ver;
 }
 
@@ -323,7 +325,7 @@ make_ambiwidth_event(
 read_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
-    DWORD	    nLength,
+    int		    nLength,
     LPDWORD	    lpEvents)
 {
     enum
@@ -339,6 +341,13 @@ read_console_input(
     int i;
     static INPUT_RECORD s_irPseudo;
 
+    if (s_dwMax == 0 && input_record_buffer.length > 0)
+    {
+	dwEvents = read_input_record_buffer(s_irCache, IRSIZE);
+	s_dwIndex = 0;
+	s_dwMax = dwEvents;
+    }
+
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
 
@@ -351,7 +360,7 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (!USE_WT && nLength == -1)
+	if (!vtp_working && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
 	if (dwEvents == 0 && nLength == -1)
@@ -421,7 +430,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, (DWORD)-1, lpEvents);
+    return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -433,7 +442,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -446,54 +455,73 @@ wait_for_single_object(
     HANDLE hHandle,
     DWORD dwMilliseconds)
 {
-    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL))
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
 # endif
-#endif
+#endif   // !FEAT_GUI_MSWIN || VIMDLL
 
-    static void
-get_exe_name(void)
+    void
+mch_get_exe_name(void)
 {
     // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
     // as the maximum length that works (plus a NUL byte).
 #define MAX_ENV_PATH_LEN 8192
     char	temp[MAX_ENV_PATH_LEN];
     char_u	*p;
+    WCHAR	buf[MAX_PATH];
+    int		updated = FALSE;
+    static int	enc_prev = -1;
 
-    if (exe_name == NULL)
+    if (exe_name == NULL || exe_pathw == NULL || enc_prev != enc_codepage)
     {
 	// store the name of the executable, may be used for $VIM
-	GetModuleFileName(NULL, temp, MAX_ENV_PATH_LEN - 1);
-	if (*temp != NUL)
-	    exe_name = FullName_save((char_u *)temp, FALSE);
-    }
-
-    if (exe_path == NULL && exe_name != NULL)
-    {
-	exe_path = vim_strnsave(exe_name, gettail_sep(exe_name) - exe_name);
-	if (exe_path != NULL)
+	GetModuleFileNameW(NULL, buf, MAX_PATH);
+	if (*buf != NUL)
 	{
-	    // Append our starting directory to $PATH, so that when doing
-	    // "!xxd" it's found in our starting directory.  Needed because
-	    // SearchPath() also looks there.
-	    p = mch_getenv("PATH");
-	    if (p == NULL
-		       || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
-	    {
-		if (p == NULL || *p == NUL)
-		    temp[0] = NUL;
-		else
-		{
-		    STRCPY(temp, p);
-		    STRCAT(temp, ";");
-		}
-		STRCAT(temp, exe_path);
-		vim_setenv((char_u *)"PATH", (char_u *)temp);
-	    }
+	    if (enc_codepage == -1)
+		enc_codepage = GetACP();
+	    if (exe_name != NULL)
+		vim_free(exe_name);
+	    exe_name = utf16_to_enc(buf, NULL);
+	    enc_prev = enc_codepage;
+
+	    WCHAR *wp = wcsrchr(buf, '\\');
+	    if (wp != NULL)
+		*wp = NUL;
+	    if (exe_pathw != NULL)
+		vim_free(exe_pathw);
+	    exe_pathw = _wcsdup(buf);
+	    updated = TRUE;
 	}
     }
+
+    if (exe_pathw == NULL || !updated)
+	return;
+
+    char_u  *exe_path = utf16_to_enc(exe_pathw, NULL);
+    if (exe_path == NULL)
+	return;
+
+    // Append our starting directory to $PATH, so that when doing
+    // "!xxd" it's found in our starting directory.  Needed because
+    // SearchPath() also looks there.
+    p = mch_getenv("PATH");
+    if (p == NULL
+	    || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
+    {
+	if (p == NULL || *p == NUL)
+	    temp[0] = NUL;
+	else
+	{
+	    STRCPY(temp, p);
+	    STRCAT(temp, ";");
+	}
+	STRCAT(temp, exe_path);
+	vim_setenv((char_u *)"PATH", (char_u *)temp);
+    }
+    vim_free(exe_path);
 }
 
 /*
@@ -525,27 +553,27 @@ vimLoadLib(const char *name)
 
     // No need to load any library when registering OLE.
     if (found_register_arg)
-	return dll;
+	return NULL;
 
     // NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
     // vimLoadLib() recursively, which causes a stack overflow.
-    if (exe_path == NULL)
-	get_exe_name();
-    if (exe_path != NULL)
-    {
-	WCHAR old_dirw[MAXPATHL];
+    if (exe_pathw == NULL)
+	mch_get_exe_name();
 
-	if (GetCurrentDirectoryW(MAXPATHL, old_dirw) != 0)
-	{
-	    // Change directory to where the executable is, both to make
-	    // sure we find a .dll there and to avoid looking for a .dll
-	    // in the current directory.
-	    SetCurrentDirectory((LPCSTR)exe_path);
-	    dll = LoadLibrary(name);
-	    SetCurrentDirectoryW(old_dirw);
-	    return dll;
-	}
-    }
+    if (exe_pathw == NULL)
+	return NULL;
+
+    WCHAR old_dirw[MAXPATHL];
+
+    if (GetCurrentDirectoryW(MAXPATHL, old_dirw) == 0)
+	return NULL;
+
+    // Change directory to where the executable is, both to make
+    // sure we find a .dll there and to avoid looking for a .dll
+    // in the current directory.
+    SetCurrentDirectoryW(exe_pathw);
+    dll = LoadLibrary(name);
+    SetCurrentDirectoryW(old_dirw);
     return dll;
 }
 
@@ -758,8 +786,8 @@ dyn_libintl_init(void)
     }
 
     // The bind_textdomain_codeset() function is optional.
-    dyn_libintl_bind_textdomain_codeset = (void *)GetProcAddress(hLibintlDLL,
-						   "bind_textdomain_codeset");
+    dyn_libintl_bind_textdomain_codeset = (char *(*)(const char *, const char *))
+			GetProcAddress(hLibintlDLL, "bind_textdomain_codeset");
     if (dyn_libintl_bind_textdomain_codeset == NULL)
 	dyn_libintl_bind_textdomain_codeset =
 					 null_libintl_bind_textdomain_codeset;
@@ -767,7 +795,8 @@ dyn_libintl_init(void)
     // _wputenv() function for the libintl.dll is optional.
     hmsvcrt = find_imported_module_by_funcname(hLibintlDLL, "getenv");
     if (hmsvcrt != NULL)
-	dyn_libintl_wputenv = (void *)GetProcAddress(hmsvcrt, "_wputenv");
+	dyn_libintl_wputenv = (int (*)(const wchar_t *))
+					GetProcAddress(hmsvcrt, "_wputenv");
     if (dyn_libintl_wputenv == NULL || dyn_libintl_wputenv == _wputenv)
 	dyn_libintl_wputenv = null_libintl_wputenv;
 
@@ -898,27 +927,31 @@ PlatformId(void)
 {
     static int done = FALSE;
 
-    if (!done)
-    {
-	OSVERSIONINFO ovi;
+    if (done)
+	return;
 
-	ovi.dwOSVersionInfoSize = sizeof(ovi);
-	GetVersionEx(&ovi);
+    OSVERSIONINFO ovi;
+
+    ovi.dwOSVersionInfoSize = sizeof(ovi);
+    GetVersionEx(&ovi);
 
 #ifdef FEAT_EVAL
-	vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
-		(int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
+    vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
+	    (int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
 #endif
-	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
-		|| ovi.dwMajorVersion > 6)
-	    win8_or_later = TRUE;
+    if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
+	    || ovi.dwMajorVersion > 6)
+	win8_or_later = TRUE;
+
+    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
+	    || ovi.dwMajorVersion > 10)
+	win10_22H2_or_later = TRUE;
 
 #ifdef HAVE_ACL
-	// Enable privilege for getting or setting SACLs.
-	win32_enable_privilege(SE_SECURITY_NAME, TRUE);
+    // Enable privilege for getting or setting SACLs.
+    win32_enable_privilege(SE_SECURITY_NAME, TRUE);
 #endif
-	done = TRUE;
-    }
+    done = TRUE;
 }
 #ifdef _MSC_VER
 # pragma warning(pop)
@@ -1029,6 +1062,7 @@ win32_kbd_patch_key(
 	return 1;
     }
 
+    // check if it already has a valid unicode character.
     if (pker->uChar.UnicodeChar != 0)
 	return 1;
 
@@ -1093,30 +1127,6 @@ decode_key_event(
 	break;
     }
 
-    // special cases
-    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
-					    && pker->uChar.UnicodeChar == NUL)
-    {
-	// Ctrl-6 is Ctrl-^
-	if (pker->wVirtualKeyCode == '6')
-	{
-	    *pch = Ctrl_HAT;
-	    return TRUE;
-	}
-	// Ctrl-2 is Ctrl-@
-	else if (pker->wVirtualKeyCode == '2')
-	{
-	    *pch = NUL;
-	    return TRUE;
-	}
-	// Ctrl-- is Ctrl-_
-	else if (pker->wVirtualKeyCode == 0xBD)
-	{
-	    *pch = Ctrl__;
-	    return TRUE;
-	}
-    }
-
     // Shift-TAB
     if (pker->wVirtualKeyCode == VK_TAB && (nModifs & SHIFT_PRESSED))
     {
@@ -1129,13 +1139,12 @@ decode_key_event(
     {
 	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
 	{
-	    if (nModifs == 0)
-		*pch = VirtKeyMap[i].chAlone;
-	    else if ((nModifs & SHIFT) != 0 && (nModifs & ~SHIFT) == 0)
+	    *pch = VirtKeyMap[i].chAlone;
+	    if ((nModifs & SHIFT) != 0)
 		*pch = VirtKeyMap[i].chShift;
 	    else if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0)
 		*pch = VirtKeyMap[i].chCtrl;
-	    else if ((nModifs & ALT) != 0 && (nModifs & ~ALT) == 0)
+	    else if ((nModifs & ALT) != 0)
 		*pch = VirtKeyMap[i].chAlt;
 
 	    if (*pch != 0)
@@ -1144,6 +1153,92 @@ decode_key_event(
 		{
 		    *pch2 = *pch;
 		    *pch = K_NUL;
+		    if (pmodifiers)
+		    {
+			if (pker->wVirtualKeyCode >= VK_F1
+			    && pker->wVirtualKeyCode <= VK_F12)
+			{
+			    if ((nModifs & ALT) != 0)
+			    {
+				*pmodifiers |= MOD_MASK_ALT;
+				if ((nModifs & SHIFT) == 0)
+				    *pch2 = VirtKeyMap[i].chAlone;
+			    }
+			    if ((nModifs & CTRL) != 0)
+			    {
+				*pmodifiers |= MOD_MASK_CTRL;
+				if ((nModifs & SHIFT) == 0)
+				    *pch2 = VirtKeyMap[i].chAlone;
+			    }
+			}
+			else if (pker->wVirtualKeyCode >= VK_END
+				&& pker->wVirtualKeyCode <= VK_DOWN)
+			{
+			    // (0x23 - 0x28): VK_END, VK_HOME,
+			    // VK_LEFT, VK_UP, VK_RIGHT, VK_DOWN
+
+			    *pmodifiers = 0;
+			    *pch2 = VirtKeyMap[i].chAlone;
+			    if ((nModifs & SHIFT) != 0
+						    && (nModifs & ~SHIFT) == 0)
+			    {
+				*pch2 = VirtKeyMap[i].chShift;
+			    }
+			    if ((nModifs & CTRL) != 0
+						     && (nModifs & ~CTRL) == 0)
+			    {
+				*pch2 = VirtKeyMap[i].chCtrl;
+				if (pker->wVirtualKeyCode == VK_UP
+				    || pker->wVirtualKeyCode == VK_DOWN)
+				{
+				    *pmodifiers |= MOD_MASK_CTRL;
+				    *pch2 = VirtKeyMap[i].chAlone;
+				}
+			    }
+			    if ((nModifs & SHIFT) != 0
+						      && (nModifs & CTRL) != 0)
+			    {
+				*pmodifiers |= MOD_MASK_CTRL;
+				*pch2 = VirtKeyMap[i].chShift;
+			    }
+			    if ((nModifs & ALT) != 0)
+			    {
+				*pch2 = VirtKeyMap[i].chAlt;
+				*pmodifiers |= MOD_MASK_ALT;
+				if ((nModifs & ~ALT) == 0)
+				{
+				    *pch2 = VirtKeyMap[i].chAlone;
+				}
+				else if ((nModifs & SHIFT) != 0)
+				{
+				    *pch2 = VirtKeyMap[i].chShift;
+				}
+				else if ((nModifs & CTRL) != 0)
+				{
+				    if (pker->wVirtualKeyCode == VK_UP
+					|| pker->wVirtualKeyCode == VK_DOWN)
+				    {
+					*pmodifiers |= MOD_MASK_CTRL;
+					*pch2 = VirtKeyMap[i].chAlone;
+				    }
+				    else
+				    {
+					*pch2 = VirtKeyMap[i].chCtrl;
+				    }
+				}
+			    }
+			}
+			else
+			{
+			    *pch2 = VirtKeyMap[i].chAlone;
+			    if ((nModifs & SHIFT) != 0)
+				*pmodifiers |= MOD_MASK_SHIFT;
+			    if ((nModifs & CTRL) != 0)
+				*pmodifiers |= MOD_MASK_CTRL;
+			    if ((nModifs & ALT) != 0)
+				*pmodifiers |= MOD_MASK_ALT;
+			}
+		    }
 		}
 
 		return TRUE;
@@ -1183,7 +1278,106 @@ decode_key_event(
     return (*pch != NUL);
 }
 
-#endif // FEAT_GUI_MSWIN
+# if defined(FEAT_EVAL)
+    static int
+encode_key_event(dict_T *args, INPUT_RECORD *ir)
+{
+    static int s_dwMods = 0;
+
+    char_u *action = dict_get_string(args, "event", TRUE);
+    if (action && (STRICMP(action, "keydown") == 0
+					|| STRICMP(action, "keyup") == 0))
+    {
+	BOOL isKeyDown = STRICMP(action, "keydown") == 0;
+	WORD vkCode = dict_get_number_def(args, "keycode", 0);
+	if (vkCode <= 0 || vkCode >= 0xFF)
+	{
+	    semsg(_(e_invalid_argument_nr), (long)vkCode);
+	    return FALSE;
+	}
+
+	ir->EventType = KEY_EVENT;
+	KEY_EVENT_RECORD ker;
+	ZeroMemory(&ker, sizeof(ker));
+	ker.bKeyDown = isKeyDown;
+	ker.wRepeatCount = 1;
+	ker.wVirtualScanCode = 0;
+	ker.dwControlKeyState = 0;
+	int mods = (int)dict_get_number(args, "modifiers");
+	// Encode the win32 console key modifiers from Vim keyboard modifiers.
+	if (mods)
+	{
+	    // If "modifiers" is explicitly set in the args, then we reset any
+	    // remembered modifier key state that may have been set from
+	    // earlier mod-key-down events, even if they are not yet unset by
+	    // earlier mod-key-up events.
+	    s_dwMods = 0;
+	    if (mods & MOD_MASK_SHIFT)
+		ker.dwControlKeyState |= SHIFT_PRESSED;
+	    if (mods & MOD_MASK_CTRL)
+		ker.dwControlKeyState |= LEFT_CTRL_PRESSED;
+	    if (mods & MOD_MASK_ALT)
+		ker.dwControlKeyState |= LEFT_ALT_PRESSED;
+	}
+
+	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
+	{
+	    if (isKeyDown)
+		s_dwMods |= SHIFT_PRESSED;
+	    else
+		s_dwMods &= ~SHIFT_PRESSED;
+	}
+	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
+	{
+	    if (isKeyDown)
+		s_dwMods |= LEFT_CTRL_PRESSED;
+	    else
+		s_dwMods &= ~LEFT_CTRL_PRESSED;
+	}
+	else if (vkCode == VK_RCONTROL)
+	{
+	    if (isKeyDown)
+		s_dwMods |= RIGHT_CTRL_PRESSED;
+	    else
+		s_dwMods &= ~RIGHT_CTRL_PRESSED;
+	}
+	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
+	{
+	    if (isKeyDown)
+		s_dwMods |= LEFT_ALT_PRESSED;
+	    else
+		s_dwMods &= ~LEFT_ALT_PRESSED;
+	}
+	else if (vkCode == VK_RMENU)
+	{
+	    if (isKeyDown)
+		s_dwMods |= RIGHT_ALT_PRESSED;
+	    else
+		s_dwMods &= ~RIGHT_ALT_PRESSED;
+	}
+	ker.dwControlKeyState |= s_dwMods;
+	ker.wVirtualKeyCode = vkCode;
+	ker.uChar.UnicodeChar = 0;
+	ir->Event.KeyEvent = ker;
+	vim_free(action);
+    }
+    else
+    {
+	if (action == NULL)
+	{
+	    semsg(_(e_missing_argument_str), "event");
+	}
+	else
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", action);
+	    vim_free(action);
+	}
+	return FALSE;
+    }
+    return TRUE;
+}
+# endif  // FEAT_EVAL
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
 
 /*
@@ -1194,14 +1388,14 @@ decode_key_event(
 mch_setmouse(int on UNUSED)
 {
 }
-#else
+#else  // !FEAT_GUI_MSWIN || VIMDLL
 static int g_fMouseAvail = FALSE;   // mouse present
 static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
 static int g_xMouse;		    // mouse x coordinate
 static int g_yMouse;		    // mouse y coordinate
-static DWORD g_cmodein = 0;         // Original console input mode
-static DWORD g_cmodeout = 0;        // Original console output mode
+static DWORD g_cmodein = 0;	    // Original console input mode
+static DWORD g_cmodeout = 0;	    // Original console output mode
 
 /*
  * Enable or disable mouse input
@@ -1246,6 +1440,96 @@ mch_bevalterm_changed(void)
     mch_setmouse(g_fMouseActive);
 }
 # endif
+
+/*
+ * Win32 console mouse scroll event handler.
+ * Console version of the _OnMouseWheel() function in gui_w32.c
+ *
+ * This encodes the mouse scroll direction and keyboard modifiers into
+ * g_nMouseClick, and the mouse position into g_xMouse and g_yMouse
+ *
+ * The direction of the scroll is decoded from two fields of the win32 console
+ * mouse event record;
+ *    1. The orientation - vertical or horizontal flag - from dwEventFlags
+ *    2. The sign - positive or negative (aka delta flag) - from dwButtonState
+ *
+ * When scroll orientation is HORIZONTAL
+ *    -  If the high word of the dwButtonState member contains a positive
+ *	 value, the wheel was rotated to the right.
+ *    -  Otherwise, the wheel was rotated to the left.
+ * When scroll orientation is VERTICAL
+ *    -  If the high word of the dwButtonState member contains a positive value,
+ *       the wheel was rotated forward, away from the user.
+ *    -  Otherwise, the wheel was rotated backward, toward the user.
+ */
+    static void
+decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
+{
+    int	    horizontal = (pmer->dwEventFlags == MOUSE_HWHEELED);
+    int	    zDelta = pmer->dwButtonState;
+
+    g_xMouse = pmer->dwMousePosition.X;
+    g_yMouse = pmer->dwMousePosition.Y;
+
+# ifdef FEAT_PROP_POPUP
+    int lcol = g_xMouse;
+    int lrow = g_yMouse;
+    win_T *wp = mouse_find_win(&lrow, &lcol, FIND_POPUP);
+    if (wp != NULL && popup_is_popup(wp))
+    {
+	g_nMouseClick = -1;
+	cmdarg_T cap;
+	oparg_T oa;
+	CLEAR_FIELD(cap);
+	clear_oparg(&oa);
+	cap.oap = &oa;
+	if (horizontal)
+	{
+	    cap.arg = zDelta < 0 ? MSCR_LEFT : MSCR_RIGHT;
+	    cap.cmdchar = zDelta < 0 ? K_MOUSELEFT : K_MOUSERIGHT;
+	}
+	else
+	{
+	    cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	    cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
+	}
+
+	// Mouse hovers over popup window, scroll it if possible.
+	mouse_row = wp->w_winrow;
+	mouse_col = wp->w_wincol;
+	nv_mousescroll(&cap);
+	update_screen(0);
+	setcursor();
+	out_flush();
+	return;
+    }
+# endif
+    mouse_col = g_xMouse;
+    mouse_row = g_yMouse;
+
+    char_u modifiers = 0;
+    char_u direction = 0;
+
+    // Decode the direction into an event that Vim can process
+    if (horizontal)
+	direction = zDelta >= 0 ? KE_MOUSELEFT : KE_MOUSERIGHT;
+    else
+	direction = zDelta >= 0 ? KE_MOUSEDOWN : KE_MOUSEUP;
+
+    // Decode the win32 console key modifiers into Vim mouse modifiers.
+    if (pmer->dwControlKeyState & SHIFT_PRESSED)
+	modifiers |= MOD_MASK_SHIFT; // MOUSE_SHIFT;
+    if (pmer->dwControlKeyState & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED))
+	modifiers |= MOD_MASK_CTRL; // MOUSE_CTRL;
+    if (pmer->dwControlKeyState & (RIGHT_ALT_PRESSED  | LEFT_ALT_PRESSED))
+	modifiers |= MOD_MASK_ALT; // MOUSE_ALT;
+
+    // add (bitwise or) the scroll direction and the key modifier chars
+    // together.
+    g_nMouseClick = ((direction << 8) | modifiers);
+
+    return;
+}
 
 /*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
@@ -1316,9 +1600,16 @@ decode_mouse_event(
 	return FALSE;
     }
 
-    // unprocessed mouse click?
+    // If there is an unprocessed mouse click drop this one.
     if (g_nMouseClick != -1)
 	return TRUE;
+
+    if (pmer->dwEventFlags == MOUSE_WHEELED
+				       || pmer->dwEventFlags == MOUSE_HWHEELED)
+    {
+	decode_mouse_wheel(pmer);
+	return TRUE;  // we now should have a mouse scroll in g_nMouseClick
+    }
 
     nButton = -1;
     g_xMouse = pmer->dwMousePosition.X;
@@ -1512,8 +1803,240 @@ decode_mouse_event(
     return TRUE;
 }
 
-#endif // FEAT_GUI_MSWIN
+# ifdef FEAT_EVAL
+    static int
+encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
+{
+    int		button;
+    int		row;
+    int		col;
+    int		repeated_click;
+    int_u	mods = 0;
+    int		move;
 
+    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
+	return FALSE;
+
+    // Note: "move" is optional, requires fewer arguments
+    move = (int)dict_get_bool(args, "move", FALSE);
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+
+    row = (int)dict_get_number(args, "row") - 1;
+    col = (int)dict_get_number(args, "col") - 1;
+
+    ir->EventType = MOUSE_EVENT;
+    MOUSE_EVENT_RECORD mer;
+    ZeroMemory(&mer, sizeof(mer));
+    mer.dwMousePosition.X  = col;
+    mer.dwMousePosition.Y  = row;
+
+    if (move)
+    {
+	mer.dwButtonState = 0;
+	mer.dwEventFlags = MOUSE_MOVED;
+    }
+    else
+    {
+	button = (int)dict_get_number(args, "button");
+	repeated_click = (int)dict_get_number(args, "multiclick");
+	mods = (int)dict_get_number(args, "modifiers");
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+
+	switch (button)
+	{
+	    case MOUSE_LEFT:
+		mer.dwButtonState = FROM_LEFT_1ST_BUTTON_PRESSED;
+		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
+		break;
+	    case MOUSE_MIDDLE:
+		mer.dwButtonState = FROM_LEFT_2ND_BUTTON_PRESSED;
+		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
+		break;
+	    case MOUSE_RIGHT:
+		mer.dwButtonState = RIGHTMOST_BUTTON_PRESSED;
+		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
+		break;
+	    case MOUSE_RELEASE:
+		// umm?  Assume Left Release?
+		mer.dwEventFlags = 0;
+
+	    case MOUSE_MOVE:
+		mer.dwButtonState = 0;
+		mer.dwEventFlags = MOUSE_MOVED;
+		break;
+	    case MOUSE_X1:
+		mer.dwButtonState = FROM_LEFT_3RD_BUTTON_PRESSED;
+		break;
+	    case MOUSE_X2:
+		mer.dwButtonState = FROM_LEFT_4TH_BUTTON_PRESSED;
+		break;
+	    case MOUSE_4:  // KE_MOUSEDOWN;
+		mer.dwButtonState = -1;
+		mer.dwEventFlags = MOUSE_WHEELED;
+		break;
+	    case MOUSE_5:  // KE_MOUSEUP;
+		mer.dwButtonState = +1;
+		mer.dwEventFlags = MOUSE_WHEELED;
+		break;
+	    case MOUSE_6:  // KE_MOUSELEFT;
+		mer.dwButtonState = -1;
+		mer.dwEventFlags = MOUSE_HWHEELED;
+		break;
+	    case MOUSE_7:  // KE_MOUSERIGHT;
+		mer.dwButtonState = +1;
+		mer.dwEventFlags = MOUSE_HWHEELED;
+		break;
+	    default:
+		semsg(_(e_invalid_argument_str), "button");
+		return FALSE;
+	}
+    }
+
+    mer.dwControlKeyState = 0;
+    if (mods != 0)
+    {
+	// Encode the win32 console key modifiers from Vim MOUSE modifiers.
+	if (mods & MOUSE_SHIFT)
+	    mer.dwControlKeyState |= SHIFT_PRESSED;
+	if (mods & MOUSE_CTRL)
+	    mer.dwControlKeyState |= LEFT_CTRL_PRESSED;
+	if (mods & MOUSE_ALT)
+	    mer.dwControlKeyState |= LEFT_ALT_PRESSED;
+    }
+    ir->Event.MouseEvent = mer;
+    return TRUE;
+}
+# endif  // FEAT_EVAL
+
+    static int
+write_input_record_buffer(INPUT_RECORD* irEvents, int nLength)
+{
+    int nCount = 0;
+    while (nCount < nLength)
+    {
+	input_record_buffer.length++;
+	input_record_buffer_node_T *event_node =
+				    malloc(sizeof(input_record_buffer_node_T));
+	event_node->ir = irEvents[nCount++];
+	event_node->next = NULL;
+	if (input_record_buffer.tail == NULL)
+	{
+	    input_record_buffer.head = event_node;
+	    input_record_buffer.tail = event_node;
+	}
+	else
+	{
+	    input_record_buffer.tail->next = event_node;
+	    input_record_buffer.tail = input_record_buffer.tail->next;
+	}
+    }
+    return nCount;
+}
+
+    static int
+read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
+{
+    int nCount = 0;
+    while (nCount < nMaxLength && input_record_buffer.head != NULL)
+    {
+	input_record_buffer.length--;
+	input_record_buffer_node_T *pop_head = input_record_buffer.head;
+	irEvents[nCount++] = pop_head->ir;
+	input_record_buffer.head = pop_head->next;
+	vim_free(pop_head);
+	if (input_record_buffer.length == 0)
+	    input_record_buffer.tail = NULL;
+    }
+    return nCount;
+}
+#endif // !FEAT_GUI_MSWIN || VIMDLL
+
+#ifdef FEAT_EVAL
+/*
+ * The 'test_mswin_event' function is for testing Vim's low-level handling of
+ * user input events.  ie, this manages the encoding of INPUT_RECORD events
+ * so that we have a way to test how Vim decodes INPUT_RECORD events in Windows
+ * consoles.
+ *
+ * The 'test_mswin_event' function is based on 'test_gui_event'.  In fact, when
+ * the Windows GUI is running, the arguments; 'event' and 'args', are the same.
+ * So, it acts as an alias for 'test_gui_event' for the Windows GUI.
+ *
+ * When the Windows console is running, the arguments; 'event' and 'args', are
+ * a subset of what 'test_gui_event' handles, ie, only "key" and "mouse"
+ * events are encoded as INPUT_RECORD events.
+ *
+ * Note: INPUT_RECORDs are only used by the Windows console, not the GUI.  The
+ * GUI sends MSG structs instead.
+ */
+    int
+test_mswin_event(char_u *event, dict_T *args)
+{
+    int lpEventsWritten = 0;
+
+# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
+    if (gui.in_use)
+	return test_gui_w32_sendevent(event, args);
+# endif
+
+# if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
+
+// Currently implemented event record types are; KEY_EVENT and MOUSE_EVENT
+// Potentially could also implement: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
+// Maybe also:  MENU_EVENT
+
+    INPUT_RECORD ir;
+    BOOL input_encoded = FALSE;
+    BOOL execute = FALSE;
+    if (STRCMP(event, "key") == 0)
+    {
+	execute = dict_get_bool(args, "execute", FALSE);
+	if (dict_has_key(args, "event"))
+	    input_encoded = encode_key_event(args, &ir);
+	else if (!execute)
+	{
+	    semsg(_(e_missing_argument_str), "event");
+	    return FALSE;
+	}
+    }
+    else if (STRCMP(event, "mouse") == 0)
+    {
+	execute = TRUE;
+	input_encoded = encode_mouse_event(args, &ir);
+    }
+    else
+    {
+	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	return FALSE;
+    }
+
+    // Ideally, WriteConsoleInput would be used to inject these low-level
+    // events.  But, this doesn't work well in the CI test environment.  So
+    // implementing an input_record_buffer instead.
+    if (input_encoded)
+	lpEventsWritten = write_input_record_buffer(&ir, 1);
+
+    // Set flags to execute the event, ie. like feedkeys mode X.
+    if (execute)
+    {
+	int save_msg_scroll = msg_scroll;
+	// Avoid a 1 second delay when the keys start Insert mode.
+	msg_scroll = FALSE;
+	ch_log(NULL, "test_mswin_event() executing");
+	exec_normal(TRUE, TRUE, TRUE);
+	msg_scroll |= save_msg_scroll;
+    }
+
+# endif
+    return lpEventsWritten;
+}
+#endif // FEAT_EVAL
 
 #ifdef MCH_CURSOR_SHAPE
 /*
@@ -1523,13 +2046,27 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    CONSOLE_CURSOR_INFO ConsoleCursorInfo;
-    ConsoleCursorInfo.dwSize = thickness;
-    ConsoleCursorInfo.bVisible = s_cursor_visible;
+    if (vtp_working)
+    {
+	if (*T_CSI == NUL)
+	{
+	    // If 't_SI' is not set, use the default cursor styles.
+	    if (thickness < 50)
+		vtp_printf("\033[3 q");	// underline
+	    else
+		vtp_printf("\033[0 q");	// default
+	}
+    }
+    else
+    {
+	CONSOLE_CURSOR_INFO ConsoleCursorInfo;
+	ConsoleCursorInfo.dwSize = thickness;
+	ConsoleCursorInfo.bVisible = s_cursor_visible;
 
-    SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
-    if (s_cursor_visible)
-	SetConsoleCursorPosition(g_hConOut, g_coord);
+	SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
+	if (s_cursor_visible)
+	    SetConsoleCursorPosition(g_hConOut, g_coord);
+    }
 }
 
     void
@@ -1688,7 +2225,7 @@ WaitForChar(long msec, int ignore_input)
 		{
 		    // The screen is now messed up, must redraw the command
 		    // line and later all the windows.
-		    redraw_all_later(CLEAR);
+		    redraw_all_later(UPD_CLEAR);
 		    compute_cmdrow();
 		    redrawcmd();
 		}
@@ -1925,7 +2462,7 @@ mch_inchar(
     // to get and still room in the buffer (up to two bytes for a char and
     // three bytes for a modifier).
     while ((typeaheadlen == 0 || WaitForChar(0L, FALSE))
-		         && typeaheadlen + 5 + TYPEAHEADSPACE <= TYPEAHEADLEN)
+			  && typeaheadlen + 5 + TYPEAHEADSPACE <= TYPEAHEADLEN)
     {
 	if (typebuf_changed(tb_change_cnt))
 	{
@@ -1941,11 +2478,40 @@ mch_inchar(
 		fprintf(fdDump, "{%02x @ %d, %d}",
 			g_nMouseClick, g_xMouse, g_yMouse);
 # endif
-	    typeahead[typeaheadlen++] = ESC + 128;
-	    typeahead[typeaheadlen++] = 'M';
-	    typeahead[typeaheadlen++] = g_nMouseClick;
-	    typeahead[typeaheadlen++] = g_xMouse + '!';
-	    typeahead[typeaheadlen++] = g_yMouse + '!';
+	    char_u modifiers = ((char_u *)(&g_nMouseClick))[0];
+	    char_u scroll_dir = ((char_u *)(&g_nMouseClick))[1];
+
+	    if (scroll_dir == KE_MOUSEDOWN
+		    || scroll_dir == KE_MOUSEUP
+		    || scroll_dir == KE_MOUSELEFT
+		    || scroll_dir == KE_MOUSERIGHT)
+	    {
+		if (modifiers > 0)
+		{
+		    // use K_SPECIAL instead of CSI to make mappings work
+		    typeahead[typeaheadlen++] = K_SPECIAL;
+		    typeahead[typeaheadlen++] = KS_MODIFIER;
+		    typeahead[typeaheadlen++] = modifiers;
+		}
+		typeahead[typeaheadlen++] = CSI;
+		typeahead[typeaheadlen++] = KS_EXTRA;
+		typeahead[typeaheadlen++] = scroll_dir;
+	    }
+	    else
+	    {
+		typeahead[typeaheadlen++] = ESC + 128;
+		typeahead[typeaheadlen++] = 'M';
+		typeahead[typeaheadlen++] = g_nMouseClick;
+	    }
+
+	    // Pass the pointer coordinates of the mouse event in 2 bytes,
+	    // allowing for > 223 columns.  Both for click and scroll events.
+	    // This is the same as what is used for the GUI.
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse % 128 + ' ' + 1);
+
 	    g_nMouseClick = -1;
 	}
 	else
@@ -1954,6 +2520,17 @@ mch_inchar(
 	    int		modifiers = 0;
 
 	    c = tgetch(&modifiers, &ch2);
+
+	    c = simplify_key(c, &modifiers);
+
+	    // Some chars need adjustment when the Ctrl modifier is used.
+	    ++no_reduce_keys;
+	    c = may_adjust_key_for_ctrl(modifiers, c);
+	    --no_reduce_keys;
+
+	    // remove the SHIFT modifier for keys where it's already included,
+	    // e.g., '(' and '*'
+	    modifiers = may_remove_shift_modifier(modifiers, c);
 
 	    if (typebuf_changed(tb_change_cnt))
 	    {
@@ -2097,7 +2674,7 @@ theend:
 	buf[len++] = typeahead[0];
 	mch_memmove(typeahead, typeahead + 1, --typeaheadlen);
     }
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
     if (len > 0)
     {
 	buf[len] = NUL;
@@ -2351,11 +2928,11 @@ theend:
  * worth allowing these to make debugging of issues easier.
  */
     static void
-bad_param_handler(const wchar_t *expression,
-    const wchar_t *function,
-    const wchar_t *file,
-    unsigned int line,
-    uintptr_t pReserved)
+bad_param_handler(const wchar_t *expression UNUSED,
+    const wchar_t *function UNUSED,
+    const wchar_t *file UNUSED,
+    unsigned int line UNUSED,
+    uintptr_t pReserved UNUSED)
 {
 }
 
@@ -2494,40 +3071,38 @@ FitConsoleWindow(
     COORD dwWindowSize;
     BOOL NeedAdjust = FALSE;
 
-    if (GetConsoleScreenBufferInfo(g_hConOut, &csbi))
-    {
-	/*
-	 * A buffer resize will fail if the current console window does
-	 * not lie completely within that buffer.  To avoid this, we might
-	 * have to move and possibly shrink the window.
-	 */
-	if (csbi.srWindow.Right >= dwBufferSize.X)
-	{
-	    dwWindowSize.X = SRWIDTH(csbi.srWindow);
-	    if (dwWindowSize.X > dwBufferSize.X)
-		dwWindowSize.X = dwBufferSize.X;
-	    csbi.srWindow.Right = dwBufferSize.X - 1;
-	    csbi.srWindow.Left = dwBufferSize.X - dwWindowSize.X;
-	    NeedAdjust = TRUE;
-	}
-	if (csbi.srWindow.Bottom >= dwBufferSize.Y)
-	{
-	    dwWindowSize.Y = SRHEIGHT(csbi.srWindow);
-	    if (dwWindowSize.Y > dwBufferSize.Y)
-		dwWindowSize.Y = dwBufferSize.Y;
-	    csbi.srWindow.Bottom = dwBufferSize.Y - 1;
-	    csbi.srWindow.Top = dwBufferSize.Y - dwWindowSize.Y;
-	    NeedAdjust = TRUE;
-	}
-	if (NeedAdjust && WantAdjust)
-	{
-	    if (!SetConsoleWindowInfo(g_hConOut, TRUE, &csbi.srWindow))
-		return FALSE;
-	}
-	return TRUE;
-    }
+    if (!GetConsoleScreenBufferInfo(g_hConOut, &csbi))
+	return FALSE;
 
-    return FALSE;
+    /*
+     * A buffer resize will fail if the current console window does
+     * not lie completely within that buffer.  To avoid this, we might
+     * have to move and possibly shrink the window.
+     */
+    if (csbi.srWindow.Right >= dwBufferSize.X)
+    {
+	dwWindowSize.X = SRWIDTH(csbi.srWindow);
+	if (dwWindowSize.X > dwBufferSize.X)
+	    dwWindowSize.X = dwBufferSize.X;
+	csbi.srWindow.Right = dwBufferSize.X - 1;
+	csbi.srWindow.Left = dwBufferSize.X - dwWindowSize.X;
+	NeedAdjust = TRUE;
+    }
+    if (csbi.srWindow.Bottom >= dwBufferSize.Y)
+    {
+	dwWindowSize.Y = SRHEIGHT(csbi.srWindow);
+	if (dwWindowSize.Y > dwBufferSize.Y)
+	    dwWindowSize.Y = dwBufferSize.Y;
+	csbi.srWindow.Bottom = dwBufferSize.Y - 1;
+	csbi.srWindow.Top = dwBufferSize.Y - dwWindowSize.Y;
+	NeedAdjust = TRUE;
+    }
+    if (NeedAdjust && WantAdjust)
+    {
+	if (!SetConsoleWindowInfo(g_hConOut, TRUE, &csbi.srWindow))
+	    return FALSE;
+    }
+    return TRUE;
 }
 
 typedef struct ConsoleBufferStruct
@@ -2569,6 +3144,11 @@ SaveConsoleBuffer(
 	return FALSE;
     }
     cb->IsValid = TRUE;
+
+    // VTP uses alternate screen buffer.
+    // No need to save buffer contents for restoration.
+    if (use_alternate_screen_buffer)
+	return TRUE;
 
     /*
      * Allocate a buffer large enough to hold the entire console screen
@@ -2662,6 +3242,11 @@ RestoreConsoleBuffer(
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
     int i;
+
+    // VTP uses alternate screen buffer.
+    // No need to restore buffer contents.
+    if (use_alternate_screen_buffer)
+	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
 	return FALSE;
@@ -2815,7 +3400,11 @@ SaveConsoleTitleAndIcon(void)
 	return;
 
     // Extract the first icon contained in the Vim executable.
-    if (mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL || g_hVimIcon == NULL)
+    if (
+# ifdef FEAT_LIBCALL
+	    mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL ||
+# endif
+	    g_hVimIcon == NULL)
 	g_hVimIcon = ExtractIcon(NULL, (LPCSTR)exe_name, 0);
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;
@@ -2855,6 +3444,8 @@ mch_init_c(void)
 	create_conin();
     g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
+    wt_init();
+    vtp_flag_init();
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     // Save the initial console buffer for later restoration
     SaveConsoleBuffer(&g_cbOrig);
@@ -2891,6 +3482,11 @@ mch_init_c(void)
 
     ui_get_shellsize();
 
+    vtp_init();
+    // Switch to a new alternate screen buffer.
+    if (use_alternate_screen_buffer)
+	vtp_printf("\033[?1049h");
+
 # ifdef MCH_WRITE_DUMP
     fdDump = fopen("dump", "wt");
 
@@ -2911,10 +3507,6 @@ mch_init_c(void)
 # ifdef FEAT_CLIPBOARD
     win_clip_init();
 # endif
-
-    vtp_flag_init();
-    vtp_init();
-    wt_init();
 }
 
 /*
@@ -3013,7 +3605,7 @@ mch_check_win(
     int argc UNUSED,
     char **argv UNUSED)
 {
-    get_exe_name();
+    mch_get_exe_name();
 
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
     return OK;	    // GUI always has a tty
@@ -3104,17 +3696,15 @@ mch_get_host_name(
     WCHAR wszHostName[256 + 1];
     DWORD wcch = ARRAY_LENGTH(wszHostName);
 
-    if (GetComputerNameW(wszHostName, &wcch))
-    {
-	char_u  *p = utf16_to_enc(wszHostName, NULL);
+    if (!GetComputerNameW(wszHostName, &wcch))
+	return;
 
-	if (p != NULL)
-	{
-	    vim_strncpy(s, p, len - 1);
-	    vim_free(p);
-	    return;
-	}
-    }
+    char_u  *p = utf16_to_enc(wszHostName, NULL);
+    if (p == NULL)
+	return;
+
+    vim_strncpy(s, p, len - 1);
+    vim_free(p);
 }
 
 
@@ -3162,32 +3752,30 @@ mch_dirname(
      * But the Win32s known bug list says that getcwd() doesn't work
      * so use the Win32 system call instead. <Negri>
      */
-    if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
+    if (GetCurrentDirectoryW(_MAX_PATH, wbuf) == 0)
+	return FAIL;
+
+    WCHAR   wcbuf[_MAX_PATH + 1];
+    char_u  *p = NULL;
+
+    if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
     {
-	WCHAR   wcbuf[_MAX_PATH + 1];
-	char_u  *p = NULL;
-
-	if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
+	p = utf16_to_enc(wcbuf, NULL);
+	if (STRLEN(p) >= (size_t)len)
 	{
-	    p = utf16_to_enc(wcbuf, NULL);
-	    if (STRLEN(p) >= (size_t)len)
-	    {
-		// long path name is too long, fall back to short one
-		vim_free(p);
-		p = NULL;
-	    }
-	}
-	if (p == NULL)
-	    p = utf16_to_enc(wbuf, NULL);
-
-	if (p != NULL)
-	{
-	    vim_strncpy(buf, p, len - 1);
-	    vim_free(p);
-	    return OK;
+	    // long path name is too long, fall back to short one
+	    VIM_CLEAR(p);
 	}
     }
-    return FAIL;
+    if (p == NULL)
+	p = utf16_to_enc(wbuf, NULL);
+
+    if (p == NULL)
+	return FAIL;
+
+    vim_strncpy(buf, p, len - 1);
+    vim_free(p);
+    return OK;
 }
 
 /*
@@ -3404,14 +3992,14 @@ win32_fileinfo(char_u *fname, BY_HANDLE_FILE_INFORMATION *info)
 	    NULL);		// handle to template file
     vim_free(wn);
 
-    if (hFile != INVALID_HANDLE_VALUE)
-    {
-	if (GetFileInformationByHandle(hFile, info) != 0)
-	    res = FILEINFO_OK;
-	else
-	    res = FILEINFO_INFO_FAIL;
-	CloseHandle(hFile);
-    }
+    if (hFile == INVALID_HANDLE_VALUE)
+	return FILEINFO_READ_FAIL;
+
+    if (GetFileInformationByHandle(hFile, info) != 0)
+	res = FILEINFO_OK;
+    else
+	res = FILEINFO_INFO_FAIL;
+    CloseHandle(hFile);
 
     return res;
 }
@@ -3493,7 +4081,7 @@ mch_writable(char_u *name)
  * the allocated memory.
  */
     int
-mch_can_exe(char_u *name, char_u **path, int use_path)
+mch_can_exe(char_u *name, char_u **path, int use_path UNUSED)
 {
     return executable_exists((char *)name, path, TRUE, TRUE);
 }
@@ -3871,6 +4459,9 @@ ResizeConBuf(
     HANDLE  hConsole,
     COORD   coordScreen)
 {
+    if (use_alternate_screen_buffer)
+	return;
+
     if (!SetConsoleScreenBufferSize(hConsole, coordScreen))
     {
 # ifdef MCH_WRITE_DUMP
@@ -4222,7 +4813,7 @@ sub_process_writer(LPVOID param)
 		      s == NULL ? l : (DWORD)(s - (lp + written)),
 		      &len, NULL);
 	}
-	if (len == (int)l)
+	if (len == l)
 	{
 	    // Finished a line, add a NL, unless this line should not have
 	    // one.
@@ -4272,7 +4863,6 @@ dump_pipe(int	    options,
     int		ret;
     DWORD	len;
     DWORD	toRead;
-    int		repeatCount;
 
     // we query the pipe to see if there is any data to read
     // to avoid to perform a blocking read
@@ -4283,11 +4873,9 @@ dump_pipe(int	    options,
 			&availableBytes,    // available bytes total
 			NULL);		    // byteLeft
 
-    repeatCount = 0;
     // We got real data in the pipe, read it
     while (ret != 0 && availableBytes > 0)
     {
-	repeatCount++;
 	toRead = (DWORD)(BUFLEN - *buffer_off);
 	toRead = availableBytes < toRead ? availableBytes : toRead;
 	ReadFile(g_hChildStd_OUT_Rd, buffer + *buffer_off, toRead , &len, NULL);
@@ -4529,7 +5117,7 @@ mch_system_piped(char *cmd, int options)
 			}
 		    }
 
-		    term_replace_bs_del_keycode(ta_buf, ta_len, len);
+		    len = term_replace_keycodes(ta_buf, ta_len, len);
 
 		    /*
 		     * For pipes: echo the typed characters.  For a pty this
@@ -4743,27 +5331,30 @@ mch_call_shell_terminal(
 
     // Find a window to make "buf" curbuf.
     aucmd_prepbuf(&aco, buf);
-
-    clear_oparg(&oa);
-    while (term_use_loop())
+    if (curbuf == buf)
     {
-	if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	// Only do this when a window was found for "buf".
+	clear_oparg(&oa);
+	while (term_use_loop())
 	{
-	    // If terminal_loop() returns OK we got a key that is handled
-	    // in Normal model. We don't do redrawing anyway.
-	    if (terminal_loop(TRUE) == OK)
+	    if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	    {
+		// If terminal_loop() returns OK we got a key that is handled
+		// in Normal model. We don't do redrawing anyway.
+		if (terminal_loop(TRUE) == OK)
+		    normal_cmd(&oa, TRUE);
+	    }
+	    else
 		normal_cmd(&oa, TRUE);
 	}
-	else
-	    normal_cmd(&oa, TRUE);
+	retval = job->jv_exitval;
+	ch_log(NULL, "system command finished");
+
+	job_unref(job);
+
+	// restore curwin/curbuf and a few other things
+	aucmd_restbuf(&aco);
     }
-    retval = job->jv_exitval;
-    ch_log(NULL, "system command finished");
-
-    job_unref(job);
-
-    // restore curwin/curbuf and a few other things
-    aucmd_restbuf(&aco);
 
     wait_return(TRUE);
     do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
@@ -4785,7 +5376,7 @@ mch_call_shell(
     int		tmode = cur_tmode;
     WCHAR	szShellTitle[512];
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
     // Change the title to reflect that we are in a subshell.
@@ -5145,7 +5736,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 
     if (env != NULL)
     {
-	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&env->dv_hashtab, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -5159,7 +5750,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 		    size_t	lkey = wcslen(wkey);
 		    size_t	lval = wcslen(wval);
 
-		    if (ga_grow(gap, (int)(lkey + lval + 2)) != OK)
+		    if (ga_grow(gap, (int)(lkey + lval + 2)) == FAIL)
 			continue;
 		    for (n = 0; n < lkey; n++)
 			*((WCHAR*)gap->ga_data + gap->ga_len++) = wkey[n];
@@ -5600,12 +6191,12 @@ mch_signal_job(job_T *job, char_u *how)
     void
 mch_clear_job(job_T *job)
 {
-    if (job->jv_status != JOB_FAILED)
-    {
-	if (job->jv_job_object != NULL)
-	    CloseHandle(job->jv_job_object);
-	CloseHandle(job->jv_proc_info.hProcess);
-    }
+    if (job->jv_status == JOB_FAILED)
+	return;
+
+    if (job->jv_job_object != NULL)
+	CloseHandle(job->jv_job_object);
+    CloseHandle(job->jv_proc_info.hProcess);
 }
 #endif
 
@@ -5622,9 +6213,6 @@ termcap_mode_start(void)
 
     if (g_fTermcapMode)
 	return;
-
-    if (!p_rs && USE_VTP)
-	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
 
@@ -5703,9 +6291,12 @@ termcap_mode_end(void)
 # endif
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
-    SetConsoleCursorInfo(g_hConOut, &g_cci);
 
-    if (p_rs || exiting)
+    // Switch back to main screen buffer.
+    if (exiting && use_alternate_screen_buffer)
+	vtp_printf("\033[?1049l");
+
+    if (!USE_WT && (p_rs || exiting))
     {
 	/*
 	 * Clear anything that happens to be on the current line.
@@ -5729,13 +6320,10 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-
-    if (!p_rs && USE_VTP)
-	vtp_printf("\033[?1049l");
-
+    SetConsoleCursorInfo(g_hConOut, &g_cci);
     g_fTermcapMode = FALSE;
 }
-#endif // FEAT_GUI_MSWIN
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
 
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
@@ -5757,7 +6345,7 @@ clear_chars(
     COORD coord,
     DWORD n)
 {
-    if (!USE_VTP)
+    if (!vtp_working)
     {
 	DWORD dwDummy;
 
@@ -5782,7 +6370,7 @@ clear_screen(void)
 {
     g_coord.X = g_coord.Y = 0;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	clear_chars(g_coord, Rows * Columns);
     else
     {
@@ -5801,7 +6389,7 @@ clear_to_end_of_display(void)
 {
     COORD save = g_coord;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	clear_chars(g_coord, (Rows - g_coord.Y - 1)
 					   * Columns + (Columns - g_coord.X));
     else
@@ -5824,7 +6412,7 @@ clear_to_end_of_line(void)
 {
     COORD save = g_coord;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	clear_chars(g_coord, Columns - g_coord.X);
     else
     {
@@ -5955,7 +6543,7 @@ insert_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT)
+    if (vtp_working)
     {
 	COORD coord;
 	int i;
@@ -5997,7 +6585,7 @@ delete_lines(unsigned cLines)
     clip.Bottom = g_srScrollRegion.Bottom;
 
     fill.Char.AsciiChar = ' ';
-    if (!USE_VTP)
+    if (!vtp_working)
 	fill.Attributes = g_attrCurrent;
     else
 	fill.Attributes = g_attrDefault;
@@ -6024,7 +6612,7 @@ delete_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT)
+    if (vtp_working)
     {
 	COORD coord;
 	int i;
@@ -6096,7 +6684,7 @@ textcolor(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
     else
 	vtp_sgr_bulk(wAttr);
@@ -6108,7 +6696,7 @@ textbackground(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0x0f) + ((wAttr & 0x0f) << 4);
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
     else
 	vtp_sgr_bulk(wAttr);
@@ -6121,7 +6709,7 @@ textbackground(WORD wAttr)
     static void
 normvideo(void)
 {
-    if (!USE_VTP)
+    if (!vtp_working)
 	textattr(g_attrDefault);
     else
 	vtp_sgr_bulk(0);
@@ -6197,20 +6785,30 @@ visual_bell(void)
     WORD    attrFlash = ~g_attrCurrent & 0xff;
 
     DWORD   dwDummy;
-    LPWORD  oldattrs = ALLOC_MULT(WORD, Rows * Columns);
+    LPWORD  oldattrs = NULL;
 
-    if (oldattrs == NULL)
-	return;
-    ReadConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
+# ifdef FEAT_TERMGUICOLORS
+    if (!(p_tgc || t_colors >= 256))
+# endif
+    {
+	oldattrs = ALLOC_MULT(WORD, Rows * Columns);
+	if (oldattrs == NULL)
+	    return;
+	ReadConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 			       coordOrigin, &dwDummy);
+    }
+
     FillConsoleOutputAttribute(g_hConOut, attrFlash, Rows * Columns,
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    // wait for 15 msec
-    if (!USE_VTP)
+
+    if (oldattrs != NULL)
+    {
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
-    vim_free(oldattrs);
+	vim_free(oldattrs);
+    }
 }
 
 
@@ -6222,7 +6820,7 @@ cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
 
-    if (USE_VTP)
+    if (vtp_working)
 	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
 
 # ifdef MCH_CURSOR_SHAPE
@@ -6479,7 +7077,7 @@ mch_write(
 	// sequence may be inserted asynchronously.
 	if (len < 0)
 	{
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    return;
 	}
 
@@ -6615,7 +7213,7 @@ mch_write(
 		    p = sp;
 
 		// If restoreFG and FG are connected, the restoreFG can be
-	        // omitted.
+		// omitted.
 		if (sgrn2((sp = sgrnc(p, 39)), 38))
 		    p = sp;
 
@@ -6631,11 +7229,11 @@ notsgr:
 		    else if (argc == 1)
 		    {
 			if (USE_VTP)
-			    textcolor((WORD) arg1);
+			    textcolor((WORD)arg1);
 			else
-			    textattr((WORD) arg1);
+			    textattr((WORD)arg1);
 		    }
-		    else if (USE_VTP)
+		    else if (vtp_working)
 			vtp_sgr_bulks(argc, args);
 		}
 		else if (argc == 2 && *p == 'H')
@@ -6764,6 +7362,21 @@ notsgr:
 		fputc('\n', fdDump);
 	    }
 # endif
+	}
+	else if (s[0] == ESC && len >= 3-1 && s[1] == '[')
+	{
+	    int l = 2;
+
+	    if (isdigit(s[l]))
+		l++;
+	    if (s[l] == ' ' && s[l + 1] == 'q')
+	    {
+		// DECSCUSR (cursor style) sequences
+		if (vtp_working)
+		    vtp_printf("%.*s", l + 2, s);   // Pass through
+		s += l + 2;
+		len -= l + 1;
+	    }
 	}
 	else
 	{
@@ -7327,6 +7940,7 @@ typedef struct _FILE_EA_INFORMATION_ {
     ULONG EaSize;
 } FILE_EA_INFORMATION_, *PFILE_EA_INFORMATION_;
 
+#ifndef PROTO
 typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
 	PHANDLE FileHandle,
 	ACCESS_MASK DesiredAccess,
@@ -7337,10 +7951,10 @@ typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
 typedef NTSTATUS (NTAPI *PfnNtClose)(
 	HANDLE Handle);
 typedef NTSTATUS (NTAPI *PfnNtSetEaFile)(
-	HANDLE           FileHandle,
-	PIO_STATUS_BLOCK IoStatusBlock,
-	PVOID            Buffer,
-	ULONG            Length);
+	HANDLE		    FileHandle,
+	PIO_STATUS_BLOCK    IoStatusBlock,
+	PVOID		    Buffer,
+	ULONG		    Length);
 typedef NTSTATUS (NTAPI *PfnNtQueryEaFile)(
 	HANDLE FileHandle,
 	PIO_STATUS_BLOCK IoStatusBlock,
@@ -7352,10 +7966,10 @@ typedef NTSTATUS (NTAPI *PfnNtQueryEaFile)(
 	PULONG EaIndex,
 	BOOLEAN RestartScan);
 typedef NTSTATUS (NTAPI *PfnNtQueryInformationFile)(
-	HANDLE                 FileHandle,
-	PIO_STATUS_BLOCK       IoStatusBlock,
-	PVOID                  FileInformation,
-	ULONG                  Length,
+	HANDLE			FileHandle,
+	PIO_STATUS_BLOCK	IoStatusBlock,
+	PVOID			FileInformation,
+	ULONG			Length,
 	FILE_INFORMATION_CLASS FileInformationClass);
 typedef VOID (NTAPI *PfnRtlInitUnicodeString)(
 	PUNICODE_STRING DestinationString,
@@ -7367,6 +7981,7 @@ PfnNtSetEaFile pNtSetEaFile = NULL;
 PfnNtQueryEaFile pNtQueryEaFile = NULL;
 PfnNtQueryInformationFile pNtQueryInformationFile = NULL;
 PfnRtlInitUnicodeString pRtlInitUnicodeString = NULL;
+#endif
 
 /*
  * Load ntdll.dll functions.
@@ -7376,32 +7991,32 @@ load_ntdll(void)
 {
     static int	loaded = -1;
 
-    if (loaded == -1)
+    if (loaded != -1)
+	return (BOOL) loaded;
+
+    HMODULE hNtdll = GetModuleHandle("ntdll.dll");
+    if (hNtdll != NULL)
     {
-	HMODULE hNtdll = GetModuleHandle("ntdll.dll");
-	if (hNtdll != NULL)
-	{
-	    pNtOpenFile = (PfnNtOpenFile) GetProcAddress(hNtdll, "NtOpenFile");
-	    pNtClose = (PfnNtClose) GetProcAddress(hNtdll, "NtClose");
-	    pNtSetEaFile = (PfnNtSetEaFile)
-		GetProcAddress(hNtdll, "NtSetEaFile");
-	    pNtQueryEaFile = (PfnNtQueryEaFile)
-		GetProcAddress(hNtdll, "NtQueryEaFile");
-	    pNtQueryInformationFile = (PfnNtQueryInformationFile)
-		GetProcAddress(hNtdll, "NtQueryInformationFile");
-	    pRtlInitUnicodeString = (PfnRtlInitUnicodeString)
-		GetProcAddress(hNtdll, "RtlInitUnicodeString");
-	}
-	if (pNtOpenFile == NULL
-		|| pNtClose == NULL
-		|| pNtSetEaFile == NULL
-		|| pNtQueryEaFile == NULL
-		|| pNtQueryInformationFile == NULL
-		|| pRtlInitUnicodeString == NULL)
-	    loaded = FALSE;
-	else
-	    loaded = TRUE;
+	pNtOpenFile = (PfnNtOpenFile) GetProcAddress(hNtdll, "NtOpenFile");
+	pNtClose = (PfnNtClose) GetProcAddress(hNtdll, "NtClose");
+	pNtSetEaFile = (PfnNtSetEaFile)
+	    GetProcAddress(hNtdll, "NtSetEaFile");
+	pNtQueryEaFile = (PfnNtQueryEaFile)
+	    GetProcAddress(hNtdll, "NtQueryEaFile");
+	pNtQueryInformationFile = (PfnNtQueryInformationFile)
+	    GetProcAddress(hNtdll, "NtQueryInformationFile");
+	pRtlInitUnicodeString = (PfnRtlInitUnicodeString)
+	    GetProcAddress(hNtdll, "RtlInitUnicodeString");
     }
+    if (pNtOpenFile == NULL
+	    || pNtClose == NULL
+	    || pNtSetEaFile == NULL
+	    || pNtQueryEaFile == NULL
+	    || pNtQueryInformationFile == NULL
+	    || pRtlInitUnicodeString == NULL)
+	loaded = FALSE;
+    else
+	loaded = TRUE;
     return (BOOL) loaded;
 }
 
@@ -7457,8 +8072,7 @@ copy_extattr(char_u *from, char_u *to)
 	    if (pNtQueryEaFile(h, &iosb, ea, eainfo.EaSize, FALSE,
 			NULL, 0, NULL, TRUE) != STATUS_SUCCESS)
 	    {
-		vim_free(ea);
-		ea = NULL;
+		VIM_CLEAR(ea);
 	    }
 	}
     }
@@ -7578,11 +8192,11 @@ get_cmd_argsW(char ***argvp)
     void
 free_cmd_argsW(void)
 {
-    if (ArglistW != NULL)
-    {
-	GlobalFree(ArglistW);
-	ArglistW = NULL;
-    }
+    if (ArglistW == NULL)
+	return;
+
+    GlobalFree(ArglistW);
+    ArglistW = NULL;
 }
 
 /*
@@ -7796,6 +8410,12 @@ mch_setenv(char *var, char *value, int x UNUSED)
  * Not stable now.
  */
 #define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
+// Notes:
+// Win 10 22H2 Final is build 19045, it's conpty is widely used.
+// Strangely, 19045 is newer but is a lower build number than the 2020 insider
+// preview which had a build 19587.  And, not sure how stable that was?
+// Win Server 2022 (May 10, 2022) is build 20348, its conpty is widely used.
+// Win 11 starts from build 22000, even though the major version says 10!
 
     static void
 vtp_flag_init(void)
@@ -7816,6 +8436,11 @@ vtp_flag_init(void)
 	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(out, mode) == 0)
 	    vtp_working = 0;
+
+	// VTP uses alternate screen buffer.
+	// But, not if running in a nested terminal
+	use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
+						&& !mch_getenv("VIM_TERMINAL");
     }
 #endif
 
@@ -7842,41 +8467,25 @@ vtp_flag_init(void)
     static void
 vtp_init(void)
 {
-    HMODULE hKerneldll;
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 # ifdef FEAT_TERMGUICOLORS
-    COLORREF fg;
-# endif
-
-    // Use functions supported from Vista
-    hKerneldll = GetModuleHandle("kernel32.dll");
-    if (hKerneldll != NULL)
-    {
-	pGetConsoleScreenBufferInfoEx =
-		(PfnGetConsoleScreenBufferInfoEx)GetProcAddress(
-		hKerneldll, "GetConsoleScreenBufferInfoEx");
-	pSetConsoleScreenBufferInfoEx =
-		(PfnSetConsoleScreenBufferInfoEx)GetProcAddress(
-		hKerneldll, "SetConsoleScreenBufferInfoEx");
-	if (pGetConsoleScreenBufferInfoEx != NULL
-		&& pSetConsoleScreenBufferInfoEx != NULL)
-	    has_csbiex = TRUE;
-    }
-
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
     save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
     save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
     store_console_bg_rgb = save_console_bg_rgb;
     store_console_fg_rgb = save_console_fg_rgb;
 
-# ifdef FEAT_TERMGUICOLORS
+    COLORREF bg;
+    bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
+    bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+    default_console_color_bg = bg;
+
+    COLORREF fg;
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     default_console_color_fg = fg;
 # endif
-
     set_console_color_rgb();
 }
 
@@ -7939,7 +8548,7 @@ vtp_sgr_bulks(
     if (argc == 0)
     {
 	sgrfgr = sgrbgr = -1;
-	vtp_printf("033[m");
+	vtp_printf("\033[m");
 	return;
     }
 
@@ -8062,13 +8671,7 @@ vtp_sgr_bulks(
     static void
 wt_init(void)
 {
-    wt_working = (mch_getenv("WT_SESSION") != NULL);
-}
-
-    int
-use_wt(void)
-{
-    return USE_WT;
+    wt_working = mch_getenv("WT_SESSION") != NULL;
 }
 
 # ifdef FEAT_TERMGUICOLORS
@@ -8087,28 +8690,30 @@ ctermtoxterm(
 set_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
     guicolor_T	fg, bg;
     int		ctermfg, ctermbg;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	return;
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (USE_WT)
+    if (p_tgc || t_colors >= 256)
     {
 	term_fg_rgb_color(fg);
 	term_bg_rgb_color(bg);
 	return;
     }
 
+    if (use_alternate_screen_buffer)
+	return;
+
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
@@ -8117,8 +8722,7 @@ set_console_color_rgb(void)
     store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
     csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8135,6 +8739,7 @@ get_default_console_color(
     guicolor_T guibg = INVALCOLOR;
     int ctermfg = 0;
     int ctermbg = 0;
+    int dummynull = 0;
 
     id = syn_name2id((char_u *)"Normal");
     if (id > 0 && p_tgc)
@@ -8143,9 +8748,11 @@ get_default_console_color(
     {
 	ctermfg = -1;
 	if (id > 0)
-	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	guifg = ctermfg != -1 ? ctermtoxterm(ctermfg)
-						    : default_console_color_fg;
+	    syn_id2cterm_bg(id, &ctermfg, &dummynull);
+	if (ctermfg != -1)
+	    guifg = ctermtoxterm(ctermfg);
+	else
+	    guifg = USE_WT ? INVALCOLOR : default_console_color_fg;
 	cterm_normal_fg_gui_color = guifg;
 	ctermfg = ctermfg < 0 ? 0 : ctermfg;
     }
@@ -8153,12 +8760,13 @@ get_default_console_color(
     {
 	ctermbg = -1;
 	if (id > 0)
-	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	cterm_normal_bg_gui_color = guibg =
-			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
-
-	if (ctermbg < 0)
-	    ctermbg = 0;
+	    syn_id2cterm_bg(id, &dummynull, &ctermbg);
+	if (ctermbg != -1)
+	    guibg = ctermtoxterm(ctermbg);
+	else
+	    guibg = USE_WT ? INVALCOLOR : default_console_color_bg;
+	cterm_normal_bg_gui_color = guibg;
+	ctermbg = ctermbg < 0 ? 0 : ctermbg;
     }
 
     *cterm_fg = ctermfg;
@@ -8175,22 +8783,20 @@ get_default_console_color(
 reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
-
-    if (USE_WT)
+    if (use_alternate_screen_buffer)
 	return;
 
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8201,26 +8807,27 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    if (use_alternate_screen_buffer)
+	return;
+
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)save_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)save_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
     void
 control_console_color_rgb(void)
 {
-    if (USE_VTP)
+    if (vtp_working)
 	set_console_color_rgb();
     else
 	reset_console_color_rgb();
@@ -8274,24 +8881,27 @@ get_conpty_fix_type(void)
     void
 resize_console_buf(void)
 {
+    if (use_alternate_screen_buffer)
+	return;
+
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     COORD coord;
     SMALL_RECT newsize;
 
-    if (GetConsoleScreenBufferInfo(g_hConOut, &csbi))
-    {
-	coord.X = SRWIDTH(csbi.srWindow);
-	coord.Y = SRHEIGHT(csbi.srWindow);
-	SetConsoleScreenBufferSize(g_hConOut, coord);
+    if (!GetConsoleScreenBufferInfo(g_hConOut, &csbi))
+	return;
 
-	newsize.Left = 0;
-	newsize.Top = 0;
-	newsize.Right = coord.X - 1;
-	newsize.Bottom = coord.Y - 1;
-	SetConsoleWindowInfo(g_hConOut, TRUE, &newsize);
+    coord.X = SRWIDTH(csbi.srWindow);
+    coord.Y = SRHEIGHT(csbi.srWindow);
+    SetConsoleScreenBufferSize(g_hConOut, coord);
 
-	SetConsoleScreenBufferSize(g_hConOut, coord);
-    }
+    newsize.Left = 0;
+    newsize.Top = 0;
+    newsize.Right = coord.X - 1;
+    newsize.Bottom = coord.Y - 1;
+    SetConsoleWindowInfo(g_hConOut, TRUE, &newsize);
+
+    SetConsoleScreenBufferSize(g_hConOut, coord);
 }
 #endif
 
@@ -8305,13 +8915,94 @@ GetWin32Error(void)
 	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
     if (oldmsg != NULL)
 	LocalFree(oldmsg);
-    if (msg != NULL)
-    {
-	// remove trailing \r\n
-	char *pcrlf = strstr(msg, "\r\n");
-	if (pcrlf != NULL)
-	    *pcrlf = '\0';
-	oldmsg = msg;
-    }
+    if (msg == NULL)
+	return NULL;
+
+    // remove trailing \r\n
+    char *pcrlf = strstr(msg, "\r\n");
+    if (pcrlf != NULL)
+	*pcrlf = '\0';
+    oldmsg = msg;
     return msg;
 }
+
+#if defined(FEAT_RELTIME) || defined(PROTO)
+static HANDLE   timer_handle;
+static int      timer_active = FALSE;
+
+/*
+ * Calls to start_timeout alternate the return value pointer between the two
+ * entries in timeout_flags. If the previously active timeout is very close to
+ * expiring when start_timeout() is called then a race condition means that the
+ * set_flag() function may still be invoked after the previous timer is
+ * deleted. Ping-ponging between the two flags prevents this causing 'fake'
+ * timeouts.
+ */
+static sig_atomic_t timeout_flags[2];
+static int	    timeout_flag_idx = 0;
+static sig_atomic_t *timeout_flag = &timeout_flags[0];
+
+
+    static void CALLBACK
+set_flag(void *param, BOOLEAN unused2 UNUSED)
+{
+    int *timeout_flag = (int *)param;
+
+    *timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    if (timer_active)
+    {
+	BOOL ret = DeleteTimerQueueTimer(NULL, timer_handle, NULL);
+	timer_active = FALSE;
+	if (!ret && GetLastError() != ERROR_IO_PENDING)
+	{
+	    semsg(_(e_could_not_clear_timeout_str), GetWin32Error());
+	}
+    }
+    *timeout_flag = FALSE;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The period is defined in milliseconds.
+ *
+ * The return value is a pointer to a flag that is initialised to 0.  If the
+ * timeout expires, the flag is set to 1. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it still returns a
+ * valid flag pointer; the flag will remain stuck at zero.
+ */
+    volatile sig_atomic_t *
+start_timeout(long msec)
+{
+    BOOL ret;
+
+    timeout_flag = &timeout_flags[timeout_flag_idx];
+
+    stop_timeout();
+    ret = CreateTimerQueueTimer(
+	    &timer_handle, NULL, set_flag, timeout_flag,
+	    (DWORD)msec, 0, WT_EXECUTEDEFAULT);
+    if (!ret)
+    {
+	semsg(_(e_could_not_set_timeout_str), GetWin32Error());
+    }
+    else
+    {
+	timeout_flag_idx = (timeout_flag_idx + 1) % 2;
+	timer_active = TRUE;
+	*timeout_flag = FALSE;
+    }
+    return timeout_flag;
+}
+#endif

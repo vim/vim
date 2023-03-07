@@ -108,6 +108,7 @@ filemess(
  * READ_STDIN	read from stdin instead of a file
  * READ_BUFFER	read from curbuf instead of a file (converting after reading
  *		stdin)
+ * READ_NOFILE	do not read a file, only trigger BufReadCmd
  * READ_DUMMY	read into a dummy buffer (to check if file contents changed)
  * READ_KEEP_UNDO  don't clear undo info or read it from a file
  * READ_FIFO	read from fifo/socket instead of a file
@@ -216,7 +217,7 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
-    int         eof;
+    int		eof;
 
     au_did_filetype = FALSE; // reset before triggering any autocommands
 
@@ -309,6 +310,11 @@ readfile(
 #endif
 
 	curbuf->b_op_start = orig_start;
+
+	if (flags & READ_NOFILE)
+	    // Return NOTDONE instead of FAIL so that BufEnter can be triggered
+	    // and other operations don't fail.
+	    return NOTDONE;
     }
 
     if ((shortmess(SHM_OVER) || curbuf->b_help) && p_verbose == 0)
@@ -514,9 +520,7 @@ readfile(
 		    // Create a swap file now, so that other Vims are warned
 		    // that we are editing this file.  Don't do this for a
 		    // "nofile" or "nowrite" buffer type.
-#ifdef FEAT_QUICKFIX
 		    if (!bt_dontwrite(curbuf))
-#endif
 		    {
 			check_need_swap(newfile);
 			// SwapExists autocommand may mess things up
@@ -585,6 +589,8 @@ readfile(
 	// correctly set when reading stdin.
 	if (!read_buffer)
 	{
+	    curbuf->b_p_eof = FALSE;
+	    curbuf->b_start_eof = FALSE;
 	    curbuf->b_p_eol = TRUE;
 	    curbuf->b_start_eol = TRUE;
 	}
@@ -595,9 +601,7 @@ readfile(
     // Create a swap file now, so that other Vims are warned that we are
     // editing this file.
     // Don't do this for a "nofile" or "nowrite" buffer type.
-#ifdef FEAT_QUICKFIX
     if (!bt_dontwrite(curbuf))
-#endif
     {
 	check_need_swap(newfile);
 	if (!read_stdin && (curbuf != old_curbuf
@@ -1631,7 +1635,6 @@ retry:
 		 * Do the conversion.
 		 */
 		dst = ptr;
-		size = size;
 		while (size > 0)
 		{
 		    found_bad = FALSE;
@@ -2268,18 +2271,28 @@ failed:
     if (error && read_count == 0)
 	error = FALSE;
 
-    /*
-     * If we get EOF in the middle of a line, note the fact and
-     * complete the line ourselves.
-     * In Dos format ignore a trailing CTRL-Z, unless 'binary' set.
-     */
+    // In Dos format ignore a trailing CTRL-Z, unless 'binary' is set.
+    // In old days the file length was in sector count and the CTRL-Z the
+    // marker where the file really ended.  Assuming we write it to a file
+    // system that keeps file length properly the CTRL-Z should be dropped.
+    // Set the 'endoffile' option so the user can decide what to write later.
+    // In Unix format the CTRL-Z is just another character.
+    if (linerest != 0
+	    && !curbuf->b_p_bin
+	    && fileformat == EOL_DOS
+	    && ptr[-1] == Ctrl_Z)
+    {
+	ptr--;
+	linerest--;
+	if (set_options)
+	    curbuf->b_p_eof = TRUE;
+    }
+
+    // If we get EOF in the middle of a line, note the fact by resetting
+    // 'endofline' and add the line normally.
     if (!error
 	    && !got_int
-	    && linerest != 0
-	    && !(!curbuf->b_p_bin
-		&& fileformat == EOL_DOS
-		&& *line_start == Ctrl_Z
-		&& ptr == line_start + 1))
+	    && linerest != 0)
     {
 	// remember for when writing
 	if (set_options)
@@ -2376,7 +2389,7 @@ failed:
 	    linecnt = 0;
 	if (newfile || read_buffer)
 	{
-	    redraw_curbuf_later(NOT_VALID);
+	    redraw_curbuf_later(UPD_NOT_VALID);
 #ifdef FEAT_DIFF
 	    // After reading the text into the buffer the diff info needs to
 	    // be updated.
@@ -2754,15 +2767,15 @@ set_file_options(int set_options, exarg_T *eap)
     void
 set_forced_fenc(exarg_T *eap)
 {
-    if (eap->force_enc != 0)
-    {
-	char_u *fenc = enc_canonize(eap->cmd + eap->force_enc);
+    if (eap->force_enc == 0)
+	return;
 
-	if (fenc != NULL)
-	    set_string_option_direct((char_u *)"fenc", -1,
-				 fenc, OPT_FREE|OPT_LOCAL, 0);
-	vim_free(fenc);
-    }
+    char_u *fenc = enc_canonize(eap->cmd + eap->force_enc);
+
+    if (fenc != NULL)
+	set_string_option_direct((char_u *)"fenc", -1,
+		fenc, OPT_FREE|OPT_LOCAL, 0);
+    vim_free(fenc);
 }
 
 /*
@@ -3408,9 +3421,7 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
     char_u	*p;
 
     if (buf->b_fname != NULL
-#ifdef FEAT_QUICKFIX
 	    && !bt_nofilename(buf)
-#endif
 	    && !path_with_url(buf->b_fname)
 	    && (force
 		|| buf->b_sfname == NULL
@@ -3819,7 +3830,7 @@ vim_rename(char_u *from, char_u *to)
      * original file will be somewhere else so the backup isn't really
      * important. If autoscripting is off the rename may fail.
      */
-    flock = Lock((UBYTE *)from, (long)ACCESS_READ);
+    flock = Lock((UBYTE *)from, (long)VIM_ACCESS_READ);
 #endif
     mch_remove(to);
 #ifdef AMIGA
@@ -4358,14 +4369,20 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
     int		flags = READ_NEW;
     int		prepped = OK;
 
-    // set curwin/curbuf for "buf" and save some things
+    // Set curwin/curbuf for "buf" and save some things.
     aucmd_prepbuf(&aco, buf);
+    if (curbuf != buf)
+    {
+	// Failed to find a window for "buf", it is dangerous to continue,
+	// better bail out.
+	return;
+    }
 
     // Unless reload_options is set, we only want to read the text from the
     // file, not reset the syntax highlighting, clear marks, diff status, etc.
     // Force the fileformat and encoding to be the same.
     if (reload_options)
-	memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
     else
 	prepped = prep_exarg(&ea, buf);
 
@@ -4747,8 +4764,8 @@ compare_readdirex_item(const void *p1, const void *p2)
 {
     char_u  *name1, *name2;
 
-    name1 = dict_get_string(*(dict_T**)p1, (char_u*)"name", FALSE);
-    name2 = dict_get_string(*(dict_T**)p2, (char_u*)"name", FALSE);
+    name1 = dict_get_string(*(dict_T**)p1, "name", FALSE);
+    name2 = dict_get_string(*(dict_T**)p2, "name", FALSE);
     if (readdirex_sort == READDIR_SORT_BYTE)
 	return STRCMP(name1, name2);
     else if (readdirex_sort == READDIR_SORT_IC)
@@ -4784,7 +4801,7 @@ readdir_core(
     int		withattr UNUSED,
     void	*context,
     int		(*checkitem)(void *context, void *item),
-    int         sort)
+    int		sort)
 {
     int			failed = FALSE;
     char_u		*p;
@@ -5053,12 +5070,11 @@ vim_opentempdir(void)
 	return;
 
     dp = opendir((const char*)vim_tempdir);
+    if (dp == NULL)
+	return;
 
-    if (dp != NULL)
-    {
-	vim_tempdir_dp = dp;
-	flock(dirfd(vim_tempdir_dp), LOCK_SH);
-    }
+    vim_tempdir_dp = dp;
+    flock(dirfd(vim_tempdir_dp), LOCK_SH);
 }
 
 /*
@@ -5067,11 +5083,11 @@ vim_opentempdir(void)
    static void
 vim_closetempdir(void)
 {
-    if (vim_tempdir_dp != NULL)
-    {
-	closedir(vim_tempdir_dp);
-	vim_tempdir_dp = NULL;
-    }
+    if (vim_tempdir_dp == NULL)
+	return;
+
+    closedir(vim_tempdir_dp);
+    vim_tempdir_dp = NULL;
 }
 # endif
 
@@ -5081,16 +5097,16 @@ vim_closetempdir(void)
     void
 vim_deltempdir(void)
 {
-    if (vim_tempdir != NULL)
-    {
+    if (vim_tempdir == NULL)
+	return;
+
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
-	vim_closetempdir();
+    vim_closetempdir();
 # endif
-	// remove the trailing path separator
-	gettail(vim_tempdir)[-1] = NUL;
-	delete_recursive(vim_tempdir);
-	VIM_CLEAR(vim_tempdir);
-    }
+    // remove the trailing path separator
+    gettail(vim_tempdir)[-1] = NUL;
+    delete_recursive(vim_tempdir);
+    VIM_CLEAR(vim_tempdir);
 }
 
 /*
@@ -5104,17 +5120,17 @@ vim_settempdir(char_u *tempdir)
     char_u	*buf;
 
     buf = alloc(MAXPATHL + 2);
-    if (buf != NULL)
-    {
-	if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)
-	    STRCPY(buf, tempdir);
-	add_pathsep(buf);
-	vim_tempdir = vim_strsave(buf);
+    if (buf == NULL)
+	return;
+
+    if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)
+	STRCPY(buf, tempdir);
+    add_pathsep(buf);
+    vim_tempdir = vim_strsave(buf);
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
-	vim_opentempdir();
+    vim_opentempdir();
 # endif
-	vim_free(buf);
-    }
+    vim_free(buf);
 }
 #endif
 
@@ -5405,7 +5421,6 @@ match_file_pat(
     return result;
 }
 
-#if defined(FEAT_WILDIGN) || defined(PROTO)
 /*
  * Return TRUE if a file matches with a pattern in "list".
  * "list" is a comma-separated list of patterns, like 'wildignore'.
@@ -5439,7 +5454,6 @@ match_file_list(char_u *list, char_u *sfname, char_u *ffname)
     }
     return FALSE;
 }
-#endif
 
 /*
  * Convert the given pattern "pat" which has shell style wildcards in it, into

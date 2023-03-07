@@ -8,6 +8,10 @@ func Test_let()
   let Test104#numvar = function('tr')
   call assert_equal("function('tr')", string(Test104#numvar))
 
+  let foo#tr = function('tr')
+  call assert_equal("function('tr')", string(foo#tr))
+  unlet foo#tr
+
   let a = 1
   let b = 2
 
@@ -312,6 +316,7 @@ func Test_let_errors()
   call assert_fails('let l += 2', 'E734:')
   call assert_fails('let g:["a;b"] = 10', 'E461:')
   call assert_fails('let g:.min = function("max")', 'E704:')
+  call assert_fails('let g:cos = "" | let g:.cos = {-> 42}', 'E704:')
   if has('channel')
     let ch = test_null_channel()
     call assert_fails('let ch += 1', 'E734:')
@@ -340,36 +345,31 @@ func Test_let_heredoc_fails()
     let v =<< that there
   endfunc
   END
-  call writefile(text, 'XheredocFail')
+  call writefile(text, 'XheredocFail', 'D')
   call assert_fails('source XheredocFail', 'E1145:')
-  call delete('XheredocFail')
 
   let text =<< trim CodeEnd
   func MissingEnd()
     let v =<< END
   endfunc
   CodeEnd
-  call writefile(text, 'XheredocWrong')
+  call writefile(text, 'XheredocWrong', 'D')
   call assert_fails('source XheredocWrong', 'E1145:')
-  call delete('XheredocWrong')
 
   let text =<< trim TEXTend
     let v =<< " comment
   TEXTend
-  call writefile(text, 'XheredocNoMarker')
+  call writefile(text, 'XheredocNoMarker', 'D')
   call assert_fails('source XheredocNoMarker', 'E172:')
-  call delete('XheredocNoMarker')
 
   let text =<< trim TEXTend
     let v =<< text
   TEXTend
-  call writefile(text, 'XheredocBadMarker')
+  call writefile(text, 'XheredocBadMarker', 'D')
   call assert_fails('source XheredocBadMarker', 'E221:')
-  call delete('XheredocBadMarker')
 
-  call writefile(['let v =<< TEXT', 'abc'], 'XheredocMissingMarker')
+  call writefile(['let v =<< TEXT', 'abc'], 'XheredocMissingMarker', 'D')
   call assert_fails('source XheredocMissingMarker', 'E990:')
-  call delete('XheredocMissingMarker')
 endfunc
 
 func Test_let_heredoc_trim_no_indent_marker()
@@ -387,9 +387,8 @@ func Test_let_interpolated()
   let text = 'text'
   call assert_equal('text{{', $'{text .. "{{"}')
   call assert_equal('text{{', $"{text .. '{{'}")
-  " FIXME: should not need to escape quotes in the expression
-  call assert_equal('text{{', $'{text .. ''{{''}')
-  call assert_equal('text{{', $"{text .. \"{{\"}")
+  call assert_equal('text{{', $'{text .. '{{'}')
+  call assert_equal('text{{', $"{text .. "{{"}")
 endfunc
 
 " Test for the setting a variable using the heredoc syntax.

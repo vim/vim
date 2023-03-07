@@ -154,7 +154,7 @@ test_trunc_string_mbyte(void)
 /*
  * Test vim_snprintf() with a focus on checking that truncation is
  * correct when buffer is small, since it cannot be tested from
- * vim scrip tests. Check that:
+ * vim script tests. Check that:
  * - no buffer overflows happens (with valgrind or asan)
  * - output string is always NUL terminated.
  *
@@ -211,7 +211,6 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-#ifdef FEAT_FLOAT
 	n = vim_snprintf(buf, bsize, "%f", 1.234);
 	assert(n == 8);
 	assert(bsize == 0 || STRNCMP(buf, "1.234000", bsize_int) == 0);
@@ -241,7 +240,6 @@ test_vim_snprintf(void)
 	assert(n == 9);
 	assert(bsize == 0 || STRNCMP(buf, "-0.000000", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
-#endif
 
 	n = vim_snprintf(buf, bsize, "%s", "漢語");
 	assert(n == 6);

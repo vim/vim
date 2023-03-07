@@ -42,11 +42,11 @@ vim_strnsave(char_u *string, size_t len)
     char_u	*p;
 
     p = alloc(len + 1);
-    if (p != NULL)
-    {
-	STRNCPY(p, string, len);
-	p[len] = NUL;
-    }
+    if (p == NULL)
+	return NULL;
+
+    STRNCPY(p, string, len);
+    p[len] = NUL;
     return p;
 }
 
@@ -94,24 +94,23 @@ vim_strsave_escaped_ext(
 	++length;			// count an ordinary char
     }
     escaped_string = alloc(length);
-    if (escaped_string != NULL)
+    if (escaped_string == NULL)
+	return NULL;
+    p2 = escaped_string;
+    for (p = string; *p; p++)
     {
-	p2 = escaped_string;
-	for (p = string; *p; p++)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
-	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	    {
-		mch_memmove(p2, p, (size_t)l);
-		p2 += l;
-		p += l - 1;		// skip multibyte char
-		continue;
-	    }
-	    if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
-		*p2++ = cc;
-	    *p2++ = *p;
+	    mch_memmove(p2, p, (size_t)l);
+	    p2 += l;
+	    p += l - 1;		// skip multibyte char
+	    continue;
 	}
-	*p2 = NUL;
+	if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
+	    *p2++ = cc;
+	*p2++ = *p;
     }
+    *p2 = NUL;
     return escaped_string;
 }
 
@@ -338,12 +337,12 @@ vim_strup(
     char_u  *p2;
     int	    c;
 
-    if (p != NULL)
-    {
-	p2 = p;
-	while ((c = *p2) != NUL)
-	    *p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
-    }
+    if (p == NULL)
+	return;
+
+    p2 = p;
+    while ((c = *p2) != NUL)
+	*p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
@@ -525,6 +524,19 @@ vim_strcat(char_u *to, char_u *from, size_t tosize)
 	mch_memmove(to + tolen, from, fromlen + 1);
 }
 
+/*
+ * A version of strlen() that has a maximum length.
+ */
+    size_t
+vim_strlen_maxlen(char *s, size_t maxlen)
+{
+    size_t i;
+    for (i = 0; i < maxlen; ++i)
+	if (s[i] == NUL)
+	    break;
+    return i;
+}
+
 #if (!defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)) || defined(PROTO)
 /*
  * Compare two strings, ignoring case, using current locale.
@@ -582,7 +594,7 @@ vim_strnicmp(char *s1, char *s2, size_t len)
  * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
  * end of the string.
  */
-    char_u  *
+    char_u *
 vim_strchr(char_u *string, int c)
 {
     char_u	*p;
@@ -747,15 +759,14 @@ concat_str(char_u *str1, char_u *str2)
     size_t  l = str1 == NULL ? 0 : STRLEN(str1);
 
     dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
-    if (dest != NULL)
-    {
-	if (str1 == NULL)
-	    *dest = NUL;
-	else
-	    STRCPY(dest, str1);
-	if (str2 != NULL)
-	    STRCPY(dest + l, str2);
-    }
+    if (dest == NULL)
+	return NULL;
+    if (str1 == NULL)
+	*dest = NUL;
+    else
+	STRCPY(dest, str1);
+    if (str2 != NULL)
+	STRCPY(dest + l, str2);
     return dest;
 }
 
@@ -780,27 +791,27 @@ string_quote(char_u *str, int function)
 		++len;
     }
     s = r = alloc(len);
-    if (r != NULL)
+    if (r == NULL)
+	return NULL;
+
+    if (function)
     {
-	if (function)
-	{
-	    STRCPY(r, "function('");
-	    r += 10;
-	}
-	else
-	    *r++ = '\'';
-	if (str != NULL)
-	    for (p = str; *p != NUL; )
-	    {
-		if (*p == '\'')
-		    *r++ = '\'';
-		MB_COPY_CHAR(p, r);
-	    }
-	*r++ = '\'';
-	if (function)
-	    *r++ = ')';
-	*r++ = NUL;
+	STRCPY(r, "function('");
+	r += 10;
     }
+    else
+	*r++ = '\'';
+    if (str != NULL)
+	for (p = str; *p != NUL; )
+	{
+	    if (*p == '\'')
+		*r++ = '\'';
+	    MB_COPY_CHAR(p, r);
+	}
+    *r++ = '\'';
+    if (function)
+	*r++ = ')';
+    *r++ = NUL;
     return s;
 }
 
@@ -882,6 +893,8 @@ string_filter_map(
     int		len = 0;
     int		idx = 0;
     int		rem;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -889,18 +902,19 @@ string_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
+
     ga_init2(&ga, sizeof(char), 80);
     for (p = str; *p != NUL; p += len)
     {
-	typval_T newtv;
-
 	if (copy_first_char_to_tv(p, &tv) == FAIL)
 	    break;
 	len = (int)STRLEN(tv.vval.v_string);
 
 	newtv.v_type = VAR_UNKNOWN;
 	set_vim_var_nr(VV_KEY, idx);
-	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
 	{
 	    clear_tv(&newtv);
@@ -929,18 +943,19 @@ string_filter_map(
     }
     ga_append(&ga, NUL);
     rettv->vval.v_string = ga.ga_data;
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*
- * reduce() String argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementation of reduce() for String "argvars[0]" using the function "expr"
+ * starting with the optional initial value "argvars[2]" and return the result
+ * in "rettv".
  */
     void
 string_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     char_u	*p = tv_get_string(&argvars[0]);
@@ -948,6 +963,7 @@ string_reduce(
     typval_T	argv[3];
     int		r;
     int		called_emsg_start = called_emsg;
+    funccall_T	*fc;
 
     if (argvars[2].v_type == VAR_UNKNOWN)
     {
@@ -960,13 +976,13 @@ string_reduce(
 	    return;
 	p += STRLEN(rettv->vval.v_string);
     }
-    else if (argvars[2].v_type != VAR_STRING)
-    {
-	semsg(_(e_string_expected_for_argument_nr), 3);
+    else if (check_for_string_arg(argvars, 2) == FAIL)
 	return;
-    }
     else
 	copy_tv(&argvars[2], rettv);
+
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, rettv);
 
     for ( ; *p != NUL; p += len)
     {
@@ -974,12 +990,17 @@ string_reduce(
 	if (copy_first_char_to_tv(p, &argv[1]) == FAIL)
 	    break;
 	len = (int)STRLEN(argv[1].vval.v_string);
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, fc, rettv);
+
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    return;
     }
+
+    if (fc != NULL)
+	remove_funccal();
 }
 
     static void
@@ -1047,20 +1068,10 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+    if ((check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL
 		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
-
-    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_NUMBER
-	    || (argvars[2].v_type != VAR_UNKNOWN
-					   && argvars[2].v_type != VAR_NUMBER
-					   && argvars[2].v_type != VAR_BOOL))
-    {
-	emsg(_(e_invalid_argument));
-	return;
-    }
 
     str = tv_get_string_chk(&argvars[0]);
     idx = tv_get_number_chk(&argvars[1], NULL);
@@ -1177,7 +1188,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	case 8: what |= STR2NR_OCT + STR2NR_OOCT + STR2NR_FORCE; break;
 	case 16: what |= STR2NR_HEX + STR2NR_FORCE; break;
     }
-    vim_str2nr(p, NULL, NULL, what, &n, NULL, 0, FALSE);
+    vim_str2nr(p, NULL, NULL, what, &n, NULL, 0, FALSE, NULL);
     // Text after the number is silently ignored.
     if (isneg)
 	rettv->vval.v_number = -n;
@@ -1783,11 +1794,8 @@ f_trim(typval_T *argvars, typval_T *rettv)
     if (head == NULL)
 	return;
 
-    if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_STRING)
-    {
-	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
+    if (check_for_opt_string_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type == VAR_STRING)
     {
@@ -1911,7 +1919,6 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
     return s;
 }
 
-# ifdef FEAT_FLOAT
 /*
  * Get float argument from "idxp" entry in "tvs".  First entry is 1.
  */
@@ -1935,11 +1942,9 @@ tv_float(typval_T *tvs, int *idxp)
     }
     return f;
 }
-# endif
 
 #endif
 
-#ifdef FEAT_FLOAT
 /*
  * Return the representation of infinity for printf() function:
  * "-inf", "inf", "+inf", " inf", "-INF", "INF", "+INF" or " INF".
@@ -1961,7 +1966,6 @@ infinity_str(int positive,
 	idx += 4;
     return table[idx];
 }
-#endif
 
 /*
  * This code was included to provide a portable vsnprintf() and snprintf().
@@ -2095,13 +2099,9 @@ vim_vsnprintf_typval(
 	    char    length_modifier = '\0';
 
 	    // temporary buffer for simple numeric->string conversion
-# if defined(FEAT_FLOAT)
-#  define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
+# define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
 			// That sounds reasonable to use as the maximum
 			// printable.
-# else
-#  define TMP_LEN 66
-# endif
 	    char    tmp[TMP_LEN];
 
 	    // string address in case of string argument
@@ -2653,7 +2653,6 @@ vim_vsnprintf_typval(
 		    break;
 		}
 
-# ifdef FEAT_FLOAT
 	    case 'f':
 	    case 'F':
 	    case 'e':
@@ -2669,9 +2668,9 @@ vim_vsnprintf_typval(
 		    int		remove_trailing_zeroes = FALSE;
 
 		    f =
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 			tvs != NULL ? tv_float(tvs, &arg_idx) :
-#  endif
+# endif
 			    va_arg(ap, double);
 		    abs_f = f < 0 ? -f : f;
 
@@ -2688,11 +2687,11 @@ vim_vsnprintf_typval(
 		    }
 
 		    if ((fmt_spec == 'f' || fmt_spec == 'F') &&
-#  ifdef VAX
+# ifdef VAX
 			    abs_f > 1.0e38
-#  else
+# else
 			    abs_f > 1.0e307
-#  endif
+# endif
 			    )
 		    {
 			// Avoid a buffer overflow
@@ -2817,7 +2816,6 @@ vim_vsnprintf_typval(
 		    str_arg = tmp;
 		    break;
 		}
-# endif
 
 	    default:
 		// unrecognized conversion specifier, keep format string

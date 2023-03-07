@@ -1,4 +1,4 @@
-README.txt for version 8.2 of Vim: Vi IMproved.
+README.txt for version 9.0 of Vim: Vi IMproved.
 
 
 WHAT IS VIM?
@@ -16,10 +16,10 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
-Vim runs under MS-Windows (XP, Vista, 7, 8, 10), macOS, VMS and almost all
+Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS and almost all
 flavours of UNIX.  Porting to other systems should not be very difficult.
-Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000, Amiga DOS,
-Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
+Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000/XP/Vista,
+Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
 
 
 DISTRIBUTION
@@ -84,7 +84,7 @@ encouraged to make a donation to help orphans in Uganda.  Please read the file
 
 Summary of the license: There are no restrictions on using or distributing an
 unmodified copy of Vim.  Parts of Vim may also be distributed, but the license
-text must always be included.  For modified versions a few restrictions apply.
+text must always be included.  For modified versions, a few restrictions apply.
 The license is GPL compatible, you may compile Vim with GPL libraries and
 distribute it.
 
@@ -106,7 +106,7 @@ For the most recent information about sponsoring look on the Vim web site:
 
 CONTRIBUTING
 
-If you would like to help making Vim better, see the CONTRIBUTING.md file.
+If you would like to help make Vim better, see the CONTRIBUTING.md file.
 
 
 INFORMATION

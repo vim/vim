@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 8.2.  Last change: 2019 May 23
+*usr_05.txt*	For Vim version 9.0.  Last change: 2019 May 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -409,7 +409,7 @@ an archive or as a repository.  For an archive you can follow these steps:
 	   package.
 	2. unpack the archive in that directory.  This assumes the top
 	   directory in the archive is "start": >
-	   	cd ~/.vim/pack/fancy
+		cd ~/.vim/pack/fancy
 		unzip /tmp/fancy.zip
 <	   If the archive layout is different make sure that you end up with a
 	   path like this:

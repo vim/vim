@@ -483,6 +483,18 @@ func Test_visual_block_put()
   bw!
 endfunc
 
+func Test_visual_block_put_invalid()
+  enew!
+  behave mswin
+  norm yy
+  norm v)Ps/^/	
+  " this was causing the column to become negative
+  silent norm ggv)P
+
+  bwipe!
+  behave xterm
+endfunc
+
 " Visual modes (v V CTRL-V) followed by an operator; count; repeating
 func Test_visual_mode_op()
   new
@@ -1155,8 +1167,8 @@ endfunc
 func Test_visual_put_in_block_using_zp()
   new
   " paste using zP
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
-    \ '/subdir', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
+    \ '/subdir',
     \ '/longsubdir',
     \ '/longlongsubdir'])
   exe "normal! 5G\<c-v>2j$y"
@@ -1164,8 +1176,8 @@ func Test_visual_put_in_block_using_zp()
   call assert_equal(['/path/subdir;text', '/path/longsubdir;text', '/path/longlongsubdir;text'], getline(1, 3))
   %d
   " paste using zP
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
-    \ '/subdir', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
+    \ '/subdir',
     \ '/longsubdir',
     \ '/longlongsubdir'])
   exe "normal! 5G\<c-v>2j$y"
@@ -1178,7 +1190,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
   new
 
   " Test 1) Paste using zp - after the cursor without trailing spaces
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1188,7 +1200,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 2) Paste using zP - in front of the cursor without trailing spaces
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1198,7 +1210,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 3) Paste using p - with trailing spaces
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1208,7 +1220,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 4) Paste using P - with trailing spaces
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1218,7 +1230,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 5) Yank with spaces inside the block
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /sub    dir/           columntext',
     \ 'texttext  /lon    gsubdir/       columntext',
     \ 'texttext  /lon    glongsubdir/   columntext'])
@@ -1262,7 +1274,7 @@ func Test_visual_block_with_virtualedit()
     set virtualedit=block
     normal G
   END
-  call writefile(lines, 'XTest_block')
+  call writefile(lines, 'XTest_block', 'D')
 
   let buf = RunVimInTerminal('-S XTest_block', {'rows': 8, 'cols': 50})
   call term_sendkeys(buf, "\<C-V>gg$")
@@ -1274,11 +1286,10 @@ func Test_visual_block_with_virtualedit()
   " clean up
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('XTest_block')
 endfunc
 
 func Test_visual_block_ctrl_w_f()
-  " Emtpy block selected in new buffer should not result in an error.
+  " Empty block selected in new buffer should not result in an error.
   au! BufNew foo sil norm f
   edit foo
 
@@ -1296,7 +1307,28 @@ func Test_visual_block_append_invalid_char()
   set isprint&
 endfunc
 
+func Test_visual_block_with_substitute()
+  " this was reading beyond the end of the line
+  new
+  norm a0)
+  sil! norm  O
+  s/)
+  sil! norm 
+  bwipe!
+endfunc
+
 func Test_visual_reselect_with_count()
+  enew
+  call setline(1, ['aaaaaa', '✗ bbbb', '✗ bbbb'])
+  exe "normal! 2Gw\<C-V>jed"
+  exe "normal! gg0lP"
+  call assert_equal(['abbbbaaaaa', '✗bbbb ', '✗ '], getline(1, '$'))
+
+  exe "normal! 1vr."
+  call assert_equal(['a....aaaaa', '✗.... ', '✗ '], getline(1, '$'))
+
+  bwipe!
+
   " this was causing an illegal memory access
   let lines =<< trim END
 
@@ -1309,11 +1341,22 @@ func Test_visual_reselect_with_count()
 
       :
   END
-  call writefile(lines, 'XvisualReselect')
+  call writefile(lines, 'XvisualReselect', 'D')
   source XvisualReselect
 
   bwipe!
-  call delete('XvisualReselect')
+endfunc
+
+func Test_visual_reselect_exclusive()
+  new
+  call setline(1, ['abcde', 'abcde'])
+  set selection=exclusive
+  normal 1G0viwd
+  normal 2G01vd
+  call assert_equal(['', ''], getline(1, 2))
+
+  set selection&
+  bwipe!
 endfunc
 
 func Test_visual_block_insert_round_off()
@@ -1457,6 +1500,58 @@ func Test_visual_paste_clipboard()
     set guioptions&
   endif
   bwipe!
+endfunc
+
+func Test_visual_area_adjusted_when_hiding()
+  " The Visual area ended after the end of the line after :hide
+  call setline(1, 'xxx')
+  vsplit Xvaafile
+  call setline(1, 'xxxxxxxx')
+  norm! $o
+  hid
+  norm! zW
+  bwipe!
+  bwipe!
+endfunc
+
+func Test_switch_buffer_ends_visual_mode()
+  enew
+  call setline(1, 'foo')
+  set hidden
+  set virtualedit=all
+  let buf1 = bufnr()
+  enew
+  let buf2 = bufnr()
+  call setline(1, ['', '', '', ''])
+  call cursor(4, 5)
+  call feedkeys("\<C-V>3k4h", 'xt')
+  exe 'buffer' buf1
+  call assert_equal('n', mode())
+
+  set nohidden
+  set virtualedit=
+  bwipe!
+  exe 'bwipe!' buf2
+endfunc
+
+" Check fix for the heap-based buffer overflow bug found in the function
+" utfc_ptr2len and reported at
+" https://huntr.dev/bounties/ae933869-a1ec-402a-bbea-d51764c6618e
+func Test_heap_buffer_overflow()
+  enew
+  set updatecount=0
+
+  norm R0
+  split other
+  norm R000
+  exe "norm \<C-V>l"
+  ball
+  call assert_equal(getpos("."), getpos("v"))
+  call assert_equal('n', mode())
+  norm zW
+
+  %bwipe!
+  set updatecount&
 endfunc
 
 

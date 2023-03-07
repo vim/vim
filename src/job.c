@@ -74,32 +74,31 @@ clear_job_options(jobopt_T *opt)
     CLEAR_POINTER(opt);
 }
 
+    static void
+unref_job_callback(callback_T *cb)
+{
+    if (cb->cb_partial != NULL)
+	partial_unref(cb->cb_partial);
+    else if (cb->cb_name != NULL)
+    {
+	func_unref(cb->cb_name);
+	if (cb->cb_free_name)
+	    vim_free(cb->cb_name);
+    }
+}
+
 /*
  * Free any members of a jobopt_T.
  */
     void
 free_job_options(jobopt_T *opt)
 {
-    if (opt->jo_callback.cb_partial != NULL)
-	partial_unref(opt->jo_callback.cb_partial);
-    else if (opt->jo_callback.cb_name != NULL)
-	func_unref(opt->jo_callback.cb_name);
-    if (opt->jo_out_cb.cb_partial != NULL)
-	partial_unref(opt->jo_out_cb.cb_partial);
-    else if (opt->jo_out_cb.cb_name != NULL)
-	func_unref(opt->jo_out_cb.cb_name);
-    if (opt->jo_err_cb.cb_partial != NULL)
-	partial_unref(opt->jo_err_cb.cb_partial);
-    else if (opt->jo_err_cb.cb_name != NULL)
-	func_unref(opt->jo_err_cb.cb_name);
-    if (opt->jo_close_cb.cb_partial != NULL)
-	partial_unref(opt->jo_close_cb.cb_partial);
-    else if (opt->jo_close_cb.cb_name != NULL)
-	func_unref(opt->jo_close_cb.cb_name);
-    if (opt->jo_exit_cb.cb_partial != NULL)
-	partial_unref(opt->jo_exit_cb.cb_partial);
-    else if (opt->jo_exit_cb.cb_name != NULL)
-	func_unref(opt->jo_exit_cb.cb_name);
+    unref_job_callback(&opt->jo_callback);
+    unref_job_callback(&opt->jo_out_cb);
+    unref_job_callback(&opt->jo_err_cb);
+    unref_job_callback(&opt->jo_close_cb);
+    unref_job_callback(&opt->jo_exit_cb);
+
     if (opt->jo_env != NULL)
 	dict_unref(opt->jo_env);
 }
@@ -141,7 +140,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	return OK;
 
     todo = (int)dict->dv_hashtab.ht_used;
-    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    item = &dict_lookup(hi)->di_tv;
@@ -222,7 +221,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_io_buf[part] = tv_get_number(item);
 		if (opt->jo_io_buf[part] <= 0)
 		{
-		    semsg(_(e_invalid_value_for_argument_str_str), hi->hi_key, tv_get_string(item));
+		    semsg(_(e_invalid_value_for_argument_str_str),
+					      hi->hi_key, tv_get_string(item));
 		    return FAIL;
 		}
 		if (buflist_findnr(opt->jo_io_buf[part]) == NULL)
@@ -530,7 +530,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		}
 		// Allow empty string, "winpty", "conpty".
 		if (!(*p == NUL || STRCMP(p, "winpty") == 0
-					          || STRCMP(p, "conpty") == 0))
+						  || STRCMP(p, "conpty") == 0))
 		{
 		    semsg(_(e_invalid_value_for_argument_str), "tty_type");
 		    return FAIL;
@@ -548,13 +548,13 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    break;
 
 		if (item == NULL || item->v_type != VAR_LIST
-			|| item->vval.v_list == NULL)
+			|| item->vval.v_list == NULL
+			|| item->vval.v_list->lv_first == &range_list_item)
 		{
 		    semsg(_(e_invalid_value_for_argument_str), "ansi_colors");
 		    return FAIL;
 		}
 
-		CHECK_LIST_MATERIALIZE(item->vval.v_list);
 		li = item->vval.v_list->lv_first;
 		for (; li != NULL && n < 16; li = li->li_next, n++)
 		{
@@ -793,11 +793,11 @@ job_free_job(job_T *job)
     static void
 job_free(job_T *job)
 {
-    if (!in_free_unref_items)
-    {
-	job_free_contents(job);
-	job_free_job(job);
-    }
+    if (in_free_unref_items)
+	return;
+
+    job_free_contents(job);
+    job_free_job(job);
 }
 
 static job_T *jobs_to_free = NULL;
@@ -885,7 +885,7 @@ job_still_useful(job_T *job)
  * Return TRUE when there is any running job that we care about.
  */
     int
-job_any_running()
+job_any_running(void)
 {
     job_T	*job;
 
@@ -1087,28 +1087,28 @@ set_ref_in_job(int copyID)
     void
 job_unref(job_T *job)
 {
-    if (job != NULL && --job->jv_refcount <= 0)
+    if (job == NULL || --job->jv_refcount > 0)
+	return;
+
+    // Do not free the job if there is a channel where the close callback
+    // may get the job info.
+    if (job_channel_still_useful(job))
+	return;
+
+    // Do not free the job when it has not ended yet and there is a
+    // "stoponexit" flag or an exit callback.
+    if (!job_need_end_check(job))
     {
-	// Do not free the job if there is a channel where the close callback
-	// may get the job info.
-	if (!job_channel_still_useful(job))
-	{
-	    // Do not free the job when it has not ended yet and there is a
-	    // "stoponexit" flag or an exit callback.
-	    if (!job_need_end_check(job))
-	    {
-		job_free(job);
-	    }
-	    else if (job->jv_channel != NULL)
-	    {
-		// Do remove the link to the channel, otherwise it hangs
-		// around until Vim exits. See job_free() for refcount.
-		ch_log(job->jv_channel, "detaching channel from job");
-		job->jv_channel->ch_job = NULL;
-		channel_unref(job->jv_channel);
-		job->jv_channel = NULL;
-	    }
-	}
+	job_free(job);
+    }
+    else if (job->jv_channel != NULL)
+    {
+	// Do remove the link to the channel, otherwise it hangs
+	// around until Vim exits. See job_free() for refcount.
+	ch_log(job->jv_channel, "detaching channel from job");
+	job->jv_channel->ch_job = NULL;
+	channel_unref(job->jv_channel);
+	job->jv_channel = NULL;
     }
 }
 
@@ -1157,18 +1157,18 @@ job_alloc(void)
     job_T *job;
 
     job = ALLOC_CLEAR_ONE(job_T);
-    if (job != NULL)
-    {
-	job->jv_refcount = 1;
-	job->jv_stoponexit = vim_strsave((char_u *)"term");
+    if (job == NULL)
+	return NULL;
 
-	if (first_job != NULL)
-	{
-	    first_job->jv_prev = job;
-	    job->jv_next = first_job;
-	}
-	first_job = job;
+    job->jv_refcount = 1;
+    job->jv_stoponexit = vim_strsave((char_u *)"term");
+
+    if (first_job != NULL)
+    {
+	first_job->jv_prev = job;
+	job->jv_next = first_job;
     }
+    first_job = job;
     return job;
 }
 
@@ -1655,7 +1655,7 @@ init_prompt(int cmdchar_todo)
  * Return TRUE if the cursor is in the editable position of the prompt line.
  */
     int
-prompt_curpos_editable()
+prompt_curpos_editable(void)
 {
     return curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count
 	&& curwin->w_cursor.col >= (int)STRLEN(prompt_text());
@@ -1686,6 +1686,8 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 
     free_callback(&buf->b_prompt_callback);
     set_callback(&buf->b_prompt_callback, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
 }
 
 /*
@@ -1713,6 +1715,8 @@ f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
 
     free_callback(&buf->b_prompt_interrupt);
     set_callback(&buf->b_prompt_interrupt, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
 }
 
 
@@ -1799,13 +1803,13 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
 	return;
 
     job = get_job_arg(&argvars[0]);
-    if (job != NULL)
-    {
-	rettv->v_type = VAR_CHANNEL;
-	rettv->vval.v_channel = job->jv_channel;
-	if (job->jv_channel != NULL)
-	    ++job->jv_channel->ch_refcount;
-    }
+    if (job == NULL)
+	return;
+
+    rettv->v_type = VAR_CHANNEL;
+    rettv->vval.v_channel = job->jv_channel;
+    if (job->jv_channel != NULL)
+	++job->jv_channel->ch_refcount;
 }
 
 /*
@@ -1851,13 +1855,13 @@ job_info(job_T *job, dict_T *dict)
 #endif
 
     l = list_alloc();
-    if (l != NULL)
-    {
-	dict_add_list(dict, "cmd", l);
-	if (job->jv_argv != NULL)
-	    for (i = 0; job->jv_argv[i] != NULL; i++)
-		list_append_string(l, (char_u *)job->jv_argv[i], -1);
-    }
+    if (l == NULL)
+	return;
+
+    dict_add_list(dict, "cmd", l);
+    if (job->jv_argv != NULL)
+	for (i = 0; job->jv_argv[i] != NULL; i++)
+	    list_append_string(l, (char_u *)job->jv_argv[i], -1);
 }
 
 /*
@@ -1893,7 +1897,7 @@ f_job_info(typval_T *argvars, typval_T *rettv)
 	job_T	*job;
 
 	job = get_job_arg(&argvars[0]);
-	if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
+	if (job != NULL && rettv_dict_alloc(rettv) == OK)
 	    job_info(job, rettv->vval.v_dict);
     }
     else if (rettv_list_alloc(rettv) == OK)

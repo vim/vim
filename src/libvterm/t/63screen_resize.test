@@ -28,20 +28,20 @@ PUSH "E"
 RESET
 RESIZE 25,80
 PUSH "Top\e[10HLine 10"
-  ?screen_chars 0,0,1,80 = "Top"
-  ?screen_chars 9,0,10,80 = "Line 10"
+  ?screen_row 0 = "Top"
+  ?screen_row 9 = "Line 10"
   ?cursor = 9,7
 RESIZE 20,80
-  ?screen_chars 0,0,1,80 = "Top"
-  ?screen_chars 9,0,10,80 = "Line 10"
+  ?screen_row 0 = "Top"
+  ?screen_row 9 = "Line 10"
   ?cursor = 9,7
 
 !Resize shorter with content must scroll
 RESET
 RESIZE 25,80
 PUSH "Top\e[25HLine 25\e[15H"
-  ?screen_chars 0,0,1,80 = "Top"
-  ?screen_chars 24,0,25,80 = "Line 25"
+  ?screen_row 0 = "Top"
+  ?screen_row 24 = "Line 25"
   ?cursor = 14,0
 WANTSCREEN b
 RESIZE 20,80
@@ -50,8 +50,8 @@ RESIZE 20,80
   sb_pushline 80 =
   sb_pushline 80 =
   sb_pushline 80 =
-  ?screen_chars 0,0,1,80 = 
-  ?screen_chars 19,0,20,80 = "Line 25"
+  ?screen_row 0  = ""
+  ?screen_row 19 = "Line 25"
   ?cursor = 9,0
 
 !Resize shorter does not lose line with cursor
@@ -62,11 +62,11 @@ RESIZE 25,80
 WANTSCREEN b
 PUSH "\e[24HLine 24\r\nLine 25\r\n"
   sb_pushline 80 =
-  ?screen_chars 23,0,24,10 = "Line 25"
+  ?screen_row 23 = "Line 25"
   ?cursor = 24,0
 RESIZE 24,80
   sb_pushline 80 =
-  ?screen_chars 22,0,23,10 = "Line 25"
+  ?screen_row 22 = "Line 25"
   ?cursor = 23,0
 
 !Resize shorter does not send the cursor to a negative row
@@ -90,8 +90,8 @@ RESET
 WANTSCREEN -b
 RESIZE 25,80
 PUSH "Line 1\e[25HBottom\e[15H"
-  ?screen_chars 0,0,1,80 = "Line 1"
-  ?screen_chars 24,0,25,80 = "Bottom"
+  ?screen_row 0  = "Line 1"
+  ?screen_row 24 = "Bottom"
   ?cursor = 14,0
 WANTSCREEN b
 RESIZE 30,80
@@ -100,9 +100,9 @@ RESIZE 30,80
   sb_popline 80
   sb_popline 80
   sb_popline 80
-  ?screen_chars 0,0,1,80 = "ABCDE"
-  ?screen_chars 5,0,6,80 = "Line 1"
-  ?screen_chars 29,0,30,80 = "Bottom"
+  ?screen_row 0  = "ABCDE"
+  ?screen_row 5  = "Line 1"
+  ?screen_row 29 = "Bottom"
   ?cursor = 19,0
 WANTSCREEN -b
 
@@ -112,6 +112,6 @@ WANTSCREEN a
 RESIZE 25,80
 PUSH "Main screen\e[?1049h\e[HAlt screen"
 RESIZE 30,80
-  ?screen_chars 0,0,1,3 = "Alt"
+  ?screen_row 0 = "Alt screen"
 PUSH "\e[?1049l"
-  ?screen_chars 0,0,1,3 = "Mai"
+  ?screen_row 0 = "Main screen"

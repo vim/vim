@@ -73,6 +73,10 @@ typedef struct {
 							char_u *p2, int last);
 } cryptmethod_T;
 
+static int crypt_sodium_init_(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+
 // index is method_nr of cryptstate_T, CRYPT_M_*
 static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
     // PK_Zip; very weak
@@ -141,7 +145,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 #endif
 	FALSE,
 	NULL,
-	crypt_sodium_init,
+	crypt_sodium_init_,
 	NULL, NULL,
 	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
 	NULL, NULL,
@@ -151,7 +155,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
     // to avoid that a text file is recognized as encrypted.
 };
 
-#ifdef FEAT_SODIUM
+#if defined(FEAT_SODIUM) || defined(PROTO)
 typedef struct {
     size_t	    count;
     unsigned char   key[crypto_box_SEEDBYTES];
@@ -194,6 +198,7 @@ typedef struct {
     dll_crypto_secretstream_xchacha20poly1305_pull
 #  define crypto_pwhash	    dll_crypto_pwhash
 #  define randombytes_buf   dll_randombytes_buf
+#  define randombytes_random dll_randombytes_random
 
 static int (*dll_sodium_init)(void) = NULL;
 static void (*dll_sodium_free)(void *) = NULL;
@@ -227,6 +232,7 @@ static int (*dll_crypto_pwhash)(unsigned char * const out,
     unsigned long long opslimit, size_t memlimit, int alg)
     = NULL;
 static void (*dll_randombytes_buf)(void * const buf, const size_t size);
+static uint32_t (*dll_randombytes_random)(void);
 
 static struct {
     const char *name;
@@ -244,6 +250,7 @@ static struct {
     {"crypto_secretstream_xchacha20poly1305_pull", (SODIUM_PROC*)&dll_crypto_secretstream_xchacha20poly1305_pull},
     {"crypto_pwhash", (SODIUM_PROC*)&dll_crypto_pwhash},
     {"randombytes_buf", (SODIUM_PROC*)&dll_randombytes_buf},
+    {"randombytes_random", (SODIUM_PROC*)&dll_randombytes_random},
     {NULL, NULL}
 };
 
@@ -389,7 +396,7 @@ crypt_get_header_len(int method_nr)
  * Get maximum crypt method specific length of the file header in bytes.
  */
     int
-crypt_get_max_header_len()
+crypt_get_max_header_len(void)
 {
     int i;
     int max = 0;
@@ -452,8 +459,8 @@ crypt_create(
     if (cryptmethods[method_nr].init_fn(
 	state, key, salt, salt_len, seed, seed_len) == FAIL)
     {
-        vim_free(state);
-        return NULL;
+	vim_free(state);
+	return NULL;
     }
     return state;
 }
@@ -692,7 +699,7 @@ crypt_encode_inplace(
     cryptstate_T *state,
     char_u	*buf,
     size_t	len,
-    int         last)
+    int		last)
 {
     cryptmethods[state->method_nr].encode_inplace_fn(state, buf, len,
 								    buf, last);
@@ -850,8 +857,8 @@ crypt_append_msg(
     }
 }
 
-    int
-crypt_sodium_init(
+    static int
+crypt_sodium_init_(
     cryptstate_T	*state UNUSED,
     char_u		*key UNUSED,
     char_u		*salt UNUSED,
@@ -1030,7 +1037,7 @@ fail:
  * Encrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
  */
-    long
+    static long
 crypt_sodium_buffer_encode(
     cryptstate_T *state UNUSED,
     char_u	*from UNUSED,
@@ -1080,7 +1087,7 @@ crypt_sodium_buffer_encode(
  * Decrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
  */
-    long
+    static long
 crypt_sodium_buffer_decode(
     cryptstate_T *state UNUSED,
     char_u	*from UNUSED,
@@ -1138,6 +1145,18 @@ crypt_sodium_munlock(void *const addr, const size_t len)
 crypt_sodium_randombytes_buf(void *const buf, const size_t size)
 {
     randombytes_buf(buf, size);
+}
+
+    int
+crypt_sodium_init(void)
+{
+    return sodium_init();
+}
+
+    uint32_t
+crypt_sodium_randombytes_random(void)
+{
+    return randombytes_random();
 }
 # endif
 

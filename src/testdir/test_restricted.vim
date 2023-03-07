@@ -101,7 +101,7 @@ func Test_restricted_mode()
     call writefile(v:errors, 'Xresult')
     qa!
   END
-  call writefile(lines, 'Xrestricted')
+  call writefile(lines, 'Xrestricted', 'D')
   if RunVim([], [], '-Z --clean -S Xrestricted')
     call assert_equal([], readfile('Xresult'))
   endif
@@ -114,7 +114,6 @@ func Test_restricted_mode()
     call assert_equal([], readfile('Xresult'))
   endif
 
-  call delete('Xrestricted')
   call delete('Xresult')
 endfunc
 

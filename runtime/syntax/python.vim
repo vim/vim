@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2021 Dec 10
+" Last Change:	2023 Feb 26
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "
@@ -35,9 +35,23 @@
 "
 "   let python_highlight_all = 1
 "
+" The use of Python 2 compatible syntax highlighting can be enforced.
+" The straddling code (Python 2 and 3 compatible), up to Python 3.5,
+" will be also supported.
+"
+"   let python_use_python2_syntax = 1
+"
+" This option will exclude all modern Python 3.6 or higher features.
+"
 
 " quit when a syntax file was already loaded.
 if exists("b:current_syntax")
+  finish
+endif
+
+" Use of Python 2 and 3.5 or lower requested.
+if exists("python_use_python2_syntax")
+  runtime! syntax/python2.vim
   finish
 endif
 
@@ -84,12 +98,18 @@ syn keyword pythonStatement	as assert break continue del global
 syn keyword pythonStatement	lambda nonlocal pass return with yield
 syn keyword pythonStatement	class def nextgroup=pythonFunction skipwhite
 syn keyword pythonConditional	elif else if
-syn keyword pythonConditional	case match
 syn keyword pythonRepeat	for while
 syn keyword pythonOperator	and in is not or
 syn keyword pythonException	except finally raise try
 syn keyword pythonInclude	from import
 syn keyword pythonAsync		async await
+
+" Soft keywords
+" These keywords do not mean anything unless used in the right context.
+" See https://docs.python.org/3/reference/lexical_analysis.html#soft-keywords
+" for more on this.
+syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
+syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
 
 " Decorators
 " A dot must be allowed because of @MyClass.myfunc decorators.

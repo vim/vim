@@ -1,12 +1,13 @@
 /* vim9compile.c */
 int lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx);
 int arg_exists(char_u *name, size_t len, int *idxp, type_T **type, int *gen_load_outer, cctx_T *cctx);
+void update_script_var_block_id(char_u *name, int block_id);
 int script_is_vim9(void);
 int script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack);
 int check_defined(char_u *p, size_t len, cctx_T *cctx, cstack_T *cstack, int is_arg);
-int need_type_where(type_T *actual, type_T *expected, int offset, where_T where, cctx_T *cctx, int silent, int actual_is_const);
-int need_type(type_T *actual, type_T *expected, int offset, int arg_idx, cctx_T *cctx, int silent, int actual_is_const);
-lvar_T *reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type);
+int need_type_where(type_T *actual, type_T *expected, int number_ok, int offset, where_T where, cctx_T *cctx, int silent, int actual_is_const);
+int need_type(type_T *actual, type_T *expected, int number_ok, int offset, int arg_idx, cctx_T *cctx, int silent, int actual_is_const);
+lvar_T *reserve_local(cctx_T *cctx, char_u *name, size_t len, int assign, type_T *type);
 int get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx, cstack_T *cstack);
 imported_T *find_imported(char_u *name, size_t len, int load);
 char_u *may_peek_next_line(cctx_T *cctx, char_u *arg, char_u **nextp);
@@ -16,6 +17,7 @@ int may_get_next_line(char_u *whitep, char_u **arg, cctx_T *cctx);
 int may_get_next_line_error(char_u *whitep, char_u **arg, cctx_T *cctx);
 void fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx);
 int func_needs_compiling(ufunc_T *ufunc, compiletype_T compile_type);
+char_u *compile_one_expr_in_str(char_u *p, cctx_T *cctx);
 int compile_all_expr_in_str(char_u *str, int evalstr, cctx_T *cctx);
 int assignment_len(char_u *p, int *heredoc);
 void vim9_declare_error(char_u *name);

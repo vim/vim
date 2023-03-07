@@ -73,6 +73,12 @@ char *searchpath(char *name);
 #  define KEY_WOW64_32KEY 0x0200
 # endif
 
+#ifdef __MINGW32__
+# define UNUSED __attribute__((unused))
+#else
+# define UNUSED
+#endif
+
 #define VIM_STARTMENU "Programs\\Vim " VIM_VERSION_SHORT
 
 int	interactive;		// non-zero when running interactively
@@ -335,23 +341,23 @@ struct
 				   // created when it's empty
 } targets[TARGET_COUNT] =
 {
-    {"all",	"batch files"},
+    {"all",	"batch files", NULL, NULL, NULL, NULL, NULL, NULL, ""},
     {"vim",	"vim.bat",	"Vim.lnk",
-					"vim.exe",    "vim.exe",  ""},
+			"vim.exe",    "vim.exe",  "", NULL, NULL, ""},
     {"gvim",	"gvim.bat",	"gVim.lnk",
-					"gvim.exe",   "gvim.exe", ""},
+			"gvim.exe",   "gvim.exe", "", NULL, NULL, ""},
     {"evim",	"evim.bat",	"gVim Easy.lnk",
-					"evim.exe",   "gvim.exe", "-y"},
+			"evim.exe",   "gvim.exe", "-y", NULL, NULL, ""},
     {"view",	"view.bat",	"Vim Read-only.lnk",
-					"view.exe",   "vim.exe",  "-R"},
+			"view.exe",   "vim.exe",  "-R", NULL, NULL, ""},
     {"gview",	"gview.bat",	"gVim Read-only.lnk",
-					"gview.exe",  "gvim.exe", "-R"},
+			"gview.exe",  "gvim.exe", "-R", NULL, NULL, ""},
     {"vimdiff", "vimdiff.bat",	"Vim Diff.lnk",
-					"vimdiff.exe","vim.exe",  "-d"},
+			"vimdiff.exe","vim.exe",  "-d", NULL, NULL, ""},
     {"gvimdiff","gvimdiff.bat",	"gVim Diff.lnk",
-					"gvimdiff.exe","gvim.exe", "-d"},
+			"gvimdiff.exe","gvim.exe", "-d", NULL, NULL, ""},
     {"vimtutor","vimtutor.bat", "Vim tutor.lnk",
-					"vimtutor.bat",  "vimtutor.bat", ""},
+			"vimtutor.bat",  "vimtutor.bat", "", NULL, NULL, ""},
 };
 
 /* Uninstall key for vim.bat, etc. */
@@ -450,7 +456,7 @@ mch_chdir(char *path)
  * Expand the executable name into a full path name.
  */
     static char *
-my_fullpath(char *buf, char *fname, int len)
+my_fullpath(char *buf, char *fname UNUSED, int len)
 {
     // Only GetModuleFileName() will get the long file name path.
     // GetFullPathName() may still use the short (FAT) name.

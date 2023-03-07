@@ -606,19 +606,16 @@ func Test_tabpage_cmdheight()
         \ 'echo "hello\nthere"',
         \ 'tabnext',
         \ 'redraw',
-	\ ], 'XTest_tabpage_cmdheight')
+	\ ], 'XTest_tabpage_cmdheight', 'D')
   " Check that cursor line is concealed
   let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight', {'statusoff': 3})
   call VerifyScreenDump(buf, 'Test_tabpage_cmdheight', {})
 
   call StopVimInTerminal(buf)
-  call delete('XTest_tabpage_cmdheight')
 endfunc
 
 " Test for closing the tab page from a command window
 func Test_tabpage_close_cmdwin()
-  CheckFeature cmdwin
-
   tabnew
   call feedkeys("q/:tabclose\<CR>\<Esc>", 'xt')
   call assert_equal(2, tabpagenr('$'))
@@ -768,14 +765,14 @@ endfunc
 func Test_tabpage_close_on_switch()
   tabnew
   tabnew
-  edit Xfile
+  edit Xtabfile
   augroup T2
     au!
-    au BufLeave Xfile 1tabclose
+    au BufLeave Xtabfile 1tabclose
   augroup END
   tabfirst
   call assert_equal(2, tabpagenr())
-  call assert_equal('Xfile', @%)
+  call assert_equal('Xtabfile', @%)
   augroup T2
     au!
   augroup END
@@ -873,6 +870,21 @@ func Test_tabpage_alloc_failure()
   call assert_fails('tab split', 'E342:')
   call assert_equal(2, winnr('$'))
   call assert_equal(1, tabpagenr('$'))
+endfunc
+
+" this was giving ml_get errors
+func Test_tabpage_last_line()
+  enew
+  call setline(1, repeat(['a'], &lines + 5))
+  $
+  tabnew
+  call setline(1, repeat(['b'], &lines + 20))
+  $
+  tabNext
+  call assert_equal('a', getline('.'))
+
+  bwipe!
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

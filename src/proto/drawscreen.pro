@@ -1,6 +1,7 @@
 /* drawscreen.c */
 int update_screen(int type_arg);
 int statusline_row(win_T *wp);
+void win_redr_status(win_T *wp, int ignore_pum);
 void showruler(int always);
 void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 void after_updating_screen(int may_resize_shell);
@@ -13,6 +14,7 @@ void redraw_later(int type);
 void redraw_win_later(win_T *wp, int type);
 void redraw_later_clear(void);
 void redraw_all_later(int type);
+void set_must_redraw(int type);
 void redraw_curbuf_later(int type);
 void redraw_buf_later(buf_T *buf, int type);
 void redraw_buf_line_later(buf_T *buf, linenr_T lnum);

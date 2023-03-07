@@ -4,18 +4,30 @@
 
 #include "utf8.h"
 
+// VIM: added
 int vterm_is_modify_other_keys(VTerm *vt)
 {
   return vt->state->mode.modify_other_keys;
 }
 
+// VIM: added
+int vterm_is_kitty_keyboard(VTerm *vt)
+{
+  return vt->state->mode.kitty_keyboard;
+}
+
 
 void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
 {
-  int needs_CSIu;
-
-  if (vt->state->mode.modify_other_keys && mod != 0) {
+  // VIM: added modifyOtherKeys support
+  if (vterm_is_modify_other_keys(vt) && mod != 0) {
     vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, c);
+    return;
+  }
+
+  // VIM: added kitty keyboard protocol support
+  if (vterm_is_kitty_keyboard(vt) && mod != 0) {
+    vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%d;%du", c, mod+1);
     return;
   }
 
@@ -33,6 +45,7 @@ void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
     return;
   }
 
+  int needs_CSIu;
   switch(c) {
     /* Special Ctrl- letters that can't be represented elsewise */
     case 'i': case 'j': case 'm': case '[':
@@ -93,12 +106,12 @@ static keycodes_s keycodes[] = {
   { KEYCODE_CSI_CURSOR, 'D', 0 }, // LEFT
   { KEYCODE_CSI_CURSOR, 'C', 0 }, // RIGHT
 
-  { KEYCODE_CSINUM,     '~', 2 }, // INS
-  { KEYCODE_CSINUM,     '~', 3 }, // DEL
+  { KEYCODE_CSINUM, '~', 2 },  // INS
+  { KEYCODE_CSINUM, '~', 3 },  // DEL
   { KEYCODE_CSI_CURSOR, 'H', 0 }, // HOME
   { KEYCODE_CSI_CURSOR, 'F', 0 }, // END
-  { KEYCODE_CSINUM,     '~', 5 }, // PAGEUP
-  { KEYCODE_CSINUM,     '~', 6 }, // PAGEDOWN
+  { KEYCODE_CSINUM, '~', 5 },  // PAGEUP
+  { KEYCODE_CSINUM, '~', 6 },  // PAGEDOWN
 };
 
 static keycodes_s keycodes_fn[] = {
@@ -107,14 +120,14 @@ static keycodes_s keycodes_fn[] = {
   { KEYCODE_SS3,	'Q', 0 }, // F2
   { KEYCODE_SS3,	'R', 0 }, // F3
   { KEYCODE_SS3,	'S', 0 }, // F4
-  { KEYCODE_CSINUM,     '~', 15 }, // F5
-  { KEYCODE_CSINUM,     '~', 17 }, // F6
-  { KEYCODE_CSINUM,     '~', 18 }, // F7
-  { KEYCODE_CSINUM,     '~', 19 }, // F8
-  { KEYCODE_CSINUM,     '~', 20 }, // F9
-  { KEYCODE_CSINUM,     '~', 21 }, // F10
-  { KEYCODE_CSINUM,     '~', 23 }, // F11
-  { KEYCODE_CSINUM,     '~', 24 }, // F12
+  { KEYCODE_CSINUM, '~', 15 }, // F5
+  { KEYCODE_CSINUM, '~', 17 }, // F6
+  { KEYCODE_CSINUM, '~', 18 }, // F7
+  { KEYCODE_CSINUM, '~', 19 }, // F8
+  { KEYCODE_CSINUM, '~', 20 }, // F9
+  { KEYCODE_CSINUM, '~', 21 }, // F10
+  { KEYCODE_CSINUM, '~', 23 }, // F11
+  { KEYCODE_CSINUM, '~', 24 }, // F12
 };
 
 static keycodes_s keycodes_kp[] = {
@@ -140,11 +153,10 @@ static keycodes_s keycodes_kp[] = {
 
 void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
 {
-  keycodes_s k;
-
   if(key == VTERM_KEY_NONE)
     return;
 
+  keycodes_s k;
   if(key < VTERM_KEY_FUNCTION_0) {
     if(key >= sizeof(keycodes)/sizeof(keycodes[0]))
       return;
@@ -166,8 +178,10 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_TAB:
+    if (vterm_is_kitty_keyboard(vt) && mod != 0)
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "9;%du", mod+1);
     /* Shift-Tab is CSI Z but plain Tab is 0x09 */
-    if(mod == VTERM_MOD_SHIFT)
+    else if(mod == VTERM_MOD_SHIFT)
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "Z");
     else if(mod & VTERM_MOD_SHIFT)
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "1;%dZ", mod+1);
@@ -184,7 +198,12 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_LITERAL: case_LITERAL:
-    if(mod & (VTERM_MOD_SHIFT|VTERM_MOD_CTRL))
+    if (vterm_is_modify_other_keys(vt) && mod != 0)
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, k.literal);
+    else if (vterm_is_kitty_keyboard(vt) && mod == 0 && k.literal == '\x1b')
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%du", k.literal);
+    else if ((vterm_is_kitty_keyboard(vt) && mod != 0)
+	|| (mod & (VTERM_MOD_SHIFT|VTERM_MOD_CTRL)))
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%d;%du", k.literal, mod+1);
     else
       vterm_push_output_sprintf(vt, mod & VTERM_MOD_ALT ? ESC_S "%c" : "%c", k.literal);

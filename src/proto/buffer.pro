@@ -1,7 +1,7 @@
 /* buffer.c */
 int get_highest_fnum(void);
 void buffer_ensure_loaded(buf_T *buf);
-int open_buffer(int read_stdin, exarg_T *eap, int flags);
+int open_buffer(int read_stdin, exarg_T *eap, int flags_arg);
 void set_bufref(bufref_T *bufref, buf_T *buf);
 int bufref_valid(bufref_T *bufref);
 int buf_valid(buf_T *buf);
@@ -11,8 +11,8 @@ void buf_freeall(buf_T *buf, int flags);
 void free_wininfo(wininfo_T *wip);
 void goto_buffer(exarg_T *eap, int start, int dir, int count);
 void handle_swap_exists(bufref_T *old_curbuf);
-char *do_bufdel(int command, char_u *arg, int addr_count, int start_bnr, int end_bnr, int forceit);
 int do_buffer(int action, int start, int dir, int count, int forceit);
+char *do_bufdel(int command, char_u *arg, int addr_count, int start_bnr, int end_bnr, int forceit);
 void set_curbuf(buf_T *buf, int action);
 void do_autochdir(void);
 void no_write_message(void);
@@ -48,7 +48,7 @@ void col_print(char_u *buf, size_t buflen, int col, int vcol);
 void maketitle(void);
 void resettitle(void);
 void free_titles(void);
-int build_stl_str_hl(win_T *wp, char_u *out, size_t outlen, char_u *fmt, int use_sandbox, int fillchar, int maxwidth, stl_hlrec_T **hltab, stl_hlrec_T **tabtab);
+int build_stl_str_hl(win_T *wp, char_u *out, size_t outlen, char_u *fmt, char_u *opt_name, int opt_scope, int fillchar, int maxwidth, stl_hlrec_T **hltab, stl_hlrec_T **tabtab);
 void get_rel_pos(win_T *wp, char_u *buf, int buflen);
 char_u *fix_fname(char_u *fname);
 void fname_expand(buf_T *buf, char_u **ffname, char_u **sfname);

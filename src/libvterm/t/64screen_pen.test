@@ -35,6 +35,12 @@ PUSH "\e[31mG\e[m"
 PUSH "\e[42mH\e[m"
   ?screen_cell 0,7 = {0x48} width=1 attrs={} fg=rgb(240,240,240) bg=idx(2)
 
+!Super/subscript
+PUSH "x\e[74m0\e[73m2\e[m"
+  ?screen_cell 0,8  = {0x78} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
+  ?screen_cell 0,9  = {0x30} width=1 attrs={S_} fg=rgb(240,240,240) bg=rgb(0,0,0)
+  ?screen_cell 0,10 = {0x32} width=1 attrs={S^} fg=rgb(240,240,240) bg=rgb(0,0,0)
+
 !EL sets reverse and colours to end of line
 PUSH "\e[H\e[7;33;44m\e[K"
   ?screen_cell 0,0  = {} width=1 attrs={R} fg=idx(3) bg=idx(4)

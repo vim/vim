@@ -30,11 +30,13 @@ endfunc
 func Test_equivalence_re1()
   set re=1
   call s:equivalence_test()
+  set re=0
 endfunc
 
 func Test_equivalence_re2()
   set re=2
   call s:equivalence_test()
+  set re=0
 endfunc
 
 func Test_recursive_substitute()
@@ -67,6 +69,7 @@ func Test_eow_with_optional()
     let actual = matchlist('abc def', '\(abc\>\)\?\s*\(def\)')
     call assert_equal(expected, actual)
   endfor
+  set re=0
 endfunc
 
 func Test_backref()
@@ -1095,5 +1098,66 @@ func Test_using_invalid_visual_position()
   /\%V
   bwipe!
 endfunc
+
+func Test_using_two_engines_pattern()
+  new
+  call setline(1, ['foobar=0', 'foobar=1', 'foobar=2'])
+  " \%#= at the end of the pattern
+  for i in range(0, 2)
+    for j in range(0, 2)
+      exe "set re=" .. i
+      call cursor(j + 1, 7)
+      call assert_fails("%s/foobar\\%#=" .. j, 'E1281:')
+    endfor
+  endfor
+  set re=0
+
+  " \%#= at the start of the pattern
+  for i in range(0, 2)
+    call cursor(i + 1, 7)
+    exe ":%s/\\%#=" .. i .. "foobar=" .. i .. "/xx"
+  endfor
+  call assert_equal(['xx', 'xx', 'xx'], getline(1, '$'))
+  bwipe!
+endfunc
+
+func Test_recursive_substitute_expr()
+  new
+  func Repl()
+    s
+  endfunc
+  silent! s/\%')/~\=Repl()
+
+  bwipe!
+  delfunc Repl
+endfunc
+
+def Test_compare_columns()
+  # this was using a line below the last line
+  enew
+  setline(1, ['', ''])
+  prop_type_add('name', {highlight: 'ErrorMsg'})
+  prop_add(1, 1, {length: 1, type: 'name'})
+  search('\%#=1\%>.l\n.*\%<2v', 'nW')
+  search('\%#=2\%>.l\n.*\%<2v', 'nW')
+  bwipe!
+  prop_type_delete('name')
+enddef
+
+def Test_compare_column_matchstr()
+  # do some search in text to set the line number, it should be ignored in
+  # matchstr().
+  enew
+  setline(1, ['one', 'two', 'three'])
+  :3
+  :/ee
+  bwipe!
+  set re=1
+  call assert_equal('aaa', matchstr('aaaaaaaaaaaaaaaaaaaa', '.*\%<5v'))
+  set re=2
+  call assert_equal('aaa', matchstr('aaaaaaaaaaaaaaaaaaaa', '.*\%<5v'))
+  set re=0
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab

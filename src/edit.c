@@ -84,9 +84,7 @@ static int	last_insert_skip; // nr of chars in front of previous insert
 static int	new_insert_skip;  // nr of chars in front of current insert
 static int	did_restart_edit;	// "restart_edit" when calling edit()
 
-#ifdef FEAT_CINDENT
 static int	can_cindent;		// may do cindenting on this line
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 static int	revins_on;		// reverse insert mode on
@@ -134,9 +132,7 @@ edit(
     static linenr_T o_lnum = 0;
     int		i;
     int		did_backspace = TRUE;	    // previous char was backspace
-#ifdef FEAT_CINDENT
     int		line_is_white = FALSE;	    // line is empty before insert
-#endif
     linenr_T	old_topline = 0;	    // topline before insertion
 #ifdef FEAT_DIFF
     int		old_topfill = -1;
@@ -172,8 +168,7 @@ edit(
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
     // Don't allow recursive insert mode when busy with completion.
-    if (textwinlock != 0 || textlock != 0
-			  || ins_compl_active() || compl_busy || pum_visible())
+    if (textlock != 0 || ins_compl_active() || compl_busy || pum_visible())
     {
 	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
@@ -242,7 +237,7 @@ edit(
 	if (startln)
 	    Insstart.col = 0;
     }
-    Insstart_textlen = (colnr_T)linetabsize(ml_get_curline());
+    Insstart_textlen = (colnr_T)linetabsize_str(ml_get_curline());
     Insstart_blank_vcol = MAXCOL;
     if (!did_ai)
 	ai_col = 0;
@@ -293,8 +288,13 @@ edit(
     conceal_check_cursor_line(cursor_line_was_concealed);
 #endif
 
-    // need to position cursor again when on a TAB
-    if (gchar_cursor() == TAB)
+    // Need to position cursor again when on a TAB and when on a char with
+    // virtual text.
+    if (gchar_cursor() == TAB
+#ifdef FEAT_PROP_POPUP
+	    || curbuf->b_has_textprop
+#endif
+       )
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     /*
@@ -310,9 +310,7 @@ edit(
 #endif
 
     setmouse();
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
 #ifdef FEAT_RIGHTLEFT
     // there is no reverse replace mode
     revins_on = (State == MODE_INSERT && p_ri);
@@ -324,16 +322,15 @@ edit(
 #endif
     if (!p_ek)
     {
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
+
 	// Disable bracketed paste mode, we won't recognize the escape
 	// sequences.
 	out_str(T_BD);
 
 	// Disable modifyOtherKeys, keys with modifiers would cause exiting
 	// Insert mode.
-	out_str(T_CTE);
+	out_str_t_TE();
     }
 
     /*
@@ -387,9 +384,7 @@ edit(
     ins_need_undo = TRUE;
 
     where_paste_started.lnum = 0;
-#ifdef FEAT_CINDENT
     can_cindent = TRUE;
-#endif
 #ifdef FEAT_FOLDING
     // The cursor line is not in a closed fold, unless 'insertmode' is set or
     // restarting.
@@ -576,6 +571,8 @@ edit(
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = FALSE;		// allow scrolling here
 #endif
+	// May request the keyboard protocol state now.
+	may_send_t_RK();
 
 	/*
 	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
@@ -742,7 +739,6 @@ edit(
 	    continue;
 	}
 
-#ifdef FEAT_CINDENT
 	if (cindent_on() && ctrl_x_mode_none())
 	{
 	    // A key name preceded by a bang means this key is not to be
@@ -756,7 +752,6 @@ edit(
 							&& stop_arrow() == OK)
 		do_c_expr_indent();
 	}
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
@@ -790,7 +785,6 @@ edit(
 	    // FALLTHROUGH
 
 	case Ctrl_C:	// End input mode
-#ifdef FEAT_CMDWIN
 	    if (c == Ctrl_C && cmdwin_type != 0)
 	    {
 		// Close the cmdline window.
@@ -799,7 +793,6 @@ edit(
 		nomove = TRUE;
 		goto doESCkey;
 	    }
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	    if (c == Ctrl_C && bt_prompt(curbuf))
 	    {
@@ -1056,12 +1049,19 @@ doESCkey:
 
 	case K_COMMAND:		    // <Cmd>command<CR>
 	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
-	    do_cmdkey_command(c, 0);
+	    {
+		do_cmdkey_command(c, 0);
+
 #ifdef FEAT_TERMINAL
-	    if (term_use_loop())
-		// Started a terminal that gets the input, exit Insert mode.
-		goto doESCkey;
+		if (term_use_loop())
+		    // Started a terminal that gets the input, exit Insert mode.
+		    goto doESCkey;
 #endif
+		if (curbuf->b_u_synced)
+		    // The command caused undo to be synced.  Need to save the
+		    // line for undo before inserting the next char.
+		    ins_need_undo = TRUE;
+	    }
 	    break;
 
 	case K_CURSORHOLD:	// Didn't type something for a while.
@@ -1201,14 +1201,12 @@ doESCkey:
 		break;
 	    }
 #endif
-#ifdef FEAT_CMDWIN
 	    if (cmdwin_type != 0)
 	    {
 		// Execute the command in the cmdline window.
 		cmdwin_result = CAR;
 		goto doESCkey;
 	    }
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	    if (bt_prompt(curbuf))
 	    {
@@ -1294,9 +1292,7 @@ docomplete:
 	    disable_fold_update--;
 #endif
 	    compl_busy = FALSE;
-#ifdef FEAT_SMARTINDENT
-	    can_si = TRUE; // allow smartindenting
-#endif
+	    can_si = may_do_si(); // allow smartindenting
 	    break;
 
 	case Ctrl_Y:	// copy from previous line or scroll down
@@ -1346,18 +1342,14 @@ normalchar:
 		    break;
 	    }
 #endif
-#ifdef FEAT_SMARTINDENT
 	    // Try to perform smart-indenting.
 	    ins_try_si(c);
-#endif
 
 	    if (c == ' ')
 	    {
 		inserted_space = TRUE;
-#ifdef FEAT_CINDENT
 		if (inindent(0))
 		    can_cindent = FALSE;
-#endif
 		if (Insstart_blank_vcol == MAXCOL
 			&& curwin->w_cursor.lnum == Insstart.lnum)
 		    Insstart_blank_vcol = get_nolist_virtcol();
@@ -1402,7 +1394,6 @@ normalchar:
 	if (arrow_used)
 	    inserted_space = FALSE;
 
-#ifdef FEAT_CINDENT
 	if (can_cindent && cindent_on() && ctrl_x_mode_normal())
 	{
 force_cindent:
@@ -1416,7 +1407,6 @@ force_cindent:
 		    do_c_expr_indent();
 	    }
 	}
-#endif // FEAT_CINDENT
 
     }	// for (;;)
     // NOTREACHED
@@ -1498,7 +1488,8 @@ ins_redraw(int ready)	    // not busy with something
 	aco_save_T	aco;
 	varnumber_T	tick = CHANGEDTICK(curbuf);
 
-	// save and restore curwin and curbuf, in case the autocmd changes them
+	// Save and restore curwin and curbuf, in case the autocmd changes
+	// them.
 	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
 	aucmd_restbuf(&aco);
@@ -1518,7 +1509,8 @@ ins_redraw(int ready)	    // not busy with something
 	aco_save_T	aco;
 	varnumber_T	tick = CHANGEDTICK(curbuf);
 
-	// save and restore curwin and curbuf, in case the autocmd changes them
+	// Save and restore curwin and curbuf, in case the autocmd changes
+	// them.
 	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDP, NULL, NULL, FALSE, curbuf);
 	aucmd_restbuf(&aco);
@@ -1529,7 +1521,7 @@ ins_redraw(int ready)	    // not busy with something
     }
 
     if (ready)
-	may_trigger_winscrolled();
+	may_trigger_win_scrolled_resized();
 
     // Trigger SafeState if nothing is pending.
     may_trigger_safestate(ready
@@ -1578,9 +1570,7 @@ ins_ctrl_v(void)
     }
     AppendToRedobuff((char_u *)CTRL_V_STR);	// CTRL-V
 
-#ifdef FEAT_CMDL_INFO
     add_to_showcmd_c(Ctrl_V);
-#endif
 
     // Do not change any modifyOtherKeys ESC sequence to a normal key for
     // CTRL-SHIFT-V.
@@ -1589,9 +1579,7 @@ ins_ctrl_v(void)
 	// when the line fits in 'columns' the '^' is at the start of the next
 	// line and will not removed by the redraw
 	edit_unputchar();
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
 
     insert_special(c, FALSE, TRUE);
 #ifdef FEAT_RIGHTLEFT
@@ -1676,49 +1664,49 @@ edit_putchar(int c, int highlight)
 {
     int	    attr;
 
-    if (ScreenLines != NULL)
-    {
-	update_topline();	// just in case w_topline isn't valid
-	validate_cursor();
-	if (highlight)
-	    attr = HL_ATTR(HLF_8);
-	else
-	    attr = 0;
-	pc_row = W_WINROW(curwin) + curwin->w_wrow;
-	pc_col = curwin->w_wincol;
-	pc_status = PC_STATUS_UNSET;
-#ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
-	{
-	    pc_col += curwin->w_width - 1 - curwin->w_wcol;
-	    if (has_mbyte)
-	    {
-		int fix_col = mb_fix_col(pc_col, pc_row);
+    if (ScreenLines == NULL)
+	return;
 
-		if (fix_col != pc_col)
-		{
-		    screen_putchar(' ', pc_row, fix_col, attr);
-		    --curwin->w_wcol;
-		    pc_status = PC_STATUS_RIGHT;
-		}
+    update_topline();	// just in case w_topline isn't valid
+    validate_cursor();
+    if (highlight)
+	attr = HL_ATTR(HLF_8);
+    else
+	attr = 0;
+    pc_row = W_WINROW(curwin) + curwin->w_wrow;
+    pc_col = curwin->w_wincol;
+    pc_status = PC_STATUS_UNSET;
+#ifdef FEAT_RIGHTLEFT
+    if (curwin->w_p_rl)
+    {
+	pc_col += curwin->w_width - 1 - curwin->w_wcol;
+	if (has_mbyte)
+	{
+	    int fix_col = mb_fix_col(pc_col, pc_row);
+
+	    if (fix_col != pc_col)
+	    {
+		screen_putchar(' ', pc_row, fix_col, attr);
+		--curwin->w_wcol;
+		pc_status = PC_STATUS_RIGHT;
 	    }
 	}
-	else
-#endif
-	{
-	    pc_col += curwin->w_wcol;
-	    if (mb_lefthalve(pc_row, pc_col))
-		pc_status = PC_STATUS_LEFT;
-	}
-
-	// save the character to be able to put it back
-	if (pc_status == PC_STATUS_UNSET)
-	{
-	    screen_getbytes(pc_row, pc_col, pc_bytes, &pc_attr);
-	    pc_status = PC_STATUS_SET;
-	}
-	screen_putchar(c, pc_row, pc_col, attr);
     }
+    else
+#endif
+    {
+	pc_col += curwin->w_wcol;
+	if (mb_lefthalve(pc_row, pc_col))
+	    pc_status = PC_STATUS_LEFT;
+    }
+
+    // save the character to be able to put it back
+    if (pc_status == PC_STATUS_UNSET)
+    {
+	screen_getbytes(pc_row, pc_col, pc_bytes, &pc_attr);
+	pc_status = PC_STATUS_SET;
+    }
+    screen_putchar(c, pc_row, pc_col, attr);
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -1755,12 +1743,13 @@ edit_unputchar(void)
 }
 
 /*
- * Called when p_dollar is set: display a '$' at the end of the changed text
- * Only works when cursor is in the line that changes.
+ * Called when "$" is in 'cpoptions': display a '$' at the end of the changed
+ * text.  Only works when cursor is in the line that changes.
  */
     void
-display_dollar(colnr_T col)
+display_dollar(colnr_T col_arg)
 {
+    colnr_T col = col_arg < 0 ? 0 : col_arg;
     colnr_T save_col;
 
     if (!redrawing())
@@ -1793,11 +1782,11 @@ display_dollar(colnr_T col)
     void
 undisplay_dollar(void)
 {
-    if (dollar_vcol >= 0)
-    {
-	dollar_vcol = -1;
-	redrawWinline(curwin, curwin->w_cursor.lnum);
-    }
+    if (dollar_vcol < 0)
+	return;
+
+    dollar_vcol = -1;
+    redrawWinline(curwin, curwin->w_cursor.lnum);
 }
 
 /*
@@ -1923,10 +1912,8 @@ get_literal(int noReduceKeys)
 	    // character for i_CTRL-V_digit.
 	    break;
 
-#ifdef FEAT_CMDL_INFO
 	if ((State & MODE_CMDLINE) == 0 && MB_BYTE2LEN_CHECK(nc) == 1)
 	    add_to_showcmd(nc);
-#endif
 	if (nc == 'x' || nc == 'X')
 	    hex = TRUE;
 	else if (nc == 'o' || nc == 'O')
@@ -2194,11 +2181,9 @@ insertchar(
     end_comment_pending = NUL;
 
     did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
 
     /*
      * If there's any pending input, grab up to INPUT_BUFLEN at once.
@@ -2220,9 +2205,7 @@ insertchar(
 	    && !has_insertcharpre()
 	    && vpeekc() != NUL
 	    && !(State & REPLACE_FLAG)
-#ifdef FEAT_CINDENT
 	    && !cindent_on()
-#endif
 #ifdef FEAT_RIGHTLEFT
 	    && !p_ri
 #endif
@@ -2400,7 +2383,7 @@ stop_arrow(void)
 	    // Don't update the original insert position when moved to the
 	    // right, except when nothing was inserted yet.
 	    update_Insstart_orig = FALSE;
-	Insstart_textlen = (colnr_T)linetabsize(ml_get_curline());
+	Insstart_textlen = (colnr_T)linetabsize_str(ml_get_curline());
 
 	if (u_save_cursor() == OK)
 	{
@@ -2541,24 +2524,14 @@ stop_insert(
 
 	    // <C-S-Right> may have started Visual mode, adjust the position for
 	    // deleted characters.
-	    if (VIsual_active && VIsual.lnum == curwin->w_cursor.lnum)
-	    {
-		int len = (int)STRLEN(ml_get_curline());
-
-		if (VIsual.col > len)
-		{
-		    VIsual.col = len;
-		    VIsual.coladd = 0;
-		}
-	    }
+	    if (VIsual_active)
+		check_visual_pos();
 	}
     }
     did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
 
     // Set '[ and '] to the inserted text.  When end_insert_pos is NULL we are
     // now in a different buffer.
@@ -2581,17 +2554,17 @@ set_last_insert(int c)
 
     vim_free(last_insert);
     last_insert = alloc(MB_MAXBYTES * 3 + 5);
-    if (last_insert != NULL)
-    {
-	s = last_insert;
-	// Use the CTRL-V only when entering a special char
-	if (c < ' ' || c == DEL)
-	    *s++ = Ctrl_V;
-	s = add_char2buf(c, s);
-	*s++ = ESC;
-	*s++ = NUL;
-	last_insert_skip = 0;
-    }
+    if (last_insert == NULL)
+	return;
+
+    s = last_insert;
+    // Use the CTRL-V only when entering a special char
+    if (c < ' ' || c == DEL)
+	*s++ = Ctrl_V;
+    s = add_char2buf(c, s);
+    *s++ = ESC;
+    *s++ = NUL;
+    last_insert_skip = 0;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -2666,6 +2639,7 @@ beginline(int flags)
 	}
 	curwin->w_set_curswant = TRUE;
     }
+    adjust_skipcol();
 }
 
 /*
@@ -2713,6 +2687,7 @@ oneright(void)
     curwin->w_cursor.col += l;
 
     curwin->w_set_curswant = TRUE;
+    adjust_skipcol();
     return OK;
 }
 
@@ -2772,7 +2747,57 @@ oneleft(void)
     // character, move to its first byte
     if (has_mbyte)
 	mb_adjust_cursor();
+    adjust_skipcol();
     return OK;
+}
+
+/*
+ * Move the cursor up "n" lines in window "wp".
+ * Takes care of closed folds.
+ * Returns the new cursor line or zero for failure.
+ */
+    linenr_T
+cursor_up_inner(win_T *wp, long n)
+{
+    linenr_T	lnum = wp->w_cursor.lnum;
+
+    // This fails if the cursor is already in the first line or the count is
+    // larger than the line number and '-' is in 'cpoptions'
+    if (lnum <= 1 || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL))
+	return 0;
+    if (n >= lnum)
+	lnum = 1;
+    else
+#ifdef FEAT_FOLDING
+	if (hasAnyFolding(wp))
+    {
+	/*
+	 * Count each sequence of folded lines as one logical line.
+	 */
+	// go to the start of the current fold
+	(void)hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
+
+	while (n--)
+	{
+	    // move up one line
+	    --lnum;
+	    if (lnum <= 1)
+		break;
+	    // If we entered a fold, move to the beginning, unless in
+	    // Insert mode or when 'foldopen' contains "all": it will open
+	    // in a moment.
+	    if (n > 0 || !((State & MODE_INSERT) || (fdo_flags & FDO_ALL)))
+		(void)hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
+	}
+	if (lnum < 1)
+	    lnum = 1;
+    }
+    else
+#endif
+	lnum -= n;
+
+    wp->w_cursor.lnum = lnum;
+    return lnum;
 }
 
     int
@@ -2780,47 +2805,8 @@ cursor_up(
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
-    linenr_T	lnum;
-
-    if (n > 0)
-    {
-	lnum = curwin->w_cursor.lnum;
-	// This fails if the cursor is already in the first line or the count
-	// is larger than the line number and '-' is in 'cpoptions'
-	if (lnum <= 1 || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL))
-	    return FAIL;
-	if (n >= lnum)
-	    lnum = 1;
-	else
-#ifdef FEAT_FOLDING
-	    if (hasAnyFolding(curwin))
-	{
-	    /*
-	     * Count each sequence of folded lines as one logical line.
-	     */
-	    // go to the start of the current fold
-	    (void)hasFolding(lnum, &lnum, NULL);
-
-	    while (n--)
-	    {
-		// move up one line
-		--lnum;
-		if (lnum <= 1)
-		    break;
-		// If we entered a fold, move to the beginning, unless in
-		// Insert mode or when 'foldopen' contains "all": it will open
-		// in a moment.
-		if (n > 0 || !((State & MODE_INSERT) || (fdo_flags & FDO_ALL)))
-		    (void)hasFolding(lnum, &lnum, NULL);
-	    }
-	    if (lnum < 1)
-		lnum = 1;
-	}
-	else
-#endif
-	    lnum -= n;
-	curwin->w_cursor.lnum = lnum;
-    }
+    if (n > 0 && cursor_up_inner(curwin, n) == 0)
+	return FAIL;
 
     // try to advance to the column we want to be at
     coladvance(curwin->w_curswant);
@@ -2832,6 +2818,55 @@ cursor_up(
 }
 
 /*
+ * Move the cursor down "n" lines in window "wp".
+ * Takes care of closed folds.
+ * Returns the new cursor line or zero for failure.
+ */
+    linenr_T
+cursor_down_inner(win_T *wp, long n)
+{
+    linenr_T	lnum = wp->w_cursor.lnum;
+    linenr_T	line_count = wp->w_buffer->b_ml.ml_line_count;
+
+#ifdef FEAT_FOLDING
+    // Move to last line of fold, will fail if it's the end-of-file.
+    (void)hasFoldingWin(wp, lnum, NULL, &lnum, TRUE, NULL);
+#endif
+    // This fails if the cursor is already in the last line or would move
+    // beyond the last line and '-' is in 'cpoptions'
+    if (lnum >= line_count
+	    || (lnum + n > line_count && vim_strchr(p_cpo, CPO_MINUS) != NULL))
+	return FAIL;
+    if (lnum + n >= line_count)
+	lnum = line_count;
+    else
+#ifdef FEAT_FOLDING
+	if (hasAnyFolding(wp))
+    {
+	linenr_T	last;
+
+	// count each sequence of folded lines as one logical line
+	while (n--)
+	{
+	    if (hasFoldingWin(wp, lnum, NULL, &last, TRUE, NULL))
+		lnum = last + 1;
+	    else
+		++lnum;
+	    if (lnum >= line_count)
+		break;
+	}
+	if (lnum > line_count)
+	    lnum = line_count;
+    }
+    else
+#endif
+	lnum += n;
+
+    wp->w_cursor.lnum = lnum;
+    return lnum;
+}
+
+/*
  * Cursor down a number of logical lines.
  */
     int
@@ -2839,47 +2874,8 @@ cursor_down(
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
-    linenr_T	lnum;
-
-    if (n > 0)
-    {
-	lnum = curwin->w_cursor.lnum;
-#ifdef FEAT_FOLDING
-	// Move to last line of fold, will fail if it's the end-of-file.
-	(void)hasFolding(lnum, NULL, &lnum);
-#endif
-	// This fails if the cursor is already in the last line or would move
-	// beyond the last line and '-' is in 'cpoptions'
-	if (lnum >= curbuf->b_ml.ml_line_count
-		|| (lnum + n > curbuf->b_ml.ml_line_count
-		    && vim_strchr(p_cpo, CPO_MINUS) != NULL))
-	    return FAIL;
-	if (lnum + n >= curbuf->b_ml.ml_line_count)
-	    lnum = curbuf->b_ml.ml_line_count;
-	else
-#ifdef FEAT_FOLDING
-	if (hasAnyFolding(curwin))
-	{
-	    linenr_T	last;
-
-	    // count each sequence of folded lines as one logical line
-	    while (n--)
-	    {
-		if (hasFolding(lnum, NULL, &last))
-		    lnum = last + 1;
-		else
-		    ++lnum;
-		if (lnum >= curbuf->b_ml.ml_line_count)
-		    break;
-	    }
-	    if (lnum > curbuf->b_ml.ml_line_count)
-		lnum = curbuf->b_ml.ml_line_count;
-	}
-	else
-#endif
-	    lnum += n;
-	curwin->w_cursor.lnum = lnum;
-    }
+    if (n > 0 &&  cursor_down_inner(curwin, n) == 0)
+	return FAIL;
 
     // try to advance to the column we want to be at
     coladvance(curwin->w_curswant);
@@ -2974,12 +2970,12 @@ get_last_insert_save(void)
     if (last_insert == NULL)
 	return NULL;
     s = vim_strsave(last_insert + last_insert_skip);
-    if (s != NULL)
-    {
-	len = (int)STRLEN(s);
-	if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
-	    s[len - 1] = NUL;
-    }
+    if (s == NULL)
+	return NULL;
+
+    len = (int)STRLEN(s);
+    if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
+	s[len - 1] = NUL;
     return s;
 }
 
@@ -3379,9 +3375,7 @@ ins_reg(void)
 	ins_redraw(FALSE);
 
 	edit_putchar('"', TRUE);
-#ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(Ctrl_R);
-#endif
     }
 
 #ifdef USE_ON_FLY_SCROLL
@@ -3400,9 +3394,7 @@ ins_reg(void)
     {
 	// Get a third key for literal register insertion
 	literally = regname;
-#ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(literally);
-#endif
 	regname = plain_vgetc();
 	LANGMAP_ADJUST(regname, TRUE);
     }
@@ -3470,9 +3462,7 @@ ins_reg(void)
 	ins_need_undo = TRUE;
     u_sync_once = 0;
 #endif
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
 
     // If the inserted register is empty, we need to remove the '"'
     if (need_redraw || stuff_empty())
@@ -3532,6 +3522,10 @@ ins_ctrl_g(void)
 		  // Allow one left/right cursor movement with the next char,
 		  // without breaking undo.
 		  dont_sync_undo = MAYBE;
+		  break;
+
+	case ESC:
+		  // Esc after CTRL-G cancels it.
 		  break;
 
 	// Unknown CTRL-G command, reserved for future expansion.
@@ -3721,14 +3715,13 @@ ins_esc(
 #endif
     if (!p_ek)
     {
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
+
 	// Re-enable bracketed paste mode.
-	out_str(T_BE);
+	out_str_t_BE();
 
 	// Re-enable modifyOtherKeys.
-	out_str(T_CTI);
+	out_str_t_TI();
     }
 #ifdef FEAT_CONCEAL
     // Check if the cursor line needs redrawing after changing State.  If
@@ -3782,51 +3775,52 @@ ins_ctrl_(void)
     static int
 ins_start_select(int c)
 {
-    if (km_startsel)
-	switch (c)
-	{
-	    case K_KHOME:
-	    case K_KEND:
-	    case K_PAGEUP:
-	    case K_KPAGEUP:
-	    case K_PAGEDOWN:
-	    case K_KPAGEDOWN:
+    if (!km_startsel)
+	return FALSE;
+    switch (c)
+    {
+	case K_KHOME:
+	case K_KEND:
+	case K_PAGEUP:
+	case K_KPAGEUP:
+	case K_PAGEDOWN:
+	case K_KPAGEDOWN:
 # ifdef MACOS_X
-	    case K_LEFT:
-	    case K_RIGHT:
-	    case K_UP:
-	    case K_DOWN:
-	    case K_END:
-	    case K_HOME:
+	case K_LEFT:
+	case K_RIGHT:
+	case K_UP:
+	case K_DOWN:
+	case K_END:
+	case K_HOME:
 # endif
-		if (!(mod_mask & MOD_MASK_SHIFT))
-		    break;
-		// FALLTHROUGH
-	    case K_S_LEFT:
-	    case K_S_RIGHT:
-	    case K_S_UP:
-	    case K_S_DOWN:
-	    case K_S_END:
-	    case K_S_HOME:
-		// Start selection right away, the cursor can move with
-		// CTRL-O when beyond the end of the line.
-		start_selection();
+	    if (!(mod_mask & MOD_MASK_SHIFT))
+		break;
+	    // FALLTHROUGH
+	case K_S_LEFT:
+	case K_S_RIGHT:
+	case K_S_UP:
+	case K_S_DOWN:
+	case K_S_END:
+	case K_S_HOME:
+	    // Start selection right away, the cursor can move with CTRL-O when
+	    // beyond the end of the line.
+	    start_selection();
 
-		// Execute the key in (insert) Select mode.
-		stuffcharReadbuff(Ctrl_O);
-		if (mod_mask)
-		{
-		    char_u	    buf[4];
+	    // Execute the key in (insert) Select mode.
+	    stuffcharReadbuff(Ctrl_O);
+	    if (mod_mask)
+	    {
+		char_u	    buf[4];
 
-		    buf[0] = K_SPECIAL;
-		    buf[1] = KS_MODIFIER;
-		    buf[2] = mod_mask;
-		    buf[3] = NUL;
-		    stuffReadbuff(buf);
-		}
-		stuffcharReadbuff(c);
-		return TRUE;
-	}
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_MODIFIER;
+		buf[2] = mod_mask;
+		buf[3] = NUL;
+		stuffReadbuff(buf);
+	    }
+	    stuffcharReadbuff(c);
+	    return TRUE;
+    }
     return FALSE;
 }
 
@@ -3839,8 +3833,7 @@ ins_insert(int replaceState)
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_INSERTMODE,
 		   (char_u *)((State & REPLACE_FLAG) ? "i"
-		          : replaceState == MODE_VREPLACE ? "v"
-						     : "r"), 1);
+			    : replaceState == MODE_VREPLACE ? "v" : "r"), 1);
 #endif
     ins_apply_autocmds(EVENT_INSERTCHANGE);
     if (State & REPLACE_FLAG)
@@ -3907,14 +3900,10 @@ ins_shift(int c, int lastc)
 
     if (did_ai && *skipwhite(ml_get_curline()) != NUL)
 	did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
-#ifdef FEAT_CINDENT
     can_cindent = FALSE;	// no cindenting after ^D or ^T
-#endif
 }
 
     static void
@@ -3944,11 +3933,9 @@ ins_del(void)
     else if (del_char(FALSE) == FAIL)  // delete char under cursor
 	vim_beep(BO_BS);
     did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
     AppendCharToRedobuff(K_DEL);
 }
 
@@ -3991,9 +3978,7 @@ ins_bs(
     int		in_indent;
     int		oldState;
     int		cpc[MAX_MCO];	    // composing characters
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     int		call_fix_indent = FALSE;
-#endif
 
     /*
      * can't delete anything in an empty file
@@ -4025,10 +4010,8 @@ ins_bs(
     if (stop_arrow() == FAIL)
 	return FALSE;
     in_indent = inindent(0);
-#ifdef FEAT_CINDENT
     if (in_indent)
 	can_cindent = FALSE;
-#endif
     end_comment_pending = NUL;	// After BS, don't auto-end comment
 #ifdef FEAT_RIGHTLEFT
     if (revins_on)	    // put cursor after last inserted char
@@ -4162,11 +4145,7 @@ ins_bs(
 	mincol = 0;
 						// keep indent
 	if (mode == BACKSPACE_LINE
-		&& (curbuf->b_p_ai
-#ifdef FEAT_CINDENT
-		    || cindent_on()
-#endif
-		   )
+		&& (curbuf->b_p_ai || cindent_on())
 #ifdef FEAT_RIGHTLEFT
 		&& !revins_on
 #endif
@@ -4177,10 +4156,8 @@ ins_bs(
 	    if (curwin->w_cursor.col < save_col)
 	    {
 		mincol = curwin->w_cursor.col;
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
 		// should now fix the indent to match with the previous line
 		call_fix_indent = TRUE;
-#endif
 	    }
 	    curwin->w_cursor.col = save_col;
 	}
@@ -4233,7 +4210,7 @@ ins_bs(
 #endif
 
 	    // delete characters until we are at or before want_vcol
-	    while (vcol > want_vcol
+	    while (vcol > want_vcol && curwin->w_cursor.col > 0
 		    && (cc = *(ml_get_cursor() - 1), VIM_ISWHITE(cc)))
 		ins_bs_one(&vcol);
 
@@ -4346,18 +4323,14 @@ ins_bs(
 	}
 	did_backspace = TRUE;
     }
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
     if (curwin->w_cursor.col <= 1)
 	did_ai = FALSE;
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     if (call_fix_indent)
 	fix_indent();
-#endif
 
     /*
      * It's a little strange to put backspaces into the redo
@@ -4426,6 +4399,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	do
 	    c = vgetc();
 	while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
+
 	if (c == NUL || got_int || (ex_normal_busy > 0 && c == Ctrl_C))
 	    // When CTRL-C was encountered the typeahead will be flushed and we
 	    // won't get the end sequence.  Except when using ":normal".
@@ -4506,9 +4480,7 @@ ins_tabline(int c)
     {
 	undisplay_dollar();
 	start_arrow(&curwin->w_cursor);
-# ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-# endif
     }
 
     if (c == K_TABLINE)
@@ -4532,9 +4504,7 @@ ins_scroll(void)
     if (gui_do_scroll())
     {
 	start_arrow(&tpos);
-# ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-# endif
     }
 }
 
@@ -4545,12 +4515,10 @@ ins_horscroll(void)
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (gui_do_horiz_scroll(scrollbar_value, FALSE))
+    if (do_mousescroll_horiz(scrollbar_value))
     {
 	start_arrow(&tpos);
-# ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-# endif
     }
 }
 #endif
@@ -4643,7 +4611,7 @@ ins_end(int c)
 }
 
     static void
-ins_s_left()
+ins_s_left(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
@@ -4712,7 +4680,7 @@ ins_right(void)
 }
 
     static void
-ins_s_right()
+ins_s_right(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
@@ -4755,11 +4723,9 @@ ins_up(
 		|| old_topfill != curwin->w_topfill
 #endif
 		)
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	start_arrow(&tpos);
-#ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-#endif
     }
     else
 	vim_beep(BO_CRSR);
@@ -4787,9 +4753,7 @@ ins_pageup(void)
     if (onepage(BACKWARD, 1L) == OK)
     {
 	start_arrow(&tpos);
-#ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-#endif
     }
     else
 	vim_beep(BO_CRSR);
@@ -4816,11 +4780,9 @@ ins_down(
 		|| old_topfill != curwin->w_topfill
 #endif
 		)
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	start_arrow(&tpos);
-#ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-#endif
     }
     else
 	vim_beep(BO_CRSR);
@@ -4848,9 +4810,7 @@ ins_pagedown(void)
     if (onepage(FORWARD, 1L) == OK)
     {
 	start_arrow(&tpos);
-#ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-#endif
     }
     else
 	vim_beep(BO_CRSR);
@@ -4881,10 +4841,8 @@ ins_tab(void)
 	return FALSE;
 
     ind = inindent(0);
-#ifdef FEAT_CINDENT
     if (ind)
 	can_cindent = FALSE;
-#endif
 
     /*
      * When nothing special, insert TAB like a normal character.
@@ -4895,10 +4853,10 @@ ins_tab(void)
 		// These five lines mean 'tabstop' != 'shiftwidth'
 		&& ((tabstop_count(curbuf->b_p_vts_array) > 1)
 		    || (tabstop_count(curbuf->b_p_vts_array) == 1
-		        && tabstop_first(curbuf->b_p_vts_array)
+			&& tabstop_first(curbuf->b_p_vts_array)
 						       != get_sw_value(curbuf))
-	            || (tabstop_count(curbuf->b_p_vts_array) == 0
-		        && curbuf->b_p_ts != get_sw_value(curbuf))))
+		    || (tabstop_count(curbuf->b_p_vts_array) == 0
+			&& curbuf->b_p_ts != get_sw_value(curbuf))))
 	    && tabstop_count(curbuf->b_p_vsts_array) == 0
 #else
 	    && !(p_sta && ind && curbuf->b_p_ts != get_sw_value(curbuf))
@@ -4910,11 +4868,9 @@ ins_tab(void)
 	return TRUE;
 
     did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
     AppendToRedobuff((char_u *)"\t");
 
 #ifdef FEAT_VARTABS
@@ -4924,7 +4880,7 @@ ins_tab(void)
 	temp -= get_nolist_virtcol() % temp;
     }
     else if (tabstop_count(curbuf->b_p_vsts_array) > 0 || curbuf->b_p_sts != 0)
-	                        // use 'softtabstop' when set
+				// use 'softtabstop' when set
 	temp = tabstop_padding(get_nolist_virtcol(), get_sts_value(),
 						     curbuf->b_p_vsts_array);
     else			// otherwise use 'tabstop'
@@ -4963,7 +4919,7 @@ ins_tab(void)
      */
 #ifdef FEAT_VARTABS
     if (!curbuf->b_p_et && (tabstop_count(curbuf->b_p_vsts_array) > 0
-                            || get_sts_value() > 0
+			    || get_sts_value() > 0
 			    || (p_sta && ind)))
 #else
     if (!curbuf->b_p_et && (get_sts_value() || (p_sta && ind)))
@@ -4977,6 +4933,8 @@ ins_tab(void)
 	colnr_T		want_vcol, vcol;
 	int		change_col = -1;
 	int		save_list = curwin->w_p_list;
+	char_u		*tab = (char_u *)"\t";
+	chartabsize_T	cts;
 
 	/*
 	 * Get the current line.  For MODE_VREPLACE state, don't make real
@@ -5022,12 +4980,14 @@ ins_tab(void)
 	getvcol(curwin, &fpos, &vcol, NULL, NULL);
 	getvcol(curwin, cursor, &want_vcol, NULL, NULL);
 
+	init_chartabsize_arg(&cts, curwin, 0, vcol, tab, tab);
+
 	// Use as many TABs as possible.  Beware of 'breakindent', 'showbreak'
 	// and 'linebreak' adding extra virtual columns.
 	while (VIM_ISWHITE(*ptr))
 	{
-	    i = lbr_chartabsize(NULL, (char_u *)"\t", vcol);
-	    if (vcol + i > want_vcol)
+	    i = lbr_chartabsize(&cts);
+	    if (cts.cts_vcol + i > want_vcol)
 		break;
 	    if (*ptr != TAB)
 	    {
@@ -5042,21 +5002,27 @@ ins_tab(void)
 	    }
 	    ++fpos.col;
 	    ++ptr;
-	    vcol += i;
+	    cts.cts_vcol += i;
 	}
+	vcol = cts.cts_vcol;
+	clear_chartabsize_arg(&cts);
 
 	if (change_col >= 0)
 	{
-	    int repl_off = 0;
-	    char_u *line = ptr;
+	    int		    repl_off = 0;
 
 	    // Skip over the spaces we need.
-	    while (vcol < want_vcol && *ptr == ' ')
+	    init_chartabsize_arg(&cts, curwin, 0, vcol, ptr, ptr);
+	    while (cts.cts_vcol < want_vcol && *cts.cts_ptr == ' ')
 	    {
-		vcol += lbr_chartabsize(line, ptr, vcol);
-		++ptr;
+		cts.cts_vcol += lbr_chartabsize(&cts);
+		++cts.cts_ptr;
 		++repl_off;
 	    }
+	    ptr = cts.cts_ptr;
+	    vcol = cts.cts_vcol;
+	    clear_chartabsize_arg(&cts);
+
 	    if (vcol > want_vcol)
 	    {
 		// Must have a char with 'showbreak' just before it.
@@ -5085,7 +5051,7 @@ ins_tab(void)
 		    mch_memmove(newp + col, ptr + i,
 					   curbuf->b_ml.ml_line_len - col - i);
 
-		    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+		    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
 			vim_free(curbuf->b_ml.ml_line_ptr);
 		    curbuf->b_ml.ml_line_ptr = newp;
 		    curbuf->b_ml.ml_line_len -= i;
@@ -5182,9 +5148,7 @@ ins_eol(int c)
 	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM : 0, old_indent,
 	    NULL);
     old_indent = 0;
-#ifdef FEAT_CINDENT
     can_cindent = TRUE;
-#endif
 #ifdef FEAT_FOLDING
     // When inserting a line the cursor line must never be in a closed fold.
     foldOpenCursor();
@@ -5214,9 +5178,7 @@ ins_digraph(void)
 
 	edit_putchar('?', TRUE);
 	did_putchar = TRUE;
-#ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(Ctrl_K);
-#endif
     }
 
 #ifdef USE_ON_FLY_SCROLL
@@ -5237,9 +5199,7 @@ ins_digraph(void)
 
     if (IS_SPECIAL(c) || mod_mask)	    // special key
     {
-#ifdef FEAT_CMDL_INFO
 	clear_showcmd();
-#endif
 	insert_special(c, TRUE, FALSE);
 	return NUL;
     }
@@ -5257,9 +5217,7 @@ ins_digraph(void)
 		edit_putchar(c, TRUE);
 		did_putchar = TRUE;
 	    }
-#ifdef FEAT_CMDL_INFO
 	    add_to_showcmd_c(c);
-#endif
 	}
 	++no_mapping;
 	++allow_keys;
@@ -5274,15 +5232,11 @@ ins_digraph(void)
 	{
 	    AppendToRedobuff((char_u *)CTRL_V_STR);
 	    c = digraph_get(c, cc, TRUE);
-#ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
-#endif
 	    return c;
 	}
     }
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
     return NUL;
 }
 #endif
@@ -5294,10 +5248,10 @@ ins_digraph(void)
     int
 ins_copychar(linenr_T lnum)
 {
-    int	    c;
-    int	    temp;
-    char_u  *ptr, *prev_ptr;
-    char_u  *line;
+    int		    c;
+    char_u	    *ptr, *prev_ptr;
+    char_u	    *line;
+    chartabsize_T   cts;
 
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
     {
@@ -5306,17 +5260,20 @@ ins_copychar(linenr_T lnum)
     }
 
     // try to advance to the cursor column
-    temp = 0;
-    line = ptr = ml_get(lnum);
-    prev_ptr = ptr;
     validate_virtcol();
-    while ((colnr_T)temp < curwin->w_virtcol && *ptr != NUL)
+    line = ml_get(lnum);
+    prev_ptr = line;
+    init_chartabsize_arg(&cts, curwin, lnum, 0, line, line);
+    while (cts.cts_vcol < curwin->w_virtcol && *cts.cts_ptr != NUL)
     {
-	prev_ptr = ptr;
-	temp += lbr_chartabsize_adv(line, &ptr, (colnr_T)temp);
+	prev_ptr = cts.cts_ptr;
+	cts.cts_vcol += lbr_chartabsize_adv(&cts);
     }
-    if ((colnr_T)temp > curwin->w_virtcol)
+    if (cts.cts_vcol > curwin->w_virtcol)
 	ptr = prev_ptr;
+    else
+	ptr = cts.cts_ptr;
+    clear_chartabsize_arg(&cts);
 
     c = (*mb_ptr2char)(ptr);
     if (c == NUL)
@@ -5338,7 +5295,7 @@ ins_ctrl_ey(int tc)
 	    scrolldown_clamp();
 	else
 	    scrollup_clamp();
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
     }
     else
     {
@@ -5413,7 +5370,7 @@ do_insert_char_pre(int c)
     }
 
     // Lock the text to avoid weird things from happening.
-    ++textwinlock;
+    ++textlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
     res = NULL;
@@ -5427,7 +5384,7 @@ do_insert_char_pre(int c)
     }
 
     set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
-    --textwinlock;
+    --textlock;
 
     // Restore the State, it may have been changed.
     State = save_State;
@@ -5436,7 +5393,6 @@ do_insert_char_pre(int c)
 }
 #endif
 
-#if defined(FEAT_CINDENT) || defined(PROTO)
     int
 get_can_cindent(void)
 {
@@ -5448,7 +5404,6 @@ set_can_cindent(int val)
 {
     can_cindent = val;
 }
-#endif
 
 /*
  * Trigger "event" and take care of fixing undo.

@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.2.  Last change: 2022 Mar 09
+*gui_w32.txt*   For Vim version 9.0.  Last change: 2022 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17,7 +17,7 @@ Vim's Win32 Graphical User Interface			*gui-w32* *win32-gui*
 
 Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
-|os_win32.txt| 	For Win32 specific items.
+|os_win32.txt|	For Win32 specific items.
 
 
 ==============================================================================
@@ -106,8 +106,7 @@ when you have got a new version):
 You can also install Vim in the "Send To" menu:
 1. Start a Windows Explorer
 2. Navigate to your sendto directory:
-   Windows XP: C:\Documents and Settings\%user%\SendTo
-   Windows Vista: C:\Users\%user%\AppData\Roaming\Microsoft\Windows\SendTo .
+   C:\Users\%user%\AppData\Roaming\Microsoft\Windows\SendTo .
 3. Right-click in the file pane and select New->Shortcut
 4. Follow the shortcut wizard, using the full path to VIM/GVIM.
 

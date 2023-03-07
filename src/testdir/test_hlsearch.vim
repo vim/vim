@@ -1,6 +1,7 @@
 " Test for v:hlsearch
 
 source check.vim
+source screendump.vim
 
 func Test_hlsearch()
   new
@@ -37,6 +38,15 @@ endfunc
 func Test_hlsearch_hangs()
   CheckFunction reltimefloat
 
+  " So, it turns out that Windows 7 implements TimerQueue timers differently
+  " and they can expire *before* the requested time has elapsed. So allow for
+  " the timeout occurring after 80 ms (5 * 16 (the typical clock tick)).
+  if has("win32")
+    let min_timeout = 0.08
+  else
+    let min_timeout = 0.1
+  endif
+
   " This pattern takes a long time to match, it should timeout.
   new
   call setline(1, ['aaa', repeat('abc ', 1000), 'ccc'])
@@ -45,8 +55,7 @@ func Test_hlsearch_hangs()
   let @/ = '\%#=1a*.*X\@<=b*'
   redraw
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed > 0.1)
-  call assert_true(elapsed < 1.0)
+  call assert_inrange(min_timeout, 1.0, elapsed)
   set nohlsearch redrawtime&
   bwipe!
 endfunc
@@ -62,6 +71,24 @@ func Test_hlsearch_eol_highlight()
   endfor
   set nohlsearch
   bwipe!
+endfunc
+
+func Test_hlsearch_Ctrl_R()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set incsearch hlsearch
+      let @" = "text"
+      put
+  END
+  call writefile(lines, 'XhlsearchCtrlR', 'D')
+  let buf = RunVimInTerminal('-S XhlsearchCtrlR', #{rows: 6, cols: 60})
+
+  call term_sendkeys(buf, "/\<C-R>\<C-R>\"")
+  call VerifyScreenDump(buf, 'Test_hlsearch_ctrlr_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

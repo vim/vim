@@ -188,7 +188,7 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    RETSIGTYPE (*sigcld) SIGPROTOARG;
+    void (*sigcld) SIGPROTOARG;
     static char TtyName[32];  // used for opening a new pty-pair
 
     if ((f = posix_openpt(O_RDWR | O_NOCTTY | O_EXTRA)) == -1)
@@ -252,31 +252,6 @@ mch_openpty(char **ttyn)
 }
 #endif
 
-#if defined(__sgi) && !defined(PTY_DONE)
-#define PTY_DONE
-    int
-mch_openpty(char **ttyn)
-{
-    int f;
-    char *name;
-    RETSIGTYPE (*sigcld) SIGPROTOARG;
-
-    /*
-     * SIGCHLD set to SIG_DFL for _getpty() because it may fork() and
-     * exec() /usr/adm/mkpts
-     */
-    sigcld = signal(SIGCHLD, SIG_DFL);
-    name = _getpty(&f, O_RDWR | O_NONBLOCK | O_EXTRA, 0600, 0);
-    signal(SIGCHLD, sigcld);
-
-    if (name == 0)
-	return -1;
-    initmaster(f);
-    *ttyn = name;
-    return f;
-}
-#endif
-
 #if defined(MIPS) && defined(HAVE_DEV_PTC) && !defined(PTY_DONE)
 #define PTY_DONE
     int
@@ -312,7 +287,7 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    RETSIGTYPE (*sigcld) SIGPROTOARG;
+    void (*sigcld) SIGPROTOARG;
     // used for opening a new pty-pair:
     static char TtyName[32];
 

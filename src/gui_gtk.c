@@ -924,22 +924,22 @@ get_menu_position(vimmenu_T *menu)
     void
 gui_mch_menu_set_tip(vimmenu_T *menu)
 {
-    if (menu->id != NULL && menu->parent != NULL && gui.toolbar != NULL)
-    {
-	char_u *tooltip;
+    if (menu->id == NULL || menu->parent == NULL || gui.toolbar == NULL)
+	return;
 
-	tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
-	if (tooltip != NULL && utf_valid_string(tooltip, NULL))
+    char_u *tooltip;
+
+    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+    if (tooltip != NULL && utf_valid_string(tooltip, NULL))
 # if GTK_CHECK_VERSION(3,0,0)
-	    // Only set the tooltip when it's valid utf-8.
-	    gtk_widget_set_tooltip_text(menu->id, (const gchar *)tooltip);
+	// Only set the tooltip when it's valid utf-8.
+	gtk_widget_set_tooltip_text(menu->id, (const gchar *)tooltip);
 # else
-	    // Only set the tooltip when it's valid utf-8.
-	    gtk_tooltips_set_tip(GTK_TOOLBAR(gui.toolbar)->tooltips,
-				 menu->id, (const char *)tooltip, NULL);
+    // Only set the tooltip when it's valid utf-8.
+    gtk_tooltips_set_tip(GTK_TOOLBAR(gui.toolbar)->tooltips,
+	    menu->id, (const char *)tooltip, NULL);
 # endif
-	CONVERT_TO_UTF8_FREE(tooltip);
-    }
+    CONVERT_TO_UTF8_FREE(tooltip);
 }
 #endif // FEAT_TOOLBAR
 
@@ -1007,34 +1007,34 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     void
 gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 {
-    if (sb->id != NULL)
-    {
-	GtkAdjustment *adjustment;
+    if (sb->id == NULL)
+	return;
 
-	// ignore events triggered by moving the thumb (happens in GTK 3)
-	++hold_gui_events;
+    GtkAdjustment *adjustment;
 
-	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
+    // ignore events triggered by moving the thumb (happens in GTK 3)
+    ++hold_gui_events;
 
-	gtk_adjustment_set_lower(adjustment, 0.0);
-	gtk_adjustment_set_value(adjustment, val);
-	gtk_adjustment_set_upper(adjustment, max + 1);
-	gtk_adjustment_set_page_size(adjustment, size);
-	gtk_adjustment_set_page_increment(adjustment,
-					  size < 3L ? 1L : size - 2L);
-	gtk_adjustment_set_step_increment(adjustment, 1.0);
+    adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 
-	g_signal_handler_block(G_OBJECT(adjustment), (gulong)sb->handler_id);
+    gtk_adjustment_set_lower(adjustment, 0.0);
+    gtk_adjustment_set_value(adjustment, val);
+    gtk_adjustment_set_upper(adjustment, max + 1);
+    gtk_adjustment_set_page_size(adjustment, size);
+    gtk_adjustment_set_page_increment(adjustment,
+	    size < 3L ? 1L : size - 2L);
+    gtk_adjustment_set_step_increment(adjustment, 1.0);
 
-	--hold_gui_events;
+    g_signal_handler_block(G_OBJECT(adjustment), (gulong)sb->handler_id);
+
+    --hold_gui_events;
 
 #if !GTK_CHECK_VERSION(3,18,0)
-	gtk_adjustment_changed(adjustment);
+    gtk_adjustment_changed(adjustment);
 #endif
 
-	g_signal_handler_unblock(G_OBJECT(adjustment),
-						      (gulong)sb->handler_id);
-    }
+    g_signal_handler_unblock(G_OBJECT(adjustment),
+	    (gulong)sb->handler_id);
 }
 
     void
@@ -1157,21 +1157,21 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
 	sb->id = gtk_vscrollbar_new(NULL);
 #endif
 
-    if (sb->id != NULL)
-    {
-	GtkAdjustment *adjustment;
+    if (sb->id == NULL)
+	return;
 
-	gtk_widget_set_can_focus(sb->id, FALSE);
-	gui_gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
+    GtkAdjustment *adjustment;
 
-	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
+    gtk_widget_set_can_focus(sb->id, FALSE);
+    gui_gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
 
-	sb->handler_id = g_signal_connect(
-			     G_OBJECT(adjustment), "value-changed",
-			     G_CALLBACK(adjustment_value_changed),
-			     GINT_TO_POINTER(sb->ident));
-	gui_mch_update();
-    }
+    adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
+
+    sb->handler_id = g_signal_connect(
+	    G_OBJECT(adjustment), "value-changed",
+	    G_CALLBACK(adjustment_value_changed),
+	    GINT_TO_POINTER(sb->ident));
+    gui_mch_update();
 }
 
     void
@@ -1994,59 +1994,58 @@ gui_make_popup(char_u *path_name, int mouse_pos)
     popup_mouse_pos = mouse_pos;
 
     menu = gui_find_menu(path_name);
+    if (menu == NULL || menu->submenu_id == NULL)
+	return;
 
-    if (menu != NULL && menu->submenu_id != NULL)
-    {
 # if GTK_CHECK_VERSION(3,22,2)
-	GdkWindow * const win = gtk_widget_get_window(gui.drawarea);
-	GdkEventButton trigger;
+    GdkWindow * const win = gtk_widget_get_window(gui.drawarea);
+    GdkEventButton trigger;
 
-	// A pseudo event to have gtk_menu_popup_at_*() functions work. Since
-	// the position where the menu pops up is automatically adjusted by
-	// the functions, none of the fields x, y, x_root and y_root has to be
-	// set to a specific value here; therefore, they are set to zero for
-	// convenience.
-	trigger.type       = GDK_BUTTON_PRESS;
-	trigger.window     = win;
-	trigger.send_event = FALSE;
-	trigger.time       = GDK_CURRENT_TIME;
-	trigger.x	   = 0.0;
-	trigger.y	   = 0.0;
-	trigger.axes       = NULL;
-	trigger.state      = 0;
-	trigger.button     = 0;
-	trigger.device     = NULL;
-	trigger.x_root     = 0.0;
-	trigger.y_root     = 0.0;
+    // A pseudo event to have gtk_menu_popup_at_*() functions work. Since
+    // the position where the menu pops up is automatically adjusted by
+    // the functions, none of the fields x, y, x_root and y_root has to be
+    // set to a specific value here; therefore, they are set to zero for
+    // convenience.
+    trigger.type       = GDK_BUTTON_PRESS;
+    trigger.window     = win;
+    trigger.send_event = FALSE;
+    trigger.time       = GDK_CURRENT_TIME;
+    trigger.x	   = 0.0;
+    trigger.y	   = 0.0;
+    trigger.axes       = NULL;
+    trigger.state      = 0;
+    trigger.button     = 0;
+    trigger.device     = NULL;
+    trigger.x_root     = 0.0;
+    trigger.y_root     = 0.0;
 
-	if (mouse_pos)
-	    gtk_menu_popup_at_pointer(GTK_MENU(menu->submenu_id),
-				      (GdkEvent *)&trigger);
-	else
-	{
-	    gint origin_x, origin_y;
-	    GdkRectangle rect = { 0, 0, 0, 0 };
+    if (mouse_pos)
+	gtk_menu_popup_at_pointer(GTK_MENU(menu->submenu_id),
+		(GdkEvent *)&trigger);
+    else
+    {
+	gint origin_x, origin_y;
+	GdkRectangle rect = { 0, 0, 0, 0 };
 
-	    gdk_window_get_origin(win, &origin_x, &origin_y);
-	    popup_menu_position_func(NULL, &rect.x, &rect.y, NULL, NULL);
+	gdk_window_get_origin(win, &origin_x, &origin_y);
+	popup_menu_position_func(NULL, &rect.x, &rect.y, NULL, NULL);
 
-	    rect.x -= origin_x;
-	    rect.y -= origin_y;
+	rect.x -= origin_x;
+	rect.y -= origin_y;
 
-	    gtk_menu_popup_at_rect(GTK_MENU(menu->submenu_id),
-				   win,
-				   &rect,
-				   GDK_GRAVITY_SOUTH_EAST,
-				   GDK_GRAVITY_NORTH_WEST,
-				   (GdkEvent *)&trigger);
-	}
-# else
-	gtk_menu_popup(GTK_MENU(menu->submenu_id),
-		       NULL, NULL,
-		       &popup_menu_position_func, NULL,
-		       0U, (guint32)GDK_CURRENT_TIME);
-# endif
+	gtk_menu_popup_at_rect(GTK_MENU(menu->submenu_id),
+		win,
+		&rect,
+		GDK_GRAVITY_SOUTH_EAST,
+		GDK_GRAVITY_NORTH_WEST,
+		(GdkEvent *)&trigger);
     }
+# else
+    gtk_menu_popup(GTK_MENU(menu->submenu_id),
+	    NULL, NULL,
+	    &popup_menu_position_func, NULL,
+	    0U, (guint32)GDK_CURRENT_TIME);
+# endif
 }
 
 #endif // FEAT_MENU

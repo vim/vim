@@ -3,11 +3,20 @@
 source check.vim
 CheckFeature cryptv
 
-let s:xxd_cmd = ''
-if empty($XXDPROG) && executable('..\xxd\xxd.exe')
-  let s:xxd_cmd = '..\xxd\xxd.exe'
-elseif !empty($XXDPROG) && executable($XXDPROG)
+" Use the xxd command from:
+" 1: $XXDPROG if set and it is executable
+" 2: the ../xxd directory if the executable is found there
+if !empty($XXDPROG) && executable($XXDPROG)
   let s:xxd_cmd = $XXDPROG
+elseif executable('..\xxd\xxd.exe')
+  " we're on MS-Windows
+  let s:xxd_cmd = '..\xxd\xxd.exe'
+elseif executable('../xxd/xxd')
+  " we're on something like Unix
+  let s:xxd_cmd = '../xxd/xxd'
+else
+  " looks like xxd wasn't build (yet)
+  let s:xxd_cmd = ''
 endif
 
 func Common_head_only(text)
@@ -118,7 +127,7 @@ endfunc
 
 func Test_uncrypt_xchacha20()
   CheckFeature sodium
-  let hex=['00000000: 5669 6d43 7279 7074 7e30 3421 6b7d e607  vimCrypt~04!k}..',
+  let hex = ['00000000: 5669 6d43 7279 7074 7e30 3421 6b7d e607  vimCrypt~04!k}..',
         \  '00000010: 4ea4 e99f 923e f67f 7b59 a80d 3bca 2f06  N....>..{Y..;./.',
         \  '00000020: fa11 b951 8d09 0dc9 470f e7cf 8b90 4310  ...Q....G.....C.',
         \  '00000030: 653b b83b e493 378b 0390 0e38 f912 626b  e;.;..7....8..bk',

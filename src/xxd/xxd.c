@@ -55,6 +55,7 @@
  * 11.01.2019  Add full 64/32 bit range to -o and output by Christer Jensen.
  * 04.02.2020  Add -d for decimal offsets by Aapo Rantalainen
  * 14.01.2022  Disable extra newlines with -c0 -p by Erik Auerswald.
+ * 20.06.2022  Permit setting the variable names used by -i by David Gow
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -132,9 +133,6 @@ extern int rewind  __P((FILE *));
 extern void perror __P((char *));
 # endif
 #endif
-
-extern long int strtol();
-extern long int ftell();
 
 char version[] = "xxd 2022-01-14 by Juergen Weigert et al.";
 #ifdef WIN32
@@ -226,6 +224,7 @@ exit_with_usage(void)
   fprintf(stderr, "    -h          print this summary.\n");
   fprintf(stderr, "    -i          output in C include file style.\n");
   fprintf(stderr, "    -l len      stop after <len> octets.\n");
+  fprintf(stderr, "    -n name     set the variable name used in C include output (-i).\n");
   fprintf(stderr, "    -o off      add <off> to the displayed file position.\n");
   fprintf(stderr, "    -ps         output in postscript plain hexdump style.\n");
   fprintf(stderr, "    -r          reverse operation: convert (or patch) hexdump into binary.\n");
@@ -497,6 +496,7 @@ main(int argc, char *argv[])
   unsigned long displayoff = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
+  char *varname = NULL;
   int addrlen = 9;
 
 #ifdef AMIGA
@@ -635,6 +635,19 @@ main(int argc, char *argv[])
 	      argc--;
 	    }
 	}
+      else if (!STRNCMP(pp, "-n", 2))
+        {
+          if (pp[2] && STRNCMP("ame", pp + 2, 3))
+            varname = pp + 2;
+          else
+            {
+              if (!argv[2])
+                exit_with_usage();
+              varname = argv[2];
+              argv++;
+              argc--;
+            }
+        }
       else if (!strcmp(pp, "--"))	/* end of options */
 	{
 	  argv++;
@@ -753,16 +766,19 @@ main(int argc, char *argv[])
 
   if (hextype == HEX_CINCLUDE)
     {
-      if (fp != stdin)
+      /* A user-set variable name overrides fp == stdin */
+      if (varname == NULL && fp != stdin)
+        varname = argv[1];
+
+      if (varname != NULL)
 	{
-	  FPRINTF_OR_DIE((fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : ""));
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
+	  FPRINTF_OR_DIE((fpo, "unsigned char %s", isdigit((int)varname[0]) ? "__" : ""));
+	  for (e = 0; (c = varname[e]) != 0; e++)
 	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  fputs_or_die("[] = {\n", fpo);
 	}
 
       p = 0;
-      c = 0;
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  FPRINTF_OR_DIE((fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",
@@ -773,11 +789,11 @@ main(int argc, char *argv[])
       if (p)
 	fputs_or_die("\n", fpo);
 
-      if (fp != stdin)
+      if (varname != NULL)
 	{
 	  fputs_or_die("};\n", fpo);
-	  FPRINTF_OR_DIE((fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : ""));
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
+	  FPRINTF_OR_DIE((fpo, "unsigned int %s", isdigit((int)varname[0]) ? "__" : ""));
+	  for (e = 0; (c = varname[e]) != 0; e++)
 	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  FPRINTF_OR_DIE((fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p));
 	}
@@ -821,7 +837,8 @@ main(int argc, char *argv[])
 	{
 	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
 				  ((unsigned long)(n + seekoff + displayoff)));
-	  for (c = addrlen; c < LLEN; l[c++] = ' ');
+	  for (c = addrlen; c < LLEN; l[c++] = ' ')
+	    ;
 	}
       x = hextype == HEX_LITTLEENDIAN ? p ^ (octspergrp-1) : p;
       c = addrlen + 1 + (grplen * x) / octspergrp;
@@ -841,7 +858,12 @@ main(int argc, char *argv[])
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
       /* When changing this update definition of LLEN above. */
-      c = addrlen + 3 + (grplen * cols - 1)/octspergrp + p;
+      if (hextype == HEX_LITTLEENDIAN)
+	/* last group will be fully used, round up */
+	c = grplen * ((cols + octspergrp - 1) / octspergrp);
+      else
+	c = (grplen * cols - 1) / octspergrp;
+      c += addrlen + 3 + p;
       l[c++] =
 #ifdef __MVS__
 	  (e >= 64)

@@ -1,6 +1,6 @@
 " METAFONT indent file
 " Language:    METAFONT
 " Maintainer:  Nicola Vitacolonna <nvitacolonna@gmail.com>
-" Last Change: 2016 Oct 1
+" Latest Revision:    2022 Aug 12
 
 runtime! indent/mp.vim

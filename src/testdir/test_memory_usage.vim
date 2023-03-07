@@ -65,6 +65,9 @@ func s:term_vim.start(...) abort
   let self.job = term_getjob(self.buf)
   call WaitFor({-> job_status(self.job) ==# 'run'})
   let self.pid = job_info(self.job).process
+
+  " running an external command may fail once in a while
+  let g:test_is_flaky = 1
 endfunc
 
 func s:term_vim.stop() abort
@@ -89,7 +92,7 @@ func Test_memory_func_capture_vargs()
           call s:f(0)
         endfor
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)
@@ -111,7 +114,6 @@ func Test_memory_func_capture_vargs()
   call assert_inrange(lower, upper, after.max)
 
   call vim.stop()
-  call delete(testfile)
 endfunc
 
 func Test_memory_func_capture_lvars()
@@ -127,7 +129,7 @@ func Test_memory_func_capture_lvars()
           call s:f()
         endfor
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)
@@ -158,7 +160,6 @@ func Test_memory_func_capture_lvars()
   call assert_inrange(lower, upper, last)
 
   call vim.stop()
-  call delete(testfile)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

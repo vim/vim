@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Apr 25
+*usr_41.txt*	For Vim version 9.0.  Last change: 2023 Jan 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -7,7 +7,7 @@
 
 The Vim script language is used for the startup vimrc file, syntax files, and
 many other things.  This chapter explains the items that can be used in a Vim
-script.  There are a lot of them, thus this is a long chapter.
+script.  There are a lot of them, therefore this is a long chapter.
 
 |41.1|	Introduction
 |41.2|	Variables
@@ -17,14 +17,10 @@ script.  There are a lot of them, thus this is a long chapter.
 |41.6|	Using functions
 |41.7|	Defining a function
 |41.8|	Lists and Dictionaries
-|41.9|	Exceptions
-|41.10|	Various remarks
-|41.11|	Writing a plugin
-|41.12|	Writing a filetype plugin
-|41.13|	Writing a compiler plugin
-|41.14|	Writing a plugin that loads quickly
-|41.15|	Writing library scripts
-|41.16|	Distributing Vim scripts
+|41.9|	White space
+|41.10|	Line continuation
+|41.11|	Comments
+|41.12|	Fileformat
 
      Next chapter: |usr_42.txt|  Add new menus
  Previous chapter: |usr_40.txt|  Make new commands
@@ -34,22 +30,19 @@ Table of contents: |usr_toc.txt|
 *41.1*	Introduction				*vim-script-intro* *script*
 
 Your first experience with Vim scripts is the vimrc file.  Vim reads it when
-it starts up and executes the commands.  You can set options to values you
-prefer.  And you can use any colon command in it (commands that start with a
-":"; these are sometimes referred to as Ex commands or command-line commands).
+it starts up and executes the commands.  You can set options to the values you
+prefer, define mappings, select plugins and much more.   You can use any colon
+command in it (commands that start with a ":"; these are sometimes referred to
+as Ex commands or command-line commands).
 
 Syntax files are also Vim scripts.  As are files that set options for a
 specific file type.  A complicated macro can be defined by a separate Vim
 script file.  You can think of other uses yourself.
 
-	If you are familiar with Python, you can find a comparison between
-	Python and Vim script here, with pointers to other documents:
-	   https://gist.github.com/yegappan/16d964a37ead0979b05e655aa036cad0
-	And if you are familiar with JavaScript:
-	   https://w0rp.com/blog/post/vim-script-for-the-javascripter/
-
 Vim script comes in two flavors: legacy and |Vim9|.  Since this help file is
 for new users, we'll teach you the newer and more convenient |Vim9| syntax.
+While legacy script is particularly for Vim, |Vim9| script looks more like
+other languages, such as JavaScript and TypeScript.
 
 To try out Vim script the best way is to edit a script file and source it.
 Basically: >
@@ -75,8 +68,9 @@ The output of the example code is:
 	count is 4 ~
 
 In the first line the `vim9script` command makes clear this is a new, |Vim9|
-script file.  That matters for how the rest of the file is used.
-
+script file.  That matters for how the rest of the file is used.  It is
+recommended to put it in the very fist line, before any comments.
+							*vim9-declarations*
 The `var i = 1` command declares the "i" variable and initializes it.  The
 generic form is: >
 
@@ -110,29 +104,53 @@ The example was given to explain the commands, but would you really want to
 make such a loop, it can be written much more compact: >
 
 	for i in range(1, 4)
-	  echo "count is" i
+	  echo $"count is {i}"
 	endfor
 
-We won't explain how `for` and `range()` work until later.  Follow the links
-if you are impatient.
+We won't explain how `for`, `range()`and `$"string"` work until later.  Follow
+the links if you are impatient.
+
+
+TRYING OUT EXAMPLES
+
+You can easily try out most examples in these help files without saving the
+commands to a file.  For example, to try out the "for" loop above do this:
+1. position the cursor on the "for"
+2. start Visual mode with "v"
+3. move down to the "endfor"
+4. press colon, then "so" and Enter
+
+After pressing colon you will see ":'<,'>", which is the range of the Visually
+selected text.
+
+For some commands it matters they are executed as in |Vim9| script.  But typed
+commands normally use legacy script syntax, such as the example below that
+causes the E1004 error.  For that use this fourth step:
+4. press colon, then "vim9 so" and Enter
+
+"vim9" is short for `vim9cmd`, which is a command modifier to execute the
+following command in |Vim9| syntax.
+
+Note that this won't work for examples that require a script context.
 
 
 FOUR KINDS OF NUMBERS
 
-Numbers can be decimal, hexadecimal, octal or binary.
+Numbers can be decimal, hexadecimal, octal and binary.
 
 A hexadecimal number starts with "0x" or "0X".  For example "0x1f" is decimal
-31.
+31 and "0x1234" is decimal 4660.
 
 An octal number starts with "0o", "0O".  "0o17" is decimal 15.
 
 A binary number starts with "0b" or "0B".  For example "0b101" is decimal 5.
 
 A decimal number is just digits.  Careful: In legacy script don't put a zero
-before a decimal number, it will be interpreted as an octal number!
+before a decimal number, it will be interpreted as an octal number!  That's
+one reason to use |Vim9| script.
 
-The `echo` command evaluates its argument and always prints decimal numbers.
-Example: >
+The `echo` command evaluates its argument and when it is a number always
+prints the decimal form.  Example: >
 
 	echo 0x7f 0o36
 <	127 30 ~
@@ -165,6 +183,7 @@ To actually have the minus sign be used for negation, you can put the second
 expression in parentheses: >
 
 	echo -0x7f (-0o36)
+<	-127 -30 ~
 
 ==============================================================================
 *41.2*	Variables
@@ -175,19 +194,19 @@ cannot start with a digit.  Valid variable names are:
 	counter
 	_aap3
 	very_long_variable_name_with_underscores
-	FuncLength
+	CamelCaseName
 	LENGTH
 
-Invalid names are "foo+bar" and "6var".
+Invalid names are "foo.bar" and "6var".
 
 Some variables are global.  To see a list of currently defined global
 variables type this command: >
 
 	:let
 
-You can use global variables everywhere.  However, it is easy to use the same
-name in two unrelated scripts.  Therefore variables declared in a script are
-local to that script.  For example, if you have this in "script1.vim": >
+You can use global variables everywhere.  However, it is too easy to use the
+same name in two unrelated scripts.  Therefore variables declared in a script
+are local to that script.  For example, if you have this in "script1.vim": >
 
 	vim9script
 	var counter = 5
@@ -204,18 +223,23 @@ Using a script-local variable means you can be sure that it is only changed in
 that script and not elsewhere.
 
 If you do want to share variables between scripts, use the "g:" prefix and
-assign the value directly, do not use `var`.  Thus in "script1.vim": >
+assign the value directly, do not use `var`.  And use a specific name to avoid
+mistakes.  Thus in "script1.vim": >
 
 	vim9script
-	g:counter = 5
-	echo g:counter
+	g:mash_counter = 5
+	echo g:mash_counter
 <	5 ~
 
 And then in "script2.vim": >
 
 	vim9script
-	echo g:counter
+	echo g:mash_counter
 <	5 ~
+
+Global variables can also be accessed on the command line, E.g. typing this: >
+	echo g:mash_counter
+That will not work for a script-local variable.
 
 More about script-local variables here: |script-variable|.
 
@@ -241,17 +265,18 @@ when it doesn't, append !: >
 
 	unlet! g:counter
 
-You cannot `unlet` script-local variables in |Vim9| script.  You can in legacy
+You cannot `unlet` script-local variables in |Vim9| script, only in legacy
 script.
 
-When a script finishes, the local variables declared there will not be
-deleted.  Functions defined in the script can use them.  Example:
+When a script has been processed to the end, the local variables declared
+there will not be deleted.  Functions defined in the script can use them.
+Example:
 >
 	vim9script
 	var counter = 0
 	def g:GetCount(): number
-	  s:counter += 1
-	  return s:counter
+	  counter += 1
+	  return counter
 	enddef
 
 Every time you call the function it will return the next count: >
@@ -261,12 +286,15 @@ Every time you call the function it will return the next count: >
 	:echo g:GetCount()
 <	2 ~
 
-If you are worried a script-local variable is consuming too much
-memory, set it to an empty value after you no longer need it.
+If you are worried a script-local variable is consuming too much memory, set
+it to an empty or null value after you no longer need it.  Example: >
+	var lines = readfile(...)
+	...
+	lines = []
 
-Note: below we'll leave out the `vim9script` line, so we can concentrate on
-the relevant commands, but you'll still need to put it at the top of your
-script file.
+Note: below we'll leave out the `vim9script` line from examples, so we can
+concentrate on the relevant commands, but you'll still need to put it at the
+top of your script file.
 
 
 STRING VARIABLES AND CONSTANTS
@@ -285,20 +313,24 @@ want to give the variable a value yet, you need to specify the type: >
 
 	var name: string
 	var age: number
-	...
-	name = "Peter"
-	age = 42
+	if male
+	   name = "Peter"
+	   age = 42
+	else
+	   name = "Elisa"
+	   age = 45
+	endif
 
 If you make a mistake and try to assign the wrong type of value you'll get an
 error: >
-	
+
 	age = "Peter"
 <	E1012: Type mismatch; expected number but got string ~
 
 More about types in |41.8|.
 
-To assign a string value to a variable, you need to use a string constant.
-There are two types of these.  First the string in double quotes, as we used
+To assign a string value to a variable, you can use a string constant.  There
+are two types of these.  First the string in double quotes, as we used
 already.  If you want to include a double quote inside the string, put a
 backslash in front of it: >
 
@@ -306,7 +338,7 @@ backslash in front of it: >
 	echo name
 <	he is "Peter" ~
 
-To avoid the need for a backslash, you can use a string in single quotes: >
+To avoid the need for backslashes, you can use a string in single quotes: >
 
 	var name = 'he is "Peter"'
 	echo name
@@ -351,8 +383,8 @@ themselves.  Thus everywhere an expression is expected, you can use a number,
 string or variable.  Other basic items in an expression are:
 
 	$NAME		environment variable
-	&name		option
-	@r		register
+	&name		option value
+	@r		register contents
 
 Examples: >
 
@@ -394,14 +426,23 @@ Grouping is done with parentheses.  No surprises here.  Example: >
 	echo (10 + 5) * 2
 <	30 ~
 
+
+OTHERS
+
 Strings can be concatenated with ".." (see |expr6|).  Example: >
 
-	echo "foo" .. "bar"
-<	foobar ~
+	echo "Name: " .. name
+	Name: Peter
 
 When the "echo" command gets multiple arguments, it separates them with a
 space.  In the example the argument is a single expression, thus no space is
 inserted.
+
+If you don't like the concatenation you can use the $"string" form, which
+accepts an expression in curly braces: >
+	echo $"Name: {name}"
+
+See |interpolated-string| for more information.
 
 Borrowed from the C language is the conditional expression: >
 
@@ -417,6 +458,10 @@ The three parts of the constructs are always evaluated first, thus you could
 see it works as: >
 
 	(a) ? (b) : (c)
+
+There is also the falsy operator: >
+	echo name ?? "No name given"
+See |??|.
 
 ==============================================================================
 *41.4*	Conditionals
@@ -482,16 +527,17 @@ ones:
 
 The result is true if the condition is met and false otherwise.  An example: >
 
-	if v:version >= 700
+	if v:version >= 800
 	  echo "congratulations"
 	else
 	  echo "you are using an old version, upgrade!"
 	endif
 
 Here "v:version" is a variable defined by Vim, which has the value of the Vim
-version.  600 is for version 6.0, version 6.1 has the value 601.  This is
-very useful to write a script that works with multiple versions of Vim.
-|v:version|
+version.  800 is for version 8.0, version 8.1 has the value 801.  This is
+useful to write a script that works with multiple versions of Vim.
+See |v:version|.  You can also check for a specific feature with `has()` or a
+specific patch, see |has-patch|.
 
 The logic operators work both for numbers and strings.  When comparing two
 strings, the mathematical difference is used.  This compares byte values,
@@ -515,8 +561,8 @@ pattern, like what's used for searching.  Example: >
 	endif
 
 Notice the use of a single-quote string for the pattern.  This is useful,
-because backslashes would need to be doubled in a double-quote string and
-patterns tend to contain many backslashes.
+because patterns tend to contain many backslashes and backslashes need to be
+doubled in a double-quote string.
 
 The match is not anchored, if you want to match the whole string start with
 "^" and end with "$".
@@ -553,6 +599,7 @@ Example: >
 The `sleep` command makes Vim take a nap.  The "50m" specifies fifty
 milliseconds.  Another example is `sleep 4`, which sleeps for four seconds.
 
+`continue` and `break` can also be used in between `for` and `endfor`.
 Even more looping can be done with the `for` command, see below in |41.8|.
 
 ==============================================================================
@@ -589,10 +636,10 @@ Example: >
 This will move the cursor "count" lines down.
 
 Make sure that the argument for `normal` is a complete command.  Otherwise
-Vim will run into the end of the argument and abort the command.  For example,
-if you start the delete operator, you must give the movement command also.
-This works: >
-	
+Vim will run into the end of the argument and silently abort the command.  For
+example, if you start the delete operator, you must give the movement command
+also.  This works: >
+
 	normal d$
 
 This does nothing: >
@@ -614,8 +661,8 @@ Notice the use of the special key "\<Esc>".  This avoids having to enter a
 real <Esc> character in your script.  That is where `execute` with a
 double-quote string comes in handy.
 
-If you don't want to execute a string but evaluate it to get its expression
-value, you can use the eval() function: >
+If you don't want to execute a string as a command but evaluate it to get the
+result of the expression, you can use the eval() function: >
 
 	var optname = "path"
 	var optvalue = eval('&' .. optname)
@@ -630,19 +677,20 @@ Vim defines many functions and provides a large amount of functionality that
 way.  A few examples will be given in this section.  You can find the whole
 list below: |function-list|.
 
-A function is called with the `call` command.  The parameters are passed in
-between parentheses separated by commas.  Example: >
+A function is called with the parameters in between parentheses, separated by
+commas.  Example: >
 
-	call search("Date: ", "W")
+	search("Date: ", "W")
 
 This calls the search() function, with arguments "Date: " and "W".  The
 search() function uses its first argument as a search pattern and the second
 one as flags.  The "W" flag means the search doesn't wrap around the end of
 the file.
 
-Using `call` is optional in |Vim9| script, this works the same way: >
+Using the `call` command is optional in |Vim9| script.  It is required in
+legacy script and on the command line: >
 
-	search("Date: ", "W")
+	call search("Date: ", "W")
 
 A function can be called in an expression.  Example: >
 
@@ -654,10 +702,10 @@ The getline() function obtains a line from the current buffer.  Its argument
 is a specification of the line number.  In this case "." is used, which means
 the line where the cursor is.
 
-The substitute() function does something similar to the `substitute` command.
-The first argument is the string on which to perform the substitution.  The
-second argument is the pattern, the third the replacement string.  Finally,
-the last arguments are the flags.
+The substitute() function does something similar to the `:substitute` command.
+The first argument "line" is the string on which to perform the substitution.
+The second argument '\a' is the pattern, the third "*" is the replacement
+string.  Finally, the last argument "g" is the flags.
 
 The setline() function sets the line, specified by the first argument, to a
 new string, the second argument.  In this example the line under the cursor is
@@ -666,7 +714,7 @@ statements is equal to: >
 
 	:substitute/\a/*/g
 
-Using the functions becomes more interesting when you do more work before and
+Using the functions becomes interesting when you do more work before and
 after the substitute() call.
 
 
@@ -689,6 +737,8 @@ String manipulation:					*string-functions*
 	fnameescape()		escape a file name for use with a Vim command
 	tr()			translate characters from one set to another
 	strtrans()		translate a string to make it printable
+	keytrans()		translate internal keycodes to a form that
+				can be used by |:map|
 	tolower()		turn a string to lowercase
 	toupper()		turn a string to uppercase
 	charclass()		class of a character
@@ -707,6 +757,7 @@ String manipulation:					*string-functions*
 	strwidth()		size of string when displayed
 	strdisplaywidth()	size of string when displayed, deals with tabs
 	setcellwidths()		set character cell width overrides
+	getcellwidths()		get character cell width overrides
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string using byte index
@@ -744,14 +795,16 @@ List manipulation:					*list-functions*
 	reduce()		reduce a List to a value
 	slice()			take a slice of a List
 	sort()			sort a List
-	reverse()		reverse the order of a List
+	reverse()		reverse the order of a List or Blob
 	uniq()			remove copies of repeated adjacent items
 	split()			split a String into a List
 	join()			join List items into a String
 	range()			return a List with a sequence of numbers
 	string()		String representation of a List
 	call()			call a function with List as arguments
-	index()			index of a value in a List
+	index()			index of a value in a List or Blob
+	indexof()		index in a List or Blob where an expression
+				evaluates to true
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
@@ -845,6 +898,7 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	screencol()		get screen column of the cursor
 	screenrow()		get screen row of the cursor
 	screenpos()		screen row and col of a text character
+	virtcol2col()		byte index of a text character on screen
 	getcurpos()		get position of the cursor
 	getpos()		get position of cursor, mark, etc.
 	setpos()		set position of cursor, mark, etc.
@@ -882,6 +936,7 @@ Working with text in the current buffer:		*text-functions*
 
 Working with text in another buffer:
 	getbufline()		get a list of lines from the specified buffer
+	getbufoneline()		get a one line from the specified buffer
 	setbufline()		replace a line in the specified buffer
 	appendbufline()		append a list of lines in the specified buffer
 	deletebufline()		delete lines from a specified buffer
@@ -935,6 +990,11 @@ Date and Time:				*date-functions* *time-functions*
 	reltimestr()		convert reltime() result to a string
 	reltimefloat()		convert reltime() result to a Float
 
+Autocmds:					*autocmd-functions*
+	autocmd_add()		add a list of autocmds and groups
+	autocmd_delete()	delete a list of autocmds and groups
+	autocmd_get()		return a list of autocmds
+
 			*buffer-functions* *window-functions* *arg-functions*
 Buffers, windows and the argument list:
 	argc()			number of entries in the argument list
@@ -972,6 +1032,7 @@ Buffers, windows and the argument list:
 	getwininfo()		get a list with window information
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
+	swapfilelist()		list of existing swap files in 'directory'
 	swapinfo()		information about a swap file
 	swapname()		get the swap file path of a buffer
 
@@ -982,6 +1043,7 @@ Command line:					*command-line-functions*
 	getcmdpos()		get position of the cursor in the command line
 	getcmdscreenpos()	get screen position of the cursor in the
 				command line
+	setcmdline()		set the current command line
 	setcmdpos()		set position of the cursor in the command line
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
@@ -1051,6 +1113,7 @@ Interactive:					*interactive-functions*
 	getcharstr()		get a character from the user as a string
 	getcharmod()		get modifiers for the last typed character
 	getmousepos()		get last known mouse position
+	getmouseshape()		get name of the current mouse shape
 	echoraw()		output characters as-is
 	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
@@ -1124,6 +1187,7 @@ Testing:				    *test-functions*
 	test_getvalue()		get value of an internal variable
 	test_gui_event()	generate a GUI event for testing
 	test_ignore_error()	ignore a specific error message
+	test_mswin_event()	generate an MS-Windows event
 	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict
@@ -1230,6 +1294,7 @@ Popup window:					*popup-window-functions*
 	popup_filter_yesno()	block until 'y' or 'n' is pressed
 	popup_getoptions()	get current options for a popup
 	popup_getpos()		get actual position and size of a popup
+	popup_findecho()	get window ID for popup used for `:echowindow`
 	popup_findinfo()	get window ID for popup info window
 	popup_findpreview()	get window ID for popup preview window
 	popup_list()		get list of all popup window IDs
@@ -1253,6 +1318,14 @@ Prompt Buffer:					*promptbuffer-functions*
 	prompt_setcallback()	set prompt callback for a buffer
 	prompt_setinterrupt()	set interrupt callback for a buffer
 	prompt_setprompt()	set the prompt text for a buffer
+
+Registers:					*register-functions*
+	getreg()		get contents of a register
+	getreginfo()		get information about a register
+	getregtype()		get type of a register
+	setreg()		set contents and type of a register
+	reg_executing()		return the name of the register being executed
+	reg_recording()		return the name of the register being recorded
 
 Text Properties:				*text-property-functions*
 	prop_add()		attach a property at a position
@@ -1285,6 +1358,7 @@ Various:					*various-functions*
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
+	getscriptinfo()		get list of sourced vim scripts
 	getimstatus()		check if IME status is active
 	interrupt()		interrupt script execution
 	windowsversion()	get MS-Windows version
@@ -1295,13 +1369,6 @@ Various:					*various-functions*
 
 	undofile()		get the name of the undo file
 	undotree()		return the state of the undo tree
-
-	getreg()		get contents of a register
-	getreginfo()		get information about a register
-	getregtype()		get type of a register
-	setreg()		set contents and type of a register
-	reg_executing()		return the name of the register being executed
-	reg_recording()		return the name of the register being recorded
 
 	shiftwidth()		effective value of 'shiftwidth'
 
@@ -1351,8 +1418,9 @@ Let's assign the variable "smaller" the value of the smallest number: >
 	  smaller = num2
 	endif
 
-The variable "smaller" is a local variable.  Variables used inside a function
-are local unless prefixed by something like "g:", "w:", or "s:".
+The variable "smaller" is a local variable.  It is declared to be a number,
+that way Vim can warn you for any mistakes.  Variables used inside a function
+are local unless prefixed by something like "g:", "w:", or "b:".
 
 	Note:
 	To access a global variable from inside a function you must prepend
@@ -1408,15 +1476,23 @@ functions in the script: >
 
 	defcompile
 
-For a function that does not return anything leave out the return type: >
+Compiling functions takes a little time, but does report errors early.  You
+could use `:defcompile` at the end of your script while working on it, and
+comment it out when everything is fine.
+
+For a function that does not return anything simply leave out the return type: >
 
 	def SayIt(text: string)
 	  echo text
 	enddef
 
+If you want to return any kind of value, you can use the "any" return type: >
+	def GetValue(): any
+This disables type checking for the return value, use only when needed.
+
 It is also possible to define a legacy function with `function` and
-`endfunction`.  These do not have types and are not compiled.  They execute
-much slower.
+`endfunction`.  These do not have types and are not compiled.  Therefore they
+execute much slower.
 
 
 USING A RANGE
@@ -1430,45 +1506,10 @@ once for every line in the range, with the cursor in that line.  Example: >
 
 If you call this function with: >
 
-	:10,15call Number()
+	:10,15Number()
 
 The function will be called six times, starting on line 10 and ending on line
 15.
-
-
-VARIABLE NUMBER OF ARGUMENTS
-
-Vim enables you to define functions that have a variable number of arguments.
-The following command, for instance, defines a function that must have 1
-argument (start) and can have up to 20 additional arguments: >
-
-	def Show(start: string, ...items: list<string>)
-
-The variable "items" will be a list containing the extra arguments.  You can
-use it like any list, for example: >
-
-	def Show(start: string, ...items: list<string>)
-	  echohl Title
-	  echo "start is " .. start
-	  echohl None
-	  for index in range(len(items))
-	    echon "  Arg " .. index .. " is " .. items[index]
-	  endfor
-	  echo
-	enddef
-
-You can call it like this: >
-
-	Show('Title', 'one', 'two', 'three')
-<	start is Title  Arg 0 is one  Arg 1 is two  Arg 2 is three ~
-	
-This uses the `echohl` command to specify the highlighting used for the
-following `echo` command.  `echohl None` stops it again.  The `echon` command
-works like `echo`, but doesn't output a line break.
-
-If you call it with one argument the "items" list will be empty.
-`range(len(items))` returns a list with the indexes, what `for` loops over,
-we'll explain that further down.
 
 
 LISTING FUNCTIONS
@@ -1482,7 +1523,7 @@ functions: >
 	function SetSyn(name) ~
 
 The "<SNR>" prefix means that a function is script-local.  |Vim9| functions
-wil start with "def" and include argument and return types.  Legacy functions
+will start with "def" and include argument and return types.  Legacy functions
 are listed with "function".
 
 To see what a function does, use its name as an argument for `function`: >
@@ -1493,12 +1534,11 @@ To see what a function does, use its name as an argument for `function`: >
 	3     endif ~
 	   endfunction ~
 
-To see the "Show" function you need to include the script prefix, since a
-"Show" function can be defined multiple times in different scripts.  To find
+To see the "Show" function you need to include the script prefix, since
+multiple "Show" functions can be defined in different scripts.  To find
 the exact name you can use `function`, but the result may be a very long list.
 To only get the functions matching a pattern you can use the `filter` prefix:
 >
-
 	:filter Show function
 <	def <SNR>86_Show(start: string, ...items: list<string>) ~
 >
@@ -1532,25 +1572,30 @@ You get an error when the function doesn't exist or cannot be deleted.
 FUNCTION REFERENCES
 
 Sometimes it can be useful to have a variable point to one function or
-another.  You can do it with function reference variable.  Often shortened to
-"funcref".  Example: >
+another.  You can do it with a function reference variable.  Often shortened
+to "funcref".  Example: >
 
-	def Right()
+	def Right(): string
 	  return 'Right!'
 	enddef
-	def Wrong()
+	def Wrong(): string
 	  return 'Wrong!'
 	enddef
-	
+
 	var Afunc = g:result == 1 ? Right : Wrong
-	Afunc()
+	echo Afunc()
 <	Wrong! ~
 
-This assumes "g:result" is not one.
+This assumes "g:result" is not one.  See |Funcref| for details.
 
 Note that the name of a variable that holds a function reference must start
 with a capital.  Otherwise it could be confused with the name of a builtin
 function.
+
+
+FURTHER READING
+
+Using a variable number of arguments is introduced in section |50.2|.
 
 More information about defining your own functions here: |user-functions|.
 
@@ -1564,7 +1609,7 @@ A List is an ordered sequence of items.  The items can be any kind of value,
 thus you can make a List of numbers, a List of Lists and even a List of mixed
 items.  To create a List with three strings: >
 
-	var alist = ['aap', 'mies', 'noot']
+	var alist = ['aap', 'noot', 'mies']
 
 The List items are enclosed in square brackets and separated by commas.  To
 create an empty List: >
@@ -1586,14 +1631,14 @@ List concatenation is done with +: >
 	echo alist
 <	['foo', 'bar', 'and', 'more'] ~
 
-Or, if you want to extend a List with a function: >
+Or, if you want to extend a List with a function, use `extend()`: >
 
 	var alist = ['one']
 	extend(alist, ['two', 'three'])
 	echo alist
 <	['one', 'two', 'three'] ~
 
-Notice that using `add()` will have a different effect: >
+Notice that using `add()` will have a different effect than `extend()`: >
 
 	var alist = ['one']
 	add(alist, ['two', 'three'])
@@ -1618,7 +1663,7 @@ One of the nice things you can do with a List is iterate over it: >
 This will loop over each element in List "alist", assigning each value to
 variable "n".  The generic form of a for loop is: >
 
-	for {varname} in {listexpression}
+	for {varname} in {list-expression}
 	  {commands}
 	endfor
 
@@ -1633,7 +1678,10 @@ range() function creates one for you: >
 	2 ~
 
 Notice that the first item of the List that range() produces is zero, thus the
-last item is one less than the length of the list.
+last item is one less than the length of the list.  Detail: Internally range()
+does not actually create the list, so that a large range used in a for loop
+works efficiently.  When used elsewhere, the range is turned into an actual
+list, which takes more time for a long list.
 
 You can also specify the maximum value, the stride and even go backwards: >
 
@@ -1644,15 +1692,17 @@ You can also specify the maximum value, the stride and even go backwards: >
 	6 ~
 	4 ~
 
-A more useful example, looping over lines in the buffer: >
+A more useful example, looping over all the lines in the buffer: >
 
-	for line in getline(1, 20)
+	for line in getline(1, 50)
 	  if line =~ "Date: "
 	    echo line
 	  endif
 	endfor
 
-This looks into lines 1 to 20 (inclusive) and echoes any date found in there.
+This looks into lines 1 to 50 (inclusive) and echoes any date found in there.
+
+For further reading see |Lists|.
 
 
 DICTIONARIES
@@ -1704,104 +1754,31 @@ specific order: >
 But you can never get back the order in which items are defined.  For that you
 need to use a List, it stores items in an ordered sequence.
 
-
-For further reading see |Lists| and |Dictionaries|.
-
-==============================================================================
-*41.9*	Exceptions
-
-Let's start with an example: >
-
-	try
-	   read ~/templates/pascal.tmpl
-	catch /E484:/
-	   echo "Sorry, the Pascal template file cannot be found."
-	endtry
-
-The `read` command will fail if the file does not exist.  Instead of
-generating an error message, this code catches the error and gives the user a
-nice message.
-
-For the commands in between `try` and `endtry` errors are turned into
-exceptions.  An exception is a string.  In the case of an error the string
-contains the error message.  And every error message has a number.  In this
-case, the error we catch contains "E484:".  This number is guaranteed to stay
-the same (the text may change, e.g., it may be translated).
-
-Besides being able to give a nice error message, Vim will also continue
-executing commands.  Otherwise, once an uncaught error is encountered,
-execution will be aborted.
-
-When the `read` command causes another error, the pattern "E484:" will not
-match in it.  Thus this exception will not be caught and result in the usual
-error message.
-
-You might be tempted to do this: >
-
-	try
-	   read ~/templates/pascal.tmpl
-	catch
-	   echo "Sorry, the Pascal template file cannot be found."
-	endtry
-
-This means all errors are caught.  But then you will not see an error that
-would indicate a completely different problem, such as "E21: Cannot make
-changes, 'modifiable' is off".
-
-Another useful mechanism is the `finally` command: >
-
-	var tmp = tempname()
-	try
-	   exe ":.,$write " .. tmp
-	   exe "!filter " .. tmp
-	   :.,$delete
-	   exe ":$read " .. tmp
-	finally
-	   call delete(tmp)
-	endtry
-
-This filters the lines from the cursor until the end of the file through the
-"filter" command, which takes a file name argument.  No matter if the
-filtering works, something goes wrong in between `try` and `finally` or the
-user cancels the filtering by pressing CTRL-C, the `call delete(tmp)` is
-always executed.  This makes sure you don't leave the temporary file behind.
-
-More information about exception handling can be found in the reference
-manual: |exception-handling|.
+For further reading see |Dictionaries|.
 
 ==============================================================================
-*41.10*	Various remarks
+*41.9*	White space
 
-Here is a summary of items that are useful to know when writing Vim scripts.
+Blank lines are allowed in a script and ignored.
 
-The end-of-line character depends on the system.  For Vim scripts it is
-recommended to always use the Unix fileformat, this also works on any other
-system.  That way you can copy your Vim scripts from MS-Windows to Unix and
-they still work.  See |:source_crnl|.  To be sure it is set right, do this
-before writing the file: >
-
-	:setlocal fileformat=unix
-
-
-WHITE SPACE
-
-Blank lines are allowed and ignored.
-
-Leading whitespace characters (blanks and TABs) are always ignored.
+Leading whitespace characters (blanks and TABs) are ignored, except when using
+|:let-heredoc| without "trim".
 
 Trailing whitespace is often ignored, but not always.  One command that
-includes it is `map`.
+includes it is `map`.  You have to watch out for that, it can cause hard to
+understand mistakes.  A generic solution is to never use trailing white space,
+unless you really need it.
 
 To include a whitespace character in the value of an option, it must be
 escaped by a "\" (backslash)  as in the following example: >
 
 	:set tags=my\ nice\ file
 
-The same example written as: >
+If it would be written as: >
 
 	:set tags=my nice file
 
-will issue an error, because it is interpreted as: >
+This will issue an error, because it is interpreted as: >
 
 	:set tags=my
 	:set nice
@@ -1809,17 +1786,52 @@ will issue an error, because it is interpreted as: >
 
 |Vim9| script is very picky when it comes to white space.  This was done
 intentionally to make sure scripts are easy to read and to avoid mistakes.
+If you use white space sensibly it will just work.  When not you will get an
+error message telling you where white space is missing or should be removed.
 
+==============================================================================
+*41.10*	Line continuation
 
-COMMENTS
+In legacy Vim script line continuation is done by preceding a continuation
+line with a backslash: >
+	let mylist = [
+			\ 'one',
+			\ 'two',
+			\ ]
 
-In |Vim9| script the character # starts a comment.  Everything after
-and including this character until the end-of-line is considered a comment and
+This requires the 'cpo' option to exclude the "C" flag.  Normally this is done
+by putting this at the start of the script: >
+	let s:save_cpo = &cpo
+	set cpo&vim
+
+And restore the option at the end of the script: >
+	let &cpo = s:save_cpo
+	unlet s:save_cpo
+
+A few more details can be found here: |line-continuation|.
+
+In |Vim9| script the backslash can still be used, but in most places it is not
+needed: >
+	var mylist = [
+			'one',
+			'two',
+			]
+
+Also, the 'cpo' option does not need to be changed.  See
+|vim9-line-continuation| for details.
+
+==============================================================================
+*41.11*	Comments
+
+In |Vim9| script the character # starts a comment.  That character and
+everything after it until the end-of-line is considered a comment and
 is ignored, except for commands that don't consider comments, as shown in
 examples below.  A comment can start on any character position on the line,
-but not when it is part of the command, e.g. in a string.
+but not when it is part of the command, e.g. inside a string.
 
-The character " (the double quote mark) starts a comment in legacy script.  
+The character " (the double quote mark) starts a comment in legacy script.
+This involves some cleverness to make sure double quoted strings are not
+recognized as comments (just one reason to prefer |Vim9| script).
 
 There is a little "catch" with comments for some commands.  Examples: >
 
@@ -1828,11 +1840,12 @@ There is a little "catch" with comments for some commands.  Examples: >
 	execute cmd		# do it
 	!ls *.c			# list C files
 
-The abbreviation 'dev' will be expanded to 'development  # shorthand'.  The
-mapping of <F3> will actually be the whole line after the 'o# ....' including
-the '# insert include'.  The `execute` command will give an error.  The `!`
-command will send everything after it to the shell, most likely causing an
-error.
+- The abbreviation 'dev' will be expanded to 'development  # shorthand'.
+- The mapping of <F3> will actually be the whole line after the 'o# ....'
+  including the '# insert include'.
+- The `execute` command will give an error.
+- The `!` command will send everything after it to the shell, most likely
+  causing an error.
 
 There can be no comment after `map`, `abbreviate`, `execute` and `!` commands
 (there are a few more commands with this restriction).  For the `map`,
@@ -1854,7 +1867,8 @@ trailing whitespace is included: >
 
 	map <F4> o#include  
 
-To spot these problems, you can highlight trailing spaces: >
+Here it is intended, in other cases it might be accidental.  To spot these
+problems, you can highlight trailing spaces: >
 	match Search /\s\+$/
 
 For Unix there is one special way to comment a line, that allows making a Vim
@@ -1863,904 +1877,23 @@ script executable, and it also works in legacy script: >
 	echo "this is a Vim script"
 	quit
 
-
-PITFALLS
-
-An even bigger problem arises in the following example: >
-
-	map ,ab o#include
-	unmap ,ab 
-
-Here the unmap command will not work, because it tries to unmap ",ab ".  This
-does not exist as a mapped sequence.  An error will be issued, which is very
-hard to identify, because the ending whitespace character in `unmap ,ab ` is
-not visible.
-
-And this is the same as what happens when one uses a comment after an 'unmap'
-command: >
-
-	unmap ,ab     # comment
-
-Here the comment part will be ignored.  However, Vim will try to unmap
-',ab     ', which does not exist.  Rewrite it as: >
-
-	unmap ,ab|    # comment
-
-
-RESTORING THE VIEW
-
-Sometimes you want to make a change and go back to where the cursor was.
-Restoring the relative position would also be nice, so that the same line
-appears at the top of the window.
-
-This example yanks the current line, puts it above the first line in the file
-and then restores the view: >
-
-	map ,p ma"aYHmbgg"aP`bzt`a
-
-What this does: >
-	ma"aYHmbgg"aP`bzt`a
-<	ma			set mark a at cursor position
-	  "aY			yank current line into register a
-	     Hmb		go to top line in window and set mark b there
-		gg		go to first line in file
-		  "aP		put the yanked line above it
-		     `b		go back to top line in display
-		       zt	position the text in the window as before
-			 `a	go back to saved cursor position
-
-
-PACKAGING
-
-Sometimes you will want to use global variables or functions, so that they can
-be used anywhere.  A good example is a global variable that passes a
-preference to a  plugin.  To avoid other scripts using the same name, use a
-prefix that is very unlikely to be used elsewhere.  For example, if you have a
-"mytags" plugin, you could use: >
-
-	g:mytags_location = '$HOME/project'
-	g:mytags_style = 'fast'
-
-To minimize interference between plugins keep as much as possible local to the
-script.  |Vim9| script helps you with that, by default functions and variables
-are script-local.
-
-If you split your plugin into parts, you can use `import` and `export` to
-share items between those parts.  See `:export` for the details.
-
 ==============================================================================
-*41.11*	Writing a plugin				*write-plugin*
+*41.12*	Fileformat
 
-You can write a Vim script in such a way that many people can use it.  This is
-called a plugin.  Vim users can drop your script in their plugin directory and
-use its features right away |add-plugin|.
-
-There are actually two types of plugins:
-
-  global plugins: For all types of files.
-filetype plugins: Only for files of a specific type.
-
-In this section the first type is explained.  Most items are also relevant for
-writing filetype plugins.  The specifics for filetype plugins are in the next
-section |write-filetype-plugin|.
-
-
-NAME
-
-First of all you must choose a name for your plugin.  The features provided
-by the plugin should be clear from its name.  And it should be unlikely that
-someone else writes a plugin with the same name but which does something
-different.
-
-A script that corrects typing mistakes could be called "typecorrect.vim".  We
-will use it here as an example.
-
-For the plugin to work for everybody, it should follow a few guidelines.  This
-will be explained step-by-step.  The complete example plugin is at the end.
-
-
-BODY
-
-Let's start with the body of the plugin, the lines that do the actual work: >
-
- 14	iabbrev teh the
- 15	iabbrev otehr other
- 16	iabbrev wnat want
- 17	iabbrev synchronisation
- 18		\ synchronization
-
-The actual list should be much longer, of course.
-
-The line numbers have only been added to explain a few things, don't put them
-in your plugin file!
-
-
-FIRST LINE
+The end-of-line character depends on the system.  For Vim scripts it is
+recommended to always use the Unix fileformat.  Lines are then separated with
+the Newline character.  This also works on any other system.  That way you can
+copy your Vim scripts from MS-Windows to Unix and they still work.  See
+|:source_crnl|.  To be sure it is set right, do this before writing the file:
 >
-  1	vim9script noclear
+	:setlocal fileformat=unix
 
-You need to use `vimscript` as the very first command.  Best is to put it in
-the very first line.
-
-The script we are writing will have a `finish` command to bail out when it is
-loaded a second time.  To avoid the items defined in the script are lost the
-"noclear" argument is used.  More info about this at |vim9-reload|.
-
-
-HEADER
-
-You will probably add new corrections to the plugin and soon have several
-versions lying around.  And when distributing this file, people will want to
-know who wrote this wonderful plugin and where they can send remarks.
-Therefore, put a header at the top of your plugin: >
-
-  2	# Vim global plugin for correcting typing mistakes
-  3	# Last Change:	2021 Dec 30
-  4	# Maintainer:	Bram Moolenaar <Bram@vim.org>
-
-About copyright and licensing: Since plugins are very useful and it's hardly
-worth restricting their distribution, please consider making your plugin
-either public domain or use the Vim |license|.  A short note about this near
-the top of the plugin should be sufficient.  Example: >
-
-  5	# License:	This file is placed in the public domain.
-
-
-LINE CONTINUATION AND AVOIDING SIDE EFFECTS		 *use-cpo-save*
-
-In line 18 above, the line-continuation mechanism is used |line-continuation|.
-Users with 'compatible' set will run into trouble here, they will get an error
-message.  We can't just reset 'compatible', because that has a lot of side
-effects.  Instead, we will set the 'cpoptions' option to its Vim default
-value and restore it later.  That will allow the use of line-continuation and
-make the script work for most people.  It is done like this: >
-
- 11	var save_cpo = &cpo
- 12	set cpo&vim
- ..
- 42	&cpo = save_cpo
-
-We first store the old value of 'cpoptions' in the "save_cpo" variable.  At
-the end of the plugin this value is restored.
-
-Notice that "save_cpo" is a script-local variable.  A global variable could
-already be in use for something else.  Always use script-local variables for
-things that are only used in the script.
-
-
-NOT LOADING
-
-It is possible that a user doesn't always want to load this plugin.  Or the
-system administrator has dropped it in the system-wide plugin directory, but a
-user has his own plugin he wants to use.  Then the user must have a chance to
-disable loading this specific plugin.  These lines will make it possible: >
-
-  7	if exists("g:loaded_typecorrect")
-  8	  finish
-  9	endif
- 10	g:loaded_typecorrect = 1
-
-This also avoids that when the script is loaded twice it would pointlessly
-redefine functions and cause trouble for autocommands that are added twice.
-
-The name is recommended to start with "g:loaded_" and then the file name of
-the plugin, literally.  The "g:" is prepended to make the variable global, so
-that other places can check whether its functionality is available.  Without
-"g:" it would be local to the script.
-
-Using `finish` stops Vim from reading the rest of the file, it's much quicker
-than using if-endif around the whole file, since Vim would still need to parse
-the commands to find the `endif`.
-
-
-MAPPING
-
-Now let's make the plugin more interesting: We will add a mapping that adds a
-correction for the word under the cursor.  We could just pick a key sequence
-for this mapping, but the user might already use it for something else.  To
-allow the user to define which keys a mapping in a plugin uses, the <Leader>
-item can be used: >
-
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
-
-The "<Plug>TypecorrAdd;" thing will do the work, more about that further on.
-
-The user can set the "g:mapleader" variable to the key sequence that he wants
-plugin mappings to start with.  Thus if the user has done: >
-
-	g:mapleader = "_"
-
-the mapping will define "_a".  If the user didn't do this, the default value
-will be used, which is a backslash.  Then a map for "\a" will be defined.
-
-Note that <unique> is used, this will cause an error message if the mapping
-already happened to exist. |:map-<unique>|
-
-But what if the user wants to define his own key sequence?  We can allow that
-with this mechanism: >
-
- 21	if !hasmapto('<Plug>TypecorrAdd;')
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
- 23	endif
-
-This checks if a mapping to "<Plug>TypecorrAdd;" already exists, and only
-defines the mapping from "<Leader>a" if it doesn't.  The user then has a
-chance of putting this in his vimrc file: >
-
-	map ,c  <Plug>TypecorrAdd;
-
-Then the mapped key sequence will be ",c" instead of "_a" or "\a".
-
-
-PIECES
-
-If a script gets longer, you often want to break up the work in pieces.  You
-can use functions or mappings for this.  But you don't want these functions
-and mappings to interfere with the ones from other scripts.  For example, you
-could define a function Add(), but another script could try to define the same
-function.  To avoid this, we define the function local to the script.
-Fortunately, in |Vim9| script this is the default.  In a legacy script you
-would need to prefix the name with "s:".
-
-We will define a function that adds a new typing correction: >
-
- 30	def Add(from: string, correct: bool)
- 31	  var to = input("type the correction for " .. from .. ": ")
- 32	  exe ":iabbrev " .. from .. " " .. to
- ..
- 36	enddef
-
-Now we can call the function Add() from within this script.  If another
-script also defines Add(), it will be local to that script and can only
-be called from that script.  There can also be a global g:Add() function,
-which is again another function.
-
-<SID> can be used with mappings.  It generates a script ID, which identifies
-the current script.  In our typing correction plugin we use it like this: >
-
- 24	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
- ..
- 28	noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
-
-Thus when a user types "\a", this sequence is invoked: >
-
-	\a  ->  <Plug>TypecorrAdd;  ->  <SID>Add  ->  :call <SID>Add(...)
-
-If another script also maps <SID>Add, it will get another script ID and
-thus define another mapping.
-
-Note that instead of Add() we use <SID>Add() here.  That is because the
-mapping is typed by the user, thus outside of the script context.  The <SID>
-is translated to the script ID, so that Vim knows in which script to look for
-the Add() function.
-
-This is a bit complicated, but it's required for the plugin to work together
-with other plugins.  The basic rule is that you use <SID>Add() in mappings and
-Add() in other places (the script itself, autocommands, user commands).
-
-We can also add a menu entry to do the same as the mapping: >
-
- 26	noremenu <script> Plugin.Add\ Correction      <SID>Add
-
-The "Plugin" menu is recommended for adding menu items for plugins.  In this
-case only one item is used.  When adding more items, creating a submenu is
-recommended.  For example, "Plugin.CVS" could be used for a plugin that offers
-CVS operations "Plugin.CVS.checkin", "Plugin.CVS.checkout", etc.
-
-Note that in line 28 ":noremap" is used to avoid that any other mappings cause
-trouble.  Someone may have remapped ":call", for example.  In line 24 we also
-use ":noremap", but we do want "<SID>Add" to be remapped.  This is why
-"<script>" is used here.  This only allows mappings which are local to the
-script. |:map-<script>|  The same is done in line 26 for ":noremenu".
-|:menu-<script>|
-
-
-<SID> AND <Plug>					*using-<Plug>*
-
-Both <SID> and <Plug> are used to avoid that mappings of typed keys interfere
-with mappings that are only to be used from other mappings.  Note the
-difference between using <SID> and <Plug>:
-
-<Plug>	is visible outside of the script.  It is used for mappings which the
-	user might want to map a key sequence to.  <Plug> is a special code
-	that a typed key will never produce.
-	To make it very unlikely that other plugins use the same sequence of
-	characters, use this structure: <Plug> scriptname mapname
-	In our example the scriptname is "Typecorr" and the mapname is "Add".
-	We add a semicolon as the terminator.  This results in
-	"<Plug>TypecorrAdd;".  Only the first character of scriptname and
-	mapname is uppercase, so that we can see where mapname starts.
-
-<SID>	is the script ID, a unique identifier for a script.
-	Internally Vim translates <SID> to "<SNR>123_", where "123" can be any
-	number.  Thus a function "<SID>Add()" will have a name "<SNR>11_Add()"
-	in one script, and "<SNR>22_Add()" in another.  You can see this if
-	you use the ":function" command to get a list of functions.  The
-	translation of <SID> in mappings is exactly the same, that's how you
-	can call a script-local function from a mapping.
-
-
-USER COMMAND
-
-Now let's add a user command to add a correction: >
-
- 38	if !exists(":Correct")
- 39	  command -nargs=1  Correct  :call Add(<q-args>, false)
- 40	endif
-
-The user command is defined only if no command with the same name already
-exists.  Otherwise we would get an error here.  Overriding the existing user
-command with ":command!" is not a good idea, this would probably make the user
-wonder why the command he defined himself doesn't work.  |:command|
-If it did happen you can find out who to blame with: >
-
-	verbose command Correct
-
-
-SCRIPT VARIABLES
-
-When a variable starts with "s:" it is a script variable.  It can only be used
-inside a script.  Outside the script it's not visible.  This avoids trouble
-with using the same variable name in different scripts.  The variables will be
-kept as long as Vim is running.  And the same variables are used when sourcing
-the same script again. |s:var|
-
-The nice thing about |Vim9| script is that variables are local to the script
-by default.  You can prepend "s:" if you like, but you do not need to.  And
-functions in the script can also use the script variables without a prefix.
-
-Script-local variables can also be used in functions, autocommands and user
-commands that are defined in the script.  Thus they are the perfect way to
-share information between parts of your plugin, without it leaking out.  In
-our example we can add a few lines to count the number of corrections: >
-
- 19	var count = 4
- ..
- 30	def Add(from: string, correct: bool)
- ..
- 34	  count += 1
- 35	  echo "you now have " .. count .. " corrections"
- 36	enddef
-
-"count" is declared and initialized to 4 in the script itself.  When later
-the Add() function is called, it increments "count".  It doesn't matter from
-where the function was called, since it has been defined in the script, it
-will use the local variables from this script.
-
-
-THE RESULT
-
-Here is the resulting complete example: >
-
-  1	vim9script noclear
-  2	# Vim global plugin for correcting typing mistakes
-  3	# Last Change:	2021 Dec 30
-  4	# Maintainer:	Bram Moolenaar <Bram@vim.org>
-  5	# License:	This file is placed in the public domain.
-  6
-  7	if exists("g:loaded_typecorrect")
-  8	  finish
-  9	endif
- 10	g:loaded_typecorrect = 1
- 11	var save_cpo = &cpo
- 12	set cpo&vim
- 13
- 14	iabbrev teh the
- 15	iabbrev otehr other
- 16	iabbrev wnat want
- 17	iabbrev synchronisation
- 18		\ synchronization
- 19	var count = 4
- 20
- 21	if !hasmapto('<Plug>TypecorrAdd;')
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
- 23	endif
- 24	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
- 25
- 26	noremenu <script> Plugin.Add\ Correction      <SID>Add
- 27
- 28	noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
- 29
- 30	def Add(from: string, correct: bool)
- 31	  var to = input("type the correction for " .. from .. ": ")
- 32	  exe ":iabbrev " .. from .. " " .. to
- 33	  if correct | exe "normal viws\<C-R>\" \b\e" | endif
- 34	  count += 1
- 35	  echo "you now have " .. count .. " corrections"
- 36	enddef
- 37
- 38	if !exists(":Correct")
- 39	  command -nargs=1  Correct  call Add(<q-args>, false)
- 40	endif
- 41
- 42	&cpo = save_cpo
-
-Line 33 wasn't explained yet.  It applies the new correction to the word under
-the cursor.  The |:normal| command is used to use the new abbreviation.  Note
-that mappings and abbreviations are expanded here, even though the function
-was called from a mapping defined with ":noremap".
-
-
-DOCUMENTATION						*write-local-help*
-
-It's a good idea to also write some documentation for your plugin.  Especially
-when its behavior can be changed by the user.  See |add-local-help| for how
-they are installed.
-
-Here is a simple example for a plugin help file, called "typecorrect.txt": >
-
-  1	*typecorrect.txt*	Plugin for correcting typing mistakes
-  2
-  3	If you make typing mistakes, this plugin will have them corrected
-  4	automatically.
-  5
-  6	There are currently only a few corrections.  Add your own if you like.
-  7
-  8	Mappings:
-  9	<Leader>a   or   <Plug>TypecorrAdd;
- 10		Add a correction for the word under the cursor.
- 11
- 12	Commands:
- 13	:Correct {word}
- 14		Add a correction for {word}.
- 15
- 16							*typecorrect-settings*
- 17	This plugin doesn't have any settings.
-
-The first line is actually the only one for which the format matters.  It will
-be extracted from the help file to be put in the "LOCAL ADDITIONS:" section of
-help.txt |local-additions|.  The first "*" must be in the first column of the
-first line.  After adding your help file do ":help" and check that the entries
-line up nicely.
-
-You can add more tags inside ** in your help file.  But be careful not to use
-existing help tags.  You would probably use the name of your plugin in most of
-them, like "typecorrect-settings" in the example.
-
-Using references to other parts of the help in || is recommended.  This makes
-it easy for the user to find associated help.
-
-
-FILETYPE DETECTION					*plugin-filetype*
-
-If your filetype is not already detected by Vim, you should create a filetype
-detection snippet in a separate file.  It is usually in the form of an
-autocommand that sets the filetype when the file name matches a pattern.
-Example: >
-
-	au BufNewFile,BufRead *.foo		setlocal filetype=foofoo
-
-Write this single-line file as "ftdetect/foofoo.vim" in the first directory
-that appears in 'runtimepath'.  For Unix that would be
-"~/.vim/ftdetect/foofoo.vim".  The convention is to use the name of the
-filetype for the script name.
-
-You can make more complicated checks if you like, for example to inspect the
-contents of the file to recognize the language.  Also see |new-filetype|.
-
-
-SUMMARY							*plugin-special*
-
-Summary of special things to use in a plugin:
-
-var name		Variable local to the script.
-
-<SID>			Script-ID, used for mappings and functions local to
-			the script.
-
-hasmapto()		Function to test if the user already defined a mapping
-			for functionality the script offers.
-
-<Leader>		Value of "mapleader", which the user defines as the
-			keys that plugin mappings start with.
-
-map <unique>		Give a warning if a mapping already exists.
-
-noremap <script>	Use only mappings local to the script, not global
-			mappings.
-
-exists(":Cmd")		Check if a user command already exists.
+When using "dos" fileformat, lines are separated with CR-NL, two characters.
+The CR character causes various problems, better avoid this.
 
 ==============================================================================
-*41.12*	Writing a filetype plugin	*write-filetype-plugin* *ftplugin*
 
-A filetype plugin is like a global plugin, except that it sets options and
-defines mappings for the current buffer only.  See |add-filetype-plugin| for
-how this type of plugin is used.
-
-First read the section on global plugins above |41.11|.  All that is said there
-also applies to filetype plugins.  There are a few extras, which are explained
-here.  The essential thing is that a filetype plugin should only have an
-effect on the current buffer.
-
-
-DISABLING
-
-If you are writing a filetype plugin to be used by many people, they need a
-chance to disable loading it.  Put this at the top of the plugin: >
-
-	# Only do this when not done yet for this buffer
-	if exists("b:did_ftplugin")
-	  finish
-	endif
-	b:did_ftplugin = 1
-
-This also needs to be used to avoid that the same plugin is executed twice for
-the same buffer (happens when using an ":edit" command without arguments).
-
-Now users can disable loading the default plugin completely by making a
-filetype plugin with only these lines: >
-
-	vim9script
-	b:did_ftplugin = 1
-
-This does require that the filetype plugin directory comes before $VIMRUNTIME
-in 'runtimepath'!
-
-If you do want to use the default plugin, but overrule one of the settings,
-you can write the different setting in a script: >
-
-	setlocal textwidth=70
-
-Now write this in the "after" directory, so that it gets sourced after the
-distributed "vim.vim" ftplugin |after-directory|.  For Unix this would be
-"~/.vim/after/ftplugin/vim.vim".  Note that the default plugin will have set
-"b:did_ftplugin", but it is ignored here.
-
-
-OPTIONS
-
-To make sure the filetype plugin only affects the current buffer use the >
-
-	setlocal
-
-command to set options.  And only set options which are local to a buffer (see
-the help for the option to check that).  When using `:setlocal` for global
-options or options local to a window, the value will change for many buffers,
-and that is not what a filetype plugin should do.
-
-When an option has a value that is a list of flags or items, consider using
-"+=" and "-=" to keep the existing value.  Be aware that the user may have
-changed an option value already.  First resetting to the default value and
-then changing it is often a good idea.  Example: >
-
-	setlocal formatoptions& formatoptions+=ro
-
-
-MAPPINGS
-
-To make sure mappings will only work in the current buffer use the >
-
-	map <buffer>
-
-command.  This needs to be combined with the two-step mapping explained above.
-An example of how to define functionality in a filetype plugin: >
-
-	if !hasmapto('<Plug>JavaImport;')
-	  map <buffer> <unique> <LocalLeader>i <Plug>JavaImport;
-	endif
-	noremap <buffer> <unique> <Plug>JavaImport; oimport ""<Left><Esc>
-
-|hasmapto()| is used to check if the user has already defined a map to
-<Plug>JavaImport;.  If not, then the filetype plugin defines the default
-mapping.  This starts with |<LocalLeader>|, which allows the user to select
-the key(s) he wants filetype plugin mappings to start with.  The default is a
-backslash.
-"<unique>" is used to give an error message if the mapping already exists or
-overlaps with an existing mapping.
-|:noremap| is used to avoid that any other mappings that the user has defined
-interferes.  You might want to use ":noremap <script>" to allow remapping
-mappings defined in this script that start with <SID>.
-
-The user must have a chance to disable the mappings in a filetype plugin,
-without disabling everything.  Here is an example of how this is done for a
-plugin for the mail filetype: >
-
-	# Add mappings, unless the user didn't want this.
-	if !exists("g:no_plugin_maps") && !exists("g:no_mail_maps")
-	  # Quote text by inserting "> "
-	  if !hasmapto('<Plug>MailQuote;')
-	    vmap <buffer> <LocalLeader>q <Plug>MailQuote;
-	    nmap <buffer> <LocalLeader>q <Plug>MailQuote;
-	  endif
-	  vnoremap <buffer> <Plug>MailQuote; :s/^/> /<CR>
-	  nnoremap <buffer> <Plug>MailQuote; :.,$s/^/> /<CR>
-	endif
-
-Two global variables are used:
-|g:no_plugin_maps|	disables mappings for all filetype plugins
-|g:no_mail_maps|	disables mappings for the "mail" filetype
-
-
-USER COMMANDS
-
-To add a user command for a specific file type, so that it can only be used in
-one buffer, use the "-buffer" argument to |:command|.  Example: >
-
-	command -buffer  Make  make %:r.s
-
-
-VARIABLES
-
-A filetype plugin will be sourced for each buffer of the type it's for.  Local
-script variables will be shared between all invocations.  Use local buffer
-variables |b:var| if you want a variable specifically for one buffer.
-
-
-FUNCTIONS
-
-When defining a function, this only needs to be done once.  But the filetype
-plugin will be sourced every time a file with this filetype will be opened.
-This construct makes sure the function is only defined once: >
-
-	if !exists("*Func")
-	  def Func(arg)
-	    ...
-	  enddef
-	endif
-<
-
-UNDO						*undo_indent* *undo_ftplugin*
-
-When the user does ":setfiletype xyz" the effect of the previous filetype
-should be undone.  Set the b:undo_ftplugin variable to the commands that will
-undo the settings in your filetype plugin.  Example: >
-
-	let b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
-		\ .. "| unlet b:match_ignorecase b:match_words b:match_skip"
-
-Using ":setlocal" with "<" after the option name resets the option to its
-global value.  That is mostly the best way to reset the option value.
-
-This does require removing the "C" flag from 'cpoptions' to allow line
-continuation, as mentioned above |use-cpo-save|.
-
-For undoing the effect of an indent script, the b:undo_indent variable should
-be set accordingly.
-
-Both these variables use legacy script syntax, not |Vim9| syntax.
-
-
-FILE NAME
-
-The filetype must be included in the file name |ftplugin-name|.  Use one of
-these three forms:
-
-	.../ftplugin/stuff.vim
-	.../ftplugin/stuff_foo.vim
-	.../ftplugin/stuff/bar.vim
-
-"stuff" is the filetype, "foo" and "bar" are arbitrary names.
-
-
-SUMMARY							*ftplugin-special*
-
-Summary of special things to use in a filetype plugin:
-
-<LocalLeader>		Value of "maplocalleader", which the user defines as
-			the keys that filetype plugin mappings start with.
-
-map <buffer>		Define a mapping local to the buffer.
-
-noremap <script>	Only remap mappings defined in this script that start
-			with <SID>.
-
-setlocal		Set an option for the current buffer only.
-
-command -buffer	Define a user command local to the buffer.
-
-exists("*s:Func")	Check if a function was already defined.
-
-Also see |plugin-special|, the special things used for all plugins.
-
-==============================================================================
-*41.13*	Writing a compiler plugin		*write-compiler-plugin*
-
-A compiler plugin sets options for use with a specific compiler.  The user can
-load it with the |:compiler| command.  The main use is to set the
-'errorformat' and 'makeprg' options.
-
-Easiest is to have a look at examples.  This command will edit all the default
-compiler plugins: >
-
-	next $VIMRUNTIME/compiler/*.vim
-
-Type `:next` to go to the next plugin file.
-
-There are two special items about these files.  First is a mechanism to allow
-a user to overrule or add to the default file.  The default files start with: >
-
-	if exists("g:current_compiler")
-	  finish
-	endif
-	g:current_compiler = "mine"
-
-When you write a compiler file and put it in your personal runtime directory
-(e.g., ~/.vim/compiler for Unix), you set the "current_compiler" variable to
-make the default file skip the settings.
-							*:CompilerSet*
-The second mechanism is to use ":set" for ":compiler!" and ":setlocal" for
-":compiler".  Vim defines the ":CompilerSet" user command for this.  However,
-older Vim versions don't, thus your plugin should define it then.  This is an
-example: >
-
-  if exists(":CompilerSet") != 2
-    command -nargs=* CompilerSet setlocal <args>
-  endif
-  CompilerSet errorformat&		" use the default 'errorformat'
-  CompilerSet makeprg=nmake
-
-When you write a compiler plugin for the Vim distribution or for a system-wide
-runtime directory, use the mechanism mentioned above.  When
-"current_compiler" was already set by a user plugin nothing will be done.
-
-When you write a compiler plugin to overrule settings from a default plugin,
-don't check "current_compiler".  This plugin is supposed to be loaded
-last, thus it should be in a directory at the end of 'runtimepath'.  For Unix
-that could be ~/.vim/after/compiler.
-
-==============================================================================
-*41.14*	Writing a plugin that loads quickly	*write-plugin-quickload*
-
-A plugin may grow and become quite long.  The startup delay may become
-noticeable, while you hardly ever use the plugin.  Then it's time for a
-quickload plugin.
-
-The basic idea is that the plugin is loaded twice.  The first time user
-commands and mappings are defined that offer the functionality.  The second
-time the functions that implement the functionality are defined.
-
-It may sound surprising that quickload means loading a script twice.  What we
-mean is that it loads quickly the first time, postponing the bulk of the
-script to the second time, which only happens when you actually use it.  When
-you always use the functionality it actually gets slower!
-
-This uses a FuncUndefined autocommand.  Since Vim 7 there is an alternative:
-use the |autoload| functionality |41.15|.  That will also use |Vim9| script
-instead of legacy script that is used here.
-
-The following example shows how it's done: >
-
-	" Vim global plugin for demonstrating quick loading
-	" Last Change:	2005 Feb 25
-	" Maintainer:	Bram Moolenaar <Bram@vim.org>
-	" License:	This file is placed in the public domain.
-
-	if !exists("s:did_load")
-		command -nargs=* BNRead  call BufNetRead(<f-args>)
-		map <F19> :call BufNetWrite('something')<CR>
-
-		let s:did_load = 1
-		exe 'au FuncUndefined BufNet* source ' .. expand('<sfile>')
-		finish
-	endif
-
-	function BufNetRead(...)
-		echo 'BufNetRead(' .. string(a:000) .. ')'
-		" read functionality here
-	endfunction
-
-	function BufNetWrite(...)
-		echo 'BufNetWrite(' .. string(a:000) .. ')'
-		" write functionality here
-	endfunction
-
-When the script is first loaded "s:did_load" is not set.  The commands between
-the "if" and "endif" will be executed.  This ends in a |:finish| command, thus
-the rest of the script is not executed.
-
-The second time the script is loaded "s:did_load" exists and the commands
-after the "endif" are executed.  This defines the (possible long)
-BufNetRead() and BufNetWrite() functions.
-
-If you drop this script in your plugin directory Vim will execute it on
-startup.  This is the sequence of events that happens:
-
-1. The "BNRead" command is defined and the <F19> key is mapped when the script
-   is sourced at startup.  A |FuncUndefined| autocommand is defined.  The
-   ":finish" command causes the script to terminate early.
-
-2. The user types the BNRead command or presses the <F19> key.  The
-   BufNetRead() or BufNetWrite() function will be called.
-
-3. Vim can't find the function and triggers the |FuncUndefined| autocommand
-   event.  Since the pattern "BufNet*" matches the invoked function, the
-   command "source fname" will be executed.  "fname" will be equal to the name
-   of the script, no matter where it is located, because it comes from
-   expanding "<sfile>" (see |expand()|).
-
-4. The script is sourced again, the "s:did_load" variable exists and the
-   functions are defined.
-
-Notice that the functions that are loaded afterwards match the pattern in the
-|FuncUndefined| autocommand.  You must make sure that no other plugin defines
-functions that match this pattern.
-
-==============================================================================
-*41.15*	Writing library scripts			*write-library-script*
-
-Some functionality will be required in several places.  When this becomes more
-than a few lines you will want to put it in one script and use it from many
-scripts.  We will call that one script a library script.
-
-Manually loading a library script is possible, so long as you avoid loading it
-when it's already done.  You can do this with the |exists()| function.
-Example: >
-
-	if !exists('*MyLibFunction')
-	   runtime library/mylibscript.vim
-	endif
-	MyLibFunction(arg)
-
-Here you need to know that MyLibFunction() is defined in a script
-"library/mylibscript.vim" in one of the directories in 'runtimepath'.
-
-To make this a bit simpler Vim offers the autoload mechanism.  Then the
-example looks like this: >
-
-	mylib#myfunction(arg)
-
-That's a lot simpler, isn't it?  Vim will recognize the function name by the
-embedded "#" character and when it's not defined search for the script
-"autoload/mylib.vim" in 'runtimepath'.  That script must define the
-"mylib#myfunction()" function.
-
-You can put many other functions in the mylib.vim script, you are free to
-organize your functions in library scripts.  But you must use function names
-where the part before the '#' matches the script name.  Otherwise Vim would
-not know what script to load.
-
-If you get really enthusiastic and write lots of library scripts, you may
-want to use subdirectories.  Example: >
-
-	netlib#ftp#read('somefile')
-
-For Unix the library script used for this could be:
-
-	~/.vim/autoload/netlib/ftp.vim
-
-Where the function is defined like this: >
-
-	def netlib#ftp#read(fname: string)
-		#  Read the file fname through ftp
-	enddef
-
-Notice that the name the function is defined with is exactly the same as the
-name used for calling the function.  And the part before the last '#'
-exactly matches the subdirectory and script name.
-
-You can use the same mechanism for variables: >
-
-	var weekdays = dutch#weekdays
-
-This will load the script "autoload/dutch.vim", which should contain something
-like: >
-
-	var dutch#weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
-		\ 'donderdag', 'vrijdag', 'zaterdag']
-
-Further reading: |autoload|.
-
-==============================================================================
-*41.16*	Distributing Vim scripts			*distribute-script*
-
-Vim users will look for scripts on the Vim website: http://www.vim.org.
-If you made something that is useful for others, share it!
-
-Another place is github.  But there you need to know where to find it!  The
-advantage is that most plugin managers fetch plugins from github.  You'll have
-to use your favorite search engine to find them.
-
-Vim scripts can be used on any system.  However, there might not be a tar or
-gzip command.  If you want to pack files together and/or compress them the
-"zip" utility is recommended.
-
-For utmost portability use Vim itself to pack scripts together.  This can be
-done with the Vimball utility.  See |vimball|.
-
-It's good if you add a line to allow automatic updating.  See |glvs-plugins|.
-
-==============================================================================
+Advance information about writing Vim script is in |usr_50.txt|.
 
 Next chapter: |usr_42.txt|  Add new menus
 

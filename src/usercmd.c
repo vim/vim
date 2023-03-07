@@ -31,6 +31,9 @@ typedef struct ucmd
 // List of all user commands.
 static garray_T ucmds = {0, 0, sizeof(ucmd_T), 4, NULL};
 
+// When non-zero it is not allowed to add or remove user commands
+static int ucmd_locked = 0;
+
 #define USER_CMD(i) (&((ucmd_T *)(ucmds.ga_data))[i])
 #define USER_CMD_GA(gap, i) (&((ucmd_T *)((gap)->ga_data))[i])
 
@@ -83,6 +86,7 @@ static struct
 #endif
     {EXPAND_SETTINGS, "option"},
     {EXPAND_PACKADD, "packadd"},
+    {EXPAND_RUNTIME, "runtime"},
     {EXPAND_SHELLCMD, "shellcmd"},
 #if defined(FEAT_SIGNS)
     {EXPAND_SIGN, "sign"},
@@ -363,9 +367,19 @@ get_user_commands(expand_T *xp UNUSED, int idx)
 
     if (idx < buf->b_ucmds.ga_len)
 	return USER_CMD_GA(&buf->b_ucmds, idx)->uc_name;
+
     idx -= buf->b_ucmds.ga_len;
     if (idx < ucmds.ga_len)
-	return USER_CMD(idx)->uc_name;
+    {
+	int	i;
+	char_u  *name = USER_CMD(idx)->uc_name;
+
+	for (i = 0; i < buf->b_ucmds.ga_len; ++i)
+	    if (STRCMP(name, USER_CMD_GA(&buf->b_ucmds, i)->uc_name) == 0)
+		// global command is overruled by buffer-local one
+		return (char_u *)"";
+	return name;
+    }
     return NULL;
 }
 
@@ -488,6 +502,9 @@ uc_list(char_u *name, size_t name_len)
     int		over;
     long	a;
     garray_T	*gap;
+
+    // don't allow for adding or removing user commands here
+    ++ucmd_locked;
 
     // In cmdwin, the alternative buffer should be used.
     gap = &prevwin_curwin()->w_buffer->b_ucmds;
@@ -646,6 +663,8 @@ uc_list(char_u *name, size_t name_len)
 
     if (!found)
 	msg(_("No user-defined commands found"));
+
+    --ucmd_locked;
 }
 
     char *
@@ -1039,7 +1058,7 @@ uc_add_command(
     // Extend the array unless we're replacing an existing command
     if (cmp != 0)
     {
-	if (ga_grow(gap, 1) != OK)
+	if (ga_grow(gap, 1) == FAIL)
 	    goto fail;
 	if ((p = vim_strnsave(name, name_len)) == NULL)
 	    goto fail;
@@ -1149,7 +1168,7 @@ ex_command(exarg_T *eap)
 	end = skiptowhite(p);
 	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl,
 					   &compl_arg, &addr_type_arg) == FAIL)
-	    return;
+	    goto theend;
 	p = skipwhite(end);
     }
 
@@ -1161,7 +1180,7 @@ ex_command(exarg_T *eap)
     if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
 	emsg(_(e_invalid_command_name));
-	return;
+	goto theend;
     }
     end = p;
     name_len = (int)(end - name);
@@ -1170,13 +1189,19 @@ ex_command(exarg_T *eap)
     // we are listing commands
     p = skipwhite(end);
     if (!has_attr && ends_excmd2(eap->arg, p))
+    {
 	uc_list(name, end - name);
+    }
     else if (!ASCII_ISUPPER(*name))
+    {
 	emsg(_(e_user_defined_commands_must_start_with_an_uppercase_letter));
+    }
     else if ((name_len == 1 && *name == 'X')
 	  || (name_len <= 4
 		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))
+    {
 	emsg(_(e_reserved_name_cannot_be_used_for_user_defined_command));
+    }
     else if (compl > 0 && (argt & EX_EXTRA) == 0)
     {
 	// Some plugins rely on silently ignoring the mistake, only make this
@@ -1197,7 +1222,12 @@ ex_command(exarg_T *eap)
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
 						  addr_type_arg, eap->forceit);
 	vim_free(tofree);
+
+	return;  // success
     }
+
+theend:
+    vim_free(compl_arg);
 }
 
 /*
@@ -1213,6 +1243,21 @@ ex_comclear(exarg_T *eap UNUSED)
 }
 
 /*
+ * If ucmd_locked is set give an error and return TRUE.
+ * Otherwise return FALSE.
+ */
+    static int
+is_ucmd_locked(void)
+{
+    if (ucmd_locked > 0)
+    {
+	emsg(_(e_cannot_change_user_commands_while_listing));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Clear all user commands for "gap".
  */
     void
@@ -1220,6 +1265,9 @@ uc_clear(garray_T *gap)
 {
     int		i;
     ucmd_T	*cmd;
+
+    if (is_ucmd_locked())
+	return;
 
     for (i = 0; i < gap->ga_len; ++i)
     {
@@ -1274,6 +1322,9 @@ ex_delcommand(exarg_T *eap)
 		    : e_no_such_user_defined_command_str), arg);
 	return;
     }
+
+    if (is_ucmd_locked())
+	return;
 
     vim_free(cmd->uc_name);
     vim_free(cmd->uc_rep);
@@ -1410,7 +1461,7 @@ add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
  * was added.  Return the number of bytes added.
  */
     size_t
-add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
+add_win_cmd_modifiers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
 {
     size_t result = 0;
 
@@ -1426,13 +1477,33 @@ add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
 
     // :tab
     if (cmod->cmod_tab > 0)
-	result += add_cmd_modifier(buf, "tab", multi_mods);
+    {
+	int tabnr = cmod->cmod_tab - 1;
+
+	if (tabnr == tabpage_index(curtab))
+	{
+	    // For compatibility, don't add a tabpage number if it is the same
+	    // as the default number for :tab.
+	    result += add_cmd_modifier(buf, "tab", multi_mods);
+	}
+	else
+	{
+	    char tab_buf[NUMBUFLEN + 3];
+
+	    sprintf(tab_buf, "%dtab", tabnr);
+	    result += add_cmd_modifier(buf, tab_buf, multi_mods);
+	}
+    }
+
     // :topleft
     if (cmod->cmod_split & WSP_TOP)
 	result += add_cmd_modifier(buf, "topleft", multi_mods);
     // :vertical
     if (cmod->cmod_split & WSP_VERT)
 	result += add_cmd_modifier(buf, "vertical", multi_mods);
+    // :horizontal
+    if (cmod->cmod_split & WSP_HOR)
+	result += add_cmd_modifier(buf, "horizontal", multi_mods);
     return result;
 }
 
@@ -1492,10 +1563,23 @@ produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
 			(cmod->cmod_flags & CMOD_ERRSILENT) ? "silent!"
 						      : "silent", &multi_mods);
     // :verbose
-    if (p_verbose > 0)
-	result += add_cmd_modifier(buf, "verbose", &multi_mods);
+    if (cmod->cmod_verbose > 0)
+    {
+	int verbose_value = cmod->cmod_verbose - 1;
+
+	if (verbose_value == 1)
+	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
+	else
+	{
+	    char verbose_buf[NUMBUFLEN];
+
+	    sprintf(verbose_buf, "%dverbose", verbose_value);
+	    result += add_cmd_modifier(buf, verbose_buf, &multi_mods);
+	}
+    }
     // flags from cmod->cmod_split
-    result += add_win_cmd_modifers(buf, cmod, &multi_mods);
+    result += add_win_cmd_modifiers(buf, cmod, &multi_mods);
+
     if (quote && buf != NULL)
     {
 	buf += result - 2;
@@ -1754,7 +1838,7 @@ do_ucmd(exarg_T *eap)
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
     else
-	cmd = USER_CMD_GA(&curbuf->b_ucmds, eap->useridx);
+	cmd = USER_CMD_GA(&prevwin_curwin()->w_buffer->b_ucmds, eap->useridx);
 
     /*
      * Replace <> in the command by the arguments.

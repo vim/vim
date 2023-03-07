@@ -93,7 +93,7 @@ func Test_tagfunc()
   delf NullTagFunc
 
   bwipe!
-  set tags& tfu& cpt& 
+  set tags& tfu& cpt&
   call delete('Xfile1')
 endfunc
 
@@ -105,7 +105,7 @@ func Test_tagfunc_settagstack()
     return [{'name' : 'mytag', 'filename' : 'Xtest', 'cmd' : '1'}]
   endfunc
   set tagfunc=Mytagfunc1
-  call writefile([''], 'Xtest')
+  call writefile([''], 'Xtest', 'D')
   call assert_fails('tag xyz', 'E986:')
 
   func Mytagfunc2(pat, flags, info)
@@ -115,7 +115,6 @@ func Test_tagfunc_settagstack()
   set tagfunc=Mytagfunc2
   call assert_fails('tag xyz', 'E986:')
 
-  call delete('Xtest')
   set tagfunc&
   delfunc Mytagfunc1
   delfunc Mytagfunc2
@@ -388,5 +387,30 @@ func Test_tagfunc_callback()
   set tagfunc&
   %bw!
 endfunc
+
+func Test_tagfunc_wipes_buffer()
+  func g:Tag0unc0(t,f,o)
+   bwipe
+  endfunc
+  set tagfunc=g:Tag0unc0
+  new
+  cal assert_fails('tag 0', 'E987:')
+
+  delfunc g:Tag0unc0
+  set tagfunc=
+endfunc
+
+func Test_tagfunc_closes_window()
+  split any
+  func MytagfuncClose(pat, flags, info)
+    close
+    return [{'name' : 'mytag', 'filename' : 'Xtest', 'cmd' : '1'}]
+  endfunc
+  set tagfunc=MytagfuncClose
+  call assert_fails('tag xyz', 'E1299:')
+
+  set tagfunc=
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

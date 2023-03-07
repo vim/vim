@@ -879,16 +879,16 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
 {
     bhdr_T	*hp;
 
-    if ((hp = ALLOC_ONE(bhdr_T)) != NULL)
+    if ((hp = ALLOC_ONE(bhdr_T)) == NULL)
+	return NULL;
+
+    if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count))
+	    == NULL)
     {
-	if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count))
-								       == NULL)
-	{
-	    vim_free(hp);	    // not enough memory
-	    return NULL;
-	}
-	hp->bh_page_count = page_count;
+	vim_free(hp);	    // not enough memory
+	return NULL;
     }
+    hp->bh_page_count = page_count;
     return hp;
 }
 
@@ -1209,12 +1209,12 @@ mf_set_ffname(memfile_T *mfp)
     void
 mf_fullname(memfile_T *mfp)
 {
-    if (mfp != NULL && mfp->mf_fname != NULL && mfp->mf_ffname != NULL)
-    {
-	vim_free(mfp->mf_fname);
-	mfp->mf_fname = mfp->mf_ffname;
-	mfp->mf_ffname = NULL;
-    }
+    if (mfp == NULL || mfp->mf_fname == NULL || mfp->mf_ffname == NULL)
+	return;
+
+    vim_free(mfp->mf_fname);
+    mfp->mf_fname = mfp->mf_ffname;
+    mfp->mf_ffname = NULL;
 }
 
 /*

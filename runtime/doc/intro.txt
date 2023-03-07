@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2022 Apr 03
+*intro.txt*     For Vim version 9.0.  Last change: 2022 Nov 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,10 +122,10 @@ http://www.vim.org/maillist.php
 Bug reports:				*bugs* *bug-reports* *bugreport.vim*
 
 There are three ways to report bugs:
-1. Open an issue on GitHub: https://github.com/vim/vim/issues
-   The text will be forwarded to the vim-dev maillist.
-2. For issues with runtime files, look in the header for an email address or
+1. For issues with runtime files, look in the header for an email address or
    any other way to report it to the maintainer.
+2. Open an issue on GitHub: https://github.com/vim/vim/issues
+   The text will be forwarded to the vim-dev maillist.
 3. Send bug reports to: Vim Developers <vim-dev@vim.org>
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
@@ -533,6 +533,10 @@ examples and use them directly.  Or type them literally, including the '<' and
 '>' characters.  This does NOT work for other commands, like ":set" and
 ":autocmd"!
 
+The notation can be used in a double quoted strings, using "\<" at the start,
+e.g. "\<C-Space>".  This results in a special key code.  To convert this back
+to readable text use `keytrans()`.
+
 ==============================================================================
 5. Modes, introduction				*vim-modes-intro* *vim-modes*
 
@@ -697,7 +701,8 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 			line-input editing commands (<Del> or <BS> to erase,
 			CTRL-U to kill the whole line).
 			Vim will enter this mode by default if it's invoked as
-			"ex" on the command-line.
+			"ex" on the command-line or the |-e| command line
+			argument was used.
 			Use the ":vi" command |:visual| to exit "Ex" mode.
 			Note: In older versions of Vim "Q" formatted text,
 			that is now done with |gq|.  But if you use the
@@ -708,7 +713,7 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 gQ			Switch to "Ex" mode like with "Q", but really behave
 			like typing ":" commands after another.  All command
 			line editing, completion etc. is available.
-			Use the ":vi" command |:visual| to exit "Ex" mode.
+			Use the `:vi` command (`:visual`) to exit "Ex" mode.
 
 ==============================================================================
 7. The window contents					*window-contents*

@@ -90,23 +90,21 @@ profile_msg(proftime_T *tm)
     return buf;
 }
 
-# if defined(FEAT_FLOAT) || defined(PROTO)
 /*
  * Return a float that represents the time in "tm".
  */
     float_T
 profile_float(proftime_T *tm)
 {
-#  ifdef MSWIN
+# ifdef MSWIN
     LARGE_INTEGER   fr;
 
     QueryPerformanceFrequency(&fr);
     return (float_T)tm->QuadPart / (float_T)fr.QuadPart;
-#  else
+# else
     return (float_T)tm->tv_sec + (float_T)tm->tv_usec / 1000000.0;
-#  endif
-}
 # endif
+}
 
 /*
  * Put the time "msec" past now in "tm".
@@ -173,7 +171,7 @@ profile_zero(proftime_T *tm)
 
 # endif  // FEAT_PROFILE || FEAT_RELTIME
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT) && defined(FEAT_PROFILE)
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_PROFILE)
 # if defined(HAVE_MATH_H)
 #  include <math.h>
 # endif
@@ -337,7 +335,7 @@ profile_reset(void)
     functbl = func_tbl_get();
     todo = (int)functbl->ht_used;
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	ufunc_T *fp;
 	int	i;
@@ -718,8 +716,8 @@ prof_child_enter(
 {
     funccall_T *fc = get_current_funccal();
 
-    if (fc != NULL && fc->func->uf_profiling)
-	profile_start(&fc->prof_child);
+    if (fc != NULL && fc->fc_func->uf_profiling)
+	profile_start(&fc->fc_prof_child);
     script_prof_save(tm);
 }
 
@@ -733,12 +731,12 @@ prof_child_exit(
 {
     funccall_T *fc = get_current_funccal();
 
-    if (fc != NULL && fc->func->uf_profiling)
+    if (fc != NULL && fc->fc_func->uf_profiling)
     {
-	profile_end(&fc->prof_child);
-	profile_sub_wait(tm, &fc->prof_child); // don't count waiting time
-	profile_add(&fc->func->uf_tm_children, &fc->prof_child);
-	profile_add(&fc->func->uf_tml_children, &fc->prof_child);
+	profile_end(&fc->fc_prof_child);
+	profile_sub_wait(tm, &fc->fc_prof_child); // don't count waiting time
+	profile_add(&fc->fc_func->uf_tm_children, &fc->fc_prof_child);
+	profile_add(&fc->fc_func->uf_tml_children, &fc->fc_prof_child);
     }
     script_prof_restore(tm);
 }
@@ -753,7 +751,7 @@ prof_child_exit(
 func_line_start(void *cookie, long lnum)
 {
     funccall_T	*fcp = (funccall_T *)cookie;
-    ufunc_T	*fp = fcp->func;
+    ufunc_T	*fp = fcp->fc_func;
 
     if (fp->uf_profiling && lnum >= 1 && lnum <= fp->uf_lines.ga_len)
     {
@@ -775,7 +773,7 @@ func_line_start(void *cookie, long lnum)
 func_line_exec(void *cookie)
 {
     funccall_T	*fcp = (funccall_T *)cookie;
-    ufunc_T	*fp = fcp->func;
+    ufunc_T	*fp = fcp->fc_func;
 
     if (fp->uf_profiling && fp->uf_tml_idx >= 0)
 	fp->uf_tml_execed = TRUE;
@@ -788,7 +786,7 @@ func_line_exec(void *cookie)
 func_line_end(void *cookie)
 {
     funccall_T	*fcp = (funccall_T *)cookie;
-    ufunc_T	*fp = fcp->func;
+    ufunc_T	*fp = fcp->fc_func;
 
     if (fp->uf_profiling && fp->uf_tml_idx >= 0)
     {
@@ -827,7 +825,7 @@ func_dump_profile(FILE *fd)
 
     sorttab = ALLOC_MULT(ufunc_T *, todo);
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -912,16 +910,16 @@ script_prof_restore(proftime_T *tm)
 {
     scriptitem_T    *si;
 
-    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
+	return;
+
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
+    if (si->sn_prof_on && --si->sn_pr_nest == 0)
     {
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
-	if (si->sn_prof_on && --si->sn_pr_nest == 0)
-	{
-	    profile_end(&si->sn_pr_child);
-	    profile_sub_wait(tm, &si->sn_pr_child); // don't count wait time
-	    profile_add(&si->sn_pr_children, &si->sn_pr_child);
-	    profile_add(&si->sn_prl_children, &si->sn_pr_child);
-	}
+	profile_end(&si->sn_pr_child);
+	profile_sub_wait(tm, &si->sn_pr_child); // don't count wait time
+	profile_add(&si->sn_pr_children, &si->sn_pr_child);
+	profile_add(&si->sn_prl_children, &si->sn_pr_child);
     }
 }
 
@@ -1011,17 +1009,17 @@ profile_dump(void)
 {
     FILE	*fd;
 
-    if (profile_fname != NULL)
+    if (profile_fname == NULL)
+	return;
+
+    fd = mch_fopen((char *)profile_fname, "w");
+    if (fd == NULL)
+	semsg(_(e_cant_open_file_str), profile_fname);
+    else
     {
-	fd = mch_fopen((char *)profile_fname, "w");
-	if (fd == NULL)
-	    semsg(_(e_cant_open_file_str), profile_fname);
-	else
-	{
-	    script_dump_profile(fd);
-	    func_dump_profile(fd);
-	    fclose(fd);
-	}
+	script_dump_profile(fd);
+	func_dump_profile(fd);
+	fclose(fd);
     }
 }
 

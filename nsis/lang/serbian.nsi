@@ -121,11 +121,6 @@ LangString str_desc_plugin_vim      ${LANG_SERBIAN} \
     "Креира директоријуме додатака у Vim инсталационом директоријуму, користе их сви \
      на систему."
 
-LangString str_section_vis_vim      ${LANG_SERBIAN} \
-    "VisVim проширење"
-LangString str_desc_vis_vim         ${LANG_SERBIAN} \
-    "VisVim проширење за Microsoft Visual Studio интеграцију."
-
 LangString str_section_nls          ${LANG_SERBIAN} \
     "Подршка за домаћи језик"
 LangString str_desc_nls             ${LANG_SERBIAN} \

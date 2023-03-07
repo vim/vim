@@ -147,7 +147,7 @@
 				// see mch_open() comment
 # define mch_fopen(n, p)	fopen(vms_fixfilename(n), (p))
 # define mch_fstat(n, p)	fstat((n), (p))
-# undef HAVE_LSTAT	        // VMS does not have lstat()
+# undef HAVE_LSTAT		// VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 #else
 # ifndef MSWIN
@@ -208,7 +208,7 @@
 #define REPLACE_NORMAL(s) (((s) & REPLACE_FLAG) && !((s) & VREPLACE_FLAG))
 
 #ifdef FEAT_ARABIC
-# define ARABIC_CHAR(ch)            (((ch) & 0xFF00) == 0x0600)
+# define ARABIC_CHAR(ch)	    (((ch) & 0xFF00) == 0x0600)
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_composinglike((p1), (p2))
 #else
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_iscomposing(utf_ptr2char(p2))
@@ -253,32 +253,38 @@
 
 #ifdef FEAT_DIFF
 # define PLINES_NOFILL(x) plines_nofill(x)
+# define PLINES_WIN_NOFILL(w, l, h) plines_win_nofill((w), (l), (h))
 #else
 # define PLINES_NOFILL(x) plines(x)
+# define PLINES_WIN_NOFILL(w, l, h) plines_win((w), (l), (h))
 #endif
 
 #if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
 # define MESSAGE_QUEUE
 #endif
 
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
-# include <float.h>
-# if defined(HAVE_MATH_H)
-   // for isnan() and isinf()
-#  include <math.h>
-# endif
+#include <float.h>
+#if defined(HAVE_MATH_H)
+  // for isnan() and isinf()
+# include <math.h>
+#endif
+
+#if defined(FEAT_EVAL)
 # ifdef USING_FLOAT_STUFF
 #  ifdef MSWIN
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
-     static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
+     static __inline int isinf(double x)
+	{ return !_finite(x) && !_isnan(x); }
 #   endif
 #  else
 #   ifndef HAVE_ISNAN
-     static inline int isnan(double x) { return x != x; }
+     static inline int isnan(double x)
+	{ return x != x; }
 #   endif
 #   ifndef HAVE_ISINF
-     static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
+     static inline int isinf(double x)
+	{ return !isnan(x) && isnan(x - x); }
 #   endif
 #  endif
 #  if !defined(INFINITY)
@@ -332,7 +338,8 @@
  */
 #define VIM_CLEAR(p) \
     do { \
-	if ((p) != NULL) { \
+	if ((p) != NULL) \
+	{ \
 	    vim_free(p); \
 	    (p) = NULL; \
 	} \
@@ -389,3 +396,56 @@
 
 // Length of the array.
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
+
+#ifdef FEAT_MENU
+#define FOR_ALL_MENUS(m) \
+    for ((m) = root_menu; (m) != NULL; (m) = (m)->next)
+#define FOR_ALL_CHILD_MENUS(p, c) \
+    for ((c) = (p)->children; (c) != NULL; (c) = (c)->next)
+#endif
+
+#define FOR_ALL_WINDOWS(wp) \
+    for ((wp) = firstwin; (wp) != NULL; (wp) = (wp)->w_next)
+#define FOR_ALL_FRAMES(frp, first_frame) \
+    for ((frp) = first_frame; (frp) != NULL; (frp) = (frp)->fr_next)
+#define FOR_ALL_TABPAGES(tp) \
+    for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next)
+#define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
+    for ((wp) = ((tp) == NULL || (tp) == curtab) \
+	    ? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
+/*
+ * When using this macro "break" only breaks out of the inner loop. Use "goto"
+ * to break out of the tabpage loop.
+ */
+#define FOR_ALL_TAB_WINDOWS(tp, wp) \
+    for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
+	for ((wp) = ((tp) == curtab) \
+		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
+
+#define FOR_ALL_POPUPWINS(wp) \
+    for ((wp) = first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+#define FOR_ALL_POPUPWINS_IN_TAB(tp, wp) \
+    for ((wp) = (tp)->tp_first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+
+#define FOR_ALL_BUFFERS(buf) \
+    for ((buf) = firstbuf; (buf) != NULL; (buf) = (buf)->b_next)
+
+#define FOR_ALL_BUF_WININFO(buf, wip) \
+    for ((wip) = (buf)->b_wininfo; (wip) != NULL; (wip) = (wip)->wi_next)
+
+// Iterate through all the signs placed in a buffer
+#define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
+    for ((sign) = (buf)->b_signlist; (sign) != NULL; (sign) = (sign)->se_next)
+
+#ifdef FEAT_SPELL
+#define FOR_ALL_SPELL_LANGS(slang) \
+    for ((slang) = first_lang; (slang) != NULL; (slang) = (slang)->sl_next)
+#endif
+
+// Iterate over all the items in a List
+#define FOR_ALL_LIST_ITEMS(l, li) \
+    for ((li) = (l) == NULL ? NULL : (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
+
+// Iterate over all the items in a hash table
+#define FOR_ALL_HASHTAB_ITEMS(ht, hi, todo) \
+    for ((hi) = (ht)->ht_array; (todo) > 0; ++(hi))

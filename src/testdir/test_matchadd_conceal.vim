@@ -339,6 +339,25 @@ func Test_matchadd_and_syn_conceal()
   call assert_equal(screenattr(1, 11) , screenattr(1, 32))
 endfunc
 
+func Test_interaction_matchadd_syntax()
+  new
+  " Test for issue #7268 fix.
+  " When redrawing the second column, win_line() was comparing the sequence
+  " number of the syntax-concealed region with a bogus zero value that was
+  " returned for the matchadd-concealed region. Before 8.0.0672 the sequence
+  " number was never reset, thus masking the problem.
+  call setline(1, 'aaa|bbb|ccc')
+  call matchadd('Conceal', '^..', 10, -1, #{conceal: 'X'})
+  syn match foobar '^.'
+  setl concealcursor=n conceallevel=1
+  redraw!
+
+  call assert_equal('Xa|bbb|ccc', Screenline(1))
+  call assert_notequal(screenattr(1, 1), screenattr(1, 2))
+
+  bwipe!
+endfunc
+
 func Test_cursor_column_in_concealed_line_after_window_scroll()
   CheckRunVimInTerminal
 
@@ -355,7 +374,7 @@ func Test_cursor_column_in_concealed_line_after_window_scroll()
     normal gg
     "==expr==
   END
-  call writefile(lines, 'Xcolesearch')
+  call writefile(lines, 'Xcolesearch', 'D')
   let buf = RunVimInTerminal('Xcolesearch', {})
   call TermWait(buf, 50)
 
@@ -375,7 +394,6 @@ func Test_cursor_column_in_concealed_line_after_window_scroll()
   call assert_equal(2, term_getcursor(buf)[1])
 
   call StopVimInTerminal(buf)
-  call delete('Xcolesearch')
 endfunc
 
 func Test_cursor_column_in_concealed_line_after_leftcol_change()
@@ -387,7 +405,7 @@ func Test_cursor_column_in_concealed_line_after_leftcol_change()
     call matchadd('Conceal', '-')
     set nowrap ss=0 cole=3 cocu=n
   END
-  call writefile(lines, 'Xcurs-columns')
+  call writefile(lines, 'Xcurs-columns', 'D')
   let buf = RunVimInTerminal('-S Xcurs-columns', {})
 
   " Go to the end of the line (3 columns beyond the end of the screen).
@@ -403,7 +421,6 @@ func Test_cursor_column_in_concealed_line_after_leftcol_change()
   call assert_equal(1, term_getcursor(buf)[1])
 
   call StopVimInTerminal(buf)
-  call delete('Xcurs-columns')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

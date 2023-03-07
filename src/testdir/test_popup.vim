@@ -16,7 +16,7 @@ func ListMonths()
   if !empty(entered)
     let mth = filter(mth, 'v:val=~"^".entered')
   endif
-  call complete(1, mth) 
+  call complete(1, mth)
   return ''
 endfunc
 
@@ -74,7 +74,7 @@ func Test_popup_complete()
   call feedkeys("aJu\<f5>\<c-p>l\<c-y>", 'tx')
   call assert_equal(["Jul"], getline(1,2))
   %d
-  
+
   " any-non printable, non-white character: Add this character and
   " reduce number of matches
   call feedkeys("aJu\<f5>\<c-p>l\<c-n>\<c-y>", 'tx')
@@ -96,7 +96,7 @@ func Test_popup_complete()
   call feedkeys("aJ\<f5>".repeat("\<c-n>",3)."\<c-l>\<esc>", 'tx')
   call assert_equal(["J"], getline(1,2))
   %d
-  
+
   " <c-l> - Insert one character from the current match
   call feedkeys("aJ\<f5>".repeat("\<c-n>",4)."\<c-l>\<esc>", 'tx')
   call assert_equal(["January"], getline(1,2))
@@ -655,7 +655,7 @@ func Test_complete_func_mess()
   set completefunc=MessComplete
   new
   call setline(1, 'Ju')
-  call assert_fails('call feedkeys("A\<c-x>\<c-u>/\<esc>", "tx")', 'E578:')
+  call assert_fails('call feedkeys("A\<c-x>\<c-u>/\<esc>", "tx")', 'E565:')
   call assert_equal('Jan/', getline(1))
   bwipe!
   set completefunc=
@@ -758,7 +758,7 @@ func Test_popup_and_previewwindow_dump()
     call setline(1, map(repeat(["ab"], 10), "v:val .. v:key"))
     exec "norm! G\<C-E>\<C-E>"
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {})
 
   " wait for the script to finish
@@ -772,7 +772,6 @@ func Test_popup_and_previewwindow_dump()
 
   call term_sendkeys(buf, "\<Esc>u")
   call StopVimInTerminal(buf)
-  call delete('Xscript')
 endfunc
 
 func Test_balloon_split()
@@ -829,7 +828,7 @@ func Test_popup_position()
     123456789_123456789_123456789_b
                 123
   END
-  call writefile(lines, 'Xtest')
+  call writefile(lines, 'Xtest', 'D')
   let buf = RunVimInTerminal('Xtest', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
 
@@ -857,14 +856,12 @@ func Test_popup_position()
   call term_sendkeys(buf, "jI123456789_\<Esc>")
   call term_sendkeys(buf, "GA\<C-N>")
   call VerifyScreenDump(buf, 'Test_popup_position_04', {'rows': 10})
-  
+
   call term_sendkeys(buf, "\<Esc>u")
   call StopVimInTerminal(buf)
-  call delete('Xtest')
 endfunc
 
 func Test_popup_command()
-  CheckScreendump
   CheckFeature menu
 
   menu Test.Foo Foo
@@ -872,25 +869,30 @@ func Test_popup_command()
   call assert_fails('popup Test.Foo.X', 'E327:')
   call assert_fails('popup Foo', 'E337:')
   unmenu Test.Foo
+endfunc
+
+func Test_popup_command_dump()
+  CheckFeature menu
+  CheckScreendump
 
   let script =<< trim END
     func StartTimer()
       call timer_start(100, {-> ChangeMenu()})
     endfunc
     func ChangeMenu()
-      nunmenu PopUp.&Paste
+      aunmenu PopUp.&Paste
       nnoremenu 1.40 PopUp.&Paste :echomsg "pasted"<CR>
       echomsg 'changed'
     endfunc
   END
-  call writefile(script, 'XtimerScript')
+  call writefile(script, 'XtimerScript', 'D')
 
   let lines =<< trim END
 	one two three four five
 	and one two Xthree four five
 	one more two three four five
   END
-  call writefile(lines, 'Xtest')
+  call writefile(lines, 'Xtest', 'D')
   let buf = RunVimInTerminal('-S XtimerScript Xtest', {})
   call term_sendkeys(buf, ":source $VIMRUNTIME/menu.vim\<CR>")
   call term_sendkeys(buf, "/X\<CR>:popup PopUp\<CR>")
@@ -917,8 +919,6 @@ func Test_popup_command()
   call VerifyScreenDump(buf, 'Test_popup_command_05', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xtest')
-  call delete('XtimerScript')
 endfunc
 
 func Test_popup_complete_backwards()
@@ -984,6 +984,25 @@ func Test_menu_only_exists_in_terminal()
   endtry
 endfunc
 
+" This used to crash before patch 8.1.1424
+func Test_popup_delete_when_shown()
+  CheckFeature menu
+  CheckNotGui
+
+  func Func()
+    popup Foo
+    return "\<Ignore>"
+  endfunc
+
+  nmenu Foo.Bar :
+  nnoremap <expr> <F2> Func()
+  call feedkeys("\<F2>\<F2>\<Esc>", 'xt')
+
+  delfunc Func
+  nunmenu Foo.Bar
+  nunmap <F2>
+endfunc
+
 func Test_popup_complete_info_01()
   new
   inoremap <buffer><F5> <C-R>=complete_info().mode<CR>
@@ -994,7 +1013,7 @@ func Test_popup_complete_info_01()
   inoremap <buffer><F6> <C-R>=s:complTestEval()<CR>
   call writefile([
         \ 'dummy	dummy.txt	1',
-        \], 'Xdummy.txt')
+        \], 'Xdummy.txt', 'D')
   setlocal tags=Xdummy.txt
   setlocal dictionary=Xdummy.txt
   setlocal thesaurus=Xdummy.txt
@@ -1027,7 +1046,7 @@ func Test_popup_complete_info_01()
     call assert_equal(mode_name, getline('.'))
     %d
   endfor
-  call delete('Xdummy.txt')
+
   bwipe!
 endfunc
 
@@ -1137,11 +1156,11 @@ func Test_CompleteChanged()
   bw!
 endfunc
 
-function! GetPumPosition()
+func GetPumPosition()
   call assert_true( pumvisible() )
   let g:pum_pos = pum_getpos()
   return ''
-endfunction
+endfunc
 
 func Test_pum_getpos()
   new
@@ -1175,15 +1194,14 @@ func Test_pum_rightleft()
     vim
     victory
   END
-  call writefile(lines, 'Xtest1')
+  call writefile(lines, 'Xtest1', 'D')
   let buf = RunVimInTerminal('--cmd "set rightleft" Xtest1', {})
-  call term_wait(buf)
   call term_sendkeys(buf, "Go\<C-P>")
   call VerifyScreenDump(buf, 'Test_pum_rightleft_01', {'rows': 8})
   call term_sendkeys(buf, "\<C-P>\<C-Y>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   redraw!
-  call assert_match('\s*miv', Screenline(5))
+  call WaitForAssert({-> assert_match('\s*miv', Screenline(5))})
 
   " Test for expanding tabs to spaces in the popup menu
   let lines =<< trim END
@@ -1191,21 +1209,19 @@ func Test_pum_rightleft()
     one	three
     four
   END
-  call writefile(lines, 'Xtest2')
+  call writefile(lines, 'Xtest2', 'D')
   call term_sendkeys(buf, "\<Esc>:e! Xtest2\<CR>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   call term_sendkeys(buf, "Goone\<C-X>\<C-L>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   redraw!
   call VerifyScreenDump(buf, 'Test_pum_rightleft_02', {'rows': 7})
   call term_sendkeys(buf, "\<C-Y>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   redraw!
-  call assert_match('\s*eerht     eno', Screenline(4))
+  call WaitForAssert({-> assert_match('\s*eerht     eno', Screenline(4))})
 
   call StopVimInTerminal(buf)
-  call delete('Xtest1')
-  call delete('Xtest2')
 endfunc
 
 " Test for a popup menu with a scrollbar
@@ -1216,23 +1232,22 @@ func Test_pum_scrollbar()
     two
     three
   END
-  call writefile(lines, 'Xtest1')
+  call writefile(lines, 'Xtest1', 'D')
   let buf = RunVimInTerminal('--cmd "set pumheight=2" Xtest1', {})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "Go\<C-P>\<C-P>\<C-P>")
   call VerifyScreenDump(buf, 'Test_pum_scrollbar_01', {'rows': 7})
   call term_sendkeys(buf, "\<C-E>\<Esc>dd")
-  call term_wait(buf)
+  call TermWait(buf)
 
   if has('rightleft')
     call term_sendkeys(buf, ":set rightleft\<CR>")
-    call term_wait(buf)
+    call TermWait(buf)
     call term_sendkeys(buf, "Go\<C-P>\<C-P>\<C-P>")
     call VerifyScreenDump(buf, 'Test_pum_scrollbar_02', {'rows': 7})
   endif
 
   call StopVimInTerminal(buf)
-  call delete('Xtest1')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

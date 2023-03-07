@@ -276,13 +276,17 @@ enum key_extra
     , KE_CANCEL = 102		// return from vgetc()
     , KE_COMMAND = 103		// <Cmd> special key
     , KE_SCRIPT_COMMAND = 104	// <ScriptCmd> special key
-    , KE_S_BS = 105	        // shift + <BS>
+    , KE_S_BS = 105		// shift + <BS>
+    , KE_SID = 106		// <SID> special key, followed by {nr};
+    , KE_ESC = 107		// used for K_ESC
 };
 
 /*
- * the three byte codes are replaced with the following int when using vgetc()
+ * The three-byte codes are replaced with a negative number when using vgetc().
  */
 #define K_ZERO		TERMCAP2KEY(KS_ZERO, KE_FILLER)
+
+#define K_ESC		TERMCAP2KEY(KS_EXTRA, KE_ESC)
 
 #define K_UP		TERMCAP2KEY('k', 'u')
 #define K_DOWN		TERMCAP2KEY('k', 'd')
@@ -294,10 +298,12 @@ enum key_extra
 #define K_C_LEFT	TERMCAP2KEY(KS_EXTRA, KE_C_LEFT)
 #define K_S_RIGHT	TERMCAP2KEY('%', 'i')
 #define K_C_RIGHT	TERMCAP2KEY(KS_EXTRA, KE_C_RIGHT)
+
 #define K_S_HOME	TERMCAP2KEY('#', '2')
 #define K_C_HOME	TERMCAP2KEY(KS_EXTRA, KE_C_HOME)
 #define K_S_END		TERMCAP2KEY('*', '7')
 #define K_C_END		TERMCAP2KEY(KS_EXTRA, KE_C_END)
+
 #define K_TAB		TERMCAP2KEY(KS_EXTRA, KE_TAB)
 #define K_S_TAB		TERMCAP2KEY('k', 'B')
 #define K_S_BS		TERMCAP2KEY(KS_EXTRA, KE_S_BS)
@@ -483,6 +489,7 @@ enum key_extra
 
 #define K_COMMAND	TERMCAP2KEY(KS_EXTRA, KE_COMMAND)
 #define K_SCRIPT_COMMAND TERMCAP2KEY(KS_EXTRA, KE_SCRIPT_COMMAND)
+#define K_SID		TERMCAP2KEY(KS_EXTRA, KE_SID)
 
 // Bits for modifier mask
 // 0x01 cannot be used, because the modifier must be 0x02 or higher

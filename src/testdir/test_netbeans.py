@@ -184,8 +184,13 @@ def writePortInFile(port):
 if __name__ == "__main__":
     HOST, PORT = "localhost", 0
 
-    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
-    ip, port = server.server_address
+    addrs = socket.getaddrinfo(HOST, PORT, 0, 0, socket.IPPROTO_TCP)
+    # Each addr is a (family, type, proto, canonname, sockaddr) tuple
+    sockaddr = addrs[0][4]
+    ThreadedTCPServer.address_family = addrs[0][0]
+
+    server = ThreadedTCPServer(sockaddr[0:2], ThreadedTCPRequestHandler)
+    ip, port = server.server_address[0:2]
 
     # Start a thread with the server.  That thread will then start a new thread
     # for each connection.
@@ -199,7 +204,7 @@ if __name__ == "__main__":
     # Main thread terminates, but the server continues running
     # until server.shutdown() is called.
     try:
-        while server_thread.isAlive(): 
+        while server_thread.is_alive():
             server_thread.join(1)
     except (KeyboardInterrupt, SystemExit):
         server.shutdown()

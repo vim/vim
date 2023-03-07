@@ -152,4 +152,4 @@ PUSH "\e[25H\r\nABCDE\b\b\b\e[2P\r\n"
 DAMAGEFLUSH
   moverect 1..25,0..80 -> 0..24,0..80
   damage 24..25,0..80
-  ?screen_chars 23,0,24,5 = "ABE"
+  ?screen_row 23 = "ABE"

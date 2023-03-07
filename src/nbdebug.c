@@ -59,13 +59,19 @@ nbdebug_wait(
 #endif
 
 	// for debugging purposes only
-	if (wait_flags & WT_ENV && wait_var && getenv(wait_var) != NULL) {
+	if (wait_flags & WT_ENV && wait_var && getenv(wait_var) != NULL)
+	{
 		sleep(atoi(getenv(wait_var)));
-	} else if (wait_flags & WT_WAIT && lookup("~/.gvimwait")) {
+	}
+	else if (wait_flags & WT_WAIT && lookup("~/.gvimwait"))
+	{
 		sleep(wait_secs > 0 && wait_secs < 120 ? wait_secs : 20);
-	} else if (wait_flags & WT_STOP && lookup("~/.gvimstop")) {
+	}
+	else if (wait_flags & WT_STOP && lookup("~/.gvimstop"))
+	{
 		int w = 1;
-		while (w) {
+		while (w)
+		{
 			;
 		}
 	}
@@ -86,9 +92,12 @@ nbdebug_log_init(
 		nb_debug = fopen(file, "a");
 		time(&now);
 		fprintf(nb_debug, "%s", get_ctime(now, TRUE));
-		if (level_var && (cp = getenv(level_var)) != NULL) {
+		if (level_var && (cp = getenv(level_var)) != NULL)
+		{
 			nb_dlevel = strtoul(cp, NULL, 0);
-		} else {
+		}
+		else
+		{
 			nb_dlevel = NB_TRACE;	// default level
 		}
 #ifdef USE_NB_ERRORHANDLER
@@ -103,7 +112,8 @@ nbdbg(char *fmt, ...)
 {
 	va_list		 ap;
 
-	if (nb_debug != NULL && nb_dlevel & NB_TRACE) {
+	if (nb_debug != NULL && nb_dlevel & NB_TRACE)
+	{
 		va_start(ap, fmt);
 		vfprintf(nb_debug, fmt, ap);
 		va_end(ap);
@@ -144,7 +154,8 @@ errorHandler(
 	    "XRequest", buf, "Unknown", msg, sizeof(msg));
 	nbdbg("\tMajor opcode of failed request: %d (%s)\n",
 	    err->request_code, msg);
-	if (err->request_code > 128) {
+	if (err->request_code > 128)
+	{
 		nbdbg("\tMinor opcode of failed request: %d\n",
 		    err->minor_code);
 	}

@@ -1,6 +1,7 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
 source check.vim
+source screendump.vim
 
 func Test_window_cmd_ls0_with_split()
   set ls=0
@@ -19,8 +20,6 @@ func Test_window_cmd_ls0_with_split()
 endfunc
 
 func Test_window_cmd_cmdwin_with_vsp()
-  CheckFeature cmdwin
-
   let efmt = 'Expected 0 but got %d (in ls=%d, %s window)'
   for v in range(0, 2)
     exec "set ls=" . v
@@ -38,6 +37,26 @@ func Test_window_cmd_cmdwin_with_vsp()
   set ls&vim
 endfunc
 
+func Test_cmdheight_not_changed()
+  set cmdheight=2
+  set winminheight=0
+  augroup Maximize
+    autocmd WinEnter * wincmd _
+  augroup END
+  split
+  tabnew
+  tabfirst
+  call assert_equal(2, &cmdheight)
+
+  tabonly!
+  only
+  set winminwidth& cmdheight&
+  augroup Maximize
+    au!
+  augroup END
+  augroup! Maximize
+endfunc
+
 " Test for jumping to windows
 func Test_window_jump()
   new
@@ -50,8 +69,8 @@ endfunc
 func Test_window_cmd_wincmd_gf()
   let fname = 'test_gf.txt'
   let swp_fname = '.' . fname . '.swp'
-  call writefile([], fname)
-  call writefile([], swp_fname)
+  call writefile([], fname, 'D')
+  call writefile([], swp_fname, 'D')
   function s:swap_exists()
     let v:swapchoice = s:swap_choice
   endfunc
@@ -77,8 +96,6 @@ func Test_window_cmd_wincmd_gf()
   call assert_notequal(fname, bufname("%"))
   new | only!
 
-  call delete(fname)
-  call delete(swp_fname)
   augroup! test_window_cmd_wincmd_gf
 endfunc
 
@@ -120,7 +137,6 @@ endfunc
 
 " Test the ":wincmd ^" and "<C-W>^" commands.
 func Test_window_split_edit_alternate()
-
   " Test for failure when the alternate buffer/file no longer exists.
   edit Xfoo | %bw
   call assert_fails(':wincmd ^', 'E23:')
@@ -153,7 +169,6 @@ endfunc
 
 " Test the ":[count]wincmd ^" and "[count]<C-W>^" commands.
 func Test_window_split_edit_bufnr()
-
   %bwipeout
   let l:nr = bufnr('%') + 1
   call assert_fails(':execute "normal! ' . l:nr . '\<C-W>\<C-^>"', 'E92:')
@@ -345,6 +360,46 @@ func Test_window_height()
   call assert_inrange(wh3, wh3 + 1, wh2)
 
   bw Xa Xb Xc
+endfunc
+
+func Test_wincmd_equal()
+  edit Xone
+  below split Xtwo
+  rightbelow vsplit Xthree
+  call assert_equal('Xone', bufname(winbufnr(1)))
+  call assert_equal('Xtwo', bufname(winbufnr(2)))
+  call assert_equal('Xthree', bufname(winbufnr(3)))
+
+  " Xone and Xtwo should be about the same height
+  let [wh1, wh2] = [winheight(1), winheight(2)]
+  call assert_inrange(wh1 - 1, wh1 + 1, wh2)
+  " Xtwo and Xthree should be about the same width
+  let [ww2, ww3] = [winwidth(2), winwidth(3)]
+  call assert_inrange(ww2 - 1, ww2 + 1, ww3)
+
+  1wincmd w
+  10wincmd _
+  2wincmd w
+  20wincmd |
+  call assert_equal(10, winheight(1))
+  call assert_equal(20, winwidth(2))
+
+  " equalizing horizontally doesn't change the heights
+  hor wincmd =
+  call assert_equal(10, winheight(1))
+  let [ww2, ww3] = [winwidth(2), winwidth(3)]
+  call assert_inrange(ww2 - 1, ww2 + 1, ww3)
+
+  2wincmd w
+  20wincmd |
+  call assert_equal(20, winwidth(2))
+  " equalizing vertically doesn't change the widths
+  vert wincmd =
+  call assert_equal(20, winwidth(2))
+  let [wh1, wh2] = [winheight(1), winheight(2)]
+  call assert_inrange(wh1 - 1, wh1 + 1, wh2)
+
+  bwipe Xone Xtwo Xthree
 endfunc
 
 func Test_window_width()
@@ -681,7 +736,7 @@ func Test_window_prevwin()
   CheckUnix
 
   set hidden autoread
-  call writefile(['2'], 'tmp.txt')
+  call writefile(['2'], 'tmp.txt', 'D')
   new tmp.txt
   q
   call Fun_RenewFile()
@@ -697,7 +752,6 @@ func Test_window_prevwin()
   wincmd p
   " reset
   q
-  call delete('tmp.txt')
   set hidden&vim autoread&vim
   delfunc Fun_RenewFile
 endfunc
@@ -725,7 +779,7 @@ func Test_relative_cursor_position_in_one_line_window()
 
   only!
   bwipe!
-  call assert_fails('call winrestview(test_null_dict())', 'E474:')
+  call assert_fails('call winrestview(test_null_dict())', 'E1297:')
 endfunc
 
 func Test_relative_cursor_position_after_move_and_resize()
@@ -926,7 +980,7 @@ func Test_winrestview()
   call assert_equal(view, winsaveview())
 
   bwipe!
-  call assert_fails('call winrestview(test_null_dict())', 'E474:')
+  call assert_fails('call winrestview(test_null_dict())', 'E1297:')
 endfunc
 
 func Test_win_splitmove()
@@ -957,7 +1011,7 @@ func Test_win_splitmove()
   call assert_equal(bufname(winbufnr(2)), 'b')
   call assert_equal(bufname(winbufnr(3)), 'a')
   call assert_equal(bufname(winbufnr(4)), 'd')
-  call assert_fails('call win_splitmove(winnr(), winnr("k"), test_null_dict())', 'E474:')
+  call assert_fails('call win_splitmove(winnr(), winnr("k"), test_null_dict())', 'E1297:')
   only | bd
 
   call assert_fails('call win_splitmove(winnr(), 123)', 'E957:')
@@ -1023,12 +1077,12 @@ func Run_noroom_for_newwindow_test(dir_arg)
     endtry
   endwhile
 
-  call writefile(['first', 'second', 'third'], 'Xfile1')
-  call writefile([], 'Xfile2')
-  call writefile([], 'Xfile3')
+  call writefile(['first', 'second', 'third'], 'Xnorfile1', 'D')
+  call writefile([], 'Xnorfile2', 'D')
+  call writefile([], 'Xnorfile3', 'D')
 
   " Argument list related commands
-  args Xfile1 Xfile2 Xfile3
+  args Xnorfile1 Xnorfile2 Xnorfile3
   next
   for cmd in ['sargument 2', 'snext', 'sprevious', 'sNext', 'srewind',
 			\ 'sfirst', 'slast']
@@ -1039,13 +1093,13 @@ func Run_noroom_for_newwindow_test(dir_arg)
   " Buffer related commands
   set modified
   hide enew
-  for cmd in ['sbuffer Xfile1', 'sbnext', 'sbprevious', 'sbNext', 'sbrewind',
+  for cmd in ['sbuffer Xnorfile1', 'sbnext', 'sbprevious', 'sbNext', 'sbrewind',
 		\ 'sbfirst', 'sblast', 'sball', 'sbmodified', 'sunhide']
     call assert_fails(dir .. cmd, 'E36:')
   endfor
 
   " Window related commands
-  for cmd in ['split', 'split Xfile2', 'new', 'new Xfile3', 'sview Xfile1',
+  for cmd in ['split', 'split Xnorfile2', 'new', 'new Xnorfile3', 'sview Xnorfile1',
 		\ 'sfind runtest.vim']
     call assert_fails(dir .. cmd, 'E36:')
   endfor
@@ -1068,7 +1122,7 @@ func Run_noroom_for_newwindow_test(dir_arg)
     call assert_fails(dir .. 'lopen', 'E36:')
 
     " Preview window
-    call assert_fails(dir .. 'pedit Xfile2', 'E36:')
+    call assert_fails(dir .. 'pedit Xnorfile2', 'E36:')
     call setline(1, 'abc')
     call assert_fails(dir .. 'psearch abc', 'E36:')
   endif
@@ -1076,15 +1130,15 @@ func Run_noroom_for_newwindow_test(dir_arg)
   " Window commands (CTRL-W ^ and CTRL-W f)
   if a:dir_arg == 'h'
     call assert_fails('call feedkeys("\<C-W>^", "xt")', 'E36:')
-    call setline(1, 'Xfile1')
+    call setline(1, 'Xnorfile1')
     call assert_fails('call feedkeys("gg\<C-W>f", "xt")', 'E36:')
   endif
   enew!
 
   " Tag commands (:stag, :stselect and :stjump)
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "second\tXfile1\t2",
-        \ "third\tXfile1\t3",],
+        \ "second\tXnorfile1\t2",
+        \ "third\tXnorfile1\t3",],
         \ 'Xtags')
   set tags=Xtags
   call assert_fails(dir .. 'stag second', 'E36:')
@@ -1106,9 +1160,6 @@ func Run_noroom_for_newwindow_test(dir_arg)
   endif
 
   %bwipe!
-  call delete('Xfile1')
-  call delete('Xfile2')
-  call delete('Xfile3')
   only
 endfunc
 
@@ -1214,7 +1265,7 @@ endfunc
 
 " Test for jumping to a vertical/horizontal neighbor window based on the
 " current cursor position
-func Test_window_goto_neightbor()
+func Test_window_goto_neighbor()
   %bw!
 
   " Vertical window movement
@@ -1327,16 +1378,16 @@ endfunc
 " window to another.
 func Test_close_dest_window()
   split
-  edit Xfile
+  edit Xdstfile
 
   " Test for BufLeave
   augroup T1
     au!
-    au BufLeave Xfile $wincmd c
+    au BufLeave Xdstfile $wincmd c
   augroup END
   wincmd b
   call assert_equal(1, winnr('$'))
-  call assert_equal('Xfile', @%)
+  call assert_equal('Xdstfile', @%)
   augroup T1
     au!
   augroup END
@@ -1350,7 +1401,7 @@ func Test_close_dest_window()
   augroup END
   wincmd t
   call assert_equal(1, winnr('$'))
-  call assert_equal('Xfile', @%)
+  call assert_equal('Xdstfile', @%)
   augroup T1
     au!
   augroup END
@@ -1430,23 +1481,33 @@ func Test_win_move_separator()
   call assert_equal(w0, winwidth(0))
   call assert_true(win_move_separator(0, -1))
   call assert_equal(w0, winwidth(0))
+
   " check that win_move_separator doesn't error with offsets beyond moving
   " possibility
   call assert_true(win_move_separator(id, 5000))
   call assert_true(winwidth(id) > w)
   call assert_true(win_move_separator(id, -5000))
   call assert_true(winwidth(id) < w)
+
   " check that win_move_separator returns false for an invalid window
   wincmd =
   let w = winwidth(0)
   call assert_false(win_move_separator(-1, 1))
   call assert_equal(w, winwidth(0))
+
   " check that win_move_separator returns false for a popup window
   let id = popup_create(['hello', 'world'], {})
   let w = winwidth(id)
   call assert_false(win_move_separator(id, 1))
   call assert_equal(w, winwidth(id))
   call popup_close(id)
+
+  " check that using another tabpage fails without crash
+  let id = win_getid()
+  tabnew
+  call assert_fails('call win_move_separator(id, -1)', 'E1308:')
+  tabclose
+
   %bwipe!
 endfunc
 
@@ -1492,23 +1553,33 @@ func Test_win_move_statusline()
     call assert_true(id->win_move_statusline(-offset))
     call assert_equal(h, winheight(id))
   endfor
+
   " check that win_move_statusline doesn't error with offsets beyond moving
   " possibility
   call assert_true(win_move_statusline(id, 5000))
   call assert_true(winheight(id) > h)
   call assert_true(win_move_statusline(id, -5000))
   call assert_true(winheight(id) < h)
+
   " check that win_move_statusline returns false for an invalid window
   wincmd =
   let h = winheight(0)
   call assert_false(win_move_statusline(-1, 1))
   call assert_equal(h, winheight(0))
+
   " check that win_move_statusline returns false for a popup window
   let id = popup_create(['hello', 'world'], {})
   let h = winheight(id)
   call assert_false(win_move_statusline(id, 1))
   call assert_equal(h, winheight(id))
   call popup_close(id)
+
+  " check that using another tabpage fails without crash
+  let id = win_getid()
+  tabnew
+  call assert_fails('call win_move_statusline(id, -1)', 'E1308:')
+  tabclose
+
   %bwipe!
 endfunc
 
@@ -1535,12 +1606,12 @@ func Test_window_alloc_failure()
   call assert_fails('split', 'E342:')
   call assert_equal(1, winnr('$'))
 
-  edit Xfile1
-  edit Xfile2
+  edit Xwaffile1
+  edit Xwaffile2
   call test_alloc_fail(GetAllocId('newwin_wvars'), 0, 0)
-  call assert_fails('sb Xfile1', 'E342:')
+  call assert_fails('sb Xwaffile1', 'E342:')
   call assert_equal(1, winnr('$'))
-  call assert_equal('Xfile2', @%)
+  call assert_equal('Xwaffile2', @%)
   %bw!
 
   " FIXME: The following test crashes Vim
@@ -1556,5 +1627,326 @@ func Test_window_alloc_failure()
   tabnew
   tabonly
 endfunc
+
+func Test_win_equal_last_status()
+  let save_lines = &lines
+  set lines=20
+  set splitbelow
+  set laststatus=0
+
+  split | split | quit
+  call assert_equal(winheight(1), winheight(2))
+
+  let &lines = save_lines
+  set splitbelow&
+  set laststatus&
+endfunc
+
+" Test "screen" and "cursor" values for 'splitkeep' with a sequence of
+" split operations for various options: with and without a winbar,
+" tabline, for each possible value of 'laststatus', 'scrolloff',
+" 'equalalways', and with the cursor at the top, middle and bottom.
+func Test_splitkeep_options()
+  " disallow window resizing
+  let save_WS = &t_WS
+  set t_WS=
+
+  let gui = has("gui_running")
+  inoremap <expr> c "<cmd>copen<bar>wincmd k<CR>"
+  for run in range(0, 20)
+    let &splitkeep = run > 10 ? 'topline' : 'screen'
+    let &scrolloff = (!(run % 4) ? 0 : run)
+    let &laststatus = (run % 3)
+    let &splitbelow = (run % 3)
+    let &equalalways = (run % 2)
+    let wsb = (run % 2) && &splitbelow
+    let tl = (gui ? 0 : ((run % 5) ? 1 : 0))
+    let pos = !(run % 3) ? 'H' : ((run % 2) ? 'M' : 'L')
+    tabnew | tabonly! | redraw
+    execute (run % 5) ? 'tabnew' : ''
+    execute (run % 2) ? 'nnoremenu 1.10 WinBar.Test :echo' : ''
+    call setline(1, range(1, 256))
+    " No scroll for restore_snapshot
+    norm G
+    try
+      copen | close | colder
+    catch /E380/
+    endtry
+    call assert_equal(257 - winheight(0), line("w0"))
+
+    " No scroll for firstwin horizontal split
+    execute 'norm gg' . pos
+    split | redraw | wincmd k
+    call assert_equal(1, line("w0"))
+    call assert_equal(&scroll, winheight(0) / 2)
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+
+    " No scroll when resizing windows
+    wincmd k | resize +2 | redraw
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+
+    " No scroll when dragging statusline
+    call win_move_statusline(1, -3)
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+    wincmd k
+    call assert_equal(1, line("w0"))
+
+    " No scroll when changing shellsize
+    set lines+=2
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+    set lines-=2
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+    wincmd k
+    call assert_equal(1, line("w0"))
+
+    " No scroll when equalizing windows
+    wincmd =
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+    wincmd k
+    call assert_equal(1, line("w0"))
+
+    " No scroll in windows split multiple times
+    vsplit | split | 4wincmd w
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+    1wincmd w | quit | wincmd l | split
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+
+    " No scroll in small window
+    2wincmd w | only | 5split | wincmd k
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+
+    " No scroll for vertical split
+    quit | vsplit | wincmd l
+    call assert_equal(1, line("w0"))
+    wincmd h
+    call assert_equal(1, line("w0"))
+
+    " No scroll in windows split and quit multiple times
+    quit | redraw | split | split | quit | redraw
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
+
+    " No scroll for new buffer
+    1wincmd w | only | copen | wincmd k
+    call assert_equal(1, line("w0"))
+    only
+    call assert_equal(1, line("w0"))
+    above copen | wincmd j
+    call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl, line("w0"))
+
+    " No scroll when opening cmdwin, and no cursor move when closing cmdwin.
+    only | norm ggL
+    let curpos = getcurpos()
+    norm q:
+    call assert_equal(1, line("w0"))
+    call assert_equal(curpos, getcurpos())
+
+    " Scroll when cursor becomes invalid in insert mode.
+    norm Lic
+    call assert_equal(curpos, getcurpos(), 'run ' .. run)
+
+    " No scroll when topline not equal to 1
+    only | execute "norm gg5\<C-e>" | split | wincmd k
+    call assert_equal(6, line("w0"))
+    wincmd j
+    call assert_equal(&spk == 'topline' ? 6 : 5 + win_screenpos(0)[0] - tl - wsb, line("w0"))
+  endfor
+
+  tabnew | tabonly! | %bwipeout!
+  iunmap c
+  set scrolloff&
+  set splitbelow&
+  set laststatus&
+  set equalalways&
+  set splitkeep&
+  let &t_WS = save_WS
+endfunc
+
+func Test_splitkeep_cmdwin_cursor_position()
+  set splitkeep=screen
+  call setline(1, range(&lines))
+
+  " No scroll when cursor is at near bottom of window and cusor position
+  " recompution (done by line('w0') in this test) happens while in cmdwin.
+  normal! G
+  let firstline = line('w0')
+  autocmd CmdwinEnter * ++once autocmd WinEnter * ++once call line('w0')
+  execute "normal! q:\<C-w>q"
+  redraw!
+  call assert_equal(firstline, line('w0'))
+
+  " User script can change cursor position successfully while in cmdwin and it
+  " shouldn't be changed when closing cmdwin.
+  execute "normal! Gq:\<Cmd>call win_execute(winnr('#')->win_getid(), 'call cursor(1, 1)')\<CR>\<C-w>q"
+  call assert_equal(1, line('.'))
+  call assert_equal(1, col('.'))
+
+  execute "normal! Gq:\<Cmd>autocmd WinEnter * ++once call cursor(1, 1)\<CR>\<C-w>q"
+  call assert_equal(1, line('.'))
+  call assert_equal(1, col('.'))
+
+  %bwipeout!
+  set splitkeep&
+endfunc
+
+func Test_splitkeep_misc()
+  set splitkeep=screen
+  set splitbelow
+
+  call setline(1, range(1, &lines))
+  norm Gzz
+  let top = line('w0')
+  " No scroll when aucmd_win is opened
+  call setbufvar(bufnr("test", 1) , '&buftype', 'nofile')
+  call assert_equal(top, line('w0'))
+  " No scroll when tab is changed/closed
+  tab help | close
+  call assert_equal(top, line('w0'))
+  " No scroll when help is closed and buffer line count < window height
+  norm ggdG
+  call setline(1, range(1, &lines - 10))
+  norm G
+  let top = line('w0')
+  help | quit
+  call assert_equal(top, line('w0'))
+  " No error when resizing window in autocmd and buffer length changed
+  autocmd FileType qf exe "resize" line('$')
+  cexpr getline(1, '$')
+  copen
+  wincmd p
+  norm dd
+  cexpr getline(1, '$')
+
+  %bwipeout!
+  set splitbelow&
+  set splitkeep&
+endfunc
+
+func Test_splitkeep_callback()
+  CheckScreendump
+  let lines =<< trim END
+    set splitkeep=screen
+    call setline(1, range(&lines))
+    function C1(a, b)
+      split | wincmd p
+    endfunction
+    function C2(a, b)
+      close | split
+    endfunction
+    nn j <cmd>call job_start([&sh, &shcf, "true"], { 'exit_cb': 'C1' })<CR>
+    nn t <cmd>call popup_create(term_start([&sh, &shcf, "true"],
+          \ { 'hidden': 1, 'exit_cb': 'C2' }), {})<CR>
+  END
+  call writefile(lines, 'XTestSplitkeepCallback', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepCallback', #{rows: 8})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_splitkeep_callback_1', {})
+
+  call term_sendkeys(buf, ":quit\<CR>Ht")
+  call VerifyScreenDump(buf, 'Test_splitkeep_callback_2', {})
+
+  call term_sendkeys(buf, ":set sb\<CR>:quit\<CR>Gj")
+  call VerifyScreenDump(buf, 'Test_splitkeep_callback_3', {})
+
+  call term_sendkeys(buf, ":quit\<CR>Gt")
+  call VerifyScreenDump(buf, 'Test_splitkeep_callback_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_splitkeep_fold()
+  CheckScreendump
+
+  let lines =<< trim END
+    set splitkeep=screen
+    set foldmethod=marker
+    set number
+    let line = 1
+    for n in range(1, &lines)
+      call setline(line, ['int FuncName() {/*{{{*/', 1, 2, 3, 4, 5, '}/*}}}*/',
+            \ 'after fold'])
+      let line += 8
+    endfor
+  END
+  call writefile(lines, 'XTestSplitkeepFold', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepFold', #{rows: 10})
+
+  call term_sendkeys(buf, "L:wincmd s\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_fold_1', {})
+
+  call term_sendkeys(buf, ":quit\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_fold_2', {})
+
+  call term_sendkeys(buf, "H:below split\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_fold_3', {})
+
+  call term_sendkeys(buf, ":wincmd k\<CR>:quit\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_fold_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_splitkeep_status()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['a', 'b', 'c'])
+    set nomodified
+    set splitkeep=screen
+    let win = winnr()
+    wincmd s
+    wincmd j
+  END
+  call writefile(lines, 'XTestSplitkeepStatus', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepStatus', #{rows: 10})
+
+  call term_sendkeys(buf, ":call win_move_statusline(win, 1)\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_status_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_new_help_window_on_error()
+  help change.txt
+  execute "normal! /CTRL-@\<CR>"
+  silent! execute "normal! \<C-W>]"
+
+  let wincount = winnr('$')
+  help 'mod'
+
+  call assert_equal(wincount, winnr('$'))
+  call assert_equal(expand("<cword>"), "'mod'")
+endfunc
+
+func Test_smoothscroll_in_zero_width_window()
+  let save_lines = &lines
+  let save_columns = &columns
+
+  winsize 0 24
+  set cpo+=n
+  exe "noremap 0 \<C-W>n\<C-W>L"
+  norm 000000
+  set number smoothscroll
+  exe "norm \<C-Y>"
+
+  only!
+  let &lines = save_lines
+  let &columns = save_columns
+  set cpo-=n
+  unmap 0
+  set nonumber nosmoothscroll
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

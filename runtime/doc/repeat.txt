@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2022 Apr 08
+*repeat.txt*    For Vim version 9.0.  Last change: 2023 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -92,7 +92,8 @@ pattern and do not match another pattern: >
 This first finds all lines containing "found", but only executes {cmd} when
 there is no match for "notfound".
 
-To execute a non-Ex command, you can use the `:normal` command: >
+Any Ex command can be used, see |ex-cmd-index|.  To execute a Normal mode
+command, you can use the `:normal` command: >
 	:g/pat/normal {commands}
 Make sure that {commands} ends with a whole command, otherwise Vim will wait
 for you to type the rest of the command for each match.  The screen will not
@@ -197,10 +198,11 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 :so[urce] {file}	Read Ex commands from {file}.  These are commands that
 			start with a ":".
 			Triggers the |SourcePre| autocommand.
-
+							*:source-range*
 :[range]so[urce] [++clear]
 			Read Ex commands from the [range] of lines in the
-			current buffer.
+			current buffer.  When [range] is omitted read all
+			lines.
 
 			When sourcing commands from the current buffer, the
 			same script-ID |<SID>| is used even if the buffer is
@@ -231,7 +233,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Examples: >
 				:4,5source
 				:10,18source ++clear
-
+<
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type
@@ -265,7 +267,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			When [where] is omitted only 'runtimepath' is used.
 			Other values:
 				START	search under "start" in 'packpath'
-				OPT 	search under "opt" in 'packpath'
+				OPT	search under "opt" in 'packpath'
 				PACK	search under "start" and "opt" in
 					'packpath'
 				ALL	first use 'runtimepath', then search
@@ -417,6 +419,11 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			For a script that was used with `import autoload` but
 			was not actually sourced yet an "A" is shown after the
 			script ID.
+			For a script that was referred to by one name but
+			after resolving symbolic links got sourced with
+			another name the other script is after "->".  E.g.
+			"20->22" means script 20 was sourced as script 22.
+			Also see `getscriptinfo()`.
 			{not available when compiled without the |+eval|
 			feature}
 
@@ -622,6 +629,11 @@ When Vim starts up, after processing your .vimrc, it scans all directories in
 directories are added to 'runtimepath'.  Then all the plugins are loaded.
 See |packload-two-steps| for how these two steps can be useful.
 
+To allow for calling into package functionality while parsing your .vimrc,
+|:colorscheme| and |autoload| will both automatically search under 'packpath'
+as well in addition to 'runtimepath'.  See the documentation for each for
+details.
+
 In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds
 "~/.vim/pack/foo/start/foobar" to 'runtimepath'.
 
@@ -718,15 +730,15 @@ up-to-date easily, but it requires a program like "git" to be available.
 You can do both, github can automatically create an archive for a release.
 
 Your directory layout would be like this:
-   start/foobar/plugin/foo.vim    	" always loaded, defines commands
-   start/foobar/plugin/bar.vim    	" always loaded, defines commands
-   start/foobar/autoload/foo.vim  	" loaded when foo command used
-   start/foobar/doc/foo.txt       	" help for foo.vim
-   start/foobar/doc/tags          	" help tags
-   opt/fooextra/plugin/extra.vim  	" optional plugin, defines commands
-   opt/fooextra/autoload/extra.vim  	" loaded when extra command used
-   opt/fooextra/doc/extra.txt  	        " help for extra.vim
-   opt/fooextra/doc/tags  	        " help tags
+   start/foobar/plugin/foo.vim		" always loaded, defines commands
+   start/foobar/plugin/bar.vim		" always loaded, defines commands
+   start/foobar/autoload/foo.vim	" loaded when foo command used
+   start/foobar/doc/foo.txt		" help for foo.vim
+   start/foobar/doc/tags		" help tags
+   opt/fooextra/plugin/extra.vim	" optional plugin, defines commands
+   opt/fooextra/autoload/extra.vim	" loaded when extra command used
+   opt/fooextra/doc/extra.txt		" help for extra.vim
+   opt/fooextra/doc/tags		" help tags
 
 This allows for the user to do: >
 	mkdir ~/.vim/pack
@@ -899,6 +911,11 @@ When executing a command that is not a specific bytecode instruction but
 executed like a normal Ex command, "step" will stop once in the compiled
 context, where local variables can be inspected, and once just before
 executing the command.
+
+In a :def function variables that haven't been declared yet cannot be
+inspected.  Variables that have been declared can be inspected, also when the
+block they were declared in has finished.  In commands this would not be
+possible, thus is slightly misleading (but can be useful).
 
 The backtrace shows the hierarchy of function calls, e.g.:
 	>bt ~

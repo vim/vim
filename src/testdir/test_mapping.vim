@@ -420,7 +420,7 @@ func Test_error_in_map_expr()
   nmap <expr> ! Func()
   set updatetime=50
   [CODE]
-  call writefile(lines, 'Xtest.vim')
+  call writefile(lines, 'Xtest.vim', 'D')
 
   let buf = term_start(GetVimCommandCleanTerm() .. ' -S Xtest.vim', {'term_rows': 8})
   let job = term_getjob(buf)
@@ -439,7 +439,6 @@ func Test_error_in_map_expr()
     call assert_equal('', job_info(job).termsig)
   endif
 
-  call delete('Xtest.vim')
   exe buf .. 'bwipe!'
 endfunc
 
@@ -479,8 +478,26 @@ func Test_list_mappings()
         \ execute('nmap ,n')->trim()->split("\n"))
 
   " verbose map
+  let lines = execute('verbose map ,n')->trim()->split("\n")
+
+  " Remove "Seen modifyOtherKeys" and other optional info.
+  if lines[0] =~ 'Seen modifyOtherKeys'
+    call remove(lines, 0)
+  endif
+  if lines[0] =~ 'modifyOtherKeys detected:'
+    call remove(lines, 0)
+  endif
+  if lines[0] =~ 'Kitty keyboard protocol:'
+    call remove(lines, 0)
+  endif
+  if lines[0] == ''
+    call remove(lines, 0)
+  endif
+
+  let index = indexof(lines, 'v:val =~ "Last set"')
+  call assert_equal(1, index)
   call assert_match("\tLast set from .*/test_mapping.vim line \\d\\+$",
-        \ execute('verbose map ,n')->trim()->split("\n")[1])
+        \ lines[index])
 
   " character with K_SPECIAL byte in rhs
   nmap foo …
@@ -501,6 +518,13 @@ func Test_list_mappings()
   nmap <M-…> foo
   call assert_equal(['n  <M-…>         foo'],
         \ execute('nmap <M-…>')->trim()->split("\n"))
+
+  " illegal bytes
+  let str = ":\x7f:\x80:\x90:\xd0:"
+  exe 'nmap foo ' .. str
+  call assert_equal(['n  foo           ' .. strtrans(str)],
+        \ execute('nmap foo')->trim()->split("\n"))
+  unlet str
 
   " map to CTRL-V
   exe "nmap ,k \<C-V>"
@@ -558,14 +582,13 @@ func Test_expr_map_restore_cursor()
       endfunc
       set stl=%{Status()}
   END
-  call writefile(lines, 'XtestExprMap')
+  call writefile(lines, 'XtestExprMap', 'D')
   let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
-  call term_sendkeys(buf, "\<C-B>")
+  call term_sendkeys(buf, GetEscCodeWithModifier('C', 'B'))
   call VerifyScreenDump(buf, 'Test_map_expr_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestExprMap')
 endfunc
 
 func Test_map_listing()
@@ -574,14 +597,13 @@ func Test_map_listing()
   let lines =<< trim END
       nmap a b
   END
-  call writefile(lines, 'XtestMapList')
+  call writefile(lines, 'XtestMapList', 'D')
   let buf = RunVimInTerminal('-S XtestMapList', #{rows: 6})
   call term_sendkeys(buf, ":                      nmap a\<CR>")
   call VerifyScreenDump(buf, 'Test_map_list_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestMapList')
 endfunc
 
 func Test_expr_map_error()
@@ -598,7 +620,7 @@ func Test_expr_map_error()
 
       call test_override('ui_delay', 10)
   END
-  call writefile(lines, 'XtestExprMap')
+  call writefile(lines, 'XtestExprMap', 'D')
   let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
   call term_sendkeys(buf, "\<F2>")
   call TermWait(buf)
@@ -612,7 +634,6 @@ func Test_expr_map_error()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestExprMap')
 endfunc
 
 " Test for mapping errors
@@ -762,11 +783,12 @@ func Test_mapcomplete()
   call feedkeys(":abbr! \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"abbr! \x01", @:)
 
-  " Multiple matches for a map
-  nmap ,f /H<CR>
-  omap ,f /H<CR>
+  " When multiple matches have the same {lhs}, it should only appear once.
+  " The simplified form should also not be included.
+  nmap ,<C-F> /H<CR>
+  omap ,<C-F> /H<CR>
   call feedkeys(":map ,\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"map ,f', @:)
+  call assert_equal('"map ,<C-F>', @:)
   mapclear
 endfunc
 
@@ -1074,11 +1096,10 @@ func Test_map_cmdkey()
       let g:x = 32
     endfunc
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   source Xscript
   call feedkeys("\<F2>", 'xt')
   call assert_equal(32, g:x)
-  call delete('Xscript')
 
   unmap <F3>
   unmap! <F3>
@@ -1522,6 +1543,34 @@ func Test_map_script_cmd_survives_unmap()
   autocmd! CmdlineEnter
 endfunc
 
+func Test_map_script_cmd_redo()
+  call mkdir('Xmapcmd', 'R')
+  let lines =<< trim END
+      vim9script
+      import autoload './script.vim'
+      onoremap <F3> <ScriptCmd>script.Func()<CR>
+  END
+  call writefile(lines, 'Xmapcmd/plugin.vim')
+
+  let lines =<< trim END
+      vim9script
+      export def Func()
+        normal! dd
+      enddef
+  END
+  call writefile(lines, 'Xmapcmd/script.vim')
+  new
+  call setline(1, ['one', 'two', 'three', 'four'])
+  nnoremap j j
+  source Xmapcmd/plugin.vim
+  call feedkeys("d\<F3>j.", 'xt')
+  call assert_equal(['two', 'four'], getline(1, '$'))
+
+  ounmap <F3>
+  nunmap j
+  bwipe!
+endfunc
+
 " Test for using <script> with a map to remap characters in rhs
 func Test_script_local_remap()
   new
@@ -1614,6 +1663,30 @@ func Test_mouse_drag_mapped_start_select()
   set mouse&
 endfunc
 
+func Test_mouse_drag_statusline()
+  set laststatus=2
+  set mouse=a
+  func ClickExpr()
+    call test_setmouse(&lines - 1, 1)
+    return "\<LeftMouse>"
+  endfunc
+  func DragExpr()
+    call test_setmouse(&lines - 2, 1)
+    return "\<LeftDrag>"
+  endfunc
+  nnoremap <expr> <F2> ClickExpr()
+  nnoremap <expr> <F3> DragExpr()
+
+  " this was causing a crash in win_drag_status_line()
+  call feedkeys("\<F2>:tabnew\<CR>\<F3>", 'tx')
+
+  nunmap <F2>
+  nunmap <F3>
+  delfunc ClickExpr
+  delfunc DragExpr
+  set laststatus& mouse&
+endfunc
+
 " Test for mapping <LeftDrag> in Insert mode
 func Test_mouse_drag_insert_map()
   set mouse=a
@@ -1677,5 +1750,68 @@ func Test_expr_map_escape_special()
   unlet g:got_ellipsis
   nunmap …
 endfunc
+
+" Testing for mapping after an <Nop> mapping is triggered on timeout.
+" Test for what patch 8.1.0052 fixes.
+func Test_map_after_timed_out_nop()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set timeout timeoutlen=400
+    inoremap ab TEST
+    inoremap a <Nop>
+  END
+  call writefile(lines, 'Xtest_map_after_timed_out_nop', 'D')
+  let buf = RunVimInTerminal('-S Xtest_map_after_timed_out_nop', #{rows: 6})
+
+  " Enter Insert mode
+  call term_sendkeys(buf, 'i')
+  " Wait for the "a" mapping to timeout
+  call term_sendkeys(buf, 'a')
+  call term_wait(buf, 500)
+  " Send "a" and wait for a period shorter than 'timeoutlen'
+  call term_sendkeys(buf, 'a')
+  call term_wait(buf, 100)
+  " Send "b", should trigger the "ab" mapping
+  call term_sendkeys(buf, 'b')
+  call WaitForAssert({-> assert_equal("TEST", term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_using_past_typeahead()
+  nnoremap :00 0
+  exe "norm :set \x80\xfb0=0\<CR>"
+  exe "sil norm :0\x0f\<C-U>\<CR>"
+
+  exe "norm :set \x80\xfb0=\<CR>"
+  nunmap :00
+endfunc
+
+func Test_mapclear_while_listing()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nocompatible
+      mapclear
+      for i in range(1, 999)
+        exe 'map ' .. 'foo' .. i .. ' bar'
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('mapclear')})
+  END
+  call writefile(lines, 'Xmapclear', 'D')
+  let buf = RunVimInTerminal('-S Xmapclear', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":map\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

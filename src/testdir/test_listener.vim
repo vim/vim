@@ -387,6 +387,37 @@ func Test_remove_listener_in_callback()
   unlet g:listener_called
 endfunc
 
+" When multiple listeners are registered, remove one listener and verify the
+" other listener is still called
+func Test_remove_one_listener_in_callback()
+  new
+  let g:listener1_called = 0
+  let g:listener2_called = 0
+  let s:ID1 = listener_add('Listener1')
+  let s:ID2 = listener_add('Listener2')
+  func Listener1(...)
+    call listener_remove(s:ID1)
+    let g:listener1_called += 1
+  endfunc
+  func Listener2(...)
+    let g:listener2_called += 1
+  endfunc
+  call setline(1, ['foo'])
+  call feedkeys("~", 'xt')
+  call listener_flush()
+  call feedkeys("~", 'xt')
+  call listener_flush()
+  call assert_equal(1, g:listener1_called)
+  call assert_equal(2, g:listener2_called)
+
+  call listener_remove(s:ID2)
+  bwipe!
+  delfunc Listener1
+  delfunc Listener2
+  unlet g:listener1_called
+  unlet g:listener2_called
+endfunc
+
 func Test_no_change_for_empty_undo()
   new
   let text = ['some word here', 'second line']

@@ -112,3 +112,14 @@ PUSH "\e[m\e[1;37m"
 PUSH "\e[m\e[37;1m"
   ?pen bold = on
   ?pen foreground = idx(15)
+
+!Super/Subscript
+PUSH "\e[73m"
+  ?pen small = on
+  ?pen baseline = raise
+PUSH "\e[74m"
+  ?pen small = on
+  ?pen baseline = lower
+PUSH "\e[75m"
+  ?pen small = off
+  ?pen baseline = normal

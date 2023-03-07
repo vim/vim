@@ -158,7 +158,8 @@ func! BuildCombiningTable()
   let end = -1
   let ranges = []
   for p in s:dataprops
-    if p[2] == 'Mn' || p[2] == 'Mc' || p[2] == 'Me'
+    " The 'Mc' property was removed, it does take up space.
+    if p[2] == 'Mn' || p[2] == 'Me'
       let n = ('0x' . p[0]) + 0
       if start >= 0 && end + 1 == n
         " continue with same range.
@@ -462,8 +463,9 @@ let s:ambitable = []
 call BuildWidthTable('A', 'ambiguous')
 
 " Edit the emoji text file.  Requires the netrw plugin.
-edit https://unicode.org/Public/emoji/12.1/emoji-data.txt
-
-" Build the emoji table. Ver. 1.0 - 6.0
-" Must come after the "ambiguous" and "doublewidth" tables
-call BuildEmojiTable()
+" commented out, because it drops too many characters
+"edit https://unicode.org/Public/15.0.0/ucd/emoji/emoji-data.txt
+"
+"" Build the emoji table. Ver. 1.0 - 6.0
+"" Must come after the "ambiguous" and "doublewidth" tables
+"call BuildEmojiTable()

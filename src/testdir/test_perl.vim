@@ -163,11 +163,7 @@ func Test_perleval()
   call assert_equal(0, perleval('0'))
   call assert_equal(2, perleval('2'))
   call assert_equal(-2, perleval('-2'))
-  if has('float')
-    call assert_equal(2.5, perleval('2.5'))
-  else
-    call assert_equal(2, perleval('2.5'))
-  end
+  call assert_equal(2.5, perleval('2.5'))
 
   sandbox call assert_equal(2, perleval('2'))
 
@@ -306,6 +302,16 @@ func Test_000_SvREFCNT()
   VIM::Eval("assert_false($$w)");
 --perl
   %bw!
+endfunc
+
+" This caused a memory error before issue #10386 was fixed
+func Test_stack_usage_fix()
+   let script =<< CODE
+     " This will grow Perl's stack in first invocation
+     eval [0, 0]->map({ -> perleval("push@_,0..4096;0") })
+     q!
+CODE
+   call RunVim([], script, '')
 endfunc
 
 func Test_set_cursor()

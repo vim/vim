@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 8.2.  Last change: 2020 Nov 30
+*undo.txt*      For Vim version 9.0.  Last change: 2022 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -105,12 +105,16 @@ change again.  But you can do something like this: >
 
 After this a "u" command will undo the delete command and the previous
 change.
-
-To do the opposite, break a change into two undo blocks, in Insert mode use
-CTRL-G u.  This is useful if you want an insert command to be undoable in
+					*undo-break* *undo-close-block*
+To do the opposite, use a new undo block for the next change, in Insert mode
+use CTRL-G u.  This is useful if you want an insert command to be undoable in
 parts.  E.g., for each sentence.  |i_CTRL-G_u|
-Setting the value of 'undolevels' also breaks undo.  Even when the new value
-is equal to the old value.
+
+Setting the value of 'undolevels' also closes the undo block.  Even when the
+new value is equal to the old value.  In |Vim9| script: >
+	&undolevels = &undolevels
+In legacy script: >
+	let &undolevels = &undolevels
 
 ==============================================================================
 4. Undo branches				*undo-branches* *undo-tree*
@@ -253,7 +257,7 @@ message about that when opening a file.
 Undo files are normally saved in the same directory as the file.  This can be
 changed with the 'undodir' option.
 
-When the file is encrypted, the text in the undo file is also crypted.  The
+When the file is encrypted, the text in the undo file is also encrypted.  The
 same key and method is used. |encryption|
 
 Note that text properties are not stored in the undo file.  You can restore

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2022 May 07
+*change.txt*    For Vim version 9.0.  Last change: 2023 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -296,7 +296,9 @@ gr{char}		Replace the virtual characters under the cursor with
 			{char}.  This replaces in screen space, not file
 			space.  See |gR| and |Virtual-Replace-mode| for more
 			details.  As with |r| a count may be given.
-			{char} can be entered like with |r|.
+			{char} can be entered like with |r|, but characters
+			that have a special meaning in Insert mode, such as
+			most CTRL-keys, cannot be used.
 
 						*digraph-arg*
 The argument for Normal mode commands like |r| and |t| is a single character.
@@ -802,6 +804,8 @@ When the {string} starts with "\=" it is evaluated as an expression, see
 |sub-replace-expression|.  You can use that for complex replacement or special
 characters.
 
+The substitution is limited in recursion to 4 levels. *E1290*
+
 Otherwise these characters in {string} have a special meaning:
 								*:s%*
 When {string} is equal to "%" and '/' is included with the 'cpoptions' option,
@@ -1031,7 +1035,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 <			to display registers '1' and 'a'.  Spaces are allowed
 			in {arg}.
 
-							*:di* *:display*
+							*:di* *:dis* *:display*
 :di[splay] [arg]	Same as :registers.
 
 							*y* *yank*
@@ -1186,11 +1190,20 @@ used.  If you do need it you can use |p| with another register.  E.g., yank
 the text to copy, Visually select the text to replace and use "0p .  You can
 repeat this as many times as you like, and the unnamed register will be
 changed each time.
-
-When you use a blockwise Visual mode command and yank only a single line into
-a register, a paste on a visual selected area will paste that single line on
-each of the selected lines (thus replacing the blockwise selected region by a
-block of the pasted line).
+							*blockwise-put*
+When a register contains text from one line (characterwise), using a
+blockwise Visual selection, putting that register will paste that text
+repeatedly in each of the selected lines, thus replacing the blockwise
+selected region by multiple copies of the register text.  For example:
+	- yank the word "TEXT" into a register with `yw`
+	- select a visual block, marked with "v" in this text:
+	    aaavvaaa
+	    bbbvvbbb
+	    cccvvccc
+	- press `p`, results in:
+	    aaaTEXTaaa
+	    bbbTEXTbbb
+	    cccTEXTccc
 
 							*blockwise-register*
 If you use a blockwise Visual mode command to get the text into the register,
@@ -1272,7 +1285,7 @@ to their previous contents.  When the '>' flag is present in 'cpoptions' then
 a line break is inserted before the appended text.
 
 5. Read-only registers ":, ". and "%
-These are '%', '#', ':' and '.'.  You can use them only with the "p", "P",
+These are '%', ':' and '.'.  You can use them only with the "p", "P",
 and ":put" commands and with CTRL-R.
 						*quote_.* *quote.* *E29*
 	".	Contains the last inserted text (the same as what is inserted

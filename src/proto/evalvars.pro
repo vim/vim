@@ -13,6 +13,8 @@ list_T *eval_spell_expr(char_u *badword, char_u *expr);
 int get_spellword(list_T *list, char_u **pp);
 void prepare_vimvar(int idx, typval_T *save_tv);
 void restore_vimvar(int idx, typval_T *save_tv);
+int is_scoped_variable(char_u *name);
+char_u *eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate);
 list_T *heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile);
 void ex_var(exarg_T *eap);
 void ex_let(exarg_T *eap);
@@ -58,6 +60,7 @@ char_u *v_exception(char_u *oldval);
 char_u *v_throwpoint(char_u *oldval);
 char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
 int eval_variable(char_u *name, int len, scid_T sid, typval_T *rettv, dictitem_T **dip, int flags);
+int eval_variable_import(char_u *name, typval_T *rettv);
 void check_vars(char_u *name, int len);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload);
@@ -105,6 +108,4 @@ void set_callback(callback_T *dest, callback_T *src);
 void copy_callback(callback_T *dest, callback_T *src);
 void expand_autload_callback(callback_T *cb);
 void free_callback(callback_T *callback);
-char_u *eval_all_expr_in_str(char_u *str);
-
 /* vim: set ft=c : */

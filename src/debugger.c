@@ -22,7 +22,7 @@ static void do_showbacktrace(char_u *cmd);
 
 static char_u *debug_oldval = NULL;	// old and newval for debug expressions
 static char_u *debug_newval = NULL;
-static int     debug_expr   = 0;        // use debug_expr
+static int     debug_expr   = 0;	// use debug_expr
 
     int
 has_watchexpr(void)
@@ -87,6 +87,7 @@ do_debug(char_u *cmd)
     msg_silent = FALSE;		// display messages
     emsg_silent = FALSE;	// display error messages
     redir_off = TRUE;		// don't redirect debug commands
+    save_timeout_for_debugging();   // disable  regexp timeout flag
 
     State = MODE_NORMAL;
     debug_mode = TRUE;
@@ -96,14 +97,12 @@ do_debug(char_u *cmd)
     if (debug_oldval != NULL)
     {
 	smsg(_("Oldval = \"%s\""), debug_oldval);
-	vim_free(debug_oldval);
-	debug_oldval = NULL;
+	VIM_CLEAR(debug_oldval);
     }
     if (debug_newval != NULL)
     {
 	smsg(_("Newval = \"%s\""), debug_newval);
-	vim_free(debug_newval);
-	debug_newval = NULL;
+	VIM_CLEAR(debug_newval);
     }
     sname = estack_sfile(ESTACK_NONE);
     if (sname != NULL)
@@ -135,9 +134,14 @@ do_debug(char_u *cmd)
 	    ignore_script = TRUE;
 	}
 
+	// don't debug any function call, e.g. from an expression mapping
+	n = debug_break_level;
+	debug_break_level = -1;
+
 	vim_free(cmdline);
 	cmdline = getcmdline_prompt('>', NULL, 0, EXPAND_NOTHING, NULL);
 
+	debug_break_level = n;
 	if (typeahead_saved)
 	{
 	    restore_typeahead(&typeaheadbuf, TRUE);
@@ -285,9 +289,10 @@ do_debug(char_u *cmd)
 
     --RedrawingDisabled;
     --no_wait_return;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     need_wait_return = FALSE;
     msg_scroll = save_msg_scroll;
+    restore_timeout_for_debugging();
     lines_left = Rows - 1;
     State = save_State;
     debug_mode = FALSE;
@@ -308,14 +313,14 @@ get_maxbacktrace_level(char_u *sname)
     char	*p, *q;
     int		maxbacktrace = 0;
 
-    if (sname != NULL)
+    if (sname == NULL)
+	return 0;
+
+    p = (char *)sname;
+    while ((q = strstr(p, "..")) != NULL)
     {
-	p = (char *)sname;
-	while ((q = strstr(p, "..")) != NULL)
-	{
-	    p = q + 2;
-	    maxbacktrace++;
-	}
+	p = q + 2;
+	maxbacktrace++;
     }
     return maxbacktrace;
 }
@@ -479,21 +484,20 @@ dbg_check_skipped(exarg_T *eap)
 {
     int		prev_got_int;
 
-    if (debug_skipped)
-    {
-	// Save the value of got_int and reset it.  We don't want a previous
-	// interruption cause flushing the input buffer.
-	prev_got_int = got_int;
-	got_int = FALSE;
-	debug_breakpoint_name = debug_skipped_name;
-	// eap->skip is TRUE
-	eap->skip = FALSE;
-	(void)dbg_check_breakpoint(eap);
-	eap->skip = TRUE;
-	got_int |= prev_got_int;
-	return TRUE;
-    }
-    return FALSE;
+    if (!debug_skipped)
+	return FALSE;
+
+    // Save the value of got_int and reset it.  We don't want a previous
+    // interruption cause flushing the input buffer.
+    prev_got_int = got_int;
+    got_int = FALSE;
+    debug_breakpoint_name = debug_skipped_name;
+    // eap->skip is TRUE
+    eap->skip = FALSE;
+    (void)dbg_check_breakpoint(eap);
+    eap->skip = TRUE;
+    got_int |= prev_got_int;
+    return TRUE;
 }
 
 /*
@@ -675,43 +679,43 @@ ex_breakadd(exarg_T *eap)
 	gap = &prof_ga;
 #endif
 
-    if (dbg_parsearg(eap->arg, gap) == OK)
-    {
-	bp = &DEBUGGY(gap, gap->ga_len);
-	bp->dbg_forceit = eap->forceit;
+    if (dbg_parsearg(eap->arg, gap) != OK)
+	return;
 
-	if (bp->dbg_type != DBG_EXPR)
+    bp = &DEBUGGY(gap, gap->ga_len);
+    bp->dbg_forceit = eap->forceit;
+
+    if (bp->dbg_type != DBG_EXPR)
+    {
+	pat = file_pat_to_reg_pat(bp->dbg_name, NULL, NULL, FALSE);
+	if (pat != NULL)
 	{
-	    pat = file_pat_to_reg_pat(bp->dbg_name, NULL, NULL, FALSE);
-	    if (pat != NULL)
-	    {
-		bp->dbg_prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
-		vim_free(pat);
-	    }
-	    if (pat == NULL || bp->dbg_prog == NULL)
-		vim_free(bp->dbg_name);
-	    else
-	    {
-		if (bp->dbg_lnum == 0)	// default line number is 1
-		    bp->dbg_lnum = 1;
-#ifdef FEAT_PROFILE
-		if (eap->cmdidx != CMD_profile)
-#endif
-		{
-		    DEBUGGY(gap, gap->ga_len).dbg_nr = ++last_breakp;
-		    ++debug_tick;
-		}
-		++gap->ga_len;
-	    }
+	    bp->dbg_prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+	    vim_free(pat);
 	}
+	if (pat == NULL || bp->dbg_prog == NULL)
+	    vim_free(bp->dbg_name);
 	else
 	{
-	    // DBG_EXPR
-	    DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
-	    ++debug_tick;
-	    if (gap == &dbg_breakp)
-		has_expr_breakpoint = TRUE;
+	    if (bp->dbg_lnum == 0)	// default line number is 1
+		bp->dbg_lnum = 1;
+#ifdef FEAT_PROFILE
+	    if (eap->cmdidx != CMD_profile)
+#endif
+	    {
+		DEBUGGY(gap, gap->ga_len).dbg_nr = ++last_breakp;
+		++debug_tick;
+	    }
+	    ++gap->ga_len;
 	}
+    }
+    else
+    {
+	// DBG_EXPR
+	DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
+	++debug_tick;
+	if (gap == &dbg_breakp)
+	    has_expr_breakpoint = TRUE;
     }
 }
 
@@ -728,7 +732,7 @@ ex_debuggreedy(exarg_T *eap)
 }
 
     static void
-update_has_expr_breakpoint()
+update_has_expr_breakpoint(void)
 {
     int i;
 
@@ -745,7 +749,7 @@ update_has_expr_breakpoint()
  * Return TRUE if there is any expression breakpoint.
  */
     int
-debug_has_expr_breakpoint()
+debug_has_expr_breakpoint(void)
 {
     return has_expr_breakpoint;
 }
@@ -815,36 +819,37 @@ ex_breakdel(exarg_T *eap)
     }
 
     if (todel < 0)
-	semsg(_(e_breakpoint_not_found_str), eap->arg);
-    else
     {
-	while (gap->ga_len > 0)
-	{
-	    vim_free(DEBUGGY(gap, todel).dbg_name);
-#ifdef FEAT_EVAL
-	    if (DEBUGGY(gap, todel).dbg_type == DBG_EXPR
-		    && DEBUGGY(gap, todel).dbg_val != NULL)
-		free_tv(DEBUGGY(gap, todel).dbg_val);
-#endif
-	    vim_regfree(DEBUGGY(gap, todel).dbg_prog);
-	    --gap->ga_len;
-	    if (todel < gap->ga_len)
-		mch_memmove(&DEBUGGY(gap, todel), &DEBUGGY(gap, todel + 1),
-			      (gap->ga_len - todel) * sizeof(struct debuggy));
-#ifdef FEAT_PROFILE
-	    if (eap->cmdidx == CMD_breakdel)
-#endif
-		++debug_tick;
-	    if (!del_all)
-		break;
-	}
-
-	// If all breakpoints were removed clear the array.
-	if (gap->ga_len == 0)
-	    ga_clear(gap);
-	if (gap == &dbg_breakp)
-	    update_has_expr_breakpoint();
+	semsg(_(e_breakpoint_not_found_str), eap->arg);
+	return;
     }
+
+    while (gap->ga_len > 0)
+    {
+	vim_free(DEBUGGY(gap, todel).dbg_name);
+#ifdef FEAT_EVAL
+	if (DEBUGGY(gap, todel).dbg_type == DBG_EXPR
+		&& DEBUGGY(gap, todel).dbg_val != NULL)
+	    free_tv(DEBUGGY(gap, todel).dbg_val);
+#endif
+	vim_regfree(DEBUGGY(gap, todel).dbg_prog);
+	--gap->ga_len;
+	if (todel < gap->ga_len)
+	    mch_memmove(&DEBUGGY(gap, todel), &DEBUGGY(gap, todel + 1),
+		    (gap->ga_len - todel) * sizeof(struct debuggy));
+#ifdef FEAT_PROFILE
+	if (eap->cmdidx == CMD_breakdel)
+#endif
+	    ++debug_tick;
+	if (!del_all)
+	    break;
+    }
+
+    // If all breakpoints were removed clear the array.
+    if (gap->ga_len == 0)
+	ga_clear(gap);
+    if (gap == &dbg_breakp)
+	update_has_expr_breakpoint();
 }
 
 /*
@@ -857,23 +862,26 @@ ex_breaklist(exarg_T *eap UNUSED)
     int		i;
 
     if (dbg_breakp.ga_len == 0)
+    {
 	msg(_("No breakpoints defined"));
-    else
-	for (i = 0; i < dbg_breakp.ga_len; ++i)
-	{
-	    bp = &BREAKP(i);
-	    if (bp->dbg_type == DBG_FILE)
-		home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
-	    if (bp->dbg_type != DBG_EXPR)
-		smsg(_("%3d  %s %s  line %ld"),
+	return;
+    }
+
+    for (i = 0; i < dbg_breakp.ga_len; ++i)
+    {
+	bp = &BREAKP(i);
+	if (bp->dbg_type == DBG_FILE)
+	    home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
+	if (bp->dbg_type != DBG_EXPR)
+	    smsg(_("%3d  %s %s  line %ld"),
 		    bp->dbg_nr,
 		    bp->dbg_type == DBG_FUNC ? "func" : "file",
 		    bp->dbg_type == DBG_FUNC ? bp->dbg_name : NameBuff,
 		    (long)bp->dbg_lnum);
-	    else
-		smsg(_("%3d  expr %s"),
+	else
+	    smsg(_("%3d  expr %s"),
 		    bp->dbg_nr, bp->dbg_name);
-	}
+    }
 }
 
 /*

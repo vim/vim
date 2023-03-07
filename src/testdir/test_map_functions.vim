@@ -1,7 +1,7 @@
 " Tests for maparg(), mapcheck(), mapset(), maplist()
 " Also test utf8 map with a 0x80 byte.
 
-func s:SID()     
+func s:SID()
   return str2nr(matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$'))
 endfunc
 
@@ -18,14 +18,14 @@ func Test_maparg()
   call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'foo<C-V>',
         \ 'lhsraw': "foo\x80\xfc\x04V", 'lhsrawalt': "foo\x16",
         \ 'mode': ' ', 'nowait': 0, 'expr': 0, 'sid': sid, 'scriptversion': 1,
-        \ 'lnum': lnum + 1, 
-	\ 'rhs': 'is<F4>foo', 'buffer': 0, 'abbr': 0},
+        \ 'lnum': lnum + 1,
+	\ 'rhs': 'is<F4>foo', 'buffer': 0, 'abbr': 0, 'mode_bits': 0x47},
 	\ maparg('foo<C-V>', '', 0, 1))
   call assert_equal({'silent': 1, 'noremap': 1, 'script': 1, 'lhs': 'bar',
         \ 'lhsraw': 'bar', 'mode': 'v',
         \ 'nowait': 0, 'expr': 1, 'sid': sid, 'scriptversion': 1,
         \ 'lnum': lnum + 2,
-	\ 'rhs': 'isbar', 'buffer': 1, 'abbr': 0},
+	\ 'rhs': 'isbar', 'buffer': 1, 'abbr': 0, 'mode_bits': 0x42},
         \ 'bar'->maparg('', 0, 1))
   let lnum = expand('<sflnum>')
   map <buffer> <nowait> foo bar
@@ -33,7 +33,7 @@ func Test_maparg()
         \ 'lhsraw': 'foo', 'mode': ' ',
         \ 'nowait': 1, 'expr': 0, 'sid': sid, 'scriptversion': 1,
         \ 'lnum': lnum + 1, 'rhs': 'bar',
-	\ 'buffer': 1, 'abbr': 0},
+	\ 'buffer': 1, 'abbr': 0, 'mode_bits': 0x47},
         \ maparg('foo', '', 0, 1))
   let lnum = expand('<sflnum>')
   tmap baz foo
@@ -41,7 +41,7 @@ func Test_maparg()
         \ 'lhsraw': 'baz', 'mode': 't',
         \ 'nowait': 0, 'expr': 0, 'sid': sid, 'scriptversion': 1,
         \ 'lnum': lnum + 1, 'rhs': 'foo',
-	\ 'buffer': 0, 'abbr': 0},
+        \ 'buffer': 0, 'abbr': 0, 'mode_bits': 0x80},
         \ maparg('baz', 't', 0, 1))
   let lnum = expand('<sflnum>')
   iab A B
@@ -49,7 +49,7 @@ func Test_maparg()
         \ 'lhsraw': 'A', 'mode': 'i',
         \ 'nowait': 0, 'expr': 0, 'sid': sid, 'scriptversion': 1,
         \ 'lnum': lnum + 1, 'rhs': 'B',
-	\ 'buffer': 0, 'abbr': 1},
+	\ 'buffer': 0, 'abbr': 1, 'mode_bits': 0x0010},
         \ maparg('A', 'i', 1, 1))
   iuna A
 
@@ -57,6 +57,20 @@ func Test_maparg()
   call assert_equal("xrx", maparg('abc'))
   map abc y<S-char-114>y
   call assert_equal("yRy", maparg('abc'))
+
+  " character with K_SPECIAL byte
+  nmap abc …
+  call assert_equal('…', maparg('abc'))
+
+  " modified character with K_SPECIAL byte
+  nmap abc <M-…>
+  call assert_equal('<M-…>', maparg('abc'))
+
+  " illegal bytes
+  let str = ":\x7f:\x80:\x90:\xd0:"
+  exe 'nmap abc ' .. str
+  call assert_equal(str, maparg('abc'))
+  unlet str
 
   omap { w
   let d = maparg('{', 'o', 0, 1)
@@ -169,11 +183,11 @@ func Test_range_map()
   call assert_equal("abcd", getline(1))
 endfunc
 
-func One_mapset_test(keys)
-  exe 'nnoremap ' .. a:keys .. ' original<CR>'
+func One_mapset_test(keys, rhs)
+  exe 'nnoremap ' .. a:keys .. ' ' .. a:rhs
   let orig = maparg(a:keys, 'n', 0, 1)
   call assert_equal(a:keys, orig.lhs)
-  call assert_equal('original<CR>', orig.rhs)
+  call assert_equal(a:rhs, orig.rhs)
   call assert_equal('n', orig.mode)
 
   exe 'nunmap ' .. a:keys
@@ -183,15 +197,16 @@ func One_mapset_test(keys)
   call mapset('n', 0, orig)
   let d = maparg(a:keys, 'n', 0, 1)
   call assert_equal(a:keys, d.lhs)
-  call assert_equal('original<CR>', d.rhs)
+  call assert_equal(a:rhs, d.rhs)
   call assert_equal('n', d.mode)
 
   exe 'nunmap ' .. a:keys
 endfunc
 
 func Test_mapset()
-  call One_mapset_test('K')
-  call One_mapset_test('<F3>')
+  call One_mapset_test('K', 'original<CR>')
+  call One_mapset_test('<F3>', 'original<CR>')
+  call One_mapset_test('<F3>', '<lt>Nop>')
 
   " Check <> key conversion
   new
@@ -211,6 +226,26 @@ func Test_mapset()
   call mapset('i', 0, orig)
   call feedkeys("SK\<Esc>", 'xt')
   call assert_equal('onxe', getline(1))
+
+  iunmap K
+
+  " Test that <Nop> is restored properly
+  inoremap K <Nop>
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('', getline(1))
+
+  let orig = maparg('K', 'i', 0, 1)
+  call assert_equal('K', orig.lhs)
+  call assert_equal('<Nop>', orig.rhs)
+  call assert_equal('i', orig.mode)
+
+  inoremap K foo
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('foo', getline(1))
+
+  call mapset('i', 0, orig)
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('', getline(1))
 
   iunmap K
 
@@ -259,7 +294,7 @@ func Test_mapset()
   bwipe!
 
   call assert_fails('call mapset([], v:false, {})', 'E730:')
-  call assert_fails('call mapset("i", 0, "")', 'E715:')
+  call assert_fails('call mapset("i", 0, "")', 'E1206:')
   call assert_fails('call mapset("i", 0, {})', 'E460:')
 endfunc
 
@@ -524,7 +559,7 @@ def Test_maplist()
   assert_equal(len(maps_maplist), len(map_set))
 
   # For everything returned by maplist, should be the same as from maparg.
-  # Except for "map dup", bacause maparg returns the <buffer> version
+  # Except for "map dup", because maparg returns the <buffer> version
   for d in maps_maplist
     if d.lhs == 'dup' && d.buffer == 0
       continue

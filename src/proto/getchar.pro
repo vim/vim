@@ -24,7 +24,7 @@ int start_redo_ins(void);
 void stop_redo_ins(void);
 int noremap_keys(void);
 int ins_typebuf(char_u *str, int noremap, int offset, int nottyped, int silent);
-int ins_char_typebuf(int c, int modifier);
+int ins_char_typebuf(int c, int modifiers);
 int typebuf_changed(int tb_change_cnt);
 int typebuf_typed(void);
 int typebuf_maplen(void);
@@ -52,6 +52,7 @@ void parse_queued_messages(void);
 void vungetc(int c);
 int fix_input_buffer(char_u *buf, int len);
 int input_available(void);
+void may_add_last_used_map_to_redobuff(void);
 int do_cmdkey_command(int key, int flags);
 void reset_last_used_map(mapblock_T *mp);
 /* vim: set ft=c : */

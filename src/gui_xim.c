@@ -13,6 +13,18 @@
 
 #include "vim.h"
 
+#if !defined(GTK_CHECK_VERSION)
+# define GTK_CHECK_VERSION(a, b, c) 0
+#endif
+#if !defined(FEAT_GUI_GTK) && defined(PROTO)
+typedef int GtkWidget;
+typedef int GtkIMContext;
+typedef int gchar;
+typedef int gpointer;
+typedef int PangoAttrIterator;
+typedef int GdkEventKey;
+#endif
+
 #if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
 # if GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
@@ -73,33 +85,43 @@ xim_log(char *s, ...)
 static callback_T imaf_cb;	    // 'imactivatefunc' callback function
 static callback_T imsf_cb;	    // 'imstatusfunc' callback function
 
-    int
-set_imactivatefunc_option(void)
+    char *
+did_set_imactivatefunc(optset_T *args UNUSED)
 {
-    return option_set_callback_func(p_imaf, &imaf_cb);
+    if (option_set_callback_func(p_imaf, &imaf_cb) == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
 }
 
-    int
-set_imstatusfunc_option(void)
+    char *
+did_set_imstatusfunc(optset_T *args UNUSED)
 {
-    return option_set_callback_func(p_imsf, &imsf_cb);
+    if (option_set_callback_func(p_imsf, &imsf_cb) == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
 }
 
     static void
 call_imactivatefunc(int active)
 {
     typval_T argv[2];
+    int save_KeyTyped = KeyTyped;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = active ? 1 : 0;
     argv[1].v_type = VAR_UNKNOWN;
     (void)call_callback_retnr(&imaf_cb, 1, argv);
+
+    KeyTyped = save_KeyTyped;
 }
 
     static int
 call_imstatusfunc(void)
 {
     int is_active;
+    int save_KeyTyped = KeyTyped;
 
     // FIXME: Don't execute user function in unsafe situation.
     if (exiting || is_autocmd_blocked())
@@ -109,6 +131,8 @@ call_imstatusfunc(void)
     ++msg_silent;
     is_active = call_callback_retnr(&imsf_cb, 0, NULL);
     --msg_silent;
+
+    KeyTyped = save_KeyTyped;
     return (is_active > 0);
 }
 #endif
@@ -127,7 +151,7 @@ free_xim_stuff(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with 'copyID'
+ * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with "copyID"
  * so that they are not garbage collected.
  */
     int
@@ -148,7 +172,7 @@ set_ref_in_im_funcs(int copyID UNUSED)
 #if defined(FEAT_XIM) || defined(PROTO)
 
 # if defined(FEAT_GUI_GTK) || defined(PROTO)
-static int xim_has_preediting INIT(= FALSE);  // IM current status
+static int xim_has_preediting = FALSE;  // IM current status
 
 /*
  * Set preedit_start_col to the current cursor position.
@@ -193,32 +217,32 @@ im_set_active(int active)
     void
 xim_set_focus(int focus)
 {
-    if (xic != NULL)
-    {
-	if (focus)
-	    gtk_im_context_focus_in(xic);
-	else
-	    gtk_im_context_focus_out(xic);
-    }
+    if (xic == NULL)
+	return;
+
+    if (focus)
+	gtk_im_context_focus_in(xic);
+    else
+	gtk_im_context_focus_out(xic);
 }
 
     void
 im_set_position(int row, int col)
 {
-    if (xic != NULL)
-    {
-	GdkRectangle area;
+    if (xic == NULL)
+	return;
 
-	area.x = FILL_X(col);
-	area.y = FILL_Y(row);
-	area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
-	area.height = gui.char_height;
+    GdkRectangle area;
 
-	gtk_im_context_set_cursor_location(xic, &area);
+    area.x = FILL_X(col);
+    area.y = FILL_Y(row);
+    area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
+    area.height = gui.char_height;
 
-	if (p_imst == IM_OVER_THE_SPOT)
-	    im_preedit_window_set_position();
-    }
+    gtk_im_context_set_cursor_location(xic, &area);
+
+    if (p_imst == IM_OVER_THE_SPOT)
+	im_preedit_window_set_position();
 }
 
 #  if 0 || defined(PROTO) // apparently only used in gui_x11.c
@@ -271,7 +295,7 @@ im_preedit_window_set_position(void)
 }
 
     static void
-im_preedit_window_open()
+im_preedit_window_open(void)
 {
     char *preedit_string;
 #if !GTK_CHECK_VERSION(3,16,0)
@@ -393,14 +417,14 @@ im_preedit_window_open()
 }
 
     static void
-im_preedit_window_close()
+im_preedit_window_close(void)
 {
     if (preedit_window != NULL)
 	gtk_widget_hide(preedit_window);
 }
 
     static void
-im_show_preedit()
+im_show_preedit(void)
 {
     im_preedit_window_open();
 

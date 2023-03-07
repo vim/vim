@@ -16,12 +16,6 @@ LANG = af am bg br ca cs cy da de el en eo es fr fo ga gd gl he hr id it
 diff: $*LANG/diff
         :print Done.
 
-# Use "aap publish" to upload the .spl files.
-SPL_files = eu.utf-8.spl
-
-UPDIR = rsync://bram@ftp1.nluug.nl//var/ftp/pub/vim/runtime/spell
-:attr {publish = $UPDIR/%file%} $SPL_files
-
 @for l in string.split(_no.LANG):
         :child $l/main.aap
 

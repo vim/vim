@@ -3,8 +3,8 @@
 " Maintainer:  Debian Vim Maintainers
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2021 Nov 26
-" URL: https://salsa.debian.org/vim-team/vim-debian/blob/master/syntax/debcontrol.vim
+" Last Change: 2023 Jan 16
+" URL: https://salsa.debian.org/vim-team/vim-debian/blob/main/syntax/debcontrol.vim
 
 " Standard syntax initialization
 if exists('b:current_syntax')
@@ -17,7 +17,7 @@ set cpo&vim
 " Should match case except for the keys of each field
 syn case match
 
-syn iskeyword @,48-57,-,/
+syn iskeyword @,48-57,-
 
 " Everything that is not explicitly matched by the rules below
 syn match debcontrolElse "^.*$"
