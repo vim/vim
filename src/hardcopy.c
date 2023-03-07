@@ -2721,14 +2721,10 @@ mch_print_begin(prt_settings_T *psettings)
     struct prt_ps_resource_S *res_cmap;
     int		retval = FALSE;
 
-    res_prolog = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
-    res_encoding = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
-    res_cidfont = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
-    res_cmap = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
+    res_prolog = ALLOC_ONE(struct prt_ps_resource_S);
+    res_encoding = ALLOC_ONE(struct prt_ps_resource_S);
+    res_cidfont = ALLOC_ONE(struct prt_ps_resource_S);
+    res_cmap = ALLOC_ONE(struct prt_ps_resource_S);
     if (res_prolog == NULL || res_encoding == NULL
 	    || res_cidfont == NULL || res_cmap == NULL)
 	goto theend;

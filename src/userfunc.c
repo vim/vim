@@ -5155,15 +5155,13 @@ define_function(
 		fudi.fd_di = dictitem_alloc(fudi.fd_newkey);
 		if (fudi.fd_di == NULL)
 		{
-		    vim_free(fp);
-		    fp = NULL;
+		    VIM_CLEAR(fp);
 		    goto erret;
 		}
 		if (dict_add(fudi.fd_dict, fudi.fd_di) == FAIL)
 		{
 		    vim_free(fudi.fd_di);
-		    vim_free(fp);
-		    fp = NULL;
+		    VIM_CLEAR(fp);
 		    goto erret;
 		}
 	    }
@@ -5292,10 +5290,7 @@ errret_2:
 	clear_type_list(&fp->uf_type_list);
     }
     if (free_fp)
-    {
-	vim_free(fp);
-	fp = NULL;
-    }
+	VIM_CLEAR(fp);
 ret_free:
     ga_clear_strings(&argtypes);
     vim_free(fudi.fd_newkey);

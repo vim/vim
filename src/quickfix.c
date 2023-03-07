@@ -6213,7 +6213,7 @@ vgr_process_args(
 {
     char_u	*p;
 
-    vim_memset(args, 0, sizeof(*args));
+    CLEAR_POINTER(args);
 
     args->regmatch.regprog = NULL;
     args->qf_title = vim_strsave(qf_cmdtitle(*eap->cmdlinep));

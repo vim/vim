@@ -1718,8 +1718,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			if (ii < gap->ga_len)
 			{
 			    char_u **p = ((char_u **)gap->ga_data) + ii;
-			    vim_free(*p);
-			    *p = NULL;
+			    VIM_CLEAR(*p);
 			    did_remove_text = TRUE;
 			}
 		    }

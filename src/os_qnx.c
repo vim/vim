@@ -24,7 +24,7 @@ void qnx_init(void)
 #if defined(FEAT_GUI_PHOTON)
     PhChannelParms_t parms;
 
-    memset(&parms, 0, sizeof(parms));
+    CLEAR_FIELD(parms);
     parms.flags = Ph_DYNAMIC_BUFFER;
 
     is_photon_available = (PhAttach(NULL, &parms) != NULL) ? TRUE : FALSE;
@@ -124,7 +124,7 @@ clip_mch_set_selection(Clipboard_T *cbd)
 
 	if (text_clip && vim_clip)
 	{
-	    memset(clip_header, 0, sizeof(clip_header));
+	    CLEAR_FIELD(clip_header);
 
 	    STRNCPY(clip_header[0].type, CLIP_TYPE_VIM, 8);
 	    clip_header[0].length = sizeof(vim_clip);

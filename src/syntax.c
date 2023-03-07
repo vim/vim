@@ -6287,7 +6287,7 @@ ex_ownsyntax(exarg_T *eap)
     if (curwin->w_s == &curwin->w_buffer->b_s)
     {
 	curwin->w_s = ALLOC_ONE(synblock_T);
-	memset(curwin->w_s, 0, sizeof(synblock_T));
+	CLEAR_POINTER(curwin->w_s);
 	hash_init(&curwin->w_s->b_keywtab);
 	hash_init(&curwin->w_s->b_keywtab_ic);
 #ifdef FEAT_SPELL

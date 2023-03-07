@@ -2714,13 +2714,7 @@ did_set_varsofttabstop(optset_T *args)
     char_u *cp;
 
     if (!((*varp)[0]) || ((*varp)[0] == '0' && !((*varp)[1])))
-    {
-	if (curbuf->b_p_vsts_array)
-	{
-	    vim_free(curbuf->b_p_vsts_array);
-	    curbuf->b_p_vsts_array = 0;
-	}
-    }
+	VIM_CLEAR(curbuf->b_p_vsts_array);
     else
     {
 	for (cp = *varp; *cp; ++cp)
@@ -2755,13 +2749,7 @@ did_set_vartabstop(optset_T *args)
     char_u *cp;
 
     if (!((*varp)[0]) || ((*varp)[0] == '0' && !((*varp)[1])))
-    {
-	if (curbuf->b_p_vts_array)
-	{
-	    vim_free(curbuf->b_p_vts_array);
-	    curbuf->b_p_vts_array = NULL;
-	}
-    }
+	VIM_CLEAR(curbuf->b_p_vts_array);
     else
     {
 	for (cp = *varp; *cp; ++cp)

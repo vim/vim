@@ -74,8 +74,7 @@ tabstop_set(char_u *var, int **array)
 	if (n <= 0 || n > TABSTOP_MAX)
 	{
 	    semsg(_(e_invalid_argument_str), cp);
-	    vim_free(*array);
-	    *array = NULL;
+	    VIM_CLEAR(*array);
 	    return FAIL;
 	}
 	(*array)[t++] = n;

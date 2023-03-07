@@ -726,10 +726,7 @@ diff_redraw(
 clear_diffin(diffin_T *din)
 {
     if (din->din_fname == NULL)
-    {
-	vim_free(din->din_mmfile.ptr);
-	din->din_mmfile.ptr = NULL;
-    }
+	VIM_CLEAR(din->din_mmfile.ptr);
     else
 	mch_remove(din->din_fname);
 }

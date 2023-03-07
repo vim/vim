@@ -8387,7 +8387,7 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
     TOOLINFOW	*pti;
     RECT	rect;
 
-    pti = alloc(sizeof(TOOLINFOW));
+    pti = ALLOC_ONE(TOOLINFOW);
     if (pti == NULL)
 	return;
 
@@ -8655,7 +8655,7 @@ netbeans_draw_multisign_indicator(int row)
 
 // TODO: at the moment, this is just a copy of test_gui_mouse_event.
 // But, we could instead generate actual Win32 mouse event messages,
-// ie. to make it consistent wih test_gui_w32_sendevent_keyboard.
+// ie. to make it consistent with test_gui_w32_sendevent_keyboard.
     static int
 test_gui_w32_sendevent_mouse(dict_T *args)
 {

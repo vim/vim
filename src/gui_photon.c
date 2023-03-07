@@ -1400,7 +1400,7 @@ gui_mch_browse(
     char_u  *open_text = NULL;
 
     flags = 0;
-    memset(&file, 0, sizeof(file));
+    CLEAR_FIELD(file);
 
     default_path = alloc(MAXPATHL + 1 + NAME_MAX + 1);
     if (default_path != NULL)
@@ -1578,8 +1578,8 @@ gui_mch_dialog(
 	    PtModalCtrl_t modal_ctrl;
 	    PtDialogInfo_t di;
 
-	    memset(&di, 0, sizeof(di));
-	    memset(&modal_ctrl, 0, sizeof(modal_ctrl));
+	    CLEAR_FIELD(di);
+	    CLEAR_FIELD(modal_ctrl);
 
 	    n = 0;
 	    PtSetArg(&args[n++], Pt_ARG_GROUP_ROWS_COLS, 0, 0);
@@ -1707,7 +1707,7 @@ gui_mch_iconify(void)
 {
     PhWindowEvent_t event;
 
-    memset(&event, 0, sizeof (event));
+    CLEAR_FIELD(event);
     event.event_f = Ph_WM_HIDE;
     event.event_state = Ph_WM_EVSTATE_HIDE;
     event.rid = PtWidgetRid(gui.vimWindow);
@@ -1723,7 +1723,7 @@ gui_mch_set_foreground(void)
 {
     PhWindowEvent_t event;
 
-    memset(&event, 0, sizeof (event));
+    CLEAR_FIELD(event);
     event.event_f = Ph_WM_TOFRONT;
     event.event_state = Ph_WM_EVSTATE_FFRONT;
     event.rid = PtWidgetRid(gui.vimWindow);

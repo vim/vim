@@ -4354,7 +4354,7 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     cmdstr = vim_strsave(tv_get_string(&argvars[0]));
 
-    memset(&eap, 0, sizeof(eap));
+    CLEAR_FIELD(eap);
     eap.cmd = cmdstr;
     eap.arg = cmdstr;
     eap.argt |= EX_NOSPC;
