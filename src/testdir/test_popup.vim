@@ -1254,15 +1254,26 @@ endfunc
 func Test_pum_highlights_default()
   CheckScreendump
   let lines =<< trim END
+    func CompleteFunc( findstart, base )
+      if a:findstart
+        return 0
+      endif
+      return {
+            \ 'words': [
+            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'W', },
+            \ { 'word': 'aword2', 'menu': 'extra text 2', 'kind': 'W', },
+            \ { 'word': 'aword3', 'menu': 'extra text 3', 'kind': 'W', },
+            \]}
+    endfunc
     lcd ../..
     source runtime/autoload/ccomplete.vim
     set completeopt=menu
-    set omnifunc=ccomplete#Complete
+    set completefunc=CompleteFunc
   END
   call writefile(lines, 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {})
   call TermWait(buf)
-  call term_sendkeys(buf, "istat\<C-X>\<C-o>")
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_pum_highlights_01', {})
   call term_sendkeys(buf, "\<C-E>\<Esc>u")
@@ -1275,10 +1286,21 @@ endfunc
 func Test_pum_highlights_custom()
   CheckScreendump
   let lines =<< trim END
+    func CompleteFunc( findstart, base )
+      if a:findstart
+        return 0
+      endif
+      return {
+            \ 'words': [
+            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'W', },
+            \ { 'word': 'aword2', 'menu': 'extra text 2', 'kind': 'W', },
+            \ { 'word': 'aword3', 'menu': 'extra text 3', 'kind': 'W', },
+            \]}
+    endfunc
     lcd ../..
     source runtime/autoload/ccomplete.vim
     set completeopt=menu
-    set omnifunc=ccomplete#Complete
+    set completefunc=CompleteFunc
     hi PmenuKind      ctermfg=1 ctermbg=225
     hi PmenuKindSel   ctermfg=1 ctermbg=7
     hi PmenuExtra     ctermfg=243 ctermbg=225
@@ -1287,7 +1309,7 @@ func Test_pum_highlights_custom()
   call writefile(lines, 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {})
   call TermWait(buf)
-  call term_sendkeys(buf, "istat\<C-X>\<C-o>")
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_pum_highlights_02', {})
   call term_sendkeys(buf, "\<C-E>\<Esc>u")
