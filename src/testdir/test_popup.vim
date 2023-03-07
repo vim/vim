@@ -1281,7 +1281,6 @@ func Test_pum_highlights_default()
   call StopVimInTerminal(buf)
 endfunc
 
-
 " Test custom highlight groups for popup menu
 func Test_pum_highlights_custom()
   CheckScreendump
