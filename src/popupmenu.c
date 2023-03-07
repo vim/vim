@@ -429,9 +429,7 @@ pum_redraw(void)
     int		attrX_norm = highlight_attr[HLF_PNX];
     int		attrX_select = highlight_attr[HLF_PSX];
     int		attr;
-    int		attrW; // highlight for "word"
-    int		attrK; // highlight for "kind"
-    int		attrX; // highlight for "menu" (extra text)
+    int		*attrs; // array used for highlights
     int		i;
     int		idx;
     char_u	*s;
@@ -441,6 +439,10 @@ pum_redraw(void)
     int		thumb_height = 1;
     int		round;
     int		n;
+
+    //		      unused	"word"		"kind"		"extra text"
+    int	attrsN[4] = { 0,	attr_norm,	attrK_norm,	attrX_norm };
+    int	attrsS[4] = { 0,	attr_select,	attrK_select,	attrX_select };
 
     if (call_update_screen)
     {
@@ -475,19 +477,8 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
-	if (idx == pum_selected)
-	{
-	    attrW = attr_select;
-	    attrK = attrK_select;
-	    attrX = attrX_select;
-	}
-	else
-	{
-	    attrW = attr_norm;
-	    attrK = attrK_norm;
-	    attrX = attrX_norm;
-	}
-	attr = attrW; // start with "word" highlight
+	attrs = idx == pum_selected ? attrsS : attrsN;
+	attr = attrs[1]; // start with "word" highlight
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -507,7 +498,7 @@ pum_redraw(void)
 	totwidth = 0;
 	for (round = 1; round <= 3; ++round)
 	{
-	    attr = round == 1 ? attrW : round == 2 ? attrK : attrX;
+	    attr = attrs[round];
 	    width = 0;
 	    s = NULL;
 	    switch (round)
