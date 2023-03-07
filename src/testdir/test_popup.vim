@@ -1265,8 +1265,6 @@ func Test_pum_highlights_default()
             \ { 'word': 'aword3', 'menu': 'extra text 3', 'kind': 'W', },
             \]}
     endfunc
-    lcd ../..
-    source runtime/autoload/ccomplete.vim
     set completeopt=menu
     set completefunc=CompleteFunc
   END
@@ -1296,8 +1294,6 @@ func Test_pum_highlights_custom()
             \ { 'word': 'aword3', 'menu': 'extra text 3', 'kind': 'W', },
             \]}
     endfunc
-    lcd ../..
-    source runtime/autoload/ccomplete.vim
     set completeopt=menu
     set completefunc=CompleteFunc
     hi PmenuKind      ctermfg=1 ctermbg=225
