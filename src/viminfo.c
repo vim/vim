@@ -1319,7 +1319,7 @@ write_viminfo_varlist(FILE *fp)
     fputs(_("\n# global variables:\n"), fp);
 
     todo = (int)gvht->ht_used;
-    for (hi = gvht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(gvht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

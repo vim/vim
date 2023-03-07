@@ -128,7 +128,7 @@ hashtab_free_contents(hashtab_T *ht)
     // Lock the hashtab, we don't want it to resize while freeing items.
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -781,7 +781,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
     ga_append(&ga, '{');
 
     todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1114,7 +1114,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	type = NULL;
 
     todo = (int)d2->dv_hashtab.ht_used;
-    for (hashitem_T *hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
+    hashitem_T *hi2;
+    FOR_ALL_HASHTAB_ITEMS(&d2->dv_hashtab, hi2, todo)
     {
 	if (!HASHITEM_EMPTY(hi2))
 	{
@@ -1203,7 +1204,7 @@ dict_equal(
 	return FALSE;
 
     todo = (int)d1->dv_hashtab.ht_used;
-    for (hi = d1->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d1->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1233,7 +1234,7 @@ dict_count(dict_T *d, typval_T *needle, int ic)
 	return 0;
 
     todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1369,7 +1370,7 @@ dict_filter_map(
     ht = &d->dv_hashtab;
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1502,7 +1503,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 	return;
 
     todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1587,7 +1588,7 @@ dict_set_items_ro(dict_T *di)
     hashitem_T	*hi;
 
     // Set readonly
-    for (hi = di->dv_hashtab.ht_array; todo > 0 ; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&di->dv_hashtab, hi, todo)
     {
 	if (HASHITEM_EMPTY(hi))
 	    continue;

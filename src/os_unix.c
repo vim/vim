@@ -2335,10 +2335,20 @@ mch_restore_title(int which)
 {
     int	do_push_pop = unix_did_set_title || did_set_icon;
 
-    // only restore the title or icon when it has been set
-    mch_settitle(((which & SAVE_RESTORE_TITLE) && unix_did_set_title) ?
-			(oldtitle ? oldtitle : p_titleold) : NULL,
+    // Only restore the title or icon when it has been set.
+    // When using "oldtitle" make a copy, it might be freed halfway.
+    char_u *title = ((which & SAVE_RESTORE_TITLE) && unix_did_set_title)
+			? (oldtitle ? oldtitle : p_titleold) : NULL;
+    char_u *tofree = NULL;
+    if (title == oldtitle && oldtitle != NULL)
+    {
+	tofree = vim_strsave(title);
+	if (tofree != NULL)
+	    title = tofree;
+    }
+    mch_settitle(title,
 	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
+    vim_free(tofree);
 
     if (do_push_pop)
     {
@@ -5654,7 +5664,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    hashitem_T	*hi;
 	    int		todo = (int)dict->dv_hashtab.ht_used;
 
-	    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;

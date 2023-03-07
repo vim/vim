@@ -3067,7 +3067,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    hashitem_T	*hi;
 	    dictitem_T	*di;
 
-	    for (hi = ht->ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

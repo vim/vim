@@ -335,7 +335,7 @@ profile_reset(void)
     functbl = func_tbl_get();
     todo = (int)functbl->ht_used;
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	ufunc_T *fp;
 	int	i;
@@ -825,7 +825,7 @@ func_dump_profile(FILE *fd)
 
     sorttab = ALLOC_MULT(ufunc_T *, todo);
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

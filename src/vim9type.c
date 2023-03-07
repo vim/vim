@@ -213,7 +213,7 @@ set_tv_type(typval_T *tv, type_T *type)
 		hashitem_T	*hi;
 		dictitem_T	*di;
 
-		for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+		FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
 		{
 		    if (!HASHITEM_EMPTY(hi))
 		    {

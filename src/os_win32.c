@@ -1308,9 +1308,9 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	if (mods)
 	{
 	    // If "modifiers" is explicitly set in the args, then we reset any
-	    // remembered modifer key state that may have been set from earlier
-	    // mod-key-down events, even if they are not yet unset by earlier
-	    // mod-key-up events.
+	    // remembered modifier key state that may have been set from
+	    // earlier mod-key-down events, even if they are not yet unset by
+	    // earlier mod-key-up events.
 	    s_dwMods = 0;
 	    if (mods & MOD_MASK_SHIFT)
 		ker.dwControlKeyState |= SHIFT_PRESSED;
@@ -2017,7 +2017,7 @@ test_mswin_event(char_u *event, dict_T *args)
     }
 
     // Ideally, WriteConsoleInput would be used to inject these low-level
-    // events.  But, this doesnt work well in the CI test environment.  So
+    // events.  But, this doesn't work well in the CI test environment.  So
     // implementing an input_record_buffer instead.
     if (input_encoded)
 	lpEventsWritten = write_input_record_buffer(&ir, 1);
@@ -5737,7 +5737,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 
     if (env != NULL)
     {
-	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(&env->dv_hashtab, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {

@@ -1672,7 +1672,7 @@ do_source_ext(
 		// is encountered without the "noclear" argument.
 		ht = &SCRIPT_VARS(sid);
 		todo = (int)ht->ht_used;
-		for (hi = ht->ht_array; todo > 0; ++hi)
+		FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 		    if (!HASHITEM_EMPTY(hi))
 		    {
 			--todo;
@@ -2063,7 +2063,7 @@ get_script_local_funcs(scid_T sid)
     // looking for functions with script ID 'sid'.
     functbl = func_tbl_get();
     todo = functbl->ht_used;
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	ufunc_T	*fp;
 
