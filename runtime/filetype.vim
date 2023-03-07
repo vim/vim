@@ -2106,6 +2106,9 @@ au BufNewFile,BufRead tags			setf tags
 " TAK
 au BufNewFile,BufRead *.tak			setf tak
 
+" Unx Tal
+au BufNewFile,BufRead *.tal			setf tal
+
 " Task
 au BufRead,BufNewFile {pending,completed,undo}.data  setf taskdata
 au BufRead,BufNewFile *.task			setf taskedit
