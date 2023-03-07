@@ -1,5 +1,8 @@
 vim9script
 
+# Maintainer:	github user lacygoill
+# Last Change:	2023 Mar 07
+
 # Init {{{1
 
 const LINK: string = '->'
