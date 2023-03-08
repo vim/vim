@@ -277,6 +277,9 @@ endif
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
 au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 
+" Cairo
+au BufNewFile,BufRead *.cairo			setf cairo
+
 " Calendar
 au BufNewFile,BufRead calendar			setf calendar
 
