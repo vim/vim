@@ -477,7 +477,7 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
-	attrs = idx == pum_selected ? attrsS : attrsN;
+	attrs = (idx == pum_selected) ? attrsS : attrsN;
 	attr = attrs[1]; // start with "word" highlight
 
 	// prepend a space if there is room
