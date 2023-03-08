@@ -7696,8 +7696,8 @@ msgstr "E1112: Элемент %d в списке задаёт неправильную ширину ячейки"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Перекрывающиеся диапазоны для 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Поддерживаются только значения от 0x100 и выше"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Поддерживаются только значения от 0x80 и выше"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr ""

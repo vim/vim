@@ -710,10 +710,11 @@ peekchr(void)
 {
     static int	after_slash = FALSE;
 
-    if (curchr == -1)
+    if (curchr != -1)
+	return curchr;
+
+    switch (curchr = regparse[0])
     {
-	switch (curchr = regparse[0])
-	{
 	case '.':
 	case '[':
 	case '~':
@@ -743,7 +744,7 @@ peekchr(void)
 	case ';':	// future ext.
 	case '`':	// future ext.
 	case '/':	// Can't be used in / command
-	    // magic only after "\v"
+			// magic only after "\v"
 	    if (reg_magic == MAGIC_ALL)
 		curchr = Magic(curchr);
 	    break;
@@ -788,8 +789,8 @@ peekchr(void)
 
 		// ignore \c \C \m \M \v \V and \Z after '$'
 		while (p[0] == '\\' && (p[1] == 'c' || p[1] == 'C'
-				|| p[1] == 'm' || p[1] == 'M'
-				|| p[1] == 'v' || p[1] == 'V' || p[1] == 'Z'))
+			    || p[1] == 'm' || p[1] == 'M'
+			    || p[1] == 'v' || p[1] == 'V' || p[1] == 'Z'))
 		{
 		    if (p[1] == 'v')
 			is_magic_all = TRUE;
@@ -802,7 +803,7 @@ peekchr(void)
 			    && (p[1] == '|' || p[1] == '&' || p[1] == ')'
 				|| p[1] == 'n'))
 			|| (is_magic_all
-			       && (p[0] == '|' || p[0] == '&' || p[0] == ')'))
+			    && (p[0] == '|' || p[0] == '&' || p[0] == ')'))
 			|| reg_magic == MAGIC_ALL)
 		    curchr = Magic('$');
 	    }
@@ -858,7 +859,6 @@ peekchr(void)
 	default:
 	    if (has_mbyte)
 		curchr = (*mb_ptr2char)(regparse);
-	}
     }
 
     return curchr;
@@ -1093,7 +1093,6 @@ static void	cleanup_subexpr(void);
 #ifdef FEAT_SYN_HL
 static void	cleanup_zsubexpr(void);
 #endif
-static void	reg_nextline(void);
 static int	match_with_backref(linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen);
 
 /*
@@ -1124,10 +1123,12 @@ static unsigned	reg_tofreelen;
 typedef struct {
     regmatch_T		*reg_match;
     regmmatch_T		*reg_mmatch;
+
     char_u		**reg_startp;
     char_u		**reg_endp;
     lpos_T		*reg_startpos;
     lpos_T		*reg_endpos;
+
     win_T		*reg_win;
     buf_T		*reg_buf;
     linenr_T		reg_firstlnum;
@@ -1383,42 +1384,42 @@ prog_magic_wrong(void)
     static void
 cleanup_subexpr(void)
 {
-    if (rex.need_clear_subexpr)
+    if (!rex.need_clear_subexpr)
+	return;
+
+    if (REG_MULTI)
     {
-	if (REG_MULTI)
-	{
-	    // Use 0xff to set lnum to -1
-	    vim_memset(rex.reg_startpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	    vim_memset(rex.reg_endpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	}
-	else
-	{
-	    vim_memset(rex.reg_startp, 0, sizeof(char_u *) * NSUBEXP);
-	    vim_memset(rex.reg_endp, 0, sizeof(char_u *) * NSUBEXP);
-	}
-	rex.need_clear_subexpr = FALSE;
+	// Use 0xff to set lnum to -1
+	vim_memset(rex.reg_startpos, 0xff, sizeof(lpos_T) * NSUBEXP);
+	vim_memset(rex.reg_endpos, 0xff, sizeof(lpos_T) * NSUBEXP);
     }
+    else
+    {
+	vim_memset(rex.reg_startp, 0, sizeof(char_u *) * NSUBEXP);
+	vim_memset(rex.reg_endp, 0, sizeof(char_u *) * NSUBEXP);
+    }
+    rex.need_clear_subexpr = FALSE;
 }
 
 #ifdef FEAT_SYN_HL
     static void
 cleanup_zsubexpr(void)
 {
-    if (rex.need_clear_zsubexpr)
+    if (!rex.need_clear_zsubexpr)
+	return;
+
+    if (REG_MULTI)
     {
-	if (REG_MULTI)
-	{
-	    // Use 0xff to set lnum to -1
-	    vim_memset(reg_startzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	    vim_memset(reg_endzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	}
-	else
-	{
-	    vim_memset(reg_startzp, 0, sizeof(char_u *) * NSUBEXP);
-	    vim_memset(reg_endzp, 0, sizeof(char_u *) * NSUBEXP);
-	}
-	rex.need_clear_zsubexpr = FALSE;
+	// Use 0xff to set lnum to -1
+	vim_memset(reg_startzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
+	vim_memset(reg_endzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
     }
+    else
+    {
+	vim_memset(reg_startzp, 0, sizeof(char_u *) * NSUBEXP);
+	vim_memset(reg_endzp, 0, sizeof(char_u *) * NSUBEXP);
+    }
+    rex.need_clear_zsubexpr = FALSE;
 }
 #endif
 

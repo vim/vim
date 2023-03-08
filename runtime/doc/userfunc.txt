@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Sep 09
+*userfunc.txt*	For Vim version 9.0.  Last change: 2023 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8,8 +8,8 @@ Defining and using functions.
 
 This is introduced in section |41.7| of the user manual.
 
-1. Defining a fuction			|define-function|
-2. Calling a fuction			|:call|
+1. Defining a function			|define-function|
+2. Calling a function			|:call|
 3. Cleaning up in a function		|:defer|
 4. Automatically loading functions	|autoload-functions|
 
@@ -187,12 +187,21 @@ See |:verbose-cmd| for more information.
 			If "[expr]" is not given, the number 0 is returned.
 			When a function ends without an explicit ":return",
 			the number 0 is returned.
+
 			In a :def function *E1095* is given if unreachable
 			code follows after the `:return`.
 			In legacy script there is no check for unreachable
 			lines, thus there is no warning if commands follow
-			`:return`.
-
+			`:return`.  Also, there is no check if the following
+			line contains a valid command.  Forgetting the line
+			continuation backslash may go unnoticed: >
+				return 'some text'
+				       .. ' some more text'
+<			Will happily return "some text" without an error.  It
+			should have been: >
+				return 'some text'
+				       \ .. ' some more text'
+<
 			If the ":return" is used after a |:try| but before the
 			matching |:finally| (if present), the commands
 			following the ":finally" up to the matching |:endtry|
@@ -202,7 +211,8 @@ See |:verbose-cmd| for more information.
 
 						*function-argument* *a:var*
 An argument can be defined by giving its name.  In the function this can then
-be used as "a:name" ("a:" for argument).
+be used as "a:name" ("a:" for argument) (in a `:def` function "a:" is not
+used).
 					*a:0* *a:1* *a:000* *E740* *...*
 Up to 20 arguments can be given, separated by commas.  After the named
 arguments an argument "..." can be specified, which means that more arguments
@@ -237,9 +247,10 @@ Example: >
   call Something('key', 20)	"key: 20"
 
 The argument default expressions are evaluated at the time of the function
-call, not definition.  Thus it is possible to use an expression which is
-invalid the moment the function is defined.  The expressions are also only
-evaluated when arguments are not specified during a call.
+call, not when the function is defined.  Thus it is possible to use an
+expression which is invalid the moment the function is defined.  The
+expressions are also only evaluated when arguments are not specified during a
+call.
 						*none-function_argument*
 You can pass |v:none| to use the default expression.  Note that this means you
 cannot pass v:none as an ordinary value when an argument has a default

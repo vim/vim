@@ -146,11 +146,15 @@ read_buffer(
     void
 buffer_ensure_loaded(buf_T *buf)
 {
-    if (buf->b_ml.ml_mfp == NULL)
-    {
-	aco_save_T	aco;
+    if (buf->b_ml.ml_mfp != NULL)
+	return;
 
-	aucmd_prepbuf(&aco, buf);
+    aco_save_T	aco;
+
+    // Make sure the buffer is in a window.  If not then skip it.
+    aucmd_prepbuf(&aco, buf);
+    if (curbuf == buf)
+    {
 	if (swap_exists_action != SEA_READONLY)
 	    swap_exists_action = SEA_NONE;
 	open_buffer(FALSE, NULL, 0);
@@ -353,25 +357,30 @@ open_buffer(
     apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif
 
-    if (retval == OK)
-    {
-	// The autocommands may have changed the current buffer.  Apply the
-	// modelines to the correct buffer, if it still exists and is loaded.
-	if (bufref_valid(&old_curbuf) && old_curbuf.br_buf->b_ml.ml_mfp != NULL)
-	{
-	    aco_save_T	aco;
+    if (retval != OK)
+	return retval;
 
-	    // Go to the buffer that was opened.
-	    aucmd_prepbuf(&aco, old_curbuf.br_buf);
+    // The autocommands may have changed the current buffer.  Apply the
+    // modelines to the correct buffer, if it still exists and is loaded.
+    if (bufref_valid(&old_curbuf) && old_curbuf.br_buf->b_ml.ml_mfp != NULL)
+    {
+	aco_save_T	aco;
+
+	// Go to the buffer that was opened, make sure it is in a window.
+	// If not then skip it.
+	aucmd_prepbuf(&aco, old_curbuf.br_buf);
+	if (curbuf == old_curbuf.br_buf)
+	{
 	    do_modelines(0);
 	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
 
 	    if ((flags & READ_NOWINENTER) == 0)
 #ifdef FEAT_EVAL
-		apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL, FALSE,
-							      curbuf, &retval);
+		apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL,
+			FALSE, curbuf, &retval);
 #else
-		apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
+	    apply_autocmds(EVENT_BUFWINENTER, NULL, NULL,
+		    FALSE, curbuf);
 #endif
 
 	    // restore curwin/curbuf and a few other things
@@ -434,7 +443,7 @@ static hashtab_T buf_hashtab;
 buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
-    if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
+    if (hash_add(&buf_hashtab, buf->b_key, "create buffer") == FAIL)
 	emsg(_(e_buffer_cannot_be_registered));
 }
 
@@ -444,7 +453,7 @@ buf_hashtab_remove(buf_T *buf)
     hashitem_T *hi = hash_find(&buf_hashtab, buf->b_key);
 
     if (!HASHITEM_EMPTY(hi))
-	hash_remove(&buf_hashtab, hi);
+	hash_remove(&buf_hashtab, hi, "close buffer");
 }
 
 /*
@@ -925,7 +934,7 @@ free_buffer(buf_T *buf)
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     // b:changedtick uses an item in buf_T, remove it now
-    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di);
+    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di, "free buffer");
     unref_var_dict(buf->b_vars);
     remove_listeners(buf);
 #endif
@@ -1752,7 +1761,6 @@ do_bufdel(
 	}
     }
 
-
     return errormsg;
 }
 
@@ -1945,7 +1953,7 @@ enter_buffer(buf_T *buf)
     maketitle();
 	// when autocmds didn't change it
     if (curwin->w_topline == 1 && !curwin->w_topline_was_set)
-	scroll_cursor_halfway(FALSE);	// redisplay at correct position
+	scroll_cursor_halfway(FALSE, FALSE);	// redisplay at correct position
 
 #ifdef FEAT_NETBEANS_INTG
     // Send fileOpened event because we've changed buffers.
@@ -1963,7 +1971,7 @@ enter_buffer(buf_T *buf)
     // May need to set the spell language.  Can only do this after the buffer
     // has been properly setup.
     if (!curbuf->b_help && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
-	(void)did_set_spelllang(curwin);
+	(void)parse_spelllang(curwin);
 #endif
 #ifdef FEAT_VIMINFO
     curbuf->b_last_used = vim_time();
@@ -2367,8 +2375,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_isk);
 #ifdef FEAT_VARTABS
     clear_string_option(&buf->b_p_vsts);
-    vim_free(buf->b_p_vsts_nopaste);
-    buf->b_p_vsts_nopaste = NULL;
+    VIM_CLEAR(buf->b_p_vsts_nopaste);
     VIM_CLEAR(buf->b_p_vsts_array);
     clear_string_option(&buf->b_p_vts);
     VIM_CLEAR(buf->b_p_vts_array);
@@ -3010,20 +3017,20 @@ fname_match(
     char_u	*p;
 
     // extra check for valid arguments
-    if (name != NULL && rmp->regprog != NULL)
+    if (name == NULL || rmp->regprog == NULL)
+	return NULL;
+
+    // Ignore case when 'fileignorecase' or the argument is set.
+    rmp->rm_ic = p_fic || ignore_case;
+    if (vim_regexec(rmp, name, (colnr_T)0))
+	match = name;
+    else if (rmp->regprog != NULL)
     {
-	// Ignore case when 'fileignorecase' or the argument is set.
-	rmp->rm_ic = p_fic || ignore_case;
-	if (vim_regexec(rmp, name, (colnr_T)0))
+	// Replace $(HOME) with '~' and try matching again.
+	p = home_replace_save(NULL, name);
+	if (p != NULL && vim_regexec(rmp, p, (colnr_T)0))
 	    match = name;
-	else if (rmp->regprog != NULL)
-	{
-	    // Replace $(HOME) with '~' and try matching again.
-	    p = home_replace_save(NULL, name);
-	    if (p != NULL && vim_regexec(rmp, p, (colnr_T)0))
-		match = name;
-	    vim_free(p);
-	}
+	vim_free(p);
     }
 
     return match;
@@ -3151,16 +3158,15 @@ wininfo_other_tab_diff(wininfo_T *wip)
 {
     win_T	*wp;
 
-    if (wip->wi_opt.wo_diff)
-    {
-	FOR_ALL_WINDOWS(wp)
-	    // return FALSE when it's a window in the current tab page, thus
-	    // the buffer was in diff mode here
-	    if (wip->wi_win == wp)
-		return FALSE;
-	return TRUE;
-    }
-    return FALSE;
+    if (!wip->wi_opt.wo_diff)
+	return FALSE;
+
+    FOR_ALL_WINDOWS(wp)
+	// return FALSE when it's a window in the current tab page, thus
+	// the buffer was in diff mode here
+	if (wip->wi_win == wp)
+	    return FALSE;
+    return TRUE;
 }
 #endif
 
@@ -3189,27 +3195,27 @@ find_wininfo(
 		&& (!need_options || wip->wi_optset))
 	    break;
 
+    if (wip != NULL)
+	return wip;
+
     // If no wininfo for curwin, use the first in the list (that doesn't have
     // 'diff' set and is in another tab page).
     // If "need_options" is TRUE skip entries that don't have options set,
     // unless the window is editing "buf", so we can copy from the window
     // itself.
-    if (wip == NULL)
-    {
 #ifdef FEAT_DIFF
-	if (skip_diff_buffer)
-	{
-	    FOR_ALL_BUF_WININFO(buf, wip)
-		if (!wininfo_other_tab_diff(wip)
-			&& (!need_options || wip->wi_optset
-			    || (wip->wi_win != NULL
-					     && wip->wi_win->w_buffer == buf)))
-		    break;
-	}
-	else
-#endif
-	    wip = buf->b_wininfo;
+    if (skip_diff_buffer)
+    {
+	FOR_ALL_BUF_WININFO(buf, wip)
+	    if (!wininfo_other_tab_diff(wip)
+		    && (!need_options || wip->wi_optset
+			|| (wip->wi_win != NULL
+			    && wip->wi_win->w_buffer == buf)))
+		break;
     }
+    else
+#endif
+	wip = buf->b_wininfo;
     return wip;
 }
 
@@ -3573,18 +3579,18 @@ buf_set_name(int fnum, char_u *name)
     buf_T	*buf;
 
     buf = buflist_findnr(fnum);
-    if (buf != NULL)
-    {
-	if (buf->b_sfname != buf->b_ffname)
-	    vim_free(buf->b_sfname);
-	vim_free(buf->b_ffname);
-	buf->b_ffname = vim_strsave(name);
-	buf->b_sfname = NULL;
-	// Allocate ffname and expand into full path.  Also resolves .lnk
-	// files on Win32.
-	fname_expand(buf, &buf->b_ffname, &buf->b_sfname);
-	buf->b_fname = buf->b_sfname;
-    }
+    if (buf == NULL)
+	return;
+
+    if (buf->b_sfname != buf->b_ffname)
+	vim_free(buf->b_sfname);
+    vim_free(buf->b_ffname);
+    buf->b_ffname = vim_strsave(name);
+    buf->b_sfname = NULL;
+    // Allocate ffname and expand into full path.  Also resolves .lnk
+    // files on Win32.
+    fname_expand(buf, &buf->b_ffname, &buf->b_sfname);
+    buf->b_fname = buf->b_sfname;
 }
 
 /*
@@ -4172,7 +4178,7 @@ typedef struct
 	Normal,
 	Empty,
 	Group,
-	Middle,
+	Separate,
 	Highlight,
 	TabPage,
 	Trunc
@@ -4184,6 +4190,7 @@ static stl_item_T      *stl_items = NULL;
 static int	       *stl_groupitem = NULL;
 static stl_hlrec_T     *stl_hltab = NULL;
 static stl_hlrec_T     *stl_tabtab = NULL;
+static int		*stl_separator_locations = NULL;
 
 /*
  * Build a string from the status line items in "fmt".
@@ -4193,7 +4200,7 @@ static stl_hlrec_T     *stl_tabtab = NULL;
  * is "curwin".
  *
  * Items are drawn interspersed with the text that surrounds it
- * Specials: %-<wid>(xxx%) => group, %= => middle marker, %< => truncation
+ * Specials: %-<wid>(xxx%) => group, %= => separation marker, %< => truncation
  * Item: %-<minwid>.<maxwid><itemch> All but <itemch> are optional
  *
  * If maxwidth is not zero, the string will be filled at any middle marker
@@ -4275,6 +4282,8 @@ build_stl_str_hl(
 	// end of the list.
 	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
 	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
+
+	stl_separator_locations = ALLOC_MULT(int, stl_items_len);
     }
 
 #ifdef FEAT_EVAL
@@ -4343,19 +4352,20 @@ build_stl_str_hl(
 	if (curitem == (int)stl_items_len)
 	{
 	    size_t	new_len = stl_items_len * 3 / 2;
-	    stl_item_T	*new_items;
-	    int		*new_groupitem;
-	    stl_hlrec_T	*new_hlrec;
 
-	    new_items = vim_realloc(stl_items, sizeof(stl_item_T) * new_len);
+	    stl_item_T *new_items =
+			  vim_realloc(stl_items, sizeof(stl_item_T) * new_len);
 	    if (new_items == NULL)
 		break;
 	    stl_items = new_items;
-	    new_groupitem = vim_realloc(stl_groupitem, sizeof(int) * new_len);
+
+	    int *new_groupitem =
+			     vim_realloc(stl_groupitem, sizeof(int) * new_len);
 	    if (new_groupitem == NULL)
 		break;
 	    stl_groupitem = new_groupitem;
-	    new_hlrec = vim_realloc(stl_hltab,
+
+	    stl_hlrec_T	*new_hlrec = vim_realloc(stl_hltab,
 					  sizeof(stl_hlrec_T) * (new_len + 1));
 	    if (new_hlrec == NULL)
 		break;
@@ -4365,6 +4375,13 @@ build_stl_str_hl(
 	    if (new_hlrec == NULL)
 		break;
 	    stl_tabtab = new_hlrec;
+
+	    int *new_separator_locs = vim_realloc(stl_separator_locations,
+					    sizeof(int) * new_len);
+	    if (new_separator_locs == NULL)
+		break;
+	    stl_separator_locations = new_separator_locs;;
+
 	    stl_items_len = new_len;
 	}
 
@@ -4393,12 +4410,13 @@ build_stl_str_hl(
 	    prevchar_isflag = prevchar_isitem = FALSE;
 	    continue;
 	}
-	if (*s == STL_MIDDLEMARK)
+	// STL_SEPARATE: Separation between items, filled with white space.
+	if (*s == STL_SEPARATE)
 	{
 	    s++;
 	    if (groupdepth > 0)
 		continue;
-	    stl_items[curitem].stl_type = Middle;
+	    stl_items[curitem].stl_type = Separate;
 	    stl_items[curitem++].stl_start = p;
 	    continue;
 	}
@@ -4608,6 +4626,8 @@ build_stl_str_hl(
 #endif
 	if (vim_strchr(STL_ALL, *s) == NULL)
 	{
+	    if (*s == NUL)  // can happen with "%0"
+		break;
 	    s++;
 	    continue;
 	}
@@ -4764,6 +4784,11 @@ build_stl_str_hl(
 	case STL_ALTPERCENT:
 	    str = buf_tmp;
 	    get_rel_pos(wp, str, TMPLEN);
+	    break;
+
+	case STL_SHOWCMD:
+	    if (p_sc && STRCMP(opt_name, p_sloc) == 0)
+		str = showcmd_buf;
 	    break;
 
 	case STL_ARGLISTSTAT:
@@ -5107,19 +5132,45 @@ build_stl_str_hl(
     }
     else if (width < maxwidth && STRLEN(out) + maxwidth - width + 1 < outlen)
     {
-	// Apply STL_MIDDLE if any
+	// Find how many separators there are, which we will use when
+	// figuring out how many groups there are.
+	int num_separators = 0;
+
 	for (l = 0; l < itemcnt; l++)
-	    if (stl_items[l].stl_type == Middle)
-		break;
-	if (l < itemcnt)
 	{
-	    int middlelength = (maxwidth - width) * MB_CHAR2LEN(fillchar);
-	    p = stl_items[l].stl_start + middlelength;
-	    STRMOVE(p, stl_items[l].stl_start);
-	    for (s = stl_items[l].stl_start; s < p;)
-		MB_CHAR2BYTES(fillchar, s);
-	    for (l++; l < itemcnt; l++)
-		stl_items[l].stl_start += middlelength;
+	    if (stl_items[l].stl_type == Separate)
+	    {
+		// Create an array of the start location for each separator
+		// mark.
+		stl_separator_locations[num_separators] = l;
+		num_separators++;
+	    }
+	}
+
+	// If we have separated groups, then we deal with it now
+	if (num_separators)
+	{
+	    int standard_spaces;
+	    int final_spaces;
+
+	    standard_spaces = (maxwidth - width) / num_separators;
+	    final_spaces = (maxwidth - width) -
+					standard_spaces * (num_separators - 1);
+	    for (l = 0; l < num_separators; l++)
+	    {
+		int dislocation = (l == (num_separators - 1)) ?
+					final_spaces : standard_spaces;
+		dislocation *= MB_CHAR2LEN(fillchar);
+		char_u *start = stl_items[stl_separator_locations[l]].stl_start;
+		char_u *seploc = start + dislocation;
+		STRMOVE(seploc, start);
+		for (s = start; s < seploc;)
+		    MB_CHAR2BYTES(fillchar, s);
+
+		for (int i = stl_separator_locations[l] + 1; i < itemcnt; i++)
+		    stl_items[i].stl_start += dislocation;
+	    }
+
 	    width = maxwidth;
 	}
     }
@@ -5349,6 +5400,10 @@ ex_buffer_all(exarg_T *eap)
 	all = FALSE;
     else
 	all = TRUE;
+
+    // Stop Visual mode, the cursor and "VIsual" may very well be invalid after
+    // switching to another buffer.
+    reset_VIsual_and_resel();
 
     setpcmark();
 
@@ -5907,14 +5962,14 @@ buf_get_fname(buf_T *buf)
     void
 set_buflisted(int on)
 {
-    if (on != curbuf->b_p_bl)
-    {
-	curbuf->b_p_bl = on;
-	if (on)
-	    apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, curbuf);
-	else
-	    apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
-    }
+    if (on == curbuf->b_p_bl)
+	return;
+
+    curbuf->b_p_bl = on;
+    if (on)
+	apply_autocmds(EVENT_BUFADD, NULL, NULL, FALSE, curbuf);
+    else
+	apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
 }
 
 /*
@@ -5942,8 +5997,14 @@ buf_contents_changed(buf_T *buf)
 	return TRUE;
     }
 
-    // set curwin/curbuf to buf and save a few things
+    // Set curwin/curbuf to buf and save a few things.
     aucmd_prepbuf(&aco, newbuf);
+    if (curbuf != newbuf)
+    {
+	// Failed to find a window for "newbuf".
+	wipe_buffer(newbuf, FALSE);
+	return TRUE;
+    }
 
     if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,

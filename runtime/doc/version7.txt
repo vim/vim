@@ -8123,7 +8123,7 @@ Files:	    src/message.c
 
 Patch 7.2.119
 Problem:    Status line is redrawn too often.
-Solution:   Check ScreeenLinesUC[] properly. (Yukihiro Nakadaira)
+Solution:   Check ScreenLinesUC[] properly. (Yukihiro Nakadaira)
 Files:	    src/screen.c
 
 Patch 7.2.120
@@ -9782,8 +9782,8 @@ Files:	    src/syntax.c
 
 Patch 7.2.406
 Problem:    Patch 7.2.119 introduces uninit mem read. (Dominique Pelle)
-Solution:   Only used ScreeenLinesC when ScreeenLinesUC is not zero. (Yukihiro
-	    Nakadaira)  Also clear ScreeenLinesC when allocating.
+Solution:   Only used ScreenLinesC when ScreenLinesUC is not zero. (Yukihiro
+	    Nakadaira)  Also clear ScreenLinesC when allocating.
 Files:	    src/screen.c
 
 Patch 7.2.407

@@ -813,7 +813,7 @@ ga_copy_string(garray_T *gap, char_u *p)
 
 /*
  * Add string "p" to "gap".
- * When out of memory "p" is freed and FAIL is returned.
+ * When out of memory FAIL is returned (caller may want to free "p").
  */
     int
 ga_add_string(garray_T *gap, char_u *p)

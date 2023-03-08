@@ -274,7 +274,7 @@ func Test_changing_cmdheight()
   call term_sendkeys(buf, ":set cmdheight-=2\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_4', {})
 
-  " reducing window size and then setting cmdheight 
+  " reducing window size and then setting cmdheight
   call term_sendkeys(buf, ":resize -1\<CR>")
   call term_sendkeys(buf, ":set cmdheight=1\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_5', {})
@@ -327,17 +327,21 @@ func Test_map_completion()
   call assert_equal('"map <Left>', getreg(':'))
   call feedkeys(":map <A-Left>\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal("\"map <A-Left>\<Tab>", getreg(':'))
+  call feedkeys(":map <M-Left>\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"map <M-Left>x", getreg(':'))
   unmap ,f
   unmap ,g
   unmap <Left>
   unmap <A-Left>x
 
-  set cpo-=< cpo-=B cpo-=k
+  set cpo-=< cpo-=k
   map <Left> left
   call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <Left>', getreg(':'))
   call feedkeys(":map <M\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal("\"map <M\<Tab>", getreg(':'))
+  call feedkeys(":map \<C-V>\<C-V><M\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"map \<C-V><Middle>x", getreg(':'))
   unmap <Left>
 
   set cpo+=<
@@ -435,6 +439,7 @@ func Test_getcompletion()
     call assert_true(matchcount > 0)
     let matchcount = len(getcompletion('File.', 'menu'))
     call assert_true(matchcount > 0)
+    source $VIMRUNTIME/delmenu.vim
   endif
 
   let l = getcompletion('v:n', 'var')
@@ -488,6 +493,12 @@ func Test_getcompletion()
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('paint', 'function')
   call assert_equal([], l)
+
+  if !has('ruby')
+    " global_functions[] has an entry but it doesn't have an implementation
+    let l = getcompletion('ruby', 'function')
+    call assert_equal([], l)
+  endif
 
   let Flambda = {-> 'hello'}
   let l = getcompletion('', 'function')
@@ -652,6 +663,20 @@ func Test_getcompletion()
   call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E871:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E1174:')
+endfunc
+
+func Test_multibyte_expression()
+  " Get a dialog in the GUI
+  CheckNotGui
+
+  " This was using uninitialized memory.
+  let lines =<< trim END
+      set verbose=6
+      norm @=ٷ
+      qall!
+  END
+  call writefile(lines, 'XmultiScript', 'D')
+  call RunVim('', '', '-u NONE -n -e -s -S XmultiScript')
 endfunc
 
 " Test for getcompletion() with "fuzzy" in 'wildoptions'
@@ -2485,6 +2510,23 @@ func Test_wildmenu_pum_from_terminal()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_wildmenu_pum_clear_entries()
+  CheckRunVimInTerminal
+
+  " This was using freed memory.  Run in a terminal to get the pum to update.
+  let lines =<< trim END
+    set wildoptions=pum
+    set wildchar=<C-E>
+  END
+  call writefile(lines, 'XwildmenuTest', 'D')
+  let buf = RunVimInTerminal('-S XwildmenuTest', #{rows: 10})
+
+  call term_sendkeys(buf, ":\<C-E>\<C-E>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_clear_entries_1', {})
+
+  set wildoptions& wildchar&
+endfunc
+
 " Test for completion after a :substitute command followed by a pipe (|)
 " character
 func Test_cmdline_complete_substitute()
@@ -2868,20 +2910,25 @@ func Test_fuzzy_completion_abbr()
   call assert_equal("\"iabbr WaitForCompletion", @:)
   call feedkeys(":iabbr a1z\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"iabbr a1z\t", @:)
+
   iunabbrev WaitForCompletion
   set wildoptions&
 endfunc
 
 " menu name fuzzy completion
 func Test_fuzzy_completion_menu()
-  CheckGui
+  CheckFeature menu
+
+  source $VIMRUNTIME/menu.vim
   set wildoptions&
   call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"menu pup', @:)
   set wildoptions=fuzzy
   call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"menu PopUp.', @:)
+
   set wildoptions&
+  source $VIMRUNTIME/delmenu.vim
 endfunc
 
 " :messages suboptions fuzzy completion

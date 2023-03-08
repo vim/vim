@@ -7702,8 +7702,8 @@ msgstr "E1112: リストの要素 %d のセル幅が不正です"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: 0x%lx の範囲が重複しています"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: 0x100 以上の値しかサポートされていません"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: 0x80 以上の値しかサポートされていません"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: \"assert_fails()\" の第4引数は数字でなければなりません"

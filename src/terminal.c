@@ -259,19 +259,19 @@ parse_termwinsize(win_T *wp, int *rows, int *cols)
     *rows = 0;
     *cols = 0;
 
-    if (*wp->w_p_tws != NUL)
-    {
-	char_u *p = vim_strchr(wp->w_p_tws, 'x');
+    if (*wp->w_p_tws == NUL)
+	return FALSE;
 
-	// Syntax of value was already checked when it's set.
-	if (p == NULL)
-	{
-	    minsize = TRUE;
-	    p = vim_strchr(wp->w_p_tws, '*');
-	}
-	*rows = atoi((char *)wp->w_p_tws);
-	*cols = atoi((char *)p + 1);
+    char_u *p = vim_strchr(wp->w_p_tws, 'x');
+
+    // Syntax of value was already checked when it's set.
+    if (p == NULL)
+    {
+	minsize = TRUE;
+	p = vim_strchr(wp->w_p_tws, '*');
     }
+    *rows = atoi((char *)wp->w_p_tws);
+    *cols = atoi((char *)p + 1);
     return minsize;
 }
 
@@ -392,7 +392,7 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
  * Flush messages on channels.
  */
     static void
-term_flush_messages()
+term_flush_messages(void)
 {
     mch_check_messages();
     parse_queued_messages();
@@ -1020,7 +1020,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
 	char *hash_key = alloc(NUMBUFLEN);
 
 	vim_snprintf(hash_key, NUMBUFLEN, "%d", bufnr);
-	hash_add(terminal_bufs, (char_u *)hash_key);
+	hash_add(terminal_bufs, (char_u *)hash_key, "terminal session");
     }
 
     return put_eol(fd);
@@ -1104,7 +1104,7 @@ free_terminal(buf_T *buf)
 }
 
     void
-free_unused_terminals()
+free_unused_terminals(void)
 {
     while (terminals_to_free != NULL)
     {
@@ -1234,8 +1234,8 @@ update_cursor(term_T *term, int redraw)
 	    gui_mch_flush();
 	}
 #endif
-        // Make sure an invoked autocmd doesn't delete the buffer (and the
-        // terminal) under our fingers.
+	// Make sure an invoked autocmd doesn't delete the buffer (and the
+	// terminal) under our fingers.
 	++term->tl_buffer->b_locked;
 
 	// save and restore curwin and curbuf, in case the autocmd changes them
@@ -1587,6 +1587,13 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
     if (modmask & (MOD_MASK_ALT | MOD_MASK_META))
 	mod |= VTERM_MOD_ALT;
 
+    // Ctrl-Shift-i may have the key "I" instead of "i", but for the kitty
+    // keyboard protocol should use "i".  Applies to all ascii letters.
+    if (ASCII_ISUPPER(c)
+	    && vterm_is_kitty_keyboard(vterm)
+	    && mod == (VTERM_MOD_CTRL | VTERM_MOD_SHIFT))
+	c = TOLOWER_ASC(c);
+
     /*
      * Convert special keys to vterm keys:
      * - Write keys to vterm: vterm_keyboard_key()
@@ -1613,21 +1620,20 @@ term_job_running_check(term_T *term, int check_job_status)
 {
     // Also consider the job finished when the channel is closed, to avoid a
     // race condition when updating the title.
-    if (term != NULL
-	&& term->tl_job != NULL
-	&& channel_is_open(term->tl_job->jv_channel))
-    {
-	job_T *job = term->tl_job;
+    if (term == NULL
+	|| term->tl_job == NULL
+	|| !channel_is_open(term->tl_job->jv_channel))
+	return FALSE;
 
-	// Careful: Checking the job status may invoke callbacks, which close
-	// the buffer and terminate "term".  However, "job" will not be freed
-	// yet.
-	if (check_job_status)
-	    job_status(job);
-	return (job->jv_status == JOB_STARTED
-		|| (job->jv_channel != NULL && job->jv_channel->ch_keep_open));
-    }
-    return FALSE;
+    job_T *job = term->tl_job;
+
+    // Careful: Checking the job status may invoke callbacks, which close
+    // the buffer and terminate "term".  However, "job" will not be freed
+    // yet.
+    if (check_job_status)
+	job_status(job);
+    return (job->jv_status == JOB_STARTED
+	    || (job->jv_channel != NULL && job->jv_channel->ch_keep_open));
 }
 
 /*
@@ -1800,28 +1806,27 @@ equal_celattr(cellattr_T *a, cellattr_T *b)
     static int
 add_empty_scrollback(term_T *term, cellattr_T *fill_attr, int lnum)
 {
-    if (ga_grow(&term->tl_scrollback, 1) == OK)
+    if (ga_grow(&term->tl_scrollback, 1) == FAIL)
+	return FALSE;
+
+    sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data
+	+ term->tl_scrollback.ga_len;
+
+    if (lnum > 0)
     {
-	sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data
-				      + term->tl_scrollback.ga_len;
+	int i;
 
-	if (lnum > 0)
+	for (i = 0; i < term->tl_scrollback.ga_len - lnum; ++i)
 	{
-	    int i;
-
-	    for (i = 0; i < term->tl_scrollback.ga_len - lnum; ++i)
-	    {
-		*line = *(line - 1);
-		--line;
-	    }
+	    *line = *(line - 1);
+	    --line;
 	}
-	line->sb_cols = 0;
-	line->sb_cells = NULL;
-	line->sb_fill_attr = *fill_attr;
-	++term->tl_scrollback.ga_len;
-	return OK;
     }
-    return FALSE;
+    line->sb_cols = 0;
+    line->sb_cells = NULL;
+    line->sb_fill_attr = *fill_attr;
+    ++term->tl_scrollback.ga_len;
+    return OK;
 }
 
 /*
@@ -2152,7 +2157,7 @@ term_in_normal_mode(void)
  * Restores updating the terminal window.
  */
     void
-term_enter_job_mode()
+term_enter_job_mode(void)
 {
     term_T	*term = curbuf->b_term;
 
@@ -2168,30 +2173,86 @@ term_enter_job_mode()
 }
 
 /*
+ * When "modify_other_keys" is set then vgetc() should not reduce a key with
+ * modifiers into a basic key.  However, we may only find out after calling
+ * vgetc().  Therefore vgetorpeek() will call check_no_reduce_keys() to update
+ * "no_reduce_keys" before using it.
+ */
+typedef enum {
+    NRKS_NONE,	    // initial value
+    NRKS_CHECK,	    // modify_other_keys was off before calling vgetc()
+    NRKS_SET,	    // no_reduce_keys was incremented in term_vgetc() or
+		    // check_no_reduce_keys(), must be decremented.
+} reduce_key_state_T;
+
+static reduce_key_state_T  no_reduce_key_state = NRKS_NONE;
+
+/*
+ * Return TRUE if the term is using modifyOtherKeys level 2 or the kitty
+ * keyboard protocol.
+ */
+    static int
+vterm_using_key_protocol(void)
+{
+    return curbuf->b_term != NULL
+	&& curbuf->b_term->tl_vterm != NULL
+	&& (vterm_is_modify_other_keys(curbuf->b_term->tl_vterm)
+		|| vterm_is_kitty_keyboard(curbuf->b_term->tl_vterm));
+}
+
+    void
+check_no_reduce_keys(void)
+{
+    if (no_reduce_key_state != NRKS_CHECK
+	    || no_reduce_keys >= 1
+	    || curbuf->b_term == NULL
+	    || curbuf->b_term->tl_vterm == NULL)
+	return;
+
+    if (vterm_using_key_protocol())
+    {
+	// "modify_other_keys" or kitty keyboard protocol was enabled while
+	// waiting.
+	no_reduce_key_state = NRKS_SET;
+	++no_reduce_keys;
+    }
+}
+
+/*
  * Get a key from the user with terminal mode mappings.
  * Note: while waiting a terminal may be closed and freed if the channel is
  * closed and ++close was used.  This may even happen before we get here.
  */
     static int
-term_vgetc()
+term_vgetc(void)
 {
     int c;
     int save_State = State;
-    int modify_other_keys = curbuf->b_term->tl_vterm == NULL ? FALSE
-			: vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
     State = MODE_TERMINAL;
     got_int = FALSE;
 #ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
 #endif
-    if (modify_other_keys)
+
+    if (vterm_using_key_protocol())
+    {
 	++no_reduce_keys;
+	no_reduce_key_state = NRKS_SET;
+    }
+    else
+    {
+	no_reduce_key_state = NRKS_CHECK;
+    }
+
     c = vgetc();
     got_int = FALSE;
     State = save_State;
-    if (modify_other_keys)
+
+    if (no_reduce_key_state == NRKS_SET)
 	--no_reduce_keys;
+    no_reduce_key_state = NRKS_NONE;
+
     return c;
 }
 
@@ -2346,43 +2407,43 @@ term_paste_register(int prev_c UNUSED)
 	return;
 
     l = (list_T *)get_reg_contents(c, GREG_LIST);
-    if (l != NULL)
+    if (l == NULL)
+	return;
+
+    type = get_reg_type(c, &reglen);
+    FOR_ALL_LIST_ITEMS(l, item)
     {
-	type = get_reg_type(c, &reglen);
-	FOR_ALL_LIST_ITEMS(l, item)
+	char_u *s = tv_get_string(&item->li_tv);
+#ifdef MSWIN
+	char_u *tmp = s;
+
+	if (!enc_utf8 && enc_codepage > 0)
 	{
-	    char_u *s = tv_get_string(&item->li_tv);
-#ifdef MSWIN
-	    char_u *tmp = s;
+	    WCHAR   *ret = NULL;
+	    int	length = 0;
 
-	    if (!enc_utf8 && enc_codepage > 0)
+	    MultiByteToWideChar_alloc(enc_codepage, 0, (char *)s,
+		    (int)STRLEN(s), &ret, &length);
+	    if (ret != NULL)
 	    {
-		WCHAR   *ret = NULL;
-		int	length = 0;
-
-		MultiByteToWideChar_alloc(enc_codepage, 0, (char *)s,
-						(int)STRLEN(s), &ret, &length);
-		if (ret != NULL)
-		{
-		    WideCharToMultiByte_alloc(CP_UTF8, 0,
-				    ret, length, (char **)&s, &length, 0, 0);
-		    vim_free(ret);
-		}
+		WideCharToMultiByte_alloc(CP_UTF8, 0,
+			ret, length, (char **)&s, &length, 0, 0);
+		vim_free(ret);
 	    }
+	}
 #endif
-	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
-						      s, (int)STRLEN(s), NULL);
+	channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+		s, (int)STRLEN(s), NULL);
 #ifdef MSWIN
-	    if (tmp != s)
-		vim_free(s);
+	if (tmp != s)
+	    vim_free(s);
 #endif
 
-	    if (item->li_next != NULL || type == MLINE)
-		channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
-						      (char_u *)"\r", 1, NULL);
-	}
-	list_free(l);
+	if (item->li_next != NULL || type == MLINE)
+	    channel_send(curbuf->b_term->tl_job->jv_channel, PART_IN,
+		    (char_u *)"\r", 1, NULL);
     }
+    list_free(l);
 }
 
 /*
@@ -2390,7 +2451,7 @@ term_paste_register(int prev_c UNUSED)
  * terminal should be displayed.
  */
     int
-terminal_is_active()
+terminal_is_active(void)
 {
     return in_terminal_loop != NULL;
 }
@@ -2548,22 +2609,22 @@ term_use_loop(void)
  * we may want to change state.
  */
     void
-term_win_entered()
+term_win_entered(void)
 {
     term_T *term = curbuf->b_term;
 
-    if (term != NULL)
+    if (term == NULL)
+	return;
+
+    if (term_use_loop_check(TRUE))
     {
-	if (term_use_loop_check(TRUE))
-	{
-	    reset_VIsual_and_resel();
-	    if (State & MODE_INSERT)
-		stop_insert_mode = TRUE;
-	}
-	mouse_was_outside = FALSE;
-	enter_mouse_col = mouse_col;
-	enter_mouse_row = mouse_row;
+	reset_VIsual_and_resel();
+	if (State & MODE_INSERT)
+	    stop_insert_mode = TRUE;
     }
+    mouse_was_outside = FALSE;
+    enter_mouse_col = mouse_col;
+    enter_mouse_row = mouse_row;
 }
 
     void
@@ -2571,16 +2632,16 @@ term_focus_change(int in_focus)
 {
     term_T *term = curbuf->b_term;
 
-    if (term != NULL && term->tl_vterm != NULL)
-    {
-	VTermState	*state = vterm_obtain_state(term->tl_vterm);
+    if (term == NULL || term->tl_vterm == NULL)
+	return;
 
-	if (in_focus)
-	    vterm_state_focus_in(state);
-	else
-	    vterm_state_focus_out(state);
-	term_forward_output(term);
-    }
+    VTermState	*state = vterm_obtain_state(term->tl_vterm);
+
+    if (in_focus)
+	vterm_state_focus_in(state);
+    else
+	vterm_state_focus_out(state);
+    term_forward_output(term);
 }
 
 /*
@@ -2598,12 +2659,13 @@ raw_c_to_ctrl(int c)
 
 /*
  * When modify_other_keys is set then do the reverse of raw_c_to_ctrl().
+ * Also when the Kitty keyboard protocol is used.
  * May set "mod_mask".
  */
     static int
 ctrl_to_raw_c(int c)
 {
-    if (c < 0x20 && vterm_is_modify_other_keys(curbuf->b_term->tl_vterm))
+    if (c < 0x20 && vterm_using_key_protocol())
     {
 	mod_mask |= MOD_MASK_CTRL;
 	return c + '@';
@@ -2822,13 +2884,13 @@ theend:
     static void
 may_toggle_cursor(term_T *term)
 {
-    if (in_terminal_loop == term)
-    {
-	if (term->tl_cursor_visible)
-	    cursor_on();
-	else
-	    cursor_off();
-    }
+    if (in_terminal_loop != term)
+	return;
+
+    if (term->tl_cursor_visible)
+	cursor_on();
+    else
+	cursor_off();
 }
 
 /*
@@ -3256,27 +3318,27 @@ handle_resize(int rows, int cols, void *user)
     static void
 limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
 {
-    if (gap->ga_len >= term->tl_buffer->b_p_twsl)
+    if (gap->ga_len < term->tl_buffer->b_p_twsl)
+	return;
+
+    int	todo = term->tl_buffer->b_p_twsl / 10;
+    int	i;
+
+    curbuf = term->tl_buffer;
+    for (i = 0; i < todo; ++i)
     {
-	int	todo = term->tl_buffer->b_p_twsl / 10;
-	int	i;
-
-	curbuf = term->tl_buffer;
-	for (i = 0; i < todo; ++i)
-	{
-	    vim_free(((sb_line_T *)gap->ga_data + i)->sb_cells);
-	    if (update_buffer)
-		ml_delete(1);
-	}
-	curbuf = curwin->w_buffer;
-
-	gap->ga_len -= todo;
-	mch_memmove(gap->ga_data,
-		    (sb_line_T *)gap->ga_data + todo,
-		    sizeof(sb_line_T) * gap->ga_len);
+	vim_free(((sb_line_T *)gap->ga_data + i)->sb_cells);
 	if (update_buffer)
-	    term->tl_scrollback_scrolled -= todo;
+	    ml_delete(1);
     }
+    curbuf = curwin->w_buffer;
+
+    gap->ga_len -= todo;
+    mch_memmove(gap->ga_data,
+	    (sb_line_T *)gap->ga_data + todo,
+	    sizeof(sb_line_T) * gap->ga_len);
+    if (update_buffer)
+	term->tl_scrollback_scrolled -= todo;
 }
 
 /*
@@ -3307,78 +3369,78 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
     limit_scrollback(term, gap, update_buffer);
 
-    if (ga_grow(gap, 1) == OK)
+    if (ga_grow(gap, 1) == FAIL)
+	return 0;
+
+    cellattr_T	*p = NULL;
+    int		len = 0;
+    int		i;
+    int		c;
+    int		col;
+    int		text_len;
+    char_u		*text;
+    sb_line_T	*line;
+    garray_T	ga;
+    cellattr_T	fill_attr = term->tl_default_color;
+
+    // do not store empty cells at the end
+    for (i = 0; i < cols; ++i)
+	if (cells[i].chars[0] != 0)
+	    len = i + 1;
+	else
+	    cell2cellattr(&cells[i], &fill_attr);
+
+    ga_init2(&ga, 1, 100);
+    if (len > 0)
+	p = ALLOC_MULT(cellattr_T, len);
+    if (p != NULL)
     {
-	cellattr_T	*p = NULL;
-	int		len = 0;
-	int		i;
-	int		c;
-	int		col;
-	int		text_len;
-	char_u		*text;
-	sb_line_T	*line;
-	garray_T	ga;
-	cellattr_T	fill_attr = term->tl_default_color;
-
-	// do not store empty cells at the end
-	for (i = 0; i < cols; ++i)
-	    if (cells[i].chars[0] != 0)
-		len = i + 1;
-	    else
-		cell2cellattr(&cells[i], &fill_attr);
-
-	ga_init2(&ga, 1, 100);
-	if (len > 0)
-	    p = ALLOC_MULT(cellattr_T, len);
-	if (p != NULL)
+	for (col = 0; col < len; col += cells[col].width)
 	{
-	    for (col = 0; col < len; col += cells[col].width)
+	    if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
 	    {
-		if (ga_grow(&ga, MB_MAXBYTES) == FAIL)
-		{
-		    ga.ga_len = 0;
-		    break;
-		}
-		for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
-		    ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
-					     (char_u *)ga.ga_data + ga.ga_len);
-		cell2cellattr(&cells[col], &p[col]);
+		ga.ga_len = 0;
+		break;
 	    }
+	    for (i = 0; (c = cells[col].chars[i]) > 0 || i == 0; ++i)
+		ga.ga_len += utf_char2bytes(c == NUL ? ' ' : c,
+			(char_u *)ga.ga_data + ga.ga_len);
+	    cell2cellattr(&cells[col], &p[col]);
 	}
-	if (ga_grow(&ga, 1) == FAIL)
-	{
-	    if (update_buffer)
-		text = (char_u *)"";
-	    else
-		text = vim_strsave((char_u *)"");
-	    text_len = 0;
-	}
-	else
-	{
-	    text = ga.ga_data;
-	    text_len = ga.ga_len;
-	    *(text + text_len) = NUL;
-	}
-	if (update_buffer)
-	    add_scrollback_line_to_buffer(term, text, text_len);
-
-	line = (sb_line_T *)gap->ga_data + gap->ga_len;
-	line->sb_cols = len;
-	line->sb_cells = p;
-	line->sb_fill_attr = fill_attr;
-	if (update_buffer)
-	{
-	    line->sb_text = NULL;
-	    ++term->tl_scrollback_scrolled;
-	    ga_clear(&ga);  // free the text
-	}
-	else
-	{
-	    line->sb_text = text;
-	    ga_init(&ga);  // text is kept in tl_scrollback_postponed
-	}
-	++gap->ga_len;
     }
+    if (ga_grow(&ga, 1) == FAIL)
+    {
+	if (update_buffer)
+	    text = (char_u *)"";
+	else
+	    text = vim_strsave((char_u *)"");
+	text_len = 0;
+    }
+    else
+    {
+	text = ga.ga_data;
+	text_len = ga.ga_len;
+	*(text + text_len) = NUL;
+    }
+    if (update_buffer)
+	add_scrollback_line_to_buffer(term, text, text_len);
+
+    line = (sb_line_T *)gap->ga_data + gap->ga_len;
+    line->sb_cols = len;
+    line->sb_cells = p;
+    line->sb_fill_attr = fill_attr;
+    if (update_buffer)
+    {
+	line->sb_text = NULL;
+	++term->tl_scrollback_scrolled;
+	ga_clear(&ga);  // free the text
+    }
+    else
+    {
+	line->sb_text = text;
+	ga_init(&ga);  // text is kept in tl_scrollback_postponed
+    }
+    ++gap->ga_len;
     return 0; // ignored
 }
 
@@ -3496,15 +3558,18 @@ term_after_channel_closed(term_T *term)
 	    // ++close or term_finish == "close"
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
-	    // Avoid closing the window if we temporarily use it.
-	    if (curwin == aucmd_win)
-		do_set_w_closing = TRUE;
-	    if (do_set_w_closing)
-		curwin->w_closing = TRUE;
-	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
-	    if (do_set_w_closing)
-		curwin->w_closing = FALSE;
-	    aucmd_restbuf(&aco);
+	    if (curbuf == term->tl_buffer)
+	    {
+		// Avoid closing the window if we temporarily use it.
+		if (is_aucmd_win(curwin))
+		    do_set_w_closing = TRUE;
+		if (do_set_w_closing)
+		    curwin->w_closing = TRUE;
+		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+		if (do_set_w_closing)
+		    curwin->w_closing = FALSE;
+		aucmd_restbuf(&aco);
+	    }
 #ifdef FEAT_PROP_POPUP
 	    if (pwin != NULL)
 		popup_close_with_retval(pwin, 0);
@@ -3545,17 +3610,16 @@ term_after_channel_closed(term_T *term)
     int
 may_close_term_popup(void)
 {
-    if (popup_is_popup(curwin) && curbuf->b_term != NULL
-				 && !term_job_running_not_none(curbuf->b_term))
-    {
-	win_T *pwin = curwin;
+    if (!popup_is_popup(curwin) || curbuf->b_term == NULL
+				 || term_job_running_not_none(curbuf->b_term))
+	return FAIL;
 
-	if (win_valid(prevwin))
-	    win_enter(prevwin, FALSE);
-	popup_close_with_retval(pwin, 0);
-	return OK;
-    }
-    return FAIL;
+    win_T *pwin = curwin;
+
+    if (win_valid(prevwin))
+	win_enter(prevwin, FALSE);
+    popup_close_with_retval(pwin, 0);
+    return OK;
 }
 #endif
 
@@ -3638,7 +3702,7 @@ term_channel_closed(channel_T *ch)
  * channel was closed.
  */
     void
-term_check_channel_closed_recently()
+term_check_channel_closed_recently(void)
 {
     term_T *term;
     term_T *next_term;
@@ -3935,12 +3999,12 @@ term_did_update_window(win_T *wp)
 {
     term_T	*term = wp->w_buffer->b_term;
 
-    if (term != NULL && term->tl_vterm != NULL && !term->tl_normal_mode
-						       && wp->w_redr_type == 0)
-    {
-	term->tl_dirty_row_start = MAX_ROW;
-	term->tl_dirty_row_end = 0;
-    }
+    if (term == NULL || term->tl_vterm == NULL || term->tl_normal_mode
+						|| wp->w_redr_type != 0)
+	return;
+
+    term->tl_dirty_row_start = MAX_ROW;
+    term->tl_dirty_row_end = 0;
 }
 
 /*
@@ -3973,16 +4037,16 @@ term_change_in_curbuf(void)
 {
     term_T *term = curbuf->b_term;
 
-    if (term_is_finished(curbuf) && term->tl_scrollback.ga_len > 0)
-    {
-	free_scrollback(term);
-	redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
+    if (!term_is_finished(curbuf) || term->tl_scrollback.ga_len <= 0)
+	return;
 
-	// The buffer is now like a normal buffer, it cannot be easily
-	// abandoned when changed.
-	set_string_option_direct((char_u *)"buftype", -1,
-					  (char_u *)"", OPT_FREE|OPT_LOCAL, 0);
-    }
+    free_scrollback(term);
+    redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
+
+    // The buffer is now like a normal buffer, it cannot be easily
+    // abandoned when changed.
+    set_string_option_direct((char_u *)"buftype", -1,
+	    (char_u *)"", OPT_FREE|OPT_LOCAL, 0);
 }
 
 /*
@@ -4139,7 +4203,7 @@ term_update_wincolor(win_T *wp)
  * or when any highlight is changed.
  */
     void
-term_update_wincolor_all()
+term_update_wincolor_all(void)
 {
     win_T	 *wp = NULL;
     int		 did_curwin = FALSE;
@@ -4236,7 +4300,7 @@ init_default_colors(term_T *term)
  * "ansi_colors" argument in term_start()) shall be applied.
  */
     static int
-term_use_palette()
+term_use_palette(void)
 {
     if (0
 #ifdef FEAT_GUI
@@ -4802,7 +4866,7 @@ term_update_palette(term_T *term)
  * Called when option 'termguicolors' is changed.
  */
     void
-term_update_palette_all()
+term_update_palette_all(void)
 {
     term_T *term;
 
@@ -4841,34 +4905,34 @@ term_update_colors_all(void)
     char_u *
 term_get_status_text(term_T *term)
 {
-    if (term->tl_status_text == NULL)
-    {
-	char_u *txt;
-	size_t len;
-	char_u *fname;
+    if (term->tl_status_text != NULL)
+	return term->tl_status_text;
 
-	if (term->tl_normal_mode)
-	{
-	    if (term_job_running(term))
-		txt = (char_u *)_("Terminal");
-	    else
-		txt = (char_u *)_("Terminal-finished");
-	}
-	else if (term->tl_title != NULL)
-	    txt = term->tl_title;
-	else if (term_none_open(term))
-	    txt = (char_u *)_("active");
-	else if (term_job_running(term))
-	    txt = (char_u *)_("running");
+    char_u *txt;
+    size_t len;
+    char_u *fname;
+
+    if (term->tl_normal_mode)
+    {
+	if (term_job_running(term))
+	    txt = (char_u *)_("Terminal");
 	else
-	    txt = (char_u *)_("finished");
-	fname = buf_get_fname(term->tl_buffer);
-	len = 9 + STRLEN(fname) + STRLEN(txt);
-	term->tl_status_text = alloc(len);
-	if (term->tl_status_text != NULL)
-	    vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
-								   fname, txt);
+	    txt = (char_u *)_("Terminal-finished");
     }
+    else if (term->tl_title != NULL)
+	txt = term->tl_title;
+    else if (term_none_open(term))
+	txt = (char_u *)_("active");
+    else if (term_job_running(term))
+	txt = (char_u *)_("running");
+    else
+	txt = (char_u *)_("finished");
+    fname = buf_get_fname(term->tl_buffer);
+    len = 9 + STRLEN(fname) + STRLEN(txt);
+    term->tl_status_text = alloc(len);
+    if (term->tl_status_text != NULL)
+	vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
+		fname, txt);
     return term->tl_status_text;
 }
 
@@ -5169,11 +5233,11 @@ dump_is_corrupt(garray_T *gap)
     static void
 append_cell(garray_T *gap, cellattr_T *cell)
 {
-    if (ga_grow(gap, 1) == OK)
-    {
-	*(((cellattr_T *)gap->ga_data) + gap->ga_len) = *cell;
-	++gap->ga_len;
-    }
+    if (ga_grow(gap, 1) == FAIL)
+	return;
+
+    *(((cellattr_T *)gap->ga_data) + gap->ga_len) = *cell;
+    ++gap->ga_len;
 }
 
     static void
@@ -5752,7 +5816,7 @@ theend:
  * Return FAIL when this is not possible.
  */
     int
-term_swap_diff()
+term_swap_diff(void)
 {
     term_T	*term = curbuf->b_term;
     linenr_T	line_count;
@@ -5969,15 +6033,15 @@ f_term_getcursor(typval_T *argvars, typval_T *rettv)
     list_append_number(l, term->tl_cursor_pos.col + 1);
 
     d = dict_alloc();
-    if (d != NULL)
-    {
-	dict_add_number(d, "visible", term->tl_cursor_visible);
-	dict_add_number(d, "blink", blink_state_is_inverted()
-			    ? !term->tl_cursor_blink : term->tl_cursor_blink);
-	dict_add_number(d, "shape", term->tl_cursor_shape);
-	dict_add_string(d, "color", cursor_color_get(term->tl_cursor_color));
-	list_append_dict(l, d);
-    }
+    if (d == NULL)
+	return;
+
+    dict_add_number(d, "visible", term->tl_cursor_visible);
+    dict_add_number(d, "blink", blink_state_is_inverted()
+	    ? !term->tl_cursor_blink : term->tl_cursor_blink);
+    dict_add_number(d, "shape", term->tl_cursor_shape);
+    dict_add_string(d, "color", cursor_color_get(term->tl_cursor_color));
+    list_append_dict(l, d);
 }
 
 /*
@@ -7625,20 +7689,20 @@ term_free_vterm(term_T *term)
 term_report_winsize(term_T *term, int rows, int cols)
 {
     // Use an ioctl() to report the new window size to the job.
-    if (term->tl_job != NULL && term->tl_job->jv_channel != NULL)
-    {
-	int fd = -1;
-	int part;
+    if (term->tl_job == NULL || term->tl_job->jv_channel == NULL)
+	return;
 
-	for (part = PART_OUT; part < PART_COUNT; ++part)
-	{
-	    fd = term->tl_job->jv_channel->ch_part[part].ch_fd;
-	    if (mch_isatty(fd))
-		break;
-	}
-	if (part < PART_COUNT && mch_report_winsize(fd, rows, cols) == OK)
-	    mch_signal_job(term->tl_job, (char_u *)"winch");
+    int fd = -1;
+    int part;
+
+    for (part = PART_OUT; part < PART_COUNT; ++part)
+    {
+	fd = term->tl_job->jv_channel->ch_part[part].ch_fd;
+	if (mch_isatty(fd))
+	    break;
     }
+    if (part < PART_COUNT && mch_report_winsize(fd, rows, cols) == OK)
+	mch_signal_job(term->tl_job, (char_u *)"winch");
 }
 
 # endif

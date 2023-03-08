@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.0.  Last change: 2022 Sep 22
+*repeat.txt*    For Vim version 9.0.  Last change: 2023 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -267,7 +267,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			When [where] is omitted only 'runtimepath' is used.
 			Other values:
 				START	search under "start" in 'packpath'
-				OPT 	search under "opt" in 'packpath'
+				OPT	search under "opt" in 'packpath'
 				PACK	search under "start" and "opt" in
 					'packpath'
 				ALL	first use 'runtimepath', then search
@@ -423,6 +423,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			after resolving symbolic links got sourced with
 			another name the other script is after "->".  E.g.
 			"20->22" means script 20 was sourced as script 22.
+			Also see `getscriptinfo()`.
 			{not available when compiled without the |+eval|
 			feature}
 
@@ -729,15 +730,15 @@ up-to-date easily, but it requires a program like "git" to be available.
 You can do both, github can automatically create an archive for a release.
 
 Your directory layout would be like this:
-   start/foobar/plugin/foo.vim    	" always loaded, defines commands
-   start/foobar/plugin/bar.vim    	" always loaded, defines commands
-   start/foobar/autoload/foo.vim  	" loaded when foo command used
-   start/foobar/doc/foo.txt       	" help for foo.vim
-   start/foobar/doc/tags          	" help tags
-   opt/fooextra/plugin/extra.vim  	" optional plugin, defines commands
-   opt/fooextra/autoload/extra.vim  	" loaded when extra command used
-   opt/fooextra/doc/extra.txt  	        " help for extra.vim
-   opt/fooextra/doc/tags  	        " help tags
+   start/foobar/plugin/foo.vim		" always loaded, defines commands
+   start/foobar/plugin/bar.vim		" always loaded, defines commands
+   start/foobar/autoload/foo.vim	" loaded when foo command used
+   start/foobar/doc/foo.txt		" help for foo.vim
+   start/foobar/doc/tags		" help tags
+   opt/fooextra/plugin/extra.vim	" optional plugin, defines commands
+   opt/fooextra/autoload/extra.vim	" loaded when extra command used
+   opt/fooextra/doc/extra.txt		" help for extra.vim
+   opt/fooextra/doc/tags		" help tags
 
 This allows for the user to do: >
 	mkdir ~/.vim/pack

@@ -7759,8 +7759,8 @@ msgstr "E1112: Listan kohdan %d soluleveys on viallinen"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Päällekkäiset arvoalueet osoitteessa 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Vain arvot 0x100:sta eteenpäin kelpaavat"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Vain arvot 0x80:sta eteenpäin kelpaavat"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: assert_fails()-funktion neljännen argumentin tulee olla numero"

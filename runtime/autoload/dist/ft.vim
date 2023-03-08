@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Apr 13
+# Last Change:	2022 Dec 14
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -712,7 +712,8 @@ export def SetFileTypeSH(name: string)
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>'
+  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
+    # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell
@@ -809,10 +810,13 @@ export def SQL()
 enddef
 
 # This function checks the first 25 lines of file extension "sc" to resolve
-# detection between scala and SuperCollider
+# detection between scala and SuperCollider.
+# NOTE: We don't check for 'Class : Method', as this can easily be confused
+# 	with valid Scala like `val x : Int = 3`. So we instead only rely on
+# 	checks that can't be confused.
 export def FTsc()
   for lnum in range(1, min([line("$"), 25]))
-    if getline(lnum) =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
+    if getline(lnum) =~# 'var\s<\|classvar\s<\|\^this.*\||\w\+|\|+\s\w*\s{\|\*ar\s'
       setf supercollider
       return
     endif

@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.0.  Last change: 2022 Nov 04
+*various.txt*   For Vim version 9.0.  Last change: 2022 Dec 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -496,7 +496,7 @@ T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
 T  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
-T  *+wildmenu*		|'wildmenu'||  Always enabled since 9.0.0279
+T  *+wildmenu*		|'wildmenu'|  Always enabled since 9.0.0279
 T  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|

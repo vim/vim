@@ -345,24 +345,25 @@ transstr(char_u *s)
     }
     else
 	res = alloc(vim_strsize(s) + 1);
-    if (res != NULL)
+
+    if (res == NULL)
+	return NULL;
+
+    *res = NUL;
+    p = s;
+    while (*p != NUL)
     {
-	*res = NUL;
-	p = s;
-	while (*p != NUL)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
-	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	    {
-		c = (*mb_ptr2char)(p);
-		if (vim_isprintc(c))
-		    STRNCAT(res, p, l);	// append printable multi-byte char
-		else
-		    transchar_hex(res + STRLEN(res), c);
-		p += l;
-	    }
+	    c = (*mb_ptr2char)(p);
+	    if (vim_isprintc(c))
+		STRNCAT(res, p, l);	// append printable multi-byte char
 	    else
-		STRCAT(res, transchar_byte(*p++));
+		transchar_hex(res + STRLEN(res), c);
+	    p += l;
 	}
+	else
+	    STRCAT(res, transchar_byte(*p++));
     }
     return res;
 }
@@ -522,22 +523,31 @@ transchar_buf(buf_T *buf, int c)
 
 /*
  * Like transchar(), but called with a byte instead of a character.  Checks
- * for an illegal UTF-8 byte.
+ * for an illegal UTF-8 byte.  Uses 'fileformat' of the current buffer.
  */
     char_u *
 transchar_byte(int c)
 {
-    if (enc_utf8 && c >= 0x80)
-    {
-	transchar_nonprint(curbuf, transchar_charbuf, c);
-	return transchar_charbuf;
-    }
-    return transchar(c);
+    return transchar_byte_buf(curbuf, c);
 }
 
 /*
+ * Like transchar_buf(), but called with a byte instead of a character.  Checks
+ * for an illegal UTF-8 byte.  Uses 'fileformat' of "buf", unless it is NULL.
+ */
+    char_u *
+transchar_byte_buf(buf_T *buf, int c)
+{
+    if (enc_utf8 && c >= 0x80)
+    {
+	transchar_nonprint(buf, transchar_charbuf, c);
+	return transchar_charbuf;
+    }
+    return transchar_buf(buf, c);
+}
+/*
  * Convert non-printable character to two or more printable characters in
- * "buf[]".  "charbuf" needs to be able to hold five bytes.
+ * "charbuf[]".  "charbuf" needs to be able to hold five bytes.
  * Does NOT work for multi-byte characters, c must be <= 255.
  */
     void
@@ -545,7 +555,7 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 {
     if (c == NL)
 	c = NUL;		// we use newline in place of a NUL
-    else if (c == CAR && get_fileformat(buf) == EOL_MAC)
+    else if (buf != NULL && c == CAR && get_fileformat(buf) == EOL_MAC)
 	c = NL;			// we use CR in place of  NL in this case
 
     if (dy_flags & DY_UHEX)		// 'display' has "uhex"
@@ -812,6 +822,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
+
+	// when properties are above or below the empty line must also be
+	// counted
+	if (cts->cts_prop_lines > 0)
+	    ++cts->cts_vcol;
     }
 #endif
 }
@@ -986,11 +1001,15 @@ init_chartabsize_arg(
 		mch_memmove(cts->cts_text_props + count, prop_start,
 						   count * sizeof(textprop_T));
 		for (i = 0; i < count; ++i)
-		    if (cts->cts_text_props[i + count].tp_id < 0)
+		{
+		    textprop_T *tp = cts->cts_text_props + i + count;
+		    if (tp->tp_id < 0
+				     && text_prop_type_valid(wp->w_buffer, tp))
 		    {
 			cts->cts_has_prop_with_text = TRUE;
 			break;
 		    }
+		}
 		if (!cts->cts_has_prop_with_text)
 		{
 		    // won't use the text properties, free them
@@ -1147,6 +1166,8 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
+    if (*s == NUL)
+	size = 0;  // NUL is not displayed
 
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
@@ -1175,9 +1196,9 @@ win_lbr_chartabsize(
 		       || (tp->tp_col == MAXCOL
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
-				: (s[0] == NUL || s[1] == NUL)
+				: (s[0] == NUL || s[charlen] == NUL)
 						  && cts->cts_with_trailing)))
-		    && tp->tp_id - 1 < gap->ga_len)
+		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
 		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
 
@@ -1191,7 +1212,7 @@ win_lbr_chartabsize(
 
 			cells = text_prop_position(wp, tp, vcol,
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
-						     &n_extra, &p, NULL, NULL);
+					      &n_extra, &p, NULL, NULL, FALSE);
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
 #endif
@@ -1210,6 +1231,10 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+		    if (tp->tp_col == MAXCOL && (tp->tp_flags
+				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
+			// count extra line for property above/below
+			++cts->cts_prop_lines;
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
@@ -1739,7 +1764,7 @@ skipwhite_and_nl(char_u *q)
  * columns (bytes) at the start of a given line
  */
     int
-getwhitecols_curline()
+getwhitecols_curline(void)
 {
     return getwhitecols(ml_get_curline());
 }
@@ -2113,7 +2138,8 @@ vim_str2nr(
     varnumber_T		*nptr,	    // return: signed result
     uvarnumber_T	*unptr,	    // return: unsigned result
     int			maxlen,     // max length of string to check
-    int			strict)     // check strictly
+    int			strict,     // check strictly
+    int			*overflow)  // when not NULL set to TRUE for overflow
 {
     char_u	    *ptr = start;
     int		    pre = 0;		// default is decimal
@@ -2184,7 +2210,11 @@ vim_str2nr(
 	    if (un <= UVARNUM_MAX / 2)
 		un = 2 * un + (uvarnumber_T)(*ptr - '0');
 	    else
+	    {
 		un = UVARNUM_MAX;
+		if (overflow != NULL)
+		    *overflow = TRUE;
+	    }
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -2209,7 +2239,11 @@ vim_str2nr(
 	    if (un <= UVARNUM_MAX / 8)
 		un = 8 * un + (uvarnumber_T)(*ptr - '0');
 	    else
+	    {
 		un = UVARNUM_MAX;
+		if (overflow != NULL)
+		    *overflow = TRUE;
+	    }
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -2233,7 +2267,11 @@ vim_str2nr(
 	    if (un <= UVARNUM_MAX / 16)
 		un = 16 * un + (uvarnumber_T)hex2nr(*ptr);
 	    else
+	    {
 		un = UVARNUM_MAX;
+		if (overflow != NULL)
+		    *overflow = TRUE;
+	    }
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -2257,7 +2295,11 @@ vim_str2nr(
 		    || (un == UVARNUM_MAX / 10 && digit <= UVARNUM_MAX % 10))
 		un = 10 * un + digit;
 	    else
+	    {
 		un = UVARNUM_MAX;
+		if (overflow != NULL)
+		    *overflow = TRUE;
+	    }
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
@@ -2285,7 +2327,11 @@ vim_str2nr(
 	{
 	    // avoid ubsan error for overflow
 	    if (un > VARNUM_MAX)
+	    {
 		*nptr = VARNUM_MIN;
+		if (overflow != NULL)
+		    *overflow = TRUE;
+	    }
 	    else
 		*nptr = -(varnumber_T)un;
 	}
@@ -2293,7 +2339,11 @@ vim_str2nr(
 	{
 	    // prevent a large unsigned number to become negative
 	    if (un > VARNUM_MAX)
+	    {
 		un = VARNUM_MAX;
+		if (overflow != NULL)
+		    *overflow = TRUE;
+	    }
 	    *nptr = (varnumber_T)un;
 	}
     }

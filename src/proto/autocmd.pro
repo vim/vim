@@ -2,7 +2,9 @@
 void aubuflocal_remove(buf_T *buf);
 int au_has_group(char_u *name);
 void do_augroup(char_u *arg, int del_group);
+void autocmd_init(void);
 void free_all_autocmds(void);
+int is_aucmd_win(win_T *win);
 int check_ei(void);
 char_u *au_event_disable(char *what);
 void au_event_restore(char_u *old_ei);
@@ -16,6 +18,7 @@ int apply_autocmds(event_T event, char_u *fname, char_u *fname_io, int force, bu
 int apply_autocmds_exarg(event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, exarg_T *eap);
 int apply_autocmds_retval(event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, int *retval);
 int trigger_cursorhold(void);
+int has_winresized(void);
 int has_winscrolled(void);
 int has_cursormoved(void);
 int has_cursormovedI(void);

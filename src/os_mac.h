@@ -272,7 +272,8 @@
 
 # include <dispatch/dispatch.h>
 
-# ifndef MAC_OS_X_VERSION_10_12
+# if !defined(MAC_OS_X_VERSION_10_12) \
+	|| (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12)
 typedef int clockid_t;
 # endif
 # ifndef CLOCK_REALTIME

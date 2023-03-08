@@ -74,8 +74,7 @@ tabstop_set(char_u *var, int **array)
 	if (n <= 0 || n > TABSTOP_MAX)
 	{
 	    semsg(_(e_invalid_argument_str), cp);
-	    vim_free(*array);
-	    *array = NULL;
+	    VIM_CLEAR(*array);
 	    return FAIL;
 	}
 	(*array)[t++] = n;
@@ -420,7 +419,7 @@ get_indent_buf(buf_T *buf, linenr_T lnum)
 {
 # ifdef FEAT_VARTABS
     return get_indent_str_vtab(ml_get_buf(buf, lnum, FALSE),
-			       (int)curbuf->b_p_ts, buf->b_p_vts_array, FALSE);
+			       (int)buf->b_p_ts, buf->b_p_vts_array, FALSE);
 # else
     return get_indent_str(ml_get_buf(buf, lnum, FALSE), (int)buf->b_p_ts, FALSE);
 # endif
@@ -1161,7 +1160,7 @@ preprocs_left(void)
  * Return TRUE if the conditions are OK for smart indenting.
  */
     int
-may_do_si()
+may_do_si(void)
 {
     return curbuf->b_p_si
 	&& !curbuf->b_p_cin
@@ -2188,12 +2187,12 @@ fixthisline(int (*get_the_indent)(void))
 {
     int amount = get_the_indent();
 
-    if (amount >= 0)
-    {
-	change_indent(INDENT_SET, amount, FALSE, 0, TRUE);
-	if (linewhite(curwin->w_cursor.lnum))
-	    did_ai = TRUE;	// delete the indent if the line stays empty
-    }
+    if (amount < 0)
+	return;
+
+    change_indent(INDENT_SET, amount, FALSE, 0, TRUE);
+    if (linewhite(curwin->w_cursor.lnum))
+	did_ai = TRUE;	// delete the indent if the line stays empty
 }
 
 /*

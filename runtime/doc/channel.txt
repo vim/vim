@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.0.  Last change: 2022 Jun 23
+*channel.txt*      For Vim version 9.0.  Last change: 2022 Dec 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -618,6 +618,9 @@ ch_info({handle})						*ch_info()*
 ch_log({msg} [, {handle}])					*ch_log()*
 		Write String {msg} in the channel log file, if it was opened
 		with |ch_logfile()|.
+		The text "ch_log():" is prepended to the message to make clear
+		it came from this function call and make it easier to find in
+		the log file.
 		When {handle} is passed the channel number is used for the
 		message.
 		{handle} can be a Channel or a Job that has a Channel.  The

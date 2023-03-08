@@ -236,7 +236,7 @@ func s:CompleteDone_CompleteFuncDict( findstart, base )
 	      \ 'menu': 'extra text',
 	      \ 'info': 'words are cool',
 	      \ 'kind': 'W',
-	      \ 'user_data': 'test'
+	      \ 'user_data': ['one', 'two']
 	    \ }
 	  \ ]
 	\ }
@@ -252,7 +252,7 @@ func s:CompleteDone_CheckCompletedItemDict(pre)
   call assert_equal( 'extra text',     v:completed_item[ 'menu' ] )
   call assert_equal( 'words are cool', v:completed_item[ 'info' ] )
   call assert_equal( 'W',              v:completed_item[ 'kind' ] )
-  call assert_equal( 'test',           v:completed_item[ 'user_data' ] )
+  call assert_equal( ['one', 'two'],   v:completed_item[ 'user_data' ] )
 
   if a:pre
     call assert_equal('function', complete_info().mode)
@@ -285,7 +285,7 @@ func Test_CompleteDoneDict()
   execute "normal a\<C-X>\<C-U>\<C-Y>"
   set completefunc&
 
-  call assert_equal('test', v:completed_item[ 'user_data' ])
+  call assert_equal(['one', 'two'], v:completed_item[ 'user_data' ])
   call assert_true(s:called_completedone)
 
   let s:called_completedone = 0
@@ -305,7 +305,6 @@ func s:CompleteDone_CompleteFuncDictNoUserData(findstart, base)
 	      \ 'menu': 'extra text',
 	      \ 'info': 'words are cool',
 	      \ 'kind': 'W',
-	      \ 'user_data': ['one', 'two'],
 	    \ }
 	  \ ]
 	\ }
@@ -317,7 +316,7 @@ func s:CompleteDone_CheckCompletedItemDictNoUserData()
   call assert_equal( 'extra text',     v:completed_item[ 'menu' ] )
   call assert_equal( 'words are cool', v:completed_item[ 'info' ] )
   call assert_equal( 'W',              v:completed_item[ 'kind' ] )
-  call assert_equal( ['one', 'two'],   v:completed_item[ 'user_data' ] )
+  call assert_equal( '',               v:completed_item[ 'user_data' ] )
 
   let s:called_completedone = 1
 endfunc
@@ -329,7 +328,7 @@ func Test_CompleteDoneDictNoUserData()
   execute "normal a\<C-X>\<C-U>\<C-Y>"
   set completefunc&
 
-  call assert_equal(['one', 'two'], v:completed_item[ 'user_data' ])
+  call assert_equal('', v:completed_item[ 'user_data' ])
   call assert_true(s:called_completedone)
 
   let s:called_completedone = 0
@@ -411,6 +410,54 @@ func Test_completefunc_info()
   bwipe!
   set completeopt&
   set completefunc&
+endfunc
+
+" Test that mouse scrolling/movement should not interrupt completion.
+func Test_mouse_scroll_move_during_completion()
+  new
+  com! -buffer TestCommand1 echo 'TestCommand1'
+  com! -buffer TestCommand2 echo 'TestCommand2'
+  call setline(1, ['', '', '', '', ''])
+  call cursor(5, 1)
+
+  " Without completion menu scrolling can move text.
+  set completeopt-=menu wrap
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelDown>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_notequal(1, winsaveview().topline)
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelUp>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_equal(1, winsaveview().topline)
+  set nowrap
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelRight>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_notequal(0, winsaveview().leftcol)
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelLeft>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_equal(0, winsaveview().leftcol)
+  call feedkeys("ccT\<C-X>\<C-V>\<MouseMove>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+
+  " With completion menu scrolling cannot move text.
+  set completeopt+=menu wrap
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelDown>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_equal(1, winsaveview().topline)
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelUp>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_equal(1, winsaveview().topline)
+  set nowrap
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelRight>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_equal(0, winsaveview().leftcol)
+  call feedkeys("ccT\<C-X>\<C-V>\<ScrollWheelLeft>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+  call assert_equal(0, winsaveview().leftcol)
+  call feedkeys("ccT\<C-X>\<C-V>\<MouseMove>\<C-V>", 'tx')
+  call assert_equal('TestCommand2', getline('.'))
+
+  bwipe!
+  set completeopt& wrap&
 endfunc
 
 " Check that when using feedkeys() typeahead does not interrupt searching for
@@ -2150,7 +2197,7 @@ endfunc
 
 func Test_ins_complete_end_of_line()
   " this was reading past the end of the line
-  new  
+  new
   norm 8oý 
   sil! norm o
 

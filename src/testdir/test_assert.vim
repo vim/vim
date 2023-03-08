@@ -190,9 +190,9 @@ func Test_wrong_error_type()
 endfunc
 
 func Test_compare_fail()
-  let s:v = {}          
-  let s:x = {"a": s:v} 
-  let s:v["b"] = s:x   
+  let s:v = {}
+  let s:x = {"a": s:v}
+  let s:v["b"] = s:x
   let s:w = {"c": s:x, "d": ''}
   try
     call assert_equal(s:w, '')

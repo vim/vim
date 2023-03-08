@@ -780,16 +780,16 @@ get_stack_limit(void)
     int
 mch_stackcheck(char *p)
 {
-    if (stack_limit != NULL)
+    if (stack_limit == NULL)
+	return OK;
+
+    if (stack_grows_downwards)
     {
-	if (stack_grows_downwards)
-	{
-	    if (p < stack_limit)
-		return FAIL;
-	}
-	else if (p > stack_limit)
+	if (p < stack_limit)
 	    return FAIL;
     }
+    else if (p > stack_limit)
+	return FAIL;
     return OK;
 }
 #endif
@@ -837,25 +837,25 @@ static char *signal_stack;
     static void
 init_signal_stack(void)
 {
-    if (signal_stack != NULL)
-    {
+    if (signal_stack == NULL)
+	return;
+
 # ifdef HAVE_SIGALTSTACK
 #  ifdef HAVE_SS_BASE
-	sigstk.ss_base = signal_stack;
+    sigstk.ss_base = signal_stack;
 #  else
-	sigstk.ss_sp = signal_stack;
+    sigstk.ss_sp = signal_stack;
 #  endif
-	sigstk.ss_size = get_signal_stack_size();
-	sigstk.ss_flags = 0;
-	(void)sigaltstack(&sigstk, NULL);
+    sigstk.ss_size = get_signal_stack_size();
+    sigstk.ss_flags = 0;
+    (void)sigaltstack(&sigstk, NULL);
 # else
-	sigstk.ss_sp = signal_stack;
-	if (stack_grows_downwards)
-	    sigstk.ss_sp += get_signal_stack_size() - 1;
-	sigstk.ss_onstack = 0;
-	(void)sigstack(&sigstk, NULL);
+    sigstk.ss_sp = signal_stack;
+    if (stack_grows_downwards)
+	sigstk.ss_sp += get_signal_stack_size() - 1;
+    sigstk.ss_onstack = 0;
+    (void)sigstack(&sigstk, NULL);
 # endif
-    }
 }
 #endif
 
@@ -2020,91 +2020,90 @@ get_x11_thing(
     int			retval = FALSE;
     Status		status;
 
-    if (get_x11_windis() == OK)
+    if (get_x11_windis() != OK)
+	return FALSE;
+
+    // Get window/icon name if any
+    if (get_title)
+	status = XGetWMName(x11_display, x11_window, &text_prop);
+    else
+	status = XGetWMIconName(x11_display, x11_window, &text_prop);
+
+    /*
+     * If terminal is xterm, then x11_window may be a child window of the
+     * outer xterm window that actually contains the window/icon name, so
+     * keep traversing up the tree until a window with a title/icon is
+     * found.
+     */
+    // Previously this was only done for xterm and alike.  I don't see a
+    // reason why it would fail for other terminal emulators.
+    // if (term_is_xterm)
+    Window	    root;
+    Window	    parent;
+    Window	    win = x11_window;
+    Window	   *children;
+    unsigned int    num_children;
+
+    while (!status || text_prop.value == NULL)
     {
-	// Get window/icon name if any
+	if (!XQueryTree(x11_display, win, &root, &parent, &children,
+		    &num_children))
+	    break;
+	if (children)
+	    XFree((void *)children);
+	if (parent == root || parent == 0)
+	    break;
+
+	win = parent;
 	if (get_title)
-	    status = XGetWMName(x11_display, x11_window, &text_prop);
+	    status = XGetWMName(x11_display, win, &text_prop);
 	else
-	    status = XGetWMIconName(x11_display, x11_window, &text_prop);
+	    status = XGetWMIconName(x11_display, win, &text_prop);
+    }
 
-	/*
-	 * If terminal is xterm, then x11_window may be a child window of the
-	 * outer xterm window that actually contains the window/icon name, so
-	 * keep traversing up the tree until a window with a title/icon is
-	 * found.
-	 */
-	// Previously this was only done for xterm and alike.  I don't see a
-	// reason why it would fail for other terminal emulators.
-	// if (term_is_xterm)
+    if (status && text_prop.value != NULL)
+    {
+	retval = TRUE;
+	if (!test_only)
 	{
-	    Window	    root;
-	    Window	    parent;
-	    Window	    win = x11_window;
-	    Window	   *children;
-	    unsigned int    num_children;
-
-	    while (!status || text_prop.value == NULL)
+	    if (get_title)
+		vim_free(oldtitle);
+	    else
+		vim_free(oldicon);
+	    if (text_prop.encoding == XA_STRING && !has_mbyte)
 	    {
-		if (!XQueryTree(x11_display, win, &root, &parent, &children,
-							       &num_children))
-		    break;
-		if (children)
-		    XFree((void *)children);
-		if (parent == root || parent == 0)
-		    break;
-
-		win = parent;
 		if (get_title)
-		    status = XGetWMName(x11_display, win, &text_prop);
+		    oldtitle = vim_strsave((char_u *)text_prop.value);
 		else
-		    status = XGetWMIconName(x11_display, win, &text_prop);
+		    oldicon = vim_strsave((char_u *)text_prop.value);
 	    }
-	}
-	if (status && text_prop.value != NULL)
-	{
-	    retval = TRUE;
-	    if (!test_only)
+	    else
 	    {
-		if (get_title)
-		    vim_free(oldtitle);
+		char    **cl;
+		Status  transform_status;
+		int	    n = 0;
+
+		transform_status = XmbTextPropertyToTextList(x11_display,
+			&text_prop,
+			&cl, &n);
+		if (transform_status >= Success && n > 0 && cl[0])
+		{
+		    if (get_title)
+			oldtitle = vim_strsave((char_u *) cl[0]);
+		    else
+			oldicon = vim_strsave((char_u *) cl[0]);
+		    XFreeStringList(cl);
+		}
 		else
-		    vim_free(oldicon);
-		if (text_prop.encoding == XA_STRING && !has_mbyte)
 		{
 		    if (get_title)
 			oldtitle = vim_strsave((char_u *)text_prop.value);
 		    else
 			oldicon = vim_strsave((char_u *)text_prop.value);
 		}
-		else
-		{
-		    char    **cl;
-		    Status  transform_status;
-		    int	    n = 0;
-
-		    transform_status = XmbTextPropertyToTextList(x11_display,
-								 &text_prop,
-								 &cl, &n);
-		    if (transform_status >= Success && n > 0 && cl[0])
-		    {
-			if (get_title)
-			    oldtitle = vim_strsave((char_u *) cl[0]);
-			else
-			    oldicon = vim_strsave((char_u *) cl[0]);
-			XFreeStringList(cl);
-		    }
-		    else
-		    {
-			if (get_title)
-			    oldtitle = vim_strsave((char_u *)text_prop.value);
-			else
-			    oldicon = vim_strsave((char_u *)text_prop.value);
-		    }
-		}
 	    }
-	    XFree((void *)text_prop.value);
 	}
+	XFree((void *)text_prop.value);
     }
     return retval;
 }
@@ -2336,10 +2335,20 @@ mch_restore_title(int which)
 {
     int	do_push_pop = unix_did_set_title || did_set_icon;
 
-    // only restore the title or icon when it has been set
-    mch_settitle(((which & SAVE_RESTORE_TITLE) && unix_did_set_title) ?
-			(oldtitle ? oldtitle : p_titleold) : NULL,
+    // Only restore the title or icon when it has been set.
+    // When using "oldtitle" make a copy, it might be freed halfway.
+    char_u *title = ((which & SAVE_RESTORE_TITLE) && unix_did_set_title)
+			? (oldtitle ? oldtitle : p_titleold) : NULL;
+    char_u *tofree = NULL;
+    if (title == oldtitle && oldtitle != NULL)
+    {
+	tofree = vim_strsave(title);
+	if (tofree != NULL)
+	    title = tofree;
+    }
+    mch_settitle(title,
 	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
+    vim_free(tofree);
 
     if (do_push_pop)
     {
@@ -2352,6 +2361,9 @@ mch_restore_title(int which)
 
 /*
  * Return TRUE if "name" looks like some xterm name.
+ * This matches "xterm.*", thus "xterm-256color", "xterm-kitty", etc.
+ * Do not consider "xterm-kitty" an xterm, it is not fully xterm compatible,
+ * using the "xterm-kitty" terminfo entry should work better.
  * Seiichi Sato mentioned that "mlterm" works like xterm.
  */
     int
@@ -2359,7 +2371,8 @@ vim_is_xterm(char_u *name)
 {
     if (name == NULL)
 	return FALSE;
-    return (STRNICMP(name, "xterm", 5) == 0
+    return ((STRNICMP(name, "xterm", 5) == 0
+				     && STRNICMP(name, "xterm-kitty", 11) != 0)
 		|| STRNICMP(name, "nxterm", 6) == 0
 		|| STRNICMP(name, "kterm", 5) == 0
 		|| STRNICMP(name, "mlterm", 6) == 0
@@ -2409,6 +2422,9 @@ use_xterm_mouse(void)
     return 0;
 }
 
+/*
+ * Return TRUE if "name" is an iris-ansi terminal name.
+ */
     int
 vim_is_iris(char_u *name)
 {
@@ -2418,33 +2434,19 @@ vim_is_iris(char_u *name)
 	    || STRCMP(name, "builtin_iris-ansi") == 0);
 }
 
+/*
+ * Return TRUE if "name" is a vt300-like terminal name.
+ */
     int
 vim_is_vt300(char_u *name)
 {
     if (name == NULL)
-	return FALSE;	       // actually all ANSI comp. terminals should be here
-    // catch VT100 - VT5xx
-    return ((STRNICMP(name, "vt", 2) == 0
-		&& vim_strchr((char_u *)"12345", name[2]) != NULL)
-	    || STRCMP(name, "builtin_vt320") == 0);
-}
-
-/*
- * Return TRUE if "name" is a terminal for which 'ttyfast' should be set.
- * This should include all windowed terminal emulators.
- */
-    int
-vim_is_fastterm(char_u *name)
-{
-    if (name == NULL)
 	return FALSE;
-    if (vim_is_xterm(name) || vim_is_vt300(name) || vim_is_iris(name))
-	return TRUE;
-    return (   STRNICMP(name, "hpterm", 6) == 0
-	    || STRNICMP(name, "sun-cmd", 7) == 0
-	    || STRNICMP(name, "screen", 6) == 0
-	    || STRNICMP(name, "tmux", 4) == 0
-	    || STRNICMP(name, "dtterm", 6) == 0);
+    // Actually all ANSI compatible terminals should be here.
+    // Catch at least VT1xx - VT5xx
+    return ((STRNICMP(name, "vt", 2) == 0
+			     && vim_strchr((char_u *)"12345", name[2]) != NULL)
+	    || STRCMP(name, "builtin_vt320") == 0);
 }
 
 /*
@@ -2779,52 +2781,52 @@ fname_case(
     DIR		*dirp;
     struct dirent *dp;
 
-    if (mch_lstat((char *)name, &st) >= 0)
+    if (mch_lstat((char *)name, &st) < 0)
+	return;
+
+    // Open the directory where the file is located.
+    slash = vim_strrchr(name, '/');
+    if (slash == NULL)
     {
-	// Open the directory where the file is located.
-	slash = vim_strrchr(name, '/');
-	if (slash == NULL)
-	{
-	    dirp = opendir(".");
-	    tail = name;
-	}
-	else
-	{
-	    *slash = NUL;
-	    dirp = opendir((char *)name);
-	    *slash = '/';
-	    tail = slash + 1;
-	}
+	dirp = opendir(".");
+	tail = name;
+    }
+    else
+    {
+	*slash = NUL;
+	dirp = opendir((char *)name);
+	*slash = '/';
+	tail = slash + 1;
+    }
 
-	if (dirp != NULL)
+    if (dirp == NULL)
+	return;
+
+    while ((dp = readdir(dirp)) != NULL)
+    {
+	// Only accept names that differ in case and are the same byte
+	// length. TODO: accept different length name.
+	if (STRICMP(tail, dp->d_name) == 0
+		&& STRLEN(tail) == STRLEN(dp->d_name))
 	{
-	    while ((dp = readdir(dirp)) != NULL)
+	    char_u	newname[MAXPATHL + 1];
+	    struct stat st2;
+
+	    // Verify the inode is equal.
+	    vim_strncpy(newname, name, MAXPATHL);
+	    vim_strncpy(newname + (tail - name), (char_u *)dp->d_name,
+		    MAXPATHL - (tail - name));
+	    if (mch_lstat((char *)newname, &st2) >= 0
+		    && st.st_ino == st2.st_ino
+		    && st.st_dev == st2.st_dev)
 	    {
-		// Only accept names that differ in case and are the same byte
-		// length. TODO: accept different length name.
-		if (STRICMP(tail, dp->d_name) == 0
-			&& STRLEN(tail) == STRLEN(dp->d_name))
-		{
-		    char_u	newname[MAXPATHL + 1];
-		    struct stat st2;
-
-		    // Verify the inode is equal.
-		    vim_strncpy(newname, name, MAXPATHL);
-		    vim_strncpy(newname + (tail - name), (char_u *)dp->d_name,
-						    MAXPATHL - (tail - name));
-		    if (mch_lstat((char *)newname, &st2) >= 0
-			    && st.st_ino == st2.st_ino
-			    && st.st_dev == st2.st_dev)
-		    {
-			STRCPY(tail, dp->d_name);
-			break;
-		    }
-		}
+		STRCPY(tail, dp->d_name);
+		break;
 	    }
-
-	    closedir(dirp);
 	}
     }
+
+    closedir(dirp);
 }
 #endif
 
@@ -2909,46 +2911,46 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
     if (selinux_enabled == -1)
 	selinux_enabled = is_selinux_enabled();
 
-    if (selinux_enabled > 0)
+    if (selinux_enabled <= 0)
+	return;
+
+    // Use "char *" instead of "security_context_t" to avoid a deprecation
+    // warning.
+    char *from_context = NULL;
+    char *to_context = NULL;
+
+    if (getfilecon((char *)from_file, &from_context) < 0)
     {
-	// Use "char *" instead of "security_context_t" to avoid a deprecation
-	// warning.
-	char *from_context = NULL;
-	char *to_context = NULL;
-
-	if (getfilecon((char *)from_file, &from_context) < 0)
-	{
-	    // If the filesystem doesn't support extended attributes,
-	    // the original had no special security context and the
-	    // target cannot have one either.
-	    if (errno == EOPNOTSUPP)
-		return;
-
-	    msg_puts(_("\nCould not get security context for "));
-	    msg_outtrans(from_file);
-	    msg_putchar('\n');
+	// If the filesystem doesn't support extended attributes,
+	// the original had no special security context and the
+	// target cannot have one either.
+	if (errno == EOPNOTSUPP)
 	    return;
-	}
-	if (getfilecon((char *)to_file, &to_context) < 0)
+
+	msg_puts(_("\nCould not get security context for "));
+	msg_outtrans(from_file);
+	msg_putchar('\n');
+	return;
+    }
+    if (getfilecon((char *)to_file, &to_context) < 0)
+    {
+	msg_puts(_("\nCould not get security context for "));
+	msg_outtrans(to_file);
+	msg_putchar('\n');
+	freecon (from_context);
+	return ;
+    }
+    if (strcmp(from_context, to_context) != 0)
+    {
+	if (setfilecon((char *)to_file, from_context) < 0)
 	{
-	    msg_puts(_("\nCould not get security context for "));
+	    msg_puts(_("\nCould not set security context for "));
 	    msg_outtrans(to_file);
 	    msg_putchar('\n');
-	    freecon (from_context);
-	    return ;
 	}
-	if (strcmp(from_context, to_context) != 0)
-	{
-	    if (setfilecon((char *)to_file, from_context) < 0)
-	    {
-		msg_puts(_("\nCould not set security context for "));
-		msg_outtrans(to_file);
-		msg_putchar('\n');
-	    }
-	}
-	freecon(to_context);
-	freecon(from_context);
     }
+    freecon(to_context);
+    freecon(from_context);
 }
 #endif // HAVE_SELINUX
 
@@ -3556,21 +3558,21 @@ mch_tcgetattr(int fd, void *term)
     int		retval = -1;
 
     tty_fd = get_tty_fd(fd);
-    if (tty_fd >= 0)
-    {
+    if (tty_fd < 0)
+	return -1;
+
 #ifdef NEW_TTY_SYSTEM
 # ifdef HAVE_TERMIOS_H
-	retval = tcgetattr(tty_fd, (struct termios *)term);
+    retval = tcgetattr(tty_fd, (struct termios *)term);
 # else
-	retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
+    retval = ioctl(tty_fd, TCGETA, (struct termio *)term);
 # endif
 #else
-	// for "old" tty systems
-	retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
+    // for "old" tty systems
+    retval = ioctl(tty_fd, TIOCGETP, (struct sgttyb *)term);
 #endif
-	if (tty_fd != fd)
-	    close(tty_fd);
-    }
+    if (tty_fd != fd)
+	close(tty_fd);
     return retval;
 }
 
@@ -3689,18 +3691,18 @@ get_stty(void)
     char_u	buf[2];
     char_u	*p;
 
-    if (get_tty_info(read_cmd_fd, &info) == OK)
-    {
-	intr_char = info.interrupt;
-	buf[0] = info.backspace;
-	buf[1] = NUL;
-	add_termcode((char_u *)"kb", buf, FALSE);
+    if (get_tty_info(read_cmd_fd, &info) != OK)
+	return;
 
-	// If <BS> and <DEL> are now the same, redefine <DEL>.
-	p = find_termcode((char_u *)"kD");
-	if (p != NULL && p[0] == buf[0] && p[1] == buf[1])
-	    do_fixdel(NULL);
-    }
+    intr_char = info.interrupt;
+    buf[0] = info.backspace;
+    buf[1] = NUL;
+    add_termcode((char_u *)"kb", buf, FALSE);
+
+    // If <BS> and <DEL> are now the same, redefine <DEL>.
+    p = find_termcode((char_u *)"kD");
+    if (p != NULL && p[0] == buf[0] && p[1] == buf[1])
+	do_fixdel(NULL);
 }
 
 /*
@@ -3787,7 +3789,11 @@ mch_setmouse(int on)
     }
 #endif
 
-    if (ttym_flags == TTYM_SGR)
+    if (T_CXM != NULL && *T_CXM != NUL)
+    {
+	term_enable_mouse(on);
+    }
+    else if (ttym_flags == TTYM_SGR)
     {
 	// SGR mode supports columns above 223
 	out_str_nf((char_u *)(on ? "\033[?1006h" : "\033[?1006l"));
@@ -4163,30 +4169,30 @@ mch_report_winsize(int fd, int rows, int cols)
     int		retval = -1;
 
     tty_fd = get_tty_fd(fd);
-    if (tty_fd >= 0)
-    {
+    if (tty_fd < 0)
+	return FAIL;
+
 # if defined(TIOCSWINSZ)
-	struct winsize ws;
+    struct winsize ws;
 
-	ws.ws_col = cols;
-	ws.ws_row = rows;
-	ws.ws_xpixel = cols * 5;
-	ws.ws_ypixel = rows * 10;
-	retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
-	ch_log(NULL, "ioctl(TIOCSWINSZ) %s",
-					  retval == 0 ? "success" : "failed");
+    ws.ws_col = cols;
+    ws.ws_row = rows;
+    ws.ws_xpixel = cols * 5;
+    ws.ws_ypixel = rows * 10;
+    retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
+    ch_log(NULL, "ioctl(TIOCSWINSZ) %s",
+	    retval == 0 ? "success" : "failed");
 # elif defined(TIOCSSIZE)
-	struct ttysize ts;
+    struct ttysize ts;
 
-	ts.ts_cols = cols;
-	ts.ts_lines = rows;
-	retval = ioctl(tty_fd, TIOCSSIZE, &ts);
-	ch_log(NULL, "ioctl(TIOCSSIZE) %s",
-					  retval == 0 ? "success" : "failed");
+    ts.ts_cols = cols;
+    ts.ts_lines = rows;
+    retval = ioctl(tty_fd, TIOCSSIZE, &ts);
+    ch_log(NULL, "ioctl(TIOCSSIZE) %s",
+	    retval == 0 ? "success" : "failed");
 # endif
-	if (tty_fd != fd)
-	    close(tty_fd);
-    }
+    if (tty_fd != fd)
+	close(tty_fd);
     return retval == 0 ? OK : FAIL;
 }
 #endif
@@ -4365,28 +4371,28 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **name1, char_u **name2)
 	*name2 = NULL;
 
     *pty_master_fd = mch_openpty(&tty_name);	    // open pty
-    if (*pty_master_fd >= 0)
-    {
-	// Leaving out O_NOCTTY may lead to waitpid() always returning
-	// 0 on Mac OS X 10.7 thereby causing freezes. Let's assume
-	// adding O_NOCTTY always works when defined.
+    if (*pty_master_fd < 0)
+	return;
+
+    // Leaving out O_NOCTTY may lead to waitpid() always returning
+    // 0 on Mac OS X 10.7 thereby causing freezes. Let's assume
+    // adding O_NOCTTY always works when defined.
 #ifdef O_NOCTTY
-	*pty_slave_fd = open(tty_name, O_RDWR | O_NOCTTY | O_EXTRA, 0);
+    *pty_slave_fd = open(tty_name, O_RDWR | O_NOCTTY | O_EXTRA, 0);
 #else
-	*pty_slave_fd = open(tty_name, O_RDWR | O_EXTRA, 0);
+    *pty_slave_fd = open(tty_name, O_RDWR | O_EXTRA, 0);
 #endif
-	if (*pty_slave_fd < 0)
-	{
-	    close(*pty_master_fd);
-	    *pty_master_fd = -1;
-	}
-	else
-	{
-	    if (name1 != NULL)
-		*name1 = vim_strsave((char_u *)tty_name);
-	    if (name2 != NULL)
-		*name2 = vim_strsave((char_u *)tty_name);
-	}
+    if (*pty_slave_fd < 0)
+    {
+	close(*pty_master_fd);
+	*pty_master_fd = -1;
+    }
+    else
+    {
+	if (name1 != NULL)
+	    *name1 = vim_strsave((char_u *)tty_name);
+	if (name2 != NULL)
+	    *name2 = vim_strsave((char_u *)tty_name);
     }
 }
 #endif
@@ -4500,27 +4506,30 @@ mch_call_shell_terminal(
 
     // Find a window to make "buf" curbuf.
     aucmd_prepbuf(&aco, buf);
-
-    clear_oparg(&oa);
-    while (term_use_loop())
+    if (curbuf == buf)
     {
-	if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	// Only when managed to find a window for "buf",
+	clear_oparg(&oa);
+	while (term_use_loop())
 	{
-	    // If terminal_loop() returns OK we got a key that is handled
-	    // in Normal model. We don't do redrawing anyway.
-	    if (terminal_loop(TRUE) == OK)
+	    if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	    {
+		// If terminal_loop() returns OK we got a key that is handled
+		// in Normal model. We don't do redrawing anyway.
+		if (terminal_loop(TRUE) == OK)
+		    normal_cmd(&oa, TRUE);
+	    }
+	    else
 		normal_cmd(&oa, TRUE);
 	}
-	else
-	    normal_cmd(&oa, TRUE);
+	retval = job->jv_exitval;
+	ch_log(NULL, "system command finished");
+
+	job_unref(job);
+
+	// restore curwin/curbuf and a few other things
+	aucmd_restbuf(&aco);
     }
-    retval = job->jv_exitval;
-    ch_log(NULL, "system command finished");
-
-    job_unref(job);
-
-    // restore curwin/curbuf and a few other things
-    aucmd_restbuf(&aco);
 
     // Only require pressing Enter when redrawing, to avoid that system() gets
     // the hit-enter prompt even though it didn't output anything.
@@ -4754,7 +4763,7 @@ mch_call_shell_fork(
 	    reset_signals();		// handle signals normally
 	    UNBLOCK_SIGNALS(&curset);
 
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	    if (ch_log_active())
 	    {
 		ch_log(NULL, "closing channel log in the child process");
@@ -5011,8 +5020,7 @@ mch_call_shell_fork(
 					|| (!curbuf->b_p_bin
 					    && curbuf->b_p_fixeol)
 					|| (lnum != curbuf->b_no_eol_lnum
-					    && (lnum !=
-						    curbuf->b_ml.ml_line_count
+					    && (lnum != curbuf->b_ml.ml_line_count
 						    || curbuf->b_p_eol)))
 				    vim_ignored = write(toshell_fd, "\n",
 								   (size_t)1);
@@ -5341,9 +5349,9 @@ finished:
 		long delay_msec = 1;
 
 		if (tmode == TMODE_RAW)
-		    // possibly disables modifyOtherKeys, so that the system
-		    // can recognize CTRL-C
-		    out_str(T_CTE);
+		    // Possibly disables modifyOtherKeys, so that the system
+		    // can recognize CTRL-C.
+		    out_str_t_TE();
 
 		/*
 		 * Similar to the loop above, but only handle X events, no
@@ -5387,7 +5395,7 @@ finished:
 
 		if (tmode == TMODE_RAW)
 		    // possibly enables modifyOtherKeys again
-		    out_str(T_CTI);
+		    out_str_t_TI();
 	    }
 # endif
 
@@ -5473,7 +5481,7 @@ mch_call_shell(
     char_u	*cmd,
     int		options)	// SHELL_*, see vim.h
 {
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
@@ -5605,7 +5613,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	reset_signals();		// handle signals normally
 	UNBLOCK_SIGNALS(&curset);
 
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	if (ch_log_active())
 	    // close the log file in the child
 	    ch_logfile((char_u *)"", (char_u *)"");
@@ -5656,7 +5664,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    hashitem_T	*hi;
 	    int		todo = (int)dict->dv_hashtab.ht_used;
 
-	    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    typval_T *item = &dict_lookup(hi)->di_tv;
@@ -5865,10 +5873,17 @@ mch_job_status(job_T *job)
 # endif
     if (wait_pid == -1)
     {
+	int waitpid_errno = errno;
+	if (waitpid_errno == ECHILD && mch_process_running(job->jv_pid))
+	    // The process is alive, but it was probably reparented (for
+	    // example by ptrace called by a debugger like lldb or gdb).
+	    // Note: This assumes that process IDs are not reused.
+	    return "run";
+
 	// process must have exited
 	if (job->jv_status < JOB_ENDED)
 	    ch_log(job->jv_channel, "Job no longer exists: %s",
-							      strerror(errno));
+						      strerror(waitpid_errno));
 	goto return_dead;
     }
     if (wait_pid == 0)
@@ -7251,29 +7266,28 @@ gpm_open(void)
 	return 0;
 #endif
 
-    if (!gpm_flag)
+    if (gpm_flag)
+	return 1; // already open
+
+    gpm_connect.eventMask = (GPM_UP | GPM_DRAG | GPM_DOWN);
+    gpm_connect.defaultMask = ~GPM_HARD;
+    // Default handling for mouse move
+    gpm_connect.minMod = 0; // Handle any modifier keys
+    gpm_connect.maxMod = 0xffff;
+    if (Gpm_Open(&gpm_connect, 0) > 0)
     {
-	gpm_connect.eventMask = (GPM_UP | GPM_DRAG | GPM_DOWN);
-	gpm_connect.defaultMask = ~GPM_HARD;
-	// Default handling for mouse move
-	gpm_connect.minMod = 0; // Handle any modifier keys
-	gpm_connect.maxMod = 0xffff;
-	if (Gpm_Open(&gpm_connect, 0) > 0)
-	{
-	    // gpm library tries to handling TSTP causes
-	    // problems. Anyways, we close connection to Gpm whenever
-	    // we are going to suspend or starting an external process
-	    // so we shouldn't  have problem with this
+	// gpm library tries to handling TSTP causes
+	// problems. Anyways, we close connection to Gpm whenever
+	// we are going to suspend or starting an external process
+	// so we shouldn't  have problem with this
 # ifdef SIGTSTP
-	    signal(SIGTSTP, restricted ? SIG_IGN : (void (*)())sig_tstp);
+	signal(SIGTSTP, restricted ? SIG_IGN : (void (*)())sig_tstp);
 # endif
-	    return 1; // succeed
-	}
-	if (gpm_fd == -2)
-	    Gpm_Close(); // We don't want to talk to xterm via gpm
-	return 0;
+	return 1; // succeed
     }
-    return 1; // already open
+    if (gpm_fd == -2)
+	Gpm_Close(); // We don't want to talk to xterm via gpm
+    return 0;
 }
 
 /*
@@ -7396,14 +7410,13 @@ sysmouse_open(void)
     mouse.operation = MOUSE_MODE;
     mouse.u.mode.mode = 0;
     mouse.u.mode.signal = SIGUSR2;
-    if (ioctl(1, CONS_MOUSECTL, &mouse) != -1)
-    {
-	signal(SIGUSR2, (void (*)())sig_sysmouse);
-	mouse.operation = MOUSE_SHOW;
-	ioctl(1, CONS_MOUSECTL, &mouse);
-	return OK;
-    }
-    return FAIL;
+    if (ioctl(1, CONS_MOUSECTL, &mouse) == -1)
+	return FAIL;
+
+    signal(SIGUSR2, (void (*)())sig_sysmouse);
+    mouse.operation = MOUSE_SHOW;
+    ioctl(1, CONS_MOUSECTL, &mouse);
+    return OK;
 }
 
 /*
@@ -8244,14 +8257,14 @@ xsmp_init(void)
     void
 xsmp_close(void)
 {
-    if (xsmp_icefd != -1)
-    {
-	SmcCloseConnection(xsmp.smcconn, 0, NULL);
-	if (xsmp.clientid != NULL)
-	    free(xsmp.clientid);
-	xsmp.clientid = NULL;
-	xsmp_icefd = -1;
-    }
+    if (xsmp_icefd == -1)
+	return;
+
+    SmcCloseConnection(xsmp.smcconn, 0, NULL);
+    if (xsmp.clientid != NULL)
+	free(xsmp.clientid);
+    xsmp.clientid = NULL;
+    xsmp_icefd = -1;
 }
 #endif // USE_XSMP
 
@@ -8309,8 +8322,8 @@ stop_timeout(void)
 start_timeout(long msec)
 {
     struct itimerspec interval = {
-	    {0, 0},                                   // Do not repeat.
-	    {msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
+	    {0, 0},					// Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000000}};	// Timeout interval
     int ret;
 
     // This is really the caller's responsibility, but let's make sure the
@@ -8323,8 +8336,8 @@ start_timeout(long msec)
 
 	action.sigev_notify = SIGEV_THREAD;
 	action.sigev_notify_function = set_flag;
-        ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
-        if (ret < 0)
+	ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
+	if (ret < 0)
 	{
 	    semsg(_(e_could_not_set_timeout_str), strerror(errno));
 	    return &timeout_flag;
@@ -8332,7 +8345,7 @@ start_timeout(long msec)
 	timer_created = TRUE;
     }
 
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
     ch_log(NULL, "setting timeout timer to %d sec %ld nsec",
 	       (int)interval.it_value.tv_sec, (long)interval.it_value.tv_nsec);
 # endif
@@ -8349,11 +8362,11 @@ start_timeout(long msec)
     void
 delete_timer(void)
 {
-    if (timer_created)
-    {
-	timer_delete(timer_id);
-	timer_created = FALSE;
-    }
+    if (!timer_created)
+	return;
+
+    timer_delete(timer_id);
+    timer_created = FALSE;
 }
 
 # else // HAVE_TIMER_CREATE
@@ -8362,10 +8375,10 @@ delete_timer(void)
  * Implement timeout with setitimer()
  */
 static struct sigaction		prev_sigaction;
-static volatile sig_atomic_t	timeout_flag         = FALSE;
-static int			timer_active         = FALSE;
+static volatile sig_atomic_t	timeout_flag	     = FALSE;
+static int			timer_active	     = FALSE;
 static int			timer_handler_active = FALSE;
-static volatile sig_atomic_t	alarm_pending        = FALSE;
+static volatile sig_atomic_t	alarm_pending	     = FALSE;
 
 /*
  * Handle SIGALRM for a timeout.
@@ -8424,8 +8437,8 @@ stop_timeout(void)
 start_timeout(long msec)
 {
     struct itimerval	interval = {
-	    {0, 0},                                // Do not repeat.
-	    {msec / 1000, (msec % 1000) * 1000}};  // Timeout interval
+	    {0, 0},				    // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000}};   // Timeout interval
     struct sigaction	handle_alarm;
     int			ret;
     sigset_t		sigs;

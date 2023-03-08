@@ -434,12 +434,12 @@ directx_enabled(void)
     static void
 directx_binddc(void)
 {
-    if (s_textArea != NULL)
-    {
-	RECT	rect;
-	GetClientRect(s_textArea, &rect);
-	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
-    }
+    if (s_textArea == NULL)
+	return;
+
+    RECT	rect;
+    GetClientRect(s_textArea, &rect);
+    DWriteContext_BindDC(s_dwc, s_hdc, &rect);
 }
 #endif
 
@@ -663,14 +663,14 @@ gui_mswin_rm_blink_timer(void)
 {
     MSG msg;
 
-    if (blink_timer != 0)
-    {
-	KillTimer(NULL, blink_timer);
-	// Eat spurious WM_TIMER messages
-	while (PeekMessageW(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
-	    ;
-	blink_timer = 0;
-    }
+    if (blink_timer == 0)
+	return;
+
+    KillTimer(NULL, blink_timer);
+    // Eat spurious WM_TIMER messages
+    while (PeekMessageW(&msg, s_hwnd, WM_TIMER, WM_TIMER, PM_REMOVE))
+	;
+    blink_timer = 0;
 }
 
 /*
@@ -888,6 +888,12 @@ _OnChar(
     modifiers = get_active_modifiers();
 
     ch = simplify_key(ch, &modifiers);
+
+    // Some keys need adjustment when the Ctrl modifier is used.
+    ++no_reduce_keys;
+    ch = may_adjust_key_for_ctrl(modifiers, ch);
+    --no_reduce_keys;
+
     // remove the SHIFT modifier for keys where it's already included, e.g.,
     // '(' and '*'
     modifiers = may_remove_shift_modifier(modifiers, ch);
@@ -1028,63 +1034,64 @@ _OnMouseButtonDown(
 	else
 	    button = MOUSE_LEFT;
     }
-    if (button >= 0)
+
+    if (button < 0)
+	return;
+
+    repeated_click = ((int)(currentTime - s_prevTime) < p_mouset);
+
+    /*
+     * Holding down the left and right buttons simulates pushing the middle
+     * button.
+     */
+    if (repeated_click
+	    && ((button == MOUSE_LEFT && s_button_pending == MOUSE_RIGHT)
+		|| (button == MOUSE_RIGHT
+		    && s_button_pending == MOUSE_LEFT)))
     {
-	repeated_click = ((int)(currentTime - s_prevTime) < p_mouset);
-
 	/*
-	 * Holding down the left and right buttons simulates pushing the middle
-	 * button.
+	 * Hmm, gui.c will ignore more than one button down at a time, so
+	 * pretend we let go of it first.
 	 */
-	if (repeated_click
-		&& ((button == MOUSE_LEFT && s_button_pending == MOUSE_RIGHT)
-		    || (button == MOUSE_RIGHT
-					  && s_button_pending == MOUSE_LEFT)))
-	{
-	    /*
-	     * Hmm, gui.c will ignore more than one button down at a time, so
-	     * pretend we let go of it first.
-	     */
-	    gui_send_mouse_event(MOUSE_RELEASE, x, y, FALSE, 0x0);
-	    button = MOUSE_MIDDLE;
-	    repeated_click = FALSE;
-	    s_button_pending = -1;
-	    _OnMouseEvent(button, x, y, repeated_click, keyFlags);
-	}
-	else if ((repeated_click)
-		|| (mouse_model_popup() && (button == MOUSE_RIGHT)))
-	{
-	    if (s_button_pending > -1)
-	    {
-		_OnMouseEvent(s_button_pending, x, y, FALSE, keyFlags);
-		s_button_pending = -1;
-	    }
-	    // TRACE("Button down at x %d, y %d\n", x, y);
-	    _OnMouseEvent(button, x, y, repeated_click, keyFlags);
-	}
-	else
-	{
-	    /*
-	     * If this is the first press (i.e. not a multiple click) don't
-	     * action immediately, but store and wait for:
-	     * i) button-up
-	     * ii) mouse move
-	     * iii) another button press
-	     * before using it.
-	     * This enables us to make left+right simulate middle button,
-	     * without left or right being actioned first.  The side-effect is
-	     * that if you click and hold the mouse without dragging, the
-	     * cursor doesn't move until you release the button. In practice
-	     * this is hardly a problem.
-	     */
-	    s_button_pending = button;
-	    s_x_pending = x;
-	    s_y_pending = y;
-	    s_kFlags_pending = keyFlags;
-	}
-
-	s_prevTime = currentTime;
+	gui_send_mouse_event(MOUSE_RELEASE, x, y, FALSE, 0x0);
+	button = MOUSE_MIDDLE;
+	repeated_click = FALSE;
+	s_button_pending = -1;
+	_OnMouseEvent(button, x, y, repeated_click, keyFlags);
     }
+    else if ((repeated_click)
+	    || (mouse_model_popup() && (button == MOUSE_RIGHT)))
+    {
+	if (s_button_pending > -1)
+	{
+	    _OnMouseEvent(s_button_pending, x, y, FALSE, keyFlags);
+	    s_button_pending = -1;
+	}
+	// TRACE("Button down at x %d, y %d\n", x, y);
+	_OnMouseEvent(button, x, y, repeated_click, keyFlags);
+    }
+    else
+    {
+	/*
+	 * If this is the first press (i.e. not a multiple click) don't
+	 * action immediately, but store and wait for:
+	 * i) button-up
+	 * ii) mouse move
+	 * iii) another button press
+	 * before using it.
+	 * This enables us to make left+right simulate middle button,
+	 * without left or right being actioned first.  The side-effect is
+	 * that if you click and hold the mouse without dragging, the
+	 * cursor doesn't move until you release the button. In practice
+	 * this is hardly a problem.
+	 */
+	s_button_pending = button;
+	s_x_pending = x;
+	s_y_pending = y;
+	s_kFlags_pending = keyFlags;
+    }
+
+    s_prevTime = currentTime;
 }
 
     static void
@@ -1227,23 +1234,23 @@ _OnFindRepl(void)
 	flags = FRD_REPLACEALL;
     }
 
-    if (flags != 0)
-    {
-	char_u	*p, *q;
+    if (flags == 0)
+	return;
 
-	// Call the generic GUI function to do the actual work.
-	if (s_findrep_struct.Flags & FR_WHOLEWORD)
-	    flags |= FRD_WHOLE_WORD;
-	if (s_findrep_struct.Flags & FR_MATCHCASE)
-	    flags |= FRD_MATCH_CASE;
-	down = (s_findrep_struct.Flags & FR_DOWN) != 0;
-	p = utf16_to_enc(s_findrep_struct.lpstrFindWhat, NULL);
-	q = utf16_to_enc(s_findrep_struct.lpstrReplaceWith, NULL);
-	if (p != NULL && q != NULL)
-	    gui_do_findrepl(flags, p, q, down);
-	vim_free(p);
-	vim_free(q);
-    }
+    char_u	*p, *q;
+
+    // Call the generic GUI function to do the actual work.
+    if (s_findrep_struct.Flags & FR_WHOLEWORD)
+	flags |= FRD_WHOLE_WORD;
+    if (s_findrep_struct.Flags & FR_MATCHCASE)
+	flags |= FRD_MATCH_CASE;
+    down = (s_findrep_struct.Flags & FR_DOWN) != 0;
+    p = utf16_to_enc(s_findrep_struct.lpstrFindWhat, NULL);
+    q = utf16_to_enc(s_findrep_struct.lpstrReplaceWith, NULL);
+    if (p != NULL && q != NULL)
+	gui_do_findrepl(flags, p, q, down);
+    vim_free(p);
+    vim_free(q);
 }
 #endif
 
@@ -2152,16 +2159,25 @@ process_message(void)
 
 	    if (len <= 0)
 	    {
-		if (   dead_key == DEAD_KEY_SET_DEFAULT
-		    && (GetKeyState(VK_CONTROL) & 0x8000)
-		    && (   (vk == 221 && scan_code == 26) // AZERTY CTRL+dead_circumflex
-			|| (vk == 220 && scan_code == 41) // QWERTZ CTRL+dead_circumflex
-		       )
-		   )
+		int wm_char = NUL;
+
+		if (dead_key == DEAD_KEY_SET_DEFAULT
+			&& (GetKeyState(VK_CONTROL) & 0x8000))
+		{
+		    if (   // AZERTY CTRL+dead_circumflex
+			   (vk == 221 && scan_code == 26)
+			   // QWERTZ CTRL+dead_circumflex
+			|| (vk == 220 && scan_code == 41))
+			wm_char = '[';
+		    if (   // QWERTZ CTRL+dead_two-overdots
+			   (vk == 192 && scan_code == 27))
+			wm_char = ']';
+		}
+		if (wm_char != NUL)
 		{
 		    // post WM_CHAR='[' - which will be interpreted with CTRL
 		    // still hold as ESC
-		    PostMessageW(msg.hwnd, WM_CHAR, '[', msg.lParam);
+		    PostMessageW(msg.hwnd, WM_CHAR, wm_char, msg.lParam);
 		    // ask _OnChar() to not touch this state, wait for next key
 		    // press and maintain knowledge that we are "poisoned" with
 		    // "dead state"
@@ -2917,11 +2933,11 @@ gui_mch_replace_dialog(exarg_T *eap)
     void
 gui_mch_mousehide(int hide)
 {
-    if (hide != gui.pointer_hidden)
-    {
-	ShowCursor(!hide);
-	gui.pointer_hidden = hide;
-    }
+    if (hide == gui.pointer_hidden)
+	return;
+
+    ShowCursor(!hide);
+    gui.pointer_hidden = hide;
 }
 
 #ifdef FEAT_MENU
@@ -2978,33 +2994,33 @@ _OnDestroy(HWND hwnd)
 _OnPaint(
     HWND hwnd)
 {
-    if (!IsMinimized(hwnd))
+    if (IsMinimized(hwnd))
+	return;
+
+    PAINTSTRUCT ps;
+
+    out_flush();	    // make sure all output has been processed
+    (void)BeginPaint(hwnd, &ps);
+
+    // prevent multi-byte characters from misprinting on an invalid
+    // rectangle
+    if (has_mbyte)
     {
-	PAINTSTRUCT ps;
+	RECT rect;
 
-	out_flush();	    // make sure all output has been processed
-	(void)BeginPaint(hwnd, &ps);
-
-	// prevent multi-byte characters from misprinting on an invalid
-	// rectangle
-	if (has_mbyte)
-	{
-	    RECT rect;
-
-	    GetClientRect(hwnd, &rect);
-	    ps.rcPaint.left = rect.left;
-	    ps.rcPaint.right = rect.right;
-	}
-
-	if (!IsRectEmpty(&ps.rcPaint))
-	{
-	    gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
-		    ps.rcPaint.right - ps.rcPaint.left + 1,
-		    ps.rcPaint.bottom - ps.rcPaint.top + 1);
-	}
-
-	EndPaint(hwnd, &ps);
+	GetClientRect(hwnd, &rect);
+	ps.rcPaint.left = rect.left;
+	ps.rcPaint.right = rect.right;
     }
+
+    if (!IsRectEmpty(&ps.rcPaint))
+    {
+	gui_redraw(ps.rcPaint.left, ps.rcPaint.top,
+		ps.rcPaint.right - ps.rcPaint.left + 1,
+		ps.rcPaint.bottom - ps.rcPaint.top + 1);
+    }
+
+    EndPaint(hwnd, &ps);
 }
 
     static void
@@ -3889,21 +3905,21 @@ _OnDropFiles(
 
     DragFinish(hDrop);
 
-    if (fnames != NULL)
-    {
-	int kbd_modifiers = get_active_modifiers();
+    if (fnames == NULL)
+	return;
 
-	if ((kbd_modifiers & MOD_MASK_SHIFT) != 0)
-	    modifiers |= MOUSE_SHIFT;
-	if ((kbd_modifiers & MOD_MASK_CTRL) != 0)
-	    modifiers |= MOUSE_CTRL;
-	if ((kbd_modifiers & MOD_MASK_ALT) != 0)
-	    modifiers |= MOUSE_ALT;
+    int kbd_modifiers = get_active_modifiers();
 
-	gui_handle_drop(pt.x, pt.y, modifiers, fnames, cFiles);
+    if ((kbd_modifiers & MOD_MASK_SHIFT) != 0)
+	modifiers |= MOUSE_SHIFT;
+    if ((kbd_modifiers & MOD_MASK_CTRL) != 0)
+	modifiers |= MOUSE_CTRL;
+    if ((kbd_modifiers & MOD_MASK_ALT) != 0)
+	modifiers |= MOUSE_ALT;
 
-	s_need_activate = TRUE;
-    }
+    gui_handle_drop(pt.x, pt.y, modifiers, fnames, cFiles);
+
+    s_need_activate = TRUE;
 }
 
     static int
@@ -4446,11 +4462,11 @@ show_sizing_tip(int cols, int rows)
     static void
 destroy_sizing_tip(void)
 {
-    if (hwndTip != NULL)
-    {
-	DestroyWindow(hwndTip);
-	hwndTip = NULL;
-    }
+    if (hwndTip == NULL)
+	return;
+
+    DestroyWindow(hwndTip);
+    hwndTip = NULL;
 }
 
     static int
@@ -5829,64 +5845,64 @@ im_set_active(int active)
     }
 # endif
 
-    if (pImmGetContext)	    // if NULL imm32.dll wasn't loaded (yet)
+    if (!pImmGetContext)    // if NULL imm32.dll wasn't loaded (yet)
+	return;
+
+    if (p_imdisable)
     {
-	if (p_imdisable)
+	if (hImcOld == (HIMC)0)
 	{
-	    if (hImcOld == (HIMC)0)
-	    {
-		hImcOld = pImmGetContext(s_hwnd);
-		if (hImcOld)
-		    pImmAssociateContext(s_hwnd, (HIMC)0);
-	    }
-	    active = FALSE;
+	    hImcOld = pImmGetContext(s_hwnd);
+	    if (hImcOld)
+		pImmAssociateContext(s_hwnd, (HIMC)0);
 	}
-	else if (hImcOld != (HIMC)0)
+	active = FALSE;
+    }
+    else if (hImcOld != (HIMC)0)
+    {
+	pImmAssociateContext(s_hwnd, hImcOld);
+	hImcOld = (HIMC)0;
+    }
+
+    hImc = pImmGetContext(s_hwnd);
+    if (!hImc)
+	return;
+
+    /*
+     * for Korean ime
+     */
+    HKL hKL = GetKeyboardLayout(0);
+
+    if (LOWORD(hKL) == MAKELANGID(LANG_KOREAN, SUBLANG_KOREAN))
+    {
+	static DWORD dwConversionSaved = 0, dwSentenceSaved = 0;
+	static BOOL bSaved = FALSE;
+
+	if (active)
 	{
-	    pImmAssociateContext(s_hwnd, hImcOld);
-	    hImcOld = (HIMC)0;
+	    // if we have a saved conversion status, restore it
+	    if (bSaved)
+		pImmSetConversionStatus(hImc, dwConversionSaved,
+			dwSentenceSaved);
+	    bSaved = FALSE;
 	}
-
-	hImc = pImmGetContext(s_hwnd);
-	if (hImc)
+	else
 	{
-	    /*
-	     * for Korean ime
-	     */
-	    HKL hKL = GetKeyboardLayout(0);
-
-	    if (LOWORD(hKL) == MAKELANGID(LANG_KOREAN, SUBLANG_KOREAN))
+	    // save conversion status and disable korean
+	    if (pImmGetConversionStatus(hImc, &dwConversionSaved,
+			&dwSentenceSaved))
 	    {
-		static DWORD dwConversionSaved = 0, dwSentenceSaved = 0;
-		static BOOL bSaved = FALSE;
-
-		if (active)
-		{
-		    // if we have a saved conversion status, restore it
-		    if (bSaved)
-			pImmSetConversionStatus(hImc, dwConversionSaved,
-							     dwSentenceSaved);
-		    bSaved = FALSE;
-		}
-		else
-		{
-		    // save conversion status and disable korean
-		    if (pImmGetConversionStatus(hImc, &dwConversionSaved,
-							    &dwSentenceSaved))
-		    {
-			bSaved = TRUE;
-			pImmSetConversionStatus(hImc,
-				dwConversionSaved & ~(IME_CMODE_NATIVE
-						       | IME_CMODE_FULLSHAPE),
-				dwSentenceSaved);
-		    }
-		}
+		bSaved = TRUE;
+		pImmSetConversionStatus(hImc,
+			dwConversionSaved & ~(IME_CMODE_NATIVE
+			    | IME_CMODE_FULLSHAPE),
+			dwSentenceSaved);
 	    }
-
-	    pImmSetOpenStatus(hImc, active);
-	    pImmReleaseContext(s_hwnd, hImc);
 	}
     }
+
+    pImmSetOpenStatus(hImc, active);
+    pImmReleaseContext(s_hwnd, hImc);
 }
 
 /*
@@ -6444,28 +6460,28 @@ gui_make_popup(char_u *path_name, int mouse_pos)
 {
     vimmenu_T	*menu = gui_find_menu(path_name);
 
-    if (menu != NULL)
+    if (menu == NULL)
+	return;
+
+    POINT	p;
+
+    // Find the position of the current cursor
+    GetDCOrgEx(s_hdc, &p);
+    if (mouse_pos)
     {
-	POINT	p;
+	int	mx, my;
 
-	// Find the position of the current cursor
-	GetDCOrgEx(s_hdc, &p);
-	if (mouse_pos)
-	{
-	    int	mx, my;
-
-	    gui_mch_getmouse(&mx, &my);
-	    p.x += mx;
-	    p.y += my;
-	}
-	else if (curwin != NULL)
-	{
-	    p.x += TEXT_X(curwin->w_wincol + curwin->w_wcol + 1);
-	    p.y += TEXT_Y(W_WINROW(curwin) + curwin->w_wrow + 1);
-	}
-	msg_scroll = FALSE;
-	gui_mch_show_popupmenu_at(menu, (int)p.x, (int)p.y);
+	gui_mch_getmouse(&mx, &my);
+	p.x += mx;
+	p.y += my;
     }
+    else if (curwin != NULL)
+    {
+	p.x += TEXT_X(curwin->w_wincol + curwin->w_wcol + 1);
+	p.y += TEXT_Y(W_WINROW(curwin) + curwin->w_wrow + 1);
+    }
+    msg_scroll = FALSE;
+    gui_mch_show_popupmenu_at(menu, (int)p.x, (int)p.y);
 }
 
 # if defined(FEAT_TEAROFF) || defined(PROTO)
@@ -8259,25 +8275,27 @@ gui_mch_drawsign(int row, int col, int typenr)
     static void
 close_signicon_image(signicon_t *sign)
 {
-    if (sign)
-	switch (sign->uType)
-	{
-	    case IMAGE_BITMAP:
-		DeleteObject((HGDIOBJ)sign->hImage);
-		break;
-	    case IMAGE_CURSOR:
-		DestroyCursor((HCURSOR)sign->hImage);
-		break;
-	    case IMAGE_ICON:
-		DestroyIcon((HICON)sign->hImage);
-		break;
+    if (sign == NULL)
+	return;
+
+    switch (sign->uType)
+    {
+	case IMAGE_BITMAP:
+	    DeleteObject((HGDIOBJ)sign->hImage);
+	    break;
+	case IMAGE_CURSOR:
+	    DestroyCursor((HCURSOR)sign->hImage);
+	    break;
+	case IMAGE_ICON:
+	    DestroyIcon((HICON)sign->hImage);
+	    break;
 # ifdef FEAT_XPM_W32
-	    case IMAGE_XPM:
-		DeleteObject((HBITMAP)sign->hImage);
-		DeleteObject((HBITMAP)sign->hShape);
-		break;
+	case IMAGE_XPM:
+	    DeleteObject((HBITMAP)sign->hImage);
+	    DeleteObject((HBITMAP)sign->hShape);
+	    break;
 # endif
-	}
+    }
 }
 
     void *
@@ -8332,11 +8350,11 @@ gui_mch_register_sign(char_u *signfile)
     void
 gui_mch_destroy_sign(void *sign)
 {
-    if (sign)
-    {
-	close_signicon_image((signicon_t *)sign);
-	vim_free(sign);
-    }
+    if (sign == NULL)
+	return;
+
+    close_signicon_image((signicon_t *)sign);
+    vim_free(sign);
 }
 #endif
 
@@ -8369,7 +8387,7 @@ make_tooltip(BalloonEval *beval, char *text, POINT pt)
     TOOLINFOW	*pti;
     RECT	rect;
 
-    pti = alloc(sizeof(TOOLINFOW));
+    pti = ALLOC_ONE(TOOLINFOW);
     if (pti == NULL)
 	return;
 
@@ -8546,10 +8564,11 @@ Handle_WM_Notify(HWND hwnd UNUSED, LPNMHDR pnmh)
     if (pnmh->idFrom != ID_BEVAL_TOOLTIP) // it is not our tooltip
 	return;
 
-    if (cur_beval != NULL)
+    if (cur_beval == NULL)
+	return;
+
+    switch (pnmh->code)
     {
-	switch (pnmh->code)
-	{
 	case TTN_SHOW:
 	    break;
 	case TTN_POP: // Before tooltip disappear
@@ -8574,7 +8593,6 @@ Handle_WM_Notify(HWND hwnd UNUSED, LPNMHDR pnmh)
 		info->uFlags |= TTF_DI_SETITEM;
 	    }
 	    break;
-	}
     }
 }
 
@@ -8634,41 +8652,176 @@ netbeans_draw_multisign_indicator(int row)
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-    int
-test_gui_w32_sendevent(dict_T *args)
-{
-    char_u	*event;
-    INPUT	inputs[1];
 
-    event = dict_get_string(args, "event", TRUE);
-    if (event == NULL)
+// TODO: at the moment, this is just a copy of test_gui_mouse_event.
+// But, we could instead generate actual Win32 mouse event messages,
+// ie. to make it consistent with test_gui_w32_sendevent_keyboard.
+    static int
+test_gui_w32_sendevent_mouse(dict_T *args)
+{
+    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
 	return FALSE;
 
-    ZeroMemory(inputs, sizeof(inputs));
+    // Note: "move" is optional, requires fewer arguments
+    int move = (int)dict_get_bool(args, "move", FALSE);
 
-    if (STRICMP(event, "keydown") == 0 || STRICMP(event, "keyup") == 0)
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+
+    int row = (int)dict_get_number(args, "row");
+    int col = (int)dict_get_number(args, "col");
+
+    if (move)
     {
-	WORD	    vkCode;
+	// the "move" argument expects row and col coordnates to be in pixels,
+	// unless "cell" is specified and is TRUE.
+	if (dict_get_bool(args, "cell", FALSE))
+	{
+	    // calculate the middle of the character cell
+	    // Note: Cell coordinates are 1-based from vimscript
+	    int pY = (row - 1) * gui.char_height + gui.char_height / 2;
+	    int pX = (col - 1) * gui.char_width + gui.char_width / 2;
+	    gui_mouse_moved(pX, pY);
+	}
+	else
+	    gui_mouse_moved(col, row);
+    }
+    else
+    {
+	int button = (int)dict_get_number(args, "button");
+	int repeated_click = (int)dict_get_number(args, "multiclick");
+	int_u mods = (int)dict_get_number(args, "modifiers");
 
-	vkCode = dict_get_number_def(args, "keycode", 0);
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+
+	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
+							repeated_click, mods);
+    }
+    return TRUE;
+}
+
+    static int
+test_gui_w32_sendevent_keyboard(dict_T *args)
+{
+    INPUT inputs[1];
+    INPUT modkeys[3];
+    SecureZeroMemory(inputs, sizeof(INPUT));
+    SecureZeroMemory(modkeys, 3 * sizeof(INPUT));
+
+    char_u *event = dict_get_string(args, "event", TRUE);
+
+    if (event && (STRICMP(event, "keydown") == 0
+				      || STRICMP(event, "keyup") == 0))
+    {
+	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
 	{
 	    semsg(_(e_invalid_argument_nr), (long)vkCode);
 	    return FALSE;
 	}
 
+	BOOL isModKey = (vkCode == VK_SHIFT || vkCode == VK_CONTROL
+	    || vkCode == VK_MENU || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT
+	    || vkCode == VK_LCONTROL || vkCode == VK_RCONTROL
+	    || vkCode == VK_LMENU || vkCode == VK_RMENU );
+
+	BOOL unwrapMods = FALSE;
+	int mods = (int)dict_get_number(args, "modifiers");
+
+	// If there are modifiers in the args, and it is not a keyup event and
+	// vkCode is not a modifier key, then we generate virtual modifier key
+	// messages before sending the actual key message.
+	if(mods && STRICMP(event, "keydown") == 0 && !isModKey)
+	{
+	    int n = 0;
+	    if (mods & MOD_MASK_SHIFT)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LSHIFT;
+		n++;
+	    }
+	    if (mods & MOD_MASK_CTRL)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LCONTROL;
+		n++;
+	    }
+	    if (mods & MOD_MASK_ALT)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LMENU;
+		n++;
+	    }
+	    if (n)
+	    {
+		(void)SetForegroundWindow(s_hwnd);
+		SendInput(n, modkeys, sizeof(INPUT));
+	    }
+	}
+
 	inputs[0].type = INPUT_KEYBOARD;
 	inputs[0].ki.wVk = vkCode;
 	if (STRICMP(event, "keyup") == 0)
+	{
 	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	    if(!isModKey)
+		unwrapMods = TRUE;
+	}
+
 	(void)SetForegroundWindow(s_hwnd);
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+	vim_free(event);
+
+	if (unwrapMods)
+	{
+	    modkeys[0].type = INPUT_KEYBOARD;
+	    modkeys[0].ki.wVk = VK_LSHIFT;
+	    modkeys[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    modkeys[1].type = INPUT_KEYBOARD;
+	    modkeys[1].ki.wVk = VK_LCONTROL;
+	    modkeys[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    modkeys[2].type = INPUT_KEYBOARD;
+	    modkeys[2].ki.wVk = VK_LMENU;
+	    modkeys[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    (void)SetForegroundWindow(s_hwnd);
+	    SendInput(3, modkeys, sizeof(INPUT));
+	}
     }
     else
-	semsg(_(e_invalid_argument_str), event);
-
-    vim_free(event);
-
+    {
+	if (event == NULL)
+	{
+	    semsg(_(e_missing_argument_str), "event");
+	}
+	else
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	    vim_free(event);
+	}
+	return FALSE;
+    }
     return TRUE;
+}
+
+    int
+test_gui_w32_sendevent(char_u *event, dict_T *args)
+{
+    if (STRICMP(event, "key") == 0)
+	return test_gui_w32_sendevent_keyboard(args);
+    else if (STRICMP(event, "mouse") == 0)
+	return test_gui_w32_sendevent_mouse(args);
+    else
+    {
+	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	return FALSE;
+    }
 }
 #endif

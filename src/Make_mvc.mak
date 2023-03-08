@@ -685,6 +685,7 @@ OBJ = \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\locale.obj \
+	$(OUTDIR)\logfile.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\map.obj \
 	$(OUTDIR)\mark.obj \
@@ -734,6 +735,7 @@ OBJ = \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\vim9class.obj \
 	$(OUTDIR)\vim9cmds.obj \
 	$(OUTDIR)\vim9compile.obj \
 	$(OUTDIR)\vim9execute.obj \
@@ -877,7 +879,7 @@ TCL_LIB = "$(TCL)\lib\tclstub$(TCL_VER).lib"
 CFLAGS  = $(CFLAGS) -DFEAT_TCL
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
 TCL_INC	= /I "$(TCL)\Include" /I "$(TCL)"
-TCL_LIB = $(TCL)\lib\tcl$(TCL_VER)vc.lib
+TCL_LIB = "$(TCL)\lib\tcl$(TCL_VER)vc.lib"
 ! endif
 !endif
 
@@ -926,7 +928,7 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON \
 		-DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
 PYTHON_LIB = /nodefaultlib:python$(PYTHON_VER).lib
 ! else
-PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
+PYTHON_LIB = "$(PYTHON)\libs\python$(PYTHON_VER).lib"
 ! endif
 !endif
 
@@ -951,7 +953,7 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
 PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
 ! else
 CFLAGS = $(CFLAGS) -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
+PYTHON3_LIB = "$(PYTHON3)\libs\python$(PYTHON3_VER).lib"
 ! endif
 !endif
 
@@ -1109,7 +1111,7 @@ RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
 RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
+RUBY_LIB = "$(RUBY)\lib\$(RUBY_INSTALL_NAME).lib"
 # Do we want to load Ruby dynamically?
 ! if "$(DYNAMIC_RUBY)" == "yes"
 !  message Ruby DLL will be loaded dynamically
@@ -1586,6 +1588,8 @@ $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
 
 $(OUTDIR)/locale.obj:	$(OUTDIR) locale.c  $(INCL)
 
+$(OUTDIR)/logfile.obj:	$(OUTDIR) logfile.c  $(INCL)
+
 $(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL) $(CUI_INCL)
 
 $(OUTDIR)/map.obj:	$(OUTDIR) map.c  $(INCL)
@@ -1704,6 +1708,8 @@ $(OUTDIR)/usercmd.obj:	$(OUTDIR) usercmd.c  $(INCL)
 $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/version.obj:	$(OUTDIR) version.c  $(INCL) version.h
+
+$(OUTDIR)/vim9class.obj:	$(OUTDIR) vim9class.c  $(INCL) vim9.h
 
 $(OUTDIR)/vim9cmds.obj:	$(OUTDIR) vim9cmds.c  $(INCL) vim9.h
 
@@ -1862,6 +1868,7 @@ proto.h: \
 	proto/json.pro \
 	proto/list.pro \
 	proto/locale.pro \
+	proto/logfile.pro \
 	proto/main.pro \
 	proto/map.pro \
 	proto/mark.pro \
@@ -1911,6 +1918,7 @@ proto.h: \
 	proto/undo.pro \
 	proto/usercmd.pro \
 	proto/userfunc.pro \
+	proto/vim9class.pro \
 	proto/vim9cmds.pro \
 	proto/vim9compile.pro \
 	proto/vim9execute.pro \

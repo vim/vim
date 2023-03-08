@@ -335,7 +335,7 @@ profile_reset(void)
     functbl = func_tbl_get();
     todo = (int)functbl->ht_used;
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	ufunc_T *fp;
 	int	i;
@@ -825,7 +825,7 @@ func_dump_profile(FILE *fd)
 
     sorttab = ALLOC_MULT(ufunc_T *, todo);
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -910,16 +910,16 @@ script_prof_restore(proftime_T *tm)
 {
     scriptitem_T    *si;
 
-    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
+	return;
+
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
+    if (si->sn_prof_on && --si->sn_pr_nest == 0)
     {
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
-	if (si->sn_prof_on && --si->sn_pr_nest == 0)
-	{
-	    profile_end(&si->sn_pr_child);
-	    profile_sub_wait(tm, &si->sn_pr_child); // don't count wait time
-	    profile_add(&si->sn_pr_children, &si->sn_pr_child);
-	    profile_add(&si->sn_prl_children, &si->sn_pr_child);
-	}
+	profile_end(&si->sn_pr_child);
+	profile_sub_wait(tm, &si->sn_pr_child); // don't count wait time
+	profile_add(&si->sn_pr_children, &si->sn_pr_child);
+	profile_add(&si->sn_prl_children, &si->sn_pr_child);
     }
 }
 
@@ -1009,17 +1009,17 @@ profile_dump(void)
 {
     FILE	*fd;
 
-    if (profile_fname != NULL)
+    if (profile_fname == NULL)
+	return;
+
+    fd = mch_fopen((char *)profile_fname, "w");
+    if (fd == NULL)
+	semsg(_(e_cant_open_file_str), profile_fname);
+    else
     {
-	fd = mch_fopen((char *)profile_fname, "w");
-	if (fd == NULL)
-	    semsg(_(e_cant_open_file_str), profile_fname);
-	else
-	{
-	    script_dump_profile(fd);
-	    func_dump_profile(fd);
-	    fclose(fd);
-	}
+	script_dump_profile(fd);
+	func_dump_profile(fd);
+	fclose(fd);
     }
 }
 

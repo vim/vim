@@ -1,11 +1,11 @@
-" Test to verify that the three function lists,
+" Test to verify that the three function lists:
 "
-"   global_functions[] in src/evalfunc.c
-"   *functions* in runtime/doc/builtin.txt
-"   *function-list* in runtime/doc/usr_41.txt
+"  - global_functions[] in src/evalfunc.c
+"  - *functions* in runtime/doc/builtin.txt
+"  - *function-list* in runtime/doc/usr_41.txt
 "
-" contain the same functions and that the global_functions and ":help
-" functions" lists are in ASCII order.
+" contain the same functions and that the global_functions and
+" ":help functions" lists are in ASCII order.
 
 func Test_function_lists()
 

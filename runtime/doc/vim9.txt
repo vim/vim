@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Oct 11
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -16,7 +16,7 @@ features in Vim9 script.
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
 5.  Namespace, Import and Export	|vim9script|
-6.  Future work: classes		|vim9-classes|
+6.  Classes and interfaces		|vim9-classes|
 
 9.  Rationale				|vim9-rationale|
 
@@ -105,7 +105,7 @@ script and `:def` functions; details are below:
 	`:open`
 	`:s`  with only flags
 	`:t`
-  	`:xit`
+	`:xit`
 - Some commands, especially those used for flow control, cannot be shortened.
   E.g., `:throw` cannot be written as `:th`.  *vim9-no-shorten*
 - You cannot use curly-braces names.
@@ -113,7 +113,7 @@ script and `:def` functions; details are below:
 	:%s/this/that
 - Executing a register with "@r" does not work, you can prepend a colon or use
   `:exe`: >
-  	:exe @a
+	:exe @a
 - Unless mentioned specifically, the highest |scriptversion| is used.
 - When defining an expression mapping, the expression will be evaluated in the
   context of the script where it was defined.
@@ -265,7 +265,7 @@ Detail: this is because "Inner" will actually become a function reference to a
 function with a generated name.
 
 It is not possible to define a script-local function in a function.  You can
-define a local function and assign it to a script-local funcref (it must have
+define a local function and assign it to a script-local Funcref (it must have
 been declared at the script level).  It is possible to define a global
 function by using the "g:" prefix.
 
@@ -388,7 +388,6 @@ used: >
 	echo temp  # Error!
 
 This is especially useful in a user command: >
-
 	command -range Rename {
 		 var save = @a
 		 @a = 'some expression'
@@ -397,7 +396,6 @@ This is especially useful in a user command: >
 	    }
 
 And with autocommands: >
-
    au BufWritePre *.go {
 		 var save = winsaveview()
 		 silent! exe ':%! some formatting command'
@@ -624,7 +622,7 @@ Additionally, a lambda can contain statements in {}: >
 	    }
 This can be useful for a timer, for example: >
 	var count = 0
- 	var timer = timer_start(500, (_) => {
+	var timer = timer_start(500, (_) => {
 		 count += 1
 		 echom 'Handler called ' .. count
 	     }, {repeat: 3})
@@ -746,7 +744,7 @@ continuation is used without a backslash and a line starts with a bar: >
 							*E1050*
 To make it possible for the operator at the start of the line to be
 recognized, it is required to put a colon before a range.  This example will
-add "start" and print: >
+add "start" and "print": >
 	var result = start
 	+ print
 Like this: >
@@ -805,7 +803,7 @@ Notes:
 	echo [1, 2]
 		[3, 4]
 - In some cases it is difficult for Vim to parse a command, especially when
-  commands are used as an argument to another command, such as `windo`.  In
+  commands are used as an argument to another command, such as `:windo`.  In
   those cases the line continuation with a backslash has to be used.
 
 
@@ -826,7 +824,7 @@ White space is required around most operators.
 
 White space is required in a sublist (list slice) around the ":", except at
 the start and end: >
-	otherlist = mylist[v : count]  	# v:count has a different meaning
+	otherlist = mylist[v : count]	# v:count has a different meaning
 	otherlist = mylist[:]		# make a copy of the List
 	otherlist = mylist[v :]
 	otherlist = mylist[: v]
@@ -881,7 +879,7 @@ This works for alphanumeric characters, underscore and dash.  If you want to
 use another character, use a single or double quoted string: >
 	var dict = {'key with space': value}
 	var dict = {"key\twith\ttabs": value}
-	var dict = {'': value}  		# empty key
+	var dict = {'': value}			# empty key
 <							*E1139*
 In case the key needs to be an expression, square brackets can be used, just
 like in JavaScript: >
@@ -1023,7 +1021,9 @@ always converted to string: >
 
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
-						*false* *true* *null* *E1034*
+			*false* *true* *null* *null_blob* *null_channel*
+			*null_dict* *null_function* *null_job* *null_list*
+			*null_partial* *null_string* *E1034*
 In Vim9 script one can use the following predefined values: >
 	true
 	false
@@ -1254,6 +1254,7 @@ level.  They cannot be created in a function, also not in a legacy function.
 :defc[ompile]		Compile functions defined in the current script that
 			were not compiled yet.
 			This will report any errors found during compilation.
+			This excludes functions defined inside a class.
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
@@ -1261,6 +1262,10 @@ level.  They cannot be created in a function, also not in a legacy function.
 			Compile function {func}, if needed.  Use "debug" and
 			"profile" to specify the compilation mode.
 			This will report any errors found during compilation.
+			{func} call also be "ClassName.functionName" to
+			compile a function or method in a class.
+			{func} call also be "ClassName" to compile all
+			functions and methods in a class.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
@@ -1309,7 +1314,7 @@ Closures defined in a loop will share the same context.  For example: >
 <							*E1271*
 A closure must be compiled in the context that it is defined in, so that
 variables in that context can be found.  This mostly happens correctly, except
-when a function is marked for debugging with `breakadd` after it was compiled.
+when a function is marked for debugging with `:breakadd` after it was compiled.
 Make sure to define the breakpoint before compiling the outer function.
 
 The "inloop" variable will exist only once, all closures put in the list refer
@@ -1351,7 +1356,7 @@ closure: >
 	}
 	endfor
 
-Using `echowindow` is useful in a timer, the messages go into a popup and will
+Using `:echowindow` is useful in a timer, the messages go into a popup and will
 not interfere with what the user is doing when it triggers.
 
 
@@ -1402,7 +1407,7 @@ to a Vim9 function:
 	  echo line(1) .. line(2)
 
 - line continuation does not always require a backslash: >
-  	echo ['one',
+	echo ['one',
 		\ 'two',
 		\ 'three'
 		\ ]
@@ -1592,7 +1597,7 @@ That is because the declaration looks like a list of numbers, thus is
 equivalent to: >
 	var ll: list<number> = [1, 2, 3]
 If you do want a more permissive list you need to declare the type: >
-	var ll: list<any = [1, 2, 3]
+	var ll: list<any> = [1, 2, 3]
 	ll->extend(['x'])  # OK
 
 
@@ -1940,64 +1945,17 @@ Or: >
 
 ==============================================================================
 
-6. Future work: classes					*vim9-classes*
+6. Classes and interfaces				*vim9-classes*
 
-Above "class" was mentioned a few times, but it has not been implemented yet.
-Most of Vim9 script can be created without this functionality, and since
-implementing classes is going to be a lot of work, it is left for the future.
-For now we'll just make sure classes can be added later.
+In legacy script a Dictionary could be used as a kind-of object, by adding
+members that are functions.  However, this is quite inefficient and requires
+the writer to do the work of making sure all the objects have the right
+members.  See |Dictionary-function|.
 
-Thoughts:
-- `class` / `endclass`, the whole class must be in one file
-- Class names are always CamelCase (to avoid a name clash with builtin types)
-- A single constructor called "constructor"
-- Single inheritance with `class ThisClass extends BaseClass`
-- `abstract class` (class with incomplete implementation)
-- `interface` / `endinterface` (abstract class without any implementation)
-- `class SomeClass implements SomeInterface`
-- Generics for class: `class <Tkey, Tentry>`
-- Generics for function: `def <Tkey> GetLast(key: Tkey)`
+In |Vim9| script you can have classes, objects and interfaces like in most
+popular object-oriented programming languages.  Since this is a lot of
+functionality it is located in a separate help file: |vim9class.txt|.
 
-Again, much of this is from TypeScript with a slightly different syntax.
-
-Some things that look like good additions:
-- Use a class as an interface (like Dart)
-- Extend a class with methods, using an import (like Dart)
-- Mixins
-- For testing: Mock mechanism
-
-An important class that will be provided is "Promise".  Since Vim is single
-threaded, connecting asynchronous operations is a natural way of allowing
-plugins to do their work without blocking the user.  It's a uniform way to
-invoke callbacks and handle timeouts and errors.
-
-Some commands have already been reserved:
-	*:class*
-	*:endclass*
-	*:abstract*
-	*:enum*
-	*:endenum*
-	*:interface*
-	*:endinterface*
-	*:static*
-	*:type*
-
-Some examples: >
-
-	abstract class Person 
-	    static const prefix = 'xxx'
-	    var name: string
-	    
-	    def constructor(name: string)
-		this.name = name
-	    enddef
-
-	    def display(): void
-		echo name
-	    enddef
-
-	    abstract def find(string): Person
-	endclass
 
 ==============================================================================
 
@@ -2282,19 +2240,6 @@ the tool into Vim script.  For that to be possible without too much
 translation, and keeping the code fast at the same time, the constructs of the
 tool need to be supported.  Since most languages support classes the lack of
 support for classes in Vim is then a problem.
-
-
-Classes ~
-
-Vim supports a kind-of object oriented programming by adding methods to a
-dictionary.  With some care this can be made to work, but it does not look
-like real classes.  On top of that, it's quite slow, because of the use of
-dictionaries.
-
-It would be good to support real classes, and this is planned for a later
-version.  The support is a "minimal common functionality" of class support in
-most languages.  It will work much like Java, which is the most popular
-programming language.
 
 
 

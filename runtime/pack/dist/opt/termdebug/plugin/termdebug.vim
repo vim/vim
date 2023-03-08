@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2022 Jun 24
+" Last Change: 2022 Nov 10
 "
 " WORK IN PROGRESS - The basics works stable, more to come
 " Note: In general you need at least GDB 7.12 because this provides the
@@ -891,7 +891,14 @@ func s:InstallCommands()
   endif
 
   if has('menu') && &mouse != ''
-    call s:InstallWinbar()
+    " install the window toolbar by default, can be disabled in the config
+    let winbar = 1
+    if exists('g:termdebug_config')
+      let winbar = get(g:termdebug_config, 'winbar', 1)
+    endif
+    if winbar
+      call s:InstallWinbar()
+    endif
 
     let popup = 1
     if exists('g:termdebug_config')

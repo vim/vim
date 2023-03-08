@@ -236,6 +236,7 @@
 
 /* Define if you have the header file: */
 #undef HAVE_DIRENT_H
+#undef HAVE_DISPATCH_DISPATCH_H
 #undef HAVE_ERRNO_H
 #undef HAVE_FCNTL_H
 #undef HAVE_FRAME_H

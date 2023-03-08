@@ -511,7 +511,7 @@ ex_sort(exarg_T *eap)
 
 	if (sort_nr || sort_flt)
 	{
-	    // Make sure vim_str2nr doesn't read any digits past the end
+	    // Make sure vim_str2nr() doesn't read any digits past the end
 	    // of the match, by temporarily terminating the string there
 	    s2 = s + end_col;
 	    c = *s2;
@@ -539,7 +539,7 @@ ex_sort(exarg_T *eap)
 		    nrs[lnum - eap->line1].st_u.num.is_number = TRUE;
 		    vim_str2nr(s, NULL, NULL, sort_what,
 			&nrs[lnum - eap->line1].st_u.num.value,
-			NULL, 0, FALSE);
+			NULL, 0, FALSE, NULL);
 		}
 	    }
 	    else
@@ -722,7 +722,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
     {
 	mark_adjust_nofold(line2 + 1, dest, -num_lines, 0L);
 #ifdef FEAT_FOLDING
-	FOR_ALL_TAB_WINDOWS(tp, win) {
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	{
 	    if (win->w_buffer == curbuf)
 		foldMoveRange(&win->w_folds, line1, line2, dest);
 	}
@@ -737,7 +738,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
     {
 	mark_adjust_nofold(dest + 1, line1 - 1, num_lines, 0L);
 #ifdef FEAT_FOLDING
-	FOR_ALL_TAB_WINDOWS(tp, win) {
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	{
 	    if (win->w_buffer == curbuf)
 		foldMoveRange(&win->w_folds, dest + 1, line1 - 1, line2);
 	}
@@ -1902,12 +1904,12 @@ check_writable(char_u *fname)
 #endif
 
 /*
- * write current buffer to file 'eap->arg'
- * if 'eap->append' is TRUE, append to the file
+ * Write the current buffer to file "eap->arg".
+ * If "eap->append" is TRUE, append to the file.
  *
- * if *eap->arg == NUL write to current file
+ * If "*eap->arg == NUL" write to current file.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 do_write(exarg_T *eap)
@@ -3140,7 +3142,7 @@ do_ecmd(
     // If the window options were changed may need to set the spell language.
     // Can only do this after the buffer has been properly setup.
     if (did_get_winopts && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
-	(void)did_set_spelllang(curwin);
+	(void)parse_spelllang(curwin);
 #endif
 
     if (command == NULL)
@@ -4011,7 +4013,7 @@ ex_substitute(exarg_T *eap)
 	return;
     }
 
-    if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, NULL, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
 	    emsg(_(e_invalid_command));
@@ -5039,6 +5041,7 @@ ex_global(exarg_T *eap)
 
     char_u	delim;		// delimiter, normally '/'
     char_u	*pat;
+    char_u	*used_pat;
     regmmatch_T	regmatch;
     int		match;
     int		which_pat;
@@ -5104,7 +5107,7 @@ ex_global(exarg_T *eap)
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
 
-    if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	emsg(_(e_invalid_command));
 	return;
@@ -5148,16 +5151,16 @@ ex_global(exarg_T *eap)
 	    if (type == 'v')
 	    {
 		if (in_vim9script())
-		    semsg(_(e_pattern_found_in_every_line_str), pat);
+		    semsg(_(e_pattern_found_in_every_line_str), used_pat);
 		else
-		    smsg(_("Pattern found in every line: %s"), pat);
+		    smsg(_("Pattern found in every line: %s"), used_pat);
 	    }
 	    else
 	    {
 		if (in_vim9script())
-		    semsg(_(e_pattern_not_found_str), pat);
+		    semsg(_(e_pattern_not_found_str), used_pat);
 		else
-		    smsg(_("Pattern not found: %s"), pat);
+		    smsg(_("Pattern not found: %s"), used_pat);
 	    }
 	}
 	else
@@ -5278,67 +5281,67 @@ prepare_tagpreview(
     need_mouse_correct = TRUE;
 # endif
 
+    if (curwin->w_p_pvw)
+	return FALSE;
+
     /*
      * If there is already a preview window open, use that one.
      */
-    if (!curwin->w_p_pvw)
+# ifdef FEAT_PROP_POPUP
+    if (use_previewpopup && *p_pvp != NUL)
     {
-# ifdef FEAT_PROP_POPUP
-	if (use_previewpopup && *p_pvp != NUL)
-	{
-	    wp = popup_find_preview_window();
-	    if (wp != NULL)
-		popup_set_wantpos_cursor(wp, wp->w_minwidth, NULL);
-	}
-	else if (use_popup != USEPOPUP_NONE)
-	{
-	    wp = popup_find_info_window();
-	    if (wp != NULL)
-	    {
-		if (use_popup == USEPOPUP_NORMAL)
-		    popup_show(wp);
-		else
-		    popup_hide(wp);
-		// When the popup moves or resizes it may reveal part of
-		// another window.  TODO: can this be done more efficiently?
-		redraw_all_later(UPD_NOT_VALID);
-	    }
-	}
-	else
-# endif
-	{
-	    FOR_ALL_WINDOWS(wp)
-		if (wp->w_p_pvw)
-		    break;
-	}
+	wp = popup_find_preview_window();
 	if (wp != NULL)
-	    win_enter(wp, undo_sync);
-	else
+	    popup_set_wantpos_cursor(wp, wp->w_minwidth, NULL);
+    }
+    else if (use_popup != USEPOPUP_NONE)
+    {
+	wp = popup_find_info_window();
+	if (wp != NULL)
 	{
-	    /*
-	     * There is no preview window open yet.  Create one.
-	     */
-# ifdef FEAT_PROP_POPUP
-	    if ((use_previewpopup && *p_pvp != NUL)
-						 || use_popup != USEPOPUP_NONE)
-		return popup_create_preview_window(use_popup != USEPOPUP_NONE);
-# endif
-	    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
-		return FALSE;
-	    curwin->w_p_pvw = TRUE;
-	    curwin->w_p_wfh = TRUE;
-	    RESET_BINDING(curwin);	    // don't take over 'scrollbind'
-	    // and 'cursorbind'
-# ifdef FEAT_DIFF
-	    curwin->w_p_diff = FALSE;	    // no 'diff'
-# endif
-# ifdef FEAT_FOLDING
-	    curwin->w_p_fdc = 0;	    // no 'foldcolumn'
-# endif
-	    return TRUE;
+	    if (use_popup == USEPOPUP_NORMAL)
+		popup_show(wp);
+	    else
+		popup_hide(wp);
+	    // When the popup moves or resizes it may reveal part of
+	    // another window.  TODO: can this be done more efficiently?
+	    redraw_all_later(UPD_NOT_VALID);
 	}
     }
-    return FALSE;
+    else
+# endif
+    {
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_p_pvw)
+		break;
+    }
+    if (wp != NULL)
+    {
+	win_enter(wp, undo_sync);
+	return FALSE;
+    }
+
+    /*
+     * There is no preview window open yet.  Create one.
+     */
+# ifdef FEAT_PROP_POPUP
+    if ((use_previewpopup && *p_pvp != NUL)
+	    || use_popup != USEPOPUP_NONE)
+	return popup_create_preview_window(use_popup != USEPOPUP_NONE);
+# endif
+    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
+	return FALSE;
+    curwin->w_p_pvw = TRUE;
+    curwin->w_p_wfh = TRUE;
+    RESET_BINDING(curwin);	    // don't take over 'scrollbind'
+				    // and 'cursorbind'
+# ifdef FEAT_DIFF
+    curwin->w_p_diff = FALSE;	    // no 'diff'
+# endif
+# ifdef FEAT_FOLDING
+    curwin->w_p_fdc = 0;	    // no 'foldcolumn'
+# endif
+    return TRUE;
 }
 
 #endif
@@ -5412,56 +5415,55 @@ ex_drop(exarg_T *eap)
 	// edited in a window yet.  It's like ":tab all" but without closing
 	// windows or tabs.
 	ex_all(eap);
+	return;
+    }
+
+    // ":drop file ...": Edit the first argument.  Jump to an existing
+    // window if possible, edit in current window if the current buffer
+    // can be abandoned, otherwise open a new window.
+    buf = buflist_findnr(ARGLIST[0].ae_fnum);
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+    {
+	if (wp->w_buffer == buf)
+	{
+	    goto_tabpage_win(tp, wp);
+	    curwin->w_arg_idx = 0;
+	    if (!bufIsChanged(curbuf))
+	    {
+		int save_ar = curbuf->b_p_ar;
+
+		// reload the file if it is newer
+		curbuf->b_p_ar = TRUE;
+		buf_check_timestamp(curbuf, FALSE);
+		curbuf->b_p_ar = save_ar;
+	    }
+	    return;
+	}
+    }
+
+    /*
+     * Check whether the current buffer is changed. If so, we will need
+     * to split the current window or data could be lost.
+     * Skip the check if the 'hidden' option is set, as in this case the
+     * buffer won't be lost.
+     */
+    if (!buf_hide(curbuf))
+    {
+	++emsg_off;
+	split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
+	--emsg_off;
+    }
+
+    // Fake a ":sfirst" or ":first" command edit the first argument.
+    if (split)
+    {
+	eap->cmdidx = CMD_sfirst;
+	eap->cmd[0] = 's';
     }
     else
-    {
-	// ":drop file ...": Edit the first argument.  Jump to an existing
-	// window if possible, edit in current window if the current buffer
-	// can be abandoned, otherwise open a new window.
-	buf = buflist_findnr(ARGLIST[0].ae_fnum);
-
-	FOR_ALL_TAB_WINDOWS(tp, wp)
-	{
-	    if (wp->w_buffer == buf)
-	    {
-		goto_tabpage_win(tp, wp);
-		curwin->w_arg_idx = 0;
-		if (!bufIsChanged(curbuf))
-		{
-		    int save_ar = curbuf->b_p_ar;
-
-		    // reload the file if it is newer
-		    curbuf->b_p_ar = TRUE;
-		    buf_check_timestamp(curbuf, FALSE);
-		    curbuf->b_p_ar = save_ar;
-		}
-		return;
-	    }
-	}
-
-	/*
-	 * Check whether the current buffer is changed. If so, we will need
-	 * to split the current window or data could be lost.
-	 * Skip the check if the 'hidden' option is set, as in this case the
-	 * buffer won't be lost.
-	 */
-	if (!buf_hide(curbuf))
-	{
-	    ++emsg_off;
-	    split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
-	    --emsg_off;
-	}
-
-	// Fake a ":sfirst" or ":first" command edit the first argument.
-	if (split)
-	{
-	    eap->cmdidx = CMD_sfirst;
-	    eap->cmd[0] = 's';
-	}
-	else
-	    eap->cmdidx = CMD_first;
-	ex_rewind(eap);
-    }
+	eap->cmdidx = CMD_first;
+    ex_rewind(eap);
 }
 
 /*
@@ -5555,53 +5557,54 @@ ex_oldfiles(exarg_T *eap UNUSED)
     char_u	*fname;
 
     if (l == NULL)
-	msg(_("No old files"));
-    else
     {
-	msg_start();
-	msg_scroll = TRUE;
-	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
-	{
-	    ++nr;
-	    fname = tv_get_string(&li->li_tv);
-	    if (!message_filtered(fname))
-	    {
-		msg_outnum((long)nr);
-		msg_puts(": ");
-		msg_outtrans(fname);
-		msg_clr_eos();
-		msg_putchar('\n');
-		out_flush();	    // output one line at a time
-		ui_breakcheck();
-	    }
-	}
+	msg(_("No old files"));
+	return;
+    }
 
-	// Assume "got_int" was set to truncate the listing.
-	got_int = FALSE;
+    msg_start();
+    msg_scroll = TRUE;
+    for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
+    {
+	++nr;
+	fname = tv_get_string(&li->li_tv);
+	if (!message_filtered(fname))
+	{
+	    msg_outnum((long)nr);
+	    msg_puts(": ");
+	    msg_outtrans(fname);
+	    msg_clr_eos();
+	    msg_putchar('\n');
+	    out_flush();	    // output one line at a time
+	    ui_breakcheck();
+	}
+    }
+
+    // Assume "got_int" was set to truncate the listing.
+    got_int = FALSE;
 
 # ifdef FEAT_BROWSE_CMD
-	if (cmdmod.cmod_flags & CMOD_BROWSE)
+    if (cmdmod.cmod_flags & CMOD_BROWSE)
+    {
+	quit_more = FALSE;
+	nr = prompt_for_number(FALSE);
+	msg_starthere();
+	if (nr > 0)
 	{
-	    quit_more = FALSE;
-	    nr = prompt_for_number(FALSE);
-	    msg_starthere();
-	    if (nr > 0)
-	    {
-		char_u *p = list_find_str(get_vim_var_list(VV_OLDFILES),
-								    (long)nr);
+	    char_u *p = list_find_str(get_vim_var_list(VV_OLDFILES),
+		    (long)nr);
 
-		if (p != NULL)
-		{
-		    p = expand_env_save(p);
-		    eap->arg = p;
-		    eap->cmdidx = CMD_edit;
-		    cmdmod.cmod_flags &= ~CMOD_BROWSE;
-		    do_exedit(eap, NULL);
-		    vim_free(p);
-		}
+	    if (p != NULL)
+	    {
+		p = expand_env_save(p);
+		eap->arg = p;
+		eap->cmdidx = CMD_edit;
+		cmdmod.cmod_flags &= ~CMOD_BROWSE;
+		do_exedit(eap, NULL);
+		vim_free(p);
 	    }
 	}
-# endif
     }
+# endif
 }
 #endif

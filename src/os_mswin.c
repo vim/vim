@@ -835,24 +835,24 @@ check_str_len(char_u *str)
     GetSystemInfo(&si);
 
     // get memory information
-    if (VirtualQuery(str, &mbi, sizeof(mbi)))
-    {
-	// pre cast these (typing savers)
-	long_u dwStr = (long_u)str;
-	long_u dwBaseAddress = (long_u)mbi.BaseAddress;
+    if (!VirtualQuery(str, &mbi, sizeof(mbi)))
+	return 0;
 
-	// get start address of page that str is on
-	long_u strPage = dwStr - (dwStr - dwBaseAddress) % si.dwPageSize;
+    // pre cast these (typing savers)
+    long_u dwStr = (long_u)str;
+    long_u dwBaseAddress = (long_u)mbi.BaseAddress;
 
-	// get length from str to end of page
-	long_u pageLength = si.dwPageSize - (dwStr - strPage);
+    // get start address of page that str is on
+    long_u strPage = dwStr - (dwStr - dwBaseAddress) % si.dwPageSize;
 
-	for (p = str; !IsBadReadPtr(p, (UINT)pageLength);
-				  p += pageLength, pageLength = si.dwPageSize)
-	    for (i = 0; i < pageLength; ++i, ++length)
-		if (p[i] == NUL)
-		    return length + 1;
-    }
+    // get length from str to end of page
+    long_u pageLength = si.dwPageSize - (dwStr - strPage);
+
+    for (p = str; !IsBadReadPtr(p, (UINT)pageLength);
+	    p += pageLength, pageLength = si.dwPageSize)
+	for (i = 0; i < pageLength; ++i, ++length)
+	    if (p[i] == NUL)
+		return length + 1;
 
     return 0;
 }
@@ -1213,43 +1213,43 @@ PrintHookProc(
     RECT	rc, rcDlg, rcOwner;
     PRINTDLGW	*pPD;
 
-    if (uiMsg == WM_INITDIALOG)
-    {
-	// Get the owner window and dialog box rectangles.
-	if ((hwndOwner = GetParent(hDlg)) == NULL)
-	    hwndOwner = GetDesktopWindow();
+    if (uiMsg != WM_INITDIALOG)
+	return FALSE;
 
-	GetWindowRect(hwndOwner, &rcOwner);
-	GetWindowRect(hDlg, &rcDlg);
-	CopyRect(&rc, &rcOwner);
+    // Get the owner window and dialog box rectangles.
+    if ((hwndOwner = GetParent(hDlg)) == NULL)
+	hwndOwner = GetDesktopWindow();
 
-	// Offset the owner and dialog box rectangles so that
-	// right and bottom values represent the width and
-	// height, and then offset the owner again to discard
-	// space taken up by the dialog box.
+    GetWindowRect(hwndOwner, &rcOwner);
+    GetWindowRect(hDlg, &rcDlg);
+    CopyRect(&rc, &rcOwner);
 
-	OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
-	OffsetRect(&rc, -rc.left, -rc.top);
-	OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+    // Offset the owner and dialog box rectangles so that
+    // right and bottom values represent the width and
+    // height, and then offset the owner again to discard
+    // space taken up by the dialog box.
 
-	// The new position is the sum of half the remaining
-	// space and the owner's original position.
+    OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+    OffsetRect(&rc, -rc.left, -rc.top);
+    OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
 
-	SetWindowPos(hDlg,
-		HWND_TOP,
-		rcOwner.left + (rc.right / 2),
-		rcOwner.top + (rc.bottom / 2),
-		0, 0,		// ignores size arguments
-		SWP_NOSIZE);
+    // The new position is the sum of half the remaining
+    // space and the owner's original position.
 
-	//  tackle the printdlg copiesctrl problem
-	pPD = (PRINTDLGW *)lParam;
-	pPD->nCopies = (WORD)pPD->lCustData;
-	SetDlgItemInt( hDlg, edt3, pPD->nCopies, FALSE );
-	//  Bring the window to top
-	BringWindowToTop(GetParent(hDlg));
-	SetForegroundWindow(hDlg);
-    }
+    SetWindowPos(hDlg,
+	    HWND_TOP,
+	    rcOwner.left + (rc.right / 2),
+	    rcOwner.top + (rc.bottom / 2),
+	    0, 0,		// ignores size arguments
+	    SWP_NOSIZE);
+
+    //  tackle the printdlg copiesctrl problem
+    pPD = (PRINTDLGW *)lParam;
+    pPD->nCopies = (WORD)pPD->lCustData;
+    SetDlgItemInt( hDlg, edt3, pPD->nCopies, FALSE );
+    //  Bring the window to top
+    BringWindowToTop(GetParent(hDlg));
+    SetForegroundWindow(hDlg);
 
     return FALSE;
 }
@@ -1389,6 +1389,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     DEVMODEW		*mem;
     DEVNAMES		*devname;
     int			i;
+    DWORD		err;
 
     bUserAbort = &(psettings->user_abort);
     CLEAR_FIELD(prt_dlg);
@@ -1571,29 +1572,26 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     return TRUE;
 
 init_fail_dlg:
+    err = CommDlgExtendedError();
+    if (err)
     {
-	DWORD err = CommDlgExtendedError();
+	char_u *buf;
 
-	if (err)
-	{
-	    char_u *buf;
-
-	    // I suspect FormatMessage() doesn't work for values returned by
-	    // CommDlgExtendedError().  What does?
-	    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			  FORMAT_MESSAGE_FROM_SYSTEM |
-			  FORMAT_MESSAGE_IGNORE_INSERTS,
-			  NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
-	    semsg(_(e_print_error_str),
-				  buf == NULL ? (char_u *)_("Unknown") : buf);
-	    LocalFree((LPVOID)(buf));
-	}
-	else
-	    msg_clr_eos(); // Maybe canceled
-
-	mch_print_cleanup();
-	return FALSE;
+	// I suspect FormatMessage() doesn't work for values returned by
+	// CommDlgExtendedError().  What does?
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
+	semsg(_(e_print_error_str),
+		buf == NULL ? (char_u *)_("Unknown") : buf);
+	LocalFree((LPVOID)(buf));
     }
+    else
+	msg_clr_eos(); // Maybe canceled
+
+    mch_print_cleanup();
+    return FALSE;
 }
 
 
@@ -1999,11 +1997,11 @@ serverSendEnc(HWND target)
     static void
 CleanUpMessaging(void)
 {
-    if (message_window != 0)
-    {
-	DestroyWindow(message_window);
-	message_window = 0;
-    }
+    if (message_window == 0)
+	return;
+
+    DestroyWindow(message_window);
+    message_window = 0;
 }
 
 static int save_reply(HWND server, char_u *reply, int expr);

@@ -48,7 +48,7 @@ typesetting command. That must be a function that takes a path and returns the
 command as a List. For example:
 >
 	def ConTeXtCustomCommand(path: string): list<string>
-	  return ['mtxrun', '--script', 'context', '--nonstopmode, path]
+	  return ['mtxrun', '--script', 'context', '--nonstopmode', path]
 	enddef
 
 	context.ConTeXtTypeset("%", v:none, ConTeXtCustomCommand)
@@ -79,7 +79,7 @@ The last command will create the following syntax files:
 - `context-data-context.vim`;
 - `context-data-interfaces.vim`;
 - `context-data-metafun.vim`;
-- `context-data-tex.vim`. 
+- `context-data-tex.vim`.
 
 The same command can be used to update those syntax files.
 

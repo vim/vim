@@ -19,7 +19,7 @@ void check_cursor_col_win(win_T *win);
 void check_cursor(void);
 void check_visual_pos(void);
 void adjust_cursor_col(void);
-int leftcol_changed(void);
+int set_leftcol(colnr_T leftcol);
 int copy_option_part(char_u **option, char_u *buf, int maxlen, char *sep_chars);
 int vim_isspace(int x);
 int simplify_key(int key, int *modifiers);

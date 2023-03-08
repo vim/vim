@@ -10,7 +10,7 @@ This file contains the particulars for the z/OS UNIX version of Vim.
 2. Putty and Colors                     |zOS-PuTTY|
 3. Motif Problems			|zOS-Motif|
 4. Bugs					|zOS-Bugs|
-5. Limitations     			|zOS-limitations|
+5. Limitations				|zOS-limitations|
 6. Open source on z/OS UNIX		|zOS-open-source|
 
 Contributors: ~
@@ -75,7 +75,7 @@ There is no solution for this yet.
   this occurs in both the terminal and gui versions.
 
 ==============================================================================
-5. Limitations     			*OS390-limitations* *zOS-limitations*
+5. Limitations				*OS390-limitations* *zOS-limitations*
 
 - No binary search in tag files.
   The program /bin/sort sorts by ASCII value by default.  This program is

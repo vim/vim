@@ -330,8 +330,23 @@ func Test_edit_11_indentexpr()
   endfunc
   set indentexpr=s:NewIndentExpr()
   call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
   set indentexpr=<SID>NewIndentExpr()
   call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
+  setlocal indentexpr=
+  setglobal indentexpr=s:NewIndentExpr()
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
+  call assert_equal('', &indentexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  bw!
+  setglobal indentexpr=<SID>NewIndentExpr()
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
+  call assert_equal('', &indentexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  bw!
   set indentexpr&
 
   bw!
@@ -558,6 +573,7 @@ func Test_edit_CTRL_G()
   call assert_equal([0, 3, 7, 0], getpos('.'))
   call feedkeys("i\<c-g>j\<esc>", 'tnix')
   call assert_equal([0, 3, 6, 0], getpos('.'))
+  call assert_nobeep("normal! i\<c-g>\<esc>")
   bw!
 endfunc
 
@@ -2057,7 +2073,7 @@ func Test_edit_overlong_file_name()
   file %%%%%%%%%%%%%%%%%%%%%%%%%%
   file %%%%%%
   set readonly
-  set ls=2 
+  set ls=2
 
   redraw!
   set noreadonly ls&

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Nov 07
+" Last Change:	2023 Feb 25
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -110,9 +110,11 @@ au BufNewFile,BufRead *.a65			setf a65
 " Applescript
 au BufNewFile,BufRead *.scpt			setf applescript
 
+" Automake (must be before the *.am pattern)
+au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
+
 " Applix ELF
-au BufNewFile,BufRead *.am
-	\ if expand("<afile>") !~? 'Makefile.am\>' | setf elf | endif
+au BufNewFile,BufRead *.am			setf elf
 
 " ALSA configuration
 au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf setf alsaconf
@@ -187,9 +189,6 @@ au BufNewFile,BufRead *.au3			setf autoit
 " Autohotkey
 au BufNewFile,BufRead *.ahk			setf autohotkey
 
-" Automake
-au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
-
 " Autotest .at files are actually m4
 au BufNewFile,BufRead *.at			setf m4
 
@@ -205,6 +204,9 @@ au BufNewFile,BufRead *.mch,*.ref,*.imp		setf b
 " BASIC or Visual Basic
 au BufNewFile,BufRead *.bas			call dist#ft#FTbas()
 au BufNewFile,BufRead *.bi,*.bm			call dist#ft#FTbas()
+
+" Bass
+au BufNewFile,BufRead *.bass			setf bass
 
 " Visual Basic Script (close to Visual Basic) or Visual Basic .NET
 au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
@@ -265,7 +267,7 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
 " Bazel (http://bazel.io)
-autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE	setf bzl
+autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
   autocmd BufRead,BufNewFile *.BUILD,BUILD		setf bzl
@@ -275,8 +277,14 @@ endif
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
 au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 
+" Cairo
+au BufNewFile,BufRead *.cairo			setf cairo
+
 " Calendar
 au BufNewFile,BufRead calendar			setf calendar
+
+" Cap'n Proto
+au BufNewFile,BufRead *.capnp			setf capnp
 
 " C#
 au BufNewFile,BufRead *.cs,*.csx		setf cs
@@ -307,6 +315,9 @@ au BufNewFile,BufRead *.cdl			setf cdl
 
 " Conary Recipe
 au BufNewFile,BufRead *.recipe			setf conaryrecipe
+
+" ChainPack Object Notation (CPON)
+au BufNewFile,BufRead *.cpon			setf cpon
 
 " Controllable Regex Mutilator
 au BufNewFile,BufRead *.crm			setf crm
@@ -369,6 +380,9 @@ au BufNewFile,BufRead *.ch			call dist#ft#FTchange()
 " ChordPro
 au BufNewFile,BufRead *.chopro,*.crd,*.cho,*.crdpro,*.chordpro	setf chordpro
 
+" Clangd
+au BufNewFile,BufRead .clangd			setf yaml
+
 " Clang-format
 au BufNewFile,BufRead .clang-format		setf yaml
 
@@ -419,11 +433,20 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 " Cooklang
 au BufNewFile,BufRead *.cook			setf cook
 
+" Clinical Quality Language (CQL)
+" .cql is also mentioned as the 'XDCC Catcher queue list' file extension.
+" If support for XDCC Catcher is needed in the future, the contents of the file
+" needs to be inspected.
+au BufNewFile,BufRead *.cql			setf cqlang
+
 " CSV Files
 au BufNewFile,BufRead *.csv			setf csv
 
 " CUDA Compute Unified Device Architecture
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
+
+" Cue
+au BufNewFile,BufRead *.cue			setf cue
 
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
@@ -507,6 +530,9 @@ au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
+
+" Dhall
+au BufNewFile,BufRead *.dhall			setf dhall
 
 " dnsmasq(8) configuration files
 au BufNewFile,BufRead */etc/dnsmasq.conf	setf dnsmasq
@@ -600,8 +626,8 @@ au BufNewFile,BufRead *.edn
 	\   setf clojure |
 	\ endif
 
-" EditorConfig (close enough to dosini)
-au BufNewFile,BufRead .editorconfig		setf dosini
+" EditorConfig
+au BufNewFile,BufRead .editorconfig		setf editorconfig
 
 " Embedix Component Description
 au BufNewFile,BufRead *.ecd			setf ecd
@@ -620,6 +646,9 @@ au BufNewFile,BufRead *.elm			setf elm
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
+
+" Elsa - https://github.com/ucsd-progsys/elsa
+au BufNewFile,BufRead *.lc			setf elsa
 
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc
@@ -657,6 +686,9 @@ autocmd BufRead,BufNewFile *.fnl		setf fennel
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
 
+" FIRRTL - Flexible Internal Representation for RTL
+au BufNewFile,BufRead *.fir			setf firrtl
+
 " Fish shell
 au BufNewFile,BufRead *.fish			setf fish
 
@@ -689,11 +721,17 @@ au BufNewFile,BufRead *.fsl			setf framescript
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
 
+" Func
+au BufNewFile,BufRead *.fc			setf func
+
 " Fusion
 au BufRead,BufNewFile *.fusion			setf fusion
 
 " F# or Forth
 au BufNewFile,BufRead *.fs			call dist#ft#FTfs()
+
+" FHIR Shorthand (FSH)
+au BufNewFile,BufRead *.fsh			setf fsh
 
 " F#
 au BufNewFile,BufRead *.fsi,*.fsx		setf fsharp
@@ -841,6 +879,9 @@ au BufNewFile,BufRead *.htpp			setf hastepreproc
 " HCL
 au BufRead,BufNewFile *.hcl			setf hcl
 
+" Go checksum file (must be before *.sum Hercules)
+au BufNewFile,BufRead go.sum,go.work.sum	setf gosum
+
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
 
@@ -975,6 +1016,8 @@ au BufNewFile,BufRead *.jsp			setf jsp
 
 " Java Properties resource file (note: doesn't catch font.properties.pl)
 au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jproperties
+" Eclipse preference files use Java Properties syntax
+au BufNewFile,BufRead org.eclipse.*.prefs	setf jproperties
 
 " Jess
 au BufNewFile,BufRead *.clp			setf jess
@@ -985,29 +1028,36 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
-" JSON
-au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
+" Jq
+au BufNewFile,BufRead *.jq			setf jq
 
 " JSON5
 au BufNewFile,BufRead *.json5			setf json5
 
 " JSON Patch (RFC 6902)
-au BufNewFile,BufRead *.json-patch			setf json
+au BufNewFile,BufRead *.json-patch		setf json
 
 " Jupyter Notebook is also json
-au BufNewFile,BufRead *.ipynb				setf json
+au BufNewFile,BufRead *.ipynb			setf json
 
 " Other files that look like json
-au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
+au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
-" JSONC
-au BufNewFile,BufRead *.jsonc			setf jsonc
+" JSONC (JSON with comments)
+au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc	setf jsonc
+au BufNewFile,BufRead .jshintrc,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
+
+" JSON
+au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
 
 " Jsonnet
 au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
+
+" KDL
+au BufNewFile,BufRead *.kdl			setf kdl
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
@@ -1191,6 +1241,9 @@ au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 " Mercurial config (looks like generic config file)
 au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 
+" Mermaid
+au BufNewFile,BufRead *.mmd,*.mmdc,*.mermaid	setf mermaid
+
 " Meson Build system config
 au BufNewFile,BufRead meson.build,meson_options.txt setf meson
 au BufNewFile,BufRead *.wrap			setf dosini
@@ -1229,6 +1282,9 @@ au BufNewFile,BufRead *.[mi][3g]		setf modula3
 " Larch/Modula-3
 au BufNewFile,BufRead *.lm3			setf modula3
 
+" Modconf
+au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
+
 " Monk
 au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
 
@@ -1238,8 +1294,8 @@ au BufNewFile,BufRead *.moo			setf moo
 " Moonscript
 au BufNewFile,BufRead *.moon			setf moonscript
 
-" Modconf
-au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
+" Move language
+au BufNewFile,BufRead *.move			setf move
 
 " MPD is based on XML
 au BufNewFile,BufRead *.mpd			setf xml
@@ -1334,6 +1390,9 @@ au BufNewFile,BufRead *.nse			setf lua
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
+" Oblivion Language and Oblivion Script Extender
+au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
+
 " OCaml
 au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
 
@@ -1373,6 +1432,7 @@ au BufNewFile,BufRead pf.conf				setf pf
 " ini style config files, using # comments
 au BufNewFile,BufRead */etc/pacman.conf,mpv.conf	setf confini
 au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
+au BufNewFile,BufRead *.nmconnection			setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
@@ -1477,7 +1537,7 @@ au BufNewFile,BufRead *.plp			setf plp
 au BufNewFile,BufRead *.po,*.pot		setf po
 
 " Postfix main config
-au BufNewFile,BufRead main.cf			setf pfmain
+au BufNewFile,BufRead main.cf,main.cf.proto	setf pfmain
 
 " PostScript (+ font files, encapsulated PostScript, Adobe Illustrator)
 au BufNewFile,BufRead *.ps,*.pfa,*.afm,*.eps,*.epsf,*.epsi,*.ai	  setf postscr
@@ -1587,7 +1647,7 @@ au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 au BufRead,BufNewFile *.ql,*.qll		setf ql
 
 " Quarto
-au BufRead,BufNewFile *.qmd     setf quarto
+au BufRead,BufNewFile *.qmd			setf quarto
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
@@ -1678,11 +1738,14 @@ au BufNewFile,BufRead *.robot,*.resource	setf robot
 " Robots.txt
 au BufNewFile,BufRead robots.txt		setf robots
 
-" Rpcgen
-au BufNewFile,BufRead *.x			setf rpcgen
+" RON (Rusty Object Notation)
+au BufNewFile,BufRead *.ron			setf ron
 
 " MikroTik RouterOS script
 au BufRead,BufNewFile *.rsc			setf routeros
+
+" Rpcgen
+au BufNewFile,BufRead *.x			setf rpcgen
 
 " reStructuredText Documentation Format
 au BufNewFile,BufRead *.rst			setf rst
@@ -1841,8 +1904,9 @@ au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFile
 " (patterns ending in a start further below)
 au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
 
-" Zig
+" Zig and Zir (Zig Intermediate Representation)
 au BufNewFile,BufRead *.zig			setf zig
+au BufNewFile,BufRead *.zir			setf zir
 
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
@@ -1871,9 +1935,15 @@ au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu
 " SKILL
 au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 
+" Cadence
+au BufNewFile,BufRead *.cdc			setf cdc
+
 " SLRN
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc
+
+" Smali
+au BufNewFile,BufRead *.smali			setf smali
 
 " Smalltalk
 au BufNewFile,BufRead *.st			setf st
@@ -1902,6 +1972,9 @@ au BufNewFile,BufRead *.smi
 
 " SMITH
 au BufNewFile,BufRead *.smt,*.smith		setf smith
+
+" Smithy
+au BufNewFile,BufRead *.smithy			setf smithy
 
 " Snobol4 and spitbol
 au BufNewFile,BufRead *.sno,*.spt		setf snobol4
@@ -1950,6 +2023,9 @@ au BufNewFile,BufRead *.sql			call dist#ft#SQL()
 " SQLJ
 au BufNewFile,BufRead *.sqlj			setf sqlj
 
+" PRQL
+au BufNewFile,BufRead *.prql			setf prql
+
 " SQR
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
@@ -1963,6 +2039,9 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config			setf sshdconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
+
+" Starlark
+au BufNewFile,BufRead *.ipd,*.star,*.starlark	setf starlark
 
 " OpenVPN configuration
 au BufNewFile,BufRead *.ovpn			setf openvpn
@@ -2073,6 +2152,9 @@ au BufNewFile,BufRead *.texinfo,*.texi,*.txi	setf texinfo
 " TeX configuration
 au BufNewFile,BufRead texmf.cnf			setf texmf
 
+" Thrift (Apache)
+au BufNewFile,BufRead *.thrift			setf thrift
+
 " Tidy config
 au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 
@@ -2140,6 +2222,9 @@ au BufNewFile,BufRead */etc/udev/permissions.d/*.permissions setf udevperm
 "
 " Udev symlinks config
 au BufNewFile,BufRead */etc/udev/cdsymlinks.conf	setf sh
+
+" Ungrammar, AKA Un-grammar
+au BufNewFile,BufRead *.ungram			setf ungrammar
 
 " UnrealScript
 au BufNewFile,BufRead *.uc			setf uc
@@ -2337,6 +2422,9 @@ au BufNewFile,BufRead fglrxrc			setf xml
 " Web Services Description Language (WSDL)
 au BufNewFile,BufRead *.wsdl			setf xml
 
+" Workflow Description Language (WDL)
+au BufNewFile,BufRead *.wdl			setf wdl
+
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml
 au BufNewFile,BufRead *.xliff			setf xml
@@ -2373,6 +2461,9 @@ au BufNewFile,BufRead */etc/yum.conf		setf dosini
 
 " YANG
 au BufRead,BufNewFile *.yang			setf yang
+
+" Yuck
+au BufNewFile,BufRead *.yuck			setf yuck
 
 " Zimbu
 au BufNewFile,BufRead *.zu			setf zimbu

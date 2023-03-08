@@ -342,6 +342,11 @@ func Test_CmdErrors()
   call assert_fails('com DoCmd :', 'E174:')
   comclear
   call assert_fails('delcom DoCmd', 'E184:')
+
+  " These used to leak memory
+  call assert_fails('com! -complete=custom,CustomComplete _ :', 'E182:')
+  call assert_fails('com! -complete=custom,CustomComplete docmd :', 'E183:')
+  call assert_fails('com! -complete=custom,CustomComplete -xxx DoCmd :', 'E181:')
 endfunc
 
 func CustomComplete(A, L, P)
@@ -848,6 +853,15 @@ func Test_buflocal_ambiguous_usercmd()
 
   delcommand TestCmd1
   delcommand TestCmd2
+  bw!
+endfunc
+
+" Test for using buffer-local user command from cmdwin.
+func Test_buflocal_usercmd_cmdwin()
+  new
+  command -buffer TestCmd edit Test
+  " This used to crash Vim
+  call assert_fails("norm q::TestCmd\<CR>", 'E11:')
   bw!
 endfunc
 

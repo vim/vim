@@ -123,8 +123,6 @@ struct compl_S
 # define CP_ICASE	    16	// ins_compl_equal() ignores case
 # define CP_FAST	    32	// use fast_breakcheck instead of ui_breakcheck
 
-static char e_hitend[] = N_("Hit end of paragraph");
-
 /*
  * All the current matches are stored in a list.
  * "compl_first_match" points to the start of the list.
@@ -265,27 +263,39 @@ ins_ctrl_x(void)
 /*
  * Functions to check the current CTRL-X mode.
  */
-int ctrl_x_mode_none(void) { return ctrl_x_mode == 0; }
-int ctrl_x_mode_normal(void) { return ctrl_x_mode == CTRL_X_NORMAL; }
-int ctrl_x_mode_scroll(void) { return ctrl_x_mode == CTRL_X_SCROLL; }
-int ctrl_x_mode_whole_line(void) { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }
-int ctrl_x_mode_files(void) { return ctrl_x_mode == CTRL_X_FILES; }
-int ctrl_x_mode_tags(void) { return ctrl_x_mode == CTRL_X_TAGS; }
-int ctrl_x_mode_path_patterns(void) {
-				  return ctrl_x_mode == CTRL_X_PATH_PATTERNS; }
-int ctrl_x_mode_path_defines(void) {
-				   return ctrl_x_mode == CTRL_X_PATH_DEFINES; }
-int ctrl_x_mode_dictionary(void) { return ctrl_x_mode == CTRL_X_DICTIONARY; }
-int ctrl_x_mode_thesaurus(void) { return ctrl_x_mode == CTRL_X_THESAURUS; }
-int ctrl_x_mode_cmdline(void) {
-	return ctrl_x_mode == CTRL_X_CMDLINE
+int ctrl_x_mode_none(void)
+    { return ctrl_x_mode == 0; }
+int ctrl_x_mode_normal(void)
+    { return ctrl_x_mode == CTRL_X_NORMAL; }
+int ctrl_x_mode_scroll(void)
+    { return ctrl_x_mode == CTRL_X_SCROLL; }
+int ctrl_x_mode_whole_line(void)
+    { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }
+int ctrl_x_mode_files(void)
+    { return ctrl_x_mode == CTRL_X_FILES; }
+int ctrl_x_mode_tags(void)
+    { return ctrl_x_mode == CTRL_X_TAGS; }
+int ctrl_x_mode_path_patterns(void)
+    { return ctrl_x_mode == CTRL_X_PATH_PATTERNS; }
+int ctrl_x_mode_path_defines(void)
+    { return ctrl_x_mode == CTRL_X_PATH_DEFINES; }
+int ctrl_x_mode_dictionary(void)
+    { return ctrl_x_mode == CTRL_X_DICTIONARY; }
+int ctrl_x_mode_thesaurus(void)
+    { return ctrl_x_mode == CTRL_X_THESAURUS; }
+int ctrl_x_mode_cmdline(void)
+    { return ctrl_x_mode == CTRL_X_CMDLINE
 		|| ctrl_x_mode == CTRL_X_CMDLINE_CTRL_X; }
-int ctrl_x_mode_function(void) { return ctrl_x_mode == CTRL_X_FUNCTION; }
-int ctrl_x_mode_omni(void) { return ctrl_x_mode == CTRL_X_OMNI; }
-int ctrl_x_mode_spell(void) { return ctrl_x_mode == CTRL_X_SPELL; }
-static int ctrl_x_mode_eval(void) { return ctrl_x_mode == CTRL_X_EVAL; }
-int ctrl_x_mode_line_or_eval(void) {
-       return ctrl_x_mode == CTRL_X_WHOLE_LINE || ctrl_x_mode == CTRL_X_EVAL; }
+int ctrl_x_mode_function(void)
+    { return ctrl_x_mode == CTRL_X_FUNCTION; }
+int ctrl_x_mode_omni(void)
+    { return ctrl_x_mode == CTRL_X_OMNI; }
+int ctrl_x_mode_spell(void)
+    { return ctrl_x_mode == CTRL_X_SPELL; }
+static int ctrl_x_mode_eval(void)
+    { return ctrl_x_mode == CTRL_X_EVAL; }
+int ctrl_x_mode_line_or_eval(void)
+    { return ctrl_x_mode == CTRL_X_WHOLE_LINE || ctrl_x_mode == CTRL_X_EVAL; }
 
 /*
  * Whether other than default completion has been selected.
@@ -2323,9 +2333,9 @@ ins_compl_prep(int c)
     if (c != Ctrl_R && vim_is_ctrl_x_key(c))
 	edit_submode_extra = NULL;
 
-    // Ignore end of Select mode mapping and mouse scroll buttons.
+    // Ignore end of Select mode mapping and mouse scroll/movement.
     if (c == K_SELECT || c == K_MOUSEDOWN || c == K_MOUSEUP
-	    || c == K_MOUSELEFT || c == K_MOUSERIGHT
+	    || c == K_MOUSELEFT || c == K_MOUSERIGHT || c == K_MOUSEMOVE
 	    || c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	return retval;
 
@@ -2535,16 +2545,15 @@ copy_global_to_buflocal_cb(callback_T *globcb, callback_T *bufcb)
  * name of a function (string), or function(<name>) or funcref(<name>) or a
  * lambda expression.
  */
-    int
-set_completefunc_option(void)
+    char *
+did_set_completefunc(optset_T *args UNUSED)
 {
-    int	retval;
+    if (option_set_callback_func(curbuf->b_p_cfu, &cfu_cb) == FAIL)
+	return e_invalid_argument;
 
-    retval = option_set_callback_func(curbuf->b_p_cfu, &cfu_cb);
-    if (retval == OK)
-	set_buflocal_cfu_callback(curbuf);
+    set_buflocal_cfu_callback(curbuf);
 
-    return retval;
+    return NULL;
 }
 
 /*
@@ -2565,16 +2574,14 @@ set_buflocal_cfu_callback(buf_T *buf UNUSED)
  * name of a function (string), or function(<name>) or funcref(<name>) or a
  * lambda expression.
  */
-    int
-set_omnifunc_option(void)
+    char *
+did_set_omnifunc(optset_T *args UNUSED)
 {
-    int	retval;
+    if (option_set_callback_func(curbuf->b_p_ofu, &ofu_cb) == FAIL)
+	return e_invalid_argument;
 
-    retval = option_set_callback_func(curbuf->b_p_ofu, &ofu_cb);
-    if (retval == OK)
-	set_buflocal_ofu_callback(curbuf);
-
-    return retval;
+    set_buflocal_ofu_callback(curbuf);
+    return NULL;
 }
 
 /*
@@ -2595,8 +2602,8 @@ set_buflocal_ofu_callback(buf_T *buf UNUSED)
  * name of a function (string), or function(<name>) or funcref(<name>) or a
  * lambda expression.
  */
-    int
-set_thesaurusfunc_option(void)
+    char *
+did_set_thesaurusfunc(optset_T *args UNUSED)
 {
     int	retval;
 
@@ -2612,7 +2619,7 @@ set_thesaurusfunc_option(void)
 	retval = option_set_callback_func(p_tsrfu, &tsrfu_cb);
     }
 
-    return retval;
+    return retval == FAIL ? e_invalid_argument : NULL;
 }
 
 /*
@@ -2987,7 +2994,7 @@ ins_compl_mode(void)
  * one assigned yet.
  */
     static void
-ins_compl_update_sequence_numbers()
+ins_compl_update_sequence_numbers(void)
 {
     int		number = 0;
     compl_T	*match;
@@ -3450,7 +3457,7 @@ get_next_filename_completion(void)
  * Get the next set of command-line completions matching "compl_pattern".
  */
     static void
-get_next_cmdline_completion()
+get_next_cmdline_completion(void)
 {
     char_u	**matches;
     int		num_matches;
@@ -3484,7 +3491,7 @@ get_next_spell_completion(linenr_T lnum UNUSED)
  * "cur_match_pos" for completion.  The length of the match is set in "len".
  */
     static char_u *
-ins_comp_get_next_word_or_line(
+ins_compl_get_next_word_or_line(
 	buf_T	*ins_buf,		// buffer being scanned
 	pos_T	*cur_match_pos,		// current match position
 	int	*match_len,
@@ -3668,8 +3675,8 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 		&& start_pos->col  == st->cur_match_pos->col)
 	    continue;
 
-	ptr = ins_comp_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
-							&len, &cont_s_ipos);
+	ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
+							   &len, &cont_s_ipos);
 	if (ptr == NULL)
 	    continue;
 
@@ -4910,8 +4917,8 @@ ins_compl_show_statusmsg(void)
     if (is_first_match(compl_first_match->cp_next))
     {
 	edit_submode_extra = compl_status_adding() && compl_length > 1
-				? (char_u *)_(e_hitend)
-				: (char_u *)_(e_pattern_not_found);
+				? (char_u *)_("Hit end of paragraph")
+				: (char_u *)_("Pattern not found");
 	edit_submode_highl = HLF_E;
     }
 

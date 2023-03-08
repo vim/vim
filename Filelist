@@ -12,9 +12,9 @@ SRC_ALL =	\
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
+		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
-		.lgtm.yml \
 		.appveyor.yml \
 		.codecov.yml \
 		ci/appveyor.bat \
@@ -87,10 +87,11 @@ SRC_ALL =	\
 		src/job.c \
 		src/json.c \
 		src/json_test.c \
+		src/keymap.h \
 		src/kword_test.c \
 		src/list.c \
 		src/locale.c \
-		src/keymap.h \
+		src/logfile.c \
 		src/macros.h \
 		src/main.c \
 		src/map.c \
@@ -161,6 +162,7 @@ SRC_ALL =	\
 		src/version.h \
 		src/vim.h \
 		src/vim9.h \
+		src/vim9class.c \
 		src/vim9cmds.c \
 		src/vim9compile.c \
 		src/vim9execute.c \
@@ -177,6 +179,8 @@ SRC_ALL =	\
 		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/*.py \
+		src/testdir/keycode_check.vim \
+		src/testdir/keycode_check.json \
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
@@ -271,6 +275,7 @@ SRC_ALL =	\
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
+		src/proto/logfile.pro \
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \
@@ -322,6 +327,7 @@ SRC_ALL =	\
 		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
+		src/proto/vim9class.pro \
 		src/proto/vim9cmds.pro \
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
@@ -394,6 +400,7 @@ SRC_ALL =	\
 		src/libvterm/t/66screen_extent.test \
 		src/libvterm/t/67screen_dbl_wh.test \
 		src/libvterm/t/68screen_termprops.test \
+		src/libvterm/t/69screen_reflow.test \
 		src/libvterm/t/90vttest_01-movement-1.test \
 		src/libvterm/t/90vttest_01-movement-2.test \
 		src/libvterm/t/90vttest_01-movement-3.test \
@@ -641,6 +648,7 @@ SRC_MAC =	\
 		src/os_mac_conv.c \
 		src/os_macosx.m \
 		src/proto/os_mac_conv.pro \
+		src/proto/os_macosx.pro \
 
 # source files for VMS (in the extra archive)
 SRC_VMS =	\
@@ -775,6 +783,7 @@ RT_SCRIPTS =	\
 		runtime/autoload/README.txt \
 		runtime/autoload/dist/*.vim \
 		runtime/autoload/xml/*.vim \
+		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/colors/lists/*.vim \

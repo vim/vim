@@ -55,6 +55,7 @@ endfunc
 " "cols" - width of the terminal window (max. 78)
 " "statusoff" - number of lines the status is offset from default
 " "wait_for_ruler" - if zero then don't wait for ruler to show
+" "no_clean" - if non-zero then remove "--clean" from the command
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -90,6 +91,10 @@ func RunVimInTerminal(arguments, options)
   endif
 
   let cmd = GetVimCommandCleanTerm() .. reset_u7 .. a:arguments
+
+  if get(a:options, 'no_clean', 0)
+    let cmd = substitute(cmd, '--clean', '', '')
+  endif
 
   let options = #{curwin: 1}
   if &termwinsize == ''
@@ -141,6 +146,9 @@ func StopVimInTerminal(buf, kill = 1)
 
   call assert_equal("running", term_getstatus(a:buf))
 
+  " Wait for all the pending updates to terminal to complete
+  call TermWait(a:buf)
+
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
   " In Command-line it's inserted, the CTRL-U removes it again.
   call term_sendkeys(a:buf, "\<C-O>:\<C-U>qa!\<cr>")
@@ -188,5 +196,6 @@ endfunc
 func Term_getlines(buf, lines)
   return join(map(a:lines, 'term_getline(a:buf, v:val)'), '')
 endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
