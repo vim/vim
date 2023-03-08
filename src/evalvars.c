@@ -331,7 +331,7 @@ garbage_collect_scriptvars(int copyID)
 	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
 
 	si = SCRIPT_ITEM(i);
-	for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+	FOR_ALL_GA_ITEMS(&si->sn_var_vals, idx)
 	{
 	    svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 

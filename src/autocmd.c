@@ -510,7 +510,7 @@ au_new_group(char_u *name)
 	return i;
 
     // the group doesn't exist yet, add it.  First try using a free entry.
-    for (i = 0; i < augroups.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&augroups, i)
 	if (AUGROUP_NAME(i) == NULL)
 	    break;
     if (i == augroups.ga_len && ga_grow(&augroups, 1) == FAIL)
@@ -574,7 +574,7 @@ au_find_group(char_u *name)
 {
     int	    i;
 
-    for (i = 0; i < augroups.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&augroups, i)
 	if (AUGROUP_NAME(i) != NULL && AUGROUP_NAME(i) != get_deleted_augroup()
 		&& STRCMP(AUGROUP_NAME(i), name) == 0)
 	    return i;
@@ -616,7 +616,7 @@ do_augroup(char_u *arg, int del_group)
     else			    // ":aug": list the group names
     {
 	msg_start();
-	for (i = 0; i < augroups.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&augroups, i)
 	{
 	    if (AUGROUP_NAME(i) != NULL)
 	    {
@@ -640,12 +640,13 @@ autocmd_init(void)
 free_all_autocmds(void)
 {
     char_u	*s;
+    int		i;
 
     for (current_augroup = -1; current_augroup < augroups.ga_len;
 							    ++current_augroup)
 	do_autocmd(NULL, (char_u *)"", TRUE);
 
-    for (int i = 0; i < augroups.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&augroups, i)
     {
 	s = ((char_u **)(augroups.ga_data))[i];
 	if (s != get_deleted_augroup())

@@ -1579,7 +1579,7 @@ getexactdigraph(int char1, int char2, int meta_char)
      * Search user digraphs first.
      */
     dp = (digr_T *)user_digraphs.ga_data;
-    for (i = 0; i < user_digraphs.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&user_digraphs, i)
     {
 	if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
 	{
@@ -1671,7 +1671,7 @@ registerdigraph(int char1, int char2, int n)
 
     // If the digraph already exists, replace "result".
     dp = (digr_T *)user_digraphs.ga_data;
-    for (i = 0; i < user_digraphs.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&user_digraphs, i)
     {
 	if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
 	{
@@ -2346,7 +2346,7 @@ ex_loadkeymap(exarg_T *eap)
     /*
      * setup ":lnoremap" to map the keys
      */
-    for (i = 0; i < curbuf->b_kmap_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&curbuf->b_kmap_ga, i)
     {
 	vim_snprintf((char *)buf, sizeof(buf), "<buffer> %s %s",
 				((kmap_T *)curbuf->b_kmap_ga.ga_data)[i].from,
@@ -2379,7 +2379,7 @@ keymap_unload(void)
 
     // clear the ":lmap"s
     kp = (kmap_T *)curbuf->b_kmap_ga.ga_data;
-    for (i = 0; i < curbuf->b_kmap_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&curbuf->b_kmap_ga, i)
     {
 	vim_snprintf((char *)buf, sizeof(buf), "<buffer> %s", kp[i].from);
 	(void)do_map(MAPTYPE_UNMAP, buf, MODE_LANGMAP, FALSE);
@@ -2399,7 +2399,7 @@ keymap_clear(garray_T *kmap)
     int	    i;
     kmap_T  *kp = (kmap_T *)kmap->ga_data;
 
-    for (i = 0; i < kmap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(kmap, i)
     {
 	vim_free(kp[i].from);
 	vim_free(kp[i].to);

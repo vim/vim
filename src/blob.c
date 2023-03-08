@@ -176,7 +176,7 @@ blob_equal(
     if (len1 != len2)
 	return FALSE;
 
-    for (i = 0; i < b1->bv_ga.ga_len; i++)
+    FOR_ALL_GA_ITEMS(&b1->bv_ga, i)
 	if (blob_get(b1, i) != blob_get(b2, i)) return FALSE;
     return TRUE;
 }
@@ -626,7 +626,7 @@ blob_filter_map(
     // Create one funccal_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
-    for (i = 0; i < b->bv_ga.ga_len; i++)
+    FOR_ALL_GA_ITEMS(&b->bv_ga, i)
     {
 	tv.v_type = VAR_NUMBER;
 	val = blob_get(b, i);

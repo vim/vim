@@ -677,7 +677,7 @@ suggest_load_files(void)
     int		c;
 
     // Do this for all languages that support sound folding.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	slang = lp->lp_slang;
@@ -977,7 +977,7 @@ read_rep_section(FILE *fd, garray_T *gap, short *first)
     // Fill the first-index table.
     for (i = 0; i < 256; ++i)
 	first[i] = -1;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	ftp = &((fromto_T *)gap->ga_data)[i];
 	if (first[*ftp->ft_from] == -1)
@@ -1506,7 +1506,7 @@ set_sal_first(slang_T *lp)
     for (i = 0; i < 256; ++i)
 	sfirst[i] = -1;
     smp = (salitem_T *)gap->ga_data;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	if (has_mbyte)
 	    // Use the lowest byte of the first character.  For latin1 it's
@@ -5042,7 +5042,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 
 	// Compute the length of what follows.
 	l = 2;	    // count <repcount> or <salcount>
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	{
 	    ftp = &((fromto_T *)gap->ga_data)[i];
 	    l += 1 + (int)STRLEN(ftp->ft_from);  // count <*fromlen> and <*from>
@@ -5065,7 +5065,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	}
 
 	put_bytes(fd, (long_u)gap->ga_len, 2);	// <repcount> or <salcount>
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	{
 	    // <rep> : <repfromlen> <repfrom> <reptolen> <repto>
 	    // <sal> : <salfromlen> <salfrom> <saltolen> <salto>
@@ -5190,7 +5190,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	putc(0, fd);					// <sectionflags>
 
 	l = (int)STRLEN(spin->si_compflags);
-	for (i = 0; i < spin->si_comppat.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&spin->si_comppat, i)
 	    l += (int)STRLEN(((char_u **)(spin->si_comppat.ga_data))[i]) + 1;
 	put_bytes(fd, (long_u)(l + 7), 4);		// <sectionlen>
 
@@ -5201,7 +5201,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	putc(spin->si_compoptions, fd);			// <compoptions>
 	put_bytes(fd, (long_u)spin->si_comppat.ga_len, 2);
 							// <comppatcount>
-	for (i = 0; i < spin->si_comppat.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&spin->si_comppat, i)
 	{
 	    p = ((char_u **)(spin->si_comppat.ga_data))[i];
 	    putc((int)STRLEN(p), fd);			// <comppatlen>
@@ -6614,7 +6614,7 @@ write_spell_prefcond(FILE *fd, garray_T *gap, size_t *fwv)
 
     totlen = 2 + gap->ga_len; // length of <prefcondcnt> and <condlen> bytes
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	// <prefcond> : <condlen> <condstr>
 	p = ((char_u **)gap->ga_data)[i];

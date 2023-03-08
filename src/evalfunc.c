@@ -10069,7 +10069,7 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
 
     spell_suggest_list(&ga, str, maxcount, need_capital, FALSE);
 
-    for (i = 0; i < ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&ga, i)
     {
 	str = ((char_u **)ga.ga_data)[i];
 

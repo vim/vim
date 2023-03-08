@@ -542,7 +542,7 @@ clear_syn_state(synstate_T *p)
     if (p->sst_stacksize > SST_FIX_STATES)
     {
 	gap = &(p->sst_union.sst_ga);
-	for (i = 0; i < gap->ga_len; i++)
+	FOR_ALL_GA_ITEMS(gap, i)
 	    unref_extmatch(SYN_STATE_P(gap)[i].bs_extmatch);
 	ga_clear(gap);
     }
@@ -563,7 +563,7 @@ clear_current_state(void)
     stateitem_T	*sip;
 
     sip = (stateitem_T *)(current_state.ga_data);
-    for (i = 0; i < current_state.ga_len; i++)
+    FOR_ALL_GA_ITEMS(&current_state, i)
 	unref_extmatch(sip[i].si_extmatch);
     ga_clear(&current_state);
 }
@@ -935,7 +935,7 @@ syn_update_ends(int startofline)
     {
 	// Check for a match carried over from a previous line with a
 	// contained region.  The match ends as soon as the region ends.
-	for (i = 0; i < current_state.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&current_state, i)
 	{
 	    cur_si = &CUR_STATE(i);
 	    if (cur_si->si_idx >= 0
@@ -6545,7 +6545,7 @@ syn_cur_foldlevel(void)
     int		level = 0;
     int		i;
 
-    for (i = 0; i < current_state.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&current_state, i)
 	if (CUR_STATE(i).si_flags & HL_FOLD)
 	    ++level;
     return level;
@@ -6643,7 +6643,7 @@ syntime_clear(void)
 	msg(_(msg_no_items));
 	return;
     }
-    for (idx = 0; idx < curwin->w_s->b_syn_patterns.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_syn_patterns, idx)
     {
 	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
 	syn_clear_time(&spp->sp_time);
@@ -6712,7 +6712,7 @@ syntime_report(void)
 
     ga_init2(&ga, sizeof(time_entry_T), 50);
     profile_zero(&total_total);
-    for (idx = 0; idx < curwin->w_s->b_syn_patterns.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_syn_patterns, idx)
     {
 	spp = &(SYN_ITEMS(curwin->w_s)[idx]);
 	if (spp->sp_time.count > 0)

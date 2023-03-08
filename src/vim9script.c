@@ -303,7 +303,7 @@ free_all_script_vars(scriptitem_T *si)
     hash_clear(ht);
     hash_init(ht);
 
-    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&si->sn_var_vals, idx)
     {
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
@@ -325,7 +325,7 @@ free_imports_and_script_vars(int sid)
     scriptitem_T    *si = SCRIPT_ITEM(sid);
     int		    idx;
 
-    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&si->sn_imports, idx)
     {
 	imported_T *imp = ((imported_T *)si->sn_imports.ga_data) + idx;
 
@@ -348,7 +348,7 @@ mark_imports_for_reload(int sid)
     scriptitem_T    *si = SCRIPT_ITEM(sid);
     int		    idx;
 
-    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&si->sn_imports, idx)
     {
 	imported_T *imp = ((imported_T *)si->sn_imports.ga_data) + idx;
 
@@ -537,7 +537,7 @@ handle_import(
     }
 
     import_gap = gap != NULL ? gap : &SCRIPT_ITEM(import_sid)->sn_imports;
-    for (i = 0; i < import_gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(import_gap, i)
     {
 	imported_T *import = (imported_T *)import_gap->ga_data + i;
 

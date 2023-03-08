@@ -1047,10 +1047,10 @@ free_scrollback(term_T *term)
 {
     int i;
 
-    for (i = 0; i < term->tl_scrollback.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&term->tl_scrollback, i)
 	vim_free(((sb_line_T *)term->tl_scrollback.ga_data + i)->sb_cells);
     ga_clear(&term->tl_scrollback);
-    for (i = 0; i < term->tl_scrollback_postponed.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&term->tl_scrollback_postponed, i)
 	vim_free(((sb_line_T *)term->tl_scrollback_postponed.ga_data + i)->sb_cells);
     ga_clear(&term->tl_scrollback_postponed);
 }
@@ -3461,7 +3461,7 @@ handle_postponed_scrollback(term_T *term)
     // above it.
     cleanup_scrollback(term);
 
-    for (i = 0; i < term->tl_scrollback_postponed.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&term->tl_scrollback_postponed, i)
     {
 	char_u		*text;
 	sb_line_T	*pp_line;

@@ -639,7 +639,7 @@ ga_clear_strings(garray_T *gap)
     int		i;
 
     if (gap->ga_data != NULL)
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	    vim_free(((char_u **)(gap->ga_data))[i]);
     ga_clear(gap);
 }
@@ -657,7 +657,7 @@ ga_copy_strings(garray_T *from, garray_T *to)
     if (ga_grow(to, from->ga_len) == FAIL)
 	return FAIL;
 
-    for (i = 0; i < from->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(from, i)
     {
 	char_u *orig = ((char_u **)from->ga_data)[i];
 	char_u *copy;
@@ -768,7 +768,7 @@ ga_concat_strings(garray_T *gap, char *sep)
     char_u	*s;
     char_u	*p;
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]) + sep_len;
 
     s = alloc(len + 1);
@@ -777,7 +777,7 @@ ga_concat_strings(garray_T *gap, char *sep)
 
     *s = NUL;
     p = s;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	if (p != s)
 	{

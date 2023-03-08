@@ -3827,7 +3827,7 @@ regmatch(
 		// The positions are stored in "backpos" and found by the
 		// current value of "scan", the position in the RE program.
 		bp = (backpos_T *)backpos.ga_data;
-		for (i = 0; i < backpos.ga_len; ++i)
+		FOR_ALL_GA_ITEMS(&backpos, i)
 		    if (bp[i].bp_scan == scan)
 			break;
 		if (i == backpos.ga_len)

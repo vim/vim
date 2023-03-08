@@ -951,7 +951,7 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
     fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
 
     // Skip over continuation lines until seeing a useful line.
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	line = ((char **)(gap->ga_data))[i];
 	if (seen_useful || line[1] != '<')
@@ -993,7 +993,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    // memory, because virp->vir_line is overwritten.
 	    if (!allocated)
 	    {
-		for (i = 0; i < values->ga_len; ++i)
+		FOR_ALL_GA_ITEMS(values, i)
 		{
 		    bval_T  *vp = (bval_T *)(values->ga_data) + i;
 
@@ -2761,7 +2761,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 		if (writing)
 		    ga_copy_string(&virp->vir_barlines, virp->vir_line);
 	}
-	for (i = 0; i < values.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&values, i)
 	{
 	    vp = (bval_T *)values.ga_data + i;
 	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)

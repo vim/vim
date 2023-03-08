@@ -5029,7 +5029,7 @@ delete_recursive(char_u *name)
 	    return -1;
 	if (readdir_core(&ga, exp, FALSE, NULL, NULL, READDIR_SORT_NONE) == OK)
 	{
-	    for (i = 0; i < ga.ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(&ga, i)
 	    {
 		vim_snprintf((char *)NameBuff, MAXPATHL, "%s/%s", exp,
 					    ((char_u **)ga.ga_data)[i]);

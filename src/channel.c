@@ -2388,7 +2388,7 @@ channel_remove_block_id(chanpart_T *chanpart, int id)
     garray_T	*gap = &chanpart->ch_block_ids;
     int		i;
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	if (((int *)gap->ga_data)[i] == id)
 	{
 	    --gap->ga_len;
@@ -2412,7 +2412,7 @@ channel_has_block_id(chanpart_T *chanpart, int id)
     garray_T	*gap = &chanpart->ch_block_ids;
     int		i;
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	if (((int *)gap->ga_data)[i] == id)
 	    return TRUE;
     return FALSE;

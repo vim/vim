@@ -1392,7 +1392,7 @@ f_globpath(typval_T *argvars, typval_T *rettv)
 	if (rettv->v_type == VAR_STRING)
 	    rettv->vval.v_string = ga_concat_strings(&ga, "\n");
 	else if (rettv_list_alloc(rettv) == OK)
-	    for (i = 0; i < ga.ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(&ga, i)
 		list_append_string(rettv->vval.v_list,
 					    ((char_u **)(ga.ga_data))[i], -1);
 	ga_clear_strings(&ga);
@@ -1708,7 +1708,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem, sort);
     if (ret == OK)
     {
-	for (i = 0; i < ga.ga_len; i++)
+	FOR_ALL_GA_ITEMS(&ga, i)
 	{
 	    p = ((char_u **)ga.ga_data)[i];
 	    list_append_string(rettv->vval.v_list, p, -1);
@@ -1761,7 +1761,7 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
 	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem, sort);
     if (ret == OK)
     {
-	for (i = 0; i < ga.ga_len; i++)
+	FOR_ALL_GA_ITEMS(&ga, i)
 	{
 	    dict_T  *dict = ((dict_T**)ga.ga_data)[i];
 	    list_append_dict(rettv->vval.v_list, dict);

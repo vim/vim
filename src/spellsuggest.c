@@ -590,7 +590,7 @@ spell_suggest(int count)
 	msg_putchar('\n');
 
 	msg_scroll = TRUE;
-	for (i = 0; i < sug.su_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&sug.su_ga, i)
 	{
 	    int el;
 
@@ -741,7 +741,7 @@ spell_suggest_list(
     ga_init2(gap, sizeof(char_u *), sug.su_ga.ga_len + 1);
     if (ga_grow(gap, sug.su_ga.ga_len) == OK)
     {
-	for (i = 0; i < sug.su_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&sug.su_ga, i)
 	{
 	    stp = &SUG(sug.su_ga, i);
 
@@ -825,7 +825,7 @@ spell_find_suggest(
     // one in 'spelllang' that supports sound folding.  That's good for when
     // using multiple files for one language, it's not that bad when mixing
     // languages (e.g., "pl,en").
-    for (i = 0; i < curbuf->b_s.b_langp.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&curbuf->b_s.b_langp, i)
     {
 	lp = LANGP_ENTRY(curbuf->b_s.b_langp, i);
 	if (lp->lp_sallang != NULL)
@@ -1088,10 +1088,10 @@ spell_find_cleanup(suginfo_T *su)
     int		i;
 
     // Free the suggestions.
-    for (i = 0; i < su->su_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&su->su_ga, i)
 	vim_free(SUG(su->su_ga, i).st_word);
     ga_clear(&su->su_ga);
-    for (i = 0; i < su->su_sga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&su->su_sga, i)
 	vim_free(SUG(su->su_sga, i).st_word);
     ga_clear(&su->su_sga);
 
@@ -1205,7 +1205,7 @@ suggest_try_change(suginfo_T *su)
     if (n < MAXWLEN)
 	fword[n] = NUL;
 
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 
@@ -2876,7 +2876,7 @@ score_comp_sal(suginfo_T *su)
 	return;
 
     // Use the sound-folding of the first language that supports it.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	if (lp->lp_slang->sl_sal.ga_len > 0)
@@ -2884,7 +2884,7 @@ score_comp_sal(suginfo_T *su)
 	    // soundfold the bad word
 	    spell_soundfold(lp->lp_slang, su->su_fbadword, TRUE, badsound);
 
-	    for (i = 0; i < su->su_ga.ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(&su->su_ga, i)
 	    {
 		stp = &SUG(su->su_ga, i);
 
@@ -2931,7 +2931,7 @@ score_combine(suginfo_T *su)
     slang_T	*slang = NULL;
 
     // Add the alternate score to su_ga.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	if (lp->lp_slang->sl_sal.ga_len > 0)
@@ -2940,7 +2940,7 @@ score_combine(suginfo_T *su)
 	    slang = lp->lp_slang;
 	    spell_soundfold(slang, su->su_fbadword, TRUE, badsound);
 
-	    for (i = 0; i < su->su_ga.ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(&su->su_ga, i)
 	    {
 		stp = &SUG(su->su_ga, i);
 		stp->st_altscore = stp_sal_score(stp, su, slang, badsound);
@@ -2963,7 +2963,7 @@ score_combine(suginfo_T *su)
     }
 
     // Add the alternate score to su_sga.
-    for (i = 0; i < su->su_sga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&su->su_sga, i)
     {
 	stp = &SUG(su->su_sga, i);
 	stp->st_altscore = spell_edit_score(slang,
@@ -2998,7 +2998,7 @@ score_combine(suginfo_T *su)
 	    {
 		// Don't add a word if it's already there.
 		p = SUG(*gap, i).st_word;
-		for (j = 0; j < ga.ga_len; ++j)
+		FOR_ALL_GA_ITEMS(&ga, j)
 		    if (STRCMP(stp[j].st_word, p) == 0)
 			break;
 		if (j == ga.ga_len)
@@ -3107,7 +3107,7 @@ suggest_try_soundalike_prep(void)
 
     // Do this for all languages that support sound folding and for which a
     // .sug file has been loaded.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	slang = lp->lp_slang;
@@ -3131,7 +3131,7 @@ suggest_try_soundalike(suginfo_T *su)
 
     // Do this for all languages that support sound folding and for which a
     // .sug file has been loaded.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	slang = lp->lp_slang;
@@ -3168,7 +3168,7 @@ suggest_try_soundalike_finish(void)
 
     // Do this for all languages that support sound folding and for which a
     // .sug file has been loaded.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	slang = lp->lp_slang;
@@ -3709,7 +3709,7 @@ rescore_suggestions(suginfo_T *su)
     int		i;
 
     if (su->su_sallang != NULL)
-	for (i = 0; i < su->su_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&su->su_ga, i)
 	    rescore_one(su, &SUG(su->su_ga, i));
 }
 

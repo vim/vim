@@ -88,7 +88,7 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
     }
 
     // Find local in current function scope.
-    for (idx = 0; idx < cctx->ctx_locals.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&cctx->ctx_locals, idx)
     {
 	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
 	if (lvp->lv_name != NULL
@@ -674,7 +674,7 @@ get_script_item_idx(
     }
 
     // Now find the svar_T index in sn_var_vals.
-    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&si->sn_var_vals, idx)
     {
 	sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 	if (sv->sv_tv == &di->di_tv)
@@ -696,7 +696,7 @@ find_imported_in_script(char_u *name, size_t len, int sid)
     if (!SCRIPT_ID_VALID(sid))
 	return NULL;
     si = SCRIPT_ITEM(sid);
-    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&si->sn_imports, idx)
     {
 	imported_T *import = ((imported_T *)si->sn_imports.ga_data) + idx;
 
@@ -2885,7 +2885,7 @@ check_args_shadowing(ufunc_T *ufunc, cctx_T *cctx)
     ufunc->uf_args_visible = 0;
 
     // Check for arguments shadowing variables from the context.
-    for (i = 0; i < ufunc->uf_args.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&ufunc->uf_args, i)
     {
 	arg = ((char_u **)(ufunc->uf_args.ga_data))[i];
 	if (check_defined(arg, STRLEN(arg), cctx, NULL, TRUE) == FAIL)
@@ -4005,7 +4005,7 @@ free_def_functions(void)
 {
     int idx;
 
-    for (idx = 0; idx < def_functions.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&def_functions, idx)
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + idx;
 

@@ -111,7 +111,7 @@ one_function_arg(
 	is_underscore = arg_copy[0] == '_' && arg_copy[1] == NUL;
 	if (argtypes == NULL || !is_underscore)
 	    // Check for duplicate argument name.
-	    for (i = 0; i < newargs->ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(newargs, i)
 		if (STRCMP(((char_u **)(newargs->ga_data))[i], arg_copy) == 0)
 		{
 		    semsg(_(e_duplicate_argument_name_str), arg_copy);
@@ -1308,7 +1308,7 @@ lambda_function_body(
 	size_t  plen;
 	char_u  *pnl;
 
-	for (idx = 0; idx < newlines.ga_len; ++idx)
+	FOR_ALL_GA_ITEMS(&newlines, idx)
 	{
 	    char_u  *p = skipwhite(((char_u **)newlines.ga_data)[idx]);
 
@@ -2240,7 +2240,7 @@ free_funccal(funccall_T *fc)
 {
     int	i;
 
-    for (i = 0; i < fc->fc_ufuncs.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&fc->fc_ufuncs, i)
     {
 	ufunc_T *fp = ((ufunc_T **)(fc->fc_ufuncs.ga_data))[i];
 
@@ -2416,7 +2416,7 @@ funccal_unref(funccall_T *fc, ufunc_T *fp, int force)
 		return;
 	    }
 	}
-    for (i = 0; i < fc->fc_ufuncs.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&fc->fc_ufuncs, i)
 	if (((ufunc_T **)(fc->fc_ufuncs.ga_data))[i] == fp)
 	    ((ufunc_T **)(fc->fc_ufuncs.ga_data))[i] = NULL;
 }
@@ -3949,7 +3949,7 @@ list_func_head(ufunc_T *fp, int indent)
 	msg_puts("function ");
     msg_puts((char *)printable_func_name(fp));
     msg_putchar('(');
-    for (j = 0; j < fp->uf_args.ga_len; ++j)
+    FOR_ALL_GA_ITEMS(&fp->uf_args, j)
     {
 	if (j)
 	    msg_puts(", ");
@@ -6908,7 +6908,7 @@ set_ref_in_func_args(int copyID)
 {
     int i;
 
-    for (i = 0; i < funcargs.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&funcargs, i)
 	if (set_ref_in_item(((typval_T **)funcargs.ga_data)[i],
 							  copyID, NULL, NULL))
 	    return TRUE;

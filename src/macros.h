@@ -449,3 +449,6 @@
 // Iterate over all the items in a hash table
 #define FOR_ALL_HASHTAB_ITEMS(ht, hi, todo) \
     for ((hi) = (ht)->ht_array; (todo) > 0; ++(hi))
+
+#define FOR_ALL_GA_ITEMS(gap, idx) \
+    for ((idx) = 0; (idx) < (gap)->ga_len; ++(idx))

@@ -107,7 +107,7 @@ ses_arglist(
 	return FAIL;
     if (put_line(fd, "%argdel") == FAIL)
 	return FAIL;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	// NULL file names are skipped (only happens when out of memory).
 	s = alist_name(&((aentry_T *)gap->ga_data)[i]);

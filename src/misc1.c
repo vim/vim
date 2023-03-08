@@ -2145,7 +2145,7 @@ init_users(void)
 	{
 	    int	i;
 
-	    for (i = 0; i < ga_users.ga_len; i++)
+	    FOR_ALL_GA_ITEMS(&ga_users, i)
 	    {
 		char_u	*local_user = ((char_u **)ga_users.ga_data)[i];
 
@@ -2191,7 +2191,7 @@ match_user(char_u *name)
     int result = 0;
 
     init_users();
-    for (i = 0; i < ga_users.ga_len; i++)
+    FOR_ALL_GA_ITEMS(&ga_users, i)
     {
 	if (STRCMP(((char_u **)ga_users.ga_data)[i], name) == 0)
 	    return 2; // full match

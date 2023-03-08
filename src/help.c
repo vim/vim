@@ -1157,7 +1157,7 @@ helptags_one(
 	    fprintf(fd_tags, "!_TAG_FILE_ENCODING\tutf-8\t//\n");
 
 	// Write the tags into the file.
-	for (i = 0; i < ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&ga, i)
 	{
 	    s = ((char_u **)ga.ga_data)[i];
 	    if (STRNCMP(s, "help-tags\t", 10) == 0)
@@ -1180,7 +1180,7 @@ helptags_one(
     if (mix)
 	got_int = FALSE;    // continue with other languages
 
-    for (i = 0; i < ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&ga, i)
 	vim_free(((char_u **)ga.ga_data)[i]);
     ga_clear(&ga);
     fclose(fd_tags);	    // there is no check for an error...

@@ -336,7 +336,8 @@ ex_class(exarg_T *eap)
 		char_u *iname = vim_strnsave(arg, impl_end - arg);
 		if (iname == NULL)
 		    goto early_ret;
-		for (int i = 0; i < ga_impl.ga_len; ++i)
+		int i;
+		FOR_ALL_GA_ITEMS(&ga_impl, i)
 		    if (STRCMP(((char_u **)ga_impl.ga_data)[i], iname) == 0)
 		    {
 			semsg(_(e_duplicate_interface_after_implements_str),
@@ -532,7 +533,8 @@ early_ret:
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.
-		for (int i = 0; i < fgap->ga_len; ++i)
+		int i;
+		FOR_ALL_GA_ITEMS(fgap, i)
 		{
 		    char_u *n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
 		    if (STRCMP(name, n) == 0)
@@ -756,7 +758,8 @@ early_ret:
 			if (STRNCMP(uf->uf_name, "new", 3) == 0 && il == 2)
 			    continue;
 			garray_T *mgap = il == 1 ? &classmembers : &objmembers;
-			for (int mi = 0; mi < mgap->ga_len; ++mi)
+			int mi;
+			FOR_ALL_GA_ITEMS(mgap, mi)
 			{
 			    char_u *mname = ((ocmember_T *)mgap->ga_data
 							       + mi)->ocm_name;
@@ -821,7 +824,8 @@ early_ret:
 	    cl->class_interfaces = ALLOC_MULT(char_u *, ga_impl.ga_len);
 	    if (cl->class_interfaces == NULL)
 		goto cleanup;
-	    for (int i = 0; i < ga_impl.ga_len; ++i)
+	    int i;
+	    FOR_ALL_GA_ITEMS(&ga_impl, i)
 		cl->class_interfaces[i] = ((char_u **)ga_impl.ga_data)[i];
 	    VIM_CLEAR(ga_impl.ga_data);
 	    ga_impl.ga_len = 0;
@@ -881,7 +885,8 @@ early_ret:
 		for (int if_i = 0; if_i < ifcl->class_obj_method_count; ++if_i)
 		{
 		    int done = FALSE;
-		    for (int cl_i = 0; cl_i < objmethods.ga_len; ++cl_i)
+		    int cl_i;
+		    FOR_ALL_GA_ITEMS(&objmethods, cl_i)
 		    {
 			if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
 			       ((ufunc_T **)objmethods.ga_data)[cl_i]->uf_name)
@@ -896,7 +901,7 @@ early_ret:
 
 		    if (!done && extends_cl != NULL)
 		    {
-			for (int cl_i = 0;
+			for (cl_i = 0;
 			     cl_i < extends_cl->class_obj_member_count; ++cl_i)
 			{
 			    if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
@@ -942,7 +947,8 @@ early_ret:
 	}
 
 	int have_new = FALSE;
-	for (int i = 0; i < classfunctions.ga_len; ++i)
+	int i;
+	FOR_ALL_GA_ITEMS(&classfunctions, i)
 	    if (STRCMP(((ufunc_T **)classfunctions.ga_data)[i]->uf_name,
 								   "new") == 0)
 	    {
@@ -955,7 +961,7 @@ early_ret:
 	    garray_T fga;
 	    ga_init2(&fga, 1, 1000);
 	    ga_concat(&fga, (char_u *)"new(");
-	    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	    for (i = 0; i < cl->class_obj_member_count; ++i)
 	    {
 		if (i > 0)
 		    ga_concat(&fga, (char_u *)", ");
@@ -1033,7 +1039,7 @@ early_ret:
 		cl->class_obj_method_count_child = gap->ga_len;
 
 	    int skipped = 0;
-	    for (int i = 0; i < parent_count; ++i)
+	    for (i = 0; i < parent_count; ++i)
 	    {
 		// Copy functions from the parent.  Can't use the same
 		// function, because "uf_class" is different and compilation
@@ -1055,8 +1061,9 @@ early_ret:
 
 		    // If the child class overrides a function from the parent
 		    // the signature must be equal.
-		    char_u *pname = pf->uf_name;
-		    for (int ci = 0; ci < gap->ga_len; ++ci)
+		    char_u	*pname = pf->uf_name;
+		    int		ci;
+		    FOR_ALL_GA_ITEMS(gap, ci)
 		    {
 			ufunc_T *cf = (*fup)[ci];
 			char_u *cname = cf->uf_name;
@@ -1074,7 +1081,7 @@ early_ret:
 	    *fcount -= skipped;
 
 	    // Set the class pointer on all the functions and object methods.
-	    for (int i = 0; i < *fcount; ++i)
+	    for (i = 0; i < *fcount; ++i)
 	    {
 		ufunc_T *fp = (*fup)[i];
 		fp->uf_class = cl;
@@ -1131,7 +1138,8 @@ cleanup:
 
     if (intf_classes != NULL)
     {
-	for (int i = 0; i < ga_impl.ga_len; ++i)
+	int i;
+	FOR_ALL_GA_ITEMS(&ga_impl, i)
 	    class_unref(intf_classes[i]);
 	vim_free(intf_classes);
     }
@@ -1143,7 +1151,8 @@ cleanup:
 	if (gap->ga_len == 0 || gap->ga_data == NULL)
 	    continue;
 
-	for (int i = 0; i < gap->ga_len; ++i)
+	int i;
+	FOR_ALL_GA_ITEMS(gap, i)
 	{
 	    ocmember_T *m = ((ocmember_T *)gap->ga_data) + i;
 	    vim_free(m->ocm_name);
@@ -1152,14 +1161,15 @@ cleanup:
 	ga_clear(gap);
     }
 
-    for (int i = 0; i < objmethods.ga_len; ++i)
+    int i;
+    FOR_ALL_GA_ITEMS(&objmethods, i)
     {
 	ufunc_T *uf = ((ufunc_T **)objmethods.ga_data)[i];
 	func_clear_free(uf, FALSE);
     }
     ga_clear(&objmethods);
 
-    for (int i = 0; i < classfunctions.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&classfunctions, i)
     {
 	ufunc_T *uf = ((ufunc_T **)classfunctions.ga_data)[i];
 	func_clear_free(uf, FALSE);

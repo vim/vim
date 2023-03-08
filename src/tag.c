@@ -2995,7 +2995,7 @@ findtags_copy_matches(findtags_state_T *st, char_u ***matchesp)
     st->match_count = 0;
     for (mtt = 0; mtt < MT_COUNT; ++mtt)
     {
-	for (i = 0; i < st->ga_match[mtt].ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&st->ga_match[mtt], i)
 	{
 	    mfp = ((char_u **)(st->ga_match[mtt].ga_data))[i];
 	    if (matches == NULL)
@@ -3351,7 +3351,7 @@ get_tagfname(
 #endif
 	    simplify_filename(buf);
 
-	    for (i = 0; i < tag_fnames.ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(&tag_fnames, i)
 		if (STRCMP(buf, ((char_u **)(tag_fnames.ga_data))[i]) == 0)
 		    return FAIL; // avoid duplicate file names
 	}

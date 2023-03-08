@@ -865,7 +865,7 @@ funcstack_check_refcount(funcstack_T *funcstack)
 
     // All partials referencing the funcstack have a reference count of
     // one, thus the funcstack is no longer of use.
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	clear_tv(stack + i);
     vim_free(stack);
     remove_funcstack_from_list(funcstack);
@@ -889,7 +889,7 @@ set_ref_in_funcstacks(int copyID)
 	typval_T    *stack = funcstack->fs_ga.ga_data;
 	int	    i;
 
-	for (i = 0; i < funcstack->fs_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&funcstack->fs_ga, i)
 	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
 		return TRUE;  // abort
     }
@@ -2025,7 +2025,7 @@ lookup_debug_var(char_u *name)
     // Go through argument names.
     ufunc = dfunc->df_ufunc;
     varargs_off = ufunc->uf_va_name == NULL ? 0 : 1;
-    for (idx = 0; idx < ufunc->uf_args.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&ufunc->uf_args, idx)
 	if (STRCMP(((char_u **)(ufunc->uf_args.ga_data))[idx], name) == 0)
 	    return STACK_TV(ectx->ec_frame_idx - ufunc->uf_args.ga_len
 							  - varargs_off + idx);
@@ -2860,7 +2860,7 @@ loopvars_check_refcount(loopvars_T *loopvars)
 
     if (loopvars->lvs_refcount > loopvars->lvs_min_refcount)
 	return FALSE;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	typval_T    *tv = ((typval_T *)gap->ga_data) + i;
 
@@ -2880,7 +2880,7 @@ loopvars_check_refcount(loopvars_T *loopvars)
     // All partials referencing the loopvars have a reference count of
     // one, thus the loopvars is no longer of use.
     stack = gap->ga_data;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	clear_tv(stack + i);
     vim_free(stack);
     remove_loopvars_from_list(loopvars);
@@ -2903,7 +2903,7 @@ set_ref_in_loopvars(int copyID)
 	typval_T    *stack = loopvars->lvs_ga.ga_data;
 	int	    i;
 
-	for (i = 0; i < loopvars->lvs_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&loopvars->lvs_ga, i)
 	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
 		return TRUE;  // abort
     }
@@ -6190,7 +6190,7 @@ call_def_function(
 
 failed_early:
     // Free all arguments and local variables.
-    for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&ectx.ec_stack, idx)
     {
 	tv = STACK_TV(idx);
 	if (tv->v_type != VAR_NUMBER && tv->v_type != VAR_UNKNOWN)

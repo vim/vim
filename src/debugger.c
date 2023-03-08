@@ -737,7 +737,7 @@ update_has_expr_breakpoint(void)
     int i;
 
     has_expr_breakpoint = FALSE;
-    for (i = 0; i < dbg_breakp.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&dbg_breakp, i)
 	if (BREAKP(i).dbg_type == DBG_EXPR)
 	{
 	    has_expr_breakpoint = TRUE;
@@ -783,7 +783,7 @@ ex_breakdel(exarg_T *eap)
     {
 	// ":breakdel {nr}"
 	nr = atol((char *)eap->arg);
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	    if (DEBUGGY(gap, i).dbg_nr == nr)
 	    {
 		todel = i;
@@ -801,7 +801,7 @@ ex_breakdel(exarg_T *eap)
 	if (dbg_parsearg(eap->arg, gap) == FAIL)
 	    return;
 	bp = &DEBUGGY(gap, gap->ga_len);
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	{
 	    bpi = &DEBUGGY(gap, i);
 	    if (bp->dbg_type == bpi->dbg_type
@@ -867,7 +867,7 @@ ex_breaklist(exarg_T *eap UNUSED)
 	return;
     }
 
-    for (i = 0; i < dbg_breakp.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&dbg_breakp, i)
     {
 	bp = &BREAKP(i);
 	if (bp->dbg_type == DBG_FILE)
@@ -951,7 +951,7 @@ debuggy_find(
 	}
     }
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	// Skip entries that are not useful or are for a line that is beyond
 	// an already found breakpoint.

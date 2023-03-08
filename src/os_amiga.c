@@ -921,7 +921,7 @@ mch_can_exe(char_u *name, char_u **path UNUSED, int use_path)
 	struct PathNode *head = DupCmdPathList(NULL);
 
 	// For each entry, recur to check for executable.
-	for(struct PathNode *tail = head; !exe && tail;
+	for (struct PathNode *tail = head; !exe && tail;
 		tail = (struct PathNode *) BADDR(tail->pn_Next))
 	{
 	    SetCurrentDir(tail->pn_Lock);

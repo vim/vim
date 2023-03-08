@@ -2693,7 +2693,7 @@ ex_menutranslate(exarg_T *eap UNUSED)
     if (STRNCMP(arg, "clear", 5) == 0 && ends_excmd2(arg, skipwhite(arg + 5)))
     {
 	tp = (menutrans_T *)menutrans_ga.ga_data;
-	for (i = 0; i < menutrans_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&menutrans_ga, i)
 	{
 	    vim_free(tp[i].from);
 	    vim_free(tp[i].from_noamp);
@@ -2780,7 +2780,7 @@ menutrans_lookup(char_u *name, int len)
     int			i;
     char_u		*dname;
 
-    for (i = 0; i < menutrans_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&menutrans_ga, i)
 	if (STRNICMP(name, tp[i].from, len) == 0 && tp[i].from[len] == NUL)
 	    return tp[i].to;
 
@@ -2792,7 +2792,7 @@ menutrans_lookup(char_u *name, int len)
     if (dname == NULL)
 	return NULL;
 
-    for (i = 0; i < menutrans_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&menutrans_ga, i)
 	if (STRICMP(dname, tp[i].from_noamp) == 0)
 	{
 	    vim_free(dname);

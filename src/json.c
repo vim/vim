@@ -320,7 +320,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    else
 	    {
 		ga_append(gap, '[');
-		for (i = 0; i < b->bv_ga.ga_len; i++)
+		FOR_ALL_GA_ITEMS(&b->bv_ga, i)
 		{
 		    if (i > 0)
 			ga_concat(gap, (char_u *)",");
@@ -1137,7 +1137,7 @@ item_end:
     semsg(_(e_json_decode_error_at_str), p);
 
 theend:
-    for (i = 0; i < stack.ga_len; i++)
+    FOR_ALL_GA_ITEMS(&stack, i)
 	clear_tv(&(((json_dec_item_T *)stack.ga_data) + i)->jd_key_tv);
     ga_clear(&stack);
 

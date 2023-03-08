@@ -266,7 +266,7 @@ spell_check(
      * We check them all, because a word may be matched longer in another
      * language.
      */
-    for (lpi = 0; lpi < wp->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&wp->w_s->b_langp, lpi)
     {
 	mi.mi_lp = LANGP_ENTRY(wp->w_s->b_langp, lpi);
 
@@ -797,7 +797,7 @@ find_word(matchinf_T *mip, int mode)
 
 		// For NOBREAK we need to try all NOBREAK languages, at least
 		// to find the ".add" file(s).
-		for (lpi = 0; lpi < mip->mi_win->w_s->b_langp.ga_len; ++lpi)
+		FOR_ALL_GA_ITEMS(&mip->mi_win->w_s->b_langp, lpi)
 		{
 		    if (slang->sl_nobreak)
 		    {
@@ -1727,7 +1727,7 @@ slang_clear(slang_T *lp)
 	// "ga_len" is set to 1 without adding an item for latin1
 	if (gap->ga_data != NULL)
 	    // SOFOFROM and SOFOTO items: free lists of wide characters.
-	    for (i = 0; i < gap->ga_len; ++i)
+	    FOR_ALL_GA_ITEMS(gap, i)
 		vim_free(((int **)gap->ga_data)[i]);
     }
     else
@@ -1953,7 +1953,7 @@ count_syllables(slang_T *slang, char_u *word)
 
 	// Find longest match of syllable items.
 	len = 0;
-	for (i = 0; i < slang->sl_syl_items.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&slang->sl_syl_items, i)
 	{
 	    syl = ((syl_item_T *)slang->sl_syl_items.ga_data) + i;
 	    if (syl->sy_len > len
@@ -2189,7 +2189,7 @@ parse_spelllang(win_T *wp)
 	    STRCAT(spf_name, ".spl");
 
 	    // If it was already found above then skip it.
-	    for (c = 0; c < ga.ga_len; ++c)
+	    FOR_ALL_GA_ITEMS(&ga, c)
 	    {
 		p = LANGP_ENTRY(ga, c)->lp_slang->sl_fname;
 		if (p != NULL && fullpathcmp(spf_name, p, FALSE, TRUE)
@@ -2259,7 +2259,7 @@ parse_spelllang(win_T *wp)
     // For each language figure out what language to use for sound folding and
     // REP items.  If the language doesn't support it itself use another one
     // with the same name.  E.g. for "en-math" use "en".
-    for (i = 0; i < ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&ga, i)
     {
 	lp = LANGP_ENTRY(ga, i);
 
@@ -2269,7 +2269,7 @@ parse_spelllang(win_T *wp)
 	    lp->lp_sallang = lp->lp_slang;
 	else
 	    // find first similar language that does sound folding
-	    for (j = 0; j < ga.ga_len; ++j)
+	    FOR_ALL_GA_ITEMS(&ga, j)
 	    {
 		lp2 = LANGP_ENTRY(ga, j);
 		if (lp2->lp_slang->sl_sal.ga_len > 0
@@ -2287,7 +2287,7 @@ parse_spelllang(win_T *wp)
 	    lp->lp_replang = lp->lp_slang;
 	else
 	    // find first similar language that has REP items
-	    for (j = 0; j < ga.ga_len; ++j)
+	    FOR_ALL_GA_ITEMS(&ga, j)
 	    {
 		lp2 = LANGP_ENTRY(ga, j);
 		if (lp2->lp_slang->sl_rep.ga_len > 0
@@ -3087,7 +3087,7 @@ eval_soundfold(char_u *word)
 
     if (curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
 	// Use the sound-folding of the first language that supports it.
-	for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+	FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
 	{
 	    lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	    if (lp->lp_slang->sl_sal.ga_len > 0)
@@ -3925,7 +3925,7 @@ spell_dump_compl(
 
     // Find out if we can support regions: All languages must support the same
     // regions or none at all.
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	p = lp->lp_slang->sl_regions;
@@ -3955,7 +3955,7 @@ spell_dump_compl(
     /*
      * Loop over all files loaded for the entries in 'spelllang'.
      */
-    for (lpi = 0; lpi < curwin->w_s->b_langp.ga_len; ++lpi)
+    FOR_ALL_GA_ITEMS(&curwin->w_s->b_langp, lpi)
     {
 	lp = LANGP_ENTRY(curwin->w_s->b_langp, lpi);
 	slang = lp->lp_slang;

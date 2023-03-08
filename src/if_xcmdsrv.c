@@ -689,7 +689,7 @@ ServerReplyFind(Window w, enum ServerReplyOp op)
     int		i;
 
     p = (struct ServerReply *) serverReply.ga_data;
-    for (i = 0; i < serverReply.ga_len; i++, p++)
+    FOR_ALL_GA_ITEMS(&serverReply, i)
 	if (p->id == w)
 	    break;
     if (i >= serverReply.ga_len)

@@ -2176,7 +2176,7 @@ is_unique(char_u *maybe_unique, garray_T *gap, int i)
     char_u  **other_paths = (char_u **)gap->ga_data;
     char_u  *rival;
 
-    for (j = 0; j < gap->ga_len; j++)
+    FOR_ALL_GA_ITEMS(gap, j)
     {
 	if (j == i)
 	    continue;  // don't compare it with itself
@@ -2292,7 +2292,7 @@ get_path_cutoff(char_u *fname, garray_T *gap)
     char_u  **path_part = (char_u **)gap->ga_data;
     char_u  *cutoff = NULL;
 
-    for (i = 0; i < gap->ga_len; i++)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	int j = 0;
 
@@ -2488,7 +2488,7 @@ theend:
     vim_free(curdir);
     if (in_curdir != NULL)
     {
-	for (i = 0; i < gap->ga_len; i++)
+	FOR_ALL_GA_ITEMS(gap, i)
 	    vim_free(in_curdir[i]);
 	vim_free(in_curdir);
     }

@@ -74,7 +74,8 @@ copy_type(type_T *type, garray_T *type_gap)
     static type_T *
 copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
 {
-    for (int i = 0; i < seen_types->ga_len; ++i)
+    int i;
+    FOR_ALL_GA_ITEMS(seen_types, i)
 	if (((type_T **)seen_types->ga_data)[i * 2] == type)
 	    // seen this type before, return the copy we made
 	    return ((type_T **)seen_types->ga_data)[i * 2 + 1];
@@ -90,7 +91,7 @@ copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
 	copy->tt_member = copy_type_deep_rec(copy->tt_member,
 							 type_gap, seen_types);
     if (type->tt_args != NULL)
-	for (int i = 0; i < type->tt_argcount; ++i)
+	for (i = 0; i < type->tt_argcount; ++i)
 	    copy->tt_args[i] = copy_type_deep_rec(copy->tt_args[i],
 							 type_gap, seen_types);
 

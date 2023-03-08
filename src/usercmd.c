@@ -153,7 +153,7 @@ find_ucmd(
     gap = &prevwin_curwin()->w_buffer->b_ucmds;
     for (;;)
     {
-	for (j = 0; j < gap->ga_len; ++j)
+	FOR_ALL_GA_ITEMS(gap, j)
 	{
 	    uc = USER_CMD_GA(gap, j);
 	    cp = eap->cmd;
@@ -374,7 +374,7 @@ get_user_commands(expand_T *xp UNUSED, int idx)
 	int	i;
 	char_u  *name = USER_CMD(idx)->uc_name;
 
-	for (i = 0; i < buf->b_ucmds.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&buf->b_ucmds, i)
 	    if (STRCMP(name, USER_CMD_GA(&buf->b_ucmds, i)->uc_name) == 0)
 		// global command is overruled by buffer-local one
 		return (char_u *)"";
@@ -510,7 +510,7 @@ uc_list(char_u *name, size_t name_len)
     gap = &prevwin_curwin()->w_buffer->b_ucmds;
     for (;;)
     {
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	{
 	    cmd = USER_CMD_GA(gap, i);
 	    a = (long)cmd->uc_argt;
@@ -1012,7 +1012,7 @@ uc_add_command(
 	gap = &ucmds;
 
     // Search for the command in the already defined commands.
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	size_t len;
 
@@ -1269,7 +1269,7 @@ uc_clear(garray_T *gap)
     if (is_ucmd_locked())
 	return;
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	cmd = USER_CMD_GA(gap, i);
 	vim_free(cmd->uc_name);
@@ -1303,7 +1303,7 @@ ex_delcommand(exarg_T *eap)
     gap = &curbuf->b_ucmds;
     for (;;)
     {
-	for (i = 0; i < gap->ga_len; ++i)
+	FOR_ALL_GA_ITEMS(gap, i)
 	{
 	    cmd = USER_CMD_GA(gap, i);
 	    res = STRCMP(arg, cmd->uc_name);

@@ -1496,7 +1496,7 @@ list_join(
 
     // Dispose each item in join_ga.
     p = (join_T *)join_ga.ga_data;
-    for (i = 0; i < join_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&join_ga, i)
     {
 	vim_free(p->tofree);
 	++p;

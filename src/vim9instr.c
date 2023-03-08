@@ -2741,7 +2741,7 @@ clear_instr_ga(garray_T *gap)
 {
     int idx;
 
-    for (idx = 0; idx < gap->ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(gap, idx)
 	delete_instr(((isn_T *)gap->ga_data) + idx);
     ga_clear(gap);
 }

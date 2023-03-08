@@ -499,7 +499,7 @@ newFoldLevelWin(win_T *wp)
 	// manual open/close will then change the flags to FD_OPEN or
 	// FD_CLOSED for those folds that don't use 'foldlevel'.
 	fp = (fold_T *)wp->w_folds.ga_data;
-	for (i = 0; i < wp->w_folds.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&wp->w_folds, i)
 	    fp[i].fd_flags = FD_LEVEL;
 	wp->w_fold_manual = FALSE;
     }
@@ -532,7 +532,7 @@ checkCloseRec(garray_T *gap, linenr_T lnum, int level)
     int		i;
 
     fp = (fold_T *)gap->ga_data;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	// Only manually opened folds may need to be closed.
 	if (fp[i].fd_flags == FD_OPEN)
@@ -1122,7 +1122,7 @@ cloneFoldGrowArray(garray_T *from, garray_T *to)
     from_p = (fold_T *)from->ga_data;
     to_p = (fold_T *)to->ga_data;
 
-    for (i = 0; i < from->ga_len; i++)
+    FOR_ALL_GA_ITEMS(from, i)
     {
 	to_p->fd_top = from_p->fd_top;
 	to_p->fd_len = from_p->fd_len;
@@ -1348,7 +1348,7 @@ setManualFoldWin(
 	    else
 		fp->fd_flags = FD_OPEN;
 	    fp2 = (fold_T *)fp->fd_nested.ga_data;
-	    for (j = 0; j < fp->fd_nested.ga_len; ++j)
+	    FOR_ALL_GA_ITEMS(&fp->fd_nested, j)
 		fp2[j].fd_flags = FD_LEVEL;
 	}
 
@@ -1414,7 +1414,7 @@ foldOpenNested(fold_T *fpr)
     fold_T	*fp;
 
     fp = (fold_T *)fpr->fd_nested.ga_data;
-    for (i = 0; i < fpr->fd_nested.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&fpr->fd_nested, i)
     {
 	foldOpenNested(&fp[i]);
 	fp[i].fd_flags = FD_OPEN;
@@ -1486,7 +1486,7 @@ deleteFoldRecurse(garray_T *gap)
 {
     int		i;
 
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	deleteFoldRecurse(&(((fold_T *)(gap->ga_data))[i].fd_nested));
     ga_clear(gap);
 }
@@ -1658,7 +1658,7 @@ getDeepestNestingRecurse(garray_T *gap)
     fold_T	*fp;
 
     fp = (fold_T *)gap->ga_data;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	level = getDeepestNestingRecurse(&fp[i].fd_nested) + 1;
 	if (level > maxlevel)
@@ -1756,7 +1756,7 @@ setSmallMaybe(garray_T *gap)
     fold_T	*fp;
 
     fp = (fold_T *)gap->ga_data;
-    for (i = 0; i < gap->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(gap, i)
 	fp[i].fd_small = MAYBE;
 }
 
@@ -1836,7 +1836,7 @@ deleteFoldMarkers(
     int		i;
 
     if (recursive)
-	for (i = 0; i < fp->fd_nested.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&fp->fd_nested, i)
 	    deleteFoldMarkers((fold_T *)fp->fd_nested.ga_data + i, TRUE,
 						       lnum_off + fp->fd_top);
     foldDelMarker(fp->fd_top + lnum_off, curwin->w_p_fmr, foldstartmarkerlen);
@@ -3230,7 +3230,7 @@ foldMerge(fold_T *fp1, garray_T *gap, fold_T *fp2)
     // Move nested folds in fp2 to the end of fp1.
     if (gap2->ga_len > 0 && ga_grow(gap1, gap2->ga_len) == OK)
     {
-	for (idx = 0; idx < gap2->ga_len; ++idx)
+	FOR_ALL_GA_ITEMS(gap2, idx)
 	{
 	    ((fold_T *)gap1->ga_data)[gap1->ga_len]
 					= ((fold_T *)gap2->ga_data)[idx];
@@ -3571,7 +3571,7 @@ put_folds_recurse(FILE *fd, garray_T *gap, linenr_T off)
     fold_T	*fp;
 
     fp = (fold_T *)gap->ga_data;
-    for (i = 0; i < gap->ga_len; i++)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	// Do nested folds first, they will be created closed.
 	if (put_folds_recurse(fd, &fp->fd_nested, off + fp->fd_top) == FAIL)
@@ -3602,7 +3602,7 @@ put_foldopen_recurse(
     fold_T	*fp;
 
     fp = (fold_T *)gap->ga_data;
-    for (i = 0; i < gap->ga_len; i++)
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	if (fp->fd_flags != FD_LEVEL)
 	{

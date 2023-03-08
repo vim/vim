@@ -1748,7 +1748,7 @@ luaV_print(lua_State *L)
 	lua_pop(L, 1);
     }
     // Replace any "\n" with "\0"
-    for (i = 0; i < msg_ga.ga_len; i++)
+    FOR_ALL_GA_ITEMS(&msg_ga, i)
 	if (((char *)msg_ga.ga_data)[i] == '\n')
 	    ((char *)msg_ga.ga_data)[i] = '\0';
     lua_pushlstring(L, msg_ga.ga_data, msg_ga.ga_len);

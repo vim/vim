@@ -759,7 +759,7 @@ highlight_reset_all(void)
     restore_cterm_colors();
 
     // Clear all default highlight groups and load the defaults.
-    for (idx = 0; idx < highlight_ga.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&highlight_ga, idx)
 	highlight_clear(idx);
     init_highlight(TRUE, TRUE);
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -1808,7 +1808,7 @@ free_highlight(void)
 {
     int	    i;
 
-    for (i = 0; i < highlight_ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&highlight_ga, i)
     {
 	highlight_clear(i);
 	vim_free(HL_TABLE()[i].sg_name);
@@ -2498,7 +2498,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
     table->ga_growsize = 7;
 
     // Try to find an entry with the same specifications.
-    for (i = 0; i < table->ga_len; ++i)
+    FOR_ALL_GA_ITEMS(table, i)
     {
 	taep = &(((attrentry_T *)table->ga_data)[i]);
 	if (	   aep->ae_attr == taep->ae_attr
@@ -2564,7 +2564,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 
 	set_must_redraw(UPD_CLEAR);
 
-	for (i = 0; i < highlight_ga.ga_len; ++i)
+	FOR_ALL_GA_ITEMS(&highlight_ga, i)
 	    set_hl_attr(i);
 
 	recursive = FALSE;
@@ -2698,7 +2698,7 @@ clear_hl_tables(void)
 #ifdef FEAT_GUI
     ga_clear(&gui_attr_table);
 #endif
-    for (i = 0; i < term_attr_table.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&term_attr_table, i)
     {
 	taep = &(((attrentry_T *)term_attr_table.ga_data)[i]);
 	vim_free(taep->ae_u.term.start);
@@ -3622,7 +3622,7 @@ highlight_gui_started(void)
     if (USE_24BIT)
 	set_normal_colors();
 
-    for (idx = 0; idx < highlight_ga.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&highlight_ga, idx)
 	gui_do_one_color(idx, FALSE, FALSE);
 
     highlight_changed();
@@ -4057,7 +4057,7 @@ free_highlight_fonts(void)
 {
     int	    idx;
 
-    for (idx = 0; idx < highlight_ga.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&highlight_ga, idx)
     {
 	gui_mch_free_font(HL_TABLE()[idx].sg_font);
 	HL_TABLE()[idx].sg_font = NOFONT;

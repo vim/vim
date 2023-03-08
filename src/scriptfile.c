@@ -184,7 +184,7 @@ estack_sfile(estack_arg_T which UNUSED)
     // For a function we compose the call stack, as it was done in the past:
     //   "function One[123]..Two[456]..Three"
     ga_init2(&ga, sizeof(char), 100);
-    for (idx = 0; idx < exestack.ga_len; ++idx)
+    FOR_ALL_GA_ITEMS(&exestack, idx)
     {
 	entry = ((estack_T *)exestack.ga_data) + idx;
 	if (entry->es_name != NULL)
@@ -1047,7 +1047,8 @@ expand:
 	if (vim_ispathsep(pat[i]))
 	    ++pat_pathsep_cnt;
 
-    for (int i = 0; i < gap->ga_len; ++i)
+    int i;
+    FOR_ALL_GA_ITEMS(gap, i)
     {
 	char_u *match = ((char_u **)gap->ga_data)[i];
 	char_u *s = match;
@@ -1179,7 +1180,7 @@ ExpandPackAddDir(
     globpath(p_pp, s, &ga, 0, TRUE);
     vim_free(s);
 
-    for (i = 0; i < ga.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&ga, i)
     {
 	match = ((char_u **)ga.ga_data)[i];
 	s = gettail(match);
@@ -2741,7 +2742,7 @@ script_autoload(
 
     // Find the name in the list of previously loaded package names.  Skip
     // "autoload/", it's always the same.
-    for (i = 0; i < ga_loaded.ga_len; ++i)
+    FOR_ALL_GA_ITEMS(&ga_loaded, i)
 	if (STRCMP(((char_u **)ga_loaded.ga_data)[i] + 9, scriptname + 9) == 0)
 	    break;
     if (!reload && i < ga_loaded.ga_len)
