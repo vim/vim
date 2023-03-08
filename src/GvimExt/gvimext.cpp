@@ -907,7 +907,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
     getGvimInvocationW(cmdStrW);
 
     if (gvimExtraOptions == EDIT_WITH_VIM_IN_DIFF_MODE)
-	wcscat(cmdStrW, L" -d");
+	wcscat(cmdStrW, L" -d -O");
     else if (gvimExtraOptions == EDIT_WITH_VIM_USE_TABPAGES)
 	wcscat(cmdStrW, L" -p");
     for (i = 0; i < cbFiles; i++)
