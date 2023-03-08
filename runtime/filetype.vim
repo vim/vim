@@ -1402,6 +1402,9 @@ au BufNewFile,BufRead *.occ			setf occam
 " Octave
 au BufNewFile,BufRead octave.conf,.octaverc,octaverc	setf octave
 
+" Odin
+au BufNewFile,BufRead *.odin			setf odin
+
 " Omnimark
 au BufNewFile,BufRead *.xom,*.xin		setf omnimark
 
