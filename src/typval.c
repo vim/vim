@@ -188,7 +188,11 @@ init_tv(typval_T *varp)
 }
 
     static varnumber_T
-tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
+tv_get_bool_or_number_chk(
+	typval_T    *varp,
+	int	    *denote,
+	int	    want_bool,
+	int	    vim9_string_error) // in Vim9 using a string is an error
 {
     varnumber_T	n = 0L;
 
@@ -210,7 +214,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    emsg(_(e_using_funcref_as_number));
 	    break;
 	case VAR_STRING:
-	    if (in_vim9script())
+	    if (vim9_string_error && in_vim9script())
 	    {
 		emsg_using_string_as(varp, !want_bool);
 		break;
@@ -287,10 +291,22 @@ tv_get_number(typval_T *varp)
     return tv_get_number_chk(varp, &error);	// return 0L on error
 }
 
+/*
+ * Like tv_get_numbe() but in Vim9 script do convert a number in a string to a
+ * number without giving an error.
+ */
+    varnumber_T
+tv_to_number(typval_T *varp)
+{
+    int		error = FALSE;
+
+    return tv_get_bool_or_number_chk(varp, &error, FALSE, FALSE);
+}
+
     varnumber_T
 tv_get_number_chk(typval_T *varp, int *denote)
 {
-    return tv_get_bool_or_number_chk(varp, denote, FALSE);
+    return tv_get_bool_or_number_chk(varp, denote, FALSE, TRUE);
 }
 
 /*
@@ -300,7 +316,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
     varnumber_T
 tv_get_bool(typval_T *varp)
 {
-    return tv_get_bool_or_number_chk(varp, NULL, TRUE);
+    return tv_get_bool_or_number_chk(varp, NULL, TRUE, TRUE);
 }
 
 /*
@@ -310,7 +326,7 @@ tv_get_bool(typval_T *varp)
     varnumber_T
 tv_get_bool_chk(typval_T *varp, int *denote)
 {
-    return tv_get_bool_or_number_chk(varp, denote, TRUE);
+    return tv_get_bool_or_number_chk(varp, denote, TRUE, TRUE);
 }
 
     static float_T

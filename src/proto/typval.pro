@@ -5,6 +5,7 @@ void free_tv(typval_T *varp);
 void clear_tv(typval_T *varp);
 void init_tv(typval_T *varp);
 varnumber_T tv_get_number(typval_T *varp);
+varnumber_T tv_to_number(typval_T *varp);
 varnumber_T tv_get_number_chk(typval_T *varp, int *denote);
 varnumber_T tv_get_bool(typval_T *varp);
 varnumber_T tv_get_bool_chk(typval_T *varp, int *denote);

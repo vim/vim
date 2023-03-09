@@ -8641,8 +8641,9 @@ sort({list} [, {how} [, {dict}]])			*sort()* *E702*
 
 		When {how} is given and it is 'n' then all items will be
 		sorted numerical (Implementation detail: this uses the
-		strtod() function to parse numbers, Strings, Lists, Dicts and
-		Funcrefs will be considered as being 0).
+		strtod() function to parse numbers.  Strings, Lists, Dicts and
+		Funcrefs will be considered as being 0).  Note that this won't
+		sort a list of strings with numbers!
 
 		When {how} is given and it is 'N' then all items will be
 		sorted numerical. This is like 'n' but a string containing
