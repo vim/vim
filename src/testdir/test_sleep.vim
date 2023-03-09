@@ -1,11 +1,7 @@
 " Test for sleep and sleep! commands
 
 func! s:get_time_ms()
-  let timestr = reltimestr(reltime())
-  let dotidx = stridx(timestr, '.')
-  let sec = str2nr(timestr[:dotidx])
-  let msec = str2nr(timestr[dotidx + 1:])
-  return (sec * 1000) + (msec / 1000)
+  return float2nr(reltimefloat(reltime()) * 1000)
 endfunc
 
 func! s:assert_takes_longer(cmd, time_ms)
