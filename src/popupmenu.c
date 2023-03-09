@@ -420,14 +420,8 @@ pum_redraw(void)
 {
     int		row = pum_row;
     int		col;
-    int		attr_norm = highlight_attr[HLF_PNI];
-    int		attr_select = highlight_attr[HLF_PSI];
     int		attr_scroll = highlight_attr[HLF_PSB];
     int		attr_thumb = highlight_attr[HLF_PST];
-    int		attrK_norm = highlight_attr[HLF_PNK];
-    int		attrK_select = highlight_attr[HLF_PSK];
-    int		attrX_norm = highlight_attr[HLF_PNX];
-    int		attrX_select = highlight_attr[HLF_PSX];
     int		attr;
     int		*attrs; // array used for highlights
     int		i;
@@ -440,9 +434,10 @@ pum_redraw(void)
     int		round;
     int		n;
 
-    //		      unused	"word"		"kind"		"extra text"
-    int	attrsN[4] = { 0,	attr_norm,	attrK_norm,	attrX_norm };
-    int	attrsS[4] = { 0,	attr_select,	attrK_select,	attrX_select };
+    int *ha = highlight_attr;
+    //		      "word"		"kind"		"extra text"
+    int	attrsN[3] = { ha[HLF_PNI],	ha[HLF_PNK],	ha[HLF_PNX] };
+    int	attrsS[3] = { ha[HLF_PSI],	ha[HLF_PSK],	ha[HLF_PSX] };
 
     if (call_update_screen)
     {
@@ -478,7 +473,7 @@ pum_redraw(void)
     {
 	idx = i + pum_first;
 	attrs = (idx == pum_selected) ? attrsS : attrsN;
-	attr = attrs[1]; // start with "word" highlight
+	attr = attrs[0]; // start with "word" highlight
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -496,16 +491,16 @@ pum_redraw(void)
 	// Do this 3 times: For the main text, kind and extra info
 	col = pum_col;
 	totwidth = 0;
-	for (round = 1; round <= 3; ++round)
+	for (round = 0; round < 3; ++round)
 	{
 	    attr = attrs[round];
 	    width = 0;
 	    s = NULL;
 	    switch (round)
 	    {
-		case 1: p = pum_array[idx].pum_text; break;
-		case 2: p = pum_array[idx].pum_kind; break;
-		case 3: p = pum_array[idx].pum_extra; break;
+		case 0: p = pum_array[idx].pum_text; break;
+		case 1: p = pum_array[idx].pum_kind; break;
+		case 2: p = pum_array[idx].pum_extra; break;
 	    }
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
@@ -618,15 +613,15 @@ pum_redraw(void)
 			width += w;
 		}
 
-	    if (round > 1)
+	    if (round > 0)
 		n = pum_kind_width + 1;
 	    else
 		n = 1;
 
 	    // Stop when there is nothing more to display.
-	    if (round == 3
-		    || (round == 2 && pum_array[idx].pum_extra == NULL)
-		    || (round == 1 && pum_array[idx].pum_kind == NULL
+	    if (round == 2
+		    || (round == 1 && pum_array[idx].pum_extra == NULL)
+		    || (round == 0 && pum_array[idx].pum_kind == NULL
 					  && pum_array[idx].pum_extra == NULL)
 		    || pum_base_width + n >= pum_width)
 		break;
