@@ -420,11 +420,10 @@ pum_redraw(void)
 {
     int		row = pum_row;
     int		col;
-    int		attr_norm = highlight_attr[HLF_PNI];
-    int		attr_select = highlight_attr[HLF_PSI];
     int		attr_scroll = highlight_attr[HLF_PSB];
     int		attr_thumb = highlight_attr[HLF_PST];
     int		attr;
+    int		*attrs; // array used for highlights
     int		i;
     int		idx;
     char_u	*s;
@@ -434,6 +433,11 @@ pum_redraw(void)
     int		thumb_height = 1;
     int		round;
     int		n;
+
+    int *ha = highlight_attr;
+    //			 "word"		"kind"		"extra text"
+    int	attrsNorm[3] = { ha[HLF_PNI],	ha[HLF_PNK],	ha[HLF_PNX] };
+    int	attrsSel[3] =  { ha[HLF_PSI],	ha[HLF_PSK],	ha[HLF_PSX] };
 
     if (call_update_screen)
     {
@@ -468,7 +472,8 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
-	attr = (idx == pum_selected) ? attr_select : attr_norm;
+	attrs = (idx == pum_selected) ? attrsSel : attrsNorm;
+	attr = attrs[0]; // start with "word" highlight
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -483,18 +488,22 @@ pum_redraw(void)
 		screen_putchar(' ', row, pum_col - 1, attr);
 
 	// Display each entry, use two spaces for a Tab.
-	// Do this 3 times: For the main text, kind and extra info
+	// Do this 3 times:
+	// 0 - main text
+	// 1 - kind
+	// 2 - extra info
 	col = pum_col;
 	totwidth = 0;
-	for (round = 1; round <= 3; ++round)
+	for (round = 0; round < 3; ++round)
 	{
+	    attr = attrs[round];
 	    width = 0;
 	    s = NULL;
 	    switch (round)
 	    {
-		case 1: p = pum_array[idx].pum_text; break;
-		case 2: p = pum_array[idx].pum_kind; break;
-		case 3: p = pum_array[idx].pum_extra; break;
+		case 0: p = pum_array[idx].pum_text; break;
+		case 1: p = pum_array[idx].pum_kind; break;
+		case 2: p = pum_array[idx].pum_extra; break;
 	    }
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
@@ -607,15 +616,15 @@ pum_redraw(void)
 			width += w;
 		}
 
-	    if (round > 1)
+	    if (round > 0)
 		n = pum_kind_width + 1;
 	    else
 		n = 1;
 
 	    // Stop when there is nothing more to display.
-	    if (round == 3
-		    || (round == 2 && pum_array[idx].pum_extra == NULL)
-		    || (round == 1 && pum_array[idx].pum_kind == NULL
+	    if (round == 2
+		    || (round == 1 && pum_array[idx].pum_extra == NULL)
+		    || (round == 0 && pum_array[idx].pum_kind == NULL
 					  && pum_array[idx].pum_extra == NULL)
 		    || pum_base_width + n >= pum_width)
 		break;

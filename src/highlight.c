@@ -164,6 +164,10 @@ static char *(highlight_init_both[]) = {
     "default link CursorLineSign SignColumn",
     "default link CursorLineFold FoldColumn",
     "default link CurSearch Search",
+    "default link PmenuKind Pmenu",
+    "default link PmenuKindSel PmenuSel",
+    "default link PmenuExtra Pmenu",
+    "default link PmenuExtraSel PmenuSel",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
     NULL
 };

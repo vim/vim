@@ -1418,8 +1418,8 @@ typedef enum auto_event event_T;
 
 /*
  * Values for index in highlight_attr[].
- * When making changes, also update HL_FLAGS below!  And update the default
- * value of 'highlight' in option.c.
+ * When making changes, also update HL_FLAGS below!
+ * And update the default value of 'highlight': HIGHLIGHT_INIT in optiondefs.h
  */
 typedef enum
 {
@@ -1465,6 +1465,10 @@ typedef enum
     , HLF_SPL	    // SpellLocal
     , HLF_PNI	    // popup menu normal item
     , HLF_PSI	    // popup menu selected item
+    , HLF_PNK	    // popup menu normal item "kind"
+    , HLF_PSK	    // popup menu selected item "kind"
+    , HLF_PNX	    // popup menu normal item "menu" (extra text)
+    , HLF_PSX	    // popup menu selected item "menu" (extra text)
     , HLF_PSB	    // popup menu scrollbar
     , HLF_PST	    // popup menu scrollbar thumb
     , HLF_TP	    // tabpage line
@@ -1485,7 +1489,8 @@ typedef enum
 		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', 'x', 'X', '*', '#', '_', '!', '.', 'o', 'q', \
+		  '+', '=', '[', ']', '{', '}', 'x', 'X', \
+		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z'}
 
 /*
