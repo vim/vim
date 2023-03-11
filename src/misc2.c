@@ -2473,9 +2473,13 @@ vim_chdir(char_u *new_dir)
 {
     char_u	*dir_name;
     int		r;
+    char_u	*file_to_find = NULL;
+    char	*search_ctx = NULL;
 
     dir_name = find_directory_in_path(new_dir, (int)STRLEN(new_dir),
-						FNAME_MESS, curbuf->b_ffname);
+		     FNAME_MESS, curbuf->b_ffname, &file_to_find, &search_ctx);
+    vim_free(file_to_find);
+    vim_findfile_cleanup(search_ctx);
     if (dir_name == NULL)
 	return -1;
     r = mch_chdir((char *)dir_name);
