@@ -150,6 +150,7 @@ NEW_TESTS = \
 	test_fnameescape \
 	test_fnamemodify \
 	test_fold \
+	test_format \
 	test_functions \
 	test_function_lists \
 	test_ga \

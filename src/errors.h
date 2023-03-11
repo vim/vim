@@ -3455,3 +3455,15 @@ EXTERN char e_cannot_use_non_null_object[]
 EXTERN char e_incomplete_type[]
 	INIT(= N_("E1363: Incomplete type"));
 #endif
+EXTERN char e_cannot_mix_positional_and_non_positional_str[]
+	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
+EXTERN char e_fmt_arg_nr_unused_str[]
+	INIT(= N_("E1401: format argument %d unused in $-style format: %s"));
+EXTERN char e_positional_num_field_spec_reused_str_str[]
+	INIT(= N_("E1402: Positional argument %d used as field width reused as different type: %s/%s"));
+EXTERN char e_positional_nr_out_of_bounds_str[]
+	INIT(= N_("E1403: Positional argument %d out of bounds: %s"));
+EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
+	INIT(= N_("E1404: Positional argument %d type used inconsistently: %s/%s"));
+EXTERN char e_invalid_format_specifier_str[]
+	INIT(= N_("E1405: Invalid format specifier: %s"));

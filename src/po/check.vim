@@ -27,8 +27,12 @@ func! GetMline()
   " remove '%' used for plural forms.
   let idline = substitute(idline, '\\nPlural-Forms: .\+;\\n', '', '')
 
+  " remove duplicate positional format arguments
+
+  let idline = substitute(idline, '\(%[-+ #''.*]*\)\([0-9]*\)$\(l\=[dsuxXpoc%]\)\(.*\)\(%[-+ #''.*]*\)\2$\(l\=[dsuxXpoc%]\)', '\1\2$\3\4', 'g')
+
   " remove everything but % items.
-  return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
+  return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*$?l\=[dsuxXpoc%]\)\=', '\1', 'g')
 endfunc
 
 " This only works when 'wrapscan' is not set.
