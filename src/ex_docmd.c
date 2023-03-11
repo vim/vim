@@ -6767,8 +6767,13 @@ ex_splitview(exarg_T *eap)
 
     if (eap->cmdidx == CMD_sfind || eap->cmdidx == CMD_tabfind)
     {
+	char_u	*file_to_find = NULL;
+	char	*search_ctx = NULL;
 	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
-					  FNAME_MESS, TRUE, curbuf->b_ffname);
+					  FNAME_MESS, TRUE, curbuf->b_ffname,
+					  &file_to_find, &search_ctx);
+	vim_free(file_to_find);
+	vim_findfile_cleanup(search_ctx);
 	if (fname == NULL)
 	    goto theend;
 	eap->arg = fname;
@@ -7032,21 +7037,25 @@ ex_find(exarg_T *eap)
 {
     char_u	*fname;
     int		count;
+    char_u	*file_to_find = NULL;
+    char	*search_ctx = NULL;
 
     fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg), FNAME_MESS,
-						      TRUE, curbuf->b_ffname);
+			   TRUE, curbuf->b_ffname, &file_to_find, &search_ctx);
     if (eap->addr_count > 0)
     {
-	// Repeat finding the file "count" times.  This matters when it
-	// appears several times in the path.
+	// Repeat finding the file "count" times.  This matters when it appears
+	// several times in the path.
 	count = eap->line2;
 	while (fname != NULL && --count > 0)
 	{
 	    vim_free(fname);
 	    fname = find_file_in_path(NULL, 0, FNAME_MESS,
-						     FALSE, curbuf->b_ffname);
+			  FALSE, curbuf->b_ffname, &file_to_find, &search_ctx);
 	}
     }
+    VIM_CLEAR(file_to_find);
+    vim_findfile_cleanup(search_ctx);
 
     if (fname == NULL)
 	return;
@@ -7057,7 +7066,7 @@ ex_find(exarg_T *eap)
 }
 
 /*
- * ":open" simulation: for now just work like ":visual".
+ * ":open" simulation: for now works just like ":visual".
  */
     static void
 ex_open(exarg_T *eap)
@@ -7138,13 +7147,6 @@ do_exedit(
 	    // Special case:  ":global/pat/visual\NLvi-commands"
 	    if (global_busy)
 	    {
-		int	rd = RedrawingDisabled;
-		int	nwr = no_wait_return;
-		int	ms = msg_scroll;
-#ifdef FEAT_GUI
-		int	he = hold_gui_events;
-#endif
-
 		if (eap->nextcmd != NULL)
 		{
 		    stuffReadbuff(eap->nextcmd);
@@ -7153,11 +7155,15 @@ do_exedit(
 
 		if (exmode_was != EXMODE_VIM)
 		    settmode(TMODE_RAW);
+		int save_rd = RedrawingDisabled;
 		RedrawingDisabled = 0;
+		int save_nwr = no_wait_return;
 		no_wait_return = 0;
 		need_wait_return = FALSE;
+		int save_ms = msg_scroll;
 		msg_scroll = 0;
 #ifdef FEAT_GUI
+		int save_he = hold_gui_events;
 		hold_gui_events = 0;
 #endif
 		set_must_redraw(UPD_CLEAR);
@@ -7166,11 +7172,11 @@ do_exedit(
 		main_loop(FALSE, TRUE);
 
 		pending_exmode_active = FALSE;
-		RedrawingDisabled = rd;
-		no_wait_return = nwr;
-		msg_scroll = ms;
+		RedrawingDisabled = save_rd;
+		no_wait_return = save_nwr;
+		msg_scroll = save_ms;
 #ifdef FEAT_GUI
-		hold_gui_events = he;
+		hold_gui_events = save_he;
 #endif
 	    }
 	    return;
