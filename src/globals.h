@@ -1875,6 +1875,19 @@ EXTERN char line_msg[]	    INIT(= N_(" line "));
 EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));
 #endif
 
+extern char typename_unknown[]	INIT(= N_("unknown"));
+extern char typename_int[]  INIT(= N_("int"));
+extern char typename_longint[]	INIT(= N_("long int"));
+extern char typename_longlongint[]  INIT(= N_("long long int"));
+extern char typename_unsignedint[]  INIT(= N_("unsigned int"));
+extern char typename_unsignedlongint[]	INIT(= N_("unsigned long int"));
+extern char typename_unsignedlonglongint[]  INIT(= N_("unsigned long long int"));
+extern char typename_pointer[]	INIT(= N_("pointer"));
+extern char typename_percent[]	INIT(= N_("percent"));
+extern char typename_char[] INIT(= N_("char"));
+extern char typename_string[]	INIT(= N_("string"));
+extern char typename_float[]	INIT(= N_("float"));
+
 /*
  * Comms. with the session manager (XSMP)
  */

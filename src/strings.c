@@ -2072,19 +2072,6 @@ enum
 
 /* Types that can be used in a format string
  */
-char typename_unknown[]	    		INIT(= N_("unknown"));
-char typename_int[]	    		INIT(= N_("int"));
-char typename_longint[]	    		INIT(= N_("long int"));
-char typename_longlongint[]		INIT(= N_("long long int"));
-char typename_unsignedint[]		INIT(= N_("unsigned int"));
-char typename_unsignedlongint[]		INIT(= N_("unsigned long int"));
-char typename_unsignedlonglongint[]	INIT(= N_("unsigned long long int"));
-char typename_pointer[]			INIT(= N_("pointer"));
-char typename_percent[]			INIT(= N_("percent"));
-char typename_char[]			INIT(= N_("char"));
-char typename_string[]			INIT(= N_("string"));
-char typename_float[]			INIT(= N_("float"));
-
     int
 format_typeof(
     const char	*type,
