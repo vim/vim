@@ -39,6 +39,9 @@
 char *fmt_012p = "%012p";
 char *fmt_5S   = "%5S";
 char *fmt_06b  = "%06b";
+char *fmt_06pb = "%01$.*2$b";
+char *fmt_212s = "%2$s %1$s %2$s";
+char *fmt_21s  = "%2$s %1$s";
 
 /*
  * Test trunc_string().
@@ -216,7 +219,7 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "1.00000001e7", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$s %1$s %2$s", "one", "two", "three");
+	n = vim_snprintf(buf, bsize, fmt_212s, "one", "two", "three");
 	assert(n == 11);
 	assert(bsize == 0 || STRNCMP(buf, "two one two", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
@@ -236,7 +239,7 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "deadbeef", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%01$.*2$b", (uvarnumber_T)12, 6);
+	n = vim_snprintf(buf, bsize, fmt_06pb, (uvarnumber_T)12, 6);
 	assert(n == 6);
 	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
@@ -281,7 +284,7 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "one two", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$s %1$s", "one", "two", "three");
+	n = vim_snprintf(buf, bsize, fmt_21s, "one", "two", "three");
 	assert(n == 7);
 	assert(bsize == 0 || STRNCMP(buf, "two one", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
