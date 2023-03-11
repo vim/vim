@@ -2088,7 +2088,7 @@ char typename_float[]			INIT(= N_("float"));
     int
 format_typeof(
     const char	*type,
-    int		usetvs)
+    int		usetvs UNUSED)
 {
     // allowed values: \0, h, l, L
     char    length_modifier = '\0';
@@ -2206,10 +2206,9 @@ format_typeof(
     case 'g':
     case 'G':
 	return TYPE_FLOAT;
-
-    default:
-	return TYPE_UNKNOWN;
     }
+
+    return TYPE_UNKNOWN;
 }
 
     char *
@@ -2258,7 +2257,6 @@ format_typename(
     int
 adjust_types(
     const char ***ap_types,
-    const char *fmt,
     int arg,
     int *num_posarg,
     const char *type)
@@ -2322,7 +2320,8 @@ parse_fmt_types(
     const char  ***ap_types,
     int		*num_posarg,
     const char  *fmt,
-    typval_T	*tvs)
+    typval_T	*tvs UNUSED
+    )
 {
     const char	*p = fmt;
     const char	*arg = NULL;
@@ -2421,8 +2420,6 @@ parse_fmt_types(
 	    // parse field width
 	    if (*(arg = p) == '*')
 	    {
-		int j;
-
 		p++;
 
 		if (VIM_ISDIGIT((int)(*p)))
@@ -2444,7 +2441,7 @@ parse_fmt_types(
 			any_pos = 1;
 			CHECK_POS_ARG;
 
-			if (adjust_types(ap_types, fmt, uj, num_posarg, arg) == FAIL)
+			if (adjust_types(ap_types, uj, num_posarg, arg) == FAIL)
 			    goto error;
 		    }
 		}
@@ -2468,7 +2465,7 @@ parse_fmt_types(
 		    any_pos = 1;
 		    CHECK_POS_ARG;
 
-		    if (adjust_types(ap_types, fmt, uj, num_posarg, arg) == FAIL)
+		    if (adjust_types(ap_types, uj, num_posarg, arg) == FAIL)
 			goto error;
 		}
 		else
@@ -2500,8 +2497,6 @@ parse_fmt_types(
 
 		if (*(arg = p) == '*')
 		{
-		    int j;
-
 		    p++;
 
 		    if (VIM_ISDIGIT((int)(*p)))
@@ -2519,7 +2514,7 @@ parse_fmt_types(
 
 			    ++p;
 
-			    if (adjust_types(ap_types, fmt, uj, num_posarg, arg) == FAIL)
+			    if (adjust_types(ap_types, uj, num_posarg, arg) == FAIL)
 				goto error;
 			}
 			else
@@ -2599,7 +2594,7 @@ parse_fmt_types(
 		case 'G':
 		    if (pos_arg != -1)
 		    {
-			if (adjust_types(ap_types, fmt, pos_arg, num_posarg, ptype) == FAIL)
+			if (adjust_types(ap_types, pos_arg, num_posarg, ptype) == FAIL)
 			    goto error;
 		    }
 		    else
@@ -3748,7 +3743,6 @@ vim_vsnprintf_typval(
     if (tvs != NULL && tvs[num_posarg != 0 ? num_posarg : arg_idx - 1].v_type != VAR_UNKNOWN)
 	emsg(_(e_too_many_arguments_to_printf));
 
-error:
     vim_free(ap_types);
     va_end(ap);
 
