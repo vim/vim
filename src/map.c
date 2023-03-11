@@ -266,7 +266,7 @@ map_add(
     mp->m_simplified = simplified;
 #ifdef FEAT_EVAL
     mp->m_expr = expr;
-    if (sid > 0)
+    if (sid != 0)
     {
 	mp->m_script_ctx.sc_sid = sid;
 	mp->m_script_ctx.sc_lnum = lnum;
@@ -924,7 +924,7 @@ do_map(
 	if (map_add(map_table, abbr_table, keys, rhs, orig_rhs,
 		    noremap, nowait, silent, mode, abbrev,
 #ifdef FEAT_EVAL
-		    expr, /* sid */ -1, /* scriptversion */ 0, /* lnum */ 0,
+		    expr, /* sid */ 0, /* scriptversion */ 0, /* lnum */ 0,
 #endif
 		    keyround1_simplified) == FAIL)
 	{
