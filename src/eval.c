@@ -6885,20 +6885,17 @@ handle_subscript(
 		*arg = skipwhite(p + 2);
 	    else
 		*arg = p + 2;
-	    if (ret == OK)
+	    if (VIM_ISWHITE(**arg))
 	    {
-		if (VIM_ISWHITE(**arg))
-		{
-		    emsg(_(e_no_white_space_allowed_before_parenthesis));
-		    ret = FAIL;
-		}
-		else if ((**arg == '{' && !in_vim9script()) || **arg == '(')
-		    // expr->{lambda}() or expr->(lambda)()
-		    ret = eval_lambda(arg, rettv, evalarg, verbose);
-		else
-		    // expr->name()
-		    ret = eval_method(arg, rettv, evalarg, verbose);
+		emsg(_(e_no_white_space_allowed_before_parenthesis));
+		ret = FAIL;
 	    }
+	    else if ((**arg == '{' && !in_vim9script()) || **arg == '(')
+		// expr->{lambda}() or expr->(lambda)()
+		ret = eval_lambda(arg, rettv, evalarg, verbose);
+	    else
+		// expr->name()
+		ret = eval_method(arg, rettv, evalarg, verbose);
 	}
 	// "." is ".name" lookup when we found a dict or when evaluating and
 	// scriptversion is at least 2, where string concatenation is "..".
