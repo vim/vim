@@ -1262,6 +1262,12 @@ class_object_index(
 	cl = rettv->vval.v_object->obj_class;
     }
 
+    if (cl == NULL)
+    {
+	emsg(_(e_incomplete_type));
+	return FAIL;
+    }
+
     if (*name_end == '(')
     {
 	int on_class = rettv->v_type == VAR_CLASS;

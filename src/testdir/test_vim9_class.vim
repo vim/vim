@@ -203,6 +203,13 @@ def Test_returning_null_object()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_using_null_class()
+  var lines =<< trim END
+      @_ = null_class.member
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E715:', 'E1363:'])
+enddef
+
 def Test_class_interface_wrong_end()
   var lines =<< trim END
       vim9script
