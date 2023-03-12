@@ -340,7 +340,7 @@ function, the function does not need to be defined more than once: >
 
 Variable declarations with :var, :final and :const ~
 				*vim9-declaration* *:var* *E1079*
-				*E1017* *E1020* *E1054* *E1087* *E1108* *E1124*
+				*E1017* *E1020* *E1054* *E1087* *E1124*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
 section.
@@ -1664,8 +1664,8 @@ type, it can not be used in Vim9 script.
 
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
-			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
-			 *E1256* *E1297* *E1298* *E1301*
+			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
+			 *E1297* *E1298* *E1301*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 

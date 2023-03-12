@@ -3569,6 +3569,7 @@ one_letter_cmd(char_u *p, cmdidx_T *idx)
     return FALSE;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if "cmd" starts with "123->", a number followed by a method
  * call.
@@ -3580,6 +3581,7 @@ number_method(char_u *cmd)
 
     return p > cmd && (p = skipwhite(p))[0] == '-' && p[1] == '>';
 }
+#endif
 
 /*
  * Find an Ex command by its name, either built-in or user.

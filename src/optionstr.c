@@ -429,6 +429,8 @@ set_string_option_direct(
 # endif
 }
 
+#if defined(FEAT_PROP_POPUP) || \
+    (defined(FEAT_DIFF) && defined(FEAT_FOLDING)) || defined(PROTO)
 /*
  * Like set_string_option_direct(), but for a window-local option in "wp".
  * Blocks autocommands to avoid the old curwin becoming invalid.
@@ -452,6 +454,7 @@ set_string_option_direct_in_win(
     curbuf = curwin->w_buffer;
     unblock_autocmds();
 }
+#endif
 
 #if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*

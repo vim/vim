@@ -2948,6 +2948,7 @@ vim_regexec_string(
     return result > 0;
 }
 
+#if defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(FEAT_X11) || defined(PROTO)
 /*
  * Note: "*prog" may be freed and changed.
  * Return TRUE if there is a match, FALSE if not.
@@ -2968,6 +2969,7 @@ vim_regexec_prog(
     *prog = regmatch.regprog;
     return r;
 }
+#endif
 
 /*
  * Note: "rmp->regprog" may be freed and changed.

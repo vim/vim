@@ -1182,8 +1182,10 @@ EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+#ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str_expected_str[]
 	INIT(= N_("E476: Invalid command: %s, expected %s"));
+#endif
 EXTERN char e_no_bang_allowed[]
 	INIT(= N_("E477: No ! allowed"));
 EXTERN char e_dont_panic[]
@@ -1208,8 +1210,10 @@ EXTERN char e_pattern_not_found_str[]
 	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_argument_must_be_positive[]
 	INIT(= N_("E487: Argument must be positive"));
+#ifdef FEAT_PROP_POPUP
 EXTERN char e_argument_must_be_positive_str[]
 	INIT(= N_("E487: Argument must be positive: %s"));
+#endif
 EXTERN char e_trailing_characters[]
 	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_characters_str[]
@@ -1370,10 +1374,12 @@ EXTERN char e_illegal_mode[]
 EXTERN char e_illegal_mouseshape[]
 	INIT(= N_("E547: Illegal mouseshape"));
 #endif
+#ifdef CURSOR_SHAPE
 EXTERN char e_digit_expected[]
 	INIT(= N_("E548: Digit expected"));
 EXTERN char e_illegal_percentage[]
 	INIT(= N_("E549: Illegal percentage"));
+#endif
 #ifdef FEAT_PRINTER
 EXTERN char e_missing_colon_3[]
 	INIT(= N_("E550: Missing colon"));
@@ -2039,14 +2045,12 @@ EXTERN char e_id_not_found_nr[]
 EXTERN char e_cannot_use_percent_with_float[]
 	// xgettext:no-c-format
 	INIT(= N_("E804: Cannot use '%' with Float"));
-#endif
 EXTERN char e_using_float_as_number[]
 	INIT(= N_("E805: Using a Float as a Number"));
 EXTERN char e_using_float_as_string[]
 	INIT(= N_("E806: Using a Float as a String"));
 EXTERN char e_expected_float_argument_for_printf[]
 	INIT(= N_("E807: Expected Float argument for printf()"));
-#if defined(FEAT_EVAL)
 EXTERN char e_number_or_float_required[]
 	INIT(= N_("E808: Number or Float required"));
 #endif
@@ -2270,8 +2274,10 @@ EXTERN char e_not_possible_to_change_sign_str[]
 EXTERN char e_cant_rename_viminfo_file_to_str[]
 	INIT(= N_("E886: Can't rename viminfo file to %s!"));
 #endif
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 EXTERN char e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded[]
 	INIT(= N_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
+#endif
 EXTERN char e_nfa_regexp_cannot_repeat_str[]
 	INIT(= N_("E888: (NFA regexp) cannot repeat %s"));
 #ifdef FEAT_PROP_POPUP
@@ -2282,6 +2288,7 @@ EXTERN char e_number_required[]
 EXTERN char e_trailing_char_after_rsb_str_str[]
 	INIT(= N_("E890: Trailing char after ']': %s]%s"));
 #endif
+#ifdef FEAT_EVAL
 EXTERN char e_using_funcref_as_float[]
 	INIT(= N_("E891: Using a Funcref as a Float"));
 EXTERN char e_using_string_as_float[]
@@ -2290,6 +2297,7 @@ EXTERN char e_using_list_as_float[]
 	INIT(= N_("E893: Using a List as a Float"));
 EXTERN char e_using_dictionary_as_float[]
 	INIT(= N_("E894: Using a Dictionary as a Float"));
+#endif
 #ifdef FEAT_MZSCHEME
 EXTERN char e_sorry_this_command_is_disabled_the_mzscheme_racket_base_module_could_not_be_loaded[]
 	INIT(= N_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
@@ -2330,9 +2338,9 @@ EXTERN char e_received_unknown_command_str[]
 EXTERN char e_not_an_open_channel[]
 	INIT(= N_("E906: Not an open channel"));
 #endif
+#ifdef FEAT_EVAL
 EXTERN char e_using_special_value_as_float[]
 	INIT(= N_("E907: Using a special value as a Float"));
-#ifdef FEAT_EVAL
 EXTERN char e_using_invalid_value_as_string_str[]
 	INIT(= N_("E908: Using an invalid value as a String: %s"));
 EXTERN char e_cannot_index_special_variable[]
@@ -2367,8 +2375,6 @@ EXTERN char e_io_file_requires_name_to_be_set[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_callback_argument[]
 	INIT(= N_("E921: Invalid callback argument"));
-EXTERN char e_expected_dict[]
-	INIT(= N_("E922: Expected a dict"));
 EXTERN char e_second_argument_of_function_must_be_list_or_dict[]
 	INIT(= N_("E923: Second argument of function() must be a list or a dict"));
 #endif
@@ -2831,8 +2837,6 @@ EXTERN char e_nr_arguments_too_many[]
 	INIT(= N_("E1106: %d arguments too many"));
 EXTERN char e_string_list_dict_or_blob_required[]
 	INIT(= N_("E1107: String, List, Dict or Blob required"));
-EXTERN char e_item_not_found_str[]
-	INIT(= N_("E1108: Item not found: %s"));
 EXTERN char e_list_item_nr_is_not_list[]
 	INIT(= N_("E1109: List item %d is not a List"));
 EXTERN char e_list_item_nr_does_not_contain_3_numbers[]
@@ -3186,8 +3190,6 @@ EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
 	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
-EXTERN char e_string_expected_for_argument_nr[]
-	INIT(= N_("E1253: String expected for argument %d"));
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
 #endif
@@ -3274,12 +3276,14 @@ EXTERN char e_could_not_clear_timeout_str[]
 	INIT(= N_("E1285: Could not clear timeout: %s"));
 EXTERN char e_could_not_set_timeout_str[]
 	INIT(= N_("E1286: Could not set timeout: %s"));
+#ifndef HAVE_TIMER_CREATE
 EXTERN char e_could_not_set_handler_for_timeout_str[]
 	INIT(= N_("E1287: Could not set handler for timeout: %s"));
 EXTERN char e_could_not_reset_handler_for_timeout_str[]
 	INIT(= N_("E1288: Could not reset handler for timeout: %s"));
 EXTERN char e_could_not_check_for_pending_sigalrm_str[]
 	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
+#endif
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_substitute_nesting_too_deep[]
