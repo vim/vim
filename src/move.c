@@ -662,6 +662,7 @@ changed_window_setting_win(win_T *wp)
     redraw_win_later(wp, UPD_NOT_VALID);
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Call changed_window_setting_win() for every window containing "buf".
  */
@@ -675,6 +676,7 @@ changed_window_setting_buf(buf_T *buf)
 	if (wp->w_buffer == buf)
 	    changed_window_setting_win(wp);
 }
+#endif
 
 /*
  * Set wp->w_topline to a certain number.
@@ -744,6 +746,7 @@ changed_line_abv_curs_win(win_T *wp)
 						|VALID_CHEIGHT|VALID_TOPLINE);
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Display of line has changed for "buf", invalidate cursor position and
  * w_botline.
@@ -759,6 +762,7 @@ changed_line_display_buf(buf_T *buf)
 				|VALID_CROW|VALID_CHEIGHT
 				|VALID_TOPLINE|VALID_BOTLINE|VALID_BOTLINE_AP);
 }
+#endif
 
 /*
  * Make sure the value of curwin->w_botline is valid.
