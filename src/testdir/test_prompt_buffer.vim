@@ -252,4 +252,28 @@ func Test_prompt_while_writing_to_hidden_buffer()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prompt_appending_while_hidden()
+  call CanTestPromptBuffer()
+
+  let scriptName = 'XpromptscriptHiddenPrompt'
+  let script =<< trim END
+    new prompt
+    set buftype=prompt
+    set bufhidden=hide
+    startinsert
+    close
+    call appendbufline('prompt', '$', 'Test')
+  END
+  eval script->writefile(scriptName, 'D')
+
+  let buf = RunVimInTerminal('-S ' .. scriptName, {'rows': 10})
+  call TermWait(buf)
+  call term_sendkeys(buf, 'j')
+  call TermWait(buf)
+  call assert_notmatch('-- INSERT --', term_getline(buf, 10))
+
+  call StopVimInTerminal(buf)
+  call delete(scriptName)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

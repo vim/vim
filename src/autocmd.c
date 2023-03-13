@@ -1657,6 +1657,10 @@ aucmd_restbuf(
 	    }
 	}
 win_found:
+#ifdef FEAT_JOB_CHANNEL
+	// May need to stop insert mode if we were in a prompt buffer.
+	leaving_window(curwin);
+#endif
 
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);
