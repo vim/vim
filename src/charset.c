@@ -907,6 +907,7 @@ vim_isfilec(int c)
     return (c >= 0x100 || (c > 0 && (g_chartab[c] & CT_FNAME_CHAR)));
 }
 
+#if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return TRUE if 'c' is a valid file-name character, including characters left
  * out of 'isfname' to make "gf" work, such as comma, space, '@', etc.
@@ -916,6 +917,7 @@ vim_is_fname_char(int c)
 {
     return vim_isfilec(c) || c == ',' || c == ' ' || c == '@';
 }
+#endif
 
 /*
  * return TRUE if 'c' is a valid file-name character or a wildcard character
