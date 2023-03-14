@@ -1,0 +1,104 @@
+*ft_rpgle.txt*	For Vim version 9.0.  Last change: 2023 Mar 14`
+
+by Andreas Louv <andreas@louv.dk>
+
+INTRODUCTION					*ft-rpgle*
+
+This is a filetype plugin to work with Free-Form ILE RPG programs.
+
+VARIABLES					*ft-rpgle-variables*
+
+						*g:rpgle_indentStart*
+`g:rpgle_indentStart`	Set the number of leading spaces that should be used
+			when no previous line is to be accounted for.
+
+						*g:no_rpgle_maps*
+`g:no_rpgle_maps`	Set to |v:true| to disable mappings defined in
+			|ft-rpgle-movements| and |ft-rpgle-operator-pending|.
+
+						*g:rpgle_spellString*
+`g:rpgle_spellString`	Set to |v:false| to disable spell checking in string
+			constants.
+
+FILETYPE DETECT					*ft-rpgle-detect*
+
+File ending with ".rpgle" and ".rpgleinc" are detected as ILE RPG files.
+
+INDENT						*ft-rpgle-indent*
+
+Enable by adding the following to your |vimrc| >
+	:filetype indent on
+<
+SYNTAX						*ft-rpgle-syntax*
+
+Enable by adding the following to your |vimrc| >
+	:syntax enable
+<
+SYNTAX FOLDS					*ft-rpgle-fold*
+
+Settings |foldmethod| to 'syntax' to enable the following folds: >
+	if		-> endif
+	dow		-> enddo
+	dou		-> enddo
+	for		-> endfor
+	select		-> endsl
+	dcl-proc	-> end-proc
+	begsr		-> endsr
+<
+MATCH WORDS					*ft-rpgle-match-words*
+
+Enable by adding the following to your |vimrc| >
+	:packadd! matchit
+<
+The following match words is supported: >
+	select		-> when		-> other	-> endsl
+	if		-> elseif	-> else		-> endif
+	dow		-> iter		-> leave	-> enddo
+	dou		-> iter		-> leave	-> enddo
+	for		-> iter		-> leave	-> endfor
+	begsr		-> endsr
+	dcl-proc	-> return	-> end-proc
+	dcl-pi		-> end-pi
+	dcl-pr		-> end-pr
+	monitor		-> on-error	-> endmon
+<
+MOVEMENTS					*ft-rpgle-movements*
+
+Enable by adding the following to your |vimrc| >
+	:filetype on
+<
+						*ft-rpgle-[[*
+[[			Jump to previous dcl-proc keyword
+						*ft-rpgle-]]*
+]]			Jump to next dcl-proc keyword
+						*ft-rpgle-[]*
+[]			Jump to previous end-proc keyword
+						*ft-rpgle-][*
+][			Jump to next end-proc keyword
+						*ft-rpgle-gd*
+gd			Goto local Declaration. When the cursor is on a local
+			variable, this command will jump to its declaration.
+			Use |gD| to goto global declaration.
+						*ft-rpgle-[{*
+[{			Jump back to the block opener at the start of the
+			current code block, i.e. pressing |[{| inside an
+			if-statement will jump to the if keyword.
+						*ft-rpgle-]}*
+]}			Jump forward to the block closer at the end of the
+			current code block, i.e. pressing |]}| inside an
+			if-statement will jump to the endif keyword.
+
+OPERATOR PENDING				*ft-rpgle-operator-pending*
+
+Enable by adding the following to your |vimrc| >
+	:filetype on
+<
+a}						*ft-rpgle-a}* *ft-rpgle-a{*
+a{						*ft-rpgle-aB*
+aB			See |aB|
+
+i}						*ft-rpgle-i}* *ft-rpgle-i{*
+i{						*ft-rpgle-iB*
+iB			See |iB|
+
+vim:tw=78:ts=8:ft=help:norl:
