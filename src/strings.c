@@ -2289,7 +2289,7 @@ adjust_types(
 	}
 	else
 	{
-	    if (format_typeof(type, TRUE) != format_typeof((*ap_types)[arg - 1], TRUE))
+	    if (format_typeof(type, FALSE) != format_typeof((*ap_types)[arg - 1], FALSE))
 	    {
 		semsg(_( e_positional_arg_num_type_inconsistent_str_str), arg, format_typename(type), format_typename((*ap_types)[arg - 1]));
 		return FAIL;
