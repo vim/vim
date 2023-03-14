@@ -17,6 +17,7 @@ runtime/autoload/netrw.vim		@cecamp
 runtime/autoload/netrwFileHandlers.vim	@cecamp
 runtime/autoload/netrwSettings.vim	@cecamp
 runtime/autoload/php.vim		@david-szabo97
+runtime/autoload/rpgle.vim		@andlrc
 runtime/autoload/rubycomplete.vim	@segfault @dkearns
 runtime/autoload/tar.vim		@cecamp
 runtime/autoload/vimball.vim		@cecamp
@@ -104,6 +105,7 @@ runtime/doc/pi_tar.txt			@cecamp
 runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
 runtime/doc/ps1.txt			@heaths
+runtime/doc/ft_rpgle.txt		@andlrc
 runtime/ftplugin/abaqus.vim		@costerwi
 runtime/ftplugin/apache.vim		@dubgeiser 
 runtime/ftplugin/awk.vim		@dkearns
@@ -187,6 +189,7 @@ runtime/ftplugin/rhelp.vim		@jalvesaq
 runtime/ftplugin/rmd.vim		@jalvesaq
 runtime/ftplugin/rnoweb.vim		@jalvesaq
 runtime/ftplugin/routeros.vim		@zainin
+runtime/ftplugin/rpgle.vim		@andlrc
 runtime/ftplugin/rrst.vim		@jalvesaq
 runtime/ftplugin/rst.vim		@marshallward
 runtime/ftplugin/ruby.vim		@tpope @dkearns
@@ -271,6 +274,7 @@ runtime/indent/readline.vim		@dkearns
 runtime/indent/rhelp.vim		@jalvesaq
 runtime/indent/rmd.vim			@jalvesaq
 runtime/indent/rnoweb.vim		@jalvesaq
+runtime/indent/rpgle.vim		@andlrc
 runtime/indent/rrst.vim			@jalvesaq
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
@@ -431,6 +435,7 @@ runtime/syntax/rmd.vim			@jalvesaq
 runtime/syntax/rng.vim			@jhradilek
 runtime/syntax/routeros.vim		@zainin
 runtime/syntax/rpcgen.vim		@cecamp
+runtime/syntax/rpgle.vim		@andlrc
 runtime/syntax/rrst.vim			@jalvesaq
 runtime/syntax/rst.vim			@marshallward
 runtime/syntax/ruby.vim			@dkearns
