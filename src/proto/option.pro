@@ -94,7 +94,6 @@ int get_option_value_strict(char_u *name, long *numval, char_u **stringval, int 
 char_u *option_iter_next(void **option, int opt_type);
 long_u get_option_flags(int opt_idx);
 void set_option_flag(int opt_idx, long_u flag);
-void clear_option_flag(int opt_idx, long_u flag);
 int is_global_option(int opt_idx);
 int is_global_local_option(int opt_idx);
 int is_window_local_option(int opt_idx);

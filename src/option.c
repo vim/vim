@@ -5246,15 +5246,6 @@ set_option_flag(int opt_idx, long_u flag)
 }
 
 /*
- * Clear a flag for the option at 'opt_idx'.
- */
-    void
-clear_option_flag(int opt_idx, long_u flag)
-{
-    options[opt_idx].flags &= ~flag;
-}
-
-/*
  * Returns TRUE if the option at 'opt_idx' is a global option
  */
     int
