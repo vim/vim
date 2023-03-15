@@ -156,7 +156,7 @@ func Test_FileChangedShell_edit_dialog()
   call feedkeys('L', 'L') " load file content only
   checktime
   call assert_equal('changed', g:reason)
-  call assert_equal(&fileformat, 'unix')
+  call assert_equal('unix', &fileformat)
   call assert_equal("line1\r", getline(1))
   call assert_equal("line2\r", getline(2))
   %s/\r
@@ -170,10 +170,10 @@ func Test_FileChangedShell_edit_dialog()
   call assert_equal(&fileformat, 'unix')
   call writefile(["line1\r", "line2\r"], 'Xchanged_r')
   let g:reason = ''
-  call feedkeys('a', 'L') " load file content and options
+  call feedkeys('p', 'L') " load file content and options
   checktime
   call assert_equal('changed', g:reason)
-  call assert_equal(&fileformat, 'dos')
+  call assert_equal('dos', &fileformat)
   call assert_equal("line1", getline(1))
   call assert_equal("line2", getline(2))
   set fileformat=unix

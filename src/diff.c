@@ -878,12 +878,16 @@ diff_try_update(
 
     // :diffupdate!
     if (eap != NULL && eap->forceit)
+    {
+	reset_buf_default_reload_choice();
 	for (idx_new = idx_orig; idx_new < DB_COUNT; ++idx_new)
 	{
 	    buf = curtab->tp_diffbuf[idx_new];
 	    if (buf_valid(buf))
-		buf_check_timestamp(buf, FALSE);
+		buf_check_timestamp(buf, FALSE, TRUE);
 	}
+	reset_buf_default_reload_choice();
+    }
 
     // Write the first buffer to a tempfile or mmfile_t.
     buf = curtab->tp_diffbuf[idx_orig];

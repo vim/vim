@@ -992,7 +992,7 @@ ex_checktime(exarg_T *eap)
     {
 	buf = buflist_findnr((int)eap->line2);
 	if (buf != NULL)	// cannot happen?
-	    (void)buf_check_timestamp(buf, FALSE);
+	    (void)buf_check_timestamp(buf, FALSE, FALSE);
     }
     no_check_timestamps = save_no_check_timestamps;
 }

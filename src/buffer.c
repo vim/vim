@@ -1934,7 +1934,7 @@ enter_buffer(buf_T *buf)
 	    need_fileinfo = TRUE;	// display file info after redraw
 
 	// check if file changed
-	(void)buf_check_timestamp(curbuf, FALSE);
+	(void)buf_check_timestamp(curbuf, FALSE, FALSE);
 
 	curwin->w_topline = 1;
 #ifdef FEAT_DIFF

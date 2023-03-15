@@ -3959,6 +3959,7 @@ check_timestamps(
 	++no_wait_return;
 	did_check_timestamps = TRUE;
 	already_warned = FALSE;
+	reset_buf_default_reload_choice();
 	FOR_ALL_BUFFERS(buf)
 	{
 	    // Only check buffers in a window.
@@ -3967,7 +3968,7 @@ check_timestamps(
 		bufref_T bufref;
 
 		set_bufref(&bufref, buf);
-		n = buf_check_timestamp(buf, focus);
+		n = buf_check_timestamp(buf, focus, TRUE);
 		if (didit < n)
 		    didit = n;
 		if (n > 0 && !bufref_valid(&bufref))
@@ -3979,6 +3980,7 @@ check_timestamps(
 		}
 	    }
 	}
+	reset_buf_default_reload_choice();
 	--no_wait_return;
 	need_check_timestamps = FALSE;
 	if (need_wait_return && didit == 2)
@@ -4036,9 +4038,27 @@ move_lines(buf_T *frombuf, buf_T *tobuf)
     return retval;
 }
 
+static int default_reload_choice = -1;
+
+/*
+ * Reset the reload choice that will apply to all buffer reloads. This should
+ * be called before and after calling a sequence of buf_check_timestamp() when
+ * setting "multiple" = 1.
+ */
+    void
+reset_buf_default_reload_choice()
+{
+    default_reload_choice = -1;
+}
+
 /*
  * Check if buffer "buf" has been changed.
  * Also check if the file for a new buffer unexpectedly appeared.
+ *
+ * "multiple" means this is called when multiple buffers are checked together.
+ * "reset_buf_default_reload_choice" needs to be called before/after calling
+ * this function.
+ *
  * return 1 if a changed buffer was found.
  * return 2 if a message has been displayed.
  * return 0 otherwise.
@@ -4046,7 +4066,8 @@ move_lines(buf_T *frombuf, buf_T *tobuf)
     int
 buf_check_timestamp(
     buf_T	*buf,
-    int		focus UNUSED)	// called for GUI focus event
+    int		focus UNUSED,	// called for GUI focus event
+    int		multiple)
 {
     stat_T	st;
     int		stat_res;
@@ -4260,17 +4281,35 @@ buf_check_timestamp(
 		    STRCAT(tbuf, "\n");
 		    STRCAT(tbuf, mesg2);
 		}
-		switch (do_dialog(VIM_WARNING, (char_u *)_("Warning"),
-			(char_u *)tbuf,
-			(char_u *)_("&OK\n&Load File\nLoad File &and Options"),
-			1, NULL, TRUE))
+		if (multiple && default_reload_choice >= 0)
 		{
-		    case 2:
-			reload = RELOAD_NORMAL;
-			break;
-		    case 3:
-			reload = RELOAD_DETECT;
-			break;
+		    reload = default_reload_choice;
+		}
+		else
+		{
+		    char *msg = multiple ?
+			"&OK\n&Load File\nLoad File and O&ptions\nLoad &All\n&Ignore All" :
+			"&OK\n&Load File\nLoad File and O&ptions\n";
+
+		    switch (do_dialog(VIM_WARNING, (char_u *)_("Warning"),
+			    (char_u *)tbuf,
+			    (char_u *)_(msg),
+			    1, NULL, TRUE))
+		    {
+			case 2:
+			    reload = RELOAD_NORMAL;
+			    break;
+			case 3:
+			    reload = RELOAD_DETECT;
+			    break;
+			case 4:
+			    reload = RELOAD_NORMAL;
+			    default_reload_choice = RELOAD_NORMAL;
+			    break;
+			case 5:
+			    default_reload_choice = RELOAD_NONE;
+			    break;
+		    }
 		}
 	    }
 	    else
