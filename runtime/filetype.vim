@@ -2102,6 +2102,9 @@ au BufNewFile,BufRead *.svg			setf svg
 " Surface
 au BufRead,BufNewFile *.sface			setf surface
 
+" LLVM TableGen
+au BufNewFile,BufRead *.td			setf tablegen
+
 " Tads (or Nroff or Perl test file)
 au BufNewFile,BufRead *.t
 	\ if !dist#ft#FTnroff() && !dist#ft#FTperl() | setf tads | endif
