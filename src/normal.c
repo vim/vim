@@ -418,6 +418,9 @@ normal_cmd_get_more_chars(
 #ifdef CURSOR_SHAPE
 	    ui_cursor_shape();	// show different cursor shape
 #endif
+#ifdef FEAT_MOUSESHAPE
+	    update_mouseshape(-1);
+#endif
 	}
 	if (lang && curbuf->b_p_iminsert == B_IMODE_LMAP)
 	{
