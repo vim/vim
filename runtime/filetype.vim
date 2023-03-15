@@ -1539,6 +1539,9 @@ au BufNewFile,BufRead *.plp			setf plp
 " PO and PO template (GNU gettext)
 au BufNewFile,BufRead *.po,*.pot		setf po
 
+" Pony
+au BufNewFile,BufRead *.pony			setf pony
+
 " Postfix main config
 au BufNewFile,BufRead main.cf,main.cf.proto	setf pfmain
 
