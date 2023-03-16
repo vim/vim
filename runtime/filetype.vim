@@ -1652,6 +1652,9 @@ au BufRead,BufNewFile *.ql,*.qll		setf ql
 " Quarto
 au BufRead,BufNewFile *.qmd			setf quarto
 
+" Racket
+au BufNewFile,BufRead *.rkt,*.rktd,*.rktl	setf racket
+
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
 
@@ -1920,7 +1923,7 @@ au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump setf zsh
 au BufNewFile,BufRead *.zsh			setf zsh
 
 " Scheme
-au BufNewFile,BufRead *.scm,*.ss,*.sld,*.rkt,*.rktd,*.rktl	setf scheme
+au BufNewFile,BufRead *.scm,*.ss,*.sld		setf scheme
 
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen
