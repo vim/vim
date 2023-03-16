@@ -1732,6 +1732,9 @@ au BufNewFile,BufRead *.rnc			setf rnc
 " Relax NG XML
 au BufNewFile,BufRead *.rng			setf rng
 
+" ILE RPG
+au BufNewFile,BufRead *.rpgle,*.rpgleinc	setf rpgle
+
 " RPL/2
 au BufNewFile,BufRead *.rpl			setf rpl
 

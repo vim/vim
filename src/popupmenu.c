@@ -434,10 +434,17 @@ pum_redraw(void)
     int		round;
     int		n;
 
-    int *ha = highlight_attr;
-    //			 "word"		"kind"		"extra text"
-    int	attrsNorm[3] = { ha[HLF_PNI],	ha[HLF_PNK],	ha[HLF_PNX] };
-    int	attrsSel[3] =  { ha[HLF_PSI],	ha[HLF_PSK],	ha[HLF_PSX] };
+    int		attrsNorm[3];
+    int		attrsSel[3];
+    // "word"
+    attrsNorm[0] = highlight_attr[HLF_PNI];
+    attrsSel[0] = highlight_attr[HLF_PSI];
+    // "kind"
+    attrsNorm[1] = highlight_attr[HLF_PNK];
+    attrsSel[1] = highlight_attr[HLF_PSK];
+    // "extra text"
+    attrsNorm[2] = highlight_attr[HLF_PNX];
+    attrsSel[2] = highlight_attr[HLF_PSX];
 
     if (call_update_screen)
     {

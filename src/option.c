@@ -126,15 +126,14 @@ set_init_default_backupskip(void)
 #endif
     int		len;
     garray_T	ga;
-    int		mustfree;
-    char_u		*item;
+    char_u	*item;
 
     opt_idx = findoption((char_u *)"backupskip");
 
     ga_init2(&ga, 1, 100);
     for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
     {
-	mustfree = FALSE;
+	int		mustfree = FALSE;
 #ifdef UNIX
 	if (*names[n] == NUL)
 # ifdef MACOS_X
@@ -150,19 +149,22 @@ set_init_default_backupskip(void)
 	    // First time count the NUL, otherwise count the ','.
 	    len = (int)STRLEN(p) + 3;
 	    item = alloc(len);
-	    STRCPY(item, p);
-	    add_pathsep(item);
-	    STRCAT(item, "*");
-	    if (find_dup_item(ga.ga_data, item, options[opt_idx].flags)
-		    == NULL
-		    && ga_grow(&ga, len) == OK)
+	    if (item != NULL)
 	    {
-		if (ga.ga_len > 0)
-		    STRCAT(ga.ga_data, ",");
-		STRCAT(ga.ga_data, item);
-		ga.ga_len += len;
+		STRCPY(item, p);
+		add_pathsep(item);
+		STRCAT(item, "*");
+		if (find_dup_item(ga.ga_data, item, options[opt_idx].flags)
+									== NULL
+			&& ga_grow(&ga, len) == OK)
+		{
+		    if (ga.ga_len > 0)
+			STRCAT(ga.ga_data, ",");
+		    STRCAT(ga.ga_data, item);
+		    ga.ga_len += len;
+		}
+		vim_free(item);
 	    }
-	    vim_free(item);
 	}
 	if (mustfree)
 	    vim_free(p);
