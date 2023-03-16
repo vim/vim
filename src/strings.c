@@ -942,7 +942,6 @@ string_filter_map(
 	    break;
 	len = (int)STRLEN(tv.vval.v_string);
 
-	newtv.v_type = VAR_UNKNOWN;
 	set_vim_var_nr(VV_KEY, idx);
 	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
@@ -951,7 +950,7 @@ string_filter_map(
 	    clear_tv(&tv);
 	    break;
 	}
-	else if (filtermap != FILTERMAP_FILTER)
+	if (filtermap == FILTERMAP_MAP || filtermap == FILTERMAP_MAPNEW)
 	{
 	    if (newtv.v_type != VAR_STRING)
 	    {
@@ -963,7 +962,7 @@ string_filter_map(
 	    else
 		ga_concat(&ga, newtv.vval.v_string);
 	}
-	else if (!rem)
+	else if (filtermap == FILTERMAP_FOREACH || !rem)
 	    ga_concat(&ga, tv.vval.v_string);
 
 	clear_tv(&newtv);

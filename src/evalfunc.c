@@ -607,10 +607,11 @@ arg_list_or_dict_or_blob_or_string_mod(
 }
 
 /*
- * Check second argument of map() or filter().
+ * Check second argument of map(), filter(), foreach().
  */
     static int
-check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
+check_map_filter_arg2(type_T *type, argcontext_T *context,
+							filtermap_T filtermap)
 {
     type_T *expected_member = NULL;
     type_T *(args[2]);
@@ -663,12 +664,14 @@ check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
     {
 	where_T where = WHERE_INIT;
 
-	if (is_map)
+	if (filtermap == FILTERMAP_MAP)
 	    t_func_exp.tt_member = expected_member == NULL
 					|| type_any_or_unknown(type->tt_member)
 				? &t_any : expected_member;
-	else
+	else if (filtermap == FILTERMAP_FILTER)
 	    t_func_exp.tt_member = &t_bool;
+	else // filtermap == FILTERMAP_FOREACH
+	    t_func_exp.tt_member = &t_unknown;
 	if (args[0] == NULL)
 	    args[0] = &t_unknown;
 	if (type->tt_argcount == -1)
@@ -693,7 +696,7 @@ arg_filter_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	return OK;
 
     if (type->tt_type == VAR_FUNC)
-	return check_map_filter_arg2(type, context, FALSE);
+	return check_map_filter_arg2(type, context, FILTERMAP_FILTER);
     semsg(_(e_string_or_function_required_for_argument_nr), 2);
     return FAIL;
 }
@@ -710,7 +713,24 @@ arg_map_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	return OK;
 
     if (type->tt_type == VAR_FUNC)
-	return check_map_filter_arg2(type, context, TRUE);
+	return check_map_filter_arg2(type, context, FILTERMAP_MAP);
+    semsg(_(e_string_or_function_required_for_argument_nr), 2);
+    return FAIL;
+}
+
+/*
+ * Check second argument of foreach(), the function.
+ */
+    static int
+arg_foreach_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    if (type->tt_type == VAR_STRING
+	    || type->tt_type == VAR_PARTIAL
+	    || type_any_or_unknown(type))
+	return OK;
+
+    if (type->tt_type == VAR_FUNC)
+	return check_map_filter_arg2(type, context, FILTERMAP_FOREACH);
     semsg(_(e_string_or_function_required_for_argument_nr), 2);
     return FAIL;
 }
@@ -1173,6 +1193,7 @@ static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
+static argcheck_T arg2_foreach[] = {arg_list_or_dict_or_blob_or_string, arg_foreach_func};
 static argcheck_T arg2_instanceof[] = {arg_object, varargs_class, NULL };
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
 static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, arg_any};
@@ -2013,6 +2034,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_foldtext},
     {"foldtextresult",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_string,	    f_foldtextresult},
+    {"foreach",		2, 2, FEARG_1,	    arg2_foreach,
+			ret_first_arg,	    f_foreach},
     {"foreground",	0, 0, 0,	    NULL,
 			ret_void,	    f_foreground},
     {"fullcommand",	1, 2, FEARG_1,	    arg2_string_bool,
