@@ -163,7 +163,7 @@ list2proftime(typval_T *arg, proftime_T *tm)
     tm->LowPart = n2;
 #  else
     tm->tv_sec = n1;
-    tm->tv_usec = n2;
+    tm->tv_fsec = n2;
 #  endif
     return error ? FAIL : OK;
 }
@@ -222,7 +222,7 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     n2 = res.LowPart;
 #  else
     n1 = res.tv_sec;
-    n2 = res.tv_usec;
+    n2 = res.tv_fsec;
 #  endif
     list_append_number(rettv->vval.v_list, (varnumber_T)n1);
     list_append_number(rettv->vval.v_list, (varnumber_T)n2);
@@ -258,6 +258,7 @@ f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    static char buf[50];
 # ifdef FEAT_RELTIME
     proftime_T	tm;
 # endif
@@ -269,7 +270,15 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     if (list2proftime(&argvars[0], &tm) == OK)
+    {
+# ifdef MSWIN
 	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
+# else
+	long usec = tm.tv_fsec / (TV_FSEC_SEC / 1000000);
+	sprintf(buf, "%3ld.%06ld", (long)tm.tv_sec, usec);
+	rettv->vval.v_string = vim_strsave((char_u *)buf);
+# endif
+    }
     else if (in_vim9script())
 	emsg(_(e_invalid_argument));
 # endif
@@ -392,7 +401,7 @@ static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
 
 /*
- * Return time left until "due".  Negative if past "due".
+ * Return time left, in "msec", until "due".  Negative if past "due".
  */
     long
 proftime_time_left(proftime_T *due, proftime_T *now)
@@ -409,7 +418,7 @@ proftime_time_left(proftime_T *due, proftime_T *now)
     if (now->tv_sec > due->tv_sec)
 	return 0;
     return (due->tv_sec - now->tv_sec) * 1000
-	+ (due->tv_usec - now->tv_usec) / 1000;
+	+ (due->tv_fsec - now->tv_fsec) / (TV_FSEC_SEC / 1000);
 #  endif
 }
 

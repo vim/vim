@@ -1869,8 +1869,27 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
 # ifdef MSWIN
 typedef LARGE_INTEGER proftime_T;
+#  define PROF_TIME_BLANK "           "
+#  define PROF_TOTALS_HEADER "count  total (s)   self (s)"
 # else
+   // Use tv_fsec for fraction of second (micro or nano) of proftime_T
+#  if defined(HAVE_TIMER_CREATE)
+typedef struct timespec proftime_T;
+#   define PROF_GET_TIME(tm) clock_gettime(CLOCK_MONOTONIC, tm)
+#   define tv_fsec tv_nsec
+#   define TV_FSEC_SEC 1000000000L
+#   define PROF_TIME_FORMAT "%3ld.%09ld"
+#   define PROF_TIME_BLANK "              "
+#   define PROF_TOTALS_HEADER "count     total (s)      self (s)"
+#  else
 typedef struct timeval proftime_T;
+#   define PROF_GET_TIME(tm) gettimeofday(tm, NULL)
+#   define tv_fsec tv_usec
+#   define TV_FSEC_SEC 1000000
+#   define PROF_TIME_FORMAT "%3ld.%06ld"
+#   define PROF_TIME_BLANK "           "
+#   define PROF_TOTALS_HEADER "count  total (s)   self (s)"
+#  endif
 # endif
 #else
 typedef int proftime_T;	    // dummy for function prototypes
