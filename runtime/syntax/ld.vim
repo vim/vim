@@ -43,7 +43,7 @@ syn match   ldSpecial       '/DISCARD/'
 syn keyword ldIdentifier    ORIGIN LENGTH
 
 syn match   ldSpecSections  '\.'
-syn match   ldSections      '\.\S\+'
+syn match   ldSections      '\.[^ \t)]\+'
 syn match   ldSpecSections  '\.\%(text\|data\|bss\|symver\)\>'
 
 syn match   ldNumber        display '\<0[xX]\x\+\>'
