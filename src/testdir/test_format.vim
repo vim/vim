@@ -82,6 +82,19 @@ func Test_printf_pos_misc()
       call assert_equal('one two one', printf('%1$s %2$s %1$s', "one", "two"))
       call assert_equal('Screen height: 400', printf('%1$s height: %2$d', "Screen", 400))
       call assert_equal('400 is: Screen height', printf('%2$d is: %1$s height', "Screen", 400))
+
+      #" Try out lots of combinations of argument types to skip
+      call assert_equal('9 12345 7654321', printf('%2$ld %1$d %3$lu', 12345, 9, 7654321))
+      call assert_equal('9 1234567 7654321', printf('%2$d %1$ld %3$lu', 1234567, 9, 7654321))
+      call assert_equal('9 1234567 7654321', printf('%2$d %1$lld %3$lu', 1234567, 9, 7654321))
+      call assert_equal('9 12345 7654321', printf('%2$ld %1$u %3$lu', 12345, 9, 7654321))
+      call assert_equal('9 1234567 7654321', printf('%2$d %1$lu %3$lu', 1234567, 9, 7654321))
+      call assert_equal('9 1234567 7654321', printf('%2$d %1$llu %3$lu', 1234567, 9, 7654321))
+      call assert_equal('9 1234567 7654321', printf('%2$d %1$llu %3$lu', 1234567, 9, 7654321))
+      call assert_equal('9 deadbeef 7654321', printf('%2$d %1$x %3$lu', 0xdeadbeef, 9, 7654321))
+      call assert_equal('9 c 7654321', printf('%2$ld %1$c %3$lu', 99, 9, 7654321))
+      call assert_equal('9 hi 7654321', printf('%2$ld %1$s %3$lu', "hi", 9, 7654321))
+      call assert_equal('9 0.000000e+00 7654321', printf('%2$ld %1$e %3$lu', 0.0, 9, 7654321))
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
