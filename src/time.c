@@ -258,24 +258,21 @@ f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    static char buf[50];
-# ifdef FEAT_RELTIME
-    proftime_T	tm;
-# endif
-
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 # ifdef FEAT_RELTIME
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
+    proftime_T	tm;
     if (list2proftime(&argvars[0], &tm) == OK)
     {
 # ifdef MSWIN
 	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
 # else
+	static char buf[50];
 	long usec = tm.tv_fsec / (TV_FSEC_SEC / 1000000);
-	sprintf(buf, "%3ld.%06ld", (long)tm.tv_sec, usec);
+	vim_snprintf(buf, sizeof(buf), "%3ld.%06ld", (long)tm.tv_sec, usec);
 	rettv->vval.v_string = vim_strsave((char_u *)buf);
 # endif
     }
