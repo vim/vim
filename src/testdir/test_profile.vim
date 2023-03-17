@@ -6,8 +6,13 @@ CheckFeature profile
 source shared.vim
 source screendump.vim
 
-let s:header = 'count  total (s)   self (s)'
-let s:header_func = 'count  total (s)   self (s)  function'
+if has('prof_nsec')
+  let s:header = 'count     total (s)      self (s)'
+  let s:header_func = 'count     total (s)      self (s)  function'
+else
+  let s:header = 'count  total (s)   self (s)'
+  let s:header_func = 'count  total (s)   self (s)  function'
+endif
 
 func Test_profile_func()
   call RunProfileFunc('func', 'let', 'let')

@@ -6145,6 +6145,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"prof_nsec",
+#ifdef HAVE_TIMER_CREATE
+		1
+#else
+		0
+#endif
+		},
 	{"reltime",
 #ifdef FEAT_RELTIME
 		1
@@ -8226,7 +8233,7 @@ init_srand(UINT32_T *x)
 #  if defined(MSWIN)
 	    *x = (UINT32_T)res.LowPart;
 #  else
-	    *x = (UINT32_T)res.tv_usec;
+	    *x = (UINT32_T)res.tv_fsec;
 #  endif
 #else
 	    *x = vim_time();

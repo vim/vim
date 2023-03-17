@@ -7244,7 +7244,8 @@ reltimestr({time})				*reltimestr()*
 			call MyFunction()
 			echo reltimestr(reltime(start))
 <		Note that overhead for the commands will be added to the time.
-		The accuracy depends on the system.
+		The accuracy depends on the system. Use reltimefloat() for the
+		greatest accuracy which is nanoseconds on some systems.
 		Leading spaces are used to make the string align nicely.  You
 		can use split() to remove it. >
 			echo split(reltimestr(reltime(start)))[0]
@@ -10847,6 +10848,7 @@ persistent_undo		Compiled with support for persistent undo history.
 postscript		Compiled with PostScript file printing.
 printer			Compiled with |:hardcopy| support.
 profile			Compiled with |:profile| support.
+prof_nsec		Profile results are in nano seconds.
 python			Python 2.x interface available. |has-python|
 python_compiled		Compiled with Python 2.x interface. |has-python|
 python_dynamic		Python 2.x interface is dynamically loaded. |has-python|

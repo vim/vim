@@ -105,7 +105,6 @@ MOFILES = \
 		it.mo \
 		ja.mo \
 		ko.UTF-8.mo \
-		ko.mo \
 		lv.mo \
 		nb.mo \
 		nl.mo \
@@ -121,13 +120,13 @@ MOFILES = \
 		vi.mo \
 		zh_CN.UTF-8.mo \
 		zh_TW.UTF-8.mo \
-		zh_TW.mo \
 
 
 MOCONVERTED = \
 		cs.cp1250.mo \
 		ja.euc-jp.mo \
 		ja.sjis.mo \
+		ko.mo \
 		pl.UTF-8.mo \
 		pl.cp1250.mo \
 		ru.cp1251.mo \
@@ -135,6 +134,7 @@ MOCONVERTED = \
 		uk.cp1251.mo \
 		zh_CN.mo \
 		zh_CN.cp936.mo \
+		zh_TW.mo \
 
 
 CHECKFILES = \
