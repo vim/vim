@@ -98,6 +98,7 @@ func Test_printf_pos_misc()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
+  call v9.CheckLegacyAndVim9Failure(["call printf('%1$d%2$d', 1, 3, 4)"], "E767:")
   call v9.CheckLegacyAndVim9Failure(["call printf('%d%2$d', 1, 3)"], "E1400:")
   call v9.CheckLegacyAndVim9Failure(["call printf('%1$%')"], "E1400:")
   call v9.CheckLegacyAndVim9Failure(["call printf('%1$_')"], "E1400:")
