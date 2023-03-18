@@ -1623,13 +1623,14 @@ updatescript(int c)
 
 /*
  * Convert "c" plus "modifiers" to merge the effect of modifyOtherKeys into the
- * character.
+ * character.  Also for when the Kitty key protocol is used.
  */
     int
 merge_modifyOtherKeys(int c_arg, int *modifiers)
 {
     int c = c_arg;
 
+    // CTRL only uses the lower 5 bits of the character.
     if (*modifiers & MOD_MASK_CTRL)
     {
 	if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
@@ -1658,12 +1659,23 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
 	if (c != c_arg)
 	    *modifiers &= ~MOD_MASK_CTRL;
     }
+
+    // Alt/Meta sets the 8th bit of the character.
     if ((*modifiers & (MOD_MASK_META | MOD_MASK_ALT))
 	    && c >= 0 && c <= 127)
     {
+	// Some terminals (esp. Kitty) do not include Shift in the character.
+	// Apply it here to get consistency across terminals.  Only do ASCII
+	// letters, for other characters it depends on the keyboard layout.
+	if ((*modifiers & MOD_MASK_SHIFT) && c >= 'a' && c <= 'z')
+	{
+	    c += 'a' - 'A';
+	    *modifiers &= ~MOD_MASK_SHIFT;
+	}
 	c += 0x80;
 	*modifiers &= ~(MOD_MASK_META | MOD_MASK_ALT);
     }
+
     return c;
 }
 
