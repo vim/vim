@@ -2330,6 +2330,9 @@ au BufNewFile,BufRead *.vue			setf vue
 " WebAssembly
 au BufNewFile,BufRead *.wast,*.wat		setf wast
 
+" WebAssembly Interface Type (WIT)
+au BufNewFile,BufRead *.wit			setf wit
+
 " Webmacro
 au BufNewFile,BufRead *.wm			setf webmacro
 

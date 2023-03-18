@@ -658,6 +658,7 @@ let s:filename_checks = {
     \ 'wget': ['.wgetrc', 'wgetrc'],
     \ 'wget2': ['.wget2rc', 'wget2rc'],
     \ 'winbatch': ['file.wbt'],
+    \ 'wit': ['file.wit'],
     \ 'wml': ['file.wml'],
     \ 'wsh': ['file.wsf', 'file.wsc'],
     \ 'wsml': ['file.wsml'],
