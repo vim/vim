@@ -1799,6 +1799,9 @@ au BufNewFile,BufRead Cargo.lock,*/.cargo/config,*/.cargo/credentials	setf toml
 " S-lang (or shader language, or SmallLisp)
 au BufNewFile,BufRead *.sl			setf slang
 
+" Sage
+au BufNewFile,BufRead *.sage		setf sage
+
 " Samba config
 au BufNewFile,BufRead smb.conf			setf samba
 

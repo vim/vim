@@ -536,6 +536,7 @@ let s:filename_checks = {
     \ 'skill': ['file.il', 'file.ils', 'file.cdf'],
     \ 'cdc': ['file.cdc'],
     \ 'slang': ['file.sl'],
+    \ 'sage': ['file.sage'],
     \ 'slice': ['file.ice'],
     \ 'slpconf': ['/etc/slp.conf', 'any/etc/slp.conf'],
     \ 'slpreg': ['/etc/slp.reg', 'any/etc/slp.reg'],
