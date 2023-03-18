@@ -77,7 +77,7 @@ struct hashmap {
 static int is_anchor(xpparam_t const *xpp, const char *line)
 {
 	int i;
-	for (i = 0; i < xpp->anchors_nr; i++) {
+	for (i = 0; i < (int)xpp->anchors_nr; i++) {
 		if (!strncmp(line, xpp->anchors[i], strlen(xpp->anchors[i])))
 			return 1;
 	}
@@ -210,6 +210,10 @@ static struct entry *find_longest_common_sequence(struct hashmap *map)
 	 * do not do that either.
 	 */
 	int anchor_i = -1;
+
+	// Added to silence Coverity.
+	if (sequence == NULL)
+		return map->first;
 
 	for (entry = map->first; entry; entry = entry->next) {
 		if (!entry->line2 || entry->line2 == NON_UNIQUE)

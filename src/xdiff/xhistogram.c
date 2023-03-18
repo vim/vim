@@ -43,8 +43,8 @@
 
 #include "xinclude.h"
 
-#define MAX_PTR	UINT_MAX
-#define MAX_CNT	UINT_MAX
+#define MAX_PTR	INT_MAX
+#define MAX_CNT	INT_MAX
 
 #define LINE_END(n) (line##n + count##n - 1)
 #define LINE_END_PTR(n) (*line##n + *count##n - 1)
@@ -107,7 +107,7 @@ static int cmp_recs(xpparam_t const *xpp,
 
 static int scanA(struct histindex *index, int line1, int count1)
 {
-	unsigned int ptr, tbl_idx;
+	int ptr, tbl_idx;
 	unsigned int chain_len;
 	struct record **rec_chain, *rec;
 
@@ -186,14 +186,14 @@ static int try_lcs(struct histindex *index, struct region *lcs, int b_ptr,
 			be = bs;
 			rc = rec->cnt;
 
-			while (line1 < as && line2 < bs
+			while (line1 < (int)as && line2 < (int)bs
 				&& CMP(index, 1, as - 1, 2, bs - 1)) {
 				as--;
 				bs--;
 				if (1 < rc)
 					rc = XDL_MIN(rc, CNT(index, as));
 			}
-			while (ae < LINE_END(1) && be < LINE_END(2)
+			while ((int)ae < LINE_END(1) && (int)be < LINE_END(2)
 				&& CMP(index, 1, ae + 1, 2, be + 1)) {
 				ae++;
 				be++;

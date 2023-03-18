@@ -399,10 +399,10 @@ static int recs_match(xrecord_t *rec1, xrecord_t *rec2, long flags)
 }
 
 /*
- * If a line is indented more than this, get_indent() just returns this value.
+ * If a line is indented more than this, xget_indent() just returns this value.
  * This avoids having to do absurd amounts of work for data that are not
- * human-readable text, and also ensures that the output of get_indent fits
- * within an int.
+ * human-readable text, and also ensures that the output of xget_indent fits within
+ * an int.
  */
 #define MAX_INDENT 200
 
@@ -411,7 +411,7 @@ static int recs_match(xrecord_t *rec1, xrecord_t *rec2, long flags)
  * columns. Return -1 if line is empty or contains only whitespace. Clamp the
  * output value at MAX_INDENT.
  */
-static int get_indent(xrecord_t *rec)
+static int xget_indent(xrecord_t *rec)
 {
 	long i;
 	int ret = 0;
@@ -499,13 +499,13 @@ static void measure_split(const xdfile_t *xdf, long split,
 		m->indent = -1;
 	} else {
 		m->end_of_file = 0;
-		m->indent = get_indent(xdf->recs[split]);
+		m->indent = xget_indent(xdf->recs[split]);
 	}
 
 	m->pre_blank = 0;
 	m->pre_indent = -1;
 	for (i = split - 1; i >= 0; i--) {
-		m->pre_indent = get_indent(xdf->recs[i]);
+		m->pre_indent = xget_indent(xdf->recs[i]);
 		if (m->pre_indent != -1)
 			break;
 		m->pre_blank += 1;
@@ -518,7 +518,7 @@ static void measure_split(const xdfile_t *xdf, long split,
 	m->post_blank = 0;
 	m->post_indent = -1;
 	for (i = split + 1; i < xdf->nrec; i++) {
-		m->post_indent = get_indent(xdf->recs[i]);
+		m->post_indent = xget_indent(xdf->recs[i]);
 		if (m->post_indent != -1)
 			break;
 		m->post_blank += 1;
@@ -796,6 +796,12 @@ static int group_slide_up(xdfile_t *xdf, struct xdlgroup *g, long flags)
 	}
 }
 
+static void xdl_bug(const char *msg)
+{
+	fprintf(stderr, "BUG: %s\n", msg);
+	exit(1);
+}
+
 /*
  * Move back and forward change groups for a consistent and pretty diff output.
  * This also helps in finding joinable change groups and reducing the diff
@@ -835,7 +841,7 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 			/* Shift the group backward as much as possible: */
 			while (!group_slide_up(xdf, &g, flags))
 				if (group_previous(xdfo, &go))
-					BUG("group sync broken sliding up");
+					xdl_bug("group sync broken sliding up");
 
 			/*
 			 * This is this highest that this group can be shifted.
@@ -851,7 +857,7 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 				if (group_slide_down(xdf, &g, flags))
 					break;
 				if (group_next(xdfo, &go))
-					BUG("group sync broken sliding down");
+					xdl_bug("group sync broken sliding down");
 
 				if (go.end > go.start)
 					end_matching_other = g.end;
@@ -876,9 +882,9 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 			 */
 			while (go.end == go.start) {
 				if (group_slide_up(xdf, &g, flags))
-					BUG("match disappeared");
+					xdl_bug("match disappeared");
 				if (group_previous(xdfo, &go))
-					BUG("group sync broken sliding to match");
+					xdl_bug("group sync broken sliding to match");
 			}
 		} else if (flags & XDF_INDENT_HEURISTIC) {
 			/*
@@ -919,9 +925,9 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 
 			while (g.end > best_shift) {
 				if (group_slide_up(xdf, &g, flags))
-					BUG("best shift unreached");
+					xdl_bug("best shift unreached");
 				if (group_previous(xdfo, &go))
-					BUG("group sync broken sliding to blank line");
+					xdl_bug("group sync broken sliding to blank line");
 			}
 		}
 
@@ -930,11 +936,11 @@ int xdl_change_compact(xdfile_t *xdf, xdfile_t *xdfo, long flags) {
 		if (group_next(xdf, &g))
 			break;
 		if (group_next(xdfo, &go))
-			BUG("group sync broken moving to next group");
+			xdl_bug("group sync broken moving to next group");
 	}
 
 	if (!group_next(xdfo, &go))
-		BUG("group sync broken at end of file");
+		xdl_bug("group sync broken at end of file");
 
 	return 0;
 }
@@ -975,7 +981,7 @@ void xdl_free_script(xdchange_t *xscr) {
 	}
 }
 
-static int xdl_call_hunk_func(xdfenv_t *xe, xdchange_t *xscr, xdemitcb_t *ecb,
+static int xdl_call_hunk_func(xdfenv_t *xe UNUSED, xdchange_t *xscr, xdemitcb_t *ecb,
 			      xdemitconf_t const *xecfg)
 {
 	xdchange_t *xch, *xche;
@@ -1013,6 +1019,7 @@ static void xdl_mark_ignorable_lines(xdchange_t *xscr, xdfenv_t *xe, long flags)
 	}
 }
 
+#if 0 // unused by Vim
 static int record_matches_regex(xrecord_t *rec, xpparam_t const *xpp) {
 	regmatch_t regmatch;
 	int i;
@@ -1052,6 +1059,7 @@ static void xdl_mark_ignorable_regex(xdchange_t *xscr, const xdfenv_t *xe,
 		xch->ignore = ignore;
 	}
 }
+#endif
 
 int xdl_diff(mmfile_t *mf1, mmfile_t *mf2, xpparam_t const *xpp,
 	     xdemitconf_t const *xecfg, xdemitcb_t *ecb) {
@@ -1074,8 +1082,10 @@ int xdl_diff(mmfile_t *mf1, mmfile_t *mf2, xpparam_t const *xpp,
 		if (xpp->flags & XDF_IGNORE_BLANK_LINES)
 			xdl_mark_ignorable_lines(xscr, &xe, xpp->flags);
 
+#if 0
 		if (xpp->ignore_regex)
 			xdl_mark_ignorable_regex(xscr, &xe, xpp);
+#endif
 
 		if (ef(&xe, xscr, ecb, xecfg) < 0) {
 

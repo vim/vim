@@ -81,8 +81,10 @@ typedef struct s_xpparam {
 	unsigned long flags;
 
 	/* -I<regex> */
+ #if 0  // unused by Vim
 	regex_t **ignore_regex;
 	size_t ignore_regex_nr;
+#endif
 
 	/* See Documentation/diff-options.txt. */
 	char **anchors;
@@ -117,10 +119,15 @@ typedef struct s_bdiffparam {
 	long bsize;
 } bdiffparam_t;
 
+#ifdef VMS
+# include "[]vim.h"
+#else
+# include "../vim.h"
+#endif
 
-#define xdl_malloc(x) xmalloc(x)
-#define xdl_free(ptr) free(ptr)
-#define xdl_realloc(ptr,x) xrealloc(ptr,x)
+#define xdl_malloc(x) lalloc((x), TRUE)
+#define xdl_free(ptr) vim_free(ptr)
+#define xdl_realloc(ptr,x) vim_realloc((ptr),(x))
 
 void *xdl_mmfile_first(mmfile_t *mmf, long *size);
 long xdl_mmfile_size(mmfile_t *mmf);
