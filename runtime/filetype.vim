@@ -653,6 +653,9 @@ au BufNewFile,BufRead filter-rules		setf elmfilt
 " Elsa - https://github.com/ucsd-progsys/elsa
 au BufNewFile,BufRead *.lc			setf elsa
 
+" EdgeDB Schema Definition Language
+au BufNewFile,BufRead *.esdl			setf esdl
+
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc
 
