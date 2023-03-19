@@ -131,6 +131,7 @@ let s:filename_checks = {
     \ 'cqlang': ['file.cql'],
     \ 'crm': ['file.crm'],
     \ 'crontab': ['crontab', 'crontab.file', '/etc/cron.d/file', 'any/etc/cron.d/file'],
+    \ 'crystal': ['file.cr'],
     \ 'cs': ['file.cs', 'file.csx'],
     \ 'csc': ['file.csc'],
     \ 'csdl': ['file.csdl'],

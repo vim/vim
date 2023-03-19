@@ -439,6 +439,9 @@ au BufNewFile,BufRead *.cook			setf cook
 " needs to be inspected.
 au BufNewFile,BufRead *.cql			setf cqlang
 
+" Crystal
+au BufNewFile,BufRead *.cr			setf crystal
+
 " CSV Files
 au BufNewFile,BufRead *.csv			setf csv
 
