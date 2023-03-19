@@ -1365,7 +1365,7 @@ dict_filter_map(
     // Create one funccal_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
-    if (filtermap != FILTERMAP_FILTER && d->dv_lock == 0)
+    if (d->dv_lock == 0)
 	d->dv_lock = VAR_LOCKED;
     ht = &d->dv_hashtab;
     hash_lock(ht);
