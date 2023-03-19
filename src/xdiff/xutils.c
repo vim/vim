@@ -437,7 +437,7 @@ void* xdl_alloc_grow_helper(void *p, long nr, long *alloc, size_t size)
 {
 	void *tmp = NULL;
 	size_t n = ((LONG_MAX - 16) / 2 >= *alloc) ? 2 * *alloc + 16 : LONG_MAX;
-	if (nr > n)
+	if (nr > (long)n)
 		n = nr;
 	if (SIZE_MAX / size >= n)
 		tmp = xdl_realloc(p, n * size);
