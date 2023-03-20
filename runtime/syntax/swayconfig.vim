@@ -2,8 +2,8 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.2.0
-" Reference version (jamespeapen/swayconfig.vim): 0.12.0
+" Version: 0.2.1
+" Reference version (jamespeapen/swayconfig.vim): 0.12.1
 " Last Change: 2023 Mar 20
 
 " References:
@@ -70,6 +70,10 @@ syn keyword swayConfigFocusKeyword focus contained
 syn keyword swayConfigFocusType output contained
 syn match swayConfigFocus /^\s*focus\soutput\s.*$/ contains=swayConfigFocusKeyword,swayConfigFocusType
 
+" mouse warping
+syn keyword swayConfigMouseWarpingType container contained
+syn match swayConfigMouseWarping /^\s*mouse_warping\s\+\(output\|container\|none\)\s\?$/ contains=i3ConfigMouseWarpingKeyword,i3ConfigMouseWarpingType,swayConfigMouseWarpingType
+
 " focus follows mouse
 syn clear i3ConfigFocusFollowsMouseType
 syn clear i3ConfigFocusFollowsMouse
@@ -94,6 +98,7 @@ hi def link swayConfigFocusKeyword                  Type
 hi def link swayConfigSmartBorderKeyword            Type
 hi def link swayConfigInputKeyword                  Type
 hi def link swayConfigSeatKeyword                   Type
+hi def link swayConfigMouseWarpingType              Type
 hi def link swayConfigFocusFollowsMouseType         Type
 hi def link swayConfigBindGestureCommand            Identifier
 hi def link swayConfigBindGestureDirection          Constant
