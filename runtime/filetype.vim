@@ -439,6 +439,9 @@ au BufNewFile,BufRead *.cook			setf cook
 " needs to be inspected.
 au BufNewFile,BufRead *.cql			setf cqlang
 
+" Crystal
+au BufNewFile,BufRead *.cr			setf crystal
+
 " CSV Files
 au BufNewFile,BufRead *.csv			setf csv
 
@@ -649,6 +652,9 @@ au BufNewFile,BufRead filter-rules		setf elmfilt
 
 " Elsa - https://github.com/ucsd-progsys/elsa
 au BufNewFile,BufRead *.lc			setf elsa
+
+" EdgeDB Schema Definition Language
+au BufNewFile,BufRead *.esdl			setf esdl
 
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc

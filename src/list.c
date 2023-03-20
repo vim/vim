@@ -2398,7 +2398,7 @@ list_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-    if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
+    if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
 
     // Create one funccal_T for all eval_expr_typval() calls.
@@ -2576,15 +2576,15 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
     if (argvars[0].v_type == VAR_DICT)
 	dict_filter_map(argvars[0].vval.v_dict, filtermap, type, func_name,
-		arg_errmsg, expr, rettv);
+						      arg_errmsg, expr, rettv);
     else if (argvars[0].v_type == VAR_BLOB)
-	blob_filter_map(argvars[0].vval.v_blob, filtermap, expr, rettv);
+	blob_filter_map(argvars[0].vval.v_blob, filtermap, expr,
+							    arg_errmsg, rettv);
     else if (argvars[0].v_type == VAR_STRING)
-	string_filter_map(tv_get_string(&argvars[0]), filtermap, expr,
-		rettv);
+	string_filter_map(tv_get_string(&argvars[0]), filtermap, expr, rettv);
     else // argvars[0].v_type == VAR_LIST
 	list_filter_map(argvars[0].vval.v_list, filtermap, type, func_name,
-		arg_errmsg, expr, rettv);
+						      arg_errmsg, expr, rettv);
 
     restore_vimvar(VV_KEY, &save_key);
     restore_vimvar(VV_VAL, &save_val);

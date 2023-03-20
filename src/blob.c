@@ -592,9 +592,10 @@ blob_filter_map(
 	blob_T		*blob_arg,
 	filtermap_T	filtermap,
 	typval_T	*expr,
+	char_u		*arg_errmsg,
 	typval_T	*rettv)
 {
-    blob_T	*b;
+    blob_T	*b = blob_arg;
     int		i;
     typval_T	tv;
     varnumber_T	val;
@@ -609,7 +610,8 @@ blob_filter_map(
 	rettv->v_type = VAR_BLOB;
 	rettv->vval.v_blob = NULL;
     }
-    if ((b = blob_arg) == NULL)
+    if (b == NULL || (filtermap == FILTERMAP_FILTER
+			    && value_check_lock(b->bv_lock, arg_errmsg, TRUE)))
 	return;
 
     b_ret = b;
@@ -622,6 +624,10 @@ blob_filter_map(
 
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+    int prev_lock = b->bv_lock;
+    if (b->bv_lock == 0)
+	b->bv_lock = VAR_LOCKED;
 
     // Create one funccal_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
@@ -658,6 +664,7 @@ blob_filter_map(
 	++idx;
     }
 
+    b->bv_lock = prev_lock;
     if (fc != NULL)
 	remove_funccal();
 }
