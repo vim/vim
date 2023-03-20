@@ -6545,7 +6545,11 @@ printf({fmt}, {expr1} ...)				*printf()*
 		The "%" starts a conversion specification.  The following
 		arguments appear in sequence:
 
-			%  [flags]  [field-width]  [.precision]  type
+			% [pos-argument] [flags] [field-width] [.precision] type
+
+		pos-argument
+			At most one positional argument specifier. These
+			take the form {n$}, where n is >= 1.
 
 		flags
 			Zero or more of the following flags:
@@ -6616,6 +6620,13 @@ printf({fmt}, {expr1} ...)				*printf()*
 			:echo printf("%d: %.*s", nr, width, line)
 <		This limits the length of the text used from "line" to
 		"width" bytes.
+
+		If the argument to be formatted is specified using a posional
+		argument specifier, and a '*' is used to indicate that a
+		number argument is to be used to specify the width or
+		precision, the argument(s) to be used must also be specified
+		using a {n$} positional argument specifier. See |printf-$|.
+
 
 		The conversion specifiers and their meanings are:
 
@@ -6730,16 +6741,9 @@ printf({fmt}, {expr1} ...)				*printf()*
 				"Bram", "Moolenaar")
 <			In Belgium, vim's creator's name is: Moolenaar Bram
 
-		Note that when you use positional arguments, the [field-width]
-		cannot be specified, because it is being used to specify which
-		positional argument is to be used.
-
-		It can be specified using the '*' specifier. In this case,
-		you must specify the field width position in the argument
-		list.
-
-		When the '.*' [precision] is used, its position, too, must
-		specified using the *n$* notation: >
+		Width (and precision) can be specified using the '*' specifier.
+		In this case, you must specify the field width position in the
+		argument list. >
 
 			echo printf("%1$*2$.*3$d", 1, 2, 3)
 <			001 >
@@ -6749,6 +6753,16 @@ printf({fmt}, {expr1} ...)				*printf()*
 <			03 >
 			echo printf("%1$*2$.*3$g", 1.4142, 2, 3)
 <			1.414
+
+		You can mix specifying the width and/or precision directly
+		and via positional arguments: >
+
+			echo printf("%1$4.*2$f", 1.4142135, 6)
+<			1.414214 >
+			echo printf("%1$*2$.4f", 1.4142135, 6)
+<			1.4142 >
+			echo printf("%1$*2$.*3$f", 1.4142135, 6, 2)
+<			  1.41
 
 							*E1400*
 		You cannot mix positional and non-positional arguments: >

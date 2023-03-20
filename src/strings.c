@@ -2349,6 +2349,35 @@ parse_fmt_types(
 
 	    p++;  // skip '%'
 
+	    // First check to see if we find a positional
+	    // argument specifier
+	    ptype = p;
+
+	    while (VIM_ISDIGIT(*ptype))
+		++ptype;
+
+	    if (*ptype == '$')
+	    {
+		if (*p == '0')
+		{
+		    // 0 flag at the wrong place
+		    semsg(_( e_invalid_format_specifier_str), fmt);
+		    goto error;
+		}
+
+		// Positional argument
+		unsigned int uj = *p++ - '0';
+
+		while (VIM_ISDIGIT((int)(*p)))
+		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		pos_arg = uj;
+
+		any_pos = 1;
+		CHECK_POS_ARG;
+
+		++p;
+	    }
+
 	    // parse flags
 	    while (*p == '0' || *p == '-' || *p == '+' || *p == ' '
 						   || *p == '#' || *p == '\'')
@@ -2368,41 +2397,6 @@ parse_fmt_types(
 	    }
 	    // If the '0' and '-' flags both appear, the '0' flag should be
 	    // ignored.
-
-	    if (VIM_ISDIGIT((int)(*p)))
-	    {
-		const char *pt = p;
-
-		while (VIM_ISDIGIT((int)(*pt)))
-		    pt++;
-
-		if (*pt == '$')
-		{
-		    is_pos_arg = 1;
-		    any_pos = 1;
-		    CHECK_POS_ARG;
-		}
-		else
-		{
-		    any_arg = 1;
-		    CHECK_POS_ARG;
-		}
-	    }
-
-	    if (is_pos_arg && VIM_ISDIGIT((int)(*p)))
-	    {
-		// Positional argument
-		unsigned int uj = *p++ - '0';
-
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		pos_arg = uj;
-
-		any_pos = 1;
-		CHECK_POS_ARG;
-
-		++p;
-	    }
 
 	    // parse field width
 	    if (*(arg = p) == '*')
@@ -2438,7 +2432,7 @@ parse_fmt_types(
 		    CHECK_POS_ARG;
 		}
 	    }
-	    else if (!is_pos_arg && VIM_ISDIGIT((int)(*(arg = p))))
+	    else if (VIM_ISDIGIT((int)(*(arg = p))))
 	    {
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
@@ -2449,16 +2443,8 @@ parse_fmt_types(
 
 		if (*p == '$')
 		{
-		    any_pos = 1;
-		    CHECK_POS_ARG;
-
-		    if (adjust_types(ap_types, uj, num_posarg, arg) == FAIL)
-			goto error;
-		}
-		else
-		{
-		    any_arg = 1;
-		    CHECK_POS_ARG;
+		    semsg(_( e_invalid_format_specifier_str), fmt);
+		    goto error;
 		}
 	    }
 
@@ -2806,12 +2792,32 @@ vim_vsnprintf_typval(
 	    // buffer for 's' and 'S' specs
 	    char_u  *tofree = NULL;
 
-	    // variable for positional arg
+	    // variables for positional arg
 	    int	    pos_arg = -1;
 	    int	    is_pos_arg = 0;
+	    const char	*ptype;
 
 
 	    p++;  // skip '%'
+
+	    // First check to see if we find a positional
+	    // argument specifier
+	    ptype = p;
+
+	    while (VIM_ISDIGIT(*ptype))
+		++ptype;
+
+	    if (*ptype == '$')
+	    {
+		// Positional argument
+		unsigned int uj = *p++ - '0';
+
+		while (VIM_ISDIGIT((int)(*p)))
+		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		pos_arg = uj;
+
+		++p;
+	    }
 
 	    // parse flags
 	    while (*p == '0' || *p == '-' || *p == '+' || *p == ' '
@@ -2833,29 +2839,6 @@ vim_vsnprintf_typval(
 	    }
 	    // If the '0' and '-' flags both appear, the '0' flag should be
 	    // ignored.
-
-	    if (VIM_ISDIGIT((int)(*p)))
-	    {
-		const char *pt = p;
-
-		while (VIM_ISDIGIT((int)(*pt)))
-		    pt++;
-
-		if (*pt == '$')
-		    is_pos_arg = 1;
-	    }
-
-	    if (is_pos_arg && VIM_ISDIGIT((int)(*p)))
-	    {
-		// Positional argument
-		unsigned int uj = *p++ - '0';
-
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		pos_arg = uj;
-
-		++p;
-	    }
 
 	    // parse field width
 	    if (*p == '*')
@@ -2891,7 +2874,7 @@ vim_vsnprintf_typval(
 		    justify_left = 1;
 		}
 	    }
-	    else if (!is_pos_arg && VIM_ISDIGIT((int)(*p)))
+	    else if (VIM_ISDIGIT((int)(*p)))
 	    {
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
@@ -2900,17 +2883,6 @@ vim_vsnprintf_typval(
 		while (VIM_ISDIGIT((int)(*p)))
 		    uj = 10 * uj + (unsigned int)(*p++ - '0');
 		min_field_width = uj;
-
-		if (*p == '$')
-		{
-		    arg_idx = (int)min_field_width;
-		    min_field_width =
-# if defined(FEAT_EVAL)
-			tvs != NULL ? tv_nr(tvs, &arg_idx) :
-# endif
-			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
-			    va_arg(ap, int));
-		}
 	    }
 
 	    // parse precision

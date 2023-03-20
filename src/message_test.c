@@ -39,7 +39,7 @@
 char *fmt_012p = "%012p";
 char *fmt_5S   = "%5S";
 char *fmt_06b  = "%06b";
-char *fmt_06pb = "%01$.*2$b";
+char *fmt_06pb = "%1$0.*2$b";
 char *fmt_212s = "%2$s %1$s %2$s";
 char *fmt_21s  = "%2$s %1$s";
 
