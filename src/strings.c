@@ -2344,7 +2344,6 @@ parse_fmt_types(
 
 	    // variable for positional arg
 	    int		pos_arg = -1;
-	    int		is_pos_arg = 0;
 	    const char	*ptype = NULL;
 
 	    p++;  // skip '%'
@@ -2452,7 +2451,6 @@ parse_fmt_types(
 	    if (*p == '.')
 	    {
 		p++;
-		is_pos_arg = 0;
 
 		if (VIM_ISDIGIT((int)(*p)))
 		{
@@ -2794,7 +2792,6 @@ vim_vsnprintf_typval(
 
 	    // variables for positional arg
 	    int	    pos_arg = -1;
-	    int	    is_pos_arg = 0;
 	    const char	*ptype;
 
 
