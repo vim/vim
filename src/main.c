@@ -3172,8 +3172,7 @@ exe_commands(mparm_T *parmp)
     static void
 source_startup_scripts(mparm_T *parmp)
 {
-    int		i;
-    bool use_exrc;
+    int		i, use_exrc;
 
     /*
      * For "evim" source evim.vim first of all, so that the user can overrule
@@ -3208,7 +3207,7 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
 		semsg(_(e_cannot_read_from_str_2), parmp->use_vimrc);
-	    use_exrc = true;
+	    use_exrc = 1;
 	}
     }
     else if (!silent_mode)
