@@ -3173,6 +3173,7 @@ exe_commands(mparm_T *parmp)
 source_startup_scripts(mparm_T *parmp)
 {
     int		i;
+    bool use_exrc;
 
     /*
      * For "evim" source evim.vim first of all, so that the user can overrule
@@ -3208,6 +3209,8 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
 		semsg(_(e_cannot_read_from_str_2), parmp->use_vimrc);
+	    else
+		use_exrc = true;
 	}
     }
     else if (!silent_mode)
@@ -3272,69 +3275,68 @@ source_startup_scripts(mparm_T *parmp)
 		    emsg(e_failed_to_source_defaults);
 	    }
 	}
-
-	/*
-	 * Read initialization commands from ".vimrc" or ".exrc" in current
-	 * directory.  This is only done if the 'exrc' option is set.
-	 * Because of security reasons we disallow shell and write commands
-	 * now, except for Unix if the file is owned by the user or 'secure'
-	 * option has been reset in environment of global ".exrc" or ".vimrc".
-	 * Only do this if VIMRC_FILE is not the same as USR_VIMRC_FILE or
-	 * SYS_VIMRC_FILE.
-	 */
-	if (p_exrc)
-	{
-#if defined(UNIX) || defined(VMS)
-	    // If ".vimrc" file is not owned by user, set 'secure' mode.
-	    if (!file_owned(VIMRC_FILE))
-#endif
-		secure = p_secure;
-
-	    i = FAIL;
-	    if (fullpathcmp((char_u *)USR_VIMRC_FILE,
-				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
-#ifdef USR_VIMRC_FILE2
-		    && fullpathcmp((char_u *)USR_VIMRC_FILE2,
-				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
-#endif
-#ifdef USR_VIMRC_FILE3
-		    && fullpathcmp((char_u *)USR_VIMRC_FILE3,
-				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
-#endif
-#ifdef SYS_VIMRC_FILE
-		    && fullpathcmp((char_u *)SYS_VIMRC_FILE,
-				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
-#endif
-				)
-		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC, NULL);
-
-	    if (i == FAIL)
-	    {
-#if defined(UNIX) || defined(VMS)
-		// if ".exrc" is not owned by user set 'secure' mode
-		if (!file_owned(EXRC_FILE))
-		    secure = p_secure;
-		else
-		    secure = 0;
-#endif
-		if (	   fullpathcmp((char_u *)USR_EXRC_FILE,
-				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
-#ifdef USR_EXRC_FILE2
-			&& fullpathcmp((char_u *)USR_EXRC_FILE2,
-				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
-#endif
-				)
-		    (void)do_source((char_u *)EXRC_FILE, FALSE,
-							      DOSO_NONE, NULL);
-	    }
-	}
-	if (secure == 2)
-	    need_wait_return = TRUE;
-	secure = 0;
 #ifdef AMIGA
 	proc->pr_WindowPtr = save_winptr;
 #endif
     }
+    /*
+     * Read initialization commands from ".vimrc" or ".exrc" in current
+     * directory.  This is only done if the 'exrc' option is set.
+     * Because of security reasons we disallow shell and write commands
+     * now, except for Unix if the file is owned by the user or 'secure'
+     * option has been reset in environment of global ".exrc" or ".vimrc".
+     * Only do this if VIMRC_FILE is not the same as USR_VIMRC_FILE or
+     * SYS_VIMRC_FILE.
+     */
+    if (p_exrc && use_exrc)
+    {
+#if defined(UNIX) || defined(VMS)
+	// If ".vimrc" file is not owned by user, set 'secure' mode.
+	if (!file_owned(VIMRC_FILE))
+#endif
+	    secure = p_secure;
+
+	i = FAIL;
+	if (fullpathcmp((char_u *)USR_VIMRC_FILE,
+			    (char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
+#ifdef USR_VIMRC_FILE2
+		&& fullpathcmp((char_u *)USR_VIMRC_FILE2,
+			    (char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
+#endif
+#ifdef USR_VIMRC_FILE3
+		&& fullpathcmp((char_u *)USR_VIMRC_FILE3,
+			    (char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
+#endif
+#ifdef SYS_VIMRC_FILE
+		&& fullpathcmp((char_u *)SYS_VIMRC_FILE,
+			    (char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
+#endif
+			    )
+	    i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC, NULL);
+
+	if (i == FAIL)
+	{
+#if defined(UNIX) || defined(VMS)
+	    // if ".exrc" is not owned by user set 'secure' mode
+	    if (!file_owned(EXRC_FILE))
+		secure = p_secure;
+	    else
+		secure = 0;
+#endif
+	    if (	   fullpathcmp((char_u *)USR_EXRC_FILE,
+			    (char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
+#ifdef USR_EXRC_FILE2
+		    && fullpathcmp((char_u *)USR_EXRC_FILE2,
+			    (char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
+#endif
+			    )
+		(void)do_source((char_u *)EXRC_FILE, FALSE,
+							  DOSO_NONE, NULL);
+	}
+    }
+    if (secure == 2)
+	need_wait_return = TRUE;
+    secure = 0;
     TIME_MSG("sourcing vimrc file(s)");
 }
 
