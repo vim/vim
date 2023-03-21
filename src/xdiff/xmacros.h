@@ -24,7 +24,11 @@
 #define XMACROS_H
 
 
-
+#ifdef __hpux
+# ifndef SIZE_MAX
+#  define SIZE_MAX ((size_t)(-1))
+# endif
+#endif
 
 #define XDL_MIN(a, b) ((a) < (b) ? (a): (b))
 #define XDL_MAX(a, b) ((a) > (b) ? (a): (b))
