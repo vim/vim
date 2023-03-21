@@ -3186,8 +3186,7 @@ source_startup_scripts(mparm_T *parmp)
     }
 
     /*
-     * If -u argument given, use only the initializations from that file and
-     * nothing else.
+     * If -u argument given, use the initializations from that file.
      */
     if (parmp->use_vimrc != NULL)
     {
@@ -3281,7 +3280,8 @@ source_startup_scripts(mparm_T *parmp)
     }
     /*
      * Read initialization commands from ".vimrc" or ".exrc" in current
-     * directory.  This is only done if the 'exrc' option is set.
+     * directory.  This is only done if the 'exrc' option is set and
+     * the "-u" flag, if present, is not "DEFAULTS", "NONE" or "NORC".
      * Because of security reasons we disallow shell and write commands
      * now, except for Unix if the file is owned by the user or 'secure'
      * option has been reset in environment of global ".exrc" or ".vimrc".
