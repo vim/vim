@@ -3208,8 +3208,7 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
 		semsg(_(e_cannot_read_from_str_2), parmp->use_vimrc);
-	    else
-		use_exrc = true;
+	    use_exrc = true;
 	}
     }
     else if (!silent_mode)
