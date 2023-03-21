@@ -1320,6 +1320,19 @@ func Test_write_in_vimrc()
   endif
 endfunc
 
+func Test_sources_local_exrc_and_vimrc_with_custom_vimrc()
+  call writefile(['set exrc'], 'Xflagvimrc', 'D')
+  for rc_file in ['exrc', 'vimrc']
+    let rc_file = has('win32') ? '_'.rc_file : '.'.rc_file
+    call writefile(['call writefile(["'.rc_file.'"], "Xtestout")'], rc_file, 'D')
+
+    if RunVim([], ['quit'], '-u Xflagvimrc')
+      call assert_equal([rc_file], readfile('Xtestout'))
+      call delete('Xtestout')
+    endif
+  endfor
+endfunc
+
 func Test_echo_true_in_cmd()
   CheckNotGui
 
