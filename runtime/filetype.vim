@@ -1112,6 +1112,9 @@ au BufNewFile,BufRead *.ldif			setf ldif
 " Ld loader
 au BufNewFile,BufRead *.ld			setf ld
 
+" Lean
+au BufNewFile,BufRead *.lean			setf lean
+
 " Ledger
 au BufRead,BufNewFile *.ldg,*.ledger,*.journal			setf ledger
 

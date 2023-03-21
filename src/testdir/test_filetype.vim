@@ -320,6 +320,7 @@ let s:filename_checks = {
     \ 'latte': ['file.latte', 'file.lte'],
     \ 'ld': ['file.ld'],
     \ 'ldif': ['file.ldif'],
+    \ 'lean': ['file.lean'],
     \ 'ledger': ['file.ldg', 'file.ledger', 'file.journal'],
     \ 'less': ['file.less'],
     \ 'lex': ['file.lex', 'file.l', 'file.lxx', 'file.l++'],
