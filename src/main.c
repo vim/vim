@@ -3172,7 +3172,8 @@ exe_commands(mparm_T *parmp)
     static void
 source_startup_scripts(mparm_T *parmp)
 {
-    int		i, use_exrc;
+    int		i;
+    int use_exrc = 1;
 
     /*
      * For "evim" source evim.vim first of all, so that the user can overrule
@@ -3194,6 +3195,7 @@ source_startup_scripts(mparm_T *parmp)
 	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)
 									 != OK)
 		emsg(e_failed_to_source_defaults);
+	    use_exrc = 0;
 	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
@@ -3202,12 +3204,12 @@ source_startup_scripts(mparm_T *parmp)
 	    if (use_gvimrc == NULL)	    // don't load gvimrc either
 		use_gvimrc = parmp->use_vimrc;
 #endif
+	    use_exrc = 0;
 	}
 	else
 	{
 	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
 		semsg(_(e_cannot_read_from_str_2), parmp->use_vimrc);
-	    use_exrc = 1;
 	}
     }
     else if (!silent_mode)
