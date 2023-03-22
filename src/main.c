@@ -3288,7 +3288,7 @@ source_startup_scripts(mparm_T *parmp)
      * Only do this if VIMRC_FILE is not the same as USR_VIMRC_FILE or
      * SYS_VIMRC_FILE.
      */
-    if (p_exrc && use_exrc)
+    if (!silent_mode && p_exrc && use_exrc)
     {
 #if defined(UNIX) || defined(VMS)
 	// If ".vimrc" file is not owned by user, set 'secure' mode.
