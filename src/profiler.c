@@ -436,21 +436,13 @@ static enum
 
 static char *pexpand_cmds[] = {
 			"start",
-#define PROFCMD_START	0
 			"stop",
-#define PROFCMD_STOP	1
 			"pause",
-#define PROFCMD_PAUSE	2
 			"continue",
-#define PROFCMD_CONTINUE 3
 			"func",
-#define PROFCMD_FUNC	4
 			"file",
-#define PROFCMD_DUMP	5
 			"dump",
-#define PROFCMD_FILE	6
 			NULL
-#define PROFCMD_LAST	7
 };
 
 /*
