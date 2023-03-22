@@ -255,10 +255,16 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyModule_AddObject py3_PyModule_AddObject
 # define PyImport_AppendInittab py3_PyImport_AppendInittab
 # define PyImport_AddModule py3_PyImport_AddModule
-# if PY_VERSION_HEX >= 0x030300f0
-#  define PyUnicode_AsUTF8AndSize py3_PyUnicode_AsUTF8AndSize
+# ifdef USE_LIMITED_API
+#  if Py_LIMITED_API >= 0x030a0000
+#   define PyUnicode_AsUTF8AndSize py3_PyUnicode_AsUTF8AndSize
+#  endif
 # else
-#  define _PyUnicode_AsString py3__PyUnicode_AsString
+#  if PY_VERSION_HEX >= 0x030300f0
+#   define PyUnicode_AsUTF8AndSize py3_PyUnicode_AsUTF8AndSize
+#  else
+#   define _PyUnicode_AsString py3__PyUnicode_AsString
+#  endif
 # endif
 # undef PyUnicode_CompareWithASCIIString
 # define PyUnicode_CompareWithASCIIString py3_PyUnicode_CompareWithASCIIString
@@ -402,7 +408,8 @@ static PyObject* (*py3_PyDict_GetItemString)(PyObject *, const char *);
 static int (*py3_PyDict_Next)(PyObject *, Py_ssize_t *, PyObject **, PyObject **);
 static PyObject* (*py3_PyLong_FromLong)(long);
 static PyObject* (*py3_PyDict_New)(void);
-# if PY_VERSION_HEX >= 0x03080000
+# if (defined(USE_LIMITED_API) && Py_LIMITED_API >= 0x03080000) || \
+       (!defined(USE_LIMITED_API) && PY_VERSION_HEX >= 0x03080000)
 static int (*py3_PyIter_Check)(PyObject *o);
 # endif
 static PyObject* (*py3_PyIter_Next)(PyObject *);
@@ -448,10 +455,16 @@ static PyObject* py3__Py_FalseStruct;
 static PyObject* py3__Py_TrueStruct;
 static int (*py3_PyModule_AddObject)(PyObject *m, const char *name, PyObject *o);
 static int (*py3_PyImport_AppendInittab)(const char *name, PyObject* (*initfunc)(void));
-# if PY_VERSION_HEX >= 0x030300f0
+# ifdef USE_LIMITED_API
+#  if Py_LIMITED_API >= 0x030a0000
 static char* (*py3_PyUnicode_AsUTF8AndSize)(PyObject *unicode, Py_ssize_t *size);
+#  endif
 # else
+#  if PY_VERSION_HEX >= 0x030300f0
+static char* (*py3_PyUnicode_AsUTF8AndSize)(PyObject *unicode, Py_ssize_t *size);
+#  else
 static char* (*py3__PyUnicode_AsString)(PyObject *unicode);
+#  endif
 # endif
 static int (*py3_PyUnicode_CompareWithASCIIString)(PyObject *unicode, const char* string);
 static PyObject* (*py3_PyUnicode_AsEncodedString)(PyObject *unicode, const char* encoding, const char* errors);
@@ -630,10 +643,16 @@ static struct
     {"PyObject_Init", (PYTHON_PROC*)&py3__PyObject_Init},
     {"PyModule_AddObject", (PYTHON_PROC*)&py3_PyModule_AddObject},
     {"PyImport_AppendInittab", (PYTHON_PROC*)&py3_PyImport_AppendInittab},
-# if PY_VERSION_HEX >= 0x030300f0
+# ifdef USE_LIMITED_API
+#  if Py_LIMITED_API >= 0x030a0000
     {"PyUnicode_AsUTF8AndSize", (PYTHON_PROC*)&py3_PyUnicode_AsUTF8AndSize},
+#  endif
 # else
+#  if PY_VERSION_HEX >= 0x030300f0
+    {"PyUnicode_AsUTF8AndSize", (PYTHON_PROC*)&py3_PyUnicode_AsUTF8AndSize},
+#  else
     {"_PyUnicode_AsString", (PYTHON_PROC*)&py3__PyUnicode_AsString},
+#  endif
 # endif
     {"PyUnicode_CompareWithASCIIString", (PYTHON_PROC*)&py3_PyUnicode_CompareWithASCIIString},
     {"PyUnicode_AsUTF8String", (PYTHON_PROC*)&py3_PyUnicode_AsUTF8String},
