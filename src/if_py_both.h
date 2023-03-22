@@ -161,16 +161,11 @@ PyObject* Vim_PyObject_New(PyTypeObject *type, size_t objsize)
 # define PyList_SET_ITEM(list, i, item) PyList_SetItem(list, i, item)
 
 # if Py_LIMITED_API < 0x03080000
-// PyIter_check only became part of stable ABI in 3.8, so we mock it here.
-// Internally if __iter__() is implemented, but not __next__(), tp_iternext
-// gets replaced with a _PyObject_NextNotImplemented stub function, which we
-// don't have a way to compare against in limited API, so this function behaves
-// slightly differently from the official API in that it will pass for
-// partially implemented iterators (but the null check will suffice most of the
-// time and prevent a crash).
+// PyIter_check only became part of stable ABI in 3.8, and there is no easy way
+// to check for it in the API. We simply return false as a compromise. This
+// does mean we should avoid compiling with stable ABI < 3.8.
 #  undef PyIter_Check
-#  define PyIter_Check(obj) \
-    (PyType_GetSlot((obj)->ob_type, Py_tp_iternext) != NULL)
+#  define PyIter_Check(obj) (FALSE)
 # endif
 
 PyTypeObject* AddHeapType(struct typeobject_wrapper* type_object)
@@ -241,13 +236,20 @@ PyTypeObject* AddHeapType(struct typeobject_wrapper* type_object)
 }
 
 // Add a heap type, since static types do not work in limited API
-// Each PYTYPE_READY needs to be paired with PYTYPE_CLEANUP.
+// Each PYTYPE_READY is paired with PYTYPE_CLEANUP.
+//
+// Note that we don't call Py_DECREF(type##Ptr) in clean up. The reason for
+// that in 3.7, it's possible to de-allocate a heap type before all instances
+// are cleared, leading to a crash, whereas in 3.8 the semantics were changed
+// and instances hold strong references to types. Since these types are
+// designed to be static, just keep them around to avoid having to write
+// version-specific handling. Vim does not re-start the Python runtime so there
+// will be no long-term leak.
 # define PYTYPE_READY(type) \
     type##Ptr = AddHeapType(&(type)); \
     if (type##Ptr == NULL) \
 	return -1;
 # define PYTYPE_CLEANUP(type) \
-    Py_DECREF(type##Ptr); \
     type##Ptr = NULL;
 
 // Limited API does not provide PyRun_* functions. Need to implement manually
