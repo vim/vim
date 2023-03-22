@@ -1112,6 +1112,9 @@ au BufNewFile,BufRead *.ldif			setf ldif
 " Ld loader
 au BufNewFile,BufRead *.ld			setf ld
 
+" Lean
+au BufNewFile,BufRead *.lean			setf lean
+
 " Ledger
 au BufRead,BufNewFile *.ldg,*.ledger,*.journal			setf ledger
 
@@ -1395,6 +1398,9 @@ au BufNewFile,BufRead *.nse			setf lua
 
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
+
+" Nu
+au BufNewFile,BufRead {env,config}.nu		setf nu
 
 " Oblivion Language and Oblivion Script Extender
 au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
@@ -1804,6 +1810,9 @@ au BufNewFile,BufRead Cargo.lock,*/.cargo/config,*/.cargo/credentials	setf toml
 
 " S-lang (or shader language, or SmallLisp)
 au BufNewFile,BufRead *.sl			setf slang
+
+" Sage
+au BufNewFile,BufRead *.sage			setf sage
 
 " Samba config
 au BufNewFile,BufRead smb.conf			setf samba
@@ -2335,6 +2344,9 @@ au BufNewFile,BufRead *.vue			setf vue
 
 " WebAssembly
 au BufNewFile,BufRead *.wast,*.wat		setf wast
+
+" WebAssembly Interface Type (WIT)
+au BufNewFile,BufRead *.wit			setf wit
 
 " Webmacro
 au BufNewFile,BufRead *.wm			setf webmacro
