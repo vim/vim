@@ -2983,7 +2983,8 @@ get_compile_type(ufunc_T *ufunc)
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
     {
-	if (!ufunc->uf_profiling && has_profiling(FALSE, ufunc->uf_name, NULL))
+	if (!ufunc->uf_profiling && has_profiling(FALSE, ufunc->uf_name, NULL,
+							    &ufunc->uf_hash))
 	    func_do_profile(ufunc);
 	if (ufunc->uf_profiling)
 	    return CT_PROFILE;

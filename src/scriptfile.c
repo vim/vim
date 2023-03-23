@@ -1721,7 +1721,7 @@ do_source_ext(
 	int	forceit;
 
 	// Check if we do profiling for this script.
-	if (!si->sn_prof_on && has_profiling(TRUE, si->sn_name, &forceit))
+	if (!si->sn_prof_on && has_profiling(TRUE, si->sn_name, &forceit, NULL))
 	{
 	    script_do_profile(si);
 	    si->sn_pr_force = forceit;

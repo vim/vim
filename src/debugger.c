@@ -528,6 +528,35 @@ static int has_expr_breakpoint = FALSE;
 #ifdef FEAT_PROFILE
 // Profiling uses file and func names similar to breakpoints.
 static garray_T prof_ga = {0, 0, sizeof(struct debuggy), 4, NULL};
+
+// Profiling caches results of regexp lookups for function/script name.
+#define N_PROF_HTAB 2
+static hashtab_T prof_cache[N_PROF_HTAB];
+#define PROF_HTAB_FUNCS 0
+#define PROF_HTAB_FILES 1
+static int prof_cache_initialized;
+typedef struct profentry_S
+{
+    char    pen_flags;	// cache data booleans: profiling, forceit
+    char_u  pen_name[1]; // actually longer
+} profentry_T;
+#define PEN_FLAG_PROFILING 1
+#define PEN_FLAG_FORCEIT 2
+#define PEN_SET_PROFILING(pe) ((pe)->pen_flags |= PEN_FLAG_PROFILING)
+#define PEN_SET_FORCEIT(pe) ((pe)->pen_flags |= PEN_FLAG_FORCEIT)
+#define PEN_IS_PROFILING(pe) (((pe)->pen_flags & PEN_FLAG_PROFILING) != 0)
+#define PEN_IS_FORCEIT(pe) (((pe)->pen_flags & PEN_FLAG_FORCEIT) != 0)
+
+#define PE2HIKEY(pe)	((pe)->pen_name)
+#define HIKEY2PE(p)	((profentry_T *)((p) - (offsetof(profentry_T, pen_name))))
+#define HI2PE(hi)	HIKEY2PE((hi)->hi_key)
+
+static void prof_clear_cache(void);
+#define PROF_CLEAR_CACHE(gap) do {if ((gap) == &prof_ga) prof_clear_cache();} while (0)
+// Can enable to get some info about profile caching
+// #define PROF_CACHE_LOG
+#else
+#define PROF_CLEAR_CACHE(gap) do {} while (0)
 #endif
 #define DBG_FUNC	1
 #define DBG_FILE	2
@@ -708,6 +737,7 @@ ex_breakadd(exarg_T *eap)
 		++debug_tick;
 	    }
 	    ++gap->ga_len;
+	    PROF_CLEAR_CACHE(gap);
 	}
     }
     else
@@ -845,6 +875,7 @@ ex_breakdel(exarg_T *eap)
 	if (!del_all)
 	    break;
     }
+    PROF_CLEAR_CACHE(gap);
 
     // If all breakpoints were removed clear the array.
     if (gap->ga_len == 0)
@@ -899,17 +930,102 @@ dbg_find_breakpoint(
 }
 
 #if defined(FEAT_PROFILE) || defined(PROTO)
+#if defined(PROF_CACHE_LOG)
+static int count_lookups[2];
+#endif
 /*
  * Return TRUE if profiling is on for a function or sourced file.
+ * Cache the results of debuggy_find().
+ * Cache is cleared whenever prof_ga.ga_len is changed.
  */
     int
 has_profiling(
     int		file,	    // TRUE for a file, FALSE for a function
     char_u	*fname,	    // file or function name
-    int		*fp)	    // return: forceit
+    int		*fp,	    // return: forceit
+    hash_T	*hashp)	    // use/return fname hash, may be NULL
 {
-    return (debuggy_find(file, fname, (linenr_T)0, &prof_ga, fp)
-							      != (linenr_T)0);
+    if (prof_ga.ga_len == 0 || !prof_cache_initialized)
+	return debuggy_find(file, fname, (linenr_T)0, &prof_ga, fp)
+							     != (linenr_T)0;
+
+    hash_T hash;
+    if (hashp != NULL)
+    {
+	hash = *hashp;
+	if (hash == 0)
+	{
+	    hash = hash_hash(fname);
+	    *hashp = hash;
+	}
+    }
+    else
+	hash = hash_hash(fname);
+
+    hashtab_T *ht = &prof_cache[file ? PROF_HTAB_FILES : PROF_HTAB_FUNCS];
+    hashitem_T *hi = hash_lookup(ht, fname, hash);
+    profentry_T *pe;
+    if (HASHITEM_EMPTY(hi))
+    {
+	pe = alloc(offsetof(profentry_T, pen_name) + STRLEN(fname) + 1);
+	if (pe == NULL)
+	    return FALSE;
+	STRCPY(pe->pen_name, fname);
+	pe->pen_flags = 0;
+	// run debuggy_find and capture return and forceit
+	int f;
+	int lnum = debuggy_find(file, fname, (linenr_T)0, &prof_ga, &f);
+	if (lnum)
+	{
+	    PEN_SET_PROFILING(pe);
+	    if (f)
+		PEN_SET_FORCEIT(pe);
+	}
+	hash_add_item(ht, hi, pe->pen_name, hash);
+#if defined(PROF_CACHE_LOG)
+	ch_log(NULL, "has_profiling: %s %s forceit %s, profile %s",
+	       file ? "file" : "func", fname,
+	       PEN_IS_FORCEIT(pe) ? "true" : "false",
+	       PEN_IS_PROFILING(pe) ? "true" : "false");
+#endif
+    }
+    else
+	pe = HI2PE(hi);
+    if (fp)
+	*fp = PEN_IS_FORCEIT(pe);
+#if defined(PROF_CACHE_LOG)
+    count_lookups[file ? PROF_HTAB_FILES : PROF_HTAB_FUNCS]++;
+#endif
+    return PEN_IS_PROFILING(pe);
+}
+
+    static void
+prof_clear_cache()
+{
+    if (!prof_cache_initialized)
+    {
+	hash_init(&prof_cache[PROF_HTAB_FUNCS]);
+	hash_init(&prof_cache[PROF_HTAB_FILES]);
+	prof_cache_initialized = TRUE;
+    }
+
+    hashtab_T *ht;
+    for (ht = &prof_cache[0]; ht < &prof_cache[N_PROF_HTAB]; ht++)
+    {
+	if (ht->ht_used > 0)
+	{
+#if defined(PROF_CACHE_LOG)
+	    int idx = ht == &prof_cache[PROF_HTAB_FUNCS]
+		      ? PROF_HTAB_FUNCS : PROF_HTAB_FILES;
+	    ch_log(NULL, "prof_clear_cache: %s, used: %ld, lookups: %d",
+		   idx == PROF_HTAB_FUNCS ? "function" : "script",
+		   ht->ht_used, count_lookups[idx]);
+	    count_lookups[idx] = 0;
+#endif
+	    hash_clear_all(ht, offsetof(profentry_T, pen_name));
+	    hash_init(ht);
+	}
+    }
 }
 #endif
 
@@ -979,6 +1095,10 @@ debuggy_find(
 		    *fp = bp->dbg_forceit;
 	    }
 	    got_int |= prev_got_int;
+#ifdef FEAT_PROFILE
+	    if (lnum && gap == &prof_ga)
+		break;
+#endif
 	}
 #ifdef FEAT_EVAL
 	else if (bp->dbg_type == DBG_EXPR)
