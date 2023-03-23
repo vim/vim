@@ -3709,7 +3709,7 @@ unix_expandpath(
     }
 
     // make room for file name
-    buflen = STRLEN(path) + BASENAMELEN + 5;
+    buflen = STRLEN(path) + MAXPATHL;
     buf = alloc(buflen);
     if (buf == NULL)
 	return 0;
@@ -3828,7 +3828,8 @@ unix_expandpath(
 		   || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), dp->d_name, e - s) == 0)))
 	    {
-		STRCPY(s, dp->d_name);
+		STRNCPY(s, dp->d_name, buflen - (s - buf));
+		buf[buflen - 1] = '\0';
 		len = STRLEN(buf);
 
 		if (starstar && stardepth < 100)
