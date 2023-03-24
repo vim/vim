@@ -2452,20 +2452,6 @@ parse_fmt_types(
 	    {
 		p++;
 
-		if (VIM_ISDIGIT((int)(*p)))
-		{
-		    const char *pt = p;
-
-		    while (VIM_ISDIGIT((int)(*pt)))
-			pt++;
-
-		    if (*pt == '$')
-		    {
-			semsg(_( e_invalid_format_specifier_str), fmt);
-			goto error;
-		    }
-		}
-
 		if (*(arg = p) == '*')
 		{
 		    p++;
