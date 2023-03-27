@@ -1162,6 +1162,9 @@ au BufNewFile,BufRead *.lite,*.lt		setf lite
 " LiteStep RC files
 au BufNewFile,BufRead */LiteStep/*/*.rc		setf litestep
 
+" Livebook
+au BufNewFile,BufRead *.livemd			setf markdown
+
 " Login access
 au BufNewFile,BufRead */etc/login.access	setf loginaccess
 
