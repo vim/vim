@@ -2438,12 +2438,12 @@ stop_insert(
      * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
     ptr = get_inserted();
-    if (did_restart_edit == 0 || (ptr != NULL
-				       && (int)STRLEN(ptr) > new_insert_skip))
+    int added = ptr == NULL ? 0 : (int)STRLEN(ptr) - new_insert_skip;
+    if (did_restart_edit == 0 || added > 0)
     {
 	vim_free(last_insert);
 	last_insert = ptr;
-	last_insert_skip = new_insert_skip;
+	last_insert_skip = added < 0 ? 0 : new_insert_skip;
     }
     else
 	vim_free(ptr);
@@ -3688,6 +3688,7 @@ ins_esc(
 	else
 	{
 	    --curwin->w_cursor.col;
+	    curwin->w_valid &= ~(VALID_WCOL|VALID_VIRTCOL);
 	    // Correct cursor for multi-byte character.
 	    if (has_mbyte)
 		mb_adjust_cursor();
