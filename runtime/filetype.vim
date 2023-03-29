@@ -273,6 +273,9 @@ if has("fname_case")
   autocmd BufRead,BufNewFile *.BUILD,BUILD		setf bzl
 endif
 
+" Busted (Lua unit testing framework - configuration files)
+au BufNewFile,BufRead .busted			setf lua
+
 " C or lpc
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
 au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
