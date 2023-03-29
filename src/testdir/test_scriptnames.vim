@@ -91,6 +91,11 @@ func Test_getscriptinfo()
   call assert_fails("echo getscriptinfo('foobar')", 'E1206:')
 
   call assert_fails("echo getscriptinfo({'sid': []})", 'E745:')
+  call assert_fails("echo getscriptinfo({'sid': 0})", 'E475:')
+  call assert_fails("echo getscriptinfo({'sid': -1})", 'E475:')
+
+  let max_sid = max(map(getscriptinfo(), { k, v -> v.sid }))
+  call assert_equal([], getscriptinfo({'sid': max_sid + 1}))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
