@@ -238,13 +238,16 @@ pum_display(
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
+	{
+	    // w_wcol includes virtual text "above"
+	    int wcol = curwin->w_wcol % curwin->w_width;
 #ifdef FEAT_RIGHTLEFT
-	if (right_left)
-	    cursor_col = curwin->w_wincol + curwin->w_width
-							  - curwin->w_wcol - 1;
-	else
+	    if (right_left)
+		cursor_col = curwin->w_wincol + curwin->w_width - wcol - 1;
+	    else
 #endif
-	    cursor_col = curwin->w_wincol + curwin->w_wcol;
+		cursor_col = curwin->w_wincol + wcol;
+	}
 
 	// if there are more items than room we need a scrollbar
 	if (pum_height < size)

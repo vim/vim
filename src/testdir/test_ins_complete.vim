@@ -2220,5 +2220,28 @@ func Test_tagfunc_wipes_out_buffer()
   bwipe!
 endfunc
 
+func Test_ins_complete_popup_position()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      set nowrap
+      setline(1, ['one', 'two', 'this is line ', 'four'])
+      prop_type_add('test', {highlight: 'Error'})
+      prop_add(3, 0, {
+          text_align: 'above',
+          text: 'The quick brown fox jumps over the lazy dog',
+          type: 'test'
+      })
+  END
+  call writefile(lines, 'XinsPopup', 'D')
+  let buf = RunVimInTerminal('-S XinsPopup', #{rows: 10})
+
+  call term_sendkeys(buf, "3GA\<C-N>")
+  call VerifyScreenDump(buf, 'Test_ins_complete_popup_position_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
