@@ -3496,7 +3496,15 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_LOAD:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
-		copy_tv(STACK_TV_VAR(iptr->isn_arg.number), STACK_TV_BOT(0));
+		tv = STACK_TV_VAR(iptr->isn_arg.number);
+		if (tv->v_type == VAR_UNKNOWN)
+		{
+		    // missing argument or default value v:none
+		    STACK_TV_BOT(0)->v_type = VAR_SPECIAL;
+		    STACK_TV_BOT(0)->vval.v_number = VVAL_NONE;
+		}
+		else
+		    copy_tv(tv, STACK_TV_BOT(0));
 		++ectx->ec_stack.ga_len;
 		break;
 
