@@ -14,8 +14,8 @@
 
 #if defined(SASC) && SASC < 658
 /*
- * The SAS C compiler has a bug that makes typedefs being forgot in include
- * files.  Has been fixed in version 6.58.
+ * The SAS C compiler has a bug that makes typedefs being forgotten
+ * in include files.  Has been fixed in version 6.58.
  */
 typedef unsigned char char_u;
 #endif

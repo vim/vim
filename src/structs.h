@@ -1993,7 +1993,7 @@ typedef struct {
 
 /*
  * Info about an encountered script.
- * When sn_state has the SN_STATE_NOT_LOADED is has not been sourced yet.
+ * When sn_state has SN_STATE_NOT_LOADED, it has not been sourced yet.
  */
 typedef struct
 {
@@ -4780,7 +4780,7 @@ typedef struct {
     int		cts_text_prop_count;	// number of text props; when zero
 					// cts_text_props is not used
     textprop_T	*cts_text_props;	// text props (allocated)
-    char	cts_has_prop_with_text; // TRUE if if a property inserts text
+    char	cts_has_prop_with_text; // TRUE if a property inserts text
     int		cts_cur_text_width;     // width of current inserted text
     int		cts_prop_lines;		// nr of properties above or below
     int		cts_first_char;		// width text props above the line
