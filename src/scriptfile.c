@@ -718,18 +718,6 @@ add_pack_dir_to_rtp(char_u *fname)
 	char_u *cur_entry = entry;
 
 	copy_option_part(&entry, buf, MAXPATHL, ",");
-	if (insp == NULL)
-	{
-	    add_pathsep(buf);
-	    rtp_ffname = fix_fname(buf);
-	    if (rtp_ffname == NULL)
-		goto theend;
-	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
-	    vim_free(rtp_ffname);
-	    if (match)
-		// Insert "ffname" after this entry (and comma).
-		insp = entry;
-	}
 
 	if ((p = (char_u *)strstr((char *)buf, "after")) != NULL
 		&& p > buf
@@ -742,6 +730,19 @@ add_pack_dir_to_rtp(char_u *fname)
 		insp = cur_entry;
 	    after_insp = cur_entry;
 	    break;
+	}
+
+	if (insp == NULL)
+	{
+	    add_pathsep(buf);
+	    rtp_ffname = fix_fname(buf);
+	    if (rtp_ffname == NULL)
+		goto theend;
+	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
+	    vim_free(rtp_ffname);
+	    if (match)
+		// Insert "ffname" after this entry (and comma).
+		insp = entry;
 	}
     }
 
