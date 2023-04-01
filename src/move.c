@@ -1763,7 +1763,7 @@ scrolling_screenlines(int byfold UNUSED)
 	|| (byfold && hasAnyFolding(curwin))
 # endif
 # ifdef FEAT_DIFF
-	|| curwin->w_p_diff
+	|| (curwin->w_p_diff && !curwin->w_p_wrap)
 # endif
 	;
 }
