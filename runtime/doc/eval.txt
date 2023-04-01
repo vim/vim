@@ -1580,6 +1580,26 @@ Examples: >
 	echo $"The square root of {{9}} is {sqrt(9)}"
 <	The square root of {9} is 3.0 ~
 
+						*string-offset-encoding*
+A string can consist of one byte or two byte or four byte characters.  A
+string offset can use UTF-8 encoding (byte) or UTF-16 encoding (16-bit words)
+or UTF-32 encoding (character).  In legacy vim scripts UTF-8 encoding (byte)
+is used for string offsets and in vim9 scripts UTF-32 encoding (character) is
+used for string offsets.
+
+The different offsets for the string "a©😊" are below:
+
+  UTF-8 offsets:
+      [0]: 61, [1]: C2, [2]: A9, [3]: F0, [4]: 9F, [5]: 98, [6]: 8A
+  UTF-16 offsets:
+      [0]: 61, [1]: C2 A9, [2]: F0 9F, [3]: 98 8A
+  UTF-32 offsets:
+      [0]: 61, [1]: C2 A9, [2]: F0 9F 98 8A
+
+The functions |byteidx()|, |utf16idx()| and |charidx()| can be used to convert
+between these indices.  The functions |strlen()|, |strutf16len()| and
+|strcharlen()| return the number of bytes, UTF-16 code units and characters in
+a string respectively.
 
 option						*expr-option* *E112* *E113*
 ------

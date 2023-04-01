@@ -1009,6 +1009,9 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     char_u	*t;
     char_u	*str;
     varnumber_T	idx;
+    varnumber_T	utf16idx = FALSE;
+    int		clen;
+    int		(*ptr2len)(char_u *);
 
     rettv->vval.v_number = -1;
 
@@ -1022,15 +1025,35 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     if (str == NULL || idx < 0)
 	return;
 
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	utf16idx = tv_get_bool(&argvars[2]);
+	if (utf16idx < 0 || utf16idx > 1)
+	{
+	    semsg(_(e_using_number_as_bool_nr), utf16idx);
+	    return;
+	}
+    }
+
+    if (enc_utf8 && comp)
+	ptr2len = utf_ptr2len;
+    else
+	ptr2len = mb_ptr2len;
+
     t = str;
     for ( ; idx > 0; idx--)
     {
 	if (*t == NUL)		// EOL reached
 	    return;
-	if (enc_utf8 && comp)
-	    t += utf_ptr2len(t);
-	else
-	    t += (*mb_ptr2len)(t);
+	if (utf16idx)
+	{
+	    clen = ptr2len(t);
+	    int c = (clen > 1) ? utf_ptr2char(t) : *t;
+	    if (c > 0xFFFF)
+		idx--;
+	}
+	if (idx > 0)
+	    t += ptr2len(t);
     }
     rettv->vval.v_number = (varnumber_T)(t - str);
 }
@@ -1062,15 +1085,19 @@ f_charidx(typval_T *argvars, typval_T *rettv)
     char_u	*str;
     varnumber_T	idx;
     varnumber_T	countcc = FALSE;
+    varnumber_T	utf16idx = FALSE;
     char_u	*p;
     int		len;
+    int		clen;
     int		(*ptr2len)(char_u *);
 
     rettv->vval.v_number = -1;
 
-    if ((check_for_string_arg(argvars, 0) == FAIL
+    if (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL
-		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL
+		|| (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 3) == FAIL))
 	return;
 
     str = tv_get_string_chk(&argvars[0]);
@@ -1079,11 +1106,10 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
-	countcc = tv_get_bool(&argvars[2]);
-    if (countcc < 0 || countcc > 1)
     {
-	semsg(_(e_using_number_as_bool_nr), countcc);
-	return;
+	countcc = tv_get_bool(&argvars[2]);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    utf16idx = tv_get_bool(&argvars[3]);
     }
 
     if (enc_utf8 && countcc)
@@ -1091,10 +1117,18 @@ f_charidx(typval_T *argvars, typval_T *rettv)
     else
 	ptr2len = mb_ptr2len;
 
-    for (p = str, len = 0; p <= str + idx; len++)
+    for (p = str, len = 0; utf16idx ? idx >= 0 : p <= str + idx; len++)
     {
 	if (*p == NUL)
 	    return;
+	if (utf16idx)
+	{
+	    idx--;
+	    clen = ptr2len(p);
+	    int c = (clen > 1) ? utf_ptr2char(p) : *p;
+	    if (c > 0xFFFF)
+		idx--;
+	}
 	p += ptr2len(p);
     }
 
@@ -1359,6 +1393,39 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "strutf16len()" function
+ */
+    void
+f_strutf16len(typval_T *argvars, typval_T *rettv)
+{
+    varnumber_T		countcc = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_opt_bool_arg(argvars, 1) == FAIL)
+	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	countcc = tv_get_bool(&argvars[1]);
+
+    char_u		*s = tv_get_string(&argvars[0]);
+    varnumber_T		len = 0;
+    int			(*func_mb_ptr2char_adv)(char_u **pp);
+    int			ch;
+
+    func_mb_ptr2char_adv = countcc ? mb_cptr2char_adv : mb_ptr2char_adv;
+    while (*s != NUL)
+    {
+	ch = func_mb_ptr2char_adv(&s);
+	if (ch > 0xFFFF)
+	    ++len;
+	++len;
+    }
+    rettv->vval.v_number = len;
+}
+
+/*
  * "strdisplaywidth()" function
  */
     void
@@ -1617,6 +1684,65 @@ f_strtrans(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = transstr(tv_get_string(&argvars[0]));
+}
+
+
+/*
+ *
+ * "utf16idx()" function
+ */
+    void
+f_utf16idx(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*str;
+    varnumber_T	idx;
+    varnumber_T	countcc = FALSE;
+    varnumber_T	charidx = FALSE;
+    char_u	*p;
+    int		len;
+    int		clen;
+    int		(*ptr2len)(char_u *);
+
+    rettv->vval.v_number = -1;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_opt_number_arg(argvars, 1) == FAIL
+	    || check_for_opt_bool_arg(argvars, 2) == FAIL
+	    || (argvars[2].v_type != VAR_UNKNOWN
+		    && check_for_opt_bool_arg(argvars, 3) == FAIL))
+	    return;
+
+    str = tv_get_string_chk(&argvars[0]);
+    idx = tv_get_number_chk(&argvars[1], NULL);
+    if (str == NULL || idx < 0)
+	return;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	countcc = tv_get_bool(&argvars[2]);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    charidx = tv_get_bool(&argvars[3]);
+    }
+
+    if (enc_utf8 && countcc)
+	ptr2len = utf_ptr2len;
+    else
+	ptr2len = mb_ptr2len;
+
+    for (p = str, len = 0; charidx ? idx >= 0 : p <= str + idx; len++)
+    {
+	if (*p == NUL)
+	    return;
+	clen = ptr2len(p);
+	int c = (clen > 1) ? utf_ptr2char(p) : *p;
+	if (c > 0xFFFF)
+	    len++;
+	p += ptr2len(p);
+	if (charidx)
+	    idx--;
+    }
+
+    rettv->vval.v_number = len > 0 ? len - 1 : 0;
 }
 
 /*
