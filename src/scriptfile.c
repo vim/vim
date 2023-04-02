@@ -718,18 +718,6 @@ add_pack_dir_to_rtp(char_u *fname)
 	char_u *cur_entry = entry;
 
 	copy_option_part(&entry, buf, MAXPATHL, ",");
-	if (insp == NULL)
-	{
-	    add_pathsep(buf);
-	    rtp_ffname = fix_fname(buf);
-	    if (rtp_ffname == NULL)
-		goto theend;
-	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
-	    vim_free(rtp_ffname);
-	    if (match)
-		// Insert "ffname" after this entry (and comma).
-		insp = entry;
-	}
 
 	if ((p = (char_u *)strstr((char *)buf, "after")) != NULL
 		&& p > buf
@@ -742,6 +730,19 @@ add_pack_dir_to_rtp(char_u *fname)
 		insp = cur_entry;
 	    after_insp = cur_entry;
 	    break;
+	}
+
+	if (insp == NULL)
+	{
+	    add_pathsep(buf);
+	    rtp_ffname = fix_fname(buf);
+	    if (rtp_ffname == NULL)
+		goto theend;
+	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
+	    vim_free(rtp_ffname);
+	    if (match)
+		// Insert "ffname" after this entry (and comma).
+		insp = entry;
 	}
     }
 
@@ -1299,7 +1300,7 @@ ex_options(
  * ":source" and associated commands.
  */
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the address holding the next breakpoint line for a source cookie.
  */
@@ -2096,7 +2097,6 @@ get_script_local_funcs(scid_T sid)
     void
 f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 {
-    int		i;
     list_T	*l;
     char_u	*pat = NULL;
     regmatch_T	regmatch;
@@ -2116,8 +2116,22 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_DICT)
     {
-	sid = dict_get_number_def(argvars[0].vval.v_dict, "sid", -1);
-	if (sid == -1)
+	dictitem_T *sid_di = dict_find(argvars[0].vval.v_dict,
+							   (char_u *)"sid", 3);
+	if (sid_di != NULL)
+	{
+	    int error = FALSE;
+	    sid = tv_get_number_chk(&sid_di->di_tv, &error);
+	    if (error)
+		return;
+	    if (sid <= 0)
+	    {
+		semsg(e_invalid_value_for_argument_str_str, "sid",
+						tv_get_string(&sid_di->di_tv));
+		return;
+	    }
+	}
+	else
 	{
 	    pat = dict_get_string(argvars[0].vval.v_dict, "name", TRUE);
 	    if (pat != NULL)
@@ -2127,7 +2141,8 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    for (i = 1; i <= script_items.ga_len; ++i)
+    for (varnumber_T i = sid > 0 ? sid : 1;
+		       (i == sid || sid <= 0) && i <= script_items.ga_len; ++i)
     {
 	scriptitem_T	*si = SCRIPT_ITEM(i);
 	dict_T		*d;
@@ -2136,9 +2151,6 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 	    continue;
 
 	if (filterpat && !vim_regexec(&regmatch, si->sn_name, (colnr_T)0))
-	    continue;
-
-	if (sid != -1 && sid != i)
 	    continue;
 
 	if ((d = dict_alloc()) == NULL
@@ -2151,10 +2163,9 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
 	    return;
 
-	// When a filter pattern is specified to return information about only
-	// specific script(s), also add the script-local variables and
-	// functions.
-	if (sid != -1)
+	// When a script ID is specified, return information about only the
+	// specified script, and add the script-local variables and functions.
+	if (sid > 0)
 	{
 	    dict_T	*var_dict;
 

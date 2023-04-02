@@ -752,6 +752,31 @@ def Test_call_default_args()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_using_vnone_default()
+  var lines =<< trim END
+      vim9script
+
+      def F(a: string = v:none)
+         if a isnot v:none
+            var b = a
+         endif
+      enddef
+      F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # TODO: this should give an error for using a missing argument
+  # lines =<< trim END
+  #    vim9script
+
+  #    def F(a: string = v:none)
+  #       var b = a
+  #    enddef
+  #    F()
+  # END
+  # v9.CheckScriptFailure(lines, 'E99:')
+enddef
+
 def Test_convert_number_to_float()
   var lines =<< trim END
       vim9script
