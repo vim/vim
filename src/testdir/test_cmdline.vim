@@ -3511,4 +3511,37 @@ func Test_getcompletion_usercmd()
   delcom TestCompletion
 endfunc
 
+func Test_custom_completion()
+  func CustomComplete1(lead, line, pos)
+    return "a\nb\nc"
+  endfunc
+
+  func CustomComplete2(lead, line, pos)
+    return ['a', 'b']
+  endfunc
+
+  func Check_custom_completion()
+    call assert_equal('custom,CustomComplete1', getcmdcompltype())
+    return ''
+  endfunc
+
+  func Check_customlist_completion()
+    call assert_equal('customlist,CustomComplete2', getcmdcompltype())
+    return ''
+  endfunc
+
+  command -nargs=1 -complete=custom,CustomComplete1 Test1 echo
+  command -nargs=1 -complete=customlist,CustomComplete2 Test2 echo
+
+  call feedkeys(":Test1 \<C-R>=Check_custom_completion()\<CR>\<Esc>", "xt")
+  call feedkeys(":Test2 \<C-R>=Check_customlist_completion()\<CR>\<Esc>", "xt")
+
+  delfunc CustomComplete1
+  delfunc CustomComplete2
+  delfunc Check_custom_completion
+  delfunc Check_customlist_completion
+  delcom Test1
+  delcom Test2
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
