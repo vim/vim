@@ -1310,6 +1310,9 @@ ex_diffpatch(exarg_T *eap)
     else
 #endif
     {
+	if (check_restricted())
+	    goto theend;
+
 	// Build the patch command and execute it.  Ignore errors.  Switch to
 	// cooked mode to allow the user to respond to prompts.
 	vim_snprintf((char *)buf, buflen, "patch -o %s %s < %s",
@@ -1380,7 +1383,8 @@ ex_diffpatch(exarg_T *eap)
 
 		    // Do filetype detection with the new name.
 		    if (au_has_group((char_u *)"filetypedetect"))
-			do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
+			do_cmdline_cmd(
+				     (char_u *)":doau filetypedetect BufRead");
 		}
 	    }
 	}
