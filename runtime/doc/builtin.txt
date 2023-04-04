@@ -4115,7 +4115,7 @@ getregtype([{regname}])					*getregtype()*
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
 
-getscriptinfo([{opts})					*getscriptinfo()*
+getscriptinfo([{opts}])					*getscriptinfo()*
 		Returns a |List| with information about all the sourced Vim
 		scripts in the order they were sourced, like what
 		`:scriptnames` shows.
