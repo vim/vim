@@ -4174,7 +4174,7 @@ get_cmdline_completion(void)
 	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
 	if (buffer == NULL)
 	    return NULL;
-	sprintf(buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
+	sprintf((char *)buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
 	return buffer;
     }
 
