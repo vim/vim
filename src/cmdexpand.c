@@ -4103,6 +4103,8 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	    list_append_string(rettv->vval.v_list, xpc.xp_files[i], -1);
     }
     vim_free(pat);
+    if (xpc.xp_arg)
+	vim_free(xpc.xp_arg);
     ExpandCleanup(&xpc);
 }
 #endif // FEAT_EVAL
