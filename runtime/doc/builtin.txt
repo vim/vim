@@ -3550,6 +3550,8 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		cmdline		|cmdline-completion| result
 		compiler	compilers
 		cscope		|:cscope| suboptions
+		custom,{func}	custom completion, defined via {func}
+		customlist,{func} custom completion, defined via {func}
 		diff_buffer     |:diffget| and |:diffput| completion
 		dir		directory names
 		environment	environment variable names

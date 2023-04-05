@@ -481,6 +481,11 @@ cmdcomplete_str_to_type(char_u *complete_str)
 {
     int i;
 
+    if (STRNCMP(complete_str, "custom,", 7) == 0)
+	return EXPAND_USER_DEFINED;
+    if (STRNCMP(complete_str, "customlist,", 11) == 0)
+	return EXPAND_USER_LIST;
+
     for (i = 0; command_complete[i].expand != 0; ++i)
 	if (STRCMP(complete_str, command_complete[i].name) == 0)
 	    return command_complete[i].expand;
