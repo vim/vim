@@ -4044,7 +4044,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
                 return;
             }
 
-            xpc.xp_arg = vim_strnsave(type + 7, STRLEN(type) - 7);
+            xpc.xp_arg = type + 7;
 	}
 
 	if (xpc.xp_context == EXPAND_USER_LIST)
@@ -4056,7 +4056,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
                 return;
             }
 
-            xpc.xp_arg = vim_strnsave(type + 11, STRLEN(type) - 11);
+            xpc.xp_arg = type + 11;
 	}
 
 # if defined(FEAT_MENU)
