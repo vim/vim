@@ -2949,6 +2949,57 @@ func Test_props_with_text_after_truncated()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_props_with_text_after_truncated_and_ambiwidth_is_double()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set ambiwidth=double
+      call setline(1, ['one two three four five six seven'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE and TWO and THREE and FOUR and FIVE'})
+
+      call setline(2, ['one two three four five six seven'])
+      call prop_add(2, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five', text_align: 'right'})
+
+      call setline(3, ['one two three four five six seven'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five lets wrap after some more text', text_align: 'below'})
+
+      call setline(4, ['cursor here'])
+      normal 4Gfh
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterTrunc-and-ambiwidth-is-double', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterTrunc-and-ambiwidth-is-double', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_ambiw_d_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+
+func Test_props_with_text_after_truncated_and_enc_is_not_utf8()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set enc=cp932 tenc=utf-8
+      call setline(1, ['one two three four five six seven'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE and TWO and THREE and FOUR and FIVE'})
+
+      call setline(2, ['one two three four five six seven'])
+      call prop_add(2, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five', text_align: 'right'})
+
+      call setline(3, ['one two three four five six seven'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five lets wrap after some more text', text_align: 'below'})
+
+      call setline(4, ['cursor here'])
+      normal 4Gfh
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterTrunc-enc-is-not-utf8', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterTrunc-enc-is-not-utf8', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_enc_is_not_utf8', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_props_with_text_empty_line()
   CheckRunVimInTerminal
 
