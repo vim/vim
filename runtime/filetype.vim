@@ -841,7 +841,7 @@ au BufNewFile,BufRead *.graphql,*.graphqls,*.gql			setf graphql
 au BufNewFile,BufRead *.gretl			setf gretl
 
 " Groovy
-au BufNewFile,BufRead *.gradle,*.groovy		setf groovy
+au BufNewFile,BufRead *.gradle,*.groovy,Jenkinsfile		setf groovy
 
 " GNU Server Pages
 au BufNewFile,BufRead *.gsp			setf gsp
