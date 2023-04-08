@@ -4139,7 +4139,7 @@ netrw:
 				  The "<nowait>" modifier has been included
 				  with most of netrw's mappings to avoid that
 				  delay.
-		Jun 26, 2015	* |netrw-gn| mapping implemted
+		Jun 26, 2015	* |netrw-gn| mapping implemented
 				* :Ntree NotADir resulted in having
 				  the tree listing expand in the error messages
 				  window.  Fixed.
