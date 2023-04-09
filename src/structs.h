@@ -4274,6 +4274,7 @@ typedef struct
     bufref_T	new_curbuf;	    // new curbuf
     char_u	*globaldir;	    // saved value of globaldir
     int		save_VIsual_active; // saved VIsual_active
+    int		save_State;	    // saved State
 } aco_save_T;
 
 /*
