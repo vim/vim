@@ -45,10 +45,34 @@ endfunc
 
 func Test_execute_list()
   call assert_equal("\nsomething\nnice", execute(['echo "something"', 'echo "nice"']))
-  let l = ['for n in range(0, 3)',
-	\  'echo n',
-	\  'endfor']
+  let l =<< trim END
+    for n in range(0, 3)
+      echo n
+    endfor
+  END
   call assert_equal("\n0\n1\n2\n3", execute(l))
+
+  " line-continuation
+  let l =<< trim END
+    echo "123
+          \ abc"
+    echo "456
+          \ def"
+    " echo "789
+          \ ghi"
+  END
+  call assert_equal("\n123 abc\n456 def", execute(l))
+
+  " line-continuation-comment
+  let l =<< trim END
+    echo 1
+          "\ + 10
+          \ + 100
+  END
+  call assert_equal("\n101", execute(l))
+
+  " line-continuation in vim9script
+  call v9.CheckDefSuccess(['execute(["echo 1 +", "10 +", "100"])'])
 
   call assert_equal("", execute([]))
 endfunc
