@@ -228,6 +228,28 @@ FunctionEnd
 !insertmacro GetParent ""
 !insertmacro GetParent "un."
 
+# Get home directory
+!macro GetHomeDir un
+Function ${un}GetHomeDir
+  Push $0
+  Push $1
+  ReadEnvStr $0 "HOME"
+  ${If} $0 == ""
+    ReadEnvStr $0 "HOMEDRIVE"
+    ReadEnvStr $1 "HOMEPATH"
+    StrCpy $0 "$0$1"
+    ${If} $0 == ""
+      ReadEnvStr $0 "USERPROFILE"
+    ${EndIf}
+  ${EndIf}
+  Pop $1
+  Exch $0  # put $0 on top of stack, restore $0 to original value
+FunctionEnd
+!macroend
+
+!insertmacro GetHomeDir ""
+!insertmacro GetHomeDir "un."
+
 # Check if Vim is already installed.
 # return: Installed directory. If not found, it will be empty.
 Function CheckOldVim
@@ -520,7 +542,8 @@ SectionGroup $(str_group_plugin) id_group_plugin
 	Section "$(str_section_plugin_home)" id_section_pluginhome
 		SectionIn 1 3
 
-		StrCpy $1 "$1 -create-directories home"
+		# use ShellExecAsUser below instead
+		# StrCpy $1 "$1 -create-directories home"
 	SectionEnd
 
 	Section "$(str_section_plugin_vim)" id_section_pluginvim
@@ -594,6 +617,13 @@ Section -call_install_exe
 	DetailPrint "$(str_msg_registering)"
 	nsExec::Exec "$0\install.exe $1"
 	Pop $3
+
+	${If} ${SectionIsSelected} ${id_section_pluginhome}
+	  ReadEnvStr $3 "COMSPEC"
+	  Call GetHomeDir
+	  Pop $4
+	  ShellExecAsUser::ShellExecAsUser "" "$3" '/c "cd /d "$4" & mkdir vimfiles & cd vimfiles & mkdir colors compiler doc ftdetect ftplugin indent keymap plugin syntax"' SW_HIDE
+	${EndIf}
 SectionEnd
 
 ##########################################################
@@ -1042,15 +1072,8 @@ SectionEnd
 SectionGroup "un.$(str_ungroup_plugin)" id_ungroup_plugin
 	Section /o "un.$(str_unsection_plugin_home)" id_unsection_plugin_home
 		# get the home dir
-		ReadEnvStr $0 "HOME"
-		${If} $0 == ""
-		  ReadEnvStr $0 "HOMEDRIVE"
-		  ReadEnvStr $1 "HOMEPATH"
-		  StrCpy $0 "$0$1"
-		  ${If} $0 == ""
-		    ReadEnvStr $0 "USERPROFILE"
-		  ${EndIf}
-		${EndIf}
+		Call un.GetHomeDir
+		Pop $0
 
 		${If} $0 != ""
 		  !insertmacro RemoveVimfiles $0

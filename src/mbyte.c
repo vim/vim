@@ -1579,7 +1579,7 @@ utf_char2cells(int c)
 	// values of them.
 	//
 	// Note that these symbols are of varying widths, as they are symbols
-	// representing differents things ranging from a simple gear icon to an
+	// representing different things ranging from a simple gear icon to an
 	// airplane. Some of them are in fact wider than double-width, but Vim
 	// doesn't support non-fixed-width font, and tagging them as
 	// double-width is the best way to handle them.
@@ -5634,8 +5634,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     if (l->lv_len == 0)
     {
 	// Clearing the table.
-	vim_free(cw_table);
-	cw_table = NULL;
+	VIM_CLEAR(cw_table);
 	cw_table_size = 0;
 	return;
     }
@@ -5647,7 +5646,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     // Check that all entries are a list with three numbers, the range is
     // valid and the cell width is valid.
     item = 0;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	listitem_T *lili;
 	varnumber_T n1;

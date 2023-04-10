@@ -13,6 +13,7 @@ int win_count(void);
 int make_windows(int count, int vertical);
 void win_move_after(win_T *win1, win_T *win2);
 void win_equal(win_T *next_curwin, int current, int dir);
+void leaving_window(win_T *win);
 void entering_window(win_T *win);
 void curwin_init(void);
 void close_windows(buf_T *buf, int keep_curwin);

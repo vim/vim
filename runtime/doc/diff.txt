@@ -181,7 +181,7 @@ possible to view the changes you have made to a buffer since the file was
 loaded.  Since Vim doesn't allow having two buffers for the same file, you
 need another buffer.  This command is useful: >
 	 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
-	 	\ | diffthis | wincmd p | diffthis
+		\ | diffthis | wincmd p | diffthis
 (this is in |defaults.vim|).  Use ":DiffOrig" to see the differences between
 the current buffer and the file it was loaded from.
 

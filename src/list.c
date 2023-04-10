@@ -1687,7 +1687,7 @@ init_static_list(staticList10_T *sl)
     list_T  *l = &sl->sl_list;
     int	    i;
 
-    memset(sl, 0, sizeof(staticList10_T));
+    CLEAR_POINTER(sl);
     l->lv_first = &sl->sl_items[0];
     l->lv_u.mat.lv_last = &sl->sl_items[9];
     l->lv_refcount = DO_NOT_FREE_CNT;
@@ -1910,8 +1910,8 @@ item_compare(const void *s1, const void *s2)
 
     if (sortinfo->item_compare_numbers)
     {
-	varnumber_T	v1 = tv_get_number(tv1);
-	varnumber_T	v2 = tv_get_number(tv2);
+	varnumber_T	v1 = tv_to_number(tv1);
+	varnumber_T	v2 = tv_to_number(tv2);
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
@@ -2398,7 +2398,7 @@ list_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-    if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
+    if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
 
     // Create one funccal_T for all eval_expr_typval() calls.
@@ -2576,15 +2576,15 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
     if (argvars[0].v_type == VAR_DICT)
 	dict_filter_map(argvars[0].vval.v_dict, filtermap, type, func_name,
-		arg_errmsg, expr, rettv);
+						      arg_errmsg, expr, rettv);
     else if (argvars[0].v_type == VAR_BLOB)
-	blob_filter_map(argvars[0].vval.v_blob, filtermap, expr, rettv);
+	blob_filter_map(argvars[0].vval.v_blob, filtermap, expr,
+							    arg_errmsg, rettv);
     else if (argvars[0].v_type == VAR_STRING)
-	string_filter_map(tv_get_string(&argvars[0]), filtermap, expr,
-		rettv);
+	string_filter_map(tv_get_string(&argvars[0]), filtermap, expr, rettv);
     else // argvars[0].v_type == VAR_LIST
 	list_filter_map(argvars[0].vval.v_list, filtermap, type, func_name,
-		arg_errmsg, expr, rettv);
+						      arg_errmsg, expr, rettv);
 
     restore_vimvar(VV_KEY, &save_key);
     restore_vimvar(VV_VAL, &save_val);
@@ -2831,7 +2831,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
     }
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
     {
-	// Check that extend() does not change the type of the list if it was
+	// Check that extend() does not change the type of the dict if it was
 	// declared.
 	if (!is_new && in_vim9script() && argvars[0].vval.v_dict != NULL)
 	    type = argvars[0].vval.v_dict->dv_type;

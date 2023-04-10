@@ -982,6 +982,9 @@ findfilendir(
 
     if (*fname != NUL && !error)
     {
+	char_u	*file_to_find = NULL;
+	char	*search_ctx = NULL;
+
 	do
 	{
 	    if (rettv->v_type == VAR_STRING || rettv->v_type == VAR_LIST)
@@ -992,13 +995,17 @@ findfilendir(
 					find_what,
 					curbuf->b_ffname,
 					find_what == FINDFILE_DIR
-					    ? (char_u *)"" : curbuf->b_p_sua);
+					    ? (char_u *)"" : curbuf->b_p_sua,
+					    &file_to_find, &search_ctx);
 	    first = FALSE;
 
 	    if (fresult != NULL && rettv->v_type == VAR_LIST)
 		list_append_string(rettv->vval.v_list, fresult, -1);
 
 	} while ((rettv->v_type == VAR_LIST || --count > 0) && fresult != NULL);
+
+	vim_free(file_to_find);
+	vim_findfile_cleanup(search_ctx);
     }
 
     if (rettv->v_type == VAR_STRING)

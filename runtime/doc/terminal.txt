@@ -30,9 +30,9 @@ If the result is "1" you have it.
       Using the client-server feature		|terminal-client-server|
 4. Remote testing			|terminal-testing|
 5. Diffing screen dumps			|terminal-diff|
-      Writing a screen dump test for Vim  	|terminal-dumptest|
-      Creating a screen dump		  	|terminal-screendump|
-      Comparing screen dumps		  	|terminal-diffscreendump|
+      Writing a screen dump test for Vim	|terminal-dumptest|
+      Creating a screen dump			|terminal-screendump|
+      Comparing screen dumps			|terminal-diffscreendump|
 6. Debugging				|terminal-debug|
       Starting					|termdebug-starting|
       Example session				|termdebug-example|
@@ -240,7 +240,7 @@ Command syntax ~
 					in a session file.
 			++shell		Instead of executing {command}
 					directly, use a shell, like with
-					`:!command` 		*E279*
+					`:!command`		*E279*
 					{only works on Unix and MS-Windows}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See

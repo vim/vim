@@ -1238,11 +1238,15 @@ func Test_listdict_extendnew()
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3, 4, 5], extendnew(l, [4, 5]))
   call assert_equal([1, 2, 3], l)
+  lockvar l
+  call assert_equal([1, 2, 3, 4, 5], extendnew(l, [4, 5]))
 
-  " Test extend() with dictionaries.
+  " Test extendnew() with dictionaries.
   let d = {'a': {'b': 'B'}}
   call assert_equal({'a': {'b': 'B'}, 'c': 'cc'}, extendnew(d, {'c': 'cc'}))
   call assert_equal({'a': {'b': 'B'}}, d)
+  lockvar d
+  call assert_equal({'a': {'b': 'B'}, 'c': 'cc'}, extendnew(d, {'c': 'cc'}))
 endfunc
 
 func s:check_scope_dict(x, fixed)
@@ -1380,7 +1384,7 @@ func Test_listdict_index()
   call v9.CheckLegacyAndVim9Failure(['VAR l = [1, 2, 3]', 'LET l[1.1] = 4'], ['E805:', 'E1012:', 'E805:'])
   call v9.CheckLegacyAndVim9Failure(['VAR l = [1, 2, 3]', 'LET l[: i] = [4, 5]'], ['E121:', 'E1001:', 'E121:'])
   call v9.CheckLegacyAndVim9Failure(['VAR l = [1, 2, 3]', 'LET l[: 3.2] = [4, 5]'], ['E805:', 'E1012:', 'E805:'])
-  call v9.CheckLegacyAndVim9Failure(['VAR t = test_unknown()', 'echo t[0]'], 'E685:')
+  call v9.CheckLegacyAndVim9Failure(['VAR t = test_unknown()', 'echo t[0]'], ['E685:', 'E909:', 'E685:'])
 endfunc
 
 " Test for a null list

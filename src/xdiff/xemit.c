@@ -65,7 +65,7 @@ xdchange_t *xdl_get_hunk(xdchange_t **xscr, xdemitconf_t const *xecfg)
 			*xscr = xch;
 	}
 
-	if (*xscr == NULL)
+	if (!*xscr)
 		return NULL;
 
 	lxch = *xscr;
@@ -96,7 +96,7 @@ xdchange_t *xdl_get_hunk(xdchange_t **xscr, xdemitconf_t const *xecfg)
 
 
 #if 0
-static long def_ff(const char *rec, long len, char *buf, long sz, void *priv UNUSED)
+static long def_ff(const char *rec, long len, char *buf, long sz)
 {
 	if (len > 0 &&
 			(isalpha((unsigned char)*rec) || /* identifier? */
@@ -120,7 +120,7 @@ static long match_func_rec(xdfile_t *xdf, xdemitconf_t const *xecfg, long ri,
 	const char *rec;
 	long len = xdl_get_rec(xdf, ri, &rec);
 	if (!xecfg->find_func)
-		return def_ff(rec, len, buf, sz, xecfg->find_func_priv);
+		return def_ff(rec, len, buf, sz);
 	return xecfg->find_func(rec, len, buf, sz, xecfg->find_func_priv);
 }
 #endif

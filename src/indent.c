@@ -74,8 +74,7 @@ tabstop_set(char_u *var, int **array)
 	if (n <= 0 || n > TABSTOP_MAX)
 	{
 	    semsg(_(e_invalid_argument_str), cp);
-	    vim_free(*array);
-	    *array = NULL;
+	    VIM_CLEAR(*array);
 	    return FAIL;
 	}
 	(*array)[t++] = n;
@@ -1161,7 +1160,7 @@ preprocs_left(void)
  * Return TRUE if the conditions are OK for smart indenting.
  */
     int
-may_do_si()
+may_do_si(void)
 {
     return curbuf->b_p_si
 	&& !curbuf->b_p_cin

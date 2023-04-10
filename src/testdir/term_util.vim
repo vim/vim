@@ -55,6 +55,7 @@ endfunc
 " "cols" - width of the terminal window (max. 78)
 " "statusoff" - number of lines the status is offset from default
 " "wait_for_ruler" - if zero then don't wait for ruler to show
+" "no_clean" - if non-zero then remove "--clean" from the command
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -90,6 +91,10 @@ func RunVimInTerminal(arguments, options)
   endif
 
   let cmd = GetVimCommandCleanTerm() .. reset_u7 .. a:arguments
+
+  if get(a:options, 'no_clean', 0)
+    let cmd = substitute(cmd, '--clean', '', '')
+  endif
 
   let options = #{curwin: 1}
   if &termwinsize == ''

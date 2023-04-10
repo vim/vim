@@ -307,14 +307,16 @@ export def FTfs()
   if exists("g:filetype_fs")
     exe "setf " .. g:filetype_fs
   else
-    var line = getline(nextnonblank(1))
-    # comments and colon definitions
-    if line =~ '^\s*\.\=( ' || line =~ '^\s*\\G\= ' || line =~ '^\\$'
-	  \ || line =~ '^\s*: \S'
-      setf forth
-    else
-      setf fsharp
-    endif
+    var n = 1
+    while n < 100 && n <= line("$")
+      # Forth comments and colon definitions
+      if getline(n) =~ "^[:(\\\\] "
+        setf forth
+        return
+      endif
+      n += 1
+    endwhile
+    setf fsharp
   endif
 enddef
 

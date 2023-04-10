@@ -4634,12 +4634,18 @@ gui_get_color(char_u *name)
 	return INVALCOLOR;
     t = gui_mch_get_color(name);
 
+    int is_none = STRCMP(name, "none") == 0;
     if (t == INVALCOLOR
 #if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
-	    && gui.in_use
+	    && (gui.in_use || is_none)
 #endif
 	    )
-	semsg(_(e_cannot_allocate_color_str), name);
+    {
+	if (is_none)
+	    emsg(_(e_cannot_use_color_none_did_you_mean_none));
+	else
+	    semsg(_(e_cannot_allocate_color_str), name);
+    }
     return t;
 }
 

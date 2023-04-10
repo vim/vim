@@ -723,7 +723,8 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 static textprop_T	*text_prop_compare_props;
 static buf_T		*text_prop_compare_buf;
 
-/* Score for sorting on position of the text property: 0: above,
+/*
+ * Score for sorting on position of the text property: 0: above,
  * 1: after (default), 2: right, 3: below (comes last)
  */
     static int
@@ -933,7 +934,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
 	if (*array == NULL)
 	    return NULL;
 	todo = (long)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -1717,8 +1718,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			if (ii < gap->ga_len)
 			{
 			    char_u **p = ((char_u **)gap->ga_data) + ii;
-			    vim_free(*p);
-			    *p = NULL;
+			    VIM_CLEAR(*p);
 			    did_remove_text = TRUE;
 			}
 		    }
@@ -1958,7 +1958,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     hash_remove(ht, hi, "prop type delete");
     vim_free(prop);
 
-    // currently visibile text properties will disappear
+    // currently visible text properties will disappear
     redraw_all_later(UPD_CLEAR);
     changed_window_setting_buf(buf == NULL ? curbuf : buf);
 }
@@ -2021,7 +2021,7 @@ list_types(hashtab_T *ht, list_T *l)
     hashitem_T	*hi;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -2074,7 +2074,7 @@ clear_ht_prop_types(hashtab_T *ht)
 	return;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

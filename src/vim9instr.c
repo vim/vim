@@ -413,7 +413,7 @@ generate_two_op(cctx_T *cctx, char_u *op)
  */
     static isntype_T
 get_compare_isn(
-	exprtype_T exprtype,
+	exprtype_T  exprtype,
 	typval_T    *tv1,
 	typval_T    *tv2,
 	type_T	    *type1,
@@ -485,13 +485,17 @@ get_compare_isn(
 	return ISN_DROP;
     }
     if (isntype == ISN_DROP
-	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
-		    && (vartype1 == VAR_BOOL || vartype1 == VAR_SPECIAL
-		       || vartype2 == VAR_BOOL || vartype2 == VAR_SPECIAL)))
-	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
-			       && exprtype != EXPR_IS && exprtype != EXPR_ISNOT
-		    && (vartype1 == VAR_BLOB || vartype2 == VAR_BLOB
-			|| vartype1 == VAR_LIST || vartype2 == VAR_LIST))))
+	    || (isntype != ISN_COMPARENULL
+		&& (((exprtype != EXPR_EQUAL
+			&& exprtype != EXPR_NEQUAL
+			&& (vartype1 == VAR_BOOL || vartype1 == VAR_SPECIAL
+			  || vartype2 == VAR_BOOL || vartype2 == VAR_SPECIAL)))
+		    || ((exprtype != EXPR_EQUAL
+			 && exprtype != EXPR_NEQUAL
+			 && exprtype != EXPR_IS
+			 && exprtype != EXPR_ISNOT
+			 && (vartype1 == VAR_BLOB || vartype2 == VAR_BLOB
+			  || vartype1 == VAR_LIST || vartype2 == VAR_LIST))))))
     {
 	semsg(_(e_cannot_compare_str_with_str),
 		vartype_name(vartype1), vartype_name(vartype2));
@@ -656,6 +660,35 @@ generate_SETTYPE(
 }
 
 /*
+ * Generate an ISN_PUSHOBJ instruction.  Object is always NULL.
+ */
+    static int
+generate_PUSHOBJ(cctx_T *cctx)
+{
+    RETURN_OK_IF_SKIP(cctx);
+    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_any) == NULL)
+	return FAIL;
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHCLASS instruction.  "class" can be NULL.
+ */
+    static int
+generate_PUSHCLASS(cctx_T *cctx, class_T *class)
+{
+    RETURN_OK_IF_SKIP(cctx);
+    isn_T *isn = generate_instr_type(cctx, ISN_PUSHCLASS,
+				  class == NULL ? &t_any : &class->class_type);
+    if (isn == NULL)
+	return FAIL;
+    isn->isn_arg.classarg = class;
+    if (class != NULL)
+	++class->class_refcount;
+    return OK;
+}
+
+/*
  * Generate a PUSH instruction for "tv".
  * "tv" will be consumed or cleared.
  */
@@ -717,6 +750,17 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_STRING:
 	    generate_PUSHS(cctx, &tv->vval.v_string);
 	    tv->vval.v_string = NULL;
+	    break;
+	case VAR_OBJECT:
+	    if (tv->vval.v_object != NULL)
+	    {
+		emsg(_(e_cannot_use_non_null_object));
+		return FAIL;
+	    }
+	    generate_PUSHOBJ(cctx);
+	    break;
+	case VAR_CLASS:
+	    generate_PUSHCLASS(cctx, tv->vval.v_class);
 	    break;
 	default:
 	    siemsg("constant type %d not supported", tv->v_type);
@@ -1328,12 +1372,16 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 
 /*
  * Generate an ISN_FUNCREF instruction.
+ * For "obj.Method" "cl" is the class of the object (can be an interface or a
+ * base class) and "fi" the index of the method on that class.
  * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
  */
     int
 generate_FUNCREF(
 	cctx_T	    *cctx,
 	ufunc_T	    *ufunc,
+	class_T	    *cl,
+	int	    fi,
 	isn_T	    **isnp)
 {
     isn_T	    *isn;
@@ -1349,17 +1397,23 @@ generate_FUNCREF(
 	*isnp = isn;
 
     has_vars = get_loop_var_info(cctx, &loopinfo);
-    if (ufunc->uf_def_status == UF_NOT_COMPILED || has_vars)
+    if (ufunc->uf_def_status == UF_NOT_COMPILED || has_vars || cl != NULL)
     {
 	extra = ALLOC_CLEAR_ONE(funcref_extra_T);
 	if (extra == NULL)
 	    return FAIL;
 	isn->isn_arg.funcref.fr_extra = extra;
 	extra->fre_loopvar_info = loopinfo;
+	if (cl != NULL)
+	{
+	    extra->fre_class = cl;
+	    ++cl->class_refcount;
+	    extra->fre_method_idx = fi;
+	}
     }
-    if (ufunc->uf_def_status == UF_NOT_COMPILED)
+    if (ufunc->uf_def_status == UF_NOT_COMPILED || cl != NULL)
 	extra->fre_func_name = vim_strsave(ufunc->uf_name);
-    else
+    if (ufunc->uf_def_status != UF_NOT_COMPILED && cl == NULL)
     {
 	if (isnp == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
 	    // compile the function now, we need the uf_dfunc_idx value
@@ -1927,7 +1981,8 @@ generate_PCALL(
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
-	if (check_func_args_from_type(cctx, type, argcount, at_top, name) == FAIL)
+	if (check_func_args_from_type(cctx, type, argcount, at_top, name)
+								       == FAIL)
 	    return FAIL;
 
 	ret_type = type->tt_member;
@@ -2457,6 +2512,10 @@ delete_instr(isn_T *isn)
 	    blob_unref(isn->isn_arg.blob);
 	    break;
 
+	case ISN_PUSHCLASS:
+	    class_unref(isn->isn_arg.classarg);
+	    break;
+
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
@@ -2484,6 +2543,8 @@ delete_instr(isn_T *isn)
 			func_unref(name);
 			vim_free(name);
 		    }
+		    if (extra->fre_class != NULL)
+			class_unref(extra->fre_class);
 		    vim_free(extra);
 		}
 	    }
@@ -2647,6 +2708,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHF:
 	case ISN_PUSHJOB:
 	case ISN_PUSHNR:
+	case ISN_PUSHOBJ:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
 	case ISN_REDIREND:

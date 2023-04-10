@@ -1623,13 +1623,14 @@ updatescript(int c)
 
 /*
  * Convert "c" plus "modifiers" to merge the effect of modifyOtherKeys into the
- * character.
+ * character.  Also for when the Kitty key protocol is used.
  */
     int
 merge_modifyOtherKeys(int c_arg, int *modifiers)
 {
     int c = c_arg;
 
+    // CTRL only uses the lower 5 bits of the character.
     if (*modifiers & MOD_MASK_CTRL)
     {
 	if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
@@ -1658,12 +1659,23 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
 	if (c != c_arg)
 	    *modifiers &= ~MOD_MASK_CTRL;
     }
+
+    // Alt/Meta sets the 8th bit of the character.
     if ((*modifiers & (MOD_MASK_META | MOD_MASK_ALT))
 	    && c >= 0 && c <= 127)
     {
+	// Some terminals (esp. Kitty) do not include Shift in the character.
+	// Apply it here to get consistency across terminals.  Only do ASCII
+	// letters, for other characters it depends on the keyboard layout.
+	if ((*modifiers & MOD_MASK_SHIFT) && c >= 'a' && c <= 'z')
+	{
+	    c += 'a' - 'A';
+	    *modifiers &= ~MOD_MASK_SHIFT;
+	}
 	c += 0x80;
 	*modifiers &= ~(MOD_MASK_META | MOD_MASK_ALT);
     }
+
     return c;
 }
 
@@ -3107,7 +3119,7 @@ check_end_reg_executing(int advance)
     static int
 vgetorpeek(int advance)
 {
-    int		c, c1;
+    int		c;
     int		timedout = FALSE;	// waited for more than 'timeoutlen'
 					// for mapping to complete or
 					// 'ttimeoutlen' for complete key code
@@ -3474,7 +3486,7 @@ vgetorpeek(int advance)
 		 * to the user with showcmd.
 		 */
 		showcmd_idx = 0;
-		c1 = 0;
+		int showing_partial = FALSE;
 		if (typebuf.tb_len > 0 && advance && !exmode_active)
 		{
 		    if (((State & (MODE_NORMAL | MODE_INSERT))
@@ -3489,7 +3501,7 @@ vgetorpeek(int advance)
 			    edit_putchar(typebuf.tb_buf[typebuf.tb_off
 						+ typebuf.tb_len - 1], FALSE);
 			    setcursor(); // put cursor back where it belongs
-			    c1 = 1;
+			    showing_partial = TRUE;
 			}
 			// need to use the col and row from above here
 			old_wcol = curwin->w_wcol;
@@ -3506,8 +3518,10 @@ vgetorpeek(int advance)
 			curwin->w_wrow = old_wrow;
 		    }
 
-		    // this looks nice when typing a dead character map
+		    // This looks nice when typing a dead character map.
+		    // There is no actual command line for get_number().
 		    if ((State & MODE_CMDLINE)
+			    && get_cmdline_info()->cmdbuff != NULL
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 			    && cmdline_star == 0
 #endif
@@ -3516,7 +3530,7 @@ vgetorpeek(int advance)
 		    {
 			putcmdline(typebuf.tb_buf[typebuf.tb_off
 						+ typebuf.tb_len - 1], FALSE);
-			c1 = 1;
+			showing_partial = TRUE;
 		    }
 		}
 
@@ -3550,11 +3564,12 @@ vgetorpeek(int advance)
 
 		if (showcmd_idx != 0)
 		    pop_showcmd();
-		if (c1 == 1)
+		if (showing_partial)
 		{
 		    if (State & MODE_INSERT)
 			edit_unputchar();
-		    if (State & MODE_CMDLINE)
+		    if ((State & MODE_CMDLINE)
+					&& get_cmdline_info()->cmdbuff != NULL)
 			unputcmdline();
 		    else
 			setcursor();	// put cursor back where it belongs
@@ -3974,23 +3989,30 @@ getcmdkeycmd(
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * If there was a mapping put info about it in the redo buffer, so that "."
- * will use the same script context.  We only need the SID.
+ * If there was a mapping we get its SID.  Otherwise, use "last_used_sid", it
+ * is set when redo'ing.
+ * Put this SID in the redo buffer, so that "." will use the same script
+ * context.
  */
     void
 may_add_last_used_map_to_redobuff(void)
 {
-    char_u buf[3 + 20];
+    char_u  buf[3 + 20];
+    int	    sid = -1;
 
-    if (last_used_map == NULL || last_used_map->m_script_ctx.sc_sid < 0)
+    if (last_used_map != NULL)
+	sid = last_used_map->m_script_ctx.sc_sid;
+    if (sid < 0)
+	sid = last_used_sid;
+
+    if (sid < 0)
 	return;
 
     // <K_SID>{nr};
     buf[0] = K_SPECIAL;
     buf[1] = KS_EXTRA;
     buf[2] = KE_SID;
-    vim_snprintf((char *)buf + 3, 20, "%d;",
-					   last_used_map->m_script_ctx.sc_sid);
+    vim_snprintf((char *)buf + 3, 20, "%d;", sid);
     add_buff(&redobuff, buf, -1L);
 }
 #endif

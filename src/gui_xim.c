@@ -13,6 +13,18 @@
 
 #include "vim.h"
 
+#if !defined(GTK_CHECK_VERSION)
+# define GTK_CHECK_VERSION(a, b, c) 0
+#endif
+#if !defined(FEAT_GUI_GTK) && defined(PROTO)
+typedef int GtkWidget;
+typedef int GtkIMContext;
+typedef int gchar;
+typedef int gpointer;
+typedef int PangoAttrIterator;
+typedef int GdkEventKey;
+#endif
+
 #if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
 # if GTK_CHECK_VERSION(3,0,0)
 #  include <gdk/gdkkeysyms-compat.h>
@@ -74,7 +86,7 @@ static callback_T imaf_cb;	    // 'imactivatefunc' callback function
 static callback_T imsf_cb;	    // 'imstatusfunc' callback function
 
     char *
-set_imactivatefunc_option(void)
+did_set_imactivatefunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(p_imaf, &imaf_cb) == FAIL)
 	return e_invalid_argument;
@@ -83,7 +95,7 @@ set_imactivatefunc_option(void)
 }
 
     char *
-set_imstatusfunc_option(void)
+did_set_imstatusfunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(p_imsf, &imsf_cb) == FAIL)
 	return e_invalid_argument;
@@ -283,7 +295,7 @@ im_preedit_window_set_position(void)
 }
 
     static void
-im_preedit_window_open()
+im_preedit_window_open(void)
 {
     char *preedit_string;
 #if !GTK_CHECK_VERSION(3,16,0)
@@ -405,14 +417,14 @@ im_preedit_window_open()
 }
 
     static void
-im_preedit_window_close()
+im_preedit_window_close(void)
 {
     if (preedit_window != NULL)
 	gtk_widget_hide(preedit_window);
 }
 
     static void
-im_show_preedit()
+im_show_preedit(void)
 {
     im_preedit_window_open();
 

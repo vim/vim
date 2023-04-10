@@ -1695,7 +1695,7 @@ gui_mch_set_scrollbar_pos(
 		XmNtopOffset, y,
 		XmNleftOffset, x,
 		XmNrightOffset, gui.which_scrollbars[SBAR_RIGHT]
-		? gui.scrollbar_width : 0,
+						     ? gui.scrollbar_width : 0,
 		XmNheight, h,
 		NULL);
     XtManageChild(sb->id);
@@ -1788,9 +1788,8 @@ gui_mch_create_scrollbar(
     int		orient)	// SBAR_VERT or SBAR_HORIZ
 {
     Arg		args[16];
-    int		n;
+    int		n = 0;
 
-    n = 0;
     XtSetArg(args[n], XmNminimum, 0); n++;
     XtSetArg(args[n], XmNorientation,
 	    (orient == SBAR_VERT) ? XmVERTICAL : XmHORIZONTAL); n++;
@@ -1801,18 +1800,21 @@ gui_mch_create_scrollbar(
 	    XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
 	    XtSetArg(args[n], XmNbottomAttachment, XmATTACH_OPPOSITE_FORM); n++;
 	    XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	    XtSetArg(args[n], XmNwidth, gui.scrollbar_width); n++;
 	    break;
 
 	case SBAR_RIGHT:
 	    XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
 	    XtSetArg(args[n], XmNbottomAttachment, XmATTACH_OPPOSITE_FORM); n++;
 	    XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	    XtSetArg(args[n], XmNwidth, gui.scrollbar_width); n++;
 	    break;
 
 	case SBAR_BOTTOM:
 	    XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
 	    XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
 	    XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
+	    XtSetArg(args[n], XmNheight, gui.scrollbar_height); n++;
 	    break;
     }
 

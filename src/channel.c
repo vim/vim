@@ -109,7 +109,7 @@ fd_write(sock_T fd, char *buf, size_t len)
 	    size = (DWORD)todo;
 	// If the pipe overflows while the job does not read the data,
 	// WriteFile() will block forever. This abandons the write.
-	memset(&ov, 0, sizeof(ov));
+	CLEAR_FIELD(ov);
 	nwrite = 0;
 	if (!WriteFile(h, buf + done, size, &nwrite, &ov))
 	{
@@ -4180,7 +4180,7 @@ channel_handle_events(int only_keep_open)
  * Return TRUE when there is any channel with a keep_open flag.
  */
     int
-channel_any_keep_open()
+channel_any_keep_open(void)
 {
     channel_T	*channel;
 

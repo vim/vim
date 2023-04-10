@@ -263,7 +263,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     }
 
-    class_T *cl = (class_T *)type->tt_member;
+    class_T *cl = type->tt_class;
     int is_super = type->tt_flags & TTFLAG_SUPER;
     if (type == &t_super)
     {
@@ -291,6 +291,13 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		vim_free(isn->isn_arg.script.scriptref);
 	    }
 	}
+    }
+
+    if (cl == NULL)
+    {
+	// TODO: this should not give an error but be handled at runtime
+	emsg(_(e_incomplete_type));
+	return FAIL;
     }
 
     ++*arg;
@@ -383,7 +390,12 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // uf_name[] only being 4 characters.
 	    char_u *ufname = (char_u *)fp->uf_name;
 	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
-		return generate_FUNCREF(cctx, fp, NULL);
+	    {
+		if (type->tt_type == VAR_OBJECT
+		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
+		    return generate_FUNCREF(cctx, fp, cl, i, NULL);
+		return generate_FUNCREF(cctx, fp, NULL, 0, NULL);
+	    }
 	}
 
 	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
@@ -914,7 +926,6 @@ compile_call(
     char_u	namebuf[MAX_FUNC_NAME_LEN];
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
-    int		error = FCERR_NONE;
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
@@ -985,6 +996,7 @@ compile_call(
     if (generate_ppconst(cctx, ppconst) == FAIL)
 	return FAIL;
 
+    funcerror_T	error;
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
     // We handle the "skip" argument of searchpair() and searchpairpos()
@@ -1308,7 +1320,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	// The function reference count will be 1.  When the ISN_FUNCREF
 	// instruction is deleted the reference count is decremented and the
 	// function is freed.
-	return generate_FUNCREF(cctx, ufunc, NULL);
+	return generate_FUNCREF(cctx, ufunc, NULL, 0, NULL);
     }
 
     func_ptr_unref(ufunc);

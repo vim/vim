@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Dec 08
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,7 +113,7 @@ script and `:def` functions; details are below:
 	:%s/this/that
 - Executing a register with "@r" does not work, you can prepend a colon or use
   `:exe`: >
-  	:exe @a
+	:exe @a
 - Unless mentioned specifically, the highest |scriptversion| is used.
 - When defining an expression mapping, the expression will be evaluated in the
   context of the script where it was defined.
@@ -340,7 +340,7 @@ function, the function does not need to be defined more than once: >
 
 Variable declarations with :var, :final and :const ~
 				*vim9-declaration* *:var* *E1079*
-				*E1017* *E1020* *E1054* *E1087* *E1108* *E1124*
+				*E1017* *E1020* *E1054* *E1087* *E1124*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
 section.
@@ -622,7 +622,7 @@ Additionally, a lambda can contain statements in {}: >
 	    }
 This can be useful for a timer, for example: >
 	var count = 0
- 	var timer = timer_start(500, (_) => {
+	var timer = timer_start(500, (_) => {
 		 count += 1
 		 echom 'Handler called ' .. count
 	     }, {repeat: 3})
@@ -824,7 +824,7 @@ White space is required around most operators.
 
 White space is required in a sublist (list slice) around the ":", except at
 the start and end: >
-	otherlist = mylist[v : count]  	# v:count has a different meaning
+	otherlist = mylist[v : count]	# v:count has a different meaning
 	otherlist = mylist[:]		# make a copy of the List
 	otherlist = mylist[v :]
 	otherlist = mylist[: v]
@@ -879,7 +879,7 @@ This works for alphanumeric characters, underscore and dash.  If you want to
 use another character, use a single or double quoted string: >
 	var dict = {'key with space': value}
 	var dict = {"key\twith\ttabs": value}
-	var dict = {'': value}  		# empty key
+	var dict = {'': value}			# empty key
 <							*E1139*
 In case the key needs to be an expression, square brackets can be used, just
 like in JavaScript: >
@@ -1254,6 +1254,7 @@ level.  They cannot be created in a function, also not in a legacy function.
 :defc[ompile]		Compile functions defined in the current script that
 			were not compiled yet.
 			This will report any errors found during compilation.
+			This excludes functions defined inside a class.
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
@@ -1261,6 +1262,10 @@ level.  They cannot be created in a function, also not in a legacy function.
 			Compile function {func}, if needed.  Use "debug" and
 			"profile" to specify the compilation mode.
 			This will report any errors found during compilation.
+			{func} call also be "ClassName.functionName" to
+			compile a function or method in a class.
+			{func} call also be "ClassName" to compile all
+			functions and methods in a class.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
@@ -1402,7 +1407,7 @@ to a Vim9 function:
 	  echo line(1) .. line(2)
 
 - line continuation does not always require a backslash: >
-  	echo ['one',
+	echo ['one',
 		\ 'two',
 		\ 'three'
 		\ ]
@@ -1659,8 +1664,8 @@ type, it can not be used in Vim9 script.
 
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
-			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
-			 *E1256* *E1297* *E1298* *E1301*
+			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
+			 *E1297* *E1298* *E1301*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 

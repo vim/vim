@@ -1987,7 +1987,7 @@ count_syllables(slang_T *slang, char_u *word)
  * Returns NULL if it's OK, an untranslated error message otherwise.
  */
     char *
-did_set_spelllang(win_T *wp)
+parse_spelllang(win_T *wp)
 {
     garray_T	ga;
     char_u	*splp;
@@ -2503,7 +2503,7 @@ spell_reload(void)
 	{
 		if (wp->w_p_spell)
 		{
-		    (void)did_set_spelllang(wp);
+		    (void)parse_spelllang(wp);
 		    break;
 		}
 	}
@@ -4410,7 +4410,7 @@ did_set_spell_option(int is_spellfile)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer == curbuf && wp->w_p_spell)
 	{
-	    errmsg = did_set_spelllang(wp);
+	    errmsg = parse_spelllang(wp);
 	    break;
 	}
     return errmsg;

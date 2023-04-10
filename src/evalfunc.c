@@ -585,7 +585,7 @@ check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
 {
     type_T *expected_member = NULL;
     type_T *(args[2]);
-    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, args};
+    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, NULL, args};
 
     if (context->arg_types[0].type_curr->tt_type == VAR_LIST
 	    || context->arg_types[0].type_curr->tt_type == VAR_DICT)
@@ -699,7 +699,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
     if (type->tt_type == VAR_FUNC)
     {
 	type_T *(args[2]);
-	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, args};
+	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, NULL, args};
 
 	if (context->arg_types[0].type_curr->tt_type == VAR_LIST)
 	    args[0] = context->arg_types[0].type_curr->tt_member;
@@ -3056,8 +3056,8 @@ internal_func_is_map(int idx)
     int
 check_internal_func(int idx, int argcount)
 {
-    int	    res;
-    char    *name;
+    funcerror_T	    res;
+    char	    *name;
 
     if (argcount < global_functions[idx].f_min_argc)
 	res = FCERR_TOOFEW;
@@ -3074,7 +3074,7 @@ check_internal_func(int idx, int argcount)
     return -1;
 }
 
-    int
+    funcerror_T
 call_internal_func(
 	char_u	    *name,
 	int	    argcount,
@@ -3107,7 +3107,7 @@ call_internal_func_by_idx(
 /*
  * Invoke a method for base->method().
  */
-    int
+    funcerror_T
 call_internal_method(
 	char_u	    *name,
 	int	    argcount,
@@ -4354,7 +4354,7 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     cmdstr = vim_strsave(tv_get_string(&argvars[0]));
 
-    memset(&eap, 0, sizeof(eap));
+    CLEAR_FIELD(eap);
     eap.cmd = cmdstr;
     eap.arg = cmdstr;
     eap.argt |= EX_NOSPC;
@@ -6145,6 +6145,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"prof_nsec",
+#ifdef HAVE_TIMER_CREATE
+		1
+#else
+		0
+#endif
+		},
 	{"reltime",
 #ifdef FEAT_RELTIME
 		1
@@ -7825,7 +7832,7 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 	if (d != NULL)
 	{
 	    todo = (int)d->dv_hashtab.ht_used;
-	    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{
@@ -8226,7 +8233,7 @@ init_srand(UINT32_T *x)
 #  if defined(MSWIN)
 	    *x = (UINT32_T)res.LowPart;
 #  else
-	    *x = (UINT32_T)res.tv_usec;
+	    *x = (UINT32_T)res.tv_fsec;
 #  endif
 #else
 	    *x = vim_time();
@@ -9940,7 +9947,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 
@@ -10030,7 +10037,7 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 

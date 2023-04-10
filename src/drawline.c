@@ -96,8 +96,9 @@ typedef struct {
 #ifdef FEAT_CONCEAL
     int		boguscols;	// nonexistent columns added to "col" to force
 				// wrapping
-    int		vcol_off;	// offset for concealed characters
+    int		vcol_off_co;	// offset for concealed characters
 #endif
+    int		vcol_off_tp;	// offset for virtual text
 #ifdef FEAT_SYN_HL
     int		draw_color_col;	// highlight colorcolumn
     int		*color_cols;	// pointer to according columns array
@@ -839,9 +840,9 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
     // edge for 'cursorcolumn'.
     wlv->col -= wlv->boguscols;
     wlv->boguscols = 0;
-#  define VCOL_HLC (wlv->vcol - wlv->vcol_off)
+#  define VCOL_HLC (wlv->vcol - wlv->vcol_off_co - wlv->vcol_off_tp)
 # else
-#  define VCOL_HLC (wlv->vcol)
+#  define VCOL_HLC (wlv->vcol - wlv->vcol_off_tp)
 # endif
 
     if (wlv->draw_color_col)
@@ -1085,6 +1086,7 @@ win_line(
     int		save_did_emsg;
 #endif
 #ifdef FEAT_PROP_POPUP
+    int		did_line = FALSE;	// set to TRUE when line text done
     int		text_prop_count;
     int		text_prop_next = 0;	// next text property to use
     textprop_T	*text_props = NULL;
@@ -1176,18 +1178,18 @@ win_line(
     int		is_concealing	= FALSE;
     int		did_wcol	= FALSE;
     int		old_boguscols   = 0;
-# define VCOL_HLC (wlv.vcol - wlv.vcol_off)
+# define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp)
 # define FIX_FOR_BOGUSCOLS \
     { \
-	wlv.n_extra += wlv.vcol_off; \
-	wlv.vcol -= wlv.vcol_off; \
-	wlv.vcol_off = 0; \
+	wlv.n_extra += wlv.vcol_off_co; \
+	wlv.vcol -= wlv.vcol_off_co; \
+	wlv.vcol_off_co = 0; \
 	wlv.col -= wlv.boguscols; \
 	old_boguscols = wlv.boguscols; \
 	wlv.boguscols = 0; \
     }
 #else
-# define VCOL_HLC (wlv.vcol)
+# define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
 #endif
 
     if (startrow > endrow)		// past the end already!
@@ -1596,6 +1598,15 @@ win_line(
 		}
 	}
     }
+
+    if (number_only)
+    {
+	// skip over rows only used for virtual text above
+	wlv.row += wlv.text_prop_above_count;
+	if (wlv.row > endrow)
+	    return wlv.row;
+	wlv.screen_row += wlv.text_prop_above_count;
+    }
 #endif
 
     // 'nowrap' or 'wrap' and a single line that doesn't fit: Advance to the
@@ -1863,7 +1874,8 @@ win_line(
 	// When only displaying the (relative) line number and that's done,
 	// stop here.
 	if (((dollar_vcol >= 0 && wp == curwin
-		   && lnum == wp->w_cursor.lnum && wlv.vcol >= (long)wp->w_virtcol)
+			       && lnum == wp->w_cursor.lnum
+			       && wlv.vcol >= (long)wp->w_virtcol)
 		|| (number_only && wlv.draw_state > WL_NR))
 #ifdef FEAT_DIFF
 				   && wlv.filler_todo <= 0
@@ -1914,17 +1926,20 @@ win_line(
 		// Check if any active property ends.
 		for (pi = 0; pi < text_props_active; ++pi)
 		{
-		    int tpi = text_prop_idxs[pi];
+		    int		tpi = text_prop_idxs[pi];
+		    textprop_T  *tp = &text_props[tpi];
 
-		    if (text_props[tpi].tp_col != MAXCOL
-			    && bcol >= text_props[tpi].tp_col - 1
-						      + text_props[tpi].tp_len)
+		    // An inline property ends when after the start column plus
+		    // length. An "above" property ends when used and n_extra
+		    // is zero.
+		    if ((tp->tp_col != MAXCOL
+				       && bcol >= tp->tp_col - 1 + tp->tp_len))
 		    {
 			if (pi + 1 < text_props_active)
 			    mch_memmove(text_prop_idxs + pi,
 					text_prop_idxs + pi + 1,
 					sizeof(int)
-					 * (text_props_active - (pi + 1)));
+					     * (text_props_active - (pi + 1)));
 			--text_props_active;
 			--pi;
 # ifdef FEAT_LINEBREAK
@@ -1940,6 +1955,8 @@ win_line(
 		    // not on the next char yet, don't start another prop
 		    --bcol;
 # endif
+		int display_text_first = FALSE;
+
 		// Add any text property that starts in this column.
 		// With 'nowrap' and not in the first screen line only "below"
 		// text prop can show.
@@ -1950,18 +1967,11 @@ win_line(
 				      || wlv.row == startrow
 				      || (text_props[text_prop_next].tp_flags
 						       & TP_FLAG_ALIGN_BELOW)))
-			       || (bcol == 0 &&
-				      (text_props[text_prop_next].tp_flags
+			       || (bcol == 0
+					&& (text_props[text_prop_next].tp_flags
 						       & TP_FLAG_ALIGN_ABOVE)))
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
-		    if (text_props[text_prop_next].tp_col == MAXCOL
-			     && *ptr == NUL && wp->w_p_list && lcs_eol_one > 0)
-		    {
-			// first display the '$' after the line
-			text_prop_follows = TRUE;
-			break;
-		    }
 		    if (text_props[text_prop_next].tp_col == MAXCOL
 			    || bcol <= text_props[text_prop_next].tp_col - 1
 					   + text_props[text_prop_next].tp_len)
@@ -1978,16 +1988,18 @@ win_line(
 		    text_prop_id = 0;
 		    reset_extra_attr = FALSE;
 		}
-		if (text_props_active > 0 && wlv.n_extra == 0)
+		if (text_props_active > 0 && wlv.n_extra == 0
+							&& !display_text_first)
 		{
 		    int used_tpi = -1;
 		    int used_attr = 0;
 		    int other_tpi = -1;
 
-		    // Sort the properties on priority and/or starting last.
-		    // Then combine the attributes, highest priority last.
 		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
+
+		    // Sort the properties on priority and/or starting last.
+		    // Then combine the attributes, highest priority last.
 		    sort_text_props(wp->w_buffer, text_props,
 					    text_prop_idxs, text_props_active);
 
@@ -2011,6 +2023,24 @@ win_line(
 						| TP_FLAG_ALIGN_BELOW)) == 0
 				    && wlv.col >= wp->w_width))
 			{
+			    if (tp->tp_col == MAXCOL
+				     && *ptr == NUL
+				     && ((wp->w_p_list && lcs_eol_one > 0
+					     && (tp->tp_flags
+						   & TP_FLAG_ALIGN_ABOVE) == 0)
+					 || (ptr == line
+						&& !did_line
+						&& (tp->tp_flags
+						      & TP_FLAG_ALIGN_BELOW))))
+			    {
+				// skip this prop, first display the '$' after
+				// the line or display an empty line
+				text_prop_follows = TRUE;
+				if (used_tpi < 0)
+				    display_text_first = TRUE;
+				continue;
+			    }
+
 			    if (pt->pt_hl_id > 0)
 				used_attr = syn_id2attr(pt->pt_hl_id);
 			    text_prop_type = pt;
@@ -2021,6 +2051,7 @@ win_line(
 			    text_prop_flags = pt->pt_flags;
 			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;
+			    display_text_first = FALSE;
 			}
 		    }
 		    if (text_prop_id < 0 && used_tpi >= 0
@@ -2103,6 +2134,9 @@ win_line(
 				    p_extra_free2 = wlv.p_extra;
 				}
 
+				if (above)
+				    wlv.vcol_off_tp = wlv.n_extra;
+
 				if (lcs_eol_one < 0
 					&& wp->w_p_wrap
 					&& wlv.col
@@ -2159,8 +2193,8 @@ win_line(
 			// must wrap anyway.
 			text_prop_above = above;
 			text_prop_follows |= other_tpi != -1
-			    && (wp->w_p_wrap
-				   || (text_props[other_tpi].tp_flags
+					&& (wp->w_p_wrap
+					     || (text_props[other_tpi].tp_flags
 			       & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_RIGHT)));
 
 			if (bail_out)
@@ -2495,6 +2529,12 @@ win_line(
 #ifdef FEAT_LINEBREAK
 	    c0 = *ptr;
 #endif
+#ifdef FEAT_PROP_POPUP
+	    if (c == NUL)
+		// text is finished, may display a "below" virtual text
+		did_line = TRUE;
+#endif
+
 	    if (has_mbyte)
 	    {
 		mb_c = c;
@@ -2965,9 +3005,9 @@ win_line(
 			int	saved_nextra = wlv.n_extra;
 
 # ifdef FEAT_CONCEAL
-			if (wlv.vcol_off > 0)
+			if (wlv.vcol_off_co > 0)
 			    // there are characters to conceal
-			    tab_len += wlv.vcol_off;
+			    tab_len += wlv.vcol_off_co;
 
 			// boguscols before FIX_FOR_BOGUSCOLS macro from above
 			if (wp->w_p_list && wp->w_lcs_chars.tab1
@@ -3021,8 +3061,8 @@ win_line(
 				// n_extra will be increased by
 				// FIX_FOX_BOGUSCOLS macro below, so need to
 				// adjust for that here
-				if (wlv.vcol_off > 0)
-				    wlv.n_extra -= wlv.vcol_off;
+				if (wlv.vcol_off_co > 0)
+				    wlv.n_extra -= wlv.vcol_off_co;
 # endif
 			    }
 			}
@@ -3030,12 +3070,12 @@ win_line(
 #endif
 #ifdef FEAT_CONCEAL
 		    {
-			int vc_saved = wlv.vcol_off;
+			int vc_saved = wlv.vcol_off_co;
 
 			// Tab alignment should be identical regardless of
 			// 'conceallevel' value. So tab compensates of all
 			// previous concealed characters, and thus resets
-			// vcol_off and boguscols accumulated so far in the
+			// vcol_off_co and boguscols accumulated so far in the
 			// line. Note that the tab can be longer than
 			// 'tabstop' when there are concealed characters.
 			FIX_FOR_BOGUSCOLS;
@@ -3055,7 +3095,8 @@ win_line(
 							? wp->w_lcs_chars.tab3
 							: wp->w_lcs_chars.tab1;
 #ifdef FEAT_LINEBREAK
-			if (wp->w_p_lbr && wlv.p_extra != NULL)
+			if (wp->w_p_lbr && wlv.p_extra != NULL
+							&& *wlv.p_extra != NUL)
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
@@ -3081,6 +3122,7 @@ win_line(
 		    }
 		}
 		else if (c == NUL
+			&& wlv.n_extra == 0
 			&& (wp->w_p_list
 			    || ((wlv.fromcol >= 0 || fromcol_prev >= 0)
 				&& wlv.tocol > wlv.vcol
@@ -3299,7 +3341,7 @@ win_line(
 		    prev_syntax_id = syntax_seqnr;
 
 		    if (wlv.n_extra > 0)
-			wlv.vcol_off += wlv.n_extra;
+			wlv.vcol_off_co += wlv.n_extra;
 		    wlv.vcol += wlv.n_extra;
 		    if (wp->w_p_wrap && wlv.n_extra > 0)
 		    {
@@ -3576,20 +3618,31 @@ win_line(
 	// At end of the text line.
 	if (c == NUL)
 	{
-	    draw_screen_line(wp, &wlv);
-
-	    // Update w_cline_height and w_cline_folded if the cursor line was
-	    // updated (saves a call to plines() later).
-	    if (wp == curwin && lnum == curwin->w_cursor.lnum)
+#ifdef FEAT_PROP_POPUP
+	    if (text_prop_follows)
 	    {
-		curwin->w_cline_row = startrow;
-		curwin->w_cline_height = wlv.row - startrow;
-#ifdef FEAT_FOLDING
-		curwin->w_cline_folded = FALSE;
-#endif
-		curwin->w_valid |= (VALID_CHEIGHT|VALID_CROW);
+		// Put the pointer back to the NUL.
+		--ptr;
+		c = ' ';
 	    }
-	    break;
+	    else
+#endif
+	    {
+		draw_screen_line(wp, &wlv);
+
+		// Update w_cline_height and w_cline_folded if the cursor line
+		// was updated (saves a call to plines() later).
+		if (wp == curwin && lnum == curwin->w_cursor.lnum)
+		{
+		    curwin->w_cline_row = startrow;
+		    curwin->w_cline_height = wlv.row - startrow;
+#ifdef FEAT_FOLDING
+		    curwin->w_cline_folded = FALSE;
+#endif
+		    curwin->w_valid |= (VALID_CHEIGHT|VALID_CROW);
+		}
+		break;
+	    }
 	}
 
 	// Show "extends" character from 'listchars' if beyond the line end and
@@ -3762,9 +3815,9 @@ win_line(
 	else if (wp->w_p_cole > 0 && is_concealing)
 	{
 	    --n_skip;
-	    ++wlv.vcol_off;
+	    ++wlv.vcol_off_co;
 	    if (wlv.n_extra > 0)
-		wlv.vcol_off += wlv.n_extra;
+		wlv.vcol_off_co += wlv.n_extra;
 	    if (wp->w_p_wrap)
 	    {
 		// Special voodoo required if 'wrap' is on.
@@ -3857,7 +3910,7 @@ win_line(
 	    wlv.char_attr = vcol_save_attr;
 #endif
 
-	// restore attributes after "predeces" in 'listchars'
+	// restore attributes after "precedes" in 'listchars'
 	if (wlv.draw_state > WL_NR && n_attr3 > 0 && --n_attr3 == 0)
 	    wlv.char_attr = saved_attr3;
 
@@ -3894,7 +3947,7 @@ win_line(
 	    wlv_screen_line(wp, &wlv, FALSE);
 	    wlv.col += wlv.boguscols;
 	    wlv.boguscols = 0;
-	    wlv.vcol_off = 0;
+	    wlv.vcol_off_co = 0;
 #else
 	    wlv_screen_line(wp, &wlv, FALSE);
 #endif

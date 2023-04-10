@@ -13,6 +13,9 @@ PACKAGE = vim
 SHELL = /bin/sh
 VIM = ../vim
 
+# MacOS sed is locale aware, set $LANG to avoid problems
+SED = LANG=C sed
+
 # The OLD_PO_FILE_INPUT and OLD_PO_FILE_OUTPUT are for the new GNU gettext
 # tools 0.10.37, which use a slightly different .po file format that is not
 # compatible with Solaris (and old gettext implementations) unless these are
@@ -58,7 +61,7 @@ uninstall:
 	@$(MAKE) prefixcheck
 	for cat in $(MOFILES) $(MOCONVERTED); do \
 	  cat=`basename $$cat`; \
-	  lang=`echo $$cat | sed 's/\$(CATOBJEXT)$$//'`; \
+	  lang=`echo $$cat | $(SED) 's/\$(CATOBJEXT)$$//'`; \
 	  rm -f $(LOCALEDIR)/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
 	done
 
@@ -106,37 +109,37 @@ sjiscorr: sjiscorr.c
 
 ja.euc-jp.po: ja.po
 	iconv -f utf-8 -t euc-jp ja.po | \
-		sed -e 's/charset=[uU][tT][fF]-8/charset=euc-jp/' -e 's/# Original translations/# Generated from ja.po, DO NOT EDIT/' > ja.euc-jp.po
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=euc-jp/' -e 's/# Original translations/# Generated from ja.po, DO NOT EDIT/' > ja.euc-jp.po
 
 # Convert cs.po to create cs.cp1250.po.
 cs.cp1250.po: cs.po
 	rm -f cs.cp1250.po
 	iconv -f iso-8859-2 -t cp1250 cs.po | \
-		sed -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from cs.po, DO NOT EDIT/' > cs.cp1250.po
+		$(SED) -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from cs.po, DO NOT EDIT/' > cs.cp1250.po
 
 # Convert pl.po to create pl.cp1250.po.
 pl.cp1250.po: pl.po
 	rm -f pl.cp1250.po
 	iconv -f iso-8859-2 -t cp1250 pl.po | \
-		sed -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.cp1250.po
+		$(SED) -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.cp1250.po
 
 # Convert pl.po to create pl.UTF-8.po.
 pl.UTF-8.po: pl.po
 	rm -f pl.UTF-8.po
 	iconv -f iso-8859-2 -t utf-8 pl.po | \
-		sed -e 's/charset=ISO-8859-2/charset=UTF-8/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.UTF-8.po
+		$(SED) -e 's/charset=ISO-8859-2/charset=UTF-8/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.UTF-8.po
 
 # Convert sk.po to create sk.cp1250.po.
 sk.cp1250.po: sk.po
 	rm -f sk.cp1250.po
 	iconv -f iso-8859-2 -t cp1250 sk.po | \
-		sed -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from sk.po, DO NOT EDIT/' > sk.cp1250.po
+		$(SED) -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from sk.po, DO NOT EDIT/' > sk.cp1250.po
 
 # Convert zh_CN.UTF-8.po to create zh_CN.po.
 zh_CN.po: zh_CN.UTF-8.po
 	rm -f zh_CN.po
 	iconv -f UTF-8 -t gb2312 zh_CN.UTF-8.po | \
-		sed -e 's/charset=[uU][tT][fF]-8/charset=gb2312/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.po
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=gb2312/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.po
 
 # Convert zh_CN.UTF-8.po to create zh_CN.cp936.po.
 # Set 'charset' to gbk to avoid that msfmt generates a warning.
@@ -144,13 +147,19 @@ zh_CN.po: zh_CN.UTF-8.po
 zh_CN.cp936.po: zh_CN.UTF-8.po
 	rm -f zh_CN.cp936.po
 	iconv -f UTF-8 -t cp936 zh_CN.UTF-8.po | \
-		sed -e 's/charset=[uU][tT][fF]-8/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.cp936.po
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.cp936.po
+
+# Convert zh_TW.UTF-8.po to create zh_TW.po
+zh_TW.po: zh_TW.UTF-8.po
+	rm -f zh_TW.po
+	iconv -f UTF-8 -t big5 zh_TW.UTF-8.po | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=big5/' -e 's/# Original translations/# Generated from zh_TW.UTF-8.po, DO NOT EDIT/' > zh_TW.po
 
 # Convert ko.UTF-8.po to create ko.po.
 ko.po: ko.UTF-8.po
 	rm -f ko.po
 	iconv -f UTF-8 -t euc-kr ko.UTF-8.po | \
-		sed -e 's/charset=UTF-8/charset=euc-kr/' \
+		$(SED) -e 's/charset=UTF-8/charset=euc-kr/' \
 		    -e 's/# Korean translation for Vim/# Generated from ko.UTF-8.po, DO NOT EDIT/' \
 		    > ko.po
 
@@ -158,13 +167,13 @@ ko.po: ko.UTF-8.po
 ru.cp1251.po: ru.po
 	rm -f ru.cp1251.po
 	iconv -f utf-8 -t cp1251 ru.po | \
-		sed -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
 
 # Convert uk.po to create uk.cp1251.po.
 uk.cp1251.po: uk.po
 	rm -f uk.cp1251.po
 	iconv -f utf-8 -t cp1251 uk.po | \
-		sed -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
 
 prefixcheck:
 	@if test "x" = "x$(prefix)"; then \
@@ -214,7 +223,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	rm *.js
 
 vim.desktop: vim.desktop.in $(POFILES)
-	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template vim.desktop.in -o tmp_vim.desktop
 	rm -f LINGUAS
 	if command -v desktop-file-validate; then desktop-file-validate tmp_vim.desktop; fi
@@ -223,7 +232,7 @@ vim.desktop: vim.desktop.in $(POFILES)
 # The dependency on vim.desktop is only to avoid the two targets are build at
 # the same time, which causes a race for the LINGUAS file.
 gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
-	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
 	rm -f LINGUAS
 	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi

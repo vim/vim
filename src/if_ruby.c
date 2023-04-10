@@ -1147,7 +1147,7 @@ vim_to_ruby(typval_T *tv)
 	    hashitem_T  *hi;
 	    dictitem_T  *di;
 
-	    for (hi = ht->ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

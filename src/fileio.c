@@ -3830,7 +3830,7 @@ vim_rename(char_u *from, char_u *to)
      * original file will be somewhere else so the backup isn't really
      * important. If autoscripting is off the rename may fail.
      */
-    flock = Lock((UBYTE *)from, (long)ACCESS_READ);
+    flock = Lock((UBYTE *)from, (long)VIM_ACCESS_READ);
 #endif
     mch_remove(to);
 #ifdef AMIGA
@@ -4382,7 +4382,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
     // file, not reset the syntax highlighting, clear marks, diff status, etc.
     // Force the fileformat and encoding to be the same.
     if (reload_options)
-	memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
     else
 	prepped = prep_exarg(&ea, buf);
 

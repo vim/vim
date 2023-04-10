@@ -480,7 +480,7 @@ spell_suggest(int count)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 
@@ -3176,7 +3176,7 @@ suggest_try_soundalike_finish(void)
 	{
 	    // Free the info about handled words.
 	    todo = (int)slang->sl_sounddone.ht_used;
-	    for (hi = slang->sl_sounddone.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&slang->sl_sounddone, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    vim_free(HI2SFT(hi));

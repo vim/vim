@@ -538,168 +538,168 @@ EXTERN type_T static_types[82]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
-    {VAR_UNKNOWN, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_UNKNOWN, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_UNKNOWN, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_UNKNOWN, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 2: t_any
-    {VAR_ANY, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_ANY, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_ANY, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_ANY, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 4: t_void
-    {VAR_VOID, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_VOID, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_VOID, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_VOID, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 6: t_bool
-    {VAR_BOOL, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_BOOL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_BOOL, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_BOOL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 8: t_null
-    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 10: t_none
-    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_SPECIAL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 12: t_number
-    {VAR_NUMBER, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_NUMBER, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 14: t_number_bool
-    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_BOOL_OK, NULL, NULL},
-    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_BOOL_OK|TTFLAG_CONST, NULL, NULL},
+    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_BOOL_OK, NULL, NULL, NULL},
+    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_BOOL_OK|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 16: t_number_float
-    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_FLOAT_OK, NULL, NULL},
-    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_FLOAT_OK|TTFLAG_CONST, NULL, NULL},
+    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_FLOAT_OK, NULL, NULL, NULL},
+    {VAR_NUMBER, 0, 0, TTFLAG_STATIC|TTFLAG_FLOAT_OK|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 18: t_float
-    {VAR_FLOAT, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_FLOAT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_FLOAT, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_FLOAT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 20: t_string
-    {VAR_STRING, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_STRING, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_STRING, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_STRING, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 22: t_blob
-    {VAR_BLOB, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_BLOB, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_BLOB, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_BLOB, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 24: t_blob_null
-    {VAR_BLOB, 0, 0, TTFLAG_STATIC, &t_void, NULL},
-    {VAR_BLOB, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_void, NULL},
+    {VAR_BLOB, 0, 0, TTFLAG_STATIC, &t_void, NULL, NULL},
+    {VAR_BLOB, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_void, NULL, NULL},
 
     // 26: t_job
-    {VAR_JOB, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_JOB, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_JOB, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_JOB, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 28: t_channel
-    {VAR_CHANNEL, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_CHANNEL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_CHANNEL, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_CHANNEL, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 30: t_number_or_string
-    {VAR_STRING, 0, 0, TTFLAG_STATIC, NULL, NULL},
-    {VAR_STRING, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL},
+    {VAR_STRING, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_STRING, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 
     // 32: t_func_unknown
-    {VAR_FUNC, -1, -1, TTFLAG_STATIC, &t_unknown, NULL},
-    {VAR_FUNC, -1, -1, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL},
+    {VAR_FUNC, -1, -1, TTFLAG_STATIC, &t_unknown, NULL, NULL},
+    {VAR_FUNC, -1, -1, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL, NULL},
 
     // 34: t_func_void
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_void, NULL},
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_void, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_void, NULL, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_void, NULL, NULL},
 
     // 36: t_func_any
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_any, NULL},
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_any, NULL, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL, NULL},
 
     // 38: t_func_number
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_number, NULL},
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_number, NULL, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL, NULL},
 
     // 40: t_func_string
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_string, NULL},
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_string, NULL, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL, NULL},
 
     // 42: t_func_bool
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_bool, NULL},
-    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
+    {VAR_FUNC, -1, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 
     // 44: t_func_0_void
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_void, NULL},
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_void, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_void, NULL, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_void, NULL, NULL},
 
     // 46: t_func_0_any
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_any, NULL},
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_any, NULL, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL, NULL},
 
     // 48: t_func_0_number
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_number, NULL},
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_number, NULL, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL, NULL},
 
     // 50: t_func_0_string
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_string, NULL},
-    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_string, NULL, NULL},
+    {VAR_FUNC, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL, NULL},
 
     // 52: t_list_any
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_any, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_any, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL, NULL},
 
     // 54: t_dict_any
-    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_any, NULL},
-    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_any, NULL, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_any, NULL, NULL},
 
     // 56: t_list_empty
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_unknown, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_unknown, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL, NULL},
 
     // 58: t_dict_empty
-    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_unknown, NULL},
-    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_unknown, NULL, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_unknown, NULL, NULL},
 
     // 60: t_list_bool
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_bool, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 
     // 62: t_list_number
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_number, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_number, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL, NULL},
 
     // 64: t_list_string
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_string, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_string, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL, NULL},
 
     // 66: t_list_job
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_job, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_job, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_job, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_job, NULL, NULL},
 
     // 68: t_list_dict_any
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_dict_any, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_dict_any, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_dict_any, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_dict_any, NULL, NULL},
 
     // 70: t_list_list_any
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_any, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_any, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_any, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_any, NULL, NULL},
 
     // 72: t_list_list_string
-    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_string, NULL},
-    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_string, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC, &t_list_string, NULL, NULL},
+    {VAR_LIST, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_list_string, NULL, NULL},
 
     // 74: t_dict_bool
-    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_bool, NULL},
-    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 
     // 76: t_dict_number
-    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_number, NULL},
-    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_number, NULL, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_number, NULL, NULL},
 
     // 78: t_dict_string
-    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_string, NULL},
-    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_string, NULL, NULL},
+    {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL, NULL},
 
     // 80: t_super (VAR_CLASS with tt_member set to &t_bool
-    {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL},
-    {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL},
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
 }
 #endif
 ;
@@ -873,10 +873,6 @@ EXTERN vimmenu_T	*root_menu INIT(= NULL);
  * overruling of menus that the user already defined.
  */
 EXTERN int	sys_menu INIT(= FALSE);
-
-#define FOR_ALL_MENUS(m) for ((m) = root_menu; (m) != NULL; (m) = (m)->next)
-#define FOR_ALL_CHILD_MENUS(p, c) \
-    for ((c) = (p)->children; (c) != NULL; (c) = (c)->next)
 #endif
 
 #ifdef FEAT_GUI
@@ -968,27 +964,6 @@ EXTERN win_T	*lastwin;		// last window
 EXTERN win_T	*prevwin INIT(= NULL);	// previous window
 #define ONE_WINDOW (firstwin == lastwin)
 #define W_NEXT(wp) ((wp)->w_next)
-#define FOR_ALL_WINDOWS(wp) for ((wp) = firstwin; (wp) != NULL; (wp) = (wp)->w_next)
-#define FOR_ALL_FRAMES(frp, first_frame) \
-    for ((frp) = first_frame; (frp) != NULL; (frp) = (frp)->fr_next)
-#define FOR_ALL_TABPAGES(tp) for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next)
-#define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
-    for ((wp) = ((tp) == NULL || (tp) == curtab) \
-	    ? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
-/*
- * When using this macro "break" only breaks out of the inner loop. Use "goto"
- * to break out of the tabpage loop.
- */
-#define FOR_ALL_TAB_WINDOWS(tp, wp) \
-    for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
-	for ((wp) = ((tp) == curtab) \
-		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
-
-#define FOR_ALL_POPUPWINS(wp) \
-    for ((wp) = first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
-#define FOR_ALL_POPUPWINS_IN_TAB(tp, wp) \
-    for ((wp) = (tp)->tp_first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
-
 
 EXTERN win_T	*curwin;	// currently active window
 
@@ -1049,16 +1024,6 @@ EXTERN int	    redraw_tabline INIT(= FALSE);  // need to redraw tabline
 EXTERN buf_T	*firstbuf INIT(= NULL);	// first buffer
 EXTERN buf_T	*lastbuf INIT(= NULL);	// last buffer
 EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
-
-#define FOR_ALL_BUFFERS(buf) \
-    for ((buf) = firstbuf; (buf) != NULL; (buf) = (buf)->b_next)
-
-#define FOR_ALL_BUF_WININFO(buf, wip) \
-    for ((wip) = (buf)->b_wininfo; (wip) != NULL; (wip) = (wip)->wi_next)
-
-// Iterate through all the signs placed in a buffer
-#define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
-	for ((sign) = (buf)->b_signlist; (sign) != NULL; (sign) = (sign)->se_next)
 
 // Flag that is set when switching off 'swapfile'.  It means that all blocks
 // are to be loaded into memory.  Shouldn't be global...
@@ -1874,9 +1839,6 @@ EXTERN disptick_T	display_tick INIT(= 0);
 // Line in which spell checking wasn't highlighted because it touched the
 // cursor position in Insert mode.
 EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
-
-#define FOR_ALL_SPELL_LANGS(slang) \
-    for ((slang) = first_lang; (slang) != NULL; (slang) = (slang)->sl_next)
 #endif
 
 #ifdef FEAT_CONCEAL
@@ -2015,11 +1977,6 @@ EXTERN char *ch_part_names[]
 
 // Whether a redraw is needed for appending a line to a buffer.
 EXTERN int channel_need_redraw INIT(= FALSE);
-
-# define FOR_ALL_CHANNELS(ch) \
-    for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
-# define FOR_ALL_JOBS(job) \
-    for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
 #endif
 
 #ifdef FEAT_EVAL
@@ -2031,14 +1988,6 @@ EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
 #endif
-
-#if defined(FEAT_DIFF)
-#define FOR_ALL_DIFFBLOCKS_IN_TAB(tp, dp) \
-    for ((dp) = (tp)->tp_first_diff; (dp) != NULL; (dp) = (dp)->df_next)
-#endif
-
-#define FOR_ALL_LIST_ITEMS(l, li) \
-    for ((li) = (l) == NULL ? NULL : (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
 
 // While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.

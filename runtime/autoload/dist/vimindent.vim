@@ -1121,13 +1121,8 @@ def Is_IN_KeywordForLoop(line_1: string, line_2: string): bool # {{{3
 enddef
 
 def InCommentOrString(): bool # {{{3
-    for synID: number in synstack('.', col('.'))
-        if synIDattr(synID, 'name') =~ '\ccomment\|string\|heredoc'
-            return true
-        endif
-    endfor
-
-    return false
+    return synstack('.', col('.'))
+        ->indexof((_, id: number): bool => synIDattr(id, 'name') =~ '\ccomment\|string\|heredoc') >= 0
 enddef
 
 def AlsoClosesBlock(line_B: dict<any>): bool # {{{3

@@ -140,7 +140,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	return OK;
 
     todo = (int)dict->dv_hashtab.ht_used;
-    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    item = &dict_lookup(hi)->di_tv;
@@ -885,7 +885,7 @@ job_still_useful(job_T *job)
  * Return TRUE when there is any running job that we care about.
  */
     int
-job_any_running()
+job_any_running(void)
 {
     job_T	*job;
 
@@ -1655,7 +1655,7 @@ init_prompt(int cmdchar_todo)
  * Return TRUE if the cursor is in the editable position of the prompt line.
  */
     int
-prompt_curpos_editable()
+prompt_curpos_editable(void)
 {
     return curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count
 	&& curwin->w_cursor.col >= (int)STRLEN(prompt_text());

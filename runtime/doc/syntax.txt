@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Dec 26
+*syntax.txt*	For Vim version 9.0.  Last change: 2023 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1307,18 +1307,32 @@ When not set 4 is used.
 
 DOSBATCH				*dosbatch.vim* *ft-dosbatch-syntax*
 
-There is one option with highlighting DOS batch files.	This covers new
-extensions to the Command Interpreter introduced with Windows 2000 and
-is controlled by the variable dosbatch_cmdextversion.  For Windows NT
-this should have the value 1, and for Windows 2000 it should be 2.
+Select the set of Windows Command interpreter extensions that should be
+supported with the variable dosbatch_cmdextversion.  For versions of Windows
+NT (before Windows 2000) this should have the value of 1.  For Windows 2000
+and later it should be 2.
 Select the version you want with the following line: >
 
    :let dosbatch_cmdextversion = 1
 
 If this variable is not defined it defaults to a value of 2 to support
-Windows 2000.
+Windows 2000 and later.
 
-A second option covers whether *.btm files should be detected as type
+The original MS-DOS supports an idiom of using a double colon (::) as an
+alternative way to enter a comment line.  This idiom can be used with the
+current Windows Command Interpreter, but it can lead to problems when used
+inside ( ... ) command blocks.  You can find a discussion about this on
+Stack Overflow -
+
+https://stackoverflow.com/questions/12407800/which-comment-style-should-i-use-in-batch-files
+
+To allow the use of the :: idiom for comments in the Windows Command
+Interpreter or working with MS-DOS bat files, set the
+dosbatch_colons_comment variable to anything: >
+
+   :let dosbatch_colons_comment = 1
+
+There is an option that covers whether *.btm files should be detected as type
 "dosbatch" (MS-DOS batch files) or type "btm" (4DOS batch files).  The latter
 is used by default.  You may select the former with the following line: >
 
@@ -2777,17 +2791,25 @@ For highlighted doctests and code inside: >
 	:let python_no_doctest_highlight = 1
 or >
 	:let python_no_doctest_code_highlight = 1
-(first option implies second one).
+The first option implies the second one.
 
 For highlighted trailing whitespace and mix of spaces and tabs: >
 	:let python_space_error_highlight = 1
 
-If you want all possible Python highlighting (the same as setting the
-preceding last option and unsetting all other ones): >
+If you want all possible Python highlighting:
 	:let python_highlight_all = 1
+This has the same effect as setting python_space_error_highlight and
+unsetting all the other ones.
 
-Note: Only existence of these options matter, not their value. You can replace
-      1 above with anything.
+If you use Python 2 or straddling code (Python 2 and 3 compatible),
+you can enforce the use of an older syntax file with support for
+Python 2 and up to Python 3.5.
+	: let python_use_python2_syntax = 1
+This option will exclude all modern Python 3.6 or higher features.
+
+Note: Only existence of these options matters, not their value.
+      You can replace 1 above with anything.
+
 
 QUAKE						*quake.vim* *ft-quake-syntax*
 
@@ -3836,7 +3858,7 @@ SYNTAX ISKEYWORD SETTING				*:syn-iskeyword*
 
 	clear:		Syntax specific iskeyword setting is disabled and the
 			buffer-local 'iskeyword' setting is used.
-	{option}       	Set the syntax 'iskeyword' option to a new value.
+	{option}	Set the syntax 'iskeyword' option to a new value.
 
 	Example: >
   :syntax iskeyword @,48-57,192-255,$,_
@@ -5283,7 +5305,7 @@ guisp={color-name}					*highlight-guisp*
 	(guisp) color to use in the GUI.  "guisp" is used for undercurl and
 	strikethrough.
 	There are a few special names:
-		NONE		no color (transparent)
+		NONE		no color (transparent)		*E1361*
 		bg		use normal background color
 		background	use normal background color
 		fg		use normal foreground color
@@ -5356,7 +5378,7 @@ ColorColumn	Used for the columns set with 'colorcolumn'.
 							*hl-Conceal*
 Conceal		Placeholder characters substituted for concealed
 		text (see 'conceallevel').
-							*hl-Cursor*
+						*hl-Cursor* *hl-lCursor*
 Cursor		Character under the cursor.
 lCursor		Character under the cursor when |language-mapping|
 		is used (see 'guicursor').
@@ -5430,6 +5452,14 @@ Normal		Normal text.
 Pmenu		Popup menu: Normal item.
 							*hl-PmenuSel*
 PmenuSel	Popup menu: Selected item.
+							*hl-PmenuKind*
+PmenuKind	Popup menu: Normal item "kind".
+							*hl-PmenuKindSel*
+PmenuKindSel	Popup menu: Selected item "kind".
+							*hl-PmenuExtra*
+PmenuExtra	Popup menu: Normal item "extra text".
+							*hl-PmenuExtraSel*
+PmenuExtraSel	Popup menu: Selected item "extra text".
 							*hl-PmenuSbar*
 PmenuSbar	Popup menu: Scrollbar.
 							*hl-PmenuThumb*

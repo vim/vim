@@ -97,14 +97,12 @@ do_debug(char_u *cmd)
     if (debug_oldval != NULL)
     {
 	smsg(_("Oldval = \"%s\""), debug_oldval);
-	vim_free(debug_oldval);
-	debug_oldval = NULL;
+	VIM_CLEAR(debug_oldval);
     }
     if (debug_newval != NULL)
     {
 	smsg(_("Newval = \"%s\""), debug_newval);
-	vim_free(debug_newval);
-	debug_newval = NULL;
+	VIM_CLEAR(debug_newval);
     }
     sname = estack_sfile(ESTACK_NONE);
     if (sname != NULL)
@@ -734,7 +732,7 @@ ex_debuggreedy(exarg_T *eap)
 }
 
     static void
-update_has_expr_breakpoint()
+update_has_expr_breakpoint(void)
 {
     int i;
 
@@ -751,7 +749,7 @@ update_has_expr_breakpoint()
  * Return TRUE if there is any expression breakpoint.
  */
     int
-debug_has_expr_breakpoint()
+debug_has_expr_breakpoint(void)
 {
     return has_expr_breakpoint;
 }

@@ -396,7 +396,7 @@ update_topline(void)
 	    // cursor in the middle of the window.  Otherwise put the cursor
 	    // near the top of the window.
 	    if (n >= halfheight)
-		scroll_cursor_halfway(FALSE);
+		scroll_cursor_halfway(FALSE, FALSE);
 	    else
 	    {
 		scroll_cursor_top(scrolljump_value(), FALSE);
@@ -499,7 +499,7 @@ update_topline(void)
 		if (line_count <= curwin->w_height + 1)
 		    scroll_cursor_bot(scrolljump_value(), FALSE);
 		else
-		    scroll_cursor_halfway(FALSE);
+		    scroll_cursor_halfway(FALSE, FALSE);
 	    }
 	}
     }
@@ -662,6 +662,7 @@ changed_window_setting_win(win_T *wp)
     redraw_win_later(wp, UPD_NOT_VALID);
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Call changed_window_setting_win() for every window containing "buf".
  */
@@ -675,6 +676,7 @@ changed_window_setting_buf(buf_T *buf)
 	if (wp->w_buffer == buf)
 	    changed_window_setting_win(wp);
 }
+#endif
 
 /*
  * Set wp->w_topline to a certain number.
@@ -744,6 +746,7 @@ changed_line_abv_curs_win(win_T *wp)
 						|VALID_CHEIGHT|VALID_TOPLINE);
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Display of line has changed for "buf", invalidate cursor position and
  * w_botline.
@@ -759,6 +762,7 @@ changed_line_display_buf(buf_T *buf)
 				|VALID_CROW|VALID_CHEIGHT
 				|VALID_TOPLINE|VALID_BOTLINE|VALID_BOTLINE_AP);
 }
+#endif
 
 /*
  * Make sure the value of curwin->w_botline is valid.
@@ -1734,7 +1738,7 @@ scrolldown(
 	    col -= width1;
 	    ++row;
 	}
-	if (col > width2)
+	if (col > width2 && width2 > 0)
 	{
 	    row += col / width2;
 	    col = col % width2;
@@ -1759,7 +1763,7 @@ scrolling_screenlines(int byfold UNUSED)
 	|| (byfold && hasAnyFolding(curwin))
 # endif
 # ifdef FEAT_DIFF
-	|| curwin->w_p_diff
+	|| (curwin->w_p_diff && !curwin->w_p_wrap)
 # endif
 	;
 }
@@ -2383,7 +2387,7 @@ scroll_cursor_top(int min_scroll, int always)
      * in a small window.
      */
     if (used > curwin->w_height)
-	scroll_cursor_halfway(FALSE);
+	scroll_cursor_halfway(FALSE, FALSE);
     else
     {
 	/*
@@ -2720,7 +2724,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
      * Otherwise put it at 1/2 of the screen.
      */
     if (line_count >= curwin->w_height && line_count > min_scroll)
-	scroll_cursor_halfway(FALSE);
+	scroll_cursor_halfway(FALSE, TRUE);
     else
     {
 	// With 'smoothscroll' scroll at least the height of the cursor line,
@@ -2760,7 +2764,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
  * If "atend" is TRUE, also put it halfway at the end of the file.
  */
     void
-scroll_cursor_halfway(int atend)
+scroll_cursor_halfway(int atend, int prefer_above)
 {
     int		above = 0;
     linenr_T	topline;
@@ -2841,43 +2845,62 @@ scroll_cursor_halfway(int atend)
 
 	// If not using smoothscroll, we have to iteratively find how many
 	// lines to scroll down to roughly fit the cursor.
-	// This may not be right in the middle if the lines' physical height >
-	// 1 (e.g. 'wrap' is on).
+	// This may not be right in the middle if the lines'
+	// physical height > 1 (e.g. 'wrap' is on).
 
-	if (below <= above)	    // add a line below the cursor first
+	// Depending on "prefer_above" we add a line above or below first.
+	// Loop twice to avoid duplicating code.
+	int done = FALSE;
+	for (int round = 1; round <= 2; ++round)
 	{
-	    if (boff.lnum < curbuf->b_ml.ml_line_count)
+	    if (prefer_above ? (round == 2 && below < above)
+			     : (round == 1 && below <= above))
 	    {
-		botline_forw(&boff);
-		used += boff.height;
+		// add a line below the cursor
+		if (boff.lnum < curbuf->b_ml.ml_line_count)
+		{
+		    botline_forw(&boff);
+		    used += boff.height;
+		    if (used > curwin->w_height)
+		    {
+			done = TRUE;
+			break;
+		    }
+		    below += boff.height;
+		}
+		else
+		{
+		    ++below;	    // count a "~" line
+		    if (atend)
+			++used;
+		}
+	    }
+
+	    if (prefer_above ? (round == 1 && below >= above)
+			     : (round == 1 && below > above))
+	    {
+		// add a line above the cursor
+		topline_back(&loff);
+		if (loff.height == MAXCOL)
+		    used = MAXCOL;
+		else
+		    used += loff.height;
 		if (used > curwin->w_height)
+		{
+		    done = TRUE;
 		    break;
-		below += boff.height;
-	    }
-	    else
-	    {
-		++below;	    // count a "~" line
-		if (atend)
-		    ++used;
-	    }
-	}
-
-	if (below > above)	    // add a line above the cursor
-	{
-	    topline_back(&loff);
-	    if (loff.height == MAXCOL)
-		used = MAXCOL;
-	    else
-		used += loff.height;
-	    if (used > curwin->w_height)
-		break;
-	    above += loff.height;
-	    topline = loff.lnum;
+		}
+		above += loff.height;
+		topline = loff.lnum;
 #ifdef FEAT_DIFF
-	    topfill = loff.fill;
+		topfill = loff.fill;
 #endif
+	    }
 	}
+	if (done)
+	    break;
     }
+
 #ifdef FEAT_FOLDING
     if (!hasFolding(topline, &curwin->w_topline, NULL))
 #endif
@@ -3554,7 +3577,6 @@ do_check_cursorbind(void)
     int		set_curswant = curwin->w_set_curswant;
     win_T	*old_curwin = curwin;
     buf_T	*old_curbuf = curbuf;
-    int		restart_edit_save;
     int		old_VIsual_select = VIsual_select;
     int		old_VIsual_active = VIsual_active;
 
@@ -3582,8 +3604,8 @@ do_check_cursorbind(void)
 
 	    // Make sure the cursor is in a valid position.  Temporarily set
 	    // "restart_edit" to allow the cursor to be beyond the EOL.
-	    restart_edit_save = restart_edit;
-	    restart_edit = TRUE;
+	    int restart_edit_save = restart_edit;
+	    restart_edit = 'a';
 	    check_cursor();
 
 	    // Avoid a scroll here for the cursor position, 'scrollbind' is

@@ -166,6 +166,31 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+def Test_break_in_skipped_block()
+  var lines =<< trim END
+      vim9script
+
+      def FixStackFrame(): string
+          for _ in [2]
+              var path = 'xxx'
+              if !!path
+                  if false
+                      break
+                  else
+                      return 'foo'
+                  endif
+              endif
+          endfor
+          return 'xxx'
+      enddef
+
+      disas FixStackFrame
+
+      FixStackFrame()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_autoload_name_mismatch()
   var dir = 'Xnamedir/autoload'
   mkdir(dir, 'pR')
@@ -725,6 +750,31 @@ def Test_call_default_args()
       Func()
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_using_vnone_default()
+  var lines =<< trim END
+      vim9script
+
+      def F(a: string = v:none)
+         if a isnot v:none
+            var b = a
+         endif
+      enddef
+      F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # TODO: this should give an error for using a missing argument
+  # lines =<< trim END
+  #    vim9script
+
+  #    def F(a: string = v:none)
+  #       var b = a
+  #    enddef
+  #    F()
+  # END
+  # v9.CheckScriptFailure(lines, 'E99:')
 enddef
 
 def Test_convert_number_to_float()

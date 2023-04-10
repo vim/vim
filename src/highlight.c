@@ -164,6 +164,10 @@ static char *(highlight_init_both[]) = {
     "default link CursorLineSign SignColumn",
     "default link CursorLineFold FoldColumn",
     "default link CurSearch Search",
+    "default link PmenuKind Pmenu",
+    "default link PmenuKindSel PmenuSel",
+    "default link PmenuExtra Pmenu",
+    "default link PmenuExtraSel PmenuSel",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
     NULL
 };
@@ -469,7 +473,7 @@ init_highlight(
  * the user to override the color values. Only loaded once.
  */
     static void
-load_default_colors_lists()
+load_default_colors_lists(void)
 {
     // Lacking a default color list isn't the end of the world but it is likely
     // an inconvenience so users should know when it is missing.
