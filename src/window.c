@@ -2292,7 +2292,7 @@ win_equal_rec(
 }
 
 #ifdef FEAT_JOB_CHANNEL
-    static void
+    void
 leaving_window(win_T *win)
 {
     // Only matters for a prompt window.

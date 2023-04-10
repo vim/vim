@@ -252,4 +252,53 @@ func Test_prompt_while_writing_to_hidden_buffer()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prompt_appending_while_hidden()
+  call CanTestPromptBuffer()
+
+  let script =<< trim END
+      new prompt
+      set buftype=prompt
+      set bufhidden=hide
+
+      func s:TextEntered(text)
+          if a:text == 'exit'
+              close
+          endif
+          echowin 'Entered:' a:text
+      endfunc
+      call prompt_setcallback(bufnr(), function('s:TextEntered'))
+
+      func DoAppend()
+        call appendbufline('prompt', '$', 'Test')
+        return ''
+      endfunc
+  END
+  call writefile(script, 'XpromptBuffer', 'D')
+
+  let buf = RunVimInTerminal('-S XpromptBuffer', {'rows': 10})
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "asomething\<CR>")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, "exit\<CR>")
+  call TermWait(buf)
+  call assert_notmatch('-- INSERT --', term_getline(buf, 10))
+
+  call term_sendkeys(buf, ":call DoAppend()\<CR>")
+  call TermWait(buf)
+  call assert_notmatch('-- INSERT --', term_getline(buf, 10))
+
+  call term_sendkeys(buf, "i")
+  call TermWait(buf)
+  call assert_match('-- INSERT --', term_getline(buf, 10))
+
+  call term_sendkeys(buf, "\<C-R>=DoAppend()\<CR>")
+  call TermWait(buf)
+  call assert_match('-- INSERT --', term_getline(buf, 10))
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

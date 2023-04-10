@@ -1566,6 +1566,8 @@ aucmd_prepbuf(
     aco->save_curwin_id = curwin->w_id;
     aco->save_curbuf = curbuf;
     aco->save_prevwin_id = prevwin == NULL ? 0 : prevwin->w_id;
+    aco->save_State = State;
+
     if (win != NULL)
     {
 	// There is a window for "buf" in the current tab page, make it the
@@ -1657,7 +1659,13 @@ aucmd_restbuf(
 	    }
 	}
 win_found:
-
+#ifdef FEAT_JOB_CHANNEL
+	// May need to stop Insert mode if we were in a prompt buffer.
+	leaving_window(curwin);
+	// Do not stop Insert mode when already in Insert mode before.
+	if (aco->save_State & MODE_INSERT)
+	    stop_insert_mode = FALSE;
+#endif
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);
 	win_remove(curwin, NULL);
