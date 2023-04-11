@@ -1043,7 +1043,7 @@ win_redr_custom(
     {
 	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
-	maxwidth = wp->w_width;
+	maxwidth = wp->w_status_height ? wp->w_width : Columns;
 
 	if (draw_ruler)
 	{
@@ -1060,10 +1060,10 @@ win_redr_custom(
 		if (*stl++ != '(')
 		    stl = p_ruf;
 	    }
-	    col = ru_col - (Columns - wp->w_width);
-	    if (col < (wp->w_width + 1) / 2)
-		col = (wp->w_width + 1) / 2;
-	    maxwidth = wp->w_width - col;
+	    col = ru_col - (Columns - maxwidth);
+	    if (col < (maxwidth + 1) / 2)
+		col = (maxwidth + 1) / 2;
+	    maxwidth -= col;
 	    if (!wp->w_status_height)
 	    {
 		row = Rows - 1;
@@ -1084,7 +1084,8 @@ win_redr_custom(
 		stl = p_stl;
 	}
 
-	col += wp->w_wincol;
+	if (wp->w_status_height)
+	    col += wp->w_wincol;
     }
 
     if (maxwidth <= 0)
