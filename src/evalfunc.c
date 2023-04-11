@@ -4044,7 +4044,7 @@ get_list_line(
     item = item->li_next;
 
     // Only concatenate lines starting with a \ when 'cpoptions' doesn't
-    // contain the 'C' flag.
+    // contain the 'C' flag.  See getsourceline().
     if (line != NULL && item != NULL && options != GETLINE_NONE
 				      && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
@@ -4117,6 +4117,19 @@ get_list_line(
 
     *p = item;
     return line;
+}
+
+/*
+ * Return the readahead line. Note that the pointer may become invalid when
+ * getting the next line, if it's concatenated with the next one.
+ */
+    char_u *
+get_list_nextline(void *cookie)
+{
+    static char_u	buf[NUMBUFLEN];
+    listitem_T		*item = *(listitem_T **)cookie;
+
+    return item == NULL ? NULL : tv_get_string_buf_chk(&item->li_tv, buf);
 }
 
 /*
