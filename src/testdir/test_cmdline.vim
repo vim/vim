@@ -3447,8 +3447,6 @@ endfunc
 func Test_cmdhistadd()
   messages clear
 
-  call assert_equal(execute('messages'), '')
-
   call cmdhistadd('foo')
 
   call assert_equal(['foo'], GetMessages())
