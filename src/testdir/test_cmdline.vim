@@ -3444,4 +3444,18 @@ func Test_setcmdline()
   cunmap a
 endfunc
 
+func Test_cmdhistadd()
+  messages clear
+
+  call assert_equal(execute('messages'), '')
+
+  call cmdhistadd('foo')
+
+  call assert_equal(execute('messages'), "\nfoo")
+
+  call cmdhistadd('bar', 'WarningMsg')
+
+  call assert_equal(execute('messages'), "\nfoo\nbar")
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

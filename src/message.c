@@ -15,7 +15,6 @@
 
 #include "vim.h"
 
-static void add_msg_hist(char_u *s, int len, int attr);
 static void hit_return_msg(void);
 static void msg_home_replace_attr(char_u *fname, int attr);
 static void msg_puts_attr_len(char *str, int maxlen, int attr);
@@ -983,7 +982,7 @@ msg_may_trunc(int force, char_u *s)
     return s;
 }
 
-    static void
+    void
 add_msg_hist(
     char_u	*s,
     int		len,		// -1 for undetermined length

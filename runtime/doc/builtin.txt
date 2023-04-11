@@ -122,6 +122,8 @@ charidx({string}, {idx} [, {countcc}])
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
+cmdhistadd({msg}[, {highlight}])
+				Number	add an {msg} to command line history
 col({expr} [, {winid}])		Number	column byte index of cursor or mark
 complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
@@ -1562,6 +1564,15 @@ clearmatches([{win}])					*clearmatches()*
 
 		Can also be used as a |method|: >
 			GetWin()->clearmatches()
+<
+cmdhistadd({msg}[, {highlight}])			*cmdhistadd()*
+		Add the String {msg} to the message history.
+		If {highlight} is set, the highlight group is used.
+		The result is a Number: TRUE if the operation was successful,
+		otherwise FALSE is returned.
+
+		Can also be used as a |method|: >
+			GetMsg()->cmdhistadd()
 <
 col({expr} [, {winid})					*col()*
 		The result is a Number, which is the byte index of the column

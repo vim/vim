@@ -538,6 +538,40 @@ del_history_idx(int histype, int idx)
 }
 
 /*
+ * "cmdhistadd()" function
+ */
+    void
+f_cmdhistadd(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    char_u	*msg;
+    int		attr = 0;
+
+    rettv->vval.v_number = FALSE;
+    if (check_secure())
+	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL))
+	return;
+
+    msg = tv_get_string_chk(&argvars[0]);	// NULL on type error
+    if (msg == NULL)
+	return;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u	*syn_name;
+
+	syn_name = tv_get_string_chk(&argvars[1]);	// NULL on type error
+	if (syn_name == NULL)
+	    return;
+	attr = syn_name2attr(syn_name);
+    }
+
+    add_msg_hist(msg, (int)STRLEN(msg), attr);
+    rettv->vval.v_number = TRUE;
+}
+/*
  * "histadd()" function
  */
     void
