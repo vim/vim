@@ -3451,11 +3451,11 @@ func Test_cmdhistadd()
 
   call cmdhistadd('foo')
 
-  call assert_equal(execute('messages'), "\nfoo")
+  call assert_equal(['foo'], GetMessages())
 
   call cmdhistadd('bar', 'WarningMsg')
 
-  call assert_equal(execute('messages'), "\nfoo\nbar")
+  call assert_equal(['foo', 'bar'], GetMessages())
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
