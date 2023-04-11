@@ -250,7 +250,6 @@ evalvars_init(void)
     set_vim_var_nr(VV_SIZEOFLONG, sizeof(long));
     set_vim_var_nr(VV_SIZEOFPOINTER, sizeof(char *));
     set_vim_var_nr(VV_MAXCOL, MAXCOL);
-    set_vim_var_list(VV_STACKTRACE, list_alloc());
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
     set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);

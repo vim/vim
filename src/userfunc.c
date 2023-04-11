@@ -3322,45 +3322,6 @@ check_user_func_argcount(ufunc_T *fp, int argcount)
     return FCERR_UNKNOWN;
 }
 
-    static void
-push_stacktrace(ufunc_T *fp, linenr_T lnum)
-{
-    list_T	*l = NULL;
-    dict_T	*d = NULL;
-    typval_T	tv;
-
-    l = get_vim_var_list(VV_STACKTRACE);
-    if (l == NULL)
-	return;
-
-    d = dict_alloc();
-    if (d == NULL)
-	return;
-
-    tv.v_type = VAR_DICT;
-    tv.v_lock = VAR_LOCKED;
-    tv.vval.v_dict = d;
-
-    dict_add_func(d, "funcref", fp);
-    dict_add_number(d, "lnum", current_sctx.sc_lnum + lnum);
-    dict_add_string(d, "filepath", current_sctx.sc_sid > 0 ?
-			   get_scriptname(current_sctx.sc_sid) : (char_u *)"");
-
-    list_append_tv(l, &tv);
-}
-
-    static void
-pop_stacktrace()
-{
-    list_T	*l = get_vim_var_list(VV_STACKTRACE);
-
-    if (l == NULL)
-	return;
-
-    if (0 < l->lv_len && l->lv_u.mat.lv_last != NULL)
-	listitem_remove(l, l->lv_u.mat.lv_last);
-}
-
 /*
  * Call a user function after checking the arguments.
  */
@@ -3411,10 +3372,8 @@ call_user_func_check(
 	    did_save_redo = TRUE;
 	}
 	++fp->uf_calls;
-	push_stacktrace(fp, SOURCING_LNUM);
 	error = call_user_func(fp, argcount, argvars, rettv, funcexe,
 				   (fp->uf_flags & FC_DICT) ? selfdict : NULL);
-	pop_stacktrace();
 	if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 	    // Function was unreferenced while being used, free it now.
 	    func_clear_free(fp, FALSE);
