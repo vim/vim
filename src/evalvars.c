@@ -1103,58 +1103,55 @@ ex_let(exarg_T *eap)
 	int	    len = 1;
 
 	CLEAR_FIELD(rettv);
-	i = FAIL;
-	if (has_assign || concat)
+
+	int cur_lnum;
+
+	op[0] = '=';
+	op[1] = NUL;
+	if (*expr != '=')
 	{
-	    int cur_lnum;
-
-	    op[0] = '=';
-	    op[1] = NUL;
-	    if (*expr != '=')
+	    if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 	    {
-		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
+		// +=, /=, etc. require an existing variable
+		semsg(_(e_cannot_use_operator_on_new_variable_str), eap->arg);
+	    }
+	    else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
+	    {
+		op[0] = *expr;   // +=, -=, *=, /=, %= or .=
+		++len;
+		if (expr[0] == '.' && expr[1] == '.') // ..=
 		{
-		    // +=, /=, etc. require an existing variable
-		    semsg(_(e_cannot_use_operator_on_new_variable_str),
-								     eap->arg);
-		}
-		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
-		{
-		    op[0] = *expr;   // +=, -=, *=, /=, %= or .=
+		    ++expr;
 		    ++len;
-		    if (expr[0] == '.' && expr[1] == '.') // ..=
-		    {
-			++expr;
-			++len;
-		    }
 		}
-		expr += 2;
 	    }
-	    else
-		++expr;
-
-	    if (vim9script && !eap->skip && (!VIM_ISWHITE(*argend)
-						   || !IS_WHITE_OR_NUL(*expr)))
-	    {
-		vim_strncpy(op, expr - len, len);
-		semsg(_(e_white_space_required_before_and_after_str_at_str),
-								   op, argend);
-	    }
-
-	    if (eap->skip)
-		++emsg_skip;
-	    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
-	    expr = skipwhite_and_linebreak(expr, &evalarg);
-	    cur_lnum = SOURCING_LNUM;
-	    i = eval0(expr, &rettv, eap, &evalarg);
-	    if (eap->skip)
-		--emsg_skip;
-	    clear_evalarg(&evalarg, eap);
-
-	    // Restore the line number so that any type error is given for the
-	    // declaration, not the expression.
-	    SOURCING_LNUM = cur_lnum;
+	    expr += 2;
 	}
+	else
+	    ++expr;
+
+	if (vim9script && !eap->skip && (!VIM_ISWHITE(*argend)
+						   || !IS_WHITE_OR_NUL(*expr)))
+	{
+	    vim_strncpy(op, expr - len, len);
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								   op, argend);
+	}
+
+	if (eap->skip)
+	    ++emsg_skip;
+	fill_evalarg_from_eap(&evalarg, eap, eap->skip);
+	expr = skipwhite_and_linebreak(expr, &evalarg);
+	cur_lnum = SOURCING_LNUM;
+	i = eval0(expr, &rettv, eap, &evalarg);
+	if (eap->skip)
+	    --emsg_skip;
+	clear_evalarg(&evalarg, eap);
+
+	// Restore the line number so that any type error is given for the
+	// declaration, not the expression.
+	SOURCING_LNUM = cur_lnum;
+
 	if (eap->skip)
 	{
 	    if (i != FAIL)
