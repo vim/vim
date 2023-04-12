@@ -4294,7 +4294,8 @@ f_setcmdline(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    rettv->vval.v_number = set_cmdline_str(argvars[0].vval.v_string, pos);
+    // Use tv_get_string() to handle a NULL string like an empty string.
+    rettv->vval.v_number = set_cmdline_str(tv_get_string(&argvars[0]), pos);
 }
 
 /*
