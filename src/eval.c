@@ -2358,7 +2358,7 @@ eval_func(
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
     s = vim_strsave(s);
-    if (s == NULL || (evaluate && (*s == NUL || (flags & EVAL_CONSTANT))))
+    if (s == NULL || (evaluate && *s == NUL))
 	ret = FAIL;
     else
     {
@@ -2647,7 +2647,6 @@ eval0_retarg(
     char_u	*expr_end;
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
-    int		flags = evalarg == NULL ? 0 : evalarg->eval_flags;
     int		check_for_end = retarg == NULL;
     int		end_error = FALSE;
 
@@ -2692,7 +2691,6 @@ eval0_retarg(
 	if (!aborting()
 		&& did_emsg == did_emsg_before
 		&& called_emsg == called_emsg_before
-		&& (flags & EVAL_CONSTANT) == 0
 		&& (!in_vim9script() || !vim9_bad_comment(p)))
 	{
 	    if (end_error)
@@ -4279,8 +4277,6 @@ eval9(
 		*arg = skipwhite(*arg);
 		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	    }
-	    else if (flags & EVAL_CONSTANT)
-		ret = FAIL;
 	    else if (evaluate)
 	    {
 		// get the value of "true", "false", etc. or a variable
