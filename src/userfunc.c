@@ -5868,6 +5868,9 @@ ex_return(exarg_T *eap)
     clear_evalarg(&evalarg, eap);
 }
 
+/*
+ * Lower level implementation of "call".  Only called when not skipping.
+ */
     static int
 ex_call_inner(
 	exarg_T	    *eap,
@@ -5882,24 +5885,12 @@ ex_call_inner(
     typval_T	rettv;
     int		failed = FALSE;
 
-    /*
-     * When skipping, evaluate the function once, to find the end of the
-     * arguments.
-     * When the function takes a range, this is discovered after the first
-     * call, and the loop is broken.
-     */
-    if (eap->skip)
-    {
-	++emsg_skip;
-	lnum = eap->line2;	// do it once, also with an invalid range
-    }
-    else
-	lnum = eap->line1;
+    lnum = eap->line1;
     for ( ; lnum <= eap->line2; ++lnum)
     {
 	funcexe_T funcexe;
 
-	if (!eap->skip && eap->addr_count > 0)
+	if (eap->addr_count > 0)
 	{
 	    if (lnum > curbuf->b_ml.ml_line_count)
 	    {
@@ -5927,14 +5918,14 @@ ex_call_inner(
 
 	// Handle a function returning a Funcref, Dictionary or List.
 	if (handle_subscript(arg, NULL, &rettv,
-			   eap->skip ? NULL : &EVALARG_EVALUATE, TRUE) == FAIL)
+					      &EVALARG_EVALUATE, TRUE) == FAIL)
 	{
 	    failed = TRUE;
 	    break;
 	}
 
 	clear_tv(&rettv);
-	if (doesrange || eap->skip)
+	if (doesrange)
 	    break;
 
 	// Stop when immediately aborting on error, or when an interrupt
@@ -5944,8 +5935,6 @@ ex_call_inner(
 	if (aborting())
 	    break;
     }
-    if (eap->skip)
-	--emsg_skip;
     return failed;
 }
 
@@ -6185,7 +6174,7 @@ ex_call(exarg_T *eap)
 	return;
     }
 
-    tofree = trans_function_name_ext(&arg, NULL, eap->skip, TFN_INT,
+    tofree = trans_function_name_ext(&arg, NULL, FALSE, TFN_INT,
 			     &fudi, &partial, vim9script ? &type : NULL, NULL);
     if (fudi.fd_newkey != NULL)
     {
@@ -6239,7 +6228,7 @@ ex_call(exarg_T *eap)
 	funcexe.fe_firstline = eap->line1;
 	funcexe.fe_lastline = eap->line2;
 	funcexe.fe_found_var = found_var;
-	funcexe.fe_evaluate = !eap->skip;
+	funcexe.fe_evaluate = TRUE;
 	failed = ex_call_inner(eap, name, &arg, startarg, &funcexe, &evalarg);
     }
 
