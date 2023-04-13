@@ -8271,7 +8271,7 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
-# if defined(HAVE_TIMER_CREATE) || defined(PROTO)
+# if defined(PROF_NSEC) || defined(PROTO)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
@@ -8371,7 +8371,7 @@ delete_timer(void)
     timer_created = FALSE;
 }
 
-# else // HAVE_TIMER_CREATE
+# else // PROF_NSEC
 
 /*
  * Implement timeout with setitimer()
@@ -8496,5 +8496,5 @@ start_timeout(long msec)
     timer_active = TRUE;
     return &timeout_flag;
 }
-# endif // HAVE_TIMER_CREATE
+# endif // PROF_NSEC
 #endif  // FEAT_RELTIME

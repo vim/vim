@@ -1873,7 +1873,8 @@ typedef LARGE_INTEGER proftime_T;
 #  define PROF_TOTALS_HEADER "count  total (s)   self (s)"
 # else
    // Use tv_fsec for fraction of second (micro or nano) of proftime_T
-#  if defined(HAVE_TIMER_CREATE)
+#  if defined(HAVE_TIMER_CREATE) && defined(HAVE_CLOCK_GETTIME)
+#   define PROF_NSEC 1
 typedef struct timespec proftime_T;
 #   define PROF_GET_TIME(tm) clock_gettime(CLOCK_MONOTONIC, tm)
 #   define tv_fsec tv_nsec
