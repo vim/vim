@@ -253,6 +253,11 @@ func Test_prompt_while_writing_to_hidden_buffer()
 endfunc
 
 func Test_prompt_appending_while_hidden()
+  if has('macOS')
+    " FIXME: This test is flaky on macOS huge.
+    let g:test_is_flaky = 1
+  endif
+
   call CanTestPromptBuffer()
 
   let script =<< trim END
