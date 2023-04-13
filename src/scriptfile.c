@@ -1456,7 +1456,7 @@ do_source_ext(
     int			    sid = -1;
     scriptitem_T	    *si = NULL;
     int			    save_estack_compiling = estack_compiling;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 #endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
@@ -1711,7 +1711,7 @@ do_source_ext(
 
     // Keep the sourcing name/lnum, for recursive calls.
     estack_push(ETYPE_SCRIPT, si->sn_name, 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1780,7 +1780,7 @@ do_source_ext(
     if (got_int)
 	emsg(_(e_interrupted));
 #ifdef FEAT_EVAL
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
 #endif
     estack_pop();
     if (p_verbose > 1)

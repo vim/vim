@@ -366,21 +366,31 @@
 
 
 #ifdef ABORT_ON_INTERNAL_ERROR
-# define ESTACK_CHECK_DECLARATION int estack_len_before;
-# define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
-# define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
-	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
-# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
-		iemsg("curbuf != curwin->w_buffer")
+# define ESTACK_CHECK_DECLARATION int estack_len_before
+# define ESTACK_CHECK_SETUP do { estack_len_before = exestack.ga_len; } while (0)
+# define ESTACK_CHECK_NOW \
+    do { \
+	if (estack_len_before != exestack.ga_len) \
+	    siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len); \
+    } while (0)
+# define CHECK_CURBUF \
+    do { \
+	if (curwin != NULL && curwin->w_buffer != curbuf) \
+	    iemsg("curbuf != curwin->w_buffer"); \
+    } while (0)
 #else
-# define ESTACK_CHECK_DECLARATION
-# define ESTACK_CHECK_SETUP
-# define ESTACK_CHECK_NOW
-# define CHECK_CURBUF
+# define ESTACK_CHECK_DECLARATION do { /**/ } while (0)
+# define ESTACK_CHECK_SETUP do { /**/ } while (0)
+# define ESTACK_CHECK_NOW do { /**/ } while (0)
+# define CHECK_CURBUF do { /**/ } while (0)
 #endif
 
 // Inline the condition for performance.
-#define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
+#define CHECK_LIST_MATERIALIZE(l) \
+    do { \
+	if ((l)->lv_first == &range_list_item) \
+	    range_list_materialize(l); \
+    } while (0)
 
 // Inlined version of ga_grow() with optimized condition that it fails.
 #define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)

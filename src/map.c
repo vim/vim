@@ -2231,12 +2231,12 @@ check_map_keycodes(void)
     int		abbr;
     int		hash;
     buf_T	*bp;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     validate_maphash();
     // avoids giving error messages
     estack_push(ETYPE_INTERNAL, (char_u *)"mappings", 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 
     // Do this once for each buffer, and then once for global
     // mappings/abbreviations with bp == NULL
@@ -2293,7 +2293,7 @@ check_map_keycodes(void)
 	if (bp == NULL)
 	    break;
     }
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
     estack_pop();
 }
 

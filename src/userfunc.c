@@ -2748,7 +2748,7 @@ call_user_func(
 #ifdef FEAT_PROFILE
     profinfo_T	profile_info;
 #endif
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
 #ifdef FEAT_PROFILE
     CLEAR_FIELD(profile_info);
@@ -2963,7 +2963,7 @@ call_user_func(
     }
 
     estack_push_ufunc(fp, 1);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
     if (p_verbose >= 12)
     {
 	++no_wait_return;
@@ -3117,7 +3117,7 @@ call_user_func(
 	--no_wait_return;
     }
 
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
     estack_pop();
     current_sctx = save_current_sctx;
     restore_current_ectx(save_current_ectx);
