@@ -2102,9 +2102,8 @@ typedef struct {
     char_u	*eval_tofree_lambda;
 } evalarg_T;
 
-// Flags for expression evaluation.
+// Flag for expression evaluation.
 #define EVAL_EVALUATE	    1	    // when missing don't actually evaluate
-#define EVAL_CONSTANT	    2	    // when not a constant return FAIL
 
 # ifdef FEAT_PROFILE
 /*

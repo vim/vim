@@ -2358,7 +2358,7 @@ eval_func(
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
     s = vim_strsave(s);
-    if (s == NULL || (evaluate && (*s == NUL || (flags & EVAL_CONSTANT))))
+    if (s == NULL || (evaluate && *s == NUL))
 	ret = FAIL;
     else
     {
@@ -2647,7 +2647,6 @@ eval0_retarg(
     char_u	*expr_end;
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
-    int		flags = evalarg == NULL ? 0 : evalarg->eval_flags;
     int		check_for_end = retarg == NULL;
     int		end_error = FALSE;
 
@@ -2692,7 +2691,6 @@ eval0_retarg(
 	if (!aborting()
 		&& did_emsg == did_emsg_before
 		&& called_emsg == called_emsg_before
-		&& (flags & EVAL_CONSTANT) == 0
 		&& (!in_vim9script() || !vim9_bad_comment(p)))
 	{
 	    if (end_error)
@@ -2807,7 +2805,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	}
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
 	evalarg_used->eval_flags = (op_falsy ? !result : result)
-				    ? orig_flags : orig_flags & ~EVAL_EVALUATE;
+				  ? orig_flags : (orig_flags & ~EVAL_EVALUATE);
 	if (eval1(arg, &var2, evalarg_used) == FAIL)
 	{
 	    evalarg_used->eval_flags = orig_flags;
@@ -2856,7 +2854,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    }
 	    *arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
 	    evalarg_used->eval_flags = !result ? orig_flags
-						 : orig_flags & ~EVAL_EVALUATE;
+					       : (orig_flags & ~EVAL_EVALUATE);
 	    if (eval1(arg, &var2, evalarg_used) == FAIL)
 	    {
 		if (evaluate && result)
@@ -2960,7 +2958,7 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    }
 	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
 	    evalarg_used->eval_flags = !result ? orig_flags
-						 : orig_flags & ~EVAL_EVALUATE;
+					       : (orig_flags & ~EVAL_EVALUATE);
 	    if (eval3(arg, &var2, evalarg_used) == FAIL)
 		return FAIL;
 
@@ -3086,7 +3084,7 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    }
 	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
 	    evalarg_used->eval_flags = result ? orig_flags
-						 : orig_flags & ~EVAL_EVALUATE;
+					      : (orig_flags & ~EVAL_EVALUATE);
 	    CLEAR_FIELD(var2);
 	    if (eval4(arg, &var2, evalarg_used) == FAIL)
 		return FAIL;
@@ -4279,8 +4277,6 @@ eval9(
 		*arg = skipwhite(*arg);
 		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	    }
-	    else if (flags & EVAL_CONSTANT)
-		ret = FAIL;
 	    else if (evaluate)
 	    {
 		// get the value of "true", "false", etc. or a variable
