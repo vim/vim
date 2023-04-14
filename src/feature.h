@@ -823,10 +823,10 @@
  * +mouse_gpm		Unix only: Include code for Linux console mouse
  *			handling.
  * +mouse_pterm		PTerm mouse support for QNX
- * +mouse_sgr		Unix only: Include code for for SGR-styled mouse.
+ * +mouse_sgr		Unix only: Include code for SGR-styled mouse.
  * +mouse_sysmouse	Unix only: Include code for FreeBSD and DragonFly
  *			console mouse handling.
- * +mouse_urxvt		Unix only: Include code for for urxvt mouse handling.
+ * +mouse_urxvt		Unix only: Include code for urxvt mouse handling.
  * +mouse		Any mouse support (any of the above enabled).
  *			Always included, since either FEAT_MOUSE_XTERM or
  *			DOS_MOUSE is defined.

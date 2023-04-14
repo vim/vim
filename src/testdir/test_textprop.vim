@@ -1570,7 +1570,7 @@ func Test_proptype_substitute_join()
   call prop_add(2, 7, {'length': 2, 'type': 'number'})
   call prop_add(3, 6, {'length': 2, 'type': 'number'})
   call prop_add(4, 7, {'length': 2, 'type': 'number'})
-  " The highlighted "is" in line 1, 2 and 4 is kept and ajudsted.
+  " The highlighted "is" in line 1, 2 and 4 is kept and adjusted.
   " The highlighted "is" in line 3 is deleted.
   let expected = [
         \ #{type_bufnr: 0, id: 0, col: 6, end: 1, type: 'number', length: 2, start: 1},
