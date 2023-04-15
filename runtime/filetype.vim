@@ -338,6 +338,10 @@ if has("fname_case")
   au BufNewFile,BufRead *.C,*.H setf cpp
 endif
 
+" C++ 20 modules (clang)
+" https://clang.llvm.org/docs/StandardCPlusPlusModules.html#file-name-requirement
+au BufNewFile,BufRead *.cppm,*.ccm,*.cxxm,*.c++m setf cpp
+
 " .h files can be C, Ch C++, ObjC or ObjC++.
 " Set c_syntax_for_h if you want C, ch_syntax_for_h if you want Ch. ObjC is
 " detected automatically.
