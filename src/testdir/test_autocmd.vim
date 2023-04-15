@@ -4247,6 +4247,7 @@ endfunc
 func Test_autocmd_shortmess()
   CheckNotMSWindows
 
+  messages clear
   call SetupVimTest_shm()
   let output = execute(':mess')->split('\n')
 
