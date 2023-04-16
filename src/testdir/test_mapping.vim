@@ -1555,15 +1555,15 @@ func Test_map_script_cmd_redo()
   let lines =<< trim END
       vim9script
       export def Func()
-        normal! dd
+        normal! V
       enddef
   END
   call writefile(lines, 'Xmapcmd/script.vim')
   new
-  call setline(1, ['one', 'two', 'three', 'four'])
+  call setline(1, ['one', 'two', 'three', 'four', 'five'])
   nnoremap j j
   source Xmapcmd/plugin.vim
-  call feedkeys("d\<F3>j.", 'xt')
+  call feedkeys("d\<F3>j.j.", 'xt')
   call assert_equal(['two', 'four'], getline(1, '$'))
 
   ounmap <F3>
