@@ -1896,7 +1896,7 @@ struct funccall_S
 				// funccal
     int		fc_copyID;	// for garbage collection
     garray_T	fc_ufuncs;	// list of ufunc_T* which keep a reference to
-				// "func"
+				// "fc_func"
 };
 
 // structure used as item in "fc_defer"
