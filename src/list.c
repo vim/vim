@@ -2401,7 +2401,7 @@ list_filter_map(
     if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
     if (l->lv_first == &range_list_item)
@@ -3064,7 +3064,7 @@ list_reduce(
     if (l == NULL)
 	return;
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, rettv);
 
     prev_locked = l->lv_lock;

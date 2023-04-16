@@ -1359,7 +1359,7 @@ dict_filter_map(
 	d_ret = rettv->vval.v_dict;
     }
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
     int prev_lock = d->dv_lock;
