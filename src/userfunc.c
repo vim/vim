@@ -6121,20 +6121,33 @@ handle_defer_one(funccall_T *funccal)
     void
 invoke_all_defer(void)
 {
-    funccall_T *funccal;
+    funccall_T		*fc;
+    funccal_entry_T	*entry;
 
-    for (funccal = current_funccal; funccal != NULL;
-						  funccal = funccal->fc_caller)
-	if (funccal->fc_ectx != NULL)
+    for (entry = funccal_stack; entry != NULL; entry = entry->next)
+	for (fc = entry->top_funccal; fc != NULL; fc = fc->fc_caller)
+	    if (fc->fc_ectx != NULL)
+	    {
+		// :def function
+		unwind_def_callstack(fc->fc_ectx);
+		may_invoke_defer_funcs(fc->fc_ectx);
+	    }
+	    else
+	    {
+		// legacy function
+		handle_defer_one(fc);
+	    }
+    for (fc = current_funccal; fc != NULL; fc = fc->fc_caller)
+	if (fc->fc_ectx != NULL)
 	{
 	    // :def function
-	    unwind_def_callstack(funccal->fc_ectx);
-	    may_invoke_defer_funcs(funccal->fc_ectx);
+	    unwind_def_callstack(fc->fc_ectx);
+	    may_invoke_defer_funcs(fc->fc_ectx);
 	}
 	else
 	{
 	    // legacy function
-	    handle_defer_one(funccal);
+	    handle_defer_one(fc);
 	}
 }
 
