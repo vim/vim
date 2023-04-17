@@ -656,6 +656,7 @@ func Test_defer_quitall()
       vim9script
       func DeferLevelTwo()
         call writefile(['text'], 'XQuitallTwo', 'D')
+        call writefile(['quit'], 'XQuitallThree', 'a')
         qa!
       endfunc
 
@@ -671,6 +672,9 @@ func Test_defer_quitall()
   call assert_equal(0, v:shell_error)
   call assert_false(filereadable('XQuitallOne'))
   call assert_false(filereadable('XQuitallTwo'))
+  call assert_equal(['quit'], readfile('XQuitallThree'))
+
+  call delete('XQuitallThree')
 endfunc
 
 func Test_defer_quitall_in_expr_func()
