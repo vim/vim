@@ -4152,11 +4152,11 @@ get_cmdline_completion(void)
     if (p == NULL || p->xpc == NULL)
 	return NULL;
 
-    char_u *cmd_compl;
-
     set_expand_context(p->xpc);
+    if (p->xpc->xp_context == EXPAND_UNSUCCESSFUL)
+	return NULL;
 
-    cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
+    char_u *cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
     if (cmd_compl != NULL)
 	return vim_strsave(cmd_compl);
 
