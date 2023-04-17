@@ -629,7 +629,7 @@ blob_filter_map(
     if (b->bv_lock == 0)
 	b->bv_lock = VAR_LOCKED;
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
     for (i = 0; i < b->bv_ga.ga_len; i++)

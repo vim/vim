@@ -902,7 +902,7 @@ string_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
     ga_init2(&ga, sizeof(char), 80);
@@ -981,7 +981,7 @@ string_reduce(
     else
 	copy_tv(&argvars[2], rettv);
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, rettv);
 
     for ( ; *p != NUL; p += len)
