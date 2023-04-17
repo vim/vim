@@ -338,6 +338,7 @@ def DetectFromText(line1: string)
     set ft=virata
 
     # Strace
+    # fast match first and complete regex if necessary
   elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:.]* *execve(')
      || line1 =~ '^__libc_start_main'
     set ft=strace
