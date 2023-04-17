@@ -338,7 +338,9 @@ def DetectFromText(line1: string)
     set ft=virata
 
     # Strace
-  elseif line1 =~ '[0-9:.]* *execve(' || line1 =~ '^__libc_start_main'
+    # inaccurate fast match first, then use accurate slow match
+  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:.]* *execve(')
+	   || line1 =~ '^__libc_start_main'
     set ft=strace
 
     # VSE JCL
