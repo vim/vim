@@ -9383,7 +9383,7 @@ fun! s:NetrwTreeDir(islocal)
 "    call Decho("treedir<".treedir.">",'~'.expand("<slnum>"))
    elseif curline =~ '@$'
 "    call Decho("handle symbolic link from current line",'~'.expand("<slnum>"))
-    let treedir= resolve(substitute(substitute(getline('.'),'@.*$','','e'),'^|*\s*','','e'))
+    let potentialdir= resolve(substitute(substitute(getline('.'),'@.*$','','e'),'^|*\s*','','e'))
 "    call Decho("treedir<".treedir.">",'~'.expand("<slnum>"))
    else
 "    call Decho("do not extract tree subdirectory from current line and set treedir to empty",'~'.expand("<slnum>"))
@@ -9405,21 +9405,17 @@ fun! s:NetrwTreeDir(islocal)
 "    call Decho(".user not attempting to close treeroot",'~'.expand("<slnum>"))
    endif
 
-"   call Decho("islocal=".a:islocal." curline<".curline.">",'~'.expand("<slnum>"))
-   let potentialdir= s:NetrwFile(substitute(curline,'^'.s:treedepthstring.'\+ \(.*\)@$','\1',''))
-"   call Decho("potentialdir<".potentialdir."> isdir=".isdirectory(potentialdir),'~'.expand("<slnum>"))
-
-   " COMBAK: a symbolic link may point anywhere -- so it will be used to start a new treetop
-"   if a:islocal && curline =~ '@$' && isdirectory(s:NetrwFile(potentialdir))
-"    let newdir          = w:netrw_treetop.'/'.potentialdir
-" "   call Decho("apply NetrwTreePath to newdir<".newdir.">",'~'.expand("<slnum>"))
-"    let treedir         = s:NetrwTreePath(newdir)
-"    let w:netrw_treetop = newdir
-" "   call Decho("newdir <".newdir.">",'~'.expand("<slnum>"))
-"   else
+   if a:islocal && curline =~ '@$'
+"    call Decho("potentialdir<".potentialdir."> isdir=".isdirectory(potentialdir),'~'.expand("<slnum>"))
+    if isdirectory(s:NetrwFile(potentialdir))
+     " COMBAK: a symbolic link may point anywhere -- so it will be used to start a new treetop...at least for directories
+     let treedir         = w:netrw_treetop.'/'.potentialdir.'/'
+     let w:netrw_treetop = treedir
+    endif
+   else
 "    call Decho("apply NetrwTreePath to treetop<".w:netrw_treetop.">",'~'.expand("<slnum>"))
     let treedir = s:NetrwTreePath(w:netrw_treetop)
-"   endif
+   endif
   endif
 
   " sanity maintenance: keep those //s away...
