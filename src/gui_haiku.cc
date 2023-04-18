@@ -75,8 +75,6 @@ extern "C" {
 #include <syslog.h>
 
 #include "vim.h"
-#include "globals.h"
-#include "proto.h"
 #include "version.h"
 
 }   // extern "C"
