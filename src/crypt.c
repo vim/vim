@@ -34,6 +34,7 @@ typedef struct {
     char    *magic;	// magic bytes stored in file header
     int	    salt_len;	// length of salt, or 0 when not using salt
     int	    seed_len;	// length of seed, or 0 when not using seed
+    int	    add_len;	// additional length in the header, for storing custom data
 #ifdef CRYPT_NOT_INPLACE
     int	    works_inplace; // encryption/decryption can be done in-place
 #endif
@@ -85,6 +86,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~01!",
 	0,
 	0,
+	0,
 #ifdef CRYPT_NOT_INPLACE
 	TRUE,
 #endif
@@ -102,6 +104,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~02!",
 	8,
 	8,
+	0,
 #ifdef CRYPT_NOT_INPLACE
 	TRUE,
 #endif
@@ -119,6 +122,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~03!",
 	8,
 	8,
+	0,
 #ifdef CRYPT_NOT_INPLACE
 	TRUE,
 #endif
@@ -140,6 +144,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	16,
 #endif
 	8,
+	0,
 #ifdef CRYPT_NOT_INPLACE
 	FALSE,
 #endif
@@ -160,6 +165,8 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	16,
 #endif
 	8,
+	// sizeof(crypto_pwhash_OPSLIMIT_INTERACTIVE + crypto_pwhash_MEMLIMIT_INTERACTIVE + crypto_pwhash_ALG_DEFAULT)
+	20,
 #ifdef CRYPT_NOT_INPLACE
 	FALSE,
 #endif
@@ -407,7 +414,8 @@ crypt_get_header_len(int method_nr)
 {
     return CRYPT_MAGIC_LEN
 	+ cryptmethods[method_nr].salt_len
-	+ cryptmethods[method_nr].seed_len;
+	+ cryptmethods[method_nr].seed_len
+	+ cryptmethods[method_nr].add_len;
 }
 
 
