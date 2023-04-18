@@ -1063,6 +1063,10 @@ invoke_defer_funcs(ectx_T *ectx)
 	int	    obj_off = functv->v_type == VAR_PARTIAL ? 1 : 0;
 	int	    argcount = l->lv_len - 1 - obj_off;
 
+	if (functv->vval.v_string == NULL)
+	    // already being called, can happen if function does ":qa"
+	    continue;
+
 	if (obj_off == 1)
 	    arg_li = arg_li->li_next;  // second list item is the object
 	for (i = 0; i < argcount; ++i)
@@ -1082,9 +1086,14 @@ invoke_defer_funcs(ectx_T *ectx)
 	    if (funcexe.fe_object != NULL)
 		++funcexe.fe_object->obj_refcount;
 	}
-	(void)call_func(functv->vval.v_string, -1,
-					  &rettv, argcount, argvars, &funcexe);
+
+	char_u *name = functv->vval.v_string;
+	functv->vval.v_string = NULL;
+
+	(void)call_func(name, -1, &rettv, argcount, argvars, &funcexe);
+
 	clear_tv(&rettv);
+	vim_free(name);
     }
 }
 
