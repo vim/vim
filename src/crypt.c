@@ -130,10 +130,30 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
 
-    // XChaCha20 using libsodium
+    // XChaCha20 using libsodium; implementation issues
     {
 	"xchacha20",
 	"VimCrypt~04!",
+#ifdef FEAT_SODIUM
+	crypto_pwhash_argon2id_SALTBYTES, // 16
+#else
+	16,
+#endif
+	8,
+#ifdef CRYPT_NOT_INPLACE
+	FALSE,
+#endif
+	FALSE,
+	NULL,
+	crypt_sodium_init_,
+	NULL, NULL,
+	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
+	NULL, NULL,
+    },
+    // XChaCha20 using libsodium; fixed
+    {
+	"xchacha20v2",
+	"VimCrypt~05!",
 #ifdef FEAT_SODIUM
 	crypto_pwhash_argon2id_SALTBYTES, // 16
 #else
