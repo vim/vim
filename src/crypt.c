@@ -397,6 +397,15 @@ crypt_get_method_nr(buf_T *buf)
 }
 
 /*
+ * Returns True for Sodium Encryption
+ */
+    int
+crypt_method_is_sodium(int method)
+{
+    return method == CRYPT_M_SOD || method == CRYPT_M_SOD2;
+}
+
+/*
  * Return TRUE when the buffer uses an encryption method that encrypts the
  * whole undo file, not only the text.
  */
@@ -616,7 +625,7 @@ crypt_create_for_writing(
 crypt_free_state(cryptstate_T *state)
 {
 #ifdef FEAT_SODIUM
-    if (state->method_nr == CRYPT_M_SOD)
+    if (crypt_method_is_sodium(state->method_nr))
     {
 	sodium_munlock(((sodium_state_T *)state->method_state)->key,
 							 crypto_box_SEEDBYTES);
@@ -783,7 +792,7 @@ crypt_check_method(int method)
 crypt_check_swapfile_curbuf(void)
 {
     int method = crypt_get_method_nr(curbuf);
-    if (method == CRYPT_M_SOD)
+    if (crypt_method_is_sodium(method))
     {
 	// encryption uses padding and MAC, that does not work very well with
 	// swap and undo files, so disable them
@@ -856,7 +865,7 @@ crypt_get_key(
     }
 
     // since the user typed this, no need to wait for return
-    if (crypt_get_method_nr(curbuf) != CRYPT_M_SOD)
+    if (!crypt_method_is_sodium(crypt_get_method_nr(curbuf)))
     {
 	if (msg_didout)
 	    msg_putchar('\n');

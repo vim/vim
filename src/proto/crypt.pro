@@ -4,6 +4,7 @@ int crypt_method_nr_from_name(char_u *name);
 int crypt_method_nr_from_magic(char *ptr, int len);
 int crypt_works_inplace(cryptstate_T *state);
 int crypt_get_method_nr(buf_T *buf);
+int crypt_method_is_sodium(int method_nr);
 int crypt_whole_undofile(int method_nr);
 int crypt_get_header_len(int method_nr);
 int crypt_get_max_header_len(void);

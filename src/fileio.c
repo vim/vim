@@ -1289,7 +1289,7 @@ retry:
 		     + crypto_secretstream_xchacha20poly1305_ABYTES;
 
 		    else if (filesize > 0 && (curbuf->b_cryptstate != NULL &&
-			 curbuf->b_cryptstate->method_nr == CRYPT_M_SOD))
+			 crypt_method_is_sodium(curbuf->b_cryptstate->method_nr)))
 			size = WRITEBUFSIZE + crypto_secretstream_xchacha20poly1305_ABYTES;
 # endif
 		    eof = size;

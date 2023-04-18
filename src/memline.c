@@ -433,7 +433,7 @@ ml_set_mfp_crypt(buf_T *buf)
 	sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
     }
 #ifdef FEAT_SODIUM
-    else if (method_nr == CRYPT_M_SOD)
+    else if (crypt_method_is_sodium(method_nr))
 	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
 		MF_SEED_LEN);
 #endif
@@ -492,7 +492,7 @@ ml_set_crypt_key(
     old_method = crypt_method_nr_from_name(old_cm);
 
     // Swapfile encryption not supported by XChaCha20
-    if (crypt_get_method_nr(buf) == CRYPT_M_SOD && *buf->b_p_key != NUL)
+    if (crypt_method_is_sodium(crypt_get_method_nr(buf)) && *buf->b_p_key != NUL)
     {
 	// close the swapfile
 	mf_close_file(buf, TRUE);
