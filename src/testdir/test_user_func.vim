@@ -702,6 +702,33 @@ func Test_defer_quitall_def()
   call delete('XQuitallDefThree')
 endfunc
 
+func Test_defer_quitall_autocmd()
+  let lines =<< trim END
+      autocmd User DeferAutocmdThree qa!
+
+      func DeferLevelTwo()
+        call writefile(['text'], 'XQuitallAutocmdTwo', 'D')
+        doautocmd User DeferAutocmdThree
+      endfunc
+
+      autocmd User DeferAutocmdTwo ++nested call DeferLevelTwo()
+
+      def DeferLevelOne()
+        call writefile(['text'], 'XQuitallAutocmdOne', 'D')
+        doautocmd User DeferAutocmdTwo
+      enddef
+
+      autocmd User DeferAutocmdOne ++nested call DeferLevelOne()
+
+      doautocmd User DeferAutocmdOne
+  END
+  call writefile(lines, 'XdeferQuitallAutocmd', 'D')
+  let res = system(GetVimCommand() .. ' -X -S XdeferQuitallAutocmd')
+  call assert_equal(0, v:shell_error)
+  call assert_false(filereadable('XQuitallAutocmdOne'))
+  call assert_false(filereadable('XQuitallAutocmdTwo'))
+endfunc
+
 func Test_defer_quitall_in_expr_func()
   let lines =<< trim END
       def DefIndex(idx: number, val: string): bool
