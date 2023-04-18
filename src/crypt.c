@@ -980,6 +980,7 @@ crypt_sodium_init_(
 	    return FAIL;
 	}
 
+	// derive the key from the file header
 	memcpy(&opslimit, arg->add, sizeof(opslimit));
 	arg->add += sizeof(opslimit);
 
@@ -990,7 +991,6 @@ crypt_sodium_init_(
 	arg->add += sizeof(alg);
 
 
-	// derive the key from the file header
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt, opslimit, memlimit, alg) != 0)
 	{
 	    // out of memory

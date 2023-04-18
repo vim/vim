@@ -2511,12 +2511,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 							*pkzip*
 	   zip		PkZip compatible method.  A weak kind of encryption.
 			Backwards compatible with Vim 7.2 and older.
+			Obsolete, please do no longer use.
 							*blowfish*
 	   blowfish	Blowfish method.  Medium strong encryption but it has
 			an implementation flaw.  Requires Vim 7.3 or later,
 			files can NOT be read by Vim 7.2 and older.  This adds
 			a "seed" to the file, every time you write the file
 			the encrypted bytes will be different.
+			Obsolete, please do no longer use.
 							*blowfish2*
 	   blowfish2	Blowfish method.  Medium strong encryption.  Requires
 			Vim 7.4.401 or later, files can NOT be read by Vim 7.3
@@ -2538,6 +2540,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			enabled.
 			Encryption of undo files is not yet supported,
 			therefore no undo file will currently be written.
+			CURRENTLY EXPERIMENTAL: Files written with this method
+			might have to be read back with the same version of
+			Vim if the binary format changes later.
+			Obsolete, please do no longer use.
+	   xchacha20v2  Version of "xchacha20" that correctly stores the key
+			derivation parameters together with the encrypted
+			file.  Should work better in case the parameters in
+			libsodium changes later.
 			CURRENTLY EXPERIMENTAL: Files written with this method
 			might have to be read back with the same version of
 			Vim if the binary format changes later.
