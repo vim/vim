@@ -77,6 +77,9 @@ typedef struct {
 static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+#ifdef FEAT_SODIUM
+static void crypt_sodium_report_hash_params( unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
+#endif
 
 // index is method_nr of cryptstate_T, CRYPT_M_*
 static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
@@ -990,6 +993,9 @@ crypt_sodium_init_(
 	memcpy(&alg, arg->add, sizeof(alg));
 	arg->add += sizeof(alg);
 
+	crypt_sodium_report_hash_params(opslimit, crypto_pwhash_OPSLIMIT_INTERACTIVE,
+		memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
+		alg, crypto_pwhash_ALG_DEFAULT);
 
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt, opslimit, memlimit, alg) != 0)
 	{
@@ -1276,6 +1282,36 @@ crypt_sodium_init(void)
 crypt_sodium_randombytes_random(void)
 {
     return randombytes_random();
+}
+
+    static void
+crypt_sodium_report_hash_params(
+	unsigned long long opslimit,
+	unsigned long long ops_def,
+	size_t memlimit,
+	size_t mem_def,
+	int alg,
+	int alg_def)
+{
+#ifdef FEAT_EVAL
+    if (p_verbose > 0)
+#endif
+    {
+	verbose_enter();
+	if (opslimit != ops_def)
+	    smsg(_("xchacha20v2: using custom opslimit \"%llu\" for Key derivation."), opslimit);
+	else
+	    smsg(_("xchacha20v2: using default opslimit \"%llu\" for Key derivation."), opslimit);
+	if (memlimit != mem_def)
+	    smsg(_("xchacha20v2: using custom memlimit \"%lu\" for Key derivation."), (unsigned long)memlimit);
+	else
+	    smsg(_("xchacha20v2: using default memlimit \"%lu\" for Key derivation."), (unsigned long)memlimit);
+	if (alg != alg_def)
+	    smsg(_("xchacha20v2: using custom algorithm \"%d\" for Key derivation."), alg);
+	else
+	    smsg(_("xchacha20v2: using default algorithm \"%d\" for Key derivation."), alg);
+	verbose_leave();
+    }
 }
 # endif
 
