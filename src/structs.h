@@ -2776,6 +2776,15 @@ typedef struct {
 // Currently all crypt methods work inplace.  If one is added that isn't then
 // define this.
 # define CRYPT_NOT_INPLACE 1
+
+// Struct for passing arguments down to the crypt_init functions
+typedef struct {
+    char_u	*salt;
+    int		salt_len;
+    char_u	*seed;
+    int		seed_len;
+} crypt_arg_T;
+
 #endif
 
 #ifdef FEAT_PROP_POPUP

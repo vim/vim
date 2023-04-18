@@ -44,7 +44,7 @@ typedef struct {
 
     // Function pointer for initializing encryption/decryption.
     int (* init_fn)(cryptstate_T *state, char_u *key,
-		      char_u *salt, int salt_len, char_u *seed, int seed_len);
+		crypt_arg_T *arg);
 
     // Function pointers for encoding/decoding from one buffer into another.
     // Optional, however, these or the _buffer ones should be configured.
@@ -73,7 +73,7 @@ typedef struct {
 							char_u *p2, int last);
 } cryptmethod_T;
 
-static int crypt_sodium_init_(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 
@@ -445,10 +445,7 @@ crypt_self_test(void)
 crypt_create(
     int		method_nr,
     char_u	*key,
-    char_u	*salt,
-    int		salt_len,
-    char_u	*seed,
-    int		seed_len)
+    crypt_arg_T *crypt_arg)
 {
     cryptstate_T *state = ALLOC_ONE(cryptstate_T);
 
@@ -456,8 +453,7 @@ crypt_create(
 	return state;
 
     state->method_nr = method_nr;
-    if (cryptmethods[method_nr].init_fn(
-	state, key, salt, salt_len, seed, seed_len) == FAIL)
+    if (cryptmethods[method_nr].init_fn(state, key, crypt_arg) == FAIL)
     {
 	vim_free(state);
 	return NULL;
@@ -476,17 +472,20 @@ crypt_create_from_header(
     char_u	*key,
     char_u	*header)
 {
-    char_u	*salt = NULL;
-    char_u	*seed = NULL;
-    int		salt_len = cryptmethods[method_nr].salt_len;
-    int		seed_len = cryptmethods[method_nr].seed_len;
+    crypt_arg_T arg;
 
-    if (salt_len > 0)
-	salt = header + CRYPT_MAGIC_LEN;
-    if (seed_len > 0)
-	seed = header + CRYPT_MAGIC_LEN + salt_len;
+    arg.salt = NULL;
+    arg.seed = NULL;
 
-    return crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
+    arg.salt_len = cryptmethods[method_nr].salt_len;
+    arg.seed_len = cryptmethods[method_nr].seed_len;
+
+    if (arg.salt_len > 0)
+	arg.salt = header + CRYPT_MAGIC_LEN;
+    if (arg.seed_len > 0)
+	arg.seed = header + CRYPT_MAGIC_LEN + arg.salt_len;
+
+    return crypt_create(method_nr, key, &arg);
 }
 
 /*
@@ -540,11 +539,13 @@ crypt_create_for_writing(
     int	    *header_len)
 {
     int	    len = crypt_get_header_len(method_nr);
-    char_u  *salt = NULL;
-    char_u  *seed = NULL;
-    int	    salt_len = cryptmethods[method_nr].salt_len;
-    int	    seed_len = cryptmethods[method_nr].seed_len;
+    crypt_arg_T arg;
     cryptstate_T *state;
+
+    arg.salt = NULL;
+    arg.seed = NULL;
+    arg.salt_len = cryptmethods[method_nr].salt_len;
+    arg.seed_len = cryptmethods[method_nr].seed_len;
 
     *header_len = len;
     *header = alloc(len);
@@ -552,12 +553,12 @@ crypt_create_for_writing(
 	return NULL;
 
     mch_memmove(*header, cryptmethods[method_nr].magic, CRYPT_MAGIC_LEN);
-    if (salt_len > 0 || seed_len > 0)
+    if (arg.salt_len > 0 || arg.seed_len > 0)
     {
-	if (salt_len > 0)
-	    salt = *header + CRYPT_MAGIC_LEN;
-	if (seed_len > 0)
-	    seed = *header + CRYPT_MAGIC_LEN + salt_len;
+	if (arg.salt_len > 0)
+	    arg.salt = *header + CRYPT_MAGIC_LEN;
+	if (arg.seed_len > 0)
+	    arg.seed = *header + CRYPT_MAGIC_LEN + arg.salt_len;
 
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -565,16 +566,16 @@ crypt_create_for_writing(
 #ifdef FEAT_SODIUM
 	if (sodium_init() >= 0)
 	{
-	    if (salt_len > 0)
-		randombytes_buf(salt, salt_len);
-	    if (seed_len > 0)
-		randombytes_buf(seed, seed_len);
+	    if (arg.salt_len > 0)
+		randombytes_buf(arg.salt, arg.salt_len);
+	    if (arg.seed_len > 0)
+		randombytes_buf(arg.seed, arg.seed_len);
 	}
 	else
 #endif
-	    sha2_seed(salt, salt_len, seed, seed_len);
+	    sha2_seed(arg.salt, arg.salt_len, arg.seed, arg.seed_len);
     }
-    state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
+    state = crypt_create(method_nr, key, &arg);
     if (state == NULL)
 	VIM_CLEAR(*header);
     return state;
@@ -861,10 +862,7 @@ crypt_append_msg(
 crypt_sodium_init_(
     cryptstate_T	*state UNUSED,
     char_u		*key UNUSED,
-    char_u		*salt UNUSED,
-    int			salt_len UNUSED,
-    char_u		*seed UNUSED,
-    int			seed_len UNUSED)
+    crypt_arg_T		*arg UNUSED)
 {
 # ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
@@ -879,7 +877,7 @@ crypt_sodium_init_(
     sodium_memzero(sd_state, sizeof(sodium_state_T));
 
     // derive a key from the password
-    if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), salt,
+    if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt,
 	crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE,
 	crypto_pwhash_ALG_DEFAULT) != 0)
     {
