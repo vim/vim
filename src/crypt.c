@@ -1211,6 +1211,14 @@ crypt_sodium_buffer_decode(
     sodium_state_T *sod_st = state->method_state;
     unsigned char  tag;
     unsigned long long out_len;
+
+    if (sod_st->count == 0 &&
+	    state->method_nr == CRYPT_M_SOD &&
+	    len > WRITEBUFSIZE +
+	    crypto_secretstream_xchacha20poly1305_HEADERBYTES +
+	    crypto_secretstream_xchacha20poly1305_ABYTES)
+	len -= cryptmethods[CRYPT_M_SOD2].add_len;
+
     *buf_out = alloc_clear(len);
     if (*buf_out == NULL)
     {
