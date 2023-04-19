@@ -6144,12 +6144,12 @@ invoke_funccall_defer(funccall_T *fc)
     void
 invoke_all_defer(void)
 {
+    for (funccall_T *fc = current_funccal; fc != NULL; fc = fc->fc_caller)
+	invoke_funccall_defer(fc);
+
     for (funccal_entry_T *fce = funccal_stack; fce != NULL; fce = fce->next)
 	for (funccall_T *fc = fce->top_funccal; fc != NULL; fc = fc->fc_caller)
 	    invoke_funccall_defer(fc);
-
-    for (funccall_T *fc = current_funccal; fc != NULL; fc = fc->fc_caller)
-	invoke_funccall_defer(fc);
 }
 
 /*
