@@ -670,7 +670,7 @@ mch_delay(long msec, int flags)
 	}
 #  endif // HAVE_SELECT
 # endif // HAVE_NANOSLEEP
-#endif // HAVE_NANOSLEEP
+#endif // HAVE_USLEEP
 #ifdef FEAT_MZSCHEME
 	}
 	while (total > 0);
