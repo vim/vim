@@ -789,7 +789,7 @@ crypt_free_key(char_u *key)
     void
 crypt_check_method(int method)
 {
-    if (method < CRYPT_M_BF2)
+    if (method < CRYPT_M_BF2 || method == CRYPT_M_SOD)
     {
 	msg_scroll = TRUE;
 	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
