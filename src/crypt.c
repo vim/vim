@@ -40,7 +40,7 @@ typedef struct {
     int	    whole_undofile; // whole undo file is encrypted
 
     // Optional function pointer for a self-test.
-    int (* self_test_fn)();
+    int (* self_test_fn)(void);
 
     // Function pointer for initializing encryption/decryption.
     int (* init_fn)(cryptstate_T *state, char_u *key,
