@@ -2784,6 +2784,9 @@ typedef struct {
     int		salt_len;
     char_u	*seed;
     int		seed_len;
+    char_u	*add;
+    int		add_len;
+    int		init_from_file;
 } crypt_arg_T;
 
 #endif

@@ -513,14 +513,18 @@ crypt_create_from_header(
 
     arg.salt = NULL;
     arg.seed = NULL;
+    arg.add = NULL;
+    arg.init_from_file = TRUE;
 
     arg.salt_len = cryptmethods[method_nr].salt_len;
     arg.seed_len = cryptmethods[method_nr].seed_len;
-
+    arg.add_len = cryptmethods[method_nr].add_len;
     if (arg.salt_len > 0)
 	arg.salt = header + CRYPT_MAGIC_LEN;
     if (arg.seed_len > 0)
 	arg.seed = header + CRYPT_MAGIC_LEN + arg.salt_len;
+    if (arg.add_len > 0)
+	arg.add = header + CRYPT_MAGIC_LEN + arg.salt_len + arg.seed_len;
 
     return crypt_create(method_nr, key, &arg);
 }
@@ -581,8 +585,11 @@ crypt_create_for_writing(
 
     arg.salt = NULL;
     arg.seed = NULL;
+    arg.add  = NULL;
     arg.salt_len = cryptmethods[method_nr].salt_len;
     arg.seed_len = cryptmethods[method_nr].seed_len;
+    arg.add_len  = cryptmethods[method_nr].add_len;
+    arg.init_from_file = FALSE;
 
     *header_len = len;
     *header = alloc(len);
@@ -590,12 +597,14 @@ crypt_create_for_writing(
 	return NULL;
 
     mch_memmove(*header, cryptmethods[method_nr].magic, CRYPT_MAGIC_LEN);
-    if (arg.salt_len > 0 || arg.seed_len > 0)
+    if (arg.salt_len > 0 || arg.seed_len > 0 || arg.add_len > 0)
     {
 	if (arg.salt_len > 0)
 	    arg.salt = *header + CRYPT_MAGIC_LEN;
 	if (arg.seed_len > 0)
 	    arg.seed = *header + CRYPT_MAGIC_LEN + arg.salt_len;
+	if (arg.add_len > 0)
+	    arg.add = *header + CRYPT_MAGIC_LEN + arg.salt_len + arg.seed_len;
 
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -906,9 +915,9 @@ crypt_sodium_init_(
     unsigned char	dkey[crypto_box_SEEDBYTES]; // 32
     sodium_state_T	*sd_state;
     int			retval = 0;
-    unsigned long long opslimit = crypto_pwhash_OPSLIMIT_INTERACTIVE;
-    size_t memlimit = crypto_pwhash_MEMLIMIT_INTERACTIVE;
-    int alg = crypto_pwhash_ALG_DEFAULT;
+    unsigned long long opslimit;
+    size_t memlimit;
+    int alg;
 
     if (sodium_init() < 0)
 	return FAIL;
@@ -916,24 +925,89 @@ crypt_sodium_init_(
     sd_state = (sodium_state_T *)sodium_malloc(sizeof(sodium_state_T));
     sodium_memzero(sd_state, sizeof(sodium_state_T));
 
-    // derive a key from the password
-    if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt,
-	opslimit, memlimit, alg) != 0)
+    if ((state->method_nr == CRYPT_M_SOD2 && !arg->init_from_file) ||
+	    state->method_nr == CRYPT_M_SOD)
     {
-	// out of memory
-	sodium_free(sd_state);
-	return FAIL;
+	opslimit = crypto_pwhash_OPSLIMIT_INTERACTIVE;
+	memlimit = crypto_pwhash_MEMLIMIT_INTERACTIVE;
+	alg = crypto_pwhash_ALG_DEFAULT;
+
+#if 0
+	// For testing
+	if (state->method_nr == CRYPT_M_SOD2)
+	{
+	    opslimit = crypto_pwhash_OPSLIMIT_MODERATE;
+	    memlimit = crypto_pwhash_MEMLIMIT_MODERATE;
+	}
+#endif
+
+	// derive a key from the password
+	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt, opslimit, memlimit, alg) != 0)
+	{
+	    // out of memory
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+	memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
+
+	retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
+	retval += sodium_mlock(key, STRLEN(key));
+
+	if (retval < 0)
+	{
+	    emsg(_(e_encryption_sodium_mlock_failed));
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+	if (state->method_nr == CRYPT_M_SOD2)
+	{
+	    memcpy(arg->add, &opslimit, sizeof(opslimit));
+	    arg->add += sizeof(opslimit);
+
+	    memcpy(arg->add, &memlimit, sizeof(memlimit));
+	    arg->add += sizeof(memlimit);
+
+	    memcpy(arg->add, &alg, sizeof(alg));
+	    arg->add += sizeof(alg);
+	}
     }
-    memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
-
-    retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
-    retval += sodium_mlock(key, STRLEN(key));
-
-    if (retval < 0)
+    else
     {
-	emsg(_(e_encryption_sodium_mlock_failed));
-	sodium_free(sd_state);
-	return FAIL;
+	// Reading parameters from file
+	if ((unsigned long)arg->add_len < (sizeof(opslimit) + sizeof(memlimit) + sizeof(alg)))
+	{
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+
+	memcpy(&opslimit, arg->add, sizeof(opslimit));
+	arg->add += sizeof(opslimit);
+
+	memcpy(&memlimit, arg->add, sizeof(memlimit));
+	arg->add += sizeof(memlimit);
+
+	memcpy(&alg, arg->add, sizeof(alg));
+	arg->add += sizeof(alg);
+
+
+	// derive the key from the file header
+	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt, opslimit, memlimit, alg) != 0)
+	{
+	    // out of memory
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+	memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
+
+	retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
+	retval += sodium_mlock(key, STRLEN(key));
+
+	if (retval < 0)
+	{
+	    emsg(_(e_encryption_sodium_mlock_failed));
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
     }
     sd_state->count = 0;
     state->method_state = sd_state;

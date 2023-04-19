@@ -5534,6 +5534,9 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 	arg.salt_len = 0;
 	arg.seed = NULL;
 	arg.seed_len = 0;
+	arg.add = NULL;
+	arg.add_len = 0;
+	arg.init_from_file = FALSE;
 
 	return crypt_create(method_nr, salt, &arg);
     }
@@ -5545,6 +5548,9 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
     arg.salt = salt;
     arg.salt_len = (int)STRLEN(salt);
     arg.seed_len = MF_SEED_LEN;
+    arg.add_len = 0;
+    arg.add = NULL;
+    arg.init_from_file = FALSE;
 
     return crypt_create(method_nr, key, &arg);
 }
