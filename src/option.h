@@ -667,6 +667,7 @@ EXTERN char_u	*p_header;	// 'printheader'
 #endif
 EXTERN int	p_prompt;	// 'prompt'
 #ifdef FEAT_GUI
+EXTERN char_u	*p_guidarkmode; // 'guidarkmode'
 EXTERN char_u	*p_guifont;	// 'guifont'
 # ifdef FEAT_XFONTSET
 EXTERN char_u	*p_guifontset;	// 'guifontset'

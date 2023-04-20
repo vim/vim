@@ -92,6 +92,7 @@ int expand_set_foldopen(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_formatoptions(optset_T *args);
 int expand_set_formatoptions(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_guicursor(optset_T *args);
+char *did_set_guidarkmode(optset_T *args);
 char *did_set_guifont(optset_T *args);
 int expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_guifontset(optset_T *args);

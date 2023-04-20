@@ -1230,6 +1230,15 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"guidarkmode",  NULL,  P_STRING|P_VI_DEF|P_RCLR,
+#if defined(FEAT_GUI_DARKTHEME)
+			    (char_u *)&p_guidarkmode, PV_NONE, did_set_guidarkmode, NULL,
+			    {(char_u *)"automatic", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE, NULL,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"guifont",	    "gfn",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP
 #if !defined(FEAT_GUI_GTK)
 				|P_COLON

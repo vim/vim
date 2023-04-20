@@ -4333,6 +4333,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	In its simplest form the value is just one font name.
 	See |gui-font| for the details.
 
+					*'guidarkmode'*
+'guidarkmode'		string	(default "automatic")
+			global
+			{only available when compiled with GUI enabled}
+	This option specifies whether Vim GUI elements should be drawn using a
+	dark color scheme if available.
+	The allowed values are:
+	  automatic	Follow the current system's preference.
+	  prefer_dark	Apply the dark mode to the GUI elements.
+	  prefer_light	Apply the light mode to the GUI elements.
+	  use_bg	Follow the value of Vim's |background| option.
+
 					*'guifontset'* *'gfs'*
 					*E250* *E252* *E234* *E597* *E598*
 'guifontset' 'gfs'	string	(default "")
@@ -4432,7 +4444,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		choices.
 								*'go-d'*
 	  'd'	Use dark theme variant if available. Currently only works for
-		GTK+ GUI.
+		Win32 and GTK+ GUI.
 								*'go-e'*
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.

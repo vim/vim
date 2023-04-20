@@ -1,4 +1,5 @@
 /* os_win32.c */
+DWORD get_win_version(void);
 void mch_get_exe_name(void);
 HINSTANCE vimLoadLib(const char *name);
 int mch_is_gui_executable(void);

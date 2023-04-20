@@ -1112,6 +1112,10 @@ did_set_background(optset_T *args)
 #ifdef FEAT_TERMINAL
     term_update_colors_all();
 #endif
+#ifdef FEAT_GUI_DARKTHEME
+    if (gui.in_use)
+	gui_mch_set_dark_theme();
+#endif
 
     return NULL;
 }
@@ -2595,6 +2599,7 @@ did_set_guifont(optset_T *args UNUSED)
     return errmsg;
 }
 
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
 /*
  * Expand the 'guifont' option. Only when GUI is being used. Each platform has
  * specific behaviors.
@@ -2615,6 +2620,40 @@ expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches)
     return FAIL;
 # endif
 }
+
+/*
+ * The 'guidarkmode' option is changed.
+ */
+    char *
+did_set_guidarkmode(optset_T *args UNUSED)
+{
+    if (*p_guidarkmode == NUL)
+    {
+	gui.prefer_dark_theme = DM_DEFAULT;
+# ifdef FEAT_GUI
+	if (gui.in_use && !gui.starting)
+	    gui_init_which_components(NULL);
+# endif
+	return NULL;
+    }
+
+    if (!STRCMP(p_guidarkmode, "automatic"))
+	gui.prefer_dark_theme = DM_AUTOMATIC;
+    else if (!STRCMP(p_guidarkmode, "prefer_dark"))
+	gui.prefer_dark_theme = DM_PREFER_DARK;
+    else if (!STRCMP(p_guidarkmode, "prefer_light"))
+	gui.prefer_dark_theme = DM_PREFER_LIGHT;
+    else if (!STRCMP(p_guidarkmode, "use_bg"))
+	gui.prefer_dark_theme = DM_USE_BACKGROUND;
+    else
+	return e_invalid_argument;
+
+    if (gui.in_use)
+	gui_mch_set_dark_theme();
+
+    return NULL;
+}
+#endif
 
 # if defined(FEAT_XFONTSET) || defined(PROTO)
 /*
@@ -4923,6 +4962,7 @@ did_set_string_option(
 
 	if (varp == &p_go			// 'guioptions'
 		|| varp == &p_guifont		// 'guifont'
+		|| varp == &p_guidarkmode	// 'guidarkmode'
 # ifdef FEAT_GUI_TABLINE
 		|| varp == &p_gtl		// 'guitablabel'
 		|| varp == &p_gtt		// 'guitabtooltip'

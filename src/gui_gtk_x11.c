@@ -3209,13 +3209,50 @@ update_window_manager_hints(int force_width, int force_height)
 
 #if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
     void
-gui_mch_set_dark_theme(int dark)
+gui_mch_set_dark_theme(void)
 {
 # if GTK_CHECK_VERSION(3,0,0)
     GtkSettings *gtk_settings;
+    gboolean dark;
+# if !GTK_CHECK_VERSION(3,20,0)
+    static gboolean sys_prefer_dark_theme;
+    static int sys_prefer_dark_theme_set = FALSE;
+# endif
 
     gtk_settings = gtk_settings_get_for_screen(gdk_screen_get_default());
-    g_object_set(gtk_settings, "gtk-application-prefer-dark-theme", (gboolean)dark, NULL);
+
+# if !GTK_CHECK_VERSION(3,20,0)
+    if (sys_prefer_dark_theme_set == FALSE)
+    {
+	g_object_get(gtk_settings, "gtk-application-prefer-dark-theme",
+		&sys_prefer_dark_theme, NULL);
+	sys_prefer_dark_theme_set = TRUE;
+    }
+# endif
+
+    switch (gui.sys_prefer_dark_theme)
+    {
+	case DM_PREFER_LIGHT:
+	case DM_PREFER_DARK:
+	    dark = (gui.sys_prefer_dark_theme == DM_PREFER_DARK);
+	    break;
+	case DM_DEFAULT:
+	case DM_AUTOMATIC:
+	    // Reset the value if possible, otherwise use the cached value.
+# if GTK_CHECK_VERSION(3,20,0)
+	    gtk_settings_reset_property(gtk_settings,
+		    "gtk-application-prefer-dark-theme");
+	    return;
+# else
+	    dark = sys_prefer_dark_theme;
+# endif
+	    break;
+	case DM_USE_BACKGROUND:
+	    dark = (*p_bg == 'd');
+	    break;
+    }
+
+    g_object_set(gtk_settings, "gtk-application-prefer-dark-theme", dark, NULL);
 # endif
 }
 #endif // FEAT_GUI_DARKTHEME

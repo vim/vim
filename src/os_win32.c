@@ -232,11 +232,9 @@ static BOOL use_alternate_screen_buffer = FALSE;
  * Get version number including build number
  */
 typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
-#define MAKE_VER(major, minor, build) \
-    (((major) << 24) | ((minor) << 16) | (build))
 
-    static DWORD
-get_build_number(void)
+    DWORD
+get_win_version(void)
 {
     OSVERSIONINFOW	osver;
     HMODULE		hNtdll;
@@ -8592,7 +8590,7 @@ mch_setenv(char *var, char *value, int x UNUSED)
     static void
 vtp_flag_init(void)
 {
-    DWORD   ver = get_build_number();
+    DWORD   ver = get_win_version();
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     DWORD   mode;
     HANDLE  out;

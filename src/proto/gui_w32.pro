@@ -42,6 +42,7 @@ void gui_mch_show_tabline(int showit);
 int gui_mch_showing_tabline(void);
 void gui_mch_update_tabline(void);
 void gui_mch_set_curtab(int nr);
+void gui_mch_set_dark_theme(void);
 void ex_simalt(exarg_T *eap);
 void gui_mch_find_dialog(exarg_T *eap);
 void gui_mch_replace_dialog(exarg_T *eap);

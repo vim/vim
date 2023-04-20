@@ -146,6 +146,15 @@
 				// is no console input possible
 #endif
 
+typedef enum
+{
+    DM_DEFAULT,			// Use the default value for the system.
+    DM_AUTOMATIC,
+    DM_PREFER_LIGHT,
+    DM_PREFER_DARK,
+    DM_USE_BACKGROUND,
+} dm_pref_T;
+
 typedef struct GuiScrollbar
 {
     long	ident;		// Unique identifier for each scrollbar
@@ -260,6 +269,10 @@ typedef struct Gui
     int		left_sbar_x;	    // Calculated x coord for left scrollbar
     int		right_sbar_x;	    // Calculated x coord for right scrollbar
     int         force_redraw;       // Force a redraw even e.g. not resized
+#ifdef FEAT_GUI_DARKTHEME
+    dm_pref_T	prefer_dark_theme;   // Whether to follow or not the global system dark
+				    // mode preference.
+#endif
 
 #ifdef FEAT_MENU
 # ifndef FEAT_GUI_GTK
