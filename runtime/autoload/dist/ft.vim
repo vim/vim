@@ -1106,9 +1106,7 @@ export def FTlsl()
   endif
 enddef
 
-# Set the filetype of a *.v file to V or Verilog based on the first 100 non-comment lines.
-# While V doesn't use semicolons for line endings, statements in Verilog end with a semicolon.
-# It's taken into account that a semicolon can be followed by a comment.
+# Set the filetype of a *.v file to Verilog, V or Cog based on the first 100 non-comment lines.
 export def FTv()
   var non_comment_line_num = 0
   for ln in getline(1, 200)
@@ -1117,13 +1115,13 @@ export def FTv()
     endif
     if ln[0] ==? "/"
       continue
-    # Verilog: line ends with a `;` followed by an optional variable number of spaces
-    # and an optional start of a comment. Example: `  b <= a + 1;  // Add 1`.
+    # Verilog: line ends with ; followed by an optional variable number of spaces
+    # and an optional start of a comment. Example: ` b <= a + 1; // Add 1`.
     elseif ln =~ ';\(\s*\)\?\(/.*\)\?$'
       setf verilog
       return
     # Coq: line ends with a `.` followed by an optional variable number of spaces
-    # and an optional start of a comment. Example: `Definition x := 10.  (*`.
+    # and an optional start of a comment. Example: `Definition x := 10. (*`.
     elseif ln =~ '\.\(\s*\)\?\((\*.*\)\?$'
       setf coq
     endif
