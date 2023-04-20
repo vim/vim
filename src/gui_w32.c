@@ -392,7 +392,7 @@ static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENE
 static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
 
 #if defined(FEAT_GUI_DARKTHEME)
-static HRESULT (*pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD) = NULL;
+static HRESULT (WINAPI *pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD) = NULL;
 #endif
 
     static UINT WINAPI
