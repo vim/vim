@@ -1106,5 +1106,26 @@ export def FTlsl()
   endif
 enddef
 
+# Set the filetype of a *.v file to V or Verilog based on the first 100 non-comment lines.
+# While V doesn't use semicolons for line endings, statements in Verilog end with a semicolon.
+# It's taken into account that a semicolon can be followed by a comment.
+export def FTv()
+  var numberOfLines = line('$')
+  var nonCommentLine = 0
+  for ln in getline(1, numberOfLines)
+    if nonCommentLine > 99
+      break
+    endif
+    if ln[0] ==? "/"
+      continue
+    elseif ln =~ ';\s\?\(/.*\)\?$'
+      setf verilog
+      return
+    endif
+    nonCommentLine += 1
+  endfor
+  setf v
+enddef
+
 # Uncomment this line to check for compilation errors early
 # defcompile
