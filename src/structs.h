@@ -2780,13 +2780,13 @@ typedef struct {
 
 // Struct for passing arguments down to the crypt_init functions
 typedef struct {
-    char_u	*salt;
-    int		salt_len;
-    char_u	*seed;
-    int		seed_len;
-    char_u	*add;
-    int		add_len;
-    int		init_from_file;
+    char_u	*cat_salt;
+    int		cat_salt_len;
+    char_u	*cat_seed;
+    int		cat_seed_len;
+    char_u	*cat_add;
+    int		cat_add_len;
+    int		cat_init_from_file;
 } crypt_arg_T;
 
 #endif

@@ -514,20 +514,20 @@ crypt_create_from_header(
 {
     crypt_arg_T arg;
 
-    arg.salt = NULL;
-    arg.seed = NULL;
-    arg.add = NULL;
-    arg.init_from_file = TRUE;
+    arg.cat_salt = NULL;
+    arg.cat_seed = NULL;
+    arg.cat_add = NULL;
+    arg.cat_init_from_file = TRUE;
 
-    arg.salt_len = cryptmethods[method_nr].salt_len;
-    arg.seed_len = cryptmethods[method_nr].seed_len;
-    arg.add_len = cryptmethods[method_nr].add_len;
-    if (arg.salt_len > 0)
-	arg.salt = header + CRYPT_MAGIC_LEN;
-    if (arg.seed_len > 0)
-	arg.seed = header + CRYPT_MAGIC_LEN + arg.salt_len;
-    if (arg.add_len > 0)
-	arg.add = header + CRYPT_MAGIC_LEN + arg.salt_len + arg.seed_len;
+    arg.cat_salt_len = cryptmethods[method_nr].salt_len;
+    arg.cat_seed_len = cryptmethods[method_nr].seed_len;
+    arg.cat_add_len = cryptmethods[method_nr].add_len;
+    if (arg.cat_salt_len > 0)
+	arg.cat_salt = header + CRYPT_MAGIC_LEN;
+    if (arg.cat_seed_len > 0)
+	arg.cat_seed = header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
+    if (arg.cat_add_len > 0)
+	arg.cat_add = header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
 
     return crypt_create(method_nr, key, &arg);
 }
@@ -586,13 +586,13 @@ crypt_create_for_writing(
     crypt_arg_T arg;
     cryptstate_T *state;
 
-    arg.salt = NULL;
-    arg.seed = NULL;
-    arg.add  = NULL;
-    arg.salt_len = cryptmethods[method_nr].salt_len;
-    arg.seed_len = cryptmethods[method_nr].seed_len;
-    arg.add_len  = cryptmethods[method_nr].add_len;
-    arg.init_from_file = FALSE;
+    arg.cat_salt = NULL;
+    arg.cat_seed = NULL;
+    arg.cat_add  = NULL;
+    arg.cat_salt_len = cryptmethods[method_nr].salt_len;
+    arg.cat_seed_len = cryptmethods[method_nr].seed_len;
+    arg.cat_add_len  = cryptmethods[method_nr].add_len;
+    arg.cat_init_from_file = FALSE;
 
     *header_len = len;
     *header = alloc(len);
@@ -600,14 +600,14 @@ crypt_create_for_writing(
 	return NULL;
 
     mch_memmove(*header, cryptmethods[method_nr].magic, CRYPT_MAGIC_LEN);
-    if (arg.salt_len > 0 || arg.seed_len > 0 || arg.add_len > 0)
+    if (arg.cat_salt_len > 0 || arg.cat_seed_len > 0 || arg.cat_add_len > 0)
     {
-	if (arg.salt_len > 0)
-	    arg.salt = *header + CRYPT_MAGIC_LEN;
-	if (arg.seed_len > 0)
-	    arg.seed = *header + CRYPT_MAGIC_LEN + arg.salt_len;
-	if (arg.add_len > 0)
-	    arg.add = *header + CRYPT_MAGIC_LEN + arg.salt_len + arg.seed_len;
+	if (arg.cat_salt_len > 0)
+	    arg.cat_salt = *header + CRYPT_MAGIC_LEN;
+	if (arg.cat_seed_len > 0)
+	    arg.cat_seed = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
+	if (arg.cat_add_len > 0)
+	    arg.cat_add = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
 
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -615,14 +615,14 @@ crypt_create_for_writing(
 #ifdef FEAT_SODIUM
 	if (sodium_init() >= 0)
 	{
-	    if (arg.salt_len > 0)
-		randombytes_buf(arg.salt, arg.salt_len);
-	    if (arg.seed_len > 0)
-		randombytes_buf(arg.seed, arg.seed_len);
+	    if (arg.cat_salt_len > 0)
+		randombytes_buf(arg.cat_salt, arg.cat_salt_len);
+	    if (arg.cat_seed_len > 0)
+		randombytes_buf(arg.cat_seed, arg.cat_seed_len);
 	}
 	else
 #endif
-	    sha2_seed(arg.salt, arg.salt_len, arg.seed, arg.seed_len);
+	    sha2_seed(arg.cat_salt, arg.cat_salt_len, arg.cat_seed, arg.cat_seed_len);
     }
     state = crypt_create(method_nr, key, &arg);
     if (state == NULL)
@@ -928,7 +928,7 @@ crypt_sodium_init_(
     sd_state = (sodium_state_T *)sodium_malloc(sizeof(sodium_state_T));
     sodium_memzero(sd_state, sizeof(sodium_state_T));
 
-    if ((state->method_nr == CRYPT_M_SOD2 && !arg->init_from_file) ||
+    if ((state->method_nr == CRYPT_M_SOD2 && !arg->cat_init_from_file) ||
 	    state->method_nr == CRYPT_M_SOD)
     {
 	opslimit = crypto_pwhash_OPSLIMIT_INTERACTIVE;
@@ -945,7 +945,7 @@ crypt_sodium_init_(
 #endif
 
 	// derive a key from the password
-	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt, opslimit, memlimit, alg) != 0)
+	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->cat_salt, opslimit, memlimit, alg) != 0)
 	{
 	    // out of memory
 	    sodium_free(sd_state);
@@ -964,40 +964,40 @@ crypt_sodium_init_(
 	}
 	if (state->method_nr == CRYPT_M_SOD2)
 	{
-	    memcpy(arg->add, &opslimit, sizeof(opslimit));
-	    arg->add += sizeof(opslimit);
+	    memcpy(arg->cat_add, &opslimit, sizeof(opslimit));
+	    arg->cat_add += sizeof(opslimit);
 
-	    memcpy(arg->add, &memlimit, sizeof(memlimit));
-	    arg->add += sizeof(memlimit);
+	    memcpy(arg->cat_add, &memlimit, sizeof(memlimit));
+	    arg->cat_add += sizeof(memlimit);
 
-	    memcpy(arg->add, &alg, sizeof(alg));
-	    arg->add += sizeof(alg);
+	    memcpy(arg->cat_add, &alg, sizeof(alg));
+	    arg->cat_add += sizeof(alg);
 	}
     }
     else
     {
 	// Reading parameters from file
-	if ((unsigned long)arg->add_len < (sizeof(opslimit) + sizeof(memlimit) + sizeof(alg)))
+	if ((unsigned long)arg->cat_add_len < (sizeof(opslimit) + sizeof(memlimit) + sizeof(alg)))
 	{
 	    sodium_free(sd_state);
 	    return FAIL;
 	}
 
 	// derive the key from the file header
-	memcpy(&opslimit, arg->add, sizeof(opslimit));
-	arg->add += sizeof(opslimit);
+	memcpy(&opslimit, arg->cat_add, sizeof(opslimit));
+	arg->cat_add += sizeof(opslimit);
 
-	memcpy(&memlimit, arg->add, sizeof(memlimit));
-	arg->add += sizeof(memlimit);
+	memcpy(&memlimit, arg->cat_add, sizeof(memlimit));
+	arg->cat_add += sizeof(memlimit);
 
-	memcpy(&alg, arg->add, sizeof(alg));
-	arg->add += sizeof(alg);
+	memcpy(&alg, arg->cat_add, sizeof(alg));
+	arg->cat_add += sizeof(alg);
 
 	crypt_sodium_report_hash_params(opslimit, crypto_pwhash_OPSLIMIT_INTERACTIVE,
 		memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
 		alg, crypto_pwhash_ALG_DEFAULT);
 
-	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->salt, opslimit, memlimit, alg) != 0)
+	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->cat_salt, opslimit, memlimit, alg) != 0)
 	{
 	    // out of memory
 	    sodium_free(sd_state);

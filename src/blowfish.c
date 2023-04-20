@@ -657,8 +657,8 @@ crypt_blowfish_init(
     if (blowfish_self_test() == FAIL)
 	return FAIL;
 
-    bf_key_init(bfs, key, arg->salt, arg->salt_len);
-    bf_cfb_init(bfs, arg->seed, arg->seed_len);
+    bf_key_init(bfs, key, arg->cat_salt, arg->cat_salt_len);
+    bf_cfb_init(bfs, arg->cat_seed, arg->cat_seed_len);
 
     return OK;
 }

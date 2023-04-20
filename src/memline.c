@@ -5513,13 +5513,13 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 	// Reading back blocks with the previous key/method/seed.
 	method_nr = mfp->mf_old_cm;
 	key = mfp->mf_old_key;
-	arg.seed = mfp->mf_old_seed;
+	arg.cat_seed = mfp->mf_old_seed;
     }
     else
     {
 	method_nr = crypt_get_method_nr(buf);
 	key = buf->b_p_key;
-	arg.seed = mfp->mf_seed;
+	arg.cat_seed = mfp->mf_seed;
     }
 
     if (*key == NUL)
@@ -5530,13 +5530,13 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 	// For PKzip: Append the offset to the key, so that we use a different
 	// key for every block.
 	vim_snprintf((char *)salt, sizeof(salt), "%s%ld", key, (long)offset);
-	arg.salt = NULL;
-	arg.salt_len = 0;
-	arg.seed = NULL;
-	arg.seed_len = 0;
-	arg.add = NULL;
-	arg.add_len = 0;
-	arg.init_from_file = FALSE;
+	arg.cat_salt = NULL;
+	arg.cat_salt_len = 0;
+	arg.cat_seed = NULL;
+	arg.cat_seed_len = 0;
+	arg.cat_add = NULL;
+	arg.cat_add_len = 0;
+	arg.cat_init_from_file = FALSE;
 
 	return crypt_create(method_nr, salt, &arg);
     }
@@ -5545,12 +5545,12 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
     // of the block for the salt.
     vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
 
-    arg.salt = salt;
-    arg.salt_len = (int)STRLEN(salt);
-    arg.seed_len = MF_SEED_LEN;
-    arg.add_len = 0;
-    arg.add = NULL;
-    arg.init_from_file = FALSE;
+    arg.cat_salt = salt;
+    arg.cat_salt_len = (int)STRLEN(salt);
+    arg.cat_seed_len = MF_SEED_LEN;
+    arg.cat_add_len = 0;
+    arg.cat_add = NULL;
+    arg.cat_init_from_file = FALSE;
 
     return crypt_create(method_nr, key, &arg);
 }
