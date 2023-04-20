@@ -1110,10 +1110,9 @@ enddef
 # While V doesn't use semicolons for line endings, statements in Verilog end with a semicolon.
 # It's taken into account that a semicolon can be followed by a comment.
 export def FTv()
-  var numberOfLines = line('$')
-  var nonCommentLine = 0
-  for ln in getline(1, numberOfLines)
-    if nonCommentLine > 99
+  var nonCommentLines = 0
+  for ln in getline(1, 200)
+    if nonCommentLines > 99
       break
     endif
     if ln[0] ==? "/"
@@ -1122,7 +1121,7 @@ export def FTv()
       setf verilog
       return
     endif
-    nonCommentLine += 1
+    nonCommentLines += 1
   endfor
   setf v
 enddef
