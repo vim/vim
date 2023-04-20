@@ -1110,18 +1110,24 @@ enddef
 # While V doesn't use semicolons for line endings, statements in Verilog end with a semicolon.
 # It's taken into account that a semicolon can be followed by a comment.
 export def FTv()
-  var nonCommentLines = 0
+  var non_comment_line_num = 0
   for ln in getline(1, 200)
-    if nonCommentLines > 99
+    if non_comment_line_num > 100
       break
     endif
     if ln[0] ==? "/"
       continue
-    elseif ln =~ ';\s\?\(/.*\)\?$'
+    # Verilog: line ends with a `;` followed by an optional variable number of spaces
+    # and an optional start of a comment. Example: `  b <= a + 1;  // Add 1`.
+    elseif ln =~ ';\(\s*\)\?\(/.*\)\?$'
       setf verilog
       return
+    # Coq: line ends with a `.` followed by an optional variable number of spaces
+    # and an optional start of a comment. Example: `Definition x := 10.  (*`.
+    elseif ln =~ '\.\(\s*\)\?\((\*.*\)\?$'
+      setf coq
     endif
-    nonCommentLines += 1
+    non_comment_line_num += 1
   endfor
   setf v
 enddef

@@ -1783,6 +1783,11 @@ func Test_v_file()
   call assert_equal('v', &filetype)
   bwipe!
 
+  call writefile(['Definition x := 10.  (*'], 'Xfile.v')
+  split Xfile.v
+  call assert_equal('coq', &filetype)
+  bwipe!
+
   filetype off
 endfunc
 
