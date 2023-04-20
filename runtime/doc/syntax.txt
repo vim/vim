@@ -4928,7 +4928,7 @@ is mostly used, because it looks better.
 ==============================================================================
 13. Colorschemes				*color-schemes*
 
-In the next section you can find information about indivisual highlight groups
+In the next section you can find information about individual highlight groups
 and how to specify colors for them.  Most likely you want to just select a set
 of colors by using the `:colorscheme` command, for example: >
 
