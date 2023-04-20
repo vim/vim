@@ -77,7 +77,7 @@ typedef struct {
 static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
-#ifdef FEAT_SODIUM
+#if defined(FEAT_EVAL) && defined(FEAT_SODIUM)
 static void crypt_sodium_report_hash_params( unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
 #endif
 
@@ -993,9 +993,11 @@ crypt_sodium_init_(
 	memcpy(&alg, arg->cat_add, sizeof(alg));
 	arg->cat_add += sizeof(alg);
 
+#ifdef FEAT_EVAL
 	crypt_sodium_report_hash_params(opslimit, crypto_pwhash_OPSLIMIT_INTERACTIVE,
 		memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
 		alg, crypto_pwhash_ALG_DEFAULT);
+#endif
 
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), arg->cat_salt, opslimit, memlimit, alg) != 0)
 	{
@@ -1284,6 +1286,7 @@ crypt_sodium_randombytes_random(void)
     return randombytes_random();
 }
 
+#ifdef FEAT_EVAL
     static void
 crypt_sodium_report_hash_params(
 	unsigned long long opslimit,
@@ -1293,9 +1296,7 @@ crypt_sodium_report_hash_params(
 	int alg,
 	int alg_def)
 {
-#ifdef FEAT_EVAL
     if (p_verbose > 0)
-#endif
     {
 	verbose_enter();
 	if (opslimit != ops_def)
@@ -1313,6 +1314,7 @@ crypt_sodium_report_hash_params(
 	verbose_leave();
     }
 }
+#endif
 # endif
 
 #endif // FEAT_CRYPT
