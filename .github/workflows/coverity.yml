@@ -32,7 +32,7 @@ jobs:
       - name: Install packages
         if: env.TOKEN
         run: |
-          sudo apt update && sudo apt install -y \
+          sudo apt-get update && sudo apt-get install -y \
             autoconf \
             gettext \
             libcanberra-dev \

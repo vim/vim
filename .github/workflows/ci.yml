@@ -21,6 +21,8 @@ jobs:
 
     env:
       CC: ${{ matrix.compiler }}
+      GCC_VER: 12
+      CLANG_VER: 16
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -91,28 +93,26 @@ jobs:
               libsodium-dev \
             )
           fi
-          sudo apt update && sudo apt install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get install -y "${PKGS[@]}"
 
-      - name: Install gcc-12
+      - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          GCC_VER=12
-          sudo apt install -y gcc-$GCC_VER
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VER 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-$GCC_VER
+          sudo apt-get install -y gcc-${{ env.GCC_VER }}
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
-      - name: Install clang-16
+      - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
         run: |
-          CLANG_VER=16
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-$CLANG_VER main"
-          sudo apt install -y clang-$CLANG_VER llvm-$CLANG_VER
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-$CLANG_VER 100
-          sudo update-alternatives --set clang /usr/bin/clang-$CLANG_VER
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-$CLANG_VER 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-$CLANG_VER 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }} main"
+          sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
+          sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${{ env.CLANG_VER }} 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-${{ env.CLANG_VER }} 100
 
       - name: Set up environment
         run: |
