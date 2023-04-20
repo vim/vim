@@ -1108,12 +1108,11 @@ enddef
 
 # Set the filetype of a *.v file to Verilog, V or Cog based on the first 100 non-comment lines.
 export def FTv()
-  var non_comment_line_num = 0
+  if did_filetype()
+    return
+  endif
   for ln in getline(1, 200)
-    if non_comment_line_num > 100
-      break
-    endif
-    if ln[0] ==? "/"
+    if ln[0] =~ '^\s*/'
       continue
     # Verilog: line ends with ; followed by an optional variable number of spaces
     # and an optional start of a comment. Example: ` b <= a + 1; // Add 1`.
@@ -1124,8 +1123,8 @@ export def FTv()
     # and an optional start of a comment. Example: `Definition x := 10. (*`.
     elseif ln =~ '\.\(\s*\)\?\((\*.*\)\?$'
       setf coq
+      return
     endif
-    non_comment_line_num += 1
   endfor
   setf v
 enddef
