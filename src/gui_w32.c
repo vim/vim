@@ -238,6 +238,10 @@ gui_mch_set_rendering_options(char_u *s)
 # define SPI_SETWHEELSCROLLCHARS	0x006D
 #endif
 
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+# define DWMWA_USE_IMMERSIVE_DARK_MODE	20
+#endif
+
 #ifdef PROTO
 /*
  * Define a few things for generating prototypes.  This is just to avoid
@@ -386,6 +390,10 @@ static int (WINAPI *pGetSystemMetricsForDpi)(int, UINT) = NULL;
 //static INT (WINAPI *pGetWindowDpiAwarenessContext)(HWND hwnd) = NULL;
 static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT dpiContext) = NULL;
 static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
+
+#if defined(FEAT_GUI_DARKTHEME)
+static HRESULT (*pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD) = NULL;
+#endif
 
     static UINT WINAPI
 stubGetDpiForSystem(void)
@@ -2787,6 +2795,33 @@ gui_mch_set_curtab(int nr)
 }
 
 #endif
+
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
+    static void load_dwm_func(void)
+{
+    static HMODULE hDwmLib = NULL;
+
+    if (hDwmLib != NULL)
+	return;
+
+    hDwmLib = LoadLibrary("dwmapi.dll");
+    if (hDwmLib == NULL)
+	return;
+
+    pDwmSetWindowAttribute = (HRESULT (WINAPI *)(HWND, DWORD, LPCVOID, DWORD))GetProcAddress(hDwmLib, "DwmSetWindowAttribute");
+}
+
+    void
+gui_mch_set_dark_theme(int dark)
+{
+    BOOL value = dark != 0;
+
+    load_dwm_func();
+
+    if (pDwmSetWindowAttribute != NULL)
+	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+}
+#endif // FEAT_GUI_DARKTHEME
 
 /*
  * ":simalt" command.
