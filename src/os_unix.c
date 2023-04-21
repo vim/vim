@@ -198,7 +198,7 @@ static void deathtrap SIGPROTOARG;
 
 static void catch_int_signal(void);
 static void set_signals(void);
-static void catch_signals(void (*func_deadly)(), void (*func_other)());
+static void catch_signals(void (*func_deadly)(int), void (*func_other)(int));
 #ifdef HAVE_SIGPROCMASK
 # define SIGSET_DECL(set)	sigset_t set;
 # define BLOCK_SIGNALS(set)	block_signals(set)
@@ -668,9 +668,9 @@ mch_delay(long msec, int flags)
 	    // a patch from Sun to fix this.  Reported by Gunnar Pedersen.
 	    select(0, NULL, NULL, NULL, &tv);
 	}
-#  endif // HAVE_SELECT
-# endif // HAVE_NANOSLEEP
-#endif // HAVE_USLEEP
+#  endif
+# endif
+#endif
 #ifdef FEAT_MZSCHEME
 	}
 	while (total > 0);
@@ -812,7 +812,7 @@ static struct sigstack sigstk;		// for sigstack()
  * Get a size of signal stack.
  * Preference (if available): sysconf > SIGSTKSZ > guessed size
  */
-static long int get_signal_stack_size()
+static long int get_signal_stack_size(void)
 {
 # ifdef HAVE_SYSCONF_SIGSTKSZ
     long int size = -1;
@@ -869,7 +869,7 @@ init_signal_stack(void)
 sig_winch SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGWINCH, (void (*)())sig_winch);
+    signal(SIGWINCH, (void (*)(int))sig_winch);
     do_resize = TRUE;
 }
 #endif
@@ -890,7 +890,7 @@ sig_tstp SIGDEFARG(sigarg)
 #if !defined(__ANDROID__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
     // This is not required on all systems.  On some systems (at least Android,
     // OpenBSD, and DragonFlyBSD) this breaks suspending with CTRL-Z.
-    signal(SIGTSTP, (void (*)())sig_tstp);
+    signal(SIGTSTP, (void (*)(int))sig_tstp);
 #endif
 }
 #endif
@@ -900,7 +900,7 @@ sig_tstp SIGDEFARG(sigarg)
 catch_sigint SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGINT, (void (*)())catch_sigint);
+    signal(SIGINT, (void (*)(int))catch_sigint);
     got_int = TRUE;
 }
 #endif
@@ -910,7 +910,7 @@ catch_sigint SIGDEFARG(sigarg)
 catch_sigusr1 SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGUSR1, (void (*)())catch_sigusr1);
+    signal(SIGUSR1, (void (*)(int))catch_sigusr1);
     got_sigusr1 = TRUE;
 }
 #endif
@@ -1383,7 +1383,7 @@ set_signals(void)
     /*
      * WINDOW CHANGE signal is handled with sig_winch().
      */
-    signal(SIGWINCH, (void (*)())sig_winch);
+    signal(SIGWINCH, (void (*)(int))sig_winch);
 #endif
 
 #ifdef SIGTSTP
@@ -1395,7 +1395,7 @@ set_signals(void)
 # ifdef FEAT_GUI
 				: gui.in_use || gui.starting ? SIG_DFL
 # endif
-				    : (void (*)())sig_tstp);
+				    : (void (*)(int))sig_tstp);
 #endif
 #if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
@@ -1415,7 +1415,7 @@ set_signals(void)
     /*
      * Call user's handler on SIGUSR1
      */
-    signal(SIGUSR1, (void (*)())catch_sigusr1);
+    signal(SIGUSR1, (void (*)(int))catch_sigusr1);
 #endif
 
     /*
@@ -1454,7 +1454,7 @@ set_signals(void)
     static void
 catch_int_signal(void)
 {
-    signal(SIGINT, (void (*)())catch_sigint);
+    signal(SIGINT, (void (*)(int))catch_sigint);
 }
 #endif
 
@@ -1470,8 +1470,8 @@ reset_signals(void)
 
     static void
 catch_signals(
-    void (*func_deadly)(),
-    void (*func_other)())
+    void (*func_deadly)(int),
+    void (*func_other)(int))
 {
     int	    i;
 
@@ -8271,7 +8271,7 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
-# if defined(HAVE_TIMER_CREATE) || defined(PROTO)
+# if defined(PROF_NSEC) || defined(PROTO)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
@@ -8371,7 +8371,7 @@ delete_timer(void)
     timer_created = FALSE;
 }
 
-# else // HAVE_TIMER_CREATE
+# else // PROF_NSEC
 
 /*
  * Implement timeout with setitimer()
@@ -8496,5 +8496,5 @@ start_timeout(long msec)
     timer_active = TRUE;
     return &timeout_flag;
 }
-# endif // HAVE_TIMER_CREATE
+# endif // PROF_NSEC
 #endif  // FEAT_RELTIME

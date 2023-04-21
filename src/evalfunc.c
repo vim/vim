@@ -6146,7 +6146,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"prof_nsec",
-#ifdef HAVE_TIMER_CREATE
+#ifdef PROF_NSEC
 		1
 #else
 		0

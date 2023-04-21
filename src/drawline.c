@@ -739,10 +739,37 @@ text_prop_position(
 
 		    if (has_mbyte)
 		    {
-			// change last character to '…'
+			char_u	buf[MB_MAXBYTES + 1];
+			char_u	*cp = buf;
+
+			// change the last character to '…', converted to the
+			// current 'encoding'
+			STRCPY(buf, "…");
+			if (!enc_utf8)
+			{
+			    vimconv_T	vc;
+
+			    vc.vc_type = CONV_NONE;
+			    convert_setup(&vc, (char_u *)"utf-8", p_enc);
+			    if (vc.vc_type != CONV_NONE)
+			    {
+				cp = string_convert(&vc, buf, NULL);
+				if (cp == NULL)
+				{
+				    // when conversion fails use '>'
+				    cp = buf;
+				    STRCPY(buf, ">");
+				}
+				convert_setup(&vc, NULL, NULL);
+			    }
+			}
+
+			lp -= (*mb_ptr2cells)(cp) - 1;
 			lp -= (*mb_head_off)(l, lp);
-			STRCPY(lp, "…");
+			STRCPY(lp, cp);
 			n_used = lp - l + 3 - before - padding;
+			if (cp != buf)
+			    vim_free(cp);
 		    }
 		    else
 			// change last character to '>'

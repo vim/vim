@@ -9,7 +9,7 @@
 /*
  * Implements logging.  Originally intended for the channel feature, which is
  * why the "ch_" prefix is used.  Also useful for any kind of low-level and
- * async debuging.
+ * async debugging.
  */
 
 #include "vim.h"

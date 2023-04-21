@@ -904,7 +904,7 @@ get_literal_key(char_u **arg)
 eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 {
     int		evaluate = evalarg == NULL ? FALSE
-					 : evalarg->eval_flags & EVAL_EVALUATE;
+				       : (evalarg->eval_flags & EVAL_EVALUATE);
     dict_T	*d = NULL;
     typval_T	tvkey;
     typval_T	tv;
@@ -1359,7 +1359,7 @@ dict_filter_map(
 	d_ret = rettv->vval.v_dict;
     }
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
     int prev_lock = d->dv_lock;

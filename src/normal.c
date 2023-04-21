@@ -913,7 +913,7 @@ normal_cmd(
 	msg_col = 0;
     }
 
-    old_pos = curwin->w_cursor;		// remember where cursor was
+    old_pos = curwin->w_cursor;		// remember where the cursor was
 
     // When 'keymodel' contains "startsel" some keys start Select/Visual
     // mode.
@@ -1803,9 +1803,19 @@ display_showcmd(void)
     cursor_off();
 
     if (*p_sloc == 's')
-	win_redr_status(curwin, FALSE);
+    {
+	if (showcmd_is_clear)
+	    curwin->w_redr_status = TRUE;
+	else
+	    win_redr_status(curwin, FALSE);
+    }
     else if (*p_sloc == 't')
-	draw_tabline();
+    {
+	if (showcmd_is_clear)
+	    redraw_tabline = TRUE;
+	else
+	    draw_tabline();
+    }
     else // 'showcmdloc' is "last" or empty
     {
 	if (!showcmd_is_clear)

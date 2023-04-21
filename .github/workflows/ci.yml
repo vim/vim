@@ -122,7 +122,6 @@ jobs:
           (
           echo "LINUX_VERSION=$(uname -r)"
           echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
-          echo "SND_DUMMY_DIR=${HOME}/snd-dummy"
           echo "TMPDIR=${{ runner.temp }}"
 
           case "${{ matrix.features }}" in
@@ -175,23 +174,17 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      # FIXME: Temporarily disabled because of build errors
-      #- name: Cache snd-dummy
-      #  uses: actions/cache@v3
-      #  with:
-      #    path: ${{ env.SND_DUMMY_DIR }}
-      #    key: linux-${{ env.LINUX_VERSION }}-snd-dummy
-
-      #- name: Set up snd-dummy
-      #  run: |
-      #    if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
-      #      bash ci/build-snd-dummy.sh
-      #    fi
-      #    cd "${SND_DUMMY_DIR}"
-      #    sudo insmod soundcore.ko
-      #    sudo insmod snd.ko
-      #    sudo insmod snd-pcm.ko
-      #    sudo insmod snd-dummy.ko
+      - name: Set up snd-dummy
+        if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
+        env:
+          DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
+        run: |
+          cd /lib/modules/${{ env.LINUX_VERSION }}
+          sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
+          sudo dpkg -x /var/cache/apt/archives/linux-modules-extra-${{ env.LINUX_VERSION }}*.deb "${DEST_DIR}"
+          tar -cC "${DEST_DIR}"/lib/modules/${{ env.LINUX_VERSION }} kernel/sound | sudo tar -x
+          sudo depmod
+          sudo modprobe snd-dummy
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')

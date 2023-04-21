@@ -127,7 +127,7 @@ let s:filename_checks = {
     \ 'context': ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
     \ 'cook': ['file.cook'],
     \ 'cpon': ['file.cpon'],
-    \ 'cpp': ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh'],
+    \ 'cpp': ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh', 'file.cppm', 'file.ccm', 'file.cxxm', 'file.c++m'],
     \ 'cqlang': ['file.cql'],
     \ 'crm': ['file.crm'],
     \ 'crontab': ['crontab', 'crontab.file', '/etc/cron.d/file', 'any/etc/cron.d/file'],
@@ -248,7 +248,7 @@ let s:filename_checks = {
     \ 'grads': ['file.gs'],
     \ 'graphql': ['file.graphql', 'file.graphqls', 'file.gql'],
     \ 'gretl': ['file.gretl'],
-    \ 'groovy': ['file.gradle', 'file.groovy'],
+    \ 'groovy': ['file.gradle', 'file.groovy', 'Jenkinsfile'],
     \ 'group': ['any/etc/group', 'any/etc/group-', 'any/etc/group.edit', 'any/etc/gshadow', 'any/etc/gshadow-', 'any/etc/gshadow.edit', 'any/var/backups/group.bak', 'any/var/backups/gshadow.bak', '/etc/group', '/etc/group-', '/etc/group.edit', '/etc/gshadow', '/etc/gshadow-', '/etc/gshadow.edit', '/var/backups/group.bak', '/var/backups/gshadow.bak'],
     \ 'grub': ['/boot/grub/menu.lst', '/boot/grub/grub.conf', '/etc/grub.conf', 'any/boot/grub/grub.conf', 'any/boot/grub/menu.lst', 'any/etc/grub.conf'],
     \ 'gsp': ['file.gsp'],
@@ -733,6 +733,11 @@ func Test_filetype_detection()
   filetype off
 endfunc
 
+" Content lines that should not result in filetype detection
+let s:false_positive_checks = {
+      \ '': [['test execve("/usr/bin/pstree", ["pstree"], 0x7ff0 /* 63 vars */) = 0']],
+      \ }
+
 " Filetypes detected from the file contents by scripts.vim
 let s:script_checks = {
       \ 'virata': [['% Virata'],
@@ -824,6 +829,7 @@ func Run_script_detection(test_dict)
 endfunc
 
 func Test_script_detection()
+  call Run_script_detection(s:false_positive_checks)
   call Run_script_detection(s:script_checks)
   call Run_script_detection(s:script_env_checks)
 endfunc

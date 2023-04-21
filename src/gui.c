@@ -230,7 +230,7 @@ gui_do_fork(void)
     int		exit_status;
     pid_t	pid = -1;
 
-# if defined(FEAT_RELTIME) && defined(HAVE_TIMER_CREATE)
+# if defined(FEAT_RELTIME) && defined(PROF_NSEC)
     // a timer is not carried forward
     delete_timer();
 # endif

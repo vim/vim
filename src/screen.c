@@ -1043,7 +1043,8 @@ win_redr_custom(
     {
 	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
-	maxwidth = wp->w_width;
+	int in_status_line = wp->w_status_height != 0;
+	maxwidth = in_status_line ? wp->w_width : Columns;
 
 	if (draw_ruler)
 	{
@@ -1060,11 +1061,11 @@ win_redr_custom(
 		if (*stl++ != '(')
 		    stl = p_ruf;
 	    }
-	    col = ru_col - (Columns - wp->w_width);
-	    if (col < (wp->w_width + 1) / 2)
-		col = (wp->w_width + 1) / 2;
-	    maxwidth = wp->w_width - col;
-	    if (!wp->w_status_height)
+	    col = ru_col - (Columns - maxwidth);
+	    if (col < (maxwidth + 1) / 2)
+		col = (maxwidth + 1) / 2;
+	    maxwidth -= col;
+	    if (!in_status_line)
 	    {
 		row = Rows - 1;
 		--maxwidth;	// writing in last column may cause scrolling
@@ -1084,7 +1085,8 @@ win_redr_custom(
 		stl = p_stl;
 	}
 
-	col += wp->w_wincol;
+	if (in_status_line)
+	    col += wp->w_wincol;
     }
 
     if (maxwidth <= 0)

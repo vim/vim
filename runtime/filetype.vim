@@ -338,6 +338,10 @@ if has("fname_case")
   au BufNewFile,BufRead *.C,*.H setf cpp
 endif
 
+" C++ 20 modules (clang)
+" https://clang.llvm.org/docs/StandardCPlusPlusModules.html#file-name-requirement
+au BufNewFile,BufRead *.cppm,*.ccm,*.cxxm,*.c++m setf cpp
+
 " .h files can be C, Ch C++, ObjC or ObjC++.
 " Set c_syntax_for_h if you want C, ch_syntax_for_h if you want Ch. ObjC is
 " detected automatically.
@@ -841,7 +845,7 @@ au BufNewFile,BufRead *.graphql,*.graphqls,*.gql			setf graphql
 au BufNewFile,BufRead *.gretl			setf gretl
 
 " Groovy
-au BufNewFile,BufRead *.gradle,*.groovy		setf groovy
+au BufNewFile,BufRead *.gradle,*.groovy,Jenkinsfile		setf groovy
 
 " GNU Server Pages
 au BufNewFile,BufRead *.gsp			setf gsp

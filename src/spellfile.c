@@ -356,7 +356,7 @@ spell_load_file(
     int		c = 0;
     int		res;
     int		did_estack_push = FALSE;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
@@ -397,7 +397,7 @@ spell_load_file(
 
     // Set sourcing_name, so that error messages mention the file name.
     estack_push(ETYPE_SPELL, fname, 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
     did_estack_push = TRUE;
 
     /*
@@ -588,7 +588,7 @@ endOK:
 	fclose(fd);
     if (did_estack_push)
     {
-	ESTACK_CHECK_NOW
+	ESTACK_CHECK_NOW;
 	estack_pop();
     }
 

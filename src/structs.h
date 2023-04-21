@@ -1896,7 +1896,7 @@ struct funccall_S
 				// funccal
     int		fc_copyID;	// for garbage collection
     garray_T	fc_ufuncs;	// list of ufunc_T* which keep a reference to
-				// "func"
+				// "fc_func"
 };
 
 // structure used as item in "fc_defer"
@@ -1993,7 +1993,7 @@ typedef struct {
 
 /*
  * Info about an encountered script.
- * When sn_state has the SN_STATE_NOT_LOADED is has not been sourced yet.
+ * When sn_state has SN_STATE_NOT_LOADED, it has not been sourced yet.
  */
 typedef struct
 {
@@ -2102,9 +2102,8 @@ typedef struct {
     char_u	*eval_tofree_lambda;
 } evalarg_T;
 
-// Flags for expression evaluation.
+// Flag for expression evaluation.
 #define EVAL_EVALUATE	    1	    // when missing don't actually evaluate
-#define EVAL_CONSTANT	    2	    // when not a constant return FAIL
 
 # ifdef FEAT_PROFILE
 /*
@@ -4781,7 +4780,7 @@ typedef struct {
     int		cts_text_prop_count;	// number of text props; when zero
 					// cts_text_props is not used
     textprop_T	*cts_text_props;	// text props (allocated)
-    char	cts_has_prop_with_text; // TRUE if if a property inserts text
+    char	cts_has_prop_with_text; // TRUE if a property inserts text
     int		cts_cur_text_width;     // width of current inserted text
     int		cts_prop_lines;		// nr of properties above or below
     int		cts_first_char;		// width text props above the line

@@ -75,8 +75,6 @@ extern "C" {
 #include <syslog.h>
 
 #include "vim.h"
-#include "globals.h"
-#include "proto.h"
 #include "version.h"
 
 }   // extern "C"
@@ -4518,7 +4516,7 @@ gui_mch_add_menu(
 	    //	when we add a BMenu to another Menu, it creates the interconnecting BMenuItem
 	    tmp->AddItem(bmenu);
 
-	    //	Now its safe to query the menu for the associated MenuItem....
+	    //	Now it's safe to query the menu for the associated MenuItem...
 	    menu->id = tmp->FindItem((const char *) menu->dname);
 
 	}

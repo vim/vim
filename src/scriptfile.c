@@ -1450,14 +1450,6 @@ do_source_ext(
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
     sctx_T		    save_current_sctx;
-#ifdef FEAT_EVAL
-    funccal_entry_T	    funccalp_entry;
-    int			    save_debug_break_level = debug_break_level;
-    int			    sid = -1;
-    scriptitem_T	    *si = NULL;
-    int			    save_estack_compiling = estack_compiling;
-    ESTACK_CHECK_DECLARATION
-#endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
     struct timeval	    tv_start;
@@ -1467,6 +1459,14 @@ do_source_ext(
 #endif
     int			    save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int			    trigger_source_post = FALSE;
+#ifdef FEAT_EVAL
+    funccal_entry_T	    funccalp_entry;
+    int			    save_debug_break_level = debug_break_level;
+    int			    sid = -1;
+    scriptitem_T	    *si = NULL;
+    int			    save_estack_compiling = estack_compiling;
+    ESTACK_CHECK_DECLARATION;
+#endif
 
     CLEAR_FIELD(cookie);
     if (fname == NULL)
@@ -1711,7 +1711,7 @@ do_source_ext(
 
     // Keep the sourcing name/lnum, for recursive calls.
     estack_push(ETYPE_SCRIPT, si->sn_name, 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1780,7 +1780,7 @@ do_source_ext(
     if (got_int)
 	emsg(_(e_interrupted));
 #ifdef FEAT_EVAL
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
 #endif
     estack_pop();
     if (p_verbose > 1)

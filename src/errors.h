@@ -3276,7 +3276,7 @@ EXTERN char e_could_not_clear_timeout_str[]
 	INIT(= N_("E1285: Could not clear timeout: %s"));
 EXTERN char e_could_not_set_timeout_str[]
 	INIT(= N_("E1286: Could not set timeout: %s"));
-#ifndef HAVE_TIMER_CREATE
+#ifndef PROF_NSEC
 EXTERN char e_could_not_set_handler_for_timeout_str[]
 	INIT(= N_("E1287: Could not set handler for timeout: %s"));
 EXTERN char e_could_not_reset_handler_for_timeout_str[]

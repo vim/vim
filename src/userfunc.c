@@ -2748,7 +2748,7 @@ call_user_func(
 #ifdef FEAT_PROFILE
     profinfo_T	profile_info;
 #endif
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
 #ifdef FEAT_PROFILE
     CLEAR_FIELD(profile_info);
@@ -2963,7 +2963,7 @@ call_user_func(
     }
 
     estack_push_ufunc(fp, 1);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
     if (p_verbose >= 12)
     {
 	++no_wait_return;
@@ -3117,7 +3117,7 @@ call_user_func(
 	--no_wait_return;
     }
 
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
     estack_pop();
     current_sctx = save_current_sctx;
     restore_current_ectx(save_current_ectx);
@@ -5868,6 +5868,9 @@ ex_return(exarg_T *eap)
     clear_evalarg(&evalarg, eap);
 }
 
+/*
+ * Lower level implementation of "call".  Only called when not skipping.
+ */
     static int
 ex_call_inner(
 	exarg_T	    *eap,
@@ -5882,24 +5885,12 @@ ex_call_inner(
     typval_T	rettv;
     int		failed = FALSE;
 
-    /*
-     * When skipping, evaluate the function once, to find the end of the
-     * arguments.
-     * When the function takes a range, this is discovered after the first
-     * call, and the loop is broken.
-     */
-    if (eap->skip)
-    {
-	++emsg_skip;
-	lnum = eap->line2;	// do it once, also with an invalid range
-    }
-    else
-	lnum = eap->line1;
+    lnum = eap->line1;
     for ( ; lnum <= eap->line2; ++lnum)
     {
 	funcexe_T funcexe;
 
-	if (!eap->skip && eap->addr_count > 0)
+	if (eap->addr_count > 0)
 	{
 	    if (lnum > curbuf->b_ml.ml_line_count)
 	    {
@@ -5927,14 +5918,14 @@ ex_call_inner(
 
 	// Handle a function returning a Funcref, Dictionary or List.
 	if (handle_subscript(arg, NULL, &rettv,
-			   eap->skip ? NULL : &EVALARG_EVALUATE, TRUE) == FAIL)
+					      &EVALARG_EVALUATE, TRUE) == FAIL)
 	{
 	    failed = TRUE;
 	    break;
 	}
 
 	clear_tv(&rettv);
-	if (doesrange || eap->skip)
+	if (doesrange)
 	    break;
 
 	// Stop when immediately aborting on error, or when an interrupt
@@ -5944,8 +5935,6 @@ ex_call_inner(
 	if (aborting())
 	    break;
     }
-    if (eap->skip)
-	--emsg_skip;
     return failed;
 }
 
@@ -6107,23 +6096,46 @@ handle_defer_one(funccall_T *funccal)
 
     for (idx = funccal->fc_defer.ga_len - 1; idx >= 0; --idx)
     {
-	funcexe_T   funcexe;
-	typval_T    rettv;
 	defer_T	    *dr = ((defer_T *)funccal->fc_defer.ga_data) + idx;
-	int	    i;
 
+	if (dr->dr_name == NULL)
+	    // already being called, can happen if function does ":qa"
+	    continue;
+
+	funcexe_T   funcexe;
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 
+	typval_T    rettv;
 	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
-	call_func(dr->dr_name, -1, &rettv,
-				    dr->dr_argcount, dr->dr_argvars, &funcexe);
+
+	char_u *name = dr->dr_name;
+	dr->dr_name = NULL;
+
+	call_func(name, -1, &rettv, dr->dr_argcount, dr->dr_argvars, &funcexe);
+
 	clear_tv(&rettv);
-	vim_free(dr->dr_name);
-	for (i = dr->dr_argcount - 1; i >= 0; --i)
+	vim_free(name);
+	for (int i = dr->dr_argcount - 1; i >= 0; --i)
 	    clear_tv(&dr->dr_argvars[i]);
     }
     ga_clear(&funccal->fc_defer);
+}
+
+    static void
+invoke_funccall_defer(funccall_T *fc)
+{
+    if (fc->fc_ectx != NULL)
+    {
+	// :def function
+	unwind_def_callstack(fc->fc_ectx);
+	may_invoke_defer_funcs(fc->fc_ectx);
+    }
+    else
+    {
+	// legacy function
+	handle_defer_one(fc);
+    }
 }
 
 /*
@@ -6132,21 +6144,12 @@ handle_defer_one(funccall_T *funccal)
     void
 invoke_all_defer(void)
 {
-    funccall_T *funccal;
+    for (funccall_T *fc = current_funccal; fc != NULL; fc = fc->fc_caller)
+	invoke_funccall_defer(fc);
 
-    for (funccal = current_funccal; funccal != NULL;
-						  funccal = funccal->fc_caller)
-	if (funccal->fc_ectx != NULL)
-	{
-	    // :def function
-	    unwind_def_callstack(funccal->fc_ectx);
-	    may_invoke_defer_funcs(funccal->fc_ectx);
-	}
-	else
-	{
-	    // legacy function
-	    handle_defer_one(funccal);
-	}
+    for (funccal_entry_T *fce = funccal_stack; fce != NULL; fce = fce->next)
+	for (funccall_T *fc = fce->top_funccal; fc != NULL; fc = fc->fc_caller)
+	    invoke_funccall_defer(fc);
 }
 
 /*
@@ -6185,7 +6188,7 @@ ex_call(exarg_T *eap)
 	return;
     }
 
-    tofree = trans_function_name_ext(&arg, NULL, eap->skip, TFN_INT,
+    tofree = trans_function_name_ext(&arg, NULL, FALSE, TFN_INT,
 			     &fudi, &partial, vim9script ? &type : NULL, NULL);
     if (fudi.fd_newkey != NULL)
     {
@@ -6239,7 +6242,7 @@ ex_call(exarg_T *eap)
 	funcexe.fe_firstline = eap->line1;
 	funcexe.fe_lastline = eap->line2;
 	funcexe.fe_found_var = found_var;
-	funcexe.fe_evaluate = !eap->skip;
+	funcexe.fe_evaluate = TRUE;
 	failed = ex_call_inner(eap, name, &arg, startarg, &funcexe, &evalarg);
     }
 

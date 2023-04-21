@@ -28,7 +28,7 @@
  */
 #if defined(__APPLE_CC__) // for Project Builder and ...
 # include <unistd.h>
-// Get stat.h or something similar. Comment: How come some OS get in in vim.h
+// Get stat.h or something similar. Comment: How come some OS get in vim.h
 # include <sys/stat.h>
 // && defined(HAVE_CURSE)
 // The curses.h from MacOS X provides by default some BACKWARD compatibility
