@@ -1106,7 +1106,7 @@ export def FTlsl()
   endif
 enddef
 
-# Set the filetype of a *.v file to Verilog, V or Cog based on the first 100 non-comment lines.
+# Set the filetype of a *.v file to Verilog, V or Cog based on the first 200 lines.
 export def FTv()
   if did_filetype()
     return
