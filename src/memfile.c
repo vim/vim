@@ -431,7 +431,9 @@ mf_get(memfile_T *mfp, blocknr_T nr, int page_count)
 	 * If not, allocate a new block.
 	 */
 	hp = mf_release(mfp, page_count);
-	if (hp == NULL && (hp = mf_alloc_bhdr(mfp, page_count)) == NULL)
+	if (hp == NULL && page_count > 0)
+	    hp = mf_alloc_bhdr(mfp, page_count);
+	if (hp == NULL)
 	    return NULL;
 
 	hp->bh_bnum = nr;
@@ -812,9 +814,10 @@ mf_release(memfile_T *mfp, int page_count)
      */
     if (hp->bh_page_count != page_count)
     {
-	vim_free(hp->bh_data);
-	if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count))
-								       == NULL)
+	VIM_CLEAR(hp->bh_data);
+	if (page_count > 0)
+	    hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count);
+	if (hp->bh_data == NULL)
 	{
 	    vim_free(hp);
 	    return NULL;
@@ -872,7 +875,7 @@ mf_release_all(void)
 }
 
 /*
- * Allocate a block header and a block of memory for it
+ * Allocate a block header and a block of memory for it.
  */
     static bhdr_T *
 mf_alloc_bhdr(memfile_T *mfp, int page_count)
@@ -882,8 +885,7 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
     if ((hp = ALLOC_ONE(bhdr_T)) == NULL)
 	return NULL;
 
-    if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count))
-	    == NULL)
+    if ((hp->bh_data = alloc((size_t)mfp->mf_page_size * page_count)) == NULL)
     {
 	vim_free(hp);	    // not enough memory
 	return NULL;
@@ -893,7 +895,7 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
 }
 
 /*
- * Free a block header and the block of memory for it
+ * Free a block header and the block of memory for it.
  */
     static void
 mf_free_bhdr(bhdr_T *hp)
@@ -903,7 +905,7 @@ mf_free_bhdr(bhdr_T *hp)
 }
 
 /*
- * insert entry *hp in the free list
+ * Insert entry *hp in the free list.
  */
     static void
 mf_ins_free(memfile_T *mfp, bhdr_T *hp)
