@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.0.  Last change: 2023 Feb 27
+*change.txt*    For Vim version 9.0.  Last change: 2023 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -454,6 +454,12 @@ zeros cause mistakes, because they can be confused with octal numbers.
 Note similarly, when 'nrformats' includes "bin", binary numbers with a leading
 '0x' or '0X' can be interpreted as hexadecimal rather than binary since '0b'
 are valid hexadecimal digits.
+
+When the number under the cursor is too big to fit into 32 or 64 bit
+(depending on how Vim was build), it will be rounded off to the nearest number
+that can be represented, and the addition/subtraction is skipped.  E.g. with
+64 bit support using CTRL-X on 18446744073709551616 results in
+18446744073709551615.  Same for larger numbers, such as 18446744073709551618.
 
 The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.

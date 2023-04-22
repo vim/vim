@@ -3,7 +3,7 @@
 " Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
-" Last Change: 	2022 Sep 30
+" Last Change: 	2023 Mar 21
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -24,8 +24,8 @@ set cpo-=C
 
 if &filetype == "man"
   " Allow hyphen, plus, colon, dot, and commercial at in manual page name.
-  " Allow parentheses for references.
-  setlocal iskeyword=48-57,_,a-z,A-Z,-,+,:,.,@-@,(,)
+  " Parentheses are not here but in dist#man#PreGetPage()
+  setlocal iskeyword=48-57,_,a-z,A-Z,-,+,:,.,@-@
   let b:undo_ftplugin = "setlocal iskeyword<"
 
   " Add mappings, unless the user didn't want this.

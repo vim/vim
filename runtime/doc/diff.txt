@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.0.  Last change: 2023 Jan 21
+*diff.txt*      For Vim version 9.0.  Last change: 2023 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -109,6 +109,7 @@ While already in Vim you can start diff mode in three ways.
 		accidentally being patched.  But it may still result in
 		various ".rej" files to be created.  And when absolute path
 		names are present these files may get patched anyway.
+		Using the "patch" command is not allowed in |restricted-mode|.
 
 To make these commands use a vertical split, prepend |:vertical|.  Examples: >
 

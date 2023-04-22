@@ -29816,7 +29816,7 @@ Files:      src/testdir/test_vim9_script.vim
 Patch 8.2.4863
 Problem:    Accessing freed memory in test without the +channel feature.
             (Dominique Pellé)
-Solution:   Do not generted PUSHCHANNEL or PUSHJOB if they are not
+Solution:   Do not generate PUSHCHANNEL or PUSHJOB if they are not
             implemented. (closes #10350)
 Files:      src/vim9instr.c, src/errors.h, src/vim9compile.c,
             src/testdir/test_vim9_script.vim

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Feb 26
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Apr 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,17 +38,35 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Delete ci/load-snd-dummy.sh?
+Update Filelist
+
+When using ":set no<CTRL-A>" add options starting with "no", not all boolean
+options.
+
 Crash when splitting window: #11961.  Set RedrawingDisabled in
 win_split_ins().
-
-CI: include #12008 end of February.
 
 In runtime/autoload/dist/script.vim change "set ft=" to "setlocal ft=" ?
 
 CTRL-J mapping is not used if halfway another mapping. #12002
 Is simplified mapping not used but escape code has been simplified?
 
-Include #11952 after a runtime files update.
+Windows scroll when using the autocmd window.  #12085
+in restore_snapshot_rec() restore more values from the snapshot, instead of
+calling frame_new_height() and frame_new_width(), especially w_topline and
+w_skipcol.
+
+'smoothscroll' problem: #12199
+Problems related to 'smoothscroll': #12218 and #12211
+
+include #12140: positional arguments in printf(), fixes #10577
+
+Include #11818: attach custom data to quickfix items.
+
+When a help item can't be found, then open 'helpfile'.  Search for the tag in
+that file and gtive E149 only when not found.  Helps for a tiny Vim installed
+without all the help files.
 
 Errors when running tests with valgrind:
 - test_codestyle.vim:  e.g.:
@@ -61,12 +79,19 @@ Upcoming larger works:
 - Make spell checking work with recent .dic/.aff files, e.g. French.  #4916
     Make Vim understand the format somehow?   Search for "spell" below.
     Make sure suggestions are speedy, also with composed words (German).
-- Discuss alternatives for using other grammars (treesitter, TextMate).
+- Make syntax highlighting faster and better.  Discuss alternatives for using
+  other grammars (treesitter, TextMate).
    - Possibly conversion to Vim syntax rules.
    - Other mechanism than group and cluster to nest syntax items, to be used
      for grammars.
    - Possibly keeping the parsed syntax tree and incremental updates.
    - tree-sitter doesn't handle incorrect syntax (while typing) properly.
+   - NeoVim uses treesitter, what can we learn from that?
+   - Vscode is asked to switch to treesitter:
+      https://github.com/microsoft/vscode/issues/50140
+   - Vscode uses TextMate.  #9087 - Other people don't like it.
+      https://github.com/icedman/vim-textmate
+   - sublime grammar?  Hugo mentions it's a moving target  #9087
    - Make clear how it relates to LSP.
    - example plugin: https://github.com/uga-rosa/dps-vsctm.vim
 
@@ -77,11 +102,17 @@ Further Vim9 improvements, possibly after launch:
 	Check for error: can't have same name twice (ignoring "_" prefix).
   - Make ":defcompile ClassName" compile all functions and methods in the
     class.
+  - Forward declaration of a class?  E.g. for Clone() function.
+	email lifepillar 2023 Mar 26
+  - Getting member of variable with "any" type should be handled at runtime.
+    Remove temporary solution from #12096 / patch 9.0.1375.
   - Private methods?
 	either: private def Func()
 	    or: def _Func()
     Perhaps use "private" keyword instead of "_" prefix?
   - "final" object members - can only be set in the constructor.
+  - "obj.Method()" does not always work in a compiled function, assumes "obj"
+    is a dictionary.  #12196
   - accept line breaks in member initialization.  #11957
   - object empty(), len() - can class define a method to be used for them?
   - add to help: when using a default new() method then reordering object
@@ -97,7 +128,7 @@ Further Vim9 improvements, possibly after launch:
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
   - Issue #11822: any.Func() can be a dict or an object call, need to handle
-    this at runtime.
+    this at runtime.  Also see #12198 for an example.
 - implement :type
 - implement :enum
 - Promise class, could be used to wait on a popup close callback?
@@ -113,7 +144,9 @@ Information missing in terminfo:
     8 is actually "super".
 - t_RV	request terminal version string; xterm:	"\033[>c"
     change in terminfo for "RV" uses the wrong escape sequence 7 - 14 Jan only
-Codes used for focus gained and lost (currently using use_xterm_like_mouse())
+- Codes for <PasteStart> t_PS and <PasteEnd> t_PE; with bracketed paste:
+    t_BE and t_BD.
+- Codes used for focus gained and lost (currently using use_xterm_like_mouse())
   termcodes are hard-coded in set_termname(), not named.
     Use the XF flag?  enables recognizing the focus in/out events.
     Check if t_fe is not empty.
@@ -275,6 +308,8 @@ Terminal emulator window:
 
 Patch adds showcmd() function  #11708
 
+Cursor is after the end of the line:  #12137.
+
 Crash when a variable is removed while listing variables (Issue #11435)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
@@ -283,10 +318,28 @@ Autoconf: must use autoconf 2.69, later version generates lots of warnings
 Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
 #11272
 
+Selected index returned by complete_info() does not match the index in the
+list of items.  #12230
+
+Support dark mode for MS-Windows: #12282
+
+Remote command escapes single quote with backslash, should be doubling the
+single quote in vim_strsave_escaped_ext()  #12202.
+
+PR to add custom and customlist completion types.  #12228
+
 Can deref_func_name() and deref_function_name() be merged?
+
+Using :global with a pattern containing \zs doesn't use the line where \zs
+matches but the start of the pattern.  #3695  If there is a useful application
+for this, it can be made to work by changing the call to ml_setmarked():
+		ml_setmarked(lnum + regmatch.startpos[0].lnum);
 
 After patch 8.2.4915 w_botline is computed much more often. Can this be
 reduced?
+
+When 'delcombine' is set a put after "x" includes the base character and all
+combining characters. (Ron Aaron, 2023 Apr 10)
 
 Add BufDeletePost.  #11041
 
@@ -310,6 +363,8 @@ https://github.com/vim/vim/pull/5566
 
 PR #11579 to add visualtext(), return Visually selected text.
 
+PR #12032: Support Python 3 stable ABI.
+
 Stray characters in the shell #11719, caused by requesting a response for:
 - XT key sequences
 - Whether modifyOtherKeys is active
@@ -319,7 +374,7 @@ Can we not request XT key sequences, or reduce them drastically?
 Issue #10512: Dynamic loading broken with Perl 5.36
 Damien has a patch (2022 Dec 4)
 
-Request #11965: Allow severaql "%=" items in 'statusline', makes it possible
+Request #11965: Allow several "%=" items in 'statusline', makes it possible
 to have text in the center.
 
 Add some kind of ":whathappend" command and functions to make visible what the
@@ -443,6 +498,12 @@ New English spell files also have very slow suggestions.
 When 'spelloptions' is "camel" then zG doesn't work on some words.
 (Gary Johnson, 17 Oct 2022)
 
+'cdpath' problems:
+- Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
+- Problem with 'cdpath' on MS-Windows when a directory is equal to $HOME.
+  (2006 Jul 26, Gary Johnson)
+- Completion of ":cd" doesn't use 'cdpath'. #374.
+
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558
 
@@ -477,6 +538,8 @@ won't work.  At least give an error.  Is there a way to make it work?
 
 Completion for ":runtime" should show valid values, not what's in the current
 directory. (#11447)
+
+Add a "description" property to mappings.  #12205
 
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need
@@ -1364,7 +1427,7 @@ No test, needs some work to include.
 Patch to improve indenting for C++ constructor with initializer list.
 (Hirohito Higashi, 2016 Mar 31)
 
-Zero-out krypt key information when no longer in use. (Ben Fritz, 2017 May 15)
+Zero-out crypt key information when no longer in use. (Ben Fritz, 2017 May 15)
 
 Add stronger encryption.  Could use libsodium (NaCl).
 https://github.com/jedisct1/libsodium/
@@ -1521,6 +1584,8 @@ Doesn't work completely (Dominique Orban)
 Patch to add a "literal" argument to bufnr().  (Olaf Dabrunz, 2015 Aug 4)
 
 Extended file attributes lost on write (backupcopy=no).  Issue 306.
+Would require reading attributes from the original file with listxattr() and
+getxattr() and adding them to the new file.
 
 Patch to add :lockjumps. (Carlo Baldassi, 2015 May 25)
 OK to not block marks?
@@ -1537,8 +1602,6 @@ Result of systemlist() does not show whether text ended in line break.
 
 When in 'comments' "n:x" follows after three-part comment directly it repeats
 any one-character from the previous line. (Kartik Agaram, 2014 Sep 19)
-
-Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Patch: Let rare word highlighting overrule good word highlighting.
 (Jakson A. Aquino, 2010 Jul 30, again 2011 Jul 2)
@@ -2613,9 +2676,6 @@ After starting Vim, using '0 to jump somewhere in a file, ":sp" doesn't center
 the cursor line.  It works OK after some other commands.
 
 Win32: Is it possible to have both postscript and Win32 printing?
-
-Problem with 'cdpath' on MS-Windows when a directory is equal to $HOME. (2006
-Jul 26, Gary Johnson)
 
 Using UTF-8 character with ":command" does not work properly. (Matt Wozniski,
 2008 Sep 29)
@@ -3906,14 +3966,6 @@ Printing:
 
 
 Syntax highlighting:
-    Long term goal: faster, better, etc.  Options:
-    - use treesitter, NeoVim uses it - Many people don't like it.
-	After changes requires rebuilding the library.
-    - use TextMate, vscode uses it.  #9087 - Other people don't like it.
-	    https://github.com/icedman/vim-textmate
-      Vscode is asked to switch to treesitter:
-      https://github.com/microsoft/vscode/issues/50140
-    - sublime grammar?
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined
@@ -5406,8 +5458,10 @@ Undo:
     Also see #1635.
 -   When using ":diffput" through a mapping, undo in the target buffer isn't
     synced.  (Ryan Carney, 2016 Sep 14)
--   The undo file name can get too long. (Issue 346)
+-   The undo file name can get too long. (Issue #346)
     For the path use a hash instead of dir%dir%dir%name  hash%name.
+    Check both for some time for backwards compatibility.
+    Alternatively: create the directory structure under 'undodir'.
 -   Patch to add ":undorecover", get as much text out of the undo file as
     possible. (Christian Brabandt, 2014 Mar 12, update Aug 22)
 -   Patch to support :undo absolute jump to file save number. (Christian

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Feb 25
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1788,6 +1788,8 @@ b:changedtick	The total number of changes to the current buffer.  It is
 		    :	call My_Update()
 		    :endif
 <		You cannot change or delete the b:changedtick variable.
+		If you need more information about the change see
+		|listener_add()|.
 
 						*window-variable* *w:var* *w:*
 A variable name that is preceded with "w:" is local to the current window.  It
@@ -4584,28 +4586,18 @@ getting the scriptnames in a Dictionary ~
 The `:scriptnames` command can be used to get a list of all script files that
 have been sourced.  There is also the `getscriptinfo()` function, but the
 information returned is not exactly the same.  In case you need to manipulate
-the output of `scriptnames` this code can be used: >
-    " Get the output of ":scriptnames" in the scriptnames_output variable.
-    let scriptnames_output = ''
-    redir => scriptnames_output
-    silent scriptnames
-    redir END
+the list, this code can be used as a base: >
 
-    " Split the output into lines and parse each line.	Add an entry to the
-    " "scripts" dictionary.
-    let scripts = {}
-    for line in split(scriptnames_output, "\n")
-      " Only do non-blank lines.
-      if line =~ '\S'
-	" Get the first number in the line.
-	let nr = matchstr(line, '\d\+')
-	" Get the file name, remove the script number " 123: ".
-	let name = substitute(line, '.\+:\s*', '', '')
-	" Add an item to the Dictionary
-	let scripts[nr] = name
-      endif
-    endfor
-    unlet scriptnames_output
+    # Create or update scripts dictionary, indexed by SNR, and return it.
+    def Scripts(scripts: dict<string> = {}): dict<string>
+      for info in getscriptinfo()
+        if scripts->has_key(info.sid)
+          continue
+        endif
+        scripts[info.sid] = info.name
+      endfor
+      return scripts
+    enddef
 
 ==============================================================================
 10. Vim script versions		*vimscript-version* *vimscript-versions*

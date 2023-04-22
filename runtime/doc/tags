@@ -3563,6 +3563,7 @@ $quote	eval.txt	/*$quote*
 :wall	editing.txt	/*:wall*
 :wh	eval.txt	/*:wh*
 :while	eval.txt	/*:while*
+:wi	gui.txt	/*:wi*
 :win	gui.txt	/*:win*
 :winc	windows.txt	/*:winc*
 :wincmd	windows.txt	/*:wincmd*
@@ -4154,7 +4155,6 @@ E1104	vim9.txt	/*E1104*
 E1105	vim9.txt	/*E1105*
 E1106	vim9.txt	/*E1106*
 E1107	eval.txt	/*E1107*
-E1108	vim9.txt	/*E1108*
 E1109	builtin.txt	/*E1109*
 E111	eval.txt	/*E111*
 E1110	builtin.txt	/*E1110*
@@ -4314,7 +4314,6 @@ E125	userfunc.txt	/*E125*
 E1250	vim9.txt	/*E1250*
 E1251	vim9.txt	/*E1251*
 E1252	vim9.txt	/*E1252*
-E1253	vim9.txt	/*E1253*
 E1254	vim9.txt	/*E1254*
 E1255	map.txt	/*E1255*
 E1256	vim9.txt	/*E1256*
@@ -4435,6 +4434,8 @@ E136	starting.txt	/*E136*
 E1360	vim9class.txt	/*E1360*
 E1361	syntax.txt	/*E1361*
 E1362	vim9class.txt	/*E1362*
+E1363	vim9class.txt	/*E1363*
+E1364	recover.txt	/*E1364*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*
@@ -5277,7 +5278,6 @@ E919	repeat.txt	/*E919*
 E92	message.txt	/*E92*
 E920	channel.txt	/*E920*
 E921	channel.txt	/*E921*
-E922	builtin.txt	/*E922*
 E923	builtin.txt	/*E923*
 E924	quickfix.txt	/*E924*
 E925	quickfix.txt	/*E925*
@@ -7422,8 +7422,6 @@ g:netrw_localmkdir	pi_netrw.txt	/*g:netrw_localmkdir*
 g:netrw_localmkdiropt	pi_netrw.txt	/*g:netrw_localmkdiropt*
 g:netrw_localmovecmd	pi_netrw.txt	/*g:netrw_localmovecmd*
 g:netrw_localmovecmdopt	pi_netrw.txt	/*g:netrw_localmovecmdopt*
-g:netrw_localrmdir	pi_netrw.txt	/*g:netrw_localrmdir*
-g:netrw_localrmdiropt	pi_netrw.txt	/*g:netrw_localrmdiropt*
 g:netrw_maxfilenamelen	pi_netrw.txt	/*g:netrw_maxfilenamelen*
 g:netrw_menu	pi_netrw.txt	/*g:netrw_menu*
 g:netrw_mkdir_cmd	pi_netrw.txt	/*g:netrw_mkdir_cmd*
@@ -7876,6 +7874,10 @@ hl-MoreMsg	syntax.txt	/*hl-MoreMsg*
 hl-NonText	syntax.txt	/*hl-NonText*
 hl-Normal	syntax.txt	/*hl-Normal*
 hl-Pmenu	syntax.txt	/*hl-Pmenu*
+hl-PmenuExtra	syntax.txt	/*hl-PmenuExtra*
+hl-PmenuExtraSel	syntax.txt	/*hl-PmenuExtraSel*
+hl-PmenuKind	syntax.txt	/*hl-PmenuKind*
+hl-PmenuKindSel	syntax.txt	/*hl-PmenuKindSel*
 hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
 hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
 hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2023 Feb 26
+*syntax.txt*	For Vim version 9.0.  Last change: 2023 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2803,8 +2803,8 @@ unsetting all the other ones.
 
 If you use Python 2 or straddling code (Python 2 and 3 compatible),
 you can enforce the use of an older syntax file with support for
-Python 2 and up to Python 3.5.
-	: let python_use_python2_syntax = 1
+Python 2 and up to Python 3.5. >
+	:let python_use_python2_syntax = 1
 This option will exclude all modern Python 3.6 or higher features.
 
 Note: Only existence of these options matters, not their value.
@@ -3748,11 +3748,12 @@ The syntax script for zsh allows for syntax-based folding: >
 Vim understands three types of syntax items:
 
 1. Keyword
-   It can only contain keyword characters, according to the 'iskeyword'
-   option.  It cannot contain other syntax items.  It will only match with a
-   complete word (there are no keyword characters before or after the match).
-   The keyword "if" would match in "if(a=b)", but not in "ifdef x", because
-   "(" is not a keyword character and "d" is.
+   It can only contain keyword characters, according to the characters
+   specified with |:syn-iskeyword| or the 'iskeyword' option.  It cannot
+   contain other syntax items.  It will only match with a complete word (there
+   are no keyword characters before or after the match).  The keyword "if"
+   would match in "if(a=b)", but not in "ifdef x", because "(" is not a
+   keyword character and "d" is.
 
 2. Match
    This is a match with a single regexp pattern.
