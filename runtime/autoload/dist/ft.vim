@@ -1106,5 +1106,40 @@ export def FTlsl()
   endif
 enddef
 
+# Set the filetype of a *.v file to Verilog, V or Cog based on the first 200
+# lines.
+export def FTv()
+  if did_filetype()
+    # ":setf" will do nothing, bail out early
+    return
+  endif
+
+  for line in getline(1, 200)
+    if line[0] =~ '^\s*/'
+      # skip comment line
+      continue
+    endif
+
+    # Verilog: line ends with ';' followed by an optional variable number of
+    # spaces and an optional start of a comment.
+    # Example: " b <= a + 1; // Add 1".
+    if line =~ ';\(\s*\)\?\(/.*\)\?$'
+      setf verilog
+      return
+    endif
+
+    # Coq: line ends with a '.' followed by an optional variable number of
+    # spaces and an optional start of a comment.
+    # Example: "Definition x := 10. (*".
+    if line =~ '\.\(\s*\)\?\((\*.*\)\?$'
+      setf coq
+      return
+    endif
+  endfor
+
+  # No line matched, fall back to "v".
+  setf v
+enddef
+
 # Uncomment this line to check for compilation errors early
 # defcompile

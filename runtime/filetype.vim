@@ -2303,8 +2303,8 @@ au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
 " Vagrant (uses Ruby syntax)
 au BufNewFile,BufRead Vagrantfile		setf ruby
 
-" Verilog HDL
-au BufNewFile,BufRead *.v			setf verilog
+" Verilog HDL, V or Coq
+au BufNewFile,BufRead *.v			call dist#ft#FTv()
 
 " Verilog-AMS HDL
 au BufNewFile,BufRead *.va,*.vams		setf verilogams
