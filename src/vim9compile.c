@@ -2646,7 +2646,7 @@ compile_assignment(
 			lhs_type = &t_number;
 		    if (*p != '=' && need_type(rhs_type, lhs_type, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
-		    goto theend;
+			goto theend;
 		}
 	    }
 	    else if (cmdidx == CMD_final)

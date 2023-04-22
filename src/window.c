@@ -4633,7 +4633,7 @@ tabpage_index(tabpage_T *ftp)
 leave_tabpage(
     buf_T	*new_curbuf UNUSED,    // what is going to be the new curbuf,
 				       // NULL if unknown
-    int		trigger_leave_autocmds UNUSED)
+    int		trigger_leave_autocmds)
 {
     tabpage_T	*tp = curtab;
 

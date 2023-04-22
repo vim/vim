@@ -3001,7 +3001,7 @@ ins_compl_update_sequence_numbers(void)
 
     if (compl_dir_forward())
     {
-	// search backwards for the first valid (!= -1) number.
+	// Search backwards for the first valid (!= -1) number.
 	// This should normally succeed already at the first loop
 	// cycle, so it's fast!
 	for (match = compl_curr_match->cp_prev; match != NULL
@@ -3012,8 +3012,7 @@ ins_compl_update_sequence_numbers(void)
 		break;
 	    }
 	if (match != NULL)
-	    // go up and assign all numbers which are not assigned
-	    // yet
+	    // go up and assign all numbers which are not assigned yet
 	    for (match = match->cp_next;
 		    match != NULL && match->cp_number == -1;
 					   match = match->cp_next)
@@ -3021,7 +3020,7 @@ ins_compl_update_sequence_numbers(void)
     }
     else // BACKWARD
     {
-	// search forwards (upwards) for the first valid (!= -1)
+	// Search forwards (upwards) for the first valid (!= -1)
 	// number.  This should normally succeed already at the
 	// first loop cycle, so it's fast!
 	for (match = compl_curr_match->cp_next; match != NULL
@@ -3032,8 +3031,7 @@ ins_compl_update_sequence_numbers(void)
 		break;
 	    }
 	if (match != NULL)
-	    // go down and assign all numbers which are not
-	    // assigned yet
+	    // go down and assign all numbers which are not assigned yet
 	    for (match = match->cp_prev; match
 		    && match->cp_number == -1;
 					   match = match->cp_prev)

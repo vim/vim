@@ -261,7 +261,7 @@ bexpr_eval(
     save_curbuf = curbuf;
     curbuf = wp->w_buffer;
     use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
-	    *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
+				    *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
     curbuf = save_curbuf;
     if (use_sandbox)
 	++sandbox;

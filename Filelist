@@ -18,10 +18,8 @@ SRC_ALL =	\
 		.appveyor.yml \
 		.codecov.yml \
 		ci/appveyor.bat \
-		ci/build-snd-dummy.sh \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
-		ci/load-snd-dummy.sh \
 		ci/setup-xvfb.sh \
 		src/Make_all.mak \
 		src/README.md \
@@ -710,6 +708,7 @@ RT_ALL =	\
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/import/dist/vimhelp.vim \
+		runtime/import/dist/vimhighlight.vim \
 		runtime/macros/README.txt \
 		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \

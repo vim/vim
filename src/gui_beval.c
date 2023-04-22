@@ -404,8 +404,7 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	}
 	else
 	{
-	    beval->timerID = g_timeout_add((guint)p_bdlay,
-		    &timeout_cb, beval);
+	    beval->timerID = g_timeout_add((guint)p_bdlay, &timeout_cb, beval);
 	}
     }
 }
