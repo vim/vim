@@ -760,7 +760,7 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
     {
 	check_cursor();
-	execute_common(argvars, rettv, 1);
+	execute_common(argvars + 1, rettv);
     }
     restore_win_noblock(&switchwin, TRUE);
 #ifdef FEAT_AUTOCHDIR

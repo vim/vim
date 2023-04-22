@@ -4136,7 +4136,7 @@ get_list_nextline(void *cookie)
  * "execute()" function
  */
     void
-execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
+execute_common(typval_T *argvars, typval_T *rettv)
 {
     char_u	*cmd = NULL;
     list_T	*list = NULL;
@@ -4153,32 +4153,31 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
 
-    if (argvars[arg_off].v_type == VAR_LIST)
+    if (argvars[0].v_type == VAR_LIST)
     {
-	list = argvars[arg_off].vval.v_list;
+	list = argvars[0].vval.v_list;
 	if (list == NULL || list->lv_len == 0)
 	    // empty list, no commands, empty output
 	    return;
 	++list->lv_refcount;
     }
-    else if (argvars[arg_off].v_type == VAR_JOB
-	    || argvars[arg_off].v_type == VAR_CHANNEL)
+    else if (argvars[0].v_type == VAR_JOB || argvars[0].v_type == VAR_CHANNEL)
     {
 	semsg(_(e_using_invalid_value_as_string_str),
-				       vartype_name(argvars[arg_off].v_type));
+					      vartype_name(argvars[0].v_type));
 	return;
     }
     else
     {
-	cmd = tv_get_string_chk(&argvars[arg_off]);
+	cmd = tv_get_string_chk(&argvars[0]);
 	if (cmd == NULL)
 	    return;
     }
 
-    if (argvars[arg_off + 1].v_type != VAR_UNKNOWN)
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char_u  *s = tv_get_string_buf_chk_strict(&argvars[arg_off + 1], buf,
+	char_u  *s = tv_get_string_buf_chk_strict(&argvars[1], buf,
 							      in_vim9script());
 
 	if (s == NULL)
@@ -4263,7 +4262,7 @@ f_execute(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
-    execute_common(argvars, rettv, 0);
+    execute_common(argvars, rettv);
 }
 
 /*

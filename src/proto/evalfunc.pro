@@ -20,7 +20,7 @@ void execute_redir_str(char_u *value, int value_len);
 void execute_cmds_from_string(char_u *str);
 char_u *get_list_line(int c, void *cookie, int indent, getline_opt_T options);
 char_u *get_list_nextline(void *cookie);
-void execute_common(typval_T *argvars, typval_T *rettv, int arg_off);
+void execute_common(typval_T *argvars, typval_T *rettv);
 void f_exists(typval_T *argvars, typval_T *rettv);
 void f_has(typval_T *argvars, typval_T *rettv);
 int dynamic_feature(char_u *feature);
