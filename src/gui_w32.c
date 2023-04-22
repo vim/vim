@@ -242,6 +242,8 @@ gui_mch_set_rendering_options(char_u *s)
 # define DWMWA_USE_IMMERSIVE_DARK_MODE	20
 #endif
 
+# define DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1	19
+
 #ifdef PROTO
 /*
  * Define a few things for generating prototypes.  This is just to avoid
@@ -393,6 +395,17 @@ static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENES
 
 #if defined(FEAT_GUI_DARKTHEME)
 static HRESULT (WINAPI *pDwmSetWindowAttribute)(HWND, DWORD, LPCVOID, DWORD) = NULL;
+
+typedef enum PreferredAppMode
+{
+   Default,
+   AllowDark,
+   ForceDark,
+   ForceLight,
+} PreferredAppMode;
+
+static DWORD (WINAPI *pSetPreferredAppMode)(DWORD) = NULL;
+static void (WINAPI *pFlushMenuThemes)(void) = NULL;
 #endif
 
     static UINT WINAPI
@@ -2808,18 +2821,57 @@ gui_mch_set_curtab(int nr)
     if (hDwmLib == NULL)
 	return;
 
-    pDwmSetWindowAttribute = (HRESULT (WINAPI *)(HWND, DWORD, LPCVOID, DWORD))GetProcAddress(hDwmLib, "DwmSetWindowAttribute");
+    pDwmSetWindowAttribute = (HRESULT (WINAPI *)(HWND, DWORD, LPCVOID, DWORD))
+	    GetProcAddress(hDwmLib, "DwmSetWindowAttribute");
 }
 
+    static void load_uxtheme_func(void)
+{
+    static HMODULE hUxThemeLib = NULL;
+
+    if (hUxThemeLib != NULL)
+	return;
+
+    hUxThemeLib = LoadLibrary("uxtheme.dll");
+    if (hUxThemeLib == NULL)
+	return;
+
+    pSetPreferredAppMode = (DWORD (WINAPI *)(DWORD))
+	    GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(135));
+    pFlushMenuThemes = (void (WINAPI *)(void))
+	    GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(136));
+}
     void
 gui_mch_set_dark_theme(int dark)
 {
-    BOOL value = dark != 0;
+    BOOL	value = dark != 0;
+    DWORD	ver = get_win_version();
 
-    load_dwm_func();
+    if (ver >= MAKE_VER(10, 0, 18362))
+    {
+	load_uxtheme_func();
 
-    if (pDwmSetWindowAttribute != NULL)
-	pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+	if (pSetPreferredAppMode != NULL && pFlushMenuThemes != NULL)
+	{
+	    pSetPreferredAppMode(dark ? ForceDark : ForceLight);
+	    pFlushMenuThemes();
+	}
+    }
+
+    if (ver >= MAKE_VER(10, 0, 17763))
+    {
+	load_dwm_func();
+
+	if (pDwmSetWindowAttribute != NULL)
+	{
+	    if (ver >= MAKE_VER(10, 0, 18985))
+		pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
+			sizeof(value));
+	    else
+		pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
+			&value, sizeof(value));
+	}
+    }
 }
 #endif // FEAT_GUI_DARKTHEME
 
