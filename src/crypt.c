@@ -34,6 +34,8 @@ typedef struct {
     char    *magic;	// magic bytes stored in file header
     int	    salt_len;	// length of salt, or 0 when not using salt
     int	    seed_len;	// length of seed, or 0 when not using seed
+    int	    add_len;	// additional length in the header needed for storing
+			// custom data
 #ifdef CRYPT_NOT_INPLACE
     int	    works_inplace; // encryption/decryption can be done in-place
 #endif
@@ -44,7 +46,7 @@ typedef struct {
 
     // Function pointer for initializing encryption/decryption.
     int (* init_fn)(cryptstate_T *state, char_u *key,
-		      char_u *salt, int salt_len, char_u *seed, int seed_len);
+		crypt_arg_T *arg);
 
     // Function pointers for encoding/decoding from one buffer into another.
     // Optional, however, these or the _buffer ones should be configured.
@@ -73,9 +75,12 @@ typedef struct {
 							char_u *p2, int last);
 } cryptmethod_T;
 
-static int crypt_sodium_init_(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+#if defined(FEAT_EVAL) && defined(FEAT_SODIUM)
+static void crypt_sodium_report_hash_params( unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
+#endif
 
 // index is method_nr of cryptstate_T, CRYPT_M_*
 static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
@@ -83,6 +88,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
     {
 	"zip",
 	"VimCrypt~01!",
+	0,
 	0,
 	0,
 #ifdef CRYPT_NOT_INPLACE
@@ -102,6 +108,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~02!",
 	8,
 	8,
+	0,
 #ifdef CRYPT_NOT_INPLACE
 	TRUE,
 #endif
@@ -119,6 +126,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	"VimCrypt~03!",
 	8,
 	8,
+	0,
 #ifdef CRYPT_NOT_INPLACE
 	TRUE,
 #endif
@@ -130,7 +138,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
 
-    // XChaCha20 using libsodium
+    // XChaCha20 using libsodium; implementation issues
     {
 	"xchacha20",
 	"VimCrypt~04!",
@@ -140,6 +148,29 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	16,
 #endif
 	8,
+	0,
+#ifdef CRYPT_NOT_INPLACE
+	FALSE,
+#endif
+	FALSE,
+	NULL,
+	crypt_sodium_init_,
+	NULL, NULL,
+	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
+	NULL, NULL,
+    },
+    // XChaCha20 using libsodium; stores parameters in header
+    {
+	"xchacha20v2",
+	"VimCrypt~05!",
+#ifdef FEAT_SODIUM
+	crypto_pwhash_argon2id_SALTBYTES, // 16
+#else
+	16,
+#endif
+	8,
+	// sizeof(crypto_pwhash_OPSLIMIT_INTERACTIVE + crypto_pwhash_MEMLIMIT_INTERACTIVE + crypto_pwhash_ALG_DEFAULT)
+	20,
 #ifdef CRYPT_NOT_INPLACE
 	FALSE,
 #endif
@@ -370,6 +401,15 @@ crypt_get_method_nr(buf_T *buf)
 }
 
 /*
+ * Returns True for Sodium Encryption.
+ */
+    int
+crypt_method_is_sodium(int method)
+{
+    return method == CRYPT_M_SOD || method == CRYPT_M_SOD2;
+}
+
+/*
  * Return TRUE when the buffer uses an encryption method that encrypts the
  * whole undo file, not only the text.
  */
@@ -387,7 +427,8 @@ crypt_get_header_len(int method_nr)
 {
     return CRYPT_MAGIC_LEN
 	+ cryptmethods[method_nr].salt_len
-	+ cryptmethods[method_nr].seed_len;
+	+ cryptmethods[method_nr].seed_len
+	+ cryptmethods[method_nr].add_len;
 }
 
 
@@ -445,10 +486,7 @@ crypt_self_test(void)
 crypt_create(
     int		method_nr,
     char_u	*key,
-    char_u	*salt,
-    int		salt_len,
-    char_u	*seed,
-    int		seed_len)
+    crypt_arg_T *crypt_arg)
 {
     cryptstate_T *state = ALLOC_ONE(cryptstate_T);
 
@@ -456,8 +494,7 @@ crypt_create(
 	return state;
 
     state->method_nr = method_nr;
-    if (cryptmethods[method_nr].init_fn(
-	state, key, salt, salt_len, seed, seed_len) == FAIL)
+    if (cryptmethods[method_nr].init_fn(state, key, crypt_arg) == FAIL)
     {
 	vim_free(state);
 	return NULL;
@@ -476,17 +513,22 @@ crypt_create_from_header(
     char_u	*key,
     char_u	*header)
 {
-    char_u	*salt = NULL;
-    char_u	*seed = NULL;
-    int		salt_len = cryptmethods[method_nr].salt_len;
-    int		seed_len = cryptmethods[method_nr].seed_len;
+    crypt_arg_T arg;
 
-    if (salt_len > 0)
-	salt = header + CRYPT_MAGIC_LEN;
-    if (seed_len > 0)
-	seed = header + CRYPT_MAGIC_LEN + salt_len;
+    CLEAR_FIELD(arg);
+    arg.cat_init_from_file = TRUE;
 
-    return crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
+    arg.cat_salt_len = cryptmethods[method_nr].salt_len;
+    arg.cat_seed_len = cryptmethods[method_nr].seed_len;
+    arg.cat_add_len = cryptmethods[method_nr].add_len;
+    if (arg.cat_salt_len > 0)
+	arg.cat_salt = header + CRYPT_MAGIC_LEN;
+    if (arg.cat_seed_len > 0)
+	arg.cat_seed = header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
+    if (arg.cat_add_len > 0)
+	arg.cat_add = header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
+
+    return crypt_create(method_nr, key, &arg);
 }
 
 /*
@@ -540,11 +582,14 @@ crypt_create_for_writing(
     int	    *header_len)
 {
     int	    len = crypt_get_header_len(method_nr);
-    char_u  *salt = NULL;
-    char_u  *seed = NULL;
-    int	    salt_len = cryptmethods[method_nr].salt_len;
-    int	    seed_len = cryptmethods[method_nr].seed_len;
+    crypt_arg_T arg;
     cryptstate_T *state;
+
+    CLEAR_FIELD(arg);
+    arg.cat_salt_len = cryptmethods[method_nr].salt_len;
+    arg.cat_seed_len = cryptmethods[method_nr].seed_len;
+    arg.cat_add_len  = cryptmethods[method_nr].add_len;
+    arg.cat_init_from_file = FALSE;
 
     *header_len = len;
     *header = alloc(len);
@@ -552,12 +597,14 @@ crypt_create_for_writing(
 	return NULL;
 
     mch_memmove(*header, cryptmethods[method_nr].magic, CRYPT_MAGIC_LEN);
-    if (salt_len > 0 || seed_len > 0)
+    if (arg.cat_salt_len > 0 || arg.cat_seed_len > 0 || arg.cat_add_len > 0)
     {
-	if (salt_len > 0)
-	    salt = *header + CRYPT_MAGIC_LEN;
-	if (seed_len > 0)
-	    seed = *header + CRYPT_MAGIC_LEN + salt_len;
+	if (arg.cat_salt_len > 0)
+	    arg.cat_salt = *header + CRYPT_MAGIC_LEN;
+	if (arg.cat_seed_len > 0)
+	    arg.cat_seed = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
+	if (arg.cat_add_len > 0)
+	    arg.cat_add = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
 
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -565,16 +612,16 @@ crypt_create_for_writing(
 #ifdef FEAT_SODIUM
 	if (sodium_init() >= 0)
 	{
-	    if (salt_len > 0)
-		randombytes_buf(salt, salt_len);
-	    if (seed_len > 0)
-		randombytes_buf(seed, seed_len);
+	    if (arg.cat_salt_len > 0)
+		randombytes_buf(arg.cat_salt, arg.cat_salt_len);
+	    if (arg.cat_seed_len > 0)
+		randombytes_buf(arg.cat_seed, arg.cat_seed_len);
 	}
 	else
 #endif
-	    sha2_seed(salt, salt_len, seed, seed_len);
+	    sha2_seed(arg.cat_salt, arg.cat_salt_len, arg.cat_seed, arg.cat_seed_len);
     }
-    state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
+    state = crypt_create(method_nr, key, &arg);
     if (state == NULL)
 	VIM_CLEAR(*header);
     return state;
@@ -587,7 +634,7 @@ crypt_create_for_writing(
 crypt_free_state(cryptstate_T *state)
 {
 #ifdef FEAT_SODIUM
-    if (state->method_nr == CRYPT_M_SOD)
+    if (crypt_method_is_sodium(state->method_nr))
     {
 	sodium_munlock(((sodium_state_T *)state->method_state)->key,
 							 crypto_box_SEEDBYTES);
@@ -742,7 +789,7 @@ crypt_free_key(char_u *key)
     void
 crypt_check_method(int method)
 {
-    if (method < CRYPT_M_BF2)
+    if (method < CRYPT_M_BF2 || method == CRYPT_M_SOD)
     {
 	msg_scroll = TRUE;
 	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
@@ -754,7 +801,7 @@ crypt_check_method(int method)
 crypt_check_swapfile_curbuf(void)
 {
     int method = crypt_get_method_nr(curbuf);
-    if (method == CRYPT_M_SOD)
+    if (crypt_method_is_sodium(method))
     {
 	// encryption uses padding and MAC, that does not work very well with
 	// swap and undo files, so disable them
@@ -827,7 +874,7 @@ crypt_get_key(
     }
 
     // since the user typed this, no need to wait for return
-    if (crypt_get_method_nr(curbuf) != CRYPT_M_SOD)
+    if (!crypt_method_is_sodium(crypt_get_method_nr(curbuf)))
     {
 	if (msg_didout)
 	    msg_putchar('\n');
@@ -861,16 +908,16 @@ crypt_append_msg(
 crypt_sodium_init_(
     cryptstate_T	*state UNUSED,
     char_u		*key UNUSED,
-    char_u		*salt UNUSED,
-    int			salt_len UNUSED,
-    char_u		*seed UNUSED,
-    int			seed_len UNUSED)
+    crypt_arg_T		*arg UNUSED)
 {
 # ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
     unsigned char	dkey[crypto_box_SEEDBYTES]; // 32
     sodium_state_T	*sd_state;
     int			retval = 0;
+    unsigned long long	opslimit;
+    size_t		memlimit;
+    int			alg;
 
     if (sodium_init() < 0)
 	return FAIL;
@@ -878,25 +925,98 @@ crypt_sodium_init_(
     sd_state = (sodium_state_T *)sodium_malloc(sizeof(sodium_state_T));
     sodium_memzero(sd_state, sizeof(sodium_state_T));
 
-    // derive a key from the password
-    if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), salt,
-	crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE,
-	crypto_pwhash_ALG_DEFAULT) != 0)
+    if ((state->method_nr == CRYPT_M_SOD2 && !arg->cat_init_from_file)
+	    || state->method_nr == CRYPT_M_SOD)
     {
-	// out of memory
-	sodium_free(sd_state);
-	return FAIL;
+	opslimit = crypto_pwhash_OPSLIMIT_INTERACTIVE;
+	memlimit = crypto_pwhash_MEMLIMIT_INTERACTIVE;
+	alg = crypto_pwhash_ALG_DEFAULT;
+
+#if 0
+	// For testing
+	if (state->method_nr == CRYPT_M_SOD2)
+	{
+	    opslimit = crypto_pwhash_OPSLIMIT_MODERATE;
+	    memlimit = crypto_pwhash_MEMLIMIT_MODERATE;
+	}
+#endif
+
+	// derive a key from the password
+	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
+				  arg->cat_salt, opslimit, memlimit, alg) != 0)
+	{
+	    // out of memory
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+	memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
+
+	retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
+	retval += sodium_mlock(key, STRLEN(key));
+
+	if (retval < 0)
+	{
+	    emsg(_(e_encryption_sodium_mlock_failed));
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+	if (state->method_nr == CRYPT_M_SOD2)
+	{
+	    memcpy(arg->cat_add, &opslimit, sizeof(opslimit));
+	    arg->cat_add += sizeof(opslimit);
+
+	    memcpy(arg->cat_add, &memlimit, sizeof(memlimit));
+	    arg->cat_add += sizeof(memlimit);
+
+	    memcpy(arg->cat_add, &alg, sizeof(alg));
+	    arg->cat_add += sizeof(alg);
+	}
     }
-    memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
-
-    retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
-    retval += sodium_mlock(key, STRLEN(key));
-
-    if (retval < 0)
+    else
     {
-	emsg(_(e_encryption_sodium_mlock_failed));
-	sodium_free(sd_state);
-	return FAIL;
+	// Reading parameters from file
+	if (arg->cat_add_len
+		    < (int)(sizeof(opslimit) + sizeof(memlimit) + sizeof(alg)))
+	{
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+
+	// derive the key from the file header
+	memcpy(&opslimit, arg->cat_add, sizeof(opslimit));
+	arg->cat_add += sizeof(opslimit);
+
+	memcpy(&memlimit, arg->cat_add, sizeof(memlimit));
+	arg->cat_add += sizeof(memlimit);
+
+	memcpy(&alg, arg->cat_add, sizeof(alg));
+	arg->cat_add += sizeof(alg);
+
+#ifdef FEAT_EVAL
+	crypt_sodium_report_hash_params(opslimit,
+					    crypto_pwhash_OPSLIMIT_INTERACTIVE,
+		memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
+		alg, crypto_pwhash_ALG_DEFAULT);
+#endif
+
+	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
+				  arg->cat_salt, opslimit, memlimit, alg) != 0)
+	{
+	    // out of memory
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
+	memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
+
+	retval += sodium_mlock(sd_state->key, crypto_box_SEEDBYTES);
+	retval += sodium_mlock(key, STRLEN(key));
+
+	if (retval < 0)
+	{
+	    emsg(_(e_encryption_sodium_mlock_failed));
+	    sodium_free(sd_state);
+	    return FAIL;
+	}
     }
     sd_state->count = 0;
     state->method_state = sd_state;
@@ -1100,6 +1220,14 @@ crypt_sodium_buffer_decode(
     sodium_state_T *sod_st = state->method_state;
     unsigned char  tag;
     unsigned long long out_len;
+
+    if (sod_st->count == 0
+	    && state->method_nr == CRYPT_M_SOD
+	    && len > WRITEBUFSIZE
+		+ crypto_secretstream_xchacha20poly1305_HEADERBYTES
+		+ crypto_secretstream_xchacha20poly1305_ABYTES)
+	len -= cryptmethods[CRYPT_M_SOD2].add_len;
+
     *buf_out = alloc_clear(len);
     if (*buf_out == NULL)
     {
@@ -1158,6 +1286,36 @@ crypt_sodium_randombytes_random(void)
 {
     return randombytes_random();
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    static void
+crypt_sodium_report_hash_params(
+	unsigned long long opslimit,
+	unsigned long long ops_def,
+	size_t memlimit,
+	size_t mem_def,
+	int alg,
+	int alg_def)
+{
+    if (p_verbose > 0)
+    {
+	verbose_enter();
+	if (opslimit != ops_def)
+	    smsg(_("xchacha20v2: using custom opslimit \"%llu\" for Key derivation."), opslimit);
+	else
+	    smsg(_("xchacha20v2: using default opslimit \"%llu\" for Key derivation."), opslimit);
+	if (memlimit != mem_def)
+	    smsg(_("xchacha20v2: using custom memlimit \"%lu\" for Key derivation."), (unsigned long)memlimit);
+	else
+	    smsg(_("xchacha20v2: using default memlimit \"%lu\" for Key derivation."), (unsigned long)memlimit);
+	if (alg != alg_def)
+	    smsg(_("xchacha20v2: using custom algorithm \"%d\" for Key derivation."), alg);
+	else
+	    smsg(_("xchacha20v2: using default algorithm \"%d\" for Key derivation."), alg);
+	verbose_leave();
+    }
+}
+#endif
 # endif
 
 #endif // FEAT_CRYPT

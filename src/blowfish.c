@@ -641,11 +641,8 @@ crypt_blowfish_decode(
     int
 crypt_blowfish_init(
     cryptstate_T	*state,
-    char_u*		key,
-    char_u*		salt,
-    int			salt_len,
-    char_u*		seed,
-    int			seed_len)
+    char_u		*key,
+    crypt_arg_T		*arg)
 {
     bf_state_T	*bfs = ALLOC_CLEAR_ONE(bf_state_T);
 
@@ -660,8 +657,8 @@ crypt_blowfish_init(
     if (blowfish_self_test() == FAIL)
 	return FAIL;
 
-    bf_key_init(bfs, key, salt, salt_len);
-    bf_cfb_init(bfs, seed, seed_len);
+    bf_key_init(bfs, key, arg->cat_salt, arg->cat_salt_len);
+    bf_cfb_init(bfs, arg->cat_seed, arg->cat_seed_len);
 
     return OK;
 }

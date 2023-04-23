@@ -29,7 +29,7 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
  # ifdef FEAT_SODIUM
-    "xchacha20",
+    "xchacha20", "xchacha20v2",
  # endif
     NULL};
 #endif
