@@ -3199,6 +3199,26 @@ func Test_props_with_text_above()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_above_padding()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      setlocal tabstop=8 noexpandtab
+      setline(1, ['', 'sky is blue', 'ocean is blue'])
+      prop_type_add('DiagVirtualText', {highlight: 'Search', override: true})
+      prop_add(3, 0, {text: "┌─ start", text_align: "above",
+               type: 'DiagVirtualText',
+               text_padding_left: 200})
+  END
+  call writefile(lines, 'XscriptAbovePadding', 'D')
+  let buf = RunVimInTerminal('-S XscriptAbovePadding', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_above_padding_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_above_with_indent()
   new
   call setline(1, ['first line', '    second line', '    line below'])

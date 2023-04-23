@@ -665,6 +665,12 @@ text_prop_position(
 	{
 	    before = 0;
 	    after = wp->w_width - cells - win_col_off(wp) - padding;
+	    if (after < 0)
+	    {
+		// text "above" has too much padding to fit
+		padding += after;
+		after = 0;
+	    }
 	}
 	else
 	{
