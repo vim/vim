@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.0.  Last change: 2023 Feb 26
+*gui.txt*       For Vim version 9.0.  Last change: 2023 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -144,7 +144,7 @@ task bar with the 'guiheadroom' option.
 		remembered until the window is opened.  The position is
 		adjusted to make the window fit on the screen (if possible).
 
-						    *:win* *:winsize* *E465*
+					    *:wi* *:win* *:winsize* *E465*
 :win[size] {width} {height}
 		Set the window height to {width} by {height} characters.
 		It is recommended to use `:set lines=11 columns=22` instead,

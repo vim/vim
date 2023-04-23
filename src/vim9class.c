@@ -737,7 +737,9 @@ early_ret:
 
     if (success)
     {
-	// Check no function argument name is used as an object/class member.
+	// Check no function argument name is used as a class member.
+	// (Object members are always accessed with "this." prefix, so no need
+	// to check them.)
 	for (int loop = 1; loop <= 2 && success; ++loop)
 	{
 	    garray_T *gap = loop == 1 ? &classfunctions : &objmethods;
@@ -749,24 +751,22 @@ early_ret:
 		for (int i = 0; i < uf->uf_args.ga_len && success; ++i)
 		{
 		    char_u *aname = ((char_u **)uf->uf_args.ga_data)[i];
-		    for (int il = 1; il <= 2 && success; ++il)
+		    garray_T *mgap = &classmembers;
+
+		    for (int mi = 0; mi < mgap->ga_len; ++mi)
 		    {
-			// For a "new()" function "this.member" arguments are
-			// OK.  TODO: check for the "this." prefix.
-			if (STRNCMP(uf->uf_name, "new", 3) == 0 && il == 2)
-			    continue;
-			garray_T *mgap = il == 1 ? &classmembers : &objmembers;
-			for (int mi = 0; mi < mgap->ga_len; ++mi)
+			char_u *mname = ((ocmember_T *)mgap->ga_data + mi)
+								    ->ocm_name;
+			if (STRCMP(aname, mname) == 0)
 			{
-			    char_u *mname = ((ocmember_T *)mgap->ga_data
-							       + mi)->ocm_name;
-			    if (STRCMP(aname, mname) == 0)
-			    {
-				success = FALSE;
-				semsg(_(e_argument_already_declared_in_class_str),
+			    success = FALSE;
+
+			    if (uf->uf_script_ctx.sc_sid > 0)
+				SOURCING_LNUM = uf->uf_script_ctx.sc_lnum;
+
+			    semsg(_(e_argument_already_declared_in_class_str),
 									aname);
-				break;
-			    }
+			    break;
 			}
 		    }
 		}

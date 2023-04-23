@@ -5107,7 +5107,8 @@ ex_global(exarg_T *eap)
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
 
-    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS,
+							    &regmatch) == FAIL)
     {
 	emsg(_(e_invalid_command));
 	return;

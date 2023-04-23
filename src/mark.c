@@ -986,12 +986,12 @@ ex_changes(exarg_T *eap UNUSED)
     }
 
 /*
- * Adjust marks between line1 and line2 (inclusive) to move 'amount' lines.
+ * Adjust marks between "line1" and "line2" (inclusive) to move "amount" lines.
  * Must be called before changed_*(), appended_lines() or deleted_lines().
  * May be called before or after changing the text.
- * When deleting lines line1 to line2, use an 'amount' of MAXLNUM: The marks
- * within this range are made invalid.
- * If 'amount_after' is non-zero adjust marks after line2.
+ * When deleting lines "line1" to "line2", use an "amount" of MAXLNUM: The
+ * marks within this range are made invalid.
+ * If "amount_after" is non-zero adjust marks after "line2".
  * Example: Delete lines 34 and 35: mark_adjust(34, 35, MAXLNUM, -2);
  * Example: Insert two lines below 55: mark_adjust(56, MAXLNUM, 2, 0);
  *				   or: mark_adjust(56, 55, MAXLNUM, 2);
@@ -1131,7 +1131,9 @@ mark_adjust_internal(
 			else
 			    win->w_topline = line1 - 1;
 		    }
-		    else		// keep topline on the same line
+		    else if (win->w_topline > line1)
+			// keep topline on the same line, unless inserting just
+			// above it (we probably want to see that line then)
 			win->w_topline += amount;
 #ifdef FEAT_DIFF
 		    win->w_topfill = 0;

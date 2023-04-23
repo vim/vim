@@ -3337,16 +3337,23 @@ func Test_cmdline_complete_bang_cmd_argument()
   call assert_equal('"!vim test_cmdline.vim', @:)
 endfunc
 
-func Check_completion()
-  call assert_equal('let a', getcmdline())
-  call assert_equal(6, getcmdpos())
-  call assert_equal(7, getcmdscreenpos())
-  call assert_equal('var', getcmdcompltype())
-  return ''
+func Call_cmd_funcs()
+  return string([getcmdpos(), getcmdscreenpos(), getcmdcompltype()])
 endfunc
 
 func Test_screenpos_and_completion()
-  call feedkeys(":let a\<C-R>=Check_completion()\<CR>\<Esc>", "xt")
+  call assert_equal(0, getcmdpos())
+  call assert_equal(0, getcmdscreenpos())
+  call assert_equal('', getcmdcompltype())
+
+  cnoremap <expr> <F2> string([getcmdpos(), getcmdscreenpos(), getcmdcompltype()])
+  call feedkeys(":let a\<F2>\<C-B>\"\<CR>", "xt")
+  call assert_equal("\"let a[6, 7, 'var']", @:)
+  call feedkeys(":quit \<F2>\<C-B>\"\<CR>", "xt")
+  call assert_equal("\"quit [6, 7, '']", @:)
+  call feedkeys(":nosuchcommand \<F2>\<C-B>\"\<CR>", "xt")
+  call assert_equal("\"nosuchcommand [15, 16, '']", @:)
+  cunmap <F2>
 endfunc
 
 func Test_recursive_register()
@@ -3450,6 +3457,19 @@ func Test_setcmdline()
   call feedkeys(":a\<CR>", 'tx')
   call assert_equal('let foo=0', @:)
   cunmap a
+endfunc
+
+func Test_rulerformat_position()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', #{rows: 2, cols: 20})
+  call term_sendkeys(buf, ":set ruler rulerformat=longish\<CR>")
+  call term_sendkeys(buf, ":set laststatus=0 winwidth=1\<CR>")
+  call term_sendkeys(buf, "\<C-W>v\<C-W>|\<C-W>p")
+  call VerifyScreenDump(buf, 'Test_rulerformat_position', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

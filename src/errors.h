@@ -3459,6 +3459,8 @@ EXTERN char e_cannot_use_non_null_object[]
 EXTERN char e_incomplete_type[]
 	INIT(= N_("E1363: Incomplete type"));
 #endif
+EXTERN char e_warning_pointer_block_corrupted[]
+	INIT(= N_("E1364: Warning: Pointer block corrupted"));
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

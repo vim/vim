@@ -73,14 +73,14 @@ vi_cv_path_python_conf:
 	"/usr/lib/pythonX.Y/config" (the directory contains a file
 	"config.c").
 
-vi_cv_var_python_epfx:
+vi_cv_path_python_epfx:
 	If Python support is enabled, set this variable to the execution
 	prefix of your Python interpreter (that is, where it thinks it is
 	running).
 	This is the output of the following Python script:
 		import sys; print sys.exec_prefix
 
-vi_cv_var_python_pfx:
+vi_cv_path_python_pfx:
 	If Python support is enabled, set this variable to the prefix of your
 	Python interpreter (that is, where it was installed).
 	This is the output of the following Python script:
@@ -93,7 +93,7 @@ vi_cv_var_python_version:
 		import sys; print sys.version[:3]
 
 vim_cv_bcopy_handles_overlap:
-	Whether the "memmove" C library call is able to copy overlapping
+	Whether the "bcopy" C library call is able to copy overlapping
 	memory regions. Set to "yes" if it does or "no" if it does not.
 	You only need to set this if vim_cv_memmove_handles_overlap is set
 	to "no".

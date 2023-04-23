@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   scan:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       CC: gcc
@@ -32,15 +32,15 @@ jobs:
       - name: Install packages
         if: env.TOKEN
         run: |
-          sudo apt update && sudo apt install -y \
+          sudo apt-get update && sudo apt-get install -y \
             autoconf \
             gettext \
             libcanberra-dev \
             libperl-dev \
-            python-dev \
+            python2-dev \
             python3-dev \
-            liblua5.3-dev \
-            lua5.3 \
+            liblua5.4-dev \
+            lua5.4 \
             ruby-dev \
             tcl-dev \
             libgtk2.0-dev \

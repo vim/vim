@@ -133,7 +133,7 @@ get_buffcont(
     for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
 	count += (long_u)STRLEN(bp->b_str);
 
-    if ((count || dozero) && (p = alloc(count + 1)) != NULL)
+    if ((count > 0 || dozero) && (p = alloc(count + 1)) != NULL)
     {
 	p2 = p;
 	for (bp = buffer->bh_first.b_next; bp != NULL; bp = bp->b_next)
@@ -141,7 +141,7 @@ get_buffcont(
 		*p2++ = *str++;
 	*p2 = NUL;
     }
-    return (p);
+    return p;
 }
 
 /*

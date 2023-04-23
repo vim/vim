@@ -3310,7 +3310,7 @@ handle_resize(int rows, int cols, void *user)
 }
 
 /*
- * If the number of lines that are stored goes over 'termscrollback' then
+ * If the number of lines that are stored goes over 'termwinscroll' then
  * delete the first 10%.
  * "gap" points to tl_scrollback or tl_scrollback_postponed.
  * "update_buffer" is TRUE when the buffer should be updated.

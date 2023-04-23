@@ -248,7 +248,7 @@ let s:filename_checks = {
     \ 'grads': ['file.gs'],
     \ 'graphql': ['file.graphql', 'file.graphqls', 'file.gql'],
     \ 'gretl': ['file.gretl'],
-    \ 'groovy': ['file.gradle', 'file.groovy'],
+    \ 'groovy': ['file.gradle', 'file.groovy', 'Jenkinsfile'],
     \ 'group': ['any/etc/group', 'any/etc/group-', 'any/etc/group.edit', 'any/etc/gshadow', 'any/etc/gshadow-', 'any/etc/gshadow.edit', 'any/var/backups/group.bak', 'any/var/backups/gshadow.bak', '/etc/group', '/etc/group-', '/etc/group.edit', '/etc/gshadow', '/etc/gshadow-', '/etc/gshadow.edit', '/var/backups/group.bak', '/var/backups/gshadow.bak'],
     \ 'grub': ['/boot/grub/menu.lst', '/boot/grub/grub.conf', '/etc/grub.conf', 'any/boot/grub/grub.conf', 'any/boot/grub/menu.lst', 'any/etc/grub.conf'],
     \ 'gsp': ['file.gsp'],
@@ -345,7 +345,7 @@ let s:filename_checks = {
     \ 'lpc': ['file.lpc', 'file.ulpc'],
     \ 'lsl': ['file.lsl'],
     \ 'lss': ['file.lss'],
-    \ 'lua': ['file.lua', 'file.rockspec', 'file.nse', '.luacheckrc'],
+    \ 'lua': ['file.lua', 'file.rockspec', 'file.nse', '.luacheckrc', '.busted'],
     \ 'lynx': ['lynx.cfg'],
     \ 'lyrics': ['file.lrc'],
     \ 'm3build': ['m3makefile', 'm3overrides'],
@@ -646,7 +646,6 @@ let s:filename_checks = {
     \ 'vdmrt': ['file.vdmrt'],
     \ 'vdmsl': ['file.vdm', 'file.vdmsl'],
     \ 'vera': ['file.vr', 'file.vri', 'file.vrh'],
-    \ 'verilog': ['file.v'],
     \ 'verilogams': ['file.va', 'file.vams'],
     \ 'vgrindefs': ['vgrindefs'],
     \ 'vhdl': ['file.hdl', 'file.vhd', 'file.vhdl', 'file.vbe', 'file.vst', 'file.vhdl_123', 'file.vho', 'some.vhdl_1', 'some.vhdl_1-file'],
@@ -732,6 +731,11 @@ func Test_filetype_detection()
   endif
   filetype off
 endfunc
+
+" Content lines that should not result in filetype detection
+let s:false_positive_checks = {
+      \ '': [['test execve("/usr/bin/pstree", ["pstree"], 0x7ff0 /* 63 vars */) = 0']],
+      \ }
 
 " Filetypes detected from the file contents by scripts.vim
 let s:script_checks = {
@@ -824,6 +828,7 @@ func Run_script_detection(test_dict)
 endfunc
 
 func Test_script_detection()
+  call Run_script_detection(s:false_positive_checks)
   call Run_script_detection(s:script_checks)
   call Run_script_detection(s:script_env_checks)
 endfunc
@@ -1760,6 +1765,27 @@ func Test_ttl_file()
   call writefile(['looks like Tera Term Language'], 'Xfile.ttl')
   split Xfile.ttl
   call assert_equal('teraterm', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_v_file()
+  filetype on
+
+  call writefile(['module tb; // Looks like a Verilog'], 'Xfile.v', 'D')
+  split Xfile.v
+  call assert_equal('verilog', &filetype)
+  bwipe!
+
+  call writefile(['module main'], 'Xfile.v')
+  split Xfile.v
+  call assert_equal('v', &filetype)
+  bwipe!
+
+  call writefile(['Definition x := 10.  (*'], 'Xfile.v')
+  split Xfile.v
+  call assert_equal('coq', &filetype)
   bwipe!
 
   filetype off

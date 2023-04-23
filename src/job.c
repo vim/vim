@@ -383,7 +383,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		val = tv_get_string(item);
 		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
 		{
-		    semsg(_(e_invalid_value_for_argument_str_str), "term_finish", val);
+		    semsg(_(e_invalid_value_for_argument_str_str),
+							   "term_finish", val);
 		    return FAIL;
 		}
 		opt->jo_set2 |= JO2_TERM_FINISH;

@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Nov 24
+# Last Change:	2023 Apr 17
 
 export def DetectFiletype()
   var line1 = getline(1)
@@ -338,7 +338,9 @@ def DetectFromText(line1: string)
     set ft=virata
 
     # Strace
-  elseif line1 =~ '[0-9:.]* *execve(' || line1 =~ '^__libc_start_main'
+    # inaccurate fast match first, then use accurate slow match
+  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:.]* *execve(')
+	   || line1 =~ '^__libc_start_main'
     set ft=strace
 
     # VSE JCL

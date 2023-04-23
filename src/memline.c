@@ -98,6 +98,9 @@ struct pointer_block
 				// followed by empty space until end of page
 };
 
+// Value for pb_count_max.
+#define PB_COUNT_MAX(mfp) (short_u)(((mfp)->mf_page_size - offsetof(PTR_BL, pb_pointer)) / sizeof(PTR_EN))
+
 /*
  * A data block is a leaf in the tree.
  *
@@ -1525,6 +1528,20 @@ ml_recover(int checkext)
 	    pp = (PTR_BL *)(hp->bh_data);
 	    if (pp->pb_id == PTR_ID)		// it is a pointer block
 	    {
+		int ptr_block_error = FALSE;
+		if (pp->pb_count_max != PB_COUNT_MAX(mfp))
+		{
+		    ptr_block_error = TRUE;
+		    pp->pb_count_max = PB_COUNT_MAX(mfp);
+		}
+		if (pp->pb_count > pp->pb_count_max)
+		{
+		    ptr_block_error = TRUE;
+		    pp->pb_count = pp->pb_count_max;
+		}
+		if (ptr_block_error)
+		    emsg(_(e_warning_pointer_block_corrupted));
+
 		// check line count when using pointer block first time
 		if (idx == 0 && line_count != 0)
 		{
@@ -4162,9 +4179,7 @@ ml_new_ptr(memfile_T *mfp)
     pp = (PTR_BL *)(hp->bh_data);
     pp->pb_id = PTR_ID;
     pp->pb_count = 0;
-    pp->pb_count_max =
-	(short_u)((mfp->mf_page_size - offsetof(PTR_BL, pb_pointer))
-							     / sizeof(PTR_EN));
+    pp->pb_count_max = PB_COUNT_MAX(mfp);
 
     return hp;
 }

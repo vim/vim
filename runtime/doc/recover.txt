@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 9.0.  Last change: 2020 Aug 15
+*recover.txt*   For Vim version 9.0.  Last change: 2023 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -176,7 +176,7 @@ the recover command:
 :rec[over]! [file]	Like ":recover", but any changes in the current
 			buffer are lost.
 
-							*E312* *E309* *E310*
+						*E312* *E309* *E310* *E1364*
 Vim has some intelligence about what to do if the swap file is corrupt in
 some way.  If Vim has doubt about what it found, it will give an error
 message and insert lines with "???" in the text.  If you see an error message

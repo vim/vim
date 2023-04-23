@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 Feb 27
+*map.txt*       For Vim version 9.0.  Last change: 2023 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1566,6 +1566,11 @@ can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
 command's attributes, which are specified when the command is defined.
 
+When defining a user command in a script, it will be able to call functions
+local to the script and use mappings local to the script.  When the user
+invokes the user command, it will run in the context of the script it was
+defined in.  This matters if |<SID>| is used in a command.
+
 There are a number of attributes, split into four categories: argument
 handling, completion behavior, range handling, and special cases.  The
 attributes are described below, by category.
@@ -1781,6 +1786,11 @@ functions cannot be used.  Commands where a "|" may appear in the argument,
 such as commands with an expression argument, cannot be followed by a "|" and
 another command.
 
+If the command is defined in Vim9 script (a script that starts with
+`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
+script.  Thus this depends on where the command is defined, not where it is
+used.
+
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with
 values from the entered command line, and all other text is copied unchanged.
@@ -1915,14 +1925,5 @@ errors and the "update" command to write modified buffers): >
 This will invoke: >
 	:call Allargs("%s/foo/bar/ge|update")
 <
-If the command is defined in Vim9 script (a script that starts with
-`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
-script.  Thus this depends on where the command is defined, not where it is
-used.
-
-When defining a user command in a script, it will be able to call functions
-local to the script and use mappings local to the script.  When the user
-invokes the user command, it will run in the context of the script it was
-defined in.  This matters if |<SID>| is used in a command.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

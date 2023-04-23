@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2023 Feb 27
+*builtin.txt*	For Vim version 9.0.  Last change: 2023 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2235,7 +2235,8 @@ execute({command} [, {silent}])					*execute()*
 			redir => var
 			{command}
 			redir END
-<
+<		Except that line continuation in {command} is not recognized.
+
 		The optional {silent} argument can have these values:
 			""		no `:silent` used
 			"silent"	`:silent` used
@@ -4115,7 +4116,7 @@ getregtype([{regname}])					*getregtype()*
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
 
-getscriptinfo([{opts})					*getscriptinfo()*
+getscriptinfo([{opts}])					*getscriptinfo()*
 		Returns a |List| with information about all the sourced Vim
 		scripts in the order they were sourced, like what
 		`:scriptnames` shows.
@@ -4124,7 +4125,7 @@ getscriptinfo([{opts})					*getscriptinfo()*
 		optional items:
 		    name	Script name match pattern. If specified,
 				and "sid" is not specified, information about
-				scripts with name that match the pattern
+				scripts with a name that match the pattern
 				"name" are returned.
 		    sid		Script ID |<SID>|.  If specified, only
 				information about the script with ID "sid" is
@@ -5666,7 +5667,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 			     "!"     Insert and Commandline mode
 				     (|mapmode-ic|)
 		  "sid"	     The script local ID, used for <sid> mappings
-			     (|<SID>|).
+			     (|<SID>|).  Negative for special contexts.
 		  "scriptversion"  The version of the script.  999999 for
 				   |Vim9| script.
 		  "lnum"     The line number in "sid", zero if unknown.
@@ -7209,7 +7210,7 @@ reltime({start})
 reltime({start}, {end})					*reltime()*
 		Return an item that represents a time value.  The item is a
 		list with items that depend on the system.  In Vim 9 script
-		list<any> can be used.
+		the type list<any> can be used.
 		The item can be passed to |reltimestr()| to convert it to a
 		string or |reltimefloat()| to convert to a Float.  For
 		example, to see the time spent in function Work(): >
@@ -10862,7 +10863,7 @@ persistent_undo		Compiled with support for persistent undo history.
 postscript		Compiled with PostScript file printing.
 printer			Compiled with |:hardcopy| support.
 profile			Compiled with |:profile| support.
-prof_nsec		Profile results are in nano seconds.
+prof_nsec		Profile results are in nanoseconds.
 python			Python 2.x interface available. |has-python|
 python_compiled		Compiled with Python 2.x interface. |has-python|
 python_dynamic		Python 2.x interface is dynamically loaded. |has-python|

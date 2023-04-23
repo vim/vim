@@ -2318,8 +2318,8 @@ gui_destroy_tearoffs_recurse(vimmenu_T *menu)
 /*
  * Execute "menu".  Use by ":emenu" and the window toolbar.
  * "eap" is NULL for the window toolbar.
- * "mode_idx" specifies a MENU_INDEX_ value, use -1 to depend on the current
- * state.
+ * "mode_idx" specifies a MENU_INDEX_ value, use MENU_INDEX_INVALID to depend
+ * on the current state.
  */
     void
 execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
@@ -2329,7 +2329,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
     if (idx < 0)
     {
 	// Use the Insert mode entry when returning to Insert mode.
-	if (restart_edit && !current_sctx.sc_sid)
+	if (restart_edit && current_sctx.sc_sid == 0)
 	{
 	    idx = MENU_INDEX_INSERT;
 	}
@@ -2513,7 +2513,7 @@ ex_emenu(exarg_T *eap)
 {
     vimmenu_T	*menu;
     char_u	*arg = eap->arg;
-    int		mode_idx = -1;
+    int		mode_idx = MENU_INDEX_INVALID;
 
     if (arg[0] && VIM_ISWHITE(arg[1]))
     {

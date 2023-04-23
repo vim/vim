@@ -29,17 +29,24 @@ runtime/colors/delek.vim		@habamax @romainl @neutaaaaan
 runtime/colors/desert.vim		@habamax @romainl @neutaaaaan
 runtime/colors/elflord.vim		@habamax @romainl @neutaaaaan
 runtime/colors/evening.vim		@habamax @romainl @neutaaaaan
+runtime/colors/habamax.vim		@habamax @romainl @neutaaaaan
 runtime/colors/industry.vim		@habamax @romainl @neutaaaaan
 runtime/colors/koehler.vim		@habamax @romainl @neutaaaaan
+runtime/colors/lunaperche.vim		@habamax @romainl @neutaaaaan
 runtime/colors/morning.vim		@habamax @romainl @neutaaaaan
 runtime/colors/murphy.vim		@habamax @romainl @neutaaaaan
 runtime/colors/pablo.vim		@habamax @romainl @neutaaaaan
 runtime/colors/peachpuff.vim		@habamax @romainl @neutaaaaan
+runtime/colors/quiet.vim		@habamax @romainl @neutaaaaan
+runtime/colors/retrobox.vim		@habamax @romainl @neutaaaaan
 runtime/colors/ron.vim			@habamax @romainl @neutaaaaan
 runtime/colors/shine.vim		@habamax @romainl @neutaaaaan
 runtime/colors/slate.vim		@habamax @romainl @neutaaaaan
+runtime/colors/sorbet.vim		@habamax @romainl @neutaaaaan
 runtime/colors/tools			@habamax @romainl @neutaaaaan
 runtime/colors/torte.vim		@habamax @romainl @neutaaaaan
+runtime/colors/wildcharm.vim		@habamax @romainl @neutaaaaan
+runtime/colors/zaibatsu.vim		@habamax @romainl @neutaaaaan
 runtime/colors/zellner.vim		@habamax @romainl @neutaaaaan
 runtime/compiler/checkstyle.vim		@dkearns
 runtime/compiler/cm3.vim		@dkearns
@@ -215,6 +222,7 @@ runtime/ftplugin/wget2.vim		@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/xs.vim			@petdance
 runtime/ftplugin/zsh.vim		@chrisbra
+runtime/import/dist/vimhighlight.vim	@lacygoill
 runtime/indent/basic.vim		@dkearns
 runtime/indent/bst.vim			@tpope
 runtime/indent/cdl.vim			@dkearns
@@ -367,6 +375,7 @@ runtime/syntax/haml.vim			@tpope
 runtime/syntax/hare.vim			@rsaihe
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/hitest.vim		@lacygoill
 runtime/syntax/hollywood.vim		@sodero
 runtime/syntax/html.vim			@dkearns
 runtime/syntax/i3config.vim		@hiqua

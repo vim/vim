@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Feb 26
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -205,7 +205,7 @@ new() call is assigned to that object member.  This mechanism comes from the
 Dart language.
 
 Putting together this way of using new() and making the members public results
-in a much shorter class definition as what we started with: >
+in a much shorter class definition than what we started with: >
 
 	class TextPosition
 	   public this.lnum: number
@@ -526,7 +526,7 @@ When a variable is declared to have the type of an object, but it is not
 initialized, the value is null.  When trying to use this null object Vim often
 does not know what class was supposed to be used.  Vim then cannot check if
 a member name is correct and you will get an "Using a null object" error,
-even when the member name is invalid. *E1360* *E1362*
+even when the member name is invalid. *E1360* *E1362* *E1363*
 
 
 Default constructor ~
@@ -872,8 +872,8 @@ Especially when refactoring or other changes to the class model.
 
 The Vim scripts are expected to be used in a plugin, with just one person or a
 small team working on it.  Complex rules then only make it more complicated,
-the extra safety provide by the rules isn't really needed.  Let's just keep it
-simple and not specify access details.
+the extra safety provided by the rules isn't really needed.  Let's just keep
+it simple and not specify access details.
 
 
 ==============================================================================

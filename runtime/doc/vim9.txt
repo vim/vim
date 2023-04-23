@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2023 Feb 21
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -914,7 +914,7 @@ Thus "=~" works like "=~#".
 "is" and "isnot" (|expr-is| and |expr-isnot|) when used on strings now return
 false.  In legacy script they just compare the strings, in |Vim9| script they
 check identity, and strings are copied when used, thus two strings are never
-the same (this might change some day if strings are not copied but reference
+the same (this might change someday if strings are not copied but reference
 counted).
 
 
@@ -1461,8 +1461,8 @@ have the "void" type.  Trying to use a void (e.g. a function without a
 return value) results in error *E1031*  *E1186* .
 
 There is no array type, use list<{type}> instead.  For a list constant an
-efficient implementation is used that avoids allocating lot of small pieces of
-memory.
+efficient implementation is used that avoids allocating a lot of small pieces
+of memory.
 							*E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
@@ -1552,6 +1552,8 @@ string to a number.
 
 If a type is given where it is not expected you can get *E1272* .
 
+If a type is incomplete you get *E1363*, e.g. when you have an object for
+which the class is not known (usually that is a null object).
 
 Type inference ~
 							*type-inference*
