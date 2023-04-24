@@ -707,7 +707,7 @@ trunc({expr})			Float	truncate Float {expr}
 type({expr})			Number	type of value {expr}
 typename({expr})		String	representation of the type of {expr}
 undofile({name})		String	undo file name for {name}
-undotree()			List	undo file tree
+undotree([{buf}])		List	undo file tree for buffer {buf}
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
@@ -10073,9 +10073,10 @@ undofile({name})					*undofile()*
 		Can also be used as a |method|: >
 			GetFilename()->undofile()
 
-undotree()						*undotree()*
-		Return the current state of the undo tree in a dictionary with
-		the following items:
+undotree([{buf}])					*undotree()*
+		Return the current state of the undo tree for the current
+		buffer, or for a specific buffer if {buf} is given.  The
+		result is a dictionary with the following items:
 		  "seq_last"	The highest undo sequence number used.
 		  "seq_cur"	The sequence number of the current position in
 				the undo tree.  This differs from "seq_last"

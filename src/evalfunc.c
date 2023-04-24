@@ -2798,7 +2798,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_typename},
     {"undofile",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_undofile},
-    {"undotree",	0, 0, 0,	    NULL,
+    {"undotree",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_dict_any,	    f_undotree},
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
