@@ -371,7 +371,7 @@ jobs:
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
-      SODIUM_VER: 1.0.18
+      SODIUM_VER: '1.0.18'
       SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
       SODIUM_MSVC_VER: v143
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
@@ -433,15 +433,11 @@ jobs:
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
           if ${{ matrix.toolchain == 'msvc' }}; then
-            SODIUM_DIR="D:\\libsodium"
+            SODIUM_DIR=D:\\libsodium
             echo "SODIUM_LIB=${SODIUM_DIR}\\${{ matrix.arch == 'x64' && 'x64' || 'Win32' }}\\Release\\${SODIUM_MSVC_VER}\\dynamic" >> $GITHUB_ENV
-            echo "SODIUM_URL=${SODIUM_MSVC_URL}" >> $GITHUB_ENV
-            echo "SODIUM_FILE=libsodium.zip" >> $GITHUB_ENV
           else
             SODIUM_DIR=D:\\libsodium-win${{ matrix.arch == 'x64' && '64' || '32' }}
             echo "SODIUM_LIB=${SODIUM_DIR}\\bin" >> $GITHUB_ENV
-            echo "SODIUM_URL=${SODIUM_MINGW_URL}" >> $GITHUB_ENV
-            echo "SODIUM_FILE=libsodium.tar.gz" >> $GITHUB_ENV
           fi
           echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
 
@@ -464,7 +460,7 @@ jobs:
           type NUL > urls.txt
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
-          echo %SODIUM_URL%>> urls.txt
+          echo %SODIUM_VER%>> urls.txt
 
       - name: Cache downloaded files
         uses: actions/cache@v3
@@ -489,9 +485,12 @@ jobs:
           copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
 
           echo %COL_GREEN%Download libsodium%COL_RESET%
-          call :downloadfile %SODIUM_URL% downloads\%SODIUM_FILE%
-          7z x -y downloads\%SODIUM_FILE% -oD:\ > nul || exit 1
-          if "${{ matrix.toolchain }}"=="mingw" (
+          if "${{ matrix.toolchain }}"=="msvc" (
+            call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+            7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+          ) else (
+            call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
+            7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
             mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
           )
 
