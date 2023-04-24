@@ -371,7 +371,8 @@ jobs:
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
-      SODIUM_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-mingw.tar.gz
       SODIUM_DIR: D:\libsodium
       SODIUM_VER: v143
       # Escape sequences
@@ -403,14 +404,13 @@ jobs:
 
           git config --global core.autocrlf input
 
-          if [ "${{ matrix.arch }}" = "x64" ]; then
+          if ${{ matrix.arch == 'x64' }}; then
             cygreg=registry
             pyreg=
             echo "VCARCH=amd64" >> $GITHUB_ENV
             echo "WARCH=x64" >> $GITHUB_ENV
             echo "BITS=64" >> $GITHUB_ENV
             echo "MSYSTEM=MINGW64" >> $GITHUB_ENV
-            echo "SODIUM_LIB=${SODIUM_DIR}\\x64\\Release\\${SODIUM_VER}\\dynamic" >> $GITHUB_ENV
           else
             cygreg=registry32
             pyreg=-32
@@ -418,7 +418,6 @@ jobs:
             echo "WARCH=ia32" >> $GITHUB_ENV
             echo "BITS=32" >> $GITHUB_ENV
             echo "MSYSTEM=MINGW32" >> $GITHUB_ENV
-            echo "SODIUM_LIB=${SODIUM_DIR}\\Win32\\Release\\${SODIUM_VER}\\dynamic" >> $GITHUB_ENV
           fi
 
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
@@ -431,6 +430,15 @@ jobs:
           fi
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+
+          if ${{ matrix.toolchain == 'msvc' }}; then
+            echo "SODIUM_LIB=${SODIUM_DIR}\\${{ matrix.arch == 'x64' && 'x64' || 'Win32' }}\\Release\\${SODIUM_VER}\\dynamic" >> $GITHUB_ENV
+            echo "SODIUM_URL=${SODIUM_MSVC_URL}" >> $GITHUB_ENV
+          else
+            echo "SODIUM_DIR=${SODIUM_DIR}-win${{ matrix.arch == 'x64' && '64' || '32' }}" >> $GITHUB_ENV
+            echo "SODIUM_LIB=${SODIUM_DIR}\\bin" >> $GITHUB_ENV
+            echo "SODIUM_URL=${SODIUM_MINGW_URL}" >> $GITHUB_ENV
+          fi
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
@@ -478,6 +486,9 @@ jobs:
           echo %COL_GREEN%Download libsodium%COL_RESET%
           call :downloadfile %SODIUM_URL% downloads\libsodium.zip
           7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+          if "${{ matrix.toolchain }}"=="mingw" (
+            mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-23.dll
+          )
 
           goto :eof
 
@@ -534,6 +545,7 @@ jobs:
               DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
+              DYNAMIC_SODIUM=yes SODIUM=${SODIUM_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
             mingw32-make -f Make_ming.mak -j2 \
