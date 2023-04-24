@@ -64,7 +64,11 @@ typedef struct pointer_entry	PTR_EN;	    // block/line-count pair
 #define BLOCK0_ID1_C0  'c'		    // block 0 id 1 'cm' 0
 #define BLOCK0_ID1_C1  'C'		    // block 0 id 1 'cm' 1
 #define BLOCK0_ID1_C2  'd'		    // block 0 id 1 'cm' 2
-#define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3 - but not actually used
+// BLOCK0_ID1_C3 and BLOCK0_ID1_C4 are for libsodium enctyption.  However, for
+// these the swapfile is disabled, thus they will not be used.  Added for
+// consistency anyway.
+#define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3
+#define BLOCK0_ID1_C4  's'		    // block 0 id 1 'cm' 4
 
 #if defined(FEAT_CRYPT)
 static int id1_codes[] = {
@@ -72,6 +76,7 @@ static int id1_codes[] = {
     BLOCK0_ID1_C1,  // CRYPT_M_BF
     BLOCK0_ID1_C2,  // CRYPT_M_BF2
     BLOCK0_ID1_C3,  // CRYPT_M_SOD  - Unused!
+    BLOCK0_ID1_C4,  // CRYPT_M_SOD2  - Unused!
 };
 #endif
 
@@ -444,6 +449,8 @@ ml_set_mfp_crypt(buf_T *buf)
 
 /*
  * Prepare encryption for "buf" with block 0 "b0p".
+ * Note: should not be called with libsodium encryption, since xchacha20 does
+ * not support swapfile encryption.
  */
     static void
 ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
@@ -494,14 +501,17 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
-    // Swapfile encryption not supported by XChaCha20
-    if (crypt_method_is_sodium(crypt_get_method_nr(buf)) && *buf->b_p_key != NUL)
+    // Swapfile encryption is not supported by XChaCha20, therefore disable the
+    // swapfile to avoid plain text being written to disk.
+    if (crypt_method_is_sodium(crypt_get_method_nr(buf))
+						       && *buf->b_p_key != NUL)
     {
 	// close the swapfile
 	mf_close_file(buf, TRUE);
 	buf->b_p_swf = FALSE;
 	return;
     }
+
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
     {
