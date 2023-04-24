@@ -2682,7 +2682,7 @@ create_blank_pointer(void)
 #endif
     GdkCursor	*cursor;
 #if GTK_CHECK_VERSION(3,0,0)
-    GdkRGBA	color = { 0.0, 0.0, 0.0, 1.0 };
+    GdkRGBA	color = { 0.0, 0.0, 0.0, 0.0 };
 #else
     GdkColor	color = { 0, 0, 0, 0 };
     char	blank_data[] = { 0x0 };
