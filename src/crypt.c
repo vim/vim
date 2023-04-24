@@ -916,7 +916,7 @@ crypt_sodium_init_(
     sodium_state_T	*sd_state;
     int			retval = 0;
     unsigned long long	opslimit;
-    size_t		memlimit;
+    unsigned long long	memlimit;
     int			alg;
 
     if (sodium_init() < 0)
@@ -943,7 +943,7 @@ crypt_sodium_init_(
 
 	// derive a key from the password
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
-				  arg->cat_salt, opslimit, memlimit, alg) != 0)
+			  arg->cat_salt, opslimit, (size_t)memlimit, alg) != 0)
 	{
 	    // out of memory
 	    sodium_free(sd_state);
@@ -995,12 +995,12 @@ crypt_sodium_init_(
 #ifdef FEAT_EVAL
 	crypt_sodium_report_hash_params(opslimit,
 					    crypto_pwhash_OPSLIMIT_INTERACTIVE,
-		memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
+		(size_t)memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
 		alg, crypto_pwhash_ALG_DEFAULT);
 #endif
 
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
-				  arg->cat_salt, opslimit, memlimit, alg) != 0)
+			  arg->cat_salt, opslimit, (size_t)memlimit, alg) != 0)
 	{
 	    // out of memory
 	    sodium_free(sd_state);
