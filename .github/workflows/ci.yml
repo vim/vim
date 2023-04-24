@@ -370,6 +370,10 @@ jobs:
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # libsodium
+      SODIUM_URL: https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip
+      SODIUM_DIR: D:\libsodium
+      SODIUM_VER: v143
       # Escape sequences
       COL_RED: "\x1b[31m"
       COL_GREEN: "\x1b[32m"
@@ -406,6 +410,7 @@ jobs:
             echo "WARCH=x64" >> $GITHUB_ENV
             echo "BITS=64" >> $GITHUB_ENV
             echo "MSYSTEM=MINGW64" >> $GITHUB_ENV
+            echo "SODIUM_LIB=${SODIUM_DIR}\\x64\\Release\\${SODIUM_VER}\\dynamic" >> $GITHUB_ENV
           else
             cygreg=registry32
             pyreg=-32
@@ -413,6 +418,7 @@ jobs:
             echo "WARCH=ia32" >> $GITHUB_ENV
             echo "BITS=32" >> $GITHUB_ENV
             echo "MSYSTEM=MINGW32" >> $GITHUB_ENV
+            echo "SODIUM_LIB=${SODIUM_DIR}\\Win32\\Release\\${SODIUM_VER}\\dynamic" >> $GITHUB_ENV
           fi
 
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
@@ -445,6 +451,7 @@ jobs:
           type NUL > urls.txt
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
+          echo %SODIUM_URL%>> urls.txt
 
       - name: Cache downloaded files
         uses: actions/cache@v3
@@ -467,6 +474,10 @@ jobs:
           7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
           copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
           copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+
+          echo %COL_GREEN%Download libsodium%COL_RESET%
+          call :downloadfile %SODIUM_URL% downloads\libsodium.zip
+          7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
 
           goto :eof
 
@@ -498,7 +509,8 @@ jobs:
               GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
-              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
+              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
+              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
@@ -566,7 +578,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
@@ -583,7 +595,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test Vim:%COL_RESET%
