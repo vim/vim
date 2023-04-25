@@ -10,9 +10,10 @@ let b:current_syntax = 'dts'
 
 syntax region dtsComment        start="/\*"  end="\*/"
 syntax match  dtsReference      "&[[:alpha:][:digit:]_]\+"
+syntax match  dtsReference      "&{[[:alpha:][:digit:]@_/-]\+}"
 syntax region dtsBinaryProperty start="\[" end="\]"
 syntax match  dtsStringProperty "\".*\""
-syntax match  dtsKeyword        "/.\{-1,\}/"
+syntax match  dtsKeyword        "/[[:alpha:][:digit:]-]\+/\([[:space:]]\|;\)"he=e-1
 syntax match  dtsLabel          "^[[:space:]]*[[:alpha:][:digit:]_]\+:"
 syntax match  dtsNode           /[[:alpha:][:digit:]-_]\+\(@[0-9a-fA-F]\+\|\)[[:space:]]*{/he=e-1
 syntax region dtsCellProperty   start="<" end=">" contains=dtsReference,dtsBinaryProperty,dtsStringProperty,dtsComment
