@@ -30,23 +30,22 @@
  */
 
 typedef struct {
-    char    *name;	// encryption name as used in 'cryptmethod'
-    char    *magic;	// magic bytes stored in file header
-    int	    salt_len;	// length of salt, or 0 when not using salt
-    int	    seed_len;	// length of seed, or 0 when not using seed
-    int	    add_len;	// additional length in the header needed for storing
-			// custom data
+    char	*name;		// encryption name as used in 'cryptmethod'
+    char	*magic;		// magic bytes stored in file header
+    int		salt_len;	// length of salt, or 0 when not using salt
+    int		seed_len;	// length of seed, or 0 when not using seed
+    int		add_len;	// additional length in the header needed for storing
+				// custom data
 #ifdef CRYPT_NOT_INPLACE
-    int	    works_inplace; // encryption/decryption can be done in-place
+    int		works_inplace;	// encryption/decryption can be done in-place
 #endif
-    int	    whole_undofile; // whole undo file is encrypted
+    int		whole_undofile;	// whole undo file is encrypted
 
     // Optional function pointer for a self-test.
-    int (* self_test_fn)(void);
+    int (*self_test_fn)(void);
 
     // Function pointer for initializing encryption/decryption.
-    int (* init_fn)(cryptstate_T *state, char_u *key,
-		crypt_arg_T *arg);
+    int (* init_fn)(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 
     // Function pointers for encoding/decoding from one buffer into another.
     // Optional, however, these or the _buffer ones should be configured.
@@ -79,7 +78,7 @@ static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 #if defined(FEAT_EVAL) && defined(FEAT_SODIUM)
-static void crypt_sodium_report_hash_params( unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
+static void crypt_sodium_report_hash_params(unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
 #endif
 
 // index is method_nr of cryptstate_T, CRYPT_M_*
@@ -916,7 +915,7 @@ crypt_sodium_init_(
     sodium_state_T	*sd_state;
     int			retval = 0;
     unsigned long long	opslimit;
-    size_t		memlimit;
+    unsigned long long	memlimit;
     int			alg;
 
     if (sodium_init() < 0)
@@ -943,7 +942,7 @@ crypt_sodium_init_(
 
 	// derive a key from the password
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
-				  arg->cat_salt, opslimit, memlimit, alg) != 0)
+			  arg->cat_salt, opslimit, (size_t)memlimit, alg) != 0)
 	{
 	    // out of memory
 	    sodium_free(sd_state);
@@ -995,12 +994,12 @@ crypt_sodium_init_(
 #ifdef FEAT_EVAL
 	crypt_sodium_report_hash_params(opslimit,
 					    crypto_pwhash_OPSLIMIT_INTERACTIVE,
-		memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
+		(size_t)memlimit, crypto_pwhash_MEMLIMIT_INTERACTIVE,
 		alg, crypto_pwhash_ALG_DEFAULT);
 #endif
 
 	if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key),
-				  arg->cat_salt, opslimit, memlimit, alg) != 0)
+			  arg->cat_salt, opslimit, (size_t)memlimit, alg) != 0)
 	{
 	    // out of memory
 	    sodium_free(sd_state);

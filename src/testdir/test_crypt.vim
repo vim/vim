@@ -49,9 +49,11 @@ func Crypt_uncrypt(method)
   call assert_equal(a:method, &cryptmethod)
 
   split Xtest.txt
-  let text = ['01234567890123456789012345678901234567',
-	\ 'line 2  foo bar blah',
-	\ 'line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx']
+  let text =<< trim END
+  01234567890123456789012345678901234567,
+  line 2  foo bar blah,
+  line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  END
   call setline(1, text)
   call feedkeys(":X\<CR>foobar\<CR>foobar\<CR>", 'xt')
   call assert_equal('*****', &key)
@@ -134,15 +136,17 @@ endfunc
 
 func Test_uncrypt_xchacha20()
   CheckFeature sodium
-  let hex = ['00000000: 5669 6d43 7279 7074 7e30 3421 6b7d e607  vimCrypt~04!k}..',
-        \  '00000010: 4ea4 e99f 923e f67f 7b59 a80d 3bca 2f06  N....>..{Y..;./.',
-        \  '00000020: fa11 b951 8d09 0dc9 470f e7cf 8b90 4310  ...Q....G.....C.',
-        \  '00000030: 653b b83b e493 378b 0390 0e38 f912 626b  e;.;..7....8..bk',
-        \  '00000040: a02e 4697 0254 2625 2d8e 3a0b 784b e89c  ..F..T&%-.:.xK..',
-        \  '00000050: 0c67 a975 3c17 9319 8ffd 1463 7783 a1f3  .g.u<......cw...',
-        \  '00000060: d917 dcb3 8b3e ecd7 c7d4 086b 6059 7ead  .....>.....k`Y~.',
-        \  '00000070: 9b07 f96b 5c1b 4d08 cd91 f208 5221 7484  ...k\.M.....R!t.',
-        \  '00000080: 72be 0136 84a1 d3                        r..6...']
+  let hex =<< trim END
+  00000000: 5669 6d43 7279 7074 7e30 3421 6b7d e607  vimCrypt~04!k}..
+  00000010: 4ea4 e99f 923e f67f 7b59 a80d 3bca 2f06  N....>..{Y..;./.
+  00000020: fa11 b951 8d09 0dc9 470f e7cf 8b90 4310  ...Q....G.....C.
+  00000030: 653b b83b e493 378b 0390 0e38 f912 626b  e;.;..7....8..bk
+  00000040: a02e 4697 0254 2625 2d8e 3a0b 784b e89c  ..F..T&%-.:.xK..
+  00000050: 0c67 a975 3c17 9319 8ffd 1463 7783 a1f3  .g.u<......cw...
+  00000060: d917 dcb3 8b3e ecd7 c7d4 086b 6059 7ead  .....>.....k`Y~.
+  00000070: 9b07 f96b 5c1b 4d08 cd91 f208 5221 7484  ...k\.M.....R!t.
+  00000080: 72be 0136 84a1 d3                        r..6...
+  END
   " the file should be in latin1 encoding, this makes sure that readfile()
   " retries several times converting the multi-byte characters
   call Uncrypt_stable_xxd('xchacha20', hex, "sodium_crypt", ["abcdefghijklmnopqrstuvwxyzäöü", "ZZZ_äüöÄÜÖ_!@#$%^&*()_+=-`~"], 0)
@@ -151,14 +155,16 @@ endfunc
 func Test_uncrypt_xchacha20v2_custom()
   CheckFeature sodium
   " Test, reading xchacha20v2 with custom encryption parameters
-  let hex = ['00000000: 5669 6d43 7279 7074 7e30 3521 934b f288  VimCrypt~05!.K..',
-        \ '00000010: 10ba 8bc9 25a0 8876 f85c f135 6fb8 518b  ....%..v.\.5o.Q.',
-        \ '00000020: b133 9af1 0300 0000 0000 0000 0000 0010  .3..............',
-        \ '00000030: 0000 0000 0200 0000 b973 5f33 80e9 54fc  .........s_3..T.',
-        \ '00000040: 138f ba3e 046b 3135 90b7 7783 5eac 7fe3  ...>.k15..w.^...',
-        \ '00000050: 0cd2 14df ed75 4b65 8763 8205 035c ec81  .....uKe.c...\..',
-        \ "00000060: a4cf 33d2 7507 ec38 ba62 a327 9068 d8ad  ..3.u..8.b.'.h..",
-        \ '00000070: 2607 3fa6 f95d 7ea8 9799 f997 4820 0c    &.?..]~.....H .']
+  let hex =<< trim END
+  00000000: 5669 6d43 7279 7074 7e30 3521 934b f288  VimCrypt~05!.K..
+  00000010: 10ba 8bc9 25a0 8876 f85c f135 6fb8 518b  ....%..v.\.5o.Q.
+  00000020: b133 9af1 0300 0000 0000 0000 0000 0010  .3..............
+  00000030: 0000 0000 0200 0000 b973 5f33 80e9 54fc  .........s_3..T.
+  00000040: 138f ba3e 046b 3135 90b7 7783 5eac 7fe3  ...>.k15..w.^...
+  00000050: 0cd2 14df ed75 4b65 8763 8205 035c ec81  .....uKe.c...\..
+  00000060: a4cf 33d2 7507 ec38 ba62 a327 9068 d8ad  ..3.u..8.b.'.h..
+  00000070: 2607 3fa6 f95d 7ea8 9799 f997 4820 0c    &.?..]~.....H .
+  END
   call Uncrypt_stable_xxd('xchacha20v2', hex, "foobar", ["", "foo", "bar", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], 1)
   call assert_match('xchacha20v2: using custom \w\+ "\d\+" for Key derivation.', execute(':messages'))
 endfunc
@@ -166,18 +172,19 @@ endfunc
 func Test_uncrypt_xchacha20v2()
   CheckFeature sodium
   " Test, reading xchacha20v2
-  let hex = [
-        \ '00000000: 5669 6d43 7279 7074 7e30 3521 9f20 4e14  VimCrypt~05!. N.',
-        \ '00000010: c7da c1bd 7dea 8fbc db6c 38e6 7a77 6fef  ....}....l8.zwo.',
-        \ '00000020: 82dd 964b 0300 0000 0000 0000 0000 0010  ...K............',
-        \ '00000030: 0000 0000 0200 0000 a97c 2f00 0b9d 19eb  .........|/.....',
-        \ '00000040: 1d92 1ea5 3f22 c179 4b3e 870a eb19 6380  ....?".yK>....c.',
-        \ '00000050: 63f8 222d b5d1 3c73 7be5 d580 47ea 44cc  c."-..<s{...G.D.',
-        \ '00000060: 6c25 8078 3fd5 d836 c700 0122 bb30 7a59  l%.x?..6...".0zY',
-        \ '00000070: b184 2ae8 e7db 113a f732 938f 7a34 1333  ..*....:.2..z4.3',
-        \ '00000080: dc89 1491 51a0 67b9 0f3a b56c 1f9d 53b0  ....Q.g..:.l..S.',
-        \ '00000090: 2416 205a 8c4c 5fde 4dac 2611 8a48 24f0  $. Z.L_.M.&..H$.',
-        \ '000000a0: ba00 92c1 60                             ....`']
+  let hex =<< trim END
+  00000000: 5669 6d43 7279 7074 7e30 3521 9f20 4e14  VimCrypt~05!. N.
+  00000010: c7da c1bd 7dea 8fbc db6c 38e6 7a77 6fef  ....}....l8.zwo.
+  00000020: 82dd 964b 0300 0000 0000 0000 0000 0010  ...K............
+  00000030: 0000 0000 0200 0000 a97c 2f00 0b9d 19eb  .........|/.....
+  00000040: 1d92 1ea5 3f22 c179 4b3e 870a eb19 6380  ....?".yK>....c.
+  00000050: 63f8 222d b5d1 3c73 7be5 d580 47ea 44cc  c."-..<s{...G.D.
+  00000060: 6c25 8078 3fd5 d836 c700 0122 bb30 7a59  l%.x?..6...".0zY
+  00000070: b184 2ae8 e7db 113a f732 938f 7a34 1333  ..*....:.2..z4.3
+  00000080: dc89 1491 51a0 67b9 0f3a b56c 1f9d 53b0  ....Q.g..:.l..S.
+  00000090: 2416 205a 8c4c 5fde 4dac 2611 8a48 24f0  $. Z.L_.M.&..H$.
+  000000a0: ba00 92c1 60                             ....`
+  END
   call Uncrypt_stable_xxd('xchacha20v2', hex, "foo1234", ["abcdefghijklmnopqrstuvwxyzäöü", 'ZZZ_äüöÄÜÖ_!@#$%^&*()_+=-`~"'], 0)
 endfunc
 
