@@ -3683,7 +3683,7 @@ func Test_mode_changes()
   au ModeChanged * :call TestMode()
   let g:n_to_any = 0
   au ModeChanged n:* let g:n_to_any += 1
-  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggdG", 'tnix')
+  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggd\<MouseMove>G", 'tnix')
 
   let g:V_to_v = 0
   au ModeChanged V:v let g:V_to_v += 1

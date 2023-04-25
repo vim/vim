@@ -975,12 +975,15 @@ normal_end:
 	reset_reg_var();
 #endif
 
-    // Reset finish_op, in case it was set
 #ifdef CURSOR_SHAPE
     int prev_finish_op = finish_op;
 #endif
-    finish_op = FALSE;
-    may_trigger_modechanged();
+    if (oap->op_type == OP_NOP)
+    {
+	// Reset finish_op, in case it was set
+	finish_op = FALSE;
+	may_trigger_modechanged();
+    }
 #ifdef CURSOR_SHAPE
     // Redraw the cursor with another shape, if we were in Operator-pending
     // mode or did a replace command.
