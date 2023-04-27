@@ -1637,14 +1637,13 @@ ml_recover(int checkext)
 		else
 		{
 		    /*
-		     * it is a data block
-		     * Append all the lines in this block
+		     * It is a data block.
+		     * Append all the lines in this block.
 		     */
 		    has_error = FALSE;
-			/*
-			 * check length of block
-			 * if wrong, use length in pointer block
-			 */
+
+		    // Check the length of the block.
+		    // If wrong, use the length given in the pointer block.
 		    if (page_count * mfp->mf_page_size != dp->db_txt_end)
 		    {
 			ml_append(lnum++, (char_u *)_("??? from here until ???END lines may be messed up"),
@@ -1654,13 +1653,12 @@ ml_recover(int checkext)
 			dp->db_txt_end = page_count * mfp->mf_page_size;
 		    }
 
-			// make sure there is a NUL at the end of the block
+		    // Make sure there is a NUL at the end of the block so we
+		    // don't go over the end when copying text.
 		    *((char_u *)dp + dp->db_txt_end - 1) = NUL;
 
-			/*
-			 * check number of lines in block
-			 * if wrong, use count in data block
-			 */
+		    // Check the number of lines in the block.
+		    // If wrong, use the count in the data block.
 		    if (line_count != dp->db_line_count)
 		    {
 			ml_append(lnum++, (char_u *)_("??? from here until ???END lines may have been inserted/deleted"),
@@ -1669,17 +1667,36 @@ ml_recover(int checkext)
 			has_error = TRUE;
 		    }
 
+		    int did_questions = FALSE;
 		    for (i = 0; i < dp->db_line_count; ++i)
 		    {
+			if ((char_u *)&(dp->db_index[i])
+					    >= (char_u *)dp + dp->db_txt_start)
+			{
+			    // line count must be wrong
+			    ++error;
+			    ml_append(lnum++,
+				    (char_u *)_("??? lines may be missing"),
+							     (colnr_T)0, TRUE);
+			    break;
+			}
+
 			txt_start = (dp->db_index[i] & DB_INDEX_MASK);
 			if (txt_start <= (int)HEADER_SIZE
 					  || txt_start >= (int)dp->db_txt_end)
 			{
-			    p = (char_u *)"???";
 			    ++error;
+			    // avoid lots of lines with "???"
+			    if (did_questions)
+				continue;
+			    did_questions = TRUE;
+			    p = (char_u *)"???";
 			}
 			else
+			{
+			    did_questions = FALSE;
 			    p = (char_u *)dp + txt_start;
+			}
 			ml_append(lnum++, p, (colnr_T)0, TRUE);
 		    }
 		    if (has_error)
