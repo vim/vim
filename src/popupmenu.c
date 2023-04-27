@@ -1649,7 +1649,7 @@ pum_make_popup(char_u *path_name, int use_mouse_pos)
     {
 	// Hack: set mouse position at the cursor so that the menu pops up
 	// around there.
-	mouse_row = curwin->w_winrow + curwin->w_wrow;
+	mouse_row = W_WINROW(curwin) + curwin->w_wrow;
 	mouse_col = curwin->w_wincol + curwin->w_wcol;
     }
 
