@@ -3134,6 +3134,9 @@ call_internal_method(
 
     if (global_functions[fi].f_argtype == FEARG_2)
     {
+	if (argcount < 1)
+	    return FCERR_TOOFEW;
+
 	// base value goes second
 	argv[0] = argvars[0];
 	argv[1] = *basetv;
@@ -3142,6 +3145,9 @@ call_internal_method(
     }
     else if (global_functions[fi].f_argtype == FEARG_3)
     {
+	if (argcount < 2)
+	    return FCERR_TOOFEW;
+
 	// base value goes third
 	argv[0] = argvars[0];
 	argv[1] = argvars[1];
@@ -3151,6 +3157,9 @@ call_internal_method(
     }
     else if (global_functions[fi].f_argtype == FEARG_4)
     {
+	if (argcount < 3)
+	    return FCERR_TOOFEW;
+
 	// base value goes fourth
 	argv[0] = argvars[0];
 	argv[1] = argvars[1];

@@ -1626,8 +1626,14 @@ check_internal_func_args(
 
     if (method_call && argoff > 1)
     {
-	isn_T	*isn = generate_instr(cctx, ISN_SHUFFLE);
+	if (argcount < argoff)
+	{
+	    semsg(_(e_not_enough_arguments_for_function_str),
+						 internal_func_name(func_idx));
+	    return FAIL;
+	}
 
+	isn_T	*isn = generate_instr(cctx, ISN_SHUFFLE);
 	if (isn  == NULL)
 	    return FAIL;
 	isn->isn_arg.shuffle.shfl_item = argcount;
