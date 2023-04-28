@@ -5231,8 +5231,8 @@ build_stl_str_hl(
 #endif // FEAT_STL_OPT
 
 /*
- * Get relative cursor position in window into "buf[buflen]", in the form 99%,
- * using "Top", "Bot" or "All" when appropriate.
+ * Get relative cursor position in window into "buf[buflen]", in the localized
+ * percentage form like %99, 99%; using "Top", "Bot" or "All" when appropriate.
  */
     void
 get_rel_pos(
@@ -5240,6 +5240,7 @@ get_rel_pos(
     char_u	*buf,
     int		buflen)
 {
+    int		per; // localized percentage value
     long	above; // number of lines above window
     long	below; // number of lines below window
 
@@ -5256,13 +5257,22 @@ get_rel_pos(
     below = wp->w_buffer->b_ml.ml_line_count - wp->w_botline + 1;
     if (below <= 0)
 	vim_strncpy(buf, (char_u *)(above == 0 ? _("All") : _("Bot")),
-							(size_t)(buflen - 1));
+		    (size_t)(buflen - 1));
     else if (above <= 0)
 	vim_strncpy(buf, (char_u *)_("Top"), (size_t)(buflen - 1));
-    else
-	vim_snprintf((char *)buf, (size_t)buflen, "%2d%%", above > 1000000L
-				    ? (int)(above / ((above + below) / 100L))
-				    : (int)(above * 100L / (above + below)));
+    else {
+	if (above > 1000000L)
+	    per = (int)(above / ((above + below) / 100L));
+	else
+	    per = (int)(above * 100L / (above + below));
+
+	if (per < 10)
+	    // localized percentage value, make sure to prepend one space
+	    vim_snprintf_add((char *)buf, buflen, _(" %d%%"), per);
+	else
+	    // localized percentage value
+	    vim_snprintf_add((char *)buf, buflen, _("%d%%"), per);
+    }
 }
 
 /*
