@@ -266,7 +266,7 @@ func Test_term_mouse_middle_click()
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
   let @* = save_quotestar
-  let @+ = save_quotestar
+  let @+ = save_quoteplus
   bwipe!
 endfunc
 
