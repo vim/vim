@@ -98,6 +98,8 @@
 # define SIGDUMMYARG
 #endif
 
+typedef void (*sighandler_T) SIGPROTOARG;
+
 #ifdef HAVE_DIRENT_H
 # include <dirent.h>
 # ifndef NAMLEN

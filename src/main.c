@@ -1557,7 +1557,7 @@ getout_preserve_modified(int exitval)
     // Ignore SIGHUP, because a dropped connection causes a read error, which
     // makes Vim exit and then handling SIGHUP causes various reentrance
     // problems.
-    signal(SIGHUP, SIG_IGN);
+    mch_signal(SIGHUP, SIG_IGN);
 # endif
 
     ml_close_notmod();		    // close all not-modified buffers

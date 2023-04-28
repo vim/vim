@@ -785,8 +785,8 @@ VimApp::ReadyToRun()
      * Apparently signals are inherited by the created thread -
      * disable the most annoying ones.
      */
-    signal(SIGINT, SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
+    mch_signal(SIGINT, SIG_IGN);
+    mch_signal(SIGQUIT, SIG_IGN);
 }
 
     void
@@ -1067,8 +1067,8 @@ VimFormView::AllAttached()
      * Apparently signals are inherited by the created thread -
      * disable the most annoying ones.
      */
-    signal(SIGINT, SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
+    mch_signal(SIGINT, SIG_IGN);
+    mch_signal(SIGQUIT, SIG_IGN);
 
     if (menuBar && textArea) {
 	/*

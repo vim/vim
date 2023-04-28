@@ -1,4 +1,5 @@
 /* os_unix.c */
+sighandler_T mch_signal(int sig, sighandler_T func);
 int mch_chdir(char *path);
 void mch_write(char_u *s, int len);
 int mch_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);

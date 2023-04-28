@@ -186,9 +186,9 @@ setup_slavepty(int fd)
     int
 mch_openpty(char **ttyn)
 {
-    int		f;
-    char	*m;
-    void (*sigcld) SIGPROTOARG;
+    int			f;
+    char		*m;
+    sighandler_T	sigcld;
     static char TtyName[32];  // used for opening a new pty-pair
 
     if ((f = posix_openpt(O_RDWR | O_NOCTTY | O_EXTRA)) == -1)
@@ -196,14 +196,14 @@ mch_openpty(char **ttyn)
 
     // SIGCHLD set to SIG_DFL for grantpt() because it fork()s and
     // exec()s pt_chmod
-    sigcld = signal(SIGCHLD, SIG_DFL);
+    sigcld = mch_signal(SIGCHLD, SIG_DFL);
     if ((m = ptsname(f)) == NULL || grantpt(f) || unlockpt(f))
     {
-	signal(SIGCHLD, sigcld);
+	mch_signal(SIGCHLD, sigcld);
 	close(f);
 	return -1;
     }
-    signal(SIGCHLD, sigcld);
+    mch_signal(SIGCHLD, sigcld);
     vim_strncpy((char_u *)TtyName, (char_u *)m, sizeof(TtyName) - 1);
     initmaster(f);
     *ttyn = TtyName;
@@ -285,9 +285,9 @@ mch_openpty(char **ttyn)
     int
 mch_openpty(char **ttyn)
 {
-    int		f;
-    char	*m;
-    void (*sigcld) SIGPROTOARG;
+    int			f;
+    char		*m;
+    sighandler_T	sigcld;
     // used for opening a new pty-pair:
     static char TtyName[32];
 
@@ -298,14 +298,14 @@ mch_openpty(char **ttyn)
      * SIGCHLD set to SIG_DFL for grantpt() because it fork()s and
      * exec()s pt_chmod
      */
-    sigcld = signal(SIGCHLD, SIG_DFL);
+    sigcld = mch_signal(SIGCHLD, SIG_DFL);
     if ((m = ptsname(f)) == NULL || grantpt(f) || unlockpt(f))
     {
-	signal(SIGCHLD, sigcld);
+	mch_signal(SIGCHLD, sigcld);
 	close(f);
 	return -1;
     }
-    signal(SIGCHLD, sigcld);
+    mch_signal(SIGCHLD, sigcld);
     vim_strncpy((char_u *)TtyName, (char_u *)m, sizeof(TtyName) - 1);
     initmaster(f);
     *ttyn = TtyName;
