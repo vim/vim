@@ -106,9 +106,6 @@ extern int	toupper(int);
 extern int	tolower(int);
 
 extern void (*signal(int, void (*func) SIGPROTOARG)) SIGPROTOARG;
-#ifdef HAVE_SIGSET
-extern void (*sigset(int, void (*func) SIGPROTOARG)) SIGPROTOARG;
-#endif
 
 #if defined(HAVE_SETJMP_H)
 # ifdef HAVE_SIGSETJMP
