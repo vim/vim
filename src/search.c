@@ -4422,13 +4422,13 @@ fuzzy_match_recursive(
 	// Found match
 	if (vim_tolower(c1) == vim_tolower(c2))
 	{
-	    int_u	recursiveMatches[MAX_FUZZY_MATCHES];
-	    int		recursiveScore = 0;
-	    char_u	*next_char;
-
 	    // Supplied matches buffer was too short
 	    if (nextMatch >= maxMatches)
 		return 0;
+
+	    int		recursiveScore = 0;
+	    int_u	recursiveMatches[MAX_FUZZY_MATCHES];
+	    CLEAR_FIELD(recursiveMatches);
 
 	    // "Copy-on-Write" srcMatches into matches
 	    if (first_match && srcMatches)
@@ -4438,10 +4438,7 @@ fuzzy_match_recursive(
 	    }
 
 	    // Recursive call that "skips" this match
-	    if (has_mbyte)
-		next_char = str + (*mb_ptr2len)(str);
-	    else
-		next_char = str + 1;
+	    char_u *next_char = str + (has_mbyte ? (*mb_ptr2len)(str) : 1);
 	    if (fuzzy_match_recursive(fuzpat, next_char, strIdx + 1,
 			&recursiveScore, strBegin, strLen, matches,
 			recursiveMatches,
@@ -4506,8 +4503,8 @@ fuzzy_match_recursive(
  * Uses char_u for match indices. Therefore patterns are limited to
  * MAX_FUZZY_MATCHES characters.
  *
- * Returns TRUE if 'pat_arg' matches 'str'. Also returns the match score in
- * 'outScore' and the matching character positions in 'matches'.
+ * Returns TRUE if "pat_arg" matches "str". Also returns the match score in
+ * "outScore" and the matching character positions in "matches".
  */
     int
 fuzzy_match(
