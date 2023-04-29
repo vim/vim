@@ -10,6 +10,13 @@
  * os_unixx.h -- include files that are only used in os_unix.c
  */
 
+/*
+ * Stuff for signals
+ */
+#if defined(HAVE_SIGSET) && !defined(signal)
+# define signal sigset
+#endif
+
    // Sun's sys/ioctl.h redefines symbols from termio world
 #if defined(HAVE_SYS_IOCTL_H) && !defined(SUN_SYSTEM)
 # include <sys/ioctl.h>

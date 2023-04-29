@@ -3706,7 +3706,7 @@ dnl Can only be used for functions that do not require any include.
 AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	getpwent getpwnam getpwuid getrlimit gettimeofday localtime_r lstat \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
-	getpgid setpgid setsid sigaltstack sigstack sigsetjmp sigaction \
+	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strcoll strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strptime strtol tgetent towlower towupper iswupper \
 	tzset usleep utime utimes mblen ftruncate unsetenv posix_openpt \
