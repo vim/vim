@@ -13,8 +13,10 @@
 /*
  * Stuff for signals
  */
-#if defined(HAVE_SIGSET) && !defined(signal)
-# define signal sigset
+#if defined(BSD) || defined(MACOS_X)
+# if defined(HAVE_SIGSET) && !defined(signal)
+#  define signal sigset
+# endif
 #endif
 
    // Sun's sys/ioctl.h redefines symbols from termio world

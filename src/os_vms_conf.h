@@ -86,9 +86,6 @@
 // Define if you have the setsid() function.
 // #undef HAVE_SETSID
 
-// Define if you have the sigset() function.
-// #undef HAVE_SIGSET
-
 #define TGETENT_ZERO_ERR
 #define HAVE_GETCWD
 #define HAVE_STRCSPN
