@@ -1209,6 +1209,24 @@ term_write_job_output(term_T *term, char_u *msg_arg, size_t len_arg)
 }
 
     static void
+position_cursor(win_T *wp, VTermPos *pos)
+{
+    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
+    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
+#ifdef FEAT_PROP_POPUP
+    if (popup_is_popup(wp))
+    {
+	wp->w_wrow += popup_top_extra(wp);
+	wp->w_wcol += popup_left_extra(wp);
+	wp->w_flags |= WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED;
+    }
+    else
+	wp->w_flags &= ~(WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED);
+#endif
+    wp->w_valid |= (VALID_WCOL|VALID_WROW);
+}
+
+    static void
 update_cursor(term_T *term, int redraw)
 {
     if (term->tl_normal_mode)
@@ -1219,7 +1237,16 @@ update_cursor(term_T *term, int redraw)
 						      term->tl_cursor_pos.col);
     else
 #endif
+    if (!term_job_running(term))
+	// avoid the cursor positioned below the last used line
 	setcursor();
+    else
+    {
+	// do not use the window cursor position
+	position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
+	windgoto(W_WINROW(curwin) + curwin->w_wrow,
+		 curwin->w_wincol + curwin->w_wcol);
+    }
     if (redraw)
     {
 	aco_save_T	aco;
@@ -2356,24 +2383,6 @@ send_keys_to_term(term_T *term, int c, int modmask, int typed)
 						(char_u *)msg, (int)len, NULL);
 
     return OK;
-}
-
-    static void
-position_cursor(win_T *wp, VTermPos *pos)
-{
-    wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
-    wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
-#ifdef FEAT_PROP_POPUP
-    if (popup_is_popup(wp))
-    {
-	wp->w_wrow += popup_top_extra(wp);
-	wp->w_wcol += popup_left_extra(wp);
-	wp->w_flags |= WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED;
-    }
-    else
-	wp->w_flags &= ~(WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED);
-#endif
-    wp->w_valid |= (VALID_WCOL|VALID_WROW);
 }
 
 /*
