@@ -86,6 +86,21 @@ func Test_op_falsy()
       call assert_equal(456, [] ?? 456)
       call assert_equal(456, {} ?? 456)
       call assert_equal(456, 0.0 ?? 456)
+
+      call assert_equal(456, v:null ?? 456)
+      call assert_equal(456, v:none ?? 456)
+      call assert_equal(456, test_null_string() ?? 456)
+      call assert_equal(456, test_null_blob() ?? 456)
+      call assert_equal(456, test_null_list() ?? 456)
+      call assert_equal(456, test_null_dict() ?? 456)
+      call assert_equal(456, test_null_function() ?? 456)
+      call assert_equal(456, test_null_partial() ?? 456)
+      if has('job')
+        call assert_equal(456, test_null_job() ?? 456)
+      endif
+      if has('channel')
+        call assert_equal(456, test_null_channel() ?? 456)
+      endif
   END
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
