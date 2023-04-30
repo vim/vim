@@ -35,7 +35,8 @@ const help_text: list<string> =<< trim END
     z      redraw menu with selected entry at center
     +      increase width of popup menu
     -      decrease width of popup menu
-    ?      show a help window
+    /      look for given text with fuzzy algorithm
+    ?      show help window
 
     <C-D>       scroll down half a page
     <C-U>       scroll up half a page
@@ -232,11 +233,11 @@ def SetToc() #{{{2
         nextline = getline(lnum + 1)
         for [lvl: string, IsEntry: func: bool] in lvl_and_test
             if IsEntry(curline, nextline)
-                b:toc.entries += [{
+                b:toc.entries->add({
                     lnum: lnum,
                     lvl: lvl->str2nr(),
                     text: curline,
-                }]
+                })
                 break
             endif
         endfor
@@ -465,12 +466,12 @@ def AddEntryInTocHelp(type: string, lnum: number, line: string) #{{{2
     # We  don't remove  the trailing  asterisk, because  the help  syntax plugin
     # might need it to highlight some headlines.
 
-    b:toc.entries += [{
+    b:toc.entries->add({
         lnum: lnum,
         lvl: lvls[type],
         text: text,
         type: type,
-    }]
+    })
 enddef
 
 def InitMaxAndCurLvl() #{{{2
@@ -503,7 +504,7 @@ def SetTitle(winid: number) #{{{2
     var curlnum: number
     var lastlnum: number = line('$', winid)
     var is_empty: bool = lastlnum == 1
-        && winid->winbufnr()->getbufline(1)->get(0, '') == ''
+        && winid->winbufnr()->getbufoneline(1) == ''
     if is_empty
         [curlnum, lastlnum] = [0, 0]
     else
@@ -718,7 +719,7 @@ def FuzzySearch(winid: number) #{{{2
         text = matches->get(0, [])
     else
         var buf: number = winid->winbufnr()
-        if prop_type_list({bufnr: buf})->index('help-fuzzy-toc') == -1
+        if prop_type_get('help-fuzzy-toc', {bufnr: buf}) == {}
             prop_type_add('help-fuzzy-toc', {
                 bufnr: buf,
                 combine: false,
@@ -929,10 +930,8 @@ enddef
 def Complete(..._): string #{{{2
     return b:toc.entries
         ->copy()
-        ->map((_, entry: dict<any>) => entry.text)
-        ->join(' ')
-        ->split('\s\+')
-        ->filter((_, token: string): bool => token =~ '^\w\+$')
+        ->map((_, entry: dict<any>) => entry.text->trim(' ~')->substitute('*', '', 'g'))
+        ->filter((_, text: string): bool => text =~ '^[-a-zA-Z0-9_() ]\+$')
         ->sort()
         ->uniq()
         ->join("\n")
