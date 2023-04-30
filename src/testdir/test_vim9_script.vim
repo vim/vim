@@ -812,6 +812,41 @@ def Test_try_catch_throw()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_throw_in_nested_try()
+  var lines =<< trim END
+      vim9script
+
+      def Try(F: func(): void)
+        try
+          F()
+        catch
+        endtry
+      enddef
+
+      class X
+        def F()
+          try
+            throw 'Foobar'
+          catch
+            throw v:exception
+          endtry
+        enddef
+      endclass
+
+      def Test_TryMethod()
+        var x = X.new()
+        Try(() => x.F())
+      enddef
+
+
+      try
+        Test_TryMethod()
+      catch
+      endtry
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_try_var_decl()
   var lines =<< trim END
       vim9script
