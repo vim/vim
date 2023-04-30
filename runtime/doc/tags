@@ -4137,6 +4137,7 @@ E1056	vim9.txt	/*E1056*
 E1057	vim9.txt	/*E1057*
 E1058	vim9.txt	/*E1058*
 E1059	vim9.txt	/*E1059*
+E106	builtin.txt	/*E106*
 E1060	vim9.txt	/*E1060*
 E1061	vim9.txt	/*E1061*
 E1062	eval.txt	/*E1062*
@@ -6759,7 +6760,9 @@ dict-identity	eval.txt	/*dict-identity*
 dict-modification	eval.txt	/*dict-modification*
 did_filetype()	builtin.txt	/*did_filetype()*
 diff	diff.txt	/*diff*
+diff()	builtin.txt	/*diff()*
 diff-diffexpr	diff.txt	/*diff-diffexpr*
+diff-func-examples	diff.txt	/*diff-func-examples*
 diff-mode	diff.txt	/*diff-mode*
 diff-options	diff.txt	/*diff-options*
 diff-original-file	diff.txt	/*diff-original-file*
