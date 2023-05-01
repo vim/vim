@@ -1848,29 +1848,80 @@ enddef
 def Test_heredoc()
   # simple heredoc
   var lines =<< trim END
-    var text =<< trim TEXT # comment
-      abc
-    TEXT
-    assert_equal(['abc'], text)
+      var text =<< trim TEXT # comment
+        abc
+      TEXT
+      assert_equal(['abc'], text)
   END
   v9.CheckDefAndScriptSuccess(lines)
 
   # empty heredoc
   lines =<< trim END
-     var text =<< trim TEXT
-     TEXT
-     assert_equal([], text)
+       var text =<< trim TEXT
+       TEXT
+       assert_equal([], text)
   END
   v9.CheckDefAndScriptSuccess(lines)
 
   # heredoc with a single empty line
   lines =<< trim END
-     var text =<< trim TEXT
+      var text =<< trim TEXT
 
-     TEXT
-     assert_equal([''], text)
+      TEXT
+      assert_equal([''], text)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # assign heredoc to variable with type
+  lines =<< trim END
+      var text: list<string> =<< trim TEXT
+        var foo =<< trim FOO
+      TEXT
+      assert_equal(['var foo =<< trim FOO'], text)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # extra whitespace before type is allowed
+  lines =<< trim END
+      var text:   list<string> =<< trim TEXT
+        var foo =<< trim FOO
+      TEXT
+      assert_equal(['var foo =<< trim FOO'], text)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # missing whitespace before type is an error
+  lines =<< trim END
+      var text:list<string> =<< trim TEXT
+        var foo =<< trim FOO
+      TEXT
+      assert_equal(['var foo =<< trim FOO'], text)
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1069:')
+
+  # assign heredoc to list slice
+  lines =<< trim END
+      var text = ['']
+      text[ : ] =<< trim TEXT
+        var foo =<< trim FOO
+      TEXT
+      assert_equal(['var foo =<< trim FOO'], text)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # assign heredoc to curly braces name in legacy function in Vim9 script
+  lines =<< trim END
+      vim9script
+      func Func()
+        let foo_3_bar = ['']
+        let foo_{1 + 2}_bar[ : ] =<< trim TEXT
+          var foo =<< trim FOO
+        TEXT
+        call assert_equal(['var foo =<< trim FOO'], foo_3_bar)
+      endfunc
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
 
   v9.CheckDefFailure(['var lines =<< trim END X', 'END'], 'E488:')
   v9.CheckDefFailure(['var lines =<< trim END " comment', 'END'], 'E488:')

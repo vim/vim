@@ -6581,7 +6581,7 @@ find_name_end(
     int		br_nest = 0;
     char_u	*p;
     int		len;
-    int		vim9script = in_vim9script();
+    int		allow_curly = flags & FNE_ALLOW_CURLY || !in_vim9script();
 
     if (expr_start != NULL)
     {
@@ -6591,12 +6591,12 @@ find_name_end(
 
     // Quick check for valid starting character.
     if ((flags & FNE_CHECK_START) && !eval_isnamec1(*arg)
-						&& (*arg != '{' || vim9script))
+					      && (*arg != '{' || !allow_curly))
 	return arg;
 
     for (p = arg; *p != NUL
 		    && (eval_isnamec(*p)
-			|| (*p == '{' && !vim9script)
+			|| (*p == '{' && allow_curly)
 			|| ((flags & FNE_INCL_BR) && (*p == '['
 					 || (*p == '.' && eval_isdictc(p[1]))))
 			|| mb_nest != 0
@@ -6637,7 +6637,7 @@ find_name_end(
 		--br_nest;
 	}
 
-	if (br_nest == 0 && !vim9script)
+	if (br_nest == 0 && allow_curly)
 	{
 	    if (*p == '{')
 	    {
