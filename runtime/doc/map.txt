@@ -408,10 +408,6 @@ Note:
 by <CR> in the {rhs} of the mapping definition.  |Command-line| mode is never
 entered.
 
-							*E1137*
-<Cmd> and <ScriptCmd> commands can have only normal characters and cannot
-contain special characters like function keys.
-
 
 1.3 MAPPING AND MODES					*:map-modes*
 			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
