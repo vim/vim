@@ -2004,6 +2004,8 @@ static funcentry_T global_functions[] =
 			ret_first_cont,	    f_extendnew},
     {"feedkeys",	1, 2, FEARG_1,	    arg2_string,
 			ret_void,	    f_feedkeys},
+    {"filecopy",	2, 2, FEARG_1,	    arg2_string,
+			ret_number_bool,    f_filecopy},
     {"file_readable",	1, 1, FEARG_1,	    arg1_string,	// obsolete
 			ret_number_bool,    f_filereadable},
     {"filereadable",	1, 1, FEARG_1,	    arg1_string,

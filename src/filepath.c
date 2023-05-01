@@ -2649,6 +2649,27 @@ f_browsedir(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
 }
 
+/*
+ * "filecopy()" function
+ */
+    void
+f_filecopy(typval_T *argvars, typval_T *rettv)
+{
+    char_u	buf[NUMBUFLEN];
+
+    rettv->vval.v_number = -1;
+    if (check_restricted() || check_secure())
+	return;
+
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
+    rettv->vval.v_number = vim_rename(tv_get_string(&argvars[0]),
+				      tv_get_string_buf(&argvars[1], buf));
+}
+
 #endif // FEAT_EVAL
 
 /*
