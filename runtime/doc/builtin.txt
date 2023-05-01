@@ -7312,8 +7312,9 @@ remote_send({server}, {string} [, {idvar}])
 <
 					*remote_startserver()* *E941* *E942*
 remote_startserver({name})
-		Become the server {name}.  This fails if already running as a
-		server, when |v:servername| is not empty.
+		Become the server {name}.  {name} must be a non-empty string.
+		This fails if already running as a server, when |v:servername|
+		is not empty.
 
 		Can also be used as a |method|: >
 			ServerName()->remote_startserver()
