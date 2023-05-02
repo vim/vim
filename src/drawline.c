@@ -389,7 +389,7 @@ handle_lnum_col(
 	  // When there are text properties above the line put the line number
 	  // below them.
 	  if (wlv->row == lnum_row
-		    && (wp->w_skipcol == 0 || wlv->row > wp->w_winrow
+		    && (wp->w_skipcol == 0 || wlv->row > 0
 					       || (wp->w_p_nu && wp->w_p_rnu)))
 	  {
 	      long num;
