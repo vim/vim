@@ -1,8 +1,15 @@
 [![Vim Logo](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
+[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) 
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) 
+[![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) 
+[![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) 
+[![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) 
+[![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) 
+[![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim)
+[![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
 
-[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
+## For translations of this README see the end. ##
 
-<sub>For translations of this README see the end.</sub>
 
 If you find a bug or want to discuss the best way to add a new feature, please
 open an [issue](https://github.com/vim/vim/issues).
@@ -14,14 +21,14 @@ or one of the [Maillists](https://www.vim.org/community.php).
 ## What is Vim? ##
 
 Vim is a greatly improved version of the good old UNIX editor
-[Vi](https://en.wikipedia.org/wiki/Vi).  Many new
-features have been added: multi-level undo, syntax highlighting, command line
+[Vi](https://en.wikipedia.org/wiki/Vi).
+Many new features have been added: multi-level undo, syntax highlighting, command line
 history, on-line help, spell checking, filename completion, block operations,
-script language, etc.  There is also a Graphical User Interface (GUI)
-available.  Still, Vi compatibility is maintained, those who have Vi "in the
-fingers" will feel at home.
-See [`runtime/doc/vi_diff.txt`](runtime/doc/vi_diff.txt) for differences with
-Vi.
+script language, etc.
+
+There is also a Graphical User Interface (GUI) available. 
+Still, Vi compatibility is maintained, those who have Vi "in the fingers" will feel at home.
+See [`runtime/doc/vi_diff.txt`](runtime/doc/vi_diff.txt) for differences with Vi.
 
 This editor is very useful for editing programs and other plain text files.
 All commands are given with normal keyboard characters, so those who can type
@@ -35,7 +42,10 @@ Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
 
 For Vim9 script see [README_VIM9](README_VIM9.md).
 
+
 ## Distribution ##
+
+[Distribution Page](https://www.vim.org/download.php)
 
 You can often use your favorite package manager to install Vim.  On Mac and
 Linux a small version of Vim is pre-installed, you still need to install Vim
@@ -43,18 +53,16 @@ if you want more features.
 
 There are separate distributions for Unix, PC, Amiga and some other systems.
 This `README.md` file comes with the runtime archive.  It includes the
-documentation, syntax files and other files that are used at runtime.  To run
-Vim you must get either one of the binary archives or a source archive.
-Which one you need depends on the system you want to run it on and whether you
-want or must compile it yourself.  Check https://www.vim.org/download.php for
-an overview of currently available distributions.
+documentation, syntax files and other files that are used at runtime.
+To run Vim you must get either one of the binary archives or a source archive.
+Which one you need depends on the system you want to run it on, and whether you
+want or must compile it yourself.
 
 Some popular places to get the latest Vim:
 * Check out the git repository from [GitHub](https://github.com/vim/vim).
 * Get the source code as an [archive](https://github.com/vim/vim/releases).
 * Get a Windows executable from the
 [vim-win32-installer](https://github.com/vim/vim-win32-installer/releases) repository.
-
 
 
 ## Compiling ##
@@ -87,6 +95,7 @@ started as `vimtutor`.  See `:help tutor` for more information.
 
 The best is to use `:help` in Vim.  If you don't have an executable yet, read
 [`runtime/doc/help.txt`](/runtime/doc/help.txt).
+
 It contains pointers to the other documentation files.
 The User Manual reads like a book and is recommended to learn to use
 Vim.  See `:help user-manual`.
