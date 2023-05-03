@@ -19,20 +19,25 @@
 # pragma clang diagnostic ignored "-Wdeclaration-after-statement"
 #endif
 
+/* Require Automated Reference Counting to compile this file */
+#if ! __has_feature(objc_arc)
+  #error This file must be compiled with ARC. Use -fobjc-arc flag.
+#endif
+
 /* Avoid a conflict for the definition of Boolean between Mac header files and
  * X11 header files. */
 #define NO_X11_INCLUDES
 
-#include <stdbool.h>
-#include <mach/boolean.h>
-#include <sys/errno.h>
-#include <stdlib.h>
+#import <stdbool.h>
+#import <mach/boolean.h>
+#import <sys/errno.h>
+#import <stdlib.h>
 
 #ifdef FEAT_RELTIME
-#include <dispatch/dispatch.h>
+#import <dispatch/dispatch.h>
 #endif
 
-#include "vim.h"
+#import "vim.h"
 #import <AppKit/AppKit.h>
 
 
@@ -66,18 +71,16 @@ clip_mch_own_selection(Clipboard_T *cbd UNUSED)
     void
 clip_mch_request_selection(Clipboard_T *cbd)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
 
     NSPasteboard *pb = [NSPasteboard generalPasteboard];
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
-    NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
-	    NSPasteboardTypeString, nil];
+    NSArray *supportedTypes = @[VimPboardType, NSPasteboardTypeString];
 #else
-    NSArray *supportedTypes = [NSArray arrayWithObjects:VimPboardType,
-	    NSStringPboardType, nil];
+    NSArray *supportedTypes = @[VimPboardType, NSStringPboardType];
 #endif
     NSString *bestType = [pb availableTypeFromArray:supportedTypes];
-    if (!bestType) goto releasepool;
+    if (!bestType) return;
 
     int motion_type = MAUTO;
     NSString *string = nil;
@@ -92,10 +95,10 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	id plist = [pb propertyListForType:VimPboardType];
 	if ([plist isKindOfClass:[NSArray class]] && [plist count] == 2)
 	{
-	    id obj = [plist objectAtIndex:1];
+	    id obj = plist[1];
 	    if ([obj isKindOfClass:[NSString class]])
 	    {
-		motion_type = [[plist objectAtIndex:0] intValue];
+		motion_type = [plist[0] intValue];
 		string = obj;
 	    }
 	}
@@ -112,11 +115,11 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	NSMutableString *mstring =
 		[[pb stringForType:NSStringPboardType] mutableCopy];
 #endif
-	if (!mstring) goto releasepool;
+	if (!mstring) return;
 
 	/* Replace unrecognized end-of-line sequences with \x0a (line feed). */
 	NSRange range = { 0, [mstring length] };
-	unsigned n = [mstring replaceOccurrencesOfString:@"\x0d\x0a"
+	NSUInteger n = [mstring replaceOccurrencesOfString:@"\x0d\x0a"
 					     withString:@"\x0a" options:0
 						  range:range];
 	if (0 == n)
@@ -129,12 +132,11 @@ clip_mch_request_selection(Clipboard_T *cbd)
     }
 
     /* Default to MAUTO, uses MCHAR or MLINE depending on trailing NL. */
-    if (!(MCHAR == motion_type || MLINE == motion_type || MBLOCK == motion_type
-	    || MAUTO == motion_type))
+    if (!(MCHAR == motion_type || MLINE == motion_type || MBLOCK == motion_type))
 	motion_type = MAUTO;
 
     char_u *str = (char_u*)[string UTF8String];
-    int len = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    int len = (int)[string lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
 
     if (input_conv.vc_type != CONV_NONE)
 	str = string_convert(&input_conv, str, &len);
@@ -144,9 +146,7 @@ clip_mch_request_selection(Clipboard_T *cbd)
 
     if (input_conv.vc_type != CONV_NONE)
 	vim_free(str);
-
-releasepool:
-    [pool release];
+    }
 }
 
 
@@ -156,7 +156,7 @@ releasepool:
     void
 clip_mch_set_selection(Clipboard_T *cbd)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
 
     /* If the '*' register isn't already filled in, fill it in now. */
     cbd->owned = TRUE;
@@ -167,7 +167,7 @@ clip_mch_set_selection(Clipboard_T *cbd)
     long_u llen = 0; char_u *str = 0;
     int motion_type = clip_convert_selection(&str, &llen, cbd);
     if (motion_type < 0)
-	goto releasepool;
+	return;
 
     /* TODO: Avoid overflow. */
     int len = (int)llen;
@@ -206,13 +206,10 @@ clip_mch_set_selection(Clipboard_T *cbd)
 #else
 	[pb setString:string forType:NSStringPboardType];
 #endif
-
-	[string release];
     }
 
     vim_free(str);
-releasepool:
-    [pool release];
+    }
 }
 
 #endif /* FEAT_CLIPBOARD */
@@ -391,19 +388,19 @@ static NSMutableDictionary<NSNumber*, NSSound*> *sounds_list = nil;
 /// A delegate for handling when a sound has stopped playing, in
 /// order to clean up the sound and to send a callback.
 @interface SoundDelegate : NSObject<NSSoundDelegate>;
-
-- (id) init:(long) sound_id callback:(soundcb_T*) callback;
+- (instancetype) init NS_UNAVAILABLE;
+- (instancetype) init:(long) sound_id callback:(soundcb_T*) callback NS_DESIGNATED_INITIALIZER;
 - (void) sound:(NSSound *)sound didFinishPlaying:(BOOL)flag;
 
-@property (readonly) long sound_id;
-@property (readonly) soundcb_T *callback;
+@property (nonatomic, readonly) long sound_id;
+@property (nonatomic, readonly) soundcb_T *callback;
 
 @end
 
 @implementation SoundDelegate
-- (id) init:(long) sound_id callback:(soundcb_T*) callback
+- (instancetype) init:(long) sound_id callback:(soundcb_T*) callback
 {
-    if ([super init])
+    if (self = [super init])
     {
 	_sound_id = sound_id;
 	_callback = callback;
@@ -421,18 +418,14 @@ static NSMutableDictionary<NSNumber*, NSSound*> *sounds_list = nil;
 	    delete_sound_callback(_callback);
 	    _callback = NULL;
 	}
-	[sounds_list removeObjectForKey:[NSNumber numberWithLong:_sound_id]];
     }
-    // Release itself. Do that here instead of earlier because NSSound only
-    // holds weak reference to this object.
-    [self release];
 }
 @end
 
     void
 process_cfrunloop(void)
 {
-    if (sounds_list != nil && [sounds_list count] > 0)
+    if (sounds_list != nil && [sounds_list count])
     {
 	// Continually drain the run loop of events. Currently, this
 	// is only used for processing sound callbacks, because
@@ -452,9 +445,9 @@ sound_mch_play(const char_u* sound_name, long sound_id, soundcb_T *callback, boo
 {
     @autoreleasepool
     {
-	NSString *sound_name_ns = [[[NSString alloc] initWithUTF8String:(const char*)sound_name] autorelease];
+	NSString *sound_name_ns = @((const char*)sound_name);
 	NSSound* sound = playfile ?
-	    [[[NSSound alloc] initWithContentsOfFile:sound_name_ns byReference:YES] autorelease] :
+	    [[NSSound alloc] initWithContentsOfFile:sound_name_ns byReference:YES] :
 	    [NSSound soundNamed:sound_name_ns];
 	if (!sound)
 	{
@@ -482,12 +475,12 @@ sound_mch_stop(long sound_id)
 {
     @autoreleasepool
     {
-	NSSound *sound = sounds_list[[NSNumber numberWithLong:sound_id]];
+    NSNumber *_sound_id = [NSNumber numberWithLong:sound_id];
+	NSSound *sound = sounds_list[_sound_id];
 	if (sound != nil)
 	{
-	    // Stop the sound. No need to release it because the delegate will do
-	    // it for us.
 	    [sound stop];
+        [sounds_list removeObjectForKey:_sound_id];
 	}
     }
 }
@@ -501,9 +494,9 @@ sound_mch_clear(void)
 	{
 	    for (NSSound *sound in [sounds_list allValues])
 	    {
-		[sound stop];
+		    [sound stop];
 	    }
-	    [sounds_list release];
+
 	    sounds_list = nil;
 	}
     }
