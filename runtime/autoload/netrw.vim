@@ -5734,7 +5734,7 @@ fun! s:NetrwEditBuf(bufnum)
    exe "sil! NetrwKeepj keepalt noswapfile b ".fnameescape(a:bufnum)
   else
 "   call Decho("exe sil! NetrwKeepj noswapfile b ".fnameescape(a:bufnum))
-   exe "sil! NetrwKeepj noswapfile b ".fnameescape(a:bufnume)
+   exe "sil! NetrwKeepj noswapfile b ".fnameescape(a:bufnum)
   endif
 "  call Dret("s:NetrwEditBuf")
 endfun
