@@ -223,9 +223,11 @@ fill_assert_error(
     }
     else
     {
-	ga_concat(gap, (char_u *)"'");
+	if (atype == ASSERT_FAILS)
+	    ga_concat(gap, (char_u *)"'");
 	ga_concat_shorten_esc(gap, exp_str);
-	ga_concat(gap, (char_u *)"'");
+	if (atype == ASSERT_FAILS)
+	    ga_concat(gap, (char_u *)"'");
     }
     if (atype != ASSERT_NOTEQUAL)
     {
@@ -743,7 +745,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		actual_tv.vval.v_string = actual;
 	    }
 	    fill_assert_error(&ga, &argvars[2], expected_str,
-			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
+			&argvars[error_found_index], &actual_tv, ASSERT_FAILS);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
