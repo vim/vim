@@ -2188,6 +2188,7 @@ func Test_terminal_ansicolors_func()
   let colors[4] = 'Invalid'
   call assert_fails('call term_setansicolors(buf, colors)', 'E254:')
   call assert_fails('call term_setansicolors(buf, {})', 'E1211:')
+  call assert_fails('call term_setansicolors(buf, [])', 'E475: Invalid value for argument "colors"')
   set tgc&
 
   call StopShellInTerminal(buf)
