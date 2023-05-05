@@ -3937,8 +3937,8 @@ copyfile_recursive(char_u *from, char_u *to)
 	sbuf = alloc(MAXPATHL);
 	if (sbuf == NULL)
 	{
-	    vim_free(exp);
 	    ga_clear_strings(&ga);
+	    vim_free(exp);
 	    return -1;
 	}
 
@@ -3954,9 +3954,9 @@ copyfile_recursive(char_u *from, char_u *to)
 	for (i = 0; i < ga.ga_len; ++i)
 	{
 	    // Copy {from}/{file} to {to}/{file} directory
-	    vim_snprintf(sbuf, MAXPATHL, "%s/%s", exp,
+	    vim_snprintf((char *)sbuf, MAXPATHL, "%s/%s", exp,
 		    ((char_u **)ga.ga_data)[i]);
-	    vim_snprintf(dbuf, MAXPATHL, "%s/%s", to,
+	    vim_snprintf((char *)dbuf, MAXPATHL, "%s/%s", to,
 		    ((char_u **)ga.ga_data)[i]);
 	    if (copyfile_recursive(sbuf, dbuf) != 0)
 	    {
