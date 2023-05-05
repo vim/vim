@@ -3920,9 +3920,11 @@ copyfile(char_u *from, char_u *to)
 
 	    // Create link
 	    ret = symlink(linkbuf, (char *)to);
+	} else {
+	    ret = -1;
 	}
 
-	return ret;
+	return ret == 0 ? ret : -1;
     }
 #endif
 
