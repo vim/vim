@@ -2661,9 +2661,8 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
     if (check_restricted() || check_secure())
 	return;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL))
+    if (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
     rettv->vval.v_number = copyfile_recursive(tv_get_string(&argvars[0]),
