@@ -3926,7 +3926,7 @@ copyfile_recursive(char_u *from, char_u *to)
 	return -1;
 
     // Make {to} directory
-    if (!mch_isdir(to) && vim_mkdir_emsg(to, 0755) != OK)
+    if (!mch_isdir(to) && vim_mkdir(to, mch_getperm(from)) != 0)
     {
 	vim_free(exp);
 	return -1;
