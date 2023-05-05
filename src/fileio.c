@@ -3770,19 +3770,12 @@ vim_fgets(char_u *buf, int size, FILE *fp)
     int
 vim_rename(char_u *from, char_u *to)
 {
-    int		fd_in;
-    int		fd_out;
     int		n;
-    char	*errmsg = NULL;
-    char	*buffer;
+    int		ret;
 #ifdef AMIGA
     BPTR	flock;
 #endif
     stat_T	st;
-    long	perm;
-#ifdef HAVE_ACL
-    vim_acl_T	acl;		// ACL from original file
-#endif
     int		use_tmp_file = FALSE;
 
     /*
@@ -3903,6 +3896,30 @@ vim_rename(char_u *from, char_u *to)
     /*
      * Rename() failed, try copying the file.
      */
+    ret = vim_copyfile(from, to);
+    if (ret == 0)
+	mch_remove(from);
+
+    return ret;
+}
+
+/*
+ * Create the new file with same permissions as the original.
+ * Return -1 for failure, 0 for success.
+ */
+    int
+vim_copyfile(char_u *from, char_u *to)
+{
+    int		fd_in;
+    int		fd_out;
+    int		n;
+    char	*errmsg = NULL;
+    char	*buffer;
+    long	perm;
+#ifdef HAVE_ACL
+    vim_acl_T	acl;		// ACL from original file
+#endif
+
     perm = mch_getperm(from);
 #ifdef HAVE_ACL
     // For systems that support ACL: get the ACL from the original file.
@@ -3971,10 +3988,8 @@ vim_rename(char_u *from, char_u *to)
 	semsg(errmsg, to);
 	return -1;
     }
-    mch_remove(from);
     return 0;
 }
-
 static int already_warned = FALSE;
 
 /*
