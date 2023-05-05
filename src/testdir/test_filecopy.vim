@@ -1,5 +1,6 @@
 " Test filecopy()
 
+source check.vim
 source shared.vim
 
 func Test_copy_file_to_file()
@@ -18,6 +19,21 @@ func Test_copy_file_to_file()
 
   call delete('Xcopy2')
   call delete('Xcopy1')
+endfunc
+
+func Test_copy_symbolic_link()
+  CheckUnix
+
+  call writefile(['text'], 'Xtestfile', 'D')
+  silent !ln -s -f Xtestfile Xtestlink
+
+  call assert_equal(0, filecopy('Xtestlink', 'Xtestlink2'))
+  call assert_equal('link', getftype('Xtestlink2'))
+  call assert_equal(['text'], readfile('Xtestlink2'))
+
+  call delete('Xtestlink2')
+  call delete('Xtestlink')
+  call delete('Xtestfile')
 endfunc
 
 func Test_copy_dir_to_dir()
