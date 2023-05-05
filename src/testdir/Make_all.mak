@@ -143,6 +143,7 @@ NEW_TESTS = \
 	test_file_perm \
 	test_file_size \
 	test_filechanged \
+	test_filecopy \
 	test_fileformat \
 	test_filetype \
 	test_filter_cmd \
