@@ -3904,80 +3904,6 @@ vim_rename(char_u *from, char_u *to)
     return ret;
 }
 
-/*
- * Copy "name" and everything in it, recursively.
- * return 0 for success, -1 if some file was not copied.
- */
-    int
-copyfile_recursive(char_u *from, char_u *to)
-{
-    int result = 0;
-    int		i;
-    char_u	*exp;
-    char_u	*sbuf;
-    char_u	*dbuf;
-    garray_T	ga;
-
-    if (!mch_isdir(from))
-	return copyfile(from, to);
-
-    exp = vim_strsave(from);
-    if (exp == NULL)
-	return -1;
-
-    // Make {to} directory
-    if (!mch_isdir(to) && vim_mkdir(to, mch_getperm(from)) != 0)
-    {
-	vim_free(exp);
-	return -1;
-    }
-
-    if (readdir_core(&ga, exp, FALSE, NULL, NULL, READDIR_SORT_NONE) == OK)
-    {
-	sbuf = alloc(MAXPATHL);
-	if (sbuf == NULL)
-	{
-	    ga_clear_strings(&ga);
-	    vim_free(exp);
-	    return -1;
-	}
-
-	dbuf = alloc(MAXPATHL);
-	if (dbuf == NULL)
-	{
-	    vim_free(sbuf);
-	    ga_clear_strings(&ga);
-	    vim_free(exp);
-	    return -1;
-	}
-
-	for (i = 0; i < ga.ga_len; ++i)
-	{
-	    // Copy {from}/{file} to {to}/{file} directory
-	    vim_snprintf((char *)sbuf, MAXPATHL, "%s/%s", exp,
-		    ((char_u **)ga.ga_data)[i]);
-	    vim_snprintf((char *)dbuf, MAXPATHL, "%s/%s", to,
-		    ((char_u **)ga.ga_data)[i]);
-	    if (copyfile_recursive(sbuf, dbuf) != 0)
-	    {
-		result = -1;
-		break;
-	    }
-	}
-
-	vim_free(dbuf);
-	vim_free(sbuf);
-	ga_clear_strings(&ga);
-
-    }
-    else
-	result = -1;
-
-    vim_free(exp);
-
-    return result;
-}
-
 
 /*
  * Create the new file with same permissions as the original.
@@ -5201,6 +5127,80 @@ delete_recursive(char_u *name)
     }
     else
 	result = mch_remove(name) == 0 ? 0 : -1;
+
+    return result;
+}
+
+/*
+ * Copy "name" and everything in it, recursively.
+ * return 0 for success, -1 if some file was not copied.
+ */
+    int
+copyfile_recursive(char_u *from, char_u *to)
+{
+    int result = 0;
+    int		i;
+    char_u	*exp;
+    char_u	*sbuf;
+    char_u	*dbuf;
+    garray_T	ga;
+
+    if (!mch_isdir(from))
+	return copyfile(from, to);
+
+    exp = vim_strsave(from);
+    if (exp == NULL)
+	return -1;
+
+    // Make {to} directory
+    if (!mch_isdir(to) && vim_mkdir(to, mch_getperm(from)) != 0)
+    {
+	vim_free(exp);
+	return -1;
+    }
+
+    if (readdir_core(&ga, exp, FALSE, NULL, NULL, READDIR_SORT_NONE) == OK)
+    {
+	sbuf = alloc(MAXPATHL);
+	if (sbuf == NULL)
+	{
+	    ga_clear_strings(&ga);
+	    vim_free(exp);
+	    return -1;
+	}
+
+	dbuf = alloc(MAXPATHL);
+	if (dbuf == NULL)
+	{
+	    vim_free(sbuf);
+	    ga_clear_strings(&ga);
+	    vim_free(exp);
+	    return -1;
+	}
+
+	for (i = 0; i < ga.ga_len; ++i)
+	{
+	    // Copy {from}/{file} to {to}/{file} directory
+	    vim_snprintf((char *)sbuf, MAXPATHL, "%s/%s", exp,
+		    ((char_u **)ga.ga_data)[i]);
+	    vim_snprintf((char *)dbuf, MAXPATHL, "%s/%s", to,
+		    ((char_u **)ga.ga_data)[i]);
+	    if (copyfile_recursive(sbuf, dbuf) != 0)
+	    {
+		result = -1;
+		break;
+	    }
+	}
+
+	vim_free(dbuf);
+	vim_free(sbuf);
+	ga_clear_strings(&ga);
+
+    }
+    else
+	result = -1;
+
+    vim_free(exp);
 
     return result;
 }
