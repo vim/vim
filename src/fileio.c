@@ -41,7 +41,7 @@ static char_u *check_for_cryptkey(char_u *cryptkey, char_u *ptr, long *sizep, of
 #endif
 static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
-static int copyfile(const char_u *from, const char_u *to);
+static int copyfile(char_u *from, char_u *to);
 
 #ifdef FEAT_EVAL
 static int readdirex_sort;
@@ -3901,6 +3901,12 @@ vim_rename(char_u *from, char_u *to)
     if (ret != 0)
 	return ret;
 
+    /*
+     * Fail if the "from" file doesn't exist.
+     */
+    if (mch_stat((char *)from, &st) < 0)
+	return -1;
+
     mch_remove(from);
     return 0;
 }
@@ -3911,7 +3917,7 @@ vim_rename(char_u *from, char_u *to)
  * Return -1 for failure, 0 for success.
  */
     static int
-copyfile(const char_u *from, const char_u *to)
+copyfile(char_u *from, char_u *to)
 {
     int		fd_in;
     int		fd_out;
@@ -3923,10 +3929,10 @@ copyfile(const char_u *from, const char_u *to)
     vim_acl_T	acl;		// ACL from original file
 #endif
 
-    perm = mch_getperm((char_u *)from);
+    perm = mch_getperm(from);
 #ifdef HAVE_ACL
     // For systems that support ACL: get the ACL from the original file.
-    acl = mch_get_acl((char_u *)from);
+    acl = mch_get_acl(from);
 #endif
     fd_in = mch_open((char *)from, O_RDONLY|O_EXTRA, 0);
     if (fd_in == -1)
@@ -3980,11 +3986,11 @@ copyfile(const char_u *from, const char_u *to)
     mch_setperm(to, perm);
 #endif
 #ifdef HAVE_ACL
-    mch_set_acl((char_u *)to, acl);
+    mch_set_acl(to, acl);
     mch_free_acl(acl);
 #endif
 #if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
-    mch_copy_sec((char_u *)from, (char_u *)to);
+    mch_copy_sec(from, to);
 #endif
     if (errmsg != NULL)
     {
