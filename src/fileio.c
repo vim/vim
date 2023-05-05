@@ -3902,12 +3902,11 @@ vim_rename(char_u *from, char_u *to)
 	return ret;
 
     /*
-     * Fail if the "from" file doesn't exist.
+     * Remove copied original file
      */
-    if (mch_stat((char *)from, &st) < 0)
-	return -1;
+    if (mch_stat((char *)from, &st) >= 0)
+	mch_remove(from);
 
-    mch_remove(from);
     return 0;
 }
 
