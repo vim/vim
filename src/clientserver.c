@@ -968,25 +968,23 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
 f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_CLIENTSERVER
-    char_u	*server;
-
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
 
-    server = tv_get_string_chk(&argvars[0]);
-    if (server == NULL)
-	return;		// type error; errmsg already given
     if (serverName != NULL)
-	emsg(_(e_already_started_server));
-    else
     {
-# ifdef FEAT_X11
-	if (check_connection() == OK)
-	    serverRegisterName(X_DISPLAY, server);
-# else
-	serverSetName(server);
-# endif
+	emsg(_(e_already_started_server));
+	return;
     }
+
+    char_u *server = tv_get_string_chk(&argvars[0]);
+# ifdef FEAT_X11
+    if (check_connection() == OK)
+	serverRegisterName(X_DISPLAY, server);
+# else
+    serverSetName(server);
+# endif
+
 #else
     emsg(_(e_clientserver_feature_not_available));
 #endif

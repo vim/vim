@@ -218,6 +218,9 @@ readfile(
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
     int		eof;
+#ifdef FEAT_SODIUM
+    int		may_need_lseek = FALSE;
+#endif
 
     au_did_filetype = FALSE; // reset before triggering any autocommands
 
@@ -1282,15 +1285,43 @@ retry:
 		     */
 # ifdef FEAT_SODIUM
 		    // Let the crypt layer work with a buffer size of 8192
+		    //
+		    // Sodium encryption requires a fixed block size to
+		    // successfully decrypt. However, unfortunately the file
+		    // header size changes between xchacha20 and xchacha20v2 by
+		    // 'add_len' bytes.
+		    // So we will now read the maximum header size + encryption
+		    // metadata, but after determining to read an xchacha20
+		    // encrypted file, we have to rewind the file descriptor by
+		    // 'add_len' bytes in the second round.
+		    //
+		    // Be careful with changing it, it needs to stay the same
+		    // for reading back previously encrypted files!
 		    if (filesize == 0)
+		    {
 			// set size to 8K + Sodium Crypt Metadata
 			size = WRITEBUFSIZE + crypt_get_max_header_len()
 		     + crypto_secretstream_xchacha20poly1305_HEADERBYTES
 		     + crypto_secretstream_xchacha20poly1305_ABYTES;
+			may_need_lseek = TRUE;
+		    }
 
-		    else if (filesize > 0 && (curbuf->b_cryptstate != NULL &&
-			 curbuf->b_cryptstate->method_nr == CRYPT_M_SOD))
+		    else if (filesize > 0 && (curbuf->b_cryptstate != NULL
+				&& crypt_method_is_sodium(
+					     curbuf->b_cryptstate->method_nr)))
+		    {
 			size = WRITEBUFSIZE + crypto_secretstream_xchacha20poly1305_ABYTES;
+			// need to rewind by - add_len from CRYPT_M_SOD2 (see
+			// description above)
+			if (curbuf->b_cryptstate->method_nr == CRYPT_M_SOD
+						     && !eof && may_need_lseek)
+			{
+			    lseek(fd, crypt_get_header_len(
+					       curbuf->b_cryptstate->method_nr)
+				       - crypt_get_max_header_len(), SEEK_CUR);
+			    may_need_lseek = FALSE;
+			}
+		    }
 # endif
 		    eof = size;
 		    size = read_eintr(fd, ptr, size);

@@ -401,6 +401,13 @@ def Test_assignment_with_operator()
       var f =  Foo.new(3)
       f.Add(17)
       assert_equal(20, f.x)
+
+      def AddToFoo(obj: Foo)
+        obj.x += 3
+      enddef
+
+      AddToFoo(f)
+      assert_equal(23, f.x)
   END
   v9.CheckScriptSuccess(lines)
 enddef

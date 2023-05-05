@@ -1143,7 +1143,7 @@ get_function_body(
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
-		if (eap->cmdidx == CMD_def && nesting == 0)
+		if (vim9_function && nesting == 0)
 		    heredoc_concat_len = newlines->ga_len + 1;
 	    }
 
@@ -1153,23 +1153,20 @@ get_function_body(
 		//       and ":cmd [a, b] =<< [trim] EOF"
 		//       and "lines =<< [trim] EOF" for Vim9
 		// Where "cmd" can be "let", "var", "final" or "const".
-		arg = skipwhite(skiptowhite(p));
-		if (*arg == '[')
-		    arg = vim_strchr(arg, ']');
-		if (arg != NULL)
+		arg = p;
+		if (checkforcmd(&arg, "let", 2)
+			|| checkforcmd(&arg, "var", 3)
+			|| checkforcmd(&arg, "final", 5)
+			|| checkforcmd(&arg, "const", 5)
+			|| vim9_function)
 		{
-		    int found = (eap->cmdidx == CMD_def && arg[0] == '='
-					     && arg[1] == '<' && arg[2] =='<');
-
-		    if (!found)
-			// skip over the argument after "cmd"
-			arg = skipwhite(skiptowhite(arg));
-		    if (found || (arg[0] == '=' && arg[1] == '<'
-								&& arg[2] =='<'
-			    && (checkforcmd(&p, "let", 2)
-				|| checkforcmd(&p, "var", 3)
-				|| checkforcmd(&p, "final", 5)
-				|| checkforcmd(&p, "const", 5))))
+		    while (vim_strchr((char_u *)"$@&", *arg) != NULL)
+			++arg;
+		    arg = skipwhite(find_name_end(arg, NULL, NULL,
+					       FNE_INCL_BR | FNE_ALLOW_CURLY));
+		    if (vim9_function && *arg == ':')
+			arg = skipwhite(skip_type(skipwhite(arg + 1), FALSE));
+		    if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<')
 		    {
 			p = skipwhite(arg + 3);
 			while (TRUE)

@@ -2670,7 +2670,7 @@ func LspTests(port)
   " " Test for sending a raw message
   " let g:lspNotif = []
   " let s = "Content-Length: 62\r\n"
-  " let s ..= "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+  " let s ..= "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
   " let s ..= "\r\n"
   " let s ..= '{"method":"echo","jsonrpc":"2.0","params":{"m":"raw-message"}}'
   " call ch_sendraw(ch, s)

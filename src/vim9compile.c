@@ -2065,16 +2065,31 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 {
     if (lhs->lhs_type->tt_type == VAR_OBJECT)
     {
-	// "this.value": load "this" object and get the value at index
-	// for an object or class member get the type of the member
+	// "this.value": load "this" object and get the value at index for an
+	// object or class member get the type of the member.
+	// Also for "obj.value".
+       char_u *dot = vim_strchr(var_start, '.');
+       if (dot == NULL)
+           return FAIL;
+
 	class_T *cl = lhs->lhs_type->tt_class;
-	type_T *type = class_member_type(cl, var_start + 5,
+	type_T *type = class_member_type(cl, dot + 1,
 					   lhs->lhs_end, &lhs->lhs_member_idx);
 	if (lhs->lhs_member_idx < 0)
 	    return FAIL;
 
-	if (generate_LOAD(cctx, ISN_LOAD, 0, NULL, lhs->lhs_type) == FAIL)
-	    return FAIL;
+	if (dot - var_start == 4 && STRNCMP(var_start, "this", 4) == 0)
+	{
+	    // load "this"
+	    if (generate_LOAD(cctx, ISN_LOAD, 0, NULL, lhs->lhs_type) == FAIL)
+		return FAIL;
+	}
+	else
+	{
+	    // load object variable or argument
+	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, cctx) == FAIL)
+		return FAIL;
+	}
 	if (cl->class_flags & CLASS_INTERFACE)
 	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type);
 	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
@@ -2169,7 +2184,7 @@ compile_assign_unlet(
     if (cctx->ctx_skip == SKIP_YES)
 	return OK;
 
-    // Load the dict or list.  On the stack we then have:
+    // Load the dict, list or object.  On the stack we then have:
     // - value (for assignment, not for :unlet)
     // - index
     // - for [a : b] second index
@@ -2731,7 +2746,7 @@ compile_assignment(
 	if (lhs.lhs_has_index)
 	{
 	    // Use the info in "lhs" to store the value at the index in the
-	    // list or dict.
+	    // list, dict or object.
 	    if (compile_assign_unlet(var_start, &lhs, TRUE, rhs_type, cctx)
 								       == FAIL)
 	    {

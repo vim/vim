@@ -182,7 +182,8 @@ func Test_client_server()
     endif
   endtry
 
-  call assert_fails('call remote_startserver([])', 'E730:')
+  call assert_fails('call remote_startserver("")', 'E1175:')
+  call assert_fails('call remote_startserver([])', 'E1174:')
   call assert_fails("let x = remote_peek([])", 'E730:')
   call assert_fails("let x = remote_read('vim10')",
         \ has('unix') ? ['E573:.*vim10'] : 'E277:')

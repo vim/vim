@@ -35,7 +35,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             v['id'] = msgid
         s = json.dumps(v)
         resp = "Content-Length: " + str(len(s)) + "\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         resp += s
         if self.debug:
@@ -46,7 +46,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         v = 'wrong-payload'
         s = json.dumps(v)
         resp = "Content-Length: " + str(len(s)) + "\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         resp += s
         self.request.sendall(resp.encode('utf-8'))
@@ -60,7 +60,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def send_empty_payload(self):
         resp = "Content-Length: 0\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         self.request.sendall(resp.encode('utf-8'))
 
@@ -71,7 +71,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         resp = "Host: abc.vim.org\r\n"
         resp += "User-Agent: Python\r\n"
         resp += "Accept-Language: en-US,en\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "Content-Length: " + str(len(s)) + "\r\n"
         resp += "\r\n"
         resp += s
@@ -93,7 +93,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         # test for sending the http header without length
         v = {'jsonrpc': '2.0', 'id': msgid, 'result': resp_dict}
         s = json.dumps(v)
-        resp = "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp = "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         resp += s
         self.request.sendall(resp.encode('utf-8'))

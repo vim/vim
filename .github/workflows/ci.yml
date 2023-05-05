@@ -370,6 +370,12 @@ jobs:
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # libsodium
+      SODIUM_VER: '1.0.18'
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+      SODIUM_MSVC_VER: v143
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+      SODIUM_MINGW_VER: 23
       # Escape sequences
       COL_RED: "\x1b[31m"
       COL_GREEN: "\x1b[32m"
@@ -399,7 +405,7 @@ jobs:
 
           git config --global core.autocrlf input
 
-          if [ "${{ matrix.arch }}" = "x64" ]; then
+          if ${{ matrix.arch == 'x64' }}; then
             cygreg=registry
             pyreg=
             echo "VCARCH=amd64" >> $GITHUB_ENV
@@ -416,8 +422,8 @@ jobs:
           fi
 
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          if [ "${{ matrix.features }}" != "TINY" ]; then
-            if [ "${{ matrix.arch }}" = "x86" ]; then
+          if ${{ matrix.features != 'TINY' }}; then
+            if ${{ matrix.arch == 'x86' }}; then
               choco install python2 --no-progress --forcex86
             else
               choco install python2 --no-progress
@@ -425,6 +431,15 @@ jobs:
           fi
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+
+          if ${{ matrix.toolchain == 'msvc' }}; then
+            SODIUM_DIR=D:\\libsodium
+            echo "SODIUM_LIB=${SODIUM_DIR}\\${{ matrix.arch == 'x64' && 'x64' || 'Win32' }}\\Release\\${SODIUM_MSVC_VER}\\dynamic" >> $GITHUB_ENV
+          else
+            SODIUM_DIR=D:\\libsodium-win${{ matrix.arch == 'x64' && '64' || '32' }}
+            echo "SODIUM_LIB=${SODIUM_DIR}\\bin" >> $GITHUB_ENV
+          fi
+          echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
@@ -445,6 +460,7 @@ jobs:
           type NUL > urls.txt
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
+          echo %SODIUM_VER%>> urls.txt
 
       - name: Cache downloaded files
         uses: actions/cache@v3
@@ -467,6 +483,16 @@ jobs:
           7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
           copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
           copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+
+          echo %COL_GREEN%Download libsodium%COL_RESET%
+          if "${{ matrix.toolchain }}"=="msvc" (
+            call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+            7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+          ) else (
+            call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
+            7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
+            mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
+          )
 
           goto :eof
 
@@ -498,7 +524,8 @@ jobs:
               GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
-              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
+              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
+              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
@@ -522,6 +549,7 @@ jobs:
               DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
+              DYNAMIC_SODIUM=yes SODIUM=${SODIUM_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
             mingw32-make -f Make_ming.mak -j2 \
@@ -566,7 +594,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
@@ -583,7 +611,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test Vim:%COL_RESET%

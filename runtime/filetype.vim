@@ -1190,6 +1190,9 @@ au BufNewFile,BufRead *.lou,*.lout		setf lout
 " Lua
 au BufNewFile,BufRead *.lua			setf lua
 
+" Luau
+au BufNewFile,BufRead *.luau		setf luau
+
 " Luacheck
 au BufNewFile,BufRead .luacheckrc		setf lua
 

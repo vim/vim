@@ -223,9 +223,11 @@ fill_assert_error(
     }
     else
     {
-	ga_concat(gap, (char_u *)"'");
+	if (atype == ASSERT_FAILS)
+	    ga_concat(gap, (char_u *)"'");
 	ga_concat_shorten_esc(gap, exp_str);
-	ga_concat(gap, (char_u *)"'");
+	if (atype == ASSERT_FAILS)
+	    ga_concat(gap, (char_u *)"'");
     }
     if (atype != ASSERT_NOTEQUAL)
     {
@@ -743,7 +745,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		actual_tv.vval.v_string = actual;
 	    }
 	    fill_assert_error(&ga, &argvars[2], expected_str,
-			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
+			&argvars[error_found_index], &actual_tv, ASSERT_FAILS);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
@@ -785,9 +787,7 @@ assert_inrange(typval_T *argvars)
 {
     garray_T	ga;
     int		error = FALSE;
-    char_u	*tofree;
-    char	msg[200];
-    char_u	numbuf[NUMBUFLEN];
+    char_u	expected_str[200];
 
     if (argvars[0].v_type == VAR_FLOAT
 	    || argvars[1].v_type == VAR_FLOAT
@@ -800,17 +800,10 @@ assert_inrange(typval_T *argvars)
 	if (factual < flower || factual > fupper)
 	{
 	    prepare_assert_error(&ga);
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-	    {
-		ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
-		vim_free(tofree);
-	    }
-	    else
-	    {
-		vim_snprintf(msg, 200, "Expected range %g - %g, but got %g",
-						      flower, fupper, factual);
-		ga_concat(&ga, (char_u *)msg);
-	    }
+	    vim_snprintf((char *)expected_str, 200, "range %g - %g,",
+							       flower, fupper);
+	    fill_assert_error(&ga, &argvars[3], expected_str, NULL,
+						    &argvars[2], ASSERT_OTHER);
 	    assert_error(&ga);
 	    ga_clear(&ga);
 	    return 1;
@@ -827,17 +820,10 @@ assert_inrange(typval_T *argvars)
 	if (actual < lower || actual > upper)
 	{
 	    prepare_assert_error(&ga);
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-	    {
-		ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
-		vim_free(tofree);
-	    }
-	    else
-	    {
-		vim_snprintf(msg, 200, "Expected range %ld - %ld, but got %ld",
-				       (long)lower, (long)upper, (long)actual);
-		ga_concat(&ga, (char_u *)msg);
-	    }
+	    vim_snprintf((char *)expected_str, 200, "range %ld - %ld,",
+						     (long)lower, (long)upper);
+	    fill_assert_error(&ga, &argvars[3], expected_str, NULL,
+						    &argvars[2], ASSERT_OTHER);
 	    assert_error(&ga);
 	    ga_clear(&ga);
 	    return 1;

@@ -4274,7 +4274,7 @@ did_set_undofile(optset_T *args)
 		&& !curbufIsChanged() && curbuf->b_ml.ml_mfp != NULL)
 	{
 #ifdef FEAT_CRYPT
-	    if (crypt_get_method_nr(curbuf) == CRYPT_M_SOD)
+	    if (crypt_method_is_sodium(crypt_get_method_nr(curbuf)))
 		continue;
 #endif
 	    u_compute_hash(hash);

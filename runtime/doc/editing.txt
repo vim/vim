@@ -1533,9 +1533,10 @@ To disable the encryption, reset the 'key' option to an empty value: >
 
 You can use the 'cryptmethod' option to select the type of encryption, use one
 of these: >
-	:setlocal cm=zip        " weak method, backwards compatible
-	:setlocal cm=blowfish   " method with flaws
-	:setlocal cm=blowfish2  " medium strong method
+	:setlocal cm=zip          " weak method, backwards compatible
+	:setlocal cm=blowfish     " method with flaws, do not use
+	:setlocal cm=blowfish2    " medium strong method
+	:setlocal cm=xchacha20v2  " medium strong method using libsodium
 
 Do this before writing the file.  When reading an encrypted file it will be
 set automatically to the method used when that file was written.  You can

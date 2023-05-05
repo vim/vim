@@ -3053,6 +3053,16 @@ exec_instructions(ectx_T *ectx)
 		goto theend;
 	    did_throw = TRUE;
 	    *msg_list = NULL;
+
+	    // This exception was not caught (yet).
+	    garray_T	*trystack = &ectx->ec_trystack;
+	    if (trystack->ga_len > 0)
+	    {
+		trycmd_T *trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - 1;
+		if (trycmd->tcd_frame_idx == ectx->ec_frame_idx)
+		    trycmd->tcd_caught = FALSE;
+	    }
 	}
 
 	if (unlikely(did_throw))
@@ -3066,7 +3076,11 @@ exec_instructions(ectx_T *ectx)
 	    while (index > 0)
 	    {
 		trycmd = ((trycmd_T *)trystack->ga_data) + index - 1;
-		if (!trycmd->tcd_in_catch || trycmd->tcd_finally_idx != 0)
+		// 1. after :try and before :catch - jump to first :catch
+		// 2. in :catch block - jump to :finally
+		// 3. in :catch block and no finally - jump to :endtry
+		if (!trycmd->tcd_in_catch || trycmd->tcd_finally_idx != 0
+				|| trycmd->tcd_frame_idx == ectx->ec_frame_idx)
 		    break;
 		// In the catch and finally block of this try we have to go up
 		// one level.
@@ -3077,20 +3091,31 @@ exec_instructions(ectx_T *ectx)
 	    {
 		if (trycmd->tcd_in_catch)
 		{
-		    // exception inside ":catch", jump to ":finally" once
-		    ectx->ec_iidx = trycmd->tcd_finally_idx;
-		    trycmd->tcd_finally_idx = 0;
+		    if (trycmd->tcd_finally_idx > 0)
+		    {
+			// exception inside ":catch", jump to ":finally" once
+			ectx->ec_iidx = trycmd->tcd_finally_idx;
+			trycmd->tcd_finally_idx = 0;
+		    }
+		    else
+		    {
+			// exception inside ":catch" or ":finally", jump to
+			// ":endtry"
+			ectx->ec_iidx = trycmd->tcd_endtry_idx;
+		    }
 		}
 		else
+		{
 		    // jump to first ":catch"
 		    ectx->ec_iidx = trycmd->tcd_catch_idx;
-		trycmd->tcd_in_catch = TRUE;
+		    trycmd->tcd_in_catch = TRUE;
+		}
 		did_throw = FALSE;  // don't come back here until :endtry
 		trycmd->tcd_did_throw = TRUE;
 	    }
 	    else
 	    {
-		// Not inside try or need to return from current functions.
+		// Not inside try or need to return from current function.
 		// Push a dummy return value.
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
@@ -4652,7 +4677,7 @@ exec_instructions(ectx_T *ectx)
 
 		    if (trystack->ga_len == 0 && trylevel == 0 && emsg_silent)
 		    {
-			// throwing an exception while using "silent!" causes
+			// Throwing an exception while using "silent!" causes
 			// the function to abort but not display an error.
 			tv = STACK_TV_BOT(-1);
 			clear_tv(tv);
