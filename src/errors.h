@@ -1236,7 +1236,7 @@ EXTERN char e_use_w_or_w_gt_gt[]
 	INIT(= N_("E494: Use w or w>>"));
 EXTERN char e_no_autocommand_file_name_to_substitute_for_afile[]
 	INIT(= N_("E495: No autocommand file name to substitute for \"<afile>\""));
-EXTERN char e_no_autocommand_buffer_name_to_substitute_for_abuf[]
+EXTERN char e_no_autocommand_buffer_number_to_substitute_for_abuf[]
 	INIT(= N_("E496: No autocommand buffer number to substitute for \"<abuf>\""));
 EXTERN char e_no_autocommand_match_name_to_substitute_for_amatch[]
 	INIT(= N_("E497: No autocommand match name to substitute for \"<amatch>\""));
