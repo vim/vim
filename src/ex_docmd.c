@@ -9380,7 +9380,7 @@ eval_vars(
 	case SPEC_ABUF:		// buffer number for autocommand
 		if (autocmd_bufnr <= 0)
 		{
-		    *errormsg = _(e_no_autocommand_buffer_name_to_substitute_for_abuf);
+		    *errormsg = _(e_no_autocommand_buffer_number_to_substitute_for_abuf);
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "%d", autocmd_bufnr);
