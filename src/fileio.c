@@ -3984,7 +3984,7 @@ copyfile(const char_u *from, const char_u *to)
     mch_free_acl(acl);
 #endif
 #if defined(HAVE_SELINUX) || defined(HAVE_SMACK)
-    mch_copy_sec(from, to);
+    mch_copy_sec((char_u *)from, (char_u *)to);
 #endif
     if (errmsg != NULL)
     {
