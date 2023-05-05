@@ -3929,6 +3929,28 @@ copyfile(char_u *from, char_u *to)
     vim_acl_T	acl;		// ACL from original file
 #endif
 
+#ifdef HAVE_READLINK
+    int		ret;
+    int		len;
+    stat_T	st;
+    char	linkbuf[MAXPATHL + 1];
+
+    ret = mch_lstat((char *)from, &st);
+    if (ret >= 0 && S_ISLNK(st.st_mode))
+    {
+	len = readlink((char *)from, linkbuf, MAXPATHL);
+	if (len > 0)
+	{
+	    linkbuf[len] = NUL;
+
+	    // Create link
+	    ret = symlink(linkbuf, (char *)to);
+	}
+
+	return ret;
+    }
+#endif
+
     perm = mch_getperm(from);
 #ifdef HAVE_ACL
     // For systems that support ACL: get the ACL from the original file.
@@ -5152,7 +5174,13 @@ copyfile_recursive(char_u *from, char_u *to)
     char_u	*dbuf;
     garray_T	ga;
 
-    if (!mch_isdir(from))
+    if (
+# if defined(UNIX) || defined(MSWIN)
+	 !mch_isrealdir(from)
+# else
+	 !mch_isdir(from)
+# endif
+    )
 	return copyfile(from, to);
 
     exp = vim_strsave(from);
