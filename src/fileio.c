@@ -41,6 +41,7 @@ static char_u *check_for_cryptkey(char_u *cryptkey, char_u *ptr, long *sizep, of
 #endif
 static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
+static int copyfile(char_u *from, char_u *to);
 
 #ifdef FEAT_EVAL
 static int readdirex_sort;
@@ -3896,7 +3897,7 @@ vim_rename(char_u *from, char_u *to)
     /*
      * Rename() failed, try copying the file.
      */
-    ret = vim_copyfile(from, to);
+    ret = copyfile(from, to);
     if (ret == 0)
 	mch_remove(from);
 
@@ -3904,11 +3905,86 @@ vim_rename(char_u *from, char_u *to)
 }
 
 /*
+ * Copy "name" and everything in it, recursively.
+ * return 0 for success, -1 if some file was not copied.
+ */
+    int
+copyfile_recursive(char_u *from, char_u *to)
+{
+    int result = 0;
+    int		i;
+    char_u	*exp;
+    char_u	*sbuf;
+    char_u	*dbuf;
+    garray_T	ga;
+
+    if (!mch_isdir(from))
+	return copyfile(from, to);
+
+    exp = vim_strsave(from);
+    if (exp == NULL)
+	return -1;
+
+    // Make {to} directory
+    if (!mch_isdir(to) && vim_mkdir_emsg(to, 0755) != OK)
+    {
+	vim_free(exp);
+	return -1;
+    }
+
+    if (readdir_core(&ga, exp, FALSE, NULL, NULL, READDIR_SORT_NONE) == OK)
+    {
+	sbuf = alloc(MAXPATHL);
+	if (sbuf == NULL)
+	{
+	    vim_free(exp);
+	    ga_clear_strings(&ga);
+	    return -1;
+	}
+
+	dbuf = alloc(MAXPATHL);
+	if (dbuf == NULL)
+	{
+	    vim_free(sbuf);
+	    ga_clear_strings(&ga);
+	    vim_free(exp);
+	    return -1;
+	}
+
+	for (i = 0; i < ga.ga_len; ++i)
+	{
+	    // Copy {from}/{file} to {to}/{file} directory
+	    vim_snprintf(sbuf, MAXPATHL, "%s/%s", exp,
+		    ((char_u **)ga.ga_data)[i]);
+	    vim_snprintf(dbuf, MAXPATHL, "%s/%s", to,
+		    ((char_u **)ga.ga_data)[i]);
+	    if (copyfile_recursive(sbuf, dbuf) != 0)
+	    {
+		result = -1;
+		break;
+	    }
+	}
+
+	vim_free(dbuf);
+	vim_free(sbuf);
+	ga_clear_strings(&ga);
+
+    }
+    else
+	result = -1;
+
+    vim_free(exp);
+
+    return result;
+}
+
+
+/*
  * Create the new file with same permissions as the original.
  * Return -1 for failure, 0 for success.
  */
-    int
-vim_copyfile(char_u *from, char_u *to)
+    static int
+copyfile(char_u *from, char_u *to)
 {
     int		fd_in;
     int		fd_out;
@@ -3936,7 +4012,7 @@ vim_copyfile(char_u *from, char_u *to)
 
     // Create the new file with same permissions as the original.
     fd_out = mch_open((char *)to,
-		       O_CREAT|O_EXCL|O_WRONLY|O_EXTRA|O_NOFOLLOW, (int)perm);
+		       O_CREAT|O_WRONLY|O_EXTRA|O_NOFOLLOW, (int)perm);
     if (fd_out == -1)
     {
 	close(fd_in);
@@ -3990,6 +4066,7 @@ vim_copyfile(char_u *from, char_u *to)
     }
     return 0;
 }
+
 static int already_warned = FALSE;
 
 /*

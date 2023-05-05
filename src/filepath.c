@@ -2666,8 +2666,8 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
 		|| check_for_string_arg(argvars, 1) == FAIL))
 	return;
 
-    rettv->vval.v_number = vim_copyfile(tv_get_string(&argvars[0]),
-				      tv_get_string_buf(&argvars[1], buf));
+    rettv->vval.v_number = copyfile_recursive(tv_get_string(&argvars[0]),
+	    tv_get_string_buf(&argvars[1], buf));
 }
 
 #endif // FEAT_EVAL
