@@ -1453,6 +1453,8 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 
     if (*p_spk != 'c')
     {
+	if (*p_spk == 't')
+	    newp->w_skipcol = oldp->w_skipcol;
 	newp->w_botline = oldp->w_botline;
 	newp->w_prev_height = oldp->w_height - WINBAR_HEIGHT(oldp);
 	newp->w_prev_winrow = oldp->w_winrow + 2 * WINBAR_HEIGHT(oldp);
@@ -6860,14 +6862,16 @@ win_new_height(win_T *wp, int height)
     }
 
     wp->w_height = height;
-    wp->w_skipcol = 0;
     wp->w_redr_status = TRUE;
     win_comp_scroll(wp);
 
     // There is no point in adjusting the scroll position when exiting.  Some
     // values might be invalid.
     if (!exiting && *p_spk == 'c')
+    {
+	wp->w_skipcol = 0;
 	scroll_to_fraction(wp, prev_height);
+    }
 }
 
     void
