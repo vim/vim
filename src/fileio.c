@@ -3936,6 +3936,8 @@ vim_copyfile(char_u *from, char_u *to)
     ret = mch_lstat((char *)from, &st);
     if (ret >= 0 && S_ISLNK(st.st_mode))
     {
+        ret = -1;
+
 	len = readlink((char *)from, linkbuf, MAXPATHL);
 	if (len > 0)
 	{
@@ -3944,8 +3946,6 @@ vim_copyfile(char_u *from, char_u *to)
 	    // Create link
 	    ret = symlink(linkbuf, (char *)to);
 	}
-	else
-	    ret = -1;
 
 	return ret == 0 ? ret : -1;
     }

@@ -2659,11 +2659,10 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
     stat_T	st;
 
     rettv->vval.v_number = -1;
-    if (check_restricted() || check_secure())
-	return;
 
-    if (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_string_arg(argvars, 1) == FAIL)
+    if (check_restricted() || check_secure()
+	    ||check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
     from = tv_get_string(&argvars[0]);
