@@ -2327,8 +2327,14 @@ win_update(win_T *wp)
 			{
 #ifdef FEAT_DIFF
 			    if (l == wp->w_topline)
-				new_rows += plines_win_nofill(wp, l, TRUE)
-							      + wp->w_topfill;
+			    {
+				int n = plines_win_nofill(wp, l, FALSE)
+								+ wp->w_topfill;
+				n = adjust_plines_for_skipcol(wp, n);
+				if (n > wp->w_height)
+				    n = wp->w_height;
+				new_rows += n;
+			    }
 			    else
 #endif
 				new_rows += plines_win(wp, l, TRUE);

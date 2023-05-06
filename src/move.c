@@ -38,7 +38,7 @@ static void botline_forw(lineoff_T *lp);
 /*
  * Reduce "n" for the screen lines skipped with "wp->w_skipcol".
  */
-    static int
+    int
 adjust_plines_for_skipcol(win_T *wp, int n)
 {
     if (wp->w_skipcol == 0)
