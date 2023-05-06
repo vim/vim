@@ -603,6 +603,26 @@ AppendToRedobuffLit(
 }
 
 /*
+ * Append "s" to the redo buffer, leaving 3-byte special key codes unmodified
+ * and escaping other K_SPECIAL and CSI bytes.
+ */
+    void
+AppendToRedobuffSpec(char_u *s)
+{
+    while (*s != NUL)
+    {
+	if (*s == K_SPECIAL && s[1] != NUL && s[2] != NUL)
+	{
+	    // insert special key literally
+	    add_buff(&redobuff, s, 3L);
+	    s += 3;
+	}
+	else
+	    add_char_buff(&redobuff, mb_cptr2char_adv(&s));
+    }
+}
+
+/*
  * Append a character to the redo buffer.
  * Translates special keys, NUL, CSI, K_SPECIAL and multibyte characters.
  */
@@ -3941,14 +3961,6 @@ getcmdkeycmd(
 	    if (c1 == K_ESC)
 		c1 = ESC;
 	}
-	if (c1 == Ctrl_V)
-	{
-	    // CTRL-V is followed by octal, hex or other characters, reverses
-	    // what AppendToRedobuffLit() does.
-	    ++no_reduce_keys;  //  don't merge modifyOtherKeys
-	    c1 = get_literal(TRUE);
-	    --no_reduce_keys;
-	}
 
 	if (got_int)
 	    aborted = TRUE;
@@ -3962,19 +3974,27 @@ getcmdkeycmd(
 	    emsg(_(e_cmd_mapping_must_end_with_cr_before_second_cmd));
 	    aborted = TRUE;
 	}
-	else if (IS_SPECIAL(c1))
+	else if (c1 == K_SNR)
 	{
-	    if (c1 == K_SNR)
-		ga_concat(&line_ga, (char_u *)"<SNR>");
-	    else
-	    {
-		semsg(e_cmd_mapping_must_not_include_str_key,
-					       get_special_key_name(c1, cmod));
-		aborted = TRUE;
-	    }
+	    ga_concat(&line_ga, (char_u *)"<SNR>");
 	}
 	else
-	    ga_append(&line_ga, c1);
+	{
+	    if (cmod != 0)
+	    {
+		ga_append(&line_ga, K_SPECIAL);
+		ga_append(&line_ga, KS_MODIFIER);
+		ga_append(&line_ga, cmod);
+	    }
+	    if (IS_SPECIAL(c1))
+	    {
+		ga_append(&line_ga, K_SPECIAL);
+		ga_append(&line_ga, K_SECOND(c1));
+		ga_append(&line_ga, K_THIRD(c1));
+	    }
+	    else
+		ga_append(&line_ga, c1);
+	}
 
 	cmod = 0;
     }

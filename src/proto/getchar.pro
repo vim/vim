@@ -11,6 +11,7 @@ void saveRedobuff(save_redo_T *save_redo);
 void restoreRedobuff(save_redo_T *save_redo);
 void AppendToRedobuff(char_u *s);
 void AppendToRedobuffLit(char_u *str, int len);
+void AppendToRedobuffSpec(char_u *s);
 void AppendCharToRedobuff(int c);
 void AppendNumberToRedobuff(long n);
 void stuffReadbuff(char_u *s);
