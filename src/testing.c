@@ -281,7 +281,6 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    int		called_emsg_before = called_emsg;
     char_u	*pat;
     char_u	*text;
 
@@ -293,7 +292,7 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
 
     pat = tv_get_string_buf_chk(&argvars[0], buf1);
     text = tv_get_string_buf_chk(&argvars[1], buf2);
-    if (called_emsg == called_emsg_before
+    if (pat != NULL && text != NULL
 		 && pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
@@ -420,7 +419,6 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    int		called_emsg_before = called_emsg;
     char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     garray_T	ga;
@@ -430,7 +428,7 @@ assert_equalfile(typval_T *argvars)
     char	line2[200];
     int		lineidx = 0;
 
-    if (called_emsg > called_emsg_before)
+    if (fname1 == NULL || fname2 == NULL)
 	return 0;
 
     IObuff[0] = NUL;
