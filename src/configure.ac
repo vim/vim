@@ -300,13 +300,6 @@ if test "$vim_cv_uname_output" = Darwin; then
      fi
   fi
 
-  dnl Avoid a bug with -O2 with gcc 4.0.1.  Symptom: malloc() reports double
-  dnl free.  This happens in expand_filename(), because the optimizer swaps
-  dnl two blocks of code, both using "repl", that can't be swapped.
-  if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
-    CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-Oz/'`
-  fi
-
 else
   AC_MSG_RESULT(no)
 fi
