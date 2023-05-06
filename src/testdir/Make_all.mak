@@ -404,6 +404,7 @@ NEW_TESTS_RES = \
 	test_expr.res \
 	test_file_size.res \
 	test_filechanged.res \
+	test_filecopy.res \
 	test_fileformat.res \
 	test_filetype.res \
 	test_filter_cmd.res \
