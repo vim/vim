@@ -93,14 +93,19 @@ if test -z "$CFLAGS"; then
   CFLAGS="-O"
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall -Wno-deprecated-declarations"
 fi
+
 if test "$GCC" = yes; then
-  dnl method that should work for nearly all versions
+  dnl Method that should work for nearly all gcc versions.
   gccversion=`$CC -dumpversion`
   if test "x$gccversion" = "x"; then
     dnl old method; fall-back for when -dumpversion doesn't work
     gccversion=`$CC --version | sed -e '2,$d' -e 's/darwin.//' -e 's/^[[^0-9]]*\([[0-9]]\.[[0-9.]]*\).*$/\1/g'`
   fi
-  dnl version 4.0.1 was reported to cause trouble on Macintosh by Marcin Dalecki
+
+  dnl Gcc version 4.0.1 was reported to cause trouble on Macintosh by Marcin
+  dnl Dalecki.  For Mac with Intel the symptom reported is: malloc() reports
+  dnl double free.  This happens in expand_filename(), because the optimizer
+  dnl swaps two blocks of code, both using "repl", that can't be swapped.
   if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
     echo 'GCC [[34]].0.[[12]] has a bug in the optimizer, disabling "-O#"'
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-O/'`
@@ -299,14 +304,6 @@ if test "$vim_cv_uname_output" = Darwin; then
       with_x=no
      fi
   fi
-
-  dnl Avoid a bug with -O2 with gcc 4.0.1.  Symptom: malloc() reports double
-  dnl free.  This happens in expand_filename(), because the optimizer swaps
-  dnl two blocks of code, both using "repl", that can't be swapped.
-  if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
-    CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-Oz/'`
-  fi
-
 else
   AC_MSG_RESULT(no)
 fi
