@@ -2655,7 +2655,8 @@ f_browsedir(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_filecopy(typval_T *argvars, typval_T *rettv)
 {
-    char_u	buf[NUMBUFLEN];
+    char_u	*from;
+    stat_T	st;
 
     rettv->vval.v_number = -1;
     if (check_restricted() || check_secure())
@@ -2665,8 +2666,11 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
 		|| check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
-    rettv->vval.v_number = copyfile_recursive(tv_get_string(&argvars[0]),
-	    tv_get_string_buf(&argvars[1], buf));
+    from = tv_get_string(&argvars[0]);
+    if (mch_lstat((char *)from, &st) >= 0
+	    && (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode)))
+	rettv->vval.v_number = vim_copyfile(tv_get_string(&argvars[0]),
+		tv_get_string(&argvars[1]));
 }
 
 #endif // FEAT_EVAL

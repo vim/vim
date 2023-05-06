@@ -41,9 +41,8 @@ func Test_copy_dir_to_dir()
   call writefile(['foo'], 'Xcopydir1/Xfilecopy')
   call mkdir('Xcopydir2')
 
-  call assert_equal(0, filecopy('Xcopydir1', 'Xcopydir2'))
-
-  call assert_equal(['foo'], readfile('Xcopydir2/Xfilecopy'))
+  " Directory copy is not supported
+  call assert_notequal(0, filecopy('Xcopydir1', 'Xcopydir2'))
 
   call delete('Xcopydir2', 'rf')
   call delete('Xcopydir1', 'rf')
@@ -62,8 +61,8 @@ func Test_copy_fails()
   " Can't copy to en empty file name.
   call assert_notequal(0, filecopy('Xfilecopy', ''))
 
-  call assert_fails('call filecopy("Xfilecopy", [])', 'E730:')
-  call assert_fails('call filecopy(0z, "Xfilecopy")', 'E976:')
+  call assert_fails('call filecopy("Xfilecopy", [])', 'E1174:')
+  call assert_fails('call filecopy(0z, "Xfilecopy")', 'E1174:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
