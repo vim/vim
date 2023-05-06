@@ -855,6 +855,47 @@ string_count(char_u *haystack, char_u *needle, int ic)
 }
 
 /*
+ * Reverse the string in 'str' and set the result in 'rettv'.
+ */
+    void
+string_reverse(char_u *str, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (str == NULL)
+	return;
+
+    char_u	*rstr = vim_strsave(str);
+    rettv->vval.v_string = rstr;
+    if (rstr == NULL || *str == NUL)
+	return;
+
+    size_t	len = STRLEN(rstr);
+    if (has_mbyte)
+    {
+	char_u *src = str;
+	char_u *dest = rstr + len;
+
+	while (src < str + len)
+	{
+	    int clen = mb_ptr2len(src);
+	    dest -= clen;
+	    mch_memmove(dest, src, (size_t)clen);
+	    src += clen;
+	}
+    }
+    else
+    {
+	for (size_t i = 0; i < len / 2; i++)
+	{
+	    char tmp = rstr[len - i - 1];
+	    rstr[len - i - 1] = rstr[i];
+	    rstr[i] = tmp;
+	}
+    }
+}
+
+/*
  * Make a typval_T of the first character of "input" and store it in "output".
  * Return OK or FAIL.
  */

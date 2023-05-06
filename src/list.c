@@ -2999,6 +2999,8 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_BLOB)
 	blob_reverse(argvars[0].vval.v_blob, rettv);
+    else if (argvars[0].v_type == VAR_STRING)
+	string_reverse(argvars[0].vval.v_string, rettv);
     else if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_argument_of_str_must_be_list_or_blob), "reverse()");
     else
