@@ -38,7 +38,7 @@ static void botline_forw(lineoff_T *lp);
 /*
  * Reduce "n" for the screen lines skipped with "wp->w_skipcol".
  */
-    static int
+    int
 adjust_plines_for_skipcol(win_T *wp, int n)
 {
     if (wp->w_skipcol == 0)
@@ -239,7 +239,7 @@ skipcol_from_plines(win_T *wp, int plines_off)
 }
 
 /*
- * Set curwin->s_skipcol to zero and redraw later if needed.
+ * Set curwin->w_skipcol to zero and redraw later if needed.
  */
     static void
 reset_skipcol(void)
@@ -2990,7 +2990,7 @@ cursor_correct(void)
 
     if (curwin->w_p_sms && !curwin->w_p_wrap)
     {
-	// 'smoothscroll is active
+	// 'smoothscroll' is active
 	if (curwin->w_cline_height == curwin->w_height)
 	{
 	    // The cursor line just fits in the window, don't scroll.
