@@ -1012,14 +1012,31 @@ ExpandOne(
     {
 	len = 0;
 	for (i = 0; i < xp->xp_numfiles; ++i)
+	{
+	    if (i > 0)
+	    {
+		if (xp->xp_prefix == XP_PREFIX_NO)
+		    len += 2;	// prefix "no"
+		else if (xp->xp_prefix == XP_PREFIX_INV)
+		    len += 3;	// prefix "inv"
+	    }
 	    len += (long_u)STRLEN(xp->xp_files[i]) + 1;
+	}
 	ss = alloc(len);
 	if (ss != NULL)
 	{
 	    *ss = NUL;
 	    for (i = 0; i < xp->xp_numfiles; ++i)
 	    {
+		if (i > 0)
+		{
+		    if (xp->xp_prefix == XP_PREFIX_NO)
+			STRCAT(ss, "no");
+		    else if (xp->xp_prefix == XP_PREFIX_INV)
+			STRCAT(ss, "inv");
+		}
 		STRCAT(ss, xp->xp_files[i]);
+
 		if (i != xp->xp_numfiles - 1)
 		    STRCAT(ss, (options & WILD_USE_NL) ? "\n" : " ");
 	    }
@@ -1044,6 +1061,7 @@ ExpandInit(expand_T *xp)
 {
     CLEAR_POINTER(xp);
     xp->xp_backslash = XP_BS_NONE;
+    xp->xp_prefix = XP_PREFIX_NONE;
     xp->xp_numfiles = -1;
 }
 
