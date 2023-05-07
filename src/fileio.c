@@ -3967,7 +3967,7 @@ vim_copyfile(char_u *from, char_u *to)
 
     // Create the new file with same permissions as the original.
     fd_out = mch_open((char *)to,
-		       O_CREAT|O_WRONLY|O_EXTRA|O_NOFOLLOW, (int)perm);
+		       O_CREAT|O_EXCL|O_WRONLY|O_EXTRA|O_NOFOLLOW, (int)perm);
     if (fd_out == -1)
     {
 	close(fd_in);

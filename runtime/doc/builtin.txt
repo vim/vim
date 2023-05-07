@@ -178,7 +178,7 @@ extendnew({expr1}, {expr2} [, {expr3}])
 				List/Dict like |extend()| but creates a new
 					List or Dictionary
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
-filecopy({from}, {to} [, {flags}])	Number	copy file from {from} to {to}
+filecopy({from}, {to})		Number	copy file from {from} to {to}
 filereadable({file})		Number	|TRUE| if {file} is a readable file
 filewritable({file})		Number	|TRUE| if {file} is a writable file
 filter({expr1}, {expr2})	List/Dict/Blob/String
@@ -2756,17 +2756,11 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		Can also be used as a |method|: >
 			GetInput()->feedkeys()
 
-filecopy({from}, {to} [, {flags}])				*filecopy()*
+filecopy({from}, {to})					*filecopy()*
 		Copy the file by the name {from} to the name {to}.  The
 		result is a Number, which is 0 if the file was copied
 		successfully, and non-zero when the copy failed.
-
-		When {flags} is "f": If {to} exists it is overwritten without
-		warning.
-
-		The result is a Number, which is 0/false if the copy
-		operation was successful, which is -2 if {to} exists and
-		-1/true when the copy failed.
+		If {to} exists, it is failed.
 
 		This function is not available in the |sandbox|.
 

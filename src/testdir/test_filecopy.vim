@@ -10,19 +10,11 @@ func Test_copy_file_to_file()
 
   call assert_equal(['foo'], readfile('Xcopy2'))
 
-  " When the destination file already exists, it should not be overwritten
-  " without flags.
+  " When the destination file already exists, it should not be overwritten.
   call writefile(['foo'], 'Xcopy1')
   call writefile(['bar'], 'Xcopy2', 'D')
-  call assert_equal(-2, filecopy('Xcopy1', 'Xcopy2'))
+  call assert_equal(-1, filecopy('Xcopy1', 'Xcopy2'))
   call assert_equal(['bar'], readfile('Xcopy2'))
-
-  " When the destination file already exists, it should be overwritten with
-  " flags.
-  call writefile(['foo'], 'Xcopy1')
-  call writefile(['bar'], 'Xcopy2', 'D')
-  call assert_equal(0, filecopy('Xcopy1', 'Xcopy2', 'f'))
-  call assert_equal(['foo'], readfile('Xcopy2'))
 
   call delete('Xcopy2')
   call delete('Xcopy1')
@@ -37,6 +29,9 @@ func Test_copy_symbolic_link()
   call assert_equal(0, filecopy('Xtestlink', 'Xtestlink2'))
   call assert_equal('link', getftype('Xtestlink2'))
   call assert_equal(['text'], readfile('Xtestlink2'))
+
+  " When the destination file already exists, it should not be overwritten.
+  call assert_equal(-1, filecopy('Xtestlink', 'Xtestlink2'))
 
   call delete('Xtestlink2')
   call delete('Xtestlink')

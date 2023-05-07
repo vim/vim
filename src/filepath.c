@@ -2664,8 +2664,7 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
 
     if (check_restricted() || check_secure()
 	    ||check_for_string_arg(argvars, 0) == FAIL
-	    || check_for_string_arg(argvars, 1) == FAIL
-	    || check_for_opt_string_arg(argvars, 2) == FAIL)
+	    || check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
     from = tv_get_string(&argvars[0]);
@@ -2675,12 +2674,6 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
 	flags = tv_get_string(&argvars[2]);
     else
 	flags = (char_u *)"";
-
-    if (STRCMP(flags, "f") != 0 && mch_lstat((char *)to, &st) >= 0)
-    {
-	rettv->vval.v_number = -2;
-        return;
-    }
 
     if (mch_lstat((char *)from, &st) >= 0
 	    && (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode)))
