@@ -3313,7 +3313,7 @@ save_clear_shm_value(void)
 {
     if (STRLEN(p_shm) >= SHM_LEN)
     {
-	iemsg(e_internal_error_shortmess_too_long);
+	iemsg(_(e_internal_error_shortmess_too_long));
 	return;
     }
 

@@ -2156,7 +2156,7 @@ compile_assign_unlet(
 	dest_type = lhs->lhs_type->tt_type;
 	if (dest_type == VAR_DICT && range)
 	{
-	    emsg(e_cannot_use_range_with_dictionary);
+	    emsg(_(e_cannot_use_range_with_dictionary));
 	    return FAIL;
 	}
 	if (dest_type == VAR_DICT
