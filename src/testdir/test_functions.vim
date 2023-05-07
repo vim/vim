@@ -1224,6 +1224,7 @@ func Test_byteidx()
   " error cases
   call assert_fails("call byteidx([], 0)", 'E730:')
   call assert_fails("call byteidx('abc', [])", 'E745:')
+  call assert_fails("call byteidx('abc', 0, {})", ['E728:', 'E728:'])
 endfunc
 
 " Test for byteidxcomp() using a character index
@@ -1263,6 +1264,7 @@ func Test_byteidxcomp()
   " error cases
   call assert_fails("call byteidxcomp([], 0)", 'E730:')
   call assert_fails("call byteidxcomp('abc', [])", 'E745:')
+  call assert_fails("call byteidxcomp('abc', 0, {})", ['E728:', 'E728:'])
 endfunc
 
 " Test for byteidx() using a UTF-16 index
@@ -1623,6 +1625,7 @@ func Test_utf16idx_from_charidx()
   " error cases
   call assert_equal(-1, utf16idx(test_null_string(), 0, v:true, v:true))
   call assert_fails('let l = utf16idx("ab", 0, v:false, [])', 'E1212:')
+  call assert_fails('echo strchars("", {})', ['E728:', 'E728:'])
 endfunc
 
 " Test for strutf16len()

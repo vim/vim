@@ -1044,8 +1044,11 @@ string_reduce(
 	remove_funccal();
 }
 
+/*
+ * Implementation of "byteidx()" and "byteidxcomp()" functions
+ */
     static void
-byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
+byteidx_common(typval_T *argvars, typval_T *rettv, int comp UNUSED)
 {
     rettv->vval.v_number = -1;
 
@@ -1065,7 +1068,8 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
 	utf16idx = tv_get_bool(&argvars[2]);
 	if (utf16idx < 0 || utf16idx > 1)
 	{
-	    semsg(_(e_using_number_as_bool_nr), utf16idx);
+	    if (utf16idx != -1)
+		semsg(_(e_using_number_as_bool_nr), utf16idx);
 	    return;
 	}
     }
@@ -1100,7 +1104,7 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     void
 f_byteidx(typval_T *argvars, typval_T *rettv)
 {
-    byteidx(argvars, rettv, FALSE);
+    byteidx_common(argvars, rettv, FALSE);
 }
 
 /*
@@ -1109,7 +1113,7 @@ f_byteidx(typval_T *argvars, typval_T *rettv)
     void
 f_byteidxcomp(typval_T *argvars, typval_T *rettv)
 {
-    byteidx(argvars, rettv, TRUE);
+    byteidx_common(argvars, rettv, TRUE);
 }
 
 /*
@@ -1419,7 +1423,10 @@ f_strchars(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type != VAR_UNKNOWN)
 	skipcc = tv_get_bool(&argvars[1]);
     if (skipcc < 0 || skipcc > 1)
-	semsg(_(e_using_number_as_bool_nr), skipcc);
+    {
+	if (skipcc != -1)
+	    semsg(_(e_using_number_as_bool_nr), skipcc);
+    }
     else
 	strchar_common(argvars, rettv, skipcc);
 }
@@ -1529,7 +1536,8 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 	    skipcc = tv_get_bool(&argvars[3]);
 	    if (skipcc < 0 || skipcc > 1)
 	    {
-		semsg(_(e_using_number_as_bool_nr), skipcc);
+		if (skipcc != -1)
+		    semsg(_(e_using_number_as_bool_nr), skipcc);
 		return;
 	    }
 	}

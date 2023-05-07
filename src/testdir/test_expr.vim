@@ -160,6 +160,8 @@ func Test_strcharpart()
       call assert_equal('edit', "editor"[-10 : 3])
   END
   call v9.CheckLegacyAndVim9Success(lines)
+
+  call assert_fails('echo strcharpart("", 0, 0, {})', ['E728:', 'E728:'])
 endfunc
 
 func Test_getreg_empty_list()
