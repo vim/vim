@@ -2666,12 +2666,6 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
 	return;
 
     from = tv_get_string(&argvars[0]);
-    to = tv_get_string(&argvars[1]);
-
-    if (argvars[2].v_type != VAR_UNKNOWN)
-	flags = tv_get_string(&argvars[2]);
-    else
-	flags = (char_u *)"";
 
     if (mch_lstat((char *)from, &st) >= 0
 	    && (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode)))
