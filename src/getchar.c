@@ -43,8 +43,8 @@ static buffheader_T recordbuff = {{NULL, {NUL}}, NULL, 0, 0};
 static int typeahead_char = 0;		// typeahead char that's not flushed
 
 /*
- * when block_redo is TRUE redo buffer will not be changed
- * used by edit() to repeat insertions and 'V' command for redoing
+ * When block_redo is TRUE the redo buffer will not be changed.
+ * Used by edit() to repeat insertions.
  */
 static int	block_redo = FALSE;
 
@@ -609,11 +609,14 @@ AppendToRedobuffLit(
     void
 AppendToRedobuffSpec(char_u *s)
 {
+    if (block_redo)
+	return;
+
     while (*s != NUL)
     {
 	if (*s == K_SPECIAL && s[1] != NUL && s[2] != NUL)
 	{
-	    // insert special key literally
+	    // Insert special key literally.
 	    add_buff(&redobuff, s, 3L);
 	    s += 3;
 	}
