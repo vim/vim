@@ -277,6 +277,7 @@ update_topline(void)
     int		halfheight;
     int		n;
     linenr_T	old_topline;
+    colnr_T	old_skipcol;
 #ifdef FEAT_DIFF
     int		old_topfill;
 #endif
@@ -312,6 +313,7 @@ update_topline(void)
 	*so_ptr = mouse_dragging - 1;
 
     old_topline = curwin->w_topline;
+    old_skipcol = curwin->w_skipcol;
 #ifdef FEAT_DIFF
     old_topfill = curwin->w_topfill;
 #endif
@@ -516,7 +518,10 @@ update_topline(void)
     {
 	dollar_vcol = -1;
 	redraw_later(UPD_VALID);
-	reset_skipcol();
+
+	// Avoid if w_skipcol was just set to make cursor visible.
+	if (curwin->w_skipcol == old_skipcol)
+	    reset_skipcol();
 
 	// May need to set w_skipcol when cursor in w_topline.
 	if (curwin->w_cursor.lnum == curwin->w_topline)

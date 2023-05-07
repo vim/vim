@@ -638,4 +638,26 @@ func Test_smoothscroll_ins_lines()
   call StopVimInTerminal(buf)
 endfunc
 
+" this placed the cursor in the command line
+func Test_smoothscroll_cursormoved_line()
+  CheckScreendump
+
+  let lines =<< trim END
+      set smoothscroll
+      call setline(1, [
+        \'',
+        \'_'->repeat(&lines * &columns),
+        \(('_')->repeat(&columns - 2) .. 'xxx')->repeat(2)
+      \])
+      autocmd CursorMoved * eval [line('w0'), line('w$')]
+      call search('xxx')
+  END
+  call writefile(lines, 'XSmoothCursorMovedLine', 'D')
+  let buf = RunVimInTerminal('-S XSmoothCursorMovedLine', #{rows: 6})
+
+  call VerifyScreenDump(buf, 'Test_smooth_cursormoved_line', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
