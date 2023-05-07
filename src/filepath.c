@@ -2656,8 +2656,6 @@ f_browsedir(typval_T *argvars UNUSED, typval_T *rettv)
 f_filecopy(typval_T *argvars, typval_T *rettv)
 {
     char_u	*from;
-    char_u	*to;
-    char_u	*flags;
     stat_T	st;
 
     rettv->vval.v_number = -1;
