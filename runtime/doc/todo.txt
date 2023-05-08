@@ -57,7 +57,6 @@ in restore_snapshot_rec() restore more values from the snapshot, instead of
 calling frame_new_height() and frame_new_width(), especially w_topline and
 w_skipcol.
 
-'smoothscroll' problem: #12199
 Problems related to 'smoothscroll': #12218 and #12211
 
 include #12140: positional arguments in printf(), fixes #10577

@@ -2774,7 +2774,6 @@ scroll_cursor_halfway(int atend, int prefer_above)
     int		above = 0;
     linenr_T	topline;
     colnr_T	skipcol = 0;
-    int		set_skipcol = FALSE;
 #ifdef FEAT_DIFF
     int		topfill = 0;
 #endif
@@ -2803,14 +2802,19 @@ scroll_cursor_halfway(int atend, int prefer_above)
 #endif
     topline = loff.lnum;
 
-    int half_height = 0;
+    int want_height;
     int smooth_scroll = FALSE;
     if (curwin->w_p_sms && curwin->w_p_wrap)
     {
 	// 'smoothscroll' and 'wrap' are set
 	smooth_scroll = TRUE;
-	half_height = (curwin->w_height - used) / 2;
-	used = 0;
+	if (atend)
+	{
+	    want_height = (curwin->w_height - used) / 2;
+	    used = 0;
+	}
+	else
+	    want_height = curwin->w_height;
     }
 
     while (topline > 1)
@@ -2822,22 +2826,21 @@ scroll_cursor_halfway(int atend, int prefer_above)
 	    topline_back_winheight(&loff, FALSE);
 	    if (loff.height == MAXCOL)
 		break;
-	    else
-		used += loff.height;
-	    if (used > half_height)
+	    used += loff.height;
+	    if (!atend && boff.lnum < curbuf->b_ml.ml_line_count)
 	    {
-		if (used - loff.height < half_height)
+		botline_forw(&boff);
+		used += boff.height;
+	    }
+	    if (used > want_height)
+	    {
+		if (used - loff.height < want_height)
 		{
-		    int plines_offset = used - half_height;
-		    loff.height -= plines_offset;
-		    used = half_height;
-
 		    topline = loff.lnum;
 #ifdef FEAT_DIFF
 		    topfill = loff.fill;
 #endif
-		    skipcol = skipcol_from_plines(curwin, plines_offset);
-		    set_skipcol = TRUE;
+		    skipcol = skipcol_from_plines(curwin, used - want_height);
 		}
 		break;
 	    }
@@ -2911,11 +2914,11 @@ scroll_cursor_halfway(int atend, int prefer_above)
 #endif
     {
 	if (curwin->w_topline != topline
-		|| set_skipcol
+		|| skipcol != 0
 		|| curwin->w_skipcol != 0)
 	{
 	    curwin->w_topline = topline;
-	    if (set_skipcol)
+	    if (skipcol != 0)
 	    {
 		curwin->w_skipcol = skipcol;
 		redraw_later(UPD_NOT_VALID);
