@@ -276,10 +276,6 @@ update_topline(void)
     long	line_count;
     int		halfheight;
     int		n;
-    linenr_T	old_topline;
-#ifdef FEAT_DIFF
-    int		old_topfill;
-#endif
 #ifdef FEAT_FOLDING
     linenr_T	lnum;
 #endif
@@ -311,9 +307,10 @@ update_topline(void)
     if (mouse_dragging > 0)
 	*so_ptr = mouse_dragging - 1;
 
-    old_topline = curwin->w_topline;
+    linenr_T old_topline = curwin->w_topline;
+    colnr_T old_skipcol = curwin->w_skipcol;
 #ifdef FEAT_DIFF
-    old_topfill = curwin->w_topfill;
+    int old_topfill = curwin->w_topfill;
 #endif
 
     /*
@@ -516,7 +513,10 @@ update_topline(void)
     {
 	dollar_vcol = -1;
 	redraw_later(UPD_VALID);
-	reset_skipcol();
+
+	// Only reset w_skipcol if it was not just set to make cursor visible.
+	if (curwin->w_skipcol == old_skipcol)
+	    reset_skipcol();
 
 	// May need to set w_skipcol when cursor in w_topline.
 	if (curwin->w_cursor.lnum == curwin->w_topline)
@@ -2769,7 +2769,6 @@ scroll_cursor_halfway(int atend, int prefer_above)
     int		above = 0;
     linenr_T	topline;
     colnr_T	skipcol = 0;
-    int		set_skipcol = FALSE;
 #ifdef FEAT_DIFF
     int		topfill = 0;
 #endif
@@ -2798,14 +2797,19 @@ scroll_cursor_halfway(int atend, int prefer_above)
 #endif
     topline = loff.lnum;
 
-    int half_height = 0;
+    int want_height;
     int smooth_scroll = FALSE;
     if (curwin->w_p_sms && curwin->w_p_wrap)
     {
 	// 'smoothscroll' and 'wrap' are set
 	smooth_scroll = TRUE;
-	half_height = (curwin->w_height - used) / 2;
-	used = 0;
+	if (atend)
+	{
+	    want_height = (curwin->w_height - used) / 2;
+	    used = 0;
+	}
+	else
+	    want_height = curwin->w_height;
     }
 
     while (topline > 1)
@@ -2817,22 +2821,21 @@ scroll_cursor_halfway(int atend, int prefer_above)
 	    topline_back_winheight(&loff, FALSE);
 	    if (loff.height == MAXCOL)
 		break;
-	    else
-		used += loff.height;
-	    if (used > half_height)
+	    used += loff.height;
+	    if (!atend && boff.lnum < curbuf->b_ml.ml_line_count)
 	    {
-		if (used - loff.height < half_height)
+		botline_forw(&boff);
+		used += boff.height;
+	    }
+	    if (used > want_height)
+	    {
+		if (used - loff.height < want_height)
 		{
-		    int plines_offset = used - half_height;
-		    loff.height -= plines_offset;
-		    used = half_height;
-
 		    topline = loff.lnum;
 #ifdef FEAT_DIFF
 		    topfill = loff.fill;
 #endif
-		    skipcol = skipcol_from_plines(curwin, plines_offset);
-		    set_skipcol = TRUE;
+		    skipcol = skipcol_from_plines(curwin, used - want_height);
 		}
 		break;
 	    }
@@ -2906,11 +2909,11 @@ scroll_cursor_halfway(int atend, int prefer_above)
 #endif
     {
 	if (curwin->w_topline != topline
-		|| set_skipcol
+		|| skipcol != 0
 		|| curwin->w_skipcol != 0)
 	{
 	    curwin->w_topline = topline;
-	    if (set_skipcol)
+	    if (skipcol != 0)
 	    {
 		curwin->w_skipcol = skipcol;
 		redraw_later(UPD_NOT_VALID);
