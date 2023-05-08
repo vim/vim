@@ -617,6 +617,10 @@ func Test_terminal_size()
   call assert_fails("call term_start(cmd, {'term_rows': 1001})", 'E475:')
   call assert_fails("call term_start(cmd, {'term_rows': 10.0})", 'E805:')
 
+  call assert_fails("call term_start(cmd, {'term_cols': -1})", 'E475:')
+  call assert_fails("call term_start(cmd, {'term_cols': 1001})", 'E475:')
+  call assert_fails("call term_start(cmd, {'term_cols': 10.0})", 'E805:')
+
   call delete('Xtext')
 endfunc
 
