@@ -444,10 +444,19 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    }
 	    else if (STRCMP(hi->hi_key, "term_cols") == 0)
 	    {
+		int error = FALSE;
+
 		if (!(supported2 & JO2_TERM_COLS))
 		    break;
 		opt->jo_set2 |= JO2_TERM_COLS;
-		opt->jo_term_cols = tv_get_number(item);
+		opt->jo_term_cols = tv_get_number_chk(item, &error);
+		if (error)
+		    return FAIL;
+		if (opt->jo_term_cols < 0 || opt->jo_term_cols > 1000)
+		{
+		    semsg(_(e_invalid_value_for_argument_str), "term_cols");
+		    return FAIL;
+		}
 	    }
 	    else if (STRCMP(hi->hi_key, "vertical") == 0)
 	    {
