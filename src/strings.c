@@ -1065,11 +1065,13 @@ byteidx_common(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     varnumber_T	utf16idx = FALSE;
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	utf16idx = tv_get_bool(&argvars[2]);
+	int error = FALSE;
+	utf16idx = tv_get_bool_chk(&argvars[2], &error);
+	if (error)
+	    return;
 	if (utf16idx < 0 || utf16idx > 1)
 	{
-	    if (utf16idx != -1)
-		semsg(_(e_using_number_as_bool_nr), utf16idx);
+	    semsg(_(e_using_number_as_bool_nr), utf16idx);
 	    return;
 	}
     }
@@ -1421,14 +1423,19 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	skipcc = tv_get_bool(&argvars[1]);
-    if (skipcc < 0 || skipcc > 1)
     {
-	if (skipcc != -1)
+	int error = FALSE;
+	skipcc = tv_get_bool_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (skipcc < 0 || skipcc > 1)
+	{
 	    semsg(_(e_using_number_as_bool_nr), skipcc);
+	    return;
+	}
     }
-    else
-	strchar_common(argvars, rettv, skipcc);
+
+    strchar_common(argvars, rettv, skipcc);
 }
 
 /*
@@ -1533,11 +1540,12 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN
 					   && argvars[3].v_type != VAR_UNKNOWN)
 	{
-	    skipcc = tv_get_bool(&argvars[3]);
+	    skipcc = tv_get_bool_chk(&argvars[3], &error);
+	    if (error)
+		return;
 	    if (skipcc < 0 || skipcc > 1)
 	    {
-		if (skipcc != -1)
-		    semsg(_(e_using_number_as_bool_nr), skipcc);
+		semsg(_(e_using_number_as_bool_nr), skipcc);
 		return;
 	    }
 	}
