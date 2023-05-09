@@ -6863,7 +6863,7 @@ write_chars(
 	    vim_free(unicodebuf);
 	    unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
 	    unibuflen = unibuflen ? 0 : length;
-	} while(1);
+	} while (TRUE);
 	cells = mb_string2cells(pchBuf, cbToWrite);
     }
     else // cbToWrite == 1 && *pchBuf == ' ' && enc_utf8

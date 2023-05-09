@@ -1854,8 +1854,8 @@ parse_cino(buf_T *buf)
     // Handle C++ namespace.
     buf->b_ind_cpp_namespace = 0;
 
-    // Handle continuation lines containing conditions of if(), for() and
-    // while().
+    // Handle continuation lines containing conditions of if (), for () and
+    // while ().
     buf->b_ind_if_for_while = 0;
 
     // indentation for # comments
@@ -3317,7 +3317,7 @@ get_c_indent(void)
 			}
 
 			// Special trick: when expecting the while () after a
-			// do, line up with the while()
+			// do, line up with the while ()
 			//     do
 			//	    x = 1;
 			// ->  here

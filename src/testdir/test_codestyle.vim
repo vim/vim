@@ -36,6 +36,10 @@ def Test_source_files()
     cursor(1, 1)
     lnum = search('else\s*{', '', 0, 0, skip)
     assert_equal(0, lnum, fname .. ': curly after "else"')
+
+    cursor(1, 1)
+    lnum = search('\<\(if\|while\|for\)(', '', 0, 0, skip)
+    assert_equal(0, lnum, fname .. ': missing white space after "if"/"while"/"for"')
   endfor
 
   bwipe!
