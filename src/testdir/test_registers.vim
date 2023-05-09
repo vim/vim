@@ -835,6 +835,23 @@ func Test_end_reg_executing()
   bwipe!
 endfunc
 
+" This was causing a crash because y_append was ending up being NULL
+func Test_zero_y_append()
+  " Run in a separate Vim instance because changing 'encoding' may cause
+  " trouble for later tests.
+  let lines =<< trim END
+      d
+      silent ?n
+      next <sfile>
+      so
+      sil! norm 0VPSP
+      set enc=latin1
+       
+  END
+  call writefile(lines, 'XTest_zero_y_append', 'D')
+  call RunVim([], [], '-u NONE -i NONE -e -s -S XTest_zero_y_append -c qa\!')
+endfunc
+
 " Make sure that y_append is correctly reset
 " and the previous register is working as expected
 func Test_register_y_append_reset()
