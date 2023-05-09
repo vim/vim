@@ -1753,22 +1753,6 @@ scrolldown(
 }
 
 /*
- * Return TRUE if scrollup() will scroll by screen line rather than text line.
- */
-    static int
-scrolling_screenlines(int byfold UNUSED)
-{
-    return (curwin->w_p_wrap && curwin->w_p_sms)
-# ifdef FEAT_FOLDING
-	|| (byfold && hasAnyFolding(curwin))
-# endif
-# ifdef FEAT_DIFF
-	|| (curwin->w_p_diff && !curwin->w_p_wrap)
-# endif
-	;
-}
-
-/*
  * Scroll the current window up by "line_count" logical lines.  "CTRL-E"
  */
     void
@@ -1778,7 +1762,14 @@ scrollup(
 {
     int		do_sms = curwin->w_p_wrap && curwin->w_p_sms;
 
-    if (scrolling_screenlines(byfold))
+    if (do_sms
+# ifdef FEAT_FOLDING
+	    || (byfold && hasAnyFolding(curwin))
+# endif
+# ifdef FEAT_DIFF
+	    || (curwin->w_p_diff && !curwin->w_p_wrap)
+# endif
+       )
     {
 	int	    width1 = curwin->w_width - curwin_col_off();
 	int	    width2 = width1 + curwin_col_off2();
@@ -2466,7 +2457,6 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 {
     int		used;
     int		scrolled = 0;
-    int		min_scrolled = 1;
     int		extra = 0;
     int		i;
     linenr_T	line_count;
@@ -2483,6 +2473,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     int		old_empty_rows = curwin->w_empty_rows;
     linenr_T	cln;		    // Cursor Line Number
     long	so = get_scrolloff_value();
+    int		do_sms = curwin->w_p_wrap && curwin->w_p_sms;
 
     cln = curwin->w_cursor.lnum;
     if (set_topbot)
@@ -2504,7 +2495,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 		break;
 	    if (used + loff.height > curwin->w_height)
 	    {
-		if (curwin->w_p_sms && curwin->w_p_wrap)
+		if (do_sms)
 		{
 		    // 'smoothscroll' and 'wrap' are set.  The above line is
 		    // too long to show in its entirety, so we show just a part
@@ -2565,15 +2556,9 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	scrolled = used;
 	if (cln == curwin->w_botline)
 	    scrolled -= curwin->w_empty_rows;
-	min_scrolled = scrolled;
-	if (curwin->w_p_sms && curwin->w_p_wrap)
+	if (do_sms)
 	{
-	    // 'smoothscroll' and 'wrap' are set
-	    if (cln > curwin->w_botline)
-		// add screen lines below w_botline
-		for (linenr_T lnum = curwin->w_botline + 1; lnum <= cln; ++lnum)
-		    min_scrolled += PLINES_NOFILL(lnum);
-
+	    // 'smoothscroll' and 'wrap' are set.
 	    // Calculate how many screen lines the current top line of window
 	    // occupies. If it is occupying more than the entire window, we
 	    // need to scroll the additional clipped lines to scroll past the
@@ -2598,7 +2583,6 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	    if (top_plines > curwin->w_height)
 	    {
 		scrolled += (top_plines - curwin->w_height);
-		min_scrolled += (top_plines - curwin->w_height);
 	    }
 	}
     }
@@ -2725,22 +2709,12 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
      */
     if (line_count >= curwin->w_height && line_count > min_scroll)
 	scroll_cursor_halfway(FALSE, TRUE);
-    else
+    else if (line_count > 0)
     {
-	// With 'smoothscroll' scroll at least the height of the cursor line,
-	// unless it would move the cursor.
-	if (curwin->w_p_wrap && curwin->w_p_sms && line_count < min_scrolled
-		&& (curwin->w_cursor.lnum < curwin->w_topline
-		    || (curwin->w_virtcol - curwin->w_skipcol >=
-					  curwin->w_width - curwin_col_off())))
-	    line_count = min_scrolled;
-	if (line_count > 0)
-	{
-	    if (scrolling_screenlines(TRUE))
-		scrollup(scrolled, TRUE);  // TODO
-	    else
-		scrollup(line_count, TRUE);
-	}
+	if (do_sms)
+	    scrollup(scrolled, TRUE);  // TODO
+	else
+	    scrollup(line_count, TRUE);
     }
 
     /*
