@@ -2047,4 +2047,35 @@ func Test_lsl_file()
   filetype off
 endfunc
 
+func Test_typ_file()
+  filetype on
+
+  " SQL type file
+
+  call writefile(['CASE = LOWER'], 'Xfile.typ', 'D')
+  split Xfile.typ
+  call assert_equal('sql', &filetype)
+  bwipe!
+
+  call writefile(['TYPE foo'], 'Xfile.typ')
+  split Xfile.typ
+  call assert_equal('sql', &filetype)
+  bwipe!
+
+  " typst document
+
+  call writefile(['this is a fallback'], 'Xfile.typ')
+  split Xfile.typ
+  call assert_equal('typst', &filetype)
+  bwipe!
+
+  let g:filetype_typ = 'typst'
+  split Xfile.typ
+  call assert_equal('typst', &filetype)
+  bwipe!
+  unlet g:filetype_typ
+
+  filetype off
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
