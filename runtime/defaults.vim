@@ -120,7 +120,7 @@ if 1
     au!
     autocmd CmdwinEnter *
 	  \ echohl Todo | 
-	  \ echo 'You discovered the command-line window! You can close it with ":q".' |
+	  \ echo gettext('You discovered the command-line window! You can close it with ":q".') |
 	  \ echohl None
   augroup END
 

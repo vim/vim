@@ -204,10 +204,12 @@ PO_INPUTLIST = \
 	vim.desktop.in
 
 PO_VIM_INPUTLIST = \
-	../../runtime/optwin.vim
+	../../runtime/optwin.vim \
+	../../runtime/defaults.vim
 
 PO_VIM_JSLIST = \
-	optwin.js
+	optwin.js \
+	defaults.js
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript
