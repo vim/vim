@@ -2269,7 +2269,11 @@ do_wqall(exarg_T *eap)
     int		save_forceit = eap->forceit;
 
     if (eap->cmdidx == CMD_xall || eap->cmdidx == CMD_wqall)
+    {
+	if (before_quit_all(eap) == FAIL)
+	    return;
 	exiting = TRUE;
+    }
 
     FOR_ALL_BUFFERS(buf)
     {

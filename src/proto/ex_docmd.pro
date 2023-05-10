@@ -39,6 +39,7 @@ char_u *get_command_name(expand_T *xp, int idx);
 void not_exiting(void);
 int before_quit_autocmds(win_T *wp, int quit_all, int forceit);
 void ex_quit(exarg_T *eap);
+int before_quit_all(exarg_T *eap);
 void tabpage_close(int forceit);
 void tabpage_close_other(tabpage_T *tp, int forceit);
 void ex_stop(exarg_T *eap);
