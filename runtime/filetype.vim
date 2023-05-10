@@ -2743,6 +2743,9 @@ au BufNewFile,BufRead .login*,.cshrc*  call dist#ft#CSH()
 " tmux configuration with arbitrary extension
 au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
 
+" Universal Scene Description
+au BufNewFile,BufRead *.usda,*.usd		setf usd
+
 " VHDL
 au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
