@@ -185,9 +185,9 @@ jobs:
           else
           sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
           sudo dpkg -x /var/cache/apt/archives/linux-modules-extra-${{ env.LINUX_VERSION }}*.deb "${DEST_DIR}"
-          tar -cC "${DEST_DIR}"/lib/modules/${{ env.LINUX_VERSION }} kernel/sound | sudo tar -x
-          sudo depmod
-          sudo modprobe snd-dummy
+          tar -cvC "${DEST_DIR}"/lib/modules/${{ env.LINUX_VERSION }} kernel/sound | sudo tar -x
+          sudo depmod --verbose
+          sudo modprobe --verbose snd-dummy
           fi
 
       - name: Check autoconf
