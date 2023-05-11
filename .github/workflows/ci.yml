@@ -180,7 +180,7 @@ jobs:
           DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
         run: |
           cd /lib/modules/${{ env.LINUX_VERSION }}
-          if [ sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }} 2>&1 | grep "Unable to locate package " ]; then
+          if [ sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }} 2>&1 | $(grep "Unable to locate package ") ]; then
           echo "Download of " linux-modules-extra-${{ env.LINUX_VERSION }} "failed continue anyway" exit 0
           else
           sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
