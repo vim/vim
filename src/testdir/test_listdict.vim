@@ -981,7 +981,7 @@ func Test_reverse_sort_uniq()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
-  call assert_fails('call reverse({})', 'E899:')
+  call assert_fails('call reverse({})', 'E1252:')
   call assert_fails('call uniq([1, 2], {x, y -> []})', 'E745:')
   call assert_fails("call sort([1, 2], function('min'), 1)", "E1206:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")

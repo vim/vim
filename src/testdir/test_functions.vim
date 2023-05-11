@@ -3475,13 +3475,16 @@ endfunc
 
 " Test for the reverse() function with a string
 func Test_string_reverse()
-  call assert_equal('', reverse(test_null_string()))
-  for [s1, s2] in [['', ''], ['a', 'a'], ['ab', 'ba'], ['abc', 'cba'],
-        \ ['abcd', 'dcba'], ['«-«-»-»', '»-»-«-«'],
-        \ ['🇦', '🇦'], ['🇦🇧', '🇧🇦'], ['🇦🇧🇨', '🇨🇧🇦'],
-        \ ['🇦«🇧-🇨»🇩', '🇩»🇨-🇧«🇦']]
-    call assert_equal(s2, reverse(s1))
-  endfor
+  let lines =<< trim END
+    call assert_equal('', reverse(test_null_string()))
+    for [s1, s2] in [['', ''], ['a', 'a'], ['ab', 'ba'], ['abc', 'cba'],
+                   \ ['abcd', 'dcba'], ['«-«-»-»', '»-»-«-«'],
+                   \ ['🇦', '🇦'], ['🇦🇧', '🇧🇦'], ['🇦🇧🇨', '🇨🇧🇦'],
+                   \ ['🇦«🇧-🇨»🇩', '🇩»🇨-🇧«🇦']]
+      call assert_equal(s2, reverse(s1))
+    endfor
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
 
   " test in latin1 encoding
   let save_enc = &encoding
