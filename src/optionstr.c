@@ -134,7 +134,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_swb, p_swb_values, &swb_flags, TRUE);
 }
 
-#if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Trigger the OptionSet autocommand.
  * "opt_idx"	is the index of the option being set.
