@@ -5441,17 +5441,17 @@ mch_call_shell(
      * Catch all deadly signals while running the external command, because a
      * CTRL-C, Ctrl-Break or illegal instruction  might otherwise kill us.
      */
-    signal(SIGINT, SIG_IGN);
+    mch_signal(SIGINT, SIG_IGN);
 #if defined(__GNUC__) && !defined(__MINGW32__)
-    signal(SIGKILL, SIG_IGN);
+    mch_signal(SIGKILL, SIG_IGN);
 #else
-    signal(SIGBREAK, SIG_IGN);
+    mch_signal(SIGBREAK, SIG_IGN);
 #endif
-    signal(SIGILL, SIG_IGN);
-    signal(SIGFPE, SIG_IGN);
-    signal(SIGSEGV, SIG_IGN);
-    signal(SIGTERM, SIG_IGN);
-    signal(SIGABRT, SIG_IGN);
+    mch_signal(SIGILL, SIG_IGN);
+    mch_signal(SIGFPE, SIG_IGN);
+    mch_signal(SIGSEGV, SIG_IGN);
+    mch_signal(SIGTERM, SIG_IGN);
+    mch_signal(SIGABRT, SIG_IGN);
 
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	// set to normal mode
@@ -5680,17 +5680,17 @@ mch_call_shell(
     }
     resettitle();
 
-    signal(SIGINT, SIG_DFL);
+    mch_signal(SIGINT, SIG_DFL);
 #if defined(__GNUC__) && !defined(__MINGW32__)
-    signal(SIGKILL, SIG_DFL);
+    mch_signal(SIGKILL, SIG_DFL);
 #else
-    signal(SIGBREAK, SIG_DFL);
+    mch_signal(SIGBREAK, SIG_DFL);
 #endif
-    signal(SIGILL, SIG_DFL);
-    signal(SIGFPE, SIG_DFL);
-    signal(SIGSEGV, SIG_DFL);
-    signal(SIGTERM, SIG_DFL);
-    signal(SIGABRT, SIG_DFL);
+    mch_signal(SIGILL, SIG_DFL);
+    mch_signal(SIGFPE, SIG_DFL);
+    mch_signal(SIGSEGV, SIG_DFL);
+    mch_signal(SIGTERM, SIG_DFL);
+    mch_signal(SIGABRT, SIG_DFL);
 
     return x;
 }

@@ -95,6 +95,8 @@
 # endif
 #endif
 
+typedef void (*sighandler_T)(int, int);
+
 /*
  * Win32 has plenty of memory, use large buffers
  */
