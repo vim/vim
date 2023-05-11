@@ -174,21 +174,20 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      # FIXME: Temporarily disabled because of build errors
       - name: Set up snd-dummy
-         if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
-         env:
-           DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
+        if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
+        env:
+         DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
          run: |
-           cd /lib/modules/${{ env.LINUX_VERSION }}
-           if [ sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }} 2>&1 | grep "Unable to locate package " ]; then
-           echo "Download of " linux-modules-extra-${{ env.LINUX_VERSION }} "failed continue anyway" exit 0
-           else
-           sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
-           sudo dpkg -x /var/cache/apt/archives/linux-modules-extra-${{ env.LINUX_VERSION }}*.deb "${DEST_DIR}"
-           tar -cC "${DEST_DIR}"/lib/modules/${{ env.LINUX_VERSION }} kernel/sound | sudo tar -x
-           sudo depmod
-           sudo modprobe snd-dummy
+          cd /lib/modules/${{ env.LINUX_VERSION }}
+          if [ sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }} 2>&1 | grep "Unable to locate package " ]; then
+          echo "Download of " linux-modules-extra-${{ env.LINUX_VERSION }} "failed continue anyway" exit 0
+          else
+          sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
+          sudo dpkg -x /var/cache/apt/archives/linux-modules-extra-${{ env.LINUX_VERSION }}*.deb "${DEST_DIR}"
+          tar -cC "${DEST_DIR}"/lib/modules/${{ env.LINUX_VERSION }} kernel/sound | sudo tar -x
+          sudo depmod
+          sudo modprobe snd-dummy
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
