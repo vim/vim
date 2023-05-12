@@ -22,6 +22,7 @@ jobs:
     env:
       CC: ${{ matrix.compiler }}
       GCC_VER: 12
+      GCOV_VER: 12
       CLANG_VER: 16
       TEST: test
       SRCDIR: ./src
@@ -238,10 +239,12 @@ jobs:
           COVERALLS_PARALLEL: true
           TRAVIS_JOB_ID: ${{ github.run_id }}
         run: |
+          sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcc-${{ env.GCOV_VER }} 100
+          sudo update-alternatives --set gcov /usr/bin/gcov-${{ env.GCOV_VER }}
           sudo apt-get install -y python3-setuptools python3-wheel
           sudo -H pip3 install pip -U
           # needed for https support for coveralls building cffi only works with gcc, not with clang
-          CC=gcc-11 pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
+          CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
           ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
 
       - name: Generate gcov files
