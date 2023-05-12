@@ -240,7 +240,6 @@ jobs:
           TRAVIS_JOB_ID: ${{ github.run_id }}
         run: |
           sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcc-${{ env.GCOV_VER }} 100
-          sudo update-alternatives --set gcov /usr/bin/gcov-${{ env.GCOV_VER }}
           sudo apt-get install -y python3-setuptools python3-wheel
           sudo -H pip3 install pip -U
           # needed for https support for coveralls building cffi only works with gcc, not with clang
