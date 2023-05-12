@@ -232,7 +232,7 @@ jobs:
           do_test make ${SHADOWOPT} ${TEST}
 
       - name: Coveralls
-        if: matrix.coverage && github.event_name != 'pull_request'
+        if: matrix.coverage
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           COVERALLS_PARALLEL: true
