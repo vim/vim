@@ -240,7 +240,7 @@ jobs:
         run: |
           sudo apt-get install -y python3-setuptools python3-wheel
           sudo -H pip3 install pip -U
-          CC=gcc pip3 install --user git+https://github.com/gcovr/gcovr.git
+          CC=gcc pip3 install --user git+https://github.com/gcovr/gcovr.git@use_writable_directory_for_gcov_execution
           ~/.local/bin/gcovr --coveralls -b "/home/runner/work/vim/vim/src" -x .xs -e /home/runner/work/vim/vim/src/if_perl.c -e /home/runner/work/vim/vim/src/xxd -e /home/runner/work/vim/vim/src/libvterm --source-encoding utf-8
 
       - name: Generate gcov files
