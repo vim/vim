@@ -243,7 +243,7 @@ jobs:
           sudo apt-get install -y python3-setuptools python3-wheel
           sudo -H pip3 install pip -U
           CC=gcc pip3 install --user git+https://github.com/gcovr/gcovr.git
-          gcovr --coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --source-encoding utf-8
+          ~/.local/bin/gcovr --coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --source-encoding utf-8
 
       - name: Generate gcov files
         if: matrix.coverage
