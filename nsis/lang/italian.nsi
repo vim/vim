@@ -91,13 +91,13 @@ LangString str_desc_edit_with       ${LANG_ITALIAN} \
 #    "Versione a 32 bit"
 #LangString str_desc_edit_with32     ${LANG_ITALIAN} \
 #    "Aggiungi Vim al menu contestuale $\"Apri con...$\" \
-#     per applicazioni a 32bit."
+#     per applicazioni a 32 bit."
 
 #LangString str_section_edit_with64  ${LANG_ITALIAN} \
 #    "Versione a 64 bit"
 #LangString str_desc_edit_with64     ${LANG_ITALIAN} \
 #    "Aggiunge Vim al menu contestuale $\"Apri con...$\" \
-#     per applicazioni a 64-bit."
+#     per applicazioni a 64 bit."
 
 LangString str_section_vim_rc       ${LANG_ITALIAN} \
     "Crea configurazione predefinita"
@@ -107,24 +107,24 @@ LangString str_desc_vim_rc          ${LANG_ITALIAN} \
 LangString str_group_plugin         ${LANG_ITALIAN} \
     "Crea cartella plugin"
 LangString str_desc_plugin          ${LANG_ITALIAN} \
-    "Crea cartella plugin.  i plugin consentono di aggiungere funzionalità \
-     a Vim copiando i relativi file in una di questa cartella."
+    "Crea cartella plugin.  I plugin consentono di aggiungere funzionalità \
+     a Vim copiando i relativi file in una di queste cartelle."
 
 LangString str_section_plugin_home  ${LANG_ITALIAN} \
-    "Private"
+    "Privata"
 LangString str_desc_plugin_home     ${LANG_ITALIAN} \
     "Crea cartella plugin nella cartella HOME."
 
 LangString str_section_plugin_vim   ${LANG_ITALIAN} \
-    "Condivise"
+    "Condivisa"
 LangString str_desc_plugin_vim      ${LANG_ITALIAN} \
     "Crea cartella plugin nella cartella di installazione di Vim \
      per uso da parte di tutti gli utenti di questo sistema."
 
 LangString str_section_nls          ${LANG_ITALIAN} \
-    "Supporto naltivo lingua (NLS)"
+    "Supporto nativo lingua (NLS)"
 LangString str_desc_nls             ${LANG_ITALIAN} \
-    "Installa i file per il supporto nativo multilngua."
+    "Installa i file per il supporto nativo multilingua."
 
 LangString str_unsection_register   ${LANG_ITALIAN} \
     "Rimuovi Vim dal registro"
@@ -134,7 +134,7 @@ LangString str_desc_unregister      ${LANG_ITALIAN} \
 LangString str_unsection_exe        ${LANG_ITALIAN} \
     "Elimina programmi/file di supporto Vim"
 LangString str_desc_rm_exe          ${LANG_ITALIAN} \
-    "Rimuove tutti i programmi/file di supporto di Vim."
+    "Elimina tutti i programmi/file di supporto di Vim."
 
 LangString str_ungroup_plugin       ${LANG_ITALIAN} \
     "Elimina cartelle plugin"
@@ -198,7 +198,7 @@ LangString str_desc_rm_rootdir      ${LANG_ITALIAN} \
 #    "Impossibile trovare chiave disinstallazione nel registro."
 
 #LangString str_msg_no_rm_reg     ${LANG_ITALIAN} \
-#    "Impossibile trovare programma disinstallazione nel regsitro."
+#    "Impossibile trovare programma disinstallazione nel registro."
 
 #LangString str_msg_no_rm_exe     ${LANG_ITALIAN} \
 #    "Impossibile trovare programma disinstallazione."
@@ -216,7 +216,7 @@ LangString str_msg_install_fail  ${LANG_ITALIAN} \
     "Installazione non riuscita."
 
 LangString str_msg_rm_exe_fail   ${LANG_ITALIAN} \
-    "Alcuni file in $0 non sono stati eleiminati!$\r$\n\
+    "Alcuni file in $0 non sono stati eliminati!$\r$\n\
      I file vanno rimossi manualmente."
 
 #LangString str_msg_rm_root_fail  ${LANG_ITALIAN} \
