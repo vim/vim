@@ -1460,6 +1460,15 @@ If there is no g:termdebug_config you can use: >
 	let g:termdebug_disasm_window = 15
 Any value greater than 1 will set the Asm window height to that value.
 
+						*termdebug_variables_window*
+If you want the Var window shown by default, set the flag to 1.
+the "variables_window_height" entry can be used to set the window height: >
+	let g:termdebug_config['variables_window'] = 1
+	let g:termdebug_config['variables_window_height'] = 15
+If there is no g:termdebug_config you can use: >
+	let g:termdebug_variables_window = 15
+Any value greater than 1 will set the Var window height to that value.
+
 Communication ~
 						*termdebug-communication*
 There is another, hidden, buffer, which is used for Vim to communicate with

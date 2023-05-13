@@ -69,6 +69,7 @@ let s:pc_id = 12
 let s:asm_id = 13
 let s:break_id = 14  " breakpoint number is added to this
 let s:stopped = 1
+let s:running = 0
 
 let s:parsing_disasm_msg = 0
 let s:asm_lines = []
@@ -131,6 +132,7 @@ func s:StartDebug_internal(dict)
   let s:ptywin = 0
   let s:pid = 0
   let s:asmwin = 0
+  let s:varwin = 0
 
   if exists('#User#TermdebugStartPre')
     doauto <nomodeline> User TermdebugStartPre
@@ -189,6 +191,12 @@ func s:StartDebug_internal(dict)
   if s:GetDisasmWindow()
     let curwinid = win_getid(winnr())
     call s:GotoAsmwinOrCreateIt()
+    call win_gotoid(curwinid)
+  endif
+
+  if s:GetVariablesWindow()
+    let curwinid = win_getid(winnr())
+    call s:GotoVariableswinOrCreateIt()
     call win_gotoid(curwinid)
   endif
 
@@ -802,6 +810,59 @@ func s:HandleDisasmMsg(msg)
   endif
 endfunc
 
+func s:ParseVarinfo(varinfo)
+  let dict = {}
+  let nameIdx = matchstrpos(a:varinfo, '{name="\([^"]*\)"')
+  let dict['name'] = a:varinfo[nameIdx[1] + 7 : nameIdx[2] - 2]
+  let typeIdx = matchstrpos(a:varinfo, ',type="\([^"]*\)"')
+  let dict['type'] = a:varinfo[typeIdx[1] + 7 : typeIdx[2] - 2]
+  let valueIdx = matchstrpos(a:varinfo, ',value="\([^"]*\)"}')
+  if valueIdx[1] == -1
+    let dict['value'] = 'Complex value'
+  else
+    let dict['value'] = a:varinfo[valueIdx[1] + 8 : valueIdx[2] - 3]
+  endif
+  return dict
+endfunc
+
+func s:SpacesString(num)
+  let i = 0
+  let ret = ''
+  while i < a:num
+    let ret = ret . ' '
+    let i += 1
+  endwhile
+  return ret
+endfunc
+
+func s:HandleVariablesMsg(msg)
+  let curwinid = win_getid(winnr())
+  if win_gotoid(s:varwin)
+
+    silent normal! gg0"_dG
+    let spaceBuffer = 20
+    call setline(1, 'Type' .
+	  \ s:SpacesString(16) .
+	  \ 'Name' .
+	  \ s:SpacesString(16) .
+	  \ 'Value')
+    let cnt = 1
+    let capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
+    let varinfo = matchstr(a:msg, capture, 0, cnt)
+    while varinfo != ''
+      let vardict = s:ParseVarinfo(varinfo)
+      call setline(cnt + 1, vardict['type'] .
+	    \ s:SpacesString(max([20 - len(vardict['type']), 1])) .
+	    \ vardict['name'] .
+	    \ s:SpacesString(max([20 - len(vardict['name']), 1])) .
+	    \ vardict['value'])
+      let cnt += 1
+      let varinfo = matchstr(a:msg, capture, 0, cnt)
+    endwhile
+  endif
+  call win_gotoid(curwinid)
+endfunc
+
 " Handle a message received from gdb on the GDB/MI interface.
 func s:CommOutput(chan, msg)
   let msgs = split(a:msg, "\r")
@@ -832,6 +893,8 @@ func s:CommOutput(chan, msg)
       elseif msg =~ '^disassemble'
         let s:parsing_disasm_msg = 1
         let s:asm_lines = []
+      elseif msg =~ '^\^done,variables='
+	call s:HandleVariablesMsg(msg)
       endif
     endif
   endfor
@@ -877,6 +940,7 @@ func s:InstallCommands()
   command Program call s:GotoProgram()
   command Source call s:GotoSourcewinOrCreateIt()
   command Asm call s:GotoAsmwinOrCreateIt()
+  command Var call s:GotoVariableswinOrCreateIt()
   command Winbar call s:InstallWinbar(1)
 
   let map = 1
@@ -951,6 +1015,7 @@ func s:DeleteCommands()
   delcommand Program
   delcommand Source
   delcommand Asm
+  delcommand Var
   delcommand Winbar
 
   if exists('s:k_map_saved')
@@ -1286,6 +1351,59 @@ func s:GotoAsmwinOrCreateIt()
   endif
 endfunc
 
+func s:GetVariablesWindow()
+  if exists('g:termdebug_config')
+    return get(g:termdebug_config, 'variables_window', 0)
+  endif
+  if exists('g:termdebug_disasm_window')
+    return g:termdebug_variables_window
+  endif
+  return 0
+endfunc
+
+func s:GetVariablesWindowHeight()
+  if exists('g:termdebug_config')
+    return get(g:termdebug_config, 'variables_window_height', 0)
+  endif
+  if exists('g:termdebug_variables_window') && g:termdebug_variables_window > 1
+    return g:termdebug_variables_window
+  endif
+  return 0
+endfunc
+
+func s:GotoVariableswinOrCreateIt()
+  if !win_gotoid(s:varwin)
+    if win_gotoid(s:sourcewin)
+      exe 'rightbelow new'
+    else
+      exe 'new'
+    endif
+
+    let s:varwin = win_getid(winnr())
+
+    setlocal nowrap
+    setlocal number
+    setlocal noswapfile
+    setlocal buftype=nofile
+    setlocal modifiable
+
+    let varbuf = bufnr('Termdebug-variables-listing')
+    if varbuf > 0
+      exe 'buffer' . varbuf
+    else
+      exe 'file Termdebug-variables-listing'
+    endif
+
+    if s:GetVariablesWindowHeight() > 0
+      exe 'resize ' .. s:GetVariablesWindowHeight()
+    endif
+  endif
+
+  if s:running
+    call s:SendCommand('-stack-list-variables 2')
+  endif
+endfunc
+
 " Handle stopping and running message from gdb.
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
@@ -1294,9 +1412,13 @@ func s:HandleCursor(msg)
   if a:msg =~ '^\*stopped'
     call ch_log('program stopped')
     let s:stopped = 1
+    if a:msg =~ '^\*stopped,reason="exited-normally"'
+      let s:running = 0
+    endif
   elseif a:msg =~ '^\*running'
     call ch_log('program running')
     let s:stopped = 0
+    let s:running = 1
   endif
 
   if a:msg =~ 'fullname='
@@ -1323,6 +1445,10 @@ func s:HandleCursor(msg)
         call win_gotoid(curwinid)
       endif
     endif
+  endif
+
+  if s:running && s:stopped && bufwinnr('Termdebug-variables-listing') != -1
+    call s:SendCommand('-stack-list-variables 2')
   endif
 
   if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
