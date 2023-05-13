@@ -49,4 +49,5 @@ void cursor_correct(void);
 int onepage(int dir, long count);
 void halfpage(int flag, linenr_T Prenum);
 void do_check_cursorbind(void);
+int marker_overlap(win_T *wp, int extra2);
 /* vim: set ft=c : */

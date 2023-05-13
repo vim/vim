@@ -202,22 +202,26 @@ redraw_for_cursorcolumn(win_T *wp)
 #endif
 
 /*
- * Calculates how much overlap the smoothscroll marker "<<<" overlaps with
- * buffer text for curwin.
+ * Calculates how much the 'listchars' "precedes" or 'smoothscroll' "<<<"
+ * marker overlaps with buffer text for window "wp".
  * Parameter "extra2" should be the padding on the 2nd line, not the first
  * line.
  * Returns the number of columns of overlap with buffer text, excluding the
  * extra padding on the ledge.
  */
-    static int
-smoothscroll_marker_overlap(int extra2)
+     int
+marker_overlap(win_T *wp, int extra2)
 {
 #if defined(FEAT_LINEBREAK)
-    // We don't draw the <<< marker when in showbreak mode, thus no need to
+    // There is no marker overlap when in showbreak mode, thus no need to
     // account for it.  See wlv_screen_line().
-    if (*get_showbreak_value(curwin) != NUL)
+    if (*get_showbreak_value(wp) != NUL)
 	return 0;
 #endif
+    // Overlap when 'list' and 'listchars' "precedes" are set is 1.
+    if (wp->w_p_list && wp->w_lcs_chars.prec)
+	return 1;
+
     return extra2 > 3 ? 0 : 3 - extra2;
 }
 
@@ -346,12 +350,11 @@ update_topline(void)
 		colnr_T vcol;
 
 		// Check that the cursor position is visible.  Add columns for
-		// the smoothscroll marker "<<<" displayed in the top-left if
-		// needed.
+		// the marker displayed in the top-left if needed.
 		getvvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
-		int smoothscroll_overlap = smoothscroll_marker_overlap(
-					 curwin_col_off() - curwin_col_off2());
-		if (curwin->w_skipcol + smoothscroll_overlap > vcol)
+		int overlap = marker_overlap(curwin, curwin_col_off()
+							- curwin_col_off2());
+		if (curwin->w_skipcol + overlap > vcol)
 		    check_topline = TRUE;
 	    }
 	}
@@ -1883,10 +1886,9 @@ scrollup(
 	int	scrolloff_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
 	int	space_cols = (curwin->w_height - 1) * width2;
 
-	// If we have non-zero scrolloff, just ignore the <<< marker as we are
+	// If we have non-zero scrolloff, just ignore the marker as we are
 	// going past it anyway.
-	int smoothscroll_overlap = scrolloff_cols != 0 ? 0 :
-					   smoothscroll_marker_overlap(extra2);
+	int overlap = scrolloff_cols != 0 ? 0 : marker_overlap(curwin, extra2);
 
 	// Make sure the cursor is in a visible part of the line, taking
 	// 'scrolloff' into account, but using screen lines.
@@ -1894,15 +1896,13 @@ scrollup(
 	if (scrolloff_cols > space_cols / 2)
 	    scrolloff_cols = space_cols / 2;
 	validate_virtcol();
-	if (curwin->w_virtcol < curwin->w_skipcol
-				       + smoothscroll_overlap + scrolloff_cols)
+	if (curwin->w_virtcol < curwin->w_skipcol + overlap + scrolloff_cols)
 	{
 	    colnr_T col = curwin->w_virtcol;
 
 	    if (col < width1)
 		col += width1;
-	    while (col < curwin->w_skipcol
-				       + smoothscroll_overlap + scrolloff_cols)
+	    while (col < curwin->w_skipcol + overlap + scrolloff_cols)
 		col += width2;
 	    curwin->w_curswant = col;
 	    coladvance(curwin->w_curswant);
@@ -1949,8 +1949,9 @@ adjust_skipcol(void)
     }
 
     validate_virtcol();
+    int overlap = marker_overlap(curwin, curwin_col_off() - curwin_col_off2());
     while (curwin->w_skipcol > 0
-		 && curwin->w_virtcol < curwin->w_skipcol + 3 + scrolloff_cols)
+	    && curwin->w_virtcol < curwin->w_skipcol + overlap + scrolloff_cols)
     {
 	// scroll a screen line down
 	if (curwin->w_skipcol >= width1 + width2)
