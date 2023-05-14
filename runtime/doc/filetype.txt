@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 9.0.  Last change: 2023 Feb 15
+*filetype.txt*  For Vim version 9.0.  Last change: 2023 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -660,8 +660,8 @@ page in a Vim window: >
 
 MANPAGER				      *manpager.vim*
 
-The |:Man| command allows you to turn Vim into a manpager (that syntax highlights
-manpages and follows linked manpages on hitting CTRL-]).
+The |:Man| command allows you to turn Vim into a manpager (that syntax
+highlights manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 

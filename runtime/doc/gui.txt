@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.0.  Last change: 2023 Mar 01
+*gui.txt*       For Vim version 9.0.  Last change: 2023 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1226,10 +1226,9 @@ This section describes other features which are related to the GUI.
   like this to set options specifically for each type of GUI: >
 
 	if has("gui_running")
-	    if has("gui_gtk2")
+	    if has("gui_gtk")
 		:set guifont=Luxi\ Mono\ 12
 	    elseif has("x11")
-		" Also for GTK 1
 		:set guifont=*-lucidatypewriter-medium-r-normal-*-*-180-*-*-m-*-*
 	    elseif has("gui_win32")
 		:set guifont=Luxi_Mono:h12:cANSI

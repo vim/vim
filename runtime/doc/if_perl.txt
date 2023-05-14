@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 9.0.  Last change: 2022 Mar 13
+*if_perl.txt*   For Vim version 9.0.  Last change: 2023 May 14
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -254,23 +254,14 @@ $main::curbuf
 
 							*script-here*
 When using a script language in-line, you might want to skip this when the
-language isn't supported.  But this mechanism doesn't work: >
+language isn't supported.  >
    if has('perl')
      perl << EOF
-       this will NOT work!
+       print 'perl works'
    EOF
    endif
-Instead, put the Perl/Python/Ruby/etc. command in a function and call that
-function: >
-    if has('perl')
-      function DefPerl()
-	perl << EOF
-	  this works
-    EOF
-      endfunction
-      call DefPerl()
-    endif
-Note that "EOF" must be at the start of the line.
+Note that "EOF" must be at the start of the line without preceding white
+space.
 
 ==============================================================================
 4. Dynamic loading					*perl-dynamic*

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 Mar 09
+*map.txt*       For Vim version 9.0.  Last change: 2023 May 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1873,7 +1873,13 @@ remains unmodified.  Also see |f-args-example| below.  Overview:
 	XX a\\\ b	   'a\ b'
 	XX a\\\\b	   'a\\b'
 	XX a\\\\ b	   'a\\', 'b'
+	XX		   [nothing]
 
+
+Note that if the "no arguments" situation is to be handled, you have to make
+sure that the function can be called without arguments.  For a compiled
+function you might want to use variable arguments, see
+|vim9-variable-arguments|.
 
 Examples for user commands: >
 

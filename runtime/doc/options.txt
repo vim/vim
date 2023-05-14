@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2023 Apr 12
+*options.txt*	For Vim version 9.0.  Last change: 2023 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -925,6 +925,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'autowriteall' for that.
 	Some buffers will not be written, specifically when 'buftype' is
 	"nowrite", "nofile", "terminal" or "prompt".
+	USE WITH CARE: If you make temporary changes to a buffer that you
+	don't want to be saved this option may cause it to be saved anyway.
+	Renaming the buffer with ":file {name}" may help avoid this.
 
 			 *'autowriteall'* *'awa'* *'noautowriteall'* *'noawa'*
 'autowriteall' 'awa'	boolean	(default off)

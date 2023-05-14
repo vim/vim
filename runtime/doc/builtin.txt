@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2023 Apr 19
+*builtin.txt*	For Vim version 9.0.  Last change: 2023 May 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2260,7 +2260,7 @@ execute({command} [, {silent}])					*execute()*
 		string.
 		{command} can be a string or a List.  In case of a List the
 		lines are executed one by one.
-		This is equivalent to: >
+		This is more or less equivalent to: >
 			redir => var
 			{command}
 			redir END
@@ -2276,7 +2276,7 @@ execute({command} [, {silent}])					*execute()*
 							*E930*
 		It is not possible to use `:redir` anywhere in {command}.
 
-		To get a list of lines use |split()| on the result: >
+		To get a list of lines use `split()` on the result: >
 			execute('args')->split("\n")
 
 <		To execute a command in another window than the current one
@@ -6767,17 +6767,20 @@ prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 		that was entered at the prompt.  This can be an empty string
 		if the user only typed Enter.
 		Example: >
-		   call prompt_setcallback(bufnr(), function('s:TextEntered'))
 		   func s:TextEntered(text)
 		     if a:text == 'exit' || a:text == 'quit'
 		       stopinsert
+		       " Reset 'modified' to allow the buffer to be closed.
+		       " We assume there is nothing useful to be saved.
+		       set nomodified
 		       close
 		     else
+		       " Do something useful with "a:text".  In this example
+		       " we just repeat it.
 		       call append(line('$') - 1, 'Entered: "' .. a:text .. '"')
-		       " Reset 'modified' to allow the buffer to be closed.
-		       set nomodified
 		     endif
 		   endfunc
+		   call prompt_setcallback(bufnr(), function('s:TextEntered'))
 
 <		Can also be used as a |method|: >
 			GetBuffer()->prompt_setcallback(callback)
@@ -10259,7 +10262,7 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 		The window will temporarily be made the current window,
 		without triggering autocommands or changing directory.  When
 		executing {command} autocommands will be triggered, this may
-		have unexpected side effects.  Use |:noautocmd| if needed.
+		have unexpected side effects.  Use `:noautocmd` if needed.
 		Example: >
 			call win_execute(winid, 'set syntax=python')
 <		Doing the same with `setwinvar()` would not trigger

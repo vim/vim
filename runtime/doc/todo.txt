@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Apr 22
+*todo.txt*      For Vim version 9.0.  Last change: 2023 May 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,16 +38,8 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Delete ci/load-snd-dummy.sh?
-Update Filelist
-
-When using ":set no<CTRL-A>" add options starting with "no", not all boolean
-options.
-
 Crash when splitting window: #11961.  Set RedrawingDisabled in
 win_split_ins().
-
-In runtime/autoload/dist/script.vim change "set ft=" to "setlocal ft=" ?
 
 CTRL-J mapping is not used if halfway another mapping. #12002
 Is simplified mapping not used but escape code has been simplified?
@@ -57,16 +49,40 @@ in restore_snapshot_rec() restore more values from the snapshot, instead of
 calling frame_new_height() and frame_new_width(), especially w_topline and
 w_skipcol.
 
-'smoothscroll' problem: #12199
-Problems related to 'smoothscroll': #12218 and #12211
+Check places that source "path/*.vim" to not match other extensions, e.g.
+.vim9, on MS-Windows (short file name match, gets expanded to long file name).
+E.g. for startup files, plugins, packs, etc.
+
+When a help item can't be found, then open 'helpfile'.  Search for the tag in
+that file and gtive E149 only when not found.  Helps for a tiny Vim installed
+without all the help files.
+
+Virtual text problems:
+-  Deleting character before a wrapping virtual text, causes for the following
+   lines to dissapear (Issue #12244)
+-  If 'list' is on, 'below' virtual text which includes 1 or 2 characters are
+   gone (Issue #12028)
+-  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
+   #12232)
+-  Virtual text to the right of the line that fits exactly on screen causes
+   that line and all lines below it not to be displayed (Issue #12213)
+-  Window screen gets wrong when a virtual text is placed on 'above' or
+   'below' on an empty line (Issue #11959)
 
 include #12140: positional arguments in printf(), fixes #10577
 
 Include #11818: attach custom data to quickfix items.
 
-When a help item can't be found, then open 'helpfile'.  Search for the tag in
-that file and gtive E149 only when not found.  Helps for a tiny Vim installed
-without all the help files.
+Include #12292: buffer argument for undotree()?
+
+When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
+highlighted. (van-de-bugger, 2018 Jan 23, #2576)
+
+Improve profiling by caching matching functions:  PR  #12192
+
+Add filecopy() ?  #12346
+
+Implement foreach()  PR  #12166
 
 Errors when running tests with valgrind:
 - test_codestyle.vim:  e.g.:
@@ -100,8 +116,21 @@ Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes
   - Change access: public by default, private by prefixing "_".
 	Check for error: can't have same name twice (ignoring "_" prefix).
+  - Cannot use class type of itself in the method (Issue #12369)
+  - class members initialized during definition (Issue #12041)
+  - cannot call class member of funcref type  (Issue #12324)
+  - nested function unable to directly modify private member (Issue #12076)
+      And: can't use "this" keyword in lambda function (Issue #12336)
+  - "return this" required for early return from constructor (inconsistent)
+    (Issue #12040)
+  - class/method confusion inside ":def" when using "class extends" (Issue
+    #12089)
+  - null_object - constant type 17 not supported (Issue #12043)
+  - problem compiling object method call as function call argument (Issue
+    #12081)
   - Make ":defcompile ClassName" compile all functions and methods in the
     class.
+  - object's method in stacktrace missing information (Issue #12078)
   - Forward declaration of a class?  E.g. for Clone() function.
 	email lifepillar 2023 Mar 26
   - Getting member of variable with "any" type should be handled at runtime.
@@ -112,12 +141,18 @@ Further Vim9 improvements, possibly after launch:
     Perhaps use "private" keyword instead of "_" prefix?
   - "final" object members - can only be set in the constructor.
   - "obj.Method()" does not always work in a compiled function, assumes "obj"
-    is a dictionary.  #12196
+    is a dictionary.  #12196  Issue #12024 might be the same problem.
+    Issue #11822: any.Func() can be a dict or an object call, need to handle
+    this at runtime.  Also see #12198 for an example.
+    Possibly issue #11981 can be fixed at the same time (has two examples).
   - accept line breaks in member initialization.  #11957
   - object empty(), len() - can class define a method to be used for them?
   - add to help: when using a default new() method then reordering object
     members may cause trouble.  Can define new() without arguments to avoid.
   - TODO items: check types for "implements" - members and methods
+  - When "Meta" is a class, is "const MetaAlias = Meta" allowed?  It should
+    either work or given an error. possibly give an error now and implement it
+    later (using a typedef).  #12006
   - how about lock/unlock?
   - When checking "implements" also check types of members and function args.
   - For chaining, allow using the class name as type for function return
@@ -127,8 +162,6 @@ Further Vim9 improvements, possibly after launch:
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
-  - Issue #11822: any.Func() can be a dict or an object call, need to handle
-    this at runtime.  Also see #12198 for an example.
 - implement :type
 - implement :enum
 - Promise class, could be used to wait on a popup close callback?
@@ -271,6 +304,11 @@ Terminal emulator window:
 - When in terminal-Normal mode when the job finishes, the cursor jumps to the
   end but the window is not updated.  This only happens when typing "a".
       :term bash -c "for V in {0..5}; do echo $V; sleep 1; done"
+- GUI: cursor color is not updated when going to Terminal-Job mode.  #12328
+- GUI: cursor color is not updated when switching between tabs with a key.
+  #12329
+- GUI: cursor color is not updated when switching between tabs with a mouse
+  click.  #12330
 - When started with ":terminal ++close" and the shell exits but there is a
   background process, the window remains open, because the channel still
   exists (and output still shows).  Perhaps close the window when an explicit
@@ -344,6 +382,11 @@ combining characters. (Ron Aaron, 2023 Apr 10)
 Add BufDeletePost.  #11041
 
 Add winid arg to col() and charcol()  #11466 (request #11461)
+
+When :argument has a non-number argument, use it like :buffer to find the
+argument by name.  #12272
+
+Fold unexpectedly closed when inserting fold marker with CTRL-V (Issue #12320)
 
 Can we make 'noendofline' and 'endoffile' visible?  Should show by default,
 since it's an unusual situation.
@@ -763,6 +806,9 @@ Improve fallback for menu translations, to avoid having to create lots of
 files that source the actual file.  E.g. menu_da_de -> menu_da
 Include part of #3242?
 
+Patch for different behavior of text objects with quotes: #11976
+Is this actually better?
+
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Added tests (James McCoy, 2016 Aug 3, #958).  Still needs more work.
@@ -1030,9 +1076,6 @@ option_save({list})					*option_save()*
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
-
-When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
-highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
 No profile information for function that executes ":quit". (Daniel Hahler,
 2017 Dec 26, #2501)

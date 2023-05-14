@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-21 19:01+0200\n"
+"POT-Creation-Date: 2023-05-12 23:23+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -157,6 +157,10 @@ msgstr "Ende"
 msgid "Top"
 msgstr "Anfang"
 
+#, c-format
+msgid "%d%%"
+msgstr "%d%%"
+
 msgid "[Prompt]"
 msgstr "[Prompt]"
 
@@ -270,6 +274,42 @@ msgstr "Die Schlüssel stimmen nicht überein!"
 
 msgid "[crypted]"
 msgstr "[verschlüsselt]"
+
+#, c-format
+msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
+msgstr ""
+"xchacha20v2: Verwendung eines benutzerdefinierten Berechnungslimit \"%llu\" "
+"für die Schlüsselableitung"
+
+#, c-format
+msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
+msgstr ""
+"xchacha20v2: Verwendung des Standard-Berechnungslimit \"%llu\" "
+"für die Schlüsselableitung"
+
+#, c-format
+msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
+msgstr ""
+"xchacha20v2: Verwendung eines benutzerdefinierten Speicherlimits \"%lu\" "
+"für die Schlüsselableitung"
+
+#, c-format
+msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
+msgstr ""
+"xchacha20v2: Verwendung des Standard-Speicherlimits \"%lu\" "
+"für die Schlüsselableitung"
+
+#, c-format
+msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
+msgstr ""
+"xchacha20v2: Verwendung des benutzerdefinierten Algorithmus \"%d\" "
+"für die Schlüsselableitung"
+
+#, c-format
+msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
+msgstr ""
+"xchacha20v2: Verwendung des Standard-Algorithmus \"%d\" "
+"für die Schlüsselableitung"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Debug-Modus. Geben Sie \"cont\" zum Fortsetzen ein."
@@ -1332,9 +1372,6 @@ msgstr " Vorschlag der Rechtschreibprüfung (s^N^P)"
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokale Stichwort-Vervollständigung(^N^P)"
 
-msgid "Hit end of paragraph"
-msgstr "Absatzende erreicht"
-
 msgid "'dictionary' option is empty"
 msgstr "Die Option 'dictionary' ist leer"
 
@@ -1366,6 +1403,12 @@ msgstr " Füge hinzu"
 
 msgid "-- Searching..."
 msgstr "-- Suche..."
+
+msgid "Hit end of paragraph"
+msgstr "Absatzende erreicht"
+
+msgid "Pattern not found"
+msgstr "Muster nicht gefunden"
 
 msgid "Back at original"
 msgstr "Zurück am Ursprung"
@@ -1627,6 +1670,9 @@ msgstr ""
 "--not-a-term\t\tKeine Warnung ausgeben, wenn Eingabe/Ausgabe nicht auf einem "
 "Terminal ausgegeben wird"
 
+msgid "--gui-dialog-file {fname}  For testing: write dialog text"
+msgstr "--gui-dialog-file {fname} Zum testen: Dialogtext schreiben"
+
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr ""
 "--ttyfail\t\tBeende, wenn Ein- oder Ausgabe nicht auf einem Terminal "
@@ -1828,6 +1874,32 @@ msgstr "-P <parent title>\tÖffne Vim innerhalb der Vater-Applikation"
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\tÖffne Vim in einem anderen Win32 widget"
 
+msgid "Seen modifyOtherKeys: true\n"
+msgstr "Habe modifyOtherKeys gesehen\n"
+
+msgid "Unknown"
+msgstr "Unbekannt"
+
+msgid "Off"
+msgstr "Aus"
+
+msgid "On"
+msgstr "An"
+
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+msgid "Cleared"
+msgstr "Gelöscht"
+
+#, c-format
+msgid "modifyOtherKeys detected: %s\n"
+msgstr "modifyOtherKeys erkannt: %s\n"
+
+#, c-format
+msgid "Kitty keyboard protocol: %s\n"
+msgstr "Kitty Keyboard Protokoll: %s\n"
+
 msgid "No abbreviation found"
 msgstr "Keine Kurzform gefunden"
 
@@ -1958,6 +2030,9 @@ msgstr "??? von hier bis ???ENDE könnten die Zeilen falsch sein"
 
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr "??? von hier bis ???ENDE könnten Zeilen eingefügt oder gelöscht sein"
+
+msgid "??? lines may be missing"
+msgstr "??? Zeilen können fehlen"
 
 msgid "???END"
 msgstr "???ENDE"
@@ -2232,9 +2307,6 @@ msgstr "Unterbrechung: "
 
 msgid "Press ENTER or type command to continue"
 msgstr "Betätigen Sie die EINGABETASTE oder geben Sie einen Befehl ein"
-
-msgid "Unknown"
-msgstr "Unbekannt"
 
 #, c-format
 msgid "%s line %ld"
@@ -3519,24 +3591,10 @@ msgstr ""
 
 msgid ""
 "\n"
-"Big version "
-msgstr ""
-"\n"
-"Große Version "
-
-msgid ""
-"\n"
 "Normal version "
 msgstr ""
 "\n"
 "Normale Version "
-
-msgid ""
-"\n"
-"Small version "
-msgstr ""
-"\n"
-"Kleine Version "
 
 msgid ""
 "\n"
@@ -3891,9 +3949,9 @@ msgstr "Unterbrochen"
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: \\ sollte von /, ? oder & gefolgt werden"
 
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
+msgid "E11: Invalid in command-line window; :q<CR> closes the window"
 msgstr ""
-"E11: Ungültig im Kommandozeilen-Fenster; <CR> führt aus, CTRL-C beendet"
+"E11: Ungültig im Kommandozeilen-Fenster; :q<CR> schließt das Fenster"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -5614,6 +5672,10 @@ msgstr "E476: Ungültiger Befehl"
 msgid "E476: Invalid command: %s"
 msgstr "E476: Ungültiger Befehl: %s"
 
+#, c-format
+msgid "E476: Invalid command: %s, expected %s"
+msgstr "E476: Ungültiger Befehl: %s, erwartete %s"
+
 msgid "E477: No ! allowed"
 msgstr "E477: Kein ! erlaubt"
 
@@ -5654,6 +5716,10 @@ msgstr "E486: Muster nicht gefunden: %s"
 
 msgid "E487: Argument must be positive"
 msgstr "E487: Argument muss positiv sein"
+
+#, c-format
+msgid "E487: Argument must be positive: %s"
+msgstr "E487: Argument muss positiv sein: %s"
 
 msgid "E488: Trailing characters"
 msgstr "E488: Überschüssige Zeichen"
@@ -5759,8 +5825,8 @@ msgid ""
 "E513: Write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Schreibfehler, Konvertierung für Zeile %ld fehlgeschlagen (leere 'fenc' "
-"zum Erzwingen)"
+"E513: Schreibfehler, Konvertierung für Zeile %ld fehlgeschlagen (leere "
+"'fenc' zum Erzwingen)"
 
 msgid "E514: Write error (file system full?)"
 msgstr "E514: Schreibfehler (Dateisystem voll?)"
@@ -5979,9 +6045,6 @@ msgstr "'>' fehlt"
 
 msgid "Illegal register name"
 msgstr "Unzulässiger Register Name"
-
-msgid "E578: Not allowed to change text here"
-msgstr "E578: Nicht erlaubt Text hier zu ändern"
 
 # TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
@@ -6231,8 +6294,9 @@ msgstr "E674: printmbcharset darf nicht leer sein mit Multi-Byte Kodierung."
 msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Keine Standardschriftart angegeben für Multi-Byte Ausdruck."
 
-msgid "E676: No matching autocommands for acwrite buffer"
-msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Buffer"
+#, c-format
+msgid "E676: No matching autocommands for buftype=%s buffer"
+msgstr "E676: Keine übereinstimmenden Autokommandos buftype-Option=%s Buffer"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: Fehler beim Schreiben einer temporären Datei"
@@ -6888,8 +6952,8 @@ msgstr ""
 "E859: Konvertierung von zurückgegebenen Pythonobjekt zu Vim Wert "
 "fehlgeschlagen"
 
-msgid "E860: Need 'id' and 'type' with 'both'"
-msgstr "E860: Benötige 'id' und 'type' mit 'both'"
+msgid "E860: Need 'id' and 'type' or 'types' with 'both'"
+msgstr "E860: Benötige 'id' und 'type' oder 'typen' mit 'beiden'"
 
 msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Kann kein zweites Popup mit Terminal öffen"
@@ -7134,10 +7198,6 @@ msgstr "E920: Für _io Datei muss _name gesetzt ist"
 
 msgid "E921: Invalid callback argument"
 msgstr "E921: Ungülgültiges Callback Argument"
-
-# TODO: Capitalise first word of message?
-msgid "E922: Expected a dict"
-msgstr "E922: Erwarte ein Dictionary"
 
 msgid "E923: Second argument of function() must be a list or a dict"
 msgstr ""
@@ -7454,11 +7514,13 @@ msgstr "E1006: %s wird als Argument verwendet"
 msgid "E1007: Mandatory argument after optional argument"
 msgstr "E1007: obligatorisches Argument nach optionalem Argument"
 
-msgid "E1008: Missing <type>"
-msgstr "E1008: Fehlendes <type>"
+#, c-format
+msgid "E1008: Missing <type> after %s"
+msgstr "E1008: Fehlendes <type> after %s"
 
-msgid "E1009: Missing > after type"
-msgstr "E1009: Fehlendes '>' nach Typ"
+#, c-format
+msgid "E1009: Missing > after type: %s"
+msgstr "E1009: Fehlendes '>' nach Typ: %s"
 
 #, c-format
 msgid "E1010: Type not recognized: %s"
@@ -7701,9 +7763,6 @@ msgstr "E1074: Keine Leerzeichen nach Punkt erlaubt"
 msgid "E1075: Namespace not supported: %s"
 msgstr "E1075: Namespace nicht unterstützt: %s"
 
-msgid "E1076: This Vim is not compiled with float support"
-msgstr "E1076: Vim wurde nicht mit der \"float\"-Eigenschaft übersetzt"
-
 #, c-format
 msgid "E1077: Missing argument type for %s"
 msgstr "E1077: Fehlender Argumenttyp für %s"
@@ -7813,10 +7872,6 @@ msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: Zeichenkette, Liste, Dictionary oder Blob benötigt"
 
 #, c-format
-msgid "E1108: Item not found: %s"
-msgstr "E1108: Element nicht gefunden: %s"
-
-#, c-format
 msgid "E1109: List item %d is not a List"
 msgstr "E1109: Listenwert %d ist keine Liste"
 
@@ -7910,10 +7965,6 @@ msgstr "E1135: Verwende Zeichenkette als Bool: \"%s\""
 msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
 msgstr "E1136: <Cmd> Mapping muss mit <CR> vor weiterem <Cmd> enden"
 
-#, c-format
-msgid "E1137: <Cmd> mapping must not include %s key"
-msgstr "E1137: <Cmd> Mapping darf %s Taste nicht enthalten"
-
 msgid "E1138: Using a Bool as a Number"
 msgstr "E1138: Bool als Zahl verwendet"
 
@@ -7927,8 +7978,9 @@ msgid "E1141: Indexable type required"
 msgstr "E1141: indexierbarer Typ erforderlich"
 
 msgid "E1142: Calling test_garbagecollect_now() while v:testing is not set"
-msgstr "E1142: Rufe test_garbagecollect_now() auf, obwohl v:testing nicht"
-"definiert wurde"
+msgstr ""
+"E1142: Rufe test_garbagecollect_now() auf, obwohl v:testing nichtdefiniert "
+"wurde"
 
 #, c-format
 msgid "E1143: Empty expression: \"%s\""
@@ -7983,8 +8035,9 @@ msgid "E1157: Missing return type"
 msgstr "E1157: Fehlender Rückgabetyp"
 
 msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
-msgstr "E1158: flatten() kann nicht in Vim9 Script verwendet werden"
-"Benutze flattennew()"
+msgstr ""
+"E1158: flatten() kann nicht in Vim9 Script verwendet werdenBenutze "
+"flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr ""
@@ -8345,10 +8398,6 @@ msgstr ""
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: Zeichenkette, Liste oder Blob erforderlich für Argument %d"
 
-#, c-format
-msgid "E1253: String expected for argument %d"
-msgstr "E1253: Zeichenkette erwartet für Argument %d"
-
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: Kann Skriptvariable nicht in einer for Schleife verwenden"
 
@@ -8398,8 +8447,8 @@ msgid ""
 "E1266: Critical error in python3 initialization, check your python3 "
 "installation"
 msgstr ""
-"E1266: Kritischer Fehler bei der Python3 Initializierierung, bitte "
-"prüfe Python3 Installation"
+"E1266: Kritischer Fehler bei der Python3 Initializierierung, bitte prüfe "
+"Python3 Installation"
 
 #, c-format
 msgid "E1267: Function name must start with a capital: %s"
@@ -8455,6 +8504,306 @@ msgstr "E1280: Ungültiges Zeichen in Wort"
 #, c-format
 msgid "E1281: Atom '\\%%#=%c' must be at the start of the pattern"
 msgstr "E1281: Atom '\\%%#=%c' muss am Anfang des Muster stehen"
+
+msgid "E1282: Bitshift operands must be numbers"
+msgstr "E1282: Bitshift Operanden müssen Zahlen sein"
+
+msgid "E1283: Bitshift amount must be a positive number"
+msgstr "E1283: Bithift-Betrag muss eine positive Zahl sein"
+
+#, c-format
+msgid "E1284: Argument 1, list item %d: Dictionary required"
+msgstr "E1284: Argument 1, Listenelement %d: muss Dictionary sein"
+
+#, c-format
+msgid "E1285: Could not clear timeout: %s"
+msgstr "E1285: Timeout konnte nicht gelöscht werden: %s"
+
+#, c-format
+msgid "E1286: Could not set timeout: %s"
+msgstr "E1286: Konnte keinen Timeout setzen: %s"
+
+#, c-format
+msgid "E1287: Could not set handler for timeout: %s"
+msgstr "E1287: Konnte Handler für Timeout nicht setzen: %s"
+
+#, c-format
+msgid "E1288: Could not reset handler for timeout: %s"
+msgstr "E1288: Konnte Handler für Timeout nicht zurücksetzen: %s"
+
+#, c-format
+msgid "E1289: Could not check for pending SIGALRM: %s"
+msgstr "E1289: Konnte nicht auf anstehende SIGALRM prüfen: %s"
+
+msgid "E1290: substitute nesting too deep"
+msgstr "E1290: Zu tiefe Schachtelung der subsitute-Funktion"
+
+#, c-format
+msgid "E1291: Invalid argument: %ld"
+msgstr "E1291: Ungültiges Argument: %ld"
+
+msgid "E1292: Command-line window is already open"
+msgstr "E1292: Befehlszeilenfenster ist bereits geöffnet"
+
+msgid "E1293: Cannot use a negative id after adding a textprop with text"
+msgstr ""
+"E1293: Negative ID kann nicht verwendet werden, nachdem eine Textproperty"
+"mit Text hinzugefügt wurde"
+
+msgid "E1294: Can only use text_align when column is zero"
+msgstr "E1294: Kann text_align nur verwenden, wenn die Spalte Null ist"
+
+msgid "E1295: Cannot specify both 'type' and 'types'"
+msgstr "E1295: Kann nicht sowohl 'type' als auch 'types' angeben"
+
+msgid "E1296: Can only use left padding when column is zero"
+msgstr "E1296: Kann nur links ausrichten, wenn Spalte Null ist"
+
+#, c-format
+msgid "E1297: Non-NULL Dictionary required for argument %d"
+msgstr "E1297: Nicht leeres Dictionary benötigt für Argument %d"
+
+#, c-format
+msgid "E1298: Non-NULL List required for argument %d"
+msgstr "E1298: Nicht leere Liste erforderlich für Argument %d"
+
+msgid "E1299: Window unexpectedly closed while searching for tags"
+msgstr "E1299: Fenster während Suche nach tags unerwarted geschlossen"
+
+msgid "E1300: Cannot use a partial with dictionary for :defer"
+msgstr "E1300: Kann kein Partial mit Dictionary für :defer verwenden"
+
+#, c-format
+msgid "E1301: String, Number, List or Blob required for argument %d"
+msgstr "E1301: Zeichenkette, Zahl, Liste oder Blob erforderlich für Argument %d"
+
+msgid "E1302: Script variable was deleted"
+msgstr "E1302: Scriptvariable wurde gelöscht"
+
+#, c-format
+msgid "E1303: Custom list completion function does not return a List but a %s"
+msgstr "E1303: Benutzerdefinierte Listenvervollständigungsfunktion gibt keine Liste, sondern ein %s zurück"
+
+#, c-format
+msgid "E1304: Cannot use type with this variable: %s"
+msgstr "E1304: Typ Kann nicht mit dieser Variable verwenden: %s"
+
+msgid ""
+"E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
+msgstr ""
+"E1305: Verwendung von \"length\", \"end_col\" und \"end_lnum\" mit \"text\" nicht möglich"
+
+msgid "E1306: Loop nesting too deep"
+msgstr "E1306: Schleifen-Schachtelung zu tief"
+
+#, c-format
+msgid "E1307: Argument %d: Trying to modify a const %s"
+msgstr "E1307: Argument %d: Versuche eine Konstante zu ändern %s"
+
+msgid "E1308: Cannot resize a window in another tab page"
+msgstr "E1308: Kann Fenster in anderem Reiter nicht ändern"
+
+msgid "E1309: Cannot change mappings while listing"
+msgstr "E1309: Mappings können während der Auflistung nicht geändert werden"
+
+msgid "E1310: Cannot change menus while listing"
+msgstr "E1310: Menüs können während der Auflistung nicht geändert werden"
+
+msgid "E1311: Cannot change user commands while listing"
+msgstr "E1311: Befehle können während der Auflistung nicht geändert werden"
+
+msgid "E1312: Not allowed to change the window layout in this autocmd"
+msgstr "E1312: Nicht erlaubt, das Fensterlayout in diesem Autocmd zu ändern"
+
+#, c-format
+msgid "E1313: Not allowed to add or remove entries (%s)"
+msgstr "E1313: Nicht erlaubt Einträge (%s) hinzuzufügen oder zu entfernen"
+
+#, c-format
+msgid "E1314: Class name must start with an uppercase letter: %s"
+msgstr "E1314: Klasse muss mit einen Großbuchstaben anfangen: %s"
+
+#, c-format
+msgid "E1315: White space required after name: %s"
+msgstr "E1315: Leerzeichen erforderlich nach Name: %s"
+
+msgid "E1316: Class can only be defined in Vim9 script"
+msgstr "E1316: Klasse kann nur in Vim9-Script definiert werden"
+
+#, c-format
+msgid "E1317: Invalid object member declaration: %s"
+msgstr "E1317: Ungültige Objekt-Member-Deklaration: %s"
+
+#, c-format
+msgid "E1318: Not a valid command in a class: %s"
+msgstr "E1318: Ungültiger Befehl in Klasse: %s"
+
+msgid "E1319: Using a class as a Number"
+msgstr "E1319: Klasse als Zahl verwendet"
+
+msgid "E1320: Using an object as a Number"
+msgstr "E1320: Objekt als Zahl verwendet"
+
+msgid "E1321: Using a class as a Float"
+msgstr "E1321: Klasse als Float verwendet"
+
+msgid "E1322: Using an object as a Float"
+msgstr "E1322: Objekt als Float verwendet"
+
+msgid "E1323: Using a class as a String"
+msgstr "E1323: Klasse als Zeichenkette verwendet"
+
+msgid "E1324: Using an object as a String"
+msgstr "E1324: Objekt als Zeichenkette verwendet"
+
+#, c-format
+msgid "E1325: Method not found on class \"%s\": %s"
+msgstr "E1325: Methode in Klasse nicht gefunden '%s': \"%s\""
+
+#, c-format
+msgid "E1326: Member not found on object \"%s\": %s"
+msgstr "E1326: Klassen-Member in Objekt nicht gefunden: \"%s\": %s"
+
+# TODO: Capitalise first word of message?
+#, c-format
+msgid "E1327: Object required, found %s"
+msgstr "E1327: Objekt benötigt, gefunden %s"
+
+#, c-format
+msgid "E1328: Constructor default value must be v:none: %s"
+msgstr "E1328: Der Standardwert des Konstruktors muss v:none sein: %s"
+
+#, c-format
+msgid "E1329: Cannot get object member type from initializer: %s"
+msgstr "E1329: Objekttyp kann nicht vom Initialisierer gefunden werden: %s"
+
+#, c-format
+msgid "E1330: Invalid type for object member: %s"
+msgstr "E1330: Ungültiger Typ für Objekt-Member: %s"
+
+msgid "E1331: Public must be followed by \"this\" or \"static\""
+msgstr "E1331: Auf \"pubic\" muss \"this\" oder \"static\" folgen"
+
+#, c-format
+msgid "E1332: Public member name cannot start with underscore: %s"
+msgstr "E1332: Public Member darf nicht mit einem Unterstrich beginnen: %s"
+
+#, c-format
+msgid "E1333: Cannot access private member: %s"
+msgstr "E1333: Kann nicht auf private Member zugreifen: %s"
+
+#, c-format
+msgid "E1334: Object member not found: %s"
+msgstr "E1334: Objekt-Member nicht gefunden: %s"
+
+#, c-format
+msgid "E1335: Member is not writable: %s"
+msgstr "E1335: Member ist nicht beschreibbar: %s"
+
+msgid "E1336: Internal error: shortmess too long"
+msgstr "E1336: Interner Fehler: shortmess Option zu lang"
+
+#, c-format
+msgid "E1337: Class member not found: %s"
+msgstr "E1337: Klassenelement nicht gefunden: %s"
+
+#, c-format
+msgid "E1338: Member not found on class \"%s\": %s"
+msgstr "E1338: Member nicht in Klasse gefunden \"%s\": %s"
+
+msgid ""
+"E1339: Cannot add a textprop with text after using a textprop with a "
+"negative id"
+msgstr ""
+"Kann kein Textproperty mit Text hinzufügen, nach einenm Textproperty mit einer "
+"negativen ID"
+
+#, c-format
+msgid "E1340: Argument already declared in the class: %s"
+msgstr "E1340: Argument bereits in Klasse deklariert: %s"
+
+#, c-format
+msgid "E1341: Variable already declared in the class: %s"
+msgstr "E1341: Variable bereits in Klasse deklariert: %s"
+
+msgid "E1342: Interface can only be defined in Vim9 script"
+msgstr "E1342: Interface kann nur in Vim9-Script definiert werden"
+
+#, c-format
+msgid "E1343: Interface name must start with an uppercase letter: %s"
+msgstr "E1343: Interface-Name muss mit einem Großbuchstaben beginnen: %s"
+
+msgid "E1344: Cannot initialize a member in an interface"
+msgstr "E1344: Kann ein Member eines Interfaces nicht initialisieren"
+
+#, c-format
+msgid "E1345: Not a valid command in an interface: %s"
+msgstr "E1345: Kein gültiger Befehl in einem Interface: %s"
+
+#, c-format
+msgid "E1346: Interface name not found: %s"
+msgstr "E1346: Interfacename nicht gefunden: %s"
+
+#, c-format
+msgid "E1347: Not a valid interface: %s"
+msgstr "E1347: Kein gültiges Interface: %s"
+
+#, c-format
+msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
+msgstr "E1348: Member \"%s\" des Interfaces \"%s\" nicht implementiert"
+
+#, c-format
+msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
+msgstr "E1349: Funktion \"%s\" des Interfaces \"%s\" nicht implementiert"
+
+msgid "E1350: Duplicate \"implements\""
+msgstr "E1350: Doppeltes \"implements\""
+
+#, c-format
+msgid "E1351: Duplicate interface after \"implements\": %s"
+msgstr "E1351: Doppeltes Interface nach \"implements\": %s"
+
+msgid "E1352: Duplicate \"extends\""
+msgstr "E1352: Doppeltes \"extends\""
+
+#, c-format
+msgid "E1353: Class name not found: %s"
+msgstr "E1353: Klassenname nicht gefunden: %s"
+
+#, c-format
+msgid "E1354: Cannot extend %s"
+msgstr "E1354: Kann nicht erweitern %s"
+
+#, c-format
+msgid "E1355: Duplicate function: %s"
+msgstr "E1355: Doppelte Funktion: %s"
+
+msgid "E1356: \"super\" must be followed by a dot"
+msgstr "E1356: \"super\" muss von einem Punkt gefolgt werden"
+
+msgid "E1357: Using \"super\" not in a class function"
+msgstr "E1357: Verwendung von \"super\" nicht in einer Klassenfunktion"
+
+msgid "E1358: Using \"super\" not in a child class"
+msgstr "E1358: Verwendung von \"super\" nicht in einer untergeordneten Klasse"
+
+msgid "E1359: Cannot define a \"new\" function in an abstract class"
+msgstr "E1359: In einer abstrakten Klasse kann keine \"new\" Funktion definiert werden"
+
+msgid "E1360: Using a null object"
+msgstr "E1360: Verwenden eines Null-Objekts"
+
+msgid "E1361: Cannot use color \"none\", did you mean \"NONE\"?"
+msgstr "E1361: Kann die Farbe \"none\" nicht verwenden, meinten Sie \"NONE\"?"
+
+msgid "E1362: Cannot use a non-null object"
+msgstr "E1362: Kann kein Nicht-Null-Objekt verwenden"
+
+msgid "E1363: Incomplete type"
+msgstr "E1363: Unvollständiger Typ"
+
+msgid "E1364: Warning: Pointer block corrupted"
+msgstr "E1364: Warnung: Pointer-Block korrupt"
 
 msgid "--No lines in buffer--"
 msgstr "--Keine Zeilen im Buffer--"
@@ -8977,6 +9326,9 @@ msgstr "anzuzeigender Text"
 msgid "number of lines to scroll for CTRL-U and CTRL-D"
 msgstr "Anzahl zu scrollender Zeilen für CTRL-U und CTRL-D"
 
+msgid "scroll by screen line"
+msgstr "bildschirmzeilenweise scrollen"
+
 msgid "number of screen lines to show around the cursor"
 msgstr "Anzahl anzuzeigender Zeilen um den Cursor herum"
 
@@ -9186,6 +9538,9 @@ msgstr ""
 msgid "a new window is put below the current one"
 msgstr "neues Fenster wird unter dem aktuellen geöffnet"
 
+msgid "determines scroll behavior for split windows"
+msgstr "bestimmt das Scrollverhalten für geteilte Fenster"
+
 msgid "a new window is put right of the current one"
 msgstr "neues Fenster wird rechts neben dem aktuellen geöffnet"
 
@@ -9255,6 +9610,9 @@ msgstr "Abfrage von Terminal-Tastencodes, wenn ein xterm erkannt wird"
 
 msgid "terminal that requires extra redrawing"
 msgstr "Terminal benötigt zusätzliche Redraws"
+
+msgid "what keyboard protocol to use for which terminal"
+msgstr "welches Tastaturprotokoll für welches Terminal zu verwenden ist"
 
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "erkennt Tasten die mit <Esc> in Einfüge-Modus anfangen"
@@ -9430,8 +9788,11 @@ msgstr "füge 's' Flag in 'shortmess' hinzu (keine Suchmeldung anzeigen)"
 msgid "list of flags to make messages shorter"
 msgstr "Liste an Flags um Meldungen kürzer auszugeben"
 
-msgid "show (partial) command keys in the status line"
-msgstr "zeige (partielle) Befehlstasten in der Statuszeile"
+msgid "show (partial) command keys in location given by 'showcmdloc'"
+msgstr "zeige (teilweise) Befehlstasten an dem mit 'showcmdloc' angegebenen Ort"
+
+msgid "location where to show the (partial) command keys for 'showcmd'"
+msgstr "Ort, an dem die (teilweisen) Befehlstasten für 'showcmd' angezeigt werden sollen"
 
 msgid "display the current mode in the status line"
 msgstr "zeige aktuellen Modus in der Statuszeile"
@@ -9669,6 +10030,9 @@ msgstr "aktiviere Lisp Modus"
 msgid "words that change how lisp indenting works"
 msgstr "Wörter, die die Funktionsweise des Lisp-Einzugs ändern"
 
+msgid "options for Lisp indenting"
+msgstr "Optionen für Lisp-Einrücken"
+
 msgid "folding"
 msgstr "Faltung"
 
@@ -9775,6 +10139,9 @@ msgstr "binäres Dateibearbeiten"
 
 msgid "last line in the file has an end-of-line"
 msgstr "letzte Zeile einer Datei hat ein Zeilenendezeichen"
+
+msgid "last line in the file followed by CTRL-Z"
+msgstr "letzte Zeile der Datei, gefolgt von CTRL-Z"
 
 msgid "fixes missing end-of-line at end of text file"
 msgstr "behebt ein fehlendes Zeilenendezeichen am Ende einer Textdatei"
@@ -10208,3 +10575,6 @@ msgstr "Name der dynamischen MzScheme Bibliothek"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "Name der dynamischen MzScheme GC Bibliothek"
+
+msgid "You discovered the command-line window! You can close it with \":q\"."
+msgstr "Sie haben das Befehlszeilenfenster entdeckt! Schließen Sie es mit \":q\"."

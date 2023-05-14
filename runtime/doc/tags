@@ -4186,7 +4186,6 @@ E1133	vim9.txt	/*E1133*
 E1134	vim9.txt	/*E1134*
 E1135	eval.txt	/*E1135*
 E1136	map.txt	/*E1136*
-E1137	map.txt	/*E1137*
 E1138	eval.txt	/*E1138*
 E1139	vim9.txt	/*E1139*
 E114	eval.txt	/*E114*
@@ -7422,6 +7421,7 @@ g:netrw_localmkdir	pi_netrw.txt	/*g:netrw_localmkdir*
 g:netrw_localmkdiropt	pi_netrw.txt	/*g:netrw_localmkdiropt*
 g:netrw_localmovecmd	pi_netrw.txt	/*g:netrw_localmovecmd*
 g:netrw_localmovecmdopt	pi_netrw.txt	/*g:netrw_localmovecmdopt*
+g:netrw_localrmdir	pi_netrw.txt	/*g:netrw_localrmdir*
 g:netrw_maxfilenamelen	pi_netrw.txt	/*g:netrw_maxfilenamelen*
 g:netrw_menu	pi_netrw.txt	/*g:netrw_menu*
 g:netrw_mkdir_cmd	pi_netrw.txt	/*g:netrw_mkdir_cmd*
@@ -9885,6 +9885,7 @@ string	eval.txt	/*string*
 string()	builtin.txt	/*string()*
 string-functions	usr_41.txt	/*string-functions*
 string-match	builtin.txt	/*string-match*
+string-offset-encoding	eval.txt	/*string-offset-encoding*
 strlen()	builtin.txt	/*strlen()*
 strpart()	builtin.txt	/*strpart()*
 strpbrk()	builtin.txt	/*strpbrk()*
@@ -9894,6 +9895,7 @@ strridx()	builtin.txt	/*strridx()*
 strspn()	builtin.txt	/*strspn()*
 strstr()	builtin.txt	/*strstr()*
 strtrans()	builtin.txt	/*strtrans()*
+strutf16len()	builtin.txt	/*strutf16len()*
 strwidth()	builtin.txt	/*strwidth()*
 style-changes	develop.txt	/*style-changes*
 style-compiler	develop.txt	/*style-compiler*
@@ -10556,6 +10558,7 @@ utf-8	mbyte.txt	/*utf-8*
 utf-8-char-arg	mbyte.txt	/*utf-8-char-arg*
 utf-8-in-xwindows	mbyte.txt	/*utf-8-in-xwindows*
 utf-8-typing	mbyte.txt	/*utf-8-typing*
+utf16idx()	builtin.txt	/*utf16idx()*
 utf8	mbyte.txt	/*utf8*
 v	visual.txt	/*v*
 v:	eval.txt	/*v:*

@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.0.  Last change: 2022 Dec 19
+*textprop.txt*  For Vim version 9.0.  Last change: 2023 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -165,8 +165,8 @@ prop_add({lnum}, {col}, {props})
 		   text_padding_left				*E1296*
 				used when "text" is present and {col} is zero;
 				padding between the end of the text line
-				(leftmost column for "below") and the virtual
-				text, not highlighted
+				(leftmost column for "above" and "below") and
+				the virtual text, not highlighted
 		   text_wrap	when "text" is present and {col} is zero,
 				specifies what happens if the text doesn't
 				fit:

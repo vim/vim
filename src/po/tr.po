@@ -1,15 +1,15 @@
 # Turkish translations for Vim
 # Vim Türkçe çevirileri
-# Copyright (C) 2019-2022 Emir SARI <emir_sari@icloud.com>
+# Copyright (C) 2019-2023 Emir SARI <emir_sari@icloud.com>
 # This file is distributed under the same license as the Vim package.
-# Emir SARI <emir_sari@icloud.com>, 2019-2022
+# Emir SARI <emir_sari@icloud.com>, 2019-2023
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-09 13:10+0300\n"
-"PO-Revision-Date: 2022-06-09 13:15+0300\n"
+"POT-Creation-Date: 2023-04-29 20:31+0300\n"
+"PO-Revision-Date: 2023-04-29 21:00+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -125,12 +125,12 @@ msgstr "[saltokunur]"
 #, c-format
 msgid "%ld line --%d%%--"
 msgid_plural "%ld lines --%d%%--"
-msgstr[0] "%ld. satır --%d%%"
-msgstr[1] "%ld. satır --%d%%"
+msgstr[0] "%ld. satır --%%%d"
+msgstr[1] "%ld. satır --%%%d"
 
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
-msgstr "satır %ld/%ld --%d%%-- sütun "
+msgstr "satır %ld/%ld --%%%d-- sütun "
 
 msgid "[No Name]"
 msgstr "[Adsız]"
@@ -152,6 +152,10 @@ msgstr "Son"
 
 msgid "Top"
 msgstr "Baş"
+
+#, c-format
+msgid "%d%%"
+msgstr "%%%d"
 
 msgid "[Prompt]"
 msgstr "[İstem]"
@@ -266,6 +270,35 @@ msgstr "Anahtarlar eşleşmiyor!"
 
 msgid "[crypted]"
 msgstr "[şifreli]"
+
+#, c-format
+msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
+msgstr "xchacha20v2: Anahtar türetimi için özel işlem sınırı \"%llu\" "
+"kullanılıyor"
+
+#, c-format
+msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
+msgstr "xchacha20v2: Anahtar türetimi için öntanımlı işlem sınırı \"%llu\" "
+"kullanılıyor"
+
+#, c-format
+msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
+msgstr "xchacha20v2: Anahtar türetimi için özel bellek sınırı \"%lu\" "
+"kullanılıyor"
+
+#, c-format
+msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
+msgstr ""
+"xchacha20v2: Anahtar türetimi için öntanımlı memlimit \"%lu\" kullanılıyor"
+
+#, c-format
+msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
+msgstr "xchacha20v2: Anahtar türetimi için özel algoritma \"%d\" kullanılıyor"
+
+#, c-format
+msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
+msgstr "xchacha20v2: Anahtar türetimi için öntanımlı algoritma \"%d\" "
+"kullanılıyor"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Hata ayıklama kipine giriliyor. Sürdürmek için \"cont\" yazın."
@@ -1310,9 +1343,6 @@ msgstr " Yazım önerisi (s^N^P)"
 msgid " Keyword Local completion (^N^P)"
 msgstr " Dahili anahtar sözcük tamamlaması (^N^P)"
 
-msgid "Hit end of paragraph"
-msgstr "Paragrafın sonuna varıldı"
-
 msgid "'dictionary' option is empty"
 msgstr "'dictionary' seçeneği boş"
 
@@ -1344,6 +1374,12 @@ msgstr " Ekleniyor"
 
 msgid "-- Searching..."
 msgstr "-- Aranıyor..."
+
+msgid "Hit end of paragraph"
+msgstr "Paragrafın sonuna varıldı"
+
+msgid "Pattern not found"
+msgstr "Dizgi bulunamadı"
 
 msgid "Back at original"
 msgstr "Başlangıca geri dönüldü"
@@ -1599,6 +1635,9 @@ msgstr "-T <uçbirim>\t\tUçbirim türünü <uçbirim>'e ayarla"
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\tGirdi-çıktının bir uçbirime olmadığı uyarısını atla"
 
+msgid "--gui-dialog-file {fname}  For testing: write dialog text"
+msgstr "--gui-dialog-file {fname}  Sınama amaçlı: İletişim kutusuna metin yaz"
+
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tGirdi veya çıktı bir uçbirime değilse çık"
 
@@ -1742,7 +1781,7 @@ msgstr "-borderwidth <gnşlk>\t<gnşlk> kenar genişliği kullan (kısa: -bw)"
 
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr ""
-"-scrollbarwidth <gnşlk>  Kaydırma çubuğu için <gnşlk> genişlik (kısa: -sw)"
+"-scrollbarwidth <gnşlk>  Sarma çubuğu için <gnşlk> genişlik (kısa: -sw)"
 
 msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "-reverse\t\tTersine dönmüş video kullan (kısa: -rv)"
@@ -1777,6 +1816,32 @@ msgstr "-P <üst başlık>\tVim'i üst uygulama içinde aç"
 
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\tVim'i başka bir win32 parçacığı içinde aç"
+
+msgid "Seen modifyOtherKeys: true\n"
+msgstr "modifyOtherKeys görüldü: true\n"
+
+msgid "Unknown"
+msgstr "Bilinmiyor"
+
+msgid "Off"
+msgstr "Kapalı"
+
+msgid "On"
+msgstr "Açık"
+
+msgid "Disabled"
+msgstr "Devre dışı"
+
+msgid "Cleared"
+msgstr "Temizlendi"
+
+#, c-format
+msgid "modifyOtherKeys detected: %s\n"
+msgstr "modifyOtherKeys algılandı: %s\n"
+
+#, c-format
+msgid "Kitty keyboard protocol: %s\n"
+msgstr "Kitty klavye protokülü: %s\n"
 
 msgid "No abbreviation found"
 msgstr "Kısaltma bulunamadı"
@@ -1905,6 +1970,9 @@ msgstr "??? konumundan ???SON konumuna kadar satırlar bozulmuş olabilir"
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
 "??? konumundan ???SON konumuna kadar satırlar eklenmiş/silinmiş olabilir"
+
+msgid "??? lines may be missing"
+msgstr "??? satır eksik olabilir"
 
 msgid "???END"
 msgstr "???SON"
@@ -2177,9 +2245,6 @@ msgstr "Yarıda kes: "
 
 msgid "Press ENTER or type command to continue"
 msgstr "Sürdürmek için ENTER'a basın veya komut girin"
-
-msgid "Unknown"
-msgstr "Bilinmiyor"
 
 #, c-format
 msgid "%s line %ld"
@@ -3447,24 +3512,10 @@ msgstr ""
 
 msgid ""
 "\n"
-"Big version "
-msgstr ""
-"\n"
-"Büyük sürüm "
-
-msgid ""
-"\n"
 "Normal version "
 msgstr ""
 "\n"
 "Orta boy sürüm "
-
-msgid ""
-"\n"
-"Small version "
-msgstr ""
-"\n"
-"Küçük sürüm "
 
 msgid ""
 "\n"
@@ -3813,8 +3864,8 @@ msgstr "Yarıda kesildi"
 msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: \\ sonrasında /, ? veya & gelmeli"
 
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr "E11: Komut satırı penceresinde geçersiz; <CR> çalıştırır, CTRL-C çıkar"
+msgid "E11: Invalid in command-line window; :q<CR> closes the window"
+msgstr "E11: Komut satırı penceresinde geçersiz; :q<CR> pencereyi kapatır"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -3942,7 +3993,7 @@ msgid "E48: Not allowed in sandbox"
 msgstr "E48: Kum havuzunda izin verilmiyor"
 
 msgid "E49: Invalid scroll size"
-msgstr "E49: Geçersiz kaydırma boyutu"
+msgstr "E49: Geçersiz sarma boyutu"
 
 msgid "E50: Too many \\z("
 msgstr "E50: Çok fazla \\z("
@@ -5025,7 +5076,7 @@ msgid "E360: Cannot execute shell with -f option"
 msgstr "E360: Kabuk -f seçeneği ile çalıştırılamıyor"
 
 msgid "E362: Using a boolean value as a Float"
-msgstr "E362: Bir Boole Değeri, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E362: Bir Boole, kayan noktalı değer olarak kullanılıyor"
 
 msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: Dizgi 'maxmempattern' ögesinden daha fazla bellek kullanıyor"
@@ -5439,6 +5490,10 @@ msgstr "E476: Geçersiz komut"
 msgid "E476: Invalid command: %s"
 msgstr "E476: Geçersiz komut: %s"
 
+#, c-format
+msgid "E476: Invalid command: %s, expected %s"
+msgstr "E476: Geçersiz komut: %s, %s bekleniyordu"
+
 msgid "E477: No ! allowed"
 msgstr "E477: ! imine izin verilmiyor"
 
@@ -5479,6 +5534,10 @@ msgstr "E486: Dizgi bulunamadı: %s"
 
 msgid "E487: Argument must be positive"
 msgstr "E487: Değişken pozitif olmalı"
+
+#, c-format
+msgid "E487: Argument must be positive: %s"
+msgstr "E487: Değişken pozitif olmalı: %s"
 
 msgid "E488: Trailing characters"
 msgstr "E488: Sonda fazladan karakterler"
@@ -5891,7 +5950,7 @@ msgid "E610: No argument to delete"
 msgstr "E610: Silinecek bir argüman yok"
 
 msgid "E611: Using a Special as a Number"
-msgstr "E611: Bir Özel, Sayı yerine kullanılıyor"
+msgstr "E611: Bir özel değer, bir sayı olarak kullanılıyor"
 
 msgid "E612: Too many signs defined"
 msgstr "E612: Çok fazla işaret tanımlanmış"
@@ -6015,8 +6074,9 @@ msgstr "E674: printmbcharset çoklu bayt kodlamada boş olamaz"
 msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Çoklu bayt yazdırma için öntanımlı yazıtipi ayarlanmamış"
 
-msgid "E676: No matching autocommands for acwrite buffer"
-msgstr "E676: acwrite arabelleği için eşleşen bir otokomut yok"
+#, c-format
+msgid "E676: No matching autocommands for buftype=%s buffer"
+msgstr "E676: buftype=%s arabelleği için eşleşen bir otokomut yok"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: Geçici dosya yazılırken hata"
@@ -6103,7 +6163,7 @@ msgid "E702: Sort compare function failed"
 msgstr "E702: Sıralayıp karşılaştırma işlevi başarısız oldu"
 
 msgid "E703: Using a Funcref as a Number"
-msgstr "E703: Bir Funcref, Sayı yerine kullanılıyor"
+msgstr "E703: Bir Funcref, sayı olarak kullanılıyor"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -6185,16 +6245,16 @@ msgid "E727: Start past end"
 msgstr "E727: Başlangıç bitişten sonra"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Bir Sözlük, Sayı yerine kullanılıyor"
+msgstr "E728: Bir sözlük, sayı olarak kullanılıyor"
 
 msgid "E729: Using a Funcref as a String"
-msgstr "E729: Funcref bir Dizi yerine kullanılıyor"
+msgstr "E729: Bir Funcref, bir dizi olarak kullanılıyor"
 
 msgid "E730: Using a List as a String"
-msgstr "E730: Liste bir Dizi yerine kullanılıyor"
+msgstr "E730: Bir liste, bir dizi olarak kullanılıyor"
 
 msgid "E731: Using a Dictionary as a String"
-msgstr "E731: Sözlük bir Dizi yerine kullanılıyor"
+msgstr "E731: Bir sözlük, bir dizi olarak kullanılıyor"
 
 msgid "E732: Using :endfor with :while"
 msgstr "E732: :endfor, :while ile kullanılıyor"
@@ -6249,7 +6309,7 @@ msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans saltokunur dosyalarda değişikliklere izin vermiyor"
 
 msgid "E745: Using a List as a Number"
-msgstr "E745: Bir Liste, Sayı yerine kullanılıyor"
+msgstr "E745: Bir liste, sayı olarak kullanılıyor"
 
 #, c-format
 msgid "E746: Function name does not match script file name: %s"
@@ -6462,10 +6522,10 @@ msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Bir kayan noktalı değer ile '%' kullanılamaz"
 
 msgid "E805: Using a Float as a Number"
-msgstr "E805: Bir Kayan Noktalı Değer, Sayı yerine kullanılıyor"
+msgstr "E805: Bir kayan noktalı değer, sayı olarak kullanılıyor"
 
 msgid "E806: Using a Float as a String"
-msgstr "E806: Kayan Noktalı Değer, bir Dizi yerine kullanılıyor"
+msgstr "E806: Bir kayan noktalı değer, bir dizi olarak kullanılıyor"
 
 msgid "E807: Expected Float argument for printf()"
 msgstr "E807: printf() için kayan noktalı değer türünde argüman bekleniyordu"
@@ -6644,8 +6704,8 @@ msgstr "E858: Eval geçerli bir python nesnesi döndürmedi"
 msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Döndürülen python nesnesi vim değerine dönüştürülemedi"
 
-msgid "E860: Need 'id' and 'type' with 'both'"
-msgstr "E860: 'both' ile 'id' ve 'type' gerekli"
+msgid "E860: Need 'id' and 'type' or 'types' with 'both'"
+msgstr "E860: 'both' ile 'id' ve 'type' veya 'types' gerekli"
 
 msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Bir uçbirimle ikinci bir açılır pencere açılamıyor"
@@ -6767,16 +6827,16 @@ msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: ']' sonrası fazladan karakter: %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
-msgstr "E891: Bir Funcref, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E891: Bir Funcref, kayan noktalı değer olarak kullanılıyor"
 
 msgid "E892: Using a String as a Float"
-msgstr "E892: Bir Dizi, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E892: Bir dizi, kayan noktalı değer olarak kullanılıyor"
 
 msgid "E893: Using a List as a Float"
-msgstr "E893: Bir Liste, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E893: Bir liste, kayan noktalı değer olarak kullanılıyor"
 
 msgid "E894: Using a Dictionary as a Float"
-msgstr "E894: Bir Sözlük, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E894: Bir sözlük, kayan noktalı değer olarak kullanılıyor"
 
 msgid ""
 "E895: Sorry, this command is disabled, the MzScheme's racket/base module "
@@ -6829,29 +6889,29 @@ msgid "E906: Not an open channel"
 msgstr "E906: Açık bir kanal değil"
 
 msgid "E907: Using a special value as a Float"
-msgstr "E907: Bir Özel Değer, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E907: Bir özel değer, bir kayan noktalı değer olarak kullanılıyor"
 
 #, c-format
 msgid "E908: Using an invalid value as a String: %s"
-msgstr "E908: Geçersiz bir değer bir Dizi yerine kullanılıyor: %s"
+msgstr "E908: Geçersiz bir değer, bir dizi olarak kullanılıyor: %s"
 
 msgid "E909: Cannot index a special variable"
 msgstr "E909: Özel bir değişken dizinlenemiyor"
 
 msgid "E910: Using a Job as a Number"
-msgstr "E910: Bir İş, Sayı yerine kullanılıyor"
+msgstr "E910: Bir iş, bir sayı olarak kullanılıyor"
 
 msgid "E911: Using a Job as a Float"
-msgstr "E911: Bir İş, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E911: Bir iş, bir kayan noktalı değer olarak kullanılıyor"
 
 msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr "E912: ch_evalexpr()/ch_sendexpr() raw/nl kanalları ile kullanılamaz"
 
 msgid "E913: Using a Channel as a Number"
-msgstr "E913: Bir Kanal, Sayı yerine kullanılıyor"
+msgstr "E913: Bir kanal, bir sayı olarak kullanılıyor"
 
 msgid "E914: Using a Channel as a Float"
-msgstr "E914: Bir Kanal, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E914: Bir kanal, bir kayan noktalı değer olarak kullanılıyor"
 
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: in_io arabelleği in_buf veya in_name ayarlı olmasını gerektirir"
@@ -6876,9 +6936,6 @@ msgstr "E920: _io dosyası _name ayarlı olmasını gerektirir"
 
 msgid "E921: Invalid callback argument"
 msgstr "E921: Geçersiz geri çağırma argümanı"
-
-msgid "E922: Expected a dict"
-msgstr "E922: Bir sözlük bekleniyordu"
 
 msgid "E923: Second argument of function() must be a list or a dict"
 msgstr "E923: function() ikinci argümanı bir liste veya sözlük olmalıdır"
@@ -7058,13 +7115,14 @@ msgstr ""
 "E973: İkili geniş nesne hazır bilgisi çift onalt. karakterlere iye olmalıdır"
 
 msgid "E974: Using a Blob as a Number"
-msgstr "E974: Bir İkili Geniş Nesne, Sayı yerine kullanılıyor"
+msgstr "E974: Bir ikili geniş nesne, sayı olarak kullanılıyor"
 
 msgid "E975: Using a Blob as a Float"
-msgstr "E975: Bir İkili Geniş Nesne, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr ""
+"E975: Bir ikili geniş nesne, bir kayan noktalı değer olarak kullanılıyor"
 
 msgid "E976: Using a Blob as a String"
-msgstr "E976: İkili Geniş Nesne bir Dizi yerine kullanılıyor"
+msgstr "E976: Bir ikili geniş nesne, bir dizi olarak kullanılıyor"
 
 msgid "E977: Can only compare Blob with Blob"
 msgstr ""
@@ -7181,11 +7239,13 @@ msgstr "E1006: %s, bir argüman olarak kullanılıyor"
 msgid "E1007: Mandatory argument after optional argument"
 msgstr "E1007: İsteğe bağlı argüman sonrası zorunlu argüman"
 
-msgid "E1008: Missing <type>"
-msgstr "E1008: <tür> eksik"
+#, c-format
+msgid "E1008: Missing <type> after %s"
+msgstr "E1008: %s sonrası <tür> eksik"
 
-msgid "E1009: Missing > after type"
-msgstr "E1009: Tür sonrasında > eksik"
+#, c-format
+msgid "E1009: Missing > after type: %s"
+msgstr "E1009: Tür sonrası > eksik: %s"
 
 #, c-format
 msgid "E1010: Type not recognized: %s"
@@ -7252,10 +7312,10 @@ msgstr "E1022: Tür veya ilklendirme gerekiyor"
 
 #, c-format
 msgid "E1023: Using a Number as a Bool: %lld"
-msgstr "E1023: Bir Sayı, bir Boole yerine kullanılıyor: %lld"
+msgstr "E1023: Bir sayı, bir Boole olarak kullanılıyor: %lld"
 
 msgid "E1024: Using a Number as a String"
-msgstr "E1024: Bir Sayı, bir Dizi yerine kullanılıyor"
+msgstr "E1024: Bir sayı, bir dizi olarak kullanılıyor"
 
 msgid "E1025: Using } outside of a block scope"
 msgstr "E1025: } bir blok kapsamı dışında kullanılıyor"
@@ -7275,7 +7335,7 @@ msgstr "E1029: %s bekleniyordu; ancak %s alındı"
 
 #, c-format
 msgid "E1030: Using a String as a Number: \"%s\""
-msgstr "E1030: Bir Dizi, bir Sayı yerine kullanılıyor: \"%s\""
+msgstr "E1030: Bir dizi, bir sayı olarak kullanılıyor: \"%s\""
 
 msgid "E1031: Cannot use void value"
 msgstr "E1031: Boş değer kullanılamaz"
@@ -7428,9 +7488,6 @@ msgstr "E1074: Nokta sonrası boşluğa izin verilmiyor"
 msgid "E1075: Namespace not supported: %s"
 msgstr "E1075: Ad alanı desteklenmiyor: %s"
 
-msgid "E1076: This Vim is not compiled with float support"
-msgstr "E1076: Bu Vim kayan noktalı değer desteği ile derlenmemiş"
-
 #, c-format
 msgid "E1077: Missing argument type for %s"
 msgstr "E1077: %s için argüman türü eksik"
@@ -7539,10 +7596,6 @@ msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: Dizi, Liste, Sözlük veya İkili Nesne gerekiyor"
 
 #, c-format
-msgid "E1108: Item not found: %s"
-msgstr "E1108: Öge bulunamadı: %s"
-
-#, c-format
 msgid "E1109: List item %d is not a List"
 msgstr "E1109: Liste ögesi %d bir Liste değil"
 
@@ -7630,7 +7683,7 @@ msgstr "E1134: Bir null listesi genişletilemez"
 
 #, c-format
 msgid "E1135: Using a String as a Bool: \"%s\""
-msgstr "E1135: Bir Dizi, bir Boole yerine kullanılıyor: \"%s\""
+msgstr "E1135: Bir dizi, bir Boole olarak kullanılıyor: \"%s\""
 
 msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
 msgstr "E1136: <Cmd> eşlemlemesi ikinci <Cmd>'den önce <CR> ile bitmelidir"
@@ -7640,7 +7693,7 @@ msgid "E1137: <Cmd> mapping must not include %s key"
 msgstr "E1137: <Cmd> eşlemlemesi %s anahtarını içermemelidir"
 
 msgid "E1138: Using a Bool as a Number"
-msgstr "E1138: Bir Boole, Sayı yerine kullanılıyor"
+msgstr "E1138: Bir Boole, bir sayı olarak kullanılıyor"
 
 msgid "E1139: Missing matching bracket after dict key"
 msgstr "E1139: Sözlük anahtarı sonrası eşleşen ayraç eksik"
@@ -8063,10 +8116,6 @@ msgstr ""
 msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: %d argümanı için dizi, liste veya ikili geniş nesne gerekiyor"
 
-#, c-format
-msgid "E1253: String expected for argument %d"
-msgstr "E1253: %d argümanı için dizi gerekiyor"
-
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: for döngüsünde betik değişkeni kullanılamaz"
 
@@ -8201,6 +8250,276 @@ msgstr "E1288: Zaman aşımı için işleyici sıfırlanamadı: %s"
 #, c-format
 msgid "E1289: Could not check for pending SIGALRM: %s"
 msgstr "E1289: Bekleyen SIGALRM için denetlenemedi: %s"
+
+msgid "E1290: substitute nesting too deep"
+msgstr "E1290: Yedek pek iç içe geçmiş"
+
+#, c-format
+msgid "E1291: Invalid argument: %ld"
+msgstr "E1291: Geçersiz argüman: %ld"
+
+msgid "E1292: Command-line window is already open"
+msgstr "E1292: Komut satırı penceresi halihazırda açık"
+
+msgid "E1293: Cannot use a negative id after adding a textprop with text"
+msgstr ""
+"E1293: Metin içeren bir textprop ekledikten sonra bir negatif kullanılamaz"
+
+msgid "E1294: Can only use text_align when column is zero"
+msgstr "E1294: Sütun sıfırken yalnızca text_align kullanılabilir"
+
+msgid "E1295: Cannot specify both 'type' and 'types'"
+msgstr "E1295: Hem 'type' hem 'types' belirtilemez"
+
+msgid "E1296: Can only use left padding when column is zero"
+msgstr "E1296: Sütun sıfırken yalnızca sol dolgu kullanılabilir"
+
+#, c-format
+msgid "E1297: Non-NULL Dictionary required for argument %d"
+msgstr "E1297: %d argümanı için NULL olmayan sözlük gerekiyor"
+
+#, c-format
+msgid "E1298: Non-NULL List required for argument %d"
+msgstr "E1298: %d argümanı için NULL olmayan liste gerekiyor"
+
+msgid "E1299: Window unexpectedly closed while searching for tags"
+msgstr "E1299: Etiketleri ararken pencere beklenmedik bir biçimde kapatıldı"
+
+msgid "E1300: Cannot use a partial with dictionary for :defer"
+msgstr "E1300: :defer için bir kısımsal sözlük kullanılamıyor"
+
+#, c-format
+msgid "E1301: String, Number, List or Blob required for argument %d"
+msgstr ""
+"E1301: %d argümanı için dizi, sayı, liste veya ikili geniş nesne gerekiyor"
+
+msgid "E1302: Script variable was deleted"
+msgstr "E1302: Betik değişkeni silinmiş"
+
+#, c-format
+msgid "E1303: Custom list completion function does not return a List but a %s"
+msgstr "E1303: Özel liste tamamlama işlevi bir liste yerine %s döndürüyor"
+
+#, c-format
+msgid "E1304: Cannot use type with this variable: %s"
+msgstr "E1304: Tür, bu değişkenle kullanılamıyor: %s"
+
+msgid ""
+"E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
+msgstr ""
+"E1305: \"text\" ile \"length\", \"end_col\" ve \"end_lnum\" kullanılamıyor"
+
+msgid "E1306: Loop nesting too deep"
+msgstr "E1306: Döngü pek iç içe geçmiş"
+
+#, c-format
+msgid "E1307: Argument %d: Trying to modify a const %s"
+msgstr "E1307: %d argümanı: Bir %s sabiti değiştirilmeye çalışılıyor"
+
+msgid "E1308: Cannot resize a window in another tab page"
+msgstr ""
+"E1308: Başka bir sekme sayfasındayken bir pencere yeniden boyutlandırılamıyor"
+
+msgid "E1309: Cannot change mappings while listing"
+msgstr "E1309: Listelerken eşlemlemeler değiştirilemıyor"
+
+msgid "E1310: Cannot change menus while listing"
+msgstr "E1310: Listelerken menüler değiştirilemiyor"
+
+msgid "E1311: Cannot change user commands while listing"
+msgstr "E1311: Listelerken kullanıcı komutları değiştirilemiyor"
+
+msgid "E1312: Not allowed to change the window layout in this autocmd"
+msgstr ""
+"E1312: Bu otomatik komutta pencere yerleşimini değiştirmeye izin verilmiyor"
+
+#, c-format
+msgid "E1313: Not allowed to add or remove entries (%s)"
+msgstr "E1313: Girdiler eklemeye veya kaldırmaya izin verilmiyor (%s)"
+
+#, c-format
+msgid "E1314: Class name must start with an uppercase letter: %s"
+msgstr "E1314: Sınıf adı bir BÜYÜK harfle başlamalıdır: %s"
+
+#, c-format
+msgid "E1315: White space required after name: %s"
+msgstr "E1315: Ad sonrası boşluk gerekiyor: %s"
+
+msgid "E1316: Class can only be defined in Vim9 script"
+msgstr "E1316: Sınıf, yalnızca Vim9 betiğinde kullanılabilir"
+
+#, c-format
+msgid "E1317: Invalid object member declaration: %s"
+msgstr "E1317: Geçersiz nesne üyesi beyanı: %s"
+
+#, c-format
+msgid "E1318: Not a valid command in a class: %s"
+msgstr "E1318: Bir sınıfta geçerli olmayan bir komut: %s"
+
+msgid "E1319: Using a class as a Number"
+msgstr "E1319: Bir sınıf, sayı olarak kullanılıyor"
+
+msgid "E1320: Using an object as a Number"
+msgstr "E1320: Bir nesne, sayı olarak kullanılıyor"
+
+msgid "E1321: Using a class as a Float"
+msgstr "E1321: Bir sınıf, kayan noktalı değer olarak kullanılıyor"
+
+msgid "E1322: Using an object as a Float"
+msgstr "E1322: Bir nesne, kayan noktalı değer olarak kullanılıyor"
+
+msgid "E1323: Using a class as a String"
+msgstr "E1323: Bir sınıf, dizi olarak kullanılıyor"
+
+msgid "E1324: Using an object as a String"
+msgstr "E1324: Bir nesne, dizi olarak kullanılıyor"
+
+#, c-format
+msgid "E1325: Method not found on class \"%s\": %s"
+msgstr "E1325: Yöntem, \"%s\" sınıfında bulunamadı: %s"
+
+#, c-format
+msgid "E1326: Member not found on object \"%s\": %s"
+msgstr "E1326: Üye, \"%s\" nesnesinde bulunamadı: %s"
+
+#, c-format
+msgid "E1327: Object required, found %s"
+msgstr "E1327: Nesne gerekiyordu, %s bulundu"
+
+#, c-format
+msgid "E1328: Constructor default value must be v:none: %s"
+msgstr "E1328: Yapıcı öntanımlı değeri v:none olmalı: %s"
+
+#, c-format
+msgid "E1329: Cannot get object member type from initializer: %s"
+msgstr "E1329: İlklendiriciden nesne üye türü alınamıyor: %s"
+
+#, c-format
+msgid "E1330: Invalid type for object member: %s"
+msgstr "E1330: Nesne üyesi için geçersiz tür: %s"
+
+msgid "E1331: Public must be followed by \"this\" or \"static\""
+msgstr "E1331: Public sonrası \"this\" veya \"static\" gelmelidir"
+
+#, c-format
+msgid "E1332: Public member name cannot start with underscore: %s"
+msgstr "E1332: Genel üye adı bir alt çizgiyle başlayamaz: %s"
+
+#, c-format
+msgid "E1333: Cannot access private member: %s"
+msgstr "E1333: Özel üyeye erişilemiyor: %s"
+
+#, c-format
+msgid "E1334: Object member not found: %s"
+msgstr "E1334: Nesne üyesi bulunamadı: %s"
+
+#, c-format
+msgid "E1335: Member is not writable: %s"
+msgstr "E1335: Üye yazılabilir değil: %s"
+
+msgid "E1336: Internal error: shortmess too long"
+msgstr "E1336: İçsel hata: Kısalık pek uzun"
+
+#, c-format
+msgid "E1337: Class member not found: %s"
+msgstr "E1337: Sınıf üyesi bulunamadı: %s"
+
+#, c-format
+msgid "E1338: Member not found on class \"%s\": %s"
+msgstr "E1338: \"%s\" sınıfında üye bulunamadı: %s"
+
+msgid ""
+"E1339: Cannot add a textprop with text after using a textprop with a "
+"negative id"
+msgstr ""
+"E1339: Negatif kimlikli bir textprop kullandıktan sonra metin içeren bir textprop eklenemiyor"
+
+#, c-format
+msgid "E1340: Argument already declared in the class: %s"
+msgstr "E1340: Sınıfta argüman halihazırda beyan edilmiş: %s"
+
+#, c-format
+msgid "E1341: Variable already declared in the class: %s"
+msgstr "E1341: Sınıfta değişken halihazırda beyan edilmiş: %s"
+
+msgid "E1342: Interface can only be defined in Vim9 script"
+msgstr "E1342: Arayüz yalnızca Vim9 betiğinde tanımlanabilir"
+
+#, c-format
+msgid "E1343: Interface name must start with an uppercase letter: %s"
+msgstr "E1343: Arayüz adı bir BÜYÜK harfle başlamalıdır: %s"
+
+msgid "E1344: Cannot initialize a member in an interface"
+msgstr "E1344: Bir arayüzde bir üye ilklendirilemiyor"
+
+#, c-format
+msgid "E1345: Not a valid command in an interface: %s"
+msgstr "E1345: Bir arayüzde geçerli bir komut değil: %s"
+
+#, c-format
+msgid "E1346: Interface name not found: %s"
+msgstr "E1346: Arayüz adı bulunamadı: %s"
+
+#, c-format
+msgid "E1347: Not a valid interface: %s"
+msgstr "E1347: Geçerli bir arayüz değil: %s"
+
+#, c-format
+msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
+msgstr "E1348: Şu arayüzün \"%s\" üyesi ilklendirilemiyor: \"%s\""
+
+#, c-format
+msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
+msgstr "E1349: Şu arayüzün \"%s\" işlevi gerçeklenmemiş: \"%s\""
+
+msgid "E1350: Duplicate \"implements\""
+msgstr "E1350: Yinelenen \"implements\""
+
+#, c-format
+msgid "E1351: Duplicate interface after \"implements\": %s"
+msgstr "E1351: \"implements\" sonrası yinelenen arayüz: %s"
+
+msgid "E1352: Duplicate \"extends\""
+msgstr "E1352: Yinelenen \"extends\""
+
+#, c-format
+msgid "E1353: Class name not found: %s"
+msgstr "E1353: Sınıf adı bulunamadı: %s"
+
+#, c-format
+msgid "E1354: Cannot extend %s"
+msgstr "E1354: %s genişletilemiyor"
+
+#, c-format
+msgid "E1355: Duplicate function: %s"
+msgstr "E1355: Yinelenen işlev: %s"
+
+msgid "E1356: \"super\" must be followed by a dot"
+msgstr "E1356: \"super\" sonrası bir nokta gelmelidir "
+
+msgid "E1357: Using \"super\" not in a class function"
+msgstr "E1357: \"super\" bir sınıf işlevi dışında kullanılıyor"
+
+msgid "E1358: Using \"super\" not in a child class"
+msgstr "E1358: \"super\", bir alt sınıfta kullanılmıyor"
+
+msgid "E1359: Cannot define a \"new\" function in an abstract class"
+msgstr "E1359: Soyut bir sınıfta bir \"new\" işlevi tanımlanamıyor"
+
+msgid "E1360: Using a null object"
+msgstr "E1360: Bir null nesne kullanılıyor"
+
+msgid "E1361: Cannot use color \"none\", did you mean \"NONE\"?"
+msgstr "E1361: \"none\" rengi kullanılamıyor, \"NONE\" mı demek istediniz?"
+
+msgid "E1362: Cannot use a non-null object"
+msgstr "E1362: Null olmayan bir nesne kullanılamıyor"
+
+msgid "E1363: Incomplete type"
+msgstr "E1363: Tam olmayan tür"
+
+msgid "E1364: Warning: Pointer block corrupted"
+msgstr "E1364: Uyarı: İşaretçi bloku hasar görmüş"
 
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
@@ -8715,7 +9034,10 @@ msgid "displaying text"
 msgstr "metin görüntüleme"
 
 msgid "number of lines to scroll for CTRL-U and CTRL-D"
-msgstr "CTRL-U ve CTRL-D için kaydırılacak satır sayısı"
+msgstr "CTRL-U ve CTRL-D için sarılacak satır sayısı"
+
+msgid "scroll by screen line"
+msgstr "ekran satırına göre sar"
 
 msgid "number of screen lines to show around the cursor"
 msgstr "imleç etrafında gösterilecek ekran satırları sayısı"
@@ -8739,7 +9061,7 @@ msgid "string to put before wrapped screen lines"
 msgstr "kaydırılmış ekran satırlarından önce konumlanacak dizi"
 
 msgid "minimal number of columns to scroll horizontally"
-msgstr "en az yatay kaydırma sütunu sayısı"
+msgstr "en az yatay sarma sütunu sayısı"
 
 msgid "minimal number of columns to keep left and right of the cursor"
 msgstr "imlecin sağında ve solunda bırakılacak en az sütun sayısı"
@@ -8765,7 +9087,7 @@ msgid "number of lines in the display"
 msgstr "ekrandaki satırların sayısı"
 
 msgid "number of lines to scroll for CTRL-F and CTRL-B"
-msgstr "CTRL-F ve CTRL-B için kaydırılacak satır sayısı"
+msgstr "CTRL-F ve CTRL-B için sarılacak satır sayısı"
 
 msgid "don't redraw while executing macros"
 msgstr "makroları çalıştırırken yenileme yapma"
@@ -8921,11 +9243,14 @@ msgstr ""
 msgid "a new window is put below the current one"
 msgstr "geçerli pencerenin altına yeni bir pencere koyulur"
 
+msgid "determines scroll behavior for split windows"
+msgstr "bölünmüş pencereler için sarma davranışını belirler"
+
 msgid "a new window is put right of the current one"
 msgstr "yeni bir pencere geçerli pencerenin sağına koyulur"
 
 msgid "this window scrolls together with other bound windows"
-msgstr "bu pencere, bağlı diğer pencerelerle birlikte kayar"
+msgstr "bu pencere, bağlı diğer pencerelerle birlikte sarılır"
 
 msgid "\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'"
 msgstr ""
@@ -8942,7 +9267,7 @@ msgstr "bir uçbirim penceresinde Vim komutlarından önce gelen düğme"
 
 msgid "max number of lines to keep for scrollback in a terminal window"
 msgstr ""
-"bir uçbirim penceresinde geri kaydırma için kullanılacak\n"
+"bir uçbirim penceresinde geri sarma için kullanılacak\n"
 "en çok satır sayısı"
 
 msgid "type of pty to use for a terminal window"
@@ -8990,14 +9315,17 @@ msgstr "bir xterm algılandığında uçbirim düğme kodlarını iste"
 msgid "terminal that requires extra redrawing"
 msgstr "ek yenileme gerektiren uçbirim"
 
+msgid "what keyboard protocol to use for which terminal"
+msgstr "hangi uçbirim için hangi klavye protokolünün kullanılacağı"
+
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "Ekleme kipinde <Esc> ile başlayan düğmeleri tanı"
 
 msgid "minimal number of lines to scroll at a time"
-msgstr "herhangi bir zamanda kaydırılacak en az satır sayısı"
+msgstr "herhangi bir zamanda sarılacak en az satır sayısı"
 
 msgid "maximum number of lines to use scrolling instead of redrawing"
-msgstr "yenileme yerine kaydırma kullanacak en çok satır sayısı"
+msgstr "yenileme yerine sarma kullanacak en çok satır sayısı"
 
 msgid "specifies what the cursor looks like in different modes"
 msgstr "imlecin farklı kiplerde nice göründüğünü belirler"
@@ -9033,7 +9361,7 @@ msgid "the window with the mouse pointer becomes the current one"
 msgstr "fare imlecinin olduğu pencere geçerli pencere olur"
 
 msgid "the window with the mouse pointer scrolls with the mouse wheel"
-msgstr "fare imlecinin olduğu pencere fare tekerleği ile kaydırılabilir"
+msgstr "fare imlecinin olduğu pencere fare tekerleği ile sarılabilir"
 
 msgid "hide the mouse pointer while typing"
 msgstr "yazı yazarken fare imlecini gizle"
@@ -9160,8 +9488,12 @@ msgstr "'shortness'daki 's' bayrağını ekle (arama iletisini gösterme)"
 msgid "list of flags to make messages shorter"
 msgstr "iletileri kısalaştırmak için kullanılan bayraklar listesi"
 
-msgid "show (partial) command keys in the status line"
-msgstr "durum satırında (kısmi) komut düğmelerini göster"
+msgid "show (partial) command keys in location given by 'showcmdloc'"
+msgstr ""
+"'showdcmdloc' tarafından verilen konumda (kısmi) komut düğmelerini göster"
+
+msgid "location where to show the (partial) command keys for 'showcmd'"
+msgstr "'showcmd' için (kısmi) komut düğmelerinin gösterileceği konum"
 
 msgid "display the current mode in the status line"
 msgstr "durum satırında geçerli kipi görüntüle"
@@ -9402,6 +9734,9 @@ msgstr "lisp kipini etkinleştir"
 msgid "words that change how lisp indenting works"
 msgstr "lisp girintilemesinin nice çalıştığını değiştiren sözcükler"
 
+msgid "options for Lisp indenting"
+msgstr "Lisp girintilemesi için seçenekler"
+
 msgid "folding"
 msgstr "kıvırma"
 
@@ -9506,6 +9841,9 @@ msgstr "ikili dosya düzenleme"
 
 msgid "last line in the file has an end-of-line"
 msgstr "dosyanın son satırında bir satırsonu var"
+
+msgid "last line in the file followed by CTRL-Z"
+msgstr "dosyanın son satırından sonra CTRL-Z var"
 
 msgid "fixes missing end-of-line at end of text file"
 msgstr "bir metin dosyasının sonundaki eksik satırsonlarını onarır"
