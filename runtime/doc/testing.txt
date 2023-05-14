@@ -369,6 +369,7 @@ test_override({name}, {val})				*test_override()*
 			     string is detected
 		ui_delay     time in msec to use in ui_delay(); overrules a
 			     wait time of up to 3 seconds for messages
+		unreachable  no error for code after `:throw` and `:return`
 		uptime	     overrules sysinfo.uptime
 		vterm_title  setting the window title by a job running in a
 			     terminal window
@@ -378,12 +379,17 @@ test_override({name}, {val})				*test_override()*
 		"starting" is to be used when a test should behave like
 		startup was done.  Since the tests are run by sourcing a
 		script the "starting" variable is non-zero. This is usually a
-		good thing (tests run faster), but sometimes changes behavior
-		in a way that the test doesn't work properly.
+		good thing (tests run faster), but sometimes this changes
+		behavior in a way that the test doesn't work properly.
 		When using: >
 			call test_override('starting', 1)
 <		The value of "starting" is saved.  It is restored by: >
 			call test_override('starting', 0)
+
+<		To make sure the flag is reset later using `:defer` can be
+		useful: >
+			call test_override('unreachable', 1)
+			defer call test_override('unreachable', 0)
 
 <		Can also be used as a |method|: >
 			GetOverrideVal()-> test_override('starting')

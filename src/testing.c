@@ -1039,6 +1039,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	no_wait_return = val;
     else if (STRCMP(name, (char_u *)"ui_delay") == 0)
 	ui_delay_for_testing = val;
+    else if (STRCMP(name, (char_u *)"unreachable") == 0)
+	ignore_unreachable_code_for_testing = val;
     else if (STRCMP(name, (char_u *)"term_props") == 0)
 	reset_term_props_on_termresponse = val;
     else if (STRCMP(name, (char_u *)"vterm_title") == 0)

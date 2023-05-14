@@ -3493,7 +3493,8 @@ compile_def_function(
 		&& ea.cmdidx != CMD_endwhile
 		&& ea.cmdidx != CMD_catch
 		&& ea.cmdidx != CMD_finally
-		&& ea.cmdidx != CMD_endtry)
+		&& ea.cmdidx != CMD_endtry
+		&& !ignore_unreachable_code_for_testing)
 	{
 	    emsg(_(e_unreachable_code_after_return));
 	    goto erret;
