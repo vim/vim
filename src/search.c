@@ -496,7 +496,7 @@ last_csearch_until(void)
 }
 
     void
-set_last_csearch(int c, char_u *s UNUSED, int len UNUSED)
+set_last_csearch(int c, char_u *s, int len)
 {
     *lastc = c;
     lastc_bytelen = len;
@@ -1789,7 +1789,7 @@ searchc(cmdarg_T *cap, int t_cmd)
     }
     else		// repeat previous search
     {
-	if (*lastc == NUL && lastc_bytelen == 1)
+	if (*lastc == NUL && lastc_bytelen <= 1)
 	    return FAIL;
 	if (dir)	// repeat in opposite direction
 	    dir = -lastcdir;
@@ -1833,7 +1833,7 @@ searchc(cmdarg_T *cap, int t_cmd)
 			return FAIL;
 		    col -= (*mb_head_off)(p, p + col - 1) + 1;
 		}
-		if (lastc_bytelen == 1)
+		if (lastc_bytelen <= 1)
 		{
 		    if (p[col] == c && stop)
 			break;
