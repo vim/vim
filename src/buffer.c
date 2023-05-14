@@ -1570,14 +1570,10 @@ do_buffer_ext(
      */
     if (action == DOBUF_SPLIT)	    // split window first
     {
-	// If 'switchbuf' contains "useopen": jump to first window containing
-	// "buf" if one exists
-	if ((swb_flags & SWB_USEOPEN) && buf_jump_open_win(buf))
+	// If 'switchbuf' is set jump to the window containing "buf".
+	if (swbuf_goto_win_with_buf(buf) != NULL)
 	    return OK;
-	// If 'switchbuf' contains "usetab": jump to first window in any tab
-	// page containing "buf" if one exists
-	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
-	    return OK;
+
 	if (win_split(0, 0) == FAIL)
 	    return FAIL;
     }
@@ -2492,15 +2488,8 @@ buflist_getfile(
 
     if (options & GETF_SWITCH)
     {
-	// If 'switchbuf' contains "useopen": jump to first window containing
-	// "buf" if one exists
-	if (swb_flags & SWB_USEOPEN)
-	    wp = buf_jump_open_win(buf);
-
-	// If 'switchbuf' contains "usetab": jump to first window in any tab
-	// page containing "buf" if one exists
-	if (wp == NULL && (swb_flags & SWB_USETAB))
-	    wp = buf_jump_open_tab(buf);
+	// If 'switchbuf' is set jump to the window containing "buf".
+	wp = swbuf_goto_win_with_buf(buf);
 
 	// If 'switchbuf' contains "split", "vsplit" or "newtab" and the
 	// current buffer isn't empty: open new tab or window
