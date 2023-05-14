@@ -812,6 +812,30 @@ def Test_try_catch_throw()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_unreachable_after()
+  var lines =<< trim END
+      try
+        throw 'Error'
+        echo 'not reached'
+      catch /Error/
+      endtry
+  END
+  v9.CheckDefFailure(lines, 'E1095: Unreachable code after :throw')
+
+  lines =<< trim END
+      def SomeFunc(): number
+        try
+          return 3
+          echo 'not reached'
+        catch /Error/
+        endtry
+        return 4
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1095: Unreachable code after :return')
+enddef
+
 def Test_throw_in_nested_try()
   var lines =<< trim END
       vim9script
@@ -1079,6 +1103,8 @@ def Test_nocatch_throw_silenced()
   source XthrowSilenced
 enddef
 
+" g:DeletedFunc() is found when compiling Test_try_catch_throw() and then
+" deleted, this should give a runtime error.
 def DeletedFunc(): list<any>
   return ['delete me']
 enddef

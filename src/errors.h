@@ -2809,8 +2809,8 @@ EXTERN char e_expected_nr_items_but_got_nr[]
 	INIT(= N_("E1093: Expected %d items but got %d"));
 EXTERN char e_import_can_only_be_used_in_script[]
 	INIT(= N_("E1094: Import can only be used in a script"));
-EXTERN char e_unreachable_code_after_return[]
-	INIT(= N_("E1095: Unreachable code after :return"));
+EXTERN char e_unreachable_code_after_str[]
+	INIT(= N_("E1095: Unreachable code after :%s"));
 EXTERN char e_returning_value_in_function_without_return_type[]
 	INIT(= N_("E1096: Returning a value in a function without a return type"));
 EXTERN char e_line_incomplete[]

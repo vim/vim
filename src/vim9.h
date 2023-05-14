@@ -842,6 +842,7 @@ struct cctx_S {
     skip_T	ctx_skip;
     scope_T	*ctx_scope;	    // current scope, NULL at toplevel
     int		ctx_had_return;	    // last seen statement was "return"
+    int		ctx_had_throw;	    // last seen statement was "throw"
 
     cctx_T	*ctx_outer;	    // outer scope for lambda or nested
 				    // function
