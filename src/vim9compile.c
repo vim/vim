@@ -3611,6 +3611,7 @@ compile_def_function(
 		    break;
 	    case CMD_throw:
 		    line = compile_throw(p, &cctx);
+		    cctx.ctx_had_return = TRUE;
 		    break;
 
 	    case CMD_eval:
