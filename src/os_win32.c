@@ -466,10 +466,10 @@ wait_for_single_object(
 mch_get_exe_name(void)
 {
     // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
-    // as the maximum length that works (plus a NUL byte).
-#define MAX_ENV_PATH_LEN 8192
-    char	temp[MAX_ENV_PATH_LEN];
-    char_u	*p;
+    // as the maximum length that works.  Add 1 for a NUL byte and 5 for
+    // "PATH=".
+#define MAX_ENV_PATH_LEN (8191 + 1 + 5)
+    WCHAR	temp[MAX_ENV_PATH_LEN];
     WCHAR	buf[MAX_PATH];
     int		updated = FALSE;
     static int	enc_prev = -1;
@@ -482,16 +482,14 @@ mch_get_exe_name(void)
 	{
 	    if (enc_codepage == -1)
 		enc_codepage = GetACP();
-	    if (exe_name != NULL)
-		vim_free(exe_name);
+	    vim_free(exe_name);
 	    exe_name = utf16_to_enc(buf, NULL);
 	    enc_prev = enc_codepage;
 
 	    WCHAR *wp = wcsrchr(buf, '\\');
 	    if (wp != NULL)
 		*wp = NUL;
-	    if (exe_pathw != NULL)
-		vim_free(exe_pathw);
+	    vim_free(exe_pathw);
 	    exe_pathw = _wcsdup(buf);
 	    updated = TRUE;
 	}
@@ -500,28 +498,36 @@ mch_get_exe_name(void)
     if (exe_pathw == NULL || !updated)
 	return;
 
-    char_u  *exe_path = utf16_to_enc(exe_pathw, NULL);
-    if (exe_path == NULL)
-	return;
-
     // Append our starting directory to $PATH, so that when doing
     // "!xxd" it's found in our starting directory.  Needed because
     // SearchPath() also looks there.
-    p = mch_getenv("PATH");
-    if (p == NULL
-	    || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
+    WCHAR *p = _wgetenv(L"PATH");
+    if (p == NULL || wcslen(p) + wcslen(exe_pathw) + 2 + 5 < MAX_ENV_PATH_LEN)
     {
+	wcscpy(temp, L"PATH=");
+
 	if (p == NULL || *p == NUL)
-	    temp[0] = NUL;
+	    wcscat(temp, exe_pathw);
 	else
 	{
-	    STRCPY(temp, p);
-	    STRCAT(temp, ";");
+	    wcscat(temp, p);
+
+	    // Check if exe_path is already included in $PATH.
+	    if (wcsstr(temp, exe_pathw) == NULL)
+	    {
+		// Append ';' if $PATH doesn't end with it.
+		size_t len = wcslen(temp);
+		if (temp[len - 1] != L';')
+		    wcscat(temp, L";");
+
+		wcscat(temp, exe_pathw);
+	    }
 	}
-	STRCAT(temp, exe_path);
-	vim_setenv((char_u *)"PATH", (char_u *)temp);
+	_wputenv(temp);
+#ifdef libintl_wputenv
+	libintl_wputenv(temp);
+#endif
     }
-    vim_free(exe_path);
 }
 
 /*
@@ -558,10 +564,11 @@ vimLoadLib(const char *name)
     // NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
     // vimLoadLib() recursively, which causes a stack overflow.
     if (exe_pathw == NULL)
+    {
 	mch_get_exe_name();
-
-    if (exe_pathw == NULL)
-	return NULL;
+	if (exe_pathw == NULL)
+	    return NULL;
+    }
 
     WCHAR old_dirw[MAXPATHL];
 
