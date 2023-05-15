@@ -468,12 +468,10 @@ mch_get_exe_name(void)
     // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
     // as the maximum length that works (plus a NUL byte).
 #define MAX_ENV_PATH_LEN 8192
-    char	    temp[MAX_ENV_PATH_LEN];
-    char_u	    *p;
-    WCHAR	    buf[MAX_PATH];
-    int		    updated = FALSE;
-    static int	    enc_prev = -1;
-    static char_u   *old_exe_path = NULL;
+    WCHAR	temp[MAX_ENV_PATH_LEN];
+    WCHAR	buf[MAX_PATH];
+    int		updated = FALSE;
+    static int	enc_prev = -1;
 
     if (exe_name == NULL || exe_pathw == NULL || enc_prev != enc_codepage)
     {
@@ -501,47 +499,41 @@ mch_get_exe_name(void)
     if (exe_pathw == NULL || !updated)
 	return;
 
-    char_u  *exe_path = utf16_to_enc(exe_pathw, NULL);
-    if (exe_path == NULL)
-	return;
-
     // Append our starting directory to $PATH, so that when doing
     // "!xxd" it's found in our starting directory.  Needed because
     // SearchPath() also looks there.
-    p = mch_getenv("PATH");
+    WCHAR *p = _wgetenv(L"PATH");
     if (p == NULL
-	    || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
+	    || wcslen(p) + wcslen(exe_pathw) + 2 < MAX_ENV_PATH_LEN)
     {
+	WCHAR   *q = NULL;
+
 	if (p == NULL || *p == NUL)
 	    temp[0] = NUL;
 	else
 	{
-	    size_t  len;
-	    char    *q = NULL;
+	    wcscpy(temp, p);
 
-	    STRCPY(temp, p);
-
-	    // Remove old_exe_path from $PATH if it exists.
-	    if (old_exe_path != NULL)
-		q = strstr(temp, (char *)old_exe_path);
-	    if (q != NULL)
+	    // Check if exe_path is already included in $PATH.
+	    q = wcsstr(temp, exe_pathw);
+	    if (q == NULL)
 	    {
-		len = STRLEN(old_exe_path);
-		if (q[len] == ';')
-		    ++len;
-		memmove(q, q + len, STRLEN(q) - len + 1);
+		// Append ';' if $PATH doesn't end with it.
+		size_t len = wcslen(temp);
+		if (temp[len - 1] != L';')
+		    wcscat(temp, L";");
 	    }
-
-	    // Append ';' if $PATH doesn't end with it.
-	    len = STRLEN(temp);
-	    if (temp[len - 1] != ';')
-		STRCAT(temp, ";");
 	}
-	STRCAT(temp, exe_path);
-	vim_setenv((char_u *)"PATH", (char_u *)temp);
+	if (q == NULL)
+	    wcscat(temp, exe_pathw);
+
+	char_u  *new_path = utf16_to_enc(temp, NULL);
+	if (new_path != NULL)
+	{
+	    vim_setenv((char_u *)"PATH", new_path);
+	    vim_free(new_path);
+	}
     }
-    vim_free(old_exe_path);
-    old_exe_path = exe_path;
 }
 
 /*
