@@ -3596,6 +3596,34 @@ user_func_error(funcerror_T error, char_u *name, int found_var)
 }
 
 /*
+ * Check the argument types "argvars[argcount]" for "name" using the
+ * information in "funcexe".  When "base_included" then "funcexe->fe_basetv"
+ * is already included in "argvars[]".
+ * Will do nothing if "funcexe->fe_check_type" is NULL or
+ * "funcexe->fe_evaluate" is FALSE;
+ * Returns an FCERR_ value.
+ */
+    static funcerror_T
+may_check_argument_types(
+	funcexe_T   *funcexe,
+	typval_T    *argvars,
+	int	    argcount,
+	int	    base_included,
+	char_u	    *name)
+{
+    if (funcexe->fe_check_type != NULL && funcexe->fe_evaluate)
+    {
+	// Check that the argument types are OK for the types of the funcref.
+	if (check_argument_types(funcexe->fe_check_type,
+			  argvars, argcount,
+			  base_included ? NULL : funcexe->fe_basetv,
+			  name) == FAIL)
+	    return FCERR_OTHER;
+    }
+    return FCERR_NONE;
+}
+
+/*
  * Call a function with its resolved parameters
  *
  * Return FAIL when the function can't be called,  OK otherwise.
@@ -3691,15 +3719,10 @@ call_func(
 	}
     }
 
-    if (error == FCERR_NONE && funcexe->fe_check_type != NULL
-						       && funcexe->fe_evaluate)
-    {
-	// Check that the argument types are OK for the types of the funcref.
-	if (check_argument_types(funcexe->fe_check_type,
-					 argvars, argcount, funcexe->fe_basetv,
-				     (name != NULL) ? name : funcname) == FAIL)
-	    error = FCERR_OTHER;
-    }
+    if (error == FCERR_NONE)
+	// check the argument types if possible
+	error = may_check_argument_types(funcexe, argvars, argcount, FALSE,
+					     (name != NULL) ? name : funcname);
 
     if (error == FCERR_NONE && funcexe->fe_evaluate)
     {
@@ -3761,10 +3784,20 @@ call_func(
 		error = FCERR_DELETED;
 	    else if (fp != NULL)
 	    {
+		int need_arg_check = FALSE;
+		if (funcexe->fe_check_type == NULL)
+		{
+		    funcexe->fe_check_type = fp->uf_func_type;
+		    need_arg_check = TRUE;
+		}
+
 		if (funcexe->fe_argv_func != NULL)
+		{
 		    // postponed filling in the arguments, do it now
 		    argcount = funcexe->fe_argv_func(argcount, argvars,
-					       argv_clear, fp);
+							       argv_clear, fp);
+		    need_arg_check = TRUE;
+		}
 
 		if (funcexe->fe_basetv != NULL)
 		{
@@ -3774,9 +3807,16 @@ call_func(
 		    argcount++;
 		    argvars = argv;
 		    argv_base = 1;
+		    need_arg_check = TRUE;
 		}
 
-		error = call_user_func_check(fp, argcount, argvars, rettv,
+		// Check the argument types now that the function type and all
+		// argument values are known, if not done above.
+		if (need_arg_check)
+		    error = may_check_argument_types(funcexe, argvars, argcount,
+				       TRUE, (name != NULL) ? name : funcname);
+		if (error == FCERR_NONE || error == FCERR_UNKNOWN)
+		    error = call_user_func_check(fp, argcount, argvars, rettv,
 							    funcexe, selfdict);
 	    }
 	}
