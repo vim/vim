@@ -467,7 +467,8 @@ mch_get_exe_name(void)
 {
     // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
     // as the maximum length that works (plus a NUL byte).
-#define MAX_ENV_PATH_LEN 8192
+    // Added 5 for "PATH=".
+#define MAX_ENV_PATH_LEN (8192 + 5)
     WCHAR	temp[MAX_ENV_PATH_LEN];
     WCHAR	buf[MAX_PATH];
     int		updated = FALSE;
@@ -504,13 +505,15 @@ mch_get_exe_name(void)
     // SearchPath() also looks there.
     WCHAR *p = _wgetenv(L"PATH");
     if (p == NULL
-	    || wcslen(p) + wcslen(exe_pathw) + 2 < MAX_ENV_PATH_LEN)
+	    || wcslen(p) + wcslen(exe_pathw) + 2 + 5 < MAX_ENV_PATH_LEN)
     {
+	wcscpy(temp, L"PATH=");
+
 	if (p == NULL || *p == NUL)
-	    wcscpy(temp, exe_pathw);
+	    wcscat(temp, exe_pathw);
 	else
 	{
-	    wcscpy(temp, p);
+	    wcscat(temp, p);
 
 	    // Check if exe_path is already included in $PATH.
 	    if (wcsstr(temp, exe_pathw) == NULL)
@@ -523,13 +526,10 @@ mch_get_exe_name(void)
 		wcscat(temp, exe_pathw);
 	    }
 	}
-
-	char_u  *new_path = utf16_to_enc(temp, NULL);
-	if (new_path != NULL)
-	{
-	    vim_setenv((char_u *)"PATH", new_path);
-	    vim_free(new_path);
-	}
+	_wputenv(temp);
+#ifdef libintl_wputenv
+	libintl_wputenv(temp);
+#endif
     }
 }
 
