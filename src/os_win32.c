@@ -468,11 +468,12 @@ mch_get_exe_name(void)
     // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
     // as the maximum length that works (plus a NUL byte).
 #define MAX_ENV_PATH_LEN 8192
-    char	temp[MAX_ENV_PATH_LEN];
-    char_u	*p;
-    WCHAR	buf[MAX_PATH];
-    int		updated = FALSE;
-    static int	enc_prev = -1;
+    char	    temp[MAX_ENV_PATH_LEN];
+    char_u	    *p;
+    WCHAR	    buf[MAX_PATH];
+    int		    updated = FALSE;
+    static int	    enc_prev = -1;
+    static char_u   *old_exe_path = NULL;
 
     if (exe_name == NULL || exe_pathw == NULL || enc_prev != enc_codepage)
     {
@@ -515,13 +516,32 @@ mch_get_exe_name(void)
 	    temp[0] = NUL;
 	else
 	{
+	    size_t  len;
+	    char    *q = NULL;
+
 	    STRCPY(temp, p);
-	    STRCAT(temp, ";");
+
+	    // Remove old_exe_path from $PATH if it exists.
+	    if (old_exe_path != NULL)
+		q = strstr(temp, (char *)old_exe_path);
+	    if (q != NULL)
+	    {
+		len = STRLEN(old_exe_path);
+		if (q[len] == ';')
+		    ++len;
+		memmove(q, q + len, STRLEN(q) - len + 1);
+	    }
+
+	    // Append ';' if $PATH doesn't end with it.
+	    len = STRLEN(temp);
+	    if (temp[len - 1] != ';')
+		STRCAT(temp, ";");
 	}
 	STRCAT(temp, exe_path);
 	vim_setenv((char_u *)"PATH", (char_u *)temp);
     }
-    vim_free(exe_path);
+    vim_free(old_exe_path);
+    old_exe_path = exe_path;
 }
 
 /*
