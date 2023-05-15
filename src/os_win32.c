@@ -506,26 +506,23 @@ mch_get_exe_name(void)
     if (p == NULL
 	    || wcslen(p) + wcslen(exe_pathw) + 2 < MAX_ENV_PATH_LEN)
     {
-	WCHAR   *q = NULL;
-
 	if (p == NULL || *p == NUL)
-	    temp[0] = NUL;
+	    wcscpy(temp, exe_pathw);
 	else
 	{
 	    wcscpy(temp, p);
 
 	    // Check if exe_path is already included in $PATH.
-	    q = wcsstr(temp, exe_pathw);
-	    if (q == NULL)
+	    if (wcsstr(temp, exe_pathw) == NULL)
 	    {
 		// Append ';' if $PATH doesn't end with it.
 		size_t len = wcslen(temp);
 		if (temp[len - 1] != L';')
 		    wcscat(temp, L";");
+
+		wcscat(temp, exe_pathw);
 	    }
 	}
-	if (q == NULL)
-	    wcscat(temp, exe_pathw);
 
 	char_u  *new_path = utf16_to_enc(temp, NULL);
 	if (new_path != NULL)
