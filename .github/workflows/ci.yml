@@ -21,7 +21,7 @@ jobs:
 
     env:
       CC: ${{ matrix.compiler }}
-      GCC_VER: 12
+      GCC_VER: 13
       CLANG_VER: 16
       TEST: test
       SRCDIR: ./src
@@ -98,10 +98,9 @@ jobs:
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew install gcc@${{ env.GCC_VER }}
-          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/bin/gcc-${{ env.GCC_VER }} 100
-          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/bin/gcc-${{ env.GCC_VER }}
+          sudo apt-get install -y gcc-${{ env.GCC_VER }}
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
       - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
