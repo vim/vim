@@ -8,7 +8,7 @@ const SHELL_PROMPT: string = g:
 
 # Init {{{1
 
-const help_text: list<string> =<< trim END
+const HELP_TEXT: list<string> =<< trim END
     normal commands in help window
     ──────────────────────────────
     ?      hide this help window
@@ -62,12 +62,13 @@ const help_text: list<string> =<< trim END
     more context for each remaining entry by pressing J or K
 END
 
-const match_entry: dict<dict<func: bool>> = {
+const MATCH_ENTRY: dict<dict<func: bool>> = {
     help: {},
 
     man: {
         1: (line: string, _): bool => line =~ '^\S',
         2: (line: string, _): bool => line =~ '^\%( \{3\}\)\=\S',
+        3: (line: string, _): bool => line =~ '^\s\+\(\%(+\|-\)\S\+,\s\+\)*\%(+\|-\)\S\+',
     },
 
     markdown: {
@@ -86,14 +87,14 @@ const match_entry: dict<dict<func: bool>> = {
     }
 }
 
-const help_rulers: dict<string> = {
+const HELP_RULERS: dict<string> = {
     '=': '^=\{40,}$',
     '-': '^-\{40,}',
 }
-const help_ruler: string = help_rulers->values()->join('\|')
+const HELP_RULER: string = HELP_RULERS->values()->join('\|')
 
 # the regex is copied from the help syntax plugin
-const help_tag: string = '\*[#-)!+-~]\+\*\%(\s\|$\)\@='
+const HELP_TAG: string = '\*[#-)!+-~]\+\*\%(\s\|$\)\@='
 
 # Adapted from `$VIMRUNTIME/syntax/help.vim`.{{{
 #
@@ -104,8 +105,8 @@ const help_tag: string = '\*[#-)!+-~]\+\*\%(\s\|$\)\@='
 # Allowing a  space or a hyphen  at the start  can give false positives,  and is
 # useless, so we don't allow them.
 #}}}
-const helpHeadline: string = '^\C[A-Z.][-A-Z0-9 .()_]*\%(\s\+\*+\@!\|$\)'
-#                                                              ^--^
+const HELP_HEADLINE: string = '^\C[A-Z.][-A-Z0-9 .()_]*\%(\s\+\*+\@!\|$\)'
+#                                                               ^--^
 # To prevent some false positives under `:help feature-list`.
 
 var lvls: dict<number>
@@ -121,7 +122,7 @@ def InitHelpLvls()
     }
 enddef
 
-const augroup: string = 'HelpToc'
+const AUGROUP: string = 'HelpToc'
 var fuzzy_entries: list<dict<any>>
 var help_winid: number
 var print_entry: bool
@@ -130,7 +131,7 @@ var selected_entry_match: number
 # Interface {{{1
 export def Open() #{{{2
     var type: string = GetType()
-    if !match_entry->has_key(type)
+    if !MATCH_ENTRY->has_key(type)
         return
     endif
     if type == 'terminal' && win_gettype() == 'popup'
@@ -141,7 +142,7 @@ export def Open() #{{{2
     endif
 
     # invalidate the cache if the buffer's contents has changed
-    if exists('b:toc')
+    if exists('b:toc') && &filetype != 'man'
         if b:toc.changedtick != b:changedtick
         # in a terminal buffer, `b:changedtick` does not change
         || type == 'terminal' && line('$') > b:toc.linecount
@@ -224,7 +225,7 @@ def SetToc() #{{{2
 
     var curline: string = getline(1)
     var nextline: string
-    var lvl_and_test: list<list<any>> = match_entry
+    var lvl_and_test: list<list<any>> = MATCH_ENTRY
         ->get(type, {})
         ->items()
         ->sort((l: list<any>, ll: list<any>): number => l[0]->str2nr() - ll[0]->str2nr())
@@ -250,8 +251,8 @@ enddef
 def SetTocHelp() #{{{2
     var main_ruler: string
     for line: string in getline(1, '$')
-        if line =~ help_ruler
-            main_ruler = line =~ '=' ? help_rulers['='] : help_rulers['-']
+        if line =~ HELP_RULER
+            main_ruler = line =~ '=' ? HELP_RULERS['='] : HELP_RULERS['-']
             break
         endif
     endfor
@@ -284,7 +285,7 @@ def SetTocHelp() #{{{2
 
         if prevline =~ '^\d\+\.\s'
         && curline !~ '^\s*$'
-        && curline !~ $'^\s*{help_tag}'
+        && curline !~ $'^\s*{HELP_TAG}'
             in_list = true
         endif
 
@@ -292,7 +293,7 @@ def SetTocHelp() #{{{2
         if prevline =~ '^\d\+\.\s'
         # let's assume that the  start of a main entry is  always followed by an
         # empty line, or a line starting with a tag
-        && (curline =~ '^>\=\s*$' || curline =~ $'^\s*{help_tag}')
+        && (curline =~ '^>\=\s*$' || curline =~ $'^\s*{HELP_TAG}')
         # ignore a numbered line in a list
         && !in_list
             var current_numbered_entry: number = prevline
@@ -308,9 +309,9 @@ def SetTocHelp() #{{{2
 
         # 1.2
         if curline =~ '^\d\+\.\d\+\s'
-            if curline =~ $'\%({help_tag}\s*\|\~\)$'
-            || (prevline =~ $'^\s*{help_tag}' || nextline =~ $'^\s*{help_tag}')
-            || (prevline =~ help_ruler || nextline =~ help_ruler)
+            if curline =~ $'\%({HELP_TAG}\s*\|\~\)$'
+            || (prevline =~ $'^\s*{HELP_TAG}' || nextline =~ $'^\s*{HELP_TAG}')
+            || (prevline =~ HELP_RULER || nextline =~ HELP_RULER)
             || (prevline =~ '^\s*$' && nextline =~ '^\s*$')
                 AddEntryInTocHelp('1.2', lnum, curline)
             endif
@@ -320,7 +321,7 @@ def SetTocHelp() #{{{2
         endif
 
         # HEADLINE
-        if curline =~ helpHeadline
+        if curline =~ HELP_HEADLINE
         && curline !~ '^CTRL-'
         &&  prevline->IsSpecialHelpLine()
         && (nextline->IsSpecialHelpLine() || nextline =~ '^\s*(\|^\t\|^N[oO][tT][eE]:')
@@ -332,14 +333,14 @@ def SetTocHelp() #{{{2
         && curline =~ '\w'
         && curline !~ '^[ \t<]\|\t\|---+---\|^NOTE:'
         && curline !~ '^\d\+\.\%(\d\+\%(\.\d\+\)\=\)\=\s'
-        && prevline !~ $'^\s*{help_tag}'
+        && prevline !~ $'^\s*{HELP_TAG}'
         && prevline !~ '\~$'
         && nextline !~ '\~$'
             AddEntryInTocHelp('header ~', lnum, curline)
         endif
 
         # *some_tag*
-        if curline =~ help_tag
+        if curline =~ HELP_TAG
             AddEntryInTocHelp('tag', lnum, curline)
         endif
 
@@ -381,7 +382,7 @@ def SetTocHelp() #{{{2
     var has_tag: bool = b:toc.entries
         ->copy()
         ->map((_, entry: dict<any>) => entry.text)
-        ->match(help_tag) >= 0
+        ->match(HELP_TAG) >= 0
     if has_tag
         ++b:toc.maxlvl
     endif
@@ -417,13 +418,13 @@ def AddEntryInTocHelp(type: string, lnum: number, line: string) #{{{2
     var text: string = line
     if type == 'tag'
         var tags: list<string>
-        text->substitute(help_tag, () => !!tags->add(submatch(0)), 'g')
+        text->substitute(HELP_TAG, () => !!tags->add(submatch(0)), 'g')
         text = tags
             # we ignore errors and warnings because those are meaningless in
             # a TOC where no context is available
             ->filter((_, tag: string) => tag !~ '\*[EW]\d\+\*')
             ->join()
-        if text !~ $'{help_tag}'
+        if text !~ HELP_TAG
             return
         endif
     endif
@@ -656,13 +657,13 @@ def Filter(winid: number, key: string): bool #{{{2
         DisplayNonFuzzyToc(winid)
 
         [{
-            group: augroup,
+            group: AUGROUP,
             event: 'CmdlineChanged',
             pattern: '@',
             cmd: $'FuzzySearch({winid})',
             replace: true,
         }, {
-            group: augroup,
+            group: AUGROUP,
             event: 'CmdlineLeave',
             pattern: '@',
             cmd: 'TearDown()',
@@ -838,8 +839,8 @@ enddef
 
 def ToggleHelp(menu_winid: number) #{{{2
     if help_winid == 0
-        var height: number = [help_text->len(), winheight(0) * 2 / 3]->min()
-        var longest_line: number = help_text
+        var height: number = [HELP_TEXT->len(), winheight(0) * 2 / 3]->min()
+        var longest_line: number = HELP_TEXT
             ->copy()
             ->map((_, line: string) => line->strcharlen())
             ->max()
@@ -849,7 +850,7 @@ def ToggleHelp(menu_winid: number) #{{{2
         --col
         var zindex: number = popup_getoptions(menu_winid).zindex
         ++zindex
-        help_winid = help_text->popup_create({
+        help_winid = HELP_TEXT->popup_create({
             line: line,
             col: col,
             pos: 'topright',
@@ -868,8 +869,8 @@ def ToggleHelp(menu_winid: number) #{{{2
         setwinvar(help_winid, '&linebreak', true)
         matchadd('Special', '^<\S\+\|^\S\{,2}  \@=', 0, -1, {window: help_winid})
         matchadd('Number', '\d\+', 0, -1, {window: help_winid})
-        for lnum: number in help_text->len()->range()
-            if help_text[lnum] =~ '^─\+$'
+        for lnum: number in HELP_TEXT->len()->range()
+            if HELP_TEXT[lnum] =~ '^─\+$'
                 matchaddpos('Title', [lnum], 0, -1, {window: help_winid})
             endif
         endfor
@@ -891,7 +892,7 @@ def Win_execute(winid: number, cmd: any) #{{{2
 enddef
 
 def TearDown() #{{{2
-    autocmd_delete([{group: augroup}])
+    autocmd_delete([{group: AUGROUP}])
     cunmap <buffer> <Down>
     cunmap <buffer> <Up>
     cunmap <buffer> <C-N>
@@ -923,8 +924,8 @@ enddef
 def IsSpecialHelpLine(line: string): bool #{{{2
     return line =~ '^[<>]\=\s*$'
         || line =~ '^\s*\*'
-        || line =~ help_ruler
-        || line =~ helpHeadline
+        || line =~ HELP_RULER
+        || line =~ HELP_HEADLINE
 enddef
 
 def Complete(..._): string #{{{2
