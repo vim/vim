@@ -10319,7 +10319,6 @@ termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
 termdebug-variables	terminal.txt	/*termdebug-variables*
 termdebug_disasm_window	terminal.txt	/*termdebug_disasm_window*
-termdebug_variables_window	terminal.txt	/*termdebug_variables_window*
 termdebug_map_K	terminal.txt	/*termdebug_map_K*
 termdebug_popup	terminal.txt	/*termdebug_popup*
 termdebug_shortcuts	terminal.txt	/*termdebug_shortcuts*
