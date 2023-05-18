@@ -123,10 +123,10 @@ profile_setlimit(long msec, proftime_T *tm)
 	QueryPerformanceFrequency(&fr);
 	tm->QuadPart += (LONGLONG)((double)msec / 1000.0 * (double)fr.QuadPart);
 # else
-	long	    fsec;
+	int64_t	    fsec;
 
 	PROF_GET_TIME(tm);
-	fsec = (long)tm->tv_fsec + (long)msec * (TV_FSEC_SEC / 1000);
+	fsec = (int64_t)tm->tv_fsec + (int64_t)msec * (int64_t)(TV_FSEC_SEC / 1000);
 	tm->tv_fsec = fsec % (long)TV_FSEC_SEC;
 	tm->tv_sec += fsec / (long)TV_FSEC_SEC;
 # endif
