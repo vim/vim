@@ -704,27 +704,29 @@ let s:filename_case_checks = {
     \ 'bzl': ['file.BUILD', 'BUILD'],
     \ }
 
-func CheckItems(checks)
+def CheckItems(checks: dict<list<string>>)
   set noswapfile
-  for [ft, names] in items(a:checks)
+
+  for [ft, names] in items(checks)
     for i in range(0, len(names) - 1)
       new
       try
-        exe 'edit ' . fnameescape(names[i])
+        exe 'edit ' .. fnameescape(names[i])
       catch
-	call assert_report('cannot edit "' . names[i] . '": ' . v:exception)
+	assert_report('cannot edit "' .. names[i] .. '": ' .. v:exception)
       endtry
       if &filetype == '' && &readonly
-	" File exists but not able to edit it (permission denied)
+	# File exists but not able to edit it (permission denied)
       else
-        let expected = ft == 'none' ? '' : ft
-	call assert_equal(expected, &filetype, 'with file name: ' . names[i])
+        var expected = ft == 'none' ? '' : ft
+	assert_equal(expected, &filetype, 'with file name: ' .. names[i])
       endif
       bwipe!
     endfor
   endfor
+
   set swapfile&
-endfunc
+enddef
 
 func Test_filetype_detection()
   filetype on

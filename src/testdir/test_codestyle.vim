@@ -2,6 +2,7 @@
 
 def Test_source_files()
   for fname in glob('../*.[ch]', 0, 1)
+    bwipe!
     exe 'edit ' .. fname
 
     cursor(1, 1)
@@ -26,11 +27,11 @@ def Test_source_files()
     lnum = search(')\s*{', '', 0, 0, skip)
     assert_equal(0, lnum, fname .. ': curly after closing paren')
 
-    cursor(1, 1)
     # Examples in comments use double quotes.
     skip = "getline('.') =~ '\"'"
-    # Avoid examples that contain: "} else
-    lnum = search('[^"]}\s*else', '', 0, 0, skip)
+
+    cursor(1, 1)
+    lnum = search('}\s*else', '', 0, 0, skip)
     assert_equal(0, lnum, fname .. ': curly before "else"')
 
     cursor(1, 1)
