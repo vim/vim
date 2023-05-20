@@ -405,6 +405,8 @@ typedef enum PreferredAppMode
 } PreferredAppMode;
 
 static DWORD (WINAPI *pSetPreferredAppMode)(DWORD) = NULL;
+static BOOL (WINAPI *pShouldAppsUseDarkMode)(void) = NULL;
+static BOOL (WINAPI *pShouldSystemUseDarkMode)(void) = NULL;
 static void (WINAPI *pFlushMenuThemes)(void) = NULL;
 #endif
 
@@ -2810,7 +2812,101 @@ gui_mch_set_curtab(int nr)
 #endif
 
 #if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
-    static void load_dwm_func(void)
+    static int
+is_w10_newer_than(unsigned short build_no)
+{
+    static DWORD win_ver = 0;
+
+    if (win_ver == 0)
+	win_ver = get_win_version();
+
+    return win_ver >= MAKE_VER(10U, 0U, build_no);
+}
+
+    static int
+is_high_contrast_theme(int *high_contrast)
+{
+	HIGHCONTRASTW hc;
+
+	hc.cbSize = sizeof(HIGHCONTRASTW);
+	if (!SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRASTW), &hc,
+		    FALSE))
+	    return FAIL;
+
+	*high_contrast = (hc.dwFlags & HCF_HIGHCONTRASTON) != 0;
+	return OK;
+}
+
+    static int
+system_prefers_dark_theme(void)
+{
+    int high_contrast;
+
+    if (pShouldSystemUseDarkMode != NULL)
+    {
+	return pShouldSystemUseDarkMode() &&
+		is_high_contrast_theme(&high_contrast) == OK &&
+		!high_contrast;
+    }
+
+    return FALSE;
+}
+
+    static void
+set_dark_theme(HWND hwnd, int dark)
+{
+    BOOL	value = dark != 0;
+    DWORD	ver = get_win_version();
+
+    if (pDwmSetWindowAttribute != NULL)
+    {
+	if (is_w10_newer_than(18985))
+	    pDwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
+		    sizeof(value));
+	else
+	    pDwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
+		    &value, sizeof(value));
+    }
+}
+
+    static void
+set_dark_theme_impl(const int dark)
+{
+    if (is_w10_newer_than(18362))
+    {
+	if (pSetPreferredAppMode != NULL && pFlushMenuThemes != NULL)
+	{
+	    pSetPreferredAppMode(dark ? ForceDark : ForceLight);
+	    pFlushMenuThemes();
+	}
+    }
+
+    if (is_w10_newer_than(17763))
+	set_dark_theme(s_hwnd, dark);
+}
+
+    void
+gui_mch_set_dark_theme(void)
+{
+    switch (gui.prefer_dark_theme)
+    {
+	case DM_DEFAULT:
+	    // Defaults to light mode.
+	case DM_PREFER_LIGHT:
+	case DM_PREFER_DARK:
+	    set_dark_theme_impl(gui.prefer_dark_theme == DM_PREFER_DARK);
+	    break;
+	case DM_AUTOMATIC:
+	    set_dark_theme_impl(system_prefers_dark_theme());
+	    break;
+	case DM_USE_BACKGROUND:
+	    set_dark_theme_impl(*p_bg == 'd');
+	    break;
+    }
+}
+
+    static void
+load_dwm_func(void)
 {
     static HMODULE hDwmLib = NULL;
 
@@ -2825,7 +2921,8 @@ gui_mch_set_curtab(int nr)
 	    GetProcAddress(hDwmLib, "DwmSetWindowAttribute");
 }
 
-    static void load_uxtheme_func(void)
+    static void
+load_uxtheme_func(void)
 {
     static HMODULE hUxThemeLib = NULL;
 
@@ -2836,43 +2933,16 @@ gui_mch_set_curtab(int nr)
     if (hUxThemeLib == NULL)
 	return;
 
+    pShouldAppsUseDarkMode = (BOOL (WINAPI *)(void))
+	    GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(132));
     pSetPreferredAppMode = (DWORD (WINAPI *)(DWORD))
 	    GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(135));
     pFlushMenuThemes = (void (WINAPI *)(void))
 	    GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(136));
+    pShouldSystemUseDarkMode = (BOOL (WINAPI *)(void))
+	    GetProcAddress(hUxThemeLib, MAKEINTRESOURCE(138));
 }
-    void
-gui_mch_set_dark_theme(int dark)
-{
-    BOOL	value = dark != 0;
-    DWORD	ver = get_win_version();
 
-    if (ver >= MAKE_VER(10, 0, 18362))
-    {
-	load_uxtheme_func();
-
-	if (pSetPreferredAppMode != NULL && pFlushMenuThemes != NULL)
-	{
-	    pSetPreferredAppMode(dark ? ForceDark : ForceLight);
-	    pFlushMenuThemes();
-	}
-    }
-
-    if (ver >= MAKE_VER(10, 0, 17763))
-    {
-	load_dwm_func();
-
-	if (pDwmSetWindowAttribute != NULL)
-	{
-	    if (ver >= MAKE_VER(10, 0, 18985))
-		pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value,
-			sizeof(value));
-	    else
-		pDwmSetWindowAttribute(s_hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
-			&value, sizeof(value));
-	}
-    }
-}
 #endif // FEAT_GUI_DARKTHEME
 
 /*
@@ -4469,12 +4539,16 @@ set_tabline_font(void)
 # define set_tabline_font()
 #endif
 
+
+
 /*
  * Invoked when a setting was changed.
  */
     static LRESULT CALLBACK
-_OnSettingChange(UINT param)
+_OnSettingChange(UINT param, LPCWSTR param_name)
 {
+    // ch_log(NULL, "OnSettingChange(param=%08lx, name=%s)", param, param_name);
+
     switch (param)
     {
 	case SPI_SETWHEELSCROLLLINES:
@@ -4485,6 +4559,14 @@ _OnSettingChange(UINT param)
 	    break;
 	case SPI_SETNONCLIENTMETRICS:
 	    set_tabline_font();
+	    break;
+	case 0:
+#ifdef FEAT_GUI_DARKTHEME
+	    if (param_name != NULL &&
+		    !wcscmp(param_name, L"ImmersiveColorSet") &&
+		    gui.prefer_dark_theme == DM_AUTOMATIC)
+		set_dark_theme_impl(system_prefers_dark_theme());
+#endif
 	    break;
 	default:
 	    break;
@@ -4957,7 +5039,7 @@ _WndProc(
 
 	// Notification for change in SystemParametersInfo()
     case WM_SETTINGCHANGE:
-	return _OnSettingChange((UINT)wParam);
+	return _OnSettingChange((UINT)wParam, (LPCWSTR)lParam);
 
 #if defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
     case WM_NOTIFY:
@@ -5350,6 +5432,10 @@ gui_mch_init(void)
 #endif
 
     load_dpi_func();
+#ifdef FEAT_GUI_DARKTHEME
+    load_uxtheme_func();
+    load_dwm_func();
+#endif
 
     s_dpi = pGetDpiForSystem();
     update_scrollbar_size();

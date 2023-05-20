@@ -52,6 +52,7 @@ char *did_set_foldmethod(optset_T *args);
 char *did_set_foldopen(optset_T *args);
 char *did_set_formatoptions(optset_T *args);
 char *did_set_guicursor(optset_T *args);
+char *did_set_guidarkmode(optset_T *args);
 char *did_set_guifont(optset_T *args);
 char *did_set_guifontset(optset_T *args);
 char *did_set_guifontwide(optset_T *args);
