@@ -1656,13 +1656,13 @@ did_set_guifont(optset_T *args UNUSED)
     return errmsg;
 }
 
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
 /*
  * The 'guidarkmode' option is changed.
  */
     char *
 did_set_guidarkmode(optset_T *args UNUSED)
 {
-#if defined(FEAT_GUI_DARKTHEME)
     if (*p_guidarkmode == NUL)
     {
 	gui.prefer_dark_theme = DM_DEFAULT;
@@ -1687,10 +1687,10 @@ did_set_guidarkmode(optset_T *args UNUSED)
 
     if (gui.in_use)
 	gui_mch_set_dark_theme();
-#endif
 
     return NULL;
 }
+#endif
 
 # if defined(FEAT_XFONTSET) || defined(PROTO)
 /*

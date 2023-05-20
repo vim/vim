@@ -1160,7 +1160,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"guidarkmode",  NULL,  P_STRING|P_VI_DEF|P_RCLR,
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI_DARKTHEME)
 			    (char_u *)&p_guidarkmode, PV_NONE, did_set_guidarkmode,
 			    {(char_u *)"", (char_u *)0L}
 #else
