@@ -887,7 +887,7 @@ ex_terminal(exarg_T *eap)
 		tty_type = 'c';
 	    else
 	    {
-		semsg(e_invalid_value_for_argument_str, "type");
+		semsg(_(e_invalid_value_for_argument_str), "type");
 		goto theend;
 	    }
 	    opt.jo_set2 |= JO2_TTY_TYPE;

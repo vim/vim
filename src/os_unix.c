@@ -7705,7 +7705,7 @@ mch_libcall(
 	    for (i = 0; signal_info[i].sig != -1; i++)
 		if (lc_signal == signal_info[i].sig)
 		    break;
-	    semsg(e_got_sig_str_in_libcall, signal_info[i].name);
+	    semsg(_(e_got_sig_str_in_libcall), signal_info[i].name);
 	}
 #  endif
 # endif
