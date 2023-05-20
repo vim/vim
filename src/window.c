@@ -950,6 +950,10 @@ win_split_ins(
     int		minheight;
     int		wmh1;
     int		did_set_fraction = FALSE;
+    int		retval = FAIL;
+
+    // Do not redraw here, curwin->w_buffer may be invalid.
+    ++RedrawingDisabled;
 
     if (flags & WSP_TOP)
 	oldwin = firstwin;
@@ -964,7 +968,7 @@ win_split_ins(
 	if (VISIBLE_HEIGHT(oldwin) <= p_wmh && new_wp == NULL)
 	{
 	    emsg(_(e_not_enough_room));
-	    return FAIL;
+	    goto theend;
 	}
 	need_status = STATUS_HEIGHT;
     }
@@ -1022,7 +1026,7 @@ win_split_ins(
 	if (available < needed && new_wp == NULL)
 	{
 	    emsg(_(e_not_enough_room));
-	    return FAIL;
+	    goto theend;
 	}
 	if (new_size == 0)
 	    new_size = oldwin->w_width / 2;
@@ -1105,7 +1109,7 @@ win_split_ins(
 	if (available < needed && new_wp == NULL)
 	{
 	    emsg(_(e_not_enough_room));
-	    return FAIL;
+	    goto theend;
 	}
 	oldwin_height = oldwin->w_height;
 	if (need_status)
@@ -1188,13 +1192,13 @@ win_split_ins(
     if (new_wp == NULL)
     {
 	if (wp == NULL)
-	    return FAIL;
+	    goto theend;
 
 	new_frame(wp);
 	if (wp->w_frame == NULL)
 	{
 	    win_free(wp, NULL);
-	    return FAIL;
+	    goto theend;
 	}
 
 	// make the contents of the new window the same as the current one
@@ -1435,8 +1439,12 @@ win_split_ins(
 	p_wiw = i;
     else
 	p_wh = i;
+    retval = OK;
 
-    return OK;
+theend:
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
+    return retval;
 }
 
 
@@ -2460,7 +2468,8 @@ close_windows(
 		}
     }
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
 
     if (count != tabpage_index(NULL))
 	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);

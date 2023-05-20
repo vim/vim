@@ -4594,7 +4594,7 @@ mch_call_shell_terminal(
 
     // Only require pressing Enter when redrawing, to avoid that system() gets
     // the hit-enter prompt even though it didn't output anything.
-    if (!RedrawingDisabled)
+    if (RedrawingDisabled == 0)
 	wait_return(TRUE);
     do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
 

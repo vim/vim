@@ -4545,7 +4545,7 @@ open_cmdwin(void)
     if (restart_edit != 0)	// autocmd with ":startinsert"
 	stuffcharReadbuff(K_NOP);
 
-    i = RedrawingDisabled;
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
 
     /*
@@ -4553,7 +4553,7 @@ open_cmdwin(void)
      */
     main_loop(TRUE, FALSE);
 
-    RedrawingDisabled = i;
+    RedrawingDisabled = save_RedrawingDisabled;
 
 # ifdef FEAT_FOLDING
     save_KeyTyped = KeyTyped;

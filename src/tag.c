@@ -3829,7 +3829,8 @@ jumpto_tag(
 	if (win_split(postponed_split > 0 ? postponed_split : 0,
 						postponed_split_flags) == FAIL)
 	{
-	    --RedrawingDisabled;
+	    if (RedrawingDisabled > 0)
+		--RedrawingDisabled;
 	    goto erret;
 	}
 	RESET_BINDING(curwin);
@@ -4032,11 +4033,13 @@ jumpto_tag(
 	}
 #endif
 
-	--RedrawingDisabled;
+	if (RedrawingDisabled > 0)
+	    --RedrawingDisabled;
     }
     else
     {
-	--RedrawingDisabled;
+	if (RedrawingDisabled > 0)
+	    --RedrawingDisabled;
 	got_int = FALSE;  // don't want entering window to fail
 
 	if (postponed_split)		// close the window

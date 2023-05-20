@@ -2506,11 +2506,10 @@ buflist_getfile(
     }
 
     ++RedrawingDisabled;
+    int retval = FAIL;
     if (GETFILE_SUCCESS(getfile(buf->b_fnum, NULL, NULL,
 				     (options & GETF_SETMARK), lnum, forceit)))
     {
-	--RedrawingDisabled;
-
 	// cursor is at to BOL and w_cursor.lnum is checked due to getfile()
 	if (!p_sol && col != 0)
 	{
@@ -2519,10 +2518,12 @@ buflist_getfile(
 	    curwin->w_cursor.coladd = 0;
 	    curwin->w_set_curswant = TRUE;
 	}
-	return OK;
+	retval = OK;
     }
-    --RedrawingDisabled;
-    return FAIL;
+
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
+    return retval;
 }
 
 /*

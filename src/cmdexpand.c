@@ -3937,14 +3937,12 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 {
     int skt = KeyTyped;
-#ifdef FEAT_EVAL
-    int old_RedrawingDisabled = RedrawingDisabled;
-#endif
 
     if (!p_wmnu || wild_menu_showing == 0)
 	return;
 
 #ifdef FEAT_EVAL
+    int save_RedrawingDisabled = RedrawingDisabled;
     if (cclp->input_fn)
 	RedrawingDisabled = 0;
 #endif
@@ -3974,7 +3972,7 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
     wild_menu_showing = 0;
 #ifdef FEAT_EVAL
     if (cclp->input_fn)
-	RedrawingDisabled = old_RedrawingDisabled;
+	RedrawingDisabled = save_RedrawingDisabled;
 #endif
 }
 

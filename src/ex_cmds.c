@@ -3219,7 +3219,8 @@ do_ecmd(
 	(void)keymap_init();
 #endif
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     did_inc_redrawing_disabled = FALSE;
     if (!skip_redraw)
     {
@@ -3263,7 +3264,7 @@ do_ecmd(
 #endif
 
 theend:
-    if (did_inc_redrawing_disabled)
+    if (did_inc_redrawing_disabled && RedrawingDisabled > 0)
 	--RedrawingDisabled;
 #if defined(FEAT_EVAL)
     if (did_set_swapcommand)
@@ -3735,7 +3736,6 @@ ex_substitute(exarg_T *eap)
     int		sublen;
     int		got_quit = FALSE;
     int		got_match = FALSE;
-    int		temp;
     int		which_pat;
     char_u	*cmd;
     int		save_State;
@@ -4316,7 +4316,7 @@ ex_substitute(exarg_T *eap)
 #endif
 			    // Invert the matched string.
 			    // Remove the inversion afterwards.
-			    temp = RedrawingDisabled;
+			    int save_RedrawingDisabled = RedrawingDisabled;
 			    RedrawingDisabled = 0;
 
 			    // avoid calling update_screen() in vgetorpeek()
@@ -4386,7 +4386,7 @@ ex_substitute(exarg_T *eap)
 			    msg_scroll = i;
 			    showruler(TRUE);
 			    windgoto(msg_row, msg_col);
-			    RedrawingDisabled = temp;
+			    RedrawingDisabled = save_RedrawingDisabled;
 
 #ifdef USE_ON_FLY_SCROLL
 			    dont_scroll = FALSE; // allow scrolling here

@@ -1602,10 +1602,7 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
-	// no redrawing and don't set the window title
-	++RedrawingDisabled;
 	(void)win_split_ins(0, WSP_TOP, auc_win, 0);
-	--RedrawingDisabled;
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
@@ -2334,7 +2331,8 @@ apply_autocmds_group(
 	    active_apc_list = patcmd.next;
     }
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     autocmd_busy = save_autocmd_busy;
     filechangeshell_busy = FALSE;
     autocmd_nested = save_autocmd_nested;

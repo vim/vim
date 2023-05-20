@@ -2969,12 +2969,13 @@ f_complete_add(typval_T *argvars, typval_T *rettv)
     void
 f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    int		saved = RedrawingDisabled;
-
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
+
     ins_compl_check_keys(0, TRUE);
     rettv->vval.v_number = ins_compl_interrupted();
-    RedrawingDisabled = saved;
+
+    RedrawingDisabled = save_RedrawingDisabled;
 }
 
 /*
@@ -5079,8 +5080,7 @@ ins_complete(int c, int enable_pum)
 show_pum(int prev_w_wrow, int prev_w_leftcol)
 {
     // RedrawingDisabled may be set when invoked through complete().
-    int n = RedrawingDisabled;
-
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
 
     // If the cursor moved or the display scrolled we need to remove the pum
@@ -5091,7 +5091,8 @@ show_pum(int prev_w_wrow, int prev_w_leftcol)
 
     ins_compl_show_pum();
     setcursor();
-    RedrawingDisabled = n;
+
+    RedrawingDisabled = save_RedrawingDisabled;
 }
 
 /*
