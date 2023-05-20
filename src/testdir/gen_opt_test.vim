@@ -101,6 +101,7 @@ let test_values = {
       \ 'foldmarker': [['((,))'], ['', 'xxx']],
       \ 'formatoptions': [['', 'vt', 'v,t'], ['xxx']],
       \ 'guicursor': [['', 'n:block-Cursor'], ['xxx']],
+      \ 'guidarkmode': [['', 'automatic', 'prefer_light'], ['xxx', '1', 'automatic,prefer_light']],
       \ 'guifont': [['', fontname], []],
       \ 'guifontwide': [['', fontname], []],
       \ 'guifontset': [['', fontname], []],
