@@ -970,7 +970,10 @@ check_argument_types(
 	}
 	else
 	    expected = type->tt_args[i];
-	if (check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
+
+	// check the type, unless the value is v:none
+	if ((tv->v_type != VAR_SPECIAL || tv->vval.v_number != VVAL_NONE)
+		   && check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
 	    return FAIL;
     }
     return OK;

@@ -757,6 +757,17 @@ arg_string_list_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *co
 }
 
 /*
+ * Check "type" is a modifiable list of 'any' or a blob or a string.
+ */
+    static int
+arg_string_list_or_blob_mod(type_T *type, type_T *decl_type, argcontext_T *context)
+{
+    if (arg_string_list_or_blob(type, decl_type, context) == FAIL)
+	return FAIL;
+    return arg_type_modifiable(type, context->arg_idx + 1);
+}
+
+/*
  * Check "type" is a job.
  */
     static int
@@ -1010,7 +1021,7 @@ static argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 static argcheck_T arg1_job[] = {arg_job};
 static argcheck_T arg1_list_any[] = {arg_list_any};
 static argcheck_T arg1_list_number[] = {arg_list_number};
-static argcheck_T arg1_list_or_blob_mod[] = {arg_list_or_blob_mod};
+static argcheck_T arg1_string_or_list_or_blob_mod[] = {arg_string_list_or_blob_mod};
 static argcheck_T arg1_list_or_dict[] = {arg_list_or_dict};
 static argcheck_T arg1_list_string[] = {arg_list_string};
 static argcheck_T arg1_string_or_list_or_dict[] = {arg_string_or_list_or_dict};
@@ -2413,7 +2424,7 @@ static funcentry_T global_functions[] =
 			ret_repeat,	    f_repeat},
     {"resolve",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_resolve},
-    {"reverse",		1, 1, FEARG_1,	    arg1_list_or_blob_mod,
+    {"reverse",		1, 1, FEARG_1,	    arg1_string_or_list_or_blob_mod,
 			ret_first_arg,	    f_reverse},
     {"round",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_round},

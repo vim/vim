@@ -553,12 +553,24 @@ changed_common(
     {
 	if (wp->w_buffer == curbuf)
 	{
-#ifdef FEAT_FOLDING
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
-#endif
+
 	    // Mark this window to be redrawn later.
 	    if (!redraw_not_allowed && wp->w_redr_type < UPD_VALID)
 		wp->w_redr_type = UPD_VALID;
+
+	    // Reset "w_skipcol" if the topline length has become smaller to
+	    // such a degree that nothing will be visible anymore, accounting
+	    // for 'smoothscroll' <<< or 'listchars' "precedes" marker.
+	    if (wp->w_skipcol > 0
+		    && (last < wp->w_topline
+			|| (wp->w_topline >= lnum
+			    && wp->w_topline < lnume
+			    && win_linetabsize(wp, wp->w_topline,
+					ml_get(wp->w_topline), (colnr_T)MAXCOL)
+				    <= wp->w_skipcol + sms_marker_overlap(wp,
+					win_col_off(wp) - win_col_off2(wp)))))
+		wp->w_skipcol = 0;
 
 	    // Check if a change in the buffer has invalidated the cached
 	    // values for the cursor.

@@ -301,7 +301,7 @@ get_register(
     if (copy)
     {
 	// If we run out of memory some or all of the lines are empty.
-	if (reg->y_size == 0)
+	if (reg->y_size == 0 || y_current->y_array == NULL)
 	    reg->y_array = NULL;
 	else
 	    reg->y_array = ALLOC_MULT(char_u *, reg->y_size);

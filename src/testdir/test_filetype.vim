@@ -305,6 +305,7 @@ let s:filename_checks = {
     \ 'json': ['file.json', 'file.jsonp', 'file.json-patch', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', '.prettierrc', '.firebaserc', '.stylelintrc', 'file.slnf'],
     \ 'json5': ['file.json5'],
     \ 'jsonc': ['file.jsonc', '.babelrc', '.eslintrc', '.jsfmtrc', '.jshintrc', '.hintrc', '.swrc', 'jsconfig.json', 'tsconfig.json', 'tsconfig.test.json', 'tsconfig-test.json'],
+    \ 'jsonl': ['file.jsonl'],
     \ 'jsonnet': ['file.jsonnet', 'file.libsonnet'],
     \ 'jsp': ['file.jsp'],
     \ 'julia': ['file.jl'],
@@ -564,7 +565,7 @@ let s:filename_checks = {
     \ 'spice': ['file.sp', 'file.spice'],
     \ 'spup': ['file.speedup', 'file.spdata', 'file.spd'],
     \ 'spyce': ['file.spy', 'file.spi'],
-    \ 'sql': ['file.tyb', 'file.typ', 'file.tyc', 'file.pkb', 'file.pks'],
+    \ 'sql': ['file.tyb', 'file.tyc', 'file.pkb', 'file.pks'],
     \ 'sqlj': ['file.sqlj'],
     \ 'prql': ['file.prql'],
     \ 'sqr': ['file.sqr', 'file.sqi'],
@@ -638,6 +639,7 @@ let s:filename_checks = {
     \ 'upstreamdat': ['upstream.dat', 'UPSTREAM.DAT', 'upstream.file.dat', 'UPSTREAM.FILE.DAT', 'file.upstream.dat', 'FILE.UPSTREAM.DAT'],
     \ 'upstreaminstalllog': ['upstreaminstall.log', 'UPSTREAMINSTALL.LOG', 'upstreaminstall.file.log', 'UPSTREAMINSTALL.FILE.LOG', 'file.upstreaminstall.log', 'FILE.UPSTREAMINSTALL.LOG'],
     \ 'upstreamlog': ['fdrupstream.log', 'upstream.log', 'UPSTREAM.LOG', 'upstream.file.log', 'UPSTREAM.FILE.LOG', 'file.upstream.log', 'FILE.UPSTREAM.LOG', 'UPSTREAM-file.log', 'UPSTREAM-FILE.LOG'],
+    \ 'usd': ['file.usda', 'file.usd'],
     \ 'usserverlog': ['usserver.log', 'USSERVER.LOG', 'usserver.file.log', 'USSERVER.FILE.LOG', 'file.usserver.log', 'FILE.USSERVER.LOG'],
     \ 'usw2kagtlog': ['usw2kagt.log', 'USW2KAGT.LOG', 'usw2kagt.file.log', 'USW2KAGT.FILE.LOG', 'file.usw2kagt.log', 'FILE.USW2KAGT.LOG'],
     \ 'vala': ['file.vala'],
@@ -702,27 +704,29 @@ let s:filename_case_checks = {
     \ 'bzl': ['file.BUILD', 'BUILD'],
     \ }
 
-func CheckItems(checks)
+def CheckItems(checks: dict<list<string>>)
   set noswapfile
-  for [ft, names] in items(a:checks)
+
+  for [ft, names] in items(checks)
     for i in range(0, len(names) - 1)
       new
       try
-        exe 'edit ' . fnameescape(names[i])
+        exe 'edit ' .. fnameescape(names[i])
       catch
-	call assert_report('cannot edit "' . names[i] . '": ' . v:exception)
+	assert_report('cannot edit "' .. names[i] .. '": ' .. v:exception)
       endtry
       if &filetype == '' && &readonly
-	" File exists but not able to edit it (permission denied)
+	# File exists but not able to edit it (permission denied)
       else
-        let expected = ft == 'none' ? '' : ft
-	call assert_equal(expected, &filetype, 'with file name: ' . names[i])
+        var expected = ft == 'none' ? '' : ft
+	assert_equal(expected, &filetype, 'with file name: ' .. names[i])
       endif
       bwipe!
     endfor
   endfor
+
   set swapfile&
-endfunc
+enddef
 
 func Test_filetype_detection()
   filetype on
@@ -2043,6 +2047,37 @@ func Test_lsl_file()
   split Xfile.lsl
   call assert_equal('larch', &filetype)
   bwipe!
+
+  filetype off
+endfunc
+
+func Test_typ_file()
+  filetype on
+
+  " SQL type file
+
+  call writefile(['CASE = LOWER'], 'Xfile.typ', 'D')
+  split Xfile.typ
+  call assert_equal('sql', &filetype)
+  bwipe!
+
+  call writefile(['TYPE foo'], 'Xfile.typ')
+  split Xfile.typ
+  call assert_equal('sql', &filetype)
+  bwipe!
+
+  " typst document
+
+  call writefile(['this is a fallback'], 'Xfile.typ')
+  split Xfile.typ
+  call assert_equal('typst', &filetype)
+  bwipe!
+
+  let g:filetype_typ = 'typst'
+  split test.typ
+  call assert_equal('typst', &filetype)
+  bwipe!
+  unlet g:filetype_typ
 
   filetype off
 endfunc

@@ -281,9 +281,6 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    int		called_emsg_before = called_emsg;
-    char_u	*pat;
-    char_u	*text;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -291,9 +288,9 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
 		|| check_for_opt_string_arg(argvars, 2) == FAIL))
 	return 1;
 
-    pat = tv_get_string_buf_chk(&argvars[0], buf1);
-    text = tv_get_string_buf_chk(&argvars[1], buf2);
-    if (called_emsg == called_emsg_before
+    char_u *pat = tv_get_string_buf_chk(&argvars[0], buf1);
+    char_u *text = tv_get_string_buf_chk(&argvars[1], buf2);
+    if (pat != NULL && text != NULL
 		 && pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
@@ -420,24 +417,23 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    int		called_emsg_before = called_emsg;
     char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
-    garray_T	ga;
     FILE	*fd1;
     FILE	*fd2;
     char	line1[200];
     char	line2[200];
     int		lineidx = 0;
 
-    if (called_emsg > called_emsg_before)
+    if (fname1 == NULL || fname2 == NULL)
 	return 0;
 
     IObuff[0] = NUL;
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname1);
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
+								       fname1);
     }
     else
     {
@@ -445,7 +441,8 @@ assert_equalfile(typval_T *argvars)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname2);
+	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
+								       fname2);
 	}
 	else
 	{
@@ -498,8 +495,10 @@ assert_equalfile(typval_T *argvars)
 	    fclose(fd2);
 	}
     }
+
     if (IObuff[0] != NUL)
     {
+	garray_T	ga;
 	prepare_assert_error(&ga);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
@@ -528,6 +527,7 @@ assert_equalfile(typval_T *argvars)
 	ga_clear(&ga);
 	return 1;
     }
+
     return 0;
 }
 
@@ -1039,6 +1039,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	no_wait_return = val;
     else if (STRCMP(name, (char_u *)"ui_delay") == 0)
 	ui_delay_for_testing = val;
+    else if (STRCMP(name, (char_u *)"unreachable") == 0)
+	ignore_unreachable_code_for_testing = val;
     else if (STRCMP(name, (char_u *)"term_props") == 0)
 	reset_term_props_on_termresponse = val;
     else if (STRCMP(name, (char_u *)"vterm_title") == 0)

@@ -488,6 +488,19 @@ def Test_missing_return()
                    'enddef'], 'E1095:')
 enddef
 
+def Test_not_missing_return()
+  var lines =<< trim END
+      def Funky(): number
+        if false
+          return 0
+        endif
+        throw 'Error'
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_return_bool()
   var lines =<< trim END
       vim9script
@@ -764,6 +777,38 @@ def Test_using_vnone_default()
       F()
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      export def Floats(x: float, y = 2.0, z = 5.0)
+        g:result = printf("%.2f %.2f %.2f", x, y, z)
+      enddef
+  END
+  writefile(lines, 'Xlib.vim', 'D')
+
+  # test using a function reference in script-local variable
+  lines =<< trim END
+      vim9script
+
+      import './Xlib.vim'
+      const Floatfunc = Xlib.Floats
+      Floatfunc(1.0, v:none, 3.0)
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('1.00 2.00 3.00', g:result)
+  unlet g:result
+
+  # test calling the imported function
+  lines =<< trim END
+      vim9script
+
+      import './Xlib.vim'
+      Xlib.Floats(1.0, v:none, 3.0)
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('1.00 2.00 3.00', g:result)
+  unlet g:result
 
   # TODO: this should give an error for using a missing argument
   # lines =<< trim END

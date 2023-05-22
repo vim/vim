@@ -287,7 +287,8 @@ do_debug(char_u *cmd)
     }
     vim_free(cmdline);
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     --no_wait_return;
     redraw_all_later(UPD_NOT_VALID);
     need_wait_return = FALSE;

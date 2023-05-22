@@ -1570,14 +1570,10 @@ do_buffer_ext(
      */
     if (action == DOBUF_SPLIT)	    // split window first
     {
-	// If 'switchbuf' contains "useopen": jump to first window containing
-	// "buf" if one exists
-	if ((swb_flags & SWB_USEOPEN) && buf_jump_open_win(buf))
+	// If 'switchbuf' is set jump to the window containing "buf".
+	if (swbuf_goto_win_with_buf(buf) != NULL)
 	    return OK;
-	// If 'switchbuf' contains "usetab": jump to first window in any tab
-	// page containing "buf" if one exists
-	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
-	    return OK;
+
 	if (win_split(0, 0) == FAIL)
 	    return FAIL;
     }
@@ -2492,15 +2488,8 @@ buflist_getfile(
 
     if (options & GETF_SWITCH)
     {
-	// If 'switchbuf' contains "useopen": jump to first window containing
-	// "buf" if one exists
-	if (swb_flags & SWB_USEOPEN)
-	    wp = buf_jump_open_win(buf);
-
-	// If 'switchbuf' contains "usetab": jump to first window in any tab
-	// page containing "buf" if one exists
-	if (wp == NULL && (swb_flags & SWB_USETAB))
-	    wp = buf_jump_open_tab(buf);
+	// If 'switchbuf' is set jump to the window containing "buf".
+	wp = swbuf_goto_win_with_buf(buf);
 
 	// If 'switchbuf' contains "split", "vsplit" or "newtab" and the
 	// current buffer isn't empty: open new tab or window
@@ -2517,11 +2506,10 @@ buflist_getfile(
     }
 
     ++RedrawingDisabled;
+    int retval = FAIL;
     if (GETFILE_SUCCESS(getfile(buf->b_fnum, NULL, NULL,
 				     (options & GETF_SETMARK), lnum, forceit)))
     {
-	--RedrawingDisabled;
-
 	// cursor is at to BOL and w_cursor.lnum is checked due to getfile()
 	if (!p_sol && col != 0)
 	{
@@ -2530,10 +2518,12 @@ buflist_getfile(
 	    curwin->w_cursor.coladd = 0;
 	    curwin->w_set_curswant = TRUE;
 	}
-	return OK;
+	retval = OK;
     }
-    --RedrawingDisabled;
-    return FAIL;
+
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
+    return retval;
 }
 
 /*
@@ -2560,7 +2550,6 @@ buflist_getfpos(void)
     }
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Find file in buffer list by name (it has to be for the current window).
  * Returns NULL if not found.
@@ -2586,7 +2575,6 @@ buflist_findname_exp(char_u *fname)
     }
     return buf;
 }
-#endif
 
 /*
  * Find file in buffer list by name (it has to be for the current window).

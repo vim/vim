@@ -4486,8 +4486,12 @@ open_cmdwin(void)
     {
 	if (p_wc == TAB)
 	{
+	    // Make Tab start command-line completion: CTRL-X CTRL-V
 	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", MODE_INSERT, TRUE);
 	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", MODE_NORMAL, TRUE);
+
+	    // Make S-Tab work like CTRL-P in command-line completion
+	    add_map((char_u *)"<buffer> <S-Tab> <C-P>", MODE_INSERT, TRUE);
 	}
 	set_option_value_give_err((char_u *)"ft",
 					       0L, (char_u *)"vim", OPT_LOCAL);
@@ -4541,7 +4545,7 @@ open_cmdwin(void)
     if (restart_edit != 0)	// autocmd with ":startinsert"
 	stuffcharReadbuff(K_NOP);
 
-    i = RedrawingDisabled;
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
 
     /*
@@ -4549,7 +4553,7 @@ open_cmdwin(void)
      */
     main_loop(TRUE, FALSE);
 
-    RedrawingDisabled = i;
+    RedrawingDisabled = save_RedrawingDisabled;
 
 # ifdef FEAT_FOLDING
     save_KeyTyped = KeyTyped;

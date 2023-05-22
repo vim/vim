@@ -7265,11 +7265,13 @@ set_context_in_set_cmd(
     if (STRNCMP(p, "no", 2) == 0 && STRNCMP(p, "novice", 6) != 0)
     {
 	xp->xp_context = EXPAND_BOOL_SETTINGS;
+	xp->xp_prefix = XP_PREFIX_NO;
 	p += 2;
     }
-    if (STRNCMP(p, "inv", 3) == 0)
+    else if (STRNCMP(p, "inv", 3) == 0)
     {
 	xp->xp_context = EXPAND_BOOL_SETTINGS;
+	xp->xp_prefix = XP_PREFIX_INV;
 	p += 3;
     }
     xp->xp_pattern = arg = p;
@@ -7528,7 +7530,7 @@ ExpandSettings(
 	    if (options[opt_idx].var == NULL)
 		continue;
 	    if (xp->xp_context == EXPAND_BOOL_SETTINGS
-	      && !(options[opt_idx].flags & P_BOOL))
+		    && !(options[opt_idx].flags & P_BOOL))
 		continue;
 	    is_term_opt = istermoption_idx(opt_idx);
 	    if (is_term_opt && num_normal > 0)
@@ -7600,7 +7602,7 @@ ExpandSettings(
 		name_buf[4] = NUL;
 
 		if (match_str(name_buf, regmatch, *matches, count,
-					(loop == 0), fuzzy, fuzzystr, fuzmatch))
+				       (loop == 0), fuzzy, fuzzystr, fuzmatch))
 		{
 		    if (loop == 0)
 			num_term++;

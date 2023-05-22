@@ -4477,12 +4477,14 @@ if test -z "$CFLAGS"; then
   CFLAGS="-O"
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall -Wno-deprecated-declarations"
 fi
+
 if test "$GCC" = yes; then
     gccversion=`$CC -dumpversion`
   if test "x$gccversion" = "x"; then
         gccversion=`$CC --version | sed -e '2,$d' -e 's/darwin.//' -e 's/^[^0-9]*\([0-9]\.[0-9.]*\).*$/\1/g'`
   fi
-    if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
+
+          if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
     echo 'GCC [34].0.[12] has a bug in the optimizer, disabling "-O#"'
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-O/'`
   else
@@ -4777,11 +4779,6 @@ rm -f core conftest.err conftest.$ac_objext \
       with_x=no
      fi
   fi
-
-        if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
-    CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-Oz/'`
-  fi
-
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }

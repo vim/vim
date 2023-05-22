@@ -2126,7 +2126,7 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 		return;
 	    if (sid <= 0)
 	    {
-		semsg(e_invalid_value_for_argument_str_str, "sid",
+		semsg(_(e_invalid_value_for_argument_str_str), "sid",
 						tv_get_string(&sid_di->di_tv));
 		return;
 	    }

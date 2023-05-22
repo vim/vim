@@ -3701,7 +3701,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    ResetRedobuff();
 		else
 		{
-		    AppendToRedobuffLit(repeat_cmdline, -1);
+		    if (cap->cmdchar == ':')
+			AppendToRedobuffLit(repeat_cmdline, -1);
+		    else
+			AppendToRedobuffSpec(repeat_cmdline);
 		    AppendToRedobuff(NL_STR);
 		    VIM_CLEAR(repeat_cmdline);
 		}

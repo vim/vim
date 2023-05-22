@@ -617,6 +617,10 @@ func Test_terminal_size()
   call assert_fails("call term_start(cmd, {'term_rows': 1001})", 'E475:')
   call assert_fails("call term_start(cmd, {'term_rows': 10.0})", 'E805:')
 
+  call assert_fails("call term_start(cmd, {'term_cols': -1})", 'E475:')
+  call assert_fails("call term_start(cmd, {'term_cols': 1001})", 'E475:')
+  call assert_fails("call term_start(cmd, {'term_cols': 10.0})", 'E805:')
+
   call delete('Xtext')
 endfunc
 
@@ -2188,6 +2192,7 @@ func Test_terminal_ansicolors_func()
   let colors[4] = 'Invalid'
   call assert_fails('call term_setansicolors(buf, colors)', 'E254:')
   call assert_fails('call term_setansicolors(buf, {})', 'E1211:')
+  call assert_fails('call term_setansicolors(buf, [])', 'E475: Invalid value for argument "colors"')
   set tgc&
 
   call StopShellInTerminal(buf)

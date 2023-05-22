@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2023 Apr 05
+*syntax.txt*	For Vim version 9.0.  Last change: 2023 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4929,7 +4929,7 @@ is mostly used, because it looks better.
 ==============================================================================
 13. Colorschemes				*color-schemes*
 
-In the next section you can find information about indivisual highlight groups
+In the next section you can find information about individual highlight groups
 and how to specify colors for them.  Most likely you want to just select a set
 of colors by using the `:colorscheme` command, for example: >
 

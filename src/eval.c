@@ -1654,7 +1654,7 @@ set_var_lval(
     {
 	cc = *endp;
 	*endp = NUL;
-	if (in_vim9script() && check_reserved_name(lp->ll_name, NULL) == FAIL)
+	if (in_vim9script() && check_reserved_name(lp->ll_name, FALSE) == FAIL)
 	    return;
 
 	if (lp->ll_blob != NULL)
@@ -2699,12 +2699,15 @@ eval0_retarg(
 		semsg(_(e_invalid_expression_str), arg);
 	}
 
-	// Some of the expression may not have been consumed.  Do not check for
-	// a next command to avoid more errors, unless "|" is following, which
-	// could only be a command separator.
-	if (eap != NULL && p != NULL
-			  &&  skipwhite(p)[0] == '|' && skipwhite(p)[1] != '|')
-	    eap->nextcmd = check_nextcmd(p);
+	if (eap != NULL && p != NULL)
+	{
+	    // Some of the expression may not have been consumed.
+	    // Only execute a next command if it cannot be a "||" operator.
+	    // The next command may be "catch".
+	    char_u *nextcmd = check_nextcmd(p);
+	    if (nextcmd != NULL && *nextcmd != '|')
+		eap->nextcmd = nextcmd;
+	}
 	return FAIL;
     }
 

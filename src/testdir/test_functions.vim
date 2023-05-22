@@ -1224,6 +1224,8 @@ func Test_byteidx()
   " error cases
   call assert_fails("call byteidx([], 0)", 'E730:')
   call assert_fails("call byteidx('abc', [])", 'E745:')
+  call assert_fails("call byteidx('abc', 0, {})", ['E728:', 'E728:'])
+  call assert_fails("call byteidx('abc', 0, -1)", ['E1023:', 'E1023:'])
 endfunc
 
 " Test for byteidxcomp() using a character index
@@ -1263,6 +1265,8 @@ func Test_byteidxcomp()
   " error cases
   call assert_fails("call byteidxcomp([], 0)", 'E730:')
   call assert_fails("call byteidxcomp('abc', [])", 'E745:')
+  call assert_fails("call byteidxcomp('abc', 0, {})", ['E728:', 'E728:'])
+  call assert_fails("call byteidxcomp('abc', 0, -1)", ['E1023:', 'E1023:'])
 endfunc
 
 " Test for byteidx() using a UTF-16 index
@@ -3467,6 +3471,26 @@ func Test_delfunc_while_listing()
   call term_sendkeys(buf, "\<CR>")
 
   call StopVimInTerminal(buf)
+endfunc
+
+" Test for the reverse() function with a string
+func Test_string_reverse()
+  let lines =<< trim END
+    call assert_equal('', reverse(test_null_string()))
+    for [s1, s2] in [['', ''], ['a', 'a'], ['ab', 'ba'], ['abc', 'cba'],
+                   \ ['abcd', 'dcba'], ['«-«-»-»', '»-»-«-«'],
+                   \ ['🇦', '🇦'], ['🇦🇧', '🇧🇦'], ['🇦🇧🇨', '🇨🇧🇦'],
+                   \ ['🇦«🇧-🇨»🇩', '🇩»🇨-🇧«🇦']]
+      call assert_equal(s2, reverse(s1))
+    endfor
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " test in latin1 encoding
+  let save_enc = &encoding
+  set encoding=latin1
+  call assert_equal('dcba', reverse('abcd'))
+  let &encoding = save_enc
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

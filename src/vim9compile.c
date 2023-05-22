@@ -1580,7 +1580,8 @@ compile_lhs(
 	else
 	{
 	    // No specific kind of variable recognized, just a name.
-	    if (check_reserved_name(lhs->lhs_name, cctx) == FAIL)
+	    if (check_reserved_name(lhs->lhs_name, lhs->lhs_has_index
+						&& *var_end == '.') == FAIL)
 		return FAIL;
 
 	    if (lookup_local(var_start, lhs->lhs_varlen,
@@ -2156,7 +2157,7 @@ compile_assign_unlet(
 	dest_type = lhs->lhs_type->tt_type;
 	if (dest_type == VAR_DICT && range)
 	{
-	    emsg(e_cannot_use_range_with_dictionary);
+	    emsg(_(e_cannot_use_range_with_dictionary));
 	    return FAIL;
 	}
 	if (dest_type == VAR_DICT
@@ -3485,7 +3486,7 @@ compile_def_function(
 	    }
 	}
 
-	if (cctx.ctx_had_return
+	if ((cctx.ctx_had_return || cctx.ctx_had_throw)
 		&& ea.cmdidx != CMD_elseif
 		&& ea.cmdidx != CMD_else
 		&& ea.cmdidx != CMD_endif
@@ -3493,11 +3494,14 @@ compile_def_function(
 		&& ea.cmdidx != CMD_endwhile
 		&& ea.cmdidx != CMD_catch
 		&& ea.cmdidx != CMD_finally
-		&& ea.cmdidx != CMD_endtry)
+		&& ea.cmdidx != CMD_endtry
+		&& !ignore_unreachable_code_for_testing)
 	{
-	    emsg(_(e_unreachable_code_after_return));
+	    semsg(_(e_unreachable_code_after_str),
+				     cctx.ctx_had_return ? "return" : "throw");
 	    goto erret;
 	}
+	cctx.ctx_had_throw = FALSE;
 
 	p = skipwhite(p);
 	if (ea.cmdidx != CMD_SIZE
@@ -3611,6 +3615,7 @@ compile_def_function(
 		    break;
 	    case CMD_throw:
 		    line = compile_throw(p, &cctx);
+		    cctx.ctx_had_throw = TRUE;
 		    break;
 
 	    case CMD_eval:
@@ -3763,7 +3768,9 @@ nextline:
 	goto erret;
     }
 
-    if (!cctx.ctx_had_return)
+    // TODO: if a function ends in "throw" but there was a return elsewhere we
+    // should not assume the return type is "void".
+    if (!cctx.ctx_had_return && !cctx.ctx_had_throw)
     {
 	if (ufunc->uf_ret_type->tt_type == VAR_UNKNOWN)
 	    ufunc->uf_ret_type = &t_void;

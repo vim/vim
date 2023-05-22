@@ -855,6 +855,47 @@ string_count(char_u *haystack, char_u *needle, int ic)
 }
 
 /*
+ * Reverse the string in 'str' and set the result in 'rettv'.
+ */
+    void
+string_reverse(char_u *str, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (str == NULL)
+	return;
+
+    char_u	*rstr = vim_strsave(str);
+    rettv->vval.v_string = rstr;
+    if (rstr == NULL || *str == NUL)
+	return;
+
+    size_t	len = STRLEN(rstr);
+    if (has_mbyte)
+    {
+	char_u *src = str;
+	char_u *dest = rstr + len;
+
+	while (src < str + len)
+	{
+	    int clen = mb_ptr2len(src);
+	    dest -= clen;
+	    mch_memmove(dest, src, (size_t)clen);
+	    src += clen;
+	}
+    }
+    else
+    {
+	for (size_t i = 0; i < len / 2; i++)
+	{
+	    char tmp = rstr[len - i - 1];
+	    rstr[len - i - 1] = rstr[i];
+	    rstr[i] = tmp;
+	}
+    }
+}
+
+/*
  * Make a typval_T of the first character of "input" and store it in "output".
  * Return OK or FAIL.
  */
@@ -1003,8 +1044,11 @@ string_reduce(
 	remove_funccal();
 }
 
+/*
+ * Implementation of "byteidx()" and "byteidxcomp()" functions
+ */
     static void
-byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
+byteidx_common(typval_T *argvars, typval_T *rettv, int comp UNUSED)
 {
     rettv->vval.v_number = -1;
 
@@ -1021,7 +1065,10 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     varnumber_T	utf16idx = FALSE;
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	utf16idx = tv_get_bool(&argvars[2]);
+	int error = FALSE;
+	utf16idx = tv_get_bool_chk(&argvars[2], &error);
+	if (error)
+	    return;
 	if (utf16idx < 0 || utf16idx > 1)
 	{
 	    semsg(_(e_using_number_as_bool_nr), utf16idx);
@@ -1059,7 +1106,7 @@ byteidx(typval_T *argvars, typval_T *rettv, int comp UNUSED)
     void
 f_byteidx(typval_T *argvars, typval_T *rettv)
 {
-    byteidx(argvars, rettv, FALSE);
+    byteidx_common(argvars, rettv, FALSE);
 }
 
 /*
@@ -1068,7 +1115,7 @@ f_byteidx(typval_T *argvars, typval_T *rettv)
     void
 f_byteidxcomp(typval_T *argvars, typval_T *rettv)
 {
-    byteidx(argvars, rettv, TRUE);
+    byteidx_common(argvars, rettv, TRUE);
 }
 
 /*
@@ -1376,11 +1423,19 @@ f_strchars(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	skipcc = tv_get_bool(&argvars[1]);
-    if (skipcc < 0 || skipcc > 1)
-	semsg(_(e_using_number_as_bool_nr), skipcc);
-    else
-	strchar_common(argvars, rettv, skipcc);
+    {
+	int error = FALSE;
+	skipcc = tv_get_bool_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (skipcc < 0 || skipcc > 1)
+	{
+	    semsg(_(e_using_number_as_bool_nr), skipcc);
+	    return;
+	}
+    }
+
+    strchar_common(argvars, rettv, skipcc);
 }
 
 /*
@@ -1485,7 +1540,9 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN
 					   && argvars[3].v_type != VAR_UNKNOWN)
 	{
-	    skipcc = tv_get_bool(&argvars[3]);
+	    skipcc = tv_get_bool_chk(&argvars[3], &error);
+	    if (error)
+		return;
 	    if (skipcc < 0 || skipcc > 1)
 	    {
 		semsg(_(e_using_number_as_bool_nr), skipcc);

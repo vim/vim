@@ -59,6 +59,8 @@ To build libtool from source:
 Build and install the GUI version with X-Windows
 ----------------------------------------------------------------------------
 
+NOTE: this probably no longer works, since Athena support has been removed.
+
 First, install XQuartz, which you can download from https://www.xquartz.org.
 
 To tell configure to use a GUI you can edit the Makefile and uncomment these

@@ -373,9 +373,9 @@
 #endif
 
 /*
- * libsodium - add cryptography support
+ * libsodium - add advanced cryptography support
  */
-#if defined(HAVE_SODIUM) && defined(FEAT_HUGE)
+#if defined(HAVE_SODIUM) && defined(FEAT_CRYPT)
 # define FEAT_SODIUM
 #endif
 

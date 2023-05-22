@@ -359,6 +359,22 @@ func Test_compl_in_cmdwin()
   set wildmenu& wildchar&
 endfunc
 
+func Test_cmdwin_cmd_completion()
+  set wildmenu wildchar=<Tab>
+  com! -nargs=* -complete=command SomeOne echo 'one'
+  com! -nargs=* -complete=command SomeTwo echo 'two'
+  call feedkeys("q:aSome\<Tab>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"SomeOne', @:)
+  call feedkeys("q:aSome\<Tab>\<Tab>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"SomeTwo', @:)
+  call feedkeys("q:aSome\<Tab>\<Tab>\<S-Tab>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"SomeOne', @:)
+
+  delcom SomeOne
+  delcom SomeTwo
+  set wildmenu& wildchar&
+endfunc
+
 func Test_cmdwin_ctrl_bsl()
   " Using CTRL-\ CTRL-N in cmd window should close the window
   call feedkeys("q:\<C-\>\<C-N>", 'xt')

@@ -1578,7 +1578,8 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	return NULL;
     }
 
-    if (scope->se_u.se_try.ts_caught_all)
+    if (scope->se_u.se_try.ts_caught_all
+				       && !ignore_unreachable_code_for_testing)
     {
 	emsg(_(e_catch_unreachable_after_catch_all));
 	return NULL;

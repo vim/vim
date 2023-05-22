@@ -1236,7 +1236,7 @@ EXTERN char e_use_w_or_w_gt_gt[]
 	INIT(= N_("E494: Use w or w>>"));
 EXTERN char e_no_autocommand_file_name_to_substitute_for_afile[]
 	INIT(= N_("E495: No autocommand file name to substitute for \"<afile>\""));
-EXTERN char e_no_autocommand_buffer_name_to_substitute_for_abuf[]
+EXTERN char e_no_autocommand_buffer_number_to_substitute_for_abuf[]
 	INIT(= N_("E496: No autocommand buffer number to substitute for \"<abuf>\""));
 EXTERN char e_no_autocommand_match_name_to_substitute_for_amatch[]
 	INIT(= N_("E497: No autocommand match name to substitute for \"<amatch>\""));
@@ -2809,8 +2809,8 @@ EXTERN char e_expected_nr_items_but_got_nr[]
 	INIT(= N_("E1093: Expected %d items but got %d"));
 EXTERN char e_import_can_only_be_used_in_script[]
 	INIT(= N_("E1094: Import can only be used in a script"));
-EXTERN char e_unreachable_code_after_return[]
-	INIT(= N_("E1095: Unreachable code after :return"));
+EXTERN char e_unreachable_code_after_str[]
+	INIT(= N_("E1095: Unreachable code after :%s"));
 EXTERN char e_returning_value_in_function_without_return_type[]
 	INIT(= N_("E1096: Returning a value in a function without a return type"));
 EXTERN char e_line_incomplete[]
@@ -2894,8 +2894,7 @@ EXTERN char e_using_string_as_bool_str[]
 #endif
 EXTERN char e_cmd_mapping_must_end_with_cr_before_second_cmd[]
 	INIT(= N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
-EXTERN char e_cmd_mapping_must_not_include_str_key[]
-	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));
+// E1137 unused
 #ifdef FEAT_EVAL
 EXTERN char e_using_bool_as_number[]
 	INIT(= N_("E1138: Using a Bool as a Number"));

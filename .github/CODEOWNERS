@@ -261,6 +261,7 @@ runtime/indent/julia.vim		@carlobaldassi
 runtime/indent/ld.vim			@dkearns
 runtime/indent/less.vim			@genoma
 runtime/indent/liquid.vim		@tpope
+runtime/indent/lua.vim			@marcuscf
 runtime/indent/make.vim			@dkearns
 runtime/indent/meson.vim		@Liambeguin
 runtime/indent/mma.vim			@dkearns
@@ -392,6 +393,7 @@ runtime/syntax/less.vim			@genoma
 runtime/syntax/lex.vim			@cecamp
 runtime/syntax/liquid.vim		@tpope
 runtime/syntax/lisp.vim			@cecamp
+runtime/syntax/lua.vim			@marcuscf
 runtime/syntax/lyrics.vim		@ObserverOfTime
 runtime/syntax/lynx.vim			@dkearns
 runtime/syntax/m3build.vim		@dkearns

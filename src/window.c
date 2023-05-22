@@ -168,6 +168,32 @@ prevwin_curwin(void)
 }
 
 /*
+ * If the 'switchbuf' option contains "useopen" or "usetab", then try to jump
+ * to a window containing "buf".
+ * Returns the pointer to the window that was jumped to or NULL.
+ */
+    win_T *
+swbuf_goto_win_with_buf(buf_T *buf)
+{
+    win_T   *wp = NULL;
+
+    if (buf == NULL)
+	return wp;
+
+    // If 'switchbuf' contains "useopen": jump to first window in the current
+    // tab page containing "buf" if one exists.
+    if (swb_flags & SWB_USEOPEN)
+	wp = buf_jump_open_win(buf);
+
+    // If 'switchbuf' contains "usetab": jump to first window in any tab page
+    // containing "buf" if one exists.
+    if (wp == NULL && (swb_flags & SWB_USETAB))
+	wp = buf_jump_open_tab(buf);
+
+    return wp;
+}
+
+/*
  * All CTRL-W window commands are handled here, called from normal_cmd().
  */
     void
@@ -580,7 +606,15 @@ wingotofile:
 		    need_mouse_correct = TRUE;
 #endif
 		    setpcmark();
-		    if (win_split(0, 0) == OK)
+
+		    // If 'switchbuf' is set to 'useopen' or 'usetab' and the
+		    // file is already opened in a window, then jump to it.
+		    wp = NULL;
+		    if ((swb_flags & (SWB_USEOPEN | SWB_USETAB))
+						&& cmdmod.cmod_tab == 0)
+			wp = swbuf_goto_win_with_buf(buflist_findname_exp(ptr));
+
+		    if (wp == NULL && win_split(0, 0) == OK)
 		    {
 			RESET_BINDING(curwin);
 			if (do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
@@ -591,12 +625,15 @@ wingotofile:
 			    win_close(curwin, FALSE);
 			    goto_tabpage_win(oldtab, oldwin);
 			}
-			else if (nchar == 'F' && lnum >= 0)
-			{
-			    curwin->w_cursor.lnum = lnum;
-			    check_cursor_lnum();
-			    beginline(BL_SOL | BL_FIX);
-			}
+			else
+			    wp = curwin;
+		    }
+
+		    if (wp != NULL && nchar == 'F' && lnum >= 0)
+		    {
+			curwin->w_cursor.lnum = lnum;
+			check_cursor_lnum();
+			beginline(BL_SOL | BL_FIX);
 		    }
 		    vim_free(ptr);
 		}
@@ -913,6 +950,10 @@ win_split_ins(
     int		minheight;
     int		wmh1;
     int		did_set_fraction = FALSE;
+    int		retval = FAIL;
+
+    // Do not redraw here, curwin->w_buffer may be invalid.
+    ++RedrawingDisabled;
 
     if (flags & WSP_TOP)
 	oldwin = firstwin;
@@ -927,7 +968,7 @@ win_split_ins(
 	if (VISIBLE_HEIGHT(oldwin) <= p_wmh && new_wp == NULL)
 	{
 	    emsg(_(e_not_enough_room));
-	    return FAIL;
+	    goto theend;
 	}
 	need_status = STATUS_HEIGHT;
     }
@@ -985,7 +1026,7 @@ win_split_ins(
 	if (available < needed && new_wp == NULL)
 	{
 	    emsg(_(e_not_enough_room));
-	    return FAIL;
+	    goto theend;
 	}
 	if (new_size == 0)
 	    new_size = oldwin->w_width / 2;
@@ -1068,7 +1109,7 @@ win_split_ins(
 	if (available < needed && new_wp == NULL)
 	{
 	    emsg(_(e_not_enough_room));
-	    return FAIL;
+	    goto theend;
 	}
 	oldwin_height = oldwin->w_height;
 	if (need_status)
@@ -1151,13 +1192,13 @@ win_split_ins(
     if (new_wp == NULL)
     {
 	if (wp == NULL)
-	    return FAIL;
+	    goto theend;
 
 	new_frame(wp);
 	if (wp->w_frame == NULL)
 	{
 	    win_free(wp, NULL);
-	    return FAIL;
+	    goto theend;
 	}
 
 	// make the contents of the new window the same as the current one
@@ -1398,8 +1439,12 @@ win_split_ins(
 	p_wiw = i;
     else
 	p_wh = i;
+    retval = OK;
 
-    return OK;
+theend:
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
+    return retval;
 }
 
 
@@ -1453,6 +1498,8 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 
     if (*p_spk != 'c')
     {
+	if (*p_spk == 't')
+	    newp->w_skipcol = oldp->w_skipcol;
 	newp->w_botline = oldp->w_botline;
 	newp->w_prev_height = oldp->w_height - WINBAR_HEIGHT(oldp);
 	newp->w_prev_winrow = oldp->w_winrow + 2 * WINBAR_HEIGHT(oldp);
@@ -2421,7 +2468,8 @@ close_windows(
 		}
     }
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
 
     if (count != tabpage_index(NULL))
 	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
@@ -6860,14 +6908,16 @@ win_new_height(win_T *wp, int height)
     }
 
     wp->w_height = height;
-    wp->w_skipcol = 0;
     wp->w_redr_status = TRUE;
     win_comp_scroll(wp);
 
     // There is no point in adjusting the scroll position when exiting.  Some
     // values might be invalid.
     if (!exiting && *p_spk == 'c')
+    {
+	wp->w_skipcol = 0;
 	scroll_to_fraction(wp, prev_height);
+    }
 }
 
     void

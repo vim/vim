@@ -550,7 +550,8 @@ do_exmode(
 #ifdef FEAT_GUI
     --hold_gui_events;
 #endif
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     --no_wait_return;
     update_screen(UPD_CLEAR);
     need_wait_return = FALSE;
@@ -631,7 +632,7 @@ do_cmdline(
     static int	recursive = 0;		// recursive depth
     int		msg_didout_before_start = 0;
     int		count = 0;		// line number count
-    int		did_inc = FALSE;	// incremented RedrawingDisabled
+    int		did_inc_RedrawingDisabled = FALSE;
     int		retval = OK;
 #ifdef FEAT_EVAL
     cstack_T	cstack;			// conditional stack
@@ -977,7 +978,7 @@ do_cmdline(
 		msg_scroll = TRUE;  // put messages below each other
 		++no_wait_return;   // don't wait for return until finished
 		++RedrawingDisabled;
-		did_inc = TRUE;
+		did_inc_RedrawingDisabled = TRUE;
 	    }
 	}
 
@@ -1336,9 +1337,10 @@ do_cmdline(
      * hit return before redrawing the screen. With the ":global" command we do
      * this only once after the command is finished.
      */
-    if (did_inc)
+    if (did_inc_RedrawingDisabled)
     {
-	--RedrawingDisabled;
+	if (RedrawingDisabled > 0)
+	    --RedrawingDisabled;
 	--no_wait_return;
 	msg_scroll = FALSE;
 
@@ -5957,10 +5959,11 @@ ex_cquit(exarg_T *eap UNUSED)
 }
 
 /*
- * ":qall": try to quit all windows
+ * Do preparations for "qall" and "wqall".
+ * Returns FAIL when quitting should be aborted.
  */
-    static void
-ex_quit_all(exarg_T *eap)
+    int
+before_quit_all(exarg_T *eap)
 {
     if (cmdwin_type != 0)
     {
@@ -5968,19 +5971,30 @@ ex_quit_all(exarg_T *eap)
 	    cmdwin_result = K_XF1;	// ex_window() takes care of this
 	else
 	    cmdwin_result = K_XF2;
-	return;
+	return FAIL;
     }
 
     // Don't quit while editing the command line.
     if (text_locked())
     {
 	text_locked_msg();
-	return;
+	return FAIL;
     }
 
     if (before_quit_autocmds(curwin, TRUE, eap->forceit))
-	return;
+	return FAIL;
 
+    return OK;
+}
+
+/*
+ * ":qall": try to quit all windows
+ */
+    static void
+ex_quit_all(exarg_T *eap)
+{
+    if (before_quit_all(eap) == FAIL)
+	return;
     exiting = TRUE;
     if (eap->forceit || !check_changed_any(FALSE, FALSE))
 	getout(0);
@@ -6150,7 +6164,8 @@ get_tabpage_arg(exarg_T *eap)
 		    tab_number = tabpage_index(lastused_tabpage);
 		else
 		{
-		    eap->errmsg = ex_errmsg(e_invalid_value_for_argument_str, eap->arg);
+		    eap->errmsg = ex_errmsg(e_invalid_value_for_argument_str,
+								     eap->arg);
 		    tab_number = 0;
 		    goto theend;
 		}
@@ -7157,7 +7172,7 @@ do_exedit(
 
 		if (exmode_was != EXMODE_VIM)
 		    settmode(TMODE_RAW);
-		int save_rd = RedrawingDisabled;
+		int save_RedrawingDisabled = RedrawingDisabled;
 		RedrawingDisabled = 0;
 		int save_nwr = no_wait_return;
 		no_wait_return = 0;
@@ -7174,7 +7189,7 @@ do_exedit(
 		main_loop(FALSE, TRUE);
 
 		pending_exmode_active = FALSE;
-		RedrawingDisabled = save_rd;
+		RedrawingDisabled = save_RedrawingDisabled;
 		no_wait_return = save_nwr;
 		msg_scroll = save_ms;
 #ifdef FEAT_GUI
@@ -8425,11 +8440,12 @@ ex_redraw(exarg_T *eap)
     void
 redraw_cmd(int clear)
 {
-    int		r = RedrawingDisabled;
-    int		p = p_lz;
-
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
+
+    int save_p_lz = p_lz;
     p_lz = FALSE;
+
     validate_cursor();
     update_topline();
     update_screen(clear ? UPD_CLEAR : VIsual_active ? UPD_INVERTED : 0);
@@ -8441,8 +8457,8 @@ redraw_cmd(int clear)
 # endif
 	resize_console_buf();
 #endif
-    RedrawingDisabled = r;
-    p_lz = p;
+    RedrawingDisabled = save_RedrawingDisabled;
+    p_lz = save_p_lz;
 
     // After drawing the statusline screen_attr may still be set.
     screen_stop_highlight();
@@ -8467,9 +8483,6 @@ redraw_cmd(int clear)
     static void
 ex_redrawstatus(exarg_T *eap UNUSED)
 {
-    int		r = RedrawingDisabled;
-    int		p = p_lz;
-
     if (eap->forceit)
 	status_redraw_all();
     else
@@ -8477,14 +8490,18 @@ ex_redrawstatus(exarg_T *eap UNUSED)
     if (msg_scrolled && (State & MODE_CMDLINE))
 	return;  // redraw later
 
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
+
+    int save_p_lz = p_lz;
     p_lz = FALSE;
+
     if (State & MODE_CMDLINE)
 	redraw_statuslines();
     else
 	update_screen(VIsual_active ? UPD_INVERTED : 0);
-    RedrawingDisabled = r;
-    p_lz = p;
+    RedrawingDisabled = save_RedrawingDisabled;
+    p_lz = save_p_lz;
     out_flush();
 }
 
@@ -8494,16 +8511,16 @@ ex_redrawstatus(exarg_T *eap UNUSED)
     static void
 ex_redrawtabline(exarg_T *eap UNUSED)
 {
-    int		r = RedrawingDisabled;
-    int		p = p_lz;
-
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
+
+    int save_p_lz = p_lz;
     p_lz = FALSE;
 
     draw_tabline();
 
-    RedrawingDisabled = r;
-    p_lz = p;
+    RedrawingDisabled = save_RedrawingDisabled;
+    p_lz = save_p_lz;
     out_flush();
 }
 
@@ -9380,7 +9397,7 @@ eval_vars(
 	case SPEC_ABUF:		// buffer number for autocommand
 		if (autocmd_bufnr <= 0)
 		{
-		    *errormsg = _(e_no_autocommand_buffer_name_to_substitute_for_abuf);
+		    *errormsg = _(e_no_autocommand_buffer_number_to_substitute_for_abuf);
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "%d", autocmd_bufnr);

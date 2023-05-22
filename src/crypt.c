@@ -1022,7 +1022,7 @@ crypt_sodium_init_(
 
     return OK;
 # else
-    emsg(e_libsodium_not_built_in);
+    emsg(_(e_libsodium_not_built_in));
     return FAIL;
 # endif
 }
@@ -1051,7 +1051,7 @@ crypt_sodium_encode(
     {
 	if (len <= crypto_secretstream_xchacha20poly1305_HEADERBYTES)
 	{
-	    emsg(e_libsodium_cannot_encrypt_header);
+	    emsg(_(e_libsodium_cannot_encrypt_header));
 	    return;
 	}
 	crypto_secretstream_xchacha20poly1305_init_push(&sod_st->state,
@@ -1061,7 +1061,7 @@ crypt_sodium_encode(
 
     if (sod_st->count && len <= crypto_secretstream_xchacha20poly1305_ABYTES)
     {
-	emsg(e_libsodium_cannot_encrypt_buffer);
+	emsg(_(e_libsodium_cannot_encrypt_buffer));
 	return;
     }
 
@@ -1098,7 +1098,7 @@ crypt_sodium_decode(
     if (sod_st->count == 0
 		   && len <= crypto_secretstream_xchacha20poly1305_HEADERBYTES)
     {
-	emsg(e_libsodium_cannot_decrypt_header);
+	emsg(_(e_libsodium_cannot_decrypt_header));
 	return;
     }
 
@@ -1106,7 +1106,7 @@ crypt_sodium_decode(
 
     if (buf_out == NULL)
     {
-	emsg(e_libsodium_cannot_allocate_buffer);
+	emsg(_(e_libsodium_cannot_allocate_buffer));
 	return;
     }
     if (sod_st->count == 0)
@@ -1114,7 +1114,7 @@ crypt_sodium_decode(
 	if (crypto_secretstream_xchacha20poly1305_init_pull(
 				       &sod_st->state, from, sod_st->key) != 0)
 	{
-	    emsg(e_libsodium_decryption_failed_header_incomplete);
+	    emsg(_(e_libsodium_decryption_failed_header_incomplete));
 	    goto fail;
 	}
 
@@ -1127,20 +1127,20 @@ crypt_sodium_decode(
 
     if (sod_st->count && len <= crypto_secretstream_xchacha20poly1305_ABYTES)
     {
-	emsg(e_libsodium_cannot_decrypt_buffer);
+	emsg(_(e_libsodium_cannot_decrypt_buffer));
 	goto fail;
     }
     if (crypto_secretstream_xchacha20poly1305_pull(&sod_st->state,
 			     buf_out, &buf_len, &tag, from, len, NULL, 0) != 0)
     {
-	emsg(e_libsodium_decryption_failed);
+	emsg(_(e_libsodium_decryption_failed));
 	goto fail;
     }
     sod_st->count++;
 
     if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL && !last)
     {
-	emsg(e_libsodium_decryption_failed_premature);
+	emsg(_(e_libsodium_decryption_failed_premature));
 	goto fail;
     }
     if (p1 == p2)
@@ -1179,7 +1179,7 @@ crypt_sodium_buffer_encode(
     *buf_out = alloc_clear(length);
     if (*buf_out == NULL)
     {
-	emsg(e_libsodium_cannot_allocate_buffer);
+	emsg(_(e_libsodium_cannot_allocate_buffer));
 	return -1;
     }
     ptr = *buf_out;
@@ -1230,7 +1230,7 @@ crypt_sodium_buffer_decode(
     *buf_out = alloc_clear(len);
     if (*buf_out == NULL)
     {
-	emsg(e_libsodium_cannot_allocate_buffer);
+	emsg(_(e_libsodium_cannot_allocate_buffer));
 	return -1;
     }
 
@@ -1239,7 +1239,7 @@ crypt_sodium_buffer_decode(
 	if (crypto_secretstream_xchacha20poly1305_init_pull(&sod_st->state,
 						       from, sod_st->key) != 0)
 	{
-	    emsg(e_libsodium_decryption_failed_header_incomplete);
+	    emsg(_(e_libsodium_decryption_failed_header_incomplete));
 	    return -1;
 	}
 	from += crypto_secretstream_xchacha20poly1305_HEADERBYTES;
@@ -1249,12 +1249,12 @@ crypt_sodium_buffer_decode(
     if (crypto_secretstream_xchacha20poly1305_pull(&sod_st->state,
 			    *buf_out, &out_len, &tag, from, len, NULL, 0) != 0)
     {
-	emsg(e_libsodium_decryption_failed);
+	emsg(_(e_libsodium_decryption_failed));
 	return -1;
     }
 
     if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL && !last)
-	emsg(e_libsodium_decryption_failed_premature);
+	emsg(_(e_libsodium_decryption_failed_premature));
     return (long) out_len;
 # else
     return -1;

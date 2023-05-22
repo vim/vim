@@ -490,7 +490,7 @@ def Test_try_catch_throw()
   try # comment
     add(l, '1')
     throw 'wrong'
-    add(l, '2')
+    add(l, '2')  # "unreachable code"
   catch # comment
     add(l, v:exception)
   finally # comment
@@ -503,7 +503,7 @@ def Test_try_catch_throw()
     try
       add(l, '1')
       throw 'wrong'
-      add(l, '2')
+      add(l, '2')  # "unreachable code"
     catch /right/
       add(l, v:exception)
     endtry
@@ -754,7 +754,7 @@ def Test_try_catch_throw()
     var ret = 5
     try
       throw 'getout'
-      return -1
+      return -1 # "unreachable code"
     catch /getout/
       # ret is evaluated here
       return ret
@@ -810,6 +810,30 @@ def Test_try_catch_throw()
       endif
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_unreachable_after()
+  var lines =<< trim END
+      try
+        throw 'Error'
+        echo 'not reached'
+      catch /Error/
+      endtry
+  END
+  v9.CheckDefFailure(lines, 'E1095: Unreachable code after :throw')
+
+  lines =<< trim END
+      def SomeFunc(): number
+        try
+          return 3
+          echo 'not reached'
+        catch /Error/
+        endtry
+        return 4
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1095: Unreachable code after :return')
 enddef
 
 def Test_throw_in_nested_try()
@@ -1079,10 +1103,17 @@ def Test_nocatch_throw_silenced()
   source XthrowSilenced
 enddef
 
+" g:DeletedFunc() is found when compiling Test_try_catch_throw() and then
+" deleted, this should give a runtime error.
 def DeletedFunc(): list<any>
   return ['delete me']
 enddef
-defcompile
+defcompile DeletedFunc
+
+call test_override('unreachable', 1)
+defcompile Test_try_catch_throw
+call test_override('unreachable', 0)
+
 delfunc DeletedFunc
 
 def s:ThrowFromDef()
@@ -1128,7 +1159,7 @@ def Test_try_catch_nested()
   try
     l->add('1')
     throw 'bad'
-    l->add('x')
+    l->add('x')  # "unreachable code"
   catch /bad/
     l->add('2')
     try
@@ -1167,6 +1198,10 @@ def Test_try_catch_nested()
   endtry
   assert_equal(['1', '2', '3', '4'], l)
 enddef
+
+call test_override('unreachable', 1)
+defcompile Test_try_catch_nested
+call test_override('unreachable', 0)
 
 def s:TryOne(): number
   try

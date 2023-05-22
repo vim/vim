@@ -856,6 +856,27 @@ def Test_class_member()
   END
   v9.CheckScriptSuccess(lines)
 
+  # access private member in lambda body
+  lines =<< trim END
+      vim9script
+
+      class Foo
+        this._x: number = 6
+
+        def Add(n: number): number
+          var Lam = () => {
+            this._x = this._x + n
+          }
+          Lam()
+          return this._x
+        enddef
+      endclass
+
+      var foo = Foo.new()
+      assert_equal(13, foo.Add(7))
+  END
+  v9.CheckScriptSuccess(lines)
+
   # check shadowing
   lines =<< trim END
       vim9script

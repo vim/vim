@@ -1012,14 +1012,31 @@ ExpandOne(
     {
 	len = 0;
 	for (i = 0; i < xp->xp_numfiles; ++i)
+	{
+	    if (i > 0)
+	    {
+		if (xp->xp_prefix == XP_PREFIX_NO)
+		    len += 2;	// prefix "no"
+		else if (xp->xp_prefix == XP_PREFIX_INV)
+		    len += 3;	// prefix "inv"
+	    }
 	    len += (long_u)STRLEN(xp->xp_files[i]) + 1;
+	}
 	ss = alloc(len);
 	if (ss != NULL)
 	{
 	    *ss = NUL;
 	    for (i = 0; i < xp->xp_numfiles; ++i)
 	    {
+		if (i > 0)
+		{
+		    if (xp->xp_prefix == XP_PREFIX_NO)
+			STRCAT(ss, "no");
+		    else if (xp->xp_prefix == XP_PREFIX_INV)
+			STRCAT(ss, "inv");
+		}
 		STRCAT(ss, xp->xp_files[i]);
+
 		if (i != xp->xp_numfiles - 1)
 		    STRCAT(ss, (options & WILD_USE_NL) ? "\n" : " ");
 	    }
@@ -1044,6 +1061,7 @@ ExpandInit(expand_T *xp)
 {
     CLEAR_POINTER(xp);
     xp->xp_backslash = XP_BS_NONE;
+    xp->xp_prefix = XP_PREFIX_NONE;
     xp->xp_numfiles = -1;
 }
 
@@ -3919,14 +3937,12 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 {
     int skt = KeyTyped;
-#ifdef FEAT_EVAL
-    int old_RedrawingDisabled = RedrawingDisabled;
-#endif
 
     if (!p_wmnu || wild_menu_showing == 0)
 	return;
 
 #ifdef FEAT_EVAL
+    int save_RedrawingDisabled = RedrawingDisabled;
     if (cclp->input_fn)
 	RedrawingDisabled = 0;
 #endif
@@ -3956,7 +3972,7 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
     wild_menu_showing = 0;
 #ifdef FEAT_EVAL
     if (cclp->input_fn)
-	RedrawingDisabled = old_RedrawingDisabled;
+	RedrawingDisabled = save_RedrawingDisabled;
 #endif
 }
 

@@ -470,7 +470,7 @@ enddef
 
 # Returns true if file content looks like LambdaProlog module
 def IsLProlog(): bool
-  # skip apparent comments and blank lines, what looks like 
+  # skip apparent comments and blank lines, what looks like
   # LambdaProlog comment may be RAPID header
   var l: number = nextnonblank(1)
   while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
@@ -1104,6 +1104,31 @@ export def FTlsl()
   else
     setf lsl
   endif
+enddef
+
+export def FTtyp()
+  if exists("g:filetype_typ")
+    exe "setf " .. g:filetype_typ
+    return
+  endif
+
+  # Look for SQL type definition syntax
+  for line in getline(1, 200)
+    # SQL type files may define the casing
+    if line =~ '^CASE\s\==\s\=\(SAME\|LOWER\|UPPER\|OPPOSITE\)$'
+      setf sql
+      return
+    endif
+
+    # SQL type files may define some types as follows
+    if line =~ '^TYPE\s.*$'
+      setf sql
+      return
+    endif
+  endfor
+
+  # Otherwise, affect the typst filetype
+  setf typst
 enddef
 
 # Set the filetype of a *.v file to Verilog, V or Cog based on the first 200

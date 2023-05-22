@@ -1557,7 +1557,7 @@ getout_preserve_modified(int exitval)
     // Ignore SIGHUP, because a dropped connection causes a read error, which
     // makes Vim exit and then handling SIGHUP causes various reentrance
     // problems.
-    signal(SIGHUP, SIG_IGN);
+    mch_signal(SIGHUP, SIG_IGN);
 # endif
 
     ml_close_notmod();		    // close all not-modified buffers
@@ -3198,7 +3198,7 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)
 									 != OK)
-		emsg(e_failed_to_source_defaults);
+		emsg(_(e_failed_to_source_defaults));
 	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
@@ -3273,7 +3273,7 @@ source_startup_scripts(mparm_T *parmp)
 		// When no .vimrc file was found: source defaults.vim.
 		if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE,
 								 NULL) == FAIL)
-		    emsg(e_failed_to_source_defaults);
+		    emsg(_(e_failed_to_source_defaults));
 	    }
 	}
 

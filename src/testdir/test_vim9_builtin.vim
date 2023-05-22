@@ -3459,8 +3459,7 @@ def Test_resolve()
 enddef
 
 def Test_reverse()
-  v9.CheckDefAndScriptFailure(['reverse(10)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1226: List or Blob required for argument 1'])
-  v9.CheckDefAndScriptFailure(['reverse("abc")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1226: List or Blob required for argument 1'])
+  v9.CheckDefAndScriptFailure(['reverse(10)'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1252: String, List or Blob required for argument 1'])
 enddef
 
 def Test_reverse_return_type()

@@ -887,7 +887,7 @@ ex_terminal(exarg_T *eap)
 		tty_type = 'c';
 	    else
 	    {
-		semsg(e_invalid_value_for_argument_str, "type");
+		semsg(_(e_invalid_value_for_argument_str), "type");
 		goto theend;
 	    }
 	    opt.jo_set2 |= JO2_TTY_TYPE;
@@ -6562,7 +6562,7 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
     if (argvars[1].vval.v_list->lv_first == &range_list_item
 	    || argvars[1].vval.v_list->lv_len != 16)
     {
-	emsg(_(e_invalid_argument));
+	semsg(_(e_invalid_value_for_argument_str), "\"colors\"");
 	return;
     }
 

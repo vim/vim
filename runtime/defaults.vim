@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2022 Mar 03
+" Last change:	2023 May 10
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -120,7 +120,7 @@ if 1
     au!
     autocmd CmdwinEnter *
 	  \ echohl Todo | 
-	  \ echo 'You discovered the command-line window! You can close it with ":q".' |
+	  \ echo gettext('You discovered the command-line window! You can close it with ":q".') |
 	  \ echohl None
   augroup END
 
