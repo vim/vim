@@ -1590,12 +1590,12 @@ EXTERN char e_cannot_get_cscope_database_information[]
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_missing_colon_str[]
-	INIT(= "E627: Missing colon: %s");
+	INIT(= N_("E627: Missing colon: %s"));
 EXTERN char e_missing_bang_or_slash_in_str[]
-	INIT(= "E628: Missing ! or / in: %s");
+	INIT(= N_("E628: Missing ! or / in: %s"));
 #ifdef NBDEBUG
 EXTERN char e_bad_return_from_nb_do_cmd[]
-	INIT(= "E629: Bad return from nb_do_cmd");
+	INIT(= N_("E629: Bad return from nb_do_cmd"));
 #endif
 #endif
 #ifdef FEAT_JOB_CHANNEL
@@ -1606,47 +1606,47 @@ EXTERN char e_str_write_failed[]
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_invalid_buffer_identifier_in_getlength[]
-	INIT(= "E632: Invalid buffer identifier in getLength");
+	INIT(= N_("E632: Invalid buffer identifier in getLength"));
 EXTERN char e_invalid_buffer_identifier_in_gettext[]
-	INIT(= "E633: Invalid buffer identifier in getText");
+	INIT(= N_("E633: Invalid buffer identifier in getText"));
 EXTERN char e_invalid_buffer_identifier_in_remove[]
-	INIT(= "E634: Invalid buffer identifier in remove");
+	INIT(= N_("E634: Invalid buffer identifier in remove"));
 EXTERN char e_invalid_buffer_identifier_in_insert[]
-	INIT(= "E635: Invalid buffer identifier in insert");
+	INIT(= N_("E635: Invalid buffer identifier in insert"));
 EXTERN char e_invalid_buffer_identifier_in_create[]
-	INIT(= "E636: Invalid buffer identifier in create");
+	INIT(= N_("E636: Invalid buffer identifier in create"));
 EXTERN char e_invalid_buffer_identifier_in_startdocumentlisten[]
-	INIT(= "E637: Invalid buffer identifier in startDocumentListen");
+	INIT(= N_("E637: Invalid buffer identifier in startDocumentListen"));
 EXTERN char e_invalid_buffer_identifier_in_stopdocumentlisten[]
-	INIT(= "E638: Invalid buffer identifier in stopDocumentListen");
+	INIT(= N_("E638: Invalid buffer identifier in stopDocumentListen"));
 EXTERN char e_invalid_buffer_identifier_in_settitle[]
-	INIT(= "E639: Invalid buffer identifier in setTitle");
+	INIT(= N_("E639: Invalid buffer identifier in setTitle"));
 EXTERN char e_invalid_buffer_identifier_in_initdone[]
-	INIT(= "E640: Invalid buffer identifier in initDone");
+	INIT(= N_("E640: Invalid buffer identifier in initDone"));
 EXTERN char e_invalid_buffer_identifier_in_setbuffernumber[]
-	INIT(= "E641: Invalid buffer identifier in setBufferNumber");
+	INIT(= N_("E641: Invalid buffer identifier in setBufferNumber"));
 EXTERN char e_file_str_not_found_in_setbuffernumber[]
-	INIT(= "E642: File %s not found in setBufferNumber");
+	INIT(= N_("E642: File %s not found in setBufferNumber"));
 EXTERN char e_invalid_buffer_identifier_in_setfullname[]
-	INIT(= "E643: Invalid buffer identifier in setFullName");
+	INIT(= N_("E643: Invalid buffer identifier in setFullName"));
 EXTERN char e_invalid_buffer_identifier_in_editfile[]
-	INIT(= "E644: Invalid buffer identifier in editFile");
+	INIT(= N_("E644: Invalid buffer identifier in editFile"));
 EXTERN char e_invalid_buffer_identifier_in_setvisible[]
-	INIT(= "E645: Invalid buffer identifier in setVisible");
+	INIT(= N_("E645: Invalid buffer identifier in setVisible"));
 EXTERN char e_invalid_buffer_identifier_in_setmodified[]
-	INIT(= "E646: Invalid buffer identifier in setModified");
+	INIT(= N_("E646: Invalid buffer identifier in setModified"));
 EXTERN char e_invalid_buffer_identifier_in_setdot[]
-	INIT(= "E647: Invalid buffer identifier in setDot");
+	INIT(= N_("E647: Invalid buffer identifier in setDot"));
 EXTERN char e_invalid_buffer_identifier_in_close[]
-	INIT(= "E648: Invalid buffer identifier in close");
+	INIT(= N_("E648: Invalid buffer identifier in close"));
 EXTERN char e_invalid_buffer_identifier_in_close_2[]
-	INIT(= "E649: Invalid buffer identifier in close");
+	INIT(= N_("E649: Invalid buffer identifier in close"));
 EXTERN char e_invalid_buffer_identifier_in_defineannotype[]
-	INIT(= "E650: Invalid buffer identifier in defineAnnoType");
+	INIT(= N_("E650: Invalid buffer identifier in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_addanno[]
-	INIT(= "E651: Invalid buffer identifier in addAnno");
+	INIT(= N_("E651: Invalid buffer identifier in addAnno"));
 EXTERN char e_invalid_buffer_identifier_in_getanno[]
-	INIT(= "E652: Invalid buffer identifier in getAnno");
+	INIT(= N_("E652: Invalid buffer identifier in getAnno"));
 #endif
 // E653 unused
 EXTERN char e_missing_delimiter_after_search_pattern_str[]
@@ -1671,7 +1671,7 @@ EXTERN char e_cannot_invoke_python_recursively[]
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_cannot_open_netbeans_connection_info_file[]
-	INIT(= "E660: Cannot open NetBeans connection info file");
+	INIT(= N_("E660: Cannot open NetBeans connection info file"));
 #endif
 #ifdef FEAT_MULTI_LANG
 EXTERN char e_sorry_no_str_help_for_str[]
