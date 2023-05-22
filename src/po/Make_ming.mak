@@ -77,10 +77,12 @@ PO_INPUTLIST = \
 	vim.desktop.in
 
 PO_VIM_INPUTLIST = \
-	../../runtime/optwin.vim
+	../../runtime/optwin.vim \
+	../../runtime/defaults.vim
 
 PO_VIM_JSLIST = \
-	optwin.js
+	optwin.js \
+	defaults.js
 
 first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
