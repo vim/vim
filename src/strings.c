@@ -2492,7 +2492,7 @@ parse_fmt_types(
 	semsg(_( e_cannot_mix_positional_and_non_positional_str), fmt); \
 	goto error; \
     } \
-} while(0);
+} while (0);
 
     if (p == NULL)
 	return OK;
