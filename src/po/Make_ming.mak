@@ -18,7 +18,7 @@ VIMRUNTIME = ../../runtime
 endif
 endif
 
-# get LANGUAGES, MOFILES and MOCONVERTED
+# get LANGUAGES, MOFILES, MOCONVERTED and others
 include Make_all.mak
 
 PACKAGE = vim
@@ -75,12 +75,6 @@ PO_INPUTLIST = \
 	../vim.h \
 	gvim.desktop.in \
 	vim.desktop.in
-
-PO_VIM_INPUTLIST = \
-	../../runtime/optwin.vim
-
-PO_VIM_JSLIST = \
-	optwin.js
 
 first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)

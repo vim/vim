@@ -180,3 +180,11 @@ CHECKFILES = \
 		zh_TW.UTF-8.ck \
 		zh_TW.ck \
 
+PO_VIM_INPUTLIST = \
+	../../runtime/optwin.vim \
+	../../runtime/defaults.vim
+
+PO_VIM_JSLIST = \
+	optwin.js \
+	defaults.js
+
