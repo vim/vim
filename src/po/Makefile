@@ -3,7 +3,7 @@
 # Include stuff found by configure.
 include ../auto/config.mk
 
-# get LANGUAGES, MOFILES, MOCONVERTED and CHECKFILES
+# get LANGUAGES, MOFILES, MOCONVERTED and others
 include Make_all.mak
 
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
@@ -202,14 +202,6 @@ PO_INPUTLIST = \
 	../vim.h \
 	gvim.desktop.in \
 	vim.desktop.in
-
-PO_VIM_INPUTLIST = \
-	../../runtime/optwin.vim \
-	../../runtime/defaults.vim
-
-PO_VIM_JSLIST = \
-	optwin.js \
-	defaults.js
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript

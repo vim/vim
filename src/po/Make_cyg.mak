@@ -63,12 +63,6 @@ PO_INPUTLIST = \
 	gvim.desktop.in \
 	vim.desktop.in
 
-PO_VIM_INPUTLIST = \
-	../../runtime/optwin.vim
-
-PO_VIM_JSLIST = \
-	optwin.js
-
 first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
 	$(XGETTEXT) --default-domain=$(LANGUAGE) \
