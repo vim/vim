@@ -2487,8 +2487,7 @@ win_update(win_T *wp)
 #endif
 
 		// Display one line.
-		row = win_line(wp, lnum, srow, wp->w_height,
-							  mod_top == 0, FALSE);
+		row = win_line(wp, lnum, srow, wp->w_height, mod_top, FALSE);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2535,7 +2534,7 @@ win_update(win_T *wp)
 		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
 		else
 #endif
-		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
+		    (void)win_line(wp, lnum, srow, wp->w_height, mod_top, TRUE);
 	    }
 
 	    // This line does not need to be drawn, advance to the next one.
