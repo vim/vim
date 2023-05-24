@@ -1401,7 +1401,7 @@ nfa_regatom(void)
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
-		siemsg("INTERNAL: Unknown character class char: %d", c);
+		siemsg("Unknown character class char: %d", c);
 		return FAIL;
 	    }
 
@@ -6905,7 +6905,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    siemsg("INTERNAL: Negative state char: %ld", (long)c);
+		    siemsg("Negative state char: %ld", (long)c);
 #endif
 		result = (c == curc);
 
@@ -7196,9 +7196,9 @@ nfa_regtry(
     if (f != NULL)
     {
 	fprintf(f, "\n\n\t=======================================================\n");
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(f, "\tRegexp is \"%s\"\n", nfa_regengine.expr);
-#endif
+# endif
 	fprintf(f, "\tInput text is \"%s\" \n", rex.input);
 	fprintf(f, "\t=======================================================\n\n");
 	nfa_print_state(f, start);

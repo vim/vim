@@ -3247,7 +3247,7 @@ save_funccal(funccal_entry_T *entry)
 restore_funccal(void)
 {
     if (funccal_stack == NULL)
-	iemsg("INTERNAL: restore_funccal()");
+	internal_error("restore_funccal()");
     else
     {
 	current_funccal = funccal_stack->top_funccal;

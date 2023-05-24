@@ -840,7 +840,8 @@ EXTERN char e_sorry_no_file_browser_in_console_mode[]
 #endif
 EXTERN char e_pattern_too_long[]
 	INIT(= N_("E339: Pattern too long"));
-// E340 unused
+EXTERN char e_internal_error_please_report_a_bug[]
+	INIT(= N_("E340: Internal error; if you can reproduce please report a bug"));
 EXTERN char e_internal_error_lalloc_zero[]
 	INIT(= N_("E341: Internal error: lalloc(0, )"));
 EXTERN char e_out_of_memory_allocating_nr_bytes[]

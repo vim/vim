@@ -78,7 +78,7 @@ See `:messages` above.
 LIST OF MESSAGES
 			*E222* *E228* *E232* *E293* *E298* *E304* *E317*
 			*E318* *E356* *E438* *E439* *E440* *E316* *E320* *E322*
-			*E323* *E341* *E473* *E570* *E685* *E292*
+			*E323* *E341* *E473* *E570* *E292*
   Add to read buffer ~
   makemap: Illegal mode ~
   Cannot create BalloonEval with both message and callback ~
@@ -99,9 +99,9 @@ LIST OF MESSAGES
   Internal error in regexp ~
   fatal error in cs_manage_matches ~
   Invalid count for del_bytes(): {N} ~
-
+						*E340* *E685* *internal-error*
 This is an internal error.  If you can reproduce it, please send in a bug
-report. |bugs|
+report, see |bugs|.
 
 
   ATTENTION ~
