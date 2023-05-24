@@ -1595,7 +1595,7 @@ EXTERN char e_missing_bang_or_slash_in_str[]
 	INIT(= N_("E628: Missing ! or / in: %s"));
 #ifdef NBDEBUG
 EXTERN char e_bad_return_from_nb_do_cmd[]
-	INIT(= N_("E629: Bad return from nb_do_cmd"));
+	INIT(= "E629: Bad return from nb_do_cmd");
 #endif
 #endif
 #ifdef FEAT_JOB_CHANNEL
