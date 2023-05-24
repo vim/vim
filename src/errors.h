@@ -1671,7 +1671,7 @@ EXTERN char e_cannot_invoke_python_recursively[]
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_cannot_open_netbeans_connection_info_file[]
-	INIT(= N_("E660: Cannot open NetBeans connection info file"));
+	INIT(= "E660: Cannot open NetBeans connection info file");
 #endif
 #ifdef FEAT_MULTI_LANG
 EXTERN char e_sorry_no_str_help_for_str[]
