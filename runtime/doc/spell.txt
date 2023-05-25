@@ -135,7 +135,7 @@ zuG			Undo |zW| and |zG|, remove the word from the internal
 		nnoremap z/  :exe ':spellrare! ' .. expand('<cWORD>')<CR>
 <			|:spellundo|, |zuw|, or |zuW| can be used to undo this.
 
-:spellr[rare]! {word}	Add {word} as a rare word to the internal word
+:spellr[are]! {word}	Add {word} as a rare word to the internal word
 			list, similar to |zW|.
 
 :[count]spellu[ndo] {word}				*:spellu* *:spellundo*
