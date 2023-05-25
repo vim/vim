@@ -1270,7 +1270,7 @@ au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 au BufNewFile,BufRead *.mmd,*.mmdc,*.mermaid	setf mermaid
 
 " Meson Build system config
-au BufNewFile,BufRead meson.build,meson_options.txt setf meson
+au BufNewFile,BufRead meson.build,meson.options,meson_options.txt setf meson
 au BufNewFile,BufRead *.wrap			setf dosini
 
 " Messages (logs mostly)
