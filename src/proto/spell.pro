@@ -28,7 +28,7 @@ void init_spell_chartab(void);
 int spell_iswordp(char_u *p, win_T *wp);
 int spell_iswordp_nmw(char_u *p, win_T *wp);
 int spell_casefold(win_T *wp, char_u *str, int len, char_u *buf, int buflen);
-int check_need_cap(linenr_T lnum, colnr_T col);
+int check_need_cap(win_T *wp, linenr_T lnum, colnr_T col);
 void ex_spellrepall(exarg_T *eap);
 void onecap_copy(char_u *word, char_u *wcopy, int upper);
 void allcap_copy(char_u *word, char_u *wcopy);
