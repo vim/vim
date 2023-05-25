@@ -8,10 +8,11 @@
 TARGETOS = WINNT
 
 !ifndef APPVER
-APPVER = 5.01
+APPVER = 6.01
 !endif
+# Set the default $(WINVER) to make it work with Windows 7.
 !ifndef WINVER
-WINVER = 0x0501
+WINVER = 0x0601
 !endif
 
 !if "$(DEBUG)" != "yes"
@@ -40,9 +41,9 @@ CPU = i386
 !endif
 
 !ifdef SDK_INCLUDE_DIR
-!include $(SDK_INCLUDE_DIR)\Win32.mak
+! include $(SDK_INCLUDE_DIR)\Win32.mak
 !elseif "$(USE_WIN32MAK)"=="yes"
-!include <Win32.mak>
+! include <Win32.mak>
 !else
 cc = cl
 link = link
