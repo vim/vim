@@ -319,6 +319,9 @@ au BufNewFile,BufRead *.cdl			setf cdl
 " Conary Recipe
 au BufNewFile,BufRead *.recipe			setf conaryrecipe
 
+" Corn config file
+au BufNewFile,BufRead *.corn			setf corn
+
 " ChainPack Object Notation (CPON)
 au BufNewFile,BufRead *.cpon			setf cpon
 
