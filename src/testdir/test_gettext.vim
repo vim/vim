@@ -1,10 +1,4 @@
-" Tests for various functions.
-
-source shared.vim
 source check.vim
-source term_util.vim
-source screendump.vim
-import './vim9.vim' as v9
 
 " Test for gettext()
 func Test_gettext()
