@@ -67,6 +67,8 @@ autocmd_get([{opts}])		List	return a list of autocmds
 balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
+bindtextdomain({package}[, {path}])
+				none	bind text domain to specific path
 blob2list({blob})		List	convert {blob} into a list of numbers
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
@@ -266,7 +268,8 @@ gettabvar({nr}, {varname} [, {def}])
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
 gettagstack([{nr}])		Dict	get the tag stack of window {nr}
-gettext({text})			String	lookup translation of {text}
+gettext({text}[, {package}[, {encoding}]])
+				String	lookup translation of {text}
 getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
@@ -1155,6 +1158,13 @@ balloon_split({msg})					*balloon_split()*
 
 <		{only available when compiled with the |+balloon_eval_term|
 		feature}
+
+bindtextdomain({package}[, {path}])			*bindtextdomain()*
+		Bind a specific {package} to a {path} so that the
+		|gettext| function can be used to get language-specific
+		translations for a package.
+
+		When {path} is omitted, the Vim runtime path is used.
 
 blob2list({blob})					*blob2list()*
 		Return a List containing the number value of each byte in Blob
@@ -4276,7 +4286,7 @@ gettagstack([{winnr}])					*gettagstack()*
 			GetWinnr()->gettagstack()
 
 
-gettext({text})						*gettext()*
+gettext({text}[, {package}[, {encoding}]])		*gettext()*
 		Translate String {text} if possible.
 		This is mainly for use in the distributed Vim scripts.  When
 		generating message translations the {text} is extracted by
@@ -4286,6 +4296,11 @@ gettext({text})						*gettext()*
 		For {text} double quoted strings are preferred, because
 		xgettext does not understand escaping in single quoted
 		strings.
+		When the {package} is specified, the translation is looked up
+		for that specific package. You need to specify the path to
+		look for translations with the |bindtextdomain()| function.
+		When {encoding} is specified, the encoding is passed on
+		to the getext library, else the current encoding is used.
 
 
 getwininfo([{winid}])					*getwininfo()*
