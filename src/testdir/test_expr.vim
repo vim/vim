@@ -25,7 +25,7 @@ func Test_equal()
   call assert_fails('echo base.method > instance.method')
   call assert_equal(0, test_null_function() == function('min'))
   call assert_equal(1, test_null_function() == test_null_function())
-  call assert_fails('eval 10 == test_unknown()', 'E685:')
+  call assert_fails('eval 10 == test_unknown()', ['E340:', 'E685:'])
 endfunc
 
 func Test_version()

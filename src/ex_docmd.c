@@ -4716,7 +4716,7 @@ address_default_all(exarg_T *eap)
 	case ADDR_NONE:
 	case ADDR_UNSIGNED:
 	case ADDR_QUICKFIX:
-	    iemsg(_("INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"));
+	    iemsg("Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX");
 	    break;
     }
 }

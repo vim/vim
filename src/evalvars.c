@@ -206,7 +206,7 @@ evalvars_init(void)
 	p = &vimvars[i];
 	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
 	{
-	    iemsg("INTERNAL: name too long, increase size of dictitem16_T");
+	    iemsg("Name too long, increase size of dictitem16_T");
 	    getout(1);
 	}
 	STRCPY(p->vv_di.di_key, p->vv_name);

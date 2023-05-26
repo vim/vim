@@ -1062,7 +1062,7 @@ win_line(
     linenr_T	lnum,
     int		startrow,
     int		endrow,
-    int		nochange UNUSED,	// not updating for changed text
+    int		mod_top UNUSED,	        // top line updated for changed text
     int		number_only)		// only update the number column
 {
     winlinevars_T	wlv;		// variables passed between functions
@@ -1314,11 +1314,18 @@ win_line(
 
 	    // When there was a sentence end in the previous line may require a
 	    // word starting with capital in this line.  In line 1 always check
-	    // the first word.
-	    if (lnum != capcol_lnum)
-		cap_col = -1;
-	    if (lnum == 1)
+	    // the first word.  Also check for sentence end in the line above
+	    // when updating the first row in a window, the top line with
+	    // changed text in a window, or if the previous line is folded.
+	    if (lnum == 1
+		    || ((startrow == 0 || mod_top == lnum
+#ifdef FEAT_FOLDING
+			|| hasFoldingWin(wp, lnum - 1, NULL, NULL, TRUE, NULL)
+#endif
+			) && check_need_cap(wp, lnum, 0)))
 		cap_col = 0;
+	    else if (lnum != capcol_lnum)
+		cap_col = -1;
 	    capcol_lnum = 0;
 	}
 #endif
@@ -2787,7 +2794,7 @@ win_line(
 			    p = prev_ptr;
 			cap_col -= (int)(prev_ptr - line);
 			len = spell_check(wp, p, &spell_hlf, &cap_col,
-								    nochange);
+								mod_top == 0);
 			word_end = v + len;
 
 			// In Insert mode only highlight a word that

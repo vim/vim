@@ -1948,7 +1948,7 @@ win_move_after(win_T *win1, win_T *win2)
     {
 	if (win1->w_frame->fr_parent != win2->w_frame->fr_parent)
 	{
-	    iemsg("INTERNAL: trying to move a window into another frame");
+	    iemsg("Trying to move a window into another frame");
 	    return;
 	}
 

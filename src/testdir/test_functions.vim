@@ -82,15 +82,15 @@ func Test_empty()
   call assert_equal(0, empty(function('Test_empty')))
   call assert_equal(0, empty(function('Test_empty', [0])))
 
-  call assert_fails("call empty(test_void())", 'E685:')
-  call assert_fails("call empty(test_unknown())", 'E685:')
+  call assert_fails("call empty(test_void())", ['E340:', 'E685:'])
+  call assert_fails("call empty(test_unknown())", ['E340:', 'E685:'])
 endfunc
 
 func Test_test_void()
   call assert_fails('echo 1 == test_void()', 'E1031:')
   call assert_fails('echo 1.0 == test_void()', 'E1031:')
-  call assert_fails('let x = json_encode(test_void())', 'E685:')
-  call assert_fails('let x = copy(test_void())', 'E685:')
+  call assert_fails('let x = json_encode(test_void())', ['E340:', 'E685:'])
+  call assert_fails('let x = copy(test_void())', ['E340:', 'E685:'])
   call assert_fails('let x = copy([test_void()])', 'E1031:')
 endfunc
 

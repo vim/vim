@@ -6524,8 +6524,8 @@ func Test_type()
     endif
     call assert_equal(v:t_blob, type(test_null_blob()))
 
-    call assert_fails("call type(test_void())", 'E685:')
-    call assert_fails("call type(test_unknown())", 'E685:')
+    call assert_fails("call type(test_void())", ['E340:', 'E685:'])
+    call assert_fails("call type(test_unknown())", ['E340:', 'E685:'])
 
     call assert_equal(0, 0 + v:false)
     call assert_equal(1, 0 + v:true)
