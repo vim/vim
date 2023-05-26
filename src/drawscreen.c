@@ -2191,11 +2191,22 @@ win_update(win_T *wp)
 	redraw_win_toolbar(wp);
 #endif
 
+    lnum = wp->w_topline;   // first line shown in window
+    spellvars_T spv = { 0 };
+#ifdef FEAT_SPELL
+    // Initialize 'spell' variables for first line passed to win_line().
+    spv.spv_has_spell = spell_check_window(wp);
+    if (spv.spv_has_spell)
+    {
+	spv.spv_unchanged = mod_top == 0;
+	spv.spv_capcol_lnum = mod_top ? mod_top : lnum;
+	spv.spv_cap_col = check_need_cap(wp, spv.spv_capcol_lnum, 0) ? 0 : - 1;
+    }
+#endif
     // Update all the window rows.
     idx = 0;		// first entry in w_lines[].wl_size
     row = 0;
     srow = 0;
-    lnum = wp->w_topline;	// first line shown in window
     for (;;)
     {
 	// stop updating when reached the end of the window (check for _past_
@@ -2450,10 +2461,19 @@ win_update(win_T *wp)
 		fold_line(wp, fold_count, &win_foldinfo, lnum, row);
 		++row;
 		--fold_count;
+		linenr_T lnume = lnum + fold_count;
 		wp->w_lines[idx].wl_folded = TRUE;
-		wp->w_lines[idx].wl_lastlnum = lnum + fold_count;
+		wp->w_lines[idx].wl_lastlnum = lnume;
 # ifdef FEAT_SYN_HL
 		did_update = DID_FOLD;
+# endif
+# ifdef FEAT_SPELL
+		// Check if the line after this fold requires capital.
+		if (spv.spv_has_spell && check_need_cap(wp, lnume + 1, 0))
+		{
+		    spv.spv_cap_col = 0;
+		    spv.spv_capcol_lnum = lnume + 1;
+		}
 # endif
 	    }
 	    else
@@ -2487,7 +2507,7 @@ win_update(win_T *wp)
 #endif
 
 		// Display one line.
-		row = win_line(wp, lnum, srow, wp->w_height, mod_top, FALSE);
+		row = win_line(wp, lnum, srow, wp->w_height, FALSE, &spv);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2534,7 +2554,7 @@ win_update(win_T *wp)
 		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
 		else
 #endif
-		    (void)win_line(wp, lnum, srow, wp->w_height, mod_top, TRUE);
+		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, &spv);
 	    }
 
 	    // This line does not need to be drawn, advance to the next one.
