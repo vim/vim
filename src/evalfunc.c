@@ -3349,12 +3349,12 @@ f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv)
     }
     else
     {
-	if (strcmp(argvars[0].vval.v_string, "vim") == 0)
+	if (strcmp((const char *)argvars[0].vval.v_string, "vim") == 0)
 	{
 	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
 	}
 
-	bindtextdomain((const char *)argvars[0].vval.v_string, argvars[1].vval.v_string);
+	bindtextdomain((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string);
     }
 
     return;
