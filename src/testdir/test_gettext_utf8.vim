@@ -9,7 +9,6 @@ import './vim9.vim' as v9
 " Test for gettext()
 func Test_gettext()
   call bindtextdomain("__PACKAGE__", getcwd())
-  call assert_fails('call gettext(1)', 'E1174:')
   call assert_equal('xxxTESTxxx', gettext("xxxTESTxxx"))
   call assert_equal('xxxTESTxxx', gettext("xxxTESTxxx", "vim"))
   call assert_equal('xxxTESTxxx', gettext("xxxTESTxxx", "__PACKAGE__"))

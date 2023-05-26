@@ -3342,14 +3342,19 @@ f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv)
 	if (p != NULL && *p != NUL)
 	{
 	    vim_snprintf((char *)NameBuff, MAXPATHL, "%s/lang", p);
-	    bindtextdomain(argvars[0].vval.v_string, (char *)NameBuff);
+	    bindtextdomain((const char *)argvars[0].vval.v_string, (char *)NameBuff);
 	}
 	if (mustfree)
 	    vim_free(p);
     }
     else
     {
-	bindtextdomain(argvars[0].vval.v_string, argvars[1].vval.v_string);
+	if (strcmp(argvars[0].vval.v_string, "vim") == 0)
+	{
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
+	}
+
+	bindtextdomain((const char *)argvars[0].vval.v_string, argvars[1].vval.v_string);
     }
 
     return;
@@ -5462,11 +5467,11 @@ f_gettext(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type == VAR_STRING)
     {
-	textdomain(argvars[1].vval.v_string);
+	textdomain((const char *)argvars[1].vval.v_string);
 
 	if (argvars[2].v_type == VAR_STRING)
 	{
-	    prev = bind_textdomain_codeset(argvars[1].vval.v_string, argvars[2].vval.v_string);
+	    prev = bind_textdomain_codeset((const char *)argvars[1].vval.v_string, (const char *)argvars[2].vval.v_string);
 	}
     }
 
@@ -5478,7 +5483,7 @@ f_gettext(typval_T *argvars, typval_T *rettv)
 	textdomain(VIMPACKAGE);
 	if (prev != NULL)
 	{
-	    bind_textdomain_codeset(argvars[1].vval.v_string, prev);
+	    bind_textdomain_codeset((const char *)argvars[1].vval.v_string, prev);
 	}
     }
 }
