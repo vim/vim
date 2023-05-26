@@ -253,9 +253,17 @@ static char *(features[]) =
 #endif
 #ifdef FEAT_GETTEXT
 # ifdef DYNAMIC_GETTEXT
+#  ifdef HAVE_BIND_TEXTDOMAIN_CODESET
+	"+gettext/dyn/bind_codeset",
+#  else
 	"+gettext/dyn",
+#  endif
 # else
+#  ifdef HAVE_BIND_TEXTDOMAIN_CODESET
+	"+gettext/bind_codeset",
+#  else
 	"+gettext",
+#  endif
 # endif
 #else
 	"-gettext",
