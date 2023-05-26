@@ -538,7 +538,8 @@ spell_suggest(int count)
     // Get the word and its length.
 
     // Figure out if the word should be capitalised.
-    need_cap = check_need_cap(curwin->w_cursor.lnum, curwin->w_cursor.col);
+    need_cap = check_need_cap(curwin, curwin->w_cursor.lnum,
+							curwin->w_cursor.col);
 
     // Make a copy of current line since autocommands may free the line.
     line = vim_strsave(ml_get_curline());
