@@ -5467,12 +5467,13 @@ f_gettext(typval_T *argvars, typval_T *rettv)
     char *prev = NULL;
 #endif
 
-    if (check_for_nonempty_string_arg(argvars, 0) == FAIL
-	    || check_for_opt_string_arg(argvars, 1) == FAIL
+    if ((check_for_nonempty_string_arg(argvars, 0) == FAIL
+	|| (check_for_opt_string_arg(argvars, 1) == FAIL
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
-	    || check_for_opt_string_arg(argvars, 2) == FAIL
+	    || (argvars[1].v_type != VAR_UNKNOWN
+		&& check_for_opt_string_arg(argvars, 2) == FAIL)
 #endif
-	    )
+	    )))
 	return;
 
     if (argvars[1].v_type == VAR_STRING)
