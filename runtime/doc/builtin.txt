@@ -4300,7 +4300,7 @@ gettext({text} [, {package} [, {encoding}]])		*gettext()*
 		for that specific package. You need to specify the path to
 		look for translations with the |bindtextdomain()| function.
 		When {encoding} is specified, the encoding is passed on
-		to the getext library, else the current encoding is used.
+		to the gettext library, else the current encoding is used.
 
 
 getwininfo([{winid}])					*getwininfo()*

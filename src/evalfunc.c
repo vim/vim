@@ -3332,7 +3332,7 @@ get_buf_arg(typval_T *arg)
  * "bindtextdomain(package, path)" function
  */
     static void
-f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv)
+f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     int	mustfree = FALSE;
     char_u	*p;
