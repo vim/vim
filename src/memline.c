@@ -64,7 +64,7 @@ typedef struct pointer_entry	PTR_EN;	    // block/line-count pair
 #define BLOCK0_ID1_C0  'c'		    // block 0 id 1 'cm' 0
 #define BLOCK0_ID1_C1  'C'		    // block 0 id 1 'cm' 1
 #define BLOCK0_ID1_C2  'd'		    // block 0 id 1 'cm' 2
-// BLOCK0_ID1_C3 and BLOCK0_ID1_C4 are for libsodium enctyption.  However, for
+// BLOCK0_ID1_C3 and BLOCK0_ID1_C4 are for libsodium encryption.  However, for
 // these the swapfile is disabled, thus they will not be used.  Added for
 // consistency anyway.
 #define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3
@@ -807,6 +807,8 @@ ml_open_file(buf_T *buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	// consumes fname!
 	{
+	    // don't sync yet in ml_sync_all()
+	    mfp->mf_dirty = MF_DIRTY_YES_NOSYNC;
 #if defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
@@ -939,7 +941,8 @@ ml_check_b0_id(ZERO_BL *b0p)
 		&& b0p->b0_id[1] != BLOCK0_ID1_C0
 		&& b0p->b0_id[1] != BLOCK0_ID1_C1
 		&& b0p->b0_id[1] != BLOCK0_ID1_C2
-		&& b0p->b0_id[1] != BLOCK0_ID1_C3)
+		&& b0p->b0_id[1] != BLOCK0_ID1_C3
+		&& b0p->b0_id[1] != BLOCK0_ID1_C4)
 	    )
 	return FAIL;
     return OK;
@@ -2513,7 +2516,7 @@ ml_sync_all(int check_file, int check_char)
 		need_check_timestamps = TRUE;	// give message later
 	    }
 	}
-	if (buf->b_ml.ml_mfp->mf_dirty)
+	if (buf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES)
 	{
 	    (void)mf_sync(buf->b_ml.ml_mfp, (check_char ? MFS_STOP : 0)
 					| (bufIsChanged(buf) ? MFS_FLUSH : 0));
