@@ -2845,7 +2845,7 @@ EXTERN char e_missing_gt[]
 EXTERN char e_cannot_convert_str_to_string[]
 	INIT(= N_("E1105: Cannot convert %s to string"));
 
-PLURAL_MSG(e_one_argument_too_many, "E1106: One argument too many",
+PLURAL_MSG(e_nr_argument_too_many, "E1106: %d argument too many",
 		e_nr_arguments_too_many, "E1106: %d arguments too many")
 
 EXTERN char e_string_list_dict_or_blob_required[]
@@ -3032,7 +3032,7 @@ EXTERN char e_cannot_open_terminal_from_command_line_window[]
 EXTERN char e_cannot_use_legacy_with_command_str[]
 	INIT(= N_("E1189: Cannot use :legacy with this command: %s"));
 
-PLURAL_MSG(e_one_argument_too_few, "E1190: One argument too few",
+PLURAL_MSG(e_nr_argument_too_few, "E1190: %d argument too few",
 		e_nr_arguments_too_few, "E1190: %d arguments too few")
 
 EXTERN char e_call_to_function_that_failed_to_compile_str[]
