@@ -6,6 +6,18 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
+// Use PLURAL_MSG() for messages that are passed to ngettext(), so that the
+// second one uses msgid_plural.
+#ifdef DO_INIT
+# define PLURAL_MSG(var1, msg1, var2, msg2) \
+	char var1[] = msg1; \
+	char var2[] = msg2;
+#else
+# define PLURAL_MSG(var1, msg1, var2, msg2) \
+	extern char var1[]; \
+	extern char var2[];
+#endif
+
 /*
  * Definition of error messages, sorted on error number.
  */
@@ -398,10 +410,10 @@ EXTERN char e_missing_endif[]
 EXTERN char e_missing_marker[]
 	INIT(= N_("E172: Missing marker"));
 #endif
-EXTERN char e_nr_more_file_to_edit[]
-	INIT(= N_("E173: %d more file to edit"));
-EXTERN char e_nr_more_files_to_edit[]
-	INIT(= N_("E173: %d more files to edit"));
+
+PLURAL_MSG(e_nr_more_file_to_edit, "E173: %d more file to edit",
+		e_nr_more_files_to_edit, "E173: %d more files to edit")
+
 EXTERN char e_command_already_exists_add_bang_to_replace_it_str[]
 	INIT(= N_("E174: Command already exists: add ! to replace it: %s"));
 EXTERN char e_no_attribute_specified[]
@@ -2832,10 +2844,10 @@ EXTERN char e_missing_gt[]
 	INIT(= N_("E1104: Missing >"));
 EXTERN char e_cannot_convert_str_to_string[]
 	INIT(= N_("E1105: Cannot convert %s to string"));
-EXTERN char e_one_argument_too_many[]
-	INIT(= N_("E1106: One argument too many"));
-EXTERN char e_nr_arguments_too_many[]
-	INIT(= N_("E1106: %d arguments too many"));
+
+PLURAL_MSG(e_one_argument_too_many, "E1106: One argument too many",
+		e_nr_arguments_too_many, "E1106: %d arguments too many")
+
 EXTERN char e_string_list_dict_or_blob_required[]
 	INIT(= N_("E1107: String, List, Dict or Blob required"));
 EXTERN char e_list_item_nr_is_not_list[]
@@ -3019,10 +3031,10 @@ EXTERN char e_cannot_open_terminal_from_command_line_window[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_legacy_with_command_str[]
 	INIT(= N_("E1189: Cannot use :legacy with this command: %s"));
-EXTERN char e_one_argument_too_few[]
-	INIT(= N_("E1190: One argument too few"));
-EXTERN char e_nr_arguments_too_few[]
-	INIT(= N_("E1190: %d arguments too few"));
+
+PLURAL_MSG(e_one_argument_too_few, "E1190: One argument too few",
+		e_nr_arguments_too_few, "E1190: %d arguments too few")
+
 EXTERN char e_call_to_function_that_failed_to_compile_str[]
 	INIT(= N_("E1191: Call to function that failed to compile: %s"));
 EXTERN char e_empty_function_name[]
