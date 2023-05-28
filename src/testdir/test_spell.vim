@@ -1021,6 +1021,14 @@ func Test_spell_screendump_spellcap()
   call term_sendkeys(buf, "\<C-E>\<C-L>")
   call VerifyScreenDump(buf, 'Test_spell_8', {})
 
+  " Adding an empty line does not remove Cap in "mod_bot" area
+  call term_sendkeys(buf, "zbO\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_9', {})
+
+  " Multiple empty lines does not remove Cap in the line after
+  call term_sendkeys(buf, "O\<Esc>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_spell_10', {})
+
   " clean up
   call StopVimInTerminal(buf)
 endfunc

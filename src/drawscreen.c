@@ -2197,12 +2197,10 @@ win_update(win_T *wp)
 #ifdef FEAT_SPELL
     // Initialize spell related variables for the first drawn line.
     CLEAR_FIELD(spv);
-    spv.spv_has_spell = spell_check_window(wp);
-    if (spv.spv_has_spell)
+    if (spell_check_window(wp))
     {
+	spv.spv_has_spell = TRUE;
 	spv.spv_unchanged = mod_top == 0;
-	spv.spv_capcol_lnum = mod_top ? mod_top : lnum;
-	spv.spv_cap_col = check_need_cap(wp, spv.spv_capcol_lnum, 0) ? 0 : - 1;
     }
 #endif
 
@@ -2464,19 +2462,13 @@ win_update(win_T *wp)
 		fold_line(wp, fold_count, &win_foldinfo, lnum, row);
 		++row;
 		--fold_count;
-		linenr_T lnume = lnum + fold_count;
 		wp->w_lines[idx].wl_folded = TRUE;
-		wp->w_lines[idx].wl_lastlnum = lnume;
+		wp->w_lines[idx].wl_lastlnum = lnum + fold_count;
 # ifdef FEAT_SYN_HL
 		did_update = DID_FOLD;
 # endif
 # ifdef FEAT_SPELL
-		// Check if the line after this fold requires a capital.
-		if (spv.spv_has_spell && check_need_cap(wp, lnume + 1, 0))
-		{
-		    spv.spv_cap_col = 0;
-		    spv.spv_capcol_lnum = lnume + 1;
-		}
+		spv.spv_capcol_lnum = 0;
 # endif
 	    }
 	    else
@@ -2571,6 +2563,9 @@ win_update(win_T *wp)
 #endif
 #ifdef FEAT_SYN_HL
 	    did_update = DID_NONE;
+#endif
+#ifdef FEAT_SPELL
+	    spv.spv_capcol_lnum = 0;
 #endif
 	}
 

@@ -1459,7 +1459,11 @@ win_line(
 	// current line is valid.
 	if (lnum == spv->spv_checked_lnum)
 	    cur_checked_col = spv->spv_checked_col;
-	if (lnum != spv->spv_capcol_lnum)
+	// Previous line was not spell checked, check for capital. This happens
+	// for the first line in an updated region or after a closed fold.
+	if (spv->spv_capcol_lnum == 0 && check_need_cap(wp, lnum, 0))
+	    spv->spv_cap_col = 0;
+	else if (lnum != spv->spv_capcol_lnum)
 	    spv->spv_cap_col = -1;
 	spv->spv_checked_lnum = 0;
 
@@ -1474,15 +1478,16 @@ win_line(
 	}
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
-	// For checking first word with a capital skip white space.
-	if (spv->spv_cap_col == 0)
-	    spv->spv_cap_col = getwhitecols(line);
 	// If current line is empty, check first word in next line for capital.
-	else if (*skipwhite(line) == NUL)
+	ptr = skipwhite(line);
+	if (*ptr == NUL)
 	{
 	    spv->spv_cap_col = 0;
 	    spv->spv_capcol_lnum = lnum + 1;
 	}
+	// For checking first word with a capital skip white space.
+	else if (spv->spv_cap_col == 0)
+	    spv->spv_cap_col = ptr - line;
 
 	// Copy the end of the current line into nextline[].
 	if (nextline[SPWORDLEN] == NUL)
