@@ -2389,7 +2389,7 @@ vim_regsub_both(
 		    else if (*s == NUL) // we hit NUL.
 		    {
 			if (copy)
-			    iemsg(_(e_damaged_match_string));
+			    iemsg(e_damaged_match_string);
 			goto exit;
 		    }
 		    else

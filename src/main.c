@@ -2743,7 +2743,7 @@ check_tty(mparm_T *parmp)
 	 */
 	if (netbeans_active() && (!stdout_isatty || !input_isatty))
 	{
-	    mch_errmsg(_("Vim: Error: Failure to start gvim from NetBeans\n"));
+	    mch_errmsg("Vim: Error: Failure to start gvim from NetBeans\n");
 	    exit(1);
 	}
 #endif

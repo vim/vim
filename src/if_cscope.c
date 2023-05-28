@@ -1723,7 +1723,7 @@ cs_manage_matches(
 	cs_print_tags_priv(mp, cp, cnt);
 	break;
     default:	// should not reach here
-	iemsg(_(e_fatal_error_in_cs_manage_matches));
+	iemsg(e_fatal_error_in_cs_manage_matches);
 	return NULL;
     }
 

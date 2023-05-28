@@ -214,7 +214,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	// buffer has already been read
     {
-	iemsg(_(e_add_to_internal_buffer_that_was_already_read_from));
+	iemsg(e_add_to_internal_buffer_that_was_already_read_from);
 	return;
     }
     else if (buf->bh_index != 0)
