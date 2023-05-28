@@ -958,6 +958,7 @@ func Test_spell_screendump()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "This is some text without any spell errors.  Everything",
              \ "should just be black, nothing wrong here.",
@@ -980,6 +981,7 @@ func Test_spell_screendump_spellcap()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "   This line has a sepll error. and missing caps and trailing spaces.   ",
              \ "another missing cap here.",
@@ -1027,6 +1029,7 @@ func Test_spell_compatible()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "test "->repeat(20),
              \ "",

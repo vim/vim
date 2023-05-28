@@ -1449,9 +1449,6 @@ win_line(
 	area_highlighting = TRUE;
 #endif
 
-    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    ptr = line;
-
 #ifdef FEAT_SPELL
     if (spv->spv_has_spell && !number_only)
     {
@@ -1466,6 +1463,17 @@ win_line(
 	    spv->spv_cap_col = -1;
 	spv->spv_checked_lnum = 0;
 
+	// Get the start of the next line, so that words that wrap to the
+	// next line are found too: "et<line-break>al.".
+	// Trick: skip a few chars for C/shell/Vim comments
+	nextline[SPWORDLEN] = NUL;
+	if (lnum < wp->w_buffer->b_ml.ml_line_count)
+	{
+	    line = ml_get_buf(wp->w_buffer, lnum + 1, FALSE);
+	    spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
+	}
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+
 	// For checking first word with a capital skip white space.
 	if (spv->spv_cap_col == 0)
 	    spv->spv_cap_col = getwhitecols(line);
@@ -1476,14 +1484,6 @@ win_line(
 	    spv->spv_capcol_lnum = lnum + 1;
 	}
 
-
-	// Get the start of the next line, so that words that wrap to the
-	// next line are found too: "et<line-break>al.".
-	// Trick: skip a few chars for C/shell/Vim comments
-	nextline[SPWORDLEN] = NUL;
-	if (lnum < wp->w_buffer->b_ml.ml_line_count)
-	    spell_cat_line(nextline + SPWORDLEN,
-			ml_get_buf(wp->w_buffer, lnum + 1, FALSE), SPWORDLEN);
 	// Copy the end of the current line into nextline[].
 	if (nextline[SPWORDLEN] == NUL)
 	{
@@ -1512,7 +1512,10 @@ win_line(
 	    }
 	}
     }
+    else
 #endif
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    ptr = line;
 
     if (wp->w_p_list)
     {
