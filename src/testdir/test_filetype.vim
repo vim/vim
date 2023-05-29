@@ -43,6 +43,9 @@ endfunc
 " Filetypes detected just from matching the file name.
 " First one is checking that these files have no filetype.
 def s:GetFilenameChecks(): dict<list<string>>
+  if !empty(windowsversion()) && !has_key(environ(), "XDG_CONFIG_HOME")
+    call setenv("XDG_CONFIG_HOME", expand("$HOME/.config"))
+  endif
   return {
     none: ['bsd', 'some-bsd'],
     8th: ['file.8th'],
@@ -95,7 +98,8 @@ def s:GetFilenameChecks(): dict<list<string>>
     bzr: ['bzr_log.any', 'bzr_log.file'],
     c: ['enlightenment/file.cfg', 'file.qc', 'file.c', 'some-enlightenment/file.cfg'],
     cabal: ['file.cabal'],
-    cabalconfig: ['cabal.config'],
+    cabalconfig: extend(['cabal.config', expand("$HOME/.config/cabal/config")],
+                      \ has_key(environ(), "XDG_CONFIG_HOME") ? [expand("$XDG_CONFIG_HOME/cabal/config")] : []),
     cabalproject: ['cabal.project', 'cabal.project.local'],
     cairo: ['file.cairo'],
     calendar: ['calendar', '/.calendar/file', '/share/calendar/any/calendar.file', '/share/calendar/calendar.file', 'any/share/calendar/any/calendar.file', 'any/share/calendar/calendar.file'],
