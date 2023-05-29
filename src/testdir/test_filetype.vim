@@ -1534,6 +1534,12 @@ func Test_mod_file()
   bwipe!
   call delete('go.mod')
 
+  call writefile(['module M'], 'go.mod')
+  split go.mod
+  call assert_equal('gomod', &filetype)
+  bwipe!
+  call delete('go.mod')
+
   filetype off
 endfunc
 

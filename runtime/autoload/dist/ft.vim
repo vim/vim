@@ -484,14 +484,14 @@ enddef
 export def FTmod()
   if exists("g:filetype_mod")
     exe "setf " .. g:filetype_mod
+  elseif expand("<afile>") =~ '\<go.mod$'
+    setf gomod
   elseif IsLProlog()
     setf lprolog
   elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
     setf modula2
   elseif IsRapid()
     setf rapid
-  elseif expand("<afile>") =~ '\<go.mod$'
-    setf gomod
   else
     # Nothing recognized, assume modsim3
     setf modsim3
