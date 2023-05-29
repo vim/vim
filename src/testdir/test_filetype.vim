@@ -768,7 +768,7 @@ def s:GetFilenameChecks(): dict<list<string>>
           '.zcompdump', '.zlogin', '.zlogout', '.zshenv', '.zshrc',
           '.zcompdump-file', '.zlog', '.zlog-file', '.zsh', '.zsh-file',
           'any/etc/zprofile', 'zlog', 'zlog-file', 'zsh', 'zsh-file'],
-    
+
     help: [$VIMRUNTIME .. '/doc/help.txt'],
     }
 enddef
