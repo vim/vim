@@ -3354,7 +3354,7 @@ f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     }
     else
     {
-	if (strcmp((const char *)argvars[0].vval.v_string, "vim") == 0)
+	if (strcmp((const char *)argvars[0].vval.v_string, VIMPACKAGE) == 0)
 	{
 	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
 	}
@@ -5476,30 +5476,39 @@ f_gettext(typval_T *argvars, typval_T *rettv)
 	    )))
 	return;
 
-    if (argvars[1].v_type == VAR_STRING)
-    {
-	textdomain((const char *)argvars[1].vval.v_string);
+    rettv->v_type = VAR_STRING;
 
+    if (argvars[1].v_type == VAR_STRING &&
+	    argvars[1].vval.v_string != NULL &&
+	    *(argvars[1].vval.v_string) != NUL)
+    {
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
-	if (argvars[2].v_type == VAR_STRING)
+	if (argvars[2].v_type == VAR_STRING &&
+		argvars[2].vval.v_string != NULL &&
+		*(argvars[2].vval.v_string) != NUL)
 	{
 	    prev = bind_textdomain_codeset((const char *)argvars[1].vval.v_string, (const char *)argvars[2].vval.v_string);
 	}
 #endif
-    }
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave((char_u *)_(argvars[0].vval.v_string));
-
-    if (argvars[1].v_type == VAR_STRING)
-    {
+#if defined(HAVE_DGETTEXT)
+	rettv->vval.v_string = vim_strsave((char_u *)dgettext((const char *)argvars[1].vval.v_string, (const char *)argvars[0].vval.v_string));
+#else
+	textdomain((const char *)argvars[1].vval.v_string);
+	rettv->vval.v_string = vim_strsave((char_u *)_(argvars[0].vval.v_string));
 	textdomain(VIMPACKAGE);
+#endif
+
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
 	if (prev != NULL)
 	{
 	    bind_textdomain_codeset((const char *)argvars[1].vval.v_string, prev);
 	}
 #endif
+    }
+    else
+    {
+	rettv->vval.v_string = vim_strsave((char_u *)_(argvars[0].vval.v_string));
     }
 }
 
