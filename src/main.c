@@ -356,7 +356,10 @@ main
     // Ensure output works usefully without a tty: buffer lines instead of
     // fully buffered.
     if (silent_mode)
-	setvbuf(stdout, NULL, _IOLBF, 0);
+    {
+	void *buf = malloc(BUFSIZ);
+	setvbuf(stdout, buf, _IOLBF, BUFSIZ);
+    }
 #endif
 
     // This message comes before term inits, but after setting "silent_mode"
