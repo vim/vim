@@ -795,6 +795,7 @@ accordingly.  Vim proceeds in this order:
 	inspected.  Buffers are created for all files (but not loaded yet).
 	The |-V| argument can be used to display or log what happens next,
 	useful for debugging the initializations.
+	The |--cmd| arguments are also executed here.
 
 3. Execute Ex commands, from environment variables and/or files
 	An environment variable is read as one Ex command line, where multiple
