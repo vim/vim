@@ -2043,7 +2043,7 @@ makemap(
 			c1 = 't';
 			break;
 		    default:
-			iemsg(_(e_makemap_illegal_mode));
+			iemsg(e_makemap_illegal_mode);
 			return FAIL;
 		}
 		do	// do this twice if c2 is set, 3 times with c3

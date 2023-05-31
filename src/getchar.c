@@ -214,7 +214,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	// buffer has already been read
     {
-	iemsg(_(e_add_to_internal_buffer_that_was_already_read_from));
+	iemsg(e_add_to_internal_buffer_that_was_already_read_from);
 	return;
     }
     else if (buf->bh_index != 0)
@@ -1645,8 +1645,8 @@ updatescript(int c)
 }
 
 /*
- * Convert "c" plus "modifiers" to merge the effect of modifyOtherKeys into the
- * character.  Also for when the Kitty key protocol is used.
+ * Convert "c_arg" plus "modifiers" to merge the effect of modifyOtherKeys into
+ * the character.  Also for when the Kitty key protocol is used.
  */
     int
 merge_modifyOtherKeys(int c_arg, int *modifiers)
@@ -2480,14 +2480,14 @@ check_simplify_modifier(int max_offset)
 		{
 		    if (put_string_in_typebuf(offset, 4, new_string, len,
 							NULL, 0, NULL) == FAIL)
-		    return -1;
+			return -1;
 		}
 		else
 		{
 		    tp[2] = modifier;
 		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
 							NULL, 0, NULL) == FAIL)
-		    return -1;
+			return -1;
 		}
 		return len;
 	    }
@@ -2798,9 +2798,9 @@ handle_mapping(
 	if (no_mapping == 0 || allow_keys != 0)
 	{
 	    if ((typebuf.tb_maplen == 0
-		    || (p_remap && typebuf.tb_noremap[
+			    || (p_remap && typebuf.tb_noremap[
 						    typebuf.tb_off] == RM_YES))
-		&& !*timedout)
+		    && !*timedout)
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else
 		keylen = 0;
@@ -3282,7 +3282,7 @@ vgetorpeek(int advance)
  * get a character: 2. from the typeahead buffer
  */
 			c = typebuf.tb_buf[typebuf.tb_off];
-			if (advance)	// remove chars from tb_buf
+			if (advance)	// remove chars from typebuf
 			{
 			    cmd_silent = (typebuf.tb_silent > 0);
 			    if (typebuf.tb_maplen > 0)
@@ -3294,8 +3294,7 @@ vgetorpeek(int advance)
 				gotchars(typebuf.tb_buf
 						 + typebuf.tb_off, 1);
 			    }
-			    KeyNoremap = typebuf.tb_noremap[
-						      typebuf.tb_off];
+			    KeyNoremap = typebuf.tb_noremap[typebuf.tb_off];
 			    del_typebuf(1, 0);
 			}
 			break;  // got character, break the for loop

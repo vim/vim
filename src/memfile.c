@@ -478,7 +478,7 @@ mf_put(
     flags = hp->bh_flags;
 
     if ((flags & BH_LOCKED) == 0)
-	iemsg(_(e_block_was_not_locked));
+	iemsg(e_block_was_not_locked);
     flags &= ~BH_LOCKED;
     if (dirty)
     {

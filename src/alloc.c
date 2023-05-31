@@ -226,7 +226,7 @@ lalloc(size_t size, int message)
     {
 	// Don't hide this message
 	emsg_silent = 0;
-	iemsg(_(e_internal_error_lalloc_zero));
+	iemsg(e_internal_error_lalloc_zero);
 	return NULL;
     }
 

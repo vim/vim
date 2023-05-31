@@ -416,7 +416,7 @@ bf_key_init(
     keylen = (int)STRLEN(key) / 2;
     if (keylen == 0)
     {
-	iemsg(_(e_bf_key_init_called_with_empty_password));
+	iemsg(e_bf_key_init_called_with_empty_password);
 	return;
     }
     for (i = 0; i < keylen; i++)
