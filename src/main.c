@@ -79,6 +79,7 @@ static mparm_T	params;
 #ifndef NO_VIM_MAIN	// skip this for unittests
 
 static char_u *start_dir = NULL;	// current working dir on startup
+static void *s_vbuf = NULL;		// buffer for setvbuf()
 
 static int has_dash_c_arg = FALSE;
 
@@ -357,8 +358,9 @@ main
     // fully buffered.
     if (silent_mode)
     {
-	void *buf = malloc(BUFSIZ);
-	setvbuf(stdout, buf, _IOLBF, BUFSIZ);
+	s_vbuf = malloc(BUFSIZ);
+	if (s_vbuf != NULL)
+	    setvbuf(stdout, s_vbuf, _IOLBF, BUFSIZ);
     }
 #endif
 
@@ -438,6 +440,19 @@ main
 }
 #endif // NO_VIM_MAIN
 #endif // PROTO
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_vbuf(void)
+{
+    if (s_vbuf != NULL)
+    {
+	setvbuf(stdout, NULL, _IONBF, 0);
+	free(s_vbuf);
+	s_vbuf = NULL;
+    }
+}
+#endif
 
 /*
  * vim_main2() is needed for FEAT_MZSCHEME, but we define it always to keep

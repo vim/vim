@@ -1,4 +1,5 @@
 /* main.c */
+void free_vbuf(void);
 int vim_main2(void);
 void common_init(mparm_T *paramp);
 int is_not_a_term(void);

@@ -580,6 +580,7 @@ free_all_mem(void)
 # ifdef FEAT_EVAL
     free_resub_eval_result();
 # endif
+    free_vbuf();
 }
 #endif
 
