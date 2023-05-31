@@ -1449,9 +1449,6 @@ win_line(
 	area_highlighting = TRUE;
 #endif
 
-    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    ptr = line;
-
 #ifdef FEAT_SPELL
     if (spv->spv_has_spell && !number_only)
     {
@@ -1462,28 +1459,36 @@ win_line(
 	// current line is valid.
 	if (lnum == spv->spv_checked_lnum)
 	    cur_checked_col = spv->spv_checked_col;
-	if (lnum != spv->spv_capcol_lnum)
+	// Previous line was not spell checked, check for capital. This happens
+	// for the first line in an updated region or after a closed fold.
+	if (spv->spv_capcol_lnum == 0 && check_need_cap(wp, lnum, 0))
+	    spv->spv_cap_col = 0;
+	else if (lnum != spv->spv_capcol_lnum)
 	    spv->spv_cap_col = -1;
 	spv->spv_checked_lnum = 0;
-
-	// For checking first word with a capital skip white space.
-	if (spv->spv_cap_col == 0)
-	    spv->spv_cap_col = getwhitecols(line);
-	// If current line is empty, check first word in next line for capital.
-	else if (*skipwhite(line) == NUL)
-	{
-	    spv->spv_cap_col = 0;
-	    spv->spv_capcol_lnum = lnum + 1;
-	}
-
 
 	// Get the start of the next line, so that words that wrap to the
 	// next line are found too: "et<line-break>al.".
 	// Trick: skip a few chars for C/shell/Vim comments
 	nextline[SPWORDLEN] = NUL;
 	if (lnum < wp->w_buffer->b_ml.ml_line_count)
-	    spell_cat_line(nextline + SPWORDLEN,
-			ml_get_buf(wp->w_buffer, lnum + 1, FALSE), SPWORDLEN);
+	{
+	    line = ml_get_buf(wp->w_buffer, lnum + 1, FALSE);
+	    spell_cat_line(nextline + SPWORDLEN, line, SPWORDLEN);
+	}
+	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+
+	// If current line is empty, check first word in next line for capital.
+	ptr = skipwhite(line);
+	if (*ptr == NUL)
+	{
+	    spv->spv_cap_col = 0;
+	    spv->spv_capcol_lnum = lnum + 1;
+	}
+	// For checking first word with a capital skip white space.
+	else if (spv->spv_cap_col == 0)
+	    spv->spv_cap_col = ptr - line;
+
 	// Copy the end of the current line into nextline[].
 	if (nextline[SPWORDLEN] == NUL)
 	{
@@ -1513,6 +1518,9 @@ win_line(
 	}
     }
 #endif
+
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    ptr = line;
 
     if (wp->w_p_list)
     {
