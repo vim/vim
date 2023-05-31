@@ -76,10 +76,11 @@ static char *(main_errors[]) =
 // Various parameters passed between main() and other functions.
 static mparm_T	params;
 
+static void *s_vbuf = NULL;		// buffer for setvbuf()
+
 #ifndef NO_VIM_MAIN	// skip this for unittests
 
 static char_u *start_dir = NULL;	// current working dir on startup
-static void *s_vbuf = NULL;		// buffer for setvbuf()
 
 static int has_dash_c_arg = FALSE;
 
