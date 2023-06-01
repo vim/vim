@@ -1779,7 +1779,6 @@ scrollup(
 	int	    width1 = curwin->w_width - curwin_col_off();
 	int	    width2 = width1 + curwin_col_off2();
 	int	    size = 0;
-	linenr_T    prev_topline = curwin->w_topline;
 
 	if (do_sms)
 	    size = linetabsize(curwin, curwin->w_topline);
@@ -1842,8 +1841,8 @@ scrollup(
 	    }
 	}
 
-	if (curwin->w_topline == prev_topline)
-	    // need to redraw even though w_topline didn't change
+	if (curwin->w_skipcol > 0)
+	    // need to redraw because wl_size of the new topline is now invalid
 	    redraw_later(UPD_NOT_VALID);
     }
     else
