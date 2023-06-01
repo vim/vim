@@ -6776,15 +6776,13 @@ set_fraction(win_T *wp)
  * call from win_new_height().  Instead we iterate over all windows in a
  * tabpage and calculate the new scroll position.
  * TODO: Ensure this also works with wrapped lines.
- * Requires topline to be able to be set to a bufferline with some
- * offset(row-wise scrolling/smoothscroll).
+ * Requires a not fully visible cursor line to be allowed at the bottom of
+ * a window("zb"), probably only when 'smoothscroll' is also set.
  */
     static void
 win_fix_scroll(int resize)
 {
-    int		diff;
     win_T	*wp;
-    linenr_T	lnum;
 
     skip_update_topline = TRUE;
     FOR_ALL_WINDOWS(wp)
@@ -6796,9 +6794,9 @@ win_fix_scroll(int resize)
 	    if (*p_spk == 's' && wp->w_winrow != wp->w_prev_winrow
 		      && wp->w_botline - 1 <= wp->w_buffer->b_ml.ml_line_count)
 	    {
-		lnum = wp->w_cursor.lnum;
-		diff = (wp->w_winrow - wp->w_prev_winrow)
-		     + (wp->w_height - wp->w_prev_height);
+		int diff = (wp->w_winrow - wp->w_prev_winrow)
+			 + (wp->w_height - wp->w_prev_height);
+		linenr_T lnum = wp->w_cursor.lnum;
 		wp->w_cursor.lnum = wp->w_botline - 1;
 		//  Add difference in height and row to botline.
 		if (diff > 0)
@@ -6835,25 +6833,21 @@ win_fix_scroll(int resize)
     static void
 win_fix_cursor(int normal)
 {
-    long	so = get_scrolloff_value();
     win_T	*wp = curwin;
-    linenr_T	nlnum = 0;
-    linenr_T	lnum = wp->w_cursor.lnum;
-    linenr_T	bot;
-    linenr_T	top;
 
-    if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
-	return;
-    if (skip_win_fix_cursor)
+    if (skip_win_fix_cursor || wp->w_buffer->b_ml.ml_line_count < wp->w_height)
 	return;
 
     // Determine valid cursor range.
-    so = MIN(wp->w_height / 2, so);
+    long so = MIN(wp->w_height / 2, get_scrolloff_value());
+    linenr_T lnum = wp->w_cursor.lnum;
     wp->w_cursor.lnum = wp->w_topline;
-    top = cursor_down_inner(wp, so);
+    linenr_T top = cursor_down_inner(wp, so);
     wp->w_cursor.lnum = wp->w_botline - 1;
-    bot = cursor_up_inner(wp, so);
+    linenr_T bot = cursor_up_inner(wp, so);
     wp->w_cursor.lnum = lnum;
+
+    linenr_T nlnum = 0;
     // Check if cursor position is above or below valid cursor range.
     if (lnum > bot && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
 	nlnum = bot;
