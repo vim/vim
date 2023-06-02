@@ -2717,7 +2717,7 @@ u_undoredo(int undo)
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
 	    unblock_autocmds();
-	    iemsg(_(e_u_undo_line_numbers_wrong));
+	    iemsg(e_u_undo_line_numbers_wrong);
 	    changed();		// don't want UNCHANGED now
 	    return;
 	}
@@ -3307,7 +3307,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	iemsg(_(e_undo_list_corrupt));
+	iemsg(e_undo_list_corrupt);
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3339,7 +3339,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    iemsg(_(e_undo_line_missing));
+	    iemsg(e_undo_line_missing);
 	    uep->ue_bot = uep->ue_top + 1;  // assume all lines deleted, will
 					    // get all the old lines back
 					    // without deleting the current

@@ -691,6 +691,12 @@ typedef struct
     int		cmod_did_esilent;	// incremented when emsg_silent is
 } cmdmod_T;
 
+typedef enum {
+    MF_DIRTY_NO = 0,		// no dirty blocks
+    MF_DIRTY_YES,		// there are dirty blocks
+    MF_DIRTY_YES_NOSYNC,	// there are dirty blocks, do not sync yet
+} mfdirty_T;
+
 #define MF_SEED_LEN	8
 
 struct memfile
@@ -712,7 +718,7 @@ struct memfile
     blocknr_T	mf_neg_count;		// number of negative blocks numbers
     blocknr_T	mf_infile_count;	// number of pages in the file
     unsigned	mf_page_size;		// number of bytes in a page
-    int		mf_dirty;		// TRUE if there are dirty blocks
+    mfdirty_T	mf_dirty;
 #ifdef FEAT_CRYPT
     buf_T	*mf_buffer;		// buffer this memfile is for
     char_u	mf_seed[MF_SEED_LEN];	// seed for encryption
@@ -4864,3 +4870,18 @@ typedef struct
     // message (when it is not NULL).
     char	*os_errbuf;
 } optset_T;
+
+/*
+ * Spell checking variables passed from win_update() to win_line().
+ */
+typedef struct {
+    int		spv_has_spell;	    // drawn window has spell checking
+#ifdef FEAT_SPELL
+    int		spv_unchanged;	    // not updating for changed text
+    int		spv_checked_col;    // column in "checked_lnum" up to
+				    // which there are no spell errors
+    linenr_T	spv_checked_lnum;   // line number for "checked_col"
+    int		spv_cap_col;	    // column to check for Cap word
+    linenr_T	spv_capcol_lnum;    // line number for "cap_col"
+#endif
+} spellvars_T;

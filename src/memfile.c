@@ -150,7 +150,7 @@ mf_open(char_u *fname, int flags)
     mfp->mf_free_first = NULL;		// free list is empty
     mfp->mf_used_first = NULL;		// used list is empty
     mfp->mf_used_last = NULL;
-    mfp->mf_dirty = FALSE;
+    mfp->mf_dirty = MF_DIRTY_NO;
     mfp->mf_used_count = 0;
     mf_hash_init(&mfp->mf_hash);
     mf_hash_init(&mfp->mf_trans);
@@ -224,7 +224,7 @@ mf_open_file(memfile_T *mfp, char_u *fname)
     if (mfp->mf_fd < 0)
 	return FAIL;
 
-    mfp->mf_dirty = TRUE;
+    mfp->mf_dirty = MF_DIRTY_YES;
     return OK;
 }
 
@@ -386,7 +386,7 @@ mf_new(memfile_T *mfp, int negative, int page_count)
 	}
     }
     hp->bh_flags = BH_LOCKED | BH_DIRTY;	// new block is always dirty
-    mfp->mf_dirty = TRUE;
+    mfp->mf_dirty = MF_DIRTY_YES;
     hp->bh_page_count = page_count;
     mf_ins_used(mfp, hp);
     mf_ins_hash(mfp, hp);
@@ -478,12 +478,13 @@ mf_put(
     flags = hp->bh_flags;
 
     if ((flags & BH_LOCKED) == 0)
-	iemsg(_(e_block_was_not_locked));
+	iemsg(e_block_was_not_locked);
     flags &= ~BH_LOCKED;
     if (dirty)
     {
 	flags |= BH_DIRTY;
-	mfp->mf_dirty = TRUE;
+	if (mfp->mf_dirty != MF_DIRTY_YES_NOSYNC)
+	    mfp->mf_dirty = MF_DIRTY_YES;
     }
     hp->bh_flags = flags;
     if (infile)
@@ -528,9 +529,10 @@ mf_sync(memfile_T *mfp, int flags)
     bhdr_T	*hp;
     int		got_int_save = got_int;
 
-    if (mfp->mf_fd < 0)	    // there is no file, nothing to do
+    if (mfp->mf_fd < 0)
     {
-	mfp->mf_dirty = FALSE;
+	// there is no file, nothing to do
+	mfp->mf_dirty = MF_DIRTY_NO;
 	return FAIL;
     }
 
@@ -576,7 +578,7 @@ mf_sync(memfile_T *mfp, int flags)
      * In case of an error this flag is also set, to avoid trying all the time.
      */
     if (hp == NULL || status == FAIL)
-	mfp->mf_dirty = FALSE;
+	mfp->mf_dirty = MF_DIRTY_NO;
 
     if ((flags & MFS_FLUSH) && *p_sws != NUL)
     {
@@ -675,7 +677,7 @@ mf_set_dirty(memfile_T *mfp)
     for (hp = mfp->mf_used_last; hp != NULL; hp = hp->bh_prev)
 	if (hp->bh_bnum > 0)
 	    hp->bh_flags |= BH_DIRTY;
-    mfp->mf_dirty = TRUE;
+    mfp->mf_dirty = MF_DIRTY_YES;
 }
 
 /*
