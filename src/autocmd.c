@@ -1657,11 +1657,13 @@ aucmd_restbuf(
 	}
 win_found:
 #ifdef FEAT_JOB_CHANNEL
+	;
+	int save_stop_insert_mode = stop_insert_mode;
 	// May need to stop Insert mode if we were in a prompt buffer.
 	leaving_window(curwin);
 	// Do not stop Insert mode when already in Insert mode before.
 	if (aco->save_State & MODE_INSERT)
-	    stop_insert_mode = FALSE;
+	    stop_insert_mode = save_stop_insert_mode;
 #endif
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);

@@ -208,8 +208,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	# create vim.pot
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
-		--keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
-		$(PO_INPUTLIST) $(PO_VIM_JSLIST)
+		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
 	# Fix Vim scripts names, so that "gf" works
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)

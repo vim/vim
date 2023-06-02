@@ -518,7 +518,7 @@ nb_parse_cmd(char_u *cmd)
 	 * so I'm disabling it except for debugging.
 	 */
 	nbdebug(("nb_parse_cmd: Command error for \"%s\"\n", cmd));
-	emsg(_(e_bad_return_from_nb_do_cmd));
+	emsg(e_bad_return_from_nb_do_cmd);
 #endif
     }
 }

@@ -218,6 +218,10 @@ open_buffer(
 	return FAIL;
     }
 
+    // Do not sync this buffer yet, may first want to read the file.
+    if (curbuf->b_ml.ml_mfp != NULL)
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES_NOSYNC;
+
     // The autocommands in readfile() may change the buffer, but only AFTER
     // reading the file.
     set_bufref(&old_curbuf, curbuf);
@@ -297,6 +301,11 @@ open_buffer(
 	if (retval == OK)
 	    retval = read_buffer(TRUE, eap, flags);
     }
+
+    // Can now sync this buffer in ml_sync_all().
+    if (curbuf->b_ml.ml_mfp != NULL
+	    && curbuf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES_NOSYNC)
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES;
 
     // if first time loading this buffer, init b_chartab[]
     if (curbuf->b_flags & BF_NEVERLOADED)

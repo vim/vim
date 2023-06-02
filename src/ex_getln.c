@@ -1221,7 +1221,12 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #endif
     if (c != ESC)	    // use ESC to cancel inserting register
     {
-	literally = i == Ctrl_R;
+	literally = i == Ctrl_R
+#ifdef FEAT_CLIPBOARD
+			|| (clip_star.available && c == '*')
+			|| (clip_plus.available && c == '+')
+#endif
+			;
 	cmdline_paste(c, literally, FALSE);
 
 #ifdef FEAT_EVAL

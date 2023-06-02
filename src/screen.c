@@ -1199,8 +1199,9 @@ screen_putchar(int c, int row, int col, int attr)
 }
 
 /*
- * Get a single character directly from ScreenLines into "bytes[]".
- * Also return its attribute in *attrp;
+ * Get a single character directly from ScreenLines into "bytes", which must
+ * have a size of "MB_MAXBYTES + 1".
+ * If "attrp" is not NULL, return the character's attribute in "*attrp".
  */
     void
 screen_getbytes(int row, int col, char_u *bytes, int *attrp)
@@ -1212,7 +1213,8 @@ screen_getbytes(int row, int col, char_u *bytes, int *attrp)
 	return;
 
     off = LineOffset[row] + col;
-    *attrp = ScreenAttrs[off];
+    if (attrp != NULL)
+	*attrp = ScreenAttrs[off];
     bytes[0] = ScreenLines[off];
     bytes[1] = NUL;
 
