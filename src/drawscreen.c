@@ -2589,6 +2589,7 @@ win_update(win_T *wp)
     wp->w_last_cursorline = wp->w_p_cul ? wp->w_cursor.lnum : 0;
 #endif
     wp->w_last_cursor_lnum_rnu = wp->w_p_rnu ? wp->w_cursor.lnum : 0;
+    wp->w_last_cursor_lnum_drawn = wp->w_cursor.lnum;
 
 #ifdef FEAT_VTP
     // Rewrite the character at the end of the screen line.

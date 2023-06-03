@@ -1703,7 +1703,7 @@ func Test_splitkeep_options()
     " No scroll when resizing windows
     wincmd k | resize +2 | redraw
     call assert_equal(1, line("w0"))
-    wincmd j
+    wincmd j | redraw!
     call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
 
     " No scroll when dragging statusline
@@ -1715,7 +1715,7 @@ func Test_splitkeep_options()
     " No scroll when changing shellsize
     set lines+=2
     call assert_equal(1, line("w0"))
-    wincmd j
+    wincmd j | redraw
     call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
     set lines-=2
     call assert_equal(&spk == 'topline' ? 1 : win_screenpos(0)[0] - tl - wsb, line("w0"))
@@ -1824,10 +1824,12 @@ func Test_splitkeep_misc()
   " Cursor is adjusted to start and end of buffer
   norm M
   wincmd s
+  redraw
   resize 1
   call assert_equal(1, line('.'))
   wincmd j
   norm GM
+  redraw
   resize 1
   call assert_equal(&lines, line('.'))
   only!
@@ -1858,6 +1860,30 @@ func Test_splitkeep_misc()
 
   %bwipeout!
   set splitbelow&
+  set splitkeep&
+endfunc
+
+func Test_splitkeep_cursor_resize()
+  set splitkeep=screen
+
+  func CursorResize()
+    call cursor(100, 1)
+    wincmd -
+  endfunc
+  func CursorEqualize()
+    call cursor(100, 1)
+    wincmd =
+  endfunc
+
+  call setline(1, range(1, 200))
+  call CursorResize()
+  call assert_equal(100, line('.'))
+
+  norm gg
+  call CursorEqualize()
+  call assert_equal(100, line('.'))
+
+  bwipeout!
   set splitkeep&
 endfunc
 

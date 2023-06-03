@@ -3709,6 +3709,8 @@ struct window_S
 
     linenr_T    w_last_cursor_lnum_rnu;  // cursor lnum when 'rnu' was last
 					 // redrawn
+    linenr_T    w_last_cursor_lnum_drawn;// cursor lnum when window was last
+					 // redrawn
 
     lcs_chars_T	w_lcs_chars;	    // 'listchars' characters
     fill_chars_T w_fill_chars;	    // 'fillchars' characters

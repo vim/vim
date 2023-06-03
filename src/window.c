@@ -6821,7 +6821,11 @@ win_fix_scroll(int resize)
 	wp->w_prev_winrow = wp->w_winrow;
     }
     skip_update_topline = FALSE;
-    // Ensure cursor is valid when not in normal mode or when resized.
+    // If the cursor position hasn't changed since it was last drawn, ensure
+    // cursor is valid when not in normal mode or when resized.  If it has
+    // changed, let update_topline() move the cursor onto the screen.
+    if (curwin->w_cursor.lnum != curwin->w_last_cursor_lnum_drawn)
+	return;
     if (!(get_real_state() & (MODE_NORMAL|MODE_CMDLINE|MODE_TERMINAL)))
 	win_fix_cursor(FALSE);
     else if (resize)
@@ -6874,7 +6878,7 @@ win_fix_cursor(int normal)
 	{
 	    wp->w_fraction = (nlnum == bot) ? FRACTION_MULT : 0;
 	    scroll_to_fraction(wp, wp->w_prev_height);
-	    validate_botline_win(curwin);
+	    validate_botline();
 	}
     }
 }
