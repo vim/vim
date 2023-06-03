@@ -1786,7 +1786,6 @@ scrollup(
 	int	    width1 = curwin->w_width - curwin_col_off();
 	int	    width2 = width1 + curwin_col_off2();
 	int	    size = 0;
-	linenr_T    prev_topline = curwin->w_topline;
 	colnr_T	    prev_skipcol = curwin->w_skipcol;
 
 	if (do_sms)
@@ -1850,9 +1849,7 @@ scrollup(
 	    }
 	}
 
-	// TODO: is comparing w_topline with prev_topline still needed?
-	if (curwin->w_topline == prev_topline
-		|| curwin->w_skipcol != prev_skipcol)
+	if (prev_skipcol > 0 || curwin->w_skipcol > 0)
 	    // need to redraw because wl_size of the topline may now be invalid
 	    redraw_later(UPD_NOT_VALID);
     }
