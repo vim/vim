@@ -823,6 +823,7 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 	    && !(wp->w_p_list && wp->w_lcs_chars.prec != 0))
     {
 	int off = (int)(current_ScreenLine - ScreenLines);
+	int max_off = off + screen_Columns;
 	int skip = 0;
 
 	if (wp->w_p_nu && wp->w_p_rnu)
@@ -836,6 +837,10 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 
 	for (int i = 0; i < 3 && i + skip < wp->w_width; ++i)
 	{
+	    if ((*mb_off2cells)(off, max_off) > 1)
+		// When the first half of a double-width character is
+		// overwritten, change the second half to a space.
+		ScreenLines[off + 1] = ' ';
 	    ScreenLines[off] = '<';
 	    if (enc_utf8)
 		ScreenLinesUC[off] = 0;
