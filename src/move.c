@@ -1479,6 +1479,7 @@ textpos2screenpos(
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
 
+	    col -= wp->w_skipcol;
 	    // long line wrapping, adjust row
 	    if (wp->w_p_wrap
 		    && col >= (colnr_T)wp->w_width

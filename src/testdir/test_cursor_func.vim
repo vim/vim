@@ -118,7 +118,7 @@ func Test_screenpos()
 
   let wininfo = getwininfo(winid)[0]
   call setline(3, ['x']->repeat(wininfo.height))
-  call setline(line('$') + 1, 'x'->repeat(wininfo.width * 3))
+  call setline(line('$') + 1, 'x'->repeat(20 * 3))
   setlocal nonumber display=lastline so=0
   exe "normal G\<C-Y>\<C-Y>"
   redraw
@@ -127,7 +127,24 @@ func Test_screenpos()
 	\ 'curscol': wincol + 7,
 	\ 'endcol': wincol + 7}, winid->screenpos(line('$'), 8))
   call assert_equal({'row': 0, 'col': 0, 'curscol': 0, 'endcol': 0},
-        \ winid->screenpos(line('$'), 22))
+	\ winid->screenpos(line('$'), 22))
+
+  1split
+  normal G$
+  redraw
+  call assert_equal({'row': winrow + 0,
+	\ 'col': wincol + 20 - 1,
+	\ 'curscol': wincol + 20 - 1,
+	\ 'endcol': wincol + 20 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  setlocal nowrap
+  normal 050zl$
+  call assert_equal({'row': winrow + 0,
+	\ 'col': wincol + 10 - 1,
+	\ 'curscol': wincol + 10 - 1,
+	\ 'endcol': wincol + 10 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  close
 
   close
   call assert_equal({}, screenpos(999, 1, 1))
