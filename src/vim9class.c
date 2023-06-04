@@ -1025,7 +1025,9 @@ early_ret:
 	    if (*fup == NULL)
 		goto cleanup;
 
-	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
+	    if (gap->ga_len != 0)
+		mch_memmove(*fup, gap->ga_data,
+					      sizeof(ufunc_T *) * gap->ga_len);
 	    vim_free(gap->ga_data);
 	    if (loop == 1)
 		cl->class_class_function_count_child = gap->ga_len;

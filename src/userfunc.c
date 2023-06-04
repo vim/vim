@@ -5651,8 +5651,8 @@ copy_function(ufunc_T *fp)
     //    type_T	**uf_arg_types;
     //    type_T	*uf_ret_type;
 
-    ufunc->uf_type_list.ga_len = 0;
-    ufunc->uf_type_list.ga_data = NULL;
+    // make uf_type_list empty
+    ga_init(&ufunc->uf_type_list);
 
     // TODO:   partial_T	*uf_partial;
 
