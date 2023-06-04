@@ -344,7 +344,8 @@ update_topline(void)
 		check_topline = TRUE;
 	    else if (check_top_offset())
 		check_topline = TRUE;
-	    else if (curwin->w_cursor.lnum == curwin->w_topline)
+	    else if (curwin->w_skipcol > 0
+				 && curwin->w_cursor.lnum == curwin->w_topline)
 	    {
 		colnr_T vcol;
 
@@ -1459,7 +1460,8 @@ textpos2screenpos(
 
 #ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
-	row += diff_check_fill(wp, lnum);
+	row += lnum == wp->w_topline ? wp->w_topfill
+				     : diff_check_fill(wp, lnum);
 #endif
 
 	colnr_T	off = win_col_off(wp);
@@ -1479,7 +1481,7 @@ textpos2screenpos(
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
 
-	    if (pos->lnum == wp->w_topline)
+	    if (lnum == wp->w_topline)
 		col -= wp->w_skipcol;
 
 	    // long line wrapping, adjust row
@@ -1848,6 +1850,7 @@ scrollup(
 	    }
 	}
 
+	// TODO: is comparing w_topline with prev_topline still needed?
 	if (curwin->w_topline == prev_topline
 		|| curwin->w_skipcol != prev_skipcol)
 	    // need to redraw because wl_size of the topline may now be invalid
