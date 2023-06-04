@@ -150,6 +150,7 @@ typedef struct {
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra;
     char_u	*saved_p_extra;
+    char_u	*saved_p_extra_free;
     int		saved_extra_attr;
     int		saved_n_attr_skip;
     int		saved_extra_for_textprop;
@@ -979,6 +980,9 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->draw_state = WL_START;
 	wlv->saved_n_extra = wlv->n_extra;
 	wlv->saved_p_extra = wlv->p_extra;
+	vim_free(wlv->saved_p_extra_free);
+	wlv->saved_p_extra_free = wlv->p_extra_free;
+	wlv->p_extra_free = NULL;
 	wlv->saved_extra_attr = wlv->extra_attr;
 	wlv->saved_n_attr_skip = wlv->n_attr_skip;
 	wlv->saved_extra_for_textprop = wlv->extra_for_textprop;
@@ -1015,6 +1019,9 @@ win_line_continue(winlinevars_T *wlv)
 	wlv->c_extra = wlv->saved_c_extra;
 	wlv->c_final = wlv->saved_c_final;
 	wlv->p_extra = wlv->saved_p_extra;
+	vim_free(wlv->p_extra_free);
+	wlv->p_extra_free = wlv->saved_p_extra_free;
+	wlv->saved_p_extra_free = NULL;
 	wlv->extra_attr = wlv->saved_extra_attr;
 	wlv->n_attr_skip = wlv->saved_n_attr_skip;
 	wlv->extra_for_textprop = wlv->saved_extra_for_textprop;
@@ -4119,5 +4126,6 @@ win_line(
 #endif
 
     vim_free(wlv.p_extra_free);
+    vim_free(wlv.saved_p_extra_free);
     return wlv.row;
 }
