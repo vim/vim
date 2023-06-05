@@ -3842,7 +3842,8 @@ set_var_const(
 	    }
 
 	    if ((flags & ASSIGN_FOR_LOOP) == 0
-				 && var_check_permission(di, name) == FAIL)
+				 ? var_check_permission(di, name) == FAIL
+				 : var_check_ro(di->di_flags, name, FALSE))
 		goto failed;
 	}
 	else
