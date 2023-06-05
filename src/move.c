@@ -2414,10 +2414,14 @@ scroll_cursor_top(int min_scroll, int always)
 	}
 	check_topfill(curwin, FALSE);
 #endif
-	// TODO: if the line doesn't fit may optimize w_skipcol
-	if (curwin->w_topline == curwin->w_cursor.lnum
-		&& curwin->w_skipcol >= curwin->w_cursor.col)
-	    reset_skipcol();
+	if (curwin->w_topline == curwin->w_cursor.lnum)
+	{
+	    validate_virtcol();
+	    if (curwin->w_skipcol >= curwin->w_virtcol)
+		// TODO: if the line doesn't fit may optimize w_skipcol instead
+		// of making it zero
+		reset_skipcol();
+	}
 	if (curwin->w_topline != old_topline
 		|| curwin->w_skipcol != old_skipcol
 #ifdef FEAT_DIFF
