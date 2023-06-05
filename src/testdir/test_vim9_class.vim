@@ -925,6 +925,33 @@ func Test_class_garbagecollect()
       echo Point.pl Point.pd
   END
   call v9.CheckScriptSuccess(lines)
+
+  let lines =<< trim END
+      vim9script
+
+      interface View
+      endinterface
+
+      class Widget
+        this.view: View
+      endclass
+
+      class MyView implements View
+        this.widget: Widget
+
+        def new()
+          # this will result in a circular reference to this object
+          this.widget = Widget.new(this)
+        enddef
+      endclass
+
+      var view = MyView.new()
+
+      # overwrite "view", will be garbage-collected next
+      view = MyView.new()
+      test_garbagecollect_now()
+  END
+  call v9.CheckScriptSuccess(lines)
 endfunc
 
 def Test_class_function()
