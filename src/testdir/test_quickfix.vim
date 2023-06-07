@@ -6428,4 +6428,11 @@ func Test_setqflist_stopinsert()
   bwipe!
 endfunc
 
+func Test_quickfix_buffer_contents()
+  call setqflist([{'filename':'filename', 'pattern':'pattern', 'text':'text'}])
+  copen
+  call assert_equal(['filename|pattern| text'], getline(1, '$'))  " The assert failed with Vim v9.0.0736; '| text' did not appear after the pattern.
+  call setqflist([], 'f')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

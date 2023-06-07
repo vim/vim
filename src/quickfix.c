@@ -3340,6 +3340,7 @@ qf_jump_print_msg(
     // Add the message, skipping leading whitespace and newlines.
     ga_concat(gap, IObuff);
     qf_fmt_text(gap, skipwhite(qf_ptr->qf_text));
+    ga_append(gap, NUL);
 
     // Output the message.  Overwrite to avoid scrolling when the 'O'
     // flag is present in 'shortmess'; But when not jumping, print the
@@ -3672,6 +3673,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     {
 	gap = qfga_get();
 	qf_fmt_text(gap, qfp->qf_pattern);
+	ga_append(gap, NUL);
 	msg_puts((char *)gap->ga_data);
 	msg_puts_attr(":", qfSepAttr);
     }
@@ -3683,6 +3685,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     gap = qfga_get();
     qf_fmt_text(gap, (fname != NULL || qfp->qf_lnum != 0)
 	    ? skipwhite(qfp->qf_text) : qfp->qf_text);
+    ga_append(gap, NUL);
     msg_prt_line((char_u *)gap->ga_data, FALSE);
     out_flush();		// show one line at a time
 }
@@ -3787,8 +3790,6 @@ qf_fmt_text(garray_T *gap, char_u *text)
 	else
 	    ga_append(gap, *p++);
     }
-
-    ga_append(gap, NUL);
 }
 
 /*
@@ -4659,7 +4660,6 @@ qf_buf_add_line(
     if (qftf_str != NULL && *qftf_str != NUL)
     {
 	ga_concat(gap, qftf_str);
-	ga_append(gap, NUL);
     }
     else
     {
@@ -4706,6 +4706,7 @@ qf_buf_add_line(
 							       : qfp->qf_text);
     }
 
+    ga_append(gap, NUL);
     if (ml_append_buf(buf, lnum, gap->ga_data, gap->ga_len, FALSE) == FAIL)
 	return FAIL;
 
