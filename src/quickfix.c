@@ -3772,10 +3772,8 @@ qf_list(exarg_T *eap)
  * Add the result to the grow array "gap".
  */
     static void
-qf_fmt_text(garray_T *gap, char_u *text)
+qf_fmt_text(garray_T *gap, char_u *p)
 {
-    char_u	*p = text;
-
     while (*p != NUL)
     {
 	if (*p == '\n')
@@ -3821,7 +3819,6 @@ qf_range_text(garray_T *gap, qfline_T *qfp)
 	    len += (int)STRLEN(buf + len);
 	}
     }
-    buf[len] = NUL;
 
     ga_concat_len(gap, buf, len);
 }
