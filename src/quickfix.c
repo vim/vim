@@ -3661,9 +3661,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     if (qfp->qf_lnum != 0)
 	msg_puts_attr(":", qfSepAttr);
     gap = qfga_get();
-    if (qfp->qf_lnum == 0)
-	ga_append(gap, NUL);
-    else
+    if (qfp->qf_lnum != 0)
 	qf_range_text(gap, qfp);
     ga_concat(gap, qf_types(qfp->qf_type, qfp->qf_nr));
     ga_append(gap, NUL);
