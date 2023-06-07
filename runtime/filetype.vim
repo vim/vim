@@ -2298,6 +2298,9 @@ au BufNewFile,BufRead */.init/*.conf,*/.init/*.override	       setf upstart
 au BufNewFile,BufRead */.config/upstart/*.conf		       setf upstart
 au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
 
+" URL shortcut
+au BufNewFile,BufRead *.url			setf urlshortcut
+
 " Vala
 au BufNewFile,BufRead *.vala			setf vala
 
