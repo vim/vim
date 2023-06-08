@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2023 May 06
+# Last Change:	2023 Jun 08
 
 export def DetectFiletype()
   var line1 = getline(1)
@@ -44,7 +44,7 @@ def DetectFromHashBang(firstline: string)
   elseif line1 =~ '^#!\s*[^/\\ ]*\>\([^/\\]\|$\)'
     name = substitute(line1, '^#!\s*\([^/\\ ]*\>\).*', '\1', '')
   else
-    name = substitute(line1, '^#!\s*\S*[/\\]\(\i\+\).*', '\1', '')
+    name = substitute(line1, '^#!\s*\S*[/\\]\(\f\+\).*', '\1', '')
   endif
 
   # tcl scripts may have #!/bin/sh in the first line and "exec wish" in the
@@ -196,6 +196,10 @@ def DetectFromHashBang(firstline: string)
     # Guile
   elseif name =~ 'guile'
     setl ft=scheme
+
+    # Nix
+  elseif name =~ 'nix-shell'
+    setl ft=nix
 
   endif
 enddef

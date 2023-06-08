@@ -852,6 +852,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     expect: [['#!/path/expect']],
     gnuplot: [['#!/path/gnuplot']],
     make:   [['#!/path/make']],
+    nix:    [['#!/path/nix-shell']],
     pike:   [['#!/path/pike'],
             ['#!/path/pike0'],
             ['#!/path/pike9']],
@@ -902,6 +903,7 @@ def s:GetScriptEnvChecks(): dict<list<list<string>>>
     scheme: [['#!/usr/bin/env VAR=val --ignore-environment scheme']],
     python: [['#!/usr/bin/env VAR=val -S python -w -T']],
     wml: [['#!/usr/bin/env VAR=val --split-string wml']],
+    nix: [['#!/usr/bin/env nix-shell']],
   }
 enddef
 
