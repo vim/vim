@@ -2234,6 +2234,9 @@ au BufNewFile,BufRead *.toml			setf toml
 " TPP - Text Presentation Program
 au BufNewFile,BufRead *.tpp			setf tpp
 
+" TRACE32 Script Language
+au BufNewFile,BufRead *.cmm,*.t32		setf t32
+
 " Treetop
 au BufRead,BufNewFile *.treetop			setf treetop
 

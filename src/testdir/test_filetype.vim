@@ -662,6 +662,7 @@ def s:GetFilenameChecks(): dict<list<string>>
               'any/etc/systemd/system/file.d/.#-file',
               'any/etc/systemd/system/file.d/file.conf'],
     systemverilog: ['file.sv', 'file.svh'],
+    t32: ['file.cmm', 'file.t32'],
     tags: ['tags'],
     tak: ['file.tak'],
     tal: ['file.tal'],
