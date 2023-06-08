@@ -190,8 +190,8 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 used for the command or the error was caught a `:try` block), does not get a
 range passed, cannot be a "dict" function, and can always be a closure.
 						*vim9-no-dict-function*
-Later classes will be added, which replaces the "dict function" mechanism.
-For now you will need to pass the dictionary explicitly: >
+You can use a Vim9 Class (|vim9class|) instead of a "dict function".
+You can also pass the dictionary explicitly: >
 	def DictFunc(self: dict<any>, arg: string)
 	   echo self[arg]
 	enddef

@@ -1099,6 +1099,7 @@ static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_num
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
+static argcheck_T arg4_string_number_bool_bool[] = {arg_string, arg_number, arg_bool, arg_bool};
 /* Function specific argument types (not covered by the above) */
 static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
 static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
@@ -1814,7 +1815,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_charclass},
     {"charcol",		1, 2, FEARG_1,	    arg2_string_or_list_number,
 			ret_number,	    f_charcol},
-    {"charidx",		2, 4, FEARG_1,	    arg3_string_number_bool,
+    {"charidx",		2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_charidx},
     {"chdir",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_chdir},
@@ -2798,7 +2799,7 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_undotree},
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
-    {"utf16idx",	2, 4, FEARG_1,	    arg3_string_number_bool,
+    {"utf16idx",	2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_utf16idx},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_member,    f_values},

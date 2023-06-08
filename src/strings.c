@@ -1054,7 +1054,8 @@ byteidx_common(typval_T *argvars, typval_T *rettv, int comp UNUSED)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL))
+		|| check_for_number_arg(argvars, 1) == FAIL
+		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
 
     char_u *str = tv_get_string_chk(&argvars[0]);
@@ -1158,7 +1159,14 @@ f_charidx(typval_T *argvars, typval_T *rettv)
     for (p = str, len = 0; utf16idx ? idx >= 0 : p <= str + idx; len++)
     {
 	if (*p == NUL)
+	{
+	    // If the index is exactly the number of bytes or utf-16 code units
+	    // in the string then return the length of the string in
+	    // characters.
+	    if (utf16idx ? (idx == 0) : (p == (str + idx)))
+		rettv->vval.v_number = len;
 	    return;
+	}
 	if (utf16idx)
 	{
 	    idx--;
@@ -1775,7 +1783,14 @@ f_utf16idx(typval_T *argvars, typval_T *rettv)
     for (p = str, len = 0; charidx ? idx >= 0 : p <= str + idx; len++)
     {
 	if (*p == NUL)
+	{
+	    // If the index is exactly the number of bytes or characters in the
+	    // string then return the length of the string in utf-16 code
+	    // units.
+	    if (charidx ? (idx == 0) : (p == (str + idx)))
+		rettv->vval.v_number = len;
 	    return;
+	}
 	int clen = ptr2len(p);
 	int c = (clen > 1) ? utf_ptr2char(p) : *p;
 	if (c > 0xFFFF)
