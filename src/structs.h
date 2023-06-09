@@ -3771,6 +3771,7 @@ struct window_S
     int		w_vsep_width;	    // Number of separator columns (0 or 1).
 
     pos_save_T	w_save_cursor;	    // backup of cursor pos and topline
+    int		w_do_win_fix_cursor;// if TRUE cursor may be invalid
 
 #ifdef FEAT_PROP_POPUP
     int		w_popup_flags;	    // POPF_ values
