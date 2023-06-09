@@ -57,6 +57,11 @@ else
   finish
 endif
 
+" Allow remote debugging via providing command_add_args lambda with
+" -iex target remote host:port
+" before issuing 'echo startupdone'
+let s:remotemode = 0
+
 let s:keepcpo = &cpo
 set cpo&vim
 
@@ -178,6 +183,12 @@ func s:StartDebug_internal(dict)
     let s:way = 'terminal'
   else
     let s:way = 'prompt'
+  endif
+
+  if exists('g:termdebug_config')
+    let s:remotemode=get(g:termdebug_config, 'remotemode', 0)
+  elseif exists('g:termdebug_remotemode')
+    let s:remotemode=1
   endif
 
   if s:way == 'prompt'
@@ -508,7 +519,12 @@ func s:StartDebugCommon(dict)
   " Run the command if the bang attribute was given and got to the debug
   " window.
   if get(a:dict, 'bang', 0)
-    call s:SendResumingCommand('-exec-run')
+    if s:remotemode
+      " use `continue` instead of `run` when in remote mode
+      call term_sendkeys(s:gdbbuf, "continue\r")
+    else
+      call s:SendResumingCommand('-exec-run')
+    endif
     call win_gotoid(s:ptywin)
   endif
 endfunc
