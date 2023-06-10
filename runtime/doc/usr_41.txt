@@ -773,6 +773,8 @@ String manipulation:					*string-functions*
 	byteidx()		byte index of a character in a string
 	byteidxcomp()		like byteidx() but count composing characters
 	charidx()		character index of a byte in a string
+	charidx_addcc()		character index counting composing characters
+	charidx_dropcc()	character index ignoring composing characters
 	utf16idx()		UTF-16 index of a byte in a string
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression

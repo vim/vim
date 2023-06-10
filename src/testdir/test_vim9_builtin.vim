@@ -709,6 +709,20 @@ def Test_charidx()
   charidx('', 1)->assert_equal(-1)
 enddef
 
+def Test_charidx_addcc()
+  v9.CheckDefAndScriptFailure(['charidx_addcc(0z10, 1)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['charidx_addcc("a", "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
+  charidx_addcc('', 0)->assert_equal(0)
+  charidx_addcc('', 1)->assert_equal(-1)
+enddef
+
+def Test_charidx_dropcc()
+  v9.CheckDefAndScriptFailure(['charidx_dropcc(0z10, 1)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['charidx_dropcc("a", "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
+  charidx_dropcc('', 0)->assert_equal(0)
+  charidx_dropcc('', 1)->assert_equal(-1)
+enddef
+
 def Test_chdir()
   assert_fails('chdir(true)', 'E1174:')
 enddef

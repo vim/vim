@@ -1182,6 +1182,70 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Translate a character index in a string to a character index
+ * with ("addcc" == TRUE) or without ("addcc" == FALSE) counting combining
+ * characters as separate characters.
+ */
+    static void
+charidx_adjust(typval_T *argvars, typval_T *rettv, int addcc)
+{
+    rettv->vval.v_number = -1;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL)
+	return;
+
+    char_u	*str = tv_get_string_chk(&argvars[0]);
+    varnumber_T	idx = tv_get_number_chk(&argvars[1], NULL);
+    if (str == NULL || idx < 0)
+	return;
+
+    char_u *dptr = str;
+    for (; idx > 0; idx--)
+    {
+	if (*dptr == NUL)
+	    return;
+	dptr += addcc ? mb_ptr2len(dptr) : utf_ptr2len(dptr);
+    }
+
+    char_u	*p = str;
+    int		len = 0;
+    while (p < dptr)
+    {
+	if (*p == NUL)
+	    return;
+	p += addcc ? utf_ptr2len(p) : mb_ptr2len(p);
+	len++;
+    }
+
+    if (!addcc && p > dptr)
+	// Index is in the middle of a character with combining characters and
+	// we are not counting combining characters.  Adjust the index to the
+	// beginning of the current character.
+	len--;
+
+    rettv->vval.v_number = len;
+}
+
+/*
+ * "charidx_addcc()" function
+ */
+    void
+f_charidx_addcc(typval_T *argvars, typval_T *rettv)
+{
+    charidx_adjust(argvars, rettv, TRUE);
+}
+
+/*
+ * "charidx_dropcc()" function
+ */
+    void
+f_charidx_dropcc(typval_T *argvars, typval_T *rettv)
+{
+    charidx_adjust(argvars, rettv, FALSE);
+}
+
+/*
  * "str2list()" function
  */
     void

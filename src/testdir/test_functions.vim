@@ -1483,14 +1483,12 @@ func Test_charidx_from_utf16_index()
   call assert_equal(-1, charidx('', 1, v:false, v:true))
   call assert_equal(0, charidx('', 0, v:true, v:true))
   call assert_equal(-1, charidx('', 1, v:true, v:true))
-
-  " error cases
-  call assert_equal(0, charidx('', 0, v:false, v:true))
-  call assert_equal(-1, charidx('', 1, v:false, v:true))
-  call assert_equal(0, charidx('', 0, v:true, v:true))
-  call assert_equal(-1, charidx('', 1, v:true, v:true))
   call assert_equal(0, charidx(test_null_string(), 0, v:false, v:true))
   call assert_equal(-1, charidx(test_null_string(), 1, v:false, v:true))
+  call assert_equal(0, charidx(test_null_string(), 0, v:true, v:true))
+  call assert_equal(-1, charidx(test_null_string(), 1, v:true, v:true))
+
+  " error cases
   call assert_fails('let x = charidx("abc", 1, v:false, [])', 'E1212:')
   call assert_fails('let x = charidx("abc", 1, v:true, [])', 'E1212:')
 endfunc
@@ -3552,6 +3550,130 @@ func Test_string_reverse()
   set encoding=latin1
   call assert_equal('dcba', reverse('abcd'))
   let &encoding = save_enc
+endfunc
+
+" Test for the charidx_addcc() function
+func Test_charidx_addcc()
+  " string with single byte characters
+  let str = 'abc'
+  for i in range(4)
+    call assert_equal(i, charidx_addcc(str, i))
+  endfor
+  call assert_equal(-1, charidx_addcc(str, 5))
+
+  " string with two byte characters
+  let str = "a©©b"
+  for i in range(4)
+    call assert_equal(i, charidx_addcc(str, i))
+  endfor
+  call assert_equal(-1, charidx_addcc(str, 5))
+
+  " string with four byte characters
+  let str = "a😊😊b"
+  for i in range(4)
+    call assert_equal(i, charidx_addcc(str, i))
+  endfor
+  call assert_equal(-1, charidx_addcc(str, 5))
+
+  " string with composing characters
+  let str = '-á-b́'
+  call assert_equal(0, charidx_addcc(str, 0))
+  call assert_equal(1, charidx_addcc(str, 1))
+  call assert_equal(3, charidx_addcc(str, 2))
+  call assert_equal(4, charidx_addcc(str, 3))
+  call assert_equal(6, charidx_addcc(str, 4))
+  call assert_equal(-1, charidx_addcc(str, 5))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, charidx_addcc(str, 0))
+  call assert_equal(1, charidx_addcc(str, 1))
+  call assert_equal(4, charidx_addcc(str, 2))
+  call assert_equal(5, charidx_addcc(str, 3))
+  call assert_equal(8, charidx_addcc(str, 4))
+  call assert_equal(-1, charidx_addcc(str, 5))
+
+  " single character with multiple composing characters
+  let str = 'ą́'
+  call assert_equal(0, charidx_addcc(str, 0))
+  call assert_equal(3, charidx_addcc(str, 1))
+  call assert_equal(-1, charidx_addcc(str, 2))
+
+  " empty string
+  call assert_equal(0, charidx_addcc('', 0))
+  call assert_equal(-1, charidx_addcc('', 1))
+  call assert_equal(0, charidx_addcc(test_null_string(), 0))
+  call assert_equal(-1, charidx_addcc(test_null_string(), -1))
+
+  " error cases
+  call assert_fails('let x = charidx_addcc([], 1)', 'E1174:')
+  call assert_fails('let x = charidx_addcc("abc", [])', 'E1210:')
+endfunc
+
+" Test for the charidx_dropcc() function
+func Test_charidx_dropcc()
+  " string with single byte characters
+  let str = 'abc'
+  for i in range(4)
+    call assert_equal(i, charidx_dropcc(str, i), $'i = {string(i)}')
+  endfor
+  call assert_equal(-1, charidx_dropcc(str, 5))
+
+  " string with two byte characters
+  let str = "a©©b"
+  for i in range(4)
+    call assert_equal(i, charidx_dropcc(str, i))
+  endfor
+  call assert_equal(-1, charidx_dropcc(str, 5))
+
+  " string with four byte characters
+  let str = "a😊😊b"
+  for i in range(4)
+    call assert_equal(i, charidx_dropcc(str, i))
+  endfor
+  call assert_equal(-1, charidx_dropcc(str, 5))
+
+  " string with composing characters
+  let str = '-á-b́'
+  call assert_equal(0, charidx_dropcc(str, 0))
+  call assert_equal(1, charidx_dropcc(str, 1))
+  call assert_equal(1, charidx_dropcc(str, 2))
+  call assert_equal(2, charidx_dropcc(str, 3))
+  call assert_equal(3, charidx_dropcc(str, 4))
+  call assert_equal(3, charidx_dropcc(str, 5))
+  call assert_equal(4, charidx_dropcc(str, 6))
+  call assert_equal(-1, charidx_dropcc(str, 7))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, charidx_dropcc(str, 0))
+  call assert_equal(1, charidx_dropcc(str, 1))
+  call assert_equal(1, charidx_dropcc(str, 2))
+  call assert_equal(1, charidx_dropcc(str, 3))
+  call assert_equal(2, charidx_dropcc(str, 4))
+  call assert_equal(3, charidx_dropcc(str, 5))
+  call assert_equal(3, charidx_dropcc(str, 6))
+  call assert_equal(3, charidx_dropcc(str, 7))
+  call assert_equal(4, charidx_dropcc(str, 8))
+  call assert_equal(-1, charidx_dropcc(str, 9))
+
+  " single character with multiple composing characters
+  let str = 'ą́'
+  call assert_equal(0, charidx_dropcc(str, 0))
+  call assert_equal(0, charidx_dropcc(str, 1))
+  call assert_equal(0, charidx_dropcc(str, 2))
+  call assert_equal(1, charidx_dropcc(str, 3))
+  call assert_equal(-1, charidx_dropcc(str, 4))
+
+  " empty string
+  call assert_equal(0, charidx_dropcc('', 0))
+  call assert_equal(-1, charidx_dropcc('', 1))
+  call assert_equal(0, charidx_dropcc(test_null_string(), 0))
+  call assert_equal(-1, charidx_dropcc(test_null_string(), -1))
+
+  " error cases
+  call assert_fails('let x = charidx_dropcc([], 1)', 'E1174:')
+  call assert_fails('let x = charidx_dropcc("abc", [])', 'E1210:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

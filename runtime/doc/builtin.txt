@@ -121,6 +121,10 @@ charclass({string})		Number	character class of {string}
 charcol({expr} [, {winid}])	Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc} [, {utf16}]])
 				Number	char index of byte {idx} in {string}
+charidx_addcc({string}, {idx})	Number	index of character at {idx} in
+					{string} counting composing characters
+charidx_dropcc({string}, {idx})	Number	index of character at {idx} in
+					{string} ignoring composing characters
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
@@ -1536,6 +1540,10 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 		not a string, the second argument is not a number or when the
 		third argument is present and is not zero or one.
 
+		See |charidx_addcc()| and |charidx_dropcc()| for getting the
+		character index with and without counting combining
+		characters.
+
 		See |byteidx()| and |byteidxcomp()| for getting the byte index
 		from the character index and |utf16idx()| for getting the
 		UTF-16 index from the character index.
@@ -1548,6 +1556,51 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 <
 		Can also be used as a |method|: >
 			GetName()->charidx(idx)
+
+charidx_addcc({string}, {idx})				*charidx_addcc()*
+		Return the index of the character at {idx} in {string}
+		counting composing characters as separate characters.
+		If there are no composing characters the returned value is
+		equal to {idx}.
+
+		{idx} is the index of a character in {string} without counting
+		composing characters as separate characters.
+
+		Returns -1 if the arguments are invalid or if there are less
+		than {idx} characters. If there are exactly {idx} characters
+		the length of the string in characters counting composing
+		characters is returned.
+
+		Examples: >
+			echo charidx_addcc('ą́ą́ą́', 1)	returns 3
+			echo charidx_addcc('ą́ą́ą́', 3)	returns 9
+			echo charidx_addcc('ą́ą́ą́', 4)	returns -1
+
+		Can also be used as a |method|: >
+			GetName()->charidx_addcc(idx)
+
+charidx_dropcc({string}, {idx})				*charidx_dropcc()*
+		Return the index of the character at {idx} in {string}
+		without counting composing characters as separate characters.
+		If there are no composing characters the returned value is
+		equal to {idx}.
+
+		{idx} is the index of a character in {string} counting
+		composing characters as separate characters.
+
+		Returns -1 if the arguments are invalid or if there are less
+		than {idx} characters. If there are exactly {idx} characters
+		the length of the string in characters without counting
+		composing characters is returned.
+
+		Examples: >
+			echo charidx_dropcc('ą́ą́ą́', 3)	returns 1
+			echo charidx_dropcc('ą́ą́ą́', 7)	returns 2
+			echo charidx_dropcc('ą́ą́ą́', 9)	returns 3
+			echo charidx_dropcc('ą́ą́ą́', 10)	returns -1
+
+		Can also be used as a |method|: >
+			GetName()->charidx_dropcc(idx)
 
 chdir({dir})						*chdir()*
 		Change the current working directory to {dir}.  The scope of
