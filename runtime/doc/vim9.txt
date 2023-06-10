@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2023 Mar 07
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -117,6 +117,9 @@ script and `:def` functions; details are below:
 - Unless mentioned specifically, the highest |scriptversion| is used.
 - When defining an expression mapping, the expression will be evaluated in the
   context of the script where it was defined.
+- When indexing a string the index is counted in characters, not bytes:
+  |vim9-string-index|
+- Some possibly unexpected differences: |vim9-gotchas|.
 
 
 Comments starting with # ~
@@ -190,8 +193,8 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 used for the command or the error was caught a `:try` block), does not get a
 range passed, cannot be a "dict" function, and can always be a closure.
 						*vim9-no-dict-function*
-Later classes will be added, which replaces the "dict function" mechanism.
-For now you will need to pass the dictionary explicitly: >
+You can use a Vim9 Class (|Vim9-class|) instead of a "dict function".
+You can also pass the dictionary explicitly: >
 	def DictFunc(self: dict<any>, arg: string)
 	   echo self[arg]
 	enddef
@@ -1056,11 +1059,11 @@ It is possible to compare `null`  with any value, this will not give a type
 error.  However, comparing `null` with a number, float or bool will always
 result in `false`.  This is different from legacy script, where comparing
 `null` with zero or `false` would return `true`.
-
+							*vim9-false-true*
 When converting a boolean to a string `false` and `true` are used, not
 `v:false` and `v:true` like in legacy script.  `v:none` has no `none`
 replacement, it has no equivalent in other languages.
-
+							*vim9-string-index*
 Indexing a string with [idx] or taking a slice with [idx : idx] uses character
 indexes instead of byte indexes.  Composing characters are included.
 Example: >

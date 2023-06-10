@@ -4653,6 +4653,7 @@ E337	gui.txt	/*E337*
 E338	editing.txt	/*E338*
 E339	message.txt	/*E339*
 E34	various.txt	/*E34*
+E340	message.txt	/*E340*
 E341	message.txt	/*E341*
 E342	message.txt	/*E342*
 E343	options.txt	/*E343*
@@ -8158,6 +8159,7 @@ intel-itanium	syntax.txt	/*intel-itanium*
 intellimouse-wheel-problems	gui_w32.txt	/*intellimouse-wheel-problems*
 interactive-functions	usr_41.txt	/*interactive-functions*
 interfaces-5.2	version5.txt	/*interfaces-5.2*
+internal-error	message.txt	/*internal-error*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
 internet	intro.txt	/*internet*
@@ -10883,6 +10885,7 @@ vim9-declaration	vim9.txt	/*vim9-declaration*
 vim9-declarations	usr_41.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
+vim9-false-true	vim9.txt	/*vim9-false-true*
 vim9-final	vim9.txt	/*vim9-final*
 vim9-function-defined-later	vim9.txt	/*vim9-function-defined-later*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
@@ -10900,6 +10903,7 @@ vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
 vim9-s-namespace	vim9.txt	/*vim9-s-namespace*
 vim9-scopes	vim9.txt	/*vim9-scopes*
+vim9-string-index	vim9.txt	/*vim9-string-index*
 vim9-types	vim9.txt	/*vim9-types*
 vim9-unpack-ignore	vim9.txt	/*vim9-unpack-ignore*
 vim9-user-command	vim9.txt	/*vim9-user-command*

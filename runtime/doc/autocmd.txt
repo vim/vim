@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.0.  Last change: 2023 Feb 18
+*autocmd.txt*   For Vim version 9.0.  Last change: 2023 May 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1016,6 +1016,9 @@ OptionSet			After setting an option.  The pattern is
 				or |:setlocal| or a |modeline| was used to set
 				the option. Similarly |v:option_oldglobal| is
 				only set when |:set| or |:setglobal| was used.
+
+				This does not set |<abuf>|, you could use
+				|bufnr()|.
 
 				Note that when setting a |global-local| string
 				option with |:set|, then |v:option_old| is the
