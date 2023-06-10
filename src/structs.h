@@ -2184,7 +2184,9 @@ typedef struct {
     linenr_T	fe_lastline;	// last line of range
     int		*fe_doesrange;	// if not NULL: return: function handled range
     int		fe_evaluate;	// actually evaluate expressions
-    partial_T	*fe_partial;	// for extra arguments
+    ufunc_T	*fe_ufunc;	// function to be called, when NULL lookup by
+				// name
+    partial_T	*fe_partial;	// for "dict" and extra arguments
     dict_T	*fe_selfdict;	// Dictionary for "self"
     object_T	*fe_object;	// object, e.g. for "this.Func()"
     typval_T	*fe_basetv;	// base for base->method()

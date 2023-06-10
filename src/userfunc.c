@@ -3666,6 +3666,9 @@ call_func(
     if (partial != NULL)
 	fp = partial->pt_func;
     if (fp == NULL)
+	fp = funcexe->fe_ufunc;
+
+    if (fp == NULL)
     {
 	// Make a copy of the name, if it comes from a funcref variable it
 	// could be changed or deleted in the called function.
@@ -4161,8 +4164,10 @@ trans_function_name_ext(
 
     if (lv.ll_ufunc != NULL)
     {
-	*ufunc = lv.ll_ufunc;
+	if (ufunc != NULL)
+	    *ufunc = lv.ll_ufunc;
 	name = vim_strsave(lv.ll_ufunc->uf_name);
+	*pp = end;
 	goto theend;
     }
 
@@ -5915,7 +5920,7 @@ ex_call_inner(
 	char_u	    *name,
 	char_u	    **arg,
 	char_u	    *startarg,
-	funcexe_T  *funcexe_init,
+	funcexe_T   *funcexe_init,
 	evalarg_T   *evalarg)
 {
     linenr_T	lnum;
@@ -6204,6 +6209,7 @@ ex_call(exarg_T *eap)
     int		len;
     int		failed = FALSE;
     funcdict_T	fudi;
+    ufunc_T	*ufunc = NULL;
     partial_T	*partial = NULL;
     evalarg_T	evalarg;
     type_T	*type = NULL;
@@ -6227,7 +6233,7 @@ ex_call(exarg_T *eap)
     }
 
     tofree = trans_function_name_ext(&arg, NULL, FALSE, TFN_INT,
-			     &fudi, &partial, vim9script ? &type : NULL, NULL);
+			   &fudi, &partial, vim9script ? &type : NULL, &ufunc);
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.
@@ -6275,6 +6281,7 @@ ex_call(exarg_T *eap)
 
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_check_type = type;
+	funcexe.fe_ufunc = ufunc;
 	funcexe.fe_partial = partial;
 	funcexe.fe_selfdict = fudi.fd_dict;
 	funcexe.fe_firstline = eap->line1;
