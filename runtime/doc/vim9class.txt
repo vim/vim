@@ -264,7 +264,7 @@ as the first character in the name, and it can be made public by prefixing
 <
 							*class-function*
 Class functions are also declared with "static".  They have no access to
-object members, they cannot use the "this" keyword. >
+object members, they cannot use the "this" keyword: >
 
 	class OtherThing
 	   this.size: number
