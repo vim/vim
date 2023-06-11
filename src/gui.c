@@ -142,7 +142,7 @@ gui_start(char_u *arg UNUSED)
 	settmode(TMODE_RAW);		// restart RAW mode
 	set_title_defaults();		// set 'title' and 'icon' again
 #if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
-	if (msg)
+	if (msg != NULL)
 	    emsg(msg);
 #endif
     }
@@ -2786,14 +2786,8 @@ gui_redraw_block(
 		if (col1 > 0)
 		    --col1;
 		else
-		{
 		    // FIXME: how can the first character ever be zero?
-		    // Make this IEMSGN when it no longer breaks Travis CI.
-		    vim_snprintf((char *)IObuff, IOSIZE,
-			    "INTERNAL ERROR: NUL in ScreenLines in row %ld",
-			    (long)gui.row);
-		    msg((char *)IObuff);
-		}
+		    siemsg("NUL in ScreenLines in row %ld", (long)gui.row);
 	    }
 #ifdef FEAT_GUI_GTK
 	    if (col2 + 1 < Columns && ScreenLines[off + col2 + 1] == 0)
@@ -4400,9 +4394,9 @@ gui_do_scrollbar(
 }
 
 /*
- * Scroll a window according to the values set in the globals current_scrollbar
- * and scrollbar_value.  Return TRUE if the cursor in the current window moved
- * or FALSE otherwise.
+ * Scroll a window according to the values set in the globals
+ * "current_scrollbar" and "scrollbar_value".
+ * Return TRUE if the cursor in the current window moved or FALSE otherwise.
  */
     int
 gui_do_scroll(void)

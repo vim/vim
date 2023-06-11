@@ -525,7 +525,8 @@ crypt_create_from_header(
     if (arg.cat_seed_len > 0)
 	arg.cat_seed = header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
     if (arg.cat_add_len > 0)
-	arg.cat_add = header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
+	arg.cat_add = header + CRYPT_MAGIC_LEN
+					 + arg.cat_salt_len + arg.cat_seed_len;
 
     return crypt_create(method_nr, key, &arg);
 }
@@ -603,7 +604,8 @@ crypt_create_for_writing(
 	if (arg.cat_seed_len > 0)
 	    arg.cat_seed = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
 	if (arg.cat_add_len > 0)
-	    arg.cat_add = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
+	    arg.cat_add = *header + CRYPT_MAGIC_LEN
+					 + arg.cat_salt_len + arg.cat_seed_len;
 
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -795,10 +797,14 @@ crypt_check_method(int method)
     }
 }
 
-#ifdef FEAT_SODIUM
-    static void
+/*
+ * If the crypt method for "curbuf" does not support encrypting the swap file
+ * then disable the swap file.
+ */
+    void
 crypt_check_swapfile_curbuf(void)
 {
+#ifdef FEAT_SODIUM
     int method = crypt_get_method_nr(curbuf);
     if (crypt_method_is_sodium(method))
     {
@@ -809,8 +815,8 @@ crypt_check_swapfile_curbuf(void)
 	msg_scroll = TRUE;
 	msg(_("Note: Encryption of swapfile not supported, disabling swap file"));
     }
-}
 #endif
+}
 
     void
 crypt_check_current_method(void)
@@ -863,9 +869,7 @@ crypt_get_key(
 		set_option_value_give_err((char_u *)"key", 0L, p1, OPT_LOCAL);
 		crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
-#ifdef FEAT_SODIUM
 		crypt_check_swapfile_curbuf();
-#endif
 	    }
 	    break;
 	}
@@ -959,7 +963,8 @@ crypt_sodium_init_(
 	    sodium_free(sd_state);
 	    return FAIL;
 	}
-	if (state->method_nr == CRYPT_M_SOD2)
+	// "cat_add" should not be NULL, check anyway for safety
+	if (state->method_nr == CRYPT_M_SOD2 && arg->cat_add != NULL)
 	{
 	    memcpy(arg->cat_add, &opslimit, sizeof(opslimit));
 	    arg->cat_add += sizeof(opslimit);

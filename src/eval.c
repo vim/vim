@@ -6322,6 +6322,10 @@ var2fpos(
 
     if (name[0] == 'w' && dollar_lnum)
     {
+	// the "w_valid" flags are not reset when moving the cursor, but they
+	// do matter for update_topline() and validate_botline().
+	check_cursor_moved(curwin);
+
 	pos.col = 0;
 	if (name[1] == '0')		// "w0": first visible line
 	{

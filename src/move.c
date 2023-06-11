@@ -344,7 +344,8 @@ update_topline(void)
 		check_topline = TRUE;
 	    else if (check_top_offset())
 		check_topline = TRUE;
-	    else if (curwin->w_cursor.lnum == curwin->w_topline)
+	    else if (curwin->w_skipcol > 0
+				 && curwin->w_cursor.lnum == curwin->w_topline)
 	    {
 		colnr_T vcol;
 
@@ -715,19 +716,21 @@ set_topline(win_T *wp, linenr_T lnum)
 /*
  * Call this function when the length of the cursor line (in screen
  * characters) has changed, and the change is before the cursor.
+ * If the line length changed the number of screen lines might change,
+ * requiring updating w_topline.  That may also invalidate w_crow.
  * Need to take care of w_botline separately!
  */
     void
 changed_cline_bef_curs(void)
 {
-    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL|VALID_CROW
 						|VALID_CHEIGHT|VALID_TOPLINE);
 }
 
     void
 changed_cline_bef_curs_win(win_T *wp)
 {
-    wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL
+    wp->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL|VALID_CROW
 						|VALID_CHEIGHT|VALID_TOPLINE);
 }
 
@@ -1457,7 +1460,8 @@ textpos2screenpos(
 
 #ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
-	row += diff_check_fill(wp, lnum);
+	row += lnum == wp->w_topline ? wp->w_topfill
+				     : diff_check_fill(wp, lnum);
 #endif
 
 	colnr_T	off = win_col_off(wp);
@@ -1476,6 +1480,9 @@ textpos2screenpos(
 	    col = scol;
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
+
+	    if (lnum == wp->w_topline)
+		col -= wp->w_skipcol;
 
 	    // long line wrapping, adjust row
 	    if (wp->w_p_wrap
@@ -1779,7 +1786,7 @@ scrollup(
 	int	    width1 = curwin->w_width - curwin_col_off();
 	int	    width2 = width1 + curwin_col_off2();
 	int	    size = 0;
-	linenr_T    prev_topline = curwin->w_topline;
+	colnr_T	    prev_skipcol = curwin->w_skipcol;
 
 	if (do_sms)
 	    size = linetabsize(curwin, curwin->w_topline);
@@ -1842,8 +1849,9 @@ scrollup(
 	    }
 	}
 
-	if (curwin->w_topline == prev_topline)
-	    // need to redraw even though w_topline didn't change
+	if (prev_skipcol > 0 || curwin->w_skipcol > 0)
+	    // need to redraw more, because wl_size of the (new) topline may
+	    // now be invalid
 	    redraw_later(UPD_NOT_VALID);
     }
     else
@@ -2406,10 +2414,14 @@ scroll_cursor_top(int min_scroll, int always)
 	}
 	check_topfill(curwin, FALSE);
 #endif
-	// TODO: if the line doesn't fit may optimize w_skipcol
-	if (curwin->w_topline == curwin->w_cursor.lnum
-		&& curwin->w_skipcol >= curwin->w_cursor.col)
-	    reset_skipcol();
+	if (curwin->w_topline == curwin->w_cursor.lnum)
+	{
+	    validate_virtcol();
+	    if (curwin->w_skipcol >= curwin->w_virtcol)
+		// TODO: if the line doesn't fit may optimize w_skipcol instead
+		// of making it zero
+		reset_skipcol();
+	}
 	if (curwin->w_topline != old_topline
 		|| curwin->w_skipcol != old_skipcol
 #ifdef FEAT_DIFF

@@ -22,6 +22,7 @@ void crypt_encode_inplace(cryptstate_T *state, char_u *buf, size_t len, int last
 void crypt_decode_inplace(cryptstate_T *state, char_u *buf, size_t len, int last);
 void crypt_free_key(char_u *key);
 void crypt_check_method(int method);
+void crypt_check_swapfile_curbuf(void);
 void crypt_check_current_method(void);
 char_u *crypt_get_key(int store, int twice);
 void crypt_append_msg(buf_T *buf);

@@ -3,7 +3,7 @@
 # Include stuff found by configure.
 include ../auto/config.mk
 
-# get LANGUAGES, MOFILES, MOCONVERTED and CHECKFILES
+# get LANGUAGES, MOFILES, MOCONVERTED and others
 include Make_all.mak
 
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
@@ -203,21 +203,12 @@ PO_INPUTLIST = \
 	gvim.desktop.in \
 	vim.desktop.in
 
-PO_VIM_INPUTLIST = \
-	../../runtime/optwin.vim \
-	../../runtime/defaults.vim
-
-PO_VIM_JSLIST = \
-	optwin.js \
-	defaults.js
-
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	# create vim.pot
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
-		--keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
-		$(PO_INPUTLIST) $(PO_VIM_JSLIST)
+		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
 	# Fix Vim scripts names, so that "gf" works
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)

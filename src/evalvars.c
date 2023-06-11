@@ -206,7 +206,7 @@ evalvars_init(void)
 	p = &vimvars[i];
 	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
 	{
-	    iemsg("INTERNAL: name too long, increase size of dictitem16_T");
+	    iemsg("Name too long, increase size of dictitem16_T");
 	    getout(1);
 	}
 	STRCPY(p->vv_di.di_key, p->vv_name);
@@ -3842,7 +3842,8 @@ set_var_const(
 	    }
 
 	    if ((flags & ASSIGN_FOR_LOOP) == 0
-				 && var_check_permission(di, name) == FAIL)
+				 ? var_check_permission(di, name) == FAIL
+				 : var_check_ro(di->di_flags, name, FALSE))
 		goto failed;
 	}
 	else

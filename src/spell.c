@@ -1342,7 +1342,7 @@ spell_move_to(
 	{
 	    // For spellbadword(): check if first word needs a capital.
 	    col = getwhitecols(line);
-	    if (check_need_cap(lnum, col))
+	    if (check_need_cap(curwin, lnum, col))
 		capcol = col;
 
 	    // Need to get the line again, may have looked at the previous
@@ -2815,24 +2815,20 @@ spell_casefold(
 
 /*
  * Check if the word at line "lnum" column "col" is required to start with a
- * capital.  This uses 'spellcapcheck' of the current buffer.
+ * capital.  This uses 'spellcapcheck' of the buffer in window "wp".
  */
     int
-check_need_cap(linenr_T lnum, colnr_T col)
+check_need_cap(win_T *wp, linenr_T lnum, colnr_T col)
 {
-    int		need_cap = FALSE;
-    char_u	*line;
-    char_u	*line_copy = NULL;
-    char_u	*p;
-    colnr_T	endcol;
-    regmatch_T	regmatch;
-
-    if (curwin->w_s->b_cap_prog == NULL)
+    if (wp->w_s->b_cap_prog == NULL)
 	return FALSE;
 
-    line = ml_get_curline();
-    endcol = 0;
-    if (getwhitecols(line) >= (int)col)
+    int		need_cap = FALSE;
+    char_u	*line = col ? ml_get_buf(wp->w_buffer, lnum, FALSE) : NULL;
+    char_u	*line_copy = NULL;
+    colnr_T	endcol = 0;
+
+    if (col == 0 || getwhitecols(line) >= col)
     {
 	// At start of line, check if previous line is empty or sentence
 	// ends there.
@@ -2840,13 +2836,16 @@ check_need_cap(linenr_T lnum, colnr_T col)
 	    need_cap = TRUE;
 	else
 	{
-	    line = ml_get(lnum - 1);
+	    line = ml_get_buf(wp->w_buffer, lnum - 1, FALSE);
 	    if (*skipwhite(line) == NUL)
 		need_cap = TRUE;
 	    else
 	    {
 		// Append a space in place of the line break.
 		line_copy = concat_str(line, (char_u *)" ");
+		if (line_copy == NULL)
+		    return FALSE;
+
 		line = line_copy;
 		endcol = (colnr_T)STRLEN(line);
 	    }
@@ -2858,13 +2857,14 @@ check_need_cap(linenr_T lnum, colnr_T col)
     if (endcol > 0)
     {
 	// Check if sentence ends before the bad word.
-	regmatch.regprog = curwin->w_s->b_cap_prog;
+	regmatch_T	regmatch;
+	regmatch.regprog = wp->w_s->b_cap_prog;
 	regmatch.rm_ic = FALSE;
-	p = line + endcol;
+	char_u *p = line + endcol;
 	for (;;)
 	{
 	    MB_PTR_BACK(line, p);
-	    if (p == line || spell_iswordp_nmw(p, curwin))
+	    if (p == line || spell_iswordp_nmw(p, wp))
 		break;
 	    if (vim_regexec(&regmatch, p, 0)
 					 && regmatch.endp[0] == line + endcol)
@@ -2873,7 +2873,7 @@ check_need_cap(linenr_T lnum, colnr_T col)
 		break;
 	    }
 	}
-	curwin->w_s->b_cap_prog = regmatch.regprog;
+	wp->w_s->b_cap_prog = regmatch.regprog;
     }
 
     vim_free(line_copy);
@@ -2890,7 +2890,6 @@ ex_spellrepall(exarg_T *eap UNUSED)
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*frompat;
-    int		addlen;
     char_u	*line;
     char_u	*p;
     int		save_ws = p_ws;
@@ -2901,9 +2900,11 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	emsg(_(e_no_previous_spell_replacement));
 	return;
     }
-    addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
+    size_t	repl_from_len = STRLEN(repl_from);
+    size_t	repl_to_len = STRLEN(repl_to);
+    int		addlen = (int)(repl_to_len - repl_from_len);
 
-    frompat = alloc(STRLEN(repl_from) + 7);
+    frompat = alloc(repl_from_len + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -2922,14 +2923,14 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	// when changing "etc" to "etc.".
 	line = ml_get_curline();
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
-					       repl_to, STRLEN(repl_to)) != 0)
+						   repl_to, repl_to_len) != 0)
 	{
 	    p = alloc(STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
 	    STRCPY(p + curwin->w_cursor.col, repl_to);
-	    STRCAT(p, line + curwin->w_cursor.col + STRLEN(repl_from));
+	    STRCAT(p, line + curwin->w_cursor.col + repl_from_len);
 	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
 	    changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
 #if defined(FEAT_PROP_POPUP)
@@ -2945,7 +2946,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	    }
 	    ++sub_nsubs;
 	}
-	curwin->w_cursor.col += (colnr_T)STRLEN(repl_to);
+	curwin->w_cursor.col += (colnr_T)repl_to_len;
     }
 
     p_ws = save_ws;
@@ -4340,7 +4341,7 @@ static int spell_expand_need_cap;
     void
 spell_expand_check_cap(colnr_T col)
 {
-    spell_expand_need_cap = check_need_cap(curwin->w_cursor.lnum, col);
+    spell_expand_need_cap = check_need_cap(curwin, curwin->w_cursor.lnum, col);
 }
 
 /*

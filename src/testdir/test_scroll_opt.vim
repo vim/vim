@@ -124,6 +124,21 @@ func Test_smoothscroll_CtrlE_CtrlY()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_smoothscroll_multibyte()
+  CheckScreendump
+
+  let lines =<< trim END
+      set scrolloff=0 smoothscroll
+      call setline(1, [repeat('ϛ', 45), repeat('2', 36)])
+      exe "normal G35l\<C-E>k"
+  END
+  call writefile(lines, 'XSmoothMultibyte', 'D')
+  let buf = RunVimInTerminal('-S XSmoothMultibyte', #{rows: 6, cols: 40})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_multi_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_smoothscroll_number()
   CheckScreendump
 
@@ -395,6 +410,64 @@ func Test_smoothscroll_long_line_showbreak()
 
   call term_sendkeys(buf, "0")
   call VerifyScreenDump(buf, 'Test_smooth_long_showbreak_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Check that 'smoothscroll' marker is drawn over double-width char correctly.
+" Run with multiple encodings.
+func Test_smoothscroll_marker_over_double_width()
+  " Run this in a separate Vim instance to avoid messing up.
+  let after =<< trim [CODE]
+    scriptencoding utf-8
+    call setline(1, 'a'->repeat(&columns) .. '口'->repeat(10))
+    setlocal smoothscroll
+    redraw
+    exe "norm \<C-E>"
+    redraw
+    " Check the chars one by one. Don't check the whole line concatenated.
+    call assert_equal('<', screenstring(1, 1))
+    call assert_equal('<', screenstring(1, 2))
+    call assert_equal('<', screenstring(1, 3))
+    call assert_equal(' ', screenstring(1, 4))
+    call assert_equal('口', screenstring(1, 5))
+    call assert_equal('口', screenstring(1, 7))
+    call assert_equal('口', screenstring(1, 9))
+    call assert_equal('口', screenstring(1, 11))
+    call assert_equal('口', screenstring(1, 13))
+    call assert_equal('口', screenstring(1, 15))
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [CODE]
+
+  let encodings = ['utf-8', 'cp932', 'cp936', 'cp949', 'cp950']
+  if !has('win32')
+    let encodings += ['euc-jp']
+  endif
+  for enc in encodings
+    let msg = 'enc=' .. enc
+    if RunVim([], after, $'--clean --cmd "set encoding={enc}"')
+      call assert_equal([], readfile('Xresult'), msg)
+    endif
+    call delete('Xresult')
+  endfor
+endfunc
+
+" Same as the test above, but check the text actually shown on screen.
+" Only run with UTF-8 encoding.
+func Test_smoothscroll_marker_over_double_width_dump()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, 'a'->repeat(&columns) .. '口'->repeat(10))
+    setlocal smoothscroll
+  END
+  call writefile(lines, 'XSmoothMarkerOverDoubleWidth', 'D')
+  let buf = RunVimInTerminal('-S XSmoothMarkerOverDoubleWidth', #{rows: 6, cols: 40})
+  call VerifyScreenDump(buf, 'Test_smooth_marker_over_double_width_1', {})
+
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_marker_over_double_width_2', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -719,7 +792,7 @@ func Test_smoothscroll_incsearch()
       call setline(14, 'bbbb')
   END
   call writefile(lines, 'XSmoothIncsearch', 'D')
-  let buf = RunVimInTerminal('-S XSmoothIncsearch', #{rows: 8, cols:40})
+  let buf = RunVimInTerminal('-S XSmoothIncsearch', #{rows: 8, cols: 40})
 
   call term_sendkeys(buf, "/b")
   call VerifyScreenDump(buf, 'Test_smooth_incsearch_1', {})
@@ -730,6 +803,32 @@ func Test_smoothscroll_incsearch()
   call term_sendkeys(buf, "b")
   call VerifyScreenDump(buf, 'Test_smooth_incsearch_4', {})
   call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test scrolling multiple lines and stopping at non-zero skipcol.
+func Test_smoothscroll_multi_skipcol()
+  CheckScreendump
+
+  let lines =<< trim END
+      setlocal cursorline scrolloff=0 smoothscroll
+      call setline(1, repeat([''], 8))
+      call setline(3, repeat('a', 50))
+      call setline(4, repeat('a', 50))
+      call setline(7, 'bbb')
+      call setline(8, 'ccc')
+      redraw
+  END
+  call writefile(lines, 'XSmoothMultiSkipcol', 'D')
+  let buf = RunVimInTerminal('-S XSmoothMultiSkipcol', #{rows: 10, cols: 40})
+  call VerifyScreenDump(buf, 'Test_smooth_multi_skipcol_1', {})
+
+  call term_sendkeys(buf, "3\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_multi_skipcol_2', {})
+
+  call term_sendkeys(buf, "2\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_multi_skipcol_3', {})
 
   call StopVimInTerminal(buf)
 endfunc

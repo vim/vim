@@ -1,5 +1,6 @@
 " Tests for encryption.
 
+source shared.vim
 source check.vim
 CheckFeature cryptv
 
@@ -86,6 +87,29 @@ endfunc
 func Test_crypt_sodium_v2()
   CheckFeature sodium
   call Crypt_uncrypt('xchacha20v2')
+endfunc
+
+func Test_crypt_sodium_v2_startup()
+  CheckFeature sodium
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('--cmd "set cm=xchacha20v2" -x Xfoo', #{wait_for_ruler: 0, rows: 6})
+  call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
+  call term_sendkeys(buf, "foo\<CR>foo\<CR>")
+  call term_sendkeys(buf, "ifoo\<Esc>")
+  call term_sendkeys(buf, "ZZ")
+  call TermWait(buf)
+
+  " Wait for Vim to write the file and exit.  Then wipe out the terminal buffer.
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+  call assert_true(filereadable('Xfoo'))
+
+  let buf = RunVimInTerminal('--cmd "set ch=3 cm=xchacha20v2 key=foo" Xfoo', #{rows: 10})
+  call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
+  call StopVimInTerminal(buf)
+
+  call delete('Xfoo')
 endfunc
 
 func Uncrypt_stable(method, crypted_text, key, uncrypted_text)

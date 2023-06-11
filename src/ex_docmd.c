@@ -3887,7 +3887,7 @@ find_ex_command(
 
 	    if (command_count != (int)CMD_SIZE)
 	    {
-		iemsg(_(e_command_table_needs_to_be_updated_run_make_cmdidxs));
+		iemsg(e_command_table_needs_to_be_updated_run_make_cmdidxs);
 		getout(1);
 	    }
 
@@ -4716,7 +4716,7 @@ address_default_all(exarg_T *eap)
 	case ADDR_NONE:
 	case ADDR_UNSIGNED:
 	case ADDR_QUICKFIX:
-	    iemsg(_("INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"));
+	    iemsg("Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX");
 	    break;
     }
 }
