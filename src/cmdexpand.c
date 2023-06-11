@@ -985,7 +985,8 @@ ExpandOne(
 	if (compl_match_array != NULL)
 	    cmdline_pum_remove();
     }
-    findex = 0;
+    if (mode != WILD_EXPAND_FREE && mode != WILD_ALL && mode != WILD_ALL_KEEP)
+	findex = 0;
 
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
