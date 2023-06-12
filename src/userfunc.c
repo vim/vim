@@ -86,12 +86,23 @@ one_function_arg(
 	return arg;
     }
 
-    // Vim9 script: cannot use script var name for argument. In function: also
-    // check local vars and arguments.
-    if (!skip && argtypes != NULL && check_defined(arg, p - arg,
-			       evalarg == NULL ? NULL : evalarg->eval_cctx,
+    // Extra checks in Vim9 script.
+    if (!skip && argtypes != NULL)
+    {
+	int c = *p;
+	*p = NUL;
+	int r = check_reserved_name(arg, FALSE);
+	*p = c;
+	if (r == FAIL)
+	    return arg;
+
+	// Cannot use script var name for argument. In function: also check
+	// local vars and arguments.
+	if (check_defined(arg, p - arg,
+				   evalarg == NULL ? NULL : evalarg->eval_cctx,
 			       eap == NULL ? NULL : eap->cstack, TRUE) == FAIL)
-	return arg;
+	    return arg;
+    }
 
     if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
 	return arg;
@@ -3666,6 +3677,9 @@ call_func(
     if (partial != NULL)
 	fp = partial->pt_func;
     if (fp == NULL)
+	fp = funcexe->fe_ufunc;
+
+    if (fp == NULL)
     {
 	// Make a copy of the name, if it comes from a funcref variable it
 	// could be changed or deleted in the called function.
@@ -4161,8 +4175,10 @@ trans_function_name_ext(
 
     if (lv.ll_ufunc != NULL)
     {
-	*ufunc = lv.ll_ufunc;
+	if (ufunc != NULL)
+	    *ufunc = lv.ll_ufunc;
 	name = vim_strsave(lv.ll_ufunc->uf_name);
+	*pp = end;
 	goto theend;
     }
 
@@ -5915,7 +5931,7 @@ ex_call_inner(
 	char_u	    *name,
 	char_u	    **arg,
 	char_u	    *startarg,
-	funcexe_T  *funcexe_init,
+	funcexe_T   *funcexe_init,
 	evalarg_T   *evalarg)
 {
     linenr_T	lnum;
@@ -6204,6 +6220,7 @@ ex_call(exarg_T *eap)
     int		len;
     int		failed = FALSE;
     funcdict_T	fudi;
+    ufunc_T	*ufunc = NULL;
     partial_T	*partial = NULL;
     evalarg_T	evalarg;
     type_T	*type = NULL;
@@ -6227,7 +6244,7 @@ ex_call(exarg_T *eap)
     }
 
     tofree = trans_function_name_ext(&arg, NULL, FALSE, TFN_INT,
-			     &fudi, &partial, vim9script ? &type : NULL, NULL);
+			   &fudi, &partial, vim9script ? &type : NULL, &ufunc);
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.
@@ -6275,6 +6292,7 @@ ex_call(exarg_T *eap)
 
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_check_type = type;
+	funcexe.fe_ufunc = ufunc;
 	funcexe.fe_partial = partial;
 	funcexe.fe_selfdict = fudi.fd_dict;
 	funcexe.fe_firstline = eap->line1;

@@ -569,6 +569,11 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	if (wp->w_skipcol == 0 || wlv->startrow != 0 || !wp->w_p_wrap)
 	    wlv->need_showbreak = FALSE;
 	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
+
+	// Correct start of highlighted area for 'showbreak'.
+	if (wlv->fromcol >= wlv->vcol && wlv->fromcol < wlv->vcol_sbr)
+	    wlv->fromcol = wlv->vcol_sbr;
+
 	// Correct end of highlighted area for 'showbreak',
 	// required when 'linebreak' is also set.
 	if (wlv->tocol == wlv->vcol)
@@ -829,7 +834,7 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 
 	if (wp->w_p_nu && wp->w_p_rnu)
 	    // Do not overwrite the line number, change "123 text" to
-	    // "123>>>xt".
+	    // "123<<<xt".
 	    while (skip < wp->w_width && VIM_ISDIGIT(ScreenLines[off]))
 	    {
 		++off;

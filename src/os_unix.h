@@ -216,24 +216,6 @@ typedef struct dsc$descriptor   DESC;
 #ifndef DFLT_HELPFILE
 # define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
 #endif
-#ifndef FILETYPE_FILE
-# define FILETYPE_FILE	"filetype.vim"
-#endif
-#ifndef FTPLUGIN_FILE
-# define FTPLUGIN_FILE	"ftplugin.vim"
-#endif
-#ifndef INDENT_FILE
-# define INDENT_FILE	"indent.vim"
-#endif
-#ifndef FTOFF_FILE
-# define FTOFF_FILE	"ftoff.vim"
-#endif
-#ifndef FTPLUGOF_FILE
-# define FTPLUGOF_FILE	"ftplugof.vim"
-#endif
-#ifndef INDOFF_FILE
-# define INDOFF_FILE	"indoff.vim"
-#endif
 #ifndef SYS_MENU_FILE
 # define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"
 #endif

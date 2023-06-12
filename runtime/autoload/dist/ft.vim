@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2023 Apr 22
+# Last Change:	2023 Jun 09
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -362,8 +362,8 @@ export def ProtoCheck(default: string)
   else
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
-    var l = getline(nextnonblank(1))
-    if l =~ '\<prolog\>' || l =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || l =~ ':-'
+    var lnum = getline(nextnonblank(1))
+    if lnum =~ '\<prolog\>' || lnum =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || lnum =~ ':-'
       setf prolog
     else
       exe 'setf ' .. default
@@ -472,12 +472,12 @@ enddef
 def IsLProlog(): bool
   # skip apparent comments and blank lines, what looks like
   # LambdaProlog comment may be RAPID header
-  var l: number = nextnonblank(1)
-  while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
-    l = nextnonblank(l + 1)
+  var lnum: number = nextnonblank(1)
+  while lnum > 0 && lnum < line('$') && getline(lnum) =~ '^\s*%' # LambdaProlog comment
+    lnum = nextnonblank(lnum + 1)
   endwhile
   # this pattern must not catch a go.mod file
-  return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+  return getline(lnum) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
 enddef
 
 # Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
@@ -504,8 +504,8 @@ export def FTpl()
   else
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
-    var l = getline(nextnonblank(1))
-    if l =~ '\<prolog\>' || l =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || l =~ ':-'
+    var line = getline(nextnonblank(1))
+    if line =~ '\<prolog\>' || line =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || line =~ ':-'
       setf prolog
     else
       setf perl
@@ -678,26 +678,24 @@ export def McSetf()
 enddef
 
 # Called from filetype.vim and scripts.vim.
-export def SetFileTypeSH(name: string)
-  if did_filetype()
+# When "setft" is passed and false then the 'filetype' option is not set.
+export def SetFileTypeSH(name: string, setft = true): string
+  if setft && did_filetype()
     # Filetype was already detected
-    return
+    return ''
   endif
-  if expand("<amatch>") =~ g:ft_ignore_pat
-    return
+  if setft && expand("<amatch>") =~ g:ft_ignore_pat
+    return ''
   endif
   if name =~ '\<csh\>'
     # Some .sh scripts contain #!/bin/csh.
-    SetFileTypeShell("csh")
-    return
+    return SetFileTypeShell("csh", setft)
   elseif name =~ '\<tcsh\>'
     # Some .sh scripts contain #!/bin/tcsh.
-    SetFileTypeShell("tcsh")
-    return
+    return SetFileTypeShell("tcsh", setft)
   elseif name =~ '\<zsh\>'
     # Some .sh scripts contain #!/bin/zsh.
-    SetFileTypeShell("zsh")
-    return
+    return SetFileTypeShell("zsh", setft)
   elseif name =~ '\<ksh\>'
     b:is_kornshell = 1
     if exists("b:is_bash")
@@ -724,34 +722,43 @@ export def SetFileTypeSH(name: string)
       unlet b:is_bash
     endif
   endif
-  SetFileTypeShell("sh")
+
+  return SetFileTypeShell("sh", setft)
 enddef
 
 # For shell-like file types, check for an "exec" command hidden in a comment,
 # as used for Tcl.
+# When "setft" is passed and false then the 'filetype' option is not set.
 # Also called from scripts.vim, thus can't be local to this script.
-export def SetFileTypeShell(name: string)
-  if did_filetype()
+export def SetFileTypeShell(name: string, setft = true): string
+  if setft && did_filetype()
     # Filetype was already detected
-    return
+    return ''
   endif
-  if expand("<amatch>") =~ g:ft_ignore_pat
-    return
+  if setft && expand("<amatch>") =~ g:ft_ignore_pat
+    return ''
   endif
-  var l = 2
-  while l < 20 && l < line("$") && getline(l) =~ '^\s*\(#\|$\)'
+
+  var lnum = 2
+  while lnum < 20 && lnum < line("$") && getline(lnum) =~ '^\s*\(#\|$\)'
     # Skip empty and comment lines.
-    l += 1
+    lnum += 1
   endwhile
-  if l < line("$") && getline(l) =~ '\s*exec\s' && getline(l - 1) =~ '^\s*#.*\\$'
+  if lnum < line("$") && getline(lnum) =~ '\s*exec\s' && getline(lnum - 1) =~ '^\s*#.*\\$'
     # Found an "exec" line after a comment with continuation
-    var n = substitute(getline(l), '\s*exec\s\+\([^ ]*/\)\=', '', '')
+    var n = substitute(getline(lnum), '\s*exec\s\+\([^ ]*/\)\=', '', '')
     if n =~ '\<tclsh\|\<wish'
-      setf tcl
-      return
+      if setft
+	setf tcl
+      endif
+      return 'tcl'
     endif
   endif
-  exe "setf " .. name
+
+  if setft
+    exe "setf " .. name
+  endif
+  return name
 enddef
 
 export def CSH()

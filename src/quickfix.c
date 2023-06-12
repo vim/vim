@@ -3340,6 +3340,7 @@ qf_jump_print_msg(
     // Add the message, skipping leading whitespace and newlines.
     ga_concat(gap, IObuff);
     qf_fmt_text(gap, skipwhite(qf_ptr->qf_text));
+    ga_append(gap, NUL);
 
     // Output the message.  Overwrite to avoid scrolling when the 'O'
     // flag is present in 'shortmess'; But when not jumping, print the
@@ -3660,9 +3661,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     if (qfp->qf_lnum != 0)
 	msg_puts_attr(":", qfSepAttr);
     gap = qfga_get();
-    if (qfp->qf_lnum == 0)
-	ga_append(gap, NUL);
-    else
+    if (qfp->qf_lnum != 0)
 	qf_range_text(gap, qfp);
     ga_concat(gap, qf_types(qfp->qf_type, qfp->qf_nr));
     ga_append(gap, NUL);
@@ -3672,6 +3671,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     {
 	gap = qfga_get();
 	qf_fmt_text(gap, qfp->qf_pattern);
+	ga_append(gap, NUL);
 	msg_puts((char *)gap->ga_data);
 	msg_puts_attr(":", qfSepAttr);
     }
@@ -3682,7 +3682,8 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     // with ^^^^.
     gap = qfga_get();
     qf_fmt_text(gap, (fname != NULL || qfp->qf_lnum != 0)
-	    ? skipwhite(qfp->qf_text) : qfp->qf_text);
+				     ? skipwhite(qfp->qf_text) : qfp->qf_text);
+    ga_append(gap, NUL);
     msg_prt_line((char_u *)gap->ga_data, FALSE);
     out_flush();		// show one line at a time
 }
@@ -3774,7 +3775,6 @@ qf_list(exarg_T *eap)
 qf_fmt_text(garray_T *gap, char_u *text)
 {
     char_u	*p = text;
-
     while (*p != NUL)
     {
 	if (*p == '\n')
@@ -3787,8 +3787,6 @@ qf_fmt_text(garray_T *gap, char_u *text)
 	else
 	    ga_append(gap, *p++);
     }
-
-    ga_append(gap, NUL);
 }
 
 /*
@@ -3807,8 +3805,8 @@ qf_range_text(garray_T *gap, qfline_T *qfp)
 
     if (qfp->qf_end_lnum > 0 && qfp->qf_lnum != qfp->qf_end_lnum)
     {
-	vim_snprintf((char *)buf + len, bufsize - len,
-		"-%ld", qfp->qf_end_lnum);
+	vim_snprintf((char *)buf + len, bufsize - len, "-%ld",
+							     qfp->qf_end_lnum);
 	len += (int)STRLEN(buf + len);
     }
     if (qfp->qf_col > 0)
@@ -3817,12 +3815,11 @@ qf_range_text(garray_T *gap, qfline_T *qfp)
 	len += (int)STRLEN(buf + len);
 	if (qfp->qf_end_col > 0 && qfp->qf_col != qfp->qf_end_col)
 	{
-	    vim_snprintf((char *)buf + len, bufsize - len,
-		    "-%d", qfp->qf_end_col);
+	    vim_snprintf((char *)buf + len, bufsize - len, "-%d",
+							      qfp->qf_end_col);
 	    len += (int)STRLEN(buf + len);
 	}
     }
-    buf[len] = NUL;
 
     ga_concat_len(gap, buf, len);
 }
@@ -4659,7 +4656,6 @@ qf_buf_add_line(
     if (qftf_str != NULL && *qftf_str != NUL)
     {
 	ga_concat(gap, qftf_str);
-	ga_append(gap, NUL);
     }
     else
     {
@@ -4706,6 +4702,7 @@ qf_buf_add_line(
 							       : qfp->qf_text);
     }
 
+    ga_append(gap, NUL);
     if (ml_append_buf(buf, lnum, gap->ga_data, gap->ga_len, FALSE) == FAIL)
 	return FAIL;
 

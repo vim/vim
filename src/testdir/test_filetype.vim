@@ -662,6 +662,7 @@ def s:GetFilenameChecks(): dict<list<string>>
               'any/etc/systemd/system/file.d/.#-file',
               'any/etc/systemd/system/file.d/file.conf'],
     systemverilog: ['file.sv', 'file.svh'],
+    trace32: ['file.cmm', 'file.t32'],
     tags: ['tags'],
     tak: ['file.tak'],
     tal: ['file.tal'],
@@ -709,6 +710,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     upstreamdat: ['upstream.dat', 'UPSTREAM.DAT', 'upstream.file.dat', 'UPSTREAM.FILE.DAT', 'file.upstream.dat', 'FILE.UPSTREAM.DAT'],
     upstreaminstalllog: ['upstreaminstall.log', 'UPSTREAMINSTALL.LOG', 'upstreaminstall.file.log', 'UPSTREAMINSTALL.FILE.LOG', 'file.upstreaminstall.log', 'FILE.UPSTREAMINSTALL.LOG'],
     upstreamlog: ['fdrupstream.log', 'upstream.log', 'UPSTREAM.LOG', 'upstream.file.log', 'UPSTREAM.FILE.LOG', 'file.upstream.log', 'FILE.UPSTREAM.LOG', 'UPSTREAM-file.log', 'UPSTREAM-FILE.LOG'],
+    urlshortcut: ['file.url'],
     usd: ['file.usda', 'file.usd'],
     usserverlog: ['usserver.log', 'USSERVER.LOG', 'usserver.file.log', 'USSERVER.FILE.LOG', 'file.usserver.log', 'FILE.USSERVER.LOG'],
     usw2kagtlog: ['usw2kagt.log', 'USW2KAGT.LOG', 'usw2kagt.file.log', 'USW2KAGT.FILE.LOG', 'file.usw2kagt.log', 'FILE.USW2KAGT.LOG'],
@@ -850,6 +852,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     expect: [['#!/path/expect']],
     gnuplot: [['#!/path/gnuplot']],
     make:   [['#!/path/make']],
+    nix:    [['#!/path/nix-shell']],
     pike:   [['#!/path/pike'],
             ['#!/path/pike0'],
             ['#!/path/pike9']],
@@ -900,6 +903,7 @@ def s:GetScriptEnvChecks(): dict<list<list<string>>>
     scheme: [['#!/usr/bin/env VAR=val --ignore-environment scheme']],
     python: [['#!/usr/bin/env VAR=val -S python -w -T']],
     wml: [['#!/usr/bin/env VAR=val --split-string wml']],
+    nix: [['#!/usr/bin/env nix-shell']],
   }
 enddef
 

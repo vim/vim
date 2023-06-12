@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 May 10
+" Last Change:	2023 Jun 09
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2234,6 +2234,9 @@ au BufNewFile,BufRead *.toml			setf toml
 " TPP - Text Presentation Program
 au BufNewFile,BufRead *.tpp			setf tpp
 
+" TRACE32 Script Language
+au BufNewFile,BufRead *.cmm,*.t32		setf trace32
+
 " Treetop
 au BufRead,BufNewFile *.treetop			setf treetop
 
@@ -2297,6 +2300,9 @@ au BufNewFile,BufRead */etc/init/*.conf,*/etc/init/*.override  setf upstart
 au BufNewFile,BufRead */.init/*.conf,*/.init/*.override	       setf upstart
 au BufNewFile,BufRead */.config/upstart/*.conf		       setf upstart
 au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
+
+" URL shortcut
+au BufNewFile,BufRead *.url			setf urlshortcut
 
 " Vala
 au BufNewFile,BufRead *.vala			setf vala

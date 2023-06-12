@@ -1767,6 +1767,29 @@ def Test_closure_in_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_call_constructor_from_legacy()
+  var lines =<< trim END
+      vim9script
+
+      var newCalled = 'false'
+
+      class A
+        def new()
+          newCalled = 'true'
+        enddef
+      endclass
+
+      export def F(options = {}): any
+        return A
+      enddef
+
+      g:p = F()
+      legacy call p.new()
+      assert_equal('true', newCalled)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_defer_with_object()
   var lines =<< trim END
       vim9script

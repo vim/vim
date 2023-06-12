@@ -311,6 +311,8 @@ def Test_reserved_name()
 
   for name in ['true',
                'false',
+               'this',
+               'super',
                'null',
                'null_blob',
                'null_dict',
@@ -322,6 +324,15 @@ def Test_reserved_name()
     v9.CheckDefExecAndScriptFailure(['var ' .. name .. ' =  0'], 'E1034:')
     v9.CheckDefExecAndScriptFailure(['var ' .. name .. ': bool'], 'E1034:')
   endfor
+
+  var lines =<< trim END
+      vim9script
+      def Foo(super: bool)
+	echo 'something'
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1034:')
 enddef
 
 def Test_null_values()
@@ -1526,6 +1537,7 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var false = 1'], 'E1034:')
   v9.CheckDefFailure(['var null = 1'], 'E1034:')
   v9.CheckDefFailure(['var this = 1'], 'E1034:')
+  v9.CheckDefFailure(['var super = 1'], 'E1034:')
 
   v9.CheckDefFailure(['[a; b; c] = g:list'], 'E1001:')
   v9.CheckDefFailure(['var [a; b; c] = g:list'], 'E1080:')

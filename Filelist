@@ -805,6 +805,11 @@ RT_SCRIPTS =	\
 		runtime/syntax/README.txt \
 		runtime/syntax/shared/*.vim \
 		runtime/syntax/shared/README.txt \
+		runtime/syntax/Makefile \
+		runtime/syntax/testdir/README.txt \
+		runtime/syntax/testdir/runtest.vim \
+		runtime/syntax/testdir/input/*.* \
+		runtime/syntax/testdir/dumps/*.dump \
 
 # Unix runtime
 RT_UNIX =	\

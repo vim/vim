@@ -1122,6 +1122,7 @@ static char *reserved[] = {
     "null_string",
     "null_channel",
     "null_job",
+    "super",
     "this",
     NULL
 };
