@@ -66,7 +66,7 @@ VIM_FOR_SYNTAXTEST = ../../src/vim
 syntaxtest:
 	cd runtime/syntax && \
 		$(MAKE) clean && \
-		$(MAKE) test VIM="$(VIM_FOR_SYNTAXTEST)"
+		$(MAKE) test VIMPROG="$(VIM_FOR_SYNTAXTEST)"
 
 
 #########################################################################
