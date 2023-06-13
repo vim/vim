@@ -46,10 +46,8 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 	fi
 	@# When the target is "clean" also clean for the indent and syntax tests.
 	@if test "$@" = "clean" -o "$@" = "distclean" -o "$@" = "testclean"; then \
-		cd runtime/indent && \
-			$(MAKE) clean; \
-		cd runtime/syntax && \
-			$(MAKE) clean; \
+		(cd runtime/indent && $(MAKE) clean); \
+		(cd runtime/syntax && $(MAKE) clean); \
 	fi
 
 # Executable used for running the indent tests.
