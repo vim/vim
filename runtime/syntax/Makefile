@@ -11,14 +11,14 @@ VIMRUNTIME = ../..
 
 # ENVVARS = LC_ALL=C LANG=C LANGUAGE=C
 
-RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) $(VIMPROG) -f $(GUI_FLAG)
+RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $(GUI_FLAG)
 
 # Run the tests that didn't run yet or failed previously.
 # If a test succeeds a testdir/done/{name} file will be written.
 # If a test fails a testdir/failed/{name}.dump file will be written.
 test:
 	@# the "vimcmd" file is used by the screendump utils
-	@echo "$(VIMPROG)" > testdir/vimcmd
+	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
 	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term -u testdir/runtest.vim
 
