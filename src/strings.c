@@ -1743,8 +1743,10 @@ f_strtrans(typval_T *argvars, typval_T *rettv)
 
 
 /*
- *
  * "utf16idx()" function
+ *
+ * Converts a byte or character offset in a string to the corresponding UTF-16
+ * code unit offset.
  */
     void
 f_utf16idx(typval_T *argvars, typval_T *rettv)
@@ -1780,6 +1782,7 @@ f_utf16idx(typval_T *argvars, typval_T *rettv)
 
     char_u	*p;
     int		len;
+    int		utf16idx = 0;
     for (p = str, len = 0; charidx ? idx >= 0 : p <= str + idx; len++)
     {
 	if (*p == NUL)
@@ -1791,6 +1794,7 @@ f_utf16idx(typval_T *argvars, typval_T *rettv)
 		rettv->vval.v_number = len;
 	    return;
 	}
+	utf16idx = len;
 	int clen = ptr2len(p);
 	int c = (clen > 1) ? utf_ptr2char(p) : *p;
 	if (c > 0xFFFF)
@@ -1800,7 +1804,7 @@ f_utf16idx(typval_T *argvars, typval_T *rettv)
 	    idx--;
     }
 
-    rettv->vval.v_number = len > 0 ? len - 1 : 0;
+    rettv->vval.v_number = utf16idx;
 }
 
 /*
