@@ -1639,108 +1639,116 @@ ex_let_option(
     p = find_option_end(&arg, &scope);
     if (p == NULL || (endchars != NULL
 			       && vim_strchr(endchars, *skipwhite(p)) == NULL))
-	emsg(_(e_unexpected_characters_in_let));
-    else
     {
-	int	    c1;
-	long	    n = 0;
-	getoption_T opt_type;
-	long	    numval;
-	char_u	    *stringval = NULL;
-	char_u	    *s = NULL;
-	int	    failed = FALSE;
-	int	    opt_p_flags;
-	char_u	    *tofree = NULL;
-	char_u	    numbuf[NUMBUFLEN];
-
-	c1 = *p;
-	*p = NUL;
-
-	opt_type = get_option_value(arg, &numval, &stringval, &opt_p_flags,
-									scope);
-	if ((opt_type == gov_bool
-		    || opt_type == gov_number
-		    || opt_type == gov_hidden_bool
-		    || opt_type == gov_hidden_number)
-			 && (tv->v_type != VAR_STRING || !in_vim9script()))
-	{
-	    if (opt_type == gov_bool || opt_type == gov_hidden_bool)
-		// bool, possibly hidden
-		n = (long)tv_get_bool(tv);
-	    else
-		// number, possibly hidden
-		n = (long)tv_get_number(tv);
-	}
-
-	if ((opt_p_flags & P_FUNC) && (tv->v_type == VAR_PARTIAL
-						|| tv->v_type == VAR_FUNC))
-	{
-	    // If the option can be set to a function reference or a lambda
-	    // and the passed value is a function reference, then convert it to
-	    // the name (string) of the function reference.
-	    s = tv2string(tv, &tofree, numbuf, 0);
-	}
-	// Avoid setting a string option to the text "v:false" or similar.
-	// In Vim9 script also don't convert a number to string.
-	else if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
-			 && (!in_vim9script() || tv->v_type != VAR_NUMBER))
-	    s = tv_get_string_chk(tv);
-
-	if (op != NULL && *op != '=')
-	{
-	    if (((opt_type == gov_bool || opt_type == gov_number) && *op == '.')
-		    || (opt_type == gov_string && *op != '.'))
-	    {
-		semsg(_(e_wrong_variable_type_for_str_equal), op);
-		failed = TRUE;  // don't set the value
-
-	    }
-	    else
-	    {
-		// number, in legacy script also bool
-		if (opt_type == gov_number
-			     || (opt_type == gov_bool && !in_vim9script()))
-		{
-		    switch (*op)
-		    {
-			case '+': n = numval + n; break;
-			case '-': n = numval - n; break;
-			case '*': n = numval * n; break;
-			case '/': n = (long)num_divide(numval, n,
-							       &failed); break;
-			case '%': n = (long)num_modulus(numval, n,
-							       &failed); break;
-		    }
-		    s = NULL;
-		}
-		else if (opt_type == gov_string
-					 && stringval != NULL && s != NULL)
-		{
-		    // string
-		    s = concat_str(stringval, s);
-		    vim_free(stringval);
-		    stringval = s;
-		}
-	    }
-	}
-
-	if (!failed)
-	{
-	    if (opt_type != gov_string || s != NULL)
-	    {
-		char *err = set_option_value(arg, n, s, scope);
-
-		arg_end = p;
-		if (err != NULL)
-		    emsg(_(err));
-	    }
-	    else
-		emsg(_(e_string_required));
-	}
-	*p = c1;
-	vim_free(stringval);
-	vim_free(tofree);
+	emsg(_(e_unexpected_characters_in_let));
+	return NULL;
     }
+
+    int		c1;
+    long	n = 0;
+    getoption_T	opt_type;
+    long	numval;
+    char_u	*stringval = NULL;
+    char_u	*s = NULL;
+    int		failed = FALSE;
+    int		opt_p_flags;
+    char_u	*tofree = NULL;
+    char_u	numbuf[NUMBUFLEN];
+
+    c1 = *p;
+    *p = NUL;
+
+    opt_type = get_option_value(arg, &numval, &stringval, &opt_p_flags, scope);
+    if (opt_type == gov_unknown && arg[0] != 't' && arg[1] != '_')
+    {
+	semsg(_(e_unknown_option_str_2), arg);
+	goto theend;
+    }
+    if (op != NULL && *op != '='
+	&& (((opt_type == gov_bool || opt_type == gov_number) && *op == '.')
+	    || (opt_type == gov_string && *op != '.')))
+    {
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+	goto theend;
+    }
+
+    if ((opt_type == gov_bool
+		|| opt_type == gov_number
+		|| opt_type == gov_hidden_bool
+		|| opt_type == gov_hidden_number)
+		     && (tv->v_type != VAR_STRING || !in_vim9script()))
+    {
+	if (opt_type == gov_bool || opt_type == gov_hidden_bool)
+	    // bool, possibly hidden
+	    n = (long)tv_get_bool_chk(tv, &failed);
+	else
+	    // number, possibly hidden
+	    n = (long)tv_get_number_chk(tv, &failed);
+	if (failed)
+	    goto theend;
+    }
+
+    if ((opt_p_flags & P_FUNC) && (tv->v_type == VAR_PARTIAL
+						    || tv->v_type == VAR_FUNC))
+    {
+	// If the option can be set to a function reference or a lambda
+	// and the passed value is a function reference, then convert it to
+	// the name (string) of the function reference.
+	s = tv2string(tv, &tofree, numbuf, 0);
+	if (s == NULL)
+	    goto theend;
+    }
+    // Avoid setting a string option to the text "v:false" or similar.
+    // In Vim9 script also don't convert a number to string.
+    else if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
+		     && (!in_vim9script() || tv->v_type != VAR_NUMBER))
+    {
+	s = tv_get_string_chk(tv);
+	if (s == NULL)
+	    goto theend;
+    }
+    else if (opt_type == gov_string || opt_type == gov_hidden_string)
+    {
+	emsg(_(e_string_required));
+	goto theend;
+    }
+
+    if (op != NULL && *op != '=')
+    {
+	// number, in legacy script also bool
+	if (opt_type == gov_number
+				 || (opt_type == gov_bool && !in_vim9script()))
+	{
+	    switch (*op)
+	    {
+		case '+': n = numval + n; break;
+		case '-': n = numval - n; break;
+		case '*': n = numval * n; break;
+		case '/': n = (long)num_divide(numval, n, &failed); break;
+		case '%': n = (long)num_modulus(numval, n, &failed); break;
+	    }
+	    s = NULL;
+	    if (failed)
+		goto theend;
+	}
+	else if (opt_type == gov_string && stringval != NULL && s != NULL)
+	{
+	    // string
+	    s = concat_str(stringval, s);
+	    vim_free(stringval);
+	    stringval = s;
+	}
+    }
+
+    char *err = set_option_value(arg, n, s, scope);
+    arg_end = p;
+    if (err != NULL)
+	emsg(_(err));
+
+theend:
+    *p = c1;
+    vim_free(stringval);
+    vim_free(tofree);
     return arg_end;
 }
 
@@ -4303,9 +4311,17 @@ set_option_from_tv(char_u *varname, typval_T *varp)
     char_u	nbuf[NUMBUFLEN];
     int		error = FALSE;
 
+    int		opt_idx = findoption(varname);
+    if (opt_idx < 0)
+    {
+	semsg(_(e_unknown_option_str_2), varname);
+	return;
+    }
+    int		opt_p_flags = get_option_flags(opt_idx);
+
     if (varp->v_type == VAR_BOOL)
     {
-	if (is_string_option(varname))
+	if (opt_p_flags & P_STRING)
 	{
 	    emsg(_(e_string_required));
 	    return;
@@ -4315,9 +4331,11 @@ set_option_from_tv(char_u *varname, typval_T *varp)
     }
     else
     {
-	if (!in_vim9script() || varp->v_type != VAR_STRING)
+	if ((opt_p_flags & (P_NUM|P_BOOL))
+		&& (!in_vim9script() || varp->v_type != VAR_STRING))
 	    numval = (long)tv_get_number_chk(varp, &error);
-	strval = tv_get_string_buf_chk(varp, nbuf);
+	if (!error)
+	    strval = tv_get_string_buf_chk(varp, nbuf);
     }
     if (!error && strval != NULL)
 	set_option_value_give_err(varname, numval, strval, OPT_LOCAL);

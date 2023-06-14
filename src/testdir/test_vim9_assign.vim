@@ -145,6 +145,12 @@ def Test_assignment()
   &ts %= 4
   assert_equal(2, &ts)
 
+  assert_fails('&ts /= 0', ['E1154:', 'E1154:'])
+  assert_fails('&ts %= 0', ['E1154:', 'E1154:'])
+  assert_fails('&ts /= []', ['E745:', 'E745:'])
+  assert_fails('&ts %= []', ['E745:', 'E745:'])
+  assert_equal(2, &ts)
+
   var f100: float = 100.0
   f100 /= 5
   assert_equal(20.0, f100)
