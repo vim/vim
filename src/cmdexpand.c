@@ -691,16 +691,15 @@ win_redr_status_matches(
 
 /*
  * Get the next or prev cmdline completion match. The index of the match is set
- * in "p_findex"
+ * in "xp->xp_selected"
  */
     static char_u *
 get_next_or_prev_match(
 	int		mode,
 	expand_T	*xp,
-	int		*p_findex,
 	char_u		*orig_save)
 {
-    int findex = *p_findex;
+    int findex = xp->xp_selected;
     int ht;
 
     if (xp->xp_numfiles <= 0)
@@ -778,7 +777,7 @@ get_next_or_prev_match(
     else if (p_wmnu)
 	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files,
 		findex, cmd_showtail);
-    *p_findex = findex;
+    xp->xp_selected = findex;
 
     if (findex == -1)
 	return vim_strsave(orig_save);
@@ -957,7 +956,6 @@ ExpandOne(
     int		mode)
 {
     char_u	*ss = NULL;
-    static int	findex;			// TODO: Move into expand_T
     static char_u *orig_save = NULL;	// kept value of orig
     int		orig_saved = FALSE;
     int		i;
@@ -966,14 +964,14 @@ ExpandOne(
     // first handle the case of using an old match
     if (mode == WILD_NEXT || mode == WILD_PREV
 	    || mode == WILD_PAGEUP || mode == WILD_PAGEDOWN)
-	return get_next_or_prev_match(mode, xp, &findex, orig_save);
+	return get_next_or_prev_match(mode, xp, orig_save);
 
     if (mode == WILD_CANCEL)
 	ss = vim_strsave(orig_save ? orig_save : (char_u *)"");
     else if (mode == WILD_APPLY)
-	ss = vim_strsave(findex == -1
+	ss = vim_strsave(xp->xp_selected == -1
 			    ? (orig_save ? orig_save : (char_u *)"")
-			    : xp->xp_files[findex]);
+			    : xp->xp_files[xp->xp_selected]);
 
     // free old names
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
@@ -986,9 +984,7 @@ ExpandOne(
 	if (compl_match_array != NULL)
 	    cmdline_pum_remove();
     }
-    // TODO: Remove condition if "findex" is part of expand_T ?
-    if (mode != WILD_EXPAND_FREE && mode != WILD_ALL && mode != WILD_ALL_KEEP)
-	findex = 0;
+    xp->xp_selected = 0;
 
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
@@ -1006,7 +1002,7 @@ ExpandOne(
     if (mode == WILD_LONGEST && xp->xp_numfiles > 0)
     {
 	ss = find_longest_match(xp, options);
-	findex = -1;			    // next p_wc gets first one
+	xp->xp_selected = -1;			// next p_wc gets first one
     }
 
     // Concatenate all matching names.  Unless interrupted, this can be slow
