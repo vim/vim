@@ -218,7 +218,6 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
-    int		eof;
 #ifdef FEAT_SODIUM
     int		may_need_lseek = FALSE;
 #endif
@@ -1223,13 +1222,13 @@ retry:
 		    size -= conv_restlen;
 		}
 
+		int eof = FALSE;
 		if (read_buffer)
 		{
 		    /*
 		     * Read bytes from curbuf.  Used for converting text read
 		     * from stdin.
 		     */
-		    eof = FALSE;
 		    if (read_buf_lnum > from)
 			size = 0;
 		    else
@@ -5477,7 +5476,7 @@ match_file_pat(
     int
 match_file_list(char_u *list, char_u *sfname, char_u *ffname)
 {
-    char_u	buf[100];
+    char_u	buf[MAXPATHL];
     char_u	*tail;
     char_u	*regpat;
     char	allow_dirs;
@@ -5490,7 +5489,7 @@ match_file_list(char_u *list, char_u *sfname, char_u *ffname)
     p = list;
     while (*p)
     {
-	copy_option_part(&p, buf, 100, ",");
+	copy_option_part(&p, buf, MAXPATHL, ",");
 	regpat = file_pat_to_reg_pat(buf, NULL, &allow_dirs, FALSE);
 	if (regpat == NULL)
 	    break;
