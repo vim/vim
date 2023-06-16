@@ -218,7 +218,7 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
-    int		eof;
+    int		eof = FALSE;
 #ifdef FEAT_SODIUM
     int		may_need_lseek = FALSE;
 #endif
@@ -1229,7 +1229,6 @@ retry:
 		     * Read bytes from curbuf.  Used for converting text read
 		     * from stdin.
 		     */
-		    eof = FALSE;
 		    if (read_buf_lnum > from)
 			size = 0;
 		    else
