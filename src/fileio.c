@@ -149,9 +149,9 @@ readfile(
     char_u	*p;
     off_T	filesize = 0;
     int		skip_read = FALSE;
+#ifdef FEAT_CRYPT
     off_T       filesize_disk = 0;      // file size read from disk
     off_T       filesize_count = 0;     // counter
-#ifdef FEAT_CRYPT
     char_u	*cryptkey = NULL;
     int		did_ask_for_key = FALSE;
 #endif
@@ -425,7 +425,9 @@ readfile(
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
 	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
+#ifdef FEAT_CRYPT
 	    filesize_disk = st.st_size;
+#endif
 #ifdef UNIX
 	    /*
 	     * Use the protection bits of the original file for the swap file.
@@ -1106,7 +1108,9 @@ retry:
     {
 	linerest = 0;
 	filesize = 0;
+#ifdef FEAT_CRYPT
 	filesize_count = 0;
+#endif
 	skip_count = lines_to_skip;
 	read_count = lines_to_read;
 	conv_restlen = 0;
@@ -1333,9 +1337,9 @@ retry:
 #endif
 		    long read_size = size;
 		    size = read_eintr(fd, ptr, read_size);
-		    filesize_count += size;
 #ifdef FEAT_CRYPT
-		    // hit end of file
+		    // Did we reach end of file?
+		    filesize_count += size;
 		    eof = (size < read_size || filesize_count == filesize_disk);
 #endif
 		}
