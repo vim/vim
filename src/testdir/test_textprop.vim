@@ -3967,7 +3967,7 @@ func Test_modify_text_before_prop()
   let buf = RunVimInTerminal('-S XtextPropModifyBefore', #{rows: 5, cols: 60})
   call VerifyScreenDump(buf, 'Test_modify_text_before_prop_1', {})
 
-  call term_sendkeys(buf, "xxia<ESC>")
+  call term_sendkeys(buf, "xxia\<Esc>")
   call VerifyScreenDump(buf, 'Test_modify_text_before_prop_2', {})
 
   call StopVimInTerminal(buf)
