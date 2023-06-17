@@ -1241,7 +1241,7 @@ win_lbr_chartabsize(
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
-		continue;
+		break;
 	}
 	if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
 	    --vcol;
