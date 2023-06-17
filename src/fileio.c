@@ -218,6 +218,7 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
+    int		eof = FALSE;
 #ifdef FEAT_SODIUM
     int		may_need_lseek = FALSE;
 #endif
@@ -1222,7 +1223,6 @@ retry:
 		    size -= conv_restlen;
 		}
 
-		int eof = FALSE;
 		if (read_buffer)
 		{
 		    /*
@@ -1306,8 +1306,8 @@ retry:
 		    {
 			// set size to 8K + Sodium Crypt Metadata
 			size = WRITEBUFSIZE + crypt_get_max_header_len()
-		     + crypto_secretstream_xchacha20poly1305_HEADERBYTES
-		     + crypto_secretstream_xchacha20poly1305_ABYTES;
+			    + crypto_secretstream_xchacha20poly1305_HEADERBYTES
+				+ crypto_secretstream_xchacha20poly1305_ABYTES;
 			may_need_lseek = TRUE;
 		    }
 
@@ -1328,11 +1328,11 @@ retry:
 			}
 		    }
 # endif
-		    eof = size;
-		    size = read_eintr(fd, ptr, size);
+		    long read_size = size;
+		    size = read_eintr(fd, ptr, read_size);
 		    filesize_count += size;
 		    // hit end of file
-		    eof = (size < eof || filesize_count == filesize_disk);
+		    eof = (size < read_size || filesize_count == filesize_disk);
 		}
 
 #ifdef FEAT_CRYPT
