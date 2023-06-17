@@ -3951,5 +3951,26 @@ func Test_error_after_using_negative_id()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_modify_text_before_prop()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['test_words', 'second line', 'third line', 'fourth line'])
+      set number
+      prop_type_add('text', {highlight: 'DiffChange'})
+      prop_type_add('below', {highlight: 'NonText'})
+      prop_add(1, 11, {type: 'text', text: repeat('a', 65)})
+      prop_add(1, 0, {type: 'below', text: repeat('a', 65), text_align: 'below'})
+  END
+  call writefile(lines, 'XtextPropModifyBefore', 'D')
+  let buf = RunVimInTerminal('-S XtextPropModifyBefore', #{rows: 5, cols: 60})
+  call VerifyScreenDump(buf, 'Test_modify_text_before_prop_1', {})
+
+  call term_sendkeys(buf, "xxia<ESC>")
+  call VerifyScreenDump(buf, 'Test_modify_text_before_prop_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
