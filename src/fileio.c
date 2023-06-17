@@ -218,7 +218,9 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
+#ifdef FEAT_CRYPT
     int		eof = FALSE;
+#endif
 #ifdef FEAT_SODIUM
     int		may_need_lseek = FALSE;
 #endif
@@ -1276,10 +1278,11 @@ retry:
 				if (!curbuf->b_p_eol)
 				    --tlen;
 				size = tlen;
+#ifdef FEAT_CRYPT
 				eof = TRUE;
+#endif
 				break;
 			    }
-
 			}
 		    }
 		}
@@ -1288,7 +1291,7 @@ retry:
 		    /*
 		     * Read bytes from the file.
 		     */
-# ifdef FEAT_SODIUM
+#ifdef FEAT_SODIUM
 		    // Let the crypt layer work with a buffer size of 8192
 		    //
 		    // Sodium encryption requires a fixed block size to
@@ -1327,12 +1330,14 @@ retry:
 			    may_need_lseek = FALSE;
 			}
 		    }
-# endif
+#endif
 		    long read_size = size;
 		    size = read_eintr(fd, ptr, read_size);
 		    filesize_count += size;
+#ifdef FEAT_CRYPT
 		    // hit end of file
 		    eof = (size < read_size || filesize_count == filesize_disk);
+#endif
 		}
 
 #ifdef FEAT_CRYPT
