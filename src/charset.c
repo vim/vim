@@ -817,16 +817,17 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 	cts->cts_vcol += win_lbr_chartabsize(cts, NULL);
 #ifdef FEAT_PROP_POPUP
     // check for a virtual text on an empty line
-    if (cts->cts_has_prop_with_text && *cts->cts_ptr == NUL
-					      && cts->cts_ptr == cts->cts_line)
+    if (cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
-
-	// when properties are above or below the empty line must also be
-	// counted
-	if (cts->cts_prop_lines > 0)
-	    ++cts->cts_vcol;
+	if (cts->cts_ptr == cts->cts_line)
+	{
+	    // when properties are above or below the empty line must also be
+	    // counted
+	    if (cts->cts_prop_lines > 0)
+		++cts->cts_vcol;
+	}
     }
 #endif
 }
@@ -1198,7 +1199,7 @@ win_lbr_chartabsize(
 		       || (tp->tp_col == MAXCOL
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
-				: (s[0] == NUL || s[charlen] == NUL)
+				: s[0] == NUL
 						  && cts->cts_with_trailing)))
 		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
@@ -1240,7 +1241,7 @@ win_lbr_chartabsize(
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
-		break;
+		continue;
 	}
 	if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
 	    --vcol;
