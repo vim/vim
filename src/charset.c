@@ -816,7 +816,7 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 						      MB_PTR_ADV(cts->cts_ptr))
 	cts->cts_vcol += win_lbr_chartabsize(cts, NULL);
 #ifdef FEAT_PROP_POPUP
-    // check for a virtual text on an empty line
+    // check for a virtual text at the end of a line or on an empty line
     if (cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
