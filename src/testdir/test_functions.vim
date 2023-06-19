@@ -1803,6 +1803,10 @@ func Test_Executable()
     let [pathext, $PATHEXT] = [$PATHEXT, '.com;.exe;.bat;.cmd']
     call assert_equal(notepadbat, exepath('notepad'))
     let $PATHEXT = pathext
+    " check for symbolic link
+    execute 'silent !mklink np.bat "' .. notepadbat .. '"'
+    call assert_equal(1, executable('./np.bat'))
+    call assert_equal(1, executable('./np'))
     bwipe
     eval 'Xnotedir'->delete('rf')
   elseif has('unix')

@@ -1775,7 +1775,11 @@ is_reparse_point_included(LPCWSTR fname)
     return FALSE;
 }
 
-    static char_u *
+/*
+ * Return the resolved file path, NULL if "fname" is an AppExecLink reparse
+ * point, already fully resolved, or it doesn't exists.
+ */
+    char_u *
 resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;
