@@ -90,9 +90,18 @@ func s:Highlight(init, old, new)
   endif
 endfunc
 
-call s:Highlight(1, '', &background)
-hi default debugBreakpoint term=reverse ctermbg=red guibg=red
-hi default debugBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+func s:InitHighlight()
+  call s:Highlight(1, '', &background)
+  hi default debugBreakpoint term=reverse ctermbg=red guibg=red
+  hi default debugBreakpointDisabled term=reverse ctermbg=gray guibg=gray
+endfunc
+
+func s:InitAutocmd()
+  augroup TermDebug
+    autocmd!
+    autocmd colorscheme * call s:InitHighlight()
+  augroup END
+endfunc
 
 " Get the command to execute the debugger as a list, defaults to ["gdb"].
 func s:GetCommand()
@@ -1521,6 +1530,9 @@ func s:BufUnloaded()
     endfor
   endfor
 endfunc
+
+call s:InitHighlight()
+call s:InitAutocmd()
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
