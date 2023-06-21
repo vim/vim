@@ -445,7 +445,9 @@ resize_func(int check_only)
 	return do_resize;
     while (do_resize)
     {
+#ifdef FEAT_EVAL
 	ch_log(NULL, "calling handle_resize() in resize_func()");
+#endif
 	handle_resize();
     }
     return FALSE;
@@ -4169,7 +4171,9 @@ mch_get_shellsize(void)
 	{
 	    columns = ws.ws_col;
 	    rows = ws.ws_row;
+#  ifdef FEAT_EVAL
 	    ch_log(NULL, "Got size with TIOCGWINSZ: %ld x %ld", columns, rows);
+#  endif
 	}
     }
 # else // TIOCGWINSZ
@@ -4185,7 +4189,9 @@ mch_get_shellsize(void)
 	{
 	    columns = ts.ts_cols;
 	    rows = ts.ts_lines;
+#  ifdef FEAT_EVAL
 	    ch_log(NULL, "Got size with TIOCGSIZE: %ld x %ld", columns, rows);
+#  endif
 	}
     }
 #  endif // TIOCGSIZE
@@ -4201,12 +4207,16 @@ mch_get_shellsize(void)
 	if ((p = (char_u *)getenv("LINES")))
 	{
 	    rows = atoi((char *)p);
+#  ifdef FEAT_EVAL
 	    ch_log(NULL, "Got 'lines' from $LINES: %ld", rows);
+#  endif
 	}
 	if ((p = (char_u *)getenv("COLUMNS")))
 	{
 	    columns = atoi((char *)p);
+#  ifdef FEAT_EVAL
 	    ch_log(NULL, "Got 'columns' from $COLUMNS: %ld", columns);
+#  endif
 	}
     }
 
@@ -4217,7 +4227,9 @@ mch_get_shellsize(void)
     if (columns == 0 || rows == 0)
     {
 	getlinecol(&columns, &rows);
+# ifdef FEAT_EVAL
 	ch_log(NULL, "Got size from termcap: %ld x %ld", columns, rows);
+# endif
     }
 #endif
 
@@ -6519,7 +6531,9 @@ select_eintr:
 	    // SIGWINCH.
 	    if (do_resize)
 	    {
+#  ifdef FEAT_EVAL
 		ch_log(NULL, "calling handle_resize() in RealWaitForChar()");
+#  endif
 		handle_resize();
 	    }
 
