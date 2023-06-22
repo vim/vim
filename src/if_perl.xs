@@ -40,7 +40,7 @@
 /* Work around for perl-5.18.
  * Don't include "perl\lib\CORE\inline.h" for now,
  * include it after Perl_sv_free2 is defined. */
-#ifdef DYNAMIC_PERL
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
@@ -402,14 +402,14 @@ static bool (*Perl_sv_2bool)(pTHX_ SV*);
 static IV (*Perl_sv_2iv)(pTHX_ SV*);
 static SV* (*Perl_sv_2mortal)(pTHX_ SV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
-static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN* const, const U32);
 static char* (*Perl_sv_2pv_nolen)(pTHX_ SV*);
 # else
 static char* (*Perl_sv_2pv)(pTHX_ SV*, STRLEN*);
 # endif
 static char* (*Perl_sv_2pvbyte)(pTHX_ SV*, STRLEN*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN* const, const U32);
 # endif
 static SV* (*Perl_sv_bless)(pTHX_ SV*, HV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
@@ -710,7 +710,7 @@ S_POPMARK(pTHX)
 # endif
 
 /* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
+# if (PERL_REVISION == 5) && (PERL_VERSION == 34)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
 {
@@ -737,7 +737,7 @@ Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
 # endif
 
 /* perl-5.32 needs Perl_SvTRUE */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+# if (PERL_REVISION == 5) && (PERL_VERSION == 32)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE(pTHX_ SV *sv) {
     if (!LIKELY(sv))
@@ -1649,7 +1649,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1700,7 +1700,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{
