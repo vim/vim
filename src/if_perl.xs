@@ -40,7 +40,7 @@
 /* Work around for perl-5.18.
  * Don't include "perl\lib\CORE\inline.h" for now,
  * include it after Perl_sv_free2 is defined. */
-#ifdef DYNAMIC_PERL
+#if (PERL_REVISION == 5) && (PERL_VERSION == 18)
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
