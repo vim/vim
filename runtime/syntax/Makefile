@@ -1,7 +1,8 @@
 # Portable Makefile for running syntax tests.
 
-# Override this if needed, e.g. with ../../src/vim
-VIMPROG = vim
+# Override this if needed, the default assumes Vim was build in the src dir.
+#VIMPROG = vim
+VIMPROG = ../../src/vim
 
 # "runtime" relative to "runtime/syntax/testdir"
 VIMRUNTIME = ../..
@@ -13,15 +14,20 @@ VIMRUNTIME = ../..
 
 RUN_VIMTEST = VIMRUNTIME=$(VIMRUNTIME) $(VALGRIND) $(ENVVARS) ../$(VIMPROG) -f $(GUI_FLAG)
 
+# Uncomment this line for debugging
+# DEBUGLOG = --log testlog
+
 # Run the tests that didn't run yet or failed previously.
 # If a test succeeds a testdir/done/{name} file will be written.
 # If a test fails a testdir/failed/{name}.dump file will be written.
+# Progress and error messages can be found in "testdir/messages".
 test:
 	@# the "vimcmd" file is used by the screendump utils
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
-	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term -u testdir/runtest.vim
+	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim
+	@tail -n 5 testdir/messages
 
 
 clean testclean:
-	rm -f testdir/failed/* testdir/done/* testdir/vimcmd
+	rm -f testdir/failed/* testdir/done/* testdir/vimcmd testdir/messages

@@ -5,28 +5,62 @@
 " Only do this with the +eval feature
 if 1
 
-let cwd = getcwd()
-if cwd !~ '[/\\]runtime[/\\]syntax\>'
-  echoerr 'Current directory must be "runtime/syntax"'
-  qall
+" Remember the directory where we started.  Will change to "testdir" below.
+let syntaxDir = getcwd()
+
+let s:messagesFname = fnameescape(syntaxDir .. '/testdir/messages')
+
+let s:messages = []
+
+" Add one message to the list of messages
+func Message(msg)
+  echomsg a:msg
+  call add(s:messages, a:msg)
+endfunc
+
+" Report a fatal message and exit
+func Fatal(msg)
+  echoerr a:msg
+  call AppendMessages(a:msg)
+  qall!
+endfunc
+
+" Append s:messages to the messages file and make it empty.
+func AppendMessages(header)
+  exe 'split ' .. s:messagesFname
+  call append(line('$'), '')
+  call append(line('$'), a:header)
+  call append(line('$'), s:messages)
+  let s:messages = []
+  wq
+endfunc
+
+" Relevant messages are written to the "messages" file.
+" If the file already exists it is appended to.
+exe 'split ' .. s:messagesFname
+call append(line('$'), repeat('=-', 70))
+call append(line('$'), '')
+call append(line('$'), 'Test run on ' .. strftime("%Y %b %d %H:%M:%S"))
+wq
+
+if syntaxDir !~ '[/\\]runtime[/\\]syntax\>'
+  call Fatal('Current directory must be "runtime/syntax"')
 endif
 if !isdirectory('testdir')
-  echoerr '"testdir" directory not found'
-  qall
+  call Fatal('"testdir" directory not found')
 endif
 
 " Use the script for source code screendump testing.  It sources other scripts,
 " therefore we must "cd" there.
 cd ../../src/testdir
 source screendump.vim
-exe 'cd ' .. fnameescape(cwd)
+exe 'cd ' .. fnameescape(syntaxDir)
 
 " For these tests we need to be able to run terminal Vim with 256 colors.  On
 " MS-Windows the console only has 16 colors and the GUI can't run in a
 " terminal.
 if !CanRunVimInTerminal()
-  echomsg 'Cannot make screendumps, aborting'
-  qall
+  call Fatal('Cannot make screendumps, aborting')
 endif
 
 cd testdir
@@ -51,7 +85,10 @@ func HandleSwapExists()
 endfunc
 
 
+let ok_count = 0
 let failed_count = 0
+let skipped_count = 0
+let MAX_FAILED_COUNT = 5
 for fname in glob('input/*.*', 1, 1)
   if fname =~ '\~$'
     " backup file, skip
@@ -59,14 +96,18 @@ for fname in glob('input/*.*', 1, 1)
   endif
 
   let linecount = readfile(fname)->len()
-  let root = substitute(fname, 'input[/\\]\(.*\)\..*', '\1', '')
+  let root = fnamemodify(fname, ':t:r')
+  let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
+  let failed_root = 'failed/' .. root
 
-  " Execute the test if the "done" file does not exist of when the input file
+  " Execute the test if the "done" file does not exist or when the input file
   " is newer.
   let in_time = getftime(fname)
   let out_time = getftime('done/' .. root)
   if out_time < 0 || in_time > out_time
-    for dumpname in glob('failed/' .. root .. '_\d*\.dump', 1, 1)
+    call ch_log('running tests for: ' .. fname)
+
+    for dumpname in glob(failed_root .. '_\d*\.dump', 1, 1)
       call delete(dumpname)
     endfor
     call delete('done/' .. root)
@@ -77,37 +118,75 @@ for fname in glob('input/*.*', 1, 1)
     call writefile(lines, 'Xtestscript')
     let buf = RunVimInTerminal('-S Xtestscript ' .. fname, {})
 
-    " Screendump at the start of the file: root_00.dump
-    let fail = VerifyScreenDump(buf, root .. '_00', {})
+    " Screendump at the start of the file: failed/filetype_00.dump
+    let root_00 = root .. '_00'
+    call ch_log('First screendump for ' .. fname .. ': failed/' .. root_00 .. '.dump')
+    let fail = VerifyScreenDump(buf, root_00, {})
 
-    " Make a Screendump every 18 lines of the file: root_NN.dump
+    " Make a Screendump every 18 lines of the file: failed/root_NN.dump
     let topline = 1
     let nr = 1
     while linecount - topline > 20
       let topline += 18
       call term_sendkeys(buf, printf("%dGzt", topline))
-      let fail += VerifyScreenDump(buf, root .. printf('_%02d', nr), {})
+      let root_next = root .. printf('_%02d', nr)
+      call ch_log('Next screendump for ' .. fname .. ': failed/' .. root_next .. '.dump')
+      let fail += VerifyScreenDump(buf, root_next, {})
       let nr += 1
     endwhile
 
-    " Screendump at the end of the file: root_99.dump
+    " Screendump at the end of the file: failed/root_99.dump
     call term_sendkeys(buf, 'Gzb')
-    let fail += VerifyScreenDump(buf, root .. '_99', {})
+    let root_last = root .. '_99'
+    call ch_log('Last screendump for ' .. fname .. ': failed/' .. root_last .. '.dump')
+    let fail += VerifyScreenDump(buf, root_last, {})
 
     call StopVimInTerminal(buf)
     call delete('Xtestscript')
 
-    if fail == 0
-      call writefile(['OK'], 'done/' . root)
-      echo "Test " . root . " OK\n"
-    else
-      let failed_count += 1
+    " Add any assert errors to s:messages
+    if len(v:errors) > 0
+      call extend(s:messages, v:errors)
+      let v:errors = []
+      let fail += 1
     endif
+
+    if fail == 0
+      call Message("Test " .. root .. " OK")
+
+      call writefile(['OK'], 'done/' .. root)
+
+      let ok_count += 1
+    else
+      call Message("Test " .. root .. " FAILED")
+
+      call delete('done/' .. root)
+
+      let failed_count += 1
+      if failed_count > MAX_FAILED_COUNT
+	call Message('')
+	call Message('Too many errors, aborting')
+      endif
+    endif
+  else
+    let skipped_count += 1
+  endif
+
+  " Append messages to the file "testdir/messages"
+  call AppendMessages('Input file ' .. fname .. ':')
+
+  if failed_count > MAX_FAILED_COUNT
+    break
   endif
 endfor
 
 " Matching "if 1" at the start.
 endif
+
+call Message('OK: ' .. ok_count)
+call Message('FAILED: ' .. failed_count)
+call Message('skipped: ' .. skipped_count)
+call AppendMessages('== SUMMARY ==')
 
 if failed_count > 0
   " have make report an error
