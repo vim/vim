@@ -163,7 +163,7 @@ for fname in glob('input/*.*', 1, 1)
 
       call delete('done/' .. root)
 
-      call failed_tests->extend(root)
+      eval failed_tests->add(root)
       if len(failed_tests) > MAX_FAILED_COUNT
 	call Message('')
 	call Message('Too many errors, aborting')
