@@ -30,6 +30,8 @@ if 1
   " Avoid storing shell history.
   let $HISTFILE = ""
 
+  " have $HOME available as $ORIGHOME (required for test_mksession)
+  let $ORIGHOME = $HOME
   " Make sure $HOME does not get read or written.
   " It must exist, gnome tries to create $HOME/.gnome2
   let $HOME = getcwd() . '/XfakeHOME'

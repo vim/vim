@@ -1262,4 +1262,15 @@ func Test_mkview_manual_fold()
   bw!
 endfunc
 
+" Test Viewdir is in $HOME
+func Test_mkview_default_home()
+  if !has('win32') || !has('unix')
+    throw 'Skipped: only runs on MS-Windows or Unix'
+  endif
+  " We don't want Vim to potentially create $viewdir for the user that is
+  " running the test, so therefore just test that it points to $HOME
+  " and assume that will be writable.
+  call assert_equal(0, stridx(&viewdir, $ORIGHOME))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
