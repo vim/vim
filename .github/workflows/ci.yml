@@ -238,6 +238,7 @@ jobs:
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
+        timeout-minutes: 20
         if: matrix.coverage
         uses: codecov/codecov-action@v3
         with:
@@ -610,6 +611,7 @@ jobs:
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
+        timeout-minutes: 20
         if: matrix.coverage
         uses: codecov/codecov-action@v3
         with:
