@@ -289,7 +289,7 @@ jobs:
           normal)
             ;;
           huge)
-            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            echo "CONFOPT=--enable-perlinterp=dynamic --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
           ) >> $GITHUB_ENV
