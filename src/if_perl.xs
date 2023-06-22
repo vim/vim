@@ -57,6 +57,8 @@
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-variable"
 # pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
+# pragma GCC diagnostic ignored "-Werror"
+# pragma GCC diagnostic ignored "-Wshadow"
 #endif
 
 #include <EXTERN.h>
