@@ -56,6 +56,7 @@
 #ifdef __GNUC__
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-variable"
+# pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #endif
 
 #include <EXTERN.h>
@@ -710,7 +711,7 @@ S_POPMARK(pTHX)
 # endif
 
 /* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
+# if (PERL_REVISION == 5) && (PERL_VERSION == 34)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
 {
@@ -737,7 +738,7 @@ Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
 # endif
 
 /* perl-5.32 needs Perl_SvTRUE */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+# if (PERL_REVISION == 5) && (PERL_VERSION == 32)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE(pTHX_ SV *sv) {
     if (!LIKELY(sv))
