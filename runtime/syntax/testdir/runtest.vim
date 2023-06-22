@@ -40,7 +40,8 @@ endfunc
 exe 'split ' .. s:messagesFname
 call append(line('$'), repeat('=-', 70))
 call append(line('$'), '')
-call append(line('$'), 'Test run on ' .. strftime("%Y %b %d %H:%M:%S"))
+let s:test_run_message = 'Test run on ' .. strftime("%Y %b %d %H:%M:%S")
+call append(line('$'), s:test_run_message)
 wq
 
 if syntaxDir !~ '[/\\]runtime[/\\]syntax\>'
@@ -86,7 +87,7 @@ endfunc
 
 
 let ok_count = 0
-let failed_count = 0
+let failed_tests = []
 let skipped_count = 0
 let MAX_FAILED_COUNT = 5
 for fname in glob('input/*.*', 1, 1)
@@ -162,20 +163,21 @@ for fname in glob('input/*.*', 1, 1)
 
       call delete('done/' .. root)
 
-      let failed_count += 1
-      if failed_count > MAX_FAILED_COUNT
+      call failed_tests->extend(root)
+      if len(failed_tests) > MAX_FAILED_COUNT
 	call Message('')
 	call Message('Too many errors, aborting')
       endif
     endif
   else
+    call Message("Test " .. root .. " skipped")
     let skipped_count += 1
   endif
 
   " Append messages to the file "testdir/messages"
   call AppendMessages('Input file ' .. fname .. ':')
 
-  if failed_count > MAX_FAILED_COUNT
+  if len(failed_tests) > MAX_FAILED_COUNT
     break
   endif
 endfor
@@ -183,12 +185,13 @@ endfor
 " Matching "if 1" at the start.
 endif
 
+call Message(s:test_run_message)
 call Message('OK: ' .. ok_count)
-call Message('FAILED: ' .. failed_count)
+call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
 call Message('skipped: ' .. skipped_count)
 call AppendMessages('== SUMMARY ==')
 
-if failed_count > 0
+if len(failed_tests) > 0
   " have make report an error
   cquit
 endif

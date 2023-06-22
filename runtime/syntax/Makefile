@@ -26,7 +26,7 @@ test:
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
 	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim
-	@tail -n 5 testdir/messages
+	@tail -n 6 testdir/messages
 
 
 clean testclean:
