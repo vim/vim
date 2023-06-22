@@ -1961,6 +1961,9 @@ au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias 
 au BufNewFile,BufRead *.zig			setf zig
 au BufNewFile,BufRead *.zir			setf zir
 
+" Zserio
+au BufNewFile,BufRead *.zs			setf zserio
+
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
 au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump setf zsh

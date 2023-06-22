@@ -801,6 +801,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     zimbu: ['file.zu'],
     zimbutempl: ['file.zut'],
     zir: ['file.zir'],
+    zserio: ['file.zs'],
     zsh: ['.zprofile', '/etc/zprofile', '.zfbfmarks', 'file.zsh',
           '.zcompdump', '.zlogin', '.zlogout', '.zshenv', '.zshrc',
           '.zcompdump-file', '.zlog', '.zlog-file', '.zsh', '.zsh-file',
