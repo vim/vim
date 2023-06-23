@@ -145,9 +145,16 @@ for fname in glob('input/*.*', 1, 1)
     call StopVimInTerminal(buf)
     call delete('Xtestscript')
 
-    " Add any assert errors to s:messages
+    " redraw here to avoid the following messages to get mixed up with screen
+    " output.
+    redraw
+
+    " Add any assert errors to s:messages.
     if len(v:errors) > 0
       call extend(s:messages, v:errors)
+      " Echo the errors here, in case the script aborts or the "messages" file
+      " is not displayed later.
+      echomsg v:errors
       let v:errors = []
       let fail += 1
     endif
