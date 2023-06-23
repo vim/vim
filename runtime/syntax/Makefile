@@ -26,7 +26,9 @@ test:
 	@echo "../$(VIMPROG)" > testdir/vimcmd
 	@echo "$(RUN_VIMTEST)" >> testdir/vimcmd
 	VIMRUNTIME=$(VIMRUNTIME) $(VIMPROG) --clean --not-a-term $(DEBUGLOG) -u testdir/runtest.vim
-	@tail -n 6 testdir/messages
+	@# FIXME: Temporarily show the whole file to find out what goes wrong
+	@#tail -n 6 testdir/messages
+	@cat testdir/messages
 
 
 clean testclean:
