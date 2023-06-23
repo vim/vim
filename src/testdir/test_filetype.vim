@@ -507,6 +507,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     pcmk: ['file.pcmk'],
     pdf: ['file.pdf'],
     perl: ['file.plx', 'file.al', 'file.psgi', 'gitolite.rc', '.gitolite.rc', 'example.gitolite.rc', '.latexmkrc', 'latexmkrc'],
+    pem: ['file.pem', 'file.cer', 'file.crt', 'file.csr'],
     pf: ['pf.conf'],
     pfmain: ['main.cf', 'main.cf.proto'],
     php: ['file.php', 'file.php9', 'file.phtml', 'file.ctp', 'file.phpt', 'file.theme'],

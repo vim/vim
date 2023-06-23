@@ -1532,6 +1532,9 @@ au BufNewFile,BufRead *.pm
 " Perl POD
 au BufNewFile,BufRead *.pod			setf pod
 
+" PEM
+au BufNewFile,BufRead *.pem,*.cer,*.crt,*.csr	setf pem
+
 " Php, php3, php4, etc.
 " Also Phtml (was used for PHP 2 in the past).
 " Also .ctp for Cake template file.
