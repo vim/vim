@@ -97,7 +97,7 @@
 #endif
 
 #ifndef DFLT_VDIR
-# define DFLT_VDIR	"$VIM/vimfiles/view"	// default for 'viewdir'
+# define DFLT_VDIR	"$HOME/vimfiles/view"	// default for 'viewdir'
 #endif
 
 #ifndef DFLT_DIR
@@ -105,7 +105,7 @@
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
-#define DFLT_RUNTIMEPATH	"$HOME/vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$HOME/vimfiles/after"
+#define DFLT_RUNTIMEPATH	"$HOME/vimfiles,$VIM/vimfiles,$VIMRUNTIME,$HOME/vimfiles/after,$VIM/vimfiles/after"
 #define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 
 #define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names

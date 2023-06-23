@@ -8912,11 +8912,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	displayed when 'verbosefile' is set.
 
 						*'viewdir'* *'vdir'*
-'viewdir' 'vdir'	string	(default for Amiga and Win32:
-							 "$VIM/vimfiles/view",
-				 for Unix: "~/.vim/view",
-				 for macOS: "$VIM:vimfiles:view"
-				 for VMS: "sys$login:vimfiles/view")
+'viewdir' 'vdir'	string	(default for Amiga "$VIM/vimfiles/view",
+					 for Win32: "$HOME/vimfiles/view",
+					 for Unix: "~/.vim/view",
+					 for macOS: "$VIM/vimfiles/view"
+					 for VMS: "sys$login:vimfiles/view")
 			global
 			{not available when compiled without the |+mksession|
 			feature}
