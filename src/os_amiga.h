@@ -199,7 +199,7 @@ typedef long off_t;
 #endif
 
 #ifndef DFLT_VDIR
-# define DFLT_VDIR	"$VIM/vimfiles/view"	// default for 'viewdir'
+# define DFLT_VDIR	"home:vimfiles/view"	// default for 'viewdir'
 #endif
 
 #ifndef DFLT_MAXMEM

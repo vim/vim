@@ -1262,4 +1262,17 @@ func Test_mkview_manual_fold()
   bw!
 endfunc
 
+" Test default 'viewdir' value
+func Test_mkview_default_home()
+  if has('win32')
+    call assert_match('^' .. $ORIGHOME .. '/vimfiles', &viewdir)
+  elseif has('unix')
+    call assert_match('^' .. $ORIGHOME .. '/.vim', &viewdir)
+  elseif has('amiga')
+    call assert_match('^home:vimfiles', &viewdir)
+  elseif has('mac')
+    call assert_match('^' .. $VIM .. '/vimfiles', &viewdir)
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
