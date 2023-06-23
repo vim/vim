@@ -117,6 +117,16 @@ for fname in glob('input/*.*', 1, 1)
       syntax on
     END
     call writefile(lines, 'Xtestscript')
+
+    " close all but the last window
+    while winnr('$') > 1
+      close
+    endwhile
+
+    " Redraw to make sure that messages are cleared and there is enough space
+    " for the terminal window.
+    redraw
+
     let buf = RunVimInTerminal('-S Xtestscript ' .. fname, {})
 
     " Screendump at the start of the file: failed/filetype_00.dump
