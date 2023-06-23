@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 # Test file to test 'for do done' loops.
 # You can start this script like: $0 {-ne -gt -le ...} (all numeric operators 
 # are allowed!

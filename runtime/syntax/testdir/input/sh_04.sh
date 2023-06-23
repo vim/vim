@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 # sh4
 Variable=${VariableB:-{VariableC}}
 Variable=${VariableB:-${VariableC:-{Var3:=eng}}}

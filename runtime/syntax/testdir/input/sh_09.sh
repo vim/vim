@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dash
 # Test file for vim the check () subshells
 ( cd ; $pwd ) | wc -c
 ( cd $1 ; $pwd ) | wc -c

@@ -85,7 +85,6 @@ func HandleSwapExists()
   endif
 endfunc
 
-
 let ok_count = 0
 let failed_tests = []
 let skipped_count = 0
@@ -115,6 +114,28 @@ for fname in glob('input/*.*', 1, 1)
 
     let lines =<< trim END
       syntax on
+
+      " extra info for shell variables
+      func ShellInfo()
+	let msg = ''
+	for [key, val] in items(b:)
+	  if key =~ '^is_'
+	    let msg ..= key .. ': ' .. val .. ', '
+	  endif
+	endfor
+	if msg != ''
+	  echomsg msg
+	endif
+      endfunc
+
+      au! SwapExists * call HandleSwapExists()
+      func HandleSwapExists()
+	" Ignore finding a swap file for the test input, the user might be
+	" editing it and that's OK.
+	if expand('<afile>') =~ 'input[/\\].*\..*'
+	  let v:swapchoice = 'e'
+	endif
+      endfunc
     END
     call writefile(lines, 'Xtestscript')
 
@@ -127,12 +148,23 @@ for fname in glob('input/*.*', 1, 1)
     " for the terminal window.
     redraw
 
-    let buf = RunVimInTerminal('-S Xtestscript ' .. fname, {})
+    let buf = RunVimInTerminal('-S Xtestscript', {})
+    " edit the file only after catching the SwapExists event
+    call term_sendkeys(buf, ":edit " .. fname .. "\<CR>")
 
-    " Screendump at the start of the file: failed/filetype_00.dump
+    if filetype == 'sh'
+      call term_sendkeys(buf, ":call ShellInfo()\<CR>")
+    endif
+
+    " Screendump at the start of the file: failed/root_00.dump
     let root_00 = root .. '_00'
     call ch_log('First screendump for ' .. fname .. ': failed/' .. root_00 .. '.dump')
     let fail = VerifyScreenDump(buf, root_00, {})
+
+    " clear the shell info if there are not enough lines to cause a scroll
+    if filetype == 'sh' && linecount <= 19
+      call term_sendkeys(buf, ":redraw\<CR>")
+    endif
 
     " Make a Screendump every 18 lines of the file: failed/root_NN.dump
     let topline = 1
