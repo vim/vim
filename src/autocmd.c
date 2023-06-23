@@ -2019,6 +2019,9 @@ apply_autocmds_group(
     save_redo_T	save_redo;
     int		save_KeyTyped = KeyTyped;
     int		save_did_emsg;
+#if defined(FEAT_TIMERS) || defined(PROTO)
+    int		save_ex_pressedreturn;
+#endif
     ESTACK_CHECK_DECLARATION;
 
     /*
@@ -2311,11 +2314,17 @@ apply_autocmds_group(
 	    check_lnums_nested(TRUE);
 
 	save_did_emsg = did_emsg;
+#if defined(FEAT_TIMERS) || defined(PROTO)
+	save_ex_pressedreturn = get_pressedreturn();
+#endif
 
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
 	did_emsg += save_did_emsg;
+#if defined(FEAT_TIMERS) || defined(PROTO)
+	set_pressedreturn(save_ex_pressedreturn);
+#endif
 
 	if (nesting == 1)
 	    // restore cursor and topline, unless they were changed
