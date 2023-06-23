@@ -40,7 +40,7 @@
 /* Work around for perl-5.18.
  * Don't include "perl\lib\CORE\inline.h" for now,
  * include it after Perl_sv_free2 is defined. */
-#if (PERL_REVISION == 5) && (PERL_VERSION == 18)
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
@@ -56,8 +56,6 @@
 #ifdef __GNUC__
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-variable"
-# pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
-# pragma GCC diagnostic ignored "-Wshadow"
 #endif
 
 #include <EXTERN.h>
