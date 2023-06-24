@@ -838,6 +838,23 @@ def Test_class_member()
   END
   v9.CheckScriptSuccess(lines)
 
+  # using static class member twice
+  lines =<< trim END
+      vim9script
+
+      class HTML
+        static author: string = 'John Doe'
+
+        static def MacroSubstitute(s: string): string
+          return substitute(s, '{{author}}', author, 'gi')
+        enddef
+      endclass
+
+      assert_equal('some text', HTML.MacroSubstitute('some text'))
+      assert_equal('some text', HTML.MacroSubstitute('some text'))
+  END
+  v9.CheckScriptSuccess(lines)
+
   # access private member in lambda
   lines =<< trim END
       vim9script
