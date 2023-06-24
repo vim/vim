@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/dash -x
 # sh5
 # Note that this is special for sh. ksh will be an extra file later.
 # Note too, that sh and ksh allow ${var:-sub} as well as ${var-sub}!
