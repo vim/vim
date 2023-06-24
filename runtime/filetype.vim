@@ -266,11 +266,11 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 " BSDL
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
-" Bazel (http://bazel.io)
+" Bazel (https://bazel.build) and Buck2 (https://buck2.build/)
 autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
-  " There is another check for BUILD further below.
-  autocmd BufRead,BufNewFile *.BUILD,BUILD		setf bzl
+  " There is another check for BUILD and BUCK further below.
+  autocmd BufRead,BufNewFile *.BUILD,BUILD,BUCK		setf bzl
 endif
 
 " Busted (Lua unit testing framework - configuration files)
@@ -2605,9 +2605,9 @@ au BufNewFile,BufRead *asterisk*/*voicemail.conf* call s:StarSetf('asteriskvm')
 " Bazaar version control
 au BufNewFile,BufRead bzr_log.*			setf bzr
 
-" Bazel build file
+" Bazel and Buck2 build file
 if !has("fname_case")
-  au BufNewFile,BufRead *.BUILD,BUILD		setf bzl
+  au BufNewFile,BufRead *.BUILD,BUILD,BUCK	setf bzl
 endif
 
 " BIND zone

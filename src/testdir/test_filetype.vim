@@ -814,7 +814,7 @@ enddef
 def s:GetFilenameCaseChecks(): dict<list<string>>
   return {
     modula2: ['file.DEF'],
-    bzl: ['file.BUILD', 'BUILD'],
+    bzl: ['file.BUILD', 'BUILD', 'BUCK'],
   }
 enddef
 
