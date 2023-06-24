@@ -2821,6 +2821,11 @@ def Test_matchfuzzy()
   v9.CheckDefAndScriptFailure(['matchfuzzy([], 1)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['matchfuzzy([], "a", [])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 3'])
   matchfuzzy(['abc', 'xyz'], '')->assert_equal([])
+  # detailed 'matchfuzzy' test in 'test_matchfuzzy.vim'
+  # extended a bit here to make sure it worked well in vim9
+  (['one two', 'two one', 'two foo one']->matchfuzzy('two one', {matchseq: 0}))->assert_equal(['two one', 'two foo one'])
+  (['one two', 'two one', 'two foo one']->matchfuzzy('two one', {matchseq: 1}))->assert_equal(['two one'])
+  ([{name: 'one'}, {name: 'two'}, {name: 'who'}]->matchfuzzy('wo', {key: 'name', matchkey: 1}))->assert_equal([{name: 'two'}])
 enddef
 
 def Test_matchfuzzypos()
