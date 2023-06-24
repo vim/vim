@@ -821,13 +821,10 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
-	if (cts->cts_ptr == cts->cts_line)
-	{
-	    // when properties are above or below the empty line must also be
-	    // counted
-	    if (cts->cts_prop_lines > 0)
-		++cts->cts_vcol;
-	}
+	// when properties are above or below the empty line must also be
+	// counted
+	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0)
+	    ++cts->cts_vcol;
     }
 #endif
 }
