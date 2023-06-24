@@ -2591,17 +2591,20 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 					(curwin, curwin->w_topline, FALSE);
 	    int skip_lines = 0;
 	    int width1 = curwin->w_width - curwin_col_off();
-	    int width2 = width1 + curwin_col_off2();
-	    // similar formula is used in curs_columns()
-	    if (curwin->w_skipcol > width1)
-		skip_lines += (curwin->w_skipcol - width1) / width2 + 1;
-	    else if (curwin->w_skipcol > 0)
-		skip_lines = 1;
-
-	    top_plines -= skip_lines;
-	    if (top_plines > curwin->w_height)
+	    if (width1 > 0)
 	    {
-		scrolled += (top_plines - curwin->w_height);
+		int width2 = width1 + curwin_col_off2();
+		// similar formula is used in curs_columns()
+		if (curwin->w_skipcol > width1)
+		    skip_lines += (curwin->w_skipcol - width1) / width2 + 1;
+		else if (curwin->w_skipcol > 0)
+		    skip_lines = 1;
+
+		top_plines -= skip_lines;
+		if (top_plines > curwin->w_height)
+		{
+		    scrolled += (top_plines - curwin->w_height);
+		}
 	    }
 	}
     }
