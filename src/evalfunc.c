@@ -2224,7 +2224,7 @@ static funcentry_T global_functions[] =
     {"matchend",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_number,	    f_matchend},
     {"matchfuzzy",	2, 3, FEARG_1,	    arg3_list_string_dict,
-			ret_list_string,    f_matchfuzzy},
+			ret_list_any,	    f_matchfuzzy},
     {"matchfuzzypos",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_any,	    f_matchfuzzypos},
     {"matchlist",	2, 4, FEARG_1,	    arg24_match_func,
