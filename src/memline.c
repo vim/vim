@@ -2494,6 +2494,18 @@ ml_sync_all(int check_file, int check_char)
 		|| buf->b_ml.ml_mfp->mf_fd < 0)
 	    continue;			    // no file
 
+	// Safety Check
+	if (crypt_method_is_sodium(crypt_get_method_nr(buf))
+					&& *buf->b_p_key != NUL)
+	{
+	    // close the swapfile
+	    mf_close_file(buf, TRUE);
+	    buf->b_p_swf = FALSE;
+	    vim_free(buf->b_p_key);
+	    buf->b_p_key = empty_option;
+	    continue;
+	}
+
 	ml_flush_line(buf);		    // flush buffered line
 					    // flush locked block
 	(void)ml_find_line(buf, (linenr_T)0, ML_FLUSH);
@@ -5570,6 +5582,15 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 
     if (*key == NUL)
 	return NULL;
+
+    // safety check
+    if (crypt_method_is_sodium(method_nr))
+    {
+	// close the swapfile
+	mf_close_file(buf, TRUE);
+	buf->b_p_swf = FALSE;
+	return NULL;
+    }
 
     if (method_nr == CRYPT_M_ZIP)
     {

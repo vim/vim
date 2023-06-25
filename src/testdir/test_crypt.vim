@@ -392,4 +392,24 @@ func Test_crypt_set_key_changes_buffer()
   call delete('Xtest1.txt')
 endfunc
 
+func Test_crypt_set_key_segfault()
+  CheckFeature sodium
+
+  defer delete('Xtest2.txt')
+  new Xtest2.txt
+  call setline(1, 'nothing')
+  set cryptmethod=xchacha20
+  set key=foobar
+  w
+  new Xtest3
+  put ='other content'
+  setl modified
+  sil! preserve
+  bw!
+
+  set cryptmethod&
+  set key=
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
