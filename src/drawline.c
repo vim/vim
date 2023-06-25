@@ -3271,6 +3271,12 @@ win_line(
 			n_attr = wlv.n_extra + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
+#ifdef FEAT_PROP_POPUP
+		    if (text_prop_type != NULL &&
+			     text_prop_flags & PT_FLAG_OVERRIDE)
+			wlv.extra_attr = hl_combine_attr(text_prop_attr, wlv.extra_attr);
+#endif
+
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
 		    mb_utf8 = FALSE;	// don't draw as UTF-8
