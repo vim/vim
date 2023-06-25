@@ -1699,7 +1699,7 @@ win_line(
 	    ptr = prev_ptr;
 	    // If the character fits on the screen, don't need to skip it.
 	    // Except for a TAB.
-	    if (((*mb_ptr2cells)(ptr) >= charsize || *ptr == TAB)
+	    if ((ptr2cells(ptr) >= charsize || *ptr == TAB)
 							       && wlv.col == 0)
 	       n_skip = v - wlv.vcol;
 	}

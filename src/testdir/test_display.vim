@@ -159,6 +159,25 @@ func Test_display_listchars_precedes()
   bw!
 endfunc
 
+" Check that a control char is scrolled to the left properly with 'nowrap'.
+func Test_display_ctrl_char_leftcol()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, "\<C-A>foobar")
+    setlocal nowrap
+    normal! $
+  END
+  call writefile(lines, 'XdispCtrlCharLeftcol', 'D')
+  let buf = RunVimInTerminal('-S XdispCtrlCharLeftcol', #{rows: 4})
+  call VerifyScreenDump(buf, 'Test_display_ctrl_char_leftcol_1', {})
+
+  call term_sendkeys(buf, 'zl')
+  call VerifyScreenDump(buf, 'Test_display_ctrl_char_leftcol_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Check that win_lines() works correctly with the number_only parameter=TRUE
 " should break early to optimize cost of drawing, but needs to make sure
 " that the number column is correctly highlighted.
