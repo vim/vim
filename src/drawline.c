@@ -2023,7 +2023,13 @@ win_line(
 		    ++text_prop_next;
 		}
 
-		if (wlv.n_extra == 0 || !wlv.extra_for_textprop)
+		if (wlv.n_extra == 0 ||
+			(!wlv.extra_for_textprop
+#ifdef FEAT_PROP_POPUP
+			 && !(text_prop_type != NULL &&
+			     text_prop_flags & PT_FLAG_OVERRIDE)
+#endif
+		    ))
 		{
 		    text_prop_attr = 0;
 		    text_prop_attr_comb = 0;
