@@ -3328,6 +3328,11 @@ win_line(
 					    || (wp->w_p_list &&
 						wp->w_lcs_chars.eol > 0)))
 			wlv.char_attr = wlv.line_attr;
+#ifdef FEAT_SIGNS
+		    // At end of line: if Sign is present with line highlight, reset char_attr
+		    if (sign_present && wlv.sattr.sat_linehl > 0 && wlv.draw_state == WL_LINE)
+			wlv.char_attr = wlv.sattr.sat_linehl;
+#endif
 # ifdef FEAT_DIFF
 		    if (wlv.diff_hlf == HLF_TXD)
 		    {
