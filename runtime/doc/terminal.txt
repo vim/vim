@@ -1547,12 +1547,12 @@ Termdebug uses the last two characters of the breakpoint ID in the
 signcolumn to represent breakpoints. For example, breakpoint ID 133
 will be displayed as `33`.
 
-If you want to customise the breakpoint signcolumn label: >
-	let g:termdebug_config['label'] = 'BB'
+If you want to customise the breakpoint signs: >
+	let g:termdebug_config['sign'] = '>>'
 If there is no g:terminal_config you can use: >
-	let g:termdebug_label = 'BB'
+	let g:termdebug_sign = '>>'
 
-After this, breakpoints will be displayed as `BB` in the signcolumn.
+After this, breakpoints will be displayed as `>>` in the signcolumn.
 
 
 Window toolbar ~

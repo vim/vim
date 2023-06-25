@@ -1403,9 +1403,9 @@ func s:CreateBreakpoint(id, subid, enabled)
     endif
     let label = ''
     if exists('g:termdebug_config')
-        let label = get(g:termdebug_config, 'label', '')
-    elseif exists('g:termdebug_label')
-        let label = g:termdebug_label
+        let label = get(g:termdebug_config, 'sign', '')
+    elseif exists('g:termdebug_sign')
+        let label = g:termdebug_sign
     endif
     if label == ''
         let label = substitute(nr, '\..*', '', '')
