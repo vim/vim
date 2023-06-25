@@ -2018,7 +2018,6 @@ apply_autocmds_group(
     int		did_save_redobuff = FALSE;
     save_redo_T	save_redo;
     int		save_KeyTyped = KeyTyped;
-    int		save_did_emsg;
     ESTACK_CHECK_DECLARATION;
 
     /*
@@ -2310,12 +2309,14 @@ apply_autocmds_group(
 	else
 	    check_lnums_nested(TRUE);
 
-	save_did_emsg = did_emsg;
+	int save_did_emsg = did_emsg;
+	int save_ex_pressedreturn = get_pressedreturn();
 
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
 	did_emsg += save_did_emsg;
+	set_pressedreturn(save_ex_pressedreturn);
 
 	if (nesting == 1)
 	    // restore cursor and topline, unless they were changed
