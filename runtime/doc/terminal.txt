@@ -1543,8 +1543,8 @@ If there is no g:termdebug_config you can use: >
 
 Change default signs ~
 							*termdebug_signs*
-Termdebug uses the last two characters of the breakpoint ID in the 
-signcolumn to represent breakpoints. For example, breakpoint ID 133 
+Termdebug uses the last two characters of the breakpoint ID in the
+signcolumn to represent breakpoints. For example, breakpoint ID 133
 will be displayed as `33`.
 
 If you want to customise the breakpoint signcolumn label: >
