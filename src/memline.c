@@ -3626,7 +3626,7 @@ adjust_text_props_for_delete(
     int		idx;
     int		line_start;
     long	line_size;
-    int		this_props_len;
+    int		this_props_len = 0;
     char_u	*text;
     size_t	textlen;
     int		found;
