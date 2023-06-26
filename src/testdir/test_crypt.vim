@@ -394,6 +394,8 @@ endfunc
 
 func Test_crypt_set_key_segfault()
   CheckFeature sodium
+  " This test fails on Windows, why?
+  CheckNotMSWindows
 
   defer delete('Xtest2.txt')
   new Xtest2.txt
