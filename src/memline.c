@@ -501,6 +501,7 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
+#ifdef FEAT_CRYPT
     // Swapfile encryption is not supported by XChaCha20, therefore disable the
     // swapfile to avoid plain text being written to disk.
     if (crypt_method_is_sodium(crypt_get_method_nr(buf))
@@ -511,6 +512,7 @@ ml_set_crypt_key(
 	buf->b_p_swf = FALSE;
 	return;
     }
+#endif
 
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
@@ -2494,6 +2496,7 @@ ml_sync_all(int check_file, int check_char)
 		|| buf->b_ml.ml_mfp->mf_fd < 0)
 	    continue;			    // no file
 
+#ifdef FEAT_CRYPT
 	// Safety Check
 	if (crypt_method_is_sodium(crypt_get_method_nr(buf))
 					&& *buf->b_p_key != NUL)
@@ -2505,6 +2508,7 @@ ml_sync_all(int check_file, int check_char)
 	    buf->b_p_key = empty_option;
 	    continue;
 	}
+#endif
 
 	ml_flush_line(buf);		    // flush buffered line
 					    // flush locked block
