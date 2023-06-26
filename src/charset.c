@@ -1097,9 +1097,14 @@ lbr_chartabsize_adv(chartabsize_T *cts)
  * inserts text.
  * This function is used very often, keep it fast!!!!
  *
- * If "headp" not NULL, set *headp to the size of what we for 'showbreak'
- * string at start of line.  Warning: *headp is only set if it's a non-zero
- * value, init to 0 before calling.
+ * If "headp" not NULL, set "*headp" to the size of 'showbreak'/'breakindent'
+ * included in the return value.
+ * When "cts->cts_max_head_vcol" is positive, only count in "*headp" the size
+ * of 'showbreak'/'breakindent' before "cts->cts_max_head_vcol".
+ * When "cts->cts_max_head_vcol" is negative, only count in "*headp" the size
+ * of 'showbreak'/'breakindent' before where cursor should be placed.
+ *
+ * Warning: "*headp" may not be set if it's 0, init to 0 before calling.
  */
     int
 win_lbr_chartabsize(
@@ -1118,9 +1123,7 @@ win_lbr_chartabsize(
     colnr_T	col2;
     colnr_T	col_adj = 0; // vcol + screen size of tab
     colnr_T	colmax;
-    int		added;
     int		mb_added = 0;
-    int		numberextra;
     char_u	*ps;
     int		tab_corr = (*s == TAB);
     int		n;
@@ -1256,7 +1259,7 @@ win_lbr_chartabsize(
 	 * Count all characters from first non-blank after a blank up to next
 	 * non-blank after a blank.
 	 */
-	numberextra = win_col_off(wp);
+	int numberextra = win_col_off(wp);
 	col2 = vcol;
 	colmax = (colnr_T)(wp->w_width - numberextra - col_adj);
 	if (vcol >= colmax)
@@ -1296,72 +1299,93 @@ win_lbr_chartabsize(
     /*
      * May have to add something for 'breakindent' and/or 'showbreak'
      * string at start of line.
-     * Set *headp to the size of what we add.
      * Do not use 'showbreak' at the NUL after the text.
      */
-    added = 0;
+    int head = mb_added;
     sbr = (c == NUL || no_sbr) ? empty_option : get_showbreak_value(wp);
-    if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && vcol != 0)
+    if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap)
     {
-	colnr_T sbrlen = 0;
-	int	numberwidth = win_col_off(wp);
-
-	numberextra = numberwidth;
-	vcol += numberextra + mb_added;
+	int	col_off_prev = win_col_off(wp);
+	int	width2 = wp->w_width - col_off_prev + win_col_off2(wp);
+	vcol += mb_added;
 #ifdef FEAT_PROP_POPUP
 	vcol -= wp->w_virtcol_first_char;
 #endif
-	if (vcol >= (colnr_T)wp->w_width)
+	colnr_T	wcol = vcol + col_off_prev;
+	// cells taken by 'showbreak'/'breakindent' before current char
+	int	head_prev = 0;
+	if (wcol >= wp->w_width)
 	{
-	    vcol -= wp->w_width;
-	    numberextra = wp->w_width - (numberextra - win_col_off2(wp));
-	    if (vcol >= numberextra && numberextra > 0)
-		vcol %= numberextra;
+	    wcol -= wp->w_width;
+	    col_off_prev = wp->w_width - width2;
+	    if (wcol >= width2 && width2 > 0)
+		wcol %= width2;
 	    if (*sbr != NUL)
-	    {
-		sbrlen = (colnr_T)MB_CHARLEN(sbr);
-		if (vcol >= sbrlen)
-		    vcol -= sbrlen;
-	    }
-	    if (vcol >= numberextra && numberextra > 0)
-		vcol = vcol % numberextra;
-	    else if (vcol > 0 && numberextra > 0)
-		vcol += numberwidth - win_col_off2(wp);
-
-	    numberwidth -= win_col_off2(wp);
+		head_prev += vim_strsize(sbr);
+	    if (wp->w_p_bri)
+		head_prev += get_breakindent_win(wp, line);
+	    if (wcol < head_prev)
+		wcol = head_prev;
+	    wcol += col_off_prev;
 	}
-	if (vcol == 0 || vcol + size + sbrlen > (colnr_T)wp->w_width)
+
+	if ((vcol > 0 && wcol == col_off_prev + head_prev)
+						  || wcol + size > wp->w_width)
 	{
-	    added = 0;
-	    if (*sbr != NUL)
+	    int added = 0;
+	    colnr_T max_head_vcol = cts->cts_max_head_vcol;
+
+	    if (vcol > 0 && wcol == col_off_prev + head_prev)
 	    {
-		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
+		added += head_prev;
+		if (max_head_vcol <= 0 || vcol < max_head_vcol)
+		    head += head_prev;
+	    }
+
+	    // cells taken by 'showbreak'/'breakindent' halfway current char
+	    int	head_mid = 0;
+	    if (*sbr != NUL)
+		head_mid += vim_strsize(sbr);
+	    if (wp->w_p_bri)
+		head_mid += get_breakindent_win(wp, line);
+	    if (head_mid > 0)
+	    {
+		if (wcol + size > wp->w_width)
 		{
 		    // calculate effective window width
-		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
-		    int prev_width = vcol
-			       ? ((colnr_T)wp->w_width - (sbrlen + vcol)) : 0;
+		    int prev_rem = wp->w_width - wcol;
+		    int width = width2 - head_mid;
 
 		    if (width <= 0)
-			width = (colnr_T)1;
-		    added += ((size - prev_width) / width) * vim_strsize(sbr);
-		    if ((size - prev_width) % width)
-			// wrapped, add another length of 'sbr'
-			added += vim_strsize(sbr);
+			width = 1;
+		    // divide "size - prev_width" by "width", rounding up
+		    int cnt = (size - prev_rem + width - 1) / width;
+		    added += cnt * head_mid;
+
+		    if (max_head_vcol == 0
+					|| vcol + size + added < max_head_vcol)
+			head += cnt * head_mid;
+		    else if (max_head_vcol > vcol + head_prev + prev_rem)
+			head += (max_head_vcol - (vcol + head_prev + prev_rem)
+					     + width2 - 1) / width2 * head_mid;
+#ifdef FEAT_PROP_POPUP
+		    else if (max_head_vcol < 0)
+		    {
+			int off = 0;
+			if ((State & MODE_NORMAL) || cts->cts_start_incl)
+			    off += cts->cts_cur_text_width;
+			if (off >= prev_rem)
+			    head += (1 + (off - prev_rem) / width) * head_mid;
+		    }
+#endif
 		}
-		else
-		    added += vim_strsize(sbr);
 	    }
-	    if (wp->w_p_bri)
-		added += get_breakindent_win(wp, line);
 
 	    size += added;
-	    if (vcol != 0)
-		added = 0;
 	}
     }
     if (headp != NULL)
-	*headp = added + mb_added;
+	*headp = head;
     return size;
 # endif
 #endif
@@ -1483,6 +1507,7 @@ getvcol(
     }
 
     init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
+    cts.cts_max_head_vcol = -1;
 
     /*
      * This function is used very often, do some speed optimizations.
