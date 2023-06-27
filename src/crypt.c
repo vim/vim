@@ -907,6 +907,7 @@ crypt_append_msg(
     }
 }
 
+# ifdef FEAT_SODIUM
     void
 crypt_sodium_lock_key(
        char_u  *key)
@@ -916,6 +917,7 @@ crypt_sodium_lock_key(
     sodium_mlock(key, STRLEN(key));
     return;
 }
+# endif
 
     static int
 crypt_sodium_init_(
