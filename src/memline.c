@@ -2504,8 +2504,6 @@ ml_sync_all(int check_file, int check_char)
 	    // close the swapfile
 	    mf_close_file(buf, TRUE);
 	    buf->b_p_swf = FALSE;
-	    vim_free(buf->b_p_key);
-	    buf->b_p_key = empty_option;
 	    continue;
 	}
 #endif
@@ -2567,6 +2565,17 @@ ml_preserve(buf_T *buf, int message)
 	    emsg(_(e_cannot_preserve_there_is_no_swap_file));
 	return;
     }
+#ifdef FEAT_CRYPT
+       // Safety Check
+       if (crypt_method_is_sodium(crypt_get_method_nr(buf))
+                                       && *buf->b_p_key != NUL)
+       {
+           // close the swapfile
+           mf_close_file(buf, TRUE);
+           buf->b_p_swf = FALSE;
+           return;
+       }
+#endif
 
     // We only want to stop when interrupted here, not when interrupted
     // before.

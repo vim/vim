@@ -30,4 +30,6 @@ int crypt_sodium_munlock(void *const addr, const size_t len);
 void crypt_sodium_randombytes_buf(void *const buf, const size_t size);
 int crypt_sodium_init(void);
 uint32_t crypt_sodium_randombytes_random(void);
+void crypt_sodium_lock_key(char_u *key);
+
 /* vim: set ft=c : */

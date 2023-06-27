@@ -907,6 +907,16 @@ crypt_append_msg(
     }
 }
 
+    void
+crypt_sodium_lock_key(
+       char_u  *key)
+{
+    if (sodium_init() < 0)
+       return;
+    sodium_mlock(key, STRLEN(key));
+    return;
+}
+
     static int
 crypt_sodium_init_(
     cryptstate_T	*state UNUSED,
