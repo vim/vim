@@ -1267,6 +1267,13 @@ crypt_sodium_buffer_decode(
 }
 
 # if defined(FEAT_SODIUM) || defined(PROTO)
+    void
+crypt_sodium_lock_key(char_u *key)
+{
+    if (sodium_init() >= 0)
+	sodium_mlock(key, STRLEN(key));
+}
+
     int
 crypt_sodium_munlock(void *const addr, const size_t len)
 {

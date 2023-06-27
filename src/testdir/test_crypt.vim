@@ -105,7 +105,7 @@ func Test_crypt_sodium_v2_startup()
   exe buf .. 'bwipe!'
   call assert_true(filereadable('Xfoo'))
 
-  let buf = RunVimInTerminal('--cmd "set ch=3 cm=xchacha20v2 key=foo" Xfoo', #{rows: 10})
+  let buf = RunVimInTerminal('--cmd "set ch=3 cm=xchacha20v2 key=foo" Xfoo', #{wait_for_ruler: 0, rows: 10})
   call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
   call StopVimInTerminal(buf)
 
@@ -390,6 +390,26 @@ func Test_crypt_set_key_changes_buffer()
   set key=
   bwipe!
   call delete('Xtest1.txt')
+endfunc
+
+func Test_crypt_set_key_segfault()
+  CheckFeature sodium
+
+  defer delete('Xtest2.txt')
+  new Xtest2.txt
+  call setline(1, 'nothing')
+  set cryptmethod=xchacha20
+  set key=foobar
+  w
+  new Xtest3
+  put ='other content'
+  setl modified
+  sil! preserve
+  bwipe!
+
+  set cryptmethod&
+  set key=
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
