@@ -2135,10 +2135,14 @@ do_set_option_numeric(
 	    ((flags & P_VI_DEF) || cp_val) ? VI_DEFAULT : VIM_DEFAULT];
     else if (nextchar == '<')
     {
-	// For 'undolevels' NO_LOCAL_UNDOLEVEL means to
-	// use the global value.
 	if ((long *)varp == &curbuf->b_p_ul && opt_flags == OPT_LOCAL)
+	    // for 'undolevels' NO_LOCAL_UNDOLEVEL means using the global value
 	    value = NO_LOCAL_UNDOLEVEL;
+	else if (opt_flags == OPT_LOCAL
+		    && ((long *)varp == &curwin->w_p_siso
+		     || (long *)varp == &curwin->w_p_so))
+	    // for 'scrolloff'/'sidescrolloff' -1 means using the global value
+	    value = -1;
 	else
 	    value = *(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
     }
