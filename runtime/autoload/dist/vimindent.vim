@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2023 Feb 01
+# Last Change:  2023 Jun 29
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -112,10 +112,6 @@ const DICT_KEY: string = '^\s*\%('
     .. '\)'
     .. ':\%(\s\|$\)'
 
-# NOT_A_DICT_KEY {{{3
-
-const NOT_A_DICT_KEY: string = ':\@!'
-
 # END_OF_COMMAND {{{3
 
 const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
@@ -197,13 +193,13 @@ patterns =<< trim eval END
     ldo\=\>!\=
     tabdo\=\>
     windo\>
-    au\%[tocmd]\>.*
-    com\%[mand]\>.*
+    au\%[tocmd]\>!\=.*
+    com\%[mand]\>!\=.*
     g\%[lobal]!\={PATTERN_DELIMITER}.*
     v\%[global]!\={PATTERN_DELIMITER}.*
 END
 
-const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%({patterns->join('\|')}\){NOT_A_DICT_KEY}'
+const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%({patterns->join('\|')}\)\%(\s\|$\)\@='
 
 # START_MIDDLE_END {{{3
 
@@ -254,7 +250,7 @@ START_MIDDLE_END = START_MIDDLE_END
         kwds->map((_, kwd: string) => kwd == ''
         ? ''
         : $'\%(^\|{BAR_SEPARATION}\|\<sil\%[ent]\|{HIGHER_ORDER_COMMAND}\)\s*'
-        .. $'\<\%({kwd}\)\>\%(\s*{OPERATOR}\)\@!'))
+        .. $'\<\%({kwd}\)\>\%(\s\|$\|!\)\@=\%(\s*{OPERATOR}\)\@!'))
 
 lockvar! START_MIDDLE_END
 
@@ -279,7 +275,7 @@ patterns = BLOCKS
 
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. patterns->join('\|') .. $'\){END_OF_COMMAND}'
     .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
-    .. $'\|^\s*elseif\=\>\%({OPERATOR}\)\@!'
+    .. $'\|^\s*elseif\=\>\%(\s\|$\)\@=\%(\s*{OPERATOR}\)\@!'
 
 # STARTS_NAMED_BLOCK {{{3
 
@@ -296,7 +292,7 @@ patterns = []
     endfor
 }
 
-const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]\s\+\)\=\%({patterns->join('\|')}\)\>{NOT_A_DICT_KEY}'
+const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]\s\+\)\=\%({patterns->join('\|')}\)\>\%(\s\|$\|!\)\@='
 
 # STARTS_CURLY_BLOCK {{{3
 
@@ -312,7 +308,7 @@ const STARTS_CURLY_BLOCK: string = '\%('
 
 # STARTS_FUNCTION {{{3
 
-const STARTS_FUNCTION: string = $'^\s*\%({MODIFIERS.def}\)\=def\>{NOT_A_DICT_KEY}'
+const STARTS_FUNCTION: string = $'^\s*\%({MODIFIERS.def}\)\=def\>!\=\s\@='
 
 # ENDS_FUNCTION {{{3
 
