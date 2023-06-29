@@ -5108,14 +5108,6 @@ build_stl_str_hl(
 	    STRMOVE(s + 1, p);
 	    *s = '<';
 
-	    // Fill up for half a double-wide character.
-	    while (++width < maxwidth)
-	    {
-		s = s + STRLEN(s);
-		MB_CHAR2BYTES(fillchar, s);
-		*s = NUL;
-	    }
-
 	    --n;	// count the '<'
 	    for (; l < itemcnt; l++)
 	    {
@@ -5123,6 +5115,14 @@ build_stl_str_hl(
 		    stl_items[l].stl_start -= n;
 		else
 		    stl_items[l].stl_start = s;
+	    }
+
+	    // Fill up for half a double-wide character.
+	    while (++width < maxwidth)
+	    {
+		s = s + STRLEN(s);
+		MB_CHAR2BYTES(fillchar, s);
+		*s = NUL;
 	    }
 	}
 	width = maxwidth;
