@@ -286,7 +286,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     handlebars: ['file.hbs'],
     hare: ['file.ha'],
     haskell: ['file.hs', 'file.hsc', 'file.hs-boot', 'file.hsig'],
-    'haskell.persistent': ['file.persistentmodels'],
+    haskellpersistent: ['file.persistentmodels'],
     haste: ['file.ht'],
     hastepreproc: ['file.htpp'],
     hb: ['file.hb'],

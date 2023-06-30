@@ -891,7 +891,7 @@ if exists('$XDG_CONFIG_HOME')
 endif
 au BufNewFile,BufRead $HOME/.config/cabal/config setf cabalconfig
 au BufNewFile,BufRead cabal.config		setf cabalconfig
-au BufNewFile,BufRead *.persistentmodels	setf haskell.persistent
+au BufNewFile,BufRead *.persistentmodels	setf haskellpersistent
 
 " Haste
 au BufNewFile,BufRead *.ht			setf haste
