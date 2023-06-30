@@ -538,8 +538,8 @@ au BufNewFile,BufRead copyright
 	\| endif
 
 " Debian Sources.list
-au BufNewFile,BufRead */etc/apt/sources.list		setf debsources
-au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
+au BufNewFile,BufRead */etc/apt/sources.list			setf debsources
+au BufNewFile,BufRead */etc/apt/sources.list.d/*.{list,sources}	setf debsources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
