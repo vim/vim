@@ -1312,7 +1312,7 @@ ex_helptags(exarg_T *eap)
 
     if (STRCMP(eap->arg, "ALL") == 0)
     {
-	do_in_path(p_rtp, (char_u *)"doc", DIP_ALL + DIP_DIR,
+	do_in_path(p_rtp, "", (char_u *)"doc", DIP_ALL + DIP_DIR,
 						 helptags_cb, &add_help_tags);
     }
     else
