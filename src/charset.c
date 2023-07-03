@@ -769,14 +769,6 @@ linetabsize_col(int startcol, char_u *s)
     init_chartabsize_arg(&cts, curwin, 0, startcol, s, s);
     while (*cts.cts_ptr != NUL)
 	cts.cts_vcol += lbr_chartabsize_adv(&cts);
-#ifdef FEAT_PROP_POPUP
-    if (cts.cts_has_prop_with_text && cts.cts_ptr == cts.cts_line)
-    {
-	// check for virtual text in an empty line
-	(void)lbr_chartabsize_adv(&cts);
-	cts.cts_vcol += cts.cts_cur_text_width;
-    }
-#endif
     clear_chartabsize_arg(&cts);
     return (int)cts.cts_vcol;
 }
