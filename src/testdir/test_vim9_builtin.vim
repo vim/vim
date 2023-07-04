@@ -4811,6 +4811,9 @@ def Test_virtcol()
   v9.CheckDefAndScriptFailure(['virtcol(".", "a")'], [
     'E1013: Argument 2: type mismatch, expected bool but got string',
     'E1212: Bool required for argument 2'])
+  v9.CheckDefAndScriptFailure(['virtcol(".", v:true, [])'], [
+    'E1013: Argument 3: type mismatch, expected number but got list',
+    'E1210: Number required for argument 3'])
   v9.CheckDefExecAndScriptFailure(['virtcol("")'],
     'E1209: Invalid value for a line number')
   new
