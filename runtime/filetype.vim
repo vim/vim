@@ -945,6 +945,9 @@ au BufNewFile,BufRead */etc/host.conf		setf hostconf
 " Hosts access
 au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
 
+" Hurl
+au BufRead,BufNewFile *.hurl			setf hurl
+
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
 
