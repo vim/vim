@@ -374,6 +374,12 @@ used.  Thus it does the same as: >
 Note: In the future more global options can be made |global-local|.  Using
 ":setlocal" on a global option might work differently then.
 
+							*window-global-local*
+One special feature are |global-local| window options. Those options are not
+only local to the window, but in addition to the buffer inside the window.
+Each buffer remembers uses its own local version of that option value, so when
+you edit the same buffer in a different window, it carries along and re-uses
+the window-local options.
 
 						*option-value-function*
 Some options ('completefunc', 'imactivatefunc', 'imstatusfunc', 'omnifunc',
