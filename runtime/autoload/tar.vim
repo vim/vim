@@ -165,7 +165,7 @@ fun! tar#Browse(tarfile)
 
   elseif tarfile =~# '\.\(tgz\)$' || tarfile =~# '\.\(tbz\)$' || tarfile =~# '\.\(txz\)$' || tarfile =~# '\.\(tzs\)$'
    if has("unix") && executable("file")
-    let filekind= system("file ".shellescape(tarfile,1)) =~ "bzip2"
+    let filekind= system("file ".shellescape(tarfile,1))
    else
     let filekind= ""
    endif
@@ -704,7 +704,7 @@ fun! tar#Extract()
   elseif filereadable(tarbase.".tar.zst")
    let extractcmd= substitute(extractcmd,"-","--zstd","")
 "   call Decho("system(".extractcmd." ".shellescape(tarbase).".tar.zst ".shellescape(fname).")")
-   call system(extractcmd." ".shellescape(tarbase).".tar.xz ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarbase).".tar.zst ".shellescape(fname))
    if v:shell_error != 0
     echohl Error | echo "***error*** ".extractcmd." ".tarbase.".tar.zst ".fname.": failed!" | echohl NONE
 "    call Decho("***error*** ".extractcmd." ".tarbase.".tar.zst ".fname.": failed!")
