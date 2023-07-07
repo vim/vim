@@ -1232,6 +1232,7 @@ Inter-process communication:		    *channel-functions*
 	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
+	err_teapot()		give error 418 or 503
 
 Jobs:						*job-functions*
 	job_start()		start a job

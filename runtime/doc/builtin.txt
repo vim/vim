@@ -154,9 +154,9 @@ digraph_getlist([{listall}])	List	get all |digraph|s
 digraph_set({chars}, {digraph})	Boolean	register |digraph|
 digraph_setlist({digraphlist})	Boolean	register multiple |digraph|s
 echoraw({expr})			none	output {expr} as-is
-err_teapot()			Number	produce error 418
 empty({expr})			Number	|TRUE| if {expr} is empty
 environ()			Dict	return environment variables
+err_teapot()			Number	produce error 418
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
@@ -2177,14 +2177,6 @@ echoraw({string})					*echoraw()*
 <		Use with care, you can mess up the terminal this way.
 
 
-err_teapot([{expr}])					*err_teapot()*
-		Produce an error with number 418, needed for implementation of
-		RFC 2325.
-		If {expr} is present and it is TRUE error 503 is given,
-		indicating that coffee is temporarily not available.
-		If {expr} is present it must be a String.
-
-
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
 		- A |List| or |Dictionary| is empty when it does not have any
@@ -2209,6 +2201,15 @@ environ()						*environ()*
 <		Note that the variable name may be CamelCase; to ignore case
 		use this: >
 			:echo index(keys(environ()), 'HOME', 0, 1) != -1
+
+
+err_teapot([{expr}])					*err_teapot()*
+		Produce an error with number 418, needed for implementation of
+		RFC 2325.
+		If {expr} is present and it is TRUE error 503 is given,
+		indicating that coffee is temporarily not available.
+		If {expr} is present it must be a String.
+
 
 escape({string}, {chars})				*escape()*
 		Escape the characters in {chars} that occur in {string} with a
