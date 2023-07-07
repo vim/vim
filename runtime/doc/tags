@@ -9707,6 +9707,8 @@ spec_chglog_format	pi_spec.txt	/*spec_chglog_format*
 spec_chglog_prepend	pi_spec.txt	/*spec_chglog_prepend*
 spec_chglog_release_info	pi_spec.txt	/*spec_chglog_release_info*
 special-buffers	windows.txt	/*special-buffers*
+special-local-buffer-option	options.txt	/*special-local-buffer-option*
+special-local-window-option	options.txt	/*special-local-window-option*
 specifies	vim9class.txt	/*specifies*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
