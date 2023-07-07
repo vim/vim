@@ -22,11 +22,11 @@ endif
 
 func Common_head_only(text)
   " This was crashing Vim
-  split Xtest.txt
+  split Xtest_head.txt
   call setline(1, a:text)
   wq
-  call feedkeys(":split Xtest.txt\<CR>foobar\<CR>", "tx")
-  call delete('Xtest.txt')
+  call feedkeys(":split Xtest_head.txt\<CR>foobar\<CR>", "tx")
+  call delete('Xtest_head.txt')
   call assert_match('VimCrypt', getline(1))
   bwipe!
 endfunc
@@ -49,7 +49,7 @@ func Crypt_uncrypt(method)
   " If the blowfish test fails 'cryptmethod' will be 'zip' now.
   call assert_equal(a:method, &cryptmethod)
 
-  split Xtest.txt
+  split Xtest_uncrypt.txt
   let text =<< trim END
   01234567890123456789012345678901234567,
   line 2  foo bar blah,
@@ -60,11 +60,11 @@ func Crypt_uncrypt(method)
   call assert_equal('*****', &key)
   w!
   bwipe!
-  call feedkeys(":split Xtest.txt\<CR>foobar\<CR>", 'xt')
+  call feedkeys(":split Xtest_uncrypt.txt\<CR>foobar\<CR>", 'xt')
   call assert_equal(text, getline(1, 3))
   set key= cryptmethod&
   bwipe!
-  call delete('Xtest.txt')
+  call delete('Xtest_uncrypt.txt')
 endfunc
 
 func Test_crypt_zip()
@@ -113,17 +113,17 @@ func Test_crypt_sodium_v2_startup()
 endfunc
 
 func Uncrypt_stable(method, crypted_text, key, uncrypted_text)
-  split Xtest.txt
+  split Xtest_stable.txt
   set bin noeol key= fenc=latin1
   exe "set cryptmethod=" . a:method
   call setline(1, a:crypted_text)
   w!
   bwipe!
   set nobin
-  call feedkeys(":split Xtest.txt\<CR>" . a:key . "\<CR>", 'xt')
+  call feedkeys(":split Xtest_stable.txt\<CR>" . a:key . "\<CR>", 'xt')
   call assert_equal(a:uncrypted_text, getline(1, len(a:uncrypted_text)))
   bwipe!
-  call delete('Xtest.txt')
+  call delete('Xtest_stable.txt')
   set key=
 endfunc
 
@@ -132,13 +132,13 @@ func Uncrypt_stable_xxd(method, hex, key, uncrypted_text, verbose)
     throw 'Skipped: xxd program missing'
   endif
   " use xxd to write the binary content
-  call system(s:xxd_cmd .. ' -r >Xtest.txt', a:hex)
+  call system(s:xxd_cmd .. ' -r >Xtest_stable_xxd.txt', a:hex)
   let cmd = (a:verbose ? ':verbose' : '') ..
-        \ ":split Xtest.txt\<CR>" . a:key . "\<CR>"
+        \ ":split Xtest_stable_xxd.txt\<CR>" . a:key . "\<CR>"
   call feedkeys(cmd, 'xt')
   call assert_equal(a:uncrypted_text, getline(1, len(a:uncrypted_text)))
   bwipe!
-  call delete('Xtest.txt')
+  call delete('Xtest_stable_xxd.txt')
   set key=
 endfunc
 
@@ -354,7 +354,7 @@ endfunc
 func Test_crypt_key_mismatch()
   set cryptmethod=blowfish
 
-  split Xtest.txt
+  split Xtest_mismatch.txt
   call setline(1, 'nothing')
   call feedkeys(":X\<CR>foobar\<CR>nothing\<CR>", 'xt')
   call assert_match("Keys don't match!", execute(':2messages'))
