@@ -1,0 +1,36 @@
+name: Qemu
+
+on: [push, pull_request]
+
+jobs:
+  qemu_job:
+    timeout-minutes: 60
+    runs-on: ubuntu-22.04
+    name: Vim on Qemu
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [ "s390x", "aarch64", "riscv64" ]
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout Source
+      - uses: uraimo/run-on-arch-action@v2
+        name: Build on Qemu
+        id: runcmd
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ubuntu22.04
+          githubToken: ${{ github.token }}
+          shell: /bin/bash
+
+          run: |
+            lscpu
+            apt-get update  -q -y
+            apt-get install -q -y --no-install-recommends build-essential libncurses-dev libsodium-dev
+            pushd src
+            ./configure --with-features=huge --enable-gui=no
+            make -j$(getconf _NPROCESSORS_ONLN)
+            ./vim --version
+            cd testdir
+            make
+            popd
