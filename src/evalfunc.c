@@ -3936,7 +3936,7 @@ f_err_teapot(typval_T *argvars, typval_T *rettv UNUSED)
 	if (argvars[0].v_type == VAR_STRING)
 	{
 	    char_u *s = tv_get_string_strict(&argvars[0]);
-	    if (s == NULL || *skipwhite(s) == NUL)
+	    if (*skipwhite(s) == NUL)
 		return;
 	}
 
