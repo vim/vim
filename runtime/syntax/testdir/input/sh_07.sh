@@ -73,7 +73,7 @@ done ; echo
 #
 # Here is the heart of this script:
 #
-echo "Processing the following command line arguements: ${*:-none}"
+echo "Processing the following command line arguments: ${*:-none}"
 echo "Script:    for loop outside a function:\t\c"
 for Var
 do
