@@ -254,6 +254,9 @@ au BufNewFile,BufRead named*.conf,rndc*.conf,rndc*.key	setf named
 au BufNewFile,BufRead named.root		setf bindzone
 au BufNewFile,BufRead *.db			call dist#ft#BindzoneCheck('')
 
+" Blade
+au BufNewFile,BufRead *.blade.php		setf blade
+
 " Blank
 au BufNewFile,BufRead *.bl			setf blank
 
