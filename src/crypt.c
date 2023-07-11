@@ -77,10 +77,12 @@ typedef struct {
 static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+# if defined(FEAT_SODIUM) || defined(PROTO)
 static void crypt_long_long_to_char(long long n, char_u *s);
 static void crypt_int_to_char(int n, char_u *s);
 static long long crypt_char_to_long_long(char_u *s);
 static int crypt_char_to_int(char_u *s);
+#endif
 #if defined(FEAT_EVAL) && defined(FEAT_SODIUM)
 static void crypt_sodium_report_hash_params(unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
 #endif
@@ -1346,7 +1348,8 @@ crypt_sodium_report_hash_params(
 crypt_long_long_to_char(long long n, char_u *s)
 {
     int i;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++)
+    {
 	s[i] = (char_u)(n & 0xff);
 	n = (unsigned)n >> 8;
     }
@@ -1356,7 +1359,8 @@ crypt_long_long_to_char(long long n, char_u *s)
 crypt_int_to_char(int n, char_u *s)
 {
     int i;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++)
+    {
 	s[i] = (char_u)(n & 0xff);
 	n = (unsigned)n >> 8;
     }
@@ -1367,12 +1371,13 @@ crypt_char_to_long_long(char_u *s)
 {
     unsigned long long    retval = 0;
     int i;
-    for (i = 7; i >= 0; i--) {
-	if (i == 7) 
+    for (i = 7; i >= 0; i--)
+    {
+	if (i == 7)
 	    retval = s[i];
 	else
 	    retval |= s[i];
-	if (i > 0) 
+	if (i > 0)
 	    retval <<= 8;
     }
     return retval;
@@ -1384,7 +1389,8 @@ crypt_char_to_int(char_u *s)
     int retval = 0;
     int i;
 
-    for (i = 3; i >= 0; i--) {
+    for (i = 3; i >= 0; i--)
+    {
 	if (i == 3)
 	    retval = s[i];
 	else
@@ -1394,8 +1400,6 @@ crypt_char_to_int(char_u *s)
     }
     return retval;
 }
-
-
 # endif
 
 #endif // FEAT_CRYPT
