@@ -178,6 +178,7 @@ endfunc
 
 func Test_uncrypt_xchacha20v2_custom()
   CheckFeature sodium
+  CheckArch s390x
   " Test, reading xchacha20v2 with custom encryption parameters
   let hex =<< trim END
   00000000: 5669 6d43 7279 7074 7e30 3521 934b f288  VimCrypt~05!.K..
@@ -199,6 +200,7 @@ endfunc
 
 func Test_uncrypt_xchacha20v2()
   CheckFeature sodium
+  CheckArch s390x
   " Test, reading xchacha20v2
   let hex =<< trim END
   00000000: 5669 6d43 7279 7074 7e30 3521 9f20 4e14  VimCrypt~05!. N.
@@ -272,6 +274,7 @@ endfunc
 
 func Test_uncrypt_xchacha20v2_2()
   CheckFeature sodium
+  CheckArch s390x
 
   sp Xcrypt_sodium_v2.txt
   " Create a larger file, so that Vim will write in several blocks

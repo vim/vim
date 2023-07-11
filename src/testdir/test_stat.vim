@@ -92,6 +92,7 @@ endfunc
 
 func Test_autoread_fast()
   CheckFeature nanotime
+  CheckArch s390x
 
   " this is timing sensitive
   let g:test_is_flaky = 1

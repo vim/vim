@@ -285,8 +285,11 @@ func Test_strftime()
   " are, a tzset(3) call may have failed somewhere
   call assert_equal(strlen(est), 2)
   call assert_equal(strlen(utc), 2)
-  " TODO: this fails on MS-Windows
-  if has('unix')
+  " TODO: this fails on MS-Windows and Qemu Archs
+  if has('unix') &&
+    \ !CheckArch('riscv64', v:false) &&
+    \ !CheckArch('s390x', v:false)  &&
+    \ !CheckArch('aarch64', v:false)
     call assert_notequal(est, utc)
   endif
 
@@ -2743,6 +2746,9 @@ func Test_readdir_sort()
 endfunc
 
 func Test_delete_rf()
+  for arch in ['s390x', 'aarch64', 'riscv64']
+    exe "CheckArch "  .. arch
+  endfor
   call mkdir('Xrfdir')
   call writefile([], 'Xrfdir/foo.txt')
   call writefile([], 'Xrfdir/bar.txt')

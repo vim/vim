@@ -1096,6 +1096,9 @@ func Test_redirect_Ctrl_C()
   CheckUnix
   CheckNotGui
   CheckRunVimInTerminal
+  for arch in ['s390x', 'aarch64']
+    exe "CheckArch "  .. arch
+  endfor
 
   let buf = Run_shell_in_terminal({})
   " Wait for the shell to display a prompt

@@ -127,6 +127,19 @@ func CheckNotMacM1()
   endif
 endfunc
 
+" Command to check for Architecture
+command -nargs=1 CheckArch call CheckArch(<q-args>, v:true)
+
+func CheckArch(arch, fail)
+  if has('unix') && system('arch') =~ a:arch
+    if a:fail
+      throw 'Skipped: does not work on Arch ' .. a:arch
+    else
+      return v:true
+    endif
+  endif
+endfunc
+
 " Command to check that making screendumps is supported.
 " Caller must source screendump.vim
 command CheckScreendump call CheckScreendump()

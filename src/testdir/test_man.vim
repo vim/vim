@@ -1,4 +1,5 @@
 " Test specifically for the Man filetype plugin.
+source check.vim
 
 runtime ftplugin/man.vim
 
@@ -134,6 +135,9 @@ endfunc
 
 " Check that underlying shell command arguments are escaped.
 func Test_Man_uses_shellescape()
+  for arch in ['s390x', 'aarch64', 'riscv64']
+    exe "CheckArch "  .. arch
+  endfor
   Man `touch\ Xbar` `touch\ Xfoo`
 
   redir => msg

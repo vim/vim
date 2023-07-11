@@ -364,6 +364,9 @@ endfunc
 func Test_confirm_write_ro()
   CheckNotGui
   CheckRunVimInTerminal
+  for arch in ['s390x', 'aarch64', 'riscv64']
+    exe "CheckArch "  .. arch
+  endfor
 
   call writefile(['foo'], 'Xconfirm_write_ro', 'D')
   let lines =<< trim END

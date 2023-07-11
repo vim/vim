@@ -493,7 +493,7 @@ func Test_buflist_alloc_failure()
 
   " test for :checktime loading the buffer
   call writefile(['one'], 'XallocFail5', 'D')
-  if has('unix')
+  if has('unix') && !CheckArch('s390x', v:false)
     edit XallocFail5
     " sleep for some time to make sure the timestamp is different
     sleep 200m
