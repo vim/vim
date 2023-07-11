@@ -307,24 +307,6 @@ set_init_default_printexpr(void)
 }
 #endif
 
-#ifdef UNIX
-/*
- * Force restricted-mode on for "nologin" or "false" $SHELL
- */
-    static void
-set_init_restricted_mode(void)
-{
-    char_u	*p;
-
-    p = get_isolated_shell_name();
-    if (p == NULL)
-	return;
-    if (fnamecmp(p, "nologin") == 0 || fnamecmp(p, "false") == 0)
-	restricted = TRUE;
-    vim_free(p);
-}
-#endif
-
 #ifdef CLEAN_RUNTIMEPATH
 /*
  * When Vim is started with the "--clean" argument, set the default value
@@ -570,10 +552,6 @@ set_init_1(int clean_arg)
      * value.  Also set the global value for local options.
      */
     set_options_default(0);
-
-#ifdef UNIX
-    set_init_restricted_mode();
-#endif
 
 #ifdef CLEAN_RUNTIMEPATH
     if (clean_arg)
