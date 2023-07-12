@@ -68,6 +68,8 @@
 #endif
 
 #define PY_SSIZE_T_CLEAN
+#define PyLong_Type (*py3_PyLong_Type)
+#define PyBool_Type (*py3_PyBool_Type)
 
 #include <Python.h>
 
@@ -270,7 +272,6 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyFloat_Type (*py3_PyFloat_Type)
 # define PyNumber_Check (*py3_PyNumber_Check)
 # define PyNumber_Long (*py3_PyNumber_Long)
-# define PyBool_Type (*py3_PyBool_Type)
 # define PyErr_NewException py3_PyErr_NewException
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
@@ -448,7 +449,10 @@ static PyTypeObject* py3_PyType_Type;
 static PyTypeObject* py3_PyStdPrinter_Type;
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
-static PyTypeObject* py3_PyBool_Type;
+PyTypeObject* py3_PyBool_Type;
+# if PY_VERSION_HEX >= 0x030c00b0
+PyTypeObject* py3_PyLong_Type;
+# endif
 static int (*py3_PyNumber_Check)(PyObject *);
 static PyObject* (*py3_PyNumber_Long)(PyObject *);
 static PyObject* (*py3_PyErr_NewException)(char *name, PyObject *base, PyObject *dict);
@@ -624,6 +628,9 @@ static struct
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
     {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},
+# if PY_VERSION_HEX >= 0x030c00b0
+    {"PyLong_Type", (PYTHON_PROC*)&py3_PyLong_Type},
+# endif
     {"PyNumber_Check", (PYTHON_PROC*)&py3_PyNumber_Check},
     {"PyNumber_Long", (PYTHON_PROC*)&py3_PyNumber_Long},
     {"PyErr_NewException", (PYTHON_PROC*)&py3_PyErr_NewException},
