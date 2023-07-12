@@ -3523,13 +3523,18 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
     int	todo = MAX(term->tl_buffer->b_p_twsl / 10,
 				     gap->ga_len - term->tl_buffer->b_p_twsl);
     int	i;
+    sb_line_T **sb_lines = (sb_line_T **)gap->ga_data;
 
     curbuf = term->tl_buffer;
     for (i = 0; i < todo; ++i)
     {
-	vim_free(((sb_line_T *)gap->ga_data + i)->sb_cells);
-	if (update_buffer)
+	if (update_buffer && (!sb_lines[i]->continuation || !i))
 	    ml_delete(1);
+	vim_free(sb_lines[i]->sb_cells);
+    }
+    // Continue until end of wrapped line
+    for (; todo < gap->ga_len && sb_lines[todo]->continuation; ++todo) {
+	vim_free(sb_lines[todo]->sb_cells);
     }
     curbuf = curwin->w_buffer;
 
