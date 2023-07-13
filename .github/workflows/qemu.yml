@@ -32,5 +32,6 @@ jobs:
             make -j$(getconf _NPROCESSORS_ONLN)
             ./vim --version
             cd testdir
+            export CI_QEMU=1
             make
             popd

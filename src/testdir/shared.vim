@@ -315,6 +315,10 @@ func RunningWithValgrind()
   return GetVimCommand() =~ '\<valgrind\>'
 endfunc
 
+func RunningSlow()
+  return RunningWithValgrind() || !empty($CI_QEMU)
+endfunc
+
 " Get the command to run Vim, with --clean instead of "-u NONE".
 func GetVimCommandClean()
   let cmd = GetVimCommand()

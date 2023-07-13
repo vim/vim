@@ -148,6 +148,7 @@ endfunc
 func StopVimInTerminal(buf, kill = 1)
   " Using a terminal to run Vim is always considered flaky.
   let g:test_is_flaky = 1
+  let timeout = RunningSlow() ? 5000 : 20000
 
   call assert_equal("running", term_getstatus(a:buf))
 
@@ -162,7 +163,7 @@ func StopVimInTerminal(buf, kill = 1)
   call TermWait(a:buf)
 
   " Wait for the terminal to end.
-  call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))}, timeout)
 
   " If the buffer still exists forcefully wipe it.
   if a:kill && bufexists(a:buf)

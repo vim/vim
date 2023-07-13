@@ -247,7 +247,7 @@ func RunTheTest(test)
     " No test should take longer than 30 seconds.  If it takes longer we
     " assume we are stuck and need to break out.
     let test_timeout_timer =
-          \ timer_start(RunningWithValgrind() ? 50000 : 30000, 'TestTimeout')
+          \ timer_start(RunningSlow() ? 50000 : 30000, 'TestTimeout')
     let g:timeout_start = localtime()
   endif
 
