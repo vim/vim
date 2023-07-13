@@ -973,6 +973,7 @@ func Test_mksession_foldopt()
   close
   %bwipe
   set sessionoptions&
+  call delete('Xtest_mks.out')
 endfunc
 
 " Test for mksession with "help" but not "options" in 'sessionoptions'
@@ -1105,6 +1106,7 @@ func Test_mksession_shortmess_with_A()
   set shortmess&
   set sessionoptions&
   call delete('Xtestsession')
+  call delete('Xtestfile')
 endfunc
 
 " Test for mksession with 'compatible' option
