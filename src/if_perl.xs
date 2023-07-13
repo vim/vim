@@ -402,14 +402,14 @@ static bool (*Perl_sv_2bool)(pTHX_ SV*);
 static IV (*Perl_sv_2iv)(pTHX_ SV*);
 static SV* (*Perl_sv_2mortal)(pTHX_ SV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
-static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN* const, const U32);
 static char* (*Perl_sv_2pv_nolen)(pTHX_ SV*);
 # else
 static char* (*Perl_sv_2pv)(pTHX_ SV*, STRLEN*);
 # endif
 static char* (*Perl_sv_2pvbyte)(pTHX_ SV*, STRLEN*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN* const, const U32);
 # endif
 static SV* (*Perl_sv_bless)(pTHX_ SV*, HV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
