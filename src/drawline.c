@@ -1830,9 +1830,9 @@ win_line(
     win_line_start(wp, &wlv, FALSE);
 
     // Repeat for the whole displayed line.
+    char_u	*prev_ptr = ptr;
     for (;;)
     {
-	char_u	*prev_ptr = ptr;
 #if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
 	int	has_match_conc = 0;	// match wants to conceal
 #endif

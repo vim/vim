@@ -2060,7 +2060,7 @@ retnomove:
 	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
 	// for tests, a user would not click before redrawing.
 	// Do not use when 'virtualedit' is active.
-	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE && !virtual_active())
+	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE)
 	    col_from_screen = ScreenCols[off];
 #ifdef FEAT_FOLDING
 	// Remember the character under the mouse, it might be a '-' or '+' in
@@ -2103,19 +2103,36 @@ retnomove:
 	// Use the column from ScreenCols[], it is accurate also after
 	// concealed characters.
 	curwin->w_cursor.col = col_from_screen;
-	if (col_from_screen == MAXCOL)
+	curwin->w_set_curswant = TRUE;
+	if (inclusive != NULL)
+	    *inclusive = FALSE;
+	if (virtual_active())
 	{
-	    curwin->w_curswant = col_from_screen;
-	    curwin->w_set_curswant = FALSE;	// May still have been TRUE
+	    if (col_from_screen == MAXCOL)
+		curwin->w_cursor.col
+			      = (colnr_T)STRLEN(ml_get(curwin->w_cursor.lnum));
+	    // Binary search to find coloff
+            int off_l = LineOffset[prev_row];
+            int off_r = off_l + prev_col;
+	    int off_click = off_r;
+            while (off_l < off_r)
+            {
+                int off_m = (off_l + off_r) / 2;
+                if (ScreenCols[off_m] < col_from_screen)
+                    off_l = off_m + 1;
+                else
+                    off_r = off_m;
+            }
+            curwin->w_cursor.coladd = off_click - off_r;
+	}
+	else if (col_from_screen == MAXCOL)
+	{
+	    // Mouse click beyond end of line
+	    curwin->w_curswant = MAXCOL;
+	    curwin->w_set_curswant = FALSE;
 	    mouse_past_eol = TRUE;
 	    if (inclusive != NULL)
 		*inclusive = TRUE;
-	}
-	else
-	{
-	    curwin->w_set_curswant = TRUE;
-	    if (inclusive != NULL)
-		*inclusive = FALSE;
 	}
 	check_cursor_col();
     }
