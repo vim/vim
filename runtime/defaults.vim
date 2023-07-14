@@ -97,7 +97,7 @@ if 1
   filetype plugin indent on
 
   " Put these in an autocmd group, so that you can revert them with:
-  " ":augroup vimStartup | exe 'au!' | augroup END"
+  " ":autocmd! vimStartup"
   augroup vimStartup
     au!
 
@@ -115,7 +115,7 @@ if 1
   " Quite a few people accidentally type "q:" instead of ":q" and get confused
   " by the command line window.  Give a hint about how to get out.
   " If you don't like this you can put this in your vimrc:
-  " ":augroup vimHints | exe 'au!' | augroup END"
+  " ":autocmd! vimHints"
   augroup vimHints
     au!
     autocmd CmdwinEnter *
