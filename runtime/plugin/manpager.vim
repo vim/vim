@@ -30,10 +30,10 @@ function s:ManPager()
   setlocal modifiable
 
   " Emulate 'col -b'
-  silent! keepj keepp %s/\v(.)\b\ze\1?//ge
+  exe 'silent! keepj keepp %s/\v(.)\b\ze\1?//e' .. (&gdefault ? '' : 'g')
 
   " Remove ansi sequences
-  silent! keepj keepp %s/\v\e\[%(%(\d;)?\d{1,2})?[mK]//ge
+  exe 'silent! keepj keepp %s/\v\e\[%(%(\d;)?\d{1,2})?[mK]//e' .. (&gdefault ? '' : 'g')
 
   " Remove empty lines above the header
   call cursor(1, 1)
