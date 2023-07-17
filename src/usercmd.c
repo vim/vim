@@ -329,7 +329,11 @@ set_context_in_user_cmdarg(
 	return set_context_in_menu_cmd(xp, cmd, arg, forceit);
 #endif
     if (context == EXPAND_COMMANDS)
+    {
+	if (xp->xp_context == EXPAND_NOTHING)
+	    xp->xp_context = context;
 	return arg;
+    }
     if (context == EXPAND_MAPPINGS)
 	return set_context_in_map_cmd(xp, (char_u *)"map", arg, forceit, FALSE,
 							FALSE, CMD_map);
