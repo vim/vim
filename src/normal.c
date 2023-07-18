@@ -4767,7 +4767,7 @@ nv_replace(cmdarg_T *cap)
 #endif
 
     // get another character
-    if (cap->nchar == Ctrl_V)
+    if (cap->nchar == Ctrl_V || cap->nchar == Ctrl_Q)
     {
 	had_ctrl_v = Ctrl_V;
 	cap->nchar = get_literal(FALSE);
