@@ -2560,12 +2560,20 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
     res.v_type = VAR_NUMBER;
 
     old_lnum = wp->w_cursor.lnum;
-    if ((c == 'k' || c == 'K' || c == K_UP || c == Ctrl_P)
-						      && wp->w_cursor.lnum > 1)
-	--wp->w_cursor.lnum;
-    if ((c == 'j' || c == 'J' || c == K_DOWN || c == Ctrl_N)
-		       && wp->w_cursor.lnum < wp->w_buffer->b_ml.ml_line_count)
-	++wp->w_cursor.lnum;
+    if (c == 'k' || c == 'K' || c == K_UP || c == Ctrl_P)
+    {
+	if (wp->w_cursor.lnum > 1)
+	    --wp->w_cursor.lnum;
+	else
+	    wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
+    }
+    if (c == 'j' || c == 'J' || c == K_DOWN || c == Ctrl_N)
+    {
+	if (wp->w_cursor.lnum < wp->w_buffer->b_ml.ml_line_count)
+	    ++wp->w_cursor.lnum;
+	else
+	    wp->w_cursor.lnum = 1;
+    }
     if (old_lnum != wp->w_cursor.lnum)
     {
 	// caller will call popup_highlight_curline()
