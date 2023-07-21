@@ -1649,7 +1649,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1700,7 +1700,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{
