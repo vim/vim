@@ -5051,7 +5051,8 @@ nv_vreplace(cmdarg_T *cap)
 	emsg(_(e_cannot_make_changes_modifiable_is_off));
     else
     {
-	if (cap->extra_char == Ctrl_V)	// get another character
+	if (cap->extra_char == Ctrl_V || cap->extra_char == Ctrl_Q)
+	    // get another character
 	    cap->extra_char = get_literal(FALSE);
 	if (cap->extra_char < ' ')
 	    // Prefix a control character with CTRL-V to avoid it being used as
