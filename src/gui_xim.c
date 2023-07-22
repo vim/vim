@@ -1063,6 +1063,9 @@ xim_reset(void)
     int
 xim_queue_key_press_event(GdkEventKey *event, int down)
 {
+#ifdef FEAT_GUI_GTK
+    if (event->state & GDK_SUPER_MASK) return FALSE;
+#endif
     if (down)
     {
 	// Workaround GTK2 XIM 'feature' that always converts keypad keys to
