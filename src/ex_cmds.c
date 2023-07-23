@@ -5592,7 +5592,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
     if (cmdmod.cmod_flags & CMOD_BROWSE)
     {
 	quit_more = FALSE;
-	nr = prompt_for_number(FALSE);
+	nr = prompt_for_number(0, FALSE);
 	msg_starthere();
 	if (nr > 0)
 	{

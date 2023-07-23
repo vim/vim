@@ -776,7 +776,7 @@ do_tag(
 		/*
 		 * Ask to select a tag from the list.
 		 */
-		i = prompt_for_number(NULL);
+		i = prompt_for_number(0, NULL);
 		if (i <= 0 || i > num_matches || got_int)
 		{
 		    // no valid choice: don't change anything

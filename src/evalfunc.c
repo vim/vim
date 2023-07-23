@@ -7175,7 +7175,7 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
     }
 
     // Ask for choice.
-    selected = prompt_for_number(&mouse_used);
+    selected = prompt_for_number(0, &mouse_used);
     if (mouse_used)
 	selected -= lines_left;
 

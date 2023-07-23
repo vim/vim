@@ -1246,7 +1246,7 @@ ml_recover(int checkext)
 	    (void)recover_names(fname, TRUE, NULL, 0, NULL);
 	    msg_putchar('\n');
 	    msg_puts(_("Enter number of swap file to use (0 to quit): "));
-	    i = get_number(FALSE, NULL);
+	    i = get_number(FALSE, 0, NULL);
 	    if (i < 1 || i > len)
 		goto theend;
 	}

@@ -648,7 +648,7 @@ spell_suggest(int count)
 	msg_col = 0;
 #endif
 	// Ask for choice.
-	selected = prompt_for_number(&mouse_used);
+	selected = prompt_for_number(0, &mouse_used);
 	if (mouse_used)
 	    selected -= lines_left;
 	lines_left = Rows;		// avoid more prompt

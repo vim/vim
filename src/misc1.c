@@ -944,6 +944,7 @@ get_keystroke(void)
     int
 get_number(
     int	    colon,			// allow colon to abort
+    int	    num_digits,
     int	    *mouse_used)
 {
     int	n = 0;
@@ -972,6 +973,8 @@ get_number(
 	    n = n * 10 + c - '0';
 	    msg_putchar(c);
 	    ++typed;
+	    if (num_digits != 0 && typed == num_digits)
+	        break;
 	}
 	else if (c == K_DEL || c == K_KDEL || c == K_BS || c == Ctrl_H)
 	{
@@ -1016,7 +1019,7 @@ get_number(
  * the line number.
  */
     int
-prompt_for_number(int *mouse_used)
+prompt_for_number(int num_digits, int *mouse_used)
 {
     int		i;
     int		save_cmdline_row;
@@ -1038,7 +1041,7 @@ prompt_for_number(int *mouse_used)
     // May show different mouse shape.
     setmouse();
 
-    i = get_number(TRUE, mouse_used);
+    i = get_number(TRUE, num_digits, mouse_used);
     if (KeyTyped)
     {
 	// don't call wait_return() now
