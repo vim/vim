@@ -1051,6 +1051,7 @@ static argcheck_T arg2_list_any_number[] = {arg_list_any, arg_number};
 static argcheck_T arg2_list_any_string[] = {arg_list_any, arg_string};
 static argcheck_T arg2_list_number[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_list_number_bool[] = {arg_list_number, arg_bool};
+static argcheck_T arg2_list_string_number[] = {arg_list_string, arg_number};
 static argcheck_T arg2_listblobmod_item[] = {arg_list_or_blob_mod, arg_item_of_prev};
 static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
 static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
@@ -2112,7 +2113,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_input},
     {"inputdialog",	1, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_inputdialog},
-    {"inputlist",	1, 1, FEARG_1,	    arg1_list_string,
+    {"inputlist",	1, 2, FEARG_1,	    arg2_list_string_number,
 			ret_number,	    f_inputlist},
     {"inputrestore",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_inputrestore},
@@ -7160,6 +7161,21 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
+    int num_digits = 0;
+    int error = FALSE;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	num_digits = (int)tv_get_number_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (num_digits < 0)
+	{
+	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
+	    return;
+	}
+    }
+
     msg_start();
     msg_row = Rows - 1;	// for when 'cmdheight' > 1
     lines_left = Rows;	// avoid more prompt
@@ -7175,7 +7191,7 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
     }
 
     // Ask for choice.
-    selected = prompt_for_number(0, &mouse_used);
+    selected = prompt_for_number(num_digits, &mouse_used);
     if (mouse_used)
 	selected -= lines_left;
 

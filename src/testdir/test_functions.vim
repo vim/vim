@@ -2037,6 +2037,12 @@ func Test_inputlist()
   call assert_equal(2, c)
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>3\<cr>", 'tx')
   call assert_equal(3, c)
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'], 1)\<cr>1", 'tx')
+  call assert_equal(1, c)
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'], 2)\<cr>10", 'tx')
+  call assert_equal(10, c)
+  call feedkeys(":let c = ['Select color:', '1. red', '2. green', '3. blue']->inputlist(1)\<cr>2", 'tx')
+  call assert_equal(2, c)
 
   " CR to cancel
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>\<cr>", 'tx')
