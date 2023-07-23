@@ -590,9 +590,9 @@ do_map(
 
 	if (special)
 	    flags |= REPTERM_SPECIAL;
-	new_keys = replace_termcodes(keys, &keys_buf, flags, &did_simplify);
+	new_keys = replace_termcodes(keys, &keys_buf, 0, flags, &did_simplify);
 	if (did_simplify)
-	    (void)replace_termcodes(keys, &alt_keys_buf,
+	    (void)replace_termcodes(keys, &alt_keys_buf, 0,
 					    flags | REPTERM_NO_SIMPLIFY, NULL);
 	keys = new_keys;
     }
@@ -602,7 +602,7 @@ do_map(
 	if (STRICMP(rhs, "<nop>") == 0)	    // "<Nop>" means nothing
 	    rhs = (char_u *)"";
 	else
-	    rhs = replace_termcodes(rhs, &arg_buf,
+	    rhs = replace_termcodes(rhs, &arg_buf, 0,
 			REPTERM_DO_LT | (special ? REPTERM_SPECIAL : 0), NULL);
     }
 
@@ -1133,7 +1133,7 @@ map_to_exists(char_u *str, char_u *modechars, int abbr)
     char_u	*buf;
     int		retval;
 
-    rhs = replace_termcodes(str, &buf, REPTERM_DO_LT, NULL);
+    rhs = replace_termcodes(str, &buf, 0, REPTERM_DO_LT, NULL);
 
     retval = map_to_exists_mode(rhs, mode_str2flags(modechars), abbr);
     vim_free(buf);
@@ -2488,14 +2488,15 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 
     mode = get_map_mode(&which, 0);
 
-    keys_simplified = replace_termcodes(keys, &keys_buf, flags, &did_simplify);
+    keys_simplified = replace_termcodes(keys, &keys_buf, 0, flags,
+								&did_simplify);
     rhs = check_map(keys_simplified, mode, exact, FALSE, abbr,
 							   &mp, &buffer_local);
     if (did_simplify)
     {
 	// When the lhs is being simplified the not-simplified keys are
 	// preferred for printing, like in do_map().
-	(void)replace_termcodes(keys, &alt_keys_buf,
+	(void)replace_termcodes(keys, &alt_keys_buf, 0,
 					flags | REPTERM_NO_SIMPLIFY, NULL);
 	rhs = check_map(alt_keys_buf, mode, exact, FALSE, abbr, &mp,
 								&buffer_local);
@@ -2579,7 +2580,8 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		did_simplify = FALSE;
 
 		lhs = str2special_save(mp->m_keys, TRUE, FALSE);
-		(void)replace_termcodes(lhs, &keys_buf, flags, &did_simplify);
+		(void)replace_termcodes(lhs, &keys_buf, 0, flags,
+								&did_simplify);
 		vim_free(lhs);
 
 		mapblock2dict(mp, d,
@@ -2758,11 +2760,6 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     orig_rhs = rhs;
-    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
-	rhs = (char_u *)"";
-    else
-	rhs = replace_termcodes(rhs, &arg_buf,
-					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
     if (dict_get_number(d, "script") != 0)
@@ -2775,6 +2772,12 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     buffer = dict_get_number(d, "buffer");
     nowait = dict_get_number(d, "nowait") != 0;
     // mode from the dict is not used
+
+    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
+	rhs = (char_u *)"";
+    else
+	rhs = replace_termcodes(rhs, &arg_buf, sid,
+					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     if (buffer)
     {
