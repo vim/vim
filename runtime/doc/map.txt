@@ -21,7 +21,7 @@ manual.
    1.9 Using mappings				|map-typing|
    1.10 Mapping alt-keys			|:map-alt-keys|
    1.11 Mapping meta-keys			|:map-meta-keys|
-   1.12 Mapping super-keys			:map-super-keys
+   1.12 Mapping super-keys			|:map-super-keys|
    1.13 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
    1.14 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
    1.15 Mapping an operator			|:map-operator|
@@ -984,13 +984,13 @@ For the Meta modifier the "T" character is used.  For example, to map Meta-b
 in Insert mode: >
 	:imap <T-b> terrible
 
-1.12 MAPPING SUPER-KEYS					:map-super-keys
+1.12 MAPPING SUPER-KEYS					*:map-super-keys*
 
-The Super modifier is available in GUI mode (when :gui_running is 1) for
+The Super modifier is available in GUI mode (when |gui_running| is 1) for
 GVim on Linux and MacVim on Mac OS. If you're on a Mac, this represents the
 Command key. The character "D" is used for the Super modifier.
 
-For example, to map Command-b in Insert mode:
+For example, to map Command-b in Insert mode: >
 	:imap <D-b> barritone
 
 1.13 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
