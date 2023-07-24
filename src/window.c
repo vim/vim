@@ -5943,7 +5943,6 @@ shell_new_columns(void)
  */
     void
 win_size_save(garray_T *gap)
-
 {
     win_T	*wp;
 
@@ -5951,8 +5950,8 @@ win_size_save(garray_T *gap)
     if (ga_grow(gap, win_count() * 2 + 1) == FAIL)
 	return;
 
-    // first entry is value of 'lines'
-    ((int *)gap->ga_data)[gap->ga_len++] = Rows;
+    // first entry is the total lines available for windows
+    ((int *)gap->ga_data)[gap->ga_len++] = ROWS_AVAIL - last_stl_height(FALSE);
 
     FOR_ALL_WINDOWS(wp)
     {
@@ -5964,7 +5963,7 @@ win_size_save(garray_T *gap)
 
 /*
  * Restore window sizes, but only if the number of windows is still the same
- * and 'lines' didn't change.
+ * and total lines available for windows didn't change.
  * Does not free the growarray.
  */
     void
@@ -5974,7 +5973,7 @@ win_size_restore(garray_T *gap)
     int		i, j;
 
     if (win_count() * 2 + 1 == gap->ga_len
-	    && ((int *)gap->ga_data)[0] == Rows)
+	    && ((int *)gap->ga_data)[0] == ROWS_AVAIL - last_stl_height(FALSE))
     {
 	// The order matters, because frames contain other frames, but it's
 	// difficult to get right. The easy way out is to do it twice.
@@ -7192,8 +7191,7 @@ last_status(
     int		morewin)	// pretend there are two or more windows
 {
     // Don't make a difference between horizontal or vertical split.
-    last_status_rec(topframe, (p_ls == 2
-			  || (p_ls == 1 && (morewin || !ONE_WINDOW))));
+    last_status_rec(topframe, last_stl_height(morewin) > 0);
 }
 
     static void
@@ -7278,6 +7276,17 @@ tabline_height(void)
 	case 1: return (first_tabpage->tp_next == NULL) ? 0 : 1;
     }
     return 1;
+}
+
+/*
+ * Return the height of the last window's statusline.
+ */
+    int
+last_stl_height(
+    int		morewin)	// pretend there are two or more windows
+{
+    return (p_ls == 2 || (p_ls == 1 && (morewin || !ONE_WINDOW)))
+		? STATUS_HEIGHT : 0;
 }
 
 /*
