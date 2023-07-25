@@ -1676,6 +1676,9 @@ au BufNewFile,BufRead *.pk			setf poke
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols
 
+" PyPA manifest files
+au BufNewFile,BufRead MANIFEST.in		setf pymanifest
+
 " Pyret
 au BufNewFile,BufRead *.arr			setf pyret
 
