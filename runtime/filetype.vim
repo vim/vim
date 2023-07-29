@@ -2484,6 +2484,9 @@ au BufNewFile,BufRead *.fsproj,*.fsproj.user	setf xml
 " VBPROJ files are Visual Studio.NET's XML-based Visual Basic project config files
 au BufNewFile,BufRead *.vbproj,*.vbproj.user	setf xml
 
+" Unison Language
+au BufNewFile,BufRead *.u,*.uu				setf unison
+
 " Qt Linguist translation source and Qt User Interface Files are XML
 " However, for .ts TypeScript is more common.
 au BufNewFile,BufRead *.ui			setf xml
