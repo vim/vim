@@ -2396,6 +2396,9 @@ au BufNewFile,BufRead .wgetrc,wgetrc		setf wget
 " Wget2 config
 au BufNewFile,BufRead .wget2rc,wget2rc		setf wget2
 
+" WebGPU Shading Language (WGSL)
+au BufNewFile,BufRead *.wgsl			setf wgsl
+
 " Website MetaLanguage
 au BufNewFile,BufRead *.wml			setf wml
 
