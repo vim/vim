@@ -259,15 +259,17 @@ void vterm_state_get_palette_color(const VTermState *state, int index, VTermColo
 
 void vterm_state_set_default_colors(VTermState *state, const VTermColor *default_fg, const VTermColor *default_bg)
 {
-  /* Copy the given colors */
-  state->default_fg = *default_fg;
-  state->default_bg = *default_bg;
+  if(default_fg) {
+    state->default_fg = *default_fg;
+    state->default_fg.type = (state->default_fg.type & ~VTERM_COLOR_DEFAULT_MASK)
+                           | VTERM_COLOR_DEFAULT_FG;
+  }
 
-  /* Make sure the correct type flags are set */
-  state->default_fg.type = (state->default_fg.type & ~VTERM_COLOR_DEFAULT_MASK)
-                         | VTERM_COLOR_DEFAULT_FG;
-  state->default_bg.type = (state->default_bg.type & ~VTERM_COLOR_DEFAULT_MASK)
-                         | VTERM_COLOR_DEFAULT_BG;
+  if(default_bg) {
+    state->default_bg = *default_bg;
+    state->default_bg.type = (state->default_bg.type & ~VTERM_COLOR_DEFAULT_MASK)
+                           | VTERM_COLOR_DEFAULT_BG;
+  }
 }
 
 void vterm_state_set_palette_color(VTermState *state, int index, const VTermColor *col)

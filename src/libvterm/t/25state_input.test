@@ -148,7 +148,9 @@ FOCUS IN
 FOCUS OUT
 
 !Focus reporting enabled
+WANTSTATE +p
 PUSH "\e[?1004h"
+  settermprop 9 true
 FOCUS IN
   output "\e[I"
 FOCUS OUT
