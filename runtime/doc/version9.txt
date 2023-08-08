@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2022 Nov 23
+*version9.txt*  For Vim version 9.0.  Last change: 2023 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -42,6 +42,17 @@ Vim version 9.0 is dedicated to Sven Guckes, who passed away in February 2022
 when the release was being prepared.  Sven was a long time supporter of Vim.
 He registered the vim.org domain and created the first Vim website.  We will
 remember him!
+
+						 *Bram* *Moolenaar* *Bram-Moolenaar*
+Vim version 9.1 is dedicated to Bram Moolenaar, who passed away on August 3rd 2023
+while still working full-time on Vim.  The Vim project would not exist without
+his ongoing passion to lead and develop Vim and the community for more than 30
+years.  Bram was also passionate about his |ICCF| foundation to help children
+in Uganda.  If you enjoy using Vim, please consider donating!
+We will miss his guidance, passion and leadership.
+
+Obituary Articles: https://github.com/vim/vim/discussions/12742
+Say Farewell: https://github.com/vim/vim/discussions/12737
 
 ==============================================================================
 NEW FEATURES						*new-9*

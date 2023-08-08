@@ -3856,7 +3856,8 @@ BeOS	os_beos.txt	/*BeOS*
 Blob	eval.txt	/*Blob*
 Blobs	eval.txt	/*Blobs*
 Boolean	eval.txt	/*Boolean*
-Bram	intro.txt	/*Bram*
+Bram	version9.txt	/*Bram*
+Bram-Moolenaar	version9.txt	/*Bram-Moolenaar*
 BufAdd	autocmd.txt	/*BufAdd*
 BufCreate	autocmd.txt	/*BufCreate*
 BufDelete	autocmd.txt	/*BufDelete*
@@ -5458,7 +5459,7 @@ Mark	motion.txt	/*Mark*
 MenuPopup	autocmd.txt	/*MenuPopup*
 MiNT	os_mint.txt	/*MiNT*
 ModeChanged	autocmd.txt	/*ModeChanged*
-Moolenaar	intro.txt	/*Moolenaar*
+Moolenaar	version9.txt	/*Moolenaar*
 MorphOS	os_amiga.txt	/*MorphOS*
 Motif	gui_x11.txt	/*Motif*
 Myspell	spell.txt	/*Myspell*
