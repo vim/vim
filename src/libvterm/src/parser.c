@@ -148,11 +148,15 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         string_fragment(vt, string_start, bytes + pos - string_start, FALSE);
         string_start = bytes + pos + 1;
       }
+      if(vt->parser.emit_nul)
+        do_control(vt, c);
       continue;
     }
     if(c == 0x18 || c == 0x1a) { // CAN, SUB
       vt->parser.in_esc = FALSE;
       ENTER_NORMAL_STATE();
+      if(vt->parser.emit_nul)
+        do_control(vt, c);
       continue;
     }
     else if(c == 0x1b) { // ESC
@@ -401,4 +405,9 @@ void vterm_parser_set_callbacks(VTerm *vt, const VTermParserCallbacks *callbacks
 void *vterm_parser_get_cbdata(VTerm *vt)
 {
   return vt->parser.cbdata;
+}
+
+void vterm_parser_set_emit_nul(VTerm *vt, int emit)
+{
+  vt->parser.emit_nul = emit;
 }
