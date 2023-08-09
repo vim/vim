@@ -9077,6 +9077,43 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
     return TRUE;
 }
 
+    static int
+test_gui_w32_sendevent_set_w32_ime(dict_T *args)
+{
+    int handled = 0;
+    char_u *ime = dict_get_string(args, "ime", TRUE);
+
+    if (ime)
+    {
+	if (STRICMP(ime, "classic") == 0)
+	{
+	    handled = 1;
+	    w32_input_instance = &w32_input_instance_classic;
+	}
+	else if (STRICMP(ime, "experimental") == 0)
+	{
+	    handled = 1;
+	    w32_input_instance = &w32_input_instance_experimental;
+	}
+    }
+
+    if (!handled)
+    {
+	if (ime == NULL)
+	{
+	    semsg(_(e_missing_argument_str), "ime");
+	}
+	else
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "ime", ime);
+	    vim_free(ime);
+	}
+	return FALSE;
+    }
+    return TRUE;
+}
+
+
     int
 test_gui_w32_sendevent(char_u *event, dict_T *args)
 {
@@ -9084,6 +9121,8 @@ test_gui_w32_sendevent(char_u *event, dict_T *args)
 	return test_gui_w32_sendevent_keyboard(args);
     else if (STRICMP(event, "mouse") == 0)
 	return test_gui_w32_sendevent_mouse(args);
+    else if (STRICMP(event, "set_w32_ime") == 0)
+	return test_gui_w32_sendevent_set_w32_ime(args);
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
