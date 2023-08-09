@@ -453,5 +453,28 @@ To try out if XPM support works do this: >
 You may need to get the vim16x16.xpm file from github:
 https://github.com/vim/vim/blob/master/runtime/vim16x16.xpm
 
+Experimental w32 keyboard "input method"       *w32-experimental-kbd-ime*
+
+Since v8.2.4807 W32 GVIM was changed over to experimental "input method" with
+the aim to be able to use more keyboard shortcuts and especially supporting
+non-standard keyboard layouts. In order to implement this support Win API
+TranslateMessage() call was dropped, and instead of that recognition of
+keycode was changed over to ToUnicode() Win API call. This approach uncovered
+numerous corner cases, which are apparently covered by TranslateMessage()
+implementation, each of it is necessary to be dealt on individual basis.
+Therefore decision was taken to make this functionality experimental and
+"classic" "input method" was made default again.
+
+Discussion about use of "experimental" input method will probably last some
+time yet. In the meantime, if you are impacted by change over back to "classic"
+input method in W32 GVIM, you can enable "experimental" input method again in
+your vimrc using following snippet:
+>
+	:call test_mswin_event('set_w32_ime', {'ime': 'experimental'})
+<
+Similarly, in case you wish to turn back "classic" input method, please use:
+>
+	:call test_mswin_event('set_w32_ime', {'ime': 'classic'})
+<
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:
