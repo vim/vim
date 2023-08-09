@@ -1060,6 +1060,9 @@ au BufNewFile,BufRead *.json5			setf json5
 " JSON Patch (RFC 6902)
 au BufNewFile,BufRead *.json-patch		setf json
 
+" Geojson is also json
+au BufNewFile,BufRead *.geojson			setf json
+
 " Jupyter Notebook is also json
 au BufNewFile,BufRead *.ipynb			setf json
 
