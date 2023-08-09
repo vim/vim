@@ -63,7 +63,7 @@ static void _OnChar_experimental(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepe
 static void _OnSysChar_experimental(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
 static void process_message_usual_key_experimental(UINT /*vk*/, const MSG* /*pmsg*/);
 static int  get_active_modifiers_experimental(void);
-static int  is_experimental_true(void) { return 1; }
+static int  is_experimental_true(void);
 
 w32_vim_input_impl w32_input_instance_experimental = {
       _OnChar_experimental      // ptr_on_char
@@ -78,7 +78,7 @@ static void _OnChar_classic(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UN
 static void _OnSysChar_classic(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
 static void process_message_usual_key_classic(UINT /*vk*/, const MSG* /*pmsg*/);
 static int  get_active_modifiers_classic(void);
-static int  is_experimental_false(void) { return 0; }
+static int  is_experimental_false(void);
 
 w32_vim_input_impl w32_input_instance_classic = {
       _OnChar_classic      // ptr_on_char
@@ -89,6 +89,16 @@ w32_vim_input_impl w32_input_instance_classic = {
 };
 
 w32_vim_input_impl *w32_input_instance = &w32_input_instance_classic;
+
+static int is_experimental_true(void)
+{
+    return 1;
+}
+
+static int is_experimental_false(void)
+{
+    return 0;
+}
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
     int
@@ -935,7 +945,7 @@ get_active_modifiers_classic(void)
 	modifiers |= MOD_MASK_CTRL;
     if (GetKeyState(VK_MENU) & 0x8000)
 	modifiers |= MOD_MASK_ALT;
-    
+
     return modifiers;
 }
 
