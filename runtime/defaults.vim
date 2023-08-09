@@ -99,15 +99,19 @@ if 1
   " Put these in an autocmd group, so that you can revert them with:
   " ":autocmd! vimStartup"
   augroup vimStartup
-    au!
+    autocmd!
 
     " When editing a file, always jump to the last known cursor position.
     " Don't do it when the position is invalid, when inside an event handler
-    " (happens when dropping a file on gvim) and for a commit message (it's
-    " likely a different one than last time).
+    " (happens when dropping a file on gvim), for a commit or rebase message
+    " (likely a different one than last time), and when using xxd(1) to filter
+    " and edit binary files (it transforms input files back and forth, causing
+    " them to have dual nature, so to speak)
     autocmd BufReadPost *
-      \ if line("'\"") >= 1 && line("'\"") <= line("$") && &ft !~# 'commit'
-      \ |   exe "normal! g`\""
+      \ let line = line("'\"")
+      \ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
+      \      && index(['xxd', 'gitrebase'], &filetype) == -1
+      \ |   execute "normal! g`\""
       \ | endif
 
   augroup END
@@ -119,7 +123,7 @@ if 1
   augroup vimHints
     au!
     autocmd CmdwinEnter *
-	  \ echohl Todo | 
+	  \ echohl Todo |
 	  \ echo gettext('You discovered the command-line window! You can close it with ":q".') |
 	  \ echohl None
   augroup END
