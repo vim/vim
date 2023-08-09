@@ -88,7 +88,7 @@ w32_vim_input_impl w32_input_instance_classic = {
     , is_experimental_false
 };
 
-w32_vim_input_impl *w32_input_instance = &w32_input_instance_experimental;
+w32_vim_input_impl *w32_input_instance = &w32_input_instance_classic;
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
     int
