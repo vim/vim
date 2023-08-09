@@ -189,7 +189,11 @@ func Test_uncrypt_xchacha20v2_custom()
   00000060: a4cf 33d2 7507 ec38 ba62 a327 9068 d8ad  ..3.u..8.b.'.h..
   00000070: 2607 3fa6 f95d 7ea8 9799 f997 4820 0c    &.?..]~.....H .
   END
-  call Uncrypt_stable_xxd('xchacha20v2', hex, "foobar", ["", "foo", "bar", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], 1)
+  try
+    call Uncrypt_stable_xxd('xchacha20v2', hex, "foobar", ["", "foo", "bar", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], 1)
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   call assert_match('xchacha20v2: using custom \w\+ "\d\+" for Key derivation.', execute(':messages'))
 endfunc
 
@@ -209,7 +213,11 @@ func Test_uncrypt_xchacha20v2()
   00000090: 2416 205a 8c4c 5fde 4dac 2611 8a48 24f0  $. Z.L_.M.&..H$.
   000000a0: ba00 92c1 60                             ....`
   END
-  call Uncrypt_stable_xxd('xchacha20v2', hex, "foo1234", ["abcdefghijklmnopqrstuvwxyzäöü", 'ZZZ_äüöÄÜÖ_!@#$%^&*()_+=-`~"'], 0)
+  try
+    call Uncrypt_stable_xxd('xchacha20v2', hex, "foo1234", ["abcdefghijklmnopqrstuvwxyzäöü", 'ZZZ_äüöÄÜÖ_!@#$%^&*()_+=-`~"'], 0)
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
 endfunc
 
 func Test_uncrypt_xchacha20_invalid()
@@ -220,6 +228,8 @@ func Test_uncrypt_xchacha20_invalid()
   try
     call feedkeys(":split samples/crypt_sodium_invalid.txt\<CR>sodium\<CR>", 'xt')
     call assert_false(1, 'should not happen')
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
   catch
     call assert_exception('pre-mature')
   endtry
@@ -272,7 +282,11 @@ func Test_uncrypt_xchacha20v2_2()
   " swapfile disabled
   call assert_equal(0, &swapfile)
   call assert_match("Note: Encryption of swapfile not supported, disabling swap file", execute(':messages'))
-  w!
+  try
+    w!
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   " encrypted using xchacha20
   call assert_match("\[xchachav2\]", execute(':messages'))
   bw!
