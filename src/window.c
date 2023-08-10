@@ -19,6 +19,7 @@ static void win_exchange(long);
 static void win_rotate(int, int);
 static void win_totop(int size, int flags);
 static void win_equal_rec(win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height);
+static void trigger_winnewpre(void);
 static void trigger_winclosed(win_T *win);
 static win_T *win_free_mem(win_T *win, int *dirp, tabpage_T *tp);
 static frame_T *win_altframe(win_T *win, tabpage_T *tp);
@@ -954,6 +955,8 @@ win_split_ins(
 
     // Do not redraw here, curwin->w_buffer may be invalid.
     ++RedrawingDisabled;
+
+    trigger_winnewpre();
 
     if (flags & WSP_TOP)
 	oldwin = firstwin;
@@ -2887,6 +2890,14 @@ win_close(win_T *win, int free_buf)
 }
 
     static void
+trigger_winnewpre(void)
+{
+    window_layout_lock();
+    apply_autocmds(EVENT_WINNEWPRE, NULL, NULL, FALSE, NULL);
+    window_layout_unlock();
+}
+
+    static void
 trigger_winclosed(win_T *win)
 {
     static int	recursive = FALSE;
@@ -4475,6 +4486,9 @@ win_new_tabpage(int after)
 
     newtp->tp_localdir = (tp->tp_localdir == NULL)
 				    ? NULL : vim_strsave(tp->tp_localdir);
+
+    trigger_winnewpre();
+
     // Create a new empty window.
     if (win_alloc_firstwin(tp->tp_curwin) == OK)
     {

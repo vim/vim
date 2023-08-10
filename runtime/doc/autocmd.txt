@@ -381,6 +381,7 @@ Name			triggered by ~
 |CursorMoved|		the cursor was moved in Normal mode
 |CursorMovedI|		the cursor was moved in Insert mode
 
+|WinNewPre|		before creating a new window
 |WinNew|		after creating a new window
 |TabNew|		after creating a new tab page
 |WinClosed|		after closing a window
@@ -1389,6 +1390,15 @@ WinLeave			Before leaving a window.  If the window to be
 				executes the BufLeave autocommands before the
 				WinLeave autocommands (but not for ":new").
 				Not used for ":qa" or ":q" when exiting Vim.
+
+							*WinNewPre*
+WinNewPre			Before creating a new window. Triggered
+				before commands that modify window layout by
+				creating a split or new tab page. Not done for
+				the first window, when Vim has just started.
+				It is not allowed to modify window layout
+				while executing commands for the WinNewPre
+				event.
 
 							*WinNew*
 WinNew				When a new window was created.  Not done for

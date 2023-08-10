@@ -5780,6 +5780,7 @@ WinClosed	autocmd.txt	/*WinClosed*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
 WinNew	autocmd.txt	/*WinNew*
+WinNewPre	autocmd.txt	/*WinNewPre*
 WinResized	autocmd.txt	/*WinResized*
 WinResized-event	windows.txt	/*WinResized-event*
 WinScrolled	autocmd.txt	/*WinScrolled*
