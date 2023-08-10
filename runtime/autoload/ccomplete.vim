@@ -2,9 +2,10 @@ vim9script noclear
 
 # Vim completion script
 # Language:     C
-# Maintainer:   Bram Moolenaar <Bram@vim.org>
+# Maintainer: The Vim Project <https://github.com/vim/vim>
+# Former Maintainer:   Bram Moolenaar <Bram@vim.org>
 #		Rewritten in Vim9 script by github user lacygoill
-# Last Change:  2022 Jan 31
+# Last Change:  2023 Aug 10
 
 var prepended: string
 var grepCache: dict<list<dict<any>>>

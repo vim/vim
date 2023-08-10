@@ -141,14 +141,14 @@ If you still have problems or any other questions, use one of the mailing
 lists to discuss them with Vim users and developers:
 	https://www.vim.org/maillist.php
 
-If nothing else works, report bugs directly:
-	Bram Moolenaar <Bram@vim.org>
+If nothing else works, report bugs directly to the vim-dev mailinglist:
+	<vim-dev@vim.org>
 
 
 ## Main author ##
 
-Send any other comments, patches, flowers and suggestions to:
-	Bram Moolenaar <Bram@vim.org>
+Send any other comments, patches, flowers and suggestions to the vim-dev mailinglist:
+	<vim-dev@vim.org>
 
 
 This is `README.md` for version 9.0 of Vim: Vi IMproved.

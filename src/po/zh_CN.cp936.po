@@ -2158,7 +2158,7 @@ msgstr "处理 %s 时发生错误:"
 msgid "line %4ld:"
 msgstr "第 %4ld 行:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "简体中文消息维护者: Yuheng Xie <elephant@linux.net.cn>"
 
 msgid "Interrupt: "

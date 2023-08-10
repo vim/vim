@@ -1114,7 +1114,7 @@ ex_messages(exarg_T *eap)
 	    msg_attr(
 		    // Translator: Please replace the name and email address
 		    // with the appropriate text for your translation.
-		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
+		    _("Messages maintainer: The Vim Project"),
 		    HL_ATTR(HLF_T));
     }
 

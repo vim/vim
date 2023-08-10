@@ -2,8 +2,9 @@
 " The commands in this are executed when the GUI is started, after the vimrc
 " has been executed.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2016 Apr 05
+" Maintainer: The Vim Project <https://github.com/vim/vim>
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last Change:	2023 Aug 10
 "
 " To use it, copy it to
 "         for Unix:  ~/.gvimrc

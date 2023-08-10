@@ -2206,7 +2206,7 @@ msgstr "Virhe suoritettaessa komentoja %s:"
 msgid "line %4ld:"
 msgstr "rivi %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Käännöksen ylläpitäjä: Flammie Pirinen <flammie@iki.fi>"
 
 msgid "Interrupt: "

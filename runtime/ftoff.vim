@@ -1,7 +1,8 @@
 " Vim support file to switch off detection of file types
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2001 Jun 11
+" Maintainer: The Vim Project <https://github.com/vim/vim>
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last change:	2023 Aug 10
 
 if exists("did_load_filetypes")
   unlet did_load_filetypes

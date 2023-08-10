@@ -1,7 +1,8 @@
 " Vim indent file
 " Language:	XHTML
-" Maintainer:	Bram Moolenaar <Bram@vim.org> (for now)
-" Last Change:	2005 Jun 24
+" Maintainer: The Vim Project <https://github.com/vim/vim>
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last Change:	2023 Aug 10
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

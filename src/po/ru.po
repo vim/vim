@@ -2228,7 +2228,7 @@ msgstr "Обнаружена ошибка при обработке %s:"
 msgid "line %4ld:"
 msgstr "строка %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "Перевод сообщений на русский язык: Василий Рагозин <vrr@users.sourceforge."
 "net>, Сергей Алёшин <alyoshin.s@gmail.com>, Матвей Тарасов "

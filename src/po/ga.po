@@ -2256,7 +2256,7 @@ msgstr "Earráid agus %s á phróiseáil:"
 msgid "line %4ld:"
 msgstr "líne %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "Cothaitheoir na dteachtaireachtaí: Kevin P. Scannell <kscanne@gmail.com>"
 
