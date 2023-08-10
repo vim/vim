@@ -453,7 +453,7 @@ To try out if XPM support works do this: >
 You may need to get the vim16x16.xpm file from github:
 https://github.com/vim/vim/blob/master/runtime/vim16x16.xpm
 
-                            
+
 Keycode translation strategy    *w32-experimental-keycode-trans-strategy*
 
 Since v8.2.4807 W32 GVIM was changed over to experimental keycode translation
