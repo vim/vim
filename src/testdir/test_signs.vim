@@ -1658,7 +1658,7 @@ func Test_sign_lnum_adjust()
 
   " Break the undo. Otherwise the undo operation below will undo all the
   " changes made by this function.
-  let &undolevels=&undolevels
+  let &g:undolevels=&g:undolevels
 
   " Delete the line with the sign
   call deletebufline('', 4)
@@ -1671,7 +1671,7 @@ func Test_sign_lnum_adjust()
   call assert_equal(5, l[0].signs[0].lnum)
 
   " Break the undo
-  let &undolevels=&undolevels
+  let &g:undolevels=&g:undolevels
 
   " Delete few lines at the end of the buffer including the line with the sign
   " Sign line number should not change (as it is placed outside of the buffer)

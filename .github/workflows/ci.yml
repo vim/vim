@@ -38,6 +38,7 @@ jobs:
         features: [tiny, normal, huge]
         compiler: [clang, gcc]
         extra: [none]
+        luaver: [lua5.4]
         include:
           - features: tiny
             compiler: clang
@@ -54,13 +55,18 @@ jobs:
             coverage: true
             extra: testgui
             uchar: true
+            luaver: lua5.4
           - features: huge
             compiler: clang
             extra: asan
+            # Lua5.1 is the most widely used version (since it's what LuaJIT is
+            # compatible with), so ensure it works
+            luaver: lua5.1
           - features: huge
             compiler: gcc
             coverage: true
             extra: unittests
+            luaver: lua5.4
           - features: normal
             compiler: gcc
             extra: vimtags
@@ -85,8 +91,8 @@ jobs:
               libperl-dev \
               python2-dev \
               python3-dev \
-              liblua5.4-dev \
-              lua5.4 \
+              lib${{ matrix.luaver }}-dev \
+              ${{ matrix.luaver }} \
               ruby-dev \
               tcl-dev \
               cscope \

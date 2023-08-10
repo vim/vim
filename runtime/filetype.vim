@@ -894,6 +894,7 @@ if exists('$XDG_CONFIG_HOME')
 endif
 au BufNewFile,BufRead $HOME/.config/cabal/config setf cabalconfig
 au BufNewFile,BufRead cabal.config		setf cabalconfig
+au BufNewFile,BufRead *.persistentmodels	setf haskellpersistent
 
 " Haste
 au BufNewFile,BufRead *.ht			setf haste
@@ -947,6 +948,9 @@ au BufNewFile,BufRead */etc/host.conf		setf hostconf
 
 " Hosts access
 au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
+
+" Hurl
+au BufRead,BufNewFile *.hurl			setf hurl
 
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
@@ -1563,6 +1567,10 @@ au BufNewFile,BufRead *.rcp			setf pilrc
 
 " Pine config
 au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
+
+" Pip requirements
+au BufNewFile,BufRead *.pip			setf requirements
+au BufNewFile,BufRead requirements.txt		setf requirements
 
 " Pipenv Pipfiles
 au BufNewFile,BufRead Pipfile			setf toml
