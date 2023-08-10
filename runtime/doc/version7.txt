@@ -4627,7 +4627,7 @@ using an #ifdef. (Sergey Khorev)
 Mzscheme interface didn't link, missing function.  Changed order of libraries
 in the configure script.
 
-Ruby interface didn't compile on Mac.  Changed #ifdef. (Kevin Ballard)
+Ruby interface didn't compile on Mac.  Changed #ifdef. (Lily Ballard)
 
 Patch 7.1b.001 (extra)
 Problem:    Random text in a source file.  No idea how it got there.
