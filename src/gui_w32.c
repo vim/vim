@@ -88,7 +88,7 @@ keycode_trans_strategy keycode_trans_strategy_classic = {
     , is_experimental_false
 };
 
-keycode_trans_strategy *keycode_trans_strategy_used = &keycode_trans_strategy_classic;
+keycode_trans_strategy *keycode_trans_strategy_used = NULL;
 
 static int is_experimental_true(void)
 {
@@ -98,6 +98,36 @@ static int is_experimental_true(void)
 static int is_experimental_false(void)
 {
     return 0;
+}
+
+/*
+ * Initialize the keycode translation strategy.
+ */
+static void keycode_trans_strategy_init(void)
+{
+    const char *strategy = NULL;
+
+    // set default value as fallback
+    keycode_trans_strategy_used = &keycode_trans_strategy_classic;
+
+    strategy = getenv("VIM_KEYCODE_TRANS_STRATEGY");
+    if (strategy == NULL)
+    {
+	return;
+    }
+
+    if (STRICMP(strategy, "classic") == 0)
+    {
+	keycode_trans_strategy_used = &keycode_trans_strategy_classic;
+	return;
+    }
+
+    if (STRICMP(strategy, "experimental") == 0)
+    {
+	keycode_trans_strategy_used = &keycode_trans_strategy_experimental;
+	return;
+    }
+
 }
 
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
@@ -2258,6 +2288,14 @@ process_message(void)
 #ifdef FEAT_MENU
     static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
 #endif
+    static int  keycode_trans_strategy_initialized = 0;
+
+    // lazy initialize - first time only
+    if (!keycode_trans_strategy_initialized)
+    {
+	keycode_trans_strategy_initialized = 1;
+	keycode_trans_strategy_init();
+    }
 
     GetMessageW(&msg, NULL, 0, 0);
 
