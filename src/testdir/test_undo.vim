@@ -133,6 +133,11 @@ func Test_undotree_bufnr()
   let d = undotree(buf2)
   call assert_notequal(d1, d)
   call assert_equal(d2, d)
+
+  " Drop created windows
+  set ul&
+  new
+  only!
 endfunc
 
 func Test_global_local_undolevels()
