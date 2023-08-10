@@ -50,13 +50,13 @@ static int gui_mswin_get_menu_height(int fix_window);
 # define gui_mswin_get_menu_height(fix_window)	0
 #endif
 
-typedef struct w32_vim_input_impl {
+typedef struct keycode_trans_strategy {
     void (*ptr_on_char) (HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
     void (*ptr_on_sys_char) (HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
     void (*ptr_process_message_usual_key) (UINT /*vk*/, const MSG* /*pmsg*/);
     int  (*ptr_get_active_modifiers)(void);
     int  (*is_experimental)(void);
-} w32_vim_input_impl;
+} keycode_trans_strategy;
 
 // forward declarations for input instance initializer
 static void _OnChar_experimental(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
@@ -65,7 +65,7 @@ static void process_message_usual_key_experimental(UINT /*vk*/, const MSG* /*pms
 static int  get_active_modifiers_experimental(void);
 static int  is_experimental_true(void);
 
-w32_vim_input_impl w32_input_instance_experimental = {
+keycode_trans_strategy keycode_trans_strategy_experimental = {
       _OnChar_experimental      // ptr_on_char
     , _OnSysChar_experimental // ptr_on_sys_char
     , process_message_usual_key_experimental // ptr_process_message_usual_key
@@ -80,7 +80,7 @@ static void process_message_usual_key_classic(UINT /*vk*/, const MSG* /*pmsg*/);
 static int  get_active_modifiers_classic(void);
 static int  is_experimental_false(void);
 
-w32_vim_input_impl w32_input_instance_classic = {
+keycode_trans_strategy keycode_trans_strategy_classic = {
       _OnChar_classic      // ptr_on_char
     , _OnSysChar_classic // ptr_on_sys_char
     , process_message_usual_key_classic // ptr_process_message_usual_key
@@ -88,7 +88,7 @@ w32_vim_input_impl w32_input_instance_classic = {
     , is_experimental_false
 };
 
-w32_vim_input_impl *w32_input_instance = &w32_input_instance_classic;
+keycode_trans_strategy *keycode_trans_strategy_used = &keycode_trans_strategy_classic;
 
 static int is_experimental_true(void)
 {
@@ -959,7 +959,7 @@ get_active_modifiers(void)
 get_active_modifiers_via_ptr(void)
 {
     // marshal to corresponding implementation
-    return w32_input_instance->ptr_get_active_modifiers();
+    return keycode_trans_strategy_used->ptr_get_active_modifiers();
 }
 
 /*
@@ -972,7 +972,7 @@ _OnChar(
     int cRepeat UNUSED)
 {
     // marshal to corresponding implementation
-    w32_input_instance->ptr_on_char(hwnd, cch, cRepeat);
+    keycode_trans_strategy_used->ptr_on_char(hwnd, cch, cRepeat);
 }
 
 /*
@@ -1068,7 +1068,7 @@ _OnSysChar(
     int cRepeat UNUSED)
 {
     // marshal to corresponding implementation
-    w32_input_instance->ptr_on_sys_char(hwnd, cch, cRepeat);
+    keycode_trans_strategy_used->ptr_on_sys_char(hwnd, cch, cRepeat);
 }
 
 /*
@@ -2118,7 +2118,7 @@ outputDeadKey_rePost(MSG originalMsg)
 static void process_message_usual_key(UINT vk, const MSG *pmsg)
 {
     // marshal to corresponding implementation
-    w32_input_instance->ptr_process_message_usual_key(vk, pmsg);
+    keycode_trans_strategy_used->ptr_process_message_usual_key(vk, pmsg);
 }
 
 /*
@@ -2317,7 +2317,7 @@ process_message(void)
 	 * We are at the moment after WM_CHAR with DEAD_KEY_SKIP_ON_CHAR event
 	 * was handled by _WndProc, this keypress we want to process normally
 	 */
-	if (w32_input_instance->is_experimental()
+	if (keycode_trans_strategy_used->is_experimental()
 		&& dead_key == DEAD_KEY_SKIP_ON_CHAR)
 	{
 	    dead_key = DEAD_KEY_OFF;
@@ -2343,7 +2343,7 @@ process_message(void)
 	     * outputDeadKey_rePost() since we do not wish to reset dead_key
 	     * value.
 	     */
-	    if (w32_input_instance->is_experimental() &&
+	    if (keycode_trans_strategy_used->is_experimental() &&
 		    dead_key == DEAD_KEY_TRANSIENT_IN_ON_CHAR)
 	    {
 		outputDeadKey_rePost_Ex(msg,
@@ -9088,35 +9088,35 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
 }
 
     static int
-test_gui_w32_sendevent_set_w32_ime(dict_T *args)
+test_gui_w32_sendevent_set_keycode_trans_strategy(dict_T *args)
 {
     int handled = 0;
-    char_u *ime = dict_get_string(args, "ime", TRUE);
+    char_u *strategy = dict_get_string(args, "strategy", TRUE);
 
-    if (ime)
+    if (strategy)
     {
-	if (STRICMP(ime, "classic") == 0)
+	if (STRICMP(strategy, "classic") == 0)
 	{
 	    handled = 1;
-	    w32_input_instance = &w32_input_instance_classic;
+	    keycode_trans_strategy_used = &keycode_trans_strategy_classic;
 	}
-	else if (STRICMP(ime, "experimental") == 0)
+	else if (STRICMP(strategy, "experimental") == 0)
 	{
 	    handled = 1;
-	    w32_input_instance = &w32_input_instance_experimental;
+	    keycode_trans_strategy_used = &keycode_trans_strategy_experimental;
 	}
     }
 
     if (!handled)
     {
-	if (ime == NULL)
+	if (strategy == NULL)
 	{
-	    semsg(_(e_missing_argument_str), "ime");
+	    semsg(_(e_missing_argument_str), "strategy");
 	}
 	else
 	{
-	    semsg(_(e_invalid_value_for_argument_str_str), "ime", ime);
-	    vim_free(ime);
+	    semsg(_(e_invalid_value_for_argument_str_str), "strategy", strategy);
+	    vim_free(strategy);
 	}
 	return FALSE;
     }
@@ -9131,8 +9131,8 @@ test_gui_w32_sendevent(char_u *event, dict_T *args)
 	return test_gui_w32_sendevent_keyboard(args);
     else if (STRICMP(event, "mouse") == 0)
 	return test_gui_w32_sendevent_mouse(args);
-    else if (STRICMP(event, "set_w32_ime") == 0)
-	return test_gui_w32_sendevent_set_w32_ime(args);
+    else if (STRICMP(event, "set_keycode_trans_strategy") == 0)
+	return test_gui_w32_sendevent_set_keycode_trans_strategy(args);
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
