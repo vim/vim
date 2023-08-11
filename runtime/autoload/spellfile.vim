@@ -1,7 +1,7 @@
 " Vim script to download a missing spell file
-" Maintainer: The Vim Project <https://github.com/vim/vim>
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 if !exists('g:spellfile_URL')
   " Always use https:// because it's secure.  The certificate is for nluug.nl,

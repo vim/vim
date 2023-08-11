@@ -1,9 +1,9 @@
 " Vim support file to define the default menus
 " You can also use this as a start for your own set of menus.
 "
-" Maintainer: The Vim Project <https://github.com/vim/vim>
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.

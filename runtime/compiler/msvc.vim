@@ -1,8 +1,8 @@
 " Vim compiler file
 " Compiler:	Microsoft Visual C
-" Maintainer: The Vim Project <https://github.com/vim/vim>
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 if exists("current_compiler")
   finish

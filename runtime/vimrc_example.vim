@@ -1,8 +1,8 @@
 " An example for a vimrc file.
 "
-" Maintainer: The Vim Project <https://github.com/vim/vim>
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " To use it, copy it to
 "	       for Unix:  ~/.vimrc

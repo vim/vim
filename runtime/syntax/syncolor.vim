@@ -1,7 +1,7 @@
 " Vim syntax support file
-" Maintainer: The Vim Project <https://github.com/vim/vim>
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " This file sets up the default methods for highlighting.
 " It is loaded from "synload.vim" and from Vim for ":syntax reset".

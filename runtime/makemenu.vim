@@ -1,9 +1,9 @@
 vim9script
 
 # Script to define the syntax menu in synmenu.vim
-# Maintainer: The Vim Project <https://github.com/vim/vim>
-# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
 # Last Change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim

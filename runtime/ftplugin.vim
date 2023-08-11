@@ -2,9 +2,9 @@ vim9script noclear
 
 # Vim support file to switch on loading plugins for file types
 #
-# Maintainer: The Vim Project <https://github.com/vim/vim>
-# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
 # Last change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 if exists("g:did_load_ftplugin")
   finish

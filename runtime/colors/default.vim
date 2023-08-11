@@ -1,7 +1,7 @@
 " Vim color file
-" Maintainer: The Vim Project <https://github.com/vim/vim>
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
 " Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " This is the default color scheme.  It doesn't define the Normal
 " highlighting, it uses whatever the colors used to be.
