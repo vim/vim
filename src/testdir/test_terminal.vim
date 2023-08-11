@@ -309,6 +309,7 @@ func Test_terminal_rename_buffer()
   call assert_equal('bar', bufname())
   call assert_match('bar.*finished', execute('ls'))
   exe 'bwipe! ' .. buf
+  call delete('Xtext')
 endfunc
 
 func s:Nasty_exit_cb(job, st)
@@ -1045,6 +1046,8 @@ func Test_terminal_redir_file()
     call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
     bwipe
   endif
+
+  call delete('Xtext')
 endfunc
 
 func TerminalTmap(remap)

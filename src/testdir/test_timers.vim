@@ -7,6 +7,11 @@ source screendump.vim
 source shared.vim
 source term_util.vim
 
+func SetUp()
+  " The tests here use timers, thus are sensitive to timing.
+  let g:test_is_flaky = 1
+endfunc
+
 func MyHandler(timer)
   let g:val += 1
 endfunc
@@ -16,7 +21,6 @@ func MyHandlerWithLists(lists, timer)
 endfunc
 
 func Test_timer_oneshot()
-  let g:test_is_flaky = 1
   let g:val = 0
   let timer = timer_start(50, 'MyHandler')
   let slept = WaitFor('g:val == 1')
@@ -35,7 +39,6 @@ func Test_timer_oneshot()
 endfunc
 
 func Test_timer_repeat_three()
-  let g:test_is_flaky = 1
   let g:val = 0
   let timer = timer_start(50, 'MyHandler', {'repeat': 3})
   let slept = WaitFor('g:val == 3')
@@ -53,7 +56,6 @@ func Test_timer_repeat_three()
 endfunc
 
 func Test_timer_repeat_many()
-  let g:test_is_flaky = 1
   let g:val = 0
   let timer = timer_start(50, 'MyHandler', {'repeat': -1})
   sleep 200m
@@ -67,7 +69,6 @@ func Test_timer_repeat_many()
 endfunc
 
 func Test_timer_with_partial_callback()
-  let g:test_is_flaky = 1
   let g:val = 0
   let meow = {'one': 1}
   function meow.bite(...)
@@ -152,7 +153,6 @@ def Test_timer_stopall_with_popup()
 enddef
 
 func Test_timer_paused()
-  let g:test_is_flaky = 1
   let g:val = 0
 
   let id = timer_start(50, 'MyHandler')
@@ -212,7 +212,6 @@ func StopTimer2(timer)
 endfunc
 
 func Test_timer_stop_in_callback()
-  let g:test_is_flaky = 1
   call assert_equal(1, len(timer_info()))
   let g:timer1 = timer_start(10, 'StopTimer1')
   let slept = 0
@@ -236,7 +235,6 @@ func StopTimerAll(timer)
 endfunc
 
 func Test_timer_stop_all_in_callback()
-  let g:test_is_flaky = 1
   " One timer is for TestTimeout()
   call assert_equal(1, len(timer_info()))
   call timer_start(10, 'StopTimerAll')

@@ -1406,7 +1406,7 @@ win_split_ins(
 	win_equal(wp, TRUE,
 		(flags & WSP_VERT) ? (dir == 'v' ? 'b' : 'h')
 		: dir == 'h' ? 'b' : 'v');
-    else if (*p_spk != 'c' && !is_aucmd_win(wp))
+    else if (!is_aucmd_win(wp))
 	win_fix_scroll(FALSE);
 
     // Don't change the window height/width to 'winheight' / 'winwidth' if a
@@ -2012,7 +2012,7 @@ win_equal(
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
-    if (*p_spk != 'c' && !is_aucmd_win(next_curwin))
+    if (!is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
 }
 
@@ -2822,8 +2822,7 @@ win_close(win_T *win, int free_buf)
     else
     {
 	win_comp_pos();
-	if (*p_spk != 'c')
-	    win_fix_scroll(FALSE);
+	win_fix_scroll(FALSE);
     }
     if (close_curwin)
     {
@@ -5906,7 +5905,7 @@ shell_new_rows(void)
     compute_cmdrow();
     curtab->tp_ch_used = p_ch;
 
-    if (*p_spk != 'c' && !skip_win_fix_scroll)
+    if (!skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 
 #if 0
@@ -6111,8 +6110,7 @@ win_setheight_win(int height, win_T *win)
     msg_row = row;
     msg_col = 0;
 
-    if (*p_spk != 'c')
-	win_fix_scroll(TRUE);
+    win_fix_scroll(TRUE);
 
     redraw_all_later(UPD_NOT_VALID);
 }
@@ -6642,8 +6640,7 @@ win_drag_status_line(win_T *dragwin, int offset)
     p_ch = MAX(Rows - cmdline_row, 1);
     curtab->tp_ch_used = p_ch;
 
-    if (*p_spk != 'c')
-	win_fix_scroll(TRUE);
+    win_fix_scroll(TRUE);
 
     redraw_all_later(UPD_SOME_VALID);
     showmode();
@@ -6772,21 +6769,22 @@ set_fraction(win_T *wp)
 }
 
 /*
- * Handle scroll position for 'splitkeep'.  Replaces scroll_to_fraction()
- * call from win_new_height().  Instead we iterate over all windows in a
- * tabpage and calculate the new scroll position.
+ * Handle scroll position, depending on 'splitkeep'.  Replaces the
+ * scroll_to_fraction() call from win_new_height() if 'splitkeep' is "screen"
+ * or "topline".  Instead we iterate over all windows in a tabpage and
+ * calculate the new scroll position.
  * TODO: Ensure this also works with wrapped lines.
- * Requires topline to be able to be set to a bufferline with some
- * offset(row-wise scrolling/smoothscroll).
+ * Requires a not fully visible cursor line to be allowed at the bottom of
+ * a window("zb"), probably only when 'smoothscroll' is also set.
  */
     static void
 win_fix_scroll(int resize)
 {
-    int		diff;
-    win_T	*wp;
-    linenr_T	lnum;
+    if (*p_spk == 'c')
+	return;  // 'splitkeep' is "cursor"
 
     skip_update_topline = TRUE;
+    win_T	*wp;
     FOR_ALL_WINDOWS(wp)
     {
 	// Skip when window height has not changed.
@@ -6796,18 +6794,22 @@ win_fix_scroll(int resize)
 	    if (*p_spk == 's' && wp->w_winrow != wp->w_prev_winrow
 		      && wp->w_botline - 1 <= wp->w_buffer->b_ml.ml_line_count)
 	    {
-		lnum = wp->w_cursor.lnum;
-		diff = (wp->w_winrow - wp->w_prev_winrow)
-		     + (wp->w_height - wp->w_prev_height);
+		int diff = (wp->w_winrow - wp->w_prev_winrow)
+					  + (wp->w_height - wp->w_prev_height);
+		linenr_T lnum = wp->w_cursor.lnum;
 		wp->w_cursor.lnum = wp->w_botline - 1;
+
 		//  Add difference in height and row to botline.
 		if (diff > 0)
 		    cursor_down_inner(wp, diff);
 		else
 		    cursor_up_inner(wp, -diff);
-		// Bring the new cursor position to the bottom of the screen.
+
+		// Scroll to put the new cursor position at the bottom of the
+		// screen.
 		wp->w_fraction = FRACTION_MULT;
 		scroll_to_fraction(wp, wp->w_prev_height);
+
 		wp->w_cursor.lnum = lnum;
 	    }
 	    else if (wp == curwin)
@@ -6835,32 +6837,33 @@ win_fix_scroll(int resize)
     static void
 win_fix_cursor(int normal)
 {
-    long	so = get_scrolloff_value();
     win_T	*wp = curwin;
-    linenr_T	nlnum = 0;
-    linenr_T	lnum = wp->w_cursor.lnum;
-    linenr_T	bot;
-    linenr_T	top;
 
-    if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
-	return;
-    if (skip_win_fix_cursor)
+    if (skip_win_fix_cursor || wp->w_buffer->b_ml.ml_line_count < wp->w_height)
 	return;
 
     // Determine valid cursor range.
-    so = MIN(wp->w_height / 2, so);
+    long so = MIN(wp->w_height / 2, get_scrolloff_value());
+    linenr_T lnum = wp->w_cursor.lnum;
+
     wp->w_cursor.lnum = wp->w_topline;
-    top = cursor_down_inner(wp, so);
+    cursor_down_inner(wp, so);
+    linenr_T top = wp->w_cursor.lnum;
+
     wp->w_cursor.lnum = wp->w_botline - 1;
-    bot = cursor_up_inner(wp, so);
+    cursor_up_inner(wp, so);
+    linenr_T bot = wp->w_cursor.lnum;
+
     wp->w_cursor.lnum = lnum;
+
     // Check if cursor position is above or below valid cursor range.
+    linenr_T nlnum = 0;
     if (lnum > bot && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
 	nlnum = bot;
     else if (lnum < top && wp->w_topline != 1)
 	nlnum = (so == wp->w_height / 2) ? bot : top;
 
-    if (nlnum)  // Cursor is invalid for current scroll position.
+    if (nlnum != 0)  // Cursor is invalid for current scroll position.
     {
 	if (normal)  // Save to jumplist and set cursor to avoid scrolling.
 	{
@@ -7029,11 +7032,8 @@ scroll_to_fraction(win_T *wp, int prev_height)
     }
 
     if (wp == curwin)
-    {
-	if (get_scrolloff_value())
-	    update_topline();
 	curs_columns(FALSE);	// validate w_wrow
-    }
+
     if (prev_height > 0)
 	wp->w_prev_fraction_row = wp->w_wrow;
 
@@ -7052,13 +7052,10 @@ win_new_width(win_T *wp, int width)
     wp->w_lines_valid = 0;
     changed_line_abv_curs_win(wp);
     invalidate_botline_win(wp);
-    if (wp == curwin)
-    {
-	skip_update_topline = (*p_spk != 'c');
-	update_topline();
+
+    if (wp == curwin && *p_spk == 'c')
 	curs_columns(TRUE);	// validate w_wrow
-	skip_update_topline = FALSE;
-    }
+
     redraw_win_later(wp, UPD_NOT_VALID);
     wp->w_redr_status = TRUE;
 }

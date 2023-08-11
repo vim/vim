@@ -460,6 +460,7 @@ enddef
 def Test_byteidx()
   v9.CheckDefAndScriptFailure(['byteidx(1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['byteidx("a", "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
+  v9.CheckDefAndScriptFailure(['byteidx("a", 0, "")'], ['E1013: Argument 3: type mismatch, expected bool but got string', 'E1212: Bool required for argument 3'])
   byteidx('', 0)->assert_equal(0)
   byteidx('', 1)->assert_equal(-1)
 enddef
@@ -467,6 +468,7 @@ enddef
 def Test_byteidxcomp()
   v9.CheckDefAndScriptFailure(['byteidxcomp(1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['byteidxcomp("a", "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
+  v9.CheckDefAndScriptFailure(['byteidxcomp("a", 0, "")'], ['E1013: Argument 3: type mismatch, expected bool but got string', 'E1212: Bool required for argument 3'])
 enddef
 
 def Test_call_call()
@@ -702,7 +704,8 @@ def Test_charidx()
   v9.CheckDefAndScriptFailure(['charidx(0z10, 1)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['charidx("a", "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
   v9.CheckDefAndScriptFailure(['charidx("a", 1, "")'], ['E1013: Argument 3: type mismatch, expected bool but got string', 'E1212: Bool required for argument 3'])
-  charidx('', 0)->assert_equal(-1)
+  v9.CheckDefAndScriptFailure(['charidx("a", 1, 0, "")'], ['E1013: Argument 4: type mismatch, expected bool but got string', 'E1212: Bool required for argument 4'])
+  charidx('', 0)->assert_equal(0)
   charidx('', 1)->assert_equal(-1)
 enddef
 
@@ -2818,6 +2821,15 @@ def Test_matchfuzzy()
   v9.CheckDefAndScriptFailure(['matchfuzzy([], 1)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['matchfuzzy([], "a", [])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 3'])
   matchfuzzy(['abc', 'xyz'], '')->assert_equal([])
+  var lines =<< trim END
+    var items = [{name: 'xyz', id: 1}, {name: 'def', id: 2},
+                 {name: 'abc', id: 3}]
+    var l: list<dict<any>> = matchfuzzy(items, 'abc', {key: 'name'})
+    assert_equal([{name: 'abc', id: 3}], l)
+    var k: list<string> = matchfuzzy(['one', 'two', 'who'], 'o')
+    assert_equal(['one', 'two', 'who'], k)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_matchfuzzypos()
@@ -2825,6 +2837,15 @@ def Test_matchfuzzypos()
   v9.CheckDefAndScriptFailure(['matchfuzzypos([], 1)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['matchfuzzypos([], "a", [])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 3'])
   matchfuzzypos(['abc', 'xyz'], '')->assert_equal([[], [], []])
+  var lines =<< trim END
+    var items = [{name: 'xyz', id: 1}, {name: 'def', id: 2},
+                 {name: 'abc', id: 3}]
+    var l: list<dict<any>> = matchfuzzypos(items, 'abc', {key: 'name'})[0]
+    assert_equal([{name: 'abc', id: 3}], l)
+    var k: list<string> = matchfuzzypos(['one', 'two', 'who'], 'o')[0]
+    assert_equal(['one', 'two', 'who'], k)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_matchlist()
@@ -3941,7 +3962,7 @@ def Test_setwinvar()
   v9.CheckDefAndScriptFailure(['setwinvar("a", "b", 1)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['setwinvar(1, 2, "c")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   assert_fails('setwinvar(1, "", 10)', 'E461: Illegal variable name')
-  assert_fails('setwinvar(0, "&rulerformat", true)', 'E928:')
+  assert_fails('setwinvar(0, "&rulerformat", true)', ['E928:', 'E928:'])
 enddef
 
 def Test_sha256()
@@ -4303,6 +4324,14 @@ def Test_strtrans()
   v9.CheckDefAndScriptFailure(['strtrans(20)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   assert_equal('abc', strtrans('abc'))
   strtrans('')->assert_equal('')
+enddef
+
+def Test_strutf16len()
+  v9.CheckDefAndScriptFailure(['strutf16len([])'], ['E1013: Argument 1: type mismatch, expected string but got list<unknown>', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['strutf16len("a", "")'], ['E1013: Argument 2: type mismatch, expected bool but got string', 'E1212: Bool required for argument 2'])
+  ""->strutf16len()->assert_equal(0)
+  '-ą́-ą́'->strutf16len(true)->assert_equal(8)
+  '-ą́-ą́'->strutf16len(false)->assert_equal(4)
 enddef
 
 def Test_strwidth()
@@ -4725,6 +4754,15 @@ def Test_uniq()
   v9.CheckDefAndScriptFailure(['uniq([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
 
   v9.CheckDefFailure(['var l: list<number> = uniq(["a", "b"])'], 'E1012: Type mismatch; expected list<number> but got list<string>')
+enddef
+
+def Test_utf16idx()
+  v9.CheckDefAndScriptFailure(['utf16idx(0z10, 1)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['utf16idx("a", "b")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
+  v9.CheckDefAndScriptFailure(['utf16idx("a", 1, "")'], ['E1013: Argument 3: type mismatch, expected bool but got string', 'E1212: Bool required for argument 3'])
+  v9.CheckDefAndScriptFailure(['utf16idx("a", 1, 0, "")'], ['E1013: Argument 4: type mismatch, expected bool but got string', 'E1212: Bool required for argument 4'])
+  utf16idx('', 0)->assert_equal(0)
+  utf16idx('', 1)->assert_equal(-1)
 enddef
 
 def Test_uniq_const()

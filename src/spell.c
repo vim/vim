@@ -2890,7 +2890,6 @@ ex_spellrepall(exarg_T *eap UNUSED)
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*frompat;
-    int		addlen;
     char_u	*line;
     char_u	*p;
     int		save_ws = p_ws;
@@ -2901,9 +2900,11 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	emsg(_(e_no_previous_spell_replacement));
 	return;
     }
-    addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
+    size_t	repl_from_len = STRLEN(repl_from);
+    size_t	repl_to_len = STRLEN(repl_to);
+    int		addlen = (int)(repl_to_len - repl_from_len);
 
-    frompat = alloc(STRLEN(repl_from) + 7);
+    frompat = alloc(repl_from_len + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -2922,14 +2923,14 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	// when changing "etc" to "etc.".
 	line = ml_get_curline();
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
-					       repl_to, STRLEN(repl_to)) != 0)
+						   repl_to, repl_to_len) != 0)
 	{
 	    p = alloc(STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
 	    STRCPY(p + curwin->w_cursor.col, repl_to);
-	    STRCAT(p, line + curwin->w_cursor.col + STRLEN(repl_from));
+	    STRCAT(p, line + curwin->w_cursor.col + repl_from_len);
 	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
 	    changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
 #if defined(FEAT_PROP_POPUP)
@@ -2945,7 +2946,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	    }
 	    ++sub_nsubs;
 	}
-	curwin->w_cursor.col += (colnr_T)STRLEN(repl_to);
+	curwin->w_cursor.col += (colnr_T)repl_to_len;
     }
 
     p_ws = save_ws;

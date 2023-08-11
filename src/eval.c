@@ -570,8 +570,7 @@ skip_expr_concatenate(
 
 /*
  * Convert "tv" to a string.
- * When "convert" is TRUE convert a List into a sequence of lines and convert
- * a Float to a String.
+ * When "convert" is TRUE convert a List into a sequence of lines.
  * Returns an allocated string (NULL when out of memory).
  */
     char_u *
@@ -579,7 +578,6 @@ typval2string(typval_T *tv, int convert)
 {
     garray_T	ga;
     char_u	*retval;
-    char_u	numbuf[NUMBUFLEN];
 
     if (convert && tv->v_type == VAR_LIST)
     {
@@ -593,11 +591,6 @@ typval2string(typval_T *tv, int convert)
 	ga_append(&ga, NUL);
 	retval = (char_u *)ga.ga_data;
     }
-    else if (convert && tv->v_type == VAR_FLOAT)
-    {
-	vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
-	retval = vim_strsave(numbuf);
-    }
     else
 	retval = vim_strsave(tv_get_string(tv));
     return retval;
@@ -606,8 +599,7 @@ typval2string(typval_T *tv, int convert)
 /*
  * Top level evaluation function, returning a string.  Does not handle line
  * breaks.
- * When "convert" is TRUE convert a List into a sequence of lines and convert
- * a Float to a String.
+ * When "convert" is TRUE convert a List into a sequence of lines.
  * Return pointer to allocated memory, or NULL for failure.
  */
     char_u *
@@ -6322,6 +6314,10 @@ var2fpos(
 
     if (name[0] == 'w' && dollar_lnum)
     {
+	// the "w_valid" flags are not reset when moving the cursor, but they
+	// do matter for update_topline() and validate_botline().
+	check_cursor_moved(curwin);
+
 	pos.col = 0;
 	if (name[1] == '0')		// "w0": first visible line
 	{

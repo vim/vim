@@ -1641,6 +1641,14 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	attr &= ~MSG_HIST;
     }
 
+    // When drawing over the command line no need to clear it later or remove
+    // the mode message.
+    if (msg_row >= cmdline_row && msg_col == 0)
+    {
+	clear_cmdline = FALSE;
+	mode_displayed = FALSE;
+    }
+
     // If the string starts with a composing character first draw a space on
     // which the composing char can be drawn.
     if (enc_utf8 && utf_iscomposing(utf_ptr2char(msgstr)))

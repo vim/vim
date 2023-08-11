@@ -77,6 +77,12 @@ typedef struct {
 static int crypt_sodium_init_(cryptstate_T *state, char_u *key, crypt_arg_T *arg);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+# if defined(FEAT_SODIUM) || defined(PROTO)
+static void crypt_long_long_to_char(long long n, char_u *s);
+static void crypt_int_to_char(int n, char_u *s);
+static long long crypt_char_to_long_long(char_u *s);
+static int crypt_char_to_int(char_u *s);
+#endif
 #if defined(FEAT_EVAL) && defined(FEAT_SODIUM)
 static void crypt_sodium_report_hash_params(unsigned long long opslimit, unsigned long long ops_def, size_t memlimit, size_t mem_def, int alg, int alg_def);
 #endif
@@ -525,7 +531,8 @@ crypt_create_from_header(
     if (arg.cat_seed_len > 0)
 	arg.cat_seed = header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
     if (arg.cat_add_len > 0)
-	arg.cat_add = header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
+	arg.cat_add = header + CRYPT_MAGIC_LEN
+					 + arg.cat_salt_len + arg.cat_seed_len;
 
     return crypt_create(method_nr, key, &arg);
 }
@@ -603,7 +610,8 @@ crypt_create_for_writing(
 	if (arg.cat_seed_len > 0)
 	    arg.cat_seed = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len;
 	if (arg.cat_add_len > 0)
-	    arg.cat_add = *header + CRYPT_MAGIC_LEN + arg.cat_salt_len + arg.cat_seed_len;
+	    arg.cat_add = *header + CRYPT_MAGIC_LEN
+					 + arg.cat_salt_len + arg.cat_seed_len;
 
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
@@ -795,10 +803,14 @@ crypt_check_method(int method)
     }
 }
 
-#ifdef FEAT_SODIUM
-    static void
+/*
+ * If the crypt method for "curbuf" does not support encrypting the swap file
+ * then disable the swap file.
+ */
+    void
 crypt_check_swapfile_curbuf(void)
 {
+#ifdef FEAT_SODIUM
     int method = crypt_get_method_nr(curbuf);
     if (crypt_method_is_sodium(method))
     {
@@ -809,8 +821,8 @@ crypt_check_swapfile_curbuf(void)
 	msg_scroll = TRUE;
 	msg(_("Note: Encryption of swapfile not supported, disabling swap file"));
     }
-}
 #endif
+}
 
     void
 crypt_check_current_method(void)
@@ -863,9 +875,7 @@ crypt_get_key(
 		set_option_value_give_err((char_u *)"key", 0L, p1, OPT_LOCAL);
 		crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
-#ifdef FEAT_SODIUM
 		crypt_check_swapfile_curbuf();
-#endif
 	    }
 	    break;
 	}
@@ -959,37 +969,48 @@ crypt_sodium_init_(
 	    sodium_free(sd_state);
 	    return FAIL;
 	}
-	if (state->method_nr == CRYPT_M_SOD2)
+	// "cat_add" should not be NULL, check anyway for safety
+	if (state->method_nr == CRYPT_M_SOD2 && arg->cat_add != NULL)
 	{
-	    memcpy(arg->cat_add, &opslimit, sizeof(opslimit));
-	    arg->cat_add += sizeof(opslimit);
+	    char_u	buffer[20];
+	    char_u	*p = buffer;
+	    vim_memset(buffer, 0, 20);
 
-	    memcpy(arg->cat_add, &memlimit, sizeof(memlimit));
-	    arg->cat_add += sizeof(memlimit);
+	    crypt_long_long_to_char(opslimit, p);
+	    p += sizeof(opslimit);
 
-	    memcpy(arg->cat_add, &alg, sizeof(alg));
-	    arg->cat_add += sizeof(alg);
+	    crypt_long_long_to_char(memlimit, p);
+	    p += sizeof(memlimit);
+
+	    crypt_int_to_char(alg, p);
+	    memcpy(arg->cat_add, buffer, sizeof(opslimit) + sizeof(memlimit) + sizeof(alg));
 	}
     }
     else
     {
+	char_u	buffer[20];
+	char_u	*p = buffer;
+	vim_memset(buffer, 0, 20);
+	int	size = sizeof(opslimit) +
+	    sizeof(memlimit) + sizeof(alg);
+
 	// Reading parameters from file
-	if (arg->cat_add_len
-		    < (int)(sizeof(opslimit) + sizeof(memlimit) + sizeof(alg)))
+	if (arg->cat_add_len < size)
 	{
 	    sodium_free(sd_state);
 	    return FAIL;
 	}
 
 	// derive the key from the file header
-	memcpy(&opslimit, arg->cat_add, sizeof(opslimit));
-	arg->cat_add += sizeof(opslimit);
+	memcpy(p, arg->cat_add, size);
+	arg->cat_add += size;
 
-	memcpy(&memlimit, arg->cat_add, sizeof(memlimit));
-	arg->cat_add += sizeof(memlimit);
-
-	memcpy(&alg, arg->cat_add, sizeof(alg));
-	arg->cat_add += sizeof(alg);
+	opslimit = crypt_char_to_long_long(p);
+	p += sizeof(opslimit);
+	memlimit = crypt_char_to_long_long(p);
+	p += sizeof(memlimit);
+	alg = crypt_char_to_int(p);
+	p += sizeof(alg);
 
 #ifdef FEAT_EVAL
 	crypt_sodium_report_hash_params(opslimit,
@@ -1262,6 +1283,13 @@ crypt_sodium_buffer_decode(
 }
 
 # if defined(FEAT_SODIUM) || defined(PROTO)
+    void
+crypt_sodium_lock_key(char_u *key)
+{
+    if (sodium_init() >= 0)
+	sodium_mlock(key, STRLEN(key));
+}
+
     int
 crypt_sodium_munlock(void *const addr, const size_t len)
 {
@@ -1315,6 +1343,63 @@ crypt_sodium_report_hash_params(
     }
 }
 #endif
+
+    static void
+crypt_long_long_to_char(long long n, char_u *s)
+{
+    int i;
+    for (i = 0; i < 8; i++)
+    {
+	s[i] = (char_u)(n & 0xff);
+	n = (unsigned)n >> 8;
+    }
+}
+
+    static void
+crypt_int_to_char(int n, char_u *s)
+{
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+	s[i] = (char_u)(n & 0xff);
+	n = (unsigned)n >> 8;
+    }
+}
+
+    static long long
+crypt_char_to_long_long(char_u *s)
+{
+    unsigned long long    retval = 0;
+    int i;
+    for (i = 7; i >= 0; i--)
+    {
+	if (i == 7)
+	    retval = s[i];
+	else
+	    retval |= s[i];
+	if (i > 0)
+	    retval <<= 8;
+    }
+    return retval;
+}
+
+    static int
+crypt_char_to_int(char_u *s)
+{
+    int retval = 0;
+    int i;
+
+    for (i = 3; i >= 0; i--)
+    {
+	if (i == 3)
+	    retval = s[i];
+	else
+	    retval |= s[i];
+	if (i > 0)
+	    retval <<= 8;
+    }
+    return retval;
+}
 # endif
 
 #endif // FEAT_CRYPT

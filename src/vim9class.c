@@ -1025,7 +1025,9 @@ early_ret:
 	    if (*fup == NULL)
 		goto cleanup;
 
-	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
+	    if (gap->ga_len != 0)
+		mch_memmove(*fup, gap->ga_data,
+					      sizeof(ufunc_T *) * gap->ga_len);
 	    vim_free(gap->ga_data);
 	    if (loop == 1)
 		cl->class_class_function_count_child = gap->ga_len;
@@ -1495,6 +1497,9 @@ copy_object(typval_T *from, typval_T *to)
     static void
 object_clear(object_T *obj)
 {
+    // Avoid a recursive call, it can happen if "obj" has a circular reference.
+    obj->obj_refcount = INT_MAX;
+
     class_T *cl = obj->obj_class;
 
     // the member values are just after the object structure
@@ -1617,6 +1622,8 @@ object_created(object_T *obj)
     first_object = obj;
 }
 
+static object_T	*next_nonref_obj = NULL;
+
 /*
  * Call this function when an object has been cleared and is about to be freed.
  * It is removed from the list headed by "first_object".
@@ -1630,6 +1637,10 @@ object_cleared(object_T *obj)
 	obj->obj_prev_used->obj_next_used = obj->obj_next_used;
     else if (first_object == obj)
 	first_object = obj->obj_next_used;
+
+    // update the next object to check if needed
+    if (obj == next_nonref_obj)
+	next_nonref_obj = obj->obj_next_used;
 }
 
 /*
@@ -1639,11 +1650,10 @@ object_cleared(object_T *obj)
 object_free_nonref(int copyID)
 {
     int		did_free = FALSE;
-    object_T	*next_obj;
 
-    for (object_T *obj = first_object; obj != NULL; obj = next_obj)
+    for (object_T *obj = first_object; obj != NULL; obj = next_nonref_obj)
     {
-	next_obj = obj->obj_next_used;
+	next_nonref_obj = obj->obj_next_used;
 	if ((obj->obj_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
 	    // Free the object and items it contains.
@@ -1652,6 +1662,7 @@ object_free_nonref(int copyID)
 	}
     }
 
+    next_nonref_obj = NULL;
     return did_free;
 }
 

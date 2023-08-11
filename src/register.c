@@ -2098,6 +2098,7 @@ do_put(
 		    {
 			// make sure curwin->w_virtcol is updated
 			changed_cline_bef_curs();
+			invalidate_botline();
 			curwin->w_cursor.col += (colnr_T)(totlen - 1);
 		    }
 		    if (VIsual_active)

@@ -3967,8 +3967,8 @@ exec_instructions(ectx_T *ectx)
 		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    classmember_T *cm = &iptr->isn_arg.classmember;
-		    *STACK_TV_BOT(0) =
-				    cm->cm_class->class_members_tv[cm->cm_idx];
+		    copy_tv(cm->cm_class->class_members_tv + cm->cm_idx,
+							      STACK_TV_BOT(0));
 		    ++ectx->ec_stack.ga_len;
 		}
 		break;

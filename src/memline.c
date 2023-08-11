@@ -64,7 +64,7 @@ typedef struct pointer_entry	PTR_EN;	    // block/line-count pair
 #define BLOCK0_ID1_C0  'c'		    // block 0 id 1 'cm' 0
 #define BLOCK0_ID1_C1  'C'		    // block 0 id 1 'cm' 1
 #define BLOCK0_ID1_C2  'd'		    // block 0 id 1 'cm' 2
-// BLOCK0_ID1_C3 and BLOCK0_ID1_C4 are for libsodium enctyption.  However, for
+// BLOCK0_ID1_C3 and BLOCK0_ID1_C4 are for libsodium encryption.  However, for
 // these the swapfile is disabled, thus they will not be used.  Added for
 // consistency anyway.
 #define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3
@@ -332,7 +332,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 0)
     {
-	iemsg(_(e_didnt_get_block_nr_zero));
+	iemsg(e_didnt_get_block_nr_zero);
 	goto error;
     }
     b0p = (ZERO_BL *)(hp->bh_data);
@@ -382,7 +382,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 1)
     {
-	iemsg(_(e_didnt_get_block_nr_one));
+	iemsg(e_didnt_get_block_nr_one);
 	goto error;
     }
     pp = (PTR_BL *)(hp->bh_data);
@@ -400,7 +400,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 2)
     {
-	iemsg(_(e_didnt_get_block_nr_two));
+	iemsg(e_didnt_get_block_nr_two);
 	goto error;
     }
 
@@ -425,6 +425,24 @@ error:
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
+ * Swapfile encryption is not supported by XChaCha20.  If this crypt method is
+ * used then disable the swapfile, to avoid plain text being written to disk,
+ * and return TRUE.
+ * Otherwise return FALSE.
+ */
+    static int
+crypt_may_close_swapfile(buf_T *buf, char_u *key, int method)
+{
+    if (crypt_method_is_sodium(method) && *key != NUL)
+    {
+	mf_close_file(buf, TRUE);
+	buf->b_p_swf = FALSE;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Prepare encryption for "buf" for the current key and method.
  */
     static void
@@ -440,11 +458,10 @@ ml_set_mfp_crypt(buf_T *buf)
 	// Generate a seed and store it in the memfile.
 	sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
     }
-#ifdef FEAT_SODIUM
+# ifdef FEAT_SODIUM
     else if (crypt_method_is_sodium(method_nr))
-	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
-		MF_SEED_LEN);
-#endif
+	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN);
+# endif
 }
 
 /*
@@ -501,16 +518,10 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
-    // Swapfile encryption is not supported by XChaCha20, therefore disable the
-    // swapfile to avoid plain text being written to disk.
-    if (crypt_method_is_sodium(crypt_get_method_nr(buf))
-						       && *buf->b_p_key != NUL)
-    {
-	// close the swapfile
-	mf_close_file(buf, TRUE);
-	buf->b_p_swf = FALSE;
+#ifdef FEAT_CRYPT
+    if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
 	return;
-    }
+#endif
 
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
@@ -807,6 +818,8 @@ ml_open_file(buf_T *buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	// consumes fname!
 	{
+	    // don't sync yet in ml_sync_all()
+	    mfp->mf_dirty = MF_DIRTY_YES_NOSYNC;
 #if defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
@@ -939,7 +952,8 @@ ml_check_b0_id(ZERO_BL *b0p)
 		&& b0p->b0_id[1] != BLOCK0_ID1_C0
 		&& b0p->b0_id[1] != BLOCK0_ID1_C1
 		&& b0p->b0_id[1] != BLOCK0_ID1_C2
-		&& b0p->b0_id[1] != BLOCK0_ID1_C3)
+		&& b0p->b0_id[1] != BLOCK0_ID1_C3
+		&& b0p->b0_id[1] != BLOCK0_ID1_C4)
 	    )
 	return FAIL;
     return OK;
@@ -971,7 +985,7 @@ ml_upd_block0(buf_T *buf, upd_block0_T what)
 
     b0p = (ZERO_BL *)(hp->bh_data);
     if (ml_check_b0_id(b0p) == FAIL)
-	iemsg(_(e_ml_upd_block0_didnt_get_block_zero));
+	iemsg(e_ml_upd_block0_didnt_get_block_zero);
     else
     {
 	if (what == UB_FNAME)
@@ -2491,6 +2505,12 @@ ml_sync_all(int check_file, int check_char)
 		|| buf->b_ml.ml_mfp->mf_fd < 0)
 	    continue;			    // no file
 
+#ifdef FEAT_CRYPT
+	if (crypt_may_close_swapfile(buf, buf->b_p_key,
+						     crypt_get_method_nr(buf)))
+	    continue;
+#endif
+
 	ml_flush_line(buf);		    // flush buffered line
 					    // flush locked block
 	(void)ml_find_line(buf, (linenr_T)0, ML_FLUSH);
@@ -2513,7 +2533,7 @@ ml_sync_all(int check_file, int check_char)
 		need_check_timestamps = TRUE;	// give message later
 	    }
 	}
-	if (buf->b_ml.ml_mfp->mf_dirty)
+	if (buf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES)
 	{
 	    (void)mf_sync(buf->b_ml.ml_mfp, (check_char ? MFS_STOP : 0)
 					| (bufIsChanged(buf) ? MFS_FLUSH : 0));
@@ -2548,6 +2568,10 @@ ml_preserve(buf_T *buf, int message)
 	    emsg(_(e_cannot_preserve_there_is_no_swap_file));
 	return;
     }
+#ifdef FEAT_CRYPT
+    if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
+	return;
+#endif
 
     // We only want to stop when interrupted here, not when interrupted
     // before.
@@ -2675,7 +2699,7 @@ ml_get_buf(
 	    // Avoid giving this message for a recursive call, may happen when
 	    // the GUI redraws part of the text.
 	    ++recursive;
-	    siemsg(_(e_ml_get_invalid_lnum_nr), lnum);
+	    siemsg(e_ml_get_invalid_lnum_nr, lnum);
 	    --recursive;
 	}
 	ml_flush_line(buf);
@@ -2722,7 +2746,7 @@ errorret:
 		++recursive;
 		get_trans_bufname(buf);
 		shorten_dir(NameBuff);
-		siemsg(_(e_ml_get_cannot_find_line_nr_in_buffer_nr_str),
+		siemsg(e_ml_get_cannot_find_line_nr_in_buffer_nr_str,
 						  lnum, buf->b_fnum, NameBuff);
 		--recursive;
 	    }
@@ -3216,7 +3240,7 @@ ml_append_int(
 	    pp = (PTR_BL *)(hp->bh_data);   // must be pointer block
 	    if (pp->pb_id != PTR_ID)
 	    {
-		iemsg(_(e_pointer_block_id_wrong_three));
+		iemsg(e_pointer_block_id_wrong_three);
 		mf_put(mfp, hp, FALSE, FALSE);
 		goto theend;
 	    }
@@ -3357,7 +3381,7 @@ ml_append_int(
 	 */
 	if (stack_idx < 0)
 	{
-	    iemsg(_(e_updated_too_many_blocks));
+	    iemsg(e_updated_too_many_blocks);
 	    buf->b_ml.ml_stack_top = 0;	// invalidate stack
 	}
     }
@@ -3623,7 +3647,7 @@ adjust_text_props_for_delete(
     int		idx;
     int		line_start;
     long	line_size;
-    int		this_props_len;
+    int		this_props_len = 0;
     char_u	*text;
     size_t	textlen;
     int		found;
@@ -3817,7 +3841,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 	    pp = (PTR_BL *)(hp->bh_data);   // must be pointer block
 	    if (pp->pb_id != PTR_ID)
 	    {
-		iemsg(_(e_pointer_block_id_wrong_four));
+		iemsg(e_pointer_block_id_wrong_four);
 		mf_put(mfp, hp, FALSE, FALSE);
 		goto theend;
 	    }
@@ -4082,7 +4106,7 @@ ml_flush_line(buf_T *buf)
 
 	hp = ml_find_line(buf, lnum, ML_FIND);
 	if (hp == NULL)
-	    siemsg(_(e_cannot_find_line_nr), lnum);
+	    siemsg(e_cannot_find_line_nr, lnum);
 	else
 	{
 	    dp = (DATA_BL *)(hp->bh_data);
@@ -4342,7 +4366,7 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	pp = (PTR_BL *)(dp);		// must be pointer block
 	if (pp->pb_id != PTR_ID)
 	{
-	    iemsg(_(e_pointer_block_id_wrong));
+	    iemsg(e_pointer_block_id_wrong);
 	    goto error_block;
 	}
 
@@ -4387,11 +4411,11 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	if (idx >= (int)pp->pb_count)	    // past the end: something wrong!
 	{
 	    if (lnum > buf->b_ml.ml_line_count)
-		siemsg(_(e_line_number_out_of_range_nr_past_the_end),
+		siemsg(e_line_number_out_of_range_nr_past_the_end,
 					      lnum - buf->b_ml.ml_line_count);
 
 	    else
-		siemsg(_(e_line_count_wrong_in_block_nr), bnum);
+		siemsg(e_line_count_wrong_in_block_nr, bnum);
 	    goto error_block;
 	}
 	if (action == ML_DELETE)
@@ -4484,7 +4508,7 @@ ml_lineadd(buf_T *buf, int count)
 	if (pp->pb_id != PTR_ID)
 	{
 	    mf_put(mfp, hp, FALSE, FALSE);
-	    iemsg(_(e_pointer_block_id_wrong_two));
+	    iemsg(e_pointer_block_id_wrong_two);
 	    break;
 	}
 	pp->pb_pointer[ip->ip_index].pe_line_count += count;
@@ -5566,6 +5590,9 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
     }
 
     if (*key == NUL)
+	return NULL;
+
+    if (crypt_may_close_swapfile(buf, key, method_nr))
 	return NULL;
 
     if (method_nr == CRYPT_M_ZIP)

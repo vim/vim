@@ -5119,7 +5119,7 @@ check_char_class(int class, int c)
 
 	default:
 	    // should not be here :P
-	    siemsg(_(e_nfa_regexp_invalid_character_class_nr), class);
+	    siemsg(e_nfa_regexp_invalid_character_class_nr, class);
 	    return FAIL;
     }
     return FAIL;
@@ -7341,7 +7341,7 @@ nfa_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	iemsg(_(e_null_argument));
+	iemsg(e_null_argument);
 	goto theend;
     }
 

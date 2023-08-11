@@ -379,7 +379,7 @@ set_string_option_direct(
 	if (idx < 0)	// not found (should not happen)
 	{
 	    semsg(_(e_internal_error_str), "set_string_option_direct()");
-	    siemsg(_("For option %s"), name);
+	    siemsg("For option %s", name);
 	    return;
 	}
     }
@@ -1174,6 +1174,10 @@ did_set_cryptkey(optset_T *args)
 		*curbuf->b_p_cm == NUL ? p_cm : curbuf->b_p_cm);
 	changed_internal();
     }
+# ifdef FEAT_SODIUM
+    if (crypt_method_is_sodium(crypt_get_method_nr(curbuf)))
+       crypt_sodium_lock_key(args->os_newval.string);
+# endif
 
     return NULL;
 }

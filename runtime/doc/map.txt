@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 May 12
+*map.txt*       For Vim version 9.0.  Last change: 2023 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -400,7 +400,7 @@ Note:
 - The command is not echo'ed, no need for <silent>.
 - The {rhs} is not subject to abbreviations nor to other mappings, even if the
   mapping is recursive.
-- In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
+- In Visual mode you can use `line('v')` and `col('v')` to get one end of the
   Visual area, the cursor is at the other end.
 
 							*E1255* *E1136*
