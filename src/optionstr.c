@@ -2102,7 +2102,7 @@ did_set_pastetoggle(optset_T *args UNUSED)
     // translate key codes like in a mapping
     if (*p_pt)
     {
-	(void)replace_termcodes(p_pt, &p,
+	(void)replace_termcodes(p_pt, &p, 0,
 		REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
 	if (p != NULL)
 	{

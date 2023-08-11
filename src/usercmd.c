@@ -990,7 +990,7 @@ uc_add_command(
     char_u	*rep_buf = NULL;
     garray_T	*gap;
 
-    replace_termcodes(rep, &rep_buf, 0, NULL);
+    replace_termcodes(rep, &rep_buf, 0, 0, NULL);
     if (rep_buf == NULL)
     {
 	// can't replace termcodes - try using the string as is

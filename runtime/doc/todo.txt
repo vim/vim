@@ -5535,7 +5535,6 @@ Undo:
 -   Undo history wrong when ":next file" re-uses a buffer. (#5426) ex_next()
     should pass flag to do_argfile(), then to do_ecmd().  Is there a test for
     this?
--   Add buffer argument to undotree(). (#4001)
 -   Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 -   Undo message is not always properly displayed.  Patch by Ken Takata, 2013
     oct 3.  Doesn't work properly according to Yukihiro Nakadaira.
