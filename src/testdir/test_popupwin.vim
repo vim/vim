@@ -4179,5 +4179,22 @@ func Test_term_popup_bufline()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popupwin_with_error()
+  CheckScreendump
+
+  let lines =<< trim END
+  let options = {'border': 'ERROR', 'line': 1, 'col': 1, 'minwidth': &columns, 'title': 'TITLE'}
+
+  END
+  "call popup_create('Hello world!', options)
+  call writefile(lines, 'XtestPopupError', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupError', {})
+  call term_sendkeys(buf, ":call popup_create('Hello world!', options)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_with_error_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2
