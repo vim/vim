@@ -3951,5 +3951,24 @@ func Test_error_after_using_negative_id()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_overlong_textprop_above_crash()
+  CheckRunVimInTerminal
 
+  let lines =<< trim END
+  vim9script
+  prop_type_add('PropType', {highlight: 'Error'})
+  setline(1, ['xxx ', 'yyy'])
+  prop_add(1, 0, {
+      type: 'PropType',
+      text: 'the quick brown fox jumps over the lazy dog. the quick brown fox jumps over the lazy dog. the quick brown fox jumps over the lazy dog.',
+      text_align: 'above',
+      text_wrap: 'wrap',
+  })
+  END
+  call writefile(lines, 'XtextPropLongAbove', 'D')
+  let buf = RunVimInTerminal('-S XtextPropLongAbove', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_long_above_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab
