@@ -1037,6 +1037,8 @@ EXTERN char e_missing_argument_str[]
 	INIT(= N_("E417: Missing argument: %s"));
 EXTERN char e_illegal_value_str[]
 	INIT(= N_("E418: Illegal value: %s"));
+EXTERN char e_im_a_teapot[]
+	INIT(= N_("E418: I'm a teapot"));
 EXTERN char e_fg_color_unknown[]
 	INIT(= N_("E419: FG color unknown"));
 EXTERN char e_bg_color_unknown[]
@@ -1270,6 +1272,8 @@ EXTERN char e_is_not_file_or_writable_device[]
 	INIT(= N_("is not a file or writable device"));
 EXTERN char e_str_is_not_file_or_writable_device[]
 	INIT(= N_("E503: \"%s\" is not a file or writable device"));
+EXTERN char e_coffee_currently_not_available[]
+	INIT(= N_("E503: Coffee is currently not available"));
 	// E504
 EXTERN char e_is_read_only_cannot_override_W_in_cpoptions[]
 	INIT(= N_("is read-only (cannot override: \"W\" in 'cpoptions')"));

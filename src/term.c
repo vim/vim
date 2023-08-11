@@ -2221,7 +2221,9 @@ set_termname(char_u *term)
     // We hard-code the received escape sequences here.  There are the terminfo
     // entries kxIN and kxOUT, but they are rarely used and do hot have a
     // two-letter termcap name.
-    if (use_xterm_like_mouse(term))
+    // This used to be done only for xterm-like terminals, but some others also
+    // may produce these codes.  Always recognize them, as the chance of them
+    // being used for something else is very small.
     {
 	char_u name[3];
 
@@ -6447,7 +6449,7 @@ check_termcode(
 # endif // !USE_ON_FLY_SCROLL
 #endif // FEAT_GUI
 
-#if (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 	/*
 	 * Handle FocusIn/FocusOut event sequences reported by XTerm.
 	 * (CSI I/CSI O)

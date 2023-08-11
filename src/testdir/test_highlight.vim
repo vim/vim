@@ -753,6 +753,26 @@ func Test_colorcolumn_sbr()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_visual_sbr()
+  CheckScreendump
+
+  " check Visual highlight when 'showbreak' is set
+  let lines =<< trim END
+      set showbreak=>
+      call setline(1, 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.')
+      exe "normal! z1\<CR>"
+  END
+  call writefile(lines, 'Xtest_visual_sbr', 'D')
+  let buf = RunVimInTerminal('-S Xtest_visual_sbr', {'rows': 6,'columns': 60})
+
+  call term_sendkeys(buf, "v$")
+  call VerifyScreenDump(buf, 'Test_visual_sbr_1', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()

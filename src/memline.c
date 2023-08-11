@@ -425,6 +425,24 @@ error:
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
+ * Swapfile encryption is not supported by XChaCha20.  If this crypt method is
+ * used then disable the swapfile, to avoid plain text being written to disk,
+ * and return TRUE.
+ * Otherwise return FALSE.
+ */
+    static int
+crypt_may_close_swapfile(buf_T *buf, char_u *key, int method)
+{
+    if (crypt_method_is_sodium(method) && *key != NUL)
+    {
+	mf_close_file(buf, TRUE);
+	buf->b_p_swf = FALSE;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Prepare encryption for "buf" for the current key and method.
  */
     static void
@@ -440,11 +458,10 @@ ml_set_mfp_crypt(buf_T *buf)
 	// Generate a seed and store it in the memfile.
 	sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
     }
-#ifdef FEAT_SODIUM
+# ifdef FEAT_SODIUM
     else if (crypt_method_is_sodium(method_nr))
-	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
-		MF_SEED_LEN);
-#endif
+	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN);
+# endif
 }
 
 /*
@@ -501,16 +518,10 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
-    // Swapfile encryption is not supported by XChaCha20, therefore disable the
-    // swapfile to avoid plain text being written to disk.
-    if (crypt_method_is_sodium(crypt_get_method_nr(buf))
-						       && *buf->b_p_key != NUL)
-    {
-	// close the swapfile
-	mf_close_file(buf, TRUE);
-	buf->b_p_swf = FALSE;
+#ifdef FEAT_CRYPT
+    if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
 	return;
-    }
+#endif
 
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
@@ -2494,6 +2505,12 @@ ml_sync_all(int check_file, int check_char)
 		|| buf->b_ml.ml_mfp->mf_fd < 0)
 	    continue;			    // no file
 
+#ifdef FEAT_CRYPT
+	if (crypt_may_close_swapfile(buf, buf->b_p_key,
+						     crypt_get_method_nr(buf)))
+	    continue;
+#endif
+
 	ml_flush_line(buf);		    // flush buffered line
 					    // flush locked block
 	(void)ml_find_line(buf, (linenr_T)0, ML_FLUSH);
@@ -2551,6 +2568,10 @@ ml_preserve(buf_T *buf, int message)
 	    emsg(_(e_cannot_preserve_there_is_no_swap_file));
 	return;
     }
+#ifdef FEAT_CRYPT
+    if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
+	return;
+#endif
 
     // We only want to stop when interrupted here, not when interrupted
     // before.
@@ -3626,7 +3647,7 @@ adjust_text_props_for_delete(
     int		idx;
     int		line_start;
     long	line_size;
-    int		this_props_len;
+    int		this_props_len = 0;
     char_u	*text;
     size_t	textlen;
     int		found;
@@ -5569,6 +5590,9 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
     }
 
     if (*key == NUL)
+	return NULL;
+
+    if (crypt_may_close_swapfile(buf, key, method_nr))
 	return NULL;
 
     if (method_nr == CRYPT_M_ZIP)

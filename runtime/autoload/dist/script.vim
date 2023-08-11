@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2023 May 06
+# Last Change:	2023 Jun 09
 
 export def DetectFiletype()
   var line1 = getline(1)
@@ -44,7 +44,7 @@ def DetectFromHashBang(firstline: string)
   elseif line1 =~ '^#!\s*[^/\\ ]*\>\([^/\\]\|$\)'
     name = substitute(line1, '^#!\s*\([^/\\ ]*\>\).*', '\1', '')
   else
-    name = substitute(line1, '^#!\s*\S*[/\\]\(\i\+\).*', '\1', '')
+    name = substitute(line1, '^#!\s*\S*[/\\]\(\f\+\).*', '\1', '')
   endif
 
   # tcl scripts may have #!/bin/sh in the first line and "exec wish" in the
@@ -53,151 +53,164 @@ def DetectFromHashBang(firstline: string)
     name = 'wish'
   endif
 
+  var ft = Exe2filetype(name, line1)
+  if ft != ''
+    exe 'setl ft=' .. ft
+  endif
+enddef
+
+# Returns the filetype name associated with program "name".
+# "line1" is the #! line at the top of the file.  Use the same as "name" if
+# not available.
+# Returns an empty string when not recognized.
+export def Exe2filetype(name: string, line1: string): string
     # Bourne-like shell scripts: bash bash2 dash ksh ksh93 sh
   if name =~ '^\(bash\d*\|dash\|ksh\d*\|sh\)\>'
-    call dist#ft#SetFileTypeSH(line1)
+    return dist#ft#SetFileTypeSH(line1, false)
 
     # csh scripts
   elseif name =~ '^csh\>'
-    if exists("g:filetype_csh")
-      call dist#ft#SetFileTypeShell(g:filetype_csh)
-    else
-      call dist#ft#SetFileTypeShell("csh")
-    endif
+    return dist#ft#SetFileTypeShell(exists("g:filetype_csh") ? g:filetype_csh : 'csh', false)
 
     # tcsh scripts
   elseif name =~ '^tcsh\>'
-    call dist#ft#SetFileTypeShell("tcsh")
+    return dist#ft#SetFileTypeShell("tcsh", false)
 
     # Z shell scripts
   elseif name =~ '^zsh\>'
-    setl ft=zsh
+    return 'zsh'
 
     # TCL scripts
   elseif name =~ '^\(tclsh\|wish\|expectk\|itclsh\|itkwish\)\>'
-    setl ft=tcl
+    return 'tcl'
 
     # Expect scripts
   elseif name =~ '^expect\>'
-    setl ft=expect
+    return 'expect'
 
     # Gnuplot scripts
   elseif name =~ '^gnuplot\>'
-    setl ft=gnuplot
+    return 'gnuplot'
 
     # Makefiles
   elseif name =~ 'make\>'
-    setl ft=make
+    return 'make'
 
     # Pike
   elseif name =~ '^pike\%(\>\|[0-9]\)'
-    setl ft=pike
+    return 'pike'
 
     # Lua
   elseif name =~ 'lua'
-    setl ft=lua
+    return 'lua'
 
     # Perl
   elseif name =~ 'perl'
-    setl ft=perl
+    return 'perl'
 
     # PHP
   elseif name =~ 'php'
-    setl ft=php
+    return 'php'
 
     # Python
   elseif name =~ 'python'
-    setl ft=python
+    return 'python'
 
     # Groovy
   elseif name =~ '^groovy\>'
-    setl ft=groovy
+    return 'groovy'
 
     # Raku
   elseif name =~ 'raku'
-    setl ft=raku
+    return 'raku'
 
     # Ruby
   elseif name =~ 'ruby'
-    setl ft=ruby
+    return 'ruby'
 
     # JavaScript
   elseif name =~ 'node\(js\)\=\>\|js\>' || name =~ 'rhino\>'
-    setl ft=javascript
+    return 'javascript'
 
     # BC calculator
   elseif name =~ '^bc\>'
-    setl ft=bc
+    return 'bc'
 
     # sed
   elseif name =~ 'sed\>'
-    setl ft=sed
+    return 'sed'
 
     # OCaml-scripts
   elseif name =~ 'ocaml'
-    setl ft=ocaml
+    return 'ocaml'
 
     # Awk scripts; also finds "gawk"
   elseif name =~ 'awk\>'
-    setl ft=awk
+    return 'awk'
 
     # Website MetaLanguage
   elseif name =~ 'wml'
-    setl ft=wml
+    return 'wml'
 
     # Scheme scripts
   elseif name =~ 'scheme'
-    setl ft=scheme
+    return 'scheme'
 
     # CFEngine scripts
   elseif name =~ 'cfengine'
-    setl ft=cfengine
+    return 'cfengine'
 
     # Erlang scripts
   elseif name =~ 'escript'
-    setl ft=erlang
+    return 'erlang'
 
     # Haskell
   elseif name =~ 'haskell'
-    setl ft=haskell
+    return 'haskell'
 
     # Scala
   elseif name =~ 'scala\>'
-    setl ft=scala
+    return 'scala'
 
     # Clojure
   elseif name =~ 'clojure'
-    setl ft=clojure
+    return 'clojure'
 
     # Free Pascal
   elseif name =~ 'instantfpc\>'
-    setl ft=pascal
+    return 'pascal'
 
     # Fennel
   elseif name =~ 'fennel\>'
-    setl ft=fennel
+    return 'fennel'
 
     # MikroTik RouterOS script
   elseif name =~ 'rsc\>'
-    setl ft=routeros
+    return 'routeros'
 
     # Fish shell
   elseif name =~ 'fish\>'
-    setl ft=fish
+    return 'fish'
 
     # Gforth
   elseif name =~ 'gforth\>'
-    setl ft=forth
+    return 'forth'
 
     # Icon
   elseif name =~ 'icon\>'
-    setl ft=icon
+    return 'icon'
 
     # Guile
   elseif name =~ 'guile'
-    setl ft=scheme
+    return 'scheme'
+
+    # Nix
+  elseif name =~ 'nix-shell'
+    return 'nix'
 
   endif
+
+  return ''
 enddef
 
 

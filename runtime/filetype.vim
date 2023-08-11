@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 May 10
+" Last Change:	2023 Jun 09
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -21,7 +21,7 @@ au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.dpkg-dist,?\+.dpkg-ol
 	\ exe "doau filetypedetect BufRead " . fnameescape(expand("<afile>:r"))
 au BufNewFile,BufRead *~
 	\ let s:name = expand("<afile>") |
-	\ let s:short = substitute(s:name, '\~$', '', '') |
+	\ let s:short = substitute(s:name, '\~\+$', '', '') |
 	\ if s:name != s:short && s:short != "" |
 	\   exe "doau filetypedetect BufRead " . fnameescape(s:short) |
 	\ endif |
@@ -254,6 +254,9 @@ au BufNewFile,BufRead named*.conf,rndc*.conf,rndc*.key	setf named
 au BufNewFile,BufRead named.root		setf bindzone
 au BufNewFile,BufRead *.db			call dist#ft#BindzoneCheck('')
 
+" Blade
+au BufNewFile,BufRead *.blade.php		setf blade
+
 " Blank
 au BufNewFile,BufRead *.bl			setf blank
 
@@ -266,11 +269,11 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 " BSDL
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
-" Bazel (http://bazel.io)
+" Bazel (https://bazel.build) and Buck2 (https://buck2.build/)
 autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
-  " There is another check for BUILD further below.
-  autocmd BufRead,BufNewFile *.BUILD,BUILD		setf bzl
+  " There is another check for BUILD and BUCK further below.
+  autocmd BufRead,BufNewFile *.BUILD,BUILD,BUCK		setf bzl
 endif
 
 " Busted (Lua unit testing framework - configuration files)
@@ -784,7 +787,7 @@ au BufNewFile,BufRead */.config/git/config			setf gitconfig
 au BufNewFile,BufRead *.git/config.worktree			setf gitconfig
 au BufNewFile,BufRead *.git/worktrees/*/config.worktree		setf gitconfig
 au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
-if !empty($XDG_CONFIG_HOME)
+if exists('$XDG_CONFIG_HOME')
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config		setf gitconfig
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/attributes		setf gitattributes
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/ignore		setf gitignore
@@ -886,7 +889,12 @@ au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
 au BufNewFile,BufRead cabal.project		setf cabalproject
 au BufNewFile,BufRead $HOME/.cabal/config	setf cabalconfig
+if exists('$XDG_CONFIG_HOME')
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/cabal/config setf cabalconfig
+endif
+au BufNewFile,BufRead $HOME/.config/cabal/config setf cabalconfig
 au BufNewFile,BufRead cabal.config		setf cabalconfig
+au BufNewFile,BufRead *.persistentmodels	setf haskellpersistent
 
 " Haste
 au BufNewFile,BufRead *.ht			setf haste
@@ -940,6 +948,9 @@ au BufNewFile,BufRead */etc/host.conf		setf hostconf
 
 " Hosts access
 au BufNewFile,BufRead */etc/hosts.allow,*/etc/hosts.deny  setf hostsaccess
+
+" Hurl
+au BufRead,BufNewFile *.hurl			setf hurl
 
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
@@ -1052,6 +1063,9 @@ au BufNewFile,BufRead *.json5			setf json5
 
 " JSON Patch (RFC 6902)
 au BufNewFile,BufRead *.json-patch		setf json
+
+" Geojson is also json
+au BufNewFile,BufRead *.geojson			setf json
 
 " Jupyter Notebook is also json
 au BufNewFile,BufRead *.ipynb			setf json
@@ -1507,6 +1521,9 @@ au BufNewFile,BufRead *.pdf				setf pdf
 " PCMK - HAE - crm configure edit
 au BufNewFile,BufRead *.pcmk				setf pcmk
 
+" PEM (Privacy-Enhanced Mail)
+au BufNewFile,BufRead *.pem,*.cer,*.crt,*.csr		setf pem
+
 " Perl
 if has("fname_case")
   au BufNewFile,BufRead *.pl,*.PL			call dist#ft#FTpl()
@@ -1550,6 +1567,10 @@ au BufNewFile,BufRead *.rcp			setf pilrc
 
 " Pine config
 au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
+
+" Pip requirements
+au BufNewFile,BufRead *.pip			setf requirements
+au BufNewFile,BufRead requirements.txt		setf requirements
 
 " Pipenv Pipfiles
 au BufNewFile,BufRead Pipfile			setf toml
@@ -1668,6 +1689,9 @@ au BufNewFile,BufRead *.pk			setf poke
 
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols
+
+" PyPA manifest files
+au BufNewFile,BufRead MANIFEST.in		setf pymanifest
 
 " Pyret
 au BufNewFile,BufRead *.arr			setf pyret
@@ -1957,6 +1981,9 @@ au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias 
 au BufNewFile,BufRead *.zig			setf zig
 au BufNewFile,BufRead *.zir			setf zir
 
+" Zserio
+au BufNewFile,BufRead *.zs			setf zserio
+
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
 au BufNewFile,BufRead .zshrc,.zshenv,.zlogin,.zlogout,.zcompdump setf zsh
@@ -2234,6 +2261,9 @@ au BufNewFile,BufRead *.toml			setf toml
 " TPP - Text Presentation Program
 au BufNewFile,BufRead *.tpp			setf tpp
 
+" TRACE32 Script Language
+au BufNewFile,BufRead *.cmm,*.t32		setf trace32
+
 " Treetop
 au BufRead,BufNewFile *.treetop			setf treetop
 
@@ -2297,6 +2327,12 @@ au BufNewFile,BufRead */etc/init/*.conf,*/etc/init/*.override  setf upstart
 au BufNewFile,BufRead */.init/*.conf,*/.init/*.override	       setf upstart
 au BufNewFile,BufRead */.config/upstart/*.conf		       setf upstart
 au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
+
+" URL shortcut
+au BufNewFile,BufRead *.url			setf urlshortcut
+
+" V
+au BufNewFile,BufRead *.vsh,*.vv			setf v
 
 " Vala
 au BufNewFile,BufRead *.vala			setf vala
@@ -2379,6 +2415,9 @@ au BufNewFile,BufRead .wgetrc,wgetrc		setf wget
 
 " Wget2 config
 au BufNewFile,BufRead .wget2rc,wget2rc		setf wget2
+
+" WebGPU Shading Language (WGSL)
+au BufNewFile,BufRead *.wgsl			setf wgsl
 
 " Website MetaLanguage
 au BufNewFile,BufRead *.wml			setf wml
@@ -2468,6 +2507,9 @@ au BufNewFile,BufRead *.fsproj,*.fsproj.user	setf xml
 " VBPROJ files are Visual Studio.NET's XML-based Visual Basic project config files
 au BufNewFile,BufRead *.vbproj,*.vbproj.user	setf xml
 
+" Unison Language
+au BufNewFile,BufRead *.u,*.uu				setf unison
+
 " Qt Linguist translation source and Qt User Interface Files are XML
 " However, for .ts TypeScript is more common.
 au BufNewFile,BufRead *.ui			setf xml
@@ -2513,7 +2555,7 @@ au BufNewFile,BufRead *.yy,*.yxx,*.y++		setf yacc
 au BufNewFile,BufRead *.y			call dist#ft#FTy()
 
 " Yaml
-au BufNewFile,BufRead *.yaml,*.yml		setf yaml
+au BufNewFile,BufRead *.yaml,*.yml,*.eyaml		setf yaml
 
 " Raml
 au BufNewFile,BufRead *.raml			setf raml
@@ -2592,9 +2634,9 @@ au BufNewFile,BufRead *asterisk*/*voicemail.conf* call s:StarSetf('asteriskvm')
 " Bazaar version control
 au BufNewFile,BufRead bzr_log.*			setf bzr
 
-" Bazel build file
+" Bazel and Buck2 build file
 if !has("fname_case")
-  au BufNewFile,BufRead *.BUILD,BUILD		setf bzl
+  au BufNewFile,BufRead *.BUILD,BUILD,BUCK	setf bzl
 endif
 
 " BIND zone
@@ -2811,8 +2853,10 @@ augroup END
 " Generic configuration file. Use FALLBACK, it's just guessing!
 au filetypedetect BufNewFile,BufRead,StdinReadPost *
 	\ if !did_filetype() && expand("<amatch>") !~ g:ft_ignore_pat
-	\    && (getline(1) =~ '^#' || getline(2) =~ '^#' || getline(3) =~ '^#'
-	\	|| getline(4) =~ '^#' || getline(5) =~ '^#') |
+	\    && (expand("<amatch>") =~# '\.conf$'
+	\	|| getline(1) =~ '^#' || getline(2) =~ '^#'
+	\	|| getline(3) =~ '^#' || getline(4) =~ '^#'
+	\	|| getline(5) =~ '^#') |
 	\   setf FALLBACK conf |
 	\ endif
 

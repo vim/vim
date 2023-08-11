@@ -46,6 +46,7 @@ static void f_did_filetype(typval_T *argvars, typval_T *rettv);
 static void f_echoraw(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_environ(typval_T *argvars, typval_T *rettv);
+static void f_err_teapot(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
 static void f_eval(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
@@ -1100,6 +1101,7 @@ static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_num
 static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
 static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
+static argcheck_T arg4_string_number_bool_bool[] = {arg_string, arg_number, arg_bool, arg_bool};
 /* Function specific argument types (not covered by the above) */
 static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
 static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
@@ -1817,7 +1819,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_charclass},
     {"charcol",		1, 2, FEARG_1,	    arg2_string_or_list_number,
 			ret_number,	    f_charcol},
-    {"charidx",		2, 4, FEARG_1,	    arg3_string_number_bool,
+    {"charidx",		2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_charidx},
     {"chdir",		1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_chdir},
@@ -1883,6 +1885,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_empty},
     {"environ",		0, 0, 0,	    NULL,
 			ret_dict_string,    f_environ},
+    {"err_teapot",	0, 1, 0,	    NULL,
+			ret_number_bool,    f_err_teapot},
     {"escape",		2, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_escape},
     {"eval",		1, 1, FEARG_1,	    arg1_string,
@@ -2231,7 +2235,7 @@ static funcentry_T global_functions[] =
     {"matchend",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_number,	    f_matchend},
     {"matchfuzzy",	2, 3, FEARG_1,	    arg3_list_string_dict,
-			ret_list_string,    f_matchfuzzy},
+			ret_list_any,	    f_matchfuzzy},
     {"matchfuzzypos",	2, 3, FEARG_1,	    arg3_list_string_dict,
 			ret_list_any,	    f_matchfuzzypos},
     {"matchlist",	2, 4, FEARG_1,	    arg24_match_func,
@@ -2806,7 +2810,7 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_undotree},
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
-    {"utf16idx",	2, 4, FEARG_1,	    arg3_string_number_bool,
+    {"utf16idx",	2, 4, FEARG_1,	    arg4_string_number_bool_bool,
 			ret_number,	    f_utf16idx},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_member,    f_values},
@@ -3675,7 +3679,7 @@ f_copy(typval_T *argvars, typval_T *rettv)
 
 /*
  * Set the cursor position.
- * If 'charcol' is TRUE, then use the column number as a character offset.
+ * If "charcol" is TRUE, then use the column number as a character offset.
  * Otherwise use the column number as a byte offset.
  */
     static void
@@ -3964,6 +3968,33 @@ f_environ(typval_T *argvars UNUSED, typval_T *rettv)
 	vim_free(entry);
     }
 #endif
+}
+
+/*
+ * "err_teapot()" function
+ */
+    static void
+f_err_teapot(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[0].v_type == VAR_STRING)
+	{
+	    char_u *s = tv_get_string_strict(&argvars[0]);
+	    if (s == NULL || *skipwhite(s) == NUL)
+		return;
+	}
+
+	int err = FALSE;
+	int do_503 = eval_expr_to_bool(&argvars[0], &err);
+	if (!err && do_503)
+	{
+	    emsg(_(e_coffee_currently_not_available));
+	    return;
+	}
+    }
+
+    emsg(_(e_im_a_teapot));
 }
 
 /*
@@ -6546,6 +6577,14 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"X11",
 #if defined(UNIX) && defined(FEAT_X11)
+		1
+#else
+		0
+#endif
+		},
+	{":tearoff",
+// same #ifdef as used for ex_tearoff().
+#if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 		1
 #else
 		0

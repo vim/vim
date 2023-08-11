@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 May 13
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Jun 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,11 +38,12 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Crash when splitting window: #11961.  Set RedrawingDisabled in
-win_split_ins().
+FILETYPE_FILE is defined to the same value in multiple places.
+Only use the one in feature.h.  Others too.
 
-CTRL-J mapping is not used if halfway another mapping. #12002
-Is simplified mapping not used but escape code has been simplified?
+Mapping with modifier is not recognized after a partial mapping.  Probably
+because the typeahead was simplified when looking for a matching mapping.
+Need to somehow undo the simplification.  #12002
 
 Windows scroll when using the autocmd window.  #12085
 in restore_snapshot_rec() restore more values from the snapshot, instead of
@@ -57,6 +58,8 @@ When a help item can't be found, then open 'helpfile'.  Search for the tag in
 that file and gtive E149 only when not found.  Helps for a tiny Vim installed
 without all the help files.
 
+SpellCap highlight not updated - PR #12428
+
 Virtual text problems:
 -  Deleting character before a wrapping virtual text, causes for the following
    lines to dissapear (Issue #12244)
@@ -64,10 +67,15 @@ Virtual text problems:
    gone (Issue #12028)
 -  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
    #12232)
+-  Virtual text to the right of the line that isn't visible doesn't cause the
+   'extends' character to show in 'list' mode.  #12478
 -  Virtual text to the right of the line that fits exactly on screen causes
    that line and all lines below it not to be displayed (Issue #12213)
 -  Window screen gets wrong when a virtual text is placed on 'above' or
    'below' on an empty line (Issue #11959)
+-  truncated Virtual text below an empty line causes display error #12493
+
+include #12403: window for Termdebug showing local variables
 
 include #12140: positional arguments in printf(), fixes #10577
 
@@ -80,6 +88,10 @@ highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
 Improve profiling by caching matching functions:  PR  #12192
 
+With 'smoothscroll' set and "lastline" in 'display', moving the cursor to a
+wrapping line that makes the display scroll up may scroll much more than
+needed, thus jump-scrolling. (part of issue 12411)
+
 Add filecopy() ?  #12346
 
 Implement foreach()  PR  #12166
@@ -91,12 +103,18 @@ Errors when running tests with valgrind:
 - test_gui.vim:
     Found errors in Test_gui_mouse_event():
 
+When every block in if/elseif ends in "throw" or "return" code following after
+"endif" should give an "unreachable code" error.
+
 Upcoming larger works:
 - Make spell checking work with recent .dic/.aff files, e.g. French.  #4916
     Make Vim understand the format somehow?   Search for "spell" below.
     Make sure suggestions are speedy, also with composed words (German).
-- Make syntax highlighting faster and better.  Discuss alternatives for using
-  other grammars (treesitter, TextMate).
+- Make syntax highlighting faster and better.
+  Add a generic mechanism to test a syntax plugin: An input file for the
+  filetype and a screendump of expected result.  With a way to specify the
+  setup (global variables) and another dump file from that.
+  Discuss alternatives for using other grammars (treesitter, TextMate).
    - Possibly conversion to Vim syntax rules.
    - Other mechanism than group and cluster to nest syntax items, to be used
      for grammars.
@@ -116,11 +134,20 @@ Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes
   - Change access: public by default, private by prefixing "_".
 	Check for error: can't have same name twice (ignoring "_" prefix).
+  - Private methods?
+	either: private def Func()
+	    or: def _Func()
+    Perhaps use "private" keyword instead of "_" prefix?
+  - "final" object members - can only be set in the constructor.
   - Cannot use class type of itself in the method (Issue #12369)
+  - Cannot use an object method in a lambda  #12417
+	Define all methods before compiling them?
   - class members initialized during definition (Issue #12041)
-  - cannot call class member of funcref type  (Issue #12324)
-  - nested function unable to directly modify private member (Issue #12076)
-      And: can't use "this" keyword in lambda function (Issue #12336)
+  - Cannot call class member of funcref type  (Issue #12324)
+	Also #12081 first case.
+  - Using list of functions does not work #12081 (repro in later message).
+  - Weird `class X not found on interface X` error (Issue #12023)
+  - First argument of call() cannot be "obj.Func". (#11865)
   - "return this" required for early return from constructor (inconsistent)
     (Issue #12040)
   - class/method confusion inside ":def" when using "class extends" (Issue
@@ -135,11 +162,6 @@ Further Vim9 improvements, possibly after launch:
 	email lifepillar 2023 Mar 26
   - Getting member of variable with "any" type should be handled at runtime.
     Remove temporary solution from #12096 / patch 9.0.1375.
-  - Private methods?
-	either: private def Func()
-	    or: def _Func()
-    Perhaps use "private" keyword instead of "_" prefix?
-  - "final" object members - can only be set in the constructor.
   - "obj.Method()" does not always work in a compiled function, assumes "obj"
     is a dictionary.  #12196  Issue #12024 might be the same problem.
     Issue #11822: any.Func() can be a dict or an object call, need to handle
@@ -173,20 +195,16 @@ Further Vim9 improvements, possibly after launch:
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 Information missing in terminfo:
+- Codes used for focus gained and lost termcodes are hard-coded in
+  set_termname(), not named.
+- t_fe	enable focus-event tracking
+- t_fd	disable focus-event tracking
 - Accept "hyper" and "meta" modifiers (16 and 32) from Kitty like Meta?
     8 is actually "super".
 - t_RV	request terminal version string; xterm:	"\033[>c"
     change in terminfo for "RV" uses the wrong escape sequence 7 - 14 Jan only
 - Codes for <PasteStart> t_PS and <PasteEnd> t_PE; with bracketed paste:
     t_BE and t_BD.
-- Codes used for focus gained and lost (currently using use_xterm_like_mouse())
-  termcodes are hard-coded in set_termname(), not named.
-    Use the XF flag?  enables recognizing the focus in/out events.
-    Check if t_fe is not empty.
-    Check for "1004" in t_XM. (disadvantage: only focus events when mouse is
-    used)
-- t_fe	enable focus-event tracking
-- t_fd	disable focus-event tracking
 Modifiers for various keys
 - flag to indicate "xterm compatible modifiers" ?
 Underline and similar:
@@ -356,6 +374,12 @@ Autoconf: must use autoconf 2.69, later version generates lots of warnings
 Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
 #11272
 
+'cindent': compound literal indented wrong.  Check for " = " before "{"?
+#12491
+
+GUI Scroll test fails on FreeBSD when using Motif.  See FIXME in
+Test_scrollbars in src/test_gui.vim
+
 Selected index returned by complete_info() does not match the index in the
 list of items.  #12230
 
@@ -383,6 +407,9 @@ Add BufDeletePost.  #11041
 
 Add winid arg to col() and charcol()  #11466 (request #11461)
 
+'switchbuf' set to "newtab" does not work for ":cfirst" when in the quickfix
+window.  #12436
+
 When :argument has a non-number argument, use it like :buffer to find the
 argument by name.  #12272
 
@@ -407,6 +434,10 @@ https://github.com/vim/vim/pull/5566
 PR #11579 to add visualtext(), return Visually selected text.
 
 PR #12032: Support Python 3 stable ABI.
+
+PR #11860: Add more info to 'colorcolumn': display a character and highlight
+for each separate entry.  Disadvantage: option value gets very complicated
+with multiple entries, e.g. every 8 columns.
 
 Stray characters in the shell #11719, caused by requesting a response for:
 - XT key sequences
@@ -472,6 +503,10 @@ To avoid flicker: add an option that when a screen clear is requested, instead
 of clearing it draws everything and uses "clear to end of line" for every line.
 Resetting 't_ut' already causes this?
 
+Instead of prefixing "INTERNAL" to internal messages, add a message in iemsg()
+and siemsg() and translate it.  Messages only given to them don't need
+translation.
+
 When scheme can't be found by configure there is no clear "not found" message:
     configure:5769: checking MzScheme install prefix
     configure:5781: result:
@@ -489,7 +524,10 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
 
-Support translations for plugins: #11637
+Add a diff() function to use the built-in diff support in a script.
+#12321   Is the returned value in the right form now?
+
+Support translations for plugins: #11637  PR: #12447
 - Need a tool like xgettext for Vim script, generates a .pot file.
   Need the equivalent of _() and N_(), perhaps TR() and TRN().
 - Instructions for how to create .po files and translate.
@@ -541,6 +579,8 @@ New English spell files also have very slow suggestions.
 When 'spelloptions' is "camel" then zG doesn't work on some words.
 (Gary Johnson, 17 Oct 2022)
 
+SpellCap doesn't show below a closed fold. #12420
+
 'cdpath' problems:
 - Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 - Problem with 'cdpath' on MS-Windows when a directory is equal to $HOME.
@@ -557,6 +597,11 @@ Add optional argument to virtcol() that specifies "start", "cursor" or "end"
 to tell which value from getvvcol() should be used. (#7964)
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
+
+When 'wildignore' has an entry ending in "/*" this means nothing matching the
+path before it will be added.  When encountering a directory check this and if
+there is a match do not scan the directory (possibly speeds up :find a lot).
+#12482
 
 globpath() does not use 'wildignorecase' at all? (related to #8350)
 
@@ -2269,10 +2314,6 @@ Diff mode out of sync. (Gary Johnson, 2010 Aug 4)
 
 Win32: completion of file name ":e c:\!test" results in ":e c:\\!test", which
 does not work. (Nieko Maatjes, 2009 Jan 8, Ingo Karkat, 2009 Jan 22)
-
-opening/closing window causes other window with 'winfixheight' to change
-height.  Also happens when there is another window in the frame, if it's not
-very high. (Yegappan Lakshmanan, 2010 Jul 22, Michael Peeters, 2010 Jul 22)
 
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)

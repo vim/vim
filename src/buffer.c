@@ -502,7 +502,7 @@ can_unload_buffer(buf_T *buf)
  * It can be:
  * 0			buffer becomes hidden
  * DOBUF_UNLOAD		buffer is unloaded
- * DOBUF_DELETE		buffer is unloaded and removed from buffer list
+ * DOBUF_DEL		buffer is unloaded and removed from buffer list
  * DOBUF_WIPE		buffer is unloaded and really deleted
  * DOBUF_WIPE_REUSE	idem, and add to buf_reuse list
  * When doing all but the first one on the current buffer, the caller should
@@ -5108,14 +5108,6 @@ build_stl_str_hl(
 	    STRMOVE(s + 1, p);
 	    *s = '<';
 
-	    // Fill up for half a double-wide character.
-	    while (++width < maxwidth)
-	    {
-		s = s + STRLEN(s);
-		MB_CHAR2BYTES(fillchar, s);
-		*s = NUL;
-	    }
-
 	    --n;	// count the '<'
 	    for (; l < itemcnt; l++)
 	    {
@@ -5123,6 +5115,14 @@ build_stl_str_hl(
 		    stl_items[l].stl_start -= n;
 		else
 		    stl_items[l].stl_start = s;
+	    }
+
+	    // Fill up for half a double-wide character.
+	    while (++width < maxwidth)
+	    {
+		s = s + STRLEN(s);
+		MB_CHAR2BYTES(fillchar, s);
+		*s = NUL;
 	    }
 	}
 	width = maxwidth;

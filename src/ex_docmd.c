@@ -9840,7 +9840,6 @@ is_loclist_cmd(int cmdidx)
 }
 #endif
 
-#if defined(FEAT_TIMERS) || defined(PROTO)
     int
 get_pressedreturn(void)
 {
@@ -9852,4 +9851,3 @@ set_pressedreturn(int val)
 {
      ex_pressedreturn = val;
 }
-#endif

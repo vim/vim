@@ -1,5 +1,16 @@
 " Test :setfiletype
 
+func Test_backup_strip()
+  filetype on
+  let fname = 'Xdetect.js~~~~~~~~~~~'
+  call writefile(['one', 'two', 'three'], fname, 'D')
+  exe 'edit ' .. fname
+  call assert_equal('javascript', &filetype)
+
+  bwipe!
+  filetype off
+endfunc
+
 func Test_detection()
   filetype on
   augroup filetypedetect
@@ -39,6 +50,30 @@ func Test_other_type()
   bwipe!
   filetype off
 endfunc
+
+" If $XDG_CONFIG_HOME is set return "fname" expanded in a list.
+" Otherwise return an empty list.
+def s:WhenConfigHome(fname: string): list<string>
+  if exists('$XDG_CONFIG_HOME')
+    return [expand(fname)]
+  endif
+  return []
+enddef
+
+" Return the name used for the $XDG_CONFIG_HOME directory.
+def s:GetConfigHome(): string
+  return getcwd() .. '/Xdg_config_home'
+enddef
+
+" saved value of $XDG_CONFIG_HOME
+let s:saveConfigHome = ''
+
+def s:SetupConfigHome()
+  if empty(windowsversion())
+    s:saveConfigHome = $XDG_CONFIG_HOME
+    setenv("XDG_CONFIG_HOME", GetConfigHome())
+  endif
+enddef
 
 " Filetypes detected just from matching the file name.
 " First one is checking that these files have no filetype.
@@ -87,6 +122,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     bicep: ['file.bicep'],
     bindzone: ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file'],
     bitbake: ['file.bb', 'file.bbappend', 'file.bbclass', 'build/conf/local.conf', 'meta/conf/layer.conf', 'build/conf/bbappend.conf', 'meta-layer/conf/distro/foo.conf'],
+    blade: ['file.blade.php'],
     blank: ['file.bl'],
     blueprint: ['file.blp'],
     bsdl: ['file.bsd', 'file.bsdl'],
@@ -95,7 +131,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     bzr: ['bzr_log.any', 'bzr_log.file'],
     c: ['enlightenment/file.cfg', 'file.qc', 'file.c', 'some-enlightenment/file.cfg'],
     cabal: ['file.cabal'],
-    cabalconfig: ['cabal.config'],
+    cabalconfig: ['cabal.config', expand("$HOME/.config/cabal/config")] + WhenConfigHome('$XDG_CONFIG_HOME/cabal/config'),
     cabalproject: ['cabal.project', 'cabal.project.local'],
     cairo: ['file.cairo'],
     calendar: ['calendar', '/.calendar/file', '/share/calendar/any/calendar.file', '/share/calendar/calendar.file', 'any/share/calendar/any/calendar.file', 'any/share/calendar/calendar.file'],
@@ -122,7 +158,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cobol: ['file.cbl', 'file.cob', 'file.lib'],
     coco: ['file.atg'],
     conaryrecipe: ['file.recipe'],
-    conf: ['auto.master'],
+    conf: ['auto.master', 'file.conf'],
     config: ['configure.in', 'configure.ac', '/etc/hostname.file', 'any/etc/hostname.file'],
     confini: ['/etc/pacman.conf', 'any/etc/pacman.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials', 'file.nmconnection'],
     context: ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
@@ -229,10 +265,10 @@ def s:GetFilenameChecks(): dict<list<string>>
     gedcom: ['file.ged', 'lltxxxxx.txt', '/tmp/lltmp', '/tmp/lltmp-file', 'any/tmp/lltmp', 'any/tmp/lltmp-file'],
     gemtext: ['file.gmi', 'file.gemini'],
     gift: ['file.gift'],
-    gitattributes: ['file.git/info/attributes', '.gitattributes', '/.config/git/attributes', '/etc/gitattributes', '/usr/local/etc/gitattributes', 'some.git/info/attributes'],
+    gitattributes: ['file.git/info/attributes', '.gitattributes', '/.config/git/attributes', '/etc/gitattributes', '/usr/local/etc/gitattributes', 'some.git/info/attributes'] + WhenConfigHome('$XDG_CONFIG_HOME/git/attributes'),
     gitcommit: ['COMMIT_EDITMSG', 'MERGE_MSG', 'TAG_EDITMSG', 'NOTES_EDITMSG', 'EDIT_DESCRIPTION'],
-    gitconfig: ['file.git/config', 'file.git/config.worktree', 'file.git/worktrees/x/config.worktree', '.gitconfig', '.gitmodules', 'file.git/modules//config', '/.config/git/config', '/etc/gitconfig', '/usr/local/etc/gitconfig', '/etc/gitconfig.d/file', 'any/etc/gitconfig.d/file', '/.gitconfig.d/file', 'any/.config/git/config', 'any/.gitconfig.d/file', 'some.git/config', 'some.git/modules/any/config'],
-    gitignore: ['file.git/info/exclude', '.gitignore', '/.config/git/ignore', 'some.git/info/exclude'],
+    gitconfig: ['file.git/config', 'file.git/config.worktree', 'file.git/worktrees/x/config.worktree', '.gitconfig', '.gitmodules', 'file.git/modules//config', '/.config/git/config', '/etc/gitconfig', '/usr/local/etc/gitconfig', '/etc/gitconfig.d/file', 'any/etc/gitconfig.d/file', '/.gitconfig.d/file', 'any/.config/git/config', 'any/.gitconfig.d/file', 'some.git/config', 'some.git/modules/any/config'] + WhenConfigHome('$XDG_CONFIG_HOME/git/config'),
+    gitignore: ['file.git/info/exclude', '.gitignore', '/.config/git/ignore', 'some.git/info/exclude'] + WhenConfigHome('$XDG_CONFIG_HOME/git/ignore'),
     gitolite: ['gitolite.conf', '/gitolite-admin/conf/file', 'any/gitolite-admin/conf/file'],
     gitrebase: ['git-rebase-todo'],
     gitsendemail: ['.gitsendemail.msg.xxxxxx'],
@@ -262,6 +298,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     handlebars: ['file.hbs'],
     hare: ['file.ha'],
     haskell: ['file.hs', 'file.hsc', 'file.hs-boot', 'file.hsig'],
+    haskellpersistent: ['file.persistentmodels'],
     haste: ['file.ht'],
     hastepreproc: ['file.htpp'],
     hb: ['file.hb'],
@@ -280,6 +317,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     html: ['file.html', 'file.htm', 'file.cshtml'],
     htmlm4: ['file.html.m4'],
     httest: ['file.htt', 'file.htb'],
+    hurl: ['file.hurl'],
     i3config: ['/home/user/.i3/config', '/home/user/.config/i3/config', '/etc/i3/config', '/etc/xdg/i3/config'],
     ibasic: ['file.iba', 'file.ibi'],
     icemenu: ['/.icewm/menu', 'any/.icewm/menu'],
@@ -304,7 +342,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     jq: ['file.jq'],
     jovial: ['file.jov', 'file.j73', 'file.jovial'],
     jproperties: ['file.properties', 'file.properties_xx', 'file.properties_xx_xx', 'some.properties_xx_xx_file', 'org.eclipse.xyz.prefs'],
-    json: ['file.json', 'file.jsonp', 'file.json-patch', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', '.prettierrc', '.firebaserc', '.stylelintrc', 'file.slnf'],
+    json: ['file.json', 'file.jsonp', 'file.json-patch', 'file.geojson', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', '.prettierrc', '.firebaserc', '.stylelintrc', 'file.slnf'],
     json5: ['file.json5'],
     jsonc: ['file.jsonc', '.babelrc', '.eslintrc', '.jsfmtrc', '.jshintrc', '.hintrc', '.swrc', 'jsconfig.json', 'tsconfig.json', 'tsconfig.test.json', 'tsconfig-test.json'],
     jsonl: ['file.jsonl'],
@@ -471,6 +509,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     pccts: ['file.g'],
     pcmk: ['file.pcmk'],
     pdf: ['file.pdf'],
+    pem: ['file.pem', 'file.cer', 'file.crt', 'file.csr'],
     perl: ['file.plx', 'file.al', 'file.psgi', 'gitolite.rc', '.gitolite.rc', 'example.gitolite.rc', '.latexmkrc', 'latexmkrc'],
     pf: ['pf.conf'],
     pfmain: ['main.cf', 'main.cf.proto'],
@@ -507,6 +546,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     psl: ['file.psl'],
     pug: ['file.pug'],
     puppet: ['file.pp'],
+    pymanifest: ['MANIFEST.in'],
     pyret: ['file.arr'],
     pyrex: ['file.pyx', 'file.pxd'],
     python: ['file.py', 'file.pyw', '.pythonstartup', '.pythonrc', 'file.ptl', 'file.pyi', 'SConstruct'],
@@ -526,6 +566,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     readline: ['.inputrc', 'inputrc'],
     rego: ['file.rego'],
     remind: ['.reminders', 'file.remind', 'file.rem', '.reminders-file'],
+    requirements: ['file.pip', 'requirements.txt'],
     rescript: ['file.res', 'file.resi'],
     resolv: ['resolv.conf'],
     reva: ['file.frt'],
@@ -566,7 +607,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     services: ['/etc/services', 'any/etc/services'],
     setserial: ['/etc/serial.conf', 'any/etc/serial.conf'],
     sexplib: ['file.sexp'],
-    sh: ['.bashrc', 'file.bash', '/usr/share/doc/bash-completion/filter.sh', '/etc/udev/cdsymlinks.conf', 'any/etc/udev/cdsymlinks.conf'],
+    sh: ['.bashrc', '.bash_profile', '.bash-profile', '.bash_logout', '.bash-logout', '.bash_aliases', '.bash-aliases', '/tmp/bash-fc-3Ozjlw', '/tmp/bash-fc.3Ozjlw', 'PKGBUILD', 'APKBUILD', 'file.bash', '/usr/share/doc/bash-completion/filter.sh', '/etc/udev/cdsymlinks.conf', 'any/etc/udev/cdsymlinks.conf'],
     sieve: ['file.siv', 'file.sieve'],
     sil: ['file.sil'],
     simula: ['file.sim'],
@@ -662,6 +703,7 @@ def s:GetFilenameChecks(): dict<list<string>>
               'any/etc/systemd/system/file.d/.#-file',
               'any/etc/systemd/system/file.d/file.conf'],
     systemverilog: ['file.sv', 'file.svh'],
+    trace32: ['file.cmm', 'file.t32'],
     tags: ['tags'],
     tak: ['file.tak'],
     tal: ['file.tal'],
@@ -704,14 +746,17 @@ def s:GetFilenameChecks(): dict<list<string>>
     udevperm: ['/etc/udev/permissions.d/file.permissions', 'any/etc/udev/permissions.d/file.permissions'],
     udevrules: ['/etc/udev/rules.d/file.rules', '/usr/lib/udev/rules.d/file.rules', '/lib/udev/rules.d/file.rules'],
     uil: ['file.uit', 'file.uil'],
+    unison: ['file.u', 'file.uu'],
     updatedb: ['/etc/updatedb.conf', 'any/etc/updatedb.conf'],
     upstart: ['/usr/share/upstart/file.conf', '/usr/share/upstart/file.override', '/etc/init/file.conf', '/etc/init/file.override', '/.init/file.conf', '/.init/file.override', '/.config/upstart/file.conf', '/.config/upstart/file.override', 'any/.config/upstart/file.conf', 'any/.config/upstart/file.override', 'any/.init/file.conf', 'any/.init/file.override', 'any/etc/init/file.conf', 'any/etc/init/file.override', 'any/usr/share/upstart/file.conf', 'any/usr/share/upstart/file.override'],
     upstreamdat: ['upstream.dat', 'UPSTREAM.DAT', 'upstream.file.dat', 'UPSTREAM.FILE.DAT', 'file.upstream.dat', 'FILE.UPSTREAM.DAT'],
     upstreaminstalllog: ['upstreaminstall.log', 'UPSTREAMINSTALL.LOG', 'upstreaminstall.file.log', 'UPSTREAMINSTALL.FILE.LOG', 'file.upstreaminstall.log', 'FILE.UPSTREAMINSTALL.LOG'],
     upstreamlog: ['fdrupstream.log', 'upstream.log', 'UPSTREAM.LOG', 'upstream.file.log', 'UPSTREAM.FILE.LOG', 'file.upstream.log', 'FILE.UPSTREAM.LOG', 'UPSTREAM-file.log', 'UPSTREAM-FILE.LOG'],
+    urlshortcut: ['file.url'],
     usd: ['file.usda', 'file.usd'],
     usserverlog: ['usserver.log', 'USSERVER.LOG', 'usserver.file.log', 'USSERVER.FILE.LOG', 'file.usserver.log', 'FILE.USSERVER.LOG'],
     usw2kagtlog: ['usw2kagt.log', 'USW2KAGT.LOG', 'usw2kagt.file.log', 'USW2KAGT.FILE.LOG', 'file.usw2kagt.log', 'FILE.USW2KAGT.LOG'],
+    v: ['file.vsh', 'file.vv'],
     vala: ['file.vala'],
     vb: ['file.sba', 'file.vb', 'file.vbs', 'file.dsm', 'file.ctl'],
     vdf: ['file.vdf'],
@@ -736,6 +781,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     webmacro: ['file.wm'],
     wget: ['.wgetrc', 'wgetrc'],
     wget2: ['.wget2rc', 'wget2rc'],
+    wgsl: ['file.wgsl'],
     winbatch: ['file.wbt'],
     wit: ['file.wit'],
     wml: ['file.wml'],
@@ -756,7 +802,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     xsd: ['file.xsd'],
     xslt: ['file.xsl', 'file.xslt'],
     yacc: ['file.yy', 'file.yxx', 'file.y++'],
-    yaml: ['file.yaml', 'file.yml', '.clangd', '.clang-format', '.clang-tidy'],
+    yaml: ['file.yaml', 'file.yml', 'file.eyaml', '.clangd', '.clang-format', '.clang-tidy'],
     yang: ['file.yang'],
     yuck: ['file.yuck'],
     z8a: ['file.z8a'],
@@ -764,6 +810,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     zimbu: ['file.zu'],
     zimbutempl: ['file.zut'],
     zir: ['file.zir'],
+    zserio: ['file.zs'],
     zsh: ['.zprofile', '/etc/zprofile', '.zfbfmarks', 'file.zsh',
           '.zcompdump', '.zlogin', '.zlogout', '.zshenv', '.zshrc',
           '.zcompdump-file', '.zlog', '.zlog-file', '.zsh', '.zsh-file',
@@ -776,7 +823,7 @@ enddef
 def s:GetFilenameCaseChecks(): dict<list<string>>
   return {
     modula2: ['file.DEF'],
-    bzl: ['file.BUILD', 'BUILD'],
+    bzl: ['file.BUILD', 'BUILD', 'BUCK'],
   }
 enddef
 
@@ -805,6 +852,12 @@ def s:CheckItems(checks: dict<list<string>>)
 enddef
 
 def Test_filetype_detection()
+  SetupConfigHome()
+  if !empty(s:saveConfigHome)
+    defer setenv("XDG_CONFIG_HOME", s:saveConfigHome)
+  endif
+  mkdir(GetConfigHome(), 'R')
+
   filetype on
   CheckItems(s:GetFilenameChecks())
   if has('fname_case')
@@ -850,6 +903,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     expect: [['#!/path/expect']],
     gnuplot: [['#!/path/gnuplot']],
     make:   [['#!/path/make']],
+    nix:    [['#!/path/nix-shell']],
     pike:   [['#!/path/pike'],
             ['#!/path/pike0'],
             ['#!/path/pike9']],
@@ -900,6 +954,7 @@ def s:GetScriptEnvChecks(): dict<list<list<string>>>
     scheme: [['#!/usr/bin/env VAR=val --ignore-environment scheme']],
     python: [['#!/usr/bin/env VAR=val -S python -w -T']],
     wml: [['#!/usr/bin/env VAR=val --split-string wml']],
+    nix: [['#!/usr/bin/env nix-shell']],
   }
 enddef
 

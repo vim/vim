@@ -266,15 +266,35 @@ endfunc
 func Test_let_option_error()
   let _w = &tw
   let &tw = 80
-  call assert_fails('let &tw .= 1', 'E734:')
+  call assert_fails('let &tw .= 1', ['E734:', 'E734:'])
+  call assert_fails('let &tw .= []', ['E734:', 'E734:'])
+  call assert_fails('let &tw = []', ['E745:', 'E745:'])
+  call assert_fails('let &tw += []', ['E745:', 'E745:'])
   call assert_equal(80, &tw)
   let &tw = _w
 
+  let _w = &autoread
+  let &autoread = 1
+  call assert_fails('let &autoread .= 1', ['E734:', 'E734:'])
+  call assert_fails('let &autoread .= []', ['E734:', 'E734:'])
+  call assert_fails('let &autoread = []', ['E745:', 'E745:'])
+  call assert_fails('let &autoread += []', ['E745:', 'E745:'])
+  call assert_equal(1, &autoread)
+  let &autoread = _w
+
   let _w = &fillchars
   let &fillchars = "vert:|"
-  call assert_fails('let &fillchars += "diff:-"', 'E734:')
+  call assert_fails('let &fillchars += "diff:-"', ['E734:', 'E734:'])
+  call assert_fails('let &fillchars += []', ['E734:', 'E734:'])
+  call assert_fails('let &fillchars = []', ['E730:', 'E730:'])
+  call assert_fails('let &fillchars .= []', ['E730:', 'E730:'])
   call assert_equal("vert:|", &fillchars)
   let &fillchars = _w
+
+  call assert_fails('let &nosuchoption = 1', ['E355:', 'E355:'])
+  call assert_fails('let &nosuchoption = ""', ['E355:', 'E355:'])
+  call assert_fails('let &nosuchoption = []', ['E355:', 'E355:'])
+  call assert_fails('let &t_xx = []', ['E730:', 'E730:'])
 endfunc
 
 " Errors with the :let statement

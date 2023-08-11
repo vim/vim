@@ -150,6 +150,7 @@ typedef struct {
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra;
     char_u	*saved_p_extra;
+    char_u	*saved_p_extra_free;
     int		saved_extra_attr;
     int		saved_n_attr_skip;
     int		saved_extra_for_textprop;
@@ -230,7 +231,7 @@ handle_foldcolumn(win_T *wp, winlinevars_T *wlv)
 	return;
 
     wlv->n_extra = (int)fill_foldcolumn(wlv->p_extra_free,
-	    wp, FALSE, wlv->lnum);
+							 wp, FALSE, wlv->lnum);
     wlv->p_extra_free[wlv->n_extra] = NUL;
     wlv->p_extra = wlv->p_extra_free;
     wlv->c_extra = NUL;
@@ -568,6 +569,11 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	if (wp->w_skipcol == 0 || wlv->startrow != 0 || !wp->w_p_wrap)
 	    wlv->need_showbreak = FALSE;
 	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
+
+	// Correct start of highlighted area for 'showbreak'.
+	if (wlv->fromcol >= wlv->vcol && wlv->fromcol < wlv->vcol_sbr)
+	    wlv->fromcol = wlv->vcol_sbr;
+
 	// Correct end of highlighted area for 'showbreak',
 	// required when 'linebreak' is also set.
 	if (wlv->tocol == wlv->vcol)
@@ -823,11 +829,12 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 	    && !(wp->w_p_list && wp->w_lcs_chars.prec != 0))
     {
 	int off = (int)(current_ScreenLine - ScreenLines);
+	int max_off = off + screen_Columns;
 	int skip = 0;
 
 	if (wp->w_p_nu && wp->w_p_rnu)
 	    // Do not overwrite the line number, change "123 text" to
-	    // "123>>>xt".
+	    // "123<<<xt".
 	    while (skip < wp->w_width && VIM_ISDIGIT(ScreenLines[off]))
 	    {
 		++off;
@@ -836,6 +843,10 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 
 	for (int i = 0; i < 3 && i + skip < wp->w_width; ++i)
 	{
+	    if ((*mb_off2cells)(off, max_off) > 1)
+		// When the first half of a double-width character is
+		// overwritten, change the second half to a space.
+		ScreenLines[off + 1] = ' ';
 	    ScreenLines[off] = '<';
 	    if (enc_utf8)
 		ScreenLinesUC[off] = 0;
@@ -974,6 +985,9 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->draw_state = WL_START;
 	wlv->saved_n_extra = wlv->n_extra;
 	wlv->saved_p_extra = wlv->p_extra;
+	vim_free(wlv->saved_p_extra_free);
+	wlv->saved_p_extra_free = wlv->p_extra_free;
+	wlv->p_extra_free = NULL;
 	wlv->saved_extra_attr = wlv->extra_attr;
 	wlv->saved_n_attr_skip = wlv->n_attr_skip;
 	wlv->saved_extra_for_textprop = wlv->extra_for_textprop;
@@ -1010,6 +1024,9 @@ win_line_continue(winlinevars_T *wlv)
 	wlv->c_extra = wlv->saved_c_extra;
 	wlv->c_final = wlv->saved_c_final;
 	wlv->p_extra = wlv->saved_p_extra;
+	vim_free(wlv->p_extra_free);
+	wlv->p_extra_free = wlv->saved_p_extra_free;
+	wlv->saved_p_extra_free = NULL;
 	wlv->extra_attr = wlv->saved_extra_attr;
 	wlv->n_attr_skip = wlv->saved_n_attr_skip;
 	wlv->extra_for_textprop = wlv->saved_extra_for_textprop;
@@ -4114,5 +4131,6 @@ win_line(
 #endif
 
     vim_free(wlv.p_extra_free);
+    vim_free(wlv.saved_p_extra_free);
     return wlv.row;
 }

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.0.  Last change: 2023 May 01
+*repeat.txt*    For Vim version 9.0.  Last change: 2023 May 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -308,8 +308,8 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			'runtimepath'.
 
 			If the filetype detection was not enabled yet (this
-			is usually done with a "syntax enable" or "filetype
-			on" command in your .vimrc file), this will also look
+			is usually done with a `syntax enable` or `filetype on`
+			command in your .vimrc file), this will also look
 			for "{name}/ftdetect/*.vim" files.
 
 			When the optional ! is added no plugin files or
