@@ -141,13 +141,13 @@ If you still have problems or any other questions, use one of the mailing
 lists to discuss them with Vim users and developers:
 	https://www.vim.org/maillist.php
 
-If nothing else works, report bugs directly to the vim-dev mailinglist:
+If nothing else works, report bugs directly to the vim-dev mailing list:
 	<vim-dev@vim.org>
 
 
 ## Main author ##
 
-Send any other comments, patches, flowers and suggestions to the vim-dev mailinglist:
+Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
 	<vim-dev@vim.org>
 
 
