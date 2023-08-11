@@ -1339,6 +1339,16 @@ gotchars(char_u *chars, int len)
 }
 
 /*
+ * Record a <Nop> key.
+ */
+    void
+gotchars_nop(void)
+{
+    char_u nop_buf[3] = { K_SPECIAL, KS_EXTRA, KE_NOP };
+    gotchars(nop_buf, 3);
+}
+
+/*
  * Undo the last gotchars() for "len" bytes.  To be used when putting a typed
  * character back into the typeahead buffer, thus gotchars() will be called
  * again.
@@ -3656,14 +3666,9 @@ vgetorpeek(int advance)
 #endif
     if (timedout && c == ESC)
     {
-	char_u nop_buf[3];
-
 	// When recording there will be no timeout.  Add a <Nop> after the ESC
 	// to avoid that it forms a key code with following characters.
-	nop_buf[0] = K_SPECIAL;
-	nop_buf[1] = KS_EXTRA;
-	nop_buf[2] = KE_NOP;
-	gotchars(nop_buf, 3);
+	gotchars_nop();
     }
 
     --vgetc_busy;
