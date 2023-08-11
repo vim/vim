@@ -40,7 +40,7 @@
 /* Work around for perl-5.18.
  * Don't include "perl\lib\CORE\inline.h" for now,
  * include it after Perl_sv_free2 is defined. */
-#if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
+#ifdef DYNAMIC_PERL
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
@@ -707,6 +707,10 @@ S_POPMARK(pTHX)
 /* perl-5.32 needs Perl_POPMARK */
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
 #  define Perl_POPMARK S_POPMARK
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 37)
+#  define GIMME GIMME_V
 # endif
 
 /* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
@@ -1649,7 +1653,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME_V == G_SCALAR)
+	if (GIMME == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1700,7 +1704,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME_V == G_SCALAR)
+	if (GIMME == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{
