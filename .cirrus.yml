@@ -13,7 +13,6 @@ freebsd_task:
         image_family: freebsd-12-4
   timeout_in: 20m
   install_script:
-    - pkg update -f
     - pkg install -y gettext
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)

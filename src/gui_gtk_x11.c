@@ -3121,8 +3121,10 @@ update_window_manager_hints(int force_width, int force_height)
 			       |GDK_HINT_MIN_SIZE;
 	// Using gui.formwin as geometry widget doesn't work as expected
 	// with GTK+ 2 -- dunno why.  Presumably all the resizing hacks
-	// in Vim confuse GTK+.
-	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.mainwin,
+	// in Vim confuse GTK+.  For GTK 3 the second argument should be NULL
+	// to make the width/height inc works, despite the docs saying
+	// something else.
+	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), NULL,
 				      &geometry, geometry_mask);
 	old_width       = width;
 	old_height      = height;

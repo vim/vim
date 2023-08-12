@@ -10,7 +10,7 @@
 VIMRUNTIME = ..\..\runtime
 !endif
 
-# get LANGUAGES, MOFILES and MOCONVERTED
+# get LANGUAGES, MOFILES, MOCONVERTED and others
 !include Make_all.mak
 
 PACKAGE = vim
@@ -53,21 +53,14 @@ PO_INPUTLIST = \
 	gvim.desktop.in \
 	vim.desktop.in
 
-PO_VIM_INPUTLIST = \
-	..\..\runtime\optwin.vim
-
-PO_VIM_JSLIST = \
-	optwin.js
-
-files: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
+files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
-	echo $(PO_VIM_JSLIST)>> .\files
 
 first_time: files
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --files-from=.\files
+	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) --files-from=.\files $(PO_VIM_JSLIST)
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
@@ -75,7 +68,7 @@ $(PACKAGE).pot: files
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --files-from=.\files
+	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) --files-from=.\files $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	$(RM) *.js

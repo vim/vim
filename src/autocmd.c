@@ -1602,10 +1602,7 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
-	// no redrawing and don't set the window title
-	++RedrawingDisabled;
 	(void)win_split_ins(0, WSP_TOP, auc_win, 0);
-	--RedrawingDisabled;
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
@@ -1660,11 +1657,13 @@ aucmd_restbuf(
 	}
 win_found:
 #ifdef FEAT_JOB_CHANNEL
+	;
+	int save_stop_insert_mode = stop_insert_mode;
 	// May need to stop Insert mode if we were in a prompt buffer.
 	leaving_window(curwin);
 	// Do not stop Insert mode when already in Insert mode before.
 	if (aco->save_State & MODE_INSERT)
-	    stop_insert_mode = FALSE;
+	    stop_insert_mode = save_stop_insert_mode;
 #endif
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);
@@ -2019,7 +2018,6 @@ apply_autocmds_group(
     int		did_save_redobuff = FALSE;
     save_redo_T	save_redo;
     int		save_KeyTyped = KeyTyped;
-    int		save_did_emsg;
     ESTACK_CHECK_DECLARATION;
 
     /*
@@ -2311,12 +2309,14 @@ apply_autocmds_group(
 	else
 	    check_lnums_nested(TRUE);
 
-	save_did_emsg = did_emsg;
+	int save_did_emsg = did_emsg;
+	int save_ex_pressedreturn = get_pressedreturn();
 
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
 	did_emsg += save_did_emsg;
+	set_pressedreturn(save_ex_pressedreturn);
 
 	if (nesting == 1)
 	    // restore cursor and topline, unless they were changed
@@ -2334,7 +2334,8 @@ apply_autocmds_group(
 	    active_apc_list = patcmd.next;
     }
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     autocmd_busy = save_autocmd_busy;
     filechangeshell_busy = FALSE;
     autocmd_nested = save_autocmd_nested;

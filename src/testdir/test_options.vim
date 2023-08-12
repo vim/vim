@@ -376,7 +376,7 @@ func Test_set_completion()
   call assert_equal('"set filetype=' .. getcompletion('a*', 'filetype')->join(), @:)
 endfunc
 
-func Test_set_errors()
+func Test_set_option_errors()
   call assert_fails('set scroll=-1', 'E49:')
   call assert_fails('set backupcopy=', 'E474:')
   call assert_fails('set regexpengine=3', 'E474:')
@@ -478,7 +478,7 @@ func Test_set_errors()
   if has('python') || has('python3')
     call assert_fails('set pyxversion=6', 'E474:')
   endif
-  call assert_fails("let &tabstop='ab'", 'E521:')
+  call assert_fails("let &tabstop='ab'", ['E521:', 'E521:'])
   call assert_fails('set spellcapcheck=%\\(', 'E54:')
   call assert_fails('set sessionoptions=curdir,sesdir', 'E474:')
   call assert_fails('set foldmarker={{{,', 'E474:')
@@ -502,6 +502,12 @@ func Test_set_errors()
   call assert_fails('set t_#-&', 'E522:')
   call assert_fails('let &formatoptions = "?"', 'E539:')
   call assert_fails('call setbufvar("", "&formatoptions", "?")', 'E539:')
+  call assert_fails('call setwinvar(0, "&scrolloff", [])', ['E745:', 'E745:'])
+  call assert_fails('call setwinvar(0, "&list", [])', ['E745:', 'E745:'])
+  call assert_fails('call setwinvar(0, "&listchars", [])', ['E730:', 'E730:'])
+  call assert_fails('call setwinvar(0, "&nosuchoption", 0)', ['E355:', 'E355:'])
+  call assert_fails('call setwinvar(0, "&nosuchoption", "")', ['E355:', 'E355:'])
+  call assert_fails('call setwinvar(0, "&nosuchoption", [])', ['E355:', 'E355:'])
 endfunc
 
 func Test_set_encoding()
@@ -948,12 +954,16 @@ func Test_local_scrolloff()
   wincmd w
   call assert_equal(5, &so)
   wincmd w
+  call assert_equal(3, &so)
   setlocal so<
   call assert_equal(5, &so)
+  setglob so=8
+  call assert_equal(8, &so)
+  call assert_equal(-1, &l:so)
   setlocal so=0
   call assert_equal(0, &so)
   setlocal so=-1
-  call assert_equal(5, &so)
+  call assert_equal(8, &so)
 
   call assert_equal(7, &siso)
   setlocal siso=3
@@ -961,12 +971,16 @@ func Test_local_scrolloff()
   wincmd w
   call assert_equal(7, &siso)
   wincmd w
+  call assert_equal(3, &siso)
   setlocal siso<
   call assert_equal(7, &siso)
+  setglob siso=4
+  call assert_equal(4, &siso)
+  call assert_equal(-1, &l:siso)
   setlocal siso=0
   call assert_equal(0, &siso)
   setlocal siso=-1
-  call assert_equal(7, &siso)
+  call assert_equal(4, &siso)
 
   close
   set so&

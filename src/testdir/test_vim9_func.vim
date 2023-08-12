@@ -166,6 +166,14 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+def Test_listing_function_error()
+  var lines =<< trim END
+      var filler = 123
+      func DoesNotExist
+  END
+  v9.CheckDefExecFailure(lines, 'E123:', 2)
+enddef
+
 def Test_break_in_skipped_block()
   var lines =<< trim END
       vim9script

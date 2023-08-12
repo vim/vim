@@ -43,6 +43,7 @@ struct qfline_S
     char_u	qf_cleared;	// set to TRUE if line has been deleted
     char_u	qf_type;	// type of the error (mostly 'E'); 1 for
 				// :helpgrep
+    typval_T	qf_user_data;	// custom user data associated with this item
     char_u	qf_valid;	// valid error message detected
 };
 
@@ -82,6 +83,7 @@ typedef struct qf_list_S
     int		qf_count;	// number of errors (0 means empty list)
     int		qf_index;	// current index in the error list
     int		qf_nonevalid;	// TRUE if not a single valid entry found
+    int		qf_has_user_data; // TRUE if at least one item has user_data attached
     char_u	*qf_title;	// title derived from the command that created
 				// the error list or set by setqflist
     typval_T	*qf_ctx;	// context set by setqflist/setloclist
@@ -168,7 +170,7 @@ static efm_T	*fmt_start = NULL; // cached across qf_parse_line() calls
 static callback_T qftf_cb;
 
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
-static int	qf_add_entry(qf_list_T *qfl, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, long end_lnum, int col, int end_col, int vis_col, char_u *pattern, int nr, int type, int valid);
+static int	qf_add_entry(qf_list_T *qfl, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, long end_lnum, int col, int end_col, int vis_col, char_u *pattern, int nr, int type, typval_T *user_data, int valid);
 static void	qf_free(qf_list_T *qfl);
 static char_u	*qf_types(int, int);
 static int	qf_get_fnum(qf_list_T *qfl, char_u *, char_u *);
@@ -951,6 +953,7 @@ typedef struct {
     char_u	*pattern;
     int		enr;
     int		type;
+    typval_T	*user_data;
     int		valid;
 } qffields_T;
 
@@ -1720,6 +1723,7 @@ qf_init_process_nextline(
 		fields->pattern,
 		fields->enr,
 		fields->type,
+		fields->user_data,
 		fields->valid);
 }
 
@@ -1965,6 +1969,7 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     qf_store_title(qfl, qf_title);
     qfl->qfl_type = qi->qfl_type;
     qfl->qf_id = ++last_qf_id;
+    qfl->qf_has_user_data = FALSE;
 }
 
 /*
@@ -2145,6 +2150,7 @@ qf_add_entry(
     char_u	*pattern,	// search pattern
     int		nr,		// error number
     int		type,		// type character
+    typval_T	*user_data,     // custom user data or NULL
     int		valid)		// valid entry
 {
     qfline_T	*qfp;
@@ -2173,6 +2179,13 @@ qf_add_entry(
     qfp->qf_col = col;
     qfp->qf_end_col = end_col;
     qfp->qf_viscol = vis_col;
+    if (user_data == NULL || user_data->v_type == VAR_UNKNOWN)
+        qfp->qf_user_data.v_type = VAR_UNKNOWN;
+    else
+    {
+	copy_tv(user_data, &qfp->qf_user_data);
+	qfl->qf_has_user_data = TRUE;
+    }
     if (pattern == NULL || *pattern == NUL)
 	qfp->qf_pattern = NULL;
     else if ((qfp->qf_pattern = vim_strsave(pattern)) == NULL)
@@ -2335,6 +2348,7 @@ copy_loclist_entries(qf_list_T *from_qfl, qf_list_T *to_qfl)
 		    from_qfp->qf_pattern,
 		    from_qfp->qf_nr,
 		    0,
+		    &from_qfp->qf_user_data,
 		    from_qfp->qf_valid) == QF_FAIL)
 	    return FAIL;
 
@@ -2360,6 +2374,7 @@ copy_loclist(qf_list_T *from_qfl, qf_list_T *to_qfl)
     // Some of the fields are populated by qf_add_entry()
     to_qfl->qfl_type = from_qfl->qfl_type;
     to_qfl->qf_nonevalid = from_qfl->qf_nonevalid;
+    to_qfl->qf_has_user_data = from_qfl->qf_has_user_data;
     to_qfl->qf_count = 0;
     to_qfl->qf_index = 0;
     to_qfl->qf_start = NULL;
@@ -3340,6 +3355,7 @@ qf_jump_print_msg(
     // Add the message, skipping leading whitespace and newlines.
     ga_concat(gap, IObuff);
     qf_fmt_text(gap, skipwhite(qf_ptr->qf_text));
+    ga_append(gap, NUL);
 
     // Output the message.  Overwrite to avoid scrolling when the 'O'
     // flag is present in 'shortmess'; But when not jumping, print the
@@ -3660,9 +3676,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     if (qfp->qf_lnum != 0)
 	msg_puts_attr(":", qfSepAttr);
     gap = qfga_get();
-    if (qfp->qf_lnum == 0)
-	ga_append(gap, NUL);
-    else
+    if (qfp->qf_lnum != 0)
 	qf_range_text(gap, qfp);
     ga_concat(gap, qf_types(qfp->qf_type, qfp->qf_nr));
     ga_append(gap, NUL);
@@ -3672,6 +3686,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     {
 	gap = qfga_get();
 	qf_fmt_text(gap, qfp->qf_pattern);
+	ga_append(gap, NUL);
 	msg_puts((char *)gap->ga_data);
 	msg_puts_attr(":", qfSepAttr);
     }
@@ -3682,7 +3697,8 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     // with ^^^^.
     gap = qfga_get();
     qf_fmt_text(gap, (fname != NULL || qfp->qf_lnum != 0)
-	    ? skipwhite(qfp->qf_text) : qfp->qf_text);
+				     ? skipwhite(qfp->qf_text) : qfp->qf_text);
+    ga_append(gap, NUL);
     msg_prt_line((char_u *)gap->ga_data, FALSE);
     out_flush();		// show one line at a time
 }
@@ -3774,7 +3790,6 @@ qf_list(exarg_T *eap)
 qf_fmt_text(garray_T *gap, char_u *text)
 {
     char_u	*p = text;
-
     while (*p != NUL)
     {
 	if (*p == '\n')
@@ -3787,8 +3802,6 @@ qf_fmt_text(garray_T *gap, char_u *text)
 	else
 	    ga_append(gap, *p++);
     }
-
-    ga_append(gap, NUL);
 }
 
 /*
@@ -3807,8 +3820,8 @@ qf_range_text(garray_T *gap, qfline_T *qfp)
 
     if (qfp->qf_end_lnum > 0 && qfp->qf_lnum != qfp->qf_end_lnum)
     {
-	vim_snprintf((char *)buf + len, bufsize - len,
-		"-%ld", qfp->qf_end_lnum);
+	vim_snprintf((char *)buf + len, bufsize - len, "-%ld",
+							     qfp->qf_end_lnum);
 	len += (int)STRLEN(buf + len);
     }
     if (qfp->qf_col > 0)
@@ -3817,12 +3830,11 @@ qf_range_text(garray_T *gap, qfline_T *qfp)
 	len += (int)STRLEN(buf + len);
 	if (qfp->qf_end_col > 0 && qfp->qf_col != qfp->qf_end_col)
 	{
-	    vim_snprintf((char *)buf + len, bufsize - len,
-		    "-%d", qfp->qf_end_col);
+	    vim_snprintf((char *)buf + len, bufsize - len, "-%d",
+							      qfp->qf_end_col);
 	    len += (int)STRLEN(buf + len);
 	}
     }
-    buf[len] = NUL;
 
     ga_concat_len(gap, buf, len);
 }
@@ -3960,6 +3972,7 @@ qf_free_items(qf_list_T *qfl)
 	    vim_free(qfp->qf_module);
 	    vim_free(qfp->qf_text);
 	    vim_free(qfp->qf_pattern);
+	    clear_tv(&qfp->qf_user_data);
 	    stop = (qfp == qfpnext);
 	    vim_free(qfp);
 	    if (stop)
@@ -4659,7 +4672,6 @@ qf_buf_add_line(
     if (qftf_str != NULL && *qftf_str != NUL)
     {
 	ga_concat(gap, qftf_str);
-	ga_append(gap, NUL);
     }
     else
     {
@@ -4706,6 +4718,7 @@ qf_buf_add_line(
 							       : qfp->qf_text);
     }
 
+    ga_append(gap, NUL);
     if (ml_append_buf(buf, lnum, gap->ga_data, gap->ga_len, FALSE) == FAIL)
 	return FAIL;
 
@@ -6088,6 +6101,7 @@ vgr_match_buflines(
 			    NULL,	// search pattern
 			    0,		// nr
 			    0,		// type
+			    NULL,	// user_data
 			    TRUE	// valid
 			    ) == QF_FAIL)
 		{
@@ -6134,6 +6148,7 @@ vgr_match_buflines(
 			    NULL,	// search pattern
 			    0,		// nr
 			    0,		// type
+			    NULL,	// user_data
 			    TRUE	// valid
 			    ) == QF_FAIL)
 		{
@@ -6774,6 +6789,8 @@ get_qfline_items(qfline_T *qfp, list_T *list)
 	    || dict_add_string(dict, "pattern", qfp->qf_pattern) == FAIL
 	    || dict_add_string(dict, "text", qfp->qf_text) == FAIL
 	    || dict_add_string(dict, "type", buf) == FAIL
+	    || (qfp->qf_user_data.v_type != VAR_UNKNOWN
+		&& dict_add_tv(dict, "user_data", &qfp->qf_user_data) == FAIL )
 	    || dict_add_number(dict, "valid", (long)qfp->qf_valid) == FAIL)
 	return FAIL;
 
@@ -7308,6 +7325,9 @@ qf_add_entry_from_dict(
     text = dict_get_string(d, "text", TRUE);
     if (text == NULL)
 	text = vim_strsave((char_u *)"");
+    typval_T user_data;
+    user_data.v_type = VAR_UNKNOWN;
+    dict_get_tv(d, "user_data", &user_data);
 
     valid = TRUE;
     if ((filename == NULL && bufnum == 0) || (lnum == 0 && pattern == NULL))
@@ -7344,6 +7364,7 @@ qf_add_entry_from_dict(
 			pattern,	// search pattern
 			nr,
 			type == NULL ? NUL : *type,
+			&user_data,
 			valid);
 
     vim_free(filename);
@@ -7351,6 +7372,7 @@ qf_add_entry_from_dict(
     vim_free(pattern);
     vim_free(text);
     vim_free(type);
+    clear_tv(&user_data);
 
     if (valid)
 	*valid_entry = TRUE;
@@ -7808,6 +7830,27 @@ set_errorlist(
     return retval;
 }
 
+static int mark_quickfix_user_data(qf_info_T *qi, int copyID)
+{
+    int abort = FALSE;
+    for (int i = 0; i < LISTCOUNT && !abort; ++i)
+    {
+	qf_list_T *qfl = &qi->qf_lists[i];
+	if (!qfl->qf_has_user_data)
+	    continue;
+	qfline_T *qfp;
+	int j;
+	FOR_ALL_QFL_ITEMS(qfl, qfp, j)
+	{
+	    typval_T* user_data = &qfp->qf_user_data;
+	    if (user_data != NULL && user_data->v_type != VAR_NUMBER
+		&& user_data->v_type != VAR_STRING && user_data->v_type != VAR_FLOAT)
+		abort = abort || set_ref_in_item(user_data, copyID, NULL, NULL);
+	}
+    }
+    return abort;
+}
+
 /*
  * Mark the quickfix context and callback function as in use for all the lists
  * in a quickfix stack.
@@ -7849,6 +7892,10 @@ set_ref_in_quickfix(int copyID)
     if (abort)
 	return abort;
 
+    abort = mark_quickfix_user_data(&ql_info, copyID);
+    if (abort)
+	return abort;
+
     abort = set_ref_in_callback(&qftf_cb, copyID);
     if (abort)
 	return abort;
@@ -7858,6 +7905,10 @@ set_ref_in_quickfix(int copyID)
 	if (win->w_llist != NULL)
 	{
 	    abort = mark_quickfix_ctx(win->w_llist, copyID);
+	    if (abort)
+		return abort;
+
+	    abort = mark_quickfix_user_data(win->w_llist, copyID);
 	    if (abort)
 		return abort;
 	}
@@ -8228,6 +8279,7 @@ hgr_search_file(
 			NULL,	// search pattern
 			0,	// nr
 			1,	// type
+			NULL,	// user_data
 			TRUE	// valid
 			) == QF_FAIL)
 	    {

@@ -642,7 +642,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 	return 0;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	iemsg(_(e_text_property_info_corrupted));
+	iemsg(e_text_property_info_corrupted);
 	return 0;
     }
     *props = text + textlen;

@@ -484,6 +484,13 @@ endif
 " END_INDENT
 
 " START_INDENT
+if true
+    var d = {
+	end: 0}
+endif
+" END_INDENT
+
+" START_INDENT
 nunmap <buffer> (
 nunmap <buffer> )
 inoremap [ {

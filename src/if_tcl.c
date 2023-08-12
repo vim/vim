@@ -1552,7 +1552,7 @@ tclsetdelcmd(
 	reflist = reflist->next;
     }
     // This should never happen.  Famous last word?
-    iemsg(_(e_tcl_fatal_error_reflist_corrupt_please_report_this));
+    iemsg(e_tcl_fatal_error_reflist_corrupt_please_report_this);
     Tcl_SetResult(interp, _("cannot register callback command: buffer/window reference not found"), TCL_STATIC);
     return TCL_ERROR;
 }

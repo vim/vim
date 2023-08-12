@@ -1723,7 +1723,7 @@ cs_manage_matches(
 	cs_print_tags_priv(mp, cp, cnt);
 	break;
     default:	// should not reach here
-	iemsg(_(e_fatal_error_in_cs_manage_matches));
+	iemsg(e_fatal_error_in_cs_manage_matches);
 	return NULL;
     }
 
@@ -2114,14 +2114,13 @@ cs_read_prompt(int i)
     int		ch;
     char	*buf = NULL; // buffer for possible error message from cscope
     int		bufpos = 0;
-    char	*cs_emsg;
     int		maxlen;
     static char *eprompt = "Press the RETURN key to continue:";
     int		epromptlen = (int)strlen(eprompt);
     int		n;
 
-    cs_emsg = _(e_cscope_error_str);
     // compute maximum allowed len for Cscope error message
+    char *cs_emsg = _(e_cscope_error_str);
     maxlen = (int)(IOSIZE - strlen(cs_emsg));
 
     for (;;)

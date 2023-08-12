@@ -957,7 +957,7 @@ ExpandOne(
     int		mode)
 {
     char_u	*ss = NULL;
-    static int	findex;
+    static int	findex;			// TODO: Move into expand_T
     static char_u *orig_save = NULL;	// kept value of orig
     int		orig_saved = FALSE;
     int		i;
@@ -971,8 +971,9 @@ ExpandOne(
     if (mode == WILD_CANCEL)
 	ss = vim_strsave(orig_save ? orig_save : (char_u *)"");
     else if (mode == WILD_APPLY)
-	ss = vim_strsave(findex == -1 ? (orig_save ?
-		    orig_save : (char_u *)"") : xp->xp_files[findex]);
+	ss = vim_strsave(findex == -1
+			    ? (orig_save ? orig_save : (char_u *)"")
+			    : xp->xp_files[findex]);
 
     // free old names
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
@@ -985,7 +986,9 @@ ExpandOne(
 	if (compl_match_array != NULL)
 	    cmdline_pum_remove();
     }
-    findex = 0;
+    // TODO: Remove condition if "findex" is part of expand_T ?
+    if (mode != WILD_EXPAND_FREE && mode != WILD_ALL && mode != WILD_ALL_KEEP)
+	findex = 0;
 
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
@@ -3937,14 +3940,12 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 {
     int skt = KeyTyped;
-#ifdef FEAT_EVAL
-    int old_RedrawingDisabled = RedrawingDisabled;
-#endif
 
     if (!p_wmnu || wild_menu_showing == 0)
 	return;
 
 #ifdef FEAT_EVAL
+    int save_RedrawingDisabled = RedrawingDisabled;
     if (cclp->input_fn)
 	RedrawingDisabled = 0;
 #endif
@@ -3974,7 +3975,7 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
     wild_menu_showing = 0;
 #ifdef FEAT_EVAL
     if (cclp->input_fn)
-	RedrawingDisabled = old_RedrawingDisabled;
+	RedrawingDisabled = save_RedrawingDisabled;
 #endif
 }
 

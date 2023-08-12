@@ -2135,10 +2135,14 @@ do_set_option_numeric(
 	    ((flags & P_VI_DEF) || cp_val) ? VI_DEFAULT : VIM_DEFAULT];
     else if (nextchar == '<')
     {
-	// For 'undolevels' NO_LOCAL_UNDOLEVEL means to
-	// use the global value.
 	if ((long *)varp == &curbuf->b_p_ul && opt_flags == OPT_LOCAL)
+	    // for 'undolevels' NO_LOCAL_UNDOLEVEL means using the global value
 	    value = NO_LOCAL_UNDOLEVEL;
+	else if (opt_flags == OPT_LOCAL
+		    && ((long *)varp == &curwin->w_p_siso
+		     || (long *)varp == &curwin->w_p_so))
+	    // for 'scrolloff'/'sidescrolloff' -1 means using the global value
+	    value = -1;
 	else
 	    value = *(long *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL);
     }
@@ -5462,20 +5466,6 @@ is_option_allocated(char *name)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-/*
- * Return TRUE if "name" is a string option.
- * Returns FALSE if option "name" does not exist.
- */
-    int
-is_string_option(char_u *name)
-{
-    int idx = findoption(name);
-
-    return idx >= 0 && (options[idx].flags & P_STRING);
-}
-#endif
-
 /*
  * Translate a string like "t_xx", "<t_xx>" or "<S-Tab>" to a key number.
  * When "has_lt" is true there is a '<' before "*arg_arg".
@@ -6532,7 +6522,7 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
-	default:	iemsg(_(e_get_varp_error));
+	default:	iemsg(e_get_varp_error);
     }
     // always return a valid pointer to avoid a crash!
     return (char_u *)&(curbuf->b_p_wm);

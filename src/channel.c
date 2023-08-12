@@ -926,7 +926,9 @@ channel_open(
     CLEAR_FIELD(hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-# if defined(AI_ADDRCONFIG) && defined(AI_V4MAPPED)
+# if defined(__ANDROID__)
+    hints.ai_flags = AI_ADDRCONFIG;
+# elif defined(AI_ADDRCONFIG) && defined(AI_V4MAPPED)
     hints.ai_flags = AI_ADDRCONFIG | AI_V4MAPPED;
 # endif
     // Set port number manually in order to prevent name resolution services
@@ -1757,7 +1759,7 @@ invoke_callback(channel_T *channel, callback_T *callback, typval_T *argv)
     typval_T	rettv;
 
     if (safe_to_invoke_callback == 0)
-	iemsg("INTERNAL: Invoking callback when it is not safe");
+	iemsg("Invoking callback when it is not safe");
 
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
@@ -2400,7 +2402,7 @@ channel_remove_block_id(chanpart_T *chanpart, int id)
 	    }
 	    return;
 	}
-    siemsg("INTERNAL: channel_remove_block_id: cannot find id %d", id);
+    siemsg("channel_remove_block_id(): cannot find id %d", id);
 }
 
 /*

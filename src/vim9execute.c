@@ -3967,8 +3967,8 @@ exec_instructions(ectx_T *ectx)
 		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 			goto theend;
 		    classmember_T *cm = &iptr->isn_arg.classmember;
-		    *STACK_TV_BOT(0) =
-				    cm->cm_class->class_members_tv[cm->cm_idx];
+		    copy_tv(cm->cm_class->class_members_tv + cm->cm_idx,
+							      STACK_TV_BOT(0));
 		    ++ectx->ec_stack.ga_len;
 		}
 		break;
@@ -4448,6 +4448,7 @@ exec_instructions(ectx_T *ectx)
 		    CLEAR_FIELD(ea);
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    define_function(&ea, NULL, &lines_to_free, 0);
 		    ga_clear_strings(&lines_to_free);
 		}

@@ -21,7 +21,7 @@ jobs:
 
     env:
       CC: ${{ matrix.compiler }}
-      GCC_VER: 12
+      GCC_VER: 13
       CLANG_VER: 16
       TEST: test
       SRCDIR: ./src
@@ -38,6 +38,7 @@ jobs:
         features: [tiny, normal, huge]
         compiler: [clang, gcc]
         extra: [none]
+        luaver: [lua5.4]
         include:
           - features: tiny
             compiler: clang
@@ -54,13 +55,18 @@ jobs:
             coverage: true
             extra: testgui
             uchar: true
+            luaver: lua5.4
           - features: huge
             compiler: clang
             extra: asan
+            # Lua5.1 is the most widely used version (since it's what LuaJIT is
+            # compatible with), so ensure it works
+            luaver: lua5.1
           - features: huge
             compiler: gcc
             coverage: true
             extra: unittests
+            luaver: lua5.4
           - features: normal
             compiler: gcc
             extra: vimtags
@@ -85,8 +91,8 @@ jobs:
               libperl-dev \
               python2-dev \
               python3-dev \
-              liblua5.4-dev \
-              lua5.4 \
+              lib${{ matrix.luaver }}-dev \
+              ${{ matrix.luaver }} \
               ruby-dev \
               tcl-dev \
               cscope \
@@ -98,10 +104,9 @@ jobs:
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew install gcc@${{ env.GCC_VER }}
-          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/bin/gcc-${{ env.GCC_VER }} 100
-          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/bin/gcc-${{ env.GCC_VER }}
+          sudo apt-get install -y gcc-${{ env.GCC_VER }}
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
       - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
@@ -239,6 +244,7 @@ jobs:
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
+        timeout-minutes: 20
         if: matrix.coverage
         uses: codecov/codecov-action@v3
         with:
@@ -276,7 +282,6 @@ jobs:
         run: |
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
-          brew uninstall perl
 
       - name: Set up environment
         run: |
@@ -611,6 +616,7 @@ jobs:
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
+        timeout-minutes: 20
         if: matrix.coverage
         uses: codecov/codecov-action@v3
         with:

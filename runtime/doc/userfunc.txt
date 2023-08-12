@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2023 Feb 02
+*userfunc.txt*	For Vim version 9.0.  Last change: 2023 May 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -51,6 +51,13 @@ define a global function.
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
 				:function dict.init
+<			Note that {name} is not an expression, you cannot use
+			a variable that is a function reference.  You can use
+			this dirty trick to list the function referred to with
+			variable "Funcref": >
+				let g:MyFuncref = Funcref
+				func g:MyFuncref
+				unlet g:MyFuncref
 
 :fu[nction] /{pattern}	List functions with a name matching {pattern}.
 			Example that lists all functions ending with "File": >
