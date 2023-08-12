@@ -325,7 +325,11 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
     set undolevels=100
     normal dd
     set undolevels=100
-    w!
+    try
+      w!
+    catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+    endtry
     call assert_equal(0, &undofile)
     bw!
     call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
