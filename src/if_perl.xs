@@ -40,7 +40,7 @@
 /* Work around for perl-5.18.
  * Don't include "perl\lib\CORE\inline.h" for now,
  * include it after Perl_sv_free2 is defined. */
-#if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
+#ifdef DYNAMIC_PERL
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
@@ -709,8 +709,142 @@ S_POPMARK(pTHX)
 #  define Perl_POPMARK S_POPMARK
 # endif
 
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+PERL_STATIC_INLINE U8
+Perl_gimme_V(pTHX)
+{
+    I32 cxix;
+    U8  gimme = (PL_op->op_flags & OPf_WANT);
+
+    if (gimme)
+        return gimme;
+    cxix = PL_curstackinfo->si_cxsubix;
+    if (cxix < 0)
+	return
+#  if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
+	    PL_curstackinfo->si_type == PERLSI_SORT ? G_SCALAR:
+#  endif
+	    G_VOID;
+    assert(cxstack[cxix].blk_gimme & G_WANT);
+    return (cxstack[cxix].blk_gimme & G_WANT);
+}
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 38)
+#  define PERL_ARGS_ASSERT_SVPVXTRUE             \
+        assert(sv)
+PERL_STATIC_INLINE bool
+Perl_SvPVXtrue(pTHX_ SV *sv)
+{
+    PERL_ARGS_ASSERT_SVPVXTRUE;
+
+    if (! (XPV *) SvANY(sv)) {
+        return false;
+    }
+
+    if ( ((XPV *) SvANY(sv))->xpv_cur > 1) { /* length > 1 */
+        return true;
+    }
+
+    if (( (XPV *) SvANY(sv))->xpv_cur == 0) {
+        return false;
+    }
+
+    return *sv->sv_u.svu_pv != '0';
+}
+
+#  define PERL_ARGS_ASSERT_SVGETMAGIC            \
+        assert(sv)
+PERL_STATIC_INLINE void
+Perl_SvGETMAGIC(pTHX_ SV *sv)
+{
+    PERL_ARGS_ASSERT_SVGETMAGIC;
+
+    if (UNLIKELY(SvGMAGICAL(sv))) {
+        mg_get(sv);
+    }
+}
+
+PERL_STATIC_INLINE char *
+Perl_SvPV_helper(pTHX_
+                 SV * const sv,
+                 STRLEN * const lp,
+                 const U32 flags,
+                 const PL_SvPVtype type,
+                 char * (*non_trivial)(pTHX_ SV *, STRLEN * const, const U32),
+                 const bool or_null,
+                 const U32 return_flags
+                )
+{
+    /* 'type' should be known at compile time, so this is reduced to a single
+     * conditional at runtime */
+    if (   (type == SvPVbyte_type_      && SvPOK_byte_nog(sv))
+        || (type == SvPVforce_type_     && SvPOK_pure_nogthink(sv))
+        || (type == SvPVutf8_type_      && SvPOK_utf8_nog(sv))
+        || (type == SvPVnormal_type_    && SvPOK_nog(sv))
+        || (type == SvPVutf8_pure_type_ && SvPOK_utf8_pure_nogthink(sv))
+        || (type == SvPVbyte_pure_type_ && SvPOK_byte_pure_nogthink(sv))
+   ) {
+        if (lp) {
+            *lp = SvCUR(sv);
+        }
+
+        /* Similarly 'return_flags is known at compile time, so this becomes
+         * branchless */
+        if (return_flags & SV_MUTABLE_RETURN) {
+            return SvPVX_mutable(sv);
+        }
+        else if(return_flags & SV_CONST_RETURN) {
+            return (char *) SvPVX_const(sv);
+        }
+        else {
+            return SvPVX(sv);
+        }
+    }
+
+    if (or_null) {  /* This is also known at compile time */
+        if (flags & SV_GMAGIC) {    /* As is this */
+            SvGETMAGIC(sv);
+        }
+
+        if (! SvOK(sv)) {
+            if (lp) {   /* As is this */
+                *lp = 0;
+            }
+
+            return NULL;
+        }
+    }
+
+    /* Can't trivially handle this, call the function */
+    return non_trivial(aTHX_ sv, lp, (flags|return_flags));
+}
+
+#  define PERL_ARGS_ASSERT_SVNV                  \
+        assert(sv)
+PERL_STATIC_INLINE NV
+Perl_SvNV(pTHX_ SV *sv) {
+    PERL_ARGS_ASSERT_SVNV;
+
+    if (SvNOK_nog(sv))
+        return SvNVX(sv);
+    return sv_2nv(sv);
+}
+
+#  define PERL_ARGS_ASSERT_SVIV                  \
+        assert(sv)
+PERL_STATIC_INLINE IV
+Perl_SvIV(pTHX_ SV *sv) {
+    PERL_ARGS_ASSERT_SVIV;
+
+    if (SvIOK_nog(sv))
+        return SvIVX(sv);
+    return sv_2iv(sv);
+}
+# endif
+
 /* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
-# if (PERL_REVISION == 5) && (PERL_VERSION == 34)
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
 {
@@ -737,7 +871,7 @@ Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
 # endif
 
 /* perl-5.32 needs Perl_SvTRUE */
-# if (PERL_REVISION == 5) && (PERL_VERSION == 32)
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
 PERL_STATIC_INLINE bool
 Perl_SvTRUE(pTHX_ SV *sv) {
     if (!LIKELY(sv))
