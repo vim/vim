@@ -721,7 +721,7 @@ text_prop_position(
 
 	// add 1 for NUL, 2 for when '…' is used
 	if (n_attr != NULL)
-	    l = alloc(n_used + before + after + padding + 3);
+	    l = alloc(n_used + before + after + (padding > 0 ? padding : 0) + 3);
 	if (n_attr == NULL || l != NULL)
 	{
 	    int off = 0;
@@ -801,7 +801,7 @@ text_prop_position(
 
 		// n_attr_skip will not be decremented before draw_state is
 		// WL_LINE
-		*n_attr_skip = before + padding;
+		*n_attr_skip = before + (padding > 0 ? padding : 0);
 	    }
 	}
     }
