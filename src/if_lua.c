@@ -71,14 +71,16 @@ static int in_ccallback = 0;
 // get/setudata manage references to vim userdata in cache table through
 // object pointers (light userdata)
 #define luaV_getudata(L, v) \
-    if (in_ccallback) { \
+    if (in_ccallback) \
 	lua_pushnil(L); \
-    } else { \
+    else \
+    { \
 	lua_pushlightuserdata((L), (void *) (v)); \
 	lua_rawget((L), lua_upvalueindex(1)); \
     }
 #define luaV_setudata(L, v) \
-    if (!in_ccallback) { \
+    if (!in_ccallback) \
+    { \
 	lua_pushlightuserdata((L), (void *) (v)); \
 	lua_pushvalue((L), -2); \
 	lua_rawset((L), lua_upvalueindex(1)); \
