@@ -1794,7 +1794,8 @@ func Test_popup_menu()
   let winid = ShowMenu(" ", 1)
   let winid = ShowMenu("j \<CR>", 2)
   let winid = ShowMenu("JjK \<CR>", 2)
-  let winid = ShowMenu("jjjjjj ", 3)
+  " wraps around
+  let winid = ShowMenu("jjjjjj ", 1)
   let winid = ShowMenu("kkk ", 1)
   let winid = ShowMenu("x", -1)
   let winid = ShowMenu("X", -1)
@@ -3053,9 +3054,13 @@ func Test_popup_menu_with_scrollbar()
   call term_sendkeys(buf, "jjj")
   call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_2', {})
 
-  " if the cursor is the bottom line, it stays at the bottom line.
+  " the cursor wraps around at the bottom
   call term_sendkeys(buf, repeat("j", 20))
   call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_3', {})
+
+  " if the cursor is again at the bottom line
+  call term_sendkeys(buf, repeat("j", 2))
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_3a', {})
 
   call term_sendkeys(buf, "kk")
   call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_4', {})
@@ -3063,9 +3068,13 @@ func Test_popup_menu_with_scrollbar()
   call term_sendkeys(buf, "k")
   call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_5', {})
 
-  " if the cursor is in the top line, it stays in the top line.
+  " the cursor wraps around at the top
   call term_sendkeys(buf, repeat("k", 20))
   call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_6', {})
+
+  " the cursor at the top of the window again
+  call term_sendkeys(buf, repeat("k", 3))
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_6a', {})
 
   " close the menu popupwin.
   call term_sendkeys(buf, " ")
