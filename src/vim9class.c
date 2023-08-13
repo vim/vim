@@ -209,6 +209,13 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
 	siemsg("index %d out of range for interface %s", idx, itf->class_name);
 	return 0;
     }
+
+    // If "cl" is the interface or the class that is extended, then the method
+    // index can be used directly and there is no need to search for the method
+    // index in one of the child classes.
+    if (cl == itf)
+	return idx;
+
     itf2class_T *i2c;
     for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
 	if (i2c->i2c_class == cl && i2c->i2c_is_method == is_method)

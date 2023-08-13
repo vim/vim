@@ -1913,4 +1913,39 @@ def Test_extends_method_crashes_vim()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for calling a method in a class that is extended
+def Test_call_method_in_extended_class()
+  var lines =<< trim END
+    vim9script
+
+    var prop_init_called = false
+    var prop_register_called = false
+
+    class Property
+      def Init()
+        prop_init_called = true
+      enddef
+
+      def Register()
+        prop_register_called = true
+      enddef
+    endclass
+
+    class Bool extends Property
+    endclass
+
+    def Observe(obj: Property)
+      obj.Register()
+    enddef
+
+    var p = Property.new()
+    Observe(p)
+
+    p.Init()
+    assert_true(prop_init_called)
+    assert_true(prop_register_called)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
