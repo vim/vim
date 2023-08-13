@@ -897,7 +897,7 @@ early_ret:
 		    if (!done && extends_cl != NULL)
 		    {
 			for (int cl_i = 0;
-			     cl_i < extends_cl->class_obj_member_count; ++cl_i)
+			     cl_i < extends_cl->class_obj_method_count; ++cl_i)
 			{
 			    if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
 				   extends_cl->class_obj_methods[cl_i]->uf_name)
