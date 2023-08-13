@@ -836,7 +836,7 @@ func s:ParseVarinfo(varinfo)
   let dict['name'] = a:varinfo[nameIdx[1] + 7 : nameIdx[2] - 2]
   let typeIdx = matchstrpos(a:varinfo, ',type="\([^"]*\)"')
   let dict['type'] = a:varinfo[typeIdx[1] + 7 : typeIdx[2] - 2]
-  let valueIdx = matchstrpos(a:varinfo, ',value="\([^"]*\)"}')
+  let valueIdx = matchstrpos(a:varinfo, ',value="\(.*\)"}')
   if valueIdx[1] == -1
     let dict['value'] = 'Complex value'
   else
