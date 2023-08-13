@@ -128,6 +128,8 @@ If nothing else works, report bugs directly to the vim-dev mailing list:
 
 MAIN AUTHOR
 
+Most of Vim was created by Bram Moolenaar <Bram@vim.org> |Bram-Moolenaar|
+
 Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
 
 	<vim-dev@vim.org>

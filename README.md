@@ -147,6 +147,9 @@ If nothing else works, report bugs directly to the vim-dev mailing list:
 
 ## Main author ##
 
+Most of Vim was created by Bram Moolenaar <Bram@vim.org>
+[Bram-Moolenaar](https://vimhelp.org/version9.txt.html#Bram-Moolenaar)
+
 Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
 	<vim-dev@vim.org>
 
