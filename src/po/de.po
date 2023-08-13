@@ -2299,7 +2299,7 @@ msgstr "Fehler beim Ausführen von \"%s\":"
 msgid "line %4ld:"
 msgstr "Zeile %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Übersetzt von Christian Brabandt <cb@256bit.org>"
 
 msgid "Interrupt: "

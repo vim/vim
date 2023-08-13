@@ -2192,7 +2192,7 @@ msgstr "riga %4ld:"
 
 #. Translator: Please replace the name and email address
 #. with the appropriate text for your translation.
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Manutentore messaggi: Antonio Colombo <azc100@gmail.com>"
 
 msgid "Interrupt: "

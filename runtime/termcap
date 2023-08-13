@@ -1,8 +1,9 @@
 #
 # Demonstration of a termcap file (for the Amiga and Archimedes)
 #
-# Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last change:	1999 Feb 02
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
+# Last Change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 #
 sx|ansi|any ansi terminal with pessimistic assumptions:\
 	:co#80:li#24:cl=50\E[;H\E[2J:bs:am:cm=\E[%i%d;%dH:\

@@ -1,7 +1,8 @@
 " Vim support file to detect file types
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 Jun 09
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")

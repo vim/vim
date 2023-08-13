@@ -2245,7 +2245,7 @@ msgstr "S'ha detectat un error en processar %s:"
 msgid "line %4ld:"
 msgstr "línia %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Traducció dels missatges: Ernest Adrogué <nr9@posteo.net>"
 
 msgid "Interrupt: "

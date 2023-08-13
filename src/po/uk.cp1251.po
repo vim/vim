@@ -2235,7 +2235,7 @@ msgstr "Виявлено помилку під час виконання %s:"
 msgid "line %4ld:"
 msgstr "рядок %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Українізація: Анатолій Сахнік <sakhnik@gmail.com>"
 
 msgid "Interrupt: "

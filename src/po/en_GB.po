@@ -94,7 +94,7 @@ msgstr "-foreground <colour>\tUse <colour> for normal text (also: -fg)"
 msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgstr "+reverse\t\tDo not use reverse video (also: +rv)"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Messages maintainer: Mike Williams <mrw@eandem.co.uk>"
 
 msgid "VIM: Can't open window!\n"

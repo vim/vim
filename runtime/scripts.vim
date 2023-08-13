@@ -1,7 +1,8 @@
 " Vim support file to detect file types in scripts
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2023 Jun 08
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by

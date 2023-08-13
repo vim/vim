@@ -1,6 +1,7 @@
 " Vim plugin for downloading spell files
-" Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Feb 01
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Exit quickly when:
 " - this plugin was already loaded

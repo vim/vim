@@ -2264,7 +2264,7 @@ msgstr "Откривена је грешка током обраде %s:"
 msgid "line %4ld:"
 msgstr "линија %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Поруке одржава: Иван Пешић <ivan.pesic@gmail.com>"
 
 msgid "Interrupt: "
