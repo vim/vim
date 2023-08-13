@@ -1509,6 +1509,9 @@ object_clear(object_T *obj)
 
     class_T *cl = obj->obj_class;
 
+    if (!cl)
+        return;
+
     // the member values are just after the object structure
     typval_T *tv = (typval_T *)(obj + 1);
     for (int i = 0; i < cl->class_obj_member_count; ++i)
