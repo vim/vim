@@ -61,16 +61,28 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 
 static const char LUA___CALL[] = "__call";
 
+// The udata system below, using upvalues, fails in luaV_call_lua_func() during
+// the calls to luaV_pushtypval() because Lua hasn't set any function environment
+// or prepared upvalues, and so the upvalue indices are filled with garbage;
+// thus we gate use of the cache via this variable.
+static int in_ccallback = 0;
+
 // most functions are closures with a cache table as first upvalue;
 // get/setudata manage references to vim userdata in cache table through
 // object pointers (light userdata)
 #define luaV_getudata(L, v) \
-    lua_pushlightuserdata((L), (void *) (v)); \
-    lua_rawget((L), lua_upvalueindex(1))
+    if (in_ccallback) { \
+	lua_pushnil(L); \
+    } else { \
+	lua_pushlightuserdata((L), (void *) (v)); \
+	lua_rawget((L), lua_upvalueindex(1)); \
+    }
 #define luaV_setudata(L, v) \
-    lua_pushlightuserdata((L), (void *) (v)); \
-    lua_pushvalue((L), -2); \
-    lua_rawset((L), lua_upvalueindex(1))
+    if (!in_ccallback) { \
+	lua_pushlightuserdata((L), (void *) (v)); \
+	lua_pushvalue((L), -2); \
+	lua_rawset((L), lua_upvalueindex(1)); \
+    }
 #define luaV_getfield(L, s) \
     lua_pushlightuserdata((L), (void *)(s)); \
     lua_rawget((L), LUA_REGISTRYINDEX)
@@ -2770,8 +2782,10 @@ luaV_call_lua_func(
 	lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
     }
 
+    in_ccallback = TRUE;
     for (i = 0; i < argcount; ++i)
 	luaV_pushtypval(funcstate->L, &argvars[i]);
+    in_ccallback = FALSE;
 
     if (lua_pcall(funcstate->L, luaargcount, 1, 0))
     {
