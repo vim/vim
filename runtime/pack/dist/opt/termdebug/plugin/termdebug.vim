@@ -146,7 +146,9 @@ func s:StartDebug_internal(dict)
   let s:ptywin = 0
   let s:pid = 0
   let s:asmwin = 0
+  let s:asmbuf = 0
   let s:varwin = 0
+  let s:varbuf = 0
 
   if exists('#User#TermdebugStartPre')
     doauto <nomodeline> User TermdebugStartPre
@@ -223,6 +225,13 @@ endfunc
 func s:CloseBuffers()
   exe 'bwipe! ' . s:ptybuf
   exe 'bwipe! ' . s:commbuf
+  if s:asmbuf > 0
+    exe 'bwipe! ' . s:asmbuf
+  endif
+  if s:varbuf > 0
+    exe 'bwipe! ' . s:varbuf
+  endif
+  s:running = 0
   unlet! s:gdbwin
 endfunc
 
@@ -696,6 +705,13 @@ func s:EndTermDebug(job, status)
   endif
 
   exe 'bwipe! ' . s:commbuf
+  if s:asmbuf > 0
+    exe 'bwipe! ' . s:asmbuf
+  endif
+  if s:varbuf > 0
+    exe 'bwipe! ' . s:varbuf
+  endif
+  let s:running = 0
   unlet s:gdbwin
 
   call s:EndDebugCommon()
@@ -1346,11 +1362,11 @@ func s:GotoAsmwinOrCreateIt()
     setlocal buftype=nofile
     setlocal modifiable
 
-    let asmbuf = bufnr('Termdebug-asm-listing')
-    if asmbuf > 0
-      exe 'buffer' . asmbuf
+    if s:asmbuf > 0
+      exe 'buffer' . s:asmbuf
     else
       silent file Termdebug-asm-listing
+      let s:asmbuf = bufnr('Termdebug-asm-listing')
     endif
 
     if s:GetDisasmWindowHeight() > 0
@@ -1407,11 +1423,11 @@ func s:GotoVariableswinOrCreateIt()
     setlocal buftype=nofile
     setlocal modifiable
 
-    let varbuf = bufnr('Termdebug-variables-listing')
-    if varbuf > 0
-      exe 'buffer' . varbuf
+    if s:varbuf > 0
+      exe 'buffer' . s:varbuf
     else
       silent file Termdebug-variables-listing
+      let s:varbuf = bufnr('Termdebug-variables-listing')
     endif
 
     if s:GetVariablesWindowHeight() > 0
