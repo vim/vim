@@ -374,7 +374,7 @@ func Test_cursor_column_in_concealed_line_after_window_scroll()
     normal gg
     "==expr==
   END
-  call writefile(lines, 'Xcolesearch')
+  call writefile(lines, 'Xcolesearch', 'D')
   let buf = RunVimInTerminal('Xcolesearch', {})
   call TermWait(buf, 50)
 
@@ -394,7 +394,6 @@ func Test_cursor_column_in_concealed_line_after_window_scroll()
   call assert_equal(2, term_getcursor(buf)[1])
 
   call StopVimInTerminal(buf)
-  call delete('Xcolesearch')
 endfunc
 
 func Test_cursor_column_in_concealed_line_after_leftcol_change()
@@ -406,7 +405,7 @@ func Test_cursor_column_in_concealed_line_after_leftcol_change()
     call matchadd('Conceal', '-')
     set nowrap ss=0 cole=3 cocu=n
   END
-  call writefile(lines, 'Xcurs-columns')
+  call writefile(lines, 'Xcurs-columns', 'D')
   let buf = RunVimInTerminal('-S Xcurs-columns', {})
 
   " Go to the end of the line (3 columns beyond the end of the screen).
@@ -422,7 +421,6 @@ func Test_cursor_column_in_concealed_line_after_leftcol_change()
   call assert_equal(1, term_getcursor(buf)[1])
 
   call StopVimInTerminal(buf)
-  call delete('Xcurs-columns')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

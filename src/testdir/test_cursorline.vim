@@ -3,26 +3,26 @@
 source check.vim
 source screendump.vim
 
-function! s:screen_attr(lnum) abort
+func s:screen_attr(lnum) abort
   return map(range(1, 8), 'screenattr(a:lnum, v:val)')
-endfunction
+endfunc
 
-function! s:test_windows(h, w) abort
+func s:test_windows(h, w) abort
   call NewWindow(a:h, a:w)
-endfunction
+endfunc
 
-function! s:close_windows() abort
+func s:close_windows() abort
   call CloseWindow()
-endfunction
+endfunc
 
-function! s:new_hi() abort
+func s:new_hi() abort
   redir => save_hi
   silent! hi CursorLineNr
   redir END
   let save_hi = join(split(substitute(save_hi, '\s*xxx\s*', ' ', ''), "\n"), '')
   exe 'hi' save_hi 'ctermbg=0 guibg=Black'
   return save_hi
-endfunction
+endfunc
 
 func Test_cursorline_highlight1()
   let save_hi = s:new_hi()
@@ -133,7 +133,7 @@ func Test_cursorline_screenline()
   call extend(lines, lines1)
   call extend(lines,  ["call append(0, ".. string(file_content).. ')'])
   call extend(lines, lines2)
-  call writefile(lines, filename)
+  call writefile(lines, filename, 'D')
   " basic test
   let buf = RunVimInTerminal('-S '. filename, #{rows: 20})
   call VerifyScreenDump(buf, 'Test_'. filename. '_1', {})
@@ -196,7 +196,6 @@ func Test_cursorline_screenline()
   call term_sendkeys(buf, ":set list& cursorlineopt& listchars&\<cr>")
 
   call StopVimInTerminal(buf)
-  call delete(filename)
 endfunc
 
 func Test_cursorline_redraw()
@@ -227,13 +226,13 @@ set all" or ":verbose set" without an argument.
 When the option was set by hand there is no "Last set" message.
 When the option was set while executing a function, user command or
 END
-  call writefile(textlines, 'Xtextfile')
+  call writefile(textlines, 'Xtextfile', 'D')
 
   let script =<< trim END
       set cursorline scrolloff=2
       normal 12G
   END
-  call writefile(script, 'Xscript')
+  call writefile(script, 'Xscript', 'D')
 
   let buf = RunVimInTerminal('-S Xscript Xtextfile', #{rows: 20, cols: 40})
   call VerifyScreenDump(buf, 'Test_cursorline_redraw_1', {})
@@ -243,8 +242,6 @@ END
   call VerifyScreenDump(buf, 'Test_cursorline_redraw_2', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xscript')
-  call delete('Xtextfile')
 endfunc
 
 func Test_cursorline_callback()
@@ -262,14 +259,13 @@ func Test_cursorline_callback()
 
       call timer_start(300, 'Func')
   END
-  call writefile(lines, 'Xcul_timer')
+  call writefile(lines, 'Xcul_timer', 'D')
 
   let buf = RunVimInTerminal('-S Xcul_timer', #{rows: 8})
   call TermWait(buf, 310)
   call VerifyScreenDump(buf, 'Test_cursorline_callback_1', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xcul_timer')
 endfunc
 
 func Test_cursorline_screenline_update()
@@ -280,7 +276,7 @@ func Test_cursorline_screenline_update()
       set cursorline cursorlineopt=screenline
       inoremap <F2> <Cmd>call cursor(1, 1)<CR>
   END
-  call writefile(lines, 'Xcul_screenline')
+  call writefile(lines, 'Xcul_screenline', 'D')
 
   let buf = RunVimInTerminal('-S Xcul_screenline', #{rows: 8})
   call term_sendkeys(buf, "A")
@@ -290,7 +286,6 @@ func Test_cursorline_screenline_update()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xcul_screenline')
 endfunc
 
 func Test_cursorline_cursorbind_horizontal_scroll()
@@ -307,7 +302,7 @@ func Test_cursorline_cursorbind_horizontal_scroll()
       20vsp
       windo :set cursorbind
   END
-  call writefile(lines, 'Xhor_scroll')
+  call writefile(lines, 'Xhor_scroll', 'D')
 
   let buf = RunVimInTerminal('-S Xhor_scroll', #{rows: 8})
   call term_sendkeys(buf, "20l")
@@ -326,7 +321,6 @@ func Test_cursorline_cursorbind_horizontal_scroll()
   call VerifyScreenDump(buf, 'Test_hor_scroll_5', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xhor_scroll')
 endfunc
 
 

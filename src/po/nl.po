@@ -653,7 +653,7 @@ msgid "E731: using Dictionary as a String"
 msgstr "E731: Dictionary gebruiken als een String"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float gebruiken als een String"
 
 #, c-format
@@ -727,6 +727,13 @@ msgstr "E131: functie %s wordt gebruikt en kan niet worden verwijderd"
 
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
 msgstr "E132: diepte functieaanroep overstijgt 'maxfuncdepth'"
+
+#: ../errors.h:2848
+#, c-format
+msgid "E1106: One argument too many"
+msgid_plural "E1106: %d arguments too many"
+msgstr[0] "E1106: Een argument te veel"
+msgstr[1] "E1106: %d argumenten te veel"
 
 #, c-format
 msgid "calling %s"
@@ -3340,7 +3347,7 @@ msgstr "regel %4ld:"
 #~ msgid "E354: Invalid register name: '%s'"
 #~ msgstr ""
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Vertaald door: Erwin Poeze <erwin.poeze@gmail.com>"
 
 #~ msgid "Interrupt: "
@@ -5402,8 +5409,8 @@ msgstr "typ :q<Enter> om te stoppen"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "typ :help<Enter> of <F1> voor on-line hulp"
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "typ :help version8<Enter> voor versieinformatie"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "typ :help version9<Enter> voor versieinformatie"
 
 msgid "Running in Vi compatible mode"
 msgstr "wordt uitgevoerd in Vi compatible-modus"

@@ -330,6 +330,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 
 /*
  * Return the number of window lines occupied by buffer line "lnum".
+ * Includes any filler lines.
  */
     int
 plines(linenr_T lnum)
@@ -349,6 +350,10 @@ plines_win(
     return plines_win_nofill(wp, lnum, winheight) + diff_check_fill(wp, lnum);
 }
 
+/*
+ * Return the number of window lines occupied by buffer line "lnum".
+ * Does not include filler lines.
+ */
     int
 plines_nofill(linenr_T lnum)
 {
@@ -364,9 +369,6 @@ plines_win_nofill(
 #endif
     int		lines;
 
-    if (!wp->w_p_wrap)
-	return 1;
-
     if (wp->w_width == 0)
 	return 1;
 
@@ -377,7 +379,16 @@ plines_win_nofill(
 	return 1;
 #endif
 
-    lines = plines_win_nofold(wp, lnum);
+    if (!wp->w_p_wrap)
+	lines = 1
+#ifdef FEAT_PROP_POPUP
+	    // add a line for each "above" and "below" aligned text property
+	    + prop_count_above_below(wp->w_buffer, lnum)
+#endif
+	;
+    else
+	lines = plines_win_nofold(wp, lnum);
+
     if (winheight > 0 && lines > wp->w_height)
 	return wp->w_height;
     return lines;
@@ -393,16 +404,22 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     char_u	*s;
     long	col;
     int		width;
+    chartabsize_T cts;
 
     s = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    if (*s == NUL)		// empty line
-	return 1;
-    col = win_linetabsize(wp, s, (colnr_T)MAXCOL);
+    init_chartabsize_arg(&cts, wp, lnum, 0, s, s);
+    if (*s == NUL
+#ifdef FEAT_PROP_POPUP
+	    && !cts.cts_has_prop_with_text
+#endif
+	    )
+	return 1; // be quick for an empty line
+    win_linetabsize_cts(&cts, (colnr_T)MAXCOL);
+    clear_chartabsize_arg(&cts);
+    col = (int)cts.cts_vcol;
 
-    /*
-     * If list mode is on, then the '$' at the end of the line may take up one
-     * extra column.
-     */
+    // If list mode is on, then the '$' at the end of the line may take up one
+    // extra column.
     if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
 	col += 1;
 
@@ -427,10 +444,10 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 plines_win_col(win_T *wp, linenr_T lnum, long column)
 {
     long	col;
-    char_u	*s;
     int		lines = 0;
     int		width;
     char_u	*line;
+    chartabsize_T cts;
 
 #ifdef FEAT_DIFF
     // Check for filler lines above this buffer line.  When folded the result
@@ -444,25 +461,27 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     if (wp->w_width == 0)
 	return lines + 1;
 
-    line = s = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
-    col = 0;
-    while (*s != NUL && --column >= 0)
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    while (*cts.cts_ptr != NUL && --column >= 0)
     {
-	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL);
-	MB_PTR_ADV(s);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	MB_PTR_ADV(cts.cts_ptr);
     }
 
     /*
-     * If *s is a TAB, and the TAB is not displayed as ^I, and we're not in
-     * MODE_INSERT state, then col must be adjusted so that it represents the
-     * last screen position of the TAB.  This only fixes an error when the TAB
-     * wraps from one screen line to the next (when 'columns' is not a multiple
-     * of 'ts') -- webb.
+     * If *cts.cts_ptr is a TAB, and the TAB is not displayed as ^I, and we're
+     * not in MODE_INSERT state, then col must be adjusted so that it
+     * represents the last screen position of the TAB.  This only fixes an
+     * error when the TAB wraps from one screen line to the next (when
+     * 'columns' is not a multiple of 'ts') -- webb.
      */
-    if (*s == TAB && (State & MODE_NORMAL)
+    col = cts.cts_vcol;
+    if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
 				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
-	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL) - 1;
+	col += win_lbr_chartabsize(&cts, NULL) - 1;
+    clear_chartabsize_arg(&cts);
 
     /*
      * Add column offset for 'number', 'relativenumber', 'foldcolumn', etc.
@@ -569,8 +588,7 @@ check_status(buf_T *buf)
 	if (wp->w_buffer == buf && wp->w_status_height)
 	{
 	    wp->w_redr_status = TRUE;
-	    if (must_redraw < VALID)
-		must_redraw = VALID;
+	    set_must_redraw(UPD_VALID);
 	}
 }
 
@@ -603,7 +621,7 @@ ask_yesno(char_u *str, int direct)
 
     while (r != 'y' && r != 'n')
     {
-	// same highlighting as for wait_return
+	// same highlighting as for wait_return()
 	smsg_attr(HL_ATTR(HLF_R), "%s (y/n)?", str);
 	if (direct)
 	    r = get_keystroke();
@@ -1101,59 +1119,59 @@ vim_beep(unsigned val)
     called_vim_beep = TRUE;
 #endif
 
-    if (emsg_silent == 0 && !in_assert_fails)
+    if (emsg_silent != 0 || in_assert_fails)
+	return;
+
+    if (!((bo_flags & val) || (bo_flags & BO_ALL)))
     {
-	if (!((bo_flags & val) || (bo_flags & BO_ALL)))
-	{
 #ifdef ELAPSED_FUNC
-	    static int		did_init = FALSE;
-	    static elapsed_T	start_tv;
+	static int		did_init = FALSE;
+	static elapsed_T	start_tv;
 
-	    // Only beep once per half a second, otherwise a sequence of beeps
-	    // would freeze Vim.
-	    if (!did_init || ELAPSED_FUNC(start_tv) > 500)
-	    {
-		did_init = TRUE;
-		ELAPSED_INIT(start_tv);
+	// Only beep once per half a second, otherwise a sequence of beeps
+	// would freeze Vim.
+	if (!did_init || ELAPSED_FUNC(start_tv) > 500)
+	{
+	    did_init = TRUE;
+	    ELAPSED_INIT(start_tv);
 #endif
-		if (p_vb
+	    if (p_vb
 #ifdef FEAT_GUI
-			// While the GUI is starting up the termcap is set for
-			// the GUI but the output still goes to a terminal.
-			&& !(gui.in_use && gui.starting)
+		    // While the GUI is starting up the termcap is set for
+		    // the GUI but the output still goes to a terminal.
+		    && !(gui.in_use && gui.starting)
 #endif
-			)
-		{
-		    out_str_cf(T_VB);
+	       )
+	    {
+		out_str_cf(T_VB);
 #ifdef FEAT_VTP
-		    // No restore color information, refresh the screen.
-		    if (has_vtp_working() != 0
+		// No restore color information, refresh the screen.
+		if (has_vtp_working() != 0
 # ifdef FEAT_TERMGUICOLORS
-			    && (p_tgc || (!p_tgc && t_colors >= 256))
+			&& (p_tgc || (!p_tgc && t_colors >= 256))
 # endif
-			)
-		    {
-			redraw_later(CLEAR);
-			update_screen(0);
-			redrawcmd();
-		    }
-#endif
+		   )
+		{
+		    redraw_later(UPD_CLEAR);
+		    update_screen(0);
+		    redrawcmd();
 		}
-		else
-		    out_char(BELL);
-#ifdef ELAPSED_FUNC
-	    }
 #endif
+	    }
+	    else
+		out_char(BELL);
+#ifdef ELAPSED_FUNC
 	}
+#endif
+    }
 
-	// When 'debug' contains "beep" produce a message.  If we are sourcing
-	// a script or executing a function give the user a hint where the beep
-	// comes from.
-	if (vim_strchr(p_debug, 'e') != NULL)
-	{
-	    msg_source(HL_ATTR(HLF_W));
-	    msg_attr(_("Beep!"), HL_ATTR(HLF_W));
-	}
+    // When 'debug' contains "beep" produce a message.  If we are sourcing
+    // a script or executing a function give the user a hint where the beep
+    // comes from.
+    if (vim_strchr(p_debug, 'e') != NULL)
+    {
+	msg_source(HL_ATTR(HLF_W));
+	msg_attr(_("Beep!"), HL_ATTR(HLF_W));
     }
 }
 
@@ -1290,6 +1308,32 @@ free_homedir(void)
 free_users(void)
 {
     ga_clear_strings(&ga_users);
+}
+#endif
+
+#if defined(MSWIN) || defined(PROTO)
+/*
+ * Initialize $VIM and $VIMRUNTIME when 'enc' is updated.
+ */
+    void
+init_vimdir(void)
+{
+    int	    mustfree;
+    char_u  *p;
+
+    mch_get_exe_name();
+
+    mustfree = FALSE;
+    didset_vim = FALSE;
+    p = vim_getenv((char_u *)"VIM", &mustfree);
+    if (mustfree)
+	vim_free(p);
+
+    mustfree = FALSE;
+    didset_vimruntime = FALSE;
+    p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
+    if (mustfree)
+	vim_free(p);
 }
 #endif
 
@@ -1655,7 +1699,21 @@ vim_version_dir(char_u *vimdir)
     vim_free(p);
     p = concat_fnames(vimdir, (char_u *)RUNTIME_DIRNAME, TRUE);
     if (p != NULL && mch_isdir(p))
-	return p;
+    {
+	char_u *fname = concat_fnames(p, (char_u *)"defaults.vim", TRUE);
+
+	// Check that "defaults.vim" exists in this directory, to avoid picking
+	// up a stray "runtime" directory, it would make many tests fail in
+	// mysterious ways.
+	if (fname != NULL)
+	{
+	    int exists = file_is_readable(fname);
+
+	    vim_free(fname);
+	    if (exists)
+		return p;
+	}
+    }
     vim_free(p);
     return NULL;
 }
@@ -1664,7 +1722,7 @@ vim_version_dir(char_u *vimdir)
  * Vim's version of getenv().
  * Special handling of $HOME, $VIM and $VIMRUNTIME.
  * Also does ACP to 'enc' conversion for Win32.
- * "mustfree" is set to TRUE when returned is allocated, it must be
+ * "mustfree" is set to TRUE when the returned string is allocated.  It must be
  * initialized to FALSE by the caller.
  */
     char_u *
@@ -1989,18 +2047,14 @@ get_env_name(
     expand_T	*xp UNUSED,
     int		idx)
 {
-# if defined(AMIGA)
-    /*
-     * No environ[] on the Amiga.
-     */
+#if defined(AMIGA)
+    // No environ[] on the Amiga.
     return NULL;
-# else
+#else
 # ifndef __WIN32__
     // Borland C++ 5.2 has this in a header file.
     extern char		**environ;
 # endif
-# define ENVNAMELEN 100
-    static char_u	name[ENVNAMELEN];
     char_u		*str;
     int			n;
 
@@ -2008,15 +2062,15 @@ get_env_name(
     if (str == NULL)
 	return NULL;
 
-    for (n = 0; n < ENVNAMELEN - 1; ++n)
+    for (n = 0; n < EXPAND_BUF_LEN - 1; ++n)
     {
 	if (str[n] == '=' || str[n] == NUL)
 	    break;
-	name[n] = str[n];
+	xp->xp_buf[n] = str[n];
     }
-    name[n] = NUL;
-    return name;
-# endif
+    xp->xp_buf[n] = NUL;
+    return xp->xp_buf;
+#endif
 }
 
 /*
@@ -2154,7 +2208,7 @@ prepare_to_exit(void)
     // Ignore SIGHUP, because a dropped connection causes a read error, which
     // makes Vim exit and then handling SIGHUP causes various reentrance
     // problems.
-    signal(SIGHUP, SIG_IGN);
+    mch_signal(SIGHUP, SIG_IGN);
 #endif
 
 #ifdef FEAT_GUI
@@ -2404,7 +2458,8 @@ get_cmd_output_as_rettv(
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_or_number_or_list_arg(argvars, 1) == FAIL))
+		|| check_for_opt_string_or_number_or_list_arg(argvars, 1)
+								      == FAIL))
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -2670,11 +2725,11 @@ path_with_url(char_u *fname)
     // non-URL text.
 
     // first character must be alpha
-    if (!isalpha(*fname))
+    if (!ASCII_ISALPHA(*fname))
 	return 0;
 
     // check body: alpha or dash
-    for (p = fname + 1; (isalpha(*p) || (*p == '-')); ++p)
+    for (p = fname + 1; (ASCII_ISALPHA(*p) || (*p == '-')); ++p)
 	;
 
     // check last char is not a dash
@@ -2722,7 +2777,7 @@ restore_v_event(dict_T *v_event, save_v_event_T *sve)
  * Fires a ModeChanged autocmd event if appropriate.
  */
     void
-may_trigger_modechanged()
+may_trigger_modechanged(void)
 {
 #ifdef FEAT_EVAL
     dict_T	    *v_event;
@@ -2730,7 +2785,9 @@ may_trigger_modechanged()
     char_u	    curr_mode[MODE_MAX_LENGTH];
     char_u	    pattern_buf[2 * MODE_MAX_LENGTH];
 
-    if (!has_modechanged())
+    // Skip this when got_int is set, the autocommand will not be executed.
+    // Better trigger it next time.
+    if (!has_modechanged() || got_int)
 	return;
 
     get_mode(curr_mode);

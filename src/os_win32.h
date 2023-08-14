@@ -86,10 +86,16 @@
 #endif
 #ifndef PROTO
 # include <windows.h>
+
+// Weird: rpcndr.h defines "small" to "char", which causes trouble
+#undef small
+
 # ifndef SM_CXPADDEDBORDER
 #  define SM_CXPADDEDBORDER     92
 # endif
 #endif
+
+typedef void (*sighandler_T)(int, int);
 
 /*
  * Win32 has plenty of memory, use large buffers

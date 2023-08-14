@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.2.  Last change: 2022 Feb 02
+*tabpage.txt*   For Vim version 9.0.  Last change: 2022 Feb 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -81,8 +81,6 @@ For the related autocommands see |tabnew-autocmd|.
 :[count]tabf[ind] [++opt] [+cmd] {file}			*:tabf* *:tabfind*
 		Open a new tab page and edit {file} in 'path', like with
 		|:find|.  For [count] see |:tabnew| above.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 :[count]tab {cmd}					*:tab*
 		Execute {cmd} and when it opens a new window open a new tab
@@ -138,7 +136,7 @@ something else.
 		    :+tabclose	    " close the next tab page
 		    :1tabclose	    " close the first tab page
 		    :$tabclose	    " close the last tab page
-		    :tabclose -2    " close the 2nd previous tab page 
+		    :tabclose -2    " close the 2nd previous tab page
 		    :tabclose +	    " close the next tab page
 		    :tabclose 3	    " close the third tab page
 		    :tabclose $	    " close the last tab page

@@ -41,8 +41,7 @@ func ReadXnetbeans()
 endfunc
 
 func Nb_basic(port)
-  call delete("Xnetbeans")
-  call writefile([], "Xnetbeans")
+  call writefile([], "Xnetbeans", 'D')
 
   " Last line number in the Xnetbeans file. Used to verify the result of the
   " communication with the netbeans server
@@ -79,7 +78,7 @@ func Nb_basic(port)
   sleep 1m
 
   " getCursor test
-  call writefile(['foo bar', 'foo bar', 'foo bar'], 'Xfile1')
+  call writefile(['foo bar', 'foo bar', 'foo bar'], 'Xfile1', 'D')
   split Xfile1
   call cursor(3, 4)
   sleep 10m
@@ -272,7 +271,7 @@ func Nb_basic(port)
   let g:last += 4
 
   " editFile test
-  call writefile(['foo bar1', 'foo bar2', 'foo bar3'], 'Xfile3')
+  call writefile(['foo bar1', 'foo bar2', 'foo bar3'], 'Xfile3', 'D')
   call appendbufline(cmdbufnr, '$', 'editFile_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 4)')
   let l = ReadXnetbeans()
@@ -838,9 +837,6 @@ func Nb_basic(port)
   call sign_unplace('*')
   call sign_undefine()
 
-  call delete("Xnetbeans")
-  call delete('Xfile1')
-  call delete('Xfile3')
   call delete('Xfile4')
 endfunc
 
@@ -851,10 +847,10 @@ endfunc
 
 func Nb_file_auth(port)
   call delete("Xnetbeans")
-  call writefile([], "Xnetbeans")
+  call writefile([], "Xnetbeans", 'D')
 
   call assert_fails('nbstart =notexist', 'E660:')
-  call writefile(['host=localhost', 'port=' . a:port, 'auth=bunny'], 'Xnbauth')
+  call writefile(['host=localhost', 'port=' . a:port, 'auth=bunny'], 'Xnbauth', 'D')
   if has('unix')
     call setfperm('Xnbauth', "rw-r--r--")
     call assert_fails('nbstart =Xnbauth', 'E668:')
@@ -871,7 +867,6 @@ func Nb_file_auth(port)
   call assert_equal('0:startupDone=0', lines[2])
 
   call delete("Xnbauth")
-  call delete("Xnetbeans")
 endfunc
 
 func Test_nb_file_auth()
@@ -882,7 +877,7 @@ endfunc
 " Test for quitting Vim with an open netbeans connection
 func Nb_quit_with_conn(port)
   call delete("Xnetbeans")
-  call writefile([], "Xnetbeans")
+  call writefile([], "Xnetbeans", 'D')
   let after =<< trim END
     source shared.vim
     set cpo&vim
@@ -892,28 +887,32 @@ func Nb_quit_with_conn(port)
       return filter(l, 'v:val !~ "^0:geometry="')
     endfunc
 
-    " Establish the connection with the netbeans server
-    exe 'nbstart :localhost:' .. g:port .. ':star'
-    call assert_true(has("netbeans_enabled"))
-    call WaitFor('len(ReadXnetbeans()) >= 3')
-    let l = ReadXnetbeans()
-    call assert_equal(['AUTH star',
-      \ '0:version=0 "2.5"',
-      \ '0:startupDone=0'], l[-3:])
+    try
+      " Establish the connection with the netbeans server
+      exe 'nbstart :localhost:' .. g:port .. ':star'
+      call assert_true(has("netbeans_enabled"))
+      call WaitFor('len(ReadXnetbeans()) >= 3')
+      let l = ReadXnetbeans()
+      call assert_equal(['AUTH star',
+        \ '0:version=0 "2.5"',
+        \ '0:startupDone=0'], l[-3:])
 
-    " Open the command buffer to communicate with the server
-    split Xcmdbuf
-    call WaitFor('len(ReadXnetbeans()) >= 6')
-    let l = ReadXnetbeans()
-    call assert_equal('0:fileOpened=0 "Xcmdbuf" T F',
-          \ substitute(l[-3], '".*/', '"', ''))
-    call assert_equal('send: 1:putBufferNumber!15 "Xcmdbuf"',
-          \ substitute(l[-2], '".*/', '"', ''))
-    call assert_equal('1:startDocumentListen!16', l[-1])
-    sleep 1m
+      " Open the command buffer to communicate with the server
+      split Xcmdbuf
+      call WaitFor('len(ReadXnetbeans()) >= 6')
+      let l = ReadXnetbeans()
+      call assert_equal('0:fileOpened=0 "Xcmdbuf" T F',
+            \ substitute(l[-3], '".*/', '"', ''))
+      call assert_equal('send: 1:putBufferNumber!15 "Xcmdbuf"',
+            \ substitute(l[-2], '".*/', '"', ''))
+      call assert_equal('1:startDocumentListen!16', l[-1])
+      sleep 1m
 
-    quit!
-    quit!
+      quit!
+      quit!
+    finally
+      qall!
+    endtry
   END
   if RunVim(['let g:port = ' .. a:port], after, '')
     call WaitFor('len(ReadXnetbeans()) >= 9')
@@ -922,7 +921,6 @@ func Nb_quit_with_conn(port)
     call assert_equal('1:killed=16', l[-2])
     call assert_equal('0:disconnect=16', l[-1])
   endif
-  call delete('Xnetbeans')
 endfunc
 
 func Test_nb_quit_with_conn()

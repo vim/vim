@@ -506,7 +506,7 @@ func Test_listchars_composing()
   set list
 
   set listchars=eol:$,space:_,nbsp:=
-  
+
   let nbsp1 = nr2char(0xa0)
   let nbsp2 = nr2char(0x202f)
   call append(0, [
@@ -664,7 +664,7 @@ func Test_listchars_foldcolumn()
       vsplit
       windo set signcolumn=yes foldcolumn=1 winminwidth=0 nowrap list listchars=extends:>,precedes:<
   END
-  call writefile(lines, 'XTest_listchars')
+  call writefile(lines, 'XTest_listchars', 'D')
 
   let buf = RunVimInTerminal('-S XTest_listchars', {'rows': 10, 'cols': 60})
 
@@ -687,7 +687,6 @@ func Test_listchars_foldcolumn()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_listchars')
 endfunc
 
 

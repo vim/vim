@@ -25,7 +25,7 @@ func Test_equal()
   call assert_fails('echo base.method > instance.method')
   call assert_equal(0, test_null_function() == function('min'))
   call assert_equal(1, test_null_function() == test_null_function())
-  call assert_fails('eval 10 == test_unknown()', 'E685:')
+  call assert_fails('eval 10 == test_unknown()', ['E340:', 'E685:'])
 endfunc
 
 func Test_version()
@@ -35,12 +35,22 @@ func Test_version()
   call assert_true(has('patch-6.9.999'))
   call assert_true(has('patch-7.1.999'))
   call assert_true(has('patch-7.4.123'))
+  call assert_true(has('patch-7.4.123 ')) " Trailing space can be allowed.
 
   call assert_false(has('patch-7'))
   call assert_false(has('patch-7.4'))
   call assert_false(has('patch-7.4.'))
   call assert_false(has('patch-9.1.0'))
   call assert_false(has('patch-9.9.1'))
+
+  call assert_false(has('patch-abc'))
+  call assert_false(has('patchabc'))
+
+  call assert_false(has('patch-8x001'))
+  call assert_false(has('patch-9X0X0'))
+  call assert_false(has('patch-9-0-0'))
+  call assert_false(has('patch-09.0.0'))
+  call assert_false(has('patch-9.00.0'))
 endfunc
 
 func Test_op_ternary()
@@ -67,9 +77,7 @@ func Test_op_falsy()
       call assert_equal(0z00, 0z00 ?? 456)
       call assert_equal([1], [1] ?? 456)
       call assert_equal({'one': 1}, {'one': 1} ?? 456)
-      if has('float')
-        call assert_equal(0.1, 0.1 ?? 456)
-      endif
+      call assert_equal(0.1, 0.1 ?? 456)
 
       call assert_equal(456, v:false ?? 456)
       call assert_equal(456, 0 ?? 456)
@@ -77,8 +85,21 @@ func Test_op_falsy()
       call assert_equal(456, 0z ?? 456)
       call assert_equal(456, [] ?? 456)
       call assert_equal(456, {} ?? 456)
-      if has('float')
-        call assert_equal(456, 0.0 ?? 456)
+      call assert_equal(456, 0.0 ?? 456)
+
+      call assert_equal(456, v:null ?? 456)
+      call assert_equal(456, v:none ?? 456)
+      call assert_equal(456, test_null_string() ?? 456)
+      call assert_equal(456, test_null_blob() ?? 456)
+      call assert_equal(456, test_null_list() ?? 456)
+      call assert_equal(456, test_null_dict() ?? 456)
+      call assert_equal(456, test_null_function() ?? 456)
+      call assert_equal(456, test_null_partial() ?? 456)
+      if has('job')
+        call assert_equal(456, test_null_job() ?? 456)
+      endif
+      if has('channel')
+        call assert_equal(456, test_null_channel() ?? 456)
       endif
   END
   call v9.CheckLegacyAndVim9Success(lines)
@@ -103,7 +124,7 @@ func Test_dict()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
-  call v9.CheckLegacyAndVim9Failure(["VAR i = has_key([], 'a')"], ['E715:', 'E1013:', 'E1206:'])
+  call v9.CheckLegacyAndVim9Failure(["VAR i = has_key([], 'a')"], ['E1206:', 'E1013:', 'E1206:'])
 endfunc
 
 func Test_strgetchar()
@@ -139,6 +160,9 @@ func Test_strcharpart()
       call assert_equal('edit', "editor"[-10 : 3])
   END
   call v9.CheckLegacyAndVim9Success(lines)
+
+  call assert_fails('call strcharpart("", 0, 0, {})', ['E728:', 'E728:'])
+  call assert_fails('call strcharpart("", 0, 0, -1)', ['E1023:', 'E1023:'])
 endfunc
 
 func Test_getreg_empty_list()
@@ -190,10 +214,8 @@ func Test_compare_with_null()
   call assert_false(s:value == v:null)
   let s:value = 0
   call assert_true(s:value == v:null)
-  if has('float')
-    let s:value = 0.0
-    call assert_true(s:value == v:null)
-  endif
+  let s:value = 0.0
+  call assert_true(s:value == v:null)
   let s:value = ''
   call assert_false(s:value == v:null)
   let s:value = 0z
@@ -269,6 +291,8 @@ func Test_printf_misc()
   let lines =<< trim END
       call assert_equal('123', printf('123'))
 
+      call assert_equal('', printf('%'))
+      call assert_equal('', printf('%.0d', 0))
       call assert_equal('123', printf('%d', 123))
       call assert_equal('123', printf('%i', 123))
       call assert_equal('123', printf('%D', 123))
@@ -454,119 +478,120 @@ func Test_printf_misc()
   call v9.CheckLegacyAndVim9Success(lines)
 
   call v9.CheckLegacyAndVim9Failure(["call printf('123', 3)"], "E767:")
+
+  " this was using uninitialized memory
+  call v9.CheckLegacyAndVim9Failure(["eval ''->printf()"], "E119:")
 endfunc
 
 func Test_printf_float()
-  if has('float')
-    let lines =<< trim END
-        call assert_equal('1.000000', printf('%f', 1))
-        call assert_equal('1.230000', printf('%f', 1.23))
-        call assert_equal('1.230000', printf('%F', 1.23))
-        call assert_equal('9999999.9', printf('%g', 9999999.9))
-        call assert_equal('9999999.9', printf('%G', 9999999.9))
-        call assert_equal('1.00000001e7', printf('%.8g', 10000000.1))
-        call assert_equal('1.00000001E7', printf('%.8G', 10000000.1))
-        call assert_equal('1.230000e+00', printf('%e', 1.23))
-        call assert_equal('1.230000E+00', printf('%E', 1.23))
-        call assert_equal('1.200000e-02', printf('%e', 0.012))
-        call assert_equal('-1.200000e-02', printf('%e', -0.012))
-        call assert_equal('0.33', printf('%.2f', 1.0 / 3.0))
-        call assert_equal('  0.33', printf('%6.2f', 1.0 / 3.0))
-        call assert_equal(' -0.33', printf('%6.2f', -1.0 / 3.0))
-        call assert_equal('000.33', printf('%06.2f', 1.0 / 3.0))
-        call assert_equal('-00.33', printf('%06.2f', -1.0 / 3.0))
-        call assert_equal('-00.33', printf('%+06.2f', -1.0 / 3.0))
-        call assert_equal('+00.33', printf('%+06.2f', 1.0 / 3.0))
-        call assert_equal(' 00.33', printf('% 06.2f', 1.0 / 3.0))
-        call assert_equal('000.33', printf('%06.2g', 1.0 / 3.0))
-        call assert_equal('-00.33', printf('%06.2g', -1.0 / 3.0))
-        call assert_equal('0.33', printf('%3.2f', 1.0 / 3.0))
-        call assert_equal('003.33e-01', printf('%010.2e', 1.0 / 3.0))
-        call assert_equal(' 03.33e-01', printf('% 010.2e', 1.0 / 3.0))
-        call assert_equal('+03.33e-01', printf('%+010.2e', 1.0 / 3.0))
-        call assert_equal('-03.33e-01', printf('%010.2e', -1.0 / 3.0))
+  let lines =<< trim END
+      call assert_equal('1.000000', printf('%f', 1))
+      call assert_equal('1.230000', printf('%f', 1.23))
+      call assert_equal('1.230000', printf('%F', 1.23))
+      call assert_equal('9999999.9', printf('%g', 9999999.9))
+      call assert_equal('9999999.9', printf('%G', 9999999.9))
+      call assert_equal('1.00000001e7', printf('%.8g', 10000000.1))
+      call assert_equal('1.00000001E7', printf('%.8G', 10000000.1))
+      call assert_equal('1.230000e+00', printf('%e', 1.23))
+      call assert_equal('1.230000E+00', printf('%E', 1.23))
+      call assert_equal('1.200000e-02', printf('%e', 0.012))
+      call assert_equal('-1.200000e-02', printf('%e', -0.012))
+      call assert_equal('0.33', printf('%.2f', 1.0 / 3.0))
+      call assert_equal('  0.33', printf('%6.2f', 1.0 / 3.0))
+      call assert_equal(' -0.33', printf('%6.2f', -1.0 / 3.0))
+      call assert_equal('000.33', printf('%06.2f', 1.0 / 3.0))
+      call assert_equal('-00.33', printf('%06.2f', -1.0 / 3.0))
+      call assert_equal('-00.33', printf('%+06.2f', -1.0 / 3.0))
+      call assert_equal('+00.33', printf('%+06.2f', 1.0 / 3.0))
+      call assert_equal(' 00.33', printf('% 06.2f', 1.0 / 3.0))
+      call assert_equal('000.33', printf('%06.2g', 1.0 / 3.0))
+      call assert_equal('-00.33', printf('%06.2g', -1.0 / 3.0))
+      call assert_equal('0.33', printf('%3.2f', 1.0 / 3.0))
+      call assert_equal('003.33e-01', printf('%010.2e', 1.0 / 3.0))
+      call assert_equal(' 03.33e-01', printf('% 010.2e', 1.0 / 3.0))
+      call assert_equal('+03.33e-01', printf('%+010.2e', 1.0 / 3.0))
+      call assert_equal('-03.33e-01', printf('%010.2e', -1.0 / 3.0))
 
-        #" When precision is 0, the dot should be omitted.
-        call assert_equal('  2', printf('%3.f', 7.0 / 3.0))
-        call assert_equal('  2', printf('%3.g', 7.0 / 3.0))
-        call assert_equal('  2e+00', printf('%7.e', 7.0 / 3.0))
+      #" When precision is 0, the dot should be omitted.
+      call assert_equal('  2', printf('%3.f', 7.0 / 3.0))
+      call assert_equal('  2', printf('%3.g', 7.0 / 3.0))
+      call assert_equal('  2e+00', printf('%7.e', 7.0 / 3.0))
 
-        #" Float zero can be signed.
-        call assert_equal('+0.000000', printf('%+f', 0.0))
-        call assert_equal('0.000000', printf('%f', 1.0 / (1.0 / 0.0)))
-        call assert_equal('-0.000000', printf('%f', 1.0 / (-1.0 / 0.0)))
-        call assert_equal('0.0', printf('%s', 1.0 / (1.0 / 0.0)))
-        call assert_equal('-0.0', printf('%s', 1.0 / (-1.0 / 0.0)))
-        call assert_equal('0.0', printf('%S', 1.0 / (1.0 / 0.0)))
-        call assert_equal('-0.0', printf('%S', 1.0 / (-1.0 / 0.0)))
+      #" Float zero can be signed.
+      call assert_equal('+0.000000', printf('%+f', 0.0))
+      call assert_equal('0.000000', printf('%f', 1.0 / (1.0 / 0.0)))
+      call assert_equal('-0.000000', printf('%f', 1.0 / (-1.0 / 0.0)))
+      call assert_equal('0.0', printf('%s', 1.0 / (1.0 / 0.0)))
+      call assert_equal('-0.0', printf('%s', 1.0 / (-1.0 / 0.0)))
+      call assert_equal('0.0', printf('%S', 1.0 / (1.0 / 0.0)))
+      call assert_equal('-0.0', printf('%S', 1.0 / (-1.0 / 0.0)))
 
-        #" Float infinity can be signed.
-        call assert_equal('inf', printf('%f', 1.0 / 0.0))
-        call assert_equal('-inf', printf('%f', -1.0 / 0.0))
-        call assert_equal('inf', printf('%g', 1.0 / 0.0))
-        call assert_equal('-inf', printf('%g', -1.0 / 0.0))
-        call assert_equal('inf', printf('%e', 1.0 / 0.0))
-        call assert_equal('-inf', printf('%e', -1.0 / 0.0))
-        call assert_equal('INF', printf('%F', 1.0 / 0.0))
-        call assert_equal('-INF', printf('%F', -1.0 / 0.0))
-        call assert_equal('INF', printf('%E', 1.0 / 0.0))
-        call assert_equal('-INF', printf('%E', -1.0 / 0.0))
-        call assert_equal('INF', printf('%E', 1.0 / 0.0))
-        call assert_equal('-INF', printf('%G', -1.0 / 0.0))
-        call assert_equal('+inf', printf('%+f', 1.0 / 0.0))
-        call assert_equal('-inf', printf('%+f', -1.0 / 0.0))
-        call assert_equal(' inf', printf('% f',  1.0 / 0.0))
-        call assert_equal('   inf', printf('%6f', 1.0 / 0.0))
-        call assert_equal('  -inf', printf('%6f', -1.0 / 0.0))
-        call assert_equal('   inf', printf('%6g', 1.0 / 0.0))
-        call assert_equal('  -inf', printf('%6g', -1.0 / 0.0))
-        call assert_equal('  +inf', printf('%+6f', 1.0 / 0.0))
-        call assert_equal('   inf', printf('% 6f', 1.0 / 0.0))
-        call assert_equal('  +inf', printf('%+06f', 1.0 / 0.0))
-        call assert_equal('inf   ', printf('%-6f', 1.0 / 0.0))
-        call assert_equal('-inf  ', printf('%-6f', -1.0 / 0.0))
-        call assert_equal('+inf  ', printf('%-+6f', 1.0 / 0.0))
-        call assert_equal(' inf  ', printf('%- 6f', 1.0 / 0.0))
-        call assert_equal('-INF  ', printf('%-6F', -1.0 / 0.0))
-        call assert_equal('+INF  ', printf('%-+6F', 1.0 / 0.0))
-        call assert_equal(' INF  ', printf('%- 6F', 1.0 / 0.0))
-        call assert_equal('INF   ', printf('%-6G', 1.0 / 0.0))
-        call assert_equal('-INF  ', printf('%-6G', -1.0 / 0.0))
-        call assert_equal('INF   ', printf('%-6E', 1.0 / 0.0))
-        call assert_equal('-INF  ', printf('%-6E', -1.0 / 0.0))
-        call assert_equal('inf', printf('%s', 1.0 / 0.0))
-        call assert_equal('-inf', printf('%s', -1.0 / 0.0))
+      #" Float infinity can be signed.
+      call assert_equal('inf', printf('%f', 1.0 / 0.0))
+      call assert_equal('-inf', printf('%f', -1.0 / 0.0))
+      call assert_equal('inf', printf('%g', 1.0 / 0.0))
+      call assert_equal('-inf', printf('%g', -1.0 / 0.0))
+      call assert_equal('inf', printf('%e', 1.0 / 0.0))
+      call assert_equal('-inf', printf('%e', -1.0 / 0.0))
+      call assert_equal('INF', printf('%F', 1.0 / 0.0))
+      call assert_equal('-INF', printf('%F', -1.0 / 0.0))
+      call assert_equal('INF', printf('%E', 1.0 / 0.0))
+      call assert_equal('-INF', printf('%E', -1.0 / 0.0))
+      call assert_equal('INF', printf('%E', 1.0 / 0.0))
+      call assert_equal('-INF', printf('%G', -1.0 / 0.0))
+      call assert_equal('+inf', printf('%+f', 1.0 / 0.0))
+      call assert_equal('-inf', printf('%+f', -1.0 / 0.0))
+      call assert_equal(' inf', printf('% f',  1.0 / 0.0))
+      call assert_equal('   inf', printf('%6f', 1.0 / 0.0))
+      call assert_equal('  -inf', printf('%6f', -1.0 / 0.0))
+      call assert_equal('   inf', printf('%6g', 1.0 / 0.0))
+      call assert_equal('  -inf', printf('%6g', -1.0 / 0.0))
+      call assert_equal('  +inf', printf('%+6f', 1.0 / 0.0))
+      call assert_equal('   inf', printf('% 6f', 1.0 / 0.0))
+      call assert_equal('  +inf', printf('%+06f', 1.0 / 0.0))
+      call assert_equal('inf   ', printf('%-6f', 1.0 / 0.0))
+      call assert_equal('-inf  ', printf('%-6f', -1.0 / 0.0))
+      call assert_equal('+inf  ', printf('%-+6f', 1.0 / 0.0))
+      call assert_equal(' inf  ', printf('%- 6f', 1.0 / 0.0))
+      call assert_equal('-INF  ', printf('%-6F', -1.0 / 0.0))
+      call assert_equal('+INF  ', printf('%-+6F', 1.0 / 0.0))
+      call assert_equal(' INF  ', printf('%- 6F', 1.0 / 0.0))
+      call assert_equal('INF   ', printf('%-6G', 1.0 / 0.0))
+      call assert_equal('-INF  ', printf('%-6G', -1.0 / 0.0))
+      call assert_equal('INF   ', printf('%-6E', 1.0 / 0.0))
+      call assert_equal('-INF  ', printf('%-6E', -1.0 / 0.0))
+      call assert_equal('inf', printf('%s', 1.0 / 0.0))
+      call assert_equal('-inf', printf('%s', -1.0 / 0.0))
 
-        #" Test special case where max precision is truncated at 340.
-        call assert_equal('1.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', printf('%.330f', 1.0))
-        call assert_equal('1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', printf('%.340f', 1.0))
-        call assert_equal('1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', printf('%.350f', 1.0))
+      #" Test special case where max precision is truncated at 340.
+      call assert_equal('1.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', printf('%.330f', 1.0))
+      call assert_equal('1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', printf('%.340f', 1.0))
+      call assert_equal('1.0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000', printf('%.350f', 1.0))
 
-        #" Float nan (not a number) has no sign.
-        call assert_equal('nan', printf('%f', sqrt(-1.0)))
-        call assert_equal('nan', printf('%f', 0.0 / 0.0))
-        call assert_equal('nan', printf('%f', -0.0 / 0.0))
-        call assert_equal('nan', printf('%g', 0.0 / 0.0))
-        call assert_equal('nan', printf('%e', 0.0 / 0.0))
-        call assert_equal('NAN', printf('%F', 0.0 / 0.0))
-        call assert_equal('NAN', printf('%G', 0.0 / 0.0))
-        call assert_equal('NAN', printf('%E', 0.0 / 0.0))
-        call assert_equal('NAN', printf('%F', -0.0 / 0.0))
-        call assert_equal('NAN', printf('%G', -0.0 / 0.0))
-        call assert_equal('NAN', printf('%E', -0.0 / 0.0))
-        call assert_equal('   nan', printf('%6f', 0.0 / 0.0))
-        call assert_equal('   nan', printf('%06f', 0.0 / 0.0))
-        call assert_equal('nan   ', printf('%-6f', 0.0 / 0.0))
-        call assert_equal('nan   ', printf('%- 6f', 0.0 / 0.0))
-        call assert_equal('nan', printf('%s', 0.0 / 0.0))
-        call assert_equal('nan', printf('%s', -0.0 / 0.0))
-        call assert_equal('nan', printf('%S', 0.0 / 0.0))
-        call assert_equal('nan', printf('%S', -0.0 / 0.0))
-    END
-    call v9.CheckLegacyAndVim9Success(lines)
+      #" Float nan (not a number) has no sign.
+      call assert_equal('nan', printf('%f', sqrt(-1.0)))
+      call assert_equal('nan', printf('%f', 0.0 / 0.0))
+      call assert_equal('nan', printf('%f', -0.0 / 0.0))
+      call assert_equal('nan', printf('%g', 0.0 / 0.0))
+      call assert_equal('nan', printf('%e', 0.0 / 0.0))
+      call assert_equal('NAN', printf('%F', 0.0 / 0.0))
+      call assert_equal('NAN', printf('%G', 0.0 / 0.0))
+      call assert_equal('NAN', printf('%E', 0.0 / 0.0))
+      call assert_equal('NAN', printf('%F', -0.0 / 0.0))
+      call assert_equal('NAN', printf('%G', -0.0 / 0.0))
+      call assert_equal('NAN', printf('%E', -0.0 / 0.0))
+      call assert_equal('   nan', printf('%6f', 0.0 / 0.0))
+      call assert_equal('   nan', printf('%06f', 0.0 / 0.0))
+      call assert_equal('nan   ', printf('%-6f', 0.0 / 0.0))
+      call assert_equal('nan   ', printf('%- 6f', 0.0 / 0.0))
+      call assert_equal('nan', printf('%s', 0.0 / 0.0))
+      call assert_equal('nan', printf('%s', -0.0 / 0.0))
+      call assert_equal('nan', printf('%S', 0.0 / 0.0))
+      call assert_equal('nan', printf('%S', -0.0 / 0.0))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
 
-    call v9.CheckLegacyAndVim9Failure(['echo printf("%f", "a")'], 'E807:')
-  endif
+  call v9.CheckLegacyAndVim9Failure(['echo printf("%f", "a")'], 'E807:')
 endfunc
 
 func Test_printf_errors()
@@ -575,10 +600,8 @@ func Test_printf_errors()
   call v9.CheckLegacyAndVim9Failure(['echo printf("%d", 1, 2)'], 'E767:')
   call v9.CheckLegacyAndVim9Failure(['echo printf("%*d", 1)'], 'E766:')
   call v9.CheckLegacyAndVim9Failure(['echo printf("%s")'], 'E766:')
-  if has('float')
-    call v9.CheckLegacyAndVim9Failure(['echo printf("%d", 1.2)'], 'E805:')
-    call v9.CheckLegacyAndVim9Failure(['echo printf("%f")'], 'E766:')
-  endif
+  call v9.CheckLegacyAndVim9Failure(['echo printf("%d", 1.2)'], 'E805:')
+  call v9.CheckLegacyAndVim9Failure(['echo printf("%f")'], 'E766:')
 endfunc
 
 func Test_printf_64bit()
@@ -597,9 +620,7 @@ func Test_printf_spec_s()
       call assert_equal("abcdefgi", printf('%s', "abcdefgi"))
 
       #" float
-      if has('float')
-        call assert_equal("1.23", printf('%s', 1.23))
-      endif
+      call assert_equal("1.23", printf('%s', 1.23))
 
       #" list
       VAR lvalue = [1, 'two', ['three', 4]]
@@ -708,13 +729,12 @@ func Test_function_outside_script()
     call writefile([execute('messages')], 'Xtest.out')
     qall
   END
-  call writefile(cleanup, 'Xverify.vim')
+  call writefile(cleanup, 'Xverify.vim', 'D')
   call RunVim([], [], "-c \"echo function('s:abc')\" -S Xverify.vim")
   call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
   call RunVim([], [], "-c \"echo funcref('s:abc')\" -S Xverify.vim")
   call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
   call delete('Xtest.out')
-  call delete('Xverify.vim')
 endfunc
 
 func Test_setmatches()
@@ -762,6 +782,12 @@ func Test_eval_after_if()
   endfunc
   if 0 | eval SetVal('a') | endif | call SetVal('b')
   call assert_equal('b', s:val)
+endfunc
+
+func Test_divide_by_zero()
+  " only tests that this doesn't crash, the result is not important
+  echo 0 / 0
+  echo 0 / 0 / -1
 endfunc
 
 " Test for command-line completion of expressions
@@ -868,8 +894,6 @@ endfunc
 
 " Test for float value comparison
 func Test_float_compare()
-  CheckFeature float
-
   let lines =<< trim END
       call assert_true(1.2 == 1.2)
       call assert_true(1.0 != 1.2)

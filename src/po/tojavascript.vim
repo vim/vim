@@ -8,8 +8,9 @@ set shortmess+=A
 for name in argv()[1:]
   exe 'edit ' .. fnameescape(name)
 
-  " Strip comments
+  " Strip comments, also after :set commands.
   g/^\s*"/s/.*//
+  g/^\s*set .*"/s/.*//
 
   " Write as .js file, xgettext recognizes them
   exe 'w! ' .. fnamemodify(name, ":t:r") .. ".js"

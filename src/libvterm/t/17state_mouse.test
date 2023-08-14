@@ -55,6 +55,10 @@ MOUSEBTN d 4 0
   output "\e[M\x60\x36\x2b"
 MOUSEBTN d 5 0
   output "\e[M\x61\x36\x2b"
+MOUSEBTN d 6 0
+  output "\e[M\x62\x36\x2b"
+MOUSEBTN d 7 0
+  output "\e[M\x63\x36\x2b"
 
 !DECRQM on mouse button mode
 PUSH "\e[?1000\$p"
@@ -179,3 +183,9 @@ RESET
 MOUSEMOVE 0,0 0
 MOUSEBTN d 1 0
 MOUSEBTN u 1 0
+
+!DECSM can set multiple modes at once
+PUSH "\e[?1002;1006h"
+  settermprop 8 2
+MOUSEBTN d 1 0
+  output "\e[<0;1;1M"

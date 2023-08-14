@@ -1,7 +1,8 @@
 " These commands create the option window.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Apr 07
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -343,6 +344,9 @@ call <SID>Header(gettext("displaying text"))
 call <SID>AddOption("scroll", gettext("number of lines to scroll for CTRL-U and CTRL-D"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>OptionL("scr")
+call <SID>AddOption("smoothscroll", gettext("scroll by screen line"))
+call append("$", "\t" .. s:local_to_window)
+call <SID>BinOptionL("sms")
 call <SID>AddOption("scrolloff", gettext("number of screen lines to show around the cursor"))
 call append("$", " \tset so=" . &so)
 call <SID>AddOption("wrap", gettext("long lines wrap"))
@@ -513,6 +517,8 @@ call <SID>AddOption("switchbuf", gettext("\"useopen\" and/or \"split\"; which wi
 call <SID>OptionG("swb", &swb)
 call <SID>AddOption("splitbelow", gettext("a new window is put below the current one"))
 call <SID>BinOptionG("sb", &sb)
+call <SID>AddOption("splitkeep", gettext("determines scroll behavior for split windows"))
+call <SID>BinOptionG("spk", &spk)
 call <SID>AddOption("splitright", gettext("a new window is put right of the current one"))
 call <SID>BinOptionG("spr", &spr)
 call <SID>AddOption("scrollbind", gettext("this window scrolls together with other bound windows"))
@@ -578,6 +584,8 @@ call <SID>BinOptionG("xtermcodes", &xtermcodes)
 call <SID>AddOption("weirdinvert", gettext("terminal that requires extra redrawing"))
 call <SID>BinOptionG("wiv", &wiv)
 
+call <SID>AddOption("keyprotocol", gettext("what keyboard protocol to use for which terminal"))
+call <SID>OptionG("kpc", &kpc)
 call <SID>AddOption("esckeys", gettext("recognize keys that start with <Esc> in Insert mode"))
 call <SID>BinOptionG("ek", &ek)
 call <SID>AddOption("scrolljump", gettext("minimal number of lines to scroll at a time"))
@@ -736,10 +744,12 @@ call <SID>AddOption("terse", gettext("add 's' flag in 'shortmess' (don't show se
 call <SID>BinOptionG("terse", &terse)
 call <SID>AddOption("shortmess", gettext("list of flags to make messages shorter"))
 call <SID>OptionG("shm", &shm)
-call <SID>AddOption("showcmd", gettext("show (partial) command keys in the status line"))
+call <SID>AddOption("showcmd", gettext("show (partial) command keys in location given by 'showcmdloc'"))
 let &sc = s:old_sc
 call <SID>BinOptionG("sc", &sc)
 set nosc
+call <SID>AddOption("showcmdloc", gettext("location where to show the (partial) command keys for 'showcmd'"))
+  call <SID>OptionG("sloc", &sloc)
 call <SID>AddOption("showmode", gettext("display the current mode in the status line"))
 call <SID>BinOptionG("smd", &smd)
 call <SID>AddOption("ruler", gettext("show cursor position below each window"))
@@ -951,6 +961,8 @@ if has("lispindent")
   call <SID>BinOptionL("lisp")
   call <SID>AddOption("lispwords", gettext("words that change how lisp indenting works"))
   call <SID>OptionL("lw")
+  call <SID>AddOption("lispoptions", gettext("options for Lisp indenting"))
+  call <SID>OptionL("lop")
 endif
 
 
@@ -1040,6 +1052,9 @@ call <SID>BinOptionL("bin")
 call <SID>AddOption("endofline", gettext("last line in the file has an end-of-line"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("eol")
+call <SID>AddOption("endoffile", gettext("last line in the file followed by CTRL-Z"))
+call append("$", "\t" .. s:local_to_buffer)
+call <SID>BinOptionL("eof")
 call <SID>AddOption("fixendofline", gettext("fixes missing end-of-line at end of text file"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("fixeol")

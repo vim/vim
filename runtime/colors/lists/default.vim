@@ -1,5 +1,5 @@
 " Maintainer:  Drew Vogel <dvogel@sidejump.org>
-" Last Change: 2022 Mar 20
+" Last Change: 2023 Apr 19
 "
 " Replaced rgb.txt as the source of de facto standard color names. This is
 " sourced each time the colorscheme command is run. It is also sourced each
@@ -7,7 +7,8 @@
 " these colors by introducing a new colors/lists/default.vim file earlier in
 " the runtimepath.
 
-let s:keepcpo= &cpo
+" make sure line continuation works
+let s:keepcpo = &cpo
 set cpo&vim
 
 call extend(v:colornames, {
@@ -801,7 +802,7 @@ call extend(v:colornames, {
 			\ 'teal': '#008080'
 			\ }, 'keep')
 
-let &cpo= s:keepcpo
+let &cpo = s:keepcpo
 unlet s:keepcpo
 
 "vim: sw=4

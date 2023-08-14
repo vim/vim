@@ -1,7 +1,8 @@
 " Vim filetype plugin file
 " Language:	Zimbu
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Nov 12
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -28,7 +29,7 @@ endif
 
 " Set 'comments' to format dashed lists in comments.
 " And to keep Zudocu comment characters.
-setlocal comments=sO:#\ -,mO:#\ \ ,:#=,:#-,:#%,:#
+setlocal comments=sO:#\ -,mO:#\ \ ,exO:#/,s:/*,m:\ ,ex:*/,:#=,:#-,:#%,:#
 
 setlocal errorformat^=%f\ line\ %l\ col\ %c:\ %m,ERROR:\ %m
 

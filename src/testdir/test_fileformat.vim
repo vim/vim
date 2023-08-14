@@ -22,16 +22,15 @@ endfunc
 func Test_fileformat_autocommand()
   let filecnt = ["", "foobar\<CR>", "eins\<CR>", "\<CR>", "zwei\<CR>", "drei", "vier", "fünf", ""]
   let ffs = &ffs
-  call writefile(filecnt, 'Xfile', 'b')
-  au BufReadPre Xfile set ffs=dos ff=dos
-  new Xfile
+  call writefile(filecnt, 'Xffafile', 'bD')
+  au BufReadPre Xffafile set ffs=dos ff=dos
+  new Xffafile
   call assert_equal('dos', &l:ff)
   call assert_equal('dos', &ffs)
 
   " cleanup
-  call delete('Xfile')
   let &ffs = ffs
-  au! BufReadPre Xfile
+  au! BufReadPre Xffafile
   bw!
 endfunc
 
@@ -65,11 +64,11 @@ endfun
 " Test for a lot of variations of the 'fileformats' option
 func Test_fileformats()
   " create three test files, one in each format
-  call writefile(['unix', 'unix'], 'XXUnix')
-  call writefile(["dos\r", "dos\r"], 'XXDos')
-  call writefile(["mac\rmac\r"], 'XXMac', 'b')
+  call writefile(['unix', 'unix'], 'XXUnix', 'D')
+  call writefile(["dos\r", "dos\r"], 'XXDos', 'D')
+  call writefile(["mac\rmac\r"], 'XXMac', 'bD')
   " create a file with no End Of Line
-  call writefile(["noeol"], 'XXEol', 'b')
+  call writefile(["noeol"], 'XXEol', 'bD')
   " create mixed format files
   call s:concat_files('XXUnix', 'XXDos', 'XXUxDs')
   call s:concat_files('XXUnix', 'XXMac', 'XXUxMac')
@@ -77,7 +76,12 @@ func Test_fileformats()
   call s:concat_files('XXMac', 'XXEol', 'XXMacEol')
   call s:concat_files('XXUxDs', 'XXMac', 'XXUxDsMc')
 
-  new
+  " The :bwipe commands below cause us to get back to the current buffer.
+  " Avoid stray errors for various 'fileformat' values which may cause a
+  " modeline to be misinterpreted by wiping the buffer and editing a new one.
+  only!
+  bwipe!
+  enew
 
   " Test 1: try reading and writing with 'fileformats' empty
   set fileformats=
@@ -277,10 +281,6 @@ func Test_fileformats()
   " cleanup
   only
   %bwipe!
-  call delete('XXUnix')
-  call delete('XXDos')
-  call delete('XXMac')
-  call delete('XXEol')
   call delete('XXUxDs')
   call delete('XXUxMac')
   call delete('XXDosMac')
@@ -314,14 +314,14 @@ endfunc
 " used as the 'fileformat'.
 func Test_fileformat_on_startup()
   let after =<< trim END
-    call writefile([&fileformat], 'Xfile', 'a')
+    call writefile([&fileformat], 'Xonsfile', 'a')
     quit
   END
   call RunVim(["set ffs=dos,unix,mac"], after, '')
   call RunVim(["set ffs=mac,dos,unix"], after, '')
   call RunVim(["set ffs=unix,mac,dos"], after, '')
-  call assert_equal(['dos', 'mac', 'unix'], readfile('Xfile'))
-  call delete('Xfile')
+  call assert_equal(['dos', 'mac', 'unix'], readfile('Xonsfile'))
+  call delete('Xonsfile')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

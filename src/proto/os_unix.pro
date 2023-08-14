@@ -1,4 +1,5 @@
 /* os_unix.c */
+sighandler_T mch_signal(int sig, sighandler_T func);
 int mch_chdir(char *path);
 void mch_write(char_u *s, int len);
 int mch_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
@@ -23,7 +24,6 @@ int use_xterm_like_mouse(char_u *name);
 int use_xterm_mouse(void);
 int vim_is_iris(char_u *name);
 int vim_is_vt300(char_u *name);
-int vim_is_fastterm(char_u *name);
 int mch_get_user_name(char_u *s, int len);
 int mch_get_uname(uid_t uid, char_u *s, int len);
 void mch_get_host_name(char_u *s, int len);
@@ -87,6 +87,6 @@ int xsmp_handle_requests(void);
 void xsmp_init(void);
 void xsmp_close(void);
 void stop_timeout(void);
-volatile int *start_timeout(long msec);
+volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
 /* vim: set ft=c : */

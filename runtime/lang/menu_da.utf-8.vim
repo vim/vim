@@ -1,6 +1,6 @@
 " Menu Translations:	Danish
 " Maintainer:		scootergrisen
-" Last Change:		2020 Apr 23
+" Last Change:		2022 Nov 17
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -44,7 +44,7 @@ menut &Save<Tab>:w	Gem<Tab>:w
 menut Save\ &As\.\.\.<Tab>:sav	Gem\ som\.\.\.<Tab>:sav
 " -SEP2-
 menut Split\ &Diff\ with\.\.\.	Opdel\ diff\ med\.\.\.
-menut Split\ Patched\ &By\.\.\.	Opdel\ patchet\ af\.\.\.
+menut Split\ Patched\ &By\.\.\.	Opdel\ patched\ af\.\.\.
 " -SEP3-
 menut &Print	Udskriv
 " -SEP4-

@@ -138,4 +138,32 @@ func Test_backspace_ctrl_u()
   close!
 endfunc
 
+" Test for setting 'backspace' to a number value (for backward compatibility)
+func Test_backspace_number_value()
+  new
+
+  set backspace=0
+  call setline(1, ['one two', 'three four'])
+  call cursor(2, 1)
+  exe "normal! A\<C-W>\<C-U>"
+  call assert_equal('three four', getline(2))
+
+  set backspace=1
+  exe "normal! A\<CR>five\<C-W>\<C-U>\<C-W>\<C-U>"
+  call assert_equal(['one two', 'three four'], getline(1, '$'))
+
+  set backspace=2
+  call cursor(2, 7)
+  exe "normal! ihalf\<C-U>"
+  call assert_equal('three four', getline(2))
+
+  set backspace=3
+  call cursor(2, 7)
+  exe "normal! ihalf\<C-U>"
+  call assert_equal('four', getline(2))
+
+  bw!
+  set backspace&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

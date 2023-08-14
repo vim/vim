@@ -3,7 +3,7 @@
 # To be used with MingW and Cygwin.
 #
 # Originally, the DLL base address was fixed: -Wl,--image-base=0x1C000000
-# Now it is allocated dymanically by the linker by evaluating all DLLs
+# Now it is allocated dynamically by the linker by evaluating all DLLs
 # already loaded in memory. The binary image contains as well information
 # for automatic pseudo-rebasing, if needed by the system. ALV 2004-02-29
 
@@ -43,9 +43,9 @@ else
 DEL = del
 endif
 endif
-# Set the default $(WINVER) to make it work with WinXP.
+# Set the default $(WINVER) to make it work with Windows 7.
 ifndef WINVER
-WINVER = 0x0501
+WINVER = 0x0601
 endif
 CXX := $(CROSS_COMPILE)g++
 WINDRES := $(CROSS_COMPILE)windres

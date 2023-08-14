@@ -19,12 +19,22 @@ endfunc
 func Test_ColonEight()
   let save_dir = getcwd()
 
-  " This could change for CygWin to //cygdrive/c
+  " This could change for CygWin to //cygdrive/c .
   let dir1 = 'c:/x.x.y'
-  if filereadable(dir1) || isdirectory(dir1)
-    call assert_report("Fatal: '" . dir1 . "' exists, cannot run test")
-    return
-  endif
+  let trycount = 5
+  while 1
+    if !filereadable(dir1) && !isdirectory(dir1)
+      break
+    endif
+    if trycount == 1
+      call assert_report("Fatal: '" . dir1 . "' exists, cannot run this test")
+      return
+    endif
+    " When tests run in parallel the directory may exist, wait a bit until it
+    " is gone.
+    sleep 5
+    let trycount -= 1
+  endwhile
 
   let file1 = dir1 . '/zz.y.txt'
   let nofile1 = dir1 . '/z.y.txt'
@@ -32,7 +42,7 @@ func Test_ColonEight()
   let file2 = dir2 . '/z.txt'
   let nofile2 = dir2 . '/zz.txt'
 
-  call mkdir(dir1)
+  call mkdir(dir1, 'D')
   let resdir1 = substitute(fnamemodify(dir1, ':p:8'), '/$', '', '')
   call assert_match('\V\^c:/XX\x\x\x\x~1.Y\$', resdir1)
 
@@ -42,9 +52,9 @@ func Test_ColonEight()
   let resfile2 = resdir2 . '/z.txt'
   let resnofile2 = resdir2 . '/zz.txt'
 
-  call mkdir(dir2)
-  call writefile([], file1)
-  call writefile([], file2)
+  call mkdir(dir2, 'D')
+  call writefile([], file1, 'D')
+  call writefile([], file2, 'D')
 
   call TestIt(file1, ':p:8', resfile1)
   call TestIt(nofile1, ':p:8', resnofile1)
@@ -63,10 +73,6 @@ func Test_ColonEight()
   call TestIt(nofile2, ':~:8', '~' . strpart(resnofile2, strlen(resdir1)))
 
   cd c:/
-  call delete(file2)
-  call delete(file1)
-  call delete(dir2, 'd')
-  call delete(dir1, 'd')
 
   call chdir(save_dir)
 endfunc
@@ -76,16 +82,13 @@ func Test_ColonEight_MultiByte()
 
   let file = dir . '/日本語のファイル.txt'
 
-  call mkdir(dir)
-  call writefile([], file)
+  call mkdir(dir, 'D')
+  call writefile([], file, 'D')
 
   let sfile = fnamemodify(file, ':8')
 
   call assert_notequal(file, sfile)
   call assert_match('\~', sfile)
-
-  call delete(file)
-  call delete(dir, 'd')
 endfunc
 
 func Test_ColonEight_notexists()

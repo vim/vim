@@ -79,9 +79,6 @@ LangString str_desc_plugin_home     ${LANG_DANISH}     "Opret plugin-mapper i HO
 LangString str_section_plugin_vim   ${LANG_DANISH}     "Delte"
 LangString str_desc_plugin_vim      ${LANG_DANISH}     "Opret plugin-mapper i Vim-installationsmappe, det bruges af alle på systemet."
 
-LangString str_section_vis_vim      ${LANG_DANISH}     "VisVim-udvidelser"
-LangString str_desc_vis_vim         ${LANG_DANISH}     "VisVim-udvidelser til integrering i Microsoft Visual Studio."
-
 LangString str_section_nls          ${LANG_DANISH}     "Understøttelse af modersmål"
 LangString str_desc_nls             ${LANG_DANISH}     "Installer filer til understøttelse af modersmål."
 

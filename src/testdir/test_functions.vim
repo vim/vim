@@ -30,9 +30,12 @@ func Test_has()
     call assert_equal(1, or(has('ttyin'), 1))
     call assert_equal(0, and(has('ttyout'), 0))
     call assert_equal(1, has('multi_byte_encoding'))
+    call assert_equal(0, has(':tearoff'))
   endif
   call assert_equal(1, has('vcon', 1))
   call assert_equal(1, has('mouse_gpm_enabled', 1))
+
+  call assert_equal(has('gui_win32') && has('menu'), has(':tearoff'))
 
   call assert_equal(0, has('nonexistent'))
   call assert_equal(0, has('nonexistent', 1))
@@ -40,6 +43,9 @@ func Test_has()
   " Will we ever have patch 9999?
   let ver = 'patch-' .. v:version / 100 .. '.' .. v:version % 100 .. '.9999'
   call assert_equal(0, has(ver))
+
+  " There actually isn't a patch 9.0.0, but this is more consistent.
+  call assert_equal(1, has('patch-9.0.0'))
 endfunc
 
 func Test_empty()
@@ -51,14 +57,12 @@ func Test_empty()
   call assert_equal(0, empty(1))
   call assert_equal(0, empty(-1))
 
-  if has('float')
-    call assert_equal(1, empty(0.0))
-    call assert_equal(1, empty(-0.0))
-    call assert_equal(0, empty(1.0))
-    call assert_equal(0, empty(-1.0))
-    call assert_equal(0, empty(1.0/0.0))
-    call assert_equal(0, empty(0.0/0.0))
-  endif
+  call assert_equal(1, empty(0.0))
+  call assert_equal(1, empty(-0.0))
+  call assert_equal(0, empty(1.0))
+  call assert_equal(0, empty(-1.0))
+  call assert_equal(0, empty(1.0/0.0))
+  call assert_equal(0, empty(0.0/0.0))
 
   call assert_equal(1, empty([]))
   call assert_equal(0, empty(['a']))
@@ -81,17 +85,26 @@ func Test_empty()
   call assert_equal(0, empty(function('Test_empty')))
   call assert_equal(0, empty(function('Test_empty', [0])))
 
-  call assert_fails("call empty(test_void())", 'E685:')
-  call assert_fails("call empty(test_unknown())", 'E685:')
+  call assert_fails("call empty(test_void())", ['E340:', 'E685:'])
+  call assert_fails("call empty(test_unknown())", ['E340:', 'E685:'])
+endfunc
+
+func Test_err_teapot()
+  call assert_fails('call err_teapot()', "E418: I'm a teapot")
+  call assert_fails('call err_teapot(0)', "E418: I'm a teapot")
+  call assert_fails('call err_teapot(v:false)', "E418: I'm a teapot")
+
+  call assert_fails('call err_teapot("1")', "E503: Coffee is currently not available")
+  call assert_fails('call err_teapot(v:true)', "E503: Coffee is currently not available")
+  let expr = 1
+  call assert_fails('call err_teapot(expr)', "E503: Coffee is currently not available")
 endfunc
 
 func Test_test_void()
   call assert_fails('echo 1 == test_void()', 'E1031:')
-  if has('float')
-    call assert_fails('echo 1.0 == test_void()', 'E1031:')
-  endif
-  call assert_fails('let x = json_encode(test_void())', 'E685:')
-  call assert_fails('let x = copy(test_void())', 'E685:')
+  call assert_fails('echo 1.0 == test_void()', 'E1031:')
+  call assert_fails('let x = json_encode(test_void())', ['E340:', 'E685:'])
+  call assert_fails('let x = copy(test_void())', ['E340:', 'E685:'])
   call assert_fails('let x = copy([test_void()])', 'E1031:')
 endfunc
 
@@ -172,10 +185,8 @@ func Test_strwidth()
     call assert_fails('call strwidth({})', 'E731:')
   endfor
 
-  if has('float')
-    call assert_equal(3, strwidth(1.2))
-    call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal(3, strwidth(1.2))
+  call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 
   set ambiwidth&
 endfunc
@@ -239,10 +250,8 @@ func Test_str2nr()
 
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
-  if has('float')
-    call assert_equal(1, str2nr(1.2))
-    call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal(1, str2nr(1.2))
+  call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
 
@@ -344,9 +353,9 @@ func Test_resolve_unix()
   call delete('Xlink2')
   call delete('Xlink3')
 
-  silent !ln -s -f Xdir//Xfile Xlink
-  call assert_equal('Xdir/Xfile', resolve('Xlink'))
-  call delete('Xlink')
+  silent !ln -s -f Xresolvedir//Xfile Xresolvelink
+  call assert_equal('Xresolvedir/Xfile', resolve('Xresolvelink'))
+  call delete('Xresolvelink')
 
   silent !ln -s -f Xlink2/ Xlink1
   call assert_equal('Xlink2', 'Xlink1'->resolve())
@@ -372,22 +381,22 @@ func Test_resolve_win32()
 
   " test for shortcut file
   if executable('cscript')
-    new Xfile
+    new Xresfile
     wq
     let lines =<< trim END
 	Set fs = CreateObject("Scripting.FileSystemObject")
 	Set ws = WScript.CreateObject("WScript.Shell")
 	Set shortcut = ws.CreateShortcut("Xlink.lnk")
-	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")
+	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xresfile")
 	shortcut.Save
     END
     call writefile(lines, 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
-    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
-    call delete('Xfile')
+    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call delete('Xresfile')
 
-    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink.lnk')))
     call delete('Xlink.lnk')
   else
     echomsg 'skipped test for shortcut file'
@@ -396,20 +405,20 @@ func Test_resolve_win32()
   " remove files
   call delete('Xlink')
   call delete('Xdir', 'd')
-  call delete('Xfile')
+  call delete('Xresfile')
 
   " test for symbolic link to a file
-  new Xfile
+  new Xresfile
   wq
-  call assert_equal('Xfile', resolve('Xfile'))
-  silent !mklink Xlink Xfile
+  call assert_equal('Xresfile', resolve('Xresfile'))
+  silent !mklink Xlink Xresfile
   if !v:shell_error
-    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink')))
     call delete('Xlink')
   else
     echomsg 'skipped test for symbolic link to a file'
   endif
-  call delete('Xfile')
+  call delete('Xresfile')
 
   " test for junction to a directory
   call mkdir('Xdir')
@@ -444,9 +453,9 @@ func Test_resolve_win32()
   endif
 
   " test for buffer name
-  new Xfile
+  new Xbuffile
   wq
-  silent !mklink Xlink Xfile
+  silent !mklink Xlink Xbuffile
   if !v:shell_error
     edit Xlink
     call assert_equal('Xlink', bufname('%'))
@@ -455,7 +464,7 @@ func Test_resolve_win32()
   else
     echomsg 'skipped test for buffer name'
   endif
-  call delete('Xfile')
+  call delete('Xbuffile')
 
   " test for reparse point
   call mkdir('Xdir')
@@ -494,17 +503,15 @@ func Test_simplify()
   call assert_equal('./file',      simplify('dir/.././file'))
   call assert_equal('../dir',      simplify('./../dir'))
   call assert_equal('..',          simplify('../testdir/..'))
-  call mkdir('Xdir')
-  call assert_equal('.',           simplify('Xdir/../.'))
-  call delete('Xdir', 'd')
+  call mkdir('Xsimpdir')
+  call assert_equal('.',           simplify('Xsimpdir/../.'))
+  call delete('Xsimpdir', 'd')
 
   call assert_fails('call simplify({->0})', 'E729:')
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
-  if has('float')
-    call assert_equal('1.2', simplify(1.2))
-    call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal('1.2', simplify(1.2))
+  call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 endfunc
 
 func Test_pathshorten()
@@ -946,9 +953,13 @@ endfunc
 func Test_append()
   enew!
   split
-  call append(0, ["foo"])
-  call append(1, [])
-  call append(1, test_null_list())
+  call assert_equal(0, append(1, []))
+  call assert_equal(0, append(1, test_null_list()))
+  call assert_equal(0, append(0, ["foo"]))
+  call assert_equal(0, append(1, []))
+  call assert_equal(0, append(1, test_null_list()))
+  call assert_equal(0, append(8, []))
+  call assert_equal(0, append(9, test_null_list()))
   call assert_equal(['foo', ''], getline(1, '$'))
   split
   only
@@ -957,6 +968,8 @@ func Test_append()
 
   " Using $ instead of '$' must give an error
   call assert_fails("call append($, 'foobar')", 'E116:')
+
+  call assert_fails("call append({}, '')", ['E728:', 'E728:'])
 endfunc
 
 " Test for setline()
@@ -1193,19 +1206,14 @@ func Test_byte2line_line2byte()
   bw!
 endfunc
 
-" Test for byteidx() and byteidxcomp() functions
+" Test for byteidx() using a character index
 func Test_byteidx()
   let a = '.é.' " one char of two bytes
   call assert_equal(0, byteidx(a, 0))
-  call assert_equal(0, byteidxcomp(a, 0))
   call assert_equal(1, byteidx(a, 1))
-  call assert_equal(1, byteidxcomp(a, 1))
   call assert_equal(3, byteidx(a, 2))
-  call assert_equal(3, byteidxcomp(a, 2))
   call assert_equal(4, byteidx(a, 3))
-  call assert_equal(4, byteidxcomp(a, 3))
   call assert_equal(-1, byteidx(a, 4))
-  call assert_equal(-1, byteidxcomp(a, 4))
 
   let b = '.é.' " normal e with composing char
   call assert_equal(0, b->byteidx(0))
@@ -1213,42 +1221,482 @@ func Test_byteidx()
   call assert_equal(4, b->byteidx(2))
   call assert_equal(5, b->byteidx(3))
   call assert_equal(-1, b->byteidx(4))
-  call assert_fails("call byteidx([], 0)", 'E730:')
 
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, byteidx(str, 0))
+  call assert_equal(1, byteidx(str, 1))
+  call assert_equal(6, byteidx(str, 2))
+  call assert_equal(7, byteidx(str, 3))
+  call assert_equal(12, byteidx(str, 4))
+  call assert_equal(-1, byteidx(str, 5))
+
+  " empty string
+  call assert_equal(0, byteidx('', 0))
+  call assert_equal(-1, byteidx('', 1))
+
+  " error cases
+  call assert_fails("call byteidx([], 0)", 'E730:')
+  call assert_fails("call byteidx('abc', [])", 'E745:')
+  call assert_fails("call byteidx('abc', 0, {})", ['E728:', 'E728:'])
+  call assert_fails("call byteidx('abc', 0, -1)", ['E1023:', 'E1023:'])
+endfunc
+
+" Test for byteidxcomp() using a character index
+func Test_byteidxcomp()
+  let a = '.é.' " one char of two bytes
+  call assert_equal(0, byteidxcomp(a, 0))
+  call assert_equal(1, byteidxcomp(a, 1))
+  call assert_equal(3, byteidxcomp(a, 2))
+  call assert_equal(4, byteidxcomp(a, 3))
+  call assert_equal(-1, byteidxcomp(a, 4))
+
+  let b = '.é.' " normal e with composing char
   call assert_equal(0, b->byteidxcomp(0))
   call assert_equal(1, b->byteidxcomp(1))
   call assert_equal(2, b->byteidxcomp(2))
   call assert_equal(4, b->byteidxcomp(3))
   call assert_equal(5, b->byteidxcomp(4))
   call assert_equal(-1, b->byteidxcomp(5))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, byteidxcomp(str, 0))
+  call assert_equal(1, byteidxcomp(str, 1))
+  call assert_equal(2, byteidxcomp(str, 2))
+  call assert_equal(4, byteidxcomp(str, 3))
+  call assert_equal(6, byteidxcomp(str, 4))
+  call assert_equal(7, byteidxcomp(str, 5))
+  call assert_equal(8, byteidxcomp(str, 6))
+  call assert_equal(10, byteidxcomp(str, 7))
+  call assert_equal(12, byteidxcomp(str, 8))
+  call assert_equal(-1, byteidxcomp(str, 9))
+
+  " empty string
+  call assert_equal(0, byteidxcomp('', 0))
+  call assert_equal(-1, byteidxcomp('', 1))
+
+  " error cases
   call assert_fails("call byteidxcomp([], 0)", 'E730:')
+  call assert_fails("call byteidxcomp('abc', [])", 'E745:')
+  call assert_fails("call byteidxcomp('abc', 0, {})", ['E728:', 'E728:'])
+  call assert_fails("call byteidxcomp('abc', 0, -1)", ['E1023:', 'E1023:'])
 endfunc
 
-" Test for charidx()
+" Test for byteidx() using a UTF-16 index
+func Test_byteidx_from_utf16_index()
+  " string with single byte characters
+  let str = "abc"
+  for i in range(3)
+    call assert_equal(i, byteidx(str, i, v:true))
+  endfor
+  call assert_equal(3, byteidx(str, 3, v:true))
+  call assert_equal(-1, byteidx(str, 4, v:true))
+
+  " string with two byte characters
+  let str = "a©©b"
+  call assert_equal(0, byteidx(str, 0, v:true))
+  call assert_equal(1, byteidx(str, 1, v:true))
+  call assert_equal(3, byteidx(str, 2, v:true))
+  call assert_equal(5, byteidx(str, 3, v:true))
+  call assert_equal(6, byteidx(str, 4, v:true))
+  call assert_equal(-1, byteidx(str, 5, v:true))
+
+  " string with two byte characters
+  let str = "a😊😊b"
+  call assert_equal(0, byteidx(str, 0, v:true))
+  call assert_equal(1, byteidx(str, 1, v:true))
+  call assert_equal(1, byteidx(str, 2, v:true))
+  call assert_equal(5, byteidx(str, 3, v:true))
+  call assert_equal(5, byteidx(str, 4, v:true))
+  call assert_equal(9, byteidx(str, 5, v:true))
+  call assert_equal(10, byteidx(str, 6, v:true))
+  call assert_equal(-1, byteidx(str, 7, v:true))
+
+  " string with composing characters
+  let str = '-á-b́'
+  call assert_equal(0, byteidx(str, 0, v:true))
+  call assert_equal(1, byteidx(str, 1, v:true))
+  call assert_equal(4, byteidx(str, 2, v:true))
+  call assert_equal(5, byteidx(str, 3, v:true))
+  call assert_equal(8, byteidx(str, 4, v:true))
+  call assert_equal(-1, byteidx(str, 5, v:true))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, byteidx(str, 0, v:true))
+  call assert_equal(1, byteidx(str, 1, v:true))
+  call assert_equal(6, byteidx(str, 2, v:true))
+  call assert_equal(7, byteidx(str, 3, v:true))
+  call assert_equal(12, byteidx(str, 4, v:true))
+  call assert_equal(-1, byteidx(str, 5, v:true))
+
+  " empty string
+  call assert_equal(0, byteidx('', 0, v:true))
+  call assert_equal(-1, byteidx('', 1, v:true))
+
+  " error cases
+  call assert_fails('call byteidx(str, 0, [])', 'E745:')
+endfunc
+
+" Test for byteidxcomp() using a UTF-16 index
+func Test_byteidxcomp_from_utf16_index()
+  " string with single byte characters
+  let str = "abc"
+  for i in range(3)
+    call assert_equal(i, byteidxcomp(str, i, v:true))
+  endfor
+  call assert_equal(3, byteidxcomp(str, 3, v:true))
+  call assert_equal(-1, byteidxcomp(str, 4, v:true))
+
+  " string with two byte characters
+  let str = "a©©b"
+  call assert_equal(0, byteidxcomp(str, 0, v:true))
+  call assert_equal(1, byteidxcomp(str, 1, v:true))
+  call assert_equal(3, byteidxcomp(str, 2, v:true))
+  call assert_equal(5, byteidxcomp(str, 3, v:true))
+  call assert_equal(6, byteidxcomp(str, 4, v:true))
+  call assert_equal(-1, byteidxcomp(str, 5, v:true))
+
+  " string with two byte characters
+  let str = "a😊😊b"
+  call assert_equal(0, byteidxcomp(str, 0, v:true))
+  call assert_equal(1, byteidxcomp(str, 1, v:true))
+  call assert_equal(1, byteidxcomp(str, 2, v:true))
+  call assert_equal(5, byteidxcomp(str, 3, v:true))
+  call assert_equal(5, byteidxcomp(str, 4, v:true))
+  call assert_equal(9, byteidxcomp(str, 5, v:true))
+  call assert_equal(10, byteidxcomp(str, 6, v:true))
+  call assert_equal(-1, byteidxcomp(str, 7, v:true))
+
+  " string with composing characters
+  let str = '-á-b́'
+  call assert_equal(0, byteidxcomp(str, 0, v:true))
+  call assert_equal(1, byteidxcomp(str, 1, v:true))
+  call assert_equal(2, byteidxcomp(str, 2, v:true))
+  call assert_equal(4, byteidxcomp(str, 3, v:true))
+  call assert_equal(5, byteidxcomp(str, 4, v:true))
+  call assert_equal(6, byteidxcomp(str, 5, v:true))
+  call assert_equal(8, byteidxcomp(str, 6, v:true))
+  call assert_equal(-1, byteidxcomp(str, 7, v:true))
+  call assert_fails('call byteidxcomp(str, 0, [])', 'E745:')
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, byteidxcomp(str, 0, v:true))
+  call assert_equal(1, byteidxcomp(str, 1, v:true))
+  call assert_equal(2, byteidxcomp(str, 2, v:true))
+  call assert_equal(4, byteidxcomp(str, 3, v:true))
+  call assert_equal(6, byteidxcomp(str, 4, v:true))
+  call assert_equal(7, byteidxcomp(str, 5, v:true))
+  call assert_equal(8, byteidxcomp(str, 6, v:true))
+  call assert_equal(10, byteidxcomp(str, 7, v:true))
+  call assert_equal(12, byteidxcomp(str, 8, v:true))
+  call assert_equal(-1, byteidxcomp(str, 9, v:true))
+
+  " empty string
+  call assert_equal(0, byteidxcomp('', 0, v:true))
+  call assert_equal(-1, byteidxcomp('', 1, v:true))
+
+  " error cases
+  call assert_fails('call byteidxcomp(str, 0, [])', 'E745:')
+endfunc
+
+" Test for charidx() using a byte index
 func Test_charidx()
   let a = 'xáb́y'
   call assert_equal(0, charidx(a, 0))
   call assert_equal(1, charidx(a, 3))
   call assert_equal(2, charidx(a, 4))
   call assert_equal(3, charidx(a, 7))
-  call assert_equal(-1, charidx(a, 8))
+  call assert_equal(4, charidx(a, 8))
+  call assert_equal(-1, charidx(a, 9))
   call assert_equal(-1, charidx(a, -1))
-  call assert_equal(-1, charidx('', 0))
-  call assert_equal(-1, charidx(test_null_string(), 0))
 
   " count composing characters
-  call assert_equal(0, charidx(a, 0, 1))
-  call assert_equal(2, charidx(a, 2, 1))
-  call assert_equal(3, charidx(a, 4, 1))
-  call assert_equal(5, charidx(a, 7, 1))
-  call assert_equal(-1, charidx(a, 8, 1))
-  call assert_equal(-1, charidx('', 0, 1))
+  call assert_equal(0, a->charidx(0, 1))
+  call assert_equal(2, a->charidx(2, 1))
+  call assert_equal(3, a->charidx(4, 1))
+  call assert_equal(5, a->charidx(7, 1))
+  call assert_equal(6, a->charidx(8, 1))
+  call assert_equal(-1, a->charidx(9, 1))
 
-  call assert_fails('let x = charidx([], 1)', 'E474:')
-  call assert_fails('let x = charidx("abc", [])', 'E474:')
-  call assert_fails('let x = charidx("abc", 1, [])', 'E474:')
-  call assert_fails('let x = charidx("abc", 1, -1)', 'E1023:')
-  call assert_fails('let x = charidx("abc", 1, 2)', 'E1023:')
+  " empty string
+  call assert_equal(0, charidx('', 0))
+  call assert_equal(-1, charidx('', 1))
+  call assert_equal(0, charidx('', 0, 1))
+  call assert_equal(-1, charidx('', 1, 1))
+
+  " error cases
+  call assert_equal(0, charidx(test_null_string(), 0))
+  call assert_equal(-1, charidx(test_null_string(), 1))
+  call assert_fails('let x = charidx([], 1)', 'E1174:')
+  call assert_fails('let x = charidx("abc", [])', 'E1210:')
+  call assert_fails('let x = charidx("abc", 1, [])', 'E1212:')
+  call assert_fails('let x = charidx("abc", 1, -1)', 'E1212:')
+  call assert_fails('let x = charidx("abc", 1, 2)', 'E1212:')
+endfunc
+
+" Test for charidx() using a UTF-16 index
+func Test_charidx_from_utf16_index()
+  " string with single byte characters
+  let str = "abc"
+  for i in range(4)
+    call assert_equal(i, charidx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(-1, charidx(str, 4, v:false, v:true))
+
+  " string with two byte characters
+  let str = "a©©b"
+  call assert_equal(0, charidx(str, 0, v:false, v:true))
+  call assert_equal(1, charidx(str, 1, v:false, v:true))
+  call assert_equal(2, charidx(str, 2, v:false, v:true))
+  call assert_equal(3, charidx(str, 3, v:false, v:true))
+  call assert_equal(4, charidx(str, 4, v:false, v:true))
+  call assert_equal(-1, charidx(str, 5, v:false, v:true))
+
+  " string with four byte characters
+  let str = "a😊😊b"
+  call assert_equal(0, charidx(str, 0, v:false, v:true))
+  call assert_equal(1, charidx(str, 1, v:false, v:true))
+  call assert_equal(1, charidx(str, 2, v:false, v:true))
+  call assert_equal(2, charidx(str, 3, v:false, v:true))
+  call assert_equal(2, charidx(str, 4, v:false, v:true))
+  call assert_equal(3, charidx(str, 5, v:false, v:true))
+  call assert_equal(4, charidx(str, 6, v:false, v:true))
+  call assert_equal(-1, charidx(str, 7, v:false, v:true))
+
+  " string with composing characters
+  let str = '-á-b́'
+  for i in str->strcharlen()->range()
+    call assert_equal(i, charidx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(4, charidx(str, 4, v:false, v:true))
+  call assert_equal(-1, charidx(str, 5, v:false, v:true))
+  for i in str->strchars()->range()
+    call assert_equal(i, charidx(str, i, v:true, v:true))
+  endfor
+  call assert_equal(6, charidx(str, 6, v:true, v:true))
+  call assert_equal(-1, charidx(str, 7, v:true, v:true))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  for i in str->strcharlen()->range()
+    call assert_equal(i, charidx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(4, charidx(str, 4, v:false, v:true))
+  call assert_equal(-1, charidx(str, 5, v:false, v:true))
+  for i in str->strchars()->range()
+    call assert_equal(i, charidx(str, i, v:true, v:true))
+  endfor
+  call assert_equal(8, charidx(str, 8, v:true, v:true))
+  call assert_equal(-1, charidx(str, 9, v:true, v:true))
+
+  " empty string
+  call assert_equal(0, charidx('', 0, v:false, v:true))
+  call assert_equal(-1, charidx('', 1, v:false, v:true))
+  call assert_equal(0, charidx('', 0, v:true, v:true))
+  call assert_equal(-1, charidx('', 1, v:true, v:true))
+
+  " error cases
+  call assert_equal(0, charidx('', 0, v:false, v:true))
+  call assert_equal(-1, charidx('', 1, v:false, v:true))
+  call assert_equal(0, charidx('', 0, v:true, v:true))
+  call assert_equal(-1, charidx('', 1, v:true, v:true))
+  call assert_equal(0, charidx(test_null_string(), 0, v:false, v:true))
+  call assert_equal(-1, charidx(test_null_string(), 1, v:false, v:true))
+  call assert_fails('let x = charidx("abc", 1, v:false, [])', 'E1212:')
+  call assert_fails('let x = charidx("abc", 1, v:true, [])', 'E1212:')
+endfunc
+
+" Test for utf16idx() using a byte index
+func Test_utf16idx_from_byteidx()
+  " UTF-16 index of a string with single byte characters
+  let str = "abc"
+  for i in range(4)
+    call assert_equal(i, utf16idx(str, i))
+  endfor
+  call assert_equal(-1, utf16idx(str, 4))
+
+  " UTF-16 index of a string with two byte characters
+  let str = 'a©©b'
+  call assert_equal(0, str->utf16idx(0))
+  call assert_equal(1, str->utf16idx(1))
+  call assert_equal(1, str->utf16idx(2))
+  call assert_equal(2, str->utf16idx(3))
+  call assert_equal(2, str->utf16idx(4))
+  call assert_equal(3, str->utf16idx(5))
+  call assert_equal(4, str->utf16idx(6))
+  call assert_equal(-1, str->utf16idx(7))
+
+  " UTF-16 index of a string with four byte characters
+  let str = 'a😊😊b'
+  call assert_equal(0, utf16idx(str, 0))
+  call assert_equal(1, utf16idx(str, 1))
+  call assert_equal(1, utf16idx(str, 2))
+  call assert_equal(1, utf16idx(str, 3))
+  call assert_equal(1, utf16idx(str, 4))
+  call assert_equal(3, utf16idx(str, 5))
+  call assert_equal(3, utf16idx(str, 6))
+  call assert_equal(3, utf16idx(str, 7))
+  call assert_equal(3, utf16idx(str, 8))
+  call assert_equal(5, utf16idx(str, 9))
+  call assert_equal(6, utf16idx(str, 10))
+  call assert_equal(-1, utf16idx(str, 11))
+
+  " UTF-16 index of a string with composing characters
+  let str = '-á-b́'
+  call assert_equal(0, utf16idx(str, 0))
+  call assert_equal(1, utf16idx(str, 1))
+  call assert_equal(1, utf16idx(str, 2))
+  call assert_equal(1, utf16idx(str, 3))
+  call assert_equal(2, utf16idx(str, 4))
+  call assert_equal(3, utf16idx(str, 5))
+  call assert_equal(3, utf16idx(str, 6))
+  call assert_equal(3, utf16idx(str, 7))
+  call assert_equal(4, utf16idx(str, 8))
+  call assert_equal(-1, utf16idx(str, 9))
+  call assert_equal(0, utf16idx(str, 0, v:true))
+  call assert_equal(1, utf16idx(str, 1, v:true))
+  call assert_equal(2, utf16idx(str, 2, v:true))
+  call assert_equal(2, utf16idx(str, 3, v:true))
+  call assert_equal(3, utf16idx(str, 4, v:true))
+  call assert_equal(4, utf16idx(str, 5, v:true))
+  call assert_equal(5, utf16idx(str, 6, v:true))
+  call assert_equal(5, utf16idx(str, 7, v:true))
+  call assert_equal(6, utf16idx(str, 8, v:true))
+  call assert_equal(-1, utf16idx(str, 9, v:true))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  call assert_equal(0, utf16idx(str, 0))
+  call assert_equal(1, utf16idx(str, 1))
+  call assert_equal(1, utf16idx(str, 2))
+  call assert_equal(1, utf16idx(str, 3))
+  call assert_equal(1, utf16idx(str, 4))
+  call assert_equal(1, utf16idx(str, 5))
+  call assert_equal(2, utf16idx(str, 6))
+  call assert_equal(3, utf16idx(str, 7))
+  call assert_equal(3, utf16idx(str, 8))
+  call assert_equal(3, utf16idx(str, 9))
+  call assert_equal(3, utf16idx(str, 10))
+  call assert_equal(3, utf16idx(str, 11))
+  call assert_equal(4, utf16idx(str, 12))
+  call assert_equal(-1, utf16idx(str, 13))
+  call assert_equal(0, utf16idx(str, 0, v:true))
+  call assert_equal(1, utf16idx(str, 1, v:true))
+  call assert_equal(2, utf16idx(str, 2, v:true))
+  call assert_equal(2, utf16idx(str, 3, v:true))
+  call assert_equal(3, utf16idx(str, 4, v:true))
+  call assert_equal(3, utf16idx(str, 5, v:true))
+  call assert_equal(4, utf16idx(str, 6, v:true))
+  call assert_equal(5, utf16idx(str, 7, v:true))
+  call assert_equal(6, utf16idx(str, 8, v:true))
+  call assert_equal(6, utf16idx(str, 9, v:true))
+  call assert_equal(7, utf16idx(str, 10, v:true))
+  call assert_equal(7, utf16idx(str, 11, v:true))
+  call assert_equal(8, utf16idx(str, 12, v:true))
+  call assert_equal(-1, utf16idx(str, 13, v:true))
+
+  " empty string
+  call assert_equal(0, utf16idx('', 0))
+  call assert_equal(-1, utf16idx('', 1))
+  call assert_equal(0, utf16idx('', 0, v:true))
+  call assert_equal(-1, utf16idx('', 1, v:true))
+
+  " error cases
+  call assert_equal(0, utf16idx("", 0))
+  call assert_equal(-1, utf16idx("", 1))
+  call assert_equal(-1, utf16idx("abc", -1))
+  call assert_equal(0, utf16idx(test_null_string(), 0))
+  call assert_equal(-1, utf16idx(test_null_string(), 1))
+  call assert_fails('let l = utf16idx([], 0)', 'E1174:')
+  call assert_fails('let l = utf16idx("ab", [])', 'E1210:')
+  call assert_fails('let l = utf16idx("ab", 0, [])', 'E1212:')
+endfunc
+
+" Test for utf16idx() using a character index
+func Test_utf16idx_from_charidx()
+  let str = "abc"
+  for i in str->strcharlen()->range()
+    call assert_equal(i, utf16idx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(3, utf16idx(str, 3, v:false, v:true))
+  call assert_equal(-1, utf16idx(str, 4, v:false, v:true))
+
+  " UTF-16 index of a string with two byte characters
+  let str = "a©©b"
+  for i in str->strcharlen()->range()
+    call assert_equal(i, utf16idx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(4, utf16idx(str, 4, v:false, v:true))
+  call assert_equal(-1, utf16idx(str, 5, v:false, v:true))
+
+  " UTF-16 index of a string with four byte characters
+  let str = "a😊😊b"
+  call assert_equal(0, utf16idx(str, 0, v:false, v:true))
+  call assert_equal(1, utf16idx(str, 1, v:false, v:true))
+  call assert_equal(3, utf16idx(str, 2, v:false, v:true))
+  call assert_equal(5, utf16idx(str, 3, v:false, v:true))
+  call assert_equal(6, utf16idx(str, 4, v:false, v:true))
+  call assert_equal(-1, utf16idx(str, 5, v:false, v:true))
+
+  " UTF-16 index of a string with composing characters
+  let str = '-á-b́'
+  for i in str->strcharlen()->range()
+    call assert_equal(i, utf16idx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(4, utf16idx(str, 4, v:false, v:true))
+  call assert_equal(-1, utf16idx(str, 5, v:false, v:true))
+  for i in str->strchars()->range()
+    call assert_equal(i, utf16idx(str, i, v:true, v:true))
+  endfor
+  call assert_equal(6, utf16idx(str, 6, v:true, v:true))
+  call assert_equal(-1, utf16idx(str, 7, v:true, v:true))
+
+  " string with multiple composing characters
+  let str = '-ą́-ą́'
+  for i in str->strcharlen()->range()
+    call assert_equal(i, utf16idx(str, i, v:false, v:true))
+  endfor
+  call assert_equal(4, utf16idx(str, 4, v:false, v:true))
+  call assert_equal(-1, utf16idx(str, 5, v:false, v:true))
+  for i in str->strchars()->range()
+    call assert_equal(i, utf16idx(str, i, v:true, v:true))
+  endfor
+  call assert_equal(8, utf16idx(str, 8, v:true, v:true))
+  call assert_equal(-1, utf16idx(str, 9, v:true, v:true))
+
+  " empty string
+  call assert_equal(0, utf16idx('', 0, v:false, v:true))
+  call assert_equal(-1, utf16idx('', 1, v:false, v:true))
+  call assert_equal(0, utf16idx('', 0, v:true, v:true))
+  call assert_equal(-1, utf16idx('', 1, v:true, v:true))
+
+  " error cases
+  call assert_equal(0, utf16idx(test_null_string(), 0, v:true, v:true))
+  call assert_equal(-1, utf16idx(test_null_string(), 1, v:true, v:true))
+  call assert_fails('let l = utf16idx("ab", 0, v:false, [])', 'E1212:')
+endfunc
+
+" Test for strutf16len()
+func Test_strutf16len()
+  call assert_equal(3, strutf16len('abc'))
+  call assert_equal(3, 'abc'->strutf16len(v:true))
+  call assert_equal(4, strutf16len('a©©b'))
+  call assert_equal(4, strutf16len('a©©b', v:true))
+  call assert_equal(6, strutf16len('a😊😊b'))
+  call assert_equal(6, strutf16len('a😊😊b', v:true))
+  call assert_equal(4, strutf16len('-á-b́'))
+  call assert_equal(6, strutf16len('-á-b́', v:true))
+  call assert_equal(4, strutf16len('-ą́-ą́'))
+  call assert_equal(8, strutf16len('-ą́-ą́', v:true))
+  call assert_equal(0, strutf16len(''))
+
+  " error cases
+  call assert_fails('let l = strutf16len([])', 'E1174:')
+  call assert_fails('let l = strutf16len("a", [])', 'E1212:')
+  call assert_equal(0, strutf16len(test_null_string()))
 endfunc
 
 func Test_count()
@@ -1333,9 +1781,8 @@ func Test_filewritable()
 
   call assert_equal(0, filewritable('doesnotexist'))
 
-  call mkdir('Xdir')
-  call assert_equal(2, filewritable('Xdir'))
-  call delete('Xdir', 'd')
+  call mkdir('Xwritedir', 'D')
+  call assert_equal(2, filewritable('Xwritedir'))
 
   call delete('Xfilewritable')
   bw!
@@ -1361,17 +1808,17 @@ func Test_Executable()
     bwipe
 
     " create "notepad.bat"
-    call mkdir('Xdir')
-    let notepadbat = fnamemodify('Xdir/notepad.bat', ':p')
+    call mkdir('Xnotedir')
+    let notepadbat = fnamemodify('Xnotedir/notepad.bat', ':p')
     call writefile([], notepadbat)
     new
     " check that the path and the pathext order is valid
-    lcd Xdir
+    lcd Xnotedir
     let [pathext, $PATHEXT] = [$PATHEXT, '.com;.exe;.bat;.cmd']
     call assert_equal(notepadbat, exepath('notepad'))
     let $PATHEXT = pathext
     bwipe
-    eval 'Xdir'->delete('rf')
+    eval 'Xnotedir'->delete('rf')
   elseif has('unix')
     call assert_equal(1, 'cat'->executable())
     call assert_equal(0, executable('nodogshere'))
@@ -1486,7 +1933,8 @@ func Test_col()
   call assert_equal(0, col([1, 100]))
   call assert_equal(0, col([1]))
   call assert_equal(0, col(test_null_list()))
-  call assert_fails('let c = col({})', 'E731:')
+  call assert_fails('let c = col({})', 'E1222:')
+  call assert_fails('let c = col(".", [])', 'E1210:')
 
   " test for getting the visual start column
   func T()
@@ -1515,6 +1963,15 @@ func Test_col()
   call cursor(1, 10)
   call assert_equal(4, col('.'))
   set virtualedit&
+
+  " Test for getting the column number in another window
+  let winid = win_getid()
+  new
+  call win_execute(winid, 'normal 1G$')
+  call assert_equal(3, col('.', winid))
+  call win_execute(winid, 'normal 2G')
+  call assert_equal(8, col('$', winid))
+  call assert_equal(0, col('.', 5001))
 
   bw!
 endfunc
@@ -1614,6 +2071,19 @@ func Test_inputlist()
   call assert_fails('call inputlist(test_null_list())', 'E686:')
 endfunc
 
+func Test_range_inputlist()
+  " flush out any garbage left in the buffer
+  while getchar(0)
+  endwhile
+
+  call feedkeys(":let result = inputlist(range(10))\<CR>1\<CR>", 'x')
+  call assert_equal(1, result)
+  call feedkeys(":let result = inputlist(range(3, 10))\<CR>1\<CR>", 'x')
+  call assert_equal(1, result)
+
+  unlet result
+endfunc
+
 func Test_balloon_show()
   CheckFeature balloon_eval
 
@@ -1627,7 +2097,7 @@ endfunc
 
 func Test_setbufvar_options()
   " This tests that aucmd_prepbuf() and aucmd_restbuf() properly restore the
-  " window layout.
+  " window layout and cursor position.
   call assert_equal(1, winnr('$'))
   split dummy_preview
   resize 2
@@ -1641,11 +2111,20 @@ func Test_setbufvar_options()
   execute 'belowright vertical split #' . dummy_buf
   call assert_equal(wh, winheight(0))
   let dum1_id = win_getid()
+  call setline(1, 'foo')
+  normal! V$
+  call assert_equal(4, col('.'))
+  call setbufvar('dummy_preview', '&buftype', 'nofile')
+  call assert_equal(4, col('.'))
 
   wincmd h
   let wh = winheight(0)
+  call setline(1, 'foo')
+  normal! V$
+  call assert_equal(4, col('.'))
   let dummy_buf = bufnr('dummy_buf2', v:true)
   eval 'nofile'->setbufvar(dummy_buf, '&buftype')
+  call assert_equal(4, col('.'))
   execute 'belowright vertical split #' . dummy_buf
   call assert_equal(wh, winheight(0))
 
@@ -1668,7 +2147,7 @@ func Test_setbufvar_keep_window_title()
       let g:buf = bufadd('Xb.txt')
       inoremap <F2> <C-R>=setbufvar(g:buf, '&autoindent', 1) ?? ''<CR>
   END
-  call writefile(lines, 'Xsetbufvar')
+  call writefile(lines, 'Xsetbufvar', 'D')
   let buf = RunVimInTerminal('-S Xsetbufvar', {})
   call WaitForAssert({-> assert_match('Xa.txt', term_gettitle(buf))}, 1000)
 
@@ -1679,7 +2158,6 @@ func Test_setbufvar_keep_window_title()
   call assert_match('Xa.txt', term_gettitle(buf))
 
   call StopVimInTerminal(buf)
-  call delete('Xsetbufvar')
 endfunc
 
 func Test_redo_in_nested_functions()
@@ -1735,7 +2213,7 @@ func Test_trim()
   call assert_fails('eval trim("  vim  ", " ", [])', 'E745:')
   call assert_fails('eval trim("  vim  ", " ", -1)', 'E475:')
   call assert_fails('eval trim("  vim  ", " ", 3)', 'E475:')
-  call assert_fails('eval trim("  vim  ", 0)', 'E475:')
+  call assert_fails('eval trim("  vim  ", 0)', 'E1174:')
 
   let chars = join(map(range(1, 0x20) + [0xa0], {n -> n->nr2char()}), '')
   call assert_equal("x", trim(chars . "x" . chars))
@@ -1945,19 +2423,18 @@ endfunc
 func Test_func_range_with_edit()
   " Define a function that edits another buffer, then call it with a range that
   " is invalid in that buffer.
-  call writefile(['just one line'], 'Xfuncrange2')
+  call writefile(['just one line'], 'Xfuncrange2', 'D')
   new
   eval 10->range()->setline(1)
   write Xfuncrange1
   call assert_fails('5,8call EditAnotherFile()', 'E16:')
 
   call delete('Xfuncrange1')
-  call delete('Xfuncrange2')
   bwipe!
 endfunc
 
 func Test_func_exists_on_reload()
-  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists')
+  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists', 'D')
   call assert_equal(0, exists('*ExistingFunction'))
   source Xfuncexists
   call assert_equal(1, '*ExistingFunction'->exists())
@@ -1966,7 +2443,7 @@ func Test_func_exists_on_reload()
   call assert_equal(1, exists('*ExistingFunction'))
 
   " But redefining in another script is not OK.
-  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2')
+  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2', 'D')
   call assert_fails('source Xfuncexists2', 'E122:')
 
   " Defining a new function from the cmdline should fail if the function is
@@ -1982,8 +2459,6 @@ func Test_func_exists_on_reload()
   call assert_fails('source Xfuncexists', 'E122:')
   call assert_equal(1, exists('*ExistingFunction'))
 
-  call delete('Xfuncexists2')
-  call delete('Xfuncexists')
   delfunc ExistingFunction
 endfunc
 
@@ -2070,88 +2545,85 @@ func Test_platform_name()
 endfunc
 
 func Test_readdir()
-  call mkdir('Xdir')
-  call writefile([], 'Xdir/foo.txt')
-  call writefile([], 'Xdir/bar.txt')
-  call mkdir('Xdir/dir')
+  call mkdir('Xreaddir', 'R')
+  call writefile([], 'Xreaddir/foo.txt')
+  call writefile([], 'Xreaddir/bar.txt')
+  call mkdir('Xreaddir/dir')
 
   " All results
-  let files = readdir('Xdir')
+  let files = readdir('Xreaddir')
   call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
 
   " Only results containing "f"
-  let files = 'Xdir'->readdir({ x -> stridx(x, 'f') != -1 })
+  let files = 'Xreaddir'->readdir({ x -> stridx(x, 'f') != -1 })
   call assert_equal(['foo.txt'], sort(files))
 
   " Only .txt files
-  let files = readdir('Xdir', { x -> x =~ '.txt$' })
+  let files = readdir('Xreaddir', { x -> x =~ '.txt$' })
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Only .txt files with string
-  let files = readdir('Xdir', 'v:val =~ ".txt$"')
+  let files = readdir('Xreaddir', 'v:val =~ ".txt$"')
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Limit to 1 result.
   let l = []
-  let files = readdir('Xdir', {x -> len(add(l, x)) == 2 ? -1 : 1})
+  let files = readdir('Xreaddir', {x -> len(add(l, x)) == 2 ? -1 : 1})
   call assert_equal(1, len(files))
 
   " Nested readdir() must not crash
-  let files = readdir('Xdir', 'readdir("Xdir", "1") != []')
+  let files = readdir('Xreaddir', 'readdir("Xreaddir", "1") != []')
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
-
-  eval 'Xdir'->delete('rf')
 endfunc
 
 func Test_readdirex()
-  call mkdir('Xdir')
-  call writefile(['foo'], 'Xdir/foo.txt')
-  call writefile(['barbar'], 'Xdir/bar.txt')
-  call mkdir('Xdir/dir')
+  call mkdir('Xexdir', 'R')
+  call writefile(['foo'], 'Xexdir/foo.txt')
+  call writefile(['barbar'], 'Xexdir/bar.txt')
+  call mkdir('Xexdir/dir')
 
   " All results
-  let files = readdirex('Xdir')->map({-> v:val.name})
+  let files = readdirex('Xexdir')->map({-> v:val.name})
   call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
-  let sizes = readdirex('Xdir')->map({-> v:val.size})
+  let sizes = readdirex('Xexdir')->map({-> v:val.size})
   call assert_equal([0, 4, 7], sort(sizes))
 
   " Only results containing "f"
-  let files = 'Xdir'->readdirex({ e -> stridx(e.name, 'f') != -1 })
+  let files = 'Xexdir'->readdirex({ e -> stridx(e.name, 'f') != -1 })
 			  \ ->map({-> v:val.name})
   call assert_equal(['foo.txt'], sort(files))
 
   " Only .txt files
-  let files = readdirex('Xdir', { e -> e.name =~ '.txt$' })
+  let files = readdirex('Xexdir', { e -> e.name =~ '.txt$' })
 			  \ ->map({-> v:val.name})
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Only .txt files with string
-  let files = readdirex('Xdir', 'v:val.name =~ ".txt$"')
+  let files = readdirex('Xexdir', 'v:val.name =~ ".txt$"')
 			  \ ->map({-> v:val.name})
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Limit to 1 result.
   let l = []
-  let files = readdirex('Xdir', {e -> len(add(l, e.name)) == 2 ? -1 : 1})
+  let files = readdirex('Xexdir', {e -> len(add(l, e.name)) == 2 ? -1 : 1})
 			  \ ->map({-> v:val.name})
   call assert_equal(1, len(files))
 
   " Nested readdirex() must not crash
-  let files = readdirex('Xdir', 'readdirex("Xdir", "1") != []')
+  let files = readdirex('Xexdir', 'readdirex("Xexdir", "1") != []')
 			  \ ->map({-> v:val.name})
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
 
   " report broken link correctly
   if has("unix")
-    call writefile([], 'Xdir/abc.txt')
-    call system("ln -s Xdir/abc.txt Xdir/link")
-    call delete('Xdir/abc.txt')
-    let files = readdirex('Xdir', 'readdirex("Xdir", "1") != []')
+    call writefile([], 'Xexdir/abc.txt')
+    call system("ln -s Xexdir/abc.txt Xexdir/link")
+    call delete('Xexdir/abc.txt')
+    let files = readdirex('Xexdir', 'readdirex("Xexdir", "1") != []')
 			  \ ->map({-> v:val.name .. '_' .. v:val.type})
     call sort(files)->assert_equal(
         \ ['bar.txt_file', 'dir_dir', 'foo.txt_file', 'link_link'])
   endif
-  eval 'Xdir'->delete('rf')
 
   call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
@@ -2163,34 +2635,34 @@ func Test_readdirex_sort()
     throw 'Skipped: Test_readdirex_sort on systems that do not allow this using the default filesystem'
   endif
   let _collate = v:collate
-  call mkdir('Xdir2')
-  call writefile(['1'], 'Xdir2/README.txt')
-  call writefile(['2'], 'Xdir2/Readme.txt')
-  call writefile(['3'], 'Xdir2/readme.txt')
+  call mkdir('Xsortdir2', 'R')
+  call writefile(['1'], 'Xsortdir2/README.txt')
+  call writefile(['2'], 'Xsortdir2/Readme.txt')
+  call writefile(['3'], 'Xsortdir2/readme.txt')
 
   " 1) default
-  let files = readdirex('Xdir2')->map({-> v:val.name})
+  let files = readdirex('Xsortdir2')->map({-> v:val.name})
   let default = copy(files)
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort using default')
 
   " 2) no sorting
-  let files = readdirex('Xdir2', 1, #{sort: 'none'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'none'})->map({-> v:val.name})
   let unsorted = copy(files)
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], sort(files), 'unsorted')
-  call assert_fails("call readdirex('Xdir2', 1, #{slort: 'none'})", 'E857: Dictionary key "sort" required')
+  call assert_fails("call readdirex('Xsortdir2', 1, #{slort: 'none'})", 'E857: Dictionary key "sort" required')
 
   " 3) sort by case (same as default)
-  let files = readdirex('Xdir2', 1, #{sort: 'case'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'case'})->map({-> v:val.name})
   call assert_equal(default, files, 'sort by case')
 
   " 4) sort by ignoring case
-  let files = readdirex('Xdir2', 1, #{sort: 'icase'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'icase'})->map({-> v:val.name})
   call assert_equal(unsorted->sort('i'), files, 'sort by icase')
 
   " 5) Default Collation
   let collate = v:collate
   lang collate C
-  let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort by C collation')
 
   " 6) Collation de_DE
@@ -2198,21 +2670,20 @@ func Test_readdirex_sort()
   " available
   try
     lang collate de_DE
-    let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
+    let files = readdirex('Xsortdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
     call assert_equal(['readme.txt', 'Readme.txt', 'README.txt'], files, 'sort by de_DE collation')
   catch
     throw 'Skipped: de_DE collation is not available'
 
   finally
     exe 'lang collate' collate
-    eval 'Xdir2'->delete('rf')
   endtry
 endfunc
 
 func Test_readdir_sort()
   " some more cases for testing sorting for readdirex
-  let dir = 'Xdir3'
-  call mkdir(dir)
+  let dir = 'Xsortdir3'
+  call mkdir(dir, 'R')
   call writefile(['1'], dir .. '/README.txt')
   call writefile(['2'], dir .. '/Readm.txt')
   call writefile(['3'], dir .. '/read.txt')
@@ -2241,9 +2712,12 @@ func Test_readdir_sort()
   exe "lang collate" collate
 
   " 5) Errors
-  call assert_fails('call readdir(dir, 1, 1)', 'E715:')
+  call assert_fails('call readdir(dir, 1, 1)', 'E1206:')
   call assert_fails('call readdir(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdir(dir, 1, test_null_dict())', 'E1297:')
+  call assert_fails('call readdirex(dir, 1, 1)', 'E1206:')
   call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdirex(dir, 1, test_null_dict())', 'E1297:')
 
   " 6) ignore other values in dict
   let files = readdir(dir, '1', #{sort: 'c'})
@@ -2251,38 +2725,36 @@ func Test_readdir_sort()
 
   " Cleanup
   exe "lang collate" collate
-
-  eval dir->delete('rf')
 endfunc
 
 func Test_delete_rf()
-  call mkdir('Xdir')
-  call writefile([], 'Xdir/foo.txt')
-  call writefile([], 'Xdir/bar.txt')
-  call mkdir('Xdir/[a-1]')  " issue #696
-  call writefile([], 'Xdir/[a-1]/foo.txt')
-  call writefile([], 'Xdir/[a-1]/bar.txt')
-  call assert_true(filereadable('Xdir/foo.txt'))
-  call assert_true('Xdir/[a-1]/foo.txt'->filereadable())
+  call mkdir('Xrfdir')
+  call writefile([], 'Xrfdir/foo.txt')
+  call writefile([], 'Xrfdir/bar.txt')
+  call mkdir('Xrfdir/[a-1]')  " issue #696
+  call writefile([], 'Xrfdir/[a-1]/foo.txt')
+  call writefile([], 'Xrfdir/[a-1]/bar.txt')
+  call assert_true(filereadable('Xrfdir/foo.txt'))
+  call assert_true('Xrfdir/[a-1]/foo.txt'->filereadable())
 
-  call assert_equal(0, delete('Xdir', 'rf'))
-  call assert_false(filereadable('Xdir/foo.txt'))
-  call assert_false(filereadable('Xdir/[a-1]/foo.txt'))
+  call assert_equal(0, delete('Xrfdir', 'rf'))
+  call assert_false(filereadable('Xrfdir/foo.txt'))
+  call assert_false(filereadable('Xrfdir/[a-1]/foo.txt'))
 
   if has('unix')
-    call mkdir('Xdir/Xdir2', 'p')
-    silent !chmod 555 Xdir
-    call assert_equal(-1, delete('Xdir/Xdir2', 'rf'))
-    call assert_equal(-1, delete('Xdir', 'rf'))
-    silent !chmod 755 Xdir
-    call assert_equal(0, delete('Xdir', 'rf'))
+    call mkdir('Xrfdir/Xdir2', 'p')
+    silent !chmod 555 Xrfdir
+    call assert_equal(-1, delete('Xrfdir/Xdir2', 'rf'))
+    call assert_equal(-1, delete('Xrfdir', 'rf'))
+    silent !chmod 755 Xrfdir
+    call assert_equal(0, delete('Xrfdir', 'rf'))
   endif
 endfunc
 
 func Test_call()
   call assert_equal(3, call('len', [123]))
   call assert_equal(3, 'len'->call([123]))
-  call assert_fails("call call('len', 123)", 'E714:')
+  call assert_fails("call call('len', 123)", 'E1211:')
   call assert_equal(0, call('', []))
   call assert_equal(0, call('len', test_null_list()))
 
@@ -2291,7 +2763,7 @@ func Test_call()
   endfunction
   let mydict = {'data': [0, 1, 2, 3], 'len': function("Mylen")}
   eval mydict.len->call([], mydict)->assert_equal(4)
-  call assert_fails("call call('Mylen', [], 0)", 'E715:')
+  call assert_fails("call call('Mylen', [], 0)", 'E1206:')
   call assert_fails('call foo', 'E107:')
 
   " These once caused a crash.
@@ -2364,6 +2836,24 @@ func Test_bufadd_bufload()
   call assert_equal(1, bufexists(buf2))
   exe 'bwipe ' .. buf2
   call assert_equal(0, bufexists(buf2))
+
+  " When 'buftype' is "nofile" then bufload() does not read the file.
+  " Other values too.
+  for val in [['nofile', 0],
+            \ ['nowrite', 1],
+            \ ['acwrite', 1],
+            \ ['quickfix', 0],
+            \ ['help', 1],
+            \ ['terminal', 0],
+            \ ['prompt', 0],
+            \ ['popup', 0],
+            \ ]
+    bwipe! XotherName
+    let buf = bufadd('XotherName')
+    call setbufvar(buf, '&bt', val[0])
+    call bufload(buf)
+    call assert_equal(val[1] ? ['some', 'text'] : [''], getbufline(buf, 1, '$'), val[0])
+  endfor
 
   bwipe someName
   bwipe XotherName
@@ -2531,12 +3021,6 @@ func Test_range()
   call assert_equal(1, index(range(1, 5), 2))
   call assert_fails("echo index([1, 2], 1, [])", 'E745:')
 
-  " inputlist()
-  call feedkeys(":let result = inputlist(range(10))\<CR>1\<CR>", 'x')
-  call assert_equal(1, result)
-  call feedkeys(":let result = inputlist(range(3, 10))\<CR>1\<CR>", 'x')
-  call assert_equal(1, result)
-
   " insert()
   call assert_equal([42, 1, 2, 3, 4, 5], insert(range(1, 5), 42))
   call assert_equal([42, 1, 2, 3, 4, 5], insert(range(1, 5), 42, 0))
@@ -2559,7 +3043,7 @@ func Test_range()
 
   " list2str()
   call assert_equal('ABC', list2str(range(65, 67)))
-  call assert_fails('let s = list2str(5)', 'E474:')
+  call assert_fails('let s = list2str(5)', 'E1211:')
 
   " lock()
   let thelist = range(5)
@@ -2740,6 +3224,32 @@ func Test_eval()
   call assert_fails("call eval('5 a')", 'E488:')
 endfunc
 
+" Test for the keytrans() function
+func Test_keytrans()
+  call assert_equal('<Space>', keytrans(' '))
+  call assert_equal('<lt>', keytrans('<'))
+  call assert_equal('<lt>Tab>', keytrans('<Tab>'))
+  call assert_equal('<Tab>', keytrans("\<Tab>"))
+  call assert_equal('<C-V>', keytrans("\<C-V>"))
+  call assert_equal('<BS>', keytrans("\<BS>"))
+  call assert_equal('<Home>', keytrans("\<Home>"))
+  call assert_equal('<C-Home>', keytrans("\<C-Home>"))
+  call assert_equal('<M-Home>', keytrans("\<M-Home>"))
+  call assert_equal('<C-Space>', keytrans("\<C-Space>"))
+  call assert_equal('<M-Space>', keytrans("\<*M-Space>"))
+  call assert_equal('<M-x>', "\<*M-x>"->keytrans())
+  call assert_equal('<C-I>', "\<*C-I>"->keytrans())
+  call assert_equal('<S-3>', "\<*S-3>"->keytrans())
+  call assert_equal('π', 'π'->keytrans())
+  call assert_equal('<M-π>', "\<M-π>"->keytrans())
+  call assert_equal('ě', 'ě'->keytrans())
+  call assert_equal('<M-ě>', "\<M-ě>"->keytrans())
+  call assert_equal('', ''->keytrans())
+  call assert_equal('', test_null_string()->keytrans())
+  call assert_fails('call keytrans(1)', 'E1174:')
+  call assert_fails('call keytrans()', 'E119:')
+endfunc
+
 " Test for the nr2char() function
 func Test_nr2char()
   set encoding=latin1
@@ -2757,6 +3267,31 @@ func Test_screen_functions()
   call assert_equal(-1, screenattr(-1, -1))
   call assert_equal(-1, screenchar(-1, -1))
   call assert_equal([], screenchars(-1, -1))
+
+  " Run this in a separate Vim instance to avoid messing up.
+  let after =<< trim [CODE]
+    scriptencoding utf-8
+    call setline(1, '口')
+    redraw
+    call assert_equal(0, screenattr(1, 1))
+    call assert_equal(char2nr('口'), screenchar(1, 1))
+    call assert_equal([char2nr('口')], screenchars(1, 1))
+    call assert_equal('口', screenstring(1, 1))
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [CODE]
+
+  let encodings = ['utf-8', 'cp932', 'cp936', 'cp949', 'cp950']
+  if !has('win32')
+    let encodings += ['euc-jp']
+  endif
+  for enc in encodings
+    let msg = 'enc=' .. enc
+    if RunVim([], after, $'--clean --cmd "set encoding={enc}"')
+      call assert_equal([], readfile('Xresult'), msg)
+    endif
+    call delete('Xresult')
+  endfor
 endfunc
 
 " Test for getcurpos() and setpos()
@@ -2845,6 +3380,12 @@ func Test_getmousepos()
   bwipe!
 endfunc
 
+func Test_getmouseshape()
+  CheckFeature mouseshape
+
+  call assert_equal('arrow', getmouseshape())
+endfunc
+
 " Test for glob()
 func Test_glob()
   call assert_equal('', glob(test_null_string()))
@@ -2889,7 +3430,7 @@ endfunc
 
 " Test for gettext()
 func Test_gettext()
-  call assert_fails('call gettext(1)', 'E475:')
+  call assert_fails('call gettext(1)', 'E1174:')
 endfunc
 
 func Test_builtin_check()
@@ -2907,6 +3448,25 @@ func Test_builtin_check()
   let g:bar = 123
   call extend(g:, #{bar: { -> "foo" }}, "keep")
   call assert_fails('call extend(g:, #{bar: { -> "foo" }}, "force")', 'E704:')
+  unlet g:bar
+
+  call assert_fails('call extend(l:, #{foo: { -> "foo" }})', 'E704:')
+  let bar = 123
+  call extend(l:, #{bar: { -> "foo" }}, "keep")
+  call assert_fails('call extend(l:, #{bar: { -> "foo" }}, "force")', 'E704:')
+  unlet bar
+
+  call assert_fails('call extend(g:, #{foo: function("extend")})', 'E704:')
+  let g:bar = 123
+  call extend(g:, #{bar: function("extend")}, "keep")
+  call assert_fails('call extend(g:, #{bar: function("extend")}, "force")', 'E704:')
+  unlet g:bar
+
+  call assert_fails('call extend(l:, #{foo: function("extend")})', 'E704:')
+  let bar = 123
+  call extend(l:, #{bar: function("extend")}, "keep")
+  call assert_fails('call extend(l:, #{bar: function("extend")}, "force")', 'E704:')
+  unlet bar
 endfunc
 
 func Test_funcref_to_string()
@@ -2960,6 +3520,52 @@ func Test_virtcol()
   call assert_equal(8, virtcol('.', v:false))
   call assert_equal([4, 8], virtcol('.', v:true))
   bwipe!
+endfunc
+
+func Test_delfunc_while_listing()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nocompatible
+      for i in range(1, 999)
+        exe 'func ' .. 'MyFunc' .. i .. '()'
+        endfunc
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('delfunc MyFunc622')})
+  END
+  call writefile(lines, 'Xfunctionclear', 'D')
+  let buf = RunVimInTerminal('-S Xfunctionclear', {'rows': 12})
+
+  " This was using freed memory.  The height of the terminal must be so that
+  " the next function to be listed with "j" is the one that is deleted in the
+  " timer callback, tricky!
+  call term_sendkeys(buf, ":func /MyFunc\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for the reverse() function with a string
+func Test_string_reverse()
+  let lines =<< trim END
+    call assert_equal('', reverse(test_null_string()))
+    for [s1, s2] in [['', ''], ['a', 'a'], ['ab', 'ba'], ['abc', 'cba'],
+                   \ ['abcd', 'dcba'], ['«-«-»-»', '»-»-«-«'],
+                   \ ['🇦', '🇦'], ['🇦🇧', '🇧🇦'], ['🇦🇧🇨', '🇨🇧🇦'],
+                   \ ['🇦«🇧-🇨»🇩', '🇩»🇨-🇧«🇦']]
+      call assert_equal(s2, reverse(s1))
+    endfor
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  " test in latin1 encoding
+  let save_enc = &encoding
+  set encoding=latin1
+  call assert_equal('dcba', reverse('abcd'))
+  let &encoding = save_enc
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,26 +1,39 @@
-" Vim syntax file
-" Language:           METAFONT
-" Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
-" Former Maintainers: Andreas Scherer <andreas.scherer@pobox.com>
-" Last Change:        2016 Oct 1
+vim9script
+
+# Vim syntax file
+# Language:           METAFONT
+# Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
+# Former Maintainers: Andreas Scherer <andreas.scherer@pobox.com>
+# Latest Revision:    2022 Aug 12
 
 if exists("b:current_syntax")
   finish
 endif
 
+# Deprecation warnings: to be removed eventually
+if exists("g:plain_mf_macros")
+  echomsg "[mf] g:plain_mf_macros is deprecated: use g:mf_plain_macros instead."
+endif
+if exists("g:plain_mf_modes")
+  echomsg "[mf] g:plain_mf_modes is deprecated: use g:mf_plain_modes instead."
+endif
+if exists("g:other_mf_macros")
+  echomsg "[mf] g:other_mf_macros is deprecated: use g:mf_other_macros instead."
+endif
+
 syn iskeyword @,_
 
-" METAFONT 'primitives' as defined in chapter 25 of 'The METAFONTbook'
-" Page 210: 'boolean expressions'
+# METAFONT 'primitives' as defined in chapter 25 of 'The METAFONTbook'
+# Page 210: 'boolean expressions'
 syn keyword mfBoolExp        and charexists false known not odd or true unknown
 
-" Page 210: 'numeric expression'
+# Page 210: 'numeric expression'
 syn keyword mfNumExp         ASCII angle cosd directiontime floor hex length
 syn keyword mfNumExp         mexp mlog normaldeviate oct sind sqrt totalweight
 syn keyword mfNumExp         turningnumber uniformdeviate xpart xxpart xypart
 syn keyword mfNumExp         ypart yxpart yypart
 
-" Page 211: 'internal quantities'
+# Page 211: 'internal quantities'
 syn keyword mfInternal       autorounding boundarychar charcode chardp chardx
 syn keyword mfInternal       chardy charext charht charic charwd day designsize
 syn keyword mfInternal       fillin fontmaking granularity hppp jobname month
@@ -32,25 +45,25 @@ syn keyword mfInternal       tracingrestores tracingspecs tracingstats
 syn keyword mfInternal       tracingtitles turningcheck vppp warningcheck
 syn keyword mfInternal       xoffset year yoffset
 
-" Page 212: 'pair expressions'
+# Page 212: 'pair expressions'
 syn keyword mfPairExp        of penoffset point postcontrol precontrol rotated
 syn keyword mfPairExp        scaled shifted slanted transformed xscaled yscaled
 syn keyword mfPairExp        zscaled
 
-" Page 213: 'path expressions'
+# Page 213: 'path expressions'
 syn keyword mfPathExp        atleast controls curl cycle makepath reverse
 syn keyword mfPathExp        subpath tension
 
-" Page 214: 'pen expressions'
+# Page 214: 'pen expressions'
 syn keyword mfPenExp         makepen nullpen pencircle
 
-" Page 214: 'picture expressions'
+# Page 214: 'picture expressions'
 syn keyword mfPicExp         nullpicture
 
-" Page 214: 'string expressions'
+# Page 214: 'string expressions'
 syn keyword mfStringExp      char decimal readstring str substring
 
-" Page 217: 'commands and statements'
+# Page 217: 'commands and statements'
 syn keyword mfCommand        addto also at batchmode contour cull delimiters
 syn keyword mfCommand        display doublepath dropping dump end errhelp
 syn keyword mfCommand        errmessage errorstopmode everyjob from interim
@@ -60,36 +73,36 @@ syn keyword mfCommand        save scrollmode shipout show showdependencies
 syn keyword mfCommand        showstats showtoken showvariable special to withpen
 syn keyword mfCommand        withweight
 
-" Page 56: 'types'
+# Page 56: 'types'
 syn keyword mfType           boolean numeric pair path pen picture string
 syn keyword mfType           transform
 
-" Page 155: 'grouping'
+# Page 155: 'grouping'
 syn keyword mfStatement      begingroup endgroup
 
-" Page 165: 'definitions'
+# Page 165: 'definitions'
 syn keyword mfDefinition     def enddef expr primary primarydef secondary
 syn keyword mfDefinition     secondarydef suffix tertiary tertiarydef text
 syn keyword mfDefinition     vardef
 
-" Page 169: 'conditions and loops'
+# Page 169: 'conditions and loops'
 syn keyword mfCondition      else elseif endfor exitif fi for forever
 syn keyword mfCondition      forsuffixes if step until
 
-" Other primitives listed in the index
+# Other primitives listed in the index
 syn keyword mfPrimitive      charlist endinput expandafter extensible fontdimen
 syn keyword mfPrimitive      headerbyte inner input intersectiontimes kern
 syn keyword mfPrimitive      ligtable quote scantokens skipto
 
-" Implicit suffix parameters
+# Implicit suffix parameters
 syn match   mfSuffixParam    "@#\|#@\|@"
 
-" These are just tags, but given their special status, we
-" highlight them as variables
+# These are just tags, but given their special status, we
+# highlight them as variables
 syn keyword mfVariable       x y
 
-" Keywords defined by plain.mf (defined on pp.262-278)
-if get(g:, "plain_mf_macros", 1)
+# Keywords defined by plain.mf (defined on pp.262-278)
+if get(g:, "mf_plain_macros", get(g:, "plain_mf_macros", 1))
   syn keyword mfDef          addto_currentpicture beginchar capsule_def
   syn keyword mfDef          change_width clear_pen_memory clearit clearpen
   syn keyword mfDef          clearxy culldraw cullit cutdraw
@@ -117,8 +130,8 @@ if get(g:, "plain_mf_macros", 1)
   syn keyword mfVardef       bot byte ceiling counterclockwise cutoff decr dir
   syn keyword mfVardef       direction directionpoint grayfont hround incr
   syn keyword mfVardef       interpath inverse labelfont labels lft magstep
-  " Note: nodot is not a vardef, it is used as in makelabel.lft.nodot("5",z5)
-  " (METAFONT only)
+  # Note: nodot is not a vardef, it is used as in makelabel.lft.nodot("5",z5)
+  # (METAFONT only)
   syn keyword mfVardef       makelabel max min nodot penlabels penpos
   syn keyword mfVardef       proofrulethickness round rt savepen slantfont solve
   syn keyword mfVardef       tensepath titlefont top unitvector vround whatever
@@ -130,24 +143,24 @@ if get(g:, "plain_mf_macros", 1)
   syn keyword mfNewInternal  infinity join_radius number_of_modes o_correction
   syn keyword mfNewInternal  pen_bot pen_lft pen_rt pen_top pixels_per_inch
   syn keyword mfNewInternal  screen_cols screen_rows tolerance
-  " Predefined constants
+  # Predefined constants
   syn keyword mfConstant     base_name base_version blankpicture ditto down
   syn keyword mfConstant     fullcircle halfcircle identity left lowres origin
   syn keyword mfConstant     penspeck proof quartercircle right rulepen smoke
   syn keyword mfConstant     unitpixel unitsquare up
-  " Other predefined variables
+  # Other predefined variables
   syn keyword mfVariable     aspect_ratio currentpen extra_beginchar
   syn keyword mfVariable     extra_endchar currentpen_path currentpicture
   syn keyword mfVariable     currenttransform d extra_setup h localfont mag mode
   syn keyword mfVariable     mode_name w
-  " let statements:
+  # let statements:
   syn keyword mfnumExp       abs
   syn keyword mfPairExp      rotatedabout
   syn keyword mfCommand      bye relax
 endif
 
-" By default, METAFONT loads modes.mf, too
-if get(g:, "plain_mf_modes", 1)
+# By default, METAFONT loads modes.mf, too
+if get(g:, "plain_mf_modes", get(g:, "mf_plain_modes", 1))
   syn keyword mfConstant     APSSixMed AgfaFourZeroZero AgfaThreeFourZeroZero
   syn keyword mfConstant     AtariNineFive AtariNineSix AtariSLMEightZeroFour
   syn keyword mfConstant     AtariSMOneTwoFour CItohEightFiveOneZero
@@ -228,36 +241,36 @@ if get(g:, "plain_mf_modes", 1)
   syn keyword mfNewInternal  blacker_min
 endif
 
-" Some other basic macro names, e.g., from cmbase, logo, etc.
-if get(g:, "other_mf_macros", 1)
+# Some other basic macro names, e.g., from cmbase, logo, etc.
+if get(g:, "mf_other_macros", get(g:, "other_mf_macros", 1))
   syn keyword mfDef          beginlogochar
   syn keyword mfDef          font_setup
   syn keyword mfPrimitive    generate
 endif
 
-" Numeric tokens
+# Numeric tokens
 syn match     mfNumeric      "[-]\=\d\+"
 syn match     mfNumeric      "[-]\=\.\d\+"
 syn match     mfNumeric      "[-]\=\d\+\.\d\+"
 
-" METAFONT lengths
+# METAFONT lengths
 syn match     mfLength       "\<\(bp\|cc\|cm\|dd\|in\|mm\|pc\|pt\)\>"
 syn match     mfLength       "[-]\=\d\+\(bp\|cc\|cm\|dd\|in\|mm\|pc\|pt\)\#\="
 syn match     mfLength       "[-]\=\.\d\+\(bp\|cc\|cm\|dd\|in\|mm\|pc\|pt\)\#\="
 syn match     mfLength       "[-]\=\d\+\.\d\+\(bp\|cc\|cm\|dd\|in\|mm\|pc\|pt\)\#\="
 
-" String constants
+# String constants
 syn match     mfOpenString   /"[^"]*/
 syn region    mfString       oneline keepend start=+"+ end=+"+
 
-" Comments:
+# Comments:
 syn keyword   mfTodoComment  contained TODO FIXME XXX DEBUG NOTE
 syn match     mfComment      "%.*$" contains=mfTodoComment,@Spell
 
-" synchronizing
-syn sync maxlines=50
+# synchronizing
+syn sync maxlines=100
 
-" Define the default highlighting
+# Define the default highlighting
 hi def link mfBoolExp      Statement
 hi def link mfNumExp       Statement
 hi def link mfPairExp      Statement
@@ -290,6 +303,6 @@ hi def link mfVariable     Identifier
 hi def link mfConstant     Constant
 hi def link mfTodoComment  Todo
 
-let b:current_syntax = "mf"
+b:current_syntax = "mf"
 
-" vim:sw=2
+# vim: sw=2 fdm=marker

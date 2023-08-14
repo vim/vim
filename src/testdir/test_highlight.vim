@@ -46,6 +46,10 @@ func Test_highlight()
   call assert_equal("Group3         xxx cleared",
 				\ split(execute("hi Group3"), "\n")[0])
   call assert_fails("hi Crash term='asdf", "E475:")
+
+  if has('gui_running')
+    call assert_fails('hi NotUsed guibg=none', 'E1361:')
+  endif
 endfunc
 
 func HighlightArgs(name)
@@ -540,7 +544,7 @@ func Test_cursorline_after_yank()
   call writefile([
 	\ 'set cul rnu',
 	\ 'call setline(1, ["","1","2","3",""])',
-	\ ], 'Xtest_cursorline_yank')
+	\ ], 'Xtest_cursorline_yank', 'D')
   let buf = RunVimInTerminal('-S Xtest_cursorline_yank', {'rows': 8})
   call TermWait(buf)
   call term_sendkeys(buf, "Gy3k")
@@ -551,7 +555,6 @@ func Test_cursorline_after_yank()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_cursorline_yank')
 endfunc
 
 " test for issue #4862
@@ -580,7 +583,7 @@ func Test_cursorline_with_visualmode()
   call writefile([
 	\ 'set cul',
 	\ 'call setline(1, repeat(["abc"], 50))',
-	\ ], 'Xtest_cursorline_with_visualmode')
+	\ ], 'Xtest_cursorline_with_visualmode', 'D')
   let buf = RunVimInTerminal('-S Xtest_cursorline_with_visualmode', {'rows': 12})
   call TermWait(buf)
   call term_sendkeys(buf, "V\<C-f>kkkjk")
@@ -589,7 +592,6 @@ func Test_cursorline_with_visualmode()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_cursorline_with_visualmode')
 endfunc
 
 func Test_cursorcolumn_insert_on_tab()
@@ -600,7 +602,7 @@ func Test_cursorcolumn_insert_on_tab()
     set cursorcolumn
     call cursor(2, 2)
   END
-  call writefile(lines, 'Xcuc_insert_on_tab')
+  call writefile(lines, 'Xcuc_insert_on_tab', 'D')
 
   let buf = RunVimInTerminal('-S Xcuc_insert_on_tab', #{rows: 8})
   call TermWait(buf)
@@ -619,7 +621,6 @@ func Test_cursorcolumn_insert_on_tab()
   call VerifyScreenDump(buf, 'Test_cursorcolumn_insert_on_tab_2', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xcuc_insert_on_tab')
 endfunc
 
 func Test_cursorcolumn_callback()
@@ -637,14 +638,13 @@ func Test_cursorcolumn_callback()
 
       call timer_start(300, 'Func')
   END
-  call writefile(lines, 'Xcuc_timer')
+  call writefile(lines, 'Xcuc_timer', 'D')
 
   let buf = RunVimInTerminal('-S Xcuc_timer', #{rows: 8})
   call TermWait(buf, 310)
   call VerifyScreenDump(buf, 'Test_cursorcolumn_callback_1', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xcuc_timer')
 endfunc
 
 func Test_wincolor()
@@ -663,7 +663,7 @@ func Test_wincolor()
 	call prop_add(6, 12, {"type": "foo", "end_col": 15})
 	/here
   END
-  call writefile(lines, 'Xtest_wincolor')
+  call writefile(lines, 'Xtest_wincolor', 'D')
   let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
   call TermWait(buf)
   call term_sendkeys(buf, "2G5lvj")
@@ -674,7 +674,6 @@ func Test_wincolor()
   " clean up
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('Xtest_wincolor')
 endfunc
 
 func Test_wincolor_listchars()
@@ -689,7 +688,7 @@ func Test_wincolor_listchars()
 	call matchadd('Conceal', 'text')
 	normal 2G5zl
   END
-  call writefile(lines, 'Xtest_wincolorlcs')
+  call writefile(lines, 'Xtest_wincolorlcs', 'D')
   let buf = RunVimInTerminal('-S Xtest_wincolorlcs', {'rows': 8})
 
   call VerifyScreenDump(buf, 'Test_wincolor_lcs', {})
@@ -697,7 +696,6 @@ func Test_wincolor_listchars()
   " clean up
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('Xtest_wincolorlcs')
 endfunc
 
 func Test_colorcolumn()
@@ -714,14 +712,13 @@ func Test_colorcolumn()
 	wincmd w
 	buf X
   END
-  call writefile(lines, 'Xtest_colorcolumn')
+  call writefile(lines, 'Xtest_colorcolumn', 'D')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_colorcolumn')
 endfunc
 
 func Test_colorcolumn_bri()
@@ -731,14 +728,13 @@ func Test_colorcolumn_bri()
   let lines =<< trim END
 	call setline(1, 'The quick brown fox jumped over the lazy dogs')
   END
-  call writefile(lines, 'Xtest_colorcolumn_bri')
+  call writefile(lines, 'Xtest_colorcolumn_bri', 'D')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn_bri', {'rows': 10,'columns': 40})
   call term_sendkeys(buf, ":set co=40 linebreak bri briopt=shift:2 cc=40,41,43\<CR>")
   call VerifyScreenDump(buf, 'Test_colorcolumn_2', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_colorcolumn_bri')
 endfunc
 
 func Test_colorcolumn_sbr()
@@ -748,14 +744,33 @@ func Test_colorcolumn_sbr()
   let lines =<< trim END
 	call setline(1, 'The quick brown fox jumped over the lazy dogs')
   END
-  call writefile(lines, 'Xtest_colorcolumn_srb')
+  call writefile(lines, 'Xtest_colorcolumn_srb', 'D')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn_srb', {'rows': 10,'columns': 40})
   call term_sendkeys(buf, ":set co=40 showbreak=+++>\\  cc=40,41,43\<CR>")
   call VerifyScreenDump(buf, 'Test_colorcolumn_3', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_colorcolumn_srb')
+endfunc
+
+func Test_visual_sbr()
+  CheckScreendump
+
+  " check Visual highlight when 'showbreak' is set
+  let lines =<< trim END
+      set showbreak=>
+      call setline(1, 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.')
+      exe "normal! z1\<CR>"
+  END
+  call writefile(lines, 'Xtest_visual_sbr', 'D')
+  let buf = RunVimInTerminal('-S Xtest_visual_sbr', {'rows': 6,'columns': 60})
+
+  call term_sendkeys(buf, "v$")
+  call VerifyScreenDump(buf, 'Test_visual_sbr_1', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
 endfunc
 
 " This test must come before the Test_cursorline test, as it appears this
@@ -883,13 +898,20 @@ func Test_highlight_start_stop()
   call assert_match("stop=^[[27h;^[[ r;", HighlightArgs('HlGrp2'))
   hi HlGrp2 stop=NONE
   call assert_notmatch("stop=", HighlightArgs('HlGrp2'))
+  set t_xy=^[foo;
+  set t_xz=^[bar;
+  hi HlGrp3 start=t_xy stop=t_xz
+  let d = hlget('HlGrp3')
+  call assert_equal('^[foo;', d[0].start)
+  call assert_equal('^[bar;', d[0].stop)
+  set t_xy= t_xz=
   hi clear
 endfunc
 
 " Test for setting various 'term' attributes
 func Test_highlight_term_attr()
-  hi HlGrp3 term=bold,underline,undercurl,strikethrough,reverse,italic,standout
-  call assert_equal('hi HlGrp3          term=bold,standout,underline,undercurl,italic,reverse,strikethrough', HighlightArgs('HlGrp3'))
+  hi HlGrp3 term=bold,underline,undercurl,underdouble,underdotted,underdashed,strikethrough,reverse,italic,standout
+  call assert_equal('hi HlGrp3          term=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,strikethrough', HighlightArgs('HlGrp3'))
   hi HlGrp3 term=NONE
   call assert_equal('hi HlGrp3          cleared', HighlightArgs('HlGrp3'))
   hi clear
@@ -1174,12 +1196,14 @@ func Test_hlset()
   " Test for setting all the 'term', 'cterm' and 'gui' attributes of a
   " highlight group
   let lines =<< trim END
-    VAR attr = {'bold': v:true, 'underline': v:true, 'undercurl': v:true,
+    VAR attr = {'bold': v:true, 'underline': v:true,
+                \ 'undercurl': v:true, 'underdouble': v:true,
+                \ 'underdotted': v:true, 'underdashed': v:true,
                 \ 'strikethrough': v:true, 'reverse': v:true, 'italic': v:true,
                 \ 'standout': v:true, 'nocombine': v:true}
     call hlset([{'name': 'myhlg2', 'term': attr, 'cterm': attr, 'gui': attr}])
     VAR id2 = hlID('myhlg2')
-    VAR expected = "myhlg2 xxx term=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough cterm=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough gui=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough"
+    VAR expected = "myhlg2 xxx term=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough cterm=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough gui=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough"
     VAR output = execute('highlight myhlg2')
     LET output = output->split("\n")->join()->substitute('\s\+', ' ', 'g')
     call assert_equal(expected, output)

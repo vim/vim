@@ -1,6 +1,7 @@
 " Vim script for Evim key bindings
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 May 10
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Don't use Vi-compatible mode.
 set nocompatible

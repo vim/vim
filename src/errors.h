@@ -6,6 +6,18 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
+// Use PLURAL_MSG() for messages that are passed to ngettext(), so that the
+// second one uses msgid_plural.
+#ifdef DO_INIT
+# define PLURAL_MSG(var1, msg1, var2, msg2) \
+	char var1[] = msg1; \
+	char var2[] = msg2;
+#else
+# define PLURAL_MSG(var1, msg1, var2, msg2) \
+	extern char var1[]; \
+	extern char var2[];
+#endif
+
 /*
  * Definition of error messages, sorted on error number.
  */
@@ -15,10 +27,8 @@ EXTERN char e_interrupted[]
 
 EXTERN char e_backslash_should_be_followed_by[]
 	INIT(= N_("E10: \\ should be followed by /, ? or &"));
-#ifdef FEAT_CMDWIN
 EXTERN char e_invalid_in_cmdline_window[]
-	INIT(= N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
-#endif
+	INIT(= N_("E11: Invalid in command-line window; :q<CR> closes the window"));
 EXTERN char e_command_not_allowed_from_vimrc_in_current_dir_or_tag_search[]
 	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
 EXTERN char e_file_exists[]
@@ -88,7 +98,7 @@ EXTERN char e_no_write_since_last_change[]
 EXTERN char e_no_write_since_last_change_add_bang_to_override[]
 	INIT(= N_("E37: No write since last change (add ! to override)"));
 EXTERN char e_null_argument[]
-	INIT(= N_("E38: Null argument"));
+	INIT(= "E38: Null argument");
 #if defined(FEAT_DIGRAPHS) || defined(FEAT_TIMERS) || defined(FEAT_EVAL)
 EXTERN char e_number_expected[]
 	INIT(= N_("E39: Number expected"));
@@ -104,9 +114,9 @@ EXTERN char e_no_errors[]
 	INIT(= N_("E42: No Errors"));
 #endif
 EXTERN char e_damaged_match_string[]
-	INIT(= N_("E43: Damaged match string"));
+	INIT(= "E43: Damaged match string");
 EXTERN char e_corrupted_regexp_program[]
-	INIT(= N_("E44: Corrupted regexp program"));
+	INIT(= "E44: Corrupted regexp program");
 EXTERN char e_readonly_option_is_set_add_bang_to_override[]
 	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
@@ -400,10 +410,10 @@ EXTERN char e_missing_endif[]
 EXTERN char e_missing_marker[]
 	INIT(= N_("E172: Missing marker"));
 #endif
-EXTERN char e_nr_more_file_to_edit[]
-	INIT(= N_("E173: %d more file to edit"));
-EXTERN char e_nr_more_files_to_edit[]
-	INIT(= N_("E173: %d more files to edit"));
+
+PLURAL_MSG(e_nr_more_file_to_edit, "E173: %d more file to edit",
+		e_nr_more_files_to_edit, "E173: %d more files to edit")
+
 EXTERN char e_command_already_exists_add_bang_to_replace_it_str[]
 	INIT(= N_("E174: Command already exists: add ! to replace it: %s"));
 EXTERN char e_no_attribute_specified[]
@@ -461,10 +471,8 @@ EXTERN char e_no_digraphs_version[]
 EXTERN char e_cannot_set_language_to_str[]
 	INIT(= N_("E197: Cannot set language to \"%s\""));
 // E198 unused
-#ifdef FEAT_CMDWIN
 EXTERN char e_active_window_or_buffer_deleted[]
 	INIT(= N_("E199: Active window or buffer deleted"));
-#endif
 EXTERN char e_readpre_autocommands_made_file_unreadable[]
 	INIT(= N_("E200: *ReadPre autocommands made the file unreadable"));
 EXTERN char e_readpre_autocommands_must_not_change_current_buffer[]
@@ -518,7 +526,7 @@ EXTERN char e_marker_cannot_start_with_lower_case_letter[]
 	INIT(= N_("E221: Marker cannot start with lower case letter"));
 #endif
 EXTERN char e_add_to_internal_buffer_that_was_already_read_from[]
-	INIT(= N_("E222: Add to internal buffer that was already read from"));
+	INIT(= "E222: Add to internal buffer that was already read from");
 EXTERN char e_recursive_mapping[]
 	INIT(= N_("E223: Recursive mapping"));
 EXTERN char e_global_abbreviation_already_exists_for_str[]
@@ -530,7 +538,7 @@ EXTERN char e_abbreviation_already_exists_for_str[]
 EXTERN char e_mapping_already_exists_for_str[]
 	INIT(= N_("E227: Mapping already exists for %s"));
 EXTERN char e_makemap_illegal_mode[]
-	INIT(= N_("E228: makemap: Illegal mode"));
+	INIT(= "E228: makemap: Illegal mode");
 #ifdef FEAT_GUI
 EXTERN char e_cannot_start_the_GUI[]
 	INIT(= N_("E229: Cannot start the GUI"));
@@ -540,7 +548,7 @@ EXTERN char e_guifontwide_invalid[]
 	INIT(= N_("E231: 'guifontwide' invalid"));
 #ifdef FEAT_BEVAL_GUI
 EXTERN char e_cannot_create_ballooneval_with_both_message_and_callback[]
-	INIT(= N_("E232: Cannot create BalloonEval with both message and callback"));
+	INIT(= "E232: Cannot create BalloonEval with both message and callback");
 #endif
 # if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 EXTERN char e_cannot_open_display[]
@@ -700,7 +708,7 @@ EXTERN char e_sorry_plusplusshell_not_supported_on_this_system[]
 #endif
 #ifdef FEAT_TCL
 EXTERN char e_tcl_fatal_error_reflist_corrupt_please_report_this[]
-	INIT(= N_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
+	INIT(= "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org");
 #endif
 // E281 unused
 EXTERN char e_cannot_read_from_str_2[]
@@ -731,9 +739,9 @@ EXTERN char e_list_or_number_required[]
 #endif
 // E291 unused
 EXTERN char e_invalid_count_for_del_bytes_nr[]
-	INIT(= N_("E292: Invalid count for del_bytes(): %ld"));
+	INIT(= "E292: Invalid count for del_bytes(): %ld");
 EXTERN char e_block_was_not_locked[]
-	INIT(= N_("E293: Block was not locked"));
+	INIT(= "E293: Block was not locked");
 EXTERN char e_seek_error_in_swap_file_read[]
 	INIT(= N_("E294: Seek error in swap file read"));
 EXTERN char e_read_error_in_swap_file[]
@@ -743,11 +751,11 @@ EXTERN char e_seek_error_in_swap_file_write[]
 EXTERN char e_write_error_in_swap_file[]
 	INIT(= N_("E297: Write error in swap file"));
 EXTERN char e_didnt_get_block_nr_zero[]
-	INIT(= N_("E298: Didn't get block nr 0?"));
+	INIT(= "E298: Didn't get block nr 0?");
 EXTERN char e_didnt_get_block_nr_one[]
-	INIT(= N_("E298: Didn't get block nr 1?"));
+	INIT(= "E298: Didn't get block nr 1?");
 EXTERN char e_didnt_get_block_nr_two[]
-	INIT(= N_("E298: Didn't get block nr 2?"));
+	INIT(= "E298: Didn't get block nr 2?");
 #ifdef FEAT_PERL
 EXTERN char e_perl_evaluation_forbidden_in_sandbox_without_safe_module[]
 	INIT(= N_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
@@ -761,7 +769,7 @@ EXTERN char e_could_not_rename_swap_file[]
 EXTERN char e_unable_to_open_swap_file_for_str_recovery_impossible[]
 	INIT(= N_("E303: Unable to open swap file for \"%s\", recovery impossible"));
 EXTERN char e_ml_upd_block0_didnt_get_block_zero[]
-	INIT(= N_("E304: ml_upd_block0(): Didn't get block 0??"));
+	INIT(= "E304: ml_upd_block0(): Didn't get block 0??");
 EXTERN char e_no_swap_file_found_for_str[]
 	INIT(= N_("E305: No swap file found for %s"));
 EXTERN char e_cannot_open_str[]
@@ -783,29 +791,29 @@ EXTERN char e_cannot_preserve_there_is_no_swap_file[]
 EXTERN char e_preserve_failed[]
 	INIT(= N_("E314: Preserve failed"));
 EXTERN char e_ml_get_invalid_lnum_nr[]
-	INIT(= N_("E315: ml_get: Invalid lnum: %ld"));
+	INIT(= "E315: ml_get: Invalid lnum: %ld");
 EXTERN char e_ml_get_cannot_find_line_nr_in_buffer_nr_str[]
-	INIT(= N_("E316: ml_get: Cannot find line %ld in buffer %d %s"));
+	INIT(= "E316: ml_get: Cannot find line %ld in buffer %d %s");
 EXTERN char e_pointer_block_id_wrong[]
-	INIT(= N_("E317: Pointer block id wrong"));
+	INIT(= "E317: Pointer block id wrong");
 EXTERN char e_pointer_block_id_wrong_two[]
-	INIT(= N_("E317: Pointer block id wrong 2"));
+	INIT(= "E317: Pointer block id wrong 2");
 EXTERN char e_pointer_block_id_wrong_three[]
-	INIT(= N_("E317: Pointer block id wrong 3"));
+	INIT(= "E317: Pointer block id wrong 3");
 EXTERN char e_pointer_block_id_wrong_four[]
-	INIT(= N_("E317: Pointer block id wrong 4"));
+	INIT(= "E317: Pointer block id wrong 4");
 EXTERN char e_updated_too_many_blocks[]
-	INIT(= N_("E318: Updated too many blocks?"));
+	INIT(= "E318: Updated too many blocks?");
 EXTERN char e_sorry_command_is_not_available_in_this_version[]
 	INIT(= N_("E319: Sorry, the command is not available in this version"));
 EXTERN char e_cannot_find_line_nr[]
-	INIT(= N_("E320: Cannot find line %ld"));
+	INIT(= "E320: Cannot find line %ld");
 EXTERN char e_could_not_reload_str[]
 	INIT(= N_("E321: Could not reload \"%s\""));
 EXTERN char e_line_number_out_of_range_nr_past_the_end[]
-	INIT(= N_("E322: Line number out of range: %ld past the end"));
+	INIT(= "E322: Line number out of range: %ld past the end");
 EXTERN char e_line_count_wrong_in_block_nr[]
-	INIT(= N_("E323: Line count wrong in block %ld"));
+	INIT(= "E323: Line count wrong in block %ld");
 #ifdef FEAT_POSTSCRIPT
 EXTERN char e_cant_open_postscript_output_file[]
 	INIT(= N_("E324: Can't open PostScript output file"));
@@ -844,16 +852,14 @@ EXTERN char e_sorry_no_file_browser_in_console_mode[]
 #endif
 EXTERN char e_pattern_too_long[]
 	INIT(= N_("E339: Pattern too long"));
-// E340 unused
+EXTERN char e_internal_error_please_report_a_bug[]
+	INIT(= N_("E340: Internal error; if you can reproduce please report a bug"));
 EXTERN char e_internal_error_lalloc_zero[]
-	INIT(= N_("E341: Internal error: lalloc(0, )"));
+	INIT(= "E341: Internal error: lalloc(0, )");
 EXTERN char e_out_of_memory_allocating_nr_bytes[]
 	INIT(= N_("E342: Out of memory!  (allocating %lu bytes)"));
-#ifdef FEAT_PATH_EXTRA
 EXTERN char e_invalid_path_number_must_be_at_end_of_path_or_be_followed_by_str[]
 	INIT(= N_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."));
-#endif
-#ifdef FEAT_SEARCHPATH
 EXTERN char e_cant_find_directory_str_in_cdpath[]
 	INIT(= N_("E344: Can't find directory \"%s\" in cdpath"));
 EXTERN char e_cant_find_file_str_in_path[]
@@ -862,7 +868,6 @@ EXTERN char e_no_more_directory_str_found_in_cdpath[]
 	INIT(= N_("E346: No more directory \"%s\" found in cdpath"));
 EXTERN char e_no_more_file_str_found_in_path[]
 	INIT(= N_("E347: No more file \"%s\" found in path"));
-#endif
 EXTERN char e_no_string_under_cursor[]
 	INIT(= N_("E348: No string under cursor"));
 EXTERN char e_no_identifier_under_cursor[]
@@ -882,7 +887,7 @@ EXTERN char e_invalid_register_name_str[]
 EXTERN char e_unknown_option_str_2[]
 	INIT(= N_("E355: Unknown option: %s"));
 EXTERN char e_get_varp_error[]
-	INIT(= N_("E356: get_varp ERROR"));
+	INIT(= "E356: get_varp ERROR");
 #ifdef FEAT_LANGMAP
 EXTERN char e_langmap_matching_character_missing_for_str[]
 	INIT(= N_("E357: 'langmap': Matching character missing for %s"));
@@ -899,7 +904,7 @@ EXTERN char e_cannot_execute_shell_with_f_option[]
 	INIT(= N_("E360: Cannot execute shell with -f option"));
 #endif
 // E361 unused
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+#if defined(FEAT_EVAL)
 EXTERN char e_using_boolean_value_as_float[]
 	INIT(= N_("E362: Using a boolean value as a Float"));
 #endif
@@ -954,9 +959,9 @@ EXTERN char e_at_bottom_of_quickfix_stack[]
 	INIT(= N_("E380: At bottom of quickfix stack"));
 EXTERN char e_at_top_of_quickfix_stack[]
 	INIT(= N_("E381: At top of quickfix stack"));
+#endif
 EXTERN char e_cannot_write_buftype_option_is_set[]
 	INIT(= N_("E382: Cannot write, 'buftype' option is set"));
-#endif
 EXTERN char e_invalid_search_string_str[]
 	INIT(= N_("E383: Invalid search string: %s"));
 EXTERN char e_search_hit_top_without_match_for_str[]
@@ -976,9 +981,9 @@ EXTERN char e_couldnt_find_pattern[]
 #ifdef FEAT_SYN_HL
 EXTERN char e_illegal_argument_str_2[]
 	INIT(= N_("E390: Illegal argument: %s"));
-EXTERN char e_no_such_syntax_cluster_1[]
+EXTERN char e_no_such_syntax_cluster_str_1[]
 	INIT(= N_("E391: No such syntax cluster: %s"));
-EXTERN char e_no_such_syntax_cluster_2[]
+EXTERN char e_no_such_syntax_cluster_str_2[]
 	INIT(= N_("E392: No such syntax cluster: %s"));
 EXTERN char e_groupthere_not_accepted_here[]
 	INIT(= N_("E393: group[t]here not accepted here"));
@@ -1032,11 +1037,13 @@ EXTERN char e_missing_argument_str[]
 	INIT(= N_("E417: Missing argument: %s"));
 EXTERN char e_illegal_value_str[]
 	INIT(= N_("E418: Illegal value: %s"));
+EXTERN char e_im_a_teapot[]
+	INIT(= N_("E418: I'm a teapot"));
 EXTERN char e_fg_color_unknown[]
 	INIT(= N_("E419: FG color unknown"));
 EXTERN char e_bg_color_unknown[]
 	INIT(= N_("E420: BG color unknown"));
-EXTERN char e_color_name_or_number_not_recognized[]
+EXTERN char e_color_name_or_number_not_recognized_str[]
 	INIT(= N_("E421: Color name or number not recognized: %s"));
 EXTERN char e_terminal_code_too_long_str[]
 	INIT(= N_("E422: Terminal code too long: %s"));
@@ -1064,7 +1071,7 @@ EXTERN char e_tags_file_not_sorted_str[]
 	INIT(= N_("E432: Tags file not sorted: %s"));
 EXTERN char e_no_tags_file[]
 	INIT(= N_("E433: No tags file"));
-EXTERN char e_canot_find_tag_pattern[]
+EXTERN char e_cannot_find_tag_pattern[]
 	INIT(= N_("E434: Can't find tag pattern"));
 EXTERN char e_couldnt_find_tag_just_guessing[]
 	INIT(= N_("E435: Couldn't find tag, just guessing!"));
@@ -1073,11 +1080,11 @@ EXTERN char e_no_str_entry_in_termcap[]
 EXTERN char e_terminal_capability_cm_required[]
 	INIT(= N_("E437: Terminal capability \"cm\" required"));
 EXTERN char e_u_undo_line_numbers_wrong[]
-	INIT(= N_("E438: u_undo: Line numbers wrong"));
+	INIT(= "E438: u_undo: Line numbers wrong");
 EXTERN char e_undo_list_corrupt[]
-	INIT(= N_("E439: Undo list corrupt"));
+	INIT(= "E439: Undo list corrupt");
 EXTERN char e_undo_line_missing[]
-	INIT(= N_("E440: Undo line missing"));
+	INIT(= "E440: Undo line missing");
 #ifdef FEAT_QUICKFIX
 EXTERN char e_there_is_no_preview_window[]
 	INIT(= N_("E441: There is no preview window"));
@@ -1090,12 +1097,10 @@ EXTERN char e_cannot_close_last_window[]
 	INIT(= N_("E444: Cannot close last window"));
 EXTERN char e_other_window_contains_changes[]
 	INIT(= N_("E445: Other window contains changes"));
-#ifdef FEAT_SEARCHPATH
 EXTERN char e_no_file_name_under_cursor[]
 	INIT(= N_("E446: No file name under cursor"));
 EXTERN char e_cant_find_file_str_in_path_2[]
 	INIT(= N_("E447: Can't find file \"%s\" in path"));
-#endif
 #ifdef USING_LOAD_LIBRARY
 EXTERN char e_could_not_load_library_function_str[]
 	INIT(= N_("E448: Could not load library function %s"));
@@ -1177,7 +1182,7 @@ EXTERN char e_argument_required[]
 EXTERN char e_command_failed[]
 	INIT(= N_("E472: Command failed"));
 EXTERN char e_internal_error_in_regexp[]
-	INIT(= N_("E473: Internal error in regexp"));
+	INIT(= "E473: Internal error in regexp");
 EXTERN char e_invalid_argument[]
 	INIT(= N_("E474: Invalid argument"));
 EXTERN char e_invalid_argument_str[]
@@ -1190,9 +1195,11 @@ EXTERN char e_invalid_value_for_argument_str_str[]
 #endif
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
-#ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+#ifdef FEAT_EVAL
+EXTERN char e_invalid_command_str_expected_str[]
+	INIT(= N_("E476: Invalid command: %s, expected %s"));
 #endif
 EXTERN char e_no_bang_allowed[]
 	INIT(= N_("E477: No ! allowed"));
@@ -1218,6 +1225,10 @@ EXTERN char e_pattern_not_found_str[]
 	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_argument_must_be_positive[]
 	INIT(= N_("E487: Argument must be positive"));
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_argument_must_be_positive_str[]
+	INIT(= N_("E487: Argument must be positive: %s"));
+#endif
 EXTERN char e_trailing_characters[]
 	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_characters_str[]
@@ -1240,7 +1251,7 @@ EXTERN char e_use_w_or_w_gt_gt[]
 	INIT(= N_("E494: Use w or w>>"));
 EXTERN char e_no_autocommand_file_name_to_substitute_for_afile[]
 	INIT(= N_("E495: No autocommand file name to substitute for \"<afile>\""));
-EXTERN char e_no_autocommand_buffer_name_to_substitute_for_abuf[]
+EXTERN char e_no_autocommand_buffer_number_to_substitute_for_abuf[]
 	INIT(= N_("E496: No autocommand buffer number to substitute for \"<abuf>\""));
 EXTERN char e_no_autocommand_match_name_to_substitute_for_amatch[]
 	INIT(= N_("E497: No autocommand match name to substitute for \"<amatch>\""));
@@ -1261,6 +1272,8 @@ EXTERN char e_is_not_file_or_writable_device[]
 	INIT(= N_("is not a file or writable device"));
 EXTERN char e_str_is_not_file_or_writable_device[]
 	INIT(= N_("E503: \"%s\" is not a file or writable device"));
+EXTERN char e_coffee_currently_not_available[]
+	INIT(= N_("E503: Coffee is currently not available"));
 	// E504
 EXTERN char e_is_read_only_cannot_override_W_in_cpoptions[]
 	INIT(= N_("is read-only (cannot override: \"W\" in 'cpoptions')"));
@@ -1269,7 +1282,7 @@ EXTERN char e_is_read_only_add_bang_to_override[]
 	INIT(= N_("is read-only (add ! to override)"));
 EXTERN char e_str_is_read_only_add_bang_to_override[]
 	INIT(= N_("E505: \"%s\" is read-only (add ! to override)"));
-EXTERN char e_canot_write_to_backup_file_add_bang_to_override[]
+EXTERN char e_cant_write_to_backup_file_add_bang_to_override[]
 	INIT(= N_("E506: Can't write to backup file (add ! to override)"));
 EXTERN char e_close_error_for_backup_file_add_bang_to_write_anyway[]
 	INIT(= N_("E507: Close error for backup file (add ! to write anyway)"));
@@ -1378,10 +1391,12 @@ EXTERN char e_illegal_mode[]
 EXTERN char e_illegal_mouseshape[]
 	INIT(= N_("E547: Illegal mouseshape"));
 #endif
+#ifdef CURSOR_SHAPE
 EXTERN char e_digit_expected[]
 	INIT(= N_("E548: Digit expected"));
 EXTERN char e_illegal_percentage[]
 	INIT(= N_("E549: Illegal percentage"));
+#endif
 #ifdef FEAT_PRINTER
 EXTERN char e_missing_colon_3[]
 	INIT(= N_("E550: Missing colon"));
@@ -1431,7 +1446,7 @@ EXTERN char e_duplicate_cscope_database_not_added[]
 	INIT(= N_("E568: Duplicate cscope database not added"));
 // E569 unused
 EXTERN char e_fatal_error_in_cs_manage_matches[]
-	INIT(= N_("E570: Fatal error in cs_manage_matches"));
+	INIT(= "E570: Fatal error in cs_manage_matches");
 #endif
 #ifdef DYNAMIC_TCL
 EXTERN char e_sorry_this_command_is_disabled_tcl_library_could_not_be_loaded[]
@@ -1592,9 +1607,9 @@ EXTERN char e_cannot_get_cscope_database_information[]
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_missing_colon_str[]
-	INIT(= "E627: Missing colon: %s");
+	INIT(= N_("E627: Missing colon: %s"));
 EXTERN char e_missing_bang_or_slash_in_str[]
-	INIT(= "E628: Missing ! or / in: %s");
+	INIT(= N_("E628: Missing ! or / in: %s"));
 #ifdef NBDEBUG
 EXTERN char e_bad_return_from_nb_do_cmd[]
 	INIT(= "E629: Bad return from nb_do_cmd");
@@ -1608,47 +1623,47 @@ EXTERN char e_str_write_failed[]
 #endif
 #ifdef FEAT_NETBEANS_INTG
 EXTERN char e_invalid_buffer_identifier_in_getlength[]
-	INIT(= "E632: Invalid buffer identifier in getLength");
+	INIT(= N_("E632: Invalid buffer identifier in getLength"));
 EXTERN char e_invalid_buffer_identifier_in_gettext[]
-	INIT(= "E633: Invalid buffer identifier in getText");
+	INIT(= N_("E633: Invalid buffer identifier in getText"));
 EXTERN char e_invalid_buffer_identifier_in_remove[]
-	INIT(= "E634: Invalid buffer identifier in remove");
+	INIT(= N_("E634: Invalid buffer identifier in remove"));
 EXTERN char e_invalid_buffer_identifier_in_insert[]
-	INIT(= "E635: Invalid buffer identifier in insert");
+	INIT(= N_("E635: Invalid buffer identifier in insert"));
 EXTERN char e_invalid_buffer_identifier_in_create[]
-	INIT(= "E636: Invalid buffer identifier in create");
+	INIT(= N_("E636: Invalid buffer identifier in create"));
 EXTERN char e_invalid_buffer_identifier_in_startdocumentlisten[]
-	INIT(= "E637: Invalid buffer identifier in startDocumentListen");
+	INIT(= N_("E637: Invalid buffer identifier in startDocumentListen"));
 EXTERN char e_invalid_buffer_identifier_in_stopdocumentlisten[]
-	INIT(= "E638: Invalid buffer identifier in stopDocumentListen");
+	INIT(= N_("E638: Invalid buffer identifier in stopDocumentListen"));
 EXTERN char e_invalid_buffer_identifier_in_settitle[]
-	INIT(= "E639: Invalid buffer identifier in setTitle");
+	INIT(= N_("E639: Invalid buffer identifier in setTitle"));
 EXTERN char e_invalid_buffer_identifier_in_initdone[]
-	INIT(= "E640: Invalid buffer identifier in initDone");
+	INIT(= N_("E640: Invalid buffer identifier in initDone"));
 EXTERN char e_invalid_buffer_identifier_in_setbuffernumber[]
-	INIT(= "E641: Invalid buffer identifier in setBufferNumber");
+	INIT(= N_("E641: Invalid buffer identifier in setBufferNumber"));
 EXTERN char e_file_str_not_found_in_setbuffernumber[]
-	INIT(= "E642: File %s not found in setBufferNumber");
+	INIT(= N_("E642: File %s not found in setBufferNumber"));
 EXTERN char e_invalid_buffer_identifier_in_setfullname[]
-	INIT(= "E643: Invalid buffer identifier in setFullName");
+	INIT(= N_("E643: Invalid buffer identifier in setFullName"));
 EXTERN char e_invalid_buffer_identifier_in_editfile[]
-	INIT(= "E644: Invalid buffer identifier in editFile");
+	INIT(= N_("E644: Invalid buffer identifier in editFile"));
 EXTERN char e_invalid_buffer_identifier_in_setvisible[]
-	INIT(= "E645: Invalid buffer identifier in setVisible");
+	INIT(= N_("E645: Invalid buffer identifier in setVisible"));
 EXTERN char e_invalid_buffer_identifier_in_setmodified[]
-	INIT(= "E646: Invalid buffer identifier in setModified");
+	INIT(= N_("E646: Invalid buffer identifier in setModified"));
 EXTERN char e_invalid_buffer_identifier_in_setdot[]
-	INIT(= "E647: Invalid buffer identifier in setDot");
+	INIT(= N_("E647: Invalid buffer identifier in setDot"));
 EXTERN char e_invalid_buffer_identifier_in_close[]
-	INIT(= "E648: Invalid buffer identifier in close");
+	INIT(= N_("E648: Invalid buffer identifier in close"));
 EXTERN char e_invalid_buffer_identifier_in_close_2[]
-	INIT(= "E649: Invalid buffer identifier in close");
+	INIT(= N_("E649: Invalid buffer identifier in close"));
 EXTERN char e_invalid_buffer_identifier_in_defineannotype[]
-	INIT(= "E650: Invalid buffer identifier in defineAnnoType");
+	INIT(= N_("E650: Invalid buffer identifier in defineAnnoType"));
 EXTERN char e_invalid_buffer_identifier_in_addanno[]
-	INIT(= "E651: Invalid buffer identifier in addAnno");
+	INIT(= N_("E651: Invalid buffer identifier in addAnno"));
 EXTERN char e_invalid_buffer_identifier_in_getanno[]
-	INIT(= "E652: Invalid buffer identifier in getAnno");
+	INIT(= N_("E652: Invalid buffer identifier in getAnno"));
 #endif
 // E653 unused
 EXTERN char e_missing_delimiter_after_search_pattern_str[]
@@ -1719,8 +1734,8 @@ EXTERN char e_printmbcharset_cannot_be_empty_with_multi_byte_encoding[]
 EXTERN char e_no_default_font_specified_for_multi_byte_printing[]
 	INIT(= N_("E675: No default font specified for multi-byte printing."));
 #endif
-EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
-	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
+EXTERN char e_no_matching_autocommands_for_buftype_str_buffer[]
+	INIT(= N_("E676: No matching autocommands for buftype=%s buffer"));
 #ifdef FEAT_SYN_HL
 EXTERN char e_error_writing_temp_file[]
 	INIT(= N_("E677: Error writing temp file"));
@@ -1806,7 +1821,7 @@ EXTERN char e_list_required[]
 	INIT(= N_("E714: List required"));
 EXTERN char e_dictionary_required[]
 	INIT(= N_("E715: Dictionary required"));
-EXTERN char e_key_not_present_in_dictionary[]
+EXTERN char e_key_not_present_in_dictionary_str[]
 	INIT(= N_("E716: Key not present in Dictionary: \"%s\""));
 EXTERN char e_dictionary_entry_already_exists[]
 	INIT(= N_("E717: Dictionary entry already exists"));
@@ -1814,13 +1829,13 @@ EXTERN char e_funcref_required[]
 	INIT(= N_("E718: Funcref required"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
-EXTERN char e_missing_colon_in_dictionary[]
+EXTERN char e_missing_colon_in_dictionary_str[]
 	INIT(= N_("E720: Missing colon in Dictionary: %s"));
-EXTERN char e_duplicate_key_in_dicitonary[]
+EXTERN char e_duplicate_key_in_dictionary_str[]
 	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
-EXTERN char e_missing_comma_in_dictionary[]
+EXTERN char e_missing_comma_in_dictionary_str[]
 	INIT(= N_("E722: Missing comma in Dictionary: %s"));
-EXTERN char e_missing_dict_end[]
+EXTERN char e_missing_dict_end_str[]
 	INIT(= N_("E723: Missing end of Dictionary '}': %s"));
 EXTERN char e_variable_nested_too_deep_for_displaying[]
 	INIT(= N_("E724: Variable nested too deep for displaying"));
@@ -1915,7 +1930,7 @@ EXTERN char e_character_in_fol_low_or_upp_is_out_of_range[]
 EXTERN char e_word_characters_differ_between_spell_files[]
 	INIT(= N_("E763: Word characters differ between spell files"));
 #endif
-#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
+#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC) || defined(FEAT_SPELL)
 EXTERN char e_option_str_is_not_set[]
 	INIT(= N_("E764: Option '%s' is not set"));
 #endif
@@ -2015,11 +2030,11 @@ EXTERN char e_cannot_delete_variable[]
 	INIT(= N_("E795: Cannot delete variable"));
 EXTERN char e_cannot_delete_variable_str[]
 	INIT(= N_("E795: Cannot delete variable %s"));
+#endif
+#ifdef MSWIN
 	// E796
-# ifdef MSWIN
 EXTERN char e_writing_to_device_disabled_with_opendevice_option[]
 	INIT(= N_("writing to device disabled with 'opendevice' option"));
-# endif
 #endif
 #ifdef FEAT_SPELL
 EXTERN char e_spellfilemising_autocommand_deleted_buffer[]
@@ -2047,18 +2062,12 @@ EXTERN char e_id_not_found_nr[]
 EXTERN char e_cannot_use_percent_with_float[]
 	// xgettext:no-c-format
 	INIT(= N_("E804: Cannot use '%' with Float"));
-#endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_float_as_number[]
 	INIT(= N_("E805: Using a Float as a Number"));
 EXTERN char e_using_float_as_string[]
-	INIT(= N_("E806: Using Float as a String"));
-#endif
-#ifdef FEAT_FLOAT
+	INIT(= N_("E806: Using a Float as a String"));
 EXTERN char e_expected_float_argument_for_printf[]
 	INIT(= N_("E807: Expected Float argument for printf()"));
-#endif
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
 EXTERN char e_number_or_float_required[]
 	INIT(= N_("E808: Number or Float required"));
 #endif
@@ -2123,9 +2132,9 @@ EXTERN char e_undo_number_nr_not_found[]
 	INIT(= N_("E830: Undo number %ld not found"));
 #ifdef FEAT_CRYPT
 EXTERN char e_bf_key_init_called_with_empty_password[]
-	INIT(= N_("E831: bf_key_init() called with empty password"));
+	INIT(= "E831: bf_key_init() called with empty password");
 # ifdef FEAT_PERSISTENT_UNDO
-EXTERN char e_non_encrypted_file_has_encrypted_undo_file[]
+EXTERN char e_non_encrypted_file_has_encrypted_undo_file_str[]
 	INIT(= N_("E832: Non-encrypted file has encrypted undo file: %s"));
 # endif
 #else
@@ -2208,8 +2217,8 @@ EXTERN char e_failed_to_convert_returned_python_object_to_vim_value[]
 	INIT(= N_("E859: Failed to convert returned python object to a Vim value"));
 #endif
 #ifdef FEAT_PROP_POPUP
-EXTERN char e_need_id_and_type_with_both[]
-	INIT(= N_("E860: Need 'id' and 'type' with 'both'"));
+EXTERN char e_need_id_and_type_or_types_with_both[]
+	INIT(= N_("E860: Need 'id' and 'type' or 'types' with 'both'"));
 # ifdef FEAT_TERMINAL
 EXTERN char e_cannot_open_second_popup_with_terminal[]
 	INIT(= N_("E861: Cannot open a second popup with a terminal"));
@@ -2253,7 +2262,7 @@ EXTERN char e_nfa_regexp_while_converting_from_postfix_to_nfa_too_many_stats_lef
 EXTERN char e_nfa_regexp_not_enough_space_to_store_whole_nfa[]
 	INIT(= N_("E876: (NFA regexp) Not enough space to store the whole NFA"));
 EXTERN char e_nfa_regexp_invalid_character_class_nr[]
-	INIT(= N_("E877: (NFA regexp) Invalid character class: %d"));
+	INIT(= "E877: (NFA regexp) Invalid character class: %d");
 EXTERN char e_nfa_regexp_could_not_allocate_memory_for_branch_traversal[]
 	INIT(= N_("E878: (NFA regexp) Could not allocate memory for branch traversal!"));
 #ifdef FEAT_SYN_HL
@@ -2282,8 +2291,10 @@ EXTERN char e_not_possible_to_change_sign_str[]
 EXTERN char e_cant_rename_viminfo_file_to_str[]
 	INIT(= N_("E886: Can't rename viminfo file to %s!"));
 #endif
+#if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 EXTERN char e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded[]
 	INIT(= N_("E887: Sorry, this command is disabled, the Python's site module could not be loaded."));
+#endif
 EXTERN char e_nfa_regexp_cannot_repeat_str[]
 	INIT(= N_("E888: (NFA regexp) cannot repeat %s"));
 #ifdef FEAT_PROP_POPUP
@@ -2294,7 +2305,7 @@ EXTERN char e_number_required[]
 EXTERN char e_trailing_char_after_rsb_str_str[]
 	INIT(= N_("E890: Trailing char after ']': %s]%s"));
 #endif
-#ifdef FEAT_FLOAT
+#ifdef FEAT_EVAL
 EXTERN char e_using_funcref_as_float[]
 	INIT(= N_("E891: Using a Funcref as a Float"));
 EXTERN char e_using_string_as_float[]
@@ -2344,11 +2355,9 @@ EXTERN char e_received_unknown_command_str[]
 EXTERN char e_not_an_open_channel[]
 	INIT(= N_("E906: Not an open channel"));
 #endif
-#ifdef FEAT_FLOAT
+#ifdef FEAT_EVAL
 EXTERN char e_using_special_value_as_float[]
 	INIT(= N_("E907: Using a special value as a Float"));
-#endif
-#ifdef FEAT_EVAL
 EXTERN char e_using_invalid_value_as_string_str[]
 	INIT(= N_("E908: Using an invalid value as a String: %s"));
 EXTERN char e_cannot_index_special_variable[]
@@ -2383,8 +2392,6 @@ EXTERN char e_io_file_requires_name_to_be_set[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_callback_argument[]
 	INIT(= N_("E921: Invalid callback argument"));
-EXTERN char e_expected_dict[]
-	INIT(= N_("E922: Expected a dict"));
 EXTERN char e_second_argument_of_function_must_be_list_or_dict[]
 	INIT(= N_("E923: Second argument of function() must be a list or a dict"));
 #endif
@@ -2415,7 +2422,7 @@ EXTERN char e_cannot_use_redir_inside_execute[]
 EXTERN char e_buffer_cannot_be_registered[]
 	INIT(= N_("E931: Buffer cannot be registered"));
 #ifdef FEAT_EVAL
-EXTERN char e_closure_function_should_not_be_at_top_level[]
+EXTERN char e_closure_function_should_not_be_at_top_level_str[]
 	INIT(= N_("E932: Closure function should not be at top level: %s"));
 EXTERN char e_function_was_deleted_str[]
 	INIT(= N_("E933: Function was deleted: %s"));
@@ -2450,7 +2457,7 @@ EXTERN char e_clientserver_feature_not_available[]
 # endif
 #endif
 EXTERN char e_command_table_needs_to_be_updated_run_make_cmdidxs[]
-	INIT(= N_("E943: Command table needs to be updated, run 'make cmdidxs'"));
+	INIT(= "E943: Command table needs to be updated, run 'make cmdidxs'");
 EXTERN char e_reverse_range_in_character_class[]
 	INIT(= N_("E944: Reverse range in character class"));
 EXTERN char e_range_too_large_in_character_class[]
@@ -2524,14 +2531,14 @@ EXTERN char_u e_invalid_line_number_nr[]
 #endif
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_text_property_info_corrupted[]
-	INIT(= N_("E967: Text property info corrupted"));
+	INIT(= "E967: Text property info corrupted");
 EXTERN char e_need_at_least_one_of_id_or_type[]
 	INIT(= N_("E968: Need at least one of 'id' or 'type'"));
 EXTERN char e_property_type_str_already_defined[]
 	INIT(= N_("E969: Property type %s already defined"));
 EXTERN char e_unknown_highlight_group_name_str[]
 	INIT(= N_("E970: Unknown highlight group name: '%s'"));
-EXTERN char e_type_not_exist[]
+EXTERN char e_property_type_str_does_not_exist[]
 	INIT(= N_("E971: Property type %s does not exist"));
 #endif
 #ifdef FEAT_EVAL
@@ -2541,10 +2548,8 @@ EXTERN char e_blob_literal_should_have_an_even_number_of_hex_characters[]
 	INIT(= N_("E973: Blob literal should have an even number of hex characters"));
 EXTERN char e_using_blob_as_number[]
 	INIT(= N_("E974: Using a Blob as a Number"));
-# ifdef FEAT_FLOAT
 EXTERN char e_using_blob_as_float[]
 	INIT(= N_("E975: Using a Blob as a Float"));
-# endif
 EXTERN char e_using_blob_as_string[]
 	INIT(= N_("E976: Using a Blob as a String"));
 EXTERN char e_can_only_compare_blob_with_blob[]
@@ -2634,10 +2639,10 @@ EXTERN char e_str_is_used_as_argument[]
 	INIT(= N_("E1006: %s is used as an argument"));
 EXTERN char e_mandatory_argument_after_optional_argument[]
 	INIT(= N_("E1007: Mandatory argument after optional argument"));
-EXTERN char e_missing_type[]
-	INIT(= N_("E1008: Missing <type>"));
-EXTERN char e_missing_gt_after_type[]
-	INIT(= N_("E1009: Missing > after type"));
+EXTERN char e_missing_type_after_str[]
+	INIT(= N_("E1008: Missing <type> after %s"));
+EXTERN char e_missing_gt_after_type_str[]
+	INIT(= N_("E1009: Missing > after type: %s"));
 EXTERN char e_type_not_recognized_str[]
 	INIT(= N_("E1010: Type not recognized: %s"));
 EXTERN char e_name_too_long_str[]
@@ -2654,17 +2659,17 @@ EXTERN char e_invalid_key_str[]
 	INIT(= N_("E1014: Invalid key: %s"));
 EXTERN char e_name_expected_str[]
 	INIT(= N_("E1015: Name expected: %s"));
-EXTERN char e_cannot_declare_a_scope_variable[]
+EXTERN char e_cannot_declare_a_scope_variable_str[]
 	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
-EXTERN char e_cannot_declare_an_environment_variable[]
+EXTERN char e_cannot_declare_an_environment_variable_str[]
 	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
-EXTERN char e_variable_already_declared[]
+EXTERN char e_variable_already_declared_str[]
 	INIT(= N_("E1017: Variable already declared: %s"));
-EXTERN char e_cannot_assign_to_constant[]
+EXTERN char e_cannot_assign_to_constant_str[]
 	INIT(= N_("E1018: Cannot assign to a constant: %s"));
 EXTERN char e_can_only_concatenate_to_string[]
 	INIT(= N_("E1019: Can only concatenate to string"));
-EXTERN char e_cannot_use_operator_on_new_variable[]
+EXTERN char e_cannot_use_operator_on_new_variable_str[]
 	INIT(= N_("E1020: Cannot use an operator on a new variable: %s"));
 EXTERN char e_const_requires_a_value[]
 	INIT(= N_("E1021: Const requires a value"));
@@ -2694,7 +2699,7 @@ EXTERN char e_missing_catch_or_finally[]
 	INIT(= N_("E1032: Missing :catch or :finally"));
 EXTERN char e_catch_unreachable_after_catch_all[]
 	INIT(= N_("E1033: Catch unreachable after catch-all"));
-EXTERN char e_cannot_use_reserved_name[]
+EXTERN char e_cannot_use_reserved_name_str[]
 	INIT(= N_("E1034: Cannot use reserved name %s"));
 EXTERN char e_percent_requires_number_arguments[]
 	// xgettext:no-c-format
@@ -2727,11 +2732,13 @@ EXTERN char e_item_not_found_in_script_str[]
 	INIT(= N_("E1048: Item not found in script: %s"));
 EXTERN char e_item_not_exported_in_script_str[]
 	INIT(= N_("E1049: Item not exported in script: %s"));
+#endif
 EXTERN char e_colon_required_before_range_str[]
 	INIT(= N_("E1050: Colon required before a range: %s"));
+#ifdef FEAT_EVAL
 EXTERN char e_wrong_argument_type_for_plus[]
 	INIT(= N_("E1051: Wrong argument type for +"));
-EXTERN char e_cannot_declare_an_option[]
+EXTERN char e_cannot_declare_an_option_str[]
 	INIT(= N_("E1052: Cannot declare an option: %s"));
 EXTERN char e_could_not_import_str[]
 	INIT(= N_("E1053: Could not import \"%s\""));
@@ -2779,10 +2786,7 @@ EXTERN char e_no_white_space_allowed_after_dot[]
 	INIT(= N_("E1074: No white space allowed after dot"));
 EXTERN char e_namespace_not_supported_str[]
 	INIT(= N_("E1075: Namespace not supported: %s"));
-# ifndef FEAT_FLOAT
-EXTERN char e_this_vim_is_not_compiled_with_float_support[]
-	INIT(= N_("E1076: This Vim is not compiled with float support"));
-# endif
+// E1076 was deleted
 EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
 #endif
@@ -2812,7 +2816,7 @@ EXTERN char e_script_cannot_import_itself[]
 	INIT(= N_("E1088: Script cannot import itself"));
 EXTERN char e_unknown_variable_str[]
 	INIT(= N_("E1089: Unknown variable: %s"));
-EXTERN char e_cannot_assign_to_argument[]
+EXTERN char e_cannot_assign_to_argument_str[]
 	INIT(= N_("E1090: Cannot assign to argument %s"));
 EXTERN char e_function_is_not_compiled_str[]
 	INIT(= N_("E1091: Function is not compiled: %s"));
@@ -2822,8 +2826,8 @@ EXTERN char e_expected_nr_items_but_got_nr[]
 	INIT(= N_("E1093: Expected %d items but got %d"));
 EXTERN char e_import_can_only_be_used_in_script[]
 	INIT(= N_("E1094: Import can only be used in a script"));
-EXTERN char e_unreachable_code_after_return[]
-	INIT(= N_("E1095: Unreachable code after :return"));
+EXTERN char e_unreachable_code_after_str[]
+	INIT(= N_("E1095: Unreachable code after :%s"));
 EXTERN char e_returning_value_in_function_without_return_type[]
 	INIT(= N_("E1096: Returning a value in a function without a return type"));
 EXTERN char e_line_incomplete[]
@@ -2844,14 +2848,12 @@ EXTERN char e_missing_gt[]
 	INIT(= N_("E1104: Missing >"));
 EXTERN char e_cannot_convert_str_to_string[]
 	INIT(= N_("E1105: Cannot convert %s to string"));
-EXTERN char e_one_argument_too_many[]
-	INIT(= N_("E1106: One argument too many"));
-EXTERN char e_nr_arguments_too_many[]
-	INIT(= N_("E1106: %d arguments too many"));
+
+PLURAL_MSG(e_one_argument_too_many, "E1106: One argument too many",
+		e_nr_arguments_too_many, "E1106: %d arguments too many")
+
 EXTERN char e_string_list_dict_or_blob_required[]
 	INIT(= N_("E1107: String, List, Dict or Blob required"));
-EXTERN char e_item_not_found_str[]
-	INIT(= N_("E1108: Item not found: %s"));
 EXTERN char e_list_item_nr_is_not_list[]
 	INIT(= N_("E1109: List item %d is not a List"));
 EXTERN char e_list_item_nr_does_not_contain_3_numbers[]
@@ -2862,8 +2864,8 @@ EXTERN char e_list_item_nr_cell_width_invalid[]
 	INIT(= N_("E1112: List item %d cell width invalid"));
 EXTERN char e_overlapping_ranges_for_nr[]
 	INIT(= N_("E1113: Overlapping ranges for 0x%lx"));
-EXTERN char e_only_values_of_0x100_and_higher_supported[]
-	INIT(= N_("E1114: Only values of 0x100 and higher supported"));
+EXTERN char e_only_values_of_0x80_and_higher_supported[]
+	INIT(= N_("E1114: Only values of 0x80 and higher supported"));
 EXTERN char e_assert_fails_fourth_argument[]
 	INIT(= N_("E1115: \"assert_fails()\" fourth argument must be a number"));
 EXTERN char e_assert_fails_fifth_argument[]
@@ -2909,8 +2911,7 @@ EXTERN char e_using_string_as_bool_str[]
 #endif
 EXTERN char e_cmd_mapping_must_end_with_cr_before_second_cmd[]
 	INIT(= N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
-EXTERN char e_cmd_maping_must_not_include_str_key[]
-	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));
+// E1137 unused
 #ifdef FEAT_EVAL
 EXTERN char e_using_bool_as_number[]
 	INIT(= N_("E1138: Using a Bool as a Number"));
@@ -3027,17 +3028,17 @@ EXTERN char e_expression_does_not_result_in_value_str[]
 #endif
 EXTERN char e_failed_to_source_defaults[]
 	INIT(= N_("E1187: Failed to source defaults.vim"));
-#if defined(FEAT_TERMINAL) && defined(FEAT_CMDWIN)
+#if defined(FEAT_TERMINAL)
 EXTERN char e_cannot_open_terminal_from_command_line_window[]
 	INIT(= N_("E1188: Cannot open a terminal from the command line window"));
 #endif
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_legacy_with_command_str[]
 	INIT(= N_("E1189: Cannot use :legacy with this command: %s"));
-EXTERN char e_one_argument_too_few[]
-	INIT(= N_("E1190: One argument too few"));
-EXTERN char e_nr_arguments_too_few[]
-	INIT(= N_("E1190: %d arguments too few"));
+
+PLURAL_MSG(e_one_argument_too_few, "E1190: One argument too few",
+		e_nr_arguments_too_few, "E1190: %d arguments too few")
+
 EXTERN char e_call_to_function_that_failed_to_compile_str[]
 	INIT(= N_("E1191: Call to function that failed to compile: %s"));
 EXTERN char e_empty_function_name[]
@@ -3101,7 +3102,7 @@ EXTERN char e_bool_required_for_argument_nr[]
 EXTERN char e_redefining_imported_item_str[]
 	INIT(= N_("E1213: Redefining imported item \"%s\""));
 #endif
-#if defined(FEAT_DIGRAPHS) && defined(FEAT_EVAL)
+#if defined(FEAT_DIGRAPHS)
 EXTERN char e_digraph_must_be_just_two_characters_str[]
 	INIT(= N_("E1214: Digraph must be just two characters: %s"));
 EXTERN char e_digraph_argument_must_be_one_character_str[]
@@ -3205,8 +3206,6 @@ EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
 	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
-EXTERN char e_string_expected_for_argument_nr[]
-	INIT(= N_("E1253: String expected for argument %d"));
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
 #endif
@@ -3281,7 +3280,7 @@ EXTERN char e_atom_engine_must_be_at_start_of_pattern[]
 #ifdef FEAT_EVAL
 EXTERN char e_bitshift_ops_must_be_number[]
 	INIT(= N_("E1282: Bitshift operands must be numbers"));
-EXTERN char e_bitshift_ops_must_be_postive[]
+EXTERN char e_bitshift_ops_must_be_positive[]
 	INIT(= N_("E1283: Bitshift amount must be a positive number"));
 #endif
 #if defined(FEAT_PROP_POPUP)
@@ -3293,6 +3292,7 @@ EXTERN char e_could_not_clear_timeout_str[]
 	INIT(= N_("E1285: Could not clear timeout: %s"));
 EXTERN char e_could_not_set_timeout_str[]
 	INIT(= N_("E1286: Could not set timeout: %s"));
+#ifndef PROF_NSEC
 EXTERN char e_could_not_set_handler_for_timeout_str[]
 	INIT(= N_("E1287: Could not set handler for timeout: %s"));
 EXTERN char e_could_not_reset_handler_for_timeout_str[]
@@ -3300,3 +3300,194 @@ EXTERN char e_could_not_reset_handler_for_timeout_str[]
 EXTERN char e_could_not_check_for_pending_sigalrm_str[]
 	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
 #endif
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_substitute_nesting_too_deep[]
+	INIT(= N_("E1290: substitute nesting too deep"));
+EXTERN char e_invalid_argument_nr[]
+	INIT(= N_("E1291: Invalid argument: %ld"));
+#endif
+EXTERN char e_cmdline_window_already_open[]
+	INIT(= N_("E1292: Command-line window is already open"));
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
+	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
+EXTERN char e_can_only_use_text_align_when_column_is_zero[]
+	INIT(= N_("E1294: Can only use text_align when column is zero"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_specify_both_type_and_types[]
+	INIT(= N_("E1295: Cannot specify both 'type' and 'types'"));
+EXTERN char e_can_only_use_left_padding_when_column_is_zero[]
+	INIT(= N_("E1296: Can only use left padding when column is zero"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_non_null_dict_required_for_argument_nr[]
+	INIT(= N_("E1297: Non-NULL Dictionary required for argument %d"));
+EXTERN char e_non_null_list_required_for_argument_nr[]
+	INIT(= N_("E1298: Non-NULL List required for argument %d"));
+#endif
+EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
+	INIT(= N_("E1299: Window unexpectedly closed while searching for tags"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
+	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
+EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1301: String, Number, List or Blob required for argument %d"));
+EXTERN char e_script_variable_was_deleted[]
+	INIT(= N_("E1302: Script variable was deleted"));
+EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
+	INIT(= N_("E1303: Custom list completion function does not return a List but a %s"));
+EXTERN char e_cannot_use_type_with_this_variable_str[]
+	INIT(= N_("E1304: Cannot use type with this variable: %s"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
+	INIT(= N_("E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_loop_nesting_too_deep[]
+	INIT(= N_("E1306: Loop nesting too deep"));
+EXTERN char e_argument_nr_trying_to_modify_const_str[]
+	INIT(= N_("E1307: Argument %d: Trying to modify a const %s"));
+EXTERN char e_cannot_resize_window_in_another_tab_page[]
+	INIT(= N_("E1308: Cannot resize a window in another tab page"));
+#endif
+EXTERN char e_cannot_change_mappings_while_listing[]
+	INIT(= N_("E1309: Cannot change mappings while listing"));
+#if defined(FEAT_MENU)
+EXTERN char e_cannot_change_menus_while_listing[]
+	INIT(= N_("E1310: Cannot change menus while listing"));
+#endif
+EXTERN char e_cannot_change_user_commands_while_listing[]
+	INIT(= N_("E1311: Cannot change user commands while listing"));
+EXTERN char e_not_allowed_to_change_window_layout_in_this_autocmd[]
+	INIT(= N_("E1312: Not allowed to change the window layout in this autocmd"));
+EXTERN char e_not_allowed_to_add_or_remove_entries_str[]
+	INIT(= N_("E1313: Not allowed to add or remove entries (%s)"));
+#ifdef FEAT_EVAL
+EXTERN char e_class_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1314: Class name must start with an uppercase letter: %s"));
+EXTERN char e_white_space_required_after_name_str[]
+	INIT(= N_("E1315: White space required after name: %s"));
+EXTERN char e_class_can_only_be_defined_in_vim9_script[]
+	INIT(= N_("E1316: Class can only be defined in Vim9 script"));
+EXTERN char e_invalid_object_member_declaration_str[]
+	INIT(= N_("E1317: Invalid object member declaration: %s"));
+EXTERN char e_not_valid_command_in_class_str[]
+	INIT(= N_("E1318: Not a valid command in a class: %s"));
+EXTERN char e_using_class_as_number[]
+	INIT(= N_("E1319: Using a class as a Number"));
+EXTERN char e_using_object_as_number[]
+	INIT(= N_("E1320: Using an object as a Number"));
+EXTERN char e_using_class_as_float[]
+	INIT(= N_("E1321: Using a class as a Float"));
+EXTERN char e_using_object_as_float[]
+	INIT(= N_("E1322: Using an object as a Float"));
+EXTERN char e_using_class_as_string[]
+	INIT(= N_("E1323: Using a class as a String"));
+EXTERN char e_using_object_as_string[]
+	INIT(= N_("E1324: Using an object as a String"));
+EXTERN char e_method_not_found_on_class_str_str[]
+	INIT(= N_("E1325: Method not found on class \"%s\": %s"));
+EXTERN char e_member_not_found_on_object_str_str[]
+	INIT(= N_("E1326: Member not found on object \"%s\": %s"));
+EXTERN char e_object_required_found_str[]
+	INIT(= N_("E1327: Object required, found %s"));
+EXTERN char e_constructor_default_value_must_be_vnone_str[]
+	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
+EXTERN char e_cannot_get_object_member_type_from_initializer_str[]
+	INIT(= N_("E1329: Cannot get object member type from initializer: %s"));
+EXTERN char e_invalid_type_for_object_member_str[]
+	INIT(= N_("E1330: Invalid type for object member: %s"));
+EXTERN char e_public_must_be_followed_by_this_or_static[]
+	INIT(= N_("E1331: Public must be followed by \"this\" or \"static\""));
+EXTERN char e_public_member_name_cannot_start_with_underscore_str[]
+	INIT(= N_("E1332: Public member name cannot start with underscore: %s"));
+EXTERN char e_cannot_access_private_member_str[]
+	INIT(= N_("E1333: Cannot access private member: %s"));
+EXTERN char e_object_member_not_found_str[]
+	INIT(= N_("E1334: Object member not found: %s"));
+EXTERN char e_member_is_not_writable_str[]
+	INIT(= N_("E1335: Member is not writable: %s"));
+#endif
+EXTERN char e_internal_error_shortmess_too_long[]
+	INIT(= "E1336: Internal error: shortmess too long");
+#ifdef FEAT_EVAL
+EXTERN char e_class_member_not_found_str[]
+	INIT(= N_("E1337: Class member not found: %s"));
+EXTERN char e_member_not_found_on_class_str_str[]
+	INIT(= N_("E1338: Member not found on class \"%s\": %s"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
+	INIT(= N_("E1339: Cannot add a textprop with text after using a textprop with a negative id"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_argument_already_declared_in_class_str[]
+	INIT(= N_("E1340: Argument already declared in the class: %s"));
+EXTERN char e_variable_already_declared_in_class_str[]
+	INIT(= N_("E1341: Variable already declared in the class: %s"));
+EXTERN char e_interface_can_only_be_defined_in_vim9_script[]
+	INIT(= N_("E1342: Interface can only be defined in Vim9 script"));
+EXTERN char e_interface_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1343: Interface name must start with an uppercase letter: %s"));
+EXTERN char e_cannot_initialize_member_in_interface[]
+	INIT(= N_("E1344: Cannot initialize a member in an interface"));
+EXTERN char e_not_valid_command_in_interface_str[]
+	INIT(= N_("E1345: Not a valid command in an interface: %s"));
+EXTERN char e_interface_name_not_found_str[]
+	INIT(= N_("E1346: Interface name not found: %s"));
+EXTERN char e_not_valid_interface_str[]
+	INIT(= N_("E1347: Not a valid interface: %s"));
+EXTERN char e_member_str_of_interface_str_not_implemented[]
+	INIT(= N_("E1348: Member \"%s\" of interface \"%s\" not implemented"));
+EXTERN char e_function_str_of_interface_str_not_implemented[]
+	INIT(= N_("E1349: Function \"%s\" of interface \"%s\" not implemented"));
+EXTERN char e_duplicate_implements[]
+	INIT(= N_("E1350: Duplicate \"implements\""));
+EXTERN char e_duplicate_interface_after_implements_str[]
+	INIT(= N_("E1351: Duplicate interface after \"implements\": %s"));
+EXTERN char e_duplicate_extends[]
+	INIT(= N_("E1352: Duplicate \"extends\""));
+EXTERN char e_class_name_not_found_str[]
+	INIT(= N_("E1353: Class name not found: %s"));
+EXTERN char e_cannot_extend_str[]
+	INIT(= N_("E1354: Cannot extend %s"));
+EXTERN char e_duplicate_function_str[]
+	INIT(= N_("E1355: Duplicate function: %s"));
+EXTERN char e_super_must_be_followed_by_dot[]
+	INIT(= N_("E1356: \"super\" must be followed by a dot"));
+EXTERN char e_using_super_not_in_class_function[]
+	INIT(= N_("E1357: Using \"super\" not in a class function"));
+EXTERN char e_using_super_not_in_child_class[]
+	INIT(= N_("E1358: Using \"super\" not in a child class"));
+EXTERN char e_cannot_define_new_function_in_abstract_class[]
+	INIT(= N_("E1359: Cannot define a \"new\" function in an abstract class"));
+EXTERN char e_using_null_object[]
+	INIT(= N_("E1360: Using a null object"));
+#endif
+EXTERN char e_cannot_use_color_none_did_you_mean_none[]
+	INIT(= N_("E1361: Cannot use color \"none\", did you mean \"NONE\"?"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_non_null_object[]
+	INIT(= N_("E1362: Cannot use a non-null object"));
+EXTERN char e_incomplete_type[]
+	INIT(= N_("E1363: Incomplete type"));
+#endif
+EXTERN char e_warning_pointer_block_corrupted[]
+	INIT(= N_("E1364: Warning: Pointer block corrupted"));
+EXTERN char e_cannot_mix_positional_and_non_positional_str[]
+	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
+EXTERN char e_fmt_arg_nr_unused_str[]
+	INIT(= N_("E1401: format argument %d unused in $-style format: %s"));
+EXTERN char e_positional_num_field_spec_reused_str_str[]
+	INIT(= N_("E1402: Positional argument %d used as field width reused as different type: %s/%s"));
+EXTERN char e_positional_nr_out_of_bounds_str[]
+	INIT(= N_("E1403: Positional argument %d out of bounds: %s"));
+EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
+	INIT(= N_("E1404: Positional argument %d type used inconsistently: %s/%s"));
+EXTERN char e_invalid_format_specifier_str[]
+	INIT(= N_("E1405: Invalid format specifier: %s"));
+
+// E1365 - E1399 unused

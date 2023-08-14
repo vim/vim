@@ -145,6 +145,11 @@
 # define EXTERN_C
 #endif
 
+// Suppress Infinite warnings when compiling XS modules under macOS 12 Monterey.
+#if defined(__clang__) && defined(__clang_major__) && __clang_major__ > 11
+# pragma clang diagnostic ignored "-Wcompound-token-split-by-macro"
+#endif
+
 /* Compatibility hacks over */
 
 static PerlInterpreter *perl_interp = NULL;
@@ -397,14 +402,14 @@ static bool (*Perl_sv_2bool)(pTHX_ SV*);
 static IV (*Perl_sv_2iv)(pTHX_ SV*);
 static SV* (*Perl_sv_2mortal)(pTHX_ SV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
-static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN* const, const U32);
 static char* (*Perl_sv_2pv_nolen)(pTHX_ SV*);
 # else
 static char* (*Perl_sv_2pv)(pTHX_ SV*, STRLEN*);
 # endif
 static char* (*Perl_sv_2pvbyte)(pTHX_ SV*, STRLEN*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN* const, const U32);
 # endif
 static SV* (*Perl_sv_bless)(pTHX_ SV*, HV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
@@ -704,6 +709,140 @@ S_POPMARK(pTHX)
 #  define Perl_POPMARK S_POPMARK
 # endif
 
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+PERL_STATIC_INLINE U8
+Perl_gimme_V(pTHX)
+{
+    I32 cxix;
+    U8  gimme = (PL_op->op_flags & OPf_WANT);
+
+    if (gimme)
+        return gimme;
+    cxix = PL_curstackinfo->si_cxsubix;
+    if (cxix < 0)
+	return
+#  if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
+	    PL_curstackinfo->si_type == PERLSI_SORT ? G_SCALAR:
+#  endif
+	    G_VOID;
+    assert(cxstack[cxix].blk_gimme & G_WANT);
+    return (cxstack[cxix].blk_gimme & G_WANT);
+}
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 38)
+#  define PERL_ARGS_ASSERT_SVPVXTRUE             \
+        assert(sv)
+PERL_STATIC_INLINE bool
+Perl_SvPVXtrue(pTHX_ SV *sv)
+{
+    PERL_ARGS_ASSERT_SVPVXTRUE;
+
+    if (! (XPV *) SvANY(sv)) {
+        return false;
+    }
+
+    if ( ((XPV *) SvANY(sv))->xpv_cur > 1) { /* length > 1 */
+        return true;
+    }
+
+    if (( (XPV *) SvANY(sv))->xpv_cur == 0) {
+        return false;
+    }
+
+    return *sv->sv_u.svu_pv != '0';
+}
+
+#  define PERL_ARGS_ASSERT_SVGETMAGIC            \
+        assert(sv)
+PERL_STATIC_INLINE void
+Perl_SvGETMAGIC(pTHX_ SV *sv)
+{
+    PERL_ARGS_ASSERT_SVGETMAGIC;
+
+    if (UNLIKELY(SvGMAGICAL(sv))) {
+        mg_get(sv);
+    }
+}
+
+PERL_STATIC_INLINE char *
+Perl_SvPV_helper(pTHX_
+                 SV * const sv,
+                 STRLEN * const lp,
+                 const U32 flags,
+                 const PL_SvPVtype type,
+                 char * (*non_trivial)(pTHX_ SV *, STRLEN * const, const U32),
+                 const bool or_null,
+                 const U32 return_flags
+                )
+{
+    /* 'type' should be known at compile time, so this is reduced to a single
+     * conditional at runtime */
+    if (   (type == SvPVbyte_type_      && SvPOK_byte_nog(sv))
+        || (type == SvPVforce_type_     && SvPOK_pure_nogthink(sv))
+        || (type == SvPVutf8_type_      && SvPOK_utf8_nog(sv))
+        || (type == SvPVnormal_type_    && SvPOK_nog(sv))
+        || (type == SvPVutf8_pure_type_ && SvPOK_utf8_pure_nogthink(sv))
+        || (type == SvPVbyte_pure_type_ && SvPOK_byte_pure_nogthink(sv))
+   ) {
+        if (lp) {
+            *lp = SvCUR(sv);
+        }
+
+        /* Similarly 'return_flags is known at compile time, so this becomes
+         * branchless */
+        if (return_flags & SV_MUTABLE_RETURN) {
+            return SvPVX_mutable(sv);
+        }
+        else if(return_flags & SV_CONST_RETURN) {
+            return (char *) SvPVX_const(sv);
+        }
+        else {
+            return SvPVX(sv);
+        }
+    }
+
+    if (or_null) {  /* This is also known at compile time */
+        if (flags & SV_GMAGIC) {    /* As is this */
+            SvGETMAGIC(sv);
+        }
+
+        if (! SvOK(sv)) {
+            if (lp) {   /* As is this */
+                *lp = 0;
+            }
+
+            return NULL;
+        }
+    }
+
+    /* Can't trivially handle this, call the function */
+    return non_trivial(aTHX_ sv, lp, (flags|return_flags));
+}
+
+#  define PERL_ARGS_ASSERT_SVNV                  \
+        assert(sv)
+PERL_STATIC_INLINE NV
+Perl_SvNV(pTHX_ SV *sv) {
+    PERL_ARGS_ASSERT_SVNV;
+
+    if (SvNOK_nog(sv))
+        return SvNVX(sv);
+    return sv_2nv(sv);
+}
+
+#  define PERL_ARGS_ASSERT_SVIV                  \
+        assert(sv)
+PERL_STATIC_INLINE IV
+Perl_SvIV(pTHX_ SV *sv) {
+    PERL_ARGS_ASSERT_SVIV;
+
+    if (SvIOK_nog(sv))
+        return SvIVX(sv);
+    return sv_2iv(sv);
+}
+# endif
+
 /* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
 PERL_STATIC_INLINE bool
@@ -873,7 +1012,8 @@ msg_split(
     char_u *
 eval_to_string(
     char_u	*arg UNUSED,
-    int		dolist UNUSED)
+    int		convert UNUSED,
+    int		use_simple_function UNUSED)
 {
     return NULL;
 }
@@ -1189,11 +1329,9 @@ perl_to_vim(SV *sv, typval_T *rettv)
 	case SVt_NULL:
 	    break;
 	case SVt_NV:	/* float */
-#ifdef FEAT_FLOAT
 	    rettv->v_type	= VAR_FLOAT;
 	    rettv->vval.v_float = SvNV(sv);
 	    break;
-#endif
 	case SVt_IV:	/* integer */
 	    if (!SvROK(sv)) { /* references should be string */
 		rettv->vval.v_number = SvIV(sv);
@@ -1460,7 +1598,7 @@ ex_perldo(exarg_T *eap)
     FREETMPS;
     LEAVE;
     check_cursor();
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     if (!length)
 	return;
 
@@ -1584,7 +1722,7 @@ SetOption(line)
     PPCODE:
     if (line != NULL)
 	do_set((char_u *)line, 0);
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
 
 void
 DoCommand(line)
@@ -1601,7 +1739,7 @@ Eval(str)
     PREINIT:
 	char_u *value;
     PPCODE:
-	value = eval_to_string((char_u *)str, TRUE);
+	value = eval_to_string((char_u *)str, TRUE, FALSE);
 	if (value == NULL)
 	{
 	    XPUSHs(sv_2mortal(newSViv(0)));
@@ -1645,7 +1783,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1696,7 +1834,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{
@@ -1777,7 +1915,7 @@ Cursor(win, ...)
       win->w_cursor.col = col;
       win->w_set_curswant = TRUE;
       check_cursor();		    /* put cursor on an existing line */
-      update_screen(NOT_VALID);
+      update_screen(UPD_NOT_VALID);
     }
 
 MODULE = VIM	    PACKAGE = VIBUF
@@ -1865,18 +2003,21 @@ Set(vimbuf, ...)
 	    {
 		aco_save_T	aco;
 
-		/* set curwin/curbuf for "vimbuf" and save some things */
+		/* Set curwin/curbuf for "vimbuf" and save some things. */
 		aucmd_prepbuf(&aco, vimbuf);
-
-		if (u_savesub(lnum) == OK)
+		if (curbuf == vimbuf)
 		{
-		    ml_replace(lnum, (char_u *)line, TRUE);
-		    changed_bytes(lnum, 0);
-		}
+		    /* Only when a window was found. */
+		    if (u_savesub(lnum) == OK)
+		    {
+			ml_replace(lnum, (char_u *)line, TRUE);
+			changed_bytes(lnum, 0);
+		    }
 
-		/* restore curwin/curbuf and a few other things */
-		aucmd_restbuf(&aco);
-		/* Careful: autocommands may have made "vimbuf" invalid! */
+		    /* restore curwin/curbuf and a few other things */
+		    aucmd_restbuf(&aco);
+		    /* Careful: autocommands may have made "vimbuf" invalid! */
+		}
 	    }
 	}
     }
@@ -1917,19 +2058,23 @@ Delete(vimbuf, ...)
 
 		    /* set curwin/curbuf for "vimbuf" and save some things */
 		    aucmd_prepbuf(&aco, vimbuf);
-
-		    if (u_savedel(lnum, 1) == OK)
+		    if (curbuf == vimbuf)
 		    {
-			ml_delete(lnum);
-			check_cursor();
-			deleted_lines_mark(lnum, 1L);
+			/* Only when a window was found. */
+			if (u_savedel(lnum, 1) == OK)
+			{
+			    ml_delete(lnum);
+			    check_cursor();
+			    deleted_lines_mark(lnum, 1L);
+			}
+
+			/* restore curwin/curbuf and a few other things */
+			aucmd_restbuf(&aco);
+			/* Careful: autocommands may have made "vimbuf"
+			 * invalid! */
 		    }
 
-		    /* restore curwin/curbuf and a few other things */
-		    aucmd_restbuf(&aco);
-		    /* Careful: autocommands may have made "vimbuf" invalid! */
-
-		    update_curbuf(VALID);
+		    update_curbuf(UPD_VALID);
 		}
 	    }
 	}
@@ -1959,18 +2104,21 @@ Append(vimbuf, ...)
 
 		/* set curwin/curbuf for "vimbuf" and save some things */
 		aucmd_prepbuf(&aco, vimbuf);
-
-		if (u_inssub(lnum + 1) == OK)
+		if (curbuf == vimbuf)
 		{
-		    ml_append(lnum, (char_u *)line, (colnr_T)0, FALSE);
-		    appended_lines_mark(lnum, 1L);
-		}
+		    /* Only when a window for "vimbuf" was found. */
+		    if (u_inssub(lnum + 1) == OK)
+		    {
+			ml_append(lnum, (char_u *)line, (colnr_T)0, FALSE);
+			appended_lines_mark(lnum, 1L);
+		    }
 
-		/* restore curwin/curbuf and a few other things */
-		aucmd_restbuf(&aco);
-		/* Careful: autocommands may have made "vimbuf" invalid! */
+		    /* restore curwin/curbuf and a few other things */
+		    aucmd_restbuf(&aco);
+		    /* Careful: autocommands may have made "vimbuf" invalid! */
+		    }
 
-		update_curbuf(VALID);
+		update_curbuf(UPD_VALID);
 	    }
 	}
     }

@@ -31,6 +31,7 @@ void ex_retab(exarg_T *eap);
 int get_expr_indent(void);
 int get_lisp_indent(void);
 void fixthisline(int (*get_the_indent)(void));
+int use_indentexpr_for_lisp(void);
 void fix_indent(void);
 void f_indent(typval_T *argvars, typval_T *rettv);
 void f_lispindent(typval_T *argvars, typval_T *rettv);

@@ -1,6 +1,4 @@
 /* channel.c */
-void ch_logfile(char_u *fname, char_u *opt);
-int ch_log_active(void);
 channel_T *add_channel(void);
 int has_any_channel(void);
 int channel_still_useful(channel_T *channel);
@@ -28,6 +26,7 @@ void channel_close(channel_T *channel, int invoke_close_cb);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
 int channel_in_blocking_wait(void);
+channel_T *get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part);
 void channel_handle_events(int only_keep_open);
 int channel_any_keep_open(void);
 void channel_set_nonblock(channel_T *channel, ch_part_T part);
@@ -45,8 +44,6 @@ void f_ch_close_in(typval_T *argvars, typval_T *rettv);
 void f_ch_getbufnr(typval_T *argvars, typval_T *rettv);
 void f_ch_getjob(typval_T *argvars, typval_T *rettv);
 void f_ch_info(typval_T *argvars, typval_T *rettv);
-void f_ch_log(typval_T *argvars, typval_T *rettv);
-void f_ch_logfile(typval_T *argvars, typval_T *rettv);
 void f_ch_open(typval_T *argvars, typval_T *rettv);
 void f_ch_read(typval_T *argvars, typval_T *rettv);
 void f_ch_readblob(typval_T *argvars, typval_T *rettv);

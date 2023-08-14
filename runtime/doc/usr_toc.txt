@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
+*usr_toc.txt*	For Vim version 9.0.  Last change: 2022 Jun 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -46,8 +46,8 @@ Tuning Vim ~
 
 Writing Vim script ~
 |usr_50.txt|  Advanced Vim script writing
-|usr_51.txt|  Create a plugin
-|usr_52.txt|  Write plugins using Vim9 script
+|usr_51.txt|  Write plugins
+|usr_52.txt|  Write larger plugins
 
 Making Vim Run ~
 |usr_90.txt|  Installing Vim
@@ -345,7 +345,7 @@ Writing Vim script ~
 
 |usr_50.txt|  Advanced Vim script writing
 		|50.1|	Exceptions
-		|50.2|    Function with variable number of arguments
+		|50.2|	Function with variable number of arguments
 		|50.3|	Restoring the view
 
 |usr_51.txt|  Write plugins

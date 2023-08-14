@@ -26,14 +26,13 @@ func Test_termencoding_euc_jp()
 	\ 'scriptencoding utf-8',
 	\ 'exe "normal aE83: バッファを作成できないので、他のを使用します...\<Esc>"',
 	\ 'split Xeuc_jp.txt',
-	\ ], 'XTest_tenc_euc_jp')
+	\ ], 'XTest_tenc_euc_jp', 'D')
   let buf = RunVimInTerminal('-S XTest_tenc_euc_jp', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_tenc_euc_jp_01', {})
 
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xeuc_jp.txt')
-  call delete('XTest_tenc_euc_jp')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

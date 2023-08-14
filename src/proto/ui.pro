@@ -30,6 +30,8 @@ void ui_cursor_shape_forced(int forced);
 void ui_cursor_shape(void);
 int check_col(int col);
 int check_row(int row);
+long scroll_line_len(linenr_T lnum);
+linenr_T ui_find_longest_lnum(void);
 void ui_focus_change(int in_focus);
 void im_save_status(long *psave);
 /* vim: set ft=c : */

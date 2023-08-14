@@ -2,6 +2,12 @@
 
 " Only load this once.
 if 1
+
+  " When using xterm version 377 the response to the modifyOtherKeys status
+  " interferes with some tests.  Remove the request from the t_TI termcap
+  " entry.
+  let &t_TI = substitute(&t_TI, "\<Esc>\\[?4m", '', '')
+
   if exists('s:did_load')
     finish
   endif
@@ -14,7 +20,7 @@ if has('packages')
   let &packpath = &rtp
 endif
 
-" Only when the +eval feature is present. 
+" Only when the +eval feature is present.
 if 1
   " Make sure the .Xauthority file can be found after changing $HOME.
   if $XAUTHORITY == ''
@@ -23,6 +29,10 @@ if 1
 
   " Avoid storing shell history.
   let $HISTFILE = ""
+
+  " Have current $HOME available as $ORIGHOME.  $HOME is used for option
+  " defaults before we get here, and test_mksession checks that.
+  let $ORIGHOME = $HOME
 
   " Make sure $HOME does not get read or written.
   " It must exist, gnome tries to create $HOME/.gnome2

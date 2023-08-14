@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.2.  Last change: 2022 Feb 22
+*quickfix.txt*  For Vim version 9.0.  Last change: 2023 Jan 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -365,8 +365,6 @@ processing a quickfix or location list command, it will be aborted.
 			If numbers [from] and/or [to] are given, the respective
 			range of errors is listed.  A negative number counts
 			from the last error backwards, -1 being the last error.
-			The 'switchbuf' settings are respected when jumping
-			to a buffer.
 			The |:filter| command can be used to display only the
 			quickfix entries matching a supplied pattern. The
 			pattern is matched against the filename, module name,
@@ -478,7 +476,7 @@ You can parse a list of lines using 'errorformat' without creating or
 modifying a quickfix list using the |getqflist()| function. Examples: >
 	echo getqflist({'lines' : ["F1:10:Line10", "F2:20:Line20"]})
 	echo getqflist({'lines' : systemlist('grep -Hn quickfix *')})
-This returns a dictionary where the 'items' key contains the list of quickfix
+This returns a dictionary where the "items" key contains the list of quickfix
 entries parsed from lines. The following shows how to use a custom
 'errorformat' to parse the lines without modifying the 'errorformat' option: >
 	echo getqflist({'efm' : '%f#%l#%m', 'lines' : ['F1#10#Line']})
@@ -568,6 +566,9 @@ pattern is used.
 The |:Lfilter| command does the same as |:Cfilter| but operates on the current
 location list.
 
+The current quickfix/location list is not modified by these commands, so you
+can go back to the unfiltered list using the |:colder|/|:lolder| command.
+
 =============================================================================
 2. The error window					*quickfix-window*
 
@@ -594,7 +595,7 @@ location list.
 			quickfix command or function, the |b:changedtick|
 			variable is incremented.  You can get the number of
 			this buffer using the getqflist() and getloclist()
-			functions by passing the 'qfbufnr' item. For a
+			functions by passing the "qfbufnr" item. For a
 			location list, this buffer is wiped out when the
 			location list is removed.
 
@@ -1269,6 +1270,21 @@ not "b:current_compiler".  What the command actually does is the following:
 
 For writing a compiler plugin, see |write-compiler-plugin|.
 
+
+DOTNET							*compiler-dotnet*
+
+The .NET CLI compiler outputs both errors and warnings by default. The output
+may be limited to include only errors, by setting the g:dotnet_errors_only
+variable to |v:true|.
+
+The associated project name is included in each error and warning. To suppress
+the project name, set the g:dotnet_show_project_file variable to |v:false|.
+
+Example: limit output to only display errors, and suppress the project name: >
+	let dotnet_errors_only = v:true
+	let dotnet_show_project_file = v:false
+	compiler dotnet
+<
 
 GCC					*quickfix-gcc*	*compiler-gcc*
 
@@ -2008,7 +2024,7 @@ The function should return a single line of text to display in the quickfix
 window for each entry from start_idx to end_idx. The function can obtain
 information about the entries using the |getqflist()| function and specifying
 the quickfix list identifier "id". For a location list, getloclist() function
-can be used with the 'winid' argument. If an empty list is returned, then the
+can be used with the "winid" argument. If an empty list is returned, then the
 default format is used to display all the entries. If an item in the returned
 list is an empty string, then the default format is used to display the
 corresponding entry.

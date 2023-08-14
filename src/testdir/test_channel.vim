@@ -20,7 +20,7 @@ endif
 " call ch_logfile('channellog', 'w')
 
 func SetUp()
-  if g:testfunc =~ '_ipv6()$' 
+  if g:testfunc =~ '_ipv6()$'
     let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
   elseif g:testfunc =~ '_unix()$'
@@ -714,7 +714,7 @@ func Stop_g_job()
 endfunc
 
 func Test_nl_read_file()
-  call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput')
+  call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput', 'D')
   let g:job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'file', 'in_name': 'Xinput'})
   call assert_equal("run", job_status(g:job))
@@ -726,7 +726,6 @@ func Test_nl_read_file()
     call assert_equal("AND this", ch_readraw(handle))
   finally
     call Stop_g_job()
-    call delete('Xinput')
   endtry
   call assert_fails("echo ch_read(test_null_channel(), {'callback' : 'abc'})", 'E475:')
 endfunc
@@ -1161,14 +1160,13 @@ func Test_write_to_buffer_and_scroll()
       endif
       call job_start(cmd, #{out_io: 'buffer', out_name: 'Xscrollbuffer'})
   END
-  call writefile(lines, 'XtestBufferScroll')
+  call writefile(lines, 'XtestBufferScroll', 'D')
   let buf = RunVimInTerminal('-S XtestBufferScroll', #{rows: 10})
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_job_buffer_scroll_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestBufferScroll')
 endfunc
 
 func Test_pipe_null()
@@ -1201,25 +1199,28 @@ func Test_pipe_null()
     call job_stop(job)
   endtry
 
-  let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'out_io': 'null', 'err_io': 'out'})
-  call assert_equal("run", job_status(job))
-  call job_stop(job)
+  " This causes spurious leak errors with valgrind.
+  if !RunningWithValgrind()
+    let job = job_start(s:python . " test_channel_pipe.py something",
+          \ {'out_io': 'null', 'err_io': 'out'})
+    call assert_equal("run", job_status(job))
+    call job_stop(job)
 
-  let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
-  call assert_equal("run", job_status(job))
-  call assert_equal('channel fail', string(job_getchannel(job)))
-  call assert_equal('fail', ch_status(job))
-  call assert_equal('no process', string(test_null_job()))
-  call assert_equal('channel fail', string(test_null_channel()))
-  call job_stop(job)
+    let job = job_start(s:python . " test_channel_pipe.py something",
+          \ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
+    call assert_equal("run", job_status(job))
+    call assert_equal('channel fail', string(job_getchannel(job)))
+    call assert_equal('fail', ch_status(job))
+    call assert_equal('no process', string(test_null_job()))
+    call assert_equal('channel fail', string(test_null_channel()))
+    call job_stop(job)
+  endif
 endfunc
 
 func Test_pipe_to_buffer_raw()
   let options = {'out_mode': 'raw', 'out_io': 'buffer', 'out_name': 'testout'}
   split testout
-  let job = job_start([s:python, '-c', 
+  let job = job_start([s:python, '-c',
         \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
   " the job may be done quickly, also accept "dead"
   call assert_match('^\%(dead\|run\)$', job_status(job))
@@ -1506,7 +1507,7 @@ func Test_open_fail()
   call assert_fails("let ch = ch_open('noserver')", 'E475:')
   echo ch
   let d = ch
-  call assert_fails("let ch = ch_open('noserver', 10)", 'E474:')
+  call assert_fails("let ch = ch_open('noserver', 10)", 'E1206:')
   call assert_fails("let ch = ch_open('localhost:-1')", 'E475:')
   call assert_fails("let ch = ch_open('localhost:65537')", 'E475:')
   call assert_fails("let ch = ch_open('localhost:8765', {'timeout' : -1})",
@@ -1632,7 +1633,12 @@ func Test_exit_callback_interval()
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = [s:python, '-c', 'import time;time.sleep(0.5)']->job_start({'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
-  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  try
+    call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  catch
+    call add(v:errors, "Job status: " .. string(job->job_info()))
+    throw v:exception
+  endtry
   let elapsed = reltimefloat(g:exit_cb_val.end)
   call assert_inrange(0.5, 1.0, elapsed)
 
@@ -1760,19 +1766,21 @@ func Test_job_start_fails()
   call assert_fails("call job_start('ls',
         \ {'err_io' : 'buffer', 'err_buf' : -1})", 'E475:')
 
+  let cmd = has('win32') ? "cmd /c dir" : "ls"
+
   set nomodifiable
-  call assert_fails("call job_start('cmd /c dir',
+  call assert_fails("call job_start(cmd,
         \ {'out_io' : 'buffer', 'out_buf' :" .. bufnr() .. "})", 'E21:')
-  call assert_fails("call job_start('cmd /c dir',
+  call assert_fails("call job_start(cmd,
         \ {'err_io' : 'buffer', 'err_buf' :" .. bufnr() .. "})", 'E21:')
   set modifiable
 
-  call assert_fails("call job_start('ls', {'in_io' : 'buffer'})", 'E915:')
+  call assert_fails("call job_start(cmd, {'in_io' : 'buffer'})", 'E915:')
 
   edit! XXX
   let bnum = bufnr()
   enew
-  call assert_fails("call job_start('ls',
+  call assert_fails("call job_start(cmd,
         \ {'in_io' : 'buffer', 'in_buf' : bnum})", 'E918:')
 
   " Empty job tests
@@ -1787,6 +1795,9 @@ func Test_job_start_fails()
 endfunc
 
 func Test_job_stop_immediately()
+  " With valgrind this causes spurious leak reports
+  CheckNotValgrind
+
   let g:job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
   try
     eval g:job->job_stop()
@@ -1958,8 +1969,10 @@ func Test_env()
     let cmd = [&shell, &shellcmdflag, 'echo $FOO']
   endif
   call assert_fails('call job_start(cmd, {"env": 1})', 'E475:')
-  call job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
-  call WaitForAssert({-> assert_equal("bar", g:envstr)})
+  let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
+  if WaitForAssert({-> assert_equal("bar", g:envstr)}, 500) != 0
+    call add(v:errors, "Job status: " .. string(job->job_info()))
+  endif
   unlet g:envstr
 endfunc
 
@@ -1976,8 +1989,13 @@ func Test_cwd()
   let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'cwd': expect})
   try
     call WaitForAssert({-> assert_notequal("", g:envstr)})
+    " There may be a trailing slash or not, ignore it
     let expect = substitute(expect, '[/\\]$', '', '')
     let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
+    " on CI there can be /private prefix or not, ignore it
+    if $CI != '' && stridx(expect, '/private/') == 0
+      let expect = expect[8:]
+    endif
     if $CI != '' && stridx(g:envstr, '/private/') == 0
       let g:envstr = g:envstr[8:]
     endif
@@ -2021,7 +2039,12 @@ func s:test_list_args(cmd, out, remove_lf)
   try
     let g:out = ''
     let job = job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
-    call WaitFor('"" != g:out')
+    try
+      call WaitFor('"" != g:out')
+    catch
+      call add(v:errors, "Job status: " .. string(job->job_info()))
+      throw v:exception
+    endtry
     if has('win32')
       let g:out = substitute(g:out, '\r', '', 'g')
     endif
@@ -2170,7 +2193,7 @@ endfunc
 func Test_job_tty_in_out()
   CheckUnix
 
-  call writefile(['test'], 'Xtestin')
+  call writefile(['test'], 'Xtestin', 'D')
   let in_opts = [{},
         \ {'in_io': 'null'},
         \ {'in_io': 'file', 'in_name': 'Xtestin'}]
@@ -2212,7 +2235,6 @@ func Test_job_tty_in_out()
     call WaitForAssert({-> assert_equal('dead', job_status(job))})
   endfor
 
-  call delete('Xtestin')
   call delete('Xtestout')
   call delete('Xtesterr')
 endfunc
@@ -2271,11 +2293,12 @@ func Test_zz_ch_log()
   call ch_log('%s%s')
   call ch_logfile('')
   let text = readfile('Xlog')
-  call assert_match("hello there", text[1])
+  call assert_match("start log session", text[0])
+  call assert_match("ch_log(): hello there", text[1])
   call assert_match("%s%s", text[2])
-  call mkdir("Xdir1")
-  call assert_fails("call ch_logfile('Xdir1')", 'E484:')
-  cal delete("Xdir1", 'd')
+  call mkdir("Xchlogdir1", 'D')
+  call assert_fails("call ch_logfile('Xchlogdir1')", 'E484:')
+
   call delete('Xlog')
 endfunc
 
@@ -2541,11 +2564,11 @@ func LspTests(port)
 
   " Test for using a one time callback function to process a response
   let g:lspOtMsgs = []
-  let r = ch_sendexpr(ch, #{method: 'msg-specifc-cb', params: {}},
+  let r = ch_sendexpr(ch, #{method: 'msg-specific-cb', params: {}},
         \ #{callback: 'LspOtCb'})
   call assert_equal(9, r.id)
   call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
-  call assert_equal([#{id: 9, jsonrpc: '2.0', result: 'msg-specifc-cb'}],
+  call assert_equal([#{id: 9, jsonrpc: '2.0', result: 'msg-specific-cb'}],
         \ g:lspOtMsgs)
 
   " Test for generating a request message from the other end (server)
@@ -2647,7 +2670,7 @@ func LspTests(port)
   " " Test for sending a raw message
   " let g:lspNotif = []
   " let s = "Content-Length: 62\r\n"
-  " let s ..= "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+  " let s ..= "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
   " let s ..= "\r\n"
   " let s ..= '{"method":"echo","jsonrpc":"2.0","params":{"m":"raw-message"}}'
   " call ch_sendraw(ch, s)

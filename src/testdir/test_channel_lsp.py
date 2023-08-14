@@ -35,7 +35,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             v['id'] = msgid
         s = json.dumps(v)
         resp = "Content-Length: " + str(len(s)) + "\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         resp += s
         if self.debug:
@@ -46,7 +46,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         v = 'wrong-payload'
         s = json.dumps(v)
         resp = "Content-Length: " + str(len(s)) + "\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         resp += s
         self.request.sendall(resp.encode('utf-8'))
@@ -60,7 +60,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def send_empty_payload(self):
         resp = "Content-Length: 0\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         self.request.sendall(resp.encode('utf-8'))
 
@@ -71,7 +71,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         resp = "Host: abc.vim.org\r\n"
         resp += "User-Agent: Python\r\n"
         resp += "Accept-Language: en-US,en\r\n"
-        resp += "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "Content-Length: " + str(len(s)) + "\r\n"
         resp += "\r\n"
         resp += s
@@ -93,7 +93,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         # test for sending the http header without length
         v = {'jsonrpc': '2.0', 'id': msgid, 'result': resp_dict}
         s = json.dumps(v)
-        resp = "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n"
+        resp = "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
         resp += "\r\n"
         resp += s
         self.request.sendall(resp.encode('utf-8'))
@@ -164,7 +164,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         self.send_lsp_msg(payload['id'], 'msg-with-id')
 
     def do_msg_specific_cb(self, payload):
-        self.send_lsp_msg(payload['id'], 'msg-specifc-cb')
+        self.send_lsp_msg(payload['id'], 'msg-specific-cb')
 
     def do_server_req(self, payload):
         self.send_lsp_msg(201, {'method': 'checkhealth', 'params': {'a': 20}})
@@ -205,7 +205,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'simple-notif': self.do_simple_notif,
                         'multi-notif': self.do_multi_notif,
                         'msg-with-id': self.do_msg_with_id,
-                        'msg-specifc-cb': self.do_msg_specific_cb,
+                        'msg-specific-cb': self.do_msg_specific_cb,
                         'server-req': self.do_server_req,
                         'extra-hdr-fields': self.do_extra_hdr_fields,
                         'delayed-payload': self.do_delayad_payload,
@@ -306,7 +306,12 @@ def main(host, port, server_class=ThreadedTCPServer):
         writePortInFile(port)
         time.sleep(0.5)
 
-    server = server_class((host, port), ThreadedTCPRequestHandler)
+    addrs = socket.getaddrinfo(host, port, 0, 0, socket.IPPROTO_TCP)
+    # Each addr is a (family, type, proto, canonname, sockaddr) tuple
+    sockaddr = addrs[0][4]
+    server_class.address_family = addrs[0][0]
+
+    server = server_class(sockaddr[0:2], ThreadedTCPRequestHandler)
     ip, port = server.server_address[0:2]
 
     # Start a thread with the server.  That thread will then start a new thread

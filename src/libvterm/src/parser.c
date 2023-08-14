@@ -34,7 +34,7 @@ static void do_csi(VTerm *vt, char command)
 
   if(vt->parser.callbacks && vt->parser.callbacks->csi)
     if((*vt->parser.callbacks->csi)(
-          vt->parser.v.csi.leaderlen ? vt->parser.v.csi.leader : NULL, 
+          vt->parser.v.csi.leaderlen ? vt->parser.v.csi.leader : NULL,
           vt->parser.v.csi.args,
           vt->parser.v.csi.argi,
           vt->parser.intermedlen ? vt->parser.intermed : NULL,
@@ -142,18 +142,21 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
   for( ; pos < len; pos++) {
     unsigned char c = bytes[pos];
     int c1_allowed = !vt->mode.utf8;
-    size_t string_len;
 
     if(c == 0x00 || c == 0x7f) { // NUL, DEL
       if(IS_STRING_STATE()) {
         string_fragment(vt, string_start, bytes + pos - string_start, FALSE);
         string_start = bytes + pos + 1;
       }
+      if(vt->parser.emit_nul)
+        do_control(vt, c);
       continue;
     }
     if(c == 0x18 || c == 0x1a) { // CAN, SUB
       vt->parser.in_esc = FALSE;
       ENTER_NORMAL_STATE();
+      if(vt->parser.emit_nul)
+        do_control(vt, c);
       continue;
     }
     else if(c == 0x1b) { // ESC
@@ -187,7 +190,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
     }
     // else fallthrough
 
-    string_len = bytes + pos - string_start;
+    size_t string_len = bytes + pos - string_start;
 
     if(vt->parser.in_esc) {
       // Hoist an ESC letter into a C1 if we're not in a string mode
@@ -247,7 +250,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       vt->parser.v.csi.argi++;
       vt->parser.intermedlen = 0;
       vt->parser.state = CSI_INTERMED;
-      // fallthrough
+      // FALLTHROUGH
     case CSI_INTERMED:
       if(is_intermed(c)) {
         if(vt->parser.intermedlen < INTERMED_MAX-1)
@@ -402,4 +405,9 @@ void vterm_parser_set_callbacks(VTerm *vt, const VTermParserCallbacks *callbacks
 void *vterm_parser_get_cbdata(VTerm *vt)
 {
   return vt->parser.cbdata;
+}
+
+void vterm_parser_set_emit_nul(VTerm *vt, int emit)
+{
+  vt->parser.emit_nul = emit;
 }

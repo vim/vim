@@ -1,4 +1,4 @@
-*os_beos.txt*	For Vim version 8.2.  Last change: 2020 Jun 07
+*os_beos.txt*	For Vim version 9.0.  Last change: 2020 Jun 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

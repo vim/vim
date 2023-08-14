@@ -46,6 +46,10 @@ func Test_isfname()
   set isfname=
   call assert_equal("~X", expand("~X"))
   set isfname&
+  " Test for setting 'isfname' to an unsupported character
+  let save_isfname = &isfname
+  call assert_fails('exe $"set isfname+={"\u1234"}"', 'E474:')
+  call assert_equal(save_isfname, &isfname)
 endfunc
 
 " Test for getting the value of 'pastetoggle'
@@ -65,7 +69,9 @@ func Test_pastetoggle()
   let &pastetoggle = str
   call assert_equal(str, &pastetoggle)
   call assert_equal("\n  pastetoggle=" .. strtrans(str), execute('set pastetoggle?'))
+
   unlet str
+  set pastetoggle&
 endfunc
 
 func Test_wildchar()
@@ -272,13 +278,17 @@ func Test_set_completion()
   call feedkeys(":setglobal di\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"setglobal dictionary diff diffexpr diffopt digraph directory display', @:)
 
-  " Expand boolan options. When doing :set no<Tab>
-  " vim displays the options names without "no" but completion uses "no...".
+  " Expand boolean options. When doing :set no<Tab> Vim prefixes the option
+  " names with "no".
   call feedkeys(":set nodi\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set nodiff digraph', @:)
+  call assert_equal('"set nodiff nodigraph', @:)
 
   call feedkeys(":set invdi\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set invdiff digraph', @:)
+  call assert_equal('"set invdiff invdigraph', @:)
+
+  " Expanding "set noinv" does nothing.
+  call feedkeys(":set noinv\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set noinv', @:)
 
   " Expand abbreviation of options.
   call feedkeys(":set ts\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -366,7 +376,7 @@ func Test_set_completion()
   call assert_equal('"set filetype=' .. getcompletion('a*', 'filetype')->join(), @:)
 endfunc
 
-func Test_set_errors()
+func Test_set_option_errors()
   call assert_fails('set scroll=-1', 'E49:')
   call assert_fails('set backupcopy=', 'E474:')
   call assert_fails('set regexpengine=3', 'E474:')
@@ -435,7 +445,16 @@ func Test_set_errors()
   if has('mouseshape')
     call assert_fails('se mouseshape=i-r:x', 'E547:')
   endif
-  call assert_fails('set backupext=~ patchmode=~', 'E589:')
+
+  " Test for 'backupext' and 'patchmode' set to the same value
+  set backupext=.bak
+  set patchmode=.patch
+  call assert_fails('set patchmode=.bak', 'E589:')
+  call assert_equal('.patch', &patchmode)
+  call assert_fails('set backupext=.patch', 'E589:')
+  call assert_equal('.bak', &backupext)
+  set backupext& patchmode&
+
   call assert_fails('set winminheight=10 winheight=9', 'E591:')
   set winminheight& winheight&
   set winheight=10 winminheight=10
@@ -459,20 +478,36 @@ func Test_set_errors()
   if has('python') || has('python3')
     call assert_fails('set pyxversion=6', 'E474:')
   endif
-  call assert_fails("let &tabstop='ab'", 'E521:')
+  call assert_fails("let &tabstop='ab'", ['E521:', 'E521:'])
   call assert_fails('set spellcapcheck=%\\(', 'E54:')
   call assert_fails('set sessionoptions=curdir,sesdir', 'E474:')
   call assert_fails('set foldmarker={{{,', 'E474:')
   call assert_fails('set sessionoptions=sesdir,curdir', 'E474:')
-  call assert_fails('set listchars=trail:· ambiwidth=double', 'E834:')
+  setlocal listchars=trail:·
+  call assert_fails('set ambiwidth=double', 'E834:')
+  setlocal listchars=trail:-
+  setglobal listchars=trail:·
+  call assert_fails('set ambiwidth=double', 'E834:')
   set listchars&
-  call assert_fails('set fillchars=stl:· ambiwidth=double', 'E835:')
+  setlocal fillchars=stl:·
+  call assert_fails('set ambiwidth=double', 'E835:')
+  setlocal fillchars=stl:-
+  setglobal fillchars=stl:·
+  call assert_fails('set ambiwidth=double', 'E835:')
   set fillchars&
   call assert_fails('set fileencoding=latin1,utf-8', 'E474:')
   set nomodifiable
   call assert_fails('set fileencoding=latin1', 'E21:')
   set modifiable&
   call assert_fails('set t_#-&', 'E522:')
+  call assert_fails('let &formatoptions = "?"', 'E539:')
+  call assert_fails('call setbufvar("", "&formatoptions", "?")', 'E539:')
+  call assert_fails('call setwinvar(0, "&scrolloff", [])', ['E745:', 'E745:'])
+  call assert_fails('call setwinvar(0, "&list", [])', ['E745:', 'E745:'])
+  call assert_fails('call setwinvar(0, "&listchars", [])', ['E730:', 'E730:'])
+  call assert_fails('call setwinvar(0, "&nosuchoption", 0)', ['E355:', 'E355:'])
+  call assert_fails('call setwinvar(0, "&nosuchoption", "")', ['E355:', 'E355:'])
+  call assert_fails('call setwinvar(0, "&nosuchoption", [])', ['E355:', 'E355:'])
 endfunc
 
 func Test_set_encoding()
@@ -682,7 +717,7 @@ func Test_backupskip()
       call writefile(['errors:'] + v:errors, 'Xtestout')
       qall
   [CODE]
-  call writefile(after, 'Xafter')
+  call writefile(after, 'Xafter', 'D')
   let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
 
   let saveenv = {}
@@ -700,7 +735,6 @@ func Test_backupskip()
   endfor
 
   call delete('Xtestout')
-  call delete('Xafter')
 
   " Duplicates should be filtered out (option has P_NODUP)
   let backupskip = &backupskip
@@ -712,7 +746,7 @@ func Test_backupskip()
   let &backupskip = backupskip
 endfunc
 
-func Test_copy_winopt()
+func Test_buf_copy_winopt()
   set hidden
 
   " Test copy option from current buffer in window
@@ -766,6 +800,108 @@ func Test_copy_winopt()
   set hidden&
 endfunc
 
+def Test_split_copy_options()
+  var values = [
+    ['cursorbind', true, false],
+    ['fillchars', '"vert:-"', '"' .. &fillchars .. '"'],
+    ['list', true, 0],
+    ['listchars', '"space:-"', '"' .. &listchars .. '"'],
+    ['number', true, 0],
+    ['relativenumber', true, false],
+    ['scrollbind', true, false],
+    ['smoothscroll', true, false],
+    ['virtualedit', '"block"', '"' .. &virtualedit .. '"'],
+    ['wincolor', '"Search"', '"' .. &wincolor .. '"'],
+    ['wrap', false, true],
+  ]
+  if has('linebreak')
+    values += [
+      ['breakindent', true, false],
+      ['breakindentopt', '"min:5"', '"' .. &breakindentopt .. '"'],
+      ['linebreak', true, false],
+      ['numberwidth', 7, 4],
+      ['showbreak', '"++"', '"' .. &showbreak .. '"'],
+    ]
+  endif
+  if has('rightleft')
+    values += [
+      ['rightleft', true, false],
+      ['rightleftcmd', '"search"', '"' .. &rightleftcmd .. '"'],
+    ]
+  endif
+  if has('statusline')
+    values += [
+      ['statusline', '"---%f---"', '"' .. &statusline .. '"'],
+    ]
+  endif
+  if has('spell')
+    values += [
+      ['spell', true, false],
+    ]
+  endif
+  if has('syntax')
+    values += [
+      ['cursorcolumn', true, false],
+      ['cursorline', true, false],
+      ['cursorlineopt', '"screenline"', '"' .. &cursorlineopt .. '"'],
+      ['colorcolumn', '"+1"', '"' .. &colorcolumn .. '"'],
+    ]
+  endif
+  if has('diff')
+    values += [
+      ['diff', true, false],
+    ]
+  endif
+  if has('conceal')
+    values += [
+      ['concealcursor', '"nv"', '"' .. &concealcursor .. '"'],
+      ['conceallevel', '3', &conceallevel],
+    ]
+  endif
+  if has('terminal')
+    values += [
+      ['termwinkey', '"<C-X>"', '"' .. &termwinkey .. '"'],
+      ['termwinsize', '"10x20"', '"' .. &termwinsize .. '"'],
+    ]
+  endif
+  if has('folding')
+    values += [
+      ['foldcolumn', 5,  &foldcolumn],
+      ['foldenable', false, true],
+      ['foldexpr', '"2 + 3"', '"' .. &foldexpr .. '"'],
+      ['foldignore', '"+="', '"' .. &foldignore .. '"'],
+      ['foldlevel', 4,  &foldlevel],
+      ['foldmarker', '">>,<<"', '"' .. &foldmarker .. '"'],
+      ['foldmethod', '"marker"', '"' .. &foldmethod .. '"'],
+      ['foldminlines', 3,  &foldminlines],
+      ['foldnestmax', 17,  &foldnestmax],
+      ['foldtext', '"closed"', '"' .. &foldtext .. '"'],
+    ]
+  endif
+  if has('signs')
+    values += [
+      ['signcolumn', '"number"', '"' .. &signcolumn .. '"'],
+    ]
+  endif
+
+  # set options to non-default value
+  for item in values
+    exe $'&l:{item[0]} = {item[1]}'
+  endfor
+
+  # check values are set in new window
+  split
+  for item in values
+    exe $'assert_equal({item[1]}, &{item[0]}, "{item[0]}")'
+  endfor
+
+  # restore
+  close
+  for item in values
+    exe $'&l:{item[0]} = {item[2]}'
+  endfor
+enddef
+
 func Test_shortmess_F()
   new
   call assert_match('\[No Name\]', execute('file'))
@@ -805,6 +941,7 @@ func Test_shortmess_F2()
   call assert_match('file2', execute('bn', ''))
   bwipe
   bwipe
+  call assert_fails('call test_getvalue("abc")', 'E475:')
 endfunc
 
 func Test_local_scrolloff()
@@ -817,12 +954,16 @@ func Test_local_scrolloff()
   wincmd w
   call assert_equal(5, &so)
   wincmd w
+  call assert_equal(3, &so)
   setlocal so<
   call assert_equal(5, &so)
+  setglob so=8
+  call assert_equal(8, &so)
+  call assert_equal(-1, &l:so)
   setlocal so=0
   call assert_equal(0, &so)
   setlocal so=-1
-  call assert_equal(5, &so)
+  call assert_equal(8, &so)
 
   call assert_equal(7, &siso)
   setlocal siso=3
@@ -830,12 +971,16 @@ func Test_local_scrolloff()
   wincmd w
   call assert_equal(7, &siso)
   wincmd w
+  call assert_equal(3, &siso)
   setlocal siso<
   call assert_equal(7, &siso)
+  setglob siso=4
+  call assert_equal(4, &siso)
+  call assert_equal(-1, &l:siso)
   setlocal siso=0
   call assert_equal(0, &siso)
   setlocal siso=-1
-  call assert_equal(7, &siso)
+  call assert_equal(4, &siso)
 
   close
   set so&
@@ -873,7 +1018,7 @@ func Test_write()
   new
   call setline(1, ['L1'])
   set nowrite
-  call assert_fails('write Xfile', 'E142:')
+  call assert_fails('write Xwrfile', 'E142:')
   set write
   close!
 endfunc
@@ -887,11 +1032,10 @@ func Test_buftype()
 
   for val in ['', 'nofile', 'nowrite', 'acwrite', 'quickfix', 'help', 'terminal', 'prompt', 'popup']
     exe 'set buftype=' .. val
-    call writefile(['something'], 'XBuftype')
+    call writefile(['something'], 'XBuftype', 'D')
     call assert_fails('write XBuftype', 'E13:', 'with buftype=' .. val)
   endfor
 
-  call delete('XBuftype')
   bwipe!
 endfunc
 
@@ -899,7 +1043,6 @@ endfunc
 func Test_rightleftcmd()
   CheckFeature rightleft
   set rightleft
-  set rightleftcmd
 
   let g:l = []
   func AddPos()
@@ -908,6 +1051,13 @@ func Test_rightleftcmd()
   endfunc
   cmap <expr> <F2> AddPos()
 
+  set rightleftcmd=
+  call feedkeys("/\<F2>abc\<Right>\<F2>\<Left>\<Left>\<F2>" ..
+        \ "\<Right>\<F2>\<Esc>", 'xt')
+  call assert_equal([2, 5, 3, 4], g:l)
+
+  let g:l = []
+  set rightleftcmd=search
   call feedkeys("/\<F2>abc\<Left>\<F2>\<Right>\<Right>\<F2>" ..
         \ "\<Left>\<F2>\<Esc>", 'xt')
   call assert_equal([&co - 1, &co - 4, &co - 2, &co - 3], g:l)
@@ -918,17 +1068,22 @@ func Test_rightleftcmd()
   set rightleft&
 endfunc
 
-" Test for the "debug" option
+" Test for the 'debug' option
 func Test_debug_option()
+  " redraw to avoid matching previous messages
+  redraw
   set debug=beep
   exe "normal \<C-c>"
   call assert_equal('Beep!', Screenline(&lines))
+  call assert_equal('line    4:', Screenline(&lines - 1))
+  " also check a line above, with a certain window width the colon is there
+  call assert_match('Test_debug_option:$',
+        \ Screenline(&lines - 3) .. Screenline(&lines - 2))
   set debug&
 endfunc
 
 " Test for the default CDPATH option
 func Test_opt_default_cdpath()
-  CheckFeature file_in_path
   let after =<< trim [CODE]
     call assert_equal(',/path/to/dir1,/path/to/dir2', &cdpath)
     call writefile(v:errors, 'Xtestout')
@@ -955,6 +1110,18 @@ func Test_opt_set_keycode()
   set <F9>=xyz
   call assert_equal('xyz', &t_k9)
   set <t_k9>&
+
+  " should we test all of them?
+  set t_Ce=testCe
+  set t_Cs=testCs
+  set t_Us=testUs
+  set t_ds=testds
+  set t_Ds=testDs
+  call assert_equal('testCe', &t_Ce)
+  call assert_equal('testCs', &t_Cs)
+  call assert_equal('testUs', &t_Us)
+  call assert_equal('testds', &t_ds)
+  call assert_equal('testDs', &t_Ds)
 endfunc
 
 " Test for changing options in a sandbox
@@ -1096,13 +1263,12 @@ func Test_opt_winminheight_term()
     below sp | wincmd _
     below sp
   END
-  call writefile(lines, 'Xwinminheight')
+  call writefile(lines, 'Xwinminheight', 'D')
   let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
   call term_sendkeys(buf, ":set wmh=1\n")
   call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
 
   call StopVimInTerminal(buf)
-  call delete('Xwinminheight')
 endfunc
 
 func Test_opt_winminheight_term_tabs()
@@ -1117,13 +1283,12 @@ func Test_opt_winminheight_term_tabs()
     split
     tabnew
   END
-  call writefile(lines, 'Xwinminheight')
+  call writefile(lines, 'Xwinminheight', 'D')
   let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
   call term_sendkeys(buf, ":set wmh=1\n")
   call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
 
   call StopVimInTerminal(buf)
-  call delete('Xwinminheight')
 endfunc
 
 " Test for the 'winminwidth' option
@@ -1152,15 +1317,14 @@ func Test_opt_reset_scroll()
     set scroll=2
     set laststatus=2
   [CODE]
-  call writefile(vimrc, 'Xscroll')
+  call writefile(vimrc, 'Xscroll', 'D')
   let buf = RunVimInTerminal('-S Xscroll', {'rows': 16, 'cols': 45})
   call term_sendkeys(buf, ":verbose set scroll?\n")
   call WaitForAssert({-> assert_match('Last set.*window size', term_getline(buf, 15))})
   call assert_match('^\s*scroll=7$', term_getline(buf, 14))
-  call StopVimInTerminal(buf)
 
   " clean up
-  call delete('Xscroll')
+  call StopVimInTerminal(buf)
 endfunc
 
 " Check that VIM_POSIX env variable influences default value of 'cpo' and 'shm'
@@ -1308,6 +1472,306 @@ func Test_switchbuf_reset()
   sblast
   call assert_equal(2, winnr('$'))
   only!
+endfunc
+
+" :set empty string for global 'keywordprg' falls back to ":help"
+func Test_keywordprg_empty()
+  let k = &keywordprg
+  set keywordprg=man
+  call assert_equal('man', &keywordprg)
+  set keywordprg=
+  call assert_equal(':help', &keywordprg)
+  set keywordprg=man
+  call assert_equal('man', &keywordprg)
+  call assert_equal("\n  keywordprg=:help", execute('set kp= kp?'))
+  let &keywordprg = k
+endfunc
+
+" check that the very first buffer created does not have 'endoffile' set
+func Test_endoffile_default()
+  let after =<< trim [CODE]
+    call writefile([execute('set eof?')], 'Xtestout')
+    qall!
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(["\nnoendoffile"], readfile('Xtestout'))
+  endif
+  call delete('Xtestout')
+endfunc
+
+" Test for setting the 'lines' and 'columns' options to a minimum value
+func Test_set_min_lines_columns()
+  let save_lines = &lines
+  let save_columns = &columns
+
+  let after =<< trim END
+    set nomore
+    let msg = []
+    let v:errmsg = ''
+    silent! let &columns=0
+    call add(msg, v:errmsg)
+    silent! set columns=0
+    call add(msg, v:errmsg)
+    silent! call setbufvar('', '&columns', 0)
+    call add(msg, v:errmsg)
+    "call writefile(msg, 'XResultsetminlines')
+    silent! let &lines=0
+    call add(msg, v:errmsg)
+    silent! set lines=0
+    call add(msg, v:errmsg)
+    silent! call setbufvar('', '&lines', 0)
+    call add(msg, v:errmsg)
+    call writefile(msg, 'XResultsetminlines')
+    qall!
+  END
+  if RunVim([], after, '')
+    call assert_equal(['E594: Need at least 12 columns',
+          \ 'E594: Need at least 12 columns: columns=0',
+          \ 'E594: Need at least 12 columns',
+          \ 'E593: Need at least 2 lines',
+          \ 'E593: Need at least 2 lines: lines=0',
+          \ 'E593: Need at least 2 lines',], readfile('XResultsetminlines'))
+  endif
+
+  call delete('XResultsetminlines')
+  let &lines = save_lines
+  let &columns = save_columns
+endfunc
+
+" Test for reverting a string option value if the new value is invalid.
+func Test_string_option_revert_on_failure()
+  new
+  let optlist = [
+        \ ['ambiwidth', 'double', 'a123'],
+        \ ['background', 'dark', 'a123'],
+        \ ['backspace', 'eol', 'a123'],
+        \ ['backupcopy', 'no', 'a123'],
+        \ ['belloff', 'showmatch', 'a123'],
+        \ ['breakindentopt', 'min:10', 'list'],
+        \ ['bufhidden', 'wipe', 'a123'],
+        \ ['buftype', 'nowrite', 'a123'],
+        \ ['casemap', 'keepascii', 'a123'],
+        \ ['cedit', "\<C-Y>", 'z'],
+        \ ['colorcolumn', '10', 'z'],
+        \ ['commentstring', '#%s', 'a123'],
+        \ ['complete', '.,t', 'a'],
+        \ ['completefunc', 'MyCmplFunc', '1a-'],
+        \ ['completeopt', 'popup', 'a123'],
+        \ ['completepopup', 'width:20', 'border'],
+        \ ['concealcursor', 'v', 'xyz'],
+        \ ['cpoptions', 'HJ', '~'],
+        \ ['cryptmethod', 'zip', 'a123'],
+        \ ['cursorlineopt', 'screenline', 'a123'],
+        \ ['debug', 'throw', 'a123'],
+        \ ['diffopt', 'iwhite', 'a123'],
+        \ ['display', 'uhex', 'a123'],
+        \ ['eadirection', 'hor', 'a123'],
+        \ ['encoding', 'utf-8', 'a123'],
+        \ ['eventignore', 'TextYankPost', 'a123'],
+        \ ['fileencoding', 'utf-8', 'a123,'],
+        \ ['fileformat', 'mac', 'a123'],
+        \ ['fileformats', 'mac', 'a123'],
+        \ ['filetype', 'abc', 'a^b'],
+        \ ['fillchars', 'diff:~', 'a123'],
+        \ ['foldclose', 'all', 'a123'],
+        \ ['foldmarker', '[[[,]]]', '[[['],
+        \ ['foldmethod', 'marker', 'a123'],
+        \ ['foldopen', 'percent', 'a123'],
+        \ ['formatoptions', 'an', '*'],
+        \ ['guicursor', 'n-v-c:block-Cursor/lCursor', 'n-v-c'],
+        \ ['helplang', 'en', 'a'],
+        \ ['highlight', '!:CursorColumn', '8:'],
+        \ ['keymodel', 'stopsel', 'a123'],
+        \ ['keyprotocol', 'kitty:kitty', 'kitty:'],
+        \ ['lispoptions', 'expr:1', 'a123'],
+        \ ['listchars', 'tab:->', 'tab:'],
+        \ ['matchpairs', '<:>', '<:'],
+        \ ['mkspellmem', '100000,1000,100', '100000'],
+        \ ['mouse', 'nvi', 'z'],
+        \ ['mousemodel', 'extend', 'a123'],
+        \ ['nrformats', 'alpha', 'a123'],
+        \ ['omnifunc', 'MyOmniFunc', '1a-'],
+        \ ['operatorfunc', 'MyOpFunc', '1a-'],
+        \ ['previewpopup', 'width:20', 'a123'],
+        \ ['printoptions', 'paper:A4', 'a123:'],
+        \ ['quickfixtextfunc', 'MyQfFunc', '1a-'],
+        \ ['rulerformat', '%l', '%['],
+        \ ['scrollopt', 'hor,jump', 'a123'],
+        \ ['selection', 'exclusive', 'a123'],
+        \ ['selectmode', 'cmd', 'a123'],
+        \ ['sessionoptions', 'options', 'a123'],
+        \ ['shortmess', 'w', '2'],
+        \ ['showbreak', '>>', "\x01"],
+        \ ['showcmdloc', 'statusline', 'a123'],
+        \ ['signcolumn', 'no', 'a123'],
+        \ ['spellcapcheck', '[.?!]\+', '%\{'],
+        \ ['spellfile', 'MySpell.en.add', "\x01"],
+        \ ['spelllang', 'en', "#"],
+        \ ['spelloptions', 'camel', 'a123'],
+        \ ['spellsuggest', 'double', 'a123'],
+        \ ['splitkeep', 'topline', 'a123'],
+        \ ['statusline', '%f', '%['],
+        \ ['swapsync', 'sync', 'a123'],
+        \ ['switchbuf', 'usetab', 'a123'],
+        \ ['syntax', 'abc', 'a^b'],
+        \ ['tabline', '%f', '%['],
+        \ ['tagcase', 'ignore', 'a123'],
+        \ ['tagfunc', 'MyTagFunc', '1a-'],
+        \ ['thesaurusfunc', 'MyThesaurusFunc', '1a-'],
+        \ ['viewoptions', 'options', 'a123'],
+        \ ['virtualedit', 'onemore', 'a123'],
+        \ ['whichwrap', '<,>', '{,}'],
+        \ ['wildmode', 'list', 'a123'],
+        \ ['wildoptions', 'pum', 'a123']
+        \ ]
+  if has('gui')
+    call add(optlist, ['browsedir', 'buffer', 'a123'])
+  endif
+  if has('clipboard_working')
+    call add(optlist, ['clipboard', 'unnamed', 'a123'])
+  endif
+  if has('win32')
+    call add(optlist, ['completeslash', 'slash', 'a123'])
+  endif
+  if has('cscope')
+    call add(optlist, ['cscopequickfix', 't-', 'z-'])
+  endif
+  if !has('win32')
+    call add(optlist, ['imactivatefunc', 'MyActFunc', '1a-'])
+    call add(optlist, ['imstatusfunc', 'MyStatusFunc', '1a-'])
+  endif
+  if has('keymap')
+    call add(optlist, ['keymap', 'greek', '[]'])
+  endif
+  if has('mouseshape')
+    call add(optlist, ['mouseshape', 'm:no', 'a123:'])
+  endif
+  if has('win32') && has('gui')
+    call add(optlist, ['renderoptions', 'type:directx', 'type:directx,a123'])
+  endif
+  if has('rightleft')
+    call add(optlist, ['rightleftcmd', 'search', 'a123'])
+  endif
+  if has('terminal')
+    call add(optlist, ['termwinkey', '<C-L>', '<C'])
+    call add(optlist, ['termwinsize', '24x80', '100'])
+  endif
+  if has('win32') && has('terminal')
+    call add(optlist, ['termwintype', 'winpty', 'a123'])
+  endif
+  if exists('+toolbar')
+    call add(optlist, ['toolbar', 'text', 'a123'])
+  endif
+  if exists('+toolbariconsize')
+    call add(optlist, ['toolbariconsize', 'medium', 'a123'])
+  endif
+  if exists('+ttymouse') && !has('gui')
+    call add(optlist, ['ttymouse', 'xterm', 'a123'])
+  endif
+  if exists('+vartabs')
+    call add(optlist, ['varsofttabstop', '12', 'a123'])
+    call add(optlist, ['vartabstop', '4,20', '4,'])
+  endif
+  if exists('+winaltkeys')
+    call add(optlist, ['winaltkeys', 'no', 'a123'])
+  endif
+  for opt in optlist
+    exe $"let save_opt = &{opt[0]}"
+    try
+      exe $"let &{opt[0]} = '{opt[1]}'"
+    catch
+      call assert_report($"Caught {v:exception} with {opt->string()}")
+    endtry
+    call assert_fails($"let &{opt[0]} = '{opt[2]}'", '', opt[0])
+    call assert_equal(opt[1], eval($"&{opt[0]}"), opt[0])
+    exe $"let &{opt[0]} = save_opt"
+  endfor
+  bw!
+endfunc
+
+func Test_set_option_window_global_local()
+  new Xbuffer1
+  let [ _gso, _lso ] = [ &g:scrolloff, &l:scrolloff ]
+  setlocal scrolloff=2
+  setglobal scrolloff=3
+  setl modified
+  " A new buffer has its own window-local options
+  hide enew
+  call assert_equal(-1, &l:scrolloff)
+  call assert_equal(3, &g:scrolloff)
+  " A new window opened with its own buffer-local options
+  new
+  call assert_equal(-1, &l:scrolloff)
+  call assert_equal(3, &g:scrolloff)
+  " Re-open Xbuffer1 and it should use
+  " the previous set window-local options
+  b Xbuffer1
+  call assert_equal(2, &l:scrolloff)
+  call assert_equal(3, &g:scrolloff)
+  bw!
+  bw!
+  let &g:scrolloff =  _gso
+endfunc
+
+func GetGlobalLocalWindowOptions()
+  new
+  sil! r $VIMRUNTIME/doc/options.txt
+  " Filter for global or local to window
+  v/^'.*'.*\n.*global or local to window |global-local/d
+  " get option value and type
+  sil %s/^'\([^']*\)'.*'\s\+\(\w\+\)\s\+(default \%(\(".*"\|\d\+\|empty\)\).*/\1 \2 \3/g
+  sil %s/empty/""/g
+  " split the result
+  let result=getline(1,'$')->map({_, val -> split(val, ' ')})
+  bw!
+  return result
+endfunc
+
+func Test_set_option_window_global_local_all()
+  new Xbuffer2
+
+  let optionlist = GetGlobalLocalWindowOptions()
+  for [opt, type, default] in optionlist
+    let _old = eval('&g:' .. opt)
+    if type == 'string'
+      if opt == 'fillchars'
+        exe 'setl ' .. opt .. '=vert:+'
+        exe 'setg ' .. opt .. '=vert:+,fold:+'
+      elseif opt == 'listchars'
+        exe 'setl ' .. opt .. '=tab:>>'
+        exe 'setg ' .. opt .. '=tab:++'
+      elseif opt == 'virtualedit'
+        exe 'setl ' .. opt .. '=all'
+        exe 'setg ' .. opt .. '=block'
+      else
+        exe 'setl ' .. opt .. '=Local'
+        exe 'setg ' .. opt .. '=Global'
+      endif
+    elseif type == 'number'
+      exe 'setl ' .. opt .. '=5'
+      exe 'setg ' .. opt .. '=10'
+    endif
+    setl modified
+    hide enew
+    if type == 'string'
+      call assert_equal('', eval('&l:' .. opt))
+      if opt == 'fillchars'
+        call assert_equal('vert:+,fold:+', eval('&g:' .. opt), 'option:' .. opt)
+      elseif opt == 'listchars'
+        call assert_equal('tab:++', eval('&g:' .. opt), 'option:' .. opt)
+      elseif opt == 'virtualedit'
+        call assert_equal('block', eval('&g:' .. opt), 'option:' .. opt)
+      else
+        call assert_equal('Global', eval('&g:' .. opt), 'option:' .. opt)
+      endif
+    elseif type == 'number'
+      call assert_equal(-1, eval('&l:' .. opt), 'option:' .. opt)
+      call assert_equal(10, eval('&g:' .. opt), 'option:' .. opt)
+    endif
+    bw!
+    exe 'let &g:' .. opt .. '=' .. default
+  endfor
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

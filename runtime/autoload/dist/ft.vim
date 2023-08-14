@@ -2,8 +2,9 @@ vim9script
 
 # Vim functions for file type detection
 #
-# Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Apr 13
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
+# Last Change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -72,22 +73,35 @@ export def FTbas()
 
   # most frequent FreeBASIC-specific keywords in distro files
   var fb_keywords = '\c^\s*\%(extern\|var\|enum\|private\|scope\|union\|byref\|operator\|constructor\|delete\|namespace\|public\|property\|with\|destructor\|using\)\>\%(\s*[:=(]\)\@!'
-  var fb_preproc  = '\c^\s*\%(#\a\+\|option\s\+\%(byval\|dynamic\|escape\|\%(no\)\=gosub\|nokeyword\|private\|static\)\>\)'
+  var fb_preproc  = '\c^\s*\%(' ..
+                      # preprocessor
+                      '#\s*\a\+\|' ..
+                      # compiler option
+                      'option\s\+\%(byval\|dynamic\|escape\|\%(no\)\=gosub\|nokeyword\|private\|static\)\>\|' ..
+                      # metacommand
+                      '\%(''\|rem\)\s*\$lang\>\|' ..
+                      # default datatype
+                      'def\%(byte\|longint\|short\|ubyte\|uint\|ulongint\|ushort\)\>' ..
+                    '\)'
   var fb_comment  = "^\\s*/'"
+
   # OPTION EXPLICIT, without the leading underscore, is common to many dialects
   var qb64_preproc = '\c^\s*\%($\a\+\|option\s\+\%(_explicit\|_\=explicitarray\)\>\)'
 
-  var lines = getline(1, min([line("$"), 100]))
-
-  if match(lines, fb_preproc) > -1 || match(lines, fb_comment) > -1 || match(lines, fb_keywords) > -1
-    setf freebasic
-  elseif match(lines, qb64_preproc) > -1
-    setf qb64
-  elseif match(lines, ft_visual_basic_content) > -1
-    setf vb
-  else
-    setf basic
-  endif
+  for lnum in range(1, min([line("$"), 100]))
+    var line = getline(lnum)
+    if line =~ ft_visual_basic_content
+      setf vb
+      return
+    elseif line =~ fb_preproc || line =~ fb_comment || line =~ fb_keywords
+      setf freebasic
+      return
+    elseif line =~ qb64_preproc
+      setf qb64
+      return
+    endif
+  endfor
+  setf basic
 enddef
 
 export def FTbtm()
@@ -123,6 +137,23 @@ export def FTcfg()
     setf rapid
   else
     setf cfg
+  endif
+enddef
+
+export def FTcls()
+  if exists("g:filetype_cls")
+    exe "setf " .. g:filetype_cls
+    return
+  endif
+
+  if getline(1) =~ '^\v%(\%|\\)'
+    setf tex
+  elseif getline(1)[0] == '#' && getline(1) =~ 'rexx'
+    setf rexx
+  elseif getline(1) == 'VERSION 1.0 CLASS'
+    setf vb
+  else
+    setf st
   endif
 enddef
 
@@ -277,14 +308,16 @@ export def FTfs()
   if exists("g:filetype_fs")
     exe "setf " .. g:filetype_fs
   else
-    var line = getline(nextnonblank(1))
-    # comments and colon definitions
-    if line =~ '^\s*\.\=( ' || line =~ '^\s*\\G\= ' || line =~ '^\\$'
-	  \ || line =~ '^\s*: \S'
-      setf forth
-    else
-      setf fsharp
-    endif
+    var n = 1
+    while n < 100 && n <= line("$")
+      # Forth comments and colon definitions
+      if getline(n) =~ "^[:(\\\\] "
+        setf forth
+        return
+      endif
+      n += 1
+    endwhile
+    setf fsharp
   endif
 enddef
 
@@ -318,7 +351,7 @@ export def FTidl()
   setf idl
 enddef
 
-# Distinguish between "default" and Cproto prototype file. */
+# Distinguish between "default", Prolog and Cproto prototype file.
 export def ProtoCheck(default: string)
   # Cproto files have a comment in the first line and a function prototype in
   # the second line, it always ends in ";".  Indent files may also have
@@ -328,7 +361,14 @@ export def ProtoCheck(default: string)
   if getline(2) =~ '.;$'
     setf cpp
   else
-    exe 'setf ' .. default
+    # recognize Prolog by specific text in the first non-empty line
+    # require a blank after the '%' because Perl uses "%list" and "%translate"
+    var lnum = getline(nextnonblank(1))
+    if lnum =~ '\<prolog\>' || lnum =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || lnum =~ ':-'
+      setf prolog
+    else
+      exe 'setf ' .. default
+    endif
   endif
 enddef
 
@@ -429,30 +469,30 @@ export def FTmm()
   setf nroff
 enddef
 
-# Returns true if file content looks like LambdaProlog
+# Returns true if file content looks like LambdaProlog module
 def IsLProlog(): bool
-  # skip apparent comments and blank lines, what looks like 
+  # skip apparent comments and blank lines, what looks like
   # LambdaProlog comment may be RAPID header
-  var l: number = nextnonblank(1)
-  while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
-    l = nextnonblank(l + 1)
+  var lnum: number = nextnonblank(1)
+  while lnum > 0 && lnum < line('$') && getline(lnum) =~ '^\s*%' # LambdaProlog comment
+    lnum = nextnonblank(lnum + 1)
   endwhile
   # this pattern must not catch a go.mod file
-  return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+  return getline(lnum) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
 enddef
 
 # Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
 export def FTmod()
   if exists("g:filetype_mod")
     exe "setf " .. g:filetype_mod
+  elseif expand("<afile>") =~ '\<go.mod$'
+    setf gomod
   elseif IsLProlog()
     setf lprolog
   elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
     setf modula2
   elseif IsRapid()
     setf rapid
-  elseif expand("<afile>") =~ '\<go.mod$'
-    setf gomod
   else
     # Nothing recognized, assume modsim3
     setf modsim3
@@ -465,8 +505,8 @@ export def FTpl()
   else
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
-    var l = getline(nextnonblank(1))
-    if l =~ '\<prolog\>' || l =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || l =~ ':-'
+    var line = getline(nextnonblank(1))
+    if line =~ '\<prolog\>' || line =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || line =~ ':-'
       setf prolog
     else
       setf perl
@@ -489,12 +529,14 @@ export def FTinc()
     # headers so assume POV-Ray
     elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
       setf pascal
+    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '[A-Z][A-Za-z0-9_:${}]*\s\+\%(??\|[?:+]\)\?= '
+      setf bitbake
     else
       FTasmsyntax()
       if exists("b:asmsyntax")
-	exe "setf " .. fnameescape(b:asmsyntax)
+        exe "setf " .. fnameescape(b:asmsyntax)
       else
-	setf pov
+        setf pov
       endif
     endif
   endif
@@ -637,26 +679,24 @@ export def McSetf()
 enddef
 
 # Called from filetype.vim and scripts.vim.
-export def SetFileTypeSH(name: string)
-  if did_filetype()
+# When "setft" is passed and false then the 'filetype' option is not set.
+export def SetFileTypeSH(name: string, setft = true): string
+  if setft && did_filetype()
     # Filetype was already detected
-    return
+    return ''
   endif
-  if expand("<amatch>") =~ g:ft_ignore_pat
-    return
+  if setft && expand("<amatch>") =~ g:ft_ignore_pat
+    return ''
   endif
   if name =~ '\<csh\>'
     # Some .sh scripts contain #!/bin/csh.
-    SetFileTypeShell("csh")
-    return
+    return SetFileTypeShell("csh", setft)
   elseif name =~ '\<tcsh\>'
     # Some .sh scripts contain #!/bin/tcsh.
-    SetFileTypeShell("tcsh")
-    return
+    return SetFileTypeShell("tcsh", setft)
   elseif name =~ '\<zsh\>'
     # Some .sh scripts contain #!/bin/zsh.
-    SetFileTypeShell("zsh")
-    return
+    return SetFileTypeShell("zsh", setft)
   elseif name =~ '\<ksh\>'
     b:is_kornshell = 1
     if exists("b:is_bash")
@@ -673,7 +713,8 @@ export def SetFileTypeSH(name: string)
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>'
+  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
+    # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell
@@ -682,34 +723,43 @@ export def SetFileTypeSH(name: string)
       unlet b:is_bash
     endif
   endif
-  SetFileTypeShell("sh")
+
+  return SetFileTypeShell("sh", setft)
 enddef
 
 # For shell-like file types, check for an "exec" command hidden in a comment,
 # as used for Tcl.
+# When "setft" is passed and false then the 'filetype' option is not set.
 # Also called from scripts.vim, thus can't be local to this script.
-export def SetFileTypeShell(name: string)
-  if did_filetype()
+export def SetFileTypeShell(name: string, setft = true): string
+  if setft && did_filetype()
     # Filetype was already detected
-    return
+    return ''
   endif
-  if expand("<amatch>") =~ g:ft_ignore_pat
-    return
+  if setft && expand("<amatch>") =~ g:ft_ignore_pat
+    return ''
   endif
-  var l = 2
-  while l < 20 && l < line("$") && getline(l) =~ '^\s*\(#\|$\)'
+
+  var lnum = 2
+  while lnum < 20 && lnum < line("$") && getline(lnum) =~ '^\s*\(#\|$\)'
     # Skip empty and comment lines.
-    l += 1
+    lnum += 1
   endwhile
-  if l < line("$") && getline(l) =~ '\s*exec\s' && getline(l - 1) =~ '^\s*#.*\\$'
+  if lnum < line("$") && getline(lnum) =~ '\s*exec\s' && getline(lnum - 1) =~ '^\s*#.*\\$'
     # Found an "exec" line after a comment with continuation
-    var n = substitute(getline(l), '\s*exec\s\+\([^ ]*/\)\=', '', '')
+    var n = substitute(getline(lnum), '\s*exec\s\+\([^ ]*/\)\=', '', '')
     if n =~ '\<tclsh\|\<wish'
-      setf tcl
-      return
+      if setft
+	setf tcl
+      endif
+      return 'tcl'
     endif
   endif
-  exe "setf " .. name
+
+  if setft
+    exe "setf " .. name
+  endif
+  return name
 enddef
 
 export def CSH()
@@ -770,10 +820,13 @@ export def SQL()
 enddef
 
 # This function checks the first 25 lines of file extension "sc" to resolve
-# detection between scala and SuperCollider
+# detection between scala and SuperCollider.
+# NOTE: We don't check for 'Class : Method', as this can easily be confused
+# 	with valid Scala like `val x : Int = 3`. So we instead only rely on
+# 	checks that can't be confused.
 export def FTsc()
   for lnum in range(1, min([line("$"), 25]))
-    if getline(lnum) =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
+    if getline(lnum) =~# 'var\s<\|classvar\s<\|\^this.*\||\w\+|\|+\s\w*\s{\|\*ar\s'
       setf supercollider
       return
     endif
@@ -816,6 +869,44 @@ export def FTperl(): number
     return 1
   endif
   return 0
+enddef
+
+# LambdaProlog and Standard ML signature files
+export def FTsig()
+  if exists("g:filetype_sig")
+    exe "setf " .. g:filetype_sig
+    return
+  endif
+
+  var lprolog_comment = '^\s*\%(/\*\|%\)'
+  var lprolog_keyword = '^\s*sig\s\+\a'
+  var sml_comment = '^\s*(\*'
+  var sml_keyword = '^\s*\%(signature\|structure\)\s\+\a'
+
+  var line = getline(nextnonblank(1))
+
+  if line =~ lprolog_comment || line =~# lprolog_keyword
+    setf lprolog
+  elseif line =~ sml_comment || line =~# sml_keyword
+    setf sml
+  endif
+enddef
+
+# This function checks the first 100 lines of files matching "*.sil" to
+# resolve detection between Swift Intermediate Language and SILE.
+export def FTsil()
+  for lnum in range(1, [line('$'), 100]->min())
+    var line: string = getline(lnum)
+    if line =~ '^\s*[\\%]'
+      setf sile
+      return
+    elseif line =~ '^\s*\S'
+      setf sil
+      return
+    endif
+  endfor
+  # no clue, default to "sil"
+  setf sil
 enddef
 
 export def FTsys()
@@ -1008,6 +1099,79 @@ export def FTdat()
   elseif getline(nextnonblank(1)) =~? '\v^\s*%(' .. ft_krl_header .. '|' .. ft_krl_defdat .. ')'
     setf krl
   endif
+enddef
+
+export def FTlsl()
+  if exists("g:filetype_lsl")
+    exe "setf " .. g:filetype_lsl
+  endif
+
+  var line = getline(nextnonblank(1))
+  if line =~ '^\s*%' || line =~# ':\s*trait\s*$'
+    setf larch
+  else
+    setf lsl
+  endif
+enddef
+
+export def FTtyp()
+  if exists("g:filetype_typ")
+    exe "setf " .. g:filetype_typ
+    return
+  endif
+
+  # Look for SQL type definition syntax
+  for line in getline(1, 200)
+    # SQL type files may define the casing
+    if line =~ '^CASE\s\==\s\=\(SAME\|LOWER\|UPPER\|OPPOSITE\)$'
+      setf sql
+      return
+    endif
+
+    # SQL type files may define some types as follows
+    if line =~ '^TYPE\s.*$'
+      setf sql
+      return
+    endif
+  endfor
+
+  # Otherwise, affect the typst filetype
+  setf typst
+enddef
+
+# Set the filetype of a *.v file to Verilog, V or Cog based on the first 200
+# lines.
+export def FTv()
+  if did_filetype()
+    # ":setf" will do nothing, bail out early
+    return
+  endif
+
+  for line in getline(1, 200)
+    if line[0] =~ '^\s*/'
+      # skip comment line
+      continue
+    endif
+
+    # Verilog: line ends with ';' followed by an optional variable number of
+    # spaces and an optional start of a comment.
+    # Example: " b <= a + 1; // Add 1".
+    if line =~ ';\(\s*\)\?\(/.*\)\?$'
+      setf verilog
+      return
+    endif
+
+    # Coq: line ends with a '.' followed by an optional variable number of
+    # spaces and an optional start of a comment.
+    # Example: "Definition x := 10. (*".
+    if line =~ '\.\(\s*\)\?\((\*.*\)\?$'
+      setf coq
+      return
+    endif
+  endfor
+
+  # No line matched, fall back to "v".
+  setf v
 enddef
 
 # Uncomment this line to check for compilation errors early

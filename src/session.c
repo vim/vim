@@ -148,11 +148,8 @@ ses_do_win(win_T *wp)
 	    && term_should_restore(wp->w_buffer);
 #endif
     if (wp->w_buffer->b_fname == NULL
-#ifdef FEAT_QUICKFIX
 	    // When 'buftype' is "nofile" can't restore the window contents.
-	    || bt_nofilename(wp->w_buffer)
-#endif
-       )
+	    || bt_nofilename(wp->w_buffer))
 	return (ssop_flags & SSOP_BLANK);
     if (bt_help(wp->w_buffer))
 	return (ssop_flags & SSOP_HELP);
@@ -203,41 +200,42 @@ ses_win_rec(FILE *fd, frame_T *fr)
     frame_T	*frc;
     int		count = 0;
 
-    if (fr->fr_layout != FR_LEAF)
-    {
-	// Find first frame that's not skipped and then create a window for
-	// each following one (first frame is already there).
-	frc = ses_skipframe(fr->fr_child);
-	if (frc != NULL)
-	    while ((frc = ses_skipframe(frc->fr_next)) != NULL)
-	    {
-		// Make window as big as possible so that we have lots of room
-		// to split.
-		if (put_line(fd, "wincmd _ | wincmd |") == FAIL
-			|| put_line(fd, fr->fr_layout == FR_COL
-						? "split" : "vsplit") == FAIL)
-		    return FAIL;
-		++count;
-	    }
+    if (fr->fr_layout == FR_LEAF)
+	return OK;
 
-	// Go back to the first window.
-	if (count > 0 && (fprintf(fd, fr->fr_layout == FR_COL
-			? "%dwincmd k" : "%dwincmd h", count) < 0
-						      || put_eol(fd) == FAIL))
-	    return FAIL;
-
-	// Recursively create frames/windows in each window of this column or
-	// row.
-	frc = ses_skipframe(fr->fr_child);
-	while (frc != NULL)
+    // Find first frame that's not skipped and then create a window for
+    // each following one (first frame is already there).
+    frc = ses_skipframe(fr->fr_child);
+    if (frc != NULL)
+	while ((frc = ses_skipframe(frc->fr_next)) != NULL)
 	{
-	    ses_win_rec(fd, frc);
-	    frc = ses_skipframe(frc->fr_next);
-	    // Go to next window.
-	    if (frc != NULL && put_line(fd, "wincmd w") == FAIL)
+	    // Make window as big as possible so that we have lots of room
+	    // to split.
+	    if (put_line(fd, "wincmd _ | wincmd |") == FAIL
+		    || put_line(fd, fr->fr_layout == FR_COL
+			? "split" : "vsplit") == FAIL)
 		return FAIL;
+	    ++count;
 	}
+
+    // Go back to the first window.
+    if (count > 0 && (fprintf(fd, fr->fr_layout == FR_COL
+		    ? "%dwincmd k" : "%dwincmd h", count) < 0
+		|| put_eol(fd) == FAIL))
+	return FAIL;
+
+    // Recursively create frames/windows in each window of this column or
+    // row.
+    frc = ses_skipframe(fr->fr_child);
+    while (frc != NULL)
+    {
+	ses_win_rec(fd, frc);
+	frc = ses_skipframe(frc->fr_next);
+	// Go to next window.
+	if (frc != NULL && put_line(fd, "wincmd w") == FAIL)
+	    return FAIL;
     }
+
     return OK;
 }
 
@@ -374,10 +372,7 @@ put_view(
 # endif
 	// Load the file.
 	else if (wp->w_buffer->b_ffname != NULL
-# ifdef FEAT_QUICKFIX
-		&& !bt_nofilename(wp->w_buffer)
-# endif
-		)
+		&& !bt_nofilename(wp->w_buffer))
 	{
 	    // Editing a file in this buffer: use ":edit file".
 	    // This may have side effects! (e.g., compressed or network file).
@@ -548,7 +543,7 @@ store_session_globals(FILE *fd)
     char_u	*p, *t;
 
     todo = (int)gvht->ht_used;
-    for (hi = gvht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(gvht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -583,7 +578,6 @@ store_session_globals(FILE *fd)
 		}
 		vim_free(p);
 	    }
-#ifdef FEAT_FLOAT
 	    else if (this_var->di_tv.v_type == VAR_FLOAT
 		    && var_flavour(this_var->di_key) == VAR_FLAVOUR_SESSION)
 	    {
@@ -600,7 +594,6 @@ store_session_globals(FILE *fd)
 			|| put_eol(fd) == FAIL)
 		    return FAIL;
 	    }
-#endif
 	}
     }
     return OK;
@@ -708,11 +701,9 @@ makeopens(
     {
 	if (!(only_save_windows && buf->b_nwindows == 0)
 		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
-#ifdef FEAT_TERMINAL
 		// Skip terminal buffers: finished ones are not useful, others
 		// will be resurrected and result in a new buffer.
 		&& !bt_terminal(buf)
-#endif
 		&& buf->b_fname != NULL
 		&& buf->b_p_bl)
 	{
@@ -818,10 +809,7 @@ makeopens(
 	    if (ses_do_win(wp)
 		    && wp->w_buffer->b_ffname != NULL
 		    && !bt_help(wp->w_buffer)
-#ifdef FEAT_QUICKFIX
-		    && !bt_nofilename(wp->w_buffer)
-#endif
-		    )
+		    && !bt_nofilename(wp->w_buffer))
 	    {
 		if (need_tabnext && put_line(fd, "tabnext") == FAIL)
 		    goto fail;
@@ -1081,11 +1069,11 @@ ex_loadview(exarg_T *eap)
     char_u	*fname;
 
     fname = get_view_file(*eap->arg);
-    if (fname != NULL)
-    {
-	do_source(fname, FALSE, DOSO_NONE, NULL);
-	vim_free(fname);
-    }
+    if (fname == NULL)
+	return;
+
+    do_source(fname, FALSE, DOSO_NONE, NULL);
+    vim_free(fname);
 }
 
 # if defined(FEAT_GUI_GNOME) \

@@ -416,7 +416,7 @@ bf_key_init(
     keylen = (int)STRLEN(key) / 2;
     if (keylen == 0)
     {
-	iemsg(_(e_bf_key_init_called_with_empty_password));
+	iemsg(e_bf_key_init_called_with_empty_password);
 	return;
     }
     for (i = 0; i < keylen; i++)
@@ -517,7 +517,8 @@ bf_self_test(void)
 
     // We can't simply use sizeof(UINT32_T), it would generate a compiler
     // warning.
-    if (ui != 0xffffffffUL || ui + 1 != 0) {
+    if (ui != 0xffffffffUL || ui + 1 != 0)
+    {
 	err++;
 	emsg(_(e_sizeof_uint32_isnot_four));
     }
@@ -573,13 +574,15 @@ bf_cfb_init(
     }
 }
 
-#define BF_CFB_UPDATE(bfs, c) { \
+#define BF_CFB_UPDATE(bfs, c) \
+{ \
     bfs->cfb_buffer[bfs->update_offset] ^= (char_u)c; \
     if (++bfs->update_offset == bfs->cfb_len) \
 	bfs->update_offset = 0; \
 }
 
-#define BF_RANBYTE(bfs, t) { \
+#define BF_RANBYTE(bfs, t) \
+{ \
     if ((bfs->randbyte_offset & BF_BLOCK_MASK) == 0) \
 	bf_e_cblock(bfs, &(bfs->cfb_buffer[bfs->randbyte_offset])); \
     t = bfs->cfb_buffer[bfs->randbyte_offset]; \
@@ -638,11 +641,8 @@ crypt_blowfish_decode(
     int
 crypt_blowfish_init(
     cryptstate_T	*state,
-    char_u*		key,
-    char_u*		salt,
-    int			salt_len,
-    char_u*		seed,
-    int			seed_len)
+    char_u		*key,
+    crypt_arg_T		*arg)
 {
     bf_state_T	*bfs = ALLOC_CLEAR_ONE(bf_state_T);
 
@@ -657,8 +657,8 @@ crypt_blowfish_init(
     if (blowfish_self_test() == FAIL)
 	return FAIL;
 
-    bf_key_init(bfs, key, salt, salt_len);
-    bf_cfb_init(bfs, seed, seed_len);
+    bf_key_init(bfs, key, arg->cat_salt, arg->cat_salt_len);
+    bf_cfb_init(bfs, arg->cat_seed, arg->cat_seed_len);
 
     return OK;
 }

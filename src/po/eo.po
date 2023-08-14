@@ -3814,7 +3814,7 @@ msgstr "linio %4ld:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Nevalida nomo de reĝistro: '%s'"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Flegado de mesaĝoj: Dominique PELLÉ <dominique.pelle@gmail.com>"
 
 msgid "Interrupt: "
@@ -6432,8 +6432,8 @@ msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "tajpu  :help<Enenklavo>  aŭ  <F1> por aliri la helpon  "
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
-msgid "type  :help version8<Enter>   for version info"
-msgstr "tajpu  :help version8<Enenklavo>  por informo de versio"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "tajpu  :help version9<Enenklavo>  por informo de versio"
 
 msgid "Running in Vi compatible mode"
 msgstr "Ruliĝas en reĝimo kongrua kun Vi"
@@ -7346,8 +7346,8 @@ msgstr "E1110: Listero %d ne enhavas 3 nombojn"
 msgid "E1111: List item %d range invalid"
 msgstr "E1111: Listero %d havas nevalidan amplekson"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Nur valoroj 0x100 kaj pli altaj estas subtenataj"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Nur valoroj 0x80 kaj pli altaj estas subtenataj"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: la 4-a argumento de \"assert_fails()\" devas esti nombro"
@@ -8173,7 +8173,7 @@ msgid "E850: Invalid register name"
 msgstr "E850: Nevalida nomo de reĝistro"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
 
 #, c-format

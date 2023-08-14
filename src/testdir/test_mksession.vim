@@ -973,6 +973,7 @@ func Test_mksession_foldopt()
   close
   %bwipe
   set sessionoptions&
+  call delete('Xtest_mks.out')
 endfunc
 
 " Test for mksession with "help" but not "options" in 'sessionoptions'
@@ -1098,14 +1099,14 @@ func Test_mksession_shortmess_with_A()
   bwipe!
 
   " Recreate the swap file to pretend the file is being edited
-  call writefile(cont, fname)
+  call writefile(cont, fname, 'D')
   set shortmess+=A
   source Xtestsession
 
   set shortmess&
   set sessionoptions&
   call delete('Xtestsession')
-  call delete(fname)
+  call delete('Xtestfile')
 endfunc
 
 " Test for mksession with 'compatible' option
@@ -1235,8 +1236,8 @@ endfunc
 
 " Test for creating views with manual folds
 func Test_mkview_manual_fold()
-  call writefile(range(1,10), 'Xfile')
-  new Xfile
+  call writefile(range(1,10), 'Xmkvfile', 'D')
+  new Xmkvfile
   " create recursive folds
   5,6fold
   4,7fold
@@ -1259,9 +1260,22 @@ func Test_mkview_manual_fold()
   source Xview
   call assert_equal([-1, -1, -1, -1, -1, -1], [foldclosed(3), foldclosed(4),
         \ foldclosed(5), foldclosed(6), foldclosed(7), foldclosed(8)])
-  call delete('Xfile')
   call delete('Xview')
   bw!
+endfunc
+
+" Test default 'viewdir' value
+func Test_mkview_default_home()
+  if has('win32')
+    " use escape() to handle backslash path separators
+    call assert_match('^' .. escape($ORIGHOME, '\') .. '/vimfiles', &viewdir)
+  elseif has('unix')
+    call assert_match('^' .. $ORIGHOME .. '/.vim', &viewdir)
+  elseif has('amiga')
+    call assert_match('^home:vimfiles', &viewdir)
+  elseif has('mac')
+    call assert_match('^' .. $VIM .. '/vimfiles', &viewdir)
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

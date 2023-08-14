@@ -103,9 +103,10 @@ json_encode_lsp_msg(typval_T *val)
     ga_append(&ga, NUL);
 
     ga_init2(&lspga, 1, 4000);
+    // Header according to LSP specification.
     vim_snprintf((char *)IObuff, IOSIZE,
 	    "Content-Length: %u\r\n"
-	    "Content-Type: application/vim-jsonrpc; charset=utf-8\r\n\r\n",
+	    "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n\r\n",
 	    ga.ga_len - 1);
     ga_concat(&lspga, IObuff);
     ga_concat_len(&lspga, ga.ga_data, ga.ga_len);
@@ -308,6 +309,8 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    semsg(_(e_cannot_json_encode_str), vartype_name(val->v_type));
 	    return FAIL;
 
@@ -409,8 +412,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
-# if defined(HAVE_MATH_H)
+#if defined(HAVE_MATH_H)
 	    if (isnan(val->vval.v_float))
 		ga_concat(gap, (char_u *)"NaN");
 	    else if (isinf(val->vval.v_float))
@@ -421,14 +423,13 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 		    ga_concat(gap, (char_u *)"Infinity");
 	    }
 	    else
-# endif
+#endif
 	    {
 		vim_snprintf((char *)numbuf, NUMBUFLEN, "%g",
 							   val->vval.v_float);
 		ga_concat(gap, numbuf);
 	    }
 	    break;
-#endif
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
@@ -540,7 +541,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 		    nr = 0;
 		    len = 0;
 		    vim_str2nr(p + 2, NULL, &len,
-			     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4, TRUE);
+			     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4, TRUE, NULL);
 		    if (len == 0)
 		    {
 			if (res != NULL)
@@ -556,8 +557,8 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 
 			// decode surrogate pair: \ud812\u3456
 			len = 0;
-			vim_str2nr(p + 2, NULL, &len,
-			     STR2NR_HEX + STR2NR_FORCE, &nr2, NULL, 4, TRUE);
+			vim_str2nr(p + 2, NULL, &len, STR2NR_HEX + STR2NR_FORCE,
+						    &nr2, NULL, 4, TRUE, NULL);
 			if (len == 0)
 			{
 			    if (res != NULL)
@@ -861,7 +862,6 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			}
 			sp = skipdigits(sp);
-#ifdef FEAT_FLOAT
 			if (*sp == '.' || *sp == 'e' || *sp == 'E')
 			{
 			    if (cur_item == NULL)
@@ -878,13 +878,12 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			}
 			else
-#endif
 			{
 			    varnumber_T nr;
 
 			    vim_str2nr(reader->js_buf + reader->js_used,
 				    NULL, &len, 0, // what
-				    &nr, NULL, 0, TRUE);
+				    &nr, NULL, 0, TRUE, NULL);
 			    if (len == 0)
 			    {
 				semsg(_(e_json_decode_error_at_str), p);
@@ -934,7 +933,6 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-#ifdef FEAT_FLOAT
 		    if (STRNICMP((char *)p, "NaN", 3) == 0)
 		    {
 			reader->js_used += 3;
@@ -968,19 +966,19 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = OK;
 			break;
 		    }
-#endif
 		    // check for truncated name
 		    len = (int)(reader->js_end
 					 - (reader->js_buf + reader->js_used));
 		    if (
 			    (len < 5 && STRNICMP((char *)p, "false", len) == 0)
-#ifdef FEAT_FLOAT
-			    || (len < 9 && STRNICMP((char *)p, "-Infinity", len) == 0)
-			    || (len < 8 && STRNICMP((char *)p, "Infinity", len) == 0)
+			    || (len < 9
+				 && STRNICMP((char *)p, "-Infinity", len) == 0)
+			    || (len < 8
+				  && STRNICMP((char *)p, "Infinity", len) == 0)
 			    || (len < 3 && STRNICMP((char *)p, "NaN", len) == 0)
-#endif
-			    || (len < 4 && (STRNICMP((char *)p, "true", len) == 0
-				       ||  STRNICMP((char *)p, "null", len) == 0)))
+			    || (len < 4
+				  && (STRNICMP((char *)p, "true", len) == 0
+				    || STRNICMP((char *)p, "null", len) == 0)))
 
 			retval = MAYBE;
 		    else
@@ -998,7 +996,6 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	    if (top_item != NULL && top_item->jd_type == JSON_OBJECT_KEY
 		    && cur_item != NULL)
 	    {
-#ifdef FEAT_FLOAT
 		if (cur_item->v_type == VAR_FLOAT)
 		{
 		    // cannot use a float as a key
@@ -1006,7 +1003,6 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    retval = FAIL;
 		    goto theend;
 		}
-#endif
 		top_item->jd_key = tv_get_string_buf_chk(cur_item, key_buf);
 		if (top_item->jd_key == NULL)
 		{

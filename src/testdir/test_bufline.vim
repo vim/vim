@@ -11,7 +11,9 @@ func Test_setbufline_getbufline()
   hide
   call assert_equal(0, setbufline(b, 1, ['foo', 'bar']))
   call assert_equal(['foo'], getbufline(b, 1))
+  call assert_equal('foo', getbufoneline(b, 1))
   call assert_equal(['bar'], getbufline(b, '$'))
+  call assert_equal('bar', getbufoneline(b, '$'))
   call assert_equal(['foo', 'bar'], getbufline(b, 1, 2))
   exe "bd!" b
   call assert_equal([], getbufline(b, 1, 2))
@@ -23,8 +25,8 @@ func Test_setbufline_getbufline()
 
   call assert_equal(1, setbufline(b, 5, 'x'))
   call assert_equal(1, setbufline(b, 5, ['x']))
-  call assert_equal(1, setbufline(b, 5, []))
-  call assert_equal(1, setbufline(b, 5, test_null_list()))
+  call assert_equal(0, setbufline(b, 5, []))
+  call assert_equal(0, setbufline(b, 5, test_null_list()))
 
   call assert_equal(1, 'x'->setbufline(bufnr('$') + 1, 1))
   call assert_equal(1, ['x']->setbufline(bufnr('$') + 1, 1))
@@ -35,8 +37,11 @@ func Test_setbufline_getbufline()
 
   call assert_equal(0, setbufline(b, 4, ['d', 'e']))
   call assert_equal(['c'], b->getbufline(3))
+  call assert_equal('c', b->getbufoneline(3))
   call assert_equal(['d'], getbufline(b, 4))
+  call assert_equal('d', getbufoneline(b, 4))
   call assert_equal(['e'], getbufline(b, 5))
+  call assert_equal('e', getbufoneline(b, 5))
   call assert_equal([], getbufline(b, 6))
   call assert_equal([], getbufline(b, 2, 1))
 
@@ -81,11 +86,16 @@ func Test_setline_startup()
   if cmd == ''
     return
   endif
-  call writefile(['call setline(1, "Hello")', 'silent w Xtest', 'q!'], 'Xscript')
+  call writefile(['call setline(1, "Hello")', 'silent w Xtest', 'q!'], 'Xscript', 'D')
   call system(cmd)
+  sleep 50m
   call assert_equal(['Hello'], readfile('Xtest'))
 
-  call delete('Xscript')
+  call assert_equal(0, setline(1, []))
+  call assert_equal(0, setline(1, test_null_list()))
+  call assert_equal(0, setline(5, []))
+  call assert_equal(0, setline(6, test_null_list()))
+
   call delete('Xtest')
 endfunc
 
@@ -93,12 +103,25 @@ func Test_appendbufline()
   new
   let b = bufnr('%')
   hide
+
+  new
+  call setline(1, ['line1', 'line2', 'line3'])
+  normal! 2gggg
+  call assert_equal(2, line("''"))
+
   call assert_equal(0, appendbufline(b, 0, ['foo', 'bar']))
   call assert_equal(['foo'], getbufline(b, 1))
   call assert_equal(['bar'], getbufline(b, 2))
   call assert_equal(['foo', 'bar'], getbufline(b, 1, 2))
+  call assert_equal(0, appendbufline(b, 0, 'baz'))
+  call assert_equal(['baz', 'foo', 'bar'], getbufline(b, 1, 3))
+
+  " appendbufline() in a hidden buffer shouldn't move marks in current window.
+  call assert_equal(2, line("''"))
+  bwipe!
+
   exe "bd!" b
-  call assert_equal([], getbufline(b, 1, 2))
+  call assert_equal([], getbufline(b, 1, 3))
 
   split Xtest
   call setline(1, ['a', 'b', 'c'])
@@ -112,8 +135,8 @@ func Test_appendbufline()
 
   call assert_equal(1, appendbufline(b, 4, 'x'))
   call assert_equal(1, appendbufline(b, 4, ['x']))
-  call assert_equal(1, appendbufline(b, 4, []))
-  call assert_equal(1, appendbufline(b, 4, test_null_list()))
+  call assert_equal(0, appendbufline(b, 4, []))
+  call assert_equal(0, appendbufline(b, 4, test_null_list()))
 
   call assert_equal(1, appendbufline(1234, 1, 'x'))
   call assert_equal(1, appendbufline(1234, 1, ['x']))
@@ -122,8 +145,8 @@ func Test_appendbufline()
 
   call assert_equal(0, appendbufline(b, 1, []))
   call assert_equal(0, appendbufline(b, 1, test_null_list()))
-  call assert_equal(1, appendbufline(b, 3, []))
-  call assert_equal(1, appendbufline(b, 3, test_null_list()))
+  call assert_equal(0, appendbufline(b, 3, []))
+  call assert_equal(0, appendbufline(b, 3, test_null_list()))
 
   call assert_equal(['a', 'b', 'c'], getbufline(b, 1, '$'))
 
@@ -168,10 +191,21 @@ func Test_deletebufline()
   let b = bufnr('%')
   call setline(1, ['aaa', 'bbb', 'ccc'])
   hide
+
+  new
+  call setline(1, ['line1', 'line2', 'line3'])
+  normal! 2gggg
+  call assert_equal(2, line("''"))
+
   call assert_equal(0, deletebufline(b, 2))
   call assert_equal(['aaa', 'ccc'], getbufline(b, 1, 2))
   call assert_equal(0, deletebufline(b, 2, 8))
   call assert_equal(['aaa'], getbufline(b, 1, 2))
+
+  " deletebufline() in a hidden buffer shouldn't move marks in current window.
+  call assert_equal(2, line("''"))
+  bwipe!
+
   exe "bd!" b
   call assert_equal(1, b->deletebufline(1))
 
@@ -214,12 +248,11 @@ func Test_appendbufline_redraw()
     call deletebufline(buf, 1, '$')
     call appendbufline(buf, '$', 'Hello Vim world...')
   END
-  call writefile(lines, 'XscriptMatchCommon')
+  call writefile(lines, 'XscriptMatchCommon', 'D')
   let buf = RunVimInTerminal('-S XscriptMatchCommon', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_appendbufline_1', {})
 
   call StopVimInTerminal(buf)
-  call delete('XscriptMatchCommon')
 endfunc
 
 func Test_setbufline_select_mode()
@@ -252,6 +285,56 @@ func Test_deletebufline_select_mode()
   call assert_equal(['foo', 'x'], getline(1, 2))
 
   exe "bwipe! " .. bufnr
+  bwipe!
+endfunc
+
+func Test_deletebufline_popup_window()
+  let popupID = popup_create('foo', {})
+  let bufnr = winbufnr(popupID)
+
+  " Check that deletebufline() brings us back to the same window.
+  new
+  let winid_before = win_getid()
+  call deletebufline(bufnr, 1, '$')
+  call assert_equal(winid_before, win_getid())
+  bwipe
+
+  call popup_close(popupID)
+endfunc
+
+func Test_setbufline_startup_nofile()
+  let before =<< trim [CODE]
+    set shortmess+=F
+    file Xresult
+    set buftype=nofile
+    call setbufline('', 1, 'success')
+  [CODE]
+  let after =<< trim [CODE]
+    set buftype=
+    write
+    quit
+  [CODE]
+
+  if !RunVim(before, after, '--clean')
+    return
+  endif
+  call assert_equal(['success'], readfile('Xresult'))
+  call delete('Xresult')
+endfunc
+
+" Test that setbufline(), appendbufline() and deletebufline() should fail and
+" return 1 when "textlock" is active.
+func Test_change_bufline_with_textlock()
+  new
+  inoremap <buffer> <expr> <F2> setbufline('', 1, '')
+  call assert_fails("normal a\<F2>", 'E565:')
+  call assert_equal('1', getline(1))
+  inoremap <buffer> <expr> <F2> appendbufline('', 1, '')
+  call assert_fails("normal a\<F2>", 'E565:')
+  call assert_equal('11', getline(1))
+  inoremap <buffer> <expr> <F2> deletebufline('', 1)
+  call assert_fails("normal a\<F2>", 'E565:')
+  call assert_equal('111', getline(1))
   bwipe!
 endfunc
 

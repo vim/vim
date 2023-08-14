@@ -45,6 +45,9 @@
 # undef F_BLANK
 #endif
 
+#ifdef HAVE_DUP
+# undef HAVE_DUP
+#endif
 #ifdef HAVE_STRFTIME
 # undef HAVE_STRFTIME
 #endif
@@ -65,6 +68,8 @@
 #endif
 
 #define PY_SSIZE_T_CLEAN
+#define PyLong_Type (*py3_PyLong_Type)
+#define PyBool_Type (*py3_PyBool_Type)
 
 #include <Python.h>
 
@@ -76,6 +81,12 @@
 # define CODEC_ERROR_HANDLER "surrogateescape"
 #else
 # define CODEC_ERROR_HANDLER NULL
+#endif
+
+// Suppress Python 3.11 depreciations to see useful warnings
+#ifdef __GNUC__
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 // Python 3 does not support CObjects, always use Capsules
@@ -262,7 +273,6 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyFloat_Type (*py3_PyFloat_Type)
 # define PyNumber_Check (*py3_PyNumber_Check)
 # define PyNumber_Long (*py3_PyNumber_Long)
-# define PyBool_Type (*py3_PyBool_Type)
 # define PyErr_NewException py3_PyErr_NewException
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
@@ -440,7 +450,10 @@ static PyTypeObject* py3_PyType_Type;
 static PyTypeObject* py3_PyStdPrinter_Type;
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
-static PyTypeObject* py3_PyBool_Type;
+PyTypeObject* py3_PyBool_Type;
+# if PY_VERSION_HEX >= 0x030c00b0
+PyTypeObject* py3_PyLong_Type;
+# endif
 static int (*py3_PyNumber_Check)(PyObject *);
 static PyObject* (*py3_PyNumber_Long)(PyObject *);
 static PyObject* (*py3_PyErr_NewException)(char *name, PyObject *base, PyObject *dict);
@@ -616,6 +629,9 @@ static struct
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
     {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},
+# if PY_VERSION_HEX >= 0x030c00b0
+    {"PyLong_Type", (PYTHON_PROC*)&py3_PyLong_Type},
+# endif
     {"PyNumber_Check", (PYTHON_PROC*)&py3_PyNumber_Check},
     {"PyNumber_Long", (PYTHON_PROC*)&py3_PyNumber_Long},
     {"PyErr_NewException", (PYTHON_PROC*)&py3_PyErr_NewException},
@@ -692,7 +708,12 @@ py3__PyObject_TypeCheck(PyObject *ob, PyTypeObject *type)
 {
     return Py_IS_TYPE(ob, type) || PyType_IsSubtype(Py_TYPE(ob), type);
 }
-#  define _PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+#  if PY_VERSION_HEX >= 0x030b00b3
+#   undef PyObject_TypeCheck
+#   define PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+#  else
+#   define _PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+#  endif
 # endif
 
 # ifdef MSWIN
@@ -1154,14 +1175,10 @@ Python3_Init(void)
 	// Catch exit() called in Py_Initialize().
 	hook_py_exit();
 	if (setjmp(exit_hook_jump_buf) == 0)
-#endif
 	{
 	    Py_Initialize();
-#ifdef HOOK_EXIT
 	    restore_py_exit();
-#endif
 	}
-#ifdef HOOK_EXIT
 	else
 	{
 	    // exit() was called in Py_Initialize().
@@ -1169,6 +1186,8 @@ Python3_Init(void)
 	    emsg(_(e_critical_error_in_python3_initialization_check_your_installation));
 	    goto fail;
 	}
+#else
+	Py_Initialize();
 #endif
 
 #if PY_VERSION_HEX < 0x03090000
@@ -1494,7 +1513,8 @@ BufferSubscript(PyObject *self, PyObject* idx)
     {
 	long _idx = PyLong_AsLong(idx);
 	return BufferItem((BufferObject *)(self), _idx);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1528,7 +1548,8 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 	return RBAsItem((BufferObject *)(self), n, val, 1,
 		    (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 		    NULL);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1612,7 +1633,8 @@ RangeSubscript(PyObject *self, PyObject* idx)
     {
 	long _idx = PyLong_AsLong(idx);
 	return RangeItem((RangeObject *)(self), _idx);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1824,34 +1846,31 @@ FunctionGetattro(PyObject *self, PyObject *nameobj)
     void
 python3_buffer_free(buf_T *buf)
 {
-    if (BUF_PYTHON_REF(buf) != NULL)
-    {
-	BufferObject *bp = BUF_PYTHON_REF(buf);
-	bp->buf = INVALID_BUFFER_VALUE;
-	BUF_PYTHON_REF(buf) = NULL;
-    }
+    BufferObject *bp = BUF_PYTHON_REF(buf);
+    if (bp == NULL)
+	return;
+    bp->buf = INVALID_BUFFER_VALUE;
+    BUF_PYTHON_REF(buf) = NULL;
 }
 
     void
 python3_window_free(win_T *win)
 {
-    if (WIN_PYTHON_REF(win) != NULL)
-    {
-	WindowObject *wp = WIN_PYTHON_REF(win);
-	wp->win = INVALID_WINDOW_VALUE;
-	WIN_PYTHON_REF(win) = NULL;
-    }
+    WindowObject *wp = WIN_PYTHON_REF(win);
+    if (wp == NULL)
+	return;
+    wp->win = INVALID_WINDOW_VALUE;
+    WIN_PYTHON_REF(win) = NULL;
 }
 
     void
 python3_tabpage_free(tabpage_T *tab)
 {
-    if (TAB_PYTHON_REF(tab) != NULL)
-    {
-	TabPageObject *tp = TAB_PYTHON_REF(tab);
-	tp->tab = INVALID_TABPAGE_VALUE;
-	TAB_PYTHON_REF(tab) = NULL;
-    }
+    TabPageObject *tp = TAB_PYTHON_REF(tab);
+    if (tp == NULL)
+	return;
+    tp->tab = INVALID_TABPAGE_VALUE;
+    TAB_PYTHON_REF(tab) = NULL;
 }
 
     static PyObject *

@@ -3738,7 +3738,7 @@ msgstr "linje %4ld:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Ugyldig registernavn: '%s'"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "Vedlikeholder for norsk oversettelse: Øyvind A. Holm <sunny@sunbase.org>"
 
@@ -5749,8 +5749,8 @@ msgstr "skriv  :q<Enter>                  for å avslutte   "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "skriv  :help<Enter>  eller  <F1>  for on-line hjelp"
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "skriv  :help version8<Enter>      for versjonsinfo "
+msgid "type  :help version9<Enter>   for version info"
+msgstr "skriv  :help version9<Enter>      for versjonsinfo "
 
 msgid "Running in Vi compatible mode"
 msgstr "Kjører i Vi-kompatibel modus"

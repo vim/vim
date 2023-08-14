@@ -742,9 +742,7 @@ buf_write(
 	    && reset_changed
 	    && whole
 	    && buf == curbuf
-#ifdef FEAT_QUICKFIX
 	    && !bt_nofilename(buf)
-#endif
 	    && !filtering
 	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
 	    && vim_strchr(p_cpo, CPO_FNAMEW) != NULL)
@@ -804,8 +802,15 @@ buf_write(
 	if (fname == buf->b_sfname)
 	    buf_fname_s = TRUE;
 
-	// set curwin/curbuf to buf and save a few things
+	// Set curwin/curbuf to buf and save a few things.
 	aucmd_prepbuf(&aco, buf);
+	if (curbuf != buf)
+	{
+	    // Could not find a window for "buf".  Doing more might cause
+	    // problems, better bail out.
+	    return FAIL;
+	}
+
 	set_bufref(&bufref, buf);
 
 	if (append)
@@ -813,11 +818,9 @@ buf_write(
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEAPPENDCMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
-#endif
 		    apply_autocmds_exarg(EVENT_FILEAPPENDPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -846,11 +849,9 @@ buf_write(
 	    }
 	    else
 	    {
-#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
-#endif
 		    apply_autocmds_exarg(EVENT_BUFWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -860,11 +861,9 @@ buf_write(
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
-#endif
 		    apply_autocmds_exarg(EVENT_FILEWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -896,7 +895,8 @@ buf_write(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
-		emsg(_(e_no_matching_autocommands_for_acwrite_buffer));
+		semsg(_(e_no_matching_autocommands_for_buftype_str_buffer),
+							       curbuf->b_p_bt);
 
 	    if (nofile_err
 #ifdef FEAT_EVAL
@@ -1144,10 +1144,8 @@ buf_write(
 
     // If 'backupskip' is not empty, don't make a backup for some files.
     dobackup = (p_wb || p_bk || *p_pm != NUL);
-#ifdef FEAT_WILDIGN
     if (dobackup && *p_bsk != NUL && match_file_list(p_bsk, sfname, ffname))
 	dobackup = FALSE;
-#endif
 
     // Save the value of got_int and reset it.  We don't want a previous
     // interruption cancel writing, only hitting CTRL-C while writing should
@@ -1208,14 +1206,22 @@ buf_write(
 		// First find a file name that doesn't exist yet (use some
 		// arbitrary numbers).
 		STRCPY(IObuff, fname);
+		fd = -1;
 		for (i = 4913; ; i += 123)
 		{
 		    sprintf((char *)gettail(IObuff), "%d", i);
 		    if (mch_lstat((char *)IObuff, &st) < 0)
-			break;
-		}
-		fd = mch_open((char *)IObuff,
+		    {
+			fd = mch_open((char *)IObuff,
 				    O_CREAT|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
+			if (fd < 0 && errno == EEXIST)
+			    // If the same file name is created by another
+			    // process between lstat() and open(), find another
+			    // name.
+			    continue;
+			break;
+		    }
+		}
 		if (fd < 0)	// can't write in directory
 		    backup_copy = TRUE;
 		else
@@ -1476,7 +1482,7 @@ buf_write(
 			{
 			    if (buf_write_bytes(&write_info) == FAIL)
 			    {
-				errmsg = (char_u *)_(e_canot_write_to_backup_file_add_bang_to_override);
+				errmsg = (char_u *)_(e_cant_write_to_backup_file_add_bang_to_override);
 				break;
 			    }
 			    ui_breakcheck();
@@ -2155,6 +2161,13 @@ restore_backup:
 	    nchars += len;
 	}
 
+	if (!buf->b_p_fixeol && buf->b_p_eof)
+	{
+	    // write trailing CTRL-Z
+	    (void)write_eintr(write_info.bw_fd, "\x1a", 1);
+	    nchars++;
+	}
+
 	// Stop when writing done or an error was encountered.
 	if (!checking_conversion || end == 0)
 	    break;
@@ -2586,23 +2599,26 @@ nofail:
 
 	// Apply POST autocommands.
 	// Careful: The autocommands may call buf_write() recursively!
+	// Only do this when a window was found for "buf".
 	aucmd_prepbuf(&aco, buf);
+	if (curbuf == buf)
+	{
+	    if (append)
+		apply_autocmds_exarg(EVENT_FILEAPPENDPOST, fname, fname,
+							   FALSE, curbuf, eap);
+	    else if (filtering)
+		apply_autocmds_exarg(EVENT_FILTERWRITEPOST, NULL, fname,
+							   FALSE, curbuf, eap);
+	    else if (reset_changed && whole)
+		apply_autocmds_exarg(EVENT_BUFWRITEPOST, fname, fname,
+							   FALSE, curbuf, eap);
+	    else
+		apply_autocmds_exarg(EVENT_FILEWRITEPOST, fname, fname,
+							   FALSE, curbuf, eap);
 
-	if (append)
-	    apply_autocmds_exarg(EVENT_FILEAPPENDPOST, fname, fname,
-							  FALSE, curbuf, eap);
-	else if (filtering)
-	    apply_autocmds_exarg(EVENT_FILTERWRITEPOST, NULL, fname,
-							  FALSE, curbuf, eap);
-	else if (reset_changed && whole)
-	    apply_autocmds_exarg(EVENT_BUFWRITEPOST, fname, fname,
-							  FALSE, curbuf, eap);
-	else
-	    apply_autocmds_exarg(EVENT_FILEWRITEPOST, fname, fname,
-							  FALSE, curbuf, eap);
-
-	// restore curwin/curbuf and a few other things
-	aucmd_restbuf(&aco);
+	    // restore curwin/curbuf and a few other things
+	    aucmd_restbuf(&aco);
+	}
 
 #ifdef FEAT_EVAL
 	if (aborting())	    // autocmds may abort script processing

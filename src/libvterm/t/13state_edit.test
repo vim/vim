@@ -1,6 +1,6 @@
 INIT
 UTF8 1
-WANTSTATE se
+WANTSTATE seb
 
 !ICH
 RESET
@@ -241,6 +241,10 @@ PUSH "\e[2;2H"
 PUSH "\e[2J"
   erase 0..25,0..80
   ?cursor = 1,1
+
+!ED 3
+PUSH "\e[3J"
+  sb_clear
 
 !SED
 RESET

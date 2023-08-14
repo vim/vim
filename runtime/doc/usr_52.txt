@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 8.2.  Last change: 2022 Jun 04
+*usr_52.txt*	For Vim version 9.0.  Last change: 2022 Jun 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -159,6 +159,7 @@ relative path: >
 
 This will search for the script "monthlib.vim" in the autoload directories of
 'runtimepath'.  With Unix one of the directories often is "~/.vim/autoload".
+It will also search under 'packpath', under "start".
 
 The main advantage of this is that this script can be easily shared with other
 scripts.  You do need to make sure that the script name is unique, since Vim

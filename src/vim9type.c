@@ -20,11 +20,16 @@
 # include <float.h>
 #endif
 
+// When not generating protos this is included in proto.h
+#ifdef PROTO
+# include "vim9.h"
+#endif
+
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
  * be easily freed later.
  */
-    static type_T *
+    type_T *
 get_type_ptr(garray_T *type_gap)
 {
     type_T *type;
@@ -32,12 +37,81 @@ get_type_ptr(garray_T *type_gap)
     if (ga_grow(type_gap, 1) == FAIL)
 	return NULL;
     type = ALLOC_CLEAR_ONE(type_T);
-    if (type != NULL)
-    {
-	((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
-	++type_gap->ga_len;
-    }
+    if (type == NULL)
+	return NULL;
+
+    ((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
+    ++type_gap->ga_len;
     return type;
+}
+
+/*
+ * Make a shallow copy of "type".
+ * When allocation fails returns "type".
+ */
+    type_T *
+copy_type(type_T *type, garray_T *type_gap)
+{
+    type_T *copy = get_type_ptr(type_gap);
+
+    if (copy == NULL)
+	return type;
+    *copy = *type;
+    copy->tt_flags &= ~TTFLAG_STATIC;
+
+    if (type->tt_args != NULL
+	   && func_type_add_arg_types(copy, type->tt_argcount, type_gap) == OK)
+	for (int i = 0; i < type->tt_argcount; ++i)
+	    copy->tt_args[i] = type->tt_args[i];
+
+    return copy;
+}
+
+/*
+ * Inner part of copy_type_deep().
+ * When allocation fails returns "type".
+ */
+    static type_T *
+copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
+{
+    for (int i = 0; i < seen_types->ga_len; ++i)
+	if (((type_T **)seen_types->ga_data)[i * 2] == type)
+	    // seen this type before, return the copy we made
+	    return ((type_T **)seen_types->ga_data)[i * 2 + 1];
+
+    type_T *copy = copy_type(type, type_gap);
+    if (ga_grow(seen_types, 1) == FAIL)
+	return copy;
+    ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2] = type;
+    ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2 + 1] = copy;
+    ++seen_types->ga_len;
+
+    if (copy->tt_member != NULL)
+	copy->tt_member = copy_type_deep_rec(copy->tt_member,
+							 type_gap, seen_types);
+    if (type->tt_args != NULL)
+	for (int i = 0; i < type->tt_argcount; ++i)
+	    copy->tt_args[i] = copy_type_deep_rec(copy->tt_args[i],
+							 type_gap, seen_types);
+
+    return copy;
+}
+
+/*
+ * Make a deep copy of "type".
+ * When allocation fails returns "type".
+ */
+    static type_T *
+copy_type_deep(type_T *type, garray_T *type_gap)
+{
+    garray_T seen_types;
+    // stores type pairs : a type we have seen and the copy used
+    ga_init2(&seen_types, sizeof(type_T *) * 2, 20);
+
+    type_T *res = copy_type_deep_rec(type, type_gap, &seen_types);
+
+    ga_clear(&seen_types);
+    return res;
 }
 
     void
@@ -69,6 +143,7 @@ alloc_type(type_T *type)
 
     if (ret->tt_member != NULL)
 	ret->tt_member = alloc_type(ret->tt_member);
+
     if (type->tt_args != NULL)
     {
 	int i;
@@ -98,7 +173,9 @@ free_type(type_T *type)
 	    free_type(type->tt_args[i]);
 	vim_free(type->tt_args);
     }
+
     free_type(type->tt_member);
+
     vim_free(type);
 }
 
@@ -136,7 +213,7 @@ set_tv_type(typval_T *tv, type_T *type)
 		hashitem_T	*hi;
 		dictitem_T	*di;
 
-		for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+		FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
 		{
 		    if (!HASHITEM_EMPTY(hi))
 		    {
@@ -311,6 +388,17 @@ func_type_add_arg_types(
 }
 
 /*
+ * Return TRUE if "type" is NULL, any or unknown.
+ * This also works for const (comparing with &t_any and &t_unknown doesn't).
+ */
+    int
+type_any_or_unknown(type_T *type)
+{
+    return type == NULL || type->tt_type == VAR_ANY
+					       || type->tt_type == VAR_UNKNOWN;
+}
+
+/*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
  * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
@@ -323,6 +411,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
     type_T  *type;
     type_T  *member_type = NULL;
+    class_T *class_type = NULL;
     int	    argcount = 0;
     int	    min_argcount = 0;
 
@@ -330,6 +419,17 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	return &t_number;
     if (tv->v_type == VAR_BOOL)
 	return &t_bool;
+    if (tv->v_type == VAR_SPECIAL)
+    {
+	if (tv->vval.v_number == VVAL_NULL)
+	    return &t_null;
+	if (tv->vval.v_number == VVAL_NONE)
+	    return &t_none;
+	if (tv->vval.v_number == VVAL_TRUE
+		|| tv->vval.v_number == VVAL_TRUE)
+	    return &t_bool;
+	return &t_unknown;
+    }
     if (tv->v_type == VAR_STRING)
 	return &t_string;
     if (tv->v_type == VAR_BLOB)
@@ -357,7 +457,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	if (l->lv_type != NULL && (l->lv_first == NULL
 					   || (flags & TVTT_MORE_SPECIFIC) == 0
 					   || l->lv_type->tt_member != &t_any))
-	    return l->lv_type;
+	    // make a copy, lv_type may be freed if the list is freed
+	    return copy_type_deep(l->lv_type, type_gap);
 	if (l->lv_first == &range_list_item)
 	    return &t_list_number;
 	if (l->lv_copyID == copyID)
@@ -431,7 +532,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		type_T *decl_type;  // unused
 
 		internal_func_get_argcount(idx, &argcount, &min_argcount);
-		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type);
+		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type,
+								     type_gap);
 	    }
 	    else
 		ufunc = find_func(name, FALSE);
@@ -459,18 +561,13 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		    {
 			type->tt_argcount -= tv->vval.v_partial->pt_argc;
 			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-			if (type->tt_argcount <= 0)
-			    type->tt_args = NULL;
-			else
-			{
-			    int i;
-
-			    func_type_add_arg_types(type, type->tt_argcount,
-								     type_gap);
-			    for (i = 0; i < type->tt_argcount; ++i)
-				type->tt_args[i] = ufunc->uf_func_type->tt_args[
+			if (type->tt_argcount > 0
+				&& func_type_add_arg_types(type,
+					    type->tt_argcount, type_gap) == OK)
+			    for (int i = 0; i < type->tt_argcount; ++i)
+				type->tt_args[i] =
+					ufunc->uf_func_type->tt_args[
 					      i + tv->vval.v_partial->pt_argc];
-			}
 		    }
 		    return type;
 		}
@@ -478,6 +575,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	    }
 	}
     }
+
+    if (tv->v_type == VAR_CLASS)
+	class_type = tv->vval.v_class;
+    else if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL)
+	class_type = tv->vval.v_object->obj_class;
 
     type = get_type_ptr(type_gap);
     if (type == NULL)
@@ -492,6 +594,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
     }
     type->tt_member = member_type;
+    type->tt_class = class_type;
 
     return type;
 }
@@ -519,13 +622,37 @@ typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
     type_T *type = typval2type_int(tv, copyID, type_gap, flags);
 
-    if (type != NULL && type != &t_bool
-	    && (tv->v_type == VAR_NUMBER
-		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
-	// Number 0 and 1 and expression with "&&" or "||" can also be used for
-	// bool.
+    if (type == NULL)
+	return NULL;
+
+    if (type != &t_bool && (tv->v_type == VAR_NUMBER
+		&& (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
+	// Number 0 and 1 and expression with "&&" or "||" can also be used
+	// for bool.
 	type = &t_number_bool;
+    else if (type != &t_float && tv->v_type == VAR_NUMBER)
+	// A number can also be used for float.
+	type = &t_number_float;
     return type;
+}
+
+/*
+ * Return TRUE if "type" can be used for a variable declaration.
+ * Give an error and return FALSE if not.
+ */
+    int
+valid_declaration_type(type_T *type)
+{
+    if (type->tt_type == VAR_SPECIAL  // null, none
+	    || type->tt_type == VAR_VOID)
+    {
+	char *tofree = NULL;
+	char *name = type_name(type, &tofree);
+	semsg(_(e_invalid_type_for_object_member_str), name);
+	vim_free(tofree);
+	return FALSE;
+    }
+    return TRUE;
 }
 
 /*
@@ -692,6 +819,12 @@ check_type_maybe(
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
 		// Using number 0 or 1 for bool is OK.
 		return OK;
+	    if (expected->tt_type == VAR_FLOAT
+		    && actual->tt_type == VAR_NUMBER
+		    && ((expected->tt_flags & TTFLAG_NUMBER_OK)
+			     || (actual->tt_flags & TTFLAG_FLOAT_OK)))
+		// Using a number where a float is expected is OK here.
+		return OK;
 	    if (give_msg)
 		type_mismatch_where(expected, actual, where);
 	    return FAIL;
@@ -727,7 +860,8 @@ check_type_maybe(
 	    {
 		int i;
 
-		for (i = 0; i < expected->tt_argcount; ++i)
+		for (i = 0; i < expected->tt_argcount
+					       && i < actual->tt_argcount; ++i)
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
 			    expected->tt_args[i], actual->tt_args[i], FALSE,
@@ -742,6 +876,30 @@ check_type_maybe(
 		// check the argument count at runtime
 		ret = MAYBE;
 	}
+	else if (expected->tt_type == VAR_OBJECT)
+	{
+	    if (actual->tt_type == VAR_ANY)
+		return MAYBE;	// use runtime type check
+	    if (actual->tt_type != VAR_OBJECT)
+		return FAIL;	// don't use tt_class
+
+	    // check the class, base class or an implemented interface matches
+	    class_T *cl;
+	    for (cl = actual->tt_class; cl != NULL; cl = cl->class_extends)
+	    {
+		if (expected->tt_class == cl)
+		    break;
+		int i;
+		for (i = cl->class_interface_count - 1; i >= 0; --i)
+		    if (expected->tt_class == cl->class_interfaces_cl[i])
+			break;
+		if (i >= 0)
+		    break;
+	    }
+	    if (cl == NULL)
+		ret = FAIL;
+	}
+
 	if (ret == FAIL && give_msg)
 	    type_mismatch_where(expected, actual, where);
     }
@@ -805,12 +963,17 @@ check_argument_types(
 	if (varargs && i >= type->tt_argcount - 1)
 	{
 	    expected = type->tt_args[type->tt_argcount - 1];
-	    if (expected != NULL)
+	    if (expected != NULL && expected->tt_type == VAR_LIST)
 		expected = expected->tt_member;
+	    if (expected == NULL)
+		expected = &t_any;
 	}
 	else
 	    expected = type->tt_args[i];
-	if (check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
+
+	// check the type, unless the value is v:none
+	if ((tv->v_type != VAR_SPECIAL || tv->vval.v_number != VVAL_NONE)
+		   && check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
 	    return FAIL;
     }
     return OK;
@@ -827,7 +990,9 @@ skip_type(char_u *start, int optional)
 
     if (optional && *p == '?')
 	++p;
-    while (ASCII_ISALNUM(*p) || *p == '_')
+
+    // Also skip over "." for imported classes: "import.ClassName".
+    while (ASCII_ISALNUM(*p) || *p == '_' || *p == '.')
 	++p;
 
     // Skip over "<type>"; this is permissive about white space.
@@ -879,6 +1044,7 @@ skip_type(char_u *start, int optional)
 /*
  * Parse the member type: "<type>" and return "type" with the member set.
  * Use "type_gap" if a new type needs to be added.
+ * "info" is extra information for an error message.
  * Returns NULL in case of failure.
  */
     static type_T *
@@ -886,8 +1052,10 @@ parse_type_member(
 	char_u	    **arg,
 	type_T	    *type,
 	garray_T    *type_gap,
-	int	    give_error)
+	int	    give_error,
+	char	    *info)
 {
+    char_u  *arg_start = *arg;
     type_T  *member_type;
     int	    prev_called_emsg = called_emsg;
 
@@ -898,7 +1066,7 @@ parse_type_member(
 	    if (*skipwhite(*arg) == '<')
 		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
 	    else
-		emsg(_(e_missing_type));
+		semsg(_(e_missing_type_after_str), info);
 	}
 	return NULL;
     }
@@ -912,7 +1080,7 @@ parse_type_member(
     if (**arg != '>' && called_emsg == prev_called_emsg)
     {
 	if (give_error)
-	    emsg(_(e_missing_gt_after_type));
+	    semsg(_(e_missing_gt_after_type_str), arg_start);
 	return NULL;
     }
     ++*arg;
@@ -933,7 +1101,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     char_u  *p = *arg;
     size_t  len;
 
-    // skip over the first word
+    // Skip over the first word.
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
     len = p - *arg;
@@ -971,20 +1139,14 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_dict_any,
-							 type_gap, give_error);
+						 type_gap, give_error, "dict");
 	    }
 	    break;
 	case 'f':
 	    if (len == 5 && STRNCMP(*arg, "float", len) == 0)
 	    {
-#ifdef FEAT_FLOAT
 		*arg += len;
 		return &t_float;
-#else
-		if (give_error)
-		    emsg(_(e_this_vim_is_not_compiled_with_float_support));
-		return NULL;
-#endif
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
 	    {
@@ -1115,7 +1277,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_list_any,
-							 type_gap, give_error);
+						 type_gap, give_error, "list");
 	    }
 	    break;
 	case 'n':
@@ -1139,6 +1301,34 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		return &t_void;
 	    }
 	    break;
+    }
+
+    // It can be a class or interface name, possibly imported.
+    typval_T tv;
+    tv.v_type = VAR_UNKNOWN;
+    if (eval_variable_import(*arg, &tv) == OK)
+    {
+	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
+	{
+	    type_T *type = get_type_ptr(type_gap);
+	    if (type != NULL)
+	    {
+		// Although the name is that of a class or interface, the type
+		// uses will be an object.
+		type->tt_type = VAR_OBJECT;
+		type->tt_class = tv.vval.v_class;
+		clear_tv(&tv);
+
+		*arg += len;
+		// Skip over ".ClassName".
+		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		    ++*arg;
+
+		return type;
+	    }
+	}
+
+	clear_tv(&tv);
     }
 
     if (give_error)
@@ -1174,6 +1364,8 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break;  // not composite is always OK
 	case VAR_LIST:
 	case VAR_DICT:
@@ -1422,6 +1614,8 @@ vartype_name(vartype_T type)
 	case VAR_LIST: return "list";
 	case VAR_DICT: return "dict";
 	case VAR_INSTR: return "instr";
+	case VAR_CLASS: return "class";
+	case VAR_OBJECT: return "object";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -1443,13 +1637,12 @@ type_name(type_T *type, char **tofree)
     if (type == NULL)
 	return "[unknown]";
     name = vartype_name(type->tt_type);
+
     if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
     {
 	char *member_free;
 	char *member_name = type_name(type->tt_member, &member_free);
-	size_t len;
-
-	len = STRLEN(name) + STRLEN(member_name) + 3;
+	size_t len = STRLEN(name) + STRLEN(member_name) + 3;
 	*tofree = alloc(len);
 	if (*tofree != NULL)
 	{
@@ -1458,6 +1651,20 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
+
+    if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
+    {
+	char_u *class_name = type->tt_class == NULL ? (char_u *)"Unknown"
+				    : type->tt_class->class_name;
+	size_t len = STRLEN(name) + STRLEN(class_name) + 3;
+	*tofree = alloc(len);
+	if (*tofree != NULL)
+	{
+	    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+	    return *tofree;
+	}
+    }
+
     if (type->tt_type == VAR_FUNC)
     {
 	garray_T    ga;
@@ -1543,10 +1750,7 @@ f_typename(typval_T *argvars, typval_T *rettv)
     if (tofree != NULL)
 	rettv->vval.v_string = (char_u *)tofree;
     else
-    {
 	rettv->vval.v_string = vim_strsave((char_u *)name);
-	vim_free(tofree);
-    }
     clear_type_list(&type_list);
 }
 

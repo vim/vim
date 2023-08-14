@@ -111,7 +111,7 @@ typedef struct matchinf_S
     win_T	*mi_win;		// buffer being checked
 
     // for NOBREAK
-    int		mi_result2;		// "mi_resul" without following word
+    int		mi_result2;		// "mi_result" without following word
     char_u	*mi_end2;		// "mi_end" without following word
 } matchinf_T;
 
@@ -1238,18 +1238,27 @@ spell_valid_case(
 }
 
 /*
- * Return TRUE if spell checking is not enabled.
+ * Return TRUE if spell checking is enabled for "wp".
+ */
+    int
+spell_check_window(win_T *wp)
+{
+    return wp->w_p_spell
+		&& *wp->w_s->b_p_spl != NUL
+		&& wp->w_s->b_langp.ga_len > 0
+		&& *(char **)(wp->w_s->b_langp.ga_data) != NULL;
+}
+
+/*
+ * Return TRUE and give an error if spell checking is not enabled.
  */
     static int
 no_spell_checking(win_T *wp)
 {
-    if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
-					 || wp->w_s->b_langp.ga_len == 0)
-    {
-	emsg(_(e_spell_checking_is_not_possible));
-	return TRUE;
-    }
-    return FALSE;
+    if (spell_check_window(wp))
+	return FALSE;
+    emsg(_(e_spell_checking_is_not_possible));
+    return TRUE;
 }
 
 /*
@@ -1333,7 +1342,7 @@ spell_move_to(
 	{
 	    // For spellbadword(): check if first word needs a capital.
 	    col = getwhitecols(line);
-	    if (check_need_cap(lnum, col))
+	    if (check_need_cap(curwin, lnum, col))
 		capcol = col;
 
 	    // Need to get the line again, may have looked at the previous
@@ -1518,16 +1527,16 @@ spell_cat_line(char_u *buf, char_u *line, int maxlen)
     while (vim_strchr((char_u *)"*#/\"\t", *p) != NULL)
 	p = skipwhite(p + 1);
 
-    if (*p != NUL)
+    if (*p == NUL)
+	return;
+
+    // Only worth concatenating if there is something else than spaces to
+    // concatenate.
+    n = (int)(p - line) + 1;
+    if (n < maxlen - 1)
     {
-	// Only worth concatenating if there is something else than spaces to
-	// concatenate.
-	n = (int)(p - line) + 1;
-	if (n < maxlen - 1)
-	{
-	    vim_memset(buf, ' ', n);
-	    vim_strncpy(buf +  n, p, maxlen - 1 - n);
-	}
+	vim_memset(buf, ' ', n);
+	vim_strncpy(buf +  n, p, maxlen - 1 - n);
     }
 }
 
@@ -1558,6 +1567,10 @@ spell_load_lang(char_u *lang)
     STRCPY(sl.sl_lang, lang);
     sl.sl_slang = NULL;
     sl.sl_nobreak = FALSE;
+
+    // Disallow deleting the current buffer.  Autocommands can do weird things
+    // and cause "lang" to be freed.
+    ++curbuf->b_locked;
 
     // We may retry when no spell file is found for the language, an
     // autocommand may load it then.
@@ -1612,6 +1625,8 @@ spell_load_lang(char_u *lang)
 	STRCPY(fname_enc + STRLEN(fname_enc) - 3, "add.spl");
 	do_in_runtimepath(fname_enc, DIP_ALL, spell_load_cb, &sl);
     }
+
+    --curbuf->b_locked;
 }
 
 /*
@@ -1788,17 +1803,17 @@ spell_load_cb(char_u *fname, void *cookie)
     slang_T	*slang;
 
     slang = spell_load_file(fname, slp->sl_lang, NULL, FALSE);
-    if (slang != NULL)
-    {
-	// When a previously loaded file has NOBREAK also use it for the
-	// ".add" files.
-	if (slp->sl_nobreak && slang->sl_add)
-	    slang->sl_nobreak = TRUE;
-	else if (slang->sl_nobreak)
-	    slp->sl_nobreak = TRUE;
+    if (slang == NULL)
+	return;
 
-	slp->sl_slang = slang;
-    }
+    // When a previously loaded file has NOBREAK also use it for the
+    // ".add" files.
+    if (slp->sl_nobreak && slang->sl_add)
+	slang->sl_nobreak = TRUE;
+    else if (slang->sl_nobreak)
+	slp->sl_nobreak = TRUE;
+
+    slp->sl_slang = slang;
 }
 
 
@@ -1833,7 +1848,7 @@ count_common_word(
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = alloc(sizeof(wordcount_T) + STRLEN(p));
+	wc = alloc(offsetof(wordcount_T, wc_word) + STRLEN(p) + 1);
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
@@ -1972,7 +1987,7 @@ count_syllables(slang_T *slang, char_u *word)
  * Returns NULL if it's OK, an untranslated error message otherwise.
  */
     char *
-did_set_spelllang(win_T *wp)
+parse_spelllang(win_T *wp)
 {
     garray_T	ga;
     char_u	*splp;
@@ -2095,8 +2110,8 @@ did_set_spelllang(win_T *wp)
 	    {
 		spell_load_lang(lang);
 		// SpellFileMissing autocommands may do anything, including
-		// destroying the buffer we are using...
-		if (!bufref_valid(&bufref))
+		// destroying the buffer we are using or closing the window.
+		if (!bufref_valid(&bufref) || !win_valid_any_tab(wp))
 		{
 		    ret_msg = N_(e_spellfilemising_autocommand_deleted_buffer);
 		    goto theend;
@@ -2284,7 +2299,7 @@ did_set_spelllang(win_T *wp)
 		}
 	    }
     }
-    redraw_win_later(wp, NOT_VALID);
+    redraw_win_later(wp, UPD_NOT_VALID);
 
 theend:
     vim_free(spl_copy);
@@ -2429,13 +2444,13 @@ spell_delete_wordlist(void)
 {
     char_u	fname[MAXPATHL];
 
-    if (int_wordlist != NULL)
-    {
-	mch_remove(int_wordlist);
-	int_wordlist_spl(fname);
-	mch_remove(fname);
-	VIM_CLEAR(int_wordlist);
-    }
+    if (int_wordlist == NULL)
+	return;
+
+    mch_remove(int_wordlist);
+    int_wordlist_spl(fname);
+    mch_remove(fname);
+    VIM_CLEAR(int_wordlist);
 }
 
 /*
@@ -2488,7 +2503,7 @@ spell_reload(void)
 	{
 		if (wp->w_p_spell)
 		{
-		    (void)did_set_spelllang(wp);
+		    (void)parse_spelllang(wp);
 		    break;
 		}
 	}
@@ -2509,16 +2524,16 @@ open_spellbuf(void)
     buf_T	*buf;
 
     buf = ALLOC_CLEAR_ONE(buf_T);
-    if (buf != NULL)
-    {
-	buf->b_spell = TRUE;
-	buf->b_p_swf = TRUE;	// may create a swap file
+    if (buf == NULL)
+	return NULL;
+
+    buf->b_spell = TRUE;
+    buf->b_p_swf = TRUE;	// may create a swap file
 #ifdef FEAT_CRYPT
-	buf->b_p_key = empty_option;
+    buf->b_p_key = empty_option;
 #endif
-	ml_open(buf);
-	ml_open_file(buf);	// create swap file now
-    }
+    ml_open(buf);
+    ml_open_file(buf);	// create swap file now
     return buf;
 }
 
@@ -2528,11 +2543,11 @@ open_spellbuf(void)
     void
 close_spellbuf(buf_T *buf)
 {
-    if (buf != NULL)
-    {
-	ml_close(buf, TRUE);
-	vim_free(buf);
-    }
+    if (buf == NULL)
+	return;
+
+    ml_close(buf, TRUE);
+    vim_free(buf);
 }
 
 /*
@@ -2800,24 +2815,20 @@ spell_casefold(
 
 /*
  * Check if the word at line "lnum" column "col" is required to start with a
- * capital.  This uses 'spellcapcheck' of the current buffer.
+ * capital.  This uses 'spellcapcheck' of the buffer in window "wp".
  */
     int
-check_need_cap(linenr_T lnum, colnr_T col)
+check_need_cap(win_T *wp, linenr_T lnum, colnr_T col)
 {
-    int		need_cap = FALSE;
-    char_u	*line;
-    char_u	*line_copy = NULL;
-    char_u	*p;
-    colnr_T	endcol;
-    regmatch_T	regmatch;
-
-    if (curwin->w_s->b_cap_prog == NULL)
+    if (wp->w_s->b_cap_prog == NULL)
 	return FALSE;
 
-    line = ml_get_curline();
-    endcol = 0;
-    if (getwhitecols(line) >= (int)col)
+    int		need_cap = FALSE;
+    char_u	*line = col ? ml_get_buf(wp->w_buffer, lnum, FALSE) : NULL;
+    char_u	*line_copy = NULL;
+    colnr_T	endcol = 0;
+
+    if (col == 0 || getwhitecols(line) >= col)
     {
 	// At start of line, check if previous line is empty or sentence
 	// ends there.
@@ -2825,13 +2836,16 @@ check_need_cap(linenr_T lnum, colnr_T col)
 	    need_cap = TRUE;
 	else
 	{
-	    line = ml_get(lnum - 1);
+	    line = ml_get_buf(wp->w_buffer, lnum - 1, FALSE);
 	    if (*skipwhite(line) == NUL)
 		need_cap = TRUE;
 	    else
 	    {
 		// Append a space in place of the line break.
 		line_copy = concat_str(line, (char_u *)" ");
+		if (line_copy == NULL)
+		    return FALSE;
+
 		line = line_copy;
 		endcol = (colnr_T)STRLEN(line);
 	    }
@@ -2843,13 +2857,14 @@ check_need_cap(linenr_T lnum, colnr_T col)
     if (endcol > 0)
     {
 	// Check if sentence ends before the bad word.
-	regmatch.regprog = curwin->w_s->b_cap_prog;
+	regmatch_T	regmatch;
+	regmatch.regprog = wp->w_s->b_cap_prog;
 	regmatch.rm_ic = FALSE;
-	p = line + endcol;
+	char_u *p = line + endcol;
 	for (;;)
 	{
 	    MB_PTR_BACK(line, p);
-	    if (p == line || spell_iswordp_nmw(p, curwin))
+	    if (p == line || spell_iswordp_nmw(p, wp))
 		break;
 	    if (vim_regexec(&regmatch, p, 0)
 					 && regmatch.endp[0] == line + endcol)
@@ -2858,7 +2873,7 @@ check_need_cap(linenr_T lnum, colnr_T col)
 		break;
 	    }
 	}
-	curwin->w_s->b_cap_prog = regmatch.regprog;
+	wp->w_s->b_cap_prog = regmatch.regprog;
     }
 
     vim_free(line_copy);
@@ -2875,7 +2890,6 @@ ex_spellrepall(exarg_T *eap UNUSED)
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*frompat;
-    int		addlen;
     char_u	*line;
     char_u	*p;
     int		save_ws = p_ws;
@@ -2886,9 +2900,11 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	emsg(_(e_no_previous_spell_replacement));
 	return;
     }
-    addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
+    size_t	repl_from_len = STRLEN(repl_from);
+    size_t	repl_to_len = STRLEN(repl_to);
+    int		addlen = (int)(repl_to_len - repl_from_len);
 
-    frompat = alloc(STRLEN(repl_from) + 7);
+    frompat = alloc(repl_from_len + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -2907,19 +2923,21 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	// when changing "etc" to "etc.".
 	line = ml_get_curline();
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
-					       repl_to, STRLEN(repl_to)) != 0)
+						   repl_to, repl_to_len) != 0)
 	{
 	    p = alloc(STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
 	    STRCPY(p + curwin->w_cursor.col, repl_to);
-	    STRCAT(p, line + curwin->w_cursor.col + STRLEN(repl_from));
+	    STRCAT(p, line + curwin->w_cursor.col + repl_from_len);
 	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
 	    changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
+#if defined(FEAT_PROP_POPUP)
 	    if (curbuf->b_has_textprop && addlen != 0)
 		adjust_prop_columns(curwin->w_cursor.lnum,
 				 curwin->w_cursor.col, addlen, APC_SUBSTITUTE);
+#endif
 
 	    if (curwin->w_cursor.lnum != prev_lnum)
 	    {
@@ -2928,7 +2946,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	    }
 	    ++sub_nsubs;
 	}
-	curwin->w_cursor.col += (colnr_T)STRLEN(repl_to);
+	curwin->w_cursor.col += (colnr_T)repl_to_len;
     }
 
     p_ws = save_ws;
@@ -3854,7 +3872,7 @@ ex_spelldump(exarg_T *eap)
     if (curbuf->b_ml.ml_line_count > 1)
 	ml_delete(curbuf->b_ml.ml_line_count);
 
-    redraw_later(NOT_VALID);
+    redraw_later(UPD_NOT_VALID);
 }
 
 /*
@@ -3996,9 +4014,10 @@ spell_dump_compl(
 		    n = arridx[depth] + curi[depth];
 		    ++curi[depth];
 		    c = byts[n];
-		    if (c == 0)
+		    if (c == 0 || depth >= MAXWLEN - 1)
 		    {
-			// End of word, deal with the word.
+			// End of word or reached maximum length, deal with the
+			// word.
 			// Don't use keep-case words in the fold-case tree,
 			// they will appear in the keep-case tree.
 			// Only use the word when the region matches.
@@ -4322,7 +4341,7 @@ static int spell_expand_need_cap;
     void
 spell_expand_check_cap(colnr_T col)
 {
-    spell_expand_need_cap = check_need_cap(curwin->w_cursor.lnum, col);
+    spell_expand_need_cap = check_need_cap(curwin, curwin->w_cursor.lnum, col);
 }
 
 /*
@@ -4362,13 +4381,13 @@ valid_spellfile(char_u *val)
     char_u *s;
 
     for (s = val; *s != NUL; ++s)
-	if (!vim_isfilec(*s) && *s != ',' && *s != ' ')
+	if (!vim_is_fname_char(*s))
 	    return FALSE;
     return TRUE;
 }
 
 /*
- * Handle side effects of setting 'spell'.
+ * Handle side effects of setting 'spell' or 'spellfile'
  * Return an error message or NULL for success.
  */
     char *
@@ -4386,15 +4405,15 @@ did_set_spell_option(int is_spellfile)
 	    errmsg = e_invalid_argument;
     }
 
-    if (errmsg == NULL)
-    {
-	FOR_ALL_WINDOWS(wp)
-	    if (wp->w_buffer == curbuf && wp->w_p_spell)
-	    {
-		errmsg = did_set_spelllang(wp);
-		break;
-	    }
-    }
+    if (errmsg != NULL)
+	return errmsg;
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer == curbuf && wp->w_p_spell)
+	{
+	    errmsg = parse_spelllang(wp);
+	    break;
+	}
     return errmsg;
 }
 

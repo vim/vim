@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
+*usr_41.txt*	For Vim version 9.0.  Last change: 2023 May 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -139,7 +139,7 @@ FOUR KINDS OF NUMBERS
 Numbers can be decimal, hexadecimal, octal and binary.
 
 A hexadecimal number starts with "0x" or "0X".  For example "0x1f" is decimal
-31 and 0x1234 is decimal 4660.
+31 and "0x1234" is decimal 4660.
 
 An octal number starts with "0o", "0O".  "0o17" is decimal 15.
 
@@ -268,14 +268,15 @@ when it doesn't, append !: >
 You cannot `unlet` script-local variables in |Vim9| script, only in legacy
 script.
 
-When a script finishes, the local variables declared there will not be
-deleted.  Functions defined in the script can use them.  Example:
+When a script has been processed to the end, the local variables declared
+there will not be deleted.  Functions defined in the script can use them.
+Example:
 >
 	vim9script
 	var counter = 0
 	def g:GetCount(): number
-	  s:counter += 1
-	  return s:counter
+	  counter += 1
+	  return counter
 	enddef
 
 Every time you call the function it will return the next count: >
@@ -322,7 +323,7 @@ want to give the variable a value yet, you need to specify the type: >
 
 If you make a mistake and try to assign the wrong type of value you'll get an
 error: >
-	
+
 	age = "Peter"
 <	E1012: Type mismatch; expected number but got string ~
 
@@ -441,7 +442,7 @@ If you don't like the concatenation you can use the $"string" form, which
 accepts an expression in curly braces: >
 	echo $"Name: {name}"
 
-See |interp-string| for more information.
+See |interpolated-string| for more information.
 
 Borrowed from the C language is the conditional expression: >
 
@@ -638,7 +639,7 @@ Make sure that the argument for `normal` is a complete command.  Otherwise
 Vim will run into the end of the argument and silently abort the command.  For
 example, if you start the delete operator, you must give the movement command
 also.  This works: >
-	
+
 	normal d$
 
 This does nothing: >
@@ -686,7 +687,7 @@ search() function uses its first argument as a search pattern and the second
 one as flags.  The "W" flag means the search doesn't wrap around the end of
 the file.
 
-Using the  `call` command is optional in |Vim9| script.  It is required in
+Using the `call` command is optional in |Vim9| script.  It is required in
 legacy script and on the command line: >
 
 	call search("Date: ", "W")
@@ -736,6 +737,8 @@ String manipulation:					*string-functions*
 	fnameescape()		escape a file name for use with a Vim command
 	tr()			translate characters from one set to another
 	strtrans()		translate a string to make it printable
+	keytrans()		translate internal keycodes to a form that
+				can be used by |:map|
 	tolower()		turn a string to lowercase
 	toupper()		turn a string to uppercase
 	charclass()		class of a character
@@ -751,9 +754,12 @@ String manipulation:					*string-functions*
 	strlen()		length of a string in bytes
 	strcharlen()		length of a string in characters
 	strchars()		number of characters in a string
+	strutf16len()		number of UTF-16 code units in a string
 	strwidth()		size of string when displayed
 	strdisplaywidth()	size of string when displayed, deals with tabs
 	setcellwidths()		set character cell width overrides
+	getcellwidths()		get character cell width overrides
+	reverse()		reverse the order of characters in a string
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string using byte index
@@ -767,6 +773,7 @@ String manipulation:					*string-functions*
 	byteidx()		byte index of a character in a string
 	byteidxcomp()		like byteidx() but count composing characters
 	charidx()		character index of a byte in a string
+	utf16idx()		UTF-16 index of a byte in a string
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
 	execute()		execute an Ex command and get the output
@@ -791,14 +798,16 @@ List manipulation:					*list-functions*
 	reduce()		reduce a List to a value
 	slice()			take a slice of a List
 	sort()			sort a List
-	reverse()		reverse the order of a List
+	reverse()		reverse the order of items in a List
 	uniq()			remove copies of repeated adjacent items
 	split()			split a String into a List
 	join()			join List items into a String
 	range()			return a List with a sequence of numbers
 	string()		String representation of a List
 	call()			call a function with List as arguments
-	index()			index of a value in a List
+	index()			index of a value in a List or Blob
+	indexof()		index in a List or Blob where an expression
+				evaluates to true
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
@@ -856,6 +865,7 @@ Floating point computation:				*float-functions*
 Blob manipulation:					*blob-functions*
 	blob2list()		get a list of numbers from a blob
 	list2blob()		get a blob from a list of numbers
+	reverse()		reverse the order of numbers in a blob
 
 Other computation:					*bitwise-function*
 	and()			bitwise AND
@@ -930,6 +940,7 @@ Working with text in the current buffer:		*text-functions*
 
 Working with text in another buffer:
 	getbufline()		get a list of lines from the specified buffer
+	getbufoneline()		get a one line from the specified buffer
 	setbufline()		replace a line in the specified buffer
 	appendbufline()		append a list of lines in the specified buffer
 	deletebufline()		delete lines from a specified buffer
@@ -1025,6 +1036,7 @@ Buffers, windows and the argument list:
 	getwininfo()		get a list with window information
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
+	swapfilelist()		list of existing swap files in 'directory'
 	swapinfo()		information about a swap file
 	swapname()		get the swap file path of a buffer
 
@@ -1035,6 +1047,7 @@ Command line:					*command-line-functions*
 	getcmdpos()		get position of the cursor in the command line
 	getcmdscreenpos()	get screen position of the cursor in the
 				command line
+	setcmdline()		set the current command line
 	setcmdpos()		set position of the cursor in the command line
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
@@ -1104,6 +1117,7 @@ Interactive:					*interactive-functions*
 	getcharstr()		get a character from the user as a string
 	getcharmod()		get modifiers for the last typed character
 	getmousepos()		get last known mouse position
+	getmouseshape()		get name of the current mouse shape
 	echoraw()		output characters as-is
 	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
@@ -1177,6 +1191,7 @@ Testing:				    *test-functions*
 	test_getvalue()		get value of an internal variable
 	test_gui_event()	generate a GUI event for testing
 	test_ignore_error()	ignore a specific error message
+	test_mswin_event()	generate an MS-Windows event
 	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict
@@ -1217,6 +1232,7 @@ Inter-process communication:		    *channel-functions*
 	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
+	err_teapot()		give error 418 or 503
 
 Jobs:						*job-functions*
 	job_start()		start a job
@@ -1283,6 +1299,7 @@ Popup window:					*popup-window-functions*
 	popup_filter_yesno()	block until 'y' or 'n' is pressed
 	popup_getoptions()	get current options for a popup
 	popup_getpos()		get actual position and size of a popup
+	popup_findecho()	get window ID for popup used for `:echowindow`
 	popup_findinfo()	get window ID for popup info window
 	popup_findpreview()	get window ID for popup preview window
 	popup_list()		get list of all popup window IDs
@@ -1306,6 +1323,14 @@ Prompt Buffer:					*promptbuffer-functions*
 	prompt_setcallback()	set prompt callback for a buffer
 	prompt_setinterrupt()	set interrupt callback for a buffer
 	prompt_setprompt()	set the prompt text for a buffer
+
+Registers:					*register-functions*
+	getreg()		get contents of a register
+	getreginfo()		get information about a register
+	getregtype()		get type of a register
+	setreg()		set contents and type of a register
+	reg_executing()		return the name of the register being executed
+	reg_recording()		return the name of the register being recorded
 
 Text Properties:				*text-property-functions*
 	prop_add()		attach a property at a position
@@ -1338,6 +1363,7 @@ Various:					*various-functions*
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
+	getscriptinfo()		get list of sourced vim scripts
 	getimstatus()		check if IME status is active
 	interrupt()		interrupt script execution
 	windowsversion()	get MS-Windows version
@@ -1347,14 +1373,7 @@ Various:					*various-functions*
 	libcallnr()		idem, returning a number
 
 	undofile()		get the name of the undo file
-	undotree()		return the state of the undo tree
-
-	getreg()		get contents of a register
-	getreginfo()		get information about a register
-	getregtype()		get type of a register
-	setreg()		set contents and type of a register
-	reg_executing()		return the name of the register being executed
-	reg_recording()		return the name of the register being recorded
+	undotree()		return the state of the undo tree for a buffer
 
 	shiftwidth()		effective value of 'shiftwidth'
 
@@ -1567,7 +1586,7 @@ to "funcref".  Example: >
 	def Wrong(): string
 	  return 'Wrong!'
 	enddef
-	
+
 	var Afunc = g:result == 1 ? Right : Wrong
 	echo Afunc()
 <	Wrong! ~
@@ -1745,9 +1764,10 @@ For further reading see |Dictionaries|.
 ==============================================================================
 *41.9*	White space
 
-Blank lines are allowed and ignored.
+Blank lines are allowed in a script and ignored.
 
-Leading whitespace characters (blanks and TABs) are always ignored.
+Leading whitespace characters (blanks and TABs) are ignored, except when using
+|:let-heredoc| without "trim".
 
 Trailing whitespace is often ignored, but not always.  One command that
 includes it is `map`.  You have to watch out for that, it can cause hard to
@@ -1814,7 +1834,7 @@ is ignored, except for commands that don't consider comments, as shown in
 examples below.  A comment can start on any character position on the line,
 but not when it is part of the command, e.g. inside a string.
 
-The character " (the double quote mark) starts a comment in legacy script.  
+The character " (the double quote mark) starts a comment in legacy script.
 This involves some cleverness to make sure double quoted strings are not
 recognized as comments (just one reason to prefer |Vim9| script).
 
@@ -1866,12 +1886,15 @@ script executable, and it also works in legacy script: >
 *41.12*	Fileformat
 
 The end-of-line character depends on the system.  For Vim scripts it is
-recommended to always use the Unix fileformat.  This also works on any other
-system.  That way you can copy your Vim scripts from MS-Windows to Unix and
-they still work.  See |:source_crnl|.  To be sure it is set right, do this
-before writing the file: >
-
+recommended to always use the Unix fileformat.  Lines are then separated with
+the Newline character.  This also works on any other system.  That way you can
+copy your Vim scripts from MS-Windows to Unix and they still work.  See
+|:source_crnl|.  To be sure it is set right, do this before writing the file:
+>
 	:setlocal fileformat=unix
+
+When using "dos" fileformat, lines are separated with CR-NL, two characters.
+The CR character causes various problems, better avoid this.
 
 ==============================================================================
 

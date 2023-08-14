@@ -110,7 +110,6 @@
 #define HAVE_SETENV
 #define HAVE_SETJMP_H
 #define HAVE_MATH_H
-#define HAVE_FLOAT_FUNCS
 #define HAVE_GETTIMEOFDAY
 #define HAVE_PWD_H
 #define HAVE_NETDB_H

@@ -120,11 +120,6 @@ LangString str_desc_plugin_vim      ${LANG_SIMPCHINESE} \
     "在 Vim 安装目录下创建(空的)插件目录结构，系统上所有用户都能使用安装在\
      该目录下的扩展插件。"
 
-LangString str_section_vis_vim      ${LANG_SIMPCHINESE} \
-    "VisVim 插件"
-LangString str_desc_vis_vim         ${LANG_SIMPCHINESE} \
-    "安装与 Visual Studio 集成的 VisVim 插件。"
-
 LangString str_section_nls          ${LANG_SIMPCHINESE} \
     "安装多语言支持"
 LangString str_desc_nls             ${LANG_SIMPCHINESE} \

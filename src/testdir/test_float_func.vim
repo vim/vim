@@ -1,7 +1,6 @@
 " test float functions
 
 source check.vim
-CheckFeature float
 import './vim9.vim' as v9
 
 func Test_abs()

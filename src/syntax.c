@@ -855,12 +855,11 @@ syn_sync(
     static void
 save_chartab(char_u *chartab)
 {
-    if (syn_block->b_syn_isk != empty_option)
-    {
-	mch_memmove(chartab, syn_buf->b_chartab, (size_t)32);
-	mch_memmove(syn_buf->b_chartab, syn_win->w_s->b_syn_chartab,
-								  (size_t)32);
-    }
+    if (syn_block->b_syn_isk == empty_option)
+	return;
+
+    mch_memmove(chartab, syn_buf->b_chartab, (size_t)32);
+    mch_memmove(syn_buf->b_chartab, syn_win->w_s->b_syn_chartab, (size_t)32);
 }
 
     static void
@@ -880,19 +879,18 @@ syn_match_linecont(linenr_T lnum)
     int r;
     char_u	buf_chartab[32];  // chartab array for syn iskyeyword
 
-    if (syn_block->b_syn_linecont_prog != NULL)
-    {
-	// use syntax iskeyword option
-	save_chartab(buf_chartab);
-	regmatch.rmm_ic = syn_block->b_syn_linecont_ic;
-	regmatch.regprog = syn_block->b_syn_linecont_prog;
-	r = syn_regexec(&regmatch, lnum, (colnr_T)0,
-				IF_SYN_TIME(&syn_block->b_syn_linecont_time));
-	syn_block->b_syn_linecont_prog = regmatch.regprog;
-	restore_chartab(buf_chartab);
-	return r;
-    }
-    return FALSE;
+    if (syn_block->b_syn_linecont_prog == NULL)
+	return FALSE;
+
+    // use syntax iskeyword option
+    save_chartab(buf_chartab);
+    regmatch.rmm_ic = syn_block->b_syn_linecont_ic;
+    regmatch.regprog = syn_block->b_syn_linecont_prog;
+    r = syn_regexec(&regmatch, lnum, (colnr_T)0,
+	    IF_SYN_TIME(&syn_block->b_syn_linecont_time));
+    syn_block->b_syn_linecont_prog = regmatch.regprog;
+    restore_chartab(buf_chartab);
+    return r;
 }
 
 /*
@@ -1030,14 +1028,14 @@ syn_stack_free_block(synblock_T *block)
 {
     synstate_T	*p;
 
-    if (block->b_sst_array != NULL)
-    {
-	FOR_ALL_SYNSTATES(block, p)
-	    clear_syn_state(p);
-	VIM_CLEAR(block->b_sst_array);
-	block->b_sst_first = NULL;
-	block->b_sst_len = 0;
-    }
+    if (block->b_sst_array == NULL)
+	return;
+
+    FOR_ALL_SYNSTATES(block, p)
+	clear_syn_state(p);
+    VIM_CLEAR(block->b_sst_array);
+    block->b_sst_first = NULL;
+    block->b_sst_len = 0;
 }
 /*
  * Free b_sst_array[] for buffer "buf".
@@ -1440,7 +1438,7 @@ load_current_state(synstate_T *from)
     validate_current_state();
     keepend_level = -1;
     if (from->sst_stacksize
-	    && ga_grow(&current_state, from->sst_stacksize) != FAIL)
+	    && ga_grow(&current_state, from->sst_stacksize) == OK)
     {
 	if (from->sst_stacksize > SST_FIX_STATES)
 	    bp = SYN_STATE_P(&(from->sst_union.sst_ga));
@@ -1485,58 +1483,50 @@ syn_stack_equal(synstate_T *sp)
     reg_extmatch_T	*six, *bsx;
 
     // First a quick check if the stacks have the same size end nextlist.
-    if (sp->sst_stacksize == current_state.ga_len
-	    && sp->sst_next_list == current_next_list)
-    {
-	// Need to compare all states on both stacks.
-	if (sp->sst_stacksize > SST_FIX_STATES)
-	    bp = SYN_STATE_P(&(sp->sst_union.sst_ga));
-	else
-	    bp = sp->sst_union.sst_stack;
+    if (sp->sst_stacksize != current_state.ga_len
+	    || sp->sst_next_list != current_next_list)
+	return FALSE;
 
-	for (i = current_state.ga_len; --i >= 0; )
+    // Need to compare all states on both stacks.
+    if (sp->sst_stacksize > SST_FIX_STATES)
+	bp = SYN_STATE_P(&(sp->sst_union.sst_ga));
+    else
+	bp = sp->sst_union.sst_stack;
+
+    for (i = current_state.ga_len; --i >= 0; )
+    {
+	// If the item has another index the state is different.
+	if (bp[i].bs_idx != CUR_STATE(i).si_idx)
+	    break;
+	if (bp[i].bs_extmatch == CUR_STATE(i).si_extmatch)
+	    continue;
+	// When the extmatch pointers are different, the strings in them can
+	// still be the same.  Check if the extmatch references are equal.
+	bsx = bp[i].bs_extmatch;
+	six = CUR_STATE(i).si_extmatch;
+	// If one of the extmatch pointers is NULL the states are different.
+	if (bsx == NULL || six == NULL)
+	    break;
+	for (j = 0; j < NSUBEXP; ++j)
 	{
-	    // If the item has another index the state is different.
-	    if (bp[i].bs_idx != CUR_STATE(i).si_idx)
-		break;
-	    if (bp[i].bs_extmatch != CUR_STATE(i).si_extmatch)
+	    // Check each referenced match string. They must all be equal.
+	    if (bsx->matches[j] != six->matches[j])
 	    {
-		// When the extmatch pointers are different, the strings in
-		// them can still be the same.  Check if the extmatch
-		// references are equal.
-		bsx = bp[i].bs_extmatch;
-		six = CUR_STATE(i).si_extmatch;
-		// If one of the extmatch pointers is NULL the states are
-		// different.
-		if (bsx == NULL || six == NULL)
+		// If the pointer is different it can still be the same text.
+		// Compare the strings, ignore case when the start item has the
+		// sp_ic flag set.
+		if (bsx->matches[j] == NULL || six->matches[j] == NULL)
 		    break;
-		for (j = 0; j < NSUBEXP; ++j)
-		{
-		    // Check each referenced match string. They must all be
-		    // equal.
-		    if (bsx->matches[j] != six->matches[j])
-		    {
-			// If the pointer is different it can still be the
-			// same text.  Compare the strings, ignore case when
-			// the start item has the sp_ic flag set.
-			if (bsx->matches[j] == NULL
-				|| six->matches[j] == NULL)
-			    break;
-			if ((SYN_ITEMS(syn_block)[CUR_STATE(i).si_idx]).sp_ic
-				? MB_STRICMP(bsx->matches[j],
-							 six->matches[j]) != 0
-				: STRCMP(bsx->matches[j], six->matches[j]) != 0)
-			    break;
-		    }
-		}
-		if (j != NSUBEXP)
+		if ((SYN_ITEMS(syn_block)[CUR_STATE(i).si_idx]).sp_ic
+			? MB_STRICMP(bsx->matches[j], six->matches[j]) != 0
+			: STRCMP(bsx->matches[j], six->matches[j]) != 0)
 		    break;
 	    }
 	}
-	if (i < 0)
-	    return TRUE;
+	if (j != NSUBEXP)
+	    break;
     }
-    return FALSE;
+    return i < 0 ? TRUE : FALSE;
 }
 
 /*
@@ -1550,10 +1540,12 @@ syn_stack_equal(synstate_T *sp)
  * lnum ->  line below window
  */
     void
-syntax_end_parsing(linenr_T lnum)
+syntax_end_parsing(win_T *wp, linenr_T lnum)
 {
     synstate_T	*sp;
 
+    if (syn_block != wp->w_s)
+	return;  // not the right window
     sp = syn_stack_find_entry(lnum);
     if (sp != NULL && sp->sst_lnum < lnum)
 	sp = sp->sst_next;
@@ -3424,7 +3416,7 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
     }
 
     // assume spell checking changed, force a redraw
-    redraw_win_later(curwin, NOT_VALID);
+    redraw_win_later(curwin, UPD_NOT_VALID);
 }
 
 /*
@@ -3475,7 +3467,7 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
 	    curbuf->b_p_isk = save_isk;
 	}
     }
-    redraw_win_later(curwin, NOT_VALID);
+    redraw_win_later(curwin, UPD_NOT_VALID);
 }
 
 /*
@@ -3676,7 +3668,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
 		{
-		    semsg(_(e_no_such_syntax_cluster_1), arg);
+		    semsg(_(e_no_such_syntax_cluster_str_1), arg);
 		    break;
 		}
 		else
@@ -3705,7 +3697,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 	    arg = skipwhite(arg_end);
 	}
     }
-    redraw_curbuf_later(SOME_VALID);
+    redraw_curbuf_later(UPD_SOME_VALID);
     syn_stack_free_all(curwin->w_s);		// Need to recompute all syntax.
 }
 
@@ -3886,7 +3878,7 @@ syn_cmd_list(
 	    {
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
-		    semsg(_(e_no_such_syntax_cluster_2), arg);
+		    semsg(_(e_no_such_syntax_cluster_str_2), arg);
 		else
 		    syn_list_cluster(id - SYNID_CLUSTER);
 	    }
@@ -4331,7 +4323,7 @@ syn_clear_keyword(int id, hashtab_T *ht)
 
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -4345,7 +4337,7 @@ syn_clear_keyword(int id, hashtab_T *ht)
 		    if (kp_prev == NULL)
 		    {
 			if (kp_next == NULL)
-			    hash_remove(ht, hi);
+			    hash_remove(ht, hi, "syntax clear keyword");
 			else
 			    hi->hi_key = KE2HIKEY(kp_next);
 		    }
@@ -4379,7 +4371,7 @@ clear_keywtab(hashtab_T *ht)
     keyentry_T	*kp_next;
 
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -4898,7 +4890,7 @@ error:
     else
 	semsg(_(e_invalid_argument_str), arg);
 
-    redraw_curbuf_later(SOME_VALID);
+    redraw_curbuf_later(UPD_SOME_VALID);
     syn_stack_free_all(curwin->w_s);		// Need to recompute all syntax.
 }
 
@@ -4954,7 +4946,7 @@ syn_cmd_match(
 	set_nextcmd(eap, rest);
 	if (!ends_excmd2(eap->cmd, rest) || eap->skip)
 	    rest = NULL;
-	else if (ga_grow(&curwin->w_s->b_syn_patterns, 1) != FAIL
+	else if (ga_grow(&curwin->w_s->b_syn_patterns, 1) == OK
 		&& (syn_id = syn_check_group(arg,
 					   (int)(group_name_end - arg))) != 0)
 	{
@@ -4989,7 +4981,7 @@ syn_cmd_match(
 		++curwin->w_s->b_syn_folditems;
 #endif
 
-	    redraw_curbuf_later(SOME_VALID);
+	    redraw_curbuf_later(UPD_SOME_VALID);
 	    syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
 	    return;	// don't free the progs and patterns now
 	}
@@ -5194,7 +5186,7 @@ syn_cmd_region(
 	set_nextcmd(eap, rest);
 	if (!ends_excmd(*rest) || eap->skip)
 	    rest = NULL;
-	else if (ga_grow(&(curwin->w_s->b_syn_patterns), pat_count) != FAIL
+	else if (ga_grow(&(curwin->w_s->b_syn_patterns), pat_count) == OK
 		&& (syn_id = syn_check_group(arg,
 					   (int)(group_name_end - arg))) != 0)
 	{
@@ -5241,7 +5233,7 @@ syn_cmd_region(
 		}
 	    }
 
-	    redraw_curbuf_later(SOME_VALID);
+	    redraw_curbuf_later(UPD_SOME_VALID);
 	    syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
 	    success = TRUE;	    // don't free the progs and patterns now
 	}
@@ -5443,11 +5435,11 @@ syn_scl_namen2id(char_u *linep, int len)
     int	    id = 0;
 
     name = vim_strnsave(linep, len);
-    if (name != NULL)
-    {
-	id = syn_scl_name2id(name);
-	vim_free(name);
-    }
+    if (name == NULL)
+	return 0;
+
+    id = syn_scl_name2id(name);
+    vim_free(name);
     return id;
 }
 
@@ -5593,7 +5585,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
 
 	if (got_clstr)
 	{
-	    redraw_curbuf_later(SOME_VALID);
+	    redraw_curbuf_later(UPD_SOME_VALID);
 	    syn_stack_free_all(curwin->w_s);	// Need to recompute all.
 	}
     }
@@ -5870,7 +5862,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
     else if (!finished)
     {
 	set_nextcmd(eap, arg_start);
-	redraw_curbuf_later(SOME_VALID);
+	redraw_curbuf_later(UPD_SOME_VALID);
 	syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
     }
 }
@@ -6262,28 +6254,28 @@ ex_syntax(exarg_T *eap)
     for (subcmd_end = arg; ASCII_ISALPHA(*subcmd_end); ++subcmd_end)
 	;
     subcmd_name = vim_strnsave(arg, subcmd_end - arg);
-    if (subcmd_name != NULL)
+    if (subcmd_name == NULL)
+	return;
+
+    if (eap->skip)		// skip error messages for all subcommands
+	++emsg_skip;
+    for (i = 0; ; ++i)
     {
-	if (eap->skip)		// skip error messages for all subcommands
-	    ++emsg_skip;
-	for (i = 0; ; ++i)
+	if (subcommands[i].name == NULL)
 	{
-	    if (subcommands[i].name == NULL)
-	    {
-		semsg(_(e_invalid_syntax_subcommand_str), subcmd_name);
-		break;
-	    }
-	    if (STRCMP(subcmd_name, (char_u *)subcommands[i].name) == 0)
-	    {
-		eap->arg = skipwhite(subcmd_end);
-		(subcommands[i].func)(eap, FALSE);
-		break;
-	    }
+	    semsg(_(e_invalid_syntax_subcommand_str), subcmd_name);
+	    break;
 	}
-	vim_free(subcmd_name);
-	if (eap->skip)
-	    --emsg_skip;
+	if (STRCMP(subcmd_name, (char_u *)subcommands[i].name) == 0)
+	{
+	    eap->arg = skipwhite(subcmd_end);
+	    (subcommands[i].func)(eap, FALSE);
+	    break;
+	}
     }
+    vim_free(subcmd_name);
+    if (eap->skip)
+	--emsg_skip;
 }
 
     void
@@ -6295,7 +6287,7 @@ ex_ownsyntax(exarg_T *eap)
     if (curwin->w_s == &curwin->w_buffer->b_s)
     {
 	curwin->w_s = ALLOC_ONE(synblock_T);
-	memset(curwin->w_s, 0, sizeof(synblock_T));
+	CLEAR_POINTER(curwin->w_s);
 	hash_init(&curwin->w_s->b_keywtab);
 	hash_init(&curwin->w_s->b_keywtab_ic);
 #ifdef FEAT_SPELL
@@ -6349,7 +6341,8 @@ static enum
     EXP_SUBCMD,	    // expand ":syn" sub-commands
     EXP_CASE,	    // expand ":syn case" arguments
     EXP_SPELL,	    // expand ":syn spell" arguments
-    EXP_SYNC	    // expand ":syn sync" arguments
+    EXP_SYNC,	    // expand ":syn sync" arguments
+    EXP_CLUSTER	    // expand ":syn list @cluster" arguments
 } expand_what;
 
 /*
@@ -6389,30 +6382,38 @@ set_context_in_syntax_cmd(expand_T *xp, char_u *arg)
     include_link = 0;
     include_default = 0;
 
+    if (*arg == NUL)
+	return;
+
     // (part of) subcommand already typed
-    if (*arg != NUL)
+    p = skiptowhite(arg);
+    if (*p == NUL)
+	return;
+
+    // past first word
+    xp->xp_pattern = skipwhite(p);
+    if (*skiptowhite(xp->xp_pattern) != NUL)
+	xp->xp_context = EXPAND_NOTHING;
+    else if (STRNICMP(arg, "case", p - arg) == 0)
+	expand_what = EXP_CASE;
+    else if (STRNICMP(arg, "spell", p - arg) == 0)
+	expand_what = EXP_SPELL;
+    else if (STRNICMP(arg, "sync", p - arg) == 0)
+	expand_what = EXP_SYNC;
+    else if (STRNICMP(arg, "list", p - arg) == 0)
     {
-	p = skiptowhite(arg);
-	if (*p != NUL)		    // past first word
-	{
-	    xp->xp_pattern = skipwhite(p);
-	    if (*skiptowhite(xp->xp_pattern) != NUL)
-		xp->xp_context = EXPAND_NOTHING;
-	    else if (STRNICMP(arg, "case", p - arg) == 0)
-		expand_what = EXP_CASE;
-	    else if (STRNICMP(arg, "spell", p - arg) == 0)
-		expand_what = EXP_SPELL;
-	    else if (STRNICMP(arg, "sync", p - arg) == 0)
-		expand_what = EXP_SYNC;
-	    else if (  STRNICMP(arg, "keyword", p - arg) == 0
-		    || STRNICMP(arg, "region", p - arg) == 0
-		    || STRNICMP(arg, "match", p - arg) == 0
-		    || STRNICMP(arg, "list", p - arg) == 0)
-		xp->xp_context = EXPAND_HIGHLIGHT;
-	    else
-		xp->xp_context = EXPAND_NOTHING;
-	}
+	p = skipwhite(p);
+	if (*p == '@')
+	    expand_what = EXP_CLUSTER;
+	else
+	    xp->xp_context = EXPAND_HIGHLIGHT;
     }
+    else if (STRNICMP(arg, "keyword", p - arg) == 0
+	    || STRNICMP(arg, "region", p - arg) == 0
+	    || STRNICMP(arg, "match", p - arg) == 0)
+	xp->xp_context = EXPAND_HIGHLIGHT;
+    else
+	xp->xp_context = EXPAND_NOTHING;
 }
 
 /*
@@ -6420,7 +6421,7 @@ set_context_in_syntax_cmd(expand_T *xp, char_u *arg)
  * expansion.
  */
     char_u *
-get_syntax_name(expand_T *xp UNUSED, int idx)
+get_syntax_name(expand_T *xp, int idx)
 {
     switch (expand_what)
     {
@@ -6444,6 +6445,17 @@ get_syntax_name(expand_T *xp UNUSED, int idx)
 		 "linebreaks=", "linecont", "lines=", "match",
 		 "maxlines=", "minlines=", "region", NULL};
 	    return (char_u *)sync_args[idx];
+	}
+	case EXP_CLUSTER:
+	{
+	    if (idx < curwin->w_s->b_syn_clusters.ga_len)
+	    {
+		vim_snprintf((char *)xp->xp_buf, EXPAND_BUF_LEN, "@%s",
+					 SYN_CLSTR(curwin->w_s)[idx].scl_name);
+		return xp->xp_buf;
+	    }
+	    else
+		return NULL;
 	}
     }
     return NULL;
@@ -6683,7 +6695,7 @@ syntime_report(void)
 {
     int		idx;
     synpat_T	*spp;
-# if defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
+# if defined(FEAT_RELTIME)
     proftime_T	tm;
 # endif
     int		len;
@@ -6713,7 +6725,7 @@ syntime_report(void)
 	    p->match = spp->sp_time.match;
 	    total_count += spp->sp_time.count;
 	    p->slowest = spp->sp_time.slowest;
-# if defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
+# if defined(FEAT_RELTIME)
 	    profile_divide(&spp->sp_time.total, spp->sp_time.count, &tm);
 	    p->average = tm;
 # endif
@@ -6747,10 +6759,8 @@ syntime_report(void)
 	msg_puts(profile_msg(&p->slowest));
 	msg_puts(" ");
 	msg_advance(38);
-# ifdef FEAT_FLOAT
 	msg_puts(profile_msg(&p->average));
 	msg_puts(" ");
-# endif
 	msg_advance(50);
 	msg_outtrans(highlight_group_name(p->id - 1));
 	msg_puts(" ");

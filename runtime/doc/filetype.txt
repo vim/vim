@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2022 Apr 09
+*filetype.txt*  For Vim version 9.0.  Last change: 2023 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -143,12 +143,14 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
 	*.bas		g:filetype_bas	|ft-basic-syntax|
 	*.cfg		g:filetype_cfg
-	*.csh		g:filetype_csh  |ft-csh-syntax|
+	*.cls		g:filetype_cls
+	*.csh		g:filetype_csh	|ft-csh-syntax|
 	*.dat		g:filetype_dat
 	*.frm		g:filetype_frm	|ft-form-syntax|
 	*.fs		g:filetype_fs	|ft-forth-syntax|
 	*.i		g:filetype_i	|ft-progress-syntax|
 	*.inc		g:filetype_inc
+	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m	|ft-mathematica-syntax|
 	*.mod		g:filetype_mod
 	*.p		g:filetype_p	|ft-pascal-syntax|
@@ -156,11 +158,13 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.pp		g:filetype_pp	|ft-pascal-syntax|
 	*.prg		g:filetype_prg
 	*.r		g:filetype_r
+	*.sig		g:filetype_sig
 	*.sql		g:filetype_sql	|ft-sql-syntax|
 	*.src		g:filetype_src
 	*.sys		g:filetype_sys
 	*.sh		g:bash_is_sh	|ft-sh-syntax|
 	*.tex		g:tex_flavor	|ft-tex-plugin|
+	*.typ		g:filetype_typ
 	*.w		g:filetype_w	|ft-cweb-syntax|
 
 For a few filetypes the global variable is used only when the filetype could
@@ -390,7 +394,7 @@ ways to change this:
    You must create a new filetype plugin in a directory early in
    'runtimepath'.  For Unix, for example you could use this file: >
 	vim ~/.vim/ftplugin/fortran.vim
-<  You can set those settings and mappings that you would like to add.  Note
+<   You can set those settings and mappings that you would like to add.  Note
    that the global plugin will be loaded after this, it may overrule the
    settings that you do here.  If this is the case, you need to use one of the
    following two methods.
@@ -399,7 +403,7 @@ ways to change this:
    You must put the copy in a directory early in 'runtimepath'.  For Unix, for
    example, you could do this: >
 	cp $VIMRUNTIME/ftplugin/fortran.vim ~/.vim/ftplugin/fortran.vim
-<  Then you can edit the copied file to your liking.  Since the b:did_ftplugin
+<   Then you can edit the copied file to your liking.  Since the b:did_ftplugin
    variable will be set, the global plugin will not be loaded.
    A disadvantage of this method is that when the distributed plugin gets
    improved, you will have to copy and modify it again.
@@ -408,7 +412,7 @@ ways to change this:
    You must create a new filetype plugin in a directory from the end of
    'runtimepath'.  For Unix, for example, you could use this file: >
 	vim ~/.vim/after/ftplugin/fortran.vim
-<  In this file you can change just those settings that you want to change.
+<   In this file you can change just those settings that you want to change.
 
 ==============================================================================
 3.  Docs for the default filetype plugins.		*ftplugin-docs*
@@ -554,11 +558,29 @@ For further discussion of fortran_have_tabs and the method used for the
 detection of source format see |ft-fortran-syntax|.
 
 
+FREEBASIC						*ft-freebasic-plugin*
+
+This plugin aims to treat the four FreeBASIC dialects, "fb", "qb", "fblite"
+and "deprecated", as distinct languages.
+
+The dialect will be set to the first name found in g:freebasic_forcelang, any
+#lang directive or $lang metacommand in the file being edited, or finally
+g:freebasic_lang.  These global variables conceptually map to the fbc options
+-forcelang and -lang.  If no dialect is explicitly specified "fb" will be
+used.
+
+For example, to set the dialect to a default of "fblite" but still allow for
+any #lang directive overrides, use the following command: >
+
+	let g:freebasic_lang = "fblite"
+
+
 GIT COMMIT                                              *ft-gitcommit-plugin*
 
 One command, :DiffGitCached, is provided to show a diff of the current commit
 in the preview window.  It is equivalent to calling "git diff --cached" plus
 any arguments given to the command.
+
 
 GPROF							*ft-gprof-plugin*
 
@@ -568,6 +590,7 @@ to the details of that function in the call graph.
 
 The mapping can be disabled with: >
 	let g:no_gprof_maps = 1
+
 
 MAIL							*ft-mail-plugin*
 
@@ -637,8 +660,8 @@ page in a Vim window: >
 
 MANPAGER				      *manpager.vim*
 
-The |:Man| command allows you to turn Vim into a manpager (that syntax highlights
-manpages and follows linked manpages on hitting CTRL-]).
+The |:Man| command allows you to turn Vim into a manpager (that syntax
+highlights manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
@@ -657,7 +680,10 @@ MARKDOWN                                                *ft-markdown-plugin*
 
 To enable folding use this: >
 	let g:markdown_folding = 1
-<
+
+'expandtab' will be set by default.  If you do not want that use this: >
+	let g:markdown_recommended_style = 0
+
 
 PDF							*ft-pdf-plugin*
 

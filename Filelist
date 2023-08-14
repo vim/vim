@@ -12,17 +12,14 @@ SRC_ALL =	\
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/workflows/coverity.yml \
+		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
-		.lgtm.yml \
-		.travis.yml \
 		.appveyor.yml \
 		.codecov.yml \
 		ci/appveyor.bat \
-		ci/build-snd-dummy.sh \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
-		ci/load-snd-dummy.sh \
 		ci/setup-xvfb.sh \
 		src/Make_all.mak \
 		src/README.md \
@@ -88,10 +85,11 @@ SRC_ALL =	\
 		src/job.c \
 		src/json.c \
 		src/json_test.c \
+		src/keymap.h \
 		src/kword_test.c \
 		src/list.c \
 		src/locale.c \
-		src/keymap.h \
+		src/logfile.c \
 		src/macros.h \
 		src/main.c \
 		src/map.c \
@@ -162,6 +160,7 @@ SRC_ALL =	\
 		src/version.h \
 		src/vim.h \
 		src/vim9.h \
+		src/vim9class.c \
 		src/vim9cmds.c \
 		src/vim9compile.c \
 		src/vim9execute.c \
@@ -172,13 +171,14 @@ SRC_ALL =	\
 		src/viminfo.c \
 		src/winclip.c \
 		src/window.c \
-		src/tee/tee.c \
 		src/xxd/xxd.c \
 		src/testdir/gen_opt_test.vim \
 		src/testdir/README.txt \
 		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/*.py \
+		src/testdir/keycode_check.vim \
+		src/testdir/keycode_check.json \
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
@@ -211,6 +211,7 @@ SRC_ALL =	\
 		src/testdir/python_before/*.py \
 		src/testdir/pyxfile/*.py \
 		src/testdir/dumps/*.dump \
+		src/testdir/dumps/*.vim \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
 		src/testdir/color_ramp.vim \
@@ -272,6 +273,7 @@ SRC_ALL =	\
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
+		src/proto/logfile.pro \
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \
@@ -323,6 +325,7 @@ SRC_ALL =	\
 		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
+		src/proto/vim9class.pro \
 		src/proto/vim9cmds.pro \
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
@@ -395,6 +398,7 @@ SRC_ALL =	\
 		src/libvterm/t/66screen_extent.test \
 		src/libvterm/t/67screen_dbl_wh.test \
 		src/libvterm/t/68screen_termprops.test \
+		src/libvterm/t/69screen_reflow.test \
 		src/libvterm/t/90vttest_01-movement-1.test \
 		src/libvterm/t/90vttest_01-movement-2.test \
 		src/libvterm/t/90vttest_01-movement-3.test \
@@ -488,7 +492,6 @@ SRC_UNIX =	\
 		src/vimtutor \
 		src/gvimtutor \
 		src/which.sh \
-		src/tee/Makefile \
 		src/xxd/Makefile \
 
 # source files for both DOS and Unix
@@ -517,7 +520,7 @@ SRC_DOS_UNIX =	\
 		src/proto/if_tcl.pro \
 		src/typemap \
 
-# source files for DOS (also in the extra archive)
+# source files for MS-Windows (also in the extra archive)
 SRC_DOS =	\
 		src/GvimExt/*.mak \
 		src/GvimExt/GvimExt.reg \
@@ -541,9 +544,11 @@ SRC_DOS =	\
 		tools/rename.bat \
 		src/bigvim.bat \
 		src/bigvim64.bat \
-		src/msvc2008.bat \
-		src/msvc2010.bat \
+		src/msvc-latest.bat \
 		src/msvc2015.bat \
+		src/msvc2017.bat \
+		src/msvc2019.bat \
+		src/msvc2022.bat \
 		src/msys32.bat \
 		src/msys64.bat \
 		src/dlldata.c \
@@ -556,7 +561,6 @@ SRC_DOS =	\
 		src/if_ole.cpp \
 		src/if_ole.h \
 		src/if_ole.idl \
-		src/if_perl_msvc/stdbool.h \
 		src/iscygpty.c \
 		src/iscygpty.h \
 		src/iid_ole.c \
@@ -571,6 +575,7 @@ SRC_DOS =	\
 		src/proto/os_win32.pro \
 		src/proto/os_mswin.pro \
 		src/testdir/Make_dos.mak \
+		src/testdir/Make_mvc.mak \
 		src/testdir/Make_ming.mak \
 		src/testdir/dos.vim \
 		src/uninstall.c \
@@ -579,7 +584,10 @@ SRC_DOS =	\
 		src/vimrun.c \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
+		src/tee/Make_ming.mak \
 		src/tee/Make_mvc.mak \
+		src/tee/Makefile \
+		src/tee/tee.c \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
@@ -587,30 +595,9 @@ SRC_DOS =	\
 		nsis/README.txt \
 		nsis/lang/*.nsi \
 		uninstall.txt \
-		src/VisVim/Commands.cpp \
-		src/VisVim/Commands.h \
-		src/VisVim/DSAddIn.cpp \
-		src/VisVim/DSAddIn.h \
-		src/VisVim/OleAut.cpp \
-		src/VisVim/OleAut.h \
-		src/VisVim/README_VisVim.txt \
-		src/VisVim/Reg.cpp \
-		src/VisVim/Register.bat \
-		src/VisVim/Resource.h \
-		src/VisVim/StdAfx.cpp \
-		src/VisVim/StdAfx.h \
-		src/VisVim/UnRegist.bat \
-		src/VisVim/VisVim.cpp \
-		src/VisVim/VisVim.def \
-		src/VisVim/VisVim.mak \
-		src/VisVim/VisVim.h \
-		src/VisVim/VisVim.odl \
-		src/VisVim/VisVim.rc \
-		src/VisVim/VsReadMe.txt \
 
 # source files for DOS without CR/LF translation (also in the extra archive)
 SRC_DOS_BIN =	\
-		src/VisVim/Res/*.bmp \
 		src/tearoff.bmp \
 		src/tools.bmp \
 		src/vim*.ico \
@@ -621,10 +608,8 @@ SRC_DOS_BIN =	\
 		src/xpm/include/*.h \
 		src/xpm/x64/lib-vc14/libXpm.lib \
 		src/xpm/x64/lib/libXpm.a \
-		src/xpm/x64/lib/libXpm.lib \
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
-		src/xpm/x86/lib/libXpm.lib \
 		runtime/bitmaps/vim.ico \
 		nsis/icons.zip \
 
@@ -661,6 +646,7 @@ SRC_MAC =	\
 		src/os_mac_conv.c \
 		src/os_macosx.m \
 		src/proto/os_mac_conv.pro \
+		src/proto/os_macosx.pro \
 
 # source files for VMS (in the extra archive)
 SRC_VMS =	\
@@ -722,6 +708,7 @@ RT_ALL =	\
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/import/dist/vimhelp.vim \
+		runtime/import/dist/vimhighlight.vim \
 		runtime/macros/README.txt \
 		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \
@@ -795,6 +782,7 @@ RT_SCRIPTS =	\
 		runtime/autoload/README.txt \
 		runtime/autoload/dist/*.vim \
 		runtime/autoload/xml/*.vim \
+		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/colors/lists/*.vim \
@@ -815,6 +803,13 @@ RT_SCRIPTS =	\
 		runtime/plugin/README.txt \
 		runtime/syntax/*.vim \
 		runtime/syntax/README.txt \
+		runtime/syntax/shared/*.vim \
+		runtime/syntax/shared/README.txt \
+		runtime/syntax/Makefile \
+		runtime/syntax/testdir/README.txt \
+		runtime/syntax/testdir/runtest.vim \
+		runtime/syntax/testdir/input/*.* \
+		runtime/syntax/testdir/dumps/*.dump \
 
 # Unix runtime
 RT_UNIX =	\
@@ -942,11 +937,7 @@ EXTRA =		\
 		$(RT_EXTRA) \
 		$(SRC_EXTRA) \
 		README_extra.txt \
-		src/VisVim/VisVim.dll \
 		runtime/vimlogo.xpm \
-		src/tee/Makefile \
-		src/tee/Make_mvc.mak \
-		src/tee/tee.c \
 
 # files in READMEdir that are included from the top dir
 IN_README_DIR = \
@@ -1017,6 +1008,8 @@ LANG_GEN = \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
+		runtime/spell/sr/README_sr.txt \
+		runtime/spell/sr/convert.vim \
 		runtime/spell/tet/*.diff \
 		runtime/spell/tet/main.aap \
 		runtime/spell/check/main.aap \

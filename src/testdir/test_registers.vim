@@ -51,8 +51,9 @@ func Test_display_registers()
     call feedkeys("i\<C-R>=2*4\n\<esc>")
     call feedkeys(":ls\n", 'xt')
 
-    let a = execute('display')
-    let b = execute('registers')
+    " these commands work in the sandbox
+    let a = execute('sandbox display')
+    let b = execute('sandbox registers')
 
     call assert_equal(a, b)
     call assert_match('^\nType Name Content\n'
@@ -411,6 +412,36 @@ func Test_clipboard_regs()
   bwipe!
 endfunc
 
+" Test unnamed for both clipboard registers (* and +)
+func Test_clipboard_regs_both_unnamed()
+  CheckNotGui
+  CheckFeature clipboard_working
+  CheckTwoClipboards
+
+  let @* = 'xxx'
+  let @+ = 'xxx'
+
+  new
+
+  set clipboard=unnamed,unnamedplus
+  call setline(1, ['foo', 'bar'])
+
+  " op_yank copies to both
+  :1
+  :normal yw
+  call assert_equal('foo', getreg('*'))
+  call assert_equal('foo', getreg('+'))
+
+  " op_delete only copies to '+'
+  :2
+  :normal dw
+  call assert_equal('foo', getreg('*'))
+  call assert_equal('bar', getreg('+'))
+
+  set clipboard&vim
+  bwipe!
+endfunc
+
 " Test for restarting the current mode (insert or virtual replace) after
 " executing the contents of a register
 func Test_put_reg_restart_mode()
@@ -489,6 +520,13 @@ func Test_get_reginfo()
         \ 'regtype': 'v'}, g:RegInfo)
   nunmap <F2>
   unlet g:RegInfo
+
+  " The type of "isunnamed" was VAR_SPECIAL but should be VAR_BOOL.  Can only
+  " be noticed when using json_encod().
+  call setreg('a', 'foo')
+  let reginfo = getreginfo('a')
+  let expected = #{regcontents: ['foo'], isunnamed: v:false, regtype: 'v'}
+  call assert_equal(json_encode(expected), json_encode(reginfo))
 
   bwipe!
 endfunc
@@ -759,8 +797,9 @@ func Test_record_in_select_mode()
   bwipe!
 endfunc
 
-" mapping that ends macro recording should be removed from recorded macro
+" A mapping that ends recording should be removed from the recorded register.
 func Test_end_record_using_mapping()
+  new
   call setline(1, 'aaa')
   nnoremap s q
   call feedkeys('safas', 'tx')
@@ -780,7 +819,10 @@ func Test_end_record_using_mapping()
   bwipe!
 endfunc
 
+" Starting a new recording should work immediately after replaying a recording
+" that ends with a <Nop> mapping or a character search.
 func Test_end_reg_executing()
+  new
   nnoremap s <Nop>
   let @a = 's'
   call feedkeys("@aqaq\<Esc>", 'tx')
@@ -796,6 +838,43 @@ func Test_end_reg_executing()
 
   nunmap s
   bwipe!
+endfunc
+
+" An operator-pending mode mapping shouldn't be applied to keys typed in
+" Insert mode immediately after a character search when replaying.
+func Test_replay_charsearch_omap()
+  CheckFeature timers
+
+  new
+  call setline(1, 'foo[blah]')
+  onoremap , k
+  call timer_start(10, {-> feedkeys(",bar\<Esc>q", 't')})
+  call feedkeys('qrct[', 'xt!')
+  call assert_equal(',bar[blah]', getline(1))
+  undo
+  call assert_equal('foo[blah]', getline(1))
+  call feedkeys('@r', 'xt!')
+  call assert_equal(',bar[blah]', getline(1))
+
+  ounmap ,
+  bwipe!
+endfunc
+
+" This was causing a crash because y_append was ending up being NULL
+func Test_zero_y_append()
+  " Run in a separate Vim instance because changing 'encoding' may cause
+  " trouble for later tests.
+  let lines =<< trim END
+      d
+      silent ?n
+      next <sfile>
+      so
+      sil! norm 0VPSP
+      set enc=latin1
+       
+  END
+  call writefile(lines, 'XTest_zero_y_append', 'D')
+  call RunVim([], [], '-u NONE -i NONE -e -s -S XTest_zero_y_append -c qa\!')
 endfunc
 
 " Make sure that y_append is correctly reset

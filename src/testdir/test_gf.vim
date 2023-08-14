@@ -49,38 +49,38 @@ endfunc
 func Test_gF()
   new
   call setline(1, ['111', '222', '333', '444'])
-  w! Xfile
+  w! Xgffile
   close
   new
   set isfname-=:
-  call setline(1, ['one', 'Xfile:3', 'three'])
+  call setline(1, ['one', 'Xgffile:3', 'three'])
   2
   call assert_fails('normal gF', 'E37:')
   call assert_equal(2, getcurpos()[1])
-  w! Xfile2
+  w! Xgffile2
   normal gF
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
   enew!
-  call setline(1, ['one', 'the Xfile line 2, and more', 'three'])
-  w! Xfile2
+  call setline(1, ['one', 'the Xgffile line 2, and more', 'three'])
+  w! Xgffile2
   normal 2GfX
   normal gF
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(2, getcurpos()[1])
 
   " jumping to the file/line with CTRL-W_F
   %bw!
   edit Xfile1
-  call setline(1, ['one', 'Xfile:4', 'three'])
+  call setline(1, ['one', 'Xgffile:4', 'three'])
   exe "normal 2G\<C-W>F"
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(4, getcurpos()[1])
 
   set isfname&
-  call delete('Xfile')
-  call delete('Xfile2')
+  call delete('Xgffile')
+  call delete('Xgffile2')
   %bw!
 endfunc
 
@@ -88,11 +88,11 @@ endfunc
 func Test_gf()
   set isfname=@,48-57,/,.,-,_,+,,,$,:,~,{,}
 
-  call writefile(["Test for gf command"], "Xtest1")
+  call writefile(["Test for gf command"], "Xtest1", 'D')
   if has("unix")
-    call writefile(["    ${CDIR}/Xtest1"], "Xtestgf")
+    call writefile(["    ${CDIR}/Xtest1"], "Xtestgf", 'D')
   else
-    call writefile(["    $TDIR/Xtest1"], "Xtestgf")
+    call writefile(["    $TDIR/Xtest1"], "Xtestgf", 'D')
   endif
   new Xtestgf
   if has("unix")
@@ -109,14 +109,12 @@ func Test_gf()
 
   normal gf
   call assert_equal('Xtest1', fnamemodify(bufname(''), ":t"))
-  close!
 
-  call delete('Xtest1')
-  call delete('Xtestgf')
+  close!
 endfunc
 
 func Test_gf_visual()
-  call writefile(['one', 'two', 'three', 'four'], "Xtest_gf_visual")
+  call writefile(['one', 'two', 'three', 'four'], "Xtest_gf_visual", 'D')
   new
   call setline(1, 'XXXtest_gf_visualXXX')
   set hidden
@@ -138,34 +136,31 @@ func Test_gf_visual()
   call assert_equal('Xtest_gf_visual', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
-  " do not include the NUL at the end 
-  call writefile(['x'], 'X')
+  " do not include the NUL at the end
+  call writefile(['x'], 'Xvisual', 'D')
   let save_enc = &enc
   for enc in ['latin1', 'utf-8']
     exe "set enc=" .. enc
     new
-    call setline(1, 'X')
+    call setline(1, 'Xvisual')
     set nomodified
     exe "normal \<C-V>$gf"
-    call assert_equal('X', bufname())
+    call assert_equal('Xvisual', bufname())
     bwipe!
   endfor
   let &enc = save_enc
-  call delete('X')
 
   " line number in visual area is used for file name
   if has('unix')
     bwipe!
-    call writefile([], "Xtest_gf_visual:3")
+    call writefile([], "Xtest_gf_visual:3", 'D')
     new
     call setline(1, 'XXXtest_gf_visual:3XXX')
     norm! 0ttvtXgF
     call assert_equal('Xtest_gf_visual:3', bufname('%'))
-  call delete('Xtest_gf_visual:3')
   endif
 
   bwipe!
-  call delete('Xtest_gf_visual')
   set hidden&
 endfunc
 
@@ -232,6 +227,7 @@ func Test_includeexpr_scriptlocal_func()
   endfunc
   set includeexpr=s:IncludeFunc()
   call assert_equal(expand('<SID>') .. 'IncludeFunc()', &includeexpr)
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &g:includeexpr)
   new | only
   call setline(1, 'TestFile1')
   let g:IncludeFname = ''
@@ -240,14 +236,121 @@ func Test_includeexpr_scriptlocal_func()
   bw!
   set includeexpr=<SID>IncludeFunc()
   call assert_equal(expand('<SID>') .. 'IncludeFunc()', &includeexpr)
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &g:includeexpr)
   new | only
   call setline(1, 'TestFile2')
   let g:IncludeFname = ''
   call assert_fails('normal! gf', 'E447:')
   call assert_equal('TestFile2', g:IncludeFname)
+  bw!
+  setlocal includeexpr=
+  setglobal includeexpr=s:IncludeFunc()
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &g:includeexpr)
+  call assert_equal('', &includeexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &includeexpr)
+  call setline(1, 'TestFile3')
+  let g:IncludeFname = ''
+  call assert_fails('normal! gf', 'E447:')
+  call assert_equal('TestFile3', g:IncludeFname)
+  bw!
+  setlocal includeexpr=
+  setglobal includeexpr=<SID>IncludeFunc()
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &g:includeexpr)
+  call assert_equal('', &includeexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'IncludeFunc()', &includeexpr)
+  call setline(1, 'TestFile4')
+  let g:IncludeFname = ''
+  call assert_fails('normal! gf', 'E447:')
+  call assert_equal('TestFile4', g:IncludeFname)
+  bw!
   set includeexpr&
   delfunc s:IncludeFunc
   bw!
+endfunc
+
+" Check that expanding directories can handle more than 255 entries.
+func Test_gf_subdirs_wildcard()
+  let cwd = getcwd()
+  let dir = 'Xtestgf_dir'
+  call mkdir(dir, 'R')
+  call chdir(dir)
+  for i in range(300)
+    call mkdir(i)
+    call writefile([], i .. '/' .. i, 'S')
+  endfor
+  set path=./**
+
+  new | only
+  call setline(1, '99')
+  w! Xtest1
+  normal gf
+  call assert_equal('99', fnamemodify(bufname(''), ":t"))
+
+  call chdir(cwd)
+  set path&
+endfunc
+
+" Test for 'switchbuf' with gf and gF commands
+func Test_gf_switchbuf()
+  call writefile(repeat(["aaa"], 10), "Xtest1", 'D')
+  edit Xtest1
+  new
+  call setline(1, ['Xtest1'])
+
+  " Test for 'useopen'
+  set switchbuf=useopen
+  call cursor(1, 1)
+  exe "normal \<C-W>f"
+  call assert_equal([2, 2], [winnr(), winnr('$')])
+  close
+
+  " If the file is opened in another tabpage, then it should not be considered
+  tabedit Xtest1
+  tabfirst
+  exe "normal \<C-W>f"
+  call assert_equal([1, 2], [winnr(), winnr('$')])
+  call assert_equal([1, 2], [tabpagenr(), tabpagenr('$')])
+  close
+
+  " Test for 'usetab'
+  set switchbuf=usetab
+  exe "normal \<C-W>f"
+  call assert_equal([1, 1], [winnr(), winnr('$')])
+  call assert_equal([2, 2], [tabpagenr(), tabpagenr('$')])
+  %bw!
+
+  " Test for CTRL-W_F with 'useopen'
+  set isfname-=:
+  call setline(1, ['Xtest1:5'])
+  set switchbuf=useopen
+  split +1 Xtest1
+  wincmd b
+  exe "normal \<C-W>F"
+  call assert_equal([1, 2], [winnr(), winnr('$')])
+  call assert_equal(5, line('.'))
+  close
+
+  " If the file is opened in another tabpage, then it should not be considered
+  tabedit +1 Xtest1
+  tabfirst
+  exe "normal \<C-W>F"
+  call assert_equal([1, 2], [winnr(), winnr('$')])
+  call assert_equal(5, line('.'))
+  call assert_equal([1, 2], [tabpagenr(), tabpagenr('$')])
+  close
+
+  " Test for CTRL_W_F with 'usetab'
+  set switchbuf=usetab
+  exe "normal \<C-W>F"
+  call assert_equal([2, 2], [tabpagenr(), tabpagenr('$')])
+  call assert_equal([1, 1], [winnr(), winnr('$')])
+  call assert_equal(5, line('.'))
+
+  set switchbuf=
+  set isfname&
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

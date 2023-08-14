@@ -1,7 +1,7 @@
 " test 'tagcase' option
 
 func Test_tagcase()
-  call writefile(["Bar\tXtext\t3", "Foo\tXtext\t2", "foo\tXtext\t4"], 'Xtags')
+  call writefile(["Bar\tXtext\t3", "Foo\tXtext\t2", "foo\tXtext\t4"], 'Xtags', 'D')
   set tags=Xtags
   e Xtext
 
@@ -43,7 +43,6 @@ func Test_tagcase()
     endfor
   endfor
 
-  call delete('Xtags')
   set tags&
   set ic&
   setg tc&

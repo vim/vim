@@ -36,9 +36,6 @@ Unicode true
 # Comment the next line if you do not want to add Native Language Support
 !define HAVE_NLS
 
-# Uncomment the next line if you want to include VisVim extension:
-#!define HAVE_VIS_VIM
-
 # Comment the following line to create an English-only installer:
 !define HAVE_MULTI_LANG
 
@@ -55,9 +52,6 @@ Unicode true
 # ----------- No configurable settings below this line -----------
 
 !include "Library.nsh"		# For DLL install
-!ifdef HAVE_VIS_VIM
-  !include "UpgradeDLL.nsh"	# for VisVim.dll
-!endif
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "nsDialogs.nsh"
@@ -234,6 +228,28 @@ FunctionEnd
 !insertmacro GetParent ""
 !insertmacro GetParent "un."
 
+# Get home directory
+!macro GetHomeDir un
+Function ${un}GetHomeDir
+  Push $0
+  Push $1
+  ReadEnvStr $0 "HOME"
+  ${If} $0 == ""
+    ReadEnvStr $0 "HOMEDRIVE"
+    ReadEnvStr $1 "HOMEPATH"
+    StrCpy $0 "$0$1"
+    ${If} $0 == ""
+      ReadEnvStr $0 "USERPROFILE"
+    ${EndIf}
+  ${EndIf}
+  Pop $1
+  Exch $0  # put $0 on top of stack, restore $0 to original value
+FunctionEnd
+!macroend
+
+!insertmacro GetHomeDir ""
+!insertmacro GetHomeDir "un."
+
 # Check if Vim is already installed.
 # return: Installed directory. If not found, it will be empty.
 Function CheckOldVim
@@ -366,11 +382,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
-	File ${VIMRT}\colors\*.*
-	SetOutPath $0\colors\tools
-	File ${VIMRT}\colors\tools\*.*
-	SetOutPath $0\colors\lists
-	File ${VIMRT}\colors\lists\*.*
+	File /r ${VIMRT}\colors\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*
@@ -395,13 +407,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\plugin\*.*
 
 	SetOutPath $0\autoload
-	File ${VIMRT}\autoload\*.*
-
-	SetOutPath $0\autoload\dist
-	File ${VIMRT}\autoload\dist\*.*
-
-	SetOutPath $0\autoload\xml
-	File ${VIMRT}\autoload\xml\*.*
+	File /r ${VIMRT}\autoload\*.*
 
 	SetOutPath $0\import\dist
 	File ${VIMRT}\import\dist\*.*
@@ -410,7 +416,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim.ico
 
 	SetOutPath $0\syntax
-	File ${VIMRT}\syntax\*.*
+	File /r ${VIMRT}\syntax\*.*
 
 	SetOutPath $0\spell
 	File ${VIMRT}\spell\*.txt
@@ -536,7 +542,8 @@ SectionGroup $(str_group_plugin) id_group_plugin
 	Section "$(str_section_plugin_home)" id_section_pluginhome
 		SectionIn 1 3
 
-		StrCpy $1 "$1 -create-directories home"
+		# use ShellExecAsUser below instead
+		# StrCpy $1 "$1 -create-directories home"
 	SectionEnd
 
 	Section "$(str_section_plugin_vim)" id_section_pluginvim
@@ -545,17 +552,6 @@ SectionGroup $(str_group_plugin) id_group_plugin
 		StrCpy $1 "$1 -create-directories vim"
 	SectionEnd
 SectionGroupEnd
-
-##########################################################
-!ifdef HAVE_VIS_VIM
-Section "$(str_section_vis_vim)" id_section_visvim
-	SectionIn 3
-
-	SetOutPath $0
-	!insertmacro UpgradeDLL "${VIMSRC}\VisVim\VisVim.dll" "$0\VisVim.dll" "$0"
-	File ${VIMSRC}\VisVim\README_VisVim.txt
-SectionEnd
-!endif
 
 ##########################################################
 !ifdef HAVE_NLS
@@ -621,6 +617,13 @@ Section -call_install_exe
 	DetailPrint "$(str_msg_registering)"
 	nsExec::Exec "$0\install.exe $1"
 	Pop $3
+
+	${If} ${SectionIsSelected} ${id_section_pluginhome}
+	  ReadEnvStr $3 "COMSPEC"
+	  Call GetHomeDir
+	  Pop $4
+	  ShellExecAsUser::ShellExecAsUser "" "$3" '/c "cd /d "$4" & mkdir vimfiles & cd vimfiles & mkdir colors compiler doc ftdetect ftplugin indent keymap plugin syntax"' SW_HIDE
+	${EndIf}
 SectionEnd
 
 ##########################################################
@@ -644,12 +647,6 @@ Section -post
 	  SectionGetSize ${id_section_editwith} $4
 	  IntOp $3 $3 + $4
 	${EndIf}
-!ifdef HAVE_VIS_VIM
-	${If} ${SectionIsSelected} ${id_section_visvim}
-	  SectionGetSize ${id_section_visvim} $4
-	  IntOp $3 $3 + $4
-	${EndIf}
-!endif
 !ifdef HAVE_NLS
 	${If} ${SectionIsSelected} ${id_section_nls}
 	  SectionGetSize ${id_section_nls} $4
@@ -680,9 +677,6 @@ Section -post
 	!insertmacro SaveSectionSelection ${id_section_vimrc}      "select_vimrc"
 	!insertmacro SaveSectionSelection ${id_section_pluginhome} "select_pluginhome"
 	!insertmacro SaveSectionSelection ${id_section_pluginvim}  "select_pluginvim"
-!ifdef HAVE_VIS_VIM
-	!insertmacro SaveSectionSelection ${id_section_visvim}     "select_visvim"
-!endif
 !ifdef HAVE_NLS
 	!insertmacro SaveSectionSelection ${id_section_nls}        "select_nls"
 !endif
@@ -754,9 +748,6 @@ Function .onInit
   !insertmacro LoadSectionSelection ${id_section_vimrc}      "select_vimrc"
   !insertmacro LoadSectionSelection ${id_section_pluginhome} "select_pluginhome"
   !insertmacro LoadSectionSelection ${id_section_pluginvim}  "select_pluginvim"
-!ifdef HAVE_VIS_VIM
-  !insertmacro LoadSectionSelection ${id_section_visvim}     "select_visvim"
-!endif
 !ifdef HAVE_NLS
   !insertmacro LoadSectionSelection ${id_section_nls}        "select_nls"
 !endif
@@ -931,9 +922,6 @@ FunctionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${id_group_plugin}        $(str_desc_plugin)
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginhome}  $(str_desc_plugin_home)
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginvim}   $(str_desc_plugin_vim)
-!ifdef HAVE_VIS_VIM
-    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_visvim}      $(str_desc_vis_vim)
-!endif
 !ifdef HAVE_NLS
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_nls}         $(str_desc_nls)
 !endif
@@ -956,13 +944,6 @@ Section "un.$(str_unsection_register)" id_unsection_register
 	# Apparently $INSTDIR is set to the directory where the uninstaller is
 	# created.  Thus the "vim61" directory is included in it.
 	StrCpy $0 "$INSTDIR"
-
-!ifdef HAVE_VIS_VIM
-	# If VisVim was installed, unregister the DLL.
-	${If} ${FileExists} "$0\VisVim.dll"
-	  ExecWait "regsvr32.exe /u /s $0\VisVim.dll"
-	${EndIf}
-!endif
 
 	# delete the context menu entry and batch files
 	DetailPrint "$(str_msg_unregistering)"
@@ -1056,9 +1037,6 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	RMDir /r $0\syntax
 	RMDir /r $0\tools
 	RMDir /r $0\tutor
-!ifdef HAVE_VIS_VIM
-	RMDir /r $0\VisVim
-!endif
 	RMDir /r $0\lang
 	RMDir /r $0\keymap
 	Delete $0\*.exe
@@ -1094,15 +1072,8 @@ SectionEnd
 SectionGroup "un.$(str_ungroup_plugin)" id_ungroup_plugin
 	Section /o "un.$(str_unsection_plugin_home)" id_unsection_plugin_home
 		# get the home dir
-		ReadEnvStr $0 "HOME"
-		${If} $0 == ""
-		  ReadEnvStr $0 "HOMEDRIVE"
-		  ReadEnvStr $1 "HOMEPATH"
-		  StrCpy $0 "$0$1"
-		  ${If} $0 == ""
-		    ReadEnvStr $0 "USERPROFILE"
-		  ${EndIf}
-		${EndIf}
+		Call un.GetHomeDir
+		Pop $0
 
 		${If} $0 != ""
 		  !insertmacro RemoveVimfiles $0

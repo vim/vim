@@ -135,7 +135,7 @@
 /* Define if struct sigcontext is present */
 #undef HAVE_SIGCONTEXT
 
-/* Define if touuper/tolower only work on lower/upercase characters */
+/* Define if toupper/tolower only work on lower/uppercase characters */
 #undef BROKEN_TOUPPER
 
 /* Define if stat() ignores a trailing slash */
@@ -157,7 +157,6 @@
 #undef HAVE_FCHDIR
 #undef HAVE_FCHOWN
 #undef HAVE_FCHMOD
-#undef HAVE_FLOAT_FUNCS
 #undef HAVE_FSEEKO
 #undef HAVE_FSYNC
 #undef HAVE_FTRUNCATE
@@ -226,6 +225,7 @@
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 #undef HAVE_MBLEN
 #undef HAVE_TIMER_CREATE
+#undef HAVE_CLOCK_GETTIME
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES
@@ -237,6 +237,7 @@
 
 /* Define if you have the header file: */
 #undef HAVE_DIRENT_H
+#undef HAVE_DISPATCH_DISPATCH_H
 #undef HAVE_ERRNO_H
 #undef HAVE_FCNTL_H
 #undef HAVE_FRAME_H
@@ -320,14 +321,8 @@
 /* Define if you want tiny features. */
 #undef FEAT_TINY
 
-/* Define if you want small features. */
-#undef FEAT_SMALL
-
 /* Define if you want normal features. */
 #undef FEAT_NORMAL
-
-/* Define if you want big features. */
-#undef FEAT_BIG
 
 /* Define if you want huge features. */
 #undef FEAT_HUGE

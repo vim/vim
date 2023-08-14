@@ -219,6 +219,53 @@ func Test_xxd()
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
 
+  " Test 17: Print C include with custom variable name
+  let s:test += 1
+  call writefile(['TESTabcd09'], 'XXDfile')
+  for arg in ['-nvarName', '-n varName', '-name varName']
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -i ' . arg . ' XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      unsigned char varName[] = {
+        0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+      };
+      unsigned int varName_len = 11;
+    [CODE]
+
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+  " using "-n name" reading from stdin
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -i < XXDfile -n StdIn'
+  $d
+  let expected =<< trim [CODE]
+    unsigned char StdIn[] = {
+      0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+    };
+    unsigned int StdIn_len = 11;
+  [CODE]
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+
+  " Test 18: Print C include: custom variable names can be capitalized
+  let s:test += 1
+  for arg in ['-C', '-capitalize']
+    call writefile(['TESTabcd09'], 'XXDfile')
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -i ' . arg . ' -n varName XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      unsigned char VARNAME[] = {
+        0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+      };
+      unsigned int VARNAME_LEN = 11;
+    [CODE]
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+
   %d
   bwipe!
   call delete('XXDfile')
@@ -227,8 +274,8 @@ endfunc
 func Test_xxd_patch()
   let cmd1 = 'silent !' .. s:xxd_cmd .. ' -r Xxxdin Xxxdfile'
   let cmd2 = 'silent !' .. s:xxd_cmd .. ' -g1 Xxxdfile > Xxxdout'
-  call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin')
-  call writefile(['::::::::'], 'Xxxdfile')
+  call writefile(["2: 41 41", "8: 42 42"], 'Xxxdin', 'D')
+  call writefile(['::::::::'], 'Xxxdfile', 'D')
   exe cmd1
   exe cmd2
   call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
@@ -242,7 +289,7 @@ func Test_xxd_patch()
   exe cmd1
   exe cmd2
   call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
-  
+
   call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
   call writefile(['::::::::'], 'Xxxdfile')
   exe cmd1
@@ -258,9 +305,7 @@ func Test_xxd_patch()
   exe cmd1
   exe cmd2
   call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
-  
-  call delete('Xxxdin')
-  call delete('Xxxdfile')
+
   call delete('Xxxdout')
 endfunc
 
@@ -322,7 +367,7 @@ endfunc
 " -c0 selects the format specific default column value, as if no -c was given
 " except for -ps, where it disables extra newlines
 func Test_xxd_c0_is_def_cols()
-  call writefile(["abcdefghijklmnopqrstuvwxyz0123456789"], 'Xxdin')
+  call writefile(["abcdefghijklmnopqrstuvwxyz0123456789"], 'Xxdin', 'D')
   for cols in ['-c0', '-c 0', '-cols 0']
     for fmt in ['', '-b', '-e', '-i']
       exe 'r! ' . s:xxd_cmd . ' ' . fmt ' Xxdin > Xxdout1'
@@ -330,7 +375,6 @@ func Test_xxd_c0_is_def_cols()
       call assert_equalfile('Xxdout1', 'Xxdout2')
     endfor
   endfor
-  call delete('Xxdin')
   call delete('Xxdout1')
   call delete('Xxdout2')
 endfunc
@@ -344,7 +388,7 @@ func Test_xxd_plain_one_line()
         \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
         \ "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
-        \ 'Xxdin')
+        \ 'Xxdin', 'D')
   for cols in ['-c0', '-c 0', '-cols 0']
     exe 'r! ' . s:xxd_cmd . ' -ps ' . cols ' Xxdin'
     " output seems to start in line 2
@@ -355,7 +399,20 @@ func Test_xxd_plain_one_line()
     " xxd output must be non-empty and comprise only lower case hex digits
     call assert_match("^[0-9a-f][0-9a-f]*$", out)
   endfor
-  call delete('Xxdin')
+endfunc
+
+func Test_xxd_little_endian_with_cols()
+  enew!
+  call writefile(["ABCDEF"], 'Xxdin', 'D')
+  exe 'r! ' .. s:xxd_cmd .. ' -e -c6 ' .. ' Xxdin'
+  call assert_equal('00000000: 44434241     4645   ABCDEF', getline(2))
+
+  enew!
+  call writefile(["ABCDEFGHI"], 'Xxdin', 'D')
+  exe 'r! ' .. s:xxd_cmd .. ' -e -c9 ' .. ' Xxdin'
+  call assert_equal('00000000: 44434241 48474645       49   ABCDEFGHI', getline(2))
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

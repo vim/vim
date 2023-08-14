@@ -3,6 +3,8 @@
 source check.vim
 CheckFeature menu
 
+source screendump.vim
+
 func Test_load_menu()
   try
     source $VIMRUNTIME/menu.vim
@@ -160,10 +162,7 @@ endfunc
 
 " Test for menu item completion in command line
 func Test_menu_expand()
-  " Make sure we don't have stale menu items like Buffers menu.
-  source $VIMRUNTIME/delmenu.vim
-
-  " Create the menu itmes for test
+  " Create the menu items for test
   menu Dummy.Nothing lll
   for i in range(1, 4)
     let m = 'menu Xmenu.A' .. i .. '.A' .. i
@@ -369,6 +368,10 @@ func Test_menu_info()
         \ display: 'tlnoremenu', modes: 'tl', enabled: v:true, silent: v:false,
         \ rhs: ':tlnoremenu<CR>', noremenu: v:true, script: v:false},
         \ menu_info('Test.tlnoremenu', 'tl'))
+
+  " Test for getting all the top-level menu names
+  call assert_notequal(menu_info('').submenus, [])
+
   aunmenu Test
   tlunmenu Test
   call assert_equal({}, menu_info('Test'))
@@ -407,9 +410,6 @@ func Test_menu_info()
         \ shortcut: '', modes: ' ', submenus: ['menu']},
         \ menu_info(']Test'))
   unmenu ]Test
-
-  " Test for getting all the top-level menu names
-  call assert_notequal(menu_info('').submenus, [])
 endfunc
 
 " Test for <special> keyword in a menu with 'cpo' containing '<'
@@ -481,6 +481,35 @@ func Test_popup_menu()
   unmenu PopUp
 endfunc
 
+" Test for MenuPopup autocommand
+func Test_autocmd_MenuPopup()
+  CheckNotGui
+
+  set mouse=a
+  set mousemodel=popup
+  aunmenu *
+  autocmd MenuPopup * exe printf(
+    \ 'anoremenu PopUp.Foo <Cmd>let g:res = ["%s", "%s"]<CR>',
+    \ expand('<afile>'), expand('<amatch>'))
+
+  call feedkeys("\<RightMouse>\<Down>\<CR>", 'tnix')
+  call assert_equal(['n', 'n'], g:res)
+
+  call feedkeys("v\<RightMouse>\<Down>\<CR>\<Esc>", 'tnix')
+  call assert_equal(['v', 'v'], g:res)
+
+  call feedkeys("gh\<RightMouse>\<Down>\<CR>\<Esc>", 'tnix')
+  call assert_equal(['s', 's'], g:res)
+
+  call feedkeys("i\<RightMouse>\<Down>\<CR>\<Esc>", 'tnix')
+  call assert_equal(['i', 'i'], g:res)
+
+  autocmd! MenuPopup
+  aunmenu PopUp.Foo
+  unlet g:res
+  set mouse& mousemodel&
+endfunc
+
 " Test for listing the menus using the :menu command
 func Test_show_menus()
   " In the GUI, tear-off menu items are present in the output below
@@ -526,6 +555,64 @@ func Test_tmenu()
   [TEXT]
   call assert_equal(exp, split(execute('tmenu'), "\n"))
   tunmenu Test
+endfunc
+
+func Test_only_modifier()
+  exe "tmenu a.b \x80\xfc0"
+  let exp =<< trim [TEXT]
+  --- Menus ---
+  500 a
+    500 b
+        t  - <T-2-^@>
+  [TEXT]
+  call assert_equal(exp, split(execute('tmenu'), "\n"))
+
+  tunmenu a.b
+endfunc
+
+func Test_unmenu_while_listing_menus()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nocompatible
+      unmenu *
+      for i in range(1, 999)
+        exe 'menu ' .. 'foo.' .. i .. ' bar'
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('unmenu *')})
+  END
+  call writefile(lines, 'Xmenuclear', 'D')
+  let buf = RunVimInTerminal('-S Xmenuclear', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":menu\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for opening a menu drawn in the cmdline area
+func Test_popupmenu_cmdline()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set mousemodel=popup
+    menu PopUp.Test1 :<CR>
+    menu PopUp.Test2 :<CR>
+    menu PopUp.Test3 :<CR>
+    call setline(1, repeat(['abcde'], 5))
+  END
+  call writefile(lines, 'Xpopupcmdline', 'D')
+  let buf = RunVimInTerminal('-S Xpopupcmdline', {'rows': 4})
+
+  " cmdline area should be cleared when popupmenu that covered it is closed
+  call term_sendkeys(buf, "\<RightMouse>\<RightRelease>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_popupmenu_cmdline_1', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

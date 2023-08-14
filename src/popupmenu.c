@@ -18,6 +18,7 @@ static int pum_selected;		// index of selected item or -1
 static int pum_first = 0;		// index of top item
 
 static int call_update_screen = FALSE;
+static int pum_in_cmdline = FALSE;
 
 static int pum_height;			// nr of displayed pum items
 static int pum_width;			// width of displayed pum items
@@ -234,19 +235,20 @@ pum_display(
 	max_width = pum_base_width;
 
 	// Calculate column
-#ifdef FEAT_WILDMENU
 	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
-#endif
+	{
+	    // w_wcol includes virtual text "above"
+	    int wcol = curwin->w_wcol % curwin->w_width;
 #ifdef FEAT_RIGHTLEFT
-	if (right_left)
-	    cursor_col = curwin->w_wincol + curwin->w_width
-							  - curwin->w_wcol - 1;
-	else
+	    if (right_left)
+		cursor_col = curwin->w_wincol + curwin->w_width - wcol - 1;
+	    else
 #endif
-	    cursor_col = curwin->w_wincol + curwin->w_wcol;
+		cursor_col = curwin->w_wincol + wcol;
+	}
 
 	// if there are more items than room we need a scrollbar
 	if (pum_height < size)
@@ -389,7 +391,7 @@ pum_display(
  * This will avoid clearing and redrawing the popup menu, prevent flicker.
  */
     void
-pum_call_update_screen()
+pum_call_update_screen(void)
 {
     call_update_screen = TRUE;
 
@@ -422,11 +424,10 @@ pum_redraw(void)
 {
     int		row = pum_row;
     int		col;
-    int		attr_norm = highlight_attr[HLF_PNI];
-    int		attr_select = highlight_attr[HLF_PSI];
     int		attr_scroll = highlight_attr[HLF_PSB];
     int		attr_thumb = highlight_attr[HLF_PST];
     int		attr;
+    int		*attrs; // array used for highlights
     int		i;
     int		idx;
     char_u	*s;
@@ -436,6 +437,18 @@ pum_redraw(void)
     int		thumb_height = 1;
     int		round;
     int		n;
+
+    int		attrsNorm[3];
+    int		attrsSel[3];
+    // "word"
+    attrsNorm[0] = highlight_attr[HLF_PNI];
+    attrsSel[0] = highlight_attr[HLF_PSI];
+    // "kind"
+    attrsNorm[1] = highlight_attr[HLF_PNK];
+    attrsSel[1] = highlight_attr[HLF_PSK];
+    // "extra text"
+    attrsNorm[2] = highlight_attr[HLF_PNX];
+    attrsSel[2] = highlight_attr[HLF_PSX];
 
     if (call_update_screen)
     {
@@ -478,7 +491,8 @@ pum_redraw(void)
 	    idx = pum_size - idx - 1;
 	}
 
-	attr = (idx == pum_selected) ? attr_select : attr_norm;
+	attrs = (idx == pum_selected) ? attrsSel : attrsNorm;
+	attr = attrs[0]; // start with "word" highlight
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -493,18 +507,22 @@ pum_redraw(void)
 		screen_putchar(' ', row, pum_col - 1, attr);
 
 	// Display each entry, use two spaces for a Tab.
-	// Do this 3 times: For the main text, kind and extra info
+	// Do this 3 times:
+	// 0 - main text
+	// 1 - kind
+	// 2 - extra info
 	col = pum_col;
 	totwidth = 0;
-	for (round = 1; round <= 3; ++round)
+	for (round = 0; round < 3; ++round)
 	{
+	    attr = attrs[round];
 	    width = 0;
 	    s = NULL;
 	    switch (round)
 	    {
-		case 1: p = pum_array[idx].pum_text; break;
-		case 2: p = pum_array[idx].pum_kind; break;
-		case 3: p = pum_array[idx].pum_extra; break;
+		case 0: p = pum_array[idx].pum_text; break;
+		case 1: p = pum_array[idx].pum_kind; break;
+		case 2: p = pum_array[idx].pum_extra; break;
 	    }
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
@@ -617,15 +635,15 @@ pum_redraw(void)
 			width += w;
 		}
 
-	    if (round > 1)
+	    if (round > 0)
 		n = pum_kind_width + 1;
 	    else
 		n = 1;
 
 	    // Stop when there is nothing more to display.
-	    if (round == 3
-		    || (round == 2 && pum_array[idx].pum_extra == NULL)
-		    || (round == 1 && pum_array[idx].pum_kind == NULL
+	    if (round == 2
+		    || (round == 1 && pum_array[idx].pum_extra == NULL)
+		    || (round == 0 && pum_array[idx].pum_kind == NULL
 					  && pum_array[idx].pum_extra == NULL)
 		    || pum_base_width + n >= pum_width)
 		break;
@@ -855,7 +873,8 @@ pum_set_selected(int n, int repeat UNUSED)
 	    ++no_u_sync;
 	    resized = prepare_tagpreview(FALSE, FALSE, use_popup);
 	    --no_u_sync;
-	    --RedrawingDisabled;
+	    if (RedrawingDisabled > 0)
+		--RedrawingDisabled;
 	    g_do_tagpreview = 0;
 
 	    if (curwin->w_p_pvw
@@ -951,7 +970,7 @@ pum_set_selected(int n, int repeat UNUSED)
 		    {
 			pum_position_info_popup(curwin);
 			if (win_valid(curwin_save))
-			    redraw_win_later(curwin_save, SOME_VALID);
+			    redraw_win_later(curwin_save, UPD_SOME_VALID);
 		    }
 # endif
 		    if ((curwin != curwin_save && win_valid(curwin_save))
@@ -971,7 +990,7 @@ pum_set_selected(int n, int repeat UNUSED)
 
 			// Return cursor to where we were
 			validate_cursor();
-			redraw_later(SOME_VALID);
+			redraw_later(UPD_SOME_VALID);
 
 			// When the preview window was resized we need to
 			// update the view on the buffer.  Only go back to
@@ -1056,8 +1075,13 @@ pum_set_selected(int n, int repeat UNUSED)
 pum_undisplay(void)
 {
     pum_array = NULL;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     redraw_tabline = TRUE;
+    if (pum_in_cmdline)
+    {
+	clear_cmdline = TRUE;
+	pum_in_cmdline = FALSE;
+    }
     status_redraw_all();
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     // hide any popup info window
@@ -1184,6 +1208,8 @@ pum_position_at_mouse(int min_width)
 	pum_row = mouse_row + 1;
 	if (pum_height > Rows - pum_row)
 	    pum_height = Rows - pum_row;
+	if (pum_row + pum_height > cmdline_row)
+	    pum_in_cmdline = TRUE;
     }
     else
     {
@@ -1377,13 +1403,13 @@ failed:
     void
 ui_remove_balloon(void)
 {
-    if (balloon_array != NULL)
-    {
-	pum_undisplay();
-	while (balloon_arraysize > 0)
-	    vim_free(balloon_array[--balloon_arraysize].pum_text);
-	VIM_CLEAR(balloon_array);
-    }
+    if (balloon_array == NULL)
+	return;
+
+    pum_undisplay();
+    while (balloon_arraysize > 0)
+	vim_free(balloon_array[--balloon_arraysize].pum_text);
+    VIM_CLEAR(balloon_array);
 }
 
 /*
@@ -1420,19 +1446,19 @@ ui_post_balloon(char_u *mesg, list_T *list)
     else
 	balloon_arraysize = split_message(mesg, &balloon_array);
 
-    if (balloon_arraysize > 0)
-    {
-	pum_array = balloon_array;
-	pum_size = balloon_arraysize;
-	pum_compute_size();
-	pum_scrollbar = 0;
-	pum_height = balloon_arraysize;
+    if (balloon_arraysize <= 0)
+	return;
 
-	pum_position_at_mouse(BALLOON_MIN_WIDTH);
-	pum_selected = -1;
-	pum_first = 0;
-	pum_redraw();
-    }
+    pum_array = balloon_array;
+    pum_size = balloon_arraysize;
+    pum_compute_size();
+    pum_scrollbar = 0;
+    pum_height = balloon_arraysize;
+
+    pum_position_at_mouse(BALLOON_MIN_WIDTH);
+    pum_selected = -1;
+    pum_first = 0;
+    pum_redraw();
 }
 
 /*
@@ -1509,7 +1535,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     // pum_size being zero.
     if (pum_size <= 0)
     {
-	emsg(e_menu_only_exists_in_another_mode);
+	emsg(_(e_menu_only_exists_in_another_mode));
 	return;
     }
 
@@ -1557,8 +1583,8 @@ pum_show_popupmenu(vimmenu_T *menu)
 
 	c = vgetc();
 
-	// Bail out when typing Esc, CTRL-C or some callback closed the popup
-	// menu.
+	// Bail out when typing Esc, CTRL-C or some callback or <expr> mapping
+	// closed the popup menu.
 	if (c == ESC || c == Ctrl_C || pum_array == NULL)
 	    break;
 	else if (c == CAR || c == NL)
@@ -1632,7 +1658,7 @@ pum_make_popup(char_u *path_name, int use_mouse_pos)
     {
 	// Hack: set mouse position at the cursor so that the menu pops up
 	// around there.
-	mouse_row = curwin->w_winrow + curwin->w_wrow;
+	mouse_row = W_WINROW(curwin) + curwin->w_wrow;
 	mouse_col = curwin->w_wincol + curwin->w_wcol;
     }
 

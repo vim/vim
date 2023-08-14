@@ -2,6 +2,7 @@
 
 source shared.vim
 source check.vim
+source term_util.vim
 
 " Test for matchfuzzy()
 func Test_matchfuzzy()
@@ -57,7 +58,7 @@ func Test_matchfuzzy()
 
   %bw!
   eval ['somebuf', 'anotherone', 'needle', 'yetanotherone']->map({_, v -> bufadd(v) + bufload(v)})
-  let l = getbufinfo()->map({_, v -> v.name})->matchfuzzy('ndl')
+  let l = getbufinfo()->map({_, v -> fnamemodify(v.name, ':t')})->matchfuzzy('ndl')
   call assert_equal(1, len(l))
   call assert_match('needle', l[0])
 
@@ -67,14 +68,14 @@ func Test_matchfuzzy()
   call assert_equal([{'id' : 6, 'val' : 'camera'}], matchfuzzy(l, 'cam', {'key' : 'val'}))
   call assert_equal([], matchfuzzy(l, 'day', {'text_cb' : {v -> v.val}}))
   call assert_equal([], matchfuzzy(l, 'day', {'key' : 'val'}))
-  call assert_fails("let x = matchfuzzy(l, 'cam', 'random')", 'E715:')
+  call assert_fails("let x = matchfuzzy(l, 'cam', 'random')", 'E1206:')
   call assert_equal([], matchfuzzy(l, 'day', {'text_cb' : {v -> []}}))
   call assert_equal([], matchfuzzy(l, 'day', {'text_cb' : {v -> 1}}))
   call assert_fails("let x = matchfuzzy(l, 'day', {'text_cb' : {a, b -> 1}})", 'E119:')
   call assert_equal([], matchfuzzy(l, 'cam'))
   call assert_fails("let x = matchfuzzy(l, 'cam', {'text_cb' : []})", 'E921:')
   call assert_fails("let x = matchfuzzy(l, 'foo', {'key' : []})", 'E730:')
-  call assert_fails("let x = matchfuzzy(l, 'cam', test_null_dict())", 'E715:')
+  call assert_fails("let x = matchfuzzy(l, 'cam', test_null_dict())", 'E1297:')
   call assert_fails("let x = matchfuzzy(l, 'foo', {'key' : test_null_string()})", 'E475:')
   call assert_fails("let x = matchfuzzy(l, 'foo', {'text_cb' : test_null_function()})", 'E475:')
   " matches with same score should not be reordered
@@ -140,14 +141,14 @@ func Test_matchfuzzypos()
         \ matchfuzzypos(l, 'cam', {'key' : 'val'}))
   call assert_equal([[], [], []], matchfuzzypos(l, 'day', {'text_cb' : {v -> v.val}}))
   call assert_equal([[], [], []], matchfuzzypos(l, 'day', {'key' : 'val'}))
-  call assert_fails("let x = matchfuzzypos(l, 'cam', 'random')", 'E715:')
+  call assert_fails("let x = matchfuzzypos(l, 'cam', 'random')", 'E1206:')
   call assert_equal([[], [], []], matchfuzzypos(l, 'day', {'text_cb' : {v -> []}}))
   call assert_equal([[], [], []], matchfuzzypos(l, 'day', {'text_cb' : {v -> 1}}))
   call assert_fails("let x = matchfuzzypos(l, 'day', {'text_cb' : {a, b -> 1}})", 'E119:')
   call assert_equal([[], [], []], matchfuzzypos(l, 'cam'))
   call assert_fails("let x = matchfuzzypos(l, 'cam', {'text_cb' : []})", 'E921:')
   call assert_fails("let x = matchfuzzypos(l, 'foo', {'key' : []})", 'E730:')
-  call assert_fails("let x = matchfuzzypos(l, 'cam', test_null_dict())", 'E715:')
+  call assert_fails("let x = matchfuzzypos(l, 'cam', test_null_dict())", 'E1297:')
   call assert_fails("let x = matchfuzzypos(l, 'foo', {'key' : test_null_string()})", 'E475:')
   call assert_fails("let x = matchfuzzypos(l, 'foo', {'text_cb' : test_null_function()})", 'E475:')
 
@@ -251,6 +252,32 @@ func Test_matchfuzzy_limit()
   call assert_equal([{'id': 5, 'val': 'crayon'}, {'id': 6, 'val': 'camera'}], l->matchfuzzy('c', #{key: 'val', limit: 0}))
   call assert_equal([{'id': 5, 'val': 'crayon'}], l->matchfuzzy('c', #{text_cb: {v -> v.val}, limit: 1}))
   call assert_equal([{'id': 5, 'val': 'crayon'}], l->matchfuzzy('c', #{key: 'val', limit: 1}))
+endfunc
+
+" This was using uninitialized memory
+func Test_matchfuzzy_initialized()
+  CheckRunVimInTerminal
+
+  " This can take a very long time (esp. when using valgrind).  Run in a
+  " separate Vim instance and kill it after two seconds.  We only check for
+  " memory errors.
+  let lines =<< trim END
+      lvimgrep [ss [fg*
+  END
+  call writefile(lines, 'XTest_matchfuzzy', 'D')
+
+  let buf = RunVimInTerminal('-u NONE -X -Z', {})
+  call term_sendkeys(buf, ":source XTest_matchfuzzy\n")
+  call TermWait(buf, 2000)
+
+  let job = term_getjob(buf)
+  if job_status(job) == "run"
+    call job_stop(job, "int")
+    call TermWait(buf, 50)
+  endif
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

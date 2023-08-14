@@ -5,6 +5,7 @@ source check.vim
 CheckNotGui
 CheckUnix
 
+source shared.vim
 source mouse.vim
 
 " Test for modeless characterwise selection (single click)
@@ -15,9 +16,14 @@ func Test_modeless_characterwise_selection()
   let save_ttymouse = &ttymouse
   call test_override('no_query_mouse', 1)
   set mouse=a term=xterm mousetime=200
+  call WaitForResponses()
+
   new
   call setline(1, ['one two three', 'foo bar baz'])
   redraw!
+
+  " Wait a bit for any terminal responses to get processed.
+  sleep 50m
 
   for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
@@ -250,6 +256,8 @@ func Test_modeless_word_selection()
   let save_ttymouse = &ttymouse
   call test_override('no_query_mouse', 1)
   set mouse=a term=xterm mousetime=200
+  call WaitForResponses()
+
   new
   call setline(1, ['one two three', 'foo bar baz'])
   redraw!
@@ -330,6 +338,8 @@ func Test_modeless_line_selection()
   let save_ttymouse = &ttymouse
   call test_override('no_query_mouse', 1)
   set mouse=a term=xterm mousetime=200
+  call WaitForResponses()
+
   new
   call setline(1, ['one two three', 'foo bar baz'])
   redraw!

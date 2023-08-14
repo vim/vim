@@ -7,6 +7,13 @@ endif
 
 source view_util.vim
 
+" When 'term' is changed some status requests may be sent.  The responses may
+" interfere with what is being tested.  A short sleep is used to process any of
+" those responses first.
+func WaitForResponses()
+  sleep 50m
+endfunc
+
 " Get the name of the Python executable.
 " Also keeps it in s:python.
 func PythonProg()
@@ -62,8 +69,8 @@ endfunc
 " Read the port number from the Xportnr file.
 func GetPort()
   let l = []
-  " with 200 it sometimes failed
-  for i in range(400)
+  " with 200 it sometimes failed, with 400 is rarily failed
+  for i in range(600)
     try
       let l = readfile("Xportnr")
     catch
@@ -98,16 +105,16 @@ func RunServer(cmd, testfunc, args)
   try
     let g:currentJob = RunCommand(pycmd)
 
-    " Wait for up to 2 seconds for the port number to be there.
+    " Wait for some time for the port number to be there.
     let port = GetPort()
     if port == 0
-      call assert_false(1, "Can't start " . a:cmd)
+      call assert_report(strftime("%H:%M:%S") .. " Can't start " .. a:cmd)
       return
     endif
 
     call call(function(a:testfunc), [port])
   catch
-    call assert_false(1, 'Caught exception: "' . v:exception . '" in ' . v:throwpoint)
+    call assert_report('Caught exception: "' . v:exception . '" in ' . v:throwpoint)
   finally
     call s:kill_server(a:cmd)
   endtry
@@ -231,14 +238,31 @@ func s:feedkeys(timer)
   call feedkeys('x', 'nt')
 endfunc
 
+" Get the name of the Vim executable that we expect has been build in the src
+" directory.
+func s:GetJustBuildVimExe()
+  if has("win32")
+    if !filereadable('..\vim.exe') && filereadable('..\vimd.exe')
+      " looks like the debug executable was intentionally build, so use it
+      return '..\vimd.exe'
+    endif
+    return '..\vim.exe'
+  endif
+  return '../vim'
+endfunc
+
 " Get $VIMPROG to run the Vim executable.
 " The Makefile writes it as the first line in the "vimcmd" file.
+" Falls back to the Vim executable in the src directory.
 func GetVimProg()
-  if !filereadable('vimcmd')
-    " Assume the script was sourced instead of running "make".
-    return '../vim'
+  if filereadable('vimcmd')
+    return readfile('vimcmd')[0]
   endif
-  return readfile('vimcmd')[0]
+  echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
+
+  " Probably the script was sourced instead of running "make".
+  " We assume Vim was just build in the src directory then.
+  return s:GetJustBuildVimExe()
 endfunc
 
 let g:valgrind_cnt = 1
@@ -246,16 +270,13 @@ let g:valgrind_cnt = 1
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
 " If there is an argument use it instead of "NONE".
 func GetVimCommand(...)
-  if !filereadable('vimcmd')
-    echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
-    if !has("win32")
-      let lines = ['../vim']
-    else
-      let lines = ['..\vim.exe']
-    endif
-  else
+  if filereadable('vimcmd')
     let lines = readfile('vimcmd')
+  else
+    echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
+    let lines = [s:GetJustBuildVimExe()]
   endif
+
   if a:0 == 0
     let name = 'NONE'
   else

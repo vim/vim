@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2022 May 05
+*quickref.txt*  For Vim version 9.0.  Last change: 2022 Dec 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -643,7 +643,7 @@ Short explanation of each option:		*option-list*
 'cinkeys'	  'cink'    keys that trigger indent when 'cindent' is set
 'cinoptions'	  'cino'    how to do indenting when 'cindent' is set
 'cinwords'	  'cinw'    words where 'si' and 'cin' add an indent
-'cinscopedecls'	  'cinsd'   words that are recognized by 'cino-g' 
+'cinscopedecls'	  'cinsd'   words that are recognized by 'cino-g'
 'clipboard'	  'cb'	    use the clipboard as the unnamed register
 'cmdheight'	  'ch'	    number of lines to use for the command-line
 'cmdwinheight'	  'cwh'     height of the command-line window
@@ -689,6 +689,7 @@ Short explanation of each option:		*option-list*
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
 'emoji'		  'emo'	    emoji characters are considered full width
 'encoding'	  'enc'     encoding used internally
+'endoffile'	  'eof'     write CTRL-Z at end of the file
 'endofline'	  'eol'     write <EOL> for last line in file
 'equalalways'	  'ea'	    windows are automatically made the same size
 'equalprg'	  'ep'	    external program to use for "=" command
@@ -774,6 +775,7 @@ Short explanation of each option:		*option-list*
 'key'			    encryption key
 'keymap'	  'kmp'     name of a keyboard mapping
 'keymodel'	  'km'	    enable starting/stopping selection with keys
+'keyprotocol'	  'kpc'	    what keyboard protocol to use for what terminal
 'keywordprg'	  'kp'	    program to use for the "K" command
 'langmap'	  'lmap'    alphabetic characters for other language mode
 'langmenu'	  'lm'	    language to be used for the menus
@@ -785,6 +787,7 @@ Short explanation of each option:		*option-list*
 'lines'			    number of lines in the display
 'linespace'	  'lsp'     number of pixel lines to use between characters
 'lisp'			    automatic indenting for Lisp
+'lispoptions'	  'lop'     changes how Lisp indenting is done
 'lispwords'	  'lw'	    words that change how lisp indenting works
 'list'			    show <Tab> and <EOL>
 'listchars'	  'lcs'     characters for displaying in list mode
@@ -899,7 +902,8 @@ Short explanation of each option:		*option-list*
 'shortmess'	  'shm'     list of flags, reduce length of messages
 'shortname'	  'sn'	    Filenames assumed to be 8.3 chars
 'showbreak'	  'sbr'     string to use at the start of wrapped lines
-'showcmd'	  'sc'	    show (partial) command in status line
+'showcmd'	  'sc'	    show (partial) command somewhere
+'showcmdloc'	  'sloc'    where to show (partial) command
 'showfulltag'	  'sft'     show full tag pattern when completing tag
 'showmatch'	  'sm'	    briefly jump to matching bracket if insert one
 'showmode'	  'smd'     message on status line to show current mode
@@ -910,6 +914,7 @@ Short explanation of each option:		*option-list*
 'smartcase'	  'scs'     no ignore case when pattern has uppercase
 'smartindent'	  'si'	    smart autoindenting for C programs
 'smarttab'	  'sta'     use 'shiftwidth' when inserting <Tab>
+'smoothscroll'	  'sms'     scroll by screen lines when 'wrap' is set
 'softtabstop'	  'sts'     number of spaces that <Tab> uses while editing
 'spell'			    enable spell checking
 'spellcapcheck'   'spc'     pattern to locate end of a sentence
@@ -918,6 +923,7 @@ Short explanation of each option:		*option-list*
 'spelloptions'	  'spo'     options for spell checking
 'spellsuggest'	  'sps'     method(s) used to suggest spelling corrections
 'splitbelow'	  'sb'	    new window from split is below the current one
+'splitkeep'	  'spk'     determines scroll behavior for split windows
 'splitright'	  'spr'     new window is put right of the current one
 'startofline'	  'sol'     commands move cursor to first non-blank in line
 'statusline'	  'stl'     custom format for the status line

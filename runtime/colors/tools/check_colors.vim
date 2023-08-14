@@ -6,10 +6,23 @@ vim9script
 def Test_check_colors()
     const savedview = winsaveview()
     cursor(1, 1)
-    var err = {}
+
+    # err is
+    # {
+    #    colors_name: "message",
+    #    init: "message",
+    #    background: "message",
+    #    ....etc
+    #    highlight: {
+    #       'Normal': "Missing ...",
+    #       'Conceal': "Missing ..."
+    #       ....etc
+    #    }
+    # }
+    var err: dict<any> = {}
 
     # 1) Check g:colors_name is existing
-    if !search('\<\%(g:\)\?colors_name\>', 'cnW')
+    if search('\<\%(g:\)\?colors_name\>', 'cnW') == 0
         err['colors_name'] = 'g:colors_name not set'
     else
         err['colors_name'] = 'OK'
@@ -180,11 +193,12 @@ def Test_check_colors()
     Result(err)
 enddef
 
-def Result(err: any)
+
+def Result(err: dict<any>)
     var do_groups: bool = v:false
     echohl Title | echomsg "---------------" | echohl Normal
     for key in sort(keys(err))
-        if key is 'highlight'
+        if key == 'highlight'
             do_groups = !empty(err[key])
             continue
         else

@@ -15,7 +15,7 @@ func Test_getjumplist()
   for i in range(1, 100)
     call add(lines, "Line " . i)
   endfor
-  call writefile(lines, "Xtest")
+  call writefile(lines, "Xtest", 'D')
 
   " Jump around and create a jump list
   edit Xtest
@@ -57,8 +57,6 @@ func Test_getjumplist()
   clearjumps
   call test_garbagecollect_now()
   call assert_equal(4, l[1])
-
-  call delete("Xtest")
 endfunc
 
 func Test_jumplist_invalid()

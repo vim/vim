@@ -201,6 +201,10 @@ func Test_syntax_completion()
 
   call feedkeys(":syn match \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('^"syn match Boolean Character ', @:)
+
+  syn cluster Aax contains=Aap
+  call feedkeys(":syn list @A\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('^"syn list @Aax', @:)
 endfunc
 
 func Test_echohl_completion()
@@ -451,7 +455,7 @@ func Test_invalid_name()
 endfunc
 
 func Test_ownsyntax()
-  new Xfoo
+  new XfooOwnSyntax
   call setline(1, '#define FOO')
   syntax on
   set filetype=c
@@ -648,7 +652,7 @@ func Test_syntax_c()
 	\ "\t}",
 	\ "\tNote: asdf",
 	\ '}',
-	\ ], 'Xtest.c')
+	\ ], 'Xtest.c', 'D')
 
   " This makes the default for 'background' use "dark", check that the
   " response to t_RB corrects it to "light".
@@ -666,7 +670,6 @@ func Test_syntax_c()
   call StopVimInTerminal(buf)
 
   let $COLORFGBG = ''
-  call delete('Xtest.c')
 endfun
 
 " Test \z(...) along with \z1
@@ -700,10 +703,10 @@ func Test_syn_wrong_z_one()
 endfunc
 
 func Test_syntax_after_bufdo()
-  call writefile(['/* aaa comment */'], 'Xaaa.c')
-  call writefile(['/* bbb comment */'], 'Xbbb.c')
-  call writefile(['/* ccc comment */'], 'Xccc.c')
-  call writefile(['/* ddd comment */'], 'Xddd.c')
+  call writefile(['/* aaa comment */'], 'Xaaa.c', 'D')
+  call writefile(['/* bbb comment */'], 'Xbbb.c', 'D')
+  call writefile(['/* ccc comment */'], 'Xccc.c', 'D')
+  call writefile(['/* ddd comment */'], 'Xddd.c', 'D')
 
   let bnr = bufnr('%')
   new Xaaa.c
@@ -731,10 +734,6 @@ func Test_syntax_after_bufdo()
   bwipe! Xccc.c
   bwipe! Xddd.c
   syntax off
-  call delete('Xaaa.c')
-  call delete('Xbbb.c')
-  call delete('Xccc.c')
-  call delete('Xddd.c')
 endfunc
 
 func Test_syntax_foldlevel()
@@ -838,8 +837,9 @@ func Test_search_syntax_skip()
   1
   call search('VIM', 'w', '', 0, 'synIDattr(synID(line("."), col("."), 1), "name") =~? "comment"')
   call assert_equal('Another Text for VIM', getline('.'))
+
   1
-  call search('VIM', 'w', '', 0, 'synIDattr(synID(line("."), col("."), 1), "name") !~? "string"')
+  call search('VIM', 'cw', '', 0, 'synIDattr(synID(line("."), col("."), 1), "name") !~? "string"')
   call assert_equal(' let a = "VIM"', getline('.'))
 
   " Skip argument using Lambda.
@@ -848,26 +848,27 @@ func Test_search_syntax_skip()
   call assert_equal('Another Text for VIM', getline('.'))
 
   1
-  call search('VIM', 'w', '', 0, { -> synIDattr(synID(line("."), col("."), 1), "name") !~? "string"})
+  call search('VIM', 'cw', '', 0, { -> synIDattr(synID(line("."), col("."), 1), "name") !~? "string"})
   call assert_equal(' let a = "VIM"', getline('.'))
 
   " Skip argument using funcref.
   func InComment()
     return synIDattr(synID(line("."), col("."), 1), "name") =~? "comment"
   endfunc
-  func InString()
+  func NotInString()
     return synIDattr(synID(line("."), col("."), 1), "name") !~? "string"
   endfunc
+
   1
   call search('VIM', 'w', '', 0, function('InComment'))
   call assert_equal('Another Text for VIM', getline('.'))
 
   1
-  call search('VIM', 'w', '', 0, function('InString'))
+  call search('VIM', 'cw', '', 0, function('NotInString'))
   call assert_equal(' let a = "VIM"', getline('.'))
 
   delfunc InComment
-  delfunc InString
+  delfunc NotInString
   bwipe!
 endfunc
 

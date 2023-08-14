@@ -1,12 +1,12 @@
 " Vim plugin for showing matching parens
-" Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2021 Apr 08
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
 " - when 'compatible' is set
-" - the "CursorMoved" autocmd event is not available.
-if exists("g:loaded_matchparen") || &cp || !exists("##CursorMoved")
+if exists("g:loaded_matchparen") || &cp
   finish
 endif
 let g:loaded_matchparen = 1
@@ -20,8 +20,8 @@ endif
 
 augroup matchparen
   " Replace all matchparen autocommands
-  autocmd! CursorMoved,CursorMovedI,WinEnter * call s:Highlight_Matching_Pair()
-  autocmd! WinLeave * call s:Remove_Matches()
+  autocmd! CursorMoved,CursorMovedI,WinEnter,BufWinEnter,WinScrolled * call s:Highlight_Matching_Pair()
+  autocmd! WinLeave,BufLeave * call s:Remove_Matches()
   if exists('##TextChanged')
     autocmd! TextChanged,TextChangedI * call s:Highlight_Matching_Pair()
   endif
@@ -109,8 +109,9 @@ func s:Highlight_Matching_Pair()
     " searchpairpos()'s skip argument.
     " We match "escape" for special items, such as lispEscapeSpecial, and
     " match "symbol" for lispBarSymbol.
-    let s_skip = '!empty(filter(map(synstack(line("."), col(".")), ''synIDattr(v:val, "name")''), ' .
-	\ '''v:val =~? "string\\|character\\|singlequote\\|escape\\|symbol\\|comment"''))'
+    let s_skip = 'synstack(".", col("."))'
+        \ . '->indexof({_, id -> synIDattr(id, "name") =~? '
+        \ . '"string\\|character\\|singlequote\\|escape\\|symbol\\|comment"}) >= 0'
     " If executing the expression determines that the cursor is currently in
     " one of the syntax types, then we want searchpairpos() to find the pair
     " within those syntax types (i.e., not skip).  Otherwise, the cursor is

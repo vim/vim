@@ -1,8 +1,9 @@
 " Vim support file to define the default menus
 " You can also use this as a start for your own set of menus.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Mar 02
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -125,6 +126,12 @@ an 10.320 &File.Open\ Tab\.\.\.<Tab>:tabnew	:browse tabnew<CR>
 an 10.325 &File.&New<Tab>:enew			:confirm enew<CR>
 an <silent> 10.330 &File.&Close<Tab>:close
 	\ :if winheight(2) < 0 && tabpagewinnr(2) == 0 <Bar>
+	\   confirm enew <Bar>
+	\ else <Bar>
+	\   confirm close <Bar>
+	\ endif<CR>
+tln <silent> 10.330 &File.&Close<Tab>:close
+	\ <C-W>:if winheight(2) < 0 && tabpagewinnr(2) == 0 <Bar>
 	\   confirm enew <Bar>
 	\ else <Bar>
 	\   confirm close <Bar>
@@ -335,7 +342,7 @@ def s:TextWidth()
     # Remove leading zeros to avoid it being used as an octal number.
     # But keep a zero by itself.
     var tw = substitute(n, "^0*", "", "")
-    &tw = tw == '' ? 0 : tw
+    &tw = tw == '' ? 0 : str2nr(tw)
   endif
 enddef
 
@@ -468,7 +475,7 @@ if has("spell")
   an <silent> 40.335.270 &Tools.&Spelling.&Find\ More\ Languages	:call <SID>SpellLang()<CR>
 
   let s:undo_spelllang = ['aun &Tools.&Spelling.&Find\ More\ Languages']
-  def s:SpellLang()
+  def s:SpellLang(encChanged = false)
     for cmd in s:undo_spelllang
       exe "silent! " .. cmd
     endfor
@@ -476,7 +483,8 @@ if has("spell")
 
     var enc = &enc == "iso-8859-15" ? "latin1" : &enc
 
-    if !exists("g:menutrans_set_lang_to")
+    # Reset g:menutrans_set_lang_to when called for the EncodingChanged event.
+    if !exists("g:menutrans_set_lang_to") || encChanged
       g:menutrans_set_lang_to = 'Set Language to'
     endif
 
@@ -504,12 +512,12 @@ if has("spell")
     else
       echomsg "Found " .. found .. " more spell files"
     endif
+
     # Need to redo this when 'encoding' is changed.
     augroup spellmenu
-    au! EncodingChanged * call <SID>SpellLang()
+    au! EncodingChanged * call SpellLang(true)
     augroup END
   enddef
-
 endif
 
 " Tools.Fold Menu
@@ -600,7 +608,9 @@ def s:XxdBack()
     exe ':%!' .. g:xxdprogram .. ' -r'
   endif
   set ft=
-  doautocmd filetypedetect BufReadPost
+  if exists('#filetypedetect') && exists('#BufReadPost')
+    doautocmd filetypedetect BufReadPost
+  endif
   &mod = mod
 enddef
 

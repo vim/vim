@@ -1,13 +1,33 @@
 version: "{build}"
 
+image: Visual Studio 2015
+
 skip_tags: true
 
 environment:
   matrix:
     - FEATURE: HUGE
+  
+    # Alternate environments, not used right now.  2022 is a lot slower.
+    #
+    # - job_name: VS-2015
+    #   appveyor_build_worker_image: Visual Studio 2015
+    #   FEATURE: HUGE
+
+    # - job_name: VS-2017
+    #   appveyor_build_worker_image: Visual Studio 2017
+    #   FEATURE: HUGE
+
+    # - job_name: VS-2019
+    #   appveyor_build_worker_image: Visual Studio 2019
+    #   FEATURE: HUGE
+
+    # - job_name: VS-2022
+    #   appveyor_build_worker_image: Visual Studio 2022
+    #   FEATURE: HUGE
+
 # disabled
 #    - FEATURE: TINY
-#    - FEATURE: SMALL
 #    - FEATURE: NORMAL
 #    - FEATURE: BIG
 
@@ -15,20 +35,19 @@ matrix:
   fast_finish: true
 
 before_build:
-  # Use Windows SDK 7.1 (= MSVC 2010)
-  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 /release'
-  - 'set INCLUDE=%INCLUDE%C:\Program Files (x86)\Windows Kits\8.1\Include\um'
+  - call ver
+  - ci\appveyor.bat install
 
 build_script:
-  - ci/appveyor.bat
+  - ci\appveyor.bat build
 
 test_script:
-  - cd src/testdir
-    # Testing with MSVC gvim
-  - path C:\Python35-x64;%PATH%
-  - nmake -f Make_dos.mak VIMPROG=..\gvim
-  - nmake -f Make_dos.mak clean
-    # Testing with MSVC console version
-  - nmake -f Make_dos.mak VIMPROG=..\vim
+  - ci\appveyor.bat test
+
+artifacts:
+  - path: src/vim.exe
+    name: vim
+  - path: src/gvim.exe
+    name: gvim
 
 # vim: sw=2 sts=2 et ts=8 sr

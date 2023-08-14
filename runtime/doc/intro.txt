@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2022 Apr 03
+*intro.txt*     For Vim version 9.0.  Last change: 2023 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,15 +122,16 @@ http://www.vim.org/maillist.php
 Bug reports:				*bugs* *bug-reports* *bugreport.vim*
 
 There are three ways to report bugs:
-1. Open an issue on GitHub: https://github.com/vim/vim/issues
-   The text will be forwarded to the vim-dev maillist.
-2. For issues with runtime files, look in the header for an email address or
+1. For issues with runtime files, look in the header for an email address or
    any other way to report it to the maintainer.
+2. Open an issue on GitHub: https://github.com/vim/vim/issues
+   The text will be forwarded to the vim-dev maillist.
 3. Send bug reports to: Vim Developers <vim-dev@vim.org>
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
-   issue, send it to <bugs@vim.org>, this only goes to the Vim maintainer
-   (that's Bram).
+   issue, please contact any of the current Vim maintainers
+   https://github.com/orgs/vim/people (but not Bram or the vim-dev ML).
+   In the future, a proper process for handling security issues will be setup.
 
 Please be brief; all the time that is spent on answering mail is subtracted
 from the time that is spent on improving Vim!  Always give a reproducible
@@ -181,9 +182,9 @@ The user may create scripts for Vim that use external commands.  These might
 introduce Y2K problems, but those are not really part of Vim itself.
 
 ==============================================================================
-3. Credits				*credits* *author* *Bram* *Moolenaar*
+3. Credits						*credits* *author*
 
-Most of Vim was created by Bram Moolenaar <Bram@vim.org>.
+Most of Vim was created by Bram Moolenaar <Bram@vim.org> |Bram-Moolenaar|
 
 Parts of the documentation come from several Vi manuals, written by:
 	W.N. Joy
@@ -216,7 +217,7 @@ Vim would never have become what it is now, without the help of these people!
 	Bill Foster		Athena GUI port (later removed)
 	Google			Lets me work on Vim one day a week
 	Loic Grenie		xvim (ideas for multi windows version)
-	Sven Guckes		Vim promoter and previous WWW page maintainer
+	Sven Guckes		Vim promoter and previous WWW page maintainer |Sven-Guckes|
 	Darren Hiebert		Exuberant ctags
 	Jason Hildebrand	GTK+ 2 port
 	Bruce Hunsaker		improvements for VMS port
@@ -533,6 +534,10 @@ examples and use them directly.  Or type them literally, including the '<' and
 '>' characters.  This does NOT work for other commands, like ":set" and
 ":autocmd"!
 
+The notation can be used in a double quoted strings, using "\<" at the start,
+e.g. "\<C-Space>".  This results in a special key code.  To convert this back
+to readable text use `keytrans()`.
+
 ==============================================================================
 5. Modes, introduction				*vim-modes-intro* *vim-modes*
 
@@ -697,7 +702,8 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 			line-input editing commands (<Del> or <BS> to erase,
 			CTRL-U to kill the whole line).
 			Vim will enter this mode by default if it's invoked as
-			"ex" on the command-line.
+			"ex" on the command-line or the |-e| command line
+			argument was used.
 			Use the ":vi" command |:visual| to exit "Ex" mode.
 			Note: In older versions of Vim "Q" formatted text,
 			that is now done with |gq|.  But if you use the
@@ -708,7 +714,7 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 gQ			Switch to "Ex" mode like with "Q", but really behave
 			like typing ":" commands after another.  All command
 			line editing, completion etc. is available.
-			Use the ":vi" command |:visual| to exit "Ex" mode.
+			Use the `:vi` command (`:visual`) to exit "Ex" mode.
 
 ==============================================================================
 7. The window contents					*window-contents*

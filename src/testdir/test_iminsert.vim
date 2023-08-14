@@ -79,17 +79,14 @@ func Test_imactivatefunc_imstatusfunc_callback_no_breaks_foldopen()
     call setline(1, ['{{{', 'abc', '}}}'])
     %foldclose
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {})
-  call term_wait(buf)
   call assert_notequal('abc', term_getline(buf, 2))
   call term_sendkeys(buf, "/abc\n")
-  call term_wait(buf)
-  call assert_equal('abc', term_getline(buf, 2))
+  call WaitForAssert({-> assert_equal('abc', term_getline(buf, 2))})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xscript')
 endfunc
 
 " Test for using an lmap in insert mode

@@ -1,6 +1,6 @@
 The files in this directory come from the xdiff implementation in git.
 You can find it here: https://github.com/git/git/tree/master/xdiff
-The files were last updated August 31, 2021 from git release v.2.33.0
+The files were last updated March 17, 2023 from git release v.2.40.0
 
 This is originally based on libxdiff, which can be found here:
 http://www.xmailserver.org/xdiff-lib.html

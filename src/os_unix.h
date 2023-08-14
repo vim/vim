@@ -88,26 +88,17 @@
 // have an argument???
 #define SIGHASARG
 
-// List 3 arg systems here. I guess __sgi, please test and correct me. jw.
-#if defined(__sgi) && defined(HAVE_SIGCONTEXT)
-# define SIGHAS3ARGS
-#endif
-
 #ifdef SIGHASARG
-# ifdef SIGHAS3ARGS
-#  define SIGPROTOARG	(int, int, struct sigcontext *)
-#  define SIGDEFARG(s)	(int s, int sig2, struct sigcontext *scont)
-#  define SIGDUMMYARG	0, 0, (struct sigcontext *)0
-# else
-#  define SIGPROTOARG	(int)
-#  define SIGDEFARG(s)	(int s UNUSED)
-#  define SIGDUMMYARG	0
-# endif
+# define SIGPROTOARG	(int)
+# define SIGDEFARG(s)	(int s UNUSED)
+# define SIGDUMMYARG	0
 #else
 # define SIGPROTOARG   (void)
 # define SIGDEFARG(s)  ()
 # define SIGDUMMYARG
 #endif
+
+typedef void (*sighandler_T) SIGPROTOARG;
 
 #ifdef HAVE_DIRENT_H
 # include <dirent.h>
@@ -128,10 +119,7 @@
 # endif
 #endif
 
-// on some systems time.h should not be included together with sys/time.h
-#if !defined(HAVE_SYS_TIME_H) || defined(TIME_WITH_SYS_TIME)
-# include <time.h>
-#endif
+#include <time.h>
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
@@ -227,24 +215,6 @@ typedef struct dsc$descriptor   DESC;
 #endif
 #ifndef DFLT_HELPFILE
 # define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
-#endif
-#ifndef FILETYPE_FILE
-# define FILETYPE_FILE	"filetype.vim"
-#endif
-#ifndef FTPLUGIN_FILE
-# define FTPLUGIN_FILE	"ftplugin.vim"
-#endif
-#ifndef INDENT_FILE
-# define INDENT_FILE	"indent.vim"
-#endif
-#ifndef FTOFF_FILE
-# define FTOFF_FILE	"ftoff.vim"
-#endif
-#ifndef FTPLUGOF_FILE
-# define FTPLUGOF_FILE	"ftplugof.vim"
-#endif
-#ifndef INDOFF_FILE
-# define INDOFF_FILE	"indoff.vim"
 #endif
 #ifndef SYS_MENU_FILE
 # define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"

@@ -10,7 +10,6 @@ func Test_skip_lua()
 endfunc
 
 CheckFeature lua
-CheckFeature float
 
 " Depending on the lua version, the error messages are different.
 let [s:major, s:minor, s:patch] = luaeval('vim.lua_version')->split('\.')->map({-> str2nr(v:val)})
@@ -617,10 +616,10 @@ endfunc
 func Test_lua_blob()
   call assert_equal(0z, luaeval('vim.blob("")'))
   call assert_equal(0z31326162, luaeval('vim.blob("12ab")'))
-  call assert_equal(0z00010203, luaeval('vim.blob("\x00\x01\x02\x03")'))
-  call assert_equal(0z8081FEFF, luaeval('vim.blob("\x80\x81\xfe\xff")'))
+  call assert_equal(0z00010203, luaeval('vim.blob("\000\001\002\003")'))
+  call assert_equal(0z8081FEFF, luaeval('vim.blob("\128\129\254\255")'))
 
-  lua b = vim.blob("\x00\x00\x00\x00")
+  lua b = vim.blob("\000\000\000\000")
   call assert_equal(0z00000000, luaeval('b'))
   call assert_equal(4, luaeval('#b'))
   lua b[0], b[1], b[2], b[3] = 1, 32, 256, 0xff
@@ -818,8 +817,7 @@ endfunc
 
 " Test :luafile foo.lua
 func Test_luafile()
-  call delete('Xlua_file')
-  call writefile(["str = 'hello'", "num = 123" ], 'Xlua_file')
+  call writefile(["str = 'hello'", "num = 123" ], 'Xlua_file', 'D')
   call setfperm('Xlua_file', 'r-xr-xr-x')
 
   luafile Xlua_file
@@ -827,7 +825,6 @@ func Test_luafile()
   call assert_equal(123, luaeval('num'))
 
   lua str, num = nil
-  call delete('Xlua_file')
 endfunc
 
 " Test :luafile %
@@ -850,12 +847,11 @@ endfunc
 " Test :luafile with syntax error
 func Test_luafile_error()
   new Xlua_file
-  call writefile(['nil = 0' ], 'Xlua_file')
+  call writefile(['nil = 0' ], 'Xlua_file', 'D')
   call setfperm('Xlua_file', 'r-xr-xr-x')
 
   call assert_fails('luafile Xlua_file', "Xlua_file:1: unexpected symbol near 'nil'")
 
-  call delete('Xlua_file')
   bwipe!
 endfunc
 
