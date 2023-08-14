@@ -16,6 +16,12 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
+#if __STDC_VERSION__ >= 199901L
+#  define LUAV_INLINE inline
+#else
+#  define LUAV_INLINE
+#endif
+
 // Only do the following when the feature is enabled.  Needed for "make
 // depend".
 #if defined(FEAT_LUA) || defined(PROTO)
@@ -61,16 +67,33 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 
 static const char LUA___CALL[] = "__call";
 
-// most functions are closures with a cache table as first upvalue;
-// get/setudata manage references to vim userdata in cache table through
-// object pointers (light userdata)
-#define luaV_getudata(L, v) \
-    lua_pushlightuserdata((L), (void *) (v)); \
-    lua_rawget((L), lua_upvalueindex(1))
-#define luaV_setudata(L, v) \
-    lua_pushlightuserdata((L), (void *) (v)); \
-    lua_pushvalue((L), -2); \
-    lua_rawset((L), lua_upvalueindex(1))
+// get/setudata manage references to vim userdata in a cache table through
+// object pointers (light userdata). The cache table itself is retrieved
+// from the registry.
+
+static const char LUAVIM_UDATA_CACHE[] = "luaV_udata_cache";
+
+    static void LUAV_INLINE
+luaV_getudata(lua_State *L, void *v)
+{
+    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
+    lua_rawget(L, LUA_REGISTRYINDEX);  // now the cache table is at the top of the stack
+    lua_pushlightuserdata(L, v);
+    lua_rawget(L, -2);
+    lua_remove(L, -2);  // remove the cache table from the stack
+}
+
+    static void LUAV_INLINE
+luaV_setudata(lua_State *L, void *v)
+{
+    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
+    lua_rawget(L, LUA_REGISTRYINDEX);  // cache table is at -1
+    lua_pushlightuserdata(L, v);       // ...now at -2
+    lua_pushvalue(L, -3);	       // copy the userdata (cache at -3)
+    lua_rawset(L, -3);		       // consumes two stack items
+    lua_pop(L, 1);		       // and remove the cache table
+}
+
 #define luaV_getfield(L, s) \
     lua_pushlightuserdata((L), (void *)(s)); \
     lua_rawget((L), LUA_REGISTRYINDEX)
@@ -2472,6 +2495,10 @@ luaopen_vim(lua_State *L)
     lua_pushstring(L, "v");
     lua_setfield(L, -2, "__mode");
     lua_setmetatable(L, -2); // cache is weak-valued
+    // put the cache table in the registry for luaV_get/setudata()
+    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
+    lua_pushvalue(L, -2);
+    lua_rawset(L, LUA_REGISTRYINDEX);
     // print
     lua_pushcfunction(L, luaV_print);
     lua_setglobal(L, "print");
