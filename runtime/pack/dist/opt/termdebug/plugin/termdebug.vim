@@ -1350,7 +1350,7 @@ func s:GotoAsmwinOrCreateIt()
     if asmbuf > 0
       exe 'buffer' . asmbuf
     else
-      silent exe 'file Termdebug-asm-listing'
+      silent file Termdebug-asm-listing
     endif
 
     if s:GetDisasmWindowHeight() > 0
@@ -1411,7 +1411,7 @@ func s:GotoVariableswinOrCreateIt()
     if varbuf > 0
       exe 'buffer' . varbuf
     else
-      silent exe 'file Termdebug-variables-listing'
+      silent file Termdebug-variables-listing
     endif
 
     if s:GetVariablesWindowHeight() > 0
