@@ -41,7 +41,7 @@ You might have to do the commands manually.  Example:
 WHEN THERE IS A MISTAKE
 
 If you find there is a mistake in one of the translations, please report this
-to the maintainer of the translation.  His/her E-mail address is in the
+to the maintainer of the translation.  His/her e-mail address is in the
 comments at the start of the file.  You can also see this with the ":messages"
 command in Vim when the translation is being used.
 
