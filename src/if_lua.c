@@ -73,27 +73,6 @@ static const char LUA___CALL[] = "__call";
 
 static const char LUAVIM_UDATA_CACHE[] = "luaV_udata_cache";
 
-    static void LUAV_INLINE
-luaV_getudata(lua_State *L, void *v)
-{
-    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
-    lua_rawget(L, LUA_REGISTRYINDEX);  // now the cache table is at the top of the stack
-    lua_pushlightuserdata(L, v);
-    lua_rawget(L, -2);
-    lua_remove(L, -2);  // remove the cache table from the stack
-}
-
-    static void LUAV_INLINE
-luaV_setudata(lua_State *L, void *v)
-{
-    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
-    lua_rawget(L, LUA_REGISTRYINDEX);  // cache table is at -1
-    lua_pushlightuserdata(L, v);       // ...now at -2
-    lua_pushvalue(L, -3);	       // copy the userdata (cache at -3)
-    lua_rawset(L, -3);		       // consumes two stack items
-    lua_pop(L, 1);		       // and remove the cache table
-}
-
 #define luaV_getfield(L, s) \
     lua_pushlightuserdata((L), (void *)(s)); \
     lua_rawget((L), LUA_REGISTRYINDEX)
@@ -511,6 +490,26 @@ luaL_typeerror(lua_State *L, int narg, const char *tname)
 }
 #endif
 
+    static LUAV_INLINE void
+luaV_getudata(lua_State *L, void *v)
+{
+    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
+    lua_rawget(L, LUA_REGISTRYINDEX);  // now the cache table is at the top of the stack
+    lua_pushlightuserdata(L, v);
+    lua_rawget(L, -2);
+    lua_remove(L, -2);  // remove the cache table from the stack
+}
+
+    static LUAV_INLINE void
+luaV_setudata(lua_State *L, void *v)
+{
+    lua_pushlightuserdata(L, (void *) LUAVIM_UDATA_CACHE);
+    lua_rawget(L, LUA_REGISTRYINDEX);  // cache table is at -1
+    lua_pushlightuserdata(L, v);       // ...now at -2
+    lua_pushvalue(L, -3);	       // copy the userdata (cache at -3)
+    lua_rawset(L, -3);		       // consumes two stack items
+    lua_pop(L, 1);		       // and remove the cache table
+}
 
 // =======   Internal   =======
 
