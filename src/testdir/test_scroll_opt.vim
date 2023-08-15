@@ -830,7 +830,13 @@ func Test_smoothscroll_multi_skipcol()
   call term_sendkeys(buf, "2\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_multi_skipcol_3', {})
 
+  call term_sendkeys(buf, "j")
+  call term_sendkeys(buf, ":call assert_equal(screenpos(0, line('.'), col('.'))['row'], 2)\<CR>")
+  call term_sendkeys(buf, ":call writefile(v:errors, 'Xresult')\<CR>")
+
   call StopVimInTerminal(buf)
+  call assert_equal([], readfile('Xresult'))
+  call delete('Xresult')
 endfunc
 
 " this was dividing by zero bug in scroll_cursor_bot

@@ -66,7 +66,7 @@ adjust_plines_for_skipcol(win_T *wp, int n)
  * whether it is the first line, whether w_skipcol is non-zero and limiting to
  * the window height.
  */
-    static int
+    int
 plines_correct_topline(win_T *wp, linenr_T lnum)
 {
     int n;

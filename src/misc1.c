@@ -517,12 +517,7 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last)
 	else
 #endif
 	{
-#ifdef FEAT_DIFF
-	    if (first == wp->w_topline)
-		count += plines_win_nofill(wp, first, TRUE) + wp->w_topfill;
-	    else
-#endif
-		count += plines_win(wp, first, TRUE);
+	    count += plines_correct_topline(wp, first);
 	    ++first;
 	}
     }
