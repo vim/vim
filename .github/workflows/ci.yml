@@ -180,21 +180,23 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      - name: Set up snd-dummy
+      - name: Check if linux-modules-extra is available
+        id: check-snd-dummy
         if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
+        continue-on-error: true
+        run: |
+          sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
+
+      - name: Set up snd-dummy
+        if: steps.check-snd-dummy.outcome == 'success' && (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
         env:
           DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
         run: |
           cd /lib/modules/${{ env.LINUX_VERSION }}
-          if apt-cache show linux-modules-extra-${{ env.LINUX_VERSION }} >/dev/null 2>&1 ; then
-          sudo apt-get install -d -y linux-modules-extra-${{ env.LINUX_VERSION }}
           sudo dpkg -x /var/cache/apt/archives/linux-modules-extra-${{ env.LINUX_VERSION }}*.deb "${DEST_DIR}"
           tar -cvC "${DEST_DIR}"/lib/modules/${{ env.LINUX_VERSION }} kernel/sound | sudo tar -x
           sudo depmod --verbose
-          sudo modprobe --verbose snd-dummy
-          else
-          echo "Module " linux-modules-extra-${{ env.LINUX_VERSION }} "doesn't seem to exist, continue anyway"; exit 0
-          fi
+          sudo modprobe --verbose snd-dummy 
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
