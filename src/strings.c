@@ -2260,7 +2260,7 @@ enum
 
 /* Types that can be used in a format string
  */
-    int
+    static int
 format_typeof(
     const char	*type,
     int		usetvs UNUSED)
@@ -2386,7 +2386,7 @@ format_typeof(
     return TYPE_UNKNOWN;
 }
 
-    char *
+    static char *
 format_typename(
     const char  *type)
 {
@@ -2429,7 +2429,7 @@ format_typename(
     return _(typename_unknown);
 }
 
-    int
+    static int
 adjust_types(
     const char ***ap_types,
     int arg,
@@ -2490,7 +2490,7 @@ adjust_types(
     return OK;
 }
 
-    int
+    static int
 parse_fmt_types(
     const char  ***ap_types,
     int		*num_posarg,
@@ -2788,7 +2788,7 @@ error:
     return FAIL;
 }
 
-    void
+    static void
 skip_to_arg(
     const char	**ap_types,
     va_list	ap_start,

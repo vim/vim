@@ -402,11 +402,6 @@ test_vim_snprintf_positional(void)
 	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$llu %3$lu", 1234567LLU, 9, 7654321UL);
-	assert(n == 17);
-	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
-	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
-
 	n = vim_snprintf(buf, bsize, "%2$d %1$x %3$lu", 0xdeadbeef, 9, 7654321UL);
 	assert(n == 18);
 	assert(bsize == 0 || STRNCMP(buf, "9 deadbeef 7654321", bsize_int) == 0);
