@@ -628,9 +628,8 @@ static struct
     {"PyStdPrinter_Type", (PYTHON_PROC*)&py3_PyStdPrinter_Type},
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
+# if PY_VERSION_HEX < 0x030c00b0
     {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},
-# if PY_VERSION_HEX >= 0x030c00b0
-    {"PyLong_Type", (PYTHON_PROC*)&py3_PyLong_Type},
 # endif
     {"PyNumber_Check", (PYTHON_PROC*)&py3_PyNumber_Check},
     {"PyNumber_Long", (PYTHON_PROC*)&py3_PyNumber_Long},
