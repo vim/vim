@@ -2060,7 +2060,7 @@ retnomove:
 	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
 	// for tests, a user would not click before redrawing.
 	// Do not use when 'virtualedit' is active.
-	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE && !virtual_active())
+	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE)
 	    col_from_screen = ScreenCols[off];
 #ifdef FEAT_FOLDING
 	// Remember the character under the mouse, it might be a '-' or '+' in
@@ -2098,40 +2098,46 @@ retnomove:
 	    redraw_cmdline = TRUE;	// show visual mode later
     }
 
-    if (col_from_screen >= 0)
+    if (col_from_screen == MAXCOL)
     {
-	// Use the column from ScreenCols[], it is accurate also after
-	// concealed characters.
-	curwin->w_cursor.col = col_from_screen;
-	if (col_from_screen == MAXCOL)
+	// When clicking after end of line, still need to set correct curswant
+	int off_l = LineOffset[prev_row];
+	if (ScreenCols[off_l] < MAXCOL)
 	{
-	    curwin->w_curswant = col_from_screen;
-	    curwin->w_set_curswant = FALSE;	// May still have been TRUE
-	    mouse_past_eol = TRUE;
-	    if (inclusive != NULL)
-		*inclusive = TRUE;
+	    // Binary search to find last char in line
+	    int off_r = off_l + prev_col;
+	    int off_click = off_r;
+	    while (off_l < off_r)
+	    {
+		int off_m = (off_l + off_r + 1) / 2;
+		if (ScreenCols[off_m] < MAXCOL)
+		    off_l = off_m;
+		else
+		    off_r = off_m - 1;
+	    }
+	    col = ScreenCols[off_r] + (off_click - off_r);
 	}
 	else
-	{
-	    curwin->w_set_curswant = TRUE;
-	    if (inclusive != NULL)
-		*inclusive = FALSE;
-	}
-	check_cursor_col();
+	    // Shouldn't normally happen
+	    col = MAXCOL;
     }
-    else
+    else if (col_from_screen >= 0)
     {
-	curwin->w_curswant = col;
-	curwin->w_set_curswant = FALSE;	// May still have been TRUE
-	if (coladvance(col) == FAIL)	// Mouse click beyond end of line
-	{
-	    if (inclusive != NULL)
-		*inclusive = TRUE;
-	    mouse_past_eol = TRUE;
-	}
-	else if (inclusive != NULL)
-	    *inclusive = FALSE;
+	// Use the virtual column from ScreenCols[], it is accurate also after
+	// concealed characters.
+	col = col_from_screen;
     }
+
+    curwin->w_curswant = col;
+    curwin->w_set_curswant = FALSE;	// May still have been TRUE
+    if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+    {
+	if (inclusive != NULL)
+	    *inclusive = TRUE;
+	mouse_past_eol = TRUE;
+    }
+    else if (inclusive != NULL)
+	*inclusive = FALSE;
 
     count = IN_BUFFER;
     if (curwin != old_curwin || curwin->w_cursor.lnum != old_cursor.lnum
