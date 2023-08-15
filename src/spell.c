@@ -3942,13 +3942,10 @@ spell_dump_compl(
 	}
     }
 
-    if (do_region && region_names != NULL)
+    if (do_region && region_names != NULL && pat == NULL)
     {
-	if (pat == NULL)
-	{
-	    vim_snprintf((char *)IObuff, IOSIZE, "/regions=%s", region_names);
-	    ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
-	}
+	vim_snprintf((char *)IObuff, IOSIZE, "/regions=%s", region_names);
+	ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
     }
     else
 	do_region = FALSE;
