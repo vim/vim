@@ -1948,4 +1948,42 @@ def Test_call_method_in_extended_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for calling a method in the parent class that is extended partially.
+" This used to fail with the 'E118: Too many arguments for function: Text' error
+" message (Github issue #12524).
+def Test_call_method_in_parent_class()
+  var lines =<< trim END
+    vim9script
+
+    class Widget
+      this._lnum: number = 1
+
+      def SetY(lnum: number)
+        this._lnum = lnum
+      enddef
+
+      def Text(): string
+        return ''
+      enddef
+    endclass
+
+    class Foo extends Widget
+      def Text(): string
+        return '<Foo>'
+      enddef
+    endclass
+
+    def Stack(w1: Widget, w2: Widget): list<Widget>
+      w1.SetY(1)
+      w2.SetY(2)
+      return [w1, w2]
+    enddef
+
+    var foo1 = Foo.new()
+    var foo2 = Foo.new()
+    var l = Stack(foo1, foo2)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

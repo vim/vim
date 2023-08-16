@@ -911,7 +911,7 @@ early_ret:
 									  == 0)
 			    {
 				int *table = (int *)(if2cl + 1);
-				table[if_i] = cl_i;
+				table[if_i] = objmethods.ga_len + cl_i;
 				break;
 			    }
 			}
