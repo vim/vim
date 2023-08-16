@@ -1087,7 +1087,7 @@ fold_line(
 
     // 1. Add the cmdwin_type for the command-line window
     // Ignores 'rightleft', this window is never right-left.
-    if (cmdwin_type != 0 && wp == curwin)
+    if (wp == cmdwin_win)
     {
 	ScreenLines[off] = cmdwin_type;
 	ScreenAttrs[off] = HL_ATTR(HLF_AT);

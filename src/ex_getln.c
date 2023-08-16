@@ -4455,8 +4455,9 @@ open_cmdwin(void)
     // Don't let quitting the More prompt make this fail.
     got_int = FALSE;
 
-    // Set "cmdwin_type" before any autocommands may mess things up.
+    // Set "cmdwin_..." variables before any autocommands may mess things up.
     cmdwin_type = get_cmdline_type();
+    cmdwin_win = curwin;
 
     // Create the command-line buffer empty.
     if (do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL) == FAIL)
@@ -4465,8 +4466,10 @@ open_cmdwin(void)
 	win_close(curwin, TRUE);
 	ga_clear(&winsizes);
 	cmdwin_type = 0;
+	cmdwin_win = NULL;
 	return Ctrl_C;
     }
+    cmdwin_buf = curbuf;
 
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     (void)setfname(curbuf, (char_u *)_("[Command Line]"), NULL, TRUE);
@@ -4576,6 +4579,8 @@ open_cmdwin(void)
 # endif
 
     cmdwin_type = 0;
+    cmdwin_buf = NULL;
+    cmdwin_win = NULL;
     exmode_active = save_exmode;
 
     // Safety check: The old window or buffer was deleted: It's a bug when
