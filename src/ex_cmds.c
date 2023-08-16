@@ -2782,9 +2782,16 @@ do_ecmd(
 	{
 	    bufref_T	save_au_new_curbuf;
 	    int		save_cmdwin_type = cmdwin_type;
+	    win_T	*save_cmdwin_win = cmdwin_win;
+
+	    // Should only be possible to get here if the cmdwin is closed, or
+	    // if it's opening and its buffer hasn't been set yet (the new
+	    // buffer is for it).
+	    assert(cmdwin_buf == NULL);
 
 	    // BufLeave applies to the old buffer.
 	    cmdwin_type = 0;
+	    cmdwin_win = NULL;
 
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
@@ -2801,7 +2808,10 @@ do_ecmd(
 	    save_au_new_curbuf = au_new_curbuf;
 	    set_bufref(&au_new_curbuf, buf);
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+
 	    cmdwin_type = save_cmdwin_type;
+	    cmdwin_win = save_cmdwin_win;
+
 	    if (!bufref_valid(&au_new_curbuf))
 	    {
 		// new buffer has been deleted

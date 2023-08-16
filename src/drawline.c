@@ -1901,7 +1901,7 @@ win_line(
 	    if (wlv.draw_state == WL_CMDLINE - 1 && wlv.n_extra == 0)
 	    {
 		wlv.draw_state = WL_CMDLINE;
-		if (cmdwin_type != 0 && wp == curwin)
+		if (wp == cmdwin_win)
 		{
 		    // Draw the cmdline character.
 		    wlv.n_extra = 1;

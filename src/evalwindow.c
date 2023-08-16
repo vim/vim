@@ -1076,7 +1076,7 @@ f_win_gettype(typval_T *argvars, typval_T *rettv)
     else if (WIN_IS_POPUP(wp))
 	rettv->vval.v_string = vim_strsave((char_u *)"popup");
 #endif
-    else if (wp == curwin && cmdwin_type != 0)
+    else if (wp == cmdwin_win)
 	rettv->vval.v_string = vim_strsave((char_u *)"command");
 #ifdef FEAT_QUICKFIX
     else if (bt_quickfix(wp->w_buffer))

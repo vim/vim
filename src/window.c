@@ -3375,6 +3375,8 @@ win_free_all(void)
 
     // avoid an error for switching tabpage with the cmdline window open
     cmdwin_type = 0;
+    cmdwin_buf = NULL;
+    cmdwin_win = NULL;
 
     while (first_tabpage->tp_next != NULL)
 	tabpage_close(TRUE);
