@@ -518,6 +518,101 @@ def Test_class_default_new()
   v9.CheckScriptFailure(lines, 'E119:')
 enddef
 
+
+def Test_class_new_with_object_member()
+  var lines =<< trim END
+      vim9script
+
+      class C
+        this.str: string
+        this.num: number
+        def new(this.str, this.num)
+        enddef
+      endclass
+
+      def Check()
+        try
+          var c = C.new('cats', 2)
+          assert_equal('cats', c.str)
+          assert_equal(2, c.num)
+        catch
+          echo $'Exception was caught: {v:exception}'
+        endtry
+      enddef
+
+      Check()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class C
+        this.str: string
+        this.num: number
+        def newVals(this.str, this.num)
+        enddef
+      endclass
+
+      def Check()
+        try
+          var c = C.newVals('dogs', 4)
+          assert_equal('dogs', c.str)
+          assert_equal(4, c.num)
+        catch
+          echo $'Exception was caught: {v:exception}'
+        endtry
+      enddef
+
+      Check()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class C
+        this.str: string
+        this.num: number
+        def new(this.str, this.num)
+        enddef
+      endclass
+
+      def Check()
+        try
+          var c = C.new(1, 2)
+        catch
+          echo $'Exception was caught: {v:exception}'
+        endtry
+      enddef
+
+      Check()
+  END
+  v9.CheckScriptFailure(lines, 'E1013:')
+
+  lines =<< trim END
+      vim9script
+
+      class C
+        this.str: string
+        this.num: number
+        def newVals(this.str, this.num)
+        enddef
+      endclass
+
+      def Check()
+        try
+          var c = C.newVals('dogs', 'apes')
+        catch
+          echo $'Exception was caught: {v:exception}'
+        endtry
+      enddef
+
+      Check()
+  END
+  v9.CheckScriptFailure(lines, 'E1013:')
+enddef
+
 def Test_class_object_member_inits()
   var lines =<< trim END
       vim9script

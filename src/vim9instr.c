@@ -1777,6 +1777,7 @@ generate_BLOBAPPEND(cctx_T *cctx)
     int
 generate_CALL(
 	cctx_T	    *cctx,
+	type_T	    *mtype,	// method type
 	ufunc_T	    *ufunc,
 	class_T	    *cl,
 	int	    mi,
@@ -1805,6 +1806,8 @@ generate_CALL(
     {
 	int		i;
 	compiletype_T	compile_type;
+	int		class_constructor = (mtype->tt_type == VAR_CLASS
+				    && STRNCMP(ufunc->uf_name, "new", 3) == 0);
 
 	for (i = 0; i < argcount; ++i)
 	{
@@ -1823,6 +1826,23 @@ generate_CALL(
 		if (ufunc->uf_arg_types == NULL)
 		    continue;
 		expected = ufunc->uf_arg_types[i];
+
+		// class constructor with object member
+		if (class_constructor && expected->tt_type == VAR_ANY)
+		{
+		    class_T *clp = mtype->tt_class;
+		    char_u *aname = ((char_u **)ufunc->uf_args.ga_data)[i];
+		    for (int om = 0; om < clp->class_obj_member_count; ++om)
+		    {
+			if (STRCMP(aname, clp->class_obj_members[om].ocm_name)
+									== 0)
+			{
+			    expected = clp->class_obj_members[om].ocm_type;
+			    break;
+			}
+		    }
+
+		}
 	    }
 	    else if (ufunc->uf_va_type == NULL
 					   || ufunc->uf_va_type == &t_list_any)
