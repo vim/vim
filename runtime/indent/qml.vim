@@ -1,8 +1,7 @@
 " Vim indent file
 " Language:     QML
-" Author:       Robert Kieffer
-" URL:
-" Last Change:  2017-10-27
+" Maintainer:   Chase Knowlden <haroldknowlden@gmail.com>
+" Last Change:  2023 Aug 16
 "
 " Improved JavaScript indent script.
 
@@ -10,13 +9,13 @@
 if exists("b:did_indent")
   finish
 endif
-let b:did_indent = 1
+let b:did_indent = "setlocal indentexpr< indkeys<"
 
-setlocal indentexpr=GetJsIndent()
+setlocal indentexpr=GetQmlIndent()
 setlocal indentkeys=0{,0},0),0],:,!^F,o,O,e,*<Return>,=*/
 
 " Only define functions once per session
-if exists("*GetJsIndent")
+if exists("*GetQmlIndent")
   finish
 endif
 
@@ -26,7 +25,7 @@ function! Trim(line)
   return substitute(substitute(substitute(a:line, '// .*', '', ''), '/\* .* \*/', '', ''), '^\s*\|\s*$', '', 'g')
 endfunction
 
-function! GetJsIndent()
+function! s:GetQmlIndent()
   let num = v:lnum
   let line = Trim(getline(num))
 

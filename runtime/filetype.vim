@@ -1708,6 +1708,9 @@ au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 " QL
 au BufRead,BufNewFile *.ql,*.qll		setf ql
 
+" QML
+au BufRead,BufNewFile *.qml,*.qbs			setf qml
+
 " QMLdir
 au BufRead,BufNewFile qmldir			setf qmldir
 

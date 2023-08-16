@@ -1,22 +1,20 @@
 " Vim syntax file
 " Language:     QML
-" Maintainer:   Peter Hoeg <peter@hoeg.com>
-" Updaters:     Refer to CONTRIBUTORS.md
-" URL:          https://github.com/peterhoeg/vim-qml
+" Previous Maintainer: Peter Hoeg <peter@hoeg.com>
+" Maintainer:   Chase Knowlden <haroldknowlden@gmail.com>
 " Changes:      `git log` is your friend
-" Last Change:  2017-11-11
+" Last Change:  2023 Aug 16
 "
 " This file is bassed on the original work done by Warwick Allison
 " <warwick.allison@nokia.com> whose did about 99% of the work here.
 
 " Based on javascript syntax (as is QML)
 
+if exists("b:current_syntax")
+  finish
+endif
+
 if !exists("main_syntax")
-  if version < 600
-    syntax clear
-  elseif exists("b:current_syntax")
-    finish
-  endif
   let main_syntax = 'qml'
 endif
 
@@ -1095,48 +1093,46 @@ endif
 if version >= 508 || !exists("did_qml_syn_inits")
   if version < 508
     let did_qml_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
+    command -nargs=+ hi link <args>
   else
-    command -nargs=+ HiLink hi def link <args>
+    command -nargs=+ hi def link <args>
   endif
-  HiLink qmlComment           Comment
-  HiLink qmlLineComment       Comment
-  HiLink qmlCommentTodo       Todo
-  HiLink qmlSpecial           Special
-  HiLink qmlStringS           String
-  HiLink qmlStringD           String
-  HiLink qmlStringT           String
-  HiLink qmlCharacter         Character
-  HiLink qmlNumber            Number
-  HiLink qmlConditional       Conditional
-  HiLink qmlRepeat            Repeat
-  HiLink qmlBranch            Conditional
-  HiLink qmlOperator          Operator
-  HiLink qmlJsType            Type
-  HiLink qmlType              Type
-  HiLink qmlObjectLiteralType Type
-  HiLink qmlStatement         Statement
-  HiLink qmlFunction          Function
-  HiLink qmlArrowFunction     Function
-  HiLink qmlBraces            Function
-  HiLink qmlError             Error
-  HiLink qmlNull              Keyword
-  HiLink qmlBoolean           Boolean
-  HiLink qmlRegexpString      String
-  HiLink qmlNullishCoalescing Operator
+  hi def link qmlComment           Comment
+  hi def link qmlLineComment       Comment
+  hi def link qmlCommentTodo       Todo
+  hi def link qmlSpecial           Special
+  hi def link qmlStringS           String
+  hi def link qmlStringD           String
+  hi def link qmlStringT           String
+  hi def link qmlCharacter         Character
+  hi def link qmlNumber            Number
+  hi def link qmlConditional       Conditional
+  hi def link qmlRepeat            Repeat
+  hi def link qmlBranch            Conditional
+  hi def link qmlOperator          Operator
+  hi def link qmlJsType            Type
+  hi def link qmlType              Type
+  hi def link qmlObjectLiteralType Type
+  hi def link qmlStatement         Statement
+  hi def link qmlFunction          Function
+  hi def link qmlArrowFunction     Function
+  hi def link qmlBraces            Function
+  hi def link qmlError             Error
+  hi def link qmlNull              Keyword
+  hi def link qmlBoolean           Boolean
+  hi def link qmlRegexpString      String
+  hi def link qmlNullishCoalescing Operator
 
-  HiLink qmlIdentifier        Identifier
-  HiLink qmlLabel             Label
-  HiLink qmlException         Exception
-  HiLink qmlMessage           Keyword
-  HiLink qmlGlobal            Keyword
-  HiLink qmlReserved          Keyword
-  HiLink qmlDebug             Debug
-  HiLink qmlConstant          Label
-  HiLink qmlBindingProperty   Label
-  HiLink qmlDeclaration       Function
-
-  delcommand HiLink
+  hi def link qmlIdentifier        Identifier
+  hi def link qmlLabel             Label
+  hi def link qmlException         Exception
+  hi def link qmlMessage           Keyword
+  hi def link qmlGlobal            Keyword
+  hi def link qmlReserved          Keyword
+  hi def link qmlDebug             Debug
+  hi def link qmlConstant          Label
+  hi def link qmlBindingProperty   Label
+  hi def link qmlDeclaration       Function
 endif
 
 let b:current_syntax = "qml"
