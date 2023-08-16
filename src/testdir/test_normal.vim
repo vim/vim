@@ -3158,7 +3158,7 @@ func Test_normal50_commandline()
   CheckFeature cmdline_hist
 
   func! DoTimerWork(id)
-    call assert_equal('[Command Line]', bufname(''))
+    call assert_equal(1, getbufinfo('')[0].command)
 
     " should fail, with E11, but does fail with E23?
     "call feedkeys("\<c-^>", 'tm')

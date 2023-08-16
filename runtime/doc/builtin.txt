@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 13
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3244,6 +3244,8 @@ getbufinfo([{dict}])
 			bufnr		Buffer number.
 			changed		TRUE if the buffer is modified.
 			changedtick	Number of changes made to the buffer.
+			command		TRUE if the buffer belongs to the
+					command-line window |cmdwin|.
 			hidden		TRUE if the buffer is hidden.
 			lastused	Timestamp in seconds, like
 					|localtime()|, when the buffer was
