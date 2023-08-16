@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-15 10:13+0400\n"
-"PO-Revision-Date: 2023-05-15 11:50+0400\n"
+"POT-Creation-Date: 2023-08-16 22:13+0400\n"
+"PO-Revision-Date: 2023-08-16 22:49+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -164,6 +164,22 @@ msgstr "Врх"
 msgid "%d%%"
 msgstr "%d%%"
 
+#, c-format
+msgid " (%d of %d)"
+msgstr " (%d од %d)"
+
+#, c-format
+msgid " ((%d) of %d)"
+msgstr " ((%d) од %d)"
+
+#, c-format
+msgid " (file %d of %d)"
+msgstr " (фајл %d од %d)"
+
+#, c-format
+msgid " (file (%d) of %d)"
+msgstr " (фајл (%d) од %d)"
+
 msgid "[Prompt]"
 msgstr "[Одзив]"
 
@@ -281,7 +297,8 @@ msgstr "xchacha20v2: за извођење кључа се користи про
 
 #, c-format
 msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
-msgstr "xchacha20v2: за извођење кључа се користи подразумевани opslimit „%llu”."
+msgstr ""
+"xchacha20v2: за извођење кључа се користи подразумевани opslimit „%llu”."
 
 #, c-format
 msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
@@ -289,7 +306,8 @@ msgstr "xchacha20v2: за извођење кључа се користи про
 
 #, c-format
 msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
-msgstr "xchacha20v2: за извођење кључа се користи подразумевани memlimit „%lu”."
+msgstr ""
+"xchacha20v2: за извођење кључа се користи подразумевани memlimit „%lu”."
 
 #, c-format
 msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
@@ -297,7 +315,8 @@ msgstr "xchacha20v2: за извођење кључа се користи про
 
 #, c-format
 msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
-msgstr "xchacha20v2: за извођење кључа се користи подразумевани алгоритам „%d”."
+msgstr ""
+"xchacha20v2: за извођење кључа се користи подразумевани алгоритам „%d”."
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Улазак у Debug режим.  Откуцајте „cont” за наставак."
@@ -599,12 +618,6 @@ msgstr "Крај функције"
 
 msgid "Backwards range given, OK to swap"
 msgstr "Задат је опсег уназад, ОК да се замени"
-
-msgid ""
-"INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
-msgstr ""
-"ИНТЕРНО: EX_DFLALL не може да се користи са ADDR_NONE, ADDR_UNSIGNED или "
-"ADDR_QUICKFIX"
 
 #, c-format
 msgid "%d more file to edit.  Quit anyway?"
@@ -2440,10 +2453,6 @@ msgstr ""
 "\n"
 "--- Опције ---"
 
-#, c-format
-msgid "For option %s"
-msgstr "За опцију %s"
-
 msgid "cannot open "
 msgstr "не може да се отвори "
 
@@ -3988,9 +3997,6 @@ msgstr "E37: Није било уписа од последње промене"
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Није било уписа од последње промене (додајте ! да премостите)"
 
-msgid "E38: Null argument"
-msgstr "E38: Празан аргумент"
-
 msgid "E39: Number expected"
 msgstr "E39: Очекује се број"
 
@@ -4003,12 +4009,6 @@ msgstr "E41: Нема више меморије!"
 
 msgid "E42: No Errors"
 msgstr "E42: Нема грешака"
-
-msgid "E43: Damaged match string"
-msgstr "E43: Оштећен стринг за подударање"
-
-msgid "E44: Corrupted regexp program"
-msgstr "E44: regexp програм је покварен"
 
 msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr "E45: Постављена је 'readonly' опција (додајте ! за премошћавање)"
@@ -4448,11 +4448,10 @@ msgstr "E172: Недостаје маркер"
 
 #, c-format
 msgid "E173: %d more file to edit"
-msgstr "E173: Још %d фајл за уређивање"
-
-#, c-format
-msgid "E173: %d more files to edit"
-msgstr "E173: Још %d фајлова за уређивање"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: Још %d фајл за уређивање"
+msgstr[1] "E173: Још %d фајла за уређивање"
+msgstr[2] "E173: Још %d фајлова за уређивање"
 
 #, c-format
 msgid "E174: Command already exists: add ! to replace it: %s"
@@ -4621,9 +4620,6 @@ msgstr "E220: Недостаје }."
 msgid "E221: Marker cannot start with lower case letter"
 msgstr "E221: Маркер не може да почне малим словом"
 
-msgid "E222: Add to internal buffer that was already read from"
-msgstr "E222: Додавање у интерни бафер из којег се већ читало"
-
 msgid "E223: Recursive mapping"
 msgstr "E223: Рекурзивно мапирање"
 
@@ -4643,9 +4639,6 @@ msgstr "E226: Скраћеница за %s већ постоји"
 msgid "E227: Mapping already exists for %s"
 msgstr "E227: Мапирање за %s већ постоји"
 
-msgid "E228: makemap: Illegal mode"
-msgstr "E228: makemap: Недозвољен режим"
-
 msgid "E229: Cannot start the GUI"
 msgstr "E229: ГКИ не може да се покрене"
 
@@ -4655,10 +4648,6 @@ msgstr "E230: Из „%s” не може да се чита"
 
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' неисправан"
-
-msgid "E232: Cannot create BalloonEval with both message and callback"
-msgstr ""
-"E232: Не може да се креира BalloonEval и са поруком и са повратним позивом"
 
 msgid "E233: Cannot open display"
 msgstr "E233: Не може да се отвори екран"
@@ -4821,13 +4810,6 @@ msgstr "E277: Не може да се прочита одговор сервер
 msgid "E279: Sorry, ++shell is not supported on this system"
 msgstr "E279: Жао нам је, ++shell није подржано на овом систему"
 
-msgid ""
-"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
-"org"
-msgstr ""
-"E280: TCL ФАТАЛНА ГРЕШКА: reflist је оштећена!? Молимо пријавите ово на vim-"
-"dev@vim.org"
-
 #, c-format
 msgid "E282: Cannot read from \"%s\""
 msgstr "E282: Не може да се чита из „%s”"
@@ -4858,13 +4840,6 @@ msgstr "E289: Метод уноса не подржава мој preedit тип"
 msgid "E290: List or number required"
 msgstr "E290: Захтева се листа или број"
 
-#, c-format
-msgid "E292: Invalid count for del_bytes(): %ld"
-msgstr "E292: Неважећи број за del_bytes(): %ld"
-
-msgid "E293: Block was not locked"
-msgstr "E293: Блок није закључан"
-
 msgid "E294: Seek error in swap file read"
 msgstr "E294: Грешка код постављања показивача за читање из привременог фајла"
 
@@ -4876,15 +4851,6 @@ msgstr "E296: Грешка код постављања показивача за
 
 msgid "E297: Write error in swap file"
 msgstr "E297: Грешка при упису привременог фајла"
-
-msgid "E298: Didn't get block nr 0?"
-msgstr "E298: Блок бр 0 није добављен?"
-
-msgid "E298: Didn't get block nr 1?"
-msgstr "E298: Блок бр 1 није добављен?"
-
-msgid "E298: Didn't get block nr 2?"
-msgstr "E298: Блок бр 2 није добављен?"
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr ""
@@ -4903,9 +4869,6 @@ msgstr "E302: Промена имена привременог фајла ниј
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
 "E303: Отварање привременог фајла за „%s” није успело, опоравак је немогућ"
-
-msgid "E304: ml_upd_block0(): Didn't get block 0??"
-msgstr "E304: ml_upd_block0(): Блок бр 0 није добављен??"
 
 #, c-format
 msgid "E305: No swap file found for %s"
@@ -4945,47 +4908,12 @@ msgstr "E313: Не може да се очува, нема привремено�
 msgid "E314: Preserve failed"
 msgstr "E314: Очување није успело"
 
-#, c-format
-msgid "E315: ml_get: Invalid lnum: %ld"
-msgstr "E315: ml_get: Неисправан lnum: %ld"
-
-#, c-format
-msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: Линија %ld у баферу %d не може да се пронађе %s"
-
-msgid "E317: Pointer block id wrong"
-msgstr "E317: Ид блока показивача је погрешан"
-
-msgid "E317: Pointer block id wrong 2"
-msgstr "E317: Ид блока показивача је погрешан 2"
-
-msgid "E317: Pointer block id wrong 3"
-msgstr "E317: Ид блока показивача је погрешан 3"
-
-msgid "E317: Pointer block id wrong 4"
-msgstr "E317: Ид блока показивача је погрешан 4"
-
-msgid "E318: Updated too many blocks?"
-msgstr "E318: Освежено превише блокова?"
-
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Жао нам је, та команда није доступна у овој верзији"
 
 #, c-format
-msgid "E320: Cannot find line %ld"
-msgstr "E320: Линија %ld не може да се пронађе"
-
-#, c-format
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: „%s” не може поново да се учита"
-
-#, c-format
-msgid "E322: Line number out of range: %ld past the end"
-msgstr "E322: Број линије је ван опсега: %ld иза краја"
-
-#, c-format
-msgid "E323: Line count wrong in block %ld"
-msgstr "E323: Број линија је погрешан у блоку %ld"
 
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: PostScript излазни фајл не може да се отвори"
@@ -5038,8 +4966,8 @@ msgstr "E338: Жао нам је, нема претраживача фајлов
 msgid "E339: Pattern too long"
 msgstr "E339: Шаблон је предугачак"
 
-msgid "E341: Internal error: lalloc(0, )"
-msgstr "E341: Интерна грешка: lalloc(0, )"
+msgid "E340: Internal error; if you can reproduce please report a bug"
+msgstr "E340: Интерна грешка; ако можете поново да је изазовете молимо вас да пријавите баг"
 
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
@@ -5095,9 +5023,6 @@ msgstr "E354: Неисправно име регистра: ’%s’"
 #, c-format
 msgid "E355: Unknown option: %s"
 msgstr "E355: Непозната опција: %s"
-
-msgid "E356: get_varp ERROR"
-msgstr "E356: get_varp ГРЕШКА"
 
 #, c-format
 msgid "E357: 'langmap': Matching character missing for %s"
@@ -5316,6 +5241,9 @@ msgstr "E417: Недостаје аргумент: %s"
 msgid "E418: Illegal value: %s"
 msgstr "E418: Неважећа вредност: %s"
 
+msgid "E418: I'm a teapot"
+msgstr "E418: Ја сам чајник"
+
 msgid "E419: FG color unknown"
 msgstr "E419: Непозната FG боја"
 
@@ -5381,15 +5309,6 @@ msgstr "E436: Нема „%s” ставке у termcap"
 
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: Потребна је могућност терминала „cm”"
-
-msgid "E438: u_undo: Line numbers wrong"
-msgstr "E438: u_undo: Погрешни бројеви линије"
-
-msgid "E439: Undo list corrupt"
-msgstr "E439: Листа опозива је искварена"
-
-msgid "E440: Undo line missing"
-msgstr "E440: Недостаје линија опозива"
 
 msgid "E441: There is no preview window"
 msgstr "E441: Нема прозора за преглед"
@@ -5503,9 +5422,6 @@ msgstr "E471: Потребан је аргумент"
 
 msgid "E472: Command failed"
 msgstr "E472: Команда није успела"
-
-msgid "E473: Internal error in regexp"
-msgstr "E473: Интерна грешка у регуларном изразу"
 
 msgid "E474: Invalid argument"
 msgstr "E474: Неважећи аргумент"
@@ -5632,6 +5548,9 @@ msgstr "није фајл или уређај на који може да се �
 #, c-format
 msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: „%s” није фајл или уређај на који може да се уписује"
+
+msgid "E503: Coffee is currently not available"
+msgstr "E503: Кафа тренутно није доступна"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "је само-за-читање (премошћавање није могуће: „W” је у 'cpoptions')"
@@ -5856,9 +5775,6 @@ msgstr "E567: Нема cscope веза"
 msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Дупликат cscope база података није додата"
 
-msgid "E570: Fatal error in cs_manage_matches"
-msgstr "E570: Фатална грешка у cs_manage_matches"
-
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
 msgstr ""
@@ -6041,12 +5957,84 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: Информације о cscope бази података не могу да се добију"
 
 #, c-format
+msgid "E627: Missing colon: %s"
+msgstr "E627: Недостаје двотачка: %s"
+
+#, c-format
+msgid "E628: Missing ! or / in: %s"
+msgstr "E628: Недостаје ! или / у: %s"
+
+#, c-format
 msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): Упис док није успостављена веза"
 
 #, c-format
 msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Упис није успео"
+
+msgid "E632: Invalid buffer identifier in getLength"
+msgstr "E632: Неисправни идентификатор бафера у getLength"
+
+msgid "E633: Invalid buffer identifier in getText"
+msgstr "E633: Неисправни идентификатор бафера у getText"
+
+msgid "E634: Invalid buffer identifier in remove"
+msgstr "E634: Неисправни идентификатор бафера у remove"
+
+msgid "E635: Invalid buffer identifier in insert"
+msgstr "E635: Неисправни идентификатор бафера у insert"
+
+msgid "E636: Invalid buffer identifier in create"
+msgstr "E636: Неисправни идентификатор бафера у create"
+
+msgid "E637: Invalid buffer identifier in startDocumentListen"
+msgstr "E637: Неисправни идентификатор бафера у startDocumentListen"
+
+msgid "E638: Invalid buffer identifier in stopDocumentListen"
+msgstr "E638: Неисправни идентификатор бафера у stopDocumentListen"
+
+msgid "E639: Invalid buffer identifier in setTitle"
+msgstr "E639: Неисправни идентификатор бафера у setTitle"
+
+msgid "E640: Invalid buffer identifier in initDone"
+msgstr "E640: Неисправни идентификатор бафера у initDone"
+
+msgid "E641: Invalid buffer identifier in setBufferNumber"
+msgstr "E641: Неисправни идентификатор бафера у setBufferNumber"
+
+#, c-format
+msgid "E642: File %s not found in setBufferNumber"
+msgstr "E642: Фајл %s није пронађен у setBufferNumber"
+
+msgid "E643: Invalid buffer identifier in setFullName"
+msgstr "E643: Неисправни идентификатор бафера у setFullName"
+
+msgid "E644: Invalid buffer identifier in editFile"
+msgstr "E644: Неисправни идентификатор бафера у editFile"
+
+msgid "E645: Invalid buffer identifier in setVisible"
+msgstr "E645: Неисправни идентификатор бафера у setVisible"
+
+msgid "E646: Invalid buffer identifier in setModified"
+msgstr "E646: Неисправни идентификатор бафера у setModified"
+
+msgid "E647: Invalid buffer identifier in setDot"
+msgstr "E647: Неисправни идентификатор бафера у setDot"
+
+msgid "E648: Invalid buffer identifier in close"
+msgstr "E648: Неисправни идентификатор бафера у close"
+
+msgid "E649: Invalid buffer identifier in close"
+msgstr "E649: Неисправни идентификатор бафера у close"
+
+msgid "E650: Invalid buffer identifier in defineAnnoType"
+msgstr "E650: Неисправни идентификатор бафера у defineAnnoType"
+
+msgid "E651: Invalid buffer identifier in addAnno"
+msgstr "E651: Неисправни идентификатор бафера у addAnno"
+
+msgid "E652: Invalid buffer identifier in getAnno"
+msgstr "E652: Неисправни идентификатор бафера у getAnno"
 
 #, c-format
 msgid "E654: Missing delimiter after search pattern: %s"
@@ -6657,9 +6645,6 @@ msgstr "E829: Грешка код уписа у фајл за опозив: %s"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Број опозива %ld није пронађен"
 
-msgid "E831: bf_key_init() called with empty password"
-msgstr "E831: bf_key_init() је позвана са празном лозинком"
-
 #, c-format
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
 msgstr "E832: Фајл који није шифрован има шифрован фајл за опозив: %s"
@@ -6819,10 +6804,6 @@ msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr ""
 "E876: (НКА регуларни израз) Нема довољно простора да се ускладишти комплетан "
 "НКА"
-
-#, c-format
-msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "E877: (НКА регуларни израз) Неважећа карактер класа: %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr ""
@@ -7059,9 +7040,6 @@ msgstr "E941: Сервер је већ покренут"
 msgid "E942: +clientserver feature not available"
 msgstr "E942: Могућност +clientserver није доступна"
 
-msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
-msgstr "E943: Табела команди мора да се освежи, покрените ’make cmdidxs’"
-
 msgid "E944: Reverse range in character class"
 msgstr "E944: Обрнути опсег у карактер класи"
 
@@ -7142,9 +7120,6 @@ msgstr "E965: Недостаје име типа особине"
 #, c-format
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Неисправан број линије: %ld"
-
-msgid "E967: Text property info corrupted"
-msgstr "E967: Информације о особини текста се искварене"
 
 msgid "E968: Need at least one of 'id' or 'type'"
 msgstr "E968: Неопходан је бар један од ’id’ или ’type’"
@@ -7599,8 +7574,9 @@ msgstr "E1093: Очекује се %d ставки али је наведено 
 msgid "E1094: Import can only be used in a script"
 msgstr "E1094: Import може да се употреби само у скрипти"
 
-msgid "E1095: Unreachable code after :return"
-msgstr "E1095: Кôд не може да се досегне након :return"
+#, c-format
+msgid "E1095: Unreachable code after :%s"
+msgstr "E1095: Кôд који не може да се досегне након :%s"
 
 msgid "E1096: Returning a value in a function without a return type"
 msgstr "E1096: Враћа се вредност из функције без наведеног повратног типа"
@@ -7637,12 +7613,12 @@ msgstr "E1104: Недостаје >"
 msgid "E1105: Cannot convert %s to string"
 msgstr "E1105: %s не може да се конвертује у стринг"
 
-msgid "E1106: One argument too many"
-msgstr "E1106: Један аргумент вишка"
-
 #, c-format
-msgid "E1106: %d arguments too many"
-msgstr "E1106: %d аргумената вишка"
+msgid "E1106: One argument too many"
+msgid_plural "E1106: %d arguments too many"
+msgstr[0] "E1106: Један аргумент вишка"
+msgstr[1] "E1106: %d аргумента вишка"
+msgstr[2] "E1106: %d аргумената вишка"
 
 msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: Потребан је Стринг Листа, Речн или Блоб"
@@ -7739,10 +7715,6 @@ msgstr "E1135: Стринг се користи као Логичка: „%s”"
 
 msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
 msgstr "E1136: <Cmd> мапирање мора да се заврши са <CR> пре другог <Cmd>"
-
-#, c-format
-msgid "E1137: <Cmd> mapping must not include %s key"
-msgstr "E1137: <Cmd> мапирање не сме да има тастер %s"
 
 msgid "E1138: Using a Bool as a Number"
 msgstr "E1138: Логичка се користи као Број"
@@ -7940,12 +7912,12 @@ msgstr "E1188: Из прозора командне линије не може �
 msgid "E1189: Cannot use :legacy with this command: %s"
 msgstr "E1189: :legacy не може да се користи са овом командом: %s"
 
-msgid "E1190: One argument too few"
-msgstr "E1190: Фали један аргумент"
-
 #, c-format
-msgid "E1190: %d arguments too few"
-msgstr "E1190: фали %d аргумената"
+msgid "E1190: One argument too few"
+msgid_plural "E1190: %d arguments too few"
+msgstr[0] "E1190: Фали један аргумент"
+msgstr[1] "E1190: Фале %d аргумента"
+msgstr[2] "E1190: Фали %d аргумената"
 
 #, c-format
 msgid "E1191: Call to function that failed to compile: %s"
@@ -8474,9 +8446,6 @@ msgstr "E1334: Члан објекта није пронађен: %s"
 msgid "E1335: Member is not writable: %s"
 msgstr "E1335: У члан не може да се уписује: %s"
 
-msgid "E1336: Internal error: shortmess too long"
-msgstr "E1336: Интерна грешка: shortmess сувише дугачко"
-
 #, c-format
 msgid "E1337: Class member not found: %s"
 msgstr "E1337: Није пронађен члан класе: %s"
@@ -8579,8 +8548,69 @@ msgstr "E1363: Тип није комплетан"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Упозорење: Блок показивача је покварен"
 
+#, c-format
+msgid "E1400: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1400: Не могу да се мешају позициони и непозициони аргументи: %s"
+
+#, c-format
+msgid "E1401: format argument %d unused in $-style format: %s"
+msgstr "E1401: аргумент формата %d није употребљен у формату $-стила: %s"
+
+#, c-format
+msgid ""
+"E1402: Positional argument %d used as field width reused as different type: "
+"%s/%s"
+msgstr ""
+"E1402: Позициони аргумент %d употребљен као ширина поља је поново искоришћен "
+"као другачији тип: %s/%s"
+
+#, c-format
+msgid "E1403: Positional argument %d out of bounds: %s"
+msgstr "E1403: Позициони аргумент %d је ван граница: %s"
+
+#, c-format
+msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
+msgstr "E1404: Позициони аргумент %d тип се не употребљава конзистентно: %s/%s"
+
+#, c-format
+msgid "E1405: Invalid format specifier: %s"
+msgstr "E1405: Неисправни спецификатор формата: %s"
+
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
+
+msgid "int"
+msgstr "целобројни"
+
+msgid "long int"
+msgstr "дуги целобројни"
+
+msgid "long long int"
+msgstr "дуги дуги целобројни"
+
+msgid "unsigned int"
+msgstr "неозначени целобројни"
+
+msgid "unsigned long int"
+msgstr "неозначени дуги целобројни"
+
+msgid "unsigned long long int"
+msgstr "неозначени дуги дуги целобројни"
+
+msgid "pointer"
+msgstr "показивач"
+
+msgid "percent"
+msgstr "проценат"
+
+msgid "char"
+msgstr "карактер"
+
+msgid "string"
+msgstr "стринг"
+
+msgid "float"
+msgstr "покретни"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "претрага је достигла ВРХ, наставља се од ДНА"
