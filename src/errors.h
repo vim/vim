@@ -471,8 +471,8 @@ EXTERN char e_no_digraphs_version[]
 EXTERN char e_cannot_set_language_to_str[]
 	INIT(= N_("E197: Cannot set language to \"%s\""));
 // E198 unused
-EXTERN char e_active_window_or_buffer_deleted[]
-	INIT(= N_("E199: Active window or buffer deleted"));
+EXTERN char e_active_window_or_buffer_changed_or_deleted[]
+	INIT(= N_("E199: Active window or buffer changed or deleted"));
 EXTERN char e_readpre_autocommands_made_file_unreadable[]
 	INIT(= N_("E200: *ReadPre autocommands made the file unreadable"));
 EXTERN char e_readpre_autocommands_must_not_change_current_buffer[]

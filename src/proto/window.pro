@@ -18,6 +18,7 @@ void leaving_window(win_T *win);
 void entering_window(win_T *win);
 void curwin_init(void);
 void close_windows(buf_T *buf, int keep_curwin);
+int last_window(void);
 int one_window(void);
 int win_close(win_T *win, int free_buf);
 void snapshot_windows_scroll_size(void);
