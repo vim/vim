@@ -2480,7 +2480,7 @@ close_windows(
  * "aucmd_win[]").
  * Returns FALSE if there is a window, possibly in another tab page.
  */
-    static int
+    int
 last_window(void)
 {
     return (one_window() && first_tabpage->tp_next == NULL);
