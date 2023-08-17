@@ -342,12 +342,13 @@ plines(linenr_T lnum)
 plines_win(
     win_T	*wp,
     linenr_T	lnum,
-    int		winheight)	// when TRUE limit to window height
+    int		limit_winheight)	// when TRUE limit to window height
 {
 #if defined(FEAT_DIFF) || defined(PROTO)
     // Check for filler lines above this buffer line.  When folded the result
     // is one line anyway.
-    return plines_win_nofill(wp, lnum, winheight) + diff_check_fill(wp, lnum);
+    return plines_win_nofill(wp, lnum, limit_winheight)
+						   + diff_check_fill(wp, lnum);
 }
 
 /*
@@ -364,7 +365,7 @@ plines_nofill(linenr_T lnum)
 plines_win_nofill(
     win_T	*wp,
     linenr_T	lnum,
-    int		winheight)	// when TRUE limit to window height
+    int		limit_winheight)	// when TRUE limit to window height
 {
 #endif
     int		lines;
@@ -389,7 +390,7 @@ plines_win_nofill(
     else
 	lines = plines_win_nofold(wp, lnum);
 
-    if (winheight > 0 && lines > wp->w_height)
+    if (limit_winheight && lines > wp->w_height)
 	return wp->w_height;
     return lines;
 }
@@ -497,7 +498,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 }
 
     int
-plines_m_win(win_T *wp, linenr_T first, linenr_T last)
+plines_m_win(win_T *wp, linenr_T first, linenr_T last, int limit_winheight)
 {
     int		count = 0;
 
@@ -519,10 +520,11 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last)
 	{
 #ifdef FEAT_DIFF
 	    if (first == wp->w_topline)
-		count += plines_win_nofill(wp, first, TRUE) + wp->w_topfill;
+		count += plines_win_nofill(wp, first, limit_winheight)
+							       + wp->w_topfill;
 	    else
 #endif
-		count += plines_win(wp, first, TRUE);
+		count += plines_win(wp, first, limit_winheight);
 	    ++first;
 	}
     }
