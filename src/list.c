@@ -2735,8 +2735,9 @@ f_count(typval_T *argvars, typval_T *rettv)
 	else
 	    n = dict_count(argvars[0].vval.v_dict, &argvars[1], ic);
     }
-    else
-	semsg(_(e_argument_of_str_must_be_list_or_dictionary), "count()");
+    else if (!error)
+	semsg(_(e_argument_of_str_must_be_list_string_or_dictionary),
+								    "count()");
     rettv->vval.v_number = n;
 }
 
