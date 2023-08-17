@@ -1829,7 +1829,6 @@ win_line(
 
     win_line_start(wp, &wlv, FALSE);
 
-    char_u	*prev_ptr = ptr;
     // Repeat for the whole displayed line.
     for (;;)
     {
@@ -2261,9 +2260,9 @@ win_line(
 	    }
 #endif
 
+#ifdef FEAT_SEARCH_EXTRA
 	    if (wlv.n_extra == 0)
 	    {
-#ifdef FEAT_SEARCH_EXTRA
 		// Check for start/end of 'hlsearch' and other matches.
 		// After end, check for start/end of next match.
 		// When another match, have to check for start again.
@@ -2278,10 +2277,8 @@ win_line(
 		// and bad things happen.
 		if (*ptr == NUL)
 		    has_match_conc = 0;
-#endif
-
-		prev_ptr = ptr;
 	    }
+#endif
 
 #ifdef FEAT_DIFF
 	    if (wlv.diff_hlf != (hlf_T)0)
@@ -2356,7 +2353,6 @@ win_line(
 		    // have made it invalid.
 		    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 		    ptr = line + v;
-		    prev_ptr = ptr;
 # ifdef FEAT_CONCEAL
 		    // no concealing past the end of the line, it interferes
 		    // with line highlighting
@@ -2567,7 +2563,9 @@ win_line(
 #ifdef FEAT_LINEBREAK
 	    int		c0;
 #endif
-	    prev_ptr = ptr;
+#ifdef FEAT_SPELL
+	    char_u	*prev_ptr = ptr;
+#endif
 
 	    // Get a character from the line itself.
 	    c = *ptr;
@@ -3809,7 +3807,7 @@ win_line(
 	    else
 		ScreenAttrs[wlv.off] = wlv.char_attr;
 
-	    ScreenCols[wlv.off] = (colnr_T)(prev_ptr - line);
+	    ScreenCols[wlv.off] = wlv.vcol;
 
 	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
 	    {
@@ -3833,7 +3831,7 @@ win_line(
 		if (wlv.tocol == wlv.vcol)
 		    ++wlv.tocol;
 
-		ScreenCols[wlv.off] = (colnr_T)(prev_ptr - line);
+		ScreenCols[wlv.off] = wlv.vcol;
 
 #ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)

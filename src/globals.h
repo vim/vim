@@ -32,7 +32,7 @@ EXTERN long	Columns INIT(= 80);	// nr of columns in the screen
  * The characters that are currently on the screen are kept in ScreenLines[].
  * It is a single block of characters, the size of the screen plus one line.
  * The attributes for those characters are kept in ScreenAttrs[].
- * The byte offset in the line is kept in ScreenCols[].
+ * The virtual column in the line is kept in ScreenCols[].
  *
  * "LineOffset[n]" is the offset from ScreenLines[] for the start of line 'n'.
  * The same value is used for ScreenLinesUC[], ScreenAttrs[] and ScreenCols[].
