@@ -289,6 +289,15 @@ set_context_in_runtime_cmd(expand_T *xp, char_u *arg)
     char_u  *p = skiptowhite(arg);
     runtime_expand_flags
 	= *p != NUL ? get_runtime_cmd_flags(&arg, p - arg) : 0;
+    // Skip to the last argument.
+    while (*(p = skiptowhite_esc(arg)) != NUL)
+    {
+	if (runtime_expand_flags == 0)
+	    // When there are multiple arguments and [where] is not specified,
+	    // use an unrelated non-zero flag to avoid expanding [where].
+	    runtime_expand_flags = DIP_ALL;
+	arg = skipwhite(p);
+    }
     xp->xp_context = EXPAND_RUNTIME;
     xp->xp_pattern = arg;
 }
