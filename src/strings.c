@@ -1032,7 +1032,7 @@ string_reduce(
 	    break;
 	len = (int)STRLEN(argv[1].vval.v_string);
 
-	r = eval_expr_typval(expr, argv, 2, fc, rettv);
+	r = eval_expr_typval(expr, TRUE, argv, 2, fc, rettv);
 
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);

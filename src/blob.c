@@ -769,7 +769,7 @@ blob_reduce(
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = blob_get(b, i);
 
-	r = eval_expr_typval(expr, argv, 2, NULL, rettv);
+	r = eval_expr_typval(expr, TRUE, argv, 2, NULL, rettv);
 
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
