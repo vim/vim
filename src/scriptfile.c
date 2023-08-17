@@ -404,18 +404,19 @@ find_script_callback(char_u *fname, void *cookie)
 #endif
 
 /*
- * Find the file "name" in all directories in "path" and invoke
+ * Find the patterns in "name" in all directories in "path" and invoke
  * "callback(fname, cookie)".
- * "name" can contain wildcards.
+ * "prefix" is prepended to each pattern in "name".
  * When "flags" has DIP_ALL: source all files, otherwise only the first one.
  * When "flags" has DIP_DIR: find directories instead of files.
  * When "flags" has DIP_ERR: give an error message if there is no match.
  *
- * return FAIL when no file could be sourced, OK otherwise.
+ * Return FAIL when no file could be sourced, OK otherwise.
  */
     int
 do_in_path(
     char_u	*path,
+    char	*prefix,
     char_u	*name,
     int		flags,
     void	(*callback)(char_u *fname, void *ck),
@@ -447,8 +448,12 @@ do_in_path(
 	if (p_verbose > 10 && name != NULL)
 	{
 	    verbose_enter();
-	    smsg(_("Searching for \"%s\" in \"%s\""),
-						 (char *)name, (char *)path);
+	    if (*prefix != NUL)
+		smsg(_("Searching for \"%s\" under \"%s\" in \"%s\""),
+					   (char *)name, prefix, (char *)path);
+	    else
+		smsg(_("Searching for \"%s\" in \"%s\""),
+						   (char *)name, (char *)path);
 	    verbose_leave();
 	}
 
@@ -479,9 +484,10 @@ do_in_path(
 		if (!did_one)
 		    did_one = (cookie == NULL);
 	    }
-	    else if (buflen + STRLEN(name) + 2 < MAXPATHL)
+	    else if (buflen + 2 + STRLEN(prefix) + STRLEN(name) < MAXPATHL)
 	    {
 		add_pathsep(buf);
+		STRCAT(buf, prefix);
 		tail = buf + STRLEN(buf);
 
 		// Loop over all patterns in "name"
@@ -559,35 +565,17 @@ do_in_path_and_pp(
     void	*cookie)
 {
     int		done = FAIL;
-    char_u	*s;
-    int		len;
-    char	*start_dir = "pack/*/start/*/%s";
-    char	*opt_dir = "pack/*/opt/*/%s";
 
     if ((flags & DIP_NORTP) == 0)
-	done = do_in_path(path, name, flags, callback, cookie);
+	done = do_in_path(path, "", name, flags, callback, cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_START))
-    {
-	len = (int)(STRLEN(start_dir) + STRLEN(name));
-	s = alloc(len);
-	if (s == NULL)
-	    return FAIL;
-	vim_snprintf((char *)s, len, start_dir, name);
-	done = do_in_path(p_pp, s, flags, callback, cookie);
-	vim_free(s);
-    }
+	done = do_in_path(p_pp, "pack/*/start/*/", name, flags, callback,
+								       cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_OPT))
-    {
-	len = (int)(STRLEN(opt_dir) + STRLEN(name));
-	s = alloc(len);
-	if (s == NULL)
-	    return FAIL;
-	vim_snprintf((char *)s, len, opt_dir, name);
-	done = do_in_path(p_pp, s, flags, callback, cookie);
-	vim_free(s);
-    }
+	done = do_in_path(p_pp, "pack/*/opt/*/", name, flags, callback,
+								       cookie);
 
     return done;
 }
@@ -899,7 +887,7 @@ add_pack_plugin(char_u *fname, void *cookie)
     void
 add_pack_start_dirs(void)
 {
-    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+    do_in_path(p_pp, "", (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
 					       add_pack_plugin, &APP_ADD_DIR);
 }
 
@@ -910,7 +898,7 @@ add_pack_start_dirs(void)
 load_start_packages(void)
 {
     did_source_packages = TRUE;
-    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+    do_in_path(p_pp, "", (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
 						  add_pack_plugin, &APP_LOAD);
 }
 
@@ -957,7 +945,7 @@ ex_packadd(exarg_T *eap)
 	vim_snprintf(pat, len, plugpat, round == 1 ? "start" : "opt", eap->arg);
 	// The first round don't give a "not found" error, in the second round
 	// only when nothing was found in the first round.
-	res = do_in_path(p_pp, (char_u *)pat,
+	res = do_in_path(p_pp, "", (char_u *)pat,
 		DIP_ALL + DIP_DIR + (round == 2 && res == FAIL ? DIP_ERR : 0),
 		add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH);
 	vim_free(pat);

@@ -347,11 +347,35 @@ func Test_runtime()
   runtime extra/bar.vim
   call assert_equal('run', g:sequence)
   let g:sequence = ''
+  runtime NoSuchFile extra/bar.vim
+  call assert_equal('run', g:sequence)
+
+  let g:sequence = ''
   runtime START extra/bar.vim
   call assert_equal('start', g:sequence)
   let g:sequence = ''
+  runtime START NoSuchFile extra/bar.vim extra/foo.vim
+  call assert_equal('start', g:sequence)
+  let g:sequence = ''
+  runtime START NoSuchFile extra/foo.vim extra/bar.vim
+  call assert_equal('foostart', g:sequence)
+  let g:sequence = ''
+  runtime! START NoSuchFile extra/bar.vim extra/foo.vim
+  call assert_equal('startfoostart', g:sequence)
+
+  let g:sequence = ''
   runtime OPT extra/bar.vim
   call assert_equal('opt', g:sequence)
+  let g:sequence = ''
+  runtime OPT NoSuchFile extra/bar.vim extra/xxx.vim
+  call assert_equal('opt', g:sequence)
+  let g:sequence = ''
+  runtime OPT NoSuchFile extra/xxx.vim extra/bar.vim
+  call assert_equal('xxxopt', g:sequence)
+  let g:sequence = ''
+  runtime! OPT NoSuchFile extra/bar.vim extra/xxx.vim
+  call assert_equal('optxxxopt', g:sequence)
+
   let g:sequence = ''
   runtime PACK extra/bar.vim
   call assert_equal('start', g:sequence)
@@ -361,6 +385,12 @@ func Test_runtime()
   let g:sequence = ''
   runtime PACK extra/xxx.vim
   call assert_equal('xxxopt', g:sequence)
+  let g:sequence = ''
+  runtime PACK extra/xxx.vim extra/foo.vim extra/bar.vim
+  call assert_equal('foostart', g:sequence)
+  let g:sequence = ''
+  runtime! PACK extra/bar.vim extra/xxx.vim extra/foo.vim
+  call assert_equal('startfoostartoptxxxopt', g:sequence)
 
   let g:sequence = ''
   runtime ALL extra/bar.vim
@@ -374,6 +404,12 @@ func Test_runtime()
   let g:sequence = ''
   runtime! ALL extra/bar.vim
   call assert_equal('runstartopt', g:sequence)
+  let g:sequence = ''
+  runtime ALL extra/xxx.vim extra/foo.vim extra/bar.vim
+  call assert_equal('run', g:sequence)
+  let g:sequence = ''
+  runtime! ALL extra/bar.vim extra/xxx.vim extra/foo.vim
+  call assert_equal('runstartfoostartoptxxxopt', g:sequence)
 endfunc
 
 func Test_runtime_completion()
