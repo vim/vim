@@ -3,7 +3,7 @@
 " Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
-" Last Change: 	2022 Jun 18
+" Last Change: 	2023 Jun 28
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -180,9 +180,10 @@ func dist#man#PopPage()
     exec "let s:man_tag_buf=s:man_tag_buf_".s:man_tag_depth
     exec "let s:man_tag_lin=s:man_tag_lin_".s:man_tag_depth
     exec "let s:man_tag_col=s:man_tag_col_".s:man_tag_depth
+
     exec s:man_tag_buf."b"
-    exec s:man_tag_lin
-    exec "norm! ".s:man_tag_col."|"
+    call cursor(s:man_tag_lin, s:man_tag_col)
+
     exec "unlet s:man_tag_buf_".s:man_tag_depth
     exec "unlet s:man_tag_lin_".s:man_tag_depth
     exec "unlet s:man_tag_col_".s:man_tag_depth
