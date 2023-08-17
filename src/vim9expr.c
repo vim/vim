@@ -1100,9 +1100,9 @@ compile_call(
     if (!has_g_namespace && !is_autoload
 	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)
     {
-	type_T	    *type = get_type_on_stack(cctx, 0);
+	type_T	    *s_type = get_type_on_stack(cctx, 0);
 
-	res = generate_PCALL(cctx, argcount, namebuf, type, FALSE);
+	res = generate_PCALL(cctx, argcount, namebuf, s_type, FALSE);
 	goto theend;
     }
 
