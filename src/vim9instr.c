@@ -1777,10 +1777,10 @@ generate_BLOBAPPEND(cctx_T *cctx)
     int
 generate_CALL(
 	cctx_T	    *cctx,
-	type_T	    *mtype,	// method type
 	ufunc_T	    *ufunc,
 	class_T	    *cl,
 	int	    mi,
+	type_T	    *mtype,	// method type
 	int	    pushed_argcount)
 {
     isn_T	*isn;
@@ -1827,7 +1827,9 @@ generate_CALL(
 		    continue;
 		expected = ufunc->uf_arg_types[i];
 
-		// class constructor with object member
+		// When the method is a class constructor and the formal
+		// argument is an object member, the type check is performed on
+		// the object member type.
 		if (class_constructor && expected->tt_type == VAR_ANY)
 		{
 		    class_T *clp = mtype->tt_class;

@@ -358,8 +358,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
 	if (type->tt_type == VAR_OBJECT
 		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
-	    return generate_CALL(cctx, type, ufunc, cl, fi, argcount);
-	return generate_CALL(cctx, type, ufunc, NULL, 0, argcount);
+	    return generate_CALL(cctx, ufunc, cl, fi, type, argcount);
+	return generate_CALL(cctx, ufunc, NULL, 0, type, argcount);
     }
 
     if (type->tt_type == VAR_OBJECT)
@@ -1080,7 +1080,7 @@ compile_call(
 	{
 	    if (!func_is_global(ufunc))
 	    {
-		res = generate_CALL(cctx, type, ufunc, NULL, 0, argcount);
+		res = generate_CALL(cctx, ufunc, NULL, 0, type, argcount);
 		goto theend;
 	    }
 	    if (!has_g_namespace
@@ -1109,7 +1109,7 @@ compile_call(
     // If we can find a global function by name generate the right call.
     if (ufunc != NULL)
     {
-	res = generate_CALL(cctx, type, ufunc, NULL, 0, argcount);
+	res = generate_CALL(cctx, ufunc, NULL, 0, type, argcount);
 	goto theend;
     }
 
