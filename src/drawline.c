@@ -145,7 +145,8 @@ typedef struct {
     int		n_attr_skip;    // chars to skip before using extra_attr
     int		c_extra;	// extra chars, all the same
     int		c_final;	// final char, mandatory if set
-    int		extra_for_textprop; // wlv.n_extra set for textprop
+    int		extra_for_textprop; // n_extra set for textprop
+    int		start_extra_for_textprop; // extra_for_textprop was just set
 
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra;
@@ -1939,20 +1940,6 @@ win_line(
 
 	if (wlv.draw_state == WL_LINE && (area_highlighting || extra_check))
 	{
-	    // handle Visual or match highlighting in this line
-	    if (wlv.vcol == wlv.fromcol
-		    || (has_mbyte && wlv.vcol + 1 == wlv.fromcol
-							    && wlv.n_extra == 0
-			&& (*mb_ptr2cells)(ptr) > 1)
-		    || ((int)vcol_prev == fromcol_prev
-			&& vcol_prev < wlv.vcol	// not at margin
-			&& wlv.vcol < wlv.tocol))
-		area_attr = vi_attr;		// start highlighting
-	    else if (area_attr != 0
-		    && (wlv.vcol == wlv.tocol
-			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
-		area_attr = 0;			// stop highlighting
-
 #ifdef FEAT_PROP_POPUP
 	    if (text_props != NULL)
 	    {
@@ -2131,15 +2118,10 @@ win_line(
 			    wlv.c_final = NUL;
 			    wlv.n_extra = (int)STRLEN(p);
 			    wlv.extra_for_textprop = TRUE;
+			    wlv.start_extra_for_textprop = TRUE;
 			    wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 								    used_attr);
 			    n_attr = mb_charlen(p);
-			    // restore search_attr and area_attr when n_extra
-			    // is down to zero
-			    saved_search_attr = search_attr;
-			    saved_area_attr = area_attr;
-			    search_attr = 0;
-			    area_attr = 0;
 			    text_prop_attr = 0;
 			    text_prop_attr_comb = 0;
 			    if (*ptr == NUL)
@@ -2258,7 +2240,39 @@ win_line(
 		    // Or when not wrapping and at the rightmost column.
 		    text_prop_follows = TRUE;
 	    }
+
+	    if (wlv.start_extra_for_textprop)
+	    {
+		wlv.start_extra_for_textprop = FALSE;
+		// restore search_attr and area_attr when n_extra
+		// is down to zero
+		saved_search_attr = search_attr;
+		saved_area_attr = area_attr;
+		search_attr = 0;
+		area_attr = 0;
+	    }
 #endif
+
+	    int *area_attr_p =
+#ifdef FEAT_PROP_POPUP
+		wlv.extra_for_textprop ? &saved_area_attr :
+#endif
+							    &area_attr;
+
+	    // handle Visual or match highlighting in this line
+	    if (wlv.vcol == wlv.fromcol
+		    || (has_mbyte && wlv.vcol + 1 == wlv.fromcol
+			&& ((wlv.n_extra == 0 && (*mb_ptr2cells)(ptr) > 1)
+			    || (wlv.n_extra > 0 && wlv.p_extra != NULL
+				&& (*mb_ptr2cells)(wlv.p_extra) > 1)))
+		    || ((int)vcol_prev == fromcol_prev
+			&& vcol_prev < wlv.vcol	// not at margin
+			&& wlv.vcol < wlv.tocol))
+		*area_attr_p = vi_attr;		// start highlighting
+	    else if (*area_attr_p != 0
+		    && (wlv.vcol == wlv.tocol
+			|| (noinvcur && (colnr_T)wlv.vcol == wp->w_virtcol)))
+		*area_attr_p = 0;		// stop highlighting
 
 #ifdef FEAT_SEARCH_EXTRA
 	    if (wlv.n_extra == 0)

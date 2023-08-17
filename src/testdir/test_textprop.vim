@@ -2602,6 +2602,33 @@ func Test_prop_inserts_text_highlight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_inserts_text_visual_block()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, repeat(['123456789'], 3))
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(2, 2, {'type': 'theprop', 'text': '-口-'})
+  END
+  call writefile(lines, 'XscriptPropsVisualBlock', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsVisualBlock', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_1', {})
+  call term_sendkeys(buf, "\<C-V>2jl")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_2', {})
+  call term_sendkeys(buf, "l")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_3', {})
+  call term_sendkeys(buf, "4l")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_4', {})
+  call term_sendkeys(buf, "Ol")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_5', {})
+  call term_sendkeys(buf, "l")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_6', {})
+  call term_sendkeys(buf, "l")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_add_with_text_fails()
   call prop_type_add('failing', #{highlight: 'ErrorMsg'})
   call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', end_lnum: 1})", 'E1305:')
