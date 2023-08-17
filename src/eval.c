@@ -252,12 +252,14 @@ eval_expr_get_funccal(typval_T *expr, typval_T *rettv)
 /*
  * Evaluate an expression, which can be a function, partial or string.
  * Pass arguments "argv[argc]".
+ * If "want_func" is TRUE treat a string as a function name, not an expression.
  * "fc_arg" is from eval_expr_get_funccal() or NULL;
  * Return the result in "rettv" and OK or FAIL.
  */
     int
 eval_expr_typval(
 	typval_T    *expr,
+	int	    want_func,
 	typval_T    *argv,
 	int	    argc,
 	funccall_T  *fc_arg,
@@ -267,17 +269,7 @@ eval_expr_typval(
     char_u	buf[NUMBUFLEN];
     funcexe_T	funcexe;
 
-    if (expr->v_type == VAR_FUNC)
-    {
-	s = expr->vval.v_string;
-	if (s == NULL || *s == NUL)
-	    return FAIL;
-	CLEAR_FIELD(funcexe);
-	funcexe.fe_evaluate = TRUE;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
-	    return FAIL;
-    }
-    else if (expr->v_type == VAR_PARTIAL)
+    if (expr->v_type == VAR_PARTIAL)
     {
 	partial_T   *partial = expr->vval.v_partial;
 
@@ -318,6 +310,18 @@ eval_expr_typval(
     {
 	return exe_typval_instr(expr, rettv);
     }
+    else if (expr->v_type == VAR_FUNC || want_func)
+    {
+	s = expr->v_type == VAR_FUNC
+		? expr->vval.v_string
+		: tv_get_string_buf_chk_strict(expr, buf, in_vim9script());
+	if (s == NULL || *s == NUL)
+	    return FAIL;
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	    return FAIL;
+    }
     else
     {
 	s = tv_get_string_buf_chk_strict(expr, buf, in_vim9script());
@@ -346,7 +350,7 @@ eval_expr_to_bool(typval_T *expr, int *error)
     typval_T	rettv;
     int		res;
 
-    if (eval_expr_typval(expr, NULL, 0, NULL, &rettv) == FAIL)
+    if (eval_expr_typval(expr, FALSE, NULL, 0, NULL, &rettv) == FAIL)
     {
 	*error = TRUE;
 	return FALSE;

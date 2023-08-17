@@ -6938,7 +6938,7 @@ indexof_eval_expr(typval_T *expr)
     argv[1] = *get_vim_var_tv(VV_VAL);
     newtv.v_type = VAR_UNKNOWN;
 
-    if (eval_expr_typval(expr, argv, 2, NULL, &newtv) == FAIL)
+    if (eval_expr_typval(expr, FALSE, argv, 2, NULL, &newtv) == FAIL)
 	return FALSE;
 
     found = tv_get_bool_chk(&newtv, &error);
