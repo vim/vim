@@ -4527,7 +4527,7 @@ messaging(void)
     void
 comp_col(void)
 {
-    int last_has_status = (p_ls == 2 || (p_ls == 1 && !ONE_WINDOW));
+    int last_has_status = last_stl_height(FALSE) > 0;
 
     sc_col = 0;
     ru_col = 0;
