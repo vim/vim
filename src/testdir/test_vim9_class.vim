@@ -135,6 +135,16 @@ def Test_class_basic()
   END
   v9.CheckScriptFailure(lines, 'E1069:')
 
+  # Test for unsupported comment specifier
+  lines =<< trim END
+    vim9script
+    class Something
+      # comment
+      #{
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1170:')
+
   lines =<< trim END
       vim9script
 
@@ -162,6 +172,44 @@ def Test_class_basic()
       assert_equal('object<TextPosition>', typename(pos))
   END
   v9.CheckScriptSuccess(lines)
+
+  # When referencing object methods, space cannot be used after a "."
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(): number
+        return 10
+      enddef
+    endclass
+    var a = A.new()
+    var v = a. Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E1202:')
+
+  # Using an object without specifying a method or a member variable
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(): number
+        return 10
+      enddef
+    endclass
+    var a = A.new()
+    var v = a.
+  END
+  v9.CheckScriptFailure(lines, 'E15:')
+
+  # Error when parsing the arguments of an object method.
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo()
+      enddef
+    endclass
+    var a = A.new()
+    var v = a.Foo(,)
+  END
+  v9.CheckScriptFailure(lines, 'E15:')
 enddef
 
 def Test_class_defined_twice()
@@ -628,6 +676,15 @@ def Test_class_object_member_inits()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1330:')
+
+  # Test for initializing an object member with an unknown variable/type
+  lines =<< trim END
+    vim9script
+    class A
+       this.value = init_val
+    endclass
+  END
+  v9.CheckScriptFailureList(lines, ['E121:', 'E1329:'])
 enddef
 
 def Test_class_object_member_access()
@@ -657,6 +714,15 @@ def Test_class_object_member_access()
       assert_fails('trip.four = 4', 'E1334')
   END
   v9.CheckScriptSuccess(lines)
+
+  # Test for a public member variable name beginning with an underscore
+  lines =<< trim END
+    vim9script
+    class A
+      public this._val = 10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1332:')
 
   lines =<< trim END
       vim9script
@@ -735,6 +801,33 @@ def Test_class_object_member_access()
             .x
   END
   v9.CheckScriptSuccess(lines)
+
+  # Test for "public" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    class Something
+      pub this.val = 1
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1065:')
+
+  # Test for "public" keyword must be followed by "this" or "static".
+  lines =<< trim END
+    vim9script
+    class Something
+      public val = 1
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1331:')
+
+  # Test for "static" cannot be abbreviated
+  lines =<< trim END
+    vim9script
+    class Something
+      stat this.val = 1
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1065:')
 enddef
 
 def Test_class_object_compare()
@@ -1002,6 +1095,42 @@ def Test_class_member()
       s.Method(7)
   END
   v9.CheckScriptFailure(lines, 'E1341: Variable already declared in the class: count')
+
+  # Test for using an invalid type for a member variable
+  lines =<< trim END
+    vim9script
+    class A
+      this.val: xxx
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1010:')
+
+  # Test for no space before or after the '=' when initializing a member
+  # variable
+  lines =<< trim END
+    vim9script
+    class A
+      this.val: number= 10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+    vim9script
+    class A
+      this.val: number =10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1004:')
+
+  # Access a non-existing member
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var a = A.new()
+    var v = a.bar
+  END
+  v9.CheckScriptFailure(lines, 'E1326:')
 enddef
 
 func Test_class_garbagecollect()
@@ -1072,6 +1201,18 @@ def Test_class_function()
       assert_equal(2, Value.GetCount())
   END
   v9.CheckScriptSuccess(lines)
+
+  # Test for cleaning up after a class definition failure when using class
+  # functions.
+  lines =<< trim END
+    vim9script
+    class A
+      static def Foo()
+      enddef
+      aaa
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1318:')
 enddef
 
 def Test_class_defcompile()
@@ -1100,6 +1241,40 @@ def Test_class_defcompile()
       defcompile C.Fc
   END
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected number but got string')
+
+  # Trying to compile a function using a non-existing class variable
+  lines =<< trim END
+    vim9script
+    defcompile x.Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E475:')
+
+  # Trying to compile a function using a variable which is not a class
+  lines =<< trim END
+    vim9script
+    var x: number
+    defcompile x.Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E475:')
+
+  # Trying to compile a function without specifying the name
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    defcompile A.
+  END
+  v9.CheckScriptFailure(lines, 'E475:')
+
+  # Trying to compile a non-existing class object member function
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var a = A.new()
+    defcompile a.Foo()
+  END
+  v9.CheckScriptFailureList(lines, ['E1334:', 'E475:'])
 enddef
 
 def Test_class_object_to_string()
@@ -1345,6 +1520,62 @@ def Test_class_implements_interface()
       Test()
   END
   v9.CheckScriptSuccess(lines)
+
+  # Interface name after "extends" doesn't end in a space or NUL character
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B extends A"
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1315:')
+
+  # Trailing characters after a class name
+  lines =<< trim END
+    vim9script
+    class A bbb
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E488:')
+
+  # using "implements" with a non-existing class
+  lines =<< trim END
+    vim9script
+    class A implements B
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1346:')
+
+  # using "implements" with a regular class
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B implements A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1347:')
+
+  # using "implements" with a variable
+  lines =<< trim END
+    vim9script
+    var T: number = 10
+    class A implements T
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1347:')
+
+  # all the class methods in an "interface" should be implemented
+  lines =<< trim END
+    vim9script
+    interface A
+      static def Foo()
+    endinterface
+    class B implements A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1349:')
 enddef
 
 def Test_call_interface_method()
@@ -1717,6 +1948,16 @@ def Test_class_extends()
       assert_equal("object of Success {success: true, value: 'asdf'}", string(v))
   END
   v9.CheckScriptSuccess(lines)
+
+  # class name after "extends" doesn't end in a space or NUL character
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A"
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1315:')
 enddef
 
 def Test_using_base_class()
@@ -1841,6 +2082,16 @@ def Test_abstract_class()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1316:')
+
+  # Abstract class cannot have a "new" function
+  lines =<< trim END
+    vim9script
+    abstract class Base
+      def new()
+      enddef
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1359:')
 enddef
 
 def Test_closure_in_class()

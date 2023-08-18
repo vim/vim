@@ -534,6 +534,7 @@ early_ret:
 		{
 		    emsg(_(e_cannot_define_new_function_in_abstract_class));
 		    success = FALSE;
+		    func_clear_free(uf, FALSE);
 		    break;
 		}
 		garray_T *fgap = has_static || is_new
@@ -654,6 +655,8 @@ early_ret:
 	    {
 		semsg(_(e_not_valid_interface_str), impl);
 		success = FALSE;
+		clear_tv(&tv);
+		break;
 	    }
 
 	    class_T *ifcl = tv.vval.v_class;
@@ -839,9 +842,9 @@ early_ret:
 
 	if (cl->class_interface_count > 0 || extends_cl != NULL)
 	{
-	    // For each interface add a lookuptable for the member index on the
-	    // interface to the member index in this class.
-	    // And a lookuptable for the object method index on the interface
+	    // For each interface add a lookup table for the member index on
+	    // the interface to the member index in this class.
+	    // And a lookup table for the object method index on the interface
 	    // to the object method index in this class.
 	    // Also do this for the extended class, if any.
 	    for (int i = 0; i <= cl->class_interface_count; ++i)
