@@ -5272,7 +5272,7 @@ exec_instructions(ectx_T *ectx)
 		    // Useful when used in unpack assignment.  Reset at
 		    // ISN_DROP.
 		    ectx->ec_where.wt_index = gi->gi_index + 1;
-		    ectx->ec_where.wt_variable = TRUE;
+		    ectx->ec_where.wt_kind = WT_VARIABLE;
 		}
 		break;
 
@@ -5442,19 +5442,19 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_CHECKTYPE:
 		{
 		    checktype_T *ct = &iptr->isn_arg.type;
-		    int		save_wt_variable = ectx->ec_where.wt_variable;
+		    int		save_wt_kind = ectx->ec_where.wt_kind;
 		    int		r;
 
 		    tv = STACK_TV_BOT((int)ct->ct_off);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (!ectx->ec_where.wt_variable)
+		    if (ectx->ec_where.wt_kind == WT_ARGUMENT)
 			ectx->ec_where.wt_index = ct->ct_arg_idx;
-		    ectx->ec_where.wt_variable = ct->ct_is_var;
+		    ectx->ec_where.wt_kind = ct->ct_is_var ? WT_VARIABLE : WT_ARGUMENT;
 		    r = check_typval_type(ct->ct_type, tv, ectx->ec_where);
-		    ectx->ec_where.wt_variable = save_wt_variable;
+		    ectx->ec_where.wt_kind = save_wt_kind;
 		    if (r == FAIL)
 			goto on_error;
-		    if (!ectx->ec_where.wt_variable)
+		    if (ectx->ec_where.wt_kind == WT_ARGUMENT)
 			ectx->ec_where.wt_index = 0;
 
 		    // number 0 is FALSE, number 1 is TRUE
@@ -5737,7 +5737,7 @@ exec_instructions(ectx_T *ectx)
 		--ectx->ec_stack.ga_len;
 		clear_tv(STACK_TV_BOT(0));
 		ectx->ec_where.wt_index = 0;
-		ectx->ec_where.wt_variable = FALSE;
+		ectx->ec_where.wt_kind = WT_ARGUMENT;
 		break;
 	}
 	continue;
@@ -6171,7 +6171,7 @@ call_def_function(
     did_emsg_def = 0;
 
     ectx.ec_where.wt_index = 0;
-    ectx.ec_where.wt_variable = FALSE;
+    ectx.ec_where.wt_kind = WT_ARGUMENT;
 
     /*
      * Execute the instructions until done.

@@ -496,7 +496,7 @@ need_type_where(
     if (!actual_is_const && ret == MAYBE && use_typecheck(actual, expected))
     {
 	generate_TYPECHECK(cctx, expected, number_ok, offset,
-					    where.wt_variable, where.wt_index);
+		where.wt_kind == WT_VARIABLE, where.wt_index);
 	return OK;
     }
 
@@ -2637,7 +2637,7 @@ compile_assignment(
 			// Use the line number of the assignment.
 			SOURCING_LNUM = start_lnum;
 			where.wt_index = var_count > 0 ? var_idx + 1 : 0;
-			where.wt_variable = var_count > 0;
+			where.wt_kind = var_count > 0 ? WT_VARIABLE : WT_ARGUMENT;
 			// If assigning to a list or dict member, use the
 			// member type.  Not for "list[:] =".
 			if (lhs.lhs_has_index

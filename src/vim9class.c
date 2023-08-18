@@ -681,12 +681,20 @@ early_ret:
 		    int cl_i;
 		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
 		    {
-			ocmember_T *m = &cl_ms[cl_i];
-			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) == 0)
-			{
-			    // TODO: check type
-			    break;
-			}
+			ocmember_T	*m = &cl_ms[cl_i];
+			where_T 	where = WHERE_INIT;
+
+			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
+			    continue;
+
+			// Ensure the type is matching.
+			where.wt_func_name = m->ocm_name;
+			where.wt_kind = WT_MEMBER;
+			if (check_type_maybe(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
+				    where) != OK)
+			    success = FALSE;
+
+			break;
 		    }
 		    if (cl_i == cl_count)
 		    {

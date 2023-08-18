@@ -1268,6 +1268,22 @@ def Test_class_implements_interface()
       Test()
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface One
+        static matching: bool
+        static as_any: any
+        static not_matching: number
+      endinterface
+      class Two implements One
+        static not_matching: string
+        static as_any: string
+        static matching: bool
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1406: Member "not_matching": type mismatch, expected number but got string')
 enddef
 
 def Test_call_interface_method()

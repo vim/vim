@@ -3855,7 +3855,7 @@ eval8(
 		{
 		    where_T where = WHERE_INIT;
 
-		    where.wt_variable = TRUE;
+		    where.wt_kind = WT_VARIABLE;
 		    res = check_type(want_type, actual, TRUE, where);
 		}
 	    }

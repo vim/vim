@@ -1046,7 +1046,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
 		// Reserve a variable to store "var".
 		where.wt_index = var_list ? idx + 1 : 0;
-		where.wt_variable = TRUE;
+		where.wt_kind = WT_VARIABLE;
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown

@@ -744,15 +744,20 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
     char *typename1 = type_name(expected, &tofree1);
     char *typename2 = type_name(actual, &tofree2);
 
-    if (where.wt_index > 0)
+    if (where.wt_kind == WT_MEMBER)
+    {
+	semsg(_(e_member_str_type_mismatch_expected_str_but_got_str), where.wt_func_name,
+		typename1, typename2);
+    }
+    else if (where.wt_index > 0)
     {
 	if (where.wt_func_name == NULL)
-	    semsg(_(where.wt_variable
+	    semsg(_(where.wt_kind
 			 ? e_variable_nr_type_mismatch_expected_str_but_got_str
 		       : e_argument_nr_type_mismatch_expected_str_but_got_str),
 					 where.wt_index, typename1, typename2);
 	else
-	    semsg(_(where.wt_variable
+	    semsg(_(where.wt_kind
 		  ? e_variable_nr_type_mismatch_expected_str_but_got_str_in_str
 		: e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
 		     where.wt_index, typename1, typename2, where.wt_func_name);
