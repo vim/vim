@@ -1497,7 +1497,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 
     d = argvars[0].vval.v_dict;
     if (d == NULL)
-	// empty dict behaves like an empty dict
+	// NULL dict behaves like an empty dict
 	return;
 
     todo = (int)d->dv_hashtab.ht_used;

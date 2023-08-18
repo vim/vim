@@ -17,7 +17,7 @@
  * ScreenLines[off]  Contains a copy of the whole screen, as it is currently
  *		     displayed (excluding text written by external commands).
  * ScreenAttrs[off]  Contains the associated attributes.
- * ScreenCols[off]   Contains the byte offset in the line. -1 means not
+ * ScreenCols[off]   Contains the virtual columns in the line. -1 means not
  *		     available (below last line), MAXCOL means after the end
  *		     of the line.
  *

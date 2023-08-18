@@ -2606,14 +2606,15 @@ func Test_prop_inserts_text_visual_block()
   CheckRunVimInTerminal
 
   let lines =<< trim END
-    call setline(1, repeat(['123456789'], 3))
+    call setline(1, repeat(['123456789'], 4))
     call prop_type_add('theprop', #{highlight: 'Special'})
     call prop_add(2, 2, {'type': 'theprop', 'text': '-口-'})
+    call prop_add(3, 3, {'type': 'theprop', 'text': '口'})
   END
   call writefile(lines, 'XscriptPropsVisualBlock', 'D')
   let buf = RunVimInTerminal('-S XscriptPropsVisualBlock', #{rows: 6, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_1', {})
-  call term_sendkeys(buf, "\<C-V>2jl")
+  call term_sendkeys(buf, "\<C-V>3jl")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_2', {})
   call term_sendkeys(buf, "l")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_visual_block_3', {})
