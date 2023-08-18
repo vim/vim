@@ -770,6 +770,36 @@ concat_str(char_u *str1, char_u *str2)
     return dest;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_RIGHTLEFT) || defined(PROTO)
+/*
+ * Reverse text into allocated memory.
+ * Returns the allocated string, NULL when out of memory.
+ */
+    char_u *
+reverse_text(char_u *s)
+{
+    size_t len = STRLEN(s);
+    char_u *rev = alloc(len + 1);
+    if (rev == NULL)
+	return NULL;
+
+    for (size_t s_i = 0, rev_i = len; s_i < len; ++s_i)
+    {
+	if (has_mbyte)
+	{
+	    int mb_len = (*mb_ptr2len)(s + s_i);
+	    rev_i -= mb_len;
+	    mch_memmove(rev + rev_i, s + s_i, mb_len);
+	    s_i += mb_len - 1;
+	}
+	else
+	    rev[--rev_i] = s[s_i];
+    }
+    rev[len] = NUL;
+    return rev;
+}
+#endif
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return string "str" in ' quotes, doubling ' characters.
@@ -852,47 +882,6 @@ string_count(char_u *haystack, char_u *needle, int ic)
 	}
 
     return n;
-}
-
-/*
- * Reverse the string in 'str' and set the result in 'rettv'.
- */
-    void
-string_reverse(char_u *str, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-    if (str == NULL)
-	return;
-
-    char_u	*rstr = vim_strsave(str);
-    rettv->vval.v_string = rstr;
-    if (rstr == NULL || *str == NUL)
-	return;
-
-    size_t	len = STRLEN(rstr);
-    if (has_mbyte)
-    {
-	char_u *src = str;
-	char_u *dest = rstr + len;
-
-	while (src < str + len)
-	{
-	    int clen = mb_ptr2len(src);
-	    dest -= clen;
-	    mch_memmove(dest, src, (size_t)clen);
-	    src += clen;
-	}
-    }
-    else
-    {
-	for (size_t i = 0; i < len / 2; i++)
-	{
-	    char tmp = rstr[len - i - 1];
-	    rstr[len - i - 1] = rstr[i];
-	    rstr[i] = tmp;
-	}
-    }
 }
 
 /*
