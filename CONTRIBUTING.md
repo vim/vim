@@ -36,7 +36,7 @@ maillist.  Try reproducing the problem without any of your plugins or settings:
 
 If you report an issue, please describe exactly how to reproduce it.
 For example, don't say "insert some text" but say what you did exactly:
-"ahere is some text&lt;Esc&gt;".
+"here is some text&lt;Esc&gt;".
 Ideally, the steps you list can be used to write a test to verify the problem
 is fixed.
 
