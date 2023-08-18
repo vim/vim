@@ -180,7 +180,7 @@ function s:RapidLenTilStr(lnum, str, startIdx) abort
 endfunction
 
 " a:lchar should be one of (, ), [, ], { or }
-" returns the number of opening/closing parenthesis which have no
+" returns the number of opening/closing parentheses which have no
 " closing/opening match in getline(a:lnum)
 function s:RapidLoneParen(lnum,lchar) abort
   if a:lchar == "(" || a:lchar == ")"
