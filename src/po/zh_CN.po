@@ -514,22 +514,22 @@ msgstr "(已中断) "
 #, c-format
 msgid "%ld match on %ld line"
 msgid_plural "%ld matches on %ld line"
-msgstr[0] "%ld 个匹配（%ld 行）"
+msgstr[0] "%2$ld 行 %1$ld 个匹配"
 
 #, c-format
 msgid "%ld substitution on %ld line"
 msgid_plural "%ld substitutions on %ld line"
-msgstr[0] "%ld 次替换（%ld 行）"
+msgstr[0] "%2$ld 行 %1$ld 次替换"
 
 #, c-format
 msgid "%ld match on %ld lines"
 msgid_plural "%ld matches on %ld lines"
-msgstr[0] "%ld 个匹配（%ld 行）"
+msgstr[0] "%2$ld 行 %1$ld 个匹配"
 
 #, c-format
 msgid "%ld substitution on %ld lines"
 msgid_plural "%ld substitutions on %ld lines"
-msgstr[0] "%ld 次替换（%ld 行）"
+msgstr[0] "%2$ld 行 %1$ld 次替换"
 
 #, c-format
 msgid "Pattern found in every line: %s"
@@ -1676,8 +1676,8 @@ msgstr "--servername <名称>\t发送到或成为 Vim 服务器 <名称>"
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <文件>\t将启动计时信息写入 <文件>"
 
-msgid "--log <file>\t\tStart logging to <file> early"
-msgstr "--log <文件>\t\t尽早开始记录日志到 <文件>"
+msgid "--log <file>\tStart logging to <file> early"
+msgstr "--log <文件>\t尽早开始记录日志到 <文件>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\t使用 <viminfo> 取代 .viminfo"
@@ -2416,15 +2416,13 @@ msgstr ""
 "\n"
 "无法设置安全上下文："
 
-# reorder if possible
 #, c-format
 msgid "Could not set security context %s for %s"
-msgstr "无法设置安全上下文 %s：%s"
+msgstr "无法为 %2$s 设置安全上下文 %1$s"
 
-# reorder if possible
 #, c-format
 msgid "Could not get security context %s for %s. Removing it!"
-msgstr "无法设置安全上下文 %s：%s。删掉它！"
+msgstr "无法为 %2$s 获取安全上下文 %1$s。删之！"
 
 msgid ""
 "\n"
@@ -2563,19 +2561,17 @@ msgstr "无法打开用于写入的临时日志文件，显示在标准错误上了……"
 
 #, c-format
 msgid " into \"%c"
-msgstr "进 \"%c "
+msgstr "进 \"%c"
 
-# reorder if possible
 #, c-format
 msgid "block of %ld line yanked%s"
 msgid_plural "block of %ld lines yanked%s"
-msgstr[0] "%ld 行的块复制%s了"
+msgstr[0] "%ld 行的块已复制%s"
 
-# reorder if possible
 #, c-format
 msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
-msgstr[0] "%ld 行复制%s了"
+msgstr[0] "%ld 行已复制%s"
 
 msgid ""
 "\n"
@@ -3023,18 +3019,16 @@ msgstr "写入拼写文件 %s ……"
 msgid "Done!"
 msgstr "完成！"
 
-# reorder if possible
 #, c-format
 msgid "Word '%.*s' removed from %s"
-msgstr "单词 '%.*s' 从 %s 中删除了"
+msgstr "从 %3$s 中删除了单词 '%1$.*2s'"
 
 msgid "Seek error in spellfile"
 msgstr "拼写文件中定位错误"
 
-# reorder if possible
 #, c-format
 msgid "Word '%.*s' added to %s"
-msgstr "单词 '%.*s' 添加到了 %s"
+msgstr "向 %3$s 中添加了单词 '%1$.*2s'"
 
 msgid "Sorry, no suggestions"
 msgstr "抱歉，没有建议"
@@ -4597,10 +4591,9 @@ msgstr "E242: 在关闭窗口时不能分割另一个窗口"
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: 不支持的参数: \"-%s\"；请使用 OLE 版本。"
 
-# reorder if possible
-#, fuzzy, c-format
-# msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-# msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
+#, c-format
+msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
+msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
 
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
@@ -4836,10 +4829,9 @@ msgstr "E314: 保留失败"
 msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: 无效的 lnum: %ld"
 
-# reorder if possible
-#, fuzzy, c-format
-# msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-# msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
+#, c-format
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
+msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
 
 msgid "E317: Pointer block id wrong"
 msgstr "E317: 指针块 id 错误"
@@ -6428,7 +6420,7 @@ msgstr "E804: 不能对浮点数使用 '%'"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: 将浮点数作整数使用"
 
-msgid "E806: Using a Float as a String"
+msgid "E806: Using Float as a String"
 msgstr "E806: 将浮点数作字符串使用"
 
 msgid "E807: Expected Float argument for printf()"
@@ -7246,10 +7238,9 @@ msgstr "E1035: % 需要整数参数"
 msgid "E1036: %c requires number or float arguments"
 msgstr "E1036: %c 需要整数或者浮点数参数"
 
-# reorder if possible
-#, fuzzy, c-format
-# msgid "E1037: Cannot use \"%s\" with %s"
-# msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
+#, c-format
+msgid "E1037: Cannot use \"%s\" with %s"
+msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
 
 msgid "E1038: \"vim9script\" can only be used in a script"
 msgstr "E1038: \"vim9script\" 只能在脚本中使用"
@@ -7511,8 +7502,8 @@ msgstr "E1112: 列表项 %d 单元格宽度无效"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: 重叠范围为 0x%lx"
 
-msgid "E1114: Only values of 0x80 and higher supported"
-msgstr "E1114: 只支持 0x80 或更高的值"
+msgid "E1114: Only values of 0x100 and higher supported"
+msgstr "E1114: 只支持 0x100 或更高的值"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: \"assert_fails()\" 第四个参数必须是一个整数"
@@ -7676,10 +7667,9 @@ msgstr "E1162: 寄存器名必须是一个字符：%s"
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
 msgstr "E1163: 变量 %d: 类型不匹配，需要 %s 但得到 %s"
 
-# reorder if possible
 #, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s in %s"
-msgstr "E1163: 变量 %d: 类型不匹配，需要 %s 但得到 %s 于 %s 中"
+msgstr "E1163: %4$s 中变量 %1$d: 类型不匹配，需要 %2$s 但得到 %3$s"
 
 msgid "E1164: vim9cmd must be followed by a command"
 msgstr "E1164: vim9cmd 后边必须是命令"
