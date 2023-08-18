@@ -2343,7 +2343,7 @@ win_update(win_T *wp)
 			    {
 				int n = plines_win_nofill(wp, l, FALSE)
 								+ wp->w_topfill;
-				n = adjust_plines_for_skipcol(wp, n);
+				n -= adjust_plines_for_skipcol(wp);
 				if (n > wp->w_height)
 				    n = wp->w_height;
 				new_rows += n;
