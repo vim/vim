@@ -292,7 +292,7 @@ tv_get_number(typval_T *varp)
 }
 
 /*
- * Like tv_get_numbe() but in Vim9 script do convert a number in a string to a
+ * Like tv_get_number() but in Vim9 script do convert a number in a string to a
  * number without giving an error.
  */
     varnumber_T
