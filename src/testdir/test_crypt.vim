@@ -332,7 +332,11 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
     endtry
     call assert_equal(0, &undofile)
     bw!
-    call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
+    try
+      call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
+    catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+    endtry
     " should fail
     norm! u
     call assert_match('Already at oldest change', execute(':1mess'))
