@@ -1239,10 +1239,10 @@ browse_destroy_cb(GtkWidget *widget UNUSED)
  * dflt				default name
  * ext				not used (extension added)
  * initdir			initial directory, NULL for current dir
- * filter			not used (file name filter)
+ * filter			file name filter
  */
     char_u *
-gui_mch_browse(int saving UNUSED,
+gui_mch_browse(int saving,
 	       char_u *title,
 	       char_u *dflt,
 	       char_u *ext UNUSED,
