@@ -1,0 +1,58 @@
+# list of labels and minimatch globs to match to apply the label.
+
+CI:
+- any: ['.cirrus.yml']
+- any: ['.github/**']
+- any: ['.appveyor.yml']
+- any: ['.codecov.yml']
+
+translation:
+- any: ['src/po/*.po']
+
+if_lua:
+- any: ['src/if_lua.c']
+- any: ['src/proto/if_lua.pro']
+- any: ['runtime/doc/if_lua.txt']
+
+if_mzscheme:
+- any: ['src/if_mzsch.c']
+- any: ['src/if_mzsch.h']
+- any: ['src/proto/if_mzsch.pro']
+- any: ['runtime/doc/if_mzsch.txt']
+
+if_perl:
+- any: ['src/if_perl.xs']
+- any: ['src/if_perlsfio.c']
+- any: ['src/proto/if_perl.pro']
+- any: ['src/proto/if_perlsfio.pro']
+- any: ['runtime/doc/if_perl.txt']
+
+if_python:
+- any: ['src/if_py_both.h']
+- any: ['runtime/doc/if_pyth.txt']
+- any: ['src/if_python.c']
+- any: ['src/if_python3.c']
+- any: ['src/proto/if_python.pro']
+- any: ['src/proto/if_python3.pro']
+
+if_ruby:
+- any: ['src/if_ruby.c']
+- any: ['src/proto/if_ruby.pro']
+- any: ['runtime/doc/if_ruby.txt']
+
+if_tcl:
+- any: ['src/if_tcl.c']
+- any: ['src/proto/if_tcl.pro']
+- any: ['runtime/doc/if_tcl.txt']
+
+runtime:
+- any: ['runtime/ftplugin']
+- any: ['runtime/syntax']
+- any: ['runtime/indent']
+- any: ['runtime/pack/dist/opt/termdebug/plugin/termdebug.vim']
+
+termdebug: runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
+
+netrw:
+- any: ['runtime/plugin/netrwPlugin.vim']
+- any: ['runtime/autoload/netrw*']
