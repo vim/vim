@@ -3001,7 +3001,13 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_BLOB)
 	blob_reverse(argvars[0].vval.v_blob, rettv);
     else if (argvars[0].v_type == VAR_STRING)
-	string_reverse(argvars[0].vval.v_string, rettv);
+    {
+	rettv->v_type = VAR_STRING;
+	if (argvars[0].vval.v_string != NULL)
+	    rettv->vval.v_string = reverse_text(argvars[0].vval.v_string);
+	else
+	    rettv->vval.v_string = NULL;
+    }
     else if (argvars[0].v_type == VAR_LIST)
 	list_reverse(argvars[0].vval.v_list, rettv);
 }
