@@ -3343,7 +3343,9 @@ win_line(
 			wlv.char_attr = wlv.line_attr;
 #ifdef FEAT_SIGNS
 		    // At end of line: if Sign is present with line highlight, reset char_attr
-		    if (sign_present && wlv.sattr.sat_linehl > 0 && wlv.draw_state == WL_LINE)
+		    // but not when cursorline is active
+		    if (sign_present && wlv.sattr.sat_linehl > 0 && wlv.draw_state == WL_LINE
+			 && !(wp->w_p_cul && lnum == wp->w_cursor.lnum))
 			wlv.char_attr = wlv.sattr.sat_linehl;
 #endif
 # ifdef FEAT_DIFF
