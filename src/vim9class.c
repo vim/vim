@@ -231,6 +231,276 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
 }
 
 /*
+ * Check whether a class named "extends_name" is present.  If the class is
+ * valid, then "extends_clp" is set with the class pointer.
+ * Returns TRUE if the class name "extends_names" is a valid class.
+ */
+    static int
+validate_extends_class(char_u *extends_name, class_T **extends_clp)
+{
+    typval_T	tv;
+    int		success = FALSE;
+
+    tv.v_type = VAR_UNKNOWN;
+    if (eval_variable_import(extends_name, &tv) == FAIL)
+    {
+	semsg(_(e_class_name_not_found_str), extends_name);
+	return success;
+    }
+    else
+    {
+	if (tv.v_type != VAR_CLASS
+		|| tv.vval.v_class == NULL
+		|| (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+	    semsg(_(e_cannot_extend_str), extends_name);
+	else
+	{
+	    class_T *extends_cl = tv.vval.v_class;
+	    ++extends_cl->class_refcount;
+	    *extends_clp = extends_cl;
+	    success = TRUE;
+	}
+	clear_tv(&tv);
+    }
+
+    return success;
+}
+
+/*
+ * Check the members of the interface class "ifcl" match the class members
+ * ("classmembers_gap") and object members ("objmembers_gap") of a class.
+ * Returns TRUE if the class and object member names are valid.
+ */
+    static int
+validate_interface_members(
+    char_u	*intf_class_name,
+    class_T	*ifcl,
+    garray_T	*classmembers_gap,
+    garray_T	*objmembers_gap)
+{
+    int success = TRUE;
+
+    for (int loop = 1; loop <= 2 && success; ++loop)
+    {
+	// loop == 1: check class members
+	// loop == 2: check object members
+	int if_count = loop == 1 ? ifcl->class_class_member_count
+						: ifcl->class_obj_member_count;
+	if (if_count == 0)
+	    continue;
+	ocmember_T *if_ms = loop == 1 ? ifcl->class_class_members
+						: ifcl->class_obj_members;
+	ocmember_T *cl_ms = (ocmember_T *)(loop == 1
+						? classmembers_gap->ga_data
+						: objmembers_gap->ga_data);
+	int cl_count = loop == 1 ? classmembers_gap->ga_len
+						: objmembers_gap->ga_len;
+	for (int if_i = 0; if_i < if_count; ++if_i)
+	{
+	    int cl_i;
+	    for (cl_i = 0; cl_i < cl_count; ++cl_i)
+	    {
+		ocmember_T	*m = &cl_ms[cl_i];
+		where_T		where = WHERE_INIT;
+
+		if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
+		    continue;
+
+		// Ensure the type is matching.
+		where.wt_func_name = (char *)m->ocm_name;
+		where.wt_kind = WT_MEMBER;
+		if (check_type_maybe(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
+								where) != OK)
+		    success = FALSE;
+
+		break;
+	    }
+	    if (cl_i == cl_count)
+	    {
+		semsg(_(e_member_str_of_interface_str_not_implemented),
+			if_ms[if_i].ocm_name, intf_class_name);
+		success = FALSE;
+		break;
+	    }
+	}
+    }
+
+    return success;
+}
+
+/*
+ * Check the functions/methods of the interface class "ifcl" match the class
+ * methods ("classfunctions_gap") and object functions ("objmemthods_gap") of a
+ * class.
+ * Returns TRUE if the class and object member names are valid.
+ */
+    static int
+validate_interface_methods(
+    char_u	*intf_class_name,
+    class_T	*ifcl,
+    garray_T	*classfunctions_gap,
+    garray_T	*objmethods_gap)
+{
+    int success = TRUE;
+
+    for (int loop = 1; loop <= 2 && success; ++loop)
+    {
+	// loop == 1: check class functions
+	// loop == 2: check object methods
+	int if_count = loop == 1 ? ifcl->class_class_function_count
+					: ifcl->class_obj_method_count;
+	if (if_count == 0)
+	    continue;
+	ufunc_T **if_fp = loop == 1 ? ifcl->class_class_functions
+						: ifcl->class_obj_methods;
+	ufunc_T **cl_fp = (ufunc_T **)(loop == 1
+						? classfunctions_gap->ga_data
+						: objmethods_gap->ga_data);
+	int cl_count = loop == 1 ? classfunctions_gap->ga_len
+						: objmethods_gap->ga_len;
+	for (int if_i = 0; if_i < if_count; ++if_i)
+	{
+	    char_u *if_name = if_fp[if_i]->uf_name;
+	    int cl_i;
+	    for (cl_i = 0; cl_i < cl_count; ++cl_i)
+	    {
+		char_u *cl_name = cl_fp[cl_i]->uf_name;
+		if (STRCMP(if_name, cl_name) == 0)
+		{
+		    where_T where = WHERE_INIT;
+
+		    // Ensure the type is matching.
+		    where.wt_func_name = (char *)if_name;
+		    where.wt_kind = WT_METHOD;
+		    if (check_type_maybe(if_fp[if_i]->uf_func_type,
+				cl_fp[cl_i]->uf_func_type, TRUE, where) != OK)
+			success = FALSE;
+		    break;
+		}
+	    }
+	    if (cl_i == cl_count)
+	    {
+		semsg(_(e_function_str_of_interface_str_not_implemented),
+			if_name, intf_class_name);
+		success = FALSE;
+		break;
+	    }
+	}
+    }
+
+    return success;
+}
+
+/*
+ * Validate all the "implements" classes when creating a new class.  The
+ * classes are returned in "intf_classes".  The class functions, class methods,
+ * object methods and object members in the new class are in
+ * "classfunctions_gap", "classmembers_gap", "objmethods_gap", and
+ * "objmembers_gap" respectively.
+ */
+    static int
+validate_implements_classes(
+    garray_T	*impl_gap,
+    class_T	**intf_classes,
+    garray_T	*classfunctions_gap,
+    garray_T	*classmembers_gap,
+    garray_T	*objmethods_gap,
+    garray_T	*objmembers_gap)
+{
+    int		success = TRUE;
+
+    for (int i = 0; i < impl_gap->ga_len && success; ++i)
+    {
+	char_u *impl = ((char_u **)impl_gap->ga_data)[i];
+	typval_T tv;
+	tv.v_type = VAR_UNKNOWN;
+	if (eval_variable_import(impl, &tv) == FAIL)
+	{
+	    semsg(_(e_interface_name_not_found_str), impl);
+	    success = FALSE;
+	    break;
+	}
+
+	if (tv.v_type != VAR_CLASS
+		|| tv.vval.v_class == NULL
+		|| (tv.vval.v_class->class_flags & CLASS_INTERFACE) == 0)
+	{
+	    semsg(_(e_not_valid_interface_str), impl);
+	    success = FALSE;
+	    clear_tv(&tv);
+	    break;
+	}
+
+	class_T *ifcl = tv.vval.v_class;
+	intf_classes[i] = ifcl;
+	++ifcl->class_refcount;
+
+	// check the members of the interface match the members of the class
+	success = validate_interface_members(impl, ifcl, classmembers_gap,
+							objmembers_gap);
+
+	// check the functions/methods of the interface match the
+	// functions/methods of the class
+	success = validate_interface_methods(impl, ifcl, classfunctions_gap,
+							objmethods_gap);
+	clear_tv(&tv);
+    }
+
+    return success;
+}
+
+/*
+ * Check no function argument name is used as a class member.
+ * (Object members are always accessed with "this." prefix, so no need
+ * to check them.)
+ */
+    static int
+check_func_arg_names(
+    garray_T	*classfunctions_gap,
+    garray_T	*objmethods_gap,
+    garray_T	*classmembers_gap)
+{
+    int success = TRUE;
+
+    // loop 1: class functions, loop 2: object methods
+    for (int loop = 1; loop <= 2 && success; ++loop)
+    {
+	garray_T *gap = loop == 1 ? classfunctions_gap : objmethods_gap;
+
+	for (int fi = 0; fi < gap->ga_len && success; ++fi)
+	{
+	    ufunc_T *uf = ((ufunc_T **)gap->ga_data)[fi];
+
+	    for (int i = 0; i < uf->uf_args.ga_len && success; ++i)
+	    {
+		char_u *aname = ((char_u **)uf->uf_args.ga_data)[i];
+		garray_T *mgap = classmembers_gap;
+
+		// Check all the class member names
+		for (int mi = 0; mi < mgap->ga_len; ++mi)
+		{
+		    char_u *mname = ((ocmember_T *)mgap->ga_data + mi)
+			->ocm_name;
+		    if (STRCMP(aname, mname) == 0)
+		    {
+			success = FALSE;
+
+			if (uf->uf_script_ctx.sc_sid > 0)
+			    SOURCING_LNUM = uf->uf_script_ctx.sc_lnum;
+
+			semsg(_(e_argument_already_declared_in_class_str),
+				aname);
+			break;
+		    }
+		}
+	    }
+	}
+    }
+
+    return success;
+}
+
+/*
  * Update the interface class lookup table for the member index on the
  * interface to the member index in the class implementing the interface.
  * And a lookup table for the object method index on the interface
@@ -335,6 +605,238 @@ update_member_method_lookup_table(
 		int *table = (int *)(if2cl + 1);
 		table[if_i] = pobj_method_offset + if_i;
 	    }
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Update the member and object method lookup tables for a new class in the
+ * interface class.
+ * For each interface add a lookup table for the member index on the interface
+ * to the member index in the new class.  And a lookup table for the object
+ * method index on the interface to the object method index in the new class.
+ */
+    static int
+add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
+{
+    for (int i = 0; i < cl->class_interface_count; ++i)
+    {
+	class_T *ifcl = cl->class_interfaces_cl[i];
+
+	if (update_member_method_lookup_table(ifcl, cl, objmethods_gap,
+							0, TRUE) == FAIL)
+	    return FAIL;
+    }
+
+    // Update the lookup table for the extended class, if nay
+    if (extends_cl != NULL)
+    {
+	class_T		*pclass = extends_cl;
+	int		pobj_method_offset = objmethods_gap->ga_len;
+
+	// Update the entire lineage of extended classes.
+	while (pclass != NULL)
+	{
+	    if (update_member_method_lookup_table(pclass, cl,
+			objmethods_gap, pobj_method_offset, FALSE) == FAIL)
+		return FAIL;
+
+	    pobj_method_offset += pclass->class_obj_method_count_child;
+	    pclass = pclass->class_extends;
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Add class members to a new class.  Allocate a typval for each class member
+ * and initialize it.
+ */
+    static void
+add_class_members(class_T *cl, exarg_T *eap)
+{
+    // Allocate a typval for each class member and initialize it.
+    cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
+					    cl->class_class_member_count);
+    if (cl->class_members_tv == NULL)
+	return;
+
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	ocmember_T *m = &cl->class_class_members[i];
+	typval_T *tv = &cl->class_members_tv[i];
+	if (m->ocm_init != NULL)
+	{
+	    typval_T *etv = eval_expr(m->ocm_init, eap);
+	    if (etv != NULL)
+	    {
+		*tv = *etv;
+		vim_free(etv);
+	    }
+	}
+	else
+	{
+	    // TODO: proper default value
+	    tv->v_type = m->ocm_type->tt_type;
+	    tv->vval.v_string = NULL;
+	}
+    }
+}
+
+/*
+ * Add a default constructor to the class "cl".
+ */
+    static void
+add_default_constructor(
+    class_T	*cl,
+    garray_T	*classfunctions_gap,
+    garray_T	*type_list_gap)
+{
+    garray_T fga;
+
+    ga_init2(&fga, 1, 1000);
+    ga_concat(&fga, (char_u *)"new(");
+    for (int i = 0; i < cl->class_obj_member_count; ++i)
+    {
+	if (i > 0)
+	    ga_concat(&fga, (char_u *)", ");
+	ga_concat(&fga, (char_u *)"this.");
+	ocmember_T *m = cl->class_obj_members + i;
+	ga_concat(&fga, (char_u *)m->ocm_name);
+	ga_concat(&fga, (char_u *)" = v:none");
+    }
+    ga_concat(&fga, (char_u *)")\nenddef\n");
+    ga_append(&fga, NUL);
+
+    exarg_T fea;
+    CLEAR_FIELD(fea);
+    fea.cmdidx = CMD_def;
+    fea.cmd = fea.arg = fga.ga_data;
+
+    garray_T lines_to_free;
+    ga_init2(&lines_to_free, sizeof(char_u *), 50);
+
+    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS);
+
+    ga_clear_strings(&lines_to_free);
+    vim_free(fga.ga_data);
+
+    if (nf != NULL && ga_grow(classfunctions_gap, 1) == OK)
+    {
+	((ufunc_T **)classfunctions_gap->ga_data)[classfunctions_gap->ga_len]
+	    = nf;
+	++classfunctions_gap->ga_len;
+
+	nf->uf_flags |= FC_NEW;
+	nf->uf_ret_type = get_type_ptr(type_list_gap);
+	if (nf->uf_ret_type != NULL)
+	{
+	    nf->uf_ret_type->tt_type = VAR_OBJECT;
+	    nf->uf_ret_type->tt_class = cl;
+	    nf->uf_ret_type->tt_argcount = 0;
+	    nf->uf_ret_type->tt_args = NULL;
+	}
+    }
+}
+
+/*
+ * Add the class functions and object methods to the new class "cl".
+ * When extending a class, add the functions and methods from the parent class
+ * also.
+ */
+    static int
+add_classfuncs_objmethods(
+    class_T	*cl,
+    class_T	*extends_cl,
+    garray_T	*classfunctions_gap,
+    garray_T	*objmethods_gap)
+{
+    // loop 1: class functions, loop 2: object methods
+    for (int loop = 1; loop <= 2; ++loop)
+    {
+	garray_T *gap = loop == 1 ? classfunctions_gap : objmethods_gap;
+	int	     *fcount = loop == 1 ? &cl->class_class_function_count
+						: &cl->class_obj_method_count;
+	ufunc_T ***fup = loop == 1 ? &cl->class_class_functions
+						: &cl->class_obj_methods;
+
+	int parent_count = 0;
+	if (extends_cl != NULL)
+	    // Include functions from the parent.
+	    parent_count = loop == 1
+				? extends_cl->class_class_function_count
+				: extends_cl->class_obj_method_count;
+
+	*fcount = parent_count + gap->ga_len;
+	if (*fcount == 0)
+	{
+	    *fup = NULL;
+	    continue;
+	}
+	*fup = ALLOC_MULT(ufunc_T *, *fcount);
+	if (*fup == NULL)
+	    return FAIL;
+
+	if (gap->ga_len != 0)
+	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
+	vim_free(gap->ga_data);
+	if (loop == 1)
+	    cl->class_class_function_count_child = gap->ga_len;
+	else
+	    cl->class_obj_method_count_child = gap->ga_len;
+
+	int skipped = 0;
+	for (int i = 0; i < parent_count; ++i)
+	{
+	    // Copy functions from the parent.  Can't use the same
+	    // function, because "uf_class" is different and compilation
+	    // will have a different result.
+	    // Put them after the functions in the current class, object
+	    // methods may be overruled, then "super.Method()" is used to
+	    // find a method from the parent.
+	    // Skip "new" functions. TODO: not all of them.
+	    if (loop == 1 && STRNCMP(
+				extends_cl->class_class_functions[i]->uf_name,
+				"new", 3) == 0)
+		++skipped;
+	    else
+	    {
+		ufunc_T *pf = (loop == 1
+					? extends_cl->class_class_functions
+					: extends_cl->class_obj_methods)[i];
+		(*fup)[gap->ga_len + i - skipped] = copy_function(pf);
+
+		// If the child class overrides a function from the parent
+		// the signature must be equal.
+		char_u *pname = pf->uf_name;
+		for (int ci = 0; ci < gap->ga_len; ++ci)
+		{
+		    ufunc_T *cf = (*fup)[ci];
+		    char_u *cname = cf->uf_name;
+		    if (STRCMP(pname, cname) == 0)
+		    {
+			where_T where = WHERE_INIT;
+			where.wt_func_name = (char *)pname;
+			where.wt_kind = WT_METHOD;
+			(void)check_type(pf->uf_func_type, cf->uf_func_type,
+								TRUE, where);
+		    }
+		}
+	    }
+	}
+
+	*fcount -= skipped;
+
+	// Set the class pointer on all the functions and object methods.
+	for (int i = 0; i < *fcount; ++i)
+	{
+	    ufunc_T *fp = (*fup)[i];
+	    fp->uf_class = cl;
+	    if (loop == 2)
+		fp->uf_flags |= FC_OBJECT;
 	}
     }
 
@@ -714,31 +1216,7 @@ early_ret:
 
     // Check the "extends" class is valid.
     if (success && extends != NULL)
-    {
-	typval_T tv;
-	tv.v_type = VAR_UNKNOWN;
-	if (eval_variable_import(extends, &tv) == FAIL)
-	{
-	    semsg(_(e_class_name_not_found_str), extends);
-	    success = FALSE;
-	}
-	else
-	{
-	    if (tv.v_type != VAR_CLASS
-		    || tv.vval.v_class == NULL
-		    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
-	    {
-		semsg(_(e_cannot_extend_str), extends);
-		success = FALSE;
-	    }
-	    else
-	    {
-		extends_cl = tv.vval.v_class;
-		++extends_cl->class_refcount;
-	    }
-	    clear_tv(&tv);
-	}
-    }
+	success = validate_extends_class(extends, &extends_cl);
     VIM_CLEAR(extends);
 
     class_T **intf_classes = NULL;
@@ -748,168 +1226,15 @@ early_ret:
     {
 	intf_classes = ALLOC_CLEAR_MULT(class_T *, ga_impl.ga_len);
 
-	for (int i = 0; i < ga_impl.ga_len && success; ++i)
-	{
-	    char_u *impl = ((char_u **)ga_impl.ga_data)[i];
-	    typval_T tv;
-	    tv.v_type = VAR_UNKNOWN;
-	    if (eval_variable_import(impl, &tv) == FAIL)
-	    {
-		semsg(_(e_interface_name_not_found_str), impl);
-		success = FALSE;
-		break;
-	    }
-
-	    if (tv.v_type != VAR_CLASS
-		    || tv.vval.v_class == NULL
-		    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) == 0)
-	    {
-		semsg(_(e_not_valid_interface_str), impl);
-		success = FALSE;
-		clear_tv(&tv);
-		break;
-	    }
-
-	    class_T *ifcl = tv.vval.v_class;
-	    intf_classes[i] = ifcl;
-	    ++ifcl->class_refcount;
-
-	    // check the members of the interface match the members of the class
-	    for (int loop = 1; loop <= 2 && success; ++loop)
-	    {
-		// loop == 1: check class members
-		// loop == 2: check object members
-		int if_count = loop == 1 ? ifcl->class_class_member_count
-					 : ifcl->class_obj_member_count;
-		if (if_count == 0)
-		    continue;
-		ocmember_T *if_ms = loop == 1 ? ifcl->class_class_members
-					       : ifcl->class_obj_members;
-		ocmember_T *cl_ms = (ocmember_T *)(loop == 1
-						    ? classmembers.ga_data
-						    : objmembers.ga_data);
-		int cl_count = loop == 1 ? classmembers.ga_len
-							   : objmembers.ga_len;
-		for (int if_i = 0; if_i < if_count; ++if_i)
-		{
-		    int cl_i;
-		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
-		    {
-			ocmember_T	*m = &cl_ms[cl_i];
-			where_T		where = WHERE_INIT;
-
-			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
-			    continue;
-
-			// Ensure the type is matching.
-			where.wt_func_name = (char *)m->ocm_name;
-			where.wt_kind = WT_MEMBER;
-			if (check_type_maybe(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
-				    where) != OK)
-			    success = FALSE;
-
-			break;
-		    }
-		    if (cl_i == cl_count)
-		    {
-			semsg(_(e_member_str_of_interface_str_not_implemented),
-						   if_ms[if_i].ocm_name, impl);
-			success = FALSE;
-			break;
-		    }
-		}
-	    }
-
-	    // check the functions/methods of the interface match the
-	    // functions/methods of the class
-	    for (int loop = 1; loop <= 2 && success; ++loop)
-	    {
-		// loop == 1: check class functions
-		// loop == 2: check object methods
-		int if_count = loop == 1 ? ifcl->class_class_function_count
-					 : ifcl->class_obj_method_count;
-		if (if_count == 0)
-		    continue;
-		ufunc_T **if_fp = loop == 1 ? ifcl->class_class_functions
-					    : ifcl->class_obj_methods;
-		ufunc_T **cl_fp = (ufunc_T **)(loop == 1
-						? classfunctions.ga_data
-						: objmethods.ga_data);
-		int cl_count = loop == 1 ? classfunctions.ga_len
-							   : objmethods.ga_len;
-		for (int if_i = 0; if_i < if_count; ++if_i)
-		{
-		    char_u *if_name = if_fp[if_i]->uf_name;
-		    int cl_i;
-		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
-		    {
-			char_u *cl_name = cl_fp[cl_i]->uf_name;
-			if (STRCMP(if_name, cl_name) == 0)
-			{
-			    where_T where = WHERE_INIT;
-
-			    // Ensure the type is matching.
-			    where.wt_func_name = (char *)if_name;
-			    where.wt_kind = WT_METHOD;
-			    if (check_type_maybe(if_fp[if_i]->uf_func_type,
-					cl_fp[cl_i]->uf_func_type, TRUE, where) != OK)
-				success = FALSE;
-			    break;
-			}
-		    }
-		    if (cl_i == cl_count)
-		    {
-			semsg(_(e_function_str_of_interface_str_not_implemented),
-								if_name, impl);
-			success = FALSE;
-			break;
-		    }
-		}
-	    }
-
-	    clear_tv(&tv);
-	}
+	success = validate_implements_classes(&ga_impl, intf_classes,
+					&classfunctions, &classmembers,
+					&objmethods, &objmembers);
     }
 
+    // Check no function argument name is used as a class member.
     if (success)
-    {
-	// Check no function argument name is used as a class member.
-	// (Object members are always accessed with "this." prefix, so no need
-	// to check them.)
-	for (int loop = 1; loop <= 2 && success; ++loop)
-	{
-	    garray_T *gap = loop == 1 ? &classfunctions : &objmethods;
-
-	    for (int fi = 0; fi < gap->ga_len && success; ++fi)
-	    {
-		ufunc_T *uf = ((ufunc_T **)gap->ga_data)[fi];
-
-		for (int i = 0; i < uf->uf_args.ga_len && success; ++i)
-		{
-		    char_u *aname = ((char_u **)uf->uf_args.ga_data)[i];
-		    garray_T *mgap = &classmembers;
-
-		    for (int mi = 0; mi < mgap->ga_len; ++mi)
-		    {
-			char_u *mname = ((ocmember_T *)mgap->ga_data + mi)
-								    ->ocm_name;
-			if (STRCMP(aname, mname) == 0)
-			{
-			    success = FALSE;
-
-			    if (uf->uf_script_ctx.sc_sid > 0)
-				SOURCING_LNUM = uf->uf_script_ctx.sc_lnum;
-
-			    semsg(_(e_argument_already_declared_in_class_str),
-									aname);
-			    break;
-			}
-		    }
-		}
-	    }
-	}
-    }
-
+	success = check_func_arg_names(&classfunctions, &objmethods,
+							&classmembers);
 
     class_T *cl = NULL;
     if (success)
@@ -968,66 +1293,15 @@ early_ret:
 
 	if (cl->class_interface_count > 0 || extends_cl != NULL)
 	{
-	    // For each interface add a lookup table for the member index on
-	    // the interface to the member index in this class.
-	    // And a lookup table for the object method index on the interface
-	    // to the object method index in this class.
-	    for (int i = 0; i < cl->class_interface_count; ++i)
-	    {
-		class_T *ifcl = cl->class_interfaces_cl[i];
-
-		if (update_member_method_lookup_table(ifcl, cl, &objmethods,
-			    0, TRUE) == FAIL)
-		    goto cleanup;
-	    }
-
-	    // Update the lookup table for the extended class, if nay
-	    if (extends_cl != NULL)
-	    {
-		class_T		*pclass = extends_cl;
-		int		pobj_method_offset = objmethods.ga_len;
-
-		// Update the entire lineage of extended classes.
-		while (pclass != NULL)
-		{
-		    if (update_member_method_lookup_table(pclass, cl,
-				&objmethods, pobj_method_offset, FALSE) ==
-			    FAIL)
-			goto cleanup;
-
-		    pobj_method_offset += pclass->class_obj_method_count_child;
-		    pclass = pclass->class_extends;
-		}
-	    }
+	    // Add a method and member lookup table to each of the interface
+	    // classes.
+	    if (add_lookup_tables(cl, extends_cl, &objmethods) == FAIL)
+		goto cleanup;
 	}
 
+	// Allocate a typval for each class member and initialize it.
 	if (is_class && cl->class_class_member_count > 0)
-	{
-	    // Allocate a typval for each class member and initialize it.
-	    cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
-						 cl->class_class_member_count);
-	    if (cl->class_members_tv != NULL)
-		for (int i = 0; i < cl->class_class_member_count; ++i)
-		{
-		    ocmember_T *m = &cl->class_class_members[i];
-		    typval_T *tv = &cl->class_members_tv[i];
-		    if (m->ocm_init != NULL)
-		    {
-			typval_T *etv = eval_expr(m->ocm_init, eap);
-			if (etv != NULL)
-			{
-			    *tv = *etv;
-			    vim_free(etv);
-			}
-		    }
-		    else
-		    {
-			// TODO: proper default value
-			tv->v_type = m->ocm_type->tt_type;
-			tv->vval.v_string = NULL;
-		    }
-		}
-	}
+	    add_class_members(cl, eap);
 
 	int have_new = FALSE;
 	for (int i = 0; i < classfunctions.ga_len; ++i)
@@ -1038,141 +1312,13 @@ early_ret:
 		break;
 	    }
 	if (is_class && !is_abstract && !have_new)
-	{
 	    // No new() method was defined, add the default constructor.
-	    garray_T fga;
-	    ga_init2(&fga, 1, 1000);
-	    ga_concat(&fga, (char_u *)"new(");
-	    for (int i = 0; i < cl->class_obj_member_count; ++i)
-	    {
-		if (i > 0)
-		    ga_concat(&fga, (char_u *)", ");
-		ga_concat(&fga, (char_u *)"this.");
-		ocmember_T *m = cl->class_obj_members + i;
-		ga_concat(&fga, (char_u *)m->ocm_name);
-		ga_concat(&fga, (char_u *)" = v:none");
-	    }
-	    ga_concat(&fga, (char_u *)")\nenddef\n");
-	    ga_append(&fga, NUL);
-
-	    exarg_T fea;
-	    CLEAR_FIELD(fea);
-	    fea.cmdidx = CMD_def;
-	    fea.cmd = fea.arg = fga.ga_data;
-
-	    garray_T lines_to_free;
-	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
-
-	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS);
-
-	    ga_clear_strings(&lines_to_free);
-	    vim_free(fga.ga_data);
-
-	    if (nf != NULL && ga_grow(&classfunctions, 1) == OK)
-	    {
-		((ufunc_T **)classfunctions.ga_data)[classfunctions.ga_len]
-									  = nf;
-		++classfunctions.ga_len;
-
-		nf->uf_flags |= FC_NEW;
-		nf->uf_ret_type = get_type_ptr(&type_list);
-		if (nf->uf_ret_type != NULL)
-		{
-		    nf->uf_ret_type->tt_type = VAR_OBJECT;
-		    nf->uf_ret_type->tt_class = cl;
-		    nf->uf_ret_type->tt_argcount = 0;
-		    nf->uf_ret_type->tt_args = NULL;
-		}
-	    }
-	}
+	    add_default_constructor(cl, &classfunctions, &type_list);
 
 	// Move all the functions into the created class.
-	// loop 1: class functions, loop 2: object methods
-	for (int loop = 1; loop <= 2; ++loop)
-	{
-	    garray_T *gap = loop == 1 ? &classfunctions : &objmethods;
-	    int	     *fcount = loop == 1 ? &cl->class_class_function_count
-					 : &cl->class_obj_method_count;
-	    ufunc_T ***fup = loop == 1 ? &cl->class_class_functions
-				       : &cl->class_obj_methods;
-
-	    int parent_count = 0;
-	    if (extends_cl != NULL)
-		// Include functions from the parent.
-		parent_count = loop == 1
-				    ? extends_cl->class_class_function_count
-				    : extends_cl->class_obj_method_count;
-
-	    *fcount = parent_count + gap->ga_len;
-	    if (*fcount == 0)
-	    {
-		*fup = NULL;
-		continue;
-	    }
-	    *fup = ALLOC_MULT(ufunc_T *, *fcount);
-	    if (*fup == NULL)
-		goto cleanup;
-
-	    if (gap->ga_len != 0)
-		mch_memmove(*fup, gap->ga_data,
-					      sizeof(ufunc_T *) * gap->ga_len);
-	    vim_free(gap->ga_data);
-	    if (loop == 1)
-		cl->class_class_function_count_child = gap->ga_len;
-	    else
-		cl->class_obj_method_count_child = gap->ga_len;
-
-	    int skipped = 0;
-	    for (int i = 0; i < parent_count; ++i)
-	    {
-		// Copy functions from the parent.  Can't use the same
-		// function, because "uf_class" is different and compilation
-		// will have a different result.
-		// Put them after the functions in the current class, object
-		// methods may be overruled, then "super.Method()" is used to
-		// find a method from the parent.
-		// Skip "new" functions. TODO: not all of them.
-		if (loop == 1 && STRNCMP(
-			    extends_cl->class_class_functions[i]->uf_name,
-								"new", 3) == 0)
-		    ++skipped;
-		else
-		{
-		    ufunc_T *pf = (loop == 1
-					? extends_cl->class_class_functions
-					: extends_cl->class_obj_methods)[i];
-		    (*fup)[gap->ga_len + i - skipped] = copy_function(pf);
-
-		    // If the child class overrides a function from the parent
-		    // the signature must be equal.
-		    char_u *pname = pf->uf_name;
-		    for (int ci = 0; ci < gap->ga_len; ++ci)
-		    {
-			ufunc_T *cf = (*fup)[ci];
-			char_u *cname = cf->uf_name;
-			if (STRCMP(pname, cname) == 0)
-			{
-			    where_T where = WHERE_INIT;
-			    where.wt_func_name = (char *)pname;
-			    where.wt_kind = WT_METHOD;
-			    (void)check_type(pf->uf_func_type, cf->uf_func_type,
-								  TRUE, where);
-			}
-		    }
-		}
-	    }
-
-	    *fcount -= skipped;
-
-	    // Set the class pointer on all the functions and object methods.
-	    for (int i = 0; i < *fcount; ++i)
-	    {
-		ufunc_T *fp = (*fup)[i];
-		fp->uf_class = cl;
-		if (loop == 2)
-		    fp->uf_flags |= FC_OBJECT;
-	    }
-	}
+	if (add_classfuncs_objmethods(cl, extends_cl, &classfunctions,
+							&objmethods) == FAIL)
+	    goto cleanup;
 
 	cl->class_type.tt_type = VAR_CLASS;
 	cl->class_type.tt_class = cl;
