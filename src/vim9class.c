@@ -802,7 +802,7 @@ early_ret:
 			    continue;
 
 			// Ensure the type is matching.
-			where.wt_func_name = m->ocm_name;
+			where.wt_func_name = (char *)m->ocm_name;
 			where.wt_kind = WT_MEMBER;
 			if (check_type_maybe(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
 				    where) != OK)
