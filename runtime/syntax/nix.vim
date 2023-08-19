@@ -1,11 +1,12 @@
 " Vim syntax file
 " Language:        Nix
-" Maintainer:	   James Fleming <james@electronic-quill.net>
+" Maintainer:      James Fleming <james@electronic-quill.net>
+"                  (Github username: equill)
 " Original Author: Daiderd Jordan <daiderd@gmail.com>
 " Acknowledgement: Based on vim-nix maintained by Daiderd Jordan <daiderd@gmail.com>
 "                  https://github.com/LnL7/vim-nix
 " License:         MIT
-" Last Change:     2023 Jul 28
+" Last Change:     2023 Aug 19
 
 if exists("b:current_syntax")
   finish
