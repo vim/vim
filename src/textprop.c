@@ -990,6 +990,31 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 	dict_add_number(dict, "type_bufnr", buf->b_fnum);
     else
 	dict_add_number(dict, "type_bufnr", 0);
+    if (prop->tp_id < 0)
+    {
+	// virtual text property
+	garray_T    *gap = &buf->b_textprop_text;
+	char_u	    *text;
+
+	// negate the property id to get the string index
+	text = ((char_u **)gap->ga_data)[-prop->tp_id - 1];
+	dict_add_string(dict, "text", text);
+
+	// text_align
+	char_u	    *text_align = NULL;
+	if (prop->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    text_align = (char_u *)"right";
+	else if (prop->tp_flags & TP_FLAG_ALIGN_ABOVE)
+	    text_align = (char_u *)"above";
+	else if (prop->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    text_align = (char_u *)"below";
+	if (text_align != NULL)
+	    dict_add_string(dict, "text_align", text_align);
+
+	// text_wrap
+	if (prop->tp_flags & TP_FLAG_WRAP)
+	    dict_add_string(dict, "text_wrap", (char_u *)"wrap");
+    }
 }
 
 /*
