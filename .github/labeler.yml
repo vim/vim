@@ -2,7 +2,9 @@
 
 CI:
 - any: ['.cirrus.yml']
-- any: ['.github/**']
+- any: ['.github/dependabot.yml']
+- any: ['.github/labeler.yml']
+- any: ['.github/workflows/*']
 - any: ['.appveyor.yml']
 - any: ['.codecov.yml']
 
