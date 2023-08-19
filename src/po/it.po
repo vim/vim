@@ -3,7 +3,6 @@
 # Antonio Colombo <azc100@gmail.com>, 2000
 # Vlad Sandrini <vlad.gently@gmail.com>, 2002
 # Luciano Montanaro <mikelima@cirulla.net>, 2006
-# Roberto Boriotti <roberto.boriotti@canon.it>, 2023
 #
 # Ogni commento è benvenuto...
 # Every remark is very welcome...
@@ -15,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-12 18:03+0200\n"
-"PO-Revision-Date: 2023-05-13 17:00+0100\n"
+"POT-Creation-Date: 2023-08-17 15:42+0200\n"
+"PO-Revision-Date: 2023-08-17 16:32+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -153,6 +152,18 @@ msgstr "Cim"
 msgid "%d%%"
 msgstr "%d%%"
 
+msgid " (%d of %d)"
+msgstr "(%d di %d)"
+
+msgid " ((%d) of %d)"
+msgstr " ((%d) di %d)"
+
+msgid " (file %d of %d)"
+msgstr " (file %d di %d)"
+
+msgid " (file (%d) of %d)"
+msgstr " (file (%d) di %d)"
+
 msgid "[Prompt]"
 msgstr "[Richiesta]"
 
@@ -270,28 +281,25 @@ msgid "[crypted]"
 msgstr "[cifrato]"
 
 msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
-msgstr "xchacha20v2: uso opslimit personalizzato \"%llu\" per ricavare la "
-"Chiave."
+msgstr ""
+"xchacha20v2: uso opslimit personalizzato \"%llu\" per ricavare la Chiave."
 
 msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
-msgstr "xchacha20v2: uso opslimit predefinito \"%llu\" per ricavare la "
-"Chiave."
+msgstr "xchacha20v2: uso opslimit predefinito \"%llu\" per ricavare la Chiave."
 
 msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
-msgstr "xchacha20v2: uso memlimit personalizzato \"%lu\" per ricavare la "
-"Chiave."
+msgstr ""
+"xchacha20v2: uso memlimit personalizzato \"%lu\" per ricavare la Chiave."
 
 msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
-msgstr "xchacha20v2: uso memlimit predefinito \"%lu\" per ricavare la "
-"Chiave."
+msgstr "xchacha20v2: uso memlimit predefinito \"%lu\" per ricavare la Chiave."
 
 msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
-msgstr "xchacha20v2: uso algoritmo personalizzato \"%d\" per ricavare la "
-"Chiave."
+msgstr ""
+"xchacha20v2: uso algoritmo personalizzato \"%d\" per ricavare la Chiave."
 
 msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
-msgstr "xchacha20v2: uso algoritmo predefinito \"%d\" per ricavare la "
-"Chiave."
+msgstr "xchacha20v2: uso algoritmo predefinito \"%d\" per ricavare la Chiave."
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Entro modalità Debug.  Batti \"cont\" per continuare."
@@ -562,12 +570,6 @@ msgstr "Fine funzione"
 
 msgid "Backwards range given, OK to swap"
 msgstr "Intervallo rovesciato, OK invertirlo"
-
-msgid ""
-"INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
-msgstr ""
-"INTERNO: Non posso usare EX_DFLALL con ADDR_NONE, ADDR_UNSIGNED o "
-"ADDR_QUICKFIX"
 
 msgid "%d more file to edit.  Quit anyway?"
 msgid_plural "%d more files to edit.  Quit anyway?"
@@ -2352,9 +2354,6 @@ msgstr ""
 "\n"
 "--- Opzioni ---"
 
-msgid "For option %s"
-msgstr "Per opzione %s"
-
 msgid "cannot open "
 msgstr "non riesco ad aprire "
 
@@ -3795,9 +3794,6 @@ msgstr "E37: Non salvato dopo l'ultima modifica"
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Non salvato dopo modifica (aggiungi ! per eseguire comunque)"
 
-msgid "E38: Null argument"
-msgstr "E38: Argomento nullo"
-
 msgid "E39: Number expected"
 msgstr "E39: Atteso un numero"
 
@@ -3809,12 +3805,6 @@ msgstr "E41: Non c'è più memoria!"
 
 msgid "E42: No Errors"
 msgstr "E42: Nessun Errore"
-
-msgid "E43: Damaged match string"
-msgstr "E43: Stringa di confronto danneggiata"
-
-msgid "E44: Corrupted regexp program"
-msgstr "E44: Programma 'regexp' corrotto"
 
 msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr "E45: File in sola-lettura (aggiungi ! per eseguire comunque)"
@@ -4198,10 +4188,9 @@ msgid "E172: Missing marker"
 msgstr "E172: Manca un marcatore"
 
 msgid "E173: %d more file to edit"
-msgstr "E173: %d ulteriore file da elaborare"
-
-msgid "E173: %d more files to edit"
-msgstr "E173: %d ulteriori file da elaborare"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: %d ulteriore file da elaborare"
+msgstr[1] "E173: %d ulteriori file da elaborare"
 
 msgid "E174: Command already exists: add ! to replace it: %s"
 msgstr "E174: Il comando esiste già: aggiungi ! per sostituirlo: %s"
@@ -4354,9 +4343,6 @@ msgstr "E220: Manca }."
 msgid "E221: Marker cannot start with lower case letter"
 msgstr "E221: Un marcatore non può iniziare con una lettera minuscola"
 
-msgid "E222: Add to internal buffer that was already read from"
-msgstr "E222: Aggiunta a buffer interno da cui si era già letto"
-
 msgid "E223: Recursive mapping"
 msgstr "E223: Mappatura ricorsiva"
 
@@ -4372,9 +4358,6 @@ msgstr "E226: Un'abbreviazione già esiste per %s"
 msgid "E227: Mapping already exists for %s"
 msgstr "E227: Una mappatura già esiste per %s"
 
-msgid "E228: makemap: Illegal mode"
-msgstr "E228: makemap: modo non consentito"
-
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Non posso inizializzare la GUI"
 
@@ -4383,9 +4366,6 @@ msgstr "E230: Non posso leggere da \"%s\""
 
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' non valido"
-
-msgid "E232: Cannot create BalloonEval with both message and callback"
-msgstr "E232: Non riesco a creare 'BalloonEval' con sia messaggio che callback"
 
 msgid "E233: Cannot open display"
 msgstr "E233: Non riesco ad aprire lo schermo"
@@ -4529,13 +4509,6 @@ msgstr "E277: Non riesco a leggere una risposta del server"
 msgid "E279: Sorry, ++shell is not supported on this system"
 msgstr "E279: Spiacente, ++shell non è supportato in questo sistema"
 
-msgid ""
-"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
-"org"
-msgstr ""
-"E280: ERRORE FATALE TCL: reflist corrotta!? Si prega notificare a vim-"
-"dev@vim.org"
-
 msgid "E282: Cannot read from \"%s\""
 msgstr "E282: Non posso leggere da \"%s\""
 
@@ -4563,12 +4536,6 @@ msgstr "E289: Metodo di Input non supporta il mio tipo di preedit"
 msgid "E290: List or number required"
 msgstr "E290: È necessaria una Lista o un Numero"
 
-msgid "E292: Invalid count for del_bytes(): %ld"
-msgstr "E292: Contatore non valido per del_bytes(): %ld"
-
-msgid "E293: Block was not locked"
-msgstr "E293: Il blocco non era riservato"
-
 msgid "E294: Seek error in swap file read"
 msgstr "E294: Errore di posizionamento durante lettura swap file"
 
@@ -4580,15 +4547,6 @@ msgstr "E296: Errore di posizionamento scrivendo swap file"
 
 msgid "E297: Write error in swap file"
 msgstr "E297: Errore scrivendo swap file"
-
-msgid "E298: Didn't get block nr 0?"
-msgstr "E298: Non riesco a leggere blocco numero 0?"
-
-msgid "E298: Didn't get block nr 1?"
-msgstr "E298: Non riesco a leggere blocco numero 1?"
-
-msgid "E298: Didn't get block nr 2?"
-msgstr "E298: Non riesco a leggere blocco numero 2?"
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr ""
@@ -4607,9 +4565,6 @@ msgstr "E302: Non riesco a rinominare lo swap file"
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
 "E303: Non riesco ad aprire lo swap file per \"%s\", recupero impossibile"
-
-msgid "E304: ml_upd_block0(): Didn't get block 0??"
-msgstr "E304: ml_upd_block0(): Non riesco a leggere blocco 0??"
 
 msgid "E305: No swap file found for %s"
 msgstr "E305: Nessun swap file trovato per %s"
@@ -4644,41 +4599,11 @@ msgstr "E313: Non posso preservare, manca swap file"
 msgid "E314: Preserve failed"
 msgstr "E314: Preservazione fallita"
 
-msgid "E315: ml_get: Invalid lnum: %ld"
-msgstr "E315: ml_get: Numero di riga non valido: %ld"
-
-msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: Non riesco a trovare la riga %ld nel buffer %d %s"
-
-msgid "E317: Pointer block id wrong"
-msgstr "E317: ID blocco puntatori errato"
-
-msgid "E317: Pointer block id wrong 2"
-msgstr "E317: ID blocco puntatori errato 2"
-
-msgid "E317: Pointer block id wrong 3"
-msgstr "E317: ID blocco puntatori errato 3"
-
-msgid "E317: Pointer block id wrong 4"
-msgstr "E317: ID blocco puntatori errato 4"
-
-msgid "E318: Updated too many blocks?"
-msgstr "E318: Aggiornati troppi blocchi?"
-
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Spiacente, comando non disponibile in questa versione"
 
-msgid "E320: Cannot find line %ld"
-msgstr "E320: Non riesco a trovare la riga %ld"
-
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Non riesco a ricaricare \"%s\""
-
-msgid "E322: Line number out of range: %ld past the end"
-msgstr "E322: Numero di riga non ammissibile: %ld dopo la fine"
-
-msgid "E323: Line count wrong in block %ld"
-msgstr "E323: Contatore righe errato nel blocco %ld"
 
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: Non riesco ad aprire file PostScript di output"
@@ -4730,8 +4655,8 @@ msgstr "E338: Spiacente, niente esplorazione file in modalità console"
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
 
-msgid "E341: Internal error: lalloc(0, )"
-msgstr "E341: Errore interno: lalloc(0, )"
+msgid "E340: Internal error; if you can reproduce please report a bug"
+msgstr "E340: Errore interno; se riproducibile, siete pregati di segnalarlo"
 
 msgid "E342: Out of memory!  (allocating %lu bytes)"
 msgstr "E342: Non c'è più memoria! (stavo allocando %lu byte)"
@@ -4778,9 +4703,6 @@ msgstr "E354: Nome registro non valido: '%s'"
 
 msgid "E355: Unknown option: %s"
 msgstr "E355: Opzione sconosciuta: %s"
-
-msgid "E356: get_varp ERROR"
-msgstr "E356: ERRORE get_varp"
 
 msgid "E357: 'langmap': Matching character missing for %s"
 msgstr "E357: 'langmap': Manca carattere corrispondente per %s"
@@ -4963,6 +4885,9 @@ msgstr "E417: Manca argomento: %s"
 msgid "E418: Illegal value: %s"
 msgstr "E418: Valore non consentito: %s"
 
+msgid "E418: I'm a teapot"
+msgstr "E418: Sono una teiera"
+
 msgid "E419: FG color unknown"
 msgstr "E419: Colore di testo sconosciuto"
 
@@ -5019,15 +4944,6 @@ msgstr "E436: Nessuna descrizione per \"%s\" in 'termcap'"
 
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: Capacità \"cm\" del terminale necessaria"
-
-msgid "E438: u_undo: Line numbers wrong"
-msgstr "E438: u_undo: Numeri righe errati"
-
-msgid "E439: Undo list corrupt"
-msgstr "E439: Lista 'undo' non valida"
-
-msgid "E440: Undo line missing"
-msgstr "E440: Riga di 'undo' mancante"
 
 msgid "E441: There is no preview window"
 msgstr "E441: Non c'è una finestra di anteprima"
@@ -5135,9 +5051,6 @@ msgstr "E471: Argomento necessario"
 
 msgid "E472: Command failed"
 msgstr "E472: Comando fallito"
-
-msgid "E473: Internal error in regexp"
-msgstr "E473: Errore interno in espressione regolare"
 
 msgid "E474: Invalid argument"
 msgstr "E474: Argomento non valido"
@@ -5253,6 +5166,9 @@ msgstr "non è un file o un dispositivo su cui si possa scrivere"
 
 msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: \"%s\" non è un file o un dispositivo scrivibile"
+
+msgid "E503: Coffee is currently not available"
+msgstr "E503: Caffè non disponibile al momento"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "è in sola lettura (non posso annullare: \"W\" in 'cpoptions')"
@@ -5458,7 +5374,7 @@ msgid "E564: %s is not a directory or a valid cscope database"
 msgstr "E564: %s non è una directory o un database cscope valido"
 
 msgid "E565: Not allowed to change text or change window"
-msgstr "E565: Non è possibile modificare testo o cambiare finestra"
+msgstr "E565: Non si può modificare testo o cambiare finestra"
 
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: Non riesco a creare pipe cscope"
@@ -5468,9 +5384,6 @@ msgstr "E567: Nessuna connessione cscope"
 
 msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Database cscope duplicato, non aggiunto"
-
-msgid "E570: Fatal error in cs_manage_matches"
-msgstr "E570: Errore irreparabile in cs_manage_matches"
 
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
@@ -5637,11 +5550,80 @@ msgstr "E625: Impossibile aprire database cscope: %s"
 msgid "E626: Cannot get cscope database information"
 msgstr "E626: Impossibile leggere informazioni sul database cscope"
 
+msgid "E627: Missing colon: %s"
+msgstr "E627: Mancano i due punti: %s"
+
+msgid "E628: Missing ! or / in: %s"
+msgstr "E628: Manca ! o / in: %s"
+
 msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): Scrittura in mancanza di connessione"
 
 msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Scrittura non riuscita"
+
+msgid "E632: Invalid buffer identifier in getLength"
+msgstr "E632: Identificativo buffer non valido in getLength"
+
+msgid "E633: Invalid buffer identifier in getText"
+msgstr "E633: Identificativo buffer non valido in getText"
+
+msgid "E634: Invalid buffer identifier in remove"
+msgstr "E634: Identificativo buffer non valido in remove"
+
+msgid "E635: Invalid buffer identifier in insert"
+msgstr "E635: Identificativo buffer non valido in insert"
+
+msgid "E636: Invalid buffer identifier in create"
+msgstr "E636: Identificativo buffer non valido in create"
+
+msgid "E637: Invalid buffer identifier in startDocumentListen"
+msgstr "E637: Identificativo buffer non valido in startDocumentListen"
+
+msgid "E638: Invalid buffer identifier in stopDocumentListen"
+msgstr "E638: Identificativo buffer non valido in stopDocumentListen"
+
+msgid "E639: Invalid buffer identifier in setTitle"
+msgstr "E639: Identificativo buffer non valido in setTitle"
+
+msgid "E640: Invalid buffer identifier in initDone"
+msgstr "E640: Identificativo buffer non valido in initDone"
+
+msgid "E641: Invalid buffer identifier in setBufferNumber"
+msgstr "E641: Identificativo buffer non valido in setBufferNumber"
+
+msgid "E642: File %s not found in setBufferNumber"
+msgstr "E642: File %s non trovato in setBufferNumber"
+
+msgid "E643: Invalid buffer identifier in setFullName"
+msgstr "E643: Identificativo buffer non valido in setFullName"
+
+msgid "E644: Invalid buffer identifier in editFile"
+msgstr "E644: Identificativo buffer non valido in editFile"
+
+msgid "E645: Invalid buffer identifier in setVisible"
+msgstr "E645: Identificativo buffer non valido in setVisible"
+
+msgid "E646: Invalid buffer identifier in setModified"
+msgstr "E646: Identificativo buffer non valido in setModified"
+
+msgid "E647: Invalid buffer identifier in setDot"
+msgstr "E647: Identificativo buffer non valido in setDot"
+
+msgid "E648: Invalid buffer identifier in close"
+msgstr "E648: Identificativo buffer non valido in close"
+
+msgid "E649: Invalid buffer identifier in close"
+msgstr "E649: Identificativo buffer non valido in close"
+
+msgid "E650: Invalid buffer identifier in defineAnnoType"
+msgstr "E650: Identificativo buffer non valido in defineAnnoType"
+
+msgid "E651: Invalid buffer identifier in addAnno"
+msgstr "E651: Identificativo buffer non valido in addAnno"
+
+msgid "E652: Invalid buffer identifier in getAnno"
+msgstr "E652: Identificativo buffer non valido in getAnno"
 
 msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: Manca un delimitatore dopo l'espressione di ricerca: %s"
@@ -6189,9 +6171,6 @@ msgstr "E829: Errore scrivendo nel file Undo: %s"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Undo numero %ld non trovato"
 
-msgid "E831: bf_key_init() called with empty password"
-msgstr "E831: Chiamata a bf_key_init() con password nulla"
-
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
 msgstr "E832: File non cifrato con file Undo cifrato: %s"
 
@@ -6345,9 +6324,6 @@ msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr ""
 "E876: (Espressione regolare NFA) Non c'è spazio sufficiente a immagazzinare "
 "l'intero NFA"
-
-msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "E877: (Espressione regolare NFA) Classe di caratteri non valida: %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr ""
@@ -6563,9 +6539,6 @@ msgstr "E941: Un server è già stato predisposto"
 msgid "E942: +clientserver feature not available"
 msgstr "E942: Funzionalità +clientserver non disponibile"
 
-msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
-msgstr "E943: Tabella dei comandi da aggiornare, eseguire 'make cmdidxs'"
-
 msgid "E944: Reverse range in character class"
 msgstr "E944: Intervallo invertito nella Classe di caratteri"
 
@@ -6640,9 +6613,6 @@ msgstr "E965: Nome del tipo di proprietà non disponibile"
 
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Numero di riga non valido: %ld"
-
-msgid "E967: Text property info corrupted"
-msgstr "E967: Informazione sulle proprietà del testo corrotta"
 
 msgid "E968: Need at least one of 'id' or 'type'"
 msgstr "E968: Occorre conoscere almeno un 'id' o 'type'"
@@ -7034,8 +7004,8 @@ msgstr "E1093: Attesi %d elementi, ma ottenuti %d"
 msgid "E1094: Import can only be used in a script"
 msgstr "E1094: Import può solo essere usato in uno script"
 
-msgid "E1095: Unreachable code after :return"
-msgstr "E1095: Codice irraggiungibile dopo :return"
+msgid "E1095: Unreachable code after :%s"
+msgstr "E1095: Codice irraggiungibile dopo :%s"
 
 msgid "E1096: Returning a value in a function without a return type"
 msgstr ""
@@ -7071,10 +7041,9 @@ msgid "E1105: Cannot convert %s to string"
 msgstr "E1105: Non posso convertire %s a una Stringa"
 
 msgid "E1106: One argument too many"
-msgstr "E1106: Un argomento di troppo"
-
-msgid "E1106: %d arguments too many"
-msgstr "E1106: %d argomenti di troppo"
+msgid_plural "E1106: %d arguments too many"
+msgstr[0] "E1106: %d argomento di troppo"
+msgstr[1] "E1106: %d argomenti di troppo"
 
 msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: Necessaria Stringa, Lista, Dizionario o Blob"
@@ -7279,7 +7248,8 @@ msgid "E1171: Missing } after inline function"
 msgstr "E1171: Manca } dopo una funzione in-linea"
 
 msgid "E1172: Cannot use default values in a lambda"
-msgstr "E1172: Non si possono usare valori predefiniti in un'espressione lambda"
+msgstr ""
+"E1172: Non si possono usare valori predefiniti in un'espressione lambda"
 
 msgid "E1173: Text found after %s: %s"
 msgstr "E1173: Trovato del testo dopo %s: %s"
@@ -7339,10 +7309,9 @@ msgid "E1189: Cannot use :legacy with this command: %s"
 msgstr "E1189: Non si può usare :legacy con questo comando: %s"
 
 msgid "E1190: One argument too few"
-msgstr "E1190: Manca un argomento"
-
-msgid "E1190: %d arguments too few"
-msgstr "E1190: Mancano %d argomenti"
+msgid_plural "E1190: %d arguments too few"
+msgstr[0] "E1190: Manca %d argomento"
+msgstr[1] "E1190: Mancano %d argomenti"
 
 msgid "E1191: Call to function that failed to compile: %s"
 msgstr "E1191: Chiamata a funzione che non si riesce a compilare: %s"
@@ -7693,8 +7662,9 @@ msgid "E1302: Script variable was deleted"
 msgstr "E1302: La variabile di script è stata annullata"
 
 msgid "E1303: Custom list completion function does not return a List but a %s"
-msgstr "E1303: La funzione personalizzata di completamento della Lista "
-"non restituisce una Lista ma un %s"
+msgstr ""
+"E1303: La funzione personalizzata di completamento della Lista non "
+"restituisce una Lista ma un %s"
 
 msgid "E1304: Cannot use type with this variable: %s"
 msgstr "E1304: Non si può assegnare il tipo a questa variabile: %s"
@@ -7711,8 +7681,8 @@ msgid "E1307: Argument %d: Trying to modify a const %s"
 msgstr "E1307: Argomento %d: Tenta di modificare la costante %s"
 
 msgid "E1308: Cannot resize a window in another tab page"
-msgstr "E1308: Non posso ridimensionare una finestra in un'altra "
-"pagine di linguette"
+msgstr ""
+"E1308: Non posso ridimensionare una finestra in un'altra pagine di linguette"
 
 msgid "E1309: Cannot change mappings while listing"
 msgstr "E1309: Non posso modificare mappature mentre le sto elencando"
@@ -7724,15 +7694,15 @@ msgid "E1311: Cannot change user commands while listing"
 msgstr "E1311: Non posso modificare comandi utente mentre li sto elencando"
 
 msgid "E1312: Not allowed to change the window layout in this autocmd"
-msgstr "E1312: Non si può modificare il formato della finestra in questo "
-"autocomando"
+msgstr ""
+"E1312: Non si può modificare il formato della finestra in questo autocomando"
 
 msgid "E1313: Not allowed to add or remove entries (%s)"
 msgstr "E1313: Not è consentito aggiungere o togliere elementi (%s)"
 
 msgid "E1314: Class name must start with an uppercase letter: %s"
-msgstr "E1314: Il nome di una Classe deve iniziare con una lettera "
-"maiuscola: %s"
+msgstr ""
+"E1314: Il nome di una Classe deve iniziare con una lettera maiuscola: %s"
 
 msgid "E1315: White space required after name: %s"
 msgstr "E1315: Spazio bianco necessario dopo il nome: %s"
@@ -7777,7 +7747,8 @@ msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Il valore predefinito del costruttore dev'essere v:none: %s"
 
 msgid "E1329: Cannot get object member type from initializer: %s"
-msgstr "E1329: Non riesco a ottenere il tipo dell'elemento Object "
+msgstr ""
+"E1329: Non riesco a ottenere il tipo dell'elemento Object "
 "dall'inizializzatore: %s"
 
 msgid "E1330: Invalid type for object member: %s"
@@ -7787,8 +7758,9 @@ msgid "E1331: Public must be followed by \"this\" or \"static\""
 msgstr "E1331: Public dev'essere seguito da \"this\" o \"static\""
 
 msgid "E1332: Public member name cannot start with underscore: %s"
-msgstr "E1332: Il nome di un elemento Pubblico non può iniziare con "
-"un trattino basso: %s"
+msgstr ""
+"E1332: Il nome di un elemento Pubblico non può iniziare con un trattino "
+"basso: %s"
 
 msgid "E1333: Cannot access private member: %s"
 msgstr "E1333: Non posso accedere elemento privato: %s"
@@ -7798,9 +7770,6 @@ msgstr "E1334: Elemento Object non trovato: %s"
 
 msgid "E1335: Member is not writable: %s"
 msgstr "E1335: Elemento non riscrivibile: %s"
-
-msgid "E1336: Internal error: shortmess too long"
-msgstr "E1336: Errore interno: shortmess troppo lungo"
 
 msgid "E1337: Class member not found: %s"
 msgstr "E1337: Elemento di Classe non trovato: %s"
@@ -7812,8 +7781,8 @@ msgid ""
 "E1339: Cannot add a textprop with text after using a textprop with a "
 "negative id"
 msgstr ""
-"E1339: Non posso aggiungere textprop a un testo dopo aver usato una "
-"textprop con un identificativo negativo"
+"E1339: Non posso aggiungere textprop a un testo dopo aver usato una textprop "
+"con un identificativo negativo"
 
 msgid "E1340: Argument already declared in the class: %s"
 msgstr "E1340: Argomento già dichiarato nella Classe: %s"
@@ -7826,8 +7795,8 @@ msgstr "E1342: L'interfaccia può essere definita solo negli script Vim9"
 
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr ""
-"E1343: I comandi definiti dall'utente devono iniziare con lettera "
-"maiuscola: %s"
+"E1343: I comandi definiti dall'utente devono iniziare con lettera maiuscola: "
+"%s"
 
 msgid "E1344: Cannot initialize a member in an interface"
 msgstr "E1344: Non riesco a inizializzare elemento di un'interfaccia"
@@ -7875,8 +7844,7 @@ msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: Uso di \"super\" fuori da una Classe-figlia"
 
 msgid "E1359: Cannot define a \"new\" function in an abstract class"
-msgstr ""
-"E1359: Non posso definire una funzione \"new\" in una Classe astratta"
+msgstr "E1359: Non posso definire una funzione \"new\" in una Classe astratta"
 
 msgid "E1360: Using a null object"
 msgstr "E1360: Uso di un Object nullo"
@@ -7893,10 +7861,67 @@ msgstr "E1363: Tipo incompleto"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Attenzione: Blocco puntatore non valido"
 
+msgid "E1400: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1400: Non si possono mischiare argomenti posizionali e non "
+"posizionali: %s"
+
+msgid "E1401: format argument %d unused in $-style format: %s"
+msgstr "E1401: argomento di formato %d non usato nel formato $-style: %s"
+
+msgid ""
+"E1402: Positional argument %d used as field width reused as different type: "
+"%s/%s"
+msgstr ""
+"E1402: Argomento posizionale %d, usato come larghezza campo, riusato con "
+"un tipo differente: %s/%s"
+
+msgid "E1403: Positional argument %d out of bounds: %s"
+msgstr "E1403: Argomento posizionale %d fuori misura: %s"
+
+msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
+msgstr "E1404: Argomento posizionale di tipo %d usato in modo "
+"inconsistente: %s/%s"
+
+msgid "E1405: Invalid format specifier: %s"
+msgstr "E1405: Specificatore di formato non valido: %s"
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
+
+msgid "int"
+msgstr "int"
+
+msgid "long int"
+msgstr "long int"
+
+msgid "long long int"
+msgstr "long long int"
+
+msgid "unsigned int"
+msgstr "unsigned int"
+
+msgid "unsigned long int"
+msgstr "unsigned long int"
+
+msgid "unsigned long long int"
+msgstr "unsigned long long int"
+
+msgid "pointer"
+msgstr "puntatore"
+
+msgid "percent"
+msgstr "percento"
+
+msgid "char"
+msgstr "carattere"
+
+msgid "string"
+msgstr "stringa"
+
+msgid "float"
+msgstr "numero a virgola mobile"
 
 #.
 #. * Some messages that can be shared are included here.
@@ -8885,8 +8910,8 @@ msgid "show (partial) command keys in location given by 'showcmdloc'"
 msgstr "mostra (una parte dei) tasti di comando nella riga di status"
 
 msgid "location where to show the (partial) command keys for 'showcmd'"
-msgstr "posizione in cui mostrare (una parte dei) tasti di comando per "
-"'showcmd'"
+msgstr ""
+"posizione in cui mostrare (una parte dei) tasti di comando per 'showcmd'"
 
 msgid "display the current mode in the status line"
 msgstr "visualizza modo corrente nella riga di status"
@@ -9466,7 +9491,7 @@ msgid "specifies the characters in a file name"
 msgstr "specifica i caratteri contenuti in un nome di file"
 
 msgid "specifies the characters in an identifier"
-msgstr "specifica i caratteri contenuti in un identificatore"
+msgstr "specifica i caratteri contenuti in un identificativo"
 
 msgid "specifies the characters in a keyword"
 msgstr "specifica i caratteri contenuti in una parola"
@@ -9685,3 +9710,5 @@ msgstr "nome della libreria dinamica MzScheme GC"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""
+"Questa è la finestra della riga-di-comando! si può chiudere con \":q\"."
+
