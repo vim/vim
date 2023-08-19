@@ -1350,15 +1350,15 @@ func s:HandleCursor(msg)
     if lnum =~ '^[0-9]*$'
       call s:GotoSourcewinOrCreateIt()
       if expand('%:p') != fnamemodify(fname, ':p')
-echomsg 'different fname: "' .. expand('%:p') .. '" vs "' .. fnamemodify(fname, ':p') .. '"'
-	augroup Termdebug
-	  " Always open a file read-only instead of showing the ATTENTION
-	  " prompt, since it is unlikely we want to edit the file.
-	  " The file may be changed but not saved, warn for that.
-	  au SwapExists * echohl WarningMsg
-		\ | echo 'Warning: file is being edited elsewhere'
-		\ | echohl None
-		\ | let v:swapchoice = 'o'
+        echomsg 'different fname: "' .. expand('%:p') .. '" vs "' .. fnamemodify(fname, ':p') .. '"'
+        augroup Termdebug
+          " Always open a file read-only instead of showing the ATTENTION
+          " prompt, since it is unlikely we want to edit the file.
+          " The file may be changed but not saved, warn for that.
+          au SwapExists * echohl WarningMsg
+          \ | echo 'Warning: file is being edited elsewhere'
+          \ | echohl None
+          \ | let v:swapchoice = 'o'
         augroup END
         if &modified
           " TODO: find existing window
