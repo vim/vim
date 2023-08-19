@@ -682,8 +682,8 @@ check_typval_arg_type(
     {
 	where.wt_index = arg_idx;
 	where.wt_kind = WT_ARGUMENT;
-	where.wt_func_name = func_name;
     }
+    where.wt_func_name = func_name;
     return check_typval_type(expected, actual_tv, where);
 }
 

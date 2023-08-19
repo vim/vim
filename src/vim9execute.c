@@ -5451,8 +5451,8 @@ exec_instructions(ectx_T *ectx)
 		    {
 			where.wt_index = ct->ct_arg_idx;
 			where.wt_kind = ct->ct_is_var ? WT_VARIABLE : WT_ARGUMENT;
-			where.wt_func_name = ectx->ec_where.wt_func_name;
 		    }
+		    where.wt_func_name = ectx->ec_where.wt_func_name;
 		    r = check_typval_type(ct->ct_type, tv, where);
 		    if (r == FAIL)
 			goto on_error;
