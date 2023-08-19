@@ -1,17 +1,21 @@
-[![Vim Logo](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
+# [![Vim The editor](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
 
-[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
-
-<sub>For translations of this README see the end.</sub>
+[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22)
+[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
+[![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim)
+[![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
+[![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim)
+[![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim)
+[![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim)
+[![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
 
 If you find a bug or want to discuss the best way to add a new feature, please
-open an [issue](https://github.com/vim/vim/issues).
+[open an issue](https://github.com/vim/vim/issues/new/choose).
 If you have a question or want to discuss the best way to do something with
 Vim, you can use [StackExchange](https://vi.stackexchange.com/)
 or one of the [Maillists](https://www.vim.org/community.php).
 
-
-## What is Vim? ##
+## What is Vim?
 
 Vim is a greatly improved version of the good old UNIX editor
 [Vi](https://en.wikipedia.org/wiki/Vi).  Many new
@@ -35,7 +39,7 @@ Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
 
 For Vim9 script see [README_VIM9](README_VIM9.md).
 
-## Distribution ##
+## Distribution
 
 You can often use your favorite package manager to install Vim.  On Mac and
 Linux a small version of Vim is pre-installed, you still need to install Vim
@@ -55,48 +59,45 @@ Some popular places to get the latest Vim:
 * Get a Windows executable from the
 [vim-win32-installer](https://github.com/vim/vim-win32-installer/releases) repository.
 
-
-
-## Compiling ##
+## Compiling
 
 If you obtained a binary distribution you don't need to compile Vim.  If you
 obtained a source distribution, all the stuff for compiling Vim is in the
-[`src`](/src) directory.  See [`src/INSTALL`](src/INSTALL) for instructions.
+[`src`](./src/) directory.  See [`src/INSTALL`](./src/INSTALL) for instructions.
 
-
-## Installation ##
+## Installation
 
 See one of these files for system-specific instructions.  Either in the
 [READMEdir directory](./READMEdir/) (in the repository) or
 the top directory (if you unpack an archive):
 
-	README_ami.txt		Amiga
-	README_unix.txt		Unix
-	README_dos.txt		MS-DOS and MS-Windows
-	README_mac.txt		Macintosh
-	README_haiku.txt	Haiku
-	README_vms.txt		VMS
+```
+README_ami.txt		Amiga
+README_unix.txt		Unix
+README_dos.txt		MS-DOS and MS-Windows
+README_mac.txt		Macintosh
+README_haiku.txt	Haiku
+README_vms.txt		VMS
+```
 
 There are other `README_*.txt` files, depending on the distribution you used.
 
-
-## Documentation ##
+## Documentation
 
 The Vim tutor is a one hour training course for beginners.  Often it can be
 started as `vimtutor`.  See `:help tutor` for more information.
 
 The best is to use `:help` in Vim.  If you don't have an executable yet, read
-[`runtime/doc/help.txt`](/runtime/doc/help.txt).
+[`runtime/doc/help.txt`](./runtime/doc/help.txt).
 It contains pointers to the other documentation files.
 The User Manual reads like a book and is recommended to learn to use
 Vim.  See `:help user-manual`.
 
-
-## Copying ##
+## Copying
 
 Vim is Charityware.  You can use and copy it as much as you like, but you are
 encouraged to make a donation to help orphans in Uganda.  Please read the file
-[`runtime/doc/uganda.txt`](runtime/doc/uganda.txt)
+[`runtime/doc/uganda.txt`](./runtime/doc/uganda.txt)
 for details (do `:help uganda` inside Vim).
 
 Summary of the license: There are no restrictions on using or distributing an
@@ -105,28 +106,25 @@ text must always be included.  For modified versions, a few restrictions apply.
 The license is GPL compatible, you may compile Vim with GPL libraries and
 distribute it.
 
-
-## Sponsoring ##
+## Sponsoring
 
 Fixing bugs and adding new features takes a lot of time and effort.  To show
 your appreciation for the work and motivate Bram and others to continue
 working on Vim please send a donation.
 
 Since Bram is back to a paid job the money will now be used to help children
-in Uganda.  See [`runtime/doc/uganda.txt`](runtime/doc/uganda.txt).  But
+in Uganda.  See [`runtime/doc/uganda.txt`](./runtime/doc/uganda.txt).  But
 at the same time donations increase Bram's motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 	https://www.vim.org/sponsor/
 
-
-## Contributing ##
+## Contributing
 
 If you would like to help make Vim better, see the
-[CONTRIBUTING.md](/CONTRIBUTING.md) file.
+[CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
-
-## Information ##
+## Information
 
 If you are on macOS, you can use [Macvim](https://macvim-dev.github.io/macvim/).
 
@@ -142,16 +140,14 @@ lists to discuss them with Vim users and developers:
 	https://www.vim.org/maillist.php
 
 If nothing else works, report bugs directly to the vim-dev mailing list:
-	<vim-dev@vim.org>
+	`<vim-dev@vim.org>`
 
+## Main author
 
-## Main author ##
-
-Most of Vim was created by Bram Moolenaar <Bram@vim.org>
+Most of Vim was created by Bram Moolenaar `<Bram@vim.org>`
 [Bram-Moolenaar](https://vimhelp.org/version9.txt.html#Bram-Moolenaar)
 
 Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
-	<vim-dev@vim.org>
-
+	`<vim-dev@vim.org>`
 
 This is `README.md` for version 9.0 of Vim: Vi IMproved.
