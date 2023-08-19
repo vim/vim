@@ -12,29 +12,29 @@ endif
 let b:did_indent = 1
 let b:undo_indent = "setlocal indentexpr< indkeys<"
 
-setlocal indentexpr=GetQmlIndent()
+setlocal indentexpr=s:GetQmlIndent()
 setlocal indentkeys=0{,0},0),0],:,!^F,o,O,e,*<Return>,=*/
 
 " Only define functions once per session
-if exists("*GetQmlIndent")
+if exists("*s:GetQmlIndent")
   finish
 endif
 
 " Clean up a line of code by removing trailing '//' and '/* */' comments, and trimming
 " whitespace
-function! Trim(line)
+function! s:Trim(line)
   return substitute(substitute(substitute(a:line, '// .*', '', ''), '/\* .* \*/', '', ''), '^\s*\|\s*$', '', 'g')
 endfunction
 
 function! s:GetQmlIndent()
   let num = v:lnum
-  let line = Trim(getline(num))
+  let line = s:Trim(getline(num))
 
   let pnum = prevnonblank(num - 1)
   if pnum == 0
     return 0
   endif
-  let pline = Trim(getline(pnum))
+  let pline = s:Trim(getline(pnum))
 
   let ind = indent(pnum)
 

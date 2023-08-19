@@ -12,12 +12,12 @@ let s:cpoptions_save = &cpoptions
 set cpoptions&vim
 
 " command for undo
-let b:undo_ftplugin = "setlocal formatoptions< comments< commentstring< indentexpr<"
+let b:undo_ftplugin = "setlocal formatoptions< comments< commentstring<"
 
 if (has("gui_win32") || has("gui_gtk")) && !exists( 'b:browsefilter' )
    let b:browsefilter =
-      \ 'QML files (*.qml,*.qbs)\t*.qml;*.qbs\n' .
-      \ 'All files\t*\n'
+      \ 'QML Files (*.qml,*.qbs)\t*.qml;*.qbs\n' .
+      \ 'All Files\t*\n'
 endif
 
 " Set 'comments' to format dashed lists in comments.
