@@ -2314,4 +2314,127 @@ def Test_call_method_in_parent_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for calling methods from three levels of classes
+def Test_multi_level_method_call()
+  var lines =<< trim END
+    vim9script
+
+    var A_func1: number = 0
+    var A_func2: number = 0
+    var A_func3: number = 0
+    var B_func2: number = 0
+    var B_func3: number = 0
+    var C_func3: number = 0
+
+    class A
+      def Func1()
+        A_func1 += 1
+      enddef
+
+      def Func2()
+        A_func2 += 1
+      enddef
+
+      def Func3()
+        A_func3 += 1
+      enddef
+    endclass
+
+    class B extends A
+      def Func2()
+        B_func2 += 1
+      enddef
+
+      def Func3()
+        B_func3 += 1
+      enddef
+    endclass
+
+    class C extends B
+      def Func3()
+        C_func3 += 1
+      enddef
+    endclass
+
+    def A_CallFuncs(a: A)
+      a.Func1()
+      a.Func2()
+      a.Func3()
+    enddef
+
+    def B_CallFuncs(b: B)
+      b.Func1()
+      b.Func2()
+      b.Func3()
+    enddef
+
+    def C_CallFuncs(c: C)
+      c.Func1()
+      c.Func2()
+      c.Func3()
+    enddef
+
+    var cobj = C.new()
+    A_CallFuncs(cobj)
+    B_CallFuncs(cobj)
+    C_CallFuncs(cobj)
+    assert_equal(3, A_func1)
+    assert_equal(0, A_func2)
+    assert_equal(0, A_func3)
+    assert_equal(3, B_func2)
+    assert_equal(0, B_func3)
+    assert_equal(3, C_func3)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using members from three levels of classes
+def Test_multi_level_member_access()
+  var lines =<< trim END
+    vim9script
+
+    class A
+      this.val1: number = 0
+      this.val2: number = 0
+      this.val3: number = 0
+    endclass
+
+    class B extends A
+      this.val2: number = 0
+      this.val3: number = 0
+    endclass
+
+    class C extends B
+      this.val3: number = 0
+    endclass
+
+    def A_members(a: A)
+      a.val1 += 1
+      a.val2 += 1
+      a.val3 += 1
+    enddef
+
+    def B_members(b: B)
+      b.val1 += 1
+      b.val2 += 1
+      b.val3 += 1
+    enddef
+
+    def C_members(c: C)
+      c.val1 += 1
+      c.val2 += 1
+      c.val3 += 1
+    enddef
+
+    var cobj = C.new()
+    A_members(cobj)
+    B_members(cobj)
+    C_members(cobj)
+    assert_equal(3, cobj.val1)
+    assert_equal(3, cobj.val2)
+    assert_equal(3, cobj.val3)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

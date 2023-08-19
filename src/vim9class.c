@@ -231,6 +231,117 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
 }
 
 /*
+ * Update the interface class lookup table for the member index on the
+ * interface to the member index in the class implementing the interface.
+ * And a lookup table for the object method index on the interface
+ * to the object method index in the class implementing the interface.
+ * This is also used for updating the lookup table for the extended class
+ * hierarchy.
+ */
+    static int
+update_member_method_lookup_table(
+	class_T		*ifcl,
+	class_T		*cl,
+	garray_T	*objmethods,
+	int		pobj_method_offset,
+	int		is_interface)
+{
+    if (ifcl == NULL)
+	return OK;
+
+    // Table for members.
+    itf2class_T *if2cl = alloc_clear(sizeof(itf2class_T)
+	    + ifcl->class_obj_member_count * sizeof(int));
+    if (if2cl == NULL)
+	return FAIL;
+    if2cl->i2c_next = ifcl->class_itf2class;
+    ifcl->class_itf2class = if2cl;
+    if2cl->i2c_class = cl;
+    if2cl->i2c_is_method = FALSE;
+
+    for (int if_i = 0; if_i < ifcl->class_obj_member_count; ++if_i)
+	for (int cl_i = 0; cl_i < cl->class_obj_member_count; ++cl_i)
+	{
+	    if (STRCMP(ifcl->class_obj_members[if_i].ocm_name,
+			cl->class_obj_members[cl_i].ocm_name) == 0)
+	    {
+		int *table = (int *)(if2cl + 1);
+		table[if_i] = cl_i;
+		break;
+	    }
+	}
+
+    // Table for methods.
+    if2cl = alloc_clear(sizeof(itf2class_T)
+	    + ifcl->class_obj_method_count * sizeof(int));
+    if (if2cl == NULL)
+	return FAIL;
+    if2cl->i2c_next = ifcl->class_itf2class;
+    ifcl->class_itf2class = if2cl;
+    if2cl->i2c_class = cl;
+    if2cl->i2c_is_method = TRUE;
+
+    for (int if_i = 0; if_i < ifcl->class_obj_method_count; ++if_i)
+    {
+	int done = FALSE;
+	for (int cl_i = 0; cl_i < objmethods->ga_len; ++cl_i)
+	{
+	    if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
+			((ufunc_T **)objmethods->ga_data)[cl_i]->uf_name)
+		    == 0)
+	    {
+		int *table = (int *)(if2cl + 1);
+		table[if_i] = cl_i;
+		done = TRUE;
+		break;
+	    }
+	}
+
+	// extended class object method is not overridden by the child class.
+	// Keep the method declared in one of the parent classes in the
+	// lineage.
+	if (!done && !is_interface)
+	{
+	    // If "ifcl" is not the immediate parent of "cl", then search in
+	    // the intermediate parent classes.
+	    if (cl->class_extends != ifcl)
+	    {
+		class_T	    *parent = cl->class_extends;
+		int	    method_offset = objmethods->ga_len;
+
+		while (!done && parent != NULL && parent != ifcl)
+		{
+
+		    for (int cl_i = 0;
+			    cl_i < parent->class_obj_method_count_child; ++cl_i)
+		    {
+			if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
+				    parent->class_obj_methods[cl_i]->uf_name)
+				== 0)
+			{
+			    int *table = (int *)(if2cl + 1);
+			    table[if_i] = method_offset + cl_i;
+			    done = TRUE;
+			    break;
+			}
+		    }
+		    method_offset += parent->class_obj_method_count_child;
+		    parent = parent->class_extends;
+		}
+	    }
+
+	    if (!done)
+	    {
+		int *table = (int *)(if2cl + 1);
+		table[if_i] = pobj_method_offset + if_i;
+	    }
+	}
+    }
+
+    return OK;
+}
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":interface" up to ":endinterface".
  */
@@ -846,79 +957,31 @@ early_ret:
 	    // the interface to the member index in this class.
 	    // And a lookup table for the object method index on the interface
 	    // to the object method index in this class.
-	    // Also do this for the extended class, if any.
-	    for (int i = 0; i <= cl->class_interface_count; ++i)
+	    for (int i = 0; i < cl->class_interface_count; ++i)
 	    {
-		class_T *ifcl = i < cl->class_interface_count
-					    ? cl->class_interfaces_cl[i]
-					    : extends_cl;
-		if (ifcl == NULL)
-		    continue;
+		class_T *ifcl = cl->class_interfaces_cl[i];
 
-		// Table for members.
-		itf2class_T *if2cl = alloc_clear(sizeof(itf2class_T)
-				 + ifcl->class_obj_member_count * sizeof(int));
-		if (if2cl == NULL)
+		if (update_member_method_lookup_table(ifcl, cl, &objmethods,
+			    0, TRUE) == FAIL)
 		    goto cleanup;
-		if2cl->i2c_next = ifcl->class_itf2class;
-		ifcl->class_itf2class = if2cl;
-		if2cl->i2c_class = cl;
-		if2cl->i2c_is_method = FALSE;
+	    }
 
-		for (int if_i = 0; if_i < ifcl->class_obj_member_count; ++if_i)
-		    for (int cl_i = 0; cl_i < cl->class_obj_member_count;
-									++cl_i)
-		    {
-			if (STRCMP(ifcl->class_obj_members[if_i].ocm_name,
-				    cl->class_obj_members[cl_i].ocm_name) == 0)
-			{
-			    int *table = (int *)(if2cl + 1);
-			    table[if_i] = cl_i;
-			    break;
-			}
-		    }
+	    // Update the lookup table for the extended class, if nay
+	    if (extends_cl != NULL)
+	    {
+		class_T		*pclass = extends_cl;
+		int		pobj_method_offset = objmethods.ga_len;
 
-		// Table for methods.
-		if2cl = alloc_clear(sizeof(itf2class_T)
-				 + ifcl->class_obj_method_count * sizeof(int));
-		if (if2cl == NULL)
-		    goto cleanup;
-		if2cl->i2c_next = ifcl->class_itf2class;
-		ifcl->class_itf2class = if2cl;
-		if2cl->i2c_class = cl;
-		if2cl->i2c_is_method = TRUE;
-
-		for (int if_i = 0; if_i < ifcl->class_obj_method_count; ++if_i)
+		// Update the entire lineage of extended classes.
+		while (pclass != NULL)
 		{
-		    int done = FALSE;
-		    for (int cl_i = 0; cl_i < objmethods.ga_len; ++cl_i)
-		    {
-			if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
-			       ((ufunc_T **)objmethods.ga_data)[cl_i]->uf_name)
-									  == 0)
-			{
-			    int *table = (int *)(if2cl + 1);
-			    table[if_i] = cl_i;
-			    done = TRUE;
-			    break;
-			}
-		    }
+		    if (update_member_method_lookup_table(pclass, cl,
+				&objmethods, pobj_method_offset, FALSE) ==
+			    FAIL)
+			goto cleanup;
 
-		    if (!done && extends_cl != NULL)
-		    {
-			for (int cl_i = 0;
-			     cl_i < extends_cl->class_obj_method_count; ++cl_i)
-			{
-			    if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
-				   extends_cl->class_obj_methods[cl_i]->uf_name)
-									  == 0)
-			    {
-				int *table = (int *)(if2cl + 1);
-				table[if_i] = objmethods.ga_len + cl_i;
-				break;
-			    }
-			}
-		    }
+		    pobj_method_offset += pclass->class_obj_method_count_child;
+		    pclass = pclass->class_extends;
 		}
 	    }
 	}
