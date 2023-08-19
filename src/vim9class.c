@@ -682,7 +682,7 @@ early_ret:
 		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
 		    {
 			ocmember_T	*m = &cl_ms[cl_i];
-			where_T 	where = WHERE_INIT;
+			where_T		where = WHERE_INIT;
 
 			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
 			    continue;
@@ -1081,6 +1081,7 @@ early_ret:
 			{
 			    where_T where = WHERE_INIT;
 			    where.wt_func_name = (char *)pname;
+			    where.wt_kind = WT_METHOD;
 			    (void)check_type(pf->uf_func_type, cf->uf_func_type,
 								  TRUE, where);
 			}

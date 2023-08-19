@@ -647,6 +647,7 @@ check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
 	    t_func_exp.tt_argcount = -1;
 
 	where.wt_index = 2;
+	where.wt_kind = WT_ARGUMENT;
 	return check_type(&t_func_exp, type, TRUE, where);
     }
     return OK;
@@ -714,6 +715,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    if (type->tt_argcount == -1)
 		t_func_exp.tt_argcount = -1;
 	    where.wt_index = 2;
+	    where.wt_kind = WT_ARGUMENT;
 	    return check_type(&t_func_exp, type, TRUE, where);
 	}
 

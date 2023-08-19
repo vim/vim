@@ -4764,9 +4764,11 @@ typedef enum {
 } magic_T;
 
 typedef enum {
-    WT_ARGUMENT = 0,
+    WT_UNKNOWN = 0,	// Unknown or unspecified location
+    WT_ARGUMENT,
     WT_VARIABLE,
     WT_MEMBER,
+    WT_METHOD,
 } wherekind_T;
 
 // Struct used to pass to error messages about where the error happened.
@@ -4776,7 +4778,7 @@ typedef struct {
     wherekind_T	wt_kind;	// "variable" when TRUE, "argument" otherwise
 } where_T;
 
-#define WHERE_INIT {NULL, 0, WT_ARGUMENT}
+#define WHERE_INIT {NULL, 0, WT_UNKNOWN}
 
 // Struct passed to get_v_event() and restore_v_event().
 typedef struct {
