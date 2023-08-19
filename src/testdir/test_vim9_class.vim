@@ -1284,6 +1284,45 @@ def Test_class_implements_interface()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1406: Member "not_matching": type mismatch, expected number but got string')
+
+  lines =<< trim END
+      vim9script
+
+      interface One
+        def IsEven(nr: number): bool
+      endinterface
+      class Two implements One
+        def IsEven(nr: number): string
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Member "IsEven": type mismatch, expected func(number): bool but got func(number): string')
+
+  lines =<< trim END
+      vim9script
+
+      interface One
+        def IsEven(nr: number): bool
+      endinterface
+      class Two implements One
+        def IsEven(nr: bool): bool
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Member "IsEven": type mismatch, expected func(number): bool but got func(bool): bool')
+
+  lines =<< trim END
+      vim9script
+
+      interface One
+        def IsEven(nr: number): bool
+      endinterface
+      class Two implements One
+        def IsEven(nr: number, ...extra: list<number>): bool
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Member "IsEven": type mismatch, expected func(number): bool but got func(number, ...list<number>): bool')
 enddef
 
 def Test_call_interface_method()

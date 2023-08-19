@@ -732,7 +732,14 @@ early_ret:
 			char_u *cl_name = cl_fp[cl_i]->uf_name;
 			if (STRCMP(if_name, cl_name) == 0)
 			{
-			    // TODO: check return and argument types
+			    where_T where = WHERE_INIT;
+
+			    // Ensure the type is matching.
+			    where.wt_func_name = (char *)if_name;
+			    where.wt_kind = WT_METHOD;
+			    if (check_type_maybe(if_fp[if_i]->uf_func_type,
+					cl_fp[cl_i]->uf_func_type, TRUE, where) != OK)
+				success = FALSE;
 			    break;
 			}
 		    }
