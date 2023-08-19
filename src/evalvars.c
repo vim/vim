@@ -3839,8 +3839,11 @@ set_var_const(
 		if (sv != NULL)
 		{
 		    // check the type and adjust to bool if needed
-		    where.wt_index = var_idx;
-		    where.wt_variable = TRUE;
+		    if (var_idx > 0)
+		    {
+			where.wt_index = var_idx;
+			where.wt_kind = WT_VARIABLE;
+		    }
 		    if (check_script_var_type(sv, tv, name, where) == FAIL)
 			goto failed;
 		    if (type == NULL)

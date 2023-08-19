@@ -678,8 +678,12 @@ check_typval_arg_type(
 {
     where_T	where = WHERE_INIT;
 
-    where.wt_index = arg_idx;
-    where.wt_func_name = func_name;
+    if (arg_idx > 0)
+    {
+	where.wt_index = arg_idx;
+	where.wt_kind = WT_ARGUMENT;
+	where.wt_func_name = func_name;
+    }
     return check_typval_type(expected, actual_tv, where);
 }
 
@@ -733,7 +737,11 @@ arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx)
 {
     where_T	where = WHERE_INIT;
 
-    where.wt_index = arg_idx;
+    if (arg_idx > 0)
+    {
+	where.wt_index = arg_idx;
+	where.wt_kind = WT_ARGUMENT;
+    }
     type_mismatch_where(expected, actual, where);
 }
 
@@ -744,25 +752,42 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
     char *typename1 = type_name(expected, &tofree1);
     char *typename2 = type_name(actual, &tofree2);
 
-    if (where.wt_index > 0)
+    switch (where.wt_kind)
     {
-	if (where.wt_func_name == NULL)
-	    semsg(_(where.wt_variable
-			 ? e_variable_nr_type_mismatch_expected_str_but_got_str
-		       : e_argument_nr_type_mismatch_expected_str_but_got_str),
-					 where.wt_index, typename1, typename2);
-	else
-	    semsg(_(where.wt_variable
-		  ? e_variable_nr_type_mismatch_expected_str_but_got_str_in_str
-		: e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
-		     where.wt_index, typename1, typename2, where.wt_func_name);
+	case WT_MEMBER:
+	    semsg(_(e_member_str_type_mismatch_expected_str_but_got_str),
+		    where.wt_func_name, typename1, typename2);
+	    break;
+	case WT_METHOD:
+	    semsg(_(e_method_str_type_mismatch_expected_str_but_got_str),
+		    where.wt_func_name, typename1, typename2);
+	    break;
+	case WT_VARIABLE:
+	    if (where.wt_func_name == NULL)
+		semsg(_(e_variable_nr_type_mismatch_expected_str_but_got_str),
+			where.wt_index, typename1, typename2);
+	    else
+		semsg(_(e_variable_nr_type_mismatch_expected_str_but_got_str_in_str),
+			where.wt_index, typename1, typename2, where.wt_func_name);
+	    break;
+	case WT_ARGUMENT:
+	    if (where.wt_func_name == NULL)
+		semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str),
+			where.wt_index, typename1, typename2);
+	    else
+		semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
+			where.wt_index, typename1, typename2, where.wt_func_name);
+	    break;
+	case WT_UNKNOWN:
+	    if (where.wt_func_name == NULL)
+		semsg(_(e_type_mismatch_expected_str_but_got_str),
+			typename1, typename2);
+	    else
+		semsg(_(e_type_mismatch_expected_str_but_got_str_in_str),
+			typename1, typename2, where.wt_func_name);
+	    break;
     }
-    else if (where.wt_func_name == NULL)
-	semsg(_(e_type_mismatch_expected_str_but_got_str),
-							 typename1, typename2);
-    else
-	semsg(_(e_type_mismatch_expected_str_but_got_str_in_str),
-				     typename1, typename2, where.wt_func_name);
+
     vim_free(tofree1);
     vim_free(tofree2);
 }

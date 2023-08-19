@@ -496,7 +496,7 @@ need_type_where(
     if (!actual_is_const && ret == MAYBE && use_typecheck(actual, expected))
     {
 	generate_TYPECHECK(cctx, expected, number_ok, offset,
-					    where.wt_variable, where.wt_index);
+		where.wt_kind == WT_VARIABLE, where.wt_index);
 	return OK;
     }
 
@@ -518,7 +518,11 @@ need_type(
 {
     where_T where = WHERE_INIT;
 
-    where.wt_index = arg_idx;
+    if (arg_idx > 0)
+    {
+	where.wt_index = arg_idx;
+	where.wt_kind = WT_ARGUMENT;
+    }
     return need_type_where(actual, expected, number_ok, offset, where,
 						cctx, silent, actual_is_const);
 }
@@ -2636,8 +2640,11 @@ compile_assignment(
 			// Without operator check type here, otherwise below.
 			// Use the line number of the assignment.
 			SOURCING_LNUM = start_lnum;
-			where.wt_index = var_count > 0 ? var_idx + 1 : 0;
-			where.wt_variable = var_count > 0;
+			if (var_count > 0)
+			{
+			    where.wt_index = var_idx + 1;
+			    where.wt_kind = WT_VARIABLE;
+			}
 			// If assigning to a list or dict member, use the
 			// member type.  Not for "list[:] =".
 			if (lhs.lhs_has_index
@@ -3193,6 +3200,7 @@ compile_def_function(
 	    // specified type.
 	    val_type = get_type_on_stack(&cctx, 0);
 	    where.wt_index = arg_idx + 1;
+	    where.wt_kind = WT_ARGUMENT;
 	    if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
 	    {
 		did_set_arg_type = TRUE;

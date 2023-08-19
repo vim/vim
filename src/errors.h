@@ -3490,5 +3490,9 @@ EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
 	INIT(= N_("E1404: Positional argument %d type used inconsistently: %s/%s"));
 EXTERN char e_invalid_format_specifier_str[]
 	INIT(= N_("E1405: Invalid format specifier: %s"));
+EXTERN char e_member_str_type_mismatch_expected_str_but_got_str[]
+	INIT(= N_("E1406: Member \"%s\": type mismatch, expected %s but got %s"));
+EXTERN char e_method_str_type_mismatch_expected_str_but_got_str[]
+	INIT(= N_("E1407: Member \"%s\": type mismatch, expected %s but got %s"));
 
 // E1365 - E1399 unused

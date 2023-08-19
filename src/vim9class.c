@@ -795,12 +795,20 @@ early_ret:
 		    int cl_i;
 		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
 		    {
-			ocmember_T *m = &cl_ms[cl_i];
-			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) == 0)
-			{
-			    // TODO: check type
-			    break;
-			}
+			ocmember_T	*m = &cl_ms[cl_i];
+			where_T		where = WHERE_INIT;
+
+			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
+			    continue;
+
+			// Ensure the type is matching.
+			where.wt_func_name = m->ocm_name;
+			where.wt_kind = WT_MEMBER;
+			if (check_type_maybe(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
+				    where) != OK)
+			    success = FALSE;
+
+			break;
 		    }
 		    if (cl_i == cl_count)
 		    {
@@ -838,7 +846,14 @@ early_ret:
 			char_u *cl_name = cl_fp[cl_i]->uf_name;
 			if (STRCMP(if_name, cl_name) == 0)
 			{
-			    // TODO: check return and argument types
+			    where_T where = WHERE_INIT;
+
+			    // Ensure the type is matching.
+			    where.wt_func_name = (char *)if_name;
+			    where.wt_kind = WT_METHOD;
+			    if (check_type_maybe(if_fp[if_i]->uf_func_type,
+					cl_fp[cl_i]->uf_func_type, TRUE, where) != OK)
+				success = FALSE;
 			    break;
 			}
 		    }
@@ -1139,6 +1154,7 @@ early_ret:
 			{
 			    where_T where = WHERE_INIT;
 			    where.wt_func_name = (char *)pname;
+			    where.wt_kind = WT_METHOD;
 			    (void)check_type(pf->uf_func_type, cf->uf_func_type,
 								  TRUE, where);
 			}
