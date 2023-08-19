@@ -3999,4 +3999,30 @@ func Test_overlong_textprop_above_crash()
 
   call StopVimInTerminal(buf)
 endfunc
+
+func Test_text_prop_list_hl_and_sign_highlight()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    func Test()
+        split Xbuffer
+        call setline(1, ['one', "\ttab", '        space', 'three', 'four', 'five'])
+        call prop_type_add('Prop1', #{highlight: 'Search', override: v:true})
+        sign define sign1 text=>> linehl=DiffAdd
+        sign place 10 line=2 name=sign1
+        sign place 20 line=3 name=sign1
+        call prop_add(1, 1, #{end_lnum: 4, end_col: 5, type: 'Prop1'})
+        sign place 30 line=5 name=sign1
+    endfunc
+    call Test()
+  END
+  call writefile(lines, 'XtextPropSignTab', 'D')
+  let buf = RunVimInTerminal('-S XtextPropSignTab', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_sign_tab_1', {})
+
+  call term_sendkeys(buf, ":setl list listchars=eol:¶,tab:>-\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_sign_tab_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

@@ -2009,7 +2009,13 @@ win_line(
 		    ++text_prop_next;
 		}
 
-		if (wlv.n_extra == 0 || !wlv.extra_for_textprop)
+		if (wlv.n_extra == 0 ||
+			(!wlv.extra_for_textprop
+#ifdef FEAT_PROP_POPUP
+			 && !(text_prop_type != NULL &&
+			     text_prop_flags & PT_FLAG_OVERRIDE)
+#endif
+		    ))
 		{
 		    text_prop_attr = 0;
 		    text_prop_attr_comb = 0;
@@ -3278,6 +3284,12 @@ win_line(
 			n_attr = wlv.n_extra + 1;
 			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
+#ifdef FEAT_PROP_POPUP
+		    if (text_prop_type != NULL &&
+			     text_prop_flags & PT_FLAG_OVERRIDE)
+			wlv.extra_attr = hl_combine_attr(text_prop_attr, wlv.extra_attr);
+#endif
+
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
 		    mb_utf8 = FALSE;	// don't draw as UTF-8
@@ -3329,6 +3341,11 @@ win_line(
 					    || (wp->w_p_list &&
 						wp->w_lcs_chars.eol > 0)))
 			wlv.char_attr = wlv.line_attr;
+#ifdef FEAT_SIGNS
+		    // At end of line: if Sign is present with line highlight, reset char_attr
+		    if (sign_present && wlv.sattr.sat_linehl > 0 && wlv.draw_state == WL_LINE)
+			wlv.char_attr = wlv.sattr.sat_linehl;
+#endif
 # ifdef FEAT_DIFF
 		    if (wlv.diff_hlf == HLF_TXD)
 		    {
