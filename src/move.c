@@ -36,29 +36,19 @@ static void topline_back(lineoff_T *lp);
 static void botline_forw(lineoff_T *lp);
 
 /*
- * Reduce "n" for the screen lines skipped with "wp->w_skipcol".
+ * Get the number of screen lines skipped with "wp->w_skipcol".
  */
     int
-adjust_plines_for_skipcol(win_T *wp, int n)
+adjust_plines_for_skipcol(win_T *wp)
 {
     if (wp->w_skipcol == 0)
-	return n;
+	return 0;
 
-    int off = 0;
     int width = wp->w_width - win_col_off(wp);
     if (wp->w_skipcol >= width)
-    {
-	++off;
-	int skip = wp->w_skipcol - width;
-	width += win_col_off2(wp);
-	while (skip >= width)
-	{
-	    ++off;
-	    skip -= width;
-	}
-    }
-    wp->w_valid &= ~VALID_WROW;
-    return n - off;
+	return (wp->w_skipcol - width) / (width + win_col_off2(wp)) + 1;
+
+    return 0;
 }
 
 /*
@@ -77,7 +67,7 @@ plines_correct_topline(win_T *wp, linenr_T lnum)
 #endif
 	n = plines_win(wp, lnum, FALSE);
     if (lnum == wp->w_topline)
-	n = adjust_plines_for_skipcol(wp, n);
+	n -= adjust_plines_for_skipcol(wp);
     if (n > wp->w_height)
 	n = wp->w_height;
     return n;
@@ -1458,10 +1448,10 @@ textpos2screenpos(
 
 	is_folded = hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 #endif
-	row = plines_m_win(wp, wp->w_topline, lnum - 1, FALSE) + 1;
+	row = plines_m_win(wp, wp->w_topline, lnum - 1, FALSE);
 	// "row" should be the screen line where line "lnum" begins, which can
 	// be negative if "lnum" is "w_topline" and "w_skipcol" is non-zero.
-	row = adjust_plines_for_skipcol(wp, row);
+	row -= adjust_plines_for_skipcol(wp);
 
 #ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
@@ -1473,7 +1463,7 @@ textpos2screenpos(
 #ifdef FEAT_FOLDING
 	if (is_folded)
 	{
-	    row += W_WINROW(wp);
+	    row += W_WINROW(wp) + 1;
 	    coloff = wp->w_wincol + 1 + off;
 	}
 	else
@@ -1499,10 +1489,10 @@ textpos2screenpos(
 	    col -= wp->w_leftcol;
 	    if (col >= wp->w_width)
 		col = -1;
-	    if (col >= 0 && row > 0 && row <= wp->w_height)
+	    if (col >= 0 && row >= 0 && row < wp->w_height)
 	    {
 		coloff = col - scol + wp->w_wincol + 1;
-		row += W_WINROW(wp);
+		row += W_WINROW(wp) + 1;
 	    }
 	    else
 		// character is out of the window
