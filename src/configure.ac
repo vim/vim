@@ -2416,25 +2416,8 @@ else
 
     LDFLAGS="$ac_save_LDFLAGS"
 
-    AC_MSG_CHECKING(size of wchar_t is 2 bytes)
-    AC_CACHE_VAL(ac_cv_small_wchar_t,
-	[AC_RUN_IFELSE([AC_LANG_SOURCE([
-#include <X11/Xlib.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-		int main()
-		{
-		  if (sizeof(wchar_t) <= 2)
-		    exit(1);
-		  exit(0);
-		}])],
-		ac_cv_small_wchar_t="no",
-		ac_cv_small_wchar_t="yes",
-		AC_MSG_ERROR(failed to compile test program))])
-    AC_MSG_RESULT($ac_cv_small_wchar_t)
-    if test "x$ac_cv_small_wchar_t" = "xyes" ; then
+    AC_CHECK_SIZEOF([wchar_t])
+    if test "$ac_cv_sizeof_wchar_t" -le 2; then
       AC_DEFINE(SMALL_WCHAR_T)
     fi
 
