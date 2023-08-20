@@ -668,14 +668,28 @@ def Test_class_object_member_inits()
   END
   v9.CheckScriptFailure(lines, 'E1022:')
 
+  # If the type is not specified for a member, then it should be set during
+  # object creation and not when defining the class.
   lines =<< trim END
       vim9script
-      class TextPosition
-        this.lnum = v:none
+
+      var init_count = 0
+      def Init(): string
+        init_count += 1
+        return 'foo'
+      enddef
+
+      class A
+        this.str1 = Init()
+        this.str2: string = Init()
         this.col = 1
       endclass
+
+      assert_equal(init_count, 0)
+      var a = A.new()
+      assert_equal(init_count, 2)
   END
-  v9.CheckScriptFailure(lines, 'E1330:')
+  v9.CheckScriptSuccess(lines)
 
   # Test for initializing an object member with an unknown variable/type
   lines =<< trim END
@@ -683,8 +697,9 @@ def Test_class_object_member_inits()
     class A
        this.value = init_val
     endclass
+    var a = A.new()
   END
-  v9.CheckScriptFailureList(lines, ['E121:', 'E1329:'])
+  v9.CheckScriptFailure(lines, 'E1001:')
 enddef
 
 def Test_class_object_member_access()

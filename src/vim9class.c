@@ -92,25 +92,9 @@ parse_member(
 
 	if (type == NULL)
 	{
-	    // No type specified, use the type of the initializer.
-	    typval_T tv;
-	    tv.v_type = VAR_UNKNOWN;
-	    char_u *expr = expr_start;
-	    int res = eval0(expr, &tv, eap, &evalarg);
-
-	    if (res == OK)
-	    {
-		type = typval2type(&tv, get_copyID(), type_list,
-						       TVTT_DO_MEMBER);
-		clear_tv(&tv);
-	    }
-	    if (type == NULL)
-	    {
-		semsg(_(e_cannot_get_object_member_type_from_initializer_str),
-			expr_start);
-		clear_evalarg(&evalarg, NULL);
-		return FAIL;
-	    }
+	    // No type specified for the member.  Set it to "any" and the
+	    // correct type will be set when the object is instantiated.
+	    type = &t_any;
 	}
 	clear_evalarg(&evalarg, NULL);
     }
