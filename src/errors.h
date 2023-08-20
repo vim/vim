@@ -1570,8 +1570,10 @@ EXTERN char e_too_many_signs_defined[]
 EXTERN char e_unknown_printer_font_str[]
 	INIT(= N_("E613: Unknown printer font: %s"));
 #endif
-// E614 unused
-// E615 unused
+EXTERN char e_class_required[]
+	INIT(= N_("E614: Class required"));
+EXTERN char e_object_required[]
+	INIT(= N_("E615: Object required"));
 // E616 unused
 #ifdef FEAT_GUI_GTK
 EXTERN char e_cannot_be_changed_in_gtk_GUI[]

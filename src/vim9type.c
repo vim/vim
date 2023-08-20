@@ -908,20 +908,7 @@ check_type_maybe(
 	    if (actual->tt_type != VAR_OBJECT)
 		return FAIL;	// don't use tt_class
 
-	    // check the class, base class or an implemented interface matches
-	    class_T *cl;
-	    for (cl = actual->tt_class; cl != NULL; cl = cl->class_extends)
-	    {
-		if (expected->tt_class == cl)
-		    break;
-		int i;
-		for (i = cl->class_interface_count - 1; i >= 0; --i)
-		    if (expected->tt_class == cl->class_interfaces_cl[i])
-			break;
-		if (i >= 0)
-		    break;
-	    }
-	    if (cl == NULL)
+	    if (class_instance_of(actual->tt_class, expected->tt_class) == FALSE)
 		ret = FAIL;
 	}
 
