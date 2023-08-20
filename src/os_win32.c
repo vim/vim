@@ -2721,6 +2721,8 @@ executable_file(char *name, char_u **path)
     {
 	char_u	*res = resolve_appexeclink((char_u *)name);
 	if (res == NULL)
+	    res = resolve_reparse_point((char_u *)name);
+	if (res == NULL)
 	    return FALSE;
 	// The path is already absolute.
 	if (path != NULL)
