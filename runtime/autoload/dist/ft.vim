@@ -287,6 +287,37 @@ export def FTe()
   endif
 enddef
 
+def IsForth(): bool
+  var first_line = nextnonblank(1)
+
+  # SwiftForth block comment (line is usually filled with '-' or '=') or
+  # OPTIONAL (sometimes precedes the header comment)
+  if getline(first_line) =~? '^\%({\%(\s\|$\)\|OPTIONAL\s\)'
+    return true
+  endif
+
+  var n = first_line
+  while n < 100 && n <= line("$")
+    # Forth comments and colon definitions
+    if getline(n) =~ '^[:(\\] '
+      return true
+    endif
+    n += 1
+  endwhile
+  return false
+enddef
+
+# Distinguish between Forth and Fortran
+export def FTf()
+  if exists("g:filetype_f")
+    exe "setf " .. g:filetype_f
+  elseif IsForth()
+    setf forth
+  else
+    setf fortran
+  endif
+enddef
+
 export def FTfrm()
   if exists("g:filetype_frm")
     exe "setf " .. g:filetype_frm
@@ -302,21 +333,13 @@ export def FTfrm()
   endif
 enddef
 
-# Distinguish between Forth and F#.
-# Provided by Doug Kearns.
+# Distinguish between Forth and F#
 export def FTfs()
   if exists("g:filetype_fs")
     exe "setf " .. g:filetype_fs
+  elseif IsForth()
+    setf forth
   else
-    var n = 1
-    while n < 100 && n <= line("$")
-      # Forth comments and colon definitions
-      if getline(n) =~ "^[:(\\\\] "
-        setf forth
-        return
-      endif
-      n += 1
-    endwhile
     setf fsharp
   endif
 enddef
