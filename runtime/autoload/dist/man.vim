@@ -1,6 +1,6 @@
 " Vim filetype plugin autoload file
 " Language:	man
-" Maintainer:	Jason Franklin <vim@justemail.net>
+" Maintainer:	Jason Franklin <jason@oneway.dev>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
 " Last Change: 	2023 Jun 28
@@ -190,8 +190,13 @@ func dist#man#GetPage(cmdmods, ...)
   endif
   let env_cmd = s:env_has_u ? 'env -u MANPAGER' : 'env MANPAGER=cat'
   let env_cmd .= ' GROFF_NO_SGR=1'
-  let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page) . ' | col -b'
+  let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page)
+
   silent exec "r !" . man_cmd
+
+  " Emulate piping the buffer through the "col -b" command.
+  " Ref: https://github.com/vim/vim/issues/12301
+  silent! keepjumps keeppatterns %s/\v(.)\b\ze\1?//ge
 
   if unsetwidth
     let $MANWIDTH = ''
