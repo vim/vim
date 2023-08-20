@@ -2504,7 +2504,7 @@ def Test_stack_expansion_with_methods()
     endclass
 
     def F0()
-      assert_match('<SNR>9_F\[1\]\.\.C\.M1\[1\]\.\.<SNR>9_F0\[1\]$', expand('<stack>'))
+      assert_match('<SNR>\d\+_F\[1\]\.\.C\.M1\[1\]\.\.<SNR>\d\+_F0\[1\]$', expand('<stack>'))
     enddef
 
     def F()
