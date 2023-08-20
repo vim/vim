@@ -803,7 +803,7 @@ func s:HandleDisasmMsg(msg)
   if a:msg =~ '^\^done'
     let curwinid = win_getid()
     if win_gotoid(s:asmwin)
-      silent normal! gg0"_dG
+      silent! %delete _
       call setline(1, s:asm_lines)
       set nomodified
       set filetype=asm
@@ -865,7 +865,7 @@ func s:HandleVariablesMsg(msg)
   let curwinid = win_getid()
   if win_gotoid(s:varwin)
 
-    silent normal! gg0"_dG
+    silent! %delete _
     let spaceBuffer = 20
     call setline(1, 'Type' .
 	  \ repeat(' ', 16) .
