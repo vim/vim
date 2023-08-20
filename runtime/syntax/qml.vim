@@ -19,8 +19,8 @@ if !exists("main_syntax")
 endif
 
 " Drop fold if it set but vim doesn't support it.
-if has("folding")
-  unlet qml_fold
+if !has("folding")
+  unlet! qml_fold
 endif
 
 syn case ignore
@@ -1066,7 +1066,7 @@ syntax keyword qmlObjectLiteralType ZoomBlur
 
 if get(g:, 'qml_fold', 0)
   syn match   qmlFunction      "\<function\>"
-  syn region  qmlFunctionFold  start="\<function\>.*[^};]$" end="^\z1}.*$" transparent fold keepend
+  syn region  qmlFunctionFold  start="^\z(\s*\)\<function\>.*[^};]$" end="^\z1}.*$" transparent fold keepend
 
   syn sync match qmlSync  grouphere qmlFunctionFold "\<function\>"
   syn sync match qmlSync  grouphere NONE "^}"

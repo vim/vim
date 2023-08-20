@@ -10,7 +10,7 @@ if exists("b:did_indent")
   finish
 endif
 let b:did_indent = 1
-let b:undo_indent = "setlocal indentexpr< indkeys<"
+let b:undo_indent = "setlocal indentexpr< indentkeys<"
 
 setlocal indentexpr=s:GetQmlIndent()
 setlocal indentkeys=0{,0},0),0],:,!^F,o,O,e,*<Return>,=*/
