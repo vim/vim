@@ -157,7 +157,7 @@ func s:StartDebug_internal(dict)
   " Uncomment this line to write logging in "debuglog".
   " call ch_logfile('debuglog', 'w')
 
-  let s:sourcewin = win_getid(winnr())
+  let s:sourcewin = win_getid()
 
   " Remember the old value of 'signcolumn' for each buffer that it's set in, so
   " that we can restore the value for all buffers.
@@ -205,13 +205,13 @@ func s:StartDebug_internal(dict)
   endif
 
   if s:GetDisasmWindow()
-    let curwinid = win_getid(winnr())
+    let curwinid = win_getid()
     call s:GotoAsmwinOrCreateIt()
     call win_gotoid(curwinid)
   endif
 
   if s:GetVariablesWindow()
-    let curwinid = win_getid(winnr())
+    let curwinid = win_getid()
     call s:GotoVariableswinOrCreateIt()
     call win_gotoid(curwinid)
   endif
@@ -256,7 +256,7 @@ func s:StartDebug_term(dict)
     return
   endif
   let pty = job_info(term_getjob(s:ptybuf))['tty_out']
-  let s:ptywin = win_getid(winnr())
+  let s:ptywin = win_getid()
   if s:vertical
     " Assuming the source code window will get a signcolumn, use two more
     " columns for that, thus one less for the terminal window.
@@ -319,7 +319,7 @@ func s:StartDebug_term(dict)
     call s:CloseBuffers()
     return
   endif
-  let s:gdbwin = win_getid(winnr())
+  let s:gdbwin = win_getid()
 
   " Wait for the "startupdone" message before sending any commands.
   let try_count = 0
@@ -407,7 +407,7 @@ func s:StartDebug_prompt(dict)
   else
     new
   endif
-  let s:gdbwin = win_getid(winnr())
+  let s:gdbwin = win_getid()
   let s:promptbuf = bufnr('')
   call prompt_setprompt(s:promptbuf, 'gdb> ')
   set buftype=prompt
@@ -468,7 +468,7 @@ func s:StartDebug_prompt(dict)
       call job_stop(s:gdbjob)
       return
     endif
-    let s:ptywin = win_getid(winnr())
+    let s:ptywin = win_getid()
     let pty = job_info(term_getjob(s:ptybuf))['tty_out']
     call s:SendCommand('tty ' . pty)
 
@@ -632,7 +632,7 @@ func s:GdbOutCallback(channel, text)
     return
   endif
 
-  let curwinid = win_getid(winnr())
+  let curwinid = win_getid()
   call win_gotoid(s:gdbwin)
 
   " Add the output above the current prompt.
@@ -718,7 +718,7 @@ func s:EndTermDebug(job, status)
 endfunc
 
 func s:EndDebugCommon()
-  let curwinid = win_getid(winnr())
+  let curwinid = win_getid()
 
   if exists('s:ptybuf') && s:ptybuf
     exe 'bwipe! ' . s:ptybuf
@@ -770,7 +770,7 @@ func s:EndPromptDebug(job, status)
     doauto <nomodeline> User TermdebugStopPre
   endif
 
-  let curwinid = win_getid(winnr())
+  let curwinid = win_getid()
   call win_gotoid(s:gdbwin)
   set nomodified
   close
@@ -801,7 +801,7 @@ endfunc
 " - CommOutput: ^error,msg="No function contains specified address."
 func s:HandleDisasmMsg(msg)
   if a:msg =~ '^\^done'
-    let curwinid = win_getid(winnr())
+    let curwinid = win_getid()
     if win_gotoid(s:asmwin)
       silent normal! gg0"_dG
       call setline(1, s:asm_lines)
@@ -872,7 +872,7 @@ func s:SpacesString(num)
 endfunc
 
 func s:HandleVariablesMsg(msg)
-  let curwinid = win_getid(winnr())
+  let curwinid = win_getid()
   if win_gotoid(s:varwin)
 
     silent normal! gg0"_dG
@@ -1030,7 +1030,7 @@ func s:InstallWinbar(force)
     nnoremenu WinBar.Cont   :Continue<CR>
     nnoremenu WinBar.Stop   :Stop<CR>
     nnoremenu WinBar.Eval   :Evaluate<CR>
-    call add(s:winbar_winids, win_getid(winnr()))
+    call add(s:winbar_winids, win_getid())
   endif
 endfunc
 
@@ -1065,7 +1065,7 @@ func s:DeleteCommands()
 
   if has('menu')
     " Remove the WinBar entries from all windows where it was added.
-    let curwinid = win_getid(winnr())
+    let curwinid = win_getid()
     for winid in s:winbar_winids
       if win_gotoid(winid)
 	aunmenu WinBar.Step
@@ -1321,7 +1321,7 @@ endfunc
 func s:GotoSourcewinOrCreateIt()
   if !win_gotoid(s:sourcewin)
     new
-    let s:sourcewin = win_getid(winnr())
+    let s:sourcewin = win_getid()
     call s:InstallWinbar(0)
   endif
 endfunc
@@ -1354,7 +1354,7 @@ func s:GotoAsmwinOrCreateIt()
       exe 'new'
     endif
 
-    let s:asmwin = win_getid(winnr())
+    let s:asmwin = win_getid()
 
     setlocal nowrap
     setlocal number
@@ -1415,7 +1415,7 @@ func s:GotoVariableswinOrCreateIt()
       exe 'new'
     endif
 
-    let s:varwin = win_getid(winnr())
+    let s:varwin = win_getid()
 
     setlocal nowrap
     setlocal number
@@ -1443,7 +1443,7 @@ endfunc
 " Handle stopping and running message from gdb.
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
-  let wid = win_getid(winnr())
+  let wid = win_getid()
 
   if a:msg =~ '^\*stopped'
     call ch_log('program stopped')
@@ -1468,7 +1468,7 @@ func s:HandleCursor(msg)
     if asm_addr != ''
       let s:asm_addr = asm_addr
 
-      let curwinid = win_getid(winnr())
+      let curwinid = win_getid()
       if win_gotoid(s:asmwin)
         let lnum = search('^' . s:asm_addr)
         if lnum == 0
@@ -1505,7 +1505,7 @@ echomsg 'different fname: "' .. expand('%:p') .. '" vs "' .. fnamemodify(fname, 
         if &modified
           " TODO: find existing window
           exe 'split ' . fnameescape(fname)
-          let s:sourcewin = win_getid(winnr())
+          let s:sourcewin = win_getid()
           call s:InstallWinbar(0)
         else
           exe 'edit ' . fnameescape(fname)
