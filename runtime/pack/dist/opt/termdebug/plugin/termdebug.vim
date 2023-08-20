@@ -122,6 +122,10 @@ func s:GetCommand()
   return type(cmd) == v:t_list ? copy(cmd) : [cmd]
 endfunc
 
+func s:Echoerr(msg)
+  echohl ErrorMsg | echom '[termdebug] ' .. a:msg | echohl None
+endfunc
+
 func s:StartDebug(bang, ...)
   " First argument is the command to debug, second core file or process ID.
   call s:StartDebug_internal({'gdb_args': a:000, 'bang': a:bang})
@@ -134,12 +138,12 @@ endfunc
 
 func s:StartDebug_internal(dict)
   if exists('s:gdbwin')
-    echoerr 'Terminal debugger already running, cannot run two'
+    call s:Echoerr('Terminal debugger already running, cannot run two')
     return
   endif
   let gdbcmd = s:GetCommand()
   if !executable(gdbcmd[0])
-    echoerr 'Cannot execute debugger program "' .. gdbcmd[0] .. '"'
+    call s:Echoerr('Cannot execute debugger program "' .. gdbcmd[0] .. '"')
     return
   endif
 
@@ -238,7 +242,7 @@ endfunc
 func s:CheckGdbRunning()
   let gdbproc = term_getjob(s:gdbbuf)
   if gdbproc == v:null || job_status(gdbproc) !=# 'run'
-    echoerr string(s:GetCommand()[0]) . ' exited unexpectedly'
+    call s:Echoerr(string(s:GetCommand()[0]) . ' exited unexpectedly')
     call s:CloseBuffers()
     return ''
   endif
@@ -252,7 +256,7 @@ func s:StartDebug_term(dict)
 	\ 'vertical': s:vertical,
 	\ })
   if s:ptybuf == 0
-    echoerr 'Failed to open the program terminal window'
+    call s:Echoerr('Failed to open the program terminal window')
     return
   endif
   let pty = job_info(term_getjob(s:ptybuf))['tty_out']
@@ -274,7 +278,7 @@ func s:StartDebug_term(dict)
 	\ 'hidden': 1,
 	\ })
   if s:commbuf == 0
-    echoerr 'Failed to open the communication terminal window'
+    call s:Echoerr('Failed to open the communication terminal window')
     exe 'bwipe! ' . s:ptybuf
     return
   endif
@@ -315,7 +319,7 @@ func s:StartDebug_term(dict)
 	\ 'term_finish': 'close',
 	\ })
   if s:gdbbuf == 0
-    echoerr 'Failed to open the gdb terminal window'
+    call s:Echoerr('Failed to open the gdb terminal window')
     call s:CloseBuffers()
     return
   endif
@@ -367,7 +371,7 @@ func s:StartDebug_term(dict)
         " response can be in the same line or the next line
         let response = line1 . line2
         if response =~ 'Undefined command'
-          echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
+          call s:Echoerr('Sorry, your gdb is too old, gdb 7.12 is required')
           " CHECKME: possibly send a "server show version" here
           call s:CloseBuffers()
           return
@@ -386,7 +390,7 @@ func s:StartDebug_term(dict)
     endif
     let try_count += 1
     if try_count > 100
-      echoerr 'Cannot check if your gdb works, continuing anyway'
+      call s:Echoerr('Cannot check if your gdb works, continuing anyway')
       break
     endif
     sleep 10m
@@ -445,7 +449,7 @@ func s:StartDebug_prompt(dict)
 	\ 'out_cb': function('s:GdbOutCallback'),
 	\ })
   if job_status(s:gdbjob) != "run"
-    echoerr 'Failed to start gdb'
+    call s:Echoerr('Failed to start gdb')
     exe 'bwipe! ' . s:promptbuf
     return
   endif
@@ -464,7 +468,7 @@ func s:StartDebug_prompt(dict)
 	  \ 'term_name': 'debugged program',
 	  \ })
     if s:ptybuf == 0
-      echoerr 'Failed to open the program terminal window'
+      call s:Echoerr('Failed to open the program terminal window')
       call job_stop(s:gdbjob)
       return
     endif
@@ -600,7 +604,7 @@ func s:PromptInterrupt()
     " Using job_stop() does not work on MS-Windows, need to send SIGTRAP to
     " the debugger program so that gdb responds again.
     if s:pid == 0
-      echoerr 'Cannot interrupt gdb, did not find a process ID'
+      call s:Echoerr('Cannot interrupt gdb, did not find a process ID')
     else
       call debugbreak(s:pid)
     endif
@@ -651,7 +655,7 @@ endfunc
 " - change \\ to \
 func s:DecodeMessage(quotedText, literal)
   if a:quotedText[0] != '"'
-    echoerr 'DecodeMessage(): missing quote in ' . a:quotedText
+    call s:Echoerr('DecodeMessage(): missing quote in ' . a:quotedText)
     return
   endif
   let msg = a:quotedText
@@ -1154,7 +1158,7 @@ func s:ClearBreakpoint()
       endif
       echomsg 'Breakpoint ' . id . ' cleared from line ' . lnum . '.'
     else
-      echoerr 'Internal error trying to remove breakpoint at line ' . lnum . '!'
+      call s:Echoerr('Internal error trying to remove breakpoint at line ' . lnum . '!')
     endif
   else
     echomsg 'No breakpoint to remove at line ' . lnum . '.'
@@ -1305,7 +1309,7 @@ func s:HandleError(msg)
     return
   endif
   let msgVal = substitute(a:msg, '.*msg="\(.*\)"', '\1', '')
-  echoerr substitute(msgVal, '\\"', '"', 'g')
+  call s:Echoerr(substitute(msgVal, '\\"', '"', 'g'))
 endfunc
 
 func s:GotoSourcewinOrCreateIt()
