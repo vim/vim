@@ -134,6 +134,10 @@ func Test_undotree_bufnr()
   call assert_notequal(d1, d)
   call assert_equal(d2, d)
 
+  " error cases
+  call assert_fails('call undotree(-1)', 'E158:')
+  call assert_fails('call undotree("nosuchbuf")', 'E158:')
+
   " Drop created windows
   set ul&
   new

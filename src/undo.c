@@ -3726,23 +3726,18 @@ u_undofile_reset_and_delete(buf_T *buf)
     void
 f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    typval_T	*tv = &argvars[0];
-    buf_T	*buf;
-    dict_T	*dict;
-    list_T	*list;
-
     if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
 	return;
-
-    if (tv->v_type == VAR_UNKNOWN)
-	buf = curbuf;
-    else
-	buf = tv_get_buf_from_arg(tv);
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 
-    dict = rettv->vval.v_dict;
+    typval_T	*tv = &argvars[0];
+    buf_T	*buf = tv->v_type == VAR_UNKNOWN ? curbuf : get_buf_arg(tv);
+    if (buf == NULL)
+	return;
+
+    dict_T *dict = rettv->vval.v_dict;
 
     dict_add_number(dict, "synced", (long)buf->b_u_synced);
     dict_add_number(dict, "seq_last", buf->b_u_seq_last);
@@ -3751,7 +3746,7 @@ f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(dict, "time_cur", (long)buf->b_u_time_cur);
     dict_add_number(dict, "save_cur", buf->b_u_save_nr_cur);
 
-    list = list_alloc();
+    list_T *list = list_alloc();
     if (list != NULL)
     {
 	u_eval_tree(buf, buf->b_u_oldhead, list);
