@@ -192,6 +192,7 @@ runtime/ftplugin/ps1xml.vim		@heaths
 runtime/ftplugin/pymanifest.vim		@ObserverOfTime
 runtime/ftplugin/python.vim		@tpict
 runtime/ftplugin/qb64.vim		@dkearns
+runtime/ftplugin/qml.vim        @ChaseKnowlden
 runtime/ftplugin/r.vim			@jalvesaq
 runtime/ftplugin/racket.vim		@benknoble
 runtime/ftplugin/readline.vim		@dkearns
@@ -284,6 +285,7 @@ runtime/indent/postscr.vim		@mrdubya
 runtime/indent/prolog.vim		@dkearns
 runtime/indent/ps1.vim			@heaths
 runtime/indent/qb64.vim			@dkearns
+runtime/indent/qml.vim          @ChaseKnowlden
 runtime/indent/r.vim			@jalvesaq
 runtime/indent/racket.vim		@benknoble
 runtime/indent/rapid.vim		@KnoP-01
@@ -443,6 +445,7 @@ runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho
 runtime/syntax/pymanifest.vim		@ObserverOfTime
 runtime/syntax/qb64.vim			@dkearns
+runtime/syntax/qml.vim          @ChaseKnowlden
 runtime/syntax/r.vim			@jalvesaq
 runtime/syntax/racket.vim		@benknoble
 runtime/syntax/raml.vim			@in3d
