@@ -1990,7 +1990,7 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	semsg(_(e_class_required));
+	emsg(_(e_class_required));
     }
 }
 

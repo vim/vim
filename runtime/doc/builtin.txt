@@ -5061,6 +5061,9 @@ instanceof({object}, {class})				*instanceof()*
 		Example: >
 			instanceof(animal, [Dog, Cat])
 
+<		Can also be used as a |method|: >
+			myobj->instanceof(mytype)
+
 interrupt()						*interrupt()*
 		Interrupt script execution.  It works more or less like the
 		user typing CTRL-C, most commands won't execute and control
