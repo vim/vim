@@ -210,6 +210,17 @@ def Test_class_basic()
     var v = a.Foo(,)
   END
   v9.CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+  vim9script
+  class A
+    this.y = {
+      X: 1
+    }
+  endclass
+  var a = A.new()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_defined_twice()

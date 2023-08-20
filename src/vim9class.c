@@ -67,50 +67,48 @@ parse_member(
 	    return FAIL;
     }
 
-    char_u *expr_start = skipwhite(type_arg);
-    char_u *expr_end = expr_start;
-    if (type == NULL && *expr_start != '=')
+    char_u *init_arg = skipwhite(type_arg);
+    if (type == NULL && *init_arg != '=')
     {
 	emsg(_(e_type_or_initialization_required));
 	return FAIL;
     }
 
-    if (*expr_start == '=')
+    if (init_expr == NULL && *init_arg == '=')
     {
-	if (!VIM_ISWHITE(expr_start[-1]) || !VIM_ISWHITE(expr_start[1]))
+	emsg(_(e_cannot_initialize_member_in_interface));
+	return FAIL;
+    }
+
+    if (*init_arg == '=')
+    {
+	evalarg_T evalarg;
+	char_u *expr_start, *expr_end;
+
+	if (!VIM_ISWHITE(init_arg[-1]) || !VIM_ISWHITE(init_arg[1]))
 	{
 	    semsg(_(e_white_space_required_before_and_after_str_at_str),
 							"=", type_arg);
 	    return FAIL;
 	}
-	expr_start = skipwhite(expr_start + 1);
+	init_arg = skipwhite(init_arg + 1);
 
-	expr_end = expr_start;
-	evalarg_T evalarg;
 	fill_evalarg_from_eap(&evalarg, eap, FALSE);
-	skip_expr(&expr_end, NULL);
+	(void)skip_expr_concatenate(&init_arg, &expr_start, &expr_end, &evalarg);
 
+	// No type specified for the member.  Set it to "any" and the correct type will be
+	// set when the object is instantiated.
 	if (type == NULL)
-	{
-	    // No type specified for the member.  Set it to "any" and the
-	    // correct type will be set when the object is instantiated.
 	    type = &t_any;
-	}
+
+	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
+	// Free the memory pointed by expr_start.
 	clear_evalarg(&evalarg, NULL);
     }
-    if (!valid_declaration_type(type))
+    else if (!valid_declaration_type(type))
 	return FAIL;
 
     *type_ret = type;
-    if (expr_end > expr_start)
-    {
-	if (init_expr == NULL)
-	{
-	    emsg(_(e_cannot_initialize_member_in_interface));
-	    return FAIL;
-	}
-	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
-    }
     return OK;
 }
 
