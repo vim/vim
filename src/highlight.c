@@ -3452,7 +3452,7 @@ syn_add_group(char_u *name)
     char_u	*p;
     char_u	*name_up;
 
-    // Check that the name is ASCII letters, digits and underscore.
+    // Check that the name is valid (ASCII letters, digits, underscores, dots, or hyphens).
     for (p = name; *p != NUL; ++p)
     {
 	if (!vim_isprintc(*p))
@@ -3461,7 +3461,7 @@ syn_add_group(char_u *name)
 	    vim_free(name);
 	    return 0;
 	}
-	else if (!ASCII_ISALNUM(*p) && *p != '_')
+	else if (!ASCII_ISALNUM(*p) && *p != '_' && *p != '.' && *p != '-')
 	{
 	    // This is an error, but since there previously was no check only
 	    // give a warning.
