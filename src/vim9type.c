@@ -426,7 +426,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	if (tv->vval.v_number == VVAL_NONE)
 	    return &t_none;
 	if (tv->vval.v_number == VVAL_TRUE
-		|| tv->vval.v_number == VVAL_TRUE)
+		|| tv->vval.v_number == VVAL_FALSE)
 	    return &t_bool;
 	return &t_unknown;
     }
