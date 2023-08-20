@@ -431,7 +431,7 @@ mch_isatty(int fd)
     struct strioctl istr;
 
     istr.ic_cmd = ISPTM;
-    istr.ic_timeout = 0;
+    istr.ic_timout = 0;
     istr.ic_dp = NULL;
     istr.ic_len = 0;
 
