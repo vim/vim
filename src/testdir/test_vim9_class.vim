@@ -2492,4 +2492,27 @@ def Test_multi_level_member_access()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test expansion of <stack> with class methods.
+def Test_stack_expansion_with_methods()
+  var lines =<< trim END
+    vim9script
+
+    class C
+        def M1()
+            F0()
+        enddef
+    endclass
+
+    def F0()
+      assert_match('<SNR>9_F\[1\]\.\.C\.M1\[1\]\.\.<SNR>9_F0\[1\]$', expand('<stack>'))
+    enddef
+
+    def F()
+        C.new().M1()
+    enddef
+
+    F()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

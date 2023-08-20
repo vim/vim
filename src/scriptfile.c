@@ -190,9 +190,8 @@ estack_sfile(estack_arg_T which UNUSED)
 	if (entry->es_name != NULL)
 	{
 	    long    lnum = 0;
-	    char    *dots;
+	    char    *class_name = "";
 
-	    len = STRLEN(entry->es_name) + 15;
 	    type_name = "";
 	    if (entry->es_type != last_type)
 	    {
@@ -204,27 +203,34 @@ estack_sfile(estack_arg_T which UNUSED)
 		}
 		last_type = entry->es_type;
 	    }
-	    len += STRLEN(type_name);
-	    if (ga_grow(&ga, (int)len) == FAIL)
-		break;
+	    if (entry->es_type == ETYPE_UFUNC && entry->es_info.ufunc->uf_class != NULL)
+		class_name = entry->es_info.ufunc->uf_class->class_name;
 	    if (idx == exestack.ga_len - 1)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
-	    dots = idx == exestack.ga_len - 1 ? "" : "..";
-	    if (lnum == 0)
-		// For the bottom entry of <sfile>: do not add the line number,
-		// it is used in <slnum>.  Also leave it out when the number is
-		// not set.
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
-				type_name, entry->es_name, dots);
-	    else
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]%s",
-				    type_name, entry->es_name, lnum, dots);
-	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
+	    len = STRLEN(entry->es_name) + STRLEN(type_name) + STRLEN(class_name) + 26;
+	    if (ga_grow(&ga, (int)len) == FAIL)
+		break;
+	    ga_concat(&ga, type_name);
+	    if (*class_name != NUL)
+	    {
+		// For class methods prepend "<class name>." to the function name.
+		ga_concat(&ga, class_name);
+		ga_append(&ga, '.');
+	    }
+	    ga_concat(&ga, entry->es_name);
+	    // For the bottom entry of <sfile>: do not add the line number, it is used in
+	    // <slnum>.  Also leave it out when the number is not set.
+	    if (lnum != 0)
+		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
+			lnum);
+	    if (idx != exestack.ga_len - 1)
+		ga_concat(&ga, "..");
 	}
     }
 
+    ga_append(&ga, '\0');
     return (char_u *)ga.ga_data;
 #endif
 }
