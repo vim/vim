@@ -2617,8 +2617,16 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    return NULL;
 	}
 
-	// No argument, return zero.
-	generate_PUSHNR(cctx, 0);
+	if (cctx->ctx_ufunc->uf_flags & FC_NEW)
+	{
+	    // For a class new() constructor, return an object of the class.
+	    generate_instr(cctx, ISN_RETURN_OBJECT);
+	    cctx->ctx_ufunc->uf_ret_type =
+		&cctx->ctx_ufunc->uf_class->class_object_type;
+	}
+	else
+	    // No argument, return zero.
+	    generate_PUSHNR(cctx, 0);
     }
 
     // may need ENDLOOP when inside a :for or :while loop

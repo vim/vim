@@ -687,7 +687,7 @@ add_class_members(class_T *cl, exarg_T *eap)
 }
 
 /*
- * Add a default constructor to the class "cl".
+ * Add a default constructor method (new()) to the class "cl".
  */
     static void
 add_default_constructor(
@@ -1150,6 +1150,18 @@ early_ret:
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
+		if (is_new)
+		{
+		    // A return type should not be specified for the new()
+		    // constructor method.
+		    if (uf->uf_ret_type->tt_type != VAR_VOID)
+		    {
+			emsg(_(e_cannot_use_a_return_type_with_new));
+			success = FALSE;
+			func_clear_free(uf, FALSE);
+			break;
+		    }
+		}
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.
@@ -1303,15 +1315,22 @@ early_ret:
 	if (is_class && cl->class_class_member_count > 0)
 	    add_class_members(cl, eap);
 
-	int have_new = FALSE;
+	int	have_new = FALSE;
+	ufunc_T	*class_func = NULL;
 	for (int i = 0; i < classfunctions.ga_len; ++i)
-	    if (STRCMP(((ufunc_T **)classfunctions.ga_data)[i]->uf_name,
-								   "new") == 0)
+	{
+	    class_func = ((ufunc_T **)classfunctions.ga_data)[i];
+	    if (STRCMP(class_func->uf_name, "new") == 0)
 	    {
 		have_new = TRUE;
 		break;
 	    }
-	if (is_class && !is_abstract && !have_new)
+	}
+
+	if (have_new)
+	    // The return type of new() is an object of class "cl"
+	    class_func->uf_ret_type->tt_class = cl;
+	else if (is_class && !is_abstract && !have_new)
 	    // No new() method was defined, add the default constructor.
 	    add_default_constructor(cl, &classfunctions, &type_list);
 

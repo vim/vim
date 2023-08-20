@@ -232,6 +232,9 @@ If the class extends a parent class, the same thing happens.  In the second
 step the members of the parent class are done first.  There is no need to call
 "super()" or "new()" on the parent.
 
+When defining the new() method the return type should not be specified.  It
+always returns an object of the class.
+
 ==============================================================================
 
 3.  class members and functions			*Vim9-class-member*

@@ -1577,6 +1577,16 @@ def Test_class_implements_interface()
   END
   v9.CheckScriptFailure(lines, 'E1349:')
 
+  # implements should be followed by a white space
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B implements A;
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1315:')
+
   lines =<< trim END
       vim9script
 
@@ -2490,6 +2500,105 @@ def Test_multi_level_member_access()
     assert_equal(3, cobj.val3)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test the return type of the new() constructor
+def Test_new_return_type()
+  # new() uses the default return type and there is no return statement
+  var lines =<< trim END
+    vim9script
+
+    class C
+      this._bufnr: number
+
+      def new(this._bufnr)
+        if !bufexists(this._bufnr)
+          this._bufnr = -1
+        endif
+      enddef
+    endclass
+
+    var c = C.new(12345)
+    assert_equal('object<C>', typename(c))
+
+    var v1: C
+    v1 = C.new(12345)
+    assert_equal('object<C>', typename(v1))
+
+    def F()
+      var v2: C
+      v2 = C.new(12345)
+      assert_equal('object<C>', typename(v2))
+    enddef
+    F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # new() uses the default return type and an empty 'return' statement
+  lines =<< trim END
+    vim9script
+
+    class C
+      this._bufnr: number
+
+      def new(this._bufnr)
+        if !bufexists(this._bufnr)
+          this._bufnr = -1
+          return
+        endif
+      enddef
+    endclass
+
+    var c = C.new(12345)
+    assert_equal('object<C>', typename(c))
+
+    var v1: C
+    v1 = C.new(12345)
+    assert_equal('object<C>', typename(v1))
+
+    def F()
+      var v2: C
+      v2 = C.new(12345)
+      assert_equal('object<C>', typename(v2))
+    enddef
+    F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # new() uses "any" return type and returns "this"
+  lines =<< trim END
+    vim9script
+
+    class C
+      this._bufnr: number
+
+      def new(this._bufnr): any
+        if !bufexists(this._bufnr)
+          this._bufnr = -1
+          return this
+        endif
+      enddef
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1365:')
+
+  # new() uses 'Dict' return type and returns a Dict
+  lines =<< trim END
+    vim9script
+
+    class C
+      this._state: dict<any>
+
+      def new(): dict<any>
+        this._state = {}
+        return this._state
+      enddef
+    endclass
+
+    var c = C.new()
+    assert_equal('object<C>', typename(c))
+  END
+  v9.CheckScriptFailure(lines, 'E1365:')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
