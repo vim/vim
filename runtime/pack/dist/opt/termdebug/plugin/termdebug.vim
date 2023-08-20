@@ -1350,6 +1350,8 @@ func s:GotoAsmwinOrCreateIt()
     setlocal number
     setlocal noswapfile
     setlocal buftype=nofile
+    setlocal bufhidden=wipe
+    setlocal signcolumn=no
     setlocal modifiable
 
     if s:asmbuf > 0
@@ -1410,6 +1412,8 @@ func s:GotoVariableswinOrCreateIt()
     setlocal nowrap
     setlocal noswapfile
     setlocal buftype=nofile
+    setlocal bufhidden=wipe
+    setlocal signcolumn=no
     setlocal modifiable
 
     if s:varbuf > 0
