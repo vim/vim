@@ -148,7 +148,7 @@ PyObject* Vim_PyObject_New(PyTypeObject *type, size_t objsize)
 	Py_XDECREF(module); \
 	Py_XDECREF(full); \
 	Py_XDECREF(full_bytes); \
-    } while(0)
+    } while (0)
 
 # define PyList_GET_ITEM(list, i) PyList_GetItem(list, i)
 # define PyList_GET_SIZE(o) PyList_Size(o)
