@@ -3792,9 +3792,11 @@ win_line(
 	}
 #endif
 
+	if (wlv.draw_state == WL_LINE)
+	    vcol_prev = wlv.vcol;
+
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.
-	vcol_prev = wlv.vcol;
 	if (wlv.draw_state < WL_LINE || n_skip <= 0)
 	{
 	    // Store the character.
