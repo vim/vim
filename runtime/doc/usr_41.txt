@@ -877,6 +877,7 @@ Other computation:					*bitwise-function*
 	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
+	instanceof()		check if a variable is an instance of a given class
 	type()			type of a variable as a number
 	typename()		type of a variable as text
 	islocked()		check if a variable is locked
