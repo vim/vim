@@ -808,16 +808,14 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 						      MB_PTR_ADV(cts->cts_ptr))
 	cts->cts_vcol += win_lbr_chartabsize(cts, NULL);
 #ifdef FEAT_PROP_POPUP
-    // check for a virtual text on an empty line
-    if (cts->cts_has_prop_with_text && *cts->cts_ptr == NUL
-					      && cts->cts_ptr == cts->cts_line)
+    // check for a virtual text at the end of a line or on an empty line
+    if (cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
-
 	// when properties are above or below the empty line must also be
 	// counted
-	if (cts->cts_prop_lines > 0)
+	if (cts->cts_ptr == cts->cts_line && cts->cts_prop_lines > 0)
 	    ++cts->cts_vcol;
     }
 #endif
@@ -1190,7 +1188,7 @@ win_lbr_chartabsize(
 		       || (tp->tp_col == MAXCOL
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
-				: (s[0] == NUL || s[charlen] == NUL)
+				: s[0] == NUL
 						  && cts->cts_with_trailing)))
 		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
