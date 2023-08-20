@@ -5823,7 +5823,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     int		col_off = curwin_col_off();
     int		flag = FALSE;
 
-    if (cap->nchar == K_END)
+    if (cap->nchar == K_END || cap->nchar == K_KEND)
 	flag = TRUE;
 
     oap->motion_type = MCHAR;
