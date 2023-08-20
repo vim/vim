@@ -1408,7 +1408,6 @@ func s:GotoVariableswinOrCreateIt()
     let s:varwin = win_getid()
 
     setlocal nowrap
-    setlocal number
     setlocal noswapfile
     setlocal buftype=nofile
     setlocal modifiable
