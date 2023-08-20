@@ -129,7 +129,6 @@ estack_sfile(estack_arg_T which UNUSED)
     size_t	len;
     int		idx;
     etype_T	last_type = ETYPE_SCRIPT;
-    char	*type_name;
 #endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
@@ -190,16 +189,16 @@ estack_sfile(estack_arg_T which UNUSED)
 	if (entry->es_name != NULL)
 	{
 	    long    lnum = 0;
-	    char    *class_name = "";
+	    char_u  *type_name = (char_u *)"";
+	    char_u  *class_name = (char_u *)"";
 
-	    type_name = "";
 	    if (entry->es_type != last_type)
 	    {
 		switch (entry->es_type)
 		{
-		    case ETYPE_SCRIPT: type_name = "script "; break;
-		    case ETYPE_UFUNC: type_name = "function "; break;
-		    default: type_name = ""; break;
+		    case ETYPE_SCRIPT: type_name = (char_u *)"script "; break;
+		    case ETYPE_UFUNC: type_name = (char_u *)"function "; break;
+		    default: type_name = (char_u *)""; break;
 		}
 		last_type = entry->es_type;
 	    }
@@ -226,7 +225,7 @@ estack_sfile(estack_arg_T which UNUSED)
 		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
 			lnum);
 	    if (idx != exestack.ga_len - 1)
-		ga_concat(&ga, "..");
+		ga_concat(&ga, (char_u *)"..");
 	}
     }
 
