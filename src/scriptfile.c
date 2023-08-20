@@ -129,7 +129,6 @@ estack_sfile(estack_arg_T which UNUSED)
     size_t	len;
     int		idx;
     etype_T	last_type = ETYPE_SCRIPT;
-    char	*type_name;
 #endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
@@ -190,41 +189,47 @@ estack_sfile(estack_arg_T which UNUSED)
 	if (entry->es_name != NULL)
 	{
 	    long    lnum = 0;
-	    char    *dots;
+	    char_u  *type_name = (char_u *)"";
+	    char_u  *class_name = (char_u *)"";
 
-	    len = STRLEN(entry->es_name) + 15;
-	    type_name = "";
 	    if (entry->es_type != last_type)
 	    {
 		switch (entry->es_type)
 		{
-		    case ETYPE_SCRIPT: type_name = "script "; break;
-		    case ETYPE_UFUNC: type_name = "function "; break;
-		    default: type_name = ""; break;
+		    case ETYPE_SCRIPT: type_name = (char_u *)"script "; break;
+		    case ETYPE_UFUNC: type_name = (char_u *)"function "; break;
+		    default: type_name = (char_u *)""; break;
 		}
 		last_type = entry->es_type;
 	    }
-	    len += STRLEN(type_name);
-	    if (ga_grow(&ga, (int)len) == FAIL)
-		break;
+	    if (entry->es_type == ETYPE_UFUNC && entry->es_info.ufunc->uf_class != NULL)
+		class_name = entry->es_info.ufunc->uf_class->class_name;
 	    if (idx == exestack.ga_len - 1)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
-	    dots = idx == exestack.ga_len - 1 ? "" : "..";
-	    if (lnum == 0)
-		// For the bottom entry of <sfile>: do not add the line number,
-		// it is used in <slnum>.  Also leave it out when the number is
-		// not set.
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
-				type_name, entry->es_name, dots);
-	    else
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]%s",
-				    type_name, entry->es_name, lnum, dots);
-	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
+	    len = STRLEN(entry->es_name) + STRLEN(type_name) + STRLEN(class_name) + 26;
+	    if (ga_grow(&ga, (int)len) == FAIL)
+		break;
+	    ga_concat(&ga, type_name);
+	    if (*class_name != NUL)
+	    {
+		// For class methods prepend "<class name>." to the function name.
+		ga_concat(&ga, class_name);
+		ga_append(&ga, '.');
+	    }
+	    ga_concat(&ga, entry->es_name);
+	    // For the bottom entry of <sfile>: do not add the line number, it is used in
+	    // <slnum>.  Also leave it out when the number is not set.
+	    if (lnum != 0)
+		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
+			lnum);
+	    if (idx != exestack.ga_len - 1)
+		ga_concat(&ga, (char_u *)"..");
 	}
     }
 
+    ga_append(&ga, '\0');
     return (char_u *)ga.ga_data;
 #endif
 }
