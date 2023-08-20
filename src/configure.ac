@@ -1503,6 +1503,23 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
     then
       AC_MSG_RESULT(yep)
 
+      dnl -- get the stable ABI version if passed in
+      AC_MSG_CHECKING(--with-python3-stable-abi argument)
+      AC_SUBST(vi_cv_var_python3_stable_abi)
+      AC_ARG_WITH(python3-stable-abi, [  --with-python3-stable-abi=VERSION  stable ABI version to target (e.g. 3.8)],
+        vi_cv_var_python3_stable_abi="$withval"; AC_MSG_RESULT($vi_cv_var_python3_stable_abi),
+        AC_MSG_RESULT(no))
+      if test "X$vi_cv_var_python3_stable_abi" != "X"; then
+        AC_CACHE_VAL(vi_cv_var_python3_stable_abi_hex,
+        [
+         vi_cv_var_python3_stable_abi_hex=`
+         ${vi_cv_path_python3} -c \
+         "major_minor='${vi_cv_var_python3_stable_abi}'.split('.'); print('0x{0:X}'.format( (int(major_minor.__getitem__(0))<<24) + (int(major_minor.__getitem__(1))<<16) ))"` ])
+        if test "X$vi_cv_var_python3_stable_abi_hex" == "X"; then
+          AC_MSG_ERROR([can't parse Python 3 stable ABI version. It should be "<major>.<minor>"])
+        fi
+      fi
+
       dnl -- get abiflags for python 3.2 or higher (PEP 3149)
       AC_CACHE_CHECK(Python's abiflags,vi_cv_var_python3_abiflags,
       [
@@ -1609,10 +1626,13 @@ eof
         else
           PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
-	if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
-	  dnl Define PYTHON3_HOME if --with-python-config-dir was used
-	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
-	fi
+        if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
+          dnl Define PYTHON3_HOME if --with-python-config-dir was used
+          PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+        fi
+        if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+          PYTHON3_CFLAGS="${PYTHON3_CFLAGS} -DPy_LIMITED_API=${vi_cv_var_python3_stable_abi_hex}"
+        fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
 
@@ -1693,6 +1713,9 @@ dnl with dlopen(), dlsym(), dlclose()
 if test "$python_ok" = yes && test "$python3_ok" = yes; then
   AC_DEFINE(DYNAMIC_PYTHON)
   AC_DEFINE(DYNAMIC_PYTHON3)
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    AC_DEFINE(DYNAMIC_PYTHON3_STABLE_ABI)
+  fi
   AC_MSG_CHECKING(whether we can do without RTLD_GLOBAL for Python)
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON_CFLAGS"
@@ -1816,6 +1839,9 @@ elif test "$python_ok" = yes; then
   fi
 elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   AC_DEFINE(DYNAMIC_PYTHON3)
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    AC_DEFINE(DYNAMIC_PYTHON3_STABLE_ABI)
+  fi
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${vi_cv_dll_name_python3}\\\""

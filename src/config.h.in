@@ -354,6 +354,9 @@
 /* Define for linking via dlopen() or LoadLibrary() */
 #undef DYNAMIC_PYTHON3
 
+/* Define if compiled against Python 3 stable ABI / limited API */
+#undef DYNAMIC_PYTHON3_STABLE_ABI
+
 /* Define if dynamic python does not require RTLD_GLOBAL */
 #undef PY_NO_RTLD_GLOBAL
 

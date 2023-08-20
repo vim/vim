@@ -51,8 +51,14 @@ jobs:
           - features: huge
             coverage: true
           - features: huge
+            compiler: clang
+            extra: none
+            interface: dynamic
+            python3: stable-abi
+          - features: huge
             compiler: gcc
             coverage: true
+            interface: dynamic
             extra: testgui
             uchar: true
             luaver: lua5.4
@@ -141,7 +147,16 @@ jobs:
             ;;
           huge)
             echo "TEST=scripttests test_libvterm"
-            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            if ${{ matrix.interface == 'dynamic' }}; then
+              if ${{ matrix.python3 == 'stable-abi' }}; then
+                PYTHON3_FLAGS="--with-python3-stable-abi=3.8"
+              else
+                PYTHON3_FLAGS=""
+              fi
+              echo "CONFOPT=--enable-perlinterp=dynamic --enable-pythoninterp=dynamic --enable-python3interp=dynamic --enable-rubyinterp=dynamic --enable-luainterp=dynamic --enable-tclinterp=dynamic ${PYTHON3_FLAGS}"
+            else
+              echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            fi
             ;;
           esac
 
@@ -369,8 +384,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64 }
-          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
           - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
@@ -501,6 +516,11 @@ jobs:
           ) else (
             set GUI=${{ matrix.GUI }}
           )
+          if "${{ matrix.python3 }}"=="stable" (
+            set PYTHON3_STABLE=yes
+          ) else (
+            set PYTHON3_STABLE=no
+          )
           if "${{ matrix.features }}"=="HUGE" (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
@@ -508,6 +528,7 @@ jobs:
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
+              DYNAMIC_PYTHON3_STABLE_ABI=%PYTHON3_STABLE% ^
               DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
@@ -525,6 +546,11 @@ jobs:
           else
             GUI=${{ matrix.GUI }}
           fi
+          if [ "${{ matrix.python3 }}" = "stable" ]; then
+            PYTHON3_STABLE=yes
+          else
+            PYTHON3_STABLE=no
+          fi
           if [ "${{ matrix.features }}" = "HUGE" ]; then
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
@@ -532,6 +558,7 @@ jobs:
               DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
+              DYNAMIC_PYTHON3_STABLE_ABI=${PYTHON3_STABLE} \
               DYNAMIC_SODIUM=yes SODIUM=${SODIUM_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else

@@ -1434,6 +1434,7 @@ $quote	eval.txt	/*$quote*
 +python/dyn	various.txt	/*+python\/dyn*
 +python3	various.txt	/*+python3*
 +python3/dyn	various.txt	/*+python3\/dyn*
++python3/dyn-stable	various.txt	/*+python3\/dyn-stable*
 +quickfix	various.txt	/*+quickfix*
 +reltime	various.txt	/*+reltime*
 +rightleft	various.txt	/*+rightleft*
@@ -9294,6 +9295,8 @@ python-path_hook	if_pyth.txt	/*python-path_hook*
 python-pyeval	if_pyth.txt	/*python-pyeval*
 python-range	if_pyth.txt	/*python-range*
 python-special-path	if_pyth.txt	/*python-special-path*
+python-stable	if_pyth.txt	/*python-stable*
+python-stable-abi	if_pyth.txt	/*python-stable-abi*
 python-strwidth	if_pyth.txt	/*python-strwidth*
 python-tabpage	if_pyth.txt	/*python-tabpage*
 python-tabpages	if_pyth.txt	/*python-tabpages*
@@ -9306,6 +9309,8 @@ python.vim	syntax.txt	/*python.vim*
 python2-directory	if_pyth.txt	/*python2-directory*
 python3	if_pyth.txt	/*python3*
 python3-directory	if_pyth.txt	/*python3-directory*
+python3-stable-abi	if_pyth.txt	/*python3-stable-abi*
+python3-version-variable	eval.txt	/*python3-version-variable*
 python_x	if_pyth.txt	/*python_x*
 python_x-special-comments	if_pyth.txt	/*python_x-special-comments*
 pythonx	if_pyth.txt	/*pythonx*
@@ -10632,6 +10637,7 @@ v:prevcount	eval.txt	/*v:prevcount*
 v:profiling	eval.txt	/*v:profiling*
 v:progname	eval.txt	/*v:progname*
 v:progpath	eval.txt	/*v:progpath*
+v:python3_version	eval.txt	/*v:python3_version*
 v:register	eval.txt	/*v:register*
 v:scrollstart	eval.txt	/*v:scrollstart*
 v:searchforward	eval.txt	/*v:searchforward*

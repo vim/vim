@@ -2424,6 +2424,25 @@ v:progpath	Contains the command with which Vim was invoked, in a form
 		".exe" is not added to v:progpath.
 		Read-only.
 
+				    *v:python3_version* *python3-version-variable*
+v:python3_version
+		Version of Python 3 that Vim was built against.  When
+		Python is loaded dynamically (|python-dynamic|), this version
+		should exactly match the Python library up to the minor
+		version (e.g.  3.10.2 and 3.10.3 are compatible as the minor
+		version is "10", whereas 3.9.4 and 3.10.3 are not compatible).
+		When |python-stable-abi| is used, this will be the minimum Python
+		version that you can use instead. (e.g. if v:python3_version
+		indicates 3.9, you can use 3.9, 3.10, or anything above).
+
+		This number is encoded as a hex number following Python ABI
+		versioning conventions.  Do the following to have a
+		human-readable full version in hex: >
+			echo printf("%08X", v:python3_version)
+<		You can obtain only the minor version by doing: >
+			echo and(v:python3_version>>16,0xff)
+<		Read-only.
+
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
 		command (regardless of whether that command actually used a

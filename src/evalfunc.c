@@ -6167,6 +6167,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"python3_stable",
+#if defined(FEAT_PYTHON3) && defined(DYNAMIC_PYTHON3_STABLE_ABI)
+		1
+#else
+		0
+#endif
+		},
 	{"python3",
 #if defined(FEAT_PYTHON3) && !defined(DYNAMIC_PYTHON3)
 		1

@@ -769,7 +769,19 @@ Unix ~
 The 'pythondll' or 'pythonthreedll' option can be used to specify the Python
 shared library file instead of DYNAMIC_PYTHON_DLL or DYNAMIC_PYTHON3_DLL file
 what were specified at compile time.  The version of the shared library must
-match the Python 2.x or Python 3 version Vim was compiled with.
+match the Python 2.x or Python 3 version (|v:python3_version|) Vim was
+compiled with unless using |python3-stable-abi|.
+
+
+Stable ABI and mixing Python versions ~
+			*python-stable* *python-stable-abi* *python3-stable-abi*
+If Vim was not compiled with Stable ABI (only available for Python 3), the
+version of the Python shared library must match the version that Vim was
+compiled with.  Otherwise, mixing versions could result in unexpected crashes
+and failures.  With Stable ABI, this restriction is relaxed, and any Python 3
+library with version of at least |v:python3_version| will work.  See
+|has-python| for how to check if Stable ABI is supported, or see if version
+output includes |+python3/dyn-stable|.
 
 ==============================================================================
 10. Python 3						*python3*
@@ -878,6 +890,18 @@ python support: >
 	  echo 'compiled with Python 3.x support'
 	  if has('python3_dynamic')
 	    echo 'Python 3.x dynamically loaded'
+	  endif
+	endif
+
+When loading the library dynamically, Vim can be compiled to support Python 3
+Stable ABI (|python3-stable-abi|) which allows you to load a different version
+of Python 3 library than the one Vim was compiled with.  To check it: >
+	if has('python3_dynamic')
+	  if has('python3_stable')
+	    echo 'support Python 3 Stable ABI.'
+	  else
+	    echo 'does not support Python 3 Stable ABI.'
+	    echo 'only use Python 3 version ' .. v:python3_version
 	  endif
 	endif
 
