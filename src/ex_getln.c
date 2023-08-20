@@ -4152,6 +4152,7 @@ get_cmdline_str(void)
 get_cmdline_completion(void)
 {
     cmdline_info_T *p;
+    char_u	*buffer;
 
     if (cmdline_star > 0)
 	return NULL;
@@ -4165,10 +4166,19 @@ get_cmdline_completion(void)
 	return NULL;
 
     char_u *cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
-    if (cmd_compl != NULL)
-	return vim_strsave(cmd_compl);
+    if (cmd_compl == NULL)
+        return NULL;
 
-    return NULL;
+    if (p->xpc->xp_context == EXPAND_USER_LIST || p->xpc->xp_context == EXPAND_USER_DEFINED)
+    {
+	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
+	if (buffer == NULL)
+	    return NULL;
+	sprintf((char *)buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
+	return buffer;
+    }
+
+    return vim_strsave(cmd_compl);
 }
 
 /*
