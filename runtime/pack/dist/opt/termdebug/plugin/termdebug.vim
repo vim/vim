@@ -861,16 +861,6 @@ func s:ParseVarinfo(varinfo)
   return dict
 endfunc
 
-func s:SpacesString(num)
-  let i = 0
-  let ret = ''
-  while i < a:num
-    let ret = ret . ' '
-    let i += 1
-  endwhile
-  return ret
-endfunc
-
 func s:HandleVariablesMsg(msg)
   let curwinid = win_getid()
   if win_gotoid(s:varwin)
@@ -878,9 +868,9 @@ func s:HandleVariablesMsg(msg)
     silent normal! gg0"_dG
     let spaceBuffer = 20
     call setline(1, 'Type' .
-	  \ s:SpacesString(16) .
+	  \ repeat(' ', 16) .
 	  \ 'Name' .
-	  \ s:SpacesString(16) .
+	  \ repeat(' ', 16) .
 	  \ 'Value')
     let cnt = 1
     let capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
@@ -888,9 +878,9 @@ func s:HandleVariablesMsg(msg)
     while varinfo != ''
       let vardict = s:ParseVarinfo(varinfo)
       call setline(cnt + 1, vardict['type'] .
-	    \ s:SpacesString(max([20 - len(vardict['type']), 1])) .
+	    \ repeat(' ', max([20 - len(vardict['type']), 1])) .
 	    \ vardict['name'] .
-	    \ s:SpacesString(max([20 - len(vardict['name']), 1])) .
+	    \ repeat(' ', max([20 - len(vardict['name']), 1])) .
 	    \ vardict['value'])
       let cnt += 1
       let varinfo = matchstr(a:msg, capture, 0, cnt)
