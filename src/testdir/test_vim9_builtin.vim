@@ -2301,6 +2301,10 @@ def Test_insert()
   v9.CheckDefAndScriptFailure(['insert([2, 3], 1, "x")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
 enddef
 
+def Test_instanceof()
+  v9.CheckDefAndScriptFailure(['instanceof(1, "x")'], ['E1013: Argument 1: type mismatch, expected object<Unknown> but got number', 'E615: Object required'])
+enddef
+
 def Test_invert()
   v9.CheckDefAndScriptFailure(['invert("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
