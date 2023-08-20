@@ -668,14 +668,28 @@ def Test_class_object_member_inits()
   END
   v9.CheckScriptFailure(lines, 'E1022:')
 
+  # If the type is not specified for a member, then it should be set during
+  # object creation and not when defining the class.
   lines =<< trim END
       vim9script
-      class TextPosition
-        this.lnum = v:none
+
+      var init_count = 0
+      def Init(): string
+        init_count += 1
+        return 'foo'
+      enddef
+
+      class A
+        this.str1 = Init()
+        this.str2: string = Init()
         this.col = 1
       endclass
+
+      assert_equal(init_count, 0)
+      var a = A.new()
+      assert_equal(init_count, 2)
   END
-  v9.CheckScriptFailure(lines, 'E1330:')
+  v9.CheckScriptSuccess(lines)
 
   # Test for initializing an object member with an unknown variable/type
   lines =<< trim END
@@ -683,8 +697,9 @@ def Test_class_object_member_inits()
     class A
        this.value = init_val
     endclass
+    var a = A.new()
   END
-  v9.CheckScriptFailureList(lines, ['E121:', 'E1329:'])
+  v9.CheckScriptFailure(lines, 'E1001:')
 enddef
 
 def Test_class_object_member_access()
@@ -2623,6 +2638,32 @@ def Test_new_return_type()
     assert_equal('object<C>', typename(c))
   END
   v9.CheckScriptFailure(lines, 'E1365:')
+enddef
+
+" Test for checking a member initialization type at run time.
+def Test_runtime_type_check_for_member_init()
+  var lines =<< trim END
+    vim9script
+
+    var retnum: bool = false
+
+    def F(): any
+        retnum = !retnum
+        if retnum
+            return 1
+        else
+            return "hello"
+        endif
+    enddef
+
+    class C
+        this._foo: bool = F()
+    endclass
+
+    var c1 = C.new()
+    var c2 = C.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1012:')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

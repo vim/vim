@@ -3150,6 +3150,19 @@ compile_def_function(
 			semsg(_(e_trailing_characters_str), expr);
 			goto erret;
 		    }
+
+		    type_T	*type = get_type_on_stack(&cctx, 0);
+		    if (m->ocm_type->tt_type != type->tt_type)
+		    {
+			// The type of the member initialization expression is
+			// determined at run time.  Add a runtime type check.
+			where_T	where = WHERE_INIT;
+			where.wt_kind = WT_MEMBER;
+			where.wt_func_name = (char *)m->ocm_name;
+			if (need_type_where(type, m->ocm_type, FALSE, -1,
+				    where, &cctx, FALSE, FALSE) == FAIL)
+			    goto erret;
+		    }
 		}
 		else
 		    push_default_value(&cctx, m->ocm_type->tt_type,
