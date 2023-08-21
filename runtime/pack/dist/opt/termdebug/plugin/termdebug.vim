@@ -617,9 +617,16 @@ endfunc
 func s:GdbOutCallback(channel, text)
   call ch_log('received from gdb: ' . a:text)
 
+  " Disassembly messages need to be forwarded as-is.
+  if s:parsing_disasm_msg
+    call s:CommOutput(a:channel, a:text)
+    return
+  end
+
   " Drop the gdb prompt, we have our own.
   " Drop status and echo'd commands.
-  if a:text == '(gdb) ' || a:text == '^done' || a:text[0] == '&'
+  if a:text == '(gdb) ' || a:text == '^done' ||
+	\ (a:text[0] == '&' && a:text !~ '^&"disassemble')
     return
   endif
   if a:text =~ '^\^error,msg='
@@ -788,7 +795,6 @@ endfunc
 
 " Disassembly window - added by Michael Sartain
 "
-" - CommOutput: disassemble $pc
 " - CommOutput: &"disassemble $pc\n"
 " - CommOutput: ~"Dump of assembler code for function main(int, char**):\n"
 " - CommOutput: ~"   0x0000555556466f69 <+0>:\tpush   rbp\n"
@@ -798,7 +804,6 @@ endfunc
 " - CommOutput: ~"End of assembler dump.\n"
 " - CommOutput: ^done
 
-" - CommOutput: disassemble $pc
 " - CommOutput: &"disassemble $pc\n"
 " - CommOutput: &"No function contains specified address.\n"
 " - CommOutput: ^error,msg="No function contains specified address."
@@ -830,12 +835,12 @@ func s:HandleDisasmMsg(msg)
       call s:SendCommand('disassemble $pc,+100')
     endif
     let s:parsing_disasm_msg = 0
-  elseif a:msg =~ '\&\"disassemble \$pc'
+  elseif a:msg =~ '^&"disassemble \$pc'
     if a:msg =~ '+100'
       " This is our second disasm attempt
       let s:parsing_disasm_msg = 2
     endif
-  else
+  elseif a:msg !~ '^&"disassemble'
     let value = substitute(a:msg, '^\~\"[ ]*', '', '')
     let value = substitute(value, '^=>[ ]*', '', '')
     let value = substitute(value, '\\n\"\r$', '', '')
@@ -919,9 +924,10 @@ func s:CommOutput(chan, msg)
         call s:HandleEvaluate(msg)
       elseif msg =~ '^\^error,msg='
         call s:HandleError(msg)
-      elseif msg =~ '^disassemble'
+      elseif msg =~ '^&"disassemble'
         let s:parsing_disasm_msg = 1
         let s:asm_lines = []
+	call s:HandleDisasmMsg(msg)
       elseif msg =~ '^\^done,variables='
 	call s:HandleVariablesMsg(msg)
       endif
