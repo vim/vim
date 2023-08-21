@@ -2162,7 +2162,7 @@ retnomove:
 do_mousescroll_horiz(long_u leftcol)
 {
     if (curwin->w_p_wrap)
-	return FALSE;  // no wrapping, no scrolling
+	return FALSE;  // no horizontal scrolling when wrapping
 
     if (curwin->w_leftcol == (colnr_T)leftcol)
 	return FALSE;  // already there
