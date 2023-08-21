@@ -68,6 +68,21 @@ static void check_winopt(winopt_T *wop);
 static int wc_use_keyname(char_u *varp, long *wcp);
 static void compatible_set(void);
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+static char *(p_bin_dep_opts[])    = {"textwidth", "wrapmargin", "modeline", "expandtab", NULL};
+static char *(p_paste_dep_opts[])  = {"autoindent", "expandtab", "ruler", "showmatch", "smarttab",
+    "softtabstop", "textwidth", "wrapmargin",
+#ifdef FEAT_RIGHTLEFT
+    "hkmap", "revins",
+#endif
+#ifdef FEAT_VARTABS
+    "varsofttabstop",
+#endif
+    NULL};
+static void didset_options_sctx(int opt_flags, char **buf);
+#endif
+
+
 /*
  * Initialize the 'shell' option to a default value.
  */
@@ -2763,6 +2778,10 @@ set_options_bin(
 	    p_et = p_et_nobin;
 	}
     }
+#if defined(FEAT_EVAL) || defined(PROTO)
+    // Remember where the dependent option were reset
+    didset_options_sctx(opt_flags, p_bin_dep_opts);
+#endif
 }
 
 /*
@@ -3846,6 +3865,7 @@ did_set_paste(optset_T *args UNUSED)
 	p_wm = 0;
 	p_sts = 0;
 	p_ai = 0;
+	p_et = 0;
 #ifdef FEAT_VARTABS
 	if (p_vsts)
 	    free_string_option(p_vsts);
@@ -3901,6 +3921,11 @@ did_set_paste(optset_T *args UNUSED)
     }
 
     old_p_paste = p_paste;
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    // Remember where the dependent options were reset
+    didset_options_sctx((OPT_LOCAL | OPT_GLOBAL), p_paste_dep_opts);
+#endif
 
     return NULL;
 }
@@ -8170,3 +8195,19 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
     return FAIL;
 #endif
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    static void
+didset_options_sctx(int opt_flags, char **buf)
+{
+	for (int i = 0; ; ++i)
+	{
+	    if (buf[i] == NULL)
+		break;
+
+	    int idx = findoption((char_u *)buf[i]);
+	    if (idx >= 0)
+		set_option_sctx_idx(idx, opt_flags, current_sctx);
+	}
+}
+#endif
