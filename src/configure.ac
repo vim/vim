@@ -12,9 +12,9 @@ AC_DEFINE(UNIX)
 AC_PROG_MAKE_SET
 
 dnl Checks for programs.
-AC_PROG_CC_C99		dnl required by almost everything
+AC_PROG_CC		dnl required by almost everything
 AC_PROG_CPP		dnl required by header file checks
-AC_PROGRAM_EGREP	dnl required by AC_EGREP_CPP
+AC_EGREP_CPP		dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
 AC_ISC_POSIX		dnl required by AC_C_CROSS
 AC_PROG_AWK		dnl required for "make html" in ../doc
@@ -3354,7 +3354,7 @@ AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_TYPE_UINT32_T
 
-AC_HEADER_TIME
+AC_CHECK_HEADERS([sys/time.h])
 AC_CHECK_TYPE(ino_t, long)
 AC_CHECK_TYPE(dev_t, unsigned)
 AC_C_BIGENDIAN(,,,)
