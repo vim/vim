@@ -229,10 +229,10 @@ endfunc
 func s:CloseBuffers()
   exe 'bwipe! ' . s:ptybuf
   exe 'bwipe! ' . s:commbuf
-  if s:asmbuf > 0
+  if s:asmbuf > 0 && bufexists(s:asmbuf)
     exe 'bwipe! ' . s:asmbuf
   endif
-  if s:varbuf > 0
+  if s:varbuf > 0 && bufexists(s:varbuf)
     exe 'bwipe! ' . s:varbuf
   endif
   s:running = 0
@@ -709,15 +709,7 @@ func s:EndTermDebug(job, status)
   endif
 
   exe 'bwipe! ' . s:commbuf
-  if s:asmbuf > 0
-    exe 'bwipe! ' . s:asmbuf
-  endif
-  if s:varbuf > 0
-    exe 'bwipe! ' . s:varbuf
-  endif
-  let s:running = 0
   unlet s:gdbwin
-
   call s:EndDebugCommon()
 endfunc
 
@@ -727,6 +719,13 @@ func s:EndDebugCommon()
   if exists('s:ptybuf') && s:ptybuf
     exe 'bwipe! ' . s:ptybuf
   endif
+  if s:asmbuf > 0 && bufexists(s:asmbuf)
+    exe 'bwipe! ' . s:asmbuf
+  endif
+  if s:varbuf > 0 && bufexists(s:varbuf)
+    exe 'bwipe! ' . s:varbuf
+  endif
+  let s:running = 0
 
   " Restore 'signcolumn' in all buffers for which it was set.
   call win_gotoid(s:sourcewin)
@@ -1358,7 +1357,7 @@ func s:GotoAsmwinOrCreateIt()
     setlocal signcolumn=no
     setlocal modifiable
 
-    if s:asmbuf > 0
+    if s:asmbuf > 0 && bufexists(s:asmbuf)
       exe 'buffer' . s:asmbuf
     else
       silent file Termdebug-asm-listing
@@ -1420,7 +1419,7 @@ func s:GotoVariableswinOrCreateIt()
     setlocal signcolumn=no
     setlocal modifiable
 
-    if s:varbuf > 0
+    if s:varbuf > 0 && bufexists(s:varbuf)
       exe 'buffer' . s:varbuf
     else
       silent file Termdebug-variables-listing
