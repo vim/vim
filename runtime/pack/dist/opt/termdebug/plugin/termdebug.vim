@@ -75,6 +75,8 @@ let s:parsing_disasm_msg = 0
 let s:asm_lines = []
 let s:asm_addr = ''
 
+let s:parsing_bt_msg = 0
+
 " Take a breakpoint number as used by GDB and turn it into an integer.
 " The breakpoint may contain a dot: 123.4 -> 123004
 " The main breakpoint has a zero subid.
@@ -153,6 +155,8 @@ func s:StartDebug_internal(dict)
   let s:asmbuf = 0
   let s:varwin = 0
   let s:varbuf = 0
+  let s:frameswin = 0
+  let s:framesbuf = 0
 
   if exists('#User#TermdebugStartPre')
     doauto <nomodeline> User TermdebugStartPre
@@ -220,6 +224,12 @@ func s:StartDebug_internal(dict)
     call win_gotoid(curwinid)
   endif
 
+  if s:GetFramesWindow()
+    let curwinid = win_getid()
+    call s:GotoFrameswinOrCreateIt()
+    call win_gotoid(curwinid)
+  endif
+
   if exists('#User#TermdebugStartPost')
     doauto <nomodeline> User TermdebugStartPost
   endif
@@ -234,6 +244,9 @@ func s:CloseBuffers()
   endif
   if s:varbuf > 0
     exe 'bwipe! ' . s:varbuf
+  endif
+  if s:framesbuf > 0
+    exe 'bwipe! ' . s:framesbuf
   endif
   s:running = 0
   unlet! s:gdbwin
@@ -715,6 +728,9 @@ func s:EndTermDebug(job, status)
   if s:varbuf > 0
     exe 'bwipe! ' . s:varbuf
   endif
+  if s:framesbuf > 0
+    exe 'bwipe! ' . s:framesbuf
+  endif
   let s:running = 0
   unlet s:gdbwin
 
@@ -814,8 +830,8 @@ func s:HandleDisasmMsg(msg)
 
       let lnum = search('^' . s:asm_addr)
       if lnum != 0
-	call sign_unplace('TermDebug', #{id: s:asm_id})
-	call sign_place(s:asm_id, 'TermDebug', 'debugPC', '%', #{lnum: lnum})
+        call sign_unplace('TermDebug', #{id: s:asm_id})
+        call sign_place(s:asm_id, 'TermDebug', 'debugPC', '%', #{lnum: lnum})
       endif
 
       call win_gotoid(curwinid)
@@ -893,6 +909,33 @@ func s:HandleVariablesMsg(msg)
   call win_gotoid(curwinid)
 endfunc
 
+func s:HandleBtMsg(msg)
+  if a:msg =~ '^\^done'
+    let curwinid = win_getid(winnr())
+    if win_gotoid(s:frameswin)
+        set modifiable
+        silent normal! gg0"_dG
+        call setline(1, s:frame_lines)
+        set nomodified
+        set nomodifiable
+        call win_gotoid(curwinid)
+    else
+       " going there did not work,
+       " disable backtrace handling as that happens when closed
+       let s:frameswin = 0
+    endif
+    let s:parsing_bt_msg = 0
+    let s:frame_lines = []
+  else
+    let value = substitute(a:msg, '^\~\"', '', '')
+    let value = substitute(value, '\\n\"$', '', '')
+    if value != '' && value =~ '^#[0-9]'
+      " TODO: show current frame with =>
+      call add(s:frame_lines, value)
+    endif
+  endif
+endfunc
+
 " Handle a message received from gdb on the GDB/MI interface.
 func s:CommOutput(chan, msg)
   let msgs = split(a:msg, "\r")
@@ -903,8 +946,11 @@ func s:CommOutput(chan, msg)
       let msg = msg[1:]
     endif
 
+    " FIXME: use a token to know where we should go here, see #10300
     if s:parsing_disasm_msg
       call s:HandleDisasmMsg(msg)
+    elseif s:parsing_bt_msg
+      call s:HandleBtMsg(msg)
     elseif msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
         call s:HandleCursor(msg)
@@ -924,7 +970,10 @@ func s:CommOutput(chan, msg)
         let s:parsing_disasm_msg = 1
         let s:asm_lines = []
       elseif msg =~ '^\^done,variables='
-	call s:HandleVariablesMsg(msg)
+        call s:HandleVariablesMsg(msg)
+      elseif msg =~ '^&".*backtrace.*'
+        let s:parsing_bt_msg = 1
+        let s:frame_lines = []
       endif
     endif
   endfor
@@ -971,6 +1020,7 @@ func s:InstallCommands()
   command Source call s:GotoSourcewinOrCreateIt()
   command Asm call s:GotoAsmwinOrCreateIt()
   command Var call s:GotoVariableswinOrCreateIt()
+  command Frames call s:GotoFrameswinOrCreateIt()
   command Winbar call s:InstallWinbar(1)
 
   let map = 1
@@ -1035,6 +1085,7 @@ func s:DeleteCommands()
   delcommand Step
   delcommand Over
   delcommand Until
+  delcommand Frames
   delcommand Finish
   delcommand Run
   delcommand Arguments
@@ -1312,6 +1363,13 @@ func s:HandleError(msg)
   call s:Echoerr(substitute(msgVal, '\\"', '"', 'g'))
 endfunc
 
+func s:RequestFramesInfo()
+  " TODO: switch this and the parsing to use -stack-list-frames
+  "       *if* frame filters including elided and constructed frames
+  "       can be handled; otherwise just parse ^\s*#\d+ from those lines
+  call s:SendCommand('-interpreter-exec mi "backtrace"')
+endfunc
+
 func s:GotoSourcewinOrCreateIt()
   if !win_gotoid(s:sourcewin)
     new
@@ -1365,8 +1423,9 @@ func s:GotoAsmwinOrCreateIt()
       let s:asmbuf = bufnr('Termdebug-asm-listing')
     endif
 
-    if s:GetDisasmWindowHeight() > 0
-      exe 'resize ' .. s:GetDisasmWindowHeight()
+    let windowHeight = s:GetDisasmWindowHeight()
+    if windowHeight > 0
+      exe 'resize ' . windowHeight
     endif
   endif
 
@@ -1427,14 +1486,74 @@ func s:GotoVariableswinOrCreateIt()
       let s:varbuf = bufnr('Termdebug-variables-listing')
     endif
 
-    if s:GetVariablesWindowHeight() > 0
-      exe 'resize ' .. s:GetVariablesWindowHeight()
+    let windowHeight = s:GetVariablesWindowHeight()
+    if windowHeight > 0
+      exe 'resize ' . windowHeight
     endif
   endif
 
   if s:running
     call s:SendCommand('-stack-list-variables 2')
   endif
+endfunc
+
+func s:GetFramesWindow()
+  if exists('g:termdebug_config')
+    return get(g:termdebug_config, 'frames_window', 0)
+  endif
+  return 0
+endfunc
+
+func s:GetFramesWindowHeight()
+  if exists('g:termdebug_config')
+    return get(g:termdebug_config, 'frames_window_height', 0)
+  endif
+  return 0
+endfunc
+
+func s:GotoFrameswinOrCreateIt()
+  " TODO: allow to switch the Frame to the current line by pressing ENTER
+  "       but only if it matches ^\s*#[0-9*]\s+
+  " NOTE: there may be artificial frames like "1.2" in which case we can do
+  "       Frame("1") to be in scope, but then would need to open the file specified
+  "       for 1.2  (which may be the same or a different file) via Vim
+
+  " request an update (it will come in later, but we'll definitely show an up-to-date info "soon")
+  call s:RequestFramesInfo()
+
+  " for now we can't do anything here, so get back to originating window
+  let curwinid = win_getid(winnr())
+  if win_gotoid(s:frameswin)
+    call win_gotoid(curwinid)
+    return
+  endif
+
+  " create new window below the Gdb one
+  " FIXME: instead we should temporarily set splitbelow, then executing 'new'
+  call win_gotoid(s:gdbwin)
+  exe 'rightbelow new'
+  let s:frameswin = win_getid(winnr())
+
+  let windowHeight = s:GetFramesWindowHeight()
+  if windowHeight > 0
+    exe 'resize ' . windowHeight
+  "else
+  "  exe 'resize 10'
+  endif
+
+  setlocal nonumber
+  setlocal nowrap
+  setlocal noswapfile
+  setlocal buftype=nofile " FIXME: we should have some highlighting here
+
+  if s:framesbuf > 0
+    exe 'buffer' . s:framesbuf
+  else
+    silent file Termdebug-frames-listing
+    let s:framesbuf = bufnr('Termdebug-Frames-listing')
+  endif
+
+  call win_gotoid(curwinid)
 endfunc
 
 " Handle stopping and running message from gdb.
@@ -1471,13 +1590,17 @@ func s:HandleCursor(msg)
         if lnum == 0
           call s:SendCommand('disassemble $pc')
         else
-	  call sign_unplace('TermDebug', #{id: s:asm_id})
-	  call sign_place(s:asm_id, 'TermDebug', 'debugPC', '%', #{lnum: lnum})
+          call sign_unplace('TermDebug', #{id: s:asm_id})
+          call sign_place(s:asm_id, 'TermDebug', 'debugPC', '%', #{lnum: lnum})
         endif
 
         call win_gotoid(curwinid)
       endif
     endif
+  endif
+
+  if s:frameswin != 0
+    call s:RequestFramesInfo()  
   endif
 
   if s:running && s:stopped && bufwinnr('Termdebug-variables-listing') != -1

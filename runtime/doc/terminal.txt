@@ -1385,8 +1385,9 @@ Other commands ~
  *:Asm*	     jump to the window with the disassembly, create it if there
 	     isn't one
  *:Var*	     jump to the window with the local and argument variables,
-             create it if there isn't one. This window updates whenever the
-             program is stopped
+             create it if there isn't one
+ *:Frames*	jump to the window with the stack frames,
+             create it if there isn't one
 
 Events ~
 							*termdebug-events*
@@ -1471,6 +1472,13 @@ the "variables_window_height" entry can be used to set the window height: >
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_variables_window = 15
 Any value greater than 1 will set the Var window height to that value.
+
+						*termdebug_frames_window*
+If you want the Frames window shown by default, set the flag to 1.
+the "frames_window_height" entry can be used to set the window height: >
+	let g:termdebug_config['frames_window'] = 1
+	let g:termdebug_config['frames_window_height'] = 15
+Any value greater than 1 will set the Frames window height to that value.
 
 Communication ~
 						*termdebug-communication*
