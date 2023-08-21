@@ -654,8 +654,9 @@ func s:GdbOutCallback(channel, text)
 endfunc
 
 " Decode a message from gdb.  "quotedText" starts with a ", return the text up
-" to the next ", unescaping characters:
+" to the next unescaped ", unescaping characters:
 " - remove line breaks (unless "literal" is v:true)
+" - change \" to "
 " - change \\t to \t (unless "literal" is v:true)
 " - change \0xhh to \xhh (disabled for now)
 " - change \ooo to octal
@@ -666,24 +667,25 @@ func s:DecodeMessage(quotedText, literal)
     return
   endif
   let msg = a:quotedText
-        \ ->substitute('^"\|".*', '', 'g')
-        " multi-byte characters arrive in octal form
-        " NULL-values must be kept encoded as those break the string otherwise
+        \ ->substitute('^"\|[^\\]\zs".*', '', 'g')
+        \ ->substitute('\\"', '"', 'g')
+        "\ multi-byte characters arrive in octal form
+        "\ NULL-values must be kept encoded as those break the string otherwise
         \ ->substitute('\\000', s:NullRepl, 'g')
         \ ->substitute('\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
-        " Note: GDB docs also mention hex encodings - the translations below work
-        "       but we keep them out for performance-reasons until we actually see
-        "       those in mi-returns
-        " \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-        " \ ->substitute('\\0x00', s:NullRepl, 'g')
+        "\ Note: GDB docs also mention hex encodings - the translations below work
+        "\       but we keep them out for performance-reasons until we actually see
+        "\       those in mi-returns
+        "\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
+        "\ \ ->substitute('\\0x00', s:NullRepl, 'g')
         \ ->substitute('\\\\', '\', 'g')
         \ ->substitute(s:NullRepl, '\\000', 'g')
   if !a:literal
-          return msg
+    return msg
         \ ->substitute('\\t', "\t", 'g')
         \ ->substitute('\\n', '', 'g')
   else
-          return msg
+    return msg
   endif
 endfunc
 const s:NullRepl = 'XXXNULLXXX'
