@@ -1574,7 +1574,8 @@ EXTERN char e_class_required[]
 	INIT(= N_("E614: Class required"));
 EXTERN char e_object_required[]
 	INIT(= N_("E615: Object required"));
-// E616 unused
+EXTERN char e_object_required_for_argument_nr[]
+	INIT(= N_("E616: Object required for argument %d"));
 #ifdef FEAT_GUI_GTK
 EXTERN char e_cannot_be_changed_in_gtk_GUI[]
 	INIT(= N_("E617: Cannot be changed in the GTK GUI"));
@@ -1779,7 +1780,8 @@ EXTERN char e_can_only_compare_list_with_list[]
 	INIT(= N_("E691: Can only compare List with List"));
 EXTERN char e_invalid_operation_for_list[]
 	INIT(= N_("E692: Invalid operation for List"));
-// E693 unused
+EXTERN char e_list_or_class_required_for_argument_nr[]
+	INIT(= N_("E693: List or Class required for argument %d"));
 EXTERN char e_invalid_operation_for_funcrefs[]
 	INIT(= N_("E694: Invalid operation for Funcrefs"));
 EXTERN char e_cannot_index_a_funcref[]

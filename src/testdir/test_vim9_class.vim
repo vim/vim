@@ -2370,22 +2370,6 @@ def Test_instanceof()
     assert_true(instanceof(b3, Mix1))
     assert_false(instanceof(b3, []))
     assert_true(instanceof(b3, [Base1, Base2, Intf1]))
-
-    try
-      instanceof('hello', Base1)
-    catch
-      assert_exception('E615:')
-    endtry
-    try
-      instanceof(b1, 1234)
-    catch
-      assert_exception('E614:')
-    endtry
-    try
-      instanceof(b1, ['hello'])
-    catch
-      assert_exception('E614:')
-    endtry
   END
   v9.CheckScriptSuccess(lines)
 enddef

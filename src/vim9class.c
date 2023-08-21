@@ -1959,11 +1959,9 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = FALSE;
 
-    if (object_tv->v_type != VAR_OBJECT || object_tv->vval.v_object == NULL)
-    {
-	emsg(_(e_object_required));
+    if (check_for_object_arg(argvars, 0) == FAIL
+	    || check_for_class_or_list_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     if (classinfo_tv->v_type == VAR_LIST)
     {
