@@ -4063,8 +4063,8 @@ func Test_virtual_text_get()
 
   let p = prop_list(1, #{end_lnum: -1})
   call assert_equal(
-        \ #{lnum: 1, id: -1, col: 2, type_bufnr: 0, end: 1,
-        \   type: 'test', length: 1, start: 1,
+        \ #{lnum: 1, col: 2, type_bufnr: 0, end: 1,
+        \   type: 'test', start: 1,
         \   text: ' virtual text1 '}, p[0])
   call assert_equal(
         \ #{lnum: 1, id: 0, col: 3, type_bufnr: 0, end: 1,
@@ -4073,8 +4073,8 @@ func Test_virtual_text_get()
         \ #{lnum: 1, id: 0, col: 5, type_bufnr: 0, end: 1,
         \   type: 'test', length: 0, start: 1}, p[2])
   call assert_equal(
-        \ #{lnum: 1, id: -3, col: 6, type_bufnr: 0, end: 1, type: 'test',
-        \   text_wrap: 'wrap', length: 1, start: 1, text: ' virtual text3 '},
+        \ #{lnum: 1, col: 6, type_bufnr: 0, end: 1, type: 'test',
+        \   text_wrap: 'wrap', start: 1, text: ' virtual text3 '},
         \  p[3])
   call assert_equal('right', p[4].text_align)
 
