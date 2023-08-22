@@ -210,6 +210,17 @@ def Test_class_basic()
     var v = a.Foo(,)
   END
   v9.CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+  vim9script
+  class A
+    this.y = {
+      X: 1
+    }
+  endclass
+  var a = A.new()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_defined_twice()
@@ -668,14 +679,28 @@ def Test_class_object_member_inits()
   END
   v9.CheckScriptFailure(lines, 'E1022:')
 
+  # If the type is not specified for a member, then it should be set during
+  # object creation and not when defining the class.
   lines =<< trim END
       vim9script
-      class TextPosition
-        this.lnum = v:none
+
+      var init_count = 0
+      def Init(): string
+        init_count += 1
+        return 'foo'
+      enddef
+
+      class A
+        this.str1 = Init()
+        this.str2: string = Init()
         this.col = 1
       endclass
+
+      assert_equal(init_count, 0)
+      var a = A.new()
+      assert_equal(init_count, 2)
   END
-  v9.CheckScriptFailure(lines, 'E1330:')
+  v9.CheckScriptSuccess(lines)
 
   # Test for initializing an object member with an unknown variable/type
   lines =<< trim END
@@ -683,8 +708,9 @@ def Test_class_object_member_inits()
     class A
        this.value = init_val
     endclass
+    var a = A.new()
   END
-  v9.CheckScriptFailureList(lines, ['E121:', 'E1329:'])
+  v9.CheckScriptFailure(lines, 'E1001:')
 enddef
 
 def Test_class_object_member_access()
@@ -2623,6 +2649,69 @@ def Test_new_return_type()
     assert_equal('object<C>', typename(c))
   END
   v9.CheckScriptFailure(lines, 'E1365:')
+enddef
+
+" Test for checking a member initialization type at run time.
+def Test_runtime_type_check_for_member_init()
+  var lines =<< trim END
+    vim9script
+
+    var retnum: bool = false
+
+    def F(): any
+        retnum = !retnum
+        if retnum
+            return 1
+        else
+            return "hello"
+        endif
+    enddef
+
+    class C
+        this._foo: bool = F()
+    endclass
+
+    var c1 = C.new()
+    var c2 = C.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1012:')
+enddef
+
+" Test for locking a variable referring to an object and reassigning to another
+" object.
+def Test_object_lockvar()
+  var lines =<< trim END
+    vim9script
+
+    class C
+      this.val: number
+      def new(this.val)
+      enddef
+    endclass
+
+    var some_dict: dict<C> = { a: C.new(1), b: C.new(2), c: C.new(3), }
+    lockvar 2 some_dict
+
+    var current: C
+    current = some_dict['c']
+    assert_equal(3, current.val)
+    current = some_dict['b']
+    assert_equal(2, current.val)
+
+    def F()
+      current = some_dict['c']
+    enddef
+
+    def G()
+      current = some_dict['b']
+    enddef
+
+    F()
+    assert_equal(3, current.val)
+    G()
+    assert_equal(2, current.val)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

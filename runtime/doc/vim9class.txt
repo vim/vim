@@ -423,6 +423,12 @@ Each member and function name can be used only once.  It is not possible to
 define a function with the same name and different type of arguments.
 
 
+Member Initialization ~
+If the type of a member is not explicitly specified in a class, then it is set
+to "any" during class definition.  When an object is instantiated from the
+class, then the type of the member is set.
+
+
 Extending a class ~
 							*extends*
 A class can extend one other class. *E1352* *E1353* *E1354*

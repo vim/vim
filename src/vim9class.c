@@ -67,66 +67,48 @@ parse_member(
 	    return FAIL;
     }
 
-    char_u *expr_start = skipwhite(type_arg);
-    char_u *expr_end = expr_start;
-    if (type == NULL && *expr_start != '=')
+    char_u *init_arg = skipwhite(type_arg);
+    if (type == NULL && *init_arg != '=')
     {
 	emsg(_(e_type_or_initialization_required));
 	return FAIL;
     }
 
-    if (*expr_start == '=')
+    if (init_expr == NULL && *init_arg == '=')
     {
-	if (!VIM_ISWHITE(expr_start[-1]) || !VIM_ISWHITE(expr_start[1]))
+	emsg(_(e_cannot_initialize_member_in_interface));
+	return FAIL;
+    }
+
+    if (*init_arg == '=')
+    {
+	evalarg_T evalarg;
+	char_u *expr_start, *expr_end;
+
+	if (!VIM_ISWHITE(init_arg[-1]) || !VIM_ISWHITE(init_arg[1]))
 	{
 	    semsg(_(e_white_space_required_before_and_after_str_at_str),
 							"=", type_arg);
 	    return FAIL;
 	}
-	expr_start = skipwhite(expr_start + 1);
+	init_arg = skipwhite(init_arg + 1);
 
-	expr_end = expr_start;
-	evalarg_T evalarg;
 	fill_evalarg_from_eap(&evalarg, eap, FALSE);
-	skip_expr(&expr_end, NULL);
+	(void)skip_expr_concatenate(&init_arg, &expr_start, &expr_end, &evalarg);
 
+	// No type specified for the member.  Set it to "any" and the correct type will be
+	// set when the object is instantiated.
 	if (type == NULL)
-	{
-	    // No type specified, use the type of the initializer.
-	    typval_T tv;
-	    tv.v_type = VAR_UNKNOWN;
-	    char_u *expr = expr_start;
-	    int res = eval0(expr, &tv, eap, &evalarg);
+	    type = &t_any;
 
-	    if (res == OK)
-	    {
-		type = typval2type(&tv, get_copyID(), type_list,
-						       TVTT_DO_MEMBER);
-		clear_tv(&tv);
-	    }
-	    if (type == NULL)
-	    {
-		semsg(_(e_cannot_get_object_member_type_from_initializer_str),
-			expr_start);
-		clear_evalarg(&evalarg, NULL);
-		return FAIL;
-	    }
-	}
+	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
+	// Free the memory pointed by expr_start.
 	clear_evalarg(&evalarg, NULL);
     }
-    if (!valid_declaration_type(type))
+    else if (!valid_declaration_type(type))
 	return FAIL;
 
     *type_ret = type;
-    if (expr_end > expr_start)
-    {
-	if (init_expr == NULL)
-	{
-	    emsg(_(e_cannot_initialize_member_in_interface));
-	    return FAIL;
-	}
-	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
-    }
     return OK;
 }
 
@@ -1740,9 +1722,13 @@ inside_class(cctx_T *cctx_arg, class_T *cl)
     void
 copy_object(typval_T *from, typval_T *to)
 {
-    *to = *from;
-    if (to->vval.v_object != NULL)
+    if (from->vval.v_object == NULL)
+	to->vval.v_object = NULL;
+    else
+    {
+	to->vval.v_object = from->vval.v_object;
 	++to->vval.v_object->obj_refcount;
+    }
 }
 
 /*
@@ -1787,9 +1773,13 @@ object_unref(object_T *obj)
     void
 copy_class(typval_T *from, typval_T *to)
 {
-    *to = *from;
-    if (to->vval.v_class != NULL)
+    if (from->vval.v_class == NULL)
+	to->vval.v_class = NULL;
+    else
+    {
+	to->vval.v_class = from->vval.v_class;
 	++to->vval.v_class->class_refcount;
+    }
 }
 
 /*
