@@ -4816,21 +4816,22 @@ typedef struct {
 // Argument for lbr_chartabsize().
 typedef struct {
     win_T	*cts_win;
-    char_u	*cts_line;	    // start of the line
-    char_u	*cts_ptr;	    // current position in line
+    char_u	*cts_line;		// start of the line
+    char_u	*cts_ptr;		// current position in line
 #ifdef FEAT_PROP_POPUP
     int		cts_text_prop_count;	// number of text props; when zero
 					// cts_text_props is not used
     textprop_T	*cts_text_props;	// text props (allocated)
-    char	cts_has_prop_with_text; // TRUE if a property inserts text
-    int		cts_cur_text_width;     // width of current inserted text
+    char	cts_has_prop_with_text;	// TRUE if a property inserts text
+    int		cts_cur_text_width;	// width of current inserted text
     int		cts_prop_lines;		// nr of properties above or below
     int		cts_first_char;		// width text props above the line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
     int		cts_start_incl;		// prop has true "start_incl" arg
 #endif
-    int		cts_vcol;	    // virtual column at current position
+    int		cts_vcol;		// virtual column at current position
+    int		cts_max_head_vcol;	// see win_lbr_chartabsize()
 } chartabsize_T;
 
 /*

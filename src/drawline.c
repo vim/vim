@@ -1110,14 +1110,10 @@ win_line(
     int		n_attr3 = 0;	    // chars with overruling special attr
     int		saved_attr3 = 0;    // char_attr saved for n_attr3
 
-    int		n_skip = 0;		// nr of cells to skip for 'nowrap' or
-					// concealing
-#ifdef FEAT_PROP_POPUP
-    int		skip_cells = 0;		// nr of cells to skip for virtual text
-					// after the line, when w_skipcol is
-					// larger than the text length
-#endif
-
+    int		skip_cells = 0;		// nr of cells to skip for w_leftcol or
+					// w_skipcol or concealing
+    int		skipped_cells = 0;	// nr of skipped cells for virtual text
+					// to be added to wlv.vcol later
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
     int		lnum_in_visual_area = FALSE;
@@ -1665,11 +1661,14 @@ win_line(
 	char_u		*prev_ptr = ptr;
 	chartabsize_T	cts;
 	int		charsize = 0;
+	int		head = 0;
 
 	init_chartabsize_arg(&cts, wp, lnum, wlv.vcol, line, ptr);
+	cts.cts_max_head_vcol = v;
 	while (cts.cts_vcol < v && *cts.cts_ptr != NUL)
 	{
-	    charsize = win_lbr_chartabsize(&cts, NULL);
+	    head = 0;
+	    charsize = win_lbr_chartabsize(&cts, &head);
 	    cts.cts_vcol += charsize;
 	    prev_ptr = cts.cts_ptr;
 	    MB_PTR_ADV(cts.cts_ptr);
@@ -1698,20 +1697,9 @@ win_line(
 	{
 	    wlv.vcol -= charsize;
 	    ptr = prev_ptr;
-	    // If the character fits on the screen, don't need to skip it.
-	    // Except for a TAB.
-	    if (((*mb_ptr2cells)(ptr) >= charsize || *ptr == TAB)
-							       && wlv.col == 0)
-	       n_skip = v - wlv.vcol;
 	}
-
-#ifdef FEAT_PROP_POPUP
-	// If there the text doesn't reach to the desired column, need to skip
-	// "skip_cells" cells when virtual text follows.
-	if ((!wp->w_p_wrap || (lnum == wp->w_topline && wp->w_skipcol > 0))
-							       && v > wlv.vcol)
-	    skip_cells = v - wlv.vcol;
-#endif
+	if (v > wlv.vcol)
+	    skip_cells = v - wlv.vcol - head;
 
 	// Adjust for when the inverted text is before the screen,
 	// and when the start of the inverted text is before the screen.
@@ -2205,6 +2193,7 @@ win_line(
 				wlv.n_attr_skip -= skip_cells;
 				if (wlv.n_attr_skip < 0)
 				    wlv.n_attr_skip = 0;
+				skipped_cells += skip_cells;
 				skip_cells = 0;
 			    }
 			    else
@@ -2212,6 +2201,7 @@ win_line(
 				// the whole text is left of the window, drop
 				// it and advance to the next one
 				skip_cells -= wlv.n_extra;
+				skipped_cells += wlv.n_extra;
 				wlv.n_extra = 0;
 				wlv.n_attr_skip = 0;
 				bail_out = TRUE;
@@ -2592,11 +2582,15 @@ win_line(
 #ifdef FEAT_LINEBREAK
 	    c0 = *ptr;
 #endif
-#ifdef FEAT_PROP_POPUP
 	    if (c == NUL)
+	    {
+#ifdef FEAT_PROP_POPUP
 		// text is finished, may display a "below" virtual text
 		did_line = TRUE;
 #endif
+		// no more cells to skip
+		skip_cells = 0;
+	    }
 
 	    if (has_mbyte)
 	    {
@@ -2762,7 +2756,7 @@ win_line(
 		// If a double-width char doesn't fit at the left side display
 		// a '<' in the first column.  Don't do this for unprintable
 		// characters.
-		if (n_skip > 0 && mb_l > 1 && wlv.n_extra == 0)
+		if (skip_cells > 0 && mb_l > 1 && wlv.n_extra == 0)
 		{
 		    wlv.n_extra = 1;
 		    wlv.c_extra = MB_FILLER_CHAR;
@@ -3438,10 +3432,10 @@ win_line(
 		    wlv.n_extra = 0;
 		    n_attr = 0;
 		}
-		else if (n_skip == 0)
+		else if (skip_cells == 0)
 		{
 		    is_concealing = TRUE;
-		    n_skip = 1;
+		    skip_cells = 1;
 		}
 		mb_c = c;
 		if (enc_utf8 && utf_char2len(c) > 1)
@@ -3459,7 +3453,7 @@ win_line(
 		is_concealing = FALSE;
 	    }
 
-	    if (n_skip > 0 && did_decrement_ptr)
+	    if (skip_cells > 0 && did_decrement_ptr)
 		// not showing the '>', put pointer back to avoid getting stuck
 		++ptr;
 
@@ -3472,7 +3466,7 @@ win_line(
 	if (!did_wcol && wlv.draw_state == WL_LINE
 		&& wp == curwin && lnum == wp->w_cursor.lnum
 		&& conceal_cursor_line(wp)
-		&& (int)wp->w_virtcol <= wlv.vcol + n_skip)
+		&& (int)wp->w_virtcol <= wlv.vcol + skip_cells)
 	{
 # ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
@@ -3797,7 +3791,7 @@ win_line(
 
 	// Store character to be displayed.
 	// Skip characters that are left of the screen for 'nowrap'.
-	if (wlv.draw_state < WL_LINE || n_skip <= 0)
+	if (wlv.draw_state < WL_LINE || skip_cells <= 0)
 	{
 	    // Store the character.
 #if defined(FEAT_RIGHTLEFT)
@@ -3893,7 +3887,7 @@ win_line(
 #ifdef FEAT_CONCEAL
 	else if (wp->w_p_cole > 0 && is_concealing)
 	{
-	    --n_skip;
+	    --skip_cells;
 	    ++wlv.vcol_off_co;
 	    if (wlv.n_extra > 0)
 		wlv.vcol_off_co += wlv.n_extra;
@@ -3973,7 +3967,13 @@ win_line(
 	}
 #endif // FEAT_CONCEAL
 	else
-	    --n_skip;
+	    --skip_cells;
+
+	if (wlv.draw_state > WL_NR && skipped_cells > 0)
+	{
+	    wlv.vcol += skipped_cells;
+	    skipped_cells = 0;
+	}
 
 	// Only advance the "wlv.vcol" when after the 'number' or
 	// 'relativenumber' column.

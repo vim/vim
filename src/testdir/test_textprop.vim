@@ -2630,6 +2630,110 @@ func Test_prop_inserts_text_visual_block()
   call StopVimInTerminal(buf)
 endfunc
 
+func Run_test_prop_inserts_text_showbreak(cmd)
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    highlight! link LineNr Normal
+    call setline(1, repeat('a', 28))
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, 28, #{type: 'theprop', text: repeat('123', 23), text_wrap: 'wrap'})
+    setlocal number showbreak=+ breakindent breakindentopt=shift:2
+    setlocal scrolloff=0 smoothscroll
+    normal! $
+  END
+  let lines = insert(lines, a:cmd)
+  call writefile(lines, 'XscriptPropsShowbreak', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsShowbreak', #{rows: 6, cols: 30})
+  call term_sendkeys(buf, ":set noruler\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_1', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_2', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_3', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_4', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_5', {})
+  call term_sendkeys(buf, "zbi")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_6', {})
+  call term_sendkeys(buf, "\<BS>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_7', {})
+  call term_sendkeys(buf, "\<Esc>l")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_8', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_9', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_10', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_11', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_12', {})
+  call term_sendkeys(buf, "023x$")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_13', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_14', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_15', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_16', {})
+  call term_sendkeys(buf, "zbi")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_17', {})
+  call term_sendkeys(buf, "\<C-U>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_18', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_19', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_20', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_21', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_prop_inserts_text_showbreak()
+  call Run_test_prop_inserts_text_showbreak('')
+  " because of 'breakindent' the screendumps are the same
+  call Run_test_prop_inserts_text_showbreak('set cpoptions+=n')
+endfunc
+
+func Test_prop_before_tab_skipcol()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, repeat("\t", 4) .. 'a')
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, 4, #{type: 'theprop', text: repeat('12', 32), text_wrap: 'wrap'})
+    setlocal list listchars=tab:<-> scrolloff=0 smoothscroll
+    normal! $
+  END
+  call writefile(lines, 'XscriptPropsBeforeTabSkipcol', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsBeforeTabSkipcol', #{rows: 6, cols: 30})
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_1', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_2', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_3', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_4', {})
+  call term_sendkeys(buf, "zbh")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_5', {})
+  call term_sendkeys(buf, "i")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_6', {})
+  call term_sendkeys(buf, "\<C-O>:setlocal nolist\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_7', {})
+  call term_sendkeys(buf, "\<Esc>l")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_8', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_9', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_10', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_11', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_add_with_text_fails()
   call prop_type_add('failing', #{highlight: 'ErrorMsg'})
   call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', end_lnum: 1})", 'E1305:')
