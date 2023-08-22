@@ -1986,10 +1986,6 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = class_instance_of(object_tv->vval.v_object->obj_class,
 		classinfo_tv->vval.v_class);
     }
-    else
-    {
-	emsg(_(e_class_required));
-    }
 }
 
 #endif // FEAT_EVAL
