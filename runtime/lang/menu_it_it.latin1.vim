@@ -2,7 +2,7 @@
 " Maintainer:		Antonio Colombo <azc100@gmail.com>
 "			Vlad Sandrini <vlad.gently@gmail.com>
 "			Luciano Montanaro <mikelima@cirulla.net>
-" Last Change:	2022 Jun 17
+" Last Change:	2023 Aug 22
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -20,7 +20,7 @@ menut &Help			&Aiuto
 
 menut &Overview<Tab><F1>	&Panoramica<Tab><F1>
 menut &User\ Manual		Manuale\ &Utente
-menut &How-to\ links	Co&Me\.\.\.
+menut &How-To\ Links	Co&Me\.\.\.
 menut &Find\.\.\.	&Cerca\.\.\.
 menut &Credits		Cr&Editi
 menut Co&pying		C&Opie
@@ -29,7 +29,7 @@ menut O&rphans		O&Rfani
 menut &Version		&Versione
 menut &About		&Intro
 
-let g:menutrans_help_dialog = "Batti un comando o una parola per cercare aiuto:\n\nPremetti i_ per comandi in modo Input (p.es.: i_CTRL-X)\nPremetti c_ per comandi che editano la linea-comandi (p.es.: c_<Del>)\nPremetti ' per un nome di opzione (p.es.: 'shiftwidth')"
+let g:menutrans_help_dialog = "Batti un comando o una parola per cercare aiuto su:\n\nPremetti i_ per comandi in modo Input (p.es.: i_CTRL-X)\nPremetti c_ per comandi che editano la linea-comandi (p.es.: c_<Del>)\nPremetti ' per un nome di opzione (p.es.: 'shiftwidth')"
 
 " File / File
 menut &File				&File
@@ -68,7 +68,6 @@ menut Find\ and\ Rep&lace\.\.\.<Tab>:s	&Sostituisci\.\.\.<Tab>:s
 menut Settings\ &Window			&Finestra\ Impostazioni
 menut Startup\ &Settings		Impostazioni\ di\ &Avvio
 menut &Global\ Settings			Impostazioni\ &Globali
-menut Question				Domanda
 
 " Edit / Modifica / Impostazioni Globali
 
@@ -80,7 +79,7 @@ menut &Context\ lines		&Linee\ di\ contesto
 
 menut &Virtual\ Edit		&Edit\ virtuale
 menut Never			Mai
-menut Block\ Selection		Selezione\ Blocco
+menut Block\ Selection		Seleziona\ Blocco
 menut Insert\ mode		Modo\ Insert
 menut Block\ and\ Insert	Selezione\ Blocco\ e\ Inserimento
 menut Always			Sempre
@@ -167,7 +166,7 @@ menut &File\ Format\.\.\.				Formato\ &File\.\.\.
 
 let g:menutrans_textwidth_dialog = "Batti nuova lunghezza linea (0 per inibire la formattazione): "
 let g:menutrans_fileformat_dialog = "Scegli formato con cui scrivere il file"
-let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annullare "
+let g:menutrans_fileformat_choices = " &Unix\n&Dos\n&Mac\n&Annullare "
 
 menut Show\ C&olor\ Schemes\ in\ Menu	Mostra\ Schemi\ C&olore\ in\ Menù
 menut C&olor\ Scheme		Schema\ c&Olori
@@ -180,8 +179,12 @@ menut evening		sera
 menut industry		industria
 menut morning		mattino
 menut peachpuff		pesca
+menut quiet		quieto
 menut shine		brillante
+menut sorbet		sorbetto
 menut slate		ardesia
+menut torte		torta
+menut wildcharm		fascino\ selvaggio
 menut BLUE		BLÙ
 menut DARKBLUE		BLÙ\ SCURO
 menut DESERT		DESERTO
@@ -190,8 +193,12 @@ menut EVENING		SERA
 menut INDUSTRY		INDUSTRIA
 menut MORNING		MATTINO
 menut PEACHPUFF		PESCA
+menut QUIET		QUIETO
 menut SHINE		BRILLANTE
+menut SORBET		SORBETTO
 menut SLATE		ARDESIA
+menut TORTE		TORTA
+menut WILDCHARM		FASCINO\ SELVAGGIO
 
 menut Show\ &Keymaps\ in\ Menu	Mostra\ Ma&ppe\ tastiera\ in\ Menù
 menut &Keymap			Ma&ppa\ tastiera
@@ -202,29 +209,105 @@ menut arabic			arabo
 menut armenian-eastern		armeno-orientale
 menut armenian-western		armeno-occidentale
 menut belarusian-jcuken		bielorusso-jcuken
+menut bulgarian-bds		bulgaro-bds
+menut bulgarian-phonetic	bulgaro-fonetico
+menut canfr-win			franco-canadese-win
+menut croatian			croato
 menut czech			ceco
+menut dvorak			tastiera-dvorak
+menut esperanto			esperanto
+menut french-azerty		francese-azerty
+menut german-qwertz		tedesco-qwertz
 menut greek			greco
 menut hebrew			ebraico
 menut hebrewp			ebraicop
+menut kana			kana
+menut kazakh-jcuken		kazako-jcuken
+menut korean			coreano
+menut korean-dubeolsik		coreano-dubeolsik
+menut lithuanian-baltic		lituano-baltico
 menut magyar			ungherese
+menut mongolian			mongolo
+menut oldturkic-orkhon		turco-antico-orkhon
+menut oldturkic-yenisei		turco-antico-yenisei
 menut persian			persiano
+menut persian-iranian		persiano-iraniano
+menut pinyin			pinyin
+menut polish-slash		polacco-slash
+menut russian-dvorak		russo-dvorak
+menut russian-jcuken		russo-jcuken
+menut russian-jcukenmac		russo-jcukenmac
+menut russian-jcukenwin		russo-jcukenwin
+menut russian-jcukenwintype	russo-jcukenwintype
+menut russian-typograph		russo-tipografico
+menut russian-yawerty		russo-yawerty
 menut serbian			serbo
 menut serbian-latin		serbo-latino
+menut sinhala			singalese
+menut sinhala-phonetic		singalese-phonetic
 menut slovak			slovacco
+menut tamil			tamil
+menut thaana			thaana
+menut thaana-phonetic		thaana-fonetico
+menut turkish-f			turco-f
+menut turkish-q			turco-q
+menut ukrainian-dvorak		ukraino-dvorak
+menut ukrainian-jcuken		ukraino-jcuken
+menut vietnamese-telex		vietnamita-telex
+menut vietnamese-viqr		vietnamita-viqr
+menut vietnamese-vni		vietnamita-vni
 menut ACCENTS			ACCENTI
 menut ARABIC			ARABO
 menut ARMENIAN-EASTERN		ARMENO-ORIENTALE
 menut ARMENIAN-WESTERN		ARMENO-OCCIDENTALE
 menut BELARUSIAN-JCUKEN		BIELORUSSO-JCUKEN
+menut BULGARIAN-BDS		BULGARO-BDS
+menut BULGARIAN-PHONETIC	BULGARO-FONETICO
+menut CANFR-WIN			FRANCO-CANADESE-WIN
+menut CROATIAN			CROATO
 menut CZECH			CECO
+menut DVORAK			TASTIERA-DVORAK
+menut ESPERANTO			ESPERANTO
+menut FRENCH-AZERTY		FRANCESE-AZERTY
+menut GERMAN-QWERTZ		TEDESCO-QWERTZ
 menut GREEK			GRECO
 menut HEBREW			EBRAICO
 menut HEBREWP			EBRAICOP
+menut KANA			KANA
+menut KAZAKH-JCUKEN		KAZAKO-JCUKEN
+menut KOREAN			COREANO
+menut KOREAN-DUBEOLSIK		COREANO-DUBEOLSIK
+menut LITHUANIAN-BALTIC		LITUANO-BALTICO
 menut MAGYAR			UNGHERESE
+menut MONGOLIAN			MONGOLO
+menut OLDTURKIC-ORKHON		TURCO-ANTICO-ORKHON
+menut OLDTURKIC-YENISEI		TURCO-ANTICO-YENISEI
 menut PERSIAN			PERSIANO
+menut PERSIAN-IRANIAN		PERSIANO-IRANIANO
+menut PINYIN			PINYIN
+menut POLISH-SLASH		POLACCO-SLASH
+menut RUSSIAN-DVORAK		RUSSO-DVORAK
+menut RUSSIAN-JCUKEN		RUSSO-JCUKEN
+menut RUSSIAN-JCUKENMAC		RUSSO-JCUKENMAC
+menut RUSSIAN-JCUKENWIN		RUSSO-JCUKENWIN
+menut RUSSIAN-JCUKENWINTYPE	RUSSO-JCUKENWINTYPE
+menut RUSSIAN-TYPOGRAPH		RUSSO-TIPOGRAFICO
+menut RUSSIAN-YAWERTY		RUSSO-YAWERTY
 menut SERBIAN			SERBO
 menut SERBIAN-LATIN		SERBO-LATINO
+menut SINHALA			SINGALESE
+menut SINHALA-PHONETIC		SINGALESE-PHONETIC
 menut SLOVAK			SLOVACCO
+menut TAMIL			TAMIL
+menut THAANA			THAANA
+menut THAANA-PHONETIC		THAANA-FONETICO
+menut TURKISH-F			TURCO-F
+menut TURKISH-Q			TURCO-Q
+menut UKRAINIAN-DVORAK		UKRAINO-DVORAK
+menut UKRAINIAN-JCUKEN		UKRAINO-JCUKEN
+menut VIETNAMESE-TELEX		VIETNAMITA-TELEX
+menut VIETNAMESE-VIQR		VIETNAMITA-VIQR
+menut VIETNAMESE-VNI		VIETNAMITA-VNI
 
 menut Select\ Fo&nt\.\.\.		Scegli\ &Font\.\.\.
 
@@ -233,7 +316,7 @@ menut &Tools				&Strumenti
 
 menut &Jump\ to\ this\ tag<Tab>g^]	&Vai\ a\ questa\ tag<Tab>g^]
 menut Jump\ &back<Tab>^T		Torna\ &Indietro<Tab>^T
-menut Build\ &Tags\ File		Costruisci\ file\ &Tags\
+menut Build\ &Tags\ File		Costruisci\ file\ &Tag\
 " Menù ortografia / Spelling
 menut &Spelling			&Ortografia
 
@@ -243,6 +326,7 @@ menut To\ &Next\ error<Tab>]s		Errore\ &Seguente<tab>]s
 menut To\ &Previous\ error<Tab>[s	Errore\ &Precedente<tab>[s
 menut Suggest\ &Corrections<Tab>z=	&Suggerimenti<Tab>z=
 menut &Repeat\ correction<Tab>:spellrepall	&Ripeti\ correzione<Tab>:spellrepall
+menut Set\ language\ to			Imposta\ lingua\ a
 menut Set\ language\ to\ "en"		Imposta\ lingua\ a\ "en"
 menut Set\ language\ to\ "en_au"	Imposta\ lingua\ a\ "en_au"
 menut Set\ language\ to\ "en_ca"	Imposta\ lingua\ a\ "en_ca"
@@ -255,25 +339,25 @@ menut &Find\ More\ Languages		&Trova\ altre\ lingue
 menut &Folding					&Piegature
 " apri e chiudi piegature
 menut &Enable/Disable\ folds<Tab>zi		Pi&egature\ Sì/No<Tab>zi
-menut &View\ Cursor\ Line<Tab>zv			&Vedi\ linea\ col\ Cursore<Tab>zv
-menut Vie&w\ Cursor\ Line\ only<Tab>zMzx		Vedi\ &Solo\ linea\ col\ Cursore<Tab>zMzx
-menut C&lose\ more\ folds<Tab>zm			C&Hiudi\ più\ piegature<Tab>zm
-menut &Close\ all\ folds<Tab>zM			&Chiudi\ tutte\ le\ piegature<Tab>zM
-menut O&pen\ more\ folds<Tab>zr			A&Pri\ più\ piegature<Tab>zr
-menut &Open\ all\ folds<Tab>zR			&Apri\ tutte\ le\ piegature<Tab>zR
+menut &View\ Cursor\ Line<Tab>zv		&Vedi\ linea\ col\ Cursore<Tab>zv
+menut Vie&w\ Cursor\ Line\ only<Tab>zMzx	Vedi\ &Solo\ linea\ col\ Cursore<Tab>zMzx
+menut C&lose\ More\ folds<Tab>zm		C&Hiudi\ più\ piegature<Tab>zm
+menut &Close\ All\ folds<Tab>zM			&Chiudi\ tutte\ le\ piegature<Tab>zM
+menut O&pen\ More\ folds<Tab>zr			A&Pri\ più\ piegature<Tab>zr
+menut &Open\ All\ folds<Tab>zR			&Apri\ tutte\ le\ piegature<Tab>zR
 " metodo piegatura
 menut Fold\ Met&hod				Meto&Do\ piegatura
 menut M&anual					&Manuale
 menut I&ndent					&Nidificazione
-menut E&xpression					&Espressione\ Reg\.
+menut E&xpression				&Espressione\ Reg\.
 menut S&yntax					&Sintassi
 menut &Diff					&Differenza
 menut Ma&rker					Mar&Catura
 
 " crea e cancella piegature
 menut Create\ &Fold<Tab>zf			Crea\ &Piegatura<Tab>zf
-menut &Delete\ Fold<Tab>zd			&Leva\ piegatura<Tab>zd
-menut Delete\ &All\ Folds<Tab>zD			Leva\ &Tutte\ le\ piegature<Tab>zD
+menut &Delete\ Fold<Tab>zd			&Togli\ piegatura<Tab>zd
+menut Delete\ &All\ Folds<Tab>zD		Togli\ &Tutte\ le\ piegature<Tab>zD
 " movimenti all'interno delle piegature
 menut Fold\ col&umn\ width			Larghezza\ piegat&Ure\ in\ colonne
 
@@ -285,9 +369,9 @@ menut &Put\ Block				&Esporta\ differenze
 
 menut &Make<Tab>:make		Esegui\ &Make<Tab>:make
 
-menut &List\ Errors<Tab>:cl		Lista\ &Errori<Tab>:cl
+menut &List\ Errors<Tab>:cl	Lista\ &Errori<Tab>:cl
 menut L&ist\ Messages<Tab>:cl!	Lista\ &Messaggi<Tab>:cl!
-menut &Next\ Error<Tab>:cn		Errore\ s&Uccessivo<Tab>:cn
+menut &Next\ Error<Tab>:cn	Errore\ s&Uccessivo<Tab>:cn
 menut &Previous\ Error<Tab>:cp	Errore\ &Precedente<Tab>:cp
 menut &Older\ List<Tab>:cold	Lista\ men&O\ recente<Tab>:cold
 menut N&ewer\ List<Tab>:cnew	Lista\ più\ rece&Nte<Tab>:cnew
@@ -302,11 +386,12 @@ menut &Convert\ to\ HEX<Tab>:%!xxd	&Converti\ a\ esadecimale<Tab>:%!xxd
 menut Conve&rt\ back<Tab>:%!xxd\ -r	Conve&rti\ da\ esadecimale<Tab>:%!xxd\ -r
 
 menut Se&T\ Compiler		Impo&Sta\ Compilatore
+menut Show\ Compiler\ Se&ttings\ in\ Menu	Mostra\ Impos&Tazioni\ Compilatore\ nel\ Menù
 
 " Buffers / Buffer
 menut &Buffers			&Buffer
 
-menut &Refresh\ menu		A&ggiorna\ menù
+menut &Refresh\ menu		A&Ggiorna\ menù
 menut &Delete			&Elimina
 menut &Alternate		&Alternato
 menut &Next			&Successivo
@@ -352,10 +437,10 @@ menut &Right\ side<Tab>^WL		Lato\ &Destro<Tab>^WL
 menut Rotate\ &Up<Tab>^WR		Ruota\ verso\ l'&Alto<Tab>^WR
 menut Rotate\ &Down<Tab>^Wr		Ruota\ verso\ il\ &Basso<Tab>^Wr
 menut &Equal\ Size<Tab>^W=		&Uguale\ ampiezza<Tab>^W=
-menut &Max\ Height<Tab>^W_		&Altezza\ massima<Tab>^W_
-menut M&in\ Height<Tab>^W1_		A&Ltezza\ minima<Tab>^W1_
-menut Max\ &Width<Tab>^W\|		Larghezza\ massima<Tab>^W\|
-menut Min\ Widt&h<Tab>^W1\|		Larghezza\ minima<Tab>^W1\|
+menut &Max\ Height<Tab>^W_		A&Ltezza\ massima<Tab>^W_
+menut M&in\ Height<Tab>^W1_		Al&Tezza\ minima<Tab>^W1_
+menut Max\ &Width<Tab>^W\|		Lar&Ghezza\ massima<Tab>^W\|
+menut Min\ Widt&h<Tab>^W1\|		Larg&hhezza\ minima<Tab>^W1\|
 
 " The popup menu
 menut &Undo		&Annulla
@@ -363,11 +448,13 @@ menut Cu&t		&Taglia
 menut &Copy		&Copia
 menut &Paste		&Incolla
 menut &Delete		&Elimina
-menut Select\ Blockwise 	Seleziona\ in\ blocco
+menut Select\ Blockwise 	Seleziona\ Blocco
 menut Select\ &Word		Seleziona\ &Parola
-menut Select\ &Line		Seleziona\ &Linea
+menut Select\ &Line		Seleziona\ &Riga
 menut Select\ &Block 		Seleziona\ &Blocco
-menut Select\ &All		Seleziona\ t&Utto
+menut Select\ &All		Seleziona\ &Tutto
+menut Select\ &Sentence		Seleziona\ &Frase
+menut Select\ Pa&ragraph	Seleziona\ Para&Grafo
 
 " The GUI Toolbar / Barra Strumenti
 menut Open		Apri

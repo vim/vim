@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-17 15:42+0200\n"
-"PO-Revision-Date: 2023-08-17 16:32+0100\n"
+"POT-Creation-Date: 2023-08-21 11:39+0200\n"
+"PO-Revision-Date: 2023-08-21 12:49+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -2642,6 +2642,9 @@ msgstr " SELEZIONA BLOCCO"
 
 msgid "recording"
 msgstr "registrazione"
+
+msgid "Searching for \"%s\" under \"%s\" in \"%s\""
+msgstr "Cerco \"%s\" sotto \"%s\" in \"%s\""
 
 msgid "Searching for \"%s\" in \"%s\""
 msgstr "Cerco \"%s\" in \"%s\""
@@ -5777,6 +5780,9 @@ msgstr ""
 msgid "E705: Variable name conflicts with existing function: %s"
 msgstr "E705: Nome di variabile in conflitto con una funzione esistente: %s"
 
+msgid "E706: Argument of %s must be a List, String or Dictionary"
+msgstr "E706: L'argumento di %s dev'essere una Lista, una Stringa o un Dizionario"
+
 msgid "E707: Function name conflicts with variable: %s"
 msgstr "E707: Nome funzione in conflitto con la variabile: %s"
 
@@ -7861,9 +7867,13 @@ msgstr "E1363: Tipo incompleto"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Attenzione: Blocco puntatore non valido"
 
+msgid "E1365: Cannot use a return type with the \"new\" function"
+msgstr "E1365: Impossibile usare questo tipo di ritorno con la "
+"funzione \"new\""
+
 msgid "E1400: Cannot mix positional and non-positional arguments: %s"
-msgstr "E1400: Non si possono mischiare argomenti posizionali e non "
-"posizionali: %s"
+msgstr ""
+"E1400: Non si possono mischiare argomenti posizionali e non posizionali: %s"
 
 msgid "E1401: format argument %d unused in $-style format: %s"
 msgstr "E1401: argomento di formato %d non usato nel formato $-style: %s"
@@ -7872,18 +7882,26 @@ msgid ""
 "E1402: Positional argument %d used as field width reused as different type: "
 "%s/%s"
 msgstr ""
-"E1402: Argomento posizionale %d, usato come larghezza campo, riusato con "
-"un tipo differente: %s/%s"
+"E1402: Argomento posizionale %d, usato come larghezza campo, riusato con un "
+"tipo differente: %s/%s"
 
 msgid "E1403: Positional argument %d out of bounds: %s"
 msgstr "E1403: Argomento posizionale %d fuori misura: %s"
 
 msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
-msgstr "E1404: Argomento posizionale di tipo %d usato in modo "
-"inconsistente: %s/%s"
+msgstr ""
+"E1404: Argomento posizionale di tipo %d usato in modo inconsistente: %s/%s"
 
 msgid "E1405: Invalid format specifier: %s"
 msgstr "E1405: Specificatore di formato non valido: %s"
+
+msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
+msgstr ""
+"E1406: Elemento \"%s\": tipo non corrispondente, atteso %s ma ottenuto %s"
+
+msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
+msgstr ""
+"E1407: Elemento \"%s\": tipo non corrispondente, atteso %s ma ottenuto %s"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0
@@ -8272,26 +8290,27 @@ msgid "\" Hit <Space> on a \"set\" line to refresh it."
 msgstr "\" Batti <Spazio> su una riga di \"set\" per aggiornarla."
 
 msgid "important"
-msgstr "importante"
+msgstr "importanti"
 
 msgid "behave very Vi compatible (not advisable)"
-msgstr "funziona in modo molto compatibile con Vi (non consigliabile)"
+msgstr "comportamento molto compatibile con Vi (non consigliato)"
 
 msgid "list of flags to specify Vi compatibility"
 msgstr "lista di flag per specificare il grado di compatibilità con Vi"
 
 msgid "use Insert mode as the default mode"
-msgstr "usa modo Insert come modo predefinito"
+msgstr "usare modo Insert come modo predefinito"
 
 msgid "paste mode, insert typed text literally"
-msgstr "mode Paste, inserisce letteralmente testo battuto"
+msgstr "modo Paste, inserire letteralmente testo battuto"
 
 msgid "key sequence to toggle paste mode"
 msgstr "sequenza di tasti per attivare/disattivare modo Paste"
 
 msgid "list of directories used for runtime files and plugins"
 msgstr ""
-"lista di directory dove cercare i file da utilizzare in esecuzione e i plugin"
+"lista di directory dove cercare i file da utilizzare in\n"
+"esecuzione e i plugin"
 
 msgid "list of directories used for plugin packages"
 msgstr "lista di directory dove cercare i pacchetti di plugin"
@@ -8304,8 +8323,8 @@ msgstr "movimenti, ricerche e modelli di ricerca"
 
 msgid "list of flags specifying which commands wrap to another line"
 msgstr ""
-"lista di flag che specificano quali comandi possono agire anche su più di "
-"una riga"
+"lista di flag che specificano quali comandi possono agire anche\n"
+"su più di una riga"
 
 msgid ""
 "many jump commands move the cursor to the first non-blank\n"
@@ -8330,33 +8349,35 @@ msgid "list of directory names used for :cd"
 msgstr "lista di nomi di directory usate per :cd"
 
 msgid "change to directory of file in buffer"
-msgstr "cambia alla directory del file nel buffer corrente"
+msgstr "passare alla directory del file nel buffer corrente"
 
 msgid "change to pwd of shell in terminal buffer"
-msgstr "cambia alla directory dello shell nel buffer di terminale"
+msgstr "passare alla directory dello shell nel buffer di terminale"
 
 msgid "search commands wrap around the end of the buffer"
 msgstr ""
-"i comandi di ricerca ricominciano dall'inizio del file una volta raggiunta "
-"la fine del buffer"
+"i comandi di ricerca ricominciano dall'inizio del file una volta\n"
+"raggiunta la fine del buffer"
 
 msgid "show match for partly typed search command"
-msgstr "mostra corrispondenze per comandi di ricerca solo parzialmente immessi"
+msgstr "mostrare corrispondenze per comandi di ricerca solo\n"
+"parzialmente immessi"
 
 msgid "change the way backslashes are used in search patterns"
 msgstr ""
-"modifica il modo in cui le barre inverse vengono usate nelle espressioni "
-"regolari di ricerca"
+"modificare il modo in cui le barre inverse vengono usate nelle\n"
+"espressioni regolari di ricerca"
 
 msgid "select the default regexp engine used"
-msgstr "scegli l'algoritmo di ricerca predefinito da usare nelle ricerche"
+msgstr "scegliere l'algoritmo di ricerca predefinito da usare\n"
+"nelle ricerche"
 
 msgid "ignore case when using a search pattern"
-msgstr "ignora maiuscolo/minuscolo nelle espressioni di ricerca"
+msgstr "ignorare maiuscolo/minuscolo nelle espressioni di ricerca"
 
 msgid "override 'ignorecase' when pattern has upper case characters"
 msgstr ""
-"ignora l'opzione 'ignorecase' quando l'espressione di ricerca contiene "
+"ignora l'opzione 'ignorecase' quando l'espressione di ricerca contiene\n"
 "caratteri maiuscoli"
 
 msgid "what method to use for changing case of letters"
@@ -8373,8 +8394,8 @@ msgstr "modello per una riga che include un file"
 
 msgid "expression used to transform an include line to a file name"
 msgstr ""
-"espressione da usare per trasformare un'istruzione di \"include\" in un nome "
-"di file"
+"espressione da usare per trasformare un'istruzione di\n"
+"\"include\" in un nome di file"
 
 msgid "tags"
 msgstr "tag"
@@ -8392,23 +8413,25 @@ msgid ""
 "how to handle case when searching in tags files:\n"
 "\"followic\" to follow 'ignorecase', \"ignore\" or \"match\""
 msgstr ""
-"come gestire maiuscolo/minuscolo nella ricerca nei file di tag:\n"
-"\"followic\" per usare il valore di 'ignorecase', \"ignore\" o \"match\""
+"come gestire maiuscolo/minuscolo nella ricerca nei file di\n"
+"tag: \"followic\" per usare il valore di 'ignorecase',\n"
+"\"ignore\" o \"match\""
 
 msgid "file names in a tags file are relative to the tags file"
 msgstr ""
-"i nomi di file in un file di tag sono espressi a partire dalla posizione del "
-"file di tag"
+"i nomi di file in un file di tag sono espressi a partire dalla\n"
+"posizione del file di tag"
 
 msgid "a :tag command will use the tagstack"
 msgstr "un comando :tag userà la pila dei tag (tagstack)"
 
 msgid "when completing tags in Insert mode show more info"
 msgstr ""
-"quando si completa un tag in modo Insert, mostra ulteriori informazioni"
+"quando si completa un tag in modo Insert, mostrare ulteriori\n"
+"informazioni"
 
 msgid "a function to be used to perform tag searches"
-msgstr "una funziona da usare per effettuare le ricerche di tag"
+msgstr "funzione da usare per effettuare le ricerche di tag"
 
 msgid "command for executing cscope"
 msgstr "comando per eseguire cscope"
@@ -8420,21 +8443,21 @@ msgid "0 or 1; the order in which \":cstag\" performs a search"
 msgstr "0 o 1; ordine in cui \":cstag\" effettua una ricerca"
 
 msgid "give messages when adding a cscope database"
-msgstr "metti messaggi quando si aggiunge un database cscope"
+msgstr "avvisare quando si aggiunge un database cscope"
 
 msgid "how many components of the path to show"
 msgstr "quanti componenti del percorso del nome di un file mostrare"
 
 msgid "when to open a quickfix window for cscope"
-msgstr "Quando aprire una finestra quickfix per cscope"
+msgstr "quando aprire una finestra quickfix per cscope"
 
 msgid "file names in a cscope file are relative to that file"
 msgstr ""
-"i nomi di file in un file cscope sono espressi a partire dalla posizione del "
-"file stesso"
+"i nomi di file in un file cscope sono espressi a partire dalla posizione\n"
+"del file stesso"
 
 msgid "displaying text"
-msgstr "visualizza del testo"
+msgstr "visualizzare del testo"
 
 msgid "number of lines to scroll for CTRL-U and CTRL-D"
 msgstr "numero di righe da scorrere con i comandi CTRL-U e CTRL-D"
@@ -8444,53 +8467,55 @@ msgstr "scorrimento per riga schermo"
 
 msgid "number of screen lines to show around the cursor"
 msgstr ""
-"numero di righe dello schermo da mostrare attorno alla riga che contiene il "
-"cursore"
+"numero di righe dello schermo da mostrare attorno alla riga che contiene\n"
+"il cursore"
 
 msgid "long lines wrap"
-msgstr "righe lunghe vanno a capo"
+msgstr "mandare a capo righe lunghe"
 
 msgid "wrap long lines at a character in 'breakat'"
 msgstr ""
-"spezza righe lunghe quando si incontra uno dei caratteri specificati in "
-"'breakat'"
+"andare a capo nelle righe lunghe quando si incontra uno dei caratteri\n"
+"specificati in 'breakat'"
 
 msgid "preserve indentation in wrapped text"
 msgstr ""
-"mantieni l'indentatura nel testo che occupa più di una riga dello schermo"
+"mantenere indentatura nel testo che occupa più di una riga dello schermo"
 
 msgid "adjust breakindent behaviour"
-msgstr "specifica comportamento dell'opzione 'breakindent'"
+msgstr "specificare comportamento dell'opzione 'breakindent'"
 
 msgid "which characters might cause a line break"
 msgstr "quali caratteri potrebbero causare un'interruzione di riga"
 
 msgid "string to put before wrapped screen lines"
 msgstr ""
-"stringa da visualizzare prima delle righe di continuazione sullo schermo di "
-"ogni riga lunga"
+"stringa da visualizzare sullo schermo prima delle righe di\n"
+"continuazione di ogni riga lunga"
 
 msgid "minimal number of columns to scroll horizontally"
 msgstr "numero minimo di colonne da far scorrere in orizzontale"
 
 msgid "minimal number of columns to keep left and right of the cursor"
 msgstr ""
-"numero minimo di colonne da mantenere a destra e a sinistra del cursore"
+"numero minimo di colonne da mantenere a destra e a sinistra\n"
+"del cursore"
 
 msgid ""
 "include \"lastline\" to show the last line even if it doesn't fit\n"
 "include \"uhex\" to show unprintable characters as a hex number"
 msgstr ""
 "includere \"lastline\" per mostrare ultima riga anche se non completa\n"
-"includere \"uhex\" per mostrare caratteri non visibile come numeri "
-"esadecimali"
+"includere \"uhex\" per mostrare come numeri esadecimali i caratteri\n"
+"non visibili"
 
 msgid "characters to use for the status line, folds and filler lines"
 msgstr ""
-"caratteri da usare per riga di status, piegature e righe di riempimento"
+"caratteri da usare per riga di status, piegature e righe\n"
+"di riempimento"
 
 msgid "number of lines used for the command-line"
-msgstr "numero di righe da usare per la riga-di-comando"
+msgstr "numero di righe disponibili per la riga-di-comando"
 
 msgid "width of the display"
 msgstr "larghezza della videata"
@@ -8505,7 +8530,7 @@ msgid "don't redraw while executing macros"
 msgstr "non aggiornare lo schermo mentre si stanno eseguendo delle macro"
 
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
-msgstr "timeout per evidenziare 'hlsearch' e :match in millisecondi"
+msgstr "ritardo in millisecondi prima di evidenziare 'hlsearch' e :match"
 
 msgid ""
 "delay in msec for each char written to the display\n"
@@ -8515,34 +8540,35 @@ msgstr ""
 "(per debugging)"
 
 msgid "show <Tab> as ^I and end-of-line as $"
-msgstr "mostra <Tab> come ^I e fine-riga come $"
+msgstr "mostrare <Tab> come ^I e fine-riga come $"
 
 msgid "list of strings used for list mode"
 msgstr "lista di stringhe da usare per il modo List"
 
 msgid "show the line number for each line"
-msgstr "mostra numero di riga per ogni riga"
+msgstr "mostrare numero di riga per ogni riga"
 
 msgid "show the relative line number for each line"
-msgstr "mostra numero di riga relativo per ogni riga"
+msgstr "mostrare numero di riga relativo per ogni riga"
 
 msgid "number of columns to use for the line number"
 msgstr "numero di colonne da usare per visualizzare numero di riga"
 
 msgid "controls whether concealable text is hidden"
-msgstr "controlla se il testo nascondibile è nascosto"
+msgstr "controllare se il testo nascondibile è nascosto"
 
 msgid "modes in which text in the cursor line can be concealed"
-msgstr "modi nei quali la riga del cursore può essere nascosta"
+msgstr "modi nei quali il testo nella riga del cursore può\n"
+"essere nascosto"
 
 msgid "syntax, highlighting and spelling"
 msgstr "sintassi, evidenziazione e correzione ortografica"
 
 msgid "\"dark\" or \"light\"; the background color brightness"
-msgstr "\"dark\" o \"light\"; scuro/chiaro, colore di sfondo"
+msgstr "\"dark\" o \"light\"; se il colore di sfondo è scuro o chiaro"
 
 msgid "type of file; triggers the FileType event when set"
-msgstr "tipo di file; fa scattare evento FileType quando è impostato"
+msgstr "tipo di file; se impostato, fa scattare evento FileType"
 
 msgid "name of syntax highlighting used"
 msgstr "nome dell'evidenziazione sintattica usata"
@@ -8554,61 +8580,63 @@ msgid "which highlighting to use for various occasions"
 msgstr "evidenziazione da usare per varie occasioni"
 
 msgid "highlight all matches for the last used search pattern"
-msgstr "evidenzia tutte le occorrenze dell'ultima ricerca effettuata"
+msgstr "evidenziare tutte le occorrenze dell'ultima ricerca effettuata"
 
 msgid "highlight group to use for the window"
 msgstr "gruppo evidenziazione da usare per la finestra"
 
 msgid "use GUI colors for the terminal"
-msgstr "usa colori della GUI per il terminale"
+msgstr "usare colori della GUI per il terminale"
 
 msgid "highlight the screen column of the cursor"
-msgstr "evidenzia la colonna del cursore sullo schermo"
+msgstr "evidenziare la colonna del cursore sullo schermo"
 
 msgid "highlight the screen line of the cursor"
-msgstr "evidenzia la riga del cursore sullo schermo"
+msgstr "evidenziare la riga del cursore sullo schermo"
 
 msgid "specifies which area 'cursorline' highlights"
-msgstr "specifica quali aree 'cursorline' evidenzia"
+msgstr "specificare quali area 'cursorline' evidenzia"
 
 msgid "columns to highlight"
 msgstr "colonne da evidenziare"
 
 msgid "highlight spelling mistakes"
-msgstr "evidenzia errori ortografici"
+msgstr "evidenziare errori ortografici"
 
 msgid "list of accepted languages"
-msgstr "lista dei linguaggi accettati"
+msgstr "lista delle lingue utilizzate"
 
 msgid "file that \"zg\" adds good words to"
-msgstr "file a cui \"zg\" aggiunge le parole \"buone\" indicate"
+msgstr "file a cui \"zg\" aggiunge le parole riconosciute\n"
+"come \"buone\""
 
 msgid "pattern to locate the end of a sentence"
 msgstr "espressione per individuare la fine di una frase"
 
 msgid "flags to change how spell checking works"
-msgstr "flag per cambiare come funziona la correzione ortografica"
+msgstr "flag per cambiare il funzionamento della correzione ortografica"
 
 msgid "methods used to suggest corrections"
 msgstr "metodi usati per suggerire correzioni"
 
 msgid "amount of memory used by :mkspell before compressing"
 msgstr ""
-"quantità di memoria usata da :mkspell prima di comprimere il file risultante"
+"quantità di memoria usata da :mkspell prima di comprimere\n"
+"il file risultante"
 
 msgid "multiple windows"
-msgstr "finestre multiple"
+msgstr "più di una finestra"
 
 msgid "0, 1 or 2; when to use a status line for the last window"
-msgstr "0, 1 o 2; quando usare la riga di status per l'ultima finestra"
+msgstr "0, 1 o 2; quando usare una riga di status per l'ultima finestra"
 
 msgid "alternate format to be used for a status line"
 msgstr "formato alternativo da usare per una riga di status"
 
 msgid "make all windows the same size when adding/removing windows"
 msgstr ""
-"rendere tutte le finestre di dimensioni uguali quando si aggiungono o "
-"rimuovono finestre"
+"rendere tutte le finestre di dimensioni uguali quando si aggiungono\n"
+"o rimuovono finestre"
 
 msgid "in which direction 'equalalways' works: \"ver\", \"hor\" or \"both\""
 msgstr "direzione in cui 'equalalways' funziona: \"ver\", \"hor\" o \"both\""
@@ -8617,60 +8645,62 @@ msgid "minimal number of lines used for the current window"
 msgstr "numero minimo di righe usato per la finestra corrente"
 
 msgid "minimal number of lines used for any window"
-msgstr "numero minimo di righe usato per ognuna delle finestre"
+msgstr "numero minimo di righe usato per ogni finestra"
 
 msgid "keep the height of the window"
-msgstr "mantieni l'altezza della finestra"
+msgstr "mantenere l'altezza della finestra"
 
 msgid "keep the width of the window"
 msgstr "mantenere la larghezza della finestra"
 
 msgid "minimal number of columns used for the current window"
-msgstr "numero minimo di colonne usate per la finestra corrente"
+msgstr "numero minimo di colonne da usare per la finestra corrente"
 
 msgid "minimal number of columns used for any window"
-msgstr "numero minimo di colonne usate per qualsiasi finestra"
+msgstr "numero minimo di colonne da usare per tutte le finestre"
 
 msgid "initial height of the help window"
 msgstr "altezza iniziale della finestra di help"
 
 msgid "use a popup window for preview"
-msgstr "usa una finestra dinamica per le anteprime"
+msgstr "usare una finestra dinamica per le anteprime"
 
 msgid "default height for the preview window"
-msgstr "altezza predefinita per la finestra precedente"
+msgstr "altezza predefinita per la finestra di anteprima"
 
 msgid "identifies the preview window"
-msgstr "identifica la finestra di anteprima"
+msgstr "identificare la finestra di anteprima"
 
 msgid "don't unload a buffer when no longer shown in a window"
-msgstr "non scaricare un buffer quando non appare più in alcuna finestra"
+msgstr "non scaricare un buffer quando non appare più in alcuna\n"
+"finestra"
 
 msgid ""
 "\"useopen\" and/or \"split\"; which window to use when jumping\n"
 "to a buffer"
 msgstr ""
-"\"useopen\" e/o \"split\"; che finestra usare quando si salta a un buffer"
+"\"useopen\" e/o \"split\"; che finestra usare quando si salta a un\n"
+"buffer"
 
 msgid "a new window is put below the current one"
-msgstr "una nuova finestra va sotto quella corrente"
+msgstr "mettere una nuova finestra sotto quella corrente"
 
 msgid "determines scroll behavior for split windows"
-msgstr "determina comportamento scorrimento per finestre con divisioni"
+msgstr "determinare comportamento scorrimento per finestre con divisioni"
 
 msgid "a new window is put right of the current one"
-msgstr "una nuova finestra va a destra di quella corrente"
+msgstr "mettere una nuova finestra a destra di quella corrente"
 
 msgid "this window scrolls together with other bound windows"
 msgstr "questa finestra scorre insieme alle altre a essa collegate"
 
 msgid "\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'"
-msgstr "\"ver\", \"hor\" e/o \"jump\"; lista delle opzioni per 'scrollbind'"
+msgstr "\"ver\", \"hor\" e/o \"jump\"; lista opzioni per 'scrollbind'"
 
 msgid "this window's cursor moves together with other bound windows"
 msgstr ""
-"il cursore di questa finestra di sposta insieme a quelli delle finestre "
-"collegate"
+"il cursore di questa finestra di sposta insieme a quelli\n"
+"delle finestre collegate"
 
 msgid "size of a terminal window"
 msgstr "dimensione di una finestra-terminale"
@@ -8680,8 +8710,8 @@ msgstr "tasto che precede comandi Vim in una finestra-terminale"
 
 msgid "max number of lines to keep for scrollback in a terminal window"
 msgstr ""
-"numero massimo di linee da ricordare per scorrere indietro in una finestra-"
-"terminale"
+"numero massimo di linee da mantenere scorrendo indietro\n"
+"in una finestra-terminale"
 
 msgid "type of pty to use for a terminal window"
 msgstr "typo di pty da usare per una finestra-terminale"
@@ -8693,19 +8723,20 @@ msgid "multiple tab pages"
 msgstr "più di una pagina di linguette"
 
 msgid "0, 1 or 2; when to use a tab pages line"
-msgstr "0, 1 o 2; quando usare riga che descrive pagine di linguette"
+msgstr "0, 1 o 2; utilizzo della riga che descrive pagine di linguette"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
-msgstr "massimo numero di pagine di linguette da aprire per -p e \"tab all\""
+msgstr "massimo numero di pagine di linguette da aprire\n"
+"per -p e \"tab all\""
 
 msgid "custom tab pages line"
-msgstr "riga personalizzata per le pagine di linguette"
+msgstr "personalizzazione riga che descrive le pagine di linguette"
 
 msgid "custom tab page label for the GUI"
-msgstr "etichetta personalizzata per le pagine di linguette nella GUI"
+msgstr "personalizzazione etichetta per le pagine di linguette nella GUI"
 
 msgid "custom tab page tooltip for the GUI"
-msgstr "suggerimento personalizzato per le pagine di linguette nella GUI"
+msgstr "personalizzazione suggerimento per le pagine di linguette nella GUI"
 
 msgid "terminal"
 msgstr "terminale"
@@ -8717,72 +8748,74 @@ msgid "alias for 'term'"
 msgstr "alias per 'term'"
 
 msgid "check built-in termcaps first"
-msgstr "controlla prima le opzioni di terminale predefinite"
+msgstr "controllare prima le opzioni di terminale predefinite"
 
 msgid "terminal connection is fast"
 msgstr "la connessione del terminale è veloce"
 
 msgid "request terminal key codes when an xterm is detected"
-msgstr "richiesta codici tasti terminale quando scoperto xterm"
+msgstr "richiesta codici tasti terminale quando il terminale\n"
+"è un xterm"
 
 msgid "terminal that requires extra redrawing"
 msgstr "terminale che richiede ulteriore ridisegno"
 
 msgid "what keyboard protocol to use for which terminal"
-msgstr "che protocollo di tastiera usare per quale terminale"
+msgstr "protocollo di tastiera da usare per un dato terminale"
 
 msgid "recognize keys that start with <Esc> in Insert mode"
-msgstr "riconosci tasti funzione che iniziano con <Esc> in modo Insert"
+msgstr "riconoscere sequenze di tasti che iniziano con <Esc> in modo Insert"
 
 msgid "minimal number of lines to scroll at a time"
 msgstr "numero minimo di righe da scorrere ogni volta"
 
 msgid "maximum number of lines to use scrolling instead of redrawing"
 msgstr ""
-"numero massimo di righe in cui usare lo scorrimento invece di ridisegnare lo "
-"schermo"
+"numero massimo di righe in cui usare lo scorrimento invece che\n"
+"ridisegnare lo schermo"
 
 msgid "specifies what the cursor looks like in different modes"
-msgstr "specifica l'aspetto del cursore nei vari modi"
+msgstr "specificare l'aspetto del cursore nei vari modi"
 
 msgid "show info in the window title"
-msgstr "mostra informazioni nel titolo della finestra"
+msgstr "mostrare informazioni nel titolo della finestra"
 
 msgid "percentage of 'columns' used for the window title"
-msgstr "percentuale di 'columns' usate per il titolo della finestra"
+msgstr "percentuale di 'columns' da usare per il titolo della finestra"
 
 msgid "when not empty, string to be used for the window title"
-msgstr "se non nulla, stringa da usare come titolo della finestra"
+msgstr "se specificata, stringa da usare come titolo della finestra"
 
 msgid "string to restore the title to when exiting Vim"
-msgstr "stringa di ripristino del titolo quando di esce da Vim"
+msgstr "stringa per ripristinare il titolo quando di esce da Vim"
 
 msgid "set the text of the icon for this window"
-msgstr "imposta testo dell'icona per questa finestra"
+msgstr "impostare testo dell'icona per questa finestra"
 
 msgid "when not empty, text for the icon of this window"
-msgstr "se non nulla, testo per l'icona di questa finestra"
+msgstr "se specificata, testo per l'icona di questa finestra"
 
 msgid "restore the screen contents when exiting Vim"
-msgstr "ripristina i contenuti dello schermo all'uscita da Vim"
+msgstr "ripristinare i contenuti dello schermo all'uscita da Vim"
 
 msgid "using the mouse"
-msgstr "usando il mouse"
+msgstr "usare il mouse"
 
 msgid "list of flags for using the mouse"
 msgstr "lista dei flag per usare il mouse"
 
 msgid "the window with the mouse pointer becomes the current one"
-msgstr "rende corrente la finestra che contiene il puntatore del mouse"
+msgstr "rendere corrente la finestra che contiene il puntatore del mouse"
 
 msgid "the window with the mouse pointer scrolls with the mouse wheel"
-msgstr "la finestra col puntatore del mouse scorre con la rotella del mouse"
+msgstr "la finestra che contiene il puntatore del mouse scorre con\n"
+"la rotella del mouse"
 
 msgid "hide the mouse pointer while typing"
-msgstr "nasconde il puntatore del mouse mentre si immette testo"
+msgstr "nascondere il puntatore del mouse mentre si immette testo"
 
 msgid "report mouse movement events"
-msgstr "riferisci eventi di movimento del mouse"
+msgstr "riferire eventi di movimento del mouse"
 
 msgid ""
 "\"extend\", \"popup\" or \"popup_setpos\"; what the right\n"
@@ -8808,20 +8841,23 @@ msgstr "lista di nomi di carattere da usare nella GUI"
 
 msgid "pair of fonts to be used, for multibyte editing"
 msgstr ""
-"coppia di caratteri da usare, per editare file con caratteri multi-byte"
+"coppia di caratteri da usare, per editare file con caratteri\n"
+"multi-byte"
 
 msgid "list of font names to be used for double-wide characters"
-msgstr "lista di nomi di carattere da usare per caratteri a doppia larghezza"
+msgstr "lista di nomi di carattere da usare per caratteri\n"
+"a doppia larghezza"
 
 msgid "use smooth, antialiased fonts"
 msgstr "usare font più leggibili, anti-alias"
 
 msgid "list of flags that specify how the GUI works"
-msgstr "lista di flag che specificano come funziona le GUI"
+msgstr "lista di flag per specificare come funziona la GUI"
 
 msgid "\"icons\", \"text\" and/or \"tooltips\"; how to show the toolbar"
 msgstr ""
-"\"icons\", \"text\" e/o \"tooltips\"; come mostrare la barra degli strumenti"
+"\"icons\", \"text\" e/o \"tooltips\"; come mostrare la barra degli\n"
+"strumenti"
 
 msgid "size of toolbar icons"
 msgstr "dimensione icone sulla barra degli strumenti"
@@ -8831,7 +8867,8 @@ msgstr "spazio (in pixel) da lasciare sopra/sotto la finestra"
 
 msgid "list of ASCII characters that can be combined into complex shapes"
 msgstr ""
-"lista caratteri ASCII che possono combinarsi per generare forme complesse"
+"lista caratteri ASCII che possono combinarsi per generare forme\n"
+"complesse"
 
 msgid "options for text rendering"
 msgstr "opzioni per la renderizzazione del testo"
@@ -8843,8 +8880,8 @@ msgid ""
 "\"last\", \"buffer\" or \"current\": which directory used for the file "
 "browser"
 msgstr ""
-"\"last\", \"buffer\" o \"current\": quale directory usare per esplorare i "
-"file"
+"\"last\", \"buffer\" o \"current\": quale directory usare per\n"
+"esplorare i file"
 
 msgid "language to be used for the menus"
 msgstr "lingua da usare per i menù"
@@ -8862,19 +8899,20 @@ msgid "delay in milliseconds before a balloon may pop up"
 msgstr "ritardo in millisecondi prima di visualizzare una didascalia"
 
 msgid "use balloon evaluation in the GUI"
-msgstr "valuta le didascalie nella GUI"
+msgstr "valutare didascalie nella GUI"
 
 msgid "use balloon evaluation in the terminal"
-msgstr "valuta le didascalie nella finestra-terminale"
+msgstr "valutare didascalie nella finestra-terminale"
 
 msgid "expression to show in balloon eval"
 msgstr "espressione da mostrare nella valutazione di una didascalia"
 
 msgid "printing"
-msgstr "in stampa"
+msgstr "stampare"
 
 msgid "list of items that control the format of :hardcopy output"
-msgstr "lista degli elementi che controllano il formato output di :hardcopy"
+msgstr "lista degli elementi che controllano il formato output\n"
+"del comando :hardcopy"
 
 msgid "name of the printer to be used for :hardcopy"
 msgstr "nome della stampante da usare per :hardcopy"
@@ -8886,10 +8924,10 @@ msgid "name of the font to be used for :hardcopy"
 msgstr "nome del carattere da usare per :hardcopy"
 
 msgid "format of the header used for :hardcopy"
-msgstr "formato dell'intestazione usata per :hardcopy"
+msgstr "formato dell'intestazione da usare per :hardcopy"
 
 msgid "encoding used to print the PostScript file for :hardcopy"
-msgstr "codifica usata per stampare il file PostScript da :hardcopy"
+msgstr "codifica da usare per stampare il file PostScript da :hardcopy"
 
 msgid "the CJK character set to be used for CJK output from :hardcopy"
 msgstr "il carattere CJK da usare per output CJK da :hardcopy"
@@ -8901,23 +8939,25 @@ msgid "messages and info"
 msgstr "messaggi e informazioni"
 
 msgid "add 's' flag in 'shortmess' (don't show search message)"
-msgstr "aggiungi 's' flag in 'shortmess' (non mostrare messaggi di ricerca)"
+msgstr "aggiungere flag 's' in 'shortmess' (non mostrare messaggi di\n"
+"ricerca)"
 
 msgid "list of flags to make messages shorter"
 msgstr "lista di flag su come abbreviare messaggi"
 
 msgid "show (partial) command keys in location given by 'showcmdloc'"
-msgstr "mostra (una parte dei) tasti di comando nella riga di status"
+msgstr "mostrare (una parte dei) tasti di comando nella riga di status"
 
 msgid "location where to show the (partial) command keys for 'showcmd'"
 msgstr ""
-"posizione in cui mostrare (una parte dei) tasti di comando per 'showcmd'"
+"posizione in cui mostrare (una parte dei) tasti di comando\n"
+"per 'showcmd'"
 
 msgid "display the current mode in the status line"
-msgstr "visualizza modo corrente nella riga di status"
+msgstr "visualizzare modo corrente nella riga di status"
 
 msgid "show cursor position below each window"
-msgstr "mostra la posizione del cursore sotto ogni finestra"
+msgstr "mostrare la posizione del cursore sotto ogni finestra"
 
 msgid "alternate format to be used for the ruler"
 msgstr "formato alternativo da usare per il righello"
@@ -8926,31 +8966,32 @@ msgid "threshold for reporting number of changed lines"
 msgstr "soglia sopra la quale riferire il numero di righe modificate"
 
 msgid "the higher the more messages are given"
-msgstr "quanto più alto, tanto più dettagliati sono i messaggi"
+msgstr "più alto il valore, più numerosi i messaggi diagnostici"
 
 msgid "file to write messages in"
 msgstr "file su cui scrivere i messaggi"
 
 msgid "pause listings when the screen is full"
-msgstr "fare sosta nella visualizzazione elenchi quando lo schermo è pieno"
+msgstr "fare sosta nella visualizzazione elenchi quando lo schermo\n"
+"è pieno"
 
 msgid "start a dialog when a command fails"
 msgstr "iniziare un dialogo quando un comando non è riuscito"
 
 msgid "ring the bell for error messages"
-msgstr "suonare il campanello con i messaggi di errore"
+msgstr "suonare il campanello per i messaggi di errore"
 
 msgid "use a visual bell instead of beeping"
 msgstr "usare un campanello visivo invece che sonoro"
 
 msgid "do not ring the bell for these reasons"
-msgstr "non suonare il campanelli in questi casi"
+msgstr "non suonare il campanello in questi casi"
 
 msgid "list of preferred languages for finding help"
 msgstr "lista dei linguaggi preferiti per ottenere aiuto"
 
 msgid "selecting text"
-msgstr "selezione di testo"
+msgstr "selezionare testo"
 
 msgid "\"old\", \"inclusive\" or \"exclusive\"; how selecting text behaves"
 msgstr "\"old\", \"inclusive\" o \"exclusive\"; modi per scegliere testo"
@@ -8967,30 +9008,34 @@ msgid ""
 "\"autoselect\" to always put selected text on the clipboard"
 msgstr ""
 "\"unnamed\" per usare registro * come registro senza nome\n"
-"\"autoselect\" per mettere sempre il testo selezionato nella clipboard"
+"\"autoselect\" per mettere sempre il testo selezionato nella\n"
+"clipboard"
 
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "\"startsel\" e/o \"stopsel\"; cosa fare usando tasti speciali"
 
 msgid "editing text"
-msgstr "in edito su testo"
+msgstr "editare un testo"
 
 msgid "maximum number of changes that can be undone"
-msgstr "massimo numero di modifiche che possono essere annullate"
+msgstr "numero massimo di modifiche che possono essere annullate"
 
 msgid "automatically save and restore undo history"
-msgstr "salvare e ripristinare automaticamente storia degli annullamenti"
+msgstr "salvare e ripristinare automaticamente la storia degli\n"
+"annullamenti"
 
 msgid "list of directories for undo files"
-msgstr "lista di directory per i file di annullamento"
+msgstr "lista di directory dove tenere i file di annullamento"
 
 msgid "maximum number lines to save for undo on a buffer reload"
 msgstr ""
-"massimo numero di righe da salvare per annullamento se si ricarica il buffer"
+"massimo numero di righe da salvare per annullamento se si\n"
+"ricarica il buffer"
 
 msgid "changes have been made and not written to a file"
 msgstr ""
-"sono state fatte modifiche che non sono ancora state salvate su un file"
+"ci sono modifiche che non sono ancora state salvate\n"
+"su un file"
 
 msgid "buffer is not to be written"
 msgstr "buffer da non salvare su disco"
@@ -8999,19 +9044,21 @@ msgid "changes to the text are possible"
 msgstr "è possibile modificare il testo"
 
 msgid "line length above which to break a line"
-msgstr "lunghezza di riga sopra la quale spezzare la riga stessa"
+msgstr "lunghezza di riga sopra la quale andare a capo"
 
 msgid "margin from the right in which to break a line"
-msgstr "margine da destra sopra il quale spezzare la riga stessa"
+msgstr "margine da destra sopra il quale andare a capo"
 
 msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
-msgstr "specificare cose <BS>, CTRL-W, etc. possono fare in modo Insert"
+msgstr "specificare cosa <BS>, CTRL-W, etc. possono fare\n"
+"in modo Insert"
 
 msgid "definition of what comment lines look like"
-msgstr "definizione di come sono individuate le righe di commento"
+msgstr "definizioni per individuare le righe di commento"
 
 msgid "list of flags that tell how automatic formatting works"
-msgstr "lista di flag con specifiche riguardo alla formattazione automatica"
+msgstr "lista di flag con specifiche riguardo alla\n"
+"formattazione automatica"
 
 msgid "pattern to recognize a numbered list"
 msgstr "espressione che permette di riconoscere una lista numerata"
@@ -9021,14 +9068,15 @@ msgstr "espressione usata da \"gq\" per formattare righe"
 
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr ""
-"specificare come funziona il completamente in modo Insert per CTRL-N e CTRL-P"
+"specificare come funziona il completamente in modo Insert\n"
+"per CTRL-N e CTRL-P"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "se usare un menù dinamico per il completamento in modo Insert"
 
 msgid "options for the Insert mode completion info popup"
 msgstr ""
-"opzioni per il pannello dinamico con le informazioni di completamento in "
+"opzioni per il menù dinamico con le informazioni di completamento in\n"
 "modo Insert"
 
 msgid "maximum height of the popup menu"
@@ -9038,42 +9086,48 @@ msgid "minimum width of the popup menu"
 msgstr "larghezza minima del menù dinamico"
 
 msgid "user defined function for Insert mode completion"
-msgstr "funzione definita dall'utente per il completamento in modo Insert"
+msgstr "funzione definita dall'utente per il completamento\n"
+"in modo Insert"
 
 msgid "function for filetype-specific Insert mode completion"
 msgstr ""
-"funzione per il completamento in modo Insert a seconda del tipo di file"
+"funzione per il completamento in modo Insert a seconda del\n"
+"tipo di file"
 
 msgid "list of dictionary files for keyword completion"
-msgstr "lista di file dizionario per il completamento di parole chiave"
+msgstr "lista di file dizionario per il completamento di\n"
+"parole chiave"
 
 msgid "list of thesaurus files for keyword completion"
-msgstr "lista di file di sinonimi per il completamento di parole chiave"
+msgstr "lista di file di sinonimi per il completamento di\n"
+"parole chiave"
 
 msgid "function used for thesaurus completion"
-msgstr "funzione usata per completamento thesaurus"
+msgstr "funzione usata per completamento sinonimi"
 
 msgid "adjust case of a keyword completion match"
 msgstr ""
-"tener conto di maiuscolo/minuscolo nelle corrispondenze di completamento"
+"aggiustare maiuscolo/minuscolo nelle corrispondenze di\n"
+"completamento"
 
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr "abilitare immissione lettere non in tastiera con c1 <BS> c2"
+msgstr "abilitare immissione lettere non in tastiera con\n"
+"c1 <BS> c2"
 
 msgid "the \"~\" command behaves like an operator"
 msgstr "il comando \"~\" si comporta come un operatore"
 
 msgid "function called for the \"g@\" operator"
-msgstr "funzione chiamata per l'operatore \"g@\""
+msgstr "funzione da chiamare per l'operatore \"g@\""
 
 msgid "when inserting a bracket, briefly jump to its match"
 msgstr ""
-"se si inserisce parentesi, saltare per un momento alla parentesi "
-"corrispondente"
+"se si inserisce una parentesi, saltare per un momento\n"
+"alla parentesi corrispondente"
 
 msgid "tenth of a second to show a match for 'showmatch'"
 msgstr ""
-"decimi di secondo per evidenziare corrispondenza col comando 'showmatch'"
+"decimi di secondo per evidenziare corrispondenze col comando 'showmatch'"
 
 msgid "list of pairs that match for the \"%\" command"
 msgstr "lista di coppie corrispondenti per il comando \"%\""
@@ -9092,19 +9146,22 @@ msgid "tabs and indenting"
 msgstr "tabulazioni e indentatura"
 
 msgid "number of spaces a <Tab> in the text stands for"
-msgstr "numero di spazi in un testo quando si inserisce <Tab>"
+msgstr "numero di spazi in un testo corrispondenti a <Tab>"
 
 msgid "number of spaces used for each step of (auto)indent"
 msgstr "numero di spazi usati per ogni rientro di (auto)indent"
 
 msgid "list of number of spaces a tab counts for"
-msgstr "lista del numero di spazi a cui ogni tab corrisponde"
+msgstr "lista del numero di spazi a cui ogni successivo\n"
+"tab corrisponde"
 
 msgid "list of number of spaces a soft tabsstop counts for"
-msgstr "lista del numero di spazi a cui ogni softtabstop corrisponde"
+msgstr "lista del numero di spazi a cui ogni successivo\n"
+"softtabstop corrisponde"
 
 msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
-msgstr "un <Tab> in un'indentatura inserisce 'shiftwidth' spazi"
+msgstr "<Tab> in un'indentatura deve inserire 'shiftwidth'\n"
+"spazi"
 
 msgid "if non-zero, number of spaces to insert for a <Tab>"
 msgstr "se diverso da zero, numero di spazi da inserire per un <Tab>"
@@ -9128,22 +9185,24 @@ msgid "options for C-indenting"
 msgstr "opzioni per indentatura C"
 
 msgid "keys that trigger C-indenting in Insert mode"
-msgstr "tasti che iniziano indentatura C in modo Insert"
+msgstr "tasti per iniziare indentatura C in modo Insert"
 
 msgid "list of words that cause more C-indent"
-msgstr "lista di parole che innescano ulteriore indentatura C"
+msgstr "lista di parole per innescare ulteriore indentatura C"
 
 msgid "list of scope declaration names used by cino-g"
 msgstr "lista di dichiarazioni di ambito usate da cino-g"
 
 msgid "expression used to obtain the indent of a line"
-msgstr "espressione usata per ottenere indentatura di una riga"
+msgstr "espressione da usare per ottenere indentatura di una riga"
 
 msgid "keys that trigger indenting with 'indentexpr' in Insert mode"
-msgstr "tasti che iniziano indentatura con 'indentexpr' in modo Insert"
+msgstr "tasti per iniziare indentatura con 'indentexpr'\n"
+"in modo Insert"
 
 msgid "copy whitespace for indenting from previous line"
-msgstr "copiare la parte di spazi bianchi di indentatura dalla riga precedente"
+msgstr "copiare la parte di spazi bianchi di indentatura dalla\n"
+"riga precedente"
 
 msgid "preserve kind of whitespace when changing indent"
 msgstr "conservare tipo di spazi bianchi quando si cambia indentatura"
@@ -9152,43 +9211,45 @@ msgid "enable lisp mode"
 msgstr "abilita Modo Lisp"
 
 msgid "words that change how lisp indenting works"
-msgstr "parole che modificano funzionamento indentatura Lisp"
+msgstr "parole per modificare funzionamento indentatura Lisp"
 
 msgid "options for Lisp indenting"
 msgstr "opzioni per indentatura Lisp"
 
 msgid "folding"
-msgstr "piegatura"
+msgstr "piegature"
 
 msgid "unset to display all folds open"
-msgstr "rimuovere per vedere aperte tutte le piegature"
+msgstr "disabilitare per riaprire tutte le piegature"
 
 msgid "folds with a level higher than this number will be closed"
-msgstr "piegature a livello più alto di questo numero resteranno chiuse"
+msgstr "livello oltre il quale le piegature restano chiuse"
 
 msgid "value for 'foldlevel' when starting to edit a file"
-msgstr "valore di 'foldlevel' all'inizio della modifica di un file"
+msgstr "valore di 'foldlevel' all'inizio dell'edit di un file"
 
 msgid "width of the column used to indicate folds"
-msgstr "larghezza della colonna usare per indicare piegature"
+msgstr "larghezza della colonna da usare per indicare piegature"
 
 msgid "expression used to display the text of a closed fold"
-msgstr "espressione usata per visualizzare testo di una piegatura chiusa"
+msgstr "espressione usata per visualizzare testo di una piegatura\n"
+"chiusa"
 
 msgid "set to \"all\" to close a fold when the cursor leaves it"
 msgstr ""
-"impostare a \"all\" per chiudere una piegatura quando il cursore la lascia"
+"impostare a \"all\" per chiudere una piegatura quando il cursore\n"
+"la lascia"
 
 msgid "specifies for which commands a fold will be opened"
 msgstr "specificare per quali comandi una piegatura verrà aperta"
 
 msgid "minimum number of screen lines for a fold to be closed"
 msgstr ""
-"numero minimo di righe sullo schermo per visualizzare come chiusa una "
-"piegatura"
+"numero minimo di righe sullo schermo per visualizzare come chiusa\n"
+"una piegatura"
 
 msgid "template for comments; used to put the marker in"
-msgstr "modello per i commenti; usata per metterci delle marcature"
+msgstr "modello per i commenti; usata per marcature nelle piegature"
 
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
@@ -9198,17 +9259,18 @@ msgstr ""
 "\"syntax\" o \"diff\""
 
 msgid "expression used when 'foldmethod' is \"expr\""
-msgstr "espressione usata quando 'foldmethod' è \"expr\""
+msgstr "espressione da usare quando 'foldmethod' è \"expr\""
 
 msgid "used to ignore lines when 'foldmethod' is \"indent\""
 msgstr "usare per ignorare righe quando 'foldmethod' è \"indent\""
 
 msgid "markers used when 'foldmethod' is \"marker\""
-msgstr "marcature usate quando 'foldmethod' è \"marker\""
+msgstr "marcature da usare quando 'foldmethod' è \"marker\""
 
 msgid "maximum fold depth for when 'foldmethod' is \"indent\" or \"syntax\""
 msgstr ""
-"massima profondità piegature quando 'foldmethod' è \"indent\" o \"syntax\""
+"massima profondità piegature quando 'foldmethod' è\n"
+"\"indent\" o \"syntax\""
 
 msgid "diff mode"
 msgstr "modo Diff"
@@ -9220,10 +9282,10 @@ msgid "options for using diff mode"
 msgstr "opzioni per usare modo Diff"
 
 msgid "expression used to obtain a diff file"
-msgstr "espressioni usate per ottenere un file diff"
+msgstr "espressioni da usare per ottenere un file diff"
 
 msgid "expression used to patch a file"
-msgstr "espressione usata per applicare patch a un file"
+msgstr "espressione da usare per applicare patch a un file"
 
 msgid "mapping"
 msgstr "mappatura"
@@ -9235,10 +9297,11 @@ msgid "recognize mappings in mapped keys"
 msgstr "riconoscere le mappature nei tasti mappati"
 
 msgid "allow timing out halfway into a mapping"
-msgstr "consenti timeout durante una mappatura"
+msgstr "consentire timeout durante una mappatura"
 
 msgid "allow timing out halfway into a key code"
-msgstr "consenti timeout durante una mappatura con uso di tasti mappati"
+msgstr "consentire timeout durante una mappatura con uso di tasti\n"
+"mappati"
 
 msgid "time in msec for 'timeout'"
 msgstr "tempo in millisecondi prima di andare in 'timeout'"
@@ -9247,19 +9310,21 @@ msgid "time in msec for 'ttimeout'"
 msgstr "tempo in millisecondi prima di andare in 'ttimeout'"
 
 msgid "reading and writing files"
-msgstr "lettura e scrittura file"
+msgstr "leggere e scrivere file"
 
 msgid "enable using settings from modelines when reading a file"
-msgstr "consenti uso di impostazioni da modeline durante la lettura di un file"
+msgstr "consentire uso di impostazioni da modeline durante la\n"
+"lettura di un file"
 
 msgid "allow setting expression options from a modeline"
-msgstr "consenti impostazione di opzioni tramite espressioni da modeline"
+msgstr "consentire impostazione di opzioni tramite espressioni\n"
+"da modeline"
 
 msgid "number of lines to check for modelines"
-msgstr "numero di righe da controllare alla ricerca di modeline"
+msgstr "numero di righe da controllare per modeline"
 
 msgid "binary file editing"
-msgstr "modifica di file binario"
+msgstr "modificare un file binario"
 
 msgid "last line in the file has an end-of-line"
 msgstr "l'ultima riga del file ha una fine-riga"
@@ -9271,7 +9336,7 @@ msgid "fixes missing end-of-line at end of text file"
 msgstr "rimediare alla mancanza di una fine-riga a fine file"
 
 msgid "prepend a Byte Order Mark to the file"
-msgstr "aggiungi all'inizio del file un Byte Order Mark"
+msgstr "aggiungere a inizio file un Byte Order Mark"
 
 msgid "end-of-line format: \"dos\", \"unix\" or \"mac\""
 msgstr "formato fine-riga: \"dos\", \"unix\" o \"mac\""
@@ -9286,7 +9351,7 @@ msgid "obsolete, use 'fileformats'"
 msgstr "obsoleto, usare 'fileformats'"
 
 msgid "writing files is allowed"
-msgstr "la riscrittura dei file è consentita"
+msgstr "riscrivere file è consentito"
 
 msgid "write a backup file before overwriting a file"
 msgstr "scrivere un file di backup, prima di riscrivere un file"
@@ -9298,7 +9363,7 @@ msgid "patterns that specify for which files a backup is not made"
 msgstr "modelli che specificano per quali file non fare un backup"
 
 msgid "whether to make the backup as a copy or rename the existing file"
-msgstr "se fare, come backup, una copia del file, oppure se rinominarlo"
+msgstr "se fare, come backup, una copia del file, invece che rinominarlo"
 
 msgid "list of directories to put backup files in"
 msgstr "lista di directory in cui scrivere i file di backup"
@@ -9307,29 +9372,34 @@ msgid "file name extension for the backup file"
 msgstr "estensione nome file da usare per i file di backup"
 
 msgid "automatically write a file when leaving a modified buffer"
-msgstr "scrivere automaticamente un file, all'uscita da un buffer modificato"
+msgstr "riscrivere automaticamente un file, all'uscita da un buffer\n"
+"modificato"
 
 msgid "as 'autowrite', but works with more commands"
-msgstr "come 'autowrite', ma funzione con un numero maggiore di comandi"
+msgstr "come 'autowrite', ma vale per un numero maggiore di comandi"
 
 msgid "always write without asking for confirmation"
 msgstr "scrivi sempre, senza mai chiedere conferma"
 
 msgid "automatically read a file when it was modified outside of Vim"
-msgstr "leggi automaticamente un file quando è stato modificato non da Vim"
+msgstr "leggere automaticamente un file quando è stato modificato\n"
+"fuori da Vim"
 
 msgid "keep oldest version of a file; specifies file name extension"
 msgstr ""
-"conserva la versione più vecchia di un file; specifica l'estensione da usare"
+"conservare la versione più vecchia di un file; specificare\n"
+"l'estensione da usare"
 
 msgid "forcibly sync the file to disk after writing it"
-msgstr "forza una scrittura fisica su disco del file, dopo averlo riscritto"
+msgstr "forzare una scrittura fisica su disco del file, dopo averlo\n"
+"riscritto"
 
 msgid "use 8.3 file names"
 msgstr "usare nomi di file nel formato 8.3"
 
 msgid "encryption method for file writing: zip, blowfish or blowfish2"
-msgstr "metodo di cifratura con cui scrivere file: zip, blowfish o blowfish2"
+msgstr "metodo di cifratura con cui riscrivere file: zip, blowfish\n"
+"o blowfish2"
 
 msgid "the swap file"
 msgstr "il file di swap"
@@ -9338,64 +9408,70 @@ msgid "list of directories for the swap file"
 msgstr "lista di directory dove mettere il file di swap"
 
 msgid "use a swap file for this buffer"
-msgstr "usare un file di swap per questo buffer"
+msgstr "usare soltanto il file di swap per questo buffer"
 
 msgid "\"sync\", \"fsync\" or empty; how to flush a swap file to disk"
 msgstr ""
-"\"sync\", \"fsync\" o nullo; come forzare la scrittura su disco di un file "
-"di swap"
+"\"sync\", \"fsync\" o nullo; come forzare la scrittura su disco\n"
+"di un file di swap"
 
 msgid "number of characters typed to cause a swap file update"
-msgstr "numero di caratteri immessi per forzare aggiornamento del file di swap"
+msgstr "numero di caratteri immessi per forzare aggiornamento del\n"
+"file di swap"
 
 msgid "time in msec after which the swap file will be updated"
 msgstr ""
-"tempo in millisecondi trascorso il quale il file di swap verrà aggiornato"
+"tempo in millisecondi trascorso il quale il file di swap\n"
+"verrà aggiornato"
 
 msgid "maximum amount of memory in Kbyte used for one buffer"
 msgstr "massima quantità di memoria in Kbyte da usare per un buffer"
 
 msgid "maximum amount of memory in Kbyte used for all buffers"
-msgstr "massima quantità di memoria in Kbyte da usare per tutti i buffer"
+msgstr "massima quantità di memoria in Kbyte da usare per tutti\n"
+"i buffer"
 
 msgid "command line editing"
 msgstr "edit della riga-di-comando"
 
 msgid "how many command lines are remembered"
-msgstr "quante righe di comando sono ricordate"
+msgstr "quante righe di comando ricordare"
 
 msgid "key that triggers command-line expansion"
 msgstr "tasto che innesca l'espansione della riga-di-comando"
 
 msgid "like 'wildchar' but can also be used in a mapping"
-msgstr "come 'wildchar', ma può anche essere usato in una mappatura"
+msgstr "come 'wildchar', ma utilizzabile anche in una mappatura"
 
 msgid "specifies how command line completion works"
-msgstr "specifica come funziona il completamento della riga-di-comando"
+msgstr "specificare funzionamento del completamento della riga-di-comando"
 
 msgid "empty or \"tagfile\" to list file name of matching tags"
-msgstr "empty o \"tagfile\" per listare nome file dei tag corrispondenti"
+msgstr "nullo o \"tagfile\" per listare nome file dei tag corrispondenti"
 
 msgid "list of file name extensions that have a lower priority"
-msgstr "lista delle estensioni di nomi file con priorità più bassa"
+msgstr "lista estensioni di nomi file con priorità più bassa"
 
 msgid "list of file name extensions added when searching for a file"
 msgstr ""
-"lista delle estensioni aggiunte ai nomi di file quando si effettua la "
-"ricerca di un file"
+"lista delle estensioni da aggiungere ai nomi di file quando si\n"
+"effettua la ricerca di un file"
 
 msgid "list of patterns to ignore files for file name completion"
-msgstr "lista di modelli da ignorare nel completamento dei nomi di file"
+msgstr "lista di modelli da ignorare nel completamento dei nomi\n"
+"di file"
 
 msgid "ignore case when using file names"
 msgstr "ignorare maiuscolo/minuscolo usando nomi di file"
 
 msgid "ignore case when completing file names"
-msgstr "ignorare maiuscolo/minuscolo nel completamento dei nomi di file"
+msgstr "ignorare maiuscolo/minuscolo nel completamento dei nomi\n"
+"di file"
 
 msgid "command-line completion shows a list of matches"
 msgstr ""
-"il completamente della riga-di-comando mostra una lista di corrispondenze"
+"il completamente della riga-di-comando mostra\n"
+"una lista di corrispondenze"
 
 msgid "key used to open the command-line window"
 msgstr "tasto usato per aprire la finestra delle righe-di-comando"
@@ -9410,40 +9486,44 @@ msgid "name of the shell program used for external commands"
 msgstr "nome della shell da usare per i programmi esterni"
 
 msgid "when to use the shell or directly execute a command"
-msgstr "quando usare la shell, oppure eseguire direttamente un comando"
+msgstr "quando usare la shell, invece che eseguire direttamente\n"
+"un comando"
 
 msgid "character(s) to enclose a shell command in"
 msgstr "caratteri fra cui inserire un comando della shell"
 
 msgid "like 'shellquote' but include the redirection"
-msgstr "come 'shellquote' ma comprende la ridirezione"
+msgstr "come 'shellquote' ma è ammessa anche la ridirezione"
 
 msgid "characters to escape when 'shellxquote' is ("
 msgstr "caratteri da proteggere quando 'shellxquote' è ("
 
 msgid "argument for 'shell' to execute a command"
-msgstr "argomento da passare alla 'shell' per poter eseguire un comando"
+msgstr "argomento da passare alla 'shell' per poter\n"
+"eseguire un comando"
 
 msgid "used to redirect command output to a file"
-msgstr "usato per ridirigere l'output di un comando a un file"
+msgstr "stringa da usare per ridirigere l'output di un comando\n"
+"a un file"
 
 msgid "use a temp file for shell commands instead of using a pipe"
 msgstr ""
-"usare un file temporaneo per i comandi della shell, invece che usare una pipe"
+"usare un file temporaneo per i comandi della shell, invece che|n"
+"usare una pipe"
 
 msgid "program used for \"=\" command"
-msgstr "programma usato per il comando \"=\""
+msgstr "programma da usare per il comando \"=\""
 
 msgid "program used to format lines with \"gq\" command"
-msgstr "programma usato per formattare le righe col comando \"gq\""
+msgstr "programma da usare per formattare righe col comando \"gq\""
 
 msgid "program used for the \"K\" command"
-msgstr "programma usato per il comando \"K\""
+msgstr "programma da usare per il comando \"K\""
 
 msgid "warn when using a shell command and a buffer has changes"
 msgstr ""
-"avvisare quando si sta usando un comando della shell e un buffer ha avuto "
-"delle modifiche"
+"avvisare quando, usando un comando della shell, un buffer è\n"
+"stato modificato"
 
 msgid "running make and jumping to errors (quickfix)"
 msgstr "eseguire make e saltare agli errori (quickfix)"
@@ -9452,58 +9532,61 @@ msgid "name of the file that contains error messages"
 msgstr "nome del file che contiene i messaggi di errore"
 
 msgid "list of formats for error messages"
-msgstr "lista di formati dei messaggi di errore"
+msgstr "lista dei formati dei messaggi di errore"
 
 msgid "program used for the \":make\" command"
 msgstr "programma usato per invocare \":make\""
 
 msgid "string used to put the output of \":make\" in the error file"
-msgstr "stringa usata per porre l'output di \":make\" nel file degli errori"
+msgstr "stringa usata per porre l'output di \":make\" nel file\n"
+"degli errori"
 
 msgid "name of the errorfile for the 'makeprg' command"
 msgstr "nome del file degli errori per il comando 'makeprg'"
 
 msgid "program used for the \":grep\" command"
-msgstr "programma usato per il comando \":grep\""
+msgstr "programma da usare per il comando \":grep\""
 
 msgid "list of formats for output of 'grepprg'"
-msgstr "lista di formati per l'output di 'grepprg'"
+msgstr "lista dei formati per l'output di 'grepprg'"
 
 msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "codifica dell'output dei programmi \":make\" e \":grep\""
 
 msgid "function to display text in the quickfix window"
-msgstr "funzione che visualizza del testo nella finestra quickfix"
+msgstr "funzione che visualizza del testo\n"
+"nella finestra quickfix"
 
 msgid "system specific"
-msgstr "proprio del sistema"
+msgstr "caratteristiche del sistema"
 
 msgid "use forward slashes in file names; for Unix-like shells"
 msgstr "usare barre nei nomi di file; per shell di tipo Unix"
 
 msgid "specifies slash/backslash used for completion"
-msgstr "specificare se va usato barra o barra inversa nel completamento"
+msgstr "specificare se va usato barra o barra inversa nel\n"
+"completamento"
 
 msgid "language specific"
-msgstr "proprio del linguaggio"
+msgstr "caratteristiche del linguaggio"
 
 msgid "specifies the characters in a file name"
-msgstr "specifica i caratteri contenuti in un nome di file"
+msgstr "lista dei caratteri contenuti in un nome di file"
 
 msgid "specifies the characters in an identifier"
-msgstr "specifica i caratteri contenuti in un identificativo"
+msgstr "lista dei caratteri contenuti in un identificativo"
 
 msgid "specifies the characters in a keyword"
-msgstr "specifica i caratteri contenuti in una parola"
+msgstr "lista dei caratteri contenuti in una parola"
 
 msgid "specifies printable characters"
-msgstr "specifica i caratteri stampabili"
+msgstr "lista dei caratteri stampabili"
 
 msgid "specifies escape characters in a string"
-msgstr "specifica i caratteri di protezione in un stringa"
+msgstr "lista dei caratteri di protezione in un stringa"
 
 msgid "display the buffer right-to-left"
-msgstr "visualizza il buffer da destra a sinistra"
+msgstr "visualizzare il buffer da destra a sinistra"
 
 msgid "when to edit the command-line right-to-left"
 msgstr "quando editare la riga-di-comando da destra a sinistra"
@@ -9513,11 +9596,11 @@ msgstr "inserire i caratteri all'indietro"
 
 msgid "allow CTRL-_ in Insert and Command-line mode to toggle 'revins'"
 msgstr ""
-"consentire CTRL-_ nei modi Insert e Command-line per innescare/disinnescare "
-"'revins'"
+"consentire CTRL-_ nei modi Insert e Command-line per\n"
+"innescare/disinnescare 'revins'"
 
 msgid "the ASCII code for the first letter of the Hebrew alphabet"
-msgstr "il codice ASCII per la prima lettera dell'alfabeto ebraico"
+msgstr "codice ASCII per la prima lettera dell'alfabeto ebraico"
 
 msgid "use Hebrew keyboard mapping"
 msgstr "usare mappatura tastiera ebraica"
@@ -9526,35 +9609,37 @@ msgid "use phonetic Hebrew keyboard mapping"
 msgstr "usare mappatura tastiera fonetica ebraica"
 
 msgid "prepare for editing Arabic text"
-msgstr "preparare per editare test in arabo"
+msgstr "preparare per editare testo in arabo"
 
 msgid "perform shaping of Arabic characters"
-msgstr "assumere la forma dei caratteri arabi"
+msgstr "consentire formazione dei caratteri arabi"
 
 msgid "terminal will perform bidi handling"
-msgstr "il terminale effettua gestione bidirezionalità del testo"
+msgstr "lasciare fare al terminale gestione bidirezionalità\n"
+"del testo"
 
 msgid "name of a keyboard mapping"
 msgstr "nome di una mappatura di tastiera"
 
 msgid "list of characters that are translated in Normal mode"
-msgstr "lista dei caratteri che vengono tradotti in modo Normal"
+msgstr "lista dei caratteri da rimappare in modo Normal"
 
 msgid "apply 'langmap' to mapped characters"
 msgstr "applicare 'langmap' ai caratteri mappati"
 
 msgid "when set never use IM; overrules following IM options"
 msgstr ""
-"se impostata, non usare mai IM [Input Method]; prevale sulle seguenti "
-"opzioni IM"
+"se impostata, non usare mai IM [Input Method]; prevale sulle\n"
+"seguenti opzioni IM"
 
 msgid "in Insert mode: 1: use :lmap; 2: use IM; 0: neither"
-msgstr "in modo Insert: 1: usare :lmap; 2: usare IM; 0: nessuno dei due"
+msgstr "in modo Insert: 1: usare :lmap; 2: usare IM;\n"
+"0: nessuno dei due"
 
 msgid "input method style, 0: on-the-spot, 1: over-the-spot"
 msgstr ""
-"stile del metodo di input, 0: on-the-spot [in questo punto], 1: over-the-"
-"spot [sopra questo punto]"
+"stile del metodo di input, 0: on-the-spot [in questo punto],\n"
+"1: over-the-spot [sopra questo punto]"
 
 msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
 msgstr ""
@@ -9562,10 +9647,11 @@ msgstr ""
 "nessuno dei due"
 
 msgid "when set always use IM when starting to edit a command line"
-msgstr "se impostato, usare sempre IM iniziando a editare una riga-di-comando"
+msgstr "se impostato, usare sempre IM iniziando a editare una\n"
+"riga-di-comando"
 
 msgid "function to obtain IME status"
-msgstr "funzione per sapere se l'IME è disponibile oppure no"
+msgstr "funzione per sapere se IME è disponibile oppure no"
 
 msgid "function to enable/disable IME"
 msgstr "funzione per abilitare/disabilitare IME"
@@ -9584,19 +9670,20 @@ msgid "character encoding for the current file"
 msgstr "codifica caratteri per il file corrente"
 
 msgid "automatically detected character encodings"
-msgstr "codifica caratteri determinata automaticamente"
+msgstr "determinare automaticamente codifica caratteri"
 
 msgid "character encoding used by the terminal"
 msgstr "codifica caratteri usata dal terminale"
 
 msgid "expression used for character encoding conversion"
-msgstr "espressione usata per convertire codifica caratteri"
+msgstr "espressione da usare per convertire codifica caratteri"
 
 msgid "delete combining (composing) characters on their own"
-msgstr "cancella caratteri combinati (composti) un byte alla volta"
+msgstr "cancellare caratteri combinati (composti) un byte alla volta"
 
 msgid "maximum number of combining (composing) characters displayed"
-msgstr "numero massimo di caratteri combinati (composti) visualizzati"
+msgstr "numero massimo di caratteri combinati (composti)\n"
+"visualizzati"
 
 msgid "key that activates the X input method"
 msgstr "tasto che attiva il metodo di input X"
@@ -9608,7 +9695,7 @@ msgid "emoji characters are full width"
 msgstr "i caratteri emoji sono a larghezza piena"
 
 msgid "various"
-msgstr "vari"
+msgstr "varie"
 
 msgid ""
 "when to use virtual editing: \"block\", \"insert\", \"all\"\n"
@@ -9624,47 +9711,52 @@ msgid "load plugin scripts when starting up"
 msgstr "caricare script plugin alla partenza di Vim"
 
 msgid "enable reading .vimrc/.exrc/.gvimrc in the current directory"
-msgstr "consenti lettura di .vimrc/.exrc/.gvimrc dalla directory corrente"
+msgstr "consentire lettura di .vimrc/.exrc/.gvimrc dalla directory\n"
+"corrente"
 
 msgid "safer working with script files in the current directory"
 msgstr ""
-"è più sicuro lavorare con file di script contenuti nella directory corrente"
+"è più sicuro lavorare con file di script contenuti\n"
+"nella directory corrente"
 
 msgid "use the 'g' flag for \":substitute\""
 msgstr "usare il flag 'g' flag con \":substitute\""
 
 msgid "'g' and 'c' flags of \":substitute\" toggle"
-msgstr "attiva/disattiva flag 'g' e 'c' di \":substitute\""
+msgstr "attivare/disattivare flag 'g' e 'c' di \":substitute\""
 
 msgid "allow reading/writing devices"
-msgstr "consenti lettura/scrittura di dispositivi"
+msgstr "consentire lettura/scrittura di dispositivi"
 
 msgid "maximum depth of function calls"
-msgstr "profondità massima delle chiamate a funzione"
+msgstr "profondità massima delle chiamate di funzione"
 
 msgid "list of words that specifies what to put in a session file"
-msgstr "lista di parole che specifica cosa mettere in un file di sessione"
+msgstr "lista di parole per specificare cosa mettere in un\n"
+"file di sessione"
 
 msgid "list of words that specifies what to save for :mkview"
-msgstr "lista di parole che specifica cosa salvare con :mkview"
+msgstr "lista di parole per specificare cosa salvare con :mkview"
 
 msgid "directory where to store files with :mkview"
 msgstr "directory in cui memorizzare file ottenuti con :mkview"
 
 msgid "list that specifies what to write in the viminfo file"
-msgstr "lista che specifica cosa scrivere nel file viminfo"
+msgstr "lista per specificare cosa scrivere nel file viminfo"
 
 msgid "file name used for the viminfo file"
-msgstr "nome del file da usare per contenere le informazioni viminfo"
+msgstr "nome del file da usare per contenere le informazioni\n"
+"viminfo"
 
 msgid "what happens with a buffer when it's no longer in a window"
-msgstr "che fare quando un buffer non è più visibile in alcuna finestra"
+msgstr "che fare quando un buffer non è più visibile in alcuna\n"
+"finestra"
 
 msgid "empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"
 msgstr "vuoto, \"nofile\", \"nowrite\", \"quickfix\", etc.: tipi di buffer"
 
 msgid "whether the buffer shows up in the buffer list"
-msgstr "se il buffer è incluso nella lista dei buffer"
+msgstr "se il buffer va incluso nella lista dei buffer"
 
 msgid "set to \"msg\" to see all error messages"
 msgstr "impostare a \"msg\" per vedere tutti i messaggi di errore"
@@ -9710,5 +9802,4 @@ msgstr "nome della libreria dinamica MzScheme GC"
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""
-"Questa è la finestra della riga-di-comando! si può chiudere con \":q\"."
-
+"Questa è la finestra della riga-di-comando! Si può chiudere con \":q\"."
