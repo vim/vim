@@ -229,10 +229,10 @@ endfunc
 func s:CloseBuffers()
   exe 'bwipe! ' . s:ptybuf
   exe 'bwipe! ' . s:commbuf
-  if s:asmbuf > 0
+  if s:asmbuf > 0 && bufexists(s:asmbuf)
     exe 'bwipe! ' . s:asmbuf
   endif
-  if s:varbuf > 0
+  if s:varbuf > 0 && bufexists(s:varbuf)
     exe 'bwipe! ' . s:varbuf
   endif
   s:running = 0
@@ -617,9 +617,16 @@ endfunc
 func s:GdbOutCallback(channel, text)
   call ch_log('received from gdb: ' . a:text)
 
+  " Disassembly messages need to be forwarded as-is.
+  if s:parsing_disasm_msg
+    call s:CommOutput(a:channel, a:text)
+    return
+  end
+
   " Drop the gdb prompt, we have our own.
   " Drop status and echo'd commands.
-  if a:text == '(gdb) ' || a:text == '^done' || a:text[0] == '&'
+  if a:text == '(gdb) ' || a:text == '^done' ||
+	\ (a:text[0] == '&' && a:text !~ '^&"disassemble')
     return
   endif
   if a:text =~ '^\^error,msg='
@@ -647,8 +654,9 @@ func s:GdbOutCallback(channel, text)
 endfunc
 
 " Decode a message from gdb.  "quotedText" starts with a ", return the text up
-" to the next ", unescaping characters:
+" to the next unescaped ", unescaping characters:
 " - remove line breaks (unless "literal" is v:true)
+" - change \" to "
 " - change \\t to \t (unless "literal" is v:true)
 " - change \0xhh to \xhh (disabled for now)
 " - change \ooo to octal
@@ -659,24 +667,25 @@ func s:DecodeMessage(quotedText, literal)
     return
   endif
   let msg = a:quotedText
-        \ ->substitute('^"\|".*', '', 'g')
-        " multi-byte characters arrive in octal form
-        " NULL-values must be kept encoded as those break the string otherwise
+        \ ->substitute('^"\|[^\\]\zs".*', '', 'g')
+        \ ->substitute('\\"', '"', 'g')
+        "\ multi-byte characters arrive in octal form
+        "\ NULL-values must be kept encoded as those break the string otherwise
         \ ->substitute('\\000', s:NullRepl, 'g')
         \ ->substitute('\\\o\o\o', {-> eval('"' .. submatch(0) .. '"')}, 'g')
-        " Note: GDB docs also mention hex encodings - the translations below work
-        "       but we keep them out for performance-reasons until we actually see
-        "       those in mi-returns
-        " \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-        " \ ->substitute('\\0x00', s:NullRepl, 'g')
+        "\ Note: GDB docs also mention hex encodings - the translations below work
+        "\       but we keep them out for performance-reasons until we actually see
+        "\       those in mi-returns
+        "\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
+        "\ \ ->substitute('\\0x00', s:NullRepl, 'g')
         \ ->substitute('\\\\', '\', 'g')
         \ ->substitute(s:NullRepl, '\\000', 'g')
   if !a:literal
-          return msg
+    return msg
         \ ->substitute('\\t', "\t", 'g')
         \ ->substitute('\\n', '', 'g')
   else
-          return msg
+    return msg
   endif
 endfunc
 const s:NullRepl = 'XXXNULLXXX'
@@ -709,15 +718,7 @@ func s:EndTermDebug(job, status)
   endif
 
   exe 'bwipe! ' . s:commbuf
-  if s:asmbuf > 0
-    exe 'bwipe! ' . s:asmbuf
-  endif
-  if s:varbuf > 0
-    exe 'bwipe! ' . s:varbuf
-  endif
-  let s:running = 0
   unlet s:gdbwin
-
   call s:EndDebugCommon()
 endfunc
 
@@ -727,6 +728,13 @@ func s:EndDebugCommon()
   if exists('s:ptybuf') && s:ptybuf
     exe 'bwipe! ' . s:ptybuf
   endif
+  if s:asmbuf > 0 && bufexists(s:asmbuf)
+    exe 'bwipe! ' . s:asmbuf
+  endif
+  if s:varbuf > 0 && bufexists(s:varbuf)
+    exe 'bwipe! ' . s:varbuf
+  endif
+  let s:running = 0
 
   " Restore 'signcolumn' in all buffers for which it was set.
   call win_gotoid(s:sourcewin)
@@ -789,7 +797,6 @@ endfunc
 
 " Disassembly window - added by Michael Sartain
 "
-" - CommOutput: disassemble $pc
 " - CommOutput: &"disassemble $pc\n"
 " - CommOutput: ~"Dump of assembler code for function main(int, char**):\n"
 " - CommOutput: ~"   0x0000555556466f69 <+0>:\tpush   rbp\n"
@@ -799,7 +806,6 @@ endfunc
 " - CommOutput: ~"End of assembler dump.\n"
 " - CommOutput: ^done
 
-" - CommOutput: disassemble $pc
 " - CommOutput: &"disassemble $pc\n"
 " - CommOutput: &"No function contains specified address.\n"
 " - CommOutput: ^error,msg="No function contains specified address."
@@ -831,12 +837,12 @@ func s:HandleDisasmMsg(msg)
       call s:SendCommand('disassemble $pc,+100')
     endif
     let s:parsing_disasm_msg = 0
-  elseif a:msg =~ '\&\"disassemble \$pc'
+  elseif a:msg =~ '^&"disassemble \$pc'
     if a:msg =~ '+100'
       " This is our second disasm attempt
       let s:parsing_disasm_msg = 2
     endif
-  else
+  elseif a:msg !~ '^&"disassemble'
     let value = substitute(a:msg, '^\~\"[ ]*', '', '')
     let value = substitute(value, '^=>[ ]*', '', '')
     let value = substitute(value, '\\n\"\r$', '', '')
@@ -920,9 +926,10 @@ func s:CommOutput(chan, msg)
         call s:HandleEvaluate(msg)
       elseif msg =~ '^\^error,msg='
         call s:HandleError(msg)
-      elseif msg =~ '^disassemble'
+      elseif msg =~ '^&"disassemble'
         let s:parsing_disasm_msg = 1
         let s:asm_lines = []
+	call s:HandleDisasmMsg(msg)
       elseif msg =~ '^\^done,variables='
 	call s:HandleVariablesMsg(msg)
       endif
@@ -1358,7 +1365,7 @@ func s:GotoAsmwinOrCreateIt()
     setlocal signcolumn=no
     setlocal modifiable
 
-    if s:asmbuf > 0
+    if s:asmbuf > 0 && bufexists(s:asmbuf)
       exe 'buffer' . s:asmbuf
     else
       silent file Termdebug-asm-listing
@@ -1420,7 +1427,7 @@ func s:GotoVariableswinOrCreateIt()
     setlocal signcolumn=no
     setlocal modifiable
 
-    if s:varbuf > 0
+    if s:varbuf > 0 && bufexists(s:varbuf)
       exe 'buffer' . s:varbuf
     else
       silent file Termdebug-variables-listing
