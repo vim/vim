@@ -2585,8 +2585,8 @@ update_si_attr(int idx)
 		sip->si_cont_list = CUR_STATE(idx - 1).si_cont_list;
 	    }
 		if (spp->sp_type == ST_REG && spp->sp_end_pattern != NULL &&
-			synIDattr(sip->si_id, 'matchgroup') ==
-				synIDattr(spp->sp_end_pattern, 'matchgroup'))
+			sip->si_attr ==
+				syn_get_match_attr(spp->sp_end_pattern, 'matchgroup'))
 	    {
 		sip->si_attr = CUR_STATE(idx - 1).si_attr;
 	    }
