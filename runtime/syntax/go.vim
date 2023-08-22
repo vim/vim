@@ -130,7 +130,7 @@ hi def link     goFloats            Type
 hi def link     goComplexes         Type
 
 " Predefined functions and values
-syn keyword     goBuiltins                 append cap close complex copy delete imag len
+syn keyword     goBuiltins                 append cap clear close complex copy delete imag len
 syn keyword     goBuiltins                 make max min new panic print println real recover
 syn keyword     goBoolean                  true false
 syn keyword     goPredefinedIdentifiers    nil iota
