@@ -210,6 +210,7 @@ runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/sed.vim		@dkearns
 runtime/ftplugin/sh.vim			@dkearns
+runtime/ftplugin/solidity.vim		@cothi
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/ssa.vim		@ObserverOfTime
@@ -299,6 +300,7 @@ runtime/indent/sass.vim			@tpope
 runtime/indent/scala.vim		@derekwyatt
 runtime/indent/scss.vim			@tpope
 runtime/indent/sh.vim			@chrisbra
+runtime/indent/solidity.vim		@cothi
 runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/tcl.vim			@dkearns
 runtime/indent/tcsh.vim			@dkearns
@@ -470,6 +472,7 @@ runtime/syntax/sdoc.vim			@gpanders
 runtime/syntax/sed.vim			@dkearns
 runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
+runtime/syntax/solidity.vim		@cothi
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
 runtime/syntax/squirrel.vim		@zenmatic
