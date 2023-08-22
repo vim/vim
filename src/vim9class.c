@@ -1724,9 +1724,13 @@ inside_class(cctx_T *cctx_arg, class_T *cl)
     void
 copy_object(typval_T *from, typval_T *to)
 {
-    *to = *from;
-    if (to->vval.v_object != NULL)
+    if (from->vval.v_object == NULL)
+	to->vval.v_object = NULL;
+    else
+    {
+	to->vval.v_object = from->vval.v_object;
 	++to->vval.v_object->obj_refcount;
+    }
 }
 
 /*
@@ -1771,9 +1775,13 @@ object_unref(object_T *obj)
     void
 copy_class(typval_T *from, typval_T *to)
 {
-    *to = *from;
-    if (to->vval.v_class != NULL)
+    if (from->vval.v_class == NULL)
+	to->vval.v_class = NULL;
+    else
+    {
+	to->vval.v_class = from->vval.v_class;
 	++to->vval.v_class->class_refcount;
+    }
 }
 
 /*

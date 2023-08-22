@@ -2666,4 +2666,41 @@ def Test_runtime_type_check_for_member_init()
   v9.CheckScriptFailure(lines, 'E1012:')
 enddef
 
+" Test for locking a variable referring to an object and reassigning to another
+" object.
+def Test_object_lockvar()
+  var lines =<< trim END
+    vim9script
+
+    class C
+      this.val: number
+      def new(this.val)
+      enddef
+    endclass
+
+    var some_dict: dict<C> = { a: C.new(1), b: C.new(2), c: C.new(3), }
+    lockvar 2 some_dict
+
+    var current: C
+    current = some_dict['c']
+    assert_equal(3, current.val)
+    current = some_dict['b']
+    assert_equal(2, current.val)
+
+    def F()
+      current = some_dict['c']
+    enddef
+
+    def G()
+      current = some_dict['b']
+    enddef
+
+    F()
+    assert_equal(3, current.val)
+    G()
+    assert_equal(2, current.val)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
