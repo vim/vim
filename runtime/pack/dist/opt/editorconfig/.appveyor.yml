@@ -1,0 +1,105 @@
+# appveyor.yml for editorconfig-vim.  Currently only tests the core.
+# Modified from https://github.com/ppalaga/ec4j/commit/1c849658fb189cd95bc41af95acd43b4f0d75a48
+#
+# Copyright (c) 2017--2019 Angelo Zerr and other contributors as
+# indicated by the @author tags.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# @author Chris White (cxw42) - Adapted to editorconfig-vim
+
+# === When to build ===
+# See https://www.appveyor.com/docs/how-to/filtering-commits/
+
+skip_commits:
+  message: /\[minor\]/
+  files:
+    - '**/*.md'
+
+# === Build matrix ===
+
+# Win is default; Ubuntu is override.  See
+# https://www.appveyor.com/blog/2018/04/25/specialized-build-matrix-configuration-in-appveyor/
+image:
+  - Visual Studio 2013
+  - Ubuntu1604
+
+# === How to build ===
+
+cache:
+    - C:\vim -> .appveyor.yml, tests\fetch-vim.bat
+
+environment:
+  VIM_EXE: C:\vim\vim\vim80\vim.exe
+
+for:
+  # Don't run the Windows build if the commit message includes "[ci-linux]"
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2013
+    skip_commits:
+      message: /\[ci-linux\]/
+
+  # Platform-specific configuration for Ubuntu
+  -
+    matrix:
+      only:
+        - image: Ubuntu1604
+    # $APPVEYOR_BUILD_FOLDER isn't expanded in the environment section
+    # here, so I can't set $VIM_EXE the way I want to.  Instead,
+    # I set $VIM_EXE in the sh-specific install steps below.
+    environment:
+      VIM_EXE: UNDEFINED
+    cache:
+      - $APPVEYOR_BUILD_FOLDER/vim -> .appveyor.yml, tests/fetch-vim.sh
+
+    # Plus, don't run Ubuntu if the commit message includes [ci-win]
+    skip_commits:
+      message: /\[ci-win\]/
+
+install:
+  # Ubuntu-specific setup.  These carry forward to the build_script.
+  - sh: export VIM_EXE="$APPVEYOR_BUILD_FOLDER/vim/bin/vim"
+  - sh: export PATH="$PATH":$APPVEYOR_BUILD_FOLDER/vim/bin
+  - sh: echo "$VIM_EXE , $PATH"
+
+  # Cross-platform - test the core
+  - cmake --version
+  - git submodule update --init --recursive
+  - cmd: tests\fetch-vim
+  - sh: tests/fetch-vim.sh
+
+build_script:
+  # Build the core tests
+  - cd tests
+  - cd core
+  - mkdir build
+  - cd build
+  - cmake ..
+
+# Note on multicore testing:
+# Two cores are available per https://help.appveyor.com/discussions/questions/11179-how-many-cores-and-threads-can-be-used-in-free-appveyor-build .
+# However, using -j2 seems to make each job take much longer.
+
+test_script:
+  # Run the core tests
+  - ctest . --output-on-failure -C Debug
+
+  # CTestCustom specifies skipping some tests on Windows.
+  - cmd: echo "Reminder - skipped some tests"
+
+on_failure:
+  - echo "failed"
+  - cmd: type tests\core\build\Testing\Temporary\LastTest.log
+  - sh: cat tests/core/build/Testing/Temporary/LastTest.log
