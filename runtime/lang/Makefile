@@ -13,6 +13,7 @@ all: \
 		menu_pl_pl.iso_8859-2.vim \
 		menu_polish_poland.1250.vim \
 		menu_ru_ru.koi8-r.vim \
+		menu_ru_ru.cp1251.vim \
 		menu_sl_si.cp1250.vim \
 		menu_sl_si.latin2.vim \
 		menu_slovak_slovak_republic.1250.vim \
@@ -112,6 +113,12 @@ menu_ru_ru.koi8-r.vim: menu_ru_ru.utf-8.vim
 	rm -f menu_ru_ru.koi8-r.vim
 	iconv -f utf-8 -t koi8-r menu_ru_ru.utf-8.vim | \
 		$(SED) -e 's/scriptencoding utf-8/scriptencoding koi8-r/' -e 's/" Original translations/" Generated from menu_ru_ru.utf-8.vim, DO NOT EDIT/' > menu_ru_ru.koi8-r.vim
+
+# Convert menu_ru_ru.utf-8.vim to create menu_ru_ru.cp1251.vim.
+menu_ru_ru.cp1251.vim: menu_ru_ru.utf-8.vim
+	rm -f menu_ru_ru.cp1251.vim
+	iconv -f utf-8 -t cp1251 menu_ru_ru.utf-8.vim | \
+		$(SED) -e 's/scriptencoding utf-8/scriptencoding cp1251/' -e 's/" Original translations/" Generated from menu_ru_ru.utf-8.vim, DO NOT EDIT/' > menu_ru_ru.cp1251.vim
 
 # Convert menu_sl_si.utf-8.vim to create menu_sl_si.cp1250.vim.
 menu_sl_si.cp1250.vim: menu_sl_si.utf-8.vim
