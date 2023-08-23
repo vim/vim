@@ -2367,6 +2367,39 @@ def Test_call_method_in_extended_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_instanceof()
+  var lines =<< trim END
+    vim9script
+
+    class Base1
+    endclass
+
+    class Base2 extends Base1
+    endclass
+
+    interface Intf1
+    endinterface
+
+    class Mix1 implements Intf1
+    endclass
+
+    class Base3 extends Mix1
+    endclass
+
+    var b1 = Base1.new()
+    var b2 = Base2.new()
+    var b3 = Base3.new()
+
+    assert_true(instanceof(b1, Base1))
+    assert_true(instanceof(b2, Base1))
+    assert_false(instanceof(b1, Base2))
+    assert_true(instanceof(b3, Mix1))
+    assert_false(instanceof(b3, []))
+    assert_true(instanceof(b3, [Base1, Base2, Intf1]))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for calling a method in the parent class that is extended partially.
 " This used to fail with the 'E118: Too many arguments for function: Text' error
 " message (Github issue #12524).

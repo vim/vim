@@ -15,4 +15,6 @@ void class_unref(class_T *cl);
 void object_created(object_T *obj);
 void object_cleared(object_T *obj);
 int object_free_nonref(int copyID);
+void f_instanceof(typval_T *argvars, typval_T *rettv);
+int class_instance_of(class_T *cl, class_T *other_cl);
 /* vim: set ft=c : */

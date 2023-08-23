@@ -310,6 +310,7 @@ inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
+instanceof({object}, {class})	Number	|TRUE| if {object} is an instance of {class}
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
 isabsolutepath({path})		Number	|TRUE| if {path} is an absolute path
@@ -5051,6 +5052,17 @@ insert({object}, {item} [, {idx}])			*insert()*
 
 		Can also be used as a |method|: >
 			mylist->insert(item)
+
+instanceof({object}, {class})				*instanceof()*
+		The result is a Number, which is |TRUE| when the {object} argument is a
+		direct or indirect instance of a |Class| specified by {class}.
+		When {class} is a |List| the function returns |TRUE| when {object} is an
+		instance of any of the specified classes.
+		Example: >
+			instanceof(animal, [Dog, Cat])
+
+<		Can also be used as a |method|: >
+			myobj->instanceof(mytype)
 
 interrupt()						*interrupt()*
 		Interrupt script execution.  It works more or less like the

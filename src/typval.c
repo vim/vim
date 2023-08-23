@@ -974,6 +974,34 @@ check_for_opt_buffer_or_dict_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is an object.
+ */
+    int
+check_for_object_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_OBJECT)
+    {
+	    semsg(_(e_object_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a class or a list.
+ */
+    int
+check_for_class_or_list_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST)
+    {
+	    semsg(_(e_list_or_class_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Get the string value of a variable.
  * If it is a Number variable, the number is converted into a string.
  * tv_get_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!

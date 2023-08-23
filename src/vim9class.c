@@ -1913,5 +1913,69 @@ object_free_nonref(int copyID)
     return did_free;
 }
 
+/*
+ * Return TRUE when the class "cl", its base class or one of the implemented interfaces
+ * matches the class "other_cl".
+ */
+    int
+class_instance_of(class_T *cl, class_T *other_cl)
+{
+    if (cl == other_cl)
+	return TRUE;
+
+    // Recursively check the base classes.
+    for (; cl != NULL; cl = cl->class_extends)
+    {
+	if (cl == other_cl)
+	    return TRUE;
+	// Check the implemented interfaces.
+	for (int i = cl->class_interface_count - 1; i >= 0; --i)
+	    if (cl->class_interfaces_cl[i] == other_cl)
+		return TRUE;
+    }
+
+    return FALSE;
+}
+
+/*
+ * "instanceof(object, classinfo)" function
+ */
+    void
+f_instanceof(typval_T *argvars, typval_T *rettv)
+{
+    typval_T	*object_tv = &argvars[0];
+    typval_T	*classinfo_tv = &argvars[1];
+    listitem_T	*li;
+
+    rettv->vval.v_number = VVAL_FALSE;
+
+    if (check_for_object_arg(argvars, 0) == FAIL
+	    || check_for_class_or_list_arg(argvars, 1) == FAIL)
+	return;
+
+    if (classinfo_tv->v_type == VAR_LIST)
+    {
+	FOR_ALL_LIST_ITEMS(classinfo_tv->vval.v_list, li)
+	{
+	    if (li->li_tv.v_type != VAR_CLASS)
+	    {
+		emsg(_(e_class_required));
+		return;
+	    }
+
+	    if (class_instance_of(object_tv->vval.v_object->obj_class,
+			li->li_tv.vval.v_class) == TRUE)
+	    {
+		rettv->vval.v_number = VVAL_TRUE;
+		return;
+	    }
+	}
+    }
+    else if (classinfo_tv->v_type == VAR_CLASS)
+    {
+	rettv->vval.v_number = class_instance_of(object_tv->vval.v_object->obj_class,
+		classinfo_tv->vval.v_class);
+    }
+}
 
 #endif // FEAT_EVAL

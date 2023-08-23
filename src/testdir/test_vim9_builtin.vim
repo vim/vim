@@ -2301,6 +2301,24 @@ def Test_insert()
   v9.CheckDefAndScriptFailure(['insert([2, 3], 1, "x")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
 enddef
 
+def Test_instanceof()
+  var lines =<< trim END
+    vim9script
+    class Foo
+    endclass
+    instanceof('hello', Foo)
+  END
+  v9.CheckScriptFailure(lines, 'E616: Object required for argument 1')
+
+  lines =<< trim END
+    vim9script
+    class Foo
+    endclass
+    instanceof(Foo.new(), 123)
+  END
+  v9.CheckScriptFailure(lines, 'E693: List or Class required for argument 2')
+enddef
+
 def Test_invert()
   v9.CheckDefAndScriptFailure(['invert("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef
