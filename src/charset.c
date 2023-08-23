@@ -1157,11 +1157,13 @@ win_lbr_chartabsize(
     }
 
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
+    int has_lcs_eol = wp->w_p_list && wp->w_lcs_chars.eol != NUL;
+
     /*
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
-    if (*s == NUL)
+    if (*s == NUL && !has_lcs_eol)
 	size = 0;  // NUL is not displayed
 
 # ifdef FEAT_PROP_POPUP
@@ -1175,8 +1177,11 @@ win_lbr_chartabsize(
 
 	// The "$" for 'list' mode will go between the EOL and
 	// the text prop, account for that.
-	if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
+	if (has_lcs_eol)
+	{
 	    ++vcol;
+	    --size;
+	}
 
 	for (i = 0; i < cts->cts_text_prop_count; ++i)
 	{
@@ -1235,8 +1240,11 @@ win_lbr_chartabsize(
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
 		break;
 	}
-	if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
+	if (has_lcs_eol)
+	{
 	    --vcol;
+	    ++size;
+	}
     }
 # endif
 
@@ -1298,12 +1306,12 @@ win_lbr_chartabsize(
 
     /*
      * May have to add something for 'breakindent' and/or 'showbreak'
-     * string at start of line.
-     * Do not use 'showbreak' at the NUL after the text.
+     * string at the start of a screen line.
      */
     int head = mb_added;
-    sbr = (c == NUL || no_sbr) ? empty_option : get_showbreak_value(wp);
-    if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap)
+    sbr = no_sbr ? empty_option : get_showbreak_value(wp);
+    // When "size" is 0, no new screen line is started.
+    if (size > 0 && wp->w_p_wrap && (*sbr != NUL || wp->w_p_bri))
     {
 	int	col_off_prev = win_col_off(wp);
 	int	width2 = wp->w_width - col_off_prev + win_col_off2(wp);
@@ -1348,37 +1356,34 @@ win_lbr_chartabsize(
 		head_mid += vim_strsize(sbr);
 	    if (wp->w_p_bri)
 		head_mid += get_breakindent_win(wp, line);
-	    if (head_mid > 0)
+	    if (head_mid > 0 && wcol + size > wp->w_width)
 	    {
-		if (wcol + size > wp->w_width)
-		{
-		    // calculate effective window width
-		    int prev_rem = wp->w_width - wcol;
-		    int width = width2 - head_mid;
+		// calculate effective window width
+		int prev_rem = wp->w_width - wcol;
+		int width = width2 - head_mid;
 
-		    if (width <= 0)
-			width = 1;
-		    // divide "size - prev_width" by "width", rounding up
-		    int cnt = (size - prev_rem + width - 1) / width;
-		    added += cnt * head_mid;
+		if (width <= 0)
+		    width = 1;
+		// divide "size - prev_width" by "width", rounding up
+		int cnt = (size - prev_rem + width - 1) / width;
+		added += cnt * head_mid;
 
-		    if (max_head_vcol == 0
-					|| vcol + size + added < max_head_vcol)
-			head += cnt * head_mid;
-		    else if (max_head_vcol > vcol + head_prev + prev_rem)
-			head += (max_head_vcol - (vcol + head_prev + prev_rem)
+		if (max_head_vcol == 0 || vcol + size + added < max_head_vcol)
+		    head += cnt * head_mid;
+		else if (max_head_vcol > vcol + head_prev + prev_rem)
+		    head += (max_head_vcol - (vcol + head_prev + prev_rem)
 					     + width2 - 1) / width2 * head_mid;
 #ifdef FEAT_PROP_POPUP
-		    else if (max_head_vcol < 0)
-		    {
-			int off = 0;
-			if ((State & MODE_NORMAL) || cts->cts_start_incl)
-			    off += cts->cts_cur_text_width;
-			if (off >= prev_rem)
-			    head += (1 + (off - prev_rem) / width) * head_mid;
-		    }
-#endif
+		else if (max_head_vcol < 0)
+		{
+		    int off = 0;
+		    if (c != NUL
+			     && ((State & MODE_NORMAL) || cts->cts_start_incl))
+			off += cts->cts_cur_text_width;
+		    if (off >= prev_rem)
+			head += (1 + (off - prev_rem) / width) * head_mid;
 		}
+#endif
 	    }
 
 	    size += added;

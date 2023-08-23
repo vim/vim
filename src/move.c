@@ -1212,7 +1212,8 @@ curs_columns(
 	    // column
 	    char_u *sbr = get_showbreak_value(curwin);
 	    if (*sbr && *ml_get_cursor() == NUL
-				    && curwin->w_wcol == vim_strsize(sbr))
+		    && curwin->w_wcol
+			      == (curwin->w_width - width2) + vim_strsize(sbr))
 		curwin->w_wcol = 0;
 #endif
 	}
