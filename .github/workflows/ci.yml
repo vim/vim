@@ -105,12 +105,12 @@ jobs:
               libsodium-dev \
             )
           fi
-          sudo apt-get update && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-fast update && sudo apt-fast install -y "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install -y gcc-${{ env.GCC_VER }}
+          sudo apt-fast install -y gcc-${{ env.GCC_VER }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
@@ -120,7 +120,7 @@ jobs:
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
           sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }} main"
-          sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+          sudo apt-fast install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
           sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
           sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${{ env.CLANG_VER }} 100
