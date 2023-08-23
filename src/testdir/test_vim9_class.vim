@@ -337,7 +337,7 @@ def Test_object_not_set()
       var bg: Background           # UNINITIALIZED
       echo Colorscheme.new(bg).GetBackground()
   END
-  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<Background> but got object<Unknown>')
+  v9.CheckScriptFailure(lines, 'E1360:')
 
   # TODO: this should not give an error but be handled at runtime
   lines =<< trim END
@@ -357,6 +357,46 @@ def Test_object_not_set()
       Func()
   END
   v9.CheckScriptFailure(lines, 'E1363:')
+enddef
+
+def Test_null_object_assign_compare()
+  var lines =<< trim END
+    vim9script
+
+    var nullo = null_object
+    def F(): any
+      return nullo
+    enddef
+    assert_equal('object<Unknown>', typename(F()))
+
+    var o0 = F()
+    assert_true(o0 == null_object)
+    assert_true(o0 == null)
+
+    var o1: any = nullo
+    assert_true(o1 == null_object)
+    assert_true(o1 == null)
+
+    def G()
+      var x = null_object
+    enddef
+
+    class C
+    endclass
+    var o2: C
+    assert_true(o2 == null_object)
+    assert_true(o2 == null)
+
+    o2 = null_object
+    assert_true(o2 == null)
+
+    o2 = C.new()
+    assert_true(o2 != null)
+
+    o2 = null_object
+    assert_true(o2 == null)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_member_initializer()
