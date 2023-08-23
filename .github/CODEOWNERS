@@ -384,6 +384,7 @@ runtime/syntax/gitolite.vim		@sitaramc
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/go.vim			@bhcleek
 runtime/syntax/godoc.vim		@dbarnett
+runtime/syntax/gp.vim			@KBelabas
 runtime/syntax/gprof.vim		@dpelle
 runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/gyp.vim			@ObserverOfTime
