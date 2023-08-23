@@ -2687,6 +2687,8 @@ func Run_test_prop_inserts_text_showbreak(cmd)
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_20', {})
   call term_sendkeys(buf, "\<C-E>")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_21', {})
+  call term_sendkeys(buf, "zbx")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_22', {})
 
   call StopVimInTerminal(buf)
 endfunc
