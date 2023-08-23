@@ -920,13 +920,10 @@ pum_set_selected(int n, int repeat UNUSED)
 			    ml_append(lnum++, p, 0, FALSE);
 			    break;
 			}
-			else
-			{
-			    *e = NUL;
-			    ml_append(lnum++, p, (int)(e - p + 1), FALSE);
-			    *e = '\n';
-			    p = e + 1;
-			}
+			*e = NUL;
+			ml_append(lnum++, p, (int)(e - p + 1), FALSE);
+			*e = '\n';
+			p = e + 1;
 		    }
 		    // delete the empty last line
 		    ml_delete(curbuf->b_ml.ml_line_count);
