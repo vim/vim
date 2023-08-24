@@ -61,8 +61,6 @@ without all the help files.
 SpellCap highlight not updated - PR #12428
 
 Virtual text problems:
--  Deleting character before a wrapping virtual text, causes for the following
-   lines to dissapear (Issue #12244)
 -  If 'list' is on, 'below' virtual text which includes 1 or 2 characters are
    gone (Issue #12028)
 -  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
@@ -74,14 +72,6 @@ Virtual text problems:
 -  Window screen gets wrong when a virtual text is placed on 'above' or
    'below' on an empty line (Issue #11959)
 -  truncated Virtual text below an empty line causes display error #12493
-
-include #12403: window for Termdebug showing local variables
-
-include #12140: positional arguments in printf(), fixes #10577
-
-Include #11818: attach custom data to quickfix items.
-
-Include #12292: buffer argument for undotree()?
 
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
 highlighted. (van-de-bugger, 2018 Jan 23, #2576)
@@ -131,7 +121,7 @@ Upcoming larger works:
 
 
 Further Vim9 improvements, possibly after launch:
-- implement :class and :interface: See |vim9-classes
+- Classes and Interfaces. See |vim9-classes|
   - Change access: public by default, private by prefixing "_".
 	Check for error: can't have same name twice (ignoring "_" prefix).
   - Private methods?
@@ -142,22 +132,15 @@ Further Vim9 improvements, possibly after launch:
   - Cannot use class type of itself in the method (Issue #12369)
   - Cannot use an object method in a lambda  #12417
 	Define all methods before compiling them?
-  - class members initialized during definition (Issue #12041)
   - Cannot call class member of funcref type  (Issue #12324)
 	Also #12081 first case.
   - Using list of functions does not work #12081 (repro in later message).
-  - Weird `class X not found on interface X` error (Issue #12023)
   - First argument of call() cannot be "obj.Func". (#11865)
-  - "return this" required for early return from constructor (inconsistent)
-    (Issue #12040)
-  - class/method confusion inside ":def" when using "class extends" (Issue
-    #12089)
   - null_object - constant type 17 not supported (Issue #12043)
   - problem compiling object method call as function call argument (Issue
     #12081)
   - Make ":defcompile ClassName" compile all functions and methods in the
     class.
-  - object's method in stacktrace missing information (Issue #12078)
   - Forward declaration of a class?  E.g. for Clone() function.
 	email lifepillar 2023 Mar 26
   - Getting member of variable with "any" type should be handled at runtime.
@@ -180,7 +163,7 @@ Further Vim9 improvements, possibly after launch:
   - For chaining, allow using the class name as type for function return
     value.
   - Implement generics
-  - Add "instanceof" (exact class name).  And "assignable" (class or child)?
+  - Add "assignable" (class or child)?
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
