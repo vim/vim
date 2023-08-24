@@ -5435,7 +5435,7 @@ $as_echo_n "checking LuaJIT version... " >&6; }
 if ${vi_cv_version_luajit+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-   vi_cv_version_luajit=`${vi_cv_path_luajit} -v 2>&1 | sed 's/LuaJIT \([0-9.]*\)\.[0-9]\(-[a-z0-9]*\)* .*/\1/'`
+   vi_cv_version_luajit=`${vi_cv_path_luajit} -v 2>&1 | sed 's/LuaJIT \([0-9.]*\)\.[0-9]\(-\?[a-z0-9]*\)* .*/\1/'`
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_version_luajit" >&5
 $as_echo "$vi_cv_version_luajit" >&6; }

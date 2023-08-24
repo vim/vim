@@ -638,7 +638,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
       if test "X$vi_cv_path_luajit" != "X"; then
 	dnl -- find LuaJIT version
 	AC_CACHE_CHECK(LuaJIT version, vi_cv_version_luajit,
-	[ vi_cv_version_luajit=`${vi_cv_path_luajit} -v 2>&1 | sed 's/LuaJIT \([[0-9.]]*\)\.[[0-9]]\(-[[a-z0-9]]*\)* .*/\1/'` ])
+       [ vi_cv_version_luajit=`${vi_cv_path_luajit} -v 2>&1 | sed 's/LuaJIT \([[0-9.]]*\)\.[[0-9]]\(-\?[[a-z0-9]]*\)* .*/\1/'` ])
 	AC_CACHE_CHECK(Lua version of LuaJIT, vi_cv_version_lua_luajit,
 	[ vi_cv_version_lua_luajit=`${vi_cv_path_luajit} -e "print(_VERSION)" | sed 's/.* //'` ])
 	vi_cv_path_lua="$vi_cv_path_luajit"
