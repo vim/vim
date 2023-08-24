@@ -817,7 +817,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     }
 
     if (set_padding_border(dict, wp->w_popup_padding, "padding", 999) == FAIL ||
-        set_padding_border(dict, wp->w_popup_border, "border", 1) == FAIL)
+	set_padding_border(dict, wp->w_popup_border, "border", 1) == FAIL)
 	return FAIL;
 
     di = dict_find(dict, (char_u *)"borderhighlight", -1);

@@ -4167,7 +4167,7 @@ get_cmdline_completion(void)
 
     char_u *cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
     if (cmd_compl == NULL)
-        return NULL;
+	return NULL;
 
     if (p->xpc->xp_context == EXPAND_USER_LIST || p->xpc->xp_context == EXPAND_USER_DEFINED)
     {

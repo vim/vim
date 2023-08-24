@@ -2075,7 +2075,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	// Also for "obj.value".
        char_u *dot = vim_strchr(var_start, '.');
        if (dot == NULL)
-           return FAIL;
+	   return FAIL;
 
 	class_T *cl = lhs->lhs_type->tt_class;
 	type_T *type = class_member_type(cl, dot + 1,

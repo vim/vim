@@ -4022,7 +4022,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     {
 	xpc.xp_pattern = pat;
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-        xpc.xp_line = pat;
+	xpc.xp_line = pat;
 
 	xpc.xp_context = cmdcomplete_str_to_type(type);
 	if (xpc.xp_context == EXPAND_NOTHING)
@@ -4033,26 +4033,26 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 
 	if (xpc.xp_context == EXPAND_USER_DEFINED)
 	{
-            // Must be "custom,funcname" pattern
-            if (STRNCMP(type, "custom,", 7) != 0)
-            {
-                semsg(_(e_invalid_argument_str), type);
-                return;
-            }
+	    // Must be "custom,funcname" pattern
+	    if (STRNCMP(type, "custom,", 7) != 0)
+	    {
+		semsg(_(e_invalid_argument_str), type);
+		return;
+	    }
 
-            xpc.xp_arg = type + 7;
+	    xpc.xp_arg = type + 7;
 	}
 
 	if (xpc.xp_context == EXPAND_USER_LIST)
 	{
-            // Must be "customlist,funcname" pattern
-            if (STRNCMP(type, "customlist,", 11) != 0)
-            {
-                semsg(_(e_invalid_argument_str), type);
-                return;
-            }
+	    // Must be "customlist,funcname" pattern
+	    if (STRNCMP(type, "customlist,", 11) != 0)
+	    {
+		semsg(_(e_invalid_argument_str), type);
+		return;
+	    }
 
-            xpc.xp_arg = type + 11;
+	    xpc.xp_arg = type + 11;
 	}
 
 # if defined(FEAT_MENU)
