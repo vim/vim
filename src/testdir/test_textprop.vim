@@ -2602,6 +2602,57 @@ func Test_prop_inserts_text_highlight()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_inserts_text_normal_gM()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, '123456789')
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, 3, {'type': 'theprop', 'text': 'bbb'})
+    call prop_add(1, 8, {'type': 'theprop', 'text': 'bbb'})
+  END
+  call writefile(lines, 'XscriptPropsNormal_gM', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsNormal_gM', #{rows: 3, cols: 60})
+  call term_sendkeys(buf, "gM")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gM', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Run_test_prop_inserts_text_normal_gj_gk(cmd)
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, repeat([repeat('a', 55)], 2))
+    call prop_type_add('theprop', {})
+    call prop_add(1, 41, {'type': 'theprop', 'text': repeat('b', 10)})
+    call prop_add(2, 41, {'type': 'theprop', 'text': repeat('b', 10)})
+  END
+  let lines = insert(lines, a:cmd)
+  call writefile(lines, 'XscriptPropsNormal_gj_gk', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsNormal_gj_gk', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_1', {})
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_2', {})
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_3', {})
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_4', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_5', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_6', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_normal_gj_gk_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_prop_inserts_text_normal_gj_gk()
+  call Run_test_prop_inserts_text_normal_gj_gk('')
+  call Run_test_prop_inserts_text_normal_gj_gk('set virtualedit=all')
+endfunc
+
 func Test_prop_inserts_text_visual_block()
   CheckRunVimInTerminal
 
