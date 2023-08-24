@@ -1205,17 +1205,6 @@ curs_columns(
 	    n = (curwin->w_wcol - curwin->w_width) / width2 + 1;
 	    curwin->w_wcol -= n * width2;
 	    curwin->w_wrow += n;
-
-#ifdef FEAT_LINEBREAK
-	    // When cursor wraps to first char of next line in Insert
-	    // mode, the 'showbreak' string isn't shown, backup to first
-	    // column
-	    char_u *sbr = get_showbreak_value(curwin);
-	    if (*sbr && *ml_get_cursor() == NUL
-		    && curwin->w_wcol
-			      == (curwin->w_width - width2) + vim_strsize(sbr))
-		curwin->w_wcol = 0;
-#endif
 	}
     }
 

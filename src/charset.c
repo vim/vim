@@ -1358,13 +1358,13 @@ win_lbr_chartabsize(
 		head_mid += get_breakindent_win(wp, line);
 	    if (head_mid > 0 && wcol + size > wp->w_width)
 	    {
-		// calculate effective window width
+		// Calculate effective window width.
 		int prev_rem = wp->w_width - wcol;
 		int width = width2 - head_mid;
 
 		if (width <= 0)
 		    width = 1;
-		// divide "size - prev_width" by "width", rounding up
+		// Divide "size - prev_rem" by "width", rounding up.
 		int cnt = (size - prev_rem + width - 1) / width;
 		added += cnt * head_mid;
 
