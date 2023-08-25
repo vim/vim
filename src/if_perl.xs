@@ -37,13 +37,6 @@
 
 #include "vim.h"
 
-/* Work around for perl-5.18.
- * Don't include "perl\lib\CORE\inline.h" for now,
- * include it after Perl_sv_free2 is defined. */
-#ifdef DYNAMIC_PERL
-# define PERL_NO_INLINE_FUNCTIONS
-#endif
-
 #ifdef _MSC_VER
 // Work around for using MSVC and ActivePerl 5.18.
 # define __inline__ __inline
@@ -657,229 +650,6 @@ static struct {
 # endif
     {"", NULL},
 };
-
-/* Work around for perl-5.18.
- * For now, only the definitions of S_SvREFCNT_dec are needed in
- * "perl\lib\CORE\inline.h". */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
-static void
-S_SvREFCNT_dec(pTHX_ SV *sv)
-{
-    if (LIKELY(sv != NULL)) {
-	U32 rc = SvREFCNT(sv);
-	if (LIKELY(rc > 1))
-	    SvREFCNT(sv) = rc - 1;
-	else
-	    Perl_sv_free2(aTHX_ sv, rc);
-    }
-}
-# endif
-
-/* perl-5.32 needs Perl_SvREFCNT_dec */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-#  define Perl_SvREFCNT_dec S_SvREFCNT_dec
-# endif
-
-/* perl-5.26 also needs S_TOPMARK and S_POPMARK. */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 26)
-PERL_STATIC_INLINE I32
-S_TOPMARK(pTHX)
-{
-    DEBUG_s(DEBUG_v(PerlIO_printf(Perl_debug_log,
-				 "MARK top  %p %" IVdf "\n",
-				  PL_markstack_ptr,
-				  (IV)*PL_markstack_ptr)));
-    return *PL_markstack_ptr;
-}
-
-PERL_STATIC_INLINE I32
-S_POPMARK(pTHX)
-{
-    DEBUG_s(DEBUG_v(PerlIO_printf(Perl_debug_log,
-				 "MARK pop  %p %" IVdf "\n",
-				  (PL_markstack_ptr-1),
-				  (IV)*(PL_markstack_ptr-1))));
-    assert((PL_markstack_ptr > PL_markstack) || !"MARK underflow");
-    return *PL_markstack_ptr--;
-}
-# endif
-
-/* perl-5.32 needs Perl_POPMARK */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-#  define Perl_POPMARK S_POPMARK
-# endif
-
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-PERL_STATIC_INLINE U8
-Perl_gimme_V(pTHX)
-{
-    I32 cxix;
-    U8  gimme = (PL_op->op_flags & OPf_WANT);
-
-    if (gimme)
-        return gimme;
-    cxix = PL_curstackinfo->si_cxsubix;
-    if (cxix < 0)
-	return
-#  if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
-	    PL_curstackinfo->si_type == PERLSI_SORT ? G_SCALAR:
-#  endif
-	    G_VOID;
-    assert(cxstack[cxix].blk_gimme & G_WANT);
-    return (cxstack[cxix].blk_gimme & G_WANT);
-}
-# endif
-
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 38)
-#  define PERL_ARGS_ASSERT_SVPVXTRUE             \
-        assert(sv)
-PERL_STATIC_INLINE bool
-Perl_SvPVXtrue(pTHX_ SV *sv)
-{
-    PERL_ARGS_ASSERT_SVPVXTRUE;
-
-    if (! (XPV *) SvANY(sv)) {
-        return false;
-    }
-
-    if ( ((XPV *) SvANY(sv))->xpv_cur > 1) { /* length > 1 */
-        return true;
-    }
-
-    if (( (XPV *) SvANY(sv))->xpv_cur == 0) {
-        return false;
-    }
-
-    return *sv->sv_u.svu_pv != '0';
-}
-
-#  define PERL_ARGS_ASSERT_SVGETMAGIC            \
-        assert(sv)
-PERL_STATIC_INLINE void
-Perl_SvGETMAGIC(pTHX_ SV *sv)
-{
-    PERL_ARGS_ASSERT_SVGETMAGIC;
-
-    if (UNLIKELY(SvGMAGICAL(sv))) {
-        mg_get(sv);
-    }
-}
-
-PERL_STATIC_INLINE char *
-Perl_SvPV_helper(pTHX_
-                 SV * const sv,
-                 STRLEN * const lp,
-                 const U32 flags,
-                 const PL_SvPVtype type,
-                 char * (*non_trivial)(pTHX_ SV *, STRLEN * const, const U32),
-                 const bool or_null,
-                 const U32 return_flags
-                )
-{
-    /* 'type' should be known at compile time, so this is reduced to a single
-     * conditional at runtime */
-    if (   (type == SvPVbyte_type_      && SvPOK_byte_nog(sv))
-        || (type == SvPVforce_type_     && SvPOK_pure_nogthink(sv))
-        || (type == SvPVutf8_type_      && SvPOK_utf8_nog(sv))
-        || (type == SvPVnormal_type_    && SvPOK_nog(sv))
-        || (type == SvPVutf8_pure_type_ && SvPOK_utf8_pure_nogthink(sv))
-        || (type == SvPVbyte_pure_type_ && SvPOK_byte_pure_nogthink(sv))
-   ) {
-        if (lp) {
-            *lp = SvCUR(sv);
-        }
-
-        /* Similarly 'return_flags is known at compile time, so this becomes
-         * branchless */
-        if (return_flags & SV_MUTABLE_RETURN) {
-            return SvPVX_mutable(sv);
-        }
-        else if(return_flags & SV_CONST_RETURN) {
-            return (char *) SvPVX_const(sv);
-        }
-        else {
-            return SvPVX(sv);
-        }
-    }
-
-    if (or_null) {  /* This is also known at compile time */
-        if (flags & SV_GMAGIC) {    /* As is this */
-            SvGETMAGIC(sv);
-        }
-
-        if (! SvOK(sv)) {
-            if (lp) {   /* As is this */
-                *lp = 0;
-            }
-
-            return NULL;
-        }
-    }
-
-    /* Can't trivially handle this, call the function */
-    return non_trivial(aTHX_ sv, lp, (flags|return_flags));
-}
-
-#  define PERL_ARGS_ASSERT_SVNV                  \
-        assert(sv)
-PERL_STATIC_INLINE NV
-Perl_SvNV(pTHX_ SV *sv) {
-    PERL_ARGS_ASSERT_SVNV;
-
-    if (SvNOK_nog(sv))
-        return SvNVX(sv);
-    return sv_2nv(sv);
-}
-
-#  define PERL_ARGS_ASSERT_SVIV                  \
-        assert(sv)
-PERL_STATIC_INLINE IV
-Perl_SvIV(pTHX_ SV *sv) {
-    PERL_ARGS_ASSERT_SVIV;
-
-    if (SvIOK_nog(sv))
-        return SvIVX(sv);
-    return sv_2iv(sv);
-}
-# endif
-
-/* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
-PERL_STATIC_INLINE bool
-Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
-{
-    if (UNLIKELY(SvIMMORTAL_INTERP(sv)))
-	return SvIMMORTAL_TRUE(sv);
-
-    if (! SvOK(sv))
-	return FALSE;
-
-    if (SvPOK(sv))
-	return SvPVXtrue(sv);
-
-    if (SvIOK(sv))
-	return SvIVX(sv) != 0; /* casts to bool */
-
-    if (SvROK(sv) && !(SvOBJECT(SvRV(sv)) && HvAMAGIC(SvSTASH(SvRV(sv)))))
-	return TRUE;
-
-    if (sv_2bool_is_fallback)
-	return sv_2bool_nomg(sv);
-
-    return isGV_with_GP(sv);
-}
-# endif
-
-/* perl-5.32 needs Perl_SvTRUE */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-PERL_STATIC_INLINE bool
-Perl_SvTRUE(pTHX_ SV *sv) {
-    if (!LIKELY(sv))
-	return FALSE;
-    SvGETMAGIC(sv);
-    return SvTRUE_nomg_NN(sv);
-}
-# endif
 
 /*
  * Make all runtime-links of perl.
@@ -1681,6 +1451,46 @@ vim_IOLayer_init(void)
 }
 #endif /* PERLIO_LAYERS && !USE_SFIO */
 
+#ifdef DYNAMIC_PERL
+
+// Certain functionality that we use like SvREFCNT_dec are inlined for
+// performance reasons. They reference Perl APIs like Perl_sv_free2(), which
+// would cause linking errors in dynamic builds as we don't link against Perl
+// during build time. Manually fix it here by redirecting these functions
+// towards the dynamically loaded version.
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
+#  undef Perl_sv_free2
+void Perl_sv_free2(pTHX_ SV* sv, const U32 refcnt)
+{
+    (*dll_Perl_sv_free2)(aTHX_ sv, refcnt);
+}
+# else
+#  undef Perl_sv_free2
+void Perl_sv_free2(pTHX_ SV* sv)
+{
+    (*dll_Perl_sv_free2)(aTHX_ sv);
+}
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+#  undef Perl_sv_2bool_flags
+bool Perl_sv_2bool_flags(pTHX_ SV* sv, I32 flags)
+{
+    return (*dll_Perl_sv_2bool_flags)(aTHX_ sv, flags);
+}
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+#  undef Perl_mg_get
+int Perl_mg_get(pTHX_ SV* sv)
+{
+    return (*dll_Perl_mg_get)(aTHX_ sv);
+}
+# endif
+
+#endif // DYNAMIC_PERL
+
 XS(boot_VIM);
 
     static void
@@ -1783,7 +1593,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME_V == G_SCALAR)
+	if (GIMME == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1834,7 +1644,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME_V == G_SCALAR)
+	if (GIMME == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{

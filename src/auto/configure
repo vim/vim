@@ -6291,6 +6291,7 @@ $as_echo ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
       $as_echo "#define DYNAMIC_PERL 1" >>confdefs.h
 
       PERL_CFLAGS="-DDYNAMIC_PERL_DLL=\\\"$libperl\\\" $PERL_CFLAGS"
+      PERL_LIBS=""
     fi
   fi
 
