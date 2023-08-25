@@ -1410,6 +1410,9 @@ au BufNewFile,BufRead *.ninja			setf ninja
 " Nix
 au BufRead,BufNewFile *.nix			setf nix
 
+" Norg
+au BufNewFile,BufRead *.norg		setf norg
+
 " NPM RC file
 au BufNewFile,BufRead npmrc,.npmrc		setf dosini
 
@@ -1477,9 +1480,6 @@ au BufNewFile,BufRead *.ora				setf ora
 
 " Org
 au BufNewFile,BufRead *.org,*.org_archive		setf org
-
-" Norg
-au BufNewFile,BufRead *.norg		setf norg
 
 " Packet filter conf
 au BufNewFile,BufRead pf.conf				setf pf
