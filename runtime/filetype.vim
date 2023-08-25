@@ -1478,6 +1478,9 @@ au BufNewFile,BufRead *.ora				setf ora
 " Org
 au BufNewFile,BufRead *.org,*.org_archive		setf org
 
+" Norg
+au BufNewFile,BufRead *.norg		setf norg
+
 " Packet filter conf
 au BufNewFile,BufRead pf.conf				setf pf
 
