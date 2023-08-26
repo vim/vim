@@ -1068,7 +1068,8 @@ main(int argc, char *argv[])
 
             c = addrlen + 1 + (grplen * (x-(octspergrp-fill))) / octspergrp;
 
-            for (int i=0;i<fill;i++)
+            int i;
+            for (i=0;i<fill;i++)
               {
                 COLOR_PROLOGUE
 
@@ -1088,7 +1089,8 @@ main(int argc, char *argv[])
             c+=cols-p;
             c+=(cols-p)/octspergrp;
 
-            for (int i=cols-p;i>0;i--)
+            int i;
+            for (i=cols-p;i>0;i--)
               {
                 COLOR_PROLOGUE
 
