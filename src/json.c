@@ -105,8 +105,7 @@ json_encode_lsp_msg(typval_T *val)
     ga_init2(&lspga, 1, 4000);
     // Header according to LSP specification.
     vim_snprintf((char *)IObuff, IOSIZE,
-	    "Content-Length: %u\r\n"
-	    "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n\r\n",
+	    "Content-Length: %u\r\n\r\n",
 	    ga.ga_len - 1);
     ga_concat(&lspga, IObuff);
     ga_concat_len(&lspga, ga.ga_data, ga.ga_len);

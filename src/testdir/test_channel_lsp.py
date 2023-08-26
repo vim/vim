@@ -172,7 +172,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def do_extra_hdr_fields(self, payload):
         self.send_extra_hdr_fields(payload['id'], 'extra-hdr-fields')
 
-    def do_delayad_payload(self, payload):
+    def do_delayed_payload(self, payload):
         self.send_delayed_payload(payload['id'], 'delayed-payload')
 
     def do_hdr_without_len(self, payload):
@@ -208,7 +208,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'msg-specific-cb': self.do_msg_specific_cb,
                         'server-req': self.do_server_req,
                         'extra-hdr-fields': self.do_extra_hdr_fields,
-                        'delayed-payload': self.do_delayad_payload,
+                        'delayed-payload': self.do_delayed_payload,
                         'hdr-without-len': self.do_hdr_without_len,
                         'hdr-with-wrong-len': self.do_hdr_with_wrong_len,
                         'hdr-with-negative-len': self.do_hdr_with_negative_len,
