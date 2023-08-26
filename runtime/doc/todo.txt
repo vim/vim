@@ -129,6 +129,7 @@ Further Vim9 improvements, possibly after launch:
 	    or: def _Func()
     Perhaps use "private" keyword instead of "_" prefix?
   - "final" object members - can only be set in the constructor.
+  - Support export/import of classes and interfaces.
   - Cannot use class type of itself in the method (Issue #12369)
   - Cannot use an object method in a lambda  #12417
 	Define all methods before compiling them?

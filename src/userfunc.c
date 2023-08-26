@@ -4369,10 +4369,14 @@ trans_function_name_ext(
 		lead += (int)STRLEN(sid_buf);
 	}
     }
+    // The function name must start with an upper case letter (unless it is a
+    // Vim9 class new() function or a Vim9 class private method)
     else if (!(flags & TFN_INT)
 	    && (builtin_function(lv.ll_name, len)
 				   || (vim9script && *lv.ll_name == '_'))
-	    && !((flags & TFN_IN_CLASS) && STRNCMP(lv.ll_name, "new", 3) == 0))
+	    && !((flags & TFN_IN_CLASS)
+		&& (STRNCMP(lv.ll_name, "new", 3) == 0
+		    || (*lv.ll_name == '_'))))
     {
 	semsg(_(vim9script ? e_function_name_must_start_with_capital_str
 			   : e_function_name_must_start_with_capital_or_s_str),

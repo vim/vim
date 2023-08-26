@@ -252,6 +252,30 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 }
 
 /*
+ * Returns TRUE if the current function is inside the class "cl" or one of the
+ * parent classes.
+ */
+    static int
+inside_class_hierarchy(cctx_T *cctx_arg, class_T *cl)
+{
+    for (cctx_T *cctx = cctx_arg; cctx != NULL; cctx = cctx->ctx_outer)
+    {
+	if (cctx->ctx_ufunc != NULL && cctx->ctx_ufunc->uf_class != NULL)
+	{
+	    class_T	*clp = cctx->ctx_ufunc->uf_class;
+	    while (clp != NULL)
+	    {
+		if (clp == cl)
+		    return TRUE;
+		clp = clp->class_extends;
+	    }
+	}
+    }
+
+    return FALSE;
+}
+
+/*
  * Compile ".member" coming after an object or class.
  */
     static int
@@ -345,6 +369,12 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	{
 	    // TODO: different error for object method?
 	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name, name);
+	    return FAIL;
+	}
+
+	if (ufunc->uf_private && !inside_class_hierarchy(cctx, cl))
+	{
+	    semsg(_(e_cannot_access_private_method_str), name);
 	    return FAIL;
 	}
 

@@ -1489,8 +1489,8 @@ typedef struct {
 #define TTFLAG_SUPER	    0x40    // object from "super".
 
 typedef enum {
-    VIM_ACCESS_PRIVATE,	// read/write only inside th class
-    VIM_ACCESS_READ,	// read everywhere, write only inside th class
+    VIM_ACCESS_PRIVATE,	// read/write only inside the class
+    VIM_ACCESS_READ,	// read everywhere, write only inside the class
     VIM_ACCESS_ALL	// read/write everywhere
 } omacc_T;
 
@@ -1790,6 +1790,7 @@ struct ufunc_S
 
     class_T	*uf_class;	// for object method and constructor; does not
 				// count for class_refcount
+    int		uf_private;	// TRUE if class or object private method
 
     garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions
