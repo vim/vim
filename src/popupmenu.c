@@ -835,7 +835,6 @@ pum_set_selected(int n, int repeat UNUSED)
 	{
 	    win_T	*curwin_save = curwin;
 	    tabpage_T   *curtab_save = curtab;
-	    int		res = OK;
 # ifdef FEAT_PROP_POPUP
 	    use_popup_T	use_popup;
 # else
@@ -875,6 +874,8 @@ pum_set_selected(int n, int repeat UNUSED)
 # endif
 		    )
 	    {
+		int	res = OK;
+
 		if (!resized
 			&& curbuf->b_nwindows == 1
 			&& curbuf->b_fname == NULL
