@@ -651,6 +651,13 @@ static struct {
     {"", NULL},
 };
 
+# if (PERL_REVISION == 5) && (PERL_VERSION <= 30)
+// In 5.30, GIMME_V requires linking to Perl_block_gimme() instead of being
+// completely inline. Just use the deprecated GIMME for simplicity.
+#  undef GIMME_V
+#  define GIMME_V GIMME
+# endif
+
 /*
  * Make all runtime-links of perl.
  *
@@ -1593,7 +1600,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1644,7 +1651,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{
