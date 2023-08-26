@@ -2433,7 +2433,8 @@ adjust_types(
 	if (*ap_types == NULL)
 	    new_types = ALLOC_CLEAR_MULT(const char *, arg);
 	else
-	    new_types = vim_realloc(*ap_types, arg * sizeof(const char *));
+	    new_types = vim_realloc((char **)*ap_types,
+						arg * sizeof(const char *));
 
 	if (new_types == NULL)
 	    return FAIL;
@@ -2771,7 +2772,7 @@ parse_fmt_types(
     return OK;
 
 error:
-    vim_free(*ap_types);
+    vim_free((char**)*ap_types);
     *ap_types = NULL;
     *num_posarg = 0;
     return FAIL;
@@ -3862,7 +3863,7 @@ vim_vsnprintf_typval(
     if (tvs != NULL && tvs[num_posarg != 0 ? num_posarg : arg_idx - 1].v_type != VAR_UNKNOWN)
 	emsg(_(e_too_many_arguments_to_printf));
 
-    vim_free(ap_types);
+    vim_free((char*)ap_types);
     va_end(ap);
 
     // Return the number of characters formatted (excluding trailing nul
