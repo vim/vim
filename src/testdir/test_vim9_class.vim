@@ -2436,6 +2436,20 @@ def Test_instanceof()
     assert_true(instanceof(b3, Mix1))
     assert_false(instanceof(b3, []))
     assert_true(instanceof(b3, [Base1, Base2, Intf1]))
+
+    def Foo()
+      var a1 = Base1.new()
+      var a2 = Base2.new()
+      var a3 = Base3.new()
+
+      assert_true(instanceof(a1, Base1))
+      assert_true(instanceof(a2, Base1))
+      assert_false(instanceof(a1, Base2))
+      assert_true(instanceof(a3, Mix1))
+      assert_false(instanceof(a3, []))
+      assert_true(instanceof(a3, [Base1, Base2, Intf1]))
+    enddef
+    Foo()
   END
   v9.CheckScriptSuccess(lines)
 enddef

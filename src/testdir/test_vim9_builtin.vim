@@ -2317,6 +2317,28 @@ def Test_instanceof()
     instanceof(Foo.new(), 123)
   END
   v9.CheckScriptFailure(lines, 'E693: List or Class required for argument 2')
+
+  lines =<< trim END
+    vim9script
+    class Foo
+    endclass
+    def Bar()
+      instanceof('hello', Foo)
+    enddef
+    Bar()
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected object<Unknown> but got string')
+
+  lines =<< trim END
+    vim9script
+    class Foo
+    endclass
+    def Bar()
+      instanceof(Foo.new(), 123)
+    enddef
+    Bar()
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected class<Unknown> but got number')
 enddef
 
 def Test_invert()
