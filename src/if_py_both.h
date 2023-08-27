@@ -109,7 +109,7 @@ PyObject* Vim_PyObject_New(PyTypeObject *type, size_t objsize)
 {
     PyObject *obj = (PyObject *)PyObject_Malloc(objsize);
     if (obj == NULL)
-        return PyErr_NoMemory();
+	return PyErr_NoMemory();
     return PyObject_Init(obj, type);
 }
 # undef PyObject_NEW
@@ -270,7 +270,7 @@ int Vim_PyRun_SimpleString(const char *str)
     // This function emulates CPython's implementation.
     PyObject* m = PyImport_AddModule("__main__");
     if (m == NULL)
-        return -1;
+	return -1;
     PyObject* d = PyModule_GetDict(m);
     PyObject* output = Vim_PyRun_String(str, Py_file_input, d, d);
     if (output == NULL)

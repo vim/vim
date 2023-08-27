@@ -96,8 +96,8 @@ parse_member(
 	fill_evalarg_from_eap(&evalarg, eap, FALSE);
 	(void)skip_expr_concatenate(&init_arg, &expr_start, &expr_end, &evalarg);
 
-	// No type specified for the member.  Set it to "any" and the correct type will be
-	// set when the object is instantiated.
+	// No type specified for the member.  Set it to "any" and the correct
+	// type will be set when the object is instantiated.
 	if (type == NULL)
 	    type = &t_any;
 
@@ -1743,7 +1743,7 @@ object_clear(object_T *obj)
     class_T *cl = obj->obj_class;
 
     if (!cl)
-        return;
+	return;
 
     // the member values are just after the object structure
     typval_T *tv = (typval_T *)(obj + 1);
@@ -1914,8 +1914,8 @@ object_free_nonref(int copyID)
 }
 
 /*
- * Return TRUE when the class "cl", its base class or one of the implemented interfaces
- * matches the class "other_cl".
+ * Return TRUE when the class "cl", its base class or one of the implemented
+ * interfaces matches the class "other_cl".
  */
     int
 class_instance_of(class_T *cl, class_T *other_cl)

@@ -2180,7 +2180,7 @@ qf_add_entry(
     qfp->qf_end_col = end_col;
     qfp->qf_viscol = vis_col;
     if (user_data == NULL || user_data->v_type == VAR_UNKNOWN)
-        qfp->qf_user_data.v_type = VAR_UNKNOWN;
+	qfp->qf_user_data.v_type = VAR_UNKNOWN;
     else
     {
 	copy_tv(user_data, &qfp->qf_user_data);
