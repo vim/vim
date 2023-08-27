@@ -2919,5 +2919,15 @@ def Test_vim9_import_symlink()
   endif
 enddef
 
+def Test_export_in_conditional_block()
+  var lines =<< trim END
+      vim9script
+      if exists('this_will_fail')
+        export var MyVar = "hello"
+      endif
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
