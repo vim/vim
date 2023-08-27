@@ -114,31 +114,10 @@ naming convention makes the object members easy to spot.  Also, when a
 variable does not have the "this." prefix you know it is not an object member.
 
 
-Member write access ~
+Member accessibility ~
 
-Now try to change an object member directly: >
+By default object members are public and can be read and modified directly.
 
-	pos.lnum = 9
-<							*E1335*
-This will give you an error!  That is because by default object members can be
-read but not set.  That's why the TextPosition class provides a method for it: >
-
-	pos.SetLnum(9)
-
-Allowing to read but not set an object member is the most common and safest
-way.  Most often there is no problem using a value, while setting a value may
-have side effects that need to be taken care of.  In this case, the SetLnum()
-method could check if the line number is valid and either give an error or use
-the closest valid value.
-							*:public* *E1331*
-If you don't care about side effects and want to allow the object member to be
-changed at any time, you can make it public: >
-
-	public this.lnum: number
-	public this.col: number
-
-Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
-"pos.lnum" directly above will no longer give an error.
 							*E1334*
 If you try to set an object member that doesn't exist you get an error: >
 	pos.other = 9
@@ -204,12 +183,12 @@ including "this.", as the argument to new() means the value provided in the
 new() call is assigned to that object member.  This mechanism comes from the
 Dart language.
 
-Putting together this way of using new() and making the members public results
-in a much shorter class definition than what we started with: >
+Putting together this way of using new() results in a much shorter class
+definition than what we started with: >
 
 	class TextPosition
-	   public this.lnum: number
-	   public this.col: number
+	   this.lnum: number
+	   this.col: number
 
 	   def new(this.lnum, this.col)
 	   enddef
@@ -255,14 +234,13 @@ prefix: >
 Since the name is used as-is, shadowing the name by a function argument name
 or local variable name is not allowed.
 
-Just like object members the access can be made private by using an underscore
-as the first character in the name, and it can be made public by prefixing
-"public": >
+Just like object members the class members are public by default and the
+access can be made private by using an underscore as the first character in
+the name: >
 
     class OtherThing
-	static total: number	      # anybody can read, only class can write
+	static total: number	      # anybody can read and write
 	static _sum: number	      # only class can read and write
-	public static result: number  # anybody can read and write
     endclass
 <
 							*class-function*
@@ -482,7 +460,6 @@ Inside a class, in between `:class` and `:endclass`, these items can appear:
 - An object member declaration: >
 	this._memberName: memberType
 	this.memberName: memberType
-	public this.memberName: memberType
 - A constructor method: >
 	def new(arguments)
 	def newName(arguments)
@@ -864,9 +841,8 @@ you will have to track down and change.  You may have to make it a "set"
 method call.  This reflects the real world problem that taking away access
 requires work to be done for all places where that access exists.
 
-An alternative would have been using the "private" keyword, just like "public"
-changes the access in the other direction.  Well, that's just to reduce the
-number of keywords.
+An alternative would have been using the "private" keyword.  Well, that's just
+to reduce the number of keywords.
 
 
 No protected object members ~

@@ -1573,19 +1573,19 @@ get_lval(
 			    switch (om->ocm_access)
 			    {
 				case VIM_ACCESS_PRIVATE:
-					semsg(_(e_cannot_access_private_member_str),
+				    semsg(_(e_cannot_access_private_member_str),
 								 om->ocm_name);
-					return NULL;
+				    return NULL;
 				case VIM_ACCESS_READ:
-					if ((flags & GLV_READ_ONLY) == 0)
-					{
-					    semsg(_(e_member_is_not_writable_str),
-								 om->ocm_name);
-					    return NULL;
-					}
-					break;
+				    if ((flags & GLV_READ_ONLY) == 0)
+				    {
+					semsg(_(e_member_is_not_writable_str),
+						om->ocm_name);
+					return NULL;
+				    }
+				    break;
 				case VIM_ACCESS_ALL:
-					break;
+				    break;
 			    }
 
 			    lp->ll_valtype = om->ocm_type;

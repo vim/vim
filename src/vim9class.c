@@ -31,20 +31,13 @@
     static int
 parse_member(
 	exarg_T	*eap,
-	char_u	*line,
 	char_u	*varname,
-	int	has_public,	    // TRUE if "public" seen before "varname"
 	char_u	**varname_end,
 	garray_T *type_list,
 	type_T	**type_ret,
 	char_u	**init_expr)
 {
     *varname_end = to_name_end(varname, FALSE);
-    if (*varname == '_' && has_public)
-    {
-	semsg(_(e_public_member_name_cannot_start_with_underscore_str), line);
-	return FAIL;
-    }
 
     char_u *colon = skipwhite(*varname_end);
     char_u *type_arg = colon;
@@ -122,7 +115,6 @@ add_member(
 	garray_T    *gap,
 	char_u	    *varname,
 	char_u	    *varname_end,
-	int	    has_public,
 	type_T	    *type,
 	char_u	    *init_expr)
 {
@@ -130,8 +122,7 @@ add_member(
 	return FAIL;
     ocmember_T *m = ((ocmember_T *)gap->ga_data) + gap->ga_len;
     m->ocm_name = vim_strnsave(varname, varname_end - varname);
-    m->ocm_access = has_public ? VIM_ACCESS_ALL
-		      : *varname == '_' ? VIM_ACCESS_PRIVATE : VIM_ACCESS_READ;
+    m->ocm_access = *varname == '_' ? VIM_ACCESS_PRIVATE : VIM_ACCESS_ALL;
     m->ocm_type = type;
     if (init_expr != NULL)
 	m->ocm_init = init_expr;
@@ -1031,24 +1022,6 @@ early_ret:
 	    break;
 	}
 
-	int has_public = FALSE;
-	if (checkforcmd(&p, "public", 3))
-	{
-	    if (STRNCMP(line, "public", 6) != 0)
-	    {
-		semsg(_(e_command_cannot_be_shortened_str), line);
-		break;
-	    }
-	    has_public = TRUE;
-	    p = skipwhite(line + 6);
-
-	    if (STRNCMP(p, "this", 4) != 0 && STRNCMP(p, "static", 6) != 0)
-	    {
-		emsg(_(e_public_must_be_followed_by_this_or_static));
-		break;
-	    }
-	}
-
 	int has_static = FALSE;
 	char_u *ps = p;
 	if (checkforcmd(&p, "static", 4))
@@ -1065,7 +1038,6 @@ early_ret:
 	// object members (public, read access, private):
 	//	"this._varname"
 	//	"this.varname"
-	//	"public this.varname"
 	if (STRNCMP(p, "this", 4) == 0)
 	{
 	    if (p[4] != '.' || !eval_isnamec1(p[5]))
@@ -1077,12 +1049,11 @@ early_ret:
 	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
-	    if (parse_member(eap, line, varname, has_public,
-			  &varname_end, &type_list, &type,
-			  is_class ? &init_expr: NULL) == FAIL)
+	    if (parse_member(eap, varname, &varname_end, &type_list, &type,
+					is_class ? &init_expr: NULL) == FAIL)
 		break;
 	    if (add_member(&objmembers, varname, varname_end,
-					  has_public, type, init_expr) == FAIL)
+						type, init_expr) == FAIL)
 	    {
 		vim_free(init_expr);
 		break;
@@ -1174,17 +1145,15 @@ early_ret:
 	    // class members (public, read access, private):
 	    //	"static _varname"
 	    //	"static varname"
-	    //	"public static varname"
 	    char_u *varname = p;
 	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
-	    if (parse_member(eap, line, varname, has_public,
-		      &varname_end, &type_list, &type,
-		      is_class ? &init_expr : NULL) == FAIL)
+	    if (parse_member(eap, varname, &varname_end, &type_list, &type,
+					is_class ? &init_expr : NULL) == FAIL)
 		break;
 	    if (add_member(&classmembers, varname, varname_end,
-				      has_public, type, init_expr) == FAIL)
+						type, init_expr) == FAIL)
 	    {
 		vim_free(init_expr);
 		break;

@@ -3405,8 +3405,6 @@ EXTERN char e_cannot_get_object_member_type_from_initializer_str[]
 	INIT(= N_("E1329: Cannot get object member type from initializer: %s"));
 EXTERN char e_invalid_type_for_object_member_str[]
 	INIT(= N_("E1330: Invalid type for object member: %s"));
-EXTERN char e_public_must_be_followed_by_this_or_static[]
-	INIT(= N_("E1331: Public must be followed by \"this\" or \"static\""));
 EXTERN char e_public_member_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public member name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_private_member_str[]

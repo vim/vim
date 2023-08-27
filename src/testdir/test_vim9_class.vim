@@ -719,7 +719,6 @@ def Test_class_object_member_access()
       class Triple
          this._one = 1
          this.two = 2
-         public this.three = 3
 
          def GetOne(): number
            return this._one
@@ -729,26 +728,15 @@ def Test_class_object_member_access()
       var trip = Triple.new()
       assert_equal(1, trip.GetOne())
       assert_equal(2, trip.two)
-      assert_equal(3, trip.three)
       assert_fails('echo trip._one', 'E1333')
 
       assert_fails('trip._one = 11', 'E1333')
-      assert_fails('trip.two = 22', 'E1335')
-      trip.three = 33
-      assert_equal(33, trip.three)
+      trip.two = 22
+      assert_equal(22, trip.two)
 
       assert_fails('trip.four = 4', 'E1334')
   END
   v9.CheckScriptSuccess(lines)
-
-  # Test for a public member variable name beginning with an underscore
-  lines =<< trim END
-    vim9script
-    class A
-      public this._val = 10
-    endclass
-  END
-  v9.CheckScriptFailure(lines, 'E1332:')
 
   lines =<< trim END
       vim9script
@@ -828,23 +816,14 @@ def Test_class_object_member_access()
   END
   v9.CheckScriptSuccess(lines)
 
-  # Test for "public" cannot be abbreviated
+  # Test for using the "public" keyword
   lines =<< trim END
     vim9script
     class Something
-      pub this.val = 1
+      public this.val = 1
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1065:')
-
-  # Test for "public" keyword must be followed by "this" or "static".
-  lines =<< trim END
-    vim9script
-    class Something
-      public val = 1
-    endclass
-  END
-  v9.CheckScriptFailure(lines, 'E1331:')
+  v9.CheckScriptFailure(lines, 'E1318:')
 
   # Test for "static" cannot be abbreviated
   lines =<< trim END
@@ -983,7 +962,7 @@ def Test_class_member()
          this.col = 1
          static counter = 0
          static _secret = 7
-         public static  anybody = 42
+         static anybody = 42
 
          static def AddToCounter(nr: number)
            counter += nr
@@ -1001,8 +980,8 @@ def Test_class_member()
       assert_equal(3, GetCounter())
 
       assert_fails('TextPos.noSuchMember = 2', 'E1337:')
-      assert_fails('TextPos.counter = 5', 'E1335:')
-      assert_fails('TextPos.counter += 5', 'E1335:')
+      TextPos.counter = 5
+      assert_equal(5, TextPos.counter)
 
       assert_fails('echo TextPos._secret', 'E1333:')
       assert_fails('TextPos._secret = 8', 'E1333:')
@@ -1522,14 +1501,14 @@ def Test_class_implements_interface()
       vim9script
 
       interface Result
-        public this.label: string
+        this.label: string
         this.errpos: number
       endinterface
 
       # order of members is opposite of interface
       class Failure implements Result
         this.errpos: number = 42
-        public this.label: string = 'label'
+        this.label: string = 'label'
       endclass
 
       def Test()
