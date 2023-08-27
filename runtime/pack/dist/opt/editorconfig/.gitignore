@@ -1,0 +1,8 @@
+tags
+tests/**/build
+tests/**/.bundle
+
+# Editor backup files
+*.swp
+*~
+~*

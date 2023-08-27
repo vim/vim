@@ -1,0 +1,30 @@
+# Make sure xvfb works - https://docs.travis-ci.com/user/gui-and-headless-browsers/#using-xvfb-directly
+dist: trusty
+
+matrix:
+  include:
+    - name: "plugin"
+      env: TEST_WHICH=plugin
+      language: ruby
+      rvm:
+        - 2.2.4
+      gemfile: tests/plugin/Gemfile
+    - name: "core"
+      env: TEST_WHICH=core
+
+addons:
+  apt:
+    packages:
+      - vim-gtk
+
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+
+script:
+  ./tests/travis-test.sh
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
