@@ -209,9 +209,6 @@ au BufNewFile,BufRead *.bi,*.bm			call dist#ft#FTbas()
 " Bass
 au BufNewFile,BufRead *.bass			setf bass
 
-" Visual Basic Script (close to Visual Basic) or Visual Basic .NET
-au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
-
 " IBasic file (similar to QBasic)
 au BufNewFile,BufRead *.iba,*.ibi		setf ibasic
 
@@ -2376,7 +2373,7 @@ au BufNewFile,BufRead *.tape			setf vhs
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl
 
 " Vim script
-au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim
+au BufNewFile,BufRead *.vim,.exrc,_exrc		setf vim
 
 " Viminfo file
 au BufNewFile,BufRead .viminfo,_viminfo		setf viminfo
@@ -2389,10 +2386,31 @@ au BufRead,BufNewFile *.hw,*.module,*.pkg
 	\   setf virata |
 	\ endif
 
-" Visual Basic (also uses *.bas) or FORM
+" Visual Basic (see also *.bas *.cls)
+
+" Visual Basic or FORM
 au BufNewFile,BufRead *.frm			call dist#ft#FTfrm()
 
-" SaxBasic is close to Visual Basic
+" Visual Basic
+" user control, ActiveX document form, active designer, property page
+au BufNewFile,BufRead *.ctl,*.dob,*.dsr,*.pag	setf vb
+
+" Visual Basic or Vimball Archiver
+au BufNewFile,BufRead *.vba			call dist#ft#FTvba()
+
+" Visual Basic Project
+au BufNewFile,BufRead *.vbp			setf dosini
+
+" VBScript (close to Visual Basic)
+au BufNewFile,BufRead *.vbs			setf vb
+
+" Visual Basic .NET (close to Visual Basic)
+au BufNewFile,BufRead *.vb			setf vb
+
+" Visual Studio Macro
+au BufNewFile,BufRead *.dsm			setf vb
+
+" SaxBasic (close to Visual Basic)
 au BufNewFile,BufRead *.sba			setf vb
 
 " Vgrindefs file
