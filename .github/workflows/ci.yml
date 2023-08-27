@@ -92,6 +92,7 @@ jobs:
           if ${{ matrix.features == 'huge' }}; then
             PKGS+=( \
               autoconf \
+              gdb \
               lcov \
               libcanberra-dev \
               libperl-dev \
