@@ -7374,6 +7374,14 @@ set_context_in_set_cmd(
 
     xp->xp_pattern = p + 1;
 
+#ifdef FEAT_SYN_HL
+    if (options[opt_idx].var == (char_u *)&p_syn)
+    {
+	xp->xp_context = EXPAND_OWNSYNTAX;
+	return;
+    }
+#endif
+
     if (flags & P_EXPAND)
     {
 	p = options[opt_idx].var;
