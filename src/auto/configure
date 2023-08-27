@@ -6775,6 +6775,30 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3_epfx" >&5
 $as_echo "$vi_cv_path_python3_epfx" >&6; }
 
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python's include path" >&5
+$as_echo_n "checking Python's include path... " >&6; }
+if ${vi_cv_path_python3_include+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+   vi_cv_path_python3_include=`
+       ${vi_cv_path_python3} -c \
+       "import sysconfig; print(sysconfig.get_path(\"include\"))"`
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3_include" >&5
+$as_echo "$vi_cv_path_python3_include" >&6; }
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python's include path" >&5
+$as_echo_n "checking Python's include path... " >&6; }
+if ${vi_cv_path_python3_platinclude+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+   vi_cv_path_python3_platinclude=`
+       ${vi_cv_path_python3} -c \
+       "import sysconfig; print(sysconfig.get_path(\"platinclude\"))"`
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3_platinclude" >&5
+$as_echo "$vi_cv_path_python3_platinclude" >&6; }
+
 
       if ${vi_cv_path_python3path+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -6873,10 +6897,10 @@ fi
 $as_echo "$vi_cv_dll_name_python3" >&6; }
 
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
-        if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+        if test "${vi_cv_path_python3_include}" = "${vi_cv_path_python3_platinclude}"; then
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_include}"
         else
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_include} -I${vi_cv_path_python3_platinclude}"
         fi
         if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
                     PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"

@@ -1543,6 +1543,18 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
        ${vi_cv_path_python3} -c \
        "import sys; print(sys.exec_prefix)"` ])
 
+      dnl -- python3's include path
+      AC_CACHE_CHECK(Python's include path,vi_cv_path_python3_include,
+      [ vi_cv_path_python3_include=`
+       ${vi_cv_path_python3} -c \
+       "import sysconfig; print(sysconfig.get_path(\"include\"))"` ])
+
+      dnl -- python3's platform include path
+      AC_CACHE_CHECK(Python's include path,vi_cv_path_python3_platinclude,
+      [ vi_cv_path_python3_platinclude=`
+       ${vi_cv_path_python3} -c \
+       "import sysconfig; print(sysconfig.get_path(\"platinclude\"))"` ])
+
       dnl -- python3's internal library path
 
       AC_CACHE_VAL(vi_cv_path_python3path,
@@ -1621,10 +1633,10 @@ eof
 	])
 
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
-        if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+        if test "${vi_cv_path_python3_include}" = "${vi_cv_path_python3_platinclude}"; then
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_include}"
         else
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_include} -I${vi_cv_path_python3_platinclude}"
         fi
         if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
           dnl Define PYTHON3_HOME if --with-python-config-dir was used
