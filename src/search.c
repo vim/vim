@@ -1220,6 +1220,9 @@ do_search(
     searchit_arg_T  *sia)	// optional arguments or NULL
 {
     pos_T	    pos;	// position of the last match
+#ifdef FEAT_FOLDING
+    linenr_T	    start, end;
+#endif
     char_u	    *searchstr;
     soffset_T	    old_off;
     int		    retval;	// Return value
@@ -1278,15 +1281,16 @@ do_search(
 #ifdef FEAT_FOLDING
     // If the cursor is in a closed fold, don't find another match in the same
     // fold.
-    if (dirc == '/')
-    {
-	if (hasFolding(pos.lnum, NULL, &pos.lnum))
-	    pos.col = MAXCOL - 2;	// avoid overflow when adding 1
-    }
-    else
-    {
-	if (hasFolding(pos.lnum, &pos.lnum, NULL))
+    if (hasFolding(pos.lnum, &start, &end)) {
+	// anchor to the start/end of the fold (to cause a search within the fold)
+	// depending on whether 'fdo' contains "search"
+	if ((dirc == '/') != (fdo_flags & FDO_SEARCH)) {
+	    pos.lnum = start;
 	    pos.col = 0;
+	} else {
+	    pos.lnum = end;
+	    pos.col = MAXCOL - 2;	// avoid overflow when adding 1
+	}
     }
 #endif
 
