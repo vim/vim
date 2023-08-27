@@ -3733,7 +3733,11 @@ win_line(
 		&& (*ptr != NUL
 		    || lcs_eol_one > 0
 		    || (wlv.n_extra > 0 && (wlv.c_extra != NUL
-						     || *wlv.p_extra != NUL))))
+						     || *wlv.p_extra != NUL))
+#ifdef FEAT_PROP_POPUP
+		    || text_prop_next < text_prop_count
+#endif
+		   ))
 	{
 	    c = wp->w_lcs_chars.ext;
 	    wlv.char_attr = hl_combine_attr(wlv.win_attr, HL_ATTR(HLF_AT));
@@ -4014,6 +4018,7 @@ win_line(
 #endif
 #ifdef FEAT_PROP_POPUP
 		    || text_prop_above || text_prop_follows
+		    || text_prop_next < text_prop_count
 #endif
 		    || (wp->w_p_list && wp->w_lcs_chars.eol != NUL
 						&& wlv.p_extra != at_end_str)

@@ -898,7 +898,6 @@ func Test_cursor_position_with_showbreak()
       vim9script
       &signcolumn = 'yes'
       &showbreak = '++'
-      &breakindent = true
       &breakindentopt = 'shift:2'
       var leftcol: number = win_getid()->getwininfo()->get(0, {})->get('textoff')
       repeat('x', &columns - leftcol - 1)->setline(1)
@@ -912,9 +911,14 @@ func Test_cursor_position_with_showbreak()
   " No line wraps, so changing 'showbreak' should lead to the same screen.
   call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal showbreak=+\<CR>")
   call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_1', {})
+  " No line wraps, so setting 'breakindent' should lead to the same screen.
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal breakindent\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_1', {})
   " The first line now wraps because of "eol" in 'listchars'.
   call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal list\<CR>")
   call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_2', {})
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal nobreakindent\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_3', {})
 
   call StopVimInTerminal(buf)
 endfunc

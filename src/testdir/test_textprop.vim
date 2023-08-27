@@ -2686,11 +2686,11 @@ func Run_test_prop_inserts_text_showbreak(cmd)
 
   let lines =<< trim END
     highlight! link LineNr Normal
+    setlocal number showbreak=+ breakindent breakindentopt=shift:2
+    setlocal scrolloff=0 smoothscroll
     call setline(1, repeat('a', 28))
     call prop_type_add('theprop', #{highlight: 'Special'})
     call prop_add(1, 28, #{type: 'theprop', text: repeat('123', 23), text_wrap: 'wrap'})
-    setlocal number showbreak=+ breakindent breakindentopt=shift:2
-    setlocal scrolloff=0 smoothscroll
     normal! $
   END
   let lines = insert(lines, a:cmd)
@@ -2740,6 +2740,10 @@ func Run_test_prop_inserts_text_showbreak(cmd)
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_21', {})
   call term_sendkeys(buf, "zbx")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_22', {})
+  call term_sendkeys(buf, "26ia\<Esc>a")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_23', {})
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal breakindentopt=\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_showbreak_24', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -2754,10 +2758,10 @@ func Test_prop_before_tab_skipcol()
   CheckRunVimInTerminal
 
   let lines =<< trim END
+    setlocal list listchars=tab:<-> scrolloff=0 smoothscroll
     call setline(1, repeat("\t", 4) .. 'a')
     call prop_type_add('theprop', #{highlight: 'Special'})
     call prop_add(1, 4, #{type: 'theprop', text: repeat('12', 32), text_wrap: 'wrap'})
-    setlocal list listchars=tab:<-> scrolloff=0 smoothscroll
     normal! $
   END
   call writefile(lines, 'XscriptPropsBeforeTabSkipcol', 'D')
@@ -2783,6 +2787,31 @@ func Test_prop_before_tab_skipcol()
   call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_10', {})
   call term_sendkeys(buf, "\<C-E>")
   call VerifyScreenDump(buf, 'Test_prop_before_tab_skipcol_11', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_prop_inserts_text_lcs_extends()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    setlocal nowrap list listchars=extends:!
+    call setline(1, repeat('a', &columns + 1))
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, &columns + 2, #{type: 'theprop', text: 'bbb'})
+  END
+  call writefile(lines, 'XscriptPropsListExtends', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsListExtends', #{rows: 3, cols: 50})
+  call term_sendkeys(buf, '20l')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_lcs_extends_1', {})
+  call term_sendkeys(buf, 'zl')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_lcs_extends_2', {})
+  call term_sendkeys(buf, 'zl')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_lcs_extends_3', {})
+  call term_sendkeys(buf, 'zl')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_lcs_extends_4', {})
+  call term_sendkeys(buf, 'zl')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_lcs_extends_5', {})
 
   call StopVimInTerminal(buf)
 endfunc
