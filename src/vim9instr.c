@@ -662,11 +662,11 @@ generate_SETTYPE(
 /*
  * Generate an ISN_PUSHOBJ instruction.  Object is always NULL.
  */
-    static int
+    int
 generate_PUSHOBJ(cctx_T *cctx)
 {
     RETURN_OK_IF_SKIP(cctx);
-    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_any) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_object) == NULL)
 	return FAIL;
     return OK;
 }
