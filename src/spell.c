@@ -403,7 +403,7 @@ advance_camelcase_word(char_u *str, win_T *wp, int *is_camel_case)
 {
     int last_type, last_last_type, this_type;
     int c;
-    char *end = str;
+    char_u *end = str;
 
     *is_camel_case = FALSE;
 
