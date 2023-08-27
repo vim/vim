@@ -1,16 +1,12 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 10
+" Last Change:	2023 Aug 27
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
 " the file contents.  The autocommand is in $VIMRUNTIME/filetype.vim.
-"
-" Note that the pattern matches are done with =~# to avoid the value of the
-" 'ignorecase' option making a difference.  Where case is to be ignored use
-" =~? instead.  Do not use =~ anywhere.
 
 
 " Bail out when a FileType autocommand has already set the filetype.
