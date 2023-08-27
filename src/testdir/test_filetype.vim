@@ -944,6 +944,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     fish:   [['#!/path/fish']],
     forth:  [['#!/path/gforth']],
     icon:   [['#!/path/icon']],
+    crystal: [['#!/path/crystal']],
   }
 enddef
 
