@@ -190,7 +190,9 @@ typedef int perl_key;
 # define perl_run dll_perl_run
 # define perl_destruct dll_perl_destruct
 # define perl_free dll_perl_free
-# define Perl_get_context dll_Perl_get_context
+# if defined(WIN32) || ((PERL_REVISION == 5) && (PERL_VERSION < 38))
+#  define Perl_get_context dll_Perl_get_context
+# endif
 # define Perl_croak dll_Perl_croak
 # ifdef PERL5101_OR_LATER
 #  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
@@ -339,7 +341,9 @@ static void (*perl_destruct)(PerlInterpreter*);
 static void (*perl_free)(PerlInterpreter*);
 static int (*perl_run)(PerlInterpreter*);
 static int (*perl_parse)(PerlInterpreter*, XSINIT_t, int, char**, char**);
+# if defined(WIN32) || ((PERL_REVISION == 5) && (PERL_VERSION < 38))
 static void* (*Perl_get_context)(void);
+# endif
 static void (*Perl_croak)(pTHX_ const char*, ...) __attribute__noreturn__;
 # ifdef PERL5101_OR_LATER
 /* Perl-5.18 has a different Perl_croak_xs_usage signature. */
@@ -509,7 +513,9 @@ static struct {
     {"perl_free", (PERL_PROC*)&perl_free},
     {"perl_run", (PERL_PROC*)&perl_run},
     {"perl_parse", (PERL_PROC*)&perl_parse},
+# if defined(WIN32) || ((PERL_REVISION == 5) && (PERL_VERSION < 38))
     {"Perl_get_context", (PERL_PROC*)&Perl_get_context},
+# endif
     {"Perl_croak", (PERL_PROC*)&Perl_croak},
 # ifdef PERL5101_OR_LATER
     {"Perl_croak_xs_usage", (PERL_PROC*)&Perl_croak_xs_usage},
@@ -1493,6 +1499,20 @@ bool Perl_sv_2bool_flags(pTHX_ SV* sv, I32 flags)
 int Perl_mg_get(pTHX_ SV* sv)
 {
     return (*dll_Perl_mg_get)(aTHX_ sv);
+}
+# endif
+
+# undef Perl_sv_2nv_flags
+NV Perl_sv_2nv_flags(pTHX_ SV *const sv, const I32 flags)
+{
+    return (*dll_Perl_sv_2nv_flags)(aTHX_ sv, flags);
+}
+
+# ifdef PERL589_OR_LATER
+#  undef Perl_sv_2iv_flags
+IV Perl_sv_2iv_flags(pTHX_ SV* sv, I32 flags)
+{
+    return (*dll_Perl_sv_2iv_flags)(aTHX_ sv, flags);
 }
 # endif
 
