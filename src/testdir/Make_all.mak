@@ -290,6 +290,7 @@ NEW_TESTS = \
 	test_taglist \
 	test_tcl \
 	test_termcodes \
+	test_termdebug \
 	test_termencoding \
 	test_terminal \
 	test_terminal2 \
@@ -523,6 +524,7 @@ NEW_TESTS_RES = \
 	test_taglist.res \
 	test_tcl.res \
 	test_termcodes.res \
+	test_termdebug.res \
 	test_termencoding.res \
 	test_terminal.res \
 	test_terminal2.res \
