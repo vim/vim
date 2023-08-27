@@ -31,22 +31,30 @@ def DetectFromHashBang(firstline: string)
     line1 = substitute(line1, '\<env\s\+', '', '')
   endif
 
-  # Get the program name.
+  # Get the program name and optional args string.
   # Only accept spaces in PC style paths: "#!c:/program files/perl [args]".
   # If the word env is used, use the first word after the space:
   # "#!/usr/bin/env perl [path/args]"
   # If there is no path use the first word: "#!perl [path/args]".
   # Otherwise get the last word after a slash: "#!/usr/bin/perl [path/args]".
-  var name: string
+  var matches: list<string>
   if line1 =~ '^#!\s*\a:[/\\]'
-    name = substitute(line1, '^#!.*[/\\]\(\i\+\).*', '\1', '')
+    matches = matchlist(line1, '^#!.*[/\\]\(\i\+\)\s*\(.\{-}\)\s*$')
   elseif line1 =~ '^#!.*\<env\>'
-    name = substitute(line1, '^#!.*\<env\>\s\+\(\i\+\).*', '\1', '')
+    matches = matchlist(line1, '^#!.*\<env\>\s\+\(\i\+\)\s*\(.\{-}\)\s*$')
   elseif line1 =~ '^#!\s*[^/\\ ]*\>\([^/\\]\|$\)'
-    name = substitute(line1, '^#!\s*\([^/\\ ]*\>\).*', '\1', '')
+    matches = matchlist(line1, '^#!\s*\([^/\\ ]*\>\)\s*\(.\{-}\)\s*$')
   else
-    name = substitute(line1, '^#!\s*\S*[/\\]\(\f\+\).*', '\1', '')
+    matches = matchlist(line1, '^#!\s*\S*[/\\]\(\f\+\)\s*\(.\{-}\)\s*$')
   endif
+
+  # unrecognised line format
+  if empty(matches)
+    return
+  endif
+
+  var name = matches[1]
+  var args = matches[2]
 
   # tcl scripts may have #!/bin/sh in the first line and "exec wish" in the
   # third line.  Suggested by Steven Atkinson.
@@ -54,17 +62,18 @@ def DetectFromHashBang(firstline: string)
     name = 'wish'
   endif
 
-  var ft = Exe2filetype(name, line1)
+  var ft = Exe2filetype(name, args, line1)
   if ft != ''
     exe 'setl ft=' .. ft
   endif
 enddef
 
 # Returns the filetype name associated with program "name".
+# "args" is any string following "name" in the hash-bang line.
 # "line1" is the #! line at the top of the file.  Use the same as "name" if
 # not available.
 # Returns an empty string when not recognized.
-export def Exe2filetype(name: string, line1: string): string
+export def Exe2filetype(name: string, args: string, line1: string): string
     # Bourne-like shell scripts: bash bash2 dash ksh ksh93 sh
   if name =~ '^\(bash\d*\|dash\|ksh\d*\|sh\)\>'
     return dist#ft#SetFileTypeSH(line1, false)
@@ -208,6 +217,14 @@ export def Exe2filetype(name: string, line1: string): string
     # Nix
   elseif name =~ 'nix-shell'
     return 'nix'
+
+    # Nvim
+  elseif name =~ '^nvim\>' && args =~ '-ll\=$'
+    return 'lua'
+
+    # Pandoc Lua Filter
+  elseif name =~ '^pandoc\>' && args =~ '--lua-filter$'
+    return 'lua'
 
   endif
 

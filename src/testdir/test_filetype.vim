@@ -878,6 +878,8 @@ enddef
 " Filetypes detected from the file contents by scripts.vim
 def s:GetScriptChecks(): dict<list<list<string>>>
   return {
+    conf:   [['#!'],
+            ['#!UNKNOWN-INTERPRETER']],
     virata: [['% Virata'],
             ['', '% Virata'],
             ['', '', '% Virata'],
@@ -909,7 +911,10 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     pike:   [['#!/path/pike'],
             ['#!/path/pike0'],
             ['#!/path/pike9']],
-    lua:    [['#!/path/lua']],
+    lua:    [['#!/path/lua'],
+            ['#!/path/nvim -l'],
+            ['#!/path/nvim -ll'],
+            ['#!/path/pandoc --lua-filter']],
     raku:   [['#!/path/raku']],
     perl:   [['#!/path/perl']],
     php:    [['#!/path/php']],
