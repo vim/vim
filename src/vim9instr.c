@@ -1902,6 +1902,10 @@ generate_CALL(
     // drop the argument types
     cctx->ctx_type_stack.ga_len -= argcount;
 
+    // For an object or class method call, drop the object/class type
+    if (ufunc->uf_class != NULL)
+	cctx->ctx_type_stack.ga_len--;
+
     // add return type
     return push_type_stack(cctx, ufunc->uf_ret_type);
 }

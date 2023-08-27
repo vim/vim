@@ -3391,4 +3391,51 @@ def Test_interface_private_class_method()
   v9.CheckScriptFailure(lines, 'E1349: Function "_Foo" of interface "Intf" not implemented')
 enddef
 
+" Test for using the return value of a class/object method as a function
+" argument.
+def Test_objmethod_funcarg()
+  var lines =<< trim END
+    vim9script
+
+    class C
+      def Foo(): string
+        return 'foo'
+      enddef
+    endclass
+
+    def Bar(a: number, s: string): string
+      return s
+    enddef
+
+    def Baz(c: C)
+      assert_equal('foo', Bar(10, c.Foo()))
+    enddef
+
+    var t = C.new()
+    Baz(t)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class C
+      static def Foo(): string
+        return 'foo'
+      enddef
+    endclass
+
+    def Bar(a: number, s: string): string
+      return s
+    enddef
+
+    def Baz()
+      assert_equal('foo', Bar(10, C.Foo()))
+    enddef
+
+    Baz()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
