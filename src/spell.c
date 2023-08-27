@@ -125,6 +125,11 @@ static int spell_mb_isword_class(int cl, win_T *wp);
 #define FIND_COMPOUND	    3	// find case-folded compound word
 #define FIND_KEEPCOMPOUND   4	// find keep-case compound word
 
+// type values for get_char_type
+#define CHAR_OTHER	0
+#define CHAR_UPPER	1
+#define CHAR_DIGIT	2
+
 static void find_word(matchinf_T *mip, int mode);
 static void find_prefix(matchinf_T *mip, int mode);
 static int fold_more(matchinf_T *mip);
@@ -138,6 +143,7 @@ static void spell_soundfold_sal(slang_T *slang, char_u *inword, char_u *res);
 static void spell_soundfold_wsal(slang_T *slang, char_u *inword, char_u *res);
 static void dump_word(slang_T *slang, char_u *word, char_u *pat, int *dir, int round, int flags, linenr_T lnum);
 static linenr_T dump_prefixes(slang_T *slang, char_u *word, char_u *pat, int *dir, int round, int flags, linenr_T startlnum);
+static char_u *advance_camelcase_word(char_u *p, win_T *wp, int *is_camel_case);
 
 /*
  * Main spell-checking function.
@@ -170,7 +176,7 @@ spell_check(
     int		lpi;
     int		count_word = docount;
     int		use_camel_case = *wp->w_s->b_p_spo != NUL;
-    int		camel_case = 0;
+    int		is_camel_case = FALSE;
 
     // A word never starts at a space or a control character.  Return quickly
     // then, skipping over the character.
@@ -202,27 +208,15 @@ spell_check(
     mi.mi_fend = ptr;
     if (spell_iswordp(mi.mi_fend, wp))
     {
-	int prev_upper;
-	int this_upper = FALSE;  // init for gcc
-
 	if (use_camel_case)
+	    mi.mi_fend = advance_camelcase_word(ptr, wp, &is_camel_case);
+	else
 	{
-	    c = PTR2CHAR(mi.mi_fend);
-	    this_upper = SPELL_ISUPPER(c);
-	}
-
-	do
-	{
-	    MB_PTR_ADV(mi.mi_fend);
-	    if (use_camel_case)
+	    do
 	    {
-		prev_upper = this_upper;
-		c = PTR2CHAR(mi.mi_fend);
-		this_upper = SPELL_ISUPPER(c);
-		camel_case = !prev_upper && this_upper;
-	    }
-	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp)
-							       && !camel_case);
+		MB_PTR_ADV(mi.mi_fend);
+	    } while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
+	}
 
 	if (capcol != NULL && *capcol == 0 && wp->w_s->b_cap_prog != NULL)
 	{
@@ -253,7 +247,7 @@ spell_check(
 							     MAXWLEN + 1);
     mi.mi_fwordlen = (int)STRLEN(mi.mi_fword);
 
-    if (camel_case && mi.mi_fwordlen > 0)
+    if (is_camel_case && mi.mi_fwordlen > 0)
 	// Introduce a fake word end space into the folded word.
 	mi.mi_fword[mi.mi_fwordlen - 1] = ' ';
 
@@ -385,6 +379,75 @@ spell_check(
     }
 
     return (int)(mi.mi_end - ptr);
+}
+
+/*
+ * Determine the type of character 'c'.
+ */
+    static int
+get_char_type(int c)
+{
+    if (VIM_ISDIGIT(c))
+	return CHAR_DIGIT;
+    if (SPELL_ISUPPER(c))
+	return CHAR_UPPER;
+    return CHAR_OTHER;
+}
+
+/*
+ * Returns a pointer to the end of the word starting at "str".
+ * Supports camelCase words.
+ */
+    static char_u *
+advance_camelcase_word(char_u *str, win_T *wp, int *is_camel_case)
+{
+    int last_type, last_last_type, this_type;
+    int c;
+    char_u *end = str;
+
+    *is_camel_case = FALSE;
+
+    if (*str == NUL)
+	return str;
+
+    c = PTR2CHAR(end);
+    MB_PTR_ADV(end);
+    // We need at most the types of the type of the last two chars.
+    last_last_type = -1;
+    last_type = get_char_type(c);
+
+    while (*end != NUL && spell_iswordp(end, wp))
+    {
+	c = PTR2CHAR(end);
+	this_type = get_char_type(c);
+
+	if (last_last_type == CHAR_UPPER && last_type == CHAR_UPPER
+		&& this_type == CHAR_OTHER)
+	{
+	    // Handle the following cases:
+	    // UpperUpperLower
+	    *is_camel_case = TRUE;
+	    // Back up by one char.
+	    MB_PTR_BACK(str, end);
+	    break;
+	}
+	else if ((this_type == CHAR_UPPER && last_type == CHAR_OTHER)
+		|| (this_type != last_type
+		    && (this_type == CHAR_DIGIT || last_type == CHAR_DIGIT)))
+	{
+	    // Handle the following cases:
+	    // LowerUpper LowerDigit UpperDigit DigitUpper DigitLower
+	    *is_camel_case = TRUE;
+	    break;
+	}
+
+	last_last_type = last_type;
+	last_type = this_type;
+
+	MB_PTR_ADV(end);
+    }
+
+    return end;
 }
 
 /*
