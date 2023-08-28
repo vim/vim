@@ -2887,14 +2887,6 @@ win_line(
 		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
 		    clear_chartabsize_arg(&cts);
 
-		    // We have just drawn the showbreak value, no need to add
-		    // space for it again.
-		    if (wlv.vcol == wlv.vcol_sbr)
-		    {
-			wlv.n_extra -= MB_CHARLEN(get_showbreak_value(wp));
-			if (wlv.n_extra < 0)
-			    wlv.n_extra = 0;
-		    }
 		    if (on_last_col && c != TAB)
 			// Do not continue search/match highlighting over the
 			// line break, but for TABs the highlighting should
