@@ -24,7 +24,7 @@
 /*
  * Parse a member declaration, both object and class member.
  * Returns OK or FAIL.  When OK then "varname_end" is set to just after the
- * variable name and "type_ret" is set to the decleared or detected type.
+ * variable name and "type_ret" is set to the declared or detected type.
  * "init_expr" is set to the initialisation expression (allocated), if there is
  * one.  For an interface "init_expr" is NULL.
  */
@@ -487,6 +487,52 @@ check_func_arg_names(
     }
 
     return success;
+}
+
+/*
+ * Returns TRUE if the member "varname" is already defined.
+ */
+    static int
+is_duplicate_member(garray_T *mgap, char_u *varname, char_u *varname_end)
+{
+    char_u *pstr = (*varname == '_') ? varname + 1 : varname;
+
+    for (int i = 0; i < mgap->ga_len; ++i)
+    {
+	ocmember_T *m = ((ocmember_T *)mgap->ga_data) + i;
+	char_u *qstr = *m->ocm_name == '_' ? m->ocm_name + 1 : m->ocm_name;
+	if (STRNCMP(pstr, qstr, varname_end - pstr) == 0)
+	{
+	    char_u *name = vim_strnsave(varname, varname_end - varname);
+	    semsg(_(e_duplicate_member_str), name);
+	    vim_free(name);
+	    return TRUE;
+	}
+    }
+
+    return FALSE;
+}
+
+/*
+ * Returns TRUE if the method "name" is already defined.
+ */
+    static int
+is_duplicate_method(garray_T *fgap, char_u *name)
+{
+    char_u *pstr = (*name == '_') ? name + 1 : name;
+
+    for (int i = 0; i < fgap->ga_len; ++i)
+    {
+	char_u *n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
+	char_u *qstr = *n == '_' ? n + 1 : n;
+	if (STRCMP(pstr, qstr) == 0)
+	{
+	    semsg(_(e_duplicate_function_str), name);
+	    return TRUE;
+	}
+    }
+
+    return FALSE;
 }
 
 /*
@@ -1080,6 +1126,11 @@ early_ret:
 		semsg(_(e_invalid_object_member_declaration_str), p);
 		break;
 	    }
+	    if (has_static)
+	    {
+		emsg(_(e_static_cannot_be_followed_by_this));
+		break;
+	    }
 	    char_u *varname = p + 5;
 	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
@@ -1088,6 +1139,11 @@ early_ret:
 			  &varname_end, &type_list, &type,
 			  is_class ? &init_expr: NULL) == FAIL)
 		break;
+	    if (is_duplicate_member(&objmembers, varname, varname_end))
+	    {
+		vim_free(init_expr);
+		break;
+	    }
 	    if (add_member(&objmembers, varname, varname_end,
 					  has_public, type, init_expr) == FAIL)
 	    {
@@ -1154,17 +1210,8 @@ early_ret:
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.
-		for (int i = 0; i < fgap->ga_len; ++i)
-		{
-		    char_u *n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
-		    char_u *pstr = *name == '_' ? name + 1 : name;
-		    char_u *qstr = *n == '_' ? n + 1 : n;
-		    if (STRCMP(pstr, qstr) == 0)
-		    {
-			semsg(_(e_duplicate_function_str), name);
-			break;
-		    }
-		}
+		if (is_duplicate_method(fgap, name))
+		    break;
 
 		if (ga_grow(fgap, 1) == OK)
 		{
@@ -1197,6 +1244,11 @@ early_ret:
 		      &varname_end, &type_list, &type,
 		      is_class ? &init_expr : NULL) == FAIL)
 		break;
+	    if (is_duplicate_member(&classmembers, varname, varname_end))
+	    {
+		vim_free(init_expr);
+		break;
+	    }
 	    if (add_member(&classmembers, varname, varname_end,
 				      has_public, type, init_expr) == FAIL)
 	    {
