@@ -1327,7 +1327,7 @@ def Test_class_defcompile()
 
       defcompile C.new
   END
-  v9.CheckScriptFailure(lines, 'E1368: Cannot define a "new" function as static')
+  v9.CheckScriptFailure(lines, 'E1370: Cannot define a "new" function as static')
 
   # Trying to compile a function using a non-existing class variable
   lines =<< trim END
