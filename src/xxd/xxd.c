@@ -517,10 +517,10 @@ main(int argc, char *argv[])
   char *pp;
   char *varname = NULL;
   int addrlen = 9;
-  int color= isatty (STDOUT_FILENO);
+  int color=0;
 
-#ifdef  __MVS__
-  color=0;
+#ifndef  __MVS__
+  color=isatty (STDOUT_FILENO);
 #endif
 
 #ifdef AMIGA
