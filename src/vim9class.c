@@ -1188,15 +1188,16 @@ early_ret:
 	    {
 		char_u *name = uf->uf_name;
 		int is_new = STRNCMP(name, "new", 3) == 0;
-		if (is_new && is_abstract)
-		{
-		    emsg(_(e_cannot_define_new_function_in_abstract_class));
-		    success = FALSE;
-		    func_clear_free(uf, FALSE);
-		    break;
-		}
 		if (is_new)
 		{
+		    // Constructors are not allowed in abstract classes.
+		    if (is_abstract)
+		    {
+			emsg(_(e_cannot_define_new_function_in_abstract_class));
+			success = FALSE;
+			func_clear_free(uf, FALSE);
+			break;
+		    }
 		    // A constructor is always static, no need to define it so.
 		    if (has_static)
 		    {
