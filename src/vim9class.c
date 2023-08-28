@@ -1197,6 +1197,14 @@ early_ret:
 		}
 		if (is_new)
 		{
+		    // A constructor is always static, no need to define it so.
+		    if (has_static)
+		    {
+			emsg(_(e_cannot_define_new_function_as_static));
+			success = FALSE;
+			func_clear_free(uf, FALSE);
+			break;
+		    }
 		    // A return type should not be specified for the new()
 		    // constructor method.
 		    if (uf->uf_ret_type->tt_type != VAR_VOID)

@@ -3493,6 +3493,8 @@ EXTERN char e_static_cannot_be_followed_by_this[]
 	INIT(= N_("E1368: Static cannot be followed by \"this\" in a member name"));
 EXTERN char e_duplicate_member_str[]
 	INIT(= N_("E1369: Duplicate member: %s"));
+EXTERN char e_cannot_define_new_function_as_static[]
+	INIT(= N_("E1370: Cannot define a \"new\" function as static"));
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
