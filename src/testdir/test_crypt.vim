@@ -290,7 +290,11 @@ func Test_uncrypt_xchacha20v2_2()
   " encrypted using xchacha20
   call assert_match("\[xchachav2\]", execute(':messages'))
   bw!
-  call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
+	try
+		call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   " successfully decrypted
   call assert_equal(range(1, 4000)->map( {_, v -> string(v)}), getline(1,'$'))
   call assert_match('xchacha20v2: using default \w\+ "\d\+" for Key derivation.', execute(':messages'))
