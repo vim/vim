@@ -894,6 +894,15 @@ def Test_class_object_member_access()
     endclass
   END
   v9.CheckScriptFailure(lines, 'E1065:')
+
+  # Test for "static" cannot be followed by "this".
+  lines =<< trim END
+    vim9script
+    class Something
+      static this.val = 1
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1368: Static cannot be followed by "this" in a member name')
 enddef
 
 def Test_class_object_compare()
@@ -3434,6 +3443,94 @@ def Test_objmethod_funcarg()
     enddef
 
     Baz()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for declaring duplicate object and class members
+def Test_dup_member_variable()
+  # Duplicate member variable
+  var lines =<< trim END
+    vim9script
+    class C
+      this.val = 10
+      this.val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Duplicate private member variable
+  lines =<< trim END
+    vim9script
+    class C
+      this._val = 10
+      this._val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _val')
+
+  # Duplicate public member variable
+  lines =<< trim END
+    vim9script
+    class C
+      public this.val = 10
+      public this.val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Duplicate private member variable
+  lines =<< trim END
+    vim9script
+    class C
+      this.val = 10
+      this._val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _val')
+
+  # Duplicate public and private member variable
+  lines =<< trim END
+    vim9script
+    class C
+      this._val = 20
+      public this.val = 10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Duplicate class member variable
+  lines =<< trim END
+    vim9script
+    class C
+      static s: string = "abc"
+      static _s: string = "def"
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _s')
+
+  # Duplicate public and private class member variable
+  lines =<< trim END
+    vim9script
+    class C
+      public static s: string = "abc"
+      static _s: string = "def"
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _s')
+
+  # Duplicate class and object member variable
+  lines =<< trim END
+    vim9script
+    class C
+      static val = 10
+      this.val = 20
+      def new()
+      enddef
+    endclass
+    var c = C.new()
+    assert_equal(10, C.val)
+    assert_equal(20, c.val)
   END
   v9.CheckScriptSuccess(lines)
 enddef
