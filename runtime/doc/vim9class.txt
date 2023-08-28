@@ -316,7 +316,7 @@ as the first character in the method name: >
 	enddef
     endclass
 <
-							*E1368*
+							*E1370*
 Note that constructors cannot be declared as "static", because they always
 are.
 
