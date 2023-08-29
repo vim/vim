@@ -207,17 +207,17 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((int)c) : c)
 
 #define COLOR_PROLOGUE \
-l[c++] ='\033'; \
-l[c++] ='['; \
-l[c++] ='1'; \
-l[c++] =';'; \
-l[c++] ='3';
+l[c++] = '\033'; \
+l[c++] = '['; \
+l[c++] = '1'; \
+l[c++] = ';'; \
+l[c++] = '3';
 
 #define COLOR_EPILOGUE \
-l[c++] ='\033'; \
-l[c++] ='['; \
-l[c++] ='0'; \
-l[c++] ='m';
+l[c++] = '\033'; \
+l[c++] = '['; \
+l[c++] = '0'; \
+l[c++] = 'm';
 #define COLOR_RED '1'
 #define COLOR_GREEN '2'
 #define COLOR_YELLOW '3'
@@ -622,15 +622,15 @@ main(int argc, char *argv[])
 	{
 	  relseek = 0;
 	  negseek = 0;
-	  if (pp[2] && STRNCMP("kip", pp+2, 3) && STRNCMP("eek", pp+2, 3))
+	  if (pp[2] && STRNCMP("kip", pp + 2, 3) && STRNCMP("eek", pp+2, 3))
 	    {
 #ifdef TRY_SEEK
 	      if (pp[2] == '+')
 		relseek++;
-	      if (pp[2+relseek] == '-')
+	      if (pp[2 + relseek] == '-')
 		negseek++;
 #endif
-	      seekoff = strtol(pp + 2+relseek+negseek, (char **)NULL, 0);
+	      seekoff = strtol(pp + 2 + relseek + negseek, (char **)NULL, 0);
 	    }
 	  else
 	    {
@@ -642,7 +642,7 @@ main(int argc, char *argv[])
 	      if (argv[2][relseek] == '-')
 		negseek++;
 #endif
-	      seekoff = strtol(argv[2] + relseek+negseek, (char **)NULL, 0);
+	      seekoff = strtol(argv[2] + relseek + negseek, (char **)NULL, 0);
 	      argv++;
 	      argc--;
 	    }
@@ -679,11 +679,11 @@ main(int argc, char *argv[])
           exit_with_usage();
         if (!STRNCMP(argv[2], "always", 2))
         {
-          color=1;
+          color = 1;
         }
         else if (!STRNCMP(argv[2], "never", 1))
         {
-          color=0;
+          color = 0;
         }
         argv++;
         argc--;
@@ -868,7 +868,7 @@ main(int argc, char *argv[])
     {
       grplen = octspergrp + octspergrp + 1;	/* chars per octet group */
       if (color)
-        grplen +=11*octspergrp;  /* color-code needs 11 extra characters */
+        grplen += 11 * octspergrp;  /* color-code needs 11 extra characters */
 
     }
   else	/* hextype == HEX_BITS */
@@ -885,7 +885,7 @@ main(int argc, char *argv[])
 	  for (c = addrlen; c < LLEN; l[c++] = ' ')
 	    ;
 	}
-      x = hextype == HEX_LITTLEENDIAN ? p ^ (octspergrp-1) : p;
+      x = hextype == HEX_LITTLEENDIAN ? p ^ (octspergrp - 1) : p;
       c = addrlen + 1 + (grplen * x) / octspergrp;
       if (hextype == HEX_NORMAL || hextype == HEX_LITTLEENDIAN)
 	{
@@ -900,8 +900,8 @@ main(int argc, char *argv[])
                     (e >= 129 && e <= 137) || (e >= 145 && e <= 154) ||
                     (e >= 162 && e <= 169) || (e >= 192 && e <= 201) ||
                     (e >= 208 && e <= 217) || (e >= 226 && e <= 233) ||
-                    (e >= 240 && e <= 249) || (e==189) || (e==64) ||
-                    (e==173) || (e==224) )
+                    (e >= 240 && e <= 249) || (e == 189) || (e == 64) ||
+                    (e == 173) || (e == 224) )
                   l[c++] = COLOR_GREEN;
 
                 else if (e==37 || e == 13 || e == 5)
@@ -933,7 +933,7 @@ main(int argc, char *argv[])
                   l[c++] = COLOR_RED;
               }
 
-            l[c++] ='m';
+            l[c++] = 'm';
             l[c++] = hexx[(e >> 4) & 0xf];
             l[c++] = hexx[e & 0xf];
 
@@ -968,7 +968,7 @@ main(int argc, char *argv[])
             c = addrlen + 3 + (grplen * cols - 1)/octspergrp + p*12;
 
           if (hextype == HEX_LITTLEENDIAN)
-            c+=1;
+            c += 1;
 
           COLOR_PROLOGUE
 
@@ -979,11 +979,11 @@ main(int argc, char *argv[])
                   (e >= 129 && e <= 137) || (e >= 145 && e <= 154) ||
                   (e >= 162 && e <= 169) || (e >= 192 && e <= 201) ||
                   (e >= 208 && e <= 217) || (e >= 226 && e <= 233) ||
-                  (e >= 240 && e <= 249) || (e==189) || (e==64) ||
-                  (e==173) || (e==224) )
+                  (e >= 240 && e <= 249) || (e == 189) || (e == 64) ||
+                  (e == 173) || (e == 224) )
                 l[c++] = COLOR_GREEN;
 
-              else if (e==37 || e == 13 || e == 5)
+              else if (e == 37 || e == 13 || e == 5)
                 l[c++] = COLOR_YELLOW;
               else if (e == 0)
                 l[c++] = COLOR_WHITE;
@@ -1005,16 +1005,16 @@ main(int argc, char *argv[])
                 else
                   l[c++] = COLOR_RED;
               }
-            l[c++] ='m';
+            l[c++] = 'm';
 
             #ifdef __MVS__
-            if (e >= 64) l[c++] =e;
-            else  l[c++] ='.';
+            if (e >= 64) l[c++] = e;
+            else  l[c++] = '.';
             #else
 
             if (ebcdic)
               e = (e < 64) ? '.' : etoa64[e-64];
-            l[c++] =(e > 31 && e < 127) ? e : '.';
+            l[c++] = (e > 31 && e < 127) ? e : '.';
             #endif
 
         COLOR_EPILOGUE
@@ -1061,22 +1061,22 @@ main(int argc, char *argv[])
         {
         c++;
 
-        int x=p;
+        int x = p;
         if (hextype == HEX_LITTLEENDIAN)
           {
-            int fill=octspergrp-(p%octspergrp);
-            if (fill==octspergrp) fill=0;
+            int fill = octspergrp - (p % octspergrp);
+            if (fill == octspergrp) fill = 0;
 
-            c = addrlen + 1 + (grplen * (x-(octspergrp-fill))) / octspergrp;
+            c = addrlen + 1 + (grplen * (x - (octspergrp-fill))) / octspergrp;
 
             int i;
-            for (i=0;i<fill;i++)
+            for (i = 0;i < fill;i++)
               {
                 COLOR_PROLOGUE
 
                 l[c++] = COLOR_RED;
-                l[c++] ='m';
-                l[c++] =' '; //empty space
+                l[c++] = 'm';
+                l[c++] = ' '; /* empty space */
 
                 COLOR_EPILOGUE
                 x++;
@@ -1087,18 +1087,18 @@ main(int argc, char *argv[])
         if (hextype != HEX_BITS)
           {
             c = addrlen + 1 + (grplen * x) / octspergrp;
-            c+=cols-p;
-            c+=(cols-p)/octspergrp;
+            c += cols - p;
+            c += (cols - p) / octspergrp;
 
             int i;
-            for (i=cols-p;i>0;i--)
+            for (i = cols - p;i > 0;i--)
               {
                 COLOR_PROLOGUE
 
-                l[c++] =COLOR_RED;
+                l[c++] = COLOR_RED;
 
-                l[c++] ='m';
-                l[c++] =' '; //empty space
+                l[c++] = 'm';
+                l[c++] = ' '; /* empty space */
                 COLOR_EPILOGUE
               }
           }
