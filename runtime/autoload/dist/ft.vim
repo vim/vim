@@ -147,13 +147,19 @@ export def FTcls()
   endif
 
   var line1 = getline(1)
-
-  if line1 =~ '^\v%(\%|\\)'
-    setf tex
-  elseif line1[0] == '#' && line1 =~ 'rexx'
+  if line1 =~ '^#!.*\<\%(rexx\|regina\)\>'
     setf rexx
+    return
   elseif line1 == 'VERSION 1.0 CLASS'
     setf vb
+    return
+  endif
+
+  var nonblank1 = getline(nextnonblank(1))
+  if nonblank1 =~ '^\v%(\%|\\)'
+    setf tex
+  elseif nonblank1 =~ '^\s*\%(/\*\|::\w\)'
+    setf rexx
   else
     setf st
   endif
