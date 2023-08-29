@@ -25,9 +25,6 @@ AC_CHECK_PROG(STRIP, strip, strip, :)
 dnl Check for extension of executables
 AC_EXEEXT
 
-dnl Check for standard headers.  We don't use this in Vim but other stuff
-dnl in autoconf needs it, where it uses STDC_HEADERS.
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 
 dnl Check that the C99 features that Vim uses are supported:
