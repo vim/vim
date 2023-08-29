@@ -372,7 +372,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    return FAIL;
 	}
 
-	if (ufunc->uf_private && !inside_class_hierarchy(cctx, cl))
+	if (*ufunc->uf_name == '_' && !inside_class_hierarchy(cctx, cl))
 	{
 	    semsg(_(e_cannot_access_private_method_str), name);
 	    return FAIL;

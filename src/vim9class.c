@@ -249,6 +249,70 @@ validate_extends_class(char_u *extends_name, class_T **extends_clp)
 }
 
 /*
+ * Check whether a class/object member variable in "classmembers_gap" /
+ * "objmembers_gap" is a duplicate of a member in any of the extended parent
+ * class lineage.  Returns TRUE if there are no duplicates.
+ */
+    static int
+validate_extends_members(
+    garray_T	*classmembers_gap,
+    garray_T	*objmembers_gap,
+    class_T	*extends_cl)
+{
+    for (int loop = 1; loop <= 2; ++loop)
+    {
+	// loop == 1: check class members
+	// loop == 2: check object members
+	int member_count = loop == 1 ? classmembers_gap->ga_len
+						: objmembers_gap->ga_len;
+	if (member_count == 0)
+	    continue;
+	ocmember_T *members = (ocmember_T *)(loop == 1
+						? classmembers_gap->ga_data
+						: objmembers_gap->ga_data);
+
+	// Validate each member variable
+	for (int c_i = 0; c_i < member_count; c_i++)
+	{
+	    class_T	*p_cl = extends_cl;
+	    ocmember_T	*c_m = members + c_i;
+	    char_u	*pstr = (*c_m->ocm_name == '_')
+					? c_m->ocm_name + 1 : c_m->ocm_name;
+
+	    // Check in all the parent classes in the lineage
+	    while (p_cl != NULL)
+	    {
+		int p_member_count = loop == 1
+					? p_cl->class_class_member_count
+					: p_cl->class_obj_member_count;
+		if (p_member_count == 0)
+		    continue;
+		ocmember_T *p_members = (loop == 1
+					? p_cl->class_class_members
+					: p_cl->class_obj_members);
+
+		// Compare against all the members in the parent class
+		for (int p_i = 0; p_i < p_member_count; p_i++)
+		{
+		    ocmember_T	*p_m = p_members + p_i;
+		    char_u	*qstr = (*p_m->ocm_name == '_')
+					? p_m->ocm_name + 1 : p_m->ocm_name;
+		    if (STRCMP(pstr, qstr) == 0)
+		    {
+			semsg(_(e_duplicate_member_str), c_m->ocm_name);
+			return FALSE;
+		    }
+		}
+
+		p_cl = p_cl->class_extends;
+	    }
+	}
+    }
+
+    return TRUE;
+}
+
+/*
  * Check the members of the interface class "ifcl" match the class members
  * ("classmembers_gap") and object members ("objmembers_gap") of a class.
  * Returns TRUE if the class and object member names are valid.
@@ -260,9 +324,7 @@ validate_interface_members(
     garray_T	*classmembers_gap,
     garray_T	*objmembers_gap)
 {
-    int success = TRUE;
-
-    for (int loop = 1; loop <= 2 && success; ++loop)
+    for (int loop = 1; loop <= 2; ++loop)
     {
 	// loop == 1: check class members
 	// loop == 2: check object members
@@ -291,9 +353,9 @@ validate_interface_members(
 		// Ensure the type is matching.
 		where.wt_func_name = (char *)m->ocm_name;
 		where.wt_kind = WT_MEMBER;
-		if (check_type_maybe(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
-								where) != OK)
-		    success = FALSE;
+		if (check_type(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
+								where) == FAIL)
+		    return FALSE;
 
 		break;
 	    }
@@ -301,13 +363,12 @@ validate_interface_members(
 	    {
 		semsg(_(e_member_str_of_interface_str_not_implemented),
 			if_ms[if_i].ocm_name, intf_class_name);
-		success = FALSE;
-		break;
+		return FALSE;
 	    }
 	}
     }
 
-    return success;
+    return TRUE;
 }
 
 /*
@@ -323,9 +384,7 @@ validate_interface_methods(
     garray_T	*classfunctions_gap,
     garray_T	*objmethods_gap)
 {
-    int success = TRUE;
-
-    for (int loop = 1; loop <= 2 && success; ++loop)
+    for (int loop = 1; loop <= 2; ++loop)
     {
 	// loop == 1: check class functions
 	// loop == 2: check object methods
@@ -354,16 +413,9 @@ validate_interface_methods(
 		    // Ensure the type is matching.
 		    where.wt_func_name = (char *)if_name;
 		    where.wt_kind = WT_METHOD;
-		    if (check_type_maybe(if_fp[if_i]->uf_func_type,
-				cl_fp[cl_i]->uf_func_type, TRUE, where) != OK)
-			success = FALSE;
-		    // Ensure the public/private access level is matching.
-		    if (if_fp[if_i]->uf_private != cl_fp[cl_i]->uf_private)
-		    {
-			semsg(_(e_interface_str_and_class_str_function_access_not_same),
-				cl_name, if_name);
-			success = FALSE;
-		    }
+		    if (check_type(if_fp[if_i]->uf_func_type,
+			cl_fp[cl_i]->uf_func_type, TRUE, where) == FAIL)
+			return FALSE;
 		    break;
 		}
 	    }
@@ -371,18 +423,17 @@ validate_interface_methods(
 	    {
 		semsg(_(e_function_str_of_interface_str_not_implemented),
 			if_name, intf_class_name);
-		success = FALSE;
-		break;
+		return FALSE;
 	    }
 	}
     }
 
-    return success;
+    return TRUE;
 }
 
 /*
  * Validate all the "implements" classes when creating a new class.  The
- * classes are returned in "intf_classes".  The class functions, class methods,
+ * classes are returned in "intf_classes".  The class functions, class members,
  * object methods and object members in the new class are in
  * "classfunctions_gap", "classmembers_gap", "objmethods_gap", and
  * "objmembers_gap" respectively.
@@ -430,8 +481,9 @@ validate_implements_classes(
 
 	// check the functions/methods of the interface match the
 	// functions/methods of the class
-	success = validate_interface_methods(impl, ifcl, classfunctions_gap,
-							objmethods_gap);
+	if (success)
+	    success = validate_interface_methods(impl, ifcl,
+					classfunctions_gap, objmethods_gap);
 	clear_tv(&tv);
     }
 
@@ -449,18 +501,16 @@ check_func_arg_names(
     garray_T	*objmethods_gap,
     garray_T	*classmembers_gap)
 {
-    int success = TRUE;
-
     // loop 1: class functions, loop 2: object methods
-    for (int loop = 1; loop <= 2 && success; ++loop)
+    for (int loop = 1; loop <= 2; ++loop)
     {
 	garray_T *gap = loop == 1 ? classfunctions_gap : objmethods_gap;
 
-	for (int fi = 0; fi < gap->ga_len && success; ++fi)
+	for (int fi = 0; fi < gap->ga_len; ++fi)
 	{
 	    ufunc_T *uf = ((ufunc_T **)gap->ga_data)[fi];
 
-	    for (int i = 0; i < uf->uf_args.ga_len && success; ++i)
+	    for (int i = 0; i < uf->uf_args.ga_len; ++i)
 	    {
 		char_u *aname = ((char_u **)uf->uf_args.ga_data)[i];
 		garray_T *mgap = classmembers_gap;
@@ -472,21 +522,20 @@ check_func_arg_names(
 			->ocm_name;
 		    if (STRCMP(aname, mname) == 0)
 		    {
-			success = FALSE;
-
 			if (uf->uf_script_ctx.sc_sid > 0)
 			    SOURCING_LNUM = uf->uf_script_ctx.sc_lnum;
 
 			semsg(_(e_argument_already_declared_in_class_str),
 				aname);
-			break;
+
+			return FALSE;
 		    }
 		}
 	    }
 	}
     }
 
-    return success;
+    return TRUE;
 }
 
 /*
@@ -1227,17 +1276,16 @@ early_ret:
 					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.
 		if (is_duplicate_method(fgap, name))
+		{
+		    success = FALSE;
+		    func_clear_free(uf, FALSE);
 		    break;
+		}
 
 		if (ga_grow(fgap, 1) == OK)
 		{
 		    if (is_new)
 			uf->uf_flags |= FC_NEW;
-
-		    // If the method name starts with '_', then it a private
-		    // method.
-		    if (*name == '_')
-			uf->uf_private = TRUE;
 
 		    ((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
 		    ++fgap->ga_len;
@@ -1294,6 +1342,12 @@ early_ret:
     if (success && extends != NULL)
 	success = validate_extends_class(extends, &extends_cl);
     VIM_CLEAR(extends);
+
+    // Check the new class members and object members doesn't duplicate the
+    // members in the extended class lineage.
+    if (success && extends_cl != NULL)
+	success = validate_extends_members(&classmembers, &objmembers,
+								extends_cl);
 
     class_T **intf_classes = NULL;
 
@@ -1605,7 +1659,7 @@ class_object_index(
 		typval_T    argvars[MAX_FUNC_ARGS + 1];
 		int	    argcount = 0;
 
-		if (fp->uf_private)
+		if (*ufname == '_')
 		{
 		    // Cannot access a private method outside of a class
 		    semsg(_(e_cannot_access_private_method_str), name);
