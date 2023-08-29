@@ -1215,6 +1215,7 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
     if test "$perl_ok" = "yes" -a "X$libperl" != "X"; then
       AC_DEFINE(DYNAMIC_PERL)
       PERL_CFLAGS="-DDYNAMIC_PERL_DLL=\\\"$libperl\\\" $PERL_CFLAGS"
+      PERL_LIBS=""
     fi
   fi
 
