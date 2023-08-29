@@ -1,8 +1,6 @@
 dnl configure.ac: autoconf script for Vim
 
-dnl Process this file with autoconf 2.69 to produce "configure".
-dnl This should also work with other versions of autoconf, but 2.70 and later
-dnl generate lots of hard to fix "obsolete" warnings.
+dnl Process this file with autoconf 2.71 to produce "configure".
 
 AC_INIT
 AC_CONFIG_SRCDIR([vim.h])
@@ -13,7 +11,7 @@ AC_DEFINE(UNIX)
 AC_PROG_MAKE_SET
 
 dnl Checks for programs.
-AC_PROG_CC_C99		dnl required by almost everything
+AC_PROG_CC		dnl required by almost everything
 AC_PROG_CPP		dnl required by header file checks
 AC_PROG_EGREP		dnl required by AC_EGREP_CPP
 AC_PROG_FGREP		dnl finds working grep -F
