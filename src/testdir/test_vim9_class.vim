@@ -2364,7 +2364,7 @@ def Test_extends_method_crashes_vim()
     endclass
 
     class Bool extends Property
-      this.value: bool
+      this.value2: bool
     endclass
 
     def Observe(obj: Property, who: Observer)
@@ -2582,13 +2582,10 @@ def Test_multi_level_member_access()
 
     class A
       this.val1: number = 0
-      this.val2: number = 0
-      this.val3: number = 0
     endclass
 
     class B extends A
       this.val2: number = 0
-      this.val3: number = 0
     endclass
 
     class C extends B
@@ -2597,14 +2594,11 @@ def Test_multi_level_member_access()
 
     def A_members(a: A)
       a.val1 += 1
-      a.val2 += 1
-      a.val3 += 1
     enddef
 
     def B_members(b: B)
       b.val1 += 1
       b.val2 += 1
-      b.val3 += 1
     enddef
 
     def C_members(c: C)
@@ -2618,8 +2612,8 @@ def Test_multi_level_member_access()
     B_members(cobj)
     C_members(cobj)
     assert_equal(3, cobj.val1)
-    assert_equal(3, cobj.val2)
-    assert_equal(3, cobj.val3)
+    assert_equal(2, cobj.val2)
+    assert_equal(1, cobj.val3)
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -3533,6 +3527,118 @@ def Test_dup_member_variable()
     assert_equal(20, c.val)
   END
   v9.CheckScriptSuccess(lines)
+
+  # Duplicate object member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      this.val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      this.val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Duplicate object private member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      this._val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      this._val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _val')
+
+  # Duplicate object private member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      this.val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      this._val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _val')
+
+  # Duplicate object member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      this._val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      this.val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Duplicate class member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      static val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      static val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Duplicate private class member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      static _val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _val')
+
+  # Duplicate private class member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      static val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      static _val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: _val')
+
+  # Duplicate class member variable in a derived class
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+      static val = 20
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
