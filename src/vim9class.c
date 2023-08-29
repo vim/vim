@@ -536,6 +536,34 @@ is_duplicate_method(garray_T *fgap, char_u *name)
 }
 
 /*
+ * Returns TRUE if the constructor is valid.
+ */
+    static int
+is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
+{
+    // Constructors are not allowed in abstract classes.
+    if (is_abstract)
+    {
+	emsg(_(e_cannot_define_new_function_in_abstract_class));
+	return FALSE;
+    }
+    // A constructor is always static, no need to define it so.
+    if (has_static)
+    {
+	emsg(_(e_cannot_define_new_function_as_static));
+	return FALSE;
+    }
+    // A return type should not be specified for the new()
+    // constructor method.
+    if (uf->uf_ret_type->tt_type != VAR_VOID)
+    {
+	emsg(_(e_cannot_use_a_return_type_with_new));
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * Update the interface class lookup table for the member index on the
  * interface to the member index in the class implementing the interface.
  * And a lookup table for the object method index on the interface
@@ -1188,25 +1216,13 @@ early_ret:
 	    {
 		char_u *name = uf->uf_name;
 		int is_new = STRNCMP(name, "new", 3) == 0;
-		if (is_new && is_abstract)
+
+		if (is_new && !is_valid_constructor(uf, is_abstract, has_static))
 		{
-		    emsg(_(e_cannot_define_new_function_in_abstract_class));
-		    success = FALSE;
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
-		if (is_new)
-		{
-		    // A return type should not be specified for the new()
-		    // constructor method.
-		    if (uf->uf_ret_type->tt_type != VAR_VOID)
-		    {
-			emsg(_(e_cannot_use_a_return_type_with_new));
-			success = FALSE;
-			func_clear_free(uf, FALSE);
-			break;
-		    }
-		}
+
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.

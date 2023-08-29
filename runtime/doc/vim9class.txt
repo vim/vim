@@ -315,6 +315,10 @@ as the first character in the method name: >
 	    OtherThing._Foo()
 	enddef
     endclass
+<
+							*E1370*
+Note that constructors cannot be declared as "static", because they always
+are.
 
 ==============================================================================
 

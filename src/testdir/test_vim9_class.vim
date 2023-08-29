@@ -1317,6 +1317,18 @@ def Test_class_defcompile()
   END
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected number but got string')
 
+  lines =<< trim END
+      vim9script
+
+      class C
+          static def new()
+          enddef
+      endclass
+
+      defcompile C.new
+  END
+  v9.CheckScriptFailure(lines, 'E1370: Cannot define a "new" function as static')
+
   # Trying to compile a function using a non-existing class variable
   lines =<< trim END
     vim9script
