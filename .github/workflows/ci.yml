@@ -26,7 +26,6 @@ jobs:
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
-      CFLAGS: -Wno-deprecated-declarations
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
@@ -37,45 +36,40 @@ jobs:
       matrix:
         features: [tiny, normal, huge]
         compiler: [clang, gcc]
-        extra: [none]
-        luaver: [lua5.4]
+        extra: [[]]
         include:
           - features: tiny
             compiler: clang
-            extra: nogui
+            extra: [nogui]
           - features: tiny
             compiler: gcc
-            extra: nogui
+            extra: [nogui]
           - features: normal
             shadow: ./src/shadow
           - features: huge
             coverage: true
           - features: huge
             compiler: clang
-            extra: none
             interface: dynamic
             python3: stable-abi
           - features: huge
             compiler: gcc
             coverage: true
             interface: dynamic
-            extra: testgui
-            uchar: true
-            luaver: lua5.4
+            extra: [uchar, testgui]
           - features: huge
             compiler: clang
-            extra: asan
             # Lua5.1 is the most widely used version (since it's what LuaJIT is
             # compatible with), so ensure it works
-            luaver: lua5.1
+            lua_ver: '5.1'
+            extra: [asan]
           - features: huge
             compiler: gcc
             coverage: true
-            extra: unittests
-            luaver: lua5.4
+            extra: [unittests]
           - features: normal
             compiler: gcc
-            extra: vimtags
+            extra: [vimtags]
 
     steps:
       - name: Checkout repository from github
@@ -90,6 +84,7 @@ jobs:
             libtool-bin \
           )
           if ${{ matrix.features == 'huge' }}; then
+            LUA_VER=${{ matrix.lua_ver || '5.4' }}
             PKGS+=( \
               autoconf \
               gdb \
@@ -98,8 +93,8 @@ jobs:
               libperl-dev \
               python2-dev \
               python3-dev \
-              lib${{ matrix.luaver }}-dev \
-              ${{ matrix.luaver }} \
+              liblua${LUA_VER}-dev \
+              lua${LUA_VER} \
               ruby-dev \
               tcl-dev \
               cscope \
@@ -148,25 +143,20 @@ jobs:
             ;;
           huge)
             echo "TEST=scripttests test_libvterm"
-            if ${{ matrix.interface == 'dynamic' }}; then
-              if ${{ matrix.python3 == 'stable-abi' }}; then
-                PYTHON3_FLAGS="--with-python3-stable-abi=3.8"
-              else
-                PYTHON3_FLAGS=""
-              fi
-              echo "CONFOPT=--enable-perlinterp=dynamic --enable-pythoninterp=dynamic --enable-python3interp=dynamic --enable-rubyinterp=dynamic --enable-luainterp=dynamic --enable-tclinterp=dynamic ${PYTHON3_FLAGS}"
-            else
-              echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            INTERFACE=${{ matrix.interface || 'yes' }}
+            if ${{ matrix.python3 == 'stable-abi' }}; then
+              PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
             fi
+            echo "CONFOPT=--enable-perlinterp=${INTERFACE} --enable-pythoninterp=${INTERFACE} --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
             ;;
           esac
 
           if ${{ matrix.coverage == true }}; then
-            CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
+            CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
           fi
-          if ${{ matrix.uchar == true }}; then
-            CFLAGS="$CFLAGS -funsigned-char"
+          if ${{ contains(matrix.extra, 'uchar') }}; then
+            CFLAGS="${CFLAGS} -funsigned-char"
           fi
           if ${{ contains(matrix.extra, 'testgui') }}; then
             echo "TEST=-C src testgui"
@@ -183,7 +173,7 @@ jobs:
           if ${{ contains(matrix.extra, 'vimtags') }}; then
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
-          echo "CFLAGS=$CFLAGS"
+          echo "CFLAGS=${CFLAGS}"
           ) >> $GITHUB_ENV
 
       - name: Set up system
