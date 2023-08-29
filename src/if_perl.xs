@@ -1516,6 +1516,10 @@ IV Perl_sv_2iv_flags(pTHX_ SV* sv, I32 flags)
 }
 # endif
 
+# ifdef PERL_USE_THREAD_LOCAL
+PERL_THREAD_LOCAL void *PL_current_context;
+# endif
+
 #endif // DYNAMIC_PERL
 
 XS(boot_VIM);
