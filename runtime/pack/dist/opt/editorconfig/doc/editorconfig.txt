@@ -1,4 +1,4 @@
-*editorconfig.txt*
+*editorconfig.txt*   EditorConfig plugin for Vim
 
 File: editorconfig.txt
 Version: 1.1.1
