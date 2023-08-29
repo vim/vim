@@ -501,6 +501,51 @@ static unsigned char etoa64[] =
     0070,0071,0372,0373,0374,0375,0376,0377
 };
 
+   static char
+begin_coloring_char(char *l,int *c,int e,int ebcdic) {
+  if (ebcdic)  /* EBCDIC */
+    {
+      if ((e >= 75 && e <= 80) || (e >= 90 && e <= 97) ||
+          (e >= 107 && e <= 111) || (e >= 121 && e <= 127) ||
+          (e >= 129 && e <= 137) || (e >= 145 && e <= 154) ||
+          (e >= 162 && e <= 169) || (e >= 192 && e <= 201) ||
+          (e >= 208 && e <= 217) || (e >= 226 && e <= 233) ||
+          (e >= 240 && e <= 249) || (e == 189) || (e == 64) ||
+          (e == 173) || (e == 224) )
+        l[(*c)++] = COLOR_GREEN;
+
+      else if (e==37 || e == 13 || e == 5)
+        l[(*c)++] = COLOR_YELLOW;
+      else if (e == 0)
+        l[(*c)++] = COLOR_WHITE;
+      else if (e == 255)
+        l[(*c)++] = COLOR_BLUE;
+      else
+        l[(*c)++] = COLOR_RED;
+    }
+  else  /* ASCII */
+    {
+      #ifdef __MVS__
+      if (e >= 64)
+        l[(*c)++] = COLOR_GREEN;
+      #else
+      if (e > 31 && e < 127)
+        l[(*c)++] = COLOR_GREEN;
+      #endif
+
+      else if (e == 9 || e == 10 || e == 13)
+        l[(*c)++] = COLOR_YELLOW;
+      else if (e == 0)
+        l[(*c)++] = COLOR_WHITE;
+      else if (e == 255)
+        l[(*c)++] = COLOR_BLUE;
+      else
+        l[(*c)++] = COLOR_RED;
+    }
+
+  l[(*c)++] = 'm';
+}
+
   int
 main(int argc, char *argv[])
 {
@@ -892,48 +937,8 @@ main(int argc, char *argv[])
           if (color)
             {
             COLOR_PROLOGUE
+            begin_coloring_char(l,&c,e,ebcdic);
 
-            if (ebcdic)  /* EBCDIC */
-              {
-                if ((e >= 75 && e <= 80) || (e >= 90 && e <= 97) ||
-                    (e >= 107 && e <= 111) || (e >= 121 && e <= 127) ||
-                    (e >= 129 && e <= 137) || (e >= 145 && e <= 154) ||
-                    (e >= 162 && e <= 169) || (e >= 192 && e <= 201) ||
-                    (e >= 208 && e <= 217) || (e >= 226 && e <= 233) ||
-                    (e >= 240 && e <= 249) || (e == 189) || (e == 64) ||
-                    (e == 173) || (e == 224) )
-                  l[c++] = COLOR_GREEN;
-
-                else if (e==37 || e == 13 || e == 5)
-                  l[c++] = COLOR_YELLOW;
-                else if (e == 0)
-                  l[c++] = COLOR_WHITE;
-                else if (e == 255)
-                  l[c++] = COLOR_BLUE;
-                else
-                  l[c++] = COLOR_RED;
-              }
-            else  /* ASCII */
-              {
-                #ifdef __MVS__
-                if (e >= 64)
-                  l[c++] = COLOR_GREEN;
-                #else
-                if (e > 31 && e < 127)
-                  l[c++] = COLOR_GREEN;
-                #endif
-
-                else if (e == 9 || e == 10 || e == 13)
-                  l[c++] = COLOR_YELLOW;
-                else if (e == 0)
-                  l[c++] = COLOR_WHITE;
-                else if (e == 255)
-                  l[c++] = COLOR_BLUE;
-                else
-                  l[c++] = COLOR_RED;
-              }
-
-            l[c++] = 'm';
             l[c++] = hexx[(e >> 4) & 0xf];
             l[c++] = hexx[e & 0xf];
 
@@ -970,42 +975,8 @@ main(int argc, char *argv[])
           if (hextype == HEX_LITTLEENDIAN)
             c += 1;
 
-          COLOR_PROLOGUE
-
-          if (ebcdic)  /* EBCDIC */
-            {
-              if ((e >= 75 && e <= 80) || (e >= 90 && e <= 97) ||
-                  (e >= 107 && e <= 111) || (e >= 121 && e <= 127) ||
-                  (e >= 129 && e <= 137) || (e >= 145 && e <= 154) ||
-                  (e >= 162 && e <= 169) || (e >= 192 && e <= 201) ||
-                  (e >= 208 && e <= 217) || (e >= 226 && e <= 233) ||
-                  (e >= 240 && e <= 249) || (e == 189) || (e == 64) ||
-                  (e == 173) || (e == 224) )
-                l[c++] = COLOR_GREEN;
-
-              else if (e == 37 || e == 13 || e == 5)
-                l[c++] = COLOR_YELLOW;
-              else if (e == 0)
-                l[c++] = COLOR_WHITE;
-              else if (e == 255)
-                l[c++] = COLOR_BLUE;
-              else
-                l[c++] = COLOR_RED;
-            }
-            else /* ascii */
-              {
-                if (e > 31 && e < 127)
-                  l[c++] = COLOR_GREEN;
-                else if (e == 9 || e == 10 || e == 13)
-                  l[c++] = COLOR_YELLOW;
-                else if (e == 0)
-                  l[c++] = COLOR_WHITE;
-                else if (e == 255)
-                  l[c++] = COLOR_BLUE;
-                else
-                  l[c++] = COLOR_RED;
-              }
-            l[c++] = 'm';
+            COLOR_PROLOGUE
+            begin_coloring_char(l,&c,e,ebcdic);
 
             #ifdef __MVS__
             if (e >= 64) l[c++] = e;
@@ -1017,7 +988,7 @@ main(int argc, char *argv[])
             l[c++] = (e > 31 && e < 127) ? e : '.';
             #endif
 
-        COLOR_EPILOGUE
+            COLOR_EPILOGUE
 
         n++;
         if (++p == cols)
