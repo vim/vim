@@ -1260,7 +1260,11 @@ early_ret:
 					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.
 		if (is_duplicate_method(fgap, name))
+		{
+		    success = FALSE;
+		    func_clear_free(uf, FALSE);
 		    break;
+		}
 
 		if (ga_grow(fgap, 1) == OK)
 		{
