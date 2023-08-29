@@ -3487,8 +3487,6 @@ EXTERN char e_cannot_use_a_return_type_with_new[]
 EXTERN char e_cannot_access_private_method_str[]
 	INIT(= N_("E1366: Cannot access private method: %s"));
 
-EXTERN char e_interface_str_and_class_str_function_access_not_same[]
-	INIT(= N_("E1367: Access type of class method %s differs from interface method %s"));
 EXTERN char e_static_cannot_be_followed_by_this[]
 	INIT(= N_("E1368: Static cannot be followed by \"this\" in a member name"));
 EXTERN char e_duplicate_member_str[]

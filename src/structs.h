@@ -1790,7 +1790,6 @@ struct ufunc_S
 
     class_T	*uf_class;	// for object method and constructor; does not
 				// count for class_refcount
-    int		uf_private;	// TRUE if class or object private method
 
     garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions

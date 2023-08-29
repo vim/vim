@@ -416,13 +416,6 @@ validate_interface_methods(
 		    if (check_type(if_fp[if_i]->uf_func_type,
 			cl_fp[cl_i]->uf_func_type, TRUE, where) == FAIL)
 			return FALSE;
-		    // Ensure the public/private access level is matching.
-		    if (if_fp[if_i]->uf_private != cl_fp[cl_i]->uf_private)
-		    {
-			semsg(_(e_interface_str_and_class_str_function_access_not_same),
-				cl_name, if_name);
-			return FALSE;
-		    }
 		    break;
 		}
 	    }
@@ -1274,11 +1267,6 @@ early_ret:
 		    if (is_new)
 			uf->uf_flags |= FC_NEW;
 
-		    // If the method name starts with '_', then it a private
-		    // method.
-		    if (*name == '_')
-			uf->uf_private = TRUE;
-
 		    ((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
 		    ++fgap->ga_len;
 		}
@@ -1651,7 +1639,7 @@ class_object_index(
 		typval_T    argvars[MAX_FUNC_ARGS + 1];
 		int	    argcount = 0;
 
-		if (fp->uf_private)
+		if (*ufname == '_')
 		{
 		    // Cannot access a private method outside of a class
 		    semsg(_(e_cannot_access_private_method_str), name);
