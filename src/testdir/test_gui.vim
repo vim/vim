@@ -1687,4 +1687,9 @@ func Test_gui_macro_csi()
   iunmap <C-D>t
 endfunc
 
+func Test_gui_csi_keytrans()
+  call assert_equal('<C-L>', keytrans("\x9b\xfc\x04L"))
+  call assert_equal('<C-D>', keytrans("\x9b\xfc\x04D"))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
