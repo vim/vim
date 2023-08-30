@@ -2791,6 +2791,25 @@ func Test_prop_before_tab_skipcol()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_inserts_text_before_linebreak()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    setlocal linebreak showbreak=+ breakindent breakindentopt=shift:2
+    call setline(1, repeat('a', 50) .. ' ' .. repeat('c', 45))
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 10), text_wrap: 'wrap'})
+    normal! $
+  END
+  call writefile(lines, 'XscriptPropsBeforeLinebreak', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsBeforeLinebreak', #{rows: 6, cols: 50})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_1', {})
+  call term_sendkeys(buf, '05x$')
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_linebreak_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_inserts_text_lcs_extends()
   CheckRunVimInTerminal
 

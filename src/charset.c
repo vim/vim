@@ -1118,14 +1118,8 @@ win_lbr_chartabsize(
     char_u	*s = cts->cts_ptr;
     colnr_T	vcol = cts->cts_vcol;
 #ifdef FEAT_LINEBREAK
-    int		c;
     int		size;
-    colnr_T	col2;
-    colnr_T	col_adj = 0; // vcol + screen size of tab
-    colnr_T	colmax;
     int		mb_added = 0;
-    char_u	*ps;
-    int		tab_corr = (*s == TAB);
     int		n;
     char_u	*sbr;
     int		no_sbr = FALSE;
@@ -1248,55 +1242,7 @@ win_lbr_chartabsize(
 # endif
 
 # ifdef FEAT_LINEBREAK
-    c = *s;
-    if (tab_corr)
-	col_adj = size - 1;
-
-    /*
-     * If 'linebreak' set check at a blank before a non-blank if the line
-     * needs a break here
-     */
-    if (wp->w_p_lbr
-	    && VIM_ISBREAK(c)
-	    && !VIM_ISBREAK((int)s[1])
-	    && wp->w_p_wrap
-	    && wp->w_width != 0)
-    {
-	/*
-	 * Count all characters from first non-blank after a blank up to next
-	 * non-blank after a blank.
-	 */
-	int numberextra = win_col_off(wp);
-	col2 = vcol;
-	colmax = (colnr_T)(wp->w_width - numberextra - col_adj);
-	if (vcol >= colmax)
-	{
-	    colmax += col_adj;
-	    n = colmax +  win_col_off2(wp);
-	    if (n > 0)
-		colmax += (((vcol - colmax) / n) + 1) * n - col_adj;
-	}
-
-	for (;;)
-	{
-	    ps = s;
-	    MB_PTR_ADV(s);
-	    c = *s;
-	    if (!(c != NUL
-		    && (VIM_ISBREAK(c)
-			|| (!VIM_ISBREAK(c)
-			       && (col2 == vcol || !VIM_ISBREAK((int)*ps))))))
-		break;
-
-	    col2 += win_chartabsize(wp, s, col2);
-	    if (col2 >= colmax)		// doesn't fit
-	    {
-		size = colmax - vcol + col_adj;
-		break;
-	    }
-	}
-    }
-    else if (has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1
+    if (has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1
 				   && wp->w_p_wrap && in_win_border(wp, vcol))
     {
 	++size;		// Count the ">" in the last column.
@@ -1314,11 +1260,10 @@ win_lbr_chartabsize(
     {
 	int	col_off_prev = win_col_off(wp);
 	int	width2 = wp->w_width - col_off_prev + win_col_off2(wp);
-	vcol += mb_added;
-#ifdef FEAT_PROP_POPUP
-	vcol -= wp->w_virtcol_first_char;
-#endif
 	colnr_T	wcol = vcol + col_off_prev;
+#ifdef FEAT_PROP_POPUP
+	wcol -= wp->w_virtcol_first_char;
+#endif
 	colnr_T	max_head_vcol = cts->cts_max_head_vcol;
 	int	added = 0;
 
@@ -1342,6 +1287,8 @@ win_lbr_chartabsize(
 		if (max_head_vcol <= 0 || vcol < max_head_vcol)
 		    head += head_prev;
 	    }
+	    else
+		head_prev = 0;
 	    wcol += col_off_prev;
 	}
 
@@ -1374,7 +1321,7 @@ win_lbr_chartabsize(
 		else if (max_head_vcol < 0)
 		{
 		    int off = 0;
-		    if (c != NUL
+		    if (*s != NUL
 			     && ((State & MODE_NORMAL) || cts->cts_start_incl))
 			off += cts->cts_cur_text_width;
 		    if (off >= prev_rem)
@@ -1386,8 +1333,56 @@ win_lbr_chartabsize(
 
 	size += added;
     }
+
     if (headp != NULL)
 	*headp = head;
+
+    /*
+     * If 'linebreak' set check at a blank before a non-blank if the line
+     * needs a break here
+     */
+    if (wp->w_p_lbr
+	    && VIM_ISBREAK((int)s[0])
+	    && !VIM_ISBREAK((int)s[1])
+	    && wp->w_p_wrap
+	    && wp->w_width != 0)
+    {
+	/*
+	 * Count all characters from first non-blank after a blank up to next
+	 * non-blank after a blank.
+	 */
+	int numberextra = win_col_off(wp);
+	colnr_T col_adj = size - 1;
+	colnr_T colmax = (colnr_T)(wp->w_width - numberextra - col_adj);
+	if (vcol >= colmax)
+	{
+	    colmax += col_adj;
+	    n = colmax +  win_col_off2(wp);
+	    if (n > 0)
+		colmax += (((vcol - colmax) / n) + 1) * n - col_adj;
+	}
+
+	colnr_T vcol2 = vcol;
+	for (;;)
+	{
+	    char_u *ps = s;
+	    MB_PTR_ADV(s);
+	    int c = *s;
+	    if (!(c != NUL
+		    && (VIM_ISBREAK(c)
+			|| (!VIM_ISBREAK(c)
+			       && (vcol2 == vcol || !VIM_ISBREAK((int)*ps))))))
+		break;
+
+	    vcol2 += win_chartabsize(wp, s, vcol2);
+	    if (vcol2 >= colmax)		// doesn't fit
+	    {
+		size = colmax - vcol + col_adj;
+		break;
+	    }
+	}
+    }
+
     return size;
 # endif
 #endif
