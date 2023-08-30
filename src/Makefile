@@ -627,7 +627,7 @@ CClink = $(CC)
 #EXTRA_LIBS = /usr/local/lib/libefence.a
 
 # Autoconf binary.
-AUTOCONF = autoconf
+AUTOCONF ?= autoconf
 
 # PURIFY - remove the # to use the "purify" program (hoi Nia++!)
 #PURIFY = purify
@@ -2014,9 +2014,6 @@ reconfig: scratch clean
 # - Use sed to change ./config.log to auto/config.log in the configure script.
 # Autoconf 2.5x (2.59 at least) produces a few more files that we need to take
 # care of:
-# - configure.lineno: has the line numbers replaced with $LINENO.  That
-#   improves patches a LOT, thus use it instead (until someone says it doesn't
-#   work on some system).
 # - autom4te.cache directory is created and not cleaned up.  Delete it.
 # - Uses ">config.log" instead of "./config.log".
 autoconf:
