@@ -3040,6 +3040,43 @@ ins_compl_update_sequence_numbers(void)
     }
 }
 
+    static int
+info_add_completion_info(list_T *li)
+{
+    compl_T	*match;
+
+    if (compl_first_match == NULL)
+	return OK;
+
+    // Skip the element with the CP_ORIGINAL_TEXT flag at the beginning, in case of
+    // forward completion, or at the end, in case of backward completion.
+    match = compl_dir_forward()
+	    ? compl_first_match->cp_next : compl_first_match->cp_prev->cp_prev;
+    while (match != NULL && !match_at_original_text(match))
+    {
+	dict_T *di = dict_alloc();
+
+	if (di == NULL)
+	    return FAIL;
+	if (list_append_dict(li, di) == FAIL)
+	    return FAIL;
+	dict_add_string(di, "word", match->cp_str);
+	dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
+	dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
+	dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
+	dict_add_string(di, "info", match->cp_text[CPT_INFO]);
+	if (match->cp_user_data.v_type == VAR_UNKNOWN)
+	    // Add an empty string for backwards compatibility
+	    dict_add_string(di, "user_data", (char_u *)"");
+	else
+	    dict_add_tv(di, "user_data", &match->cp_user_data);
+
+	match = compl_dir_forward() ? match->cp_next : match->cp_prev;
+    }
+
+    return OK;
+}
+
 /*
  * Get complete information
  */
@@ -3088,41 +3125,13 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     if (ret == OK && (what_flag & CI_WHAT_ITEMS))
     {
 	list_T	    *li;
-	dict_T	    *di;
-	compl_T     *match;
 
 	li = list_alloc();
 	if (li == NULL)
 	    return;
 	ret = dict_add_list(retdict, "items", li);
-	if (ret == OK && compl_first_match != NULL)
-	{
-	    match = compl_first_match;
-	    do
-	    {
-		if (!match_at_original_text(match))
-		{
-		    di = dict_alloc();
-		    if (di == NULL)
-			return;
-		    ret = list_append_dict(li, di);
-		    if (ret != OK)
-			return;
-		    dict_add_string(di, "word", match->cp_str);
-		    dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
-		    dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
-		    dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
-		    dict_add_string(di, "info", match->cp_text[CPT_INFO]);
-		    if (match->cp_user_data.v_type == VAR_UNKNOWN)
-			// Add an empty string for backwards compatibility
-			dict_add_string(di, "user_data", (char_u *)"");
-		    else
-			dict_add_tv(di, "user_data", &match->cp_user_data);
-		}
-		match = match->cp_next;
-	    }
-	    while (match != NULL && !is_first_match(match));
-	}
+	if (ret == OK)
+	    ret = info_add_completion_info(li);
     }
 
     if (ret == OK && (what_flag & CI_WHAT_SELECTED))
