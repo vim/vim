@@ -43,6 +43,9 @@ let s:unsupported = [
       \ ]
 let &cpo=s:cpo
 
+setlocal comments=:#
+setlocal commentstring=#\ %s
+
 " Match uri's
 syn match debsourcesUri            '\(https\?://\|ftp://\|[rs]sh://\|debtorrent://\|\(cdrom\|copy\|file\):\)[^' 	<>"]\+'
 exe 'syn match debsourcesDistrKeyword   +\([[:alnum:]_./]*\)\<\('. join(s:supported, '\|'). '\)\>\([-[:alnum:]_./]*\)+'
