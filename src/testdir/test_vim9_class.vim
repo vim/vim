@@ -1180,6 +1180,36 @@ def Test_class_member()
   END
   v9.CheckScriptFailure(lines, 'E1010:')
 
+  # Test for setting a member on a null object
+  lines =<< trim END
+    vim9script
+    class A
+        this.val: string
+    endclass
+
+    def F()
+        var obj: A
+        obj.val = ""
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object')
+
+  # Test for accessing a member on a null object
+  lines =<< trim END
+    vim9script
+    class A
+        this.val: string
+    endclass
+
+    def F()
+        var obj: A
+        echo obj.val
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object')
+
   # Test for no space before or after the '=' when initializing a member
   # variable
   lines =<< trim END
