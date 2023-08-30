@@ -550,7 +550,7 @@ begin_coloring_char (char *l,int *c,int e,int ebcdic) {
 main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
-  int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
+  int c, e, p = 0, relseek = 1, negseek = 0, revert = 0,i,x;
   int cols = 0, colsgiven = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
   int capitalize = 0, decimal_offset = 0;
   int ebcdic = 0;
@@ -1030,7 +1030,7 @@ main(int argc, char *argv[])
         {
         c++;
 
-        int x = p;
+        x = p;
         if (hextype == HEX_LITTLEENDIAN)
           {
             int fill = octspergrp - (p % octspergrp);
@@ -1038,7 +1038,6 @@ main(int argc, char *argv[])
 
             c = addrlen + 1 + (grplen * (x - (octspergrp-fill))) / octspergrp;
 
-            int i;
             for (i = 0; i < fill;i++)
               {
                 COLOR_PROLOGUE
@@ -1059,7 +1058,6 @@ main(int argc, char *argv[])
             c += cols - p;
             c += (cols - p) / octspergrp;
 
-            int i;
             for (i = cols - p; i > 0;i--)
               {
                 COLOR_PROLOGUE
