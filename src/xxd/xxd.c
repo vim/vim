@@ -503,7 +503,7 @@ static unsigned char etoa64[] =
 
    static void
 begin_coloring_char (char *l,int *c,int e,int ebcdic) {
-  if (ebcdic)  /* EBCDIC */
+  if (ebcdic)
     {
       if ((e >= 75 && e <= 80) || (e >= 90 && e <= 97) ||
           (e >= 107 && e <= 111) || (e >= 121 && e <= 127) ||
