@@ -974,29 +974,29 @@ main(int argc, char *argv[])
           if (hextype == HEX_LITTLEENDIAN)
             c += 1;
 
-            COLOR_PROLOGUE
-            begin_coloring_char(l,&c,e,ebcdic);
+          COLOR_PROLOGUE
+          begin_coloring_char(l,&c,e,ebcdic);
 
-            #ifdef __MVS__
-            if (e >= 64) l[c++] = e;
-            else  l[c++] = '.';
-            #else
-            if (ebcdic)
-              e = (e < 64) ? '.' : etoa64[e-64];
-            l[c++] = (e > 31 && e < 127) ? e : '.';
-            #endif
+          #ifdef __MVS__
+          if (e >= 64) l[c++] = e;
+          else  l[c++] = '.';
+          #else
+          if (ebcdic)
+            e = (e < 64) ? '.' : etoa64[e-64];
+          l[c++] = (e > 31 && e < 127) ? e : '.';
+          #endif
 
-            COLOR_EPILOGUE
+          COLOR_EPILOGUE
 
-        n++;
-        if (++p == cols)
-          {
-            l[c++] = '\n';
-            l[c++] = '\0';
-            xxdline(fpo, l, autoskip ? nonzero : 1);
-            nonzero = 0;
-            p = 0;
-          }
+          n++;
+          if (++p == cols)
+            {
+              l[c++] = '\n';
+              l[c++] = '\0';
+              xxdline(fpo, l, autoskip ? nonzero : 1);
+              nonzero = 0;
+              p = 0;
+            }
         }
       else /*no colors*/
         {
