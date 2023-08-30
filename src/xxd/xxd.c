@@ -920,8 +920,6 @@ main(int argc, char *argv[])
 
   while ((length < 0 || n < length) && (e = getc_or_die(fp)) != EOF)
     {
-      int x;
-
       if (p == 0)
 	{
 	  addrlen = sprintf(l, decimal_offset ? "%08ld:" : "%08lx:",
@@ -951,7 +949,6 @@ main(int argc, char *argv[])
 	}
       else /* hextype == HEX_BITS */
 	{
-	  int i;
 	  for (i = 7; i >= 0; i--)
 	    l[c++] = (e & (1 << i)) ? '1' : '0';
 	}
