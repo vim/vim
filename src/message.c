@@ -1842,7 +1842,11 @@ str2special(
     }
 
     c = *str;
-    if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+    if ((c == K_SPECIAL
+#ifdef FEAT_GUI
+		|| c == CSI
+#endif
+	) && str[1] != NUL && str[2] != NUL)
     {
 	if (str[1] == KS_MODIFIER)
 	{
@@ -1850,7 +1854,11 @@ str2special(
 	    str += 3;
 	    c = *str;
 	}
-	if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+	if ((c == K_SPECIAL
+#ifdef FEAT_GUI
+		    || c == CSI
+#endif
+	    ) && str[1] != NUL && str[2] != NUL)
 	{
 	    c = TO_SPECIAL(str[1], str[2]);
 	    str += 2;
