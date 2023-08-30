@@ -564,7 +564,6 @@ main(int argc, char *argv[])
   int addrlen = 9;
   int color = 0;
 
-
 #ifdef UNIX
   color = isatty (STDOUT_FILENO);
 #endif
@@ -982,7 +981,6 @@ main(int argc, char *argv[])
             if (e >= 64) l[c++] = e;
             else  l[c++] = '.';
             #else
-
             if (ebcdic)
               e = (e < 64) ? '.' : etoa64[e-64];
             l[c++] = (e > 31 && e < 127) ? e : '.';
@@ -1041,7 +1039,7 @@ main(int argc, char *argv[])
             c = addrlen + 1 + (grplen * (x - (octspergrp-fill))) / octspergrp;
 
             int i;
-            for (i = 0;i < fill;i++)
+            for (i = 0; i < fill;i++)
               {
                 COLOR_PROLOGUE
 
@@ -1062,7 +1060,7 @@ main(int argc, char *argv[])
             c += (cols - p) / octspergrp;
 
             int i;
-            for (i = cols - p;i > 0;i--)
+            for (i = cols - p; i > 0;i--)
               {
                 COLOR_PROLOGUE
 
