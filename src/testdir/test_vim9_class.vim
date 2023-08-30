@@ -3653,4 +3653,37 @@ def Test_dup_member_variable()
   v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
 enddef
 
+" Test for accessing a private member outside a class in a def function
+def Test_private_member_access_outside_class()
+  # private object member variable
+  var lines =<< trim END
+    vim9script
+    class A
+      this._val = 10
+      def GetVal(): number
+        return this._val
+      enddef
+    endclass
+    def T()
+      var a = A.new()
+      a._val = 20
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+  # private class member variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val: number = 10
+    endclass
+    def T()
+      A._val = 20
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

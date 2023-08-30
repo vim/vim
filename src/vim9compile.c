@@ -1866,6 +1866,15 @@ compile_lhs(
 	{
 	    // for an object or class member get the type of the member
 	    class_T *cl = lhs->lhs_type->tt_class;
+	    // If it is private member variable, then accessing it outside the
+	    // class is not allowed.
+	    if (*(after + 1) == '_' && !inside_class(cctx, cl))
+	    {
+		char_u *m_name = vim_strnsave(after + 1, lhs->lhs_end - after);
+		semsg(_(e_cannot_access_private_member_str), m_name);
+		vim_free(m_name);
+		return FAIL;
+	    }
 	    lhs->lhs_member_type = class_member_type(cl, after + 1,
 					   lhs->lhs_end, &lhs->lhs_member_idx);
 	    if (lhs->lhs_member_idx < 0)
