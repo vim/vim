@@ -36,7 +36,7 @@ menut &File				&File
 
 menut &Open\.\.\.<Tab>:e		&Apri\.\.\.<Tab>:e
 menut Sp&lit-Open\.\.\.<Tab>:sp		A&Pri\ nuova\ finestra\.\.\.<Tab>:sp
-menut Open\ Tab\.\.\.<Tab>:tabnew	Apri\ nuova\ &Linguetta\.\.\.<Tab>:tabnew
+menut Open\ &Tab\.\.\.<Tab>:tabnew	Apri\ nuova\ &Linguetta\.\.\.<Tab>:tabnew
 menut &New<Tab>:enew			&Nuovo<Tab>:enew
 menut &Close<Tab>:close			&Chiudi<Tab>:close
 menut &Save<Tab>:w			&Salva<Tab>:w

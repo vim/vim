@@ -19,7 +19,7 @@ scriptencoding latin1
 menutrans &File				&Soubor
 menutrans &Open\.\.\.<Tab>:e		&Otevrit\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Otevrit\ v\ no&vem\ okne\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otevrit\ tab\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Otevrit\ tab\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Novy<Tab>:enew
 menutrans &Close<Tab>:close		&Zavrit<Tab>:close
 menutrans &Save<Tab>:w			&Ulozit<Tab>:w
