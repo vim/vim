@@ -1878,8 +1878,14 @@ compile_lhs(
 	    // class is not allowed.
 	    if ((access != VIM_ACCESS_ALL) && !inside_class(cctx, cl))
 	    {
-		char_u *m_name = vim_strnsave(after + 1, lhs->lhs_end - after);
-		semsg(_(e_cannot_access_private_member_str), m_name);
+		char_u	*m_name;
+		char	*msg;
+
+		m_name = vim_strnsave(after + 1, lhs->lhs_end - after - 1);
+		msg = (access == VIM_ACCESS_PRIVATE)
+				? e_cannot_access_private_member_str
+				: e_cannot_change_readonly_variable_str;
+		semsg(_(msg), m_name);
 		vim_free(m_name);
 		return FAIL;
 	    }

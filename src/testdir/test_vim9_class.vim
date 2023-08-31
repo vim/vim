@@ -3725,7 +3725,7 @@ def Test_readonly_member_change_in_def_func()
     enddef
     T()
   END
-  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: val')
+  v9.CheckScriptFailure(lines, 'E46: Cannot change read-only variable "val"')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
