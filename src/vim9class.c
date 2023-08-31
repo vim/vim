@@ -1554,6 +1554,7 @@ cleanup:
  * Find member "name" in class "cl", set "member_idx" to the member index and
  * return its type.
  * When not found "member_idx" is set to -1 and t_any is returned.
+ * Set *p_m ocmmember_T if not NULL
  */
     type_T *
 class_member_type(
@@ -1561,7 +1562,7 @@ class_member_type(
     char_u	*name,
     char_u	*name_end,
     int		*member_idx,
-    omacc_T	*access)
+    ocmember_T	**p_m)
 {
     *member_idx = -1;  // not found (yet)
     size_t len = name_end - name;
@@ -1572,7 +1573,8 @@ class_member_type(
 	if (STRNCMP(m->ocm_name, name, len) == 0 && m->ocm_name[len] == NUL)
 	{
 	    *member_idx = i;
-	    *access = m->ocm_access;
+	    if (p_m != NULL)
+		*p_m = m;
 	    return m->ocm_type;
 	}
     }
