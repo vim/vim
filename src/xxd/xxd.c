@@ -719,14 +719,38 @@ main(int argc, char *argv[])
         }
       else if (!STRNCMP(pp, "-R", 2))
         {
-	  if (!argv[2])
-	    exit_with_usage();
-	  if (!STRNCMP(argv[2], "always", 2))
-	    color = 1;
-	  else if (!STRNCMP(argv[2], "never", 1))
-	    color = 0;
-	  argv++;
-	  argc--;
+          if (argv[2] &&
+                  (!STRNCMP(argv[2], "always", 6) ||
+                   !STRNCMP(argv[2], "never", 5) ||
+                   !STRNCMP(argv[2], "auto", 4) ) )
+            {
+              if (argv[2][1] == 'l')
+                /* "a[l]ways" */
+                color = 1;
+              else if (argv[2][0] == 'n')
+                /* "[n]ever" */
+                color = 0;
+              else
+                {
+                  /* "auto" */
+#ifdef UNIX
+                  color = isatty(STDOUT_FILENO);
+#else
+                  color = 0;
+#endif
+                }
+              argv++;
+              argc--;
+            }
+          else
+            {
+              /* "auto" is default */
+#ifdef UNIX
+              color = isatty(STDOUT_FILENO);
+#else
+              color = 0;
+#endif
+            }
         }
       else if (!strcmp(pp, "--"))	/* end of options */
 	{
