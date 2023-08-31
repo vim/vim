@@ -56,6 +56,7 @@
  * 04.02.2020  Add -d for decimal offsets by Aapo Rantalainen
  * 14.01.2022  Disable extra newlines with -c0 -p by Erik Auerswald.
  * 20.06.2022  Permit setting the variable names used by -i by David Gow
+ * 31.08.2023  -R never/auto/always prints colored output
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -134,7 +135,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2022-01-14 by Juergen Weigert et al.";
+char version[] = "xxd 2023-08-31 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
