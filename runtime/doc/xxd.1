@@ -135,6 +135,12 @@ to read plain hexadecimal dumps without line number information and without a
 particular column layout. Additional whitespace and line breaks are allowed
 anywhere.
 .TP
+.IR \-R " "[WHEN]
+In output the hex-value and the value are both colored with the same color depending on the hex-value. Mostly helping to differentiate printable and non-printable characters.
+.I WHEN
+is
+.BR never ", " always ", or " auto .
+.TP
 .I \-seek offset
 When used after
 .IR \-r :
