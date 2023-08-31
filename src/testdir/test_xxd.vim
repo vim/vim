@@ -1,5 +1,8 @@
 " Test for the xxd command
 
+source check.vim
+source screendump.vim
+
 if empty($XXD) && executable('..\xxd\xxd.exe')
   let s:xxd_cmd = '..\xxd\xxd.exe'
 elseif empty($XXD) || !executable($XXD)
@@ -311,7 +314,7 @@ endfunc
 
 " Various ways with wrong arguments that trigger the usage output.
 func Test_xxd_usage()
-  for arg in ['-h', '-c', '-g', '-o', '-s', '-l', '-X', 'one two three']
+  for arg in ['-h', '-c', '-g', '-o', '-s', '-l', '-X', '-R', 'one two three']
     new
     exe 'r! ' . s:xxd_cmd . ' ' . arg
     call assert_match("Usage:", join(getline(1, 3)))
@@ -415,4 +418,178 @@ func Test_xxd_little_endian_with_cols()
   bwipe!
 endfunc
 
+func Test_xxd_color()
+"Test: color=never
+let s:test = 1
+
+"Note Quotation mark escaped
+"Note Aposhpere vaihdettu apostrophe replaced with 0x00
+"Note Backslash replaced with 0x00
+let data = [
+    \ "00000000: 0001 0203 0405 0607 0809 0a0b 0c0d 0e0f  ................",
+    \ "00000010: 1011 1213 1415 1617 1819 1a1b 1c1d 1e1f  ................",
+    \ "00000020: 2021 2223 2425 2600 2829 2a2b 2c2d 2e2f   !\"#$%&.()*+,-./",
+    \ "00000030: 3031 3233 3435 3637 3839 3a3b 3c3d 3e3f  0123456789:;<=>?",
+    \ "00000040: 4041 4243 4445 4647 4849 4a4b 4c4d 4e4f  @ABCDEFGHIJKLMNO",
+    \ "00000050: 5051 5253 5455 5657 5859 5a5b 005d 5e5f  PQRSTUVWXYZ[.]^_",
+    \ "00000060: 6061 6263 6465 6667 6869 6a6b 6c6d 6e6f  `abcdefghijklmno",
+    \ "00000070: 7071 7273 7475 7677 7879 7a7b 7c7d 7e7f  pqrstuvwxyz{|}~.",
+    \ "00000080: 8081 8283 8485 8687 8889 8a8b 8c8d 8e8f  ................",
+    \ "00000090: 9091 9293 9495 9697 9899 9a9b 9c9d 9e9f  ................",
+    \ "000000a0: a0a1 a2a3 a4a5 a6a7 a8a9 aaab acad aeaf  ................",
+    \ "000000b0: b0b1 b2b3 b4b5 b6b7 b8b9 babb bcbd bebf  ................",
+    \ "000000c0: c0c1 c2c3 c4c5 c6c7 c8c9 cacb cccd cecf  ................",
+    \ "000000d0: d0d1 d2d3 d4d5 d6d7 d8d9 dadb dcdd dedf  ................",
+    \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
+    \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
+call writefile(data,'Xinput')
+
+  silent exe '!' . s:xxd_cmd . ' -r < Xinput > XXDfile'
+
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -R never ' . ' XXDfile'
+  $d
+  let expected = [
+      \ "00000000: 0001 0203 0405 0607 0809 0a0b 0c0d 0e0f  ................",
+      \ "00000010: 1011 1213 1415 1617 1819 1a1b 1c1d 1e1f  ................",
+      \ "00000020: 2021 2223 2425 2600 2829 2a2b 2c2d 2e2f   !\"#$%&.()*+,-./",
+      \ "00000030: 3031 3233 3435 3637 3839 3a3b 3c3d 3e3f  0123456789:;<=>?",
+      \ "00000040: 4041 4243 4445 4647 4849 4a4b 4c4d 4e4f  @ABCDEFGHIJKLMNO",
+      \ "00000050: 5051 5253 5455 5657 5859 5a5b 005d 5e5f  PQRSTUVWXYZ[.]^_",
+      \ "00000060: 6061 6263 6465 6667 6869 6a6b 6c6d 6e6f  `abcdefghijklmno",
+      \ "00000070: 7071 7273 7475 7677 7879 7a7b 7c7d 7e7f  pqrstuvwxyz{|}~.",
+      \ "00000080: 8081 8283 8485 8687 8889 8a8b 8c8d 8e8f  ................",
+      \ "00000090: 9091 9293 9495 9697 9899 9a9b 9c9d 9e9f  ................",
+      \ "000000a0: a0a1 a2a3 a4a5 a6a7 a8a9 aaab acad aeaf  ................",
+      \ "000000b0: b0b1 b2b3 b4b5 b6b7 b8b9 babb bcbd bebf  ................",
+      \ "000000c0: c0c1 c2c3 c4c5 c6c7 c8c9 cacb cccd cecf  ................",
+      \ "000000d0: d0d1 d2d3 d4d5 d6d7 d8d9 dadb dcdd dedf  ................",
+      \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
+      \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
+
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+  "Test: color=always
+  let s:test += 1
+
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -R always -c 4 ' . ' XXDfile'
+  $d
+  let expected = [
+      \ "00000000: \e[1;37m00\e[0m\e[1;31m01\e[0m \e[1;31m02\e[0m\e[1;31m03\e[0m  \e[1;37m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000004: \e[1;31m04\e[0m\e[1;31m05\e[0m \e[1;31m06\e[0m\e[1;31m07\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000008: \e[1;31m08\e[0m\e[1;33m09\e[0m \e[1;33m0a\e[0m\e[1;31m0b\e[0m  \e[1;31m.\e[0m\e[1;33m.\e[0m\e[1;33m.\e[0m\e[1;31m.\e[0m",
+      \ "0000000c: \e[1;31m0c\e[0m\e[1;33m0d\e[0m \e[1;31m0e\e[0m\e[1;31m0f\e[0m  \e[1;31m.\e[0m\e[1;33m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000010: \e[1;31m10\e[0m\e[1;31m11\e[0m \e[1;31m12\e[0m\e[1;31m13\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000014: \e[1;31m14\e[0m\e[1;31m15\e[0m \e[1;31m16\e[0m\e[1;31m17\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000018: \e[1;31m18\e[0m\e[1;31m19\e[0m \e[1;31m1a\e[0m\e[1;31m1b\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "0000001c: \e[1;31m1c\e[0m\e[1;31m1d\e[0m \e[1;31m1e\e[0m\e[1;31m1f\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000020: \e[1;32m20\e[0m\e[1;32m21\e[0m \e[1;32m22\e[0m\e[1;32m23\e[0m  \e[1;32m \e[0m\e[1;32m!\e[0m\e[1;32m\"\e[0m\e[1;32m#\e[0m",
+      \ "00000024: \e[1;32m24\e[0m\e[1;32m25\e[0m \e[1;32m26\e[0m\e[1;37m00\e[0m  \e[1;32m$\e[0m\e[1;32m%\e[0m\e[1;32m&\e[0m\e[1;37m.\e[0m",
+      \ "00000028: \e[1;32m28\e[0m\e[1;32m29\e[0m \e[1;32m2a\e[0m\e[1;32m2b\e[0m  \e[1;32m(\e[0m\e[1;32m)\e[0m\e[1;32m*\e[0m\e[1;32m+\e[0m",
+      \ "0000002c: \e[1;32m2c\e[0m\e[1;32m2d\e[0m \e[1;32m2e\e[0m\e[1;32m2f\e[0m  \e[1;32m,\e[0m\e[1;32m-\e[0m\e[1;32m.\e[0m\e[1;32m/\e[0m",
+      \ "00000030: \e[1;32m30\e[0m\e[1;32m31\e[0m \e[1;32m32\e[0m\e[1;32m33\e[0m  \e[1;32m0\e[0m\e[1;32m1\e[0m\e[1;32m2\e[0m\e[1;32m3\e[0m",
+      \ "00000034: \e[1;32m34\e[0m\e[1;32m35\e[0m \e[1;32m36\e[0m\e[1;32m37\e[0m  \e[1;32m4\e[0m\e[1;32m5\e[0m\e[1;32m6\e[0m\e[1;32m7\e[0m",
+      \ "00000038: \e[1;32m38\e[0m\e[1;32m39\e[0m \e[1;32m3a\e[0m\e[1;32m3b\e[0m  \e[1;32m8\e[0m\e[1;32m9\e[0m\e[1;32m:\e[0m\e[1;32m;\e[0m",
+      \ "0000003c: \e[1;32m3c\e[0m\e[1;32m3d\e[0m \e[1;32m3e\e[0m\e[1;32m3f\e[0m  \e[1;32m<\e[0m\e[1;32m=\e[0m\e[1;32m>\e[0m\e[1;32m?\e[0m",
+      \ "00000040: \e[1;32m40\e[0m\e[1;32m41\e[0m \e[1;32m42\e[0m\e[1;32m43\e[0m  \e[1;32m@\e[0m\e[1;32mA\e[0m\e[1;32mB\e[0m\e[1;32mC\e[0m",
+      \ "00000044: \e[1;32m44\e[0m\e[1;32m45\e[0m \e[1;32m46\e[0m\e[1;32m47\e[0m  \e[1;32mD\e[0m\e[1;32mE\e[0m\e[1;32mF\e[0m\e[1;32mG\e[0m",
+      \ "00000048: \e[1;32m48\e[0m\e[1;32m49\e[0m \e[1;32m4a\e[0m\e[1;32m4b\e[0m  \e[1;32mH\e[0m\e[1;32mI\e[0m\e[1;32mJ\e[0m\e[1;32mK\e[0m",
+      \ "0000004c: \e[1;32m4c\e[0m\e[1;32m4d\e[0m \e[1;32m4e\e[0m\e[1;32m4f\e[0m  \e[1;32mL\e[0m\e[1;32mM\e[0m\e[1;32mN\e[0m\e[1;32mO\e[0m",
+      \ "00000050: \e[1;32m50\e[0m\e[1;32m51\e[0m \e[1;32m52\e[0m\e[1;32m53\e[0m  \e[1;32mP\e[0m\e[1;32mQ\e[0m\e[1;32mR\e[0m\e[1;32mS\e[0m",
+      \ "00000054: \e[1;32m54\e[0m\e[1;32m55\e[0m \e[1;32m56\e[0m\e[1;32m57\e[0m  \e[1;32mT\e[0m\e[1;32mU\e[0m\e[1;32mV\e[0m\e[1;32mW\e[0m",
+      \ "00000058: \e[1;32m58\e[0m\e[1;32m59\e[0m \e[1;32m5a\e[0m\e[1;32m5b\e[0m  \e[1;32mX\e[0m\e[1;32mY\e[0m\e[1;32mZ\e[0m\e[1;32m[\e[0m",
+      \ "0000005c: \e[1;37m00\e[0m\e[1;32m5d\e[0m \e[1;32m5e\e[0m\e[1;32m5f\e[0m  \e[1;37m.\e[0m\e[1;32m]\e[0m\e[1;32m^\e[0m\e[1;32m_\e[0m",
+      \ "00000060: \e[1;32m60\e[0m\e[1;32m61\e[0m \e[1;32m62\e[0m\e[1;32m63\e[0m  \e[1;32m`\e[0m\e[1;32ma\e[0m\e[1;32mb\e[0m\e[1;32mc\e[0m",
+      \ "00000064: \e[1;32m64\e[0m\e[1;32m65\e[0m \e[1;32m66\e[0m\e[1;32m67\e[0m  \e[1;32md\e[0m\e[1;32me\e[0m\e[1;32mf\e[0m\e[1;32mg\e[0m",
+      \ "00000068: \e[1;32m68\e[0m\e[1;32m69\e[0m \e[1;32m6a\e[0m\e[1;32m6b\e[0m  \e[1;32mh\e[0m\e[1;32mi\e[0m\e[1;32mj\e[0m\e[1;32mk\e[0m",
+      \ "0000006c: \e[1;32m6c\e[0m\e[1;32m6d\e[0m \e[1;32m6e\e[0m\e[1;32m6f\e[0m  \e[1;32ml\e[0m\e[1;32mm\e[0m\e[1;32mn\e[0m\e[1;32mo\e[0m",
+      \ "00000070: \e[1;32m70\e[0m\e[1;32m71\e[0m \e[1;32m72\e[0m\e[1;32m73\e[0m  \e[1;32mp\e[0m\e[1;32mq\e[0m\e[1;32mr\e[0m\e[1;32ms\e[0m",
+      \ "00000074: \e[1;32m74\e[0m\e[1;32m75\e[0m \e[1;32m76\e[0m\e[1;32m77\e[0m  \e[1;32mt\e[0m\e[1;32mu\e[0m\e[1;32mv\e[0m\e[1;32mw\e[0m",
+      \ "00000078: \e[1;32m78\e[0m\e[1;32m79\e[0m \e[1;32m7a\e[0m\e[1;32m7b\e[0m  \e[1;32mx\e[0m\e[1;32my\e[0m\e[1;32mz\e[0m\e[1;32m{\e[0m",
+      \ "0000007c: \e[1;32m7c\e[0m\e[1;32m7d\e[0m \e[1;32m7e\e[0m\e[1;31m7f\e[0m  \e[1;32m|\e[0m\e[1;32m}\e[0m\e[1;32m~\e[0m\e[1;31m.\e[0m",
+      \ "00000080: \e[1;31m80\e[0m\e[1;31m81\e[0m \e[1;31m82\e[0m\e[1;31m83\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000084: \e[1;31m84\e[0m\e[1;31m85\e[0m \e[1;31m86\e[0m\e[1;31m87\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000088: \e[1;31m88\e[0m\e[1;31m89\e[0m \e[1;31m8a\e[0m\e[1;31m8b\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "0000008c: \e[1;31m8c\e[0m\e[1;31m8d\e[0m \e[1;31m8e\e[0m\e[1;31m8f\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000090: \e[1;31m90\e[0m\e[1;31m91\e[0m \e[1;31m92\e[0m\e[1;31m93\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000094: \e[1;31m94\e[0m\e[1;31m95\e[0m \e[1;31m96\e[0m\e[1;31m97\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "00000098: \e[1;31m98\e[0m\e[1;31m99\e[0m \e[1;31m9a\e[0m\e[1;31m9b\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "0000009c: \e[1;31m9c\e[0m\e[1;31m9d\e[0m \e[1;31m9e\e[0m\e[1;31m9f\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000a0: \e[1;31ma0\e[0m\e[1;31ma1\e[0m \e[1;31ma2\e[0m\e[1;31ma3\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000a4: \e[1;31ma4\e[0m\e[1;31ma5\e[0m \e[1;31ma6\e[0m\e[1;31ma7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000a8: \e[1;31ma8\e[0m\e[1;31ma9\e[0m \e[1;31maa\e[0m\e[1;31mab\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000ac: \e[1;31mac\e[0m\e[1;31mad\e[0m \e[1;31mae\e[0m\e[1;31maf\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000b0: \e[1;31mb0\e[0m\e[1;31mb1\e[0m \e[1;31mb2\e[0m\e[1;31mb3\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000b4: \e[1;31mb4\e[0m\e[1;31mb5\e[0m \e[1;31mb6\e[0m\e[1;31mb7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000b8: \e[1;31mb8\e[0m\e[1;31mb9\e[0m \e[1;31mba\e[0m\e[1;31mbb\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000bc: \e[1;31mbc\e[0m\e[1;31mbd\e[0m \e[1;31mbe\e[0m\e[1;31mbf\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000c0: \e[1;31mc0\e[0m\e[1;31mc1\e[0m \e[1;31mc2\e[0m\e[1;31mc3\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000c4: \e[1;31mc4\e[0m\e[1;31mc5\e[0m \e[1;31mc6\e[0m\e[1;31mc7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000c8: \e[1;31mc8\e[0m\e[1;31mc9\e[0m \e[1;31mca\e[0m\e[1;31mcb\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000cc: \e[1;31mcc\e[0m\e[1;31mcd\e[0m \e[1;31mce\e[0m\e[1;31mcf\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000d0: \e[1;31md0\e[0m\e[1;31md1\e[0m \e[1;31md2\e[0m\e[1;31md3\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000d4: \e[1;31md4\e[0m\e[1;31md5\e[0m \e[1;31md6\e[0m\e[1;31md7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000d8: \e[1;31md8\e[0m\e[1;31md9\e[0m \e[1;31mda\e[0m\e[1;31mdb\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000dc: \e[1;31mdc\e[0m\e[1;31mdd\e[0m \e[1;31mde\e[0m\e[1;31mdf\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000e0: \e[1;31me0\e[0m\e[1;31me1\e[0m \e[1;31me2\e[0m\e[1;31me3\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000e4: \e[1;31me4\e[0m\e[1;31me5\e[0m \e[1;31me6\e[0m\e[1;31me7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000e8: \e[1;31me8\e[0m\e[1;31me9\e[0m \e[1;31mea\e[0m\e[1;31meb\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000ec: \e[1;31mec\e[0m\e[1;31med\e[0m \e[1;31mee\e[0m\e[1;31mef\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000f0: \e[1;31mf0\e[0m\e[1;31mf1\e[0m \e[1;31mf2\e[0m\e[1;31mf3\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000f4: \e[1;31mf4\e[0m\e[1;31mf5\e[0m \e[1;31mf6\e[0m\e[1;31mf7\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000f8: \e[1;31mf8\e[0m\e[1;31mf9\e[0m \e[1;31mfa\e[0m\e[1;31mfb\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m",
+      \ "000000fc: \e[1;31mfc\e[0m\e[1;31mfd\e[0m \e[1;31mfe\e[0m\e[1;34mff\e[0m  \e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;31m.\e[0m\e[1;34m.\e[0m"]
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+  call delete('Xinput')
+  call delete('XXDfile')
+
+endfunc
+
+func Test_xxd_color2()
+  CheckScreendump
+  CheckUnix
+  CheckNotMac
+  CheckNotBSD
+
+  "Note Quotation mark escaped
+  "Note Aposhpere vaihdettu apostrophe replaced with 0x00
+  "Note Backslash replaced with 0x00
+  let data = [
+      \ "00000000: 0001 0203 0405 0607 0809 0a0b 0c0d 0e0f  ................",
+      \ "00000010: 1011 1213 1415 1617 1819 1a1b 1c1d 1e1f  ................",
+      \ "00000020: 2021 2223 2425 2600 2829 2a2b 2c2d 2e2f   !\"#$%&.()*+,-./",
+      \ "00000030: 3031 3233 3435 3637 3839 3a3b 3c3d 3e3f  0123456789:;<=>?",
+      \ "00000040: 4041 4243 4445 4647 4849 4a4b 4c4d 4e4f  @ABCDEFGHIJKLMNO",
+      \ "00000050: 5051 5253 5455 5657 5859 5a5b 005d 5e5f  PQRSTUVWXYZ[.]^_",
+      \ "00000060: 6061 6263 6465 6667 6869 6a6b 6c6d 6e6f  `abcdefghijklmno",
+      \ "00000070: 7071 7273 7475 7677 7879 7a7b 7c7d 7e7f  pqrstuvwxyz{|}~.",
+      \ "00000080: 8081 8283 8485 8687 8889 8a8b 8c8d 8e8f  ................",
+      \ "00000090: 9091 9293 9495 9697 9899 9a9b 9c9d 9e9f  ................",
+      \ "000000a0: a0a1 a2a3 a4a5 a6a7 a8a9 aaab acad aeaf  ................",
+      \ "000000b0: b0b1 b2b3 b4b5 b6b7 b8b9 babb bcbd bebf  ................",
+      \ "000000c0: c0c1 c2c3 c4c5 c6c7 c8c9 cacb cccd cecf  ................",
+      \ "000000d0: d0d1 d2d3 d4d5 d6d7 d8d9 dadb dcdd dedf  ................",
+      \ "000000e0: e0e1 e2e3 e4e5 e6e7 e8e9 eaeb eced eeef  ................",
+      \ "000000f0: f0f1 f2f3 f4f5 f6f7 f8f9 fafb fcfd feff  ................"]
+  call writefile(data, 'Xinput', 'D')
+
+  call system(s:xxd_cmd .. ' -r < Xinput > XXDfile_colors')
+
+  let buf = RunVimInTerminal('', #{rows: 20, cmd: 'sh'})
+  call term_sendkeys(buf,  s:xxd_cmd .. " -R never  < XXDfile_colors\<cr>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_xxd_color_0', {})
+
+  call TermWait(buf)
+  call term_sendkeys(buf,  "clear\<CR>")
+  call term_sendkeys(buf,  s:xxd_cmd .. " -R always  < XXDfile_colors\<cr>")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_xxd_color_1', {})
+
+  call term_sendkeys(buf,  "exit\<CR>")
+
+  call delete('XXDfile_colors')
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

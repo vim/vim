@@ -490,7 +490,7 @@ def Test_assignment_with_operator()
       vim9script
 
       class Foo
-        this.x: number
+        public this.x: number
 
         def Add(n: number)
           this.x += n
@@ -1179,6 +1179,61 @@ def Test_class_member()
     endclass
   END
   v9.CheckScriptFailure(lines, 'E1010:')
+
+  # Test for setting a member on a null object
+  lines =<< trim END
+    vim9script
+    class A
+        this.val: string
+    endclass
+
+    def F()
+        var obj: A
+        obj.val = ""
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object')
+
+  # Test for accessing a member on a null object
+  lines =<< trim END
+    vim9script
+    class A
+        this.val: string
+    endclass
+
+    def F()
+        var obj: A
+        echo obj.val
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object')
+
+  # Test for setting a member on a null object, at script level
+  lines =<< trim END
+    vim9script
+    class A
+        this.val: string
+    endclass
+
+    var obj: A
+    obj.val = ""
+  END
+  # FIXME(in source): this should give E1360 as well!
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<A> but got string')
+
+  # Test for accessing a member on a null object, at script level
+  lines =<< trim END
+    vim9script
+    class A
+        this.val: string
+    endclass
+
+    var obj: A
+    echo obj.val
+  END
+  v9.CheckScriptFailure(lines, 'E1360: Using a null object')
 
   # Test for no space before or after the '=' when initializing a member
   # variable
@@ -2593,15 +2648,15 @@ def Test_multi_level_member_access()
     vim9script
 
     class A
-      this.val1: number = 0
+      public this.val1: number = 0
     endclass
 
     class B extends A
-      this.val2: number = 0
+      public this.val2: number = 0
     endclass
 
     class C extends B
-      this.val3: number = 0
+      public this.val3: number = 0
     endclass
 
     def A_members(a: A)
@@ -3672,18 +3727,60 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
 
-  # private class member variable
+  # access a non-existing private object member variable
   lines =<< trim END
     vim9script
     class A
-      static _val: number = 10
+      this._val = 10
     endclass
     def T()
-      A._val = 20
+      var a = A.new()
+      a._a = 1
     enddef
     T()
   END
-  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+  v9.CheckScriptFailure(lines, 'E1089: Unknown variable: _a = 1')
+enddef
+
+" Test for changing the member access of an interface in a implementation class
+def Test_change_interface_member_access()
+  var lines =<< trim END
+    vim9script
+    interface A
+      public this.val: number
+    endinterface
+    class B implements A
+      this.val = 10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1367: Access level of member "val" of interface "A" is different')
+
+  lines =<< trim END
+    vim9script
+    interface A
+      this.val: number
+    endinterface
+    class B implements A
+      public this.val = 10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1367: Access level of member "val" of interface "A" is different')
+enddef
+
+" Test for trying to change a readonly member from a def function
+def Test_readonly_member_change_in_def_func()
+  var lines =<< trim END
+    vim9script
+    class A
+      this.val: number
+    endclass
+    def T()
+      var a = A.new()
+      a.val = 20
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E46: Cannot change read-only variable "val"')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -1159,6 +1159,9 @@ win_lbr_chartabsize(
     size = win_chartabsize(wp, s, vcol);
     if (*s == NUL && !has_lcs_eol)
 	size = 0;  // NUL is not displayed
+# ifdef FEAT_LINEBREAK
+    int is_doublewidth = has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1;
+# endif
 
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
@@ -1242,8 +1245,7 @@ win_lbr_chartabsize(
 # endif
 
 # ifdef FEAT_LINEBREAK
-    if (has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1
-				   && wp->w_p_wrap && in_win_border(wp, vcol))
+    if (is_doublewidth && wp->w_p_wrap && in_win_border(wp, vcol + size - 2))
     {
 	++size;		// Count the ">" in the last column.
 	mb_added = 1;
