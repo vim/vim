@@ -2147,7 +2147,14 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     // -1 dict, list, blob or object
     tv = STACK_TV_BOT(-3);
     SOURCING_LNUM = iptr->isn_lnum;
-    if (dest_type == VAR_ANY)
+
+    // Make sure an object has been initialized
+    if (dest_type == VAR_OBJECT && tv_dest->vval.v_object == NULL)
+    {
+	emsg(_(e_using_null_object));
+	status = FAIL;
+    }
+    else if (dest_type == VAR_ANY)
     {
 	dest_type = tv_dest->v_type;
 	if (dest_type == VAR_DICT)
