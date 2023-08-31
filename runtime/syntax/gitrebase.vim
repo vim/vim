@@ -26,6 +26,7 @@ syn match   gitrebaseNoop   "\v^noop>"
 syn match   gitrebaseMerge  "\v^m(erge)=>"   nextgroup=gitrebaseMergeOption,gitrebaseName skipwhite
 syn match   gitrebaseLabel  "\v^l(abel)=>"   nextgroup=gitrebaseName skipwhite
 syn match   gitrebaseReset  "\v^(t|reset)=>" nextgroup=gitrebaseName skipwhite
+syn match   gitrebaseUpdateRef "\v^u(pdate-ref)=>" nextgroup=gitrebaseName skipwhite
 syn match   gitrebaseSummary ".*"               contains=gitrebaseHash contained
 syn match   gitrebaseCommand ".*"                                      contained
 exe 'syn match gitrebaseComment " \@<=' . s:c . ' empty$" containedin=gitrebaseSummary contained'
@@ -52,6 +53,7 @@ hi def link gitrebaseNoop           Comment
 hi def link gitrebaseMerge          Exception
 hi def link gitrebaseLabel          Label
 hi def link gitrebaseReset          Keyword
+hi def link gitrebaseUpdateRef      gitrebaseReset
 hi def link gitrebaseSummary        String
 hi def link gitrebaseComment        Comment
 hi def link gitrebaseSquashError    Error
