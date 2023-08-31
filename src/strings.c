@@ -2231,6 +2231,8 @@ vim_vsnprintf(
     return vim_vsnprintf_typval(str, str_m, fmt, ap, NULL);
 }
 
+/** The types of arguments that can be used in a format string
+ */
 enum
 {
     TYPE_UNKNOWN = -1,
@@ -2247,7 +2249,8 @@ enum
     TYPE_FLOAT
 };
 
-/* Types that can be used in a format string
+/* Convert format string argument type from its format specifier to the
+ * specific type.
  */
     static int
 format_typeof(
@@ -2375,6 +2378,8 @@ format_typeof(
     return TYPE_UNKNOWN;
 }
 
+/** Format a format string argument type to its type name.
+ */
     static char *
 format_typename(
     const char  *type)
@@ -2418,6 +2423,16 @@ format_typename(
     return _(typename_unknown);
 }
 
+/** Creates or adjusts the ap_types array to the correct number
+ * of entries and adds 'type' at the correct position.
+ *
+ * arg is the argument number, num_posarg contains the number of
+ * positional arguments that have been added already, type points
+ * to a format specifier in the original format string.
+ *
+ * Return FAIL on memory allocation error or if positional arguments
+ * are used incorrectly, OK otherwise.
+ */
     static int
 adjust_types(
     const char ***ap_types,
@@ -2446,6 +2461,8 @@ adjust_types(
 	*num_posarg = arg;
     }
 
+    // If argument was already used, check that it's used as the
+    // same type.
     if ((*ap_types)[arg - 1] != NULL)
     {
 	if ((*ap_types)[arg - 1][0] == '*' || type[0] == '*')
@@ -2480,6 +2497,16 @@ adjust_types(
     return OK;
 }
 
+/** Parses the format string and returns an array of pointers to
+ * the format specifiers in the format string.
+ *
+ * ap_types is created in this function.
+ * num_posargs will hold the number of positional arguments
+ * fmt is the original format string
+ * tvs holds the arguments
+ *
+ * Return FAIL on error, OK on success.
+ */
     static int
 parse_fmt_types(
     const char  ***ap_types,
@@ -2778,6 +2805,13 @@ error:
     return FAIL;
 }
 
+/** Advances the va_list pointer contained in ap to position arg_idx,
+ * taking into account the current argument position (arg_cur) and
+ * the types of the arguments to skip over (pointed to by ap_types).
+ * ap_start is (a copy of) the original va_list, so that it is possible
+ * to 'skip back' over arguments by jumping back to the beginning and
+ * jumping over all needed arguments.
+ */
     static void
 skip_to_arg(
     const char	**ap_types,
@@ -2961,7 +2995,7 @@ vim_vsnprintf_typval(
 
 	    p++;  // skip '%'
 
-	    // First check to see if we find a positional
+	    // First, check to see if we find a positional
 	    // argument specifier
 	    ptype = p;
 
