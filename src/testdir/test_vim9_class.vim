@@ -1232,7 +1232,6 @@ def Test_class_member()
 
     var obj: A
     echo obj.val
-    F()
   END
   v9.CheckScriptFailure(lines, 'E1360: Using a null object')
 
