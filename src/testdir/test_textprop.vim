@@ -2810,6 +2810,22 @@ func Test_prop_inserts_text_before_linebreak()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_inserts_text_before_double_width_wrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, repeat('a', 40) .. '口' .. '12345')
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, 41, #{type: 'theprop', text: repeat('b', 9)})
+    normal! $
+  END
+  call writefile(lines, 'XscriptPropsBeforeDoubleWidthWrap', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsBeforeDoubleWidthWrap', #{rows: 3, cols: 50})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_before_double_width_wrap_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_inserts_text_lcs_extends()
   CheckRunVimInTerminal
 
