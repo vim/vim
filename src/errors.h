@@ -3486,6 +3486,8 @@ EXTERN char e_cannot_use_a_return_type_with_new[]
 	INIT(= N_("E1365: Cannot use a return type with the \"new\" function"));
 EXTERN char e_cannot_access_private_method_str[]
 	INIT(= N_("E1366: Cannot access private method: %s"));
+EXTERN char e_member_str_of_interface_str_has_different_access[]
+	INIT(= N_("E1367: Access level of member \"%s\" of interface \"%s\" is different"));
 
 EXTERN char e_static_cannot_be_followed_by_this[]
 	INIT(= N_("E1368: Static cannot be followed by \"this\" in a member name"));
@@ -3510,4 +3512,4 @@ EXTERN char e_member_str_type_mismatch_expected_str_but_got_str[]
 EXTERN char e_method_str_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1407: Member \"%s\": type mismatch, expected %s but got %s"));
 
-// E1367, E1371 - E1399 unused
+// E1371 - E1399 unused
