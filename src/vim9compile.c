@@ -1865,20 +1865,30 @@ compile_lhs(
 	else if (use_class)
 	{
 	    // for an object or class member get the type of the member
-	    class_T *cl = lhs->lhs_type->tt_class;
+	    class_T	*cl = lhs->lhs_type->tt_class;
+	    omacc_T	access;
+
+	    lhs->lhs_member_type = class_member_type(cl, after + 1,
+					lhs->lhs_end, &lhs->lhs_member_idx,
+					&access);
+	    if (lhs->lhs_member_idx < 0)
+		return FAIL;
+
 	    // If it is private member variable, then accessing it outside the
 	    // class is not allowed.
-	    if (*(after + 1) == '_' && !inside_class(cctx, cl))
+	    if ((access != VIM_ACCESS_ALL) && !inside_class(cctx, cl))
 	    {
-		char_u *m_name = vim_strnsave(after + 1, lhs->lhs_end - after);
-		semsg(_(e_cannot_access_private_member_str), m_name);
+		char_u	*m_name;
+		char	*msg;
+
+		m_name = vim_strnsave(after + 1, lhs->lhs_end - after - 1);
+		msg = (access == VIM_ACCESS_PRIVATE)
+				? e_cannot_access_private_member_str
+				: e_cannot_change_readonly_variable_str;
+		semsg(_(msg), m_name);
 		vim_free(m_name);
 		return FAIL;
 	    }
-	    lhs->lhs_member_type = class_member_type(cl, after + 1,
-					   lhs->lhs_end, &lhs->lhs_member_idx);
-	    if (lhs->lhs_member_idx < 0)
-		return FAIL;
 	}
 	else
 	{
@@ -2086,9 +2096,11 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
        if (dot == NULL)
 	   return FAIL;
 
-	class_T *cl = lhs->lhs_type->tt_class;
-	type_T *type = class_member_type(cl, dot + 1,
-					   lhs->lhs_end, &lhs->lhs_member_idx);
+	class_T	*cl = lhs->lhs_type->tt_class;
+	omacc_T	access;
+	type_T	*type = class_member_type(cl, dot + 1,
+					   lhs->lhs_end, &lhs->lhs_member_idx,
+					   &access);
 	if (lhs->lhs_member_idx < 0)
 	    return FAIL;
 

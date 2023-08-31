@@ -2982,7 +2982,8 @@ insecure_flag(int opt_idx, int opt_flags)
 /*
  * Redraw the window title and/or tab page text later.
  */
-void redraw_titles(void)
+    void
+redraw_titles(void)
 {
     need_maketitle = TRUE;
     redraw_tabline = TRUE;

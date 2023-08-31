@@ -30,14 +30,14 @@
  */
     static int
 parse_member(
-	exarg_T	*eap,
-	char_u	*line,
-	char_u	*varname,
-	int	has_public,	    // TRUE if "public" seen before "varname"
-	char_u	**varname_end,
-	garray_T *type_list,
-	type_T	**type_ret,
-	char_u	**init_expr)
+    exarg_T	*eap,
+    char_u	*line,
+    char_u	*varname,
+    int	has_public,	    // TRUE if "public" seen before "varname"
+    char_u	**varname_end,
+    garray_T *type_list,
+    type_T	**type_ret,
+    char_u	**init_expr)
 {
     *varname_end = to_name_end(varname, FALSE);
     if (*varname == '_' && has_public)
@@ -119,12 +119,12 @@ parse_member(
  */
     static int
 add_member(
-	garray_T    *gap,
-	char_u	    *varname,
-	char_u	    *varname_end,
-	int	    has_public,
-	type_T	    *type,
-	char_u	    *init_expr)
+    garray_T    *gap,
+    char_u	    *varname,
+    char_u	    *varname_end,
+    int	    has_public,
+    type_T	    *type,
+    char_u	    *init_expr)
 {
     if (ga_grow(gap, 1) == FAIL)
 	return FAIL;
@@ -356,6 +356,13 @@ validate_interface_members(
 		if (check_type(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
 								where) == FAIL)
 		    return FALSE;
+
+		if (if_ms[if_i].ocm_access != m->ocm_access)
+		{
+		    semsg(_(e_member_str_of_interface_str_has_different_access),
+			    if_ms[if_i].ocm_name, intf_class_name);
+		    return FALSE;
+		}
 
 		break;
 	    }
@@ -622,11 +629,11 @@ is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
  */
     static int
 update_member_method_lookup_table(
-	class_T		*ifcl,
-	class_T		*cl,
-	garray_T	*objmethods,
-	int		pobj_method_offset,
-	int		is_interface)
+    class_T		*ifcl,
+    class_T		*cl,
+    garray_T	*objmethods,
+    int		pobj_method_offset,
+    int		is_interface)
 {
     if (ifcl == NULL)
 	return OK;
@@ -1550,10 +1557,11 @@ cleanup:
  */
     type_T *
 class_member_type(
-	class_T *cl,
-	char_u	*name,
-	char_u	*name_end,
-	int	*member_idx)
+    class_T	*cl,
+    char_u	*name,
+    char_u	*name_end,
+    int		*member_idx,
+    omacc_T	*access)
 {
     *member_idx = -1;  // not found (yet)
     size_t len = name_end - name;
@@ -1564,6 +1572,7 @@ class_member_type(
 	if (STRNCMP(m->ocm_name, name, len) == 0 && m->ocm_name[len] == NUL)
 	{
 	    *member_idx = i;
+	    *access = m->ocm_access;
 	    return m->ocm_type;
 	}
     }
