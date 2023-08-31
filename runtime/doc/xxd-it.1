@@ -6,7 +6,7 @@
 .\"    Modificato da Bram Moolenaar <Bram@vim.org>
 .SH NOME
 .I xxd
-\- Produce esadecimale da un file binario o viceversa.
+\- Produce lista esadecimale da un file binario o viceversa.
 .SH SINTASSI
 .B xxd
 \-h[elp]
@@ -18,36 +18,33 @@
 \-r[evert] [opzioni] [input_file [output_file]]
 .SH DESCRIZIONE
 .I xxd
-crea un'immagine esadecimale di un dato file o dello "standard input".
-Può anche ottenere da un'immagine esadecimale il file binario originale.
+crea un'immagine esadecimale di un dato file o dello `standard input'.
+Può anche ricostruire da un'immagine esadecimale il file binario originale.
 Come
 .BR uuencode (1)
 e
 .BR uudecode (1)
-permette di trasmettere dati binari in una rappresentazione ASCII "a prova
-di email", ma ha anche il vantaggio di poter decodificare sullo "standard
-output".  Inoltre, può essere usato per effettuare delle modifiche (patch)
-a file binari.
+permette di trasmettere dati binari in una rappresentazione ASCII `a prova
+di email', ma ha anche il vantaggio di poter decodificare sullo `standard output'.
+Inoltre, può essere usato per effettuare delle modifiche (patch) a file binari.
 .SH OPZIONI
 Se non si specifica un
 .I input_file
-il programma legge dallo "standard input".
+il programma legge dallo `standard input'.
 Se
 .I input_file
 è specificato come il carattere
 .RB \` \- '
-, l'input è letto dallo "standard input".
+, l'input è letto dallo `standard input'.
 Se non si specifica un
 .I output_file
 (o si mette al suo posto il carattere
 .RB \` \- '
-), i risultati sono inviati allo "standard output".
+), i risultati sono inviati allo `standard output'.
 .PP
-Si noti che la scansione dei caratteri è "pigra", e non controlla oltre
-la prima lettera dell'opzione, a meno che l'opzione sia seguita da un
-parametro.
-Gli spazi fra una singola lettera di opzione e il corrispondente parametro
-dopo di essa sono facoltativi.
+Si noti che la scansione dei caratteri è "pigra", e non controlla oltre la prima
+lettera di un'opzione, a meno che l'opzione sia seguita da un parametro.
+Gli spazi fra una singola lettera di opzione e il relativo parametro sono facoltativi.
 I parametri delle opzioni possono essere specificati usando la notazione
 decimale, esadecimale oppure ottale.
 Pertanto
@@ -60,118 +57,123 @@ sono notazioni equivalenti fra loro.
 .PP
 .TP
 .IR \-a " | " \-autoskip
-Richiesta di autoskip: Un singolo '*' rimpiazza linee di zeri binari.
-Valore di default: off.
+Richiesta di omissione: Un singolo '*' rimpiazza righe a zeri binari. Default: off.
 .TP
 .IR \-b " | " \-bits
 Richiesta di una immagine binaria (cifre binarie), invece che esadecimale.
-Questa opzione scrive un byte come otto cifre "1" e "0" invece di usare i
-numeri esadecimali. Ogni linea è preceduta da un indirizzo in esadecimale e
-seguita da una decodifica ascii (o ebcdic). Le opzioni specificabili dalla
-linea comando \-r, \-p, \-i non funzionano in questo modo.
+Quest'opzione scrive un byte come otto cifre "1" e "0" invece di usare i
+numeri esadecimali. Ogni riga è preceduta da un indirizzo in esadecimale e
+seguita da una decodifica ASCII (o EBCDIC). Le opzioni specificabili dalla
+riga comando \-r, \-p, \-i non funzionano in questo modo.
 .TP
 .IR "\-c colonne " | " \-cols colonne"
-.IR "\-c colonne " | " \-cols colonne"
-In ogni linea sono formattate
+In ogni riga sono formattate
 .RI < colonne >
 colonne. Valore di default 16 (\-i: 12, \-ps: 30, \-b: 6).
-Valore massimo 256.
+Non c'è un valore massimo per \-ps; se si specifica 0 viene scritta un'unica lunga riga di output.
+.TP
+.IR \-C " | " \-capitalize
+Mette in maiuscolo i nomi di variabili nello stile delle `include' C, se si usa \-i.
 .TP
 .IR \-E " | " \-EBCDIC
 Cambia la codifica della colonna di destra da ASCII a EBCDIC.
 Questo non modifica la rappresentazione esadecimale. Non ha senso
-specificare questa opzione in combinazione con \-r, \-p o \-i.
+specificare quest'opzione in combinazione con \-r, \-p o \-i.
 .TP
-.IR "\-g numero_byte " | " \-groupsize numero_byte"
-Inserisci ogni
-.RI < numero_byte >
-byte di output (di due caratteri esadecimali o otto numeri binari ognuno)
-uno spazio bianco.
+.IR \-e
+Considera la lista esadecimale come avente codifica `little-endian'.
+Quest'opzione tratta i gruppi di byte come parole in codifica `little-endian'.
+Il raggruppamento di default dei byte a 4 a 4 può essere cambiato usando
+.RI "" \-g .
+Quest'opzione si applica solo alla lista esadecimale, Lasciando inalterata
+la rappresentazione ASCII (or EBCDIC).
+Le opzioni della riga di comando
+\-r, \-p, \-i non funzionano in questa modalità.
+.TP
+.IR "\-g numero " | " \-groupsize numero"
+Separa ogni gruppo di
+.RI < numero >
+byte in output (di due caratteri esadecimali o otto caratteri binari ognuno) con uno spazio bianco.
 Specificando
 .I \-g 0
 i byte di output non sono separati da alcuno spazio.
-.RI < numero_byte > ha come valore di default " 2
-in modalità normale [esadecimale] e \fI1\fP in modalità binaria.
-Il raggruppamento non si applica agli stili "PostScript" e "include".
+.RI < Numero "> ha come valore di default " 2
+in modalità normale [esadecimale], \fI4\fP in modalità `little-endian' e \fI1\fP in modalità binaria.
+Il raggruppamento non si applica agli stili `PostScript' e `include'.
 .TP
 .IR \-h " | " \-help
-stampa un sommario dei comandi disponibili ed esce.  Non viene fatto
-null'altro.
+Stampa un sommario dei comandi disponibili ed esce.  Non viene fatto null'altro.
 .TP
 .IR \-i " | " \-include
-L'output è nello stile dei file "include" in C.  Viene preparata la
-definizione completa di un "array" [vettore], dandogli il nome del
-file di input), tranne che nel caso in cui xxd legga dallo "standard input".
+L'output è un file `include' in C.  Viene preparata la definizione completa del
+vettore (col nome del file di input), tranne quando xxd legga dallo `standard input'.
 .TP
 .IR "\-l numero " | " \-len numero"
 Il programma esce dopo aver scritto
 .RI  < numero >
 byte.
 .TP
+.I "\-n nome " | " \-name nome"
+Specifica il nome del vettore in output quando si usa \-i. Il vettore viene chiamato
+\fInome\fP e la sua lunghezza viene chiamata \fInome\fP_len.
+.TP
+.I \-o incremento
+Aggiunge
+.RI < incremento >
+alla posizione visualizzata dei byte del file.
+.TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
-L'output è nello stile di un dump continuo sotto postscript.
-Noto anche come stile esadecimale semplice [plain].
+L'output è nello stile di un dump esadecimale continuo sotto postscript. Noto anche come stile esadecimale semplice.
 .TP
 .IR \-r " | " \-revert
-ricostruzione: converte (o mette una patch) a partire dall'immagine
-esadecimale, creando [o modificando] il file binario.
-Se non diretto allo "standard output", xxd scrive nel suo file di output
-in maniera continua, senza interruzioni.  Usare la combinazione
+Ricostruisce: converte (o mette una patch) da immagine esadecimale, a file binario.
+Se non scrive sullo `standard output', xxd scrive nel file di output in maniera
+continua, senza interruzioni.  Usare la combinazione
 .I \-r \-p
-per leggere dump in stile esadecimale semplice [plain], senza l'informazione
-di numero di linea e senza un particolare tracciato di colonna.  Degli spazi
-o delle linee vuote possono essere inserite a piacere [e vengono ignorate].
+per leggere dump in stile esadecimale semplice, senza l'informazione del numero
+di riga e senza un particolare tracciato di colonna.  Spazi o righe vuote possono
+essere presenti [e vengono ignorati].
 .TP
 .I \-seek distanza
 Usato con l'opzione
 .IR \-r :
 (ricostruzione),
 .RI < distanza >
-viene aggiunta alla posizione nel file trovata nella immagine
-esadecimale.
+viene aggiunta alla posizione nel file trovata nella immagine esadecimale.
 .TP
 .I \-s [+][\-]seek
 Inizia a
 .RI < seek >
 byte assoluti (o relativi) di distanza all'interno di input_file.
-\fI+ \fRindica che il "seek" è relativo alla posizione corrente nel file
-"standard input" (non significativa quando non si legge da "standard input").
-\fI\- \fRindica che il "seek" dovrebbe posizionarsi ad quel numero di
-caratteri dalla fine dell'input (o se in combinazione con
-\fI+ \fR: prime della posizione corrente nel file "standard input").
-Se non si specifica una opzione \-s, xxd inizia alla posizione
-corrente all'interno del file.
+\fI+ \fRindica che il `seek' è relativo alla posizione corrente nel file `standard input'
+(non significativo quando non si legge da `standard input'). \fI\- \fRindica che il
+`seek' dovrebbe posizionarsi al numero specificato di caratteri dalla fine dell'input
+(o se in combinazione con \fI+ \fR: prima della posizione corrente nel file `standard input').
+Se non si specifica l'opzione \-s, xxd inizia dalla posizione corrente all'interno del file.
 .TP
 .I \-u
-usa lettere esadecimali maiuscole. Il valore di default è di usare
-lettere minuscole.
+Usa lettere esadecimali maiuscole. Per default si usano lettere minuscole.
 .TP
 .IR \-v " | " \-version
-visualizza la stringa contenente la versione del programma.
+Visualizza la stringa contenente la versione del programma.
 .SH ATTENZIONE
 .PP
 .I xxd \-r
-è capace di operare "magie" nell'utilizzare l'informazione "numero di linea".
-Se sul file di output ci si può posizionare usando la "seek", il numero di
-linea all'inizio di ogni riga esadecimale può essere non ordinato, delle
-linee possono mancare delle linee, oppure esserci delle sovrapposizioni.
-In simili casi xxd userà lseek(2) per raggiungere la posizione d'inizio.
-Se il file di output non consente di usare "seek", sono permessi solo dei
-"buchi", che saranno riempiti con zeri binari.
+è capace di operare "magie" nell'utilizzare l'informazione "numero di riga".
+Se è possibili posizionarsi tramite `seek' sul file di output, il numero di riga
+di ogni riga esadecimale può essere non ordinato, delle righe possono mancare, o
+sovrapporsi. In tal caso xxd userà lseek(2) per posizionarsi all'interno del file.
+Se per il file di output non si può usare `seek', sono permessi solo dei "buchi", che saranno riempiti con zeri binari.
 .PP
 .I xxd \-r
-non genera mai errori di specifica parametri. I parametri non riconosciuti
-sono silenziosamente ignorati.
+non genera mai errori per parametri errati. I parametri extra sono silenziosamente ignorati.
 .PP
-Nel modificare immagini esadecimali, tenete conto che
+Nel modificare immagini esadecimali, si tenga conto che
 .I xxd \-r
-salta il resto della linea, dopo aver letto abbastanza caratteri contenenti
-dati esadecimali (vedere opzione \-c). Ciò implica pure che le modifiche alle
-colonne di caratteri stampabili ascii (o ebcdic) sono sempre ignorate.
-La ricostruzione da un file immagine esadecimale in stile semplice
-(postscript) con xxd \-r \-p non dipende dal numero corretto di colonne. 
-IN questo caso, qualsiasi cosa assomigli a una coppia di cifre esadecimali
-è interpretata [e utilizzata].
+salta il resto della riga, dopo aver letto i caratteri contenenti dati esadecimali
+(vedere opzione \-c). Ciò implica pure che le modifiche alle colonne di caratteri
+stampabili ASCII (o EBCDIC) sono sempre ignorate. La ricostruzione da un file immagine
+esadecimale in stile semplice (postscript) con xxd \-r \-p non dipende dal numero corretto di colonne. In questo caso, qualsiasi cosa assomigli a una coppia di cifre esadecimali è interpretata [e utilizzata].
 .PP
 Notare la differenza fra
 .br
@@ -183,53 +185,48 @@ e
 .PP
 .I xxd \-s \+seek
 può comportarsi in modo diverso da
-.IR "xxd \-s seek"
-, perché lseek(2) è usata per tornare indietro nel file di input.  Il '+'
-fa differenza se il file di input è lo "standard input", e se la posizione nel
-file di "standard input" non è all'inizio del file quando xxd è eseguito,
-con questo input.
-I seguenti esempi possono contribuire a chiarire il concetto
-(o ad oscurarlo!)...
+.IR "xxd \-s seek" ,
+perché lseek(2) è usata per tornare indietro nel file di input.  Il '+'
+fa differenza se il file di input è lo `standard input', e se la posizione nel
+file di `standard input' non è all'inizio del file quando xxd è eseguito, e riceve input.
+I seguenti esempi possono contribuire a chiarire il concetto (o ad oscurarlo!)...
 .PP
-Riavvolge lo "standard input" prima di leggere; necessario perché `cat'
-ha già letto lo stesso file ["file"] fino alla fine dello "standard input".
+Riavvolge lo `standard input' prima di leggere; necessario perché `cat'
+ha già letto lo stesso file fino alla fine dello `standard input'.
 .br
-\fI% sh \-c 'cat > copia_normale; xxd \-s 0 > copia_esadecimale' < file
+\fI% sh \-c "cat > copia_normale; xxd \-s 0 > copia_esadecimale" < file\fR
 .PP
 Stampa immagine esadecimale dalla posizione file 0x480 (=1024+128) in poi.
 Il segno `+' vuol dire "rispetto alla posizione corrente", quindi il `128'
 si aggiunge a 1k (1024) dove `dd' si era fermato.
 .br
-\fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +128 > esadecimale' < file
+\fI% sh \-c "dd of=normale bs=1k count=1; xxd \-s +128 > esadecimale" < file\fR
 .PP
-Immagine esadecimale dalla posizione 0x100 ( = 1024\-768 ) del file in avanti.
+Immagine esadecimale dalla posizione 0x100 (=1024\-768 ) del file in avanti.
 .br
-\fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +\-768 > esadecimale' < file
+\fI% sh \-c "dd of=normale bs=1k count=1; xxd \-s +\-768 > esadecimale" < file
 .PP
 Comunque, questo capita raramente, e l'uso del `+' non serve quasi mai.
-L'autore preferisce monitorare il comportamento di xxd con strace(1) o
-truss(1), quando si usa l'opzione \-s.
+L'autore preferisce monitorare il comportamento di xxd con strace(1) o truss(1), quando si usa l'opzione \-s.
 .SH ESEMPI
 .PP
 .br
-Stampa tutto tranne le prime tre linee (0x30 byte esadecimali) di
-.B file
+Stampa tutto tranne le prime tre righe (0x30 byte in esadecimale) di
+.BR file
 \.
 .br
-\fI% xxd \-s 0x30 file
+\fI% xxd \-s 0x30 file\fR
 .PP
 .br
-Stampa 3 linee (0x30 byte esadecimali) alla fine di
-.B file
-\.
+Stampa 3 righe (0x30 byte in esadecimale) alla fine di
+.BR file .
 .br
 \fI% xxd \-s \-0x30 file
 .PP
 .br
-Stampa 120 byte come immagine esadecimale continua con 20 byte per linea.
+Stampa 120 byte come immagine esadecimale continua con 20 byte per riga.
 .br
 \fI% xxd \-l 120 \-ps \-c 20 xxd.1\fR
-
 .br
 2e54482058584420312022417567757374203139
 .br
@@ -245,11 +242,9 @@ Stampa 120 byte come immagine esadecimale continua con 20 byte per linea.
 .br
 
 .br
-Stampa i primi 120 byte della pagina di manuale vim.1 a 12 byte per linea.
+Stampa i primi 120 byte della pagina di manuale xxd.1 a 12 byte per riga.
 .br
 \fI% xxd \-l 120 \-c 12 xxd.1\fR
-
-
 .br
 0000000: 2e54 4820 5858 4420 3120 2241  .TH XXD 1 "A
 .br
@@ -285,13 +280,13 @@ su
 .B output_file
 premettendogli 100 byte a 0x00.
 .br
-\fI% xxd input_file | xxd \-r \-s 100 \> output_file\fR
+\fI% xxd input_file | xxd \-r \-s 100 > output_file\fR
 .br
 
 .br
 Modificare (patch) la data nel file xxd.1
 .br
-\fI% echo '0000037: 3574 68' | xxd \-r \- xxd.1\fR
+\fI% echo "0000037: 3574 68" | xxd \-r \- xxd.1\fR
 .br
 \fI% xxd \-s 0x36 \-l 13 \-c 13 xxd.1\fR
 .br
@@ -299,9 +294,9 @@ Modificare (patch) la data nel file xxd.1
 .PP
 .br
 Creare un file di 65537 byte tutto a 0x00,
-tranne che l'ultimo carattere che è una 'A' (esadecimale 0x41).
+tranne l'ultimo carattere che è una 'A' (esadecimale 0x41).
 .br
-\fI% echo '010000: 41' | xxd \-r \> file\fR
+\fI% echo "010000: 41" | xxd \-r > file\fR
 .PP
 .br
 Stampa una immagine esadecimale del file  di cui sopra con opzione autoskip.
@@ -314,34 +309,31 @@ Stampa una immagine esadecimale del file  di cui sopra con opzione autoskip.
 .br
 000fffc: 0000 0000 40                   ....A
 .PP
-Crea un file di 1 byte che contiene il solo carattere 'A'.
+Creare un file di 1 byte che contiene il solo carattere 'A'.
 Il numero dopo '\-r \-s' viene aggiunto a quello trovato nel file;
 in pratica, i byte precedenti non sono stampati.
 .br
-\fI% echo '010000: 41' | xxd \-r \-s \-0x10000 \> file\fR
+\fI% echo "010000: 41" | xxd \-r \-s \-0x10000 > file\fR
 .PP
-Usa xxd come filtro all'interno di un editor come
+Usare xxd come filtro all'interno di un editor come
 .B vim(1)
-per ottenere una immagine esadecimale di una parte di file
-delimitata dai marcatori `a' e `z'.
+per ottenere l'immagine esadecimale della parte di file fra i marcatori `a' e `z'.
 .br
 \fI:'a,'z!xxd\fR
 .PP
 Usare xxd come filtro all'interno di un editor come
 .B vim(1)
-per ricostruire un pezzo di file binario da una immagine esadecimale
-delimitata dai marcatori `a' e `z'.
+per ricostruire un pezzo di file binario da un'immagine esadecimale fra i marcatori `a' e `z'.
 .br
 \fI:'a,'z!xxd \-r\fR
 .PP
 Usare xxd come filtro all'interno di un editor come
 .B vim(1)
-per ricostruire una sola linea di file binario da una immagine esadecimale,
-Portare il cursore sopra la linea e battere:
+per ricostruire una sola riga di file binario da un'immagine esadecimale. Portare il cursore sopra la riga e battere:
 .br
 \fI!!xxd \-r\fR
 .PP
-Per leggere singoli caratteri da una linea seriale
+Leggere singoli caratteri da una linea seriale
 .br
 \fI% xxd \-c1 < /dev/term/b &\fR
 .br
@@ -356,7 +348,8 @@ Il programma può restituire questi codici di errore:
 nessun errore rilevato.
 .TP
 \-1
-operazione non supportata (
+operazione non supportata
+\%(\c
 .I xxd \-r \-i
 non ancora possible).
 .TP
@@ -370,14 +363,13 @@ problemi con il file di input.
 problemi con il file di output.
 .TP
 4,5
-posizione "seek" specificata non raggiungibile all'interno del file.
+posizione `seek' specificata non raggiungibile all'interno del file.
 .SH VEDERE ANCHE
 uuencode(1), uudecode(1), patch(1)
 .br
 .SH AVVERTIMENTI
 La stranezza dello strumento rispecchia la mente del suo creatore.
-Usate a vostro rischio e pericolo. Copiate i file. Tracciate l'esecuzione.
-Diventate un mago.
+Usate a vostro rischio e pericolo. Copiate i file. Tracciate l'esecuzione. Diventate un mago.
 .br
 .SH VERSIONE
 Questa pagina di manuale documenta la versione 1.7 di xxd.
@@ -393,7 +385,7 @@ fate soldi e condivideteli con me
 .br
 perdete soldi e non venite a chiederli a me.
 .PP
-Pagina di manuale messa in piedi da Tony Nugent
+Pagina di manuale iniziata da Tony Nugent
 .br
 <tony@sctnugen.ppp.gu.edu.au> <T.Nugent@sct.gu.edu.au>
 .br
