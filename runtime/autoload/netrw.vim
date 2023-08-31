@@ -2996,15 +2996,10 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
    " Detect filetype of local version of remote file.
    " Note that isk must not include a "/" for scripts.vim
    " to process this detection correctly.
-"   call Decho("detect filetype of local version of remote file<".rfile.">",'~'.expand("<slnum>"))
-"   call Decho("..did_filetype()=".did_filetype())
-   setl ft=
-"   call Decho("..initial filetype<".&ft."> for buf#".bufnr()."<".bufname().">")
-   let iskkeep= &isk
+"   call Decho("detect filetype of local version of remote file",'~'.expand("<slnum>"))
+   let iskkeep= &l:isk
    setl isk-=/
-   filetype detect
-"   call Decho("..local filetype<".&ft."> for buf#".bufnr()."<".bufname().">")
-   let &isk= iskkeep
+   let &l:isk= iskkeep
 "   call Dredir("ls!","NetrwGetFile (renamed buffer back to remote filename<".rfile."> : expand(%)<".expand("%").">)")
    let line1 = 1
    let line2 = line("$")
@@ -4285,7 +4280,7 @@ fun! s:NetrwGetBuffer(islocal,dirname)
   endif
 "  call Decho("  bufnum#".bufnum,'~'.expand("<slnum>"))
 
-  " highjack the current buffer
+  " hijack the current buffer
   "   IF the buffer already has the desired name
   "   AND it is empty
   let curbuf = bufname("%")
@@ -4293,16 +4288,16 @@ fun! s:NetrwGetBuffer(islocal,dirname)
    let curbuf = getcwd()
   endif
 "  call Dredir("ls!","NetrwGetFile (renamed buffer back to remote filename<".rfile."> : expand(%)<".expand("%").">)")
-"  call Decho("deciding if netrw may highjack the current buffer#".bufnr("%")."<".curbuf.">",'~'.expand("<slnum>"))
+"  call Decho("deciding if netrw may hijack the current buffer#".bufnr("%")."<".curbuf.">",'~'.expand("<slnum>"))
 "  call Decho("..dirname<".dirname.">  IF dirname == bufname",'~'.expand("<slnum>"))
 "  call Decho("..curbuf<".curbuf.">",'~'.expand("<slnum>"))
 "  call Decho("..line($)=".line("$")." AND this is 1",'~'.expand("<slnum>"))
 "  call Decho("..getline(%)<".getline("%").">  AND this line is empty",'~'.expand("<slnum>"))
   if dirname == curbuf && line("$") == 1 && getline("%") == ""
-"   call Dret("s:NetrwGetBuffer 0<cleared buffer> : highjacking buffer#".bufnr("%"))
+"   call Dret("s:NetrwGetBuffer 0<cleared buffer> : hijacking buffer#".bufnr("%"))
    return 0
   else  " DEBUG
-"   call Decho("..did NOT highjack buffer",'~'.expand("<slnum>"))
+"   call Decho("..did NOT hijack buffer",'~'.expand("<slnum>"))
   endif
   " Aug 14, 2021: was thinking about looking for a [No Name] buffer here and using it, but that might cause problems
 
