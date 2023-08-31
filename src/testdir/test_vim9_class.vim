@@ -1184,7 +1184,7 @@ def Test_class_member()
   lines =<< trim END
     vim9script
     class A
-        this.val: string
+        public this.val: string
     endclass
 
     def F()
@@ -1214,7 +1214,7 @@ def Test_class_member()
   lines =<< trim END
     vim9script
     class A
-        this.val: string
+        public this.val: string
     endclass
 
     var obj: A
