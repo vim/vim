@@ -2207,7 +2207,7 @@ environ()						*environ()*
 
 err_teapot([{expr}])					*err_teapot()*
 		Produce an error with number 418, needed for implementation of
-		RFC 2325.
+		RFC 2324.
 		If {expr} is present and it is TRUE error 503 is given,
 		indicating that coffee is temporarily not available.
 		If {expr} is present it must be a String.
