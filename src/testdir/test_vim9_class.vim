@@ -1452,6 +1452,24 @@ def Test_interface_basics()
   lines =<< trim END
       vim9script
 
+      interface A
+          public def Method(): float
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1371: Cannot use access modifiers in interfaces')
+
+  lines =<< trim END
+      vim9script
+
+      interface A
+          def new()
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1372: Cannot declare a "new" function in an interface')
+
+  lines =<< trim END
+      vim9script
+
       interface Some
         static count: number
         def Method(count: number)
