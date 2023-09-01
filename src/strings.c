@@ -2819,7 +2819,7 @@ skip_to_arg(
     va_list	*ap,
     int		*arg_idx,
     int		*arg_cur,
-    char	*fmt)
+    const char	*fmt)
 {
     int		arg_min = 0;
 
