@@ -516,6 +516,7 @@ runtime/syntax/xs.vim			@petdance
 runtime/syntax/xslt.vim			@Boobies
 runtime/syntax/xxd.vim			@cecamp
 runtime/syntax/yacc.vim			@cecamp
+runtime/syntax/zserio.vim		@dpelle
 runtime/syntax/zsh.vim			@chrisbra
 runtime/tutor/tutor.eo			@dpelle
 runtime/tutor/tutor.eo.utf-8		@dpelle
