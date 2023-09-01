@@ -38,9 +38,9 @@
 // function and never as literals in C code.
 char *fmt_012p = "%012p";
 char *fmt_5S   = "%5S";
-char *fmt_06b  = "%06llb";
-char *fmt_06pb = "%1$0.*2$llb";
-char *fmt_06pb2 = "%2$0*1$llb";
+char *fmt_06b  = "%06b";
+char *fmt_06pb = "%1$0.*2$b";
+char *fmt_06pb2 = "%2$0*1$b";
 char *fmt_212s = "%2$s %1$s %2$s";
 char *fmt_21s  = "%2$s %1$s";
 
@@ -373,52 +373,52 @@ test_vim_snprintf_positional(void)
 	assert(bsize == 0 || STRNCMP(buf, "  1234567", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$ld %1$d %3$llu", 12345, 9L, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$ld %1$d %3$lu", 12345, 9L, 7654321UL);
 	assert(n == 15);
 	assert(bsize == 0 || STRNCMP(buf, "9 12345 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$ld %3$llu", 1234567L, 9, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$d %1$ld %3$lu", 1234567L, 9, 7654321UL);
 	assert(n == 17);
 	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$lld %3$llu", 1234567LL, 9, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$d %1$lld %3$lu", 1234567LL, 9, 7654321UL);
 	assert(n == 17);
 	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$ld %1$u %3$llu", 12345U, 9L, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$ld %1$u %3$lu", 12345U, 9L, 7654321UL);
 	assert(n == 15);
 	assert(bsize == 0 || STRNCMP(buf, "9 12345 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$lu %3$llu", 1234567UL, 9, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$d %1$lu %3$lu", 1234567UL, 9, 7654321UL);
 	assert(n == 17);
 	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$llu %3$llu", 1234567LLU, 9, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$d %1$llu %3$lu", 1234567LLU, 9, 7654321UL);
 	assert(n == 17);
 	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$x %3$llu", 0xdeadbeef, 9, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$d %1$x %3$lu", 0xdeadbeef, 9, 7654321UL);
 	assert(n == 18);
 	assert(bsize == 0 || STRNCMP(buf, "9 deadbeef 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$ld %1$c %3$llu", 'c', 9L, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$ld %1$c %3$lu", 'c', 9L, 7654321UL);
 	assert(n == 11);
 	assert(bsize == 0 || STRNCMP(buf, "9 c 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$ld %1$s %3$llu", "hi", 9L, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$ld %1$s %3$lu", "hi", 9L, 7654321UL);
 	assert(n == 12);
 	assert(bsize == 0 || STRNCMP(buf, "9 hi 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$ld %1$e %3$llu", 0.0, 9L, 7654321UL);
+	n = vim_snprintf(buf, bsize, "%2$ld %1$e %3$lu", 0.0, 9L, 7654321UL);
 	assert(n == 22);
 	assert(bsize == 0 || STRNCMP(buf, "9 0.000000e+00 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
