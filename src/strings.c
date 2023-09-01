@@ -2818,7 +2818,8 @@ skip_to_arg(
     va_list	ap_start,
     va_list	*ap,
     int		*arg_idx,
-    int		*arg_cur)
+    int		*arg_cur,
+    char	*fmt)
 {
     int		arg_min = 0;
 
@@ -2843,7 +2844,15 @@ skip_to_arg(
 
     for (*arg_cur = arg_min; *arg_cur < *arg_idx - 1; ++*arg_cur)
     {
-	const char *p = ap_types[*arg_cur];
+	const char *p;
+
+	if (ap_types == NULL || ap_types[*arg_cur] == NULL)
+	{
+	    semsg(e_aptypes_is_null_str, fmt, *arg_cur);
+	    return;
+	}
+
+	p = ap_types[*arg_cur];
 
 	int fmt_type = format_typeof(p, TRUE);
 
@@ -3058,7 +3067,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 		    tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
-			(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+			(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 			va_arg(ap, int));
 
 		if (j >= 0)
@@ -3118,7 +3127,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 			tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
-			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 			    va_arg(ap, int));
 
 		    if (j >= 0)
@@ -3191,7 +3200,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 			    tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
-				(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+				(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 				va_arg(ap, int));
 
 			// standard demands unsigned char
@@ -3206,7 +3215,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 				tvs != NULL ? tv_str(tvs, &arg_idx, &tofree) :
 # endif
-				    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+				    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 				    va_arg(ap, char *));
 
 		    if (str_arg == NULL)
@@ -3303,7 +3312,7 @@ vim_vsnprintf_typval(
 				 tvs != NULL ? (void *)tv_str(tvs, &arg_idx,
 									NULL) :
 # endif
-					(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+					(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 					va_arg(ap, void *));
 
 			if (ptr_arg != NULL)
@@ -3316,7 +3325,7 @@ vim_vsnprintf_typval(
 				    tvs != NULL ?
 					   (uvarnumber_T)tv_nr(tvs, &arg_idx) :
 # endif
-					(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+					(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 					va_arg(ap, uvarnumber_T));
 
 			if (bin_arg != 0)
@@ -3334,7 +3343,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 					tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
-					    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+					    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 					    va_arg(ap, int));
 
 			    if (int_arg > 0)
@@ -3347,7 +3356,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 					tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
-					    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+					    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 					    va_arg(ap, long int));
 
 			    if (long_arg > 0)
@@ -3360,7 +3369,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 					tvs != NULL ? tv_nr(tvs, &arg_idx) :
 # endif
-					    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+					    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 					    va_arg(ap, varnumber_T));
 
 			    if (llong_arg > 0)
@@ -3382,7 +3391,7 @@ vim_vsnprintf_typval(
 					    tvs != NULL ? (unsigned)
 							tv_nr(tvs, &arg_idx) :
 # endif
-						(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+						(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 						va_arg(ap, unsigned int));
 
 				if (uint_arg != 0)
@@ -3394,7 +3403,7 @@ vim_vsnprintf_typval(
 					    tvs != NULL ? (unsigned long)
 							tv_nr(tvs, &arg_idx) :
 # endif
-						(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+						(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 						va_arg(ap, unsigned long int));
 
 				if (ulong_arg != 0)
@@ -3406,7 +3415,7 @@ vim_vsnprintf_typval(
 					    tvs != NULL ? (uvarnumber_T)
 							tv_nr(tvs, &arg_idx) :
 # endif
-						(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+						(skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 						va_arg(ap, uvarnumber_T));
 
 				if (ullong_arg != 0)
@@ -3608,7 +3617,7 @@ vim_vsnprintf_typval(
 # if defined(FEAT_EVAL)
 			tvs != NULL ? tv_float(tvs, &arg_idx) :
 # endif
-			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur),
+			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx, &arg_cur, fmt),
 			    va_arg(ap, double));
 
 		    abs_f = f < 0 ? -f : f;
