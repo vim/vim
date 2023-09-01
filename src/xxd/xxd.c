@@ -743,21 +743,26 @@ main(int argc, char *argv[])
         }
       else if (!STRNCMP(pp, "-R", 2))
         {
-	  if (!argv[2])
+	  char *pw = pp + 2;
+	  if (!pw[0])
+	    {
+	      pw = argv[2];
+	      argv++;
+	      argc--;
+	    }
+	  if (!pw)
 	    exit_with_usage();
-	  if (!STRNCMP(argv[2], "always", 6))
+	  if (!STRNCMP(pw, "always", 6))
 	    {
 	      (void)enable_color();
 	      color = 1;
 	    }
-	  else if (!STRNCMP(argv[2], "never", 5))
+	  else if (!STRNCMP(pw, "never", 5))
 	    color = 0;
-	  else if (!STRNCMP(argv[2], "auto", 4))
+	  else if (!STRNCMP(pw, "auto", 4))
 	    ;	/* Do nothing. */
 	  else
 	    exit_with_usage();
-	  argv++;
-	  argc--;
         }
       else if (!strcmp(pp, "--"))	/* end of options */
 	{
