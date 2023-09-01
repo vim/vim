@@ -87,6 +87,7 @@
 #endif
 #if defined(WIN32) || defined(CYGWIN)
 # include <io.h>	/* for setmode() */
+# include <windows.h>
 #else
 # ifdef UNIX
 #  include <unistd.h>
@@ -256,7 +257,7 @@ exit_with_usage(void)
 	  "", "");
 #endif
   fprintf(stderr, "    -u          use upper case hex letters.\n");
-  fprintf(stderr, "    -R [WHEN]   colorize the output; WHEN can be 'always', 'auto' or 'never'. Default: 'auto'.\n"),
+  fprintf(stderr, "    -R when     colorize the output; <when> can be 'always', 'auto' or 'never'. Default: 'auto'.\n"),
   fprintf(stderr, "    -v          show version: \"%s%s\".\n", version, osver);
   exit(1);
 }
@@ -502,7 +503,7 @@ static unsigned char etoa64[] =
     0070,0071,0372,0373,0374,0375,0376,0377
 };
 
-   static void
+  static void
 begin_coloring_char (char *l, int *c, int e, int ebcdic)
 {
   if (ebcdic)
@@ -547,6 +548,27 @@ begin_coloring_char (char *l, int *c, int e, int ebcdic)
   l[(*c)++] = 'm';
 }
 
+  static int
+enable_color(void)
+{
+#ifdef WIN32
+  DWORD   mode;
+  HANDLE  out;
+
+  if (!isatty(1))
+    return 0;
+
+  out = GetStdHandle(STD_OUTPUT_HANDLE);
+  GetConsoleMode(out, &mode);
+  mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+  return (int)SetConsoleMode(out, mode);
+#elif defined(UNIX)
+  return isatty(STDOUT_FILENO);
+#else
+  return 0;
+#endif
+}
+
   int
 main(int argc, char *argv[])
 {
@@ -564,10 +586,11 @@ main(int argc, char *argv[])
   char *varname = NULL;
   int addrlen = 9;
   int color = 0;
+  char *no_color;
 
-#ifdef UNIX
-  color = isatty(STDOUT_FILENO);
-#endif
+  no_color = getenv("NO_COLOR");
+  if (no_color == NULL || no_color[0] == '\0')
+    color = enable_color();
 
 #ifdef AMIGA
   /* This program doesn't work when started from the Workbench */
@@ -722,10 +745,17 @@ main(int argc, char *argv[])
         {
 	  if (!argv[2])
 	    exit_with_usage();
-	  if (!STRNCMP(argv[2], "always", 2))
-	    color = 1;
-	  else if (!STRNCMP(argv[2], "never", 1))
+	  if (!STRNCMP(argv[2], "always", 6))
+	    {
+	      (void)enable_color();
+	      color = 1;
+	    }
+	  else if (!STRNCMP(argv[2], "never", 5))
 	    color = 0;
+	  else if (!STRNCMP(argv[2], "auto", 4))
+	    ;	/* Do nothing. */
+	  else
+	    exit_with_usage();
 	  argv++;
 	  argc--;
         }
