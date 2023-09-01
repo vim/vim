@@ -315,6 +315,9 @@ typedef int perl_key;
 #   define PL_thr_key *dll_PL_thr_key
 #  endif
 # endif
+# ifdef PERL_USE_THREAD_LOCAL
+#  define PL_current_context *dll_PL_current_context
+# endif
 # define Perl_hv_iternext_flags dll_Perl_hv_iternext_flags
 # define Perl_hv_iterinit dll_Perl_hv_iterinit
 # define Perl_hv_iterkey dll_Perl_hv_iterkey
@@ -484,6 +487,9 @@ static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
 static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
 static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
 # endif
+# ifdef PERL_USE_THREAD_LOCAL
+static void** dll_PL_current_context;
+# endif
 static void (*boot_DynaLoader)_((pTHX_ CV*));
 static HE * (*Perl_hv_iternext_flags)(pTHX_ HV *, I32);
 static I32 (*Perl_hv_iterinit)(pTHX_ HV *);
@@ -633,6 +639,9 @@ static struct {
 #  ifdef USE_ITHREADS
     {"PL_thr_key", (PERL_PROC*)&dll_PL_thr_key},
 #  endif
+# ifdef PERL_USE_THREAD_LOCAL
+    {"PL_current_context", (PERL_PROC*)&dll_PL_current_context},
+# endif
 # else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
@@ -1514,10 +1523,6 @@ IV Perl_sv_2iv_flags(pTHX_ SV* sv, I32 flags)
 {
     return (*dll_Perl_sv_2iv_flags)(aTHX_ sv, flags);
 }
-# endif
-
-# ifdef PERL_USE_THREAD_LOCAL
-PERL_THREAD_LOCAL void *PL_current_context;
 # endif
 
 #endif // DYNAMIC_PERL
