@@ -34,7 +34,7 @@ menutrans &About		&Om
 menutrans &File				&Arkiv
 menutrans &Open\.\.\.<Tab>:e		&Öppna\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Öppna\ i\ splitt-vy\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Öppna\ flik\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Öppna\ flik\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Ny<Tab>:enew
 menutrans &Close<Tab>:close		S&täng<Tab>:close
 menutrans &Save<Tab>:w			&Spara<Tab>:w

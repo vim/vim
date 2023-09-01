@@ -23,7 +23,7 @@ endif
 menutrans &File				                        Skrá
 menutrans &Open\.\.\.<Tab>:e		                Opna\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	                Splitt\ opna\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	            Opna\ flipa\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	            Opna\ flipa\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		                    Nı\ Skrá<Tab>:enew
 menutrans &Close<Tab>:close		                    Loka<Tab>:close
 menutrans &Save<Tab>:w			                    Vista<Tab>:w

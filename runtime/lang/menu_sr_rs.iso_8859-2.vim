@@ -31,7 +31,7 @@ menutrans &About	      &O\ programu
 menutrans &File			    &Fajl
 menutrans &Open\.\.\.<Tab>:e	    &Otvori\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Podeli-otvori\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otvori\ karticu\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Otvori\ karticu\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew	    &Nov<Tab>:enew
 menutrans &Close<Tab>:close	    &Zatvori<Tab>:close
 menutrans &Save<Tab>:w		    &Saèuvaj<Tab>:w
