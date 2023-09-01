@@ -373,20 +373,17 @@ validate_interface_methods(
 }
 
 /*
- * Validate all the "implements" classes when creating a new class.  The
- * classes are returned in "intf_classes".  The class functions, class members,
- * object methods and object members in the new class are in
- * "classfunctions_gap", "classmembers_gap", "objmethods_gap", and
- * "objmembers_gap" respectively.
+ * Validate all the "implements" interfaces when creating a new class.
+ * The classes are returned in "intf_classes". The class functions and
+ * object methods in the new class are in "classfunctions_gap" and
+ * "objmethods_gap" respectively.
  */
     static int
 validate_implements_classes(
     garray_T	*impl_gap,
     class_T	**intf_classes,
     garray_T	*classfunctions_gap,
-    garray_T	*classmembers_gap,
-    garray_T	*objmethods_gap,
-    garray_T	*objmembers_gap)
+    garray_T	*objmethods_gap)
 {
     int		success = TRUE;
 
@@ -1339,8 +1336,7 @@ early_ret:
 	intf_classes = ALLOC_CLEAR_MULT(class_T *, ga_impl.ga_len);
 
 	success = validate_implements_classes(&ga_impl, intf_classes,
-					&classfunctions, &classmembers,
-					&objmethods, &objmembers);
+					&classfunctions, &objmethods);
     }
 
     // Check no function argument name is used as a class member.
