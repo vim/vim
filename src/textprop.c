@@ -759,13 +759,12 @@ text_prop_compare(const void *s1, const void *s2)
     tp2 = &text_prop_compare_props[idx2];
     col1 = tp1->tp_col;
     col2 = tp2->tp_col;
-    if (col1 == MAXCOL && col2 == MAXCOL)
+    if (col1 == MAXCOL || col2 == MAXCOL)
     {
 	int order1 = text_prop_order(tp1->tp_flags);
 	int order2 = text_prop_order(tp2->tp_flags);
 
-	// both props add text before or after the line, sort on order where it
-	// is added
+	// sort on order where it is added
 	if (order1 != order2)
 	    return order1 < order2 ? 1 : -1;
     }

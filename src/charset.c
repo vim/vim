@@ -1209,17 +1209,18 @@ win_lbr_chartabsize(
 			cells = text_prop_position(wp, tp, vcol,
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
 					      &n_extra, &p, NULL, NULL, FALSE);
-#ifdef FEAT_LINEBREAK
+#  ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
-#endif
+#  endif
 		    }
 		    else
 			cells = vim_strsize(p);
 		    cts->cts_cur_text_width += cells;
 		    if (tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 			cts->cts_first_char += cells;
+		    else
+			size += cells;
 		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
-		    size += cells;
 		    if (*s == TAB)
 		    {
 			// tab size changes because of the inserted text
@@ -1263,9 +1264,9 @@ win_lbr_chartabsize(
 	int	col_off_prev = win_col_off(wp);
 	int	width2 = wp->w_width - col_off_prev + win_col_off2(wp);
 	colnr_T	wcol = vcol + col_off_prev;
-#ifdef FEAT_PROP_POPUP
+#  ifdef FEAT_PROP_POPUP
 	wcol -= wp->w_virtcol_first_char;
-#endif
+#  endif
 	colnr_T	max_head_vcol = cts->cts_max_head_vcol;
 	int	added = 0;
 
@@ -1319,7 +1320,7 @@ win_lbr_chartabsize(
 		else if (max_head_vcol > vcol + head_prev + prev_rem)
 		    head += (max_head_vcol - (vcol + head_prev + prev_rem)
 					     + width2 - 1) / width2 * head_mid;
-#ifdef FEAT_PROP_POPUP
+#  ifdef FEAT_PROP_POPUP
 		else if (max_head_vcol < 0)
 		{
 		    int off = 0;
@@ -1329,7 +1330,7 @@ win_lbr_chartabsize(
 		    if (off >= prev_rem)
 			head += (1 + (off - prev_rem) / width) * head_mid;
 		}
-#endif
+#  endif
 	    }
 	}
 
@@ -1385,6 +1386,9 @@ win_lbr_chartabsize(
 	}
     }
 
+#  ifdef FEAT_PROP_POPUP
+    size += cts->cts_first_char;
+#  endif
     return size;
 # endif
 #endif
