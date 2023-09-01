@@ -88,10 +88,9 @@
 #if defined(WIN32) || defined(CYGWIN)
 # include <io.h>	/* for setmode() */
 # include <windows.h>
-#else
-# ifdef UNIX
-#  include <unistd.h>
-# endif
+#endif
+#ifdef UNIX
+# include <unistd.h>
 #endif
 #include <stdlib.h>
 #include <string.h>	/* for strncmp() */
