@@ -400,7 +400,7 @@ a number.  This example extends the one above: >
 	      return this.base * this.height / 2
 	   enddef
 	endclass
-< 							*E1349*
+<							*E1349*
 If a class declares to implement an interface, all the methods specified in
 the interface must appear in the class, with the same signatures.
 
@@ -596,7 +596,7 @@ return type, but without the body and without `:enddef`.  Example: >
 	interface HasSurface
 	   def Surface(): number
 	endinterface
-< 							*E1343*
+<							*E1343*
 An interface name must start with an uppercase letter.
 The "Has" prefix can be used to make it easier to guess this is an interface
 name, with a hint about what it provides.
