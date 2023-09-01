@@ -22,7 +22,7 @@ def Test_class_basic()
       class Not@working
       endclass
   END
-  v9.CheckScriptFailure(lines, 'E1315:')
+  v9.CheckScriptFailure(lines, 'E1315: White space required')
 
   lines =<< trim END
       vim9script
@@ -281,7 +281,6 @@ def Test_class_interface_wrong_end()
   lines =<< trim END
       vim9script
       export interface AnotherName
-        this.member: string
       endclass
   END
   v9.CheckScriptFailure(lines, 'E476: Invalid command: endclass, expected endinterface')
@@ -1439,8 +1438,6 @@ def Test_interface_basics()
   var lines =<< trim END
       vim9script
       interface Something
-        this.value: string
-        static count: number
         def GetCount(): number
       endinterface
   END
@@ -1448,10 +1445,9 @@ def Test_interface_basics()
 
   lines =<< trim END
       interface SomethingWrong
-        static count = 7
       endinterface
   END
-  v9.CheckScriptFailure(lines, 'E1342:')
+  v9.CheckScriptFailure(lines, 'E1342: Interface can only be defined in Vim9 script')
 
   lines =<< trim END
       vim9script
@@ -1461,7 +1457,7 @@ def Test_interface_basics()
         def Method(count: number)
       endinterface
   END
-  v9.CheckScriptFailure(lines, 'E1340: Argument already declared in the class: count', 5)
+  v9.CheckScriptFailure(lines, 'E1373: Cannot declare class or object members in an interface', 4)
 
   lines =<< trim END
       vim9script
@@ -1471,14 +1467,11 @@ def Test_interface_basics()
         def Method(value: number)
       endinterface
   END
-  # The argument name and the object member name are the same, but this is not a
-  # problem because object members are always accessed with the "this." prefix.
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1373: Cannot declare class or object members in an interface', 4)
 
   lines =<< trim END
       vim9script
       interface somethingWrong
-        static count = 7
       endinterface
   END
   v9.CheckScriptFailure(lines, 'E1343: Interface name must start with an uppercase letter: somethingWrong')
@@ -1486,18 +1479,6 @@ def Test_interface_basics()
   lines =<< trim END
       vim9script
       interface SomethingWrong
-        this.value: string
-        static count = 7
-        def GetCount(): number
-      endinterface
-  END
-  v9.CheckScriptFailure(lines, 'E1344:')
-
-  lines =<< trim END
-      vim9script
-      interface SomethingWrong
-        this.value: string
-        static count: number
         def GetCount(): number
           return 5
         enddef
@@ -1548,25 +1529,24 @@ def Test_class_implements_interface()
       vim9script
 
       interface Some
-        static count: number
-        def Method(nr: number)
+        def Method1(nr: number)
       endinterface
 
       class SomeImpl implements Some
-        static count: number
-        def Method(nr: number)
+        def Method1(nr: number)
           echo nr
         enddef
       endclass
 
       interface Another
-        this.member: string
+        def Method2(nr: number)
       endinterface
 
       class AnotherImpl implements Some, Another
-        this.member = 'abc'
-        static count: number
-        def Method(nr: number)
+        def Method1(nr: number)
+          echo nr
+        enddef
+        def Method2(nr: number)
           echo nr
         enddef
       endclass
@@ -1577,24 +1557,22 @@ def Test_class_implements_interface()
       vim9script
 
       interface Some
-        static counter: number
       endinterface
 
       class SomeImpl implements Some implements Some
-        static count: number
       endclass
   END
-  v9.CheckScriptFailure(lines, 'E1350:')
+  v9.CheckScriptFailure(lines, 'E1350: Duplicate "implements"')
 
   lines =<< trim END
       vim9script
 
       interface Some
-        static counter: number
+        def Method()
       endinterface
 
       class SomeImpl implements Some, Some
-        static count: number
+        def Method()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1351: Duplicate interface after "implements": Some')
@@ -1603,29 +1581,10 @@ def Test_class_implements_interface()
       vim9script
 
       interface Some
-        static counter: number
-        def Method(nr: number)
-      endinterface
-
-      class SomeImpl implements Some
-        static count: number
-        def Method(nr: number)
-          echo nr
-        enddef
-      endclass
-  END
-  v9.CheckScriptFailure(lines, 'E1348: Member "counter" of interface "Some" not implemented')
-
-  lines =<< trim END
-      vim9script
-
-      interface Some
-        static count: number
         def Methods(nr: number)
       endinterface
 
       class SomeImpl implements Some
-        static count: number
         def Method(nr: number)
           echo nr
         enddef
@@ -1638,40 +1597,88 @@ def Test_class_implements_interface()
       vim9script
 
       interface Result
-        public this.label: string
-        this.errpos: number
+        def M1(): number
+        def M2(): string
       endinterface
 
       # order of members is opposite of interface
       class Failure implements Result
         this.errpos: number = 42
         public this.label: string = 'label'
+
+        def M2(): string
+          return this.label
+        enddef
+
+        def M1(): number
+          return this.errpos
+        enddef
       endclass
 
       def Test()
-        var result: Result = Failure.new()
+        var result = Failure.new()
 
-        assert_equal('label', result.label)
-        assert_equal(42, result.errpos)
+        assert_equal('label', result.M2())
+        assert_equal(42, result.M1())
 
         result.label = 'different'
-        assert_equal('different', result.label)
-        assert_equal(42, result.errpos)
+        assert_equal('different', result.M2())
+        assert_equal(42, result.M1())
       enddef
 
       Test()
   END
   v9.CheckScriptSuccess(lines)
 
-  # Interface name after "extends" doesn't end in a space or NUL character
+  # Class name after "extends" doesn't end in a space or NUL character
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A"
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1315: White space required')
+
+  # Interface name after "implements" doesn't end in a space or NUL character
   lines =<< trim END
     vim9script
     interface A
     endinterface
-    class B extends A"
+    class B implements A"
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1315:')
+  v9.CheckScriptFailure(lines, 'E1315: White space required')
+
+  # Interfaces cannot be extended
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    interface B extends A
+    endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1344: Cannot extend an interface')
+
+  # Interfaces cannot implement interfaces
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    interface B implements A
+    endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1375: Interfaces cannot implement other interfaces')
+
+  # Interfaces cannot extended classes
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B extends A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1374: Cannot extend a class with an interface')
 
   # Trailing characters after a class name
   lines =<< trim END
@@ -1681,7 +1688,7 @@ def Test_class_implements_interface()
   END
   v9.CheckScriptFailure(lines, 'E488:')
 
-  # using "implements" with a non-existing class
+  # using "implements" with a non-existing interface
   lines =<< trim END
     vim9script
     class A implements B
@@ -1697,7 +1704,7 @@ def Test_class_implements_interface()
     class B implements A
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1347:')
+  v9.CheckScriptFailure(lines, 'E1347: Not a valid interface')
 
   # using "implements" with a variable
   lines =<< trim END
@@ -1706,7 +1713,7 @@ def Test_class_implements_interface()
     class A implements T
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1347:')
+  v9.CheckScriptFailure(lines, 'E1347: Not a valid interface')
 
   # all the class methods in an "interface" should be implemented
   lines =<< trim END
@@ -1727,23 +1734,7 @@ def Test_class_implements_interface()
     class B implements A;
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1315:')
-
-  lines =<< trim END
-      vim9script
-
-      interface One
-        static matching: bool
-        static as_any: any
-        static not_matching: number
-      endinterface
-      class Two implements One
-        static not_matching: string
-        static as_any: string
-        static matching: bool
-      endclass
-  END
-  v9.CheckScriptFailure(lines, 'E1406: Member "not_matching": type mismatch, expected number but got string')
+  v9.CheckScriptFailure(lines, 'E1315: White space required')
 
   lines =<< trim END
       vim9script
@@ -1925,12 +1916,11 @@ def Test_class_used_as_type()
   lines =<< trim END
       vim9script
 
-      interface HasX
+      abstract class HasX
         this.x: number
-      endinterface
+      endclass
 
-      class Point implements HasX
-        this.x = 0
+      class Point extends HasX
         this.y = 0
       endclass
 
@@ -2164,7 +2154,7 @@ def Test_class_extends()
     class B extends A"
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1315:')
+  v9.CheckScriptFailure(lines, 'E1315: White space required')
 enddef
 
 def Test_using_base_class()
@@ -3740,31 +3730,6 @@ def Test_private_member_access_outside_class()
     T()
   END
   v9.CheckScriptFailure(lines, 'E1089: Unknown variable: _a = 1')
-enddef
-
-" Test for changing the member access of an interface in a implementation class
-def Test_change_interface_member_access()
-  var lines =<< trim END
-    vim9script
-    interface A
-      public this.val: number
-    endinterface
-    class B implements A
-      this.val = 10
-    endclass
-  END
-  v9.CheckScriptFailure(lines, 'E1367: Access level of member "val" of interface "A" is different')
-
-  lines =<< trim END
-    vim9script
-    interface A
-      this.val: number
-    endinterface
-    class B implements A
-      public this.val = 10
-    endclass
-  END
-  v9.CheckScriptFailure(lines, 'E1367: Access level of member "val" of interface "A" is different')
 enddef
 
 " Test for trying to change a readonly member from a def function

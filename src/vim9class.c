@@ -74,12 +74,6 @@ parse_member(
 	return FAIL;
     }
 
-    if (init_expr == NULL && *init_arg == '=')
-    {
-	emsg(_(e_cannot_initialize_member_in_interface));
-	return FAIL;
-    }
-
     if (*init_arg == '=')
     {
 	evalarg_T evalarg;
@@ -231,9 +225,15 @@ validate_extends_class(char_u *extends_name, class_T **extends_clp)
     }
     else
     {
-	if (tv.v_type != VAR_CLASS
-		|| tv.vval.v_class == NULL
-		|| (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+	int is_class_type = tv.v_type == VAR_CLASS;
+	int is_interface = is_class_type
+		&& (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0;
+
+	// classes cannot be extended by interfaces
+	if (is_class_type && is_interface)
+	    emsg(_(e_interfaces_cannot_extend_classes));
+
+	else if (!is_class_type || tv.vval.v_class == NULL)
 	    semsg(_(e_cannot_extend_str), extends_name);
 	else
 	{
@@ -305,72 +305,6 @@ validate_extends_members(
 		}
 
 		p_cl = p_cl->class_extends;
-	    }
-	}
-    }
-
-    return TRUE;
-}
-
-/*
- * Check the members of the interface class "ifcl" match the class members
- * ("classmembers_gap") and object members ("objmembers_gap") of a class.
- * Returns TRUE if the class and object member names are valid.
- */
-    static int
-validate_interface_members(
-    char_u	*intf_class_name,
-    class_T	*ifcl,
-    garray_T	*classmembers_gap,
-    garray_T	*objmembers_gap)
-{
-    for (int loop = 1; loop <= 2; ++loop)
-    {
-	// loop == 1: check class members
-	// loop == 2: check object members
-	int if_count = loop == 1 ? ifcl->class_class_member_count
-						: ifcl->class_obj_member_count;
-	if (if_count == 0)
-	    continue;
-	ocmember_T *if_ms = loop == 1 ? ifcl->class_class_members
-						: ifcl->class_obj_members;
-	ocmember_T *cl_ms = (ocmember_T *)(loop == 1
-						? classmembers_gap->ga_data
-						: objmembers_gap->ga_data);
-	int cl_count = loop == 1 ? classmembers_gap->ga_len
-						: objmembers_gap->ga_len;
-	for (int if_i = 0; if_i < if_count; ++if_i)
-	{
-	    int cl_i;
-	    for (cl_i = 0; cl_i < cl_count; ++cl_i)
-	    {
-		ocmember_T	*m = &cl_ms[cl_i];
-		where_T		where = WHERE_INIT;
-
-		if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
-		    continue;
-
-		// Ensure the type is matching.
-		where.wt_func_name = (char *)m->ocm_name;
-		where.wt_kind = WT_MEMBER;
-		if (check_type(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
-								where) == FAIL)
-		    return FALSE;
-
-		if (if_ms[if_i].ocm_access != m->ocm_access)
-		{
-		    semsg(_(e_member_str_of_interface_str_has_different_access),
-			    if_ms[if_i].ocm_name, intf_class_name);
-		    return FALSE;
-		}
-
-		break;
-	    }
-	    if (cl_i == cl_count)
-	    {
-		semsg(_(e_member_str_of_interface_str_not_implemented),
-			if_ms[if_i].ocm_name, intf_class_name);
-		return FALSE;
 	    }
 	}
     }
@@ -482,10 +416,6 @@ validate_implements_classes(
 	intf_classes[i] = ifcl;
 	++ifcl->class_refcount;
 
-	// check the members of the interface match the members of the class
-	success = validate_interface_members(impl, ifcl, classmembers_gap,
-							objmembers_gap);
-
 	// check the functions/methods of the interface match the
 	// functions/methods of the class
 	if (success)
@@ -595,8 +525,18 @@ is_duplicate_method(garray_T *fgap, char_u *name)
  * Returns TRUE if the constructor is valid.
  */
     static int
-is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
+is_valid_constructor(
+	ufunc_T *uf,
+	int is_abstract,
+	int has_static,
+	int is_interface)
 {
+    // Interfaces cannot be instantiated as objects
+    if (is_interface)
+    {
+	emsg(_(e_cannot_define_new_function_in_interfaces));
+	return FALSE;
+    }
     // Constructors are not allowed in abstract classes.
     if (is_abstract)
     {
@@ -969,11 +909,12 @@ add_classfuncs_objmethods(
     void
 ex_class(exarg_T *eap)
 {
-    int	    is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+    int	    is_class = eap->cmdidx == CMD_class;
+    int	    is_interface = eap->cmdidx == CMD_interface;
+    int	    is_abstract = eap->cmdidx == CMD_abstract;
     long    start_lnum = SOURCING_LNUM;
+    char_u  *arg = eap->arg;
 
-    char_u *arg = eap->arg;
-    int is_abstract = eap->cmdidx == CMD_abstract;
     if (is_abstract)
     {
 	if (STRNCMP(arg, "class", 5) != 0 || !VIM_ISWHITE(arg[5]))
@@ -1031,10 +972,15 @@ ex_class(exarg_T *eap)
     arg = skipwhite(name_end);
     while (*arg != NUL && *arg != '#' && *arg != '\n')
     {
-	// TODO:
-	//    specifies SomeInterface
 	if (STRNCMP(arg, "extends", 7) == 0 && IS_WHITE_OR_NUL(arg[7]))
 	{
+	    // interfaces cannot be extended, neither by classes or interfaces
+	    // MAYBE: interfaces could be allowed to extend other interfaces
+	    if (is_interface)
+	    {
+		emsg(_(e_cannot_extend_interfaces));
+		goto early_ret;
+	    }
 	    if (extends != NULL)
 	    {
 		emsg(_(e_duplicate_extends));
@@ -1056,6 +1002,11 @@ ex_class(exarg_T *eap)
 	else if (STRNCMP(arg, "implements", 10) == 0
 						   && IS_WHITE_OR_NUL(arg[10]))
 	{
+	    if (is_interface)
+	    {
+		emsg(_(e_interfaces_cannot_implement_interfaces));
+		goto early_ret;
+	    }
 	    if (ga_impl.ga_len > 0)
 	    {
 		emsg(_(e_duplicate_implements));
@@ -1176,6 +1127,11 @@ early_ret:
 		semsg(_(e_command_cannot_be_shortened_str), line);
 		break;
 	    }
+	    if (is_interface)
+	    {
+		emsg(_(e_interfaces_cannot_have_access_modifiers));
+		break;
+	    }
 	    has_public = TRUE;
 	    p = skipwhite(line + 6);
 
@@ -1205,6 +1161,11 @@ early_ret:
 	//	"public this.varname"
 	if (STRNCMP(p, "this", 4) == 0)
 	{
+	    if (is_interface)
+	    {
+		emsg(_(e_interfaces_cannot_have_members));
+		break;
+	    }
 	    if (p[4] != '.' || !eval_isnamec1(p[5]))
 	    {
 		semsg(_(e_invalid_object_member_declaration_str), p);
@@ -1221,7 +1182,7 @@ early_ret:
 	    char_u *init_expr = NULL;
 	    if (parse_member(eap, line, varname, has_public,
 			  &varname_end, &type_list, &type,
-			  is_class ? &init_expr: NULL) == FAIL)
+			  &init_expr) == FAIL)
 		break;
 	    if (is_duplicate_member(&objmembers, varname, varname_end))
 	    {
@@ -1273,11 +1234,20 @@ early_ret:
 		char_u *name = uf->uf_name;
 		int is_new = STRNCMP(name, "new", 3) == 0;
 
-		if (is_new && !is_valid_constructor(uf, is_abstract, has_static))
+		if (is_new && !is_valid_constructor(
+			    uf, is_abstract, has_static, is_interface))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
+
+		// // TODO: Currently allowing private methods in interfaces
+		// if (is_interface && name[0] == '_')
+		// {
+		//     emsg(_(e_interfaces_methods_cannot_be_private));
+		//     func_clear_free(uf, FALSE);
+		//     break;
+		// }
 
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
@@ -1303,6 +1273,11 @@ early_ret:
 	// class members
 	else if (has_static)
 	{
+	    if (is_interface)
+	    {
+		emsg(_(e_interfaces_cannot_have_members));
+		break;
+	    }
 	    // class members (public, read access, private):
 	    //	"static _varname"
 	    //	"static varname"
@@ -1313,7 +1288,7 @@ early_ret:
 	    char_u *init_expr = NULL;
 	    if (parse_member(eap, line, varname, has_public,
 		      &varname_end, &type_list, &type,
-		      is_class ? &init_expr : NULL) == FAIL)
+		      &init_expr) == FAIL)
 		break;
 	    if (is_duplicate_member(&classmembers, varname, varname_end))
 	    {

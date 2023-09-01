@@ -3437,16 +3437,16 @@ EXTERN char e_interface_can_only_be_defined_in_vim9_script[]
 	INIT(= N_("E1342: Interface can only be defined in Vim9 script"));
 EXTERN char e_interface_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1343: Interface name must start with an uppercase letter: %s"));
-EXTERN char e_cannot_initialize_member_in_interface[]
-	INIT(= N_("E1344: Cannot initialize a member in an interface"));
+EXTERN char e_cannot_extend_interfaces[]
+	INIT(= N_("E1344: Cannot extend an interface"));
 EXTERN char e_not_valid_command_in_interface_str[]
 	INIT(= N_("E1345: Not a valid command in an interface: %s"));
 EXTERN char e_interface_name_not_found_str[]
 	INIT(= N_("E1346: Interface name not found: %s"));
 EXTERN char e_not_valid_interface_str[]
 	INIT(= N_("E1347: Not a valid interface: %s"));
-EXTERN char e_member_str_of_interface_str_not_implemented[]
-	INIT(= N_("E1348: Member \"%s\" of interface \"%s\" not implemented"));
+EXTERN char e_interfaces_methods_cannot_be_private[]
+	INIT(= N_("E1348: Functions of interfaces cannot be private"));
 EXTERN char e_function_str_of_interface_str_not_implemented[]
 	INIT(= N_("E1349: Function \"%s\" of interface \"%s\" not implemented"));
 EXTERN char e_duplicate_implements[]
@@ -3495,6 +3495,16 @@ EXTERN char e_duplicate_member_str[]
 	INIT(= N_("E1369: Duplicate member: %s"));
 EXTERN char e_cannot_define_new_function_as_static[]
 	INIT(= N_("E1370: Cannot define a \"new\" function as static"));
+EXTERN char e_interfaces_cannot_have_access_modifiers[]
+	INIT(= N_("E1371: Cannot use access modifiers in interfaces"));
+EXTERN char e_cannot_define_new_function_in_interfaces[]
+	INIT(= N_("E1372: Cannot declare a \"new\" function in an interface"));
+EXTERN char e_interfaces_cannot_have_members[]
+	INIT(= N_("E1373: Cannot declare class or object members in an interface"));
+EXTERN char e_interfaces_cannot_extend_classes[]
+	INIT(= N_("E1374: Cannot extend a class with an interface"));
+EXTERN char e_interfaces_cannot_implement_interfaces[]
+	INIT(= N_("E1375: Interfaces cannot implement other interfaces"));
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

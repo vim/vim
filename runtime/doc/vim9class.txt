@@ -47,9 +47,10 @@ An object can only be created by a class.  A class provides:
 - State shared by all objects of the class: class variables (class members).
 - A hierarchy of classes, with super-classes and sub-classes, inheritance.
 
-An interface is used to specify properties of an object:
+An interface is used to specify methods of an object:
 - An object can declare several interfaces that it implements.
-- Different objects implementing the same interface can be used the same way.
+- Objects belonging to different classes, implementing the same interface, can
+  be used in the same way.
 
 The class hierarchy allows for single inheritance.  Otherwise interfaces are
 to be used where needed.
@@ -399,10 +400,56 @@ a number.  This example extends the one above: >
 	      return this.base * this.height / 2
 	   enddef
 	endclass
+< 							*E1349*
+If a class declares to implement an interface, all the methods specified in
+the interface must appear in the class, with the same signatures.
 
-If a class declares to implement an interface, all the items specified in the
-interface must appear in the class, with the same types. *E1348* *E1349*
+An interface shouldn't be considered akin to a class: it's a collection of
+methods definitions that must be defined by all classes implementing that
+interface. It's a way of saying: if a class implements `SomeInterface`, it's
+guaranteed that class has `SomeMethod` and you can call it.
 
+Not being a class, an interface cannot be extended, nor it can implement other
+interfaces, nor a class can extend an interface: it can only be implemented by
+classes. On the other hand, while a class can only extend another class (single
+inheritance), it can implement multiple interfaces: >
+
+	interface HasSurface
+	    def Surface(): float
+	endinterface
+	
+	interface HasCorners
+	    def Corners(): list<number>
+	endinterface
+	
+	class Triangle implements HasSurface, HasCorners
+	    this.base: number
+	    this.height: number
+	    this.corners: list<number>
+	
+	    def new(this.base, this.height, this.corners)
+	    enddef
+	
+	    def Surface(): float
+	        return this.base * this.height / 2
+	    enddef
+	
+	    def Corners(): list<number>
+	        return this.corners
+	    enddef
+	endclass
+	
+	class Circle implements HasSurface
+	    this.radius: number
+	
+	    def new(this.radius)
+	    enddef
+	
+	    def Surface(): float
+	        return this.radius * this.radius * 3.14159265
+	    enddef
+	endclass
+<
 The interface name can be used as a type: >
 
 	var shapes: list<HasSurface> = [
@@ -412,6 +459,8 @@ The interface name can be used as a type: >
 	for shape in shapes
 	   echo $'the surface is {shape.Surface()}'
 	endfor
+
+For additional details, read |:interface|
 
 
 ==============================================================================
@@ -505,13 +554,6 @@ only appear once *E1350* .  Multiple interfaces can be specified, separated by
 commas.  Each interface name can appear only once. *E1351*
 
 
-A class defining an interface ~
-							*specifies*
-A class can declare its interface, the object members and methods, with a
-named interface.  This avoids the need for separately specifying the
-interface, which is often done in many languages, especially Java.
-
-
 Items in a class ~
 						*E1318* *E1325* *E1326*
 Inside a class, in between `:class` and `:endclass`, these items can appear:
@@ -547,21 +589,33 @@ prefixed with `:export`: >
 
 	export interface InterfaceName
 	endinterface
-<							*E1344*
-An interface can declare object members, just like in a class but without any
-initializer.
-							*E1345*
+<							*E1345*
 An interface can declare methods with `:def`, including the arguments and
 return type, but without the body and without `:enddef`.  Example: >
 
 	interface HasSurface
-	   this.size: number
 	   def Surface(): number
 	endinterface
-
-An interface name must start with an uppercase letter. *E1343*
+< 							*E1343*
+An interface name must start with an uppercase letter.
 The "Has" prefix can be used to make it easier to guess this is an interface
 name, with a hint about what it provides.
+							*E1372*
+Interfaces aren't classes: they cannot define `new()` constructors since they
+cannot be instantiated as objects.
+							*E1374* *E1344* *E1375*
+Interfaces can only be implemented by classes with the |implements| keyword.
+
+- they cannot extend a class with |extends|
+- they cannot be extended with |extends|, neither by interfaces or classes
+- they cannot implement other interfaces with |implements|
+
+							*E1373*
+Interfaces can only define methods, not members.
+							*E1348*
+Interface methods cannot start with an underscore, they are always public.
+{not implemented}
+
 An interface can only be defined in a |Vim9| script file.  *E1342*
 
 
