@@ -438,7 +438,14 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	{
 	    ocmember_T *m = &cl->class_class_members[idx];
 	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	    {
+		if (*name == '_' && !inside_class(cctx, cl))
+		{
+		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		    return FAIL;
+		}
 		break;
+	    }
 	}
 	if (idx < cl->class_class_member_count)
 	{
