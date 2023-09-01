@@ -498,6 +498,7 @@ typedef struct {
 typedef struct {
     class_T	*cm_class;
     int		cm_idx;
+    int		cm_static;
 } classmember_T;
 // arguments to ISN_STOREINDEX
 typedef struct {
