@@ -31,7 +31,7 @@ menutrans &About		이\ 프로그램은(&A)
 menutrans &File				파일(&F)
 menutrans &Open\.\.\.<Tab>:e		열기(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	나눠서\ 열기(&l)\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	탭\ 열기\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	탭\ 열기\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		새로운(&N)<Tab>:enew
 menutrans &Close<Tab>:close		닫기(&C)<Tab>:close
 menutrans &Save<Tab>:w			저장(&S)<Tab>:w

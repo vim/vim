@@ -39,7 +39,7 @@ let g:menutrans_help_dialog = "ƒwƒ‹ƒv‚ğŒŸõ‚µ‚½‚¢ƒRƒ}ƒ“ƒh‚à‚µ‚­‚Í’PŒê‚ğ“ü—Í‚µ‚Ä‚
 menutrans &File				ƒtƒ@ƒCƒ‹(&F)
 menutrans &Open\.\.\.<Tab>:e		ŠJ‚­(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	•ªŠ„‚µ‚ÄŠJ‚­(&L)\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	ƒ^ƒuƒy[ƒW‚ÅŠJ‚­<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	ƒ^ƒuƒy[ƒW‚ÅŠJ‚­<Tab>:tabnew
 menutrans &New<Tab>:enew		V‹Kì¬(&N)<Tab>:enew
 menutrans &Close<Tab>:close		•Â‚¶‚é(&C)<Tab>:close
 menutrans &Save<Tab>:w			•Û‘¶(&S)<Tab>:w
