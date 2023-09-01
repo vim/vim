@@ -3783,4 +3783,28 @@ def Test_readonly_member_change_in_def_func()
   v9.CheckScriptFailure(lines, 'E46: Cannot change read-only variable "val"')
 enddef
 
+" Test for reading and writing a class member from a def function
+def Test_modify_class_member_from_def_function()
+  var lines =<< trim END
+    vim9script
+    class A
+      this.var1: number = 10
+      public static var2 = 20
+      public static var3 = 30
+      static _priv_var4: number = 40
+    endclass
+    def T()
+      assert_equal(20, A.var2)
+      assert_equal(30, A.var3)
+      A.var2 = 50
+      A.var3 = 60
+      assert_equal(50, A.var2)
+      assert_equal(60, A.var3)
+      assert_fails('echo A._priv_var4', 'E1333: Cannot access private member: _priv_var4')
+    enddef
+    T()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

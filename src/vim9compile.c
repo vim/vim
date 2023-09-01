@@ -1868,8 +1868,10 @@ compile_lhs(
 	    class_T	*cl = lhs->lhs_type->tt_class;
 	    ocmember_T	*m;
 
-	    lhs->lhs_member_type = class_member_type(cl, after + 1,
-				    lhs->lhs_end, &lhs->lhs_member_idx, &m);
+	    lhs->lhs_member_type = class_member_type(cl,
+					lhs->lhs_type->tt_type == VAR_OBJECT,
+					after + 1, lhs->lhs_end,
+					&lhs->lhs_member_idx, &m);
 	    if (lhs->lhs_member_idx < 0)
 		return FAIL;
 
@@ -2091,7 +2093,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	   return FAIL;
 
 	class_T	*cl = lhs->lhs_type->tt_class;
-	type_T	*type = class_member_type(cl, dot + 1,
+	type_T	*type = class_member_type(cl, TRUE, dot + 1,
 					   lhs->lhs_end, &lhs->lhs_member_idx,
 					   NULL);
 	if (lhs->lhs_member_idx < 0)
