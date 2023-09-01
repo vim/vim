@@ -3523,6 +3523,51 @@ func Test_prop_above_with_number()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_above_with_linebreak()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    setlocal linebreak breakindent breakindentopt=shift:4
+    call setline(1, ["a b", "c d"])
+    call prop_type_add('theprop' , #{highlight: 'Special'})
+    call prop_add(1, 0, #{type: 'theprop', text: '123', text_align: 'above'})
+    normal! 2gg$
+  END
+  call writefile(lines, 'XscriptPropAboveLinebreak', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropAboveLinebreak', #{rows: 6})
+  call VerifyScreenDump(buf, 'Test_prop_above_linebreak_1', {})
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_prop_above_linebreak_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_prop_above_and_before()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    setlocal linebreak breakindent breakindentopt=shift:2
+    call setline(1, ["a", "  b c"])
+    call prop_type_add('theprop' , #{highlight: 'Special'})
+    call prop_add(2, 0, #{type: 'theprop', text: '  123', text_align: 'above'})
+    call prop_add(2, 4, #{type: 'theprop', text: ': 456'} )
+    normal! 2gg$
+  END
+  call writefile(lines, 'XscriptPropAboveAndBefore', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropAboveAndBefore', #{rows: 6})
+  call VerifyScreenDump(buf, 'Test_prop_above_and_before_1', {})
+  call term_sendkeys(buf, 'h')
+  call VerifyScreenDump(buf, 'Test_prop_above_and_before_2', {})
+  call term_sendkeys(buf, 'h')
+  call VerifyScreenDump(buf, 'Test_prop_above_and_before_3', {})
+  call term_sendkeys(buf, 'h')
+  call VerifyScreenDump(buf, 'Test_prop_above_and_before_4', {})
+  call term_sendkeys(buf, 'h')
+  call VerifyScreenDump(buf, 'Test_prop_above_and_before_5', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_below_split_line()
   CheckRunVimInTerminal
 
