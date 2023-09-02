@@ -2112,7 +2112,8 @@ win_line(
 							& TP_FLAG_ALIGN_RIGHT);
 			    int	    below = (tp->tp_flags
 							& TP_FLAG_ALIGN_BELOW);
-			    int	    wrap = (tp->tp_flags & TP_FLAG_WRAP);
+			    int	    wrap = tp->tp_col < MAXCOL
+					      || (tp->tp_flags & TP_FLAG_WRAP);
 			    int	    padding = tp->tp_col == MAXCOL
 						 && tp->tp_len > 1
 							  ? tp->tp_len - 1 : 0;

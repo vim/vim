@@ -1983,7 +1983,7 @@ func Test_prop_with_linebreak()
       set linebreak
       setline(1, 'one twoword')
       prop_type_add('test', {highlight: 'Special'})
-      prop_add(1, 4, {text: ': virtual text', type: 'test', text_wrap: 'wrap'})
+      prop_add(1, 4, {text: ': virtual text', type: 'test'})
   END
   call writefile(lines, 'XscriptPropWithLinebreak', 'D')
   let buf = RunVimInTerminal('-S XscriptPropWithLinebreak', #{rows: 6, cols: 50})
@@ -2690,7 +2690,7 @@ func Run_test_prop_inserts_text_showbreak(cmd)
     setlocal scrolloff=0 smoothscroll
     call setline(1, repeat('a', 28))
     call prop_type_add('theprop', #{highlight: 'Special'})
-    call prop_add(1, 28, #{type: 'theprop', text: repeat('123', 23), text_wrap: 'wrap'})
+    call prop_add(1, 28, #{type: 'theprop', text: repeat('123', 23)})
     normal! $
   END
   let lines = insert(lines, a:cmd)
@@ -2761,7 +2761,7 @@ func Test_prop_before_tab_skipcol()
     setlocal list listchars=tab:<-> scrolloff=0 smoothscroll
     call setline(1, repeat("\t", 4) .. 'a')
     call prop_type_add('theprop', #{highlight: 'Special'})
-    call prop_add(1, 4, #{type: 'theprop', text: repeat('12', 32), text_wrap: 'wrap'})
+    call prop_add(1, 4, #{type: 'theprop', text: repeat('12', 32)})
     normal! $
   END
   call writefile(lines, 'XscriptPropsBeforeTabSkipcol', 'D')
@@ -2798,7 +2798,7 @@ func Test_prop_inserts_text_before_linebreak()
     setlocal linebreak showbreak=+ breakindent breakindentopt=shift:2
     call setline(1, repeat('a', 50) .. ' ' .. repeat('c', 45))
     call prop_type_add('theprop', #{highlight: 'Special'})
-    call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 10), text_wrap: 'wrap'})
+    call prop_add(1, 51, #{type: 'theprop', text: repeat('b', 10)})
     normal! $
   END
   call writefile(lines, 'XscriptPropsBeforeLinebreak', 'D')
@@ -3255,8 +3255,8 @@ func Test_props_with_text_empty_line()
   let lines =<< trim END
       call setline(1, ['', 'aaa', '', 'bbbbbb'])
       call prop_type_add('prop1', #{highlight: 'Search'})
-      call prop_add(1, 1, #{type: 'prop1', text_wrap: 'wrap', text: repeat('X', &columns)})
-      call prop_add(3, 1, #{type: 'prop1', text_wrap: 'wrap', text: repeat('X', &columns + 1)})
+      call prop_add(1, 1, #{type: 'prop1', text: repeat('X', &columns)})
+      call prop_add(3, 1, #{type: 'prop1', text: repeat('X', &columns + 1)})
       normal gg0
   END
   call writefile(lines, 'XscriptPropsWithTextEmptyLine', 'D')
