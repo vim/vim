@@ -1475,6 +1475,7 @@ early_ret:
 
 	// Add the class to the script-local variables.
 	// TODO: handle other context, e.g. in a function
+	// TODO: does uf_hash need to be cleared?
 	typval_T tv;
 	tv.v_type = VAR_CLASS;
 	tv.vval.v_class = cl;

@@ -1823,6 +1823,7 @@ struct ufunc_S
 # ifdef FEAT_PROFILE
     int		uf_profiling;	// TRUE when func is being profiled
     int		uf_prof_initialized;
+    hash_T	uf_hash;	// hash for uf_name when profiling
     // profiling the function as a whole
     int		uf_tm_count;	// nr of calls
     proftime_T	uf_tm_total;	// time spent in function + children

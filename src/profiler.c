@@ -664,7 +664,8 @@ script_prof_save(
     void
 profile_may_start_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller)
 {
-    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
+    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL,
+								&fp->uf_hash))
     {
 	info->pi_started_profiling = TRUE;
 	func_do_profile(fp);
