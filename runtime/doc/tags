@@ -4442,6 +4442,7 @@ E1362	vim9class.txt	/*E1362*
 E1363	vim9class.txt	/*E1363*
 E1364	recover.txt	/*E1364*
 E137	starting.txt	/*E137*
+E1370	vim9class.txt	/*E1370*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*
 E140	message.txt	/*E140*
@@ -8031,6 +8032,7 @@ i_CTRL-O	insert.txt	/*i_CTRL-O*
 i_CTRL-P	insert.txt	/*i_CTRL-P*
 i_CTRL-Q	insert.txt	/*i_CTRL-Q*
 i_CTRL-R	insert.txt	/*i_CTRL-R*
+i_CTRL-R_-	insert.txt	/*i_CTRL-R_-*
 i_CTRL-R_=	insert.txt	/*i_CTRL-R_=*
 i_CTRL-R_CTRL-O	insert.txt	/*i_CTRL-R_CTRL-O*
 i_CTRL-R_CTRL-P	insert.txt	/*i_CTRL-R_CTRL-P*

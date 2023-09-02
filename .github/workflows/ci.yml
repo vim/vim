@@ -242,6 +242,12 @@ jobs:
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
+      - name: Vim tags
+        if: contains(matrix.extra, 'vimtags')
+        run: |
+          # This will exit with an error code if the generated vim tags differs from source.
+          git diff --exit-code -- runtime/doc/tags
+
       - name: Generate gcov files
         if: matrix.coverage
         run: |
