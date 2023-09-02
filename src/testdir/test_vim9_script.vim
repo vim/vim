@@ -4332,6 +4332,23 @@ def Test_option_set()
   set foldlevel&
 enddef
 
+def Test_option_set_line_number()
+  var lines =<< trim END
+      vim9script
+      # line2
+      # line3
+      def F()
+          # line5
+          &foldlevel = -128
+      enddef
+      F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  var res = execute('verbose set foldlevel')
+  assert_match('  foldlevel.*Last set from .*XScriptSuccess\d\+ line 6', res)
+enddef
+
 def Test_option_modifier()
   # legacy script allows for white space
   var lines =<< trim END
