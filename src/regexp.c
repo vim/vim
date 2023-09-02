@@ -2052,7 +2052,7 @@ vim_regsub_both(
 	if (copy)
 	{
 	    if (eval_result[nested] != NULL &&
-		    STRLEN(eval_result[nested]) < destlen)
+		    (int)STRLEN(eval_result[nested]) < destlen)
 	    {
 		STRCPY(dest, eval_result[nested]);
 		dst += STRLEN(eval_result[nested]);
