@@ -105,6 +105,7 @@ NEW_TESTS = \
 	test_conceal \
 	test_const \
 	test_cpoptions \
+	test_crash \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
@@ -369,6 +370,7 @@ NEW_TESTS_RES = \
 	test_conceal.res \
 	test_const.res \
 	test_cpoptions.res \
+	test_crash.res \
 	test_crypt.res \
 	test_cscope.res \
 	test_cursor_func.res \

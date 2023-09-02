@@ -2646,11 +2646,17 @@ do_ecmd(
 	goto theend;
     }
 
-    /*
-     * End Visual mode before switching to another buffer, so the text can be
-     * copied into the GUI selection buffer.
-     */
+    
+     // End Visual mode before switching to another buffer, so the text can be
+     // copied into the GUI selection buffer.
+     // Careful: may trigger ModeChanged() autocommand
+     
+    // Should we block autocommands here?
     reset_VIsual();
+
+    // autocommands freed window :(
+    if (oldwin != NULL && !win_valid(oldwin))
+	oldwin = NULL;
 
 #if defined(FEAT_EVAL)
     if ((command != NULL || newlnum > (linenr_T)0)
