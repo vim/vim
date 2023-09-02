@@ -4651,7 +4651,7 @@ ex_substitute(exarg_T *eap)
 		mch_memmove(new_end, sub_firstline + copycol, (size_t)copy_len);
 		new_end += copy_len;
 
-		if (new_start_len - copy_len < sublen)
+		if ((int)new_start_len - copy_len < sublen)
 		    sublen = new_start_len - copy_len - 1;
 
 #ifdef FEAT_EVAL
