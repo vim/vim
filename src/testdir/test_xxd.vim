@@ -577,6 +577,7 @@ func Test_xxd_color2()
 
   call system(s:xxd_cmd .. ' -r < Xinput > XXDfile_colors')
 
+  let $PS1='$ '
   let buf = RunVimInTerminal('', #{rows: 20, cmd: 'sh'})
   call term_sendkeys(buf,  s:xxd_cmd .. " -R never  < XXDfile_colors\<cr>")
   call TermWait(buf)
@@ -591,5 +592,6 @@ func Test_xxd_color2()
   call term_sendkeys(buf,  "exit\<CR>")
 
   call delete('XXDfile_colors')
+  unlet! $PS1
 endfunc
 " vim: shiftwidth=2 sts=2 expandtab
