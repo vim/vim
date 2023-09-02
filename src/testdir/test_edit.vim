@@ -1219,7 +1219,7 @@ func Test_edit_LEFT_RIGHT()
 endfunc
 
 func Test_edit_MOUSE()
-  " This is a simple test, since we not really using the mouse here
+  " This is a simple test, since we're not really using the mouse here
   CheckFeature mouse
   10new
   call setline(1, range(1, 100))
@@ -1797,7 +1797,7 @@ func Test_edit_charconvert()
   close!
   set charconvert&
 
-  " 'charconvert' function doesn't create a output file
+  " 'charconvert' function doesn't create an output file
   func Cconv1()
   endfunc
   set charconvert=Cconv1()
