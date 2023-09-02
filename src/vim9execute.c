@@ -3836,6 +3836,7 @@ exec_instructions(ectx_T *ectx)
 		    char_u	*tofree = NULL;
 
 		    --ectx->ec_stack.ga_len;
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    tv = STACK_TV_BOT(0);
 		    if (tv->v_type == VAR_STRING)
 		    {
@@ -3845,7 +3846,6 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    else if (iptr->isn_type == ISN_STOREFUNCOPT)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			// If the option can be set to a function reference or
 			// a lambda and the passed value is a function
 			// reference, then convert it to the name (string) of
