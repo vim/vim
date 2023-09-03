@@ -1180,6 +1180,13 @@ get_lval(
 	    return NULL;
 	lp->ll_tv = &v->di_tv;
     }
+    if (vim9script && writing && lp->ll_tv->v_type == VAR_CLASS
+	    && (lp->ll_tv->vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+    {
+	if (!quiet)
+	    semsg(_(e_interface_static_direct_access_str), lp->ll_name);
+	return NULL;
+    }
 
     if (vim9script && (flags & GLV_NO_DECL) == 0)
     {

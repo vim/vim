@@ -1830,6 +1830,11 @@ class_object_index(
 		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 		    return FAIL;
 		}
+		if ((cl->class_flags & CLASS_INTERFACE) != 0)
+		{
+		    semsg(_(e_interface_static_direct_access_str), m->ocm_name);
+		    return FAIL;
+		}
 
 		typval_T *tv = &cl->class_members_tv[i];
 		copy_tv(tv, rettv);

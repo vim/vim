@@ -3723,7 +3723,7 @@ def Test_interface_static_member_access()
     endclass
     C.new().F()
   END
-  v9.CheckScriptFailure(lines, 'E1408: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
 
   # In a class cannot write to interface static
   lines =<< trim END
@@ -3739,7 +3739,7 @@ def Test_interface_static_member_access()
     endclass
     C.new().F()
   END
-  v9.CheckScriptFailure(lines, 'E1408: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
 
   # In a def cannot read from interface static
   lines =<< trim END
@@ -3752,7 +3752,7 @@ def Test_interface_static_member_access()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1408: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
 
   # In a def cannot write to interface static
   lines =<< trim END
@@ -3765,7 +3765,29 @@ def Test_interface_static_member_access()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1408: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
+
+  # script level cannot read interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static s_var1: number
+    endinterface
+
+    var x = I.s_var1
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Interface static "s_var1":')
+
+  # script level cannot write interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static s_var1: number
+    endinterface
+
+    I.s_var1 = 3
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Interface static "I.s_var1')
 
 enddef
 
