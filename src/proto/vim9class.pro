@@ -12,6 +12,8 @@ void copy_object(typval_T *from, typval_T *to);
 void object_unref(object_T *obj);
 void copy_class(typval_T *from, typval_T *to);
 void class_unref(class_T *cl);
+int class_free_nonref(int copyID);
+int set_ref_in_classes(int copyID);
 void object_created(object_T *obj);
 void object_cleared(object_T *obj);
 int object_free_nonref(int copyID);

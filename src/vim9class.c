@@ -21,6 +21,43 @@
 # include "vim9.h"
 #endif
 
+static class_T *first_class = NULL;
+static class_T *next_nonref_class = NULL;
+
+/*
+ * Call this function when a class has been created.  It will be added to the
+ * list headed by "first_class".
+ */
+    static void
+class_created(class_T *cl)
+{
+    if (first_class != NULL)
+    {
+	cl->class_next_used = first_class;
+	first_class->class_prev_used = cl;
+    }
+    first_class = cl;
+}
+
+/*
+ * Call this function when a class has been cleared and is about to be freed.
+ * It is removed from the list headed by "first_class".
+ */
+    static void
+class_cleared(class_T *cl)
+{
+    if (cl->class_next_used != NULL)
+	cl->class_next_used->class_prev_used = cl->class_prev_used;
+    if (cl->class_prev_used != NULL)
+	cl->class_prev_used->class_next_used = cl->class_next_used;
+    else if (first_class == cl)
+	first_class = cl->class_next_used;
+
+    // update the next class to check if needed
+    if (cl == next_nonref_class)
+	next_nonref_class = cl->class_next_used;
+}
+
 /*
  * Parse a member declaration, both object and class member.
  * Returns OK or FAIL.  When OK then "varname_end" is set to just after the
@@ -1470,6 +1507,8 @@ early_ret:
 	cl->class_object_type.tt_class = cl;
 	cl->class_type_list = type_list;
 
+	class_created(cl);
+
 	// TODO:
 	// - Fill hashtab with object members and methods ?
 
@@ -1945,73 +1984,114 @@ copy_class(typval_T *from, typval_T *to)
 }
 
 /*
+ * Free the class "cl" and its contents.
+ */
+    static void
+class_free(class_T *cl)
+{
+    // Freeing what the class contains may recursively come back here.
+    // Clear "class_name" first, if it is NULL the class does not need to
+    // be freed.
+    VIM_CLEAR(cl->class_name);
+
+    class_unref(cl->class_extends);
+
+    for (int i = 0; i < cl->class_interface_count; ++i)
+    {
+	vim_free(((char_u **)cl->class_interfaces)[i]);
+	if (cl->class_interfaces_cl[i] != NULL)
+	    class_unref(cl->class_interfaces_cl[i]);
+    }
+    vim_free(cl->class_interfaces);
+    vim_free(cl->class_interfaces_cl);
+
+    itf2class_T *next;
+    for (itf2class_T *i2c = cl->class_itf2class; i2c != NULL; i2c = next)
+    {
+	next = i2c->i2c_next;
+	vim_free(i2c);
+    }
+
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	ocmember_T *m = &cl->class_class_members[i];
+	vim_free(m->ocm_name);
+	vim_free(m->ocm_init);
+	if (cl->class_members_tv != NULL)
+	    clear_tv(&cl->class_members_tv[i]);
+    }
+    vim_free(cl->class_class_members);
+    vim_free(cl->class_members_tv);
+
+    for (int i = 0; i < cl->class_obj_member_count; ++i)
+    {
+	ocmember_T *m = &cl->class_obj_members[i];
+	vim_free(m->ocm_name);
+	vim_free(m->ocm_init);
+    }
+    vim_free(cl->class_obj_members);
+
+    for (int i = 0; i < cl->class_class_function_count; ++i)
+    {
+	ufunc_T *uf = cl->class_class_functions[i];
+	func_clear_free(uf, FALSE);
+    }
+    vim_free(cl->class_class_functions);
+
+    for (int i = 0; i < cl->class_obj_method_count; ++i)
+    {
+	ufunc_T *uf = cl->class_obj_methods[i];
+	func_clear_free(uf, FALSE);
+    }
+    vim_free(cl->class_obj_methods);
+
+    clear_type_list(&cl->class_type_list);
+
+    class_cleared(cl);
+
+    vim_free(cl);
+}
+
+/*
  * Unreference a class.  Free it when the reference count goes down to zero.
  */
     void
 class_unref(class_T *cl)
 {
     if (cl != NULL && --cl->class_refcount <= 0 && cl->class_name != NULL)
+	class_free(cl);
+}
+
+/*
+ * Go through the list of all classes and free items without "copyID".
+ */
+    int
+class_free_nonref(int copyID)
+{
+    int		did_free = FALSE;
+
+    for (class_T *cl = first_class; cl != NULL; cl = next_nonref_class)
     {
-	// Freeing what the class contains may recursively come back here.
-	// Clear "class_name" first, if it is NULL the class does not need to
-	// be freed.
-	VIM_CLEAR(cl->class_name);
-
-	class_unref(cl->class_extends);
-
-	for (int i = 0; i < cl->class_interface_count; ++i)
+	next_nonref_class = cl->class_next_used;
+	if ((cl->class_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
-	    vim_free(((char_u **)cl->class_interfaces)[i]);
-	    if (cl->class_interfaces_cl[i] != NULL)
-		class_unref(cl->class_interfaces_cl[i]);
+	    // Free the class and items it contains.
+	    class_free(cl);
+	    did_free = TRUE;
 	}
-	vim_free(cl->class_interfaces);
-	vim_free(cl->class_interfaces_cl);
-
-	itf2class_T *next;
-	for (itf2class_T *i2c = cl->class_itf2class; i2c != NULL; i2c = next)
-	{
-	    next = i2c->i2c_next;
-	    vim_free(i2c);
-	}
-
-	for (int i = 0; i < cl->class_class_member_count; ++i)
-	{
-	    ocmember_T *m = &cl->class_class_members[i];
-	    vim_free(m->ocm_name);
-	    vim_free(m->ocm_init);
-	    if (cl->class_members_tv != NULL)
-		clear_tv(&cl->class_members_tv[i]);
-	}
-	vim_free(cl->class_class_members);
-	vim_free(cl->class_members_tv);
-
-	for (int i = 0; i < cl->class_obj_member_count; ++i)
-	{
-	    ocmember_T *m = &cl->class_obj_members[i];
-	    vim_free(m->ocm_name);
-	    vim_free(m->ocm_init);
-	}
-	vim_free(cl->class_obj_members);
-
-	for (int i = 0; i < cl->class_class_function_count; ++i)
-	{
-	    ufunc_T *uf = cl->class_class_functions[i];
-	    func_clear_free(uf, FALSE);
-	}
-	vim_free(cl->class_class_functions);
-
-	for (int i = 0; i < cl->class_obj_method_count; ++i)
-	{
-	    ufunc_T *uf = cl->class_obj_methods[i];
-	    func_clear_free(uf, FALSE);
-	}
-	vim_free(cl->class_obj_methods);
-
-	clear_type_list(&cl->class_type_list);
-
-	vim_free(cl);
     }
+
+    next_nonref_class = NULL;
+    return did_free;
+}
+
+    int
+set_ref_in_classes(int copyID)
+{
+    for (class_T *cl = first_class; cl != NULL; cl = cl->class_next_used)
+	set_ref_in_item_class(cl, copyID, NULL, NULL);
+
+    return FALSE;
 }
 
 static object_T *first_object = NULL;
