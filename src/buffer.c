@@ -5777,7 +5777,7 @@ bt_normal(buf_T *buf)
 bt_quickfix(buf_T *buf UNUSED)
 {
 #ifdef FEAT_QUICKFIX
-    return buf != NULL && buf->b_p_bt[0] == 'q';
+    return buf != NULL && buf_valid(buf) && buf->b_p_bt[0] == 'q';
 #else
     return FALSE;
 #endif
