@@ -6408,6 +6408,7 @@ mode([expr])	Return a string that indicates the current mode.
 		   Rvc	    Virtual Replace mode completion |compl-generic|
 		   Rvx	    Virtual Replace mode |i_CTRL-X| completion
 		   c	    Command-line editing
+		   ct	    Command-line editing via Terminal-Job mode
 		   cv	    Vim Ex mode |gQ|
 		   ce	    Normal Ex mode |Q|
 		   r	    Hit-enter prompt

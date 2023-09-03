@@ -935,9 +935,19 @@ func Test_mode()
 
   if has('terminal')
     term
+    " Terminal-Job mode
+    call assert_equal('t', mode())
+    call assert_equal('t', mode(1))
+    call feedkeys("\<C-W>:echo \<C-R>=Save_mode()\<C-U>\<CR>", 'xt')
+    call assert_equal("c-ct", g:current_modes)
+    call feedkeys("\<Esc>", 'xt')
+
+    " Terminal-Normal mode
     call feedkeys("\<C-W>N", 'xt')
     call assert_equal('n', mode())
     call assert_equal('nt', mode(1))
+    call feedkeys(":echo \<C-R>=Save_mode()\<C-U>\<CR>", 'xt')
+    call assert_equal("c-c", g:current_modes)
     call feedkeys("aexit\<CR>", 'xt')
   endif
 
