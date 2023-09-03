@@ -2871,7 +2871,7 @@ skip_to_arg(
 	    break;
 
 	case TYPE_LONGLONGINT:
-	    va_arg(*ap, long long int);
+	    va_arg(*ap, varnumber_T);
 	    break;
 
 	case TYPE_UNSIGNEDINT:
@@ -2883,7 +2883,7 @@ skip_to_arg(
 	    break;
 
 	case TYPE_UNSIGNEDLONGLONGINT:
-	    va_arg(*ap, unsigned long long int);
+	    va_arg(*ap, uvarnumber_T);
 	    break;
 
 	case TYPE_FLOAT:
