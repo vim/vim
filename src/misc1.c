@@ -664,7 +664,11 @@ get_mode(char_u *buf)
     }
 #ifdef FEAT_TERMINAL
     else if (term_use_loop())
+    {
+	if (State & MODE_CMDLINE)
+	    buf[i++] = 'c';
 	buf[i++] = 't';
+    }
 #endif
     else if (VIsual_active)
     {
