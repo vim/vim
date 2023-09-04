@@ -136,7 +136,7 @@ generate_CONSTRUCT(cctx_T *cctx, class_T *cl)
  * index.
  */
     int
-generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
+generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type, int is_static)
 {
     RETURN_OK_IF_SKIP(cctx);
 
@@ -145,7 +145,9 @@ generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
     if (isn == NULL)
 	return FAIL;
 
-    isn->isn_arg.number = idx;
+    isn->isn_arg.classmember.cm_class = NULL;
+    isn->isn_arg.classmember.cm_idx = idx;
+    isn->isn_arg.classmember.cm_static = is_static;
     return push_type_stack2(cctx, type, &t_any);
 }
 
@@ -154,7 +156,8 @@ generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
  * by index.
  */
     int
-generate_GET_ITF_MEMBER(cctx_T *cctx, class_T *itf, int idx, type_T *type)
+generate_GET_ITF_MEMBER(cctx_T *cctx, class_T *itf, int idx, type_T *type,
+								int is_static)
 {
     RETURN_OK_IF_SKIP(cctx);
 
@@ -166,6 +169,7 @@ generate_GET_ITF_MEMBER(cctx_T *cctx, class_T *itf, int idx, type_T *type)
     isn->isn_arg.classmember.cm_class = itf;
     ++itf->class_refcount;
     isn->isn_arg.classmember.cm_idx = idx;
+    isn->isn_arg.classmember.cm_static = is_static;
     return push_type_stack2(cctx, type, &t_any);
 }
 

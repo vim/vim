@@ -509,6 +509,36 @@ def Test_assignment_with_operator()
       assert_equal(23, f.x)
   END
   v9.CheckScriptSuccess(lines)
+
+  # do the same thing, but through an interface
+  lines =<< trim END
+      vim9script
+
+      interface I
+        public this.x: number
+      endinterface
+
+      class Foo implements I
+        public this.x: number
+
+        def Add(n: number)
+          var i: I = this
+          i.x += n
+        enddef
+      endclass
+
+      var f =  Foo.new(3)
+      f.Add(17)
+      assert_equal(20, f.x)
+
+      def AddToFoo(i: I)
+        i.x += 3
+      enddef
+
+      AddToFoo(f)
+      assert_equal(23, f.x)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_list_of_objects()
@@ -3762,6 +3792,142 @@ def Test_dup_member_variable()
   v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
 enddef
 
+def Test_interface_static_member_access()
+  # In a class cannot read from interface static
+  var lines =<< trim END
+    vim9script
+    interface I
+        public static num: number
+    endinterface
+    class C implements I
+        public static num = 3
+        def F()
+            var x = I.num
+        enddef
+    endclass
+    C.new().F()
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
+
+  # In a class cannot write to interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static num: number
+    endinterface
+    class C implements I
+        public static num = 3
+        def F()
+            I.num = 7
+        enddef
+    endclass
+    C.new().F()
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
+
+  # In a def cannot read from interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static num: number
+    endinterface
+    def F()
+        var x = I.num
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
+
+  # In a def cannot write to interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static num: number
+    endinterface
+    def F()
+        I.num = 7
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
+
+  # script level cannot read interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static s_var1: number
+    endinterface
+
+    var x = I.s_var1
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "s_var1"')
+
+  # script level cannot write interface static
+  lines =<< trim END
+    vim9script
+    interface I
+        public static s_var1: number
+    endinterface
+
+    I.s_var1 = 3
+  END
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "I.s_var1 = 3"')
+
+enddef
+
+def Test_static_member_access_outside_class()
+  # Verify access of statics implemented from interface
+  # in a :def (outside of a class)
+  # Note the order of the static is different
+  # between the interface and the class,
+  # since they are allocated in order in each interface/class;
+  # so the static index is mapped from interfaced to  class as needed.
+
+  # Check reading statics
+  var lines =<< trim END
+    vim9script
+
+    interface I
+        public static s_var1: number
+        public static s_var2: number
+    endinterface
+
+    class C implements I
+        public static s_var2 = 2
+        public static x_static = 7
+        public static s_var1 = 1
+    endclass
+
+    def F1(): number
+        assert_equal(1, C.s_var1)
+        assert_equal(2, C.s_var2)
+        assert_equal(7, C.x_static)
+        return 11
+    enddef
+
+    # access the class static through an interface argument
+    def F2(i: I): number
+        assert_equal(1, i.s_var1)
+        assert_equal(2, i.s_var2)
+        return 22
+    enddef
+
+    # access the class static through an object interface
+    def F3(o: C): number
+        assert_equal(1, o.s_var1)
+        assert_equal(2, o.s_var2)
+        assert_equal(7, o.x_static)
+        return 33
+    enddef
+
+    assert_equal(11, F1())
+    var c = C.new()
+    assert_equal(22, F2(c))
+    assert_equal(33, F3(c))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for accessing a private member outside a class in a def function
 def Test_private_member_access_outside_class()
   # private object member variable
@@ -3794,6 +3960,63 @@ def Test_private_member_access_outside_class()
     T()
   END
   v9.CheckScriptFailure(lines, 'E1089: Unknown variable: _a = 1')
+
+  # private static member variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      var a = A.new()
+      var x = a._val
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+  # private static member variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      var a = A.new()
+      a._val = 3
+    enddef
+    T()
+  END
+  # TODO: wrong error, should be about private member
+  v9.CheckScriptFailure(lines, 'E1089: Unknown variable')
+
+  # private static class variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      var x = A._val
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+  # private static class variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      A._val = 3
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+
 enddef
 
 " Test for changing the member access of an interface in a implementation class

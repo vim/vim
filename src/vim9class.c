@@ -220,9 +220,11 @@ add_members_to_class(
  * "cl" implementing that interface.
  */
     int
-object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
+object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl,
+								int is_static)
 {
-    if (idx > (is_method ? itf->class_obj_method_count
+    if (idx >= (is_method ? itf->class_obj_method_count
+				   : is_static ? itf->class_class_member_count
 						: itf->class_obj_member_count))
     {
 	siemsg("index %d out of range for interface %s", idx, itf->class_name);
@@ -245,8 +247,28 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
 					      cl->class_name, itf->class_name);
 	return 0;
     }
-    int *table = (int *)(i2c + 1);
-    return table[idx];
+    if (is_static)
+    {
+	// TODO: Need a table for fast lookup?
+	char_u *name = itf->class_class_members[idx].ocm_name;
+	for (int i = 0; i < i2c->i2c_class->class_class_member_count; ++i)
+	{
+	    ocmember_T *m = &i2c->i2c_class->class_class_members[i];
+	    if (STRCMP(name, m->ocm_name) == 0)
+	    {
+		return i;
+	    }
+	}
+	siemsg("class %s, interface %s, static %s not found",
+				      cl->class_name, itf->class_name, name);
+	return 0;
+    }
+    else
+    {
+	// A table follows the i2c for the class
+	int *table = (int *)(i2c + 1);
+	return table[idx];
+    }
 }
 
 /*
@@ -1806,6 +1828,12 @@ class_object_index(
 		if (*name == '_')
 		{
 		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		    return FAIL;
+		}
+		if ((cl->class_flags & CLASS_INTERFACE) != 0)
+		{
+		    semsg(_(e_interface_static_direct_access_str),
+						cl->class_name, m->ocm_name);
 		    return FAIL;
 		}
 

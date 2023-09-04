@@ -407,8 +407,27 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
 		*arg = name_end;
 		if (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED))
-		    return generate_GET_ITF_MEMBER(cctx, cl, i, m->ocm_type);
-		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
+		    return generate_GET_ITF_MEMBER(cctx, cl, i, m->ocm_type,
+									FALSE);
+		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type, FALSE);
+	    }
+	}
+
+	for (int i = 0; i < cl->class_class_member_count; ++i)
+	{
+	    ocmember_T *m = &cl->class_class_members[i];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	    {
+		if (*name == '_' && !inside_class(cctx, cl))
+		{
+		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		    return FAIL;
+		}
+		*arg = name_end;
+		if (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED))
+		    return generate_GET_ITF_MEMBER(cctx, cl, i, m->ocm_type,
+									TRUE);
+		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type, TRUE);
 	    }
 	}
 
@@ -439,6 +458,13 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    ocmember_T *m = &cl->class_class_members[idx];
 	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
 	    {
+		// Note: type->tt_type = VAR_CLASS
+		if ((cl->class_flags & CLASS_INTERFACE) != 0)
+		{
+		    semsg(_(e_interface_static_direct_access_str),
+						cl->class_name, m->ocm_name);
+		    return FAIL;
+		}
 		if (*name == '_' && !inside_class(cctx, cl))
 		{
 		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);

@@ -1874,7 +1874,13 @@ compile_lhs(
 					&lhs->lhs_member_idx, &m);
 	    if (lhs->lhs_member_idx < 0)
 		return FAIL;
-
+	    if ((cl->class_flags & CLASS_INTERFACE) != 0
+					&& lhs->lhs_type->tt_type == VAR_CLASS)
+	    {
+		semsg(_(e_interface_static_direct_access_str),
+						cl->class_name, m->ocm_name);
+		return FAIL;
+	    }
 	    // If it is private member variable, then accessing it outside the
 	    // class is not allowed.
 	    if ((m->ocm_access != VIM_ACCESS_ALL) && !inside_class(cctx, cl))
@@ -2112,8 +2118,9 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 		return FAIL;
 	}
 	if (cl->class_flags & CLASS_INTERFACE)
-	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type);
-	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
+	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type,
+									FALSE);
+	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type, FALSE);
     }
 
     compile_load_lhs(lhs, var_start, NULL, cctx);

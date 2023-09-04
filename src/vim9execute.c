@@ -2316,8 +2316,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		class_T	    *itf = iptr->isn_arg.storeindex.si_class;
 		if (itf != NULL)
 		    // convert interface member index to class member index
-		    lidx = object_index_from_itf_index(itf, FALSE,
-							lidx, obj->obj_class);
+		    lidx = object_index_from_itf_index(itf, FALSE, lidx,
+						       obj->obj_class, FALSE);
 	    }
 	    else
 	    {
@@ -4261,7 +4261,8 @@ exec_instructions(ectx_T *ectx)
 
 		    // convert the interface index to the object index
 		    int idx = object_index_from_itf_index(mfunc->cmf_itf,
-						    TRUE, mfunc->cmf_idx, cl);
+						    TRUE, mfunc->cmf_idx, cl,
+						    FALSE);
 
 		    if (call_ufunc(cl->class_obj_methods[idx], NULL,
 				mfunc->cmf_argcount, ectx, NULL, NULL) == FAIL)
@@ -4410,7 +4411,8 @@ exec_instructions(ectx_T *ectx)
 
 			// convert the interface index to the object index
 			int idx = object_index_from_itf_index(extra->fre_class,
-					      TRUE, extra->fre_method_idx, cl);
+					      TRUE, extra->fre_method_idx, cl,
+					      FALSE);
 			ufunc = cl->class_obj_methods[idx];
 		    }
 		    else if (extra == NULL || extra->fre_func_name == NULL)
@@ -5389,20 +5391,25 @@ exec_instructions(ectx_T *ectx)
 			goto on_error;
 		    }
 
+		    int is_static = iptr->isn_arg.classmember.cm_static;
 		    int idx;
 		    if (iptr->isn_type == ISN_GET_OBJ_MEMBER)
-			idx = iptr->isn_arg.number;
+			idx = iptr->isn_arg.classmember.cm_idx;
 		    else
 		    {
 			idx = iptr->isn_arg.classmember.cm_idx;
 			// convert the interface index to the object index
 			idx = object_index_from_itf_index(
-					    iptr->isn_arg.classmember.cm_class,
-					    FALSE, idx, obj->obj_class);
+					iptr->isn_arg.classmember.cm_class,
+					FALSE, idx, obj->obj_class, is_static);
 		    }
 
-		    // the members are located right after the object struct
-		    typval_T *mtv = ((typval_T *)(obj + 1)) + idx;
+		    // The members are located right after the object struct.
+		    typval_T *mtv;
+		    if (is_static)
+			mtv = &obj->obj_class->class_members_tv[idx];
+		    else
+			mtv = ((typval_T *)(obj + 1)) + idx;
 		    copy_tv(mtv, tv);
 
 		    // Unreference the object after getting the member, it may
