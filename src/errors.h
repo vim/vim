@@ -3514,6 +3514,5 @@ EXTERN char e_method_str_type_mismatch_expected_str_but_got_str[]
 EXTERN char e_aptypes_is_null_str_nr[]
 	INIT(= "E1408: Internal error: ap_types or ap_types[idx] is NULL: %s: %d");
 EXTERN char e_interface_static_direct_access_str[]
-	INIT(= N_("E1409: Interface static \"%s\": cannot directly access"));
-
+	INIT(= N_("E1409: Cannot directly access interface \"%s\" static member \"%s\""));
 // E1371 - E1399 unused

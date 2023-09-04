@@ -3753,7 +3753,7 @@ def Test_interface_static_member_access()
     endclass
     C.new().F()
   END
-  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
 
   # In a class cannot write to interface static
   lines =<< trim END
@@ -3769,7 +3769,7 @@ def Test_interface_static_member_access()
     endclass
     C.new().F()
   END
-  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
 
   # In a def cannot read from interface static
   lines =<< trim END
@@ -3782,7 +3782,7 @@ def Test_interface_static_member_access()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
 
   # In a def cannot write to interface static
   lines =<< trim END
@@ -3795,7 +3795,7 @@ def Test_interface_static_member_access()
     enddef
     F()
   END
-  v9.CheckScriptFailure(lines, 'E1409: Interface static "num":')
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "num"')
 
   # script level cannot read interface static
   lines =<< trim END
@@ -3806,7 +3806,7 @@ def Test_interface_static_member_access()
 
     var x = I.s_var1
   END
-  v9.CheckScriptFailure(lines, 'E1409: Interface static "s_var1":')
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "s_var1"')
 
   # script level cannot write interface static
   lines =<< trim END
@@ -3817,7 +3817,7 @@ def Test_interface_static_member_access()
 
     I.s_var1 = 3
   END
-  v9.CheckScriptFailure(lines, 'E1409: Interface static "I.s_var1')
+  v9.CheckScriptFailure(lines, 'E1409: Cannot directly access interface "I" static member "I.s_var1 = 3"')
 
 enddef
 

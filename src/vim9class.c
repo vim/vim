@@ -1832,7 +1832,8 @@ class_object_index(
 		}
 		if ((cl->class_flags & CLASS_INTERFACE) != 0)
 		{
-		    semsg(_(e_interface_static_direct_access_str), m->ocm_name);
+		    semsg(_(e_interface_static_direct_access_str),
+						cl->class_name, m->ocm_name);
 		    return FAIL;
 		}
 

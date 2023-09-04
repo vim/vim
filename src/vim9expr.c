@@ -461,7 +461,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		// Note: type->tt_type = VAR_CLASS
 		if ((cl->class_flags & CLASS_INTERFACE) != 0)
 		{
-		    semsg(_(e_interface_static_direct_access_str), m->ocm_name);
+		    semsg(_(e_interface_static_direct_access_str),
+						cl->class_name, m->ocm_name);
 		    return FAIL;
 		}
 		if (*name == '_' && !inside_class(cctx, cl))

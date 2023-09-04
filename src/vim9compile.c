@@ -1877,7 +1877,8 @@ compile_lhs(
 	    if ((cl->class_flags & CLASS_INTERFACE) != 0
 					&& lhs->lhs_type->tt_type == VAR_CLASS)
 	    {
-		semsg(_(e_interface_static_direct_access_str), m->ocm_name);
+		semsg(_(e_interface_static_direct_access_str),
+						cl->class_name, m->ocm_name);
 		return FAIL;
 	    }
 	    // If it is private member variable, then accessing it outside the

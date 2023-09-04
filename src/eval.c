@@ -1184,7 +1184,8 @@ get_lval(
 	    && (lp->ll_tv->vval.v_class->class_flags & CLASS_INTERFACE) != 0)
     {
 	if (!quiet)
-	    semsg(_(e_interface_static_direct_access_str), lp->ll_name);
+	    semsg(_(e_interface_static_direct_access_str),
+			    lp->ll_tv->vval.v_class->class_name, lp->ll_name);
 	return NULL;
     }
 
