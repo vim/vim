@@ -759,7 +759,7 @@ main(int argc, char *argv[])
 	  else if (!STRNCMP(pw, "never", 5))
 	    color = 0;
 	  else if (!STRNCMP(pw, "auto", 4))
-	    ;	/* Do nothing. */
+	    color = enable_color();
 	  else
 	    exit_with_usage();
         }
