@@ -135,7 +135,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2023-09-01 by Juergen Weigert et al.";
+char version[] = "xxd 2023-09-04 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -759,7 +759,7 @@ main(int argc, char *argv[])
 	  else if (!STRNCMP(pw, "never", 5))
 	    color = 0;
 	  else if (!STRNCMP(pw, "auto", 4))
-	    ;	/* Do nothing. */
+	    color = enable_color();
 	  else
 	    exit_with_usage();
         }
