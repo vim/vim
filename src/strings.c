@@ -2801,7 +2801,7 @@ skip_to_arg(
 
 	if (ap_types == NULL || ap_types[*arg_cur] == NULL)
 	{
-	    semsg(e_aptypes_is_null_str_nr, fmt, *arg_cur);
+	    siemsg(e_aptypes_is_null_str_nr, fmt, *arg_cur);
 	    return;
 	}
 
