@@ -1307,6 +1307,60 @@ func Test_class_garbagecollect()
   call v9.CheckScriptSuccess(lines)
 endfunc
 
+" Test interface garbage collection
+func Test_interface_garbagecollect()
+  let lines =<< trim END
+    vim9script
+
+    interface I
+      static ro_class_var: number
+      public static rw_class_var: number
+      static _priv_class_var: number
+      this.ro_obj_var: number
+      public this.rw_obj_var: number
+      this._priv_obj_var: number
+
+      static def ClassFoo(): number
+      static def _ClassBar(): number
+      def ObjFoo(): number
+      def _ObjBar(): number
+    endinterface
+
+    class A implements I
+      static ro_class_var: number = 10
+      public static rw_class_var: number = 20
+      static _priv_class_var: number = 30
+      this.ro_obj_var: number = 40
+      public this.rw_obj_var: number = 50
+      this._priv_obj_var: number = 60
+
+      static def _ClassBar(): number
+        return _priv_class_var
+      enddef
+
+      static def ClassFoo(): number
+        return ro_class_var + rw_class_var + A._ClassBar()
+      enddef
+
+      def _ObjBar(): number
+        return this._priv_obj_var
+      enddef
+
+      def ObjFoo(): number
+        return this.ro_obj_var + this.rw_obj_var + this._ObjBar()
+      enddef
+    endclass
+
+    assert_equal(60, A.ClassFoo())
+    var o = A.new()
+    assert_equal(150, o.ObjFoo())
+    test_garbagecollect_now()
+    assert_equal(60, A.ClassFoo())
+    assert_equal(150, o.ObjFoo())
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 def Test_class_function()
   var lines =<< trim END
       vim9script
