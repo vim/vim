@@ -570,7 +570,9 @@ normal_cmd_get_more_chars(
 	    // but when replaying a recording the next key is already in the
 	    // typeahead buffer, so record a <Nop> before that to prevent the
 	    // vpeekc() above from applying wrong mappings when replaying.
+	    ++no_u_sync;
 	    gotchars_nop();
+	    --no_u_sync;
 	}
     }
     --no_mapping;
