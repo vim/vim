@@ -5725,10 +5725,15 @@ set_ref_in_item_class(
 	return FALSE;
 
     cl->class_copyID = copyID;
-    for (int i = 0; !abort && i < cl->class_class_member_count; ++i)
-	abort = abort || set_ref_in_item(
-		&cl->class_members_tv[i],
-		copyID, ht_stack, list_stack);
+    if (cl->class_members_tv != NULL)
+    {
+	// The "class_members_tv" table is allocated only for regular classes
+	// and not for interfaces.
+	for (int i = 0; !abort && i < cl->class_class_member_count; ++i)
+	    abort = abort || set_ref_in_item(
+		    &cl->class_members_tv[i],
+		    copyID, ht_stack, list_stack);
+    }
 
     for (int i = 0; !abort && i < cl->class_class_function_count; ++i)
 	abort = abort || set_ref_in_func(NULL,
