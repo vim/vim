@@ -4158,6 +4158,13 @@ close_others(
 	if (wp == curwin)		// don't close current window
 	    continue;
 
+	// autoccommands messed this one up
+	if (!buf_valid(wp->w_buffer) && win_valid(wp))
+	{
+	    wp->w_buffer = NULL;
+	    win_close(wp, 0);
+	    continue;
+	}
 	// Check if it's allowed to abandon this window
 	r = can_abandon(wp->w_buffer, forceit);
 	if (!win_valid(wp))		// autocommands messed wp up
