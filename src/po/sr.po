@@ -8623,7 +8623,7 @@ msgstr "E1405: Неисправни спецификатор формата: %s"
 
 #, c-format
 msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1406: Члан „%d”: неодговарајући тип, очекује се %s али је наведено %s"
+msgstr "E1406: Члан „%s”: неодговарајући тип, очекује се %s али је наведено %s"
 
 #, c-format
 msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
