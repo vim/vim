@@ -3789,17 +3789,17 @@ def Test_modify_class_member_from_def_function()
     vim9script
     class A
       this.var1: number = 10
-      public static var2 = 20
-      public static var3 = 30
+      public static var2: list<number> = [1, 2]
+      public static var3: dict<number> = {a: 1, b: 2}
       static _priv_var4: number = 40
     endclass
     def T()
-      assert_equal(20, A.var2)
-      assert_equal(30, A.var3)
-      A.var2 = 50
-      A.var3 = 60
-      assert_equal(50, A.var2)
-      assert_equal(60, A.var3)
+      assert_equal([1, 2], A.var2)
+      assert_equal({a: 1, b: 2}, A.var3)
+      A.var2 = [3, 4]
+      A.var3 = {c: 3, d: 4}
+      assert_equal([3, 4], A.var2)
+      assert_equal({c: 3, d: 4}, A.var3)
       assert_fails('echo A._priv_var4', 'E1333: Cannot access private member: _priv_var4')
     enddef
     T()

@@ -59,6 +59,7 @@ int set_ref_in_dict(dict_T *d, int copyID);
 int set_ref_in_list(list_T *ll, int copyID);
 int set_ref_in_list_items(list_T *l, int copyID, ht_stack_T **ht_stack);
 int set_ref_in_callback(callback_T *cb, int copyID);
+int set_ref_in_item_class(class_T *cl, int copyID, ht_stack_T **ht_stack, list_stack_T **list_stack);
 int set_ref_in_item(typval_T *tv, int copyID, ht_stack_T **ht_stack, list_stack_T **list_stack);
 char_u *echo_string_core(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int composite_val);
 char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
