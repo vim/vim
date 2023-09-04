@@ -509,6 +509,36 @@ def Test_assignment_with_operator()
       assert_equal(23, f.x)
   END
   v9.CheckScriptSuccess(lines)
+
+  # do the same thing, but through an interface
+  lines =<< trim END
+      vim9script
+
+      interface I
+        public this.x: number
+      endinterface
+
+      class Foo implements I
+        public this.x: number
+
+        def Add(n: number)
+          var i: I = this
+          i.x += n
+        enddef
+      endclass
+
+      var f =  Foo.new(3)
+      f.Add(17)
+      assert_equal(20, f.x)
+
+      def AddToFoo(i: I)
+        i.x += 3
+      enddef
+
+      AddToFoo(f)
+      assert_equal(23, f.x)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_list_of_objects()
@@ -3876,6 +3906,63 @@ def Test_private_member_access_outside_class()
     T()
   END
   v9.CheckScriptFailure(lines, 'E1089: Unknown variable: _a = 1')
+
+  # private static member variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      var a = A.new()
+      var x = a._val
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+  # private static member variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      var a = A.new()
+      a._val = 3
+    enddef
+    T()
+  END
+  # TODO: wrong error, should be about private member
+  v9.CheckScriptFailure(lines, 'E1089: Unknown variable')
+
+  # private static class variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      var x = A._val
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+  # private static class variable
+  lines =<< trim END
+    vim9script
+    class A
+      static _val = 10
+    endclass
+    def T()
+      A._val = 3
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+
+
 enddef
 
 " Test for changing the member access of an interface in a implementation class
