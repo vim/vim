@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-16 22:13+0400\n"
-"PO-Revision-Date: 2023-08-16 22:49+0400\n"
+"POT-Creation-Date: 2023-09-04 10:49+0400\n"
+"PO-Revision-Date: 2023-09-04 13:00+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -2764,6 +2764,10 @@ msgid "recording"
 msgstr "снимање"
 
 #, c-format
+msgid "Searching for \"%s\" under \"%s\" in \"%s\""
+msgstr "Тражи се „%s” под „%s” у „%s”"
+
+#, c-format
 msgid "Searching for \"%s\" in \"%s\""
 msgstr "Тражи се „%s” у „%s”"
 
@@ -4967,7 +4971,9 @@ msgid "E339: Pattern too long"
 msgstr "E339: Шаблон је предугачак"
 
 msgid "E340: Internal error; if you can reproduce please report a bug"
-msgstr "E340: Интерна грешка; ако можете поново да је изазовете молимо вас да пријавите баг"
+msgstr ""
+"E340: Интерна грешка; ако можете поново да је изазовете молимо вас да "
+"пријавите баг"
 
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
@@ -5920,6 +5926,16 @@ msgstr "E612: Дефинисано је превише знакова"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Непознат фонт штампача: %s"
 
+msgid "E614: Class required"
+msgstr "E614: Потребна је класа"
+
+msgid "E615: Object required"
+msgstr "E615: Потребан је објекат"
+
+#, c-format
+msgid "E616: Object required for argument %d"
+msgstr "E616: За аргумент %d је потребан објекат"
+
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: Не може да се промени у GTK ГКИ"
 
@@ -6163,6 +6179,10 @@ msgstr "E691: Листа може да се пореди само са Лист�
 msgid "E692: Invalid operation for List"
 msgstr "E692: Неисправна операција за Листу"
 
+#, c-format
+msgid "E693: List or Class required for argument %d"
+msgstr "E693: За аргумент %d се захтева Листа или Класа"
+
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Неисправна операција за Funcrefs"
 
@@ -6203,6 +6223,10 @@ msgstr "E704: Име Funcref мора да почне великим слово�
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
 msgstr "E705: Име променљиве је у конфликту са постојећом функцијом: %s"
+
+#, c-format
+msgid "E706: Argument of %s must be a List, String or Dictionary"
+msgstr "E706: Аргумент за %s мора бити Листа, Стринг или Речник"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -8548,6 +8572,27 @@ msgstr "E1363: Тип није комплетан"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Упозорење: Блок показивача је покварен"
 
+msgid "E1365: Cannot use a return type with the \"new\" function"
+msgstr "E1365: Повратни тип не може да се користи са функцијом „new”"
+
+#, c-format
+msgid "E1366: Cannot access private method: %s"
+msgstr "E1366: Не може да се приступи приватној методи: %s"
+
+#, c-format
+msgid "E1367: Access level of member \"%s\" of interface \"%s\" is different"
+msgstr "E1367: Ниво приступа члана „%s” интерфејса „%s” се разликује"
+
+msgid "E1368: Static cannot be followed by \"this\" in a member name"
+msgstr "E1368: У имену члана након static не може да следи „this”"
+
+#, c-format
+msgid "E1369: Duplicate member: %s"
+msgstr "E1369: Дуплирани члан: %s"
+
+msgid "E1370: Cannot define a \"new\" function as static"
+msgstr "E1370: Функција „new” не може да се дефинише као static"
+
 #, c-format
 msgid "E1400: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1400: Не могу да се мешају позициони и непозициони аргументи: %s"
@@ -8575,6 +8620,14 @@ msgstr "E1404: Позициони аргумент %d тип се не упот�
 #, c-format
 msgid "E1405: Invalid format specifier: %s"
 msgstr "E1405: Неисправни спецификатор формата: %s"
+
+#, c-format
+msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1406: Члан „%s”: неодговарајући тип, очекује се %s али је наведено %s"
+
+#, c-format
+msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1407: Члан „%s”: неодговарајући тип, очекује се %s али је наведено %s"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
