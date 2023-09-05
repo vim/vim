@@ -43,6 +43,7 @@
  */
 #define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
 #define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
+#define IS_WHITE_NL_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == '\n' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
