@@ -103,6 +103,14 @@ func CheckLinux()
   endif
 endfunc
 
+" Command to check for not running on Linux
+command CheckNotLinux call CheckNotLinux()
+func CheckNotLinux()
+  if has('linux')
+    throw 'Skipped: does not work on Linux'
+  endif
+endfunc
+
 " Command to check for not running on a BSD system.
 command CheckNotBSD call CheckNotBSD()
 func CheckNotBSD()

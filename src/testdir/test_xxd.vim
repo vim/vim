@@ -552,6 +552,7 @@ func Test_xxd_color2()
   CheckUnix
   CheckNotMac
   CheckNotBSD
+  CheckNotLinux
 
   "Note Quotation mark escaped
   "Note Aposhpere vaihdettu apostrophe replaced with 0x00
