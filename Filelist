@@ -217,6 +217,7 @@ SRC_ALL =	\
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
+		src/testdir/crash/* \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/alloc.pro \
