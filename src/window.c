@@ -1733,6 +1733,11 @@ win_exchange(long Prenum)
 	beep_flush();
 	return;
     }
+    if (text_or_buf_locked())
+    {
+	beep_flush();
+	return;
+    }
 
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
