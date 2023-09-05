@@ -44,7 +44,7 @@ menutrans &File 文件(&F)
 " File menuitems {{{1
 menutrans &Open\.\.\.<Tab>:e 打开(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp 在拆分窗口打开(&L)\.\.\.<Tab>:sp
-menutrans Open\ &Tab\.\.\.<Tab>:tabnew 在标签页打开\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew 在标签页打开(&T)\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew 新建(&N)<Tab>:enew
 menutrans &Close<Tab>:close 关闭(&C)<Tab>:close
 menutrans &Save<Tab>:w 保存(&S)<Tab>:w
