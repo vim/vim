@@ -40,10 +40,10 @@ endif
 let &l:define='\v(<fn>|<const>|<var>|^\s*\#\s*define)'
 
 " Safety check: don't execute zip from current directory
-let s:tmp_cwd = getcwd()
 if !exists('g:zig_std_dir') && exists('*json_decode') &&
-    \  executable('zig') && (fnamemodify(exepath("zig"), ":p:h") != s:tmp_cwd
-          \ || (index(split($PATH,has("win32")? ';' : ':'), s:tmp_cwd) != -1 && s:tmp_cwd != '.'))
+    \  executable('zig') && (get(g:, 'plugin_exec', 0) || get(g:, 'zig_exec', 0))
+    \ && (fnamemodify(exepath("zig"), ":p:h") != s:tmp_cwd
+    \ || (index(split($PATH,has("win32")? ';' : ':'), s:tmp_cwd) != -1 && s:tmp_cwd != '.'))
     silent let s:env = system('zig env')
     if v:shell_error == 0
         let g:zig_std_dir = json_decode(s:env)['std_dir']
