@@ -1592,7 +1592,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	had_comma = **arg == ',';
 	if (had_comma)
 	{
-	    if (vim9script && !IS_WHITE_OR_NUL((*arg)[1]) && (*arg)[1] != ']')
+	    if (vim9script && !IS_WHITE_NL_OR_NUL((*arg)[1]) && (*arg)[1] != ']')
 	    {
 		semsg(_(e_white_space_required_after_str_str), ",", *arg);
 		goto failret;

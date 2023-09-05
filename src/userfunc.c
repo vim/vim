@@ -1879,7 +1879,7 @@ get_func_arguments(
 	    argp = skipwhite(argp);
 	if (*argp != ',')
 	    break;
-	if (vim9script && !IS_WHITE_OR_NUL(argp[1]))
+	if (vim9script && !IS_WHITE_NL_OR_NUL(argp[1]))
 	{
 	    if (evaluate)
 		semsg(_(e_white_space_required_after_str_str), ",", argp);

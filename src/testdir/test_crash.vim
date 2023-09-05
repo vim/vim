@@ -62,7 +62,6 @@ func Test_crash1()
 
   let file = 'crash/vim_regsub_both_poc'
   let args = printf(cmn_args, vim, file)
-  " using || because this poc causes vim to exit with exitstatus != 0
   call term_sendkeys(buf, args ..
     \ '  && echo "crash 7: [OK]" >> X_crash1_result.txt' .. "\<cr>")
   call TermWait(buf, 1000)
