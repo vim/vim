@@ -37,6 +37,10 @@ jobs:
         features: [tiny, normal, huge]
         compiler: [clang, gcc]
         extra: [[]]
+        # Only use non-native architecture when features != huge.
+        # features=huge tries to install python3-dev, which fails to install
+        # for the non-native architecture.
+        architecture: [native]
         include:
           - features: tiny
             compiler: clang
@@ -46,6 +50,8 @@ jobs:
             extra: [nogui]
           - features: normal
             shadow: ./src/shadow
+            compiler: gcc
+            architecture: i386
           - features: huge
             coverage: true
           - features: huge
@@ -75,13 +81,18 @@ jobs:
       - name: Checkout repository from github
         uses: actions/checkout@v3
 
+      - run: sudo dpkg --add-architecture i386
+        if: matrix.architecture == 'i386'
+
       - name: Install packages
         run: |
           PKGS=( \
             gettext \
-            libgtk2.0-dev \
+            libgtk2.0-dev:${{ matrix.architecture }} \
             desktop-file-utils \
             libtool-bin \
+            libncurses-dev:${{ matrix.architecture }} \
+            libxt-dev:${{ matrix.architecture }} \
           )
           if ${{ matrix.features == 'huge' }}; then
             LUA_VER=${{ matrix.lua_ver || '5.4' }}
@@ -106,7 +117,7 @@ jobs:
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          sudo apt-get install -y gcc-${{ env.GCC_VER }}
+          sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
