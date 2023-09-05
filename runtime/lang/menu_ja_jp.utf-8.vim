@@ -39,7 +39,7 @@ let g:menutrans_help_dialog = "ヘルプを検索したいコマンドもしく�
 menutrans &File				ファイル(&F)
 menutrans &Open\.\.\.<Tab>:e		開く(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	分割して開く(&L)\.\.\.<Tab>:sp
-menutrans Open\ &Tab\.\.\.<Tab>:tabnew	タブページで開く<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	タブページで開く(&T)<Tab>:tabnew
 menutrans &New<Tab>:enew		新規作成(&N)<Tab>:enew
 menutrans &Close<Tab>:close		閉じる(&C)<Tab>:close
 menutrans &Save<Tab>:w			保存(&S)<Tab>:w
