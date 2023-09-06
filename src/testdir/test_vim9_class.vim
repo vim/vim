@@ -3790,6 +3790,16 @@ def Test_dup_member_variable()
     endclass
   END
   v9.CheckScriptFailure(lines, 'E1369: Duplicate member: val')
+
+  # Two member variables with a common prefix
+  lines =<< trim END
+    vim9script
+    class A
+      public static svar2: number
+      public static svar: number
+    endclass
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_interface_static_member_access()
@@ -4080,6 +4090,41 @@ def Test_modify_class_member_from_def_function()
       assert_fails('echo A._priv_var4', 'E1333: Cannot access private member: _priv_var4')
     enddef
     T()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for accessing a class member variable using an object
+def Test_class_member_access_using_object()
+  var lines =<< trim END
+    vim9script
+    class A
+      public static svar1: list<number> = [1]
+      public static svar2: list<number> = [2]
+    endclass
+
+    A.svar1->add(3)
+    A.svar2->add(4)
+    assert_equal([1, 3], A.svar1)
+    assert_equal([2, 4], A.svar2)
+    var a1 = A.new()
+    a1.svar1->add(5)
+    a1.svar2->add(6)
+    assert_equal([1, 3, 5], a1.svar1)
+    assert_equal([2, 4, 6], a1.svar2)
+
+    def Foo()
+      A.svar1->add(7)
+      A.svar2->add(8)
+      assert_equal([1, 3, 5, 7], A.svar1)
+      assert_equal([2, 4, 6, 8], A.svar2)
+      var a2 = A.new()
+      a2.svar1->add(9)
+      a2.svar2->add(10)
+      assert_equal([1, 3, 5, 7, 9], a2.svar1)
+      assert_equal([2, 4, 6, 8, 10], a2.svar2)
+    enddef
+    Foo()
   END
   v9.CheckScriptSuccess(lines)
 enddef
