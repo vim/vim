@@ -846,28 +846,43 @@ add_class_members(class_T *cl, exarg_T *eap)
     // Allocate a typval for each class member and initialize it.
     cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
 					    cl->class_class_member_count);
+    cl->p_class_members_tv = ALLOC_CLEAR_MULT(typval_T*,
+					    cl->class_class_member_count);
     if (cl->class_members_tv == NULL)
 	return;
 
+    class_T *parent = cl->class_extends;
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	ocmember_T	*m = &cl->class_class_members[i];
-	typval_T	*tv = &cl->class_members_tv[i];
-	if (m->ocm_init != NULL)
+	typval_T	*tv;
+	if (parent != NULL && i < parent->class_class_member_count)
 	{
-	    typval_T *etv = eval_expr(m->ocm_init, eap);
-	    if (etv != NULL)
+	    // share the parent's static variable
+	    tv = parent->p_class_members_tv[i];
+	    // NOTE: this class's tv not written; remains UNKNOWN
+	    // TODO: could add new vartype_T of VAR_INVALID for clarity
+	}
+	if (TRUE) // NOTE: "else" in an actual implementation
+	{
+	    tv = &cl->class_members_tv[i];
+	    if (m->ocm_init != NULL)
 	    {
-		*tv = *etv;
-		vim_free(etv);
+		typval_T *etv = eval_expr(m->ocm_init, eap);
+		if (etv != NULL)
+		{
+		    *tv = *etv;
+		    vim_free(etv);
+		}
+	    }
+	    else
+	    {
+		// TODO: proper default value
+		tv->v_type = m->ocm_type->tt_type;
+		tv->vval.v_string = NULL;
 	    }
 	}
-	else
-	{
-	    // TODO: proper default value
-	    tv->v_type = m->ocm_type->tt_type;
-	    tv->vval.v_string = NULL;
-	}
+	cl->p_class_members_tv[i] = tv;
     }
 }
 

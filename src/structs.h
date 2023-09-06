@@ -1539,7 +1539,8 @@ struct class_S
     // class members: "static varname"
     int		class_class_member_count;
     ocmember_T	*class_class_members;	// allocated
-    typval_T	*class_members_tv;	// allocated array of class member vals
+    typval_T	**p_class_members_tv;	// allocated array ptr to vals
+    typval_T	*class_members_tv;	// allocated statics in this class
 
     // class functions: "static def SomeMethod()"
     int		class_class_function_count;	    // total count
