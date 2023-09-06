@@ -237,10 +237,16 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl,
     if (cl == itf)
 	return idx;
 
-    itf2class_T *i2c;
-    for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
-	if (i2c->i2c_class == cl && i2c->i2c_is_method == is_method)
-	    break;
+    itf2class_T *i2c = NULL;
+    int searching = TRUE;
+    for (class_T *super = cl; super != NULL && searching;
+						super = super->class_extends)
+	for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
+	    if (i2c->i2c_class == super && i2c->i2c_is_method == is_method)
+	    {
+		searching = FALSE;
+		break;
+	    }
     if (i2c == NULL)
     {
 	siemsg("class %s not found on interface %s",
@@ -1978,7 +1984,8 @@ class_member_index(char_u *name, size_t len, class_T **cl_ret, cctx_T *cctx)
 inside_class(cctx_T *cctx_arg, class_T *cl)
 {
     for (cctx_T *cctx = cctx_arg; cctx != NULL; cctx = cctx->ctx_outer)
-	if (cctx->ctx_ufunc != NULL && cctx->ctx_ufunc->uf_class == cl)
+	if (cctx->ctx_ufunc != NULL
+			&& class_instance_of(cctx->ctx_ufunc->uf_class, cl))
 	    return TRUE;
     return FALSE;
 }
