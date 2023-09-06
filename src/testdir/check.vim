@@ -103,11 +103,11 @@ func CheckLinux()
   endif
 endfunc
 
-" Command to check for not running on Linux
-command CheckNotLinux call CheckNotLinux()
-func CheckNotLinux()
-  if has('linux')
-    throw 'Skipped: does not work on Linux'
+" Command to check for dash is not executable
+command CheckDash call CheckDash()
+func CheckDash()
+  if !executable('dash')
+    throw 'Skipped: dash not executable!'
   endif
 endfunc
 
