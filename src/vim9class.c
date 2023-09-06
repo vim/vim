@@ -467,8 +467,8 @@ validate_interface_methods(
 						: objmethods_gap->ga_len;
 	for (int if_i = 0; if_i < if_count; ++if_i)
 	{
-	    char_u *if_name = if_fp[if_i]->uf_name;
-	    int cl_i;
+	    char_u	*if_name = if_fp[if_i]->uf_name;
+	    int		cl_i;
 	    for (cl_i = 0; cl_i < cl_count; ++cl_i)
 	    {
 		char_u *cl_name = cl_fp[cl_i]->uf_name;
@@ -584,8 +584,8 @@ check_func_arg_names(
 		// Check all the class member names
 		for (int mi = 0; mi < mgap->ga_len; ++mi)
 		{
-		    char_u *mname = ((ocmember_T *)mgap->ga_data + mi)
-			->ocm_name;
+		    char_u *mname =
+				((ocmember_T *)mgap->ga_data + mi)->ocm_name;
 		    if (STRCMP(aname, mname) == 0)
 		    {
 			if (uf->uf_script_ctx.sc_sid > 0)
@@ -610,22 +610,24 @@ check_func_arg_names(
     static int
 is_duplicate_member(garray_T *mgap, char_u *varname, char_u *varname_end)
 {
-    char_u *pstr = (*varname == '_') ? varname + 1 : varname;
+    char_u	*name = vim_strnsave(varname, varname_end - varname);
+    char_u	*pstr = (*name == '_') ? name + 1 : name;
+    int		dup = FALSE;
 
     for (int i = 0; i < mgap->ga_len; ++i)
     {
 	ocmember_T *m = ((ocmember_T *)mgap->ga_data) + i;
-	char_u *qstr = *m->ocm_name == '_' ? m->ocm_name + 1 : m->ocm_name;
-	if (STRNCMP(pstr, qstr, varname_end - pstr) == 0)
+	char_u	*qstr = *m->ocm_name == '_' ? m->ocm_name + 1 : m->ocm_name;
+	if (STRCMP(pstr, qstr) == 0)
 	{
-	    char_u *name = vim_strnsave(varname, varname_end - varname);
 	    semsg(_(e_duplicate_member_str), name);
-	    vim_free(name);
-	    return TRUE;
+	    dup = TRUE;
+	    break;
 	}
     }
 
-    return FALSE;
+    vim_free(name);
+    return dup;
 }
 
 /*
@@ -638,8 +640,8 @@ is_duplicate_method(garray_T *fgap, char_u *name)
 
     for (int i = 0; i < fgap->ga_len; ++i)
     {
-	char_u *n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
-	char_u *qstr = *n == '_' ? n + 1 : n;
+	char_u	*n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
+	char_u	*qstr = *n == '_' ? n + 1 : n;
 	if (STRCMP(pstr, qstr) == 0)
 	{
 	    semsg(_(e_duplicate_function_str), name);
@@ -699,7 +701,7 @@ update_member_method_lookup_table(
 
     // Table for members.
     itf2class_T *if2cl = alloc_clear(sizeof(itf2class_T)
-	    + ifcl->class_obj_member_count * sizeof(int));
+				+ ifcl->class_obj_member_count * sizeof(int));
     if (if2cl == NULL)
 	return FAIL;
     if2cl->i2c_next = ifcl->class_itf2class;
@@ -711,7 +713,7 @@ update_member_method_lookup_table(
 	for (int cl_i = 0; cl_i < cl->class_obj_member_count; ++cl_i)
 	{
 	    if (STRCMP(ifcl->class_obj_members[if_i].ocm_name,
-			cl->class_obj_members[cl_i].ocm_name) == 0)
+				cl->class_obj_members[cl_i].ocm_name) == 0)
 	    {
 		int *table = (int *)(if2cl + 1);
 		table[if_i] = cl_i;
@@ -721,7 +723,7 @@ update_member_method_lookup_table(
 
     // Table for methods.
     if2cl = alloc_clear(sizeof(itf2class_T)
-	    + ifcl->class_obj_method_count * sizeof(int));
+				+ ifcl->class_obj_method_count * sizeof(int));
     if (if2cl == NULL)
 	return FAIL;
     if2cl->i2c_next = ifcl->class_itf2class;
@@ -735,8 +737,7 @@ update_member_method_lookup_table(
 	for (int cl_i = 0; cl_i < objmethods->ga_len; ++cl_i)
 	{
 	    if (STRCMP(ifcl->class_obj_methods[if_i]->uf_name,
-			((ufunc_T **)objmethods->ga_data)[cl_i]->uf_name)
-		    == 0)
+			((ufunc_T **)objmethods->ga_data)[cl_i]->uf_name) == 0)
 	    {
 		int *table = (int *)(if2cl + 1);
 		table[if_i] = cl_i;
@@ -754,8 +755,8 @@ update_member_method_lookup_table(
 	    // the intermediate parent classes.
 	    if (cl->class_extends != ifcl)
 	    {
-		class_T	    *parent = cl->class_extends;
-		int	    method_offset = objmethods->ga_len;
+		class_T		*parent = cl->class_extends;
+		int		method_offset = objmethods->ga_len;
 
 		while (!done && parent != NULL && parent != ifcl)
 		{
@@ -844,8 +845,8 @@ add_class_members(class_T *cl, exarg_T *eap)
 
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
-	ocmember_T *m = &cl->class_class_members[i];
-	typval_T *tv = &cl->class_members_tv[i];
+	ocmember_T	*m = &cl->class_class_members[i];
+	typval_T	*tv = &cl->class_members_tv[i];
 	if (m->ocm_init != NULL)
 	{
 	    typval_T *etv = eval_expr(m->ocm_init, eap);
@@ -905,7 +906,7 @@ add_default_constructor(
     if (nf != NULL && ga_grow(classfunctions_gap, 1) == OK)
     {
 	((ufunc_T **)classfunctions_gap->ga_data)[classfunctions_gap->ga_len]
-	    = nf;
+									= nf;
 	++classfunctions_gap->ga_len;
 
 	nf->uf_flags |= FC_NEW;
@@ -935,10 +936,10 @@ add_classfuncs_objmethods(
     // loop 1: class functions, loop 2: object methods
     for (int loop = 1; loop <= 2; ++loop)
     {
-	garray_T *gap = loop == 1 ? classfunctions_gap : objmethods_gap;
-	int	     *fcount = loop == 1 ? &cl->class_class_function_count
+	garray_T	*gap = loop == 1 ? classfunctions_gap : objmethods_gap;
+	int		*fcount = loop == 1 ? &cl->class_class_function_count
 						: &cl->class_obj_method_count;
-	ufunc_T ***fup = loop == 1 ? &cl->class_class_functions
+	ufunc_T		***fup = loop == 1 ? &cl->class_class_functions
 						: &cl->class_obj_methods;
 
 	int parent_count = 0;
@@ -1028,11 +1029,11 @@ add_classfuncs_objmethods(
     void
 ex_class(exarg_T *eap)
 {
-    int	    is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
-    long    start_lnum = SOURCING_LNUM;
+    int		is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+    long	start_lnum = SOURCING_LNUM;
+    char_u	*arg = eap->arg;
+    int		is_abstract = eap->cmdidx == CMD_abstract;
 
-    char_u *arg = eap->arg;
-    int is_abstract = eap->cmdidx == CMD_abstract;
     if (is_abstract)
     {
 	if (STRNCMP(arg, "class", 5) != 0 || !VIM_ISWHITE(arg[5]))
@@ -1329,8 +1330,8 @@ early_ret:
 
 	    if (uf != NULL)
 	    {
-		char_u *name = uf->uf_name;
-		int is_new = STRNCMP(name, "new", 3) == 0;
+		char_u	*name = uf->uf_name;
+		int	is_new = STRNCMP(name, "new", 3) == 0;
 
 		if (is_new && !is_valid_constructor(uf, is_abstract, has_static))
 		{
@@ -1630,11 +1631,11 @@ class_member_type(
     ocmember_T	**p_m)
 {
     *member_idx = -1;  // not found (yet)
-    size_t len = name_end - name;
-    int member_count = is_object ? cl->class_obj_member_count
-					: cl->class_class_member_count;
-    ocmember_T *members = is_object ? cl->class_obj_members
-					: cl->class_class_members;
+    size_t	len = name_end - name;
+    int		member_count = is_object ? cl->class_obj_member_count
+						: cl->class_class_member_count;
+    ocmember_T	*members = is_object ? cl->class_obj_members
+						: cl->class_class_members;
 
     for (int i = 0; i < member_count; ++i)
     {
@@ -1668,6 +1669,57 @@ ex_enum(exarg_T *eap UNUSED)
 ex_type(exarg_T *eap UNUSED)
 {
     // TODO
+}
+
+/*
+ * Returns OK if a member variable named "name" is present in the class "cl".
+ * Otherwise returns FAIL.  If found, the member variable typval is set in
+ * "rettv".  If "is_object" is TRUE, then the object member variable table is
+ * searched.  Otherwise the class member variable table is searched.
+ */
+    static int
+get_member_tv(
+    class_T	*cl,
+    int		is_object,
+    char_u	*name,
+    size_t	namelen,
+    typval_T	*rettv)
+{
+    int member_count = is_object ? cl->class_obj_member_count
+						: cl->class_class_member_count;
+    ocmember_T *members = is_object ? cl->class_obj_members
+						: cl->class_class_members;
+
+    for (int i = 0; i < member_count; ++i)
+    {
+	ocmember_T *m = &members[i];
+	if (STRNCMP(name, m->ocm_name, namelen) == 0
+						&& m->ocm_name[namelen] == NUL)
+	{
+	    if (*name == '_')
+	    {
+		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		return FAIL;
+	    }
+
+	    // The object only contains a pointer to the class, the member
+	    // values array follows right after that.
+	    object_T *obj = rettv->vval.v_object;
+	    if (is_object)
+	    {
+		typval_T *tv = (typval_T *)(obj + 1) + i;
+		copy_tv(tv, rettv);
+	    }
+	    else
+		copy_tv(&cl->class_members_tv[i], rettv);
+
+	    object_unref(obj);
+
+	    return OK;
+	}
+    }
+
+    return FAIL;
 }
 
 /*
@@ -1736,8 +1788,8 @@ class_object_index(
 	    char_u *ufname = (char_u *)fp->uf_name;
 	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
 	    {
-		typval_T    argvars[MAX_FUNC_ARGS + 1];
-		int	    argcount = 0;
+		typval_T	argvars[MAX_FUNC_ARGS + 1];
+		int		argcount = 0;
 
 		if (*ufname == '_')
 		{
@@ -1752,7 +1804,7 @@ class_object_index(
 		if (ret == FAIL)
 		    return FAIL;
 
-		funcexe_T   funcexe;
+		funcexe_T funcexe;
 		CLEAR_FIELD(funcexe);
 		funcexe.fe_evaluate = TRUE;
 		if (rettv->v_type == VAR_OBJECT)
@@ -1791,27 +1843,13 @@ class_object_index(
 
     else if (rettv->v_type == VAR_OBJECT)
     {
-	for (int i = 0; i < cl->class_obj_member_count; ++i)
+	// Search in the object member variable table and the class member
+	// variable table.
+	if (get_member_tv(cl, TRUE, name, len, rettv) == OK
+		|| get_member_tv(cl, FALSE, name, len, rettv) == OK)
 	{
-	    ocmember_T *m = &cl->class_obj_members[i];
-	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
-	    {
-		if (*name == '_')
-		{
-		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
-		    return FAIL;
-		}
-
-		// The object only contains a pointer to the class, the member
-		// values array follows right after that.
-		object_T *obj = rettv->vval.v_object;
-		typval_T *tv = (typval_T *)(obj + 1) + i;
-		copy_tv(tv, rettv);
-		object_unref(obj);
-
-		*arg = name_end;
-		return OK;
-	    }
+	    *arg = name_end;
+	    return OK;
 	}
 
 	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
@@ -1864,8 +1902,8 @@ find_class_func(char_u **arg)
     if (name_end == name || *name_end != '.')
 	return NULL;
 
-    size_t len = name_end - name;
-    typval_T tv;
+    size_t	len = name_end - name;
+    typval_T	tv;
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable(name, (int)len,
 				    0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
