@@ -7482,6 +7482,7 @@ g:netrw_wiw	pi_netrw.txt	/*g:netrw_wiw*
 g:netrw_xstrlen	pi_netrw.txt	/*g:netrw_xstrlen*
 g:no_mail_maps	filetype.txt	/*g:no_mail_maps*
 g:no_plugin_maps	filetype.txt	/*g:no_plugin_maps*
+g:plugin_exec	filetype.txt	/*g:plugin_exec*
 g:rust_bang_comment_leader	ft_rust.txt	/*g:rust_bang_comment_leader*
 g:rust_conceal	ft_rust.txt	/*g:rust_conceal*
 g:rust_conceal_mod_path	ft_rust.txt	/*g:rust_conceal_mod_path*
@@ -9142,6 +9143,7 @@ plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*
 plugin-filetype	usr_51.txt	/*plugin-filetype*
 plugin-special	usr_51.txt	/*plugin-special*
+plugin_exec	filetype.txt	/*plugin_exec*
 plugin_name.txt	helphelp.txt	/*plugin_name.txt*
 pmbcs-option	print.txt	/*pmbcs-option*
 pmbfn-option	print.txt	/*pmbfn-option*
