@@ -1448,7 +1448,7 @@ func Test_substitute_expr_switch_win()
   let bufnr = bufnr('%')
   put ="abcdef"
   silent! s/\%')/\=R()
-  call assert_fails(':%s/./\=R()/g', 'E565')
+  call assert_fails(':%s/./\=R()/g', 'E565:')
   delfunc R
   exe bufnr .. "bw!"
 endfunc
