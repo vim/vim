@@ -640,6 +640,68 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
 }
 
 /*
+ * Look for ".member", check if a member of the specified class.
+ *
+ * If found, fill in the information about the member and the parsing;
+ * and return TRUE. Some information may be saved even when return FALSE.
+ *
+ * TODO: Some cases may be missed, for example if continues on next line.
+ *
+ * TODO: useful to have char_u **name_start?
+ */
+
+    static int
+find_class_object_member(
+    class_T	*cl,
+    char_u	*check_start,
+    char_u	**name_end,
+    int		*idx,
+    int		*is_class,
+    ocmember_T	**p_m)
+{
+    char_u *name = skipwhite(check_start);
+    if (*name++ != '.')
+	return FALSE;
+    char_u *end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
+    size_t len = end - name;
+    if (len == 0)
+	return FALSE;
+
+    int searching = TRUE;
+    ocmember_T *m = NULL;
+    for (int i = 0; i < cl->class_obj_member_count; ++i)
+    {
+	m = &cl->class_obj_members[i];
+	if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	{
+	    *idx = i;
+	    *is_class = FALSE;
+	    searching = FALSE;
+	    break;
+	}
+    }
+    if (searching)
+	for (int i = 0; i < cl->class_class_member_count; ++i)
+	{
+	    m = &cl->class_class_members[i];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	    {
+		*idx = i;
+		*is_class = TRUE;
+		searching = FALSE;
+		break;
+	    }
+	}
+    if (searching)
+	return FALSE;
+
+    *name_end = end;
+    if (p_m != NULL)
+	*p_m = m;
+    return TRUE;
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * "is_expr" is TRUE when evaluating an expression, might be a funcref.
@@ -811,7 +873,34 @@ compile_load(
 	    }
 	}
 	if (gen_load)
-	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
+	{
+	    // Optimization: check if can generate LOAD CLASSMEMBER.
+	    int did_classmember = FALSE;
+	    if (type->tt_type == VAR_OBJECT
+		&& (type->tt_class->class_flags & CLASS_INTERFACE) == 0
+		&& !gen_load_outer)
+	    {
+		// Got an object that is not an interface.
+		int is_class;
+		char_u *name_end;
+		ocmember_T *m;
+		int idx01;
+		if (find_class_object_member(type->tt_class, end_arg,
+					    &name_end, &idx01, &is_class, &m)
+		    && is_class
+		    && m->ocm_access != VIM_ACCESS_PRIVATE)
+		{
+		    // Have index of a readable "static" of the class.
+		    if ((res = generate_CLASSMEMBER(cctx, TRUE, type->tt_class,
+							    idx01)) == FAIL)
+			goto theend;
+		    end = name_end;
+		    did_classmember = TRUE;
+		}
+	    }
+	    if (!did_classmember)
+		res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
+	}
 	if (gen_load_outer > 0)
 	{
 	    res = generate_LOADOUTER(cctx, idx, gen_load_outer,
@@ -3588,6 +3677,5 @@ compile_expr0(char_u **arg,  cctx_T *cctx)
 {
     return compile_expr0_ext(arg, cctx, NULL);
 }
-
 
 #endif // defined(FEAT_EVAL)

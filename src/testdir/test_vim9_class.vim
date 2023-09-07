@@ -4203,6 +4203,21 @@ def Test_static_member_access_outside_class()
     assert_equal(33, F3(c))
   END
   v9.CheckScriptSuccess(lines)
+  lines =<< trim END
+    vim9script
+
+    class C
+        public static sval1: number = 1
+    endclass
+
+    def RS(o: C): number
+        return o.
+        sval1
+    enddef
+
+    disa RS
+  END
+  v9.CheckScriptFailure(lines, 'E1028: Compiling :def function failed')
 enddef
 
 " Test for accessing a private member outside a class in a def function
