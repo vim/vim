@@ -5021,6 +5021,7 @@ define_function(
     // Do not define the function when getting the body fails and when
     // skipping.
     if (((class_flags & CF_INTERFACE) == 0
+		&& (class_flags & CF_ABSTRACT_METHOD) == 0
 		&& get_function_body(eap, &newlines, line_arg, lines_to_free)
 								       == FAIL)
 	    || eap->skip)

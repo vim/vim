@@ -294,21 +294,19 @@ validate_extends_class(char_u *extends_name, class_T **extends_clp)
 	semsg(_(e_class_name_not_found_str), extends_name);
 	return success;
     }
+
+    if (tv.v_type != VAR_CLASS
+	    || tv.vval.v_class == NULL
+	    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+	semsg(_(e_cannot_extend_str), extends_name);
     else
     {
-	if (tv.v_type != VAR_CLASS
-		|| tv.vval.v_class == NULL
-		|| (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
-	    semsg(_(e_cannot_extend_str), extends_name);
-	else
-	{
-	    class_T *extends_cl = tv.vval.v_class;
-	    ++extends_cl->class_refcount;
-	    *extends_clp = extends_cl;
-	    success = TRUE;
-	}
-	clear_tv(&tv);
+	class_T *extends_cl = tv.vval.v_class;
+	++extends_cl->class_refcount;
+	*extends_clp = extends_cl;
+	success = TRUE;
     }
+    clear_tv(&tv);
 
     return success;
 }
@@ -370,6 +368,65 @@ validate_extends_members(
 		}
 
 		p_cl = p_cl->class_extends;
+	    }
+	}
+    }
+
+    return TRUE;
+}
+
+/*
+ * When extending an abstract class, check whether all the abstract methods in
+ * the parent class are implemented.  Returns TRUE if all the methods are
+ * implemented.
+ */
+    static int
+validate_extends_methods(
+    garray_T	*classmethods_gap,
+    garray_T	*objmethods_gap,
+    class_T	*extends_cl)
+{
+    for (int loop = 1; loop <= 2; ++loop)
+    {
+	// loop == 1: check class methods
+	// loop == 2: check object methods
+	int extends_method_count = loop == 1
+				? extends_cl->class_class_function_count
+				: extends_cl->class_obj_method_count;
+	if (extends_method_count == 0)
+	    continue;
+
+	ufunc_T **extends_methods = loop == 1
+				? extends_cl->class_class_functions
+				: extends_cl->class_obj_methods;
+
+	int method_count = loop == 1 ? classmethods_gap->ga_len
+						: objmethods_gap->ga_len;
+	ufunc_T **cl_fp = (ufunc_T **)(loop == 1
+						? classmethods_gap->ga_data
+						: objmethods_gap->ga_data);
+
+	for (int i = 0; i < extends_method_count; i++)
+	{
+	    ufunc_T *uf = extends_methods[i];
+	    if ((uf->uf_flags & FC_ABSTRACT) == 0)
+		continue;
+
+	    int method_found = FALSE;
+
+	    for (int j = 0; j < method_count; j++)
+	    {
+		if (STRCMP(uf->uf_name, cl_fp[j]->uf_name) == 0)
+		{
+		    method_found = TRUE;
+		    break;
+		}
+	    }
+
+	    if (!method_found)
+	    {
+		semsg(_(e_abstract_method_str_not_found), uf->uf_name);
+		return FALSE;
 	    }
 	}
     }
@@ -1252,6 +1309,31 @@ early_ret:
 	    }
 	}
 
+	int abstract_method = FALSE;
+	char_u *pa = p;
+	if (checkforcmd(&p, "abstract", 3))
+	{
+	    if (STRNCMP(pa, "abstract", 8) != 0)
+	    {
+		semsg(_(e_command_cannot_be_shortened_str), pa);
+		break;
+	    }
+
+	    if (!is_abstract)
+	    {
+		semsg(_(e_abstract_method_in_concrete_class), pa);
+		break;
+	    }
+
+	    abstract_method = TRUE;
+	    p = skipwhite(pa + 8);
+	    if (STRNCMP(p, "def", 3) != 0 && STRNCMP(p, "static", 6) != 0)
+	    {
+		emsg(_(e_abstract_must_be_followed_by_def_or_static));
+		break;
+	    }
+	}
+
 	int has_static = FALSE;
 	char_u *ps = p;
 	if (checkforcmd(&p, "static", 4))
@@ -1330,8 +1412,13 @@ early_ret:
 	    ea.cookie = eap->cookie;
 
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
+	    int class_flags;
+	    if (is_class)
+		class_flags = abstract_method ? CF_ABSTRACT_METHOD : CF_CLASS;
+	    else
+		class_flags = CF_INTERFACE;
 	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free,
-					   is_class ? CF_CLASS : CF_INTERFACE);
+								class_flags);
 	    ga_clear_strings(&lines_to_free);
 
 	    if (uf != NULL)
@@ -1339,7 +1426,8 @@ early_ret:
 		char_u	*name = uf->uf_name;
 		int	is_new = STRNCMP(name, "new", 3) == 0;
 
-		if (is_new && !is_valid_constructor(uf, is_abstract, has_static))
+		if (is_new && !is_valid_constructor(uf, is_abstract,
+								has_static))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;
@@ -1359,6 +1447,9 @@ early_ret:
 		{
 		    if (is_new)
 			uf->uf_flags |= FC_NEW;
+
+		    if (abstract_method)
+			uf->uf_flags |= FC_ABSTRACT;
 
 		    ((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
 		    ++fgap->ga_len;
@@ -1416,10 +1507,18 @@ early_ret:
 	success = validate_extends_class(extends, &extends_cl);
     VIM_CLEAR(extends);
 
-    // Check the new class members and object members doesn't duplicate the
+    // Check the new class members and object members are not duplicates of the
     // members in the extended class lineage.
     if (success && extends_cl != NULL)
 	success = validate_extends_members(&classmembers, &objmembers,
+								extends_cl);
+
+    // When extending an abstract class, make sure all the abstract methods in
+    // the parent class are implemented.  If the current class is an abstract
+    // class, then there is no need for this check.
+    if (success && !is_abstract && extends_cl != NULL
+				&& (extends_cl->class_flags & CLASS_ABSTRACT))
+	success = validate_extends_methods(&classfunctions, &objmethods,
 								extends_cl);
 
     class_T **intf_classes = NULL;
@@ -1449,6 +1548,8 @@ early_ret:
 	    goto cleanup;
 	if (!is_class)
 	    cl->class_flags = CLASS_INTERFACE;
+	else if (is_abstract)
+	    cl->class_flags = CLASS_ABSTRACT;
 
 	cl->class_refcount = 1;
 	cl->class_name = vim_strnsave(name_start, name_end - name_start);

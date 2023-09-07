@@ -4396,4 +4396,140 @@ def Test_class_member_access_using_object()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for abstract methods
+def Test_abstract_method()
+  # Use two abstract methods
+  var lines =<< trim END
+    vim9script
+    abstract class A
+      def M1(): number
+        return 10
+      enddef
+      abstract def M2(): number
+      abstract def M3(): number
+    endclass
+    class B extends A
+      def M2(): number
+        return 20
+      enddef
+      def M3(): number
+        return 30
+      enddef
+    endclass
+    var b = B.new()
+    assert_equal([10, 20, 30], [b.M1(), b.M2(), b.M3()])
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Don't define an abstract method
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo()
+    endclass
+    class B extends A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1373: Abstract method "Foo" is not implemented')
+
+  # Use abstract method in a concrete class
+  lines =<< trim END
+    vim9script
+    class A
+      abstract def Foo()
+    endclass
+    class B extends A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1372: Abstract method "abstract def Foo()" cannot be defined in a concrete class')
+
+  # Use abstract method in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      abstract def Foo()
+    endinterface
+    class B implements A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1372: Abstract method "abstract def Foo()" cannot be defined in a concrete class')
+
+  # Abbreviate the "abstract" keyword
+  lines =<< trim END
+    vim9script
+    class A
+      abs def Foo()
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1065: Command cannot be shortened: abs def Foo()')
+
+  # Use "abstract" with a member variable
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract this.val = 10
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1371: Abstract must be followed by "def" or "static"')
+
+  # Use a static abstract method
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract static def Foo(): number
+    endclass
+    class B extends A
+      static def Foo(): number
+        return 4
+      enddef
+    endclass
+    assert_equal(4, B.Foo())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Type mismatch between abstract method and concrete method
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(a: string, b: number): list<number>
+    endclass
+    class B extends A
+      def Foo(a: number, b: string): list<string>
+        return []
+      enddef
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Member "Foo": type mismatch, expected func(string, number): list<number> but got func(number, string): list<string>')
+
+  # Use an abstract class to invoke an abstract method
+  # FIXME: This should fail
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract static def Foo()
+    endclass
+    A.Foo()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Invoke an abstract method from a def function
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): list<number>
+    endclass
+    class B extends A
+      def Foo(): list<number>
+        return [3, 5]
+      enddef
+    endclass
+    def Bar(c: B)
+      assert_equal([3, 5], c.Foo())
+    enddef
+    var b = B.new()
+    Bar(b)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -358,6 +358,16 @@ class, for which objects can be created.  Example: >
 An abstract class is defined the same way as a normal class, except that it
 does not have any new() method. *E1359*
 
+						*abstract-method*
+An abstract method can be defined in an abstract class by using the "abstract"
+prefix when defining the function: >
+
+	abstract class Shape
+	   abstract def Draw()
+	endclass
+
+A class extending the abstract class must implement all the abstract methods.
+Class methods in an abstract class can also be abstract methods.
 
 ==============================================================================
 
