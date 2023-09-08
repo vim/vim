@@ -1515,6 +1515,7 @@ struct itf2class_S {
 
 #define CLASS_INTERFACE	    1
 #define CLASS_EXTENDED	    2	    // another class extends this one
+#define CLASS_ABSTRACT	    4	    // abstract class
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -1875,6 +1876,7 @@ struct ufunc_S
 
 #define FC_OBJECT   0x4000	// object method
 #define FC_NEW	    0x8000	// constructor
+#define FC_ABSTRACT 0x10000	// abstract method
 
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length

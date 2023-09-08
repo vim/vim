@@ -2915,5 +2915,6 @@ long elapsed(DWORD start_tick);
 // Flags used by "class_flags" of define_function()
 #define CF_CLASS	1	// inside a class
 #define CF_INTERFACE	2	// inside an interface
+#define CF_ABSTRACT_METHOD	4	// inside an abstract class
 
 #endif // VIM__H

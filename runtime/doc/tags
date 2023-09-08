@@ -5850,6 +5850,7 @@ abandon	editing.txt	/*abandon*
 abbreviations	map.txt	/*abbreviations*
 abel.vim	syntax.txt	/*abel.vim*
 abs()	builtin.txt	/*abs()*
+abstract-method	vim9class.txt	/*abstract-method*
 acos()	builtin.txt	/*acos()*
 active-buffer	windows.txt	/*active-buffer*
 ada#Create_Tags()	ft_ada.txt	/*ada#Create_Tags()*
