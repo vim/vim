@@ -237,16 +237,28 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl,
     if (cl == itf)
 	return idx;
 
-    itf2class_T *i2c = NULL;
-    int searching = TRUE;
+    itf2class_T		*i2c = NULL;
+    int			searching = TRUE;
+    int			method_offset = 0;
+
     for (class_T *super = cl; super != NULL && searching;
 						super = super->class_extends)
+    {
 	for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
+	{
 	    if (i2c->i2c_class == super && i2c->i2c_is_method == is_method)
 	    {
 		searching = FALSE;
 		break;
 	    }
+	}
+	if (searching && is_method)
+	    // The parent class methods are stored after the current class
+	    // methods.
+	    method_offset += is_static
+				? super->class_class_function_count_child
+				: super->class_obj_method_count_child;
+    }
     if (i2c == NULL)
     {
 	siemsg("class %s not found on interface %s",
@@ -273,7 +285,9 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl,
     {
 	// A table follows the i2c for the class
 	int *table = (int *)(i2c + 1);
-	return table[idx];
+	// "method_offset" is 0, if method is in the current class.  If method
+	// is in a parent class, then it is non-zero.
+	return table[idx] + method_offset;
     }
 }
 

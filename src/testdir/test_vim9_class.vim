@@ -4396,4 +4396,81 @@ def Test_class_member_access_using_object()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for using a interface method using a child object
+def Test_interface_method_from_child()
+  var lines =<< trim END
+    vim9script
+
+    interface A
+      def Foo(): string
+    endinterface
+
+    class B implements A
+      def Foo(): string
+        return 'foo'
+      enddef
+    endclass
+
+    class C extends B
+      def Bar(): string
+        return 'bar'
+      enddef
+    endclass
+
+    def T1(a: A)
+      assert_equal('foo', a.Foo())
+    enddef
+
+    def T2(b: B)
+      assert_equal('foo', b.Foo())
+    enddef
+
+    var c = C.new()
+    T1(c)
+    T2(c)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using an interface method using a child object when it is overridden
+" by the child class.
+" FIXME: This test fails.
+" def Test_interface_overridden_method_from_child()
+"   var lines =<< trim END
+"     vim9script
+"
+"     interface A
+"       def Foo(): string
+"     endinterface
+"
+"     class B implements A
+"       def Foo(): string
+"         return 'b-foo'
+"       enddef
+"     endclass
+"
+"     class C extends B
+"       def Bar(): string
+"         return 'bar'
+"       enddef
+"       def Foo(): string
+"         return 'c-foo'
+"       enddef
+"     endclass
+"
+"     def T1(a: A)
+"       assert_equal('c-foo', a.Foo())
+"     enddef
+"
+"     def T2(b: B)
+"       assert_equal('c-foo', b.Foo())
+"     enddef
+"
+"     var c = C.new()
+"     T1(c)
+"     T2(c)
+"   END
+"   v9.CheckScriptSuccess(lines)
+" enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
