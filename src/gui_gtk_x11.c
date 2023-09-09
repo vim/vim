@@ -4002,8 +4002,8 @@ gui_mch_init(void)
     }
 
     // Real windows can get focus ... GtkPlug, being a mere container can't,
-    // only its widgets.  Arguably, this could be common code and we not use
-    // the window focus at all, but let's be safe.
+    // only its widgets.  Arguably, this could be common code and we do not
+    // use the window focus at all, but let's be safe.
     if (gtk_socket_id == 0)
     {
 	g_signal_connect(G_OBJECT(gui.mainwin), "focus-out-event",

@@ -722,7 +722,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 	{
 	    // If a type check is needed that means assigning "any" or
 	    // "unknown" to a more specific type, which fails here.
-	    // Execpt when it looks like a lambda, since they have an
+	    // Except when it looks like a lambda, since they have an
 	    // incomplete type.
 	    type_mismatch_where(expected, actual_type, where);
 	    res = FAIL;

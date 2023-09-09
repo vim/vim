@@ -48,8 +48,8 @@
  *
  * ATTENTION:
  * ==========
- *	Also we use an allocated search context here, this functions are NOT
- *	thread-safe!!!!!
+ *	Also we use an allocated search context here, these functions are NOT
+ *	thread-safe!
  *
  *	To minimize parameter passing (or because I'm to lazy), only the
  *	external visible functions get a search context as a parameter. This is

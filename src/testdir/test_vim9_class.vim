@@ -1884,7 +1884,7 @@ def Test_class_implements_interface()
         enddef
       endclass
   END
-  v9.CheckScriptFailure(lines, 'E1407: Member "IsEven": type mismatch, expected func(number): bool but got func(number): string')
+  v9.CheckScriptFailure(lines, 'E1407: Method "IsEven": type mismatch, expected func(number): bool but got func(number): string')
 
   lines =<< trim END
       vim9script
@@ -1897,7 +1897,7 @@ def Test_class_implements_interface()
         enddef
       endclass
   END
-  v9.CheckScriptFailure(lines, 'E1407: Member "IsEven": type mismatch, expected func(number): bool but got func(bool): bool')
+  v9.CheckScriptFailure(lines, 'E1407: Method "IsEven": type mismatch, expected func(number): bool but got func(bool): bool')
 
   lines =<< trim END
       vim9script
@@ -1910,7 +1910,7 @@ def Test_class_implements_interface()
         enddef
       endclass
   END
-  v9.CheckScriptFailure(lines, 'E1407: Member "IsEven": type mismatch, expected func(number): bool but got func(number, ...list<number>): bool')
+  v9.CheckScriptFailure(lines, 'E1407: Method "IsEven": type mismatch, expected func(number): bool but got func(number, ...list<number>): bool')
 
   # access superclass interface members from subclass, mix variable order
   lines =<< trim END
@@ -4576,7 +4576,7 @@ def Test_abstract_method()
       enddef
     endclass
   END
-  v9.CheckScriptFailure(lines, 'E1407: Member "Foo": type mismatch, expected func(string, number): list<number> but got func(number, string): list<string>')
+  v9.CheckScriptFailure(lines, 'E1407: Method "Foo": type mismatch, expected func(string, number): list<number> but got func(number, string): list<string>')
 
   # Use an abstract class to invoke an abstract method
   # FIXME: This should fail
