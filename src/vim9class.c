@@ -1785,6 +1785,81 @@ ex_type(exarg_T *eap UNUSED)
 }
 
 /*
+ * Returns TRUE if a member variable named "name" is present in the class "cl";
+ * otherwise returns FALSE.  If found, indirectly set the return values,
+ * including the class where it is defined.
+ *
+ * NOTE: set internal flag "check_super" to TRUE
+ *	 to return the class where name is defined.
+ * NOTE: this may need adjustment when class member inheritance is changed.
+ */
+// TODO: fold this into the one place it is used, unless there might
+//	 be another use for it.
+    static int
+find_class_member_definition(
+    class_T	*cl,
+    char_u	*name,
+    size_t	namelen,
+    ocmember_T	**ret_m,
+    class_T	**ret_cl)
+{
+    int		check_super = FALSE; // If statics are shared, not inherited,
+				    // then want check_super TRUE. But even
+				    // if inherited, their definition doesn't
+				    // show up in the subclass, so still might
+				    // want to check_super to find where the
+				    // static is defined.
+    class_T	*found_cl = NULL;   // also used as a "found" flag
+    ocmember_T *found_m = NULL;
+    for(class_T *super = cl; super != NULL; super = super->class_extends)
+    {
+	int tmp_idx;
+
+	found_m = class_member_lookup(cl, name, namelen, &tmp_idx);
+	if (found_m != NULL)
+	    found_cl = super;
+
+	// TODO:
+	// With the condition "!check_super" only look at one class.
+	// Use "!check_super && found_m != NULL" to look until found in class,
+	//	but currently, if it's going to be found, it's found
+	//	in the first class that's checked.
+	// Note that when check_super is TRUE, the class definition closest to
+	// the root is found; useful when shared to find the definition.
+	if (!check_super)
+	    break;
+    }
+    if (found_cl != NULL)
+    {
+	*ret_m = found_m;
+	*ret_cl = found_cl;
+	return TRUE;
+    }
+
+    return FALSE;
+}
+
+/*
+ * Returns OK if "name" is *not* a class member of "cl"; otherwise generate
+ * an error and return FAIL.
+ * TODO: specify any weird rules or search depending on final spec.
+ */
+    int
+check_object_static_member_access(class_T* cl, char_u* name, size_t len)
+{
+    ocmember_T  *m;
+    class_T	    *cl_dfn;
+
+    if (find_class_member_definition(cl, name, len, &m, &cl_dfn))
+    {
+	semsg(_(e_object_accessing_class_member_str),
+	      cl_dfn->class_name, m->ocm_name);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Returns OK if a member variable named "name" is present in the class "cl".
  * Otherwise returns FAIL.  If found, the member variable typval is set in
  * "rettv".  If "is_object" is TRUE, then the object member variable table is
@@ -1944,13 +2019,16 @@ class_object_index(
 
     else if (rettv->v_type == VAR_OBJECT)
     {
-	// Search in the object member variable table and the class member
-	// variable table.
+	// Search in the object member variable table
 	if (get_member_tv(cl, TRUE, name, len, rettv) == OK)
 	{
 	    *arg = name_end;
 	    return OK;
 	}
+
+	// An error if it's a class member.
+	if (check_object_static_member_access(cl, name, len) == FAIL)
+	    return FAIL;
 
 	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
     }

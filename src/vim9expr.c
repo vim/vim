@@ -411,6 +411,10 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    return generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type, FALSE);
 	}
 
+	// An error if it's a class member
+	if (check_object_static_member_access(cl, name, len) == FAIL)
+	    return FAIL;
+
 	// Could be a function reference: "obj.Func".
 	m_idx = object_method_idx(cl, name, len);
 	if (m_idx >= 0)

@@ -3521,4 +3521,6 @@ EXTERN char e_aptypes_is_null_nr_str[]
 	INIT(= "E1408: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
 EXTERN char e_interface_static_direct_access_str[]
 	INIT(= N_("E1409: Cannot directly access interface \"%s\" static member \"%s\""));
+EXTERN char e_object_accessing_class_member_str[]
+	INIT(= N_("E1410: Cannot access static \"%s.%s\" with an object"));
 // E1371 - E1399 unused
