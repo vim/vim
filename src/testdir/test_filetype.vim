@@ -456,6 +456,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     mrxvtrc: ['mrxvtrc', '.mrxvtrc'],
     msidl: ['file.odl', 'file.mof'],
     msql: ['file.msql'],
+    mojo: ['file.mojo', 'file.🔥'],
     mupad: ['file.mu'],
     mush: ['file.mush'],
     muttrc: ['Muttngrc', 'Muttrc', '.muttngrc', '.muttngrc-file', '.muttrc',
