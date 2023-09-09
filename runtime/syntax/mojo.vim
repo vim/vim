@@ -86,7 +86,7 @@ syn keyword mojoStatement	as assert break continue del global
 syn keyword mojoStatement	lambda nonlocal pass return with yield
 syn keyword mojoStatement	class def nextgroup=mojoFunction skipwhite
 syn keyword mojoStatement	struct fn nextgroup=mojoFunction skipwhite
-syn keyword mojoIdentifier	alias var let
+syn keyword mojoStatement	alias var let
 syn keyword mojoConditional	elif else if
 syn keyword mojoRepeat		for while
 syn keyword mojoOperator	and in is not or
@@ -271,7 +271,6 @@ syn sync match mojoSync grouphere NONE "^\%(def\|class\)\s\+\h\w*\s*[(:]"
 
 " The default highlight links.  Can be overridden later.
 hi def link mojoStatement		Statement
-hi def link mojoIdentifier		Identifier
 hi def link mojoConditional		Conditional
 hi def link mojoRepeat			Repeat
 hi def link mojoOperator		Operator
