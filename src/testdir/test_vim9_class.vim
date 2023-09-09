@@ -1955,10 +1955,6 @@ def Test_class_implements_interface()
         enddef
     endclass
 
-    def F1(i: I1): list<number>
-        return [ i.svar1, i.svar2 ]
-    enddef
-
     def F2(i: I1): list<number>
         return [ i.mvar1, i.mvar2 ]
     enddef
@@ -1966,10 +1962,6 @@ def Test_class_implements_interface()
     var oa = A.new()
     var ob = B.new()
     var oc = C.new()
-
-    assert_equal([11, 12],   F1(oa))
-    assert_equal([21, 22],   F1(ob))
-    assert_equal([31, 32],   F1(oc))
 
     assert_equal([111, 112], F2(oa))
     assert_equal([121, 122], F2(ob))
@@ -2041,39 +2033,21 @@ def Test_class_implements_interface()
         enddef
     endclass
 
-    def F1(i: I1): list<number>
-        return [ i.svar1, i.svar2 ]
-    enddef
-
     def F2(i: I1): list<number>
         return [ i.mvar1, i.mvar2 ]
-    enddef
-
-    def F3(i: I2): list<number>
-        return [ i.svar3, i.svar4 ]
     enddef
 
     def F4(i: I2): list<number>
         return [ i.mvar3, i.mvar4 ]
     enddef
 
-    def F5(o: C): number
-        return o.svar5
-    enddef
-
     var oa = A.new()
     var ob = B.new()
     var oc = C.new()
 
-    assert_equal([[11, 12]],   [F1(oa)])
-    assert_equal([[21, 22], [23, 24]], [F1(ob), F3(ob)])
-    assert_equal([[31, 32], [33, 34]], [F1(oc), F3(oc)])
-
     assert_equal([[111, 112]], [F2(oa)])
     assert_equal([[121, 122], [123, 124]], [F2(ob), F4(ob)])
     assert_equal([[131, 132], [133, 134]], [F2(oc), F4(oc)])
-
-    assert_equal(1001, F5(oc))
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -4182,25 +4156,7 @@ def Test_static_member_access_outside_class()
         return 11
     enddef
 
-    # access the class static through an interface argument
-    def F2(i: I): number
-        assert_equal(1, i.s_var1)
-        assert_equal(2, i.s_var2)
-        return 22
-    enddef
-
-    # access the class static through an object interface
-    def F3(o: C): number
-        assert_equal(1, o.s_var1)
-        assert_equal(2, o.s_var2)
-        assert_equal(7, o.x_static)
-        return 33
-    enddef
-
     assert_equal(11, F1())
-    var c = C.new()
-    assert_equal(22, F2(c))
-    assert_equal(33, F3(c))
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -4250,7 +4206,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
+  v9.CheckScriptFailure(lines, 'E1326: Member not found on object "A": _val')
 
   # private static member variable
   lines =<< trim END
@@ -4362,7 +4318,7 @@ def Test_modify_class_member_from_def_function()
 enddef
 
 " Test for accessing a class member variable using an object
-def Test_class_member_access_using_object()
+def Test_class_variable_access_using_object()
   var lines =<< trim END
     vim9script
     class A
@@ -4374,26 +4330,74 @@ def Test_class_member_access_using_object()
     A.svar2->add(4)
     assert_equal([1, 3], A.svar1)
     assert_equal([2, 4], A.svar2)
-    var a1 = A.new()
-    a1.svar1->add(5)
-    a1.svar2->add(6)
-    assert_equal([1, 3, 5], a1.svar1)
-    assert_equal([2, 4, 6], a1.svar2)
 
     def Foo()
       A.svar1->add(7)
       A.svar2->add(8)
-      assert_equal([1, 3, 5, 7], A.svar1)
-      assert_equal([2, 4, 6, 8], A.svar2)
-      var a2 = A.new()
-      a2.svar1->add(9)
-      a2.svar2->add(10)
-      assert_equal([1, 3, 5, 7, 9], a2.svar1)
-      assert_equal([2, 4, 6, 8, 10], a2.svar2)
+      assert_equal([1, 3, 7], A.svar1)
+      assert_equal([2, 4, 8], A.svar2)
     enddef
     Foo()
   END
   v9.CheckScriptSuccess(lines)
+
+  # Cannot read from a class variable using an object in script context
+  lines =<< trim END
+    vim9script
+    class A
+      public this.var1: number
+      public static svar2: list<number> = [1]
+    endclass
+
+    var a = A.new()
+    echo a.svar2
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Member not found on object "A": svar2')
+
+  # Cannot write to a class variable using an object in script context
+  lines =<< trim END
+    vim9script
+    class A
+      public this.var1: number
+      public static svar2: list<number> = [1]
+    endclass
+
+    var a = A.new()
+    a.svar2 = [2]
+  END
+  v9.CheckScriptFailure(lines, 'E1334: Object member not found: svar2 = [2]')
+
+  # Cannot read from a class variable using an object in def method context
+  lines =<< trim END
+    vim9script
+    class A
+      public this.var1: number
+      public static svar2: list<number> = [1]
+    endclass
+
+    def T()
+      var a = A.new()
+      echo a.svar2
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1326: Member not found on object "A": svar2')
+
+  # Cannot write to a class variable using an object in def method context
+  lines =<< trim END
+    vim9script
+    class A
+      public this.var1: number
+      public static svar2: list<number> = [1]
+    endclass
+
+    def T()
+      var a = A.new()
+      a.svar2 = [2]
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1089: Unknown variable: svar2 = [2]')
 enddef
 
 " Test for using a interface method using a child object
