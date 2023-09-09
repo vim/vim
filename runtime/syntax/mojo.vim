@@ -185,17 +185,20 @@ endif
 " https://docs.modular.com/mojo/lib.html
 "
 if !exists("mojo_no_builtin_highlight")
-  syn keyword mojoBuiltin	Byte ListLiteral slice constrained CoroutineContext
-  syn keyword mojoBuiltin	Coroutine debug_assert DType dtype type invalid bool
-  syn keyword mojoBuiltin	int8 si8 unit8 ui8 int16 si16 unit16 ui16 int32 si32
-  syn keyword mojoBuiltin	uint32 ui32 int64 si64 uint64 ui64 bfloat16 bf16
-  syn keyword mojoBuiltin	float16 f16 float32 f32 float64 f64 index address
-  syn keyword mojoBuiltin	Error FloatLiteral Int put_new_line print 
-  syn keyword mojoBuiltin	print_no_newline len Attr range rebind SIMD Int8 UInt8
-  syn keyword mojoBuiltin	Int16 UInt16 Int32 UInt32 Int64 UInt64 Float16 Float32
-  syn keyword mojoBuiltin	Float64 element_type _65x13_type String ord chr atol
-  syn keyword mojoBuiltin	isdigit StringLiteral string StringRef Tuple AnyType
-  syn keyword mojoBuiltin	NoneType None Lifetime
+  " Built-in functions
+  syn keyword mojoBuiltin	slice constrained debug_assert put_new_line print
+  syn keyword mojoBuiltin	print_no_newline len range rebind element_type 
+  syn keyword mojoBuiltin	ord chr atol isdigit index address string
+  " Built-in types
+  syn keyword mojoType		Byte ListLiteral CoroutineContext Coroutine DType
+  syn keyword mojoType		dtype type invalid bool int8 si8 unit8 ui8 int16 
+  syn keyword mojoType		si16 unit16 ui16 int32 si32 uint32 ui32 int64 
+  syn keyword mojoType		si64 uint64 ui64 bfloat16 bf16 float16 f16 float32
+  syn keyword mojoType		f32 float64 f64 Error FloatLiteral Int Attr SIMD 
+  syn keyword mojoType		Int8 UInt8 Int16 UInt16 Int32 UInt32 Int64 UInt64
+  syn keyword mojoType		Float16 Float32 Float64 element_type _65x13_type
+  syn keyword mojoType		String StringLiteral StringRef Tuple AnyType
+  syn keyword mojoType		NoneType None Lifetime
   " avoid highlighting attributes as builtins
   syn match   mojoAttribute	/\.\h\w*/hs=s+1
 	\ contains=ALLBUT,mojoBuiltin,mojoFunction,mojoAsync
@@ -292,6 +295,7 @@ if !exists("mojo_no_number_highlight")
 endif
 if !exists("mojo_no_builtin_highlight")
   hi def link mojoBuiltin		Function
+  hi def link mojoType			Type
 endif
 if !exists("mojo_no_exception_highlight")
   hi def link mojoExceptions		Structure
