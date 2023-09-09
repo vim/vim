@@ -1669,7 +1669,14 @@ compile_lhs(
 	    {
 		if (is_decl)
 		{
-		    semsg(_(e_variable_already_declared_str), lhs->lhs_name);
+		    // if we come here with what looks like an assignment like .=
+		    // but which has been reject by assignment_len() from may_compile_assignment
+		    // give a better error message
+		    char_u *p = skipwhite(lhs->lhs_end);
+		    if (p[0] == '.' && p[1] == '=')
+			emsg(_(e_dot_equal_not_supported_with_script_version_two));
+		    else
+			semsg(_(e_variable_already_declared_str), lhs->lhs_name);
 		    return FAIL;
 		}
 	    }
