@@ -1966,8 +1966,7 @@ class_object_index(
     {
 	// Search in the object member variable table and the class member
 	// variable table.
-	if (get_member_tv(cl, TRUE, name, len, rettv) == OK
-		|| get_member_tv(cl, FALSE, name, len, rettv) == OK)
+	if (get_member_tv(cl, TRUE, name, len, rettv) == OK)
 	{
 	    *arg = name_end;
 	    return OK;
