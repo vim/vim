@@ -4248,8 +4248,6 @@ def Test_private_member_access_outside_class()
     T()
   END
   v9.CheckScriptFailure(lines, 'E1333: Cannot access private member: _val')
-
-
 enddef
 
 " Test for changing the member access of an interface in a implementation class
@@ -4611,6 +4609,67 @@ def Test_abstract_method()
     Bar(b)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for calling a class method using an object in a def function context and
+" script context.
+def Test_class_method_call_using_object()
+  # script context
+  var lines =<< trim END
+    vim9script
+    class A
+      static def Foo(): list<string>
+        return ['a', 'b']
+      enddef
+      def Bar()
+        assert_equal(['a', 'b'], A.Foo())
+        assert_equal(['a', 'b'], Foo())
+      enddef
+    endclass
+
+    def T()
+      assert_equal(['a', 'b'], A.Foo())
+      var t_a = A.new()
+      t_a.Bar()
+    enddef
+
+    assert_equal(['a', 'b'], A.Foo())
+    var a = A.new()
+    a.Bar()
+    T()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # script context
+  lines =<< trim END
+    vim9script
+    class A
+      static def Foo(): string
+        return 'foo'
+      enddef
+    endclass
+
+    var a = A.new()
+    assert_equal('foo', a.Foo())
+  END
+  v9.CheckScriptFailure(lines, 'E1325: Method not found on class "A": Foo()')
+
+  # def function context
+  lines =<< trim END
+    vim9script
+    class A
+      static def Foo(): string
+        return 'foo'
+      enddef
+    endclass
+
+    def T()
+      var a = A.new()
+      assert_equal('foo', a.Foo())
+    enddef
+    T()
+  END
+  v9.CheckScriptFailure(lines, 'E1325: Method not found on class "A": Foo()')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
