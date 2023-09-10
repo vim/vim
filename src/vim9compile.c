@@ -332,6 +332,62 @@ script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 }
 
 /*
+ * If "name[len]" is a class method in cctx->ctx_ufunc->uf_class return the
+ * class method index.
+ * If "cl_ret" is not NULL set it to the class.
+ * Otherwise return -1.
+ */
+    int
+cctx_class_method_idx(
+    cctx_T  *cctx,
+    char_u  *name,
+    size_t  len,
+    class_T **cl_ret)
+{
+    if (cctx == NULL || cctx->ctx_ufunc == NULL
+	    || cctx->ctx_ufunc->uf_class == NULL)
+	return -1;
+
+    class_T *cl = cctx->ctx_ufunc->uf_class;
+    int m_idx = class_method_idx(cl, name, len);
+    if (m_idx >= 0)
+    {
+	if (cl_ret != NULL)
+	    *cl_ret = cl;
+    }
+
+    return m_idx;
+}
+
+/*
+ * If "name[len]" is a class member in cctx->ctx_ufunc->uf_class return the
+ * class member variable index.
+ * If "cl_ret" is not NULL set it to the class.
+ * Otherwise return -1;
+ */
+    int
+cctx_class_member_idx(
+    cctx_T  *cctx,
+    char_u  *name,
+    size_t  len,
+    class_T **cl_ret)
+{
+    if (cctx == NULL || cctx->ctx_ufunc == NULL
+	    || cctx->ctx_ufunc->uf_class == NULL)
+	return -1;
+
+    class_T *cl = cctx->ctx_ufunc->uf_class;
+    int m_idx = class_member_idx(cl, name, len);
+    if (m_idx >= 0)
+    {
+	if (cl_ret != NULL)
+	    *cl_ret = cl;
+    }
+
+    return m_idx;
+}
+
+/*
  * Return TRUE if "name" is a local variable, argument, script variable or
  * imported.  Also if "name" is "this" and in a class method.
  */
@@ -346,7 +402,7 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 			&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW))
 			&& STRNCMP(name, "this", 4) == 0)))
 	    || script_var_exists(name, len, cctx, NULL) == OK
-	    || class_member_index(name, len, NULL, cctx) >= 0
+	    || cctx_class_member_idx(cctx, name, len, NULL) >= 0
 	    || find_imported(name, len, FALSE) != NULL;
 }
 
@@ -393,7 +449,7 @@ check_defined(
 	return FAIL;
     }
 
-    if (class_member_index(p, len, NULL, cctx) >= 0)
+    if (cctx_class_member_idx(cctx, p, len, NULL) >= 0)
     {
 	if (is_arg)
 	    semsg(_(e_argument_already_declared_in_class_str), p);
@@ -1617,8 +1673,8 @@ compile_lhs(
 		    return FAIL;
 		}
 	    }
-	    else if ((lhs->lhs_classmember_idx = class_member_index(
-				 var_start, lhs->lhs_varlen, NULL, cctx)) >= 0)
+	    else if ((lhs->lhs_classmember_idx = cctx_class_member_idx(
+			    cctx, var_start, lhs->lhs_varlen, NULL)) >= 0)
 	    {
 		if (is_decl)
 		{

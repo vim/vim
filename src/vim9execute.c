@@ -2166,26 +2166,20 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    class_T *cl = obj->obj_class;
 	    char_u  *member = tv_idx->vval.v_string;
 
-	    ocmember_T *m = NULL;
-	    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	    int		m_idx;
+	    ocmember_T *m = object_member_lookup(cl, member, 0, &m_idx);
+	    if (m != NULL)
 	    {
-		m = &cl->class_obj_members[i];
-		if (STRCMP(member, m->ocm_name) == 0)
+		if (*member == '_')
 		{
-		    if (*member == '_')
-		    {
-			semsg(_(e_cannot_access_private_member_str),
-								  m->ocm_name);
-			status = FAIL;
-		    }
-
-		    lidx = i;
-		    break;
+		    semsg(_(e_cannot_access_private_member_str),
+			    m->ocm_name);
+		    status = FAIL;
 		}
-		m = NULL;
-	    }
 
-	    if (m == NULL)
+		lidx = m_idx;
+	    }
+	    else
 	    {
 		semsg(_(e_member_not_found_on_object_str_str),
 						       cl->class_name, member);
