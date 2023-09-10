@@ -394,10 +394,10 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
     if (type->tt_type == VAR_OBJECT)
     {
-	int m_idx = object_member_idx(cl, name, len);
+        int m_idx;
+        ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
 	if (m_idx >= 0)
 	{
-	    ocmember_T *m = &cl->class_obj_members[m_idx];
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
