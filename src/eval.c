@@ -1545,12 +1545,9 @@ get_lval(
 			int	m_idx;
 			ufunc_T	*fp;
 
-			if (round == 1)
-			    fp = class_method_lookup(cl, key, p - key, &m_idx);
-			else
-			    fp = class_obj_method_lookup(cl, key, p - key,
-								&m_idx);
-
+			fp = method_lookup(cl,
+				round == 1 ? VAR_CLASS : VAR_OBJECT,
+				key, p - key, &m_idx);
 			if (fp != NULL)
 			{
 			    lp->ll_ufunc = fp;
@@ -1565,11 +1562,7 @@ get_lval(
 		    int		m_idx;
 		    ocmember_T	*om;
 
-		    if (v_type == VAR_OBJECT)
-			om = class_obj_member_lookup(cl, key, p - key, &m_idx);
-		    else
-			om = class_member_lookup(cl, key, p - key, &m_idx);
-
+		    om = member_lookup(cl, v_type, key, p - key, &m_idx);
 		    if (om != NULL)
 		    {
 			switch (om->ocm_access)

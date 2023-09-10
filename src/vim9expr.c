@@ -394,7 +394,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
     if (type->tt_type == VAR_OBJECT)
     {
-	int m_idx = class_obj_member_idx(cl, name, len);
+	int m_idx = object_member_idx(cl, name, len);
 	if (m_idx >= 0)
 	{
 	    ocmember_T *m = &cl->class_obj_members[m_idx];
@@ -412,7 +412,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	}
 
 	// Could be a function reference: "obj.Func".
-	m_idx = class_obj_method_idx(cl, name, len);
+	m_idx = object_method_idx(cl, name, len);
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_obj_methods[m_idx];

@@ -2167,7 +2167,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    char_u  *member = tv_idx->vval.v_string;
 
 	    int		m_idx;
-	    ocmember_T *m = class_obj_member_lookup(cl, member, 0, &m_idx);
+	    ocmember_T *m = object_member_lookup(cl, member, 0, &m_idx);
 	    if (m != NULL)
 	    {
 		if (*member == '_')

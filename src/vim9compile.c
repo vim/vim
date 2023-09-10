@@ -347,17 +347,16 @@ cctx_class_method_idx(
     if (cctx == NULL || cctx->ctx_ufunc == NULL
 	    || cctx->ctx_ufunc->uf_class == NULL)
 	return -1;
-    class_T *cl = cctx->ctx_ufunc->uf_class;
 
+    class_T *cl = cctx->ctx_ufunc->uf_class;
     int m_idx = class_method_idx(cl, name, len);
     if (m_idx >= 0)
     {
 	if (cl_ret != NULL)
 	    *cl_ret = cl;
-	return m_idx;
     }
 
-    return -1;
+    return m_idx;
 }
 
 /*
@@ -374,19 +373,18 @@ cctx_class_member_idx(
     class_T **cl_ret)
 {
     if (cctx == NULL || cctx->ctx_ufunc == NULL
-					  || cctx->ctx_ufunc->uf_class == NULL)
+	    || cctx->ctx_ufunc->uf_class == NULL)
 	return -1;
-    class_T *cl = cctx->ctx_ufunc->uf_class;
 
+    class_T *cl = cctx->ctx_ufunc->uf_class;
     int m_idx = class_member_idx(cl, name, len);
     if (m_idx >= 0)
     {
 	if (cl_ret != NULL)
 	    *cl_ret = cl;
-	return m_idx;
     }
 
-    return -1;
+    return m_idx;
 }
 
 /*

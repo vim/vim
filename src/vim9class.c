@@ -1752,10 +1752,8 @@ class_member_type(
 
     *member_idx = -1;  // not found (yet)
 
-    if (is_object)
-	m = class_obj_member_lookup(cl, name, len, member_idx);
-    else
-	m = class_member_lookup(cl, name, len, member_idx);
+    m = member_lookup(cl, is_object ? VAR_OBJECT : VAR_CLASS, name, len,
+								member_idx);
     if (m == NULL)
     {
 	semsg(_(e_unknown_variable_str), name);
@@ -1803,11 +1801,8 @@ get_member_tv(
     ocmember_T *m;
     int		m_idx;
 
-    if (is_object)
-	m = class_obj_member_lookup(cl, name, namelen, &m_idx);
-    else
-	m = class_member_lookup(cl, name, namelen, &m_idx);
-
+    m = member_lookup(cl, is_object ? VAR_OBJECT : VAR_CLASS, name, namelen,
+								&m_idx);
     if (m == NULL)
 	return FAIL;
 
@@ -1890,10 +1885,7 @@ class_object_index(
 	ufunc_T *fp;
 	int	m_idx;
 
-	if (rettv->v_type == VAR_CLASS)
-	    fp = class_method_lookup(cl, name, len, &m_idx);
-	else
-	    fp = class_obj_method_lookup(cl, name, len, &m_idx);
+	fp = method_lookup(cl, rettv->v_type, name, len, &m_idx);
 	if (fp == NULL)
 	{
 	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name,
@@ -2031,10 +2023,7 @@ find_class_func(char_u **arg)
     len = fname_end - fname;
 
     int m_idx;
-    if (tv.v_type == VAR_CLASS)
-	fp = class_method_lookup(cl, fname, len, &m_idx);
-    else
-	fp = class_obj_method_lookup(cl, fname, len, &m_idx);
+    fp = method_lookup(cl, tv.v_type, fname, len, &m_idx);
 
 fail_after_eval:
     clear_tv(&tv);
@@ -2113,7 +2102,7 @@ class_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
  * If "namelen" is zero, then it is assumed that "name" is NUL terminated.
  */
     int
-class_obj_member_idx(class_T *cl, char_u *name, size_t namelen)
+object_member_idx(class_T *cl, char_u *name, size_t namelen)
 {
     for (int i = 0; i < cl->class_obj_member_count; ++i)
     {
@@ -2137,9 +2126,9 @@ class_obj_member_idx(class_T *cl, char_u *name, size_t namelen)
  * The object member variable index is set in "idx".
  */
     ocmember_T *
-class_obj_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
+object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 {
-    *idx = class_obj_member_idx(cl, name, namelen);
+    *idx = object_member_idx(cl, name, namelen);
     return *idx >= 0 ? &cl->class_obj_members[*idx] : NULL;
 }
 
@@ -2148,7 +2137,7 @@ class_obj_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
  * Returns -1, if the method is not found.
  */
     int
-class_obj_method_idx(class_T *cl, char_u *name, size_t namelen)
+object_method_idx(class_T *cl, char_u *name, size_t namelen)
 {
     for (int i = 0; i < cl->class_obj_method_count; ++i)
     {
@@ -2169,10 +2158,53 @@ class_obj_method_idx(class_T *cl, char_u *name, size_t namelen)
  * The object method index is set in "idx".
  */
     ufunc_T *
-class_obj_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
+object_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 {
-    *idx = class_obj_method_idx(cl, name, namelen);
+    *idx = object_method_idx(cl, name, namelen);
     return *idx >= 0 ? cl->class_obj_methods[*idx] : NULL;
+}
+
+/*
+ * Lookup a class or object member variable by name.  If v_type is VAR_CLASS,
+ * then lookup a class member variable and if it is VAR_OBJECT, then lookup a
+ * object member variable.
+ *
+ * Returns a pointer to the member variable structure if variable is found.
+ * Otherwise returns NULL.  The member variable index is set in "*idx".
+ */
+    ocmember_T *
+member_lookup(
+    class_T	*cl,
+    vartype_T	v_type,
+    char_u	*name,
+    size_t	namelen,
+    int		*idx)
+{
+    if (v_type == VAR_CLASS)
+	return class_member_lookup(cl, name, namelen, idx);
+    else
+	return object_member_lookup(cl, name, namelen, idx);
+}
+
+/*
+ * Lookup a class or object method by name.  If v_type is VAR_CLASS, then
+ * lookup a class method and if it is VAR_OBJECT, then lookup a object method.
+ *
+ * Returns a pointer to the method structure if variable is found.
+ * Otherwise returns NULL.  The method variable index is set in "*idx".
+ */
+    ufunc_T *
+method_lookup(
+    class_T	*cl,
+    vartype_T	v_type,
+    char_u	*name,
+    size_t	namelen,
+    int		*idx)
+{
+    if (v_type == VAR_CLASS)
+	return class_method_lookup(cl, name, namelen, idx);
+    else
+	return object_method_lookup(cl, name, namelen, idx);
 }
 
 /*
