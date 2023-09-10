@@ -4348,7 +4348,7 @@ def Test_strptime()
     v9.CheckDefAndScriptFailure(['strptime(10, "2021")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
     v9.CheckDefAndScriptFailure(['strptime("%Y", 2021)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
     assert_notequal(0, strptime('%Y', '2021'))
-    # This fails on BSD 14 and returns 
+    # This fails on BSD 14 and returns
     # -2209078800 instead of 0
     assert_equal(0, strptime('%Y', ''))
   endif
