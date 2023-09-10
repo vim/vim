@@ -1,19 +1,21 @@
-" Vim support file to switch on loading indent files for file types
-"
-" Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 10
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+vim9script noclear
 
-if exists("did_indent_on")
+# Vim support file to switch on loading indent files for file types
+#
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
+# Last Change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+
+if exists("g:did_indent_on")
   finish
 endif
-let did_indent_on = 1
+g:did_indent_on = 1
 
 augroup filetypeindent
-  au FileType * call s:LoadIndent()
+  au FileType * LoadIndent()
 augroup END
 
-def s:LoadIndent()
+def LoadIndent()
   if exists("b:undo_indent")
     legacy exe b:undo_indent
     unlet! b:undo_indent b:did_indent
