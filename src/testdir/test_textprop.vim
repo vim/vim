@@ -3087,6 +3087,23 @@ func Test_prop_with_multibyte_below()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_below_rightleft()
+  CheckRunVimInTerminal
+  CheckFeature rightleft
+
+  let lines =<< trim END
+    setlocal number rightleft
+    call setline(1, 'abcde')
+    call prop_type_add('theprop', #{highlight: 'Special'})
+    call prop_add(1, 0, #{type: 'theprop', text: '12345', text_align: 'below'})
+  END
+  call writefile(lines, 'XscriptPropBelowRightleft', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropBelowRightleft', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_below_rightleft_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_above_empty()
   CheckRunVimInTerminal
 
