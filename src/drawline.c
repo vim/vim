@@ -2011,10 +2011,8 @@ win_line(
 
 		if (wlv.n_extra == 0 ||
 			(!wlv.extra_for_textprop
-#ifdef FEAT_PROP_POPUP
 			 && !(text_prop_type != NULL &&
 			     text_prop_flags & PT_FLAG_OVERRIDE)
-#endif
 		    ))
 		{
 		    text_prop_attr = 0;
@@ -2134,7 +2132,7 @@ win_line(
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
-#ifdef FEAT_LINEBREAK
+# ifdef FEAT_LINEBREAK
 			    if (above || below || right || !wrap)
 			    {
 				// no 'showbreak' before "below" text property
@@ -2142,7 +2140,7 @@ win_line(
 				wlv.need_showbreak = FALSE;
 				wlv.dont_use_showbreak = TRUE;
 			    }
-#endif
+# endif
 			    if ((right || above || below || !wrap
 					    || padding > 0) && wp->w_width > 2)
 			    {
@@ -2155,6 +2153,11 @@ win_line(
 				// exactly the same.
 				start_line = text_prop_position(wp, tp,
 						    wlv.vcol,
+# ifdef FEAT_RIGHTLEFT
+						    wp->w_p_rl
+						    ? wp->w_width - wlv.col - 1
+						    :
+# endif
 						    wlv.col,
 						    &wlv.n_extra, &wlv.p_extra,
 						    &n_attr, &wlv.n_attr_skip,
