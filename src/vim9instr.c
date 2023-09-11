@@ -1838,9 +1838,7 @@ generate_CALL(
 		{
 		    class_T *clp = mtype->tt_class;
 		    char_u  *aname = ((char_u **)ufunc->uf_args.ga_data)[i];
-		    int	    m_idx;
-		    ocmember_T *m = object_member_lookup(clp, aname, 0,
-									&m_idx);
+		    ocmember_T *m = object_member_lookup(clp, aname, 0, NULL);
 		    if (m != NULL)
 			expected = m->ocm_type;
 		}

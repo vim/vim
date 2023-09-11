@@ -1883,9 +1883,8 @@ class_object_index(
     if (*name_end == '(')
     {
 	ufunc_T *fp;
-	int	m_idx;
 
-	fp = method_lookup(cl, rettv->v_type, name, len, &m_idx);
+	fp = method_lookup(cl, rettv->v_type, name, len, NULL);
 	if (fp == NULL)
 	{
 	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name,
@@ -2022,8 +2021,7 @@ find_class_func(char_u **arg)
 	goto fail_after_eval;
     len = fname_end - fname;
 
-    int m_idx;
-    fp = method_lookup(cl, tv.v_type, fname, len, &m_idx);
+    fp = method_lookup(cl, tv.v_type, fname, len, NULL);
 
 fail_after_eval:
     clear_tv(&tv);
@@ -2038,20 +2036,9 @@ fail_after_eval:
     int
 class_member_idx(class_T *cl, char_u *name, size_t namelen)
 {
-    for (int i = 0; i < cl->class_class_member_count; ++i)
-    {
-	ocmember_T *m = &cl->class_class_members[i];
-	if (namelen)
-	{
-	    if (STRNCMP(name, m->ocm_name, namelen) == 0
-		    && m->ocm_name[namelen] == NUL)
-		return i;
-	}
-	else if (STRCMP(name, m->ocm_name) == 0)
-	    return i;
-    }
-
-    return -1;
+    int idx;
+    class_member_lookup(cl, name, namelen, &idx);
+    return idx;
 }
 
 /*
@@ -2062,8 +2049,31 @@ class_member_idx(class_T *cl, char_u *name, size_t namelen)
     ocmember_T *
 class_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 {
-    *idx = class_member_idx(cl, name, namelen);
-    return *idx >= 0 ? &cl->class_class_members[*idx] : NULL;
+    ocmember_T	*ret_m = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	ocmember_T *m = &cl->class_class_members[i];
+	if (namelen)
+	{
+	    if (STRNCMP(name, m->ocm_name, namelen) == 0
+		    && m->ocm_name[namelen] == NUL)
+	    {
+		ret_m = m;
+		ret_idx = i;
+		break;
+	    }
+	}
+	else if (STRCMP(name, m->ocm_name) == 0)
+	{
+	    ret_m = m;
+	    ret_idx = i;
+            break;
+	}
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_m;
 }
 
 /*
@@ -2073,15 +2083,9 @@ class_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
     int
 class_method_idx(class_T *cl, char_u *name, size_t namelen)
 {
-    for (int i = 0; i < cl->class_class_function_count; ++i)
-    {
-	ufunc_T *fp = cl->class_class_functions[i];
-	char_u *ufname = (char_u *)fp->uf_name;
-	if (STRNCMP(name, ufname, namelen) == 0 && ufname[namelen] == NUL)
-	    return i;
-    }
-
-    return -1;
+    int idx;
+    class_method_lookup(cl, name, namelen, &idx);
+    return idx;
 }
 
 /*
@@ -2092,8 +2096,22 @@ class_method_idx(class_T *cl, char_u *name, size_t namelen)
     ufunc_T *
 class_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 {
-    *idx = class_method_idx(cl, name, namelen);
-    return *idx >= 0 ? cl->class_class_functions[*idx] : NULL;
+    ufunc_T	*ret_fp = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_class_function_count; ++i)
+    {
+	ufunc_T *fp = cl->class_class_functions[i];
+	char_u *ufname = (char_u *)fp->uf_name;
+	if (STRNCMP(name, ufname, namelen) == 0 && ufname[namelen] == NUL)
+	{
+	    ret_fp = fp;
+	    ret_idx = i;
+	    break;
+	}
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_fp;
 }
 
 /*
@@ -2104,20 +2122,9 @@ class_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
     int
 object_member_idx(class_T *cl, char_u *name, size_t namelen)
 {
-    for (int i = 0; i < cl->class_obj_member_count; ++i)
-    {
-	ocmember_T *m = &cl->class_obj_members[i];
-	if (namelen)
-	{
-	    if (STRNCMP(name, m->ocm_name, namelen) == 0
-		    && m->ocm_name[namelen] == NUL)
-	    return i;
-	}
-	else if (STRCMP(name, m->ocm_name) == 0)
-	    return i;
-    }
-
-    return -1;
+    int idx;
+    object_member_lookup(cl, name, namelen, &idx);
+    return idx;
 }
 
 /*
@@ -2128,8 +2135,31 @@ object_member_idx(class_T *cl, char_u *name, size_t namelen)
     ocmember_T *
 object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 {
-    *idx = object_member_idx(cl, name, namelen);
-    return *idx >= 0 ? &cl->class_obj_members[*idx] : NULL;
+    ocmember_T	*ret_m = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_obj_member_count; ++i)
+    {
+	ocmember_T  *m = &cl->class_obj_members[i];
+	if (namelen)
+	{
+	    if (STRNCMP(name, m->ocm_name, namelen) == 0
+		    && m->ocm_name[namelen] == NUL)
+	    {
+		ret_m = m;
+		ret_idx = i;
+		break;
+	    }
+	}
+	else if (STRCMP(name, m->ocm_name) == 0)
+        {
+	    ret_m = m;
+	    ret_idx = i;
+            break;
+        }
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_m;
 }
 
 /*
@@ -2139,17 +2169,9 @@ object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
     int
 object_method_idx(class_T *cl, char_u *name, size_t namelen)
 {
-    for (int i = 0; i < cl->class_obj_method_count; ++i)
-    {
-	ufunc_T *fp = cl->class_obj_methods[i];
-	// Use a separate pointer to avoid that ASAN complains about
-	// uf_name[] only being 4 characters.
-	char_u *ufname = (char_u *)fp->uf_name;
-	if (STRNCMP(name, ufname, namelen) == 0 && ufname[namelen] == NUL)
-	    return i;
-    }
-
-    return -1;
+    int idx;
+    object_method_lookup(cl, name, namelen, &idx);
+    return idx;
 }
 
 /*
@@ -2160,8 +2182,24 @@ object_method_idx(class_T *cl, char_u *name, size_t namelen)
     ufunc_T *
 object_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
 {
-    *idx = object_method_idx(cl, name, namelen);
-    return *idx >= 0 ? cl->class_obj_methods[*idx] : NULL;
+    ufunc_T	*ret_fp = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_obj_method_count; ++i)
+    {
+	ufunc_T *fp = cl->class_obj_methods[i];
+	// Use a separate pointer to avoid that ASAN complains about
+	// uf_name[] only being 4 characters.
+	char_u *ufname = (char_u *)fp->uf_name;
+	if (STRNCMP(name, ufname, namelen) == 0 && ufname[namelen] == NUL)
+	{
+	    ret_fp = fp;
+	    ret_idx = i;
+	    break;
+	}
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_fp;
 }
 
 /*
