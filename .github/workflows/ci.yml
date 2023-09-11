@@ -79,7 +79,7 @@ jobs:
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'
@@ -297,7 +297,7 @@ jobs:
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install packages
         if: matrix.features == 'huge'
@@ -458,7 +458,7 @@ jobs:
           release: false
 
       - name: Checkout repository from github
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create a list of download URLs
         shell: cmd
