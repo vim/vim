@@ -6,6 +6,7 @@ editorconfig-commands	editorconfig.txt	/*editorconfig-commands*
 editorconfig-contents	editorconfig.txt	/*editorconfig-contents*
 editorconfig-hook	editorconfig.txt	/*editorconfig-hook*
 editorconfig-installation	editorconfig.txt	/*editorconfig-installation*
+editorconfig-license	editorconfig.txt	/*editorconfig-license*
 editorconfig-overview	editorconfig.txt	/*editorconfig-overview*
 editorconfig-settings	editorconfig.txt	/*editorconfig-settings*
 editorconfig.txt	editorconfig.txt	/*editorconfig.txt*
