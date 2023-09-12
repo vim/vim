@@ -1368,6 +1368,10 @@ au BufNewFile,BufRead *.rc,*.rch
 	\   setf rc |
 	\ endif
 
+" Mojo
+" Mojo files use either .mojo or .🔥 as extension
+au BufNewFile,BufRead *.mojo,*.🔥		setf mojo
+
 " MuPAD source
 au BufRead,BufNewFile *.mu			setf mupad
 

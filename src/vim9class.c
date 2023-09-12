@@ -269,14 +269,10 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl,
     {
 	// TODO: Need a table for fast lookup?
 	char_u *name = itf->class_class_members[idx].ocm_name;
-	for (int i = 0; i < i2c->i2c_class->class_class_member_count; ++i)
-	{
-	    ocmember_T *m = &i2c->i2c_class->class_class_members[i];
-	    if (STRCMP(name, m->ocm_name) == 0)
-	    {
-		return i;
-	    }
-	}
+	int	m_idx = class_member_idx(i2c->i2c_class, name, 0);
+	if (m_idx >= 0)
+	    return m_idx;
+
 	siemsg("class %s, interface %s, static %s not found",
 				      cl->class_name, itf->class_name, name);
 	return 0;
@@ -1751,27 +1747,23 @@ class_member_type(
     int		*member_idx,
     ocmember_T	**p_m)
 {
-    *member_idx = -1;  // not found (yet)
     size_t	len = name_end - name;
-    int		member_count = is_object ? cl->class_obj_member_count
-						: cl->class_class_member_count;
-    ocmember_T	*members = is_object ? cl->class_obj_members
-						: cl->class_class_members;
+    ocmember_T	*m;
 
-    for (int i = 0; i < member_count; ++i)
+    *member_idx = -1;  // not found (yet)
+
+    m = member_lookup(cl, is_object ? VAR_OBJECT : VAR_CLASS, name, len,
+								member_idx);
+    if (m == NULL)
     {
-	ocmember_T *m = members + i;
-	if (STRNCMP(m->ocm_name, name, len) == 0 && m->ocm_name[len] == NUL)
-	{
-	    *member_idx = i;
-	    if (p_m != NULL)
-		*p_m = m;
-	    return m->ocm_type;
-	}
+	semsg(_(e_unknown_variable_str), name);
+	return &t_any;
     }
 
-    semsg(_(e_unknown_variable_str), name);
-    return &t_any;
+    if (p_m != NULL)
+	*p_m = m;
+
+    return m->ocm_type;
 }
 
 /*
@@ -1806,41 +1798,34 @@ get_member_tv(
     size_t	namelen,
     typval_T	*rettv)
 {
-    int member_count = is_object ? cl->class_obj_member_count
-						: cl->class_class_member_count;
-    ocmember_T *members = is_object ? cl->class_obj_members
-						: cl->class_class_members;
+    ocmember_T *m;
+    int		m_idx;
 
-    for (int i = 0; i < member_count; ++i)
+    m = member_lookup(cl, is_object ? VAR_OBJECT : VAR_CLASS, name, namelen,
+								&m_idx);
+    if (m == NULL)
+	return FAIL;
+
+    if (*name == '_')
     {
-	ocmember_T *m = &members[i];
-	if (STRNCMP(name, m->ocm_name, namelen) == 0
-						&& m->ocm_name[namelen] == NUL)
-	{
-	    if (*name == '_')
-	    {
-		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
-		return FAIL;
-	    }
-
-	    // The object only contains a pointer to the class, the member
-	    // values array follows right after that.
-	    object_T *obj = rettv->vval.v_object;
-	    if (is_object)
-	    {
-		typval_T *tv = (typval_T *)(obj + 1) + i;
-		copy_tv(tv, rettv);
-	    }
-	    else
-		copy_tv(&cl->class_members_tv[i], rettv);
-
-	    object_unref(obj);
-
-	    return OK;
-	}
+	semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+	return FAIL;
     }
 
-    return FAIL;
+    // The object only contains a pointer to the class, the member
+    // values array follows right after that.
+    object_T *obj = rettv->vval.v_object;
+    if (is_object)
+    {
+	typval_T *tv = (typval_T *)(obj + 1) + m_idx;
+	copy_tv(tv, rettv);
+    }
+    else
+	copy_tv(&cl->class_members_tv[m_idx], rettv);
+
+    object_unref(obj);
+
+    return OK;
 }
 
 /*
@@ -1897,77 +1882,70 @@ class_object_index(
 
     if (*name_end == '(')
     {
-	int on_class = rettv->v_type == VAR_CLASS;
-	int count = on_class ? cl->class_class_function_count
-			     : cl->class_obj_method_count;
-	for (int i = 0; i < count; ++i)
+	ufunc_T *fp;
+
+	fp = method_lookup(cl, rettv->v_type, name, len, NULL);
+	if (fp == NULL)
 	{
-	    ufunc_T *fp = on_class ? cl->class_class_functions[i]
-				   : cl->class_obj_methods[i];
-	    // Use a separate pointer to avoid that ASAN complains about
-	    // uf_name[] only being 4 characters.
-	    char_u *ufname = (char_u *)fp->uf_name;
-	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
-	    {
-		typval_T	argvars[MAX_FUNC_ARGS + 1];
-		int		argcount = 0;
-
-		if (*ufname == '_')
-		{
-		    // Cannot access a private method outside of a class
-		    semsg(_(e_cannot_access_private_method_str), name);
-		    return FAIL;
-		}
-
-		char_u *argp = name_end;
-		int ret = get_func_arguments(&argp, evalarg, 0,
-							   argvars, &argcount);
-		if (ret == FAIL)
-		    return FAIL;
-
-		funcexe_T funcexe;
-		CLEAR_FIELD(funcexe);
-		funcexe.fe_evaluate = TRUE;
-		if (rettv->v_type == VAR_OBJECT)
-		{
-		    funcexe.fe_object = rettv->vval.v_object;
-		    ++funcexe.fe_object->obj_refcount;
-		}
-
-		// Clear the class or object after calling the function, in
-		// case the refcount is one.
-		typval_T tv_tofree = *rettv;
-		rettv->v_type = VAR_UNKNOWN;
-
-		// Call the user function.  Result goes into rettv;
-		int error = call_user_func_check(fp, argcount, argvars,
-							rettv, &funcexe, NULL);
-
-		// Clear the previous rettv and the arguments.
-		clear_tv(&tv_tofree);
-		for (int idx = 0; idx < argcount; ++idx)
-		    clear_tv(&argvars[idx]);
-
-		if (error != FCERR_NONE)
-		{
-		    user_func_error(error, printable_func_name(fp),
-							 funcexe.fe_found_var);
-		    return FAIL;
-		}
-		*arg = argp;
-		return OK;
-	    }
+	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name,
+		    name);
+	    return FAIL;
 	}
 
-	semsg(_(e_method_not_found_on_class_str_str), cl->class_name, name);
+	typval_T	argvars[MAX_FUNC_ARGS + 1];
+	int		argcount = 0;
+
+	if (*fp->uf_name == '_')
+	{
+	    // Cannot access a private method outside of a class
+	    semsg(_(e_cannot_access_private_method_str), name);
+	    return FAIL;
+	}
+
+	char_u *argp = name_end;
+	int ret = get_func_arguments(&argp, evalarg, 0,
+		argvars, &argcount);
+	if (ret == FAIL)
+	    return FAIL;
+
+	funcexe_T funcexe;
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+	if (rettv->v_type == VAR_OBJECT)
+	{
+	    funcexe.fe_object = rettv->vval.v_object;
+	    ++funcexe.fe_object->obj_refcount;
+	}
+
+	// Clear the class or object after calling the function, in
+	// case the refcount is one.
+	typval_T tv_tofree = *rettv;
+	rettv->v_type = VAR_UNKNOWN;
+
+	// Call the user function.  Result goes into rettv;
+	int error = call_user_func_check(fp, argcount, argvars,
+		rettv, &funcexe, NULL);
+
+	// Clear the previous rettv and the arguments.
+	clear_tv(&tv_tofree);
+	for (int idx = 0; idx < argcount; ++idx)
+	    clear_tv(&argvars[idx]);
+
+	if (error != FCERR_NONE)
+	{
+	    user_func_error(error, printable_func_name(fp),
+		    funcexe.fe_found_var);
+	    return FAIL;
+	}
+	*arg = argp;
+	return OK;
     }
 
     else if (rettv->v_type == VAR_OBJECT)
     {
 	// Search in the object member variable table and the class member
 	// variable table.
-	if (get_member_tv(cl, TRUE, name, len, rettv) == OK
-		|| get_member_tv(cl, FALSE, name, len, rettv) == OK)
+	if (get_member_tv(cl, TRUE, name, len, rettv) == OK)
 	{
 	    *arg = name_end;
 	    return OK;
@@ -1978,34 +1956,34 @@ class_object_index(
 
     else if (rettv->v_type == VAR_CLASS)
     {
+	int	    m_idx;
+
 	// class member
-	for (int i = 0; i < cl->class_class_member_count; ++i)
+	ocmember_T *m = class_member_lookup(cl, name, len, &m_idx);
+	if (m == NULL)
 	{
-	    ocmember_T *m = &cl->class_class_members[i];
-	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
-	    {
-		if (*name == '_')
-		{
-		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
-		    return FAIL;
-		}
-		if ((cl->class_flags & CLASS_INTERFACE) != 0)
-		{
-		    semsg(_(e_interface_static_direct_access_str),
-						cl->class_name, m->ocm_name);
-		    return FAIL;
-		}
-
-		typval_T *tv = &cl->class_members_tv[i];
-		copy_tv(tv, rettv);
-		class_unref(cl);
-
-		*arg = name_end;
-		return OK;
-	    }
+	    semsg(_(e_member_not_found_on_class_str_str), cl->class_name, name);
+	    return FAIL;
 	}
 
-	semsg(_(e_member_not_found_on_class_str_str), cl->class_name, name);
+	if (*name == '_')
+	{
+	    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+	    return FAIL;
+	}
+	if ((cl->class_flags & CLASS_INTERFACE) != 0)
+	{
+	    semsg(_(e_interface_static_direct_access_str),
+		    cl->class_name, m->ocm_name);
+	    return FAIL;
+	}
+
+	typval_T *tv = &cl->class_members_tv[m_idx];
+	copy_tv(tv, rettv);
+	class_unref(cl);
+
+	*arg = name_end;
+	return OK;
     }
 
     return FAIL;
@@ -2023,6 +2001,7 @@ find_class_func(char_u **arg)
     if (name_end == name || *name_end != '.')
 	return NULL;
 
+    ufunc_T	*fp = NULL;
     size_t	len = name_end - name;
     typval_T	tv;
     tv.v_type = VAR_UNKNOWN;
@@ -2042,53 +2021,228 @@ find_class_func(char_u **arg)
 	goto fail_after_eval;
     len = fname_end - fname;
 
-    int count = tv.v_type == VAR_CLASS ? cl->class_class_function_count
-				       : cl->class_obj_method_count;
-    ufunc_T **funcs = tv.v_type == VAR_CLASS ? cl->class_class_functions
-					     : cl->class_obj_methods;
-    for (int i = 0; i < count; ++i)
-    {
-	ufunc_T *fp = funcs[i];
-	// Use a separate pointer to avoid that ASAN complains about
-	// uf_name[] only being 4 characters.
-	char_u *ufname = (char_u *)fp->uf_name;
-	if (STRNCMP(fname, ufname, len) == 0 && ufname[len] == NUL)
-	{
-	    clear_tv(&tv);
-	    return fp;
-	}
-    }
+    fp = method_lookup(cl, tv.v_type, fname, len, NULL);
 
 fail_after_eval:
     clear_tv(&tv);
-    return NULL;
+    return fp;
 }
 
 /*
- * If "name[len]" is a class member in cctx->ctx_ufunc->uf_class return the
- * index in class.class_class_members[].
- * If "cl_ret" is not NULL set it to the class.
- * Otherwise return -1;
+ * Returns the index of class member variable "name" in the class "cl".
+ * Returns -1, if the variable is not found.
+ * If "namelen" is zero, then it is assumed that "name" is NUL terminated.
  */
     int
-class_member_index(char_u *name, size_t len, class_T **cl_ret, cctx_T *cctx)
+class_member_idx(class_T *cl, char_u *name, size_t namelen)
 {
-    if (cctx == NULL || cctx->ctx_ufunc == NULL
-					  || cctx->ctx_ufunc->uf_class == NULL)
-	return -1;
-    class_T *cl = cctx->ctx_ufunc->uf_class;
+    int idx;
+    class_member_lookup(cl, name, namelen, &idx);
+    return idx;
+}
 
+/*
+ * Returns a pointer to the class member variable "name" in the class "cl".
+ * Returns NULL if the variable is not found.
+ * The member variable index is set in "idx".
+ */
+    ocmember_T *
+class_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
+{
+    ocmember_T	*ret_m = NULL;
+    int		ret_idx = -1;
     for (int i = 0; i < cl->class_class_member_count; ++i)
     {
 	ocmember_T *m = &cl->class_class_members[i];
-	if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	if (namelen)
 	{
-	    if (cl_ret != NULL)
-		*cl_ret = cl;
-	    return i;
+	    if (STRNCMP(name, m->ocm_name, namelen) == 0
+		    && m->ocm_name[namelen] == NUL)
+	    {
+		ret_m = m;
+		ret_idx = i;
+		break;
+	    }
+	}
+	else if (STRCMP(name, m->ocm_name) == 0)
+	{
+	    ret_m = m;
+	    ret_idx = i;
+            break;
 	}
     }
-    return -1;
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_m;
+}
+
+/*
+ * Returns the index of class method "name" in the class "cl".
+ * Returns -1, if the method is not found.
+ */
+    int
+class_method_idx(class_T *cl, char_u *name, size_t namelen)
+{
+    int idx;
+    class_method_lookup(cl, name, namelen, &idx);
+    return idx;
+}
+
+/*
+ * Returns a pointer to the class method "name" in class "cl".
+ * Returns NULL if the method is not found.
+ * The method index is set in "idx".
+ */
+    ufunc_T *
+class_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
+{
+    ufunc_T	*ret_fp = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_class_function_count; ++i)
+    {
+	ufunc_T *fp = cl->class_class_functions[i];
+	char_u *ufname = (char_u *)fp->uf_name;
+	if (STRNCMP(name, ufname, namelen) == 0 && ufname[namelen] == NUL)
+	{
+	    ret_fp = fp;
+	    ret_idx = i;
+	    break;
+	}
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_fp;
+}
+
+/*
+ * Returns the index of object member variable "name" in the class "cl".
+ * Returns -1, if the variable is not found.
+ * If "namelen" is zero, then it is assumed that "name" is NUL terminated.
+ */
+    int
+object_member_idx(class_T *cl, char_u *name, size_t namelen)
+{
+    int idx;
+    object_member_lookup(cl, name, namelen, &idx);
+    return idx;
+}
+
+/*
+ * Returns a pointer to the object member variable "name" in the class "cl".
+ * Returns NULL if the variable is not found.
+ * The object member variable index is set in "idx".
+ */
+    ocmember_T *
+object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
+{
+    ocmember_T	*ret_m = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_obj_member_count; ++i)
+    {
+	ocmember_T  *m = &cl->class_obj_members[i];
+	if (namelen)
+	{
+	    if (STRNCMP(name, m->ocm_name, namelen) == 0
+		    && m->ocm_name[namelen] == NUL)
+	    {
+		ret_m = m;
+		ret_idx = i;
+		break;
+	    }
+	}
+	else if (STRCMP(name, m->ocm_name) == 0)
+        {
+	    ret_m = m;
+	    ret_idx = i;
+            break;
+        }
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_m;
+}
+
+/*
+ * Returns the index of object method "name" in the class "cl".
+ * Returns -1, if the method is not found.
+ */
+    int
+object_method_idx(class_T *cl, char_u *name, size_t namelen)
+{
+    int idx;
+    object_method_lookup(cl, name, namelen, &idx);
+    return idx;
+}
+
+/*
+ * Returns a pointer to the object method "name" in class "cl".
+ * Returns NULL if the method is not found.
+ * The object method index is set in "idx".
+ */
+    ufunc_T *
+object_method_lookup(class_T *cl, char_u *name, size_t namelen, int *idx)
+{
+    ufunc_T	*ret_fp = NULL;
+    int		ret_idx = -1;
+    for (int i = 0; i < cl->class_obj_method_count; ++i)
+    {
+	ufunc_T *fp = cl->class_obj_methods[i];
+	// Use a separate pointer to avoid that ASAN complains about
+	// uf_name[] only being 4 characters.
+	char_u *ufname = (char_u *)fp->uf_name;
+	if (STRNCMP(name, ufname, namelen) == 0 && ufname[namelen] == NUL)
+	{
+	    ret_fp = fp;
+	    ret_idx = i;
+	    break;
+	}
+    }
+    if (idx != NULL)
+	*idx = ret_idx;
+    return ret_fp;
+}
+
+/*
+ * Lookup a class or object member variable by name.  If v_type is VAR_CLASS,
+ * then lookup a class member variable and if it is VAR_OBJECT, then lookup a
+ * object member variable.
+ *
+ * Returns a pointer to the member variable structure if variable is found.
+ * Otherwise returns NULL.  The member variable index is set in "*idx".
+ */
+    ocmember_T *
+member_lookup(
+    class_T	*cl,
+    vartype_T	v_type,
+    char_u	*name,
+    size_t	namelen,
+    int		*idx)
+{
+    if (v_type == VAR_CLASS)
+	return class_member_lookup(cl, name, namelen, idx);
+    else
+	return object_member_lookup(cl, name, namelen, idx);
+}
+
+/*
+ * Lookup a class or object method by name.  If v_type is VAR_CLASS, then
+ * lookup a class method and if it is VAR_OBJECT, then lookup a object method.
+ *
+ * Returns a pointer to the method structure if variable is found.
+ * Otherwise returns NULL.  The method variable index is set in "*idx".
+ */
+    ufunc_T *
+method_lookup(
+    class_T	*cl,
+    vartype_T	v_type,
+    char_u	*name,
+    size_t	namelen,
+    int		*idx)
+{
+    if (v_type == VAR_CLASS)
+	return class_method_lookup(cl, name, namelen, idx);
+    else
+	return object_method_lookup(cl, name, namelen, idx);
 }
 
 /*

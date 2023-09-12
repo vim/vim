@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.0.  Last change: 2022 Dec 01
+*channel.txt*      For Vim version 9.0.  Last change: 2023 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -956,7 +956,7 @@ job_start({command} [, {options}])			*job_start()*
 		to String.  This works best on Unix.
 
 		On MS-Windows, job_start() makes a GUI application hidden. If
-		want to show it, Use |:!start| instead.
+		you want to show it, use |:!start| instead.
 
 		The command is executed directly, not through a shell, the
 		'shell' option is not used.  To use the shell: >

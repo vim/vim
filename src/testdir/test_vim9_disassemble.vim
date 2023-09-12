@@ -3067,17 +3067,13 @@ def Test_disassemble_interface_static_member()
 
     def F1(i: I)
       var x: number
-      x = i.s_var
       x = i.o_var
-      x = i.s_var2
       x = i.o_var2
     enddef
 
     def F2(o: C)
       var x: number
-      x = o.s_var
       x = o.o_var
-      x = o.s_var2
       x = o.o_var2
     enddef
 
@@ -3087,43 +3083,27 @@ def Test_disassemble_interface_static_member()
   v9.CheckScriptSuccess(lines)
   assert_match('<SNR>\d*_F1\_s*' ..
     'var x: number\_s*' ..
-    'x = i.s_var\_s*' ..
-    '0 LOAD arg\[-1\]\_s*' ..
-    '1 ITF_MEMBER 0 on I \[STATIC\]\_s*' ..
-    '2 STORE $0\_s*' ..
     'x = i.o_var\_s*' ..
-    '3 LOAD arg\[-1\]\_s*' ..
-    '4 ITF_MEMBER 0 on I\_s*' ..
-    '5 STORE $0\_s*' ..
-    'x = i.s_var2\_s*' ..
-    '6 LOAD arg\[-1\]\_s*' ..
-    '7 ITF_MEMBER 1 on I \[STATIC\]\_s*' ..
-    '8 STORE $0\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 ITF_MEMBER 0 on I\_s*' ..
+    '2 STORE $0\_s*' ..
     'x = i.o_var2\_s*' ..
-    '9 LOAD arg\[-1\]\_s*' ..
-    '10 ITF_MEMBER 1 on I\_s*' ..
-    '11 STORE $0\_s*' ..
-    '12 RETURN void\_s*',
+    '3 LOAD arg\[-1\]\_s*' ..
+    '4 ITF_MEMBER 1 on I\_s*' ..
+    '5 STORE $0\_s*' ..
+    '6 RETURN void\_s*',
     g:instr1)
   assert_match('<SNR>\d*_F2\_s*' ..
     'var x: number\_s*' ..
-    'x = o.s_var\_s*' ..
-    '0 LOAD arg\[-1\]\_s*' ..
-    '1 OBJ_MEMBER 0 \[STATIC\]\_s*' ..
-    '2 STORE $0\_s*' ..
     'x = o.o_var\_s*' ..
-    '3 LOAD arg\[-1\]\_s*' ..
-    '4 OBJ_MEMBER 0\_s*' ..
-    '5 STORE $0\_s*' ..
-    'x = o.s_var2\_s*' ..
-    '6 LOAD arg\[-1\]\_s*' ..
-    '7 OBJ_MEMBER 1 \[STATIC\]\_s*' ..
-    ' 8 STORE $0\_s*' ..
+    '0 LOAD arg\[-1\]\_s*' ..
+    '1 OBJ_MEMBER 0\_s*' ..
+    '2 STORE $0\_s*' ..
     'x = o.o_var2\_s*' ..
-    '9 LOAD arg\[-1\]\_s*' ..
-    '10 OBJ_MEMBER 1\_s*' ..
-    '11 STORE $0\_s*' ..
-    '12 RETURN void',
+    '3 LOAD arg\[-1\]\_s*' ..
+    '4 OBJ_MEMBER 1\_s*' ..
+    '5 STORE $0\_s*' ..
+    '6 RETURN void',
     g:instr2)
 
   unlet g:instr1

@@ -568,7 +568,7 @@ endfunc
 func Test_mkview_terminal_windows()
   CheckFeature terminal
 
-  " create two window on the same terminal to check this is handled OK
+  " create two windows on the same terminal to check this is handled OK
   terminal
   let term_buf = bufnr()
   exe 'sbuf ' .. term_buf

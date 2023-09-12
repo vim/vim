@@ -3789,7 +3789,7 @@ ins_compl_get_exp(pos_T *ini)
 	st.found_all = FALSE;
 	st.ins_buf = curbuf;
 	vim_free(st.e_cpt_copy);
-	// Make a copy of 'complete', if case the buffer is wiped out.
+	// Make a copy of 'complete', in case the buffer is wiped out.
 	st.e_cpt_copy = vim_strsave((compl_cont_status & CONT_LOCAL)
 					    ? (char_u *)"." : curbuf->b_p_cpt);
 	st.e_cpt = st.e_cpt_copy == NULL ? (char_u *)"" : st.e_cpt_copy;

@@ -300,6 +300,7 @@ endfunc
 
 func Test_strptime()
   CheckFunction strptime
+  CheckNotBSD
 
   if exists('$TZ')
     let tz = $TZ
@@ -314,6 +315,8 @@ func Test_strptime()
 
   call assert_fails('call strptime()', 'E119:')
   call assert_fails('call strptime("xxx")', 'E119:')
+  " This fails on BSD 14 and returns
+  " -2209078800 instead of 0
   call assert_equal(0, strptime("%Y", ''))
   call assert_equal(0, strptime("%Y", "xxx"))
 
@@ -2911,7 +2914,7 @@ func Test_state()
   call term_sendkeys(buf, getstate)
   call WaitForAssert({-> assert_match('state: mSc; mode: n', term_getline(buf, 6))}, 1000)
 
-  " A operator is pending
+  " An operator is pending
   call term_sendkeys(buf, ":call RunTimer()\<CR>y")
   call TermWait(buf, 25)
   call term_sendkeys(buf, "y")

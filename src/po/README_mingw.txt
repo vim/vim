@@ -60,7 +60,7 @@ the same as in the Unix case, only the commands change):
 
     There is one special message:
 	msgid "Messages maintainer: The Vim Project"
-    You should include your name and E-mail address instead, for example:
+    You should include your name and e-mail address instead, for example:
 	msgstr "Berichten übersetzt bei: John Doe <john@doe.org>"
 
 (3) Clean up

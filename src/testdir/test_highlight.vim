@@ -878,7 +878,7 @@ func Test_highlight_default()
   hi clear
 endfunc
 
-" Test for 'ctermul in a highlight group
+" Test for 'ctermul' in a highlight group
 func Test_highlight_ctermul()
   CheckNotGui
   call assert_notmatch('ctermul=', HighlightArgs('Normal'))

@@ -524,7 +524,7 @@ func Test_connect_waittime()
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
   if ch_status(handle) != "fail"
-    " Oops, port does exists.
+    " Oops, port exists.
     call ch_close(handle)
   else
     let elapsed = reltime(start)
@@ -538,7 +538,7 @@ func Test_connect_waittime()
   try
     let handle = ch_open('localhost:9867', {'waittime': 500})
     if ch_status(handle) != "fail"
-      " Oops, port does exists.
+      " Oops, port exists.
       call ch_close(handle)
     else
       " Failed connection should wait about 500 msec.  Can be longer if the
