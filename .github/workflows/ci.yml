@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     env:
       CC: ${{ matrix.compiler }}
