@@ -3411,16 +3411,14 @@ EXTERN char e_public_member_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public member name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_private_member_str[]
 	INIT(= N_("E1333: Cannot access private member: %s"));
-EXTERN char e_object_member_not_found_str[]
-	INIT(= N_("E1334: Object member not found: %s"));
 EXTERN char e_member_is_not_writable_str[]
 	INIT(= N_("E1335: Member is not writable: %s"));
 #endif
 EXTERN char e_internal_error_shortmess_too_long[]
 	INIT(= "E1336: Internal error: shortmess too long");
 #ifdef FEAT_EVAL
-EXTERN char e_class_member_not_found_str[]
-	INIT(= N_("E1337: Class member not found: %s"));
+EXTERN char e_class_member_str_not_found_in_class_str[]
+	INIT(= N_("E1337: Class member \"%s\" not found in class \"%s\""));
 EXTERN char e_member_not_found_on_class_str_str[]
 	INIT(= N_("E1338: Member not found on class \"%s\": %s"));
 #endif
@@ -3488,7 +3486,6 @@ EXTERN char e_cannot_access_private_method_str[]
 	INIT(= N_("E1366: Cannot access private method: %s"));
 EXTERN char e_member_str_of_interface_str_has_different_access[]
 	INIT(= N_("E1367: Access level of member \"%s\" of interface \"%s\" is different"));
-
 EXTERN char e_static_cannot_be_followed_by_this[]
 	INIT(= N_("E1368: Static cannot be followed by \"this\" in a member name"));
 EXTERN char e_duplicate_member_str[]
@@ -3501,6 +3498,16 @@ EXTERN char e_abstract_method_in_concrete_class[]
 	INIT(= N_("E1372: Abstract method \"%s\" cannot be defined in a concrete class"));
 EXTERN char e_abstract_method_str_not_found[]
 	INIT(= N_("E1373: Abstract method \"%s\" is not implemented"));
+EXTERN char e_class_member_str_accessible_only_inside_class_str[]
+	INIT(= N_("E1374: Class member \"%s\" accessible only inside class \"%s\""));
+EXTERN char e_class_member_str_accessible_only_using_class_str[]
+	INIT(= N_("E1375: Class member \"%s\" accessible only using class \"%s\""));
+EXTERN char e_object_member_str_accessible_only_using_object_str[]
+	INIT(= N_("E1376: Object member \"%s\" accessible only using class \"%s\" object"));
+EXTERN char e_static_member_not_supported_in_interface[]
+	INIT(= N_("E1377: Static member is not supported in an interface"));
+EXTERN char e_method_str_of_class_str_has_different_access[]
+	INIT(= N_("E1378: Access level of method \"%s\" is different in class \"%s\""));
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
@@ -3521,4 +3528,4 @@ EXTERN char e_aptypes_is_null_nr_str[]
 	INIT(= "E1408: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
 EXTERN char e_interface_static_direct_access_str[]
 	INIT(= N_("E1409: Cannot directly access interface \"%s\" static member \"%s\""));
-// E1371 - E1399 unused
+// E1376 - E1399 unused

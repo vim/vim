@@ -1596,10 +1596,7 @@ get_lval(
 
 		if (lp->ll_valtype == NULL)
 		{
-		    if (v_type == VAR_OBJECT)
-			semsg(_(e_object_member_not_found_str), key);
-		    else
-			semsg(_(e_class_member_not_found_str), key);
+		    member_not_found_msg(cl, v_type, key, p - key);
 		    return NULL;
 		}
 	    }

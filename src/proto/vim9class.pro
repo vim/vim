@@ -26,6 +26,8 @@ int set_ref_in_classes(int copyID);
 void object_created(object_T *obj);
 void object_cleared(object_T *obj);
 int object_free_nonref(int copyID);
+void method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
+void member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
 void f_instanceof(typval_T *argvars, typval_T *rettv);
 int class_instance_of(class_T *cl, class_T *other_cl);
 /* vim: set ft=c : */
