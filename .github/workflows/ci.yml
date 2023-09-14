@@ -200,16 +200,16 @@ jobs:
       - name: Set up snd-dummy
         if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
         env:
-          DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
+          DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-5.15.0-1041-azure
         uses: tecolicom/actions-use-apt-tools@main
         with:
-          tools: linux-modules-extra-${{ env.LINUX_VERSION }}
+          tools: linux-modules-extra-5.15.0-1041-azure
           path: "${DEST_DIR}"
 
       - name: modprobe snd-dummy
         if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
         run: |
-          sudo depmod --verbose
+          sudo depmod
           sudo modprobe --verbose snd-dummy
 
       - name: Check autoconf
