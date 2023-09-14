@@ -209,8 +209,8 @@ jobs:
       - name: modprobe snd-dummy
         if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
         run: |
-          sudo depmod
-          sudo modprobe --verbose snd-dummy
+          sudo depmod --basedir /lib/modules/5.15.0-1041-azure
+          sudo modprobe --dirname /lib/modules/5.15.0-1041-azure --verbose snd-dummy
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
