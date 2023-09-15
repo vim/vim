@@ -3,7 +3,7 @@
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
 " Last Change: 2024 Apr 07
-" Version: 2.1.0
+" Version: 2.1.1
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -286,6 +286,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
 	\	'new', 'popup',
+	\	'vim9script',
 	\ ]
 	" Required for original behavior
 	" \	'global', 'vglobal'
