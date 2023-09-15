@@ -281,7 +281,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'behave', 'augroup', 'normal', 'syntax',
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
-	\	'new',
+	\	'new', 'vim9script',
 	\ ]
 	" Required for original behavior
 	" \	'global', 'vglobal'
