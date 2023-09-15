@@ -5788,7 +5788,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
 	    p++;
 	}
-	FreeEnvironmentStrings(base);
+	FreeEnvironmentStringsW(base);
 	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
     }
 
