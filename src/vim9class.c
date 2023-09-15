@@ -322,63 +322,109 @@ validate_extends_class(char_u *extends_name, class_T **extends_clp)
 }
 
 /*
- * Check whether a class/object member variable in "classmembers_gap" /
- * "objmembers_gap" is a duplicate of a member in any of the extended parent
- * class lineage.  Returns TRUE if there are no duplicates.
+ * Check method names in the parent class lineage to make sure the access is
+ * the same for overridden methods.
+ */
+    static int
+validate_extends_methods(
+    garray_T	*objmethods_gap,
+    class_T	*extends_cl)
+{
+    class_T	*super = extends_cl;
+    int		method_count = objmethods_gap->ga_len;
+    ufunc_T	**cl_fp = (ufunc_T **)(objmethods_gap->ga_data);
+
+    while (super != NULL)
+    {
+	int extends_method_count = super->class_obj_method_count_child;
+	if (extends_method_count == 0)
+	{
+	    super = super->class_extends;
+	    continue;
+	}
+
+	ufunc_T **extends_methods = super->class_obj_methods;
+
+	for (int i = 0; i < extends_method_count; i++)
+	{
+	    char_u  *pstr = extends_methods[i]->uf_name;
+	    int	    extends_private = (*pstr == '_');
+	    if (extends_private)
+		pstr++;
+
+	    for (int j = 0; j < method_count; j++)
+	    {
+		char_u  *qstr = cl_fp[j]->uf_name;
+		int	priv_method = (*qstr == '_');
+		if (priv_method)
+		    qstr++;
+		if (STRCMP(pstr, qstr) == 0 && priv_method != extends_private)
+		{
+		    // Method access is different between the super class and
+		    // the subclass
+		    semsg(_(e_method_str_of_class_str_has_different_access),
+			    cl_fp[j]->uf_name, super->class_name);
+		    return FALSE;
+		}
+	    }
+	}
+	super = super->class_extends;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Check whether a object member variable in "objmembers_gap" is a duplicate of
+ * a member in any of the extended parent class lineage.  Returns TRUE if there
+ * are no duplicates.
  */
     static int
 validate_extends_members(
-    garray_T	*classmembers_gap,
     garray_T	*objmembers_gap,
     class_T	*extends_cl)
 {
-    for (int loop = 1; loop <= 2; ++loop)
-    {
-	// loop == 1: check class members
-	// loop == 2: check object members
-	int member_count = loop == 1 ? classmembers_gap->ga_len
-						: objmembers_gap->ga_len;
-	if (member_count == 0)
-	    continue;
-	ocmember_T *members = (ocmember_T *)(loop == 1
-						? classmembers_gap->ga_data
-						: objmembers_gap->ga_data);
+    // loop == 1: check class members
+    // loop == 2: check object members
+    int member_count = objmembers_gap->ga_len;
+    if (member_count == 0)
+	return TRUE;
 
-	// Validate each member variable
-	for (int c_i = 0; c_i < member_count; c_i++)
-	{
-	    class_T	*p_cl = extends_cl;
-	    ocmember_T	*c_m = members + c_i;
-	    char_u	*pstr = (*c_m->ocm_name == '_')
+    ocmember_T *members = (ocmember_T *)(objmembers_gap->ga_data);
+
+    // Validate each member variable
+    for (int c_i = 0; c_i < member_count; c_i++)
+    {
+	class_T	    *p_cl = extends_cl;
+	ocmember_T  *c_m = members + c_i;
+	char_u	    *pstr = (*c_m->ocm_name == '_')
 					? c_m->ocm_name + 1 : c_m->ocm_name;
 
-	    // Check in all the parent classes in the lineage
-	    while (p_cl != NULL)
+	// Check in all the parent classes in the lineage
+	while (p_cl != NULL)
+	{
+	    int p_member_count = p_cl->class_obj_member_count;
+	    if (p_member_count == 0)
 	    {
-		int p_member_count = loop == 1
-					? p_cl->class_class_member_count
-					: p_cl->class_obj_member_count;
-		if (p_member_count == 0)
-		    continue;
-		ocmember_T *p_members = (loop == 1
-					? p_cl->class_class_members
-					: p_cl->class_obj_members);
-
-		// Compare against all the members in the parent class
-		for (int p_i = 0; p_i < p_member_count; p_i++)
-		{
-		    ocmember_T	*p_m = p_members + p_i;
-		    char_u	*qstr = (*p_m->ocm_name == '_')
-					? p_m->ocm_name + 1 : p_m->ocm_name;
-		    if (STRCMP(pstr, qstr) == 0)
-		    {
-			semsg(_(e_duplicate_member_str), c_m->ocm_name);
-			return FALSE;
-		    }
-		}
-
 		p_cl = p_cl->class_extends;
+		continue;
 	    }
+	    ocmember_T *p_members = p_cl->class_obj_members;
+
+	    // Compare against all the members in the parent class
+	    for (int p_i = 0; p_i < p_member_count; p_i++)
+	    {
+		ocmember_T	*p_m = p_members + p_i;
+		char_u	*qstr = (*p_m->ocm_name == '_')
+		    ? p_m->ocm_name + 1 : p_m->ocm_name;
+		if (STRCMP(pstr, qstr) == 0)
+		{
+		    semsg(_(e_duplicate_member_str), c_m->ocm_name);
+		    return FALSE;
+		}
+	    }
+
+	    p_cl = p_cl->class_extends;
 	}
     }
 
@@ -391,7 +437,7 @@ validate_extends_members(
  * implemented.
  */
     static int
-validate_extends_methods(
+validate_abstract_class_methods(
     garray_T	*classmethods_gap,
     garray_T	*objmethods_gap,
     class_T	*extends_cl)
@@ -707,18 +753,26 @@ is_duplicate_member(garray_T *mgap, char_u *varname, char_u *varname_end)
  * Returns TRUE if the method "name" is already defined.
  */
     static int
-is_duplicate_method(garray_T *fgap, char_u *name)
+is_duplicate_method(
+    garray_T	*classmethods_gap,
+    garray_T	*objmethods_gap,
+    char_u	*name)
 {
     char_u *pstr = (*name == '_') ? name + 1 : name;
 
-    for (int i = 0; i < fgap->ga_len; ++i)
+    // loop 1: class methods, loop 2: object methods
+    for (int loop = 1; loop <= 2; loop++)
     {
-	char_u	*n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
-	char_u	*qstr = *n == '_' ? n + 1 : n;
-	if (STRCMP(pstr, qstr) == 0)
+	garray_T *fgap = (loop == 1) ? classmethods_gap : objmethods_gap;
+	for (int i = 0; i < fgap->ga_len; ++i)
 	{
-	    semsg(_(e_duplicate_function_str), name);
-	    return TRUE;
+	    char_u	*n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
+	    char_u	*qstr = *n == '_' ? n + 1 : n;
+	    if (STRCMP(pstr, qstr) == 0)
+	    {
+		semsg(_(e_duplicate_function_str), name);
+		return TRUE;
+	    }
 	}
     }
 
@@ -882,7 +936,7 @@ add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
 	    return FAIL;
     }
 
-    // Update the lookup table for the extended class, if nay
+    // Update the lookup table for the extended class, if any
     if (extends_cl != NULL)
     {
 	class_T		*pclass = extends_cl;
@@ -1017,9 +1071,10 @@ add_classfuncs_objmethods(
 
 	int parent_count = 0;
 	if (extends_cl != NULL)
-	    // Include functions from the parent.
+	    // Include object methods from the parent.
+	    // Don't include the parent class methods.
 	    parent_count = loop == 1
-				? extends_cl->class_class_function_count
+				? 0
 				: extends_cl->class_obj_method_count;
 
 	*fcount = parent_count + gap->ga_len;
@@ -1087,6 +1142,8 @@ add_classfuncs_objmethods(
 	{
 	    ufunc_T *fp = (*fup)[i];
 	    fp->uf_class = cl;
+	    if (i < gap->ga_len)
+		fp->uf_defclass = cl;
 	    if (loop == 2)
 		fp->uf_flags |= FC_OBJECT;
 	}
@@ -1443,16 +1500,16 @@ early_ret:
 		    break;
 		}
 
-		garray_T *fgap = has_static || is_new
-					       ? &classfunctions : &objmethods;
 		// Check the name isn't used already.
-		if (is_duplicate_method(fgap, name))
+		if (is_duplicate_method(&classfunctions, &objmethods, name))
 		{
 		    success = FALSE;
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
 
+		garray_T *fgap = has_static || is_new
+					       ? &classfunctions : &objmethods;
 		if (ga_grow(fgap, 1) == OK)
 		{
 		    if (is_new)
@@ -1517,19 +1574,23 @@ early_ret:
 	success = validate_extends_class(extends, &extends_cl);
     VIM_CLEAR(extends);
 
-    // Check the new class members and object members are not duplicates of the
-    // members in the extended class lineage.
+    // Check the new object methods to make sure their access (public or
+    // private) is the same as that in the extended class lineage.
     if (success && extends_cl != NULL)
-	success = validate_extends_members(&classmembers, &objmembers,
-								extends_cl);
+	success = validate_extends_methods(&objmethods, extends_cl);
+
+    // Check the new class and object variables are not duplicates of the
+    // variables in the extended class lineage.
+    if (success && extends_cl != NULL)
+	success = validate_extends_members(&objmembers, extends_cl);
 
     // When extending an abstract class, make sure all the abstract methods in
     // the parent class are implemented.  If the current class is an abstract
     // class, then there is no need for this check.
     if (success && !is_abstract && extends_cl != NULL
 				&& (extends_cl->class_flags & CLASS_ABSTRACT))
-	success = validate_extends_methods(&classfunctions, &objmethods,
-								extends_cl);
+	success = validate_abstract_class_methods(&classfunctions,
+						&objmethods, extends_cl);
 
     class_T **intf_classes = NULL;
 
@@ -1572,12 +1633,10 @@ early_ret:
 	    extends_cl->class_flags |= CLASS_EXTENDED;
 	}
 
-	// Add class and object members to "cl".
+	// Add class and object variables to "cl".
 	if (add_members_to_class(&classmembers,
-				 extends_cl == NULL ? NULL
-					     : extends_cl->class_class_members,
-				 extends_cl == NULL ? 0
-					: extends_cl->class_class_member_count,
+				 NULL,
+				 0,
 				 &cl->class_class_members,
 				 &cl->class_class_member_count) == FAIL
 		|| add_members_to_class(&objmembers,
@@ -1756,7 +1815,21 @@ class_member_type(
 								member_idx);
     if (m == NULL)
     {
-	semsg(_(e_unknown_variable_str), name);
+	char_u *varname = vim_strnsave(name, len);
+	if (varname != NULL)
+	{
+	    if (is_object && class_member_idx(cl, name, len) >= 0)
+		// A class variable with this name is present
+		semsg(_(e_class_member_str_accessible_only_inside_class_str),
+			varname, cl->class_name);
+	    else if (!is_object && object_member_idx(cl, name, len) >= 0)
+		// An instance variable with this name is present
+		semsg(_(e_object_member_str_accessible_only_using_object_str),
+			varname, cl->class_name);
+	    else
+		semsg(_(e_unknown_variable_str), varname);
+	}
+	vim_free(varname);
 	return &t_any;
     }
 
@@ -1887,8 +1960,7 @@ class_object_index(
 	fp = method_lookup(cl, rettv->v_type, name, len, NULL);
 	if (fp == NULL)
 	{
-	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name,
-		    name);
+	    method_not_found_msg(cl, rettv->v_type, name, len);
 	    return FAIL;
 	}
 
@@ -1951,7 +2023,7 @@ class_object_index(
 	    return OK;
 	}
 
-	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
+	member_not_found_msg(cl, VAR_OBJECT, name, len);
     }
 
     else if (rettv->v_type == VAR_CLASS)
@@ -1962,7 +2034,7 @@ class_object_index(
 	ocmember_T *m = class_member_lookup(cl, name, len, &m_idx);
 	if (m == NULL)
 	{
-	    semsg(_(e_member_not_found_on_class_str_str), cl->class_name, name);
+	    member_not_found_msg(cl, VAR_CLASS, name, len);
 	    return FAIL;
 	}
 
@@ -2029,7 +2101,7 @@ fail_after_eval:
 }
 
 /*
- * Returns the index of class member variable "name" in the class "cl".
+ * Returns the index of class variable "name" in the class "cl".
  * Returns -1, if the variable is not found.
  * If "namelen" is zero, then it is assumed that "name" is NUL terminated.
  */
@@ -2495,6 +2567,68 @@ object_free_nonref(int copyID)
 
     next_nonref_obj = NULL;
     return did_free;
+}
+
+/*
+ * Echo a class or object method not found message.
+ */
+    void
+method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
+{
+    char_u *method_name = vim_strnsave(name, len);
+    if ((v_type == VAR_OBJECT)
+	    && (class_method_idx(cl, name, len) >= 0))
+    {
+	// If this is a class method, then give a different error
+	if (*name == '_')
+	    semsg(_(e_cannot_access_private_method_str), method_name);
+	else
+	    semsg(_(e_class_member_str_accessible_only_using_class_str),
+		    method_name, cl->class_name);
+    }
+    else if ((v_type == VAR_CLASS)
+	    && (object_method_idx(cl, name, len) >= 0))
+    {
+	// If this is an object method, then give a different error
+	if (*name == '_')
+	    semsg(_(e_cannot_access_private_method_str), method_name);
+	else
+	    semsg(_(e_object_member_str_accessible_only_using_object_str),
+		    method_name, cl->class_name);
+    }
+    else
+	semsg(_(e_method_not_found_on_class_str_str), cl->class_name,
+		method_name);
+    vim_free(method_name);
+}
+
+/*
+ * Echo a class or object member not found message.
+ */
+    void
+member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
+{
+    char_u *varname = len ? vim_strnsave(name, len) : vim_strsave(name);
+
+    if (v_type == VAR_OBJECT)
+    {
+	if (class_member_idx(cl, name, len) >= 0)
+	    semsg(_(e_class_member_str_accessible_only_using_class_str),
+		    varname, cl->class_name);
+	else
+	    semsg(_(e_member_not_found_on_object_str_str), cl->class_name,
+		    varname);
+    }
+    else
+    {
+	if (object_member_idx(cl, name, len) >= 0)
+	    semsg(_(e_object_member_str_accessible_only_using_object_str),
+		    varname, cl->class_name);
+	else
+	    semsg(_(e_class_member_str_not_found_in_class_str),
+		    varname, cl->class_name);
+    }
+    vim_free(varname);
 }
 
 /*

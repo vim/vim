@@ -2172,8 +2172,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    {
 		if (*member == '_')
 		{
-		    semsg(_(e_cannot_access_private_member_str),
-			    m->ocm_name);
+		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 		    status = FAIL;
 		}
 
@@ -2181,8 +2180,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    }
 	    else
 	    {
-		semsg(_(e_member_not_found_on_object_str_str),
-						       cl->class_name, member);
+		member_not_found_msg(cl, VAR_OBJECT, member, 0);
 		status = FAIL;
 	    }
 	}
