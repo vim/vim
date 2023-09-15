@@ -14,11 +14,6 @@
  */
 
 /*
- * PBYTE(lp, c) - put byte 'c' at position 'lp'
- */
-#define PBYTE(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
-
-/*
  * Position comparisons
  */
 #define LT_POS(a, b) (((a).lnum != (b).lnum) \
