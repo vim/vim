@@ -7045,7 +7045,7 @@ else $as_nop
          "major_minor='${vi_cv_var_python3_stable_abi}'.split('.'); print('0x{0:X}'.format( (int(major_minor.__getitem__(0))<<24) + (int(major_minor.__getitem__(1))<<16) ))"`
 fi
 
-        if test "X$vi_cv_var_python3_stable_abi_hex" == "X"; then
+        if test "X$vi_cv_var_python3_stable_abi_hex" = "X"; then
           as_fn_error $? "can't parse Python 3 stable ABI version. It should be \"<major>.<minor>\"" "$LINENO" 5
         fi
       fi

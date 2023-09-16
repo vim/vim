@@ -1511,7 +1511,7 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
          vi_cv_var_python3_stable_abi_hex=`
          ${vi_cv_path_python3} -c \
          "major_minor='${vi_cv_var_python3_stable_abi}'.split('.'); print('0x{0:X}'.format( (int(major_minor.__getitem__(0))<<24) + (int(major_minor.__getitem__(1))<<16) ))"` ])
-        if test "X$vi_cv_var_python3_stable_abi_hex" == "X"; then
+        if test "X$vi_cv_var_python3_stable_abi_hex" = "X"; then
           AC_MSG_ERROR([can't parse Python 3 stable ABI version. It should be "<major>.<minor>"])
         fi
       fi
