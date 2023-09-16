@@ -1572,8 +1572,7 @@ EXTERN char e_unknown_printer_font_str[]
 #endif
 EXTERN char e_class_required[]
 	INIT(= N_("E614: Class required"));
-EXTERN char e_object_required[]
-	INIT(= N_("E615: Object required"));
+// E615 unused
 EXTERN char e_object_required_for_argument_nr[]
 	INIT(= N_("E616: Object required for argument %d"));
 #ifdef FEAT_GUI_GTK
@@ -3401,8 +3400,7 @@ EXTERN char e_object_required_found_str[]
 	INIT(= N_("E1327: Object required, found %s"));
 EXTERN char e_constructor_default_value_must_be_vnone_str[]
 	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
-EXTERN char e_cannot_get_object_member_type_from_initializer_str[]
-	INIT(= N_("E1329: Cannot get object member type from initializer: %s"));
+// E1329 unused
 EXTERN char e_invalid_type_for_object_member_str[]
 	INIT(= N_("E1330: Invalid type for object member: %s"));
 EXTERN char e_public_must_be_followed_by_this_or_static[]
@@ -3411,6 +3409,7 @@ EXTERN char e_public_member_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public member name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_private_member_str[]
 	INIT(= N_("E1333: Cannot access private member: %s"));
+// E1334 unused
 EXTERN char e_member_is_not_writable_str[]
 	INIT(= N_("E1335: Member is not writable: %s"));
 #endif
@@ -3419,8 +3418,8 @@ EXTERN char e_internal_error_shortmess_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_class_member_str_not_found_in_class_str[]
 	INIT(= N_("E1337: Class member \"%s\" not found in class \"%s\""));
-EXTERN char e_member_not_found_on_class_str_str[]
-	INIT(= N_("E1338: Member not found on class \"%s\": %s"));
+EXTERN char e_interface_static_direct_access_str[]
+	INIT(= N_("E1338: Cannot directly access interface \"%s\" static member \"%s\""));
 #endif
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
@@ -3444,9 +3443,9 @@ EXTERN char e_interface_name_not_found_str[]
 EXTERN char e_not_valid_interface_str[]
 	INIT(= N_("E1347: Not a valid interface: %s"));
 EXTERN char e_member_str_of_interface_str_not_implemented[]
-	INIT(= N_("E1348: Member \"%s\" of interface \"%s\" not implemented"));
-EXTERN char e_function_str_of_interface_str_not_implemented[]
-	INIT(= N_("E1349: Function \"%s\" of interface \"%s\" not implemented"));
+	INIT(= N_("E1348: Member \"%s\" of interface \"%s\" is not implemented"));
+EXTERN char e_method_str_of_interface_str_not_implemented[]
+	INIT(= N_("E1349: Method \"%s\" of interface \"%s\" is not implemented"));
 EXTERN char e_duplicate_implements[]
 	INIT(= N_("E1350: Duplicate \"implements\""));
 EXTERN char e_duplicate_interface_after_implements_str[]
@@ -3480,6 +3479,7 @@ EXTERN char e_incomplete_type[]
 #endif
 EXTERN char e_warning_pointer_block_corrupted[]
 	INIT(= N_("E1364: Warning: Pointer block corrupted"));
+#ifdef FEAT_EVAL
 EXTERN char e_cannot_use_a_return_type_with_new[]
 	INIT(= N_("E1365: Cannot use a return type with the \"new\" function"));
 EXTERN char e_cannot_access_private_method_str[]
@@ -3504,10 +3504,21 @@ EXTERN char e_class_member_str_accessible_only_using_class_str[]
 	INIT(= N_("E1375: Class member \"%s\" accessible only using class \"%s\""));
 EXTERN char e_object_member_str_accessible_only_using_object_str[]
 	INIT(= N_("E1376: Object member \"%s\" accessible only using class \"%s\" object"));
-EXTERN char e_static_member_not_supported_in_interface[]
-	INIT(= N_("E1377: Static member is not supported in an interface"));
 EXTERN char e_method_str_of_class_str_has_different_access[]
-	INIT(= N_("E1378: Access level of method \"%s\" is different in class \"%s\""));
+	INIT(= N_("E1377: Access level of method \"%s\" is different in class \"%s\""));
+EXTERN char e_static_cannot_be_used_in_interface[]
+	INIT(= N_("E1378: Static cannot be used in an interface"));
+EXTERN char e_private_variable_str_in_interface[]
+	INIT(= N_("E1379: Private variable not supported in an interface"));
+EXTERN char e_private_method_str_in_interface[]
+	INIT(= N_("E1380: Private method not supported in an interface"));
+EXTERN char e_interface_cannot_use_implements[]
+	INIT(= N_("E1381: Interface cannot use \"implements\""));
+EXTERN char e_member_str_type_mismatch_expected_str_but_got_str[]
+	INIT(= N_("E1382: Member \"%s\": type mismatch, expected %s but got %s"));
+EXTERN char e_method_str_type_mismatch_expected_str_but_got_str[]
+	INIT(= N_("E1383: Method \"%s\": type mismatch, expected %s but got %s"));
+#endif
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
@@ -3520,12 +3531,6 @@ EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
 	INIT(= N_("E1404: Positional argument %d type used inconsistently: %s/%s"));
 EXTERN char e_invalid_format_specifier_str[]
 	INIT(= N_("E1405: Invalid format specifier: %s"));
-EXTERN char e_member_str_type_mismatch_expected_str_but_got_str[]
-	INIT(= N_("E1406: Member \"%s\": type mismatch, expected %s but got %s"));
-EXTERN char e_method_str_type_mismatch_expected_str_but_got_str[]
-	INIT(= N_("E1407: Method \"%s\": type mismatch, expected %s but got %s"));
 EXTERN char e_aptypes_is_null_nr_str[]
 	INIT(= "E1408: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
-EXTERN char e_interface_static_direct_access_str[]
-	INIT(= N_("E1409: Cannot directly access interface \"%s\" static member \"%s\""));
-// E1376 - E1399 unused
+// E1384 - E1399 unused

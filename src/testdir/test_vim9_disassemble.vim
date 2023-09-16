@@ -3052,9 +3052,7 @@ def Test_disassemble_interface_static_member()
   var lines =<< trim END
     vim9script
     interface I
-      public static s_var: number
       public this.o_var: number
-      public static s_var2: number
       public this.o_var2: number
     endinterface
 
