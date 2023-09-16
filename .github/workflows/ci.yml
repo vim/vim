@@ -210,7 +210,7 @@ jobs:
         if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
         run: |
           sudo depmod --verbose
-          sudo modprobe --verbose snd-dummy
+          sudo modprobe --verbose snd-dummy || true
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
