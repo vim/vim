@@ -1049,9 +1049,9 @@ add_default_constructor(
 }
 
 /*
- * Add the class functions and object methods to the new class "cl".
- * When extending a class, add the functions and methods from the parent class
- * also.
+ * Add the class methods and object methods to the new class "cl".
+ * When extending a class "extends_cl", add the instance methods from the
+ * parent class also.
  */
     static int
 add_classfuncs_objmethods(
@@ -1095,26 +1095,19 @@ add_classfuncs_objmethods(
 	else
 	    cl->class_obj_method_count_child = gap->ga_len;
 
-	int skipped = 0;
-	for (int i = 0; i < parent_count; ++i)
+	if (loop == 2)
 	{
-	    // Copy functions from the parent.  Can't use the same
-	    // function, because "uf_class" is different and compilation
-	    // will have a different result.
-	    // Put them after the functions in the current class, object
-	    // methods may be overruled, then "super.Method()" is used to
-	    // find a method from the parent.
-	    // Skip "new" functions. TODO: not all of them.
-	    if (loop == 1 && STRNCMP(
-				extends_cl->class_class_functions[i]->uf_name,
-				"new", 3) == 0)
-		++skipped;
-	    else
+	    // Copy instance methods from the parent.
+
+	    for (int i = 0; i < parent_count; ++i)
 	    {
-		ufunc_T *pf = (loop == 1
-					? extends_cl->class_class_functions
-					: extends_cl->class_obj_methods)[i];
-		(*fup)[gap->ga_len + i - skipped] = copy_function(pf);
+		// Can't use the same parent function, because "uf_class" is
+		// different and compilation will have a different result.
+		// Put them after the functions in the current class, object
+		// methods may be overruled, then "super.Method()" is used to
+		// find a method from the parent.
+		ufunc_T *pf = (extends_cl->class_obj_methods)[i];
+		(*fup)[gap->ga_len + i] = copy_function(pf);
 
 		// If the child class overrides a function from the parent
 		// the signature must be equal.
@@ -1134,8 +1127,6 @@ add_classfuncs_objmethods(
 		}
 	    }
 	}
-
-	*fcount -= skipped;
 
 	// Set the class pointer on all the functions and object methods.
 	for (int i = 0; i < *fcount; ++i)
