@@ -8,9 +8,6 @@ freebsd_task:
     - name: FreeBSD 14.0
       freebsd_instance:
         image_family: freebsd-14-0
-    - name: FreeBSD 13.1 
-      freebsd_instance:
-        image_family: freebsd-13-1
   timeout_in: 20m
   install_script:
     - pkg install -y gettext
