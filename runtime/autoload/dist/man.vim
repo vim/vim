@@ -196,7 +196,11 @@ func dist#man#GetPage(cmdmods, ...)
 
   " Emulate piping the buffer through the "col -b" command.
   " Ref: https://github.com/vim/vim/issues/12301
-  silent! keepjumps keeppatterns %s/\v(.)\b\ze\1?//ge
+  if &gdefault
+    silent! keepjumps keeppatterns %s/\v(.)\b\ze\1?//e
+  else
+    silent! keepjumps keeppatterns %s/\v(.)\b\ze\1?//ge
+  endif
 
   if unsetwidth
     let $MANWIDTH = ''
