@@ -102,6 +102,11 @@
 # define ROOT_UID 0
 #endif
 
+/* Include MAC_OS_X_VERSION_* macros */
+#ifdef HAVE_AVAILABILITYMACROS_H
+# include <AvailabilityMacros.h>
+#endif
+
 /*
  * MACOS_X	    compiling for Mac OS X
  * MACOS_X_DARWIN   integrating the darwin feature into MACOS_X
@@ -167,7 +172,9 @@
 # if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
-# if defined(FEAT_HUGE) && !defined(FEAT_SOUND)
+# if defined(FEAT_HUGE) && !defined(FEAT_SOUND) && \
+   defined(MAC_OS_X_VERSION_MIN_REQUIRED) && \
+    MAC_OS_X_VERSION_MIN_REQUIRED >= 101100
 #  define FEAT_SOUND
 # endif
 # if defined(FEAT_SOUND)
