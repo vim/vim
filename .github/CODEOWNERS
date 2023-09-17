@@ -166,6 +166,7 @@ runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/jsonc.vim		@izhakjakov
 runtime/ftplugin/julia.vim		@carlobaldassi
 runtime/ftplugin/kconfig.vim		@chrisbra
+runtime/ftplugin/kotlin.vim		@udalov
 runtime/ftplugin/less.vim		@genoma
 runtime/ftplugin/liquid.vim		@tpope
 runtime/ftplugin/lua.vim		@dkearns
@@ -194,7 +195,7 @@ runtime/ftplugin/ps1xml.vim		@heaths
 runtime/ftplugin/pymanifest.vim		@ObserverOfTime
 runtime/ftplugin/python.vim		@tpict
 runtime/ftplugin/qb64.vim		@dkearns
-runtime/ftplugin/qml.vim        @ChaseKnowlden
+runtime/ftplugin/qml.vim		@ChaseKnowlden
 runtime/ftplugin/r.vim			@jalvesaq
 runtime/ftplugin/racket.vim		@benknoble
 runtime/ftplugin/readline.vim		@dkearns
@@ -271,6 +272,7 @@ runtime/indent/javascript.vim		@bounceme
 runtime/indent/json.vim			@elzr
 runtime/indent/jsonc.vim		@izhakjakov
 runtime/indent/julia.vim		@carlobaldassi
+runtime/indent/kotlin.vim		@udalov
 runtime/indent/krl.vim			@KnoP-01
 runtime/indent/ld.vim			@dkearns
 runtime/indent/less.vim			@genoma
@@ -288,7 +290,7 @@ runtime/indent/postscr.vim		@mrdubya
 runtime/indent/prolog.vim		@dkearns
 runtime/indent/ps1.vim			@heaths
 runtime/indent/qb64.vim			@dkearns
-runtime/indent/qml.vim          @ChaseKnowlden
+runtime/indent/qml.vim			@ChaseKnowlden
 runtime/indent/r.vim			@jalvesaq
 runtime/indent/racket.vim		@benknoble
 runtime/indent/rapid.vim		@KnoP-01
@@ -325,7 +327,7 @@ runtime/plugin/tarPlugin.vim		@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
 runtime/plugin/manpager.vim		@Konfekt
-runtime/syntax/shared/hgcommitDiff.vim		@vegerot
+runtime/syntax/shared/hgcommitDiff.vim	@vegerot
 runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp
@@ -408,6 +410,7 @@ runtime/syntax/javascript.vim		@fleiner
 runtime/syntax/jsonc.vim		@izhakjakov
 runtime/syntax/julia.vim		@carlobaldassi
 runtime/syntax/kconfig.vim		@chrisbra
+runtime/syntax/kotlin.vim		@udalov
 runtime/syntax/krl.vim			@KnoP-01
 runtime/syntax/less.vim			@genoma
 runtime/syntax/lex.vim			@cecamp
@@ -450,7 +453,7 @@ runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho
 runtime/syntax/pymanifest.vim		@ObserverOfTime
 runtime/syntax/qb64.vim			@dkearns
-runtime/syntax/qml.vim          @ChaseKnowlden
+runtime/syntax/qml.vim			@ChaseKnowlden
 runtime/syntax/r.vim			@jalvesaq
 runtime/syntax/racket.vim		@benknoble
 runtime/syntax/raml.vim			@in3d
