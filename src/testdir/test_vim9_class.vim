@@ -837,6 +837,27 @@ def Test_class_new_with_object_member()
       Check()
   END
   v9.CheckSourceFailure(lines, 'E1013:')
+
+  lines =<< trim END
+      vim9script
+
+      class C
+        this.str: string
+        def new(str: any)
+        enddef
+      endclass
+
+      def Check()
+        try
+          var c = C.new(1)
+        catch
+          assert_report($'Unexpected exception was caught: {v:exception}')
+        endtry
+      enddef
+
+      Check()
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_class_object_member_inits()

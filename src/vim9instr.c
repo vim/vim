@@ -1784,7 +1784,6 @@ generate_CALL(
 	ufunc_T	    *ufunc,
 	class_T	    *cl,
 	int	    mi,
-	type_T	    *mtype,	// method type
 	int	    pushed_argcount)
 {
     isn_T	*isn;
@@ -1810,8 +1809,6 @@ generate_CALL(
     {
 	int		i;
 	compiletype_T	compile_type;
-	int		class_constructor = (mtype->tt_type == VAR_CLASS
-				    && STRNCMP(ufunc->uf_name, "new", 3) == 0);
 
 	for (i = 0; i < argcount; ++i)
 	{
@@ -1830,18 +1827,6 @@ generate_CALL(
 		if (ufunc->uf_arg_types == NULL)
 		    continue;
 		expected = ufunc->uf_arg_types[i];
-
-		// When the method is a class constructor and the formal
-		// argument is an object member, the type check is performed on
-		// the object member type.
-		if (class_constructor && expected->tt_type == VAR_ANY)
-		{
-		    class_T *clp = mtype->tt_class;
-		    char_u  *aname = ((char_u **)ufunc->uf_args.ga_data)[i];
-		    ocmember_T *m = object_member_lookup(clp, aname, 0, NULL);
-		    if (m != NULL)
-			expected = m->ocm_type;
-		}
 	    }
 	    else if (ufunc->uf_va_type == NULL
 					   || ufunc->uf_va_type == &t_list_any)

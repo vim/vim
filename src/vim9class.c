@@ -1200,7 +1200,8 @@ add_default_constructor(
     garray_T lines_to_free;
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
-    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS);
+    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS,
+			    cl->class_obj_members, cl->class_obj_member_count);
 
     ga_clear_strings(&lines_to_free);
     vim_free(fga.ga_data);
@@ -1678,7 +1679,7 @@ early_ret:
 	    else
 		class_flags = CF_INTERFACE;
 	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free,
-								class_flags);
+			class_flags, objmembers.ga_data, objmembers.ga_len);
 	    ga_clear_strings(&lines_to_free);
 
 	    if (uf != NULL)

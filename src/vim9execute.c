@@ -4461,7 +4461,7 @@ exec_instructions(ectx_T *ectx)
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    define_function(&ea, NULL, &lines_to_free, 0);
+		    define_function(&ea, NULL, &lines_to_free, 0, NULL, 0);
 		    ga_clear_strings(&lines_to_free);
 		}
 		break;
