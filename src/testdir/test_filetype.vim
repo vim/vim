@@ -372,6 +372,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     lilo: ['lilo.conf', 'lilo.conf-file'],
     lilypond: ['file.ly', 'file.ily'],
     limits: ['/etc/limits', '/etc/anylimits.conf', '/etc/anylimits.d/file.conf', '/etc/limits.conf', '/etc/limits.d/file.conf', '/etc/some-limits.conf', '/etc/some-limits.d/file.conf', 'any/etc/limits', 'any/etc/limits.conf', 'any/etc/limits.d/file.conf', 'any/etc/some-limits.conf', 'any/etc/some-limits.d/file.conf'],
+    liquidsoap: ['file.liq'],
     liquid: ['file.liquid'],
     lisp: ['file.lsp', 'file.lisp', 'file.asd', 'file.el', 'file.cl', '.emacs', '.sawfishrc', 'sbclrc', '.sbclrc'],
     lite: ['file.lite', 'file.lt'],

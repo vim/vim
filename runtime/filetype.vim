@@ -1181,6 +1181,9 @@ endif
 " SBCL implementation of Common Lisp
 au BufNewFile,BufRead sbclrc,.sbclrc		setf lisp
 
+" Liquidsoap
+au BufNewFile,BufRead *.liq			setf liquidsoap
+
 " Liquid
 au BufNewFile,BufRead *.liquid			setf liquid
 
