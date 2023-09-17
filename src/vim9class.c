@@ -293,7 +293,10 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl,
  * Returns TRUE if the class name "extends_names" is a valid class.
  */
     static int
-validate_extends_class(char_u *extends_name, class_T **extends_clp)
+validate_extends_class(
+    char_u  *extends_name,
+    class_T **extends_clp,
+    int	    is_class)
 {
     typval_T	tv;
     int		success = FALSE;
@@ -305,9 +308,13 @@ validate_extends_class(char_u *extends_name, class_T **extends_clp)
 	return success;
     }
 
-    if (tv.v_type != VAR_CLASS
-	    || tv.vval.v_class == NULL
-	    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+    if (tv.v_type != VAR_CLASS || tv.vval.v_class == NULL
+	    || (is_class
+		&& (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+	    || (!is_class
+		&& (tv.vval.v_class->class_flags & CLASS_INTERFACE) == 0))
+	// a interface cannot extend a class and a class cannot extend an
+	// interface.
 	semsg(_(e_cannot_extend_str), extends_name);
     else
     {
@@ -352,6 +359,8 @@ validate_extends_methods(
 	    if (extends_private)
 		pstr++;
 
+	    // When comparing the method names, ignore the access type (public
+	    // and private methods are considered the same).
 	    for (int j = 0; j < method_count; j++)
 	    {
 		char_u  *qstr = cl_fp[j]->uf_name;
@@ -380,12 +389,10 @@ validate_extends_methods(
  * are no duplicates.
  */
     static int
-validate_extends_members(
+extends_check_dup_members(
     garray_T	*objmembers_gap,
     class_T	*extends_cl)
 {
-    // loop == 1: check class members
-    // loop == 2: check object members
     int member_count = objmembers_gap->ga_len;
     if (member_count == 0)
 	return TRUE;
@@ -422,6 +429,68 @@ validate_extends_members(
 		    semsg(_(e_duplicate_member_str), c_m->ocm_name);
 		    return FALSE;
 		}
+	    }
+
+	    p_cl = p_cl->class_extends;
+	}
+    }
+
+    return TRUE;
+}
+
+/*
+ * Compare the variable type of interface variables in "objmembers_gap" against
+ * the variable in any of the extended super interface lineage.  Used to
+ * compare the variable types when extending interfaces.  Returns TRUE if the
+ * variable types are the same.
+ */
+    static int
+extends_check_intf_var_type(
+    garray_T	*objmembers_gap,
+    class_T	*extends_cl)
+{
+    int member_count = objmembers_gap->ga_len;
+    if (member_count == 0)
+	return TRUE;
+
+    ocmember_T *members = (ocmember_T *)(objmembers_gap->ga_data);
+
+    // Validate each member variable
+    for (int c_i = 0; c_i < member_count; c_i++)
+    {
+	class_T	    *p_cl = extends_cl;
+	ocmember_T  *c_m = members + c_i;
+	int	    var_found = FALSE;
+
+	// Check in all the parent classes in the lineage
+	while (p_cl != NULL && !var_found)
+	{
+	    int p_member_count = p_cl->class_obj_member_count;
+	    if (p_member_count == 0)
+	    {
+		p_cl = p_cl->class_extends;
+		continue;
+	    }
+	    ocmember_T *p_members = p_cl->class_obj_members;
+
+	    // Compare against all the members in the parent class
+	    for (int p_i = 0; p_i < p_member_count; p_i++)
+	    {
+		where_T		where = WHERE_INIT;
+		ocmember_T	*p_m = p_members + p_i;
+
+		if (STRCMP(p_m->ocm_name, c_m->ocm_name) != 0)
+		    continue;
+
+		// Ensure the type is matching.
+		where.wt_func_name = (char *)c_m->ocm_name;
+		where.wt_kind = WT_MEMBER;
+
+		if (check_type(p_m->ocm_type, c_m->ocm_type, TRUE,
+								where) == FAIL)
+		    return FALSE;
+
+		var_found = TRUE;
 	    }
 
 	    p_cl = p_cl->class_extends;
@@ -491,60 +560,107 @@ validate_abstract_class_methods(
 }
 
 /*
- * Check the members of the interface class "ifcl" match the class members
- * ("classmembers_gap") and object members ("objmembers_gap") of a class.
- * Returns TRUE if the class and object member names are valid.
+ * Returns TRUE if the interface variable "if_var" is present in the list of
+ * variables in "cl_mt" or in the parent lineage of one of the extended classes
+ * in "extends_cl".  For a class variable, 'is_class_var' is TRUE.
  */
     static int
-validate_interface_members(
+intf_variable_present(
+    char_u	*intf_class_name,
+    ocmember_T *if_var,
+    int		is_class_var,
+    ocmember_T *cl_mt,
+    int		cl_member_count,
+    class_T	*extends_cl)
+{
+    int		variable_present  = FALSE;
+
+    for (int cl_i = 0; cl_i < cl_member_count; ++cl_i)
+    {
+	ocmember_T	*m = &cl_mt[cl_i];
+	where_T		where = WHERE_INIT;
+
+	if (STRCMP(if_var->ocm_name, m->ocm_name) != 0)
+	    continue;
+
+	// Ensure the access type is same
+	if (if_var->ocm_access != m->ocm_access)
+	{
+	    semsg(_(e_member_str_of_interface_str_has_different_access),
+		    if_var->ocm_name, intf_class_name);
+	    return FALSE;
+	}
+
+	// Ensure the type is matching.
+	if (m->ocm_type == &t_any)
+	{
+	    // variable type is not specified.  Use the variable type in the
+	    // interface.
+	    m->ocm_type = if_var->ocm_type;
+	}
+	else
+	{
+	    where.wt_func_name = (char *)m->ocm_name;
+	    where.wt_kind = WT_MEMBER;
+	    if (check_type(if_var->ocm_type, m->ocm_type, TRUE,
+							    where) == FAIL)
+		return FALSE;
+	}
+
+	variable_present = TRUE;
+	break;
+    }
+
+    if (!variable_present && extends_cl != NULL)
+    {
+	int ext_cl_count = is_class_var
+				? extends_cl->class_class_member_count
+				: extends_cl->class_obj_member_count;
+	ocmember_T *ext_cl_mt = is_class_var
+				? extends_cl->class_class_members
+				: extends_cl->class_obj_members;
+	return intf_variable_present(intf_class_name, if_var,
+					is_class_var, ext_cl_mt,
+					ext_cl_count,
+					extends_cl->class_extends);
+    }
+
+    return variable_present;
+}
+
+/*
+ * Check the variables of the interface class "ifcl" match the class variables
+ * ("classmembers_gap") and object variables ("objmembers_gap") of a class.
+ * Returns TRUE if the class and object variables names are valid.
+ */
+    static int
+validate_interface_variables(
     char_u	*intf_class_name,
     class_T	*ifcl,
     garray_T	*classmembers_gap,
-    garray_T	*objmembers_gap)
+    garray_T	*objmembers_gap,
+    class_T	*extends_cl)
 {
     for (int loop = 1; loop <= 2; ++loop)
     {
-	// loop == 1: check class members
-	// loop == 2: check object members
-	int if_count = loop == 1 ? ifcl->class_class_member_count
+	// loop == 1: check class variables
+	// loop == 2: check object variables
+	int is_class_var = (loop == 1);
+	int if_count = is_class_var ? ifcl->class_class_member_count
 						: ifcl->class_obj_member_count;
 	if (if_count == 0)
 	    continue;
-	ocmember_T *if_ms = loop == 1 ? ifcl->class_class_members
+	ocmember_T *if_ms = is_class_var ? ifcl->class_class_members
 						: ifcl->class_obj_members;
-	ocmember_T *cl_ms = (ocmember_T *)(loop == 1
+	ocmember_T *cl_ms = (ocmember_T *)(is_class_var
 						? classmembers_gap->ga_data
 						: objmembers_gap->ga_data);
-	int cl_count = loop == 1 ? classmembers_gap->ga_len
+	int cl_count = is_class_var ? classmembers_gap->ga_len
 						: objmembers_gap->ga_len;
 	for (int if_i = 0; if_i < if_count; ++if_i)
 	{
-	    int cl_i;
-	    for (cl_i = 0; cl_i < cl_count; ++cl_i)
-	    {
-		ocmember_T	*m = &cl_ms[cl_i];
-		where_T		where = WHERE_INIT;
-
-		if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) != 0)
-		    continue;
-
-		// Ensure the type is matching.
-		where.wt_func_name = (char *)m->ocm_name;
-		where.wt_kind = WT_MEMBER;
-		if (check_type(if_ms[if_i].ocm_type, m->ocm_type, TRUE,
-								where) == FAIL)
-		    return FALSE;
-
-		if (if_ms[if_i].ocm_access != m->ocm_access)
-		{
-		    semsg(_(e_member_str_of_interface_str_has_different_access),
-			    if_ms[if_i].ocm_name, intf_class_name);
-		    return FALSE;
-		}
-
-		break;
-	    }
-	    if (cl_i == cl_count)
+	    if (!intf_variable_present(intf_class_name, &if_ms[if_i],
+				is_class_var, cl_ms, cl_count, extends_cl))
 	    {
 		semsg(_(e_member_str_of_interface_str_not_implemented),
 			if_ms[if_i].ocm_name, intf_class_name);
@@ -557,56 +673,107 @@ validate_interface_members(
 }
 
 /*
- * Check the functions/methods of the interface class "ifcl" match the class
- * methods ("classfunctions_gap") and object functions ("objmemthods_gap") of a
- * class.
- * Returns TRUE if the class and object member names are valid.
+ * Returns TRUE if the method signature of "if_method" and "cl_method" matches.
+ */
+    static int
+intf_method_type_matches(ufunc_T *if_method, ufunc_T *cl_method)
+{
+    where_T where = WHERE_INIT;
+
+    // Ensure the type is matching.
+    where.wt_func_name = (char *)if_method->uf_name;
+    where.wt_kind = WT_METHOD;
+    if (check_type(if_method->uf_func_type, cl_method->uf_func_type, TRUE,
+								where) == FAIL)
+	return FALSE;
+
+    return TRUE;
+}
+
+/*
+ * Returns TRUE if the interface method "if_ufunc" is present in the list of
+ * methods in "cl_fp" or in the parent lineage of one of the extended classes
+ * in "extends_cl".  For a class method, 'is_class_method' is TRUE.
+ */
+    static int
+intf_method_present(
+    ufunc_T *if_ufunc,
+    int	    is_class_method,
+    ufunc_T **cl_fp,
+    int	    cl_count,
+    class_T *extends_cl)
+{
+    int		method_present  = FALSE;
+
+    for (int cl_i = 0; cl_i < cl_count; ++cl_i)
+    {
+	char_u *cl_name = cl_fp[cl_i]->uf_name;
+	if (STRCMP(if_ufunc->uf_name, cl_name) == 0)
+	{
+	    // Ensure the type is matching.
+	    if (!intf_method_type_matches(if_ufunc, cl_fp[cl_i]))
+		return FALSE;
+	    method_present = TRUE;
+	    break;
+	}
+    }
+
+    if (!method_present && extends_cl != NULL)
+    {
+	ufunc_T **ext_cl_fp = (ufunc_T **)(is_class_method
+					? extends_cl->class_class_functions
+					: extends_cl->class_obj_methods);
+	int	ext_cl_count = is_class_method
+				? extends_cl->class_class_function_count
+				: extends_cl->class_obj_method_count;
+	return intf_method_present(if_ufunc, is_class_method, ext_cl_fp,
+					ext_cl_count,
+					extends_cl->class_extends);
+    }
+
+    return method_present;
+}
+
+/*
+ * Validate that a new class implements all the class/instance methods in the
+ * interface "ifcl".  The new class methods are in "classfunctions_gap" and the
+ * new object methods are in "objmemthods_gap".  Also validates the method
+ * types.
+ * Returns TRUE if all the interface class/object methods are implemented in
+ * the new class.
  */
     static int
 validate_interface_methods(
     char_u	*intf_class_name,
     class_T	*ifcl,
     garray_T	*classfunctions_gap,
-    garray_T	*objmethods_gap)
+    garray_T	*objmethods_gap,
+    class_T	*extends_cl)
 {
     for (int loop = 1; loop <= 2; ++loop)
     {
-	// loop == 1: check class functions
+	// loop == 1: check class methods
 	// loop == 2: check object methods
-	int if_count = loop == 1 ? ifcl->class_class_function_count
+	int is_class_method = (loop == 1);
+	int if_count = is_class_method ? ifcl->class_class_function_count
 					: ifcl->class_obj_method_count;
 	if (if_count == 0)
 	    continue;
-	ufunc_T **if_fp = loop == 1 ? ifcl->class_class_functions
+	ufunc_T **if_fp = is_class_method ? ifcl->class_class_functions
 						: ifcl->class_obj_methods;
-	ufunc_T **cl_fp = (ufunc_T **)(loop == 1
+	ufunc_T **cl_fp = (ufunc_T **)(is_class_method
 						? classfunctions_gap->ga_data
 						: objmethods_gap->ga_data);
-	int cl_count = loop == 1 ? classfunctions_gap->ga_len
+	int cl_count = is_class_method ? classfunctions_gap->ga_len
 						: objmethods_gap->ga_len;
 	for (int if_i = 0; if_i < if_count; ++if_i)
 	{
 	    char_u	*if_name = if_fp[if_i]->uf_name;
-	    int		cl_i;
-	    for (cl_i = 0; cl_i < cl_count; ++cl_i)
-	    {
-		char_u *cl_name = cl_fp[cl_i]->uf_name;
-		if (STRCMP(if_name, cl_name) == 0)
-		{
-		    where_T where = WHERE_INIT;
 
-		    // Ensure the type is matching.
-		    where.wt_func_name = (char *)if_name;
-		    where.wt_kind = WT_METHOD;
-		    if (check_type(if_fp[if_i]->uf_func_type,
-			cl_fp[cl_i]->uf_func_type, TRUE, where) == FAIL)
-			return FALSE;
-		    break;
-		}
-	    }
-	    if (cl_i == cl_count)
+	    if (!intf_method_present(if_fp[if_i], is_class_method, cl_fp,
+							cl_count, extends_cl))
 	    {
-		semsg(_(e_function_str_of_interface_str_not_implemented),
+		semsg(_(e_method_str_of_interface_str_not_implemented),
 			if_name, intf_class_name);
 		return FALSE;
 	    }
@@ -630,7 +797,8 @@ validate_implements_classes(
     garray_T	*classfunctions_gap,
     garray_T	*classmembers_gap,
     garray_T	*objmethods_gap,
-    garray_T	*objmembers_gap)
+    garray_T	*objmembers_gap,
+    class_T	*extends_cl)
 {
     int		success = TRUE;
 
@@ -660,15 +828,16 @@ validate_implements_classes(
 	intf_classes[i] = ifcl;
 	++ifcl->class_refcount;
 
-	// check the members of the interface match the members of the class
-	success = validate_interface_members(impl, ifcl, classmembers_gap,
-							objmembers_gap);
+	// check the variables of the interface match the members of the class
+	success = validate_interface_variables(impl, ifcl, classmembers_gap,
+						objmembers_gap, extends_cl);
 
 	// check the functions/methods of the interface match the
 	// functions/methods of the class
 	if (success)
 	    success = validate_interface_methods(impl, ifcl,
-					classfunctions_gap, objmethods_gap);
+					classfunctions_gap, objmethods_gap,
+					extends_cl);
 	clear_tv(&tv);
     }
 
@@ -820,8 +989,7 @@ update_member_method_lookup_table(
     class_T	*ifcl,
     class_T	*cl,
     garray_T	*objmethods,
-    int		pobj_method_offset,
-    int		is_interface)
+    int		pobj_method_offset)
 {
     if (ifcl == NULL)
 	return OK;
@@ -876,7 +1044,7 @@ update_member_method_lookup_table(
 	// extended class object method is not overridden by the child class.
 	// Keep the method declared in one of the parent classes in the
 	// lineage.
-	if (!done && !is_interface)
+	if (!done)
 	{
 	    // If "ifcl" is not the immediate parent of "cl", then search in
 	    // the intermediate parent classes.
@@ -927,13 +1095,20 @@ update_member_method_lookup_table(
     static int
 add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
 {
+    // update the lookup table for all the implemented interfaces
     for (int i = 0; i < cl->class_interface_count; ++i)
     {
 	class_T *ifcl = cl->class_interfaces_cl[i];
 
-	if (update_member_method_lookup_table(ifcl, cl, objmethods_gap,
-							0, TRUE) == FAIL)
-	    return FAIL;
+	// update the lookup table for this interface and all its super
+	// interfaces.
+	while (ifcl != NULL)
+	{
+	    if (update_member_method_lookup_table(ifcl, cl, objmethods_gap,
+								0) == FAIL)
+		return FAIL;
+	    ifcl = ifcl->class_extends;
+	}
     }
 
     // Update the lookup table for the extended class, if any
@@ -946,7 +1121,7 @@ add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
 	while (pclass != NULL)
 	{
 	    if (update_member_method_lookup_table(pclass, cl,
-			objmethods_gap, pobj_method_offset, FALSE) == FAIL)
+			objmethods_gap, pobj_method_offset) == FAIL)
 		return FAIL;
 
 	    pobj_method_offset += pclass->class_obj_method_count_child;
@@ -1237,6 +1412,12 @@ ex_class(exarg_T *eap)
 	else if (STRNCMP(arg, "implements", 10) == 0
 						   && IS_WHITE_OR_NUL(arg[10]))
 	{
+	    if (!is_class)
+	    {
+		emsg(_(e_interface_cannot_use_implements));
+		goto early_ret;
+	    }
+
 	    if (ga_impl.ga_len > 0)
 	    {
 		emsg(_(e_duplicate_implements));
@@ -1377,18 +1558,25 @@ early_ret:
 		break;
 	    }
 
-	    if (!is_abstract)
+	    if (!is_class)
+		// ignore "abstract" in an interface (as all the methods in an
+		// interface are abstract.
+		p = skipwhite(pa + 8);
+	    else
 	    {
-		semsg(_(e_abstract_method_in_concrete_class), pa);
-		break;
-	    }
+		if (!is_abstract)
+		{
+		    semsg(_(e_abstract_method_in_concrete_class), pa);
+		    break;
+		}
 
-	    abstract_method = TRUE;
-	    p = skipwhite(pa + 8);
-	    if (STRNCMP(p, "def", 3) != 0 && STRNCMP(p, "static", 6) != 0)
-	    {
-		emsg(_(e_abstract_must_be_followed_by_def_or_static));
-		break;
+		abstract_method = TRUE;
+		p = skipwhite(pa + 8);
+		if (STRNCMP(p, "def", 3) != 0 && STRNCMP(p, "static", 6) != 0)
+		{
+		    emsg(_(e_abstract_must_be_followed_by_def_or_static));
+		    break;
+		}
 	    }
 	}
 
@@ -1399,6 +1587,12 @@ early_ret:
 	    if (STRNCMP(ps, "static", 6) != 0)
 	    {
 		semsg(_(e_command_cannot_be_shortened_str), ps);
+		break;
+	    }
+
+	    if (!is_class)
+	    {
+		emsg(_(e_static_cannot_be_used_in_interface));
 		break;
 	    }
 	    has_static = TRUE;
@@ -1425,6 +1619,14 @@ early_ret:
 	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
+
+	    if (!is_class && *varname == '_')
+	    {
+		// private variables are not supported in an interface
+		semsg(_(e_private_variable_str_in_interface), varname);
+		break;
+	    }
+
 	    if (parse_member(eap, line, varname, has_public,
 			  &varname_end, &type_list, &type,
 			  is_class ? &init_expr: NULL) == FAIL)
@@ -1484,6 +1686,13 @@ early_ret:
 		char_u	*name = uf->uf_name;
 		int	is_new = STRNCMP(name, "new", 3) == 0;
 
+		if (!is_class && *name == '_')
+		{
+		    // private variables are not supported in an interface
+		    semsg(_(e_private_method_str_in_interface), name);
+		    func_clear_free(uf, FALSE);
+		    break;
+		}
 		if (is_new && !is_valid_constructor(uf, is_abstract,
 								has_static))
 		{
@@ -1562,7 +1771,7 @@ early_ret:
 
     // Check the "extends" class is valid.
     if (success && extends != NULL)
-	success = validate_extends_class(extends, &extends_cl);
+	success = validate_extends_class(extends, &extends_cl, is_class);
     VIM_CLEAR(extends);
 
     // Check the new object methods to make sure their access (public or
@@ -1571,9 +1780,15 @@ early_ret:
 	success = validate_extends_methods(&objmethods, extends_cl);
 
     // Check the new class and object variables are not duplicates of the
-    // variables in the extended class lineage.
+    // variables in the extended class lineage.  If an interface is extending
+    // another interface, then it can duplicate the member variables.
     if (success && extends_cl != NULL)
-	success = validate_extends_members(&objmembers, extends_cl);
+    {
+	if (is_class)
+	    success = extends_check_dup_members(&objmembers, extends_cl);
+	else
+	    success = extends_check_intf_var_type(&objmembers, extends_cl);
+    }
 
     // When extending an abstract class, make sure all the abstract methods in
     // the parent class are implemented.  If the current class is an abstract
@@ -1592,7 +1807,8 @@ early_ret:
 
 	success = validate_implements_classes(&ga_impl, intf_classes,
 					&classfunctions, &classmembers,
-					&objmethods, &objmembers);
+					&objmethods, &objmembers,
+					extends_cl);
     }
 
     // Check no function argument name is used as a class member.
@@ -2637,10 +2853,18 @@ class_instance_of(class_T *cl, class_T *other_cl)
     {
 	if (cl == other_cl)
 	    return TRUE;
-	// Check the implemented interfaces.
+	// Check the implemented interfaces and the super interfaces
 	for (int i = cl->class_interface_count - 1; i >= 0; --i)
-	    if (cl->class_interfaces_cl[i] == other_cl)
-		return TRUE;
+	{
+	    class_T	*intf = cl->class_interfaces_cl[i];
+	    while (intf != NULL)
+	    {
+		if (intf == other_cl)
+		    return TRUE;
+		// check the super interfaces
+		intf = intf->class_extends;
+	    }
+	}
     }
 
     return FALSE;
