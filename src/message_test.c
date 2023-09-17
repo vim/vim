@@ -225,7 +225,6 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "one two", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-#ifdef FEAT_FLOAT
 	n = vim_snprintf(buf, bsize, "%f", 1.234);
 	assert(n == 8);
 	assert(bsize == 0 || STRNCMP(buf, "1.234000", bsize_int) == 0);
@@ -255,7 +254,6 @@ test_vim_snprintf(void)
 	assert(n == 9);
 	assert(bsize == 0 || STRNCMP(buf, "-0.000000", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
-#endif
 
 	n = vim_snprintf(buf, bsize, "%s", "漢語");
 	assert(n == 6);
