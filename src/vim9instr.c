@@ -1899,9 +1899,15 @@ generate_CALL(
     // drop the argument types
     cctx->ctx_type_stack.ga_len -= argcount;
 
-    // For an object or class method call, drop the object/class type
+    // For an object or class method call, drop the object/class type.
     if (ufunc->uf_class != NULL)
-	cctx->ctx_type_stack.ga_len--;
+    {
+	// When a class method is called without the class name prefix, then
+	// the type will not be in the stack.
+	type_T *stype = get_type_on_stack(cctx, 0);
+	if (stype->tt_type == VAR_CLASS || stype->tt_type == VAR_OBJECT)
+	    cctx->ctx_type_stack.ga_len--;
+    }
 
     // add return type
     return push_type_stack(cctx, ufunc->uf_ret_type);

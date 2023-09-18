@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Mar 22
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Sep 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11,7 +11,7 @@ Vim9 classes, objects, interfaces, types and enums.
 
 1.  Overview			|Vim9-class-overview|
 2.  A simple class		|Vim9-simple-class|
-3.  Class members and functions	|Vim9-class-member|
+3.  Class variables and methods	|Vim9-class-member|
 4.  Using an abstract class	|Vim9-abstract-class|
 5.  Using an interface		|Vim9-using-interface|
 6.  More class details		|Vim9-class|
@@ -139,11 +139,13 @@ changed at any time, you can make it public: >
 
 Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
 "pos.lnum" directly above will no longer give an error.
-							*E1334*
+							*E1326*
 If you try to set an object member that doesn't exist you get an error: >
 	pos.other = 9
-<	E1334: Object member not found: other ~
+<	E1326: Member not found on object "TextPosition": other ~
 
+							*E1376*
+A object member cannot be accessed using the class name.
 
 Private members ~
 							*E1332* *E1333*
@@ -176,9 +178,9 @@ number to the total number of lines: >
 	   endif
 	   return this._lnum
 	enddef
-
-
+<
 Private methods ~
+							*E1366*
 If you want object methods to be accessible only from other methods of the
 same class and not used from outside the class, then you can make them
 private.  This is done by prefixing the method name with an underscore: >
@@ -252,16 +254,17 @@ If the class extends a parent class, the same thing happens.  In the second
 step the members of the parent class are done first.  There is no need to call
 "super()" or "new()" on the parent.
 
+						*E1365*
 When defining the new() method the return type should not be specified.  It
 always returns an object of the class.
 
 ==============================================================================
 
-3.  class members and functions			*Vim9-class-member*
+3.  Class Variables and Methods			*Vim9-class-member*
 
-						*:static* *E1337* *E1338*
+					    *:static* *E1337* *E1338* *E1368*
 Class members are declared with "static".  They are used by the name without a
-prefix: >
+prefix in the class where they are defined: >
 
 	class OtherThing
 	   this.size: number
@@ -275,6 +278,10 @@ prefix: >
 Since the name is used as-is, shadowing the name by a function argument name
 or local variable name is not allowed.
 
+							*E1374* *E1375*
+To access a class member outside of the class where it is defined, the class
+name prefix must be used.  A class member cannot be accessed using an object.
+
 Just like object members the access can be made private by using an underscore
 as the first character in the name, and it can be made public by prefixing
 "public": >
@@ -285,10 +292,11 @@ as the first character in the name, and it can be made public by prefixing
 	public static result: number  # anybody can read and write
     endclass
 <
-							*class-function*
-Class functions are also declared with "static".  They have no access to
-object members, they cannot use the "this" keyword. >
-
+							*class-method*
+Class methods are also declared with "static".  They can use the class
+variables but they have no access to the object variables, they cannot use the
+"this" keyword.
+>
 	class OtherThing
 	   this.size: number
 	   static totalSize: number
@@ -301,8 +309,9 @@ object members, they cannot use the "this" keyword. >
 	   enddef
 	endclass
 
-Inside the class the function can be called by name directly, outside the
-class the class name must be prefixed: `OtherThing.ClearTotalSize()`.
+Inside the class the class method can be called by name directly, outside the
+class the class name must be prefixed: `OtherThing.ClearTotalSize()`.  To use
+a super class method in a child class, the class name must be prefixed.
 
 Just like object methods the access can be made private by using an underscore
 as the first character in the method name: >
@@ -312,13 +321,38 @@ as the first character in the method name: >
 	    echo "Foo"
 	enddef
 	def Bar()
-	    OtherThing._Foo()
+	    _Foo()
 	enddef
     endclass
 <
 							*E1370*
 Note that constructors cannot be declared as "static", because they always
 are.
+
+To access the class methods and class variables of a super class in an
+extended class, the class name prefix should be used just as from anywhere
+outside of the defining class: >
+
+    vim9script
+    class Vehicle
+	static nextID: number = 1000
+	static def GetID(): number
+	    nextID += 1
+	    return nextID
+	enddef
+    endclass
+    class Car extends Vehicle
+	this.myID: number
+	def new()
+	    this.myID = Vehicle.GetID()
+	enddef
+    endclass
+<
+Class variables and methods are not inherited by a child class.  A child class
+can declare a static variable or a method with the same name as the one in the
+super class.  Depending on the class where the member is used the
+corresponding class member will be used.  The type of the class member in a
+child class can be different from that in the super class.
 
 ==============================================================================
 
@@ -358,16 +392,19 @@ class, for which objects can be created.  Example: >
 An abstract class is defined the same way as a normal class, except that it
 does not have any new() method. *E1359*
 
-						*abstract-method*
+						*abstract-method* *E1371* *E1372*
 An abstract method can be defined in an abstract class by using the "abstract"
 prefix when defining the function: >
 
 	abstract class Shape
 	   abstract def Draw()
+	   abstract static def SetColor()
 	endclass
-
+<
+						*E1373*
 A class extending the abstract class must implement all the abstract methods.
-Class methods in an abstract class can also be abstract methods.
+The signature (arguments, argument types and return type) must be exactly the
+same.  Class methods in an abstract class can also be abstract methods.
 
 ==============================================================================
 
@@ -409,9 +446,10 @@ a number.  This example extends the one above: >
 	      return this.base * this.height / 2
 	   enddef
 	endclass
-
+<
+					*E1348* *E1349* *E1367* *E1382* *E1383*
 If a class declares to implement an interface, all the items specified in the
-interface must appear in the class, with the same types. *E1348* *E1349*
+interface must appear in the class, with the same types.
 
 The interface name can be used as a type: >
 
@@ -422,7 +460,14 @@ The interface name can be used as a type: >
 	for shape in shapes
 	   echo $'the surface is {shape.Surface()}'
 	endfor
+<
+						*E1378* *E1379* *E1380*
+An interface can have only instance variables (read-only and read-write
+access) and methods.  An interface cannot contain private variables, private
+methods, class variables and class methods.
 
+An interface can extend another interface using "extends".  The sub-interface
+inherits all the instance variables and methods from the super interface.
 
 ==============================================================================
 
@@ -464,9 +509,12 @@ once.  They can appear in any order, although this order is recommended: >
 	extends ClassName
 	implements InterfaceName, OtherInterface
 	specifies SomeInterface
-<							*E1355*
+<							*E1355* *E1369*
 Each member and function name can be used only once.  It is not possible to
-define a function with the same name and different type of arguments.
+define a function with the same name and different type of arguments.  It is
+not possible to use a public and private member variable with the same name.
+A object variable name used in a super class cannot be reused in a child
+class.
 
 
 Member Initialization ~
@@ -490,6 +538,10 @@ is not possible to override them (unlike some other languages).
 Object methods of the base class can be overruled.  The signature (arguments,
 argument types and return type) must be exactly the same.  The method of the
 base class can be called by prefixing "super.".
+
+						*E1377*
+The access level of a method (public or private) in a child class should be
+the same as the super class.
 
 Other object methods of the base class are taken over by the child class.
 
@@ -523,18 +575,26 @@ interface, which is often done in many languages, especially Java.
 
 
 Items in a class ~
-						*E1318* *E1325* *E1326*
+						*E1318* *E1325*
 Inside a class, in between `:class` and `:endclass`, these items can appear:
 - An object member declaration: >
-	this._memberName: memberType
-	this.memberName: memberType
-	public this.memberName: memberType
+	this._privateMemberName: memberType
+	this.readonlyMemberName: memberType
+	public this.readwriteMemberName: memberType
+- A class member declaration: >
+	static this._privateMemberName: memberType
+	static this.readonlyMemberName: memberType
+	static public this.readwriteMemberName: memberType
 - A constructor method: >
 	def new(arguments)
 	def newName(arguments)
+- A class method: >
+	static def SomeMethod(arguments)
+	static def _PrivateMethod(arguments)
 - An object method: >
 	def SomeMethod(arguments)
-<							*E1329*
+	def _PrivateMethod(arguments)
+
 For the object member the type must be specified.  The best way is to do this
 explicitly with ": {type}".  For simple types you can also use an initializer,
 such as "= 123", and Vim will see that the type is a number.  Avoid doing this
@@ -573,6 +633,8 @@ An interface name must start with an uppercase letter. *E1343*
 The "Has" prefix can be used to make it easier to guess this is an interface
 name, with a hint about what it provides.
 An interface can only be defined in a |Vim9| script file.  *E1342*
+An interface cannot "implement" another interface but it can "extend" another
+interface. *E1381*
 
 
 null object ~

@@ -1592,7 +1592,7 @@ early_ret:
 
 	    if (!is_class)
 	    {
-		emsg(_(e_static_cannot_be_used_in_interface));
+		emsg(_(e_static_member_not_supported_in_interface));
 		break;
 	    }
 	    has_static = TRUE;
@@ -1623,7 +1623,8 @@ early_ret:
 	    if (!is_class && *varname == '_')
 	    {
 		// private variables are not supported in an interface
-		semsg(_(e_private_variable_str_in_interface), varname);
+		semsg(_(e_private_variable_not_supported_in_interface),
+			varname);
 		break;
 	    }
 
@@ -1689,7 +1690,8 @@ early_ret:
 		if (!is_class && *name == '_')
 		{
 		    // private variables are not supported in an interface
-		    semsg(_(e_private_method_str_in_interface), name);
+		    semsg(_(e_private_method_not_supported_in_interface),
+			    name);
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
@@ -2010,8 +2012,7 @@ class_member_type(
     int		is_object,
     char_u	*name,
     char_u	*name_end,
-    int		*member_idx,
-    ocmember_T	**p_m)
+    int		*member_idx)
 {
     size_t	len = name_end - name;
     ocmember_T	*m;
@@ -2022,26 +2023,10 @@ class_member_type(
 								member_idx);
     if (m == NULL)
     {
-	char_u *varname = vim_strnsave(name, len);
-	if (varname != NULL)
-	{
-	    if (is_object && class_member_idx(cl, name, len) >= 0)
-		// A class variable with this name is present
-		semsg(_(e_class_member_str_accessible_only_inside_class_str),
-			varname, cl->class_name);
-	    else if (!is_object && object_member_idx(cl, name, len) >= 0)
-		// An instance variable with this name is present
-		semsg(_(e_object_member_str_accessible_only_using_object_str),
-			varname, cl->class_name);
-	    else
-		semsg(_(e_unknown_variable_str), varname);
-	}
-	vim_free(varname);
+	member_not_found_msg(cl, is_object ? VAR_OBJECT : VAR_CLASS, name,
+									len);
 	return &t_any;
     }
-
-    if (p_m != NULL)
-	*p_m = m;
 
     return m->ocm_type;
 }
@@ -2248,12 +2233,6 @@ class_object_index(
 	if (*name == '_')
 	{
 	    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
-	    return FAIL;
-	}
-	if ((cl->class_flags & CLASS_INTERFACE) != 0)
-	{
-	    semsg(_(e_interface_static_direct_access_str),
-		    cl->class_name, m->ocm_name);
 	    return FAIL;
 	}
 

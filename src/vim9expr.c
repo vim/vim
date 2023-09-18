@@ -439,12 +439,6 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m != NULL)
 	{
 	    // Note: type->tt_type = VAR_CLASS
-	    if ((cl->class_flags & CLASS_INTERFACE) != 0)
-	    {
-		semsg(_(e_interface_static_direct_access_str),
-			cl->class_name, m->ocm_name);
-		return FAIL;
-	    }
 	    // A private class variable can be accessed only in the class where
 	    // it is defined.
 	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
@@ -1152,9 +1146,6 @@ compile_call(
 	    // the class where the function is defined.
 	    if (cctx->ctx_ufunc->uf_defclass == cl)
 	    {
-		// The generate_CALL() function expects the class type at the
-		// top of the stack.  So push the class type to the stack.
-		push_type_stack(cctx, &t_class);
 		res = generate_CALL(cctx, cl->class_class_functions[mi], NULL,
 							0, type, argcount);
 	    }
