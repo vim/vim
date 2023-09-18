@@ -3418,8 +3418,7 @@ EXTERN char e_internal_error_shortmess_too_long[]
 #ifdef FEAT_EVAL
 EXTERN char e_class_member_str_not_found_in_class_str[]
 	INIT(= N_("E1337: Class member \"%s\" not found in class \"%s\""));
-EXTERN char e_interface_static_direct_access_str[]
-	INIT(= N_("E1338: Cannot directly access interface \"%s\" static member \"%s\""));
+// E1338 unused
 #endif
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
@@ -3506,11 +3505,11 @@ EXTERN char e_object_member_str_accessible_only_using_object_str[]
 	INIT(= N_("E1376: Object member \"%s\" accessible only using class \"%s\" object"));
 EXTERN char e_method_str_of_class_str_has_different_access[]
 	INIT(= N_("E1377: Access level of method \"%s\" is different in class \"%s\""));
-EXTERN char e_static_cannot_be_used_in_interface[]
-	INIT(= N_("E1378: Static cannot be used in an interface"));
-EXTERN char e_private_variable_str_in_interface[]
+EXTERN char e_static_member_not_supported_in_interface[]
+	INIT(= N_("E1378: Static member not supported in an interface"));
+EXTERN char e_private_variable_not_supported_in_interface[]
 	INIT(= N_("E1379: Private variable not supported in an interface"));
-EXTERN char e_private_method_str_in_interface[]
+EXTERN char e_private_method_not_supported_in_interface[]
 	INIT(= N_("E1380: Private method not supported in an interface"));
 EXTERN char e_interface_cannot_use_implements[]
 	INIT(= N_("E1381: Interface cannot use \"implements\""));

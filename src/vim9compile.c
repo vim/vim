@@ -1579,6 +1579,47 @@ is_decl_command(cmdidx_T cmdidx)
 }
 
 /*
+ * Returns TRUE if the class or object variable in "lhs" is modifiable.
+ * "var_start" points to the start of the variable name and "lhs->lhs_varlen"
+ * has the total length.  Note that the "lhs" can be nested an object reference
+ * (e.g.  a.b.c.d.var).
+ */
+    static int
+lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
+{
+    size_t	varlen = lhs->lhs_varlen;
+    class_T	*cl = lhs->lhs_type->tt_class;
+    int		is_object = lhs->lhs_type->tt_type == VAR_OBJECT;
+    char_u	*name = var_start + varlen + 1;
+    size_t	namelen = lhs->lhs_end - var_start - varlen - 1;
+    ocmember_T	*m;
+
+    m = member_lookup(cl, lhs->lhs_type->tt_type, name, namelen, NULL);
+    if (m == NULL)
+    {
+	member_not_found_msg(cl, lhs->lhs_type->tt_type, name, namelen);
+	return FALSE;
+    }
+
+    // If it is private member variable, then accessing it outside the
+    // class is not allowed.
+    // If it is a read only class variable, then it can be modified
+    // only inside the class where it is defined.
+    if ((m->ocm_access != VIM_ACCESS_ALL) &&
+	    ((is_object && !inside_class(cctx, cl))
+	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
+    {
+	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
+				? e_cannot_access_private_member_str
+				: e_cannot_change_readonly_variable_str;
+	semsg(_(msg), m->ocm_name);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
  * Figure out the LHS type and other properties for an assignment or one item
  * of ":unlet" with an index.
  * Returns OK or FAIL.
@@ -1691,9 +1732,9 @@ compile_lhs(
 	    {
 		if (is_decl)
 		{
-		    // if we come here with what looks like an assignment like .=
-		    // but which has been reject by assignment_len() from may_compile_assignment
-		    // give a better error message
+		    // if we come here with what looks like an assignment like
+		    // .= but which has been reject by assignment_len() from
+		    // may_compile_assignment give a better error message
 		    char_u *p = skipwhite(lhs->lhs_end);
 		    if (p[0] == '.' && p[1] == '=')
 			emsg(_(e_dot_equal_not_supported_with_script_version_two));
@@ -1959,36 +2000,17 @@ compile_lhs(
 	{
 	    // for an object or class member get the type of the member
 	    class_T	*cl = lhs->lhs_type->tt_class;
-	    ocmember_T	*m;
 	    int		is_object = lhs->lhs_type->tt_type == VAR_OBJECT;
+
+	    if (!lhs_class_member_modifiable(lhs, var_start, cctx))
+		return FAIL;
 
 	    lhs->lhs_member_type = class_member_type(cl,
 					is_object,
 					after + 1, lhs->lhs_end,
-					&lhs->lhs_member_idx, &m);
+					&lhs->lhs_member_idx);
 	    if (lhs->lhs_member_idx < 0)
 		return FAIL;
-	    if ((cl->class_flags & CLASS_INTERFACE) != 0
-					&& lhs->lhs_type->tt_type == VAR_CLASS)
-	    {
-		semsg(_(e_interface_static_direct_access_str),
-						cl->class_name, m->ocm_name);
-		return FAIL;
-	    }
-	    // If it is private member variable, then accessing it outside the
-	    // class is not allowed.
-	    // If it is a read only class variable, then it can be modified
-	    // only inside the class where it is defined.
-	    if ((m->ocm_access != VIM_ACCESS_ALL) &&
-		    ((is_object && !inside_class(cctx, cl))
-		     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
-	    {
-		char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
-				? e_cannot_access_private_member_str
-				: e_cannot_change_readonly_variable_str;
-		semsg(_(msg), m->ocm_name);
-		return FAIL;
-	    }
 	}
 	else
 	{
@@ -2163,6 +2185,14 @@ compile_load_lhs(
 
 	lhs->lhs_type = cctx->ctx_type_stack.ga_len == 0 ? &t_void
 						  : get_type_on_stack(cctx, 0);
+
+	if (lhs->lhs_type->tt_type == VAR_OBJECT)
+	{
+	    // Check whether the object variable is modifiable
+	    if (!lhs_class_member_modifiable(lhs, var_start, cctx))
+		return FAIL;
+	}
+
 	// Now we can properly check the type.  The variable is indexed, thus
 	// we need the member type.  For a class or object we don't know the
 	// type yet, it depends on what member is used.
@@ -2198,8 +2228,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 
 	class_T	*cl = lhs->lhs_type->tt_class;
 	type_T	*type = class_member_type(cl, TRUE, dot + 1,
-					   lhs->lhs_end, &lhs->lhs_member_idx,
-					   NULL);
+					  lhs->lhs_end, &lhs->lhs_member_idx);
 	if (lhs->lhs_member_idx < 0)
 	    return FAIL;
 
