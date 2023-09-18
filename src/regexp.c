@@ -1709,46 +1709,20 @@ cstrchr(char_u *s, int c)
 //		      regsub stuff			      //
 ////////////////////////////////////////////////////////////////
 
-/*
- * We should define ftpr as a pointer to a function returning a pointer to
- * a function returning a pointer to a function ...
- * This is impossible, so we declare a pointer to a function returning a
- * void pointer. This should work for all compilers.
- */
-typedef void (*(*fptr_T)(int *, int));
+typedef void (*fptr_T)(int *, int);
 
 static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int destlen, int flags);
 
-    static fptr_T
+    static void
 do_upper(int *d, int c)
 {
     *d = MB_TOUPPER(c);
-
-    return (fptr_T)NULL;
 }
 
-    static fptr_T
-do_Upper(int *d, int c)
-{
-    *d = MB_TOUPPER(c);
-
-    return (fptr_T)do_Upper;
-}
-
-    static fptr_T
+    static void
 do_lower(int *d, int c)
 {
     *d = MB_TOLOWER(c);
-
-    return (fptr_T)NULL;
-}
-
-    static fptr_T
-do_Lower(int *d, int c)
-{
-    *d = MB_TOLOWER(c);
-
-    return (fptr_T)do_Lower;
 }
 
 /*
@@ -2203,13 +2177,13 @@ vim_regsub_both(
 	    {
 		switch (*src++)
 		{
-		case 'u':   func_one = (fptr_T)do_upper;
+		case 'u':   func_one = do_upper;
 			    continue;
-		case 'U':   func_all = (fptr_T)do_Upper;
+		case 'U':   func_all = do_upper;
 			    continue;
-		case 'l':   func_one = (fptr_T)do_lower;
+		case 'l':   func_one = do_lower;
 			    continue;
-		case 'L':   func_all = (fptr_T)do_Lower;
+		case 'L':   func_all = do_lower;
 			    continue;
 		case 'e':
 		case 'E':   func_one = func_all = (fptr_T)NULL;
@@ -2276,11 +2250,12 @@ vim_regsub_both(
 
 	    // Write to buffer, if copy is set.
 	    if (func_one != (fptr_T)NULL)
-		// Turbo C complains without the typecast
-		func_one = (fptr_T)(func_one(&cc, c));
+	    {
+		func_one(&cc, c);
+		func_one = NULL;
+	    }
 	    else if (func_all != (fptr_T)NULL)
-		// Turbo C complains without the typecast
-		func_all = (fptr_T)(func_all(&cc, c));
+		func_all(&cc, c);
 	    else // just copy
 		cc = c;
 
@@ -2424,11 +2399,12 @@ vim_regsub_both(
 				c = *s;
 
 			    if (func_one != (fptr_T)NULL)
-				// Turbo C complains without the typecast
-				func_one = (fptr_T)(func_one(&cc, c));
+			    {
+				func_one(&cc, c);
+				func_one = NULL;
+			    }
 			    else if (func_all != (fptr_T)NULL)
-				// Turbo C complains without the typecast
-				func_all = (fptr_T)(func_all(&cc, c));
+				func_all(&cc, c);
 			    else // just copy
 				cc = c;
 
