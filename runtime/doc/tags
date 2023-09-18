@@ -9043,6 +9043,7 @@ numbersize-variable	eval.txt	/*numbersize-variable*
 o	insert.txt	/*o*
 o_CTRL-V	motion.txt	/*o_CTRL-V*
 o_V	motion.txt	/*o_V*
+o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
 object	vim9class.txt	/*object*
 object-motions	motion.txt	/*object-motions*
@@ -10860,6 +10861,7 @@ v_iw	motion.txt	/*v_iw*
 v_i{	motion.txt	/*v_i{*
 v_i}	motion.txt	/*v_i}*
 v_o	visual.txt	/*v_o*
+v_object-select	motion.txt	/*v_object-select*
 v_p	change.txt	/*v_p*
 v_r	change.txt	/*v_r*
 v_s	change.txt	/*v_s*
