@@ -1507,6 +1507,7 @@ def Test_class_member()
   END
   v9.CheckSourceFailure(lines, 'E1340: Argument already declared in the class: count')
 
+  # Use a local variable in a method with the same name as a class variable
   lines =<< trim END
       vim9script
 
@@ -5486,6 +5487,116 @@ def Test_nested_object_assignment()
     T(d)
   END
   v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "value"')
+enddef
+
+" Test for calling methods using a null object
+def Test_null_object_method_call()
+  # Calling a object method using a null object in script context
+  var lines =<< trim END
+    vim9script
+
+    class C
+      def Foo()
+        assert_report('This method should not be executed')
+      enddef
+    endclass
+
+    var o: C
+    o.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 10)
+
+  # Calling a object method using a null object in def function context
+  lines =<< trim END
+    vim9script
+
+    class C
+      def Foo()
+        assert_report('This method should not be executed')
+      enddef
+    endclass
+
+    def T()
+      var o: C
+      o.Foo()
+    enddef
+    T()
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+
+  # Calling a object method through another class method using a null object in
+  # script context
+  lines =<< trim END
+    vim9script
+
+    class C
+      def Foo()
+        assert_report('This method should not be executed')
+      enddef
+
+      static def Bar(o_any: any)
+        var o_typed: C = o_any
+        o_typed.Foo()
+      enddef
+    endclass
+
+    var o: C
+    C.Bar(o)
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+
+  # Calling a object method through another class method using a null object in
+  # def function context
+  lines =<< trim END
+    vim9script
+
+    class C
+      def Foo()
+        assert_report('This method should not be executed')
+      enddef
+
+      static def Bar(o_any: any)
+        var o_typed: C = o_any
+        o_typed.Foo()
+      enddef
+    endclass
+
+    def T()
+      var o: C
+      C.Bar(o)
+    enddef
+    T()
+  END
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 2)
+enddef
+
+" Test for using a dict as an object member
+def Test_dict_object_member()
+  var lines =<< trim END
+    vim9script
+
+    class Context
+      public this.state: dict<number> = {}
+      def GetState(): dict<number>
+        return this.state
+      enddef
+    endclass
+
+    var ctx = Context.new()
+    ctx.state->extend({a: 1})
+    ctx.state['b'] = 2
+    assert_equal({a: 1, b: 2}, ctx.GetState())
+
+    def F()
+      ctx.state['c'] = 3
+      assert_equal({a: 1, b: 2, c: 3}, ctx.GetState())
+    enddef
+    F()
+    assert_equal(3, ctx.state.c)
+    ctx.state.c = 4
+    assert_equal(4, ctx.state.c)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

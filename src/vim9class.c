@@ -534,7 +534,7 @@ validate_abstract_class_methods(
 	for (int i = 0; i < extends_method_count; i++)
 	{
 	    ufunc_T *uf = extends_methods[i];
-	    if ((uf->uf_flags & FC_ABSTRACT) == 0)
+	    if (!IS_ABSTRACT_METHOD(uf))
 		continue;
 
 	    int method_found = FALSE;

@@ -3286,7 +3286,7 @@ compile_def_function(
 
 	// In the constructor allocate memory for the object and initialize the
 	// object members.
-	if ((ufunc->uf_flags & FC_NEW) == FC_NEW)
+	if (IS_CONSTRUCTOR_METHOD(ufunc))
 	{
 	    generate_CONSTRUCT(&cctx, ufunc->uf_class);
 
@@ -3949,7 +3949,7 @@ nextline:
 	if (ufunc->uf_ret_type->tt_type == VAR_UNKNOWN)
 	    ufunc->uf_ret_type = &t_void;
 	else if (ufunc->uf_ret_type->tt_type != VAR_VOID
-		&& (ufunc->uf_flags & FC_NEW) != FC_NEW)
+		&& !IS_CONSTRUCTOR_METHOD(ufunc))
 	{
 	    emsg(_(e_missing_return_statement));
 	    goto erret;
@@ -3957,7 +3957,7 @@ nextline:
 
 	// Return void if there is no return at the end.
 	// For a constructor return the object.
-	if ((ufunc->uf_flags & FC_NEW) == FC_NEW)
+	if (IS_CONSTRUCTOR_METHOD(ufunc))
 	{
 	    generate_instr(&cctx, ISN_RETURN_OBJECT);
 	    ufunc->uf_ret_type = &ufunc->uf_class->class_object_type;

@@ -2617,7 +2617,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    return NULL;
 	}
 
-	if (cctx->ctx_ufunc->uf_flags & FC_NEW)
+	if (IS_CONSTRUCTOR_METHOD(cctx->ctx_ufunc))
 	{
 	    // For a class new() constructor, return an object of the class.
 	    generate_instr(cctx, ISN_RETURN_OBJECT);
