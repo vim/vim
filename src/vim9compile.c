@@ -1579,6 +1579,35 @@ is_decl_command(cmdidx_T cmdidx)
 }
 
 /*
+ * Returns TRUE if the class or object variable "m" in class "cl" is
+ * modifiable.
+ */
+    int
+cctx_class_member_modifiable(
+    class_T	*cl,
+    ocmember_T	*m,
+    int		is_object,
+    cctx_T	*cctx)
+{
+    // If it is private member variable, then accessing it outside the
+    // class is not allowed.
+    // If it is a read only class variable, then it can be modified
+    // only inside the class where it is defined.
+    if ((m->ocm_access != VIM_ACCESS_ALL) &&
+	    ((is_object && !inside_class(cctx, cl))
+	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
+    {
+	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
+				? e_cannot_access_private_member_str
+				: e_cannot_change_readonly_variable_str;
+	semsg(_(msg), m->ocm_name);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
  * Returns TRUE if the class or object variable in "lhs" is modifiable.
  * "var_start" points to the start of the variable name and "lhs->lhs_varlen"
  * has the total length.  Note that the "lhs" can be nested an object reference
@@ -1601,22 +1630,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	return FALSE;
     }
 
-    // If it is private member variable, then accessing it outside the
-    // class is not allowed.
-    // If it is a read only class variable, then it can be modified
-    // only inside the class where it is defined.
-    if ((m->ocm_access != VIM_ACCESS_ALL) &&
-	    ((is_object && !inside_class(cctx, cl))
-	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
-    {
-	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
-				? e_cannot_access_private_member_str
-				: e_cannot_change_readonly_variable_str;
-	semsg(_(msg), m->ocm_name);
-	return FALSE;
-    }
-
-    return TRUE;
+    return cctx_class_member_modifiable(cl, m, is_object, cctx);
 }
 
 /*
@@ -2071,7 +2085,7 @@ has_list_index(char_u *idx_start, cctx_T *cctx)
 
     save_skip = cctx->ctx_skip;
     cctx->ctx_skip = SKIP_YES;
-    (void)compile_expr0(&p, cctx);
+    (void)compile_expr0_lhs(&p, cctx);
     cctx->ctx_skip = save_skip;
     return *skipwhite(p) == ':';
 }
@@ -2172,7 +2186,7 @@ compile_load_lhs(
 	var_start[varlen] = NUL;
 	cctx->ctx_ufunc->uf_lines.ga_len = cctx->ctx_lnum + 1;
 	char_u *p = var_start;
-	res = compile_expr0(&p, cctx);
+	res = compile_expr0_lhs(&p, cctx);
 	var_start[varlen] = c;
 	cctx->ctx_ufunc->uf_lines.ga_len = lines_len;
 	if (res == FAIL || p != var_start + varlen)

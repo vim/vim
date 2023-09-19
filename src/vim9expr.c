@@ -405,10 +405,17 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
         ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
 	if (m_idx >= 0)
 	{
-	    if (*name == '_' && !inside_class(cctx, cl))
+	    if (m->ocm_access == VIM_ACCESS_PRIVATE
+		    && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 		return FAIL;
+	    }
+
+	    if (cctx->ctx_lhs_expr)
+	    {
+		if (!cctx_class_member_modifiable(cl, m, TRUE, cctx))
+		    return FAIL;
 	    }
 
 	    *arg = name_end;
@@ -441,7 +448,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // Note: type->tt_type = VAR_CLASS
 	    // A private class variable can be accessed only in the class where
 	    // it is defined.
-	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
+	    if (m->ocm_access == VIM_ACCESS_PRIVATE
+		    && cctx->ctx_ufunc->uf_class != cl)
 	    {
 		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 		return FAIL;
@@ -3581,6 +3589,21 @@ compile_expr0_ext(char_u **arg,  cctx_T *cctx, int *is_const)
     if (generate_ppconst(cctx, &ppconst) == FAIL)
 	return FAIL;
     return OK;
+}
+
+/*
+ * Compile a LHS expression
+ */
+    int
+compile_expr0_lhs(char_u **arg, cctx_T *cctx)
+{
+    int save_lhs_expr = cctx->ctx_lhs_expr;
+    int	res;
+
+    cctx->ctx_lhs_expr = TRUE;
+    res = compile_expr0_ext(arg, cctx, NULL);
+    cctx->ctx_lhs_expr = save_lhs_expr;
+    return res;
 }
 
 /*

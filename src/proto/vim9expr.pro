@@ -14,5 +14,6 @@ int bool_on_stack(cctx_T *cctx);
 void error_white_both(char_u *op, int len);
 int compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst);
 int compile_expr0_ext(char_u **arg, cctx_T *cctx, int *is_const);
+int compile_expr0_lhs(char_u **arg, cctx_T *cctx);
 int compile_expr0(char_u **arg, cctx_T *cctx);
 /* vim: set ft=c : */

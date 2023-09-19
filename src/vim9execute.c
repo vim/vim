@@ -2170,7 +2170,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    ocmember_T *m = object_member_lookup(cl, member, 0, &m_idx);
 	    if (m != NULL)
 	    {
-		if (*member == '_')
+		if (m->ocm_access == VIM_ACCESS_PRIVATE)
 		{
 		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 		    status = FAIL;

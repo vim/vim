@@ -529,7 +529,7 @@ def Test_member_any_used_as_object()
       endclass
 
       class Outer
-        this.inner: any
+        public this.inner: any
       endclass
 
       def F(outer: Outer)
@@ -552,7 +552,7 @@ def Test_member_any_used_as_object()
     endclass
 
     class Outer
-      this.inner: any
+      public this.inner: any
     endclass
 
     def F(outer: Outer)
@@ -574,7 +574,7 @@ def Test_member_any_used_as_object()
     endclass
 
     class Outer
-      this.inner: any
+      public this.inner: any
     endclass
 
     def F(outer: Outer)
@@ -598,7 +598,7 @@ def Test_assignment_nested_type()
     endclass
 
     class Outer
-      this.inner: Inner
+      public this.inner: Inner
     endclass
 
     def F(outer: Outer)
@@ -5481,7 +5481,76 @@ def Test_nested_object_assignment()
     var d = D.new()
     T(d)
   END
-  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "value"')
+  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "c"')
+enddef
+
+" Test for modifying a object variable
+def Test_dict_in_object_assignment()
+  # Modifying a read-only dict object variable in def function context
+  var lines =<< trim END
+    vim9script
+
+    class A
+      this.d = {val: 10}
+    endclass
+
+    def T()
+      var a = A.new()
+      a.d.val = 20
+    enddef
+    T()
+  END
+  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "d"')
+
+  # Modifying a read-only dict object variable in script context
+  lines =<< trim END
+    vim9script
+
+    class A
+      this.d = {val: 10}
+    endclass
+
+    var a = A.new()
+    a.d.val = 20
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Member is not writable: d')
+
+  # Modifying a read-write dict object variable in def function context
+  lines =<< trim END
+    vim9script
+
+    class A
+      public this.d = {val: 10}
+      def GetVal(): number
+        return this.d.val
+      enddef
+    endclass
+
+    def T()
+      var a = A.new()
+      a.d.val = 20
+      assert_equal(20, a.GetVal())
+    enddef
+    T()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Modifying a read-write dict object variable in script context
+  lines =<< trim END
+    vim9script
+
+    class A
+      public this.d = {val: 10}
+      def GetVal(): number
+        return this.d.val
+      enddef
+    endclass
+
+    var a = A.new()
+    a.d.val = 20
+    assert_equal(20, a.GetVal())
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

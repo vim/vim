@@ -2071,7 +2071,7 @@ get_member_tv(
     if (m == NULL)
 	return FAIL;
 
-    if (*name == '_')
+    if (m->ocm_access == VIM_ACCESS_PRIVATE)
     {
 	semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 	return FAIL;
@@ -2230,7 +2230,7 @@ class_object_index(
 	    return FAIL;
 	}
 
-	if (*name == '_')
+	if (m->ocm_access == VIM_ACCESS_PRIVATE)
 	{
 	    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 	    return FAIL;

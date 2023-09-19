@@ -856,6 +856,7 @@ struct cctx_S {
 
     lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
 				    // lhs_name is not NULL
+    int		ctx_lhs_expr;	    // compiling LHS expression
 };
 
 /*
