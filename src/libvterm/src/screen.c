@@ -776,8 +776,14 @@ static int resize(int new_rows, int new_cols, VTermStateFields *fields, void *us
     if(screen->sb_buffer)
       vterm_allocator_free(screen->vt, screen->sb_buffer);
 
+    if (new_cols > 1000)
+      new_cols = 1000;
+
     screen->sb_buffer = vterm_allocator_malloc(screen->vt, sizeof(VTermScreenCell) * new_cols);
   }
+
+  if (new_rows > 1000)
+    new_rows = 1000;
 
   resize_buffer(screen, 0, new_rows, new_cols, !altscreen_active, fields);
   if(screen->buffers[BUFIDX_ALTSCREEN])
