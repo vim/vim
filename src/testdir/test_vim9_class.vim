@@ -3032,6 +3032,10 @@ def Test_instanceof()
       assert_true(instanceof(a3, [Base1, Base2, Intf1]))
     enddef
     Foo()
+
+    var o_null: Base1
+    assert_false(instanceof(o_null, Base1))
+
   END
   v9.CheckSourceSuccess(lines)
 enddef

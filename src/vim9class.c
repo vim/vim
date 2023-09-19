@@ -2865,6 +2865,9 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
 	    || check_for_class_or_list_arg(argvars, 1) == FAIL)
 	return;
 
+    if (object_tv->vval.v_object == NULL)
+	return;
+
     if (classinfo_tv->v_type == VAR_LIST)
     {
 	FOR_ALL_LIST_ITEMS(classinfo_tv->vval.v_list, li)
