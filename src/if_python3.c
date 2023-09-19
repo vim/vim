@@ -442,7 +442,7 @@ static void(*py3_PyEval_RestoreThread)(PyThreadState *);
 static PyThreadState*(*py3_PyEval_SaveThread)(void);
 static int (*py3_PyArg_Parse)(PyObject *, char *, ...);
 static int (*py3_PyArg_ParseTuple)(PyObject *, char *, ...);
-static int (*py3_PyMem_Free)(void *);
+static void (*py3_PyMem_Free)(void *);
 static void* (*py3_PyMem_Malloc)(size_t);
 static int (*py3_Py_IsInitialized)(void);
 static void (*py3_PyErr_Clear)(void);
