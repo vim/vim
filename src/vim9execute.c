@@ -535,6 +535,15 @@ call_dfunc(
     // If this is an object method, the object is just before the arguments.
     typval_T	*obj = STACK_TV_BOT(0) - argcount - vararg_count - 1;
 
+    if (obj->v_type == VAR_OBJECT && obj->vval.v_object == NULL
+					&& !IS_CONSTRUCTOR_METHOD(ufunc))
+    {
+	// If this is not the constructor method, then a valid object is
+	// needed.
+	emsg(_(e_using_null_object));
+	return FAIL;
+    }
+
     // Check the argument types.
     if (check_ufunc_arg_types(ufunc, argcount, vararg_count, ectx) == FAIL)
 	return FAIL;
@@ -599,7 +608,7 @@ call_dfunc(
 
     // For an object method move the object from just before the arguments to
     // the first local variable.
-    if (ufunc->uf_flags & FC_OBJECT)
+    if (IS_OBJECT_METHOD(ufunc))
     {
 	*STACK_TV_VAR(0) = *obj;
 	obj->v_type = VAR_UNKNOWN;
@@ -1148,7 +1157,7 @@ func_return(ectx_T *ectx)
     // Clear the arguments.  If this was an object method also clear the
     // object, it is just before the arguments.
     int top = ectx->ec_frame_idx - argcount;
-    if (dfunc->df_ufunc->uf_flags & FC_OBJECT)
+    if (IS_OBJECT_METHOD(dfunc->df_ufunc))
 	--top;
     for (idx = top; idx < ectx->ec_frame_idx; ++idx)
 	clear_tv(STACK_TV(idx));

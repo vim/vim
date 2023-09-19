@@ -1582,7 +1582,6 @@ get_lval(
 					lp->ll_tv->vval.v_object + 1)) + m_idx;
 			else
 			    lp->ll_tv = &cl->class_members_tv[m_idx];
-			break;
 		    }
 		}
 
