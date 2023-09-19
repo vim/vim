@@ -5962,14 +5962,15 @@ static struct PyMethodDef CurrentMethods[] = {
 };
 
     static void
-init_range_cmd(exarg_T *eap)
+init_range_cmd(void *arg)
 {
+    exarg_T *eap = (exarg_T*)arg;
     RangeStart = eap->line1;
     RangeEnd = eap->line2;
 }
 
     static void
-init_range_eval(typval_T *rettv UNUSED)
+init_range_eval(void *rettv UNUSED)
 {
     RangeStart = (PyInt) curwin->w_cursor.lnum;
     RangeEnd = RangeStart;
