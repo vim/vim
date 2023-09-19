@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.0.  Last change: 2023 Mar 07
+*change.txt*    For Vim version 9.0.  Last change: 2023 Sep 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -210,6 +210,7 @@ gR			Enter Virtual Replace mode: Each character you type
 
 							*v_r*
 {Visual}r{char}		Replace all selected characters by {char}.
+			CTRL-C will be inserted literally.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
