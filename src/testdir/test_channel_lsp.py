@@ -29,7 +29,20 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             with open("Xlspserver.log", "a") as myfile:
                 myfile.write(msg)
 
-    def send_lsp_msg(self, msgid, resp_dict):
+    def send_lsp_req(self, msgid, method, params):
+        v = {'jsonrpc': '2.0', 'id': msgid, 'method': method}
+        if len(params) != 0:
+            v['params'] = params
+        s = json.dumps(v)
+        req = "Content-Length: " + str(len(s)) + "\r\n"
+        req += "Content-Type: application/vscode-jsonrpc; charset=utf-8\r\n"
+        req += "\r\n"
+        req += s
+        if self.debug:
+            self.debuglog("SEND: ({0} bytes) '{1}'\n".format(len(req), req))
+        self.request.sendall(req.encode('utf-8'))
+
+    def send_lsp_resp(self, msgid, resp_dict):
         v = {'jsonrpc': '2.0', 'result': resp_dict}
         if msgid != -1:
             v['id'] = msgid
@@ -118,56 +131,56 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def do_ping(self, payload):
         time.sleep(0.2)
-        self.send_lsp_msg(payload['id'], 'alive')
+        self.send_lsp_resp(payload['id'], 'alive')
 
     def do_echo(self, payload):
-        self.send_lsp_msg(-1, payload)
+        self.send_lsp_resp(-1, payload)
 
     def do_simple_rpc(self, payload):
         # test for a simple RPC request
-        self.send_lsp_msg(payload['id'], 'simple-rpc')
+        self.send_lsp_resp(payload['id'], 'simple-rpc')
 
     def do_rpc_with_notif(self, payload):
         # test for sending a notification before replying to a request message
-        self.send_lsp_msg(-1, 'rpc-with-notif-notif')
+        self.send_lsp_resp(-1, 'rpc-with-notif-notif')
         # sleep for some time to make sure the notification is delivered
         time.sleep(0.2)
-        self.send_lsp_msg(payload['id'], 'rpc-with-notif-resp')
+        self.send_lsp_resp(payload['id'], 'rpc-with-notif-resp')
 
     def do_wrong_payload(self, payload):
         # test for sending a non dict payload
         self.send_wrong_payload()
         time.sleep(0.2)
-        self.send_lsp_msg(-1, 'wrong-payload')
+        self.send_lsp_resp(-1, 'wrong-payload')
 
     def do_large_payload(self, payload):
         # test for sending a large (> 64K) payload
-        self.send_lsp_msg(payload['id'], payload)
+        self.send_lsp_resp(payload['id'], payload)
 
     def do_rpc_resp_incorrect_id(self, payload):
-        self.send_lsp_msg(-1, 'rpc-resp-incorrect-id-1')
-        self.send_lsp_msg(-1, 'rpc-resp-incorrect-id-2')
-        self.send_lsp_msg(1, 'rpc-resp-incorrect-id-3')
+        self.send_lsp_resp(-1, 'rpc-resp-incorrect-id-1')
+        self.send_lsp_resp(-1, 'rpc-resp-incorrect-id-2')
+        self.send_lsp_resp(1, 'rpc-resp-incorrect-id-3')
         time.sleep(0.2)
-        self.send_lsp_msg(payload['id'], 'rpc-resp-incorrect-id-4')
+        self.send_lsp_resp(payload['id'], 'rpc-resp-incorrect-id-4')
 
     def do_simple_notif(self, payload):
         # notification message test
-        self.send_lsp_msg(-1, 'simple-notif')
+        self.send_lsp_resp(-1, 'simple-notif')
 
     def do_multi_notif(self, payload):
         # send multiple notifications
-        self.send_lsp_msg(-1, 'multi-notif1')
-        self.send_lsp_msg(-1, 'multi-notif2')
+        self.send_lsp_resp(-1, 'multi-notif1')
+        self.send_lsp_resp(-1, 'multi-notif2')
 
     def do_msg_with_id(self, payload):
-        self.send_lsp_msg(payload['id'], 'msg-with-id')
+        self.send_lsp_resp(payload['id'], 'msg-with-id')
 
     def do_msg_specific_cb(self, payload):
-        self.send_lsp_msg(payload['id'], 'msg-specific-cb')
+        self.send_lsp_resp(payload['id'], 'msg-specific-cb')
 
     def do_server_req(self, payload):
-        self.send_lsp_msg(201, {'method': 'checkhealth', 'params': {'a': 20}})
+        self.send_lsp_resp(201, {'method': 'checkhealth', 'params': {'a': 20}})
 
     def do_extra_hdr_fields(self, payload):
         self.send_extra_hdr_fields(payload['id'], 'extra-hdr-fields')
@@ -189,6 +202,19 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def do_empty_payload(self, payload):
         self.send_empty_payload()
+
+    def do_server_req_in_middle(self, payload):
+        # Send a notification message to the client in the middle of processing
+        # a request message from the client
+        self.send_lsp_req(-1, 'server-req-in-middle', {'text': 'server-notif'})
+        # Send a request message to the client in the middle of processing a
+        # request message from the client.
+        self.send_lsp_req(payload['id'], 'server-req-in-middle', {'text': 'server-req'})
+
+    def do_server_req_in_middle_resp(self, payload):
+        # After receiving a response from the client send the response to the
+        # client request.
+        self.send_lsp_resp(payload['id'], {'text': 'server-resp'})
 
     def process_msg(self, msg):
         try:
@@ -213,7 +239,9 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'hdr-with-wrong-len': self.do_hdr_with_wrong_len,
                         'hdr-with-negative-len': self.do_hdr_with_negative_len,
                         'empty-header': self.do_empty_header,
-                        'empty-payload': self.do_empty_payload
+                        'empty-payload': self.do_empty_payload,
+                        'server-req-in-middle': self.do_server_req_in_middle,
+                        'server-req-in-middle-resp': self.do_server_req_in_middle_resp,
                         }
                 if decoded['method'] in test_map:
                     test_map[decoded['method']](decoded)

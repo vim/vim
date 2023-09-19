@@ -1858,7 +1858,7 @@ did_set_isopt(optset_T *args)
  * The 'jumpoptions' option is changed.
  */
     char *
-did_set_jumpoptions(optset_T *args)
+did_set_jumpoptions(optset_T *args UNUSED)
 {
     if (opt_strings_flags(p_jop, p_jop_values, &jop_flags, TRUE) != OK)
 	return e_invalid_argument;
