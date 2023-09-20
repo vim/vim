@@ -3411,7 +3411,7 @@ EXTERN char e_cannot_access_private_member_str[]
 	INIT(= N_("E1333: Cannot access private member: %s"));
 // E1334 unused
 EXTERN char e_member_is_not_writable_str[]
-	INIT(= N_("E1335: Member is not writable: %s"));
+	INIT(= N_("E1335: Variable \"%s\" in class \"%s\" is not writable"));
 #endif
 EXTERN char e_internal_error_shortmess_too_long[]
 	INIT(= "E1336: Internal error: shortmess too long");

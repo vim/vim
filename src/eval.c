@@ -1570,7 +1570,7 @@ get_lval(
 				if ((flags & GLV_READ_ONLY) == 0)
 				{
 				    semsg(_(e_member_is_not_writable_str),
-					    om->ocm_name);
+					    om->ocm_name, cl->class_name);
 				    return NULL;
 				}
 				break;
