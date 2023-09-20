@@ -613,8 +613,63 @@ def Test_assignment_nested_type()
     enddef
 
     Test_assign_to_nested_typed_member()
+
+    var script_inner = Inner.new(0)
+    var script_outer = Outer.new(script_inner)
+    script_outer.inner.value = 1
+    assert_equal(1, script_inner.value)
   END
   v9.CheckSourceSuccess(lines)
+
+  # Assignment where target item is read only in :def
+  lines =<< trim END
+    vim9script
+
+    class Inner
+      this.value: number = 0
+    endclass
+
+    class Outer
+      this.inner: Inner
+    endclass
+
+    def F(outer: Outer)
+      outer.inner.value = 1
+    enddef
+
+    def Test_assign_to_nested_typed_member()
+      var inner = Inner.new(0)
+      var outer = Outer.new(inner)
+      F(outer)
+      assert_equal(1, inner.value)
+    enddef
+
+    Test_assign_to_nested_typed_member()
+  END
+  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "value"')
+
+  # Assignment where target item is read only script level
+  lines =<< trim END
+    vim9script
+
+    class Inner
+      this.value: number = 0
+    endclass
+
+    class Outer
+      this.inner: Inner
+    endclass
+
+    def F(outer: Outer)
+      outer.inner.value = 1
+    enddef
+
+    var script_inner = Inner.new(0)
+    var script_outer = Outer.new(script_inner)
+    script_outer.inner.value = 1
+    assert_equal(1, script_inner.value)
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Member is not writable: value')
 enddef
 
 def Test_assignment_with_operator()
