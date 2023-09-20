@@ -2101,11 +2101,11 @@ retnomove:
     if (col_from_screen == MAXCOL)
     {
 	// When clicking after end of line, still need to set correct curswant
-	int off_l = LineOffset[prev_row];
+	int off_l = LineOffset[prev_row] + curwin->w_wincol;
 	if (ScreenCols[off_l] < MAXCOL)
 	{
 	    // Binary search to find last char in line
-	    int off_r = off_l + prev_col;
+	    int off_r = LineOffset[prev_row] + prev_col;
 	    int off_click = off_r;
 	    while (off_l < off_r)
 	    {
@@ -2118,8 +2118,8 @@ retnomove:
 	    col = ScreenCols[off_r] + (off_click - off_r);
 	}
 	else
-	    // Shouldn't normally happen
-	    col = MAXCOL;
+	    // Clicking on an empty line
+	    col = prev_col - curwin->w_wincol;
     }
     else if (col_from_screen >= 0)
     {

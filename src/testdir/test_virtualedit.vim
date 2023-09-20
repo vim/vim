@@ -564,35 +564,38 @@ func Test_virtualedit_mouse()
   let save_mouse = &mouse
   set mouse=a
   set virtualedit=all
-  new
+  botright new
+  let row = win_screenpos(0)[0]
+  20vsplit
+  wincmd p
 
   call setline(1, ["text\tword"])
   redraw
-  call test_setmouse(1, 4)
+  call test_setmouse(row, 21 + 4)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 4, 0, 4], getcurpos())
-  call test_setmouse(1, 5)
+  call test_setmouse(row, 21 + 5)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 0, 5], getcurpos())
-  call test_setmouse(1, 6)
+  call test_setmouse(row, 21 + 6)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 1, 6], getcurpos())
-  call test_setmouse(1, 7)
+  call test_setmouse(row, 21 + 7)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 2, 7], getcurpos())
-  call test_setmouse(1, 8)
+  call test_setmouse(row, 21 + 8)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 3, 8], getcurpos())
-  call test_setmouse(1, 9)
+  call test_setmouse(row, 21 + 9)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 6, 0, 9], getcurpos())
-  call test_setmouse(1, 12)
+  call test_setmouse(row, 21 + 12)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 9, 0, 12], getcurpos())
-  call test_setmouse(1, 13)
+  call test_setmouse(row, 21 + 13)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 10, 0, 13], getcurpos())
-  call test_setmouse(1, 15)
+  call test_setmouse(row, 21 + 15)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 10, 2, 15], getcurpos())
 
