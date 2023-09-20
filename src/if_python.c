@@ -317,7 +317,7 @@ struct PyMethodDef { Py_ssize_t a; };
  */
 static int(*dll_PyArg_Parse)(PyObject *, char *, ...);
 static int(*dll_PyArg_ParseTuple)(PyObject *, char *, ...);
-static int(*dll_PyMem_Free)(void *);
+static void(*dll_PyMem_Free)(void *);
 static void* (*dll_PyMem_Malloc)(size_t);
 static int(*dll_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static int(*dll_PyErr_BadArgument)(void);

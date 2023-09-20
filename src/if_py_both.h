@@ -2079,9 +2079,10 @@ typedef struct
 } dictiterinfo_T;
 
     static PyObject *
-DictionaryIterNext(dictiterinfo_T **dii)
+DictionaryIterNext(void **arg)
 {
     PyObject	*ret;
+    dictiterinfo_T **dii = (dictiterinfo_T**)arg;
 
     if (!(*dii)->dii_todo)
 	return NULL;
@@ -2123,7 +2124,7 @@ DictionaryIter(DictionaryObject *self)
     dii->dii_todo = ht->ht_used;
 
     return IterNew(dii,
-	    (destructorfun)(void *) PyMem_Free, (nextfun) DictionaryIterNext,
+	    PyMem_Free, DictionaryIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
@@ -3081,17 +3082,19 @@ typedef struct
 } listiterinfo_T;
 
     static void
-ListIterDestruct(listiterinfo_T *lii)
+ListIterDestruct(void *arg)
 {
+    listiterinfo_T *lii = (listiterinfo_T*)arg;
     list_rem_watch(lii->list, &lii->lw);
     list_unref(lii->list);
     PyMem_Free(lii);
 }
 
     static PyObject *
-ListIterNext(listiterinfo_T **lii)
+ListIterNext(void **arg)
 {
     PyObject	*ret;
+    listiterinfo_T **lii = (listiterinfo_T**)arg;
 
     if (!((*lii)->lw.lw_item))
 	return NULL;
@@ -3123,7 +3126,7 @@ ListIter(ListObject *self)
     ++l->lv_refcount;
 
     return IterNew(lii,
-	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext,
+	    ListIterDestruct, ListIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
@@ -3747,9 +3750,10 @@ typedef struct
 } optiterinfo_T;
 
     static PyObject *
-OptionsIterNext(optiterinfo_T **oii)
+OptionsIterNext(void **arg)
 {
     char_u	*name;
+    optiterinfo_T **oii = (optiterinfo_T**)arg;
 
     if ((name = option_iter_next(&((*oii)->lastoption), (*oii)->opt_type)))
 	return PyString_FromString((char *)name);
@@ -3772,7 +3776,7 @@ OptionsIter(OptionsObject *self)
     oii->lastoption = NULL;
 
     return IterNew(oii,
-	    (destructorfun)(void *) PyMem_Free, (nextfun) OptionsIterNext,
+	    PyMem_Free, OptionsIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
@@ -4149,6 +4153,12 @@ CheckWindow(WindowObject *self)
     return 0;
 }
 
+    static int
+CheckWindowCb(void *self)
+{
+    return CheckWindow((WindowObject*)self);
+}
+
     static PyObject *
 WindowNew(win_T *win, tabpage_T *tab)
 {
@@ -4287,7 +4297,7 @@ WindowAttr(WindowObject *self, char *name)
     else if (strcmp(name, "vars") == 0)
 	return NEW_DICTIONARY(self->win->w_vars);
     else if (strcmp(name, "options") == 0)
-	return OptionsNew(SREQ_WIN, self->win, (checkfun) CheckWindow,
+	return OptionsNew(SREQ_WIN, self->win, CheckWindowCb,
 			(PyObject *) self);
     else if (strcmp(name, "number") == 0)
     {
@@ -5142,6 +5152,12 @@ CheckBuffer(BufferObject *self)
     return 0;
 }
 
+    static int
+CheckBufferCb(void *self)
+{
+    return CheckBuffer((BufferObject*)self);
+}
+
     static PyObject *
 RBItem(BufferObject *self, PyInt n, PyInt start, PyInt end)
 {
@@ -5544,7 +5560,7 @@ BufferAttr(BufferObject *self, char *name)
     else if (strcmp(name, "vars") == 0)
 	return NEW_DICTIONARY(self->buf->b_vars);
     else if (strcmp(name, "options") == 0)
-	return OptionsNew(SREQ_BUF, self->buf, (checkfun) CheckBuffer,
+	return OptionsNew(SREQ_BUF, self->buf, CheckBufferCb,
 			(PyObject *) self);
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, BufferAttrs);
@@ -5742,8 +5758,9 @@ BufMapItem(PyObject *self UNUSED, PyObject *keyObject)
 }
 
     static void
-BufMapIterDestruct(PyObject *buffer)
+BufMapIterDestruct(void* arg)
 {
+    PyObject *buffer = (PyObject*)arg;
     // Iteration was stopped before all buffers were processed
     if (buffer)
     {
@@ -5752,26 +5769,29 @@ BufMapIterDestruct(PyObject *buffer)
 }
 
     static int
-BufMapIterTraverse(PyObject *buffer, visitproc visit, void *arg)
+BufMapIterTraverse(void *iter, visitproc visit, void *arg)
 {
+    PyObject *buffer = (PyObject*)iter;
     if (buffer)
 	Py_VISIT(buffer);
     return 0;
 }
 
     static int
-BufMapIterClear(PyObject **buffer)
+BufMapIterClear(void **iter)
 {
+    PyObject **buffer = (PyObject**)iter;
     if (*buffer)
 	Py_CLEAR(*buffer);
     return 0;
 }
 
     static PyObject *
-BufMapIterNext(PyObject **buffer)
+BufMapIterNext(void **arg)
 {
     PyObject	*next;
     PyObject	*ret;
+    PyObject	**buffer = (PyObject**)arg;
 
     if (!*buffer)
 	return NULL;
@@ -5801,8 +5821,8 @@ BufMapIter(PyObject *self)
 
     buffer = BufferNew(firstbuf);
     return IterNew(buffer,
-	    (destructorfun) BufMapIterDestruct, (nextfun) BufMapIterNext,
-	    (traversefun) BufMapIterTraverse, (clearfun) BufMapIterClear,
+	    BufMapIterDestruct, BufMapIterNext,
+	    BufMapIterTraverse, BufMapIterClear,
 	    (PyObject *)self);
 }
 
@@ -6124,13 +6144,14 @@ out:
 }
 
     static void
-run_eval(const char *cmd, typval_T *rettv
+run_eval(const char *cmd, void *arg
 #ifdef PY_CAN_RECURSE
 	, PyGILState_STATE *pygilstate UNUSED
 #endif
 	)
 {
     PyObject	*run_ret;
+    typval_T	*rettv = (typval_T*)arg;
 
     run_ret = PyRun_String((char *)cmd, Py_eval_input, globals, globals);
     if (run_ret == NULL)
