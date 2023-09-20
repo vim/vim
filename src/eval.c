@@ -1564,6 +1564,9 @@ get_lval(
 					om->ocm_name);
 				return NULL;
 			    case VIM_ACCESS_READ:
+				// If [idx] or .key following, read only OK.
+				if (*p == '[' || *p == '.')
+				    break;
 				if ((flags & GLV_READ_ONLY) == 0)
 				{
 				    semsg(_(e_member_is_not_writable_str),
