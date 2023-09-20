@@ -64,6 +64,7 @@ char *did_set_highlight(optset_T *args);
 char *did_set_iconstring(optset_T *args);
 char *did_set_imactivatekey(optset_T *args);
 char *did_set_isopt(optset_T *args);
+char *did_set_jumpoptions(optset_T *args);
 char *did_set_keymap(optset_T *args);
 char *did_set_keymodel(optset_T *args);
 char *did_set_keyprotocol(optset_T *args);

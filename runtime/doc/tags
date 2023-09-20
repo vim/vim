@@ -433,7 +433,9 @@ $quote	eval.txt	/*$quote*
 'isp'	options.txt	/*'isp'*
 'isprint'	options.txt	/*'isprint'*
 'joinspaces'	options.txt	/*'joinspaces'*
+'jop'	options.txt	/*'jop'*
 'js'	options.txt	/*'js'*
+'jumpoptions'	options.txt	/*'jumpoptions'*
 'key'	options.txt	/*'key'*
 'keymap'	options.txt	/*'keymap'*
 'keymodel'	options.txt	/*'keymodel'*
@@ -8300,6 +8302,7 @@ json_encode()	builtin.txt	/*json_encode()*
 jtags	tagsrch.txt	/*jtags*
 jump-motions	motion.txt	/*jump-motions*
 jumplist	motion.txt	/*jumplist*
+jumplist-stack	motion.txt	/*jumplist-stack*
 jumpto-diffs	diff.txt	/*jumpto-diffs*
 k	motion.txt	/*k*
 kcc	uganda.txt	/*kcc*
