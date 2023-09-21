@@ -646,7 +646,7 @@ def Test_assignment_nested_type()
 
     Test_assign_to_nested_typed_member()
   END
-  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "value"')
+  v9.CheckSourceFailure(lines, 'E1335: Variable "value" in class "Inner" is not writable')
 
   # Assignment where target item is read only script level
   lines =<< trim END
@@ -669,7 +669,7 @@ def Test_assignment_nested_type()
     script_outer.inner.value = 1
     assert_equal(1, script_inner.value)
   END
-  v9.CheckSourceFailure(lines, 'E1335: Member is not writable: value')
+  v9.CheckSourceFailure(lines, 'E1335: Variable "value" in class "Inner" is not writable')
 enddef
 
 def Test_assignment_with_operator()
@@ -1243,7 +1243,7 @@ def Test_class_variable_access()
       var b = B.new()
       b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "ro_class_var"')
+  v9.CheckSourceFailure(lines, 'E1335: Variable "ro_class_var" in class "A" is not writable')
 
   # A private class variable cannot be accessed from a child class
   lines =<< trim END
@@ -4269,7 +4269,7 @@ def Test_readonly_member_change_in_def_func()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "val"')
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val" in class "A" is not writable')
 enddef
 
 " Test for reading and writing a class member from a def function
@@ -5541,7 +5541,7 @@ def Test_nested_object_assignment()
     var d = D.new()
     T(d)
   END
-  v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "value"')
+  v9.CheckSourceFailure(lines, 'E1335: Variable "value" in class "A" is not writable')
 enddef
 
 " Test for calling methods using a null object
