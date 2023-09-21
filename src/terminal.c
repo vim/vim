@@ -272,10 +272,10 @@ parse_termwinsize(win_T *wp, int *rows, int *cols)
     }
     *rows = atoi((char *)wp->w_p_tws);
     *cols = atoi((char *)p + 1);
-    if (*rows > 1000)
-	*rows = 1000;
-    if (*cols > 1000)
-	*cols = 1000;
+    if (*rows > VTERM_MAX_ROWS)
+	*rows = VTERM_MAX_ROWS;
+    if (*cols > VTERM_MAX_COLS)
+	*cols = VTERM_MAX_COLS;
     return minsize;
 }
 
