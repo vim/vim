@@ -3852,7 +3852,14 @@ win_line(
 	    else
 		ScreenAttrs[wlv.off] = wlv.char_attr;
 
-	    ScreenCols[wlv.off] = wlv.vcol;
+	    if (wlv.draw_state > WL_NR
+#ifdef FEAT_DIFF
+		    && wlv.filler_todo <= 0
+#endif
+		    )
+		ScreenCols[wlv.off] = wlv.vcol;
+	    else
+		ScreenCols[wlv.off] = -1;
 
 	    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
 	    {
@@ -3865,18 +3872,20 @@ win_line(
 		else
 		    // DBCS: Put second byte in the second screen char.
 		    ScreenLines[wlv.off] = mb_c & 0xff;
+
 		if (wlv.draw_state > WL_NR
 #ifdef FEAT_DIFF
 			&& wlv.filler_todo <= 0
 #endif
 			)
-		    ++wlv.vcol;
+		    ScreenCols[wlv.off] = ++wlv.vcol;
+		else
+		    ScreenCols[wlv.off] = -1;
+
 		// When "wlv.tocol" is halfway a character, set it to the end
 		// of the character, otherwise highlighting won't stop.
 		if (wlv.tocol == wlv.vcol)
 		    ++wlv.tocol;
-
-		ScreenCols[wlv.off] = wlv.vcol;
 
 #ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)
