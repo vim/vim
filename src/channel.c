@@ -2466,6 +2466,12 @@ channel_get_json(
 		d = item->jq_value->vval.v_dict;
 		if (d == NULL)
 		    goto nextitem;
+		// When looking for a response message from the LSP server,
+		// ignore new LSP request and notification messages.  LSP
+		// request and notification messages have the "method" field in
+		// the header and the response messages do not have this field.
+		if (dict_has_key(d, "method"))
+		    goto nextitem;
 		di = dict_find(d, (char_u *)"id", -1);
 		if (di == NULL)
 		    goto nextitem;
@@ -2927,16 +2933,9 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    seq_nr = 0;
 	    if (d != NULL)
 	    {
-		// When looking for a response message from the LSP server,
-		// ignore new LSP request and notification messages.  LSP
-		// request and notification messages have the "method" field in
-		// the header and the response messages do not have this field.
-		if (!dict_has_key(d, "method"))
-		{
-		    di = dict_find(d, (char_u *)"id", -1);
-		    if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
-			seq_nr = di->di_tv.vval.v_number;
-		}
+		di = dict_find(d, (char_u *)"id", -1);
+		if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
+		    seq_nr = di->di_tv.vval.v_number;
 	    }
 
 	    argv[1] = *listtv;

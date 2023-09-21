@@ -2481,6 +2481,14 @@ endfunc
 " Test for the 'lsp' channel mode
 func LspCb(chan, msg)
   call add(g:lspNotif, a:msg)
+  if a:msg->has_key('method')
+    " Requests received from the LSP server
+    if a:msg['method'] == 'server-req-in-middle'
+          \ && a:msg['params']['text'] == 'server-req'
+      call ch_sendexpr(a:chan, #{method: 'server-req-in-middle-resp',
+            \ id: a:msg['id'], params: #{text: 'client-resp'}})
+    endif
+  endif
 endfunc
 
 func LspOtCb(chan, msg)
@@ -2651,6 +2659,19 @@ func LspTests(port)
         \ params: #{text: content}}}, resp)
   " send a ping to make sure communication still works
   call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
+
+  " Test for processing a request message from the server while the client
+  " is waiting for a response with the same identifier.
+  let g:lspNotif = []
+  let resp = ch_evalexpr(ch, #{method: 'server-req-in-middle',
+        \ params: #{text: 'client-req'}})
+  call assert_equal(#{jsonrpc: '2.0', id: 28,
+        \ result: #{text: 'server-resp'}}, resp)
+  call assert_equal([
+        \ #{id: -1, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \   params: #{text: 'server-notif'}},
+        \ #{id: 28, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \   params: #{text: 'server-req'}}], g:lspNotif)
 
   " Test for invoking an unsupported method
   let resp = ch_evalexpr(ch, #{method: 'xyz', params: {}}, #{timeout: 200})
