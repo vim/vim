@@ -18,8 +18,8 @@
  *		     displayed (excluding text written by external commands).
  * ScreenAttrs[off]  Contains the associated attributes.
  * ScreenCols[off]   Contains the virtual columns in the line. -1 means not
- *		     available (below last line), MAXCOL means after the end
- *		     of the line.
+ *		     available or before buffer text, MAXCOL means after the
+ *		     end of the line.
  *
  * LineOffset[row]   Contains the offset into ScreenLines*[], ScreenAttrs[]
  *		     and ScreenCols[] for each line.

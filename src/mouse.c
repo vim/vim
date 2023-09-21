@@ -2115,11 +2115,16 @@ retnomove:
 		else
 		    off_r = off_m - 1;
 	    }
-	    col = ScreenCols[off_r] + (off_click - off_r);
+	    colnr_T eol_vcol = ScreenCols[off_r];
+	    if (eol_vcol < 0)
+		// Empty line or whole line before w_leftcol,
+		// with columns before buffer text
+		eol_vcol = curwin->w_leftcol - 1;
+	    col = eol_vcol + (off_click - off_r);
 	}
 	else
-	    // Clicking on an empty line
-	    col = prev_col - curwin->w_wincol;
+	    // Empty line or whole line before w_leftcol
+	    col = prev_col - curwin->w_wincol + curwin->w_leftcol;
     }
     else if (col_from_screen >= 0)
     {
