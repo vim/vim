@@ -65,7 +65,7 @@ one_function_arg(
 	garray_T    *newargs,
 	garray_T    *argtypes,
 	int	    types_optional,
-	garray_T    *is_argobjm,
+	garray_T    *arg_objm,
 	evalarg_T   *evalarg,
 	exarg_T	    *eap,
 	int	    is_vararg,
@@ -138,7 +138,7 @@ one_function_arg(
 
     // get any type from "arg: type"
     if (argtypes != NULL && (skip || ga_grow(argtypes, 1) == OK)
-	    && is_argobjm != NULL && (skip || ga_grow(is_argobjm, 1) == OK))
+		&& arg_objm != NULL && (skip || ga_grow(arg_objm, 1) == OK))
     {
 	char_u *type = NULL;
 
@@ -174,7 +174,7 @@ one_function_arg(
 		type = vim_strsave((char_u *)
 					    (is_vararg ? "list<any>" : "any"));
 	    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
-	    ((int8_T *)is_argobjm->ga_data)[is_argobjm->ga_len++] = 0;
+	    ((int8_T *)arg_objm->ga_data)[arg_objm->ga_len++] = FALSE;
 	}
     }
 
@@ -224,7 +224,7 @@ get_function_args(
     garray_T	*newargs,
     garray_T	*argtypes,	// NULL unless using :def
     int		types_optional,	// types optional if "argtypes" is not NULL
-    garray_T	*is_argobjm,	// NULL unless using :def
+    garray_T	*arg_objm,	// NULL unless using :def
     evalarg_T	*evalarg,	// context or NULL
     int		*varargs,
     garray_T	*default_args,
@@ -245,8 +245,8 @@ get_function_args(
 	ga_init2(newargs, sizeof(char_u *), 3);
     if (argtypes != NULL)
 	ga_init2(argtypes, sizeof(char_u *), 3);
-    if (is_argobjm != NULL)
-	ga_init2(is_argobjm, sizeof(int8_T), 3);
+    if (arg_objm != NULL)
+	ga_init2(arg_objm, sizeof(int8_T), 3);
     if (!skip && default_args != NULL)
 	ga_init2(default_args, sizeof(char_u *), 3);
 
@@ -301,7 +301,7 @@ get_function_args(
 
 		arg = p;
 		p = one_function_arg(p, newargs, argtypes, types_optional,
-					is_argobjm, evalarg, eap, TRUE, skip);
+					arg_objm, evalarg, eap, TRUE, skip);
 		if (p == arg)
 		    break;
 		if (*skipwhite(p) == '=')
@@ -357,12 +357,12 @@ get_function_args(
 		newargs->ga_len++;
 
 		if (argtypes != NULL && ga_grow(argtypes, 1) == OK
-			&& is_argobjm != NULL && ga_grow(is_argobjm, 1) == OK)
+			    && arg_objm != NULL && ga_grow(arg_objm, 1) == OK)
 		{
 		    // TODO: use the actual type
 		    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] =
 						  vim_strsave((char_u *)"any");
-		    ((int8_T *)is_argobjm->ga_data)[is_argobjm->ga_len++] = 1;
+		    ((int8_T *)arg_objm->ga_data)[arg_objm->ga_len++] = TRUE;
 
 		    // Add a line to the function body for the assignment.
 		    if (ga_grow(newlines, 1) == OK)
@@ -399,7 +399,7 @@ get_function_args(
 
 	    arg = p;
 	    p = one_function_arg(p, newargs, argtypes, types_optional,
-					is_argobjm, evalarg, eap, FALSE, skip);
+					arg_objm, evalarg, eap, FALSE, skip);
 	    if (p == arg)
 		break;
 
@@ -502,7 +502,7 @@ parse_argument_types(
 	ufunc_T *fp,
 	garray_T *argtypes,
 	int varargs,
-	garray_T *is_argobjm,
+	garray_T *arg_objm,
 	ocmember_T *obj_members,
 	int obj_member_count)
 {
@@ -531,8 +531,7 @@ parse_argument_types(
 		    type = &t_unknown;
 		else
 		{
-		    if (is_argobjm != NULL
-					&& ((int8_T *)is_argobjm->ga_data)[i])
+		    if (arg_objm != NULL && ((int8_T *)arg_objm->ga_data)[i])
 		    {
 			char_u *aname = ((char_u **)fp->uf_args.ga_data)[i];
 
@@ -1496,7 +1495,7 @@ get_lambda_tv(
     garray_T	*pnewargs;
     garray_T	argtypes;
     garray_T	default_args;
-    garray_T	is_argobjm;
+    garray_T	arg_objm;
     ufunc_T	*fp = NULL;
     partial_T   *pt = NULL;
     int		varargs;
@@ -1524,14 +1523,14 @@ get_lambda_tv(
     s = *arg + 1;
     ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional,
-			types_optional ? &is_argobjm : NULL, evalarg,
+			types_optional ? &arg_objm : NULL, evalarg,
 			NULL, &default_args, TRUE, NULL, FALSE, NULL, NULL);
     if (ret == FAIL || skip_arrow(s, equal_arrow, &ret_type, NULL) == NULL)
     {
 	if (types_optional)
 	{
 	    ga_clear_strings(&argtypes);
-	    ga_clear(&is_argobjm);
+	    ga_clear(&arg_objm);
 	}
 	return called_emsg == called_emsg_start ? NOTDONE : FAIL;
     }
@@ -1544,7 +1543,7 @@ get_lambda_tv(
     *arg += 1;
     ret = get_function_args(arg, equal_arrow ? ')' : '-', pnewargs,
 	    types_optional ? &argtypes : NULL, types_optional,
-			types_optional ? &is_argobjm : NULL, evalarg,
+			types_optional ? &arg_objm : NULL, evalarg,
 					    &varargs, &default_args,
 					    FALSE, NULL, FALSE, NULL, NULL);
     if (ret == FAIL
@@ -1554,7 +1553,7 @@ get_lambda_tv(
 	if (types_optional)
 	{
 	    ga_clear_strings(&argtypes);
-	    ga_clear(&is_argobjm);
+	    ga_clear(&arg_objm);
 	}
 	ga_clear_strings(&newargs);
 	return white_error ? FAIL : NOTDONE;
@@ -4647,7 +4646,7 @@ define_function(
     char_u	*line_arg = NULL;
     garray_T	newargs;
     garray_T	argtypes;
-    garray_T	is_argobjm;
+    garray_T	arg_objm;
     garray_T	default_args;
     garray_T	newlines;
     int		varargs = FALSE;
@@ -4706,7 +4705,7 @@ define_function(
 
     ga_init(&newargs);
     ga_init(&argtypes);
-    ga_init(&is_argobjm);
+    ga_init(&arg_objm);
     ga_init(&default_args);
 
     /*
@@ -4954,7 +4953,7 @@ define_function(
     ++p;
     if (get_function_args(&p, ')', &newargs,
 			 eap->cmdidx == CMD_def ? &argtypes : NULL, FALSE,
-			 eap->cmdidx == CMD_def ? &is_argobjm : NULL,
+			 eap->cmdidx == CMD_def ? &arg_objm : NULL,
 			 NULL, &varargs, &default_args, eap->skip,
 			 eap, class_flags, &newlines, lines_to_free) == FAIL)
 	goto errret_2;
@@ -5298,7 +5297,7 @@ define_function(
 	// The function may use script variables from the context.
 	function_using_block_scopes(fp, cstack);
 
-	if (parse_argument_types(fp, &argtypes, varargs, &is_argobjm,
+	if (parse_argument_types(fp, &argtypes, varargs, &arg_objm,
 					obj_members, obj_member_count) == FAIL)
 	{
 	    SOURCING_LNUM = lnum_save;
@@ -5399,7 +5398,7 @@ errret_2:
 	VIM_CLEAR(fp);
 ret_free:
     ga_clear_strings(&argtypes);
-    ga_clear(&is_argobjm);
+    ga_clear(&arg_objm);
     vim_free(fudi.fd_newkey);
     if (name != name_arg)
 	vim_free(name);
