@@ -1592,7 +1592,7 @@ early_ret:
 
 	    if (!is_class)
 	    {
-		emsg(_(e_static_variable_not_supported_in_interface));
+		emsg(_(e_static_member_not_supported_in_interface));
 		break;
 	    }
 	    has_static = TRUE;

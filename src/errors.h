@@ -3505,8 +3505,8 @@ EXTERN char e_object_variable_str_accessible_only_using_object_str[]
 	INIT(= N_("E1376: Object variable \"%s\" accessible only using class \"%s\" object"));
 EXTERN char e_method_str_of_class_str_has_different_access[]
 	INIT(= N_("E1377: Access level of method \"%s\" is different in class \"%s\""));
-EXTERN char e_static_variable_not_supported_in_interface[]
-	INIT(= N_("E1378: Static variable not supported in an interface"));
+EXTERN char e_static_member_not_supported_in_interface[]
+	INIT(= N_("E1378: Static member not supported in an interface"));
 EXTERN char e_private_variable_not_supported_in_interface[]
 	INIT(= N_("E1379: Private variable not supported in an interface"));
 EXTERN char e_private_method_not_supported_in_interface[]
