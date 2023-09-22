@@ -6703,15 +6703,15 @@ mch_expand_wildcards(
 #define STYLE_PRINT	3	// use "print -N", for zsh
 #define STYLE_BT	4	// `cmd` expansion, execute the pattern directly
 #define STYLE_GLOBSTAR	5	// use extended shell glob for bash (this uses extended
-				// globbing functionality using globstar)
+				// globbing functionality using globstar, needs bash > 4)
     int		shell_style = STYLE_ECHO;
     int		check_spaces;
     static int	did_find_nul = FALSE;
     int		ampersand = FALSE;
 		// vimglob() function to define for Posix shell
     static char *sh_vimglob_func = "vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >";
-		// globstar() function with globstar setting enabled
-    static char *sh_globstar_opt = "shopt -s globstar; ";
+		// vimglob() function with globstar setting enabled, only for bash >= 4.X
+    static char *sh_globstar_opt = "[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ";
 
     *num_file = 0;	// default: no files found
     *file = NULL;
