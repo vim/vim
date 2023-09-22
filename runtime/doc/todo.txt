@@ -120,16 +120,9 @@ Upcoming larger works:
    - example plugin: https://github.com/uga-rosa/dps-vsctm.vim
 
 
-Further Vim9 improvements, possibly after launch:
+Further Vim9 improvements:
 - Classes and Interfaces. See |vim9-classes|
-  - Change access: public by default, private by prefixing "_".
-	Check for error: can't have same name twice (ignoring "_" prefix).
-  - Private methods?
-	either: private def Func()
-	    or: def _Func()
-    Perhaps use "private" keyword instead of "_" prefix?
   - "final" object members - can only be set in the constructor.
-  - Support export/import of classes and interfaces.
   - Cannot use class type of itself in the method (Issue #12369)
   - Cannot use an object method in a lambda  #12417
 	Define all methods before compiling them?
@@ -137,13 +130,6 @@ Further Vim9 improvements, possibly after launch:
 	Also #12081 first case.
   - Using list of functions does not work #12081 (repro in later message).
   - First argument of call() cannot be "obj.Func". (#11865)
-  - null_object - constant type 17 not supported (Issue #12043)
-  - problem compiling object method call as function call argument (Issue
-    #12081)
-  - Make ":defcompile ClassName" compile all functions and methods in the
-    class.
-  - Forward declaration of a class?  E.g. for Clone() function.
-	email lifepillar 2023 Mar 26
   - Getting member of variable with "any" type should be handled at runtime.
     Remove temporary solution from #12096 / patch 9.0.1375.
   - "obj.Method()" does not always work in a compiled function, assumes "obj"
@@ -151,18 +137,21 @@ Further Vim9 improvements, possibly after launch:
     Issue #11822: any.Func() can be a dict or an object call, need to handle
     this at runtime.  Also see #12198 for an example.
     Possibly issue #11981 can be fixed at the same time (has two examples).
-  - accept line breaks in member initialization.  #11957
+  - Support export/import of classes and interfaces.
+  - Make ":defcompile ClassName" compile all functions and methods in the
+    class.
+  - Forward declaration of a class?  E.g. for Clone() function.
+	Email lifepillar 2023 Mar 26
   - object empty(), len() - can class define a method to be used for them?
   - add to help: when using a default new() method then reordering object
     members may cause trouble.  Can define new() without arguments to avoid.
-  - TODO items: check types for "implements" - members and methods
   - When "Meta" is a class, is "const MetaAlias = Meta" allowed?  It should
-    either work or given an error. possibly give an error now and implement it
+    either work or given an error. Possibly give an error now and implement it
     later (using a typedef).  #12006
   - how about lock/unlock?
-  - When checking "implements" also check types of members and function args.
   - For chaining, allow using the class name as type for function return
     value.
+  - Implement "specifies" interface
   - Implement generics
   - Add "assignable" (class or child)?
   - More efficient way for interface member index than iterating over list?
