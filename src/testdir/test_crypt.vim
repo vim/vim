@@ -288,7 +288,7 @@ func Test_uncrypt_xchacha20v2_2()
     throw 'Skipped: sodium_mlock() not possible'
   endtry
   " encrypted using xchacha20
-  call assert_match('\[xchachav2\]', execute(':messages'))
+  call assert_match('\[xchacha20v2\]', execute(':messages'))
   bw!
 	try
 		call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
