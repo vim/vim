@@ -648,7 +648,7 @@ valid_declaration_type(type_T *type)
     {
 	char *tofree = NULL;
 	char *name = type_name(type, &tofree);
-	semsg(_(e_invalid_type_for_object_member_str), name);
+	semsg(_(e_invalid_type_for_object_variable_str), name);
 	vim_free(tofree);
 	return FALSE;
     }
@@ -755,7 +755,7 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
     switch (where.wt_kind)
     {
 	case WT_MEMBER:
-	    semsg(_(e_member_str_type_mismatch_expected_str_but_got_str),
+	    semsg(_(e_variable_str_type_mismatch_expected_str_but_got_str),
 		    where.wt_func_name, typename1, typename2);
 	    break;
 	case WT_METHOD:

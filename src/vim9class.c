@@ -79,7 +79,7 @@ parse_member(
     *varname_end = to_name_end(varname, FALSE);
     if (*varname == '_' && has_public)
     {
-	semsg(_(e_public_member_name_cannot_start_with_underscore_str), line);
+	semsg(_(e_public_variable_name_cannot_start_with_underscore_str), line);
 	return FAIL;
     }
 
@@ -113,7 +113,7 @@ parse_member(
 
     if (init_expr == NULL && *init_arg == '=')
     {
-	emsg(_(e_cannot_initialize_member_in_interface));
+	emsg(_(e_cannot_initialize_variable_in_interface));
 	return FAIL;
     }
 
@@ -426,7 +426,7 @@ extends_check_dup_members(
 		    ? p_m->ocm_name + 1 : p_m->ocm_name;
 		if (STRCMP(pstr, qstr) == 0)
 		{
-		    semsg(_(e_duplicate_member_str), c_m->ocm_name);
+		    semsg(_(e_duplicate_variable_str), c_m->ocm_name);
 		    return FALSE;
 		}
 	    }
@@ -586,7 +586,7 @@ intf_variable_present(
 	// Ensure the access type is same
 	if (if_var->ocm_access != m->ocm_access)
 	{
-	    semsg(_(e_member_str_of_interface_str_has_different_access),
+	    semsg(_(e_variable_str_of_interface_str_has_different_access),
 		    if_var->ocm_name, intf_class_name);
 	    return FALSE;
 	}
@@ -662,7 +662,7 @@ validate_interface_variables(
 	    if (!intf_variable_present(intf_class_name, &if_ms[if_i],
 				is_class_var, cl_ms, cl_count, extends_cl))
 	    {
-		semsg(_(e_member_str_of_interface_str_not_implemented),
+		semsg(_(e_variable_str_of_interface_str_not_implemented),
 			if_ms[if_i].ocm_name, intf_class_name);
 		return FALSE;
 	    }
@@ -908,7 +908,7 @@ is_duplicate_member(garray_T *mgap, char_u *varname, char_u *varname_end)
 	char_u	*qstr = *m->ocm_name == '_' ? m->ocm_name + 1 : m->ocm_name;
 	if (STRCMP(pstr, qstr) == 0)
 	{
-	    semsg(_(e_duplicate_member_str), name);
+	    semsg(_(e_duplicate_variable_str), name);
 	    dup = TRUE;
 	    break;
 	}
@@ -957,20 +957,20 @@ is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
     // Constructors are not allowed in abstract classes.
     if (is_abstract)
     {
-	emsg(_(e_cannot_define_new_function_in_abstract_class));
+	emsg(_(e_cannot_define_new_method_in_abstract_class));
 	return FALSE;
     }
     // A constructor is always static, no need to define it so.
     if (has_static)
     {
-	emsg(_(e_cannot_define_new_function_as_static));
+	emsg(_(e_cannot_define_new_method_as_static));
 	return FALSE;
     }
     // A return type should not be specified for the new()
     // constructor method.
     if (uf->uf_ret_type->tt_type != VAR_VOID)
     {
-	emsg(_(e_cannot_use_a_return_type_with_new));
+	emsg(_(e_cannot_use_a_return_type_with_new_method));
 	return FALSE;
     }
     return TRUE;
@@ -1592,7 +1592,7 @@ early_ret:
 
 	    if (!is_class)
 	    {
-		emsg(_(e_static_member_not_supported_in_interface));
+		emsg(_(e_static_variable_not_supported_in_interface));
 		break;
 	    }
 	    has_static = TRUE;
@@ -1607,7 +1607,7 @@ early_ret:
 	{
 	    if (p[4] != '.' || !eval_isnamec1(p[5]))
 	    {
-		semsg(_(e_invalid_object_member_declaration_str), p);
+		semsg(_(e_invalid_object_variable_declaration_str), p);
 		break;
 	    }
 	    if (has_static)
@@ -2073,7 +2073,7 @@ get_member_tv(
 
     if (*name == '_')
     {
-	semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+	semsg(_(e_cannot_access_private_variable_str), m->ocm_name);
 	return FAIL;
     }
 
@@ -2232,7 +2232,7 @@ class_object_index(
 
 	if (*name == '_')
 	{
-	    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+	    semsg(_(e_cannot_access_private_variable_str), m->ocm_name);
 	    return FAIL;
 	}
 
@@ -2769,7 +2769,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 	if (*name == '_')
 	    semsg(_(e_cannot_access_private_method_str), method_name);
 	else
-	    semsg(_(e_class_member_str_accessible_only_using_class_str),
+	    semsg(_(e_class_method_str_accessible_only_using_class_str),
 		    method_name, cl->class_name);
     }
     else if ((v_type == VAR_CLASS)
@@ -2779,7 +2779,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 	if (*name == '_')
 	    semsg(_(e_cannot_access_private_method_str), method_name);
 	else
-	    semsg(_(e_object_member_str_accessible_only_using_object_str),
+	    semsg(_(e_object_method_str_accessible_only_using_object_str),
 		    method_name, cl->class_name);
     }
     else
@@ -2799,19 +2799,19 @@ member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     if (v_type == VAR_OBJECT)
     {
 	if (class_member_idx(cl, name, len) >= 0)
-	    semsg(_(e_class_member_str_accessible_only_using_class_str),
+	    semsg(_(e_class_variable_str_accessible_only_using_class_str),
 		    varname, cl->class_name);
 	else
-	    semsg(_(e_member_not_found_on_object_str_str), cl->class_name,
+	    semsg(_(e_variable_not_found_on_object_str_str), cl->class_name,
 		    varname);
     }
     else
     {
 	if (object_member_idx(cl, name, len) >= 0)
-	    semsg(_(e_object_member_str_accessible_only_using_object_str),
+	    semsg(_(e_object_variable_str_accessible_only_using_object_str),
 		    varname, cl->class_name);
 	else
-	    semsg(_(e_class_member_str_not_found_in_class_str),
+	    semsg(_(e_class_variable_str_not_found_in_class_str),
 		    varname, cl->class_name);
     }
     vim_free(varname);
