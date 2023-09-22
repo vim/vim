@@ -2005,10 +2005,13 @@ msg_prt_line(char_u *s, int list)
 	{
 	    attr = 0;
 	    c = *s++;
-	    in_multispace = c == ' '
-		&& ((col > 0 && s[-2] == ' ') || *s == ' ');
-	    if (!in_multispace)
-		multispace_pos = 0;
+	    if (list)
+	    {
+		in_multispace = c == ' ' && (*s == ' '
+						 || (col > 0 && s[-2] == ' '));
+		if (!in_multispace)
+		    multispace_pos = 0;
+	    }
 	    if (c == TAB && (!list || curwin->w_lcs_chars.tab1))
 	    {
 		// tab amount depends on current column
@@ -2062,7 +2065,7 @@ msg_prt_line(char_u *s, int list)
 	    }
 	    else if (c == ' ')
 	    {
-		if (list && lead != NULL && s <= lead && in_multispace
+		if (lead != NULL && s <= lead && in_multispace
 			&& curwin->w_lcs_chars.leadmultispace != NULL)
 		{
 		    c = curwin->w_lcs_chars.leadmultispace[multispace_pos++];
@@ -2082,7 +2085,7 @@ msg_prt_line(char_u *s, int list)
 		    c = curwin->w_lcs_chars.trail;
 		    attr = HL_ATTR(HLF_8);
 		}
-		else if (list && in_multispace
+		else if (in_multispace
 			&& curwin->w_lcs_chars.multispace != NULL)
 		{
 		    c = curwin->w_lcs_chars.multispace[multispace_pos++];
