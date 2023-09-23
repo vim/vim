@@ -3517,6 +3517,10 @@ EXTERN char e_member_str_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1382: Member \"%s\": type mismatch, expected %s but got %s"));
 EXTERN char e_method_str_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1383: Method \"%s\": type mismatch, expected %s but got %s"));
+EXTERN char e_cannot_lock_object[]
+	INIT(= N_("E1384: Cannot lock or unlock an object"));
+EXTERN char e_cannot_lock_class[]
+	INIT(= N_("E1384: Cannot lock or unlock a class"));
 #endif
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));

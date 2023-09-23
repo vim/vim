@@ -2185,6 +2185,18 @@ do_lock_var(
 								  lp->ll_name);
 			    ret = FAIL;
 			}
+			// TODO: && deep != 0 ???
+			// not worth the special case, use final in vim9script
+			if (sv != NULL && sv->sv_type->tt_type == VAR_OBJECT)
+			{
+			    emsg(_(e_cannot_lock_object));
+			    ret = FAIL;
+			}
+			if (sv != NULL && sv->sv_type->tt_type == VAR_CLASS)
+			{
+			    emsg(_(e_cannot_lock_class));
+			    ret = FAIL;
+			}
 		    }
 
 		    if (ret == OK)
