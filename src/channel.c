@@ -3052,13 +3052,27 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     {
 	// JSON or JS or LSP mode: invoke the one-time callback with the
 	// matching nr
-	for (cbitem = cbhead->cq_next; cbitem != NULL; cbitem = cbitem->cq_next)
-	    if (cbitem->cq_seq_nr == seq_nr)
+	int lsp_req_msg = FALSE;
+
+	// Don't use a LSP server request message with the same sequence number
+	// as the client request message as the response message.
+	if (ch_mode == CH_MODE_LSP && argv[1].v_type == VAR_DICT
+		&& dict_has_key(argv[1].vval.v_dict, "method"))
+	    lsp_req_msg = TRUE;
+
+	if (!lsp_req_msg)
+	{
+	    for (cbitem = cbhead->cq_next; cbitem != NULL;
+		    cbitem = cbitem->cq_next)
 	    {
-		invoke_one_time_callback(channel, cbhead, cbitem, argv);
-		called_otc = TRUE;
-		break;
+		if (cbitem->cq_seq_nr == seq_nr)
+		{
+		    invoke_one_time_callback(channel, cbhead, cbitem, argv);
+		    called_otc = TRUE;
+		    break;
+		}
 	    }
+	}
     }
 
     if (seq_nr > 0 && (ch_mode != CH_MODE_LSP || called_otc))
