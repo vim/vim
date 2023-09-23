@@ -5654,4 +5654,34 @@ def Test_dict_object_member()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" The following test was failing after 9.0.1914.  This was caused by using a
+" freed object from a previous method call.
+def Test_freed_object_from_previous_method_call()
+  var lines =<< trim END
+    vim9script
+
+    class Context
+    endclass
+
+    class Result
+    endclass
+
+    def Failure(): Result
+      return Result.new()
+    enddef
+
+    def GetResult(ctx: Context): Result
+      return Failure()
+    enddef
+
+    def Test_GetResult()
+      var ctx = Context.new()
+      var result = GetResult(ctx)
+    enddef
+
+    Test_GetResult()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
