@@ -2520,8 +2520,8 @@ EXTERN char e_no_line_number_to_use_for_sflnum[]
 	INIT(= N_("E961: No line number to use for \"<sflnum>\""));
 EXTERN char e_invalid_action_str_2[]
 	INIT(= N_("E962: Invalid action: '%s'"));
-EXTERN char e_setting_str_to_value_with_wrong_type[]
-	INIT(= N_("E963: Setting %s to value with wrong type"));
+EXTERN char e_setting_v_str_to_value_with_wrong_type[]
+	INIT(= N_("E963: Setting v:%s to value with wrong type"));
 #endif
 #ifdef FEAT_PROP_POPUP
 EXTERN char_u e_invalid_column_number_nr[]
