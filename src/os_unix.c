@@ -1858,7 +1858,7 @@ ex_xrestore(exarg_T *eap)
     static int
 test_x11_window(Display *dpy)
 {
-    int			(*old_handler)();
+    int			(*old_handler)(Display*, XErrorEvent*);
     XTextProperty	text_prop;
 
     old_handler = XSetErrorHandler(x_error_check);
@@ -7781,9 +7781,9 @@ setup_term_clip(void)
     open_app_context();
     if (app_context != NULL && xterm_Shell == (Widget)0)
     {
-	int (*oldhandler)();
+	int (*oldhandler)(Display*, XErrorEvent*);
 # if defined(USING_SETJMP)
-	int (*oldIOhandler)();
+	int (*oldIOhandler)(Display*);
 # endif
 # ifdef ELAPSED_FUNC
 	elapsed_T start_tv;

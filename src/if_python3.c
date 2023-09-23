@@ -2070,7 +2070,7 @@ set_ref_in_python3(int copyID)
 }
 
     int
-python3_version()
+python3_version(void)
 {
 #ifdef USE_LIMITED_API
     return Py_LIMITED_API;
