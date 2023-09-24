@@ -132,7 +132,7 @@ def Test_class_basic()
       endclass
       var obj = Something.new()
   END
-  v9.CheckSourceFailure(lines, 'E1326: Member not found on object "Something": state')
+  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "Something": state')
 
   # Space before ":" in a member variable declaration
   lines =<< trim END
@@ -563,7 +563,7 @@ def Test_member_any_used_as_object()
     var outer_obj = Outer.new(inner_obj)
     F(outer_obj)
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private member: _value')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _value')
 
   # Try modifying a non-existing variable using an "any" object
   lines =<< trim END
@@ -585,7 +585,7 @@ def Test_member_any_used_as_object()
     var outer_obj = Outer.new(inner_obj)
     F(outer_obj)
   END
-  v9.CheckSourceFailure(lines, 'E1326: Member not found on object "Inner": someval')
+  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "Inner": someval')
 enddef
 
 " Nested assignment to a object variable which is of another class type
@@ -1009,7 +1009,7 @@ def Test_class_object_member_inits()
        this.value: void
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1330: Invalid type for object member: void')
+  v9.CheckSourceFailure(lines, 'E1330: Invalid type for object variable: void')
 enddef
 
 " Test for instance variable access
@@ -1154,7 +1154,7 @@ def Test_instance_variable_access()
     endclass
     A.val = 1
   END
-  v9.CheckSourceFailure(lines, 'E1376: Object member "val" accessible only using class "A" object')
+  v9.CheckSourceFailure(lines, 'E1376: Object variable "val" accessible only using class "A" object')
 
   # Read a instance variable using the class name in the script context
   lines =<< trim END
@@ -1164,7 +1164,7 @@ def Test_instance_variable_access()
     endclass
     var i = A.val
   END
-  v9.CheckSourceFailure(lines, 'E1376: Object member "val" accessible only using class "A" object')
+  v9.CheckSourceFailure(lines, 'E1376: Object variable "val" accessible only using class "A" object')
 
   # Modify a instance variable using the class name in a def function
   lines =<< trim END
@@ -1177,7 +1177,7 @@ def Test_instance_variable_access()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1376: Object member "val" accessible only using class "A" object')
+  v9.CheckSourceFailure(lines, 'E1376: Object variable "val" accessible only using class "A" object')
 
   # Read a instance variable using the class name in a def function
   lines =<< trim END
@@ -1190,7 +1190,7 @@ def Test_instance_variable_access()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1376: Object member "val" accessible only using class "A" object')
+  v9.CheckSourceFailure(lines, 'E1376: Object variable "val" accessible only using class "A" object')
 
   # Access from child class extending a class:
   lines =<< trim END
@@ -1237,7 +1237,7 @@ def Test_class_variable_access()
       static this.val = 1
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1368: Static cannot be followed by "this" in a member name')
+  v9.CheckSourceFailure(lines, 'E1368: Static cannot be followed by "this" in a variable name')
 
   # Test for "static" cannot be followed by "public".
   lines =<< trim END
@@ -1282,7 +1282,7 @@ def Test_class_variable_access()
       var b = B.new()
       b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private member: _priv_class_var')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _priv_class_var')
 
   # A private class variable cannot be modified from a child class
   lines =<< trim END
@@ -1300,7 +1300,7 @@ def Test_class_variable_access()
       var b = B.new()
       b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private member: _priv_class_var')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _priv_class_var')
 
   # Access from child class extending a class and from script context
   lines =<< trim END
@@ -1689,7 +1689,7 @@ def Test_class_member()
     var a = A.new()
     var v = a.bar
   END
-  v9.CheckSourceFailure(lines, 'E1326: Member not found on object "A": bar')
+  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "A": bar')
 enddef
 
 func Test_class_garbagecollect()
@@ -1881,7 +1881,7 @@ def Test_class_defcompile()
 
       defcompile C.new
   END
-  v9.CheckSourceFailure(lines, 'E1370: Cannot define a "new" function as static')
+  v9.CheckSourceFailure(lines, 'E1370: Cannot define a "new" method as static')
 
   # Trying to compile a function using a non-existing class variable
   lines =<< trim END
@@ -2103,7 +2103,7 @@ def Test_class_implements_interface()
         enddef
       endclass
   END
-  v9.CheckSourceFailure(lines, 'E1348: Member "counter" of interface "Some" is not implemented')
+  v9.CheckSourceFailure(lines, 'E1348: Variable "counter" of interface "Some" is not implemented')
 
   lines =<< trim END
       vim9script
@@ -2718,7 +2718,7 @@ def Test_class_extends()
       endclass
       var c = Child.new()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "new" accessible only using class "Child"')
+  v9.CheckSourceFailure(lines, 'E1385: Class method "new" accessible only using class "Child"')
 
   # base class with more than one object member
   lines =<< trim END
@@ -4000,7 +4000,7 @@ def Test_static_inheritence()
     assert_equal(102, ob.AccessObject())
     assert_equal(103, oc.AccessObject())
 
-    assert_fails('echo oc.AccessPrivateStaticThroughClassName()', 'E1333: Cannot access private member: _svar')
+    assert_fails('echo oc.AccessPrivateStaticThroughClassName()', 'E1333: Cannot access private variable: _svar')
 
     # verify object properly resolves to correct static
     assert_equal(1, oa.AccessStaticThroughObject())
@@ -4020,7 +4020,7 @@ def Test_dup_member_variable()
       this.val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val')
 
   # Duplicate private member variable
   lines =<< trim END
@@ -4030,7 +4030,7 @@ def Test_dup_member_variable()
       this._val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: _val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val')
 
   # Duplicate public member variable
   lines =<< trim END
@@ -4040,7 +4040,7 @@ def Test_dup_member_variable()
       public this.val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val')
 
   # Duplicate private member variable
   lines =<< trim END
@@ -4050,7 +4050,7 @@ def Test_dup_member_variable()
       this._val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: _val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val')
 
   # Duplicate public and private member variable
   lines =<< trim END
@@ -4060,7 +4060,7 @@ def Test_dup_member_variable()
       public this.val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val')
 
   # Duplicate class member variable
   lines =<< trim END
@@ -4070,7 +4070,7 @@ def Test_dup_member_variable()
       static _s: string = "def"
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: _s')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _s')
 
   # Duplicate public and private class member variable
   lines =<< trim END
@@ -4080,7 +4080,7 @@ def Test_dup_member_variable()
       static _s: string = "def"
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: _s')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _s')
 
   # Duplicate class and object member variable
   lines =<< trim END
@@ -4109,7 +4109,7 @@ def Test_dup_member_variable()
       this.val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val')
 
   # Duplicate object private member variable in a derived class
   lines =<< trim END
@@ -4123,7 +4123,7 @@ def Test_dup_member_variable()
       this._val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: _val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val')
 
   # Duplicate object private member variable in a derived class
   lines =<< trim END
@@ -4137,7 +4137,7 @@ def Test_dup_member_variable()
       this._val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: _val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val')
 
   # Duplicate object member variable in a derived class
   lines =<< trim END
@@ -4151,7 +4151,7 @@ def Test_dup_member_variable()
       this.val = 20
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1369: Duplicate member: val')
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val')
 
   # Two member variables with a common prefix
   lines =<< trim END
@@ -4181,7 +4181,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private member: _val')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _val')
 
   # access a non-existing private object member variable
   lines =<< trim END
@@ -4195,7 +4195,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1326: Member not found on object "A": _a')
+  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "A": _a')
 
   # private static member variable
   lines =<< trim END
@@ -4209,7 +4209,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "_val" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "_val" accessible only using class "A"')
 
   # private static member variable
   lines =<< trim END
@@ -4223,7 +4223,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "_val" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "_val" accessible only using class "A"')
 
   # private static class variable
   lines =<< trim END
@@ -4236,7 +4236,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private member: _val')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _val')
 
   # private static class variable
   lines =<< trim END
@@ -4249,7 +4249,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private member: _val')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _val')
 enddef
 
 " Test for changing the member access of an interface in a implementation class
@@ -4263,7 +4263,7 @@ def Test_change_interface_member_access()
       this.val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1367: Access level of member "val" of interface "A" is different')
+  v9.CheckSourceFailure(lines, 'E1367: Access level of variable "val" of interface "A" is different')
 
   lines =<< trim END
     vim9script
@@ -4274,7 +4274,7 @@ def Test_change_interface_member_access()
       public this.val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1367: Access level of member "val" of interface "A" is different')
+  v9.CheckSourceFailure(lines, 'E1367: Access level of variable "val" of interface "A" is different')
 enddef
 
 " Test for trying to change a readonly member from a def function
@@ -4310,7 +4310,7 @@ def Test_modify_class_member_from_def_function()
       A.var3 = {c: 3, d: 4}
       assert_equal([3, 4], A.var2)
       assert_equal({c: 3, d: 4}, A.var3)
-      assert_fails('echo A._priv_var4', 'E1333: Cannot access private member: _priv_var4')
+      assert_fails('echo A._priv_var4', 'E1333: Cannot access private variable: _priv_var4')
     enddef
     T()
   END
@@ -4352,7 +4352,7 @@ def Test_class_variable_access_using_object()
     var a = A.new()
     echo a.svar2
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "svar2" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "svar2" accessible only using class "A"')
 
   # Cannot write to a class variable using an object in script context
   lines =<< trim END
@@ -4365,7 +4365,7 @@ def Test_class_variable_access_using_object()
     var a = A.new()
     a.svar2 = [2]
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "svar2" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "svar2" accessible only using class "A"')
 
   # Cannot read from a class variable using an object in def method context
   lines =<< trim END
@@ -4381,7 +4381,7 @@ def Test_class_variable_access_using_object()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "svar2" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "svar2" accessible only using class "A"')
 
   # Cannot write to a class variable using an object in def method context
   lines =<< trim END
@@ -4397,7 +4397,7 @@ def Test_class_variable_access_using_object()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "svar2" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "svar2" accessible only using class "A"')
 enddef
 
 " Test for using a interface method using a child object
@@ -4636,7 +4636,7 @@ def Test_class_method_call_from_subclass()
     var b = B.new()
     b.Bar()
   END
-  v9.CheckSourceFailure(lines, 'E1374: Class member "Foo" accessible only inside class "A"')
+  v9.CheckSourceFailure(lines, 'E1384: Class method "Foo" accessible only inside class "A"')
 enddef
 
 " Test for calling a class method using an object in a def function context and
@@ -4680,7 +4680,7 @@ def Test_class_method_call_using_object()
     var a = A.new()
     assert_equal('foo', a.Foo())
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "Foo" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1385: Class method "Foo" accessible only using class "A"')
 
   # def function context
   lines =<< trim END
@@ -4697,7 +4697,7 @@ def Test_class_method_call_using_object()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "Foo" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1385: Class method "Foo" accessible only using class "A"')
 enddef
 
 def Test_class_variable()
@@ -4750,7 +4750,7 @@ def Test_class_variable()
     endclass
     B.ClassFunc()
   END
-  v9.CheckSourceFailure(lines, 'E1374: Class member "val" accessible only inside class "A"')
+  v9.CheckSourceFailure(lines, 'E1374: Class variable "val" accessible only inside class "A"')
 
   # Reading a parent class variable from a child class method
   lines =<< trim END
@@ -4767,7 +4767,7 @@ def Test_class_variable()
     endclass
     B.ClassFunc()
   END
-  v9.CheckSourceFailure(lines, 'E1374: Class member "val" accessible only inside class "A"')
+  v9.CheckSourceFailure(lines, 'E1374: Class variable "val" accessible only inside class "A"')
 
   # Modifying a parent class variable from a child object method
   lines =<< trim END
@@ -4785,7 +4785,7 @@ def Test_class_variable()
     var b = B.new()
     b.ObjFunc()
   END
-  v9.CheckSourceFailure(lines, 'E1374: Class member "val" accessible only inside class "A"')
+  v9.CheckSourceFailure(lines, 'E1374: Class variable "val" accessible only inside class "A"')
 
   # Reading a parent class variable from a child object method
   lines =<< trim END
@@ -4803,7 +4803,7 @@ def Test_class_variable()
     var b = B.new()
     b.ObjFunc()
   END
-  v9.CheckSourceFailure(lines, 'E1374: Class member "val" accessible only inside class "A"')
+  v9.CheckSourceFailure(lines, 'E1374: Class variable "val" accessible only inside class "A"')
 
   # Modifying a class variable using an object at script level
   lines =<< trim END
@@ -4815,7 +4815,7 @@ def Test_class_variable()
     var a = A.new()
     a.val = 20
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "val" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "val" accessible only using class "A"')
 
   # Reading a class variable using an object at script level
   lines =<< trim END
@@ -4827,7 +4827,7 @@ def Test_class_variable()
     var a = A.new()
     var i = a.val
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "val" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "val" accessible only using class "A"')
 
   # Modifying a class variable using an object at function level
   lines =<< trim END
@@ -4843,7 +4843,7 @@ def Test_class_variable()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "val" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "val" accessible only using class "A"')
 
   # Reading a class variable using an object at function level
   lines =<< trim END
@@ -4858,7 +4858,7 @@ def Test_class_variable()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1375: Class member "val" accessible only using class "A"')
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "val" accessible only using class "A"')
 enddef
 
 " Test for using a duplicate class method and class variable in a child class
@@ -4957,7 +4957,7 @@ def Test_instance_method_call_using_class()
     endclass
     A.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1376: Object member "Foo" accessible only using class "A" object')
+  v9.CheckSourceFailure(lines, 'E1386: Object method "Foo" accessible only using class "A" object')
 
   # Invoke an object method using a class in def function context
   lines =<< trim END
@@ -4972,7 +4972,7 @@ def Test_instance_method_call_using_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1376: Object member "Foo" accessible only using class "A" object')
+  v9.CheckSourceFailure(lines, 'E1386: Object method "Foo" accessible only using class "A" object')
 enddef
 
 " Test for duplicate class method and instance method
@@ -5218,7 +5218,7 @@ def Test_extend_interface()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1348: Member "var2" of interface "B" is not implemented')
+  v9.CheckSourceFailure(lines, 'E1348: Variable "var2" of interface "B" is not implemented')
 
   # interface cannot extend a class
   lines =<< trim END
@@ -5276,7 +5276,7 @@ def Test_extend_interface()
       this.val2: number
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1382: Member "val1": type mismatch, expected number but got string')
+  v9.CheckSourceFailure(lines, 'E1382: Variable "val1": type mismatch, expected number but got string')
 enddef
 
 " Test for a child class implementing an interface when some of the methods are
@@ -5433,7 +5433,7 @@ def Test_child_class_implements_interface()
       this.var1 = [{a: 10}]
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1348: Member "var3" of interface "Intf" is not implemented')
+  v9.CheckSourceFailure(lines, 'E1348: Variable "var3" of interface "Intf" is not implemented')
 
   # One of the interface variables is of different type
   lines =<< trim END
@@ -5460,7 +5460,7 @@ def Test_child_class_implements_interface()
       this.var1 = [{a: 10}]
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1382: Member "var3": type mismatch, expected list<dict<number>> but got list<dict<string>>')
+  v9.CheckSourceFailure(lines, 'E1382: Variable "var3": type mismatch, expected list<dict<number>> but got list<dict<string>>')
 enddef
 
 " Test for extending an interface with duplicate variables and methods
@@ -5531,7 +5531,7 @@ def Test_implements_using_var_type_any()
     endclass
     var b = B.new()
   END
-  v9.CheckSourceFailure(lines, 'E1382: Member "val": type mismatch, expected list<dict<string>> but got dict<number>')
+  v9.CheckSourceFailure(lines, 'E1382: Variable "val": type mismatch, expected list<dict<string>> but got dict<number>')
 enddef
 
 " Test for assigning to a member variable in a nested class

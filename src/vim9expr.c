@@ -293,7 +293,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     {
 	if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
 	{
-	    emsg(_(e_using_super_not_in_class_function));
+	    emsg(_(e_using_super_not_in_class_method));
 	    return FAIL;
 	}
 	is_super = TRUE;
@@ -407,7 +407,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	{
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
-		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		semsg(_(e_cannot_access_private_variable_str), m->ocm_name);
 		return FAIL;
 	    }
 
@@ -443,7 +443,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // it is defined.
 	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
 	    {
-		semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		semsg(_(e_cannot_access_private_variable_str), m->ocm_name);
 		return FAIL;
 	    }
 
@@ -772,7 +772,7 @@ compile_load(
 		    res = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
 		else
 		{
-		    semsg(_(e_class_member_str_accessible_only_inside_class_str),
+		    semsg(_(e_class_variable_str_accessible_only_inside_class_str),
 			    name, cl->class_name);
 		    res = FAIL;
 		}
@@ -1151,7 +1151,7 @@ compile_call(
 	    }
 	    else
 	    {
-		semsg(_(e_class_member_str_accessible_only_inside_class_str),
+		semsg(_(e_class_method_str_accessible_only_inside_class_str),
 			name, cl->class_name);
 		res = FAIL;
 	    }

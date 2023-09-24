@@ -1610,8 +1610,8 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
     {
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
-				? e_cannot_access_private_member_str
-				: e_member_is_not_writable_str;
+				? e_cannot_access_private_variable_str
+				: e_variable_is_not_writable_str;
 	semsg(_(msg), m->ocm_name, cl->class_name);
 	return FALSE;
     }
@@ -1750,7 +1750,7 @@ compile_lhs(
 		{
 		    // A class variable can be accessed without the class name
 		    // only inside a class.
-		    semsg(_(e_class_member_str_accessible_only_inside_class_str),
+		    semsg(_(e_class_variable_str_accessible_only_inside_class_str),
 			    lhs->lhs_name, defcl->class_name);
 		    return FAIL;
 		}
