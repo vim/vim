@@ -366,7 +366,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                    Les 3.1: HET COMMANDO PLAK
 
-  ** Tik  p  ('put') en plak daarmee zojuist gewiste tekst na te cursor. **
+  ** Tik  p  ('put') en plak daarmee zojuist gewiste tekst na de cursor. **
 
   1. Ga met de cursor naar de eerste regel met ---> hierna.
 
