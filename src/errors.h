@@ -3534,8 +3534,12 @@ EXTERN char e_missing_name_after_implements[]
 	INIT(= N_("E1389: Missing name after implements"));
 EXTERN char e_cannot_use_an_object_variable_except_with_the_new_method_str[]
 	INIT(= N_("E1390: Cannot use an object variable \"this.%s\" except with the \"new\" method"));
+EXTERN char e_cannot_lock_object_variable_str[]
+	INIT(= N_("E1391: Cannot (un)lock variable \"%s\" in class \"%s\""));
+EXTERN char e_cannot_lock_class_variable_str[]
+	INIT(= N_("E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""));
 #endif
-// E1391 - E1499 unused (reserved for Vim9 class support)
+// E1393 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

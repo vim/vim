@@ -986,6 +986,62 @@ eval_foldexpr(win_T *wp, int *cp)
 #endif
 
 /*
+ * Fill in "lp" using "root". This is used in a special case when
+ * "get_lval()" parses a bare word when "lval_root" is not NULL.
+ *
+ * This is typically called with "lval_root" as "root". For a class, find
+ * the name from lp in the class from root, fill in lval_T if found. For a
+ * complex type, list/dict use it as the result; just put the root into
+ * ll_tv.
+ *
+ * "lval_root" is a hack used during run-time/instr-execution to provide the
+ * starting point for "get_lval()" to traverse a chain of indexes. In some
+ * cases get_lval sees a bare name and uses this function to populate the
+ * lval_T.
+ *
+ * For setting up "lval_root" (currently only used with lockvar)
+ *	compile_lock_unlock - pushes object on stack (which becomes lval_root)
+ *	execute_instructions: ISN_LOCKUNLOCK - sets lval_root from stack.
+ */
+    static void
+get_lval_root(lval_T *lp, typval_T *root, int is_arg)
+{
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: get_lvalroot(): name %s", lp->ll_name);
+#endif
+    if (!is_arg && root->v_type == VAR_CLASS)
+    {
+	if (root->vval.v_class != NULL)
+	{
+	    // Special special case. Look for a bare class variable reference.
+	    class_T	*cl = root->vval.v_class;
+	    int		m_idx;
+	    ocmember_T	*m = class_member_lookup(cl, lp->ll_name,
+					lp->ll_name_end - lp->ll_name, &m_idx);
+	    if (m != NULL)
+	    {
+		// Assuming "inside class" since bare reference.
+		lp->ll_class = root->vval.v_class;
+		lp->ll_oi = m_idx;
+		lp->ll_valtype = m->ocm_type;
+		lp->ll_tv = &lp->ll_class->class_members_tv[m_idx];
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR: get_lvalroot() class member: name %s",
+								lp->ll_name);
+#endif
+		return;
+	    }
+	}
+    }
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: get_lvalroot() any type");
+#endif
+    lp->ll_tv = root;
+    lp->ll_is_root = TRUE;
+}
+
+/*
  * Get an lval: variable, Dict item or List item that can be assigned a value
  * to: "name", "na{me}", "name[expr]", "name[expr:expr]", "name[expr][expr]",
  * "name.key", "name.key[expr]" etc.
@@ -1027,6 +1083,11 @@ get_lval(
     int		quiet = flags & GLV_QUIET;
     int		writing = 0;
     int		vim9script = in_vim9script();
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: get_lval(): name %s, lval_root %p",
+						    name, (void*)lval_root);
+#endif
 
     // Clear everything in "lp".
     CLEAR_POINTER(lp);
@@ -1122,6 +1183,7 @@ get_lval(
 		    return NULL;
 		lp->ll_name_end = tp;
 	    }
+	    // TODO: check inside class?
 	}
     }
     if (lp->ll_name == NULL)
@@ -1157,7 +1219,11 @@ get_lval(
 
     // Without [idx] or .key we are done.
     if ((*p != '[' && *p != '.'))
+    {
+	if (lval_root != NULL)
+	    get_lval_root(lp, lval_root, lval_root_is_arg);
 	return p;
+    }
 
     if (vim9script && lval_root != NULL)
     {
@@ -1350,6 +1416,8 @@ get_lval(
 		}
 	    }
 	    lp->ll_list = NULL;
+	    lp->ll_object = NULL;
+	    lp->ll_class = NULL;
 
 	    // a NULL dict is equivalent with an empty dict
 	    if (lp->ll_tv->vval.v_dict == NULL)
@@ -1482,6 +1550,8 @@ get_lval(
 	    clear_tv(&var1);
 
 	    lp->ll_dict = NULL;
+	    lp->ll_object = NULL;
+	    lp->ll_class = NULL;
 	    lp->ll_list = lp->ll_tv->vval.v_list;
 	    lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1,
 				     (flags & GLV_ASSIGN_WITH_OP) == 0, quiet);
@@ -1516,10 +1586,22 @@ get_lval(
 	}
 	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
-	    class_T *cl = (v_type == VAR_OBJECT
-					   && lp->ll_tv->vval.v_object != NULL)
-			    ? lp->ll_tv->vval.v_object->obj_class
-			    : lp->ll_tv->vval.v_class;
+	    lp->ll_dict = NULL;
+	    lp->ll_list = NULL;
+
+	    class_T *cl;
+	    if (v_type == VAR_OBJECT && lp->ll_tv->vval.v_object != NULL)
+	    {
+	        cl = lp->ll_tv->vval.v_object->obj_class;
+	        lp->ll_object = lp->ll_tv->vval.v_object;
+	    }
+	    else
+	    {
+	        cl = lp->ll_tv->vval.v_class;
+	        lp->ll_object = NULL;
+	    }
+	    lp->ll_class = cl;
+
 	    // TODO: what if class is NULL?
 	    if (cl != NULL)
 	    {
@@ -1539,6 +1621,7 @@ get_lval(
 			fp = method_lookup(cl,
 				round == 1 ? VAR_CLASS : VAR_OBJECT,
 				key, p - key, &m_idx);
+			lp->ll_oi = m_idx;
 			if (fp != NULL)
 			{
 			    lp->ll_ufunc = fp;
@@ -1548,12 +1631,16 @@ get_lval(
 		    }
 		}
 
+		// TODO: dont' check access if inside class
+		// TODO: is GLV_READ_ONLY the right thing to use
+		//	     for class/object member access?
+		//	     Probably in some cases. Need inside class check
 		if (lp->ll_valtype == NULL)
 		{
 		    int		m_idx;
-		    ocmember_T	*om;
-
-		    om = member_lookup(cl, v_type, key, p - key, &m_idx);
+		    ocmember_T	*om
+			    = member_lookup(cl, v_type, key, p - key, &m_idx);
+		    lp->ll_oi = m_idx;
 		    if (om != NULL)
 		    {
 			switch (om->ocm_access)

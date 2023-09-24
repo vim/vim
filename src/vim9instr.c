@@ -2177,6 +2177,23 @@ generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
  * A copy is made of "line".
  */
     int
+generate_LOCKUNLOCK(cctx_T *cctx, char_u *line, int is_arg)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_LOCKUNLOCK)) == NULL)
+	return FAIL;
+    isn->isn_arg.lockunlock.string = vim_strsave(line);
+    isn->isn_arg.lockunlock.is_arg = is_arg;
+    return OK;
+}
+
+/*
+ * Generate an EXEC instruction that takes a string argument.
+ * A copy is made of "line".
+ */
+    int
 generate_EXEC_copy(cctx_T *cctx, isntype_T isntype, char_u *line)
 {
     isn_T	*isn;

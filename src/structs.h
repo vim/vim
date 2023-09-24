@@ -4535,6 +4535,11 @@ typedef struct
  *	"tv"	    points to the (first) list item value
  *	"li"	    points to the (first) list item
  *	"range", "n1", "n2" and "empty2" indicate what items are used.
+ * For a member in a class/object: TODO: verify fields
+ *	"name"	    points to the (expanded) variable name.
+ *	"exp_name"  NULL or non-NULL, to be freed later.
+ *	"tv"	    points to the (first) list item value
+ *	"oi"	    index into member array, see _type to determine which array
  * For an existing Dict item:
  *	"name"	    points to the (expanded) variable name.
  *	"exp_name"  NULL or non-NULL, to be freed later.
@@ -4571,6 +4576,11 @@ typedef struct lval_S
     type_T	*ll_valtype;	// type expected for the value or NULL
     blob_T	*ll_blob;	// The Blob or NULL
     ufunc_T	*ll_ufunc;	// The function or NULL
+    object_T	*ll_object;	// The object or NULL, class is not NULL
+    class_T	*ll_class;	// The class or NULL, object may be NULL
+    int		ll_oi;		// The object/class member index
+    int		ll_is_root;	// Special case. ll_tv is lval_root,
+				// ignore the rest.
 } lval_T;
 
 // Structure used to save the current state.  Used when executing Normal mode
