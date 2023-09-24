@@ -174,7 +174,7 @@ one_function_arg(
 		type = vim_strsave((char_u *)
 					    (is_vararg ? "list<any>" : "any"));
 	    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
-	    ((int8_T *)arg_objm->ga_data)[arg_objm->ga_len++] = FALSE;
+	    ((int *)arg_objm->ga_data)[arg_objm->ga_len++] = FALSE;
 	}
     }
 
@@ -246,7 +246,7 @@ get_function_args(
     if (argtypes != NULL)
 	ga_init2(argtypes, sizeof(char_u *), 3);
     if (arg_objm != NULL)
-	ga_init2(arg_objm, sizeof(int8_T), 3);
+	ga_init2(arg_objm, sizeof(int), 3);
     if (!skip && default_args != NULL)
 	ga_init2(default_args, sizeof(char_u *), 3);
 
@@ -362,7 +362,7 @@ get_function_args(
 		    // TODO: use the actual type
 		    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] =
 						  vim_strsave((char_u *)"any");
-		    ((int8_T *)arg_objm->ga_data)[arg_objm->ga_len++] = TRUE;
+		    ((int *)arg_objm->ga_data)[arg_objm->ga_len++] = TRUE;
 
 		    // Add a line to the function body for the assignment.
 		    if (ga_grow(newlines, 1) == OK)
@@ -531,7 +531,7 @@ parse_argument_types(
 		    type = &t_unknown;
 		else
 		{
-		    if (arg_objm != NULL && ((int8_T *)arg_objm->ga_data)[i])
+		    if (arg_objm != NULL && ((int *)arg_objm->ga_data)[i])
 		    {
 			char_u *aname = ((char_u **)fp->uf_args.ga_data)[i];
 
