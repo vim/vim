@@ -1198,7 +1198,7 @@ Solution:   Use "curtab" if "tp" is NULL. (closes #5475)
 Files:      src/evalwindow.c, src/testdir/test_getvar.vim
 
 Patch 8.2.0118
-Problem:    Crash when cycling to buffers involving popup window .
+Problem:    Crash when cycling to buffers involving popup window.
 Solution:   Do not decrement buffer reference count.
 Files:      src/popupwin.c, src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_infopopup_7.dump
