@@ -38,13 +38,13 @@ if exists("loaded_matchit") && !exists("b:match_words")
 	\   s:line_start .. 'case\s\+:' .. s:line_start .. 'default\>:\<breaksw\>:' ..
 	\   s:line_start .. 'endsw\>'
   unlet s:line_start
-  let b:undo_ftplugin ..= " | unlet b:match_words"
+  let b:undo_ftplugin ..= " | unlet! b:match_words"
 endif
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   let  b:browsefilter="csh Scripts (*.csh)\t*.csh\n" ..
 	\	      "All Files (*.*)\t*.*\n"
-  let b:undo_ftplugin ..= " | unlet b:browsefilter"
+  let b:undo_ftplugin ..= " | unlet! b:browsefilter"
 endif
 
 let &cpo = s:save_cpo
