@@ -395,8 +395,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
 	if (type->tt_type == VAR_OBJECT
 		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
-	    return generate_CALL(cctx, ufunc, cl, fi, type, argcount);
-	return generate_CALL(cctx, ufunc, NULL, 0, type, argcount);
+	    return generate_CALL(cctx, ufunc, cl, fi, argcount);
+	return generate_CALL(cctx, ufunc, NULL, 0, argcount);
     }
 
     if (type->tt_type == VAR_OBJECT)
@@ -977,7 +977,6 @@ compile_call(
     int		has_g_namespace;
     ca_special_T special_fn;
     imported_T	*import;
-    type_T	*type;
 
     if (varlen >= sizeof(namebuf))
     {
@@ -1061,7 +1060,6 @@ compile_call(
     if (compile_arguments(arg, cctx, &argcount, special_fn) == FAIL)
 	goto theend;
 
-    type = get_decl_type_on_stack(cctx, 1);
     is_autoload = vim_strchr(name, AUTOLOAD_CHAR) != NULL;
     if (ASCII_ISLOWER(*name) && name[1] != ':' && !is_autoload)
     {
@@ -1079,6 +1077,8 @@ compile_call(
 
 	    if (STRCMP(name, "add") == 0 && argcount == 2)
 	    {
+		type_T	    *type = get_decl_type_on_stack(cctx, 1);
+
 		// add() can be compiled to instructions if we know the type
 		if (type->tt_type == VAR_LIST)
 		{
@@ -1128,7 +1128,7 @@ compile_call(
 	{
 	    if (!func_is_global(ufunc))
 	    {
-		res = generate_CALL(cctx, ufunc, NULL, 0, type, argcount);
+		res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
 		goto theend;
 	    }
 	    if (!has_g_namespace
@@ -1147,7 +1147,7 @@ compile_call(
 	    if (cctx->ctx_ufunc->uf_defclass == cl)
 	    {
 		res = generate_CALL(cctx, cl->class_class_functions[mi], NULL,
-							0, type, argcount);
+							0, argcount);
 	    }
 	    else
 	    {
@@ -1175,7 +1175,7 @@ compile_call(
     // If we can find a global function by name generate the right call.
     if (ufunc != NULL)
     {
-	res = generate_CALL(cctx, ufunc, NULL, 0, type, argcount);
+	res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
 	goto theend;
     }
 
