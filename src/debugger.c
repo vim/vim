@@ -1000,7 +1000,7 @@ has_profiling(
 }
 
     static void
-prof_clear_cache()
+prof_clear_cache(void)
 {
     if (!prof_cache_initialized)
     {
