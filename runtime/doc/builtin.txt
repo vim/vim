@@ -9443,7 +9443,7 @@ strutf16len({string} [, {countcc}])			*strutf16len()*
 		    echo strutf16len('😊')		returns 2
 		    echo strutf16len('ą́')		returns 1
 		    echo strutf16len('ą́', v:true)	returns 3
-
+<
 		Can also be used as a |method|: >
 			GetText()->strutf16len()
 <
