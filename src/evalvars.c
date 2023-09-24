@@ -3673,6 +3673,62 @@ list_one_var_a(
 }
 
 /*
+ * Addition handling for setting a v: variable.
+ * Return TRUE if the variable should be set normally,
+ *        FALSE if nothing else needs to be done.
+ */
+    int
+before_set_vvar(
+    char_u	*varname,
+    dictitem_T	*di,
+    typval_T	*tv,
+    int		copy,
+    int		*type_error)
+{
+    if (di->di_tv.v_type == VAR_STRING)
+    {
+	VIM_CLEAR(di->di_tv.vval.v_string);
+	if (copy || tv->v_type != VAR_STRING)
+	{
+	    char_u *val = tv_get_string(tv);
+
+	    // Careful: when assigning to v:errmsg and
+	    // tv_get_string() causes an error message the variable
+	    // will already be set.
+	    if (di->di_tv.vval.v_string == NULL)
+		di->di_tv.vval.v_string = vim_strsave(val);
+	}
+	else
+	{
+	    // Take over the string to avoid an extra alloc/free.
+	    di->di_tv.vval.v_string = tv->vval.v_string;
+	    tv->vval.v_string = NULL;
+	}
+	return FALSE;
+    }
+    else if (di->di_tv.v_type == VAR_NUMBER)
+    {
+	di->di_tv.vval.v_number = tv_get_number(tv);
+	if (STRCMP(varname, "searchforward") == 0)
+	    set_search_direction(di->di_tv.vval.v_number ? '/' : '?');
+#ifdef FEAT_SEARCH_EXTRA
+	else if (STRCMP(varname, "hlsearch") == 0)
+	{
+	    no_hlsearch = !di->di_tv.vval.v_number;
+	    redraw_all_later(UPD_SOME_VALID);
+	}
+#endif
+	return FALSE;
+    }
+    else if (di->di_tv.v_type != tv->v_type)
+    {
+	*type_error = TRUE;
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * Set variable "name" to value in "tv".
  * If the variable already exists, the value is updated.
  * Otherwise the variable is created.
@@ -3877,51 +3933,15 @@ set_var_const(
 
 	// existing variable, need to clear the value
 
-	// Handle setting internal di: variables separately where needed to
+	// Handle setting internal v: variables separately where needed to
 	// prevent changing the type.
-	if (ht == &vimvarht)
+	int type_error = FALSE;
+	if (ht == &vimvarht
+		&& !before_set_vvar(varname, di, tv, copy, &type_error))
 	{
-	    if (di->di_tv.v_type == VAR_STRING)
-	    {
-		VIM_CLEAR(di->di_tv.vval.v_string);
-		if (copy || tv->v_type != VAR_STRING)
-		{
-		    char_u *val = tv_get_string(tv);
-
-		    // Careful: when assigning to v:errmsg and
-		    // tv_get_string() causes an error message the variable
-		    // will already be set.
-		    if (di->di_tv.vval.v_string == NULL)
-			di->di_tv.vval.v_string = vim_strsave(val);
-		}
-		else
-		{
-		    // Take over the string to avoid an extra alloc/free.
-		    di->di_tv.vval.v_string = tv->vval.v_string;
-		    tv->vval.v_string = NULL;
-		}
-		goto failed;
-	    }
-	    else if (di->di_tv.v_type == VAR_NUMBER)
-	    {
-		di->di_tv.vval.v_number = tv_get_number(tv);
-		if (STRCMP(varname, "searchforward") == 0)
-		    set_search_direction(di->di_tv.vval.v_number
-							      ? '/' : '?');
-#ifdef FEAT_SEARCH_EXTRA
-		else if (STRCMP(varname, "hlsearch") == 0)
-		{
-		    no_hlsearch = !di->di_tv.vval.v_number;
-		    redraw_all_later(UPD_SOME_VALID);
-		}
-#endif
-		goto failed;
-	    }
-	    else if (di->di_tv.v_type != tv->v_type)
-	    {
-		semsg(_(e_setting_str_to_value_with_wrong_type), name);
-		goto failed;
-	    }
+	    if (type_error)
+		semsg(_(e_setting_v_str_to_value_with_wrong_type), varname);
+	    goto failed;
 	}
 
 	clear_tv(&di->di_tv);

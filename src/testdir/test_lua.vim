@@ -970,9 +970,9 @@ func Test_lua_global_var_table()
   let g:Var1 = [10, 20]
   let g:Var2 = #{one: 'mercury', two: 'mars'}
   lua << trim END
-    vim.g.Var1[2] = Nil
+    vim.g.Var1[2] = nil
     vim.g.Var1[3] = 15
-    vim.g.Var2['two'] = Nil
+    vim.g.Var2['two'] = nil
     vim.g.Var2['three'] = 'earth'
   END
   call assert_equal([10, 15], g:Var1)
@@ -985,11 +985,11 @@ func Test_lua_global_var_table()
   let g:Var4 = #{x: 'edit', y: 'run'}
   let g:Var5 = function('min')
   lua << trim END
-    vim.g.Var1 = Nil
-    vim.g.Var2 = Nil
-    vim.g.Var3 = Nil
-    vim.g.Var4 = Nil
-    vim.g.Var5 = Nil
+    vim.g.Var1 = nil
+    vim.g.Var2 = nil
+    vim.g.Var3 = nil
+    vim.g.Var4 = nil
+    vim.g.Var5 = nil
   END
   call assert_false(exists('g:Var1'))
   call assert_false(exists('g:Var2'))
@@ -1001,16 +1001,16 @@ func Test_lua_global_var_table()
   let g:Var1 = 10
   lockvar g:Var1
   call assert_fails('lua vim.g.Var1 = 20', 'variable is locked')
-  call assert_fails('lua vim.g.Var1 = Nil', 'variable is locked')
+  call assert_fails('lua vim.g.Var1 = nil', 'variable is locked')
   unlockvar g:Var1
   let g:Var2 = [7, 14]
   lockvar 0 g:Var2
-  lua vim.g.Var2[2] = Nil
+  lua vim.g.Var2[2] = nil
   lua vim.g.Var2[3] = 21
-  call assert_fails('lua vim.g.Var2 = Nil', 'variable is locked')
+  call assert_fails('lua vim.g.Var2 = nil', 'variable is locked')
   call assert_equal([7, 21], g:Var2)
   lockvar 1 g:Var2
-  call assert_fails('lua vim.g.Var2[2] = Nil', 'list is locked')
+  call assert_fails('lua vim.g.Var2[2] = nil', 'list is locked')
   call assert_fails('lua vim.g.Var2[3] = 21', 'list is locked')
   unlockvar g:Var2
 
@@ -1020,7 +1020,7 @@ func Test_lua_global_var_table()
 
   " Attempt to access a non-existing global variable
   call assert_equal(v:null, luaeval('vim.g.NonExistingVar'))
-  lua vim.g.NonExisting = Nil
+  lua vim.g.NonExisting = nil
 
   unlet! g:Var1 g:Var2 g:Var3 g:Var4 g:Var5
 endfunc
@@ -1033,14 +1033,36 @@ func Test_lua_predefined_var_table()
   call assert_equal('SomeError', luaeval('vim.v.errmsg'))
   lua vim.v.errmsg = 'OtherError'
   call assert_equal('OtherError', v:errmsg)
-  call assert_fails('lua vim.v.errmsg = Nil', 'variable is fixed')
+  lua vim.v.errmsg = 42
+  call assert_equal('42', v:errmsg)
+  call assert_fails('lua vim.v.errmsg = nil', 'variable is fixed')
   let v:oldfiles = ['one', 'two']
   call assert_equal(['one', 'two'], luaeval('vim.v.oldfiles'))
   lua vim.v.oldfiles = vim.list({})
   call assert_equal([], v:oldfiles)
+  call assert_fails('lua vim.v.oldfiles = "a"',
+        \ 'Setting v:oldfiles to value with wrong type')
+  call assert_equal([], v:oldfiles)
   call assert_equal(v:null, luaeval('vim.v.null'))
-  call assert_fails('lua vim.v.argv[1] = Nil', 'list is locked')
+  call assert_fails('lua vim.v.argv[1] = nil', 'list is locked')
   call assert_fails('lua vim.v.newvar = 1', 'Dictionary is locked')
+
+  new
+  call setline(1, ' foo foo foo')
+  /foo
+  call assert_equal([0, 1, 2, 0, 2], getcurpos())
+  call assert_equal(1, v:searchforward)
+  normal! n
+  call assert_equal([0, 1, 6, 0, 6], getcurpos())
+  lua vim.v.searchforward = 0
+  call assert_equal(0, v:searchforward)
+  normal! n
+  call assert_equal([0, 1, 2, 0, 2], getcurpos())
+  lua vim.v.searchforward = 1
+  call assert_equal(1, v:searchforward)
+  normal! n
+  call assert_equal([0, 1, 6, 0, 6], getcurpos())
+  bwipe!
 endfunc
 
 " Test for adding, accessing and modifying window-local variables using the
@@ -1076,7 +1098,7 @@ func Test_lua_window_var_table()
   call assert_equal(#{a: [1, 2], b: 20}, w:wvar7)
 
   " delete a window variable
-  lua vim.w.wvar2 = Nil
+  lua vim.w.wvar2 = nil
   call assert_false(exists('w:wvar2'))
 
   new
@@ -1117,7 +1139,7 @@ func Test_lua_buffer_var_table()
   call assert_equal(#{a: [1, 2], b: 20}, b:bvar7)
 
   " delete a buffer variable
-  lua vim.b.bvar2 = Nil
+  lua vim.b.bvar2 = nil
   call assert_false(exists('b:bvar2'))
 
   new
@@ -1158,7 +1180,7 @@ func Test_lua_tabpage_var_table()
   call assert_equal(#{a: [1, 2], b: 20}, t:tvar7)
 
   " delete a tabpage variable
-  lua vim.t.tvar2 = Nil
+  lua vim.t.tvar2 = nil
   call assert_false(exists('t:tvar2'))
 
   tabnew

@@ -1900,6 +1900,16 @@ luaV_setvar(lua_State *L)
 	}
 	else
 	{
+	    int type_error = FALSE;
+	    if (dict == get_vimvar_dict()
+	       && !before_set_vvar((char_u *)name, di, &tv, TRUE, &type_error))
+	    {
+		clear_tv(&tv);
+		if (type_error)
+		    return luaL_error(L,
+				"Setting v:%s to value with wrong type", name);
+		return 0;
+	    }
 	    // Clear the old value
 	    clear_tv(&di->di_tv);
 	    // Update the value
