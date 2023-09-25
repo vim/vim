@@ -700,6 +700,109 @@ did_set_option_listflag(char_u *val, char_u *flags, char *errbuf)
 }
 
 /*
+ * Expand an option that accepts a list of string values.
+ */
+    int
+expand_set_opt_string(
+	optexpand_T *args,
+	char **values,
+	int numValues,
+	int *numMatches,
+	char_u ***matches)
+{
+    regmatch_T *regmatch = args->oe_regmatch;
+    int include_orig_val = args->oe_include_orig_val;
+    char_u *option_val = args->oe_opt_value;
+
+    // Assume numValues is small since they are fixed enums, so just allocate
+    // upfront instead of needing two passes to calculate output size.
+    *matches = ALLOC_MULT(char_u *, numValues + 1);
+    if (*matches == NULL)
+	return FAIL;
+
+    int count = 0;
+    
+    if (include_orig_val && *option_val != NUL)
+    {
+	(*matches)[count] = vim_strsave(option_val);
+	count++;
+    }
+
+    for (char **val = values; *val != NULL; val++)
+    {
+	if (include_orig_val && *option_val != NUL)
+	{
+	    if (STRCMP((char_u*)*val, option_val) == 0)
+		continue;
+	}
+	if (vim_regexec(regmatch, (char_u*)(*val), (colnr_T)0))
+	{
+	    (*matches)[count] = vim_strsave((char_u*)*val);
+	    count++;
+	}
+    }
+    *numMatches = count;
+    return OK;
+}
+
+/*
+ * Expand an option which is a list of flags.
+ */
+    int
+expand_set_opt_listflag(
+	optexpand_T *args,
+	char_u *flags,
+	int *numMatches,
+	char_u ***matches)
+{
+    char_u *option_val = args->oe_opt_value;
+    char_u *cmdline_val = args->oe_set_arg;
+    int append = args->oe_append;
+    int include_orig_val = args->oe_include_orig_val && (*option_val != NUL);
+
+    int num_flags = STRLEN(flags);
+
+    // Assume we only have small number of flags, so just allocate max size.
+    *matches = ALLOC_MULT(char_u *, num_flags + 1);
+    if (*matches == NULL)
+	return FAIL;
+
+    int count = 0;
+
+    if (include_orig_val)
+    {
+	(*matches)[count] = vim_strsave(option_val);
+	count++;
+    }
+
+    for (char_u *flag = flags; *flag != NUL; flag++)
+    {
+	if (append && vim_strchr(option_val, *flag) != NULL)
+	{
+	    continue;
+	}
+
+	if (vim_strchr(cmdline_val, *flag) == NULL)
+	{
+	    if (include_orig_val
+		    && option_val[1] == NUL
+		    && *flag == option_val[0])
+	    {
+		// This value is already used as the first choice as it's the
+		// existing flag. Just skip it to avoid duplicate.
+		continue;
+	    }
+	    char_u flag_str[] = { *flag, NUL };
+	    (*matches)[count] = vim_strsave(flag_str);
+	    count++;
+	}
+    }
+
+    *numMatches = count;
+    return OK;
+}
+
+/*
  * The 'ambiwidth' option is changed.
  */
     char *
@@ -1313,6 +1416,66 @@ did_set_diffopt(optset_T *args UNUSED)
 
     return NULL;
 }
+
+    int
+expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *p_diffopt_values[] = 
+    {
+	"filler",
+	"context:",
+	"iblank",
+	"icase",
+	"iwhite",
+	"iwhiteall",
+	"iwhiteeol",
+	"horizontal",
+	"vertical",
+	"closeoff",
+	"hiddenoff",
+	"foldcolumn:",
+	"followwrap",
+	"internal",
+	"indent-heuristic",
+	"algorithm:",
+	NULL
+    };
+    static char *p_algorithm_values[] =
+    {
+	"myers",
+	"minimal",
+	"patience",
+	"histogram",
+	NULL
+    };
+
+    expand_T *xp = args->oe_xp;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	// Within "algorithm:", we have a subgroup of possible options.
+	int is_algo = FALSE;
+	int algo_len = STRLEN("algorithm:");
+	if (xp->xp_pattern - args->oe_set_arg >= algo_len &&
+		STRNCMP(xp->xp_pattern - algo_len, "algorithm:", algo_len) == 0)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    p_algorithm_values,
+		    sizeof(p_algorithm_values) / sizeof(p_algorithm_values[0]) - 1,
+		    numMatches,
+		    matches);
+	}
+	return FAIL;
+    }
+
+    return expand_set_opt_string(
+	    args,
+	    p_diffopt_values,
+	    sizeof(p_diffopt_values) / sizeof(p_diffopt_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 /*
@@ -1328,6 +1491,17 @@ did_set_display(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_display(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_dy_values,
+	    sizeof(p_dy_values) / sizeof(p_dy_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'eadirection' option is changed.
  */
@@ -1335,6 +1509,17 @@ did_set_display(optset_T *args UNUSED)
 did_set_eadirection(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_ead, p_ead_values, FALSE);
+}
+
+    int
+expand_set_eadirection(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_ead_values,
+	    sizeof(p_ead_values) / sizeof(p_ead_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -1428,6 +1613,19 @@ did_set_encoding(optset_T *args)
     }
 
     return errmsg;
+}
+
+    int
+expand_set_encoding(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return ExpandGeneric(
+	    (char_u*)"", // not using fuzzy as currently EXPAND_STRING_SETTING doesn't use it
+	    args->oe_xp,
+	    args->oe_regmatch,
+	    matches,
+	    numMatches,
+	    get_encoding_name,
+	    FALSE);
 }
 
 /*
@@ -1581,6 +1779,17 @@ did_set_foldmethod(optset_T *args)
     if (foldmethodIsDiff(curwin))
 	newFoldLevel();
     return NULL;
+}
+
+    int
+expand_set_foldmethod(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_fdm_values,
+	    sizeof(p_fdm_values) / sizeof(p_fdm_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -2038,6 +2247,12 @@ did_set_mouse(optset_T *args)
 							args->os_errbuf);
 }
 
+    int
+expand_set_mouse(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)MOUSE_ALL, numMatches, matches);
+}
+
 /*
  * The 'mousemodel' option is changed.
  */
@@ -2315,6 +2530,12 @@ did_set_shortmess(optset_T *args)
     return did_set_option_listflag(*varp, (char_u *)SHM_ALL, args->os_errbuf);
 }
 
+    int
+expand_set_shortmess(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)SHM_ALL, numMatches, matches);
+}
+
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
  * The 'showbreak' option is changed.
@@ -2434,6 +2655,27 @@ did_set_spellsuggest(optset_T *args UNUSED)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_spellsuggest(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *p_spellsuggest_values[] = 
+    {
+	"best",
+	"fast",
+	"double",
+	"expr:",
+	"file:",
+	"timeout:",
+	NULL
+    };
+    return expand_set_opt_string(
+	    args,
+	    p_spellsuggest_values,
+	    sizeof(p_spellsuggest_values) / sizeof(p_spellsuggest_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
