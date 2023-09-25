@@ -1721,7 +1721,10 @@ theend:
     eval_lavars_used = old_eval_lavars;
     vim_free(tofree2);
     if (types_optional)
+    {
 	ga_clear_strings(&argtypes);
+	ga_clear(&arg_objm);
+    }
 
     return OK;
 
@@ -1732,6 +1735,7 @@ errret:
     if (types_optional)
     {
 	ga_clear_strings(&argtypes);
+	ga_clear(&arg_objm);
 	if (fp != NULL)
 	    vim_free(fp->uf_arg_types);
     }
