@@ -3052,15 +3052,15 @@ def Test_disassemble_interface_static_member()
   var lines =<< trim END
     vim9script
     interface I
-      public this.o_var: number
-      public this.o_var2: number
+      this.o_var: number
+      this.o_var2: number
     endinterface
 
     class C implements I
       public static s_var: number
-      public this.o_var: number
+      this.o_var: number
       public static s_var2: number
-      public this.o_var2: number
+      this.o_var2: number
     endclass
 
     def F1(i: I)

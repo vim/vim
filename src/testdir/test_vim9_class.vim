@@ -291,15 +291,78 @@ def Test_class_basic()
 
   # Use a multi-line initialization for a member variable
   lines =<< trim END
-  vim9script
-  class A
-    this.y = {
-      X: 1
-    }
-  endclass
-  var a = A.new()
+    vim9script
+    class A
+      this.y = {
+        X: 1
+      }
+    endclass
+    var a = A.new()
   END
   v9.CheckSourceSuccess(lines)
+enddef
+
+" Tests for object/class methods in a class
+def Test_class_def_method()
+  # Using the "public" keyword when defining an object method
+  var lines =<< trim END
+    vim9script
+    class A
+      public def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "this" or "static"', 3)
+
+  # Using the "public" keyword when defining a class method
+  lines =<< trim END
+    vim9script
+    class A
+      public static def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
+
+  # Using the "public" keyword when defining an object private method
+  lines =<< trim END
+    vim9script
+    class A
+      public def _Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "this" or "static"', 3)
+
+  # Using the "public" keyword when defining a class private method
+  lines =<< trim END
+    vim9script
+    class A
+      public static def _Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
+
+  # Using a "def" keyword without an object method name
+  lines =<< trim END
+    vim9script
+    class A
+      def
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1318: Not a valid command in a class: def', 3)
+
+  # Using a "def" keyword without a class method name
+  lines =<< trim END
+    vim9script
+    class A
+      static def
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1318: Not a valid command in a class: static def', 3)
 enddef
 
 def Test_class_defined_twice()
@@ -691,36 +754,6 @@ def Test_assignment_with_operator()
 
       def AddToFoo(obj: Foo)
         obj.x += 3
-      enddef
-
-      AddToFoo(f)
-      assert_equal(23, f.x)
-  END
-  v9.CheckSourceSuccess(lines)
-
-  # do the same thing, but through an interface
-  lines =<< trim END
-      vim9script
-
-      interface I
-        public this.x: number
-      endinterface
-
-      class Foo implements I
-        public this.x: number
-
-        def Add(n: number)
-          var i: I = this
-          i.x += n
-        enddef
-      endclass
-
-      var f =  Foo.new(3)
-      f.Add(17)
-      assert_equal(20, f.x)
-
-      def AddToFoo(i: I)
-        i.x += 3
       enddef
 
       AddToFoo(f)
@@ -1743,7 +1776,6 @@ func Test_interface_garbagecollect()
 
     interface I
       this.ro_obj_var: number
-      public this.rw_obj_var: number
 
       def ObjFoo(): number
     endinterface
@@ -1753,7 +1785,6 @@ func Test_interface_garbagecollect()
       public static rw_class_var: number = 20
       static _priv_class_var: number = 30
       this.ro_obj_var: number = 40
-      public this.rw_obj_var: number = 50
       this._priv_obj_var: number = 60
 
       static def _ClassBar(): number
@@ -1769,16 +1800,16 @@ func Test_interface_garbagecollect()
       enddef
 
       def ObjFoo(): number
-        return this.ro_obj_var + this.rw_obj_var + this._ObjBar()
+        return this.ro_obj_var + this._ObjBar()
       enddef
     endclass
 
     assert_equal(60, A.ClassFoo())
     var o = A.new()
-    assert_equal(150, o.ObjFoo())
+    assert_equal(100, o.ObjFoo())
     test_garbagecollect_now()
     assert_equal(60, A.ClassFoo())
-    assert_equal(150, o.ObjFoo())
+    assert_equal(100, o.ObjFoo())
   END
   call v9.CheckSourceSuccess(lines)
 endfunc
@@ -1938,8 +1969,7 @@ def Test_interface_basics()
   var lines =<< trim END
       vim9script
       interface Something
-        this.ro_var: string
-        public this.rw_var: list<number>
+        this.ro_var: list<number>
         def GetCount(): number
       endinterface
   END
@@ -2127,24 +2157,21 @@ def Test_class_implements_interface()
       vim9script
 
       interface Result
-        public this.label: string
+        this.label: string
         this.errpos: number
       endinterface
 
       # order of members is opposite of interface
       class Failure implements Result
+        public this.lnum: number = 5
         this.errpos: number = 42
-        public this.label: string = 'label'
+        this.label: string = 'label'
       endclass
 
       def Test()
         var result: Result = Failure.new()
 
         assert_equal('label', result.label)
-        assert_equal(42, result.errpos)
-
-        result.label = 'different'
-        assert_equal('different', result.label)
         assert_equal(42, result.errpos)
       enddef
 
@@ -2251,14 +2278,14 @@ def Test_class_implements_interface()
     vim9script
 
     interface I1
-        public this.mvar1: number
-        public this.mvar2: number
+        this.mvar1: number
+        this.mvar2: number
     endinterface
 
     # NOTE: the order is swapped
     class A implements I1
-        public this.mvar2: number
-        public this.mvar1: number
+        this.mvar2: number
+        this.mvar1: number
         public static svar2: number
         public static svar1: number
         def new()
@@ -2303,20 +2330,20 @@ def Test_class_implements_interface()
     vim9script
 
     interface I1
-        public this.mvar1: number
-        public this.mvar2: number
+        this.mvar1: number
+        this.mvar2: number
     endinterface
 
     interface I2
-        public this.mvar3: number
-        public this.mvar4: number
+        this.mvar3: number
+        this.mvar4: number
     endinterface
 
     class A implements I1
         public static svar1: number
         public static svar2: number
-        public this.mvar1: number
-        public this.mvar2: number
+        this.mvar1: number
+        this.mvar2: number
         def new()
             svar1 = 11
             svar2 = 12
@@ -2326,10 +2353,10 @@ def Test_class_implements_interface()
     endclass
 
     class B extends A implements I2
-        public static svar3: number
-        public static svar4: number
-        public this.mvar3: number
-        public this.mvar4: number
+        static svar3: number
+        static svar4: number
+        this.mvar3: number
+        this.mvar4: number
         def new()
             svar3 = 23
             svar4 = 24
@@ -2368,6 +2395,36 @@ def Test_class_implements_interface()
     assert_equal([[131, 132], [133, 134]], [F2(oc), F4(oc)])
   END
   v9.CheckSourceSuccess(lines)
+
+  # Using two interface names without a space after the ","
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    interface B
+    endinterface
+    class C implements A,B
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1315: White space required after name: A,B', 6)
+
+  # No interface name after a comma
+  lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B implements A,
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1389: Missing name after implements', 4)
+
+  # No interface name after implements
+  lines =<< trim END
+    vim9script
+    class A implements
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1389: Missing name after implements', 2)
 enddef
 
 def Test_call_interface_method()
@@ -3558,19 +3615,6 @@ def Test_private_object_method()
   END
   v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo')
 
-  # Try to use "public" keyword when defining a private method
-  lines =<< trim END
-    vim9script
-
-    class A
-      public def _Foo()
-      enddef
-    endclass
-    var a = A.new()
-    a._Foo()
-  END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "this" or "static"')
-
   # Define two private methods with the same name
   lines =<< trim END
     vim9script
@@ -4257,10 +4301,10 @@ def Test_change_interface_member_access()
   var lines =<< trim END
     vim9script
     interface A
-      public this.val: number
+      this.val: number
     endinterface
     class B implements A
-      this.val = 10
+      public this.val = 10
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1367: Access level of variable "val" of interface "A" is different')
@@ -5101,7 +5145,7 @@ def Test_extend_empty_class()
 enddef
 
 " A interface cannot have a static variable or a static method or a private
-" variable or a private method
+" variable or a private method or a public variable
 def Test_interface_with_unsupported_members()
   var lines =<< trim END
     vim9script
@@ -5125,12 +5169,20 @@ def Test_interface_with_unsupported_members()
       public static num: number
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1378: Static member not supported in an interface')
+  v9.CheckSourceFailure(lines, 'E1387: Public variable not supported in an interface')
 
   lines =<< trim END
     vim9script
     interface A
-      public static _num: number
+      public static num: number
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1387: Public variable not supported in an interface')
+
+  lines =<< trim END
+    vim9script
+    interface A
+      static _num: number
     endinterface
   END
   v9.CheckSourceFailure(lines, 'E1378: Static member not supported in an interface')
@@ -5177,14 +5229,14 @@ def Test_extend_interface()
       def Foo()
     endinterface
     interface B extends A
-      public this.var2: dict<string>
+      this.var2: dict<string>
       def Bar()
     endinterface
     class C implements A, B
       this.var1 = [1, 2]
       def Foo()
       enddef
-      public this.var2 = {a: '1'}
+      this.var2 = {a: '1'}
       def Bar()
       enddef
     endclass
@@ -5197,10 +5249,10 @@ def Test_extend_interface()
       def Foo()
     endinterface
     interface B extends A
-      public this.var2: dict<string>
+      this.var2: dict<string>
     endinterface
     class C implements A, B
-      public this.var2 = {a: '1'}
+      this.var2 = {a: '1'}
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1349: Method "Foo" of interface "A" is not implemented')
@@ -5211,7 +5263,7 @@ def Test_extend_interface()
       def Foo()
     endinterface
     interface B extends A
-      public this.var2: dict<string>
+      this.var2: dict<string>
     endinterface
     class C implements A, B
       def Foo()

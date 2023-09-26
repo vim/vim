@@ -1220,8 +1220,7 @@ get_lval(
 	int r = OK;
 	if (v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
 	    r = rettv_list_alloc(lp->ll_tv);
-	else if (v_type == VAR_BLOB
-					     && lp->ll_tv->vval.v_blob == NULL)
+	else if (v_type == VAR_BLOB && lp->ll_tv->vval.v_blob == NULL)
 	    r = rettv_blob_alloc(lp->ll_tv);
 	if (r == FAIL)
 	    return NULL;
