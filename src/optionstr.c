@@ -721,7 +721,7 @@ expand_set_opt_string(
 	return FAIL;
 
     int count = 0;
-    
+
     if (include_orig_val && *option_val != NUL)
     {
 	(*matches)[count] = vim_strsave(option_val);
@@ -1420,7 +1420,7 @@ did_set_diffopt(optset_T *args UNUSED)
     int
 expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *p_diffopt_values[] = 
+    static char *p_diffopt_values[] =
     {
 	"filler",
 	"context:",
@@ -2660,7 +2660,7 @@ did_set_spellsuggest(optset_T *args UNUSED)
     int
 expand_set_spellsuggest(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *p_spellsuggest_values[] = 
+    static char *p_spellsuggest_values[] =
     {
 	"best",
 	"fast",

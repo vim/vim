@@ -5782,10 +5782,10 @@ f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }
 
-//
-// Function given to ExpandGeneric() to obtain the possible arguments of the
-// encoding options.
-//
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * encoding options.
+ */
     char_u *
 get_encoding_name(expand_T *xp UNUSED, int idx)
 {

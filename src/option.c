@@ -7355,9 +7355,7 @@ set_context_in_set_cmd(
     if ((nextchar == '-' || nextchar == '+' || nextchar == '^') && p[1] == '=')
     {
 	if (nextchar == '-')
-	{
 	    expand_option_subtract = TRUE;
-	}
 	if (nextchar == '+' || nextchar == '^')
 	    expand_option_append = TRUE;
 	++p;
@@ -7483,9 +7481,7 @@ set_context_in_set_cmd(
     // An option that is a list of single-character flags should always start
     // at the end as we don't complete words.
     if (flags & P_FLAGLIST)
-    {
 	xp->xp_pattern = arg + STRLEN(arg);
-    }
 
     // Some options can either be using file/dir expansions, or custom value
     // expansion depending on what the user typed. Unfortunately we have to
@@ -7797,7 +7793,9 @@ escape_option_str_cmdline(char_u *var)
     return buf;
 }
 
-// Expansion handler for :set= when we just want to fill in with the existing value.
+/*
+ * Expansion handler for :set= when we just want to fill in with the existing value.
+ */
     int
 ExpandOldSetting(int *numMatches, char_u ***matches)
 {
@@ -7838,7 +7836,9 @@ ExpandOldSetting(int *numMatches, char_u ***matches)
     return OK;
 }
 
-// Expansion handler for :set=/:set+= when the option has a custom expansion handler.
+/*
+ * Expansion handler for :set=/:set+= when the option has a custom expansion handler.
+ */
     int
 ExpandStringSetting(
     expand_T	*xp,
@@ -7884,7 +7884,9 @@ ExpandStringSetting(
     return num_ret;
 }
 
-// Expansion handler for :set-=
+/*
+ * Expansion handler for :set-=
+ */
     int
 ExpandSettingSubtract(
     expand_T	*xp,
@@ -7897,7 +7899,7 @@ ExpandSettingSubtract(
 	return ExpandOldSetting(numMatches, matches);
 
     char_u *cmdline_val = xp->xp_line + expand_option_start_col;
-    
+
     char_u *option_val = *(char_u**)get_option_varp_scope(
 	expand_option_idx, expand_option_flags);
 
@@ -7961,7 +7963,7 @@ ExpandSettingSubtract(
 	char_u	    *item;
 	char_u	    *option_copy;
 	char_u	    *next_val;
-	char_u 	    *comma;
+	char_u	    *comma;
 
 	if (*option_val == NUL)
 	    return FAIL;
@@ -8012,7 +8014,7 @@ ExpandSettingSubtract(
 		vim_free(buf);
 		break;
 	    }
-	} while(next_val != NULL);
+	} while (next_val != NULL);
 
 	vim_free(option_copy);
 
