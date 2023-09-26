@@ -4636,6 +4636,56 @@ def Test_free_type_before_use()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" The following complicated script used to cause an internal error (E340)
+" because the funcref instruction memory was referenced after the instruction
+" memory was reallocated (Github issue #13178)
+def Test_refer_funcref_instr_after_realloc()
+  var lines =<< trim END
+    vim9script
+    def A(d: bool)
+      var e = abs(0)
+      var f = &emoji
+      &emoji = true
+      if ['', '', '']->index('xxx') == 0
+        eval 0 + 0
+      endif
+      if &filetype == 'xxx'
+        var g = abs(0)
+        while g > 0
+          if getline(g) == ''
+            break
+          endif
+          --g
+        endwhile
+        if g == 0
+          return
+        endif
+        if d
+          feedkeys($'{g}G')
+          g = abs(0)
+        endif
+        var h = abs(0)
+        var i = abs(0)
+        var j = abs(0)
+        while j < 0
+          if abs(0) < h && getline(j) != ''
+          break
+          endif
+          ++j
+        endwhile
+        feedkeys($'{g}G{j}G')
+        return
+      endif
+      def B()
+      enddef
+      def C()
+      enddef
+    enddef
+    A(false)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
