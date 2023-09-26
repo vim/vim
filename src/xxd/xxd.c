@@ -234,7 +234,7 @@ exit_with_usage(void)
   fprintf(stderr, "    or\n       %s -r [-s [-]offset] [-c cols] [-ps] [infile [outfile]]\n", pname);
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "    -a          toggle autoskip: A single '*' replaces nul-lines. Default off.\n");
-  fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i,-r). Default hex.\n");
+  fprintf(stderr, "    -b          binary digit dump (incompatible with -ps,-i). Default hex.\n");
   fprintf(stderr, "    -C          capitalize variable names in C include file style (-i).\n");
   fprintf(stderr, "    -c cols     format <cols> octets per line. Default 16 (-i: 12, -ps: 30).\n");
   fprintf(stderr, "    -E          show characters in EBCDIC. Default ASCII.\n");
@@ -325,6 +325,17 @@ parse_hex_digit(int c)
 }
 
 /*
+ * If "c" is a bin digit, return the value.
+ * Otherwise return -1.
+ */
+  static int
+parse_bin_digit(int c)
+{
+  return (c >= '0' && c <= '1') ? c - '0'
+        : -1;
+}
+
+/*
  * Ignore text on "fpi" until end-of-line or end-of-file.
  * Return the '\n' or EOF character.
  * When an error is encountered exit with an error message.
@@ -352,7 +363,7 @@ huntype(
   int hextype,
   long base_off)
 {
-  int c, ign_garb = 1, n1 = -1, n2 = 0, n3, p = cols;
+  int c, ign_garb = 1, n1 = -1, n2 = 0, n3, p = cols, bt, b = 0, bcnt = 0;
   long have_off = 0, want_off = 0;
 
   rewind(fpi);
@@ -368,25 +379,60 @@ huntype(
       if (hextype == HEX_POSTSCRIPT && (c == ' ' || c == '\n' || c == '\t'))
 	continue;
 
-      n3 = n2;
-      n2 = n1;
+      if (hextype == HEX_NORMAL || hextype == HEX_POSTSCRIPT)
+        {
+	  n3 = n2;
+	  n2 = n1;
 
-      n1 = parse_hex_digit(c);
-      if (n1 == -1 && ign_garb)
-	continue;
+	  n1 = parse_hex_digit(c);
+	  if (n1 == -1 && ign_garb)
+	    continue;
+        }
+      else /* HEX_BITS */
+        {
+	  n1 = parse_hex_digit(c);
+	  if (n1 == -1 && ign_garb)
+	    continue;
+
+          bt = parse_bin_digit(c);
+          if (bt != -1)
+            {
+              b = ((b << 1) | bt);
+              ++bcnt;
+            }
+        }
 
       ign_garb = 0;
 
-      if (!hextype && (p >= cols))
+      if ((hextype != HEX_POSTSCRIPT) && (p >= cols))
 	{
-	  if (n1 < 0)
-	    {
-	      p = 0;
-	      continue;
-	    }
-	  want_off = (want_off << 4) | n1;
-	  continue;
-	}
+          if (hextype == HEX_NORMAL)
+            {
+	      if (n1 < 0)
+	        {
+	          p = 0;
+	          continue;
+	        }
+	      want_off = (want_off << 4) | n1;
+            }
+          else /* HEX_BITS */
+            {
+              n1 = parse_hex_digit(c);
+              if (n1 >= 0)
+                {
+                  want_off = (want_off << 4) | n1;
+                }
+
+              if (bt < 0)
+                {
+                  p = 0;
+                  bcnt = 0;
+                  b = 0;
+                  continue;
+                }
+            }
+          continue;
+        }
 
       if (base_off + want_off != have_off)
 	{
@@ -402,23 +448,40 @@ huntype(
 	    putc_or_die(0, fpo);
 	}
 
-      if (n2 >= 0 && n1 >= 0)
-	{
-	  putc_or_die((n2 << 4) | n1, fpo);
-	  have_off++;
-	  want_off++;
-	  n1 = -1;
-	  if (!hextype && (++p >= cols))
-	    /* skip the rest of the line as garbage */
-	    c = skip_to_eol(fpi, c);
-	}
-      else if (n1 < 0 && n2 < 0 && n3 < 0)
-        /* already stumbled into garbage, skip line, wait and see */
-	c = skip_to_eol(fpi, c);
+      if (hextype == HEX_NORMAL || hextype == HEX_POSTSCRIPT)
+        {
+          if (n2 >= 0 && n1 >= 0)
+            {
+              putc_or_die((n2 << 4) | n1, fpo);
+              have_off++;
+              want_off++;
+              n1 = -1;
+              if (!hextype && (++p >= cols))
+              /* skip the rest of the line as garbage */
+              c = skip_to_eol(fpi, c);
+            }
+          else if (n1 < 0 && n2 < 0 && n3 < 0)
+            /* already stumbled into garbage, skip line, wait and see */
+            c = skip_to_eol(fpi, c);
+        }
+      else /* HEX_BITS */
+        {
+          if (bcnt == 8)
+            {
+              putc_or_die(b, fpo);
+              have_off++;
+              want_off++;
+              b = 0;
+              bcnt = 0;
+              if (++p >= cols)
+                /* skip the rest of the line as garbage */
+                 c = skip_to_eol(fpi, c);
+            }
+        }
 
       if (c == '\n')
 	{
-	  if (!hextype)
+	  if (hextype == HEX_NORMAL || hextype == HEX_BITS)
 	    want_off = 0;
 	  p = cols;
 	  ign_garb = 1;
@@ -847,12 +910,17 @@ main(int argc, char *argv[])
     }
 
   if (revert)
-    {
-      if (hextype && (hextype != HEX_POSTSCRIPT))
-	error_exit(-1, "Sorry, cannot revert this type of hexdump");
-      return huntype(fp, fpo, cols, hextype,
-		negseek ? -seekoff : seekoff);
-    }
+    switch (hextype)
+      {
+      case HEX_NORMAL:
+      case HEX_POSTSCRIPT:
+      case HEX_BITS:
+        return huntype(fp, fpo, cols, hextype,
+          negseek ? -seekoff : seekoff);
+        break;
+      default:
+        error_exit(-1, "Sorry, cannot revert this type of hexdump");
+      }
 
   if (seekoff || negseek || !relseek)
     {

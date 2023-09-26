@@ -64,7 +64,7 @@ Switch to bits (binary digits) dump, rather than hex dump.
 This option writes octets as eight digits "1"s and "0"s instead of a normal
 hexadecimal dump. Each line is preceded by a line number in hexadecimal and
 followed by an ASCII (or EBCDIC) representation. The command line switches
-\-r, \-p, \-i do not work with this mode.
+\-p, \-i do not work with this mode.
 .TP
 .IR "\-c cols " | " \-cols cols"
 Format
@@ -133,7 +133,9 @@ it. Use the combination
 .I \-r \-p
 to read plain hexadecimal dumps without line number information and without a
 particular column layout. Additional whitespace and line breaks are allowed
-anywhere.
+anywhere. Use the combination
+.I \-r \-b
+to read a bits dump instead of a hex dump.
 .TP
 .IR \-R " " when
 In output the hex-value and the value are both colored with the same color

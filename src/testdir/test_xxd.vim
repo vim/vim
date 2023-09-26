@@ -312,6 +312,31 @@ func Test_xxd_patch()
   call delete('Xxxdout')
 endfunc
 
+func Test_xxd_patch_with_bitdump()
+  let cmd1 = 'silent !' .. s:xxd_cmd .. ' -r -b Xxxdin Xxxdfile'
+  let cmd2 = 'silent !' .. s:xxd_cmd .. ' -g1 Xxxdfile > Xxxdout'
+
+  call writefile(["2: 01000001 01000001", "8: 01000010 01000010"], 'Xxxdin', 'D')
+  call writefile(['::::::::'], 'Xxxdfile', 'D')
+  exe cmd1
+  exe cmd2
+  call assert_equal(['00000000: 3a 3a 41 41 3a 3a 3a 3a 42 42                    ::AA::::BB'], readfile('Xxxdout'))
+
+  call writefile(["1: 01000011 01000011", "4: 01000100 01000100"], 'Xxxdin', 'D')
+  call writefile(['::::::::'], 'Xxxdfile', 'D')
+  exe cmd1
+  exe cmd2
+  call assert_equal(['00000000: 3a 43 43 3a 44 44 3a 3a 0a                       :CC:DD::.'], readfile('Xxxdout'))
+
+  call writefile(["02: 01000101 01000101", "08: 01000110 01000110"], 'Xxxdin', 'D')
+  call writefile(['::::::::'], 'Xxxdfile', 'D')
+  exe cmd1
+  exe cmd2
+  call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
+
+  call delete('Xxxdout')
+endfunc
+
 " Various ways with wrong arguments that trigger the usage output.
 func Test_xxd_usage()
   for arg in ['-h', '-c', '-g', '-o', '-s', '-l', '-X', '-R', 'one two three']
@@ -333,6 +358,18 @@ func Test_xxd_bit_dump()
   new
   exe 'r! printf "123456" | ' . s:xxd_cmd . ' -b1'
   call assert_match('00000000: 00110001 00110010 00110011 00110100 00110101 00110110  123456', join(getline(1, 3)))
+  bwipe!
+endfunc
+
+func Test_xxd_revert_bit_dump()
+  new
+  exe 'r! printf "00000000: 01000001 01100010 01000011 01100100 01000101 01100110 01000111 01101000  AbCdEfGh" | ' . s:xxd_cmd . ' -r -b1 -c 8'
+  call assert_match('AbCdEfGh', join(getline(1, 3)))
+  bwipe!
+
+  new
+  exe 'r! printf "00000000: 01000001 01100010 01000011 01100100 01000101 01100110  AbCdEf\n00000006: 01000111 01101000                                      Gh\n" | ' . s:xxd_cmd . ' -r -b1'
+  call assert_match('AbCdEfGh', join(getline(1, 3)))
   bwipe!
 endfunc
 
