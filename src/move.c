@@ -3587,7 +3587,7 @@ do_check_cursorbind(void)
     FOR_ALL_WINDOWS(curwin)
     {
 	curbuf = curwin->w_buffer;
-	// skip original window  and windows with 'noscrollbind'
+	// skip original window and windows with 'nocursorbind'
 	if (curwin != old_curwin && curwin->w_p_crb)
 	{
 # ifdef FEAT_DIFF

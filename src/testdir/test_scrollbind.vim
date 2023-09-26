@@ -30,6 +30,9 @@ func Test_scrollbind()
   wincmd p
   setl noscrollbind
   call assert_equal(0, topLineLeft - topLineRight)
+
+  bwipe!
+  bwipe!
 endfunc
 
 " Test for 'scrollbind'
@@ -266,10 +269,44 @@ end of window 2
 	      \ '. line 15 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ 15',
 	      \ '. line 12 ZYXWVUTSRQPONMLKJIHGREDCBA9876543210 12',
 	      \ ],  getline(1, '$'))
-  enew!
 
-  new | only!
+  bwipe!
+  bwipe!
+  bwipe!
   set scrollbind& scrollopt& scrolloff& wrap& equalalways& splitbelow&
+endfunc
+
+func Test_scrollbind_mouse()
+  new | only
+  let w1 = win_getid()
+  setlocal nowrap scrollbind
+  call setline(1, range(1, 8))
+  rightbelow vnew
+  let w2 = win_getid()
+  setlocal nowrap scrollbind
+  call setline(1, range(1, 8))
+
+  for w in [w1, w2]
+    call win_gotoid(w)
+    call test_setmouse(1, 1)
+    call assert_equal(1, line('w0', w1))
+    call assert_equal(1, line('w0', w2))
+    call feedkeys("\<ScrollWheelDown>", 'xt')
+    call assert_equal(4, line('w0', w1))
+    call assert_equal(4, line('w0', w2))
+    call feedkeys("\<ScrollWheelDown>", 'xt')
+    call assert_equal(7, line('w0', w1))
+    call assert_equal(7, line('w0', w2))
+    call feedkeys("\<ScrollWheelUp>", 'xt')
+    call assert_equal(4, line('w0', w1))
+    call assert_equal(4, line('w0', w2))
+    call feedkeys("\<ScrollWheelUp>", 'xt')
+    call assert_equal(1, line('w0', w1))
+    call assert_equal(1, line('w0', w2))
+  endfor
+
+  bwipe!
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

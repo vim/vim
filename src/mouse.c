@@ -1171,6 +1171,9 @@ do_mousescroll(cmdarg_T *cap)
 	    leftcol = 0;
 	do_mousescroll_horiz((long_u)leftcol);
     }
+
+    if (curwin->w_p_scb)
+	do_check_scrollbind(TRUE);
     may_trigger_win_scrolled_resized();
 }
 
