@@ -7909,55 +7909,12 @@ ExpandSettingSubtract(
     {
 	return ExpandOldSetting(numMatches, matches);
     }
-    else if (option_flags & P_FLAGLIST)
-    {
-	// Only present the flags that are set on the option as the other flags
-	// are not meaningful to do set-= on.
-
-	if (*xp->xp_pattern != NUL)
-	{
-	    // Don't suggest anything if cmdline is non-empty. Vim's set-=
-	    // behavior requires consecutive strings and it's usually
-	    // unintuitive to users if ther try to subtract multiple flags at
-	    // once.
-	    return FAIL;
-	}
-
-	int num_flags = STRLEN(option_val);
-	if (num_flags == 0)
-	    return FAIL;
-
-	*matches = ALLOC_MULT(char_u *, num_flags + 1);
-	if (*matches == NULL)
-	    return FAIL;
-
-	int count = 0;
-
-	(*matches)[count] = vim_strsave(option_val);
-	count++;
-
-	if (num_flags > 1)
-	{
-	    // If more than one flags, split the flags up and expose each
-	    // character as individual choice.
-	    for (char_u *flag = option_val; *flag != NUL; flag++)
-	    {
-		if (vim_strchr(cmdline_val, *flag) == NULL)
-		{
-		    char_u flag_str[] = { *flag, NUL };
-		    (*matches)[count] = vim_strsave(flag_str);
-		    count++;
-		}
-	    }
-	}
-
-	*numMatches = count;
-	return OK;
-    }
     else if (option_flags & P_COMMA)
     {
 	// Split the option by comma, then present each option to the user if
 	// it matches the pattern.
+	// This condition needs to go first, because 'whichwrap' has both
+	// P_COMMA and P_FLAGLIST.
 	garray_T    ga;
 
 	char_u	    *item;
@@ -8020,6 +7977,51 @@ ExpandSettingSubtract(
 
 	*matches = ga.ga_data;
 	*numMatches = ga.ga_len;
+	return OK;
+    }
+    else if (option_flags & P_FLAGLIST)
+    {
+	// Only present the flags that are set on the option as the other flags
+	// are not meaningful to do set-= on.
+
+	if (*xp->xp_pattern != NUL)
+	{
+	    // Don't suggest anything if cmdline is non-empty. Vim's set-=
+	    // behavior requires consecutive strings and it's usually
+	    // unintuitive to users if ther try to subtract multiple flags at
+	    // once.
+	    return FAIL;
+	}
+
+	int num_flags = STRLEN(option_val);
+	if (num_flags == 0)
+	    return FAIL;
+
+	*matches = ALLOC_MULT(char_u *, num_flags + 1);
+	if (*matches == NULL)
+	    return FAIL;
+
+	int count = 0;
+
+	(*matches)[count] = vim_strsave(option_val);
+	count++;
+
+	if (num_flags > 1)
+	{
+	    // If more than one flags, split the flags up and expose each
+	    // character as individual choice.
+	    for (char_u *flag = option_val; *flag != NUL; flag++)
+	    {
+		if (vim_strchr(cmdline_val, *flag) == NULL)
+		{
+		    char_u flag_str[] = { *flag, NUL };
+		    (*matches)[count] = vim_strsave(flag_str);
+		    count++;
+		}
+	    }
+	}
+
+	*numMatches = count;
 	return OK;
     }
 

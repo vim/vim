@@ -24,6 +24,11 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 				 "hangul", "insertmode", "lang", "mess",
 				 "showmatch", "operator", "register", "shell",
 				 "spell", "term", "wildmode", NULL};
+#if defined(FEAT_DIFF)
+// Note: Keep this in sync with diffopt_changed()
+static char *(p_dip_values[]) = {"filler", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", NULL};
+static char *(p_dip_algorithm_values[]) = {"myers", "minimal", "patience", "histogram", NULL};
+#endif
 static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
@@ -40,6 +45,10 @@ static char *(p_jop_values[]) = {"stack", NULL};
 static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 				 "quickfix", "search", "tag", "insert",
 				 "undo", "jump", NULL};
+#endif
+#if defined(FEAT_SPELL)
+// Note: Keep this in sync with spell_check_sps()
+static char *(p_sps_values[]) = {"best", "fast", "double", "expr:", "file:", "timeout:", NULL};
 #endif
 #ifdef FEAT_SESSION
 // Also used for 'viewoptions'!  Keep in sync with SSOP_ flags.
@@ -814,6 +823,17 @@ did_set_ambiwidth(optset_T *args UNUSED)
     return check_chars_options();
 }
 
+    int
+expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_ambw_values,
+	    sizeof(p_ambw_values) / sizeof(p_ambw_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'background' option is changed.
  */
@@ -850,6 +870,17 @@ did_set_background(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_background(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_bg_values,
+	    sizeof(p_bg_values) / sizeof(p_bg_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'backspace' option is changed.
  */
@@ -865,6 +896,17 @@ did_set_backspace(optset_T *args UNUSED)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_backspace(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_bs_values,
+	    sizeof(p_bs_values) / sizeof(p_bs_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -904,6 +946,17 @@ did_set_backupcopy(optset_T *args)
     return errmsg;
 }
 
+    int
+expand_set_backupcopy(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_bkc_values,
+	    sizeof(p_bkc_values) / sizeof(p_bkc_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'backupext' or the 'patchmode' option is changed.
  */
@@ -924,6 +977,17 @@ did_set_backupext_or_patchmode(optset_T *args UNUSED)
 did_set_belloff(optset_T *args UNUSED)
 {
     return did_set_opt_flags(p_bo, p_bo_values, &bo_flags, TRUE);
+}
+
+    int
+expand_set_belloff(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_bo_values,
+	    sizeof(p_bo_values) / sizeof(p_bo_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
@@ -958,6 +1022,17 @@ did_set_browsedir(optset_T *args UNUSED)
 
     return NULL;
 }
+
+    int
+expand_set_browsedir(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_bsdir_values,
+	    sizeof(p_bsdir_values) / sizeof(p_bsdir_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 /*
@@ -967,6 +1042,17 @@ did_set_browsedir(optset_T *args UNUSED)
 did_set_bufhidden(optset_T *args UNUSED)
 {
     return did_set_opt_strings(curbuf->b_p_bh, p_bufhidden_values, FALSE);
+}
+
+    int
+expand_set_bufhidden(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_bufhidden_values,
+	    sizeof(p_bufhidden_values) / sizeof(p_bufhidden_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -989,6 +1075,17 @@ did_set_buftype(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_buftype(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_buftype_values,
+	    sizeof(p_buftype_values) / sizeof(p_buftype_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'casemap' option is changed.
  */
@@ -996,6 +1093,17 @@ did_set_buftype(optset_T *args UNUSED)
 did_set_casemap(optset_T *args UNUSED)
 {
     return did_set_opt_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
+}
+
+    int
+expand_set_casemap(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_cmp_values,
+	    sizeof(p_cmp_values) / sizeof(p_cmp_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -1207,6 +1315,17 @@ did_set_completeopt(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_completeopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_cot_values,
+	    sizeof(p_cot_values) / sizeof(p_cot_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 #if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
 /*
  * The 'completepopup' option is changed.
@@ -1235,6 +1354,17 @@ did_set_completeslash(optset_T *args UNUSED)
 
     return NULL;
 }
+
+    int
+expand_set_completeslash(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_csl_values,
+	    sizeof(p_csl_values) / sizeof(p_csl_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 #if defined(FEAT_CONCEAL) || defined(PROTO)
@@ -1248,6 +1378,12 @@ did_set_concealcursor(optset_T *args)
 
     return did_set_option_listflag(*varp, (char_u *)COCU_ALL, args->os_errbuf);
 }
+
+    int
+expand_set_concealcursor(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)COCU_ALL, numMatches, matches);
+}
 #endif
 
 /*
@@ -1259,6 +1395,12 @@ did_set_cpoptions(optset_T *args)
     char_u	**varp = (char_u **)args->os_varp;
 
     return did_set_option_listflag(*varp, (char_u *)CPO_ALL, args->os_errbuf);
+}
+
+    int
+expand_set_cpoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)CPO_ALL, numMatches, matches);
 }
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
@@ -1347,6 +1489,17 @@ did_set_cryptmethod(optset_T *args)
     }
     return NULL;
 }
+
+    int
+expand_set_cryptmethod(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_cm_values,
+	    sizeof(p_cm_values) / sizeof(p_cm_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 #if (defined(FEAT_CSCOPE) && defined(FEAT_QUICKFIX)) || defined(PROTO)
@@ -1404,6 +1557,17 @@ did_set_debug(optset_T *args UNUSED)
     return did_set_opt_strings(p_debug, p_debug_values, TRUE);
 }
 
+    int
+expand_set_debug(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_debug_values,
+	    sizeof(p_debug_values) / sizeof(p_debug_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 #if defined(FEAT_DIFF) || defined(PROTO)
 /*
  * The 'diffopt' option is changed.
@@ -1420,35 +1584,6 @@ did_set_diffopt(optset_T *args UNUSED)
     int
 expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *p_diffopt_values[] =
-    {
-	"filler",
-	"context:",
-	"iblank",
-	"icase",
-	"iwhite",
-	"iwhiteall",
-	"iwhiteeol",
-	"horizontal",
-	"vertical",
-	"closeoff",
-	"hiddenoff",
-	"foldcolumn:",
-	"followwrap",
-	"internal",
-	"indent-heuristic",
-	"algorithm:",
-	NULL
-    };
-    static char *p_algorithm_values[] =
-    {
-	"myers",
-	"minimal",
-	"patience",
-	"histogram",
-	NULL
-    };
-
     expand_T *xp = args->oe_xp;
 
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
@@ -1461,8 +1596,8 @@ expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
 	{
 	    return expand_set_opt_string(
 		    args,
-		    p_algorithm_values,
-		    sizeof(p_algorithm_values) / sizeof(p_algorithm_values[0]) - 1,
+		    p_dip_algorithm_values,
+		    sizeof(p_dip_algorithm_values) / sizeof(p_dip_algorithm_values[0]) - 1,
 		    numMatches,
 		    matches);
 	}
@@ -1471,8 +1606,8 @@ expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
 
     return expand_set_opt_string(
 	    args,
-	    p_diffopt_values,
-	    sizeof(p_diffopt_values) / sizeof(p_diffopt_values[0]) - 1,
+	    p_dip_values,
+	    sizeof(p_dip_values) / sizeof(p_dip_values[0]) - 1,
 	    numMatches,
 	    matches);
 }
@@ -1668,6 +1803,17 @@ did_set_fileformat(optset_T *args)
     return NULL;
 }
 
+    int
+expand_set_fileformat(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_ff_values,
+	    sizeof(p_ff_values) / sizeof(p_ff_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'fileformats' option is changed.
  */
@@ -1714,6 +1860,17 @@ did_set_filetype_or_syntax(optset_T *args)
 did_set_foldclose(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_fcl, p_fcl_values, TRUE);
+}
+
+    int
+expand_set_foldclose(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_fcl_values,
+	    sizeof(p_fcl_values) / sizeof(p_fcl_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -1800,6 +1957,17 @@ did_set_foldopen(optset_T *args UNUSED)
 {
     return did_set_opt_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
 }
+
+    int
+expand_set_foldopen(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_fdo_values,
+	    sizeof(p_fdo_values) / sizeof(p_fdo_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 /*
@@ -1811,6 +1979,12 @@ did_set_formatoptions(optset_T *args)
     char_u	**varp = (char_u **)args->os_varp;
 
     return did_set_option_listflag(*varp, (char_u *)FO_ALL, args->os_errbuf);
+}
+
+    int
+expand_set_formatoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)FO_ALL, numMatches, matches);
 }
 
 #if defined(CURSOR_SHAPE) || defined(PROTO)
@@ -1930,6 +2104,12 @@ did_set_guioptions(optset_T *args)
 
     gui_init_which_components(args->os_oldval.string);
     return NULL;
+}
+
+    int
+expand_set_guioptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)GO_ALL, numMatches, matches);
 }
 #endif
 
@@ -2075,6 +2255,17 @@ did_set_jumpoptions(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_jumpoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_jop_values,
+	    sizeof(p_jop_values) / sizeof(p_jop_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 #if defined(FEAT_KEYMAP) || defined(PROTO)
 /*
  * The 'keymap' option is changed.
@@ -2146,6 +2337,17 @@ did_set_keymodel(optset_T *args UNUSED)
     km_stopsel = (vim_strchr(p_km, 'o') != NULL);
     km_startsel = (vim_strchr(p_km, 'a') != NULL);
     return NULL;
+}
+
+    int
+expand_set_keymodel(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_km_values,
+	    sizeof(p_km_values) / sizeof(p_km_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -2271,6 +2473,17 @@ did_set_mousemodel(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_mousemodel(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_mousem_values,
+	    sizeof(p_mousem_values) / sizeof(p_mousem_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 #if defined(FEAT_MOUSESHAPE) || defined(PROTO)
     char *
 did_set_mouseshape(optset_T *args UNUSED)
@@ -2293,6 +2506,17 @@ did_set_nrformats(optset_T *args)
     char_u	**varp = (char_u **)args->os_varp;
 
     return did_set_opt_strings(*varp, p_nf_values, TRUE);
+}
+
+    int
+expand_set_nrformats(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_nf_values,
+	    sizeof(p_nf_values) / sizeof(p_nf_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -2477,6 +2701,17 @@ did_set_scrollopt(optset_T *args UNUSED)
     return did_set_opt_strings(p_sbo, p_scbopt_values, TRUE);
 }
 
+    int
+expand_set_scrollopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_scbopt_values,
+	    sizeof(p_scbopt_values) / sizeof(p_scbopt_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'selection' option is changed.
  */
@@ -2489,6 +2724,17 @@ did_set_selection(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_selection(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_sel_values,
+	    sizeof(p_sel_values) / sizeof(p_sel_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'selectmode' option is changed.
  */
@@ -2496,6 +2742,17 @@ did_set_selection(optset_T *args UNUSED)
 did_set_selectmode(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_slm, p_slm_values, TRUE);
+}
+
+    int
+expand_set_selectmode(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_slm_values,
+	    sizeof(p_slm_values) / sizeof(p_slm_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 #if defined(FEAT_SESSION) || defined(PROTO)
@@ -2516,6 +2773,17 @@ did_set_sessionoptions(optset_T *args)
     }
 
     return NULL;
+}
+
+    int
+expand_set_sessionoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_ssop_values,
+	    sizeof(p_ssop_values) / sizeof(p_ssop_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -2566,6 +2834,17 @@ did_set_showcmdloc(optset_T *args UNUSED)
     return did_set_opt_strings(p_sloc, p_sloc_values, FALSE);
 }
 
+    int
+expand_set_showcmdloc(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_sloc_values,
+	    sizeof(p_sloc_values) / sizeof(p_sloc_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 #if defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * The 'signcolumn' option is changed.
@@ -2585,6 +2864,17 @@ did_set_signcolumn(optset_T *args)
 	curwin->w_nrwidth_line_count = 0;
 
     return NULL;
+}
+
+    int
+expand_set_signcolumn(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_scl_values,
+	    sizeof(p_scl_values) / sizeof(p_scl_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -2660,20 +2950,10 @@ did_set_spellsuggest(optset_T *args UNUSED)
     int
 expand_set_spellsuggest(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    static char *p_spellsuggest_values[] =
-    {
-	"best",
-	"fast",
-	"double",
-	"expr:",
-	"file:",
-	"timeout:",
-	NULL
-    };
     return expand_set_opt_string(
 	    args,
-	    p_spellsuggest_values,
-	    sizeof(p_spellsuggest_values) / sizeof(p_spellsuggest_values[0]) - 1,
+	    p_sps_values,
+	    sizeof(p_sps_values) / sizeof(p_sps_values[0]) - 1,
 	    numMatches,
 	    matches);
 }
@@ -2686,6 +2966,17 @@ expand_set_spellsuggest(optexpand_T *args, int *numMatches, char_u ***matches)
 did_set_splitkeep(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_spk, p_spk_values, FALSE);
+}
+
+    int
+expand_set_splitkeep(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_spk_values,
+	    sizeof(p_spk_values) / sizeof(p_spk_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)
@@ -2708,6 +2999,17 @@ did_set_swapsync(optset_T *args UNUSED)
     return did_set_opt_strings(p_sws, p_sws_values, FALSE);
 }
 
+    int
+expand_set_swapsync(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_sws_values,
+	    sizeof(p_sws_values) / sizeof(p_sws_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'switchbuf' option is changed.
  */
@@ -2715,6 +3017,17 @@ did_set_swapsync(optset_T *args UNUSED)
 did_set_switchbuf(optset_T *args UNUSED)
 {
     return did_set_opt_flags(p_swb, p_swb_values, &swb_flags, TRUE);
+}
+
+    int
+expand_set_switchbuf(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_swb_values,
+	    sizeof(p_swb_values) / sizeof(p_swb_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 #if defined(FEAT_STL_OPT) || defined(PROTO)
@@ -2756,6 +3069,17 @@ did_set_tagcase(optset_T *args)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_tagcase(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_tc_values,
+	    sizeof(p_tc_values) / sizeof(p_tc_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -2891,6 +3215,17 @@ did_set_termwintype(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_twt, p_twt_values, FALSE);
 }
+
+    int
+expand_set_termwintype(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_twt_values,
+	    sizeof(p_twt_values) / sizeof(p_twt_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 # endif
 #endif
 
@@ -2924,6 +3259,17 @@ did_set_toolbar(optset_T *args UNUSED)
 		(TOOLBAR_TEXT | TOOLBAR_ICONS)) != 0);
     return NULL;
 }
+
+    int
+expand_set_toolbar(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_toolbar_values,
+	    sizeof(p_toolbar_values) / sizeof(p_toolbar_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 #if (defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)) || defined(PROTO)
@@ -2940,6 +3286,17 @@ did_set_toolbariconsize(optset_T *args UNUSED)
     gui_mch_show_toolbar((toolbar_flags &
 		(TOOLBAR_TEXT | TOOLBAR_ICONS)) != 0);
     return NULL;
+}
+
+    int
+expand_set_toolbariconsize(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_tbis_values,
+	    sizeof(p_tbis_values) / sizeof(p_tbis_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -2963,6 +3320,17 @@ did_set_ttymouse(optset_T *args UNUSED)
 	setmouse();		// may switch it on again
 
     return errmsg;
+}
+
+    int
+expand_set_ttymouse(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_ttym_values,
+	    sizeof(p_ttym_values) / sizeof(p_ttym_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -3170,6 +3538,17 @@ did_set_virtualedit(optset_T *args)
     return NULL;
 }
 
+    int
+expand_set_virtualedit(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_ve_values,
+	    sizeof(p_ve_values) / sizeof(p_ve_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+
 /*
  * The 'whichwrap' option is changed.
  */
@@ -3178,7 +3557,15 @@ did_set_whichwrap(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
 
-    return did_set_option_listflag(*varp, (char_u *)WW_ALL, args->os_errbuf);
+    // Add ',' to the list flags because 'whichwrap' is a flag
+    // list that is comma-separated.
+    return did_set_option_listflag(*varp, (char_u *)(WW_ALL ","), args->os_errbuf);
+}
+
+    int
+expand_set_whichwrap(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_listflag(args, (char_u*)WW_ALL, numMatches, matches);
 }
 
 /*
@@ -3199,6 +3586,17 @@ did_set_wildmode(optset_T *args UNUSED)
 did_set_wildoptions(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_wop, p_wop_values, TRUE);
+}
+
+    int
+expand_set_wildoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_wop_values,
+	    sizeof(p_wop_values) / sizeof(p_wop_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 #if defined(FEAT_WAK) || defined(PROTO)
@@ -3222,6 +3620,17 @@ did_set_winaltkeys(optset_T *args UNUSED)
 #  endif
 # endif
     return errmsg;
+}
+
+    int
+expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_wak_values,
+	    sizeof(p_wak_values) / sizeof(p_wak_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 

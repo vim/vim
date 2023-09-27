@@ -424,6 +424,7 @@ spell_check_sps(void)
 	    if (*s != NUL && !VIM_ISDIGIT(*s))
 		f = -1;
 	}
+	// Note: Keep this in sync with p_sps_values.
 	else if (STRCMP(buf, "best") == 0)
 	    f = SPS_BEST;
 	else if (STRCMP(buf, "fast") == 0)

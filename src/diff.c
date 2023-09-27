@@ -2266,6 +2266,7 @@ diffopt_changed(void)
     p = p_dip;
     while (*p != NUL)
     {
+	// Note: Keep this in sync with p_dip_values
 	if (STRNCMP(p, "filler", 6) == 0)
 	{
 	    p += 6;
@@ -2343,6 +2344,7 @@ diffopt_changed(void)
 	}
 	else if (STRNCMP(p, "algorithm:", 10) == 0)
 	{
+	    // Note: Keep this in sync with p_dip_algorithm_values.
 	    p += 10;
 	    if (STRNCMP(p, "myers", 5) == 0)
 	    {
