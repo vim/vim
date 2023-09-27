@@ -1430,11 +1430,19 @@ ex_class(exarg_T *eap)
 	    {
 		char_u *impl_end = find_name_end(arg, NULL, NULL,
 							      FNE_CHECK_START);
-		if (!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
+		if ((!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
+			|| (*impl_end == ','
+			    && !IS_WHITE_OR_NUL(*(impl_end + 1))))
 		{
 		    semsg(_(e_white_space_required_after_name_str), arg);
 		    goto early_ret;
 		}
+		if (impl_end - arg == 0)
+		{
+		    emsg(_(e_missing_name_after_implements));
+		    goto early_ret;
+		}
+
 		char_u *iname = vim_strnsave(arg, impl_end - arg);
 		if (iname == NULL)
 		    goto early_ret;
@@ -1537,6 +1545,11 @@ early_ret:
 	    if (STRNCMP(line, "public", 6) != 0)
 	    {
 		semsg(_(e_command_cannot_be_shortened_str), line);
+		break;
+	    }
+	    if (!is_class)
+	    {
+		emsg(_(e_public_member_not_supported_in_interface));
 		break;
 	    }
 	    has_public = TRUE;
@@ -1664,7 +1677,20 @@ early_ret:
 	    exarg_T	ea;
 	    garray_T	lines_to_free;
 
-	    // TODO: error for "public static def Func()"?
+	    if (has_public)
+	    {
+		// "public" keyword is not supported when defining an object or
+		// class method
+		emsg(_(e_public_keyword_not_supported_for_method));
+		break;
+	    }
+
+	    if (*p == NUL)
+	    {
+		// No method name following def
+		semsg(_(e_not_valid_command_in_class_str), line);
+		break;
+	    }
 
 	    CLEAR_FIELD(ea);
 	    ea.cmd = line;

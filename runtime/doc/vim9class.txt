@@ -464,10 +464,10 @@ The interface name can be used as a type: >
 	   echo $'the surface is {shape.Surface()}'
 	endfor
 <
-						*E1378* *E1379* *E1380*
-An interface can have only instance variables (read-only and read-write
-access) and methods.  An interface cannot contain private variables, private
-methods, class variables and class methods.
+					*E1378* *E1379* *E1380* *E1387*
+An interface can contain only object methods and read-only object variables.
+An interface cannot contain read-write and private object variables, private
+object methods, class variables and class methods.
 
 An interface can extend another interface using "extends".  The sub-interface
 inherits all the instance variables and methods from the super interface.
@@ -563,7 +563,7 @@ will be added automatically.
 
 
 A class implementing an interface ~
-						*implements* *E1346* *E1347*
+					*implements* *E1346* *E1347* *E1389*
 A class can implement one or more interfaces.  The "implements" keyword can
 only appear once *E1350* .  Multiple interfaces can be specified, separated by
 commas.  Each interface name can appear only once. *E1351*
@@ -577,7 +577,7 @@ interface, which is often done in many languages, especially Java.
 
 
 Items in a class ~
-						*E1318* *E1325*
+						*E1318* *E1325* *E1388*
 Inside a class, in between `:class` and `:endclass`, these items can appear:
 - An object variable declaration: >
 	this._privateVariableName: memberType
