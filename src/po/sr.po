@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-04 10:49+0400\n"
-"PO-Revision-Date: 2023-09-04 13:00+0400\n"
+"POT-Creation-Date: 2023-09-27 10:56+0400\n"
+"PO-Revision-Date: 2023-09-27 11:45+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -5929,9 +5929,6 @@ msgstr "E613: Непознат фонт штампача: %s"
 msgid "E614: Class required"
 msgstr "E614: Потребна је класа"
 
-msgid "E615: Object required"
-msgstr "E615: Потребан је објекат"
-
 #, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: За аргумент %d је потребан објекат"
@@ -7131,8 +7128,8 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Неисправна акција: ’%s’"
 
 #, c-format
-msgid "E963: Setting %s to value with wrong type"
-msgstr "E963: Постављање %s на вредност погрешног типа"
+msgid "E963: Setting v:%s to value with wrong type"
+msgstr "E963: Постављање v:%s на вредност погрешног типа"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
@@ -8402,8 +8399,8 @@ msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: Класа може да се дефинише само у Vim9 скрипти"
 
 #, c-format
-msgid "E1317: Invalid object member declaration: %s"
-msgstr "E1317: Неисправна декларација члана објекта: %s"
+msgid "E1317: Invalid object variable declaration: %s"
+msgstr "E1317: Неисправна декларација променљиве објекта: %s"
 
 #, c-format
 msgid "E1318: Not a valid command in a class: %s"
@@ -8432,8 +8429,8 @@ msgid "E1325: Method not found on class \"%s\": %s"
 msgstr "E1325: Није пронађена метода класе „%s”: %s"
 
 #, c-format
-msgid "E1326: Member not found on object \"%s\": %s"
-msgstr "E1326: Члан није пронађен у објекту „%s”: %s"
+msgid "E1326: Variable not found on object \"%s\": %s"
+msgstr "E1326: Променљива није пронађена у објекту „%s”: %s"
 
 #, c-format
 msgid "E1327: Object required, found %s"
@@ -8444,39 +8441,27 @@ msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Подразумевана вредност конструктора мора бити v:none: %s"
 
 #, c-format
-msgid "E1329: Cannot get object member type from initializer: %s"
-msgstr "E1329: Тип члана објекта не може да се одреди из иницијализатора: %s"
-
-#, c-format
-msgid "E1330: Invalid type for object member: %s"
-msgstr "E1330: Неисправан тип члана објекта: %s"
+msgid "E1330: Invalid type for object variable: %s"
+msgstr "E1330: Неисправан тип променљиве објекта: %s"
 
 msgid "E1331: Public must be followed by \"this\" or \"static\""
 msgstr "E1331: Након Public мора да следи „this” или „static”"
 
 #, c-format
-msgid "E1332: Public member name cannot start with underscore: %s"
-msgstr "E1332: Име Public члана не може почети доњом цртом: %s"
+msgid "E1332: Public variable name cannot start with underscore: %s"
+msgstr "E1332: Име Public променљиве не може почети доњом цртом: %s"
 
 #, c-format
-msgid "E1333: Cannot access private member: %s"
-msgstr "E1333: Не може да се приступи приватном члану: %s"
+msgid "E1333: Cannot access private variable: %s"
+msgstr "E1333: Не може да се приступи приватној променљивој: %s"
 
 #, c-format
-msgid "E1334: Object member not found: %s"
-msgstr "E1334: Члан објекта није пронађен: %s"
+msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
+msgstr "E1335: У променљиву „%s” у класи „%s” не може да се упише"
 
 #, c-format
-msgid "E1335: Member is not writable: %s"
-msgstr "E1335: У члан не може да се уписује: %s"
-
-#, c-format
-msgid "E1337: Class member not found: %s"
-msgstr "E1337: Није пронађен члан класе: %s"
-
-#, c-format
-msgid "E1338: Member not found on class \"%s\": %s"
-msgstr "E1338: Није пронађен члан класе „%s”: %s"
+msgid "E1337: Class variable \"%s\" not found in class \"%s\""
+msgstr "E1337: Променљива класе „%s” није пронађена у класи „%s”"
 
 msgid ""
 "E1339: Cannot add a textprop with text after using a textprop with a "
@@ -8500,8 +8485,8 @@ msgstr "E1342: Интерфејс може да се дефинише само �
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr "E1343: Име интерфејса мора да почне великим словом: %s"
 
-msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1344: Члан не може да се иницијализује у интерфејсу"
+msgid "E1344: Cannot initialize a variable in an interface"
+msgstr "E1344: Не може да се иницијализује променљива у интерфејсу"
 
 #, c-format
 msgid "E1345: Not a valid command in an interface: %s"
@@ -8516,12 +8501,12 @@ msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: Неважећи интерфејс: %s"
 
 #, c-format
-msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
-msgstr "E1348: Члан „%s” интерфејса „%s” није имплементиран"
+msgid "E1348: Variable \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1348: Није имплементирана променљива „%s” интерфејса „%s”"
 
 #, c-format
-msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
-msgstr "E1349: Функција „%s” интерфејса „%s” није имплементирана"
+msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1349: Није имплементирана функција „%s” интерфејса „%s”"
 
 msgid "E1350: Duplicate \"implements\""
 msgstr "E1350: Дупликат „implements”"
@@ -8548,14 +8533,14 @@ msgstr "E1355: Дуплирана функција: %s"
 msgid "E1356: \"super\" must be followed by a dot"
 msgstr "E1356: Након „super” мора да следи тачка"
 
-msgid "E1357: Using \"super\" not in a class function"
-msgstr "E1357:„super” се користи ван функције класе"
+msgid "E1357: Using \"super\" not in a class method"
+msgstr "E1357: „super” се користи ван методе класе"
 
 msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: „super” се не користи у изведеној класи"
 
-msgid "E1359: Cannot define a \"new\" function in an abstract class"
-msgstr "E1359: Функција „new” не може да се дефинише у апстрактној класи"
+msgid "E1359: Cannot define a \"new\" method in an abstract class"
+msgstr "E1359: Метода „new” не може да се дефинише у апстрактној класи"
 
 msgid "E1360: Using a null object"
 msgstr "E1360: Користи се null објекат"
@@ -8572,26 +8557,85 @@ msgstr "E1363: Тип није комплетан"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Упозорење: Блок показивача је покварен"
 
-msgid "E1365: Cannot use a return type with the \"new\" function"
-msgstr "E1365: Повратни тип не може да се користи са функцијом „new”"
+msgid "E1365: Cannot use a return type with the \"new\" method"
+msgstr "E1365: Повратни тип не може да се користи са методом „new”"
 
 #, c-format
 msgid "E1366: Cannot access private method: %s"
 msgstr "E1366: Не може да се приступи приватној методи: %s"
 
 #, c-format
-msgid "E1367: Access level of member \"%s\" of interface \"%s\" is different"
-msgstr "E1367: Ниво приступа члана „%s” интерфејса „%s” се разликује"
+msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
+msgstr "E1367: Ниво приступа променљиве „%s” интерфејса „%s” се разликује"
 
-msgid "E1368: Static cannot be followed by \"this\" in a member name"
-msgstr "E1368: У имену члана након static не може да следи „this”"
+msgid "E1368: Static cannot be followed by \"this\" in a variable name"
+msgstr "E1368: У имену променљиве након static не може да следи „this”"
 
 #, c-format
-msgid "E1369: Duplicate member: %s"
-msgstr "E1369: Дуплирани члан: %s"
+msgid "E1369: Duplicate variable: %s"
+msgstr "E1369: Дуплирана променљива: %s"
 
-msgid "E1370: Cannot define a \"new\" function as static"
-msgstr "E1370: Функција „new” не може да се дефинише као static"
+msgid "E1370: Cannot define a \"new\" method as static"
+msgstr "E1370: Метода „new” не може да се дефинише као static"
+
+msgid "E1371: Abstract must be followed by \"def\" or \"static\""
+msgstr "E1371: Након abstract мора да следи „def” или „static”"
+
+#, c-format
+msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
+msgstr "E1372: Апстрактна метода „%s” не може да се дефинише у конкретној класи"
+
+#, c-format
+msgid "E1373: Abstract method \"%s\" is not implemented"
+msgstr "E1373: Није имплементирана апстрактна метода „%s”"
+
+#, c-format
+msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
+msgstr "E1374: Променљивој класе „%s” може да се приступи само унутар класе „%s”"
+
+#, c-format
+msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
+msgstr "E1375: Променљивој класе „%s” може да се приступи само употребом класе „%s”"
+
+#, c-format
+msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
+msgstr "E1376: Променљивој објекта „%s” може да се приступи само употребом објекта класе „%s”"
+
+#, c-format
+msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
+msgstr "E1377: Ниво приступа методе „%s” у класи „%s” је другачији"
+
+msgid "E1378: Static member not supported in an interface"
+msgstr "E1378: У интерфејсу се не подржава статички члан"
+
+msgid "E1379: Private variable not supported in an interface"
+msgstr "E1379: У интерфејсу се не подржава приватна променљива"
+
+msgid "E1380: Private method not supported in an interface"
+msgstr "E1380: У интерфејсу се не подржава приватна метода"
+
+msgid "E1381: Interface cannot use \"implements\""
+msgstr "E1381: Интерфејс не може да користи „implements”"
+
+#, c-format
+msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1382: Променљива „%s”: грешка типа, очекивао се %s али је наведен %s"
+
+#, c-format
+msgid "E1383: Method \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1383: Метода „%s”: грешка типа, очекивао се %s али је наведен %s"
+
+#, c-format
+msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
+msgstr "E1384: Методи класе „%s” може да се приступи само унутар класе „%s”"
+
+#, c-format
+msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
+msgstr "E1385: Методи класе „%s” може да се приступи само користећи класу „%s”"
+
+#, c-format
+msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
+msgstr "E1386: Методи објекта „%s” може да се приступи само користећи објекат класе „%s”"
 
 #, c-format
 msgid "E1400: Cannot mix positional and non-positional arguments: %s"
@@ -8620,14 +8664,6 @@ msgstr "E1404: Позициони аргумент %d тип се не упот�
 #, c-format
 msgid "E1405: Invalid format specifier: %s"
 msgstr "E1405: Неисправни спецификатор формата: %s"
-
-#, c-format
-msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1406: Члан „%s”: неодговарајући тип, очекује се %s али је наведено %s"
-
-#, c-format
-msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1407: Члан „%s”: неодговарајући тип, очекује се %s али је наведено %s"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -8978,7 +9014,7 @@ msgid "GVim"
 msgstr "GVim"
 
 msgid "Text Editor"
-msgstr "Едитор текст"
+msgstr "Едитор текста"
 
 msgid "Edit text files"
 msgstr "Уређујте текст фајлове"
