@@ -654,6 +654,11 @@ static char *(features[]) =
 	"-X11",
 # endif
 #endif
+# ifdef FEAT_XATTR
+	"+xattr",
+# else
+	"-xattr",
+# endif
 #ifdef FEAT_XFONTSET
 	"+xfontset",
 #else

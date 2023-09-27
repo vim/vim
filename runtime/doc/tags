@@ -1483,6 +1483,7 @@ $quote	eval.txt	/*$quote*
 +wildmenu	various.txt	/*+wildmenu*
 +windows	various.txt	/*+windows*
 +writebackup	various.txt	/*+writebackup*
++xattr	various.txt	/*+xattr*
 +xfontset	various.txt	/*+xfontset*
 +xim	various.txt	/*+xim*
 +xpm	various.txt	/*+xpm*
@@ -4506,6 +4507,10 @@ E1502	builtin.txt	/*E1502*
 E1503	builtin.txt	/*E1503*
 E1504	builtin.txt	/*E1504*
 E1505	builtin.txt	/*E1505*
+E1506	editing.txt	/*E1506*
+E1507	editing.txt	/*E1507*
+E1508	editing.txt	/*E1508*
+E1509	editing.txt	/*E1509*
 E151	helphelp.txt	/*E151*
 E152	helphelp.txt	/*E152*
 E153	helphelp.txt	/*E153*
@@ -11224,6 +11229,7 @@ x-resources	version5.txt	/*x-resources*
 x11-clientserver	remote.txt	/*x11-clientserver*
 x11-cut-buffer	gui_x11.txt	/*x11-cut-buffer*
 x11-selection	gui_x11.txt	/*x11-selection*
+xattr	editing.txt	/*xattr*
 xf86conf.vim	syntax.txt	/*xf86conf.vim*
 xfontset	mbyte.txt	/*xfontset*
 xfree-xterm	syntax.txt	/*xfree-xterm*

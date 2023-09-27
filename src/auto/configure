@@ -825,6 +825,7 @@ with_global_runtime
 with_modified_by
 enable_smack
 enable_selinux
+enable_xattr
 with_features
 with_compiledby
 enable_xsmp
@@ -1514,6 +1515,7 @@ Optional Features:
   --disable-darwin        Disable Darwin (Mac OS X) support.
   --disable-smack	  Do not check for Smack support.
   --disable-selinux	  Do not check for SELinux support.
+  --disable-xattr	  Do not check for XATTR support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
   --enable-luainterp=OPTS      Include Lua interpreter.  default=no OPTS=no/yes/dynamic
@@ -5418,6 +5420,32 @@ fi
 printf "%s\n" "yes" >&6; }
   fi
 fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-xattr argument" >&5
+printf %s "checking --enable-xattr argument... " >&6; }
+# Check whether --enable-xattr was given.
+if test ${enable_xattr+y}
+then :
+  enableval=$enable_xattr;
+else $as_nop
+  enable_xattr="yes"
+fi
+
+if test "$enable_xattr" = "yes"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+  ac_fn_c_check_header_compile "$LINENO" "attr/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
+if test "x$ac_cv_header_attr_xattr_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_XATTR 1" >>confdefs.h
+
+fi
+
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-features argument" >&5

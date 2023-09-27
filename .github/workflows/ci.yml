@@ -110,6 +110,8 @@ jobs:
               tcl-dev \
               cscope \
               libsodium-dev \
+              attr \
+              libattr1-dev
             )
           fi
           sudo apt-get update && sudo apt-get install -y "${PKGS[@]}"
