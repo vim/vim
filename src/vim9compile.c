@@ -1029,7 +1029,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     ufunc_T	*ufunc;
     int		r = FAIL;
     compiletype_T   compile_type;
-    isn_T	*funcref_isn = NULL;
+    int		funcref_isn_idx = -1;
     lvar_T	*lvar = NULL;
 
     if (eap->forceit)
@@ -1148,7 +1148,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 					    ASSIGN_CONST, ufunc->uf_func_type);
 	if (lvar == NULL)
 	    goto theend;
-	if (generate_FUNCREF(cctx, ufunc, NULL, 0, &funcref_isn) == FAIL)
+	if (generate_FUNCREF(cctx, ufunc, NULL, 0, &funcref_isn_idx) == FAIL)
 	    goto theend;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
     }
@@ -1178,8 +1178,12 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 #endif
 
     // If a FUNCREF instruction was generated, set the index after compiling.
-    if (funcref_isn != NULL && ufunc->uf_def_status == UF_COMPILED)
+    if (funcref_isn_idx != -1 && ufunc->uf_def_status == UF_COMPILED)
+    {
+	isn_T	*funcref_isn = ((isn_T *)cctx->ctx_instr.ga_data) +
+							funcref_isn_idx;
 	funcref_isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
+    }
 
 theend:
     vim_free(lambda_name);
