@@ -4150,7 +4150,7 @@ def Test_dup_member_variable()
     assert_equal(10, C.val)
     assert_equal(20, c.val)
   END
-  v9.CheckSourceSuccess(lines)
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val', 4)
 
   # Duplicate object member variable in a derived class
   lines =<< trim END
@@ -5766,6 +5766,93 @@ def Test_freed_object_from_previous_method_call()
     Test_GetResult()
   END
   v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for duplicate object and class variable
+def Test_duplicate_variable()
+  # Object variable name is same as the class variable name
+  var lines =<< trim END
+    vim9script
+    class A
+      public static sval: number
+      public this.sval: number
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: sval', 4)
+
+  # Duplicate variable name and calling a class method
+  lines =<< trim END
+    vim9script
+    class A
+      public static sval: number
+      public this.sval: number
+      def F1()
+        echo this.sval
+      enddef
+      static def F2()
+        echo sval
+      enddef
+    endclass
+    A.F2()
+  END
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: sval', 4)
+
+  # Duplicate variable with an empty constructor
+  lines =<< trim END
+    vim9script
+    class A
+      public static sval: number
+      public this.sval: number
+      def new()
+      enddef
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: sval', 4)
+enddef
+
+" Test for using a reserved keyword as a variable name
+def Test_reserved_varname()
+  for kword in ['true', 'false', 'null', 'null_blob', 'null_dict',
+                'null_function', 'null_list', 'null_partial', 'null_string',
+                'null_channel', 'null_job', 'super', 'this']
+
+    var lines =<< trim eval END
+      vim9script
+      class C
+        public this.{kword}: list<number> = [1, 2, 3]
+      endclass
+      var o = C.new()
+    END
+    v9.CheckSourceFailure(lines, $'E1034: Cannot use reserved name {kword}', 3)
+
+    lines =<< trim eval END
+      vim9script
+      class C
+        public this.{kword}: list<number> = [1, 2, 3]
+        def new()
+        enddef
+      endclass
+      var o = C.new()
+    END
+    v9.CheckSourceFailure(lines, $'E1034: Cannot use reserved name {kword}', 3)
+
+    lines =<< trim eval END
+      vim9script
+      class C
+        public this.{kword}: list<number> = [1, 2, 3]
+        def new()
+        enddef
+        def F()
+          echo this.{kword}
+        enddef
+      endclass
+      var o = C.new()
+      o.F()
+    END
+    v9.CheckSourceFailure(lines, $'E1034: Cannot use reserved name {kword}', 3)
+  endfor
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
