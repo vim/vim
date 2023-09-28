@@ -6711,7 +6711,7 @@ mch_expand_wildcards(
 		// vimglob() function to define for Posix shell
     static char *sh_vimglob_func = "vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >";
 		// vimglob() function with globstar setting enabled, only for bash >= 4.X
-    static char *sh_globstar_opt = "[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ";
+    static char *sh_globstar_opt = "[ ${BASH_VERSINFO:-0} -ge 4 ] && shopt -s globstar; ";
 
     *num_file = 0;	// default: no files found
     *file = NULL;
