@@ -1275,8 +1275,8 @@ static struct vimoption options[] =
     {"hidden",	    "hid",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_hid, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_hl, PV_NONE, did_set_highlight, NULL,
+    {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP|P_COLON,
+			    (char_u *)&p_hl, PV_NONE, did_set_highlight, expand_set_highlight,
 			    {(char_u *)HIGHLIGHT_INIT, (char_u *)0L}
 			    SCTX_INIT},
     {"history",	    "hi",   P_NUM|P_VIM,

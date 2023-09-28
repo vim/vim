@@ -735,9 +735,10 @@ expand_set_opt_string(
 	int *numMatches,
 	char_u ***matches)
 {
-    regmatch_T *regmatch = args->oe_regmatch;
-    int include_orig_val = args->oe_include_orig_val;
-    char_u *option_val = args->oe_opt_value;
+    char_u	*p;
+    regmatch_T	*regmatch = args->oe_regmatch;
+    int		include_orig_val = args->oe_include_orig_val;
+    char_u	*option_val = args->oe_opt_value;
 
     // Assume numValues is small since they are fixed enums, so just allocate
     // upfront instead of needing two passes to calculate output size.
@@ -749,8 +750,13 @@ expand_set_opt_string(
 
     if (include_orig_val && *option_val != NUL)
     {
-	(*matches)[count] = vim_strsave(option_val);
-	count++;
+	p = vim_strsave(option_val);
+	if (p == NULL)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
+	(*matches)[count++] = p;
     }
 
     for (char **val = values; *val != NULL; val++)
@@ -762,8 +768,18 @@ expand_set_opt_string(
 	}
 	if (vim_regexec(regmatch, (char_u*)(*val), (colnr_T)0))
 	{
-	    (*matches)[count] = vim_strsave((char_u*)*val);
-	    count++;
+	    p = vim_strsave((char_u*)*val);
+	    if (p == NULL)
+	    {
+		if (count == 0)
+		{
+		    VIM_CLEAR(*matches);
+		    return FAIL;
+		}
+		else
+		    break;
+	    }
+	    (*matches)[count++] = p;
 	}
     }
     *numMatches = count;
@@ -830,10 +846,11 @@ expand_set_opt_listflag(
 	int *numMatches,
 	char_u ***matches)
 {
-    char_u *option_val = args->oe_opt_value;
-    char_u *cmdline_val = args->oe_set_arg;
-    int append = args->oe_append;
-    int include_orig_val = args->oe_include_orig_val && (*option_val != NUL);
+    char_u  *p;
+    char_u  *option_val = args->oe_opt_value;
+    char_u  *cmdline_val = args->oe_set_arg;
+    int	    append = args->oe_append;
+    int	    include_orig_val = args->oe_include_orig_val && (*option_val != NUL);
 
     int num_flags = STRLEN(flags);
 
@@ -846,16 +863,19 @@ expand_set_opt_listflag(
 
     if (include_orig_val)
     {
-	(*matches)[count] = vim_strsave(option_val);
-	count++;
+	p = vim_strsave(option_val);
+	if (p == NULL)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
+	(*matches)[count++] = p;
     }
 
     for (char_u *flag = flags; *flag != NUL; flag++)
     {
 	if (append && vim_strchr(option_val, *flag) != NULL)
-	{
 	    continue;
-	}
 
 	if (vim_strchr(cmdline_val, *flag) == NULL)
 	{
@@ -867,9 +887,18 @@ expand_set_opt_listflag(
 		// existing flag. Just skip it to avoid duplicate.
 		continue;
 	    }
-	    char_u flag_str[] = { *flag, NUL };
-	    (*matches)[count] = vim_strsave(flag_str);
-	    count++;
+	    p = vim_strnsave(flag, 1);
+	    if (p == NULL)
+	    {
+		if (count == 0)
+		{
+		    VIM_CLEAR(*matches);
+		    return FAIL;
+		}
+		else
+		    break;
+	    }
+	    (*matches)[count++] = p;
 	}
     }
 
@@ -2307,6 +2336,115 @@ did_set_highlight(optset_T *args UNUSED)
 	return e_invalid_argument;	// invalid flags
 
     return NULL;
+}
+
+/*
+ * Expand 'highlight' option.
+ */
+    int
+expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    char_u	    *p;
+    expand_T	    *xp = args->oe_xp;
+    static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
+    int		    i;
+    int		    count = 0;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	// Right after a ':', meaning we just return all highlight names.
+	return expand_set_opt_generic(
+		args,
+		get_highlight_name,
+		numMatches,
+		matches);
+    }
+
+    if (*xp->xp_pattern == NUL)
+    {
+	// At beginning of a comma-separated list. Return the specific list of
+	// supported occasions.
+	*matches = ALLOC_MULT(char_u *, HLF_COUNT + 1);
+	if (*matches == NULL)
+	    return FAIL;
+
+	// We still want to return the full option if it's requested.
+	if (args->oe_include_orig_val)
+	{
+	    p = vim_strsave(args->oe_opt_value);
+	    if (p == NULL)
+	    {
+		VIM_CLEAR(*matches);
+		return FAIL;
+	    }
+	    (*matches)[count++] = p;
+	}
+
+	for (i = 0; i < HLF_COUNT; i++)
+	{
+	    p = vim_strnsave(&hl_flags[i], 1);
+	    if (p == NULL)
+	    {
+		if (count == 0)
+		{
+		    VIM_CLEAR(*matches);
+		    return FAIL;
+		}
+		else
+		    break;
+	    }
+	    (*matches)[count++] = p;
+	}
+
+	*numMatches = count;
+	return OK;
+    }
+
+    // We are after the initial character (which indicates the occasion). We
+    // already made sure we are not matching after a ':' above, so now we want
+    // to match against display mode modifiers.
+    // Since the xp_pattern starts from the beginning, we need to include it in
+    // the returned match.
+
+    // Note: Keep this in sync with highlight_changed()
+    static char p_hl_mode_values[] =
+	{':', 'b', 'i', '-', 'n', 'r', 's', 'u', 'c', '2', 'd', '=', 't'};
+    int num_hl_modes = sizeof(p_hl_mode_values) / sizeof(p_hl_mode_values[0]);
+
+    *matches = ALLOC_MULT(char_u *, num_hl_modes);
+    if (*matches == NULL)
+	return FAIL;
+
+    int pattern_len = STRLEN(xp->xp_pattern);
+
+    for (i = 0; i < num_hl_modes; i++)
+    {
+	// Don't allow duplicates as these are unique flags
+	if (vim_strchr(xp->xp_pattern + 1, p_hl_mode_values[i]) != NULL)
+	    continue;
+
+	// ':' only works by itself, not with other flags.
+	if (pattern_len > 1 && p_hl_mode_values[i] == ':')
+	    continue;
+
+	p = vim_strnsave(xp->xp_pattern, pattern_len + 1);
+	if (p == NULL)
+	{
+	    if (i == 0)
+	    {
+		VIM_CLEAR(*matches);
+		return FAIL;
+	    }
+	    else
+		break;
+	}
+	p[pattern_len] = p_hl_mode_values[i];
+	p[pattern_len + 1] = NUL;
+	(*matches)[count++] = p;
+    }
+    *numMatches = count;
+
+    return OK;
 }
 
 /*
