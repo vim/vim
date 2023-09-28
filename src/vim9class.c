@@ -893,24 +893,52 @@ check_func_arg_names(
 }
 
 /*
- * Returns TRUE if the member "varname" is already defined.
+ * Returns TRUE if 'varname' is a reserved keyword name
  */
     static int
-is_duplicate_member(garray_T *mgap, char_u *varname, char_u *varname_end)
+is_reserved_varname(char_u *varname, char_u *varname_end)
+{
+    int reserved = FALSE;
+    char_u save_varname_end = *varname_end;
+    *varname_end = NUL;
+
+    reserved = check_reserved_name(varname, FALSE) == FAIL;
+
+    *varname_end = save_varname_end;
+
+    return reserved;
+}
+
+/*
+ * Returns TRUE if the variable "varname" is already defined either as a class
+ * variable or as an object variable.
+ */
+    static int
+is_duplicate_variable(
+    garray_T	*class_members,
+    garray_T	*obj_members,
+    char_u	*varname,
+    char_u	*varname_end)
 {
     char_u	*name = vim_strnsave(varname, varname_end - varname);
     char_u	*pstr = (*name == '_') ? name + 1 : name;
     int		dup = FALSE;
 
-    for (int i = 0; i < mgap->ga_len; ++i)
+    for (int loop = 1; loop <= 2; loop++)
     {
-	ocmember_T *m = ((ocmember_T *)mgap->ga_data) + i;
-	char_u	*qstr = *m->ocm_name == '_' ? m->ocm_name + 1 : m->ocm_name;
-	if (STRCMP(pstr, qstr) == 0)
+	// loop == 1: class variables, loop == 2: object variables
+	garray_T    *vgap = (loop == 1) ? class_members : obj_members;
+	for (int i = 0; i < vgap->ga_len; ++i)
 	{
-	    semsg(_(e_duplicate_variable_str), name);
-	    dup = TRUE;
-	    break;
+	    ocmember_T *m = ((ocmember_T *)vgap->ga_data) + i;
+	    char_u	*qstr = *m->ocm_name == '_' ? m->ocm_name + 1
+						    : m->ocm_name;
+	    if (STRCMP(pstr, qstr) == 0)
+	    {
+		semsg(_(e_duplicate_variable_str), name);
+		dup = TRUE;
+		break;
+	    }
 	}
     }
 
@@ -1646,7 +1674,13 @@ early_ret:
 			  &varname_end, &type_list, &type,
 			  is_class ? &init_expr: NULL) == FAIL)
 		break;
-	    if (is_duplicate_member(&objmembers, varname, varname_end))
+	    if (is_reserved_varname(varname, varname_end))
+	    {
+		vim_free(init_expr);
+		break;
+	    }
+	    if (is_duplicate_variable(&classmembers, &objmembers, varname,
+								varname_end))
 	    {
 		vim_free(init_expr);
 		break;
@@ -1768,7 +1802,13 @@ early_ret:
 		      &varname_end, &type_list, &type,
 		      is_class ? &init_expr : NULL) == FAIL)
 		break;
-	    if (is_duplicate_member(&classmembers, varname, varname_end))
+	    if (is_reserved_varname(varname, varname_end))
+	    {
+		vim_free(init_expr);
+		break;
+	    }
+	    if (is_duplicate_variable(&classmembers, &objmembers, varname,
+								varname_end))
 	    {
 		vim_free(init_expr);
 		break;
