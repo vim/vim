@@ -2396,6 +2396,7 @@ EXTERN char e_io_file_requires_name_to_be_set[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_callback_argument[]
 	INIT(= N_("E921: Invalid callback argument"));
+// E922 unused
 EXTERN char e_second_argument_of_function_must_be_list_or_dict[]
 	INIT(= N_("E923: Second argument of function() must be a list or a dict"));
 #endif
@@ -2790,7 +2791,7 @@ EXTERN char e_no_white_space_allowed_after_dot[]
 	INIT(= N_("E1074: No white space allowed after dot"));
 EXTERN char e_namespace_not_supported_str[]
 	INIT(= N_("E1075: Namespace not supported: %s"));
-// E1076 was deleted
+// E1076 unused (was deleted)
 EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
 #endif
@@ -2858,6 +2859,7 @@ PLURAL_MSG(e_one_argument_too_many, "E1106: One argument too many",
 
 EXTERN char e_string_list_dict_or_blob_required[]
 	INIT(= N_("E1107: String, List, Dict or Blob required"));
+// E1108 unused
 EXTERN char e_list_item_nr_is_not_list[]
 	INIT(= N_("E1109: List item %d is not a List"));
 EXTERN char e_list_item_nr_does_not_contain_3_numbers[]
@@ -3210,6 +3212,7 @@ EXTERN char e_list_dict_blob_or_string_required_for_argument_nr[]
 	INIT(= N_("E1251: List, Dictionary, Blob or String required for argument %d"));
 EXTERN char e_string_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1252: String, List or Blob required for argument %d"));
+// E1253 unused
 EXTERN char e_cannot_use_script_variable_in_for_loop[]
 	INIT(= N_("E1254: Cannot use script variable in for loop"));
 #endif
@@ -3523,7 +3526,7 @@ EXTERN char e_class_method_str_accessible_only_using_class_str[]
 	INIT(= N_("E1385: Class method \"%s\" accessible only using class \"%s\""));
 EXTERN char e_object_method_str_accessible_only_using_object_str[]
 	INIT(= N_("E1386: Object method \"%s\" accessible only using class \"%s\" object"));
-EXTERN char e_public_member_not_supported_in_interface[]
+EXTERN char e_public_variable_not_supported_in_interface[]
 	INIT(= N_("E1387: Public variable not supported in an interface"));
 EXTERN char e_public_keyword_not_supported_for_method[]
 	INIT(= N_("E1388: Public keyword not supported for a method"));

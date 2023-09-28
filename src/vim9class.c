@@ -1577,7 +1577,7 @@ early_ret:
 	    }
 	    if (!is_class)
 	    {
-		emsg(_(e_public_member_not_supported_in_interface));
+		emsg(_(e_public_variable_not_supported_in_interface));
 		break;
 	    }
 	    has_public = TRUE;

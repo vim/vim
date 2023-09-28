@@ -258,9 +258,14 @@ If the class extends a parent class, the same thing happens.  In the second
 step the object variables of the parent class are initialized first.  There is
 no need to call "super()" or "new()" on the parent.
 
-						*E1365*
+							*E1365*
 When defining the new() method the return type should not be specified.  It
 always returns an object of the class.
+
+							*E1386*
+When invoking an object method, the method name should be preceded by the
+object variable name.  A object method cannot be invoked using the class
+name.
 
 ==============================================================================
 
@@ -282,7 +287,7 @@ prefix in the class where they are defined: >
 Since the name is used as-is, shadowing the name by a method argument name
 or local variable name is not allowed.
 
-							*E1374* *E1375*
+					    *E1374* *E1375* *E1384* *E1385*
 To access a class member outside of the class where it is defined, the class
 name prefix must be used.  A class member cannot be accessed using an object.
 
