@@ -956,6 +956,17 @@ def Test_class_new_with_object_member()
   v9.CheckSourceFailure(lines, 'E1013:')
 
   lines =<< trim END
+    vim9script
+
+    class C
+      this.str: string
+      def MethodA(this.str)
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1390: Cannot use an object variable "this.str" except with the "new" method')
+
+  lines =<< trim END
       vim9script
 
       class C
