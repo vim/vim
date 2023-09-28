@@ -1297,6 +1297,21 @@ did_set_chars_option(optset_T *args)
 }
 
 /*
+ * Expand 'fillchars' or 'listchars' option value.
+ */
+    int
+expand_set_chars_option(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    char_u **varp = (char_u **)args->oe_varp;
+    int is_lcs = (varp == &p_lcs || varp == &curwin->w_p_lcs);
+    return expand_set_opt_generic(
+	    args,
+	    is_lcs ? get_listchars_name : get_fillchars_name,
+	    numMatches,
+	    matches);
+}
+
+/*
  * The 'cinoptions' option is changed.
  */
     char *

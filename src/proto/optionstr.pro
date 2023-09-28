@@ -132,6 +132,7 @@ int expand_set_browsedir(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_bufhidden(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_buftype(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_casemap(optexpand_T *args, int *numMatches, char_u ***matches);
+int expand_set_chars_option(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_complete(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_completeopt(optexpand_T *args, int *numMatches, char_u ***matches);

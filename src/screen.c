@@ -4658,6 +4658,43 @@ get_encoded_char_adv(char_u **p)
     return mb_ptr2char_adv(p);
 }
 
+struct charstab
+{
+    int	    *cp;
+    char    *name;
+};
+static fill_chars_T fill_chars;
+static struct charstab filltab[] =
+{
+    {&fill_chars.stl,		"stl"},
+    {&fill_chars.stlnc,		"stlnc"},
+    {&fill_chars.vert,		"vert"},
+    {&fill_chars.fold,		"fold"},
+    {&fill_chars.foldopen,	"foldopen"},
+    {&fill_chars.foldclosed,	"foldclose"},
+    {&fill_chars.foldsep,	"foldsep"},
+    {&fill_chars.diff,		"diff"},
+    {&fill_chars.eob,		"eob"},
+    {&fill_chars.lastline,	"lastline"},
+};
+static lcs_chars_T lcs_chars;
+static struct charstab lcstab[] =
+{
+    {&lcs_chars.eol,		"eol"},
+    {&lcs_chars.ext,		"extends"},
+    {&lcs_chars.nbsp,		"nbsp"},
+    {&lcs_chars.prec,		"precedes"},
+    {&lcs_chars.space,		"space"},
+    {&lcs_chars.tab2,		"tab"},
+    {&lcs_chars.trail,		"trail"},
+    {&lcs_chars.lead,		"lead"},
+#ifdef FEAT_CONCEAL
+    {&lcs_chars.conceal,	"conceal"},
+#else
+    {NULL,			"conceal"},
+#endif
+};
+
 /*
  * Handle setting 'listchars' or 'fillchars'.
  * "value" points to either the global or the window-local value.
@@ -4677,45 +4714,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
 
-    struct charstab
-    {
-	int	*cp;
-	char	*name;
-    };
     struct charstab *tab;
-
-    static fill_chars_T fill_chars;
-    static struct charstab filltab[] =
-    {
-	{&fill_chars.stl,	"stl"},
-	{&fill_chars.stlnc,	"stlnc"},
-	{&fill_chars.vert,	"vert"},
-	{&fill_chars.fold,	"fold"},
-	{&fill_chars.foldopen,	"foldopen"},
-	{&fill_chars.foldclosed, "foldclose"},
-	{&fill_chars.foldsep,	"foldsep"},
-	{&fill_chars.diff,	"diff"},
-	{&fill_chars.eob,	"eob"},
-	{&fill_chars.lastline,	"lastline"},
-    };
-
-    static lcs_chars_T lcs_chars;
-    struct charstab lcstab[] =
-    {
-	{&lcs_chars.eol,	"eol"},
-	{&lcs_chars.ext,	"extends"},
-	{&lcs_chars.nbsp,	"nbsp"},
-	{&lcs_chars.prec,	"precedes"},
-	{&lcs_chars.space,	"space"},
-	{&lcs_chars.tab2,	"tab"},
-	{&lcs_chars.trail,	"trail"},
-	{&lcs_chars.lead,	"lead"},
-#ifdef FEAT_CONCEAL
-	{&lcs_chars.conceal,	"conceal"},
-#else
-	{NULL,			"conceal"},
-#endif
-    };
 
     if (is_listchars)
     {
@@ -4954,6 +4953,32 @@ set_fillchars_option(win_T *wp, char_u *val, int apply)
 set_listchars_option(win_T *wp, char_u *val, int apply)
 {
     return set_chars_option(wp, val, TRUE, apply);
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain possible arguments of the
+ * 'fillchars' option.
+ */
+    char_u *
+get_fillchars_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (sizeof(filltab) / sizeof(filltab[0])))
+	return NULL;
+
+    return (char_u*)filltab[idx].name;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain possible arguments of the
+ * 'listchars' option.
+ */
+    char_u *
+get_listchars_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (sizeof(lcstab) / sizeof(lcstab[0])))
+	return NULL;
+
+    return (char_u*)lcstab[idx].name;
 }
 
 /*

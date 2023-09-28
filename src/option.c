@@ -7858,7 +7858,7 @@ ExpandStringSetting(
     }
 
     optexpand_T args;
-    args.oe_idx = expand_option_idx;
+    args.oe_varp = get_varp_scope(&options[expand_option_idx], expand_option_flags);
     args.oe_append = expand_option_append;
     args.oe_regmatch = regmatch;
     args.oe_xp = xp;

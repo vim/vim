@@ -4909,9 +4909,9 @@ typedef struct
  */
 typedef struct
 {
-    // Index of the option
-    int		oe_idx;
     // Pointer to the option variable. It's always a string.
+    char_u	*oe_varp;
+    // The original option value, escaped.
     char_u	*oe_opt_value;
 
     // TRUE if using set+= instead of set=
