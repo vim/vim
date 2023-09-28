@@ -960,6 +960,28 @@ def Test_class_new_with_object_member()
 
       class C
         this.str: string
+        def MethodA(this.str)
+        enddef
+      endclass
+
+      def Check()
+        try
+          var c = C.new()
+          c.MethodA('abc')
+        catch
+          assert_report($'Unexpected exception was caught: {v:exception}')
+        endtry
+      enddef
+
+      Check()
+  END
+  v9.CheckSourceFailure(lines, 'E1390:')
+
+  lines =<< trim END
+      vim9script
+
+      class C
+        this.str: string
         def new(str: any)
         enddef
       endclass
