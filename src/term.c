@@ -1608,6 +1608,23 @@ apply_builtin_tcap(char_u *term, tcap_entry_T *entries, int overwrite)
 }
 
 /*
+ * Apply builtin termcap entries for a given keyprotocol.
+ */
+    void
+apply_keyprotocol(char_u *term, keyprot_T prot)
+{
+    if (prot == KEYPROTOCOL_KITTY)
+	apply_builtin_tcap(term, builtin_kitty, TRUE);
+    if (prot == KEYPROTOCOL_MOK2)
+	apply_builtin_tcap(term, builtin_mok2, TRUE);
+
+    if (prot != KEYPROTOCOL_NONE)
+	// Some function keys may accept modifiers even though the
+	// terminfo/termcap entry does not indicate this.
+	accept_modifiers_for_function_keys();
+}
+
+/*
  * Parsing of the builtin termcap entries.
  * Caller should check if "term" is a valid builtin terminal name.
  * The terminal's name is not set, as this is already done in termcapinit().
@@ -2083,10 +2100,7 @@ set_termname(char_u *term)
 	// Use the 'keyprotocol' option to adjust the t_TE and t_TI
 	// termcap entries if there is an entry matching "term".
 	keyprot_T kpc = match_keyprotocol(term);
-	if (kpc == KEYPROTOCOL_KITTY)
-	    apply_builtin_tcap(term, builtin_kitty, TRUE);
-	else if (kpc == KEYPROTOCOL_MOK2)
-	    apply_builtin_tcap(term, builtin_mok2, TRUE);
+	apply_keyprotocol(term, kpc);
 
 #ifdef FEAT_TERMGUICOLORS
 	// There is no good way to detect that the terminal supports RGB
@@ -2098,11 +2112,6 @@ set_termname(char_u *term)
 		&& term_strings_not_set(KS_8U))
 	    apply_builtin_tcap(term, builtin_rgb, TRUE);
 #endif
-
-	if (kpc != KEYPROTOCOL_NONE)
-	    // Some function keys may accept modifiers even though the
-	    // terminfo/termcap entry does not indicate this.
-	    accept_modifiers_for_function_keys();
     }
 
 /*

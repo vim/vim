@@ -1945,8 +1945,12 @@ did_set_keymodel(optset_T *args UNUSED)
     char *
 did_set_keyprotocol(optset_T *args UNUSED)
 {
-    if (match_keyprotocol(NULL) == KEYPROTOCOL_FAIL)
+    char_u *term = T_NAME;
+    keyprot_T kpc = match_keyprotocol(term);
+    if (kpc == KEYPROTOCOL_FAIL)
 	return e_invalid_argument;
+
+    apply_keyprotocol(term, kpc);
 
     return NULL;
 }
