@@ -150,7 +150,7 @@ If you try to set an object variable that doesn't exist you get an error: >
 A object variable cannot be accessed using the class name.
 
 Private variables ~
-							*E1332* *E1333*
+					*private-variable* *E1332* *E1333*
 On the other hand, if you do not want the object variables to be read directly,
 you can make them private.  This is done by prefixing an underscore to the
 name: >
@@ -182,7 +182,7 @@ number to the total number of lines: >
 	enddef
 <
 Private methods ~
-							*E1366*
+						*private-method* *E1366*
 If you want object methods to be accessible only from other methods of the
 same class and not used from outside the class, then you can make them
 private.  This is done by prefixing the method name with an underscore: >
@@ -203,7 +203,7 @@ the above class): >
     a._Foo()
 <
 Simplifying the new() method ~
-
+						*new()* *constructor*
 Many constructors take values for the object variables.  Thus you very often
 see this pattern: >
 
@@ -650,7 +650,7 @@ even when the variable name is invalid. *E1360* *E1362* *E1363*
 
 
 Default constructor ~
-
+							*default-constructor*
 In case you define a class without a new() method, one will be automatically
 defined.  This default constructor will have arguments for all the object
 variables, in the order they were specified.  Thus if your class looks like: >
