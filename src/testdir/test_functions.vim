@@ -3628,6 +3628,7 @@ endfunc
 " Test for glob() with shell special patterns
 func Test_glob_extended_bash()
   CheckExecutable bash
+  CheckNotMSWindows
   let _shell = &shell
   set shell=bash
 
