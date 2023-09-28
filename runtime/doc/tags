@@ -4485,12 +4485,6 @@ E1389	vim9class.txt	/*E1389*
 E139	message.txt	/*E139*
 E1390	vim9class.txt	/*E1390*
 E140	message.txt	/*E140*
-E1400	builtin.txt	/*E1400*
-E1401	builtin.txt	/*E1401*
-E1402	builtin.txt	/*E1402*
-E1403	builtin.txt	/*E1403*
-E1404	builtin.txt	/*E1404*
-E1405	builtin.txt	/*E1405*
 E141	message.txt	/*E141*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
@@ -4502,6 +4496,12 @@ E148	repeat.txt	/*E148*
 E149	helphelp.txt	/*E149*
 E15	eval.txt	/*E15*
 E150	helphelp.txt	/*E150*
+E1500	builtin.txt	/*E1500*
+E1501	builtin.txt	/*E1501*
+E1502	builtin.txt	/*E1502*
+E1503	builtin.txt	/*E1503*
+E1504	builtin.txt	/*E1504*
+E1505	builtin.txt	/*E1505*
 E151	helphelp.txt	/*E151*
 E152	helphelp.txt	/*E152*
 E153	helphelp.txt	/*E153*
@@ -6496,6 +6496,7 @@ conceal	syntax.txt	/*conceal*
 confirm()	builtin.txt	/*confirm()*
 connection-refused	message.txt	/*connection-refused*
 console-menus	gui.txt	/*console-menus*
+constructor	vim9class.txt	/*constructor*
 context.vim	ft_context.txt	/*context.vim*
 control	intro.txt	/*control*
 conversion-server	mbyte.txt	/*conversion-server*
@@ -6669,6 +6670,7 @@ debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*
 decada_members	ft_ada.txt	/*decada_members*
 deepcopy()	builtin.txt	/*deepcopy()*
+default-constructor	vim9class.txt	/*default-constructor*
 defaults.vim	starting.txt	/*defaults.vim*
 defaults.vim-explained	usr_05.txt	/*defaults.vim-explained*
 define-function	userfunc.txt	/*define-function*
@@ -8920,6 +8922,7 @@ netrw.vim	pi_netrw.txt	/*netrw.vim*
 netrw_filehandler	pi_netrw.txt	/*netrw_filehandler*
 netterm-mouse	options.txt	/*netterm-mouse*
 network	pi_netrw.txt	/*network*
+new()	vim9class.txt	/*new()*
 new-5	version5.txt	/*new-5*
 new-6	version6.txt	/*new-6*
 new-7	version7.txt	/*new-7*
@@ -9311,6 +9314,8 @@ printf-s	builtin.txt	/*printf-s*
 printf-x	builtin.txt	/*printf-x*
 printing	print.txt	/*printing*
 printing-formfeed	print.txt	/*printing-formfeed*
+private-method	vim9class.txt	/*private-method*
+private-variable	vim9class.txt	/*private-variable*
 profile	repeat.txt	/*profile*
 profiling	repeat.txt	/*profiling*
 profiling-variable	eval.txt	/*profiling-variable*

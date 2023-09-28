@@ -3532,18 +3532,20 @@ EXTERN char e_missing_name_after_implements[]
 EXTERN char e_cannot_use_an_object_variable_except_with_the_new_method_str[]
 	INIT(= N_("E1390: Cannot use an object variable \"this.%s\" except with the \"new\" method"));
 #endif
+// E1391 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
-	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
+	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
-	INIT(= N_("E1401: format argument %d unused in $-style format: %s"));
+	INIT(= N_("E1501: format argument %d unused in $-style format: %s"));
 EXTERN char e_positional_num_field_spec_reused_str_str[]
-	INIT(= N_("E1402: Positional argument %d used as field width reused as different type: %s/%s"));
+	INIT(= N_("E1502: Positional argument %d used as field width reused as different type: %s/%s"));
 EXTERN char e_positional_nr_out_of_bounds_str[]
-	INIT(= N_("E1403: Positional argument %d out of bounds: %s"));
+	INIT(= N_("E1503: Positional argument %d out of bounds: %s"));
 EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
-	INIT(= N_("E1404: Positional argument %d type used inconsistently: %s/%s"));
+	INIT(= N_("E1504: Positional argument %d type used inconsistently: %s/%s"));
 EXTERN char e_invalid_format_specifier_str[]
-	INIT(= N_("E1405: Invalid format specifier: %s"));
+	INIT(= N_("E1505: Invalid format specifier: %s"));
 EXTERN char e_aptypes_is_null_nr_str[]
-	INIT(= "E1408: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
-// E1391 - E1399 unused
+	INIT(= "E1520: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
+
+// E1506 - E1519 unused
