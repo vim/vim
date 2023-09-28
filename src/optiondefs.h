@@ -518,7 +518,7 @@ static struct vimoption options[] =
 						  |P_ONECOMMA|P_NODUP,
 #ifdef FEAT_LINEBREAK
 			    (char_u *)VAR_WIN, PV_BRIOPT,
-			    did_set_breakindentopt, NULL,
+			    did_set_breakindentopt, expand_set_breakindentopt,
 			    {(char_u *)"", (char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -591,7 +591,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"clipboard",   "cb",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_CLIPBOARD
-			    (char_u *)&p_cb, PV_NONE, did_set_clipboard, NULL,
+			    (char_u *)&p_cb, PV_NONE, did_set_clipboard, expand_set_clipboard,
 # ifdef FEAT_XCLIPBOARD
 			    {(char_u *)"autoselect,exclude:cons\\|linux",
 							       (char_u *)0L}
@@ -640,7 +640,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_cp, PV_NONE, did_set_compatible, NULL,
 			    {(char_u *)TRUE, (char_u *)FALSE} SCTX_INIT},
     {"complete",    "cpt",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_cpt, PV_CPT, did_set_complete, NULL,
+			    (char_u *)&p_cpt, PV_CPT, did_set_complete, expand_set_complete,
 			    {(char_u *)".,w,b,u,t,i", (char_u *)0L}
 			    SCTX_INIT},
     {"concealcursor","cocu", P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF|P_FLAGLIST,
@@ -791,7 +791,7 @@ static struct vimoption options[] =
     {"cursorlineopt", "culopt", P_STRING|P_VI_DEF|P_RWIN|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_SYN_HL
 			    (char_u *)VAR_WIN, PV_CULOPT,
-			    did_set_cursorlineopt, NULL,
+			    did_set_cursorlineopt, expand_set_cursorlineopt,
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
@@ -909,7 +909,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ek, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)TRUE} SCTX_INIT},
     {"eventignore", "ei",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_ei, PV_NONE, did_set_eventignore, NULL,
+			    (char_u *)&p_ei, PV_NONE, did_set_eventignore, expand_set_eventignore,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"expandtab",   "et",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_et, PV_ET, NULL, NULL,
@@ -1488,8 +1488,8 @@ static struct vimoption options[] =
     {"keymodel",    "km",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_km, PV_NONE, did_set_keymodel, expand_set_keymodel,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
-    {"keyprotocol", "kpc",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_kpc, PV_NONE, did_set_keyprotocol, NULL,
+    {"keyprotocol", "kpc",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_COLON,
+			    (char_u *)&p_kpc, PV_NONE, did_set_keyprotocol, expand_set_keyprotocol,
 			    {(char_u *)"kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2", (char_u *)0L}
 			    SCTX_INIT},
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
@@ -1574,7 +1574,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_lisp, PV_LISP, did_set_lisp, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"lispoptions", "lop",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_lop, PV_LOP, did_set_lispoptions, NULL,
+			    (char_u *)&p_lop, PV_LOP, did_set_lispoptions, expand_set_lispoptions,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"lispwords",   "lw",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_lispwords, PV_LW, NULL, NULL,
@@ -1973,7 +1973,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"printoptions", "popt", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_PRINTER
-			    (char_u *)&p_popt, PV_NONE, parse_printoptions, NULL,
+			    (char_u *)&p_popt, PV_NONE, parse_printoptions, expand_set_printoptions,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -2104,7 +2104,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"rightleftcmd", "rlc", P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
 #ifdef FEAT_RIGHTLEFT
-			    (char_u *)VAR_WIN, PV_RLC, did_set_rightleftcmd, NULL,
+			    (char_u *)VAR_WIN, PV_RLC, did_set_rightleftcmd, expand_set_rightleftcmd,
 			    {(char_u *)"search", (char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -2381,7 +2381,7 @@ static struct vimoption options[] =
     {"spelloptions", "spo",  P_STRING|P_ALLOCED|P_VI_DEF
 						    |P_ONECOMMA|P_NODUP|P_RBUF,
 #ifdef FEAT_SPELL
-			    (char_u *)&p_spo, PV_SPO, did_set_spelloptions, NULL,
+			    (char_u *)&p_spo, PV_SPO, did_set_spelloptions, expand_set_spelloptions,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -2819,8 +2819,8 @@ static struct vimoption options[] =
     {"wildmenu",    "wmnu", P_BOOL|P_VI_DEF,
 			    (char_u *)&p_wmnu, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"wildmode",    "wim",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_wim, PV_NONE, did_set_wildmode, NULL,
+    {"wildmode",    "wim",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_COLON,
+			    (char_u *)&p_wim, PV_NONE, did_set_wildmode, expand_set_wildmode,
 			    {(char_u *)"full", (char_u *)0L} SCTX_INIT},
     {"wildoptions", "wop",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_wop, PV_NONE, did_set_wildoptions, expand_set_wildoptions,

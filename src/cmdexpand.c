@@ -3230,6 +3230,7 @@ ExpandGeneric(
     // applies to the completion context. Menus and scriptnames should be kept
     // in the specified order.
     if (!fuzzy && xp->xp_context != EXPAND_MENUNAMES
+					&& xp->xp_context != EXPAND_STRING_SETTING
 					&& xp->xp_context != EXPAND_MENUS
 					&& xp->xp_context != EXPAND_SCRIPTNAMES)
 	sort_matches = TRUE;

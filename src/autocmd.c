@@ -2737,6 +2737,16 @@ get_event_name(expand_T *xp UNUSED, int idx)
     return (char_u *)event_names[idx - augroups.ga_len].name;
 }
 
+/*
+ * Function given to ExpandGeneric() to obtain the list of event names. Don't
+ * include groups.
+ */
+    char_u *
+get_event_name_no_group(expand_T *xp UNUSED, int idx)
+{
+    return (char_u *)event_names[idx].name;
+}
+
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

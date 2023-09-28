@@ -24,6 +24,10 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 				 "hangul", "insertmode", "lang", "mess",
 				 "showmatch", "operator", "register", "shell",
 				 "spell", "term", "wildmode", NULL};
+#if defined(FEAT_LINEBREAK)
+// Note: Keep this in sync with briopt_check()
+static char *(p_briopt_values[]) = {"shift:", "min:", "sbr", "list:", "column:", NULL};
+#endif
 #if defined(FEAT_DIFF)
 // Note: Keep this in sync with diffopt_changed()
 static char *(p_dip_values[]) = {"filler", "context:", "iblank", "icase", "iwhite", "iwhiteall", "iwhiteeol", "horizontal", "vertical", "closeoff", "hiddenoff", "foldcolumn:", "followwrap", "internal", "indent-heuristic", "algorithm:", NULL};
@@ -31,6 +35,10 @@ static char *(p_dip_algorithm_values[]) = {"myers", "minimal", "patience", "hist
 #endif
 static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
+#ifdef FEAT_CLIPBOARD
+// Note: Keep this in sync with did_set_clipboard()
+static char *(p_cb_values[]) = {"unnamed", "unnamedplus", "autoselect", "autoselectplus", "autoselectml", "html", "exclude:", NULL};
+#endif
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
  # ifdef FEAT_SODIUM
@@ -39,6 +47,10 @@ static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
     NULL};
 #endif
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
+#ifdef FEAT_SYN_HL
+// Note: Keep this in sync with fill_culopt_flags()
+static char *(p_culopt_values[]) = {"line", "screenline", "number", "both", NULL};
+#endif
 static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};
 static char *(p_jop_values[]) = {"stack", NULL};
 #ifdef FEAT_FOLDING
@@ -46,6 +58,8 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 				 "quickfix", "search", "tag", "insert",
 				 "undo", "jump", NULL};
 #endif
+// Note: Keep this in sync with match_keyprotocol()
+static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
 #if defined(FEAT_SPELL)
 // Note: Keep this in sync with spell_check_sps()
 static char *(p_sps_values[]) = {"best", "fast", "double", "expr:", "file:", "timeout:", NULL};
@@ -71,6 +85,8 @@ static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "g
 static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", "sgr", NULL};
 #endif
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", "none", "NONE", NULL};
+// Note: Keep this in sync with check_opt_wim()
+static char *(p_wim_values[]) = {"full", "longest", "list", "lastused", NULL};
 static char *(p_wop_values[]) = {"fuzzy", "tagfile", "pum", NULL};
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
@@ -754,6 +770,56 @@ expand_set_opt_string(
     return OK;
 }
 
+static char_u *set_opt_callback_orig_option = NULL;
+static char_u *((*set_opt_callback_func)(expand_T *, int));
+
+/*
+ * Callback used by expand_set_opt_generic to also include the original value.
+ */
+    static char_u *
+expand_set_opt_callback(expand_T *xp, int idx)
+{
+    if (idx == 0)
+    {
+	if (set_opt_callback_orig_option != NULL)
+	    return set_opt_callback_orig_option;
+	else
+	    return (char_u *)""; // empty strings are ignored
+    }
+    return set_opt_callback_func(xp, idx - 1);
+}
+
+/*
+ * Expand an option with a callback that iterates through a list of possible names.
+ */
+    int
+expand_set_opt_generic(
+	optexpand_T *args,
+	char_u *((*func)(expand_T *, int)),
+	int *numMatches,
+	char_u ***matches)
+{
+    int ret;
+
+    set_opt_callback_orig_option = args->oe_include_orig_val ?
+	args->oe_opt_value : NULL;
+    set_opt_callback_func = func;
+
+    ret = ExpandGeneric(
+	    (char_u*)"", // not using fuzzy as currently EXPAND_STRING_SETTING doesn't use it
+	    args->oe_xp,
+	    args->oe_regmatch,
+	    matches,
+	    numMatches,
+	    expand_set_opt_callback,
+	    FALSE);
+
+    set_opt_callback_orig_option = NULL;
+    set_opt_callback_func = NULL;
+    return ret;
+}
+
+
 /*
  * Expand an option which is a list of flags.
  */
@@ -1007,6 +1073,17 @@ did_set_breakindentopt(optset_T *args UNUSED)
 
     return errmsg;
 }
+
+    int
+expand_set_breakindentopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_briopt_values,
+	    sizeof(p_briopt_values) / sizeof(p_briopt_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 #if defined(FEAT_BROWSE) || defined(PROTO)
@@ -1105,6 +1182,19 @@ expand_set_casemap(optexpand_T *args, int *numMatches, char_u ***matches)
 	    numMatches,
 	    matches);
 }
+
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
+    int
+expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_cb_values,
+	    sizeof(p_cb_values) / sizeof(p_cb_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
+#endif
 
 /*
  * The global 'listchars' or 'fillchars' option is changed.
@@ -1300,6 +1390,20 @@ did_set_complete(optset_T *args)
     }
 
     return NULL;
+}
+
+    int
+expand_set_complete(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *(p_cpt_values[]) = {
+	".", "w", "b", "u", "k", "kspell", "s", "i", "d", "]", "t", "U",
+	NULL};
+    return expand_set_opt_string(
+	    args,
+	    p_cpt_values,
+	    sizeof(p_cpt_values) / sizeof(p_cpt_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -1541,10 +1645,22 @@ did_set_cursorlineopt(optset_T *args)
 {
     char_u	**varp = (char_u **)args->os_varp;
 
+    // This could be changed to use opt_strings_flags() instead.
     if (**varp == NUL || fill_culopt_flags(*varp, curwin) != OK)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_cursorlineopt(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_culopt_values,
+	    sizeof(p_culopt_values) / sizeof(p_culopt_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -1753,14 +1869,11 @@ did_set_encoding(optset_T *args)
     int
 expand_set_encoding(optexpand_T *args, int *numMatches, char_u ***matches)
 {
-    return ExpandGeneric(
-	    (char_u*)"", // not using fuzzy as currently EXPAND_STRING_SETTING doesn't use it
-	    args->oe_xp,
-	    args->oe_regmatch,
-	    matches,
-	    numMatches,
+    return expand_set_opt_generic(
+	    args,
 	    get_encoding_name,
-	    FALSE);
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -1772,6 +1885,26 @@ did_set_eventignore(optset_T *args UNUSED)
     if (check_ei() == FAIL)
 	return e_invalid_argument;
     return NULL;
+}
+
+    static char_u *
+get_eventignore_name(expand_T *xp, int idx)
+{
+    // 'eventignore' allows special keyword "all" in addition to
+    // all event names.
+    if (idx == 0)
+	return (char_u *)"all";
+    return get_event_name_no_group(xp, idx - 1);
+}
+
+    int
+expand_set_eventignore(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_generic(
+	    args,
+	    get_eventignore_name,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -2362,6 +2495,27 @@ did_set_keyprotocol(optset_T *args UNUSED)
     return NULL;
 }
 
+    int
+expand_set_keyprotocol(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    expand_T *xp = args->oe_xp;
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	// 'keyprotocol' only has well-defined terms for completion for the
+	// protocol part after the colon.
+	return expand_set_opt_string(
+		args,
+		p_kpc_protocol_values,
+		sizeof(p_kpc_protocol_values) / sizeof(p_kpc_protocol_values[0]) - 1,
+		numMatches,
+		matches);
+    }
+    // Use expand_set_opt_string instead of returning FAIL so that we can
+    // include the original value if args->oe_include_orig_val is set.
+    static char *(empty[]) = {NULL};
+    return expand_set_opt_string(args, empty, 0, numMatches, matches);
+}
+
 /*
  * The 'lispoptions' option is changed.
  */
@@ -2376,6 +2530,18 @@ did_set_lispoptions(optset_T *args)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_lispoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *(p_lop_values[]) = {"expr:0", "expr:1", NULL};
+    return expand_set_opt_string(
+	    args,
+	    p_lop_values,
+	    sizeof(p_lop_values) / sizeof(p_lop_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -2613,6 +2779,30 @@ did_set_printencoding(optset_T *args UNUSED)
 }
 #endif
 
+#if defined(FEAT_PRINTER) || defined(PROTO)
+
+    static char_u *
+get_printoptions_names(expand_T *xp, int idx)
+{
+    if (idx >= sizeof(printer_opts) / sizeof(printer_opts[0]))
+	return NULL;
+    return (char_u*)printer_opts[idx].name;
+}
+
+/*
+ * Expand 'printoptions' option
+ */
+    int
+expand_set_printoptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_generic(
+	    args,
+	    get_printoptions_names,
+	    numMatches,
+	    matches);
+}
+#endif
+
 #if defined(FEAT_STL_OPT) || defined(PROTO)
 /*
  * The 'statusline' or the 'tabline' or the 'rulerformat' option is changed.
@@ -2678,6 +2868,18 @@ did_set_rightleftcmd(optset_T *args)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_rightleftcmd(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *(p_rlc_values[]) = {"search", NULL};
+    return expand_set_opt_string(
+	    args,
+	    p_rlc_values,
+	    sizeof(p_rlc_values) / sizeof(p_rlc_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 #endif
 
@@ -2933,6 +3135,18 @@ did_set_spelloptions(optset_T *args)
 	return e_invalid_argument;
 
     return NULL;
+}
+
+    int
+expand_set_spelloptions(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    static char *(p_spo_values[]) = {"camel", NULL};
+    return expand_set_opt_string(
+	    args,
+	    p_spo_values,
+	    sizeof(p_spo_values) / sizeof(p_spo_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*
@@ -3577,6 +3791,17 @@ did_set_wildmode(optset_T *args UNUSED)
     if (check_opt_wim() == FAIL)
 	return e_invalid_argument;
     return NULL;
+}
+
+    int
+expand_set_wildmode(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_string(
+	    args,
+	    p_wim_values,
+	    sizeof(p_wim_values) / sizeof(p_wim_values[0]) - 1,
+	    numMatches,
+	    matches);
 }
 
 /*

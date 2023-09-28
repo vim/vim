@@ -8359,6 +8359,7 @@ fill_culopt_flags(char_u *val, win_T *wp)
 	p = val;
     while (*p != NUL)
     {
+	// Note: Keep this in sync with p_culopt_values.
 	if (STRNCMP(p, "line", 4) == 0)
 	{
 	    p += 4;
