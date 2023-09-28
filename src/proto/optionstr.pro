@@ -161,6 +161,7 @@ int expand_set_lispoptions(optexpand_T *args, int *numMatches, char_u ***matches
 int expand_set_mouse(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_mousemodel(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_nrformats(optexpand_T *args, int *numMatches, char_u ***matches);
+int expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_printoptions(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_rightleftcmd(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_scrollopt(optexpand_T *args, int *numMatches, char_u ***matches);
@@ -185,6 +186,7 @@ int expand_set_whichwrap(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_wildmode(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_wildoptions(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_winaltkeys(optexpand_T *args, int *numMatches, char_u ***matches);
+int expand_set_wincolor(optexpand_T *args, int *numMatches, char_u ***matches);
 int check_ff_value(char_u *p);
 void save_clear_shm_value(void);
 void restore_shm_value(void);

@@ -673,9 +673,9 @@ static struct vimoption options[] =
 			    (char_u *)&p_cot, PV_NONE, did_set_completeopt, expand_set_completeopt,
 			    {(char_u *)"menu,preview", (char_u *)0L}
 			    SCTX_INIT},
-    {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+    {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP|P_COLON,
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
-			    (char_u *)&p_cpp, PV_NONE, did_set_completepopup, NULL,
+			    (char_u *)&p_cpp, PV_NONE, did_set_completepopup, expand_set_popupoption,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -1883,9 +1883,9 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)12L, (char_u *)0L} SCTX_INIT},
-    {"previewpopup", "pvp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+    {"previewpopup", "pvp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP|P_COLON,
 #ifdef FEAT_PROP_POPUP
-			    (char_u *)&p_pvp, PV_NONE, did_set_previewpopup, NULL,
+			    (char_u *)&p_pvp, PV_NONE, did_set_previewpopup, expand_set_popupoption,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -2836,7 +2836,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"wincolor", "wcr",	    P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
-			    (char_u *)VAR_WIN, PV_WCR, did_set_wincolor, NULL,
+			    (char_u *)VAR_WIN, PV_WCR, did_set_wincolor, expand_set_wincolor,
 			    {(char_u *)"", (char_u *)NULL}
 			    SCTX_INIT},
     {"window",	    "wi",   P_NUM|P_VI_DEF,

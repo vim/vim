@@ -60,6 +60,12 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 #endif
 // Note: Keep this in sync with match_keyprotocol()
 static char *(p_kpc_protocol_values[]) = {"none", "mok2", "kitty", NULL};
+#ifdef FEAT_PROP_POPUP
+// Note: Keep this in sync with parse_popup_option()
+static char *(p_popup_option_values[]) = {"height:", "width:", "highlight:", "border:", "align:", NULL};
+static char *(p_popup_option_border_values[]) = {"on", "off", NULL};
+static char *(p_popup_option_align_values[]) = {"item", "menu", NULL};
+#endif
 #if defined(FEAT_SPELL)
 // Note: Keep this in sync with spell_check_sps()
 static char *(p_sps_values[]) = {"best", "fast", "double", "expr:", "file:", "timeout:", NULL};
@@ -1749,7 +1755,6 @@ expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
     {
 	// Within "algorithm:", we have a subgroup of possible options.
-	int is_algo = FALSE;
 	int algo_len = STRLEN("algorithm:");
 	if (xp->xp_pattern - args->oe_set_arg >= algo_len &&
 		STRNCMP(xp->xp_pattern - algo_len, "algorithm:", algo_len) == 0)
@@ -2898,6 +2903,58 @@ did_set_previewpopup(optset_T *args UNUSED)
 
     return NULL;
 }
+
+    int
+expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    expand_T *xp = args->oe_xp;
+
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	// Within "highlight:"/"border:"/"align:", we have a subgroup of possible options.
+	int border_len = STRLEN("border:");
+	if (xp->xp_pattern - args->oe_set_arg >= border_len &&
+		STRNCMP(xp->xp_pattern - border_len, "border:", border_len) == 0)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    p_popup_option_border_values,
+		    sizeof(p_popup_option_border_values) / sizeof(p_popup_option_border_values[0]) - 1,
+		    numMatches,
+		    matches);
+	}
+	int align_len = STRLEN("align:");
+	if (xp->xp_pattern - args->oe_set_arg >= align_len &&
+		STRNCMP(xp->xp_pattern - align_len, "align:", align_len) == 0)
+	{
+	    return expand_set_opt_string(
+		    args,
+		    p_popup_option_align_values,
+		    sizeof(p_popup_option_align_values) / sizeof(p_popup_option_align_values[0]) - 1,
+		    numMatches,
+		    matches);
+	}
+	int highlight_len = STRLEN("highlight:");
+	if (xp->xp_pattern - args->oe_set_arg >= highlight_len &&
+		STRNCMP(xp->xp_pattern - highlight_len, "highlight:", highlight_len) == 0)
+	{
+	    // Return the list of all highlight names
+	    return expand_set_opt_generic(
+		    args,
+		    get_highlight_name,
+		    numMatches,
+		    matches);
+	}
+	return FAIL;
+    }
+
+    return expand_set_opt_string(
+	    args,
+	    p_popup_option_values,
+	    sizeof(p_popup_option_values) / sizeof(p_popup_option_values[0]) - 1,
+	    numMatches,
+	    matches);
+}
 #endif
 
 #if defined(FEAT_POSTSCRIPT) || defined(PROTO)
@@ -4022,6 +4079,16 @@ did_set_wincolor(optset_T *args UNUSED)
     term_update_wincolor(curwin);
 #endif
     return NULL;
+}
+
+    int
+expand_set_wincolor(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    return expand_set_opt_generic(
+	    args,
+	    get_highlight_name,
+	    numMatches,
+	    matches);
 }
 
 #ifdef FEAT_SYN_HL
