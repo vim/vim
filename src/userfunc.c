@@ -320,12 +320,12 @@ get_function_args(
 		++p;
 	    char_u *argend = p;
 
-	    // object variable can use constructor
+	    // object variable this. can be used only in a constructor
 	    if (STRNCMP(eap->arg, "new", 3) != 0)
 	    {
 		c = *argend;
 		*argend = NUL;
-		semsg(_(e_cannot_use_a_object_variable_except_with_the_new_method_str), arg);
+		semsg(_(e_cannot_use_an_object_variable_except_with_the_new_method_str), arg);
 		*argend = c;
 		break;
 	    }

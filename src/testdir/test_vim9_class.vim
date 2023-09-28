@@ -956,26 +956,15 @@ def Test_class_new_with_object_member()
   v9.CheckSourceFailure(lines, 'E1013:')
 
   lines =<< trim END
-      vim9script
+    vim9script
 
-      class C
-        this.str: string
-        def MethodA(this.str)
-        enddef
-      endclass
-
-      def Check()
-        try
-          var c = C.new()
-          c.MethodA('abc')
-        catch
-          assert_report($'Unexpected exception was caught: {v:exception}')
-        endtry
+    class C
+      this.str: string
+      def MethodA(this.str)
       enddef
-
-      Check()
+    endclass
   END
-  v9.CheckSourceFailure(lines, 'E1390:')
+  v9.CheckSourceFailure(lines, 'E1390: Cannot use an object variable "this.str" except with the "new" method')
 
   lines =<< trim END
       vim9script

@@ -3529,8 +3529,8 @@ EXTERN char e_public_keyword_not_supported_for_method[]
 	INIT(= N_("E1388: Public keyword not supported for a method"));
 EXTERN char e_missing_name_after_implements[]
 	INIT(= N_("E1389: Missing name after implements"));
-EXTERN char e_cannot_use_a_object_variable_except_with_the_new_method_str[]
-	INIT(= N_("E1390: Cannot use a object variable \"this.%s\" except with the \"new\" method"));
+EXTERN char e_cannot_use_an_object_variable_except_with_the_new_method_str[]
+	INIT(= N_("E1390: Cannot use an object variable \"this.%s\" except with the \"new\" method"));
 #endif
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1400: Cannot mix positional and non-positional arguments: %s"));
