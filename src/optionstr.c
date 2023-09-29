@@ -2992,9 +2992,9 @@ did_set_printencoding(optset_T *args UNUSED)
 #if defined(FEAT_PRINTER) || defined(PROTO)
 
     static char_u *
-get_printoptions_names(expand_T *xp, int idx)
+get_printoptions_names(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= sizeof(printer_opts) / sizeof(printer_opts[0]))
+    if (idx >= (int)(sizeof(printer_opts) / sizeof(printer_opts[0])))
 	return NULL;
     return (char_u*)printer_opts[idx].name;
 }

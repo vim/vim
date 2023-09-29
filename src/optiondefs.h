@@ -448,7 +448,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_bdlay, PV_NONE, NULL, NULL,
 			    {(char_u *)600L, (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
@@ -467,7 +467,7 @@ static struct vimoption options[] =
 			    did_set_balloonevalterm, NULL,
 			    {(char_u *)FALSE, (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
@@ -476,7 +476,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_bexpr, PV_BEXPR, did_set_optexpr, NULL,
 			    {(char_u *)"", (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
@@ -1160,7 +1160,7 @@ static struct vimoption options[] =
 # endif
 				    (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
@@ -1175,8 +1175,8 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"guifontset",  "gfs",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA,
 #if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
-			    (char_u *)&p_guifontset, PV_NONE, NULL,
-			    did_set_guifontset,
+			    (char_u *)&p_guifontset, PV_NONE,
+			    did_set_guifontset, NULL,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -1958,7 +1958,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_pmcs, PV_NONE, NULL, NULL,
 			    {(char_u *)"", (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
@@ -2722,7 +2722,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_vts, PV_VTS, did_set_vartabstop, NULL,
 			    {(char_u *)"", (char_u *)0L}
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)"", (char_u *)NULL}
 #endif
 			    SCTX_INIT},
@@ -2763,7 +2763,7 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)"'100,<50,s10,h"}
 #endif
 #else
-			    (char_u *)NULL, PV_NONE, NULL,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},

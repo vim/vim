@@ -4962,7 +4962,7 @@ set_listchars_option(win_T *wp, char_u *val, int apply)
     char_u *
 get_fillchars_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (sizeof(filltab) / sizeof(filltab[0])))
+    if (idx >= (int)(sizeof(filltab) / sizeof(filltab[0])))
 	return NULL;
 
     return (char_u*)filltab[idx].name;
@@ -4975,7 +4975,7 @@ get_fillchars_name(expand_T *xp UNUSED, int idx)
     char_u *
 get_listchars_name(expand_T *xp UNUSED, int idx)
 {
-    if (idx >= (sizeof(lcstab) / sizeof(lcstab[0])))
+    if (idx >= (int)(sizeof(lcstab) / sizeof(lcstab[0])))
 	return NULL;
 
     return (char_u*)lcstab[idx].name;
