@@ -1957,7 +1957,7 @@ fill_partial_and_closure(
  * Execute iptr->isn_arg.string as an Ex command.
  */
     static int
-exec_command(isn_T *iptr)
+exec_command(isn_T *iptr, char_u *cmd_string)
 {
     source_cookie_T cookie;
 
@@ -1965,8 +1965,7 @@ exec_command(isn_T *iptr)
     // Pass getsourceline to get an error for a missing ":end" command.
     CLEAR_FIELD(cookie);
     cookie.sourcing_lnum = iptr->isn_lnum - 1;
-    if (do_cmdline(iptr->isn_arg.string,
-		getsourceline, &cookie,
+    if (do_cmdline(cmd_string, getsourceline, &cookie,
 			     DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED) == FAIL
 		|| did_emsg)
 	return FAIL;
@@ -3182,7 +3181,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // execute Ex command line
 	    case ISN_EXEC:
-		if (exec_command(iptr) == FAIL)
+		if (exec_command(iptr, iptr->isn_arg.string) == FAIL)
 		    goto on_error;
 		break;
 
@@ -4179,16 +4178,24 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_LOCKUNLOCK:
 		{
+		    // TODO: could put lval_root info in struct
 		    typval_T	*lval_root_save = lval_root;
+		    int		lval_root_is_arg_save = lval_root_is_arg;
 		    int		res;
+#ifdef LOG_LOCKVAR
+		    ch_log(NULL, "LKVAR: execute INS_LOCKUNLOCK isn_arg %s",
+							iptr->isn_arg.string);
+#endif
 
 		    // Stack has the local variable, argument the whole :lock
 		    // or :unlock command, like ISN_EXEC.
 		    --ectx->ec_stack.ga_len;
 		    lval_root = STACK_TV_BOT(0);
-		    res = exec_command(iptr);
+		    lval_root_is_arg = iptr->isn_arg.lockunlock.is_arg;
+		    res = exec_command(iptr, iptr->isn_arg.lockunlock.string);
 		    clear_tv(lval_root);
 		    lval_root = lval_root_save;
+		    lval_root_is_arg = lval_root_is_arg_save;
 		    if (res == FAIL)
 			goto on_error;
 		}

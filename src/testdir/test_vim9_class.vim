@@ -3480,7 +3480,7 @@ enddef
 
 " Test for locking a variable referring to an object and reassigning to another
 " object.
-def Test_object_lockvar()
+def Test_lockvar_object()
   var lines =<< trim END
     vim9script
 
@@ -3511,6 +3511,480 @@ def Test_object_lockvar()
     assert_equal(3, current.val)
     G()
     assert_equal(2, current.val)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test trying to lock an object variable from various places
+def Test_lockvar_object_variable()
+  # An object variable lockvar has several cases:
+  # object method, scriptlevel, scriplevel from :def, :def arg
+  # method arg, static method arg.
+  # Also different depths
+
+  # TODO: handle inside_class in vim9class
+  # lockvar of a read-only currently fails even if inside
+
+  #
+  # lockvar of read-only object variable
+  #
+
+  # read-only lockvar from object method
+  var lines =<< trim END
+    vim9script
+
+    class C
+      this.val1: number
+      def Lock()
+        lockvar this.val1
+      enddef
+    endclass
+    var o = C.new(3)
+    o.Lock()
+  END
+  # TODO: wrong error
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val1" in class "C" is not writable')
+
+  # read-only lockvar from scriptlevel
+  lines =<< trim END
+    vim9script
+
+    class C
+      this.val2: number
+    endclass
+    var o = C.new(3)
+    lockvar o.val2
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val2" in class "C" is not writable')
+
+  # read-only lockvar of scriptlevel variable from def
+  lines =<< trim END
+    vim9script
+
+    class C
+      this.val3: number
+    endclass
+    var o = C.new(3)
+    def Lock()
+      lockvar o.val3
+    enddef
+    Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val3" in class "C" is not writable')
+
+  # read-only lockvar of def argument variable
+  lines =<< trim END
+    vim9script
+
+    class C
+      this.val4: number
+    endclass
+    def Lock(o: C)
+      lockvar o.val4
+    enddef
+    Lock(C.new(3))
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val4" in class "C" is not writable')
+
+  # TODO: the following tests use type "any" for argument. Need a run time
+  #       check for access. Probably OK as is for now.
+
+  # read-only lockvar from object method arg
+  lines =<< trim END
+    vim9script
+
+    class C
+      this.val5: number
+      def Lock(o_any: any)
+        lockvar o_any.val5
+      enddef
+    endclass
+    var o = C.new(3)
+    o.Lock(C.new(5))
+  END
+  # TODO: wrong error, tricky since type "any"
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val5" in class "C" is not writable')
+
+  # read-only lockvar from class method arg
+  lines =<< trim END
+    vim9script
+
+    class C
+      this.val6: number
+      static def Lock(o_any: any)
+        lockvar o_any.val6
+      enddef
+    endclass
+    var o = C.new(3)
+    C.Lock(o)
+  END
+  # TODO: wrong error, tricky since type "any"
+  v9.CheckSourceFailure(lines, 'E1335: Variable "val6" in class "C" is not writable')
+
+  #
+  # lockvar of public object variable
+  #
+
+  # lockvar from object method
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val1: number
+      def Lock()
+        lockvar this.val1
+      enddef
+    endclass
+    var o = C.new(3)
+    o.Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "this.val1" in class "C"', 1)
+
+  # lockvar from scriptlevel
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val2: number
+    endclass
+    var o = C.new(3)
+    lockvar o.val2
+  END
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o.val2" in class "C"', 7)
+
+  # lockvar of scriptlevel variable from def
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val3: number
+    endclass
+    var o = C.new(3)
+    def Lock()
+      lockvar o.val3
+    enddef
+    Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o.val3" in class "C"', 1)
+
+  # lockvar of def argument variable
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val4: number
+    endclass
+    def Lock(o: C)
+      lockvar o.val4
+    enddef
+    Lock(C.new(3))
+  END
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o.val4" in class "C"', 1)
+
+  # lockvar from object method arg
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val5: number
+      def Lock(o_any: any)
+        lockvar o_any.val5
+      enddef
+    endclass
+    var o = C.new(3)
+    o.Lock(C.new(5))
+  END
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val5" in class "C"', 1)
+
+  # lockvar from class method arg
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val6: number
+      static def Lock(o_any: any)
+        lockvar o_any.val6
+      enddef
+    endclass
+    var o = C.new(3)
+    C.Lock(o)
+  END
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val6" in class "C"', 1)
+enddef
+
+" Test trying to lock a class variable from various places
+def Test_lockvar_class_variable()
+
+  # lockvar bare static from object method
+  var lines =<< trim END
+    vim9script
+
+    class C
+      public static sval1: number
+      def Lock()
+        lockvar sval1
+      enddef
+    endclass
+    var o = C.new()
+    o.Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1392: Cannot (un)lock class variable "sval1" in class "C"', 1)
+
+  # lockvar C.static from object method
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval2: number
+      def Lock()
+        lockvar C.sval2
+      enddef
+    endclass
+    var o = C.new()
+    o.Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1392: Cannot (un)lock class variable "C.sval2" in class "C"', 1)
+
+  # lockvar bare static from class method
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval3: number
+      static def Lock()
+        lockvar sval3
+      enddef
+    endclass
+    C.Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1392: Cannot (un)lock class variable "sval3" in class "C"', 1)
+
+  # lockvar C.static from class method
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval4: number
+      static def Lock()
+        lockvar C.sval4
+      enddef
+    endclass
+    C.Lock()
+  END
+  v9.CheckSourceFailure(lines, 'E1392: Cannot (un)lock class variable "C.sval4" in class "C"', 1)
+
+  # lockvar C.static from script level
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval5: number
+    endclass
+    lockvar C.sval5
+  END
+  v9.CheckSourceFailure(lines, 'E1392: Cannot (un)lock class variable "C.sval5" in class "C"', 6)
+
+  # lockvar o.static from script level
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval6: number
+    endclass
+    var o = C.new()
+    lockvar o.sval6
+  END
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "sval6" accessible only using class "C"', 7)
+enddef
+
+" Test locking an argument to :def
+def Test_lockvar_argument()
+  # Lockvar a function arg
+  var lines =<< trim END
+    vim9script
+
+    def Lock(val: any)
+        lockvar val
+    enddef
+
+    var d = {a: 1, b: 2}
+    Lock(d)
+
+    d->extend({c: 3})
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: extend() argument')
+
+  # Lockvar a function arg. Verify "sval" is interpreted as argument and not a
+  # class member in "C". This tests lval_root_is_arg.
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval: list<number>
+    endclass
+
+    def Lock2(sval: any)
+      lockvar sval
+    enddef
+
+    var o = C.new()
+    Lock2(o)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Lock a class.
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval: list<number>
+    endclass
+
+    def Lock2(sval: any)
+      lockvar sval
+    enddef
+
+    Lock2(C)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Lock an object.
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval: list<number>
+    endclass
+
+    def Lock2(sval: any)
+      lockvar sval
+    enddef
+
+    Lock2(C.new())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # In this case (unlike previous) "lockvar sval" is a class member.
+  lines =<< trim END
+    vim9script
+
+    class C
+      public static sval: list<number>
+      def Lock2()
+        lockvar sval
+      enddef
+    endclass
+
+
+    var o = C.new()
+    o.Lock2()
+  END
+  v9.CheckSourceFailure(lines, 'E1392: Cannot (un)lock class variable "sval" in class "C"', 1)
+enddef
+
+" Test that this can be locked without error
+def Test_lockvar_this()
+  # lockvar this
+  var lines =<< trim END
+    vim9script
+    class C
+      def TLock()
+        lockvar this
+      enddef
+    endclass
+    var o = C.new()
+    o.TLock()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # lockvar four   (four letter word, but not this)
+  lines =<< trim END
+    vim9script
+    class C
+      def TLock4()
+        var four: number
+        lockvar four
+      enddef
+    endclass
+    var o = C.new()
+    o.TLock4()
+  END
+  v9.CheckSourceFailure(lines, 'E1178: Cannot lock or unlock a local variable')
+
+  # lockvar this5; "this" + one char, 5 letter word, starting with "this"
+  lines =<< trim END
+    vim9script
+    class C
+      def TLock5()
+        var this5: number
+        lockvar this5
+      enddef
+    endclass
+    var o = C.new()
+    o.TLock5()
+  END
+  v9.CheckSourceFailure(lines, 'E1178: Cannot lock or unlock a local variable')
+enddef
+
+" Test some general lockvar cases
+def Test_lockvar_general()
+  # lockvar an object and a class. It does nothing
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    var o = C.new()
+    lockvar o
+    lockvar C
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Lock a list element that's nested in an object variable from a :def
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val: list<list<number>> = [ [1], [2], [3] ]
+    endclass
+    def Lock2(obj: any)
+      lockvar obj.val[1]
+    enddef
+
+    var o = C.new()
+    Lock2(o)
+    o.val[0] = [9]
+    assert_equal([ [9], [2], [3] ], o.val)
+    try
+      o.val[1] = [999]
+      call assert_false(true, 'assign should have failed')
+    catch
+      assert_exception('E741:')
+    endtry
+    o.val[2] = [8]
+    assert_equal([ [9], [2], [8] ], o.val)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Lock a list element that's nested in an object variable from scriptlevel
+  lines =<< trim END
+    vim9script
+
+    class C
+      public this.val: list<list<number>> = [ [1], [2], [3] ]
+    endclass
+
+    var o = C.new()
+    lockvar o.val[1]
+    o.val[0] = [9]
+    assert_equal([ [9], [2], [3] ], o.val)
+    try
+      o.val[1] = [999]
+      call assert_false(true, 'assign should have failed')
+    catch
+      assert_exception('E741:')
+    endtry
+    o.val[2] = [8]
+    assert_equal([ [9], [2], [8] ], o.val)
   END
   v9.CheckSourceSuccess(lines)
 enddef

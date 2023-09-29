@@ -2123,6 +2123,30 @@ do_unlet(char_u *name, int forceit)
     return FAIL;
 }
 
+    static void
+report_lockvar_member(char *msg, lval_T *lp)
+{
+    int did_alloc = FALSE;
+    char_u *vname = (char_u *)"";
+    char_u *class_name = lp->ll_class != NULL
+				    ? lp->ll_class->class_name : (char_u *)"";
+    if (lp->ll_name != NULL)
+    {
+	if (lp->ll_name_end == NULL)
+	    vname = lp->ll_name;
+	else
+	{
+	    vname = vim_strnsave(lp->ll_name, lp->ll_name_end - lp->ll_name);
+	    if (vname == NULL)
+		return;
+	    did_alloc = TRUE;
+	}
+    }
+    semsg(_(msg), vname, class_name);
+    if (did_alloc)
+	vim_free(vname);
+}
+
 /*
  * Lock or unlock variable indicated by "lp".
  * "deep" is the levels to go (-1 for unlimited);
@@ -2140,6 +2164,10 @@ do_lock_var(
     int		ret = OK;
     int		cc;
     dictitem_T	*di;
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: do_lock_var(): name %s, is_root %d", lp->ll_name, lp->ll_is_root);
+#endif
 
     if (lp->ll_tv == NULL)
     {
@@ -2201,10 +2229,13 @@ do_lock_var(
 	}
 	*name_end = cc;
     }
-    else if (deep == 0)
+    else if (deep == 0 && lp->ll_object == NULL && lp->ll_class == NULL)
     {
 	// nothing to do
     }
+    else if (lp->ll_is_root)
+	// (un)lock the item.
+	item_lock(lp->ll_tv, deep, lock, FALSE);
     else if (lp->ll_range)
     {
 	listitem_T    *li = lp->ll_li;
@@ -2220,12 +2251,56 @@ do_lock_var(
     else if (lp->ll_list != NULL)
 	// (un)lock a List item.
 	item_lock(&lp->ll_li->li_tv, deep, lock, FALSE);
+    else if (lp->ll_object != NULL)  // This check must be before ll_class.
+    {
+	// (un)lock an object variable.
+	report_lockvar_member(e_cannot_lock_object_variable_str, lp);
+	ret = FAIL;
+    }
+    else if (lp->ll_class != NULL)
+    {
+	// (un)lock a class variable.
+	report_lockvar_member(e_cannot_lock_class_variable_str, lp);
+	ret = FAIL;
+    }
     else
+    {
 	// (un)lock a Dictionary item.
-	item_lock(&lp->ll_di->di_tv, deep, lock, FALSE);
+	if (lp->ll_di == NULL)
+	{
+	    emsg(_(e_dictionary_required));
+	    ret = FAIL;
+	}
+	else
+	    item_lock(&lp->ll_di->di_tv, deep, lock, FALSE);
+    }
 
     return ret;
 }
+
+#ifdef LOG_LOCKVAR
+    static char *
+vartype_tostring(vartype_T vartype)
+{
+    return
+	        vartype == VAR_BOOL ? "v_number"
+	      : vartype == VAR_SPECIAL ? "v_number"
+	      : vartype == VAR_NUMBER ? "v_number"
+	      : vartype == VAR_FLOAT ? "v_float"
+	      : vartype == VAR_STRING ? "v_string"
+	      : vartype == VAR_BLOB ? "v_blob"
+	      : vartype == VAR_FUNC ? "v_string"
+	      : vartype == VAR_PARTIAL ? "v_partial"
+	      : vartype == VAR_LIST ? "v_list"
+	      : vartype == VAR_DICT ? "v_dict"
+	      : vartype == VAR_JOB ? "v_job"
+	      : vartype == VAR_CHANNEL ? "v_channel"
+	      : vartype == VAR_INSTR ? "v_instr"
+	      : vartype == VAR_CLASS ? "v_class"
+	      : vartype == VAR_OBJECT ? "v_object"
+	      : "";
+}
+#endif
 
 /*
  * Lock or unlock an item.  "deep" is nr of levels to go.
@@ -2242,6 +2317,10 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
     blob_T	*b;
     hashitem_T	*hi;
     int		todo;
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: item_lock(): type %s", vartype_tostring(tv->v_type));
+#endif
 
     if (recurse >= DICT_MAXNEST)
     {
