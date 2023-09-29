@@ -2249,9 +2249,8 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 		return FAIL;
 	}
 	if (cl->class_flags & CLASS_INTERFACE)
-	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type,
-									FALSE);
-	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type, FALSE);
+	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type);
+	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
     }
 
     compile_load_lhs(lhs, var_start, NULL, cctx);
