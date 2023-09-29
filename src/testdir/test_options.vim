@@ -424,7 +424,7 @@ func Test_set_completion_string_values()
   " Test the other simple options to make sure they have basic auto-complete,
   " but don't exhaustively validate their results.
   call assert_equal(getcompletion('set ambw=', 'cmdline')[0], 'single')
-  call assert_equal(getcompletion('set bg=', 'cmdline')[0], 'light')
+  call assert_match('light\|dark', getcompletion('set bg=', 'cmdline')[1])
   call assert_equal(getcompletion('set backspace=', 'cmdline')[0], 'indent')
   call assert_equal(getcompletion('set backupcopy=', 'cmdline')[1], 'yes')
   call assert_equal(getcompletion('set belloff=', 'cmdline')[1], 'backspace')
@@ -612,7 +612,11 @@ func Test_set_completion_string_values()
 
   " Test files with commas in name are being parsed and escaped properly
   set path=has\\\ space,file\\,with\\,comma,normal_file
-  call assert_equal(getcompletion('set path-=', 'cmdline'), ['has\\\ space', 'file\\,with\\,comma', 'normal_file'])
+  if exists('+completeslash')
+    call assert_equal(getcompletion('set path-=', 'cmdline'), ['has\\\ space', 'file\,with\,comma', 'normal_file'])
+  else
+    call assert_equal(getcompletion('set path-=', 'cmdline'), ['has\\\ space', 'file\\,with\\,comma', 'normal_file'])
+  endif
   set path&
 
   " Flag list should present orig value, then individual flags
