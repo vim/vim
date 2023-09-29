@@ -295,11 +295,11 @@ func Test_set_completion()
   call assert_equal('"set tabstop thesaurus thesaurusfunc ttyscroll', @:)
 
   " Expand current value
-  call feedkeys(":set fileencodings=\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set fileencodings=ucs-bom,utf-8,default,latin1', @:)
+  call feedkeys(":set suffixes=\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set suffixes=.bak,~,.o,.h,.info,.swp,.obj', @:)
 
-  call feedkeys(":set fileencodings:\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set fileencodings:ucs-bom,utf-8,default,latin1', @:)
+  call feedkeys(":set suffixes:\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"set suffixes:.bak,~,.o,.h,.info,.swp,.obj', @:)
 
   " Expand key codes.
   call feedkeys(":set <H\<C-A>\<C-B>\"\<CR>", 'tx')
@@ -360,13 +360,17 @@ func Test_set_completion()
   call assert_equal("\"set invtabstop=", @:)
 
   " Expand options for 'spellsuggest'
-  call feedkeys(":set spellsuggest=best,file:xyz\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"set spellsuggest=best,file:xyz", @:)
+  call feedkeys(":set spellsuggest=file:test_options.v\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set spellsuggest=file:test_options.vim", @:)
+  call feedkeys(":set spellsuggest=best,file:test_options.v\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set spellsuggest=best,file:test_options.vim", @:)
 
   " Expand value for 'key'
   set key=abcd
   call feedkeys(":set key=\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set key=*****', @:)
+  call feedkeys(":set key-=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set key-=*****', @:)
   set key=
 
   " Expand values for 'filetype'
@@ -380,6 +384,249 @@ func Test_set_completion()
   call assert_equal('"set syntax=sshdconfig', @:)
   call feedkeys(":set syntax=a\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set syntax=' .. getcompletion('a*', 'syntax')->join(), @:)
+endfunc
+
+" Test handling of expanding individual string option values
+func Test_set_completion_string_values()
+  "
+  " Test basic enum string options that have well-defined enum names
+  "
+
+  call assert_equal(getcompletion('set display=', 'cmdline'), ['lastline', 'truncate', 'uhex'])
+  call assert_equal(getcompletion('set display=t', 'cmdline'), ['truncate'])
+  call assert_equal(getcompletion('set display=*ex*', 'cmdline'), ['uhex'])
+
+  " Test that if a value is set, it will populate the results, but only if
+  " typed value is empty.
+  set display=uhex,lastline
+  call assert_equal(getcompletion('set display=', 'cmdline'), ['uhex,lastline', 'lastline', 'truncate', 'uhex'])
+  call assert_equal(getcompletion('set display=u', 'cmdline'), ['uhex'])
+  " If the set value is part of the enum list, it will show as the first
+  " result with no duplicate.
+  set display=uhex
+  call assert_equal(getcompletion('set display=', 'cmdline'), ['uhex', 'lastline', 'truncate'])
+  " If empty value, will just show the normal list without an empty item
+  set display=
+  call assert_equal(getcompletion('set display=', 'cmdline'), ['lastline', 'truncate', 'uhex'])
+  " Test escaping of the values
+  call assert_equal(getcompletion('set fillchars=', 'cmdline')[0], 'vert:\|,fold:-,eob:~,lastline:@')
+
+  " Test comma-separated lists will expand after a comma.
+  call assert_equal(getcompletion('set display=truncate,*ex*', 'cmdline'), ['uhex'])
+  " Also test the positioning of the expansion is correct
+  call feedkeys(":set display=truncate,l\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set display=truncate,lastline', @:)
+  set display&
+
+  " Test single-value options will not expand after a comma
+  call assert_equal(getcompletion('set ambw=single,', 'cmdline'), [])
+
+  " Test the other simple options to make sure they have basic auto-complete,
+  " but don't exhaustively validate their results.
+  call assert_equal(getcompletion('set ambw=', 'cmdline')[0], 'single')
+  call assert_equal(getcompletion('set bg=', 'cmdline')[0], 'light')
+  call assert_equal(getcompletion('set backspace=', 'cmdline')[0], 'indent')
+  call assert_equal(getcompletion('set backupcopy=', 'cmdline')[1], 'yes')
+  call assert_equal(getcompletion('set belloff=', 'cmdline')[1], 'backspace')
+  call assert_equal(getcompletion('set briopt=', 'cmdline')[1], 'min:')
+  if exists('+browsedir')
+    call assert_equal(getcompletion('set browsedir=', 'cmdline')[1], 'current')
+  endif
+  call assert_equal(getcompletion('set bufhidden=', 'cmdline')[1], 'unload')
+  call assert_equal(getcompletion('set buftype=', 'cmdline')[1], 'nowrite')
+  call assert_equal(getcompletion('set casemap=', 'cmdline')[1], 'internal')
+  if exists('+clipboard')
+    call assert_match('unnamed', getcompletion('set clipboard=', 'cmdline')[1])
+  endif
+  call assert_equal(getcompletion('set complete=', 'cmdline')[1], '.')
+  call assert_equal(getcompletion('set completeopt=', 'cmdline')[1], 'menu')
+  if exists('+completeslash')
+    call assert_equal(getcompletion('set completeslash=', 'cmdline')[1], 'backslash')
+  endif
+  if exists('+cryptmethod')
+    call assert_equal(getcompletion('set cryptmethod=', 'cmdline')[1], 'zip')
+  endif
+  if exists('+cursorlineopt')
+    call assert_equal(getcompletion('set cursorlineopt=', 'cmdline')[1], 'line')
+  endif
+  call assert_equal(getcompletion('set debug=', 'cmdline')[1], 'throw')
+  call assert_equal(getcompletion('set eadirection=', 'cmdline')[1], 'ver')
+  call assert_equal(getcompletion('set fileformat=', 'cmdline')[2], 'mac')
+  if exists('+foldclose')
+    call assert_equal(getcompletion('set foldclose=', 'cmdline')[0], 'all')
+  endif
+  if exists('+foldmethod')
+    call assert_equal(getcompletion('set foldmethod=', 'cmdline')[1], 'expr')
+  endif
+  if exists('+foldopen')
+    call assert_equal(getcompletion('set foldopen=', 'cmdline')[1], 'all')
+  endif
+  call assert_equal(getcompletion('set jumpoptions=', 'cmdline')[0], 'stack')
+  call assert_equal(getcompletion('set keymodel=', 'cmdline')[1], 'stopsel')
+  call assert_equal(getcompletion('set lispoptions=', 'cmdline')[1], 'expr:1')
+  call assert_match('popup', getcompletion('set mousemodel=', 'cmdline')[2])
+  call assert_equal(getcompletion('set nrformats=', 'cmdline')[1], 'bin')
+  if exists('+rightleftcmd')
+    call assert_equal(getcompletion('set rightleftcmd=', 'cmdline')[0], 'search')
+  endif
+  call assert_equal(getcompletion('set scrollopt=', 'cmdline')[1], 'ver')
+  call assert_equal(getcompletion('set selection=', 'cmdline')[1], 'exclusive')
+  call assert_equal(getcompletion('set selectmode=', 'cmdline')[1], 'key')
+  if exists('+ssop')
+    call assert_equal(getcompletion('set ssop=', 'cmdline')[1], 'buffers')
+  endif
+  call assert_equal(getcompletion('set showcmdloc=', 'cmdline')[1], 'statusline')
+  if exists('+signcolumn')
+    call assert_equal(getcompletion('set signcolumn=', 'cmdline')[1], 'yes')
+  endif
+  if exists('+spelloptions')
+    call assert_equal(getcompletion('set spelloptions=', 'cmdline')[0], 'camel')
+  endif
+  if exists('+spellsuggest')
+    call assert_equal(getcompletion('set spellsuggest+=', 'cmdline')[0], 'best')
+  endif
+  call assert_equal(getcompletion('set splitkeep=', 'cmdline')[1], 'screen')
+  call assert_equal(getcompletion('set swapsync=', 'cmdline')[1], 'sync')
+  call assert_equal(getcompletion('set switchbuf=', 'cmdline')[1], 'usetab')
+  call assert_equal(getcompletion('set tagcase=', 'cmdline')[1], 'ignore')
+  if exists('+termwintype')
+    call assert_equal(getcompletion('set termwintype=', 'cmdline')[1], 'conpty')
+  endif
+  if exists('+toolbar')
+    call assert_equal(getcompletion('set toolbar=', 'cmdline')[1], 'text')
+  endif
+  if exists('+tbis')
+    call assert_equal(getcompletion('set tbis=', 'cmdline')[2], 'medium')
+  endif
+  if exists('+ttymouse')
+    set ttymouse=
+    call assert_equal(getcompletion('set ttymouse=', 'cmdline')[1], 'xterm2')
+    set ttymouse&
+  endif
+  call assert_equal(getcompletion('set virtualedit=', 'cmdline')[1], 'insert')
+  call assert_equal(getcompletion('set wildmode=', 'cmdline')[1], 'longest')
+  call assert_equal(getcompletion('set wildoptions=', 'cmdline')[1], 'tagfile')
+  if exists('+winaltkeys')
+    call assert_equal(getcompletion('set winaltkeys=', 'cmdline')[1], 'yes')
+  endif
+
+  " Other string options that queries the system rather than fixed enum names
+  call assert_equal(getcompletion('set eventignore=', 'cmdline')[0], 'all')
+  call assert_equal(getcompletion('set eventignore=', 'cmdline')[1], 'BufAdd')
+  call assert_equal(getcompletion('set fileencodings=', 'cmdline')[1], 'latin1')
+  call assert_equal(getcompletion('set printoptions=', 'cmdline')[0], 'top')
+  call assert_equal(getcompletion('set wincolor=', 'cmdline')[0], 'SpecialKey')
+
+  call assert_equal(getcompletion('set listchars+=', 'cmdline')[0], 'eol')
+  call assert_equal(getcompletion('setl listchars+=', 'cmdline')[0], 'eol')
+  call assert_equal(getcompletion('set fillchars+=', 'cmdline')[0], 'stl')
+  call assert_equal(getcompletion('setl fillchars+=', 'cmdline')[0], 'stl')
+
+  "
+  " Unique string options below
+  "
+
+  " keyprotocol: only auto-complete when after ':' with known protocol types
+  call assert_equal(getcompletion('set keyprotocol=', 'cmdline'), ['kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2'])
+  call feedkeys(":set keyprotocol+=someterm:m\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set keyprotocol+=someterm:mok2', @:)
+  set keyprotocol&
+
+  " previewpopup / completepopup
+  call assert_equal(getcompletion('set previewpopup=', 'cmdline')[0], 'height:')
+  call assert_equal(getcompletion('set previewpopup=highlight:End*Buffer', 'cmdline')[0], 'EndOfBuffer')
+  call feedkeys(":set previewpopup+=border:\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set previewpopup+=border:on', @:)
+  call feedkeys(":set completepopup=height:10,align:\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set completepopup=height:10,align:item', @:)
+  set previewpopup& completepopup&
+
+  " diffopt: special handling of algorithm:<alg_list>
+  call assert_equal(getcompletion('set diffopt+=', 'cmdline')[0], 'filler')
+  call assert_equal(getcompletion('set diffopt+=iblank,algorithm:pat*', 'cmdline')[0], 'patience')
+
+  " highlight: special parsing, including auto-completing highlight groups
+  " after ':'
+  call assert_equal(getcompletion('set hl+=', 'cmdline')[0], '8')
+  call assert_equal(getcompletion('set hl+=8', 'cmdline')[0], '8:')
+  call assert_equal(getcompletion('set hl+=8', 'cmdline')[1], '8b')
+  call assert_equal(getcompletion('set hl+=8', 'cmdline')[2], '8i')
+  call assert_equal(getcompletion('set hl+=8b', 'cmdline')[0], '8bi')
+  call assert_equal(getcompletion('set hl+=8:No*ext', 'cmdline')[0], 'NonText')
+
+  "
+  " Test flag lists
+  "
+
+  " Test set=. Show the original value if empty, otherwise, the list should
+  " avoid showing what's already typed.
+  set mouse=nvi
+  call assert_equal(getcompletion('set mouse=', 'cmdline'), ['nvi','a','n','v','i','c','h','r'])
+  call assert_equal(getcompletion('set mouse=hn', 'cmdline'), ['a','v','i','c','r'])
+
+  " Test set+=. Never show original value, and it also tries to avoid listing
+  " flags that's already in the option value.
+  call assert_equal(getcompletion('set mouse+=', 'cmdline'), ['a','c','h','r'])
+  call assert_equal(getcompletion('set mouse+=hn', 'cmdline'), ['a','c','r'])
+
+  " Test that the position of the expansion is correct (even if there are
+  " additional values after the current cursor)
+  call feedkeys(":set mouse=hn\<Left>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set mouse=han', @:)
+  set mouse&
+
+  " Test that other flag list options have auto-complete, but don't
+  " exhaustively validate their results.
+  if exists('+concealcursor')
+    call assert_equal(getcompletion('set cocu=', 'cmdline')[0], 'n')
+  endif
+  call assert_equal(getcompletion('set cpo=', 'cmdline')[1], 'a')
+  call assert_equal(getcompletion('set fo=', 'cmdline')[1], 't')
+  if exists('+guioptions')
+    call assert_equal(getcompletion('set go=', 'cmdline')[1], '!')
+  endif
+  call assert_equal(getcompletion('set shortmess=', 'cmdline')[1], 'r')
+  call assert_equal(getcompletion('set whichwrap=', 'cmdline')[1], 'b')
+
+  "
+  "Test set-=
+  "
+
+  " Normal single-value option just shows the existing value
+  set ambiwidth=double
+  call assert_equal(getcompletion('set ambw-=', 'cmdline'), ['double'])
+  set ambiwidth&
+
+  " Comma-separated lists should present each option
+  set diffopt=context:123,iblank,iwhiteall
+  call assert_equal(getcompletion('set diffopt-=', 'cmdline'), ['context:123', 'iblank', 'iwhiteall'])
+  call assert_equal(getcompletion('set diffopt-=*n*', 'cmdline'), ['context:123', 'iblank'])
+  call assert_equal(getcompletion('set diffopt-=i', 'cmdline'), ['iblank', 'iwhiteall'])
+
+  " Don't present more than one option as it doesn't make sense in set-=
+  call assert_equal(getcompletion('set diffopt-=iblank,', 'cmdline'), [])
+  set diffopt&
+
+  " Test escaping output
+  call assert_equal(getcompletion('set fillchars-=', 'cmdline')[0], 'vert:\|')
+
+  " Test files with commas in name are being parsed and escaped properly
+  set path=has\\\ space,file\\,with\\,comma,normal_file
+  call assert_equal(getcompletion('set path-=', 'cmdline'), ['has\\\ space', 'file\\,with\\,comma', 'normal_file'])
+  set path&
+
+  " Flag list should present orig value, then individual flags
+  set mouse=anv
+  call assert_equal(getcompletion('set mouse-=', 'cmdline'), ['anv','a','n','v'])
+
+  " Don't auto-complete when we have at least one flags already
+  call assert_equal(getcompletion('set mouse-=n', 'cmdline'), [])
+  set mouse&
+
+  " 'whichwrap' is an odd case where it's both flag list and comma-separated
+  set ww=b,h
+  call assert_equal(getcompletion('set ww-=', 'cmdline'), ['b','h'])
+  set ww&
 endfunc
 
 func Test_set_option_errors()
@@ -1447,7 +1694,7 @@ func Test_opt_cdhome()
   set cdhome&
 endfunc
 
-func Test_set_completion_2()
+func Test_set_completion_fuzzy()
   CheckOption termguicolors
 
   " Test default option completion
