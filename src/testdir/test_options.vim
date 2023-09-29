@@ -505,14 +505,14 @@ func Test_set_completion_string_values()
   endif
   call assert_equal(getcompletion('set virtualedit=', 'cmdline')[1], 'insert')
   call assert_equal(getcompletion('set wildmode=', 'cmdline')[1], 'longest')
+  call assert_equal(getcompletion('set wildmode=list,longest:', 'cmdline')[0], 'full')
   call assert_equal(getcompletion('set wildoptions=', 'cmdline')[1], 'tagfile')
   if exists('+winaltkeys')
     call assert_equal(getcompletion('set winaltkeys=', 'cmdline')[1], 'yes')
   endif
 
   " Other string options that queries the system rather than fixed enum names
-  call assert_equal(getcompletion('set eventignore=', 'cmdline')[0], 'all')
-  call assert_equal(getcompletion('set eventignore=', 'cmdline')[1], 'BufAdd')
+  call assert_equal(getcompletion('set eventignore=', 'cmdline')[0:1], ['all', 'BufAdd'])
   call assert_equal(getcompletion('set fileencodings=', 'cmdline')[1], 'latin1')
   call assert_equal(getcompletion('set printoptions=', 'cmdline')[0], 'top')
   call assert_equal(getcompletion('set wincolor=', 'cmdline')[0], 'SpecialKey')
@@ -527,7 +527,7 @@ func Test_set_completion_string_values()
   "
 
   " keyprotocol: only auto-complete when after ':' with known protocol types
-  call assert_equal(getcompletion('set keyprotocol=', 'cmdline'), ['kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2'])
+  call assert_equal(getcompletion('set keyprotocol=', 'cmdline'), [&keyprotocol])
   call feedkeys(":set keyprotocol+=someterm:m\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set keyprotocol+=someterm:mok2', @:)
   set keyprotocol&
@@ -539,27 +539,39 @@ func Test_set_completion_string_values()
   call assert_equal('"set previewpopup+=border:on', @:)
   call feedkeys(":set completepopup=height:10,align:\<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set completepopup=height:10,align:item', @:)
+  call assert_equal(getcompletion('set completepopup=bogusname:', 'cmdline'), [])
   set previewpopup& completepopup&
 
   " diffopt: special handling of algorithm:<alg_list>
   call assert_equal(getcompletion('set diffopt+=', 'cmdline')[0], 'filler')
+  call assert_equal(getcompletion('set diffopt+=iblank,foldcolumn:', 'cmdline'), [])
   call assert_equal(getcompletion('set diffopt+=iblank,algorithm:pat*', 'cmdline')[0], 'patience')
 
   " highlight: special parsing, including auto-completing highlight groups
   " after ':'
+  call assert_equal(getcompletion('set hl=', 'cmdline')[0:1], [&hl, '8'])
   call assert_equal(getcompletion('set hl+=', 'cmdline')[0], '8')
-  call assert_equal(getcompletion('set hl+=8', 'cmdline')[0], '8:')
-  call assert_equal(getcompletion('set hl+=8', 'cmdline')[1], '8b')
-  call assert_equal(getcompletion('set hl+=8', 'cmdline')[2], '8i')
+  call assert_equal(getcompletion('set hl+=8', 'cmdline')[0:2], ['8:', '8b', '8i'])
   call assert_equal(getcompletion('set hl+=8b', 'cmdline')[0], '8bi')
   call assert_equal(getcompletion('set hl+=8:No*ext', 'cmdline')[0], 'NonText')
+  " If all the display modes are used up we should be suggesting nothing. Make
+  " a hl typed option with all the modes which will look like '8bi-nrsuc2d=t',
+  " and make sure nothing is suggested from that.
+  let hl_display_modes = join(
+        \ filter(map(getcompletion('set hl+=8', 'cmdline'),
+        \            {idx, val -> val[1]}),
+        \        {idx, val -> val != ':'}),
+        \ '')
+  call assert_equal(getcompletion('set hl+=8'..hl_display_modes, 'cmdline'), [])
 
   "
   " Test flag lists
   "
 
-  " Test set=. Show the original value if empty, otherwise, the list should
-  " avoid showing what's already typed.
+  " Test set=. Show the original value if nothing is typed after '='.
+  " Otherwise, the list should avoid showing what's already typed.
+  set mouse=v
+  call assert_equal(getcompletion('set mouse=', 'cmdline'), ['v','a','n','i','c','h','r'])
   set mouse=nvi
   call assert_equal(getcompletion('set mouse=', 'cmdline'), ['nvi','a','n','v','i','c','h','r'])
   call assert_equal(getcompletion('set mouse=hn', 'cmdline'), ['a','v','i','c','r'])
@@ -568,6 +580,7 @@ func Test_set_completion_string_values()
   " flags that's already in the option value.
   call assert_equal(getcompletion('set mouse+=', 'cmdline'), ['a','c','h','r'])
   call assert_equal(getcompletion('set mouse+=hn', 'cmdline'), ['a','c','r'])
+  call assert_equal(getcompletion('set mouse+=acrhn', 'cmdline'), [])
 
   " Test that the position of the expansion is correct (even if there are
   " additional values after the current cursor)
@@ -597,14 +610,22 @@ func Test_set_completion_string_values()
   call assert_equal(getcompletion('set ambw-=', 'cmdline'), ['double'])
   set ambiwidth&
 
+  " Works on numbers and term options as well
+  call assert_equal(getcompletion('set laststatus-=', 'cmdline'), [string(&laststatus)])
+  set t_Ce=testCe
+  call assert_equal(getcompletion('set t_Ce-=', 'cmdline'), ['testCe'])
+  set t_Ce&
+
   " Comma-separated lists should present each option
-  set diffopt=context:123,iblank,iwhiteall
+  set diffopt=context:123,,,,,iblank,iwhiteall
   call assert_equal(getcompletion('set diffopt-=', 'cmdline'), ['context:123', 'iblank', 'iwhiteall'])
   call assert_equal(getcompletion('set diffopt-=*n*', 'cmdline'), ['context:123', 'iblank'])
   call assert_equal(getcompletion('set diffopt-=i', 'cmdline'), ['iblank', 'iwhiteall'])
-
   " Don't present more than one option as it doesn't make sense in set-=
   call assert_equal(getcompletion('set diffopt-=iblank,', 'cmdline'), [])
+  " Test empty option
+  set diffopt=
+  call assert_equal(getcompletion('set diffopt-=', 'cmdline'), [])
   set diffopt&
 
   " Test escaping output
@@ -620,11 +641,15 @@ func Test_set_completion_string_values()
   set path&
 
   " Flag list should present orig value, then individual flags
-  set mouse=anv
-  call assert_equal(getcompletion('set mouse-=', 'cmdline'), ['anv','a','n','v'])
-
+  set mouse=v
+  call assert_equal(getcompletion('set mouse-=', 'cmdline'), ['v'])
+  set mouse=avn
+  call assert_equal(getcompletion('set mouse-=', 'cmdline'), ['avn','a','v','n'])
   " Don't auto-complete when we have at least one flags already
   call assert_equal(getcompletion('set mouse-=n', 'cmdline'), [])
+  " Test empty option
+  set mouse=
+  call assert_equal(getcompletion('set mouse-=', 'cmdline'), [])
   set mouse&
 
   " 'whichwrap' is an odd case where it's both flag list and comma-separated

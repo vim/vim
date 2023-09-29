@@ -7898,17 +7898,13 @@ ExpandSettingSubtract(
 	// term option
 	return ExpandOldSetting(numMatches, matches);
 
-    char_u *cmdline_val = xp->xp_line + expand_option_start_col;
-
     char_u *option_val = *(char_u**)get_option_varp_scope(
 	expand_option_idx, expand_option_flags);
 
     long_u option_flags =  options[expand_option_idx].flags;
 
     if (option_flags & P_NUM)
-    {
 	return ExpandOldSetting(numMatches, matches);
-    }
     else if (option_flags & P_COMMA)
     {
 	// Split the option by comma, then present each option to the user if
@@ -8002,9 +7998,15 @@ ExpandSettingSubtract(
 	    return FAIL;
 
 	int count = 0;
+	char_u *p;
 
-	(*matches)[count] = vim_strsave(option_val);
-	count++;
+	p = vim_strsave(option_val);
+	if (p == NULL)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
+	(*matches)[count++] = p;
 
 	if (num_flags > 1)
 	{
@@ -8012,12 +8014,10 @@ ExpandSettingSubtract(
 	    // character as individual choice.
 	    for (char_u *flag = option_val; *flag != NUL; flag++)
 	    {
-		if (vim_strchr(cmdline_val, *flag) == NULL)
-		{
-		    char_u flag_str[] = { *flag, NUL };
-		    (*matches)[count] = vim_strsave(flag_str);
-		    count++;
-		}
+		char_u *p = vim_strnsave(flag, 1);
+		if (p == NULL)
+		    break;
+		(*matches)[count++] = p;
 	    }
 	}
 
