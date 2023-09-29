@@ -413,9 +413,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
 	    *arg = name_end;
 	    if (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED))
-		return generate_GET_ITF_MEMBER(cctx, cl, m_idx, m->ocm_type,
-									FALSE);
-	    return generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type, FALSE);
+		return generate_GET_ITF_MEMBER(cctx, cl, m_idx, m->ocm_type);
+	    return generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type);
 	}
 
 	// Could be a function reference: "obj.Func".
