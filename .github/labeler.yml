@@ -55,6 +55,6 @@ runtime:
 
 termdebug: runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
 
-netrw:
+plugin-netrw:
 - any: ['runtime/plugin/netrwPlugin.vim']
 - any: ['runtime/autoload/netrw*']
