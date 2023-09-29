@@ -3208,6 +3208,7 @@ $quote	eval.txt	/*$quote*
 :set-inv	options.txt	/*:set-inv*
 :set-termcap	options.txt	/*:set-termcap*
 :set-verbose	options.txt	/*:set-verbose*
+:set=	options.txt	/*:set=*
 :set^=	options.txt	/*:set^=*
 :set_env	options.txt	/*:set_env*
 :setf	options.txt	/*:setf*
@@ -5923,6 +5924,7 @@ added-7.3	version7.txt	/*added-7.3*
 added-7.4	version7.txt	/*added-7.4*
 added-8.1	version8.txt	/*added-8.1*
 added-8.2	version8.txt	/*added-8.2*
+added-9.1	version9.txt	/*added-9.1*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -6303,6 +6305,7 @@ changed-7.3	version7.txt	/*changed-7.3*
 changed-7.4	version7.txt	/*changed-7.4*
 changed-8.1	version8.txt	/*changed-8.1*
 changed-8.2	version8.txt	/*changed-8.2*
+changed-9.1	version9.txt	/*changed-9.1*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	builtin.txt	/*changenr()*
@@ -6475,6 +6478,7 @@ complete-items	insert.txt	/*complete-items*
 complete-popup	insert.txt	/*complete-popup*
 complete-popuphidden	insert.txt	/*complete-popuphidden*
 complete-script-local-functions	cmdline.txt	/*complete-script-local-functions*
+complete-set-option	cmdline.txt	/*complete-set-option*
 complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	builtin.txt	/*complete_add()*
@@ -8974,6 +8978,7 @@ new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*
 new-other-8.2	version8.txt	/*new-other-8.2*
+new-other-9.1	version9.txt	/*new-other-9.1*
 new-perl-python	version5.txt	/*new-perl-python*
 new-persistent-undo	version7.txt	/*new-persistent-undo*
 new-plugins	version6.txt	/*new-plugins*
@@ -9134,6 +9139,7 @@ patches-8	version8.txt	/*patches-8*
 patches-8.1	version8.txt	/*patches-8.1*
 patches-8.2	version8.txt	/*patches-8.2*
 patches-9	version9.txt	/*patches-9*
+patches-9.1	version9.txt	/*patches-9.1*
 patches-after-8.2	version9.txt	/*patches-after-8.2*
 pathshorten()	builtin.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
@@ -10911,6 +10917,7 @@ version-8.0	version8.txt	/*version-8.0*
 version-8.1	version8.txt	/*version-8.1*
 version-8.2	version8.txt	/*version-8.2*
 version-9.0	version9.txt	/*version-9.0*
+version-9.1	version9.txt	/*version-9.1*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -10926,6 +10933,7 @@ version8.1	version8.txt	/*version8.1*
 version8.2	version8.txt	/*version8.2*
 version8.txt	version8.txt	/*version8.txt*
 version9.0	version9.txt	/*version9.0*
+version9.1	version9.txt	/*version9.1*
 version9.txt	version9.txt	/*version9.txt*
 versionlong-variable	eval.txt	/*versionlong-variable*
 vi	intro.txt	/*vi*
@@ -10944,6 +10952,7 @@ vim-8.1	version8.txt	/*vim-8.1*
 vim-8.2	version8.txt	/*vim-8.2*
 vim-9	version9.txt	/*vim-9*
 vim-9.0	version9.txt	/*vim-9.0*
+vim-9.1	version9.txt	/*vim-9.1*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
