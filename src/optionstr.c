@@ -788,6 +788,11 @@ expand_set_opt_string(
 	    (*matches)[count++] = p;
 	}
     }
+    if (count == 0)
+    {
+	VIM_CLEAR(*matches);
+	return FAIL;
+    }
     *numMatches = count;
     return OK;
 }
@@ -908,6 +913,11 @@ expand_set_opt_listflag(
 	}
     }
 
+    if (count == 0)
+    {
+	VIM_CLEAR(*matches);
+	return FAIL;
+    }
     *numMatches = count;
     return OK;
 }
@@ -2416,6 +2426,11 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
 	    (*matches)[count++] = p;
 	}
 
+	if (count == 0)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
 	*numMatches = count;
 	return OK;
     }
@@ -2461,6 +2476,11 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
 	p[pattern_len] = p_hl_mode_values[i];
 	p[pattern_len + 1] = NUL;
 	(*matches)[count++] = p;
+    }
+    if (count == 0)
+    {
+	VIM_CLEAR(*matches);
+	return FAIL;
     }
     *numMatches = count;
 

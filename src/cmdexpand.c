@@ -3094,9 +3094,9 @@ ExpandFromContext(
 	    || xp->xp_context == EXPAND_BOOL_SETTINGS)
 	ret = ExpandSettings(xp, &regmatch, pat, numMatches, matches, fuzzy);
     else if (xp->xp_context == EXPAND_STRING_SETTING)
-	return ExpandStringSetting(xp, &regmatch, numMatches, matches);
+	ret = ExpandStringSetting(xp, &regmatch, numMatches, matches);
     else if (xp->xp_context == EXPAND_SETTING_SUBTRACT)
-	return ExpandSettingSubtract(xp, &regmatch, numMatches, matches);
+	ret = ExpandSettingSubtract(xp, &regmatch, numMatches, matches);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(pat, &regmatch, numMatches, matches);
 #if defined(FEAT_EVAL)

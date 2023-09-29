@@ -2340,6 +2340,9 @@ typedef char *(*opt_did_set_cb_T)(optset_T *args);
  *
  * Returns OK if the expansion succeeded (numMatches and matches have to be
  * set). Otherwise returns FAIL.
+ *
+ * Note: If returned FAIL or *numMatches is 0, *matches will NOT be freed by
+ * caller.
  */
 typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***matches);
 
