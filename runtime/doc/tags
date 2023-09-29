@@ -3208,6 +3208,7 @@ $quote	eval.txt	/*$quote*
 :set-inv	options.txt	/*:set-inv*
 :set-termcap	options.txt	/*:set-termcap*
 :set-verbose	options.txt	/*:set-verbose*
+:set=	options.txt	/*:set=*
 :set^=	options.txt	/*:set^=*
 :set_env	options.txt	/*:set_env*
 :setf	options.txt	/*:setf*
@@ -6484,6 +6485,7 @@ complete-items	insert.txt	/*complete-items*
 complete-popup	insert.txt	/*complete-popup*
 complete-popuphidden	insert.txt	/*complete-popuphidden*
 complete-script-local-functions	cmdline.txt	/*complete-script-local-functions*
+complete-set-option	cmdline.txt	/*complete-set-option*
 complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	builtin.txt	/*complete_add()*

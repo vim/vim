@@ -1803,6 +1803,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	dig = e + 1;
 	x = getdigits(&dig);
 
+	// Note: Keep this in sync with p_popup_option_values.
 	if (STRNCMP(s, "height:", 7) == 0)
 	{
 	    if (dig != p)
@@ -1840,6 +1841,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	}
 	else if (STRNCMP(s, "border:", 7) == 0)
 	{
+	    // Note: Keep this in sync with p_popup_option_border_values.
 	    char_u	*arg = s + 7;
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
@@ -1858,6 +1860,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	}
 	else if (STRNCMP(s, "align:", 6) == 0)
 	{
+	    // Note: Keep this in sync with p_popup_option_align_values.
 	    char_u	*arg = s + 6;
 	    int		item = STRNCMP(arg, "item", 4) == 0 && arg + 4 == p;
 	    int		menu = STRNCMP(arg, "menu", 4) == 0 && arg + 4 == p;

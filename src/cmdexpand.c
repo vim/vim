@@ -15,9 +15,6 @@
 
 static int	cmd_showtail;	// Only show path tail in lists ?
 
-static int      ExpandGeneric(char_u *pat, expand_T *xp, regmatch_T *regmatch,
-			      char_u ***matches, int *numMatches,
-			      char_u *((*func)(expand_T *, int)), int escaped);
 static int	ExpandFromContext(expand_T *xp, char_u *, char_u ***, int *, int);
 static char_u	*showmatches_gettail(char_u *s);
 static int	expand_showtail(expand_T *xp);
@@ -54,6 +51,8 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_FILETYPE
 	    && xp->xp_context != EXPAND_HELP
 	    && xp->xp_context != EXPAND_OLD_SETTING
+	    && xp->xp_context != EXPAND_STRING_SETTING
+	    && xp->xp_context != EXPAND_SETTING_SUBTRACT
 	    && xp->xp_context != EXPAND_OWNSYNTAX
 	    && xp->xp_context != EXPAND_PACKADD
 	    && xp->xp_context != EXPAND_RUNTIME
@@ -3093,6 +3092,10 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_SETTINGS
 	    || xp->xp_context == EXPAND_BOOL_SETTINGS)
 	ret = ExpandSettings(xp, &regmatch, pat, numMatches, matches, fuzzy);
+    else if (xp->xp_context == EXPAND_STRING_SETTING)
+	ret = ExpandStringSetting(xp, &regmatch, numMatches, matches);
+    else if (xp->xp_context == EXPAND_SETTING_SUBTRACT)
+	ret = ExpandSettingSubtract(xp, &regmatch, numMatches, matches);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(pat, &regmatch, numMatches, matches);
 #if defined(FEAT_EVAL)
@@ -3121,7 +3124,7 @@ ExpandFromContext(
  *
  * Returns OK when no problems encountered, FAIL for error (out of memory).
  */
-    static int
+    int
 ExpandGeneric(
     char_u	*pat,
     expand_T	*xp,
@@ -3226,6 +3229,7 @@ ExpandGeneric(
     // applies to the completion context. Menus and scriptnames should be kept
     // in the specified order.
     if (!fuzzy && xp->xp_context != EXPAND_MENUNAMES
+					&& xp->xp_context != EXPAND_STRING_SETTING
 					&& xp->xp_context != EXPAND_MENUS
 					&& xp->xp_context != EXPAND_SCRIPTNAMES)
 	sort_matches = TRUE;

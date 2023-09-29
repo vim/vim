@@ -1266,6 +1266,7 @@ did_set_clipboard(optset_T *args UNUSED)
 
     for (p = p_cb; *p != NUL; )
     {
+	// Note: Keep this in sync with p_cb_values.
 	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
 	{
 	    new_unnamed |= CLIP_UNNAMED;

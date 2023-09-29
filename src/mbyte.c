@@ -5782,3 +5782,16 @@ f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }
 #endif
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * encoding options.
+ */
+    char_u *
+get_encoding_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(enc_canon_table) / sizeof(enc_canon_table[0])))
+	return NULL;
+
+    return (char_u*)enc_canon_table[idx].name;
+}

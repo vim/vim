@@ -60,6 +60,7 @@
 #define P_RWINONLY   0x10000000L // only redraw current window
 #define P_MLE	     0x20000000L // under control of 'modelineexpr'
 #define P_FUNC	     0x40000000L // accept a function reference or a lambda
+#define P_COLON	     0x80000000L // values use colons to create sublists
 
 // Returned by get_option_value().
 typedef enum {
@@ -230,7 +231,7 @@ typedef enum {
 #define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\\.;"
 
 // characters for p_ww option:
-#define WW_ALL		"bshl<>[],~"
+#define WW_ALL		"bshl<>[]~"
 
 // characters for p_mouse option:
 #define MOUSE_NORMAL	'n'		// use mouse in Normal mode

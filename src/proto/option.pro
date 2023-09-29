@@ -129,6 +129,8 @@ void set_imsearch_global(void);
 void set_context_in_set_cmd(expand_T *xp, char_u *arg, int opt_flags);
 int ExpandSettings(expand_T *xp, regmatch_T *regmatch, char_u *fuzzystr, int *numMatches, char_u ***matches, int can_fuzzy);
 int ExpandOldSetting(int *numMatches, char_u ***matches);
+int ExpandStringSetting(expand_T *xp, regmatch_T *regmatch, int *numMatches, char_u ***matches);
+int ExpandSettingSubtract(expand_T *xp, regmatch_T *regmatch, int *numMatches, char_u ***matches);
 int shortmess(int x);
 void vimrc_found(char_u *fname, char_u *envname);
 void change_compatible(int on);
