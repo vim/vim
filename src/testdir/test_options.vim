@@ -1861,4 +1861,16 @@ func Test_binary_depending_options()
   call delete('Xoutput_bin')
 endfunc
 
+func Test_set_keyprotocol()
+  let term = &term
+  set term=ansi
+  call assert_equal('', &t_TI)
+
+  " Setting 'keyprotocol' should affect terminal codes without needing to
+  " reset 'term'
+  set keyprotocol+=ansi:kitty
+  call assert_equal("\<Esc>[=1;1u", &t_TI)
+  let &term = term
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
