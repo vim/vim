@@ -696,8 +696,7 @@ win_redr_status_matches(
     static char_u *
 get_next_or_prev_match(
 	int		mode,
-	expand_T	*xp,
-	char_u		*orig_save)
+	expand_T	*xp)
 {
     int findex = xp->xp_selected;
     int ht;
@@ -757,14 +756,14 @@ get_next_or_prev_match(
     // When wrapping around, return the original string, set findex to -1.
     if (findex < 0)
     {
-	if (orig_save == NULL)
+	if (xp->xp_orig == NULL)
 	    findex = xp->xp_numfiles - 1;
 	else
 	    findex = -1;
     }
     if (findex >= xp->xp_numfiles)
     {
-	if (orig_save == NULL)
+	if (xp->xp_orig == NULL)
 	    findex = 0;
 	else
 	    findex = -1;
@@ -780,7 +779,7 @@ get_next_or_prev_match(
     xp->xp_selected = findex;
 
     if (findex == -1)
-	return vim_strsave(orig_save);
+	return vim_strsave(xp->xp_orig);
 
     return vim_strsave(xp->xp_files[findex]);
 }
@@ -915,8 +914,8 @@ find_longest_match(expand_T *xp, int options)
  * Return NULL for failure.
  *
  * "orig" is the originally expanded string, copied to allocated memory.  It
- * should either be kept in orig_save or freed.  When "mode" is WILD_NEXT or
- * WILD_PREV "orig" should be NULL.
+ * should either be kept in "xp->xp_orig" or freed.  When "mode" is WILD_NEXT
+ * or WILD_PREV "orig" should be NULL.
  *
  * Results are cached in xp->xp_files and xp->xp_numfiles, except when "mode"
  * is WILD_EXPAND_FREE or WILD_ALL.
@@ -956,7 +955,6 @@ ExpandOne(
     int		mode)
 {
     char_u	*ss = NULL;
-    static char_u *orig_save = NULL;	// kept value of orig
     int		orig_saved = FALSE;
     int		i;
     long_u	len;
@@ -964,13 +962,13 @@ ExpandOne(
     // first handle the case of using an old match
     if (mode == WILD_NEXT || mode == WILD_PREV
 	    || mode == WILD_PAGEUP || mode == WILD_PAGEDOWN)
-	return get_next_or_prev_match(mode, xp, orig_save);
+	return get_next_or_prev_match(mode, xp);
 
     if (mode == WILD_CANCEL)
-	ss = vim_strsave(orig_save ? orig_save : (char_u *)"");
+	ss = vim_strsave(xp->xp_orig ? xp->xp_orig : (char_u *)"");
     else if (mode == WILD_APPLY)
 	ss = vim_strsave(xp->xp_selected == -1
-			    ? (orig_save ? orig_save : (char_u *)"")
+			    ? (xp->xp_orig ? xp->xp_orig : (char_u *)"")
 			    : xp->xp_files[xp->xp_selected]);
 
     // free old names
@@ -978,7 +976,7 @@ ExpandOne(
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
-	VIM_CLEAR(orig_save);
+	VIM_CLEAR(xp->xp_orig);
 
 	// The entries from xp_files may be used in the PUM, remove it.
 	if (compl_match_array != NULL)
@@ -991,8 +989,8 @@ ExpandOne(
 
     if (xp->xp_numfiles == -1 && mode != WILD_APPLY && mode != WILD_CANCEL)
     {
-	vim_free(orig_save);
-	orig_save = orig;
+	vim_free(xp->xp_orig);
+	xp->xp_orig = orig;
 	orig_saved = TRUE;
 
 	ss = ExpandOne_start(mode, xp, str, options);
@@ -1045,7 +1043,7 @@ ExpandOne(
     if (mode == WILD_EXPAND_FREE || mode == WILD_ALL)
 	ExpandCleanup(xp);
 
-    // Free "orig" if it wasn't stored in "orig_save".
+    // Free "orig" if it wasn't stored in "xp->xp_orig".
     if (!orig_saved)
 	vim_free(orig);
 
@@ -1075,6 +1073,7 @@ ExpandCleanup(expand_T *xp)
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
     }
+    VIM_CLEAR(xp->xp_orig);
 }
 
 /*

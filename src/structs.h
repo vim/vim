@@ -610,6 +610,7 @@ typedef struct expand
 					// file name completion
     int		xp_col;			// cursor position in line
     int		xp_selected;		// selected index in completion
+    char_u	*xp_orig;		// originally expanded string
     char_u	**xp_files;		// list of files
     char_u	*xp_line;		// text being completed
 #define EXPAND_BUF_LEN 256
