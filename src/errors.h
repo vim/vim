@@ -3548,7 +3548,6 @@ EXTERN char e_positional_arg_num_type_inconsistent_str_str[]
 	INIT(= N_("E1504: Positional argument %d type used inconsistently: %s/%s"));
 EXTERN char e_invalid_format_specifier_str[]
 	INIT(= N_("E1505: Invalid format specifier: %s"));
+// E1506 - E1519 unused
 EXTERN char e_aptypes_is_null_nr_str[]
 	INIT(= "E1520: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
-
-// E1506 - E1519 unused
