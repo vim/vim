@@ -6318,4 +6318,80 @@ def Test_reserved_varname()
   endfor
 enddef
 
+" Test for checking the type of the arguments and the return value of a object
+" method in an extended class.
+def Test_extended_obj_method_type_check()
+  var lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    class Foo
+      def Doit(p: B): B
+        return B.new()
+      enddef
+    endclass
+
+    class Bar extends Foo
+      def Doit(p: A): C
+        return C.new()
+      enddef
+    endclass
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    class Foo
+      def Doit(p: B): B
+        return B.new()
+      enddef
+    endclass
+
+    class Bar extends Foo
+      def Doit(p: C): B
+        return B.new()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "Doit": type mismatch, expected func(object<B>): object<B> but got func(object<C>): object<B>', 20)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    class Foo
+      def Doit(p: B): B
+        return B.new()
+      enddef
+    endclass
+
+    class Bar extends Foo
+      def Doit(p: B): A
+        return A.new()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "Doit": type mismatch, expected func(object<B>): object<B> but got func(object<B>): object<A>', 20)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

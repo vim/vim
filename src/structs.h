@@ -4798,14 +4798,19 @@ typedef enum {
     WT_ARGUMENT,
     WT_VARIABLE,
     WT_MEMBER,
-    WT_METHOD,
+    WT_METHOD,		// object method
+    WT_METHOD_ARG,	// object method argument type
+    WT_METHOD_RETURN	// object method return type
 } wherekind_T;
 
-// Struct used to pass to error messages about where the error happened.
+// Struct used to pass the location of a type check.  Used in error messages to
+// indicate where the error happened.  Also used for doing covariance type
+// check for object method return type and contra-variance type check for
+// object method arguments.
 typedef struct {
     char	*wt_func_name;  // function name or NULL
     char	wt_index;	// argument or variable index, 0 means unknown
-    wherekind_T	wt_kind;	// "variable" when TRUE, "argument" otherwise
+    wherekind_T	wt_kind;	// type check location
 } where_T;
 
 #define WHERE_INIT {NULL, 0, WT_UNKNOWN}

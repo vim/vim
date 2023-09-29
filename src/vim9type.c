@@ -759,6 +759,8 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
 		    where.wt_func_name, typename1, typename2);
 	    break;
 	case WT_METHOD:
+	case WT_METHOD_ARG:
+	case WT_METHOD_RETURN:
 	    semsg(_(e_method_str_type_mismatch_expected_str_but_got_str),
 		    where.wt_func_name, typename1, typename2);
 	    break;
@@ -869,8 +871,15 @@ check_type_maybe(
 	    {
 		if (actual->tt_member != NULL
 					    && actual->tt_member != &t_unknown)
+		{
+		    where_T  func_where = where;
+
+		    if (where.wt_kind == WT_METHOD)
+			func_where.wt_kind = WT_METHOD_RETURN;
 		    ret = check_type_maybe(expected->tt_member,
-					      actual->tt_member, FALSE, where);
+					    actual->tt_member, FALSE,
+					    func_where);
+		}
 		else
 		    ret = MAYBE;
 	    }
@@ -887,14 +896,20 @@ check_type_maybe(
 
 		for (i = 0; i < expected->tt_argcount
 					       && i < actual->tt_argcount; ++i)
+		{
+		    where_T  func_where = where;
+		    if (where.wt_kind == WT_METHOD)
+			func_where.wt_kind = WT_METHOD_ARG;
+
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
 			    expected->tt_args[i], actual->tt_args[i], FALSE,
-								where) == FAIL)
+							func_where) == FAIL)
 		    {
 			ret = FAIL;
 			break;
 		    }
+		}
 	    }
 	    if (ret == OK && expected->tt_argcount >= 0
 						  && actual->tt_argcount == -1)
@@ -910,7 +925,10 @@ check_type_maybe(
 	    if (actual->tt_class == NULL)
 		return OK;	// A null object matches
 
-	    if (class_instance_of(actual->tt_class, expected->tt_class) == FALSE)
+	    // For object method arguments, do a contra-variance type check in
+	    // an extended class.  For all others, do a co-variance type check.
+	    if (class_instance_of(actual->tt_class, expected->tt_class,
+				    where.wt_kind != WT_METHOD_ARG) == FALSE)
 		ret = FAIL;
 	}
 
