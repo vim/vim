@@ -1177,9 +1177,9 @@
 #endif
 
 /*
- * XATTR support
+ * currently Unix only: XATTR support
  */
 
-#if defined(FEAT_NORMAL) && defined(HAVE_XATTR)
+#if defined(FEAT_NORMAL) && defined(HAVE_XATTR) && !defined(MACOS_X)
 # define FEAT_XATTR
 #endif
