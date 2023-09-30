@@ -326,7 +326,7 @@ jobs:
 
       - name: Configure
         run: |
-          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing --disable-xattr
           # Append various warning flags to CFLAGS.
           # BSD sed needs backup extension specified.
           sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
