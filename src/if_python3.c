@@ -395,8 +395,8 @@ static int (*py3_PyObject_SetAttrString)(PyObject *, const char *, PyObject *);
 static PyObject* (*py3_PyObject_CallFunctionObjArgs)(PyObject *, ...);
 static PyObject* (*py3__PyObject_CallFunction_SizeT)(PyObject *, char *, ...);
 static PyObject* (*py3_PyObject_Call)(PyObject *, PyObject *, PyObject *);
-static PyObject* (*py3_PyEval_GetGlobals)();
-static PyObject* (*py3_PyEval_GetLocals)();
+static PyObject* (*py3_PyEval_GetGlobals)(void);
+static PyObject* (*py3_PyEval_GetLocals)(void);
 static PyObject* (*py3_PyList_GetItem)(PyObject *, Py_ssize_t);
 static PyObject* (*py3_PyImport_ImportModule)(const char *);
 static PyObject* (*py3_PyImport_AddModule)(const char *);
@@ -1061,7 +1061,7 @@ static struct PyModuleDef vimmodule;
 // An alternative would be to convert all attribute string comparisons to use
 // PyUnicode_CompareWithASCIIString to skip having to extract the chars.
 static char py3_unicode_utf8_chars[20];
-char* PY_UNICODE_GET_UTF8_CHARS(PyObject* str)
+static char* PY_UNICODE_GET_UTF8_CHARS(PyObject* str)
 {
     py3_unicode_utf8_chars[0] = '\0';
     PyObject* bytes = PyUnicode_AsUTF8String(str);

@@ -7518,7 +7518,7 @@ set_context_in_set_cmd(
  * If 'test_only' is FALSE and 'fuzzy' is TRUE and if 'str' fuzzy matches
  * 'fuzzystr', then stores the match details in fuzmatch[idx] and returns TRUE.
  */
-    int
+    static int
 match_str(
 	char_u		*str,
 	regmatch_T	*regmatch,
@@ -8014,7 +8014,7 @@ ExpandSettingSubtract(
 	    // character as individual choice.
 	    for (char_u *flag = option_val; *flag != NUL; flag++)
 	    {
-		char_u *p = vim_strnsave(flag, 1);
+		p = vim_strnsave(flag, 1);
 		if (p == NULL)
 		    break;
 		(*matches)[count++] = p;

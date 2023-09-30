@@ -338,7 +338,7 @@ typedef int perl_key;
  */
 static HANDLE hPerlLib = NULL;
 
-static PerlInterpreter* (*perl_alloc)();
+static PerlInterpreter* (*perl_alloc)(void);
 static void (*perl_construct)(PerlInterpreter*);
 static void (*perl_destruct)(PerlInterpreter*);
 static void (*perl_free)(PerlInterpreter*);

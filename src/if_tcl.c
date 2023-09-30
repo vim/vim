@@ -180,7 +180,7 @@ typedef int HANDLE;
  * Declare HANDLE for tcl.dll and function pointers.
  */
 static HANDLE hTclLib = NULL;
-Tcl_Interp* (*dll_Tcl_CreateInterp)();
+Tcl_Interp* (*dll_Tcl_CreateInterp)(void);
 void (*dll_Tcl_FindExecutable)(const void *);
 
 /*
