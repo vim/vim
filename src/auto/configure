@@ -5279,7 +5279,7 @@ else
 printf "%s\n" "yes" >&6; }
 fi
 if test "$enable_smack" = "yes"; then
-  ac_fn_c_check_header_compile "$LINENO" "attr/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
+  ac_fn_c_check_header_compile "$LINENO" "sys/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
 if test "x$ac_cv_header_attr_xattr_h" = xyes
 then :
   true
@@ -5434,7 +5434,7 @@ fi
 if test "$enable_xattr" = "yes"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-  ac_fn_c_check_header_compile "$LINENO" "attr/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
+  ac_fn_c_check_header_compile "$LINENO" "sys/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
 if test "x$ac_cv_header_attr_xattr_h" = xyes
 then :
   printf "%s\n" "#define HAVE_XATTR 1" >>confdefs.h
