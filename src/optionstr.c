@@ -733,7 +733,7 @@ did_set_option_listflag(char_u *val, char_u *flags, char *errbuf)
 /*
  * Expand an option that accepts a list of string values.
  */
-    int
+    static int
 expand_set_opt_string(
 	optexpand_T *args,
 	char **values,
@@ -819,7 +819,7 @@ expand_set_opt_callback(expand_T *xp, int idx)
 /*
  * Expand an option with a callback that iterates through a list of possible names.
  */
-    int
+    static int
 expand_set_opt_generic(
 	optexpand_T *args,
 	char_u *((*func)(expand_T *, int)),
@@ -850,7 +850,7 @@ expand_set_opt_generic(
 /*
  * Expand an option which is a list of flags.
  */
-    int
+    static int
 expand_set_opt_listflag(
 	optexpand_T *args,
 	char_u *flags,
