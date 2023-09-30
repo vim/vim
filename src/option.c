@@ -1315,13 +1315,6 @@ ex_set(exarg_T *eap)
  * :set operator types
  */
 typedef enum {
-    OP_NONE = 0,
-    OP_ADDING,		// "opt+=arg"
-    OP_PREPENDING,	// "opt^=arg"
-    OP_REMOVING,	// "opt-=arg"
-} set_op_T;
-
-typedef enum {
     PREFIX_NO = 0,	// "no" prefix
     PREFIX_NONE,	// no prefix
     PREFIX_INV,		// "inv" prefix
@@ -1935,7 +1928,7 @@ do_set_option_string(
 	char_u	    **argp,
 	int	    nextchar,
 	set_op_T    op_arg,
-	int	    flags,
+	long_u	    flags,
 	int	    cp_val,
 	char_u	    *varp_arg,
 	char	    *errbuf,
@@ -2037,7 +2030,7 @@ do_set_option_string(
 	// be triggered that can cause havoc.
 	*errmsg = did_set_string_option(
 			opt_idx, (char_u **)varp, oldval, newval, errbuf,
-			opt_flags, value_checked);
+			opt_flags, op, value_checked);
 
 	secure = secure_saved;
     }
@@ -7802,6 +7795,10 @@ ExpandOldSetting(int *numMatches, char_u ***matches)
     char_u  *var = NULL;	// init for GCC
     char_u  *buf;
 
+    if (expand_option_idx >= 0 &&
+	    (options[expand_option_idx].flags & P_NO_CMD_EXPAND))
+	return FAIL;
+
     *numMatches = 0;
     *matches = ALLOC_MULT(char_u *, 1);
     if (*matches == NULL)
@@ -7897,6 +7894,10 @@ ExpandSettingSubtract(
     if (expand_option_idx < 0)
 	// term option
 	return ExpandOldSetting(numMatches, matches);
+
+    if (expand_option_idx >= 0 &&
+	    (options[expand_option_idx].flags & P_NO_CMD_EXPAND))
+	return FAIL;
 
     char_u *option_val = *(char_u**)get_option_varp_scope(
 	expand_option_idx, expand_option_flags);

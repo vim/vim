@@ -1467,7 +1467,7 @@ static struct vimoption options[] =
     {"jumpoptions", "jop",  P_STRING|P_VI_DEF|P_VIM|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_jop, PV_NONE, did_set_jumpoptions, expand_set_jumpoptions,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
-    {"key",	    NULL,   P_STRING|P_ALLOCED|P_VI_DEF|P_NO_MKRC,
+    {"key",	    NULL,   P_STRING|P_ALLOCED|P_VI_DEF|P_NO_MKRC|P_NO_CMD_EXPAND,
 #ifdef FEAT_CRYPT
 			    (char_u *)&p_key, PV_KEY, did_set_cryptkey, NULL,
 			    {(char_u *)"", (char_u *)0L}

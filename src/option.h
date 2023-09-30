@@ -61,6 +61,7 @@
 #define P_MLE	     0x20000000L // under control of 'modelineexpr'
 #define P_FUNC	     0x40000000L // accept a function reference or a lambda
 #define P_COLON	     0x80000000L // values use colons to create sublists
+#define P_NO_CMD_EXPAND	0x100000000L // don't perform cmdline completions
 
 // Returned by get_option_value().
 typedef enum {

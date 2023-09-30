@@ -579,7 +579,7 @@ set_string_option(
     }
 #endif
     if ((errmsg = did_set_string_option(opt_idx, varp, oldval, value, errbuf,
-		    opt_flags, &value_checked)) == NULL)
+		    opt_flags, OP_NONE, &value_checked)) == NULL)
 	did_set_option(opt_idx, opt_flags, TRUE, value_checked);
 
 #if defined(FEAT_EVAL)
@@ -1577,6 +1577,10 @@ did_set_cryptkey(optset_T *args)
     // Make sure the ":set" command doesn't show the new value in the
     // history.
     remove_key_from_history();
+
+    if (args->os_op != OP_NONE)
+	// Don't allow set+=/-=/^= as they can allow for substring guessing
+	return e_invalid_argument;
 
     if (STRCMP(curbuf->b_p_key, args->os_oldval.string) != 0)
     {
@@ -4209,6 +4213,7 @@ did_set_string_option(
     char_u	*value,			// new value of the option
     char	*errbuf,		// buffer for errors, or NULL
     int		opt_flags,		// OPT_LOCAL and/or OPT_GLOBAL
+    set_op_T    op,			// OP_ADDING/OP_PREPENDING/OP_REMOVING
     int		*value_checked)		// value was checked to be safe, no
 					// need to set P_INSECURE
 {
@@ -4247,6 +4252,7 @@ did_set_string_option(
 	args.os_varp = (char_u *)varp;
 	args.os_idx = opt_idx;
 	args.os_flags = opt_flags;
+	args.os_op = op;
 	args.os_oldval.string = oldval;
 	args.os_newval.string = value;
 	args.os_errbuf = errbuf;

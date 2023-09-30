@@ -438,4 +438,27 @@ func Test_crypt_set_key_segfault()
   bwipe!
 endfunc
 
+func Test_crypt_set_key_disallow_append_subtract()
+  new Xtest4
+
+  set key=foobar
+  call assert_true(&modified)
+  setl nomodified
+
+  call assert_fails('set key-=foo', 'E474:')
+  call assert_fails('set key-=bar', 'E474:')
+  call assert_fails('set key-=foobar', 'E474:')
+  call assert_fails('set key-=test1', 'E474:')
+
+  call assert_false(&modified)
+  call assert_equal('*****', &key)
+
+  call assert_fails('set key+=test2', 'E474:')
+  call assert_fails('set key^=test3', 'E474:')
+
+  call assert_false(&modified)
+  set key=
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
