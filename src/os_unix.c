@@ -36,12 +36,12 @@ static int selinux_enabled = -1;
 #endif
 
 #ifdef FEAT_XATTR
-# include <attr/xattr.h>
+# include <sys/xattr.h>
 # define XATTR_VAL_LEN 1024
 #endif
 
 #ifdef HAVE_SMACK
-# include <attr/xattr.h>
+# include <sys/xattr.h>
 # include <linux/xattr.h>
 # ifndef SMACK_LABEL_LEN
 #  define SMACK_LABEL_LEN 1024
