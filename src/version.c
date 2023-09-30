@@ -654,6 +654,11 @@ static char *(features[]) =
 	"-X11",
 # endif
 #endif
+# ifdef FEAT_XATTR
+	"+xattr",
+# else
+	"-xattr",
+# endif
 #ifdef FEAT_XFONTSET
 	"+xfontset",
 #else
@@ -699,6 +704,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1962,
 /**/
     1961,
 /**/

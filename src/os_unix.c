@@ -35,6 +35,11 @@
 static int selinux_enabled = -1;
 #endif
 
+#ifdef FEAT_XATTR
+# include <attr/xattr.h>
+# define XATTR_VAL_LEN 1024
+#endif
+
 #ifdef HAVE_SMACK
 # include <attr/xattr.h>
 # include <linux/xattr.h>
@@ -3095,6 +3100,96 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
     }
 }
 #endif // HAVE_SMACK
+
+#ifdef FEAT_XATTR
+/*
+ * Copy extended attributes from_file to to_file
+ */
+    void
+mch_copy_xattr(char_u *from_file, char_u *to_file)
+{
+    char	*xattr_buf;
+    size_t	size;
+    size_t	tsize;
+    ssize_t	keylen, vallen, max_vallen = 0;
+    char	*key;
+    char	*val = NULL;
+    char	*errmsg = NULL;
+
+    if (from_file == NULL)
+	return;
+
+    // get the length of the extended attributes
+    size = listxattr((char *)from_file, NULL, 0);
+    // not supported or no attributes to copy
+    if (errno == ENOTSUP || size == 0)
+	return;
+    xattr_buf = (char*)alloc(size);
+    if (xattr_buf == NULL)
+	return;
+    size = listxattr((char *)from_file, xattr_buf, size);
+    tsize = size;
+
+    errno = 0;
+
+    for (int round = 0; round < 2; round++)
+    {
+
+	key = xattr_buf;
+	if (round == 1)
+	    size = tsize;
+
+	while (size > 0)
+	{
+	    vallen = getxattr((char *)from_file, key,
+		    val, round ? max_vallen : 0);
+	    // only set the attribute in the second round
+	    if (vallen >= 0 && round &&
+		setxattr((char *)to_file, key, val, vallen, 0) == 0)
+		;
+	    else if (errno)
+	    {
+		switch (errno)
+		{
+		    case E2BIG:
+			errmsg = e_xattr_e2big;
+			goto error_exit;
+		    case ENOTSUP:
+			errmsg = e_xattr_enotsup;
+			goto error_exit;
+		    case ERANGE:
+			errmsg = e_xattr_erange;
+			goto error_exit;
+		    default:
+			errmsg = e_xattr_other;
+			goto error_exit;
+		}
+	    }
+
+	    if (round == 0 && vallen > max_vallen)
+		max_vallen = vallen;
+
+	    // add one for terminating null
+	    keylen = STRLEN(key) + 1;
+	    size -= keylen;
+	    key += keylen;
+	}
+	if (round)
+	    break;
+
+	val = (char*)alloc(max_vallen + 1);
+	if (val == NULL)
+	    goto error_exit;
+
+    }
+error_exit:
+    vim_free(xattr_buf);
+    vim_free(val);
+
+    if (errmsg != NULL)
+	emsg((char *)errmsg);
+}
+#endif
 
 /*
  * Return a pointer to the ACL of file "fname" in allocated memory.

@@ -513,6 +513,18 @@ if test "x$found_smack" = "x"; then
   fi
 fi
 
+dnl enable xattr support
+AC_MSG_CHECKING(--enable-xattr argument)
+AC_ARG_ENABLE(xattr,
+	[  --disable-xattr	  Do not check for XATTR support.],
+	, enable_xattr="yes")
+if test "$enable_xattr" = "yes"; then
+  AC_MSG_RESULT(yes)
+  AC_CHECK_HEADER([attr/xattr.h], [AC_DEFINE(HAVE_XATTR)])
+else
+  AC_MSG_RESULT(no)
+fi
+
 dnl Check user requested features.
 
 AC_MSG_CHECKING(--with-features argument)

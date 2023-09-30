@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.0.  Last change: 2022 Dec 13
+*various.txt*   For Vim version 9.0.  Last change: 2023 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -503,6 +503,7 @@ T  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
+N  *+xattr*		compiled with extended attribute support (Linux only)
    *+xpm*		pixmap support
 m  *+xpm_w32*		Win32 GUI only: pixmap support |w32-xpm-support|
    *+xsmp*		XSMP (X session management) support

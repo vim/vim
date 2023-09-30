@@ -226,6 +226,7 @@
 #undef HAVE_MBLEN
 #undef HAVE_TIMER_CREATE
 #undef HAVE_CLOCK_GETTIME
+#undef HAVE_XATTR
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES
