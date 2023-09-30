@@ -37,7 +37,6 @@ static int selinux_enabled = -1;
 
 #ifdef FEAT_XATTR
 # include <sys/xattr.h>
-# define XATTR_VAL_LEN 1024
 #endif
 
 #ifdef HAVE_SMACK
