@@ -7369,6 +7369,15 @@ set_context_in_set_cmd(
     else
 	expand_option_idx = opt_idx;
 
+    if (!is_term_option)
+    {
+	if (options[opt_idx].flags & P_NO_CMD_EXPAND)
+	{
+	    xp->xp_context=EXPAND_UNSUCCESSFUL;
+	    return;
+	}
+    }
+
     xp->xp_pattern = p + 1;
     expand_option_start_col = (int)(p + 1 - xp->xp_line);
 
@@ -7795,10 +7804,6 @@ ExpandOldSetting(int *numMatches, char_u ***matches)
     char_u  *var = NULL;	// init for GCC
     char_u  *buf;
 
-    if (expand_option_idx >= 0 &&
-	    (options[expand_option_idx].flags & P_NO_CMD_EXPAND))
-	return FAIL;
-
     *numMatches = 0;
     *matches = ALLOC_MULT(char_u *, 1);
     if (*matches == NULL)
@@ -7894,10 +7899,6 @@ ExpandSettingSubtract(
     if (expand_option_idx < 0)
 	// term option
 	return ExpandOldSetting(numMatches, matches);
-
-    if (expand_option_idx >= 0 &&
-	    (options[expand_option_idx].flags & P_NO_CMD_EXPAND))
-	return FAIL;
 
     char_u *option_val = *(char_u**)get_option_varp_scope(
 	expand_option_idx, expand_option_flags);
