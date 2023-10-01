@@ -4489,6 +4489,8 @@ E1388	vim9class.txt	/*E1388*
 E1389	vim9class.txt	/*E1389*
 E139	message.txt	/*E139*
 E1390	vim9class.txt	/*E1390*
+E1391	eval.txt	/*E1391*
+E1392	eval.txt	/*E1392*
 E140	message.txt	/*E140*
 E141	message.txt	/*E141*
 E142	message.txt	/*E142*
@@ -4513,6 +4515,7 @@ E1508	editing.txt	/*E1508*
 E1509	editing.txt	/*E1509*
 E151	helphelp.txt	/*E151*
 E152	helphelp.txt	/*E152*
+E1520	builtin.txt	/*E1520*
 E153	helphelp.txt	/*E153*
 E154	helphelp.txt	/*E154*
 E155	sign.txt	/*E155*
@@ -5007,6 +5010,8 @@ E610	editing.txt	/*E610*
 E611	eval.txt	/*E611*
 E612	sign.txt	/*E612*
 E613	print.txt	/*E613*
+E614	builtin.txt	/*E614*
+E616	builtin.txt	/*E616*
 E617	options.txt	/*E617*
 E618	print.txt	/*E618*
 E619	print.txt	/*E619*
@@ -5090,6 +5095,7 @@ E69	pattern.txt	/*E69*
 E690	eval.txt	/*E690*
 E691	eval.txt	/*E691*
 E692	eval.txt	/*E692*
+E693	builtin.txt	/*E693*
 E694	eval.txt	/*E694*
 E695	eval.txt	/*E695*
 E696	eval.txt	/*E696*
@@ -5103,6 +5109,7 @@ E702	builtin.txt	/*E702*
 E703	eval.txt	/*E703*
 E704	eval.txt	/*E704*
 E705	eval.txt	/*E705*
+E706	builtin.txt	/*E706*
 E707	eval.txt	/*E707*
 E708	eval.txt	/*E708*
 E709	eval.txt	/*E709*

@@ -1855,7 +1855,7 @@ cosh({expr})						*cosh()*
 			Compute()->cosh()
 
 
-count({comp}, {expr} [, {ic} [, {start}]])			*count()*
+count({comp}, {expr} [, {ic} [, {start}]])		*count()* *E706*
 		Return the number of times an item with value {expr} appears
 		in |String|, |List| or |Dictionary| {comp}.
 
@@ -5052,12 +5052,14 @@ insert({object}, {item} [, {idx}])			*insert()*
 
 		Can also be used as a |method|: >
 			mylist->insert(item)
-
-instanceof({object}, {class})				*instanceof()*
-		The result is a Number, which is |TRUE| when the {object} argument is a
-		direct or indirect instance of a |Class| specified by {class}.
-		When {class} is a |List| the function returns |TRUE| when {object} is an
-		instance of any of the specified classes.
+<
+					*instanceof()* *E614* *E616* *E693*
+instanceof({object}, {class})
+		The result is a Number, which is |TRUE| when the {object}
+		argument is a direct or indirect instance of a |Class|
+		specified by {class}.
+		When {class} is a |List| the function returns |TRUE| when
+		{object} is an instance of any of the specified classes.
 		Example: >
 			instanceof(animal, [Dog, Cat])
 
@@ -6689,6 +6691,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 		using a {n$} positional argument specifier. See |printf-$|.
 
 
+							*E1520*
 		The conversion specifiers and their meanings are:
 
 				*printf-d* *printf-b* *printf-B* *printf-o*
