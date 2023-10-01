@@ -1837,7 +1837,7 @@ stropt_get_newval(
 					     &(options[opt_idx]), OPT_GLOBAL));
     else
     {
-	++arg;	// joption_value2stringump to after the '=' or ':'
+	++arg;	// jump to after the '=' or ':'
 
 	// Set 'keywordprg' to ":help" if an empty
 	// value was passed to :set by the user.
