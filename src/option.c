@@ -7989,7 +7989,7 @@ ExpandSettingSubtract(
 	    return FAIL;
 	}
 
-	int num_flags = STRLEN(option_val);
+	size_t num_flags = STRLEN(option_val);
 	if (num_flags == 0)
 	    return FAIL;
 

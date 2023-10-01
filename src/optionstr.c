@@ -737,7 +737,7 @@ did_set_option_listflag(char_u *val, char_u *flags, char *errbuf)
 expand_set_opt_string(
 	optexpand_T *args,
 	char **values,
-	int numValues,
+	size_t numValues,
 	int *numMatches,
 	char_u ***matches)
 {
@@ -863,7 +863,7 @@ expand_set_opt_listflag(
     int	    append = args->oe_append;
     int	    include_orig_val = args->oe_include_orig_val && (*option_val != NUL);
 
-    int num_flags = STRLEN(flags);
+    size_t num_flags = STRLEN(flags);
 
     // Assume we only have small number of flags, so just allocate max size.
     *matches = ALLOC_MULT(char_u *, num_flags + 1);
@@ -1765,7 +1765,7 @@ expand_set_diffopt(optexpand_T *args, int *numMatches, char_u ***matches)
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
     {
 	// Within "algorithm:", we have a subgroup of possible options.
-	int algo_len = STRLEN("algorithm:");
+	int algo_len = (int)STRLEN("algorithm:");
 	if (xp->xp_pattern - args->oe_set_arg >= algo_len &&
 		STRNCMP(xp->xp_pattern - algo_len, "algorithm:", algo_len) == 0)
 	{
@@ -2377,7 +2377,7 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
     char_u	    *p;
     expand_T	    *xp = args->oe_xp;
     static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
-    int		    i;
+    size_t	    i;
     int		    count = 0;
 
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
@@ -2442,15 +2442,15 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
     // the returned match.
 
     // Note: Keep this in sync with highlight_changed()
-    static char p_hl_mode_values[] =
+    static char_u p_hl_mode_values[] =
 	{':', 'b', 'i', '-', 'n', 'r', 's', 'u', 'c', '2', 'd', '=', 't'};
-    int num_hl_modes = ARRAY_LENGTH(p_hl_mode_values);
+    size_t num_hl_modes = ARRAY_LENGTH(p_hl_mode_values);
 
     *matches = ALLOC_MULT(char_u *, num_hl_modes);
     if (*matches == NULL)
 	return FAIL;
 
-    int pattern_len = STRLEN(xp->xp_pattern);
+    size_t pattern_len = STRLEN(xp->xp_pattern);
 
     for (i = 0; i < num_hl_modes; i++)
     {
@@ -2936,7 +2936,7 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
     {
 	// Within "highlight:"/"border:"/"align:", we have a subgroup of possible options.
-	int border_len = STRLEN("border:");
+	int border_len = (int)STRLEN("border:");
 	if (xp->xp_pattern - args->oe_set_arg >= border_len &&
 		STRNCMP(xp->xp_pattern - border_len, "border:", border_len) == 0)
 	{
@@ -2947,7 +2947,7 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
 		    numMatches,
 		    matches);
 	}
-	int align_len = STRLEN("align:");
+	int align_len = (int)STRLEN("align:");
 	if (xp->xp_pattern - args->oe_set_arg >= align_len &&
 		STRNCMP(xp->xp_pattern - align_len, "align:", align_len) == 0)
 	{
@@ -2958,7 +2958,7 @@ expand_set_popupoption(optexpand_T *args, int *numMatches, char_u ***matches)
 		    numMatches,
 		    matches);
 	}
-	int highlight_len = STRLEN("highlight:");
+	int highlight_len = (int)STRLEN("highlight:");
 	if (xp->xp_pattern - args->oe_set_arg >= highlight_len &&
 		STRNCMP(xp->xp_pattern - highlight_len, "highlight:", highlight_len) == 0)
 	{
