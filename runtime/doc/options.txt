@@ -4928,6 +4928,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"echo &key".  This is to avoid showing it to someone who shouldn't
 	know.  It also means you cannot see it yourself once you have set it,
 	be careful not to make a typing error!
+	You also cannot use |:set-=|, |:set+=|, |:set^=| on this option to
+	prevent an attacker from guessing substrings in your key.
 	You can use "&key" in an expression to detect whether encryption is
 	enabled.  When 'key' is set it returns "*****" (five stars).
 

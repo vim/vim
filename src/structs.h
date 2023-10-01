@@ -588,6 +588,13 @@ typedef enum {
     XP_PREFIX_INV,	// "inv" prefix for bool option
 } xp_prefix_T;
 
+typedef enum {
+    OP_NONE = 0,
+    OP_ADDING,		// "opt+=arg"
+    OP_PREPENDING,	// "opt^=arg"
+    OP_REMOVING,	// "opt-=arg"
+} set_op_T;
+
 /*
  * used for completion on the command line
  */
@@ -4876,6 +4883,7 @@ typedef struct
     char_u	*os_varp;
     int		os_idx;
     int		os_flags;
+    set_op_T	os_op;
 
     // old value of the option (can be a string, number or a boolean)
     union

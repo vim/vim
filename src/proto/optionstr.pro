@@ -121,7 +121,7 @@ char *did_set_wildmode(optset_T *args);
 char *did_set_wildoptions(optset_T *args);
 char *did_set_winaltkeys(optset_T *args);
 char *did_set_wincolor(optset_T *args);
-char *did_set_string_option(int opt_idx, char_u **varp, char_u *oldval, char_u *value, char *errbuf, int opt_flags, int *value_checked);
+char *did_set_string_option(int opt_idx, char_u **varp, char_u *oldval, char_u *value, char *errbuf, int opt_flags, set_op_T op, int *value_checked);
 int expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_background(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_backspace(optexpand_T *args, int *numMatches, char_u ***matches);

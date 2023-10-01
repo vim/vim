@@ -1315,13 +1315,6 @@ ex_set(exarg_T *eap)
  * :set operator types
  */
 typedef enum {
-    OP_NONE = 0,
-    OP_ADDING,		// "opt+=arg"
-    OP_PREPENDING,	// "opt^=arg"
-    OP_REMOVING,	// "opt-=arg"
-} set_op_T;
-
-typedef enum {
     PREFIX_NO = 0,	// "no" prefix
     PREFIX_NONE,	// no prefix
     PREFIX_INV,		// "inv" prefix
@@ -1935,7 +1928,7 @@ do_set_option_string(
 	char_u	    **argp,
 	int	    nextchar,
 	set_op_T    op_arg,
-	int	    flags,
+	long_u	    flags,
 	int	    cp_val,
 	char_u	    *varp_arg,
 	char	    *errbuf,
@@ -2037,7 +2030,7 @@ do_set_option_string(
 	// be triggered that can cause havoc.
 	*errmsg = did_set_string_option(
 			opt_idx, (char_u **)varp, oldval, newval, errbuf,
-			opt_flags, value_checked);
+			opt_flags, op, value_checked);
 
 	secure = secure_saved;
     }
@@ -7375,6 +7368,15 @@ set_context_in_set_cmd(
 	expand_option_idx = -1;
     else
 	expand_option_idx = opt_idx;
+
+    if (!is_term_option)
+    {
+	if (options[opt_idx].flags & P_NO_CMD_EXPAND)
+	{
+	    xp->xp_context=EXPAND_UNSUCCESSFUL;
+	    return;
+	}
+    }
 
     xp->xp_pattern = p + 1;
     expand_option_start_col = (int)(p + 1 - xp->xp_line);
