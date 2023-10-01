@@ -2485,7 +2485,7 @@ msgstr "-u <файл>\t\tПрименить вместо файлов .vimrc указанный <файл>"
 
 # :!~ Restorer
 msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
-msgstr "-U <файл>\t\tПрименить вместо файлов .gvimrc указанный <файла>"
+msgstr "-U <файл>\t\tПрименить вместо файлов .gvimrc указанный <файл>"
 
 # :!~ Restorer
 msgid "--noplugin\t\tDon't load plugin scripts"
