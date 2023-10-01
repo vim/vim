@@ -2424,7 +2424,7 @@ v:progpath	Contains the command with which Vim was invoked, in a form
 		".exe" is not added to v:progpath.
 		Read-only.
 
-				    *v:python3_version* *python3-version-variable*
+				*v:python3_version* *python3-version-variable*
 v:python3_version
 		Version of Python 3 that Vim was built against.  When
 		Python is loaded dynamically (|python-dynamic|), this version

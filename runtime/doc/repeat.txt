@@ -1149,8 +1149,8 @@ Profiling should give a good indication of where time is spent, but keep in
 mind there are various things that may clobber the results:
 
 - The accuracy of the time measured depends on the gettimeofday(), or
-  clock_gettime if available, system function. The accuracy ranges from 1/100
-  second to nanoseconds. With clock_gettime the times are displayed in
+  clock_gettime() if available, system function. The accuracy ranges from
+  1/100 second to nanoseconds. With clock_gettime() the times are displayed in
   nanoseconds, otherwise microseconds.  You can use `has("prof_nsec")`.
 
 - Real elapsed time is measured, if other processes are busy they may cause
