@@ -3186,7 +3186,7 @@ error_exit:
     vim_free(val);
 
     if (errmsg != NULL)
-	emsg((char *)errmsg);
+	emsg(_(errmsg));
 }
 #endif
 

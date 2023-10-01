@@ -3557,9 +3557,9 @@ EXTERN char e_xattr_erange[]
 EXTERN char e_xattr_enotsup[]
 	INIT(= N_("E1507: Extended attributes are not supported by the filesystem"));
 EXTERN char e_xattr_e2big[]
-	INIT(= N_("E1508: size of the extended attribute value is larger than the maximum size allowed"));
+	INIT(= N_("E1508: Size of the extended attribute value is larger than the maximum size allowed"));
 EXTERN char e_xattr_other[]
-	INIT(= N_("E1509: error occured when reading or writing extended attribute"));
+	INIT(= N_("E1509: Error occured when reading or writing extended attribute"));
 // E1509 - E1519 unused
 EXTERN char e_aptypes_is_null_nr_str[]
 	INIT(= "E1520: Internal error: ap_types or ap_types[idx] is NULL: %d: %s");
