@@ -29,5 +29,5 @@ int object_free_nonref(int copyID);
 void method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
 void member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
 void f_instanceof(typval_T *argvars, typval_T *rettv);
-int class_instance_of(class_T *cl, class_T *other_cl, int covariance_check);
+int class_instance_of(class_T *cl, class_T *other_cl);
 /* vim: set ft=c : */

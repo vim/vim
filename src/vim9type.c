@@ -925,10 +925,14 @@ check_type_maybe(
 	    if (actual->tt_class == NULL)
 		return OK;	// A null object matches
 
-	    // For object method arguments, do a contra-variance type check in
-	    // an extended class.  For all others, do a co-variance type check.
-	    if (class_instance_of(actual->tt_class, expected->tt_class,
-				    where.wt_kind != WT_METHOD_ARG) == FALSE)
+	    // For object method arguments, do a invariant type check in
+	    // an extended class.  For all others, do a covariance type check.
+	    if (where.wt_kind == WT_METHOD_ARG)
+	    {
+		if (actual->tt_class != expected->tt_class)
+		    ret = FAIL;
+	    }
+	    else if (!class_instance_of(actual->tt_class, expected->tt_class))
 		ret = FAIL;
 	}
 

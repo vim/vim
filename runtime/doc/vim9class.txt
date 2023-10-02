@@ -547,11 +547,9 @@ Object variables from the base class are all taken over by the child class.  It
 is not possible to override them (unlike some other languages).
 
 						*E1356* *E1357* *E1358*
-Object methods of the base class can be overruled.  The number of arguments
-must be exactly the same.  The method argument type can be a contra-variant
-type of the base class method argument type.  The method return value type can
-be a covariant type of the base class method return value type.  The method of
-the base class can be called by prefixing "super.".
+Object methods of the base class can be overruled.  The signature (arguments,
+argument types and return type) must be exactly the same.  The method of the
+base class can be called by prefixing "super.".
 
 						*E1377*
 The access level of a method (public or private) in a child class should be
