@@ -2381,7 +2381,7 @@ expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches)
     char_u	    *p;
     expand_T	    *xp = args->oe_xp;
     static char_u   hl_flags[HLF_COUNT] = HL_FLAGS;
-    size_t 	    i;
+    size_t	    i;
     int		    count = 0;
 
     if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
