@@ -226,6 +226,10 @@ gui_mch_set_rendering_options(char_u *s)
 # define WM_DPICHANGED			0x02E0
 #endif
 
+#ifndef WM_GETDPISCALEDSIZE
+# define WM_GETDPISCALEDSIZE		0x02E4
+#endif
+
 #ifndef WM_MOUSEHWHEEL
 # define WM_MOUSEHWHEEL			0x020E
 #endif
@@ -379,6 +383,7 @@ typedef enum DPI_AWARENESS {
 static int		s_dpi = DEFAULT_DPI;
 static BOOL		s_in_dpichanged = FALSE;
 static DPI_AWARENESS	s_process_dpi_aware = DPI_AWARENESS_INVALID;
+static RECT		s_suggested_rect;
 
 static UINT (WINAPI *pGetDpiForSystem)(void) = NULL;
 static UINT (WINAPI *pGetDpiForWindow)(HWND hwnd) = NULL;
@@ -4734,12 +4739,31 @@ _OnMenuSelect(HWND hwnd, WPARAM wParam, LPARAM lParam)
 }
 #endif
 
+    static BOOL
+_OnGetDpiScaledSize(HWND hwnd, UINT dpi, SIZE *size)
+{
+    //TRACE("DPI: %d, SIZE=(%d,%d), s_dpi: %d", dpi, size->cx, size->cy, s_dpi);
+
+    // Calculate new approximate size.
+    // FIXME: If a bitmap font (e.g. FixedSys) is used, the font size may not
+    // be changed.  In that case, the calculated size can be wrong.
+    size->cx = size->cx * dpi / s_dpi;
+    size->cy = size->cy * dpi / s_dpi;
+    //TRACE("New approx. SIZE=(%d,%d)", size->cx, size->cy);
+
+    return FALSE;
+}
+
     static LRESULT
-_OnDpiChanged(HWND hwnd, UINT xdpi UNUSED, UINT ydpi, RECT *rc UNUSED)
+_OnDpiChanged(HWND hwnd, UINT xdpi UNUSED, UINT ydpi, RECT *rc)
 {
     s_dpi = ydpi;
     s_in_dpichanged = TRUE;
     //TRACE("DPI: %d", ydpi);
+
+    s_suggested_rect = *rc;
+    //TRACE("Suggested pos&size: %d,%d %d,%d", rc->left, rc->top,
+    //		rc->right - rc->left, rc->bottom - rc->top);
 
     update_scrollbar_size();
     update_toolbar_size();
@@ -4893,6 +4917,8 @@ _WndProc(
 	    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 	return 1L;
 #endif
+    case WM_GETDPISCALEDSIZE:
+	return _OnGetDpiScaledSize(hwnd, (UINT)wParam, (SIZE *)lParam);
     case WM_DPICHANGED:
 	return _OnDpiChanged(hwnd, (UINT)LOWORD(wParam), (UINT)HIWORD(wParam),
 		(RECT*)lParam);
@@ -5550,7 +5576,12 @@ gui_mch_set_shellsize(
     if (IsZoomed(s_hwnd) && starting == 0)
 	ShowWindow(s_hwnd, SW_SHOWNORMAL);
 
-    GetWindowRect(s_hwnd, &window_rect);
+    if (s_in_dpichanged)
+	// Use the suggested position when in WM_DPICHANGED.
+	window_rect = s_suggested_rect;
+    else
+	// Use current position.
+	GetWindowRect(s_hwnd, &window_rect);
 
     // compute the size of the outside of the window
     win_width = width + (pGetSystemMetricsForDpi(SM_CXFRAME, s_dpi) +
@@ -5567,20 +5598,35 @@ gui_mch_set_shellsize(
     window_rect.bottom = window_rect.top + win_height;
 
     // If the window is going off the screen, move it on to the screen.
-    if ((direction & RESIZE_HOR) && window_rect.right > workarea_rect.right)
-	OffsetRect(&window_rect, workarea_rect.right - window_rect.right, 0);
+    // Don't adjust the position when in WM_DPICHANGED.
+    if (!s_in_dpichanged)
+    {
+	if ((direction & RESIZE_HOR)
+		&& window_rect.right > workarea_rect.right)
+	    OffsetRect(&window_rect,
+		    workarea_rect.right - window_rect.right, 0);
 
-    if ((direction & RESIZE_HOR) && window_rect.left < workarea_rect.left)
-	OffsetRect(&window_rect, workarea_rect.left - window_rect.left, 0);
+	if ((direction & RESIZE_HOR)
+		&& window_rect.left < workarea_rect.left)
+	    OffsetRect(&window_rect,
+		    workarea_rect.left - window_rect.left, 0);
 
-    if ((direction & RESIZE_VERT) && window_rect.bottom > workarea_rect.bottom)
-	OffsetRect(&window_rect, 0, workarea_rect.bottom - window_rect.bottom);
+	if ((direction & RESIZE_VERT)
+		&& window_rect.bottom > workarea_rect.bottom)
+	    OffsetRect(&window_rect,
+		    0, workarea_rect.bottom - window_rect.bottom);
 
-    if ((direction & RESIZE_VERT) && window_rect.top < workarea_rect.top)
-	OffsetRect(&window_rect, 0, workarea_rect.top - window_rect.top);
+	if ((direction & RESIZE_VERT)
+		&& window_rect.top < workarea_rect.top)
+	    OffsetRect(&window_rect,
+		    0, workarea_rect.top - window_rect.top);
+    }
 
     MoveWindow(s_hwnd, window_rect.left, window_rect.top,
 						win_width, win_height, TRUE);
+
+    //TRACE("New pos: %d,%d  New size: %d,%d",
+    //	    window_rect.left, window_rect.top, win_width, win_height);
 
     SetActiveWindow(s_hwnd);
     SetFocus(s_hwnd);
