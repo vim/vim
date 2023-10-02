@@ -1312,7 +1312,7 @@ ex_set(exarg_T *eap)
 }
 
 /*
- * :set operator types
+ * :set boolean option prefix
  */
 typedef enum {
     PREFIX_NO = 0,	// "no" prefix
@@ -1830,7 +1830,7 @@ stropt_get_newval(
 					     &(options[opt_idx]), OPT_GLOBAL));
     else
     {
-	++arg;	// joption_value2stringump to after the '=' or ':'
+	++arg;	// jump to after the '=' or ':'
 
 	// Set 'keywordprg' to ":help" if an empty
 	// value was passed to :set by the user.
@@ -7991,7 +7991,7 @@ ExpandSettingSubtract(
 	    return FAIL;
 	}
 
-	int num_flags = STRLEN(option_val);
+	size_t num_flags = STRLEN(option_val);
 	if (num_flags == 0)
 	    return FAIL;
 

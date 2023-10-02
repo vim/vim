@@ -588,6 +588,9 @@ typedef enum {
     XP_PREFIX_INV,	// "inv" prefix for bool option
 } xp_prefix_T;
 
+/*
+ * :set operator types
+ */
 typedef enum {
     OP_NONE = 0,
     OP_ADDING,		// "opt+=arg"
