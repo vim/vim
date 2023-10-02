@@ -173,8 +173,8 @@
 #  define FEAT_CLIPBOARD
 # endif
 # if defined(FEAT_HUGE) && !defined(FEAT_SOUND) && \
-   defined(MAC_OS_X_VERSION_MIN_REQUIRED) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED >= 101100
+	defined(__clang_major__) && __clang_major__ >= 7 && \
+	defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 #  define FEAT_SOUND
 # endif
 # if defined(FEAT_SOUND)
