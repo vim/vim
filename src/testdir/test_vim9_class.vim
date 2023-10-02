@@ -6338,7 +6338,31 @@ def Test_extended_obj_method_type_check()
     endclass
 
     class Bar extends Foo
-      def Doit(p: A): C
+      def Doit(p: C): B
+        return B.new()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "Doit": type mismatch, expected func(object<B>): object<B> but got func(object<C>): object<B>', 20)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    class Foo
+      def Doit(p: B): B
+        return B.new()
+      enddef
+    endclass
+
+    class Bar extends Foo
+      def Doit(p: B): C
         return C.new()
       enddef
     endclass
@@ -6362,12 +6386,12 @@ def Test_extended_obj_method_type_check()
     endclass
 
     class Bar extends Foo
-      def Doit(p: C): B
+      def Doit(p: A): B
         return B.new()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1383: Method "Doit": type mismatch, expected func(object<B>): object<B> but got func(object<C>): object<B>', 20)
+  v9.CheckSourceFailure(lines, 'E1383: Method "Doit": type mismatch, expected func(object<B>): object<B> but got func(object<A>): object<B>', 20)
 
   lines =<< trim END
     vim9script

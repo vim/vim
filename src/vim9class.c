@@ -2561,7 +2561,7 @@ inside_class(cctx_T *cctx_arg, class_T *cl)
 {
     for (cctx_T *cctx = cctx_arg; cctx != NULL; cctx = cctx->ctx_outer)
 	if (cctx->ctx_ufunc != NULL
-			&& class_instance_of(cctx->ctx_ufunc->uf_class, cl, TRUE))
+			&& class_instance_of(cctx->ctx_ufunc->uf_class, cl))
 	    return TRUE;
     return FALSE;
 }
@@ -2871,38 +2871,28 @@ member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
  * interfaces matches the class "other_cl".
  */
     int
-class_instance_of(class_T *cl, class_T *other_cl, int covariance_check)
+class_instance_of(class_T *cl, class_T *other_cl)
 {
     if (cl == other_cl)
 	return TRUE;
 
-    if (covariance_check)
+    // Recursively check the base classes.
+    for (; cl != NULL; cl = cl->class_extends)
     {
-	// Recursively check the base classes.
-	for (; cl != NULL; cl = cl->class_extends)
+	if (cl == other_cl)
+	    return TRUE;
+	// Check the implemented interfaces and the super interfaces
+	for (int i = cl->class_interface_count - 1; i >= 0; --i)
 	{
-	    if (cl == other_cl)
-		return TRUE;
-	    // Check the implemented interfaces and the super interfaces
-	    for (int i = cl->class_interface_count - 1; i >= 0; --i)
+	    class_T	*intf = cl->class_interfaces_cl[i];
+	    while (intf != NULL)
 	    {
-		class_T	*intf = cl->class_interfaces_cl[i];
-		while (intf != NULL)
-		{
-		    if (intf == other_cl)
-			return TRUE;
-		    // check the super interfaces
-		    intf = intf->class_extends;
-		}
+		if (intf == other_cl)
+		    return TRUE;
+		// check the super interfaces
+		intf = intf->class_extends;
 	    }
 	}
-    }
-    else
-    {
-	// contra-variance
-	for (; other_cl != NULL; other_cl = other_cl->class_extends)
-	    if (cl == other_cl)
-		return TRUE;
     }
 
     return FALSE;
@@ -2938,7 +2928,7 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
 	    }
 
 	    if (class_instance_of(object_tv->vval.v_object->obj_class,
-			li->li_tv.vval.v_class, TRUE) == TRUE)
+			li->li_tv.vval.v_class) == TRUE)
 	    {
 		rettv->vval.v_number = VVAL_TRUE;
 		return;
@@ -2947,9 +2937,8 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
     }
     else if (classinfo_tv->v_type == VAR_CLASS)
     {
-	rettv->vval.v_number = class_instance_of(
-					object_tv->vval.v_object->obj_class,
-					classinfo_tv->vval.v_class, TRUE);
+	rettv->vval.v_number = class_instance_of(object_tv->vval.v_object->obj_class,
+		classinfo_tv->vval.v_class);
     }
 }
 
