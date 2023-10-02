@@ -3128,6 +3128,10 @@ text...
 <			You may want to make a copy of a list to avoid this.
 			See |deepcopy()|.
 
+							*E1391* *E1392*
+			Locking and unlocking object and class variables is
+			currently NOT supported.
+
 
 :unlo[ckvar][!] [depth] {name} ...		*:unlockvar* *:unlo* *E1246*
 			Unlock the internal variable {name}.  Does the
