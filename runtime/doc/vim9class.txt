@@ -658,7 +658,7 @@ When a variable is declared to have the type of an object, but it is not
 initialized, the value is null.  When trying to use this null object Vim often
 does not know what class was supposed to be used.  Vim then cannot check if
 a variable name is correct and you will get an "Using a null object" error,
-even when the variable name is invalid. *E1360* *E1362* *E1363*
+even when the variable name is invalid. *E1360* *E1362*
 
 
 Default constructor ~
