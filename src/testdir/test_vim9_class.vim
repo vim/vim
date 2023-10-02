@@ -626,7 +626,7 @@ def Test_member_any_used_as_object()
     var outer_obj = Outer.new(inner_obj)
     F(outer_obj)
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _value', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_value" in class "Inner"', 1)
 
   # Try modifying a non-existing variable using an "any" object
   lines =<< trim END
@@ -1063,9 +1063,9 @@ def Test_instance_variable_access()
     assert_equal(1, trip.GetOne())
     assert_equal(2, trip.two)
     assert_equal(3, trip.three)
-    assert_fails('echo trip._one', 'E1333: Cannot access private variable: _one')
+    assert_fails('echo trip._one', 'E1333: Cannot access private variable "_one" in class "Triple"')
 
-    assert_fails('trip._one = 11', 'E1333: Cannot access private variable: _one')
+    assert_fails('trip._one = 11', 'E1333: Cannot access private variable "_one" in class "Triple"')
     assert_fails('trip.two = 22', 'E1335: Variable "two" in class "Triple" is not writable')
     trip.three = 33
     assert_equal(33, trip.three)
@@ -1315,7 +1315,7 @@ def Test_class_variable_access()
     var b = B.new()
     b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _priv_class_var', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_priv_class_var" in class "A"', 1)
 
   # A private class variable cannot be modified from a child class
   lines =<< trim END
@@ -1333,7 +1333,7 @@ def Test_class_variable_access()
     var b = B.new()
     b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _priv_class_var', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_priv_class_var" in class "A"', 1)
 
   # Access from child class extending a class and from script context
   lines =<< trim END
@@ -1514,8 +1514,8 @@ def Test_class_member()
     assert_fails('TextPos.counter = 5', 'E1335: Variable "counter" in class "TextPos" is not writable')
     assert_fails('TextPos.counter += 5', 'E1335: Variable "counter" in class "TextPos" is not writable')
 
-    assert_fails('echo TextPos._secret', 'E1333: Cannot access private variable: _secret')
-    assert_fails('TextPos._secret = 8', 'E1333: Cannot access private variable: _secret')
+    assert_fails('echo TextPos._secret', 'E1333: Cannot access private variable "_secret" in class "TextPos"')
+    assert_fails('TextPos._secret = 8', 'E1333: Cannot access private variable "_secret" in class "TextPos"')
 
     assert_equal(42, TextPos.anybody)
     TextPos.anybody = 12
@@ -3522,9 +3522,6 @@ def Test_lockvar_object_variable()
   # method arg, static method arg.
   # Also different depths
 
-  # TODO: handle inside_class in vim9class
-  # lockvar of a read-only currently fails even if inside
-
   #
   # lockvar of read-only object variable
   #
@@ -3542,8 +3539,7 @@ def Test_lockvar_object_variable()
     var o = C.new(3)
     o.Lock()
   END
-  # TODO: wrong error
-  v9.CheckSourceFailure(lines, 'E1335: Variable "val1" in class "C" is not writable')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "this.val1" in class "C"')
 
   # read-only lockvar from scriptlevel
   lines =<< trim END
@@ -3602,8 +3598,7 @@ def Test_lockvar_object_variable()
     var o = C.new(3)
     o.Lock(C.new(5))
   END
-  # TODO: wrong error, tricky since type "any"
-  v9.CheckSourceFailure(lines, 'E1335: Variable "val5" in class "C" is not writable')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val5" in class "C"')
 
   # read-only lockvar from class method arg
   lines =<< trim END
@@ -3618,8 +3613,7 @@ def Test_lockvar_object_variable()
     var o = C.new(3)
     C.Lock(o)
   END
-  # TODO: wrong error, tricky since type "any"
-  v9.CheckSourceFailure(lines, 'E1335: Variable "val6" in class "C" is not writable')
+  v9.CheckSourceFailure(lines, 'E1391: Cannot (un)lock variable "o_any.val6" in class "C"')
 
   #
   # lockvar of public object variable
@@ -3987,6 +3981,71 @@ def Test_lockvar_general()
     assert_equal([ [9], [2], [8] ], o.val)
   END
   v9.CheckSourceSuccess(lines)
+
+  # lock a script level variable from an object method
+  lines =<< trim END
+    vim9script
+
+    class C
+      def Lock()
+        lockvar l
+      enddef
+    endclass
+
+    var l = [1]
+    C.new().Lock()
+    l[0] = 11
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: l[0] = 11', 11)
+
+  # lock a list element referenced by a private object variable
+  # in an object fetched via a script level list
+  lines =<< trim END
+    vim9script
+
+    class C
+      this._v1: list<list<number>>
+      def Lock()
+        lockvar lc[0]._v1[1]
+      enddef
+    endclass
+
+    var l = [[1], [2], [3]]
+    var o = C.new(l)
+    var lc: list<C> = [ o ]
+
+    o.Lock()
+    l[0] = [22]
+    l[1] = [33]
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: l[1] = [33]', 16)
+
+  # similar to the previous test, except the locking code is executing
+  # in a class that does not own the private variable.
+  # Note that the locking code is in a class has a private variable of
+  # the same name.
+  lines =<< trim END
+    vim9script
+
+    class C2
+      this._v1: list<list<number>>
+      def Lock(obj: any)
+        lockvar lc[0]._v1[1]
+      enddef
+    endclass
+
+    class C
+      this._v1: list<list<number>>
+    endclass
+
+    var l = [[1], [2], [3]]
+    var o = C.new(l)
+    var lc: list<C> = [ o ]
+
+    var o2 = C2.new()
+    o2.Lock(o)
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "C"')
 enddef
 
 " Test for a private object method
@@ -4518,7 +4577,7 @@ def Test_static_inheritence()
     assert_equal(102, ob.AccessObject())
     assert_equal(103, oc.AccessObject())
 
-    assert_fails('echo oc.AccessPrivateStaticThroughClassName()', 'E1333: Cannot access private variable: _svar')
+    assert_fails('echo oc.AccessPrivateStaticThroughClassName()', 'E1333: Cannot access private variable "_svar" in class "A"')
 
     # verify object properly resolves to correct static
     assert_equal(1, oa.AccessStaticThroughObject())
@@ -4699,7 +4758,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _val', 2)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_val" in class "A"', 2)
 
   # access a non-existing private object member variable
   lines =<< trim END
@@ -4754,7 +4813,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _val', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_val" in class "A"', 1)
 
   # private static class variable
   lines =<< trim END
@@ -4767,7 +4826,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable: _val', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_val" in class "A"', 1)
 enddef
 
 " Test for changing the member access of an interface in a implementation class
@@ -4828,7 +4887,7 @@ def Test_modify_class_member_from_def_function()
       A.var3 = {c: 3, d: 4}
       assert_equal([3, 4], A.var2)
       assert_equal({c: 3, d: 4}, A.var3)
-      assert_fails('echo A._priv_var4', 'E1333: Cannot access private variable: _priv_var4')
+      assert_fails('echo A._priv_var4', 'E1333: Cannot access private variable "_priv_var4" in class "A"')
     enddef
     T()
   END

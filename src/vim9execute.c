@@ -2180,7 +2180,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    {
 		if (*member == '_')
 		{
-		    semsg(_(e_cannot_access_private_variable_str), m->ocm_name);
+		    semsg(_(e_cannot_access_private_variable_str),
+						m->ocm_name, cl->class_name);
 		    status = FAIL;
 		}
 
@@ -4178,9 +4179,7 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_LOCKUNLOCK:
 		{
-		    // TODO: could put lval_root info in struct
-		    typval_T	*lval_root_save = lval_root;
-		    int		lval_root_is_arg_save = lval_root_is_arg;
+		    lval_root_T	*lval_root_save = lval_root;
 		    int		res;
 #ifdef LOG_LOCKVAR
 		    ch_log(NULL, "LKVAR: execute INS_LOCKUNLOCK isn_arg %s",
@@ -4190,12 +4189,14 @@ exec_instructions(ectx_T *ectx)
 		    // Stack has the local variable, argument the whole :lock
 		    // or :unlock command, like ISN_EXEC.
 		    --ectx->ec_stack.ga_len;
-		    lval_root = STACK_TV_BOT(0);
-		    lval_root_is_arg = iptr->isn_arg.lockunlock.is_arg;
-		    res = exec_command(iptr, iptr->isn_arg.lockunlock.string);
-		    clear_tv(lval_root);
+		    lval_root_T root = { STACK_TV_BOT(0),
+					iptr->isn_arg.lockunlock.lu_cl_exec,
+					iptr->isn_arg.lockunlock.lu_is_arg };
+		    lval_root = &root;
+		    res = exec_command(iptr,
+					iptr->isn_arg.lockunlock.lu_string);
+		    clear_tv(root.lr_tv);
 		    lval_root = lval_root_save;
-		    lval_root_is_arg = lval_root_is_arg_save;
 		    if (res == FAIL)
 			goto on_error;
 		}

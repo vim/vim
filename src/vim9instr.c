@@ -2170,7 +2170,11 @@ generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
 }
 
 /*
- * Generate an EXEC instruction that takes a string argument.
+ * Generate a LOCKUNLOCK instruction.The root item, where the indexing starts
+ * to find the variable, is on the stack. The instr takes
+ * - the string to parse, "root.b[idx1][idx2].d.val", to find the variable
+ * - the class, if any, in which the string executes.
+ * - if the root item is a function argument
  * A copy is made of "line".
  */
     int
@@ -2181,8 +2185,12 @@ generate_LOCKUNLOCK(cctx_T *cctx, char_u *line, int is_arg)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_LOCKUNLOCK)) == NULL)
 	return FAIL;
-    isn->isn_arg.lockunlock.string = vim_strsave(line);
-    isn->isn_arg.lockunlock.is_arg = is_arg;
+    class_T *cl = cctx->ctx_ufunc != NULL ? cctx->ctx_ufunc->uf_class : NULL;
+    isn->isn_arg.lockunlock.lu_string = vim_strsave(line);
+    isn->isn_arg.lockunlock.lu_cl_exec = cl;
+    if (cl != NULL)
+	++cl->class_refcount;
+    isn->isn_arg.lockunlock.lu_is_arg = is_arg;
     return OK;
 }
 
@@ -2490,7 +2498,6 @@ delete_instr(isn_T *isn)
 	case ISN_LOADOPT:
 	case ISN_LOADT:
 	case ISN_LOADW:
-	case ISN_LOCKUNLOCK:
 	case ISN_PUSHEXC:
 	case ISN_PUSHFUNC:
 	case ISN_PUSHS:
@@ -2503,6 +2510,11 @@ delete_instr(isn_T *isn)
 	case ISN_STOREW:
 	case ISN_STRINGMEMBER:
 	    vim_free(isn->isn_arg.string);
+	    break;
+
+	case ISN_LOCKUNLOCK:
+	    class_unref(isn->isn_arg.lockunlock.lu_cl_exec);
+	    vim_free(isn->isn_arg.lockunlock.lu_string);
 	    break;
 
 	case ISN_SUBSTITUTE:
