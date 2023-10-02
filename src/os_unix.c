@@ -3154,8 +3154,9 @@ mch_copy_xattr(char_u *from_file, char_u *to_file)
 			errmsg = e_xattr_e2big;
 			goto error_exit;
 		    case ENOTSUP:
-			errmsg = e_xattr_enotsup;
-			goto error_exit;
+		    case EACCES:
+		    case EPERM:
+			break;
 		    case ERANGE:
 			errmsg = e_xattr_erange;
 			goto error_exit;
