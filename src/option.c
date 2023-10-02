@@ -1312,7 +1312,7 @@ ex_set(exarg_T *eap)
 }
 
 /*
- * :set operator types
+ * :set boolean option prefix
  */
 typedef enum {
     PREFIX_NO = 0,	// "no" prefix
