@@ -1557,7 +1557,7 @@ string to a number.
 
 If a type is given where it is not expected you can get *E1272* .
 
-If a type is incomplete you get *E1363*, e.g. when you have an object for
+If a type is incomplete you get *E1363* , e.g. when you have an object for
 which the class is not known (usually that is a null object).
 
 Type inference ~
@@ -1756,7 +1756,7 @@ Exporting an item can be written as: >
 	export interface MyClass ...
 <							*E1043* *E1044*
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported. {not implemented yet: class, interface}
+be exported.
 
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
@@ -1862,9 +1862,9 @@ However, the namespace cannot be resolved on its own: >
 <
 This also affects the use of |<SID>| in the legacy mapping context.  Since
 |<SID>| is only a valid prefix for a function and NOT for a namespace, you
-cannot use it
-to scope a function in a script local namespace. Instead of prefixing the
-function with |<SID>| you should use|<ScriptCmd>|. For example: >
+cannot use it to scope a function in a script local namespace. Instead of
+prefixing the function with |<SID>| you should use|<ScriptCmd>|. For example:
+>
 	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
 <
 							*:import-cycle*

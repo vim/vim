@@ -304,7 +304,7 @@ as the first character in the name, and it can be made public by prefixing
 							*class-method*
 Class methods are also declared with "static".  They can use the class
 variables but they have no access to the object variables, they cannot use the
-"this" keyword.
+"this" keyword:
 >
 	class OtherThing
 	   this.size: number
@@ -656,7 +656,7 @@ When a variable is declared to have the type of an object, but it is not
 initialized, the value is null.  When trying to use this null object Vim often
 does not know what class was supposed to be used.  Vim then cannot check if
 a variable name is correct and you will get an "Using a null object" error,
-even when the variable name is invalid. *E1360* *E1362* *E1363*
+even when the variable name is invalid. *E1360* *E1362*
 
 
 Default constructor ~
