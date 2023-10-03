@@ -1789,7 +1789,7 @@ filename.  For example: >
 Then you can use "that.item", etc.  You are free to choose the name "that".
 Use something that will be recognized as referring to the imported script.
 Avoid command names, command modifiers and builtin function names, because the
-name will shadow them.  Better not start the name starts with a capital
+name will shadow them.  It's better not to start the name with a capital
 letter, since it can then also shadow global user commands and functions.
 Also, you cannot use the name for something else in the script, such as a
 function or variable name.
