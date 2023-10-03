@@ -136,10 +136,15 @@ particular column layout. Additional whitespace and line breaks are allowed
 anywhere.
 .TP
 .IR \-R " " when
-In output the hex-value and the value are both colored with the same color depending on the hex-value. Mostly helping to differentiate printable and non-printable characters.
+In output the hex-value and the value are both colored with the same color
+depending on the hex-value. Mostly helping to differentiate printable and
+non-printable characters.
 .I \fIwhen\fP
 is
 .BR never ", " always ", or " auto .
+When the 
+.BR $NO_COLOR
+environment variable is set, colorization will be disabled.
 .TP
 .I \-seek offset
 When used after
