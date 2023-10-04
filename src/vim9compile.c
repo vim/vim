@@ -1766,6 +1766,9 @@ compile_lhs(
 		}
 		lhs->lhs_dest = dest_class_member;
 		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
+		lhs->lhs_type =
+		    class_member_type_by_idx(cctx->ctx_ufunc->uf_class,
+					FALSE, lhs->lhs_classmember_idx);
 	    }
 	    else
 	    {
@@ -3308,7 +3311,15 @@ compile_def_function(
 		    }
 
 		    type_T	*type = get_type_on_stack(&cctx, 0);
-		    if (m->ocm_type->tt_type != type->tt_type)
+		    if (m->ocm_type->tt_type == VAR_ANY
+			    && !m->ocm_has_type
+			    && type->tt_type != VAR_SPECIAL)
+		    {
+			// If the member variable type is not yet set, then use
+			// the initialization expression type.
+			m->ocm_type = type;
+		    }
+		    else if (m->ocm_type->tt_type != type->tt_type)
 		    {
 			// The type of the member initialization expression is
 			// determined at run time.  Add a runtime type check.

@@ -1509,10 +1509,11 @@ typedef enum {
  * Entry for an object or class member variable.
  */
 typedef struct {
-    char_u	*ocm_name;   // allocated
+    char_u	*ocm_name;	// allocated
     omacc_T	ocm_access;
+    int		ocm_has_type;	// type specified explicitly
     type_T	*ocm_type;
-    char_u	*ocm_init;   // allocated
+    char_u	*ocm_init;	// allocated
 } ocmember_T;
 
 // used for the lookup table of a class member index and object method index
