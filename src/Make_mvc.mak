@@ -1312,7 +1312,7 @@ notags:
 
 clean: testclean
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
-	- if exist *.obj del *.obj
+	- if exist $(OUTDIR)\*.obj del $(OUTDIR)\*.obj
 	- if exist $(VIM).exe del $(VIM).exe
 	- if exist $(VIM).ilk del $(VIM).ilk
 	- if exist $(VIM).pdb del $(VIM).pdb
