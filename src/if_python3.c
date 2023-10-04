@@ -242,7 +242,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # if PY_VERSION_HEX >= 0x03040000
 #  define PyType_GetFlags py3_PyType_GetFlags
 # endif
-#undef Py_BuildValue
+# undef Py_BuildValue
 # define Py_BuildValue py3_Py_BuildValue
 # define Py_SetPythonHome py3_Py_SetPythonHome
 # define Py_Initialize py3_Py_Initialize
@@ -251,7 +251,9 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define _Py_NoneStruct (*py3__Py_NoneStruct)
 # define _Py_FalseStruct (*py3__Py_FalseStruct)
 # define _Py_TrueStruct (*py3__Py_TrueStruct)
-# define _PyObject_NextNotImplemented (*py3__PyObject_NextNotImplemented)
+# ifndef USE_LIMITED_API
+#  define _PyObject_NextNotImplemented (*py3__PyObject_NextNotImplemented)
+# endif
 # define PyModule_AddObject py3_PyModule_AddObject
 # define PyImport_AppendInittab py3_PyImport_AppendInittab
 # define PyImport_AddModule py3_PyImport_AddModule
@@ -288,7 +290,9 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
 # define PyType_Type (*py3_PyType_Type)
-# define PyStdPrinter_Type (*py3_PyStdPrinter_Type)
+# ifndef USE_LIMITED_API
+#  define PyStdPrinter_Type (*py3_PyStdPrinter_Type)
+# endif
 # define PySlice_Type (*py3_PySlice_Type)
 # define PyFloat_Type (*py3_PyFloat_Type)
 # define PyNumber_Check (*py3_PyNumber_Check)
@@ -449,7 +453,9 @@ static void (*py3_PyErr_Clear)(void);
 static PyObject* (*py3_PyErr_Format)(PyObject *, const char *, ...);
 static void (*py3_PyErr_PrintEx)(int);
 static PyObject*(*py3__PyObject_Init)(PyObject *, PyTypeObject *);
+# ifndef USE_LIMITED_API
 static iternextfunc py3__PyObject_NextNotImplemented;
+# endif
 static PyObject* py3__Py_NoneStruct;
 static PyObject* py3__Py_FalseStruct;
 static PyObject* py3__Py_TrueStruct;
@@ -485,7 +491,9 @@ static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
 static PyObject* (*py3_PyType_GenericAlloc)(PyTypeObject *type, Py_ssize_t nitems);
 static PyObject* (*py3_PyType_GenericNew)(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static PyTypeObject* py3_PyType_Type;
+# ifndef USE_LIMITED_API
 static PyTypeObject* py3_PyStdPrinter_Type;
+# endif
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
 PyTypeObject* py3_PyBool_Type;
@@ -633,7 +641,9 @@ static struct
     {"PyEval_SaveThread", (PYTHON_PROC*)&py3_PyEval_SaveThread},
     {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&py3_PyArg_Parse},
     {"Py_IsInitialized", (PYTHON_PROC*)&py3_Py_IsInitialized},
+# ifndef USE_LIMITED_API
     {"_PyObject_NextNotImplemented", (PYTHON_PROC*)&py3__PyObject_NextNotImplemented},
+# endif
     {"_Py_NoneStruct", (PYTHON_PROC*)&py3__Py_NoneStruct},
     {"_Py_FalseStruct", (PYTHON_PROC*)&py3__Py_FalseStruct},
     {"_Py_TrueStruct", (PYTHON_PROC*)&py3__Py_TrueStruct},
@@ -681,7 +691,9 @@ static struct
     {"PyType_GenericAlloc", (PYTHON_PROC*)&py3_PyType_GenericAlloc},
     {"PyType_GenericNew", (PYTHON_PROC*)&py3_PyType_GenericNew},
     {"PyType_Type", (PYTHON_PROC*)&py3_PyType_Type},
+# ifndef USE_LIMITED_API
     {"PyStdPrinter_Type", (PYTHON_PROC*)&py3_PyStdPrinter_Type},
+# endif
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
 # if PY_VERSION_HEX < 0x030c00b0
@@ -1167,7 +1179,7 @@ reset_stdin(void)
 {
     FILE *(*py__acrt_iob_func)(unsigned) = NULL;
     FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
-    HINSTANCE hinst = hinstPy3;
+    HINSTANCE hinst = get_forwarded_dll(hinstPy3);
 
     if (hinst == NULL || is_stdin_readable())
 	return;
@@ -1219,7 +1231,7 @@ hooked_exit(int ret)
     static void
 hook_py_exit(void)
 {
-    HINSTANCE hinst = hinstPy3;
+    HINSTANCE hinst = get_forwarded_dll(hinstPy3);
 
     if (hinst == NULL || orig_exit != NULL)
 	return;
