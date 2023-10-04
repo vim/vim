@@ -2278,30 +2278,6 @@ do_lock_var(
     return ret;
 }
 
-#ifdef LOG_LOCKVAR
-    static char *
-vartype_tostring(vartype_T vartype)
-{
-    return
-	        vartype == VAR_BOOL ? "v_number"
-	      : vartype == VAR_SPECIAL ? "v_number"
-	      : vartype == VAR_NUMBER ? "v_number"
-	      : vartype == VAR_FLOAT ? "v_float"
-	      : vartype == VAR_STRING ? "v_string"
-	      : vartype == VAR_BLOB ? "v_blob"
-	      : vartype == VAR_FUNC ? "v_string"
-	      : vartype == VAR_PARTIAL ? "v_partial"
-	      : vartype == VAR_LIST ? "v_list"
-	      : vartype == VAR_DICT ? "v_dict"
-	      : vartype == VAR_JOB ? "v_job"
-	      : vartype == VAR_CHANNEL ? "v_channel"
-	      : vartype == VAR_INSTR ? "v_instr"
-	      : vartype == VAR_CLASS ? "v_class"
-	      : vartype == VAR_OBJECT ? "v_object"
-	      : "";
-}
-#endif
-
 /*
  * Lock or unlock an item.  "deep" is nr of levels to go.
  * When "check_refcount" is TRUE do not lock a list or dict with a reference
@@ -2319,7 +2295,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
     int		todo;
 
 #ifdef LOG_LOCKVAR
-    ch_log(NULL, "LKVAR: item_lock(): type %s", vartype_tostring(tv->v_type));
+    ch_log(NULL, "LKVAR: item_lock(): type %s", vartype_name(tv->v_type));
 #endif
 
     if (recurse >= DICT_MAXNEST)

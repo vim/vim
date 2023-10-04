@@ -508,8 +508,9 @@ typedef struct {
 
 // arguments to ISN_LOCKUNLOCK
 typedef struct {
-    char_u	*string;	// for exec_command
-    int		is_arg;		// is lval_root a function arg
+    char_u	*lu_string;	// for exec_command
+    class_T	*lu_cl_exec;	// executing, null if not class/obj method
+    int		lu_is_arg;	// is lval_root a function arg
 } lockunlock_T;
 
 /*

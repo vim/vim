@@ -3411,7 +3411,7 @@ EXTERN char e_public_must_be_followed_by_this_or_static[]
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_private_variable_str[]
-	INIT(= N_("E1333: Cannot access private variable: %s"));
+	INIT(= N_("E1333: Cannot access private variable \"%s\" in class \"%s\""));
 // E1334 unused
 EXTERN char e_variable_is_not_writable_str[]
 	INIT(= N_("E1335: Variable \"%s\" in class \"%s\" is not writable"));

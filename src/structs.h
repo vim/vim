@@ -4595,6 +4595,16 @@ typedef struct lval_S
 				// ignore the rest.
 } lval_T;
 
+/**
+ * This may be used to specify the base type that get_lval() uses when
+ * following a chain, for example a[idx1][idx2].
+ */
+typedef struct lval_root_S {
+    typval_T	*lr_tv;
+    class_T	*lr_cl_exec;	// executing class for access checking
+    int		lr_is_arg;
+} lval_root_T;
+
 // Structure used to save the current state.  Used when executing Normal mode
 // commands while in any other mode.
 typedef struct {

@@ -985,6 +985,52 @@ eval_foldexpr(win_T *wp, int *cp)
 }
 #endif
 
+#ifdef LOG_LOCKVAR
+typedef struct flag_string_S
+{
+    int	    flag;
+    char    *str;
+} flag_string_T;
+
+    static char *
+flags_tostring(int flags, flag_string_T *_fstring, char *buf, size_t n)
+{
+    char *p = buf;
+    *p = NUL;
+    for (flag_string_T *fstring = _fstring; fstring->flag; ++fstring)
+    {
+	if ((fstring->flag & flags) != 0)
+	{
+	    size_t len = STRLEN(fstring->str);
+	    if (n > p - buf + len + 7)
+	    {
+		STRCAT(p, fstring->str);
+		p += len;
+		STRCAT(p, " ");
+		++p;
+	    }
+	    else
+	    {
+		STRCAT(buf, "...");
+		break;
+	    }
+	}
+    }
+    return buf;
+}
+
+flag_string_T glv_flag_strings[] = {
+    { GLV_QUIET,		"QUIET" },
+    { GLV_NO_AUTOLOAD,		"NO_AUTOLOAD" },
+    { GLV_READ_ONLY,		"READ_ONLY" },
+    { GLV_NO_DECL,		"NO_DECL" },
+    { GLV_COMPILING,		"COMPILING" },
+    { GLV_ASSIGN_WITH_OP,	"ASSIGN_WITH_OP" },
+    { GLV_PREFER_FUNC,		"PREFER_FUNC" },
+    { 0,			NULL }
+};
+#endif
+
 /*
  * Fill in "lp" using "root". This is used in a special case when
  * "get_lval()" parses a bare word when "lval_root" is not NULL.
@@ -1004,30 +1050,30 @@ eval_foldexpr(win_T *wp, int *cp)
  *	execute_instructions: ISN_LOCKUNLOCK - sets lval_root from stack.
  */
     static void
-get_lval_root(lval_T *lp, typval_T *root, int is_arg)
+get_lval_root(lval_T *lp, lval_root_T *lr)
 {
 #ifdef LOG_LOCKVAR
-    ch_log(NULL, "LKVAR: get_lvalroot(): name %s", lp->ll_name);
+    ch_log(NULL, "LKVAR: get_lval_root(): name %s", lp->ll_name);
 #endif
-    if (!is_arg && root->v_type == VAR_CLASS)
+    if (!lr->lr_is_arg && lr->lr_tv->v_type == VAR_CLASS)
     {
-	if (root->vval.v_class != NULL)
+	if (lr->lr_tv->vval.v_class != NULL)
 	{
 	    // Special special case. Look for a bare class variable reference.
-	    class_T	*cl = root->vval.v_class;
+	    class_T	*cl = lr->lr_tv->vval.v_class;
 	    int		m_idx;
 	    ocmember_T	*m = class_member_lookup(cl, lp->ll_name,
 					lp->ll_name_end - lp->ll_name, &m_idx);
 	    if (m != NULL)
 	    {
 		// Assuming "inside class" since bare reference.
-		lp->ll_class = root->vval.v_class;
+		lp->ll_class = lr->lr_tv->vval.v_class;
 		lp->ll_oi = m_idx;
 		lp->ll_valtype = m->ocm_type;
 		lp->ll_tv = &lp->ll_class->class_members_tv[m_idx];
 #ifdef LOG_LOCKVAR
-		ch_log(NULL, "LKVAR: get_lvalroot() class member: name %s",
-								lp->ll_name);
+		ch_log(NULL, "LKVAR:    ... class member %s.%s",
+					lp->ll_class->class_name, lp->ll_name);
 #endif
 		return;
 	    }
@@ -1035,10 +1081,52 @@ get_lval_root(lval_T *lp, typval_T *root, int is_arg)
     }
 
 #ifdef LOG_LOCKVAR
-    ch_log(NULL, "LKVAR: get_lvalroot() any type");
+    ch_log(NULL, "LKVAR:    ... type: %s", vartype_name(lr->lr_tv->v_type));
 #endif
-    lp->ll_tv = root;
+    lp->ll_tv = lr->lr_tv;
     lp->ll_is_root = TRUE;
+}
+
+/*
+ * Check if the class has permission to access the member.
+ * Returns OK or FAIL.
+ */
+    static int
+get_lval_check_access(
+    class_T	*cl_exec,   // executing class, NULL if :def or script level
+    class_T	*cl,	    // class which contains the member
+    ocmember_T	*om,	    // member being accessed
+    char_u	*p,	    // char after member name
+    int		flags)	    // GLV flags to check if writing to lval
+{
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: get_lval_check_access(), cl_exec %p, cl %p, %c",
+						(void*)cl_exec, (void*)cl, *p);
+#endif
+    if (cl_exec == NULL || cl_exec != cl)
+    {
+	switch (om->ocm_access)
+	{
+	    case VIM_ACCESS_PRIVATE:
+		semsg(_(e_cannot_access_private_variable_str),
+						om->ocm_name, cl->class_name);
+		return FAIL;
+	    case VIM_ACCESS_READ:
+		// If [idx] or .key following, read only OK.
+		if (*p == '[' || *p == '.')
+		    break;
+		if ((flags & GLV_READ_ONLY) == 0)
+		{
+		    semsg(_(e_variable_is_not_writable_str),
+						om->ocm_name, cl->class_name);
+		    return FAIL;
+		}
+		break;
+	    case VIM_ACCESS_ALL:
+		break;
+	}
+    }
+    return OK;
 }
 
 /*
@@ -1083,10 +1171,19 @@ get_lval(
     int		quiet = flags & GLV_QUIET;
     int		writing = 0;
     int		vim9script = in_vim9script();
+    class_T	*cl_exec = NULL;    // class that is executing, or NULL.
 
 #ifdef LOG_LOCKVAR
-    ch_log(NULL, "LKVAR: get_lval(): name %s, lval_root %p",
-						    name, (void*)lval_root);
+    if (lval_root == NULL)
+	ch_log(NULL,
+	       "LKVAR: get_lval(): name %s, lval_root (nil)", name);
+    else
+	ch_log(NULL,
+	   "LKVAR: get_lval(): name %s, lr_tv %p lr_is_arg %d",
+	    name, (void*)lval_root->lr_tv, lval_root->lr_is_arg);
+    char buf[80];
+    ch_log(NULL, "LKVAR:    ...: GLV flags %s",
+		    flags_tostring(flags, glv_flag_strings, buf, sizeof(buf)));
 #endif
 
     // Clear everything in "lp".
@@ -1221,15 +1318,16 @@ get_lval(
     if ((*p != '[' && *p != '.'))
     {
 	if (lval_root != NULL)
-	    get_lval_root(lp, lval_root, lval_root_is_arg);
+	    get_lval_root(lp, lval_root);
 	return p;
     }
 
     if (vim9script && lval_root != NULL)
     {
 	// using local variable
-	lp->ll_tv = lval_root;
+	lp->ll_tv = lval_root->lr_tv;
 	v = NULL;
+	cl_exec = lval_root->lr_cl_exec;
     }
     else
     {
@@ -1643,26 +1741,9 @@ get_lval(
 		    lp->ll_oi = m_idx;
 		    if (om != NULL)
 		    {
-			switch (om->ocm_access)
-			{
-			    case VIM_ACCESS_PRIVATE:
-				semsg(_(e_cannot_access_private_variable_str),
-					om->ocm_name);
-				return NULL;
-			    case VIM_ACCESS_READ:
-				// If [idx] or .key following, read only OK.
-				if (*p == '[' || *p == '.')
-				    break;
-				if ((flags & GLV_READ_ONLY) == 0)
-				{
-				    semsg(_(e_variable_is_not_writable_str),
-					    om->ocm_name, cl->class_name);
-				    return NULL;
-				}
-				break;
-			    case VIM_ACCESS_ALL:
-				break;
-			}
+			if (get_lval_check_access(cl_exec, cl, om,
+							  p, flags) == FAIL)
+			    return NULL;
 
 			lp->ll_valtype = om->ocm_type;
 

@@ -212,11 +212,20 @@ compile_lock_unlock(
     if (p[1] != ':')
     {
 	char_u *end = find_name_end(p, NULL, NULL, FNE_CHECK_START);
-	// If name is is locally accessible, except for local var,
+
+	// The most important point is that something like
+	// name[idx].member... needs to be resolved at runtime, get_lval(),
+	// starting from the root "name".
+
+	// These checks are reminiscent of the variable_exists function.
+	// But most of the matches require special handling.
+
+	// If bare name is is locally accessible, except for local var,
 	// then put it on the stack to use with ISN_LOCKUNLOCK.
 	// This could be v.memb, v[idx_key]; bare class variable,
-	// function arg. The local variable on the stack, will be passed
-	// to ex_lockvar() indirectly.
+	// function arg. The item on the stack, will be passed
+	// to ex_lockvar() indirectly and be used as the root for get_lval.
+	// A bare script variable name needs no special handling.
 
 	char_u	*name = NULL;
 	int	len = end - p;
@@ -233,7 +242,7 @@ compile_lock_unlock(
 	    // Push the local on the stack, could be "this".
 	    name = p;
 #ifdef LOG_LOCKVAR
-	    ch_log(NULL, "LKVAR: compile... lookup_local: name %s", name);
+	    ch_log(NULL, "LKVAR:    ... lookup_local: name %s", name);
 #endif
 	}
 	if (name == NULL)
@@ -247,7 +256,7 @@ compile_lock_unlock(
 		    name = cl->class_name;
 		    len = STRLEN(name);
 #ifdef LOG_LOCKVAR
-		    ch_log(NULL, "LKVAR: compile... cctx_class_member: name %s",
+		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
 			   name);
 #endif
 		}
@@ -255,23 +264,33 @@ compile_lock_unlock(
 	}
 	if (name == NULL)
 	{
-	    int	    idx;
-	    type_T  *type;
 	    // Can lockvar any function arg.
-	    // TODO: test arg[idx]/arg.member
-	    if (arg_exists(p, len, &idx, &type, NULL, cctx) == OK)
+	    if (arg_exists(p, len, NULL, NULL, NULL, cctx) == OK)
 	    {
 		name = p;
 		is_arg = TRUE;
 #ifdef LOG_LOCKVAR
-		ch_log(NULL, "LKVAR: compile... arg_exists: name %s", name);
+		ch_log(NULL, "LKVAR:    ... arg_exists: name %s", name);
+#endif
+	    }
+	}
+	if (name == NULL)
+	{
+	    // No special handling for a bare script variable; but
+	    // if followed by '[' or '.', it's a root for get_lval().
+	    if (script_var_exists(p, len, cctx, NULL) == OK
+		&& (*end == '.' || *end == '['))
+	    {
+		name = p;
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR:    ... script_var_exists: name %s", name);
 #endif
 	    }
 	}
 	if (name != NULL)
 	{
 #ifdef LOG_LOCKVAR
-	    ch_log(NULL, "LKVAR: compile... INS_LOCKUNLOCK %s", name);
+	    ch_log(NULL, "LKVAR:    ... INS_LOCKUNLOCK %s", name);
 #endif
 	    if (compile_load(&name, name + len, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
@@ -292,7 +311,7 @@ compile_lock_unlock(
 	else
 	    vim_snprintf((char *)buf, len, "%s %d %s", cmd, deep, p);
 #ifdef LOG_LOCKVAR
-	ch_log(NULL, "LKVAR: compile... buf %s", buf);
+	ch_log(NULL, "LKVAR:    ... buf %s", buf);
 #endif
 	if (isn == ISN_LOCKUNLOCK)
 	    ret = generate_LOCKUNLOCK(cctx, buf, is_arg);
