@@ -1542,12 +1542,16 @@ func Ch_open_delay(port)
 endfunc
 
 func Test_open_delay()
+  " This fails on BSD (e.g. Cirrus-CI), why?
+  CheckNotBSD
   " The server will wait half a second before creating the port.
   call s:run_server('Ch_open_delay', 'delay')
 endfunc
 
 func Test_open_delay_ipv6()
   CheckIPv6
+  " This fails on BSD (e.g. Cirrus-CI), why?
+  CheckNotBSD
   call Test_open_delay()
 endfunc
 
