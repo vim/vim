@@ -72,6 +72,7 @@ parse_member(
     char_u	*varname,
     int		has_public,	    // TRUE if "public" seen before "varname"
     char_u	**varname_end,
+    int		*has_type,
     garray_T	*type_list,
     type_T	**type_ret,
     char_u	**init_expr)
@@ -86,6 +87,7 @@ parse_member(
     char_u *colon = skipwhite(*varname_end);
     char_u *type_arg = colon;
     type_T *type = NULL;
+    *has_type = FALSE;
     if (*colon == ':')
     {
 	if (VIM_ISWHITE(**varname_end))
@@ -102,6 +104,7 @@ parse_member(
 	type = parse_type(&type_arg, type_list, TRUE);
 	if (type == NULL)
 	    return FAIL;
+	*has_type = TRUE;
     }
 
     char_u *init_arg = skipwhite(type_arg);
@@ -160,6 +163,7 @@ add_member(
     char_u	*varname,
     char_u	*varname_end,
     int		has_public,
+    int		has_type,
     type_T	*type,
     char_u	*init_expr)
 {
@@ -169,6 +173,7 @@ add_member(
     m->ocm_name = vim_strnsave(varname, varname_end - varname);
     m->ocm_access = has_public ? VIM_ACCESS_ALL
 		      : *varname == '_' ? VIM_ACCESS_PRIVATE : VIM_ACCESS_READ;
+    m->ocm_has_type = has_type;
     m->ocm_type = type;
     if (init_expr != NULL)
 	m->ocm_init = init_expr;
@@ -1149,6 +1154,10 @@ add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
     static void
 add_class_members(class_T *cl, exarg_T *eap)
 {
+    garray_T	type_list;
+
+    ga_init2(&type_list, sizeof(type_T *), 10);
+
     // Allocate a typval for each class member and initialize it.
     cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
 					    cl->class_class_member_count);
@@ -1164,6 +1173,13 @@ add_class_members(class_T *cl, exarg_T *eap)
 	    typval_T *etv = eval_expr(m->ocm_init, eap);
 	    if (etv != NULL)
 	    {
+		if (m->ocm_type->tt_type == VAR_ANY
+			&& !m->ocm_has_type
+			&& etv->v_type != VAR_SPECIAL)
+		    // If the member variable type is not yet set, then use
+		    // the initialization expression type.
+		    m->ocm_type = typval2type(etv, get_copyID(), &type_list,
+				    TVTT_DO_MEMBER|TVTT_MORE_SPECIFIC);
 		*tv = *etv;
 		vim_free(etv);
 	    }
@@ -1175,6 +1191,8 @@ add_class_members(class_T *cl, exarg_T *eap)
 	    tv->vval.v_string = NULL;
 	}
     }
+
+    clear_type_list(&type_list);
 }
 
 /*
@@ -1643,6 +1661,7 @@ early_ret:
 	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
+	    int	    has_type = FALSE;
 
 	    if (!is_class && *varname == '_')
 	    {
@@ -1653,7 +1672,7 @@ early_ret:
 	    }
 
 	    if (parse_member(eap, line, varname, has_public,
-			  &varname_end, &type_list, &type,
+			  &varname_end, &has_type, &type_list, &type,
 			  is_class ? &init_expr: NULL) == FAIL)
 		break;
 	    if (is_reserved_varname(varname, varname_end))
@@ -1668,7 +1687,7 @@ early_ret:
 		break;
 	    }
 	    if (add_member(&objmembers, varname, varname_end,
-					  has_public, type, init_expr) == FAIL)
+				has_public, has_type, type, init_expr) == FAIL)
 	    {
 		vim_free(init_expr);
 		break;
@@ -1776,12 +1795,14 @@ early_ret:
 	    //	"static _varname"
 	    //	"static varname"
 	    //	"public static varname"
-	    char_u *varname = p;
-	    char_u *varname_end = NULL;
-	    type_T *type = NULL;
-	    char_u *init_expr = NULL;
+	    char_u  *varname = p;
+	    char_u  *varname_end = NULL;
+	    int	    has_type = FALSE;
+	    type_T  *type = NULL;
+	    char_u  *init_expr = NULL;
+
 	    if (parse_member(eap, line, varname, has_public,
-		      &varname_end, &type_list, &type,
+		      &varname_end, &has_type, &type_list, &type,
 		      is_class ? &init_expr : NULL) == FAIL)
 		break;
 	    if (is_reserved_varname(varname, varname_end))
@@ -1796,7 +1817,7 @@ early_ret:
 		break;
 	    }
 	    if (add_member(&classmembers, varname, varname_end,
-				      has_public, type, init_expr) == FAIL)
+			      has_public, has_type, type, init_expr) == FAIL)
 	    {
 		vim_free(init_expr);
 		break;
@@ -2078,6 +2099,35 @@ class_member_type(
     }
 
     return m->ocm_type;
+}
+
+/*
+ * Given a class or object variable index, return the variable type
+ */
+    type_T *
+class_member_type_by_idx(
+    class_T	*cl,
+    int		is_object,
+    int		member_idx)
+{
+    ocmember_T	*m;
+    int		member_count;
+
+    if (is_object)
+    {
+	m = cl->class_obj_members;
+	member_count = cl->class_obj_member_count;
+    }
+    else
+    {
+	m = cl->class_class_members;
+	member_count = cl->class_class_member_count;
+    }
+
+    if (member_idx >= member_count)
+	return NULL;
+
+    return m[member_idx].ocm_type;
 }
 
 /*
