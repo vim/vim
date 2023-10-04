@@ -2172,8 +2172,8 @@ get_member_tv(
 
     if (*name == '_')
     {
-	semsg(_(e_cannot_access_private_variable_str), m->ocm_name,
-							    cl->class_name);
+	emsg_var_cl_define(e_cannot_access_private_variable_str,
+							m->ocm_name, 0, cl);
 	return FAIL;
     }
 
@@ -2332,8 +2332,8 @@ class_object_index(
 
 	if (*name == '_')
 	{
-	    semsg(_(e_cannot_access_private_variable_str), m->ocm_name,
-							    cl->class_name);
+	    emsg_var_cl_define(e_cannot_access_private_variable_str,
+							m->ocm_name, 0, cl);
 	    return FAIL;
 	}
 
@@ -2581,6 +2581,57 @@ member_lookup(
 	return class_member_lookup(cl, name, namelen, idx);
     else
 	return object_member_lookup(cl, name, namelen, idx);
+}
+
+/*
+ * Find the class that defines the named member. Look up the hierarchy
+ * starting at "cl".
+ *
+ * Return the class that defines the member "name", else NULL.
+ * Fill in "p_m", if specified, for ocmember_T in found class.
+ */
+// NOTE: if useful for something could also indirectly return vartype and idx.
+    static class_T *
+class_defining_member(class_T *cl, char_u *name, size_t len, ocmember_T **p_m)
+{
+    class_T	*cl_found = NULL;
+    vartype_T	vartype = VAR_UNKNOWN;
+    ocmember_T	*m_found = NULL;
+
+    len = len != 0 ? len : STRLEN(name);
+
+    // Loop assumes if member is not defined in "cl", then it is not
+    // defined in any super class; the last class where it's found is the
+    // class where it is defined. Once the vartype is found, the other
+    // type is no longer checked.
+    for (class_T *super = cl; super != NULL; super = super->class_extends)
+    {
+	class_T		*cl_tmp = NULL;
+	ocmember_T	*m = NULL;
+	if (vartype == VAR_UNKNOWN || vartype == VAR_OBJECT)
+	{
+	    if ((m = object_member_lookup(super, name, len, NULL)) != NULL)
+	    {
+		cl_tmp = super;
+		vartype = VAR_OBJECT;
+	    }
+	}
+	if (vartype == VAR_UNKNOWN || vartype == VAR_CLASS)
+	{
+	    if (( m = class_member_lookup(super, name, len, NULL)) != NULL)
+	    {
+		cl_tmp = super;
+		vartype = VAR_OBJECT;
+	    }
+	}
+	if (cl_tmp == NULL)
+	    break;  // member is not in this or any super class.
+	cl_found = cl_tmp;
+	m_found = m;
+    }
+    if (p_m != NULL)
+	*p_m = m_found;
+    return cl_found;
 }
 
 /*
@@ -2854,6 +2905,22 @@ object_free_nonref(int copyID)
 
     next_nonref_obj = NULL;
     return did_free;
+}
+
+/*
+ * Output message which takes a variable name and the class that defines it.
+ * "cl" is that class where the name was found. Search "cl"'s hierarchy to
+ * find the defining class.
+ */
+    void
+emsg_var_cl_define(char *msg, char_u *name, size_t len, class_T *cl)
+{
+    ocmember_T	*m;
+    class_T	*cl_def = class_defining_member(cl, name, len, &m);
+    if (cl_def != NULL)
+	semsg(_(msg), m->ocm_name, cl_def->class_name);
+    else
+	emsg(_(e_internal_error_please_report_a_bug));
 }
 
 /*

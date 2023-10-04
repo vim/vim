@@ -1725,6 +1725,119 @@ def Test_class_member()
   v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "A": bar', 5)
 enddef
 
+" These messages should show the defining class of the variable (base class),
+" not the class that did the reference (super class)
+def Test_defining_class_message()
+  var lines =<< trim END
+    vim9script
+
+    class Base
+      this._v1: list<list<number>>
+    endclass
+
+    class Child extends Base
+    endclass
+
+    var o = Child.new()
+    var x = o._v1
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Base"', 11)
+  lines =<< trim END
+    vim9script
+
+    class Base
+      this._v1: list<list<number>>
+    endclass
+
+    class Child extends Base
+    endclass
+
+    def F()
+      var o = Child.new()
+      var x = o._v1
+    enddef
+    F()
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Base"', 2)
+  lines =<< trim END
+    vim9script
+
+    class Base
+      this.v1: list<list<number>>
+    endclass
+
+    class Child extends Base
+    endclass
+
+    var o = Child.new()
+    o.v1 = []
+  END
+  v9.CheckSourceFailure(lines, 'E1335: Variable "v1" in class "Base" is not writable', 11)
+  lines =<< trim END
+    vim9script
+
+    class Base
+      this.v1: list<list<number>>
+    endclass
+
+    class Child extends Base
+    endclass
+
+    def F()
+      var o = Child.new()
+      o.v1 = []
+    enddef
+    F()
+  END
+
+  # Attempt to read a private variable that is in the middle
+  # of the class hierarchy.
+  v9.CheckSourceFailure(lines, 'E1335: Variable "v1" in class "Base" is not writable', 2)
+  lines =<< trim END
+    vim9script
+
+    class Base0
+    endclass
+
+    class Base extends Base0
+      this._v1: list<list<number>>
+    endclass
+
+    class Child extends Base
+    endclass
+
+    def F()
+      var o = Child.new()
+      var x = o._v1
+    enddef
+    F()
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Base"', 2)
+
+  # Attempt to read a private variable that is at the start
+  # of the class hierarchy.
+  lines =<< trim END
+    vim9script
+
+    class Base0
+    endclass
+
+    class Base extends Base0
+    endclass
+
+    class Child extends Base
+      this._v1: list<list<number>>
+    endclass
+
+    def F()
+      var o = Child.new()
+      var x = o._v1
+    enddef
+    F()
+  END
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Child"', 2)
+enddef
+
 func Test_class_garbagecollect()
   let lines =<< trim END
     vim9script

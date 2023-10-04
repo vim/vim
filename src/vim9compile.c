@@ -1616,7 +1616,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
 				? e_cannot_access_private_variable_str
 				: e_variable_is_not_writable_str;
-	semsg(_(msg), m->ocm_name, cl->class_name);
+	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
 	return FALSE;
     }
 

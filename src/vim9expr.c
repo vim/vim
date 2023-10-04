@@ -407,8 +407,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	{
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
-		semsg(_(e_cannot_access_private_variable_str), m->ocm_name,
-							    cl->class_name);
+		emsg_var_cl_define(e_cannot_access_private_variable_str,
+							m->ocm_name, 0, cl);
 		return FAIL;
 	    }
 
@@ -443,8 +443,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // it is defined.
 	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
 	    {
-		semsg(_(e_cannot_access_private_variable_str), m->ocm_name,
-							    cl->class_name);
+		emsg_var_cl_define(e_cannot_access_private_variable_str,
+							m->ocm_name, 0, cl);
 		return FAIL;
 	    }
 
