@@ -350,6 +350,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     jsonnet: ['file.jsonnet', 'file.libsonnet'],
     jsp: ['file.jsp'],
     julia: ['file.jl'],
+    just: ['justfile', 'Justfile', '.justfile', 'config.just'],
     kconfig: ['Kconfig', 'Kconfig.debug', 'Kconfig.file'],
     kdl: ['file.kdl'],
     kivy: ['file.kv'],
