@@ -53,18 +53,18 @@ Pertanto
 .B \-c 010
 e
 .B \-cols 8
-sono notazioni equivalenti fra loro.
+sono tutte notazioni equivalenti fra loro.
 .PP
 .TP
 .IR \-a " | " \-autoskip
 Richiesta di omissione: Un singolo '*' rimpiazza righe a zeri binari. Default: off.
 .TP
 .IR \-b " | " \-bits
-Richiesta di una immagine binaria (cifre binarie), invece che esadecimale.
+Richiesta di un'immagine binaria (cifre binarie), invece che esadecimale.
 Quest'opzione scrive un byte come otto cifre "1" e "0" invece di usare i
 numeri esadecimali. Ogni riga è preceduta da un indirizzo in esadecimale e
-seguita da una decodifica ASCII (o EBCDIC). Le opzioni specificabili dalla
-riga comando \-r, \-p, \-i non funzionano in questo modo.
+seguita da una decodifica ASCII (o EBCDIC). Le opzioni \-r, \-p, \-i,
+specificabili dalla riga comando, non funzionano in questo modo.
 .TP
 .IR "\-c colonne " | " \-cols colonne"
 In ogni riga sono formattate
@@ -123,7 +123,8 @@ Aggiunge
 alla posizione visualizzata dei byte del file.
 .TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
-L'output è nello stile di un dump esadecimale continuo sotto postscript. Noto anche come stile esadecimale semplice.
+L'output è nello stile di un dump esadecimale continuo sotto postscript.
+Noto anche come stile esadecimale semplice.
 .TP
 .IR \-r " | " \-revert
 Ricostruisce: converte (o mette una patch) da immagine esadecimale, a file binario.
@@ -131,14 +132,19 @@ Se non scrive sullo `standard output', xxd scrive nel file di output in maniera
 continua, senza interruzioni.  Usare la combinazione
 .I \-r \-p
 per leggere dump in stile esadecimale semplice, senza l'informazione del numero
-di riga e senza un particolare tracciato di colonna.  Spazi o righe vuote possono
-essere presenti [e vengono ignorati].
+di riga e senza un particolare tracciato di colonna.  Spazi o righe vuote
+possono essere presenti [e vengono ignorati].
 .TP
 .IR \-R " "[quando]
-Nell'output i valori esadecimali e i caratteri corrispondenti hanno entrambi lo stesso colore, a seconda del valore esadecimale. Utile soprattutto a distinguere i caratteri stampabili da quello non stampabili.
+Nell'output i valori esadecimali e i caratteri corrispondenti hanno entrambi
+lo stesso colore, a seconda del valore esadecimale. Utile soprattutto a
+distinguere i caratteri stampabili da quelli non stampabili.
 .I quando
 può assumere i valori
 .BR never ", " always ", o " auto .
+Quando la variabile d'ambiente
+.BR $NO_COLOR
+è impostata, la colorazione viene disabilitata.
 .TP
 .I \-seek distanza
 Usato con l'opzione
@@ -218,8 +224,7 @@ L'autore preferisce monitorare il comportamento di xxd con strace(1) o truss(1),
 .PP
 .br
 Stampa tutto tranne le prime tre righe (0x30 byte in esadecimale) di
-.BR file
-\.
+.BR file .
 .br
 \fI% xxd \-s 0x30 file\fR
 .PP
