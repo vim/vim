@@ -1,23 +1,23 @@
-#env:
-#  CIRRUS_CLONE_DEPTH: 3
-#  FEATURES: huge
-#
-#freebsd_task:
-#  name: FreeBSD
-#  matrix:
-#    - name: FreeBSD 14.0
-#      freebsd_instance:
-#        image_family: freebsd-14-0
-#  timeout_in: 20m
-#  install_script:
-#    - pkg install -y gettext
-#  build_script:
-#    - NPROC=$(getconf _NPROCESSORS_ONLN)
-#    - ./configure --with-features=${FEATURES}
-#    - make -j${NPROC}
-#  test_script:
-#    - src/vim --version
-#      # run tests as user "cirrus" instead of root
-#    - pw useradd cirrus -m
-#    - chown -R cirrus:cirrus .
-#    - sudo -u cirrus make test
+env:
+  CIRRUS_CLONE_DEPTH: 3
+  FEATURES: huge
+
+freebsd_task:
+  name: FreeBSD
+  matrix:
+    - name: FreeBSD 14.0
+      freebsd_instance:
+        image_family: freebsd-14-0
+  timeout_in: 20m
+  install_script:
+    - pkg install -y gettext
+  build_script:
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - ./configure --with-features=${FEATURES}
+    - make -j${NPROC}
+  test_script:
+    - src/vim --version
+      # run tests as user "cirrus" instead of root
+    - pw useradd cirrus -m
+    - chown -R cirrus:cirrus .
+    - sudo -u cirrus make test
