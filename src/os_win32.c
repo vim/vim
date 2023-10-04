@@ -626,15 +626,20 @@ get_imported_func_info(HINSTANCE hInst, const char *funcname, int info,
     PIMAGE_THUNK_DATA		pIAT;	    // Import Address Table
     PIMAGE_THUNK_DATA		pINT;	    // Import Name Table
     PIMAGE_IMPORT_BY_NAME	pImpName;
+    DWORD			ImpVA;
 
     if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
 	return NULL;
     pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
     if (pPE->Signature != IMAGE_NT_SIGNATURE)
 	return NULL;
-    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage
-	    + pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-							    .VirtualAddress);
+
+    ImpVA = pPE->OptionalHeader
+		.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    if (ImpVA == 0)
+	return NULL;	// No Import Table
+    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage + ImpVA);
+
     for (; pImpDesc->FirstThunk; ++pImpDesc)
     {
 	if (!pImpDesc->OriginalFirstThunk)
@@ -706,6 +711,65 @@ get_dll_import_func(HINSTANCE hInst, const char *funcname)
 hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook)
 {
     return get_imported_func_info(hInst, funcname, 2, hook);
+}
+#endif
+
+#if defined(FEAT_PYTHON3) || defined(PROTO)
+/*
+ * Check if the specified DLL is a function forwarder.
+ * If yes, return the instance of the forwarded DLL.
+ * If no, return the specified DLL.
+ * If error, return NULL.
+ * This assumes that the DLL forwards all the function to a single DLL.
+ */
+    HINSTANCE
+get_forwarded_dll(HINSTANCE hInst)
+{
+    PBYTE			pImage = (PBYTE)hInst;
+    PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
+    PIMAGE_NT_HEADERS		pPE;
+    PIMAGE_EXPORT_DIRECTORY	pExpDir;
+    DWORD			ExpVA;
+    DWORD			ExpSize;
+    LPDWORD			pFunctionTable;
+
+    if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
+	return NULL;
+    pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
+    if (pPE->Signature != IMAGE_NT_SIGNATURE)
+	return NULL;
+
+    ExpVA = pPE->OptionalHeader
+		.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    ExpSize = pPE->OptionalHeader
+		.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
+    if (ExpVA == 0)
+	return hInst;	// No Export Directory
+    pExpDir = (PIMAGE_EXPORT_DIRECTORY)(pImage + ExpVA);
+    pFunctionTable = (LPDWORD)(pImage + pExpDir->AddressOfFunctions);
+
+    if (pExpDir->NumberOfNames == 0)
+	return hInst;	// No export names.
+
+    // Check only the first entry.
+    if ((pFunctionTable[0] < ExpVA) || (pFunctionTable[0] >= ExpVA + ExpSize))
+	// The first entry is not a function forwarder.
+	return hInst;
+
+    // The first entry is a function forwarder.
+    // The name is represented as "DllName.FunctionName".
+    const char *name = (const char *)(pImage + pFunctionTable[0]);
+    const char *p = strchr(name, '.');
+    if (p == NULL)
+	return hInst;
+
+    // Extract DllName.
+    char buf[MAX_PATH];
+    if (p - name + 1 > sizeof(buf))
+	return NULL;
+    strncpy(buf, name, p - name);
+    buf[p - name] = '\0';
+    return GetModuleHandleA(buf);
 }
 #endif
 
