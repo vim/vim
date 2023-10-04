@@ -51,5 +51,6 @@ void serverProcessPendingMessages(void);
 char *charset_id2name(int id);
 char *quality_id2name(DWORD id);
 int get_logfont(LOGFONTW *lf, char_u *name, HDC printer_dc, int verbose);
+void gui_mch_expand_font(optexpand_T *args, void *param, int (*cb)(char_u *val));
 void channel_init_winsock(void);
 /* vim: set ft=c : */

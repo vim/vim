@@ -731,7 +731,8 @@ did_set_option_listflag(char_u *val, char_u *flags, char *errbuf)
 }
 
 /*
- * Expand an option that accepts a list of string values.
+ * Expand an option that accepts a list of fixed string values with known
+ * number of items.
  */
     static int
 expand_set_opt_string(
@@ -801,10 +802,11 @@ static char_u *set_opt_callback_orig_option = NULL;
 static char_u *((*set_opt_callback_func)(expand_T *, int));
 
 /*
- * Callback used by expand_set_opt_generic to also include the original value.
+ * Callback used by expand_set_opt_generic to also include the original value
+ * as the first item.
  */
     static char_u *
-expand_set_opt_callback(expand_T *xp, int idx)
+expand_set_opt_generic_cb(expand_T *xp, int idx)
 {
     if (idx == 0)
     {
@@ -817,7 +819,8 @@ expand_set_opt_callback(expand_T *xp, int idx)
 }
 
 /*
- * Expand an option with a callback that iterates through a list of possible names.
+ * Expand an option with a callback that iterates through a list of possible
+ * names using an index.
  */
     static int
 expand_set_opt_generic(
@@ -838,7 +841,7 @@ expand_set_opt_generic(
 	    args->oe_regmatch,
 	    matches,
 	    numMatches,
-	    expand_set_opt_callback,
+	    expand_set_opt_generic_cb,
 	    FALSE);
 
     set_opt_callback_orig_option = NULL;
@@ -846,6 +849,95 @@ expand_set_opt_generic(
     return ret;
 }
 
+static garray_T *expand_cb_ga;
+static optexpand_T *expand_cb_args;
+
+/*
+ * Callback provided to a function in expand_set_opt_callback. Will perform
+ * regex matching against the value and add to the list.
+ *
+ * Returns OK usually. Returns FAIL if it failed to allocate memory, and the
+ * caller should terminate the enumeration.
+ */
+    static int
+expand_set_opt_callback_cb(char_u *val)
+{
+    regmatch_T	*regmatch = expand_cb_args->oe_regmatch;
+    expand_T	*xp = expand_cb_args->oe_xp;
+    garray_T	*ga = expand_cb_ga;
+    char_u	*str;
+
+    if (val == NULL || *val == NUL)
+	return OK;
+
+    if (xp->xp_pattern[0] != NUL &&
+	    !vim_regexec(regmatch, val, (colnr_T)0))
+	return OK;
+
+    str = vim_strsave_escaped(val, (char_u *)" \t\\");
+
+    if (str == NULL)
+	return FAIL;
+
+    if (ga_grow(ga, 1) == FAIL)
+    {
+	vim_free(str);
+	return FAIL;
+    }
+
+    ((char_u **)ga->ga_data)[ga->ga_len] = str;
+    ++ga->ga_len;
+    return OK;
+}
+
+/*
+ * Expand an option with a provided function that takes a callback. The
+ * function will enumerate through all options and call the callback to add it
+ * to the list.
+ *
+ * "func" is the enumerator function that will generate the list of options.
+ * "func_params" is a single parameter that will be passed to func.
+ */
+    static int
+expand_set_opt_callback(
+	optexpand_T *args,
+	void (*func)(optexpand_T *, void* params, int (*cb)(char_u *val)),
+	void *func_params,
+	int *numMatches,
+	char_u ***matches)
+{
+    garray_T	ga;
+    int		include_orig_val = args->oe_include_orig_val;
+    char_u	*option_val = args->oe_opt_value;
+
+    ga_init2(&ga, sizeof(char *), 30);
+
+    if (include_orig_val && *option_val != NUL)
+    {
+	char_u *p = vim_strsave(option_val);
+	if (p == NULL)
+	    return FAIL;
+	if (ga_grow(&ga, 1) == FAIL)
+	{
+	    vim_free(p);
+	    return FAIL;
+	}
+	((char_u **)ga.ga_data)[ga.ga_len] = p;
+	++ga.ga_len;
+    }
+
+    expand_cb_ga = &ga;
+    expand_cb_args = args;
+
+    func(args, func_params, expand_set_opt_callback_cb);
+
+    expand_cb_ga = NULL;
+    expand_cb_args = NULL;
+
+    *matches = ga.ga_data;
+    *numMatches = ga.ga_len;
+    return OK;
+}
 
 /*
  * Expand an option which is a list of flags.
@@ -2235,6 +2327,27 @@ did_set_guifont(optset_T *args UNUSED)
     }
 
     return errmsg;
+}
+
+/*
+ * Expand the 'guifont' option. Only when GUI is being used. Each platform has
+ * specific behaviors.
+ */
+    int
+expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches)
+{
+    if (!gui.in_use)
+	return FAIL;
+
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
+    char_u **varp = (char_u **)args->oe_varp;
+    int wide = (varp == &p_guifontwide);
+
+    return expand_set_opt_callback(
+	    args, gui_mch_expand_font, &wide, numMatches, matches);
+# else
+    return FAIL;
+# endif
 }
 
 # if defined(FEAT_XFONTSET) || defined(PROTO)

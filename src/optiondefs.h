@@ -1164,9 +1164,13 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"guifont",	    "gfn",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
+    {"guifont",	    "gfn",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP
+#if !defined(FEAT_GUI_GTK)
+				|P_COLON
+#endif
+				,
 #ifdef FEAT_GUI
-			    (char_u *)&p_guifont, PV_NONE, did_set_guifont, NULL,
+			    (char_u *)&p_guifont, PV_NONE, did_set_guifont, expand_set_guifont,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
@@ -1183,10 +1187,14 @@ static struct vimoption options[] =
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"guifontwide", "gfw",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
+    {"guifontwide", "gfw",  P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP
+#if !defined(FEAT_GUI_GTK)
+				|P_COLON
+#endif
+				,
 #if defined(FEAT_GUI)
 			    (char_u *)&p_guifontwide, PV_NONE,
-			    did_set_guifontwide, NULL,
+			    did_set_guifontwide, expand_set_guifont,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

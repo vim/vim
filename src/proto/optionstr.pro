@@ -152,6 +152,7 @@ int expand_set_foldclose(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_foldmethod(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_foldopen(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_formatoptions(optexpand_T *args, int *numMatches, char_u ***matches);
+int expand_set_guifont(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_guioptions(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_highlight(optexpand_T *args, int *numMatches, char_u ***matches);
 int expand_set_jumpoptions(optexpand_T *args, int *numMatches, char_u ***matches);
