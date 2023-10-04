@@ -1704,6 +1704,6 @@ most of the information will be restored).
 			If you get the |press-enter| prompt you can press "q"
 			and still get the prompt to enter a file number.
 			Use ! to abandon a modified buffer. |abandon|
-			{not when compiled with tiny or small features}
+			{not when compiled with tiny features}
 
  vim:tw=78:ts=8:noet:ft=help:norl:

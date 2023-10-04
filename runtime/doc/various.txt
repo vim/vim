@@ -320,15 +320,13 @@ g8			Print the hex values of the bytes used in the
 			The first column shows the smallest version in which
 			they are included:
 			   T	tiny (always)
-			   S	small
 			   N	normal
-			   B	big
 			   H	huge
 			   m	manually enabled or depends on other features
 			   -    never, feature was removed
 			 (none) system dependent
 			Thus if a feature is marked with "N", it is included
-			in the normal, big and huge versions of Vim.
+			in the normal and huge versions of Vim.
 
 							*+feature-list*
    *+acl*		|ACL| support included

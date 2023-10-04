@@ -6,7 +6,7 @@ These files are in the runtime archive (vim90rt.tgz).
 
 
 The Amiga "bin" archive contains the Vim executable for the Amiga.  It was
-compiled with "big" features.
+compiled with "huge" features.
 
 Postscript printing is not included to avoid requiring floating point
 computations.
