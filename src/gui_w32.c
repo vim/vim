@@ -1588,7 +1588,7 @@ GetAverageFontSize(HDC hdc, SIZE *size)
  * Get the character size of a font.
  */
     static void
-GetFontSize(GuiFont font)
+GetFontSize(GuiFont font, int *char_width, int *char_height)
 {
     HWND    hwnd = GetDesktopWindow();
     HDC	    hdc = GetWindowDC(hwnd);
@@ -1599,12 +1599,23 @@ GetFontSize(GuiFont font)
     GetTextMetrics(hdc, &tm);
     GetAverageFontSize(hdc, &size);
 
-    gui.char_width = size.cx + tm.tmOverhang;
-    gui.char_height = tm.tmHeight + p_linespace;
+    if (char_width)
+	*char_width = size.cx + tm.tmOverhang;
+    if (char_height)
+	*char_height = tm.tmHeight + p_linespace;
 
     SelectFont(hdc, hfntOld);
 
     ReleaseDC(hwnd, hdc);
+}
+
+/*
+ * Update the character size in "gui" structure with the specified font.
+ */
+    static void
+UpdateFontSize(GuiFont font)
+{
+    GetFontSize(font, &gui.char_width, &gui.char_height);
 }
 
 /*
@@ -1613,7 +1624,7 @@ GetFontSize(GuiFont font)
     int
 gui_mch_adjust_charheight(void)
 {
-    GetFontSize(gui.norm_font);
+    UpdateFontSize(gui.norm_font);
     return OK;
 }
 
@@ -3517,7 +3528,7 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
     gui_mch_free_font(gui.norm_font);
     gui.norm_font = font;
     current_font_height = lfOrig.lfHeight;
-    GetFontSize(font);
+    UpdateFontSize(font);
 
     p = logfont2name(lfOrig);
     if (p != NULL)
@@ -4742,16 +4753,33 @@ _OnMenuSelect(HWND hwnd, WPARAM wParam, LPARAM lParam)
     static BOOL
 _OnGetDpiScaledSize(HWND hwnd, UINT dpi, SIZE *size)
 {
+    int		old_width, old_height;
+    int		new_width, new_height;
+    LOGFONTW	lf;
+    HFONT	font;
+
     //TRACE("DPI: %d, SIZE=(%d,%d), s_dpi: %d", dpi, size->cx, size->cy, s_dpi);
 
     // Calculate new approximate size.
-    // FIXME: If a bitmap font (e.g. FixedSys) is used, the font size may not
-    // be changed.  In that case, the calculated size can be wrong.
-    size->cx = size->cx * dpi / s_dpi;
-    size->cy = size->cy * dpi / s_dpi;
+    GetFontSize(gui.norm_font, &old_width, &old_height);    // Current size
+    GetObjectW((HFONT)gui.norm_font, sizeof(lf), &lf);
+    lf.lfHeight = lf.lfHeight * (int)dpi / s_dpi;
+    font = CreateFontIndirectW(&lf);
+    if (font)
+    {
+	GetFontSize((GuiFont)font, &new_width, &new_height);	// New size
+	DeleteFont(font);
+    }
+    else
+    {
+	new_width = old_width;
+	new_height = old_height;
+    }
+    size->cx = size->cx * new_width / old_width;
+    size->cy = size->cy * new_height / old_height;
     //TRACE("New approx. SIZE=(%d,%d)", size->cx, size->cy);
 
-    return FALSE;
+    return TRUE;
 }
 
     static LRESULT
