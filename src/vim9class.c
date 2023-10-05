@@ -1152,12 +1152,8 @@ add_lookup_tables(class_T *cl, class_T *extends_cl, garray_T *objmethods_gap)
  * and initialize it.
  */
     static void
-add_class_members(class_T *cl, exarg_T *eap)
+add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 {
-    garray_T	type_list;
-
-    ga_init2(&type_list, sizeof(type_T *), 10);
-
     // Allocate a typval for each class member and initialize it.
     cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
 					    cl->class_class_member_count);
@@ -1178,8 +1174,9 @@ add_class_members(class_T *cl, exarg_T *eap)
 			&& etv->v_type != VAR_SPECIAL)
 		    // If the member variable type is not yet set, then use
 		    // the initialization expression type.
-		    m->ocm_type = typval2type(etv, get_copyID(), &type_list,
-				    TVTT_DO_MEMBER|TVTT_MORE_SPECIFIC);
+		    m->ocm_type = typval2type(etv, get_copyID(),
+					type_list_gap,
+					TVTT_DO_MEMBER|TVTT_MORE_SPECIFIC);
 		*tv = *etv;
 		vim_free(etv);
 	    }
@@ -1191,8 +1188,6 @@ add_class_members(class_T *cl, exarg_T *eap)
 	    tv->vval.v_string = NULL;
 	}
     }
-
-    clear_type_list(&type_list);
 }
 
 /*
@@ -1953,7 +1948,7 @@ early_ret:
 
 	// Allocate a typval for each class member and initialize it.
 	if (is_class && cl->class_class_member_count > 0)
-	    add_class_members(cl, eap);
+	    add_class_members(cl, eap, &type_list);
 
 	int	have_new = FALSE;
 	ufunc_T	*class_func = NULL;
