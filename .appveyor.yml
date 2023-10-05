@@ -29,7 +29,6 @@ environment:
 # disabled
 #    - FEATURE: TINY
 #    - FEATURE: NORMAL
-#    - FEATURE: BIG
 
 matrix:
   fast_finish: true
