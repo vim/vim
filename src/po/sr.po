@@ -2,7 +2,7 @@
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
-# Copyright (C) 2022
+# Copyright (C) 2023
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR Ivan Pešić <ivan.pesic@gmail.com>, 2017.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-27 10:56+0400\n"
-"PO-Revision-Date: 2023-09-27 11:45+0400\n"
+"POT-Creation-Date: 2023-10-05 16:19+0400\n"
+"PO-Revision-Date: 2023-10-05 16:31+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -8452,8 +8452,8 @@ msgid "E1332: Public variable name cannot start with underscore: %s"
 msgstr "E1332: Име Public променљиве не може почети доњом цртом: %s"
 
 #, c-format
-msgid "E1333: Cannot access private variable: %s"
-msgstr "E1333: Не може да се приступи приватној променљивој: %s"
+msgid "E1333: Cannot access private variable \"%s\" in class \"%s\""
+msgstr "E1333: Не може да се приступи приватној променљивој „%s” у класи „%s”"
 
 #, c-format
 msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
@@ -8583,7 +8583,8 @@ msgstr "E1371: Након abstract мора да следи „def” или „
 
 #, c-format
 msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
-msgstr "E1372: Апстрактна метода „%s” не може да се дефинише у конкретној класи"
+msgstr ""
+"E1372: Апстрактна метода „%s” не може да се дефинише у конкретној класи"
 
 #, c-format
 msgid "E1373: Abstract method \"%s\" is not implemented"
@@ -8591,15 +8592,19 @@ msgstr "E1373: Није имплементирана апстрактна мет
 
 #, c-format
 msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
-msgstr "E1374: Променљивој класе „%s” може да се приступи само унутар класе „%s”"
+msgstr ""
+"E1374: Променљивој класе „%s” може да се приступи само унутар класе „%s”"
 
 #, c-format
 msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
-msgstr "E1375: Променљивој класе „%s” може да се приступи само употребом класе „%s”"
+msgstr ""
+"E1375: Променљивој класе „%s” може да се приступи само употребом класе „%s”"
 
 #, c-format
 msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
-msgstr "E1376: Променљивој објекта „%s” може да се приступи само употребом објекта класе „%s”"
+msgstr ""
+"E1376: Променљивој објекта „%s” може да се приступи само употребом објекта "
+"класе „%s”"
 
 #, c-format
 msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
@@ -8635,35 +8640,75 @@ msgstr "E1385: Методи класе „%s” може да се присту�
 
 #, c-format
 msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
-msgstr "E1386: Методи објекта „%s” може да се приступи само користећи објекат класе „%s”"
+msgstr ""
+"E1386: Методи објекта „%s” може да се приступи само користећи објекат класе "
+"„%s”"
 
-#, c-format
-msgid "E1400: Cannot mix positional and non-positional arguments: %s"
-msgstr "E1400: Не могу да се мешају позициони и непозициони аргументи: %s"
+msgid "E1387: Public variable not supported in an interface"
+msgstr "E1387: У интерфејсу се не подржава јавна променљива"
 
-#, c-format
-msgid "E1401: format argument %d unused in $-style format: %s"
-msgstr "E1401: аргумент формата %d није употребљен у формату $-стила: %s"
+msgid "E1388: Public keyword not supported for a method"
+msgstr "E1388: Метода не подржава кључну реч public"
+
+msgid "E1389: Missing name after implements"
+msgstr "E1389: Недостаје име након implements"
 
 #, c-format
 msgid ""
-"E1402: Positional argument %d used as field width reused as different type: "
+"E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
+"method"
+msgstr ""
+"E1390: Не може да се користи променљива објекта „this.%s” осим са методом "
+"„new”"
+
+#, c-format
+msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
+msgstr "E1391: Не може да се откључа/закључа променљива „%s” у класи „%s”"
+
+#, c-format
+msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
+msgstr "E1392: Не може да се откључа/закључа променљива класе „%s” у класи „%s”"
+
+#, c-format
+msgid "E1500: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1500: Не могу да се мешају позициони и непозициони аргументи: %s"
+
+#, c-format
+msgid "E1501: format argument %d unused in $-style format: %s"
+msgstr "E1501: аргумент формата %d није употребљен у формату $-стила: %s"
+
+#, c-format
+msgid ""
+"E1502: Positional argument %d used as field width reused as different type: "
 "%s/%s"
 msgstr ""
-"E1402: Позициони аргумент %d употребљен као ширина поља је поново искоришћен "
+"E1502: Позициони аргумент %d употребљен као ширина поља је поново искоришћен "
 "као другачији тип: %s/%s"
 
 #, c-format
-msgid "E1403: Positional argument %d out of bounds: %s"
-msgstr "E1403: Позициони аргумент %d је ван граница: %s"
+msgid "E1503: Positional argument %d out of bounds: %s"
+msgstr "E1503: Позициони аргумент %d је ван граница: %s"
 
 #, c-format
-msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
-msgstr "E1404: Позициони аргумент %d тип се не употребљава конзистентно: %s/%s"
+msgid "E1504: Positional argument %d type used inconsistently: %s/%s"
+msgstr "E1504: Позициони аргумент %d тип се не употребљава конзистентно: %s/%s"
 
 #, c-format
-msgid "E1405: Invalid format specifier: %s"
-msgstr "E1405: Неисправни спецификатор формата: %s"
+msgid "E1505: Invalid format specifier: %s"
+msgstr "E1505: Неисправни спецификатор формата: %s"
+
+msgid "E1506: Buffer too small to copy xattr value or key"
+msgstr "E1506: Бафер је сувише мали да би се копирала xattr вредност или кључ"
+
+msgid ""
+"E1508: Size of the extended attribute value is larger than the maximum size "
+"allowed"
+msgstr ""
+"E1508: Величина вредности проширеног атрибута је већа од максимално "
+"дозвољене величине"
+
+msgid "E1509: Error occured when reading or writing extended attribute"
+msgstr "E1509: Дошло је до грешке приликом читања или уписивања проширеног атрибута"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
