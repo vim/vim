@@ -6483,26 +6483,26 @@ func Test_class_variable_complex_type_check()
   " script level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
-      public static Fn: func(list<dict<number>>): dict<list<number>> = Foo
+      public static Fn: func(list<dict<blob>>): dict<list<blob>> = Foo
     endclass
     test_garbagecollect_now()
     A.Fn = "abc"
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 9)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 9)
 
   " class variable with a specific type.  Try assigning a different type at
   " class def method level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
-      public static Fn: func(list<dict<number>>): dict<list<number>> = Foo
+      public static Fn: func(list<dict<blob>>): dict<list<blob>> = Foo
       def Bar()
         Fn = "abc"
       enddef
@@ -6511,17 +6511,17 @@ func Test_class_variable_complex_type_check()
     test_garbagecollect_now()
     a.Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 1)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 1)
 
   " class variable with a specific type.  Try assigning a different type at
   " script def method level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
-      public static Fn: func(list<dict<number>>): dict<list<number>> = Foo
+      public static Fn: func(list<dict<blob>>): dict<list<blob>> = Foo
     endclass
     def Bar()
       A.Fn = "abc"
@@ -6529,13 +6529,13 @@ func Test_class_variable_complex_type_check()
     test_garbagecollect_now()
     Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 1)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 1)
 
   " class variable without any type.  Should be set to the initialization
   " expression type.  Try assigning a different type from script level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6544,13 +6544,13 @@ func Test_class_variable_complex_type_check()
     test_garbagecollect_now()
     A.Fn = "abc"
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 9)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 9)
 
   " class variable without any type.  Should be set to the initialization
   " expression type.  Try assigning a different type at class def level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6563,13 +6563,13 @@ func Test_class_variable_complex_type_check()
     test_garbagecollect_now()
     a.Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 1)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 1)
 
   " class variable without any type.  Should be set to the initialization
   " expression type.  Try assigning a different type at script def level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6581,12 +6581,12 @@ func Test_class_variable_complex_type_check()
     test_garbagecollect_now()
     Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 1)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 1)
 
   " class variable with 'any" type.  Can be assigned different types.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6594,13 +6594,13 @@ func Test_class_variable_complex_type_check()
       public static Fn2: any
     endclass
     test_garbagecollect_now()
-    assert_equal('func(list<dict<number>>): dict<list<number>>', typename(A.Fn))
+    assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(A.Fn))
     A.Fn = "abc"
     test_garbagecollect_now()
     assert_equal('string', typename(A.Fn))
     A.Fn2 = Foo
     test_garbagecollect_now()
-    assert_equal('func(list<dict<number>>): dict<list<number>>', typename(A.Fn2))
+    assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(A.Fn2))
     A.Fn2 = "xyz"
     test_garbagecollect_now()
     assert_equal('string', typename(A.Fn2))
@@ -6610,7 +6610,7 @@ func Test_class_variable_complex_type_check()
   " class variable with 'any" type.  Can be assigned different types.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6618,11 +6618,11 @@ func Test_class_variable_complex_type_check()
       public static Fn2: any
 
       def Bar()
-        assert_equal('func(list<dict<number>>): dict<list<number>>', typename(Fn))
+        assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(Fn))
         Fn = "abc"
         assert_equal('string', typename(Fn))
         Fn2 = Foo
-        assert_equal('func(list<dict<number>>): dict<list<number>>', typename(Fn2))
+        assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(Fn2))
         Fn2 = "xyz"
         assert_equal('string', typename(Fn2))
       enddef
@@ -6639,7 +6639,7 @@ func Test_class_variable_complex_type_check()
   " class variable with 'any" type.  Can be assigned different types.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6648,11 +6648,11 @@ func Test_class_variable_complex_type_check()
     endclass
 
     def Bar()
-      assert_equal('func(list<dict<number>>): dict<list<number>>', typename(A.Fn))
+      assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(A.Fn))
       A.Fn = "abc"
       assert_equal('string', typename(A.Fn))
       A.Fn2 = Foo
-      assert_equal('func(list<dict<number>>): dict<list<number>>', typename(A.Fn2))
+      assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(A.Fn2))
       A.Fn2 = "xyz"
       assert_equal('string', typename(A.Fn2))
     enddef
@@ -6660,6 +6660,19 @@ func Test_class_variable_complex_type_check()
     test_garbagecollect_now()
     A.Fn = Foo
     Bar()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  let lines =<< trim END
+    vim9script
+    class A
+      public static foo = [0z10, 0z20]
+    endclass
+    assert_equal([0z10, 0z20], A.foo)
+    A.foo = [0z30]
+    assert_equal([0z30], A.foo)
+    var a = A.foo
+    assert_equal([0z30], a)
   END
   call v9.CheckSourceSuccess(lines)
 endfunc
@@ -6670,27 +6683,27 @@ func Test_object_variable_complex_type_check()
   " script level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
-      public this.Fn: func(list<dict<number>>): dict<list<number>> = Foo
+      public this.Fn: func(list<dict<blob>>): dict<list<blob>> = Foo
     endclass
     var a = A.new()
     test_garbagecollect_now()
     a.Fn = "abc"
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 10)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 10)
 
   " object variable with a specific type.  Try assigning a different type at
   " object def method level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
-      public this.Fn: func(list<dict<number>>): dict<list<number>> = Foo
+      public this.Fn: func(list<dict<blob>>): dict<list<blob>> = Foo
       def Bar()
         this.Fn = "abc"
         this.Fn = Foo
@@ -6700,17 +6713,17 @@ func Test_object_variable_complex_type_check()
     test_garbagecollect_now()
     a.Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 1)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 1)
 
   " object variable with a specific type.  Try assigning a different type at
   " script def method level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
-      public this.Fn: func(list<dict<number>>): dict<list<number>> = Foo
+      public this.Fn: func(list<dict<blob>>): dict<list<blob>> = Foo
     endclass
     def Bar()
       var a = A.new()
@@ -6720,13 +6733,13 @@ func Test_object_variable_complex_type_check()
     test_garbagecollect_now()
     Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 2)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 2)
 
   " object variable without any type.  Should be set to the initialization
   " expression type.  Try assigning a different type from script level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6736,13 +6749,13 @@ func Test_object_variable_complex_type_check()
     test_garbagecollect_now()
     a.Fn = "abc"
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 10)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 10)
 
   " object variable without any type.  Should be set to the initialization
   " expression type.  Try assigning a different type at object def level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6756,13 +6769,13 @@ func Test_object_variable_complex_type_check()
     test_garbagecollect_now()
     a.Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 1)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 1)
 
   " object variable without any type.  Should be set to the initialization
   " expression type.  Try assigning a different type at script def level.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6776,12 +6789,12 @@ func Test_object_variable_complex_type_check()
     test_garbagecollect_now()
     Bar()
   END
-  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<number>>): dict<list<number>> but got string', 2)
+  call v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(list<dict<blob>>): dict<list<blob>> but got string', 2)
 
   " object variable with 'any" type.  Can be assigned different types.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6791,13 +6804,13 @@ func Test_object_variable_complex_type_check()
 
     var a = A.new()
     test_garbagecollect_now()
-    assert_equal('func(list<dict<number>>): dict<list<number>>', typename(a.Fn))
+    assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(a.Fn))
     a.Fn = "abc"
     test_garbagecollect_now()
     assert_equal('string', typename(a.Fn))
     a.Fn2 = Foo
     test_garbagecollect_now()
-    assert_equal('func(list<dict<number>>): dict<list<number>>', typename(a.Fn2))
+    assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(a.Fn2))
     a.Fn2 = "xyz"
     test_garbagecollect_now()
     assert_equal('string', typename(a.Fn2))
@@ -6807,7 +6820,7 @@ func Test_object_variable_complex_type_check()
   " object variable with 'any" type.  Can be assigned different types.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6815,11 +6828,11 @@ func Test_object_variable_complex_type_check()
       public this.Fn2: any
 
       def Bar()
-        assert_equal('func(list<dict<number>>): dict<list<number>>', typename(this.Fn))
+        assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(this.Fn))
         this.Fn = "abc"
         assert_equal('string', typename(this.Fn))
         this.Fn2 = Foo
-        assert_equal('func(list<dict<number>>): dict<list<number>>', typename(this.Fn2))
+        assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(this.Fn2))
         this.Fn2 = "xyz"
         assert_equal('string', typename(this.Fn2))
       enddef
@@ -6837,7 +6850,7 @@ func Test_object_variable_complex_type_check()
   " object variable with 'any" type.  Can be assigned different types.
   let lines =<< trim END
     vim9script
-    def Foo(l: list<dict<number>>): dict<list<number>>
+    def Foo(l: list<dict<blob>>): dict<list<blob>>
       return {}
     enddef
     class A
@@ -6847,11 +6860,11 @@ func Test_object_variable_complex_type_check()
 
     def Bar()
       var a = A.new()
-      assert_equal('func(list<dict<number>>): dict<list<number>>', typename(a.Fn))
+      assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(a.Fn))
       a.Fn = "abc"
       assert_equal('string', typename(a.Fn))
       a.Fn2 = Foo
-      assert_equal('func(list<dict<number>>): dict<list<number>>', typename(a.Fn2))
+      assert_equal('func(list<dict<blob>>): dict<list<blob>>', typename(a.Fn2))
       a.Fn2 = "xyz"
       assert_equal('string', typename(a.Fn2))
     enddef
