@@ -5,6 +5,8 @@ coverage:
       default:
         threshold: 0.05%
 
+comment: false
+
 # Files not run by tests
 ignore:
   - "src/dosinst.c"
