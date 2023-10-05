@@ -1094,7 +1094,7 @@ au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 au BufNewFile,BufRead *.jl			setf julia
 
 " Just
-autocmd BufNewFile,BufRead *[jJ]ustfile,.justfile,*.just setfiletype just
+au BufNewFile,BufRead [jJ]ustfile,.justfile,*.just setf just
 
 " KDL
 au BufNewFile,BufRead *.kdl			setf kdl
