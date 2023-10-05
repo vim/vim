@@ -2226,6 +2226,7 @@ class_object_index(
 	return FAIL;
     size_t len = name_end - name;
 
+    int did_emsg_save = did_emsg;
     class_T *cl;
     if (rettv->v_type == VAR_CLASS)
 	cl = rettv->vval.v_class;
@@ -2315,7 +2316,8 @@ class_object_index(
 	    return OK;
 	}
 
-	member_not_found_msg(cl, VAR_OBJECT, name, len);
+	if (did_emsg == did_emsg_save)
+	    member_not_found_msg(cl, VAR_OBJECT, name, len);
     }
 
     else if (rettv->v_type == VAR_CLASS)
