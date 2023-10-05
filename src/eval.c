@@ -1271,6 +1271,14 @@ get_lval(
 		    semsg(_(e_using_type_not_in_script_context_str), p);
 		    return NULL;
 		}
+		if (vim9script && (flags & GLV_NO_DECL) &&
+			!(flags & GLV_FOR_LOOP))
+		{
+		    // Using a type and not in a "var" declaration.
+		    semsg(_(e_trailing_characters_str), p);
+		    return NULL;
+		}
+
 
 		// parse the type after the name
 		lp->ll_type = parse_type(&tp,

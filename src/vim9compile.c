@@ -1737,11 +1737,14 @@ compile_lhs(
 		if (is_decl)
 		{
 		    // if we come here with what looks like an assignment like
-		    // .= but which has been reject by assignment_len() from
+		    // .= but which has been rejected by assignment_len() from
 		    // may_compile_assignment give a better error message
 		    char_u *p = skipwhite(lhs->lhs_end);
 		    if (p[0] == '.' && p[1] == '=')
 			emsg(_(e_dot_equal_not_supported_with_script_version_two));
+		    else if (p[0] == ':')
+			// type specified in a non-var assignment
+			semsg(_(e_trailing_characters_str), p);
 		    else
 			semsg(_(e_variable_already_declared_str), lhs->lhs_name);
 		    return FAIL;

@@ -2822,6 +2822,45 @@ def Test_using_s_var_in_function()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for specifying a type in assignment
+def Test_type_specification_in_assignment()
+  # specify type for an existing script local variable without "var"
+  var lines =<< trim END
+    vim9script
+    var n: number = 10
+    n: number = 20
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: : number = 20', 3)
+
+  # specify type for a non-existing script local variable without "var"
+  lines =<< trim END
+    vim9script
+    MyVar: string = 'abc'
+  END
+  v9.CheckSourceFailure(lines, "E492: Not an editor command: MyVar: string = 'abc'", 2)
+
+  # specify type for an existing def local variable without "var"
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var n: number = 10
+      n: number = 20
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: : number = 20', 2)
+
+  # specify type for a non-existing def local variable without "var"
+  lines =<< trim END
+    vim9script
+    def Foo()
+      MyVar: string = 'abc'
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, "E476: Invalid command: MyVar: string = 'abc'", 1)
+enddef
+
 let g:someVar = 'X'
 
 " Test for heredoc with Vim expressions.
