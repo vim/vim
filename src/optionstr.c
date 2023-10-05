@@ -849,6 +849,7 @@ expand_set_opt_generic(
     return ret;
 }
 
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
 static garray_T *expand_cb_ga;
 static optexpand_T *expand_cb_args;
 
@@ -938,6 +939,7 @@ expand_set_opt_callback(
     *numMatches = ga.ga_len;
     return OK;
 }
+#endif
 
 /*
  * Expand an option which is a list of flags.
