@@ -580,6 +580,56 @@ func Test_set_guifontwide()
   endif
 endfunc
 
+func Test_expand_guifont()
+  if has('gui_win32')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling existing option, and suggesting current font size
+    set guifont=Courier\ New:h11:cANSI
+    call assert_equal('Courier\ New:h11:cANSI', getcompletion('set guifont=', 'cmdline')[0])
+    call assert_equal('h11', getcompletion('set guifont=Lucida\ Console:', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Courier\ New'], getcompletion('set guifont=Couri*ew$', 'cmdline'))
+    call assert_equal(['Courier\ New'], getcompletion('set guifontwide=Couri*ew$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out
+    call assert_equal([], getcompletion('set guifont=Arial', 'cmdline'))
+    call assert_equal([], getcompletion('set guifontwide=Arial', 'cmdline'))
+
+    " Test auto-completion working for font options
+    call assert_notequal(-1, index(getcompletion('set guifont=Courier\ New:', 'cmdline'), 'b'))
+    call assert_equal(['cDEFAULT'], getcompletion('set guifont=Courier\ New:cD*T', 'cmdline'))
+    call assert_equal(['qCLEARTYPE'], getcompletion('set guifont=Courier\ New:qC*TYPE', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  elseif has('gui_gtk')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling default and existing option
+    set guifont=
+    call assert_equal('Monospace\ 10', getcompletion('set guifont=', 'cmdline')[0])
+    set guifont=Monospace\ 9
+    call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Monospace'], getcompletion('set guifont=Mono*pace$', 'cmdline'))
+    call assert_equal(['Monospace'], getcompletion('set guifontwide=Mono*pace$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out only in 'guifont'
+    call assert_equal([], getcompletion('set guifont=Sans$', 'cmdline'))
+    call assert_equal(['Sans'], getcompletion('set guifontwide=Sans$', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  else
+    call assert_equal([], getcompletion('set guifont=', 'cmdline'))
+  endif
+endfunc
+
 func Test_set_guiligatures()
   CheckX11BasedGui
 

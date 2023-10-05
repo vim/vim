@@ -2819,6 +2819,32 @@ points_to_pixels(WCHAR *str, WCHAR **end, int vertical, long_i pprinter_dc)
     return pixels;
 }
 
+/*
+ * Convert pixel into point size. This is a reverse of points_to_pixels.
+ */
+    static double
+pixels_to_points(int pixels, int vertical, long_i pprinter_dc)
+{
+    double	points = 0;
+    HWND	hwnd = (HWND)0;
+    HDC		hdc;
+    HDC		printer_dc = (HDC)pprinter_dc;
+
+    if (printer_dc == NULL)
+    {
+	hwnd = GetDesktopWindow();
+	hdc = GetWindowDC(hwnd);
+    }
+    else
+	hdc = printer_dc;
+
+    points = pixels * 72.0 / GetDeviceCaps(hdc, vertical ? LOGPIXELSY : LOGPIXELSX);
+    if (printer_dc == NULL)
+	ReleaseDC(hwnd, hdc);
+
+    return points;
+}
+
     static int CALLBACK
 font_enumproc(
     ENUMLOGFONTW    *elf,
@@ -2887,6 +2913,100 @@ init_logfont(LOGFONTW *lf)
 
     // Return success
     return OK;
+}
+
+/*
+ * Call back for EnumFontFamiliesW in expand_font_enumproc.
+ *
+ */
+    static int CALLBACK
+expand_font_enumproc(
+    ENUMLOGFONTW    *elf,
+    NEWTEXTMETRICW  *ntm UNUSED,
+    DWORD	    type UNUSED,
+    LPARAM	    lparam)
+{
+    LOGFONTW *lf = (LOGFONTW*)elf;
+
+# ifndef FEAT_PROPORTIONAL_FONTS
+    // Ignore non-monospace fonts without further ado
+    if ((ntm->tmPitchAndFamily & 1) != 0)
+	return 1;
+# endif
+
+    // Filter only on ANSI. Otherwise will see a lot of random fonts that we
+    // usually don't want.
+    if (lf->lfCharSet != ANSI_CHARSET)
+        return 1;
+
+    int (*add_match)(char_u *) = (int (*)(char_u *))lparam;
+
+    WCHAR *faceNameW = lf->lfFaceName;
+    char_u *faceName = utf16_to_enc(faceNameW, NULL);
+    if (!faceName)
+	return 0;
+
+    add_match(faceName);
+    vim_free(faceName);
+
+    return 1;
+}
+
+/*
+ * Cmdline expansion for setting 'guifont'. Will enumerate through all
+ * monospace fonts for completion. If used after ':', will expand to possible
+ * font configuration options like font sizes.
+ *
+ * This function has "gui" in its name because in some platforms (GTK) font
+ * handling is done by the GUI code, whereas in Windows it's part of the
+ * platform code.
+ */
+    void
+gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char_u *val))
+{
+    expand_T	    *xp = args->oe_xp;
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	char buf[30];
+
+	// Always fill in with the current font size as first option for
+	// convenience. We simply round to the closest integer for simplicity.
+        int font_height = (int)round(
+		pixels_to_points(-current_font_height, TRUE, (long_i)NULL));
+	vim_snprintf(buf, ARRAY_LENGTH(buf), "h%d", font_height);
+	add_match((char_u *)buf);
+
+	// Note: Keep this in sync with get_logfont(). Don't include 'c' and
+	// 'q' as we fill in all the values below.
+	static char *(p_gfn_win_opt_values[]) = {
+	    "h" , "w" , "W" , "b" , "i" , "u" , "s"};
+	for (size_t i = 0; i < ARRAY_LENGTH(p_gfn_win_opt_values); i++)
+	    add_match((char_u *)p_gfn_win_opt_values[i]);
+
+	struct charset_pair *cp;
+	for (cp = charset_pairs; cp->name != NULL; ++cp)
+	{
+	    vim_snprintf(buf, ARRAY_LENGTH(buf), "c%s", cp->name);
+	    add_match((char_u *)buf);
+	}
+	struct quality_pair *qp;
+	for (qp = quality_pairs; qp->name != NULL; ++qp)
+	{
+	    vim_snprintf(buf, ARRAY_LENGTH(buf), "q%s", qp->name);
+	    add_match((char_u *)buf);
+	}
+	return;
+    }
+
+    HWND	hwnd = GetDesktopWindow();
+    HDC		hdc = GetWindowDC(hwnd);
+
+    EnumFontFamiliesW(hdc,
+	    NULL,
+	    (FONTENUMPROCW)expand_font_enumproc,
+	    (LPARAM)add_match);
+
+    ReleaseDC(hwnd, hdc);
 }
 
 /*
@@ -2995,6 +3115,7 @@ get_logfont(
     {
 	switch (*p++)
 	{
+	    // Note: Keep this in sync with gui_mch_expand_font().
 	    case L'h':
 		lf->lfHeight = - points_to_pixels(p, &p, TRUE, (long_i)printer_dc);
 		break;

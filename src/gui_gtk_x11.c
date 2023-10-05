@@ -5316,6 +5316,62 @@ gui_mch_free_font(GuiFont font)
 }
 
 /*
+ * Cmdline expansion for setting 'guifont' / 'guifontwide'. Will enumerate
+ * through all fonts for completion. When setting 'guifont' it will only show
+ * monospace fonts as it's unlikely other fonts would be useful.
+ */
+    void
+gui_mch_expand_font(optexpand_T *args, void *param, int (*add_match)(char_u *val))
+{
+    PangoFontFamily	**font_families = NULL;
+    int			n_families = 0;
+    int			wide = *(int *)param;
+
+    if (args->oe_include_orig_val && *args->oe_opt_value == NUL && !wide)
+    {
+	// If guifont is empty, and we want to fill in the orig value, suggest
+	// the default so the user can modify it.
+	if (add_match((char_u *)DEFAULT_FONT) != OK)
+	    return;
+    }
+
+    pango_context_list_families(
+	    gui.text_context,
+	    &font_families,
+	    &n_families);
+
+    for (int i = 0; i < n_families; i++)
+    {
+	if (!wide && !pango_font_family_is_monospace(font_families[i]))
+	    continue;
+
+	const char* fam_name = pango_font_family_get_name(font_families[i]);
+	if (input_conv.vc_type != CONV_NONE)
+	{
+	    char_u *buf = string_convert(&input_conv, (char_u*)fam_name, NULL);
+	    if (buf != NULL)
+	    {
+		if (add_match(buf) != OK)
+		{
+		    vim_free(buf);
+		    break;
+		}
+		vim_free(buf);
+	    }
+	    else
+		break;
+	}
+	else
+	{
+	    if (add_match((char_u *)fam_name) != OK)
+		break;
+	}
+    }
+
+    g_free(font_families);
+}
+
+/*
  * Return the Pixel value (color) for the given color name.
  *
  * Return INVALCOLOR for error.
