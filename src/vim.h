@@ -2776,6 +2776,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #define GLV_COMPILING	TFN_COMPILING	// variable may be defined later
 #define GLV_ASSIGN_WITH_OP TFN_ASSIGN_WITH_OP // assignment with operator
 #define GLV_PREFER_FUNC	0x10000		// prefer function above variable
+#define GLV_FOR_LOOP	0x20000		// assigning to a loop variable
 
 #define DO_NOT_FREE_CNT 99999	// refcount for dict or list that should not
 				// be freed.

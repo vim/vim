@@ -1858,6 +1858,7 @@ ex_let_one(
 	char_u	*p;
 	int	lval_flags = (flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
 							     ? GLV_NO_DECL : 0;
+	lval_flags |= (flags & ASSIGN_FOR_LOOP) ? GLV_FOR_LOOP : 0;
 	if (op != NULL && *op != '=')
 	    lval_flags |= GLV_ASSIGN_WITH_OP;
 
