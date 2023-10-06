@@ -7347,6 +7347,22 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 						   || tv_islocked(&di->di_tv));
 		}
 	    }
+	    else if (lv.ll_object != NULL)
+	    {
+		typval_T *tv = ((typval_T *)(lv.ll_object + 1)) + lv.ll_oi;
+		rettv->vval.v_number = tv_islocked(tv);
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR: f_islocked(): name %s (obj)", lv.ll_name);
+#endif
+	    }
+	    else if (lv.ll_class != NULL)
+	    {
+		typval_T *tv = &lv.ll_class->class_members_tv[lv.ll_oi];
+		rettv->vval.v_number = tv_islocked(tv);
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR: f_islocked(): name %s (cl)", lv.ll_name);
+#endif
+	    }
 	    else if (lv.ll_range)
 		emsg(_(e_range_not_allowed));
 	    else if (lv.ll_newkey != NULL)

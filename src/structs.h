@@ -4547,11 +4547,18 @@ typedef struct
  *	"tv"	    points to the (first) list item value
  *	"li"	    points to the (first) list item
  *	"range", "n1", "n2" and "empty2" indicate what items are used.
- * For a member in a class/object: TODO: verify fields
+ * For a plain class or object:
+ *	"name"	    points to the variable name.
+ *	"exp_name"  is NULL.
+ *	"tv"	    points to the variable
+ *	"is_root"   TRUE
+ * For a variable in a class/object: (class is not NULL)
  *	"name"	    points to the (expanded) variable name.
  *	"exp_name"  NULL or non-NULL, to be freed later.
- *	"tv"	    points to the (first) list item value
- *	"oi"	    index into member array, see _type to determine which array
+ *	"tv"	    May point to class/object variable.
+ *	"object"    object containing variable, NULL if class variable
+ *	"class"	    class of object or class containing variable
+ *	"oi"	    index into class/object of tv
  * For an existing Dict item:
  *	"name"	    points to the (expanded) variable name.
  *	"exp_name"  NULL or non-NULL, to be freed later.
@@ -4591,8 +4598,8 @@ typedef struct lval_S
     object_T	*ll_object;	// The object or NULL, class is not NULL
     class_T	*ll_class;	// The class or NULL, object may be NULL
     int		ll_oi;		// The object/class member index
-    int		ll_is_root;	// Special case. ll_tv is lval_root,
-				// ignore the rest.
+    int		ll_is_root;	// TRUE if ll_tv is the lval_root, like a
+				// plain object/class. ll_tv is variable.
 } lval_T;
 
 /**
