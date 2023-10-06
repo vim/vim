@@ -37,7 +37,7 @@ OPTIONS
               option  writes octets as eight digits "1"s and "0"s instead of a
               normal hexadecimal dump. Each line is preceded by a line  number
               in  hexadecimal and followed by an ASCII (or EBCDIC) representa‐
-              tion. The command line switches -r, -p, -i do not work with this
+              tion. The command line switches -p, -i do  not  work  with  this
               mode.
 
        -c cols | -cols cols
@@ -97,7 +97,8 @@ OPTIONS
               truncating it. Use the combination -r -p to read plain hexadeci‐
               mal dumps without line number information and without a particu‐
               lar column layout. Additional whitespace and line breaks are al‐
-              lowed anywhere.
+              lowed anywhere.  Use the combination -r -b to read a  bits  dump
+              instead of a hex dump.
 
        -R when
               In  output the hex-value and the value are both colored with the
