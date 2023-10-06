@@ -368,9 +368,8 @@ OK:	    if (cond)
                cmd;
 	    }
 
-When a block has one line the braces can be left out.  When an if/else has
-braces on one block, it usually looks better when the other block also has
-braces:
+When a block has one line the braces must be left out.  However, when an
+if/else has braces on one block, then all blocks must have braces:
 OK:	    if (cond)
 	       cmd;
 	    else
@@ -385,6 +384,27 @@ OK:	    if (cond)
                cmd;
                cmd;
 	    }
+
+Wrong:	    if (cond)
+	    {
+               cmd;
+	    }
+
+Wrong:	    if (cond)
+               cmd;
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+
+Wrong:	    if (cond)
+	    {
+               cmd;
+               cmd;
+	    }
+	    else
+               cmd;
 
 Use ANSI (new style) function declarations with the return type on a separate
 indented line.
