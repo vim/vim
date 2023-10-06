@@ -2180,8 +2180,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    {
 		if (*member == '_')
 		{
-		    semsg(_(e_cannot_access_private_variable_str),
-						m->ocm_name, cl->class_name);
+		    emsg_var_cl_define(e_cannot_access_private_variable_str,
+							m->ocm_name, 0, cl);
 		    status = FAIL;
 		}
 
