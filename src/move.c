@@ -1753,10 +1753,7 @@ scrolldown(
 	    ++row;
 	}
 	if (col > width2 && width2 > 0)
-	{
 	    row += col / width2;
-	    col = col % width2;
-	}
 	if (row >= curwin->w_height)
 	{
 	    curwin->w_curswant = curwin->w_virtcol
@@ -1989,10 +1986,7 @@ adjust_skipcol(void)
 	++row;
     }
     if (col > width2)
-    {
 	row += col / width2;
-	col = col % width2;
-    }
     if (row >= curwin->w_height)
     {
 	if (curwin->w_skipcol == 0)
