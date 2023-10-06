@@ -68,8 +68,6 @@
 #endif
 
 #define PY_SSIZE_T_CLEAN
-#define PyLong_Type (*py3_PyLong_Type)
-#define PyBool_Type (*py3_PyBool_Type)
 
 #ifdef Py_LIMITED_API
 # define USE_LIMITED_API // Using Python 3 limited ABI
@@ -297,6 +295,10 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyFloat_Type (*py3_PyFloat_Type)
 # define PyNumber_Check (*py3_PyNumber_Check)
 # define PyNumber_Long (*py3_PyNumber_Long)
+# define PyBool_Type (*py3_PyBool_Type)
+# if PY_VERSION_HEX >= 0x030c00b0
+#  define PyLong_Type (*py3_PyLong_Type)
+# endif
 # define PyErr_NewException py3_PyErr_NewException
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
@@ -496,9 +498,9 @@ static PyTypeObject* py3_PyStdPrinter_Type;
 # endif
 static PyTypeObject* py3_PySlice_Type;
 static PyTypeObject* py3_PyFloat_Type;
-PyTypeObject* py3_PyBool_Type;
+static PyTypeObject* py3_PyBool_Type;
 # if PY_VERSION_HEX >= 0x030c00b0
-PyTypeObject* py3_PyLong_Type;
+static PyTypeObject* py3_PyLong_Type;
 # endif
 static int (*py3_PyNumber_Check)(PyObject *);
 static PyObject* (*py3_PyNumber_Long)(PyObject *);
@@ -696,8 +698,9 @@ static struct
 # endif
     {"PySlice_Type", (PYTHON_PROC*)&py3_PySlice_Type},
     {"PyFloat_Type", (PYTHON_PROC*)&py3_PyFloat_Type},
-# if PY_VERSION_HEX < 0x030c00b0
     {"PyBool_Type", (PYTHON_PROC*)&py3_PyBool_Type},
+# if PY_VERSION_HEX >= 0x030c00b0
+    {"PyLong_Type", (PYTHON_PROC*)&py3_PyLong_Type},
 # endif
     {"PyNumber_Check", (PYTHON_PROC*)&py3_PyNumber_Check},
     {"PyNumber_Long", (PYTHON_PROC*)&py3_PyNumber_Long},
@@ -787,6 +790,42 @@ py3__PyObject_TypeCheck(PyObject *ob, PyTypeObject *type)
 #  else
 #   define _PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
 #  endif
+# endif
+
+# if !defined(USE_LIMITED_API) && PY_VERSION_HEX >= 0x030c00b0
+// Py_SIZE() uses PyLong_Type and PyBool_Type starting from Python 3.12.
+// We need to define our own Py_SIZE() to replace Py{Bool,Long}_Type with
+// py3_Py{Bool,Long}_Type.
+// We also need to redefine PyTuple_GET_SIZE() and PyList_GET_SIZE(), because
+// they use Py_SIZE().
+    static inline Py_ssize_t
+py3_Py_SIZE(PyObject *ob)
+{
+    assert(ob->ob_type != &PyLong_Type);
+    assert(ob->ob_type != &PyBool_Type);
+    PyVarObject *var_ob = _PyVarObject_CAST(ob);
+    return var_ob->ob_size;
+}
+#  undef Py_SIZE
+#  define Py_SIZE(ob) py3_Py_SIZE(_PyObject_CAST(ob))
+
+    static inline Py_ssize_t
+py3_PyTuple_GET_SIZE(PyObject *op)
+{
+    PyTupleObject *tuple = _PyTuple_CAST(op);
+    return Py_SIZE(tuple);
+}
+#  undef PyTuple_GET_SIZE
+#  define PyTuple_GET_SIZE(op) py3_PyTuple_GET_SIZE(_PyObject_CAST(op))
+
+    static inline
+Py_ssize_t py3_PyList_GET_SIZE(PyObject *op)
+{
+    PyListObject *list = _PyList_CAST(op);
+    return Py_SIZE(list);
+}
+#  undef PyList_GET_SIZE
+#  define PyList_GET_SIZE(op) py3_PyList_GET_SIZE(_PyObject_CAST(op))
 # endif
 
 # ifdef MSWIN
