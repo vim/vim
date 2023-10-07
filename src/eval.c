@@ -1375,6 +1375,7 @@ get_lval(
 		      && v_type != VAR_OBJECT
 		      && v_type != VAR_CLASS)
 	{
+	    // TODO: have a message with obj/class, not just dict,
 	    if (!quiet)
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
 	    return NULL;
@@ -1385,6 +1386,7 @@ get_lval(
 		&& v_type != VAR_OBJECT
 		&& v_type != VAR_CLASS)
 	{
+	    // TODO: have a message with obj/class, not just dict/list/blob,
 	    if (!quiet)
 		emsg(_(e_can_only_index_list_dictionary_or_blob));
 	    return NULL;
@@ -1739,10 +1741,6 @@ get_lval(
 		    }
 		}
 
-		// TODO: dont' check access if inside class
-		// TODO: is GLV_READ_ONLY the right thing to use
-		//	     for class/object member access?
-		//	     Probably in some cases. Need inside class check
 		if (lp->ll_valtype == NULL)
 		{
 		    int		m_idx;

@@ -4161,6 +4161,86 @@ def Test_lockvar_general()
   v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "C"')
 enddef
 
+" Test builtin islocked()
+def Test_lockvar_islocked()
+  # Can't lock class/object variable
+  # Lock class/object variable's value
+  # Lock item of variabl's value (a list item)
+  # varible is at index 1 within class/object
+  var lines =<< trim END
+    vim9script
+
+    class C
+      this.o0: list<list<number>> = [ [0],  [1],  [2]]
+      this.o1: list<list<number>> = [[10], [11], [12]]
+      static c0: list<list<number>> = [[20], [21], [22]]
+      static c1: list<list<number>> = [[30], [31], [32]]
+    endclass
+
+    def LockIt(arg: any)
+      lockvar arg
+    enddef
+
+    def UnlockIt(arg: any)
+      unlockvar arg
+    enddef
+
+    var obj = C.new()
+    #lockvar obj.o1         # can't lock something you can't write to
+
+    try
+      lockvar obj.o1         # can't lock something you can't write to
+      call assert_false(1, '"lockvar obj.o1" should have failed')
+    catch
+      call assert_exception('E1335:')
+    endtry
+
+    LockIt(obj.o1)         # but can lock it's value
+    assert_equal(1, islocked("obj.o1"))
+    assert_equal(1, islocked("obj.o1[0]"))
+    assert_equal(1, islocked("obj.o1[1]"))
+    UnlockIt(obj.o1)
+    assert_equal(0, islocked("obj.o1"))
+    assert_equal(0, islocked("obj.o1[0]"))
+
+    lockvar obj.o1[0]
+    assert_equal(0, islocked("obj.o1"))
+    assert_equal(1, islocked("obj.o1[0]"))
+    assert_equal(0, islocked("obj.o1[1]"))
+    unlockvar obj.o1[0]
+    assert_equal(0, islocked("obj.o1"))
+    assert_equal(0, islocked("obj.o1[0]"))
+
+    # Same thing, but with a static
+
+    try
+      lockvar C.c1         # can't lock something you can't write to
+      call assert_false(1, '"lockvar C.c1" should have failed')
+    catch
+      call assert_exception('E1335:')
+    endtry
+
+    LockIt(C.c1)         # but can lock it's value
+    assert_equal(1, islocked("C.c1"))
+    assert_equal(1, islocked("C.c1[0]"))
+    assert_equal(1, islocked("C.c1[1]"))
+    UnlockIt(C.c1)
+    assert_equal(0, islocked("C.c1"))
+    assert_equal(0, islocked("C.c1[0]"))
+
+    lockvar C.c1[0]
+    assert_equal(0, islocked("C.c1"))
+    assert_equal(1, islocked("C.c1[0]"))
+    assert_equal(0, islocked("C.c1[1]"))
+    unlockvar C.c1[0]
+    assert_equal(0, islocked("C.c1"))
+    assert_equal(0, islocked("C.c1[0]"))
+  END
+  v9.CheckSourceSuccess(lines)
+  lines =<< trim END
+  END
+enddef
+
 " Test for a private object method
 def Test_private_object_method()
   # Try calling a private method using an object (at the script level)
