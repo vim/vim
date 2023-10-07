@@ -7308,6 +7308,83 @@ f_invert(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Free resources in lval_root allocated by fill_exec_lval_root().
+ */
+    static void
+free_lval_root(lval_root_T *root)
+{
+    if (root->lr_tv != NULL)
+	free_tv(root->lr_tv);
+    class_unref(root->lr_cl_exec);
+    root->lr_tv = NULL;
+    root->lr_cl_exec = NULL;
+}
+
+/*
+ * This is used if executing in a method, the argument string is a
+ * variable/item expr/reference. If it starts with a potential class/object
+ * variable then return OK, may get later errors in get_lval.
+ *
+ * Adjust "root" as needed. Note that name may change (for example to skip
+ * "this") and is returned. lr_tv may be changed or freed.
+ *
+ * Always returns OK.
+ * Free resources and return FAIL if the root should not be used. Otherwise OK.
+ */
+
+    static int
+fix_variable_reference_lval_root(lval_root_T *root, char_u **p_name)
+{
+    char_u	*name = *p_name;
+    char_u	*end;
+    dictitem_T	*di;
+
+    // Only set lr_sync_root and lr_tv if the name is an object/class
+    // reference: object ("this.") or class because name is class variable.
+    if (root->lr_tv->v_type == VAR_OBJECT)
+    {
+	if (STRNCMP("this.", name, 5) == 0)
+	{
+	    name += 5;
+	        root->lr_sync_root = TRUE;
+	}
+	else if (STRCMP("this", name) == 0)
+	{
+	    name += 4;
+	    root->lr_sync_root = TRUE;
+	}
+    }
+    if (!root->lr_sync_root)	// not object member, try class member
+    {
+	// Explicitly check if the name is a class member.
+	// If it's not then do nothing.
+	for (end = name; ASCII_ISALNUM(*end) || *end == '_'; ++end)
+	    ;
+	if (class_member_lookup(root->lr_cl_exec, name, end - name, NULL)
+								    != NULL)
+	{
+	    // Using a class, so reference the class tv.
+	    di = find_var(root->lr_cl_exec->class_name, NULL, FALSE);
+	    if (di != NULL)
+	    {
+		// replace the lr_tv
+		clear_tv(root->lr_tv);
+		copy_tv(&di->di_tv, root->lr_tv);
+		root->lr_sync_root = TRUE;
+	    }
+	}
+    }
+    if (!root->lr_sync_root)
+    {
+	free_tv(root->lr_tv);
+	root->lr_tv = NULL;	    // Not a member variable
+    }
+    *p_name = name;
+    // If FAIL, then must free_lval_root(root);
+    return OK;
+}
+
+/*
  * "islocked()" function
  */
     static void
@@ -7322,9 +7399,34 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    end = get_lval(tv_get_string(&argvars[0]), NULL, &lv, FALSE, FALSE,
+    char_u *name = tv_get_string(&argvars[0]);
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: f_islocked(): name: %s", name);
+#endif
+
+    lval_root_T	aroot;	// fully initialized in fill_exec_lval_root
+    lval_root_T *root = NULL;
+
+    // Set up lval_root if executing in a method.
+    if (fill_exec_lval_root(&aroot) == OK)
+    {
+	// Almost always produces a valid lval_root since lr_cl_exec is used
+	// for access verification, lr_tv may be set to NULL.
+	char_u *tname = name;
+	if (fix_variable_reference_lval_root(&aroot, &tname) == OK)
+	{
+	    name = tname;
+	    root = &aroot;
+	}
+    }
+
+    lval_root_T	*lval_root_save = lval_root;
+    lval_root = root;
+    end = get_lval(name, NULL, &lv, FALSE, FALSE,
 			     GLV_NO_AUTOLOAD | GLV_READ_ONLY | GLV_NO_DECL,
 			     FNE_CHECK_START);
+    lval_root = lval_root_save;
+
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
@@ -7346,6 +7448,10 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 		    rettv->vval.v_number = ((di->di_flags & DI_FLAGS_LOCK)
 						   || tv_islocked(&di->di_tv));
 		}
+	    }
+	    else if (lv.ll_is_root)
+	    {
+		rettv->vval.v_number = tv_islocked(lv.ll_tv);
 	    }
 	    else if (lv.ll_object != NULL)
 	    {
@@ -7376,6 +7482,8 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	}
     }
 
+    if (root != NULL)
+	free_lval_root(root);
     clear_lval(&lv);
 }
 

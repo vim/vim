@@ -1704,8 +1704,7 @@ def Test_class_member()
     var obj: A
     obj.val = ""
   END
-  # FIXME(in source): this should give E1360 as well!
-  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got string', 7)
+  v9.CheckSourceFailure(lines, 'E1360: Using a null object', 7)
 
   # Test for accessing a member on a null object, at script level
   lines =<< trim END
@@ -4259,8 +4258,249 @@ def Test_lockvar_islocked()
     assert_equal(0, islocked("C.c1[0]"))
   END
   v9.CheckSourceSuccess(lines)
+
+  # Do islocked() from an object method
+  # and then from a class method
   lines =<< trim END
+    vim9script
+
+    var l0o0 = [  [0],   [1],   [2]]
+    var l0o1 = [ [10],  [11],  [12]]
+    var l0c0 = [[120], [121], [122]]
+    var l0c1 = [[130], [131], [132]]
+
+    class C0
+      this.o0: list<list<number>> =   l0o0
+      this.o1: list<list<number>> =   l0o1
+      static c0: list<list<number>> = l0c0
+      static c1: list<list<number>> = l0c1
+      def Islocked(arg: string): number
+          return islocked(arg)
+      enddef
+      static def SIslocked(arg: string): number
+        return islocked(arg)
+      enddef
+    endclass
+
+    var l2o0 = [[20000], [20001], [20002]]
+    var l2o1 = [[20010], [20011], [20012]]
+    var l2c0 = [[20120], [20121], [20122]]
+    var l2c1 = [[20130], [20131], [20132]]
+
+    class C2
+      this.o0: list<list<number>> =   l2o0
+      this.o1: list<list<number>> =   l2o1
+      static c0: list<list<number>> = l2c0
+      static c1: list<list<number>> = l2c1
+      def Islocked(arg: string): number
+          return islocked(arg)
+      enddef
+      static def SIslocked(arg: string): number
+        return islocked(arg)
+      enddef
+    endclass
+
+    var obj0 = C0.new()
+    var obj2 = C2.new()
+
+    var l = [ obj0, null_object, obj2 ]
+
+    # lock list, object func access through script var expr
+    assert_equal(0, obj0.Islocked("l[0].o0"))
+    assert_equal(0, obj0.Islocked("l[0].o0[2]"))
+    lockvar l0o0
+    assert_equal(1, obj0.Islocked("l[0].o0"))
+    assert_equal(1, obj0.Islocked("l[0].o0[2]"))
+
+    #echo "check-b" obj2.Islocked("l[1].o1")    # NULL OBJECT
+
+    # lock list element, object func access through script var expr
+    lockvar l0o1[1]
+    assert_equal(0, obj0.Islocked("this.o1[0]"))
+    assert_equal(1, obj0.Islocked("this.o1[1]"))
+
+    assert_equal(0, obj0.Islocked("this.o1"))
+    lockvar l0o1
+    assert_equal(1, obj0.Islocked("this.o1"))
+    unlockvar l0o1
+
+    lockvar l0c1[1]
+
+    # static by class name member expr from same class
+    assert_equal(0, obj0.Islocked("C0.c1[0]"))
+    assert_equal(1, obj0.Islocked("C0.c1[1]"))
+    # static by bare name member expr from same class
+    assert_equal(0, obj0.Islocked("c1[0]"))
+    assert_equal(1, obj0.Islocked("c1[1]"))
+
+    # static by class name member expr from other class
+    assert_equal(0, obj2.Islocked("C0.c1[0]"))
+    assert_equal(1, obj2.Islocked("C0.c1[1]"))
+    # static by bare name member expr from other class
+    assert_equal(0, obj2.Islocked("c1[0]"))
+    assert_equal(0, obj2.Islocked("c1[1]"))
+
+
+    # static by bare name in same class
+    assert_equal(0, obj0.Islocked("c0"))
+    lockvar l0c0
+    assert_equal(1, obj0.Islocked("c0"))
+
+    #
+    # similar stuff, but use static method
+    #
+
+    unlockvar l0o0
+
+    # lock list, object func access through script var expr
+    assert_equal(0, C0.SIslocked("l[0].o0"))
+    assert_equal(0, C0.SIslocked("l[0].o0[2]"))
+    lockvar l0o0
+    assert_equal(1, C0.SIslocked("l[0].o0"))
+    assert_equal(1, C0.SIslocked("l[0].o0[2]"))
+
+    unlockvar l0o1
+
+    # can't access "this" from class method
+    try
+      C0.SIslocked("this.o1[0]")
+      call assert_0(1, '"C0.SIslocked("this.o1[0]")" should have failed')
+    catch
+      call assert_exception('E121: Undefined variable: this')
+    endtry
+
+    lockvar l0c1[1]
+
+    # static by class name member expr from same class
+    assert_equal(0, C0.SIslocked("C0.c1[0]"))
+    assert_equal(1, C0.SIslocked("C0.c1[1]"))
+    # static by bare name member expr from same class
+    assert_equal(0, C0.SIslocked("c1[0]"))
+    assert_equal(1, C0.SIslocked("c1[1]"))
+
+    # static by class name member expr from other class
+    assert_equal(0, C2.SIslocked("C0.c1[0]"))
+    assert_equal(1, C2.SIslocked("C0.c1[1]"))
+    # static by bare name member expr from other class
+    assert_equal(0, C2.SIslocked("c1[0]"))
+    assert_equal(0, C2.SIslocked("c1[1]"))
+
+
+    # static by bare name in same class
+    unlockvar l0c0
+    assert_equal(0, C0.SIslocked("c0"))
+    lockvar l0c0
+    assert_equal(1, C0.SIslocked("c0"))
   END
+  v9.CheckSourceSuccess(lines)
+
+  # Check islocked class/object from various places.
+  lines =<< trim END
+    vim9script
+
+    class C
+      def Islocked(arg: string): number
+        return islocked(arg)
+      enddef
+      static def SIslocked(arg: string): number
+        return islocked(arg)
+      enddef
+    endclass
+    var obj = C.new()
+
+    # object method
+    assert_equal(0, obj.Islocked("this"))
+    assert_equal(0, obj.Islocked("C"))
+
+    # class method
+    ### assert_equal(0, C.SIslocked("this"))
+    assert_equal(0, C.SIslocked("C"))
+
+    #script level
+    var v: number
+    v = islocked("C")
+    assert_equal(0, v)
+    v = islocked("obj")
+    assert_equal(0, v)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+def Test_lockvar_islocked_notfound()
+  # Try non-existent things
+  var lines =<< trim END
+    vim9script
+
+    class C
+      def Islocked(arg: string): number
+          return islocked(arg)
+      enddef
+      static def SIslocked(arg: string): number
+        return islocked(arg)
+      enddef
+    endclass
+    var obj = C.new()
+    assert_equal(-1, obj.Islocked("anywhere"))
+    assert_equal(-1, C.SIslocked("notanywhere"))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Something not found of the form "name1.name2" is an error
+  lines =<< trim END
+    vim9script
+
+    islocked("one.two")
+  END
+  v9.CheckSourceFailure(lines, 'E121: Undefined variable: one')
+
+  lines =<< trim END
+    vim9script
+
+    class C
+      this.val = { key: "value" }
+      def Islocked(arg: string): number
+          return islocked(arg)
+      enddef
+    endclass
+    var obj = C.new()
+    obj.Islocked("this.val.not_there"))
+  END
+  v9.CheckSourceFailure(lines, 'E716: Key not present in Dictionary: "not_there"')
+
+  lines =<< trim END
+    vim9script
+
+    class C
+      def Islocked(arg: string): number
+          return islocked(arg)
+      enddef
+    endclass
+    var obj = C.new()
+    obj.Islocked("this.notobjmember")
+  END
+  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "C": notobjmember')
+
+  # access a script variable through methods
+  lines =<< trim END
+    vim9script
+
+    var l = [1]
+    class C
+      def Islocked(arg: string): number
+          return islocked(arg)
+      enddef
+      static def SIslocked(arg: string): number
+        return islocked(arg)
+      enddef
+    endclass
+    var obj = C.new()
+    assert_equal(0, obj.Islocked("l"))
+    assert_equal(0, C.SIslocked("l"))
+    lockvar l
+    assert_equal(1, obj.Islocked("l"))
+    assert_equal(1, C.SIslocked("l"))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for a private object method

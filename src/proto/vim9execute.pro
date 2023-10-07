@@ -4,6 +4,7 @@ void update_has_breakpoint(ufunc_T *ufunc);
 int funcstack_check_refcount(funcstack_T *funcstack);
 int set_ref_in_funcstacks(int copyID);
 int in_def_function(void);
+int fill_exec_lval_root(lval_root_T *lr);
 ectx_T *clear_current_ectx(void);
 void restore_current_ectx(ectx_T *ectx);
 int add_defer_function(char_u *name, int argcount, typval_T *argvars);
