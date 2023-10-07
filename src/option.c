@@ -7470,7 +7470,7 @@ set_context_in_set_cmd(
 		while (s > xp->xp_pattern && *(s - 1) == '\\')
 		    --s;
 		if ((*p == ' ' && (xp->xp_backslash == XP_BS_THREE && (p - s) < 3))
-			|| (*p == ',' && (flags & P_COMMA) && ((p - s) % 1) == 0)
+			|| (*p == ',' && (flags & P_COMMA))
 			|| (*p == ':' && (flags & P_COLON)))
 		{
 		    xp->xp_pattern = p + 1;
