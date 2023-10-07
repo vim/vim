@@ -6989,4 +6989,44 @@ func Test_object_variable_complex_type_check()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Test for recursively calling an object method.  This used to cause an
+" use-after-free error.
+def Test_recursive_object_method_call()
+  var lines =<< trim END
+    vim9script
+    class A
+      this.val: number = 0
+      def Foo(): number
+        if this.val >= 90
+          return this.val
+        endif
+        this.val += 1
+        return this.Foo()
+      enddef
+    endclass
+    var a = A.new()
+    assert_equal(90, a.Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for recursively calling a class method.
+def Test_recursive_class_method_call()
+  var lines =<< trim END
+    vim9script
+    class A
+      static val: number = 0
+      static def Foo(): number
+        if val >= 90
+          return val
+        endif
+        val += 1
+        return Foo()
+      enddef
+    endclass
+    assert_equal(90, A.Foo())
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
