@@ -136,7 +136,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2023-10-06 by Juergen Weigert et al.";
+char version[] = "xxd 2023-10-08 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -364,7 +364,7 @@ huntype(
   int hextype,
   long base_off)
 {
-  int c, ign_garb = 1, n1 = -1, n2 = 0, n3, p = cols, bt, b = 0, bcnt = 0;
+  int c, ign_garb = 1, n1 = -1, n2 = 0, n3 = 0, p = cols, bt = 0, b = 0, bcnt = 0;
   long have_off = 0, want_off = 0;
 
   rewind(fpi);
