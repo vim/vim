@@ -254,7 +254,7 @@ compile_lock_unlock(
 		{
 		    // Push the class of the bare class variable name
 		    name = cl->class_name;
-		    len = STRLEN(name);
+		    len = (int)STRLEN(name);
 #ifdef LOG_LOCKVAR
 		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
 			   name);
