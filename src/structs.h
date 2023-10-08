@@ -631,8 +631,9 @@ typedef struct expand
  * values for xp_backslash
  */
 #define XP_BS_NONE	0	// nothing special for backslashes
-#define XP_BS_ONE	1	// uses one backslash before a space
-#define XP_BS_THREE	2	// uses three backslashes before a space
+#define XP_BS_ONE	0x1	// uses one backslash before a space
+#define XP_BS_THREE	0x2	// uses three backslashes before a space
+#define XP_BS_COMMA	0x4	// commas need to be escaped with a backslash
 
 /*
  * Variables shared between getcmdline(), redrawcmdline() and others.
