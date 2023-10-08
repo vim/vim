@@ -131,9 +131,11 @@ Ricostruisce: converte (o mette una patch) da immagine esadecimale, a file binar
 Se non scrive sullo `standard output', xxd scrive nel file di output in maniera
 continua, senza interruzioni.  Usare la combinazione
 .I \-r \-p
-per leggere dump in stile esadecimale semplice, senza l'informazione del numero
+per leggere un dump in stile esadecimale semplice, senza l'informazione del numero
 di riga e senza un particolare tracciato di colonna.  Spazi o righe vuote
-possono essere presenti [e vengono ignorati].
+possono essere presenti dappertutto [e vengono ignorati]. Usare la combinazione
+.I \-r \-b
+per leggere un dump binario, invece che un dump esadecimale.
 .TP
 .IR \-R " "[quando]
 Nell'output i valori esadecimali e i caratteri corrispondenti hanno entrambi
