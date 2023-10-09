@@ -113,9 +113,10 @@ wildescape(
 	for (int i = 0; i < numfiles; ++i)
 	{
 	    // for ":set path=" we need to escape spaces twice
-	    if (xp->xp_backslash == XP_BS_THREE)
+	    if (xp->xp_backslash & XP_BS_THREE)
 	    {
-		p = vim_strsave_escaped(files[i], (char_u *)" ");
+		char *pat = (xp->xp_backslash & XP_BS_COMMA) ?  " ," : " ";
+		p = vim_strsave_escaped(files[i], (char_u *)pat);
 		if (p != NULL)
 		{
 		    vim_free(files[i]);
@@ -128,6 +129,18 @@ wildescape(
 			files[i] = p;
 		    }
 #endif
+		}
+	    }
+	    else if (xp->xp_backslash & XP_BS_COMMA)
+	    {
+		if (vim_strchr(files[i], ',') != NULL)
+		{
+		    p = vim_strsave_escaped(files[i], (char_u *)",");
+		    if (p != NULL)
+		    {
+			vim_free(files[i]);
+			files[i] = p;
+		    }
 		}
 	    }
 #ifdef BACKSLASH_IN_FILENAME
@@ -2730,14 +2743,23 @@ expand_files_and_dirs(
 	for (i = 0; pat[i]; ++i)
 	    if (pat[i] == '\\')
 	    {
-		if (xp->xp_backslash == XP_BS_THREE
+		if (xp->xp_backslash & XP_BS_THREE
 			&& pat[i + 1] == '\\'
 			&& pat[i + 2] == '\\'
 			&& pat[i + 3] == ' ')
 		    STRMOVE(pat + i, pat + i + 3);
-		if (xp->xp_backslash == XP_BS_ONE
+		else if (xp->xp_backslash & XP_BS_ONE
 			&& pat[i + 1] == ' ')
 		    STRMOVE(pat + i, pat + i + 1);
+		else if ((xp->xp_backslash & XP_BS_COMMA)
+			&& pat[i + 1] == '\\'
+			&& pat[i + 2] == ',')
+		    STRMOVE(pat + i, pat + i + 2);
+#ifdef BACKSLASH_IN_FILENAME
+		else if ((xp->xp_backslash & XP_BS_COMMA)
+			&& pat[i + 1] == ',')
+		    STRMOVE(pat + i, pat + i + 1);
+#endif
 	    }
     }
 
