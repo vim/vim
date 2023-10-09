@@ -874,8 +874,7 @@ check_type_maybe(
 		{
 		    where_T  func_where = where;
 
-		    if (where.wt_kind == WT_METHOD)
-			func_where.wt_kind = WT_METHOD_RETURN;
+		    func_where.wt_kind = WT_METHOD_RETURN;
 		    ret = check_type_maybe(expected->tt_member,
 					    actual->tt_member, FALSE,
 					    func_where);
@@ -898,8 +897,7 @@ check_type_maybe(
 					       && i < actual->tt_argcount; ++i)
 		{
 		    where_T  func_where = where;
-		    if (where.wt_kind == WT_METHOD)
-			func_where.wt_kind = WT_METHOD_ARG;
+		    func_where.wt_kind = WT_METHOD_ARG;
 
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(

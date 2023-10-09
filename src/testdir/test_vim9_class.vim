@@ -7154,4 +7154,41 @@ def Test_recursive_class_method_call()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for checking the argument types and the return type when assigning a
+" funcref to make sure the invariant class type is used.
+def Test_funcref_argtype_returntype_check()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A
+    endclass
+
+    def Foo(p: B): B
+      return B.new()
+    enddef
+
+    var Bar: func(A): A = Foo
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(object<A>): object<A> but got func(object<B>): object<B>', 11)
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A
+    endclass
+
+    def Foo(p: B): B
+      return B.new()
+    enddef
+
+    def Baz()
+      var Bar: func(A): A = Foo
+    enddef
+    Baz()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(object<A>): object<A> but got func(object<B>): object<B>', 1)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
