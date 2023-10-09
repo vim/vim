@@ -1770,7 +1770,7 @@ compile_lhs(
 		lhs->lhs_dest = dest_class_member;
 		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
 		lhs->lhs_type =
-		    class_member_type_by_idx(cctx->ctx_ufunc->uf_class,
+		    oc_member_type_by_idx(cctx->ctx_ufunc->uf_class,
 					FALSE, lhs->lhs_classmember_idx);
 	    }
 	    else
@@ -2254,7 +2254,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	   return FAIL;
 
 	class_T	*cl = lhs->lhs_type->tt_class;
-	type_T	*type = class_member_type(cl, TRUE, dot + 1,
+	type_T	*type = oc_member_type(cl, TRUE, dot + 1,
 					  lhs->lhs_end, &lhs->lhs_member_idx);
 	if (lhs->lhs_member_idx < 0)
 	    return FAIL;
@@ -2274,6 +2274,22 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	if (cl->class_flags & CLASS_INTERFACE)
 	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type);
 	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
+    }
+    else if (lhs->lhs_type->tt_type == VAR_CLASS)
+    {
+	// "<classname>.value": load class variable "classname.value"
+       char_u *dot = vim_strchr(var_start, '.');
+       if (dot == NULL)
+	   return FAIL;
+
+	class_T	*cl = lhs->lhs_type->tt_class;
+	ocmember_T *m = class_member_lookup(cl, dot + 1,
+						lhs->lhs_end - dot - 1,
+						&lhs->lhs_member_idx);
+	if (m == NULL)
+	    return FAIL;
+
+	return generate_CLASSMEMBER(cctx, TRUE, cl, lhs->lhs_member_idx);
     }
 
     compile_load_lhs(lhs, var_start, NULL, cctx);
