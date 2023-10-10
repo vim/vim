@@ -1771,8 +1771,8 @@ EXTERN char e_less_targets_than_list_items[]
 	INIT(= N_("E687: Less targets than List items"));
 EXTERN char e_more_targets_than_list_items[]
 	INIT(= N_("E688: More targets than List items"));
-EXTERN char e_can_only_index_list_dictionary_or_blob[]
-	INIT(= N_("E689: Can only index a List, Dictionary or Blob"));
+EXTERN char e_index_not_allowed_after_str_str[]
+	INIT(= N_("E689: Index not allowed after a %s: %s"));
 EXTERN char e_missing_in_after_for[]
 	INIT(= N_("E690: Missing \"in\" after :for"));
 EXTERN char e_can_only_compare_list_with_list[]
@@ -3081,8 +3081,8 @@ EXTERN char e_libsodium_decryption_failed_premature[]
 #ifdef FEAT_EVAL
 EXTERN char e_no_white_space_allowed_after_str_str[]
 	INIT(= N_("E1202: No white space allowed after '%s': %s"));
-EXTERN char e_dot_can_only_be_used_on_dictionary_str[]
-	INIT(= N_("E1203: Dot can only be used on a dictionary: %s"));
+EXTERN char e_dot_not_allowed_after_str_str[]
+	INIT(= N_("E1203: Dot not allowed after a %s: %s"));
 #endif
 EXTERN char e_regexp_number_after_dot_pos_search_chr[]
 	INIT(= N_("E1204: No Number allowed after .: '\\%%%c'"));

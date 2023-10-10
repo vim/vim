@@ -1278,7 +1278,7 @@ def Test_assignment_dict()
     var n: any
     n.key = 5
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E1148:', 'E1203: Dot can only be used on a dictionary: n.key = 5'], 2)
+  v9.CheckDefExecAndScriptFailure(lines, ['E1148:', 'E1203: Dot not allowed after a number: n.key = 5'], 2)
 enddef
 
 def Test_assignment_local()

@@ -435,13 +435,13 @@ func Test_dict_assign()
     let n = 0
     let n.key = 3
   END
-  call v9.CheckScriptFailure(lines, 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  call v9.CheckScriptFailure(lines, 'E1203: Dot not allowed after a number: n.key = 3')
   let lines =<< trim END
     vim9script
     var n = 0
     n.key = 3
   END
-  call v9.CheckScriptFailure(lines, 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  call v9.CheckScriptFailure(lines, 'E1203: Dot not allowed after a number: n.key = 3')
   let lines =<< trim END
     var n = 0
     n.key = 3
