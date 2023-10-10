@@ -102,18 +102,18 @@ static void luaV_call_lua_func_free(void *state);
 
 #ifdef DYNAMIC_LUA
 
-#ifndef MSWIN
+#ifdef MSWIN
+# define load_dll vimLoadLib
+# define symbol_from_dll GetProcAddress
+# define close_dll FreeLibrary
+# define load_dll_error GetWin32Error
+#else
 # include <dlfcn.h>
 # define HANDLE void*
 # define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 # define symbol_from_dll dlsym
 # define close_dll dlclose
 # define load_dll_error dlerror
-#else
-# define load_dll vimLoadLib
-# define symbol_from_dll GetProcAddress
-# define close_dll FreeLibrary
-# define load_dll_error GetWin32Error
 #endif
 
 // lauxlib

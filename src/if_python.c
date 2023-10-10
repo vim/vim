@@ -130,7 +130,12 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define HINSTANCE long_u		// for generating prototypes
 # endif
 
-# ifndef MSWIN
+# ifdef MSWIN
+#  define load_dll vimLoadLib
+#  define close_dll FreeLibrary
+#  define symbol_from_dll GetProcAddress
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
@@ -142,11 +147,6 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define close_dll dlclose
 #  define symbol_from_dll dlsym
 #  define load_dll_error dlerror
-# else
-#  define load_dll vimLoadLib
-#  define close_dll FreeLibrary
-#  define symbol_from_dll GetProcAddress
-#  define load_dll_error GetWin32Error
 # endif
 
 // This makes if_python.c compile without warnings against Python 2.5
@@ -496,14 +496,14 @@ static struct
     PYTHON_PROC *ptr;
 } python_funcname_table[] =
 {
-# ifndef PY_SSIZE_T_CLEAN
-    {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
-    {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
-    {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
-# else
+# ifdef PY_SSIZE_T_CLEAN
     {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&dll_Py_BuildValue},
+# else
+    {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
+    {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
+    {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
 # endif
     {"PyMem_Free", (PYTHON_PROC*)&dll_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
