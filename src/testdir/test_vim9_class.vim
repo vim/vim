@@ -7431,4 +7431,50 @@ def Test_funcref_argtype_returntype_check()
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(object<A>): object<A> but got func(object<B>): object<B>', 1)
 enddef
 
+" Test for using an operator (e.g. +) with an assignment
+def Test_op_and_assignment()
+  # Using += with a class variable
+  var lines =<< trim END
+    vim9script
+    class A
+      public static val: list<number> = []
+      static def Foo(): list<number>
+        val += [1]
+        return val
+      enddef
+    endclass
+    def Bar(): list<number>
+      A.val += [2]
+      return A.val
+    enddef
+    assert_equal([1], A.Foo())
+    assert_equal([1, 2], Bar())
+    A.val += [3]
+    assert_equal([1, 2, 3], A.val)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using += with an object variable
+  lines =<< trim END
+    vim9script
+    class A
+      public this.val: list<number> = []
+      def Foo(): list<number>
+        this.val += [1]
+        return this.val
+      enddef
+    endclass
+    def Bar(bar_a: A): list<number>
+      bar_a.val += [2]
+      return bar_a.val
+    enddef
+    var a = A.new()
+    assert_equal([1], a.Foo())
+    assert_equal([1, 2], Bar(a))
+    a.val += [3]
+    assert_equal([1, 2, 3], a.val)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

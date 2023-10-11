@@ -2032,7 +2032,7 @@ cleanup:
  * Set *p_m ocmmember_T if not NULL
  */
     type_T *
-class_member_type(
+oc_member_type(
     class_T	*cl,
     int		is_object,
     char_u	*name,
@@ -2060,7 +2060,7 @@ class_member_type(
  * Given a class or object variable index, return the variable type
  */
     type_T *
-class_member_type_by_idx(
+oc_member_type_by_idx(
     class_T	*cl,
     int		is_object,
     int		member_idx)
