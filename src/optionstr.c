@@ -2105,6 +2105,19 @@ expand_set_fileformat(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 
 /*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * fileformat options.
+ */
+    char_u *
+get_fileformat_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)ARRAY_LENGTH(p_ff_values))
+	return NULL;
+
+    return (char_u*)p_ff_values[idx];
+}
+
+/*
  * The 'fileformats' option is changed.
  */
     char *

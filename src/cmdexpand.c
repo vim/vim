@@ -1769,6 +1769,45 @@ set_context_for_wildcard_arg(
 }
 
 /*
+ * Set the completion context for the "++opt=arg" argument.  Always returns
+ * NULL.
+ */
+    static char_u *
+set_context_in_argopt(expand_T *xp, char_u *arg)
+{
+    char_u	*p;
+
+    p = vim_strchr(arg, '=');
+    if (p == NULL)
+	xp->xp_pattern = arg;
+    else
+	xp->xp_pattern = p + 1;
+
+    xp->xp_context = EXPAND_ARGOPT;
+    return NULL;
+}
+
+#ifdef FEAT_TERMINAL
+/*
+ * Set the completion context for :terminal's [options].  Always returns NULL.
+ */
+    static char_u *
+set_context_in_terminalopt(expand_T *xp, char_u *arg)
+{
+    char_u	*p;
+
+    p = vim_strchr(arg, '=');
+    if (p == NULL)
+	xp->xp_pattern = arg;
+    else
+	xp->xp_pattern = p + 1;
+
+    xp->xp_context = EXPAND_TERMINALOPT;
+    return NULL;
+}
+#endif
+
+/*
  * Set the completion context for the :filter command. Returns a pointer to the
  * next command after the :filter command.
  */
@@ -2491,13 +2530,28 @@ set_one_cmd_context(
 
     arg = skipwhite(p);
 
-    // Skip over ++argopt argument
-    if ((ea.argt & EX_ARGOPT) && *arg != NUL && STRNCMP(arg, "++", 2) == 0)
+    // Does command allow "++argopt" argument?
+    if ((ea.argt & EX_ARGOPT) || ea.cmdidx == CMD_terminal)
     {
-	p = arg;
-	while (*p && !vim_isspace(*p))
-	    MB_PTR_ADV(p);
-	arg = skipwhite(p);
+	while (*arg != NUL && STRNCMP(arg, "++", 2) == 0)
+	{
+	    p = arg + 2;
+	    while (*p && !vim_isspace(*p))
+		MB_PTR_ADV(p);
+
+	    // Still touching the command after "++"?
+	    if (*p == NUL)
+	    {
+		if (ea.argt & EX_ARGOPT)
+		    return set_context_in_argopt(xp, arg + 2);
+#ifdef FEAT_TERMINAL
+		if (ea.cmdidx == CMD_terminal)
+		    return set_context_in_terminalopt(xp, arg + 2);
+#endif
+	    }
+
+	    arg = skipwhite(p);
+	}
     }
 
     if (ea.cmdidx == CMD_write || ea.cmdidx == CMD_update)
@@ -3120,6 +3174,12 @@ ExpandFromContext(
 	ret = ExpandSettingSubtract(xp, &regmatch, numMatches, matches);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(pat, &regmatch, numMatches, matches);
+    else if (xp->xp_context == EXPAND_ARGOPT)
+	ret = expand_argopt(pat, xp, &regmatch, matches, numMatches);
+#if defined(FEAT_TERMINAL)
+    else if (xp->xp_context == EXPAND_TERMINALOPT)
+	ret = expand_terminal_opt(pat, xp, &regmatch, matches, numMatches);
+#endif
 #if defined(FEAT_EVAL)
     else if (xp->xp_context == EXPAND_USER_DEFINED)
 	ret = ExpandUserDefined(pat, xp, &regmatch, matches, numMatches);
@@ -3253,7 +3313,9 @@ ExpandGeneric(
     if (!fuzzy && xp->xp_context != EXPAND_MENUNAMES
 					&& xp->xp_context != EXPAND_STRING_SETTING
 					&& xp->xp_context != EXPAND_MENUS
-					&& xp->xp_context != EXPAND_SCRIPTNAMES)
+					&& xp->xp_context != EXPAND_SCRIPTNAMES
+					&& xp->xp_context != EXPAND_ARGOPT
+					&& xp->xp_context != EXPAND_TERMINALOPT)
 	sort_matches = TRUE;
 
     // <SNR> functions should be sorted to the end.

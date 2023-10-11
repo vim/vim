@@ -30,6 +30,7 @@ int expand_filename(exarg_T *eap, char_u **cmdlinep, char **errormsgp);
 void separate_nextcmd(exarg_T *eap, int keep_backslash);
 char_u *skip_cmd_arg(char_u *p, int rembs);
 int get_bad_opt(char_u *p, exarg_T *eap);
+int expand_argopt(char_u *pat, expand_T *xp, regmatch_T *rmp, char_u ***matches, int *numMatches);
 int ends_excmd(int c);
 int ends_excmd2(char_u *cmd_start, char_u *cmd);
 char_u *find_nextcmd(char_u *p);
