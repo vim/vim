@@ -1375,9 +1375,9 @@ get_lval(
 		      && v_type != VAR_OBJECT
 		      && v_type != VAR_CLASS)
 	{
-	    // TODO: have a message with obj/class, not just dict,
 	    if (!quiet)
-		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
+		semsg(_(e_dot_not_allowed_after_str_str),
+						vartype_name(v_type), name);
 	    return NULL;
 	}
 	if (v_type != VAR_LIST
@@ -1386,9 +1386,9 @@ get_lval(
 		&& v_type != VAR_OBJECT
 		&& v_type != VAR_CLASS)
 	{
-	    // TODO: have a message with obj/class, not just dict/list/blob,
 	    if (!quiet)
-		emsg(_(e_can_only_index_list_dictionary_or_blob));
+		semsg(_(e_index_not_allowed_after_str_str),
+						vartype_name(v_type), name);
 	    return NULL;
 	}
 
