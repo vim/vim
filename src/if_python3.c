@@ -104,6 +104,9 @@
 #define PyString_FromString(repr) \
     PyUnicode_Decode(repr, STRLEN(repr), ENC_OPT, ERRORS_DECODE_ARG)
 #define PyString_FromFormat PyUnicode_FromFormat
+#ifdef PyUnicode_FromFormat
+# define Py_UNICODE_USE_UCS_FUNCTIONS
+#endif
 #ifndef PyInt_Check
 # define PyInt_Check(obj) PyLong_Check(obj)
 #endif
@@ -134,7 +137,12 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 
 #if defined(DYNAMIC_PYTHON3) || defined(PROTO)
 
-# ifndef MSWIN
+# ifdef MSWIN
+#  define load_dll vimLoadLib
+#  define close_dll FreeLibrary
+#  define symbol_from_dll GetProcAddress
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  if defined(PY_NO_RTLD_GLOBAL) && defined(PY3_NO_RTLD_GLOBAL)
@@ -145,11 +153,6 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 #  define close_dll dlclose
 #  define symbol_from_dll dlsym
 #  define load_dll_error dlerror
-# else
-#  define load_dll vimLoadLib
-#  define close_dll FreeLibrary
-#  define symbol_from_dll GetProcAddress
-#  define load_dll_error GetWin32Error
 # endif
 /*
  * Wrapper defines
@@ -216,14 +219,14 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyObject_GetItem py3_PyObject_GetItem
 # define PyObject_IsTrue py3_PyObject_IsTrue
 # define PyModule_GetDict py3_PyModule_GetDict
-# ifndef USE_LIMITED_API
+# ifdef USE_LIMITED_API
+#  define Py_CompileString py3_Py_CompileString
+#  define PyEval_EvalCode py3_PyEval_EvalCode
+# else
 #  undef PyRun_SimpleString
 #  define PyRun_SimpleString py3_PyRun_SimpleString
 #  undef PyRun_String
 #  define PyRun_String py3_PyRun_String
-# else
-#  define Py_CompileString py3_Py_CompileString
-#  define PyEval_EvalCode py3_PyEval_EvalCode
 # endif
 # define PyObject_GetAttrString py3_PyObject_GetAttrString
 # define PyObject_HasAttrString py3_PyObject_HasAttrString
@@ -321,15 +324,14 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyType_GenericNew py3_PyType_GenericNew
 # undef PyUnicode_FromString
 # define PyUnicode_FromString py3_PyUnicode_FromString
-# ifndef PyUnicode_FromFormat
-#  define PyUnicode_FromFormat py3_PyUnicode_FromFormat
-# else
-#  define Py_UNICODE_USE_UCS_FUNCTIONS
+# ifdef Py_UNICODE_USE_UCS_FUNCTIONS
 #  ifdef Py_UNICODE_WIDE
 #   define PyUnicodeUCS4_FromFormat py3_PyUnicodeUCS4_FromFormat
 #  else
 #   define PyUnicodeUCS2_FromFormat py3_PyUnicodeUCS2_FromFormat
 #  endif
+# else
+#  define PyUnicode_FromFormat py3_PyUnicode_FromFormat
 # endif
 # undef PyUnicode_Decode
 # define PyUnicode_Decode py3_PyUnicode_Decode
@@ -388,12 +390,12 @@ static void (*py3_Py_Finalize)(void);
 static void (*py3_PyErr_SetString)(PyObject *, const char *);
 static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
 static int (*py3_PyErr_ExceptionMatches)(PyObject *);
-# ifndef USE_LIMITED_API
-static int (*py3_PyRun_SimpleString)(char *);
-static PyObject* (*py3_PyRun_String)(char *, int, PyObject *, PyObject *);
-# else
+# ifdef USE_LIMITED_API
 static PyObject* (*py3_Py_CompileString)(const char *, const char *, int);
 static PyObject* (*py3_PyEval_EvalCode)(PyObject *co, PyObject *globals, PyObject *locals);
+# else
+static int (*py3_PyRun_SimpleString)(char *);
+static PyObject* (*py3_PyRun_String)(char *, int, PyObject *, PyObject *);
 # endif
 static PyObject* (*py3_PyObject_GetAttrString)(PyObject *, const char *);
 static int (*py3_PyObject_HasAttrString)(PyObject *, const char *);
@@ -430,14 +432,14 @@ static int (*py3_PyType_GetFlags)(PyTypeObject *o);
 static int (*py3_PyType_Ready)(PyTypeObject *type);
 static int (*py3_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static PyObject* (*py3_PyUnicode_FromString)(const char *u);
-# ifndef Py_UNICODE_USE_UCS_FUNCTIONS
-static PyObject* (*py3_PyUnicode_FromFormat)(const char *u, ...);
-# else
+# ifdef Py_UNICODE_USE_UCS_FUNCTIONS
 #  ifdef Py_UNICODE_WIDE
 static PyObject* (*py3_PyUnicodeUCS4_FromFormat)(const char *u, ...);
 #  else
 static PyObject* (*py3_PyUnicodeUCS2_FromFormat)(const char *u, ...);
 #  endif
+# else
+static PyObject* (*py3_PyUnicode_FromFormat)(const char *u, ...);
 # endif
 static PyObject* (*py3_PyUnicode_Decode)(const char *u, Py_ssize_t size,
 	const char *encoding, const char *errors);
@@ -594,12 +596,12 @@ static struct
     {"PyErr_SetString", (PYTHON_PROC*)&py3_PyErr_SetString},
     {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
     {"PyErr_ExceptionMatches", (PYTHON_PROC*)&py3_PyErr_ExceptionMatches},
-# ifndef USE_LIMITED_API
-    {"PyRun_SimpleString", (PYTHON_PROC*)&py3_PyRun_SimpleString},
-    {"PyRun_String", (PYTHON_PROC*)&py3_PyRun_String},
-# else
+# ifdef USE_LIMITED_API
     {"Py_CompileString", (PYTHON_PROC*)&py3_Py_CompileString},
     {"PyEval_EvalCode", (PYTHON_PROC*)&PyEval_EvalCode},
+# else
+    {"PyRun_SimpleString", (PYTHON_PROC*)&py3_PyRun_SimpleString},
+    {"PyRun_String", (PYTHON_PROC*)&py3_PyRun_String},
 # endif
     {"PyObject_GetAttrString", (PYTHON_PROC*)&py3_PyObject_GetAttrString},
     {"PyObject_HasAttrString", (PYTHON_PROC*)&py3_PyObject_HasAttrString},
@@ -668,14 +670,14 @@ static struct
 # endif
     {"PyUnicode_CompareWithASCIIString", (PYTHON_PROC*)&py3_PyUnicode_CompareWithASCIIString},
     {"PyUnicode_AsUTF8String", (PYTHON_PROC*)&py3_PyUnicode_AsUTF8String},
-# ifndef Py_UNICODE_USE_UCS_FUNCTIONS
-    {"PyUnicode_FromFormat", (PYTHON_PROC*)&py3_PyUnicode_FromFormat},
-# else
+# ifdef Py_UNICODE_USE_UCS_FUNCTIONS
 #  ifdef Py_UNICODE_WIDE
     {"PyUnicodeUCS4_FromFormat", (PYTHON_PROC*)&py3_PyUnicodeUCS4_FromFormat},
 #  else
     {"PyUnicodeUCS2_FromFormat", (PYTHON_PROC*)&py3_PyUnicodeUCS2_FromFormat},
 #  endif
+# else
+    {"PyUnicode_FromFormat", (PYTHON_PROC*)&py3_PyUnicode_FromFormat},
 # endif
     {"PyBytes_AsString", (PYTHON_PROC*)&py3_PyBytes_AsString},
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
@@ -1093,13 +1095,7 @@ static struct PyModuleDef vimmodule;
  */
 #include "if_py_both.h"
 
-#ifndef USE_LIMITED_API
-# if PY_VERSION_HEX >= 0x030300f0
-#  define PY_UNICODE_GET_UTF8_CHARS(obj) PyUnicode_AsUTF8AndSize(obj, NULL)
-# else
-#  define PY_UNICODE_GET_UTF8_CHARS _PyUnicode_AsString
-# endif
-#else
+#ifdef USE_LIMITED_API
 # if Py_LIMITED_API >= 0x030A0000
 #  define PY_UNICODE_GET_UTF8_CHARS(obj) PyUnicode_AsUTF8AndSize(obj, NULL)
 # else
@@ -1130,6 +1126,12 @@ static char* PY_UNICODE_GET_UTF8_CHARS(PyObject* str)
     }
     return py3_unicode_utf8_chars;
 }
+# endif
+#else	// !USE_LIMITED_API
+# if PY_VERSION_HEX >= 0x030300f0
+#  define PY_UNICODE_GET_UTF8_CHARS(obj) PyUnicode_AsUTF8AndSize(obj, NULL)
+# else
+#  define PY_UNICODE_GET_UTF8_CHARS _PyUnicode_AsString
 # endif
 #endif
 

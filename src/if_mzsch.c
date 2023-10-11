@@ -1366,10 +1366,10 @@ mzscheme_buffer_free(buf_T *buf)
 
     bp = BUFFER_REF(buf);
     bp->buf = INVALID_BUFFER_VALUE;
-#ifndef MZ_PRECISE_GC
-    scheme_gc_ptr_ok(bp);
-#else
+#ifdef MZ_PRECISE_GC
     scheme_free_immobile_box(buf->b_mzscheme_ref);
+#else
+    scheme_gc_ptr_ok(bp);
 #endif
     buf->b_mzscheme_ref = NULL;
     MZ_GC_CHECK();
@@ -1391,10 +1391,10 @@ mzscheme_window_free(win_T *win)
     MZ_GC_REG();
     wp = WINDOW_REF(win);
     wp->win = INVALID_WINDOW_VALUE;
-#ifndef MZ_PRECISE_GC
-    scheme_gc_ptr_ok(wp);
-#else
+#ifdef MZ_PRECISE_GC
     scheme_free_immobile_box(win->w_mzscheme_ref);
+#else
+    scheme_gc_ptr_ok(wp);
 #endif
     win->w_mzscheme_ref = NULL;
     MZ_GC_CHECK();
@@ -1921,10 +1921,10 @@ window_new(win_T *win)
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_window));
     CLEAR_POINTER(self);
-#ifndef MZ_PRECISE_GC
-    scheme_dont_gc_ptr(self);	// because win isn't visible to GC
-#else
+#ifdef MZ_PRECISE_GC
     win->w_mzscheme_ref = scheme_malloc_immobile_box(NULL);
+#else
+    scheme_dont_gc_ptr(self);	// because win isn't visible to GC
 #endif
     MZ_GC_CHECK();
     WINDOW_REF(win) = self;
@@ -2305,10 +2305,10 @@ buffer_new(buf_T *buf)
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_buffer));
     CLEAR_POINTER(self);
-#ifndef MZ_PRECISE_GC
-    scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
-#else
+#ifdef MZ_PRECISE_GC
     buf->b_mzscheme_ref = scheme_malloc_immobile_box(NULL);
+#else
+    scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
 #endif
     MZ_GC_CHECK();
     BUFFER_REF(buf) = self;
