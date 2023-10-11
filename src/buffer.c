@@ -6013,6 +6013,9 @@ buf_contents_changed(buf_T *buf)
 	return TRUE;
     }
 
+    // We don't want to trigger autocommands now, they may have nasty
+    // side-effects like wiping buffers
+    block_autocmds();
     if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,
 				  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
@@ -6037,6 +6040,8 @@ buf_contents_changed(buf_T *buf)
 
     if (curbuf != newbuf)	// safety check
 	wipe_buffer(newbuf, FALSE);
+
+    unblock_autocmds();
 
     return differ;
 }
