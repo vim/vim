@@ -4604,13 +4604,16 @@ typedef struct lval_S
 } lval_T;
 
 /**
- * This may be used to specify the base type that get_lval() uses when
+ * This may be used to specify the base typval that get_lval() uses when
  * following a chain, for example a[idx1][idx2].
+ * The lr_sync_root flags signals get_lval that the first time through
+ * the indexing loop, skip handling  '.' and '[idx]'.
  */
 typedef struct lval_root_S {
     typval_T	*lr_tv;
     class_T	*lr_cl_exec;	// executing class for access checking
     int		lr_is_arg;
+    int		lr_sync_root;
 } lval_root_T;
 
 // Structure used to save the current state.  Used when executing Normal mode
