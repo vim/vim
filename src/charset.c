@@ -1123,6 +1123,7 @@ win_lbr_chartabsize(
     int		n;
     char_u	*sbr;
     int		no_sbr = FALSE;
+    colnr_T	vcol_start = 0; // start from where to consider linebreak
 #endif
 
 #if defined(FEAT_PROP_POPUP)
@@ -1344,7 +1345,14 @@ win_lbr_chartabsize(
      * If 'linebreak' set check at a blank before a non-blank if the line
      * needs a break here
      */
-    if (wp->w_p_lbr
+    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_width != 0)
+    {
+	char_u	*t = cts->cts_line;
+	while (VIM_ISBREAK((int)*t))
+	    t++;
+	vcol_start = t - cts->cts_line;
+    }
+    if (wp->w_p_lbr && vcol_start <= vcol
 	    && VIM_ISBREAK((int)s[0])
 	    && !VIM_ISBREAK((int)s[1])
 	    && wp->w_p_wrap

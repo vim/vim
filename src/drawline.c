@@ -171,6 +171,11 @@ typedef struct {
 #ifdef FEAT_SIGNS
     sign_attrs_T sattr;
 #endif
+#ifdef FEAT_LINEBREAK
+     // do consider wrapping in linebreak mode only after encountering
+     // a non whitespace char
+    int		need_lbr;
+#endif
 } winlinevars_T;
 
 // draw_state values for items that are drawn in sequence:
@@ -968,6 +973,9 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 {
     wlv->col = 0;
     wlv->off = (unsigned)(current_ScreenLine - ScreenLines);
+#ifdef FEAT_LINEBREAK
+    wlv->need_lbr = FALSE;
+#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (wp->w_p_rl)
@@ -994,6 +1002,9 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->saved_extra_for_textprop = wlv->extra_for_textprop;
 	wlv->saved_c_extra = wlv->c_extra;
 	wlv->saved_c_final = wlv->c_final;
+#ifdef FEAT_LINEBREAK
+	wlv->need_lbr = TRUE;
+#endif
 #ifdef FEAT_SYN_HL
 	if (!(wlv->cul_screenline
 # ifdef FEAT_DIFF
@@ -2905,8 +2916,19 @@ win_line(
 		}
 #endif
 #ifdef FEAT_LINEBREAK
+		// we don't want linebreak to apply for lines that start with
+		// leading spaces, followed by long letters (since it would add
+		// a break at the beginning of a line and this might be unexpected)
+		//
+		// So only allow to linebreak, once we have found chars not in
+		// 'breakat' in the line.
+		if ( wp->w_p_lbr && !wlv.need_lbr && c != NUL &&
+			!VIM_ISBREAK((int)*ptr))
+		    wlv.need_lbr = TRUE;
+#endif
+#ifdef FEAT_LINEBREAK
 		// Found last space before word: check for line break.
-		if (wp->w_p_lbr && c0 == c
+		if (wp->w_p_lbr && c0 == c && wlv.need_lbr
 				  && VIM_ISBREAK(c) && !VIM_ISBREAK((int)*ptr))
 		{
 		    int	    mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1)
