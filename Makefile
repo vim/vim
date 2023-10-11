@@ -565,3 +565,14 @@ html: dist dist/$(COMMENT_HTML)
 farsi: dist dist/$(COMMENT_FARSI)
 	-rm -f dist/farsi$(VERSION).zip
 	zip -9 -rD -z dist/farsi$(VERSION).zip farsi < dist/$(COMMENT_FARSI)
+
+FORMAT_CONFIG=src/uncrustify.cfg
+FORMAT_FILES=src/sound.c src/sign.c
+format:
+	uncrustify -c $(FORMAT_CONFIG) --replace --no-backup $(FORMAT_FILES)
+
+formatlint:
+	uncrustify -c $(FORMAT_CONFIG) -q --check $(FORMAT_FILES)
+
+formatupdate:
+	uncrustify -c $(FORMAT_CONFIG) --update-config-with-doc -o $(FORMAT_CONFIG)

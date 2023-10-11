@@ -1117,5 +1117,6 @@ IGNORE = \
 		ci/unlisted.make \
 		src/libvterm/CODE-MAP \
 		runtime/syntax/testdir/input/html_html \
+		src/uncrustify.cfg \
 
 # vim: set ft=make:
