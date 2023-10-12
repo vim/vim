@@ -17,7 +17,7 @@ func Test_crash1()
   let buf = RunVimInTerminal('sh', opts)
 
   let file = 'crash/poc_huaf1'
-  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':qa!'"
+  let cmn_args = "%s -u NONE -i NONE -n -e -s -S %s -c ':0cq'"
   let args = printf(cmn_args, vim, file)
   call term_sendkeys(buf, args ..
     \ '  && echo "crash 1: [OK]" > X_crash1_result.txt' .. "\<cr>")
@@ -46,9 +46,8 @@ func Test_crash1()
 
   let file = 'crash/poc_tagfunc.vim'
   let args = printf(cmn_args, vim, file)
-  " using || because this poc causes vim to exit with exitstatus != 0
   call term_sendkeys(buf, args ..
-    \ '  || echo "crash 5: [OK]" >> X_crash1_result.txt' .. "\<cr>")
+    \ '  && echo "crash 5: [OK]" >> X_crash1_result.txt' .. "\<cr>")
 
   call TermWait(buf, 100)
 
@@ -69,7 +68,7 @@ func Test_crash1()
   let file = 'crash/vim_msg_trunc_poc'
   let args = printf(cmn_args, vim, file)
   call term_sendkeys(buf, args ..
-    \ '  || echo "crash 8: [OK]" >> X_crash1_result.txt' .. "\<cr>")
+    \ '  && echo "crash 8: [OK]" >> X_crash1_result.txt' .. "\<cr>")
   call TermWait(buf, 3000)
 
   let file = 'crash/crash_scrollbar'
@@ -81,7 +80,7 @@ func Test_crash1()
   let file = 'crash/editing_arg_idx_POC_1'
   let args = printf(cmn_args, vim, file)
   call term_sendkeys(buf, args ..
-    \ '  || echo "crash 10: [OK]" >> X_crash1_result.txt' .. "\<cr>")
+    \ '  && echo "crash 10: [OK]" >> X_crash1_result.txt' .. "\<cr>")
   call TermWait(buf, 1000)
   call delete('Xerr')
   call delete('@')

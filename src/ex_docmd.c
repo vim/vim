@@ -5954,6 +5954,9 @@ ex_quit(exarg_T *eap)
     static void
 ex_cquit(exarg_T *eap UNUSED)
 {
+    if (eap->addr_count > 0 && (int)eap->line2 == 0 && exmode_active)
+	ex_exitval = 0;
+
     // this does not always pass on the exit code to the Manx compiler. why?
     getout(eap->addr_count > 0 ? (int)eap->line2 : EXIT_FAILURE);
 }
