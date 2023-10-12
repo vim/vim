@@ -7995,7 +7995,7 @@ ex_winsize(exarg_T *eap)
     char_u	*arg = eap->arg;
     char_u	*p;
 
-    if (!isdigit(*arg))
+    if (!SAFE_isdigit(*arg))
     {
 	semsg(_(e_invalid_argument_str), arg);
 	return;
@@ -8386,7 +8386,7 @@ ex_later(exarg_T *eap)
 
     if (*p == NUL)
 	count = 1;
-    else if (isdigit(*p))
+    else if (SAFE_isdigit(*p))
     {
 	count = getdigits(&p);
 	switch (*p)
@@ -8489,7 +8489,7 @@ ex_redir(exarg_T *eap)
 			arg++;
 		    // Make register empty when not using @A-@Z and the
 		    // command is valid.
-		    if (*arg == NUL && !isupper(redir_reg))
+		    if (*arg == NUL && !SAFE_isupper(redir_reg))
 			write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
 		}
 	    }

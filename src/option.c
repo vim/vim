@@ -7680,7 +7680,7 @@ ExpandSettings(
 	{
 	    for (opt_idx = 0; (str = get_termcode(opt_idx)) != NULL; opt_idx++)
 	    {
-		if (!isprint(str[0]) || !isprint(str[1]))
+		if (!SAFE_isprint(str[0]) || !SAFE_isprint(str[1]))
 		    continue;
 
 		name_buf[0] = 't';

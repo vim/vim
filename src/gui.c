@@ -5030,7 +5030,7 @@ display_errors(void)
 
     // avoid putting up a message box with blanks only
     for (p = (char_u *)error_ga.ga_data; *p != NUL; ++p)
-	if (!isspace(*p))
+	if (!SAFE_isspace(*p))
 	{
 	    // Truncate a very long message, it will go off-screen.
 	    if (STRLEN(p) > 2000)

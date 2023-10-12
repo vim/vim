@@ -2307,7 +2307,7 @@ gui_adjust_rgb(guicolor_T c)
     static int
 hex_digit(int c)
 {
-    if (isdigit(c))
+    if (SAFE_isdigit(c))
 	return c - '0';
     c = TOLOWER_ASC(c);
     if (c >= 'a' && c <= 'f')

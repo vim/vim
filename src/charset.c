@@ -1958,7 +1958,7 @@ vim_islower(int c)
 	if (enc_latin1like)
 	    return (latin1flags[c] & LATIN1LOWER) == LATIN1LOWER;
     }
-    return islower(c);
+    return SAFE_islower(c);
 }
 
     int
@@ -1982,7 +1982,7 @@ vim_isupper(int c)
 	if (enc_latin1like)
 	    return (latin1flags[c] & LATIN1UPPER) == LATIN1UPPER;
     }
-    return isupper(c);
+    return SAFE_isupper(c);
 }
 
     int

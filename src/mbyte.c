@@ -4628,7 +4628,7 @@ enc_canonize(char_u *enc)
     }
 
     // "iso-8859n" -> "iso-8859-n"
-    if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
+    if (STRNCMP(p, "iso-8859", 8) == 0 && SAFE_isdigit(p[8]))
     {
 	STRMOVE(p + 9, p + 8);
 	p[8] = '-';
@@ -4705,7 +4705,7 @@ enc_locale_env(char *locale)
     if ((p = (char *)vim_strchr((char_u *)s, '.')) != NULL)
     {
 	if (p > s + 2 && STRNICMP(p + 1, "EUC", 3) == 0
-			&& !isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
+			&& !SAFE_isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
 	{
 	    // copy "XY.EUC" to "euc-XY" to buf[10]
 	    STRCPY(buf + 10, "euc-");
@@ -4721,7 +4721,7 @@ enc_locale_env(char *locale)
     {
 	if (s[i] == '_' || s[i] == '-')
 	    buf[i] = '-';
-	else if (isalnum((int)s[i]))
+	else if (SAFE_isalnum(s[i]))
 	    buf[i] = TOLOWER_ASC(s[i]);
 	else
 	    break;

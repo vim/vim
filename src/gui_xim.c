@@ -1471,7 +1471,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 		break;
 	    if ((ns = end = strchr(s, ',')) == NULL)
 		end = s + strlen(s);
-	    while (isspace(((char_u *)end)[-1]))
+	    while (SAFE_isspace(((char_u *)end)[-1]))
 		end--;
 	    *end = NUL;
 
@@ -1533,7 +1533,7 @@ xim_real_init(Window x11_window, Display *x11_display)
     strcpy(tmp, gui.rsrc_preedit_type_name);
     for (s = tmp; s && !found; )
     {
-	while (*s && isspace((unsigned char)*s))
+	while (*s && SAFE_isspace((unsigned char)*s))
 	    s++;
 	if (!*s)
 	    break;
@@ -1541,7 +1541,7 @@ xim_real_init(Window x11_window, Display *x11_display)
 	    ns++;
 	else
 	    end = s + strlen(s);
-	while (isspace((unsigned char)*end))
+	while (SAFE_isspace((unsigned char)*end))
 	    end--;
 	*end = '\0';
 

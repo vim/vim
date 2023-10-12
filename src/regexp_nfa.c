@@ -5041,11 +5041,11 @@ check_char_class(int class, int c)
     switch (class)
     {
 	case NFA_CLASS_ALNUM:
-	    if (c >= 1 && c < 128 && isalnum(c))
+	    if (SAFE_isalnum(c))
 		return OK;
 	    break;
 	case NFA_CLASS_ALPHA:
-	    if (c >= 1 && c < 128 && isalpha(c))
+	    if (SAFE_isalpha(c))
 		return OK;
 	    break;
 	case NFA_CLASS_BLANK:
@@ -5053,7 +5053,7 @@ check_char_class(int class, int c)
 		return OK;
 	    break;
 	case NFA_CLASS_CNTRL:
-	    if (c >= 1 && c <= 127 && iscntrl(c))
+	    if (SAFE_iscntrl(c))
 		return OK;
 	    break;
 	case NFA_CLASS_DIGIT:
@@ -5061,7 +5061,7 @@ check_char_class(int class, int c)
 		return OK;
 	    break;
 	case NFA_CLASS_GRAPH:
-	    if (c >= 1 && c <= 127 && isgraph(c))
+	    if (SAFE_isgraph(c))
 		return OK;
 	    break;
 	case NFA_CLASS_LOWER:
@@ -5073,7 +5073,7 @@ check_char_class(int class, int c)
 		return OK;
 	    break;
 	case NFA_CLASS_PUNCT:
-	    if (c >= 1 && c < 128 && ispunct(c))
+	    if (SAFE_ispunct(c))
 		return OK;
 	    break;
 	case NFA_CLASS_SPACE:

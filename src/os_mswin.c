@@ -675,7 +675,7 @@ display_errors(void)
 	{
 	    // avoid putting up a message box with blanks only
 	    for (p = (char_u *)error_ga.ga_data; *p; ++p)
-		if (!isspace(*p))
+		if (!SAFE_isspace(*p))
 		{
 		    // Only use a dialog when not using --gui-dialog-file:
 		    // write text to a file.
@@ -759,7 +759,7 @@ mch_chdir(char *path)
 	smsg("chdir(%s)", path);
 	verbose_leave();
     }
-    if (isalpha(path[0]) && path[1] == ':')	// has a drive name
+    if (SAFE_isalpha(path[0]) && path[1] == ':')	// has a drive name
     {
 	// If we can change to the drive, skip that part of the path.  If we
 	// can't then the current directory may be invalid, try using chdir()
@@ -1751,7 +1751,7 @@ is_reparse_point_included(LPCWSTR fname)
     WCHAR	buf[MAX_PATH];
     DWORD	attr;
 
-    if (isalpha(p[0]) && p[1] == L':' && is_path_sep(p[2]))
+    if (SAFE_isalpha(p[0]) && p[1] == L':' && is_path_sep(p[2]))
 	p += 3;
     else if (is_path_sep(p[0]) && is_path_sep(p[1]))
 	p += 2;

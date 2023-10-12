@@ -147,7 +147,7 @@ int is_cygpty(int fd)
 			p = NULL;
 		}
 		if (p != NULL) {
-			while (*p && isxdigit(*p))	// Skip 16-digit hexadecimal.
+			while (*p && SAFE_isxdigit(*p))	// Skip 16-digit hexadecimal.
 				++p;
 			if (is_wprefix(p, L"-pty")) {
 				p += 4;
@@ -156,7 +156,7 @@ int is_cygpty(int fd)
 			}
 		}
 		if (p != NULL) {
-			while (*p && isdigit(*p))	// Skip pty number.
+			while (*p && SAFE_isdigit(*p))	// Skip pty number.
 				++p;
 			if (is_wprefix(p, L"-from-master")) {
 				//p += 12;

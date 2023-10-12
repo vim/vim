@@ -5382,9 +5382,9 @@ do_intro_line(
 	if (highest_patch())
 	{
 	    // Check for 9.9x or 9.9xx, alpha/beta version
-	    if (isalpha((int)vers[3]))
+	    if (SAFE_isalpha((int)vers[3]))
 	    {
-		int len = (isalpha((int)vers[4])) ? 5 : 4;
+		int len = (SAFE_isalpha((int)vers[4])) ? 5 : 4;
 		sprintf((char *)vers + len, ".%d%s", highest_patch(),
 							 mediumVersion + len);
 	    }

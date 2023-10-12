@@ -1874,12 +1874,12 @@ collection:
 				break;
 			    case CLASS_ALNUM:
 				for (cu = 1; cu < 128; cu++)
-				    if (isalnum(cu))
+				    if (SAFE_isalnum(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_ALPHA:
 				for (cu = 1; cu < 128; cu++)
-				    if (isalpha(cu))
+				    if (SAFE_isalpha(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_BLANK:
@@ -1888,7 +1888,7 @@ collection:
 				break;
 			    case CLASS_CNTRL:
 				for (cu = 1; cu <= 127; cu++)
-				    if (iscntrl(cu))
+				    if (SAFE_iscntrl(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_DIGIT:
@@ -1898,7 +1898,7 @@ collection:
 				break;
 			    case CLASS_GRAPH:
 				for (cu = 1; cu <= 127; cu++)
-				    if (isgraph(cu))
+				    if (SAFE_isgraph(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_LOWER:
@@ -1914,7 +1914,7 @@ collection:
 				break;
 			    case CLASS_PUNCT:
 				for (cu = 1; cu < 128; cu++)
-				    if (ispunct(cu))
+				    if (SAFE_ispunct(cu))
 					regmbc(cu);
 				break;
 			    case CLASS_SPACE:

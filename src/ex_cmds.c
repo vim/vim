@@ -3707,7 +3707,7 @@ skip_substitute(char_u *start, int delimiter)
     static int
 check_regexp_delim(int c)
 {
-    if (isalpha(c))
+    if (SAFE_isalpha(c))
     {
 	emsg(_(e_regular_expressions_cant_be_delimited_by_letters));
 	return FAIL;

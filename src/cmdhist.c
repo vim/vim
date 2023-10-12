@@ -674,7 +674,7 @@ remove_key_from_history(void)
 	return;
 
     for ( ; *p; ++p)
-	if (STRNCMP(p, "key", 3) == 0 && !isalpha(p[3]))
+	if (STRNCMP(p, "key", 3) == 0 && !SAFE_isalpha(p[3]))
 	{
 	    p = vim_strchr(p + 3, '=');
 	    if (p == NULL)
