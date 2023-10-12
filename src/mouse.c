@@ -3201,7 +3201,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 	|| defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
- * The first column is one.
+ * The first column is zero.
  */
     int
 vcol2col(win_T *wp, linenr_T lnum, int vcol)
@@ -3214,7 +3214,10 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
     while (cts.cts_vcol < vcol && *cts.cts_ptr != NUL)
     {
-	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	int size = win_lbr_chartabsize(&cts, NULL);
+	if (cts.cts_vcol + size > vcol)
+	    break;
+	cts.cts_vcol += size;
 	MB_PTR_ADV(cts.cts_ptr);
     }
     clear_chartabsize_arg(&cts);
