@@ -7477,4 +7477,480 @@ def Test_op_and_assignment()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using an object method as a funcref
+def Test_object_funcref()
+  # Using object method funcref from a def function
+  var lines =<< trim END
+    vim9script
+    class A
+      def Foo(): list<number>
+        return [3, 2, 1]
+      enddef
+    endclass
+    def Bar()
+      var a = A.new()
+      var Fn = a.Foo
+      assert_equal([3, 2, 1], Fn())
+    enddef
+    Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using object method funcref at the script level
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(): dict<number>
+        return {a: 1, b: 2}
+      enddef
+    endclass
+    var a = A.new()
+    var Fn = a.Foo
+    assert_equal({a: 1, b: 2}, Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using object method funcref from another object method
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(): list<number>
+        return [3, 2, 1]
+      enddef
+      def Bar()
+        var Fn = this.Foo
+        assert_equal([3, 2, 1], Fn())
+      enddef
+    endclass
+    var a = A.new()
+    a.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using function() to get a object method funcref
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo(l: list<any>): list<any>
+        return l
+      enddef
+    endclass
+    var a = A.new()
+    var Fn = function(a.Foo, [[{a: 1, b: 2}, [3, 4]]])
+    assert_equal([{a: 1, b: 2}, [3, 4]], Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Use an object method with a function returning a funcref and then call the
+  # funcref.
+  lines =<< trim END
+    vim9script
+
+    def Map(F: func(number): number): func(number): number
+      return (n: number) => F(n)
+    enddef
+
+    class Math
+      def Double(n: number): number
+        return 2 * n
+      enddef
+    endclass
+
+    const math = Math.new()
+    assert_equal(48, Map(math.Double)(24))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Try using a private object method funcref from a def function
+  lines =<< trim END
+    vim9script
+    class A
+      def _Foo()
+      enddef
+    endclass
+    def Bar()
+      var a = A.new()
+      var Fn = a._Foo
+    enddef
+    Bar()
+  END
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 2)
+
+  # Try using a private object method funcref at the script level
+  lines =<< trim END
+    vim9script
+    class A
+      def _Foo()
+      enddef
+    endclass
+    var a = A.new()
+    var Fn = a._Foo
+  END
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 7)
+
+  # Using a private object method funcref from another object method
+  lines =<< trim END
+    vim9script
+    class A
+      def _Foo(): list<number>
+        return [3, 2, 1]
+      enddef
+      def Bar()
+        var Fn = this._Foo
+        assert_equal([3, 2, 1], Fn())
+      enddef
+    endclass
+    var a = A.new()
+    a.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a class method as a funcref
+def Test_class_funcref()
+  # Using class method funcref in a def function
+  var lines =<< trim END
+    vim9script
+    class A
+      static def Foo(): list<number>
+        return [3, 2, 1]
+      enddef
+    endclass
+    def Bar()
+      var Fn = A.Foo
+      assert_equal([3, 2, 1], Fn())
+    enddef
+    Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using class method funcref at script level
+  lines =<< trim END
+    vim9script
+    class A
+      static def Foo(): dict<number>
+        return {a: 1, b: 2}
+      enddef
+    endclass
+    var Fn = A.Foo
+    assert_equal({a: 1, b: 2}, Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using function() to get a class method funcref
+  lines =<< trim END
+    vim9script
+    class A
+      static def Foo(l: list<any>): list<any>
+        return l
+      enddef
+    endclass
+    var Fn = function(A.Foo, [[{a: 1, b: 2}, [3, 4]]])
+    assert_equal([{a: 1, b: 2}, [3, 4]], Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a class method funcref from another class method
+  lines =<< trim END
+    vim9script
+    class A
+      static def Foo(): list<number>
+        return [3, 2, 1]
+      enddef
+      static def Bar()
+        var Fn = Foo
+        assert_equal([3, 2, 1], Fn())
+      enddef
+    endclass
+    A.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Use a class method with a function returning a funcref and then call the
+  # funcref.
+  lines =<< trim END
+    vim9script
+
+    def Map(F: func(number): number): func(number): number
+      return (n: number) => F(n)
+    enddef
+
+    class Math
+      static def StaticDouble(n: number): number
+        return 2 * n
+      enddef
+    endclass
+
+    assert_equal(48, Map(Math.StaticDouble)(24))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Try using a private class method funcref in a def function
+  lines =<< trim END
+    vim9script
+    class A
+      static def _Foo()
+      enddef
+    endclass
+    def Bar()
+      var Fn = A._Foo
+    enddef
+    Bar()
+  END
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 1)
+
+  # Try using a private class method funcref at script level
+  lines =<< trim END
+    vim9script
+    class A
+      static def _Foo()
+      enddef
+    endclass
+    var Fn = A._Foo
+  END
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 6)
+
+  # Using a private class method funcref from another class method
+  lines =<< trim END
+    vim9script
+    class A
+      static def _Foo(): list<number>
+        return [3, 2, 1]
+      enddef
+      static def Bar()
+        var Fn = _Foo
+        assert_equal([3, 2, 1], Fn())
+      enddef
+    endclass
+    A.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using an object member as a funcref
+def Test_object_member_funcref()
+  # Using a funcref object variable in an object method
+  var lines =<< trim END
+    vim9script
+    def Foo(n: number): number
+      return n * 10
+    enddef
+
+    class A
+      this.Cb: func(number): number = Foo
+      def Bar()
+        assert_equal(200, this.Cb(20))
+      enddef
+    endclass
+
+    var a = A.new()
+    a.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref object variable in a def method
+  lines =<< trim END
+    vim9script
+    def Foo(n: number): number
+      return n * 10
+    enddef
+
+    class A
+      this.Cb: func(number): number = Foo
+    endclass
+
+    def Bar()
+      var a = A.new()
+      assert_equal(200, a.Cb(20))
+    enddef
+    Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref object variable at script level
+  lines =<< trim END
+    vim9script
+    def Foo(n: number): number
+      return n * 10
+    enddef
+
+    class A
+      this.Cb: func(number): number = Foo
+    endclass
+
+    var a = A.new()
+    assert_equal(200, a.Cb(20))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref object variable pointing to an object method in an object
+  # method.
+  lines =<< trim END
+    vim9script
+    class A
+      this.Cb: func(number): number = this.Foo
+      def Foo(n: number): number
+        return n * 10
+      enddef
+      def Bar()
+        assert_equal(200, this.Cb(20))
+      enddef
+    endclass
+
+    var a = A.new()
+    a.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref object variable pointing to an object method in a def
+  # method.
+  lines =<< trim END
+    vim9script
+    class A
+      this.Cb: func(number): number = this.Foo
+      def Foo(n: number): number
+        return n * 10
+      enddef
+    endclass
+
+    def Bar()
+      var a = A.new()
+      assert_equal(200, a.Cb(20))
+    enddef
+    Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref object variable pointing to an object method at script
+  # level.
+  lines =<< trim END
+    vim9script
+    class A
+      this.Cb = this.Foo
+      def Foo(n: number): number
+        return n * 10
+      enddef
+    endclass
+
+    var a = A.new()
+    assert_equal(200, a.Cb(20))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using a class member as a funcref
+def Test_class_member_funcref()
+  # Using a funcref class variable in a class method
+  var lines =<< trim END
+    vim9script
+    def Foo(n: number): number
+      return n * 10
+    enddef
+
+    class A
+      static Cb = Foo
+      static def Bar()
+        assert_equal(200, Cb(20))
+      enddef
+    endclass
+
+    A.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref class variable in a def method
+  lines =<< trim END
+    vim9script
+    def Foo(n: number): number
+      return n * 10
+    enddef
+
+    class A
+      public static Cb = Foo
+    endclass
+
+    def Bar()
+      assert_equal(200, A.Cb(20))
+    enddef
+    Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref class variable at script level
+  lines =<< trim END
+    vim9script
+    def Foo(n: number): number
+      return n * 10
+    enddef
+
+    class A
+      public static Cb = Foo
+    endclass
+
+    assert_equal(200, A.Cb(20))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref class variable pointing to a class method in a class
+  # method.
+  lines =<< trim END
+    vim9script
+    class A
+      static Cb: func(number): number
+      static def Foo(n: number): number
+        return n * 10
+      enddef
+      static def Init()
+        Cb = Foo
+      enddef
+      static def Bar()
+        assert_equal(200, Cb(20))
+      enddef
+    endclass
+
+    A.Init()
+    A.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref class variable pointing to a class method in a def method.
+  lines =<< trim END
+    vim9script
+    class A
+      static Cb: func(number): number
+      static def Foo(n: number): number
+        return n * 10
+      enddef
+      static def Init()
+        Cb = Foo
+      enddef
+    endclass
+
+    def Bar()
+      A.Init()
+      assert_equal(200, A.Cb(20))
+    enddef
+    Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using a funcref class variable pointing to a class method at script level.
+  lines =<< trim END
+    vim9script
+    class A
+      static Cb: func(number): number
+      static def Foo(n: number): number
+        return n * 10
+      enddef
+      static def Init()
+        Cb = Foo
+      enddef
+    endclass
+
+    A.Init()
+    assert_equal(200, A.Cb(20))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
