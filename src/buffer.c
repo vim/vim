@@ -943,7 +943,7 @@ free_buffer(buf_T *buf)
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     // b:changedtick uses an item in buf_T, remove it now
-    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di, "free buffer");
+    dictitem_remove_nofree(buf->b_vars, (dictitem_T *)&buf->b_ct_di, "free buffer");
     unref_var_dict(buf->b_vars);
     remove_listeners(buf);
 #endif

@@ -11,6 +11,7 @@ int dict_free_nonref(int copyID);
 void dict_free_items(int copyID);
 dictitem_T *dictitem_alloc(char_u *key);
 void dictitem_remove(dict_T *dict, dictitem_T *item, char *command);
+void dictitem_remove_nofree(dict_T *dict, dictitem_T *item, char *command);
 void dictitem_free(dictitem_T *item);
 dict_T *dict_copy(dict_T *orig, int deep, int top, int copyID);
 int dict_wrong_func_name(dict_T *d, typval_T *tv, char_u *name);

@@ -275,6 +275,23 @@ dictitem_remove(dict_T *dict, dictitem_T *item, char *command)
 }
 
 /*
+ * Remove item "item" from Dictionary "dict" but do *not* free it. Only call
+ * this is "item" is managed by the caller to avoid leaks.
+ * "command" is used for the error message when the hashtab if frozen.
+ */
+    void
+dictitem_remove_nofree(dict_T *dict, dictitem_T *item, char *command)
+{
+    hashitem_T	*hi;
+
+    hi = hash_find(&dict->dv_hashtab, item->di_key);
+    if (HASHITEM_EMPTY(hi))
+	internal_error("dictitem_remove()");
+    else
+	hash_remove(&dict->dv_hashtab, hi, command);
+}
+
+/*
  * Free a dict item.  Also clears the value.
  */
     void
