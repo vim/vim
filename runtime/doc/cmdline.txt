@@ -90,7 +90,7 @@ CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		In the GUI the |key-notation| is inserted without simplifying.
 
 							*c_<Left>* *c_Left*
-<Left>		cursor left. See 'wildmenu' for behavior during wildmenu
+<Left>		cursor left.  See 'wildmenu' for behavior during wildmenu
 		completion mode.
 							*c_<Right>* *c_Right*
 <Right>		cursor right.  See 'wildmenu' for behavior during wildmenu
