@@ -5256,6 +5256,7 @@ partial_free(partial_T *pt)
     }
     else
 	func_ptr_unref(pt->pt_func);
+    object_unref(pt->pt_obj);
 
     // "out_up" is no longer used, decrement refcount on partial that owns it.
     partial_unref(pt->pt_outer.out_up_partial);
@@ -5578,6 +5579,7 @@ free_unref_items(int copyID)
     /*
      * PASS 2: free the items themselves.
      */
+    object_free_items(copyID);
     dict_free_items(copyID);
     list_free_items(copyID);
 
@@ -5816,6 +5818,15 @@ set_ref_in_item_partial(
 	dtv.v_type = VAR_DICT;
 	dtv.vval.v_dict = pt->pt_dict;
 	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+    }
+
+    if (pt->pt_obj != NULL)
+    {
+	typval_T objtv;
+
+	objtv.v_type = VAR_OBJECT;
+	objtv.vval.v_object = pt->pt_obj;
+	set_ref_in_item(&objtv, copyID, ht_stack, list_stack);
     }
 
     for (int i = 0; i < pt->pt_argc; ++i)

@@ -1384,6 +1384,7 @@ generate_FUNCREF(
 	cctx_T	    *cctx,
 	ufunc_T	    *ufunc,
 	class_T	    *cl,
+	int	    object_method,
 	int	    fi,
 	int	    *isn_idx)
 {
@@ -1412,6 +1413,7 @@ generate_FUNCREF(
 	{
 	    extra->fre_class = cl;
 	    ++cl->class_refcount;
+	    extra->fre_object_method = object_method;
 	    extra->fre_method_idx = fi;
 	}
     }

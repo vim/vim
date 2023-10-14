@@ -616,6 +616,12 @@ call_dfunc(
     // the first local variable.
     if (IS_OBJECT_METHOD(ufunc))
     {
+	if (obj->v_type != VAR_OBJECT)
+	{
+	    semsg(_(e_internal_error_str), "type in stack is not an object");
+	    return FAIL;
+	}
+
 	*STACK_TV_VAR(0) = *obj;
 	obj->v_type = VAR_UNKNOWN;
     }
@@ -1496,6 +1502,23 @@ call_partial(
     {
 	partial_T   *pt = tv->vval.v_partial;
 	int	    i;
+
+	if (pt->pt_obj != NULL)
+	{
+	    // partial with an object method.  Push the object before the
+	    // function arguments.
+	    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+		return FAIL;
+	    for (i = 1; i <= argcount; ++i)
+		*STACK_TV_BOT(-i + 1) = *STACK_TV_BOT(-i);
+
+	    typval_T *obj_tv = STACK_TV_BOT(-argcount);
+	    obj_tv->v_type = VAR_OBJECT;
+	    obj_tv->v_lock = 0;
+	    obj_tv->vval.v_object = pt->pt_obj;
+	    ++pt->pt_obj->obj_refcount;
+	    ++ectx->ec_stack.ga_len;
+	}
 
 	if (pt->pt_argc > 0)
 	{
@@ -4447,20 +4470,44 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    if (extra != NULL && extra->fre_class != NULL)
 		    {
-			tv = STACK_TV_BOT(-1);
-			if (tv->v_type != VAR_OBJECT)
+			class_T	*cl;
+			if (extra->fre_object_method)
 			{
-			    object_required_error(tv);
-			    vim_free(pt);
-			    goto on_error;
-			}
-			object_T *obj = tv->vval.v_object;
-			class_T *cl = obj->obj_class;
+			    tv = STACK_TV_BOT(-1);
+			    if (tv->v_type != VAR_OBJECT)
+			    {
+				object_required_error(tv);
+				vim_free(pt);
+				goto on_error;
+			    }
 
-			// convert the interface index to the object index
-			int idx = object_index_from_itf_index(extra->fre_class,
-					      TRUE, extra->fre_method_idx, cl);
-			ufunc = cl->class_obj_methods[idx];
+			    object_T *obj = tv->vval.v_object;
+			    cl = obj->obj_class;
+			    // drop the value from the stack
+			    clear_tv(tv);
+			    --ectx->ec_stack.ga_len;
+
+			    pt->pt_obj = obj;
+			    ++obj->obj_refcount;
+			}
+			else
+			    cl = extra->fre_class;
+
+			if (extra->fre_object_method)
+			{
+			    // object method
+			    // convert the interface index to the object index
+			    int idx =
+				object_index_from_itf_index(extra->fre_class,
+					TRUE, extra->fre_method_idx, cl);
+			    ufunc = cl->class_obj_methods[idx];
+			}
+			else
+			{
+			    // class method
+			    ufunc =
+				cl->class_class_functions[extra->fre_method_idx];
+			}
 		    }
 		    else if (extra == NULL || extra->fre_func_name == NULL)
 		    {

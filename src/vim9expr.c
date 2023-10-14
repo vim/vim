@@ -281,6 +281,8 @@ inside_class_hierarchy(cctx_T *cctx_arg, class_T *cl)
     static int
 compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 {
+    int m_idx;
+
     if (VIM_ISWHITE((*arg)[1]))
     {
 	semsg(_(e_no_white_space_allowed_after_str_str), ".", *arg);
@@ -365,17 +367,34 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		break;
 	    }
 	}
+	ocmember_T  *ocm = NULL;
 	if (ufunc == NULL)
 	{
-	    method_not_found_msg(cl, type->tt_type, name, len);
-	    return FAIL;
+	    // could be a funcref in a member variable
+	    ocm = member_lookup(cl, type->tt_type, name, len, &m_idx);
+	    if (ocm == NULL || ocm->ocm_type->tt_type != VAR_FUNC)
+	    {
+		method_not_found_msg(cl, type->tt_type, name, len);
+		return FAIL;
+	    }
+	    if (type->tt_type == VAR_CLASS)
+	    {
+		if (generate_CLASSMEMBER(cctx, TRUE, cl, m_idx) == FAIL)
+		    return FAIL;
+	    }
+	    else
+	    {
+		if (generate_GET_OBJ_MEMBER(cctx, m_idx, ocm->ocm_type) ==
+									FAIL)
+		    return FAIL;
+	    }
 	}
 
 	// A private object method can be used only inside the class where it
 	// is defined or in one of the child classes.
 	// A private class method can be used only in the class where it is
 	// defined.
-	if (*ufunc->uf_name == '_' &&
+	if (ocm == NULL && *ufunc->uf_name == '_' &&
 		((type->tt_type == VAR_OBJECT
 		  && !inside_class_hierarchy(cctx, cl))
 		 || (type->tt_type == VAR_CLASS
@@ -393,6 +412,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
 	    return FAIL;
 
+	if (ocm != NULL)
+	    return generate_PCALL(cctx, argcount, name, ocm->ocm_type, TRUE);
 	if (type->tt_type == VAR_OBJECT
 		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
 	    return generate_CALL(cctx, ufunc, cl, fi, argcount);
@@ -401,7 +422,6 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
     if (type->tt_type == VAR_OBJECT)
     {
-        int m_idx;
         ocmember_T *m = object_member_lookup(cl, name, len, &m_idx);
 	if (m_idx >= 0)
 	{
@@ -418,15 +438,21 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    return generate_GET_OBJ_MEMBER(cctx, m_idx, m->ocm_type);
 	}
 
-	// Could be a function reference: "obj.Func".
+	// Could be an object method reference: "obj.Func".
 	m_idx = object_method_idx(cl, name, len);
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_obj_methods[m_idx];
-	    if (type->tt_type == VAR_OBJECT
-		    && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
-		return generate_FUNCREF(cctx, fp, cl, m_idx, NULL);
-	    return generate_FUNCREF(cctx, fp, NULL, 0, NULL);
+	    // Private methods are not accessible outside the class
+	    if (*name == '_' && !inside_class(cctx, cl))
+	    {
+		semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+		return FAIL;
+	    }
+	    *arg = name_end;
+	    if (type->tt_type == VAR_OBJECT)
+		return generate_FUNCREF(cctx, fp, cl, TRUE, m_idx, NULL);
+	    return generate_FUNCREF(cctx, fp, NULL, FALSE, 0, NULL);
 	}
 
 	member_not_found_msg(cl, VAR_OBJECT, name, len);
@@ -451,6 +477,24 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    *arg = name_end;
 	    return generate_CLASSMEMBER(cctx, TRUE, cl, idx);
 	}
+
+	// Could be a class method reference: "class.Func".
+	m_idx = class_method_idx(cl, name, len);
+	if (m_idx >= 0)
+	{
+	    ufunc_T *fp = cl->class_class_functions[m_idx];
+	    // Private methods are not accessible outside the class
+	    if (*name == '_' && !inside_class(cctx, cl))
+	    {
+		semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+		return FAIL;
+	    }
+	    *arg = name_end;
+	    if (type->tt_type == VAR_CLASS)
+		return generate_FUNCREF(cctx, fp, cl, FALSE, m_idx, NULL);
+	    return generate_FUNCREF(cctx, fp, NULL, FALSE, 0, NULL);
+	}
+
 	member_not_found_msg(cl, VAR_CLASS, name, len);
     }
 
@@ -716,6 +760,7 @@ compile_load(
     {
 	size_t	    len = end - *arg;
 	int	    idx;
+	int	    method_idx;
 	int	    gen_load = FALSE;
 	int	    gen_load_outer = 0;
 	int	    outer_loop_depth = -1;
@@ -764,13 +809,27 @@ compile_load(
 		else
 		    gen_load = TRUE;
 	    }
-	    else if ((idx = cctx_class_member_idx(cctx, *arg, len, &cl)) >= 0)
+	    else if (cctx->ctx_ufunc->uf_defclass != NULL &&
+		    (((idx =
+		       cctx_class_member_idx(cctx, *arg, len, &cl)) >= 0)
+		     || ((method_idx =
+			     cctx_class_method_idx(cctx, *arg, len, &cl)) >= 0)))
 	    {
-		// Referencing a class variable without the class name.
-		// A class variable can be referenced without the class name
-		// only in the class where the function is defined.
+		// Referencing a class variable or method without the class
+		// name.  A class variable or method can be referenced without
+		// the class name only in the class where the function is
+		// defined.
 		if (cctx->ctx_ufunc->uf_defclass == cl)
-		    res = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+		{
+		    if (idx >= 0)
+			res = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+		    else
+		    {
+			ufunc_T *fp = cl->class_class_functions[method_idx];
+			res = generate_FUNCREF(cctx, fp, cl, FALSE, method_idx,
+									NULL);
+		    }
+		}
 		else
 		{
 		    semsg(_(e_class_variable_str_accessible_only_inside_class_str),
@@ -1387,7 +1446,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	// The function reference count will be 1.  When the ISN_FUNCREF
 	// instruction is deleted the reference count is decremented and the
 	// function is freed.
-	return generate_FUNCREF(cctx, ufunc, NULL, 0, NULL);
+	return generate_FUNCREF(cctx, ufunc, NULL, FALSE, 0, NULL);
     }
 
     func_ptr_unref(ufunc);

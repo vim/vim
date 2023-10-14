@@ -2167,15 +2167,35 @@ call_oc_method(
     ufunc_T	*fp;
     typval_T	argvars[MAX_FUNC_ARGS + 1];
     int		argcount = 0;
+    ocmember_T	*ocm = NULL;
+    int		m_idx;
 
     fp = method_lookup(cl, rettv->v_type, name, len, NULL);
     if (fp == NULL)
     {
-	method_not_found_msg(cl, rettv->v_type, name, len);
-	return FAIL;
+	// could be an object or class funcref variable
+	ocm = member_lookup(cl, rettv->v_type, name, len, &m_idx);
+	if (ocm == NULL || ocm->ocm_type->tt_type != VAR_FUNC)
+	{
+	    method_not_found_msg(cl, rettv->v_type, name, len);
+	    return FAIL;
+	}
+
+	if (rettv->v_type == VAR_OBJECT)
+	{
+	    // funcref object variable
+	    object_T	*obj = rettv->vval.v_object;
+	    typval_T	*tv = (typval_T *)(obj + 1) + m_idx;
+	    copy_tv(tv, rettv);
+	}
+	else
+	    // funcref class variable
+	    copy_tv(&cl->class_members_tv[m_idx], rettv);
+	*arg = name_end;
+	return OK;
     }
 
-    if (*fp->uf_name == '_')
+    if (ocm == NULL && *fp->uf_name == '_')
     {
 	// Cannot access a private method outside of a class
 	semsg(_(e_cannot_access_private_method_str), fp->uf_name);
@@ -2284,6 +2304,37 @@ class_object_index(
 	int is_object = rettv->v_type == VAR_OBJECT;
 	if (get_member_tv(cl, is_object, name, len, rettv) == OK)
 	{
+	    *arg = name_end;
+	    return OK;
+	}
+
+	// could be a class method or an object method
+	int	fidx;
+	ufunc_T	*fp = method_lookup(cl, rettv->v_type, name, len, &fidx);
+	if (fp != NULL)
+	{
+	    // Private methods are not accessible outside the class
+	    if (*name == '_')
+	    {
+		semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+		return FAIL;
+	    }
+
+	    partial_T	*pt = ALLOC_CLEAR_ONE(partial_T);
+	    if (pt == NULL)
+		return FAIL;
+
+	    pt->pt_refcount = 1;
+	    if (is_object)
+	    {
+		pt->pt_obj = rettv->vval.v_object;
+		++pt->pt_obj->obj_refcount;
+	    }
+	    pt->pt_auto = TRUE;
+	    pt->pt_func = fp;
+	    func_ptr_ref(pt->pt_func);
+	    rettv->v_type = VAR_PARTIAL;
+	    rettv->vval.v_partial = pt;
 	    *arg = name_end;
 	    return OK;
 	}
@@ -2774,8 +2825,6 @@ object_created(object_T *obj)
     first_object = obj;
 }
 
-static object_T	*next_nonref_obj = NULL;
-
 /*
  * Call this function when an object has been cleared and is about to be freed.
  * It is removed from the list headed by "first_object".
@@ -2789,36 +2838,51 @@ object_cleared(object_T *obj)
 	obj->obj_prev_used->obj_next_used = obj->obj_next_used;
     else if (first_object == obj)
 	first_object = obj->obj_next_used;
-
-    // update the next object to check if needed
-    if (obj == next_nonref_obj)
-	next_nonref_obj = obj->obj_next_used;
 }
 
 /*
- * Free an object.
+ * Free the contents of an object ignoring the reference count.
  */
     static void
-object_clear(object_T *obj)
+object_free_contents(object_T *obj)
 {
-    // Avoid a recursive call, it can happen if "obj" has a circular reference.
-    obj->obj_refcount = INT_MAX;
-
     class_T *cl = obj->obj_class;
 
     if (!cl)
 	return;
 
+    // Avoid a recursive call, it can happen if "obj" has a circular reference.
+    obj->obj_refcount = INT_MAX;
+
     // the member values are just after the object structure
     typval_T *tv = (typval_T *)(obj + 1);
     for (int i = 0; i < cl->class_obj_member_count; ++i)
 	clear_tv(tv + i);
+}
+
+    static void
+object_free_object(object_T *obj)
+{
+    class_T *cl = obj->obj_class;
+
+    if (!cl)
+	return;
 
     // Remove from the list headed by "first_object".
     object_cleared(obj);
 
     vim_free(obj);
     class_unref(cl);
+}
+
+    static void
+object_free(object_T *obj)
+{
+    if (in_free_unref_items)
+	return;
+
+    object_free_contents(obj);
+    object_free_object(obj);
 }
 
 /*
@@ -2828,7 +2892,7 @@ object_clear(object_T *obj)
 object_unref(object_T *obj)
 {
     if (obj != NULL && --obj->obj_refcount <= 0)
-	object_clear(obj);
+	object_free(obj);
 }
 
 /*
@@ -2839,19 +2903,30 @@ object_free_nonref(int copyID)
 {
     int		did_free = FALSE;
 
-    for (object_T *obj = first_object; obj != NULL; obj = next_nonref_obj)
+    for (object_T *obj = first_object; obj != NULL; obj = obj->obj_next_used)
     {
-	next_nonref_obj = obj->obj_next_used;
 	if ((obj->obj_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
-	    // Free the object and items it contains.
-	    object_clear(obj);
+	    // Free the object contents.  Object itself will be freed later.
+	    object_free_contents(obj);
 	    did_free = TRUE;
 	}
     }
 
-    next_nonref_obj = NULL;
     return did_free;
+}
+
+    void
+object_free_items(int copyID)
+{
+    object_T	*obj_next;
+
+    for (object_T *obj = first_object; obj != NULL; obj = obj_next)
+    {
+	obj_next = obj->obj_next_used;
+	if ((obj->obj_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
+	    object_free_object(obj);
+    }
 }
 
 /*

@@ -4801,6 +4801,9 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    pt->pt_auto = arg_pt->pt_auto;
 		    if (pt->pt_dict != NULL)
 			++pt->pt_dict->dv_refcount;
+		    pt->pt_obj = arg_pt->pt_obj;
+		    if (pt->pt_obj != NULL)
+			++pt->pt_obj->obj_refcount;
 		}
 
 		pt->pt_refcount = 1;

@@ -2316,6 +2316,7 @@ struct partial_S
 
     int		pt_copyID;	// funcstack may contain pointer to partial
     dict_T	*pt_dict;	// dict for "self"
+    object_T	*pt_obj;	// object method
 };
 
 typedef struct {
