@@ -1547,14 +1547,17 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
     static int
 virtcol2col(win_T *wp, linenr_T lnum, int vcol)
 {
-    int		offset = vcol2col(wp, lnum, vcol);
+    int		offset = vcol2col(wp, lnum, vcol - 1);
     char_u	*line = ml_get_buf(wp->w_buffer, lnum, FALSE);
     char_u	*p = line + offset;
 
-    // For a multibyte character, need to return the column number of the first
-    // byte.
-    MB_PTR_BACK(line, p);
-
+    if (*p == NUL)
+    {
+	if (p == line)  // empty line
+	    return 0;
+	// Move to the first byte of the last char.
+	MB_PTR_BACK(line, p);
+    }
     return (int)(p - line + 1);
 }
 
