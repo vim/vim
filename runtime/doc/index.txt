@@ -1117,7 +1117,7 @@ commands in wildmenu mode (see 'wildmenu')
 		<Up>		move up to parent / select the previous match
 		<Down>		move down to submenu / select the next match
 		<Left>		select the previous match / move up to parent
-		<Down>		select the next match / move down to submenu
+		<Right>		select the next match / move down to submenu
 		<CR>		move into submenu when doing menu completion
 		other		stop completion and insert the typed character
 
