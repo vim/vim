@@ -544,6 +544,7 @@ au BufNewFile,BufRead copyright
 " Debian Sources.list
 au BufNewFile,BufRead */etc/apt/sources.list		setf debsources
 au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
+au BufNewFile,BufRead */etc/apt/sources.list.d/*.sources	setf deb822sources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
