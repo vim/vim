@@ -3577,6 +3577,13 @@ call_callback(
 
     if (callback->cb_name == NULL || *callback->cb_name == NUL)
 	return FAIL;
+
+    if (callback_depth > p_mfd)
+    {
+	emsg(_(e_command_too_recursive));
+	return FAIL;
+    }
+
     CLEAR_FIELD(funcexe);
     funcexe.fe_evaluate = TRUE;
     funcexe.fe_partial = callback->cb_partial;

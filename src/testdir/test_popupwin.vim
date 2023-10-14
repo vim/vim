@@ -4205,5 +4205,11 @@ func Test_popupwin_with_error()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_close_callback_recursive()
+  " this invokes the callback recursively
+  let winid = popup_create('something', #{callback: 'popup_close'})
+  redraw
+  call assert_fails('call popup_close(winid)', 'E169')
+endfunc
 
 " vim: shiftwidth=2 sts=2
