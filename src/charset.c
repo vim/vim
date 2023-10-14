@@ -1348,7 +1348,7 @@ win_lbr_chartabsize(
     if (wp->w_p_lbr && wp->w_p_wrap && wp->w_width != 0)
     {
 	char_u	*t = cts->cts_line;
-	while (VIM_ISBREAK((int)*t))
+	while (VIM_ISBREAK((int)t[0]))
 	    t++;
 	vcol_start = t - cts->cts_line;
     }
