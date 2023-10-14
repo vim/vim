@@ -754,8 +754,10 @@ you can use Vim without this file.
 MS-Windows ~
 
 To use the Python interface the Python DLL must be in your search path.  In a
-console window type "path" to see what directories are used.  The 'pythondll'
-or 'pythonthreedll' option can be also used to specify the Python DLL.
+console window type "path" to see what directories are used.  If the DLL is
+not found in your search path, Vim will check the registry to find the path
+where Python is installed.  The 'pythondll' or 'pythonthreedll' option can be
+also used to specify the Python DLL.
 
 The name of the DLL should match the Python version Vim was compiled with.
 Currently the name for Python 2 is "python27.dll", that is for Python 2.7.
@@ -782,6 +784,8 @@ and failures.  With Stable ABI, this restriction is relaxed, and any Python 3
 library with version of at least |v:python3_version| will work.  See
 |has-python| for how to check if Stable ABI is supported, or see if version
 output includes |+python3/dyn-stable|.
+On MS-Windows, 'pythonthreedll' will be set to "python3.dll".  When searching
+the DLL from the registry, Vim will search the latest version of Python.
 
 ==============================================================================
 10. Python 3						*python3*
