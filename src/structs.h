@@ -603,7 +603,8 @@ typedef enum {
  */
 typedef struct expand
 {
-    char_u	*xp_pattern;		// start of item to expand
+    char_u	*xp_pattern;		// start of item to expand, guaranteed
+					// to be part of xp_line
     int		xp_context;		// type of expansion
     int		xp_pattern_len;		// bytes in xp_pattern before cursor
     xp_prefix_T	xp_prefix;

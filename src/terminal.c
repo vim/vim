@@ -818,6 +818,8 @@ ex_terminal(exarg_T *eap)
 		ep = NULL;
 	}
 
+	// Note: Keep this in sync with get_terminalopt_name.
+
 # define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
 				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
 	if (OPTARG_HAS("close"))
@@ -967,6 +969,96 @@ ex_terminal(exarg_T *eap)
 theend:
     vim_free(tofree);
     vim_free(opt.jo_eof_chars);
+}
+
+    static char_u *
+get_terminalopt_name(expand_T *xp UNUSED, int idx)
+{
+    // Note: Keep this in sync with ex_terminal.
+    static char *(p_termopt_values[]) =
+    {
+	"close",
+	"noclose",
+	"open",
+	"curwin",
+	"hidden",
+	"norestore",
+	"shell",
+	"kill=",
+	"rows=",
+	"cols=",
+	"eof=",
+	"type=",
+	"api=",
+    };
+
+    if (idx < (int)ARRAY_LENGTH(p_termopt_values))
+	return (char_u*)p_termopt_values[idx];
+    return NULL;
+}
+
+    static char_u *
+get_termkill_name(expand_T *xp UNUSED, int idx)
+{
+    // These are platform-specific values used for job_stop(). They are defined
+    // in each platform's mch_signal_job(). Just use a unified auto-complete
+    // list for simplicity.
+    static char *(p_termkill_values[]) =
+    {
+	"term",
+	"hup",
+	"quit",
+	"int",
+	"kill",
+	"winch",
+    };
+
+    if (idx < (int)ARRAY_LENGTH(p_termkill_values))
+	return (char_u*)p_termkill_values[idx];
+    return NULL;
+}
+
+/*
+ * Command-line expansion for :terminal [options]
+ */
+    int
+expand_terminal_opt(
+	char_u	    *pat,
+	expand_T    *xp,
+	regmatch_T  *rmp,
+	char_u	    ***matches,
+	int	    *numMatches)
+{
+    if (xp->xp_pattern > xp->xp_line && *(xp->xp_pattern-1) == '=')
+    {
+	char_u *(*cb)(expand_T *, int) = NULL;
+
+	char_u *name_end = xp->xp_pattern - 1;
+	if (name_end - xp->xp_line >= 4
+		&& STRNCMP(name_end - 4, "kill", 4) == 0)
+	    cb = get_termkill_name;
+
+	if (cb != NULL)
+	{
+	    return ExpandGeneric(
+		    pat,
+		    xp,
+		    rmp,
+		    matches,
+		    numMatches,
+		    cb,
+		    FALSE);
+	}
+	return FAIL;
+    }
+    return ExpandGeneric(
+	    pat,
+	    xp,
+	    rmp,
+	    matches,
+	    numMatches,
+	    get_terminalopt_name,
+	    FALSE);
 }
 
 #if defined(FEAT_SESSION) || defined(PROTO)
