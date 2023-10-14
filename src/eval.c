@@ -1187,7 +1187,6 @@ get_lval(
     char buf[80];
     ch_log(NULL, "LKVAR:    ...: GLV flags: %s",
 		    flags_tostring(flags, glv_flag_strings, buf, sizeof(buf)));
-    int log_sync_root_key = FALSE;
 #endif
 
     // Clear everything in "lp".
@@ -1326,21 +1325,16 @@ get_lval(
 	}
     }
 
-    int sync_root = FALSE;
-    if (vim9script && lval_root != NULL)
-    {
-	cl_exec = lval_root->lr_cl_exec;
-	sync_root = lval_root->lr_sync_root;
-    }
-
-    // Without [idx] or .key we are done, unless doing sync_root.
-    if (*p != '[' && *p != '.' && (*name == NUL || !sync_root))
+    // Without [idx] or .key we are done.
+    if (*p != '[' && *p != '.')
     {
 	if (lval_root != NULL)
 	    fill_lval_from_lval_root(lp, lval_root);
 	return p;
     }
 
+    if (vim9script && lval_root != NULL)
+	cl_exec = lval_root->lr_cl_exec;
     if (vim9script && lval_root != NULL && lval_root->lr_tv != NULL)
     {
 	// using local variable
@@ -1375,7 +1369,7 @@ get_lval(
      */
     var1.v_type = VAR_UNKNOWN;
     var2.v_type = VAR_UNKNOWN;
-    while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.') || sync_root)
+    while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
 	vartype_T v_type = lp->ll_tv->v_type;
 
@@ -1439,19 +1433,7 @@ get_lval(
 	}
 
 	len = -1;
-	if (sync_root)
-	{
-	    // For example, the first token is a member variable name and
-	    // lp->ll_tv is a class/object.
-	    // Process it directly without looking for "[idx]" or ".name".
-	    key = name;
-	    sync_root = FALSE;  // only first time through
-#ifdef LOG_LOCKVAR
-	    log_sync_root_key = TRUE;
-	    ch_log(NULL, "LKVAR:    ... loop: name: %s, sync_root", name);
-#endif
-	}
-	else if (*p == '.')
+	if (*p == '.')
 	{
 	    key = p + 1;
 	    for (len = 0; ASCII_ISALNUM(key[len]) || key[len] == '_'; ++len)
@@ -1543,15 +1525,11 @@ get_lval(
 	    ++p;
 	}
 #ifdef LOG_LOCKVAR
-	if (log_sync_root_key)
-	    ch_log(NULL, "LKVAR:    ... loop: p: %s, sync_root key: %s", p,
-									key);
-	else if (len == -1)
+	if (len == -1)
 	    ch_log(NULL, "LKVAR:    ... loop: p: %s, '[' key: %s", p,
 				empty1 ? ":" : (char*)tv_get_string(&var1));
 	else
 	    ch_log(NULL, "LKVAR:    ... loop: p: %s, '.' key: %s", p, key);
-	log_sync_root_key = FALSE;
 #endif
 
 	if (v_type == VAR_DICT)
