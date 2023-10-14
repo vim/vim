@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-05 16:19+0400\n"
+"POT-Creation-Date: 2023-10-12 14:11+0400\n"
 "PO-Revision-Date: 2023-10-05 16:31+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
@@ -6164,8 +6164,9 @@ msgstr "E687: Мање одредишта него ставки Листе"
 msgid "E688: More targets than List items"
 msgstr "E688: Више одредишта него ставки Листе"
 
-msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr "E689: Само Листа, Речник или Блоб могу да се индексирају"
+#, c-format
+msgid "E689: Index not allowed after a %s: %s"
+msgstr "E689: Индекс није дозвољен након %s: %s"
 
 msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Недостаје „in” након :for"
@@ -7979,8 +7980,8 @@ msgid "E1202: No white space allowed after '%s': %s"
 msgstr "E1202: Празан простор није дозвољен након ’%s’: %s"
 
 #, c-format
-msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E1203: Тачка може да се користи само над речником: %s"
+msgid "E1203: Dot not allowed after a %s: %s"
+msgstr "E1203: Тачка није дозвољена након %s: %s"
 
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
@@ -8667,7 +8668,8 @@ msgstr "E1391: Не може да се откључа/закључа проме�
 
 #, c-format
 msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
-msgstr "E1392: Не може да се откључа/закључа променљива класе „%s” у класи „%s”"
+msgstr ""
+"E1392: Не може да се откључа/закључа променљива класе „%s” у класи „%s”"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
@@ -8708,7 +8710,8 @@ msgstr ""
 "дозвољене величине"
 
 msgid "E1509: Error occured when reading or writing extended attribute"
-msgstr "E1509: Дошло је до грешке приликом читања или уписивања проширеног атрибута"
+msgstr ""
+"E1509: Дошло је до грешке приликом читања или уписивања проширеног атрибута"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
