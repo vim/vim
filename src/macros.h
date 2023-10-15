@@ -50,6 +50,28 @@
  */
 #define BUFEMPTY() (curbuf->b_ml.ml_line_count == 1 && *ml_get((linenr_T)1) == NUL)
 
+// The is*() and to*() functions declared in <ctype.h> have
+// undefined behavior for values other than EOF outside the range of
+// unsigned char.  If plain char is signed, a call with a negative
+// value has undefined behavior.  These macros cast the argument to
+// unsigned char.  (Most implementations behave more or less sanely
+// with negative values, and most character values in practice are
+// positive, but we want to avoid undefined behavior anyway.)
+#define SAFE_isalnum(c)  (isalnum ((unsigned char)(c)))
+#define SAFE_isalpha(c)  (isalpha ((unsigned char)(c)))
+#define SAFE_isblank(c)  (isblank ((unsigned char)(c)))
+#define SAFE_iscntrl(c)  (iscntrl ((unsigned char)(c)))
+#define SAFE_isdigit(c)  (isdigit ((unsigned char)(c)))
+#define SAFE_isgraph(c)  (isgraph ((unsigned char)(c)))
+#define SAFE_islower(c)  (islower ((unsigned char)(c)))
+#define SAFE_isprint(c)  (isprint ((unsigned char)(c)))
+#define SAFE_ispunct(c)  (ispunct ((unsigned char)(c)))
+#define SAFE_isspace(c)  (isspace ((unsigned char)(c)))
+#define SAFE_isupper(c)  (isupper ((unsigned char)(c)))
+#define SAFE_isxdigit(c) (isxdigit((unsigned char)(c)))
+#define SAFE_tolower(c)  (tolower ((unsigned char)(c)))
+#define SAFE_toupper(c)  (toupper ((unsigned char)(c)))
+
 /*
  * toupper() and tolower() that use the current locale.
  * On some systems toupper()/tolower() only work on lower/uppercase
@@ -90,28 +112,6 @@
 // non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
 // below 0 and above 255.
 #define VIM_ISDIGIT(c) ((unsigned)(c) - '0' < 10)
-
-// The is*() and to*() functions declared in <ctype.h> have
-// undefined behavior for values other than EOF outside the range of
-// unsigned char.  If plain char is signed, a call with a negative
-// value has undefined behavior.  These macros cast the argument to
-// unsigned char.  (Most implementations behave more or less sanely
-// with negative values, and most character values in practice are
-// positive, but we want to avoid undefined behavior anyway.)
-#define SAFE_isalnum(c)  (isalnum ((unsigned char)(c)))
-#define SAFE_isalpha(c)  (isalpha ((unsigned char)(c)))
-#define SAFE_isblank(c)  (isblank ((unsigned char)(c)))
-#define SAFE_iscntrl(c)  (iscntrl ((unsigned char)(c)))
-#define SAFE_isdigit(c)  (isdigit ((unsigned char)(c)))
-#define SAFE_isgraph(c)  (isgraph ((unsigned char)(c)))
-#define SAFE_islower(c)  (islower ((unsigned char)(c)))
-#define SAFE_isprint(c)  (isprint ((unsigned char)(c)))
-#define SAFE_ispunct(c)  (ispunct ((unsigned char)(c)))
-#define SAFE_isspace(c)  (isspace ((unsigned char)(c)))
-#define SAFE_isupper(c)  (isupper ((unsigned char)(c)))
-#define SAFE_isxdigit(c) (isxdigit((unsigned char)(c)))
-#define SAFE_tolower(c)  (tolower ((unsigned char)(c)))
-#define SAFE_toupper(c)  (toupper ((unsigned char)(c)))
 
 // Like isalpha() but reject non-ASCII characters.  Can't be used with a
 // special key (negative value).

@@ -99,12 +99,12 @@ xdchange_t *xdl_get_hunk(xdchange_t **xscr, xdemitconf_t const *xecfg)
 static long def_ff(const char *rec, long len, char *buf, long sz)
 {
 	if (len > 0 &&
-			(SAFE_isalpha((unsigned char)*rec) || /* identifier? */
+			(isalpha((unsigned char)*rec) || /* identifier? */
 			 *rec == '_' || /* also identifier? */
 			 *rec == '$')) { /* identifiers from VMS and other esoterico */
 		if (len > sz)
 			len = sz;
-		while (0 < len && SAFE_isspace((unsigned char)rec[len - 1]))
+		while (0 < len && isspace((unsigned char)rec[len - 1]))
 			len--;
 		memcpy(buf, rec, len);
 		return len;

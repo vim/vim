@@ -206,7 +206,7 @@ char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 #define HEX_BITS 3		/* not hex a dump, but bits: 01111001 */
 #define HEX_LITTLEENDIAN 4
 
-#define CONDITIONAL_CAPITALIZE(c) (capitalize ? SAFE_toupper(c) : c)
+#define CONDITIONAL_CAPITALIZE(c) (capitalize ? toupper((unsigned char)(c)) : (c))
 
 #define COLOR_PROLOGUE \
 l[c++] = '\033'; \
@@ -225,30 +225,6 @@ l[c++] = 'm';
 #define COLOR_YELLOW '3'
 #define COLOR_BLUE '4'
 #define COLOR_WHITE '7'
-
-// The is*() and to*() functions declared in <ctype.h> have
-// undefined behavior for values other than EOF outside the range of
-// unsigned char.  If plain char is signed, a call with a negative
-// value has undefined behavior.  These macros cast the argument to
-// unsigned char.  (Most implementations behave more or less sanely
-// with negative values, and most character values in practice are
-// positive, but we want to avoid undefined behavior anyway.)
-// These macro definitions are copied from src/macros.h.
-// Not all of them are used here.
-#define SAFE_isalnum(c)  (isalnum ((unsigned char)(c)))
-#define SAFE_isalpha(c)  (isalpha ((unsigned char)(c)))
-#define SAFE_isblank(c)  (isblank ((unsigned char)(c)))
-#define SAFE_iscntrl(c)  (iscntrl ((unsigned char)(c)))
-#define SAFE_isdigit(c)  (isdigit ((unsigned char)(c)))
-#define SAFE_isgraph(c)  (isgraph ((unsigned char)(c)))
-#define SAFE_islower(c)  (islower ((unsigned char)(c)))
-#define SAFE_isprint(c)  (isprint ((unsigned char)(c)))
-#define SAFE_ispunct(c)  (ispunct ((unsigned char)(c)))
-#define SAFE_isspace(c)  (isspace ((unsigned char)(c)))
-#define SAFE_isupper(c)  (isupper ((unsigned char)(c)))
-#define SAFE_isxdigit(c) (isxdigit((unsigned char)(c)))
-#define SAFE_tolower(c)  (tolower ((unsigned char)(c)))
-#define SAFE_toupper(c)  (toupper ((unsigned char)(c)))
 
 static char *pname;
 
@@ -980,9 +956,9 @@ main(int argc, char *argv[])
 
       if (varname != NULL)
 	{
-	  FPRINTF_OR_DIE((fpo, "unsigned char %s", SAFE_isdigit(varname[0]) ? "__" : ""));
+	  FPRINTF_OR_DIE((fpo, "unsigned char %s", isdigit((unsigned char)varname[0]) ? "__" : ""));
 	  for (e = 0; (c = varname[e]) != 0; e++)
-	    putc_or_die(SAFE_isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
+	    putc_or_die(isalnum((unsigned char)c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  fputs_or_die("[] = {\n", fpo);
 	}
 
@@ -1000,9 +976,9 @@ main(int argc, char *argv[])
       if (varname != NULL)
 	{
 	  fputs_or_die("};\n", fpo);
-	  FPRINTF_OR_DIE((fpo, "unsigned int %s", SAFE_isdigit(varname[0]) ? "__" : ""));
+	  FPRINTF_OR_DIE((fpo, "unsigned int %s", isdigit((unsigned char)varname[0]) ? "__" : ""));
 	  for (e = 0; (c = varname[e]) != 0; e++)
-	    putc_or_die(SAFE_isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
+	    putc_or_die(isalnum((unsigned char)c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  FPRINTF_OR_DIE((fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p));
 	}
 
