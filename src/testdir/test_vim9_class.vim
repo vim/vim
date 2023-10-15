@@ -7510,6 +7510,21 @@ def Test_object_funcref()
   END
   v9.CheckSourceSuccess(lines)
 
+  # Using object method funcref at the script level
+  lines =<< trim END
+    vim9script
+    class A
+      this.val: number
+      def Foo(): number
+        return this.val
+      enddef
+    endclass
+    var a = A.new(345)
+    var Fn = a.Foo
+    assert_equal(345, Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
   # Using object method funcref from another object method
   lines =<< trim END
     vim9script
@@ -7604,6 +7619,26 @@ def Test_object_funcref()
     a.Bar()
   END
   v9.CheckSourceSuccess(lines)
+
+  # Using object method funcref using call()
+  lines =<< trim END
+    vim9script
+    class A
+      this.val: number
+      def Foo(): number
+        return this.val
+      enddef
+    endclass
+
+    def Bar(obj: A)
+      assert_equal(123, call(obj.Foo, []))
+    enddef
+
+    var a = A.new(123)
+    Bar(a)
+    assert_equal(123, call(a.Foo, []))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for using a class method as a funcref
@@ -7634,6 +7669,21 @@ def Test_class_funcref()
     endclass
     var Fn = A.Foo
     assert_equal({a: 1, b: 2}, Fn())
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using class method funcref at the script level
+  lines =<< trim END
+    vim9script
+    class A
+      public static val: number
+      static def Foo(): number
+        return val
+      enddef
+    endclass
+    A.val = 567
+    var Fn = A.Foo
+    assert_equal(567, Fn())
   END
   v9.CheckSourceSuccess(lines)
 
@@ -7723,6 +7773,25 @@ def Test_class_funcref()
       enddef
     endclass
     A.Bar()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Using class method funcref using call()
+  lines =<< trim END
+    vim9script
+    class A
+      public static val: number
+      static def Foo(): number
+        return val
+      enddef
+    endclass
+
+    def Bar()
+      A.val = 468
+      assert_equal(468, call(A.Foo, []))
+    enddef
+    Bar()
+    assert_equal(468, call(A.Foo, []))
   END
   v9.CheckSourceSuccess(lines)
 enddef
