@@ -6953,6 +6953,21 @@ def Test_extended_obj_method_type_check()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1383: Method "Doit": type mismatch, expected func(object<B>): object<B> but got func(object<B>): object<A>', 20)
+
+  # check varargs type mismatch
+  lines =<< trim END
+    vim9script
+
+    class B
+      def F(...xxx: list<any>)
+      enddef
+    endclass
+    class C extends B
+      def F(xxx: list<any>)
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1383: Method "F": type mismatch, expected func(...list<any>) but got func(list<any>)', 10)
 enddef
 
 " Test type checking for class variable in assignments
@@ -7429,6 +7444,54 @@ def Test_funcref_argtype_returntype_check()
     Baz()
   END
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(object<A>): object<A> but got func(object<B>): object<B>', 1)
+enddef
+
+def Test_funcref_argtype_invariance_check()
+  var lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    var Func: func(B): number
+    Func = (o: B): number => 3
+    assert_equal(3, Func(B.new()))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    var Func: func(B): number
+    Func = (o: A): number => 3
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(object<B>): number but got func(object<A>): number', 11)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+    endclass
+    class B extends A
+    endclass
+    class C extends B
+    endclass
+
+    var Func: func(B): number
+    Func = (o: C): number => 3
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected func(object<B>): number but got func(object<C>): number', 11)
 enddef
 
 " Test for using an operator (e.g. +) with an assignment

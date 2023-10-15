@@ -1995,7 +1995,7 @@ def Test_varargs_mismatch()
       var res = Map((v) => str2nr(v))
       assert_equal(12, res)
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected func(...any): number but got func(any): number')
 enddef
 
 def Test_using_var_as_arg()
