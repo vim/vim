@@ -74,7 +74,7 @@ find_word_under_cursor(
 	    }
 	}
 
-	col = vcol2col(wp, lnum, col);
+	col = vcol2col(wp, lnum, col, NULL);
 	scol = col;
 
 	if (VIsual_active
