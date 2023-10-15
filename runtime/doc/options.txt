@@ -9333,12 +9333,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When using the popup menu for command line completion, the following
 	keys have special meanings:
 	<Up> <Down>	- select previous/next match (like CTRL-P/CTRL-N)
+	<PageUp>	- select a match several entries back
+	<PageDown>	- select a match several entries further
 	<Left>		- in filename/menu name completion: move up into
 			  parent directory or parent menu.
 	<Right>		- in filename/menu name completion: move into a
 			  subdirectory or submenu.
-	<PageUp>	- Select a match several entries back, but don't insert it.
-	<PageDown>	- Select a match several entries further, but don't insert it.
 	CTRL-E		- end completion, go back to what was there before
 			  selecting a match.
 	CTRL-Y		- accept the currently selected match and stop
