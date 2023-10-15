@@ -174,6 +174,9 @@ edit(
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
+    // Reset Changedtick_i, so that TextChangedI will only be triggered for stuff
+    // from insert mode
+    curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
 
     /*
      * Trigger InsertEnter autocommands.  Do not do this for "r<CR>" or "grx".
@@ -840,6 +843,7 @@ doESCkey:
 		if (cmdchar != 'r' && cmdchar != 'v' && c != Ctrl_C)
 		    ins_apply_autocmds(EVENT_INSERTLEAVE);
 		did_cursorhold = FALSE;
+		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 		return (c == Ctrl_O);
 	    }
 	    continue;
