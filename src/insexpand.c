@@ -4157,7 +4157,7 @@ ins_compl_next(
 	ins_compl_update_shown_match();
 
     if (allow_get_expansion && insert_match
-	    && (!(compl_get_longest || compl_restarting) || compl_used_match))
+	    && (!compl_get_longest || compl_used_match))
 	// Delete old text to be replaced
 	ins_compl_delete();
 
