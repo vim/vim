@@ -3047,6 +3047,11 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
     if (from_file == NULL)
 	return;
 
+    size = listxattr((char *)from_file, NULL, 0);
+    // not supported or no attributes to copy
+    if (errno == ENOTSUP || size == 0)
+	return;
+
     for (index = 0 ; index < (int)(sizeof(smack_copied_attributes)
 			      / sizeof(smack_copied_attributes)[0]) ; index++)
     {
