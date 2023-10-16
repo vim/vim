@@ -2159,7 +2159,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		if (q > p && *q == NUL)
 		{
 		    // Ignore trailing path separator.
-		    q[-1] = NUL;
+		    p[q - p - 1] = NUL;
 		    q = gettail(p);
 		}
 		if (q > p && !mch_isFullName(buf))
