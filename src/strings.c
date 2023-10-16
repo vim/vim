@@ -1977,6 +1977,8 @@ f_trim(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type == VAR_STRING)
     {
 	mask = tv_get_string_buf_chk(&argvars[1], buf2);
+	if (*mask == NUL)
+	    mask = NULL;
 
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
