@@ -7992,7 +7992,7 @@ ExpandSettingSubtract(
 	{
 	    // Don't suggest anything if cmdline is non-empty. Vim's set-=
 	    // behavior requires consecutive strings and it's usually
-	    // unintuitive to users if ther try to subtract multiple flags at
+	    // unintuitive to users if they try to subtract multiple flags at
 	    // once.
 	    return FAIL;
 	}
