@@ -125,7 +125,6 @@ typedef enum {
     ISN_NEWFUNC,    // create a global function from a lambda function
     ISN_DEF,	    // list functions
     ISN_DEFER,	    // :defer  argument count is isn_arg.number
-    ISN_DEFEROBJ,   // idem, function is an object method
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump

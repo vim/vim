@@ -2000,7 +2000,6 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     int		defer_var_idx;
     type_T	*type;
     int		func_idx;
-    int		obj_method = 0;
 
     // Get a funcref for the function name.
     // TODO: better way to find the "(".
@@ -2016,15 +2015,8 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
 	// TODO: better type
 	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
 							   &t_func_any, FALSE);
-    else
-    {
-	int typecount = cctx->ctx_type_stack.ga_len;
-	if (compile_expr0(&arg, cctx) == FAIL)
-	    return NULL;
-	if (cctx->ctx_type_stack.ga_len >= typecount + 2)
-	    // must have seen "obj.Func", pushed an object and a function
-	    obj_method = 1;
-    }
+    else if (compile_expr0(&arg, cctx) == FAIL)
+	return NULL;
     *paren = '(';
 
     // check for function type
@@ -2056,7 +2048,7 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     defer_var_idx = get_defer_var_idx(cctx);
     if (defer_var_idx == 0)
 	return NULL;
-    if (generate_DEFER(cctx, defer_var_idx - 1, obj_method, argcount) == FAIL)
+    if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
 	return NULL;
 
     return skipwhite(arg);
