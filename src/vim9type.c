@@ -884,6 +884,11 @@ check_type_maybe(
 		else
 		    ret = MAYBE;
 	    }
+	    if (ret != FAIL
+		    && ((expected->tt_flags & TTFLAG_VARARGS)
+			!= (actual->tt_flags & TTFLAG_VARARGS))
+		    && expected->tt_argcount != -1)
+		ret = FAIL;
 	    if (ret != FAIL && expected->tt_argcount != -1
 		    && actual->tt_min_argcount != -1
 		    && (actual->tt_argcount == -1
