@@ -1599,7 +1599,7 @@ getcmdline_int(
     cmdline_info_T save_ccline;
     int		did_save_ccline = FALSE;
     int		cmdline_type;
-    int		wild_type;
+    int		wild_type = 0;
 
     // one recursion level deeper
     ++depth;
@@ -1878,7 +1878,7 @@ getcmdline_int(
 	    c = wildmenu_translate_key(&ccline, c, &xpc, did_wild_list);
 
 	int key_is_wc = (c == p_wc && KeyTyped) || c == p_wcm;
-	if (cmdline_pum_active() && !key_is_wc)
+	if ((cmdline_pum_active() || did_wild_list) && !key_is_wc)
 	{
 	    // Ctrl-Y: Accept the current selection and close the popup menu.
 	    // Ctrl-E: cancel the cmdline popup menu and return the original
@@ -1889,7 +1889,6 @@ getcmdline_int(
 		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
 							firstc != '@') == FAIL)
 		    break;
-		c = Ctrl_E;
 	    }
 	}
 
@@ -2015,6 +2014,14 @@ getcmdline_int(
 	    c = NL;
 
 	do_abbr = TRUE;		// default: check for abbreviation
+
+	// If already used to cancel/accept wildmenu, don't process the key
+	// further.
+	if (wild_type == WILD_CANCEL || wild_type == WILD_APPLY)
+	{
+	    wild_type = 0;
+	    goto cmdline_not_changed;
+	}
 
 	/*
 	 * Big switch for a typed command line character.

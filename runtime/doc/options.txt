@@ -9323,6 +9323,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	CTRL-N		- go to the next entry
 	<CR>		- in menu completion, when the cursor is just after a
 			  dot: move into a submenu.
+	CTRL-E		- end completion, go back to what was there before
+			  selecting a match.
+	CTRL-Y		- accept the currently selected match and stop
+			  completion.
 
 	When not using the popup menu for command line completion, the
 	following keys have special meanings:
@@ -9341,10 +9345,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			  parent directory or parent menu.
 	<Right>		- in filename/menu name completion: move into a
 			  subdirectory or submenu.
-	CTRL-E		- end completion, go back to what was there before
-			  selecting a match.
-	CTRL-Y		- accept the currently selected match and stop
-			  completion.
 
 	This makes the menus accessible from the console |console-menus|.
 
