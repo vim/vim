@@ -8043,12 +8043,14 @@ def Test_objmethod_popup_callback()
     endclass
 
     var a = A.new()
+    feedkeys('', 'xt')
     var winid = popup_create('Y/N?',
                               {filter: a.PopupFilter, callback: a.PopupCb})
     feedkeys('y', 'xt')
     popup_close(winid)
     assert_equal(100, a.selection)
     assert_equal(['y'], a.filterkeys)
+    feedkeys('', 'xt')
     winid = popup_create('Y/N?',
                               {filter: a.PopupFilter, callback: a.PopupCb})
     feedkeys('n', 'xt')
@@ -8078,12 +8080,14 @@ def Test_objmethod_popup_callback()
 
     def Foo()
       var a = A.new()
+      feedkeys('', 'xt')
       var winid = popup_create('Y/N?',
                                 {filter: a.PopupFilter, callback: a.PopupCb})
       feedkeys('y', 'xt')
       popup_close(winid)
       assert_equal(100, a.selection)
       assert_equal(['y'], a.filterkeys)
+      feedkeys('', 'xt')
       winid = popup_create('Y/N?',
                                 {filter: a.PopupFilter, callback: a.PopupCb})
       feedkeys('n', 'xt')
@@ -8116,12 +8120,14 @@ def Test_classmethod_popup_callback()
       enddef
     endclass
 
+    feedkeys('', 'xt')
     var winid = popup_create('Y/N?',
                               {filter: A.PopupFilter, callback: A.PopupCb})
     feedkeys('y', 'xt')
     popup_close(winid)
     assert_equal(100, A.selection)
     assert_equal(['y'], A.filterkeys)
+    feedkeys('', 'xt')
     winid = popup_create('Y/N?',
                               {filter: A.PopupFilter, callback: A.PopupCb})
     feedkeys('n', 'xt')
@@ -8150,12 +8156,14 @@ def Test_classmethod_popup_callback()
     endclass
 
     def Foo()
+      feedkeys('', 'xt')
       var winid = popup_create('Y/N?',
                                 {filter: A.PopupFilter, callback: A.PopupCb})
       feedkeys('y', 'xt')
       popup_close(winid)
       assert_equal(100, A.selection)
       assert_equal(['y'], A.filterkeys)
+      feedkeys('', 'xt')
       winid = popup_create('Y/N?',
                                 {filter: A.PopupFilter, callback: A.PopupCb})
       feedkeys('n', 'xt')
