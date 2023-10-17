@@ -848,8 +848,9 @@ py3_get_system_libname(const char *libname)
 		break;
 
 	    major = wcstol(keyname, &wp, 10);
-	    if (*wp == L'.')
-		minor = wcstol(wp + 1, &wp, 10);
+	    if (*wp != L'.')
+		continue;
+	    minor = wcstol(wp + 1, &wp, 10);
 #  ifdef _WIN64
 	    if (*wp != L'\0')
 		continue;
