@@ -14,7 +14,6 @@ int check_for_unknown_arg(typval_T *args, int idx);
 int check_for_string_arg(typval_T *args, int idx);
 int check_for_nonempty_string_arg(typval_T *args, int idx);
 int check_for_opt_string_arg(typval_T *args, int idx);
-int check_for_opt_string_or_none_arg(typval_T *args, int idx, int *is_none);
 int check_for_number_arg(typval_T *args, int idx);
 int check_for_opt_number_arg(typval_T *args, int idx);
 int check_for_float_or_nr_arg(typval_T *args, int idx);

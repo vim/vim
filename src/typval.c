@@ -451,37 +451,6 @@ check_for_opt_string_arg(typval_T *args, int idx)
 }
 
 /*
- * Check for an optional string argument at 'idx', that can also be 'v:none' to
- * use the default value.
- *
- * If 'is_none' is non-NULL it is set to 0 and updated to 1 when "args[idx]" is
- * 'v:none'.
- */
-    int
-check_for_opt_string_or_none_arg(typval_T *args, int idx, int *is_none)
-{
-    if (is_none != NULL)
-	*is_none = 0;
-
-    if (args[idx].v_type == VAR_UNKNOWN)
-	return OK;
-
-    if (args[idx].v_type == VAR_SPECIAL
-	    && args[idx].vval.v_number == VVAL_NONE)
-    {
-	if (is_none != NULL)
-	    *is_none = 1;
-	return OK;
-    }
-
-    if (args[idx].v_type == VAR_STRING)
-	return OK;
-
-    semsg(_(e_string_or_none_required_for_argument_nr), idx + 1);
-    return FAIL;
-}
-
-/*
  * Give an error and return FAIL unless "args[idx]" is a number.
  */
     int

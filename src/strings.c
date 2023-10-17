@@ -1962,7 +1962,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_or_none_arg(argvars, 1, NULL) == FAIL
+		|| check_for_opt_string_arg(argvars, 1) == FAIL
 		|| (argvars[1].v_type != VAR_UNKNOWN
 		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
@@ -1971,24 +1971,28 @@ f_trim(typval_T *argvars, typval_T *rettv)
     if (head == NULL)
 	return;
 
-    if (check_for_opt_string_or_none_arg(argvars, 1, NULL) == FAIL)
+    if (check_for_opt_string_arg(argvars, 1) == FAIL)
 	return;
 
     if (argvars[1].v_type == VAR_STRING)
-	mask = tv_get_string_buf_chk(&argvars[1], buf2);
-
-    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN)
     {
-	int	error = 0;
+	mask = tv_get_string_buf_chk(&argvars[1], buf2);
+	if (*mask == NUL)
+	    mask = NULL;
 
-	// leading or trailing characters to trim
-	dir = (int)tv_get_number_chk(&argvars[2], &error);
-	if (error)
-	    return;
-	if (dir < 0 || dir > 2)
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
-	    return;
+	    int	error = 0;
+
+	    // leading or trailing characters to trim
+	    dir = (int)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;
+	    if (dir < 0 || dir > 2)
+	    {
+		semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
+		return;
+	    }
 	}
     }
 
