@@ -260,7 +260,7 @@ nextwild(
     {
 	if (cmdline_fuzzy_completion_supported(xp))
 	    // If fuzzy matching, don't modify the search string
-	    p1 = vim_strsave(xp->xp_pattern);
+	    p1 = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
 	else
 	    p1 = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
 

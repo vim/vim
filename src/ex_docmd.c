@@ -5590,7 +5590,8 @@ expand_argopt(
 
     // Special handling of "ff" which acts as a short form of
     // "fileformat", as "ff" is not a substring of it.
-    if (STRCMP(xp->xp_pattern, "ff") == 0)
+    if (xp->xp_pattern_len == 2
+	    && STRNCMP(xp->xp_pattern, "ff", xp->xp_pattern_len) == 0)
     {
 	*matches = ALLOC_MULT(char_u *, 1);
 	if (*matches == NULL)
