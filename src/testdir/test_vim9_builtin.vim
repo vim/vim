@@ -4786,7 +4786,7 @@ enddef
 
 def Test_trim()
   v9.CheckDefAndScriptFailure(['trim(["a"])'], ['E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1174: String required for argument 1'])
-  v9.CheckDefAndScriptFailure(['trim("a", ["b"])'], ['E1013: Argument 2: type mismatch, expected string but got list<string>', 'E1174: String required for argument 2'])
+  v9.CheckDefAndScriptFailure(['trim("a", ["b"])'], ['E1013: Argument 2: type mismatch, expected string but got list<string>', 'E1393: String or v:none required for argument 2'])
   v9.CheckDefAndScriptFailure(['trim("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
   trim('')->assert_equal('')
   trim('', '')->assert_equal('')
