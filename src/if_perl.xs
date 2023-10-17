@@ -46,6 +46,11 @@
 # define NO_THREAD_SAFE_LOCALE
 #endif
 
+#if defined(MSWIN) && defined(DYNAMIC_PERL)
+// Work around for warning C4273 (inconsistent DLL linkage).
+# define PERL_EXT_RE_BUILD
+#endif
+
 #ifdef __GNUC__
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wunused-variable"
@@ -1483,7 +1488,7 @@ vim_IOLayer_init(void)
 
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
 #  undef Perl_sv_free2
-void Perl_sv_free2(pTHX_ SV* sv, const U32 refcnt)
+void Perl_sv_free2(pTHX_ SV *const sv, const U32 refcnt)
 {
     (*dll_Perl_sv_free2)(aTHX_ sv, refcnt);
 }
@@ -1519,7 +1524,7 @@ NV Perl_sv_2nv_flags(pTHX_ SV *const sv, const I32 flags)
 
 # ifdef PERL589_OR_LATER
 #  undef Perl_sv_2iv_flags
-IV Perl_sv_2iv_flags(pTHX_ SV* sv, I32 flags)
+IV Perl_sv_2iv_flags(pTHX_ SV *const sv, const I32 flags)
 {
     return (*dll_Perl_sv_2iv_flags)(aTHX_ sv, flags);
 }
