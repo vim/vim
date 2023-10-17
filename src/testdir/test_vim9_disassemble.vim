@@ -3276,7 +3276,7 @@ def Test_funcref_with_class()
     'defer a.Foo()\_s*' ..
     '0 LOAD arg\[-1\]\_s*' ..
     '1 FUNCREF A.Foo\_s*' ..
-    '2 DEFEROBJ 0 args\_s*' ..
+    '2 DEFER 0 args\_s*' ..
     '3 RETURN void', g:instr)
   unlet g:instr
 enddef

@@ -62,7 +62,7 @@ int generate_CALL(cctx_T *cctx, ufunc_T *ufunc, class_T *cl, int mi, int pushed_
 int generate_UCALL(cctx_T *cctx, char_u *name, int argcount);
 int check_func_args_from_type(cctx_T *cctx, type_T *type, int argcount, int at_top, char_u *name);
 int generate_PCALL(cctx_T *cctx, int argcount, char_u *name, type_T *type, int at_top);
-int generate_DEFER(cctx_T *cctx, int var_idx, int obj_method, int argcount);
+int generate_DEFER(cctx_T *cctx, int var_idx, int argcount);
 int generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len);
 int generate_ECHO(cctx_T *cctx, int with_white, int count);
 int generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count);

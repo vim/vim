@@ -1029,10 +1029,9 @@ add_defer_item(int var_idx, int argcount, ectx_T *ectx)
  * Returns OK or FAIL.
  */
     static int
-defer_command(int var_idx, int has_obj, int argcount, ectx_T *ectx)
+defer_command(int var_idx, int argcount, ectx_T *ectx)
 {
-    int		obj_off = has_obj ? 1 : 0;
-    list_T	*l = add_defer_item(var_idx, argcount + obj_off, ectx);
+    list_T	*l = add_defer_item(var_idx, argcount, ectx);
     int		i;
     typval_T	*func_tv;
 
@@ -1040,20 +1039,18 @@ defer_command(int var_idx, int has_obj, int argcount, ectx_T *ectx)
 	return FAIL;
 
     func_tv = STACK_TV_BOT(-argcount - 1);
-    if (has_obj ? func_tv->v_type != VAR_PARTIAL : func_tv->v_type != VAR_FUNC)
+    if (func_tv->v_type != VAR_PARTIAL && func_tv->v_type != VAR_FUNC)
     {
 	semsg(_(e_expected_str_but_got_str),
-		has_obj ? "partial" : "function",
+		"function or partial",
 		vartype_name(func_tv->v_type));
 	return FAIL;
     }
     list_set_item(l, 0, func_tv);
-    if (has_obj)
-	list_set_item(l, 1, STACK_TV_BOT(-argcount - 2));
 
     for (i = 0; i < argcount; ++i)
-	list_set_item(l, i + 1 + obj_off, STACK_TV_BOT(-argcount + i));
-    ectx->ec_stack.ga_len -= argcount + 1 + obj_off;
+	list_set_item(l, i + 1, STACK_TV_BOT(-argcount + i));
+    ectx->ec_stack.ga_len -= argcount + 1;
     return OK;
 }
 
@@ -1116,15 +1113,12 @@ invoke_defer_funcs(ectx_T *ectx)
 	int	    i;
 	listitem_T  *arg_li = l->lv_first;
 	typval_T    *functv = &l->lv_first->li_tv;
-	int	    obj_off = functv->v_type == VAR_PARTIAL ? 1 : 0;
-	int	    argcount = l->lv_len - 1 - obj_off;
+	int	    argcount = l->lv_len - 1;
 
 	if (functv->vval.v_string == NULL)
 	    // already being called, can happen if function does ":qa"
 	    continue;
 
-	if (obj_off == 1)
-	    arg_li = arg_li->li_next;  // second list item is the object
 	for (i = 0; i < argcount; ++i)
 	{
 	    arg_li = arg_li->li_next;
@@ -1138,7 +1132,7 @@ invoke_defer_funcs(ectx_T *ectx)
 	if (functv->v_type == VAR_PARTIAL)
 	{
 	    funcexe.fe_partial = functv->vval.v_partial;
-	    funcexe.fe_object = l->lv_first->li_next->li_tv.vval.v_object;
+	    funcexe.fe_object = functv->vval.v_partial->pt_obj;
 	    if (funcexe.fe_object != NULL)
 		++funcexe.fe_object->obj_refcount;
 	}
@@ -4401,9 +4395,7 @@ exec_instructions(ectx_T *ectx)
 
 	    // :defer func(arg)
 	    case ISN_DEFER:
-	    case ISN_DEFEROBJ:
 		if (defer_command(iptr->isn_arg.defer.defer_var_idx,
-			     iptr->isn_type == ISN_DEFEROBJ,
 			     iptr->isn_arg.defer.defer_argcount, ectx) == FAIL)
 		    goto on_error;
 		break;
@@ -6933,9 +6925,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d PCALL end", pfx, current);
 		break;
 	    case ISN_DEFER:
-	    case ISN_DEFEROBJ:
-		smsg("%s%4d %s %d args", pfx, current,
-			    iptr->isn_type == ISN_DEFER ? "DEFER" : "DEFEROBJ",
+		smsg("%s%4d DEFER %d args", pfx, current,
 				      (int)iptr->isn_arg.defer.defer_argcount);
 		break;
 	    case ISN_RETURN:
