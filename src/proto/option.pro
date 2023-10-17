@@ -81,6 +81,7 @@ char *did_set_undofile(optset_T *args);
 char *did_set_undolevels(optset_T *args);
 char *did_set_updatecount(optset_T *args);
 char *did_set_weirdinvert(optset_T *args);
+char *did_set_wildchar(optset_T *args);
 char *did_set_window(optset_T *args);
 char *did_set_winheight_helpheight(optset_T *args);
 char *did_set_winminheight(optset_T *args);

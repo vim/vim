@@ -2812,11 +2812,11 @@ static struct vimoption options[] =
 			    (char_u *)&p_ww, PV_NONE, did_set_whichwrap, expand_set_whichwrap,
 			    {(char_u *)"", (char_u *)"b,s"} SCTX_INIT},
     {"wildchar",    "wc",   P_NUM|P_VIM,
-			    (char_u *)&p_wc, PV_NONE, NULL, NULL,
+			    (char_u *)&p_wc, PV_NONE, did_set_wildchar, NULL,
 			    {(char_u *)(long)Ctrl_E, (char_u *)(long)TAB}
 			    SCTX_INIT},
     {"wildcharm",   "wcm",  P_NUM|P_VI_DEF,
-			    (char_u *)&p_wcm, PV_NONE, NULL, NULL,
+			    (char_u *)&p_wcm, PV_NONE, did_set_wildchar, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"wildignore",  "wig",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_wig, PV_NONE, NULL, NULL,
