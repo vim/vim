@@ -1353,6 +1353,8 @@ endfunc
 
 " Test that -cq works as expected
 func Test_cq_zero_exmode()
+  CheckFeature channel
+
   let logfile = 'Xcq_log.txt'
   let out = system(GetVimCommand() .. ' --clean --log ' .. logfile .. ' -es -X -c "argdelete foobar" -c"7cq"')
   call assert_equal(8, v:shell_error)
