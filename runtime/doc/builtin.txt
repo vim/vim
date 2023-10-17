@@ -10119,9 +10119,10 @@ trim({text} [, {mask} [, {dir}]])				*trim()*
 		Return {text} as a String where any character in {mask} is
 		removed from the beginning and/or end of {text}.
 
-		If {mask} is not given, {mask} is all characters up to 0x20,
-		which includes Tab, space, NL and CR, plus the non-breaking
-		space character 0xa0.
+		If {mask} is not given, or is |v:none| (see
+		|none-function_argument|), {mask} is all characters up to
+		0x20, which includes Tab, space, NL and CR, plus the
+		non-breaking space character 0xa0.
 
 		The optional {dir} argument specifies where to remove the
 		characters:
