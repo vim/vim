@@ -174,9 +174,6 @@ edit(
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
-    // Reset Changedtick_i, so that TextChangedI will only be triggered for stuff
-    // from insert mode
-    curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
 
     /*
      * Trigger InsertEnter autocommands.  Do not do this for "r<CR>" or "grx".

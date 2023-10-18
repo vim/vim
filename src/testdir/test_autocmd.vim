@@ -2566,28 +2566,27 @@ func Test_ChangedP()
   call cursor(3, 1)
   let g:autocmd = ''
   call feedkeys("o\<esc>", 'tnix')
-  " `TextChangedI` triggers only if text is actually changed in Insert mode
-  call assert_equal('', g:autocmd)
-
-  let g:autocmd = ''
-  call feedkeys("Sf", 'tnix')
   call assert_equal('I', g:autocmd)
 
   let g:autocmd = ''
+  call feedkeys("Sf", 'tnix')
+  call assert_equal('II', g:autocmd)
+
+  let g:autocmd = ''
   call feedkeys("Sf\<C-N>", 'tnix')
-  call assert_equal('IP', g:autocmd)
+  call assert_equal('IIP', g:autocmd)
 
   let g:autocmd = ''
   call feedkeys("Sf\<C-N>\<C-N>", 'tnix')
-  call assert_equal('IPP', g:autocmd)
+  call assert_equal('IIPP', g:autocmd)
 
   let g:autocmd = ''
   call feedkeys("Sf\<C-N>\<C-N>\<C-N>", 'tnix')
-  call assert_equal('IPPP', g:autocmd)
+  call assert_equal('IIPPP', g:autocmd)
 
   let g:autocmd = ''
   call feedkeys("Sf\<C-N>\<C-N>\<C-N>\<C-N>", 'tnix')
-  call assert_equal('IPPPP', g:autocmd)
+  call assert_equal('IIPPPP', g:autocmd)
 
   call assert_equal(['foo', 'bar', 'foobar', 'foo'], getline(1, '$'))
   " TODO: how should it handle completeopt=noinsert,noselect?
