@@ -4686,6 +4686,35 @@ def Test_refer_funcref_instr_after_realloc()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for calling a deferred function after an exception
+def Test_defer_after_exception()
+  var lines =<< trim END
+    vim9script
+
+    var callTrace: list<string> = []
+    def Defer()
+      callTrace += ['a']
+      callTrace += ['b']
+      callTrace += ['c']
+      callTrace += ['d']
+    enddef
+
+    def Foo()
+      defer Defer()
+      throw "TestException"
+    enddef
+
+    try
+      Foo()
+    catch /TestException/
+      callTrace += ['e']
+    endtry
+
+    assert_equal(['a', 'b', 'c', 'd', 'e'], callTrace)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
