@@ -561,13 +561,12 @@ check_due_timer(void)
 	    int prev_uncaught_emsg = uncaught_emsg;
 	    int save_called_emsg = called_emsg;
 	    int save_must_redraw = must_redraw;
-	    int save_trylevel = trylevel;
-	    int save_did_throw = did_throw;
-	    int save_need_rethrow = need_rethrow;
 	    int save_ex_pressedreturn = get_pressedreturn();
 	    int save_may_garbage_collect = may_garbage_collect;
-	    except_T *save_current_exception = current_exception;
-	    vimvars_save_T vvsave;
+	    vimvars_save_T	vvsave;
+	    exception_state_T	estate;
+
+	    exception_state_save(&estate);
 
 	    // Create a scope for running the timer callback, ignoring most of
 	    // the current scope, such as being inside a try/catch.
@@ -576,11 +575,8 @@ check_due_timer(void)
 	    called_emsg = 0;
 	    did_emsg = FALSE;
 	    must_redraw = 0;
-	    trylevel = 0;
-	    did_throw = FALSE;
-	    need_rethrow = FALSE;
-	    current_exception = NULL;
 	    may_garbage_collect = FALSE;
+	    exception_state_clear();
 	    save_vimvars(&vvsave);
 
 	    // Invoke the callback.
@@ -597,10 +593,7 @@ check_due_timer(void)
 		++timer->tr_emsg_count;
 	    did_emsg = save_did_emsg;
 	    called_emsg = save_called_emsg;
-	    trylevel = save_trylevel;
-	    did_throw = save_did_throw;
-	    need_rethrow = save_need_rethrow;
-	    current_exception = save_current_exception;
+	    exception_state_restore(&estate);
 	    restore_vimvars(&vvsave);
 	    if (must_redraw != 0)
 		need_update_screen = TRUE;

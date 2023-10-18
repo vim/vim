@@ -4691,12 +4691,22 @@ def Test_defer_after_exception()
   var lines =<< trim END
     vim9script
 
-    var callTrace: list<string> = []
+    var callTrace: list<number> = []
+    def Bar()
+      callTrace += [1]
+      throw 'InnerException'
+    enddef
+
     def Defer()
-      callTrace += ['a']
-      callTrace += ['b']
-      callTrace += ['c']
-      callTrace += ['d']
+      callTrace += [2]
+      callTrace += [3]
+      try
+        Bar()
+      catch /InnerException/
+        callTrace += [4]
+      endtry
+      callTrace += [5]
+      callTrace += [6]
     enddef
 
     def Foo()
@@ -4707,10 +4717,10 @@ def Test_defer_after_exception()
     try
       Foo()
     catch /TestException/
-      callTrace += ['e']
+      callTrace += [7]
     endtry
 
-    assert_equal(['a', 'b', 'c', 'd', 'e'], callTrace)
+    assert_equal([2, 3, 1, 4, 5, 6, 7], callTrace)
   END
   v9.CheckScriptSuccess(lines)
 enddef
