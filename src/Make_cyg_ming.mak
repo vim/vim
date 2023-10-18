@@ -513,9 +513,6 @@ endif # RUBY
 DEF_GUI=-DFEAT_GUI_MSWIN -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
-ifeq ($(ARCH),x86-64)
-DEFINES+=-DMS_WIN64
-endif
 
 #>>>>> end of choices
 ###########################################################################
