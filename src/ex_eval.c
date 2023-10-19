@@ -765,10 +765,11 @@ exception_state_save(exception_state_T *estate)
     void
 exception_state_restore(exception_state_T *estate)
 {
-    current_exception = estate->estate_current_exception;
-    did_throw = estate->estate_did_throw;
-    need_rethrow = estate->estate_need_rethrow;
-    trylevel = estate->estate_trylevel;
+    if (current_exception == NULL)
+	current_exception = estate->estate_current_exception;
+    did_throw |= estate->estate_did_throw;
+    need_rethrow |= estate->estate_need_rethrow;
+    trylevel |= estate->estate_trylevel;
 }
 
 /*
