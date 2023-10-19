@@ -186,7 +186,7 @@ func s:Highlight_Matching_Pair()
   " If a match is found setup match highlighting.
   if m_lnum > 0 && m_lnum >= stoplinetop && m_lnum <= stoplinebottom 
     if exists('*matchaddpos')
-      call matchaddpos('MatchParen', [[c_lnum, c_col - before], [m_lnum, m_col]], 10, 3)
+      silent! call matchaddpos('MatchParen', [[c_lnum, c_col - before], [m_lnum, m_col]], 10, 3)
     else
       exe '3match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) .
 	    \ 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
