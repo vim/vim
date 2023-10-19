@@ -8337,4 +8337,76 @@ def Test_classmethod_timer_callback()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using a class variable as the first and/or second operand of a binary
+" operator.
+def Test_class_variable_as_operands()
+  var lines =<< trim END
+    vim9script
+    class Tests
+      static truthy: bool = true
+      static list: list<any> = []
+      static four: number = 4
+      static hello: string = 'hello'
+
+      static def Hello(): string
+        return hello
+      enddef
+
+      static def Four(): number
+        return four
+      enddef
+
+      static def List(): list<any>
+        return list
+      enddef
+
+      static def Truthy(): bool
+        return truthy
+      enddef
+
+      def TestOps()
+        assert_true(Tests.truthy == truthy)
+        assert_true(truthy == Tests.truthy)
+        assert_true(Tests.list isnot [])
+        assert_true([] isnot Tests.list)
+        assert_equal(2, Tests.four >> 1)
+        assert_equal(16, 1 << Tests.four)
+        assert_equal(8, Tests.four + four)
+        assert_equal(8, four + Tests.four)
+        assert_equal('hellohello', Tests.hello .. hello)
+        assert_equal('hellohello', hello .. Tests.hello)
+      enddef
+    endclass
+
+    def TestOps2()
+      assert_true(Tests.truthy == Tests.Truthy())
+      assert_true(Tests.Truthy() == Tests.truthy)
+      assert_true(Tests.list is Tests.List())
+      assert_true(Tests.List() is Tests.list)
+      assert_equal(2, Tests.four >> 1)
+      assert_equal(16, 1 << Tests.four)
+      assert_equal(8, Tests.four + Tests.Four())
+      assert_equal(8, Tests.Four() + Tests.four)
+      assert_equal('hellohello', Tests.hello .. Tests.Hello())
+      assert_equal('hellohello', Tests.Hello() .. Tests.hello)
+    enddef
+
+    var t = Tests.new()
+    t.TestOps()
+    TestOps2()
+
+    assert_true(Tests.truthy == Tests.Truthy())
+    assert_true(Tests.Truthy() == Tests.truthy)
+    assert_true(Tests.list is Tests.List())
+    assert_true(Tests.List() is Tests.list)
+    assert_equal(2, Tests.four >> 1)
+    assert_equal(16, 1 << Tests.four)
+    assert_equal(8, Tests.four + Tests.Four())
+    assert_equal(8, Tests.Four() + Tests.four)
+    assert_equal('hellohello', Tests.hello .. Tests.Hello())
+    assert_equal('hellohello', Tests.Hello() .. Tests.hello)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
