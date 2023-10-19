@@ -2340,8 +2340,7 @@ class_object_index(
 	}
 
 	if (did_emsg == did_emsg_save)
-	    member_not_found_msg(cl, is_object ? VAR_OBJECT : VAR_CLASS, name,
-									len);
+	    member_not_found_msg(cl, rettv->v_type, name, len);
     }
 
     return FAIL;

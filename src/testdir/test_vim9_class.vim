@@ -8347,10 +8347,10 @@ def Test_class_variable_as_operands()
       public static TruthyFn: func
       static list: list<any> = []
       static four: number = 4
-      static hello: string = 'hello'
+      static str: string = 'hello'
 
-      static def Hello(): string
-        return hello
+      static def Str(): string
+        return str
       enddef
 
       static def Four(): number
@@ -8374,8 +8374,17 @@ def Test_class_variable_as_operands()
         assert_equal(16, 1 << Tests.four)
         assert_equal(8, Tests.four + four)
         assert_equal(8, four + Tests.four)
-        assert_equal('hellohello', Tests.hello .. hello)
-        assert_equal('hellohello', hello .. Tests.hello)
+        assert_equal('hellohello', Tests.str .. str)
+        assert_equal('hellohello', str .. Tests.str)
+
+        # Using class variable for list indexing
+        var l = range(10)
+        assert_equal(4, l[Tests.four])
+        assert_equal([4, 5, 6], l[Tests.four : Tests.four + 2])
+
+        # Using class variable for Dict key
+        var d = {hello: 'abc'}
+        assert_equal('abc', d[Tests.str])
       enddef
     endclass
 
@@ -8390,8 +8399,17 @@ def Test_class_variable_as_operands()
       assert_equal(16, 1 << Tests.four)
       assert_equal(8, Tests.four + Tests.Four())
       assert_equal(8, Tests.Four() + Tests.four)
-      assert_equal('hellohello', Tests.hello .. Tests.Hello())
-      assert_equal('hellohello', Tests.Hello() .. Tests.hello)
+      assert_equal('hellohello', Tests.str .. Tests.Str())
+      assert_equal('hellohello', Tests.Str() .. Tests.str)
+
+      # Using class variable for list indexing
+      var l = range(10)
+      assert_equal(4, l[Tests.four])
+      assert_equal([4, 5, 6], l[Tests.four : Tests.four + 2])
+
+      # Using class variable for Dict key
+      var d = {hello: 'abc'}
+      assert_equal('abc', d[Tests.str])
     enddef
 
     Tests.TruthyFn = Tests.Truthy
@@ -8409,8 +8427,17 @@ def Test_class_variable_as_operands()
     assert_equal(16, 1 << Tests.four)
     assert_equal(8, Tests.four + Tests.Four())
     assert_equal(8, Tests.Four() + Tests.four)
-    assert_equal('hellohello', Tests.hello .. Tests.Hello())
-    assert_equal('hellohello', Tests.Hello() .. Tests.hello)
+    assert_equal('hellohello', Tests.str .. Tests.Str())
+    assert_equal('hellohello', Tests.Str() .. Tests.str)
+
+    # Using class variable for list indexing
+    var l = range(10)
+    assert_equal(4, l[Tests.four])
+    assert_equal([4, 5, 6], l[Tests.four : Tests.four + 2])
+
+    # Using class variable for Dict key
+    var d = {hello: 'abc'}
+    assert_equal('abc', d[Tests.str])
   END
   v9.CheckSourceSuccess(lines)
 enddef

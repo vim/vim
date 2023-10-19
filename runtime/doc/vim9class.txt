@@ -28,7 +28,8 @@ Vim9 classes, objects, interfaces, types and enums.
 The fancy term is "object-oriented programming".  You can find lots of study
 material on this subject.  Here we document what |Vim9| script provides,
 assuming you know the basics already.  Added are helpful hints about how to
-use this functionality effectively.
+use this functionality effectively.  Vim9 classes and objects cannot be used
+in legacy Vim scripts and legacy functions.
 
 The basic item is an object:
 - An object stores state.  It contains one or more variables that can each

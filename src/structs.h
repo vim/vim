@@ -1099,6 +1099,7 @@ struct exception_state_S
     int		estate_did_throw;
     int		estate_need_rethrow;
     int		estate_trylevel;
+    int		estate_did_emsg;
 };
 
 #ifdef FEAT_SYN_HL
