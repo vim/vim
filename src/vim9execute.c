@@ -398,6 +398,9 @@ check_ufunc_arg_types(ufunc_T *ufunc, int argcount, int off, ectx_T *ectx)
 	if (argv[i].v_type == VAR_SPECIAL
 		&& argv[i].vval.v_number == VVAL_NONE)
 	    continue;
+	// only pass values to user functions, never types
+	if (check_is_value(argv[i].v_type) == FAIL)
+	    return FAIL;
 
 	if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
 	    type = ufunc->uf_arg_types[i];
@@ -4444,6 +4447,11 @@ exec_instructions(ectx_T *ectx)
 		    garray_T	*trystack = &ectx->ec_trystack;
 		    trycmd_T    *trycmd = NULL;
 
+		    ///////////////////////////////////////////////////
+		    // TODO: If FAIL, line number in output not correct
+		    ///////////////////////////////////////////////////
+		    if (check_is_value(STACK_TV_BOT(-1)->v_type) == FAIL)
+			goto theend;
 		    if (trystack->ga_len > 0)
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;

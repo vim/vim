@@ -1644,16 +1644,19 @@ get_member_type_from_stack(
     if (count == 0)
 	return &t_unknown;
 
-    // Use the first value type for the list member type, then find the common
-    // type from following items.
+    // find the common type from items.
     typep = ((type2_T *)stack->ga_data) + stack->ga_len;
-    result = (typep -(count * skip) + skip - 1)->type_curr;
-    for (i = 1; i < count; ++i)
+    result = &t_unknown;
+    for (i = 0; i < count; ++i)
     {
-	if (result == &t_any)
-	    break;  // won't get more common
 	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
-	common_type(type, result, &result, type_gap);
+	//if (check_is_value(type->tt_type) == FAIL)
+	// TODO: For now skip checking for list item
+	// Using "skip != 1", which happens to imply list, is an ugly HACK
+	if (skip != 1 && check_is_value(type->tt_type) == FAIL)
+	    return NULL;
+	if (result != &t_any)
+	    common_type(type, result, &result, type_gap);
     }
 
     return result;

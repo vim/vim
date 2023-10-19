@@ -1627,7 +1627,7 @@ typedef struct
     char	*f_name;	// function name
     char	f_min_argc;	// minimal number of arguments
     char	f_max_argc;	// maximal number of arguments
-    char	f_argtype;	// for method: FEARG_ values
+    char	f_argtype;	// for method: FEARG_ values; bits FEFLG_
     argcheck_T	*f_argcheck;	// list of functions to check argument types
     type_T	*(*f_retfunc)(int argcount, type2_T *argtypes,
 							   type_T **decl_type);
@@ -1637,10 +1637,12 @@ typedef struct
 } funcentry_T;
 
 // values for f_argtype; zero means it cannot be used as a method
-#define FEARG_1    1	    // base is the first argument
-#define FEARG_2    2	    // base is the second argument
-#define FEARG_3    3	    // base is the third argument
-#define FEARG_4    4	    // base is the fourth argument
+#define FEARG_1    0x01	    // base is the first argument
+#define FEARG_2    0x02	    // base is the second argument
+#define FEARG_3    0x03	    // base is the third argument
+#define FEARG_4    0x04	    // base is the fourth argument
+#define FEARG_MASK 0x0F	    // bits in f_argtype used as argument index
+#define FEFLG_XVAL 0x10	    // builtin accepts a non-value (class, typealias)
 
 #if defined(HAVE_MATH_H)
 # define MATH_FUNC(name) name
@@ -3115,7 +3117,7 @@ check_internal_func(int idx, int argcount)
     else if (argcount > global_functions[idx].f_max_argc)
 	res = FCERR_TOOMANY;
     else
-	return global_functions[idx].f_argtype;
+	return global_functions[idx].f_argtype & FEARG_MASK;
 
     name = internal_func_name(idx);
     if (res == FCERR_TOOMANY)
@@ -3172,14 +3174,14 @@ call_internal_method(
     fi = find_internal_func(name);
     if (fi < 0)
 	return FCERR_UNKNOWN;
-    if (global_functions[fi].f_argtype == 0)
+    if ((global_functions[fi].f_argtype & FEARG_MASK) == 0)
 	return FCERR_NOTMETHOD;
     if (argcount + 1 < global_functions[fi].f_min_argc)
 	return FCERR_TOOFEW;
     if (argcount + 1 > global_functions[fi].f_max_argc)
 	return FCERR_TOOMANY;
 
-    if (global_functions[fi].f_argtype == FEARG_2)
+    if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_2)
     {
 	if (argcount < 1)
 	    return FCERR_TOOFEW;
@@ -3190,7 +3192,7 @@ call_internal_method(
 	for (int i = 1; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
-    else if (global_functions[fi].f_argtype == FEARG_3)
+    else if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_3)
     {
 	if (argcount < 2)
 	    return FCERR_TOOFEW;
@@ -3202,7 +3204,7 @@ call_internal_method(
 	for (int i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
-    else if (global_functions[fi].f_argtype == FEARG_4)
+    else if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_4)
     {
 	if (argcount < 3)
 	    return FCERR_TOOFEW;

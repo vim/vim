@@ -3552,8 +3552,10 @@ EXTERN char e_missing_typealias_type[]
 	INIT(= N_("E1398: Missing type alias type"));
 EXTERN char e_type_can_only_be_used_in_script[]
 	INIT(= N_("E1399: Type can only be used in a script"));
+EXTERN char e_cannot_assign_class_to_variable[]
+	INIT(= N_("E1400: Cannot use a class as a variable or value"));
 #endif
-// E1400 - E1499 unused (reserved for Vim9 class support)
+// E1401 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

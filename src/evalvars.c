@@ -630,6 +630,29 @@ is_scoped_variable(char_u *name)
 }
 
 /*
+ * Check if the typval_T is a value; report an error if it is not.
+ * Only a value can be assigned to a variable; if it's not a value
+ * it's probably a type.
+ *
+ * Return OK if it's a value, else FAIL
+ */
+    int
+check_is_value(vartype_T typ)
+{
+    if (typ == VAR_CLASS)
+    {
+	emsg(_(e_cannot_assign_class_to_variable));
+	return FAIL;
+    }
+    //else if (typ == VAR_TYPEALIAS)
+    //{
+    //    emsg(_(e_cannot_assign_typealias_to_variable));
+    //    return FAIL;
+    //}
+    return OK;
+}
+
+/*
  * Evaluate one Vim expression {expr} in string "p" and append the
  * resulting string to "gap".  "p" points to the opening "{".
  * When "evaluate" is FALSE only skip over the expression.
@@ -1876,6 +1899,8 @@ ex_let_one(
 	p = get_lval(arg, tv, &lv, FALSE, FALSE, lval_flags, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
+	    if (check_is_value(tv->v_type) == FAIL)
+		return NULL;
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
 	    {
