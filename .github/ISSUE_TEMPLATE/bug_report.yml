@@ -10,9 +10,7 @@ body:
         Thanks for reporting issues of Vim!
 
         If you want to report a security issue, instead of reporting it here
-        you can alternatively disclose it on
-        [huntr.dev](https://huntr.dev/bounties/disclose/?utm_campaign=vim%2Fvim&utm_medium=social&utm_source=github&target=https%3A%2F%2Fgithub.com%2Fvim%2Fvim).
-        They have rewards in the form of money, swag and CVEs.
+        please disclose it privately to cb@256bit.org
         
         To make it easier for us to help you please enter detailed information below.
   - type: textarea
