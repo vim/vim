@@ -1088,6 +1088,19 @@ struct cleanup_stuff
     except_T *exception;	// exception value
 };
 
+/*
+ * Exception state that is saved and restored when calling timer callback
+ * functions and deferred functions.
+ */
+typedef struct exception_state_S exception_state_T;
+struct exception_state_S
+{
+    except_T	*estate_current_exception;
+    int		estate_did_throw;
+    int		estate_need_rethrow;
+    int		estate_trylevel;
+};
+
 #ifdef FEAT_SYN_HL
 // struct passed to in_id_list()
 struct sp_syn
