@@ -1743,7 +1743,7 @@ def Test_class_member()
     var a = A.new()
     var v = a.bar
   END
-  v9.CheckSourceFailure(lines, 'E1337: Class variable "bar" not found in class "A"', 5)
+  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "A": bar', 5)
 enddef
 
 " These messages should show the defining class of the variable (base class),
@@ -5384,7 +5384,7 @@ def Test_class_variable_access_using_object()
     var a = A.new()
     echo a.svar2
   END
-  v9.CheckSourceFailure(lines, 'E1337: Class variable "svar2" not found in class "A"', 8)
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "svar2" accessible only using class "A"', 8)
 
   # Cannot write to a class variable using an object in script context
   lines =<< trim END
@@ -5859,7 +5859,7 @@ def Test_class_variable()
     var a = A.new()
     var i = a.val
   END
-  v9.CheckSourceFailure(lines, 'E1337: Class variable "val" not found in class "A"', 7)
+  v9.CheckSourceFailure(lines, 'E1375: Class variable "val" accessible only using class "A"', 7)
 
   # Modifying a class variable using an object at function level
   lines =<< trim END
@@ -8344,6 +8344,7 @@ def Test_class_variable_as_operands()
     vim9script
     class Tests
       static truthy: bool = true
+      public static TruthyFn: func
       static list: list<any> = []
       static four: number = 4
       static hello: string = 'hello'
@@ -8381,6 +8382,8 @@ def Test_class_variable_as_operands()
     def TestOps2()
       assert_true(Tests.truthy == Tests.Truthy())
       assert_true(Tests.Truthy() == Tests.truthy)
+      assert_true(Tests.truthy == Tests.TruthyFn())
+      assert_true(Tests.TruthyFn() == Tests.truthy)
       assert_true(Tests.list is Tests.List())
       assert_true(Tests.List() is Tests.list)
       assert_equal(2, Tests.four >> 1)
@@ -8391,12 +8394,15 @@ def Test_class_variable_as_operands()
       assert_equal('hellohello', Tests.Hello() .. Tests.hello)
     enddef
 
+    Tests.TruthyFn = Tests.Truthy
     var t = Tests.new()
     t.TestOps()
     TestOps2()
 
     assert_true(Tests.truthy == Tests.Truthy())
     assert_true(Tests.Truthy() == Tests.truthy)
+    assert_true(Tests.truthy == Tests.TruthyFn())
+    assert_true(Tests.TruthyFn() == Tests.truthy)
     assert_true(Tests.list is Tests.List())
     assert_true(Tests.List() is Tests.list)
     assert_equal(2, Tests.four >> 1)
