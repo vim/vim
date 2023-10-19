@@ -10,13 +10,6 @@
  * Implements communication through a socket or any file handle.
  */
 
-#ifdef WIN32
-// Must include winsock2.h before windows.h since it conflicts with winsock.h
-// (included in windows.h).
-# include <winsock2.h>
-# include <ws2tcpip.h>
-#endif
-
 #include "vim.h"
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)

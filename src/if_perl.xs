@@ -24,17 +24,6 @@
 # define _USE_32BIT_TIME_T
 #endif
 
-/*
- * Prevent including winsock.h.  perl.h tries to detect whether winsock.h is
- * already included before including winsock2.h, because winsock2.h isn't
- * compatible with winsock.h.  However the detection doesn't work with some
- * versions of MinGW.  If WIN32_LEAN_AND_MEAN is defined, windows.h will not
- * include winsock.h.
- */
-#ifdef WIN32
-# define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "vim.h"
 
 #ifdef _MSC_VER

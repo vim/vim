@@ -923,7 +923,7 @@ endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/job.o $(OUTDIR)/channel.o
-LIB += -lwsock32 -lws2_32
+LIB += -lws2_32
 endif
 
 ifeq ($(DIRECTX),yes)
