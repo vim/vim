@@ -2974,8 +2974,8 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 		    method_name, cl->class_name);
     }
     else
-	semsg(_(e_method_not_found_on_class_str_str), cl->class_name,
-		method_name);
+	semsg(_(e_method_not_found_on_class_str_str), method_name,
+	        cl->class_name);
     vim_free(method_name);
 }
 
@@ -2993,8 +2993,8 @@ member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 	    semsg(_(e_class_variable_str_accessible_only_using_class_str),
 		    varname, cl->class_name);
 	else
-	    semsg(_(e_variable_not_found_on_object_str_str), cl->class_name,
-		    varname);
+	    semsg(_(e_variable_not_found_on_object_str_str), varname,
+		    cl->class_name);
     }
     else
     {
