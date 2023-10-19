@@ -163,6 +163,8 @@ runtime/ftplugin/ishd.vim		@dkearns
 runtime/ftplugin/j.vim			@glts
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
+runtime/ftplugin/json.vim		@dbarnett
+runtime/ftplugin/json5.vim		@dkearns
 runtime/ftplugin/jsonc.vim		@izhakjakov
 runtime/ftplugin/julia.vim		@carlobaldassi
 runtime/ftplugin/kconfig.vim		@chrisbra
