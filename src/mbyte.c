@@ -5092,6 +5092,13 @@ f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
 
+    // should the iconv() function be disabled in
+    // restricted mode?
+#if 0
+    if (check_restricted() || check_secure())
+	return;
+#endif
+
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_string_arg(argvars, 1) == FAIL
