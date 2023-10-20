@@ -132,7 +132,7 @@ def Test_class_basic()
     endclass
     var obj = Something.new()
   END
-  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "Something": state', 1)
+  v9.CheckSourceFailure(lines, 'E1326: Variable "state" not found in object "Something"', 1)
 
   # Space before ":" in a member variable declaration
   lines =<< trim END
@@ -648,7 +648,7 @@ def Test_member_any_used_as_object()
     var outer_obj = Outer.new(inner_obj)
     F(outer_obj)
   END
-  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "Inner": someval', 1)
+  v9.CheckSourceFailure(lines, 'E1326: Variable "someval" not found in object "Inner"', 1)
 enddef
 
 " Nested assignment to a object variable which is of another class type
@@ -1092,7 +1092,7 @@ def Test_instance_variable_access()
     trip.three = 33
     assert_equal(33, trip.three)
 
-    assert_fails('trip.four = 4', 'E1326: Variable not found on object "Triple": four')
+    assert_fails('trip.four = 4', 'E1326: Variable "four" not found in object "Triple"')
   END
   v9.CheckSourceSuccess(lines)
 
@@ -1743,7 +1743,7 @@ def Test_class_member()
     var a = A.new()
     var v = a.bar
   END
-  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "A": bar', 5)
+  v9.CheckSourceFailure(lines, 'E1326: Variable "bar" not found in object "A"', 5)
 enddef
 
 " These messages should show the defining class of the variable (base class),
@@ -2080,7 +2080,7 @@ def Test_class_defcompile()
     var a = A.new()
     defcompile a.Foo()
   END
-  v9.CheckSourceFailureList(lines, ['E1326: Variable not found on object "A": Foo', 'E475: Invalid argument: a.Foo()'])
+  v9.CheckSourceFailureList(lines, ['E1326: Variable "Foo" not found in object "A"', 'E475: Invalid argument: a.Foo()'])
 enddef
 
 def Test_class_object_to_string()
@@ -3055,7 +3055,7 @@ def Test_abstract_class()
     endclass
     var p = Base.new('Peter')
   END
-  v9.CheckSourceFailure(lines, 'E1325: Method not found on class "Base": new', 8)
+  v9.CheckSourceFailure(lines, 'E1325: Method "new" not found in class "Base"', 8)
 
   lines =<< trim END
     abstract class Base
@@ -4478,7 +4478,7 @@ def Test_lockvar_islocked_notfound()
     var obj = C.new()
     obj.Islocked("this.notobjmember")
   END
-  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "C": notobjmember')
+  v9.CheckSourceFailure(lines, 'E1326: Variable "notobjmember" not found in object "C"')
 
   # access a script variable through methods
   lines =<< trim END
@@ -4938,7 +4938,7 @@ def Test_private_class_method()
     var c = C.new()
     assert_equal(1234, C._Foo())
   END
-  v9.CheckSourceFailure(lines, 'E1325: Method not found on class "C": _Foo', 16)
+  v9.CheckSourceFailure(lines, 'E1325: Method "_Foo" not found in class "C"', 16)
 enddef
 
 " Test for using the return value of a class/object method as a function
@@ -5227,7 +5227,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1326: Variable not found on object "A": _a', 2)
+  v9.CheckSourceFailure(lines, 'E1326: Variable "_a" not found in object "A"', 2)
 
   # private static member variable
   lines =<< trim END

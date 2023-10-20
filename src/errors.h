@@ -3396,9 +3396,9 @@ EXTERN char e_using_class_as_string[]
 EXTERN char e_using_object_as_string[]
 	INIT(= N_("E1324: Using an object as a String"));
 EXTERN char e_method_not_found_on_class_str_str[]
-	INIT(= N_("E1325: Method not found on class \"%s\": %s"));
+	INIT(= N_("E1325: Method \"%s\" not found in class \"%s\""));
 EXTERN char e_variable_not_found_on_object_str_str[]
-	INIT(= N_("E1326: Variable not found on object \"%s\": %s"));
+	INIT(= N_("E1326: Variable \"%s\" not found in object \"%s\""));
 EXTERN char e_object_required_found_str[]
 	INIT(= N_("E1327: Object required, found %s"));
 EXTERN char e_constructor_default_value_must_be_vnone_str[]
