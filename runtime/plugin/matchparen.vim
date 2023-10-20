@@ -204,8 +204,7 @@ endfunction
 func s:Remove_Matches()
   if exists('w:paren_hl_on') && w:paren_hl_on
     while !empty(w:matchparen_ids)
-      let id = remove(w:matchparen_ids, 0)
-      silent! call matchdelete(id)
+      silent! call remove(w:matchparen_ids, 0)->matchdelete()
     endwhile
     let w:paren_hl_on = 0
   endif
