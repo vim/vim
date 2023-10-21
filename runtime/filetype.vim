@@ -1031,6 +1031,9 @@ au BufNewFile,BufRead *.jal,*.JAL		setf jal
 " Jam
 au BufNewFile,BufRead *.jpl,*.jpr		setf jam
 
+" Janet
+au BufNewFile,BufRead *.janet			setf janet
+
 " Java
 au BufNewFile,BufRead *.java,*.jav		setf java
 

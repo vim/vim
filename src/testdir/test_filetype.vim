@@ -334,6 +334,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     j: ['file.ijs'],
     jal: ['file.jal', 'file.JAL'],
     jam: ['file.jpl', 'file.jpr', 'JAM-file.file', 'JAM.file', 'Prl-file.file', 'Prl.file'],
+    janet: ['file.janet'],
     java: ['file.java', 'file.jav'],
     javacc: ['file.jj', 'file.jjt'],
     javascript: ['file.js', 'file.jsm', 'file.javascript', 'file.es', 'file.mjs', 'file.cjs'],
@@ -951,6 +952,7 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     crystal: [['#!/path/crystal']],
     rexx:   [['#!/path/rexx'],
             ['#!/path/regina']],
+    janet: [['#!/path/janet']],
   }
 enddef
 

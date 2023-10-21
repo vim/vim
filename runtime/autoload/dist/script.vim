@@ -217,6 +217,10 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^\%(rexx\|regina\)\>'
     return 'rexx'
 
+    # Janet
+  elseif name =~ '^janet\>'
+    return 'janet'
+
   endif
 
   return ''
