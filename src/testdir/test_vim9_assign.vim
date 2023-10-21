@@ -1890,7 +1890,7 @@ def Test_assign_funcref_args()
     var FuncAnyVA: func(...any): number
     FuncAnyVA = (v): number => v
   END
-  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(...any): number but got func(any): number')
+  v9.CheckScriptFailure(lines, 'E1180: Variable arguments type must be a list: any')
 
   # varargs must match
   lines =<< trim END
@@ -1898,7 +1898,7 @@ def Test_assign_funcref_args()
     var FuncAnyVA: func(...any): number
     FuncAnyVA = (v1, v2): number => v1 + v2
   END
-  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(...any): number but got func(any, any): number')
+  v9.CheckScriptFailure(lines, 'E1180: Variable arguments type must be a list: any')
 
   # varargs must match
   lines =<< trim END
@@ -1906,7 +1906,7 @@ def Test_assign_funcref_args()
     var FuncAnyVA: func(...any): number
     FuncAnyVA = (v1: list<any>): number => 3
   END
-  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(...any): number but got func(list<any>): number')
+  v9.CheckScriptFailure(lines, 'E1180: Variable arguments type must be a list: any')
 enddef
 
 def Test_assign_funcref_arg_any()

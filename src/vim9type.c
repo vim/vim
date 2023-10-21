@@ -1231,6 +1231,15 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 			type = parse_type(&p, type_gap, give_error);
 			if (type == NULL)
 			    return NULL;
+			if ((flags & TTFLAG_VARARGS) != 0
+				&& type->tt_type != VAR_LIST)
+			{
+			    char *tofree;
+			    semsg(_(e_variable_arguments_type_must_be_list_str),
+				  type_name(type, &tofree));
+			    vim_free(tofree);
+			    return NULL;
+			}
 			arg_type[argcount++] = type;
 
 			// Nothing comes after "...{type}".
