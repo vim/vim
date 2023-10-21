@@ -1468,7 +1468,7 @@ return value) results in error *E1031*  *E1186* .
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating a lot of small pieces
 of memory.
-							*E1005* *E1007*
+				    *vim9-func-declaration* *E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
 				checking for arguments or return value
@@ -1668,6 +1668,26 @@ needed.
 Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.  Since |flatten()| is intended to always change the
 type, it can not be used in Vim9 script.
+
+Assigning to a funcref with specified arguments (see |vim9-func-declaration|)
+does strict type checking of the arguments. For variable number of arguments
+the type must match: >
+	var FuncRef: func(string, number, bool): number
+	FuncRef = (v1: string, v2: number, v3: bool) => 777	# OK
+	FuncRef = (v1: string, v2: number, v3: number) => 777	# Error!
+	# variable number of arguments must have same type
+	var FuncVA: func(...list<string>): number
+	FuncVA = (...v: list<number>): number => v  # Error!
+	FuncVA = (...v: list<any>): number => v	    # OK, `any` runtime check
+	FuncVA = (v1: string, v: string2): number => 333     # Error!
+	FuncVA = (v: list<string>): number => 3	    # Error!
+
+If the destinataion funcref has no specified arguments, then there is no
+argument type checking: >
+	var FuncUnknownArgs: func: number
+	FuncUnknownArgs = (v): number => v			# OK
+	FuncUnknownArgs = (v1: string, v2: string): number => 3	# OK
+<	FuncUnknownArgs = (...v1: list<string>): number => 333	# OK
 
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
