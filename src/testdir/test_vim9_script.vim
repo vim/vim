@@ -4725,6 +4725,64 @@ def Test_defer_after_exception()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for multiple deferred function which throw exceptions.
+" Exceptions thrown by deferred functions should result in error messages but
+" not propagated into the calling functions.
+def Test_multidefer_with_exception()
+  var lines =<< trim END
+    vim9script
+
+    var callTrace: list<number> = []
+    def Except()
+      callTrace += [1]
+      throw 'InnerException'
+      callTrace += [2]
+    enddef
+
+    def FirstDefer()
+      callTrace += [3]
+      callTrace += [4]
+    enddef
+
+    def SecondDeferWithExcept()
+      callTrace += [5]
+      Except()
+      callTrace += [6]
+    enddef
+
+    def ThirdDefer()
+      callTrace += [7]
+      callTrace += [8]
+    enddef
+
+    def Foo()
+      callTrace += [9]
+      defer FirstDefer()
+      defer SecondDeferWithExcept()
+      defer ThirdDefer()
+      callTrace += [10]
+    enddef
+
+    v:errmsg = ''
+    try
+      callTrace += [11]
+      Foo()
+      callTrace += [12]
+    catch /TestException/
+      callTrace += [13]
+    catch
+      callTrace += [14]
+    finally
+      callTrace += [15]
+    endtry
+    callTrace += [16]
+
+    assert_equal('E605: Exception not caught: InnerException', v:errmsg)
+    assert_equal([11, 9, 10, 7, 8, 5, 1, 3, 4, 12, 15, 16], callTrace)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
