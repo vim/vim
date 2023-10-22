@@ -2279,6 +2279,13 @@ func Test_complete_info_index()
   call feedkeys("Go\<C-X>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
   call assert_equal("eee", g:compl_info['items'][g:compl_info['selected']]['word'])
 
+  " switch direction
+  call feedkeys("Go\<C-X>\<C-N>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("fff", g:compl_info['items'][g:compl_info['selected']]['word'])
+
+  call feedkeys("Go\<C-X>\<C-P>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("aaa", g:compl_info['items'][g:compl_info['selected']]['word'])
+
   " Add 'noselect', check that 'selected' is -1 when nothing is selected.
   set completeopt+=noselect
   " Search forward.
