@@ -818,6 +818,9 @@ au BufNewFile,BufRead *.gleam			setf gleam
 " GLSL
 au BufNewFile,BufRead *.glsl			setf glsl
 
+" GN (generate ninja) files
+au BufNewFile,BufRead *.gn,*.gni		setf gn
+
 " GP scripts (2.0 and onward)
 au BufNewFile,BufRead *.gp,.gprc		setf gp
 
