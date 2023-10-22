@@ -92,6 +92,10 @@ free_tv(typval_T *varp)
 	    object_unref(varp->vval.v_object);
 	    break;
 
+	case VAR_TYPEALIAS:
+	    typealias_unref(varp->vval.v_typealias);
+	    break;
+
 	case VAR_NUMBER:
 	case VAR_FLOAT:
 	case VAR_ANY:
@@ -168,6 +172,10 @@ clear_tv(typval_T *varp)
 	case VAR_OBJECT:
 	    object_unref(varp->vval.v_object);
 	    varp->vval.v_object = NULL;
+	    break;
+	case VAR_TYPEALIAS:
+	    typealias_unref(varp->vval.v_typealias);
+	    varp->vval.v_typealias = NULL;
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -261,6 +269,10 @@ tv_get_bool_or_number_chk(
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    break;
+	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_variable),
+					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -378,6 +390,10 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    break;
+	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_variable),
+					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -1129,6 +1145,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
 	    break;
+	case VAR_TYPEALIAS:
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_INSTR:
@@ -1288,6 +1305,15 @@ copy_tv(typval_T *from, typval_T *to)
 	    {
 		to->vval.v_dict = from->vval.v_dict;
 		++to->vval.v_dict->dv_refcount;
+	    }
+	    break;
+	case VAR_TYPEALIAS:
+	    if (from->vval.v_typealias == NULL)
+		to->vval.v_typealias = NULL;
+	    else
+	    {
+		to->vval.v_typealias = from->vval.v_typealias;
+		++to->vval.v_typealias->ta_refcount;
 	    }
 	    break;
 	case VAR_VOID:
@@ -1596,6 +1622,7 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    case VAR_FLOAT: if (!in_vim9script())
 				 return tv->vval.v_float == 0.0;
 			     break;
+	    case VAR_TYPEALIAS: return tv->vval.v_typealias == NULL;
 	    default: break;
 	}
     }
@@ -2068,6 +2095,9 @@ tv_equal(
 
 	case VAR_FUNC:
 	    return tv1->vval.v_string == tv2->vval.v_string;
+
+	case VAR_TYPEALIAS:
+	    return tv1->vval.v_typealias == tv2->vval.v_typealias;
 
 	case VAR_UNKNOWN:
 	case VAR_ANY:

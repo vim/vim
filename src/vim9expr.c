@@ -238,6 +238,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    case VAR_INSTR:
 	    case VAR_CLASS:
 	    case VAR_OBJECT:
+	    case VAR_TYPEALIAS:
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
 	    case VAR_VOID:
@@ -528,6 +529,13 @@ compile_load_scriptvar(
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	if (sv->sv_tv->v_type == VAR_TYPEALIAS)
+	{
+	    semsg(_(e_using_typealias_as_variable),
+				sv->sv_tv->vval.v_typealias->ta_name);
+	    return FAIL;
+	}
 
 	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 					current_sctx.sc_sid, idx, sv->sv_type);

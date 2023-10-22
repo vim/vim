@@ -1354,7 +1354,9 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     }
 
     // It can be a class or interface name, possibly imported.
-    typval_T tv;
+    int		did_emsg_before = did_emsg;
+    typval_T	tv;
+
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(*arg, &tv) == OK)
     {
@@ -1377,11 +1379,22 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		return type;
 	    }
 	}
+	else if (tv.v_type == VAR_TYPEALIAS)
+	{
+	    // user defined type
+	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
+	    *arg += len;
+	    clear_tv(&tv);
+	    // Skip over ".TypeName".
+	    while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		++*arg;
+	    return type;
+	}
 
 	clear_tv(&tv);
     }
 
-    if (give_error)
+    if (give_error && (did_emsg == did_emsg_before))
 	semsg(_(e_type_not_recognized_str), *arg);
     return NULL;
 }
@@ -1416,6 +1429,7 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    break;  // not composite is always OK
 	case VAR_LIST:
 	case VAR_DICT:
@@ -1666,6 +1680,7 @@ vartype_name(vartype_T type)
 	case VAR_INSTR: return "instr";
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
+	case VAR_TYPEALIAS: return "typealias";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -1795,12 +1810,25 @@ f_typename(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     ga_init2(&type_list, sizeof(type_T *), 10);
-    type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
-    name = type_name(type, &tofree);
-    if (tofree != NULL)
-	rettv->vval.v_string = (char_u *)tofree;
+    if (argvars[0].v_type == VAR_TYPEALIAS)
+	type = argvars[0].vval.v_typealias->ta_type;
     else
-	rettv->vval.v_string = vim_strsave((char_u *)name);
+	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
+    name = type_name(type, &tofree);
+    if (argvars[0].v_type == VAR_TYPEALIAS)
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, "typealias<%s>", name);
+	rettv->vval.v_string = vim_strsave((char_u *)IObuff);
+	if (tofree != NULL)
+	    vim_free(tofree);
+    }
+    else
+    {
+	if (tofree != NULL)
+	    rettv->vval.v_string = (char_u *)tofree;
+	else
+	    rettv->vval.v_string = vim_strsave((char_u *)name);
+    }
     clear_type_list(&type_list);
 }
 

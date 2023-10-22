@@ -310,6 +310,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    semsg(_(e_cannot_json_encode_str), vartype_name(val->v_type));
 	    return FAIL;
 
