@@ -3067,15 +3067,20 @@ info_add_completion_info(list_T *li)
     //    first entry with the CP_ORIGINAL_TEXT
     //    flag set and next-entry moves in opposite direction through the list
     //    compared to case 1, so pretend the direction is backwards again
+    //
+    // But only do this when the 'noselect' option is not active!
 
-    if (forward && !match_at_original_text(match))
-	forward = FALSE;
-    else if (!forward && match_at_original_text(match))
-	forward = TRUE;
+    if (!compl_no_select)
+    {
+	if (forward && !match_at_original_text(match))
+	    forward = FALSE;
+	else if (!forward && match_at_original_text(match))
+	    forward = TRUE;
+    }
 
     // Skip the element with the CP_ORIGINAL_TEXT flag at the beginning, in case of
     // forward completion, or at the end, in case of backward completion.
-    match = forward ? match->cp_next : match->cp_prev->cp_prev;
+    match = forward ? match->cp_next : (compl_no_select ? match->cp_prev : match->cp_prev->cp_prev);
 
     while (match != NULL && !match_at_original_text(match))
     {
