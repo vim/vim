@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2023 Jun 10
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Oct 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1487,13 +1487,14 @@ func({type})			function with argument type, does not return
 func({type}): {type}		function with argument type and return type
 func(?{type})			function with type of optional argument, does
 				not return a value
-func(...{type})			function with type of variable number of
-				arguments, does not return a value
-func({type}, ?{type}, ...{type}): {type}
+func(...list<{type}>)		function with type of list for variable number
+				of arguments, does not return a value
+func({type}, ?{type}, ...list<{type}>): {type}
 				function with:
 				- type of mandatory argument
 				- type of optional argument
-				- type of variable number of arguments
+				- type of list for variable number of
+				  arguments
 				- return type
 
 If the return type is "void" the function does not return a value.
@@ -1687,8 +1688,8 @@ argument type checking: >
 	var FuncUnknownArgs: func: number
 	FuncUnknownArgs = (v): number => v			# OK
 	FuncUnknownArgs = (v1: string, v2: string): number => 3	# OK
-<	FuncUnknownArgs = (...v1: list<string>): number => 333	# OK
-
+	FuncUnknownArgs = (...v1: list<string>): number => 333	# OK
+<
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
