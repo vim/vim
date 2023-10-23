@@ -1509,7 +1509,7 @@ au BufNewFile,BufRead *.nmconnection			setf confini
 " Pacman hooks
 au BufNewFile,BufRead *.hook
 	\ if getline(1) == '[Trigger]' |
-	\   setf conf |
+	\   setf confini |
 	\ endif
 
 " Pam conf
