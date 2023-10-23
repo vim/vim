@@ -4134,6 +4134,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
+		// trigger TextChangedI
+		curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
+
 		if (op_change(oap))	// will call edit()
 		    cap->retval |= CA_COMMAND_BUSY;
 		if (restart_edit == 0)
@@ -4244,6 +4247,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
+		// trigger TextChangedI
+		curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
+
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
 		// Reset linebreak, so that formatting works correctly.
