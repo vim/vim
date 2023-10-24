@@ -88,6 +88,8 @@
 #endif
 #if defined(WIN32) || defined(CYGWIN)
 # include <io.h>	/* for setmode() */
+#endif
+#ifdef WIN32
 # include <windows.h>
 #endif
 #ifdef UNIX
