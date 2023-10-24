@@ -418,19 +418,13 @@ huntype(
             }
           else /* HEX_BITS */
             {
-              n1 = parse_hex_digit(c);
-              if (n1 >= 0)
-                {
-                  want_off = (want_off << 4) | n1;
-                }
-
-              if (bt < 0)
-                {
-                  p = 0;
+	      if (n1 < 0)
+	        {
+	          p = 0;
                   bcnt = 0;
-                  b = 0;
-                  continue;
-                }
+	          continue;
+	        }
+	      want_off = (want_off << 4) | n1;
             }
           continue;
         }
