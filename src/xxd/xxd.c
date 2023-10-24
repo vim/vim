@@ -136,7 +136,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2023-10-08 by Juergen Weigert et al.";
+char version[] = "xxd 2023-10-24 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
