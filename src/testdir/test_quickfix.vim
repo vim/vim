@@ -6447,4 +6447,44 @@ func Test_quickfix_buffer_contents()
   call setqflist([], 'f')
 endfunc
 
+" Test for "%b" in "errorformat"
+func Test_efm_format_b()
+  call setqflist([], 'f')
+  new
+  call setline(1, ['1: abc', '1: def', '1: ghi'])
+  let b1 = bufnr()
+  new
+  call setline(1, ['2: abc', '2: def', '2: ghi'])
+  let b2 = bufnr()
+  new
+  call setline(1, ['3: abc', '3: def', '3: ghi'])
+  let b3 = bufnr()
+  new
+  let lines =<< trim eval END
+    {b1}:1:1
+    {b2}:2:2
+    {b3}:3:3
+  END
+  call setqflist([], ' ', #{lines: lines, efm: '%b:%l:%c'})
+  cfirst
+  call assert_equal([b1, 1, 1], [bufnr(), line('.'), col('.')])
+  cnext
+  call assert_equal([b2, 2, 2], [bufnr(), line('.'), col('.')])
+  cnext
+  call assert_equal([b3, 3, 3], [bufnr(), line('.'), col('.')])
+  enew!
+
+  " Use a non-existing buffer
+  let lines =<< trim eval END
+    9991:1:1
+    9992:2:2
+    {b3}:3:3
+  END
+  call setqflist([], ' ', #{lines: lines, efm: '%b:%l:%c'})
+  cfirst | cnext
+  call assert_equal([b3, 3, 3], [bufnr(), line('.'), col('.')])
+  %bw!
+  call setqflist([], 'f')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

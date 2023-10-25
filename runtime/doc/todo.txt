@@ -5945,8 +5945,6 @@ Various improvements:
 7   Instead of filtering errors with a shell script it should be possible to
     do this with Vim script.  A function that filters the raw text that comes
     from the 'makeprg'?
--   Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
-    Govindachar)
 7   Allow a window not to have a statusline.  Makes it possible to use a
     window as a buffer-tab selection.
 8   Allow non-active windows to have a different statusline. (Yakov Lerner)
