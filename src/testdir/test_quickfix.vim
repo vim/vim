@@ -6476,13 +6476,22 @@ func Test_efm_format_b()
 
   " Use a non-existing buffer
   let lines =<< trim eval END
-    9991:1:1
-    9992:2:2
-    {b3}:3:3
+    9991:1:1:m1
+    9992:2:2:m2
+    {b3}:3:3:m3
   END
-  call setqflist([], ' ', #{lines: lines, efm: '%b:%l:%c'})
+  call setqflist([], ' ', #{lines: lines, efm: '%b:%l:%c:%m'})
   cfirst | cnext
   call assert_equal([b3, 3, 3], [bufnr(), line('.'), col('.')])
+  " Lines with non-existing buffer numbers should be used as non-error lines
+  call assert_equal([
+    \ #{lnum: 0, bufnr: 0, end_lnum: 0, pattern: '', valid: 0, vcol: 0, nr: -1,
+    \   module: '', type: '', end_col: 0, col: 0, text: '9991:1:1:m1'},
+    \ #{lnum: 0, bufnr: 0, end_lnum: 0, pattern: '', valid: 0, vcol: 0, nr: -1,
+    \   module: '', type: '', end_col: 0, col: 0, text: '9992:2:2:m2'},
+    \ #{lnum: 3, bufnr: b3, end_lnum: 0, pattern: '', valid: 1, vcol: 0,
+    \   nr: -1, module: '', type: '', end_col: 0, col: 3, text: 'm3'}],
+    \ getqflist())
   %bw!
   call setqflist([], 'f')
 endfunc

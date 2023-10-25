@@ -1463,7 +1463,9 @@ This means that a file name which is a single alphabetical letter will not be
 detected.
 
 The "%b" conversion is used to parse a buffer number.  This is useful for
-referring to lines from an unsaved buffer or a scratch buffer.
+referring to lines in a scratch buffer or a buffer with no name.  If a buffer
+with the matching number doesn't exist, then that line is used as a non-error
+line.
 
 The "%p" conversion is normally followed by a "^".  It's used for compilers
 that output a line like: >
