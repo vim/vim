@@ -2797,7 +2797,7 @@ The first option implies the second one.
 For highlighted trailing whitespace and mix of spaces and tabs: >
 	:let python_space_error_highlight = 1
 
-If you want all possible Python highlighting:
+If you want all possible Python highlighting: >
 	:let python_highlight_all = 1
 This has the same effect as setting python_space_error_highlight and
 unsetting all the other ones.
