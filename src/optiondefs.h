@@ -943,7 +943,7 @@ static struct vimoption options[] =
 				    (char_u *)FALSE,
 #endif
 					(char_u *)0L} SCTX_INIT},
-    {"filetype",    "ft",   P_STRING|P_EXPAND|P_ALLOCED|P_VI_DEF|P_NOGLOB|P_NFNAME,
+    {"filetype",    "ft",   P_STRING|P_ALLOCED|P_VI_DEF|P_NOGLOB|P_NFNAME,
 			    (char_u *)&p_ft, PV_FT,
 			    did_set_filetype_or_syntax, NULL,
 			    {(char_u *)"", (char_u *)0L}
