@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 9.0.  Last change: 2022 Feb 22
+*if_pyth.txt*   For Vim version 9.0.  Last change: 2023 Oct 25
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -524,7 +524,7 @@ The range object methods are:
 
 Range object type is available using "Range" attribute of vim module.
 
-Example (assume r is the current range):
+Example (assume r is the current range): >
 	# Send all lines in a range to the default printer
 	vim.command("%d,%dhardcopy!" % (r.start+1,r.end+1))
 
