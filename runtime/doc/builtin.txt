@@ -4201,7 +4201,7 @@ getscriptinfo([{opts}])					*getscriptinfo()*
 				Note that this is a copy, the value of
 				script-local variables cannot be changed using
 				this dictionary.
-		    version	Vimscript version (|scriptversion|)
+		    version	Vim script version (|scriptversion|)
 
 		Examples: >
 			:echo getscriptinfo({'name': 'myscript'})

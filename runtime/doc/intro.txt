@@ -184,7 +184,7 @@ introduce Y2K problems, but those are not really part of Vim itself.
 ==============================================================================
 3. Credits						*credits* *author*
 
-Most of Vim was created by Bram Moolenaar <Bram@vim.org> |Bram-Moolenaar|
+Most of Vim was created by Bram Moolenaar <Bram@vim.org> |Bram-Moolenaar|.
 
 Parts of the documentation come from several Vi manuals, written by:
 	W.N. Joy
@@ -217,7 +217,8 @@ Vim would never have become what it is now, without the help of these people!
 	Bill Foster		Athena GUI port (later removed)
 	Google			Let Bram work on Vim one day a week
 	Loic Grenie		xvim (ideas for multi windows version)
-	Sven Guckes		Vim promoter and previous WWW page maintainer |Sven-Guckes|
+	Sven Guckes		Vim promoter and previous WWW page maintainer
+				|Sven-Guckes|
 	Darren Hiebert		Exuberant ctags
 	Jason Hildebrand	GTK+ 2 port
 	Bruce Hunsaker		improvements for VMS port

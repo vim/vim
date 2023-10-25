@@ -449,7 +449,8 @@ m  *+python/dyn*	Python 2 interface |python-dynamic| |/dyn|
 m  *+python3*		Python 3 interface |python|
 m  *+python3/dyn*	Python 3 interface |python-dynamic| |/dyn|
 m  *+python3/dyn-stable*
-			Python 3 interface |python-dynamic| |python-stable| |/dyn|
+			Python 3 interface |python-dynamic| |python-stable|
+			|/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option
