@@ -373,6 +373,13 @@ func Test_xxd_revert_bit_dump()
   bwipe!
 endfunc
 
+func Test_xxd_roundtrip_large_bit_dump()
+  new
+  exe 'r! printf "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" | ' . s:xxd_cmd . ' -b | ' . s:xxd_cmd . ' -r -b'
+  call assert_match('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345678', join(getline(1, 3)))
+  bwipe!
+endfunc
+
 func Test_xxd_version()
   new
   exe 'r! ' . s:xxd_cmd . ' -v'
