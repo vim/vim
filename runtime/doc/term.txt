@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2023 Jan 15
+*term.txt*      For Vim version 9.0.  Last change: 2023 Oct 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -104,6 +104,11 @@ pasted text.  This way Vim can separate text that is pasted from characters
 that are typed.  The pasted text is handled like when the middle mouse button
 is used, it is inserted literally and not interpreted as commands.
 
+Please note: while bracketed paste is trying to prevent nasty side-effects
+from pasting (like the CTRL-C or <ESC> key), it's not a guaranteed security
+measure because different terminals may implement this mode slightly
+differently.  You should still be careful with what you paste into Vim.
+
 When the cursor is in the first column, the pasted text will be inserted
 before it.  Otherwise the pasted text is appended after the cursor position.
 This means one cannot paste after the first column.  Unfortunately Vim does
@@ -121,6 +126,9 @@ to disable bracketed paste.
 If |t_PS| or |t_PE| is not set, then |t_BE| will not be used.  This is to make
 sure that bracketed paste is not enabled when the escape codes surrounding
 pasted text cannot be recognized.
+
+Note: bracketed paste mode will be disabled, when the 'esckeys' option is not
+set (also when the 'compatible' option is set).
 
 If your terminal supports bracketed paste, but the options are not set
 automatically, you can try using something like this: >
