@@ -1644,7 +1644,7 @@ typedef struct
 #define FEARG_3    0x03	    // base is the third argument
 #define FEARG_4    0x04	    // base is the fourth argument
 #define FEARG_MASK 0x0F	    // bits in f_argtype used as argument index
-#define FEFLG_XVAL 0x10	    // builtin accepts a non-value (class, typealias)
+#define FE_X	   0x10	    // builtin accepts a non-value (class, typealias)
 
 #if defined(HAVE_MATH_H)
 # define MATH_FUNC(name) name
@@ -2156,7 +2156,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
-    {"instanceof",	2, 19, FEARG_1,	    arg219_instanceof,
+    {"instanceof",	2, 19, FEARG_1|FE_X, arg219_instanceof,
 			ret_bool,	    f_instanceof},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
@@ -2634,7 +2634,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_strgetchar},
     {"stridx",		2, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number,	    f_stridx},
-    {"string",		1, 1, FEARG_1,	    NULL,
+    {"string",		1, 1, FEARG_1|FE_X, NULL,
 			ret_string,	    f_string},
     {"strlen",		1, 1, FEARG_1,	    arg1_string_or_nr,
 			ret_number,	    f_strlen},
@@ -2828,9 +2828,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
-    {"type",		1, 1, FEARG_1,	    NULL,
+    {"type",		1, 1, FEARG_1|FE_X, NULL,
 			ret_number,	    f_type},
-    {"typename",	1, 1, FEARG_1,	    NULL,
+    {"typename",	1, 1, FEARG_1|FE_X, NULL,
 			ret_string,	    f_typename},
     {"undofile",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_undofile},
@@ -3146,6 +3146,13 @@ call_internal_func(
     if (argcount > global_functions[i].f_max_argc)
 	return FCERR_TOOMANY;
     argvars[argcount].v_type = VAR_UNKNOWN;
+    // check arguments for functions that can't handle non-values
+    if (!(global_functions[i].f_argtype & FE_X))
+    {
+	for (int idx = 0; idx < argcount; ++idx)
+	    if (check_is_value(argvars[idx].v_type) == FAIL)
+		return FCERR_OTHER;
+    }
     global_functions[i].f_func(argvars, rettv);
     return FCERR_NONE;
 }
