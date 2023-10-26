@@ -9723,6 +9723,12 @@ f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
+    // seting an environment variable may be dangerous, e.g. you could
+    // setenv GCONV_PATH=/tmp and then have iconv() unexpectedly call
+    // a shell command using some shared library:
+    if (check_restricted() || check_secure())
+	return;
+
     name = tv_get_string_buf(&argvars[0], namebuf);
     if (argvars[1].v_type == VAR_SPECIAL
 				      && argvars[1].vval.v_number == VVAL_NULL)

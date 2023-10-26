@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.0.  Last change: 2023 Oct 17
+*starting.txt*  For Vim version 9.0.  Last change: 2023 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -249,10 +249,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 					*-Z* *restricted-mode* *E145* *E981*
 -Z		Restricted mode.  All commands that make use of an external
 		shell are disabled.  This includes suspending with CTRL-Z,
-		":sh", filtering, the system() function, backtick expansion
+		":sh", filtering, the |system()| function, backtick expansion
 		and libcall().
-		Also disallowed are delete(), rename(), mkdir(), job_start(),
-		etc.
+		Also disallowed are |delete()|, |rename()|, |mkdir()|,
+		|job_start()|, |setenv()| etc.
 		Interfaces, such as Python, Ruby and Lua, are also disabled,
 		since they could be used to execute shell commands.  Perl uses
 		the Safe module.
