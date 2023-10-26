@@ -124,6 +124,9 @@ runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/debchangelog.vim	@jamessan
+runtime/ftplugin/debcontrol.vim		@jamessan
+runtime/ftplugin/debsources.vim		@jamessan
 runtime/ftplugin/desktop.vim		@e-kwsm
 runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
@@ -357,6 +360,12 @@ runtime/syntax/d.vim			@JesseKPhillips
 runtime/syntax/dart.vim			@pr3d4t0r
 runtime/syntax/datascript.vim		@dpelle
 runtime/syntax/dcl.vim			@cecamp
+runtime/syntax/deb822sources.vim	@jamessan
+runtime/syntax/debchangelog.vim		@jamessan
+runtime/syntax/debcontrol.vim		@jamessan
+runtime/syntax/debcopyright.vim		@jamessan
+runtime/syntax/debsources.vim		@jamessan
+runtime/syntax/dep3patch.vim		@jamessan
 runtime/syntax/desktop.vim		@e-kwsm
 runtime/syntax/dosbatch.vim		@mrdubya
 runtime/syntax/dosini.vim		@xuhdev
@@ -479,6 +488,7 @@ runtime/syntax/scss.vim			@tpope
 runtime/syntax/sdoc.vim			@gpanders
 runtime/syntax/sed.vim			@dkearns
 runtime/syntax/sh.vim			@cecamp
+runtime/syntax/shared/debversions.vim	@jamessan
 runtime/syntax/sm.vim			@cecamp
 runtime/syntax/solidity.vim		@cothi
 runtime/syntax/spec.vim			@ignatenkobrain
