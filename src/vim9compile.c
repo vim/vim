@@ -2040,9 +2040,7 @@ compile_lhs(
 	    lhs->lhs_member_type = m->ocm_type;
 	}
 	else
-	{
 	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
-	}
     }
     return OK;
 }
@@ -2220,16 +2218,27 @@ compile_load_lhs(
 		return FAIL;
 	}
 
+	if (lhs->lhs_type->tt_type == VAR_DICT && var_start[varlen] == '[')
+	{
+	    // If the lhs is a Dict variable and an item is accessed by "[",
+	    // then need to convert the key into a string.  The top item in the
+	    // type stack is the Dict and the second last item is the key.
+	    if (may_generate_2STRING(-2, FALSE, cctx) == FAIL)
+		return FAIL;
+	}
+
 	// Now we can properly check the type.  The variable is indexed, thus
 	// we need the member type.  For a class or object we don't know the
 	// type yet, it depends on what member is used.
+	// The top item in the stack is the Dict, followed by the key and then
+	// the type of the value.
 	vartype_T vartype = lhs->lhs_type->tt_type;
 	type_T *member_type = lhs->lhs_type->tt_member;
 	if (rhs_type != NULL && member_type != NULL
 		&& vartype != VAR_OBJECT && vartype != VAR_CLASS
 		&& rhs_type != &t_void
 		&& need_type(rhs_type, member_type, FALSE,
-					    -2, 0, cctx, FALSE, FALSE) == FAIL)
+					    -3, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
     }
     else

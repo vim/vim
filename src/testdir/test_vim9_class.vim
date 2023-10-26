@@ -8442,4 +8442,133 @@ def Test_class_variable_as_operands()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for checking the type of the key used to access an object dict member.
+def Test_dict_member_key_type_check()
+  var lines =<< trim END
+    vim9script
+
+    abstract class State
+      this.numbers: dict<string> = {0: 'nil', 1: 'unity'}
+    endclass
+
+    class Test extends State
+      def ObjMethodTests()
+        var cursor: number = 0
+        var z: number = 0
+        [this.numbers[cursor]] = ['zero.1']
+        assert_equal({0: 'zero.1', 1: 'unity'}, this.numbers)
+        [this.numbers[string(cursor)], z] = ['zero.2', 1]
+        assert_equal({0: 'zero.2', 1: 'unity'}, this.numbers)
+        [z, this.numbers[string(cursor)]] = [1, 'zero.3']
+        assert_equal({0: 'zero.3', 1: 'unity'}, this.numbers)
+        [this.numbers[cursor], z] = ['zero.4', 1]
+        assert_equal({0: 'zero.4', 1: 'unity'}, this.numbers)
+        [z, this.numbers[cursor]] = [1, 'zero.5']
+        assert_equal({0: 'zero.5', 1: 'unity'}, this.numbers)
+      enddef
+
+      static def ClassMethodTests(that: State)
+        var cursor: number = 0
+        var z: number = 0
+        [that.numbers[cursor]] = ['zero.1']
+        assert_equal({0: 'zero.1', 1: 'unity'}, that.numbers)
+        [that.numbers[string(cursor)], z] = ['zero.2', 1]
+        assert_equal({0: 'zero.2', 1: 'unity'}, that.numbers)
+        [z, that.numbers[string(cursor)]] = [1, 'zero.3']
+        assert_equal({0: 'zero.3', 1: 'unity'}, that.numbers)
+        [that.numbers[cursor], z] = ['zero.4', 1]
+        assert_equal({0: 'zero.4', 1: 'unity'}, that.numbers)
+        [z, that.numbers[cursor]] = [1, 'zero.5']
+        assert_equal({0: 'zero.5', 1: 'unity'}, that.numbers)
+      enddef
+
+      def new()
+      enddef
+
+      def newMethodTests()
+        var cursor: number = 0
+        var z: number
+        [this.numbers[cursor]] = ['zero.1']
+        assert_equal({0: 'zero.1', 1: 'unity'}, this.numbers)
+        [this.numbers[string(cursor)], z] = ['zero.2', 1]
+        assert_equal({0: 'zero.2', 1: 'unity'}, this.numbers)
+        [z, this.numbers[string(cursor)]] = [1, 'zero.3']
+        assert_equal({0: 'zero.3', 1: 'unity'}, this.numbers)
+        [this.numbers[cursor], z] = ['zero.4', 1]
+        assert_equal({0: 'zero.4', 1: 'unity'}, this.numbers)
+        [z, this.numbers[cursor]] = [1, 'zero.5']
+        assert_equal({0: 'zero.5', 1: 'unity'}, this.numbers)
+      enddef
+    endclass
+
+    def DefFuncTests(that: Test)
+      var cursor: number = 0
+      var z: number
+      [that.numbers[cursor]] = ['zero.1']
+      assert_equal({0: 'zero.1', 1: 'unity'}, that.numbers)
+      [that.numbers[string(cursor)], z] = ['zero.2', 1]
+      assert_equal({0: 'zero.2', 1: 'unity'}, that.numbers)
+      [z, that.numbers[string(cursor)]] = [1, 'zero.3']
+      assert_equal({0: 'zero.3', 1: 'unity'}, that.numbers)
+      [that.numbers[cursor], z] = ['zero.4', 1]
+      assert_equal({0: 'zero.4', 1: 'unity'}, that.numbers)
+      [z, that.numbers[cursor]] = [1, 'zero.5']
+      assert_equal({0: 'zero.5', 1: 'unity'}, that.numbers)
+    enddef
+
+    Test.newMethodTests()
+    Test.new().ObjMethodTests()
+    Test.ClassMethodTests(Test.new())
+    DefFuncTests(Test.new())
+
+    const test: Test = Test.new()
+    var cursor: number = 0
+    [test.numbers[cursor], cursor] = ['zero', 1]
+    [cursor, test.numbers[cursor]] = [1, 'one']
+    assert_equal({0: 'zero', 1: 'one'}, test.numbers)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+      this.numbers: dict<string> = {a: '1', b: '2'}
+
+      def new()
+      enddef
+
+      def Foo()
+        var z: number
+        [this.numbers.a, z] = [{}, 10]
+      enddef
+    endclass
+
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected string but got dict<unknown>', 2)
+
+  lines =<< trim END
+    vim9script
+
+    class A
+      this.numbers: dict<number> = {a: 1, b: 2}
+
+      def new()
+      enddef
+
+      def Foo()
+        var x: string = 'a'
+        var y: number
+        [this.numbers[x], y] = [{}, 10]
+      enddef
+    endclass
+
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
