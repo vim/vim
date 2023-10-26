@@ -2986,4 +2986,21 @@ def Test_heredoc_expr()
   v9.CheckDefAndScriptFailure(lines, 'E15: Invalid expression: "}"')
 enddef
 
+" Test for assigning to a multi-dimensional list item.
+def Test_list_item_assign()
+  var lines =<< trim END
+    vim9script
+
+    def Foo()
+        var l: list<list<string>> = [['x', 'x', 'x'], ['y', 'y', 'y']]
+        var z: number = 1
+
+        [l[1][2], z] = ['a', 20]
+        assert_equal([['x', 'x', 'x'], ['y', 'y', 'a']], l)
+    enddef
+    Foo()
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
