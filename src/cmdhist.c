@@ -742,7 +742,10 @@ ex_history(exarg_T *eap)
 	end = arg;
     if (!get_list_range(&end, &hisidx1, &hisidx2) || *end != NUL)
     {
-	semsg(_(e_trailing_characters_str), end);
+	if (*end != NUL)
+	    semsg(_(e_trailing_characters_str), end);
+	else
+	    semsg(_(e_val_too_large), arg);
 	return;
     }
 

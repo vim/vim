@@ -3560,3 +3560,5 @@ EXTERN char e_xattr_e2big[]
 	INIT(= N_("E1508: Size of the extended attribute value is larger than the maximum size allowed"));
 EXTERN char e_xattr_other[]
 	INIT(= N_("E1509: Error occurred when reading or writing extended attribute"));
+EXTERN char e_val_too_large[]
+	INIT(= N_("E1510: Value too large: %s"));
