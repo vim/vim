@@ -1462,6 +1462,9 @@ au BufNewFile,BufRead {env,config}.nu		setf nu
 " Oblivion Language and Oblivion Script Extender
 au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
 
+" Objdump
+au BufNewFile,BufRead *.objdump,*.cppobjdump  setf objdump
+
 " OCaml
 au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
 

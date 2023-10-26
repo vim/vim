@@ -495,6 +495,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     nsis: ['file.nsi', 'file.nsh'],
     nu: ['env.nu', 'config.nu'],
     obj: ['file.obj'],
+    objdump: ['file.objdump', 'file.cppobjdump'],
     obse: ['file.obl', 'file.obse', 'file.oblivion', 'file.obscript'],
     ocaml: ['file.ml', 'file.mli', 'file.mll', 'file.mly', '.ocamlinit', 'file.mlt', 'file.mlp', 'file.mlip', 'file.mli.cppo', 'file.ml.cppo'],
     occam: ['file.occ'],
