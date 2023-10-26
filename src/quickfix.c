@@ -987,8 +987,8 @@ qf_parse_fmt_f(regmatch_T *rmp, int midx, qffields_T *fields, int prefix)
 }
 
 /*
- * Parse the match for error number ('%n') pattern in regmatch.
- * Return the matched value in "fields->enr".
+ * Parse the match for buffer number ('%b') pattern in regmatch.
+ * Return the matched value in "fields->bnr".
  */
     static int
 qf_parse_fmt_b(regmatch_T *rmp, int midx, qffields_T *fields)
