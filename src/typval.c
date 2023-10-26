@@ -1004,15 +1004,21 @@ check_for_object_arg(typval_T *args, int idx)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a class or a list.
+ * Give an error and return FAIL unless all of "args[idx]"
+ * to "args[xxx] == UNKNOWN" is a class.
  */
     int
-check_for_class_or_list_arg(typval_T *args, int idx)
+check_for_class_or_typealias_args(typval_T *args, int idx)
 {
-    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST)
+    for (int i = idx; args[i].v_type != VAR_UNKNOWN; ++i)
     {
-	semsg(_(e_list_or_class_required_for_argument_nr), idx + 1);
-	return FAIL;
+	if (args[i].v_type != VAR_CLASS
+	    // && args[i].v_type != VAR_TYPEALIAS
+	    )
+	{
+	    semsg(_(e_class_or_typealias_required_for_argument_nr), i + 1);
+	    return FAIL;
+	}
     }
     return OK;
 }

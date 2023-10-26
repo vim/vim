@@ -1650,10 +1650,7 @@ get_member_type_from_stack(
     for (i = 0; i < count; ++i)
     {
 	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
-	//if (check_is_value(type->tt_type) == FAIL)
-	// TODO: For now skip checking for list item
-	// Using "skip != 1", which happens to imply list, is an ugly HACK
-	if (skip != 1 && check_is_value(type->tt_type) == FAIL)
+	if (check_is_value(type->tt_type) == FAIL)
 	    return NULL;
 	if (result != &t_any)
 	    common_type(type, result, &result, type_gap);

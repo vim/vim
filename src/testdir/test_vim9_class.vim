@@ -190,7 +190,7 @@ def Test_class_basic()
     endclass
     sort([1.1, A], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1321: Using a Class as a Float', 4)
+  v9.CheckSourceFailure(lines, 'E1393: Cannot use a class as a variable or value', 4)
 
   # Test for using object as a float
   lines =<< trim END
@@ -3367,8 +3367,7 @@ def Test_instanceof()
     assert_true(instanceof(b2, Base1))
     assert_false(instanceof(b1, Base2))
     assert_true(instanceof(b3, Mix1))
-    assert_false(instanceof(b3, []))
-    assert_true(instanceof(b3, [Base1, Base2, Intf1]))
+    assert_true(instanceof(b3, Base1, Base2, Intf1))
 
     def Foo()
       var a1 = Base1.new()
@@ -3379,8 +3378,7 @@ def Test_instanceof()
       assert_true(instanceof(a2, Base1))
       assert_false(instanceof(a1, Base2))
       assert_true(instanceof(a3, Mix1))
-      assert_false(instanceof(a3, []))
-      assert_true(instanceof(a3, [Base1, Base2, Intf1]))
+      assert_true(instanceof(a3, Base1, Base2, Intf1))
     enddef
     Foo()
 
@@ -3389,6 +3387,58 @@ def Test_instanceof()
 
   END
   v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class Base1
+    endclass
+    instanceof(Base1.new())
+  END
+  v9.CheckSourceFailure(lines, 'E119: Not enough arguments for function: instanceof')
+
+  lines =<< trim END
+    vim9script
+
+    class Base1
+    endclass
+    def F()
+      instanceof(Base1.new())
+    enddef
+    F()
+  END
+  v9.CheckSourceFailure(lines, 'E119: Not enough arguments for function: instanceof')
+
+  lines =<< trim END
+    vim9script
+
+    class Base1
+    endclass
+
+    class Base2
+    endclass
+
+    var o = Base2.new()
+    instanceof(o, Base1, Base2, 3)
+  END
+  v9.CheckSourceFailure(lines, 'E693: Class or Typealias required for argument 4', 10)
+
+  lines =<< trim END
+    vim9script
+
+    class Base1
+    endclass
+
+    class Base2
+    endclass
+
+    def F()
+      var o = Base2.new()
+      instanceof(o, Base1, Base2, 3)
+    enddef
+    F()
+  END
+  v9.CheckSourceFailure(lines, 'E1013: Argument 4: type mismatch, expected class<Unknown> but got number')
 enddef
 
 " Test for calling a method in the parent class that is extended partially.

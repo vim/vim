@@ -758,15 +758,16 @@ arg_string_or_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context
 }
 
 /*
- * Check "type" is a list of 'any' or a class.
+ * Check "type" is a class.
  */
     static int
-arg_class_or_list(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_class(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_CLASS
-	    || type->tt_type == VAR_LIST
-	    || type_any_or_unknown(type))
+	//|| type->tt_type == VAR_TYPEALIAS
+	)
 	return OK;
+    // TODO: consider TYPEALIAS in following
     arg_type_mismatch(&t_class, type, context->arg_idx + 1);
     return FAIL;
 }
@@ -1152,7 +1153,8 @@ static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
-static argcheck_T arg2_instanceof[] = {arg_object, arg_class_or_list};
+// TODO: instead of arg_class, could have args_class followed by 17 NULLs
+static argcheck_T arg219_instanceof[] = {arg_object, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class, arg_class};
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
 static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, NULL};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
@@ -2154,7 +2156,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
-    {"instanceof",	2, 2, FEARG_1,	    arg2_instanceof,
+    {"instanceof",	2, 19, FEARG_1,	    arg219_instanceof,
 			ret_bool,	    f_instanceof},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},

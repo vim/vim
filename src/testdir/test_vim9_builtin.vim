@@ -2316,7 +2316,7 @@ def Test_instanceof()
     endclass
     instanceof(Foo.new(), 123)
   END
-  v9.CheckScriptFailure(lines, 'E693: List or Class required for argument 2')
+  v9.CheckScriptFailure(lines, 'E693: Class or Typealias required for argument 2')
 
   lines =<< trim END
     vim9script
@@ -2344,20 +2344,20 @@ def Test_instanceof()
     vim9script
     class Foo
     endclass
-    instanceof(Foo.new(), [{}])
+    instanceof(Foo.new(), {})
   END
-  v9.CheckSourceFailure(lines, 'E614: Class required')
+  v9.CheckSourceFailure(lines, 'E693: Class or Typealias required for argument 2')
 
   lines =<< trim END
     vim9script
     class Foo
     endclass
     def Bar()
-      instanceof(Foo.new(), [{}])
+      instanceof(Foo.new(), {})
     enddef
     Bar()
   END
-  v9.CheckSourceFailure(lines, 'E614: Class required')
+  v9.CheckSourceFailure(lines, 'E1013: Argument 2: type mismatch, expected class<Unknown> but got dict<unknown>')
 enddef
 
 def Test_invert()

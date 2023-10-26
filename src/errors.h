@@ -1779,8 +1779,8 @@ EXTERN char e_can_only_compare_list_with_list[]
 	INIT(= N_("E691: Can only compare List with List"));
 EXTERN char e_invalid_operation_for_list[]
 	INIT(= N_("E692: Invalid operation for List"));
-EXTERN char e_list_or_class_required_for_argument_nr[]
-	INIT(= N_("E693: List or Class required for argument %d"));
+EXTERN char e_class_or_typealias_required_for_argument_nr[]
+	INIT(= N_("E693: Class or Typealias required for argument %d"));
 EXTERN char e_invalid_operation_for_funcrefs[]
 	INIT(= N_("E694: Invalid operation for Funcrefs"));
 EXTERN char e_cannot_index_a_funcref[]
