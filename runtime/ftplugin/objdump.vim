@@ -7,12 +7,8 @@ if exists("b:did_ftplugin")
   finish
 endif
 
-let s:cpo_save = &cpo
-set cpo&vim
-
 let b:did_ftplugin = 1
 
-setlocal commentstring=#\ %s
+let b:undo_ftplugin = "setlocal cms<"
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
+setlocal commentstring=#\ %s
