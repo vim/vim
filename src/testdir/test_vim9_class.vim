@@ -190,7 +190,7 @@ def Test_class_basic()
     endclass
     sort([1.1, A], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1393: Cannot use a class as a variable or value', 4)
+  v9.CheckSourceFailure(lines, 'E1400: Cannot use a class as a variable or value', 4)
 
   # Test for using object as a float
   lines =<< trim END
@@ -3104,7 +3104,7 @@ def Test_assign_class_to_variable()
 
     var X = C
   END
-  v9.CheckSourceFailure(lines, 'E1393: Cannot use a class as a variable or value', 6)
+  v9.CheckSourceFailure(lines, 'E1400: Cannot use a class as a variable or value', 6)
 
   # :def
   lines =<< trim END
@@ -3118,7 +3118,7 @@ def Test_assign_class_to_variable()
     enddef
     F()
   END
-  v9.CheckSourceFailure(lines, 'E1393: Cannot use a class as a variable or value', 1)
+  v9.CheckSourceFailure(lines, 'E1400: Cannot use a class as a variable or value', 1)
 enddef
 
 def Test_construct_object_from_legacy()
