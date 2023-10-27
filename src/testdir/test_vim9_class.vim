@@ -170,7 +170,7 @@ def Test_class_basic()
     if A
     endif
   END
-  v9.CheckSourceFailure(lines, 'E1319: Using a class as a Number', 4)
+  v9.CheckSourceFailure(lines, 'E1319: Using a Class as a Number', 4)
 
   # Test for using object as a bool
   lines =<< trim END
@@ -181,7 +181,7 @@ def Test_class_basic()
     if a
     endif
   END
-  v9.CheckSourceFailure(lines, 'E1320: Using an object as a Number', 5)
+  v9.CheckSourceFailure(lines, 'E1320: Using an Object as a Number', 5)
 
   # Test for using class as a float
   lines =<< trim END
@@ -190,7 +190,7 @@ def Test_class_basic()
     endclass
     sort([1.1, A], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1321: Using a class as a Float', 4)
+  v9.CheckSourceFailure(lines, 'E1321: Using a Class as a Float', 4)
 
   # Test for using object as a float
   lines =<< trim END
@@ -200,7 +200,7 @@ def Test_class_basic()
     var a = A.new()
     sort([1.1, a], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1322: Using an object as a Float', 5)
+  v9.CheckSourceFailure(lines, 'E1322: Using an Object as a Float', 5)
 
   # Test for using class as a string
   lines =<< trim END
@@ -209,7 +209,7 @@ def Test_class_basic()
     endclass
     :exe 'call ' .. A
   END
-  v9.CheckSourceFailure(lines, 'E1323: Using a class as a String', 4)
+  v9.CheckSourceFailure(lines, 'E1323: Using a Class as a String', 4)
 
   # Test for using object as a string
   lines =<< trim END
@@ -219,7 +219,7 @@ def Test_class_basic()
     var a = A.new()
     :exe 'call ' .. a
   END
-  v9.CheckSourceFailure(lines, 'E1324: Using an object as a String', 5)
+  v9.CheckSourceFailure(lines, 'E1324: Using an Object as a String', 5)
 
   # Test creating a class with member variables and methods, calling a object
   # method.  Check for using type() and typename() with a class and an object.

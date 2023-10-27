@@ -1374,7 +1374,8 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_INSTR:
 		    case VAR_CLASS:
 		    case VAR_OBJECT:
-				     continue;
+		    case VAR_TYPEALIAS:
+				      continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
 		if (this_var->di_tv.v_type == VAR_BOOL

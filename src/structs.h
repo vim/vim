@@ -1468,6 +1468,7 @@ typedef struct ectx_S ectx_T;
 typedef struct instr_S instr_T;
 typedef struct class_S class_T;
 typedef struct object_S object_T;
+typedef struct typealias_S typealias_T;
 
 typedef enum
 {
@@ -1489,6 +1490,7 @@ typedef enum
     VAR_INSTR,		// "v_instr" is used
     VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
+    VAR_TYPEALIAS	// "v_typealias" is used
 } vartype_T;
 
 // A type specification.
@@ -1602,6 +1604,13 @@ struct object_S
     int		obj_copyID;	    // used by garbage collection
 };
 
+struct typealias_S
+{
+    int	    ta_refcount;
+    type_T  *ta_type;
+    char_u  *ta_name;
+};
+
 /*
  * Structure to hold an internal variable without a name.
  */
@@ -1625,6 +1634,7 @@ struct typval_S
 	instr_T		*v_instr;	// instructions to execute
 	class_T		*v_class;	// class value (can be NULL)
 	object_T	*v_object;	// object value (can be NULL)
+	typealias_T	*v_typealias;	// user-defined type name
     }		vval;
 };
 

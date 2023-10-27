@@ -2095,12 +2095,119 @@ ex_enum(exarg_T *eap UNUSED)
 }
 
 /*
- * Handle ":type".
+ * Type aliases (:type)
+ */
+
+    void
+typealias_free(typealias_T *ta)
+{
+    // ta->ta_type is freed in clear_type_list()
+    vim_free(ta->ta_name);
+    vim_free(ta);
+}
+
+    void
+typealias_unref(typealias_T *ta)
+{
+    if (ta != NULL && --ta->ta_refcount <= 0)
+	typealias_free(ta);
+}
+
+/*
+ * Handle ":type".  Create an alias for a type specification.
  */
     void
 ex_type(exarg_T *eap UNUSED)
 {
-    // TODO
+    char_u	*arg = eap->arg;
+
+    if (!current_script_is_vim9()
+		|| (cmdmod.cmod_flags & CMOD_LEGACY)
+		|| !getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	emsg(_(e_type_can_only_be_defined_in_vim9_script));
+	return;
+    }
+
+    if (*arg == NUL)
+    {
+	emsg(_(e_missing_typealias_name));
+	return;
+    }
+
+    if (!ASCII_ISUPPER(*arg))
+    {
+	semsg(_(e_type_name_must_start_with_uppercase_letter_str), arg);
+	return;
+    }
+
+    char_u *name_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
+    if (!IS_WHITE_OR_NUL(*name_end))
+    {
+	semsg(_(e_white_space_required_after_name_str), arg);
+	return;
+    }
+    char_u *name_start = arg;
+
+    arg = skipwhite(name_end);
+    if (*arg != '=')
+    {
+	semsg(_(e_missing_equal_str), arg);
+	return;
+    }
+    if (!IS_WHITE_OR_NUL(*(arg + 1)))
+    {
+	semsg(_(e_white_space_required_after_str_str), "=", arg);
+	return;
+    }
+    arg++;
+    arg = skipwhite(arg);
+
+    if (*arg == NUL)
+    {
+	emsg(_(e_missing_typealias_type));
+	return;
+    }
+
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    type_T *type = parse_type(&arg, &si->sn_type_list, TRUE);
+    if (type == NULL)
+	return;
+
+    if (*arg != NUL)
+    {
+	// some text after the type
+	semsg(_(e_trailing_characters_str), arg);
+	return;
+    }
+
+    int cc = *name_end;
+    *name_end = NUL;
+
+    typval_T tv;
+    tv.v_type = VAR_UNKNOWN;
+    if (eval_variable_import(name_start, &tv) == OK)
+    {
+	if (tv.v_type == VAR_TYPEALIAS)
+	    semsg(_(e_typealias_already_exists_for_str), name_start);
+	else
+	    semsg(_(e_redefining_script_item_str), name_start);
+	clear_tv(&tv);
+	goto done;
+    }
+
+    // Add the user-defined type to the script-local variables.
+    tv.v_type = VAR_TYPEALIAS;
+    tv.v_lock = 0;
+    tv.vval.v_typealias = ALLOC_CLEAR_ONE(typealias_T);
+    ++tv.vval.v_typealias->ta_refcount;
+    tv.vval.v_typealias->ta_name = vim_strsave(name_start);
+    tv.vval.v_typealias->ta_type = type;
+    set_var_const(name_start, current_sctx.sc_sid, NULL, &tv, FALSE,
+						ASSIGN_CONST | ASSIGN_FINAL, 0);
+
+done:
+    *name_end = cc;
 }
 
 /*

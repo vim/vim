@@ -743,12 +743,13 @@ constructor methods.
 
 7.  Type definition					*Vim9-type* *:type*
 
-{not implemented yet}
+A type definition is giving a name to a type specification.  This also known
+type alias.  For Example: >
 
-A type definition is giving a name to a type specification.  For Example: >
+	:type ListOfStrings = list<string>
 
-	:type ListOfStrings list<string>
-
+The type alias can be used wherever a built-in type can be used.  The type
+alias name must start with an upper case character.
 
 ==============================================================================
 

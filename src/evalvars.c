@@ -158,6 +158,7 @@ static struct vimvar
     {VV_NAME("sizeofpointer",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("maxcol",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("python3_version",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
@@ -260,6 +261,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
     set_vim_var_nr(VV_TYPE_CLASS,   VAR_TYPE_CLASS);
     set_vim_var_nr(VV_TYPE_OBJECT,  VAR_TYPE_OBJECT);
+    set_vim_var_nr(VV_TYPE_TYPEALIAS,  VAR_TYPE_TYPEALIAS);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
@@ -1834,6 +1836,12 @@ ex_let_one(
 	return NULL;
     }
 
+    if (tv->v_type == VAR_TYPEALIAS)
+    {
+	semsg(_(e_using_typealias_as_variable), tv->vval.v_typealias->ta_name);
+	return NULL;
+    }
+
     if (*arg == '$')
     {
 	// ":let $VAR = expr": Set environment variable.
@@ -2331,6 +2339,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    break;
 
 	case VAR_BLOB:
@@ -2998,7 +3007,7 @@ eval_variable(
     }
 
     // Check for local variable when debugging.
-    if ((tv = lookup_debug_var(name)) == NULL)
+    if ((sid == 0) && (tv = lookup_debug_var(name)) == NULL)
     {
 	// Check for user-defined variables.
 	dictitem_T	*v = find_var(name, &ht, flags & EVAL_VAR_NOAUTOLOAD);
@@ -3114,6 +3123,25 @@ eval_variable(
 		}
 	    }
 
+	    if ((tv->v_type == VAR_TYPEALIAS || tv->v_type == VAR_CLASS)
+		    && sid != 0)
+	    {
+		// type alias or class imported from another script.  Check
+		// whether it is exported from the other script.
+		sv = find_typval_in_script(tv, sid, TRUE);
+		if (sv == NULL)
+		{
+		    ret = FAIL;
+		    goto done;
+		}
+		if ((sv->sv_flags & SVFLAG_EXPORTED) == 0)
+		{
+		    semsg(_(e_item_not_exported_in_script_str), name);
+		    ret = FAIL;
+		    goto done;
+		}
+	    }
+
 	    // If a list or dict variable wasn't initialized and has meaningful
 	    // type, do it now.  Not for global variables, they are not
 	    // declared.
@@ -3162,6 +3190,7 @@ eval_variable(
 	}
     }
 
+done:
     if (len > 0)
 	name[len] = cc;
 
@@ -3945,6 +3974,14 @@ set_var_const(
 			  && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0)
 	    {
 		semsg(_(e_redefining_script_item_str), name);
+		goto failed;
+	    }
+
+	    if (di->di_tv.v_type == VAR_TYPEALIAS)
+	    {
+		semsg(_(e_using_typealias_as_variable),
+					    di->di_tv.vval.v_typealias->ta_name);
+		clear_tv(&di->di_tv);
 		goto failed;
 	    }
 

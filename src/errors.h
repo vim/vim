@@ -3384,17 +3384,17 @@ EXTERN char e_invalid_object_variable_declaration_str[]
 EXTERN char e_not_valid_command_in_class_str[]
 	INIT(= N_("E1318: Not a valid command in a class: %s"));
 EXTERN char e_using_class_as_number[]
-	INIT(= N_("E1319: Using a class as a Number"));
+	INIT(= N_("E1319: Using a Class as a Number"));
 EXTERN char e_using_object_as_number[]
-	INIT(= N_("E1320: Using an object as a Number"));
+	INIT(= N_("E1320: Using an Object as a Number"));
 EXTERN char e_using_class_as_float[]
-	INIT(= N_("E1321: Using a class as a Float"));
+	INIT(= N_("E1321: Using a Class as a Float"));
 EXTERN char e_using_object_as_float[]
-	INIT(= N_("E1322: Using an object as a Float"));
+	INIT(= N_("E1322: Using an Object as a Float"));
 EXTERN char e_using_class_as_string[]
-	INIT(= N_("E1323: Using a class as a String"));
+	INIT(= N_("E1323: Using a Class as a String"));
 EXTERN char e_using_object_as_string[]
-	INIT(= N_("E1324: Using an object as a String"));
+	INIT(= N_("E1324: Using an Object as a String"));
 EXTERN char e_method_not_found_on_class_str_str[]
 	INIT(= N_("E1325: Method \"%s\" not found in class \"%s\""));
 EXTERN char e_variable_not_found_on_object_str_str[]
@@ -3538,8 +3538,22 @@ EXTERN char e_cannot_lock_object_variable_str[]
 	INIT(= N_("E1391: Cannot (un)lock variable \"%s\" in class \"%s\""));
 EXTERN char e_cannot_lock_class_variable_str[]
 	INIT(= N_("E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""));
+EXTERN char e_type_can_only_be_defined_in_vim9_script[]
+	INIT(= N_("E1393: Type can only be defined in Vim9 script"));
+EXTERN char e_type_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1394: Type name must start with an uppercase letter: %s"));
+EXTERN char e_using_typealias_as_variable[]
+	INIT(= N_("E1395: Type alias \"%s\" cannot be used as a variable"));
+EXTERN char e_typealias_already_exists_for_str[]
+	INIT(= N_("E1396: Type alias \"%s\" already exists"));
+EXTERN char e_missing_typealias_name[]
+	INIT(= N_("E1397: Missing type alias name"));
+EXTERN char e_missing_typealias_type[]
+	INIT(= N_("E1398: Missing type alias type"));
+EXTERN char e_type_can_only_be_used_in_script[]
+	INIT(= N_("E1399: Type can only be used in a script"));
 #endif
-// E1393 - E1499 unused (reserved for Vim9 class support)
+// E1400 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

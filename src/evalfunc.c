@@ -3890,6 +3890,12 @@ f_empty(typval_T *argvars, typval_T *rettv)
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
 #endif
+	case VAR_TYPEALIAS:
+	    n = argvars[0].vval.v_typealias == NULL
+		|| argvars[0].vval.v_typealias->ta_name == NULL
+		|| *argvars[0].vval.v_typealias->ta_name == NUL;
+	    break;
+
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
@@ -7539,6 +7545,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -10885,6 +10892,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_CLASS:   n = VAR_TYPE_CLASS; break;
 	case VAR_OBJECT:  n = VAR_TYPE_OBJECT; break;
+	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
