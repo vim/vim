@@ -3809,7 +3809,7 @@ exec_instructions(ectx_T *ectx)
 		tv = STACK_TV_VAR(iptr->isn_arg.number);
 		if (STACK_TV_BOT(0)->v_type == VAR_TYPEALIAS)
 		{
-		    semsg(_(e_using_typealias_as_variable),
+		    semsg(_(e_using_typealias_as_value),
 				STACK_TV_BOT(0)->vval.v_typealias->ta_name);
 		    clear_tv(STACK_TV_BOT(0));
 		    goto on_error;

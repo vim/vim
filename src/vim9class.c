@@ -2196,13 +2196,26 @@ ex_type(exarg_T *eap UNUSED)
 	goto done;
     }
 
-    // Add the user-defined type to the script-local variables.
-    tv.v_type = VAR_TYPEALIAS;
-    tv.v_lock = 0;
-    tv.vval.v_typealias = ALLOC_CLEAR_ONE(typealias_T);
-    ++tv.vval.v_typealias->ta_refcount;
-    tv.vval.v_typealias->ta_name = vim_strsave(name_start);
-    tv.vval.v_typealias->ta_type = type;
+    // Create a script-local variable for the type alias.
+    if (type->tt_type != VAR_OBJECT)
+    {
+	tv.v_type = VAR_TYPEALIAS;
+	tv.v_lock = 0;
+	tv.vval.v_typealias = ALLOC_CLEAR_ONE(typealias_T);
+	++tv.vval.v_typealias->ta_refcount;
+	tv.vval.v_typealias->ta_name = vim_strsave(name_start);
+	tv.vval.v_typealias->ta_type = type;
+    }
+    else
+    {
+	// When creating a type alias for a class, use the class type itself to
+	// create the type alias variable.  This is needed to use the type
+	// alias to invoke class methods (e.g. new()) and use class variables.
+	tv.v_type = VAR_CLASS;
+	tv.v_lock = 0;
+	tv.vval.v_class = type->tt_class;
+	++tv.vval.v_class->class_refcount;
+    }
     set_var_const(name_start, current_sctx.sc_sid, NULL, &tv, FALSE,
 						ASSIGN_CONST | ASSIGN_FINAL, 0);
 
@@ -3155,6 +3168,7 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
     typval_T	*object_tv = &argvars[0];
     typval_T	*classinfo_tv = &argvars[1];
     listitem_T	*li;
+    class_T	*c;
 
     rettv->vval.v_number = VVAL_FALSE;
 
@@ -3169,25 +3183,35 @@ f_instanceof(typval_T *argvars, typval_T *rettv)
     {
 	FOR_ALL_LIST_ITEMS(classinfo_tv->vval.v_list, li)
 	{
-	    if (li->li_tv.v_type != VAR_CLASS)
+	    if (li->li_tv.v_type != VAR_CLASS && !tv_class_alias(&li->li_tv))
 	    {
 		emsg(_(e_class_required));
 		return;
 	    }
 
-	    if (class_instance_of(object_tv->vval.v_object->obj_class,
-			li->li_tv.vval.v_class) == TRUE)
+	    if (li->li_tv.v_type == VAR_TYPEALIAS)
+		c = li->li_tv.vval.v_typealias->ta_type->tt_class;
+	    else
+		c = li->li_tv.vval.v_class;
+
+	    if (class_instance_of(object_tv->vval.v_object->obj_class, c)
+								== TRUE)
 	    {
 		rettv->vval.v_number = VVAL_TRUE;
 		return;
 	    }
 	}
+
+	return;
     }
-    else if (classinfo_tv->v_type == VAR_CLASS)
-    {
-	rettv->vval.v_number = class_instance_of(object_tv->vval.v_object->obj_class,
-		classinfo_tv->vval.v_class);
-    }
+
+    if (classinfo_tv->v_type == VAR_TYPEALIAS)
+	c = classinfo_tv->vval.v_typealias->ta_type->tt_class;
+    else
+	c = classinfo_tv->vval.v_class;
+
+    rettv->vval.v_number =
+		class_instance_of(object_tv->vval.v_object->obj_class, c);
 }
 
 #endif // FEAT_EVAL

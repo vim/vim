@@ -271,7 +271,7 @@ tv_get_bool_or_number_chk(
 	    emsg(_(e_cannot_use_void_value));
 	    break;
 	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_variable),
+	    semsg(_(e_using_typealias_as_number),
 					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
@@ -392,7 +392,7 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_(e_cannot_use_void_value));
 	    break;
 	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_variable),
+	    semsg(_(e_using_typealias_as_float),
 					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
@@ -1004,12 +1004,23 @@ check_for_object_arg(typval_T *args, int idx)
 }
 
 /*
+ * Returns TRUE if "tv" is a type alias for a class
+ */
+    int
+tv_class_alias(typval_T *tv)
+{
+    return tv->v_type == VAR_TYPEALIAS &&
+			tv->vval.v_typealias->ta_type->tt_type == VAR_OBJECT;
+}
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a class or a list.
  */
     int
 check_for_class_or_list_arg(typval_T *args, int idx)
 {
-    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST)
+    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST
+					&& !tv_class_alias(&args[idx]))
     {
 	semsg(_(e_list_or_class_required_for_argument_nr), idx + 1);
 	return FAIL;
@@ -1146,6 +1157,9 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    emsg(_(e_cannot_use_void_value));
 	    break;
 	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_string),
+					varp->vval.v_typealias->ta_name);
+	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_INSTR:
