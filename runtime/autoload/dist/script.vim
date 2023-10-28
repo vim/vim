@@ -221,6 +221,10 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^janet\>'
     return 'janet'
 
+    # Dart
+  elseif name =~ '^dart\>'
+    return 'dart'
+
   endif
 
   return ''
