@@ -4081,11 +4081,9 @@ did_set_showtabline(optset_T *args UNUSED)
     char *
 did_set_smoothscroll(optset_T *args UNUSED)
 {
-    if (curwin->w_p_sms)
-	return NULL;
+    if (!curwin->w_p_sms)
+	curwin->w_skipcol = 0;
 
-    curwin->w_skipcol = 0;
-    changed_line_abv_curs();
     return NULL;
 }
 
@@ -4535,9 +4533,12 @@ did_set_winwidth(optset_T *args UNUSED)
     char *
 did_set_wrap(optset_T *args UNUSED)
 {
-    // If 'wrap' is set, set w_leftcol to zero.
+    // Set w_leftcol or w_skipcol to zero.
     if (curwin->w_p_wrap)
 	curwin->w_leftcol = 0;
+    else
+	curwin->w_skipcol = 0;
+
     return NULL;
 }
 
