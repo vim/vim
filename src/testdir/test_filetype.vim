@@ -955,7 +955,8 @@ def s:GetScriptChecks(): dict<list<list<string>>>
     crystal: [['#!/path/crystal']],
     rexx:   [['#!/path/rexx'],
             ['#!/path/regina']],
-    janet: [['#!/path/janet']],
+    janet:  [['#!/path/janet']],
+    dart:   [['#!/path/dart']],
   }
 enddef
 
