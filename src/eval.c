@@ -1885,7 +1885,7 @@ set_var_lval(
 	    {
 		if (di != NULL && di->di_tv.v_type == VAR_TYPEALIAS)
 		{
-		    semsg(_(e_using_typealias_as_variable),
+		    semsg(_(e_cannot_modify_typealias),
 					di->di_tv.vval.v_typealias->ta_name);
 		    clear_tv(&tv);
 		    return;
@@ -4045,7 +4045,8 @@ eval8(
 
 	    if (!equal_type(want_type, actual, 0))
 	    {
-		if (want_type == &t_bool && actual != &t_bool
+		if (want_type->tt_type == VAR_BOOL
+					&& actual->tt_type != VAR_BOOL
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
 		{
 		    int n = tv2bool(rettv);

@@ -1811,7 +1811,13 @@ f_typename(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     ga_init2(&type_list, sizeof(type_T *), 10);
     if (argvars[0].v_type == VAR_TYPEALIAS)
-	type = argvars[0].vval.v_typealias->ta_type;
+    {
+	type = copy_type(argvars[0].vval.v_typealias->ta_type, &type_list);
+	// A type alias for a class has the type set to VAR_OBJECT.  Change it
+	// to VAR_CLASS, so that the name is "typealias<class<xxx>>"
+	if (type->tt_type == VAR_OBJECT)
+	    type->tt_type = VAR_CLASS;
+    }
     else
 	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
     name = type_name(type, &tofree);

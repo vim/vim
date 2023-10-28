@@ -4785,21 +4785,40 @@ enddef
 
 " Test for :type command to create type aliases
 def Test_typealias()
+  # Use type alias at script level
   var lines =<< trim END
     vim9script
     type ListOfStrings = list<string>
-    var a: ListOfStrings = ['a', 'b']
-    assert_equal(['a', 'b'], a)
-    def Foo(b: ListOfStrings): ListOfStrings
-      var c: ListOfStrings = ['c', 'd']
-      assert_equal(['c', 'd'], c)
-      return b
+    def Foo(a: ListOfStrings): ListOfStrings
+      return a
     enddef
+    var b: ListOfStrings = ['a', 'b']
+    assert_equal(['a', 'b'], b)
     assert_equal(['e', 'f'], Foo(['e', 'f']))
     assert_equal('typealias<list<string>>', typename(ListOfStrings))
     assert_equal(v:t_typealias, type(ListOfStrings))
     assert_equal('ListOfStrings', string(ListOfStrings))
     assert_equal(false, null == ListOfStrings)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Use type alias at def function level
+  lines =<< trim END
+    vim9script
+    type ListOfStrings = list<string>
+    def Foo(a: ListOfStrings): ListOfStrings
+      return a
+    enddef
+    def Bar()
+      var c: ListOfStrings = ['c', 'd']
+      assert_equal(['c', 'd'], c)
+      assert_equal(['e', 'f'], Foo(['e', 'f']))
+      assert_equal('typealias<list<string>>', typename(ListOfStrings))
+      assert_equal(v:t_typealias, type(ListOfStrings))
+      assert_equal('ListOfStrings', string(ListOfStrings))
+      assert_equal(false, null == ListOfStrings)
+    enddef
+    Bar()
   END
   v9.CheckSourceSuccess(lines)
 
@@ -4861,9 +4880,9 @@ def Test_typealias()
   # type alias starting with lower-case letter
   lines =<< trim END
     vim9script
-    type index number
+    type index = number
   END
-  v9.CheckSourceFailure(lines, 'E1394: Type name must start with an uppercase letter: index number', 2)
+  v9.CheckSourceFailure(lines, 'E1394: Type name must start with an uppercase letter: index = number', 2)
 
   # No white space following the alias name
   lines =<< trim END
@@ -4895,19 +4914,66 @@ def Test_typealias()
   END
   v9.CheckSourceFailure(lines, 'E1396: Type alias "MyList" already exists', 3)
 
-  # Sourcing a script twice (which will free script local variables)
+  # def function argument name collision with a type alias
+  lines =<< trim END
+    vim9script
+    type A = list<number>
+    def Foo(A: number)
+    enddef
+  END
+  v9.CheckSourceFailure(lines, 'E1168: Argument already declared in the script: A: number)', 3)
+
+  # def function local variable name collision with a type alias
+  lines =<< trim END
+    vim9script
+    type A = list<number>
+    def Foo()
+      var A: number = 10
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1054: Variable already declared in the script: A', 1)
+
+  # type alias a variable
+  lines =<< trim END
+    vim9script
+    var A: list<number> = []
+    type B = A
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: A', 3)
+
+  # type alias a class
   lines =<< trim END
     vim9script
     class C
     endclass
     type AC = C
-    assert_equal('typealias<object<C>>', typename(AC))
+    assert_equal('class<C>', typename(AC))
   END
+  v9.CheckSourceSuccess(lines)
+
+  # Sourcing a script twice (which will free script local variables)
+  # Uses "lines" from the previous test
   new
   setline(1, lines)
   :source
   :source
   bw!
+
+  # type alias a type alias
+  lines =<< trim END
+    vim9script
+    type A = string
+    type B = A
+    var b: B = 'abc'
+    assert_equal('abc', b)
+    def Foo()
+      var c: B = 'def'
+      assert_equal('def', c)
+    enddef
+    Foo()
+  END
+  v9.CheckSourceSuccess(lines)
 
   # Assigning to a type alias (script level)
   lines =<< trim END
@@ -4915,7 +4981,7 @@ def Test_typealias()
     type MyType = list<number>
     MyType = [1, 2, 3]
   END
-  v9.CheckSourceFailure(lines, 'E1395: Type alias "MyType" cannot be used as a variable', 3)
+  v9.CheckSourceFailure(lines, 'E1395: Type alias "MyType" cannot be modified', 3)
 
   # Assigning a type alias (def function level)
   lines =<< trim END
@@ -4926,16 +4992,18 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1395: Type alias "A" cannot be used as a variable', 1)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 1)
 
   # Using type alias in an expression (script level)
   lines =<< trim END
     vim9script
     type MyType = list<number>
-    assert_fails('var m = MyType', 'E1395: Type alias "MyType" cannot be used as a variable')
-    assert_fails('var i = MyType + 1', 'E1395: Type alias "MyType" cannot be used as a variable')
-    assert_fails('var f = 1.0 + MyType', 'E1395: Type alias "MyType" cannot be used as a variable')
-    assert_fails('MyType += 10', 'E1395: Type alias "MyType" cannot be used as a variable')
+    assert_fails('var m = MyType', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var i = MyType + 1', 'E1400: Using type alias "MyType" as a Number')
+    assert_fails('var f = 1.0 + MyType', 'E1400: Using type alias "MyType" as a Number')
+    assert_fails('MyType += 10', 'E1395: Type alias "MyType" cannot be modified')
+    assert_fails('var x = $"-{MyType}-"', 'E1402: Using type alias "MyType" as a String')
+    assert_fails('var x = MyType[1]', 'E909: Cannot index a special variable')
   END
   v9.CheckSourceSuccess(lines)
 
@@ -4948,7 +5016,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1395: Type alias "MyType" cannot be used as a variable', 1)
+  v9.CheckSourceFailure(lines, 'E1051: Wrong argument type for +', 1)
 
   # Using type alias in an expression (def function level)
   lines =<< trim END
@@ -4971,6 +5039,25 @@ def Test_typealias()
     Foo()
   END
   v9.CheckSourceFailure(lines, 'E46: Cannot change read-only variable "MyType"', 1)
+
+  # Convert type alias to a string (def function level)
+  lines =<< trim END
+    vim9script
+    type MyType = list<number>
+    def Foo()
+      var x = $"-{MyType}-"
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1105: Cannot convert typealias to string', 1)
+
+  # Using type alias as a float
+  lines =<< trim END
+    vim9script
+    type B = number
+    sort([1.1, B], 'f')
+  END
+  v9.CheckSourceFailure(lines, 'E1401: Using type alias "B" as a Float', 3)
 
   # Creating a typealias in a def function
   lines =<< trim END
@@ -5010,11 +5097,19 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1395: Type alias "A" cannot be used as a variable', 2)
+  v9.CheckSourceFailure(lines, 'E1072: Cannot compare typealias with number', 2)
+
+  # casting a number to a type alias (script level)
+  lines =<< trim END
+    vim9script
+    type MyType = bool
+    assert_equal(true, <MyType>1 == true)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Test for exporting and importing type aliases
-def Test_import_typealias()
+def Test_typealias_import()
   var lines =<< trim END
     vim9script
     export type MyType = list<number>
@@ -5071,6 +5166,24 @@ def Test_import_typealias()
     var myList2: MyType2 = [4, 5, 6]
     assert_equal([1, 2, 3], myList1)
     assert_equal([4, 5, 6], myList2)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Using an exported class to create a type alias
+  lines =<< trim END
+    vim9script
+    export class MyClass
+      this.val = 10
+    endclass
+  END
+  writefile(lines, 'Xtypeexport4.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Xtypeexport4.vim' as T
+
+    type MyType3 = T.MyClass
+    var c: MyType3 = T.MyClass.new()
+    assert_equal(10, c.val)
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -5131,6 +5244,17 @@ def Test_typealias_with_builtin_functions()
   END
   v9.CheckScriptFailure(lines, 'E701: Invalid type for len()', 3)
 
+  # Using a type alias with len()
+  lines =<< trim END
+    vim9script
+    type A = list<func>
+    def Foo()
+      var x = len(A)
+    enddef
+    Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected list<any> but got typealias', 1)
+
   # Using a type alias with eval()
   lines =<< trim END
     vim9script
@@ -5140,7 +5264,7 @@ def Test_typealias_with_builtin_functions()
     enddef
     Foo()
   END
-  v9.CheckScriptFailure(lines, 'E1395: Type alias "A" cannot be used as a variable', 1)
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 1)
 enddef
 
 " Test for type alias refcount
@@ -5157,6 +5281,37 @@ def Test_typealias_refcount()
     type B = list<number>
     var x: B = []
     assert_equal(1, test_refcount(B))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using instanceof() with a type alias
+def Test_typealias_instanceof()
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    type Ctype = C
+    var o = C.new()
+    assert_equal(1, instanceof(o, Ctype))
+    type Ntype = number
+    assert_fails('instanceof(o, Ntype)', 'E693: List or Class required for argument 2')
+    assert_equal(1, instanceof(o, [Ctype]))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for type aliasing a class
+def Test_typealias_class()
+  var lines =<< trim END
+    vim9script
+    class C
+      this.color = 'green'
+    endclass
+    type MyClass = C
+    var o: MyClass = MyClass.new()
+    assert_equal('green', o.color)
   END
   v9.CheckScriptSuccess(lines)
 enddef
