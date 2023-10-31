@@ -1,4 +1,4 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl
 
 # converts vim documentation to simple html
 # Sirtaj Singh Kang (taj@kde.org)
@@ -6,11 +6,18 @@
 # Sun Feb 24 14:49:17 CET 2002
 
 use strict;
+use warnings;
 use vars qw/%url $date/;
 
 %url = ();
-$date = `date`;
-chop $date;
+# 30.11.23, Restorer:
+# This command does not work in OS Windows.
+# The "date" command in Windows is different from its counterpart in UNIX-like systems.
+# The closest analog is the "date /t" command, but how it would work in UNIX,
+# I don't know. I've corrected it as best I can. I don't know Perl.
+#$date = `date`;
+#chop $date;
+$date = localtime();
 
 sub maplink
 {
