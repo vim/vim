@@ -3494,8 +3494,8 @@ EXTERN char e_duplicate_variable_str[]
 	INIT(= N_("E1369: Duplicate variable: %s"));
 EXTERN char e_cannot_define_new_method_as_static[]
 	INIT(= N_("E1370: Cannot define a \"new\" method as static"));
-EXTERN char e_abstract_must_be_followed_by_def_or_static[]
-	INIT(= N_("E1371: Abstract must be followed by \"def\" or \"static\""));
+EXTERN char e_abstract_must_be_followed_by_def[]
+	INIT(= N_("E1371: Abstract must be followed by \"def\""));
 EXTERN char e_abstract_method_in_concrete_class[]
 	INIT(= N_("E1372: Abstract method \"%s\" cannot be defined in a concrete class"));
 EXTERN char e_abstract_method_str_not_found[]
