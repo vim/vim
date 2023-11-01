@@ -322,7 +322,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		    vim_snprintf(buf, sizeof(buf), "close sound%06ld",
 								p->snd_id);
-		    mciSendString(buf, NULL, 0, 0);
+		    mciSendStringA(buf, NULL, 0, 0);
 
 		    long result =   wParam == MCI_NOTIFY_SUCCESSFUL ? 0
 				  : wParam == MCI_NOTIFY_ABORTED ? 1 : 2;
@@ -406,7 +406,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 	return;
 
     vim_snprintf(buf, sizeof(buf), "play sound%06ld notify", newid);
-    err = mciSendString(buf, NULL, 0, sound_window());
+    err = mciSendStringA(buf, NULL, 0, sound_window());
     if (err != 0)
 	goto failure;
 
@@ -424,7 +424,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 
 failure:
     vim_snprintf(buf, sizeof(buf), "close sound%06ld", newid);
-    mciSendString(buf, NULL, 0, NULL);
+    mciSendStringA(buf, NULL, 0, NULL);
 }
 
     void
@@ -438,14 +438,14 @@ f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 
     id = tv_get_number(&argvars[0]);
     vim_snprintf(buf, sizeof(buf), "stop sound%06ld", id);
-    mciSendString(buf, NULL, 0, NULL);
+    mciSendStringA(buf, NULL, 0, NULL);
 }
 
     void
 f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     PlaySoundW(NULL, NULL, 0);
-    mciSendString("close all", NULL, 0, NULL);
+    mciSendStringA("close all", NULL, 0, NULL);
 }
 
 # if defined(EXITFREE)
