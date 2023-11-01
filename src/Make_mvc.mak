@@ -1272,7 +1272,7 @@ $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 $(VIM): $(VIM).exe
 
 $(OUTDIR):
-	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
+	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR:/=\)
 
 CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 
