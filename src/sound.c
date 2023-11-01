@@ -376,7 +376,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 {
     long	newid = sound_id + 1;
     size_t	len;
-    char_u	*p, *esc;
+    char_u	*p, *filename;
     WCHAR	*wp;
     soundcb_T	*soundcb;
     char	buf[32];
@@ -385,17 +385,15 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
+    filename = tv_get_string(&argvars[0]);
 
-    len = STRLEN(esc) + 5 + 18 + 1;
+    len = STRLEN(filename) + 5 + 18 + 2 + 1;
     p = alloc(len);
     if (p == NULL)
     {
-	free(esc);
 	return;
     }
-    vim_snprintf((char *)p, len, "open %s alias sound%06ld", esc, newid);
-    free(esc);
+    vim_snprintf((char *)p, len, "open \"%s\" alias sound%06ld", filename, newid);
 
     wp = enc_to_utf16((char_u *)p, NULL);
     free(p);
