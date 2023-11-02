@@ -5567,7 +5567,26 @@ def Test_abstract_method()
       enddef
     endclass
   END
-  v9.CheckSourceSuccess(lines)
+  v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
+
+  # Use abstract static method in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      abstract static def Foo()
+      enddef
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
+
+  # Use abstract static variable in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      abstract static foo: number = 10
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
 
   # Abbreviate the "abstract" keyword
   lines =<< trim END
