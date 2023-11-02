@@ -1462,17 +1462,20 @@ If there is no g:termdebug_config you can use: >
 	let g:termdebug_use_prompt = 1
 <
 						*termdebug_map_K*
-The K key is normally mapped to |:Evaluate|. If you do not want this use: >
+The K key maybe mapped to |:Evaluate| if it was no e.g buffer local mapping
+stop it.  If you do not want this use: >
 	let g:termdebug_config['map_K'] = 0
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_map_K = 0
 <
 						*termdebug_map_minus*
-The - key is normally mapped to |:Down|. If you do not want this use: >
+The - key maybe mapped to |:Down| if it was no e.g buffer local mapping stop
+it.  If you do not want this use: >
 	let g:termdebug_config['map_minus'] = 0
 <
 						*termdebug_map_plus*
-The + key is normally mapped to |:Up|. If you do not want this use: >
+The + key maybe mapped to |:Up| if it was no e.g buffer local mapping stop it.
+If you do not want this use: >
 	let g:termdebug_config['map_plus'] = 0
 <
 						*termdebug_disasm_window*
