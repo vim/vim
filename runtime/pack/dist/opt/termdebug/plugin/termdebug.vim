@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2023 Aug 23
+" Last Change: 2023 Nov 02
 "
 " WORK IN PROGRESS - The basics works stable, more to come
 " Note: In general you need at least GDB 7.12 because this provides the
@@ -859,7 +859,8 @@ func s:ParseVarinfo(varinfo)
   let nameIdx = matchstrpos(a:varinfo, '{name="\([^"]*\)"')
   let dict['name'] = a:varinfo[nameIdx[1] + 7 : nameIdx[2] - 2]
   let typeIdx = matchstrpos(a:varinfo, ',type="\([^"]*\)"')
-  let dict['type'] = a:varinfo[typeIdx[1] + 7 : typeIdx[2] - 2]
+  " 'type' maybe is a url-like a bit lengthy string
+  let dict['type'] = (a:varinfo[typeIdx[1] + 7 : typeIdx[2] - 2])->fnamemodify(':t')
   let valueIdx = matchstrpos(a:varinfo, ',value="\(.*\)"}')
   if valueIdx[1] == -1
     let dict['value'] = 'Complex value'
@@ -1420,8 +1421,15 @@ endfunc
 
 func s:GotoAsmwinOrCreateIt()
   if !win_gotoid(s:asmwin)
+    let mdf = ''
     if win_gotoid(s:sourcewin)
-      exe 'rightbelow new'
+      " 60 is approx spaceBuffer * 3
+      if winwidth(0) > (78 + 60)
+        let mdf = 'vert'
+        exe mdf .. ' ' .. 60 .. 'new'
+      else
+        exe 'rightbelow new'
+      endif
     else
       exe 'new'
     endif
@@ -1443,7 +1451,7 @@ func s:GotoAsmwinOrCreateIt()
       let s:asmbuf = bufnr('Termdebug-asm-listing')
     endif
 
-    if s:GetDisasmWindowHeight() > 0
+    if mdf != 'vert' && s:GetDisasmWindowHeight() > 0
       exe 'resize ' .. s:GetDisasmWindowHeight()
     endif
   endif
@@ -1483,8 +1491,15 @@ endfunc
 
 func s:GotoVariableswinOrCreateIt()
   if !win_gotoid(s:varwin)
+    let mdf = ''
     if win_gotoid(s:sourcewin)
-      exe 'rightbelow new'
+      " 60 is approx spaceBuffer * 3
+      if winwidth(0) > (78 + 60)
+        let mdf = 'vert'
+        exe mdf .. ' ' .. 60 .. 'new'
+      else
+        exe 'rightbelow new'
+      endif
     else
       exe 'new'
     endif
@@ -1505,7 +1520,7 @@ func s:GotoVariableswinOrCreateIt()
       let s:varbuf = bufnr('Termdebug-variables-listing')
     endif
 
-    if s:GetVariablesWindowHeight() > 0
+    if mdf != 'vert' && s:GetVariablesWindowHeight() > 0
       exe 'resize ' .. s:GetVariablesWindowHeight()
     endif
   endif
@@ -1774,3 +1789,5 @@ call s:InitAutocmd()
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
+
+" vim: sw=2 sts=2 et
