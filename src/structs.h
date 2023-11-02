@@ -4948,10 +4948,6 @@ typedef struct
 	char_u	*string;
     } os_newval;
 
-    // When set by the called function: Stop processing the option further.
-    // Currently only used for boolean options.
-    int		os_doskip;
-
     // Option value was checked to be safe, no need to set P_INSECURE
     // Used for the 'keymap', 'filetype' and 'syntax' options.
     int		os_value_checked;
