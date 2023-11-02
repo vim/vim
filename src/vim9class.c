@@ -1560,7 +1560,7 @@ early_ret:
 	    p = skipwhite(pa + 8);
 	    if (STRNCMP(p, "def", 3) != 0 && STRNCMP(p, "static", 6) != 0)
 	    {
-		emsg(_(e_abstract_must_be_followed_by_def_or_static));
+		emsg(_(e_abstract_must_be_followed_by_def));
 		break;
 	    }
 
