@@ -836,6 +836,7 @@ with_luajit
 enable_mzschemeinterp
 with_plthome
 enable_perlinterp
+with_xsubpp
 enable_pythoninterp
 with_python_command
 with_python_config_dir
@@ -1569,6 +1570,7 @@ Optional Packages:
   --with-lua-prefix=PFX   Prefix where Lua is installed.
   --with-luajit           Link with LuaJIT instead of Lua.
   --with-plthome=PLTHOME   Use PLTHOME.
+  --with-xsubpp=PATH  path to the xsubpp command
   --with-python-command=NAME  name of the Python 2 command (default: python2 or python)
   --with-python-config-dir=PATH  Python's config directory (deprecated)
   --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)
@@ -6455,12 +6457,42 @@ printf "%s\n" "OK" >&6; }
       vi_cv_perllib=`$vi_cv_path_perl -MConfig -e 'print $Config{privlibexp}'`
 
       vi_cv_perl_extutils=unknown_perl_extutils_path
-      for extutils_rel_path in ExtUtils vendor_perl/ExtUtils; do
-	xsubpp_path="$vi_cv_perllib/$extutils_rel_path/xsubpp"
-	if test -f "$xsubpp_path"; then
-	  vi_cv_perl_xsubpp="$xsubpp_path"
-	fi
-      done
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-xsubpp path" >&5
+printf %s "checking --with-xsubpp path... " >&6; }
+      vi_cv_perl_xsubpp=
+
+# Check whether --with-xsubpp was given.
+if test ${with_xsubpp+y}
+then :
+  withval=$with_xsubpp;
+            if test -f "$withval"
+            then
+	      vi_cv_perl_xsubpp="$withval"
+            fi
+
+fi
+
+
+      if test "x$vi_cv_perl_xsubpp" = "x"
+      then
+	for extutils_rel_path in ExtUtils vendor_perl/ExtUtils; do
+	  xsubpp_path="$vi_cv_perllib/$extutils_rel_path/xsubpp"
+	  if test -f "$xsubpp_path"; then
+	    vi_cv_perl_xsubpp="$xsubpp_path"
+	  fi
+	done
+      fi
+
+      if test "x$vi_cv_perl_xsubpp" = "x"
+      then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: empty" >&5
+printf "%s\n" "empty" >&6; }
+      else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_perl_xsubpp" >&5
+printf "%s\n" "$vi_cv_perl_xsubpp" >&6; }
+      fi
+
 
                               perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[^ ]*//' \

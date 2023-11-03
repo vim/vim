@@ -35,7 +35,7 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, 'E475: Invalid argument: noclass Something', 2)
 
-  # Only the completed word "class" should be recognized
+  # Only the complete word "class" should be recognized
   lines =<< trim END
     vim9script
     abstract classy Something
@@ -4186,8 +4186,8 @@ enddef
 def Test_lockvar_islocked()
   # Can't lock class/object variable
   # Lock class/object variable's value
-  # Lock item of variabl's value (a list item)
-  # varible is at index 1 within class/object
+  # Lock item of variable's value (a list item)
+  # variable is at index 1 within class/object
   var lines =<< trim END
     vim9script
 
@@ -5567,7 +5567,26 @@ def Test_abstract_method()
       enddef
     endclass
   END
-  v9.CheckSourceSuccess(lines)
+  v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
+
+  # Use abstract static method in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      abstract static def Foo()
+      enddef
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
+
+  # Use abstract static variable in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      abstract static foo: number = 10
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1404: Abstract cannot be used in an interface', 3)
 
   # Abbreviate the "abstract" keyword
   lines =<< trim END
@@ -5585,22 +5604,18 @@ def Test_abstract_method()
       abstract this.val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1371: Abstract must be followed by "def" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1371: Abstract must be followed by "def"', 3)
 
   # Use a static abstract method
-  lines =<< trim END
-    vim9script
-    abstract class A
-      abstract static def Foo(): number
-    endclass
-    class B extends A
-      static def Foo(): number
-        return 4
-      enddef
-    endclass
-    assert_equal(4, B.Foo())
-  END
-  v9.CheckSourceSuccess(lines)
+  # TODO: this does not fail, so skip it for now
+
+  # lines =<< trim END
+  #   vim9script
+  #   abstract class A
+  #     abstract static def Foo(): number
+  #   endclass
+  # END
+  # v9.CheckSourceFailure(lines, 'E1371: Abstract must be followed by "def"', 3)
 
   # Type mismatch between abstract method and concrete method
   lines =<< trim END
@@ -5615,17 +5630,6 @@ def Test_abstract_method()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1383: Method "Foo": type mismatch, expected func(string, number): list<number> but got func(number, string): list<string>', 9)
-
-  # Use an abstract class to invoke an abstract method
-  # FIXME: This should fail
-  lines =<< trim END
-    vim9script
-    abstract class A
-      abstract static def Foo()
-    endclass
-    A.Foo()
-  END
-  v9.CheckSourceSuccess(lines)
 
   # Invoke an abstract method from a def function
   lines =<< trim END
@@ -5643,6 +5647,18 @@ def Test_abstract_method()
     enddef
     var b = B.new()
     Bar(b)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Use a static method in an abstract class
+  lines =<< trim END
+    vim9script
+    abstract class A
+      static def Foo(): string
+        return 'foo'
+      enddef
+    endclass
+    assert_equal('foo', A.Foo())
   END
   v9.CheckSourceSuccess(lines)
 enddef

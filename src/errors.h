@@ -3494,8 +3494,8 @@ EXTERN char e_duplicate_variable_str[]
 	INIT(= N_("E1369: Duplicate variable: %s"));
 EXTERN char e_cannot_define_new_method_as_static[]
 	INIT(= N_("E1370: Cannot define a \"new\" method as static"));
-EXTERN char e_abstract_must_be_followed_by_def_or_static[]
-	INIT(= N_("E1371: Abstract must be followed by \"def\" or \"static\""));
+EXTERN char e_abstract_must_be_followed_by_def[]
+	INIT(= N_("E1371: Abstract must be followed by \"def\""));
 EXTERN char e_abstract_method_in_concrete_class[]
 	INIT(= N_("E1372: Abstract method \"%s\" cannot be defined in a concrete class"));
 EXTERN char e_abstract_method_str_not_found[]
@@ -3560,8 +3560,10 @@ EXTERN char e_using_typealias_as_string[]
 	INIT(= N_("E1402: Using type alias \"%s\" as a String"));
 EXTERN char e_using_typealias_as_value[]
 	INIT(= N_("E1403: Type alias \"%s\" cannot be used as a value"));
+EXTERN char e_abstract_cannot_be_used_in_interface[]
+	INIT(= N_("E1404: Abstract cannot be used in an interface"));
 #endif
-// E1404 - E1499 unused (reserved for Vim9 class support)
+// E1405 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

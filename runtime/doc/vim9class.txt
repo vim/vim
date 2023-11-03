@@ -411,6 +411,8 @@ prefix when defining the method: >
 	   abstract static def SetColor()
 	endclass
 <
+A static method in an abstract class cannot be an abstract method.
+
 						*E1373*
 A class extending the abstract class must implement all the abstract methods.
 The signature (arguments, argument types and return type) must be exactly the
