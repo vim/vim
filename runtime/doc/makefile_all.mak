@@ -1,4 +1,4 @@
-# Makefile for all
+# makefile with common components
 
 DOCS = \
 	arabic.txt \

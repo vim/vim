@@ -7,33 +7,29 @@
 !INCLUDE makefile_all.mak
 
 
-# НАДО: подумать, что использовать вместо awk. PowerShell?
+# TODO: to think about what to use instead of awk. PowerShell?
 #AWK =
 
 #
 VIMEXE = D:\Programs\Vim\vim90\vim.exe
 
-
-
 #
 GETTEXT_PATH = D:\Programs\GetText\bin
 
-
-
-# На случай, если в системе установлен какой‐нибудь пакет типа GNUWin32,
-# UNIXUtils или что‐то подобное.
-# Если в системе установлена программа "touch", но она не прописана в переменной
-# окружения %PATH%, то укажите здесь полный маршрут к этому файлу.
+# In case some package like GnuWin32, UnixUtils
+# or something similar is installed on the system.
+# If the "touch" program is installed on the system, but it is not registered
+# in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("touch.exe")
 TOUCH = touch.exe $@ 
 !ELSE
 TOUCH = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
 !ENDIF
 
-# На случай, если в системе установлен какой‐нибудь пакет типа GNUWin32,
-# UNIXUtils, gettext или что‐то подобное.
-# Если в системе установлена программа "iconv", но она не прописана в
-# переменной окружения %PATH%, то укажите здесь полный маршрут к этому файлу.
+# In case some package like GnuWin32, UnixUtils, gettext
+# or something similar is installed on the system.
+# If the "iconv" program is installed on the system, but it is not registered
+# in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("iconv.exe")
 ICONV = iconv.exe
 !ELSEIF EXIST ("$(GETTEXT_PATH)\iconv.exe")
@@ -77,27 +73,27 @@ uganda.nsis.txt : uganda.*
 	 ^| Set-Content $(@B)$$ext
 
 
-# НАДО: подумать, что можно использовать вместо awk. PowerShell?
+# TODO:
 #html: noerrors tags $(HTMLS)
 #	if exist errors.log (more errors.log)
 
-# НАДО:
+# TODO:
 #noerrors:
 #	$(RM) errors.log
 
-# НАДО: подумать, что можно использовать вместо awk. PowerShell?
+# TODO:
 #.txt.html:
 
 
-# НАДО: подумать, что можно использовать вместо awk. PowerShell?
+# TODO:
 #index.html: help.txt
 
 
-# НАДО: подумать, что можно использовать вместо awk. PowerShell?
+# TODO:
 #vimindex.html: index.txt
 
 
-# НАДО: подумать, что можно использовать вместо awk. PowerShell?
+# TODO:
 #tags.ref tags.html: tags
 
 # Perl version of .txt to .html conversion.
@@ -112,7 +108,7 @@ test_urls :
 
 clean :
 	$(RM) doctags.exe doctags.obj
-	$(RM) *.html
+	$(RM) *.html vim-stylesheet.css
 
 
 
@@ -173,14 +169,14 @@ os_win32.txt :
 
 convert-all : $(CONVERTED)
 !IF [powershell -nologo -noprofile "exit $$psversiontable.psversion.major"] == 2
-!ERROR Для работы требуется программа «PowerShell» версии 3.0 или выше
+!ERROR The program "PowerShell" version 3.0 or higher is required to work
 !ENDIF
 
 vim-da.UTF-8.1 : vim-da.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -190,7 +186,7 @@ vimdiff-da.UTF-8.1 : vimdiff-da.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -200,7 +196,7 @@ vimtutor-da.UTF-8.1 : vimtutor-da.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -210,7 +206,7 @@ vim-de.UTF-8.1 : vim-de.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -220,7 +216,7 @@ evim-fr.UTF-8.1 : evim-fr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -230,7 +226,7 @@ vim-fr.UTF-8.1 : vim-fr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -240,7 +236,7 @@ vimdiff-fr.UTF-8.1 : vimdiff-fr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -250,7 +246,7 @@ vimtutor-fr.UTF-8.1 : vimtutor-fr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t utf-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -260,7 +256,7 @@ xxd-fr.UTF-8.1 : xxd-fr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -270,7 +266,7 @@ evim-it.UTF-8.1 : evim-it.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -280,7 +276,7 @@ vim-it.UTF-8.1 : vim-it.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -290,7 +286,7 @@ vimdiff-it.UTF-8.1 : vimdiff-it.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -300,7 +296,7 @@ vimtutor-it.UTF-8.1 : vimtutor-it.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -310,7 +306,7 @@ xxd-it.UTF-8.1 : xxd-it.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28591)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -320,7 +316,7 @@ evim-pl.UTF-8.1 : evim-pl.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28592)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -330,7 +326,7 @@ vim-pl.UTF-8.1 : vim-pl.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28592)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -340,7 +336,7 @@ vimdiff-pl.UTF-8.1 : vimdiff-pl.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28592)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -350,7 +346,7 @@ vimtutor-pl.UTF-8.1 : vimtutor-pl.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28592)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -360,7 +356,7 @@ xxd-pl.UTF-8.1 : xxd-pl.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28592)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -370,7 +366,7 @@ evim-ru.UTF-8.1 : evim-ru.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f KOI8-R -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(20866)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -380,7 +376,7 @@ vim-ru.UTF-8.1 : vim-ru.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f KOI8-R -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(20866)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -390,7 +386,7 @@ vimdiff-ru.UTF-8.1 : vimdiff-ru.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f KOI8-R -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(20866)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -400,7 +396,7 @@ vimtutor-ru.UTF-8.1 : vimtutor-ru.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f KOI8-R -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(20866)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -410,7 +406,7 @@ xxd-ru.UTF-8.1 : xxd-ru.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f KOI8-R -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(20866)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -423,7 +419,7 @@ evim-tr.UTF-8.1 : evim-tr.1
 !    IF [powershell -nologo -noprofile "exit $$psversiontable.psversion.major"] == 2
 !    ERROR Для работы требуется программа «PowerShell» версии 3.0 или выше
 !    ENDIF
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28599)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -433,7 +429,7 @@ vim-tr.UTF-8.1 : vim-tr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-9 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28599)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -443,7 +439,7 @@ vimdiff-tr.UTF-8.1 : vimdiff-tr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-9 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28599)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
@@ -453,7 +449,7 @@ vimtutor-tr.UTF-8.1 : vimtutor-tr.1
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-9 -t UTF-8 $? >$@
 !ELSE
-# Преобразование в кодировку UTF-8 без МПБ и с UNIX-подобным окончанием строки
+# Conversion to UTF-8 encoding without BOM and with UNIX-like line ending
 	powershell -nologo -noprofile -Command\
 	[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28599)) ^|\
 	1>nul New-Item -Force -Path . -ItemType file -Name $@
