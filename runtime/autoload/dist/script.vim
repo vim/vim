@@ -369,7 +369,7 @@ def DetectFromText(line1: string)
 
     # Strace
     # inaccurate fast match first, then use accurate slow match
-  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:.]* *execve(')
+  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:. ]*execve(')
 	   || line1 =~ '^__libc_start_main'
     setl ft=strace
 
