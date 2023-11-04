@@ -2992,13 +2992,67 @@ def Test_list_item_assign()
     vim9script
 
     def Foo()
-        var l: list<list<string>> = [['x', 'x', 'x'], ['y', 'y', 'y']]
-        var z: number = 1
+      var l: list<list<string>> = [['x', 'x', 'x'], ['y', 'y', 'y']]
+      var z: number = 1
 
-        [l[1][2], z] = ['a', 20]
-        assert_equal([['x', 'x', 'x'], ['y', 'y', 'a']], l)
+      [l[1][2], z] = ['a', 20]
+      assert_equal([['x', 'x', 'x'], ['y', 'y', 'a']], l)
     enddef
     Foo()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    var l: list<list<string>> = [['x', 'x', 'x'], ['y', 'y', 'y']]
+    var z: number = 1
+
+    [l[1][2], z] = ['a', 20]
+    assert_equal([['x', 'x', 'x'], ['y', 'y', 'a']], l)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for assigning to a multi-dimensional dict item.
+def Test_dict_item_assign()
+  # This used to fail with the error "E1105: Cannot convert list to string"
+  # (Github issue #13485)
+  var lines =<< trim END
+    vim9script
+    def F()
+      var d: dict<dict<number>> = {a: {b: 0}}
+
+      for group in keys(d)
+        d['a']['b'] += 1
+      endfor
+      assert_equal({a: {b: 1}}, d)
+    enddef
+    F()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # This used to crash Vim
+  lines =<< trim END
+    vim9script
+    def F()
+      var d: dict<dict<number>> = {a: {b: 0}}
+      d['a']['b'] += 1
+      assert_equal({a: {b: 1}}, d)
+    enddef
+    F()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Assignment at script level
+  lines =<< trim END
+    vim9script
+    var d: dict<dict<number>> = {a: {b: 0}}
+
+    for group in keys(d)
+      d['a']['b'] += 1
+    endfor
+    assert_equal({a: {b: 1}}, d)
   END
   v9.CheckSourceSuccess(lines)
 enddef

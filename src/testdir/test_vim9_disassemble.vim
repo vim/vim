@@ -560,7 +560,6 @@ def Test_disassemble_store_index()
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
         '\d\+ USEDICT\_s*' ..
-        '\d\+ 2STRING stack\[-2\]\_s*' ..
         '\d\+ STOREINDEX any\_s*' ..
         '\d\+ RETURN void',
         res)
