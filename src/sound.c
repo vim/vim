@@ -322,7 +322,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		    vim_snprintf(buf, sizeof(buf), "close sound%06ld",
 								p->snd_id);
-		    mciSendString(buf, NULL, 0, 0);
+		    mciSendStringA(buf, NULL, 0, 0);
 
 		    long result =   wParam == MCI_NOTIFY_SUCCESSFUL ? 0
 				  : wParam == MCI_NOTIFY_ABORTED ? 1 : 2;
@@ -376,7 +376,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 {
     long	newid = sound_id + 1;
     size_t	len;
-    char_u	*p, *esc;
+    char_u	*p, *filename;
     WCHAR	*wp;
     soundcb_T	*soundcb;
     char	buf[32];
@@ -385,17 +385,15 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
+    filename = tv_get_string(&argvars[0]);
 
-    len = STRLEN(esc) + 5 + 18 + 1;
+    len = STRLEN(filename) + 5 + 18 + 2 + 1;
     p = alloc(len);
     if (p == NULL)
     {
-	free(esc);
 	return;
     }
-    vim_snprintf((char *)p, len, "open %s alias sound%06ld", esc, newid);
-    free(esc);
+    vim_snprintf((char *)p, len, "open \"%s\" alias sound%06ld", filename, newid);
 
     wp = enc_to_utf16((char_u *)p, NULL);
     free(p);
@@ -408,7 +406,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 	return;
 
     vim_snprintf(buf, sizeof(buf), "play sound%06ld notify", newid);
-    err = mciSendString(buf, NULL, 0, sound_window());
+    err = mciSendStringA(buf, NULL, 0, sound_window());
     if (err != 0)
 	goto failure;
 
@@ -426,7 +424,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 
 failure:
     vim_snprintf(buf, sizeof(buf), "close sound%06ld", newid);
-    mciSendString(buf, NULL, 0, NULL);
+    mciSendStringA(buf, NULL, 0, NULL);
 }
 
     void
@@ -440,14 +438,14 @@ f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
 
     id = tv_get_number(&argvars[0]);
     vim_snprintf(buf, sizeof(buf), "stop sound%06ld", id);
-    mciSendString(buf, NULL, 0, NULL);
+    mciSendStringA(buf, NULL, 0, NULL);
 }
 
     void
 f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     PlaySoundW(NULL, NULL, 0);
-    mciSendString("close all", NULL, 0, NULL);
+    mciSendStringA("close all", NULL, 0, NULL);
 }
 
 # if defined(EXITFREE)
