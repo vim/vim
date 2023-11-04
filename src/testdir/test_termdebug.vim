@@ -80,6 +80,24 @@ func Test_termdebug_basic()
         \  'priority': 110, 'group': 'TermDebug'}],
         \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
   Continue
+
+  if winwidth(0) < 78 + 60
+    Var
+    call assert_equal(winnr(), winnr('$'))
+    bw!
+    Asm
+    call assert_equal(winnr(), winnr('$'))
+    bw!
+  endif
+  set columns=160
+  Var
+  call assert_equal(winnr(), winnr('$') - 1)
+  bw!
+  Asm
+  call assert_equal(winnr(), winnr('$') - 1)
+  bw!
+  set columns&
+
   wincmd t
   quit!
   redraw!
