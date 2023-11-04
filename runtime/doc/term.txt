@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2023 Oct 25
+*term.txt*      For Vim version 9.0.  Last change: 2023 Nov 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -332,11 +332,16 @@ using the "xterm" workaround.  These are the relevant entries (so far):
 
 	XM	"\033[?1006;1004;1000%?%p1%{1}%=%th%el%;"
 				mouse enable / disable |t_XM|
+	FE	"\033[?1004h"	enable focus event tracking |t_fe|
+	FD	"\033[?1004l"	disable focus event tracking |t_fd|
 
 The "XM" entry includes "1006" to enable SGR style mouse reporting.  This
 supports columns above 223.  It also includes "1004" which enables focus
-reporting.  The t_fe and t_fd entries can be left empty (they don't have
-entries in terminfo/termcap anyway).
+reporting.
+Note: As of 2023, the "1004" is currently not used by Vim itself, instead
+it is recommended to set focus reporting independently of mouse tracking by
+the |t_fe| and |t_fd| entries, as ncurses also starts to use with the latest
+versions (and will then also end up in terminfo/termcap).
 
 						*xterm-kitty* *kitty-terminal*
 The Kitty terminal is a special case.  Mainly because it works differently
