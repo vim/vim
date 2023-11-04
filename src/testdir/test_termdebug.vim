@@ -81,26 +81,36 @@ func Test_termdebug_basic()
         \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
   Continue
 
+  let cn = 0
   if winwidth(0) < 78 + 60
     Var
     call assert_equal(winnr(), winnr('$'))
+    call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]])
+    let cn += 1
     bw!
     Asm
     call assert_equal(winnr(), winnr('$'))
+    call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]])
+    let cn += 1
     bw!
   endif
   set columns=160
   Var
   call assert_equal(winnr(), winnr('$') - 1)
+  call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['row', [['leaf', 1003 + cn], ['leaf', 1000]]]]])
+  let cn += 1
   bw!
   Asm
   call assert_equal(winnr(), winnr('$') - 1)
+  call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['row', [['leaf', 1003 + cn], ['leaf', 1000]]]]])
+  let cn += 1
   bw!
   set columns&
 
   wincmd t
   quit!
   redraw!
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
 
   call delete('XTD_basic')
