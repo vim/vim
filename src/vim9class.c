@@ -1557,13 +1557,6 @@ early_ret:
 		break;
 	    }
 
-	    p = skipwhite(pa + 8);
-	    if (STRNCMP(p, "def", 3) != 0 && STRNCMP(p, "static", 6) != 0)
-	    {
-		emsg(_(e_abstract_must_be_followed_by_def));
-		break;
-	    }
-
 	    if (!is_class)
 	    {
 		// "abstract" not supported in an interface
@@ -1574,6 +1567,13 @@ early_ret:
 	    if (!is_abstract)
 	    {
 		semsg(_(e_abstract_method_in_concrete_class), pa);
+		break;
+	    }
+
+	    p = skipwhite(pa + 8);
+	    if (STRNCMP(p, "def", 3) != 0)
+	    {
+		emsg(_(e_abstract_must_be_followed_by_def));
 		break;
 	    }
 

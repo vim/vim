@@ -5607,15 +5607,13 @@ def Test_abstract_method()
   v9.CheckSourceFailure(lines, 'E1371: Abstract must be followed by "def"', 3)
 
   # Use a static abstract method
-  # TODO: this does not fail, so skip it for now
-
-  # lines =<< trim END
-  #   vim9script
-  #   abstract class A
-  #     abstract static def Foo(): number
-  #   endclass
-  # END
-  # v9.CheckSourceFailure(lines, 'E1371: Abstract must be followed by "def"', 3)
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract static def Foo(): number
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1371: Abstract must be followed by "def"', 3)
 
   # Type mismatch between abstract method and concrete method
   lines =<< trim END
