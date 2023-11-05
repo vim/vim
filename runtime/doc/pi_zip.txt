@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 9.0.  Last change: 2023 Mar 12
+*pi_zip.txt*	For Vim version 9.0.  Last change: 2023 Nov 05
 
 				+====================+
 				| Zip File Interface |
@@ -69,6 +69,13 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    This option specifies the program (and any options needed) used to
    extract a file from a zip archive.  By default, >
 	let g:zip_extractcmd= g:zip_unzipcmd
+<
+							*g:zip_exec*
+   For security reasons, one may prevent that Vim runs executables
+   automatically when opening a buffer.  This option (default: "1")
+   can be used to prevent executing the "unzip" command when set to
+   "0": >
+	let g:zip_exec=0
 <
    PREVENTING LOADING~
 

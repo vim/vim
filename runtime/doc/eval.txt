@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Jun 01
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Nov 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,6 +36,7 @@ a remark is given.
 11. No +eval feature		|no-eval-feature|
 12. The sandbox			|eval-sandbox|
 13. Textlock			|textlock|
+14. Vim script library		|vim-script-library|
 
 Testing support is documented in |testing.txt|.
 Profiling is documented at |profiling|.
@@ -4800,6 +4801,38 @@ This is not allowed when the textlock is active:
 	- editing another file
 	- closing a window or quitting Vim
 	- etc.
+
+==============================================================================
+14. Vim script library					*vim-script-library*
+
+Vim comes bundled with a Vim script library, that can be used by runtime,
+script authors.  Currently, it only includes very few functions, but it may
+grow over time.
+
+The functions are available as |Vim9-script| as well as using legacy vim
+script (to be used for non Vim 9.0 versions and Neovim).
+
+							*dist#vim* *dist#vim9*
+The functions make use of the autoloaded prefix "dist#vim" (for legacy Vim script and
+Neovim) and "dist#vim9" for Vim9 script.
+
+The following functions are available:
+
+dist#vim#IsSafeExecutable(filetype, executable) ~
+dist#vim9#IsSafeExecutable(filetype:string, executable:string): bool ~
+
+This function takes a filetype and an executable and checks whether it is safe
+to execute the given executable.  For security reasons users may not want to
+have Vim execute random executables or may have forbidden to do so for
+specific filetypes by setting the "<filetype>_exec" variable (|plugin_exec|).
+
+It returns |true| or |false| to indicate whether the plugin should run the given
+exectuable.  It takes the following arguments:
+
+	argument	type ~
+
+	filetype	string
+	executable	string
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

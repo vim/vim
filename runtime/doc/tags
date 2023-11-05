@@ -6758,6 +6758,8 @@ dircolors.vim	syntax.txt	/*dircolors.vim*
 dis	motion.txt	/*dis*
 disable-menus	gui.txt	/*disable-menus*
 discard	editing.txt	/*discard*
+dist#vim	eval.txt	/*dist#vim*
+dist#vim9	eval.txt	/*dist#vim9*
 distribute-script	usr_51.txt	/*distribute-script*
 distributed-plugins	usr_05.txt	/*distributed-plugins*
 distribution	intro.txt	/*distribution*
@@ -7422,6 +7424,7 @@ g:gnat.Project_File	ft_ada.txt	/*g:gnat.Project_File*
 g:gnat.Set_Project_File()	ft_ada.txt	/*g:gnat.Set_Project_File()*
 g:gnat.Tags()	ft_ada.txt	/*g:gnat.Tags()*
 g:gnat.Tags_Command	ft_ada.txt	/*g:gnat.Tags_Command*
+g:gzip_exec	pi_gzip.txt	/*g:gzip_exec*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
 g:html_dynamic_folds	syntax.txt	/*g:html_dynamic_folds*
@@ -7616,6 +7619,7 @@ g:vimsyn_minlines	syntax.txt	/*g:vimsyn_minlines*
 g:vimsyn_noerror	syntax.txt	/*g:vimsyn_noerror*
 g:yaml_schema	syntax.txt	/*g:yaml_schema*
 g:zipPlugin_ext	pi_zip.txt	/*g:zipPlugin_ext*
+g:zip_exec	pi_zip.txt	/*g:zip_exec*
 g:zip_extractcmd	pi_zip.txt	/*g:zip_extractcmd*
 g:zip_nomax	pi_zip.txt	/*g:zip_nomax*
 g:zip_shq	pi_zip.txt	/*g:zip_shq*
@@ -10987,6 +10991,7 @@ vim-modes	intro.txt	/*vim-modes*
 vim-modes-intro	intro.txt	/*vim-modes-intro*
 vim-raku	ft_raku.txt	/*vim-raku*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
+vim-script-library	eval.txt	/*vim-script-library*
 vim-use	intro.txt	/*vim-use*
 vim-variable	eval.txt	/*vim-variable*
 vim.b	if_lua.txt	/*vim.b*
