@@ -82,7 +82,8 @@ func Test_termdebug_basic()
   Continue
 
   let cn = 0
-  if winwidth(0) < 78 + 60
+  " 60 is approx spaceBuffer * 3
+  if winwidth(0) <= 78 + 60
     Var
     call assert_equal(winnr(), winnr('$'))
     call assert_equal(winlayout(), ['col', [['leaf', 1002], ['leaf', 1001], ['leaf', 1000], ['leaf', 1003 + cn]]])
