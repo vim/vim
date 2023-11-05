@@ -21,10 +21,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9001968.011023\n"
+"Project-Id-Version: RuVim_0.9002091.051123\n"
 "Report-Msgid-Bugs-To: The Vim Project, <vim-dev@vim.org>\n"
-"POT-Creation-Date: 2023-10-01 11:51+0300\n"
-"PO-Revision-Date: 2023-10-01 11:57+0300\n"
+"POT-Creation-Date: 2023-11-05 18:50+0300\n"
+"PO-Revision-Date: 2023-11-05 19:57+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -439,7 +439,7 @@ msgstr "[шифровано]"
 #, c-format
 msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
 msgstr ""
-"xChaCha20v2: для получения ключа применено нестандартное значение opslimit "
+"XChaCha20v2: для получения ключа применено нестандартное значение opslimit "
 "\"%llu\""
 
 # #Restorer: выводится при значении 'verbose'>0
@@ -447,7 +447,7 @@ msgstr ""
 #, c-format
 msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
 msgstr ""
-"xChaCha20v2: для получения ключа применено стандартное значение opslimit "
+"XChaCha20v2: для получения ключа применено стандартное значение opslimit "
 "\"%llu\""
 
 # #Restorer: выводится при значении 'verbose'>0
@@ -455,7 +455,7 @@ msgstr ""
 #, c-format
 msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
 msgstr ""
-"xChaCha20v2: для получения ключа применено нестандартное значение memlimit "
+"XChaCha20v2: для получения ключа применено нестандартное значение memlimit "
 "\"%lu\""
 
 # #Restorer: выводится при значении 'verbose'>0
@@ -463,7 +463,7 @@ msgstr ""
 #, c-format
 msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
 msgstr ""
-"xChaCha20v2: для получения ключа применено стандартное значение memlimit "
+"XChaCha20v2: для получения ключа применено стандартное значение memlimit "
 "\"%lu\""
 
 # #Restorer: выводится при значении 'verbose'>0
@@ -471,13 +471,13 @@ msgstr ""
 #, c-format
 msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
 msgstr ""
-"xChaCha20v2: для получения ключа применён нестандартный алгоритм \"%d\""
+"XChaCha20v2: для получения ключа применён нестандартный алгоритм \"%d\""
 
 # #Restorer: выводится при значении 'verbose'>0
 # :!~ Restorer
 #, c-format
 msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
-msgstr "xChaCha20v2: для получения ключа применён стандартный алгоритм \"%d\""
+msgstr "XChaCha20v2: для получения ключа применён стандартный алгоритм \"%d\""
 
 # :!~ Restorer
 msgid "Entering Debug mode.  Type \"cont\" to continue."
@@ -911,8 +911,7 @@ msgstr ""
 # :!~ Restorer
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr ""
-"Переключение в Ex-режим. Чтобы переключить в режим команд, наберите \"visual"
-"\""
+"Переключение в Ex-режим. Чтобы переключить в режим команд, наберите :visual"
 
 # #Restorer: выводится при значении 'verbose'>=9
 # ~!: earlier
@@ -2212,7 +2211,7 @@ msgstr ""
 # :!~ Restorer
 msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr ""
-"Недопустимый аргумент командной строки '-nb'. Отключено при компиляции\n"
+"Неподдерживаемый аргумент командной строки -nb. Отключено при компиляции\n"
 
 # :!~ Restorer
 msgid "This Vim was not compiled with the diff feature."
@@ -2351,7 +2350,7 @@ msgstr "-unregister\t\tОтмена регистрации программы gVim в пространстве OLE"
 
 # ~!: earlier
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
-msgstr "-g\t\t\tЗапуск программы с графическим интерфейсом (как \"gVim\")"
+msgstr "-g\t\t\tЗапуск программы с графическим интерфейсом (как \"gvim\")"
 
 # :!~ Restorer
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
@@ -2452,7 +2451,7 @@ msgstr "-f\t\t\tНе использовать команду newcli для открытия окна"
 # :!~ Restorer
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr ""
-"-dev <устройство>\tИспользовать для ввода-вывода указанное <устройство>"
+"-dev <устройство>\tИспользовать для операций ввода-вывода данное <устройство>"
 
 # :!~ Restorer
 msgid "-A\t\t\tStart in Arabic mode"
@@ -2562,7 +2561,7 @@ msgstr ""
 # :!~ Restorer
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-silent <файлы>   То же, но без сообщений при отсутствии сервера"
+"--remote-silent <файлы>   То же, но не сообщать о недоступности сервера"
 
 # #Restorer: добавил пару пробельных символов, дабы подравнять сообщение
 # ~!: earlier
@@ -2575,9 +2574,8 @@ msgstr ""
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-wait-silent <файлы>  То же, но без сообщений при отсутствии сервера"
+"--remote-wait-silent <файлы>  То же, но не сообщать о недоступности сервера"
 
-# #Restorer: добавил пару пробельных символов, дабы подравнять сообщение
 # :!~ Restorer
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
@@ -2643,7 +2641,7 @@ msgstr ""
 # :!~ Restorer
 msgid "-display <display>\tRun Vim on <display>"
 msgstr ""
-"-display <display>\tЗапуск программы с подключением к указанному X-серверу"
+"-display <X-сервер>\tЗапуск программы с подключением к указанному X-серверу"
 
 # :!~ Restorer
 msgid "-iconic\t\tStart Vim iconified"
@@ -2660,7 +2658,8 @@ msgstr "-foreground <цвет>\tНазначить указанный <цвет> цветом текста (или -fg)"
 # #Restorer: убрал один \t, чтобы выглядело единообразно
 # :!~ Restorer
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
-msgstr "-font <шрифт>\tНазначить указанный <шрифт> для обычного текста ( -fn)"
+msgstr ""
+"-font <шрифт>\tНазначить указанный <шрифт> для обычного текста (или -fn)"
 
 # :!~ Restorer
 msgid "-boldfont <font>\tUse <font> for bold text"
@@ -2932,7 +2931,7 @@ msgstr ""
 # :!~ Restorer
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr ""
-"Строки, которые были добавлены или удалены, помещены между метками ??? и ???"
+"Строки, которые были вставлены или удалены, помещены между метками ??? и ???"
 "END"
 
 # :!~ Restorer
@@ -3161,9 +3160,8 @@ msgid ""
 "    file when making changes.  Quit, or continue with caution.\n"
 msgstr ""
 "\n"
-"(1) Возможно, редактирование этого же файла выполняется в другой программе "
-"на\n"
-"    этом же компьютере или по сетевому подключению.\n"
+"(1) Возможно, редактирование этого же файла выполняется в другой программе\n"
+"    на этом же компьютере или по сетевому подключению.\n"
 "\n"
 "В этом случае лучше не редактировать этот файл или делать это "
 "осмотрительно,\n"
@@ -5387,7 +5385,8 @@ msgstr ""
 # :!~ Restorer
 msgid "                              for Vim defaults   "
 msgstr ""
-"                                                 возможности редактора Vim"
+"                                                    возможности редактора "
+"Vim "
 
 # :!~ Restorer
 msgid "Sponsor Vim development!"
@@ -5402,16 +5401,14 @@ msgstr "Станьте зарегистрированным пользователем программы «Редактор Vim»!"
 # :!~ Restorer
 msgid "type  :help sponsor<Enter>    for information "
 msgstr ""
-"наберите :help sponsor<ENTER>            чтобы узнать об этом "
-"подробнее       "
+"наберите :help sponsor<ENTER>            чтобы узнать об этом подробнее      "
 
 # #Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # #Restorer: выравнивается по самому длинному подобному сообщению
 # :!~ Restorer
 msgid "type  :help register<Enter>   for information "
 msgstr ""
-"наберите :help register<ENTER>           чтобы узнать об этом "
-"подробнее       "
+"наберите :help register<ENTER>           чтобы узнать об этом подробнее      "
 
 # #Restorer: пробелы не убирать, сделано для выравнивания сообщений
 # #Restorer: выравнивается по самому длинному подобному сообщению
@@ -5799,7 +5796,7 @@ msgstr "E35: В этом сеансе работы не применялся поисковый запрос"
 
 # :!~ Restorer
 msgid "E36: Not enough room"
-msgstr "E36: Не достаточно места для создания нового окна"
+msgstr "E36: Недостаточно места для создания нового окна"
 
 # :!~ Restorer
 msgid "E37: No write since last change"
@@ -6237,7 +6234,8 @@ msgstr ""
 # :!~ Restorer
 msgid "E135: *Filter* Autocommands must not change current buffer"
 msgstr ""
-"E135: Автокоманды по событиям *Filter* не должны изменять текущий буфер"
+"E135: Действия автокоманд по событиям *Filter* не должны изменять текущий "
+"буфер"
 
 # :!~ Restorer
 msgid "E136: viminfo: Too many errors, skipping rest of file"
@@ -6549,12 +6547,13 @@ msgstr "E199: Удалены активное окно или буфер"
 # :!~ Restorer
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr ""
-"E200: В результате действий автокоманд по событию *ReadPre файл стал нечитаем"
+"E200: В результате действий автокоманд по событиям *ReadPre файл стал "
+"нечитаем"
 
 # :!~ Restorer
 msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr ""
-"E201: Действия автокоманд для событий *ReadPre не должны изменять текущий "
+"E201: Действия автокоманд по событиям *ReadPre не должны изменять текущий "
 "буфер"
 
 # :!~ Restorer
@@ -7226,7 +7225,7 @@ msgstr "E359: Установка режима экрана не поддерживается"
 msgid "E360: Cannot execute shell with -f option"
 msgstr ""
 "E360: Не удалось вызвать командную оболочку. Программа запущена с аргументом "
-"'-f'"
+"-f"
 
 # :!~ Restorer
 msgid "E362: Using a boolean value as a Float"
@@ -8770,8 +8769,9 @@ msgstr ""
 "выражения"
 
 # :!~ Restorer
-msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr "E689: Индекс разрешён только для типа данных List, Dictionary или BLOB"
+#, c-format
+msgid "E689: Index not allowed after a %s: %s"
+msgstr "E689: Не допускается указание индекса для типа данных %s в %s"
 
 # :!~ Restorer
 msgid "E690: Missing \"in\" after :for"
@@ -10694,7 +10694,7 @@ msgstr "E1088: Не допускается импортирование командным файлом самого себя"
 # :!~ Restorer
 #, c-format
 msgid "E1089: Unknown variable: %s"
-msgstr "E1089: Не распознана переменная %s"
+msgstr "E1089: Не распознана переменная \"%s\""
 
 # :!~ Restorer
 #, c-format
@@ -10704,7 +10704,7 @@ msgstr "E1090: Не допускается присвоение значения аргументу %s"
 # :!~ Restorer
 #, c-format
 msgid "E1091: Function is not compiled: %s"
-msgstr "E1091: Некомпилированная функция %s"
+msgstr "E1091: Некомпилированная функция \"%s\""
 
 # :!~ Restorer
 msgid "E1092: Cannot nest :redir"
@@ -11188,7 +11188,7 @@ msgstr[2] "E1190: В функцию передано на %d аргументов меньше"
 # :!~ Restorer
 #, c-format
 msgid "E1191: Call to function that failed to compile: %s"
-msgstr "E1191: Ошибка компиляции при обращении к функции %s"
+msgstr "E1191: Обращение к некомпилированной функции \"%s\""
 
 # :!~ Restorer
 msgid "E1192: Empty function name"
@@ -11197,8 +11197,7 @@ msgstr "E1192: Отсутствует наименование функции"
 # :!~ Restorer
 msgid "E1193: cryptmethod xchacha20 not built into this Vim"
 msgstr ""
-"E1193: Алгоритм шифрования «XChaCha20» не поддерживается в данной программе "
-"Vim"
+"E1193: Алгоритм шифрования «XChaCha20» не поддерживается в данной версии Vim"
 
 # :!~ Restorer
 msgid "E1194: Cannot encrypt header, not enough space"
@@ -11239,8 +11238,8 @@ msgstr "E1202: Запрещён пробельный символ после '%s' в %s"
 
 # :!~ Restorer
 #, c-format
-msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E1203: Символ точка используется только в типе данных Dictionary %s"
+msgid "E1203: Dot not allowed after a %s: %s"
+msgstr "E1203: Не допускается символ точки для типа данных %s в %s"
 
 # :!~ Restorer
 #, c-format
@@ -11817,38 +11816,38 @@ msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Недопустимая команда в объявлении класса %s"
 
 # :!~ Restorer
-msgid "E1319: Using a class as a Number"
+msgid "E1319: Using a Class as a Number"
 msgstr "E1319: Ожидался тип данных Number, а получен Class"
 
 # :!~ Restorer
-msgid "E1320: Using an object as a Number"
+msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Ожидался тип данных Number, а получен Object"
 
 # :!~ Restorer
-msgid "E1321: Using a class as a Float"
+msgid "E1321: Using a Class as a Float"
 msgstr "E1321: Ожидался тип данных Float, а получен Class"
 
 # :!~ Restorer
-msgid "E1322: Using an object as a Float"
+msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Ожидался тип данных Float, а получен Object"
 
 # :!~ Restorer
-msgid "E1323: Using a class as a String"
+msgid "E1323: Using a Class as a String"
 msgstr "E1323: Ожидался тип данных String, а получен Class"
 
 # :!~ Restorer
-msgid "E1324: Using an object as a String"
+msgid "E1324: Using an Object as a String"
 msgstr "E1324: Ожидался тип данных String, а получен Object"
 
 # :!~ Restorer
 #, c-format
-msgid "E1325: Method not found on class \"%s\": %s"
-msgstr "E1325: У класса \"%s\" отсутствует метод %s"
+msgid "E1325: Method \"%s\" not found in class \"%s\""
+msgstr "E1325: У класса \"%2$s\" отсутствует метод \"%1$s\""
 
 # :!~ Restorer
 #, c-format
-msgid "E1326: Variable not found on object \"%s\": %s"
-msgstr "E1326: У объекта \"%s\" отсутствует переменная %s"
+msgid "E1326: Variable \"%s\" not found in object \"%s\""
+msgstr "E1326: У объекта \"%s\" отсутствует переменная \"%s\""
 
 # :!~ Restorer
 #, c-format
@@ -11879,8 +11878,9 @@ msgstr ""
 
 # :!~ Restorer
 #, c-format
-msgid "E1333: Cannot access private variable: %s"
-msgstr "E1333: Отсутствует доступ к внутренней переменной %s"
+msgid "E1333: Cannot access private variable \"%s\" in class \"%s\""
+msgstr ""
+"E1333: Отсутствует доступ к внутренней переменной \"%s\" в классе \"%s\""
 
 # :!~ Restorer
 #, c-format
@@ -12047,10 +12047,9 @@ msgid "E1370: Cannot define a \"new\" method as static"
 msgstr "E1370: Не допускается определение метода \"new\" как статического"
 
 # :!~ Restorer
-msgid "E1371: Abstract must be followed by \"def\" or \"static\""
+msgid "E1371: Abstract must be followed by \"def\""
 msgstr ""
-"E1371: После ключевого слова \"abstract\" требуется ключевое слово \"def\" "
-"или \"static\""
+"E1371: После ключевого слова \"abstract\" требуется ключевое слово \"def\""
 
 # :!~ Restorer
 #, c-format
@@ -12165,6 +12164,66 @@ msgstr ""
 "классе \"%s\""
 
 # :!~ Restorer
+msgid "E1393: Type can only be defined in Vim9 script"
+msgstr ""
+"E1393: Псевдоним типа может быть определён только в командном файле Vim9"
+
+# :!~ Restorer
+#, c-format
+msgid "E1394: Type name must start with an uppercase letter: %s"
+msgstr ""
+"E1394: Наименование псевдонима типа должно начинаться с прописной буквы %s"
+
+# :!~ Restorer
+#, c-format
+msgid "E1395: Type alias \"%s\" cannot be modified"
+msgstr "E1395: Не допускается изменение псевдонима типа \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1396: Type alias \"%s\" already exists"
+msgstr "E1396: Псеводним типа уже определён \"%s\""
+
+# :!~ Restorer
+msgid "E1397: Missing type alias name"
+msgstr "E1397: Не указано наименование для псевдонима типа"
+
+# :!~ Restorer
+msgid "E1398: Missing type alias type"
+msgstr "E1398: Не указан тип для псевдонима типа"
+
+# :!~ Restorer
+msgid "E1399: Type can only be used in a script"
+msgstr ""
+"E1399: Псевдоним типа можжет быть определён только на уровне командного файла"
+
+# :!~ Restorer
+#, c-format
+msgid "E1400: Using type alias \"%s\" as a Number"
+msgstr "E1400: Ожидался тип данных Number, а получен псевдоним типа \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1401: Using type alias \"%s\" as a Float"
+msgstr "E1401: Ожидался тип данных Float, а получен псевдоним типа \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1402: Using type alias \"%s\" as a String"
+msgstr "E1402: Ожидался тип данных String, а получен псевдоним типа \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1403: Type alias \"%s\" cannot be used as a value"
+msgstr ""
+"E1403: Недопускается в качестве значения указывать псевдоним типа \"%s\""
+
+# :!~ Restorer
+msgid "E1404: Abstract cannot be used in an interface"
+msgstr ""
+"E1404: Недопускается использование ключевого слова \"abstract\" в интерфейсах"
+
+# :!~ Restorer
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Указаны как позиционные, так и не позиционные спецификаторы %s"
@@ -12207,10 +12266,6 @@ msgstr ""
 "E1506: Недостаточный размер буфера для копирования расширенного атрибута"
 
 # :!~ Restorer
-msgid "E1507: Extended attributes are not supported by the filesystem"
-msgstr "E1507: В файловой системе не поддерживаются расширенные атрибуты"
-
-# :!~ Restorer
 msgid ""
 "E1508: Size of the extended attribute value is larger than the maximum size "
 "allowed"
@@ -12218,9 +12273,14 @@ msgstr ""
 "E1508: Значение расширенного атрибута превышает максимально допустимый размер"
 
 # :!~ Restorer
-msgid "E1509: Error occured when reading or writing extended attribute"
+msgid "E1509: Error occurred when reading or writing extended attribute"
 msgstr ""
 "E1509: Произошла ошибка при считывании или записи расширенного атрибута"
+
+# :!~ Restorer
+#, c-format
+msgid "E1510: Value too large: %s"
+msgstr "E1510: Превышена допустимая величина в значении %s"
 
 # #Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 # :!~ Restorer
@@ -12673,7 +12733,7 @@ msgstr ""
 # #Restorer: используется для файла desktop
 # ~!: earlier
 msgid "GVim"
-msgstr "GVim"
+msgstr "gVim"
 
 # #Restorer: используется для файла desktop
 # ~!: earlier
