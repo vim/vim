@@ -614,7 +614,7 @@ func Test_statusline_highlight_group_cleared()
   CheckScreendump
 
   let lines =<< trim END
-    set fillchars=stl:\ ,stlnc:\  
+    set fillchars=stl:\ ,stlnc:\  laststatus=2
     split
     hi clear StatusLine
     hi clear StatusLineNC
