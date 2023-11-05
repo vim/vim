@@ -4845,7 +4845,7 @@ def Test_values()
       vim9script
 
       class Foo
-        this.val: number
+        var val: number
         def Add()
           echo this.val
         enddef

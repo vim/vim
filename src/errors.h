@@ -3402,11 +3402,12 @@ EXTERN char e_object_required_found_str[]
 	INIT(= N_("E1327: Object required, found %s"));
 EXTERN char e_constructor_default_value_must_be_vnone_str[]
 	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
-// E1329 unused
+EXTERN char e_invalid_class_variable_declaration_str[]
+	INIT(= N_("E1329: Invalid class variable declaration: %s"));
 EXTERN char e_invalid_type_for_object_variable_str[]
 	INIT(= N_("E1330: Invalid type for object variable: %s"));
-EXTERN char e_public_must_be_followed_by_this_or_static[]
-	INIT(= N_("E1331: Public must be followed by \"this\" or \"static\""));
+EXTERN char e_public_must_be_followed_by_var_or_static[]
+	INIT(= N_("E1331: Public must be followed by \"var\" or \"static\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_protected_variable_str[]
@@ -3487,8 +3488,8 @@ EXTERN char e_cannot_access_protected_method_str[]
 	INIT(= N_("E1366: Cannot access protected method: %s"));
 EXTERN char e_variable_str_of_interface_str_has_different_access[]
 	INIT(= N_("E1367: Access level of variable \"%s\" of interface \"%s\" is different"));
-EXTERN char e_static_cannot_be_followed_by_this[]
-	INIT(= N_("E1368: Static cannot be followed by \"this\" in a variable name"));
+EXTERN char e_static_must_be_followed_by_var_or_def[]
+	INIT(= N_("E1368: Static must be followed by \"var\" or \"def\""));
 EXTERN char e_duplicate_variable_str[]
 	INIT(= N_("E1369: Duplicate variable: %s"));
 EXTERN char e_cannot_define_new_method_as_static[]
