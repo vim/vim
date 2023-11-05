@@ -2221,15 +2221,6 @@ compile_load_lhs(
 		return FAIL;
 	}
 
-	if (lhs->lhs_type->tt_type == VAR_DICT && var_start[varlen] == '[')
-	{
-	    // If the lhs is a Dict variable and an item is accessed by "[",
-	    // then need to convert the key into a string.  The top item in the
-	    // type stack is the Dict and the second last item is the key.
-	    if (may_generate_2STRING(-2, FALSE, cctx) == FAIL)
-		return FAIL;
-	}
-
 	// Now we can properly check the type.  The variable is indexed, thus
 	// we need the member type.  For a class or object we don't know the
 	// type yet, it depends on what member is used.
