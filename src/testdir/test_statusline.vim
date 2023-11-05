@@ -610,4 +610,22 @@ func Test_statusline_showcmd()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_statusline_highlight_group_cleared()
+  CheckScreendump
+
+  let lines =<< trim END
+    set fillchars=stl:\ ,stlnc:\  
+    split
+    hi clear StatusLine
+    hi clear StatusLineNC
+  END
+  call writefile(lines, 'XTest_statusline_stl', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_statusline_stl', {})
+
+  call VerifyScreenDump(buf, 'Test_statusline_stl_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
