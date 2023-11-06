@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2023 Oct 23
+*options.txt*	For Vim version 9.0.  Last change: 2023 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3494,8 +3494,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	and the value of that item:
 
 	  item name	default		Used for ~
-	  stl		' ' or '^'	statusline of the current window
-	  stlnc		' ' or '='	statusline of the non-current windows
+	  stl		' '		statusline of the current window
+	  stlnc		' '		statusline of the non-current windows
 	  vert		'|'		vertical separators |:vsplit|
 	  fold		'-'		filling 'foldtext'
 	  foldopen	'-'		mark the beginning of a fold
@@ -3505,15 +3505,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate
 
-	Any one that is omitted will fall back to the default.  For "stl" and
-	"stlnc" the space will be used when there is highlighting, '^' or '='
-	otherwise.
+	Any one that is omitted will fall back to the default.
 
 	Example: >
-	    :set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
-<	This is similar to the default, except that these characters will also
-	be used when there is highlighting.
-
+	    :set fillchars=stl:\ ,stlnc:\ ,vert:\|,fold:-,diff:-
+<
 	For the "stl", "stlnc", "foldopen", "foldclose" and "foldsep" items
 	single-byte and multibyte characters are supported.  But double-width
 	characters are not supported.
