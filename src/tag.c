@@ -1483,7 +1483,7 @@ find_tagfunc_tags(
 
     if (result == FAIL)
 	return FAIL;
-    if (rettv.v_type == VAR_SPECIAL && rettv.vval.v_number == VVAL_NULL)
+    if (TYPVAL_IS_NULL(&rettv))
     {
 	clear_tv(&rettv);
 	return NOTDONE;

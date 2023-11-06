@@ -9813,8 +9813,7 @@ f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     name = tv_get_string_buf(&argvars[0], namebuf);
-    if (argvars[1].v_type == VAR_SPECIAL
-				      && argvars[1].vval.v_number == VVAL_NULL)
+    if (TYPVAL_IS_NULL(&argvars[1]))
 	vim_unsetenv_ext(name);
     else
 	vim_setenv_ext(name, tv_get_string_buf(&argvars[1], valbuf));

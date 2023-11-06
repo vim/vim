@@ -285,7 +285,6 @@ enddef
 
 def Test_assert_exception()
   v9.CheckDefAndScriptFailure(['assert_exception({})'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', 'E1174: String required for argument 1'])
-  v9.CheckDefAndScriptFailure(['assert_exception("E1:", v:null)'], ['E1013: Argument 2: type mismatch, expected string but got special', 'E1174: String required for argument 2'])
 enddef
 
 def Test_assert_fails()
@@ -305,7 +304,7 @@ enddef
 def Test_assert_match()
   v9.CheckDefAndScriptFailure(['assert_match({}, "b")'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', ''])
   v9.CheckDefAndScriptFailure(['assert_match("a", 1)'], ['E1013: Argument 2: type mismatch, expected string but got number', ''])
-  v9.CheckDefAndScriptFailure(['assert_match("a", "b", null)'], ['E1013: Argument 3: type mismatch, expected string but got special', ''])
+  v9.CheckDefAndScriptFailure(['assert_match("a", "b", [])'], ['E1013: Argument 3: type mismatch, expected string but got list<any>', ''])
 enddef
 
 def Test_assert_nobeep()
@@ -315,7 +314,7 @@ enddef
 def Test_assert_notmatch()
   v9.CheckDefAndScriptFailure(['assert_notmatch({}, "b")'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', ''])
   v9.CheckDefAndScriptFailure(['assert_notmatch("a", 1)'], ['E1013: Argument 2: type mismatch, expected string but got number', ''])
-  v9.CheckDefAndScriptFailure(['assert_notmatch("a", "b", null)'], ['E1013: Argument 3: type mismatch, expected string but got special', ''])
+  v9.CheckDefAndScriptFailure(['assert_notmatch("a", "b", [])'], ['E1013: Argument 3: type mismatch, expected string but got list<any>', ''])
 enddef
 
 def Test_assert_report()
@@ -942,7 +941,6 @@ enddef
 
 def Test_eval()
   v9.CheckDefAndScriptFailure(['eval(10)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  v9.CheckDefAndScriptFailure(['eval(null)'], ['E1013: Argument 1: type mismatch, expected string but got special', 'E1174: String required for argument 1'])
   v9.CheckDefExecAndScriptFailure(['eval("")'], 'E15: Invalid expression')
   assert_equal(2, eval('1 + 1'))
 enddef
@@ -969,7 +967,7 @@ enddef
 
 def Test_exepath()
   v9.CheckDefExecFailure(['echo exepath(true)'], 'E1013:')
-  v9.CheckDefExecFailure(['echo exepath(v:null)'], 'E1013:')
+  v9.CheckDefExecFailure(['echo exepath(v:null)'], 'E1174: String required for argument 1')
   v9.CheckDefExecFailure(['echo exepath("")'], 'E1175:')
 enddef
 
@@ -1282,7 +1280,6 @@ def Test_finddir()
   delete('Xtestdir', 'rf')
 
   v9.CheckDefAndScriptFailure(['finddir(true)'], ['E1013: Argument 1: type mismatch, expected string but got bool', 'E1174: String required for argument 1'])
-  v9.CheckDefAndScriptFailure(['finddir(v:null)'], ['E1013: Argument 1: type mismatch, expected string but got special', 'E1174: String required for argument 1'])
   v9.CheckDefExecFailure(['echo finddir("")'], 'E1175:')
   v9.CheckDefAndScriptFailure(['finddir("a", [])'], ['E1013: Argument 2: type mismatch, expected string but got list<any>', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['finddir("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
@@ -1302,7 +1299,7 @@ def Test_findfile()
   v9.CheckDefAndScriptSuccess(lines)
 
   v9.CheckDefExecFailure(['findfile(true)'], 'E1013: Argument 1: type mismatch, expected string but got bool')
-  v9.CheckDefExecFailure(['findfile(v:null)'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  v9.CheckDefExecFailure(['findfile(v:null)'], 'E1174: String required for argument 1')
   v9.CheckDefExecFailure(['findfile("")'], 'E1175:')
   v9.CheckDefAndScriptFailure(['findfile("a", [])'], ['E1013: Argument 2: type mismatch, expected string but got list<any>', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['findfile("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
@@ -1426,7 +1423,7 @@ def Test_fnamemodify()
   v9.CheckDefSuccess(['echo fnamemodify("file", "")'])
 
   v9.CheckDefExecFailure(['echo fnamemodify(true, ":p")'], 'E1013: Argument 1: type mismatch, expected string but got bool')
-  v9.CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E1013: Argument 1: type mismatch, expected string but got special')
+  v9.CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E1174: String required for argument 1')
   v9.CheckDefExecFailure(['echo fnamemodify("file", true)'],  'E1013: Argument 2: type mismatch, expected string but got bool')
 enddef
 
@@ -1513,7 +1510,7 @@ def Test_filter()
 enddef
 
 def Test_filter_wrong_dict_key_type()
-  assert_fails('g:Wrong_dict_key_type([1, v:null, 3])', 'E1013:')
+  assert_fails('g:Wrong_dict_key_type([1, false, 3])', 'E1013:')
 enddef
 
 def Test_filter_return_type()
@@ -1836,7 +1833,7 @@ def Test_getfperm()
   assert_equal('', getfperm(test_null_string()))
 
   v9.CheckDefExecFailure(['echo getfperm(true)'], 'E1013:')
-  v9.CheckDefExecFailure(['echo getfperm(v:null)'], 'E1013:')
+  v9.CheckDefExecFailure(['echo getfperm(v:null)'], 'E1174: String required for argument 1')
 enddef
 
 def Test_getfsize()
@@ -1844,7 +1841,7 @@ def Test_getfsize()
   assert_equal(-1, getfsize(test_null_string()))
 
   v9.CheckDefExecFailure(['echo getfsize(true)'], 'E1013:')
-  v9.CheckDefExecFailure(['echo getfsize(v:null)'], 'E1013:')
+  v9.CheckDefExecFailure(['echo getfsize(v:null)'], 'E1174: String required for argument 1')
 enddef
 
 def Test_getftime()
@@ -1852,7 +1849,7 @@ def Test_getftime()
   assert_equal(-1, getftime(test_null_string()))
 
   v9.CheckDefExecFailure(['echo getftime(true)'], 'E1013:')
-  v9.CheckDefExecFailure(['echo getftime(v:null)'], 'E1013:')
+  v9.CheckDefExecFailure(['echo getftime(v:null)'], 'E1174: String required for argument 1')
 enddef
 
 def Test_getftype()
@@ -1860,7 +1857,7 @@ def Test_getftype()
   assert_equal('', getftype(test_null_string()))
 
   v9.CheckDefExecFailure(['echo getftype(true)'], 'E1013:')
-  v9.CheckDefExecFailure(['echo getftype(v:null)'], 'E1013:')
+  v9.CheckDefExecFailure(['echo getftype(v:null)'], 'E1174: String required for argument 1')
 enddef
 
 def Test_getjumplist()
@@ -2070,7 +2067,7 @@ def Test_glob()
 enddef
 
 def Test_glob2regpat()
-  v9.CheckDefAndScriptFailure(['glob2regpat(null)'], ['E1013: Argument 1: type mismatch, expected string but got special', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['glob2regpat({})'], ['E1013: Argument 1: type mismatch, expected string but got dict<any>', 'E1174: String required for argument 1'])
   glob2regpat('')->assert_equal('^$')
 enddef
 

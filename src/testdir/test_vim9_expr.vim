@@ -747,6 +747,8 @@ def Test_expr4_compare_null()
       assert_false(null_blob != null)
       assert_false(v:null != test_null_blob())
       assert_false(null != null_blob)
+      assert_false(0z == null)
+      assert_false(0z12 == null)
 
       var nb = null_blob
       assert_true(nb == null_blob)
@@ -779,6 +781,8 @@ def Test_expr4_compare_null()
       assert_false(null_dict != null)
       assert_false(v:null != test_null_dict())
       assert_false(null != null_dict)
+      assert_false({} == null)
+      assert_false({a: 1} == null)
 
       assert_true(g:null_dict == v:null)
       assert_true(v:null == g:null_dict)
@@ -805,6 +809,10 @@ def Test_expr4_compare_null()
       assert_true(Nf == null)
       assert_true(null_function == Nf)
       assert_true(null == Nf)
+      var Nf2: func = null
+      assert_true(Nf2 == null)
+      var Fn3: func = function('min')
+      assert_false(Fn3 == null)
 
       if has('job')
         assert_true(test_null_job() == v:null)
@@ -831,6 +839,8 @@ def Test_expr4_compare_null()
       assert_false(null_list != null)
       assert_false(v:null != test_null_list())
       assert_false(null != null_list)
+      assert_false([] == null)
+      assert_false([1] == null)
 
       assert_false(g:not_null_list == v:null)
       assert_false(v:null == g:not_null_list)
@@ -866,6 +876,8 @@ def Test_expr4_compare_null()
       assert_false(null_string != null)
       assert_false(v:null != test_null_string())
       assert_false(null != null_string)
+      assert_false('' == null)
+      assert_false('a' == null)
 
       assert_true(null_string is test_null_string())
       assert_false(null_string is '')
@@ -1708,6 +1720,24 @@ def Test_expr6_float()
       assert_equal(-9.9, g:afloat - g:anint)
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+" Test for using null with the "+", "-" and "." operators
+def Test_expr6_null()
+  var lines =<< trim END
+    vim9script
+    var x: list<number> = [] + null
+  END
+  v9.CheckSourceFailure(lines, 'E745: Using a List as a Number', 2)
+
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var x: list<number> = [] + null
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1051: Wrong argument type for +', 1)
 enddef
 
 func Test_expr6_fails()

@@ -1361,9 +1361,7 @@ typval_compare(
 	// it means TRUE.
 	n1 = (type == EXPR_ISNOT);
     }
-    else if (((tv1->v_type == VAR_SPECIAL && tv1->vval.v_number == VVAL_NULL)
-		|| (tv2->v_type == VAR_SPECIAL
-					   && tv2->vval.v_number == VVAL_NULL))
+    else if ((TYPVAL_IS_NULL(tv1) || (TYPVAL_IS_NULL(tv2)))
 	    && tv1->v_type != tv2->v_type
 	    && (type == EXPR_EQUAL || type == EXPR_NEQUAL))
     {
@@ -1598,8 +1596,7 @@ typval_compare_list(
     int
 typval_compare_null(typval_T *tv1, typval_T *tv2)
 {
-    if ((tv1->v_type == VAR_SPECIAL && tv1->vval.v_number == VVAL_NULL)
-	    || (tv2->v_type == VAR_SPECIAL && tv2->vval.v_number == VVAL_NULL))
+    if (TYPVAL_IS_NULL(tv1) || TYPVAL_IS_NULL(tv2))
     {
 	typval_T	*tv = tv1->v_type == VAR_SPECIAL ? tv2 : tv1;
 

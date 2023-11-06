@@ -1880,6 +1880,8 @@ ex_let_one(
 	    }
 	    else
 	    {
+		if (in_vim9script())
+		    normalize_null_value(lv.ll_type, tv);
 		set_var_lval(&lv, p, tv, copy, flags, op, var_idx);
 		arg_end = lv.ll_name_end;
 	    }
@@ -3957,6 +3959,14 @@ set_var_const(
 
     if (di != NULL)
     {
+	if (vim9script && TYPVAL_IS_NULL(tv) && di->di_tv.v_type != VAR_ANY)
+	{
+	    clear_tv(tv);
+	    tv->v_type = di->di_tv.v_type;
+	    if (di->di_tv.v_type == VAR_SPECIAL)
+		tv->vval.v_number = di->di_tv.vval.v_number;
+	}
+
 	// Item already exists.  Allowed to replace when reloading.
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{

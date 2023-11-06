@@ -1896,6 +1896,12 @@ set_var_lval(
 		    return;
 		}
 
+		if (TYPVAL_IS_NULL(rettv) && tv.v_type != VAR_ANY)
+		{
+		    clear_tv(rettv);
+		    rettv->v_type = tv.v_type;
+		}
+
 		if ((di == NULL
 			 || (!var_check_ro(di->di_flags, lp->ll_name, FALSE)
 			   && !tv_check_lock(&di->di_tv, lp->ll_name, FALSE)))

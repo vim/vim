@@ -1348,8 +1348,12 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    semsg(_(e_missing_comma_in_list_str), p);
 	    return FAIL;
 	}
+	type_T *save_ctx_assign_type = cctx->ctx_assign_type;
+	if (cctx->ctx_assign_type != NULL)
+	    cctx->ctx_assign_type = cctx->ctx_assign_type->tt_member;
 	if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
 	    return FAIL;
+	cctx->ctx_assign_type = save_ctx_assign_type;
 	if (!is_const)
 	    is_all_const = FALSE;
 	++count;
@@ -1617,8 +1621,12 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    goto failret;
 	}
 
+	type_T *save_ctx_assign_type = cctx->ctx_assign_type;
+	if (cctx->ctx_assign_type != NULL)
+	    cctx->ctx_assign_type = cctx->ctx_assign_type->tt_member;
 	if (compile_expr0_ext(arg, cctx, &is_const) == FAIL)
 	    return FAIL;
+	cctx->ctx_assign_type = save_ctx_assign_type;
 	if (!is_const)
 	    is_all_const = FALSE;
 	++count;
@@ -3633,7 +3641,7 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
  * Returns OK or FAIL.
  */
     int
-compile_expr0_ext(char_u **arg,  cctx_T *cctx, int *is_const)
+compile_expr0_ext(char_u **arg, cctx_T *cctx, int *is_const)
 {
     ppconst_T	ppconst;
 
@@ -3645,6 +3653,11 @@ compile_expr0_ext(char_u **arg,  cctx_T *cctx, int *is_const)
     }
     if (is_const != NULL)
 	*is_const = ppconst.pp_used > 0 || ppconst.pp_is_const;
+    if (cctx->ctx_assign_type != NULL && ppconst.pp_used > 0)
+    {
+	normalize_null_value(cctx->ctx_assign_type,
+					&ppconst.pp_tv[ppconst.pp_used - 1]);
+    }
     if (generate_ppconst(cctx, &ppconst) == FAIL)
 	return FAIL;
     return OK;

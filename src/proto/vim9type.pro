@@ -33,6 +33,7 @@ void set_type_on_stack(cctx_T *cctx, type_T *type, int offset);
 type_T *get_type_on_stack(cctx_T *cctx, int offset);
 type_T *get_decl_type_on_stack(cctx_T *cctx, int offset);
 type_T *get_member_type_from_stack(int count, int skip, cctx_T *cctx);
+void normalize_null_value(type_T *lv_type, typval_T *tv);
 char *vartype_name(vartype_T type);
 char *type_name(type_T *type, char **tofree);
 void f_typename(typval_T *argvars, typval_T *rettv);

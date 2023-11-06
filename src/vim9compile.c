@@ -2661,8 +2661,11 @@ compile_assignment(
 	wp = op + oplen;
 	if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	    return FAIL;
+	type_T *save_ctx_assign_type = cctx->ctx_assign_type;
+	cctx->ctx_assign_type = &t_list_any;
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;
+	cctx->ctx_assign_type = save_ctx_assign_type;
 	end = p;
 
 	if (cctx->ctx_skip != SKIP_YES)
@@ -2795,7 +2798,14 @@ compile_assignment(
 				++cctx->ctx_locals.ga_len;
 			    goto theend;
 			}
+			type_T *save_ctx_assign_type = cctx->ctx_assign_type;
+			cctx->ctx_assign_type = NULL;
+			if (lhs.lhs_lvar != NULL)
+			    cctx->ctx_assign_type = lhs.lhs_lvar->lv_type;
+
 			r = compile_expr0_ext(&p, cctx, &is_const);
+
+			cctx->ctx_assign_type = save_ctx_assign_type;
 			if (lhs.lhs_new_local)
 			    ++cctx->ctx_locals.ga_len;
 		    }
@@ -2876,7 +2886,7 @@ compile_assignment(
 									 cctx))
 			    use_type = lhs.lhs_member_type;
 			if (need_type_where(rhs_type, use_type, FALSE, -1,
-					 where, cctx, FALSE, is_const) == FAIL)
+				    where, cctx, FALSE, is_const) == FAIL)
 			    goto theend;
 		    }
 		}
@@ -3437,9 +3447,11 @@ compile_def_function(
 	    // Make sure later arguments are not found.
 	    ufunc->uf_args_visible = arg_idx;
 
+	    cctx.ctx_assign_type = ufunc->uf_arg_types[arg_idx];
 	    int r = compile_expr0(&arg, &cctx);
 	    if (r == FAIL)
 		goto erret;
+	    cctx.ctx_assign_type = NULL;
 
 	    // If no type specified use the type of the default value.
 	    // Otherwise check that the default value type matches the

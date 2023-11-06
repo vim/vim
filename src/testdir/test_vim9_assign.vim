@@ -272,7 +272,7 @@ def Test_assign_concat()
     s ..= '-'
     s ..= v:null
     s ..= g:someNumber
-    assert_equal('-99true-null43', s)
+    assert_equal('-99true-43', s)
   END
   v9.CheckDefAndScriptSuccess(lines)
 
@@ -3199,6 +3199,306 @@ def Test_type_check()
     F()
   END
   v9.CheckScriptFailure(lines, 'E1411: Missing dot after object "o"')
+enddef
+
+" Test for using null in assignments
+def Test_assign_null()
+  var lines =<< trim END
+    var v1: number = null
+    assert_equal(0, v1)
+    assert_equal('number', typename(v1))
+    v1 = 100
+    v1 = null
+    assert_equal(0, v1)
+
+    var v2: string = null
+    assert_equal('', v2)
+    assert_equal('string', typename(v2))
+    v2 = 'abc'
+    v2 = null
+    assert_equal('', v2)
+
+    var v3: bool = null
+    assert_equal(false, v3)
+    assert_equal('bool', typename(v3))
+    v3 = true
+    v3 = null
+    assert_equal(false, v3)
+
+    var v4: float = null
+    assert_equal(0.0, v4)
+    assert_equal('float', typename(v4))
+    v4 = 0.1
+    v4 = null
+    assert_equal(0.0, v4)
+
+    var v5: list<number> = null
+    assert_equal([], v5)
+    assert_equal('list<any>', typename(v5))
+    v5 = []
+    v5 = null
+    assert_equal([], v5)
+
+    var v6: dict<number> = null
+    assert_equal({}, v6)
+    assert_equal('dict<any>', typename(v6))
+    v6 = {}
+    v6 = null
+    assert_equal({}, v6)
+
+    var v7: blob = null
+    assert_equal(0z, v7)
+    assert_equal('blob', typename(v7))
+    v7 = 0z12
+    v7 = null
+    assert_equal(0z, v7)
+
+    var Fn1: func = null
+    assert_equal(test_null_function(), Fn1)
+    assert_equal('func(...): unknown', typename(Fn1))
+    Fn1 = function('min')
+    Fn1 = null
+    assert_equal(test_null_function(), Fn1)
+
+    var l: list<number>
+    var d: dict<number>
+    var b: blob
+    var Fn: func
+
+    [l, d, b, Fn] = [null, null, null, null]
+    assert_equal([[], {}, 0z, test_null_function()], [l, d, b, Fn])
+  END
+  v9.CheckSourceSuccess(['vim9script'] + lines)
+
+  v9.CheckSourceSuccess(['vim9script', 'def Func()'] + lines
+                        + ['enddef', 'defcompile', 'Func()'])
+
+  # Assigning null to a variable which is already set to null
+  lines =<< trim END
+    vim9script
+    var x = null
+    x = null
+    assert_equal('special', typename(x))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Assigning a variable without a type to null
+  lines =<< trim END
+    vim9script
+    var sv1 = null
+    assert_equal('special', typename(sv1))
+    def Foo()
+      var fv1 = null
+      assert_equal('special', typename(fv1))
+    enddef
+    Foo()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Assigning a function argument of "any" type to null
+  lines =<< trim END
+    vim9script
+    def Foo(s: string, x: any = null)
+      assert_equal(s, typename(x))
+    enddef
+    Foo('list<number>', [1, 2])
+    Foo('special')
+  END
+  v9.CheckSourceSuccess(lines)
+
+  for [vartype, result] in [
+                            ['bool', 'false'],
+                            ['number', '0'],
+                            ['float', '0.0'],
+                            ['string', "''"],
+                            ['blob', '0z'],
+                            ['list<string>', '[]'],
+                            ['dict<string>', '{}'],
+                            ['func', 'test_null_function()']]
+    # Test for passing null as an argument to a function
+    var flines =<< trim eval CODE
+      vim9script
+      def Foo(X: {vartype})
+        assert_equal({result}, X)
+      enddef
+      Foo(null)
+    CODE
+    v9.CheckSourceSuccess(flines)
+
+    # Test for passing null as a default function argument
+    flines =<< trim eval CODE
+      vim9script
+      def Foo(X: {vartype} = null)
+        assert_equal({result}, X)
+      enddef
+      Foo()
+    CODE
+    v9.CheckSourceSuccess(flines)
+
+    # Test for assigning null to a function local variable
+    flines =<< trim eval CODE
+      vim9script
+      def Foo()
+        var X: {vartype} = null
+        var Y: {vartype}
+        X = null
+        assert_equal({result}, X)
+        assert_equal({result}, Y)
+      enddef
+      Foo()
+    CODE
+    v9.CheckSourceSuccess(flines)
+
+    # Test for returning null from a function
+    flines =<< trim eval CODE
+      vim9script
+      def Foo(): {vartype}
+        return null
+      enddef
+      assert_equal({result}, Foo())
+    CODE
+    v9.CheckSourceSuccess(flines)
+
+    # Test for passing null as an argument to a funcref
+    flines =<< trim eval CODE
+      vim9script
+      var Fn = (V: {vartype}) => assert_equal({result}, V)
+      Fn(null)
+    CODE
+    v9.CheckSourceSuccess(flines)
+
+    # Test for assigning null to a script-local variable
+    flines =<< trim eval CODE
+      vim9script
+      var X: {vartype} = null
+      var Y: {vartype}
+      Y = null
+      assert_equal({result}, X)
+      assert_equal({result}, Y)
+    CODE
+    v9.CheckSourceSuccess(flines)
+
+    # Test for assigning a list variable item to null
+    flines =<< trim eval END
+      var l1: list<list<{vartype}>> = null
+      assert_equal([], l1)
+      var l2: list<list<{vartype}>> = [null]
+      assert_equal([[]], l2)
+      var l3: list<list<{vartype}>> = [[null]]
+      assert_equal([[{result}]], l3)
+      var l4: list<list<{vartype}>> = [null, null]
+      assert_equal([[], []], l4)
+      var l5: list<list<{vartype}>> = [[null], [null]]
+      assert_equal([[{result}], [{result}]], l5)
+    END
+    v9.CheckSourceSuccess(['vim9script'] + flines)
+    v9.CheckSourceSuccess(['vim9script', 'def Foo()'] + flines
+                          + ['enddef', 'defcompile', 'Foo()'])
+
+    # Test for assigning a member of a dict type to null
+    flines =<< trim eval END
+      var d1: dict<dict<list<{vartype}>>> = null
+      assert_equal({{}}, d1)
+      var d2: dict<dict<list<{vartype}>>> = {{x: null, y: {{a: [{result}]}}}}
+      assert_equal({{x: {{}}, y: {{a: [{result}]}}}}, d2)
+      var d3: dict<dict<list<{vartype}>>> = {{x: null, y: null}}
+      assert_equal({{x: {{}}, y: {{}}}}, d3)
+      var d4: dict<dict<list<{vartype}>>> = {{x: {{a: null, b: [{result}]}}}}
+      assert_equal({{x: {{a: [], b: [{result}]}}}}, d4)
+    END
+    v9.CheckSourceSuccess(['vim9script'] + flines)
+    v9.CheckSourceSuccess(['vim9script', 'def Foo()'] + flines
+                          + ['enddef', 'defcompile', 'Foo()'])
+
+    # Test for passing null as argument to a function with a composite argument
+    flines =<< trim eval END
+      vim9script
+      def Foo(a: list<list<{vartype}>>): list<list<{vartype}>>
+          return a
+      enddef
+      assert_equal([], Foo(null))
+      assert_equal([[]], Foo([null]))
+      assert_equal([[], []], Foo([null, null]))
+      assert_equal([[{result}]], Foo([[null]]))
+      assert_equal([[{result}], [{result}]], Foo([[null], [null]]))
+    END
+    v9.CheckSourceSuccess(flines)
+
+    # Test for passing null as argument to a lambda with a composite argument
+    flines =<< trim eval END
+      var Fn = (x: list<list<{vartype}>>): list<list<{vartype}>> => x
+      assert_equal([], Fn(null))
+      assert_equal([[]], Fn([null]))
+      assert_equal([[], []], Fn([null, null]))
+      assert_equal([[{result}]], Fn([[null]]))
+      assert_equal([[{result}], [{result}]], Fn([[null], [null]]))
+    END
+    v9.CheckSourceSuccess(['vim9script'] + flines)
+    v9.CheckSourceSuccess(['vim9script', 'def Foo()'] + flines
+                          + ['enddef', 'defcompile', 'Foo()'])
+
+    # Test for passing null as argument to a funcref with a composite argument
+    flines =<< trim eval END
+      def Bar(x: list<list<{vartype}>>): list<list<{vartype}>>
+        return x
+      enddef
+
+      var Fn = Bar
+      assert_equal([], Fn(null))
+      assert_equal([[]], Fn([null]))
+      assert_equal([[], []], Fn([null, null]))
+      assert_equal([[{result}]], Fn([[null]]))
+      assert_equal([[{result}], [{result}]], Fn([[null], [null]]))
+    END
+    v9.CheckSourceSuccess(['vim9script'] + flines)
+    v9.CheckSourceSuccess(['vim9script', 'def Foo()'] + flines
+                          + ['enddef', 'defcompile', 'Foo()'])
+
+    # Assign multiple variables (list type) to null using a List
+    flines =<< trim eval END
+      var x: list<list<{vartype}>>
+      var y: list<list<{vartype}>>
+      [x, y] = [null, null]
+      assert_equal([[], []], [x, y])
+      [x, y] = [[null], [null]]
+      assert_equal([[[]], [[]]], [x, y])
+      [x, y] = [[null, null], [null, null]]
+      assert_equal([[[], []], [[], []]], [x, y])
+      [x, y] = [[[null], [null]], [[null], [null]]]
+      assert_equal([[[{result}], [{result}]], [[{result}], [{result}]]], [x, y])
+    END
+    v9.CheckSourceSuccess(['vim9script'] + flines)
+    v9.CheckSourceSuccess(['vim9script', 'def Foo()'] + flines
+                          + ['enddef', 'defcompile', 'Foo()'])
+
+    # Assign multiple variables (dict type) to null using a List
+    flines =<< trim eval END
+      var x: dict<dict<{vartype}>>
+      var y: dict<dict<{vartype}>>
+      [x, y] = [null, null]
+      assert_equal([{{}}, {{}}], [x, y])
+      [x, y] = [{{a: null}}, {{b: null}}]
+      assert_equal([{{a: {{}}}}, {{b: {{}}}}], [x, y])
+      [x, y] = [{{a: null, b: null}}, {{c: null, d: null}}]
+      assert_equal([{{a: {{}}, b: {{}}}}, {{c: {{}}, d: {{}}}}], [x, y])
+      [x, y] = [{{a: {{b: null}}, c: {{d: null}}}}, {{e: {{f: null}}, g: {{h: null}}}}]
+      assert_equal([{{a: {{b: {result}}}, c: {{d: {result}}}}}, {{e: {{f: {result}}}, g: {{h: {result}}}}}], [x, y])
+    END
+    v9.CheckSourceSuccess(['vim9script'] + flines)
+    v9.CheckSourceSuccess(['vim9script', 'def Foo()'] + flines
+                          + ['enddef', 'defcompile', 'Foo()'])
+  endfor
+
+  # Assign a list containing a variable to null
+  lines =<< trim END
+    vim9script
+    def Foo()
+      var x: list<list<number>>
+      [x] = null
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1093: Expected 1 items but got -1', 2)
 enddef
 
 " Test for checking the argument type of a def function

@@ -455,3 +455,11 @@
 // Iterate over all the items in a hash table
 #define FOR_ALL_HASHTAB_ITEMS(ht, hi, todo) \
     for ((hi) = (ht)->ht_array; (todo) > 0; ++(hi))
+
+// Is typval "t" a null type?
+#define TYPVAL_IS_NULL(t) \
+	    ((t)->v_type == VAR_SPECIAL && (t)->vval.v_number == VVAL_NULL)
+
+// Is type "t" a null type?
+#define TYPE_IS_NULL(t) \
+	    ((t)->tt_type == VAR_SPECIAL && ((t)->tt_flags & TTFLAG_NULL))

@@ -2659,8 +2659,11 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	else
 	{
 	    // compile return argument into instructions
+	    type_T *save_ctx_assign_type = cctx->ctx_assign_type;
+	    cctx->ctx_assign_type = cctx->ctx_ufunc->uf_ret_type;
 	    if (compile_expr0(&p, cctx) == FAIL)
 		return NULL;
+	    cctx->ctx_assign_type = save_ctx_assign_type;
 	}
 
 	if (cctx->ctx_skip != SKIP_YES)

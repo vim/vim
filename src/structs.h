@@ -1498,7 +1498,7 @@ struct type_S {
     vartype_T	    tt_type;
     int8_T	    tt_argcount;    // for func, incl. vararg, -1 for unknown
     int8_T	    tt_min_argcount; // number of non-optional arguments
-    char_u	    tt_flags;	    // TTFLAG_ values
+    short_u	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
@@ -1516,6 +1516,7 @@ typedef struct {
 #define TTFLAG_STATIC	    0x10    // one of the static types, e.g. t_any
 #define TTFLAG_CONST	    0x20    // cannot be changed
 #define TTFLAG_SUPER	    0x40    // object from "super".
+#define TTFLAG_NULL	    0x80    // "null"
 
 typedef enum {
     VIM_ACCESS_PRIVATE,	// read/write only inside the class

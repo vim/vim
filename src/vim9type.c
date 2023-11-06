@@ -218,6 +218,9 @@ set_tv_type(typval_T *tv, type_T *type)
 	// If the variable type is "any", then keep the value type.
 	// e.g.  var x: any = [1, 2] or var y: any = {v: 1}
 	return;
+
+    normalize_null_value(type, tv);
+
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
 	dict_T *d = tv->vval.v_dict;
@@ -272,7 +275,10 @@ get_list_type(type_T *member_type, garray_T *type_gap)
     if (member_type == NULL || member_type->tt_type == VAR_ANY)
 	return &t_list_any;
     if (member_type->tt_type == VAR_VOID
-	    || member_type->tt_type == VAR_UNKNOWN)
+	    || member_type->tt_type == VAR_UNKNOWN
+	    || TYPE_IS_NULL(member_type))
+	// If the member type is void, unknown or null, then treat it as an
+	// empty list
 	return &t_list_empty;
     if (member_type->tt_type == VAR_BOOL)
 	return &t_list_bool;
@@ -851,6 +857,10 @@ check_type_maybe(
 	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
 
     {
+	// "null" type is always equal to all the other types
+	if (TYPE_IS_NULL(actual))
+	    return OK;
+
 	// tt_type should match, except that a "partial" can be assigned to a
 	// variable with type "func".
 	// And "unknown" (using global variable) and "any" need a runtime type
@@ -1029,8 +1039,14 @@ check_argument_types(
 	else
 	    expected = type->tt_args[i];
 
-	// check the type, unless the value is v:none
-	if ((tv->v_type != VAR_SPECIAL || tv->vval.v_number != VVAL_NONE)
+	// Convert null value arguments (if any) to the corresponding type
+	// specific empty value.
+	normalize_null_value(expected, tv);
+
+	// check the type, unless the value is v:none or v:null
+	if ((tv->v_type != VAR_SPECIAL ||
+		    (tv->vval.v_number != VVAL_NONE
+		     && tv->vval.v_number != VVAL_NULL))
 		   && check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)
 	    return FAIL;
     }
@@ -1482,14 +1498,14 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	return;
     }
 
-    // If either is VAR_UNKNOWN use the other type.  An empty list/dict has no
-    // specific type.
-    if (type1 == NULL || type1->tt_type == VAR_UNKNOWN)
+    // If either is VAR_UNKNOWN or NULL use the other type.  An empty list/dict
+    // has no specific type.
+    if (type1 == NULL || type1->tt_type == VAR_UNKNOWN || TYPE_IS_NULL(type1))
     {
 	*dest = type2;
 	return;
     }
-    if (type2 == NULL || type2->tt_type == VAR_UNKNOWN)
+    if (type2 == NULL || type2->tt_type == VAR_UNKNOWN || TYPE_IS_NULL(type2))
     {
 	*dest = type1;
 	return;
@@ -1673,6 +1689,51 @@ get_member_type_from_stack(
     }
 
     return result;
+}
+
+/*
+ * Normalize the generic "null" values in typval "tv" based on the
+ * corresponding type in "lv".  For composite types like List and Dict,
+ * recursively normalize the "null" values.
+ */
+    void
+normalize_null_value(type_T *lv_type, typval_T *tv)
+{
+    if (TYPVAL_IS_NULL(tv))
+    {
+	if (lv_type != NULL && lv_type->tt_type != VAR_SPECIAL
+					&& lv_type->tt_type != VAR_ANY)
+	{
+	    clear_tv(tv);
+	    tv->v_type = lv_type->tt_type;
+	}
+	return;
+    }
+
+    if (tv->v_type == VAR_LIST)
+    {
+	if (tv->vval.v_list != NULL && lv_type != NULL
+				&& lv_type->tt_member != NULL
+				&& lv_type->tt_member->tt_type != VAR_ANY)
+	{
+	    listitem_T	*li;
+	    FOR_ALL_LIST_ITEMS(tv->vval.v_list, li)
+		normalize_null_value(lv_type->tt_member, &li->li_tv);
+	}
+    }
+    else if (tv->v_type == VAR_DICT)
+    {
+	if (tv->vval.v_dict != NULL && lv_type != NULL
+				&& lv_type->tt_member != NULL
+				&& lv_type->tt_member->tt_type != VAR_ANY)
+	{
+	    dict_iterator_T iter;
+	    typval_T	    *value;
+	    dict_iterate_start(tv, &iter);
+	    while (dict_iterate_next(&iter, &value) != NULL)
+		normalize_null_value(lv_type->tt_member, value);
+	}
+    }
 }
 
     char *

@@ -406,6 +406,9 @@ check_ufunc_arg_types(ufunc_T *ufunc, int argcount, int off, ectx_T *ectx)
 	    type = ufunc->uf_arg_types[i];
 	else if (ufunc->uf_va_type != NULL)
 	    type = ufunc->uf_va_type->tt_member;
+
+	normalize_null_value(type, &argv[i]);
+
 	if (type != NULL && check_typval_arg_type(type,
 		    &argv[i], NULL, i + 1) == FAIL)
 	    return FAIL;
@@ -3814,16 +3817,33 @@ exec_instructions(ectx_T *ectx)
 
 	    // store local variable
 	    case ISN_STORE:
-		--ectx->ec_stack.ga_len;
-		tv = STACK_TV_VAR(iptr->isn_arg.number);
-		if (check_typval_is_value(STACK_TV_BOT(0)) == FAIL)
 		{
-		    clear_tv(STACK_TV_BOT(0));
-		    goto on_error;
+		    --ectx->ec_stack.ga_len;
+		    tv = STACK_TV_VAR(iptr->isn_arg.number);
+		    typval_T *rhs_tv = STACK_TV_BOT(0);
+
+		    if (check_typval_is_value(rhs_tv) == FAIL)
+		    {
+			clear_tv(rhs_tv);
+			goto on_error;
+		    }
+
+		    // If the rhs is "null", then use the corresponding lhs
+		    // null type.  If the lhs is "any" type or unknown, then
+		    // use the special "null" type.  Note that if a function
+		    // local variable doesn't have a declared type, then it
+		    // uses the "number" type.
+		    if (TYPVAL_IS_NULL(rhs_tv)
+				&& tv->v_type != VAR_ANY
+				&& tv->v_type != VAR_NUMBER)
+		    {
+			clear_tv(rhs_tv);
+			rhs_tv->v_type = tv->v_type;
+		    }
+		    clear_tv(tv);
+		    *tv = *rhs_tv;
+		    break;
 		}
-		clear_tv(tv);
-		*tv = *STACK_TV_BOT(0);
-		break;
 
 	    // store s: variable in old script or autoload import
 	    case ISN_STORES:
@@ -6147,7 +6167,7 @@ call_def_function(
 		else if (check_typval_arg_type(expected, tv,
 						   NULL, argv_idx + 1) == FAIL)
 		    goto failed_early;
-	}
+	    }
 	    if (!done)
 		copy_tv(tv, STACK_TV_BOT(0));
 	}
