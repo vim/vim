@@ -260,6 +260,9 @@ func s:modeline_fails_dll(what, text, error, interp)
 endfunc
 
 func Test_modeline_fails_always2()
+  if empty(s:dyninterp_list)
+    throw 'skipped. no dynamic language interpreter enabled.'
+  endif
   call s:modeline_fails_dll('luadll', 'luadll=Something()', 'E520:', 'lua')
   call s:modeline_fails_dll('mzschemedll', 'mzschemedll=Something()', 'E520:', 'mzscheme')
   call s:modeline_fails_dll('mzschemegcdll', 'mzschemegcdll=Something()', 'E520:', 'mzscheme')
