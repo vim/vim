@@ -245,6 +245,14 @@ func Test_modeline_fails_always()
   call s:modeline_fails('t_8b', 't_8b=Something()', 'E520:')
 endfunc
 
+let s:dyninterp_list = execute('version')
+    \ ->split('\n')
+    \ ->filter('v:val[0] =~ ''[-+]''')
+    \ ->reduce({acc, val -> acc + split(val,'\s\+')}, [])
+    \ ->filter('v:val[0] == ''+''')
+    \ ->filter('v:val =~ ''/dyn$'' || v:val =~ ''/dyn-stable$''')
+    \ ->map({k,v -> substitute(v, '/.*$', '', '')})
+
 func Test_modeline_fails_always2()
   call s:modeline_fails('luadll', 'luadll=Something()', 'E520:')
   call s:modeline_fails('mzschemedll', 'mzschemedll=Something()', 'E520:')
