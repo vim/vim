@@ -164,7 +164,9 @@ func Test_modeline_colon()
 endfunc
 
 func s:modeline_fails(what, text, error)
-  call CheckOption(a:what)
+  if !exists('+' .. a:what)
+    return
+  endif
   let fname = "Xmodeline_fails_" . a:what
   call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname, 'D')
   let modeline = &modeline
