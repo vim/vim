@@ -253,6 +253,12 @@ let s:dyninterp_list = execute('version')
     \ ->filter('v:val =~ ''/dyn$'' || v:val =~ ''/dyn-stable$''')
     \ ->map({k,v -> substitute(v, '/.*$', '', '')})
 
+func s:modeline_fails_dll(what, text, error, interp)
+  if index(s:dyninterp_list, '+' . a:interp) >= 0
+    call s:modeline_fails(a:what, a:text, a:error)
+  endif
+endfunc
+
 func Test_modeline_fails_always2()
   call s:modeline_fails('luadll', 'luadll=Something()', 'E520:')
   call s:modeline_fails('mzschemedll', 'mzschemedll=Something()', 'E520:')
