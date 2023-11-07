@@ -9062,10 +9062,12 @@ null	vim9.txt	/*null*
 null-variable	eval.txt	/*null-variable*
 null_blob	vim9.txt	/*null_blob*
 null_channel	vim9.txt	/*null_channel*
+null_class	vim9.txt	/*null_class*
 null_dict	vim9.txt	/*null_dict*
 null_function	vim9.txt	/*null_function*
 null_job	vim9.txt	/*null_job*
 null_list	vim9.txt	/*null_list*
+null_object	vim9.txt	/*null_object*
 null_partial	vim9.txt	/*null_partial*
 null_string	vim9.txt	/*null_string*
 number_relativenumber	options.txt	/*number_relativenumber*
