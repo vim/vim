@@ -260,6 +260,9 @@ func s:modeline_fails_dll(what, text, error, interp)
 endfunc
 
 func Test_modeline_fails_always2()
+  if has('python_compiled') || has('python3_compiled')
+    call s:modeline_fails('pyxversion', 'pyxversion=Something()', 'E520:')
+  endif
   if empty(s:dyninterp_list)
     throw 'skipped. no dynamic language interpreter enabled.'
   endif
@@ -271,7 +274,6 @@ func Test_modeline_fails_always2()
   call s:modeline_fails_dll('pythonhome', 'pythonhome=Something()', 'E520:', 'python')
   call s:modeline_fails_dll('pythonthreedll', 'pythonthreedll=Something()', 'E520:', 'python3')
   call s:modeline_fails_dll('pythonthreehome', 'pythonthreehome=Something()', 'E520:', 'python3')
-  call s:modeline_fails_dll('pyxversion', 'pyxversion=Something()', 'E520:', 'python3')
   call s:modeline_fails_dll('rubydll', 'rubydll=Something()', 'E520:', 'ruby')
   call s:modeline_fails_dll('tcldll', 'tcldll=Something()', 'E520:', 'tcl')
 endfunc
