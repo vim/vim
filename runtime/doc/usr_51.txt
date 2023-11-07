@@ -103,7 +103,7 @@ NOT LOADING
 
 It is possible that a user doesn't always want to load this plugin.  Or the
 system administrator has dropped it in the system-wide plugin directory, but a
-user has his own plugin he wants to use.  Then the user must have a chance to
+user has their own plugin he wants to use.  Then the user must have a chance to
 disable loading this specific plugin.  These lines will make it possible: >
 
   7	if exists("g:loaded_typecorrect")
@@ -147,7 +147,7 @@ will be used, which is a backslash.  Then a map for "\a" will be defined.
 Note that <unique> is used, this will cause an error message if the mapping
 already happened to exist. |:map-<unique>|
 
-But what if the user wants to define his own key sequence?  We can allow that
+But what if the user wants to define their own key sequence?  We can allow that
 with this mechanism: >
 
  19	if !hasmapto('<Plug>TypecorrAdd;')
@@ -156,7 +156,7 @@ with this mechanism: >
 
 This checks if a mapping to "<Plug>TypecorrAdd;" already exists, and only
 defines the mapping from "<Leader>a" if it doesn't.  The user then has a
-chance of putting this in his vimrc file: >
+chance of putting this in their vimrc file: >
 
 	map ,c  <Plug>TypecorrAdd;
 
