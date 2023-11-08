@@ -4462,16 +4462,7 @@ fillchar_status(int *attr, win_T *wp)
 	*attr = HL_ATTR(HLF_SNC);
 	fill = wp->w_fill_chars.stlnc;
     }
-    // Use fill when there is highlighting, and highlighting of current
-    // window differs, or the fillchars differ, or this is not the
-    // current window
-    if (*attr != 0 && ((HL_ATTR(HLF_S) != HL_ATTR(HLF_SNC)
-			|| wp != curwin || ONE_WINDOW)
-		    || (wp->w_fill_chars.stl != wp->w_fill_chars.stlnc)))
-	return fill;
-    if (wp == curwin)
-	return '^';
-    return '=';
+    return fill;
 }
 
 /*
