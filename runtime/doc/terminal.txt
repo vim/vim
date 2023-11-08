@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.0.  Last change: 2023 Aug 23
+*terminal.txt*	For Vim version 9.0.  Last change: 2023 Nov 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -42,6 +42,7 @@ If the result is "1" you have it.
       Other commands				|termdebug-commands|
       Events					|termdebug-events|
       Prompt mode				|termdebug-prompt|
+      Mappings					|termdebug-mappings|
       Communication				|termdebug-communication|
       Customizing				|termdebug-customizing|
 
@@ -1461,18 +1462,22 @@ Prompt mode can be used even when the |+terminal| feature is present with: >
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_use_prompt = 1
 <
-						*termdebug_map_K*
-The K key is normally mapped to |:Evaluate|. If you do not want this use: >
+Mappings ~
+					*termdebug_map_K* *termdebug-mappings*
+The K key is normally mapped to |:Evaluate| unless there already exists a
+buffer local mapping to K |map-local|.  If you do not want this use: >
 	let g:termdebug_config['map_K'] = 0
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_map_K = 0
 <
 						*termdebug_map_minus*
-The - key is normally mapped to |:Down|. If you do not want this use: >
+The - key is normally mapped to |:Down| unless there already exists a buffer
+local mapping to the - key.  If you do not want this use: >
 	let g:termdebug_config['map_minus'] = 0
 <
 						*termdebug_map_plus*
-The + key is normally mapped to |:Up|. If you do not want this use: >
+The + key is normally mapped to |:Up| unless there already exists a buffer
+local mapping to the + key.  If you do not want this use: >
 	let g:termdebug_config['map_plus'] = 0
 <
 						*termdebug_disasm_window*

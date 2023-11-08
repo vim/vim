@@ -10434,6 +10434,7 @@ termdebug-customizing	terminal.txt	/*termdebug-customizing*
 termdebug-events	terminal.txt	/*termdebug-events*
 termdebug-example	terminal.txt	/*termdebug-example*
 termdebug-frames	terminal.txt	/*termdebug-frames*
+termdebug-mappings	terminal.txt	/*termdebug-mappings*
 termdebug-prompt	terminal.txt	/*termdebug-prompt*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
