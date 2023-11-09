@@ -9,7 +9,7 @@ CI:
 - any: ['.codecov.yml']
 
 documentation:
-- any: ['*/doc/*']
+- all: ['*/doc/*']
 
 translation:
 - any: ['src/po/*.po']
