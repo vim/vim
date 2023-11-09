@@ -2534,6 +2534,9 @@ au BufNewFile,BufRead */etc/xinetd.conf		setf xinetd
 " XS Perl extension interface language
 au BufNewFile,BufRead *.xs			setf xs
 
+" X compose file
+au BufNewFile,BufRead .XCompose,Compose	setf xcompose
+
 " X resources file
 au BufNewFile,BufRead .Xdefaults,.Xpdefaults,.Xresources,xdm-config,*.ad setf xdefaults
 
