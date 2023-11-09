@@ -8,6 +8,9 @@ CI:
 - any: ['.appveyor.yml']
 - any: ['.codecov.yml']
 
+documentation:
+- any: ['*/doc/*']
+
 translation:
 - any: ['src/po/*.po']
 
