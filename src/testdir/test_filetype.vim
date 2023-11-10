@@ -186,6 +186,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cvs: ['cvs123'],
     cvsrc: ['.cvsrc'],
     cynpp: ['file.cyn'],
+    cypher: ['file.cypher'],
     d: ['file.d'],
     dart: ['file.dart', 'file.drt'],
     datascript: ['file.ds'],
