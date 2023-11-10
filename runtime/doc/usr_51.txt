@@ -147,8 +147,8 @@ will be used, which is a backslash.  Then a map for "\a" will be defined.
 Note that <unique> is used, this will cause an error message if the mapping
 already happened to exist. |:map-<unique>|
 
-But what if the user wants to define their own key sequence?  We can allow that
-with this mechanism: >
+But what if the user wants to define their own key sequence?  We can allow
+that with this mechanism: >
 
  19	if !hasmapto('<Plug>TypecorrAdd;')
  20	  map <unique> <Leader>a  <Plug>TypecorrAdd;
