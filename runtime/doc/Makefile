@@ -15,7 +15,7 @@ include ../../src/auto/config.mk
 
 # 17.10.23, added by Restorer
 # Common components
-include makefile_all.mak
+include make_all.mak
 
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html

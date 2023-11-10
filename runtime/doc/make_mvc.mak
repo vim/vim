@@ -4,7 +4,7 @@
 # 17.11.23, Restorer, <restorer@mail2k.ru>
 
 # Common components
-!INCLUDE makefile_all.mak
+!INCLUDE make_all.mak
 
 
 # TODO: to think about what to use instead of awk. PowerShell?
