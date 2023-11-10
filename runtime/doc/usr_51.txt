@@ -103,8 +103,8 @@ NOT LOADING
 
 It is possible that a user doesn't always want to load this plugin.  Or the
 system administrator has dropped it in the system-wide plugin directory, but a
-user has their own plugin they want to use.  Then the user must have a chance to
-disable loading this specific plugin.  These lines will make it possible: >
+user has their own plugin they want to use.  Then the user must have a chance
+to disable loading this specific plugin.  These lines will make it possible: >
 
   7	if exists("g:loaded_typecorrect")
   8	  finish
