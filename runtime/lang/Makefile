@@ -2,7 +2,7 @@
 
 # 08.11.23, added by Restorer
 # Common components
-include Make_all.mak
+include make_all.mak
 
 SED = LANG=C sed
 
