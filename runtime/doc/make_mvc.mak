@@ -10,10 +10,10 @@
 # TODO: to think about what to use instead of awk. PowerShell?
 #AWK =
 
-#
+# Correct the following line for the where executeable file vim is installed
 VIMEXE = D:\Programs\Vim\vim90\vim.exe
 
-#
+# Correct the following line for the directory where gettext et al is installed
 GETTEXT_PATH = D:\Programs\GetText\bin
 
 # In case some package like GnuWin32, UnixUtils
@@ -21,7 +21,7 @@ GETTEXT_PATH = D:\Programs\GetText\bin
 # If the "touch" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("touch.exe")
-TOUCH = touch.exe $@ 
+TOUCH = touch.exe $@
 !ELSE
 TOUCH = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
 !ENDIF
