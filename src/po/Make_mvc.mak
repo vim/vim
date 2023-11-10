@@ -102,8 +102,8 @@ nb.po : no.po
 ja.sjis.po : ja.po
 	@$(MAKE) -nologo -f Make_mvc.mak sjiscorr
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t CP932 $? | .\sjiscorr.exe > $@
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t CP932 $? | .\sjiscorr.exe > $@
 !ELSEIF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP932 $? | .\sjiscorr.exe > $@
 !ELSE
@@ -131,8 +131,8 @@ sjiscorr : sjiscorr.c
 # Convert ja.po to create ja.euc-jp.po
 ja.euc-jp.po : ja.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t EUC-JP -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t EUC-JP -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-JP $? > $@
@@ -162,8 +162,8 @@ ja.euc-jp.po : ja.po
 # Convert cs.po to create cs.cp1250.po.
 cs.cp1250.po : cs.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t CP1250 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
@@ -192,8 +192,8 @@ cs.cp1250.po : cs.po
 # Convert pl.po to create pl.cp1250.po.
 pl.cp1250.po : pl.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t CP1250 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
@@ -222,8 +222,8 @@ pl.cp1250.po : pl.po
 # Convert pl.po to create pl.UTF-8.po.
 pl.UTF-8.po : pl.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t UTF-8 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t UTF-8 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? > $@
@@ -248,8 +248,8 @@ pl.UTF-8.po : pl.po
 # Convert sk.po to create sk.cp1250.po.
 sk.cp1250.po : sk.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t CP1250 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
@@ -278,8 +278,8 @@ sk.cp1250.po : sk.po
 # Convert zh_CN.UTF-8.po to create zh_CN.po.
 zh_CN.po : zh_CN.UTF-8.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t GB2312 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t GB2312 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t GB2312 $? > $@
@@ -334,8 +334,8 @@ zh_CN.cp936.po : zh_CN.UTF-8.po
 # Convert zh_TW.UTF-8.po to create zh_TW.po
 zh_TW.po : zh_TW.UTF-8.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t BIG5 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t BIG5 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t BIG5 $? > $@
@@ -381,8 +381,8 @@ zh_TW.po : zh_TW.UTF-8.po
 #zh_TW.po : zh_TW.UTF-8.po
 #	@$(MAKE) -nologo -f Make_mvc.mak big5corr
 #	-$(RM) $@
-#!IF EXIST ("msgconv.exe")
-#	"msgconv.exe" -t BIG5 $? | .\big5corr.exe > $@
+#!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+#	"$(GETTEXT_PATH)\msgconv.exe" -t BIG5 $? | .\big5corr.exe > $@
 #!ELSEIF DEFINED (ICONV)
 #	$(ICONV) -f UTF-8 -t BIG5 $? | .\big5corr.exe > $@
 #!ELSE
@@ -412,8 +412,8 @@ zh_TW.po : zh_TW.UTF-8.po
 # Convert ko.UTF-8.po to create ko.po.
 ko.po : ko.UTF-8.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t EUC-KR -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t EUC-KR -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-KR $? > $@
@@ -443,8 +443,8 @@ ko.po : ko.UTF-8.po
 # Convert ru.po to create ru.cp1251.po.
 ru.cp1251.po : ru.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t CP1251 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t CP1251 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? > $@
@@ -474,8 +474,8 @@ ru.cp1251.po : ru.po
 # Convert uk.po to create uk.cp1251.po.
 uk.cp1251.po : uk.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
-	"msgconv.exe" -t CP1251 -o $@ $?
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" -t CP1251 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? > $@
