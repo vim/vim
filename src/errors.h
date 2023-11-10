@@ -3410,8 +3410,8 @@ EXTERN char e_public_must_be_followed_by_this_or_static[]
 	INIT(= N_("E1331: Public must be followed by \"this\" or \"static\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
-EXTERN char e_cannot_access_private_variable_str[]
-	INIT(= N_("E1333: Cannot access private variable \"%s\" in class \"%s\""));
+EXTERN char e_cannot_access_protected_variable_str[]
+	INIT(= N_("E1333: Cannot access protected variable \"%s\" in class \"%s\""));
 // E1334 unused
 EXTERN char e_variable_is_not_writable_str[]
 	INIT(= N_("E1335: Variable \"%s\" in class \"%s\" is not writable"));
@@ -3484,8 +3484,8 @@ EXTERN char e_warning_pointer_block_corrupted[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_a_return_type_with_new_method[]
 	INIT(= N_("E1365: Cannot use a return type with the \"new\" method"));
-EXTERN char e_cannot_access_private_method_str[]
-	INIT(= N_("E1366: Cannot access private method: %s"));
+EXTERN char e_cannot_access_protected_method_str[]
+	INIT(= N_("E1366: Cannot access protected method: %s"));
 EXTERN char e_variable_str_of_interface_str_has_different_access[]
 	INIT(= N_("E1367: Access level of variable \"%s\" of interface \"%s\" is different"));
 EXTERN char e_static_cannot_be_followed_by_this[]
@@ -3510,10 +3510,10 @@ EXTERN char e_method_str_of_class_str_has_different_access[]
 	INIT(= N_("E1377: Access level of method \"%s\" is different in class \"%s\""));
 EXTERN char e_static_member_not_supported_in_interface[]
 	INIT(= N_("E1378: Static member not supported in an interface"));
-EXTERN char e_private_variable_not_supported_in_interface[]
-	INIT(= N_("E1379: Private variable not supported in an interface"));
-EXTERN char e_private_method_not_supported_in_interface[]
-	INIT(= N_("E1380: Private method not supported in an interface"));
+EXTERN char e_protected_variable_not_supported_in_interface[]
+	INIT(= N_("E1379: Protected variable not supported in an interface"));
+EXTERN char e_protected_method_not_supported_in_interface[]
+	INIT(= N_("E1380: Protected method not supported in an interface"));
 EXTERN char e_interface_cannot_use_implements[]
 	INIT(= N_("E1381: Interface cannot use \"implements\""));
 EXTERN char e_variable_str_type_mismatch_expected_str_but_got_str[]

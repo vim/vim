@@ -1624,7 +1624,7 @@ early_ret:
 	    if (!is_class && *varname == '_')
 	    {
 		// private variables are not supported in an interface
-		semsg(_(e_private_variable_not_supported_in_interface),
+		semsg(_(e_protected_variable_not_supported_in_interface),
 			varname);
 		break;
 	    }
@@ -1710,7 +1710,7 @@ early_ret:
 		if (!is_class && *name == '_')
 		{
 		    // private variables are not supported in an interface
-		    semsg(_(e_private_method_not_supported_in_interface),
+		    semsg(_(e_protected_method_not_supported_in_interface),
 			    name);
 		    func_clear_free(uf, FALSE);
 		    break;
@@ -2248,7 +2248,7 @@ get_member_tv(
 
     if (*name == '_')
     {
-	emsg_var_cl_define(e_cannot_access_private_variable_str,
+	emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
 	return FAIL;
     }
@@ -2319,7 +2319,7 @@ call_oc_method(
     if (ocm == NULL && *fp->uf_name == '_')
     {
 	// Cannot access a private method outside of a class
-	semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+	semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 	return FAIL;
     }
 
@@ -2437,7 +2437,7 @@ class_object_index(
 	    // Private methods are not accessible outside the class
 	    if (*name == '_')
 	    {
-		semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 		return FAIL;
 	    }
 
@@ -3078,7 +3078,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	// If this is a class method, then give a different error
 	if (*name == '_')
-	    semsg(_(e_cannot_access_private_method_str), method_name);
+	    semsg(_(e_cannot_access_protected_method_str), method_name);
 	else
 	    semsg(_(e_class_method_str_accessible_only_using_class_str),
 		    method_name, cl->class_name);
@@ -3088,7 +3088,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	// If this is an object method, then give a different error
 	if (*name == '_')
-	    semsg(_(e_cannot_access_private_method_str), method_name);
+	    semsg(_(e_cannot_access_protected_method_str), method_name);
 	else
 	    semsg(_(e_object_method_str_accessible_only_using_object_str),
 		    method_name, cl->class_name);

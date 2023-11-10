@@ -117,7 +117,7 @@ variable.
 
 
 Object variable write access ~
-
+						    *read-only-variable*
 Now try to change an object variable directly: >
 
 	pos.lnum = 9
@@ -133,7 +133,7 @@ way.  Most often there is no problem using a value, while setting a value may
 have side effects that need to be taken care of.  In this case, the SetLnum()
 method could check if the line number is valid and either give an error or use
 the closest valid value.
-							*:public* *E1331*
+					*:public* *public-variable* *E1331*
 If you don't care about side effects and want to allow the object variable to
 be changed at any time, you can make it public: >
 
@@ -150,16 +150,16 @@ If you try to set an object variable that doesn't exist you get an error: >
 							*E1376*
 A object variable cannot be accessed using the class name.
 
-Private variables ~
-					*private-variable* *E1332* *E1333*
-On the other hand, if you do not want the object variables to be read directly,
-you can make them private.  This is done by prefixing an underscore to the
-name: >
+Protected variables ~
+					*protected-variable* *E1332* *E1333*
+On the other hand, if you do not want the object variables to be read directly
+from outside the class or its sub-classes, you can make them protected.  This
+is done by prefixing an underscore to the name: >
 
 	this._lnum: number
 	this._col number
 
-Now you need to provide methods to get the value of the private variables.
+Now you need to provide methods to get the value of the protected variables.
 These are commonly called getters.  We recommend using a name that starts with
 "Get": >
 
@@ -182,11 +182,11 @@ number to the total number of lines: >
 	   return this._lnum
 	enddef
 <
-Private methods ~
-						*private-method* *E1366*
+Protected methods ~
+						*protected-method* *E1366*
 If you want object methods to be accessible only from other methods of the
 same class and not used from outside the class, then you can make them
-private.  This is done by prefixing the method name with an underscore: >
+protected.  This is done by prefixing the method name with an underscore: >
 
     class SomeClass
 	def _Foo(): number
@@ -197,7 +197,7 @@ private.  This is done by prefixing the method name with an underscore: >
 	enddef
     endclass
 <
-Accessing a private method outside the class will result in an error (using
+Accessing a protected method outside the class will result in an error (using
 the above class): >
 
     var a = SomeClass.new()
@@ -292,9 +292,9 @@ or local variable name is not allowed.
 To access a class member outside of the class where it is defined, the class
 name prefix must be used.  A class member cannot be accessed using an object.
 
-Just like object members the access can be made private by using an underscore
-as the first character in the name, and it can be made public by prefixing
-"public": >
+Just like object members the access can be made protected by using an
+underscore as the first character in the name, and it can be made public by
+prefixing "public": >
 
     class OtherThing
 	static total: number	      # anybody can read, only class can write
@@ -323,8 +323,8 @@ Inside the class the class method can be called by name directly, outside the
 class the class name must be prefixed: `OtherThing.ClearTotalSize()`.  To use
 a super class method in a child class, the class name must be prefixed.
 
-Just like object methods the access can be made private by using an underscore
-as the first character in the method name: >
+Just like object methods the access can be made protected by using an
+underscore as the first character in the method name: >
 
     class OtherThing
 	static def _Foo()
@@ -477,8 +477,8 @@ The interface name can be used as a type: >
 <
 					*E1378* *E1379* *E1380* *E1387*
 An interface can contain only object methods and read-only object variables.
-An interface cannot contain read-write and private object variables, private
-object methods, class variables and class methods.
+An interface cannot contain read-write or protected object variables,
+protected object methods, class variables and class methods.
 
 An interface can extend another interface using "extends".  The sub-interface
 inherits all the instance variables and methods from the super interface.
@@ -526,11 +526,12 @@ once.  They can appear in any order, although this order is recommended: >
 <							*E1355* *E1369*
 Each variable and method name can be used only once.  It is not possible to
 define a method with the same name and different type of arguments.  It is not
-possible to use a public and private member variable with the same name.  A
+possible to use a public and protected member variable with the same name.  A
 object variable name used in a super class cannot be reused in a child class.
 
 
 Object Variable Initialization ~
+
 If the type of a variable is not explicitly specified in a class, then it is
 set to "any" during class definition.  When an object is instantiated from the
 class, then the type of the variable is set.
@@ -559,7 +560,7 @@ in the extended method.  The method of the base class can be called by
 prefixing "super.".
 
 						*E1377*
-The access level of a method (public or private) in a child class should be
+The access level of a method (public or protected) in a child class should be
 the same as the super class.
 
 Other object methods of the base class are taken over by the child class.
@@ -597,11 +598,11 @@ Items in a class ~
 						*E1318* *E1325* *E1388*
 Inside a class, in between `:class` and `:endclass`, these items can appear:
 - An object variable declaration: >
-	this._privateVariableName: memberType
+	this._protectedVariableName: memberType
 	this.readonlyVariableName: memberType
 	public this.readwriteVariableName: memberType
 - A class variable declaration: >
-	static _privateClassVariableName: memberType
+	static _protectedClassVariableName: memberType
 	static readonlyClassVariableName: memberType
 	static public readwriteClassVariableName: memberType
 - A constructor method: >
@@ -609,10 +610,10 @@ Inside a class, in between `:class` and `:endclass`, these items can appear:
 	def newName(arguments)
 - A class method: >
 	static def SomeMethod(arguments)
-	static def _PrivateMethod(arguments)
+	static def _ProtectedMethod(arguments)
 - An object method: >
 	def SomeMethod(arguments)
-	def _PrivateMethod(arguments)
+	def _ProtectedMethod(arguments)
 
 For the object variable the type must be specified.  The best way is to do
 this explicitly with ": {type}".  For simple types you can also use an
@@ -704,8 +705,8 @@ Note that you cannot use another default value than "v:none" here.  If you
 want to initialize the object variables, do it where they are declared.  This
 way you only need to look in one place for the default values.
 
-All object variables will be used in the default constructor, also private
-access ones.
+All object variables will be used in the default constructor, including
+protected access ones.
 
 If the class extends another one, the object variables of that class will come
 first.
@@ -962,6 +963,18 @@ while there is no ClassName() method, it's a method by another name in the
 class called ClassName.  Quite confusing.
 
 
+Vim9class access modes ~
+						    *vim9-access-modes*
+The variable access modes, and their meaning, supported by Vim9class are
+	|public-variable|	read and write from anywhere
+	|read-only-variable|	read from anywhere, write from inside the
+				class and sub-classes
+	|protected-variable|	read and write from inside the class and
+				sub-classes
+
+The method access modes are similar, but without the read-only mode.
+
+
 Default read access to object variables ~
 
 Some users will remark that the access rules for object variables are
@@ -978,10 +991,10 @@ directly writing you get an error, which makes you wonder if you actually want
 to allow that.  This helps writing code with fewer mistakes.
 
 
-Making object variables private with an underscore ~
+Making object variables protected with an underscore ~
 
-When an object variable is private, it can only be read and changed inside the
-class (and in sub-classes), then it cannot be used outside of the class.
+When an object variable is protected, it can only be read and changed inside
+the class (and in sub-classes), then it cannot be used outside of the class.
 Prepending an underscore is a simple way to make that visible.  Various
 programming languages have this as a recommendation.
 
@@ -991,21 +1004,21 @@ Since the name only appears in the class (and sub-classes) they will be easy
 to find and change.
 
 The other way around is much harder: you can easily prepend an underscore to
-the object variable inside the class to make it private, but any usage
+the object variable inside the class to make it protected, but any usage
 elsewhere you will have to track down and change.  You may have to make it a
 "set" method call.  This reflects the real world problem that taking away
 access requires work to be done for all places where that access exists.
 
-An alternative would have been using the "private" keyword, just like "public"
-changes the access in the other direction.  Well, that's just to reduce the
-number of keywords.
+An alternative would have been using the "protected" keyword, just like
+"public" changes the access in the other direction.  Well, that's just to
+reduce the number of keywords.
 
 
-No protected object variables ~
+No private object variables ~
 
 Some languages provide several ways to control access to object variables.
 The most known is "protected", and the meaning varies from language to
-language.  Others are "shared", "private" and even "friend".
+language.  Others are "shared", "private", "package" and even "friend".
 
 These rules make life more difficult.  That can be justified in projects where
 many people work on the same, complex code where it is easy to make mistakes.

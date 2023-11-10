@@ -1617,7 +1617,7 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
     {
 	char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
-				? e_cannot_access_private_variable_str
+				? e_cannot_access_protected_variable_str
 				: e_variable_is_not_writable_str;
 	emsg_var_cl_define(msg, m->ocm_name, 0, cl);
 	return FALSE;
@@ -2034,8 +2034,8 @@ compile_lhs(
 		     || (!is_object && cctx->ctx_ufunc->uf_class != cl)))
 	    {
 		char *msg = (m->ocm_access == VIM_ACCESS_PRIVATE)
-					? e_cannot_access_private_variable_str
-					: e_variable_is_not_writable_str;
+				    ? e_cannot_access_protected_variable_str
+				    : e_variable_is_not_writable_str;
 		emsg_var_cl_define(msg, m->ocm_name, 0, cl);
 		return FAIL;
 	    }
