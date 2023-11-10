@@ -155,12 +155,42 @@ zh_TW.po: zh_TW.UTF-8.po
 	iconv -f UTF-8 -t big5 zh_TW.UTF-8.po | \
 		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=big5/' -e 's/# Original translations/# Generated from zh_TW.UTF-8.po, DO NOT EDIT/' > zh_TW.po
 
+
+# 06.11.23, added by Restorer
+# Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters
+# Requires doubling backslashes in the second byte.  Don't depend on big5corr,
+# it should only be compiled when zh_TW.po is outdated.
+
+#
+#  For more details, see:
+#  https://github.com/vim/vim/pull/3476
+#  https://github.com/vim/vim/pull/3476
+#  https://github.com/vim/vim/pull/12153
+#  (read all comments)
+#
+#  I checked the workability on the list of backslash characters
+#  specified in zh_tw.utf-8.po. It works.
+#  But it is better to have someone native speaker check it.
+#
+
+#zh_TW.po : zh_TW.UTF-8.po
+#	@$(MAKE) big5corr
+#	rm -f zh_TW.po
+#	iconv -f utf-8 -t big5 zh_TW.UTF-8.po | ./big5corr > zh_TW.po
+
+
+# 06.11.23, added by Restorer
+# see above in the zh_tw.po conversion section for backslashes.
+#big5corr : big5corr.c
+#	$(CC) -o big5corr big5corr.c
+
+
 # Convert ko.UTF-8.po to create ko.po.
 ko.po: ko.UTF-8.po
 	rm -f ko.po
 	iconv -f UTF-8 -t euc-kr ko.UTF-8.po | \
 		$(SED) -e 's/charset=UTF-8/charset=euc-kr/' \
-		    -e 's/# Korean translation for Vim/# Generated from ko.UTF-8.po, DO NOT EDIT/' \
+		    -e 's/# Original translations/# Generated from ko.UTF-8.po, DO NOT EDIT/' \
 		    > ko.po
 
 # Convert ru.po to create ru.cp1251.po.
@@ -186,6 +216,7 @@ prefixcheck:
 clean: checkclean
 	rm -f core core.* *.old.po *.mo *.pot sjiscorr
 	rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
+#	rm -f big5corr
 
 distclean: clean
 
@@ -231,7 +262,10 @@ gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
 	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi
 	mv tmp_gvim.desktop gvim.desktop
 
-update-po: $(LANGUAGES)
+# 06.11.23, changed by Restorer
+# When updating ja.sjis.po there are a bunch of errors and a crash.
+# The files that are converted to a different encoding clearly state "DO NOT EDIT".
+update-po : $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually
 $(LANGUAGES):
