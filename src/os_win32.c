@@ -8578,6 +8578,9 @@ vtp_printf(
     DWORD   result;
     int	    len;
 
+    if (silent_mode)
+	return 0;
+
     va_start(list, format);
     len = vim_vsnprintf((char *)buf, 100, (char *)format, list);
     va_end(list);
