@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2023 Nov 06
+*options.txt*	For Vim version 9.0.  Last change: 2023 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3791,9 +3791,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 'formatoptions' 'fo'	string (Vim default: "tcq", Vi default: "vt")
 			local to buffer
 	This is a sequence of letters which describes how automatic
-	formatting is to be done.  See |fo-table|.  When the 'paste' option is
-	on, no formatting is done (like 'formatoptions' is empty).  Commas can
-	be inserted for readability.
+	formatting is to be done.
+	See |fo-table| for possible values and |gq| for how to format text.
+	When the 'paste' option is on, no formatting is done (like
+	'formatoptions' is empty).  Commas can be inserted for readability.
 	To avoid problems with flags that are added in the future, use the
 	"+=" and "-=" feature of ":set" |add-option-flags|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
