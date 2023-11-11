@@ -7670,6 +7670,7 @@ gd	pattern.txt	/*gd*
 gdb	debug.txt	/*gdb*
 gdb-version	terminal.txt	/*gdb-version*
 ge	motion.txt	/*ge*
+gender-neutral	helphelp.txt	/*gender-neutral*
 get()	builtin.txt	/*get()*
 get-ms-debuggers	debug.txt	/*get-ms-debuggers*
 getbufinfo()	builtin.txt	/*getbufinfo()*
