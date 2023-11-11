@@ -324,7 +324,7 @@ def Test_class_def_method()
   END
   v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
 
-  # Using the "public" keyword when defining an object private method
+  # Using the "public" keyword when defining an object protected method
   lines =<< trim END
     vim9script
     class A
@@ -334,7 +334,7 @@ def Test_class_def_method()
   END
   v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "this" or "static"', 3)
 
-  # Using the "public" keyword when defining a class private method
+  # Using the "public" keyword when defining a class protected method
   lines =<< trim END
     vim9script
     class A
@@ -606,7 +606,7 @@ def Test_member_any_used_as_object()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Try modifying a private variable using an "any" object
+  # Try modifying a protected variable using an "any" object
   lines =<< trim END
     vim9script
 
@@ -626,7 +626,7 @@ def Test_member_any_used_as_object()
     var outer_obj = Outer.new(inner_obj)
     F(outer_obj)
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_value" in class "Inner"', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_value" in class "Inner"', 1)
 
   # Try modifying a non-existing variable using an "any" object
   lines =<< trim END
@@ -1085,9 +1085,9 @@ def Test_instance_variable_access()
     assert_equal(1, trip.GetOne())
     assert_equal(2, trip.two)
     assert_equal(3, trip.three)
-    assert_fails('echo trip._one', 'E1333: Cannot access private variable "_one" in class "Triple"')
+    assert_fails('echo trip._one', 'E1333: Cannot access protected variable "_one" in class "Triple"')
 
-    assert_fails('trip._one = 11', 'E1333: Cannot access private variable "_one" in class "Triple"')
+    assert_fails('trip._one = 11', 'E1333: Cannot access protected variable "_one" in class "Triple"')
     assert_fails('trip.two = 22', 'E1335: Variable "two" in class "Triple" is not writable')
     trip.three = 33
     assert_equal(33, trip.three)
@@ -1321,7 +1321,7 @@ def Test_class_variable_access()
   END
   v9.CheckSourceFailure(lines, 'E1335: Variable "ro_class_var" in class "A" is not writable', 1)
 
-  # A private class variable cannot be accessed from a child class
+  # A protected class variable cannot be accessed from a child class
   lines =<< trim END
     vim9script
     class A
@@ -1337,9 +1337,9 @@ def Test_class_variable_access()
     var b = B.new()
     b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_priv_class_var" in class "A"', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_priv_class_var" in class "A"', 1)
 
-  # A private class variable cannot be modified from a child class
+  # A protected class variable cannot be modified from a child class
   lines =<< trim END
     vim9script
     class A
@@ -1355,7 +1355,7 @@ def Test_class_variable_access()
     var b = B.new()
     b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_priv_class_var" in class "A"', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_priv_class_var" in class "A"', 1)
 
   # Access from child class extending a class and from script context
   lines =<< trim END
@@ -1536,8 +1536,8 @@ def Test_class_member()
     assert_fails('TextPos.counter = 5', 'E1335: Variable "counter" in class "TextPos" is not writable')
     assert_fails('TextPos.counter += 5', 'E1335: Variable "counter" in class "TextPos" is not writable')
 
-    assert_fails('echo TextPos._secret', 'E1333: Cannot access private variable "_secret" in class "TextPos"')
-    assert_fails('TextPos._secret = 8', 'E1333: Cannot access private variable "_secret" in class "TextPos"')
+    assert_fails('echo TextPos._secret', 'E1333: Cannot access protected variable "_secret" in class "TextPos"')
+    assert_fails('TextPos._secret = 8', 'E1333: Cannot access protected variable "_secret" in class "TextPos"')
 
     assert_equal(42, TextPos.anybody)
     TextPos.anybody = 12
@@ -1583,7 +1583,7 @@ def Test_class_member()
   END
   v9.CheckSourceSuccess(lines)
 
-  # access private member in lambda
+  # access protected member in lambda
   lines =<< trim END
     vim9script
 
@@ -1601,7 +1601,7 @@ def Test_class_member()
   END
   v9.CheckSourceSuccess(lines)
 
-  # access private member in lambda body
+  # access protected member in lambda body
   lines =<< trim END
     vim9script
 
@@ -1762,7 +1762,7 @@ def Test_defining_class_message()
     var o = Child.new()
     var x = o._v1
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Base"', 11)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_v1" in class "Base"', 11)
   lines =<< trim END
     vim9script
 
@@ -1779,7 +1779,7 @@ def Test_defining_class_message()
     enddef
     F()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Base"', 2)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_v1" in class "Base"', 2)
   lines =<< trim END
     vim9script
 
@@ -1811,7 +1811,7 @@ def Test_defining_class_message()
     F()
   END
 
-  # Attempt to read a private variable that is in the middle
+  # Attempt to read a protected variable that is in the middle
   # of the class hierarchy.
   v9.CheckSourceFailure(lines, 'E1335: Variable "v1" in class "Base" is not writable', 2)
   lines =<< trim END
@@ -1833,9 +1833,9 @@ def Test_defining_class_message()
     enddef
     F()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Base"', 2)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_v1" in class "Base"', 2)
 
-  # Attempt to read a private variable that is at the start
+  # Attempt to read a protected variable that is at the start
   # of the class hierarchy.
   lines =<< trim END
     vim9script
@@ -1856,7 +1856,7 @@ def Test_defining_class_message()
     enddef
     F()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "Child"', 2)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_v1" in class "Child"', 2)
 enddef
 
 func Test_class_garbagecollect()
@@ -4132,7 +4132,7 @@ def Test_lockvar_general()
   END
   v9.CheckSourceFailure(lines, 'E741: Value is locked: l[0] = 11', 11)
 
-  # lock a list element referenced by a private object variable
+  # lock a list element referenced by a protected object variable
   # in an object fetched via a script level list
   lines =<< trim END
     vim9script
@@ -4155,8 +4155,8 @@ def Test_lockvar_general()
   v9.CheckSourceFailure(lines, 'E741: Value is locked: l[1] = [33]', 16)
 
   # similar to the previous test, except the locking code is executing
-  # in a class that does not own the private variable.
-  # Note that the locking code is in a class has a private variable of
+  # in a class that does not own the protected variable.
+  # Note that the locking code is in a class has a protected variable of
   # the same name.
   lines =<< trim END
     vim9script
@@ -4179,7 +4179,7 @@ def Test_lockvar_general()
     var o2 = C2.new()
     o2.Lock(o)
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_v1" in class "C"')
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_v1" in class "C"')
 enddef
 
 " Test builtin islocked()
@@ -4503,9 +4503,9 @@ def Test_lockvar_islocked_notfound()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for a private object method
+" Test for a protected object method
 def Test_private_object_method()
-  # Try calling a private method using an object (at the script level)
+  # Try calling a protected method using an object (at the script level)
   var lines =<< trim END
     vim9script
 
@@ -4517,9 +4517,9 @@ def Test_private_object_method()
     var a = A.new()
     a._Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 9)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 9)
 
-  # Try calling a private method using an object (from a def function)
+  # Try calling a protected method using an object (from a def function)
   lines =<< trim END
     vim9script
 
@@ -4534,9 +4534,9 @@ def Test_private_object_method()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo()', 2)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo()', 2)
 
-  # Use a private method from another object method (in script context)
+  # Use a protected method from another object method (in script context)
   lines =<< trim END
     vim9script
 
@@ -4553,7 +4553,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Use a private method from another object method (def function context)
+  # Use a protected method from another object method (def function context)
   lines =<< trim END
     vim9script
 
@@ -4573,7 +4573,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Try calling a private method without the "this" prefix
+  # Try calling a protected method without the "this" prefix
   lines =<< trim END
     vim9script
 
@@ -4590,7 +4590,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceFailure(lines, 'E117: Unknown function: _Foo', 1)
 
-  # Try calling a private method using the class name
+  # Try calling a protected method using the class name
   lines =<< trim END
     vim9script
 
@@ -4601,9 +4601,9 @@ def Test_private_object_method()
     endclass
     A._Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 8)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 8)
 
-  # Define two private methods with the same name
+  # Define two protected methods with the same name
   lines =<< trim END
     vim9script
 
@@ -4617,7 +4617,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: _Foo', 7)
 
-  # Define a private method and a object method with the same name
+  # Define a protected method and a object method with the same name
   lines =<< trim END
     vim9script
 
@@ -4631,7 +4631,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: Foo', 7)
 
-  # Define an object method and a private method with the same name
+  # Define an object method and a protected method with the same name
   lines =<< trim END
     vim9script
 
@@ -4645,7 +4645,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: _Foo', 7)
 
-  # Call a public method and a private method from a private method
+  # Call a public method and a protected method from a protected method
   lines =<< trim END
     vim9script
 
@@ -4669,7 +4669,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Try calling a private method from another class
+  # Try calling a protected method from another class
   lines =<< trim END
     vim9script
 
@@ -4687,9 +4687,9 @@ def Test_private_object_method()
     var b = B.new()
     b.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo()', 2)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo()', 2)
 
-  # Call a private object method from a child class object method
+  # Call a protected object method from a child class object method
   lines =<< trim END
     vim9script
     class A
@@ -4711,7 +4711,7 @@ def Test_private_object_method()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Call a private object method from a child class object
+  # Call a protected object method from a child class object
   lines =<< trim END
     vim9script
     class A
@@ -4730,7 +4730,7 @@ def Test_private_object_method()
     var c = C.new()
     assert_equal(1234, c._Foo())
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 16)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 16)
 
   # Using "_" prefix in a method name should fail outside of a class
   lines =<< trim END
@@ -4743,9 +4743,9 @@ def Test_private_object_method()
   v9.CheckSourceFailure(lines, 'E1267: Function name must start with a capital: _Foo(): number', 2)
 enddef
 
-" Test for an private class method
+" Test for an protected class method
 def Test_private_class_method()
-  # Try calling a class private method (at the script level)
+  # Try calling a class protected method (at the script level)
   var lines =<< trim END
     vim9script
 
@@ -4756,9 +4756,9 @@ def Test_private_class_method()
     endclass
     A._Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 8)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 8)
 
-  # Try calling a class private method (from a def function)
+  # Try calling a class protected method (from a def function)
   lines =<< trim END
     vim9script
 
@@ -4772,9 +4772,9 @@ def Test_private_class_method()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo()', 1)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo()', 1)
 
-  # Try calling a class private method using an object (at the script level)
+  # Try calling a class protected method using an object (at the script level)
   lines =<< trim END
     vim9script
 
@@ -4786,9 +4786,9 @@ def Test_private_class_method()
     var a = A.new()
     a._Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 9)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 9)
 
-  # Try calling a class private method using an object (from a def function)
+  # Try calling a class protected method using an object (from a def function)
   lines =<< trim END
     vim9script
 
@@ -4803,9 +4803,9 @@ def Test_private_class_method()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 2)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 2)
 
-  # Use a class private method from an object method
+  # Use a class protected method from an object method
   lines =<< trim END
     vim9script
 
@@ -4822,7 +4822,7 @@ def Test_private_class_method()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Use a class private method from another class private method without the
+  # Use a class protected method from another class protected method without the
   # class name prefix.
   lines =<< trim END
     vim9script
@@ -4843,7 +4843,7 @@ def Test_private_class_method()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Declare a class method and a class private method with the same name
+  # Declare a class method and a class protected method with the same name
   lines =<< trim END
     vim9script
 
@@ -4857,7 +4857,7 @@ def Test_private_class_method()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: Foo', 7)
 
-  # Try calling a class private method from another class
+  # Try calling a class protected method from another class
   lines =<< trim END
     vim9script
 
@@ -4874,9 +4874,9 @@ def Test_private_class_method()
     var b = B.new()
     assert_equal(1234, b.Foo())
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo()', 1)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo()', 1)
 
-  # Call a private class method from a child class object method
+  # Call a protected class method from a child class object method
   lines =<< trim END
     vim9script
     class A
@@ -4896,9 +4896,9 @@ def Test_private_class_method()
     var c = C.new()
     assert_equal(1234, c.Baz())
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo()', 1)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo()', 1)
 
-  # Call a private class method from a child class private class method
+  # Call a protected class method from a child class protected class method
   lines =<< trim END
     vim9script
     class A
@@ -4917,9 +4917,9 @@ def Test_private_class_method()
     endclass
     assert_equal(1234, C.Baz())
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo()', 1)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo()', 1)
 
-  # Call a private class method from a child class object
+  # Call a protected class method from a child class object
   lines =<< trim END
     vim9script
     class A
@@ -5032,7 +5032,7 @@ def Test_static_inheritence()
     assert_equal(102, ob.AccessObject())
     assert_equal(103, oc.AccessObject())
 
-    assert_fails('echo oc.AccessPrivateStaticThroughClassName()', 'E1333: Cannot access private variable "_svar" in class "A"')
+    assert_fails('echo oc.AccessPrivateStaticThroughClassName()', 'E1333: Cannot access protected variable "_svar" in class "A"')
 
     # verify object properly resolves to correct static
     assert_equal(1, oa.AccessStaticThroughObject())
@@ -5054,7 +5054,7 @@ def Test_dup_member_variable()
   END
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val', 4)
 
-  # Duplicate private member variable
+  # Duplicate protected member variable
   lines =<< trim END
     vim9script
     class C
@@ -5074,7 +5074,7 @@ def Test_dup_member_variable()
   END
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val', 4)
 
-  # Duplicate private member variable
+  # Duplicate protected member variable
   lines =<< trim END
     vim9script
     class C
@@ -5084,7 +5084,7 @@ def Test_dup_member_variable()
   END
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val', 4)
 
-  # Duplicate public and private member variable
+  # Duplicate public and protected member variable
   lines =<< trim END
     vim9script
     class C
@@ -5104,7 +5104,7 @@ def Test_dup_member_variable()
   END
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _s', 4)
 
-  # Duplicate public and private class member variable
+  # Duplicate public and protected class member variable
   lines =<< trim END
     vim9script
     class C
@@ -5143,7 +5143,7 @@ def Test_dup_member_variable()
   END
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: val', 9)
 
-  # Duplicate object private member variable in a derived class
+  # Duplicate object protected member variable in a derived class
   lines =<< trim END
     vim9script
     class A
@@ -5157,7 +5157,7 @@ def Test_dup_member_variable()
   END
   v9.CheckSourceFailure(lines, 'E1369: Duplicate variable: _val', 9)
 
-  # Duplicate object private member variable in a derived class
+  # Duplicate object protected member variable in a derived class
   lines =<< trim END
     vim9script
     class A
@@ -5196,9 +5196,9 @@ def Test_dup_member_variable()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for accessing a private member outside a class in a def function
+" Test for accessing a protected member outside a class in a def function
 def Test_private_member_access_outside_class()
-  # private object member variable
+  # protected object member variable
   var lines =<< trim END
     vim9script
     class A
@@ -5213,9 +5213,9 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_val" in class "A"', 2)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_val" in class "A"', 2)
 
-  # access a non-existing private object member variable
+  # access a non-existing protected object member variable
   lines =<< trim END
     vim9script
     class A
@@ -5229,7 +5229,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1326: Variable "_a" not found in object "A"', 2)
 
-  # private static member variable
+  # protected static member variable
   lines =<< trim END
     vim9script
     class A
@@ -5243,7 +5243,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1375: Class variable "_val" accessible only using class "A"', 2)
 
-  # private static member variable
+  # protected static member variable
   lines =<< trim END
     vim9script
     class A
@@ -5257,7 +5257,7 @@ def Test_private_member_access_outside_class()
   END
   v9.CheckSourceFailure(lines, 'E1375: Class variable "_val" accessible only using class "A"', 2)
 
-  # private static class variable
+  # protected static class variable
   lines =<< trim END
     vim9script
     class A
@@ -5268,9 +5268,9 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_val" in class "A"', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_val" in class "A"', 1)
 
-  # private static class variable
+  # protected static class variable
   lines =<< trim END
     vim9script
     class A
@@ -5281,7 +5281,7 @@ def Test_private_member_access_outside_class()
     enddef
     T()
   END
-  v9.CheckSourceFailure(lines, 'E1333: Cannot access private variable "_val" in class "A"', 1)
+  v9.CheckSourceFailure(lines, 'E1333: Cannot access protected variable "_val" in class "A"', 1)
 enddef
 
 " Test for changing the member access of an interface in a implementation class
@@ -5342,7 +5342,7 @@ def Test_modify_class_member_from_def_function()
       A.var3 = {c: 3, d: 4}
       assert_equal([3, 4], A.var2)
       assert_equal({c: 3, d: 4}, A.var3)
-      assert_fails('echo A._priv_var4', 'E1333: Cannot access private variable "_priv_var4" in class "A"')
+      assert_fails('echo A._priv_var4', 'E1333: Cannot access protected variable "_priv_var4" in class "A"')
     enddef
     T()
   END
@@ -6035,7 +6035,7 @@ def Test_dup_classmethod_objmethod()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: Foo', 6)
 
-  # Duplicate private instance method
+  # Duplicate protected instance method
   lines =<< trim END
     vim9script
     class A
@@ -6059,7 +6059,7 @@ def Test_dup_classmethod_objmethod()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: Foo', 6)
 
-  # Duplicate private class method
+  # Duplicate protected class method
   lines =<< trim END
     vim9script
     class A
@@ -6071,7 +6071,7 @@ def Test_dup_classmethod_objmethod()
   END
   v9.CheckSourceFailure(lines, 'E1355: Duplicate function: _Foo', 6)
 
-  # Duplicate private class and object method
+  # Duplicate protected class and object method
   lines =<< trim END
     vim9script
     class A
@@ -6087,7 +6087,7 @@ enddef
 " Test for an instance method access level comparison with parent instance
 " methods.
 def Test_instance_method_access_level()
-  # Private method in subclass
+  # protected method in subclass
   var lines =<< trim END
     vim9script
     class A
@@ -6147,7 +6147,7 @@ def Test_extend_empty_class()
 enddef
 
 " A interface cannot have a static variable or a static method or a private
-" variable or a private method or a public variable
+" variable or a protected method or a public variable
 def Test_interface_with_unsupported_members()
   var lines =<< trim END
     vim9script
@@ -6211,7 +6211,7 @@ def Test_interface_with_unsupported_members()
       this._Foo: list<string>
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1379: Private variable not supported in an interface', 3)
+  v9.CheckSourceFailure(lines, 'E1379: Protected variable not supported in an interface', 3)
 
   lines =<< trim END
     vim9script
@@ -6219,7 +6219,7 @@ def Test_interface_with_unsupported_members()
       def _Foo(d: dict<any>): list<string>
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1380: Private method not supported in an interface', 3)
+  v9.CheckSourceFailure(lines, 'E1380: Protected method not supported in an interface', 3)
 enddef
 
 " Test for extending an interface
@@ -7653,7 +7653,7 @@ def Test_object_funcref()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Try using a private object method funcref from a def function
+  # Try using a protected object method funcref from a def function
   lines =<< trim END
     vim9script
     class A
@@ -7666,9 +7666,9 @@ def Test_object_funcref()
     enddef
     Bar()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 2)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 2)
 
-  # Try using a private object method funcref at the script level
+  # Try using a protected object method funcref at the script level
   lines =<< trim END
     vim9script
     class A
@@ -7678,9 +7678,9 @@ def Test_object_funcref()
     var a = A.new()
     var Fn = a._Foo
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 7)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 7)
 
-  # Using a private object method funcref from another object method
+  # Using a protected object method funcref from another object method
   lines =<< trim END
     vim9script
     class A
@@ -7812,7 +7812,7 @@ def Test_class_funcref()
   END
   v9.CheckSourceSuccess(lines)
 
-  # Try using a private class method funcref in a def function
+  # Try using a protected class method funcref in a def function
   lines =<< trim END
     vim9script
     class A
@@ -7824,9 +7824,9 @@ def Test_class_funcref()
     enddef
     Bar()
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 1)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 1)
 
-  # Try using a private class method funcref at script level
+  # Try using a protected class method funcref at script level
   lines =<< trim END
     vim9script
     class A
@@ -7835,9 +7835,9 @@ def Test_class_funcref()
     endclass
     var Fn = A._Foo
   END
-  v9.CheckSourceFailure(lines, 'E1366: Cannot access private method: _Foo', 6)
+  v9.CheckSourceFailure(lines, 'E1366: Cannot access protected method: _Foo', 6)
 
-  # Using a private class method funcref from another class method
+  # Using a protected class method funcref from another class method
   lines =<< trim END
     vim9script
     class A

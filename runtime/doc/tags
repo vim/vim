@@ -9334,8 +9334,6 @@ printf-s	builtin.txt	/*printf-s*
 printf-x	builtin.txt	/*printf-x*
 printing	print.txt	/*printing*
 printing-formfeed	print.txt	/*printing-formfeed*
-private-method	vim9class.txt	/*private-method*
-private-variable	vim9class.txt	/*private-variable*
 profile	repeat.txt	/*profile*
 profiling	repeat.txt	/*profiling*
 profiling-variable	eval.txt	/*profiling-variable*
@@ -9360,6 +9358,8 @@ prop_type_change()	textprop.txt	/*prop_type_change()*
 prop_type_delete()	textprop.txt	/*prop_type_delete()*
 prop_type_get()	textprop.txt	/*prop_type_get()*
 prop_type_list()	textprop.txt	/*prop_type_list()*
+protected-method	vim9class.txt	/*protected-method*
+protected-variable	vim9class.txt	/*protected-variable*
 ps1-about	ft_ps1.txt	/*ps1-about*
 ps1-compiler	ft_ps1.txt	/*ps1-compiler*
 ps1-folding	ft_ps1.txt	/*ps1-folding*
@@ -9368,6 +9368,7 @@ ps1-syntax	ft_ps1.txt	/*ps1-syntax*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
+public-variable	vim9class.txt	/*public-variable*
 pum_getpos()	builtin.txt	/*pum_getpos()*
 pumvisible()	builtin.txt	/*pumvisible()*
 put	change.txt	/*put*
@@ -9507,6 +9508,7 @@ rcp	pi_netrw.txt	/*rcp*
 read-in-close-cb	channel.txt	/*read-in-close-cb*
 read-messages	insert.txt	/*read-messages*
 read-only-share	editing.txt	/*read-only-share*
+read-only-variable	vim9class.txt	/*read-only-variable*
 read-stdin	version5.txt	/*read-stdin*
 readblob()	builtin.txt	/*readblob()*
 readdir()	builtin.txt	/*readdir()*
@@ -11004,6 +11006,7 @@ vim.w	if_lua.txt	/*vim.w*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
 vim9	vim9.txt	/*vim9*
+vim9-access-modes	vim9class.txt	/*vim9-access-modes*
 vim9-autoload	vim9.txt	/*vim9-autoload*
 vim9-boolean	vim9.txt	/*vim9-boolean*
 vim9-classes	vim9.txt	/*vim9-classes*

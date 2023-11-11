@@ -1112,7 +1112,7 @@ get_lval_check_access(
 	switch (om->ocm_access)
 	{
 	    case VIM_ACCESS_PRIVATE:
-		msg = e_cannot_access_private_variable_str;
+		msg = e_cannot_access_protected_variable_str;
 		break;
 	    case VIM_ACCESS_READ:
 		// If [idx] or .key following, read only OK.

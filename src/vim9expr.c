@@ -403,7 +403,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		 || (type->tt_type == VAR_CLASS
 		     && cctx->ctx_ufunc->uf_class != cl)))
 	{
-	    semsg(_(e_cannot_access_private_method_str), name);
+	    semsg(_(e_cannot_access_protected_method_str), name);
 	    return FAIL;
 	}
 
@@ -430,7 +430,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	{
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
-		emsg_var_cl_define(e_cannot_access_private_variable_str,
+		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
 		return FAIL;
 	    }
@@ -449,7 +449,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // Private methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
-		semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 		return FAIL;
 	    }
 	    *arg = name_end;
@@ -472,7 +472,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // it is defined.
 	    if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
 	    {
-		emsg_var_cl_define(e_cannot_access_private_variable_str,
+		emsg_var_cl_define(e_cannot_access_protected_variable_str,
 							m->ocm_name, 0, cl);
 		return FAIL;
 	    }
@@ -491,7 +491,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    // Private methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
-		semsg(_(e_cannot_access_private_method_str), fp->uf_name);
+		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 		return FAIL;
 	    }
 	    *arg = name_end;
