@@ -342,6 +342,9 @@ au BufNewFile,BufRead *.cc
 au BufNewFile,BufRead *.cpp
 	\ if exists("cynlib_syntax_for_cpp")|setf cynlib|else|setf cpp|endif
 
+" Cypher query language
+au BufNewFile,BufRead *.cypher			setf cypher
+
 " C++
 au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.ipp,*.moc,*.tcc,*.inl setf cpp
 if has("fname_case")
