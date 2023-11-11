@@ -3,6 +3,7 @@
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 " Last Change:	May 09, 2023
 " 	2023 Sep 14 by Vim Project (all :loadkeymap variants)
+" 	2023 Nov 12 by Vim Project (:let-heredoc improvements)
 " Version:	9.0-25
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
@@ -407,7 +408,7 @@ syn match	vimSetMod	contained	"&vim\=\|[!&?<]\|all&"
 " Let And Var: {{{2
 " ===========
 syn keyword	vimLet	let	unl[et]	skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s\+\%(trim\s\+\)\=\%(eval\s\+\)\=\s*\z(\L\S*\)'	matchgroup=vimLetHereDocStop end='^\s*\z1\s*$'
+VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*\%(trim\s\+\%(eval\s\+\)\=\|eval\s\+\%(trim\s\+\)\=\)\=\z(\L\S*\)' matchgroup=vimLetHereDocStop end='^\s*\z1\s*$'
 syn keyword	vimLet	var		skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
 
 " Abbreviations: {{{2
