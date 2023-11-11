@@ -237,6 +237,7 @@ runtime/ftplugin/vdf.vim		@ObserverOfTime
 runtime/ftplugin/wast.vim		@rhysd
 runtime/ftplugin/wget.vim		@dkearns
 runtime/ftplugin/wget2.vim		@dkearns
+runtime/ftplugin/xcompose.vim		@ObserverOfTime
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/xs.vim			@petdance
 runtime/ftplugin/zsh.vim		@chrisbra
@@ -525,6 +526,7 @@ runtime/syntax/wdl.vim			@zenmatic
 runtime/syntax/wget.vim			@dkearns
 runtime/syntax/wget2.vim		@dkearns
 runtime/syntax/xbl.vim			@dkearns
+runtime/syntax/xcompose.vim		@ObserverOfTime
 runtime/syntax/xmath.vim		@cecamp
 runtime/syntax/xml.vim			@chrisbra
 runtime/syntax/xs.vim			@petdance
