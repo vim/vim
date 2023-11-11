@@ -14,7 +14,6 @@
 !ERROR Set the environment variable %LANGUAGE%. See README_mvc.txt
 !ENDIF
 
-
 # get LANGUAGES, MOFILES, MOCONVERTED and others
 !INCLUDE Make_all.mak
 
@@ -79,7 +78,6 @@ checkclean :
 
 converted : $(MOCONVERTED)
 
-
 nl.po :
 	@( echo \# > nl.po )
 
@@ -114,7 +112,6 @@ ja.sjis.po : ja.po
 sjiscorr : sjiscorr.c
 	$(CC) sjiscorr.c
 
-
 # Convert ja.po to create ja.euc-jp.po
 ja.euc-jp.po : ja.po
 	-$(RM) $@
@@ -144,7 +141,6 @@ ja.euc-jp.po : ja.po
 		'# Generated from ja.po, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(20932))
-
 
 # Convert cs.po to create cs.cp1250.po.
 cs.cp1250.po : cs.po
@@ -347,7 +343,6 @@ zh_TW.po : zh_TW.UTF-8.po
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
 
-
 # Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters
 # Requires doubling backslashes in the second byte.  Don't depend on big5corr,
 # it should only be compiled when zh_TW.po is outdated.
@@ -387,11 +382,9 @@ zh_TW.po : zh_TW.UTF-8.po
 #		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 #		[System.Text.Encoding]::GetEncoding(950))
 
-
 # see above in the zh_tw.po conversion section for backslashes.
 #big5corr : big5corr.c
 #	$(CC) big5corr.c
-
 
 # Convert ko.UTF-8.po to create ko.po.
 ko.po : ko.UTF-8.po
@@ -490,7 +483,6 @@ uk.cp1251.po : uk.po
 	set OLD_PO_FILE_INPUT=yes
 	$(MSGFMT) -o $@ $<
 
-
 PO_INPUTLIST = \
 	..\*.c \
 	..\if_perl.xs \
@@ -563,7 +555,5 @@ clean : checkclean
 	$(RM) files
 	$(RM) sjiscorr.obj sjiscorr.exe
 #	$(RM) big5corr.obj big5corr.exe
-
-
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:
