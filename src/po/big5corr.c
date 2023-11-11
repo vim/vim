@@ -1,16 +1,13 @@
-
 /*
  * Simplistic program to correct Big5 inside strings.  When a trail byte is a
  * backslash it needs to be doubled.
  * Public domain.
- * Time 2018-10-20 22:37:05
- * Author K.Takata <kentkt@csc.jp>
  */
 
 /*
  * 06.11.23, added by Restorer:
  * For more details, see:
- * https://github.com/vim/vim/pull/3476
+ * https://github.com/vim/vim/pull/3261
  * https://github.com/vim/vim/pull/3476
  * https://github.com/vim/vim/pull/12153
  * (read all comments)
@@ -37,7 +34,7 @@ main(int argc, char **argv)
 			if (strncmp(p, "charset=utf-8", 13) == 0
 				|| strncmp(p, "charset=UTF-8", 13) == 0)
 			{
-				fputs("charset=big5", stdout);
+				fputs("charset=BIG5", stdout);
 				p += 12;
 			}
 			else if (strncmp(p, "# Original translations", 23) == 0)
