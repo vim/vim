@@ -13,9 +13,8 @@ VIMEXE = vim
 # AWK, used for "make html".  Comment this out if the include gives problems.
 include ../../src/auto/config.mk
 
-# 17.10.23, added by Restorer
 # Common components
-include makefile_all.mak
+include Make_all.mak
 
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html
@@ -148,16 +147,16 @@ os_win32.txt:
 
 # Note that $< works with GNU make while $> works for BSD make.
 # Is there a solution that works for both??
-vim-da.UTF-8.1: vim-da.1		 # 17.10.23, added by Restorer
+vim-da.UTF-8.1: vim-da.1
 	iconv -f latin1 -t utf-8 $< >$@
 
-vimdiff-da.UTF-8.1: vimdiff-da.1	 # 17.10.23, added by Restorer
+vimdiff-da.UTF-8.1: vimdiff-da.1
 	iconv -f latin1 -t utf-8 $< >$@
 
-vimtutor-da.UTF-8.1: vimtutor-da.1	 # 17.10.23, added by Restorer
+vimtutor-da.UTF-8.1: vimtutor-da.1
 	iconv -f latin1 -t utf-8 $< >$@
 
-vim-de.UTF-8.1: vim-de.1		 # 17.10.23, added by Restorer
+vim-de.UTF-8.1: vim-de.1
 	iconv -f latin1 -t utf-8 $< >$@
 
 vim-fr.UTF-8.1: vim-fr.1
