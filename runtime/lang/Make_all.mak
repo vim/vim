@@ -27,9 +27,4 @@ CONVERTED = \
 		menu_uk_ua.cp1251.vim \
 		menu_uk_ua.koi8-u.vim \
 
-
-#		menu_slovak_slovak_republic.1250.vim \
-
-
-
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:
