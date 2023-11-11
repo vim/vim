@@ -1,5 +1,5 @@
 #
-# makefile with common components
+# Makefile with common components
 #
 
 CONVERTED = \
