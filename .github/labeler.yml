@@ -50,6 +50,46 @@ if_tcl:
 - any: ['src/proto/if_tcl.pro']
 - any: ['runtime/doc/if_tcl.txt']
 
+installer:
+- any: ['nsis/**']
+- any: ['src/dosinst.*']
+- any: ['src/uninstall.c']
+
+platform-mac:
+- any: ['src/INSTALLmac.txt']
+- any: ['src/os_mac*']
+- any: ['src/proto/os_mac*']
+
+platform-windows:
+- any: ['nsis/**']
+- any: ['src/*.bat']
+- any: ['src/*.bmp']
+- any: ['src/*.ico']
+- any: ['src/GvimExt/*']
+- any: ['src/INSTALLpc.txt']
+- any: ['src/Make_cyg*.mak']
+- any: ['src/Make_ming.mak']
+- any: ['src/Make_mvc.mak']
+- any: ['src/dosinst.*']
+- any: ['src/gui_dwrite.*']
+- any: ['src/gui_w32*']
+- any: ['src/if_ole.*']
+- any: ['src/iid_ole.c']
+- any: ['src/os_mswin*']
+- any: ['src/os_w32*']
+- any: ['src/os_win32.*']
+- any: ['src/proto/gui_w32.pro']
+- any: ['src/proto/os_mswin.pro']
+- any: ['src/proto/os_win32.pro']
+- any: ['src/proto/winclip.pro']
+- any: ['src/uninstall.c']
+- any: ['src/vim.manifest']
+- any: ['src/vim.rc']
+- any: ['src/vimrun.c']
+- any: ['src/winclip.c']
+- any: ['src/xpm/**']
+- any: ['src/xpm_w32.*']
+
 runtime:
 - any: ['runtime/ftplugin']
 - any: ['runtime/syntax']
@@ -61,3 +101,6 @@ termdebug: runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
 plugin-netrw:
 - any: ['runtime/plugin/netrwPlugin.vim']
 - any: ['runtime/autoload/netrw*']
+
+xxd:
+- any: ['src/xxd/*']
