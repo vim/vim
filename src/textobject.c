@@ -1131,6 +1131,11 @@ current_block(
 		break;
 	}
 
+	if (EQUAL_POS(start_pos, *end_pos))
+	    // empty block like this: ()
+	    // there is no inner block to select, abort
+	    return FAIL;
+
 	/*
 	 * In Visual mode, when the resulting area is not bigger than what we
 	 * started with, extend it to the next block, and then exclude again.
