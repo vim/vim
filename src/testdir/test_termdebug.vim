@@ -96,6 +96,7 @@ func Test_termdebug_basic()
     bw!
   endif
   set columns=160
+  call term_wait(gdb_buf)
   let winw = winwidth(0)
   Var
   if winwidth(0) < winw
@@ -113,6 +114,7 @@ func Test_termdebug_basic()
     bw!
   endif
   set columns&
+  call term_wait(gdb_buf)
 
   wincmd t
   quit!
