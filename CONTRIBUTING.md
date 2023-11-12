@@ -82,3 +82,11 @@ See https://www.vim.org/translations.php for examples.
 [3]: https://github.com/vim/vim/blob/master/runtime/tutor/README.txt
 [4]: https://github.com/vim/vim/blob/master/runtime/doc/vim.1
 [5]: https://github.com/vim/vim/blob/master/nsis/lang/english.nsi
+
+
+# The development guide, how do I contribute to the project still?
+
+There is [collection]: https://github.com/vim/vim/discussions/13087
+It maybe not fully officially recommended, but should be able to give you some
+idea.  If you still have some question about guide, you can contact the vim-dev
+maillist, or other questions use [StackExchange](https://vi.stackexchange.com/)
