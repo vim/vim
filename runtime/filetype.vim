@@ -2454,8 +2454,7 @@ au BufNewFile,BufRead *.vroom			setf vroom
 au BufNewFile,BufRead *.vue			setf vue
 
 " WebAssembly
-au BufNewFile,BufRead *.wat			setf wat
-au BufNewFile,BufRead *.wast		setf wast
+au BufNewFile,BufRead *.wat,*.wast		setf wat
 
 " WebAssembly Interface Type (WIT)
 au BufNewFile,BufRead *.wit			setf wit
