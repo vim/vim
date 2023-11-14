@@ -3993,6 +3993,13 @@ ex_substitute(exarg_T *eap)
 	    emsg(_(e_positive_count_required));
 	    return;
 	}
+	else if (i >= INT_MAX)
+	{
+	    char	buf[20];
+	    vim_snprintf(buf, sizeof(buf), "%ld", i);
+	    semsg(_(e_val_too_large), buf);
+	    return;
+	}
 	eap->line1 = eap->line2;
 	eap->line2 += i - 1;
 	if (eap->line2 > curbuf->b_ml.ml_line_count)

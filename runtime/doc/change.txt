@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.0.  Last change: 2023 Sep 19
+*change.txt*    For Vim version 9.0.  Last change: 2023 Nov 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -644,9 +644,9 @@ For other systems the tmpnam() library function is used.
 			current line only.  When [count] is given, replace in
 			[count] lines, starting with the last line in [range].
 			When [range] is omitted start in the current line.
-							*E939*
-			[count] must be a positive number.  Also see
-			|cmdline-ranges|.
+							*E939* *E1510*
+			[count] must be a positive number (max 2147483647)
+			Also see |cmdline-ranges|.
 
 			See |:s_flags| for [flags].
 			The delimiter doesn't need to be /, see
