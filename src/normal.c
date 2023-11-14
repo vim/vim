@@ -2562,7 +2562,14 @@ nv_z_get_count(cmdarg_T *cap, int *nchar_arg)
 	if (nchar == K_DEL || nchar == K_KDEL)
 	    n /= 10;
 	else if (VIM_ISDIGIT(nchar))
+	{
+	    if (n > LONG_MAX / 10)
+	    {
+		clearopbeep(cap->oap);
+		break;
+	    }
 	    n = n * 10 + (nchar - '0');
+	}
 	else if (nchar == CAR)
 	{
 #ifdef FEAT_GUI
