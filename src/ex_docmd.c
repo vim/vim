@@ -4644,7 +4644,7 @@ get_address(
 		    lnum -= n;
 		else
 		{
-		    if (n >= LONG_MAX - lnum)
+		    if (lnum >= 0 && n >= LONG_MAX - lnum)
 		    {
 			emsg(_(e_line_number_out_of_range));
 			goto error;
