@@ -1,4 +1,4 @@
-*pi_gzip.txt*   For Vim version 9.0.  Last change: 2023 Nov 05
+*pi_gzip.txt*   For Vim version 9.0.  Last change: 2023 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,7 +22,7 @@ executing the executables command when set to "0": >
 <
 
 ==============================================================================
-2. Autocommands						*gzip-autocmd*
+1. Autocommands						*gzip-autocmd*
 
 The plugin installs autocommands to intercept reading and writing of files
 with these extensions:
