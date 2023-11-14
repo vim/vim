@@ -45,8 +45,9 @@ adjust_plines_for_skipcol(win_T *wp)
 	return 0;
 
     int width = wp->w_width - win_col_off(wp);
-    if (wp->w_skipcol >= width)
-	return (wp->w_skipcol - width) / (width + win_col_off2(wp)) + 1;
+    int w2 = width + win_col_off2(wp);
+    if (wp->w_skipcol >= width && w2 > 0)
+	return (wp->w_skipcol - width) / w2 + 1;
 
     return 0;
 }
