@@ -2682,6 +2682,8 @@ win_close(win_T *win, int free_buf)
 	    reset_VIsual_and_resel();	// stop Visual mode
 
 	    other_buffer = TRUE;
+	    if (!win_valid(win))
+		return FAIL;
 	    win->w_closing = TRUE;
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
 	    if (!win_valid(win))
