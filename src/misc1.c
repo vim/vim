@@ -975,6 +975,8 @@ get_number(
 	c = safe_vgetc();
 	if (VIM_ISDIGIT(c))
 	{
+	    if (n > INT_MAX / 10)
+		return 0;
 	    n = n * 10 + c - '0';
 	    msg_putchar(c);
 	    ++typed;
