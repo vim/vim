@@ -229,11 +229,11 @@ shift_line(
     int	amount,
     int call_changed_bytes)	// call changed_bytes()
 {
-    int		count;
+    long long	count;
     int		i, j;
     int		sw_val = (int)get_sw_value_indent(curbuf);
 
-    count = get_indent();	// get current indent
+    count = (long long)get_indent();	// get current indent
 
     if (round)			// round off indent
     {
@@ -260,14 +260,19 @@ shift_line(
 		count = 0;
 	}
 	else
-	    count += sw_val * amount;
+	{
+	    if ((long long)sw_val * (long long)amount > INT_MAX - count)
+		count = INT_MAX;
+	    else
+		count += (long long)sw_val * (long long)amount;
+	}
     }
 
     // Set new indent
     if (State & VREPLACE_FLAG)
-	change_indent(INDENT_SET, count, FALSE, NUL, call_changed_bytes);
+	change_indent(INDENT_SET, (int)count, FALSE, NUL, call_changed_bytes);
     else
-	(void)set_indent(count, call_changed_bytes ? SIN_CHANGED : 0);
+	(void)set_indent((int)count, call_changed_bytes ? SIN_CHANGED : 0);
 }
 
 /*
