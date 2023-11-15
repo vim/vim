@@ -1048,7 +1048,6 @@ highlight_set_ctermul(int idx, int color, int is_normal_group)
 highlight_set_cterm_font(
 	int	idx,
 	char_u	*arg,
-	int	is_normal_group,
 	int	init)
 {
     int		font;
@@ -1714,7 +1713,7 @@ do_highlight(
 	    }
 	    else if (STRCMP(key, "CTERMFONT") == 0)
 	    {
-		if (!highlight_set_cterm_font(idx, arg, is_normal_group, init))
+		if (!highlight_set_cterm_font(idx, arg, init))
 		{
 		    error = TRUE;
 		    break;
