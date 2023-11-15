@@ -5269,6 +5269,13 @@ ctermul={color-nr}				*highlight-ctermul*
 	command is given.  If the Normal group colors are changed later, the
 	"fg" and "bg" colors will not be adjusted.
 
+ctermfont={font-nr}				*highlight-ctermfont*
+	This gives the alternative font number to use in the terminal. The
+	available fonts depend on the terminal, and if the terminal is not set
+	up for alternative fonts this simply won't do anything. The range of
+	{font-nr} is 0-9 where 0 resets the font to the default font and 1-9
+	selects one of the 8 alternate fonts. For more information see your
+	terminals handling of SGR parameters 10-19.
 
 3. highlight arguments for the GUI
 
