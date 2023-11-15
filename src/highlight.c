@@ -2995,8 +2995,9 @@ highlight_list_one(int id)
 				    sgp->sg_cterm_bg, NULL, "ctermbg");
     didh = highlight_list_arg(id, didh, LIST_INT,
 				    sgp->sg_cterm_ul, NULL, "ctermul");
-    didh = highlight_list_arg(id, didh, LIST_INT,
-				    sgp->sg_cterm_font, NULL, "ctermfont");
+    if (sgp->sg_cterm_font != 0)
+	didh = highlight_list_arg(id, didh, LIST_INT,
+				    sgp->sg_cterm_font + 1, NULL, "ctermfont");
 
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
     didh = highlight_list_arg(id, didh, LIST_ATTR,
@@ -3187,7 +3188,7 @@ highlight_color(
 	    return (HL_TABLE()[id - 1].sg_gui_sp_name);
 	return (HL_TABLE()[id - 1].sg_gui_bg_name);
     }
-    if (font || sp)
+    if (sp)
 	return NULL;
     if (modec == 'c')
     {
@@ -3195,6 +3196,8 @@ highlight_color(
 	    n = HL_TABLE()[id - 1].sg_cterm_fg - 1;
 	else if (ul)
 	    n = HL_TABLE()[id - 1].sg_cterm_ul - 1;
+	else if (font)
+	    n = HL_TABLE()[id - 1].sg_cterm_font;
 	else
 	    n = HL_TABLE()[id - 1].sg_cterm_bg - 1;
 	if (n < 0)
@@ -4234,7 +4237,8 @@ highlight_get_info(int hl_idx, int resolve_link)
 			highlight_color(hlgid, (char_u *)"ul", 'c')) == FAIL)
 	    goto error;
     if (sgp->sg_cterm_font != 0)
-	if (dict_add_number(dict, "font", sgp->sg_cterm_font) == FAIL)
+	if (dict_add_string(dict, "ctermfont",
+			highlight_color(hlgid, (char_u *)"font", 'c')) == FAIL)
 	    goto error;
     if (sgp->sg_gui != 0)
     {
