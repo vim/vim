@@ -3116,6 +3116,15 @@ term_set_winsize(int height, int width)
 }
 #endif
 
+    void
+term_font(int n)
+{
+    char buf[20];
+    char *format = "\033[%dm";
+    sprintf(buf, format, 10 + n);
+    OUT_STR(buf);
+}
+
     static void
 term_color(char_u *s, int n)
 {
