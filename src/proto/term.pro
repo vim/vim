@@ -33,6 +33,7 @@ void term_set_winsize(int height, int width);
 void term_fg_color(int n);
 void term_bg_color(int n);
 void term_ul_color(int n);
+void term_font(int n);
 char_u *term_bg_default(void);
 void term_fg_rgb_color(guicolor_T rgb);
 void term_bg_rgb_color(guicolor_T rgb);

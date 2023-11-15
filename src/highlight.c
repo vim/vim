@@ -59,6 +59,7 @@ typedef struct
     int		sg_cterm_bg;	// terminal bg color number + 1
     int		sg_cterm_ul;	// terminal ul color number + 1
     int		sg_cterm_attr;	// Screen attr for color term mode
+    int		sg_cterm_font;	// terminal alternative font (0 for normal)
 // for when using the GUI
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     guicolor_T	sg_gui_fg;	// GUI foreground color handle
@@ -1035,6 +1036,39 @@ highlight_set_ctermul(int idx, int color, int is_normal_group)
 }
 
 /*
+ * Set the cterm font for the highlight group at 'idx'.
+ * 'arg' is the color name or the numeric value as a string.
+ * 'init' is set to TRUE when initializing highlighting.
+ * Called for the ":highlight" command and the "hlset()" function.
+ *
+ * Returns TRUE if the font is set.
+ */
+    static int
+highlight_set_cterm_font(
+	int	idx,
+	char_u	*arg,
+	int	init)
+{
+    int		font;
+
+    if (init && (HL_TABLE()[idx].sg_set & SG_CTERM))
+	return FALSE;
+
+    if (!init)
+	HL_TABLE()[idx].sg_set |= SG_CTERM;
+
+    if (VIM_ISDIGIT(*arg))
+	font = atoi((char *)arg);
+    else if (STRICMP(arg, "NONE") == 0)
+	font = -1;
+    else
+	return FALSE;
+
+    HL_TABLE()[idx].sg_cterm_font = font + 1;
+    return TRUE;
+}
+
+/*
  * Set the cterm fg/bg/ul color for the highlight group at 'idx'.
  * 'key' is one of 'CTERMFG' or 'CTERMBG' or 'CTERMUL'.
  * 'keystart' is the color name/value.
@@ -1679,6 +1713,14 @@ do_highlight(
 		    break;
 		}
 	    }
+	    else if (STRCMP(key, "CTERMFONT") == 0)
+	    {
+		if (!highlight_set_cterm_font(idx, arg, init))
+		{
+		    error = TRUE;
+		    break;
+		}
+	    }
 	    else if (STRCMP(key, "GUIFG") == 0)
 	    {
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
@@ -1865,6 +1907,7 @@ hl_has_settings(int idx, int check_link)
 	    || HL_TABLE()[idx].sg_cterm_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_fg != 0
 	    || HL_TABLE()[idx].sg_cterm_bg != 0
+	    || HL_TABLE()[idx].sg_cterm_font != 0
 #ifdef FEAT_GUI
 	    || HL_TABLE()[idx].sg_gui_attr != 0
 	    || HL_TABLE()[idx].sg_gui_fg_name != NULL
@@ -1892,6 +1935,7 @@ highlight_clear(int idx)
     HL_TABLE()[idx].sg_cterm_fg = 0;
     HL_TABLE()[idx].sg_cterm_bg = 0;
     HL_TABLE()[idx].sg_cterm_attr = 0;
+    HL_TABLE()[idx].sg_cterm_font = 0;
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
     HL_TABLE()[idx].sg_gui = 0;
     VIM_CLEAR(HL_TABLE()[idx].sg_gui_fg_name);
@@ -2539,6 +2583,8 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 						  == taep->ae_u.cterm.bg_color
 			    && aep->ae_u.cterm.ul_color
 						  == taep->ae_u.cterm.ul_color
+			    && aep->ae_u.cterm.font
+						  == taep->ae_u.cterm.font
 #ifdef FEAT_TERMGUICOLORS
 			    && aep->ae_u.cterm.fg_rgb
 						    == taep->ae_u.cterm.fg_rgb
@@ -2609,6 +2655,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	taep->ae_u.cterm.fg_color = aep->ae_u.cterm.fg_color;
 	taep->ae_u.cterm.bg_color = aep->ae_u.cterm.bg_color;
 	taep->ae_u.cterm.ul_color = aep->ae_u.cterm.ul_color;
+	taep->ae_u.cterm.font = aep->ae_u.cterm.font;
 #ifdef FEAT_TERMGUICOLORS
 	taep->ae_u.cterm.fg_rgb = aep->ae_u.cterm.fg_rgb;
 	taep->ae_u.cterm.bg_rgb = aep->ae_u.cterm.bg_rgb;
@@ -2639,6 +2686,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
     at_en.ae_u.cterm.ul_color = 0;
+    at_en.ae_u.cterm.font = 0;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 #endif
@@ -2809,6 +2857,8 @@ hl_combine_attr(int char_attr, int prim_attr)
 		    new_en.ae_u.cterm.bg_color = prim_aep->ae_u.cterm.bg_color;
 		if (prim_aep->ae_u.cterm.ul_color > 0)
 		    new_en.ae_u.cterm.ul_color = prim_aep->ae_u.cterm.ul_color;
+		if (prim_aep->ae_u.cterm.font > 0)
+		    new_en.ae_u.cterm.font = prim_aep->ae_u.cterm.font;
 #ifdef FEAT_TERMGUICOLORS
 		// If both fg and bg are not set fall back to cterm colors.
 		// Helps for SpellBad which uses undercurl in the GUI.
@@ -2948,6 +2998,8 @@ highlight_list_one(int id)
 				    sgp->sg_cterm_bg, NULL, "ctermbg");
     didh = highlight_list_arg(id, didh, LIST_INT,
 				    sgp->sg_cterm_ul, NULL, "ctermul");
+    didh = highlight_list_arg(id, didh, LIST_INT,
+				    sgp->sg_cterm_font, NULL, "ctermfont");
 
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
     didh = highlight_list_arg(id, didh, LIST_ATTR,
@@ -3138,7 +3190,7 @@ highlight_color(
 	    return (HL_TABLE()[id - 1].sg_gui_sp_name);
 	return (HL_TABLE()[id - 1].sg_gui_bg_name);
     }
-    if (font || sp)
+    if (sp)
 	return NULL;
     if (modec == 'c')
     {
@@ -3146,6 +3198,8 @@ highlight_color(
 	    n = HL_TABLE()[id - 1].sg_cterm_fg - 1;
 	else if (ul)
 	    n = HL_TABLE()[id - 1].sg_cterm_ul - 1;
+	else if (font)
+	    n = HL_TABLE()[id - 1].sg_cterm_font - 1;
 	else
 	    n = HL_TABLE()[id - 1].sg_cterm_bg - 1;
 	if (n < 0)
@@ -3296,7 +3350,8 @@ set_hl_attr(
 
     // For the color term mode: If there are other than "normal"
     // highlighting attributes, need to allocate an attr number.
-    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 && sgp->sg_cterm_ul == 0
+    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 &&
+	sgp->sg_cterm_ul == 0 && sgp->sg_cterm_font == 0
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
@@ -3310,6 +3365,7 @@ set_hl_attr(
 	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 	at_en.ae_u.cterm.ul_color = sgp->sg_cterm_ul;
+	at_en.ae_u.cterm.font = sgp->sg_cterm_font;
 # ifdef FEAT_TERMGUICOLORS
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
@@ -3717,6 +3773,8 @@ combine_stl_hlt(
 	hlt[hlcnt + i].sg_cterm_fg = hlt[id - 1].sg_cterm_fg;
     if (hlt[id - 1].sg_cterm_bg != hlt[id_S - 1].sg_cterm_bg)
 	hlt[hlcnt + i].sg_cterm_bg = hlt[id - 1].sg_cterm_bg;
+    if (hlt[id - 1].sg_cterm_font != hlt[id_S - 1].sg_cterm_font)
+	hlt[hlcnt + i].sg_cterm_font = hlt[id - 1].sg_cterm_font;
 #  if defined(FEAT_GUI) || defined(FEAT_EVAL)
     hlt[hlcnt + i].sg_gui ^=
 	hlt[id - 1].sg_gui ^ hlt[id_S - 1].sg_gui;
@@ -4180,6 +4238,10 @@ highlight_get_info(int hl_idx, int resolve_link)
 	if (dict_add_string(dict, "ctermul",
 			highlight_color(hlgid, (char_u *)"ul", 'c')) == FAIL)
 	    goto error;
+    if (sgp->sg_cterm_font != 0)
+	if (dict_add_string(dict, "ctermfont",
+			highlight_color(hlgid, (char_u *)"font", 'c')) == FAIL)
+	    goto error;
     if (sgp->sg_gui != 0)
     {
 	attr_dict = highlight_get_attr_dict(sgp->sg_gui);
@@ -4408,6 +4470,7 @@ hlg_add_or_update(dict_T *dict)
     char_u	*ctermfg;
     char_u	*ctermbg;
     char_u	*ctermul;
+    char_u	*ctermfont;
     char_u	*guifg;
     char_u	*guibg;
     char_u	*guisp;
@@ -4492,6 +4555,10 @@ hlg_add_or_update(dict_T *dict)
     if (error)
 	return FALSE;
 
+    ctermfont = hldict_get_string(dict, (char_u *)"ctermfont", &error);
+    if (error)
+	return FALSE;
+
     if (!hldict_attr_to_str(dict, (char_u *)"gui", gui_attr, sizeof(gui_attr)))
 	return FALSE;
 
@@ -4516,7 +4583,7 @@ hlg_add_or_update(dict_T *dict)
     // If none of the attributes are specified, then do nothing.
     if (term_attr[0] == NUL && start == NULL && stop == NULL
 	    && cterm_attr[0] == NUL && ctermfg == NULL && ctermbg == NULL
-	    && ctermul == NULL && gui_attr[0] == NUL
+	    && ctermul == NULL && ctermfont == NULL && gui_attr[0] == NUL
 # ifdef FEAT_GUI
 	    && font == NULL
 # endif
@@ -4536,6 +4603,7 @@ hlg_add_or_update(dict_T *dict)
     p = add_attr_and_value(p, (char_u *)" ctermfg=", 9, ctermfg);
     p = add_attr_and_value(p, (char_u *)" ctermbg=", 9, ctermbg);
     p = add_attr_and_value(p, (char_u *)" ctermul=", 9, ctermul);
+    p = add_attr_and_value(p, (char_u *)" ctermfont=", 9, ctermfont);
     p = add_attr_and_value(p, (char_u *)" gui=", 5, gui_attr);
 # ifdef FEAT_GUI
     p = add_attr_and_value(p, (char_u *)" font=", 6, font);

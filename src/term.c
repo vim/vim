@@ -625,7 +625,7 @@ static tcap_entry_T builtin_kitty[] = {
 
 #ifdef FEAT_TERMGUICOLORS
 /*
- * Additions for using the RGB colors
+ * Additions for using the RGB colors and terminal font
  */
 static tcap_entry_T builtin_rgb[] = {
     // These are printf strings, not terminal codes.
@@ -636,6 +636,12 @@ static tcap_entry_T builtin_rgb[] = {
     {(int)KS_NAME,	NULL}  // end marker
 };
 #endif
+
+static tcap_entry_T special_term[] = {
+    // These are printf strings, not terminal codes.
+    {(int)KS_CF,	"\033[%dm"},
+    {(int)KS_NAME,	NULL}  // end marker
+};
 
 /*
  * iris-ansi for Silicon Graphics machines.
@@ -1235,6 +1241,7 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_U7,	"[U7]"},
     {(int)KS_RFG,	"[RFG]"},
     {(int)KS_RBG,	"[RBG]"},
+    {(int)KS_CF,	"[CF%d]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
     {K_LEFT,		"[KL]"},
@@ -1754,6 +1761,7 @@ get_term_entries(int *height, int *width)
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
 			{KS_CST, "ST"}, {KS_CRT, "RT"},
 			{KS_SSI, "Si"}, {KS_SRI, "Ri"},
+			{KS_CF, "CF"},
 			{(enum SpecialKey)0, NULL}
 		    };
     int		    i;
@@ -2113,6 +2121,8 @@ set_termname(char_u *term)
 		&& term_strings_not_set(KS_8U))
 	    apply_builtin_tcap(term, builtin_rgb, TRUE);
 #endif
+	if (term_strings_not_set(KS_CF))
+	    apply_builtin_tcap(term, special_term, TRUE);
     }
 
 /*
@@ -3115,6 +3125,17 @@ term_set_winsize(int height, int width)
     OUT_STR(tgoto((char *)T_CWS, width, height));
 }
 #endif
+
+    void
+term_font(int n)
+{
+    if (*T_CFO)
+    {
+	char buf[20];
+	sprintf(buf, (char *)T_CFO, 9 + n);
+	OUT_STR(buf);
+    }
+}
 
     static void
 term_color(char_u *s, int n)

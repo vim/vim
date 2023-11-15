@@ -888,6 +888,16 @@ func Test_highlight_ctermul()
   highlight Normal ctermul=NONE
 endfunc
 
+" Test for 'ctermfont' in a highlight group
+func Test_highlight_ctermfont()
+  CheckNotGui
+  call assert_notmatch('ctermfont=', HighlightArgs('Normal'))
+  highlight Normal ctermfont=3
+  call assert_match('ctermfont=3', HighlightArgs('Normal'))
+  call assert_equal('3', synIDattr(synIDtrans(hlID('Normal')), 'font'))
+  highlight Normal ctermfont=NONE
+endfunc
+
 " Test for specifying 'start' and 'stop' in a highlight group
 func Test_highlight_start_stop()
   hi HlGrp1 start=<Esc>[27h;<Esc>[<Space>r;
@@ -1314,6 +1324,7 @@ func Test_hlset()
   call hlset([{'name': 'hlg11', 'ctermfg': ''}])
   call hlset([{'name': 'hlg11', 'ctermbg': ''}])
   call hlset([{'name': 'hlg11', 'ctermul': ''}])
+  call hlset([{'name': 'hlg11', 'ctermfont': ''}])
   call hlset([{'name': 'hlg11', 'font': ''}])
   call hlset([{'name': 'hlg11', 'gui': {}}])
   call hlset([{'name': 'hlg11', 'guifg': ''}])

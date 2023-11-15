@@ -2931,6 +2931,7 @@ static struct vimoption options[] =
     p_term("t_cd", T_CD)
     p_term("t_ce", T_CE)
     p_term("t_Ce", T_UCE)
+    p_term("t_CF", T_CFO)
     p_term("t_cl", T_CL)
     p_term("t_cm", T_CM)
     p_term("t_Co", T_CCO)

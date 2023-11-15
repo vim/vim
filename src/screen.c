@@ -1667,6 +1667,8 @@ screen_start_highlight(int attr)
      */
     if (aep != NULL)
     {
+	if (aep->ae_u.cterm.font > 0 && aep->ae_u.cterm.font < 12)
+		term_font(aep->ae_u.cterm.font);
 #ifdef FEAT_TERMGUICOLORS
 	// When 'termguicolors' is set but fg or bg is unset,
 	// fall back to the cterm colors.   This helps for SpellBad,
