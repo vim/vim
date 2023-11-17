@@ -2183,6 +2183,9 @@ au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 " Swift Intermediate Language or SILE
 au BufNewFile,BufRead *.sil			call dist#ft#FTsil()
 
+" Swig
+autocmd BufNewFile,BufRead *.i,*.swg,*.swig set filetype=swig
+
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
 
