@@ -2563,12 +2563,11 @@ nv_z_get_count(cmdarg_T *cap, int *nchar_arg)
 	    n /= 10;
 	else if (VIM_ISDIGIT(nchar))
 	{
-	    if (n > LONG_MAX / 10)
+	    if (vim_append_digit_long(&n, nchar - '0') == FAIL)
 	    {
 		clearopbeep(cap->oap);
 		break;
 	    }
-	    n = n * 10 + (nchar - '0');
 	}
 	else if (nchar == CAR)
 	{
