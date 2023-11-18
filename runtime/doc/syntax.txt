@@ -5275,7 +5275,7 @@ ctermfont={font-nr}				*highlight-ctermfont*
 	up for alternative fonts this simply won't do anything. The range of
 	{font-nr} is 0-9 where 0 resets the font to the default font and 1-9
 	selects one of the 8 alternate fonts. For more information see your
-	terminals handling of SGR parameters 10-19.
+	terminal's handling of SGR parameters 10-19.
 
 3. highlight arguments for the GUI
 

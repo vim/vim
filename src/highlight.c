@@ -1038,7 +1038,6 @@ highlight_set_ctermul(int idx, int color, int is_normal_group)
 /*
  * Set the cterm font for the highlight group at 'idx'.
  * 'arg' is the color name or the numeric value as a string.
- * 'is_normal_group' is set if the highlight group is 'NORMAL'
  * 'init' is set to TRUE when initializing highlighting.
  * Called for the ":highlight" command and the "hlset()" function.
  *
@@ -1177,6 +1176,7 @@ highlight_set_cterm_color(
 
     return TRUE;
 }
+
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
 /*
  * Set the GUI foreground color for the highlight group at 'idx'.
