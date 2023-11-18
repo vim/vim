@@ -353,26 +353,6 @@ menu_sl_si.latin2.vim : menu_sl_si.utf-8.vim
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28592))
 
-## Convert menu_sl_si.utf-8.vim to create menu_slovak_slovak_republic.1250.vim.
-#menu_slovak_slovak_republic.1250.vim : menu_sl_si.utf-8.vim
-#	$(RM) $@
-#!IF DEFINED (ICONV)
-#	$(ICONV) -f UTF-8 -t CP1250 $? >$@
-#!ELSE
-#	powershell -nologo -noprofile -Command \
-#		[System.IO.File]::WriteAllText(\"$@\", \
-#		[System.IO.File]::ReadAllText(\"$?\", \
-#		[System.Text.Encoding]::GetEncoding(65001)), \
-#		[System.Text.Encoding]::GetEncoding(1250))
-#!ENDIF
-#	powershell -nologo -noprofile -Command \
-#		$$out = [System.IO.File]::ReadAllText(\"$@\", \
-#		[System.Text.Encoding]::GetEncoding(1250)) -replace \
-#		'scriptencoding utf-8', 'scriptencoding cp1250' -replace \
-#		' Original translations', ' Generated from menu_sl_si.utf-8.vim, DO NOT EDIT'; \
-#		[System.IO.File]::WriteAllText(\"$@\", $$out, \
-#		[System.Text.Encoding]::GetEncoding(1250))
-
 # Convert menu_sr_rs.utf-8.vim to create menu_sr_rs.ascii.vim.
 menu_sr_rs.ascii.vim : menu_sr_rs.utf-8.vim
 	$(RM) $@
@@ -532,6 +512,5 @@ menu_uk_ua.koi8-u.vim : menu_uk_ua.utf-8.vim
 		' Original translations', ' Generated from menu_uk_ua.utf-8.vim, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(21866))
-
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:

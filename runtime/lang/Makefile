@@ -131,14 +131,6 @@ menu_sl_si.latin2.vim: menu_sl_si.utf-8.vim
 			-e 's/" Original translations/" Generated from menu_sl_si.utf-8.vim, DO NOT EDIT/' \
 			> menu_sl_si.latin2.vim
 
-# Convert menu_uk_ua.utf-8.vim to create menu_slovak_slovak_republic.1250.vim.
-#menu_slovak_slovak_republic.1250.vim: menu_sl_si.utf-8.vim
-#	rm -f menu_slovak_slovak_republic.1250.vim
-#	iconv -f UTF-8 -t CP1250 menu_sl_si.utf-8.vim | \
-#		$(SED) -e 's/scriptencoding utf-8/scriptencoding cp1250/' \
-#			-e 's/" Original translations/" Generated from menu_sl_si.utf-8.vim, DO NOT EDIT/' \
-#			> menu_slovak_slovak_republic.1250.vim
-
 # Convert menu_tr_tr.utf-8.vim to create menu_tr_tr.cp1254.vim.
 menu_tr_tr.cp1254.vim: menu_tr_tr.utf-8.vim
 	rm -f menu_tr_tr.cp1254.vim
