@@ -1062,7 +1062,7 @@ highlight_set_cterm_font(
     else
 	return FALSE;
 
-    HL_TABLE()[idx].sg_cterm_font = font;
+    HL_TABLE()[idx].sg_cterm_font = font + 1;
     return TRUE;
 }
 
@@ -2995,9 +2995,8 @@ highlight_list_one(int id)
 				    sgp->sg_cterm_bg, NULL, "ctermbg");
     didh = highlight_list_arg(id, didh, LIST_INT,
 				    sgp->sg_cterm_ul, NULL, "ctermul");
-    if (sgp->sg_cterm_font != 0)
-	didh = highlight_list_arg(id, didh, LIST_INT,
-				    sgp->sg_cterm_font + 1, NULL, "ctermfont");
+    didh = highlight_list_arg(id, didh, LIST_INT,
+				    sgp->sg_cterm_font, NULL, "ctermfont");
 
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
     didh = highlight_list_arg(id, didh, LIST_ATTR,
@@ -3197,7 +3196,7 @@ highlight_color(
 	else if (ul)
 	    n = HL_TABLE()[id - 1].sg_cterm_ul - 1;
 	else if (font)
-	    n = HL_TABLE()[id - 1].sg_cterm_font;
+	    n = HL_TABLE()[id - 1].sg_cterm_font - 1;
 	else
 	    n = HL_TABLE()[id - 1].sg_cterm_bg - 1;
 	if (n < 0)

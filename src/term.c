@@ -3121,7 +3121,7 @@ term_font(int n)
 {
     char buf[20];
     char *format = "\033[%dm";
-    sprintf(buf, format, 10 + n);
+    sprintf(buf, format, 9 + n);
     OUT_STR(buf);
 }
 
