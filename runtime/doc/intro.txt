@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.0.  Last change: 2023 Aug 15
+*intro.txt*     For Vim version 9.0.  Last change: 2023 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,7 +43,8 @@ document, there is a separate document for each supported system, see
 
 							*pronounce*
 Vim is pronounced as one word, like Jim, not vi-ai-em.  It's written with a
-capital, since it's a name, again like Jim.
+capital, since it's a name, again like Jim.  The GUI version of Vim is written
+"gVim" (or "GVim" when at the beginning of a sentence).
 
 This manual is a reference for all the Vim commands and options.  This is not
 an introduction to the use of Vi or Vim, it gets a bit complicated here and
@@ -97,12 +98,14 @@ There are several mailing lists for Vim:
 <vim-mac@vim.org>				*vim-mac* *vim_mac*
 	For discussions about using and improving the Macintosh version of
 	Vim.
+<vim-security@googlegroups.com>			*vim-security*
+	This list is for (privately) discussing security relevant issues of Vim.
 
 See http://www.vim.org/maillist.php for the latest information.
 
 NOTE:
 - Anyone can see the archive, e.g. on Google groups.  Search this if you have
-  questions.
+  questions, except for the vim-security list.
 - You can only send messages to these lists if you have subscribed!
 - The first message is moderated, thus it may take a few hours to show up.
 - You need to send the messages from the same location as where you subscribed
