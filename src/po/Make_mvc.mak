@@ -65,28 +65,28 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 .SUFFIXES:
 .SUFFIXES: .po .mo .pot .ck
 
-all : $(MOFILES) $(MOCONVERTED)
+all: $(MOFILES) $(MOCONVERTED)
 
-.po.ck :
+.po.ck:
 	$(VIMEXE) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	$(TOUCH)
 
-check : $(CHECKFILES)
+check: $(CHECKFILES)
 
-checkclean :
+checkclean:
 	$(RM) *.ck
 
-converted : $(MOCONVERTED)
+converted: $(MOCONVERTED)
 
-nl.po :
+nl.po:
 	@( echo \# > nl.po )
 
 # Norwegian/Bokmal: "nb" is an alias for "no".
-nb.po : no.po
+nb.po: no.po
 	$(CP) no.po nb.po
 
 # Convert ja.po to create ja.sjis.po.
-ja.sjis.po : ja.po
+ja.sjis.po: ja.po
 	@$(MAKE) -nologo -f Make_mvc.mak sjiscorr
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
@@ -109,11 +109,11 @@ ja.sjis.po : ja.po
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(932))
 
-sjiscorr : sjiscorr.c
+sjiscorr: sjiscorr.c
 	$(CC) sjiscorr.c
 
 # Convert ja.po to create ja.euc-jp.po
-ja.euc-jp.po : ja.po
+ja.euc-jp.po: ja.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t EUC-JP -o $@ $?
@@ -143,7 +143,7 @@ ja.euc-jp.po : ja.po
 		[System.Text.Encoding]::GetEncoding(20932))
 
 # Convert cs.po to create cs.cp1250.po.
-cs.cp1250.po : cs.po
+cs.cp1250.po: cs.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
@@ -173,7 +173,7 @@ cs.cp1250.po : cs.po
 		[System.Text.Encoding]::GetEncoding(1250))
 
 # Convert pl.po to create pl.cp1250.po.
-pl.cp1250.po : pl.po
+pl.cp1250.po: pl.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
@@ -203,7 +203,7 @@ pl.cp1250.po : pl.po
 		[System.Text.Encoding]::GetEncoding(1250))
 
 # Convert pl.po to create pl.UTF-8.po.
-pl.UTF-8.po : pl.po
+pl.UTF-8.po: pl.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t UTF-8 -o $@ $?
@@ -228,7 +228,7 @@ pl.UTF-8.po : pl.po
 		^| 1>nul New-Item -Force -Path . -ItemType file -Name $@
 
 # Convert sk.po to create sk.cp1250.po.
-sk.cp1250.po : sk.po
+sk.cp1250.po: sk.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
@@ -258,7 +258,7 @@ sk.cp1250.po : sk.po
 		[System.Text.Encoding]::GetEncoding(1250))
 
 # Convert zh_CN.UTF-8.po to create zh_CN.po.
-zh_CN.po : zh_CN.UTF-8.po
+zh_CN.po: zh_CN.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t GB2312 -o $@ $?
@@ -291,7 +291,7 @@ zh_CN.po : zh_CN.UTF-8.po
 # Convert zh_CN.UTF-8.po to create zh_CN.cp936.po.
 # Set 'charset' to gbk to avoid that msfmt generates a warning.
 # This used to convert from zh_CN.po, but that results in a conversion error.
-zh_CN.cp936.po : zh_CN.UTF-8.po
+zh_CN.cp936.po: zh_CN.UTF-8.po
 	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP936 $? > $@
@@ -313,7 +313,7 @@ zh_CN.cp936.po : zh_CN.UTF-8.po
 		[System.Text.Encoding]::GetEncoding(20936))
 
 # Convert zh_TW.UTF-8.po to create zh_TW.po
-zh_TW.po : zh_TW.UTF-8.po
+zh_TW.po: zh_TW.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t BIG5 -o $@ $?
@@ -359,7 +359,7 @@ zh_TW.po : zh_TW.UTF-8.po
 #  But it is better to have someone native speaker check it.
 #
 
-#zh_TW.po : zh_TW.UTF-8.po
+#zh_TW.po: zh_TW.UTF-8.po
 #	@$(MAKE) -nologo -f Make_mvc.mak big5corr
 #	-$(RM) $@
 #!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
@@ -383,11 +383,11 @@ zh_TW.po : zh_TW.UTF-8.po
 #		[System.Text.Encoding]::GetEncoding(950))
 
 # see above in the zh_tw.po conversion section for backslashes.
-#big5corr : big5corr.c
+#big5corr: big5corr.c
 #	$(CC) big5corr.c
 
 # Convert ko.UTF-8.po to create ko.po.
-ko.po : ko.UTF-8.po
+ko.po: ko.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t EUC-KR -o $@ $?
@@ -418,7 +418,7 @@ ko.po : ko.UTF-8.po
 		[System.Text.Encoding]::GetEncoding(51949))
 
 # Convert ru.po to create ru.cp1251.po.
-ru.cp1251.po : ru.po
+ru.cp1251.po: ru.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t CP1251 -o $@ $?
@@ -449,7 +449,7 @@ ru.cp1251.po : ru.po
 		[System.Text.Encoding]::GetEncoding(1251))
 
 # Convert uk.po to create uk.cp1251.po.
-uk.cp1251.po : uk.po
+uk.cp1251.po: uk.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" -t CP1251 -o $@ $?
@@ -479,7 +479,7 @@ uk.cp1251.po : uk.po
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 
-.po.mo :
+.po.mo:
 	set OLD_PO_FILE_INPUT=yes
 	$(MSGFMT) -o $@ $<
 
@@ -494,10 +494,10 @@ PO_INPUTLIST = \
 	gvim.desktop.in \
 	vim.desktop.in
 
-files : $(PO_INPUTLIST)
+files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
-first_time : files
+first_time: files
 	$(VIMEXE) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
@@ -508,7 +508,7 @@ first_time : files
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
-$(PACKAGE).pot : files
+$(PACKAGE).pot: files
 	$(VIMEXE) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
@@ -523,33 +523,33 @@ $(PACKAGE).pot : files
 # 06.11.23, changed by Restorer
 # When updating ja.sjis.po there are a bunch of errors and a crash.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
-update-po : $(MOFILES:.mo=)
+update-po: $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually
-$(LANGUAGES) :
+$(LANGUAGES):
 	@$(MAKE) -nologo -f Make_mvc.mak $(PACKAGE).pot GETTEXT_PATH=$(GETTEXT_PATH)
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
 	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
 	$(RM) $@.po.old
 
-install : $(LANGUAGE).mo
+install: $(LANGUAGE).mo
 	if not exist $(INSTALLDIR) $(MKD) $(INSTALLDIR)
 	$(CP) $(LANGUAGE).mo $(INSTALLDIR)\$(PACKAGE).mo
 
-install-all : all
+install-all: all
 	for %%l in ($(LANGUAGES)) do @if not exist $(VIMRUNTIME)\lang\%%l\LC_MESSAGES \
 	$(MKD) $(VIMRUNTIME)\lang\%%l\LC_MESSAGES
 	for %%l in ($(LANGUAGES)) do @$(CP) %%l.mo \
 	$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
-cleanup-po : $(LANGUAGE).po
+cleanup-po: $(LANGUAGE).po
 	$(VIMEXE) -u NONE -e -X -S cleanup.vim -c wq $**
 
-cleanup-po-all : $(POFILES)
+cleanup-po-all: $(POFILES)
 	!$(VIMEXE) -u NONE -e -X -S cleanup.vim -c wq $**
 
-clean : checkclean
+clean: checkclean
 	$(RM) *.mo
 	$(RM) *.pot
 	$(RM) files
