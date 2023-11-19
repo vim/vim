@@ -5048,7 +5048,8 @@ get_styled_font_variants(void)
     }
 
     pango_font_description_free(bold_font_desc);
-    g_object_unref(plain_font);
+    if (bold_font != NULL && gui.font_can_bold)
+	g_object_unref(plain_font);
 }
 
 static PangoEngineShape *default_shape_engine = NULL;
