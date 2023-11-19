@@ -1761,7 +1761,7 @@ early_ret:
 
 	    if (parse_member(eap, line, varname, has_public,
 		      &varname_end, &has_type, &type_list, &type,
-		      is_class ? &init_expr : NULL) == FAIL)
+		      &init_expr) == FAIL)
 		break;
 	    if (is_reserved_varname(varname, varname_end))
 	    {
