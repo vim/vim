@@ -1405,7 +1405,6 @@ do_source_buffer_init(source_cookie_T *sp, exarg_T *eap)
 	    goto errret;
 	if (ga_add_string(&sp->buflines, line) == FAIL)
 	    goto errret;
-	line = NULL;
     }
     sp->buf_lnum = 0;
     sp->source_from_buf = TRUE;
