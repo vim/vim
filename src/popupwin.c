@@ -2382,6 +2382,8 @@ invoke_popup_callback(win_T *wp, typval_T *result)
     typval_T	rettv;
     typval_T	argv[3];
 
+    rettv.v_type = VAR_UNKNOWN;
+
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = (varnumber_T)wp->w_id;
 
