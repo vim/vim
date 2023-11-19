@@ -249,24 +249,22 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = i * sw_val;
+	count = (long long)i * (long long)sw_val;
     }
     else		// original vi indent
     {
 	if (left)
 	{
-	    count -= sw_val * amount;
+	    count -= (long long)sw_val * (long long)amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	{
-	    if ((long long)sw_val * (long long)amount > INT_MAX - count)
-		count = INT_MAX;
-	    else
-		count += (long long)sw_val * (long long)amount;
-	}
+	    count += (long long)sw_val * (long long)amount;
     }
+
+    if (count > INT_MAX)
+	count = INT_MAX;
 
     // Set new indent
     if (State & VREPLACE_FLAG)
