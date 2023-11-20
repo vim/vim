@@ -2684,6 +2684,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
     at_en.ae_u.cterm.ul_color = 0;
+    at_en.ae_u.cterm.font = 0;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 #endif
@@ -3345,11 +3346,10 @@ set_hl_attr(
 	sgp->sg_term_attr = get_attr_entry(&term_attr_table, &at_en);
     }
 
-    if (sgp->sg_cterm_font != 0)
-	at_en.ae_u.cterm.font = sgp->sg_cterm_font;
     // For the color term mode: If there are other than "normal"
     // highlighting attributes, need to allocate an attr number.
-    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 && sgp->sg_cterm_ul == 0
+    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 &&
+	sgp->sg_cterm_ul == 0 && sgp->sg_cterm_font == 0
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
@@ -3363,6 +3363,7 @@ set_hl_attr(
 	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
 	at_en.ae_u.cterm.ul_color = sgp->sg_cterm_ul;
+	at_en.ae_u.cterm.font = sgp->sg_cterm_font;
 # ifdef FEAT_TERMGUICOLORS
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
@@ -4467,6 +4468,7 @@ hlg_add_or_update(dict_T *dict)
     char_u	*ctermfg;
     char_u	*ctermbg;
     char_u	*ctermul;
+    char_u	*ctermfont;
     char_u	*guifg;
     char_u	*guibg;
     char_u	*guisp;
@@ -4551,6 +4553,10 @@ hlg_add_or_update(dict_T *dict)
     if (error)
 	return FALSE;
 
+    ctermfont = hldict_get_string(dict, (char_u *)"ctermfont", &error);
+    if (error)
+	return FALSE;
+
     if (!hldict_attr_to_str(dict, (char_u *)"gui", gui_attr, sizeof(gui_attr)))
 	return FALSE;
 
@@ -4575,7 +4581,7 @@ hlg_add_or_update(dict_T *dict)
     // If none of the attributes are specified, then do nothing.
     if (term_attr[0] == NUL && start == NULL && stop == NULL
 	    && cterm_attr[0] == NUL && ctermfg == NULL && ctermbg == NULL
-	    && ctermul == NULL && gui_attr[0] == NUL
+	    && ctermul == NULL && ctermfont == NULL && gui_attr[0] == NUL
 # ifdef FEAT_GUI
 	    && font == NULL
 # endif
@@ -4595,6 +4601,7 @@ hlg_add_or_update(dict_T *dict)
     p = add_attr_and_value(p, (char_u *)" ctermfg=", 9, ctermfg);
     p = add_attr_and_value(p, (char_u *)" ctermbg=", 9, ctermbg);
     p = add_attr_and_value(p, (char_u *)" ctermul=", 9, ctermul);
+    p = add_attr_and_value(p, (char_u *)" ctermfont=", 9, ctermfont);
     p = add_attr_and_value(p, (char_u *)" gui=", 5, gui_attr);
 # ifdef FEAT_GUI
     p = add_attr_and_value(p, (char_u *)" font=", 6, font);
