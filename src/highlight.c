@@ -1059,6 +1059,8 @@ highlight_set_cterm_font(
 
     if (VIM_ISDIGIT(*arg))
 	font = atoi((char *)arg);
+    else if (STRICMP(arg, "NONE") == 0)
+	font = -1;
     else
 	return FALSE;
 
