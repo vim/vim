@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2023 Nov 04
+*term.txt*      For Vim version 9.0.  Last change: 2023 Nov 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -757,8 +757,9 @@ For Windows Terminal you can use something like this: >
 	let &t_SI = "\e[5 q"    " blink bar
 	let &t_SR = "\e[3 q"    " blink underline
 	let &t_EI = "\e[1 q"    " blink block
-	let &t_ti ..= "\e[1 q"   " blink block
-	let &t_te ..= "\e[0 q"   " default (depends on terminal, normally blink block)
+	let &t_ti ..= "\e[1 q"  " blink block
+	let &t_te ..= "\e[0 q"  " default (depends on terminal, normally blink
+				" block)
     endif
 
 {not available when compiled without the |+cursorshape| feature}

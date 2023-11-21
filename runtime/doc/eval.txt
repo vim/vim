@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Nov 05
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4809,12 +4809,12 @@ Vim comes bundled with a Vim script library, that can be used by runtime,
 script authors.  Currently, it only includes very few functions, but it may
 grow over time.
 
-The functions are available as |Vim9-script| as well as using legacy vim
+The functions are available as |Vim9-script| as well as using legacy Vim
 script (to be used for non Vim 9.0 versions and Neovim).
 
 							*dist#vim* *dist#vim9*
-The functions make use of the autoloaded prefix "dist#vim" (for legacy Vim script and
-Neovim) and "dist#vim9" for Vim9 script.
+The functions make use of the autoloaded prefix "dist#vim" (for legacy Vim
+script and Neovim) and "dist#vim9" for Vim9 script.
 
 The following functions are available:
 

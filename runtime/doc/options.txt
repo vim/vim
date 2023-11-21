@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2023 Nov 19
+*options.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9299,7 +9299,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	uses another default.
 
 
-			*'wildignorecase'* *'wic'* *'nowildignorecase'* *'nowic'*
+		    *'wildignorecase'* *'wic'* *'nowildignorecase'* *'nowic'*
 'wildignorecase' 'wic'	boolean	(default off)
 			global
 	When set case is ignored when completing file names and directories.

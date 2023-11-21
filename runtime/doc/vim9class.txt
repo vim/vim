@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Sep 18
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -402,7 +402,7 @@ class, for which objects can be created.  Example: >
 An abstract class is defined the same way as a normal class, except that it
 does not have any new() method. *E1359*
 
-						*abstract-method* *E1371* *E1372*
+					    *abstract-method* *E1371* *E1372*
 An abstract method can be defined in an abstract class by using the "abstract"
 prefix when defining the method: >
 
