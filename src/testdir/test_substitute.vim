@@ -1472,4 +1472,29 @@ func Test_substitute_expr_recursive()
   exe bufnr .. "bw!"
 endfunc
 
+" recursive call of :s and sub-replace special
+" (used to access freed memory)
+"
+" This test needs to be run as first one, because it
+" depends on that the last substitution pattern has
+" not yet been set
+func Test_aaaa_substitute_expr_recursive_special()
+  func R()
+    " FIXME: leaving out the 'n' flag leaks memory, why?
+    %s/./\='.'/gn
+  endfunc
+  new Xfoobar_UAF
+  put ='abcdef'
+  let bufnr = bufnr('%')
+  try
+    silent! :s/./~\=R()/0
+    "call assert_fails(':s/./~\=R()/0', 'E939:')
+    let @/='.'
+    ~g
+  catch /^Vim\%((\a\+)\)\=:E565:/
+  endtry
+  delfunc R
+  exe bufnr .. "bw!"
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
