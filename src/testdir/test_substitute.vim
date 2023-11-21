@@ -147,7 +147,6 @@ func Test_substitute_repeat()
   call feedkeys("Qsc\<CR>y", 'tx')
   bwipe!
 endfunc
-
 " Test %s/\n// which is implemented as a special case to use a
 " more efficient join rather than doing a regular substitution.
 func Test_substitute_join()
@@ -1447,10 +1446,29 @@ func Test_substitute_expr_switch_win()
   endfunc
   new Xfoobar
   let bufnr = bufnr('%')
-  put ="abcdef"
+  put ='abcdef'
   silent! s/\%')/\=R()
   call assert_fails(':%s/./\=R()/g', 'E565:')
   delfunc R
+  exe bufnr .. "bw!"
+endfunc
+
+" recursive call of :s using test-replace special
+func Test_substitute_expr_recursive()
+  func Q()
+    %s/./\='foobar'/gn
+    return "foobar"
+  endfunc
+  func R()
+    %s/./\=Q()/g
+  endfunc
+  new Xfoobar_UAF
+  let bufnr = bufnr('%')
+  put ='abcdef'
+  silent! s/./\=R()/g
+  call assert_fails(':%s/./\=R()/g', 'E565:')
+  delfunc R
+  delfunc Q
   exe bufnr .. "bw!"
 endfunc
 
