@@ -135,6 +135,13 @@ get_extra_op_char(int optype)
     return opchars[optype][1];
 }
 
+// Return something that fits into an int.
+    int
+trim_to_int(long long x)
+{
+    return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
+}
+
 /*
  * op_shift - handle a shift operation
  */
@@ -230,8 +237,8 @@ shift_line(
     int call_changed_bytes)	// call changed_bytes()
 {
     long long	count;
-    long	i, j;
-    long	sw_val = get_sw_value_indent(curbuf);
+    int		i, j;
+    int		sw_val = trim_to_int(get_sw_value_indent(curbuf));
 
     count = (long long)get_indent();	// get current indent
 

@@ -3,6 +3,7 @@ int get_op_type(int char1, int char2);
 int op_is_change(int op);
 int get_op_char(int optype);
 int get_extra_op_char(int optype);
+int trim_to_int(long long x);
 void op_shift(oparg_T *oap, int curs_top, int amount);
 void shift_line(int left, int round, int amount, int call_changed_bytes);
 int op_delete(oparg_T *oap);
