@@ -230,8 +230,8 @@ shift_line(
     int call_changed_bytes)	// call changed_bytes()
 {
     long long	count;
-    int		i, j;
-    int		sw_val = (int)get_sw_value_indent(curbuf);
+    long	i, j;
+    long	sw_val = get_sw_value_indent(curbuf);
 
     count = (long long)get_indent();	// get current indent
 
