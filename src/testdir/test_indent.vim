@@ -288,7 +288,12 @@ endfunc
 
 func Test_indent_overflow_count2()
   new
-  setl sw=0x180000000
+  " this only works, when long is not 64bits
+  try
+    setl sw=0x180000000
+  catch /^Vim\%((\a\+)\)\=:E487:/
+  throw 'Skipped: value negative on this platform'
+  endtry
   call setline(1, "\tabc")
   norm! <<
   call assert_equal(0, indent(1))
