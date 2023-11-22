@@ -286,4 +286,13 @@ func Test_indent_overflow_count()
   close!
 endfunc
 
+func Test_indent_overflow_count2()
+  new
+  setl sw=0x180000000
+  call setline(1, "\tabc")
+  norm! <<
+  call assert_equal(0, indent(1))
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
