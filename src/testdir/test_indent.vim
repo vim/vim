@@ -288,7 +288,7 @@ endfunc
 
 func Test_indent_overflow_count2()
   new
-  " this only works, when long is not 64bits
+  " this only works, when long is 64bits
   try
     setl sw=0x180000000
   catch /^Vim\%((\a\+)\)\=:E487:/
