@@ -13,7 +13,7 @@
  * (read all comments)
  *
  * I checked the workability on the list of backslash characters
- * specified in zh_tw.utf-8.po. It works.
+ * specified in zh_TW.UTF-8.po. It works.
  * But it is better to have someone native speaker check it.
  *
  */
@@ -34,7 +34,7 @@ main(int argc, char **argv)
 			if (strncmp(p, "charset=utf-8", 13) == 0
 				|| strncmp(p, "charset=UTF-8", 13) == 0)
 			{
-				fputs("charset=BIG5", stdout);
+				fputs("charset=BIG-5", stdout);
 				p += 12;
 			}
 			else if (strncmp(p, "# Original translations", 23) == 0)
