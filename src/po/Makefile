@@ -282,7 +282,6 @@ gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
 	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi
 	mv tmp_gvim.desktop gvim.desktop
 
-# 06.11.23, changed by Restorer
 # When updating ja.sjis.po there are a bunch of errors and a crash.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
 update-po: $(MOFILES:.mo=)

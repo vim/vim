@@ -23,7 +23,7 @@ VIMRUNTIME = ..\..\runtime
 
 PACKAGE = vim
 # Correct the following line for the where executeable file vim is installed
-VIMEXE = D:\Programs\Vim\vim90\vim.exe
+VIM = ..\vim
 
 # Correct the following line for the directory where gettext et al is installed
 GETTEXT_PATH = D:\Programs\GetText\bin
@@ -68,7 +68,7 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 all: $(MOFILES) $(MOCONVERTED)
 
 .po.ck:
-	$(VIMEXE) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
+	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	$(TOUCH)
 
 check: $(CHECKFILES)
@@ -382,7 +382,7 @@ zh_TW.po: zh_TW.UTF-8.po
 #		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 #		[System.Text.Encoding]::GetEncoding(950))
 
-# see above in the zh_tw.po conversion section for backslashes.
+# see above in the zh_TW.po conversion section for backslashes.
 #big5corr: big5corr.c
 #	$(CC) big5corr.c
 
@@ -498,29 +498,28 @@ files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
 first_time: files
-	$(VIMEXE) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
+	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
-	$(VIMEXE) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
+	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
 $(PACKAGE).pot: files
-	$(VIMEXE) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
+	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
-	$(VIMEXE) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
+	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
-# 06.11.23, changed by Restorer
 # When updating ja.sjis.po there are a bunch of errors and a crash.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
 update-po: $(MOFILES:.mo=)
@@ -544,10 +543,10 @@ install-all: all
 	$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
 cleanup-po: $(LANGUAGE).po
-	$(VIMEXE) -u NONE -e -X -S cleanup.vim -c wq $**
+	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
 
 cleanup-po-all: $(POFILES)
-	!$(VIMEXE) -u NONE -e -X -S cleanup.vim -c wq $**
+	!$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
 
 clean: checkclean
 	$(RM) *.mo
