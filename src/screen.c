@@ -4726,7 +4726,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
     }
 
     // first round: check for valid value, second round: assign values
-    for (round = 0; round <= 1; ++round)
+    for (round = 0; round <= (apply ? 1 : 0); ++round)
     {
 	if (round > 0)
 	{
@@ -4912,11 +4912,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	{
 	    wp->w_fill_chars = fill_chars;
 	}
-    }
-    else if (is_listchars)
-    {
-	vim_free(lcs_chars.multispace);
-	vim_free(lcs_chars.leadmultispace);
     }
 
     return NULL;	// no error
