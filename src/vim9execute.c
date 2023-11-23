@@ -548,6 +548,12 @@ call_dfunc(
     if (check_ufunc_arg_types(ufunc, argcount, vararg_count, ectx) == FAIL)
 	return FAIL;
 
+    // While check_ufunc_arg_types call, def function compilation process may
+    // run.  If so many def functions are compiled, def_functions array may be
+    // reallocated and dfunc may no longer have valid pointer.  Get the object
+    // pointer from def_functions again here.
+    dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
+
     // Reserve space for:
     // - missing arguments
     // - stack frame
