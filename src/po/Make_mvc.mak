@@ -538,9 +538,9 @@ install: $(LANGUAGE).mo
 
 install-all: all
 	for %%l in ($(LANGUAGES)) do @if not exist $(VIMRUNTIME)\lang\%%l\LC_MESSAGES \
-	$(MKD) $(VIMRUNTIME)\lang\%%l\LC_MESSAGES
+		$(MKD) $(VIMRUNTIME)\lang\%%l\LC_MESSAGES
 	for %%l in ($(LANGUAGES)) do @$(CP) %%l.mo \
-	$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
+		$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
 cleanup-po: $(LANGUAGE).po
 	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
