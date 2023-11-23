@@ -30,10 +30,12 @@ The distributed files are generated on Unix, but this should also be possible
 on MS-Windows.  Download the gettext packages, for example from:
 
 	http://sourceforge.net/projects/gettext
+	or
+	https://mlocati.github.io/articles/gettext-iconv-windows.html
 
 You might have to do the commands manually.  Example:
 
-   cd c:\vim\vim81
+   cd c:\vim\vim91
    mkdir runtime\lang\ja\LC_MESSAGES
    msgfmt -o runtime\lang\ja\LC_MESSAGES\vim.mo src\po\ja.po
 
@@ -51,7 +53,7 @@ CREATING A NEW PO FILE
 We will use "xx.po" as an example here, replace "xx" with the name of your
 language.
 
-- Edit Makefile to add xx to LANGUAGES and xx.mo to MOFILES.
+- Edit Make_all.mak to add xx to LANGUAGES and xx.mo to MOFILES.
 - If you haven't done so already, run ./configure in the top vim directory
   (i.e. go up two directories) and then come back here afterwards.
 - Execute these commands:
