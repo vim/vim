@@ -698,6 +698,7 @@ RT_ALL =	\
 		runtime/doc/*.pl \
 		runtime/doc/*.txt \
 		runtime/doc/Makefile \
+		runtime/doc/Make_all.mak \
 		runtime/doc/doctags.c \
 		runtime/doc/doctags.vim \
 		runtime/doc/test_urls.vim \
@@ -846,6 +847,7 @@ RT_AMI_DOS =	\
 # DOS runtime (also in the extra archive)
 RT_DOS =	\
 		README_dos.txt \
+		runtime/doc/Make_mvc.mak \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
@@ -988,6 +990,7 @@ LANG_GEN = \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \
 		runtime/lang/Makefile \
+		runtime/lang/Make_all.mak \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \
 		runtime/keymap/*.vim \
@@ -1047,10 +1050,12 @@ LANG_SRC = \
 		src/po/vim.desktop.in \
 		src/po/gvim.desktop.in \
 		src/po/sjiscorr.c \
+		src/po/big5corr.c \
 		src/po/*.po \
 
 # the language files for the Win32 lang archive
 LANG_DOS = \
 		src/po/*.mo \
+		runtime/lang/Make_mvc.mak \
 
 # vim: set ft=make:
