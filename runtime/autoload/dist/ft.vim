@@ -612,10 +612,6 @@ export def FTprogress_asm()
     elseif line =~ ft_swig_keywords || line =~ ft_swig_verbatim_block_start || line =~ ft_swig_verbatim_block_end
       setf swig
       return
-    elseif line !~ '^\s*$' || line =~ '^/\*'
-      # Not an empty line: Doesn't look like valid assembly code.
-      # Or it looks like a Progress /* comment
-      break
     endif
     lnum += 1
   endwhile
