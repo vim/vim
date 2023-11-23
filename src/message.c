@@ -1446,6 +1446,9 @@ msg_start(void)
 {
     int		did_return = FALSE;
 
+    if (msg_row < cmdline_row)
+	msg_row = cmdline_row;
+
     if (!msg_silent)
     {
 	VIM_CLEAR(keep_msg);
