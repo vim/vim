@@ -1734,7 +1734,7 @@ parse_cino(buf_T *buf)
     int		divider;
     int		fraction = 0;
     int		sw;
-    long long	t = get_sw_value(buf);
+    long	t = get_sw_value(buf);
 
     // needed for cino-(, it will be multiplied by 2 again
     if (t > INT_MAX / 2)
@@ -1902,17 +1902,14 @@ parse_cino(buf_T *buf)
 	    {
 		n *= sw;
 		if (divider)
-		    n += (sw * fraction + divider / 2) / divider;
+		    n += ((long long)sw * fraction + divider / 2) / divider;
 	    }
 	    ++p;
 	}
 	if (l[1] == '-')
 	    n = -n;
 
-	if (n > INT_MAX)
-	    n = INT_MAX;
-	else if (n < INT_MIN)
-	    n = INT_MIN;
+	n = trim_to_int(n);
 
 	// When adding an entry here, also update the default 'cinoptions' in
 	// doc/indent.txt, and add explanation for it!

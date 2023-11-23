@@ -2838,3 +2838,11 @@ vim_append_digit_long(long *value, int digit)
     *value = x * 10 + (long)digit;
     return OK;
 }
+
+// Return something that fits into an int.
+    int
+trim_to_int(long long x)
+{
+    return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
+}
+
