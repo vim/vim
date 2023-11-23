@@ -8646,7 +8646,10 @@ f_range(typval_T *argvars, typval_T *rettv)
     list->lv_u.nonmat.lv_start = start;
     list->lv_u.nonmat.lv_end = end;
     list->lv_u.nonmat.lv_stride = stride;
-    list->lv_len = (end - start) / stride + 1;
+    if (stride > 0 ? end < start : end > start)
+	list->lv_len = 0;
+    else
+	list->lv_len = (end - start) / stride + 1;
 }
 
 /*
