@@ -2346,20 +2346,20 @@ func Test_swig_file()
 
   " Swig
 
-  call writefile(['%module mymodule'], 'Xfile.i', 'D')
+  call writefile(['%module mymodule', '/* a comment */'], 'Xfile.i', 'D')
   split Xfile.i
   call assert_equal('swig', &filetype)
   bwipe!
 
   " Swig
 
-  call writefile(['%{', '#include <header.hpp>", '%}'], 'Xfile.i', 'D')
+  call writefile(['%{', '#include <header.hpp>', '%}'], 'Xfile.i', 'D')
   split Xfile.i
   call assert_equal('swig', &filetype)
   bwipe!
 
   " ASM
-  call writefile(['; comment'], 'Xfile.i', 'D')
+  call writefile(['; comment', ';'], 'Xfile.i', 'D')
   split Xfile.i
   call assert_equal('asm', &filetype)
   bwipe!
