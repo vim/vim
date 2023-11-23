@@ -1688,7 +1688,7 @@ au BufNewFile,BufRead .procmail,.procmailrc	setf procmail
 " Progress or CWEB
 au BufNewFile,BufRead *.w			call dist#ft#FTprogress_cweb()
 
-" Progress or assembly
+" Progress or assembly or Swig
 au BufNewFile,BufRead *.i			call dist#ft#FTprogress_asm()
 
 " Progress or Pascal
@@ -2184,7 +2184,7 @@ au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 au BufNewFile,BufRead *.sil			call dist#ft#FTsil()
 
 " Swig
-autocmd BufNewFile,BufRead *.i,*.swg,*.swig set filetype=swig
+au BufNewFile,BufRead *.swg,*.swig set filetype=swig
 
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
