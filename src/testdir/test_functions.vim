@@ -951,7 +951,6 @@ func Test_mode()
     call assert_equal('nt', mode(1))
     call feedkeys(":echo \<C-R>=Save_mode()\<C-U>\<CR>", 'xt')
     call assert_equal("c-c", g:current_modes)
-
     call feedkeys("aexit\<CR>", 'xt')
   endif
   call feedkeys(":\<insert>\<C-r>=Save_mode()\<CR>",'xt')
