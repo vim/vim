@@ -720,9 +720,8 @@ get_mode(char_u *buf)
 	    buf[i++] = 'v';
 	else if (exmode_active == EXMODE_NORMAL)
 	    buf[i++] = 'e';
-	if (cmdline_overstrike() == TRUE){
+	if (cmdline_overstrike() == TRUE)
 	    buf[i++] = 'r';
-	}
     }
     else
     {
