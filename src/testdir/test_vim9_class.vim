@@ -8585,4 +8585,171 @@ def Test_dict_member_key_type_check()
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
 enddef
 
+def Test_compile_many_def_functions_in_funcref_instr()
+  # This used to crash Vim.  This is reproducible only when run on new instance
+  # of Vim.
+  var lines =<< trim END
+    vim9script
+
+    class A
+      def new()
+        this.TakeFunc(this.F00)
+      enddef
+
+      def TakeFunc(F: func)
+      enddef
+
+      def F00()
+        this.F01()
+        this.F02()
+        this.F03()
+        this.F04()
+        this.F05()
+        this.F06()
+        this.F07()
+        this.F08()
+        this.F09()
+        this.F10()
+        this.F11()
+        this.F12()
+        this.F13()
+        this.F14()
+        this.F15()
+        this.F16()
+        this.F17()
+        this.F18()
+        this.F19()
+        this.F20()
+        this.F21()
+        this.F22()
+        this.F23()
+        this.F24()
+        this.F25()
+        this.F26()
+        this.F27()
+        this.F28()
+        this.F29()
+        this.F30()
+        this.F31()
+        this.F32()
+        this.F33()
+        this.F34()
+        this.F35()
+        this.F36()
+        this.F37()
+        this.F38()
+        this.F39()
+        this.F40()
+        this.F41()
+        this.F42()
+        this.F43()
+        this.F44()
+        this.F45()
+        this.F46()
+        this.F47()
+      enddef
+
+      def F01()
+      enddef
+      def F02()
+      enddef
+      def F03()
+      enddef
+      def F04()
+      enddef
+      def F05()
+      enddef
+      def F06()
+      enddef
+      def F07()
+      enddef
+      def F08()
+      enddef
+      def F09()
+      enddef
+      def F10()
+      enddef
+      def F11()
+      enddef
+      def F12()
+      enddef
+      def F13()
+      enddef
+      def F14()
+      enddef
+      def F15()
+      enddef
+      def F16()
+      enddef
+      def F17()
+      enddef
+      def F18()
+      enddef
+      def F19()
+      enddef
+      def F20()
+      enddef
+      def F21()
+      enddef
+      def F22()
+      enddef
+      def F23()
+      enddef
+      def F24()
+      enddef
+      def F25()
+      enddef
+      def F26()
+      enddef
+      def F27()
+      enddef
+      def F28()
+      enddef
+      def F29()
+      enddef
+      def F30()
+      enddef
+      def F31()
+      enddef
+      def F32()
+      enddef
+      def F33()
+      enddef
+      def F34()
+      enddef
+      def F35()
+      enddef
+      def F36()
+      enddef
+      def F37()
+      enddef
+      def F38()
+      enddef
+      def F39()
+      enddef
+      def F40()
+      enddef
+      def F41()
+      enddef
+      def F42()
+      enddef
+      def F43()
+      enddef
+      def F44()
+      enddef
+      def F45()
+      enddef
+      def F46()
+      enddef
+      def F47()
+      enddef
+    endclass
+
+    A.new()
+  END
+  writefile(lines, 'Xscript', 'D')
+  g:RunVim([], [], '-u NONE -S Xscript -c qa')
+  assert_equal(0, v:shell_error)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
