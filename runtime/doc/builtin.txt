@@ -6417,7 +6417,6 @@ mode([expr])	Return a string that indicates the current mode.
 		   cv	    Vim Ex mode |gQ|
 		   cvr	    Vim Ex while in overstrike mode |c_<Insert>|
 		   ce	    Normal Ex mode |Q|
-		   cer	    Normal Ex while in overstrike mode |c_<Insert>|
 		   r	    Hit-enter prompt
 		   rm	    The -- more -- prompt
 		   r?	    A |:confirm| query of some sort
