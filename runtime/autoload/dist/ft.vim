@@ -594,9 +594,8 @@ enddef
 var ft_swig_keywords = '^\s*%\%(addmethods\|apply\|beginfile\|clear\|constant\|define\|echo\|enddef\|endoffile\|extend\|feature\|fragment\|ignore\|import\|importfile\|include\|includefile\|inline\|insert\|keyword\|module\|name\|namewarn\|native\|newobject\|parms\|pragma\|rename\|template\|typedef\|typemap\|types\|varargs\|warn\)'
 # This is the start/end of a block that is copied literally to the processor file (C/C++)
 var ft_swig_verbatim_block_start = '^\s*%{'
-var ft_swig_verbatim_block_end = '^\s*}%'
 
-export def FTprogress_asm()
+export def FTi()
   if exists("g:filetype_i")
     exe "setf " .. g:filetype_i
     return
@@ -609,7 +608,7 @@ export def FTprogress_asm()
     if line =~ '^\s*;' || line =~ '^\*'
       FTasm()
       return
-    elseif line =~ ft_swig_keywords || line =~ ft_swig_verbatim_block_start || line =~ ft_swig_verbatim_block_end
+    elseif line =~ ft_swig_keywords || line =~ ft_swig_verbatim_block_start
       setf swig
       return
     endif

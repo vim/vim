@@ -59,8 +59,7 @@ syn keyword swigDirective %nspace %pointer_cast %pointer_class %pointer_function
 syn keyword swigDirective %refobject %set_output %shared_ptr %std_comp_methods
 syn keyword swigDirective %std_nodefconst_type %typecheck %typemaps_string %unique_ptr %unrefobject %valuewrapper
 
-syn match swigVerbatimStartEnd "%\({\|}\)"
-syn region swigVerbatim  contained start="%{" end="%}"
+syn match swigVerbatimStartEnd "%[{}]"
 
 syn match swigUserDef "%[-_a-zA-Z0-9]\+"
 
@@ -87,7 +86,6 @@ hi def link swigOtherLanguageSpecific Special
 
 hi def link swigInsertSection PreProc
 
-hi def link swigVerbatim Statement
 hi def link swigVerbatimStartEnd Statement
 
 let b:current_syntax = "swig"

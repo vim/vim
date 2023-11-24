@@ -2341,18 +2341,16 @@ func Test_vba_file()
   filetype off
 endfunc
 
-func Test_swig_file()
+func Test_i_file()
   filetype on
 
-  " Swig
-
+  " Swig: keyword
   call writefile(['%module mymodule', '/* a comment */'], 'Xfile.i', 'D')
   split Xfile.i
   call assert_equal('swig', &filetype)
   bwipe!
 
-  " Swig
-
+  " Swig: verbatim block
   call writefile(['%{', '#include <header.hpp>', '%}'], 'Xfile.i', 'D')
   split Xfile.i
   call assert_equal('swig', &filetype)
@@ -2362,6 +2360,12 @@ func Test_swig_file()
   call writefile(['; comment', ';'], 'Xfile.i', 'D')
   split Xfile.i
   call assert_equal('asm', &filetype)
+  bwipe!
+
+  " *.i defaults to progress
+  call writefile(['looks like progress'], 'Xfile.i', 'D')
+  split Xfile.i
+  call assert_equal('progress', &filetype)
   bwipe!
 
   filetype off

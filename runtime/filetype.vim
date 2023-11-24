@@ -1689,7 +1689,7 @@ au BufNewFile,BufRead .procmail,.procmailrc	setf procmail
 au BufNewFile,BufRead *.w			call dist#ft#FTprogress_cweb()
 
 " Progress or assembly or Swig
-au BufNewFile,BufRead *.i			call dist#ft#FTprogress_asm()
+au BufNewFile,BufRead *.i			call dist#ft#FTi()
 
 " Progress or Pascal
 au BufNewFile,BufRead *.p			call dist#ft#FTprogress_pascal()
