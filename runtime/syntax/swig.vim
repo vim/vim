@@ -61,8 +61,11 @@ syn keyword swigDirective %std_nodefconst_type %typecheck %typemaps_string %uniq
 
 syn match swigVerbatimStartEnd "%[{}]"
 
-syn match swigUserDef "%[-_a-zA-Z0-9]\+"
-syn match swigVerbatimMacro "^\s*%#[-_a-zA-Z0-9]\+\%( .*\)\?$"
+syn match swigUserDef "%\w\+"
+syn match swigVerbatimMacro "^\s*%#\w\+\%( .*\)\?$"
+
+" SWIG: typemap var and typemap macros (eg: $1, $*1_type, $&n_ltype, $self)
+syn match swigTypeMapVars "\$[*&_a-zA-Z0-9]\+"
 
 " Default highlighting
 hi def link swigInclude Include
@@ -89,6 +92,8 @@ hi def link swigInsertSection PreProc
 
 hi def link swigVerbatimStartEnd Statement
 hi def link swigVerbatimMacro Macro
+
+hi def link swigTypeMapVars SpecialChar
 
 let b:current_syntax = "swig"
 " vim: ts=8
