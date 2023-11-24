@@ -722,7 +722,7 @@ get_mode(char_u *buf)
 	    buf[i++] = 'e';
 # if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
 	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
-	if (cmdline_overstrike() == TRUE)
+	if ((State & MODE_CMDLINE) && cmdline_overstrike())
 	    buf[i++] = 'r';
 #endif
     }
