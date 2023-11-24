@@ -62,6 +62,7 @@ syn keyword swigDirective %std_nodefconst_type %typecheck %typemaps_string %uniq
 syn match swigVerbatimStartEnd "%[{}]"
 
 syn match swigUserDef "%[-_a-zA-Z0-9]\+"
+syn match swigVerbatimMacro "^\s*%#[-_a-zA-Z0-9]\+\%( .*\)\?$"
 
 " Default highlighting
 hi def link swigInclude Include
@@ -87,6 +88,7 @@ hi def link swigOtherLanguageSpecific Special
 hi def link swigInsertSection PreProc
 
 hi def link swigVerbatimStartEnd Statement
+hi def link swigVerbatimMacro Macro
 
 let b:current_syntax = "swig"
 " vim: ts=8
