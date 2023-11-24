@@ -43,9 +43,9 @@ ICONV="$(GETTEXT_PATH)\iconv.exe"
 # If the "touch" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("touch.exe")
-TOUCH = touch.exe $@
+TOUCH_TARGET = touch.exe $@
 !ELSE
-TOUCH = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
+TOUCH_TARGET = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
 !ENDIF
 
 MV = move /y
@@ -66,7 +66,7 @@ all: $(MOFILES) $(MOCONVERTED)
 .po.ck:
 	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
 		-c "if error == 0 | q | else | num 2 | cq | endif" $<
-	$(TOUCH)
+	$(TOUCH_TARGET)
 
 check: $(CHECKFILES)
 
