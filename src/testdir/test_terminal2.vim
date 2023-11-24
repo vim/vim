@@ -252,6 +252,7 @@ func Test_terminal_resize()
   terminal
   call assert_equal(2, winnr('$'))
   let buf = bufnr()
+  call TermWait(buf)
 
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
@@ -262,6 +263,7 @@ func Test_terminal_resize()
   else
     call feedkeys("ls\<CR>", 'xt')
   endif
+  call TermWait(buf)
   " Wait for some output
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 3))})
 
@@ -269,6 +271,7 @@ func Test_terminal_resize()
   call feedkeys("\<C-W>N", 'xt')
   " Open a new window
   call feedkeys("i\<C-W>n", 'xt')
+  call TermWait(buf)
   call assert_equal(3, winnr('$'))
   redraw
 
@@ -285,6 +288,7 @@ func Test_terminal_resize2()
   terminal
   call assert_equal(2, winnr('$'))
   let buf = bufnr()
+  call TermWait(buf)
 
   " Wait for the shell to display a prompt
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
@@ -292,6 +296,7 @@ func Test_terminal_resize2()
   " This used to crash Vim
   call feedkeys("printf '\033[8;99999;99999t'\<CR>", 'xt')
   redraw
+  call TermWait(buf)
 
   call feedkeys("exit\<CR>", 'xt')
   call TermWait(buf)
