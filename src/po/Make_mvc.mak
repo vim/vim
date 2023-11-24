@@ -10,10 +10,6 @@
 !ERROR The program "PowerShell" version 3.0 or higher is required to work
 !ENDIF
 
-!IFNDEF LANGUAGE
-!ERROR Set the environment variable %LANGUAGE%. See README_mvc.txt
-!ENDIF
-
 # get LANGUAGES, MOFILES, MOCONVERTED and others
 !INCLUDE Make_all.mak
 
@@ -28,9 +24,9 @@ VIM = ..\vim
 # Correct the following line for the directory where gettext et al is installed
 GETTEXT_PATH = D:\Programs\GetText\bin
 
-MSGFMT = $(GETTEXT_PATH)\msgfmt -v
-XGETTEXT = $(GETTEXT_PATH)\xgettext
-MSGMERGE = $(GETTEXT_PATH)\msgmerge
+MSGFMT = "$(GETTEXT_PATH)\msgfmt" -v
+XGETTEXT = "$(GETTEXT_PATH)\xgettext"
+MSGMERGE = "$(GETTEXT_PATH)\msgmerge"
 
 # In case some package like GnuWin32, UnixUtils, gettext
 # or something similar is installed on the system.
@@ -68,7 +64,8 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 all: $(MOFILES) $(MOCONVERTED)
 
 .po.ck:
-	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
+	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	$(TOUCH)
 
 check: $(CHECKFILES)
@@ -77,6 +74,9 @@ checkclean:
 	$(RM) *.ck
 
 converted: $(MOCONVERTED)
+
+checklanguage:
+	@if "$(LANGUAGE)"=="" (echo Set the environment variable ^%LANGUAGE^%. See README_mvc.txt. && exit 1)
 
 nl.po:
 	@( echo \# > nl.po )
@@ -497,7 +497,7 @@ PO_INPUTLIST = \
 files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
-first_time: files
+first_time: checklanguage files
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
@@ -532,7 +532,7 @@ $(LANGUAGES):
 	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
 	$(RM) $@.po.old
 
-install: $(LANGUAGE).mo
+install: checklanguage $(LANGUAGE).mo
 	if not exist $(INSTALLDIR) $(MKD) $(INSTALLDIR)
 	$(CP) $(LANGUAGE).mo $(INSTALLDIR)\$(PACKAGE).mo
 
@@ -542,7 +542,7 @@ install-all: all
 	for %%l in ($(LANGUAGES)) do @$(CP) %%l.mo \
 		$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
-cleanup-po: $(LANGUAGE).po
+cleanup-po: checklanguage $(LANGUAGE).po
 	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
 
 cleanup-po-all: $(POFILES)
