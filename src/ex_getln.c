@@ -3169,8 +3169,6 @@ redraw:
     return (char_u *)line_ga.ga_data;
 }
 
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if ccline.overstrike is on.
  */
@@ -3180,6 +3178,8 @@ cmdline_overstrike(void)
     return ccline.overstrike;
 }
 
+# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
+	 || defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if the cursor is at the end of the cmdline.
  */

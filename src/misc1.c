@@ -720,11 +720,8 @@ get_mode(char_u *buf)
 	    buf[i++] = 'v';
 	else if (exmode_active == EXMODE_NORMAL)
 	    buf[i++] = 'e';
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
-	if ((State & MODE_CMDLINE) && cmdline_overstrike())
+	if (cmdline_overstrike() == TRUE)
 	    buf[i++] = 'r';
-#endif
     }
     else
     {
