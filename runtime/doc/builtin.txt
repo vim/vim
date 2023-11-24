@@ -6413,8 +6413,11 @@ mode([expr])	Return a string that indicates the current mode.
 		   Rvx	    Virtual Replace mode |i_CTRL-X| completion
 		   c	    Command-line editing
 		   ct	    Command-line editing via Terminal-Job mode
+		   cr	    Command-line while in overstrike mode |c_<Insert>|
 		   cv	    Vim Ex mode |gQ|
+		   cvr	    Vim Ex while in overstrike mode |c_<Insert>|
 		   ce	    Normal Ex mode |Q|
+		   cer	    Normal Ex while in overstrike mode |c_<Insert>|
 		   r	    Hit-enter prompt
 		   rm	    The -- more -- prompt
 		   r?	    A |:confirm| query of some sort
