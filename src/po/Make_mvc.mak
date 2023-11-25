@@ -526,7 +526,7 @@ update-po: $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually
 $(LANGUAGES):
-	@$(MAKE) -nologo -f Make_mvc.mak $(PACKAGE).pot GETTEXT_PATH=$(GETTEXT_PATH)
+	@$(MAKE) -nologo -f Make_mvc.mak $(PACKAGE).pot GETTEXT_PATH="$(GETTEXT_PATH)"
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
 	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
