@@ -2184,7 +2184,7 @@ au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 au BufNewFile,BufRead *.sil			call dist#ft#FTsil()
 
 " Swig
-au BufNewFile,BufRead *.swg,*.swig set filetype=swig
+au BufNewFile,BufRead *.swg,*.swig setf swig
 
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
