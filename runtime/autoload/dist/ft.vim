@@ -590,23 +590,27 @@ export def FTprogress_cweb()
   endif
 enddef
 
-export def FTprogress_asm()
+# These include the leading '%' sign
+var ft_swig_keywords = '^\s*%\%(addmethods\|apply\|beginfile\|clear\|constant\|define\|echo\|enddef\|endoffile\|extend\|feature\|fragment\|ignore\|import\|importfile\|include\|includefile\|inline\|insert\|keyword\|module\|name\|namewarn\|native\|newobject\|parms\|pragma\|rename\|template\|typedef\|typemap\|types\|varargs\|warn\)'
+# This is the start/end of a block that is copied literally to the processor file (C/C++)
+var ft_swig_verbatim_block_start = '^\s*%{'
+
+export def FTi()
   if exists("g:filetype_i")
     exe "setf " .. g:filetype_i
     return
   endif
-  # This function checks for an assembly comment the first ten lines.
+  # This function checks for an assembly comment or a SWIG keyword or verbatim block in the first 50 lines.
   # If not found, assume Progress.
   var lnum = 1
-  while lnum <= 10 && lnum < line('$')
+  while lnum <= 50 && lnum < line('$')
     var line = getline(lnum)
     if line =~ '^\s*;' || line =~ '^\*'
       FTasm()
       return
-    elseif line !~ '^\s*$' || line =~ '^/\*'
-      # Not an empty line: Doesn't look like valid assembly code.
-      # Or it looks like a Progress /* comment
-      break
+    elseif line =~ ft_swig_keywords || line =~ ft_swig_verbatim_block_start
+      setf swig
+      return
     endif
     lnum += 1
   endwhile

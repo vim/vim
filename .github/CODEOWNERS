@@ -224,6 +224,7 @@ runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/ssa.vim		@ObserverOfTime
 runtime/ftplugin/swayconfig.vim		@jamespeapen
 runtime/ftplugin/systemverilog.vim	@Kocha
+runtime/ftplugin/swig.vim		@jmarrec
 runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
 runtime/ftplugin/tidy.vim		@dkearns
@@ -502,6 +503,7 @@ runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/sudoers.vim		@e-kwsm
 runtime/syntax/svn.vim			@hdima
 runtime/syntax/swayconfig.vim		@jamespeapen
+runtime/syntax/swig.vim			@jmarrec
 runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/tap.vim			@petdance

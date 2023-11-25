@@ -1688,8 +1688,8 @@ au BufNewFile,BufRead .procmail,.procmailrc	setf procmail
 " Progress or CWEB
 au BufNewFile,BufRead *.w			call dist#ft#FTprogress_cweb()
 
-" Progress or assembly
-au BufNewFile,BufRead *.i			call dist#ft#FTprogress_asm()
+" Progress or assembly or Swig
+au BufNewFile,BufRead *.i			call dist#ft#FTi()
 
 " Progress or Pascal
 au BufNewFile,BufRead *.p			call dist#ft#FTprogress_pascal()
@@ -2182,6 +2182,9 @@ au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 
 " Swift Intermediate Language or SILE
 au BufNewFile,BufRead *.sil			call dist#ft#FTsil()
+
+" Swig
+au BufNewFile,BufRead *.swg,*.swig setf swig
 
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
