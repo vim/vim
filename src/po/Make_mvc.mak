@@ -10,10 +10,6 @@
 !ERROR The program "PowerShell" version 3.0 or higher is required to work
 !ENDIF
 
-!IFNDEF LANGUAGE
-!ERROR Set the environment variable %LANGUAGE%. See README_mvc.txt
-!ENDIF
-
 # get LANGUAGES, MOFILES, MOCONVERTED and others
 !INCLUDE Make_all.mak
 
@@ -22,15 +18,16 @@ VIMRUNTIME = ..\..\runtime
 !ENDIF
 
 PACKAGE = vim
-# Correct the following line for the where executeable file vim is installed
+# Correct the following line for the where executeable file vim is installed.
 VIM = ..\vim
 
-# Correct the following line for the directory where gettext et al is installed
+# Correct the following line for the directory where gettext et al is
+# installed.  Please do not put the path in quotes.
 GETTEXT_PATH = D:\Programs\GetText\bin
 
-MSGFMT = $(GETTEXT_PATH)\msgfmt -v
-XGETTEXT = $(GETTEXT_PATH)\xgettext
-MSGMERGE = $(GETTEXT_PATH)\msgmerge
+MSGFMT = "$(GETTEXT_PATH)\msgfmt" -v
+XGETTEXT = "$(GETTEXT_PATH)\xgettext"
+MSGMERGE = "$(GETTEXT_PATH)\msgmerge"
 
 # In case some package like GnuWin32, UnixUtils, gettext
 # or something similar is installed on the system.
@@ -47,9 +44,9 @@ ICONV="$(GETTEXT_PATH)\iconv.exe"
 # If the "touch" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("touch.exe")
-TOUCH = touch.exe $@
+TOUCH_TARGET = touch.exe $@
 !ELSE
-TOUCH = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
+TOUCH_TARGET = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
 !ENDIF
 
 MV = move /y
@@ -68,8 +65,9 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 all: $(MOFILES) $(MOCONVERTED)
 
 .po.ck:
-	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
-	$(TOUCH)
+	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+		-c "if error == 0 | q | else | num 2 | cq | endif" $<
+	$(TOUCH_TARGET)
 
 check: $(CHECKFILES)
 
@@ -77,6 +75,9 @@ checkclean:
 	$(RM) *.ck
 
 converted: $(MOCONVERTED)
+
+checklanguage:
+	@if "$(LANGUAGE)"=="" (echo Set the environment variable ^%LANGUAGE^%. See README_mvc.txt. && exit 1)
 
 nl.po:
 	@( echo \# > nl.po )
@@ -497,7 +498,7 @@ PO_INPUTLIST = \
 files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
-first_time: files
+first_time: checklanguage files
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
@@ -526,13 +527,13 @@ update-po: $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually
 $(LANGUAGES):
-	@$(MAKE) -nologo -f Make_mvc.mak $(PACKAGE).pot GETTEXT_PATH=$(GETTEXT_PATH)
+	@$(MAKE) -nologo -f Make_mvc.mak $(PACKAGE).pot GETTEXT_PATH="$(GETTEXT_PATH)"
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
 	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
 	$(RM) $@.po.old
 
-install: $(LANGUAGE).mo
+install: checklanguage $(LANGUAGE).mo
 	if not exist $(INSTALLDIR) $(MKD) $(INSTALLDIR)
 	$(CP) $(LANGUAGE).mo $(INSTALLDIR)\$(PACKAGE).mo
 
@@ -542,8 +543,8 @@ install-all: all
 	for %%l in ($(LANGUAGES)) do @$(CP) %%l.mo \
 		$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
-cleanup-po: $(LANGUAGE).po
-	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
+cleanup-po: checklanguage $(LANGUAGE).po
+	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
 
 cleanup-po-all: $(POFILES)
 	!$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**

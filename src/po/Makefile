@@ -32,7 +32,8 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
-	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
+	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	touch $@
 
 all: $(MOFILES) $(MOCONVERTED) $(MSGFMT_DESKTOP)
