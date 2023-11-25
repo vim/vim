@@ -10,7 +10,8 @@
 # Common components
 !INCLUDE Make_all.mak
 
-# Correct the following line for the directory where iconv is installed
+# Correct the following line for the directory where iconv is installed.
+# Please do not put the path in quotes.
 ICONV_PATH = D:\Programs\GetText\bin
 
 # In case some package like GnuWin32, UnixUtils, gettext
@@ -18,9 +19,9 @@ ICONV_PATH = D:\Programs\GetText\bin
 # If the "iconv" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("iconv.exe")
-ICONV = iconv.exe
+ICONV = "iconv.exe"
 !ELSEIF EXIST ("$(ICONV_PATH)\iconv.exe")
-ICONV="$(ICONV_PATH)\iconv.exe"
+ICONV = "$(ICONV_PATH)\iconv.exe"
 !ENDIF
 
 RM = del /q

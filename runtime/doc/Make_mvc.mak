@@ -10,20 +10,22 @@
 # TODO: to think about what to use instead of awk. PowerShell?
 #AWK =
 
-# Correct the following line for the where executeable file vim is installed
+# Correct the following line for the where executeable file vim is installed.
+# Please do not put the path in quotes.
 VIMEXE = D:\Programs\Vim\vim90\vim.exe
 
-# Correct the following line for the directory where gettext et al is installed
-GETTEXT_PATH = D:\Programs\GetText\bin
+# Correct the following line for the directory where iconv installed.
+# Please do not put the path in quotes.
+ICONV_PATH = D:\Programs\GetText\bin
 
 # In case some package like GnuWin32, UnixUtils
 # or something similar is installed on the system.
 # If the "touch" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("touch.exe")
-TOUCH = touch.exe $@
+TOUCH = "touch.exe" %1
 !ELSE
-TOUCH = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
+TOUCH = if exist %1 ( copy /b %1+,, ) else ( type nul >%1 )
 !ENDIF
 
 # In case some package like GnuWin32, UnixUtils, gettext
@@ -31,9 +33,9 @@ TOUCH = @if exist $@ ( copy /b $@+,, ) else ( type nul >$@ )
 # If the "iconv" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("iconv.exe")
-ICONV = iconv.exe
-!ELSEIF EXIST ("$(GETTEXT_PATH)\iconv.exe")
-ICONV="$(GETTEXT_PATH)\iconv.exe"
+ICONV = "iconv.exe"
+!ELSEIF EXIST ("$(ICONV_PATH)\iconv.exe")
+ICONV = "$(ICONV_PATH)\iconv.exe"
 !ENDIF
 
 RM = del /q
@@ -46,7 +48,7 @@ all : tags perlhtml $(CONVERTED)
 
 # Use "doctags" to generate the tags file.  Only works for English!
 tags : doctags $(DOCS)
-	doctags $(DOCS) | sort /L C /O tags
+	doctags.exe $(DOCS) | sort /L C /O tags
 	powershell -nologo -noprofile -Command \
 		"(Get-Content -Raw tags | Get-Unique | % {$$_ -replace \"`r\", \"\"}) \
 		| New-Item -Force -Path . -ItemType file -Name tags"
@@ -58,15 +60,15 @@ doctags : doctags.c
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
 vimtags : $(DOCS)
-	$(VIMEXE) --clean -esX -V1 -u doctags.vim
+	@"$(VIMEXE)" --clean -esX -V1 -u doctags.vim
 
 
-uganda.nsis.txt : uganda.*
-	!powershell -nologo -noprofile -Command \
+uganda.nsis.txt : uganda.???
+	!@powershell -nologo -noprofile -Command \
 		$$ext=(Get-Item $?).Extension; (Get-Content $? ^| \
 		% {$$_ -replace '\s*\*[-a-zA-Z0-9.]*\*', '' -replace 'vim:tw=78:.*', ''}) \
 		^| Set-Content $*$$ext
-	!powershell -nologo -noprofile -Command \
+	!@powershell -nologo -noprofile -Command \
 		$$ext=(Get-Item $?).Extension; \
 		(Get-Content -Raw $(@B)$$ext).Trim() -replace '(\r\n){3,}', '$$1$$1' \
 		^| Set-Content $(@B)$$ext
@@ -103,68 +105,102 @@ perlhtml : tags $(DOCS)
 
 # Check URLs in the help with "curl" or "powershell".
 test_urls :
-	$(VIMEXE) -S test_urls.vim
+	"$(VIMEXE)" -S test_urls.vim
 
 clean :
 	$(RM) doctags.exe doctags.obj
 	$(RM) *.html vim-stylesheet.css
 
 
-
 arabic.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 farsi.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 hebrew.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 russian.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 gui_w32.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 if_ole.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_390.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_amiga.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_beos.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_dos.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_haiku.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_mac.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_mint.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_msdos.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_os2.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_qnx.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_risc.txt :
-	$(TOUCH)
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 os_win32.txt :
-	$(TOUCH)
-
+	<<touch.bat $@
+@$(TOUCH)
+<<
 
 convert-all : $(CONVERTED)
 !IF [powershell -nologo -noprofile "exit $$psversiontable.psversion.major"] == 2
@@ -450,7 +486,5 @@ vimtutor-tr.UTF-8.1 : vimtutor-tr.1
 		[IO.File]::ReadAllText(\"$?\", [Text.Encoding]::GetEncoding(28599)) ^| \
 		1>nul New-Item -Force -Path . -ItemType file -Name $@
 !ENDIF
-
-
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:
