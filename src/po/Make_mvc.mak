@@ -18,10 +18,11 @@ VIMRUNTIME = ..\..\runtime
 !ENDIF
 
 PACKAGE = vim
-# Correct the following line for the where executeable file vim is installed
+# Correct the following line for the where executeable file vim is installed.
 VIM = ..\vim
 
-# Correct the following line for the directory where gettext et al is installed
+# Correct the following line for the directory where gettext et al is
+# installed.  Please do not put the path in quotes.
 GETTEXT_PATH = D:\Programs\GetText\bin
 
 MSGFMT = "$(GETTEXT_PATH)\msgfmt" -v
@@ -543,7 +544,7 @@ install-all: all
 		$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
 cleanup-po: checklanguage $(LANGUAGE).po
-	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
+	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
 
 cleanup-po-all: $(POFILES)
 	!$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
