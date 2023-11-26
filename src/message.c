@@ -353,7 +353,7 @@ trunc_string(
     else
     {
 	// can't fit in the "...", just truncate it
-	buf[e - 1] = NUL;
+	buf[buflen - 1] = NUL;
     }
 }
 
@@ -375,15 +375,13 @@ smsg(const char *s, ...)
 	// give the raw message so the user at least gets a hint.
 	return msg((char *)s);
     }
-    else
-    {
-	va_list arglist;
 
-	va_start(arglist, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-	va_end(arglist);
-	return msg((char *)IObuff);
-    }
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg((char *)IObuff);
 }
 
     int
@@ -395,15 +393,13 @@ smsg_attr(int attr, const char *s, ...)
 	// give the raw message so the user at least gets a hint.
 	return msg_attr((char *)s, attr);
     }
-    else
-    {
-	va_list arglist;
 
-	va_start(arglist, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-	va_end(arglist);
-	return msg_attr((char *)IObuff, attr);
-    }
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg_attr((char *)IObuff, attr);
 }
 
     int
@@ -415,15 +411,13 @@ smsg_attr_keep(int attr, const char *s, ...)
 	// give the raw message so the user at least gets a hint.
 	return msg_attr_keep((char *)s, attr, TRUE);
     }
-    else
-    {
-	va_list arglist;
 
-	va_start(arglist, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-	va_end(arglist);
-	return msg_attr_keep((char *)IObuff, attr, TRUE);
-    }
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg_attr_keep((char *)IObuff, attr, TRUE);
 }
 
 #endif
@@ -598,12 +592,12 @@ ignore_error_for_testing(char_u *error)
 }
 
     static int
-ignore_error(char_u *msg)
+ignore_error(const char *msg)
 {
     int i;
 
     for (i = 0; i < ignore_error_list.ga_len; ++i)
-	if (strstr((char *)msg,
+	if (strstr(msg,
 		  (char *)((char_u **)(ignore_error_list.ga_data))[i]) != NULL)
 	    return TRUE;
     return FALSE;
@@ -635,7 +629,7 @@ do_perror(char *msg)
  * Note: caller must check 'emsg_not_now()' before calling this.
  */
     static int
-emsg_core(char_u *s)
+emsg_core(const char *s)
 {
     int		attr;
     char_u	*p;
@@ -671,7 +665,7 @@ emsg_core(char_u *s)
 	 * when the message should be ignored completely (used for the
 	 * interrupt message).
 	 */
-	if (cause_errthrow(s, severe, &ignore) == TRUE)
+	if (cause_errthrow((char_u *)s, severe, &ignore) == TRUE)
 	{
 	    if (!ignore)
 		++did_emsg;
@@ -680,7 +674,7 @@ emsg_core(char_u *s)
 
 	if (in_assert_fails && emsg_assert_fails_msg == NULL)
 	{
-	    emsg_assert_fails_msg = vim_strsave(s);
+	    emsg_assert_fails_msg = vim_strsave((char_u *)s);
 	    emsg_assert_fails_lnum = SOURCING_LNUM;
 	    vim_free(emsg_assert_fails_context);
 	    emsg_assert_fails_context = vim_strsave(
@@ -688,7 +682,7 @@ emsg_core(char_u *s)
 	}
 
 	// set "v:errmsg", also when using ":silent! cmd"
-	set_vim_var_string(VV_ERRMSG, s, -1);
+	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
 #endif
 
 	/*
@@ -717,7 +711,7 @@ emsg_core(char_u *s)
 		    redir_write(p, -1);
 		    vim_free(p);
 		}
-		redir_write(s, -1);
+		redir_write((char_u *)s, -1);
 	    }
 #ifdef FEAT_EVAL
 	    // Only increment did_emsg_def when :silent! wasn't used inside the
@@ -726,7 +720,7 @@ emsg_core(char_u *s)
 		++did_emsg_def;
 #endif
 #ifdef FEAT_EVAL
-	    ch_log(NULL, "ERROR silent: %s", (char *)s);
+	    ch_log(NULL, "ERROR silent: %s", s);
 #endif
 	    return TRUE;
 	}
@@ -784,45 +778,44 @@ emsg_core(char_u *s)
 }
 
 /*
- * Print an error message.
+ * Print error message "s".  Should already be translated.
+ * Return TRUE if wait_return() not called.
  */
     int
 emsg(char *s)
 {
     // Skip this if not giving error messages at the moment.
-    if (!emsg_not_now())
-	return emsg_core((char_u *)s);
-    return TRUE;		// no error messages at the moment
+    if (emsg_not_now())
+	return TRUE;
+
+    return emsg_core(s);
 }
 
 #ifndef PROTO  // manual proto with __attribute__
 /*
- * Print an error message with format string and variable arguments.
- * Note: caller must not pass 'IObuff' as 1st argument.
+ * Print error message "s" with format string and variable arguments.
+ * "s" should already be translated.
+ * Note: caller must not use "IObuff" for "s"!
+ * Return TRUE if wait_return() not called.
  */
     int
 semsg(const char *s, ...)
 {
     // Skip this if not giving error messages at the moment.
-    if (!emsg_not_now())
-    {
-	if (IObuff == NULL)
-	{
-	    // Very early in initialisation and already something wrong, just
-	    // give the raw message so the user at least gets a hint.
-	    return emsg_core((char_u *)s);
-	}
-	else
-	{
-	    va_list ap;
+    if (emsg_not_now())
+	return TRUE;
 
-	    va_start(ap, s);
-	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	    va_end(ap);
-	    return emsg_core(IObuff);
-	}
-    }
-    return TRUE;		// no error messages at the moment
+    if (IObuff == NULL)
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return emsg_core(s);
+
+    va_list ap;
+
+    va_start(ap, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+    va_end(ap);
+    return emsg_core((char *)IObuff);
 }
 #endif
 
@@ -834,16 +827,20 @@ semsg(const char *s, ...)
     void
 iemsg(char *s)
 {
-    if (!emsg_not_now())
-    {
-	emsg_core((char_u *)s);
+    if (emsg_not_now())
+	return;
+
+    // Give a generic error which is translated.  The error itself may not be
+    // translated, it almost never shows.
+    emsg_core(_(e_internal_error_please_report_a_bug));
+
+    emsg_core(s);
 #if defined(ABORT_ON_INTERNAL_ERROR) && defined(FEAT_EVAL)
-	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
-	msg_putchar('\n');  // avoid overwriting the error message
-	out_flush();
-	abort();
+    set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
+    msg_putchar('\n');  // avoid overwriting the error message
+    out_flush();
+    abort();
 #endif
-    }
 }
 
 #ifndef PROTO  // manual proto with __attribute__
@@ -856,29 +853,33 @@ iemsg(char *s)
     void
 siemsg(const char *s, ...)
 {
-    if (!emsg_not_now())
-    {
-	if (IObuff == NULL)
-	{
-	    // Very early in initialisation and already something wrong, just
-	    // give the raw message so the user at least gets a hint.
-	    emsg_core((char_u *)s);
-	}
-	else
-	{
-	    va_list ap;
+    if (emsg_not_now())
+	return;
 
-	    va_start(ap, s);
-	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	    va_end(ap);
-	    emsg_core(IObuff);
-	}
-# ifdef ABORT_ON_INTERNAL_ERROR
-	msg_putchar('\n');  // avoid overwriting the error message
-	out_flush();
-	abort();
-# endif
+    // Give a generic error which is translated.  The error itself may not be
+    // translated, it almost never shows.
+    emsg_core(_(e_internal_error_please_report_a_bug));
+
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	emsg_core(s);
     }
+    else
+    {
+	va_list ap;
+
+	va_start(ap, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	va_end(ap);
+	emsg_core((char *)IObuff);
+    }
+# ifdef ABORT_ON_INTERNAL_ERROR
+    msg_putchar('\n');  // avoid overwriting the error message
+    out_flush();
+    abort();
+# endif
 }
 #endif
 
@@ -888,6 +889,10 @@ siemsg(const char *s, ...)
     void
 internal_error(char *where)
 {
+    // Give a generic error which is translated.  The error itself may not be
+    // translated, it almost never shows.
+    emsg_core(_(e_internal_error_please_report_a_bug));
+
     siemsg(_(e_internal_error_str), where);
 }
 
@@ -899,7 +904,11 @@ internal_error(char *where)
     void
 internal_error_no_abort(char *where)
 {
-     semsg(_(e_internal_error_str), where);
+    // Give a generic error which is translated.  The error itself may not be
+    // translated, it almost never shows.
+    emsg_core(_(e_internal_error_please_report_a_bug));
+
+    semsg(_(e_internal_error_str), where);
 }
 #endif
 
@@ -908,7 +917,7 @@ internal_error_no_abort(char *where)
     void
 emsg_invreg(int name)
 {
-    semsg(_(e_invalid_register_name_str), transchar(name));
+    semsg(_(e_invalid_register_name_str), transchar_buf(NULL, name));
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -1006,28 +1015,28 @@ add_msg_hist(
 
     // allocate an entry and add the message at the end of the history
     p = ALLOC_ONE(struct msg_hist);
-    if (p != NULL)
+    if (p == NULL)
+	return;
+
+    if (len < 0)
+	len = (int)STRLEN(s);
+    // remove leading and trailing newlines
+    while (len > 0 && *s == '\n')
     {
-	if (len < 0)
-	    len = (int)STRLEN(s);
-	// remove leading and trailing newlines
-	while (len > 0 && *s == '\n')
-	{
-	    ++s;
-	    --len;
-	}
-	while (len > 0 && s[len - 1] == '\n')
-	    --len;
-	p->msg = vim_strnsave(s, len);
-	p->next = NULL;
-	p->attr = attr;
-	if (last_msg_hist != NULL)
-	    last_msg_hist->next = p;
-	last_msg_hist = p;
-	if (first_msg_hist == NULL)
-	    first_msg_hist = last_msg_hist;
-	++msg_hist_len;
+	++s;
+	--len;
     }
+    while (len > 0 && s[len - 1] == '\n')
+	--len;
+    p->msg = vim_strnsave(s, len);
+    p->next = NULL;
+    p->attr = attr;
+    if (last_msg_hist != NULL)
+	last_msg_hist->next = p;
+    last_msg_hist = p;
+    if (first_msg_hist == NULL)
+	first_msg_hist = last_msg_hist;
+    ++msg_hist_len;
 }
 
 /*
@@ -1105,7 +1114,7 @@ ex_messages(exarg_T *eap)
 	    msg_attr(
 		    // Translator: Please replace the name and email address
 		    // with the appropriate text for your translation.
-		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
+		    _("Messages maintainer: The Vim Project"),
 		    HL_ATTR(HLF_T));
     }
 
@@ -1437,6 +1446,9 @@ msg_start(void)
 {
     int		did_return = FALSE;
 
+    if (msg_row < cmdline_row)
+	msg_row = cmdline_row;
+
     if (!msg_silent)
     {
 	VIM_CLEAR(keep_msg);
@@ -1607,7 +1619,7 @@ msg_outtrans_one(char_u *p, int attr)
 	msg_outtrans_len_attr(p, l, attr);
 	return p + l;
     }
-    msg_puts_attr((char *)transchar_byte(*p), attr);
+    msg_puts_attr((char *)transchar_byte_buf(NULL, *p), attr);
     return p + 1;
 }
 
@@ -1630,6 +1642,14 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
     {
 	add_msg_hist(str, len, attr);
 	attr &= ~MSG_HIST;
+    }
+
+    // When drawing over the command line no need to clear it later or remove
+    // the mode message.
+    if (msg_row >= cmdline_row && msg_col == 0)
+    {
+	clear_cmdline = FALSE;
+	mode_displayed = FALSE;
     }
 
     // If the string starts with a composing character first draw a space on
@@ -1664,7 +1684,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 		    msg_puts_attr_len((char *)plain_start,
 					       (int)(str - plain_start), attr);
 		plain_start = str + mb_l;
-		msg_puts_attr((char *)transchar(c),
+		msg_puts_attr((char *)transchar_buf(NULL, c),
 					    attr == 0 ? HL_ATTR(HLF_8) : attr);
 		retval += char2cells(c);
 	    }
@@ -1673,7 +1693,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	}
 	else
 	{
-	    s = transchar_byte(*str);
+	    s = transchar_byte_buf(NULL, *str);
 	    if (s[1] != NUL)
 	    {
 		// unprintable char: print the printable chars so far and the
@@ -1759,7 +1779,7 @@ msg_outtrans_special(
 	    text = (char *)str2special(&str, from, FALSE);
 	if (text[0] != NUL && text[1] == NUL)
 	    // single-byte character or illegal byte
-	    text = (char *)transchar_byte((char_u)text[0]);
+	    text = (char *)transchar_byte_buf(NULL, (char_u)text[0]);
 	len = vim_strsize((char_u *)text);
 	if (maxlen > 0 && retval + len >= maxlen)
 	    break;
@@ -1825,7 +1845,11 @@ str2special(
     }
 
     c = *str;
-    if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+    if ((c == K_SPECIAL
+#ifdef FEAT_GUI
+		|| c == CSI
+#endif
+	) && str[1] != NUL && str[2] != NUL)
     {
 	if (str[1] == KS_MODIFIER)
 	{
@@ -1833,7 +1857,11 @@ str2special(
 	    str += 3;
 	    c = *str;
 	}
-	if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+	if ((c == K_SPECIAL
+#ifdef FEAT_GUI
+		    || c == CSI
+#endif
+	    ) && str[1] != NUL && str[2] != NUL)
 	{
 	    c = TO_SPECIAL(str[1], str[2]);
 	    str += 2;
@@ -1980,10 +2008,13 @@ msg_prt_line(char_u *s, int list)
 	{
 	    attr = 0;
 	    c = *s++;
-	    in_multispace = c == ' '
-		&& ((col > 0 && s[-2] == ' ') || *s == ' ');
-	    if (!in_multispace)
-		multispace_pos = 0;
+	    if (list)
+	    {
+		in_multispace = c == ' ' && (*s == ' '
+						 || (col > 0 && s[-2] == ' '));
+		if (!in_multispace)
+		    multispace_pos = 0;
+	    }
 	    if (c == TAB && (!list || curwin->w_lcs_chars.tab1))
 	    {
 		// tab amount depends on current column
@@ -2027,7 +2058,7 @@ msg_prt_line(char_u *s, int list)
 	    else if (c != NUL && (n = byte2cells(c)) > 1)
 	    {
 		n_extra = n - 1;
-		p_extra = transchar_byte(c);
+		p_extra = transchar_byte_buf(NULL, c);
 		c_extra = NUL;
 		c_final = NUL;
 		c = *p_extra++;
@@ -2037,7 +2068,7 @@ msg_prt_line(char_u *s, int list)
 	    }
 	    else if (c == ' ')
 	    {
-		if (list && lead != NULL && s <= lead && in_multispace
+		if (lead != NULL && s <= lead && in_multispace
 			&& curwin->w_lcs_chars.leadmultispace != NULL)
 		{
 		    c = curwin->w_lcs_chars.leadmultispace[multispace_pos++];
@@ -2057,7 +2088,7 @@ msg_prt_line(char_u *s, int list)
 		    c = curwin->w_lcs_chars.trail;
 		    attr = HL_ATTR(HLF_8);
 		}
-		else if (list && in_multispace
+		else if (in_multispace
 			&& curwin->w_lcs_chars.multispace != NULL)
 		{
 		    c = curwin->w_lcs_chars.multispace[multispace_pos++];
@@ -2745,7 +2776,7 @@ store_sb_text(
 
     if (s > *sb_str)
     {
-	mp = alloc(sizeof(msgchunk_T) + (s - *sb_str));
+	mp = alloc(offsetof(msgchunk_T, sb_text) + (s - *sb_str) + 1);
 	if (mp != NULL)
 	{
 	    mp->sb_eol = finish;
@@ -3055,7 +3086,8 @@ msg_puts_printf(char_u *str, int maxlen)
     {
 	char_u *tofree = NULL;
 
-	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	if (maxlen > 0 && vim_strlen_maxlen((char *)p, (size_t)maxlen)
+							     >= (size_t)maxlen)
 	{
 	    tofree = vim_strnsave(p, (size_t)maxlen);
 	    p = tofree;

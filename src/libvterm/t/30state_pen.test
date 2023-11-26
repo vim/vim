@@ -123,3 +123,11 @@ PUSH "\e[74m"
 PUSH "\e[75m"
   ?pen small = off
   ?pen baseline = normal
+
+!DECSTR resets pen attributes
+PUSH "\e[1;4m"
+  ?pen bold = on
+  ?pen underline = 1
+PUSH "\e[!p"
+  ?pen bold = off
+  ?pen underline = 0

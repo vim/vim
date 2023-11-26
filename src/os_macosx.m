@@ -430,7 +430,7 @@ static NSMutableDictionary<NSNumber*, NSSound*> *sounds_list = nil;
 @end
 
     void
-process_cfrunloop()
+process_cfrunloop(void)
 {
     if (sounds_list != nil && [sounds_list count] > 0)
     {
@@ -493,7 +493,7 @@ sound_mch_stop(long sound_id)
 }
 
     void
-sound_mch_clear()
+sound_mch_clear(void)
 {
     if (sounds_list != nil)
     {
@@ -510,7 +510,7 @@ sound_mch_clear()
 }
 
     void
-sound_mch_free()
+sound_mch_free(void)
 {
     sound_mch_clear();
 }

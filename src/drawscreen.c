@@ -73,8 +73,6 @@ static void redraw_custom_statusline(win_T *wp);
 static int  did_update_one_window;
 #endif
 
-static void win_redr_status(win_T *wp, int ignore_pum);
-
 /*
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
@@ -423,7 +421,7 @@ statusline_row(win_T *wp)
  * If "ignore_pum" is TRUE, also redraw statusline when the popup menu is
  * displayed.
  */
-    static void
+    void
 win_redr_status(win_T *wp, int ignore_pum UNUSED)
 {
     int		row;
@@ -548,6 +546,16 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 						   - 1 + wp->w_wincol), attr);
 
 	win_redr_ruler(wp, TRUE, ignore_pum);
+
+	// Draw the 'showcmd' information if 'showcmdloc' == "statusline".
+	if (p_sc && *p_sloc == 's')
+	{
+	    int	width = MIN(10, this_ru_col - len - 2);
+
+	    if (width > 0)
+		screen_puts_len(showcmd_buf, width, row,
+				wp->w_wincol + this_ru_col - width - 1, attr);
+	}
     }
 
     /*
@@ -1784,7 +1792,8 @@ win_update(win_T *wp)
 		j = wp->w_lines[0].wl_lnum - wp->w_topline;
 	    if (j < wp->w_height - 2)		// not too far off
 	    {
-		i = plines_m_win(wp, wp->w_topline, wp->w_lines[0].wl_lnum - 1);
+		i = plines_m_win(wp, wp->w_topline, wp->w_lines[0].wl_lnum - 1,
+									 TRUE);
 #ifdef FEAT_DIFF
 		// insert extra lines for previously invisible filler lines
 		if (wp->w_lines[0].wl_lnum != wp->w_topline)
@@ -2183,11 +2192,23 @@ win_update(win_T *wp)
 	redraw_win_toolbar(wp);
 #endif
 
+    lnum = wp->w_topline;   // first line shown in window
+
+    spellvars_T spv;
+#ifdef FEAT_SPELL
+    // Initialize spell related variables for the first drawn line.
+    CLEAR_FIELD(spv);
+    if (spell_check_window(wp))
+    {
+	spv.spv_has_spell = TRUE;
+	spv.spv_unchanged = mod_top == 0;
+    }
+#endif
+
     // Update all the window rows.
     idx = 0;		// first entry in w_lines[].wl_size
     row = 0;
     srow = 0;
-    lnum = wp->w_topline;	// first line shown in window
     for (;;)
     {
 	// stop updating when reached the end of the window (check for _past_
@@ -2319,8 +2340,14 @@ win_update(win_T *wp)
 			{
 #ifdef FEAT_DIFF
 			    if (l == wp->w_topline)
-				new_rows += plines_win_nofill(wp, l, TRUE)
-							      + wp->w_topfill;
+			    {
+				int n = plines_win_nofill(wp, l, FALSE)
+								+ wp->w_topfill;
+				n -= adjust_plines_for_skipcol(wp);
+				if (n > wp->w_height)
+				    n = wp->w_height;
+				new_rows += n;
+			    }
 			    else
 #endif
 				new_rows += plines_win(wp, l, TRUE);
@@ -2441,6 +2468,9 @@ win_update(win_T *wp)
 # ifdef FEAT_SYN_HL
 		did_update = DID_FOLD;
 # endif
+# ifdef FEAT_SPELL
+		spv.spv_capcol_lnum = 0;
+# endif
 	    }
 	    else
 #endif
@@ -2473,8 +2503,7 @@ win_update(win_T *wp)
 #endif
 
 		// Display one line.
-		row = win_line(wp, lnum, srow, wp->w_height,
-							  mod_top == 0, FALSE);
+		row = win_line(wp, lnum, srow, wp->w_height, FALSE, &spv);
 
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
@@ -2521,7 +2550,7 @@ win_update(win_T *wp)
 		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
 		else
 #endif
-		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
+		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, &spv);
 	    }
 
 	    // This line does not need to be drawn, advance to the next one.
@@ -2535,6 +2564,9 @@ win_update(win_T *wp)
 #endif
 #ifdef FEAT_SYN_HL
 	    did_update = DID_NONE;
+#endif
+#ifdef FEAT_SPELL
+	    spv.spv_capcol_lnum = 0;
 #endif
 	}
 

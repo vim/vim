@@ -3718,7 +3718,7 @@ msgstr "rad %4ld:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Otillåtet registernamn: '%s'"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Meddelandeansvarig: Johan Svedberg <johan@svedberg.com>"
 
 msgid "Interrupt: "

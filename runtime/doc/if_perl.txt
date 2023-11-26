@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 9.0.  Last change: 2022 Mar 13
+*if_perl.txt*   For Vim version 9.0.  Last change: 2023 May 14
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -254,23 +254,14 @@ $main::curbuf
 
 							*script-here*
 When using a script language in-line, you might want to skip this when the
-language isn't supported.  But this mechanism doesn't work: >
+language isn't supported.  >
    if has('perl')
      perl << EOF
-       this will NOT work!
+       print 'perl works'
    EOF
    endif
-Instead, put the Perl/Python/Ruby/etc. command in a function and call that
-function: >
-    if has('perl')
-      function DefPerl()
-	perl << EOF
-	  this works
-    EOF
-      endfunction
-      call DefPerl()
-    endif
-Note that "EOF" must be at the start of the line.
+Note that "EOF" must be at the start of the line without preceding white
+space.
 
 ==============================================================================
 4. Dynamic loading					*perl-dynamic*
@@ -305,6 +296,12 @@ The 'perldll' option can be used to specify the Perl shared library file
 instead of DYNAMIC_PERL_DLL file what was specified at compile time.  The
 version of the shared library must match the Perl version Vim was compiled
 with.
+
+Note: If you are building Perl locally, you have to use a version compiled
+with threading support for it for Vim to successfully link against it. You can
+use the `-Dusethreads` flags when configuring Perl, and check that a Perl
+binary has it enabled by running `perl -V` and verify that `USE_ITHREADS` is
+under "Compile-time options".
 
 ==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:

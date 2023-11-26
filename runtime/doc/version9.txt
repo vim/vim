@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2022 Nov 23
+*version9.txt*  For Vim version 9.0.  Last change: 2023 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -42,6 +42,17 @@ Vim version 9.0 is dedicated to Sven Guckes, who passed away in February 2022
 when the release was being prepared.  Sven was a long time supporter of Vim.
 He registered the vim.org domain and created the first Vim website.  We will
 remember him!
+
+						 *Bram* *Moolenaar* *Bram-Moolenaar*
+Vim version 9.1 is dedicated to Bram Moolenaar, who passed away on August 3rd
+2023 while still working full-time on Vim.  The Vim project would not exist
+without his ongoing passion to lead and develop Vim and the community for more
+than 30 years.  Bram was also passionate about his |ICCF| foundation to help
+children in Uganda.  If you enjoy using Vim, please consider donating! We will
+miss his guidance, passion and leadership.
+
+Obituary Articles: https://github.com/vim/vim/discussions/12742
+Say Farewell: https://github.com/vim/vim/discussions/12737
 
 ==============================================================================
 NEW FEATURES						*new-9*
@@ -1187,7 +1198,7 @@ Solution:   Use "curtab" if "tp" is NULL. (closes #5475)
 Files:      src/evalwindow.c, src/testdir/test_getvar.vim
 
 Patch 8.2.0118
-Problem:    Crash when cycling to buffers involving popup window .
+Problem:    Crash when cycling to buffers involving popup window.
 Solution:   Do not decrement buffer reference count.
 Files:      src/popupwin.c, src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_infopopup_7.dump
@@ -29816,7 +29827,7 @@ Files:      src/testdir/test_vim9_script.vim
 Patch 8.2.4863
 Problem:    Accessing freed memory in test without the +channel feature.
             (Dominique Pellé)
-Solution:   Do not generted PUSHCHANNEL or PUSHJOB if they are not
+Solution:   Do not generate PUSHCHANNEL or PUSHJOB if they are not
             implemented. (closes #10350)
 Files:      src/vim9instr.c, src/errors.h, src/vim9compile.c,
             src/testdir/test_vim9_script.vim
@@ -31666,6 +31677,87 @@ Patch 8.2.5172
 Problem:    "make menu" still uses legacy script.
 Solution:   make menu generation script use Vim9 script, fix errors.
 Files:      runtime/makemenu.vim
+
+
+==============================================================================
+VERSION 9.1				*version-9.1* *version9.1* *vim-9.1*
+
+This section is about improvements made between version 9.0 and 9.1.
+
+This release has hundreds of bug fixes, there are a few new features and there
+are many minor improvements.
+
+Vim9 classes
+------------
+
+Virtual text
+------------
+
+Smooth Scroll
+-------------
+
+Other improvements				*new-other-9.1*
+------------------
+
+Changed						*changed-9.1*
+-------
+
+Added						*added-9.1*
+-----
+
+Various syntax, indent and other plugins were added.
+
+Functions: ~
+
+|err_teapot()|		produce error 418 or 503
+|getbufoneline()|	get a one line from the specified buffer
+|getcellwidths()|	get character cell width overrides
+|getmouseshape()|	get name of the current mouse shape
+|getscriptinfo()|	get list of sourced vim scripts
+|indexof()|		index in a List or Blob of a true expression
+|instanceof()|		check if a variable is an instance of a given class
+|keytrans()|		translate internal key codes to be usable with |:map|
+|popup_findecho()|	get window ID for popup used for |:echowindow|
+|setcmdline()|		set the current command line
+|strutf16len()|		number of UTF-16 code units in a string
+|swapfilelist()|	list of existing swap files in 'directory'
+|test_mswin_event()|	generate an MS-Windows event for testing
+|utf16idx()|		UTF-16 index of a byte in a string
+
+
+Autocommands: ~
+
+|TextChangedT|		after a change was made to the text in Terminal mode
+|WinResized|		after a window in the current tab page is resized
+
+
+Commands: ~
+
+|:abstract|		define an Vim9 abstract class
+|:class|		start of a class specification
+|:defer|		call function when current function is done
+|:echowindow|		same as :echomsg, but use a popup window
+|:endinterface|		end of an interface specification
+|:endclass|		end of a class specification
+|:horizontal|		following window command work horizontally
+|:interface|		start of an interface specification
+|:public|		prefix for a class or object member
+|:static|		prefix for a class member or function
+|:this|			prefix for an object member
+
+
+Options: ~
+
+'jumpoptions'		specifies how jumping is done
+'keyprotocol'		what keyboard protocol to use for what terminal
+'lispoptions'		changes how Lisp indenting is done
+'showcmdloc'		where to show (partial) command
+'smoothscroll'		scroll by screen lines when 'wrap' is set
+'splitkeep'		determines scroll behavior for split windows
+
+
+Patches						*patches-9.1*
+-------
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

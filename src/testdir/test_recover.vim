@@ -161,6 +161,7 @@ endfunc
 func Test_recover_empty_swap_file()
   CheckUnix
   call writefile([], '.Xfile1.swp', 'D')
+  set dir=.
   let msg = execute('recover Xfile1')
   call assert_match('Unable to read block 0 from .Xfile1.swp', msg)
   call assert_equal('Xfile1', @%)
@@ -173,6 +174,7 @@ func Test_recover_empty_swap_file()
 
   " :recover from an empty buffer
   call assert_fails('recover', 'E305:')
+  set dir&vim
 endfunc
 
 " Test for :recover using a corrupted swap file
@@ -249,6 +251,14 @@ func Test_recover_corrupted_swap_file()
   call assert_equal(['???EMPTY BLOCK'], getline(1, '$'))
   bw!
 
+  " set the number of pointers in a pointer block to a large value
+  let b = copy(save_b)
+  let b[4098:4099] = 0zFFFF
+  call writefile(b, sn)
+  call assert_fails('recover Xfile1', 'E1364:')
+  call assert_equal('Xfile1', @%)
+  bw!
+
   " set the block number in a pointer entry to a negative number
   let b = copy(save_b)
   if system_64bit
@@ -282,6 +292,21 @@ func Test_recover_corrupted_swap_file()
   call assert_fails('recover Xfile1', 'E312:')
   call assert_equal('Xfile1', @%)
   call assert_equal(['??? from here until ???END lines may have been inserted/deleted',
+        \ '???END'], getline(1, '$'))
+  bw!
+
+  " set the number of lines in the data block to a large value
+  let b = copy(save_b)
+  if system_64bit
+    let b[8208:8215] = 0z00FFFFFF.FFFFFF00
+  else
+    let b[8208:8211] = 0z00FFFF00
+  endif
+  call writefile(b, sn)
+  call assert_fails('recover Xfile1', 'E312:')
+  call assert_equal('Xfile1', @%)
+  call assert_equal(['??? from here until ???END lines may have been inserted/deleted',
+        \ '', '???', '??? lines may be missing',
         \ '???END'], getline(1, '$'))
   bw!
 

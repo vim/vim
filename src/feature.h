@@ -22,7 +22,7 @@
  * - Add a #define below.
  * - Add a message in the table above ex_version().
  * - Add a string to f_has().
- * - Add a feature to ":help feature-list" in doc/eval.txt.
+ * - Add a feature to ":help feature-list" in doc/builtin.txt.
  * - Add feature to ":help +feature-list" in doc/various.txt.
  * - Add comment for the documentation of commands that use the feature.
  */
@@ -272,8 +272,9 @@
  */
 #if defined(FEAT_NORMAL) \
 	&& defined(FEAT_EVAL) \
-	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
-		|| defined(MSWIN))
+	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) \
+		&& (!defined(MACOS_X) || defined(HAVE_DISPATCH_DISPATCH_H))) \
+	    || defined(MSWIN))
 # define FEAT_RELTIME
 #endif
 
@@ -372,9 +373,9 @@
 #endif
 
 /*
- * libsodium - add cryptography support
+ * libsodium - add advanced cryptography support
  */
-#if defined(HAVE_SODIUM) && defined(FEAT_HUGE)
+#if defined(HAVE_SODIUM) && defined(FEAT_CRYPT)
 # define FEAT_SODIUM
 #endif
 
@@ -714,19 +715,31 @@
 
 /*
  * File names for:
- * FILETYPE_FILE	switch on file type detection
- * FTPLUGIN_FILE	switch on loading filetype plugin files
- * INDENT_FILE		switch on loading indent files
- * FTOFF_FILE		switch off file type detection
- * FTPLUGOF_FILE	switch off loading settings files
- * INDOFF_FILE		switch off loading indent files
+ * FILETYPE_FILE	used for file type detection
+ * FTPLUGIN_FILE	used for loading filetype plugin files
+ * INDENT_FILE		used for loading indent files
+ * FTOFF_FILE		used for file type detection
+ * FTPLUGOF_FILE	used for loading settings files
+ * INDOFF_FILE		used for loading indent files
  */
-// # define FILETYPE_FILE	"filetype.vim"
-// # define FTPLUGIN_FILE	"ftplugin.vim"
-// # define INDENT_FILE		"indent.vim"
-// # define FTOFF_FILE		"ftoff.vim"
-// # define FTPLUGOF_FILE	"ftplugof.vim"
-// # define INDOFF_FILE		"indoff.vim"
+#ifndef FILETYPE_FILE
+# define FILETYPE_FILE		"filetype.vim"
+#endif
+#ifndef FTPLUGIN_FILE
+# define FTPLUGIN_FILE		"ftplugin.vim"
+#endif
+#ifndef INDENT_FILE
+# define INDENT_FILE		"indent.vim"
+#endif
+#ifndef FTOFF_FILE
+# define FTOFF_FILE		"ftoff.vim"
+#endif
+#ifndef FTPLUGOF_FILE
+# define FTPLUGOF_FILE		"ftplugof.vim"
+#endif
+#ifndef INDOFF_FILE
+# define INDOFF_FILE		"indoff.vim"
+#endif
 
 /*
  * SYS_MENU_FILE	Name of the default menu.vim file.
@@ -822,10 +835,10 @@
  * +mouse_gpm		Unix only: Include code for Linux console mouse
  *			handling.
  * +mouse_pterm		PTerm mouse support for QNX
- * +mouse_sgr		Unix only: Include code for for SGR-styled mouse.
+ * +mouse_sgr		Unix only: Include code for SGR-styled mouse.
  * +mouse_sysmouse	Unix only: Include code for FreeBSD and DragonFly
  *			console mouse handling.
- * +mouse_urxvt		Unix only: Include code for for urxvt mouse handling.
+ * +mouse_urxvt		Unix only: Include code for urxvt mouse handling.
  * +mouse		Any mouse support (any of the above enabled).
  *			Always included, since either FEAT_MOUSE_XTERM or
  *			DOS_MOUSE is defined.
@@ -1161,4 +1174,12 @@
 	|| defined(DYNAMIC_LUA) \
 	|| defined(FEAT_TERMINAL)
 # define USING_LOAD_LIBRARY
+#endif
+
+/*
+ * currently Unix only: XATTR support
+ */
+
+#if defined(FEAT_NORMAL) && defined(HAVE_XATTR) && !defined(MACOS_X)
+# define FEAT_XATTR
 #endif

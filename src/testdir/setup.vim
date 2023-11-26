@@ -20,7 +20,7 @@ if has('packages')
   let &packpath = &rtp
 endif
 
-" Only when the +eval feature is present. 
+" Only when the +eval feature is present.
 if 1
   " Make sure the .Xauthority file can be found after changing $HOME.
   if $XAUTHORITY == ''
@@ -29,6 +29,10 @@ if 1
 
   " Avoid storing shell history.
   let $HISTFILE = ""
+
+  " Have current $HOME available as $ORIGHOME.  $HOME is used for option
+  " defaults before we get here, and test_mksession checks that.
+  let $ORIGHOME = $HOME
 
   " Make sure $HOME does not get read or written.
   " It must exist, gnome tries to create $HOME/.gnome2

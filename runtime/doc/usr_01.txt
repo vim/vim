@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 9.0.  Last change: 2019 Nov 21
+*usr_01.txt*	For Vim version 9.0.  Last change: 2023 May 12
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -161,7 +161,7 @@ filename.  For French:
 ==============================================================================
 *01.4*	Copyright					*manual-copyright*
 
-The Vim user manual and reference manual are Copyright (c) 1988-2003 by Bram
+The Vim user manual and reference manual are Copyright (c) 1988 by Bram
 Moolenaar.  This material may be distributed only subject to the terms and
 conditions set forth in the Open Publication License, v1.0 or later.  The
 latest version is presently available at:

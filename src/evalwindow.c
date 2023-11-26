@@ -24,29 +24,29 @@ win_getid(typval_T *argvars)
     if (argvars[0].v_type == VAR_UNKNOWN)
 	return curwin->w_id;
     winnr = tv_get_number(&argvars[0]);
-    if (winnr > 0)
+    if (winnr <= 0)
+	return 0;
+
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	wp = firstwin;
+    else
     {
-	if (argvars[1].v_type == VAR_UNKNOWN)
+	tabpage_T	*tp;
+	int		tabnr = tv_get_number(&argvars[1]);
+
+	FOR_ALL_TABPAGES(tp)
+	    if (--tabnr == 0)
+		break;
+	if (tp == NULL)
+	    return -1;
+	if (tp == curtab)
 	    wp = firstwin;
 	else
-	{
-	    tabpage_T	*tp;
-	    int		tabnr = tv_get_number(&argvars[1]);
-
-	    FOR_ALL_TABPAGES(tp)
-		if (--tabnr == 0)
-		    break;
-	    if (tp == NULL)
-		return -1;
-	    if (tp == curtab)
-		wp = firstwin;
-	    else
-		wp = tp->tp_firstwin;
-	}
-	for ( ; wp != NULL; wp = wp->w_next)
-	    if (--winnr == 0)
-		return wp->w_id;
+	    wp = tp->tp_firstwin;
     }
+    for ( ; wp != NULL; wp = wp->w_next)
+	if (--winnr == 0)
+	    return wp->w_id;
     return 0;
 }
 
@@ -380,18 +380,20 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	}
     }
 
-    if (nr > 0)
-	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-					      wp != twin; wp = wp->w_next)
+    if (nr <= 0)
+	return 0;
+
+    for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
+	    wp != twin; wp = wp->w_next)
+    {
+	if (wp == NULL)
 	{
-	    if (wp == NULL)
-	    {
-		// didn't find it in this tabpage
-		nr = 0;
-		break;
-	    }
-	    ++nr;
+	    // didn't find it in this tabpage
+	    nr = 0;
+	    break;
 	}
+	++nr;
+    }
     return nr;
 }
 
@@ -718,66 +720,66 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 
     id = (int)tv_get_number(argvars);
     wp = win_id2wp_tp(id, &tp);
-    if (wp != NULL && tp != NULL)
+    if (wp == NULL || tp == NULL)
+	return;
+
+    pos_T	curpos = wp->w_cursor;
+    char_u	cwd[MAXPATHL];
+    int	cwd_status = FAIL;
+#ifdef FEAT_AUTOCHDIR
+    char_u	autocwd[MAXPATHL];
+    int	apply_acd = FALSE;
+#endif
+
+    // Getting and setting directory can be slow on some systems, only do
+    // this when the current or target window/tab have a local directory or
+    // 'acd' is set.
+    if (curwin != wp
+	    && (curwin->w_localdir != NULL
+		|| wp->w_localdir != NULL
+		|| (curtab != tp
+		    && (curtab->tp_localdir != NULL
+			|| tp->tp_localdir != NULL))
+#ifdef FEAT_AUTOCHDIR
+		|| p_acd
+#endif
+	       ))
+	cwd_status = mch_dirname(cwd, MAXPATHL);
+
+#ifdef FEAT_AUTOCHDIR
+    // If 'acd' is set, check we are using that directory.  If yes, then
+    // apply 'acd' afterwards, otherwise restore the current directory.
+    if (cwd_status == OK && p_acd)
     {
-	pos_T	curpos = wp->w_cursor;
-	char_u	cwd[MAXPATHL];
-	int	cwd_status = FAIL;
-#ifdef FEAT_AUTOCHDIR
-	char_u	autocwd[MAXPATHL];
-	int	apply_acd = FALSE;
+	do_autochdir();
+	apply_acd = mch_dirname(autocwd, MAXPATHL) == OK
+	    && STRCMP(cwd, autocwd) == 0;
+    }
 #endif
 
-	// Getting and setting directory can be slow on some systems, only do
-	// this when the current or target window/tab have a local directory or
-	// 'acd' is set.
-	if (curwin != wp
-		&& (curwin->w_localdir != NULL
-		    || wp->w_localdir != NULL
-		    || (curtab != tp
-			&& (curtab->tp_localdir != NULL
-			    || tp->tp_localdir != NULL))
+    if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
+    {
+	check_cursor();
+	execute_common(argvars, rettv, 1);
+    }
+    restore_win_noblock(&switchwin, TRUE);
 #ifdef FEAT_AUTOCHDIR
-		    || p_acd
+    if (apply_acd)
+	do_autochdir();
+    else
 #endif
-		    ))
-	    cwd_status = mch_dirname(cwd, MAXPATHL);
-
-#ifdef FEAT_AUTOCHDIR
-	// If 'acd' is set, check we are using that directory.  If yes, then
-	// apply 'acd' afterwards, otherwise restore the current directory.
-	if (cwd_status == OK && p_acd)
-	{
-	    do_autochdir();
-	    apply_acd = mch_dirname(autocwd, MAXPATHL) == OK
-						  && STRCMP(cwd, autocwd) == 0;
-	}
-#endif
-
-	if (switch_win_noblock(&switchwin, wp, tp, TRUE) == OK)
-	{
-	    check_cursor();
-	    execute_common(argvars, rettv, 1);
-	}
-	restore_win_noblock(&switchwin, TRUE);
-#ifdef FEAT_AUTOCHDIR
-	if (apply_acd)
-	    do_autochdir();
-	else
-#endif
-	    if (cwd_status == OK)
+	if (cwd_status == OK)
 	    mch_chdir((char *)cwd);
 
-	// Update the status line if the cursor moved.
-	if (win_valid(wp) && !EQUAL_POS(curpos, wp->w_cursor))
-	    wp->w_redr_status = TRUE;
+    // Update the status line if the cursor moved.
+    if (win_valid(wp) && !EQUAL_POS(curpos, wp->w_cursor))
+	wp->w_redr_status = TRUE;
 
-	// In case the command moved the cursor or changed the Visual area,
-	// check it is valid.
-	check_cursor();
-	if (VIsual_active)
-	    check_pos(curbuf, &VIsual);
-    }
+    // In case the command moved the cursor or changed the Visual area,
+    // check it is valid.
+    check_cursor();
+    if (VIsual_active)
+	check_pos(curbuf, &VIsual);
 }
 
 /*
@@ -1093,11 +1095,11 @@ f_getcmdwintype(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
     rettv->vval.v_string = alloc(2);
-    if (rettv->vval.v_string != NULL)
-    {
-	rettv->vval.v_string[0] = cmdwin_type;
-	rettv->vval.v_string[1] = NUL;
-    }
+    if (rettv->vval.v_string == NULL)
+	return;
+
+    rettv->vval.v_string[0] = cmdwin_type;
+    rettv->vval.v_string[1] = NUL;
 }
 
 /*

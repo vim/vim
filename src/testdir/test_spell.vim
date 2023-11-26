@@ -132,6 +132,26 @@ foobar/?
   set spell&
 endfunc
 
+func Test_spell_camelcase()
+  set spell spelloptions=camel
+  let words = [
+      \ 'UPPER',
+      \ 'lower',
+      \ 'mixedCase',
+      \ 'HTML',
+      \ 'XMLHttpRequest',
+      \ 'foo123bar',
+      \ '12345678',
+      \ 'HELLO123world',
+      \]
+
+  for word in words
+    call assert_equal(['', ''],  spellbadword(word))
+  endfor
+
+  set spell& spelloptions&
+endfunc
+
 func Test_spell_file_missing()
   let s:spell_file_missing = 0
   augroup TestSpellFileMissing
@@ -274,14 +294,13 @@ func Test_compl_with_CTRL_X_CTRL_K_using_spell()
   call assert_equal(['theater'], getline(1, '$'))
   set spelllang=en_gb
   call feedkeys("Stheat\<c-x>\<c-k>\<esc>", 'tnx')
-  " FIXME: commented out, expected theatre bug got theater. See issue #7025.
-  " call assert_equal(['theatre'], getline(1, '$'))
+  call assert_equal(['theatre'], getline(1, '$'))
 
   bwipe!
   set spell& spelllang& dictionary& ignorecase&
 endfunc
 
-func Test_spellreall()
+func Test_spellrepall()
   new
   set spell
   call assert_fails('spellrepall', 'E752:')
@@ -958,6 +977,7 @@ func Test_spell_screendump()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "This is some text without any spell errors.  Everything",
              \ "should just be black, nothing wrong here.",
@@ -980,6 +1000,7 @@ func Test_spell_screendump_spellcap()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "   This line has a sepll error. and missing caps and trailing spaces.   ",
              \ "another missing cap here.",
@@ -999,12 +1020,33 @@ func Test_spell_screendump_spellcap()
   call VerifyScreenDump(buf, 'Test_spell_3', {})
 
   " Deleting a full stop removes missing Cap in next line
-  call term_sendkeys(buf, "5Gddk$x")
+  call term_sendkeys(buf, "5Gdd\<C-L>k$x")
   call VerifyScreenDump(buf, 'Test_spell_4', {})
 
   " Undo also updates the next line (go to command line to remove message)
   call term_sendkeys(buf, "u:\<Esc>")
   call VerifyScreenDump(buf, 'Test_spell_5', {})
+
+  " Folding an empty line does not remove Cap in next line
+  call term_sendkeys(buf, "uzfk:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_6', {})
+
+  " Folding the end of a sentence does not remove Cap in next line
+  " and editing a line does not remove Cap in current line
+  call term_sendkeys(buf, "Jzfkk$x")
+  call VerifyScreenDump(buf, 'Test_spell_7', {})
+
+  " Cap is correctly applied in the first row of a window
+  call term_sendkeys(buf, "\<C-E>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_spell_8', {})
+
+  " Adding an empty line does not remove Cap in "mod_bot" area
+  call term_sendkeys(buf, "zbO\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_9', {})
+
+  " Multiple empty lines does not remove Cap in the line after
+  call term_sendkeys(buf, "O\<Esc>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_spell_10', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1014,6 +1056,7 @@ func Test_spell_compatible()
   CheckScreendump
 
   let lines =<< trim END
+       call test_override('alloc_lines', 1)
        call setline(1, [
              \ "test "->repeat(20),
              \ "",
@@ -1032,6 +1075,15 @@ func Test_spell_compatible()
 
   " clean up
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_z_equal_with_large_count()
+  split
+  set spell
+  call setline(1, "ff")
+  norm 0z=337203685477580
+  set nospell
+  bwipe!
 endfunc
 
 let g:test_data_aff1 = [

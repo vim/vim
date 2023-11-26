@@ -21,13 +21,20 @@ func Test_packadd()
   call mkdir(s:plugdir . '/plugin/also', 'p')
   call mkdir(s:plugdir . '/ftdetect', 'p')
   call mkdir(s:plugdir . '/after', 'p')
+
+  " This used to crash Vim
+  let &rtp = 'nosuchdir,' . s:plugdir . '/after'
+  packadd mytest
+  " plugdir should be inserted before plugdir/after
+  call assert_match('^nosuchdir,' . s:plugdir . ',', &rtp)
+
   set rtp&
   let rtp = &rtp
   filetype on
 
   let rtp_entries = split(rtp, ',')
   for entry in rtp_entries
-    if entry =~? '\<after\>' 
+    if entry =~? '\<after\>'
       let first_after_entry = entry
       break
     endif
@@ -183,15 +190,17 @@ func Test_packadd_symlink_dir2()
   exec "silent !rmdir" top2_dir
 endfunc
 
-" Check command-line completion for 'packadd'
+" Check command-line completion for :packadd
 func Test_packadd_completion()
   let optdir1 = &packpath . '/pack/mine/opt'
   let optdir2 = &packpath . '/pack/candidate/opt'
 
   call mkdir(optdir1 . '/pluginA', 'p')
   call mkdir(optdir1 . '/pluginC', 'p')
+  call writefile([], optdir1 . '/unrelated')
   call mkdir(optdir2 . '/pluginB', 'p')
   call mkdir(optdir2 . '/pluginC', 'p')
+  call writefile([], optdir2 . '/unrelated')
 
   let li = []
   call feedkeys(":packadd \<Tab>')\<C-B>call add(li, '\<CR>", 't')
@@ -269,9 +278,9 @@ func Test_helptags()
 
   helptags ALL
 
-  let tags1 = readfile(docdir1 . '/tags') 
+  let tags1 = readfile(docdir1 . '/tags')
   call assert_match('look-here', tags1[0])
-  let tags2 = readfile(docdir2 . '/tags') 
+  let tags2 = readfile(docdir2 . '/tags')
   call assert_match('look-away', tags2[0])
 
   call assert_fails('helptags abcxyz', 'E150:')
@@ -338,11 +347,35 @@ func Test_runtime()
   runtime extra/bar.vim
   call assert_equal('run', g:sequence)
   let g:sequence = ''
+  runtime NoSuchFile extra/bar.vim
+  call assert_equal('run', g:sequence)
+
+  let g:sequence = ''
   runtime START extra/bar.vim
   call assert_equal('start', g:sequence)
   let g:sequence = ''
+  runtime START NoSuchFile extra/bar.vim extra/foo.vim
+  call assert_equal('start', g:sequence)
+  let g:sequence = ''
+  runtime START NoSuchFile extra/foo.vim extra/bar.vim
+  call assert_equal('foostart', g:sequence)
+  let g:sequence = ''
+  runtime! START NoSuchFile extra/bar.vim extra/foo.vim
+  call assert_equal('startfoostart', g:sequence)
+
+  let g:sequence = ''
   runtime OPT extra/bar.vim
   call assert_equal('opt', g:sequence)
+  let g:sequence = ''
+  runtime OPT NoSuchFile extra/bar.vim extra/xxx.vim
+  call assert_equal('opt', g:sequence)
+  let g:sequence = ''
+  runtime OPT NoSuchFile extra/xxx.vim extra/bar.vim
+  call assert_equal('xxxopt', g:sequence)
+  let g:sequence = ''
+  runtime! OPT NoSuchFile extra/bar.vim extra/xxx.vim
+  call assert_equal('optxxxopt', g:sequence)
+
   let g:sequence = ''
   runtime PACK extra/bar.vim
   call assert_equal('start', g:sequence)
@@ -352,6 +385,12 @@ func Test_runtime()
   let g:sequence = ''
   runtime PACK extra/xxx.vim
   call assert_equal('xxxopt', g:sequence)
+  let g:sequence = ''
+  runtime PACK extra/xxx.vim extra/foo.vim extra/bar.vim
+  call assert_equal('foostart', g:sequence)
+  let g:sequence = ''
+  runtime! PACK extra/bar.vim extra/xxx.vim extra/foo.vim
+  call assert_equal('startfoostartoptxxxopt', g:sequence)
 
   let g:sequence = ''
   runtime ALL extra/bar.vim
@@ -365,6 +404,117 @@ func Test_runtime()
   let g:sequence = ''
   runtime! ALL extra/bar.vim
   call assert_equal('runstartopt', g:sequence)
+  let g:sequence = ''
+  runtime ALL extra/xxx.vim extra/foo.vim extra/bar.vim
+  call assert_equal('run', g:sequence)
+  let g:sequence = ''
+  runtime! ALL extra/bar.vim extra/xxx.vim extra/foo.vim
+  call assert_equal('runstartfoostartoptxxxopt', g:sequence)
+endfunc
+
+func Test_runtime_completion()
+  let rundir = &packpath . '/runtime/Aextra'
+  let startdir = &packpath . '/pack/mine/start/foo/Aextra'
+  let optdir = &packpath . '/pack/mine/opt/bar/Aextra'
+  call mkdir(rundir . '/Arunbaz', 'p')
+  call mkdir(startdir . '/Astartbaz', 'p')
+  call mkdir(optdir . '/Aoptbaz', 'p')
+  call writefile([], rundir . '/../Arunfoo.vim')
+  call writefile([], rundir . '/Arunbar.vim')
+  call writefile([], rundir . '/Aunrelated')
+  call writefile([], rundir . '/../Aunrelated')
+  call writefile([], startdir . '/../Astartfoo.vim')
+  call writefile([], startdir . '/Astartbar.vim')
+  call writefile([], startdir . '/Aunrelated')
+  call writefile([], startdir . '/../Aunrelated')
+  call writefile([], optdir . '/../Aoptfoo.vim')
+  call writefile([], optdir . '/Aoptbar.vim')
+  call writefile([], optdir . '/Aunrelated')
+  call writefile([], optdir . '/../Aunrelated')
+  exe 'set rtp=' . &packpath . '/runtime'
+
+  func Check_runtime_completion(arg, arg_prev, res)
+    call feedkeys(':runtime ' .. a:arg .. "\<C-A>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"runtime ' .. a:arg_prev .. join(a:res), @:)
+    call assert_equal(a:res, getcompletion(a:arg, 'runtime'))
+  endfunc
+
+  call Check_runtime_completion('', '',
+        \ ['Aextra/', 'Arunfoo.vim', 'START', 'OPT', 'PACK', 'ALL'])
+  call Check_runtime_completion('S', '',
+        \ ['START'])
+  call Check_runtime_completion('O', '',
+        \ ['OPT'])
+  call Check_runtime_completion('P', '',
+        \ ['PACK'])
+  call Check_runtime_completion('A', '',
+        \ ['Aextra/', 'Arunfoo.vim', 'ALL'])
+  call Check_runtime_completion('Other.vim ', 'Other.vim ',
+        \ ['Aextra/', 'Arunfoo.vim'])
+  call Check_runtime_completion('Aextra/', '',
+        \ ['Aextra/Arunbar.vim', 'Aextra/Arunbaz/'])
+  call Check_runtime_completion('Other.vim Aextra/', 'Other.vim ',
+        \ ['Aextra/Arunbar.vim', 'Aextra/Arunbaz/'])
+
+  call Check_runtime_completion('START ', 'START ',
+        \ ['Aextra/', 'Astartfoo.vim'])
+  call Check_runtime_completion('START Other.vim ', 'START Other.vim ',
+        \ ['Aextra/', 'Astartfoo.vim'])
+  call Check_runtime_completion('START A', 'START ',
+        \ ['Aextra/', 'Astartfoo.vim'])
+  call Check_runtime_completion('START Other.vim A', 'START Other.vim ',
+        \ ['Aextra/', 'Astartfoo.vim'])
+  call Check_runtime_completion('START Aextra/', 'START ',
+        \ ['Aextra/Astartbar.vim', 'Aextra/Astartbaz/'])
+  call Check_runtime_completion('START Other.vim Aextra/', 'START Other.vim ',
+        \ ['Aextra/Astartbar.vim', 'Aextra/Astartbaz/'])
+
+  call Check_runtime_completion('OPT ', 'OPT ',
+        \ ['Aextra/', 'Aoptfoo.vim'])
+  call Check_runtime_completion('OPT Other.vim ', 'OPT Other.vim ',
+        \ ['Aextra/', 'Aoptfoo.vim'])
+  call Check_runtime_completion('OPT A', 'OPT ',
+        \ ['Aextra/', 'Aoptfoo.vim'])
+  call Check_runtime_completion('OPT Other.vim A', 'OPT Other.vim ',
+        \ ['Aextra/', 'Aoptfoo.vim'])
+  call Check_runtime_completion('OPT Aextra/', 'OPT ',
+        \ ['Aextra/Aoptbar.vim', 'Aextra/Aoptbaz/'])
+  call Check_runtime_completion('OPT Other.vim Aextra/', 'OPT Other.vim ',
+        \ ['Aextra/Aoptbar.vim', 'Aextra/Aoptbaz/'])
+
+  call Check_runtime_completion('PACK ', 'PACK ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('PACK Other.vim ', 'PACK Other.vim ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('PACK A', 'PACK ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('PACK Other.vim A', 'PACK Other.vim ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('PACK Aextra/', 'PACK ',
+        \ ['Aextra/Aoptbar.vim', 'Aextra/Aoptbaz/',
+        \ 'Aextra/Astartbar.vim', 'Aextra/Astartbaz/'])
+  call Check_runtime_completion('PACK Other.vim Aextra/', 'PACK Other.vim ',
+        \ ['Aextra/Aoptbar.vim', 'Aextra/Aoptbaz/',
+        \ 'Aextra/Astartbar.vim', 'Aextra/Astartbaz/'])
+
+  call Check_runtime_completion('ALL ', 'ALL ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Arunfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('ALL Other.vim ', 'ALL Other.vim ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Arunfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('ALL A', 'ALL ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Arunfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('ALL Other.vim A', 'ALL Other.vim ',
+        \ ['Aextra/', 'Aoptfoo.vim', 'Arunfoo.vim', 'Astartfoo.vim'])
+  call Check_runtime_completion('ALL Aextra/', 'ALL ',
+        \ ['Aextra/Aoptbar.vim', 'Aextra/Aoptbaz/',
+        \ 'Aextra/Arunbar.vim', 'Aextra/Arunbaz/',
+        \ 'Aextra/Astartbar.vim', 'Aextra/Astartbaz/'])
+  call Check_runtime_completion('ALL Other.vim Aextra/', 'ALL Other.vim ',
+        \ ['Aextra/Aoptbar.vim', 'Aextra/Aoptbaz/',
+        \ 'Aextra/Arunbar.vim', 'Aextra/Arunbaz/',
+        \ 'Aextra/Astartbar.vim', 'Aextra/Astartbaz/'])
+
+  delfunc Check_runtime_completion
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -150,7 +150,7 @@ coladvance2(
 
 	    if ((addspaces || finetune) && !VIsual_active)
 	    {
-		curwin->w_curswant = linetabsize_str(line) + one_more;
+		curwin->w_curswant = linetabsize(curwin, pos->lnum) + one_more;
 		if (curwin->w_curswant > 0)
 		    --curwin->w_curswant;
 	    }
@@ -166,7 +166,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize_str(line);
+	    csize = linetabsize(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
@@ -1130,25 +1130,27 @@ simplify_key(int key, int *modifiers)
     int	    key0;
     int	    key1;
 
-    if (*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT))
+    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT)))
+	return key;
+
+    // TAB is a special case
+    if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
     {
-	// TAB is a special case
-	if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
+	*modifiers &= ~MOD_MASK_SHIFT;
+	return K_S_TAB;
+    }
+    key0 = KEY2TERMCAP0(key);
+    key1 = KEY2TERMCAP1(key);
+    for (i = 0; modifier_keys_table[i] != NUL; i += MOD_KEYS_ENTRY_SIZE)
+    {
+	if (key0 == modifier_keys_table[i + 3]
+		&& key1 == modifier_keys_table[i + 4]
+		&& (*modifiers & modifier_keys_table[i]))
 	{
-	    *modifiers &= ~MOD_MASK_SHIFT;
-	    return K_S_TAB;
+	    *modifiers &= ~modifier_keys_table[i];
+	    return TERMCAP2KEY(modifier_keys_table[i + 1],
+		    modifier_keys_table[i + 2]);
 	}
-	key0 = KEY2TERMCAP0(key);
-	key1 = KEY2TERMCAP1(key);
-	for (i = 0; modifier_keys_table[i] != NUL; i += MOD_KEYS_ENTRY_SIZE)
-	    if (key0 == modifier_keys_table[i + 3]
-		    && key1 == modifier_keys_table[i + 4]
-		    && (*modifiers & modifier_keys_table[i]))
-	    {
-		*modifiers &= ~modifier_keys_table[i];
-		return TERMCAP2KEY(modifier_keys_table[i + 1],
-						   modifier_keys_table[i + 2]);
-	    }
     }
     return key;
 }
@@ -1292,10 +1294,10 @@ get_special_key_name(int c, int modifiers)
 }
 
 /*
- * Try translating a <> name at (*srcp)[] to dst[].
- * Return the number of characters added to dst[], zero for no match.
- * If there is a match, srcp is advanced to after the <> name.
- * dst[] must be big enough to hold the result (up to six characters)!
+ * Try translating a <> name at "(*srcp)[]" to "dst[]".
+ * Return the number of characters added to "dst[]", zero for no match.
+ * If there is a match, "srcp" is advanced to after the <> name.
+ * "dst[]" must be big enough to hold the result (up to six characters)!
  */
     int
 trans_special(
@@ -1352,8 +1354,9 @@ special_to_buf(int key, int modifiers, int escape_ks, char_u *dst)
 }
 
 /*
- * Try translating a <> name at (*srcp)[], return the key and modifiers.
- * srcp is advanced to after the <> name.
+ * Try translating a <> name at "(*srcp)[]", return the key and put modifiers
+ * in "modp".
+ * "srcp" is advanced to after the <> name.
  * returns 0 if there is no match.
  */
     int
@@ -1407,7 +1410,7 @@ find_special_key(
 	    bp += 3;	// skip t_xx, xx may be '-' or '>'
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
-	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
+	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE, NULL);
 	    if (l == 0)
 	    {
 		emsg(_(e_invalid_argument));
@@ -1445,7 +1448,7 @@ find_special_key(
 	    {
 		// <Char-123> or <Char-033> or <Char-0x33>
 		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL,
-								  &n, 0, TRUE);
+							    &n, 0, TRUE, NULL);
 		if (l == 0)
 		{
 		    emsg(_(e_invalid_argument));
@@ -1486,13 +1489,30 @@ find_special_key(
 		 */
 		key = simplify_key(key, &modifiers);
 
-		if (!(flags & FSK_KEYCODE))
+		if ((flags & FSK_KEYCODE) == 0)
 		{
 		    // don't want keycode, use single byte code
 		    if (key == K_BS)
 			key = BS;
 		    else if (key == K_DEL || key == K_KDEL)
 			key = DEL;
+		}
+		else if (key == 27
+			&& (flags & FSK_FROM_PART) != 0
+			&& (kitty_protocol_state == KKPS_ENABLED
+			    || kitty_protocol_state == KKPS_DISABLED))
+		{
+		    // Using the Kitty key protocol, which uses K_ESC for an
+		    // Esc character.  For the simplified keys use the Esc
+		    // character and set did_simplify, then in the
+		    // non-simplified keys use K_ESC.
+		    if ((flags & FSK_SIMPLIFY) != 0)
+		    {
+			if (did_simplify != NULL)
+			    *did_simplify = TRUE;
+		    }
+		    else
+			key = K_ESC;
 		}
 
 		// Normal Key with modifier: Try to make a single byte code.
@@ -1523,22 +1543,29 @@ find_special_key(
     int
 may_adjust_key_for_ctrl(int modifiers, int key)
 {
-    if (modifiers & MOD_MASK_CTRL)
+    if ((modifiers & MOD_MASK_CTRL) == 0)
+	return key;
+
+    if (ASCII_ISALPHA(key))
     {
-	if (ASCII_ISALPHA(key))
-	{
 #ifdef FEAT_TERMINAL
-	    check_no_reduce_keys();  // may update the no_reduce_keys flag
+	check_no_reduce_keys();  // may update the no_reduce_keys flag
 #endif
-	    return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
-	}
-	if (key == '2')
-	    return '@';
-	if (key == '6')
-	    return '^';
-	if (key == '-')
-	    return '_';
+	return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
     }
+    if (key == '2')
+	return '@';
+    if (key == '6')
+	return '^';
+    if (key == '-')
+	return '_';
+
+    // On a Belgian keyboard AltGr $ is ']', on other keyboards '$' can only be
+    // obtained with Shift.  Assume that '$' without shift implies a Belgian
+    // keyboard, where CTRL-$ means CTRL-].
+    if (key == '$' && (modifiers & MOD_MASK_SHIFT) == 0)
+	return ']';
+
     return key;
 }
 
@@ -2446,9 +2473,13 @@ vim_chdir(char_u *new_dir)
 {
     char_u	*dir_name;
     int		r;
+    char_u	*file_to_find = NULL;
+    char	*search_ctx = NULL;
 
     dir_name = find_directory_in_path(new_dir, (int)STRLEN(new_dir),
-						FNAME_MESS, curbuf->b_ffname);
+		     FNAME_MESS, curbuf->b_ffname, &file_to_find, &search_ctx);
+    vim_free(file_to_find);
+    vim_findfile_cleanup(search_ctx);
     if (dir_name == NULL)
 	return -1;
     r = mch_chdir((char *)dir_name);
@@ -2806,21 +2837,21 @@ read_string(FILE *fd, int cnt)
 
     // allocate memory
     str = alloc(cnt + 1);
-    if (str != NULL)
+    if (str == NULL)
+	return NULL;
+
+    // Read the string.  Quit when running into the EOF.
+    for (i = 0; i < cnt; ++i)
     {
-	// Read the string.  Quit when running into the EOF.
-	for (i = 0; i < cnt; ++i)
+	c = getc(fd);
+	if (c == EOF)
 	{
-	    c = getc(fd);
-	    if (c == EOF)
-	    {
-		vim_free(str);
-		return NULL;
-	    }
-	    str[i] = c;
+	    vim_free(str);
+	    return NULL;
 	}
-	str[i] = NUL;
+	str[i] = c;
     }
+    str[i] = NUL;
     return str;
 }
 

@@ -257,7 +257,7 @@ start_global_changes(void)
  * right text.
  */
     static int
-is_clipboard_needs_update()
+is_clipboard_needs_update(void)
 {
     return clipboard_needs_update;
 }
@@ -1253,7 +1253,7 @@ clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
  * Return an error message or NULL for success.
  */
     char *
-check_clipboard_option(void)
+did_set_clipboard(optset_T *args UNUSED)
 {
     int		new_unnamed = 0;
     int		new_autoselect_star = FALSE;
@@ -1266,6 +1266,7 @@ check_clipboard_option(void)
 
     for (p = p_cb; *p != NUL; )
     {
+	// Note: Keep this in sync with p_cb_values.
 	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
 	{
 	    new_unnamed |= CLIP_UNNAMED;

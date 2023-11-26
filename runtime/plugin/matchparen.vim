@@ -1,6 +1,7 @@
 " Vim plugin for showing matching parens
-" Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2022 Nov 28
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Oct 20
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -17,12 +18,15 @@ if !exists("g:matchparen_insert_timeout")
   let g:matchparen_insert_timeout = 60
 endif
 
+let s:has_matchaddpos = exists('*matchaddpos')
+
 augroup matchparen
   " Replace all matchparen autocommands
   autocmd! CursorMoved,CursorMovedI,WinEnter,BufWinEnter,WinScrolled * call s:Highlight_Matching_Pair()
   autocmd! WinLeave,BufLeave * call s:Remove_Matches()
   if exists('##TextChanged')
     autocmd! TextChanged,TextChangedI * call s:Highlight_Matching_Pair()
+    autocmd! TextChangedP * call s:Remove_Matches()
   endif
 augroup END
 
@@ -37,6 +41,9 @@ set cpo-=C
 " The function that is invoked (very often) to define a ":match" highlighting
 " for any matching paren.
 func s:Highlight_Matching_Pair()
+  if !exists("w:matchparen_ids")
+    let w:matchparen_ids = []
+  endif
   " Remove any previous match.
   call s:Remove_Matches()
 
@@ -108,8 +115,9 @@ func s:Highlight_Matching_Pair()
     " searchpairpos()'s skip argument.
     " We match "escape" for special items, such as lispEscapeSpecial, and
     " match "symbol" for lispBarSymbol.
-    let s_skip = '!empty(filter(map(synstack(line("."), col(".")), ''synIDattr(v:val, "name")''), ' .
-	\ '''v:val =~? "string\\|character\\|singlequote\\|escape\\|symbol\\|comment"''))'
+    let s_skip = 'synstack(".", col("."))'
+        \ . '->indexof({_, id -> synIDattr(id, "name") =~? '
+        \ . '"string\\|character\\|singlequote\\|escape\\|symbol\\|comment"}) >= 0'
     " If executing the expression determines that the cursor is currently in
     " one of the syntax types, then we want searchpairpos() to find the pair
     " within those syntax types (i.e., not skip).  Otherwise, the cursor is
@@ -183,11 +191,12 @@ func s:Highlight_Matching_Pair()
 
   " If a match is found setup match highlighting.
   if m_lnum > 0 && m_lnum >= stoplinetop && m_lnum <= stoplinebottom 
-    if exists('*matchaddpos')
-      call matchaddpos('MatchParen', [[c_lnum, c_col - before], [m_lnum, m_col]], 10, 3)
+    if s:has_matchaddpos
+      call add(w:matchparen_ids, matchaddpos('MatchParen', [[c_lnum, c_col - before], [m_lnum, m_col]], 10))
     else
       exe '3match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) .
 	    \ 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
+      call add(w:matchparen_ids, 3)
     endif
     let w:paren_hl_on = 1
   endif
@@ -195,11 +204,12 @@ endfunction
 
 func s:Remove_Matches()
   if exists('w:paren_hl_on') && w:paren_hl_on
-    silent! call matchdelete(3)
+    while !empty(w:matchparen_ids)
+      silent! call remove(w:matchparen_ids, 0)->matchdelete()
+    endwhile
     let w:paren_hl_on = 0
   endif
 endfunc
-
 
 " Define commands that will disable and enable the plugin.
 command DoMatchParen call s:DoMatchParen()

@@ -1,6 +1,7 @@
 /* window.c */
 int window_layout_locked(enum CMD_index cmd);
 win_T *prevwin_curwin(void);
+win_T *swbuf_goto_win_with_buf(buf_T *buf);
 void do_window(int nchar, long Prenum, int xchar);
 void get_wincmd_addr_type(char_u *arg, exarg_T *eap);
 int win_split(int size, int flags);
@@ -13,6 +14,7 @@ int win_count(void);
 int make_windows(int count, int vertical);
 void win_move_after(win_T *win1, win_T *win2);
 void win_equal(win_T *next_curwin, int current, int dir);
+void leaving_window(win_T *win);
 void entering_window(win_T *win);
 void curwin_init(void);
 void close_windows(buf_T *buf, int keep_curwin);
@@ -79,6 +81,7 @@ void win_comp_scroll(win_T *wp);
 void command_height(void);
 void last_status(int morewin);
 int tabline_height(void);
+int last_stl_height(int morewin);
 int min_rows(void);
 int only_one_window(void);
 void check_lnums(int do_curwin);

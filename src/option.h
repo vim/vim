@@ -14,7 +14,7 @@
 #define _OPTION_H_
 
 //
-// Flags
+// Option Flags
 //
 #define P_BOOL		0x01	// the option is boolean
 #define P_NUM		0x02	// the option is numeric
@@ -25,6 +25,7 @@
 				// the same.
 #define P_EXPAND	0x10	// environment expansion.  NOTE: P_EXPAND can
 				// never be used for local or hidden options!
+#define P_NO_CMD_EXPAND	0x20	// don't perform cmdline completions
 #define P_NODEFAULT	0x40	// don't set to default value
 #define P_DEF_ALLOCED	0x80	// default value is in allocated memory, must
 				//  use vim_free() when assigning new value
@@ -60,6 +61,11 @@
 #define P_RWINONLY   0x10000000L // only redraw current window
 #define P_MLE	     0x20000000L // under control of 'modelineexpr'
 #define P_FUNC	     0x40000000L // accept a function reference or a lambda
+#define P_COLON	     0x80000000L // values use colons to create sublists
+// Warning: Currently we have used all 32 bits for option flags. On some 32-bit
+//          systems, the flags are stored as a 32-bit integer, and adding more
+//          flags will overflow it. Adding another flag will need to change how
+//          it's stored first.
 
 // Returned by get_option_value().
 typedef enum {
@@ -89,7 +95,7 @@ typedef enum {
 #   ifdef VMS
 #    define DFLT_EFM	"%A%p^,%C%%CC-%t-%m,%Cat line number %l in file %f,%f|%l| %m"
 #   else // Unix, probably
-#define DFLT_EFM	"%*[^\"]\"%f\"%*\\D%l: %m,\"%f\"%*\\D%l: %m,%-G%f:%l: (Each undeclared identifier is reported only once,%-G%f:%l: for each function it appears in.),%-GIn file included from %f:%l:%c:,%-GIn file included from %f:%l:%c\\,,%-GIn file included from %f:%l:%c,%-GIn file included from %f:%l,%-G%*[ ]from %f:%l:%c,%-G%*[ ]from %f:%l:,%-G%*[ ]from %f:%l\\,,%-G%*[ ]from %f:%l,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,\"%f\"\\, line %l%*\\D%c%*[^ ] %m,%D%*\\a[%*\\d]: Entering directory %*[`']%f',%X%*\\a[%*\\d]: Leaving directory %*[`']%f',%D%*\\a: Entering directory %*[`']%f',%X%*\\a: Leaving directory %*[`']%f',%DMaking %*\\a in %f,%f|%l| %m"
+#define DFLT_EFM	"%*[^\"]\"%f\"%*\\D%l: %m,\"%f\"%*\\D%l: %m,%-Gg%\\?make[%*\\d]: *** [%f:%l:%m,%-Gg%\\?make: *** [%f:%l:%m,%-G%f:%l: (Each undeclared identifier is reported only once,%-G%f:%l: for each function it appears in.),%-GIn file included from %f:%l:%c:,%-GIn file included from %f:%l:%c\\,,%-GIn file included from %f:%l:%c,%-GIn file included from %f:%l,%-G%*[ ]from %f:%l:%c,%-G%*[ ]from %f:%l:,%-G%*[ ]from %f:%l\\,,%-G%*[ ]from %f:%l,%f:%l:%c:%m,%f(%l):%m,%f:%l:%m,\"%f\"\\, line %l%*\\D%c%*[^ ] %m,%D%*\\a[%*\\d]: Entering directory %*[`']%f',%X%*\\a[%*\\d]: Leaving directory %*[`']%f',%D%*\\a: Entering directory %*[`']%f',%X%*\\a: Leaving directory %*[`']%f',%DMaking %*\\a in %f,%f|%l| %m"
 #   endif
 #  endif
 # endif
@@ -230,7 +236,7 @@ typedef enum {
 #define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\\.;"
 
 // characters for p_ww option:
-#define WW_ALL		"bshl<>[],~"
+#define WW_ALL		"bshl<>[]~"
 
 // characters for p_mouse option:
 #define MOUSE_NORMAL	'n'		// use mouse in Normal mode
@@ -268,9 +274,11 @@ typedef enum {
 #define SHM_COMPLETIONSCAN  'C'		// completion scanning messages
 #define SHM_RECORDING	'q'		// short recording message
 #define SHM_FILEINFO	'F'		// no file info messages
-#define SHM_SEARCHCOUNT  'S'		// search stats: '[1/10]'
+#define SHM_SEARCHCOUNT  'S'		// no search stats: '[1/10]'
 #define SHM_POSIX       "AS"		// POSIX value
 #define SHM_ALL		"rmfixlnwaWtToOsAIcCqFS" // all possible flags for 'shm'
+#define SHM_LEN		30		// max length of all flags together
+					// plus a NUL character
 
 // characters for p_go:
 #define GO_TERMINAL	'!'		// use terminal for system commands
@@ -297,7 +305,8 @@ typedef enum {
 #define GO_FOOTER	'F'		// add footer
 #define GO_VERTICAL	'v'		// arrange dialog buttons vertically
 #define GO_KEEPWINSIZE	'k'		// keep GUI window size
-#define GO_ALL		"!aAbcdefFghilmMprtTvk" // all possible flags for 'go'
+// all possible flags for 'go'
+#define GO_ALL		"!aAbcdefFghilLmMpPrRtTvk"
 
 // flags for 'comments' option
 #define COM_NEST	'n'		// comments strings nest
@@ -343,14 +352,16 @@ typedef enum {
 #define STL_ALTPERCENT	'P'		// percentage as TOP BOT ALL or NN%
 #define STL_ARGLISTSTAT	'a'		// argument list status as (x of y)
 #define STL_PAGENUM	'N'		// page number (when printing)
+#define STL_SHOWCMD	'S'		// 'showcmd' buffer
 #define STL_VIM_EXPR	'{'		// start of expression to substitute
-#define STL_MIDDLEMARK	'='		// separation between left and right
+#define STL_SEPARATE	'='		// separation between alignment
+					// sections
 #define STL_TRUNCMARK	'<'		// truncation mark if line is too long
 #define STL_USER_HL	'*'		// highlight from (User)1..9 or 0
 #define STL_HIGHLIGHT	'#'		// highlight name
 #define STL_TABPAGENR	'T'		// tab page label nr
 #define STL_TABCLOSENR	'X'		// tab page close nr
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaN{#")
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaNS{#")
 
 // flags used for parsed 'wildmode'
 #define WIM_FULL	0x01
@@ -596,6 +607,9 @@ EXTERN char_u	*p_fp;		// 'formatprg'
 EXTERN int	p_fs;		// 'fsync'
 #endif
 EXTERN int	p_gd;		// 'gdefault'
+EXTERN char_u	*p_jop;		// 'jumpoptions'
+EXTERN unsigned	jop_flags;	//
+#define JOP_STACK		0x001
 #ifdef FEAT_PROP_POPUP
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_cpp;		// 'completepopup'
@@ -892,6 +906,7 @@ EXTERN int	p_sn;		// 'shortname'
 EXTERN char_u	*p_sbr;		// 'showbreak'
 #endif
 EXTERN int	p_sc;		// 'showcmd'
+EXTERN char_u	*p_sloc;	// 'showcmdloc'
 EXTERN int	p_sft;		// 'showfulltag'
 EXTERN int	p_sm;		// 'showmatch'
 EXTERN int	p_smd;		// 'showmode'

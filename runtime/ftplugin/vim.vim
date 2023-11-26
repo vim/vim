@@ -1,7 +1,8 @@
 " Vim filetype plugin
 " Language:	Vim
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Sep 20
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -84,8 +85,8 @@ if !exists("no_plugin_maps") && !exists("no_vim_maps")
   vnoremap <silent><buffer> ][ m':<C-U>exe "normal! gv"<Bar>call search('^\s*end\(f\%[unction]\\|\(export\s\+\)\?def\)\>', "W")<CR>
 
   " Move around comments
-  nnoremap <silent><buffer> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
-  vnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
+  nnoremap <silent><buffer> ]" :call search('\%(^\s*".*\n\)\@<!\%(^\s*"\)', "W")<CR>
+  vnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\@<!\%(^\s*"\)', "W")<CR>
   nnoremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
   vnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
 endif
@@ -99,18 +100,23 @@ if exists("loaded_matchit")
   "   func name
   " require a parenthesis following, then there can be an "endfunc".
   let b:match_words =
-	\ '\<\%(fu\%[nction]\|def\)!\=\s\+\S\+(:\%(\%(^\||\)\s*\)\@<=\<retu\%[rn]\>:\%(\%(^\||\)\s*\)\@<=\<\%(endf\%[unction]\|enddef\)\>,' .
- 	\ '\<\(wh\%[ile]\|for\)\>:\%(\%(^\||\)\s*\)\@<=\<brea\%[k]\>:\%(\%(^\||\)\s*\)\@<=\<con\%[tinue]\>:\%(\%(^\||\)\s*\)\@<=\<end\(w\%[hile]\|fo\%[r]\)\>,' .
-	\ '\<if\>:\%(\%(^\||\)\s*\)\@<=\<el\%[seif]\>:\%(\%(^\||\)\s*\)\@<=\<en\%[dif]\>,' .
-	\ '{:},' .
-	\ '\<try\>:\%(\%(^\||\)\s*\)\@<=\<cat\%[ch]\>:\%(\%(^\||\)\s*\)\@<=\<fina\%[lly]\>:\%(\%(^\||\)\s*\)\@<=\<endt\%[ry]\>,' .
-	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,'
+	\ '\<\%(fu\%[nction]\|def\)!\=\s\+\S\+\s*(:\%(\%(^\||\)\s*\)\@<=\<retu\%[rn]\>:\%(\%(^\||\)\s*\)\@<=\<\%(endf\%[unction]\|enddef\)\>,' ..
+	\ '\<\%(wh\%[ile]\|for\)\>:\%(\%(^\||\)\s*\)\@<=\<brea\%[k]\>:\%(\%(^\||\)\s*\)\@<=\<con\%[tinue]\>:\%(\%(^\||\)\s*\)\@<=\<end\%(w\%[hile]\|fo\%[r]\)\>,' ..
+	\ '\<if\>:\%(\%(^\||\)\s*\)\@<=\<el\%[seif]\>:\%(\%(^\||\)\s*\)\@<=\<en\%[dif]\>,' ..
+	\ '{:},' ..
+	\ '\<try\>:\%(\%(^\||\)\s*\)\@<=\<cat\%[ch]\>:\%(\%(^\||\)\s*\)\@<=\<fina\%[lly]\>:\%(\%(^\||\)\s*\)\@<=\<endt\%[ry]\>,' ..
+	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,' ..
+	\ '\<class\>:\<endclass\>,' ..
+	\ '\<inte\%[rface]\>:\<endinterface\>,' ..
+	\ '\<enu\%[m]\>:\<endenum\>,'
+
   " Ignore syntax region commands and settings, any 'en*' would clobber
   " if-endif.
   " - set spl=de,en
   " - au! FileType javascript syntax region foldBraces start=/{/ end=/}/ …
-  let b:match_skip = 'synIDattr(synID(line("."),col("."),1),"name")
-        \ =~? "comment\\|string\\|vimLetHereDoc\\|vimSynReg\\|vimSet"'
+  " Also ignore here-doc and dictionary keys (vimVar).
+  let b:match_skip = 'synIDattr(synID(line("."), col("."), 1), "name")
+	\ =~? "comment\\|string\\|vimSynReg\\|vimSet\\|vimLetHereDoc\\|vimVar"'
 endif
 
 let &cpo = s:cpo_save

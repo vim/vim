@@ -41,21 +41,31 @@ PUSH "x\e[74m0\e[73m2\e[m"
   ?screen_cell 0,9  = {0x30} width=1 attrs={S_} fg=rgb(240,240,240) bg=rgb(0,0,0)
   ?screen_cell 0,10 = {0x32} width=1 attrs={S^} fg=rgb(240,240,240) bg=rgb(0,0,0)
 
-!EL sets reverse and colours to end of line
+!EL sets only colours to end of line, not other attrs
 PUSH "\e[H\e[7;33;44m\e[K"
-  ?screen_cell 0,0  = {} width=1 attrs={R} fg=idx(3) bg=idx(4)
-  ?screen_cell 0,79 = {} width=1 attrs={R} fg=idx(3) bg=idx(4)
-
-!DECSCNM xors reverse for entire screen
-PUSH "\e[?5h"
   ?screen_cell 0,0  = {} width=1 attrs={} fg=idx(3) bg=idx(4)
   ?screen_cell 0,79 = {} width=1 attrs={} fg=idx(3) bg=idx(4)
+
+!DECSCNM xors reverse for entire screen
+PUSH "R\e[?5h"
+  ?screen_cell 0,0  = {0x52} width=1 attrs={} fg=idx(3) bg=idx(4)
   ?screen_cell 1,0  = {} width=1 attrs={R} fg=rgb(240,240,240) bg=rgb(0,0,0)
 PUSH "\e[?5\$p"
   output "\e[?5;1\$y"
 PUSH "\e[?5l"
-  ?screen_cell 0,0  = {} width=1 attrs={R} fg=idx(3) bg=idx(4)
-  ?screen_cell 0,79 = {} width=1 attrs={R} fg=idx(3) bg=idx(4)
+  ?screen_cell 0,0  = {0x52} width=1 attrs={R} fg=idx(3) bg=idx(4)
   ?screen_cell 1,0  = {} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
 PUSH "\e[?5\$p"
   output "\e[?5;2\$y"
+
+!Set default colours
+RESET
+PUSH "ABC\e[31mDEF\e[m"
+  ?screen_cell 0,0  = {0x41} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
+  ?screen_cell 0,3  = {0x44} width=1 attrs={} fg=idx(1) bg=rgb(0,0,0)
+SETDEFAULTCOL rgb(252,253,254)
+  ?screen_cell 0,0  = {0x41} width=1 attrs={} fg=rgb(252,253,254) bg=rgb(0,0,0)
+  ?screen_cell 0,3  = {0x44} width=1 attrs={} fg=idx(1) bg=rgb(0,0,0)
+SETDEFAULTCOL rgb(250,250,250) rgb(10,20,30)
+  ?screen_cell 0,0  = {0x41} width=1 attrs={} fg=rgb(250,250,250) bg=rgb(10,20,30)
+  ?screen_cell 0,3  = {0x44} width=1 attrs={} fg=idx(1) bg=rgb(10,20,30)

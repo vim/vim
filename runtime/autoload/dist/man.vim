@@ -1,9 +1,9 @@
 " Vim filetype plugin autoload file
 " Language:	man
-" Maintainer:	Jason Franklin <vim@justemail.net>
+" Maintainer:	Jason Franklin <jason@oneway.dev>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
-" Last Change: 	2022 Jun 18
+" Last Change: 	2023 Jun 28
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -21,31 +21,65 @@ catch /E145:/
   " Ignore the error in restricted mode
 endtry
 
+func s:ParseIntoPageAndSection()
+  " Accommodate a reference that terminates in a hyphen.
+  "
+  " See init_charset_table() at
+  " https://git.savannah.gnu.org/cgit/groff.git/tree/src/roff/troff/input.cpp?h=1.22.4#n6794
+  "
+  " See can_break_after() at
+  " https://git.savannah.gnu.org/cgit/groff.git/tree/src/roff/troff/charinfo.h?h=1.22.4#n140
+  "
+  " Assumptions and limitations:
+  " 1) Manual-page references (in consequence of command-related filenames)
+  "    do not contain non-ASCII HYPHENs (0x2010), any terminating HYPHEN
+  "    must have been introduced to mark division of a word at the end of
+  "    a line and can be discarded; whereas similar references may contain
+  "    ASCII HYPHEN-MINUSes (0x002d) and any terminating HYPHEN-MINUS forms
+  "    a compound word in addition to marking word division.
+  " 2) Well-formed manual-page references always have a section suffix, e.g.
+  "    "git-commit(1)", therefore suspended hyphenated compounds are not
+  "    determined, e.g.     [V] (With cursor at _git-merge-_ below...)
+  "    ".................... git-merge- and git-merge-base. (See git-cherry-
+  "    pick(1) and git-cherry(1).)" (... look up "git-merge-pick(1)".)
+  "
+  " Note that EM DASH (0x2014), a third stooge from init_charset_table(),
+  " neither connects nor divides parts of a word.
+  let str = expand("<cWORD>")
+
+  if str =~ '\%u2010$'	" HYPHEN (-1).
+    let str = strpart(str, 0, strridx(str, "\u2010"))
+
+    " Append the leftmost WORD (or an empty string) from the line below.
+    let str .= get(split(get(getbufline(bufnr('%'), line('.') + 1), 0, '')), 0, '')
+  elseif str =~ '-$'	" HYPHEN-MINUS.
+    " Append the leftmost WORD (or an empty string) from the line below.
+    let str .= get(split(get(getbufline(bufnr('%'), line('.') + 1), 0, '')), 0, '')
+  endif
+
+  " According to man(1), section name formats vary (MANSECT):
+  " 1 n l 8 3 2 3posix 3pm 3perl 3am 5 4 9 6 7
+  let parts = matchlist(str, '\(\k\+\)(\(\k\+\))')
+  return (len(parts) > 2)
+	  \ ? {'page': parts[1], 'section': parts[2]}
+	  \ : {'page': matchstr(str, '\k\+'), 'section': ''}
+endfunc
+
 func dist#man#PreGetPage(cnt)
   if a:cnt == 0
-    let old_isk = &iskeyword
-    if &ft == 'man'
-      setl iskeyword+=(,)
-    endif
-    let str = expand("<cword>")
-    let &l:iskeyword = old_isk
-    let page = substitute(str, '(*\(\k\+\).*', '\1', '')
-    let sect = substitute(str, '\(\k\+\)(\([^()]*\)).*', '\2', '')
-    if match(sect, '^[0-9 ]\+$') == -1
-      let sect = ""
-    endif
-    if sect == page
-      let sect = ""
-    endif
+    let what = s:ParseIntoPageAndSection()
+    let sect = what.section
+    let page = what.page
   else
+    let what = s:ParseIntoPageAndSection()
     let sect = a:cnt
-    let page = expand("<cword>")
+    let page = what.page
   endif
+
   call dist#man#GetPage('', sect, page)
 endfunc
 
 func s:GetCmdArg(sect, page)
-
   if empty(a:sect)
     return shellescape(a:page)
   endif
@@ -75,9 +109,11 @@ func dist#man#GetPage(cmdmods, ...)
     return
   endif
 
-  " To support:	    nmap K :Man <cword>
-  if page == '<cword>'
-    let page = expand('<cword>')
+  " To support:	    nmap K :Man <cWORD><CR>
+  if page ==? '<cword>'
+    let what = s:ParseIntoPageAndSection()
+    let sect = what.section
+    let page = what.page
   endif
 
   if !exists('g:ft_man_no_sect_fallback') || (g:ft_man_no_sect_fallback == 0)
@@ -154,8 +190,13 @@ func dist#man#GetPage(cmdmods, ...)
   endif
   let env_cmd = s:env_has_u ? 'env -u MANPAGER' : 'env MANPAGER=cat'
   let env_cmd .= ' GROFF_NO_SGR=1'
-  let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page) . ' | col -b'
+  let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page)
+
   silent exec "r !" . man_cmd
+
+  " Emulate piping the buffer through the "col -b" command.
+  " Ref: https://github.com/vim/vim/issues/12301
+  exe 'silent! keepjumps keeppatterns %s/\v(.)\b\ze\1?//e' .. (&gdefault ? '' : 'g')
 
   if unsetwidth
     let $MANWIDTH = ''
@@ -180,9 +221,10 @@ func dist#man#PopPage()
     exec "let s:man_tag_buf=s:man_tag_buf_".s:man_tag_depth
     exec "let s:man_tag_lin=s:man_tag_lin_".s:man_tag_depth
     exec "let s:man_tag_col=s:man_tag_col_".s:man_tag_depth
+
     exec s:man_tag_buf."b"
-    exec s:man_tag_lin
-    exec "norm! ".s:man_tag_col."|"
+    call cursor(s:man_tag_lin, s:man_tag_col)
+
     exec "unlet s:man_tag_buf_".s:man_tag_depth
     exec "unlet s:man_tag_lin_".s:man_tag_depth
     exec "unlet s:man_tag_col_".s:man_tag_depth

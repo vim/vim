@@ -1,10 +1,11 @@
 " Vim syntax file
 " Language:	Model
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 20
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " very basic things only (based on the vgrindefs file).
-" If you use this language, please improve it, and send me the patches!
+" If you use this language, please improve it, and send patches!
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")

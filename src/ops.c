@@ -17,6 +17,9 @@
 static void shift_block(oparg_T *oap, int amount);
 static void	mb_adjust_opend(oparg_T *oap);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
+static void	pbyte(pos_T lp, int c);
+#define PBYTE(lp, c) pbyte(lp, c)
+
 
 // Flags for third item in "opchars".
 #define OPF_LINES  1	// operator always works on lines
@@ -226,11 +229,11 @@ shift_line(
     int	amount,
     int call_changed_bytes)	// call changed_bytes()
 {
-    int		count;
+    long long	count;
     int		i, j;
-    int		sw_val = (int)get_sw_value_indent(curbuf);
+    int		sw_val = trim_to_int(get_sw_value_indent(curbuf));
 
-    count = get_indent();	// get current indent
+    count = (long long)get_indent();	// get current indent
 
     if (round)			// round off indent
     {
@@ -246,25 +249,25 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = i * sw_val;
+	count = (long long)i * (long long)sw_val;
     }
     else		// original vi indent
     {
 	if (left)
 	{
-	    count -= sw_val * amount;
+	    count -= (long long)sw_val * (long long)amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	    count += sw_val * amount;
+	    count += (long long)sw_val * (long long)amount;
     }
 
     // Set new indent
     if (State & VREPLACE_FLAG)
-	change_indent(INDENT_SET, count, FALSE, NUL, call_changed_bytes);
+	change_indent(INDENT_SET, trim_to_int(count), FALSE, NUL, call_changed_bytes);
     else
-	(void)set_indent(count, call_changed_bytes ? SIN_CHANGED : 0);
+	(void)set_indent(trim_to_int(count), call_changed_bytes ? SIN_CHANGED : 0);
 }
 
 /*
@@ -989,11 +992,11 @@ mb_adjust_opend(oparg_T *oap)
 {
     char_u	*p;
 
-    if (oap->inclusive)
-    {
-	p = ml_get(oap->end.lnum);
-	oap->end.col += mb_tail_off(p, p + oap->end.col);
-    }
+    if (!oap->inclusive)
+	return;
+
+    p = ml_get(oap->end.lnum);
+    oap->end.col += mb_tail_off(p, p + oap->end.col);
 }
 
 /*
@@ -1869,22 +1872,23 @@ adjust_cursor_eol(void)
 {
     unsigned int cur_ve_flags = get_ve_flags();
 
-    if (curwin->w_cursor.col > 0
-	    && gchar_cursor() == NUL
-	    && (cur_ve_flags & VE_ONEMORE) == 0
-	    && !(restart_edit || (State & MODE_INSERT)))
+    int adj_cursor = (curwin->w_cursor.col > 0
+				&& gchar_cursor() == NUL
+				&& (cur_ve_flags & VE_ONEMORE) == 0
+				&& !(restart_edit || (State & MODE_INSERT)));
+    if (!adj_cursor)
+	return;
+
+    // Put the cursor on the last character in the line.
+    dec_cursor();
+
+    if (cur_ve_flags == VE_ALL)
     {
-	// Put the cursor on the last character in the line.
-	dec_cursor();
+	colnr_T	    scol, ecol;
 
-	if (cur_ve_flags == VE_ALL)
-	{
-	    colnr_T	    scol, ecol;
-
-	    // Coladd is set to the width of the last character.
-	    getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
-	    curwin->w_cursor.coladd = ecol - scol + 1;
-	}
+	// Coladd is set to the width of the last character.
+	getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
+	curwin->w_cursor.coladd = ecol - scol + 1;
     }
 }
 
@@ -2235,12 +2239,12 @@ reset_lbr(void)
     static void
 restore_lbr(int lbr_saved)
 {
-    if (!curwin->w_p_lbr && lbr_saved)
-    {
-	// changing 'linebreak' may require w_virtcol to be updated
-	curwin->w_p_lbr = TRUE;
-	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-    }
+    if (curwin->w_p_lbr || !lbr_saved)
+	return;
+
+    // changing 'linebreak' may require w_virtcol to be updated
+    curwin->w_p_lbr = TRUE;
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 }
 #endif
 
@@ -2780,11 +2784,12 @@ do_addsub(
 		    ? (int)STRLEN(ptr) - col
 		    : length);
 
+	int overflow = FALSE;
 	vim_str2nr(ptr + col, &pre, &length,
 		0 + (do_bin ? STR2NR_BIN : 0)
 		    + (do_oct ? STR2NR_OCT : 0)
 		    + (do_hex ? STR2NR_HEX : 0),
-		NULL, &n, maxlen, FALSE);
+		NULL, &n, maxlen, FALSE, &overflow);
 
 	// ignore leading '-' for hex and octal and bin numbers
 	if (pre && negative)
@@ -2801,10 +2806,14 @@ do_addsub(
 	    subtract ^= TRUE;
 
 	oldn = n;
-	if (subtract)
-	    n -= (uvarnumber_T)Prenum1;
-	else
-	    n += (uvarnumber_T)Prenum1;
+	if (!overflow)  // if number is too big don't add/subtract
+	{
+	    if (subtract)
+		n -= (uvarnumber_T)Prenum1;
+	    else
+		n += (uvarnumber_T)Prenum1;
+	}
+
 	// handle wraparound for decimal numbers
 	if (!pre)
 	{
@@ -2913,7 +2922,7 @@ do_addsub(
 	    for (bit = bits; bit > 0; bit--)
 		if ((n >> (bit - 1)) & 0x1) break;
 
-	    for (i = 0; bit > 0; bit--)
+	    for (i = 0; bit > 0 && i < (NUMBUFLEN - 1); bit--)
 		buf2[i++] = ((n >> (bit - 1)) & 0x1) ? '1' : '0';
 
 	    buf2[i] = '\0';
@@ -3404,10 +3413,13 @@ static callback_T opfunc_cb;
  * Process the 'operatorfunc' option value.
  * Returns OK or FAIL.
  */
-    int
-set_operatorfunc_option(void)
+    char *
+did_set_operatorfunc(optset_T *args UNUSED)
 {
-    return option_set_callback_func(p_opfunc, &opfunc_cb);
+    if (option_set_callback_func(p_opfunc, &opfunc_cb) == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -3692,7 +3704,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    ResetRedobuff();
 		else
 		{
-		    AppendToRedobuffLit(repeat_cmdline, -1);
+		    if (cap->cmdchar == ':')
+			AppendToRedobuffLit(repeat_cmdline, -1);
+		    else
+			AppendToRedobuffSpec(repeat_cmdline);
 		    AppendToRedobuff(NL_STR);
 		    VIM_CLEAR(repeat_cmdline);
 		}
@@ -4119,6 +4134,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
+		// trigger TextChangedI
+		curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
+
 		if (op_change(oap))	// will call edit()
 		    cap->retval |= CA_COMMAND_BUSY;
 		if (restart_edit == 0)
@@ -4229,6 +4247,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
+		// trigger TextChangedI
+		curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
+
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
 		// Reset linebreak, so that formatting works correctly.
@@ -4336,4 +4357,19 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
     restore_lbr(lbr_saved);
 #endif
+}
+
+// put byte 'c' at position 'lp', but
+// verify, that the position to place
+// is actually safe
+    static void
+pbyte(pos_T lp, int c)
+{
+    char_u *p = ml_get_buf(curbuf, lp.lnum, TRUE);
+    int	len = curbuf->b_ml.ml_line_len;
+
+    // safety check
+    if (lp.col >= len)
+	lp.col = (len > 1 ? len - 2 : 0);
+    *(p + lp.col) = c;
 }

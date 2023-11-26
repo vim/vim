@@ -166,6 +166,39 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+def Test_listing_function_error()
+  var lines =<< trim END
+      var filler = 123
+      func DoesNotExist
+  END
+  v9.CheckDefExecFailure(lines, 'E123:', 2)
+enddef
+
+def Test_break_in_skipped_block()
+  var lines =<< trim END
+      vim9script
+
+      def FixStackFrame(): string
+          for _ in [2]
+              var path = 'xxx'
+              if !!path
+                  if false
+                      break
+                  else
+                      return 'foo'
+                  endif
+              endif
+          endfor
+          return 'xxx'
+      enddef
+
+      disas FixStackFrame
+
+      FixStackFrame()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_autoload_name_mismatch()
   var dir = 'Xnamedir/autoload'
   mkdir(dir, 'pR')
@@ -426,6 +459,16 @@ def Test_check_argument_type()
       Func()
   END
   v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got bool', 2)
+
+  lines =<< trim END
+      vim9script
+
+      def Foobar(Fn: func(any, ?string): any)
+      enddef
+
+      Foobar((t) => 0)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_missing_return()
@@ -453,6 +496,19 @@ def Test_missing_return()
                    'enddef'], 'E1095:')
 enddef
 
+def Test_not_missing_return()
+  var lines =<< trim END
+      def Funky(): number
+        if false
+          return 0
+        endif
+        throw 'Error'
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_return_bool()
   var lines =<< trim END
       vim9script
@@ -463,6 +519,17 @@ def Test_return_bool()
         return popup_filter_yesno(id, key)
       enddef
       defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_return_void_comment_follows()
+  var lines =<< trim END
+    vim9script
+    def ReturnCommentFollows(): void
+      return # Some comment
+    enddef
+    defcompile
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -586,7 +653,7 @@ def Test_call_ufunc_failure()
       defcompile
 
       func! g:Global(a, b)
-        echo a:a a:b 
+        echo a:a a:b
       endfunc
       Tryit()
   END
@@ -702,6 +769,75 @@ def Test_call_default_args()
       enddef
       g:str = 'works'
       Func()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_using_vnone_default()
+  var lines =<< trim END
+      vim9script
+
+      def F(a: string = v:none)
+         if a isnot v:none
+            var b = a
+         endif
+      enddef
+      F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      export def Floats(x: float, y = 2.0, z = 5.0)
+        g:result = printf("%.2f %.2f %.2f", x, y, z)
+      enddef
+  END
+  writefile(lines, 'Xlib.vim', 'D')
+
+  # test using a function reference in script-local variable
+  lines =<< trim END
+      vim9script
+
+      import './Xlib.vim'
+      const Floatfunc = Xlib.Floats
+      Floatfunc(1.0, v:none, 3.0)
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('1.00 2.00 3.00', g:result)
+  unlet g:result
+
+  # test calling the imported function
+  lines =<< trim END
+      vim9script
+
+      import './Xlib.vim'
+      Xlib.Floats(1.0, v:none, 3.0)
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('1.00 2.00 3.00', g:result)
+  unlet g:result
+
+  # TODO: this should give an error for using a missing argument
+  # lines =<< trim END
+  #    vim9script
+
+  #    def F(a: string = v:none)
+  #       var b = a
+  #    enddef
+  #    F()
+  # END
+  # v9.CheckScriptFailure(lines, 'E99:')
+enddef
+
+def Test_convert_number_to_float()
+  var lines =<< trim END
+      vim9script
+      def  Foo(a: float, b: float): float
+         return a + b
+      enddef
+
+      assert_equal(5.3, Foo(3.3, 2))
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -1848,6 +1984,20 @@ def Test_call_varargs_only()
   v9.CheckDefFailure(['g:MyVarargsOnly("one", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number')
 enddef
 
+def Test_varargs_mismatch()
+  var lines =<< trim END
+      vim9script
+
+      def Map(Fn: func(...any): number): number
+        return Fn('12')
+      enddef
+
+      var res = Map((v) => str2nr(v))
+      assert_equal(12, res)
+  END
+  v9.CheckScriptFailure(lines, 'E1180: Variable arguments type must be a list: any')
+enddef
+
 def Test_using_var_as_arg()
   var lines =<< trim END
       def Func(x: number)
@@ -2103,7 +2253,7 @@ def Test_nested_function_with_args_split()
         )
         # had a double free if the right parenthesis of the nested function is
         # on the next line
-         
+
         enddef|BBBB
       enddef
       # Compile all functions
@@ -2128,8 +2278,8 @@ def Test_error_in_function_args()
         def SecondFunction(J  =
         # Nois
         # one
-         
-         enddef|BBBB
+
+        enddef|BBBB
       enddef
       # Compile all functions
       defcompile
@@ -2614,7 +2764,7 @@ def Test_func_type_fails()
   v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = g:FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
   v9.CheckDefFailure(['var Ref1: func(bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
   v9.CheckDefFailure(['var Ref1: func(?bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
-  v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
+  v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1180: Variable arguments type must be a list: bool')
 
   v9.CheckDefFailure(['var RefWrong: func(string ,number)'], 'E1068:')
   v9.CheckDefFailure(['var RefWrong: func(string,number)'], 'E1069:')
@@ -3513,6 +3663,17 @@ def Test_partial_call()
       const Call = Foo(Expr)
   END
   v9.CheckScriptFailure(lines, 'E1031:')
+
+  # Test for calling a partial that takes a single argument.
+  # This used to produce a "E340: Internal error" message.
+  lines =<< trim END
+      def Foo(n: number): number
+        return n * 2
+      enddef
+      var Fn = function(Foo, [10])
+      assert_equal(20, Fn())
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_partial_double_nested()
@@ -4256,6 +4417,32 @@ func Test_lambda_allocation_failure()
   bw!
 endfunc
 
+def Test_lambda_argument_type_check()
+  var lines =<< trim END
+      vim9script
+
+      def Scan(ll: list<any>): func(func(any))
+        return (Emit: func(any)) => {
+          for e in ll
+            Emit(e)
+          endfor
+        }
+      enddef
+
+      def Sum(Cont: func(func(any))): any
+        var sum = 0.0
+        Cont((v: float) => {  # <== NOTE: the lambda expects a float
+          sum += v
+        })
+        return sum
+      enddef
+
+      const ml = [3.0, 2, '7']
+      echo Scan(ml)->Sum()
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected float but got string')
+enddef
+
 def Test_multiple_funcref()
   # This was using a NULL pointer
   var lines =<< trim END
@@ -4364,6 +4551,48 @@ def Test_invalid_redir()
   END
   v9.CheckScriptFailure(lines, 'E354:')
   delfunc g:Ttwo
+enddef
+
+func Test_keytyped_in_nested_function()
+  CheckRunVimInTerminal
+
+  call Run_Test_keytyped_in_nested_function()
+endfunc
+
+def Run_Test_keytyped_in_nested_function()
+  var lines =<< trim END
+      vim9script
+      autocmd CmdlineEnter * sample#Init()
+
+      exe 'set rtp=' .. getcwd() .. '/Xrtpdir'
+  END
+  writefile(lines, 'Xkeytyped', 'D')
+
+  var dir = 'Xrtpdir/autoload'
+  mkdir(dir, 'pR')
+
+  lines =<< trim END
+      vim9script
+      export def Init(): void
+         cnoremap <expr>" <SID>Quote('"')
+      enddef
+      def Quote(str: string): string
+         def InPair(): number
+            return 0
+         enddef
+         return str
+      enddef
+  END
+  writefile(lines, dir .. '/sample.vim')
+
+  var buf = g:RunVimInTerminal('-S Xkeytyped', {rows: 6})
+
+  term_sendkeys(buf, ':"')
+  g:VerifyScreenDump(buf, 'Test_keytyped_in_nested_func', {})
+
+  # clean up
+  term_sendkeys(buf, "\<Esc>")
+  g:StopVimInTerminal(buf)
 enddef
 
 " The following messes up syntax highlight, keep near the end.

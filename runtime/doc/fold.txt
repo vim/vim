@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 9.0.  Last change: 2022 Oct 01
+*fold.txt*      For Vim version 9.0.  Last change: 2023 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -202,7 +202,7 @@ non-matching marker pairs.  Example: >
 
 	/* funcB() {{{2 */
 	void funcB() {}
-
+<							*{{{* *}}}*
 A fold starts at a "{{{" marker.  The following number specifies the fold
 level.  What happens depends on the difference between the current fold level
 and the level given by the marker:
@@ -353,7 +353,8 @@ zC		Close all folds under the cursor recursively.  Folds that
 		'foldenable' will be set.
 
 							*za*
-za		When on a closed fold: open it.  When folds are nested, you
+za		Summary: Toggle the fold under the cursor.
+		When on a closed fold: open it.  When folds are nested, you
 		may have to use "za" several times.  When a count is given,
 		that many closed folds are opened.
 		When on an open fold: close it and set 'foldenable'.  This
@@ -597,6 +598,11 @@ line is folded, it cannot be displayed there.
 
 Many movement commands handle a sequence of folded lines like an empty line.
 For example, the "w" command stops once in the first column.
+
+When starting a search in a closed fold it will not find a match in the
+current fold.  It's like a forward search always starts from the end of the
+closed fold, while a backwards search starts from the start of the closed
+fold.
 
 When in Insert mode, the cursor line is never folded.  That allows you to see
 what you type!

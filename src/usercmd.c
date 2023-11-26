@@ -86,6 +86,7 @@ static struct
 #endif
     {EXPAND_SETTINGS, "option"},
     {EXPAND_PACKADD, "packadd"},
+    {EXPAND_RUNTIME, "runtime"},
     {EXPAND_SHELLCMD, "shellcmd"},
 #if defined(FEAT_SIGNS)
     {EXPAND_SIGN, "sign"},
@@ -479,6 +480,11 @@ cmdcomplete_type_to_str(int expand)
 cmdcomplete_str_to_type(char_u *complete_str)
 {
     int i;
+
+    if (STRNCMP(complete_str, "custom,", 7) == 0)
+	return EXPAND_USER_DEFINED;
+    if (STRNCMP(complete_str, "customlist,", 11) == 0)
+	return EXPAND_USER_LIST;
 
     for (i = 0; command_complete[i].expand != 0; ++i)
 	if (STRCMP(complete_str, command_complete[i].name) == 0)
@@ -989,7 +995,7 @@ uc_add_command(
     char_u	*rep_buf = NULL;
     garray_T	*gap;
 
-    replace_termcodes(rep, &rep_buf, 0, NULL);
+    replace_termcodes(rep, &rep_buf, 0, 0, NULL);
     if (rep_buf == NULL)
     {
 	// can't replace termcodes - try using the string as is
@@ -1057,7 +1063,7 @@ uc_add_command(
     // Extend the array unless we're replacing an existing command
     if (cmp != 0)
     {
-	if (ga_grow(gap, 1) != OK)
+	if (ga_grow(gap, 1) == FAIL)
 	    goto fail;
 	if ((p = vim_strnsave(name, name_len)) == NULL)
 	    goto fail;
@@ -1167,7 +1173,7 @@ ex_command(exarg_T *eap)
 	end = skiptowhite(p);
 	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl,
 					   &compl_arg, &addr_type_arg) == FAIL)
-	    return;
+	    goto theend;
 	p = skipwhite(end);
     }
 
@@ -1179,7 +1185,7 @@ ex_command(exarg_T *eap)
     if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
 	emsg(_(e_invalid_command_name));
-	return;
+	goto theend;
     }
     end = p;
     name_len = (int)(end - name);
@@ -1188,13 +1194,19 @@ ex_command(exarg_T *eap)
     // we are listing commands
     p = skipwhite(end);
     if (!has_attr && ends_excmd2(eap->arg, p))
+    {
 	uc_list(name, end - name);
+    }
     else if (!ASCII_ISUPPER(*name))
+    {
 	emsg(_(e_user_defined_commands_must_start_with_an_uppercase_letter));
+    }
     else if ((name_len == 1 && *name == 'X')
 	  || (name_len <= 4
 		  && STRNCMP(name, "Next", name_len > 4 ? 4 : name_len) == 0))
+    {
 	emsg(_(e_reserved_name_cannot_be_used_for_user_defined_command));
+    }
     else if (compl > 0 && (argt & EX_EXTRA) == 0)
     {
 	// Some plugins rely on silently ignoring the mistake, only make this
@@ -1215,7 +1227,12 @@ ex_command(exarg_T *eap)
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
 						  addr_type_arg, eap->forceit);
 	vim_free(tofree);
+
+	return;  // success
     }
+
+theend:
+    vim_free(compl_arg);
 }
 
 /*
@@ -1826,7 +1843,7 @@ do_ucmd(exarg_T *eap)
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
     else
-	cmd = USER_CMD_GA(&curbuf->b_ucmds, eap->useridx);
+	cmd = USER_CMD_GA(&prevwin_curwin()->w_buffer->b_ucmds, eap->useridx);
 
     /*
      * Replace <> in the command by the arguments.

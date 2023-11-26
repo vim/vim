@@ -25,7 +25,7 @@ func Test_equal()
   call assert_fails('echo base.method > instance.method')
   call assert_equal(0, test_null_function() == function('min'))
   call assert_equal(1, test_null_function() == test_null_function())
-  call assert_fails('eval 10 == test_unknown()', 'E685:')
+  call assert_fails('eval 10 == test_unknown()', ['E340:', 'E685:'])
 endfunc
 
 func Test_version()
@@ -86,6 +86,21 @@ func Test_op_falsy()
       call assert_equal(456, [] ?? 456)
       call assert_equal(456, {} ?? 456)
       call assert_equal(456, 0.0 ?? 456)
+
+      call assert_equal(456, v:null ?? 456)
+      call assert_equal(456, v:none ?? 456)
+      call assert_equal(456, test_null_string() ?? 456)
+      call assert_equal(456, test_null_blob() ?? 456)
+      call assert_equal(456, test_null_list() ?? 456)
+      call assert_equal(456, test_null_dict() ?? 456)
+      call assert_equal(456, test_null_function() ?? 456)
+      call assert_equal(456, test_null_partial() ?? 456)
+      if has('job')
+        call assert_equal(456, test_null_job() ?? 456)
+      endif
+      if has('channel')
+        call assert_equal(456, test_null_channel() ?? 456)
+      endif
   END
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
@@ -145,6 +160,9 @@ func Test_strcharpart()
       call assert_equal('edit', "editor"[-10 : 3])
   END
   call v9.CheckLegacyAndVim9Success(lines)
+
+  call assert_fails('call strcharpart("", 0, 0, {})', ['E728:', 'E728:'])
+  call assert_fails('call strcharpart("", 0, 0, -1)', ['E1023:', 'E1023:'])
 endfunc
 
 func Test_getreg_empty_list()
@@ -273,6 +291,8 @@ func Test_printf_misc()
   let lines =<< trim END
       call assert_equal('123', printf('123'))
 
+      call assert_equal('', printf('%'))
+      call assert_equal('', printf('%.0d', 0))
       call assert_equal('123', printf('%d', 123))
       call assert_equal('123', printf('%i', 123))
       call assert_equal('123', printf('%D', 123))
@@ -458,6 +478,9 @@ func Test_printf_misc()
   call v9.CheckLegacyAndVim9Success(lines)
 
   call v9.CheckLegacyAndVim9Failure(["call printf('123', 3)"], "E767:")
+
+  " this was using uninitialized memory
+  call v9.CheckLegacyAndVim9Failure(["eval ''->printf()"], "E119:")
 endfunc
 
 func Test_printf_float()
@@ -1018,6 +1041,50 @@ func Test_bitwise_shift()
      assert_equal(16, a)
   END
   call v9.CheckDefAndScriptSuccess(lines)
+
+  let lines =<< trim END
+    # Use in a lambda function
+    const DivBy2Ref_A = (n: number): number => n >> 1
+    assert_equal(16, DivBy2Ref_A(32))
+    const DivBy2Ref_B = (n: number): number => (<number>n) >> 1
+    assert_equal(16, DivBy2Ref_B(32))
+    const MultBy2Ref_A = (n: number): number => n << 1
+    assert_equal(8, MultBy2Ref_A(4))
+    const MultBy2Ref_B = (n: number): number => (<number>n) << 1
+    assert_equal(8, MultBy2Ref_B(4))
+
+    def DivBy2_A(): func(number): number
+      return (n: number): number => n >> 1
+    enddef
+    assert_equal(16, DivBy2_A()(32))
+    def DivBy2_B(): func(number): number
+      return (n: number): number => (<number>n) >> 1
+    enddef
+    assert_equal(16, DivBy2_B()(32))
+    def MultBy2_A(): func(number): number
+      return (n: number): number => n << 1
+    enddef
+    assert_equal(64, MultBy2_A()(32))
+    def MultBy2_B(): func(number): number
+      return (n: number): number => (<number>n) << 1
+    enddef
+    assert_equal(64, MultBy2_B()(32))
+  END
+  call v9.CheckDefAndScriptSuccess(lines)
+
+  " Use in a legacy lambda function
+  const DivBy2Ref_A = {n -> n >> 1}
+  call assert_equal(16, DivBy2Ref_A(32))
+  func DivBy2_A()
+    return {n -> n >> 1}
+  endfunc
+  call assert_equal(16, DivBy2_A()(32))
+  const MultBy2Ref_A = {n -> n << 1}
+  call assert_equal(64, MultBy2Ref_A(32))
+  func MultBy2_A()
+    return {n -> n << 1}
+  endfunc
+  call assert_equal(64, MultBy2_A()(32))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

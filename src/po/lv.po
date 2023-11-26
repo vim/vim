@@ -215,7 +215,7 @@ msgstr "E298: Neizdevās iegūt bloku nr 2?"
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Neizdevās iegūt bloku 0??"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Messages maintainer: Valdis Vitolins <valdis.vitolins@odo.lv>"
 
 msgid "Keys don't match!"

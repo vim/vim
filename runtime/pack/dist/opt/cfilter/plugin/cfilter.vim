@@ -1,7 +1,7 @@
 vim9script
 
 # cfilter.vim: Plugin to filter entries from a quickfix/location list
-# Last Change: Jun 30, 2022
+# Last Change: August 16, 2023
 # Maintainer: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
 # Version: 2.0
 #
@@ -31,11 +31,11 @@ def Qf_filter(qf: bool, searchpat: string, bang: string)
   if qf
     Xgetlist = function('getqflist')
     Xsetlist = function('setqflist')
-    cmd = ':Cfilter' .. bang
+    cmd = $':Cfilter{bang}'
   else
     Xgetlist = function('getloclist', [0])
     Xsetlist = function('setloclist', [0])
-    cmd = ':Lfilter' .. bang
+    cmd = $':Lfilter{bang}'
   endif
 
   firstchar = searchpat[0]
@@ -62,7 +62,7 @@ def Qf_filter(qf: bool, searchpat: string, bang: string)
   endif
 
   items = filter(Xgetlist(), Cond)
-  title = cmd .. ' /' .. pat .. '/'
+  title = $'{cmd} /{pat}/'
   Xsetlist([], ' ', {title: title, items: items})
 enddef
 

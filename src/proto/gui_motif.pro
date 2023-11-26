@@ -32,8 +32,6 @@ void gui_mch_set_scrollbar_colors(scrollbar_T *sb);
 Window gui_x11_get_wid(void);
 char_u *gui_mch_browse(int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter);
 int gui_mch_dialog(int type, char_u *title, char_u *message, char_u *button_names, int dfltbutton, char_u *textfield, int ex_cmd);
-void gui_mch_enable_footer(int showit);
-void gui_mch_set_footer(char_u *s);
 void gui_mch_show_toolbar(int showit);
 int gui_mch_compute_toolbar_height(void);
 void motif_get_toolbar_colors(Pixel *bgp, Pixel *fgp, Pixel *bsp, Pixel *tsp, Pixel *hsp);

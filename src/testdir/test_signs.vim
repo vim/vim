@@ -194,6 +194,11 @@ func Test_sign()
   sign undefine Sign3
   call assert_fails("sign place 41 line=3 name=Sign1 buffer=" .
 			  \ bufnr('%'), 'E155:')
+
+  " Defining a sign without attributes is allowed.
+  sign define Sign1
+  call assert_equal([{'name': 'Sign1'}], sign_getdefined())
+  sign undefine Sign1
 endfunc
 
 func Test_sign_many_bytes()
@@ -1658,7 +1663,7 @@ func Test_sign_lnum_adjust()
 
   " Break the undo. Otherwise the undo operation below will undo all the
   " changes made by this function.
-  let &undolevels=&undolevels
+  let &g:undolevels=&g:undolevels
 
   " Delete the line with the sign
   call deletebufline('', 4)
@@ -1671,7 +1676,7 @@ func Test_sign_lnum_adjust()
   call assert_equal(5, l[0].signs[0].lnum)
 
   " Break the undo
-  let &undolevels=&undolevels
+  let &g:undolevels=&g:undolevels
 
   " Delete few lines at the end of the buffer including the line with the sign
   " Sign line number should not change (as it is placed outside of the buffer)
@@ -1775,10 +1780,10 @@ func Test_sign_cursor_position()
   let lines =<< trim END
 	call setline(1, [repeat('x', 75), 'mmmm', 'yyyy'])
 	call cursor(2,1)
-   	sign define s1 texthl=Search text==>
-   	sign define s2 linehl=Pmenu
+	sign define s1 texthl=Search text==>
+	sign define s2 linehl=Pmenu
 	redraw
-   	sign place 10 line=2 name=s1
+	sign place 10 line=2 name=s1
   END
   call writefile(lines, 'XtestSigncolumn', 'D')
   let buf = RunVimInTerminal('-S XtestSigncolumn', {'rows': 6})
@@ -1805,10 +1810,16 @@ func Test_sign_cursor_position()
   call term_sendkeys(buf, "2G")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_sign_cursor_5', {})
+  call term_sendkeys(buf, ":set cursorlineopt=number,screenline\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_5', {})
 
   " sign highlighting overrules 'cursorline'
   call term_sendkeys(buf, ":sign unplace 12\<CR>")
   call term_sendkeys(buf, ":sign place 13 line=2 priority=100 name=s2\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_6', {})
+  call term_sendkeys(buf, ":set cursorlineopt&\<CR>")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_sign_cursor_6', {})
 

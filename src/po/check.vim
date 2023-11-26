@@ -6,6 +6,9 @@
 
 if 1	" Only execute this if the eval feature is available.
 
+" using line continuation
+set cpo&vim
+
 " Function to get a split line at the cursor.
 " Used for both msgid and msgstr lines.
 " Removes all text except % items and returns the result.
@@ -27,8 +30,15 @@ func! GetMline()
   " remove '%' used for plural forms.
   let idline = substitute(idline, '\\nPlural-Forms: .\+;\\n', '', '')
 
+  " remove duplicate positional format arguments
+  let idline2 = ""
+  while idline2 != idline
+    let idline2 = idline
+    let idline = substitute(idline, '%\([1-9][0-9]*\)\$\([-+ #''.*]*[0-9]*l\=[dsuxXpoc%]\)\(.*\)%\1$\([-+ #''.*]*\)\(l\=[dsuxXpoc%]\)', '%\1$\2\3\4', 'g')
+  endwhile
+
   " remove everything but % items.
-  return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
+  return substitute(idline, '[^%]*\(%([1-9][0-9]*\$)\=[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
 endfunc
 
 " This only works when 'wrapscan' is not set.
@@ -59,12 +69,18 @@ while 1
   if getline(line('.') - 1) !~ "no-c-format"
     " go over the "msgid" and "msgid_plural" lines
     let prevfromline = 'foobar'
+    let plural = 0
     while 1
+      if getline('.') =~ 'msgid_plural'
+	let plural += 1
+      endif
       let fromline = GetMline()
       if prevfromline != 'foobar' && prevfromline != fromline
+	    \ && (plural != 1
+	    \     || count(prevfromline, '%') + 1 != count(fromline, '%'))
 	echomsg 'Mismatching % in line ' . (line('.') - 1)
 	echomsg 'msgid: ' . prevfromline
-	echomsg 'msgid ' . fromline
+	echomsg 'msgid: ' . fromline
 	if error == 0
 	  let error = line('.')
 	endif
@@ -86,6 +102,7 @@ while 1
     while getline('.') =~ '^msgstr'
       let toline = GetMline()
       if fromline != toline
+	    \ && (plural == 0 || count(fromline, '%') != count(toline, '%') + 1)
 	echomsg 'Mismatching % in line ' . (line('.') - 1)
 	echomsg 'msgid: ' . fromline
 	echomsg 'msgstr: ' . toline

@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.0.  Last change: 2022 Sep 30
+*os_vms.txt*    For Vim version 9.0.  Last change: 2022 Nov 25
 
 
 		  VIM REFERENCE MANUAL
@@ -203,7 +203,7 @@ You can check that everything is at the right place with the :version command.
 
 Example LOGIN.COM: >
 
- 	$ define/nolog VIM DKA0:[UTIL.VIM81]
+	$ define/nolog VIM DKA0:[UTIL.VIM81]
 	$ vi*m :== mcr VIM:VIM.EXE
 	$ gv*im:== spawn/nowait/input=NLA0 mcr VIM:VIM.EXE -g -GEOMETRY 80x40
 	$ set disp/create/node=192.168.10.202/trans=tcpip

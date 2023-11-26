@@ -67,11 +67,11 @@ is_maphash_valid(void)
     static void
 validate_maphash(void)
 {
-    if (!maphash_valid)
-    {
-	CLEAR_FIELD(maphash);
-	maphash_valid = TRUE;
-    }
+    if (maphash_valid)
+	return;
+
+    CLEAR_FIELD(maphash);
+    maphash_valid = TRUE;
 }
 
 /*
@@ -180,7 +180,7 @@ showmap(
     len = msg_outtrans_special(mp->m_keys, TRUE, 0);
     do
     {
-	msg_putchar(' ');		// padd with blanks
+	msg_putchar(' ');		// pad with blanks
 	++len;
     } while (len < 12);
 
@@ -227,7 +227,7 @@ map_add(
 	int	    is_abbr,
 #ifdef FEAT_EVAL
 	int	    expr,
-	scid_T	    sid,	    // -1 to use current_sctx
+	scid_T	    sid,	    // 0 to use current_sctx
 	int	    scriptversion,
 	linenr_T    lnum,
 #endif
@@ -266,7 +266,7 @@ map_add(
     mp->m_simplified = simplified;
 #ifdef FEAT_EVAL
     mp->m_expr = expr;
-    if (sid > 0)
+    if (sid != 0)
     {
 	mp->m_script_ctx.sc_sid = sid;
 	mp->m_script_ctx.sc_lnum = lnum;
@@ -326,7 +326,7 @@ list_mappings(
 		case MOKS_OFF: name = _("Off"); break;
 		case MOKS_ENABLED: name = _("On"); break;
 		case MOKS_DISABLED: name = _("Disabled"); break;
-		case MOKS_AFTER_T_KE: name = _("Cleared"); break;
+		case MOKS_AFTER_T_TE: name = _("Cleared"); break;
 	    }
 
 	    char buf[200];
@@ -344,7 +344,7 @@ list_mappings(
 		case KKPS_OFF: name = _("Off"); break;
 		case KKPS_ENABLED: name = _("On"); break;
 		case KKPS_DISABLED: name = _("Disabled"); break;
-		case KKPS_AFTER_T_KE: name = _("Cleared"); break;
+		case KKPS_AFTER_T_TE: name = _("Cleared"); break;
 	    }
 
 	    char buf[200];
@@ -581,8 +581,8 @@ do_map(
     // needs to be freed later (*keys_buf and *arg_buf).
     // replace_termcodes() also removes CTRL-Vs and sometimes backslashes.
     // If something like <C-H> is simplified to 0x08 then mark it as simplified
-    // and also add a n entry with a modifier, which will work when
-    // modifyOtherKeys is working.
+    // and also add an entry with a modifier, which will work when using a key
+    // protocol.
     if (haskey)
     {
 	char_u	*new_keys;
@@ -590,9 +590,9 @@ do_map(
 
 	if (special)
 	    flags |= REPTERM_SPECIAL;
-	new_keys = replace_termcodes(keys, &keys_buf, flags, &did_simplify);
+	new_keys = replace_termcodes(keys, &keys_buf, 0, flags, &did_simplify);
 	if (did_simplify)
-	    (void)replace_termcodes(keys, &alt_keys_buf,
+	    (void)replace_termcodes(keys, &alt_keys_buf, 0,
 					    flags | REPTERM_NO_SIMPLIFY, NULL);
 	keys = new_keys;
     }
@@ -602,7 +602,7 @@ do_map(
 	if (STRICMP(rhs, "<nop>") == 0)	    // "<Nop>" means nothing
 	    rhs = (char_u *)"";
 	else
-	    rhs = replace_termcodes(rhs, &arg_buf,
+	    rhs = replace_termcodes(rhs, &arg_buf, 0,
 			REPTERM_DO_LT | (special ? REPTERM_SPECIAL : 0), NULL);
     }
 
@@ -924,7 +924,7 @@ do_map(
 	if (map_add(map_table, abbr_table, keys, rhs, orig_rhs,
 		    noremap, nowait, silent, mode, abbrev,
 #ifdef FEAT_EVAL
-		    expr, /* sid */ -1, /* scriptversion */ 0, /* lnum */ 0,
+		    expr, /* sid */ 0, /* scriptversion */ 0, /* lnum */ 0,
 #endif
 		    keyround1_simplified) == FAIL)
 	{
@@ -1133,7 +1133,7 @@ map_to_exists(char_u *str, char_u *modechars, int abbr)
     char_u	*buf;
     int		retval;
 
-    rhs = replace_termcodes(str, &buf, REPTERM_DO_LT, NULL);
+    rhs = replace_termcodes(str, &buf, 0, REPTERM_DO_LT, NULL);
 
     retval = map_to_exists_mode(rhs, mode_str2flags(modechars), abbr);
     vim_free(buf);
@@ -1445,7 +1445,7 @@ ExpandMappings(
 	    mp = maphash[hash];
 	for (; mp; mp = mp->m_next)
 	{
-	    if (!(mp->m_mode & expand_mapmodes))
+	    if (mp->m_simplified || !(mp->m_mode & expand_mapmodes))
 		continue;
 
 	    p = translate_mapping(mp->m_keys);
@@ -1843,32 +1843,33 @@ vim_strsave_escape_csi(char_u *p)
     // illegal utf-8 byte:
     // 0xc0 -> 0xc3 0x80 -> 0xc3 K_SPECIAL KS_SPECIAL KE_FILLER
     res = alloc(STRLEN(p) * 4 + 1);
-    if (res != NULL)
+    if (res == NULL)
+	return NULL;
+
+    d = res;
+    for (s = p; *s != NUL; )
     {
-	d = res;
-	for (s = p; *s != NUL; )
-	{
-	    if ((s[0] == K_SPECIAL
+	if ((s[0] == K_SPECIAL
 #ifdef FEAT_GUI
 		    || (gui.in_use && s[0] == CSI)
 #endif
-		) && s[1] != NUL && s[2] != NUL)
-	    {
-		// Copy special key unmodified.
-		*d++ = *s++;
-		*d++ = *s++;
-		*d++ = *s++;
-	    }
-	    else
-	    {
-		// Add character, possibly multi-byte to destination, escaping
-		// CSI and K_SPECIAL. Be careful, it can be an illegal byte!
-		d = add_char2buf(PTR2CHAR(s), d);
-		s += MB_CPTR2LEN(s);
-	    }
+	    ) && s[1] != NUL && s[2] != NUL)
+	{
+	    // Copy special key unmodified.
+	    *d++ = *s++;
+	    *d++ = *s++;
+	    *d++ = *s++;
 	}
-	*d = NUL;
+	else
+	{
+	    // Add character, possibly multi-byte to destination, escaping
+	    // CSI and K_SPECIAL. Be careful, it can be an illegal byte!
+	    d = add_char2buf(PTR2CHAR(s), d);
+	    s += MB_CPTR2LEN(s);
+	}
     }
+    *d = NUL;
+
     return res;
 }
 
@@ -2042,7 +2043,7 @@ makemap(
 			c1 = 't';
 			break;
 		    default:
-			iemsg(_(e_makemap_illegal_mode));
+			iemsg(e_makemap_illegal_mode);
 			return FAIL;
 		}
 		do	// do this twice if c2 is set, 3 times with c3
@@ -2230,12 +2231,12 @@ check_map_keycodes(void)
     int		abbr;
     int		hash;
     buf_T	*bp;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     validate_maphash();
     // avoids giving error messages
     estack_push(ETYPE_INTERNAL, (char_u *)"mappings", 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 
     // Do this once for each buffer, and then once for global
     // mappings/abbreviations with bp == NULL
@@ -2292,7 +2293,7 @@ check_map_keycodes(void)
 	if (bp == NULL)
 	    break;
     }
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
     estack_pop();
 }
 
@@ -2487,14 +2488,15 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 
     mode = get_map_mode(&which, 0);
 
-    keys_simplified = replace_termcodes(keys, &keys_buf, flags, &did_simplify);
+    keys_simplified = replace_termcodes(keys, &keys_buf, 0, flags,
+								&did_simplify);
     rhs = check_map(keys_simplified, mode, exact, FALSE, abbr,
 							   &mp, &buffer_local);
     if (did_simplify)
     {
 	// When the lhs is being simplified the not-simplified keys are
 	// preferred for printing, like in do_map().
-	(void)replace_termcodes(keys, &alt_keys_buf,
+	(void)replace_termcodes(keys, &alt_keys_buf, 0,
 					flags | REPTERM_NO_SIMPLIFY, NULL);
 	rhs = check_map(alt_keys_buf, mode, exact, FALSE, abbr, &mp,
 								&buffer_local);
@@ -2578,7 +2580,8 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		did_simplify = FALSE;
 
 		lhs = str2special_save(mp->m_keys, TRUE, FALSE);
-		(void)replace_termcodes(lhs, &keys_buf, flags, &did_simplify);
+		(void)replace_termcodes(lhs, &keys_buf, 0, flags,
+								&did_simplify);
 		vim_free(lhs);
 
 		mapblock2dict(mp, d,
@@ -2757,11 +2760,6 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     orig_rhs = rhs;
-    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
-	rhs = (char_u *)"";
-    else
-	rhs = replace_termcodes(rhs, &arg_buf,
-					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
     if (dict_get_number(d, "script") != 0)
@@ -2774,6 +2772,12 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     buffer = dict_get_number(d, "buffer");
     nowait = dict_get_number(d, "nowait") != 0;
     // mode from the dict is not used
+
+    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
+	rhs = (char_u *)"";
+    else
+	rhs = replace_termcodes(rhs, &arg_buf, sid,
+					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     if (buffer)
     {
@@ -2982,7 +2986,7 @@ langmap_set_entry(int from, int to)
 	    b = i;
     }
 
-    if (ga_grow(&langmap_mapga, 1) != OK)
+    if (ga_grow(&langmap_mapga, 1) == FAIL)
 	return;  // out of memory
 
     // insert new entry at position "a"
@@ -3033,8 +3037,8 @@ langmap_init(void)
  * Called when langmap option is set; the language map can be
  * changed at any time!
  */
-    void
-langmap_set(void)
+    char *
+did_set_langmap(optset_T *args UNUSED)
 {
     char_u  *p;
     char_u  *p2;
@@ -3087,9 +3091,10 @@ langmap_set(void)
 	    }
 	    if (to == NUL)
 	    {
-		semsg(_(e_langmap_matching_character_missing_for_str),
-							     transchar(from));
-		return;
+		sprintf(args->os_errbuf,
+			_(e_langmap_matching_character_missing_for_str),
+			transchar(from));
+		return args->os_errbuf;
 	    }
 
 	    if (from >= 256)
@@ -3109,8 +3114,10 @@ langmap_set(void)
 		    {
 			if (p[0] != ',')
 			{
-			    semsg(_(e_langmap_extra_characters_after_semicolon_str), p);
-			    return;
+			    sprintf(args->os_errbuf,
+				    _(e_langmap_extra_characters_after_semicolon_str),
+				    p);
+			    return args->os_errbuf;
 			}
 			++p;
 		    }
@@ -3119,6 +3126,8 @@ langmap_set(void)
 	    }
 	}
     }
+
+    return NULL;
 }
 #endif
 

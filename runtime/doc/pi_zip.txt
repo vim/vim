@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 9.0.  Last change: 2022 Oct 17
+*pi_zip.txt*	For Vim version 9.0.  Last change: 2023 Nov 05
 
 				+====================+
 				| Zip File Interface |
@@ -70,6 +70,13 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
    extract a file from a zip archive.  By default, >
 	let g:zip_extractcmd= g:zip_unzipcmd
 <
+							*g:zip_exec*
+   For security reasons, one may prevent that Vim runs executables
+   automatically when opening a buffer.  This option (default: "1")
+   can be used to prevent executing the "unzip" command when set to
+   "0": >
+	let g:zip_exec=0
+<
    PREVENTING LOADING~
 
    If for some reason you do not wish to use vim to examine zipped files,
@@ -102,6 +109,7 @@ Copyright: Copyright (C) 2005-2015 Charles E Campbell	 *zip-copyright*
 
 ==============================================================================
 4. History							*zip-history* {{{1
+   v33 Dec 07, 2021 * *.xlam mentioned twice in zipPlugin
    v32 Oct 22, 2021 * to avoid an issue with a vim 8.2 patch, zipfile: has
 		      been changed to zipfile:// . This often shows up
 		      as zipfile:/// with zipped files that are root-based.

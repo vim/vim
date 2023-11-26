@@ -17,14 +17,15 @@ permissions:
 
 jobs:
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       CC: ${{ matrix.compiler }}
+      GCC_VER: 13
+      CLANG_VER: 17
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
-      CFLAGS: -Wno-deprecated-declarations
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
@@ -35,83 +36,104 @@ jobs:
       matrix:
         features: [tiny, normal, huge]
         compiler: [clang, gcc]
-        extra: [none]
+        extra: [[]]
+        # Only use non-native architecture when features != huge.
+        # features=huge tries to install python3-dev, which fails to install
+        # for the non-native architecture.
+        architecture: [native]
         include:
           - features: tiny
             compiler: clang
-            extra: nogui
+            extra: [nogui]
           - features: tiny
             compiler: gcc
-            extra: nogui
+            extra: [nogui]
           - features: normal
             shadow: ./src/shadow
-          - features: huge
-            coverage: true
-          - features: huge
             compiler: gcc
+            architecture: i386
+          - features: huge
             coverage: true
-            extra: testgui
-            uchar: true
           - features: huge
             compiler: clang
-            extra: asan
+            interface: dynamic
+            python3: stable-abi
           - features: huge
             compiler: gcc
             coverage: true
-            extra: unittests
+            interface: dynamic
+            extra: [uchar, testgui]
+          - features: huge
+            compiler: clang
+            # Lua5.1 is the most widely used version (since it's what LuaJIT is
+            # compatible with), so ensure it works
+            lua_ver: '5.1'
+            extra: [asan]
+          - features: huge
+            compiler: gcc
+            coverage: true
+            extra: [unittests]
           - features: normal
             compiler: gcc
-            extra: vimtags
+            extra: [vimtags]
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - run: sudo dpkg --add-architecture i386
+        if: matrix.architecture == 'i386'
 
       - name: Install packages
         run: |
           PKGS=( \
             gettext \
-            libgtk2.0-dev \
+            libgtk2.0-dev:${{ matrix.architecture }} \
             desktop-file-utils \
             libtool-bin \
+            libncurses-dev:${{ matrix.architecture }} \
+            libxt-dev:${{ matrix.architecture }} \
           )
           if ${{ matrix.features == 'huge' }}; then
+            LUA_VER=${{ matrix.lua_ver || '5.4' }}
             PKGS+=( \
               autoconf \
+              gdb \
               lcov \
               libcanberra-dev \
               libperl-dev \
-              python-dev \
+              python2-dev \
               python3-dev \
-              liblua5.3-dev \
-              lua5.3 \
+              liblua${LUA_VER}-dev \
+              lua${LUA_VER} \
               ruby-dev \
               tcl-dev \
               cscope \
               libsodium-dev \
+              attr \
+              libattr1-dev
             )
           fi
-          sudo apt update && sudo apt install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get install -y "${PKGS[@]}"
 
-      - name: Install gcc-11
+      - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo apt install -y gcc-11
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-11
+          sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
-      - name: Install clang-15
+      - name: Install clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-15 main"
-          sudo apt install -y clang-15 llvm-15
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 100
-          sudo update-alternatives --set clang /usr/bin/clang-15
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-15 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-15 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-${{ env.CLANG_VER }} main"
+          sudo apt-get install -y clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${{ env.CLANG_VER }} 100
+          sudo update-alternatives --set clang /usr/bin/clang-${{ env.CLANG_VER }}
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-${{ env.CLANG_VER }} 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-${{ env.CLANG_VER }} 100
 
       - name: Set up environment
         run: |
@@ -121,7 +143,6 @@ jobs:
           (
           echo "LINUX_VERSION=$(uname -r)"
           echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
-          echo "SND_DUMMY_DIR=${HOME}/snd-dummy"
           echo "TMPDIR=${{ runner.temp }}"
 
           case "${{ matrix.features }}" in
@@ -135,16 +156,20 @@ jobs:
             ;;
           huge)
             echo "TEST=scripttests test_libvterm"
-            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            INTERFACE=${{ matrix.interface || 'yes' }}
+            if ${{ matrix.python3 == 'stable-abi' }}; then
+              PYTHON3_CONFOPT="--with-python3-stable-abi=3.8"
+            fi
+            echo "CONFOPT=--enable-perlinterp=${INTERFACE} --enable-pythoninterp=${INTERFACE} --enable-python3interp=${INTERFACE} --enable-rubyinterp=${INTERFACE} --enable-luainterp=${INTERFACE} --enable-tclinterp=${INTERFACE} ${PYTHON3_CONFOPT}"
             ;;
           esac
 
           if ${{ matrix.coverage == true }}; then
-            CFLAGS="$CFLAGS --coverage -DUSE_GCOV_FLUSH"
+            CFLAGS="${CFLAGS} --coverage -DUSE_GCOV_FLUSH"
             echo "LDFLAGS=--coverage"
           fi
-          if ${{ matrix.uchar == true }}; then
-            CFLAGS="$CFLAGS -funsigned-char"
+          if ${{ contains(matrix.extra, 'uchar') }}; then
+            CFLAGS="${CFLAGS} -funsigned-char"
           fi
           if ${{ contains(matrix.extra, 'testgui') }}; then
             echo "TEST=-C src testgui"
@@ -161,7 +186,7 @@ jobs:
           if ${{ contains(matrix.extra, 'vimtags') }}; then
             echo "TEST=-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
           fi
-          echo "CFLAGS=$CFLAGS"
+          echo "CFLAGS=${CFLAGS}"
           ) >> $GITHUB_ENV
 
       - name: Set up system
@@ -174,23 +199,20 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      # FIXME: Temporarily disabled because of build errors
-      #- name: Cache snd-dummy
-      #  uses: actions/cache@v3
-      #  with:
-      #    path: ${{ env.SND_DUMMY_DIR }}
-      #    key: linux-${{ env.LINUX_VERSION }}-snd-dummy
+      - name: Set up snd-dummy
+        if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
+        env:
+          DEST_DIR: ${{ env.TMPDIR }}/linux-modules-extra-${{ env.LINUX_VERSION }}
+        uses: tecolicom/actions-use-apt-tools@main
+        with:
+          tools: linux-modules-extra-${{ env.LINUX_VERSION }}
+          path: "${DEST_DIR}"
 
-      #- name: Set up snd-dummy
-      #  run: |
-      #    if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
-      #      bash ci/build-snd-dummy.sh
-      #    fi
-      #    cd "${SND_DUMMY_DIR}"
-      #    sudo insmod soundcore.ko
-      #    sudo insmod snd.ko
-      #    sudo insmod snd-pcm.ko
-      #    sudo insmod snd-dummy.ko
+      - name: modprobe snd-dummy
+        if: (!(contains(matrix.extra, 'unittests') || contains(matrix.extra, 'vimtags')))
+        run: |
+          sudo depmod --verbose
+          sudo modprobe --verbose snd-dummy || true
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
@@ -228,23 +250,16 @@ jobs:
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
 
       - name: Test
-        timeout-minutes: 20
+        timeout-minutes: 25
         run: |
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
-      # - name: Coveralls
-      #   if: matrix.coverage && github.event_name != 'pull_request'
-      #   env:
-      #     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      #     COVERALLS_PARALLEL: true
-      #     TRAVIS_JOB_ID: ${{ github.run_id }}
-      #   run: |
-      #     sudo apt-get install -y python3-setuptools python3-wheel
-      #     sudo -H pip3 install pip -U
-      #     # needed for https support for coveralls building cffi only works with gcc, not with clang
-      #     CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
-      #     ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
+      - name: Vim tags
+        if: contains(matrix.extra, 'vimtags')
+        run: |
+          # This will exit with an error code if the generated vim tags differs from source.
+          git diff --exit-code -- runtime/doc/tags
 
       - name: Generate gcov files
         if: matrix.coverage
@@ -253,8 +268,9 @@ jobs:
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
+        timeout-minutes: 20
         if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
@@ -265,19 +281,6 @@ jobs:
             asan_symbolize -l "$f"
             false # in order to fail a job
           done
-
-  # coveralls:
-  #   runs-on: ubuntu-20.04
-  #
-  #   needs: linux
-  #   if: always() && github.event_name != 'pull_request'
-  #
-  #   steps:
-  #     - name: Parallel finished
-  #       env:
-  #         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-  #       run: |
-  #         curl -k "https://coveralls.io/webhook?repo_token=${COVERALLS_REPO_TOKEN}" -d "payload[build_num]=${GITHUB_RUN_ID}&payload[status]=done"
 
   macos:
     runs-on: macos-latest
@@ -296,16 +299,13 @@ jobs:
 
     steps:
       - name: Checkout repository from github
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install packages
         if: matrix.features == 'huge'
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
         run: |
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
-          brew uninstall perl
 
       - name: Set up environment
         run: |
@@ -373,11 +373,17 @@ jobs:
       PYTHON_VER_DOT: '2.7'
       PYTHON_DIR: 'C:\Python27'
       # Python 3
-      PYTHON3_VER: 310
-      PYTHON3_VER_DOT: '3.10'
+      PYTHON3_VER: 311
+      PYTHON3_VER_DOT: '3.11'
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
+      # libsodium
+      SODIUM_VER: '1.0.18'
+      SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+      SODIUM_MSVC_VER: v143
+      SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+      SODIUM_MINGW_VER: 23
       # Escape sequences
       COL_RED: "\x1b[31m"
       COL_GREEN: "\x1b[32m"
@@ -388,8 +394,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64 }
-          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64, python3: stable }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, python3: stable, coverage: yes }
           - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
           - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
           - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
@@ -407,7 +413,7 @@ jobs:
 
           git config --global core.autocrlf input
 
-          if [ "${{ matrix.arch }}" = "x64" ]; then
+          if ${{ matrix.arch == 'x64' }}; then
             cygreg=registry
             pyreg=
             echo "VCARCH=amd64" >> $GITHUB_ENV
@@ -424,8 +430,8 @@ jobs:
           fi
 
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          if [ "${{ matrix.features }}" != "TINY" ]; then
-            if [ "${{ matrix.arch }}" = "x86" ]; then
+          if ${{ matrix.features != 'TINY' }}; then
+            if ${{ matrix.arch == 'x86' }}; then
               choco install python2 --no-progress --forcex86
             else
               choco install python2 --no-progress
@@ -433,6 +439,15 @@ jobs:
           fi
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
+
+          if ${{ matrix.toolchain == 'msvc' }}; then
+            SODIUM_DIR=D:\\libsodium
+            echo "SODIUM_LIB=${SODIUM_DIR}\\${{ matrix.arch == 'x64' && 'x64' || 'Win32' }}\\Release\\${SODIUM_MSVC_VER}\\dynamic" >> $GITHUB_ENV
+          else
+            SODIUM_DIR=D:\\libsodium-win${{ matrix.arch == 'x64' && '64' || '32' }}
+            echo "SODIUM_LIB=${SODIUM_DIR}\\bin" >> $GITHUB_ENV
+          fi
+          echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
@@ -445,7 +460,7 @@ jobs:
           release: false
 
       - name: Checkout repository from github
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create a list of download URLs
         shell: cmd
@@ -453,6 +468,7 @@ jobs:
           type NUL > urls.txt
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
+          echo %SODIUM_VER%>> urls.txt
 
       - name: Cache downloaded files
         uses: actions/cache@v3
@@ -475,6 +491,16 @@ jobs:
           7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
           copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
           copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
+
+          echo %COL_GREEN%Download libsodium%COL_RESET%
+          if "${{ matrix.toolchain }}"=="msvc" (
+            call :downloadfile %SODIUM_MSVC_URL% downloads\libsodium.zip
+            7z x -y downloads\libsodium.zip -oD:\ > nul || exit 1
+          ) else (
+            call :downloadfile %SODIUM_MINGW_URL% downloads\libsodium.tar.gz
+            7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
+            mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
+          )
 
           goto :eof
 
@@ -500,13 +526,20 @@ jobs:
           ) else (
             set GUI=${{ matrix.GUI }}
           )
+          if "${{ matrix.python3 }}"=="stable" (
+            set PYTHON3_STABLE=yes
+          ) else (
+            set PYTHON3_STABLE=no
+          )
           if "${{ matrix.features }}"=="HUGE" (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
               GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
-              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
+              DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
+              DYNAMIC_PYTHON3_STABLE_ABI=%PYTHON3_STABLE% ^
+              DYNAMIC_SODIUM=yes SODIUM=%SODIUM_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
@@ -523,6 +556,11 @@ jobs:
           else
             GUI=${{ matrix.GUI }}
           fi
+          if [ "${{ matrix.python3 }}" = "stable" ]; then
+            PYTHON3_STABLE=yes
+          else
+            PYTHON3_STABLE=no
+          fi
           if [ "${{ matrix.features }}" = "HUGE" ]; then
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
@@ -530,6 +568,8 @@ jobs:
               DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
+              DYNAMIC_PYTHON3_STABLE_ABI=${PYTHON3_STABLE} \
+              DYNAMIC_SODIUM=yes SODIUM=${SODIUM_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
             mingw32-make -f Make_ming.mak -j2 \
@@ -574,7 +614,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
@@ -591,7 +631,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test Vim:%COL_RESET%
@@ -612,8 +652,9 @@ jobs:
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
       - name: Codecov
+        timeout-minutes: 20
         if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}

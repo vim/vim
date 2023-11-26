@@ -770,7 +770,7 @@ The second argument of |popup_create()| is a dictionary with options:
 	cursorline	TRUE:	 Highlight the cursor line. Also scrolls the
 				 text to show this line (only works properly
 				 when 'wrap' is off).
-			zero: 	 Do not highlight the cursor line.
+			zero:	 Do not highlight the cursor line.
 			Default is zero, except for |popup_menu()|.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.

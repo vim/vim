@@ -1,7 +1,8 @@
 " Tests for Unicode manipulations
- 
+
 source check.vim
 source view_util.vim
+source screendump.vim
 
 " Visual block Insert adjusts for multi-byte char
 func Test_visual_block_insert()
@@ -28,8 +29,10 @@ func Test_strchars()
     call assert_equal(exp[i], strcharlen(inp[i]))
   endfor
 
-  call assert_fails("let v=strchars('abc', [])", 'E745:')
-  call assert_fails("let v=strchars('abc', 2)", 'E1023:')
+  call assert_fails("call strchars('abc', 2)", ['E1023:', 'E1023:'])
+  call assert_fails("call strchars('abc', -1)", ['E1023:', 'E1023:'])
+  call assert_fails("call strchars('abc', {})", ['E728:', 'E728:'])
+  call assert_fails("call strchars('abc', [])", ['E745:', 'E745:'])
 endfunc
 
 " Test for customlist completion
@@ -106,7 +109,7 @@ func Test_list2str_str2list_latin1()
 
   let save_encoding = &encoding
   set encoding=latin1
-  
+
   let lres = str2list(s, 1)
   let sres = list2str(l, 1)
   call assert_equal([65, 66, 67], str2list("ABC"))
@@ -122,7 +125,7 @@ endfunc
 func Test_screenchar_utf8()
   new
 
-  " 1-cell, with composing characters 
+  " 1-cell, with composing characters
   call setline(1, ["ABC\u0308"])
   redraw
   call assert_equal([0x0041], screenchars(1, 1))
@@ -132,7 +135,20 @@ func Test_screenchar_utf8()
   call assert_equal("B", screenstring(1, 2))
   call assert_equal("C\u0308", screenstring(1, 3))
 
-  " 2-cells, with composing characters 
+  " 1-cell, with 6 composing characters
+  set maxcombine=6
+  call setline(1, ["ABC" .. repeat("\u0308", 6)])
+  redraw
+  call assert_equal([0x0041], screenchars(1, 1))
+  call assert_equal([0x0042], 1->screenchars(2))
+  " This should not use uninitialized memory
+  call assert_equal([0x0043] + repeat([0x0308], 6), screenchars(1, 3))
+  call assert_equal("A", screenstring(1, 1))
+  call assert_equal("B", screenstring(1, 2))
+  call assert_equal("C" .. repeat("\u0308", 6), screenstring(1, 3))
+  set maxcombine&
+
+  " 2-cells, with composing characters
   let text = "\u3042\u3044\u3046\u3099"
   call setline(1, text)
   redraw
@@ -166,6 +182,39 @@ func Test_setcellwidths()
   call assert_equal(2, strwidth("\u1339"))
   call assert_equal(1, strwidth("\u133a"))
 
+  for aw in ['single', 'double']
+    exe 'set ambiwidth=' . aw
+    " Handle \u0080 to \u009F as control chars even on MS-Windows.
+    set isprint=@,161-255
+
+    call setcellwidths([])
+    " Control chars
+    call assert_equal(4, strwidth("\u0081"))
+    call assert_equal(6, strwidth("\uFEFF"))
+    " Ambiguous width chars
+    call assert_equal((aw == 'single') ? 1 : 2, strwidth("\u00A1"))
+    call assert_equal((aw == 'single') ? 1 : 2, strwidth("\u2010"))
+
+    call setcellwidths([[0x81, 0x81, 1], [0xA1, 0xA1, 1],
+                      \ [0x2010, 0x2010, 1], [0xFEFF, 0xFEFF, 1]])
+    " Control chars
+    call assert_equal(4, strwidth("\u0081"))
+    call assert_equal(6, strwidth("\uFEFF"))
+    " Ambiguous width chars
+    call assert_equal(1, strwidth("\u00A1"))
+    call assert_equal(1, strwidth("\u2010"))
+
+    call setcellwidths([[0x81, 0x81, 2], [0xA1, 0xA1, 2],
+                      \ [0x2010, 0x2010, 2], [0xFEFF, 0xFEFF, 2]])
+    " Control chars
+    call assert_equal(4, strwidth("\u0081"))
+    call assert_equal(6, strwidth("\uFEFF"))
+    " Ambiguous width chars
+    call assert_equal(2, strwidth("\u00A1"))
+    call assert_equal(2, strwidth("\u2010"))
+  endfor
+  set ambiwidth& isprint&
+
   call setcellwidths([])
 
   call assert_fails('call setcellwidths(1)', 'E1211:')
@@ -196,6 +245,42 @@ func Test_setcellwidths()
   set listchars&
   set fillchars&
   call setcellwidths([])
+endfunc
+
+func Test_getcellwidths()
+  call setcellwidths([])
+  call assert_equal([], getcellwidths())
+
+  let widthlist = [
+        \ [0x1330, 0x1330, 2],
+        \ [9999, 10000, 1],
+        \ [0x1337, 0x1339, 2],
+        \]
+  let widthlistsorted = [
+        \ [0x1330, 0x1330, 2],
+        \ [0x1337, 0x1339, 2],
+        \ [9999, 10000, 1],
+        \]
+  call setcellwidths(widthlist)
+  call assert_equal(widthlistsorted, getcellwidths())
+
+  call setcellwidths([])
+endfunc
+
+func Test_setcellwidths_dump()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, "\ue5ffDesktop")
+  END
+  call writefile(lines, 'XCellwidths', 'D')
+  let buf = RunVimInTerminal('-S XCellwidths', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_setcellwidths_dump_1', {})
+
+  call term_sendkeys(buf, ":call setcellwidths([[0xe5ff, 0xe5ff, 2]])\<CR>")
+  call VerifyScreenDump(buf, 'Test_setcellwidths_dump_2', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_print_overlong()

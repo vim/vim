@@ -1,8 +1,9 @@
 " Vim support file to define the syntax selection menu
 " This file is normally sourced from menu.vim.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Oct 04
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Define the SetSyn function, used for the Syntax menu entries.
 " Set 'filetype' and also 'syntax' if it is manually selected.
@@ -72,7 +73,7 @@ an 50.10.440 &Syntax.AB.Assembly.PIC :cal SetSyn("pic")<CR>
 an 50.10.450 &Syntax.AB.Assembly.Turbo :cal SetSyn("tasm")<CR>
 an 50.10.460 &Syntax.AB.Assembly.VAX\ Macro\ Assembly :cal SetSyn("vmasm")<CR>
 an 50.10.470 &Syntax.AB.Assembly.Z-80 :cal SetSyn("z8a")<CR>
-an 50.10.480 &Syntax.AB.Assembly.xa\ 6502\ cross\ assember :cal SetSyn("a65")<CR>
+an 50.10.480 &Syntax.AB.Assembly.xa\ 6502\ cross\ assembler :cal SetSyn("a65")<CR>
 an 50.10.490 &Syntax.AB.ASN\.1 :cal SetSyn("asn")<CR>
 an 50.10.500 &Syntax.AB.Asterisk\ config :cal SetSyn("asterisk")<CR>
 an 50.10.510 &Syntax.AB.Asterisk\ voicemail\ config :cal SetSyn("asteriskvm")<CR>
@@ -302,7 +303,7 @@ an 50.50.710 &Syntax.HIJK.Kimwitu++ :cal SetSyn("kwt")<CR>
 an 50.50.720 &Syntax.HIJK.Kivy :cal SetSyn("kivy")<CR>
 an 50.50.730 &Syntax.HIJK.KixTart :cal SetSyn("kix")<CR>
 an 50.60.100 &Syntax.L.Lace :cal SetSyn("lace")<CR>
-an 50.60.110 &Syntax.L.LamdaProlog :cal SetSyn("lprolog")<CR>
+an 50.60.110 &Syntax.L.LambdaProlog :cal SetSyn("lprolog")<CR>
 an 50.60.120 &Syntax.L.Latte :cal SetSyn("latte")<CR>
 an 50.60.130 &Syntax.L.Ld\ script :cal SetSyn("ld")<CR>
 an 50.60.140 &Syntax.L.LDAP.LDIF :cal SetSyn("ldif")<CR>
@@ -617,7 +618,7 @@ an 50.160.330 &Syntax.UV.VSE\ JCL :cal SetSyn("vsejcl")<CR>
 an 50.170.100 &Syntax.WXYZ.WEB.CWEB :cal SetSyn("cweb")<CR>
 an 50.170.110 &Syntax.WXYZ.WEB.WEB :cal SetSyn("web")<CR>
 an 50.170.120 &Syntax.WXYZ.WEB.WEB\ Changes :cal SetSyn("change")<CR>
-an 50.170.130 &Syntax.WXYZ.WebAssembly :cal SetSyn("wast")<CR>
+an 50.170.130 &Syntax.WXYZ.WebAssembly :cal SetSyn("wat")<CR>
 an 50.170.140 &Syntax.WXYZ.Webmacro :cal SetSyn("webmacro")<CR>
 an 50.170.150 &Syntax.WXYZ.Website\ MetaLanguage :cal SetSyn("wml")<CR>
 an 50.170.170 &Syntax.WXYZ.wDiff :cal SetSyn("wdiff")<CR>
@@ -644,6 +645,7 @@ an 50.170.390 &Syntax.WXYZ.XFree86\ Config :cal SetSyn("xf86conf")<CR>
 an 50.170.410 &Syntax.WXYZ.YAML :cal SetSyn("yaml")<CR>
 an 50.170.420 &Syntax.WXYZ.Yacc :cal SetSyn("yacc")<CR>
 an 50.170.440 &Syntax.WXYZ.Zimbu :cal SetSyn("zimbu")<CR>
+an 50.170.440 &Syntax.WXYZ.Zserio:cal SetSyn("zserio")<CR>
 
 " The End Of The Syntax Menu
 

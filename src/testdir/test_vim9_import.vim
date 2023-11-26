@@ -2656,7 +2656,7 @@ def Test_autoload_mapping()
 
       import autoload 'toggle.vim'
 
-      nnoremap <silent> <expr> tt toggle.Toggle() 
+      nnoremap <silent> <expr> tt toggle.Toggle()
       nnoremap <silent> xx <ScriptCmd>toggle.Doit()<CR>
       nnoremap <silent> yy <Cmd>toggle.Doit()<CR>
   END
@@ -2917,6 +2917,16 @@ def Test_vim9_import_symlink()
     &rtp = save_rtp
     delete('Xfrom', 'rf')
   endif
+enddef
+
+def Test_export_in_conditional_block()
+  var lines =<< trim END
+      vim9script
+      if exists('this_will_fail')
+        export var MyVar = "hello"
+      endif
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 

@@ -282,24 +282,23 @@ score_wordcount_adj(
     int		newscore;
 
     hi = hash_find(&slang->sl_wordcount, word);
-    if (!HASHITEM_EMPTY(hi))
-    {
-	wc = HI2WC(hi);
-	if (wc->wc_count < SCORE_THRES2)
-	    bonus = SCORE_COMMON1;
-	else if (wc->wc_count < SCORE_THRES3)
-	    bonus = SCORE_COMMON2;
-	else
-	    bonus = SCORE_COMMON3;
-	if (split)
-	    newscore = score - bonus / 2;
-	else
-	    newscore = score - bonus;
-	if (newscore < 0)
-	    return 0;
-	return newscore;
-    }
-    return score;
+    if (HASHITEM_EMPTY(hi))
+	return score;
+
+    wc = HI2WC(hi);
+    if (wc->wc_count < SCORE_THRES2)
+	bonus = SCORE_COMMON1;
+    else if (wc->wc_count < SCORE_THRES3)
+	bonus = SCORE_COMMON2;
+    else
+	bonus = SCORE_COMMON3;
+    if (split)
+	newscore = score - bonus / 2;
+    else
+	newscore = score - bonus;
+    if (newscore < 0)
+	return 0;
+    return newscore;
 }
 
 /*
@@ -316,36 +315,37 @@ badword_captype(char_u *word, char_u *end)
     int		first;
     char_u	*p;
 
-    if (flags & WF_KEEPCAP)
+    if (!(flags & WF_KEEPCAP))
+	return flags;
+
+    // Count the number of UPPER and lower case letters.
+    l = u = 0;
+    first = FALSE;
+    for (p = word; p < end; MB_PTR_ADV(p))
     {
-	// Count the number of UPPER and lower case letters.
-	l = u = 0;
-	first = FALSE;
-	for (p = word; p < end; MB_PTR_ADV(p))
+	c = PTR2CHAR(p);
+	if (SPELL_ISUPPER(c))
 	{
-	    c = PTR2CHAR(p);
-	    if (SPELL_ISUPPER(c))
-	    {
-		++u;
-		if (p == word)
-		    first = TRUE;
-	    }
-	    else
-		++l;
+	    ++u;
+	    if (p == word)
+		first = TRUE;
 	}
-
-	// If there are more UPPER than lower case letters suggest an
-	// ALLCAP word.  Otherwise, if the first letter is UPPER then
-	// suggest ONECAP.  Exception: "ALl" most likely should be "All",
-	// require three upper case letters.
-	if (u > l && u > 2)
-	    flags |= WF_ALLCAP;
-	else if (first)
-	    flags |= WF_ONECAP;
-
-	if (u >= 2 && l >= 2)	// maCARONI maCAroni
-	    flags |= WF_MIXCAP;
+	else
+	    ++l;
     }
+
+    // If there are more UPPER than lower case letters suggest an
+    // ALLCAP word.  Otherwise, if the first letter is UPPER then
+    // suggest ONECAP.  Exception: "ALl" most likely should be "All",
+    // require three upper case letters.
+    if (u > l && u > 2)
+	flags |= WF_ALLCAP;
+    else if (first)
+	flags |= WF_ONECAP;
+
+    if (u >= 2 && l >= 2)	// maCARONI maCAroni
+	flags |= WF_MIXCAP;
+
     return flags;
 }
 
@@ -424,6 +424,7 @@ spell_check_sps(void)
 	    if (*s != NUL && !VIM_ISDIGIT(*s))
 		f = -1;
 	}
+	// Note: Keep this in sync with p_sps_values.
 	else if (STRCMP(buf, "best") == 0)
 	    f = SPS_BEST;
 	else if (STRCMP(buf, "fast") == 0)
@@ -480,7 +481,7 @@ spell_suggest(int count)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 
@@ -538,7 +539,8 @@ spell_suggest(int count)
     // Get the word and its length.
 
     // Figure out if the word should be capitalised.
-    need_cap = check_need_cap(curwin->w_cursor.lnum, curwin->w_cursor.col);
+    need_cap = check_need_cap(curwin, curwin->w_cursor.lnum,
+							curwin->w_cursor.col);
 
     // Make a copy of current line since autocommands may free the line.
     line = vim_strsave(ml_get_curline());
@@ -3176,7 +3178,7 @@ suggest_try_soundalike_finish(void)
 	{
 	    // Free the info about handled words.
 	    todo = (int)slang->sl_sounddone.ht_used;
-	    for (hi = slang->sl_sounddone.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&slang->sl_sounddone, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    vim_free(HI2SFT(hi));
@@ -3228,7 +3230,7 @@ add_sound_suggest(
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = alloc(sizeof(sftword_T) + STRLEN(goodword));
+	sft = alloc(offsetof(sftword_T, sft_word) + STRLEN(goodword) + 1);
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;
@@ -3692,12 +3694,11 @@ add_banned(
 
     hash = hash_hash(word);
     hi = hash_lookup(&su->su_banned, word, hash);
-    if (HASHITEM_EMPTY(hi))
-    {
-	s = vim_strsave(word);
-	if (s != NULL)
-	    hash_add_item(&su->su_banned, hi, s, hash);
-    }
+    if (!HASHITEM_EMPTY(hi))		// already present
+	return;
+    s = vim_strsave(word);
+    if (s != NULL)
+	hash_add_item(&su->su_banned, hi, s, hash);
 }
 
 /*
@@ -3778,25 +3779,25 @@ cleanup_suggestions(
     int		maxscore,
     int		keep)		// nr of suggestions to keep
 {
-    if (gap->ga_len > 0)
+    if (gap->ga_len <= 0)
+	return maxscore;
+
+    // Sort the list.
+    qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T),
+	    sug_compare);
+
+    // Truncate the list to the number of suggestions that will be
+    // displayed.
+    if (gap->ga_len > keep)
     {
-	// Sort the list.
-	qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T),
-								  sug_compare);
+	int		i;
+	suggest_T   *stp = &SUG(*gap, 0);
 
-	// Truncate the list to the number of suggestions that will be
-	// displayed.
-	if (gap->ga_len > keep)
-	{
-	    int		i;
-	    suggest_T   *stp = &SUG(*gap, 0);
-
-	    for (i = keep; i < gap->ga_len; ++i)
-		vim_free(stp[i].st_word);
-	    gap->ga_len = keep;
-	    if (keep >= 1)
-		return stp[keep - 1].st_score;
-	}
+	for (i = keep; i < gap->ga_len; ++i)
+	    vim_free(stp[i].st_word);
+	gap->ga_len = keep;
+	if (keep >= 1)
+	    return stp[keep - 1].st_score;
     }
     return maxscore;
 }

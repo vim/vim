@@ -809,17 +809,17 @@ bomb_size(void)
     void
 remove_bom(char_u *s)
 {
-    if (enc_utf8)
-    {
-	char_u *p = s;
+    if (!enc_utf8)
+	return;
 
-	while ((p = vim_strbyte(p, 0xef)) != NULL)
-	{
-	    if (p[1] == 0xbb && p[2] == 0xbf)
-		STRMOVE(p, p + 3);
-	    else
-		++p;
-	}
+    char_u *p = s;
+
+    while ((p = vim_strbyte(p, 0xef)) != NULL)
+    {
+	if (p[1] == 0xbb && p[2] == 0xbf)
+	    STRMOVE(p, p + 3);
+	else
+	    ++p;
     }
 }
 #endif
@@ -1419,14 +1419,13 @@ utf_char2cells(int c)
 	{0x2e80, 0x2e99},
 	{0x2e9b, 0x2ef3},
 	{0x2f00, 0x2fd5},
-	{0x2ff0, 0x2ffb},
-	{0x3000, 0x303e},
+	{0x2ff0, 0x303e},
 	{0x3041, 0x3096},
 	{0x3099, 0x30ff},
 	{0x3105, 0x312f},
 	{0x3131, 0x318e},
 	{0x3190, 0x31e3},
-	{0x31f0, 0x321e},
+	{0x31ef, 0x321e},
 	{0x3220, 0x3247},
 	{0x3250, 0x4dbf},
 	{0x4e00, 0xa48c},
@@ -1579,7 +1578,7 @@ utf_char2cells(int c)
 	// values of them.
 	//
 	// Note that these symbols are of varying widths, as they are symbols
-	// representing differents things ranging from a simple gear icon to an
+	// representing different things ranging from a simple gear icon to an
 	// airplane. Some of them are in fact wider than double-width, but Vim
 	// doesn't support non-fixed-width font, and tagging them as
 	// double-width is the best way to handle them.
@@ -1589,19 +1588,26 @@ utf_char2cells(int c)
 #endif
     };
 
-    if (c >= 0x100)
-    {
-#if defined(FEAT_EVAL) || defined(USE_WCHAR_FUNCTIONS)
-	int	n;
-#endif
-
 #ifdef FEAT_EVAL
-	n = cw_value(c);
+    // Use the value from setcellwidths() at 0x80 and higher, unless the
+    // character is not printable.
+    if (c >= 0x80 &&
+# ifdef USE_WCHAR_FUNCTIONS
+	    wcwidth(c) >= 1 &&
+# endif
+	    vim_isprintc(c))
+    {
+	int n = cw_value(c);
 	if (n != 0)
 	    return n;
+    }
 #endif
 
+    if (c >= 0x100)
+    {
 #ifdef USE_WCHAR_FUNCTIONS
+	int	n;
+
 	/*
 	 * Assume the library function wcwidth() works better than our own
 	 * stuff.  It should return 1 for ambiguous width chars!
@@ -3145,8 +3151,10 @@ static convertStruct foldCase[] =
 	{0x1fbe,0x1fbe,-1,-7173},
 	{0x1fc8,0x1fcb,1,-86},
 	{0x1fcc,0x1fcc,-1,-9},
+	{0x1fd3,0x1fd3,-1,-7235},
 	{0x1fd8,0x1fd9,1,-8},
 	{0x1fda,0x1fdb,1,-100},
+	{0x1fe3,0x1fe3,-1,-7219},
 	{0x1fe8,0x1fe9,1,-8},
 	{0x1fea,0x1feb,1,-112},
 	{0x1fec,0x1fec,-1,-7},
@@ -3203,6 +3211,7 @@ static convertStruct foldCase[] =
 	{0xa7d0,0xa7d6,6,1},
 	{0xa7d8,0xa7f5,29,1},
 	{0xab70,0xabbf,1,-38864},
+	{0xfb05,0xfb05,-1,1},
 	{0xff21,0xff3a,1,32},
 	{0x10400,0x10427,1,40},
 	{0x104b0,0x104d3,1,40},
@@ -4043,7 +4052,7 @@ utf_allow_break_before(int cc)
 	0x2021, // ‡ double dagger
 	0x2026, // … horizontal ellipsis
 	0x2030, // ‰ per mille sign
-	0x2031, // ‱ per then thousand sign
+	0x2031, // ‱ per ten thousand sign
 	0x203c, // ‼ double exclamation mark
 	0x2047, // ⁇ double question mark
 	0x2048, // ⁈ question exclamation mark
@@ -4590,56 +4599,56 @@ enc_canonize(char_u *enc)
 
     // copy "enc" to allocated memory, with room for two '-'
     r = alloc(STRLEN(enc) + 3);
-    if (r != NULL)
+    if (r == NULL)
+	return NULL;
+
+    // Make it all lower case and replace '_' with '-'.
+    p = r;
+    for (s = enc; *s != NUL; ++s)
     {
-	// Make it all lower case and replace '_' with '-'.
-	p = r;
-	for (s = enc; *s != NUL; ++s)
-	{
-	    if (*s == '_')
-		*p++ = '-';
-	    else
-		*p++ = TOLOWER_ASC(*s);
-	}
-	*p = NUL;
+	if (*s == '_')
+	    *p++ = '-';
+	else
+	    *p++ = TOLOWER_ASC(*s);
+    }
+    *p = NUL;
 
-	// Skip "2byte-" and "8bit-".
-	p = enc_skip(r);
+    // Skip "2byte-" and "8bit-".
+    p = enc_skip(r);
 
-	// Change "microsoft-cp" to "cp".  Used in some spell files.
-	if (STRNCMP(p, "microsoft-cp", 12) == 0)
-	    STRMOVE(p, p + 10);
+    // Change "microsoft-cp" to "cp".  Used in some spell files.
+    if (STRNCMP(p, "microsoft-cp", 12) == 0)
+	STRMOVE(p, p + 10);
 
-	// "iso8859" -> "iso-8859"
-	if (STRNCMP(p, "iso8859", 7) == 0)
-	{
-	    STRMOVE(p + 4, p + 3);
-	    p[3] = '-';
-	}
+    // "iso8859" -> "iso-8859"
+    if (STRNCMP(p, "iso8859", 7) == 0)
+    {
+	STRMOVE(p + 4, p + 3);
+	p[3] = '-';
+    }
 
-	// "iso-8859n" -> "iso-8859-n"
-	if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
-	{
-	    STRMOVE(p + 9, p + 8);
-	    p[8] = '-';
-	}
+    // "iso-8859n" -> "iso-8859-n"
+    if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
+    {
+	STRMOVE(p + 9, p + 8);
+	p[8] = '-';
+    }
 
-	// "latin-N" -> "latinN"
-	if (STRNCMP(p, "latin-", 6) == 0)
-	    STRMOVE(p + 5, p + 6);
+    // "latin-N" -> "latinN"
+    if (STRNCMP(p, "latin-", 6) == 0)
+	STRMOVE(p + 5, p + 6);
 
-	if (enc_canon_search(p) >= 0)
-	{
-	    // canonical name can be used unmodified
-	    if (p != r)
-		STRMOVE(r, p);
-	}
-	else if ((i = enc_alias_search(p)) >= 0)
-	{
-	    // alias recognized, get canonical name
-	    vim_free(r);
-	    r = vim_strsave((char_u *)enc_canon_table[i].name);
-	}
+    if (enc_canon_search(p) >= 0)
+    {
+	// canonical name can be used unmodified
+	if (p != r)
+	    STRMOVE(r, p);
+    }
+    else if ((i = enc_alias_search(p)) >= 0)
+    {
+	// alias recognized, get canonical name
+	vim_free(r);
+	r = vim_strsave((char_u *)enc_canon_table[i].name);
     }
     return r;
 }
@@ -5269,26 +5278,26 @@ convert_input_safe(
 
     d = string_convert_ext(&input_conv, ptr, &dlen,
 					restp == NULL ? NULL : &unconvertlen);
-    if (d != NULL)
+    if (d == NULL)
+	return dlen;
+
+    if (dlen <= maxlen)
     {
-	if (dlen <= maxlen)
+	if (unconvertlen > 0)
 	{
-	    if (unconvertlen > 0)
-	    {
-		// Move the unconverted characters to allocated memory.
-		*restp = alloc(unconvertlen);
-		if (*restp != NULL)
-		    mch_memmove(*restp, ptr + len - unconvertlen, unconvertlen);
-		*restlenp = unconvertlen;
-	    }
-	    mch_memmove(ptr, d, dlen);
+	    // Move the unconverted characters to allocated memory.
+	    *restp = alloc(unconvertlen);
+	    if (*restp != NULL)
+		mch_memmove(*restp, ptr + len - unconvertlen, unconvertlen);
+	    *restlenp = unconvertlen;
 	}
-	else
-	    // result is too long, keep the unconverted text (the caller must
-	    // have done something wrong!)
-	    dlen = len;
-	vim_free(d);
+	mch_memmove(ptr, d, dlen);
     }
+    else
+	// result is too long, keep the unconverted text (the caller must
+	// have done something wrong!)
+	dlen = len;
+    vim_free(d);
     return dlen;
 }
 
@@ -5627,8 +5636,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     if (l->lv_len == 0)
     {
 	// Clearing the table.
-	vim_free(cw_table);
-	cw_table = NULL;
+	VIM_CLEAR(cw_table);
 	cw_table_size = 0;
 	return;
     }
@@ -5640,7 +5648,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     // Check that all entries are a list with three numbers, the range is
     // valid and the cell width is valid.
     item = 0;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	listitem_T *lili;
 	varnumber_T n1;
@@ -5661,9 +5669,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (i == 0)
 	    {
 		n1 = lili->li_tv.vval.v_number;
-		if (n1 < 0x100)
+		if (n1 < 0x80)
 		{
-		    emsg(_(e_only_values_of_0x100_and_higher_supported));
+		    emsg(_(e_only_values_of_0x80_and_higher_supported));
 		    vim_free(ptrs);
 		    return;
 		}
@@ -5742,6 +5750,29 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(cw_table_save);
+    redraw_all_later(UPD_CLEAR);
+}
+
+    void
+f_getcellwidths(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    for (size_t i = 0; i < cw_table_size; i++)
+    {
+	list_T *entry = list_alloc();
+	if (entry == NULL)
+	    break;
+	if (list_append_number(entry, (varnumber_T)cw_table[i].first) == FAIL
+	   || list_append_number(entry, (varnumber_T)cw_table[i].last) == FAIL
+	   || list_append_number(entry, (varnumber_T)cw_table[i].width) == FAIL
+	   || list_append_list(rettv->vval.v_list, entry) == FAIL)
+	{
+	    list_free(entry);
+	    break;
+	}
+    }
 }
 
     void
@@ -5753,3 +5784,16 @@ f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }
 #endif
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * encoding options.
+ */
+    char_u *
+get_encoding_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(enc_canon_table) / sizeof(enc_canon_table[0])))
+	return NULL;
+
+    return (char_u*)enc_canon_table[idx].name;
+}

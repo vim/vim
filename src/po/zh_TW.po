@@ -5,8 +5,17 @@
 #
 # FIRST AUTHOR  Francis S.Lin <piaip@csie.ntu.edu.tw>, 2000
 # FIRST RELEASE Thu Jun 14 14:24:17 CST 2001
+# MAINTAINER: Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 #
-# Last update: 2005/01/27 07:03 (6.3)
+# Generated from zh_TW.UTF-8.po, DO NOT EDIT.
+#
+# Last update: $LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+#
+# XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
+#     it only because patches have been submitted for it by Debian users and the
+#     former maintainer was MIA (Missing In Action), taking over its
+#     maintenance was thus the only way to include those patches.
+#     If you care about this file, and have time to maintain it please do so!
 #
 # To update, search pattern:		/fuzzy\|^msgstr ""\(\n"\)\@!
 #
@@ -2552,7 +2561,7 @@ msgstr ""
 "gvim 認得的參數 (Athena 版):\n"
 
 msgid "-display <display>\tRun Vim on <display>"
-msgstr "-display <display>\t在視窗 <display> 執行 vim"
+msgstr "-display <display>\t在視窗 <display> 執行 Vim"
 
 msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\t啟動後圖示化(iconified)"
@@ -2620,7 +2629,7 @@ msgstr ""
 "gvim 認得的參數 (GTK+ 版):\n"
 
 msgid "-display <display>\tRun Vim on <display> (also: --display)"
-msgstr "-display <display>\t在 <display> 執行 Vim (也可用 --display)"
+msgstr "-display <display>\t在 <display> 執行 vim (也可用 --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\t設定獨特的角色(role)以區分主視窗"
@@ -3214,7 +3223,7 @@ msgstr "行 %4ld:"
 msgid "[string too long]"
 msgstr "[此行過長]"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "正體中文訊息維護者: Francis S.Lin <piaip@csie.ntu.edu."
 "tw>,                                 Cecil Sheng   <b7506022@csie.ntu.edu.tw>"
@@ -3281,11 +3290,11 @@ msgstr "少於一行 "
 
 #, c-format
 msgid "%ld more lines"
-msgstr "還有 %ld 行 "
+msgstr "多了 %ld 行 "
 
 #, c-format
 msgid "%ld fewer lines"
-msgstr "只剩 %ld 行 "
+msgstr "少了 %ld 行 "
 
 msgid " (Interrupted)"
 msgstr " (已中斷)"

@@ -568,7 +568,7 @@ endfunc
 func Test_mkview_terminal_windows()
   CheckFeature terminal
 
-  " create two window on the same terminal to check this is handled OK
+  " create two windows on the same terminal to check this is handled OK
   terminal
   let term_buf = bufnr()
   exe 'sbuf ' .. term_buf
@@ -973,6 +973,7 @@ func Test_mksession_foldopt()
   close
   %bwipe
   set sessionoptions&
+  call delete('Xtest_mks.out')
 endfunc
 
 " Test for mksession with "help" but not "options" in 'sessionoptions'
@@ -1105,6 +1106,7 @@ func Test_mksession_shortmess_with_A()
   set shortmess&
   set sessionoptions&
   call delete('Xtestsession')
+  call delete('Xtestfile')
 endfunc
 
 " Test for mksession with 'compatible' option
@@ -1260,6 +1262,20 @@ func Test_mkview_manual_fold()
         \ foldclosed(5), foldclosed(6), foldclosed(7), foldclosed(8)])
   call delete('Xview')
   bw!
+endfunc
+
+" Test default 'viewdir' value
+func Test_mkview_default_home()
+  if has('win32')
+    " use escape() to handle backslash path separators
+    call assert_match('^' .. escape($ORIGHOME, '\') .. '/vimfiles', &viewdir)
+  elseif has('unix')
+    call assert_match('^' .. $ORIGHOME .. '/.vim', &viewdir)
+  elseif has('amiga')
+    call assert_match('^home:vimfiles', &viewdir)
+  elseif has('mac')
+    call assert_match('^' .. $VIM .. '/vimfiles', &viewdir)
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

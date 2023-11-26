@@ -51,6 +51,7 @@ func ScreenAttrs(lnum, width) abort
   return attrs
 endfunc
 
+" Create a new window with the requested size and fix it.
 func NewWindow(height, width) abort
   exe a:height . 'new'
   exe a:width . 'vsp'
@@ -93,6 +94,18 @@ func GetEscCodeCSIu(key, modifier)
   let key = printf("%d", char2nr(a:key))
   let mod = printf("%d", a:modifier)
   return "\<Esc>[" .. key .. ';' .. mod .. 'u'
+endfunc
+
+" Return the kitty keyboard protocol encoding for a function key:
+" CSI {key}
+" CSS 1;{modifier} {key}
+func GetEscCodeFunckey(key, modifier)
+  if a:modifier == 0
+    return "\<Esc>[" .. a:key
+  endif
+
+  let mod = printf("%d", a:modifier)
+  return "\<Esc>[1;".. mod .. a:key
 endfunc
 
 " Return the kitty keyboard protocol encoding for "key" without a modifier.

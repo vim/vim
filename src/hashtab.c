@@ -108,7 +108,7 @@ hash_clear_all(hashtab_T *ht, int off)
     hashitem_T	*hi;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -249,7 +249,7 @@ hash_add_item(
     hash_T	hash)
 {
     // If resizing failed before and it fails again we can't add an item.
-    if ((ht->ht_flags & HTFLAGS_ERROR) && hash_may_resize(ht, 0) == FAIL)
+    if (ht->ht_flags & HTFLAGS_ERROR)
 	return FAIL;
 
     ++ht->ht_used;
@@ -350,7 +350,7 @@ hash_may_resize(
     hashitem_T	*olditem, *newitem;
     unsigned	newi;
     int		todo;
-    long_u	oldsize, newsize;
+    long_u	newsize;
     long_u	minsize;
     long_u	newmask;
     hash_T	perturb;
@@ -366,6 +366,7 @@ hash_may_resize(
 	emsg("hash_may_resize(): table completely filled");
 #endif
 
+    long_u oldsize = ht->ht_mask + 1;
     if (minitems == 0)
     {
 	// Return quickly for small tables with at least two NULL items.  NULL
@@ -380,7 +381,6 @@ hash_may_resize(
 	 * Shrink the array when it's less than 1/5 full.  When growing it is
 	 * at least 1/4 full (avoids repeated grow-shrink operations)
 	 */
-	oldsize = ht->ht_mask + 1;
 	if (ht->ht_filled * 3 < oldsize * 2 && ht->ht_used > oldsize / 5)
 	    return OK;
 
@@ -421,6 +421,14 @@ hash_may_resize(
 	    oldarray = ht->ht_array;
 	CLEAR_FIELD(ht->ht_smallarray);
     }
+
+    else if (newsize == oldsize && ht->ht_filled * 3 < oldsize * 2)
+    {
+	// The hashtab is already at the desired size, and there are not too
+	// many removed items, bail out.
+	return OK;
+    }
+
     else
     {
 	// Allocate an array.

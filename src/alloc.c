@@ -226,7 +226,7 @@ lalloc(size_t size, int message)
     {
 	// Don't hide this message
 	emsg_silent = 0;
-	iemsg(_(e_internal_error_lalloc_zero));
+	iemsg(e_internal_error_lalloc_zero);
 	return NULL;
     }
 
@@ -580,6 +580,7 @@ free_all_mem(void)
 # ifdef FEAT_EVAL
     free_resub_eval_result();
 # endif
+    free_vbuf();
 }
 #endif
 
@@ -813,7 +814,7 @@ ga_copy_string(garray_T *gap, char_u *p)
 
 /*
  * Add string "p" to "gap".
- * When out of memory "p" is freed and FAIL is returned.
+ * When out of memory FAIL is returned (caller may want to free "p").
  */
     int
 ga_add_string(garray_T *gap, char_u *p)

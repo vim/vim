@@ -1,7 +1,8 @@
 " These commands create the option window.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Nov 23
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 31
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -517,7 +518,7 @@ call <SID>OptionG("swb", &swb)
 call <SID>AddOption("splitbelow", gettext("a new window is put below the current one"))
 call <SID>BinOptionG("sb", &sb)
 call <SID>AddOption("splitkeep", gettext("determines scroll behavior for split windows"))
-call <SID>BinOptionG("spk", &spk)
+call <SID>OptionG("spk", &spk)
 call <SID>AddOption("splitright", gettext("a new window is put right of the current one"))
 call <SID>BinOptionG("spr", &spr)
 call <SID>AddOption("scrollbind", gettext("this window scrolls together with other bound windows"))
@@ -743,10 +744,12 @@ call <SID>AddOption("terse", gettext("add 's' flag in 'shortmess' (don't show se
 call <SID>BinOptionG("terse", &terse)
 call <SID>AddOption("shortmess", gettext("list of flags to make messages shorter"))
 call <SID>OptionG("shm", &shm)
-call <SID>AddOption("showcmd", gettext("show (partial) command keys in the status line"))
+call <SID>AddOption("showcmd", gettext("show (partial) command keys in location given by 'showcmdloc'"))
 let &sc = s:old_sc
 call <SID>BinOptionG("sc", &sc)
 set nosc
+call <SID>AddOption("showcmdloc", gettext("location where to show the (partial) command keys for 'showcmd'"))
+  call <SID>OptionG("sloc", &sloc)
 call <SID>AddOption("showmode", gettext("display the current mode in the status line"))
 call <SID>BinOptionG("smd", &smd)
 call <SID>AddOption("ruler", gettext("show cursor position below each window"))

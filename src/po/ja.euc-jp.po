@@ -2182,7 +2182,7 @@ msgstr "%s の処理中にエラーが検出されました:"
 msgid "line %4ld:"
 msgstr "行 %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "日本語メッセージ翻訳/監修: 村岡 太郎 <koron.kaoriya@gmail.com>"
 
 msgid "Interrupt: "
@@ -7702,8 +7702,8 @@ msgstr "E1112: リストの要素 %d のセル幅が不正です"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: 0x%lx の範囲が重複しています"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: 0x100 以上の値しかサポートされていません"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: 0x80 以上の値しかサポートされていません"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: \"assert_fails()\" の第4引数は数字でなければなりません"

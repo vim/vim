@@ -259,6 +259,8 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     buf->b_listener = lnr;
 
     set_callback(&lnr->lr_callback, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
 
     lnr->lr_id = ++next_listener_id;
     rettv->vval.v_number = lnr->lr_id;
@@ -551,12 +553,24 @@ changed_common(
     {
 	if (wp->w_buffer == curbuf)
 	{
-#ifdef FEAT_FOLDING
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
-#endif
+
 	    // Mark this window to be redrawn later.
 	    if (!redraw_not_allowed && wp->w_redr_type < UPD_VALID)
 		wp->w_redr_type = UPD_VALID;
+
+	    // Reset "w_skipcol" if the topline length has become smaller to
+	    // such a degree that nothing will be visible anymore, accounting
+	    // for 'smoothscroll' <<< or 'listchars' "precedes" marker.
+	    if (wp->w_skipcol > 0
+		    && (last < wp->w_topline
+			|| (wp->w_topline >= lnum
+			    && wp->w_topline < lnume
+			    && win_linetabsize(wp, wp->w_topline,
+					ml_get(wp->w_topline), (colnr_T)MAXCOL)
+				    <= wp->w_skipcol + sms_marker_overlap(wp,
+					win_col_off(wp) - win_col_off2(wp)))))
+		wp->w_skipcol = 0;
 
 	    // Check if a change in the buffer has invalidated the cached
 	    // values for the cursor.
@@ -609,7 +623,9 @@ changed_common(
 		{
 		    if (wp->w_lines[i].wl_lnum >= lnum)
 		    {
-			if (wp->w_lines[i].wl_lnum < lnume)
+			// Do not change wl_lnum at index zero, it is used to
+			// compare with w_topline.  Invalidate it instead.
+			if (wp->w_lines[i].wl_lnum < lnume || i == 0)
 			{
 			    // line included in change
 			    wp->w_lines[i].wl_valid = FALSE;
@@ -770,14 +786,7 @@ appended_lines(linenr_T lnum, long count)
     void
 appended_lines_mark(linenr_T lnum, long count)
 {
-    // Skip mark_adjust when adding a line after the last one, there can't
-    // be marks there. But it's still needed in diff mode.
-    if (lnum + count < curbuf->b_ml.ml_line_count
-#ifdef FEAT_DIFF
-	    || curwin->w_p_diff
-#endif
-	)
-	mark_adjust(lnum + 1, (linenr_T)MAXLNUM, count, 0L);
+    mark_adjust(lnum + 1, (linenr_T)MAXLNUM, count, 0L);
     changed_lines(lnum + 1, 0, lnum + 1, count);
 }
 
@@ -2140,14 +2149,7 @@ open_line(
 	    goto theend;
 	// Postpone calling changed_lines(), because it would mess up folding
 	// with markers.
-	// Skip mark_adjust when adding a line after the last one, there can't
-	// be marks there. But still needed in diff mode.
-	if (curwin->w_cursor.lnum + 1 < curbuf->b_ml.ml_line_count
-#ifdef FEAT_DIFF
-		|| curwin->w_p_diff
-#endif
-	    )
-	    mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
+	mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 	did_append = TRUE;
 #ifdef FEAT_PROP_POPUP
 	if ((State & MODE_INSERT) && (State & VREPLACE_FLAG) == 0)

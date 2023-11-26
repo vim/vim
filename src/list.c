@@ -124,27 +124,27 @@ list_alloc_with_items(int count)
 
     list_init(l);
 
-    if (count > 0)
-    {
-	listitem_T	*li = (listitem_T *)(l + 1);
-	int		i;
+    if (count <= 0)
+	return l;
 
-	l->lv_len = count;
-	l->lv_with_items = count;
-	l->lv_first = li;
-	l->lv_u.mat.lv_last = li + count - 1;
-	for (i = 0; i < count; ++i)
-	{
-	    if (i == 0)
-		li->li_prev = NULL;
-	    else
-		li->li_prev = li - 1;
-	    if (i == count - 1)
-		li->li_next = NULL;
-	    else
-		li->li_next = li + 1;
-	    ++li;
-	}
+    listitem_T	*li = (listitem_T *)(l + 1);
+    int		i;
+
+    l->lv_len = count;
+    l->lv_with_items = count;
+    l->lv_first = li;
+    l->lv_u.mat.lv_last = li + count - 1;
+    for (i = 0; i < count; ++i)
+    {
+	if (i == 0)
+	    li->li_prev = NULL;
+	else
+	    li->li_prev = li - 1;
+	if (i == count - 1)
+	    li->li_next = NULL;
+	else
+	    li->li_next = li + 1;
+	++li;
     }
 
     return l;
@@ -297,11 +297,11 @@ list_free_items(int copyID)
     void
 list_free(list_T *l)
 {
-    if (!in_free_unref_items)
-    {
-	list_free_contents(l);
-	list_free_list(l);
-    }
+    if (in_free_unref_items)
+	return;
+
+    list_free_contents(l);
+    list_free_list(l);
 }
 
 /*
@@ -414,6 +414,10 @@ list_find(list_T *l, long n)
 	return NULL;
 
     CHECK_LIST_MATERIALIZE(l);
+
+    // range_list_materialize may reset l->lv_len
+    if (n >= l->lv_len)
+	return NULL;
 
     // When there is a cached index may start search from there.
     if (l->lv_u.mat.lv_idx_item != NULL)
@@ -540,13 +544,13 @@ list_find_index(list_T *l, long *idx)
 {
     listitem_T *li = list_find(l, *idx);
 
-    if (li == NULL)
+    if (li != NULL)
+	return li;
+
+    if (*idx < 0)
     {
-	if (*idx < 0)
-	{
-	    *idx = 0;
-	    li = list_find(l, *idx);
-	}
+	*idx = 0;
+	li = list_find(l, *idx);
     }
     return li;
 }
@@ -772,21 +776,21 @@ check_range_index_one(list_T *l, long *n1, int can_append, int quiet)
     long	orig_n1 = *n1;
     listitem_T	*li = list_find_index(l, n1);
 
+    if (li != NULL)
+	return li;
+
+    // Vim9: Allow for adding an item at the end.
+    if (can_append && in_vim9script()
+	    && *n1 == l->lv_len && l->lv_lock == 0)
+    {
+	list_append_number(l, 0);
+	li = list_find_index(l, n1);
+    }
     if (li == NULL)
     {
-	// Vim9: Allow for adding an item at the end.
-	if (can_append && in_vim9script()
-					&& *n1 == l->lv_len && l->lv_lock == 0)
-	{
-	    list_append_number(l, 0);
-	    li = list_find_index(l, n1);
-	}
-	if (li == NULL)
-	{
-	    if (!quiet)
-		semsg(_(e_list_index_out_of_range_nr), orig_n1);
-	    return NULL;
-	}
+	if (!quiet)
+	    semsg(_(e_list_index_out_of_range_nr), orig_n1);
+	return NULL;
     }
     return li;
 }
@@ -1286,45 +1290,45 @@ list_copy(list_T *orig, int deep, int top, int copyID)
 	return NULL;
 
     copy = list_alloc();
-    if (copy != NULL)
+    if (copy == NULL)
+	return NULL;
+
+    if (orig->lv_type == NULL || top || deep)
+	copy->lv_type = NULL;
+    else
+	copy->lv_type = alloc_type(orig->lv_type);
+    if (copyID != 0)
     {
-	if (orig->lv_type == NULL || top || deep)
-	    copy->lv_type = NULL;
-	else
-	    copy->lv_type = alloc_type(orig->lv_type);
-	if (copyID != 0)
+	// Do this before adding the items, because one of the items may
+	// refer back to this list.
+	orig->lv_copyID = copyID;
+	orig->lv_copylist = copy;
+    }
+    CHECK_LIST_MATERIALIZE(orig);
+    for (item = orig->lv_first; item != NULL && !got_int;
+	    item = item->li_next)
+    {
+	ni = listitem_alloc();
+	if (ni == NULL)
+	    break;
+	if (deep)
 	{
-	    // Do this before adding the items, because one of the items may
-	    // refer back to this list.
-	    orig->lv_copyID = copyID;
-	    orig->lv_copylist = copy;
-	}
-	CHECK_LIST_MATERIALIZE(orig);
-	for (item = orig->lv_first; item != NULL && !got_int;
-							 item = item->li_next)
-	{
-	    ni = listitem_alloc();
-	    if (ni == NULL)
-		break;
-	    if (deep)
+	    if (item_copy(&item->li_tv, &ni->li_tv,
+			deep, FALSE, copyID) == FAIL)
 	    {
-		if (item_copy(&item->li_tv, &ni->li_tv,
-						  deep, FALSE, copyID) == FAIL)
-		{
-		    vim_free(ni);
-		    break;
-		}
+		vim_free(ni);
+		break;
 	    }
-	    else
-		copy_tv(&item->li_tv, &ni->li_tv);
-	    list_append(copy, ni);
 	}
-	++copy->lv_refcount;
-	if (item != NULL)
-	{
-	    list_unref(copy);
-	    copy = NULL;
-	}
+	else
+	    copy_tv(&item->li_tv, &ni->li_tv);
+	list_append(copy, ni);
+    }
+    ++copy->lv_refcount;
+    if (item != NULL)
+    {
+	list_unref(copy);
+	copy = NULL;
     }
 
     return copy;
@@ -1491,17 +1495,17 @@ list_join(
     retval = list_join_inner(gap, l, sep, echo_style, restore_copyID,
 							    copyID, &join_ga);
 
+    if (join_ga.ga_data == NULL)
+	return retval;
+
     // Dispose each item in join_ga.
-    if (join_ga.ga_data != NULL)
+    p = (join_T *)join_ga.ga_data;
+    for (i = 0; i < join_ga.ga_len; ++i)
     {
-	p = (join_T *)join_ga.ga_data;
-	for (i = 0; i < join_ga.ga_len; ++i)
-	{
-	    vim_free(p->tofree);
-	    ++p;
-	}
-	ga_clear(&join_ga);
+	vim_free(p->tofree);
+	++p;
     }
+    ga_clear(&join_ga);
 
     return retval;
 }
@@ -1592,7 +1596,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	had_comma = **arg == ',';
 	if (had_comma)
 	{
-	    if (vim9script && !IS_WHITE_OR_NUL((*arg)[1]) && (*arg)[1] != ']')
+	    if (vim9script && !IS_WHITE_NL_OR_NUL((*arg)[1]) && (*arg)[1] != ']')
 	    {
 		semsg(_(e_white_space_required_after_str_str), ",", *arg);
 		goto failret;
@@ -1687,7 +1691,7 @@ init_static_list(staticList10_T *sl)
     list_T  *l = &sl->sl_list;
     int	    i;
 
-    memset(sl, 0, sizeof(staticList10_T));
+    CLEAR_POINTER(sl);
     l->lv_first = &sl->sl_items[0];
     l->lv_u.mat.lv_last = &sl->sl_items[9];
     l->lv_refcount = DO_NOT_FREE_CNT;
@@ -1910,8 +1914,8 @@ item_compare(const void *s1, const void *s2)
 
     if (sortinfo->item_compare_numbers)
     {
-	varnumber_T	v1 = tv_get_number(tv1);
-	varnumber_T	v2 = tv_get_number(tv2);
+	varnumber_T	v1 = tv_to_number(tv1);
+	varnumber_T	v2 = tv_to_number(tv2);
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
@@ -2333,7 +2337,7 @@ filter_map_one(
     copy_tv(tv, get_vim_var_tv(VV_VAL));
     argv[0] = *get_vim_var_tv(VV_KEY);
     argv[1] = *get_vim_var_tv(VV_VAL);
-    if (eval_expr_typval(expr, argv, 2, fc, newtv) == FAIL)
+    if (eval_expr_typval(expr, FALSE, argv, 2, fc, newtv) == FAIL)
 	goto theend;
     if (filtermap == FILTERMAP_FILTER)
     {
@@ -2398,10 +2402,10 @@ list_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-    if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
+    if (l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
     if (l->lv_first == &range_list_item)
@@ -2560,36 +2564,36 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     // message.  Avoid a misleading error message for an empty string that
     // was not passed as argument.
     expr = &argvars[1];
-    if (expr->v_type != VAR_UNKNOWN)
-    {
-	typval_T	save_val;
-	typval_T	save_key;
+    if (expr->v_type == VAR_UNKNOWN)
+	return;
 
-	prepare_vimvar(VV_VAL, &save_val);
-	prepare_vimvar(VV_KEY, &save_key);
+    typval_T	save_val;
+    typval_T	save_key;
 
-	// We reset "did_emsg" to be able to detect whether an error
-	// occurred during evaluation of the expression.
-	save_did_emsg = did_emsg;
-	did_emsg = FALSE;
+    prepare_vimvar(VV_VAL, &save_val);
+    prepare_vimvar(VV_KEY, &save_key);
 
-	if (argvars[0].v_type == VAR_DICT)
-	    dict_filter_map(argvars[0].vval.v_dict, filtermap, type, func_name,
-		    arg_errmsg, expr, rettv);
-	else if (argvars[0].v_type == VAR_BLOB)
-	    blob_filter_map(argvars[0].vval.v_blob, filtermap, expr, rettv);
-	else if (argvars[0].v_type == VAR_STRING)
-	    string_filter_map(tv_get_string(&argvars[0]), filtermap, expr,
-		    rettv);
-	else // argvars[0].v_type == VAR_LIST
-	    list_filter_map(argvars[0].vval.v_list, filtermap, type, func_name,
-		    arg_errmsg, expr, rettv);
+    // We reset "did_emsg" to be able to detect whether an error
+    // occurred during evaluation of the expression.
+    save_did_emsg = did_emsg;
+    did_emsg = FALSE;
 
-	restore_vimvar(VV_KEY, &save_key);
-	restore_vimvar(VV_VAL, &save_val);
+    if (argvars[0].v_type == VAR_DICT)
+	dict_filter_map(argvars[0].vval.v_dict, filtermap, type, func_name,
+						      arg_errmsg, expr, rettv);
+    else if (argvars[0].v_type == VAR_BLOB)
+	blob_filter_map(argvars[0].vval.v_blob, filtermap, expr,
+							    arg_errmsg, rettv);
+    else if (argvars[0].v_type == VAR_STRING)
+	string_filter_map(tv_get_string(&argvars[0]), filtermap, expr, rettv);
+    else // argvars[0].v_type == VAR_LIST
+	list_filter_map(argvars[0].vval.v_list, filtermap, type, func_name,
+						      arg_errmsg, expr, rettv);
 
-	did_emsg |= save_did_emsg;
-    }
+    restore_vimvar(VV_KEY, &save_key);
+    restore_vimvar(VV_VAL, &save_val);
+
+    did_emsg |= save_did_emsg;
 }
 
 /*
@@ -2735,8 +2739,9 @@ f_count(typval_T *argvars, typval_T *rettv)
 	else
 	    n = dict_count(argvars[0].vval.v_dict, &argvars[1], ic);
     }
-    else
-	semsg(_(e_argument_of_str_must_be_list_or_dictionary), "count()");
+    else if (!error)
+	semsg(_(e_argument_of_str_must_be_list_string_or_dictionary),
+								    "count()");
     rettv->vval.v_number = n;
 }
 
@@ -2831,7 +2836,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
     }
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
     {
-	// Check that extend() does not change the type of the list if it was
+	// Check that extend() does not change the type of the dict if it was
 	// declared.
 	if (!is_new && in_vim9script() && argvars[0].vval.v_dict != NULL)
 	    type = argvars[0].vval.v_dict->dv_type;
@@ -2994,14 +2999,20 @@ list_reverse(list_T *l, typval_T *rettv)
     void
 f_reverse(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_list_or_blob_arg(argvars, 0) == FAIL)
+    if (check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type == VAR_BLOB)
 	blob_reverse(argvars[0].vval.v_blob, rettv);
-    else if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_argument_of_str_must_be_list_or_blob), "reverse()");
-    else
+    else if (argvars[0].v_type == VAR_STRING)
+    {
+	rettv->v_type = VAR_STRING;
+	if (argvars[0].vval.v_string != NULL)
+	    rettv->vval.v_string = reverse_text(argvars[0].vval.v_string);
+	else
+	    rettv->vval.v_string = NULL;
+    }
+    else if (argvars[0].v_type == VAR_LIST)
 	list_reverse(argvars[0].vval.v_list, rettv);
 }
 
@@ -3064,7 +3075,7 @@ list_reduce(
     if (l == NULL)
 	return;
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, rettv);
 
     prev_locked = l->lv_lock;
@@ -3083,7 +3094,7 @@ list_reduce(
 	else
 	    argv[1] = li->li_tv;
 
-	r = eval_expr_typval(expr, argv, 2, fc, rettv);
+	r = eval_expr_typval(expr, TRUE, argv, 2, fc, rettv);
 
 	if (argv[0].v_type != VAR_NUMBER && argv[0].v_type != VAR_UNKNOWN)
 	    clear_tv(&argv[0]);
@@ -3124,7 +3135,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	    && argvars[0].v_type != VAR_LIST
 	    && argvars[0].v_type != VAR_BLOB)
     {
-	semsg(_(e_string_list_or_blob_required), "reduce()");
+	emsg(_(e_string_list_or_blob_required));
 	return;
     }
 

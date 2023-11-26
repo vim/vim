@@ -490,7 +490,7 @@ def Test_try_catch_throw()
   try # comment
     add(l, '1')
     throw 'wrong'
-    add(l, '2')
+    add(l, '2')  # "unreachable code"
   catch # comment
     add(l, v:exception)
   finally # comment
@@ -503,7 +503,7 @@ def Test_try_catch_throw()
     try
       add(l, '1')
       throw 'wrong'
-      add(l, '2')
+      add(l, '2')  # "unreachable code"
     catch /right/
       add(l, v:exception)
     endtry
@@ -542,12 +542,12 @@ def Test_try_catch_throw()
   if 1
   else
     try | catch /pat/ | endtry
-    try | catch /pat/ 
+    try | catch /pat/
     endtry
-    try 
+    try
     catch /pat/ | endtry
-    try 
-    catch /pat/ 
+    try
+    catch /pat/
     endtry
   endif
 
@@ -617,7 +617,7 @@ def Test_try_catch_throw()
   endtry
   assert_equal(266, n)
 
-  l = [1, 2, 3] 
+  l = [1, 2, 3]
   try
     [n] = l
   catch /E1093:/
@@ -754,7 +754,7 @@ def Test_try_catch_throw()
     var ret = 5
     try
       throw 'getout'
-      return -1
+      return -1 # "unreachable code"
     catch /getout/
       # ret is evaluated here
       return ret
@@ -810,6 +810,65 @@ def Test_try_catch_throw()
       endif
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_unreachable_after()
+  var lines =<< trim END
+      try
+        throw 'Error'
+        echo 'not reached'
+      catch /Error/
+      endtry
+  END
+  v9.CheckDefFailure(lines, 'E1095: Unreachable code after :throw')
+
+  lines =<< trim END
+      def SomeFunc(): number
+        try
+          return 3
+          echo 'not reached'
+        catch /Error/
+        endtry
+        return 4
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1095: Unreachable code after :return')
+enddef
+
+def Test_throw_in_nested_try()
+  var lines =<< trim END
+      vim9script
+
+      def Try(F: func(): void)
+        try
+          F()
+        catch
+        endtry
+      enddef
+
+      class X
+        def F()
+          try
+            throw 'Foobar'
+          catch
+            throw v:exception
+          endtry
+        enddef
+      endclass
+
+      def Test_TryMethod()
+        var x = X.new()
+        Try(() => x.F())
+      enddef
+
+
+      try
+        Test_TryMethod()
+      catch
+      endtry
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_try_var_decl()
@@ -1044,10 +1103,17 @@ def Test_nocatch_throw_silenced()
   source XthrowSilenced
 enddef
 
+" g:DeletedFunc() is found when compiling Test_try_catch_throw() and then
+" deleted, this should give a runtime error.
 def DeletedFunc(): list<any>
   return ['delete me']
 enddef
-defcompile
+defcompile DeletedFunc
+
+call test_override('unreachable', 1)
+defcompile Test_try_catch_throw
+call test_override('unreachable', 0)
+
 delfunc DeletedFunc
 
 def s:ThrowFromDef()
@@ -1093,7 +1159,7 @@ def Test_try_catch_nested()
   try
     l->add('1')
     throw 'bad'
-    l->add('x')
+    l->add('x')  # "unreachable code"
   catch /bad/
     l->add('2')
     try
@@ -1132,6 +1198,10 @@ def Test_try_catch_nested()
   endtry
   assert_equal(['1', '2', '3', '4'], l)
 enddef
+
+call test_override('unreachable', 1)
+defcompile Test_try_catch_nested
+call test_override('unreachable', 0)
 
 def s:TryOne(): number
   try
@@ -1336,7 +1406,7 @@ def Test_statusline_syntax()
       endfunc
       set laststatus=2 statusline=%!Status()
       redrawstatus
-      set laststatus statusline= 
+      set laststatus statusline=
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -3601,7 +3671,7 @@ def Test_declare_script_var_in_func()
   END
   v9.CheckScriptFailure(lines, 'E1269:')
 enddef
-        
+
 def Test_lock_script_var()
   var lines =<< trim END
       vim9script
@@ -3626,7 +3696,7 @@ def Test_lock_script_var()
   END
   v9.CheckScriptSuccess(lines)
 enddef
-        
+
 
 func Test_vim9script_not_global()
   " check that items defined in Vim9 script are script-local, not global
@@ -4262,6 +4332,23 @@ def Test_option_set()
   set foldlevel&
 enddef
 
+def Test_option_set_line_number()
+  var lines =<< trim END
+      vim9script
+      # line2
+      # line3
+      def F()
+          # line5
+          &foldlevel = -128
+      enddef
+      F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  var res = execute('verbose set foldlevel')
+  assert_match('  foldlevel.*Last set from .*XScriptSuccess\d\+ line 6', res)
+enddef
+
 def Test_option_modifier()
   # legacy script allows for white space
   var lines =<< trim END
@@ -4517,6 +4604,183 @@ def Test_echo_uninit_variables()
 
     assert_equal(['no process', 'channel fail'], res->split('\n'))
   endif
+enddef
+
+def Test_free_type_before_use()
+  # this rather complicated script was freeing a type before using it
+  var lines =<< trim END
+      vim9script
+
+      def Scan(rel: list<dict<any>>): func(func(dict<any>))
+        return (Emit: func(dict<any>)) => {
+          for t in rel
+            Emit(t)
+          endfor
+        }
+      enddef
+
+      def Build(Cont: func(func(dict<any>))): list<dict<any>>
+        var rel: list<dict<any>> = []
+        Cont((t) => {
+            add(rel, t)
+        })
+        return rel
+      enddef
+
+      var R = [{A: 0}]
+      var result = Scan(R)->Build()
+      result = Scan(R)->Build()
+
+      assert_equal(R, result)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" The following complicated script used to cause an internal error (E340)
+" because the funcref instruction memory was referenced after the instruction
+" memory was reallocated (Github issue #13178)
+def Test_refer_funcref_instr_after_realloc()
+  var lines =<< trim END
+    vim9script
+    def A(d: bool)
+      var e = abs(0)
+      var f = &emoji
+      &emoji = true
+      if ['', '', '']->index('xxx') == 0
+        eval 0 + 0
+      endif
+      if &filetype == 'xxx'
+        var g = abs(0)
+        while g > 0
+          if getline(g) == ''
+            break
+          endif
+          --g
+        endwhile
+        if g == 0
+          return
+        endif
+        if d
+          feedkeys($'{g}G')
+          g = abs(0)
+        endif
+        var h = abs(0)
+        var i = abs(0)
+        var j = abs(0)
+        while j < 0
+          if abs(0) < h && getline(j) != ''
+          break
+          endif
+          ++j
+        endwhile
+        feedkeys($'{g}G{j}G')
+        return
+      endif
+      def B()
+      enddef
+      def C()
+      enddef
+    enddef
+    A(false)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for calling a deferred function after an exception
+def Test_defer_after_exception()
+  var lines =<< trim END
+    vim9script
+
+    var callTrace: list<number> = []
+    def Bar()
+      callTrace += [1]
+      throw 'InnerException'
+    enddef
+
+    def Defer()
+      callTrace += [2]
+      callTrace += [3]
+      try
+        Bar()
+      catch /InnerException/
+        callTrace += [4]
+      endtry
+      callTrace += [5]
+      callTrace += [6]
+    enddef
+
+    def Foo()
+      defer Defer()
+      throw "TestException"
+    enddef
+
+    try
+      Foo()
+    catch /TestException/
+      callTrace += [7]
+    endtry
+
+    assert_equal([2, 3, 1, 4, 5, 6, 7], callTrace)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for multiple deferred function which throw exceptions.
+" Exceptions thrown by deferred functions should result in error messages but
+" not propagated into the calling functions.
+def Test_multidefer_with_exception()
+  var lines =<< trim END
+    vim9script
+
+    var callTrace: list<number> = []
+    def Except()
+      callTrace += [1]
+      throw 'InnerException'
+      callTrace += [2]
+    enddef
+
+    def FirstDefer()
+      callTrace += [3]
+      callTrace += [4]
+    enddef
+
+    def SecondDeferWithExcept()
+      callTrace += [5]
+      Except()
+      callTrace += [6]
+    enddef
+
+    def ThirdDefer()
+      callTrace += [7]
+      callTrace += [8]
+    enddef
+
+    def Foo()
+      callTrace += [9]
+      defer FirstDefer()
+      defer SecondDeferWithExcept()
+      defer ThirdDefer()
+      callTrace += [10]
+    enddef
+
+    v:errmsg = ''
+    try
+      callTrace += [11]
+      Foo()
+      callTrace += [12]
+    catch /TestException/
+      callTrace += [13]
+    catch
+      callTrace += [14]
+    finally
+      callTrace += [15]
+    endtry
+    callTrace += [16]
+
+    assert_equal('E605: Exception not caught: InnerException', v:errmsg)
+    assert_equal([11, 9, 10, 7, 8, 5, 1, 3, 4, 12, 15, 16], callTrace)
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 " Keep this last, it messes up highlighting.

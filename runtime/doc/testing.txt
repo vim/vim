@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.0.  Last change: 2022 May 16
+*testing.txt*	For Vim version 9.0.  Last change: 2023 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -21,7 +21,7 @@ Vim can be tested after building it, usually with "make test".
 The tests are located in the directory "src/testdir".
 
 There are two types of tests added over time:
-	test20.in		oldest, only for tiny and small builds
+	test20.in		oldest, only for tiny builds
 	test_something.vim	new style tests
 
 						*new-style-testing*
@@ -94,7 +94,7 @@ test_gui_event({event}, {args})
 		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
 		    "scrollbar" move or drag the scrollbar.
-		    "sendevent" send a low-level GUI event.
+		    "key"	send a low-level keyboard event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -135,9 +135,9 @@ test_gui_event({event}, {args})
 		  Inject either a mouse button click, or a mouse move, event.
 		  The supported items in {args} are:
 		    button:	mouse button.  The supported values are:
-				    0	right mouse button
+				    0	left mouse button
 				    1	middle mouse button
-				    2	left mouse button
+				    2	right mouse button
 				    3	mouse button release
 				    4	scroll wheel down
 				    5	scroll wheel up
@@ -166,20 +166,22 @@ test_gui_event({event}, {args})
 		  Set or drag the left, right or horizontal scrollbar.  Only
 		  works when the scrollbar actually exists.  The supported
 		  items in {args} are:
-		    which:	scrollbar. The supported values are:
+		    which:	Selects the scrollbar. The supported values
+				are:
 				    left  Left scrollbar of the current window
 				    right Right scrollbar of the current window
 				    hor   Horizontal scrollbar
-		    value:	amount to scroll.  For the vertical scrollbars
-				the value can be 1 to the line-count of the
-				buffer.  For the horizontal scrollbar the
-				value can be between 1 and the maximum line
-				length, assuming 'wrap' is not set.
+		    value:	Amount to scroll.  For the vertical scrollbars
+				the value can be between 0 to the line-count
+				of the buffer minus one.  For the horizontal
+				scrollbar the value can be between 1 and the
+				maximum line length, assuming 'wrap' is not
+				set.
 		    dragging:	1 to drag the scrollbar and 0 to click in the
 				scrollbar.
 
-		"sendevent":
-		  Send a low-level GUI event (e.g. key-up or down).
+		"key":
+		  Send a low-level keyboard event (e.g. key-up or down).
 		  Currently only supported on MS-Windows.
 		  The supported items in {args} are:
 		    event:	The supported string values are:
@@ -197,7 +199,7 @@ test_gui_event({event}, {args})
 		  Inject an event to select a tabline menu entry. The
 		  supported items in {args} are:
 		    tabnr:	tab page number
-		    item: 	tab page menu item number. 1 for the first
+		    item:	tab page menu item number. 1 for the first
 				menu item, 2 for the second item and so on.
 
 		After injecting the GUI events you probably should call
@@ -223,6 +225,77 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		Can also be used as a |method|: >
 			GetErrorText()->test_ignore_error()
 
+
+test_mswin_event({event}, {args})		*test_mswin_event()*
+		Generate a low-level MS-Windows {event} with arguments {args}
+		for testing Vim functionality.  It works for MS-Windows GUI
+		and for the console.
+
+		{event} is a String and the supported values are:
+		    "mouse"	mouse event.
+		    "key"	keyboard event.
+
+		"mouse":
+		  Inject either a mouse button click, or a mouse move, event.
+		  The supported items in {args} are:
+		    button:	mouse button.  The supported values are:
+				    0	right mouse button
+				    1	middle mouse button
+				    2	left mouse button
+				    3	mouse button release
+				    4	scroll wheel down
+				    5	scroll wheel up
+				    6	scroll wheel left
+				    7	scroll wheel right
+		    row:	mouse click row number.  The first row of the
+				Vim window is 1 and the last row is 'lines'.
+		    col:	mouse click column number.  The maximum value
+				of {col} is 'columns'.
+				Note: row and col are always interpreted as
+				screen cells for the console application.
+				But, they may be interpreted as pixels
+				for the GUI, depending on "cell".
+		    multiclick:	set to 1 to inject a double-click mouse event.
+		    modifiers:	key modifiers.  The supported values are:
+				    4	shift is pressed
+				    8	alt is pressed
+				   16	ctrl is pressed
+		    move:	Optional; if used and TRUE then a mouse move
+			        event can be generated.
+				Only {args} row: and col: are used and
+				required.
+				Only results in an event when 'mousemoveevent'
+				is set or a popup uses mouse move events.
+		    cell:	Optional for the GUI: when present and TRUE
+				then "move" uses screen cells instead of pixel
+				positions.  Not used by the console.
+
+		"key":
+		  Send a low-level keyboard event (e.g. keyup or keydown).
+		  The supported items in {args} are:
+		    event:	The supported string values are:
+				    keyup   generate a keyup event
+				    keydown generate a keydown event
+		    keycode:	Keycode to use for a keyup or a keydown event.
+		    modifiers:	Optional; key modifiers.
+				The supported values are:
+				    2	shift is pressed
+				    4	ctrl is pressed
+				    8	alt is pressed
+				Note: These values are different from the
+				mouse modifiers.
+		    execute:	Optional. Similar to |feedkeys()| mode x.
+				When this is included and set to true
+				(non-zero) then Vim will process any buffered
+				unprocessed key events.  All other {args}
+				items are optional when this is set and true.
+
+		Returns TRUE if the event is successfully added or executed,
+		FALSE if there is a failure.
+
+		Can also be used as a |method|: >
+			GetEvent()->test_mswin_event({args})
+<
 
 test_null_blob()					*test_null_blob()*
 		Return a |Blob| that is null. Only useful for testing.
@@ -298,7 +371,8 @@ test_override({name}, {val})				*test_override()*
 			     string is detected
 		ui_delay     time in msec to use in ui_delay(); overrules a
 			     wait time of up to 3 seconds for messages
-		uptime 	     overrules sysinfo.uptime
+		unreachable  no error for code after `:throw` and `:return`
+		uptime	     overrules sysinfo.uptime
 		vterm_title  setting the window title by a job running in a
 			     terminal window
 		ALL	     clear all overrides, except alloc_lines ({val} is
@@ -307,12 +381,17 @@ test_override({name}, {val})				*test_override()*
 		"starting" is to be used when a test should behave like
 		startup was done.  Since the tests are run by sourcing a
 		script the "starting" variable is non-zero. This is usually a
-		good thing (tests run faster), but sometimes changes behavior
-		in a way that the test doesn't work properly.
+		good thing (tests run faster), but sometimes this changes
+		behavior in a way that the test doesn't work properly.
 		When using: >
 			call test_override('starting', 1)
 <		The value of "starting" is saved.  It is restored by: >
 			call test_override('starting', 0)
+
+<		To make sure the flag is reset later using `:defer` can be
+		useful: >
+			call test_override('unreachable', 1)
+			defer call test_override('unreachable', 0)
 
 <		Can also be used as a |method|: >
 			GetOverrideVal()-> test_override('starting')
@@ -377,13 +456,14 @@ assert_beeps({cmd})					*assert_beeps()*
 assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
 		added to |v:errors| and 1 is returned.  Otherwise zero is
-		returned |assert-return|.
+		returned. |assert-return|
+		The error is in the form "Expected {expected} but got
+		{actual}".  When {msg} is present it is prefixed to that.
+
 		There is no automatic conversion, the String "4" is different
 		from the Number 4.  And the number 4 is different from the
 		Float 4.0.  The value of 'ignorecase' is not used here, case
 		always matters.
-		When {msg} is omitted an error in the form "Expected
-		{expected} but got {actual}" is produced.
 		Example: >
 	assert_equal('foo', 'bar')
 <		Will result in a string to be added to |v:errors|:
@@ -462,11 +542,12 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 assert_false({actual} [, {msg}])			*assert_false()*
 		When {actual} is not false an error message is added to
 		|v:errors|, like with |assert_equal()|.
+		The error is in the form "Expected False but got {actual}".
+		When {msg} is present it is prepended to that.
 		Also see |assert-return|.
+
 		A value is false when it is zero. When {actual} is not a
 		number the assert fails.
-		When {msg} is omitted an error in the form
-		"Expected False but got {actual}" is produced.
 
 		Can also be used as a |method|: >
 			GetResult()->assert_false()
@@ -475,14 +556,16 @@ assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
 		This asserts number and |Float| values.  When {actual}  is lower
 		than {lower} or higher than {upper} an error message is added
 		to |v:errors|.  Also see |assert-return|.
-		When {msg} is omitted an error in the form
-		"Expected range {lower} - {upper}, but got {actual}" is
-		produced.
+		The error is in the form "Expected range {lower} - {upper},
+		but got {actual}".  When {msg} is present it is prefixed to
+		that.
 
 								*assert_match()*
 assert_match({pattern}, {actual} [, {msg}])
 		When {pattern} does not match {actual} an error message is
 		added to |v:errors|.  Also see |assert-return|.
+		The error is in the form "Pattern {pattern} does not match
+		{actual}".  When {msg} is present it is prefixed to that.
 
 		{pattern} is used as with |=~|: The matching is always done
 		like 'magic' was set and 'cpoptions' is empty, no matter what
@@ -492,8 +575,6 @@ assert_match({pattern}, {actual} [, {msg}])
 		Use "^" and "$" to match with the start and end of the text.
 		Use both to match the whole text.
 
-		When {msg} is omitted an error in the form
-		"Pattern {pattern} does not match {actual}" is produced.
 		Example: >
 	assert_match('^f.*o$', 'foobar')
 <		Will result in a string to be added to |v:errors|:
@@ -543,8 +624,7 @@ assert_true({actual} [, {msg}])				*assert_true()*
 		Also see |assert-return|.
 		A value is TRUE when it is a non-zero number.  When {actual}
 		is not a number the assert fails.
-		When {msg} is omitted an error in the form "Expected True but
-		got {actual}" is produced.
+		When {msg} is given it precedes the default message.
 
 		Can also be used as a |method|: >
 			GetResult()->assert_true()

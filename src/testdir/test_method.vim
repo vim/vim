@@ -62,7 +62,7 @@ func Test_dict_method()
   call assert_equal(2, d->remove("two"))
   let d.two = 2
   call assert_fails('let x = d->repeat(2)', 'E731:')
-  call assert_fails('let x = d->reverse()', 'E899:')
+  call assert_fails('let x = d->reverse()', 'E1252:')
   call assert_fails('let x = d->sort()', 'E686:')
   call assert_equal("{'one': 1, 'two': 2, 'three': 3}", d->string())
   call assert_equal(v:t_dict, d->type())
@@ -127,7 +127,7 @@ endfunc
 
 func Test_method_syntax()
   eval [1, 2, 3]  ->sort( )
-  eval [1, 2, 3]  
+  eval [1, 2, 3]
 	\ ->sort(
 	\ )
   eval [1, 2, 3]->sort()

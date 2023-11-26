@@ -375,7 +375,7 @@ func Test_searchpair_timeout_with_skip()
   else
     let ms = 1
     let min_time = 0.001
-    let max_time = min_time * 10.0
+    let max_time = min_time * 15.0
     if RunningWithValgrind()
       let max_time += 0.04  " this can be slow with valgrind
     endif
@@ -1411,6 +1411,22 @@ func Test_subst_word_under_cursor()
   set noincsearch
 endfunc
 
+func Test_search_skip_all_matches()
+  enew
+  call setline(1, ['no match here',
+        \ 'match this line',
+        \ 'nope',
+        \ 'match in this line',
+        \ 'last line',
+        \ ])
+  call cursor(1, 1)
+  let lnum = search('this', '', 0, 0, 'getline(".") =~ "this line"')
+  " Only check that no match is found.  Previously it searched forever.
+  call assert_equal(0, lnum)
+
+  bwipe!
+endfunc
+
 func Test_search_undefined_behaviour()
   CheckFeature terminal
 
@@ -2060,6 +2076,30 @@ func Test_incsearch_substitute_dump2()
   sleep 100m
   call VerifyScreenDump(buf, 'Test_incsearch_sub_02', {})
 
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_incsearch_restore_view()
+  CheckOption incsearch
+  CheckScreendump
+
+  let lines =<< trim [CODE]
+    set incsearch nohlsearch
+    setlocal scrolloff=0 smoothscroll
+    call setline(1, [join(range(25), ' '), '', '', '', '', 'xxx'])
+    call feedkeys("2\<C-E>", 't')
+  [CODE]
+  call writefile(lines, 'Xincsearch_restore_view', 'D')
+  let buf = RunVimInTerminal('-S Xincsearch_restore_view', {'rows': 6, 'cols': 20})
+
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_01', {})
+  call term_sendkeys(buf, '/xx')
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_02', {})
+  call term_sendkeys(buf, 'x')
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_03', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_01', {})
 
   call StopVimInTerminal(buf)
 endfunc

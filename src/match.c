@@ -978,14 +978,14 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
     if (dict_has_key(tv->vval.v_dict, "conceal"))
 	*conceal_char = dict_get_string(tv->vval.v_dict, "conceal", FALSE);
 
-    if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
+    if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) == NULL)
+	return OK;
+
+    *win = find_win_by_nr_or_id(&di->di_tv);
+    if (*win == NULL)
     {
-	*win = find_win_by_nr_or_id(&di->di_tv);
-	if (*win == NULL)
-	{
-	    emsg(_(e_invalid_window_number));
-	    return FAIL;
-	}
+	emsg(_(e_invalid_window_number));
+	return FAIL;
     }
 
     return OK;
@@ -1330,32 +1330,32 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    if (rettv_list_alloc(rettv) == OK)
-    {
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
 # ifdef FEAT_SEARCH_EXTRA
-	int	    id;
-	matchitem_T *m;
+    int	    id;
+    matchitem_T *m;
 
-	if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
-	    return;
+    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+	return;
 
-	id = (int)tv_get_number(&argvars[0]);
-	if (id >= 1 && id <= 3)
+    id = (int)tv_get_number(&argvars[0]);
+    if (id >= 1 && id <= 3)
+    {
+	if ((m = get_match(curwin, id)) != NULL)
 	{
-	    if ((m = get_match(curwin, id)) != NULL)
-	    {
-		list_append_string(rettv->vval.v_list,
-					       syn_id2name(m->mit_hlg_id), -1);
-		list_append_string(rettv->vval.v_list, m->mit_pattern, -1);
-	    }
-	    else
-	    {
-		list_append_string(rettv->vval.v_list, NULL, -1);
-		list_append_string(rettv->vval.v_list, NULL, -1);
-	    }
+	    list_append_string(rettv->vval.v_list,
+		    syn_id2name(m->mit_hlg_id), -1);
+	    list_append_string(rettv->vval.v_list, m->mit_pattern, -1);
 	}
-# endif
+	else
+	{
+	    list_append_string(rettv->vval.v_list, NULL, -1);
+	    list_append_string(rettv->vval.v_list, NULL, -1);
+	}
     }
+# endif
 }
 
 /*

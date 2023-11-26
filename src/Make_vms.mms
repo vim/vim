@@ -409,6 +409,7 @@ SRC = \
 	usercmd.c \
 	userfunc.c \
 	version.c \
+	vim9class.c \
 	vim9cmds.c \
 	vim9compile.c \
 	vim9execute.c \
@@ -534,6 +535,7 @@ OBJ = \
 	usercmd.obj \
 	userfunc.obj \
 	version.obj \
+	vim9class.obj \
 	vim9cmds.obj \
 	vim9compile.obj \
 	vim9execute.obj \
@@ -1119,6 +1121,10 @@ version.obj : version.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
 viminfo.obj : viminfo.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ errors.h globals.h version.h
+vim9class.obj : vim9class.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h

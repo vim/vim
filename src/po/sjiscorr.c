@@ -19,12 +19,12 @@ main(int argc, char **argv)
 			if (strncmp(p, "charset=utf-8", 13) == 0
 				|| strncmp(p, "charset=UTF-8", 13) == 0)
 			{
-				fputs("charset=cp932", stdout);
+				fputs("charset=CP932", stdout);
 				p += 12;
 			}
 			else if (strncmp(p, "# Original translations", 23) == 0)
 			{
-				fputs("# generated from ja.po, DO NOT EDIT", stdout);
+				fputs("# Generated from ja.po, DO NOT EDIT.", stdout);
 				while (p[1] != '\n')
 					++p;
 			}

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Zvezdan Petkovic <zpetkovic@acm.org>
-" Last Change:	2022 Jun 28
+" Last Change:	2023 Feb 28
 " Credits:	Neil Schemenauer <nas@python.ca>
 "		Dmitry Vasiliev
 "
@@ -35,9 +35,23 @@
 "
 "   let python_highlight_all = 1
 "
+" The use of Python 2 compatible syntax highlighting can be enforced.
+" The straddling code (Python 2 and 3 compatible), up to Python 3.5,
+" will be also supported.
+"
+"   let python_use_python2_syntax = 1
+"
+" This option will exclude all modern Python 3.6 or higher features.
+"
 
 " quit when a syntax file was already loaded.
 if exists("b:current_syntax")
+  finish
+endif
+
+" Use of Python 2 and 3.5 or lower requested.
+if exists("python_use_python2_syntax")
+  runtime! syntax/python2.vim
   finish
 endif
 
@@ -91,8 +105,8 @@ syn keyword pythonInclude	from import
 syn keyword pythonAsync		async await
 
 " Soft keywords
-" These keywords do not mean anything unless used in the right context
-" See https://docs.python.org/3/reference/lexical_analysis.html#soft-keywords 
+" These keywords do not mean anything unless used in the right context.
+" See https://docs.python.org/3/reference/lexical_analysis.html#soft-keywords
 " for more on this.
 syn match   pythonConditional   "^\s*\zscase\%(\s\+.*:.*$\)\@="
 syn match   pythonConditional   "^\s*\zsmatch\%(\s\+.*:\s*\%(#.*\)\=$\)\@="
@@ -164,17 +178,17 @@ syn match   pythonEscape	"\\$"
 " and so on, as specified in the 'Python Language Reference'.
 " https://docs.python.org/reference/lexical_analysis.html#numeric-literals
 if !exists("python_no_number_highlight")
-  " numbers (including longs and complex)
-  syn match   pythonNumber	"\<0[oO]\=\o\+[Ll]\=\>"
-  syn match   pythonNumber	"\<0[xX]\x\+[Ll]\=\>"
-  syn match   pythonNumber	"\<0[bB][01]\+[Ll]\=\>"
-  syn match   pythonNumber	"\<\%([1-9]\d*\|0\)[Ll]\=\>"
-  syn match   pythonNumber	"\<\d\+[jJ]\>"
-  syn match   pythonNumber	"\<\d\+[eE][+-]\=\d\+[jJ]\=\>"
+  " numbers (including complex)
+  syn match   pythonNumber	"\<0[oO]\%(_\=\o\)\+\>"
+  syn match   pythonNumber	"\<0[xX]\%(_\=\x\)\+\>"
+  syn match   pythonNumber	"\<0[bB]\%(_\=[01]\)\+\>"
+  syn match   pythonNumber	"\<\%([1-9]\%(_\=\d\)*\|0\+\%(_\=0\)*\)\>"
+  syn match   pythonNumber	"\<\d\%(_\=\d\)*[jJ]\>"
+  syn match   pythonNumber	"\<\d\%(_\=\d\)*[eE][+-]\=\d\%(_\=\d\)*[jJ]\=\>"
   syn match   pythonNumber
-	\ "\<\d\+\.\%([eE][+-]\=\d\+\)\=[jJ]\=\%(\W\|$\)\@="
+        \ "\<\d\%(_\=\d\)*\.\%([eE][+-]\=\d\%(_\=\d\)*\)\=[jJ]\=\%(\W\|$\)\@="
   syn match   pythonNumber
-	\ "\%(^\|\W\)\zs\d*\.\d\+\%([eE][+-]\=\d\+\)\=[jJ]\=\>"
+        \ "\%(^\|\W\)\zs\%(\d\%(_\=\d\)*\)\=\.\d\%(_\=\d\)*\%([eE][+-]\=\d\%(_\=\d\)*\)\=[jJ]\=\>"
 endif
 
 " Group the built-ins in the order in the 'Python Library Reference' for

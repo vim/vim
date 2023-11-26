@@ -77,3 +77,12 @@ RESIZE 5,16
   ?lineinfo 3 =
   ?screen_row 3 = "> "
   ?cursor = 3,2
+
+!Cursor goes missing
+# For more context: https://github.com/neovim/neovim/pull/21124
+RESET
+RESIZE 5,5
+RESIZE 3,1
+PUSH "\x1b[2;1Habc\r\n\x1b[H"
+RESIZE 1,1
+  ?cursor = 0,0

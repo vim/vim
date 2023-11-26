@@ -83,20 +83,20 @@ ui_inchar_undo(char_u *s, int len)
     if (ta_str != NULL)
 	newlen += ta_len - ta_off;
     new = alloc(newlen);
-    if (new != NULL)
+    if (new == NULL)
+	return;
+
+    if (ta_str != NULL)
     {
-	if (ta_str != NULL)
-	{
-	    mch_memmove(new, ta_str + ta_off, (size_t)(ta_len - ta_off));
-	    mch_memmove(new + ta_len - ta_off, s, (size_t)len);
-	    vim_free(ta_str);
-	}
-	else
-	    mch_memmove(new, s, (size_t)len);
-	ta_str = new;
-	ta_len = newlen;
-	ta_off = 0;
+	mch_memmove(new, ta_str + ta_off, (size_t)(ta_len - ta_off));
+	mch_memmove(new + ta_len - ta_off, s, (size_t)len);
+	vim_free(ta_str);
     }
+    else
+	mch_memmove(new, s, (size_t)len);
+    ta_str = new;
+    ta_len = newlen;
+    ta_off = 0;
 }
 #endif
 
@@ -815,25 +815,25 @@ set_input_buf(char_u *p, int overwrite)
 {
     garray_T	*gap = (garray_T *)p;
 
-    if (gap != NULL)
+    if (gap == NULL)
+	return;
+
+    if (gap->ga_data != NULL)
     {
-	if (gap->ga_data != NULL)
+	if (overwrite || inbufcount + gap->ga_len >= INBUFLEN)
 	{
-	    if (overwrite || inbufcount + gap->ga_len >= INBUFLEN)
-	    {
-		mch_memmove(inbuf, gap->ga_data, gap->ga_len);
-		inbufcount = gap->ga_len;
-	    }
-	    else
-	    {
-		mch_memmove(inbuf + gap->ga_len, inbuf, inbufcount);
-		mch_memmove(inbuf, gap->ga_data, gap->ga_len);
-		inbufcount += gap->ga_len;
-	    }
-	    vim_free(gap->ga_data);
+	    mch_memmove(inbuf, gap->ga_data, gap->ga_len);
+	    inbufcount = gap->ga_len;
 	}
-	vim_free(gap);
+	else
+	{
+	    mch_memmove(inbuf + gap->ga_len, inbuf, inbufcount);
+	    mch_memmove(inbuf, gap->ga_data, gap->ga_len);
+	    inbufcount += gap->ga_len;
+	}
+	vim_free(gap->ga_data);
     }
+    vim_free(gap);
 }
 
 /*
@@ -1032,7 +1032,11 @@ fill_input_buf(int exit_on_error UNUSED)
 	    // If a CTRL-C was typed, remove it from the buffer and set
 	    // got_int.  Also recognize CTRL-C with modifyOtherKeys set, lower
 	    // and upper case, in two forms.
-	    if (ctrl_c_interrupts && (inbuf[inbufcount] == 3
+	    // If terminal key protocols are in use, we expect to receive
+	    // Ctrl_C as an escape sequence, ignore a raw Ctrl_C as this could
+	    // be paste data.
+	    if (ctrl_c_interrupts
+			&& ((inbuf[inbufcount] == Ctrl_C && !key_protocol_enabled())
 			|| (len >= 10 && STRNCMP(inbuf + inbufcount,
 						   "\033[27;5;99~", 10) == 0)
 			|| (len >= 10 && STRNCMP(inbuf + inbufcount,

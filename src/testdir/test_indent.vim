@@ -175,7 +175,7 @@ func Test_modeline_indent_expr()
 endfunc
 
 func Test_indent_func_with_gq()
-  
+
   function GetTeXIndent()
     " Sample indent expression for TeX files
     let lnum = prevnonblank(v:lnum - 1)
@@ -186,7 +186,7 @@ func Test_indent_func_with_gq()
     let line = getline(lnum)
     let ind = indent(lnum)
     " Add a 'shiftwidth' after beginning of environments.
-    if line =~ '\\begin{center}' 
+    if line =~ '\\begin{center}'
       let ind = ind + shiftwidth()
     endif
     return ind
@@ -248,7 +248,7 @@ func Test_indent_func_with_gq()
 
   bwipe!
   delmark ab
-  delfunction GetTeXIndent 
+  delfunction GetTeXIndent
 endfu
 
 func Test_formatting_keeps_first_line_indent()
@@ -273,6 +273,31 @@ func Test_formatting_keeps_first_line_indent()
   END
   call assert_equal(expected, getline(1, '$'))
   bwipe!
+endfunc
+
+" Test for indenting with large amount, causes overflow
+func Test_indent_overflow_count()
+  new
+  setl sw=8
+  call setline(1, "abc")
+  norm! V2147483647>
+  " indents by INT_MAX
+  call assert_equal(2147483647, indent(1))
+  close!
+endfunc
+
+func Test_indent_overflow_count2()
+  new
+  " this only works, when long is 64bits
+  try
+    setl sw=0x180000000
+  catch /^Vim\%((\a\+)\)\=:E487:/
+  throw 'Skipped: value negative on this platform'
+  endtry
+  call setline(1, "\tabc")
+  norm! <<
+  call assert_equal(0, indent(1))
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

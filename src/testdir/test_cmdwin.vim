@@ -359,6 +359,22 @@ func Test_compl_in_cmdwin()
   set wildmenu& wildchar&
 endfunc
 
+func Test_cmdwin_cmd_completion()
+  set wildmenu wildchar=<Tab>
+  com! -nargs=* -complete=command SomeOne echo 'one'
+  com! -nargs=* -complete=command SomeTwo echo 'two'
+  call feedkeys("q:aSome\<Tab>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"SomeOne', @:)
+  call feedkeys("q:aSome\<Tab>\<Tab>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"SomeTwo', @:)
+  call feedkeys("q:aSome\<Tab>\<Tab>\<S-Tab>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"SomeOne', @:)
+
+  delcom SomeOne
+  delcom SomeTwo
+  set wildmenu& wildchar&
+endfunc
+
 func Test_cmdwin_ctrl_bsl()
   " Using CTRL-\ CTRL-N in cmd window should close the window
   call feedkeys("q:\<C-\>\<C-N>", 'xt')
@@ -424,5 +440,34 @@ func Test_cmdwin_split_often()
   let &columns = columns
 endfunc
 
+func Test_cmdwin_restore_heights()
+  set showtabline=0 cmdheight=2 laststatus=0
+  call feedkeys("q::set cmdheight=1\<CR>:q\<CR>", 'ntx')
+  call assert_equal(&lines - 1, winheight(0))
+
+  set showtabline=2 cmdheight=3
+  call feedkeys("q::set showtabline=0\<CR>:q\<CR>", 'ntx')
+  call assert_equal(&lines - 3, winheight(0))
+
+  set cmdheight=1 laststatus=2
+  call feedkeys("q::set laststatus=0\<CR>:q\<CR>", 'ntx')
+  call assert_equal(&lines - 1, winheight(0))
+
+  set laststatus=2
+  call feedkeys("q::set laststatus=1\<CR>:q\<CR>", 'ntx')
+  call assert_equal(&lines - 1, winheight(0))
+
+  set laststatus=2
+  belowright vsplit
+  wincmd _
+  let restcmds = winrestcmd()
+  call feedkeys("q::set laststatus=1\<CR>:q\<CR>", 'ntx')
+  " As we have 2 windows, &ls = 1 should still have a statusline on the last
+  " window. As such, the number of available rows hasn't changed and the window
+  " sizes should be restored.
+  call assert_equal(restcmds, winrestcmd())
+
+  set cmdheight& showtabline& laststatus&
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

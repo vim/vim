@@ -4,8 +4,8 @@ vim9script
 #
 # Usage:  vim -u NONE -S keycode_check.vim
 #
-# Author: 	Bram Moolenaar
-# Last Update: 	2022 Nov 15
+# Author:	Bram Moolenaar
+# Last Update:	2022 Nov 15
 #
 # The codes are stored in the file "keycode_check.json", so that you can
 # compare the results of various terminals.
@@ -449,7 +449,7 @@ enddef
 # The main loop
 while true
   var action = inputlist(['Select operation:',
-    			'1. List results',
+			'1. List results',
 			'2. Add results for a new terminal',
 			'3. Replace results',
 			'4. Clear results',

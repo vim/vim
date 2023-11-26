@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.0.  Last change: 2022 May 13
+*help.txt*	For Vim version 9.0.  Last change: 2022 Dec 03
 
 			VIM - main help file
 									 k
@@ -153,6 +153,7 @@ Special issues ~
 |terminal.txt|	Terminal window support
 |popup.txt|	popup window support
 |vim9.txt|	using Vim9 script
+|vim9class.txt|	using Vim9 script classes
 
 Programming language support ~
 |indent.txt|	automatic indenting for C and other languages

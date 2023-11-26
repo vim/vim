@@ -1,7 +1,7 @@
 " Vim tutor support file
-" Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Maintainer: Bram Moolenaar
-" Last Change:	2019 Nov 11
+" Author:	Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
+" Maintainer:	The·Vim·Project·<https://github.com/vim/vim>
+" Last Change:	2023 Aug 13
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
