@@ -2052,6 +2052,7 @@ getcmdline_int(
 #endif
 		status_redraw_curbuf();
 		redraw_statuslines();
+		may_trigger_modechanged();
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
