@@ -940,18 +940,17 @@ func Test_mode()
   execute "normal! gR\<C-o>g@l\<Esc>"
   call assert_equal('n-niV', g:current_modes)
   " Test statusline updates for overstike mode
-  try
-  CheckRunVimInTerminal
-  let buf = RunVimInTerminal('', {'rows': 12})
-  call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
-  call term_sendkeys(buf, ":")
-  call TermWait(buf)
-  call VerifyScreenDump(buf, 'Test_mode_c', {})
-  call term_sendkeys(buf, "\<insert>")
-  call TermWait(buf)
-  call VerifyScreenDump(buf, 'Test_mode_cr', {})
-  call StopVimInTerminal(buf)
-  endt
+  if CanRunVimInTerminal()
+    let buf = RunVimInTerminal('', {'rows': 12})
+    call term_sendkeys(buf, ":set laststatus=2 statusline=%!mode(1)\<CR>")
+    call term_sendkeys(buf, ":")
+    call TermWait(buf)
+    call VerifyScreenDump(buf, 'Test_mode_1', {})
+    call term_sendkeys(buf, "\<insert>")
+    call TermWait(buf)
+    call VerifyScreenDump(buf, 'Test_mode_2', {})
+    call StopVimInTerminal(buf)
+  endif
 
   if has('terminal')
     term
