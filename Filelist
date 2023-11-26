@@ -848,6 +848,7 @@ RT_AMI_DOS =	\
 RT_DOS =	\
 		README_dos.txt \
 		runtime/doc/Make_mvc.mak \
+		runtime/tutor/Make_mvc.mak \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
@@ -996,6 +997,7 @@ LANG_GEN = \
 		runtime/keymap/*.vim \
 		runtime/tutor/README.*.txt \
 		runtime/tutor/Makefile \
+		runtime/tutor/Make_all.mak \
 		runtime/tutor/tutor.utf-8 \
 		runtime/tutor/tutor.?? \
 		runtime/tutor/tutor.??.utf-8 \
