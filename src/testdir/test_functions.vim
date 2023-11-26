@@ -925,7 +925,7 @@ func Test_mode()
   call feedkeys("Qcall Save_mode()\<CR>vi\<CR>", 'xt')
   call assert_equal('c-ce', g:current_modes)
   " How to test Ex mode?
-  
+
   " Test mode in operatorfunc (it used to be Operator-pending).
   set operatorfunc=OperatorFunc
   function OperatorFunc(_)
