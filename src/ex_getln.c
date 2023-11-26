@@ -2050,9 +2050,9 @@ getcmdline_int(
 #ifdef CURSOR_SHAPE
 		ui_cursor_shape();	// may show different cursor shape
 #endif
+		may_trigger_modechanged();
 		status_redraw_curbuf();
 		redraw_statuslines();
-		may_trigger_modechanged();
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
