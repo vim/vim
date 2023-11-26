@@ -166,6 +166,39 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+def Test_listing_function_error()
+  var lines =<< trim END
+      var filler = 123
+      func DoesNotExist
+  END
+  v9.CheckDefExecFailure(lines, 'E123:', 2)
+enddef
+
+def Test_break_in_skipped_block()
+  var lines =<< trim END
+      vim9script
+
+      def FixStackFrame(): string
+          for _ in [2]
+              var path = 'xxx'
+              if !!path
+                  if false
+                      break
+                  else
+                      return 'foo'
+                  endif
+              endif
+          endfor
+          return 'xxx'
+      enddef
+
+      disas FixStackFrame
+
+      FixStackFrame()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_autoload_name_mismatch()
   var dir = 'Xnamedir/autoload'
   mkdir(dir, 'pR')
@@ -463,6 +496,19 @@ def Test_missing_return()
                    'enddef'], 'E1095:')
 enddef
 
+def Test_not_missing_return()
+  var lines =<< trim END
+      def Funky(): number
+        if false
+          return 0
+        endif
+        throw 'Error'
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_return_bool()
   var lines =<< trim END
       vim9script
@@ -725,6 +771,63 @@ def Test_call_default_args()
       Func()
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_using_vnone_default()
+  var lines =<< trim END
+      vim9script
+
+      def F(a: string = v:none)
+         if a isnot v:none
+            var b = a
+         endif
+      enddef
+      F()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      export def Floats(x: float, y = 2.0, z = 5.0)
+        g:result = printf("%.2f %.2f %.2f", x, y, z)
+      enddef
+  END
+  writefile(lines, 'Xlib.vim', 'D')
+
+  # test using a function reference in script-local variable
+  lines =<< trim END
+      vim9script
+
+      import './Xlib.vim'
+      const Floatfunc = Xlib.Floats
+      Floatfunc(1.0, v:none, 3.0)
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('1.00 2.00 3.00', g:result)
+  unlet g:result
+
+  # test calling the imported function
+  lines =<< trim END
+      vim9script
+
+      import './Xlib.vim'
+      Xlib.Floats(1.0, v:none, 3.0)
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('1.00 2.00 3.00', g:result)
+  unlet g:result
+
+  # TODO: this should give an error for using a missing argument
+  # lines =<< trim END
+  #    vim9script
+
+  #    def F(a: string = v:none)
+  #       var b = a
+  #    enddef
+  #    F()
+  # END
+  # v9.CheckScriptFailure(lines, 'E99:')
 enddef
 
 def Test_convert_number_to_float()
@@ -1892,7 +1995,7 @@ def Test_varargs_mismatch()
       var res = Map((v) => str2nr(v))
       assert_equal(12, res)
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1180: Variable arguments type must be a list: any')
 enddef
 
 def Test_using_var_as_arg()
@@ -2661,7 +2764,7 @@ def Test_func_type_fails()
   v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = g:FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
   v9.CheckDefFailure(['var Ref1: func(bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
   v9.CheckDefFailure(['var Ref1: func(?bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
-  v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
+  v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1180: Variable arguments type must be a list: bool')
 
   v9.CheckDefFailure(['var RefWrong: func(string ,number)'], 'E1068:')
   v9.CheckDefFailure(['var RefWrong: func(string,number)'], 'E1069:')
@@ -3560,6 +3663,17 @@ def Test_partial_call()
       const Call = Foo(Expr)
   END
   v9.CheckScriptFailure(lines, 'E1031:')
+
+  # Test for calling a partial that takes a single argument.
+  # This used to produce a "E340: Internal error" message.
+  lines =<< trim END
+      def Foo(n: number): number
+        return n * 2
+      enddef
+      var Fn = function(Foo, [10])
+      assert_equal(20, Fn())
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_partial_double_nested()

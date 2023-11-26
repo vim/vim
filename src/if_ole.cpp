@@ -323,7 +323,7 @@ CVim::SendKeys(BSTR keys)
     }
 
     /* Translate key codes like <Esc> */
-    str = replace_termcodes((char_u *)buffer, &ptr, REPTERM_DO_LT, NULL);
+    str = replace_termcodes((char_u *)buffer, &ptr, 0, REPTERM_DO_LT, NULL);
 
     /* If ptr was set, then a new buffer was allocated,
      * so we can free the old one.
@@ -334,7 +334,7 @@ CVim::SendKeys(BSTR keys)
     /* Reject strings too long to fit in the input buffer. Allow 10 bytes
      * space to cover for the (remote) possibility that characters may enter
      * the input buffer between now and when the WM_OLE message is actually
-     * processed. If more that 10 characters enter the input buffer in that
+     * processed. If more than 10 characters enter the input buffer in that
      * time, the WM_OLE processing will simply fail to insert the characters.
      */
     if ((int)(STRLEN(str)) > (vim_free_in_input_buf() - 10))

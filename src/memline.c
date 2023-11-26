@@ -64,7 +64,11 @@ typedef struct pointer_entry	PTR_EN;	    // block/line-count pair
 #define BLOCK0_ID1_C0  'c'		    // block 0 id 1 'cm' 0
 #define BLOCK0_ID1_C1  'C'		    // block 0 id 1 'cm' 1
 #define BLOCK0_ID1_C2  'd'		    // block 0 id 1 'cm' 2
-#define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3 - but not actually used
+// BLOCK0_ID1_C3 and BLOCK0_ID1_C4 are for libsodium encryption.  However, for
+// these the swapfile is disabled, thus they will not be used.  Added for
+// consistency anyway.
+#define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3
+#define BLOCK0_ID1_C4  's'		    // block 0 id 1 'cm' 4
 
 #if defined(FEAT_CRYPT)
 static int id1_codes[] = {
@@ -72,6 +76,7 @@ static int id1_codes[] = {
     BLOCK0_ID1_C1,  // CRYPT_M_BF
     BLOCK0_ID1_C2,  // CRYPT_M_BF2
     BLOCK0_ID1_C3,  // CRYPT_M_SOD  - Unused!
+    BLOCK0_ID1_C4,  // CRYPT_M_SOD2  - Unused!
 };
 #endif
 
@@ -97,6 +102,9 @@ struct pointer_block
     PTR_EN	pb_pointer[1];	// list of pointers to blocks (actually longer)
 				// followed by empty space until end of page
 };
+
+// Value for pb_count_max.
+#define PB_COUNT_MAX(mfp) (short_u)(((mfp)->mf_page_size - offsetof(PTR_BL, pb_pointer)) / sizeof(PTR_EN))
 
 /*
  * A data block is a leaf in the tree.
@@ -324,7 +332,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 0)
     {
-	iemsg(_(e_didnt_get_block_nr_zero));
+	iemsg(e_didnt_get_block_nr_zero);
 	goto error;
     }
     b0p = (ZERO_BL *)(hp->bh_data);
@@ -374,7 +382,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 1)
     {
-	iemsg(_(e_didnt_get_block_nr_one));
+	iemsg(e_didnt_get_block_nr_one);
 	goto error;
     }
     pp = (PTR_BL *)(hp->bh_data);
@@ -392,7 +400,7 @@ ml_open(buf_T *buf)
 	goto error;
     if (hp->bh_bnum != 2)
     {
-	iemsg(_(e_didnt_get_block_nr_two));
+	iemsg(e_didnt_get_block_nr_two);
 	goto error;
     }
 
@@ -417,6 +425,24 @@ error:
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
+ * Swapfile encryption is not supported by XChaCha20.  If this crypt method is
+ * used then disable the swapfile, to avoid plain text being written to disk,
+ * and return TRUE.
+ * Otherwise return FALSE.
+ */
+    static int
+crypt_may_close_swapfile(buf_T *buf, char_u *key, int method)
+{
+    if (crypt_method_is_sodium(method) && *key != NUL)
+    {
+	mf_close_file(buf, TRUE);
+	buf->b_p_swf = FALSE;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Prepare encryption for "buf" for the current key and method.
  */
     static void
@@ -432,15 +458,16 @@ ml_set_mfp_crypt(buf_T *buf)
 	// Generate a seed and store it in the memfile.
 	sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
     }
-#ifdef FEAT_SODIUM
-    else if (method_nr == CRYPT_M_SOD)
-	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
-		MF_SEED_LEN);
-#endif
+# ifdef FEAT_SODIUM
+    else if (crypt_method_is_sodium(method_nr))
+	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN);
+# endif
 }
 
 /*
  * Prepare encryption for "buf" with block 0 "b0p".
+ * Note: should not be called with libsodium encryption, since xchacha20 does
+ * not support swapfile encryption.
  */
     static void
 ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
@@ -491,14 +518,11 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
-    // Swapfile encryption not supported by XChaCha20
-    if (crypt_get_method_nr(buf) == CRYPT_M_SOD && *buf->b_p_key != NUL)
-    {
-	// close the swapfile
-	mf_close_file(buf, TRUE);
-	buf->b_p_swf = FALSE;
+#ifdef FEAT_CRYPT
+    if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
 	return;
-    }
+#endif
+
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
     {
@@ -794,6 +818,8 @@ ml_open_file(buf_T *buf)
 	    continue;
 	if (mf_open_file(mfp, fname) == OK)	// consumes fname!
 	{
+	    // don't sync yet in ml_sync_all()
+	    mfp->mf_dirty = MF_DIRTY_YES_NOSYNC;
 #if defined(MSWIN)
 	    /*
 	     * set full pathname for swap file now, because a ":!cd dir" may
@@ -926,7 +952,8 @@ ml_check_b0_id(ZERO_BL *b0p)
 		&& b0p->b0_id[1] != BLOCK0_ID1_C0
 		&& b0p->b0_id[1] != BLOCK0_ID1_C1
 		&& b0p->b0_id[1] != BLOCK0_ID1_C2
-		&& b0p->b0_id[1] != BLOCK0_ID1_C3)
+		&& b0p->b0_id[1] != BLOCK0_ID1_C3
+		&& b0p->b0_id[1] != BLOCK0_ID1_C4)
 	    )
 	return FAIL;
     return OK;
@@ -958,7 +985,7 @@ ml_upd_block0(buf_T *buf, upd_block0_T what)
 
     b0p = (ZERO_BL *)(hp->bh_data);
     if (ml_check_b0_id(b0p) == FAIL)
-	iemsg(_(e_ml_upd_block0_didnt_get_block_zero));
+	iemsg(e_ml_upd_block0_didnt_get_block_zero);
     else
     {
 	if (what == UB_FNAME)
@@ -1525,6 +1552,20 @@ ml_recover(int checkext)
 	    pp = (PTR_BL *)(hp->bh_data);
 	    if (pp->pb_id == PTR_ID)		// it is a pointer block
 	    {
+		int ptr_block_error = FALSE;
+		if (pp->pb_count_max != PB_COUNT_MAX(mfp))
+		{
+		    ptr_block_error = TRUE;
+		    pp->pb_count_max = PB_COUNT_MAX(mfp);
+		}
+		if (pp->pb_count > pp->pb_count_max)
+		{
+		    ptr_block_error = TRUE;
+		    pp->pb_count = pp->pb_count_max;
+		}
+		if (ptr_block_error)
+		    emsg(_(e_warning_pointer_block_corrupted));
+
 		// check line count when using pointer block first time
 		if (idx == 0 && line_count != 0)
 		{
@@ -1610,14 +1651,13 @@ ml_recover(int checkext)
 		else
 		{
 		    /*
-		     * it is a data block
-		     * Append all the lines in this block
+		     * It is a data block.
+		     * Append all the lines in this block.
 		     */
 		    has_error = FALSE;
-			/*
-			 * check length of block
-			 * if wrong, use length in pointer block
-			 */
+
+		    // Check the length of the block.
+		    // If wrong, use the length given in the pointer block.
 		    if (page_count * mfp->mf_page_size != dp->db_txt_end)
 		    {
 			ml_append(lnum++, (char_u *)_("??? from here until ???END lines may be messed up"),
@@ -1627,13 +1667,12 @@ ml_recover(int checkext)
 			dp->db_txt_end = page_count * mfp->mf_page_size;
 		    }
 
-			// make sure there is a NUL at the end of the block
+		    // Make sure there is a NUL at the end of the block so we
+		    // don't go over the end when copying text.
 		    *((char_u *)dp + dp->db_txt_end - 1) = NUL;
 
-			/*
-			 * check number of lines in block
-			 * if wrong, use count in data block
-			 */
+		    // Check the number of lines in the block.
+		    // If wrong, use the count in the data block.
 		    if (line_count != dp->db_line_count)
 		    {
 			ml_append(lnum++, (char_u *)_("??? from here until ???END lines may have been inserted/deleted"),
@@ -1642,17 +1681,36 @@ ml_recover(int checkext)
 			has_error = TRUE;
 		    }
 
+		    int did_questions = FALSE;
 		    for (i = 0; i < dp->db_line_count; ++i)
 		    {
+			if ((char_u *)&(dp->db_index[i])
+					    >= (char_u *)dp + dp->db_txt_start)
+			{
+			    // line count must be wrong
+			    ++error;
+			    ml_append(lnum++,
+				    (char_u *)_("??? lines may be missing"),
+							     (colnr_T)0, TRUE);
+			    break;
+			}
+
 			txt_start = (dp->db_index[i] & DB_INDEX_MASK);
 			if (txt_start <= (int)HEADER_SIZE
 					  || txt_start >= (int)dp->db_txt_end)
 			{
-			    p = (char_u *)"???";
 			    ++error;
+			    // avoid lots of lines with "???"
+			    if (did_questions)
+				continue;
+			    did_questions = TRUE;
+			    p = (char_u *)"???";
 			}
 			else
+			{
+			    did_questions = FALSE;
 			    p = (char_u *)dp + txt_start;
+			}
 			ml_append(lnum++, p, (colnr_T)0, TRUE);
 		    }
 		    if (has_error)
@@ -2447,6 +2505,12 @@ ml_sync_all(int check_file, int check_char)
 		|| buf->b_ml.ml_mfp->mf_fd < 0)
 	    continue;			    // no file
 
+#ifdef FEAT_CRYPT
+	if (crypt_may_close_swapfile(buf, buf->b_p_key,
+						     crypt_get_method_nr(buf)))
+	    continue;
+#endif
+
 	ml_flush_line(buf);		    // flush buffered line
 					    // flush locked block
 	(void)ml_find_line(buf, (linenr_T)0, ML_FLUSH);
@@ -2469,7 +2533,7 @@ ml_sync_all(int check_file, int check_char)
 		need_check_timestamps = TRUE;	// give message later
 	    }
 	}
-	if (buf->b_ml.ml_mfp->mf_dirty)
+	if (buf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES)
 	{
 	    (void)mf_sync(buf->b_ml.ml_mfp, (check_char ? MFS_STOP : 0)
 					| (bufIsChanged(buf) ? MFS_FLUSH : 0));
@@ -2504,6 +2568,10 @@ ml_preserve(buf_T *buf, int message)
 	    emsg(_(e_cannot_preserve_there_is_no_swap_file));
 	return;
     }
+#ifdef FEAT_CRYPT
+    if (crypt_may_close_swapfile(buf, buf->b_p_key, crypt_get_method_nr(buf)))
+	return;
+#endif
 
     // We only want to stop when interrupted here, not when interrupted
     // before.
@@ -2631,7 +2699,7 @@ ml_get_buf(
 	    // Avoid giving this message for a recursive call, may happen when
 	    // the GUI redraws part of the text.
 	    ++recursive;
-	    siemsg(_(e_ml_get_invalid_lnum_nr), lnum);
+	    siemsg(e_ml_get_invalid_lnum_nr, lnum);
 	    --recursive;
 	}
 	ml_flush_line(buf);
@@ -2678,7 +2746,7 @@ errorret:
 		++recursive;
 		get_trans_bufname(buf);
 		shorten_dir(NameBuff);
-		siemsg(_(e_ml_get_cannot_find_line_nr_in_buffer_nr_str),
+		siemsg(e_ml_get_cannot_find_line_nr_in_buffer_nr_str,
 						  lnum, buf->b_fnum, NameBuff);
 		--recursive;
 	    }
@@ -3172,7 +3240,7 @@ ml_append_int(
 	    pp = (PTR_BL *)(hp->bh_data);   // must be pointer block
 	    if (pp->pb_id != PTR_ID)
 	    {
-		iemsg(_(e_pointer_block_id_wrong_three));
+		iemsg(e_pointer_block_id_wrong_three);
 		mf_put(mfp, hp, FALSE, FALSE);
 		goto theend;
 	    }
@@ -3313,7 +3381,7 @@ ml_append_int(
 	 */
 	if (stack_idx < 0)
 	{
-	    iemsg(_(e_updated_too_many_blocks));
+	    iemsg(e_updated_too_many_blocks);
 	    buf->b_ml.ml_stack_top = 0;	// invalidate stack
 	}
     }
@@ -3579,7 +3647,7 @@ adjust_text_props_for_delete(
     int		idx;
     int		line_start;
     long	line_size;
-    int		this_props_len;
+    int		this_props_len = 0;
     char_u	*text;
     size_t	textlen;
     int		found;
@@ -3773,7 +3841,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 	    pp = (PTR_BL *)(hp->bh_data);   // must be pointer block
 	    if (pp->pb_id != PTR_ID)
 	    {
-		iemsg(_(e_pointer_block_id_wrong_four));
+		iemsg(e_pointer_block_id_wrong_four);
 		mf_put(mfp, hp, FALSE, FALSE);
 		goto theend;
 	    }
@@ -4038,7 +4106,7 @@ ml_flush_line(buf_T *buf)
 
 	hp = ml_find_line(buf, lnum, ML_FIND);
 	if (hp == NULL)
-	    siemsg(_(e_cannot_find_line_nr), lnum);
+	    siemsg(e_cannot_find_line_nr, lnum);
 	else
 	{
 	    dp = (DATA_BL *)(hp->bh_data);
@@ -4162,9 +4230,7 @@ ml_new_ptr(memfile_T *mfp)
     pp = (PTR_BL *)(hp->bh_data);
     pp->pb_id = PTR_ID;
     pp->pb_count = 0;
-    pp->pb_count_max =
-	(short_u)((mfp->mf_page_size - offsetof(PTR_BL, pb_pointer))
-							     / sizeof(PTR_EN));
+    pp->pb_count_max = PB_COUNT_MAX(mfp);
 
     return hp;
 }
@@ -4300,7 +4366,7 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	pp = (PTR_BL *)(dp);		// must be pointer block
 	if (pp->pb_id != PTR_ID)
 	{
-	    iemsg(_(e_pointer_block_id_wrong));
+	    iemsg(e_pointer_block_id_wrong);
 	    goto error_block;
 	}
 
@@ -4345,11 +4411,11 @@ ml_find_line(buf_T *buf, linenr_T lnum, int action)
 	if (idx >= (int)pp->pb_count)	    // past the end: something wrong!
 	{
 	    if (lnum > buf->b_ml.ml_line_count)
-		siemsg(_(e_line_number_out_of_range_nr_past_the_end),
+		siemsg(e_line_number_out_of_range_nr_past_the_end,
 					      lnum - buf->b_ml.ml_line_count);
 
 	    else
-		siemsg(_(e_line_count_wrong_in_block_nr), bnum);
+		siemsg(e_line_count_wrong_in_block_nr, bnum);
 	    goto error_block;
 	}
 	if (action == ML_DELETE)
@@ -4442,7 +4508,7 @@ ml_lineadd(buf_T *buf, int count)
 	if (pp->pb_id != PTR_ID)
 	{
 	    mf_put(mfp, hp, FALSE, FALSE);
-	    iemsg(_(e_pointer_block_id_wrong_two));
+	    iemsg(e_pointer_block_id_wrong_two);
 	    break;
 	}
 	pp->pb_pointer[ip->ip_index].pe_line_count += count;
@@ -5497,6 +5563,7 @@ ml_decrypt_data(
 /*
  * Prepare for encryption/decryption, using the key, seed and offset.
  * Return an allocated cryptstate_T *.
+ * Note: Encryption not supported for SODIUM
  */
     static cryptstate_T *
 ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
@@ -5505,22 +5572,27 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
     char_u	salt[50];
     int		method_nr;
     char_u	*key;
-    char_u	*seed;
+    crypt_arg_T arg;
 
+    CLEAR_FIELD(arg);
     if (reading && mfp->mf_old_key != NULL)
     {
 	// Reading back blocks with the previous key/method/seed.
 	method_nr = mfp->mf_old_cm;
 	key = mfp->mf_old_key;
-	seed = mfp->mf_old_seed;
+	arg.cat_seed = mfp->mf_old_seed;
     }
     else
     {
 	method_nr = crypt_get_method_nr(buf);
 	key = buf->b_p_key;
-	seed = mfp->mf_seed;
+	arg.cat_seed = mfp->mf_seed;
     }
+
     if (*key == NUL)
+	return NULL;
+
+    if (crypt_may_close_swapfile(buf, key, method_nr))
 	return NULL;
 
     if (method_nr == CRYPT_M_ZIP)
@@ -5528,14 +5600,24 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
 	// For PKzip: Append the offset to the key, so that we use a different
 	// key for every block.
 	vim_snprintf((char *)salt, sizeof(salt), "%s%ld", key, (long)offset);
-	return crypt_create(method_nr, salt, NULL, 0, NULL, 0);
+	arg.cat_seed = NULL;
+	arg.cat_init_from_file = FALSE;
+
+	return crypt_create(method_nr, salt, &arg);
     }
 
     // Using blowfish or better: add salt and seed. We use the byte offset
     // of the block for the salt.
     vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
-    return crypt_create(method_nr, key, salt, (int)STRLEN(salt),
-							seed, MF_SEED_LEN);
+
+    arg.cat_salt = salt;
+    arg.cat_salt_len = (int)STRLEN(salt);
+    arg.cat_seed_len = MF_SEED_LEN;
+    arg.cat_add_len = 0;
+    arg.cat_add = NULL;
+    arg.cat_init_from_file = FALSE;
+
+    return crypt_create(method_nr, key, &arg);
 }
 
 #endif

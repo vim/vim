@@ -46,7 +46,7 @@ Change to the vim directory and do:
 
     $ export CC=cc
     $ export _CC_CCMODE=1
-    $./configure --with-features=big --without-x --enable-gui=no
+    $./configure --with-features=normal --without-x --enable-gui=no
     $ cd src
     $ make
 

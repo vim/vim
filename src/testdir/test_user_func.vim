@@ -651,26 +651,98 @@ func Test_defer_throw()
   call assert_false(filereadable('XDeleteTwo'))
 endfunc
 
-func Test_defer_quitall()
+func Test_defer_quitall_func()
   let lines =<< trim END
-      vim9script
       func DeferLevelTwo()
-        call writefile(['text'], 'XQuitallTwo', 'D')
+        call writefile(['text'], 'XQuitallFuncTwo', 'D')
+        call writefile(['quit'], 'XQuitallFuncThree', 'a')
         qa!
       endfunc
 
+      func DeferLevelOne()
+        call writefile(['text'], 'XQuitalFunclOne', 'D')
+        defer DeferLevelTwo()
+      endfunc
+
+      call DeferLevelOne()
+  END
+  call writefile(lines, 'XdeferQuitallFunc', 'D')
+  call system(GetVimCommand() .. ' -X -S XdeferQuitallFunc')
+  call assert_equal(0, v:shell_error)
+  call assert_false(filereadable('XQuitallFuncOne'))
+  call assert_false(filereadable('XQuitallFuncTwo'))
+  call assert_equal(['quit'], readfile('XQuitallFuncThree'))
+
+  call delete('XQuitallFuncThree')
+endfunc
+
+func Test_defer_quitall_def()
+  let lines =<< trim END
+      vim9script
+      def DeferLevelTwo()
+        call writefile(['text'], 'XQuitallDefTwo', 'D')
+        call writefile(['quit'], 'XQuitallDefThree', 'a')
+        qa!
+      enddef
+
       def DeferLevelOne()
-        call writefile(['text'], 'XQuitallOne', 'D')
-        call DeferLevelTwo()
+        call writefile(['text'], 'XQuitallDefOne', 'D')
+        defer DeferLevelTwo()
       enddef
 
       DeferLevelOne()
   END
-  call writefile(lines, 'XdeferQuitall', 'D')
-  let res = system(GetVimCommand() .. ' -X -S XdeferQuitall')
+  call writefile(lines, 'XdeferQuitallDef', 'D')
+  call system(GetVimCommand() .. ' -X -S XdeferQuitallDef')
   call assert_equal(0, v:shell_error)
-  call assert_false(filereadable('XQuitallOne'))
-  call assert_false(filereadable('XQuitallTwo'))
+  call assert_false(filereadable('XQuitallDefOne'))
+  call assert_false(filereadable('XQuitallDefTwo'))
+  call assert_equal(['quit'], readfile('XQuitallDefThree'))
+
+  call delete('XQuitallDefThree')
+endfunc
+
+func Test_defer_quitall_autocmd()
+  let lines =<< trim END
+      func DeferLevelFive()
+        defer writefile(['5'], 'XQuitallAutocmd', 'a')
+        qa!
+      endfunc
+
+      autocmd User DeferAutocmdFive call DeferLevelFive()
+
+      def DeferLevelFour()
+        defer writefile(['4'], 'XQuitallAutocmd', 'a')
+        doautocmd User DeferAutocmdFive
+      enddef
+
+      func DeferLevelThree()
+        defer writefile(['3'], 'XQuitallAutocmd', 'a')
+        call DeferLevelFour()
+      endfunc
+
+      autocmd User DeferAutocmdThree ++nested call DeferLevelThree()
+
+      def DeferLevelTwo()
+        defer writefile(['2'], 'XQuitallAutocmd', 'a')
+        doautocmd User DeferAutocmdThree
+      enddef
+
+      func DeferLevelOne()
+        defer writefile(['1'], 'XQuitallAutocmd', 'a')
+        call DeferLevelTwo()
+      endfunc
+
+      autocmd User DeferAutocmdOne ++nested call DeferLevelOne()
+
+      doautocmd User DeferAutocmdOne
+  END
+  call writefile(lines, 'XdeferQuitallAutocmd', 'D')
+  call system(GetVimCommand() .. ' -X -S XdeferQuitallAutocmd')
+  call assert_equal(0, v:shell_error)
+  call assert_equal(['5', '4', '3', '2', '1'], readfile('XQuitallAutocmd'))
+
+  call delete('XQuitallAutocmd')
 endfunc
 
 func Test_defer_quitall_in_expr_func()
@@ -689,7 +761,7 @@ func Test_defer_quitall_in_expr_func()
       call Test_defer_in_funcref()
   END
   call writefile(lines, 'XdeferQuitallExpr', 'D')
-  let res = system(GetVimCommand() .. ' -X -S XdeferQuitallExpr')
+  call system(GetVimCommand() .. ' -X -S XdeferQuitallExpr')
   call assert_equal(0, v:shell_error)
   call assert_false(filereadable('Xentry0'))
   call assert_false(filereadable('Xentry1'))
@@ -798,5 +870,102 @@ func Test_defer_wrong_arguments()
   call v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number')
 endfunc
 
+" Test for calling a deferred function after an exception
+func Test_defer_after_exception()
+  let g:callTrace = []
+  func Bar()
+    let g:callTrace += [1]
+    throw 'InnerException'
+  endfunc
+
+  func Defer()
+    let g:callTrace += [2]
+    let g:callTrace += [3]
+    try
+      call Bar()
+    catch /InnerException/
+      let g:callTrace += [4]
+    endtry
+    let g:callTrace += [5]
+    let g:callTrace += [6]
+  endfunc
+
+  func Foo()
+    defer Defer()
+    throw "TestException"
+  endfunc
+
+  try
+    call Foo()
+  catch /TestException/
+    let g:callTrace += [7]
+  endtry
+  call assert_equal([2, 3, 1, 4, 5, 6, 7], g:callTrace)
+
+  delfunc Defer
+  delfunc Foo
+  delfunc Bar
+  unlet g:callTrace
+endfunc
+
+" Test for multiple deferred function which throw exceptions.
+" Exceptions thrown by deferred functions should result in error messages but
+" not propagated into the calling functions.
+func Test_multidefer_with_exception()
+  let g:callTrace = []
+  func Except()
+    let g:callTrace += [1]
+    throw 'InnerException'
+    let g:callTrace += [2]
+  endfunc
+
+  func FirstDefer()
+    let g:callTrace += [3]
+    let g:callTrace += [4]
+  endfunc
+
+  func SecondDeferWithExcept()
+    let g:callTrace += [5]
+    call Except()
+    let g:callTrace += [6]
+  endfunc
+
+  func ThirdDefer()
+    let g:callTrace += [7]
+    let g:callTrace += [8]
+  endfunc
+
+  func Foo()
+    let g:callTrace += [9]
+    defer FirstDefer()
+    defer SecondDeferWithExcept()
+    defer ThirdDefer()
+    let g:callTrace += [10]
+  endfunc
+
+  let v:errmsg = ''
+  try
+    let g:callTrace += [11]
+    call Foo()
+    let g:callTrace += [12]
+  catch /TestException/
+    let g:callTrace += [13]
+  catch
+    let g:callTrace += [14]
+  finally
+    let g:callTrace += [15]
+  endtry
+  let g:callTrace += [16]
+
+  call assert_equal('E605: Exception not caught: InnerException', v:errmsg)
+  call assert_equal([11, 9, 10, 7, 8, 5, 1, 3, 4, 12, 15, 16], g:callTrace)
+
+  unlet g:callTrace
+  delfunc Except
+  delfunc FirstDefer
+  delfunc SecondDeferWithExcept
+  delfunc ThirdDefer
+  delfunc Foo
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

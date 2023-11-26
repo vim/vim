@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.0.  Last change: 2022 Nov 20
+*change.txt*    For Vim version 9.0.  Last change: 2023 Nov 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -210,6 +210,7 @@ gR			Enter Virtual Replace mode: Each character you type
 
 							*v_r*
 {Visual}r{char}		Replace all selected characters by {char}.
+			CTRL-C will be inserted literally.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
@@ -296,7 +297,9 @@ gr{char}		Replace the virtual characters under the cursor with
 			{char}.  This replaces in screen space, not file
 			space.  See |gR| and |Virtual-Replace-mode| for more
 			details.  As with |r| a count may be given.
-			{char} can be entered like with |r|.
+			{char} can be entered like with |r|, but characters
+			that have a special meaning in Insert mode, such as
+			most CTRL-keys, cannot be used.
 
 						*digraph-arg*
 The argument for Normal mode commands like |r| and |t| is a single character.
@@ -452,6 +455,12 @@ zeros cause mistakes, because they can be confused with octal numbers.
 Note similarly, when 'nrformats' includes "bin", binary numbers with a leading
 '0x' or '0X' can be interpreted as hexadecimal rather than binary since '0b'
 are valid hexadecimal digits.
+
+When the number under the cursor is too big to fit into 32 or 64 bit
+(depending on how Vim was build), it will be rounded off to the nearest number
+that can be represented, and the addition/subtraction is skipped.  E.g. with
+64 bit support using CTRL-X on 18446744073709551616 results in
+18446744073709551615.  Same for larger numbers, such as 18446744073709551618.
 
 The CTRL-A command is very useful in a macro.  Example: Use the following
 steps to make a numbered list.
@@ -635,9 +644,9 @@ For other systems the tmpnam() library function is used.
 			current line only.  When [count] is given, replace in
 			[count] lines, starting with the last line in [range].
 			When [range] is omitted start in the current line.
-							*E939*
-			[count] must be a positive number.  Also see
-			|cmdline-ranges|.
+							*E939* *E1510*
+			[count] must be a positive number (max 2147483647)
+			Also see |cmdline-ranges|.
 
 			See |:s_flags| for [flags].
 			The delimiter doesn't need to be /, see
@@ -1033,7 +1042,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 <			to display registers '1' and 'a'.  Spaces are allowed
 			in {arg}.
 
-							*:di* *:display*
+							*:di* *:dis* *:display*
 :di[splay] [arg]	Same as :registers.
 
 							*y* *yank*

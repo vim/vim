@@ -54,6 +54,9 @@ if has('timers')
   endfunc
 
   func Test_cursorhold_insert()
+    " depends on timing
+    let g:test_is_flaky = 1
+
     " Need to move the cursor.
     call feedkeys("ggG", "xt")
 
@@ -2022,8 +2025,8 @@ endfunc
 " Test for BufUnload autocommand that unloads all the other buffers
 func Test_bufunload_all()
   let g:test_is_flaky = 1
-  call writefile(['Test file Xxx1'], 'Xxx1', 'D')"
-  call writefile(['Test file Xxx2'], 'Xxx2', 'D')"
+  call writefile(['Test file Xxx1'], 'Xxx1', 'D')
+  call writefile(['Test file Xxx2'], 'Xxx2', 'D')
 
   let content =<< trim [CODE]
     func UnloadAllBufs()
@@ -3607,6 +3610,35 @@ func Test_Changed_ChangedI()
   " call assert_equal('N4', g:autocmd_n)
   call assert_equal('I3', g:autocmd_i)
 
+  " TextChangedI should only trigger if change was done in Insert mode
+  let g:autocmd_i = ''
+  call feedkeys("yypi\<esc>", 'tnix')
+  call assert_equal('', g:autocmd_i)
+
+  " TextChanged should only trigger if change was done in Normal mode
+  let g:autocmd_n = ''
+  call feedkeys("ibar\<esc>", 'tnix')
+  call assert_equal('', g:autocmd_n)
+
+  " If change is a mix of Normal and Insert modes, TextChangedI should trigger
+  func s:validate_mixed_textchangedi(keys)
+    call feedkeys("ifoo\<esc>", 'tnix')
+    let g:autocmd_i = ''
+    let g:autocmd_n = ''
+    call feedkeys(a:keys, 'tnix')
+    call assert_notequal('', g:autocmd_i)
+    call assert_equal('', g:autocmd_n)
+  endfunc
+
+  call s:validate_mixed_textchangedi("o\<esc>")
+  call s:validate_mixed_textchangedi("O\<esc>")
+  call s:validate_mixed_textchangedi("ciw\<esc>")
+  call s:validate_mixed_textchangedi("cc\<esc>")
+  call s:validate_mixed_textchangedi("C\<esc>")
+  call s:validate_mixed_textchangedi("s\<esc>")
+  call s:validate_mixed_textchangedi("S\<esc>")
+
+
   " CleanUp
   call test_override("char_avail", 0)
   au! TextChanged  <buffer>
@@ -3627,9 +3659,20 @@ func Test_closing_autocmd_window()
   END
   call v9.CheckScriptFailure(lines, 'E814:')
   au! BufEnter
-  only!
   bwipe Xa.txt
   bwipe Xb.txt
+endfunc
+
+func Test_switch_window_in_autocmd_window()
+  edit Xa.txt
+  tabnew Xb.txt
+  autocmd BufEnter Xa.txt wincmd w
+  doautoall BufEnter
+  au! BufEnter
+  bwipe Xa.txt
+  call assert_false(bufexists('Xa.txt'))
+  bwipe Xb.txt
+  call assert_false(bufexists('Xb.txt'))
 endfunc
 
 func Test_bufwipeout_changes_window()
@@ -3669,7 +3712,7 @@ endfunc
 " Test for ModeChanged pattern
 func Test_mode_changes()
   let g:index = 0
-  let g:mode_seq = ['n', 'i', 'n', 'v', 'V', 'i', 'ix', 'i', 'ic', 'i', 'n', 'no', 'n', 'V', 'v', 's', 'n']
+  let g:mode_seq = ['n', 'i', 'n', 'v', 'V', 'i', 'ix', 'i', 'ic', 'i', 'n', 'no', 'noV', 'n', 'V', 'v', 's', 'n']
   func! TestMode()
     call assert_equal(g:mode_seq[g:index], get(v:event, "old_mode"))
     call assert_equal(g:mode_seq[g:index + 1], get(v:event, "new_mode"))
@@ -3680,7 +3723,7 @@ func Test_mode_changes()
   au ModeChanged * :call TestMode()
   let g:n_to_any = 0
   au ModeChanged n:* let g:n_to_any += 1
-  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggdG", 'tnix')
+  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggdV\<MouseMove>G", 'tnix')
 
   let g:V_to_v = 0
   au ModeChanged V:v let g:V_to_v += 1
@@ -4215,6 +4258,7 @@ func SetupVimTest_shm()
   let g:bwe = []
   let g:brp = []
   set shortmess+=F
+  messages clear
 
   let dirname='XVimTestSHM'
   call mkdir(dirname, 'R')

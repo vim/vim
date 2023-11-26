@@ -194,6 +194,11 @@ func Test_sign()
   sign undefine Sign3
   call assert_fails("sign place 41 line=3 name=Sign1 buffer=" .
 			  \ bufnr('%'), 'E155:')
+
+  " Defining a sign without attributes is allowed.
+  sign define Sign1
+  call assert_equal([{'name': 'Sign1'}], sign_getdefined())
+  sign undefine Sign1
 endfunc
 
 func Test_sign_many_bytes()
@@ -1658,7 +1663,7 @@ func Test_sign_lnum_adjust()
 
   " Break the undo. Otherwise the undo operation below will undo all the
   " changes made by this function.
-  let &undolevels=&undolevels
+  let &g:undolevels=&g:undolevels
 
   " Delete the line with the sign
   call deletebufline('', 4)
@@ -1671,7 +1676,7 @@ func Test_sign_lnum_adjust()
   call assert_equal(5, l[0].signs[0].lnum)
 
   " Break the undo
-  let &undolevels=&undolevels
+  let &g:undolevels=&g:undolevels
 
   " Delete few lines at the end of the buffer including the line with the sign
   " Sign line number should not change (as it is placed outside of the buffer)

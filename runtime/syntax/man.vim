@@ -20,7 +20,9 @@ runtime! syntax/ctrlh.vim
 
 syn case ignore
 
-syn match  manReference       "\f\+([1-9][a-z]\=)"
+" See notes about hyphenation in s:ParseIntoPageAndSection of
+" autoload/dist/man.vim.
+syn match  manReference       "\%(\f\+[\u2010-]\%(\n\|\r\n\=\)\s\+\)\=\f\+([1-9]\l*)"
 syn match  manSectionHeading  "^\a.*$"
 syn match  manSubHeading      "^\s\{3\}\a.*$"
 syn match  manOptionDesc      "^\s*[+-][a-z0-9]\S*"

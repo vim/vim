@@ -92,6 +92,10 @@ free_tv(typval_T *varp)
 	    object_unref(varp->vval.v_object);
 	    break;
 
+	case VAR_TYPEALIAS:
+	    typealias_unref(varp->vval.v_typealias);
+	    break;
+
 	case VAR_NUMBER:
 	case VAR_FLOAT:
 	case VAR_ANY:
@@ -169,6 +173,10 @@ clear_tv(typval_T *varp)
 	    object_unref(varp->vval.v_object);
 	    varp->vval.v_object = NULL;
 	    break;
+	case VAR_TYPEALIAS:
+	    typealias_unref(varp->vval.v_typealias);
+	    varp->vval.v_typealias = NULL;
+	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
@@ -188,7 +196,11 @@ init_tv(typval_T *varp)
 }
 
     static varnumber_T
-tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
+tv_get_bool_or_number_chk(
+	typval_T    *varp,
+	int	    *denote,
+	int	    want_bool,
+	int	    vim9_string_error) // in Vim9 using a string is an error
 {
     varnumber_T	n = 0L;
 
@@ -210,14 +222,14 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    emsg(_(e_using_funcref_as_number));
 	    break;
 	case VAR_STRING:
-	    if (in_vim9script())
+	    if (vim9_string_error && in_vim9script())
 	    {
 		emsg_using_string_as(varp, !want_bool);
 		break;
 	    }
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
-					    STR2NR_ALL, &n, NULL, 0, FALSE);
+					 STR2NR_ALL, &n, NULL, 0, FALSE, NULL);
 	    return n;
 	case VAR_LIST:
 	    emsg(_(e_using_list_as_number));
@@ -258,6 +270,10 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
 	    break;
+	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_number),
+					varp->vval.v_typealias->ta_name);
+	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_INSTR:
@@ -287,10 +303,22 @@ tv_get_number(typval_T *varp)
     return tv_get_number_chk(varp, &error);	// return 0L on error
 }
 
+/*
+ * Like tv_get_number() but in Vim9 script do convert a number in a string to a
+ * number without giving an error.
+ */
+    varnumber_T
+tv_to_number(typval_T *varp)
+{
+    int		error = FALSE;
+
+    return tv_get_bool_or_number_chk(varp, &error, FALSE, FALSE);
+}
+
     varnumber_T
 tv_get_number_chk(typval_T *varp, int *denote)
 {
-    return tv_get_bool_or_number_chk(varp, denote, FALSE);
+    return tv_get_bool_or_number_chk(varp, denote, FALSE, TRUE);
 }
 
 /*
@@ -300,7 +328,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
     varnumber_T
 tv_get_bool(typval_T *varp)
 {
-    return tv_get_bool_or_number_chk(varp, NULL, TRUE);
+    return tv_get_bool_or_number_chk(varp, NULL, TRUE, TRUE);
 }
 
 /*
@@ -310,7 +338,7 @@ tv_get_bool(typval_T *varp)
     varnumber_T
 tv_get_bool_chk(typval_T *varp, int *denote)
 {
-    return tv_get_bool_or_number_chk(varp, denote, TRUE);
+    return tv_get_bool_or_number_chk(varp, denote, TRUE, TRUE);
 }
 
     static float_T
@@ -362,6 +390,10 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    break;
+	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_float),
+					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -523,7 +555,7 @@ check_for_list_arg(typval_T *args, int idx)
 {
     if (args[idx].v_type != VAR_LIST)
     {
-	    semsg(_(e_list_required_for_argument_nr), idx + 1);
+	semsg(_(e_list_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -958,6 +990,45 @@ check_for_opt_buffer_or_dict_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is an object.
+ */
+    int
+check_for_object_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_OBJECT)
+    {
+	semsg(_(e_object_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Returns TRUE if "tv" is a type alias for a class
+ */
+    int
+tv_class_alias(typval_T *tv)
+{
+    return tv->v_type == VAR_TYPEALIAS &&
+			tv->vval.v_typealias->ta_type->tt_type == VAR_OBJECT;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a class or a list.
+ */
+    int
+check_for_class_or_list_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST
+					&& !tv_class_alias(&args[idx]))
+    {
+	semsg(_(e_list_or_class_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Get the string value of a variable.
  * If it is a Number variable, the number is converted into a string.
  * tv_get_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!
@@ -1084,6 +1155,10 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
+	    break;
+	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_string),
+					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -1244,6 +1319,15 @@ copy_tv(typval_T *from, typval_T *to)
 	    {
 		to->vval.v_dict = from->vval.v_dict;
 		++to->vval.v_dict->dv_refcount;
+	    }
+	    break;
+	case VAR_TYPEALIAS:
+	    if (from->vval.v_typealias == NULL)
+		to->vval.v_typealias = NULL;
+	    else
+	    {
+		to->vval.v_typealias = from->vval.v_typealias;
+		++to->vval.v_typealias->ta_refcount;
 	    }
 	    break;
 	case VAR_VOID:
@@ -1534,12 +1618,15 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 #ifdef FEAT_JOB_CHANNEL
 	    case VAR_CHANNEL: return tv->vval.v_channel == NULL;
 #endif
+	    // TODO: null_class handling
+	    // case VAR_CLASS: return tv->vval.v_class == NULL;
 	    case VAR_DICT: return tv->vval.v_dict == NULL;
 	    case VAR_FUNC: return tv->vval.v_string == NULL;
 #ifdef FEAT_JOB_CHANNEL
 	    case VAR_JOB: return tv->vval.v_job == NULL;
 #endif
 	    case VAR_LIST: return tv->vval.v_list == NULL;
+	    case VAR_OBJECT: return tv->vval.v_object == NULL;
 	    case VAR_PARTIAL: return tv->vval.v_partial == NULL;
 	    case VAR_STRING: return tv->vval.v_string == NULL;
 
@@ -1549,6 +1636,7 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    case VAR_FLOAT: if (!in_vim9script())
 				 return tv->vval.v_float == 0.0;
 			     break;
+	    case VAR_TYPEALIAS: return tv->vval.v_typealias == NULL;
 	    default: break;
 	}
     }
@@ -2022,6 +2110,9 @@ tv_equal(
 	case VAR_FUNC:
 	    return tv1->vval.v_string == tv2->vval.v_string;
 
+	case VAR_TYPEALIAS:
+	    return tv1->vval.v_typealias == tv2->vval.v_typealias;
+
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
@@ -2230,7 +2321,7 @@ eval_number(
 	// decimal, hex or octal number
 	vim_str2nr(*arg, NULL, &len, skip_quotes
 		      ? STR2NR_NO_OCT + STR2NR_QUOTE
-		      : STR2NR_ALL, &n, NULL, 0, TRUE);
+		      : STR2NR_ALL, &n, NULL, 0, TRUE, NULL);
 	if (len == 0)
 	{
 	    if (evaluate)

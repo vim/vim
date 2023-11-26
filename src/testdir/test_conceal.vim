@@ -347,13 +347,68 @@ func Test_conceal_mouse_click()
   redraw
   call assert_equal(['conceal  click here '], ScreenLines(1, 20))
 
+  " click on the space between "this" and "click" puts cursor there
+  call test_setmouse(1, 9)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 13, 0, 13], getcurpos())
   " click on 'h' of "here" puts cursor there
   call test_setmouse(1, 16)
   call feedkeys("\<LeftMouse>", "tx")
   call assert_equal([0, 1, 20, 0, 20], getcurpos())
+  " click on 'e' of "here" puts cursor there
+  call test_setmouse(1, 19)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 23], getcurpos())
+  " click after end of line puts cursor on 'e' without 'virtualedit'
+  call test_setmouse(1, 20)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 24], getcurpos())
+  call test_setmouse(1, 21)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 25], getcurpos())
+  call test_setmouse(1, 22)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 26], getcurpos())
+  call test_setmouse(1, 31)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 35], getcurpos())
+  call test_setmouse(1, 32)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 36], getcurpos())
+
+  set virtualedit=all
+  redraw
+  " click on the space between "this" and "click" puts cursor there
+  call test_setmouse(1, 9)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 13, 0, 13], getcurpos())
+  " click on 'h' of "here" puts cursor there
+  call test_setmouse(1, 16)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 20, 0, 20], getcurpos())
+  " click on 'e' of "here" puts cursor there
+  call test_setmouse(1, 19)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 23, 0, 23], getcurpos())
+  " click after end of line puts cursor there without 'virtualedit'
+  call test_setmouse(1, 20)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 24, 0, 24], getcurpos())
+  call test_setmouse(1, 21)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 24, 1, 25], getcurpos())
+  call test_setmouse(1, 22)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 24, 2, 26], getcurpos())
+  call test_setmouse(1, 31)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 24, 11, 35], getcurpos())
+  call test_setmouse(1, 32)
+  call feedkeys("\<LeftMouse>", "tx")
+  call assert_equal([0, 1, 24, 12, 36], getcurpos())
 
   bwipe!
-  set mouse&
+  set mouse& virtualedit&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

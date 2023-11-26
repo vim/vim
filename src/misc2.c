@@ -150,7 +150,7 @@ coladvance2(
 
 	    if ((addspaces || finetune) && !VIsual_active)
 	    {
-		curwin->w_curswant = linetabsize_str(line) + one_more;
+		curwin->w_curswant = linetabsize(curwin, pos->lnum) + one_more;
 		if (curwin->w_curswant > 0)
 		    --curwin->w_curswant;
 	    }
@@ -166,7 +166,7 @@ coladvance2(
 		&& wcol >= (colnr_T)width
 		&& width > 0)
 	{
-	    csize = linetabsize_str(line);
+	    csize = linetabsize(curwin, pos->lnum);
 	    if (csize > 0)
 		csize--;
 
@@ -1410,7 +1410,7 @@ find_special_key(
 	    bp += 3;	// skip t_xx, xx may be '-' or '>'
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
-	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
+	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE, NULL);
 	    if (l == 0)
 	    {
 		emsg(_(e_invalid_argument));
@@ -1448,7 +1448,7 @@ find_special_key(
 	    {
 		// <Char-123> or <Char-033> or <Char-0x33>
 		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL,
-								  &n, 0, TRUE);
+							    &n, 0, TRUE, NULL);
 		if (l == 0)
 		{
 		    emsg(_(e_invalid_argument));
@@ -2473,9 +2473,13 @@ vim_chdir(char_u *new_dir)
 {
     char_u	*dir_name;
     int		r;
+    char_u	*file_to_find = NULL;
+    char	*search_ctx = NULL;
 
     dir_name = find_directory_in_path(new_dir, (int)STRLEN(new_dir),
-						FNAME_MESS, curbuf->b_ffname);
+		     FNAME_MESS, curbuf->b_ffname, &file_to_find, &search_ctx);
+    vim_free(file_to_find);
+    vim_findfile_cleanup(search_ctx);
     if (dir_name == NULL)
 	return -1;
     r = mch_chdir((char *)dir_name);

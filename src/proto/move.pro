@@ -1,5 +1,7 @@
 /* move.c */
+int adjust_plines_for_skipcol(win_T *wp);
 void redraw_for_cursorline(win_T *wp);
+int sms_marker_overlap(win_T *wp, int extra2);
 void update_topline_redraw(void);
 void update_topline(void);
 void update_curswant_force(void);
@@ -43,7 +45,7 @@ void scrollup_clamp(void);
 void scroll_cursor_top(int min_scroll, int always);
 void set_empty_rows(win_T *wp, int used);
 void scroll_cursor_bot(int min_scroll, int set_topbot);
-void scroll_cursor_halfway(int atend);
+void scroll_cursor_halfway(int atend, int prefer_above);
 void cursor_correct(void);
 int onepage(int dir, long count);
 void halfpage(int flag, linenr_T Prenum);

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2023 Jan 17
+*usr_41.txt*	For Vim version 9.0.  Last change: 2023 May 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -754,10 +754,12 @@ String manipulation:					*string-functions*
 	strlen()		length of a string in bytes
 	strcharlen()		length of a string in characters
 	strchars()		number of characters in a string
+	strutf16len()		number of UTF-16 code units in a string
 	strwidth()		size of string when displayed
 	strdisplaywidth()	size of string when displayed, deals with tabs
 	setcellwidths()		set character cell width overrides
 	getcellwidths()		get character cell width overrides
+	reverse()		reverse the order of characters in a string
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string using byte index
@@ -771,6 +773,7 @@ String manipulation:					*string-functions*
 	byteidx()		byte index of a character in a string
 	byteidxcomp()		like byteidx() but count composing characters
 	charidx()		character index of a byte in a string
+	utf16idx()		UTF-16 index of a byte in a string
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
 	execute()		execute an Ex command and get the output
@@ -795,7 +798,7 @@ List manipulation:					*list-functions*
 	reduce()		reduce a List to a value
 	slice()			take a slice of a List
 	sort()			sort a List
-	reverse()		reverse the order of a List or Blob
+	reverse()		reverse the order of items in a List
 	uniq()			remove copies of repeated adjacent items
 	split()			split a String into a List
 	join()			join List items into a String
@@ -862,6 +865,7 @@ Floating point computation:				*float-functions*
 Blob manipulation:					*blob-functions*
 	blob2list()		get a list of numbers from a blob
 	list2blob()		get a blob from a list of numbers
+	reverse()		reverse the order of numbers in a blob
 
 Other computation:					*bitwise-function*
 	and()			bitwise AND
@@ -873,6 +877,8 @@ Other computation:					*bitwise-function*
 	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
+	instanceof()		check if a variable is an instance of a given
+				class
 	type()			type of a variable as a number
 	typename()		type of a variable as text
 	islocked()		check if a variable is locked
@@ -1228,6 +1234,7 @@ Inter-process communication:		    *channel-functions*
 	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
+	err_teapot()		give error 418 or 503
 
 Jobs:						*job-functions*
 	job_start()		start a job
@@ -1368,7 +1375,7 @@ Various:					*various-functions*
 	libcallnr()		idem, returning a number
 
 	undofile()		get the name of the undo file
-	undotree()		return the state of the undo tree
+	undotree()		return the state of the undo tree for a buffer
 
 	shiftwidth()		effective value of 'shiftwidth'
 

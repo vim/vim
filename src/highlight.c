@@ -164,6 +164,10 @@ static char *(highlight_init_both[]) = {
     "default link CursorLineSign SignColumn",
     "default link CursorLineFold FoldColumn",
     "default link CurSearch Search",
+    "default link PmenuKind Pmenu",
+    "default link PmenuKindSel PmenuSel",
+    "default link PmenuExtra Pmenu",
+    "default link PmenuExtraSel PmenuSel",
     CENT("Normal cterm=NONE", "Normal gui=NONE"),
     NULL
 };
@@ -469,7 +473,7 @@ init_highlight(
  * the user to override the color values. Only loaded once.
  */
     static void
-load_default_colors_lists()
+load_default_colors_lists(void)
 {
     // Lacking a default color list isn't the end of the world but it is likely
     // an inconvenience so users should know when it is missing.
@@ -3448,7 +3452,7 @@ syn_add_group(char_u *name)
     char_u	*p;
     char_u	*name_up;
 
-    // Check that the name is ASCII letters, digits and underscore.
+    // Check that the name is valid (ASCII letters, digits, underscores, dots, or hyphens).
     for (p = name; *p != NUL; ++p)
     {
 	if (!vim_isprintc(*p))
@@ -3457,7 +3461,7 @@ syn_add_group(char_u *name)
 	    vim_free(name);
 	    return 0;
 	}
-	else if (!ASCII_ISALNUM(*p) && *p != '_')
+	else if (!ASCII_ISALNUM(*p) && *p != '_' && *p != '.' && *p != '-')
 	{
 	    // This is an error, but since there previously was no check only
 	    // give a warning.
@@ -3810,6 +3814,7 @@ highlight_changed(void)
 		if (attr > HL_ALL)  // Combination with ':' is not allowed.
 		    return FAIL;
 
+		// Note: Keep this in sync with expand_set_highlight().
 		switch (*p)
 		{
 		    case 'b':	attr |= HL_BOLD;

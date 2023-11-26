@@ -1,11 +1,12 @@
 " Vim syntax file
 " Language:        Nix
-" Maintainer:	   James Fleming <james@electronic-quill.net>
+" Maintainer:      James Fleming <james@electronic-quill.net>
+"                  (Github username: equill)
 " Original Author: Daiderd Jordan <daiderd@gmail.com>
 " Acknowledgement: Based on vim-nix maintained by Daiderd Jordan <daiderd@gmail.com>
 "                  https://github.com/LnL7/vim-nix
 " License:         MIT
-" Last Change:     2022 Dec 06
+" Last Change:     2023 Aug 19
 
 if exists("b:current_syntax")
   finish
@@ -68,7 +69,8 @@ syn match nixAttribute "[a-zA-Z_][a-zA-Z0-9_'-]*\ze\%([^a-zA-Z0-9_'.-]\|$\)" con
 syn region nixAttributeAssignment start="=" end="\ze;" contained contains=@nixExpr
 syn region nixAttributeDefinition start=/\ze[a-zA-Z_"$]/ end=";" contained contains=nixComment,nixAttribute,nixInterpolation,nixSimpleString,nixAttributeDot,nixAttributeAssignment
 
-syn region nixInheritAttributeScope start="(" end="\ze)" contained contains=@nixExpr
+syn region nixInheritAttributeSubExpr start="("ms=e+1 end="\ze)" contained contains=nixAttributeDot,@nixExpr
+syn region nixInheritAttributeScope start="\ze(" end=")" contained contains=nixInheritAttributeSubExpr
 syn region nixAttributeDefinition matchgroup=nixInherit start="\<inherit\>" end=";" contained contains=nixComment,nixInheritAttributeScope,nixAttribute
 
 syn region nixAttributeSet start="{" end="}" contains=nixComment,nixAttributeDefinition
@@ -97,7 +99,7 @@ syn match nixArgOperator '[a-zA-Z_][a-zA-Z0-9_'-]*\%(\s\|#.\{-\}\n\|\n\|/\*\_.\{
 "
 " "\%(\s\|#.\{-\}\n\|\n\|/\*\_.\{-\}\*/\)*"
 "
-" It is also used throught the whole file and is marked with 'v's as well.
+" It is also used throughout the whole file and is marked with 'v's as well.
 "
 " Fortunately the matching rules for function arguments are much simpler than
 " for real attribute sets, because we can stop when we hit the first ellipsis or

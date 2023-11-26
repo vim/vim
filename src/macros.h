@@ -14,11 +14,6 @@
  */
 
 /*
- * PBYTE(lp, c) - put byte 'c' at position 'lp'
- */
-#define PBYTE(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
-
-/*
  * Position comparisons
  */
 #define LT_POS(a, b) (((a).lnum != (b).lnum) \
@@ -43,6 +38,7 @@
  */
 #define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
 #define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
+#define IS_WHITE_NL_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == '\n' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
@@ -240,7 +236,7 @@
 #define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
 #define MB_CHAR2LEN(c)	    (has_mbyte ? mb_char2len(c) : 1)
 #define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
-#define MB_CHAR2BYTES(c, b) do { if (has_mbyte) (b) += (*mb_char2bytes)((c), (b)); else *(b)++ = (c); } while(0)
+#define MB_CHAR2BYTES(c, b) do { if (has_mbyte) (b) += (*mb_char2bytes)((c), (b)); else *(b)++ = (c); } while (0)
 
 #ifdef FEAT_AUTOCHDIR
 # define DO_AUTOCHDIR do { if (p_acd) do_autochdir(); } while (0)
@@ -366,21 +362,31 @@
 
 
 #ifdef ABORT_ON_INTERNAL_ERROR
-# define ESTACK_CHECK_DECLARATION int estack_len_before;
-# define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
-# define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
-	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
-# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
-		iemsg("curbuf != curwin->w_buffer")
+# define ESTACK_CHECK_DECLARATION int estack_len_before
+# define ESTACK_CHECK_SETUP do { estack_len_before = exestack.ga_len; } while (0)
+# define ESTACK_CHECK_NOW \
+    do { \
+	if (estack_len_before != exestack.ga_len) \
+	    siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len); \
+    } while (0)
+# define CHECK_CURBUF \
+    do { \
+	if (curwin != NULL && curwin->w_buffer != curbuf) \
+	    iemsg("curbuf != curwin->w_buffer"); \
+    } while (0)
 #else
-# define ESTACK_CHECK_DECLARATION
-# define ESTACK_CHECK_SETUP
-# define ESTACK_CHECK_NOW
-# define CHECK_CURBUF
+# define ESTACK_CHECK_DECLARATION do { /**/ } while (0)
+# define ESTACK_CHECK_SETUP do { /**/ } while (0)
+# define ESTACK_CHECK_NOW do { /**/ } while (0)
+# define CHECK_CURBUF do { /**/ } while (0)
 #endif
 
 // Inline the condition for performance.
-#define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
+#define CHECK_LIST_MATERIALIZE(l) \
+    do { \
+	if ((l)->lv_first == &range_list_item) \
+	    range_list_materialize(l); \
+    } while (0)
 
 // Inlined version of ga_grow() with optimized condition that it fails.
 #define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
@@ -396,3 +402,56 @@
 
 // Length of the array.
 #define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))
+
+#ifdef FEAT_MENU
+#define FOR_ALL_MENUS(m) \
+    for ((m) = root_menu; (m) != NULL; (m) = (m)->next)
+#define FOR_ALL_CHILD_MENUS(p, c) \
+    for ((c) = (p)->children; (c) != NULL; (c) = (c)->next)
+#endif
+
+#define FOR_ALL_WINDOWS(wp) \
+    for ((wp) = firstwin; (wp) != NULL; (wp) = (wp)->w_next)
+#define FOR_ALL_FRAMES(frp, first_frame) \
+    for ((frp) = first_frame; (frp) != NULL; (frp) = (frp)->fr_next)
+#define FOR_ALL_TABPAGES(tp) \
+    for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next)
+#define FOR_ALL_WINDOWS_IN_TAB(tp, wp) \
+    for ((wp) = ((tp) == NULL || (tp) == curtab) \
+	    ? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
+/*
+ * When using this macro "break" only breaks out of the inner loop. Use "goto"
+ * to break out of the tabpage loop.
+ */
+#define FOR_ALL_TAB_WINDOWS(tp, wp) \
+    for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
+	for ((wp) = ((tp) == curtab) \
+		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
+
+#define FOR_ALL_POPUPWINS(wp) \
+    for ((wp) = first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+#define FOR_ALL_POPUPWINS_IN_TAB(tp, wp) \
+    for ((wp) = (tp)->tp_first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+
+#define FOR_ALL_BUFFERS(buf) \
+    for ((buf) = firstbuf; (buf) != NULL; (buf) = (buf)->b_next)
+
+#define FOR_ALL_BUF_WININFO(buf, wip) \
+    for ((wip) = (buf)->b_wininfo; (wip) != NULL; (wip) = (wip)->wi_next)
+
+// Iterate through all the signs placed in a buffer
+#define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
+    for ((sign) = (buf)->b_signlist; (sign) != NULL; (sign) = (sign)->se_next)
+
+#ifdef FEAT_SPELL
+#define FOR_ALL_SPELL_LANGS(slang) \
+    for ((slang) = first_lang; (slang) != NULL; (slang) = (slang)->sl_next)
+#endif
+
+// Iterate over all the items in a List
+#define FOR_ALL_LIST_ITEMS(l, li) \
+    for ((li) = (l) == NULL ? NULL : (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
+
+// Iterate over all the items in a hash table
+#define FOR_ALL_HASHTAB_ITEMS(ht, hi, todo) \
+    for ((hi) = (ht)->ht_array; (todo) > 0; ++(hi))

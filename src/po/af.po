@@ -1562,7 +1562,7 @@ msgstr "Fout ontdek tydens verwerking van %s: "
 msgid "line %4ld:"
 msgstr "reël %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Boodskappe onderhouers: Danie Roux en Jean Jordaan <droux@tuks.co.za>"
 
 msgid "Interrupt: "

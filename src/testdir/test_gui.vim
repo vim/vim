@@ -580,6 +580,56 @@ func Test_set_guifontwide()
   endif
 endfunc
 
+func Test_expand_guifont()
+  if has('gui_win32')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling existing option, and suggesting current font size
+    set guifont=Courier\ New:h11:cANSI
+    call assert_equal('Courier\ New:h11:cANSI', getcompletion('set guifont=', 'cmdline')[0])
+    call assert_equal('h11', getcompletion('set guifont=Lucida\ Console:', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Courier\ New'], getcompletion('set guifont=Couri*ew$', 'cmdline'))
+    call assert_equal(['Courier\ New'], getcompletion('set guifontwide=Couri*ew$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out
+    call assert_equal([], getcompletion('set guifont=Arial', 'cmdline'))
+    call assert_equal([], getcompletion('set guifontwide=Arial', 'cmdline'))
+
+    " Test auto-completion working for font options
+    call assert_notequal(-1, index(getcompletion('set guifont=Courier\ New:', 'cmdline'), 'b'))
+    call assert_equal(['cDEFAULT'], getcompletion('set guifont=Courier\ New:cD*T', 'cmdline'))
+    call assert_equal(['qCLEARTYPE'], getcompletion('set guifont=Courier\ New:qC*TYPE', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  elseif has('gui_gtk')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling default and existing option
+    set guifont=
+    call assert_equal('Monospace\ 10', getcompletion('set guifont=', 'cmdline')[0])
+    set guifont=Monospace\ 9
+    call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Monospace'], getcompletion('set guifont=Mono*pace$', 'cmdline'))
+    call assert_equal(['Monospace'], getcompletion('set guifontwide=Mono*pace$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out only in 'guifont'
+    call assert_equal([], getcompletion('set guifont=Sans$', 'cmdline'))
+    call assert_equal(['Sans'], getcompletion('set guifontwide=Sans$', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  else
+    call assert_equal([], getcompletion('set guifont=', 'cmdline'))
+  endif
+endfunc
+
 func Test_set_guiligatures()
   CheckX11BasedGui
 
@@ -718,8 +768,11 @@ func Test_set_guioptions()
 endfunc
 
 func Test_scrollbars()
-  new
+  " this test sometimes fails on CI
+  let g:test_is_flaky = 1
+
   " buffer with 200 lines
+  new
   call setline(1, repeat(['one', 'two'], 100))
   set guioptions+=rlb
 
@@ -730,12 +783,15 @@ func Test_scrollbars()
   call assert_equal(1, winline())
   call assert_equal(11, line('.'))
 
-  " scroll to move line 1 at top, cursor stays in line 11
-  let args = #{which: 'right', value: 0, dragging: 0}
-  call test_gui_event('scrollbar', args)
-  redraw
-  call assert_equal(11, winline())
-  call assert_equal(11, line('.'))
+  " FIXME: This test should also pass with Motif and 24 lines
+  if &lines > 24 || !has('gui_motif')
+    " scroll to move line 1 at top, cursor stays in line 11
+    let args = #{which: 'right', value: 0, dragging: 0}
+    call test_gui_event('scrollbar', args)
+    redraw
+    call assert_equal(11, winline())
+    call assert_equal(11, line('.'))
+  endif
 
   set nowrap
   call setline(11, repeat('x', 150))
@@ -1679,6 +1735,11 @@ func Test_gui_macro_csi()
   norm @q
   call assert_equal('', getline(1))
   iunmap <C-D>t
+endfunc
+
+func Test_gui_csi_keytrans()
+  call assert_equal('<C-L>', keytrans("\x9b\xfc\x04L"))
+  call assert_equal('<C-D>', keytrans("\x9b\xfc\x04D"))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -34,7 +34,7 @@ server_to_input_buf(char_u *str)
     //  The last but one parameter of replace_termcodes() is TRUE so that the
     //  <lt> sequence is recognised - needed for a real backslash.
     p_cpo = (char_u *)"Bk";
-    str = replace_termcodes(str, &ptr, REPTERM_DO_LT, NULL);
+    str = replace_termcodes(str, &ptr, 0, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
 
     if (*ptr != NUL)	// trailing CTRL-V results in nothing
@@ -968,25 +968,23 @@ f_remote_send(typval_T *argvars UNUSED, typval_T *rettv)
 f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 #ifdef FEAT_CLIENTSERVER
-    char_u	*server;
-
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
 
-    server = tv_get_string_chk(&argvars[0]);
-    if (server == NULL)
-	return;		// type error; errmsg already given
     if (serverName != NULL)
-	emsg(_(e_already_started_server));
-    else
     {
-# ifdef FEAT_X11
-	if (check_connection() == OK)
-	    serverRegisterName(X_DISPLAY, server);
-# else
-	serverSetName(server);
-# endif
+	emsg(_(e_already_started_server));
+	return;
     }
+
+    char_u *server = tv_get_string_chk(&argvars[0]);
+# ifdef FEAT_X11
+    if (check_connection() == OK)
+	serverRegisterName(X_DISPLAY, server);
+# else
+    serverSetName(server);
+# endif
+
 #else
     emsg(_(e_clientserver_feature_not_available));
 #endif

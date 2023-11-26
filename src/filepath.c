@@ -938,9 +938,9 @@ f_filewritable(typval_T *argvars, typval_T *rettv)
 
     static void
 findfilendir(
-    typval_T	*argvars UNUSED,
+    typval_T	*argvars,
     typval_T	*rettv,
-    int		find_what UNUSED)
+    int		find_what)
 {
     char_u	*fname;
     char_u	*fresult = NULL;
@@ -982,6 +982,9 @@ findfilendir(
 
     if (*fname != NUL && !error)
     {
+	char_u	*file_to_find = NULL;
+	char	*search_ctx = NULL;
+
 	do
 	{
 	    if (rettv->v_type == VAR_STRING || rettv->v_type == VAR_LIST)
@@ -992,13 +995,17 @@ findfilendir(
 					find_what,
 					curbuf->b_ffname,
 					find_what == FINDFILE_DIR
-					    ? (char_u *)"" : curbuf->b_p_sua);
+					    ? (char_u *)"" : curbuf->b_p_sua,
+					    &file_to_find, &search_ctx);
 	    first = FALSE;
 
 	    if (fresult != NULL && rettv->v_type == VAR_LIST)
 		list_append_string(rettv->vval.v_list, fresult, -1);
 
 	} while ((rettv->v_type == VAR_LIST || --count > 0) && fresult != NULL);
+
+	vim_free(file_to_find);
+	vim_findfile_cleanup(search_ctx);
     }
 
     if (rettv->v_type == VAR_STRING)
@@ -1609,7 +1616,7 @@ checkitem_common(void *context, char_u *name, dict_T *dict)
 	argv[0].vval.v_dict = dict;
     }
 
-    if (eval_expr_typval(expr, argv, 1, NULL, &rettv) == FAIL)
+    if (eval_expr_typval(expr, FALSE, argv, 1, NULL, &rettv) == FAIL)
 	goto theend;
 
     // We want to use -1, but also true/false should be allowed.
@@ -2152,7 +2159,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		if (q > p && *q == NUL)
 		{
 		    // Ignore trailing path separator.
-		    q[-1] = NUL;
+		    p[q - p - 1] = NUL;
 		    q = gettail(p);
 		}
 		if (q > p && !mch_isFullName(buf))
@@ -3678,7 +3685,6 @@ unix_expandpath(
     int		didstar)	// expanded "**" once already
 {
     char_u	*buf;
-    size_t	buflen;
     char_u	*path_end;
     char_u	*p, *s, *e;
     int		start_len = gap->ga_len;
@@ -3701,8 +3707,8 @@ unix_expandpath(
 	    return 0;
     }
 
-    // make room for file name
-    buflen = STRLEN(path) + BASENAMELEN + 5;
+    // make room for file name (a bit too much to stay on the safe side)
+    size_t buflen = STRLEN(path) + MAXPATHL;
     buf = alloc(buflen);
     if (buf == NULL)
 	return 0;
@@ -3821,7 +3827,7 @@ unix_expandpath(
 		   || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), dp->d_name, e - s) == 0)))
 	    {
-		STRCPY(s, dp->d_name);
+		vim_strncpy(s, (char_u *)dp->d_name, buflen - (s - buf) - 1);
 		len = STRLEN(buf);
 
 		if (starstar && stardepth < 100)

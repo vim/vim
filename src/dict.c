@@ -128,7 +128,7 @@ hashtab_free_contents(hashtab_T *ht)
     // Lock the hashtab, we don't want it to resize while freeing items.
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -781,7 +781,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
     ga_append(&ga, '{');
 
     todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -904,7 +904,7 @@ get_literal_key(char_u **arg)
 eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 {
     int		evaluate = evalarg == NULL ? FALSE
-					 : evalarg->eval_flags & EVAL_EVALUATE;
+				       : (evalarg->eval_flags & EVAL_EVALUATE);
     dict_T	*d = NULL;
     typval_T	tvkey;
     typval_T	tv;
@@ -1114,7 +1114,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	type = NULL;
 
     todo = (int)d2->dv_hashtab.ht_used;
-    for (hashitem_T *hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
+    hashitem_T *hi2;
+    FOR_ALL_HASHTAB_ITEMS(&d2->dv_hashtab, hi2, todo)
     {
 	if (!HASHITEM_EMPTY(hi2))
 	{
@@ -1203,7 +1204,7 @@ dict_equal(
 	return FALSE;
 
     todo = (int)d1->dv_hashtab.ht_used;
-    for (hi = d1->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d1->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1233,7 +1234,7 @@ dict_count(dict_T *d, typval_T *needle, int ic)
 	return 0;
 
     todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1304,7 +1305,7 @@ dict_extend_func(
 	action = (char_u *)"force";
 
     if (type != NULL && check_typval_arg_type(type, &argvars[1],
-		func_name, 2) == FAIL)
+							 func_name, 2) == FAIL)
 	return;
     dict_extend(d1, d2, action, func_name);
 
@@ -1332,7 +1333,6 @@ dict_filter_map(
 	typval_T	*expr,
 	typval_T	*rettv)
 {
-    int		prev_lock;
     dict_T	*d_ret = NULL;
     hashtab_T	*ht;
     hashitem_T	*hi;
@@ -1352,8 +1352,6 @@ dict_filter_map(
 			&& value_check_lock(d->dv_lock, arg_errmsg, TRUE)))
 	return;
 
-    prev_lock = d->dv_lock;
-
     if (filtermap == FILTERMAP_MAPNEW)
     {
 	if (rettv_dict_alloc(rettv) == FAIL)
@@ -1361,15 +1359,16 @@ dict_filter_map(
 	d_ret = rettv->vval.v_dict;
     }
 
-    // Create one funccal_T for all eval_expr_typval() calls.
+    // Create one funccall_T for all eval_expr_typval() calls.
     fc = eval_expr_get_funccal(expr, &newtv);
 
-    if (filtermap != FILTERMAP_FILTER && d->dv_lock == 0)
+    int prev_lock = d->dv_lock;
+    if (d->dv_lock == 0)
 	d->dv_lock = VAR_LOCKED;
     ht = &d->dv_hashtab;
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1498,11 +1497,11 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 
     d = argvars[0].vval.v_dict;
     if (d == NULL)
-	// empty dict behaves like an empty dict
+	// NULL dict behaves like an empty dict
 	return;
 
     todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&d->dv_hashtab, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -1587,7 +1586,7 @@ dict_set_items_ro(dict_T *di)
     hashitem_T	*hi;
 
     // Set readonly
-    for (hi = di->dv_hashtab.ht_array; todo > 0 ; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&di->dv_hashtab, hi, todo)
     {
 	if (HASHITEM_EMPTY(hi))
 	    continue;

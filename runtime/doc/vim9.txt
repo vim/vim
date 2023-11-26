@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Dec 08
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Oct 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,10 +113,13 @@ script and `:def` functions; details are below:
 	:%s/this/that
 - Executing a register with "@r" does not work, you can prepend a colon or use
   `:exe`: >
-  	:exe @a
+	:exe @a
 - Unless mentioned specifically, the highest |scriptversion| is used.
 - When defining an expression mapping, the expression will be evaluated in the
   context of the script where it was defined.
+- When indexing a string the index is counted in characters, not bytes:
+  |vim9-string-index|
+- Some possibly unexpected differences: |vim9-gotchas|.
 
 
 Comments starting with # ~
@@ -190,8 +193,8 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 used for the command or the error was caught a `:try` block), does not get a
 range passed, cannot be a "dict" function, and can always be a closure.
 						*vim9-no-dict-function*
-Later classes will be added, which replaces the "dict function" mechanism.
-For now you will need to pass the dictionary explicitly: >
+You can use a Vim9 Class (|Vim9-class|) instead of a "dict function".
+You can also pass the dictionary explicitly: >
 	def DictFunc(self: dict<any>, arg: string)
 	   echo self[arg]
 	enddef
@@ -340,7 +343,7 @@ function, the function does not need to be defined more than once: >
 
 Variable declarations with :var, :final and :const ~
 				*vim9-declaration* *:var* *E1079*
-				*E1017* *E1020* *E1054* *E1087* *E1108* *E1124*
+				*E1017* *E1020* *E1054* *E1087* *E1124*
 Local variables need to be declared with `:var`.  Local constants need to be
 declared with `:final` or `:const`.  We refer to both as "variables" in this
 section.
@@ -622,7 +625,7 @@ Additionally, a lambda can contain statements in {}: >
 	    }
 This can be useful for a timer, for example: >
 	var count = 0
- 	var timer = timer_start(500, (_) => {
+	var timer = timer_start(500, (_) => {
 		 count += 1
 		 echom 'Handler called ' .. count
 	     }, {repeat: 3})
@@ -824,7 +827,7 @@ White space is required around most operators.
 
 White space is required in a sublist (list slice) around the ":", except at
 the start and end: >
-	otherlist = mylist[v : count]  	# v:count has a different meaning
+	otherlist = mylist[v : count]	# v:count has a different meaning
 	otherlist = mylist[:]		# make a copy of the List
 	otherlist = mylist[v :]
 	otherlist = mylist[: v]
@@ -879,7 +882,7 @@ This works for alphanumeric characters, underscore and dash.  If you want to
 use another character, use a single or double quoted string: >
 	var dict = {'key with space': value}
 	var dict = {"key\twith\ttabs": value}
-	var dict = {'': value}  		# empty key
+	var dict = {'': value}			# empty key
 <							*E1139*
 In case the key needs to be an expression, square brackets can be used, just
 like in JavaScript: >
@@ -914,7 +917,7 @@ Thus "=~" works like "=~#".
 "is" and "isnot" (|expr-is| and |expr-isnot|) when used on strings now return
 false.  In legacy script they just compare the strings, in |Vim9| script they
 check identity, and strings are copied when used, thus two strings are never
-the same (this might change some day if strings are not copied but reference
+the same (this might change someday if strings are not copied but reference
 counted).
 
 
@@ -1022,18 +1025,21 @@ always converted to string: >
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
 			*false* *true* *null* *null_blob* *null_channel*
-			*null_dict* *null_function* *null_job* *null_list*
-			*null_partial* *null_string* *E1034*
+			*null_class* *null_dict* *null_function* *null_job*
+			*null_list* *null_object* *null_partial* *null_string*
+			*E1034*
 In Vim9 script one can use the following predefined values: >
 	true
 	false
 	null
 	null_blob
 	null_channel
+	null_class
 	null_dict
 	null_function
 	null_job
 	null_list
+	null_object
 	null_partial
 	null_string
 `true` is the same as `v:true`, `false` the same as `v:false`, `null` the same
@@ -1056,11 +1062,11 @@ It is possible to compare `null`  with any value, this will not give a type
 error.  However, comparing `null` with a number, float or bool will always
 result in `false`.  This is different from legacy script, where comparing
 `null` with zero or `false` would return `true`.
-
+							*vim9-false-true*
 When converting a boolean to a string `false` and `true` are used, not
 `v:false` and `v:true` like in legacy script.  `v:none` has no `none`
 replacement, it has no equivalent in other languages.
-
+							*vim9-string-index*
 Indexing a string with [idx] or taking a slice with [idx : idx] uses character
 indexes instead of byte indexes.  Composing characters are included.
 Example: >
@@ -1254,6 +1260,7 @@ level.  They cannot be created in a function, also not in a legacy function.
 :defc[ompile]		Compile functions defined in the current script that
 			were not compiled yet.
 			This will report any errors found during compilation.
+			This excludes functions defined inside a class.
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
@@ -1261,6 +1268,10 @@ level.  They cannot be created in a function, also not in a legacy function.
 			Compile function {func}, if needed.  Use "debug" and
 			"profile" to specify the compilation mode.
 			This will report any errors found during compilation.
+			{func} call also be "ClassName.functionName" to
+			compile a function or method in a class.
+			{func} call also be "ClassName" to compile all
+			functions and methods in a class.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
@@ -1402,7 +1413,7 @@ to a Vim9 function:
 	  echo line(1) .. line(2)
 
 - line continuation does not always require a backslash: >
-  	echo ['one',
+	echo ['one',
 		\ 'two',
 		\ 'three'
 		\ ]
@@ -1456,9 +1467,9 @@ have the "void" type.  Trying to use a void (e.g. a function without a
 return value) results in error *E1031*  *E1186* .
 
 There is no array type, use list<{type}> instead.  For a list constant an
-efficient implementation is used that avoids allocating lot of small pieces of
-memory.
-							*E1005* *E1007*
+efficient implementation is used that avoids allocating a lot of small pieces
+of memory.
+				    *vim9-func-declaration* *E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
 				checking for arguments or return value
@@ -1477,13 +1488,14 @@ func({type})			function with argument type, does not return
 func({type}): {type}		function with argument type and return type
 func(?{type})			function with type of optional argument, does
 				not return a value
-func(...{type})			function with type of variable number of
-				arguments, does not return a value
-func({type}, ?{type}, ...{type}): {type}
+func(...list<{type}>)		function with type of list for variable number
+				of arguments, does not return a value
+func({type}, ?{type}, ...list<{type}>): {type}
 				function with:
 				- type of mandatory argument
 				- type of optional argument
-				- type of variable number of arguments
+				- type of list for variable number of
+				  arguments
 				- return type
 
 If the return type is "void" the function does not return a value.
@@ -1547,6 +1559,8 @@ string to a number.
 
 If a type is given where it is not expected you can get *E1272* .
 
+If a type is incomplete you get *E1363* , e.g. when you have an object for
+which the class is not known (usually that is a null object).
 
 Type inference ~
 							*type-inference*
@@ -1657,10 +1671,30 @@ Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.  Since |flatten()| is intended to always change the
 type, it can not be used in Vim9 script.
 
+Assigning to a funcref with specified arguments (see |vim9-func-declaration|)
+does strict type checking of the arguments. For variable number of arguments
+the type must match: >
+	var FuncRef: func(string, number, bool): number
+	FuncRef = (v1: string, v2: number, v3: bool) => 777	# OK
+	FuncRef = (v1: string, v2: number, v3: number) => 777	# Error!
+	# variable number of arguments must have same type
+	var FuncVA: func(...list<string>): number
+	FuncVA = (...v: list<number>): number => v  # Error!
+	FuncVA = (...v: list<any>): number => v	    # OK, `any` runtime check
+	FuncVA = (v1: string, v: string2): number => 333     # Error!
+	FuncVA = (v: list<string>): number => 3	    # Error!
+
+If the destinataion funcref has no specified arguments, then there is no
+argument type checking: >
+	var FuncUnknownArgs: func: number
+	FuncUnknownArgs = (v): number => v			# OK
+	FuncUnknownArgs = (v1: string, v2: string): number => 3	# OK
+	FuncUnknownArgs = (...v1: list<string>): number => 333	# OK
+<
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
-			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
-			 *E1256* *E1297* *E1298* *E1301*
+			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
+			 *E1297* *E1298* *E1301*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 
@@ -1744,7 +1778,7 @@ Exporting an item can be written as: >
 	export interface MyClass ...
 <							*E1043* *E1044*
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported. {not implemented yet: class, interface}
+be exported.
 
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
@@ -1777,7 +1811,7 @@ filename.  For example: >
 Then you can use "that.item", etc.  You are free to choose the name "that".
 Use something that will be recognized as referring to the imported script.
 Avoid command names, command modifiers and builtin function names, because the
-name will shadow them.  Better not start the name starts with a capital
+name will shadow them.  It's better not to start the name with a capital
 letter, since it can then also shadow global user commands and functions.
 Also, you cannot use the name for something else in the script, such as a
 function or variable name.
@@ -1850,9 +1884,9 @@ However, the namespace cannot be resolved on its own: >
 <
 This also affects the use of |<SID>| in the legacy mapping context.  Since
 |<SID>| is only a valid prefix for a function and NOT for a namespace, you
-cannot use it
-to scope a function in a script local namespace. Instead of prefixing the
-function with |<SID>| you should use|<ScriptCmd>|. For example: >
+cannot use it to scope a function in a script local namespace. Instead of
+prefixing the function with |<SID>| you should use|<ScriptCmd>|. For example:
+>
 	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
 <
 							*:import-cycle*

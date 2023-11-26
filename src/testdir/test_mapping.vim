@@ -783,11 +783,12 @@ func Test_mapcomplete()
   call feedkeys(":abbr! \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"abbr! \x01", @:)
 
-  " Multiple matches for a map
-  nmap ,f /H<CR>
-  omap ,f /H<CR>
+  " When multiple matches have the same {lhs}, it should only appear once.
+  " The simplified form should also not be included.
+  nmap ,<C-F> /H<CR>
+  omap ,<C-F> /H<CR>
   call feedkeys(":map ,\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"map ,f', @:)
+  call assert_equal('"map ,<C-F>', @:)
   mapclear
 endfunc
 
@@ -1000,10 +1001,6 @@ func Test_map_cmdkey()
   call assert_fails('call feedkeys("\<F3>", "xt")', 'E1136:')
   call assert_equal(0, x)
 
-  noremap <F3> <Cmd><F3>let x = 2<CR>
-  call assert_fails('call feedkeys("\<F3>", "xt")', 'E1137:')
-  call assert_equal(0, x)
-
   noremap <F3> <Cmd>let x = 3
   call assert_fails('call feedkeys("\<F3>", "xt!")', 'E1255:')
   call assert_equal(0, x)
@@ -1103,11 +1100,6 @@ func Test_map_cmdkey()
   unmap <F3>
   unmap! <F3>
   %bw!
-
-  " command line ending in "0" is handled without errors
-  onoremap ix <cmd>eval 0<cr>
-  call feedkeys('dix.', 'xt')
-  ounmap ix
 endfunc
 
 " text object enters visual mode
@@ -1349,13 +1341,13 @@ func Test_map_cmdkey_op_pending_mode()
   call assert_equal(['lines', 'of test text'], getline(1, '$'))
   call assert_equal(['some short '], getreg('"', 1, 1))
   " create a new undo point
-  let &undolevels = &undolevels
+  let &g:undolevels = &g:undolevels
 
   call feedkeys(".", 'xt')
   call assert_equal(['test text'], getline(1, '$'))
   call assert_equal(['lines', 'of '], getreg('"', 1, 1))
   " create a new undo point
-  let &undolevels = &undolevels
+  let &g:undolevels = &g:undolevels
 
   call feedkeys("uu", 'xt')
   call assert_equal(['some short lines', 'of test text'], getline(1, '$'))
@@ -1494,6 +1486,24 @@ func Test_map_cmdkey_redo()
   call delete('Xcmdtext')
   delfunc SelectDash
   ounmap i-
+
+  new
+  call setline(1, 'aaa bbb ccc ddd')
+
+  " command can contain special keys
+  onoremap ix <Cmd>let g:foo ..= '…'<Bar>normal! <C-Right><CR>
+  let g:foo = ''
+  call feedkeys('0dix.', 'xt')
+  call assert_equal('……', g:foo)
+  call assert_equal('ccc ddd', getline(1))
+  unlet g:foo
+
+  " command line ending in "0" is handled without errors
+  onoremap ix <Cmd>eval 0<CR>
+  call feedkeys('dix.', 'xt')
+
+  ounmap ix
+  bwipe!
 endfunc
 
 func Test_map_script_cmd_restore()
@@ -1554,15 +1564,15 @@ func Test_map_script_cmd_redo()
   let lines =<< trim END
       vim9script
       export def Func()
-        normal! dd
+        normal! V
       enddef
   END
   call writefile(lines, 'Xmapcmd/script.vim')
   new
-  call setline(1, ['one', 'two', 'three', 'four'])
+  call setline(1, ['one', 'two', 'three', 'four', 'five'])
   nnoremap j j
   source Xmapcmd/plugin.vim
-  call feedkeys("d\<F3>j.", 'xt')
+  call feedkeys("d\<F3>j.j.", 'xt')
   call assert_equal(['two', 'four'], getline(1, '$'))
 
   ounmap <F3>

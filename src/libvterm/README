@@ -7,7 +7,7 @@ The original can be found:
 	https://github.com/neovim/libvterm
 
 Modifications:
-- revisions up to 817 have been included
+- revisions up to 839 have been included
 - Added a .gitignore file.
 - use TRUE and FALSE instead of true and false
 - use int or unsigned int instead of bool

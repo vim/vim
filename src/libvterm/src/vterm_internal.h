@@ -169,6 +169,7 @@ struct VTermState
         SELECTION_QUERY,
         SELECTION_SET_INITIAL,
         SELECTION_SET,
+        SELECTION_INVALID,
       } state : 8;
       uint32_t recvpartial;
       uint32_t sendpartial;
@@ -238,6 +239,8 @@ struct VTerm
     void *cbdata;
 
     int string_initial;
+
+    int emit_nul;
   } parser;
 
   /* len == malloc()ed size; cur == number of valid bytes */

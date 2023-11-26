@@ -3907,7 +3907,7 @@ msgstr "%4ld 줄:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: 잘못된 레지스터 이름: '%s'"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "메시지 관리자: SungHyun Nam <goweol@gmail.com>"
 
 msgid "Interrupt: "

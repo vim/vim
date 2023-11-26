@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:		Jan 07, 2020
-" Version:	32
+" Date:		Nov 14, 2023
+" Version:	32b  (with modifications from the Vim Project)
 " Maintainer:	Charles E Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
 "
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v32"
+let g:loaded_tar= "v32a"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of tar needs vim 7.2"
@@ -208,18 +208,24 @@ fun! tar#Browse(tarfile)
 "   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
    return
   endif
-  if line("$") == curlast || ( line("$") == (curlast + 1) && getline("$") =~# '\c\%(warning\|error\|inappropriate\|unrecognized\)')
-   redraw!
-   echohl WarningMsg | echo "***warning*** (tar#Browse) ".a:tarfile." doesn't appear to be a tar file" | echohl None
-   keepj sil! %d
-   let eikeep= &ei
-   set ei=BufReadCmd,FileReadCmd
-   exe "r ".fnameescape(a:tarfile)
-   let &ei= eikeep
-   keepj sil! 1d
-"   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
-   return
-  endif
+  "
+  " The following should not be neccessary, since in case of errors the
+  " previous if statement should have caught the problem (because tar exited
+  " with a non-zero exit code).
+  " if line("$") == curlast || ( line("$") == (curlast + 1) &&
+  "       \ getline("$") =~# '\c\<\%(warning\|error\|inappropriate\|unrecognized\)\>' &&
+  "       \ getline("$") =~  '\s' )
+  "  redraw!
+  "  echohl WarningMsg | echo "***warning*** (tar#Browse) ".a:tarfile." doesn't appear to be a tar file" | echohl None
+  "  keepj sil! %d
+  "  let eikeep= &ei
+  "  set ei=BufReadCmd,FileReadCmd
+  "  exe "r ".fnameescape(a:tarfile)
+  "  let &ei= eikeep
+  "  keepj sil! 1d
+  "   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
+  "  return
+  " endif
 
   " set up maps supported for tar
   setlocal noma nomod ro

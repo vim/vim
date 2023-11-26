@@ -181,7 +181,7 @@ fill_assert_error(
 		return;
 
 	    todo = (int)exp_d->dv_hashtab.ht_used;
-	    for (hi = exp_d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&exp_d->dv_hashtab, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{
@@ -204,7 +204,7 @@ fill_assert_error(
 
 	    // Add items only present in got_d.
 	    todo = (int)got_d->dv_hashtab.ht_used;
-	    for (hi = got_d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&got_d->dv_hashtab, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{
@@ -223,9 +223,11 @@ fill_assert_error(
     }
     else
     {
-	ga_concat(gap, (char_u *)"'");
+	if (atype == ASSERT_FAILS)
+	    ga_concat(gap, (char_u *)"'");
 	ga_concat_shorten_esc(gap, exp_str);
-	ga_concat(gap, (char_u *)"'");
+	if (atype == ASSERT_FAILS)
+	    ga_concat(gap, (char_u *)"'");
     }
     if (atype != ASSERT_NOTEQUAL)
     {
@@ -279,9 +281,6 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    int		called_emsg_before = called_emsg;
-    char_u	*pat;
-    char_u	*text;
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
@@ -289,9 +288,9 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
 		|| check_for_opt_string_arg(argvars, 2) == FAIL))
 	return 1;
 
-    pat = tv_get_string_buf_chk(&argvars[0], buf1);
-    text = tv_get_string_buf_chk(&argvars[1], buf2);
-    if (called_emsg == called_emsg_before
+    char_u *pat = tv_get_string_buf_chk(&argvars[0], buf1);
+    char_u *text = tv_get_string_buf_chk(&argvars[1], buf2);
+    if (pat != NULL && text != NULL
 		 && pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
@@ -418,24 +417,23 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
-    int		called_emsg_before = called_emsg;
     char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
-    garray_T	ga;
     FILE	*fd1;
     FILE	*fd2;
     char	line1[200];
     char	line2[200];
     int		lineidx = 0;
 
-    if (called_emsg > called_emsg_before)
+    if (fname1 == NULL || fname2 == NULL)
 	return 0;
 
     IObuff[0] = NUL;
     fd1 = mch_fopen((char *)fname1, READBIN);
     if (fd1 == NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname1);
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
+								       fname1);
     }
     else
     {
@@ -443,7 +441,8 @@ assert_equalfile(typval_T *argvars)
 	if (fd2 == NULL)
 	{
 	    fclose(fd1);
-	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str, fname2);
+	    vim_snprintf((char *)IObuff, IOSIZE, (char *)e_cant_read_file_str,
+								       fname2);
 	}
 	else
 	{
@@ -496,8 +495,10 @@ assert_equalfile(typval_T *argvars)
 	    fclose(fd2);
 	}
     }
+
     if (IObuff[0] != NUL)
     {
+	garray_T	ga;
 	prepare_assert_error(&ga);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
@@ -526,6 +527,7 @@ assert_equalfile(typval_T *argvars)
 	ga_clear(&ga);
 	return 1;
     }
+
     return 0;
 }
 
@@ -743,7 +745,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		actual_tv.vval.v_string = actual;
 	    }
 	    fill_assert_error(&ga, &argvars[2], expected_str,
-			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
+			&argvars[error_found_index], &actual_tv, ASSERT_FAILS);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
@@ -785,9 +787,7 @@ assert_inrange(typval_T *argvars)
 {
     garray_T	ga;
     int		error = FALSE;
-    char_u	*tofree;
-    char	msg[200];
-    char_u	numbuf[NUMBUFLEN];
+    char_u	expected_str[200];
 
     if (argvars[0].v_type == VAR_FLOAT
 	    || argvars[1].v_type == VAR_FLOAT
@@ -800,17 +800,10 @@ assert_inrange(typval_T *argvars)
 	if (factual < flower || factual > fupper)
 	{
 	    prepare_assert_error(&ga);
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-	    {
-		ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
-		vim_free(tofree);
-	    }
-	    else
-	    {
-		vim_snprintf(msg, 200, "Expected range %g - %g, but got %g",
-						      flower, fupper, factual);
-		ga_concat(&ga, (char_u *)msg);
-	    }
+	    vim_snprintf((char *)expected_str, 200, "range %g - %g,",
+							       flower, fupper);
+	    fill_assert_error(&ga, &argvars[3], expected_str, NULL,
+						    &argvars[2], ASSERT_OTHER);
 	    assert_error(&ga);
 	    ga_clear(&ga);
 	    return 1;
@@ -827,17 +820,10 @@ assert_inrange(typval_T *argvars)
 	if (actual < lower || actual > upper)
 	{
 	    prepare_assert_error(&ga);
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-	    {
-		ga_concat(&ga, tv2string(&argvars[3], &tofree, numbuf, 0));
-		vim_free(tofree);
-	    }
-	    else
-	    {
-		vim_snprintf(msg, 200, "Expected range %ld - %ld, but got %ld",
-				       (long)lower, (long)upper, (long)actual);
-		ga_concat(&ga, (char_u *)msg);
-	    }
+	    vim_snprintf((char *)expected_str, 200, "range %ld - %ld,",
+						     (long)lower, (long)upper);
+	    fill_assert_error(&ga, &argvars[3], expected_str, NULL,
+						    &argvars[2], ASSERT_OTHER);
 	    assert_error(&ga);
 	    ga_clear(&ga);
 	    return 1;
@@ -1053,6 +1039,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	no_wait_return = val;
     else if (STRCMP(name, (char_u *)"ui_delay") == 0)
 	ui_delay_for_testing = val;
+    else if (STRCMP(name, (char_u *)"unreachable") == 0)
+	ignore_unreachable_code_for_testing = val;
     else if (STRCMP(name, (char_u *)"term_props") == 0)
 	reset_term_props_on_termresponse = val;
     else if (STRCMP(name, (char_u *)"vterm_title") == 0)
@@ -1143,6 +1131,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_DICT:
 	    if (argvars[0].vval.v_dict != NULL)
 		retval = argvars[0].vval.v_dict->dv_refcount - 1;
+	    break;
+	case VAR_TYPEALIAS:
+	    if (argvars[0].vval.v_typealias != NULL)
+		retval = argvars[0].vval.v_typealias->ta_refcount - 1;
 	    break;
     }
 

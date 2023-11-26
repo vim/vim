@@ -1236,7 +1236,7 @@ variable.  It supports 3 keys, `line_continuation`, `more_in_bracket_block`,
 and `searchpair_timeout`.
 `line_continuation` expects a number which will be added to the indent level of
 a continuation line starting with a backslash, and defaults to
-`shiftwidth() * 3`.  It also accepts a string, which is evaluated at runtime.
+`shiftwidth() * 3` .  It also accepts a string, which is evaluated at runtime.
 `more_in_bracket_block` expects a boolean value; when on, an extra
 `shiftwidth()` is added inside blocks surrounded with brackets.  It defaults to
 `v:false`.
@@ -1244,14 +1244,14 @@ a continuation line starting with a backslash, and defaults to
 a timeout.  Increasing the value might give more accurate results, but also
 causes the indentation to take more time.  It defaults to 100 (milliseconds).
 
-Example of configuration:
+Example of configuration: >
 
 	let g:vim_indent = #{
 	    \ line_continuation: shiftwidth() * 3,
 	    \ more_in_bracket_block: v:false,
 	    \ searchpair_timeout: 100,
 	    \ }
-
+<
 							*g:vim_indent_cont*
 This variable is equivalent to `g:vim_indent.line_continuation`.
 It's supported for backward compatibility.

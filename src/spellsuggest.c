@@ -424,6 +424,7 @@ spell_check_sps(void)
 	    if (*s != NUL && !VIM_ISDIGIT(*s))
 		f = -1;
 	}
+	// Note: Keep this in sync with p_sps_values.
 	else if (STRCMP(buf, "best") == 0)
 	    f = SPS_BEST;
 	else if (STRCMP(buf, "fast") == 0)
@@ -480,7 +481,7 @@ spell_suggest(int count)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 
@@ -538,7 +539,8 @@ spell_suggest(int count)
     // Get the word and its length.
 
     // Figure out if the word should be capitalised.
-    need_cap = check_need_cap(curwin->w_cursor.lnum, curwin->w_cursor.col);
+    need_cap = check_need_cap(curwin, curwin->w_cursor.lnum,
+							curwin->w_cursor.col);
 
     // Make a copy of current line since autocommands may free the line.
     line = vim_strsave(ml_get_curline());
@@ -3176,7 +3178,7 @@ suggest_try_soundalike_finish(void)
 	{
 	    // Free the info about handled words.
 	    todo = (int)slang->sl_sounddone.ht_used;
-	    for (hi = slang->sl_sounddone.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&slang->sl_sounddone, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    vim_free(HI2SFT(hi));

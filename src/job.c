@@ -140,7 +140,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	return OK;
 
     todo = (int)dict->dv_hashtab.ht_used;
-    for (hi = dict->dv_hashtab.ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(&dict->dv_hashtab, hi, todo)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    item = &dict_lookup(hi)->di_tv;
@@ -272,7 +272,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		*lp = tv_get_number(item);
 		if (*lp < 0)
 		{
-		    semsg(_(e_invalid_value_for_argument_str_str), hi->hi_key, tv_get_string(item));
+		    semsg(_(e_invalid_value_for_argument_str_str),
+					      hi->hi_key, tv_get_string(item));
 		    return FAIL;
 		}
 	    }
@@ -383,7 +384,8 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		val = tv_get_string(item);
 		if (STRCMP(val, "open") != 0 && STRCMP(val, "close") != 0)
 		{
-		    semsg(_(e_invalid_value_for_argument_str_str), "term_finish", val);
+		    semsg(_(e_invalid_value_for_argument_str_str),
+							   "term_finish", val);
 		    return FAIL;
 		}
 		opt->jo_set2 |= JO2_TERM_FINISH;
@@ -443,10 +445,19 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 	    }
 	    else if (STRCMP(hi->hi_key, "term_cols") == 0)
 	    {
+		int error = FALSE;
+
 		if (!(supported2 & JO2_TERM_COLS))
 		    break;
 		opt->jo_set2 |= JO2_TERM_COLS;
-		opt->jo_term_cols = tv_get_number(item);
+		opt->jo_term_cols = tv_get_number_chk(item, &error);
+		if (error)
+		    return FAIL;
+		if (opt->jo_term_cols < 0 || opt->jo_term_cols > 1000)
+		{
+		    semsg(_(e_invalid_value_for_argument_str), "term_cols");
+		    return FAIL;
+		}
 	    }
 	    else if (STRCMP(hi->hi_key, "vertical") == 0)
 	    {
@@ -885,7 +896,7 @@ job_still_useful(job_T *job)
  * Return TRUE when there is any running job that we care about.
  */
     int
-job_any_running()
+job_any_running(void)
 {
     job_T	*job;
 
@@ -1655,7 +1666,7 @@ init_prompt(int cmdchar_todo)
  * Return TRUE if the cursor is in the editable position of the prompt line.
  */
     int
-prompt_curpos_editable()
+prompt_curpos_editable(void)
 {
     return curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count
 	&& curwin->w_cursor.col >= (int)STRLEN(prompt_text());

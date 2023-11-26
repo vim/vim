@@ -1748,4 +1748,34 @@ func Test_expand_fold_at_bottom_of_buffer()
   bwipe!
 endfunc
 
+func Test_fold_screenrow_motion()
+  call setline(1, repeat(['aaaa'], 5))
+  1,4fold
+  norm Ggkzo
+  call assert_equal(1, line('.'))
+endfunc
+
+" This was using freed memory
+func Test_foldcolumn_linebreak_control_char()
+  CheckFeature linebreak
+
+  5vnew
+  setlocal foldcolumn=1 linebreak
+  call setline(1, "aaa\<C-A>b")
+  redraw
+  call assert_equal([' aaa^', ' Ab  '], ScreenLines([1, 2], 5))
+  call assert_equal(screenattr(1, 5), screenattr(2, 2))
+
+  bwipe!
+endfunc
+
+" This used to cause invalid memory access
+func Test_foldexpr_return_empty_string()
+  new
+  setlocal foldexpr='' foldmethod=expr
+  redraw
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

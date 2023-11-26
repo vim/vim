@@ -5,6 +5,7 @@ if exists("+t_kD")
 endif
 
 source check.vim
+source screendump.vim
 
 " Needed for testing basic rightleft: Test_edit_rightleft
 source view_util.vim
@@ -573,6 +574,7 @@ func Test_edit_CTRL_G()
   call assert_equal([0, 3, 7, 0], getpos('.'))
   call feedkeys("i\<c-g>j\<esc>", 'tnix')
   call assert_equal([0, 3, 6, 0], getpos('.'))
+  call assert_nobeep("normal! i\<c-g>\<esc>")
   bw!
 endfunc
 
@@ -1217,7 +1219,7 @@ func Test_edit_LEFT_RIGHT()
 endfunc
 
 func Test_edit_MOUSE()
-  " This is a simple test, since we not really using the mouse here
+  " This is a simple test, since we're not really using the mouse here
   CheckFeature mouse
   10new
   call setline(1, range(1, 100))
@@ -1795,7 +1797,7 @@ func Test_edit_charconvert()
   close!
   set charconvert&
 
-  " 'charconvert' function doesn't create a output file
+  " 'charconvert' function doesn't create an output file
   func Cconv1()
   endfunc
   set charconvert=Cconv1()
@@ -1954,6 +1956,22 @@ func Test_edit_insert_reg()
   call assert_equal('"', g:Line)
   call test_override('ALL', 0)
   close!
+endfunc
+
+" Test for positioning cursor after CTRL-R expression failed
+func Test_edit_ctrl_r_failed()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', #{rows: 6, cols: 60})
+
+  " trying to insert a dictionary produces an error
+  call term_sendkeys(buf, "i\<C-R>={}\<CR>")
+
+  " ending Insert mode should put the cursor back on the ':'
+  call term_sendkeys(buf, ":\<Esc>")
+  call VerifyScreenDump(buf, 'Test_edit_ctlr_r_failed_1', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " When a character is inserted at the last position of the last line in a

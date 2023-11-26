@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 Jan 09
+*map.txt*       For Vim version 9.0.  Last change: 2023 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -400,17 +400,13 @@ Note:
 - The command is not echo'ed, no need for <silent>.
 - The {rhs} is not subject to abbreviations nor to other mappings, even if the
   mapping is recursive.
-- In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
+- In Visual mode you can use `line('v')` and `col('v')` to get one end of the
   Visual area, the cursor is at the other end.
 
 							*E1255* *E1136*
 <Cmd> and <ScriptCmd> commands must terminate, that is, they must be followed
 by <CR> in the {rhs} of the mapping definition.  |Command-line| mode is never
 entered.
-
-							*E1137*
-<Cmd> and <ScriptCmd> commands can have only normal characters and cannot
-contain special characters like function keys.
 
 
 1.3 MAPPING AND MODES					*:map-modes*
@@ -845,7 +841,7 @@ option).  After that it assumes that the 'q' is to be interpreted as such.  If
 you type slowly, or your system is slow, reset the 'timeout' option.  Then you
 might want to set the 'ttimeout' option.
 
-			      				*map-precedence*
+							*map-precedence*
 Buffer-local mappings (defined using |:map-<buffer>|) take precedence over
 global mappings.  When a buffer-local mapping is the same as a global mapping,
 Vim will use the buffer-local mapping.  In addition, Vim will use a complete
@@ -922,6 +918,11 @@ in the original Vi, you would get back the text before the first undo).
 
 
 1.10 MAPPING ALT-KEYS					*:map-alt-keys*
+
+For a readable mapping command the <A-k> form can be used.  Note that <A-k>
+and <A-K> are different, the latter will use an upper case letter.  Actually,
+<A-K> and <A-S-K> are the same.  Instead of "A" you can use "M".  If you have
+an actual Meta modifier key, please see |:map-meta-keys|.
 
 In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
 always work.  But in a terminal Vim gets a sequence of bytes and has to figure
@@ -1028,7 +1029,7 @@ enabled when it spots an escape sequence that must have been created by it.
 To see if Vim detected such an escape sequence use `:verbose map`, the first
 line will then show "Seen modifyOtherKeys: true" (possibly translated).
 
-This automatic detection depends on receiving an escape code starting with 
+This automatic detection depends on receiving an escape code starting with
 "<1b>[27;".  This is the normal way xterm sends these key codes.  However, if
 the *formatOtherKeys* resource is set another form is used that is not
 recognized, therefore you must not set formatOtherKeys.
@@ -1068,8 +1069,8 @@ translated).  The meaning of {value}:
 	On		protocol is used
 	Disabled	protocol was used but expected to have been disabled
 			by 't_TE'
-	Cleared		protocol expected to have beeen disabled by 't_TE',
-			previous state is unknown 
+	Cleared		protocol expected to have been disabled by 't_TE',
+			previous state is unknown
 
 
 1.14 MAPPING AN OPERATOR				*:map-operator*
@@ -1212,7 +1213,7 @@ non-id	  The "non-id" type ends in a non-keyword character, the other
 Examples of strings that cannot be abbreviations: "a.b", "#def", "a b", "_$r"
 
 An abbreviation is only recognized when you type a non-keyword character.
-This can also be the <Esc> that ends insert mode or the <CR> that ends a
+This can also be the <Esc> that ends Insert mode or the <CR> that ends a
 command.  The non-keyword character which ends the abbreviation is inserted
 after the expanded abbreviation.  An exception to this is the character <C-]>,
 which is used to expand an abbreviation without inserting any extra
@@ -1416,12 +1417,13 @@ this, they can be made local to the script.
 
 						*<SID>* *<SNR>* *E81*
 The string "<SID>" can be used in a mapping or menu.  This requires that the
-'<' flag is not present in 'cpoptions'.
+'<' flag is not present in 'cpoptions'.  This is useful if you have a
+script-local function that you want to call from a mapping in the same script.
    When executing the map command, Vim will replace "<SID>" with the special
 key code <SNR>, followed by a number that's unique for the script, and an
 underscore.  Example: >
 	:map <SID>Add
-could define a mapping "<SNR>23_Add".
+would define a mapping "<SNR>23_Add".
 
 When defining a function in a script, "s:" can be prepended to the name to
 make it local to the script (in |Vim9| script functions without a prefix are
@@ -1559,6 +1561,11 @@ User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
 command's attributes, which are specified when the command is defined.
+
+When defining a user command in a script, it will be able to call functions
+local to the script and use mappings local to the script.  When the user
+invokes the user command, it will run in the context of the script it was
+defined in.  This matters if |<SID>| is used in a command.
 
 There are a number of attributes, split into four categories: argument
 handling, completion behavior, range handling, and special cases.  The
@@ -1723,7 +1730,7 @@ by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
 
 Possible values are (second column is the short name used in listing):
-    -addr=lines		  	Range of lines (this is the default for -range)
+    -addr=lines			Range of lines (this is the default for -range)
     -addr=arguments	  arg	Range for arguments
     -addr=buffers	  buf	Range for buffers (also not loaded buffers)
     -addr=loaded_buffers  load	Range for loaded buffers
@@ -1774,6 +1781,11 @@ There must be white space before the "{".  No nesting is supported, inline
 functions cannot be used.  Commands where a "|" may appear in the argument,
 such as commands with an expression argument, cannot be followed by a "|" and
 another command.
+
+If the command is defined in Vim9 script (a script that starts with
+`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
+script.  Thus this depends on where the command is defined, not where it is
+used.
 
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with
@@ -1861,7 +1873,13 @@ remains unmodified.  Also see |f-args-example| below.  Overview:
 	XX a\\\ b	   'a\ b'
 	XX a\\\\b	   'a\\b'
 	XX a\\\\ b	   'a\\', 'b'
+	XX		   [nothing]
 
+
+Note that if the "no arguments" situation is to be handled, you have to make
+sure that the function can be called without arguments.  For a compiled
+function you might want to use variable arguments, see
+|vim9-variable-arguments|.
 
 Examples for user commands: >
 
@@ -1909,14 +1927,5 @@ errors and the "update" command to write modified buffers): >
 This will invoke: >
 	:call Allargs("%s/foo/bar/ge|update")
 <
-If the command is defined in Vim9 script (a script that starts with
-`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
-script.  Thus this depends on where the command is defined, not where it is
-used.
-
-When defining a user command in a script, it will be able to call functions
-local to the script and use mappings local to the script.  When the user
-invokes the user command, it will run in the context of the script it was
-defined in.  This matters if |<SID>| is used in a command.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

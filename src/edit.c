@@ -840,6 +840,7 @@ doESCkey:
 		if (cmdchar != 'r' && cmdchar != 'v' && c != Ctrl_C)
 		    ins_apply_autocmds(EVENT_INSERTLEAVE);
 		did_cursorhold = FALSE;
+		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 		return (c == Ctrl_O);
 	    }
 	    continue;
@@ -2438,12 +2439,12 @@ stop_insert(
      * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
     ptr = get_inserted();
-    if (did_restart_edit == 0 || (ptr != NULL
-				       && (int)STRLEN(ptr) > new_insert_skip))
+    int added = ptr == NULL ? 0 : (int)STRLEN(ptr) - new_insert_skip;
+    if (did_restart_edit == 0 || added > 0)
     {
 	vim_free(last_insert);
 	last_insert = ptr;
-	last_insert_skip = new_insert_skip;
+	last_insert_skip = added < 0 ? 0 : new_insert_skip;
     }
     else
 	vim_free(ptr);
@@ -2734,6 +2735,7 @@ oneleft(void)
 	}
 
 	curwin->w_set_curswant = TRUE;
+	adjust_skipcol();
 	return OK;
     }
 
@@ -2754,17 +2756,12 @@ oneleft(void)
 /*
  * Move the cursor up "n" lines in window "wp".
  * Takes care of closed folds.
- * Returns the new cursor line or zero for failure.
  */
-    linenr_T
+    void
 cursor_up_inner(win_T *wp, long n)
 {
     linenr_T	lnum = wp->w_cursor.lnum;
 
-    // This fails if the cursor is already in the first line or the count is
-    // larger than the line number and '-' is in 'cpoptions'
-    if (lnum <= 1 || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL))
-	return 0;
     if (n >= lnum)
 	lnum = 1;
     else
@@ -2797,7 +2794,6 @@ cursor_up_inner(win_T *wp, long n)
 	lnum -= n;
 
     wp->w_cursor.lnum = lnum;
-    return lnum;
 }
 
     int
@@ -2805,8 +2801,13 @@ cursor_up(
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
-    if (n > 0 && cursor_up_inner(curwin, n) == 0)
+    // This fails if the cursor is already in the first line or the count is
+    // larger than the line number and '-' is in 'cpoptions'
+    linenr_T lnum = curwin->w_cursor.lnum;
+    if (n > 0 && (lnum <= 1
+		       || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL)))
 	return FAIL;
+    cursor_up_inner(curwin, n);
 
     // try to advance to the column we want to be at
     coladvance(curwin->w_curswant);
@@ -2820,23 +2821,13 @@ cursor_up(
 /*
  * Move the cursor down "n" lines in window "wp".
  * Takes care of closed folds.
- * Returns the new cursor line or zero for failure.
  */
-    linenr_T
+    void
 cursor_down_inner(win_T *wp, long n)
 {
     linenr_T	lnum = wp->w_cursor.lnum;
     linenr_T	line_count = wp->w_buffer->b_ml.ml_line_count;
 
-#ifdef FEAT_FOLDING
-    // Move to last line of fold, will fail if it's the end-of-file.
-    (void)hasFoldingWin(wp, lnum, NULL, &lnum, TRUE, NULL);
-#endif
-    // This fails if the cursor is already in the last line or would move
-    // beyond the last line and '-' is in 'cpoptions'
-    if (lnum >= line_count
-	    || (lnum + n > line_count && vim_strchr(p_cpo, CPO_MINUS) != NULL))
-	return FAIL;
     if (lnum + n >= line_count)
 	lnum = line_count;
     else
@@ -2848,6 +2839,7 @@ cursor_down_inner(win_T *wp, long n)
 	// count each sequence of folded lines as one logical line
 	while (n--)
 	{
+	    // Move to last line of fold, will fail if it's the end-of-file.
 	    if (hasFoldingWin(wp, lnum, NULL, &last, TRUE, NULL))
 		lnum = last + 1;
 	    else
@@ -2863,7 +2855,6 @@ cursor_down_inner(win_T *wp, long n)
 	lnum += n;
 
     wp->w_cursor.lnum = lnum;
-    return lnum;
 }
 
 /*
@@ -2874,8 +2865,16 @@ cursor_down(
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
-    if (n > 0 &&  cursor_down_inner(curwin, n) == 0)
+    linenr_T	lnum = curwin->w_cursor.lnum;
+    linenr_T	line_count = curwin->w_buffer->b_ml.ml_line_count;
+    // This fails if the cursor is already in the last line or would move
+    // beyond the last line and '-' is in 'cpoptions'
+    if (n > 0
+	    && (lnum >= line_count
+		|| (lnum + n > line_count
+				     && vim_strchr(p_cpo, CPO_MINUS) != NULL)))
 	return FAIL;
+    cursor_down_inner(curwin, n);
 
     // try to advance to the column we want to be at
     coladvance(curwin->w_curswant);
@@ -3524,6 +3523,10 @@ ins_ctrl_g(void)
 		  dont_sync_undo = MAYBE;
 		  break;
 
+	case ESC:
+		  // Esc after CTRL-G cancels it.
+		  break;
+
 	// Unknown CTRL-G command, reserved for future expansion.
 	default:  vim_beep(BO_CTRLG);
     }
@@ -3608,7 +3611,8 @@ ins_esc(
     temp = curwin->w_cursor.col;
     if (disabled_redraw)
     {
-	--RedrawingDisabled;
+	if (RedrawingDisabled > 0)
+	    --RedrawingDisabled;
 	disabled_redraw = FALSE;
     }
     if (!arrow_used)
@@ -3684,6 +3688,7 @@ ins_esc(
 	else
 	{
 	    --curwin->w_cursor.col;
+	    curwin->w_valid &= ~(VALID_WCOL|VALID_VIRTCOL);
 	    // Correct cursor for multi-byte character.
 	    if (has_mbyte)
 		mb_adjust_cursor();
@@ -3701,8 +3706,13 @@ ins_esc(
 
     State = MODE_NORMAL;
     may_trigger_modechanged();
-    // need to position cursor again when on a TAB
-    if (gchar_cursor() == TAB)
+    // need to position cursor again when on a TAB and when on a char with
+    // virtual text.
+    if (gchar_cursor() == TAB
+#ifdef FEAT_PROP_POPUP
+	    || curbuf->b_has_textprop
+#endif
+       )
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     setmouse();
@@ -3850,6 +3860,7 @@ ins_insert(int replaceState)
     static void
 ins_ctrl_o(void)
 {
+    restart_VIsual_select = 0;
     if (State & VREPLACE_FLAG)
 	restart_edit = 'V';
     else if (State & REPLACE_FLAG)
@@ -4607,7 +4618,7 @@ ins_end(int c)
 }
 
     static void
-ins_s_left()
+ins_s_left(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
@@ -4676,7 +4687,7 @@ ins_right(void)
 }
 
     static void
-ins_s_right()
+ins_s_right(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Jan 12
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,6 +36,7 @@ a remark is given.
 11. No +eval feature		|no-eval-feature|
 12. The sandbox			|eval-sandbox|
 13. Textlock			|textlock|
+14. Vim script library		|vim-script-library|
 
 Testing support is documented in |testing.txt|.
 Profiling is documented at |profiling|.
@@ -1372,7 +1373,7 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr10(expr1, ...)	|Funcref| function call  	*E1085*
+expr10(expr1, ...)	|Funcref| function call		*E1085*
 
 When expr10 is a |Funcref| type variable, invoke the function it refers to.
 
@@ -1580,6 +1581,33 @@ Examples: >
 	echo $"The square root of {{9}} is {sqrt(9)}"
 <	The square root of {9} is 3.0 ~
 
+						*string-offset-encoding*
+A string consists of multiple characters.  How the characters are stored
+depends on 'encoding'.  Most common is UTF-8, which uses one byte for ASCII
+characters, two bytes for other latin characters and more bytes for other
+characters.
+
+A string offset can count characters or bytes.  Other programs may use
+UTF-16 encoding (16-bit words) and an offset of UTF-16 words.  Some functions
+use byte offsets, usually for UTF-8 encoding.  Other functions use character
+offsets, in which case the encoding doesn't matter.
+
+The different offsets for the string "a©😊" are below:
+
+  UTF-8 offsets:
+      [0]: 61, [1]: C2, [2]: A9, [3]: F0, [4]: 9F, [5]: 98, [6]: 8A
+  UTF-16 offsets:
+      [0]: 0061, [1]: 00A9, [2]: D83D, [3]: DE0A
+  UTF-32 (character) offsets:
+      [0]: 00000061, [1]: 000000A9, [2]: 0001F60A
+
+You can use the "g8" and "ga" commands on a character to see the
+decimal/hex/octal values.
+
+The functions |byteidx()|, |utf16idx()| and |charidx()| can be used to convert
+between these indices.  The functions |strlen()|, |strutf16len()| and
+|strcharlen()| return the number of bytes, UTF-16 code units and characters in
+a string respectively.
 
 option						*expr-option* *E112* *E113*
 ------
@@ -1654,7 +1682,7 @@ See below |functions|.
 
 lambda expression				*expr-lambda* *lambda*
 -----------------
-{args -> expr1}		legacy lambda expression 		*E451*
+{args -> expr1}		legacy lambda expression		*E451*
 (args) => expr1		|Vim9| lambda expression
 
 A lambda expression creates a new unnamed function which returns the result of
@@ -1788,6 +1816,8 @@ b:changedtick	The total number of changes to the current buffer.  It is
 		    :	call My_Update()
 		    :endif
 <		You cannot change or delete the b:changedtick variable.
+		If you need more information about the change see
+		|listener_add()|.
 
 						*window-variable* *w:var* *w:*
 A variable name that is preceded with "w:" is local to the current window.  It
@@ -2394,6 +2424,25 @@ v:progpath	Contains the command with which Vim was invoked, in a form
 		On MS-Windows the executable may be called "vim.exe", but the
 		".exe" is not added to v:progpath.
 		Read-only.
+
+				*v:python3_version* *python3-version-variable*
+v:python3_version
+		Version of Python 3 that Vim was built against.  When
+		Python is loaded dynamically (|python-dynamic|), this version
+		should exactly match the Python library up to the minor
+		version (e.g.  3.10.2 and 3.10.3 are compatible as the minor
+		version is "10", whereas 3.9.4 and 3.10.3 are not compatible).
+		When |python-stable-abi| is used, this will be the minimum Python
+		version that you can use instead. (e.g. if v:python3_version
+		indicates 3.9, you can use 3.9, 3.10, or anything above).
+
+		This number is encoded as a hex number following Python ABI
+		versioning conventions.  Do the following to have a
+		human-readable full version in hex: >
+			echo printf("%08X", v:python3_version)
+<		You can obtain only the minor version by doing: >
+			echo and(v:python3_version>>16,0xff)
+<		Read-only.
 
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
@@ -3062,7 +3111,7 @@ text...
 				let mylist = [1, 2, 3]
 				lockvar 0 mylist
 				let mylist[0] = 77	" OK
-				call add(mylist, 4]	" OK
+				call add(mylist, 4)	" OK
 				let mylist = [7, 8, 9]  " Error!
 <								*E743*
 			For unlimited depth use [!] and omit [depth].
@@ -3079,6 +3128,10 @@ text...
 				:let cl[1] = 99		" won't work!
 <			You may want to make a copy of a list to avoid this.
 			See |deepcopy()|.
+
+							*E1391* *E1392*
+			Locking and unlocking object and class variables is
+			currently NOT supported.
 
 
 :unlo[ckvar][!] [depth] {name} ...		*:unlockvar* *:unlo* *E1246*
@@ -4581,31 +4634,21 @@ The input is in the variable "line", the results in the variables "file",
 
 getting the scriptnames in a Dictionary ~
 						*scriptnames-dictionary*
-The |:scriptnames| command can be used to get a list of all script files that
-have been sourced.  There is no equivalent function or variable for this
-(because it's rarely needed).  In case you need to manipulate the list this
-code can be used: >
-    " Get the output of ":scriptnames" in the scriptnames_output variable.
-    let scriptnames_output = ''
-    redir => scriptnames_output
-    silent scriptnames
-    redir END
+The `:scriptnames` command can be used to get a list of all script files that
+have been sourced.  There is also the `getscriptinfo()` function, but the
+information returned is not exactly the same.  In case you need to manipulate
+the list, this code can be used as a base: >
 
-    " Split the output into lines and parse each line.	Add an entry to the
-    " "scripts" dictionary.
-    let scripts = {}
-    for line in split(scriptnames_output, "\n")
-      " Only do non-blank lines.
-      if line =~ '\S'
-	" Get the first number in the line.
-	let nr = matchstr(line, '\d\+')
-	" Get the file name, remove the script number " 123: ".
-	let name = substitute(line, '.\+:\s*', '', '')
-	" Add an item to the Dictionary
-	let scripts[nr] = name
-      endif
-    endfor
-    unlet scriptnames_output
+    # Create or update scripts dictionary, indexed by SNR, and return it.
+    def Scripts(scripts: dict<string> = {}): dict<string>
+      for info in getscriptinfo()
+        if scripts->has_key(info.sid)
+          continue
+        endif
+        scripts[info.sid] = info.name
+      endfor
+      return scripts
+    enddef
 
 ==============================================================================
 10. Vim script versions		*vimscript-version* *vimscript-versions*
@@ -4758,6 +4801,38 @@ This is not allowed when the textlock is active:
 	- editing another file
 	- closing a window or quitting Vim
 	- etc.
+
+==============================================================================
+14. Vim script library					*vim-script-library*
+
+Vim comes bundled with a Vim script library, that can be used by runtime,
+script authors.  Currently, it only includes very few functions, but it may
+grow over time.
+
+The functions are available as |Vim9-script| as well as using legacy Vim
+script (to be used for non Vim 9.0 versions and Neovim).
+
+							*dist#vim* *dist#vim9*
+The functions make use of the autoloaded prefix "dist#vim" (for legacy Vim
+script and Neovim) and "dist#vim9" for Vim9 script.
+
+The following functions are available:
+
+dist#vim#IsSafeExecutable(filetype, executable) ~
+dist#vim9#IsSafeExecutable(filetype:string, executable:string): bool ~
+
+This function takes a filetype and an executable and checks whether it is safe
+to execute the given executable.  For security reasons users may not want to
+have Vim execute random executables or may have forbidden to do so for
+specific filetypes by setting the "<filetype>_exec" variable (|plugin_exec|).
+
+It returns |true| or |false| to indicate whether the plugin should run the given
+exectuable.  It takes the following arguments:
+
+	argument	type ~
+
+	filetype	string
+	executable	string
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

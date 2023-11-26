@@ -1401,7 +1401,7 @@ nfa_regatom(void)
 		    rc_did_emsg = TRUE;
 		    return FAIL;
 		}
-		siemsg("INTERNAL: Unknown character class char: %d", c);
+		siemsg("Unknown character class char: %d", c);
 		return FAIL;
 	    }
 
@@ -3822,7 +3822,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 
 	} // switch(*p)
 
-    } // for(p = postfix; *p; ++p)
+    } // for (p = postfix; *p; ++p)
 
     if (nfa_calc_size == TRUE)
     {
@@ -5119,7 +5119,7 @@ check_char_class(int class, int c)
 
 	default:
 	    // should not be here :P
-	    siemsg(_(e_nfa_regexp_invalid_character_class_nr), class);
+	    siemsg(e_nfa_regexp_invalid_character_class_nr, class);
 	    return FAIL;
     }
     return FAIL;
@@ -6678,7 +6678,9 @@ nfa_regmatch(
 		int subidx;
 		int bytelen;
 
-		if (t->state->c <= NFA_BACKREF9)
+#ifdef FEAT_SYN_HL
+		if (t->state->c >= NFA_BACKREF1 && t->state->c <= NFA_BACKREF9)
+#endif
 		{
 		    subidx = t->state->c - NFA_BACKREF1 + 1;
 		    result = match_backref(&t->subs.norm, subidx, &bytelen);
@@ -6903,7 +6905,7 @@ nfa_regmatch(
 
 #ifdef DEBUG
 		if (c < 0)
-		    siemsg("INTERNAL: Negative state char: %ld", (long)c);
+		    siemsg("Negative state char: %ld", (long)c);
 #endif
 		result = (c == curc);
 
@@ -7194,9 +7196,9 @@ nfa_regtry(
     if (f != NULL)
     {
 	fprintf(f, "\n\n\t=======================================================\n");
-#ifdef DEBUG
+# ifdef DEBUG
 	fprintf(f, "\tRegexp is \"%s\"\n", nfa_regengine.expr);
-#endif
+# endif
 	fprintf(f, "\tInput text is \"%s\" \n", rex.input);
 	fprintf(f, "\t=======================================================\n\n");
 	nfa_print_state(f, start);
@@ -7339,7 +7341,7 @@ nfa_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	iemsg(_(e_null_argument));
+	iemsg(e_null_argument);
 	goto theend;
     }
 

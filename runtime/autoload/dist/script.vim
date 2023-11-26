@@ -3,8 +3,9 @@ vim9script
 # Vim function for detecting a filetype from the file contents.
 # Invoked from "scripts.vim" in 'runtimepath'
 #
-# Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Nov 24
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
+# Last Change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 export def DetectFiletype()
   var line1 = getline(1)
@@ -44,7 +45,7 @@ def DetectFromHashBang(firstline: string)
   elseif line1 =~ '^#!\s*[^/\\ ]*\>\([^/\\]\|$\)'
     name = substitute(line1, '^#!\s*\([^/\\ ]*\>\).*', '\1', '')
   else
-    name = substitute(line1, '^#!\s*\S*[/\\]\(\i\+\).*', '\1', '')
+    name = substitute(line1, '^#!\s*\S*[/\\]\(\f\+\).*', '\1', '')
   endif
 
   # tcl scripts may have #!/bin/sh in the first line and "exec wish" in the
@@ -53,151 +54,180 @@ def DetectFromHashBang(firstline: string)
     name = 'wish'
   endif
 
+  var ft = Exe2filetype(name, line1)
+  if ft != ''
+    exe 'setl ft=' .. ft
+  endif
+enddef
+
+# Returns the filetype name associated with program "name".
+# "line1" is the #! line at the top of the file.  Use the same as "name" if
+# not available.
+# Returns an empty string when not recognized.
+export def Exe2filetype(name: string, line1: string): string
     # Bourne-like shell scripts: bash bash2 dash ksh ksh93 sh
   if name =~ '^\(bash\d*\|dash\|ksh\d*\|sh\)\>'
-    call dist#ft#SetFileTypeSH(line1)
+    return dist#ft#SetFileTypeSH(line1, false)
 
     # csh scripts
   elseif name =~ '^csh\>'
-    if exists("g:filetype_csh")
-      call dist#ft#SetFileTypeShell(g:filetype_csh)
-    else
-      call dist#ft#SetFileTypeShell("csh")
-    endif
+    return dist#ft#SetFileTypeShell(exists("g:filetype_csh") ? g:filetype_csh : 'csh', false)
 
     # tcsh scripts
   elseif name =~ '^tcsh\>'
-    call dist#ft#SetFileTypeShell("tcsh")
+    return dist#ft#SetFileTypeShell("tcsh", false)
 
     # Z shell scripts
   elseif name =~ '^zsh\>'
-    set ft=zsh
+    return 'zsh'
 
     # TCL scripts
   elseif name =~ '^\(tclsh\|wish\|expectk\|itclsh\|itkwish\)\>'
-    set ft=tcl
+    return 'tcl'
 
     # Expect scripts
   elseif name =~ '^expect\>'
-    set ft=expect
+    return 'expect'
 
     # Gnuplot scripts
   elseif name =~ '^gnuplot\>'
-    set ft=gnuplot
+    return 'gnuplot'
 
     # Makefiles
   elseif name =~ 'make\>'
-    set ft=make
+    return 'make'
 
     # Pike
   elseif name =~ '^pike\%(\>\|[0-9]\)'
-    set ft=pike
+    return 'pike'
 
     # Lua
   elseif name =~ 'lua'
-    set ft=lua
+    return 'lua'
 
     # Perl
   elseif name =~ 'perl'
-    set ft=perl
+    return 'perl'
 
     # PHP
   elseif name =~ 'php'
-    set ft=php
+    return 'php'
 
     # Python
   elseif name =~ 'python'
-    set ft=python
+    return 'python'
 
     # Groovy
   elseif name =~ '^groovy\>'
-    set ft=groovy
+    return 'groovy'
 
     # Raku
   elseif name =~ 'raku'
-    set ft=raku
+    return 'raku'
 
     # Ruby
   elseif name =~ 'ruby'
-    set ft=ruby
+    return 'ruby'
 
     # JavaScript
   elseif name =~ 'node\(js\)\=\>\|js\>' || name =~ 'rhino\>'
-    set ft=javascript
+    return 'javascript'
 
     # BC calculator
   elseif name =~ '^bc\>'
-    set ft=bc
+    return 'bc'
 
     # sed
   elseif name =~ 'sed\>'
-    set ft=sed
+    return 'sed'
 
     # OCaml-scripts
   elseif name =~ 'ocaml'
-    set ft=ocaml
+    return 'ocaml'
 
     # Awk scripts; also finds "gawk"
   elseif name =~ 'awk\>'
-    set ft=awk
+    return 'awk'
 
     # Website MetaLanguage
   elseif name =~ 'wml'
-    set ft=wml
+    return 'wml'
 
     # Scheme scripts
   elseif name =~ 'scheme'
-    set ft=scheme
+    return 'scheme'
 
     # CFEngine scripts
   elseif name =~ 'cfengine'
-    set ft=cfengine
+    return 'cfengine'
 
     # Erlang scripts
   elseif name =~ 'escript'
-    set ft=erlang
+    return 'erlang'
 
     # Haskell
   elseif name =~ 'haskell'
-    set ft=haskell
+    return 'haskell'
 
     # Scala
   elseif name =~ 'scala\>'
-    set ft=scala
+    return 'scala'
 
     # Clojure
   elseif name =~ 'clojure'
-    set ft=clojure
+    return 'clojure'
 
     # Free Pascal
   elseif name =~ 'instantfpc\>'
-    set ft=pascal
+    return 'pascal'
 
     # Fennel
   elseif name =~ 'fennel\>'
-    set ft=fennel
+    return 'fennel'
 
     # MikroTik RouterOS script
   elseif name =~ 'rsc\>'
-    set ft=routeros
+    return 'routeros'
 
     # Fish shell
   elseif name =~ 'fish\>'
-    set ft=fish
+    return 'fish'
 
     # Gforth
   elseif name =~ 'gforth\>'
-    set ft=forth
+    return 'forth'
 
     # Icon
   elseif name =~ 'icon\>'
-    set ft=icon
+    return 'icon'
 
     # Guile
   elseif name =~ 'guile'
-    set ft=scheme
+    return 'scheme'
+
+    # Nix
+  elseif name =~ 'nix-shell'
+    return 'nix'
+
+    # Crystal
+  elseif name =~ '^crystal\>'
+    return 'crystal'
+
+    # Rexx
+  elseif name =~ '^\%(rexx\|regina\)\>'
+    return 'rexx'
+
+    # Janet
+  elseif name =~ '^janet\>'
+    return 'janet'
+
+    # Dart
+  elseif name =~ '^dart\>'
+    return 'dart'
 
   endif
+
+  return ''
 enddef
 
 
@@ -218,28 +248,28 @@ def DetectFromText(line1: string)
       || "\n" .. line1 .. "\n" .. line2 .. "\n" .. line3 ..
 	 "\n" .. line4 .. "\n" .. line5
 	 =~ '\n\s*emulate\s\+\%(-[LR]\s\+\)\=[ckz]\=sh\>'
-    set ft=zsh
+    setl ft=zsh
 
   # ELM Mail files
   elseif line1 =~ '^From \([a-zA-Z][a-zA-Z_0-9\.=-]*\(@[^ ]*\)\=\|-\) .* \(19\|20\)\d\d$'
-    set ft=mail
+    setl ft=mail
 
   # Mason
   elseif line1 =~ '^<[%&].*>'
-    set ft=mason
+    setl ft=mason
 
   # Vim scripts (must have '" vim' as the first line to trigger this)
   elseif line1 =~ '^" *[vV]im$'
-    set ft=vim
+    setl ft=vim
 
   # libcxx and libstdc++ standard library headers like "iostream" do not have
   # an extension, recognize the Emacs file mode.
   elseif line1 =~? '-\*-.*C++.*-\*-'
-    set ft=cpp
+    setl ft=cpp
 
   # MOO
   elseif line1 =~ '^\*\* LambdaMOO Database, Format Version \%([1-3]\>\)\@!\d\+ \*\*$'
-    set ft=moo
+    setl ft=moo
 
     # Diff file:
     # - "diff" in first line (context diff)
@@ -258,11 +288,11 @@ def DetectFromText(line1: string)
 	 || (line1 =~ '^\*\*\* ' && line2 =~ '^--- ')
 	 || (line1 =~ '^=== ' && ((line2 =~ '^=\{66\}' && line3 =~ '^--- ' && line4 =~ '^+++') || (line2 =~ '^--- ' && line3 =~ '^+++ ')))
 	 || (line1 =~ '^=== \(removed\|added\|renamed\|modified\)')
-    set ft=diff
+    setl ft=diff
 
     # PostScript Files (must have %!PS as the first line, like a2ps output)
   elseif line1 =~ '^%![ \t]*PS'
-    set ft=postscr
+    setl ft=postscr
 
     # M4 scripts: Guess there is a line that starts with "dnl".
   elseif line1 =~ '^\s*dnl\>'
@@ -270,64 +300,64 @@ def DetectFromText(line1: string)
 	 || line3 =~ '^\s*dnl\>'
 	 || line4 =~ '^\s*dnl\>'
 	 || line5 =~ '^\s*dnl\>'
-    set ft=m4
+    setl ft=m4
 
     # AmigaDos scripts
   elseif $TERM == "amiga" && (line1 =~ "^;" || line1 =~? '^\.bra')
-    set ft=amiga
+    setl ft=amiga
 
     # SiCAD scripts (must have procn or procd as the first line to trigger this)
   elseif line1 =~? '^ *proc[nd] *$'
-    set ft=sicad
+    setl ft=sicad
 
     # Purify log files start with "****  Purify"
   elseif line1 =~ '^\*\*\*\*  Purify'
-    set ft=purifylog
+    setl ft=purifylog
 
     # XML
   elseif line1 =~ '<?\s*xml.*?>'
-    set ft=xml
+    setl ft=xml
 
     # XHTML (e.g.: PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN")
   elseif line1 =~ '\<DTD\s\+XHTML\s'
-    set ft=xhtml
+    setl ft=xhtml
 
     # HTML (e.g.: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN")
     # Avoid "doctype html", used by slim.
   elseif line1 =~? '<!DOCTYPE\s\+html\>'
-    set ft=html
+    setl ft=html
 
     # PDF
   elseif line1 =~ '^%PDF-'
-    set ft=pdf
+    setl ft=pdf
 
     # XXD output
   elseif line1 =~ '^\x\{7}: \x\{2} \=\x\{2} \=\x\{2} \=\x\{2} '
-    set ft=xxd
+    setl ft=xxd
 
     # RCS/CVS log output
   elseif line1 =~ '^RCS file:' || line2 =~ '^RCS file:'
-    set ft=rcslog
+    setl ft=rcslog
 
     # CVS commit
   elseif line2 =~ '^CVS:' || getline("$") =~ '^CVS: '
-    set ft=cvs
+    setl ft=cvs
 
     # Prescribe
   elseif line1 =~ '^!R!'
-    set ft=prescribe
+    setl ft=prescribe
 
     # Send-pr
   elseif line1 =~ '^SEND-PR:'
-    set ft=sendpr
+    setl ft=sendpr
 
     # SNNS files
   elseif line1 =~ '^SNNS network definition file'
-    set ft=snnsnet
+    setl ft=snnsnet
   elseif line1 =~ '^SNNS pattern definition file'
-    set ft=snnspat
+    setl ft=snnspat
   elseif line1 =~ '^SNNS result file'
-    set ft=snnsres
+    setl ft=snnsres
 
     # Virata
   elseif line1 =~ '^%.\{-}[Vv]irata'
@@ -335,79 +365,81 @@ def DetectFromText(line1: string)
 	 || line3 =~ '^%.\{-}[Vv]irata'
 	 || line4 =~ '^%.\{-}[Vv]irata'
 	 || line5 =~ '^%.\{-}[Vv]irata'
-    set ft=virata
+    setl ft=virata
 
     # Strace
-  elseif line1 =~ '[0-9:.]* *execve(' || line1 =~ '^__libc_start_main'
-    set ft=strace
+    # inaccurate fast match first, then use accurate slow match
+  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:. ]*execve(')
+	   || line1 =~ '^__libc_start_main'
+    setl ft=strace
 
     # VSE JCL
   elseif line1 =~ '^\* $$ JOB\>' || line1 =~ '^// *JOB\>'
-    set ft=vsejcl
+    setl ft=vsejcl
 
     # TAK and SINDA
   elseif line4 =~ 'K & K  Associates' || line2 =~ 'TAK 2000'
-    set ft=takout
+    setl ft=takout
   elseif line3 =~ 'S Y S T E M S   I M P R O V E D '
-    set ft=sindaout
+    setl ft=sindaout
   elseif getline(6) =~ 'Run Date: '
-    set ft=takcmp
+    setl ft=takcmp
   elseif getline(9) =~ 'Node    File  1'
-    set ft=sindacmp
+    setl ft=sindacmp
 
     # DNS zone files
   elseif line1 .. line2 .. line3 .. line4 =~ '^; <<>> DiG [0-9.]\+.* <<>>\|$ORIGIN\|$TTL\|IN\s\+SOA'
-    set ft=bindzone
+    setl ft=bindzone
 
     # BAAN
   elseif line1 =~ '|\*\{1,80}' && line2 =~ 'VRC '
 	 || line2 =~ '|\*\{1,80}' && line3 =~ 'VRC '
-    set ft=baan
+    setl ft=baan
 
     # Valgrind
   elseif line1 =~ '^==\d\+== valgrind' || line3 =~ '^==\d\+== Using valgrind'
-    set ft=valgrind
+    setl ft=valgrind
 
     # Go docs
   elseif line1 =~ '^PACKAGE DOCUMENTATION$'
-    set ft=godoc
+    setl ft=godoc
 
     # Renderman Interface Bytestream
   elseif line1 =~ '^##RenderMan'
-    set ft=rib
+    setl ft=rib
 
     # Scheme scripts
   elseif line1 =~ 'exec\s\+\S*scheme' || line2 =~ 'exec\s\+\S*scheme'
-    set ft=scheme
+    setl ft=scheme
 
     # Git output
   elseif line1 =~ '^\(commit\|tree\|object\) \x\{40,\}\>\|^tag \S\+$'
-    set ft=git
+    setl ft=git
 
     # Gprof (gnu profiler)
   elseif line1 == 'Flat profile:'
 	&& line2 == ''
 	&& line3 =~ '^Each sample counts as .* seconds.$'
-    set ft=gprof
+    setl ft=gprof
 
     # Erlang terms
     # (See also: http://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html#Choosing-Modes)
   elseif line1 =~? '-\*-.*erlang.*-\*-'
-    set ft=erlang
+    setl ft=erlang
 
     # YAML
   elseif line1 =~ '^%YAML'
-    set ft=yaml
+    setl ft=yaml
 
     # MikroTik RouterOS script
   elseif line1 =~ '^#.*by RouterOS.*$'
-    set ft=routeros
+    setl ft=routeros
 
     # Sed scripts
     # #ncomment is allowed but most likely a false positive so require a space
     # before any trailing comment text
   elseif line1 =~ '^#n\%($\|\s\)'
-    set ft=sed
+    setl ft=sed
 
   else
     var lnum = 1
@@ -416,7 +448,7 @@ def DetectFromText(line1: string)
     endwhile
     if getline(lnum) =~ '^Index:\s\+\f\+$'
       # CVS diff
-      set ft=diff
+      setl ft=diff
 
       # locale input files: Formal Definitions of Cultural Conventions
       # filename must be like en_US, fr_FR@euro or en_US.UTF-8

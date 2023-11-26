@@ -24,25 +24,7 @@
 # define _USE_32BIT_TIME_T
 #endif
 
-/*
- * Prevent including winsock.h.  perl.h tries to detect whether winsock.h is
- * already included before including winsock2.h, because winsock2.h isn't
- * compatible with winsock.h.  However the detection doesn't work with some
- * versions of MinGW.  If WIN32_LEAN_AND_MEAN is defined, windows.h will not
- * include winsock.h.
- */
-#ifdef WIN32
-# define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "vim.h"
-
-/* Work around for perl-5.18.
- * Don't include "perl\lib\CORE\inline.h" for now,
- * include it after Perl_sv_free2 is defined. */
-#ifdef DYNAMIC_PERL
-# define PERL_NO_INLINE_FUNCTIONS
-#endif
 
 #ifdef _MSC_VER
 // Work around for using MSVC and ActivePerl 5.18.
@@ -51,6 +33,11 @@
 # define __builtin_expect(expr, val) (expr)
 // Work around for using MSVC and Strawberry Perl 5.32.
 # define NO_THREAD_SAFE_LOCALE
+#endif
+
+#if defined(MSWIN) && defined(DYNAMIC_PERL)
+// Work around for warning C4273 (inconsistent DLL linkage).
+# define PERL_EXT_RE_BUILD
 #endif
 
 #ifdef __GNUC__
@@ -173,7 +160,13 @@ typedef int XSUBADDR_t;
 typedef int perl_key;
 # endif
 
-# ifndef MSWIN
+# ifdef MSWIN
+#  define PERL_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define HANDLE void*
 #  define PERL_PROC void*
@@ -181,12 +174,6 @@ typedef int perl_key;
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
 #  define load_dll_error dlerror
-# else
-#  define PERL_PROC FARPROC
-#  define load_dll vimLoadLib
-#  define symbol_from_dll GetProcAddress
-#  define close_dll FreeLibrary
-#  define load_dll_error GetWin32Error
 # endif
 /*
  * Wrapper defines
@@ -197,7 +184,9 @@ typedef int perl_key;
 # define perl_run dll_perl_run
 # define perl_destruct dll_perl_destruct
 # define perl_free dll_perl_free
-# define Perl_get_context dll_Perl_get_context
+# if defined(WIN32) || ((PERL_REVISION == 5) && (PERL_VERSION < 38))
+#  define Perl_get_context dll_Perl_get_context
+# endif
 # define Perl_croak dll_Perl_croak
 # ifdef PERL5101_OR_LATER
 #  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
@@ -320,6 +309,9 @@ typedef int perl_key;
 #   define PL_thr_key *dll_PL_thr_key
 #  endif
 # endif
+# ifdef PERL_USE_THREAD_LOCAL
+#  define PL_current_context *dll_PL_current_context
+# endif
 # define Perl_hv_iternext_flags dll_Perl_hv_iternext_flags
 # define Perl_hv_iterinit dll_Perl_hv_iterinit
 # define Perl_hv_iterkey dll_Perl_hv_iterkey
@@ -340,13 +332,15 @@ typedef int perl_key;
  */
 static HANDLE hPerlLib = NULL;
 
-static PerlInterpreter* (*perl_alloc)();
+static PerlInterpreter* (*perl_alloc)(void);
 static void (*perl_construct)(PerlInterpreter*);
 static void (*perl_destruct)(PerlInterpreter*);
 static void (*perl_free)(PerlInterpreter*);
 static int (*perl_run)(PerlInterpreter*);
 static int (*perl_parse)(PerlInterpreter*, XSINIT_t, int, char**, char**);
+# if defined(WIN32) || ((PERL_REVISION == 5) && (PERL_VERSION < 38))
 static void* (*Perl_get_context)(void);
+# endif
 static void (*Perl_croak)(pTHX_ const char*, ...) __attribute__noreturn__;
 # ifdef PERL5101_OR_LATER
 /* Perl-5.18 has a different Perl_croak_xs_usage signature. */
@@ -402,14 +396,14 @@ static bool (*Perl_sv_2bool)(pTHX_ SV*);
 static IV (*Perl_sv_2iv)(pTHX_ SV*);
 static SV* (*Perl_sv_2mortal)(pTHX_ SV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
-static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pv_flags)(pTHX_ SV*, STRLEN* const, const U32);
 static char* (*Perl_sv_2pv_nolen)(pTHX_ SV*);
 # else
 static char* (*Perl_sv_2pv)(pTHX_ SV*, STRLEN*);
 # endif
 static char* (*Perl_sv_2pvbyte)(pTHX_ SV*, STRLEN*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN*, I32);
+static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN* const, const U32);
 # endif
 static SV* (*Perl_sv_bless)(pTHX_ SV*, HV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
@@ -487,6 +481,9 @@ static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
 static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
 static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
 # endif
+# ifdef PERL_USE_THREAD_LOCAL
+static void** dll_PL_current_context;
+# endif
 static void (*boot_DynaLoader)_((pTHX_ CV*));
 static HE * (*Perl_hv_iternext_flags)(pTHX_ HV *, I32);
 static I32 (*Perl_hv_iterinit)(pTHX_ HV *);
@@ -516,7 +513,9 @@ static struct {
     {"perl_free", (PERL_PROC*)&perl_free},
     {"perl_run", (PERL_PROC*)&perl_run},
     {"perl_parse", (PERL_PROC*)&perl_parse},
+# if defined(WIN32) || ((PERL_REVISION == 5) && (PERL_VERSION < 38))
     {"Perl_get_context", (PERL_PROC*)&Perl_get_context},
+# endif
     {"Perl_croak", (PERL_PROC*)&Perl_croak},
 # ifdef PERL5101_OR_LATER
     {"Perl_croak_xs_usage", (PERL_PROC*)&Perl_croak_xs_usage},
@@ -634,6 +633,9 @@ static struct {
 #  ifdef USE_ITHREADS
     {"PL_thr_key", (PERL_PROC*)&dll_PL_thr_key},
 #  endif
+# ifdef PERL_USE_THREAD_LOCAL
+    {"PL_current_context", (PERL_PROC*)&dll_PL_current_context},
+# endif
 # else
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
@@ -658,93 +660,11 @@ static struct {
     {"", NULL},
 };
 
-/* Work around for perl-5.18.
- * For now, only the definitions of S_SvREFCNT_dec are needed in
- * "perl\lib\CORE\inline.h". */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
-static void
-S_SvREFCNT_dec(pTHX_ SV *sv)
-{
-    if (LIKELY(sv != NULL)) {
-	U32 rc = SvREFCNT(sv);
-	if (LIKELY(rc > 1))
-	    SvREFCNT(sv) = rc - 1;
-	else
-	    Perl_sv_free2(aTHX_ sv, rc);
-    }
-}
-# endif
-
-/* perl-5.32 needs Perl_SvREFCNT_dec */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-#  define Perl_SvREFCNT_dec S_SvREFCNT_dec
-# endif
-
-/* perl-5.26 also needs S_TOPMARK and S_POPMARK. */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 26)
-PERL_STATIC_INLINE I32
-S_TOPMARK(pTHX)
-{
-    DEBUG_s(DEBUG_v(PerlIO_printf(Perl_debug_log,
-				 "MARK top  %p %" IVdf "\n",
-				  PL_markstack_ptr,
-				  (IV)*PL_markstack_ptr)));
-    return *PL_markstack_ptr;
-}
-
-PERL_STATIC_INLINE I32
-S_POPMARK(pTHX)
-{
-    DEBUG_s(DEBUG_v(PerlIO_printf(Perl_debug_log,
-				 "MARK pop  %p %" IVdf "\n",
-				  (PL_markstack_ptr-1),
-				  (IV)*(PL_markstack_ptr-1))));
-    assert((PL_markstack_ptr > PL_markstack) || !"MARK underflow");
-    return *PL_markstack_ptr--;
-}
-# endif
-
-/* perl-5.32 needs Perl_POPMARK */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-#  define Perl_POPMARK S_POPMARK
-# endif
-
-/* perl-5.34 needs Perl_SvTRUE_common; used in SvTRUE_nomg_NN */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 34)
-PERL_STATIC_INLINE bool
-Perl_SvTRUE_common(pTHX_ SV * sv, const bool sv_2bool_is_fallback)
-{
-    if (UNLIKELY(SvIMMORTAL_INTERP(sv)))
-	return SvIMMORTAL_TRUE(sv);
-
-    if (! SvOK(sv))
-	return FALSE;
-
-    if (SvPOK(sv))
-	return SvPVXtrue(sv);
-
-    if (SvIOK(sv))
-	return SvIVX(sv) != 0; /* casts to bool */
-
-    if (SvROK(sv) && !(SvOBJECT(SvRV(sv)) && HvAMAGIC(SvSTASH(SvRV(sv)))))
-	return TRUE;
-
-    if (sv_2bool_is_fallback)
-	return sv_2bool_nomg(sv);
-
-    return isGV_with_GP(sv);
-}
-# endif
-
-/* perl-5.32 needs Perl_SvTRUE */
-# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
-PERL_STATIC_INLINE bool
-Perl_SvTRUE(pTHX_ SV *sv) {
-    if (!LIKELY(sv))
-	return FALSE;
-    SvGETMAGIC(sv);
-    return SvTRUE_nomg_NN(sv);
-}
+# if (PERL_REVISION == 5) && (PERL_VERSION <= 30)
+// In 5.30, GIMME_V requires linking to Perl_block_gimme() instead of being
+// completely inline. Just use the deprecated GIMME for simplicity.
+#  undef GIMME_V
+#  define GIMME_V GIMME
 # endif
 
 /*
@@ -1547,6 +1467,60 @@ vim_IOLayer_init(void)
 }
 #endif /* PERLIO_LAYERS && !USE_SFIO */
 
+#ifdef DYNAMIC_PERL
+
+// Certain functionality that we use like SvREFCNT_dec are inlined for
+// performance reasons. They reference Perl APIs like Perl_sv_free2(), which
+// would cause linking errors in dynamic builds as we don't link against Perl
+// during build time. Manually fix it here by redirecting these functions
+// towards the dynamically loaded version.
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 18)
+#  undef Perl_sv_free2
+void Perl_sv_free2(pTHX_ SV *const sv, const U32 refcnt)
+{
+    (*dll_Perl_sv_free2)(aTHX_ sv, refcnt);
+}
+# else
+#  undef Perl_sv_free2
+void Perl_sv_free2(pTHX_ SV* sv)
+{
+    (*dll_Perl_sv_free2)(aTHX_ sv);
+}
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 14)
+#  undef Perl_sv_2bool_flags
+bool Perl_sv_2bool_flags(pTHX_ SV* sv, I32 flags)
+{
+    return (*dll_Perl_sv_2bool_flags)(aTHX_ sv, flags);
+}
+# endif
+
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 28)
+#  undef Perl_mg_get
+int Perl_mg_get(pTHX_ SV* sv)
+{
+    return (*dll_Perl_mg_get)(aTHX_ sv);
+}
+# endif
+
+# undef Perl_sv_2nv_flags
+NV Perl_sv_2nv_flags(pTHX_ SV *const sv, const I32 flags)
+{
+    return (*dll_Perl_sv_2nv_flags)(aTHX_ sv, flags);
+}
+
+# ifdef PERL589_OR_LATER
+#  undef Perl_sv_2iv_flags
+IV Perl_sv_2iv_flags(pTHX_ SV *const sv, const I32 flags)
+{
+    return (*dll_Perl_sv_2iv_flags)(aTHX_ sv, flags);
+}
+# endif
+
+#endif // DYNAMIC_PERL
+
 XS(boot_VIM);
 
     static void
@@ -1649,7 +1623,7 @@ Buffers(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	{
 	    i = 0;
 	    FOR_ALL_BUFFERS(vimbuf)
@@ -1700,7 +1674,7 @@ Windows(...)
     PPCODE:
     if (items == 0)
     {
-	if (GIMME == G_SCALAR)
+	if (GIMME_V == G_SCALAR)
 	    XPUSHs(sv_2mortal(newSViv(win_count())));
 	else
 	{

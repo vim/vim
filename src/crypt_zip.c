@@ -83,10 +83,7 @@ make_crc_tab(void)
 crypt_zip_init(
     cryptstate_T    *state,
     char_u	    *key,
-    char_u	    *salt UNUSED,
-    int		    salt_len UNUSED,
-    char_u	    *seed UNUSED,
-    int		    seed_len UNUSED)
+    crypt_arg_T     *arg UNUSED)
 {
     char_u	*p;
     zip_state_T	*zs;

@@ -886,16 +886,20 @@ remove_timer(void)
     timer_id = 0;
 }
 
-    void
-mzvim_reset_timer(void)
+#endif // MZSCHEME_GUI_THREADS
+
+    char *
+did_set_mzquantum(optset_T *args UNUSED)
 {
+#if defined(MZSCHEME_GUI_THREADS)
+    // reset timer
     if (timer_id != 0)
 	remove_timer();
     if (mz_threads_allow && p_mzq > 0 && gui.in_use)
 	setup_timer();
+#endif
+    return NULL;
 }
-
-#endif // MZSCHEME_GUI_THREADS
 
     static void
 notify_multithread(int on)
@@ -1362,10 +1366,10 @@ mzscheme_buffer_free(buf_T *buf)
 
     bp = BUFFER_REF(buf);
     bp->buf = INVALID_BUFFER_VALUE;
-#ifndef MZ_PRECISE_GC
-    scheme_gc_ptr_ok(bp);
-#else
+#ifdef MZ_PRECISE_GC
     scheme_free_immobile_box(buf->b_mzscheme_ref);
+#else
+    scheme_gc_ptr_ok(bp);
 #endif
     buf->b_mzscheme_ref = NULL;
     MZ_GC_CHECK();
@@ -1387,10 +1391,10 @@ mzscheme_window_free(win_T *win)
     MZ_GC_REG();
     wp = WINDOW_REF(win);
     wp->win = INVALID_WINDOW_VALUE;
-#ifndef MZ_PRECISE_GC
-    scheme_gc_ptr_ok(wp);
-#else
+#ifdef MZ_PRECISE_GC
     scheme_free_immobile_box(win->w_mzscheme_ref);
+#else
+    scheme_gc_ptr_ok(wp);
 #endif
     win->w_mzscheme_ref = NULL;
     MZ_GC_CHECK();
@@ -1917,10 +1921,10 @@ window_new(win_T *win)
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_window));
     CLEAR_POINTER(self);
-#ifndef MZ_PRECISE_GC
-    scheme_dont_gc_ptr(self);	// because win isn't visible to GC
-#else
+#ifdef MZ_PRECISE_GC
     win->w_mzscheme_ref = scheme_malloc_immobile_box(NULL);
+#else
+    scheme_dont_gc_ptr(self);	// because win isn't visible to GC
 #endif
     MZ_GC_CHECK();
     WINDOW_REF(win) = self;
@@ -2301,10 +2305,10 @@ buffer_new(buf_T *buf)
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_buffer));
     CLEAR_POINTER(self);
-#ifndef MZ_PRECISE_GC
-    scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
-#else
+#ifdef MZ_PRECISE_GC
     buf->b_mzscheme_ref = scheme_malloc_immobile_box(NULL);
+#else
+    scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
 #endif
     MZ_GC_CHECK();
     BUFFER_REF(buf) = self;
@@ -3063,7 +3067,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    hashitem_T	*hi;
 	    dictitem_T	*di;
 
-	    for (hi = ht->ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

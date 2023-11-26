@@ -772,6 +772,33 @@ func Test_usercmd_with_block()
   END
   call v9.CheckScriptFailure(lines, 'E1128:')
   delcommand BadCommand
+
+  let lines =<< trim END
+	  vim9script
+    command Cmd {
+        g:result = [1,
+        2]
+    }
+    Cmd
+  END
+  call v9.CheckScriptSuccess(lines)
+  call assert_equal([1, 2], g:result)
+  delcommand Cmd
+	unlet! g:result
+
+  let lines =<< trim END
+		vim9script
+		command Cmd {
+			g:result = and(0x80,
+			0x80)
+    }
+    Cmd
+  END
+  call v9.CheckScriptSuccess(lines)
+  call assert_equal(128, g:result)
+  delcommand Cmd
+	unlet! g:result
+
 endfunc
 
 func Test_delcommand_buffer()
@@ -853,6 +880,15 @@ func Test_buflocal_ambiguous_usercmd()
 
   delcommand TestCmd1
   delcommand TestCmd2
+  bw!
+endfunc
+
+" Test for using buffer-local user command from cmdwin.
+func Test_buflocal_usercmd_cmdwin()
+  new
+  command -buffer TestCmd edit Test
+  " This used to crash Vim
+  call assert_fails("norm q::TestCmd\<CR>", 'E11:')
   bw!
 endfunc
 

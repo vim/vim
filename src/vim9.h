@@ -32,7 +32,7 @@ typedef enum {
 
     ISN_SOURCE,	    // source autoload script, isn_arg.number is the script ID
     ISN_INSTR,	    // instructions compiled from expression
-    ISN_CONSTRUCT,  // construct an object, using contstruct_T
+    ISN_CONSTRUCT,  // construct an object, using construct_T
     ISN_GET_OBJ_MEMBER, // object member, index is isn_arg.number
     ISN_GET_ITF_MEMBER, // interface member, index is isn_arg.classmember
     ISN_STORE_THIS, // store value in "this" object member, index is
@@ -101,6 +101,8 @@ typedef enum {
     ISN_PUSHFUNC,	// push func isn_arg.string
     ISN_PUSHCHANNEL,	// push NULL channel
     ISN_PUSHJOB,	// push NULL job
+    ISN_PUSHOBJ,	// push NULL object
+    ISN_PUSHCLASS,	// push class, uses isn_arg.classarg
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
 			// -1 for null_list
     ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
@@ -123,7 +125,6 @@ typedef enum {
     ISN_NEWFUNC,    // create a global function from a lambda function
     ISN_DEF,	    // list functions
     ISN_DEFER,	    // :defer  argument count is isn_arg.number
-    ISN_DEFEROBJ,   // idem, function is an object method
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
@@ -381,6 +382,7 @@ typedef struct {
     char_u	  *fre_func_name;	// function name for legacy function
     loopvarinfo_T fre_loopvar_info;	// info about variables inside loops
     class_T	  *fre_class;		// class for a method
+    int		  fre_object_method;	// class or object method
     int		  fre_method_idx;	// method index on "fre_class"
 } funcref_extra_T;
 
@@ -497,11 +499,19 @@ typedef struct {
     class_T	*cm_class;
     int		cm_idx;
 } classmember_T;
+
 // arguments to ISN_STOREINDEX
 typedef struct {
     vartype_T	si_vartype;
     class_T	*si_class;
 } storeindex_T;
+
+// arguments to ISN_LOCKUNLOCK
+typedef struct {
+    char_u	*lu_string;	// for exec_command
+    class_T	*lu_cl_exec;	// executing, null if not class/obj method
+    int		lu_is_arg;	// is lval_root a function arg
+} lockunlock_T;
 
 /*
  * Instruction
@@ -518,6 +528,7 @@ struct isn_S {
 	channel_T	    *channel;
 	job_T		    *job;
 	partial_T	    *partial;
+	class_T		    *classarg;
 	jump_T		    jump;
 	jumparg_T	    jumparg;
 	forloop_T	    forloop;
@@ -558,6 +569,7 @@ struct isn_S {
 	construct_T	    construct;
 	classmember_T	    classmember;
 	storeindex_T	    storeindex;
+	lockunlock_T	    lockunlock;
     } isn_arg;
 };
 
@@ -839,6 +851,7 @@ struct cctx_S {
     skip_T	ctx_skip;
     scope_T	*ctx_scope;	    // current scope, NULL at toplevel
     int		ctx_had_return;	    // last seen statement was "return"
+    int		ctx_had_throw;	    // last seen statement was "throw"
 
     cctx_T	*ctx_outer;	    // outer scope for lambda or nested
 				    // function

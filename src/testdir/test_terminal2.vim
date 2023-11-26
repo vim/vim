@@ -64,6 +64,14 @@ func Test_terminal_termwinsize_option_zero()
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
 
+  " This used to crash Vim
+  set termwinsize=10000*10000
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([1000, 1000], term_getsize(buf))
+  call StopShellInTerminal(buf)
+  exe buf . 'bwipe'
+
   set termwinsize=
 endfunc
 
@@ -266,6 +274,25 @@ func Test_terminal_resize()
 
   close
   call assert_equal(2, winnr('$'))
+  call feedkeys("exit\<CR>", 'xt')
+  call TermWait(buf)
+  set statusline&
+endfunc
+
+func Test_terminal_resize2()
+  CheckNotMSWindows
+  set statusline=x
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " This used to crash Vim
+  call feedkeys("printf '\033[8;99999;99999t'\<CR>", 'xt')
+  redraw
+
   call feedkeys("exit\<CR>", 'xt')
   call TermWait(buf)
   set statusline&

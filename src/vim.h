@@ -102,6 +102,11 @@
 # define ROOT_UID 0
 #endif
 
+/* Include MAC_OS_X_VERSION_* macros */
+#ifdef HAVE_AVAILABILITYMACROS_H
+# include <AvailabilityMacros.h>
+#endif
+
 /*
  * MACOS_X	    compiling for Mac OS X
  * MACOS_X_DARWIN   integrating the darwin feature into MACOS_X
@@ -167,7 +172,9 @@
 # if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
-# if defined(FEAT_HUGE) && !defined(FEAT_SOUND)
+# if defined(FEAT_HUGE) && !defined(FEAT_SOUND) && \
+	defined(__clang_major__) && __clang_major__ >= 7 && \
+	defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 #  define FEAT_SOUND
 # endif
 # if defined(FEAT_SOUND)
@@ -242,6 +249,9 @@
 #if (defined(UNIX) || defined(VMS)) \
 	&& (!defined(MACOS_X) || defined(HAVE_CONFIG_H))
 # include "os_unix.h"	    // bring lots of system header files
+#else
+  // For all non-Unix systems: use old-fashioned signal().
+# define mch_signal(signum, sighandler) signal(signum, sighandler)
 #endif
 
 // Mark unused function arguments with UNUSED, so that gcc -Wunused-parameter
@@ -812,6 +822,10 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_BREAKPOINT	51
 #define EXPAND_SCRIPTNAMES	52
 #define EXPAND_RUNTIME		53
+#define EXPAND_STRING_SETTING	54
+#define EXPAND_SETTING_SUBTRACT	55
+#define EXPAND_ARGOPT		56
+#define EXPAND_TERMINALOPT	57
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -1418,8 +1432,8 @@ typedef enum auto_event event_T;
 
 /*
  * Values for index in highlight_attr[].
- * When making changes, also update HL_FLAGS below!  And update the default
- * value of 'highlight' in option.c.
+ * When making changes, also update HL_FLAGS below!
+ * And update the default value of 'highlight': HIGHLIGHT_INIT in optiondefs.h
  */
 typedef enum
 {
@@ -1465,6 +1479,10 @@ typedef enum
     , HLF_SPL	    // SpellLocal
     , HLF_PNI	    // popup menu normal item
     , HLF_PSI	    // popup menu selected item
+    , HLF_PNK	    // popup menu normal item "kind"
+    , HLF_PSK	    // popup menu selected item "kind"
+    , HLF_PNX	    // popup menu normal item "menu" (extra text)
+    , HLF_PSX	    // popup menu selected item "menu" (extra text)
     , HLF_PSB	    // popup menu scrollbar
     , HLF_PST	    // popup menu scrollbar thumb
     , HLF_TP	    // tabpage line
@@ -1485,7 +1503,8 @@ typedef enum
 		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', 'x', 'X', '*', '#', '_', '!', '.', 'o', 'q', \
+		  '+', '=', '[', ']', '{', '}', 'x', 'X', \
+		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z'}
 
 /*
@@ -1864,8 +1883,28 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 #if (defined(FEAT_PROFILE) || defined(FEAT_RELTIME)) && !defined(PROTO)
 # ifdef MSWIN
 typedef LARGE_INTEGER proftime_T;
+#  define PROF_TIME_BLANK "           "
+#  define PROF_TOTALS_HEADER "count  total (s)   self (s)"
 # else
+   // Use tv_fsec for fraction of second (micro or nano) of proftime_T
+#  if defined(HAVE_TIMER_CREATE) && defined(HAVE_CLOCK_GETTIME)
+#   define PROF_NSEC 1
+typedef struct timespec proftime_T;
+#   define PROF_GET_TIME(tm) clock_gettime(CLOCK_MONOTONIC, tm)
+#   define tv_fsec tv_nsec
+#   define TV_FSEC_SEC 1000000000L
+#   define PROF_TIME_FORMAT "%3ld.%09ld"
+#   define PROF_TIME_BLANK "              "
+#   define PROF_TOTALS_HEADER "count     total (s)      self (s)"
+#  else
 typedef struct timeval proftime_T;
+#   define PROF_GET_TIME(tm) gettimeofday(tm, NULL)
+#   define tv_fsec tv_usec
+#   define TV_FSEC_SEC 1000000
+#   define PROF_TIME_FORMAT "%3ld.%06ld"
+#   define PROF_TIME_BLANK "           "
+#   define PROF_TOTALS_HEADER "count  total (s)   self (s)"
+#  endif
 # endif
 #else
 typedef int proftime_T;	    // dummy for function prototypes
@@ -2102,7 +2141,9 @@ typedef int sock_T;
 #define VV_SIZEOFLONG	103
 #define VV_SIZEOFPOINTER 104
 #define VV_MAXCOL	105
-#define VV_LEN		106	// number of v: vars
+#define VV_PYTHON3_VERSION 106
+#define VV_TYPE_TYPEALIAS 107
+#define VV_LEN		108	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2125,6 +2166,7 @@ typedef int sock_T;
 #define VAR_TYPE_INSTR	    11
 #define VAR_TYPE_CLASS	    12
 #define VAR_TYPE_OBJECT	    13
+#define VAR_TYPE_TYPEALIAS  15
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
@@ -2229,6 +2271,7 @@ typedef enum {
     ASSERT_NOTEQUAL,
     ASSERT_MATCH,
     ASSERT_NOTMATCH,
+    ASSERT_FAILS,
     ASSERT_OTHER
 } assert_type_T;
 
@@ -2269,6 +2312,43 @@ typedef enum {
     KEYPROTOCOL_KITTY,
     KEYPROTOCOL_FAIL
 } keyprot_T;
+
+// errors for when calling a function
+typedef enum {
+    FCERR_NONE,		// no error
+    FCERR_UNKNOWN,	// unknown function
+    FCERR_TOOMANY,	// too many arguments
+    FCERR_TOOFEW,	// too few arguments
+    FCERR_SCRIPT,	// missing script context
+    FCERR_DICT,		// missing dict
+    FCERR_OTHER,	// another kind of error
+    FCERR_DELETED,	// function was deleted
+    FCERR_NOTMETHOD,	// function cannot be used as a method
+    FCERR_FAILED,	// error while executing the function
+} funcerror_T;
+
+/*
+ * Type for the callback function that is invoked after an option value is
+ * changed to validate and apply the new value.
+ *
+ * Returns NULL if the option value is valid is successfully applied.
+ * Otherwise returns an error message.
+ */
+typedef char *(*opt_did_set_cb_T)(optset_T *args);
+
+/*
+ * Type for the callback function that is invoked when expanding possible
+ * string option values during cmdline completion.
+ *
+ * Strings in returned matches will be managed and freed by caller.
+ *
+ * Returns OK if the expansion succeeded (numMatches and matches have to be
+ * set). Otherwise returns FAIL.
+ *
+ * Note: If returned FAIL or *numMatches is 0, *matches will NOT be freed by
+ * caller.
+ */
+typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***matches);
 
 // Flags for assignment functions.
 #define ASSIGN_VAR	0     // ":var" (nothing special)
@@ -2699,20 +2779,11 @@ typedef enum {
 #define GLV_NO_DECL	TFN_NO_DECL	// assignment without :var or :let
 #define GLV_COMPILING	TFN_COMPILING	// variable may be defined later
 #define GLV_ASSIGN_WITH_OP TFN_ASSIGN_WITH_OP // assignment with operator
+#define GLV_PREFER_FUNC	0x10000		// prefer function above variable
+#define GLV_FOR_LOOP	0x20000		// assigning to a loop variable
 
 #define DO_NOT_FREE_CNT 99999	// refcount for dict or list that should not
 				// be freed.
-
-// errors for when calling a function
-#define FCERR_UNKNOWN	0
-#define FCERR_TOOMANY	1
-#define FCERR_TOOFEW	2
-#define FCERR_SCRIPT	3
-#define FCERR_DICT	4
-#define FCERR_NONE	5
-#define FCERR_OTHER	6
-#define FCERR_DELETED	7
-#define FCERR_NOTMETHOD	8   // function cannot be used as a method
 
 // fixed buffer length for fname_trans_sid()
 #define FLEN_FIXED 40
@@ -2720,6 +2791,7 @@ typedef enum {
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name
 #define FNE_CHECK_START	2	// check name starts with valid character
+#define FNE_ALLOW_CURLY	4	// always allow curly braces name
 
 // BSD is supposed to cover FreeBSD and similar systems.
 #if (defined(SUN_SYSTEM) || defined(BSD) || defined(__FreeBSD_kernel__)) \
@@ -2871,5 +2943,6 @@ long elapsed(DWORD start_tick);
 // Flags used by "class_flags" of define_function()
 #define CF_CLASS	1	// inside a class
 #define CF_INTERFACE	2	// inside an interface
+#define CF_ABSTRACT_METHOD	4	// inside an abstract class
 
 #endif // VIM__H

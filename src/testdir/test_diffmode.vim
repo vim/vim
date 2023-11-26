@@ -736,6 +736,21 @@ func Test_diffpatch()
   bwipe!
 endfunc
 
+" FIXME: test fails, the Xresult file can't be read
+func No_Test_diffpatch_restricted()
+  let lines =<< trim END
+    call assert_fails('diffpatch NoSuchDiff', 'E145:')
+
+    call writefile(v:errors, 'Xresult')
+    qa!
+  END
+  call writefile(lines, 'Xrestricted', 'D')
+  if RunVim([], [], '-Z --clean -S Xrestricted')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xresult')
+endfunc
+
 func Test_diff_too_many_buffers()
   for i in range(1, 8)
     exe "new Xtest" . i
@@ -1586,6 +1601,57 @@ func Test_diff_scroll()
   call VerifyScreenDump(buf, 'Test_diff_scroll_2', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+" This was scrolling too many lines.
+func Test_diff_scroll_wrap_on()
+  20new
+  40vsplit
+  call setline(1, map(range(1, 9), 'repeat(v:val, 200)'))
+  setlocal number diff so=0
+  redraw
+  normal! jj
+  call assert_equal(1, winsaveview().topline)
+  normal! j
+  call assert_equal(2, winsaveview().topline)
+
+  bwipe!
+  bwipe!
+endfunc
+
+func Test_diff_scroll_many_filler()
+  20new
+  vnew
+  call setline(1, ['^^^', '^^^', '$$$', '$$$'])
+  diffthis
+  setlocal scrolloff=0
+  wincmd p
+  call setline(1, ['^^^', '^^^'] + repeat(['###'], 41) + ['$$$', '$$$'])
+  diffthis
+  setlocal scrolloff=0
+  wincmd p
+  redraw
+
+  " Note: need a redraw after each scroll, otherwise the test always passes.
+  normal! G
+  redraw
+  call assert_equal(3, winsaveview().topline)
+  call assert_equal(18, winsaveview().topfill)
+  exe "normal! \<C-B>"
+  redraw
+  call assert_equal(3, winsaveview().topline)
+  call assert_equal(19, winsaveview().topfill)
+  exe "normal! \<C-B>"
+  redraw
+  call assert_equal(2, winsaveview().topline)
+  call assert_equal(0, winsaveview().topfill)
+  exe "normal! \<C-B>"
+  redraw
+  call assert_equal(1, winsaveview().topline)
+  call assert_equal(0, winsaveview().topfill)
+
+  bwipe!
+  bwipe!
 endfunc
 
 " This was trying to update diffs for a buffer being closed

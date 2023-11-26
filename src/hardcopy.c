@@ -144,7 +144,7 @@ static colnr_T hardcopy_line(prt_settings_T *psettings, int page_line, prt_pos_T
  * Returns an error message or NULL;
  */
     char *
-parse_printoptions(void)
+parse_printoptions(optset_T *args UNUSED)
 {
     return parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
 }
@@ -155,7 +155,7 @@ parse_printoptions(void)
  * Returns an error message or NULL;
  */
     char *
-parse_printmbfont(void)
+parse_printmbfont(optset_T *args UNUSED)
 {
     return parse_list_options(p_pmfn, mbfont_opts, OPT_MBFONT_NUM_OPTIONS);
 }
@@ -2721,14 +2721,10 @@ mch_print_begin(prt_settings_T *psettings)
     struct prt_ps_resource_S *res_cmap;
     int		retval = FALSE;
 
-    res_prolog = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
-    res_encoding = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
-    res_cidfont = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
-    res_cmap = (struct prt_ps_resource_S *)
-				      alloc(sizeof(struct prt_ps_resource_S));
+    res_prolog = ALLOC_ONE(struct prt_ps_resource_S);
+    res_encoding = ALLOC_ONE(struct prt_ps_resource_S);
+    res_cidfont = ALLOC_ONE(struct prt_ps_resource_S);
+    res_cmap = ALLOC_ONE(struct prt_ps_resource_S);
     if (res_prolog == NULL || res_encoding == NULL
 	    || res_cidfont == NULL || res_cmap == NULL)
 	goto theend;

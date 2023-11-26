@@ -356,7 +356,7 @@ spell_load_file(
     int		c = 0;
     int		res;
     int		did_estack_push = FALSE;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
@@ -397,7 +397,7 @@ spell_load_file(
 
     // Set sourcing_name, so that error messages mention the file name.
     estack_push(ETYPE_SPELL, fname, 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
     did_estack_push = TRUE;
 
     /*
@@ -588,7 +588,7 @@ endOK:
 	fclose(fd);
     if (did_estack_push)
     {
-	ESTACK_CHECK_NOW
+	ESTACK_CHECK_NOW;
 	estack_pop();
     }
 
@@ -1771,7 +1771,7 @@ spell_reload_one(
     // When "zg" was used and the file wasn't loaded yet, should redo
     // 'spelllang' to load it now.
     if (added_word && !didit)
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 }
 
 
@@ -3466,7 +3466,7 @@ spell_free_aff(afffile_T *aff)
     for (ht = &aff->af_pref; ; ht = &aff->af_suff)
     {
 	todo = (int)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -5117,7 +5117,7 @@ write_vim_spell(spellinfo_T *spin, char_u *fname)
 	    hashitem_T	*hi;
 
 	    todo = (int)spin->si_commonwords.ht_used;
-	    for (hi = spin->si_commonwords.ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(&spin->si_commonwords, hi, todo)
 		if (!HASHITEM_EMPTY(hi))
 		{
 		    l = (int)STRLEN(hi->hi_key) + 1;

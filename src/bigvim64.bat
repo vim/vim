@@ -1,4 +1,4 @@
-:: command to build big Vim 64 bit with OLE, Perl and Python.
+:: command to build huge Vim 64 bit with OLE, Perl and Python.
 :: First run: %VCDIR%\vcvarsall.bat x86_amd64
 :: Ruby and Tcl are excluded, doesn't seem to work.
 SET VCDIR="C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\"

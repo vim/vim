@@ -3909,7 +3909,7 @@ msgstr "wiersz %4ld:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Niew³aœciwa nazwa rejestru: '%s'"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Opiekun komunikatów: Miko³aj Machowski <mikmach@wp.pl>"
 
 msgid "Interrupt: "

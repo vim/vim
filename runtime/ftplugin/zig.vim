@@ -17,7 +17,7 @@ compiler zig_build
 " Match Zig builtin fns
 setlocal iskeyword+=@-@
 
-" Recomended code style, no tabs and 4-space indentation
+" Recommended code style, no tabs and 4-space indentation
 setlocal expandtab
 setlocal tabstop=8
 setlocal softtabstop=4
@@ -28,7 +28,7 @@ setlocal formatoptions-=t formatoptions+=croql
 setlocal suffixesadd=.zig,.zir
 
 if has('comments')
-    setlocal comments=:///,://!,://,:\\\\
+    setlocal comments=:///,://!,://
     setlocal commentstring=//\ %s
 endif
 
@@ -39,7 +39,9 @@ endif
 
 let &l:define='\v(<fn>|<const>|<var>|^\s*\#\s*define)'
 
-if !exists('g:zig_std_dir') && exists('*json_decode') && executable('zig')
+" Safety check: don't execute zig from current directory
+if !exists('g:zig_std_dir') && exists('*json_decode') &&
+    \  executable('zig') && dist#vim#IsSafeExecutable('zig', 'zig')
     silent let s:env = system('zig env')
     if v:shell_error == 0
         let g:zig_std_dir = json_decode(s:env)['std_dir']
@@ -48,7 +50,7 @@ if !exists('g:zig_std_dir') && exists('*json_decode') && executable('zig')
 endif
 
 if exists('g:zig_std_dir')
-    let &l:path = &l:path . ',' . g:zig_std_dir
+    let &l:path = g:zig_std_dir . ',' . &l:path
 endif
 
 let b:undo_ftplugin =

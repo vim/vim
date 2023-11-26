@@ -508,7 +508,7 @@ ex_listdo(exarg_T *eap)
 		    i++;
 		break;
 	    case CMD_tabdo:
-		for( ; tp != NULL && i + 1 < eap->line1; tp = tp->tp_next)
+		for ( ; tp != NULL && i + 1 < eap->line1; tp = tp->tp_next)
 		    i++;
 		break;
 	    case CMD_argdo:

@@ -162,7 +162,7 @@ endfunc
 
 " Test for menu item completion in command line
 func Test_menu_expand()
-  " Create the menu itmes for test
+  " Create the menu items for test
   menu Dummy.Nothing lll
   for i in range(1, 4)
     let m = 'menu Xmenu.A' .. i .. '.A' .. i
@@ -590,6 +590,27 @@ func Test_unmenu_while_listing_menus()
   call term_sendkeys(buf, "G")
   call TermWait(buf, 50)
   call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for opening a menu drawn in the cmdline area
+func Test_popupmenu_cmdline()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set mousemodel=popup
+    menu PopUp.Test1 :<CR>
+    menu PopUp.Test2 :<CR>
+    menu PopUp.Test3 :<CR>
+    call setline(1, repeat(['abcde'], 5))
+  END
+  call writefile(lines, 'Xpopupcmdline', 'D')
+  let buf = RunVimInTerminal('-S Xpopupcmdline', {'rows': 4})
+
+  " cmdline area should be cleared when popupmenu that covered it is closed
+  call term_sendkeys(buf, "\<RightMouse>\<RightRelease>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_popupmenu_cmdline_1', {})
 
   call StopVimInTerminal(buf)
 endfunc

@@ -18,10 +18,8 @@ SRC_ALL =	\
 		.appveyor.yml \
 		.codecov.yml \
 		ci/appveyor.bat \
-		ci/build-snd-dummy.sh \
 		ci/config.mk*.sed \
 		ci/if_ver*.vim \
-		ci/load-snd-dummy.sh \
 		ci/setup-xvfb.sh \
 		src/Make_all.mak \
 		src/README.md \
@@ -219,6 +217,7 @@ SRC_ALL =	\
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
+		src/testdir/crash/* \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/alloc.pro \
@@ -699,6 +698,7 @@ RT_ALL =	\
 		runtime/doc/*.pl \
 		runtime/doc/*.txt \
 		runtime/doc/Makefile \
+		runtime/doc/Make_all.mak \
 		runtime/doc/doctags.c \
 		runtime/doc/doctags.vim \
 		runtime/doc/test_urls.vim \
@@ -710,6 +710,7 @@ RT_ALL =	\
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/import/dist/vimhelp.vim \
+		runtime/import/dist/vimhighlight.vim \
 		runtime/macros/README.txt \
 		runtime/macros/editexisting.vim \
 		runtime/macros/hanoi/click.me \
@@ -806,6 +807,11 @@ RT_SCRIPTS =	\
 		runtime/syntax/README.txt \
 		runtime/syntax/shared/*.vim \
 		runtime/syntax/shared/README.txt \
+		runtime/syntax/Makefile \
+		runtime/syntax/testdir/README.txt \
+		runtime/syntax/testdir/runtest.vim \
+		runtime/syntax/testdir/input/*.* \
+		runtime/syntax/testdir/dumps/*.dump \
 
 # Unix runtime
 RT_UNIX =	\
@@ -841,6 +847,8 @@ RT_AMI_DOS =	\
 # DOS runtime (also in the extra archive)
 RT_DOS =	\
 		README_dos.txt \
+		runtime/doc/Make_mvc.mak \
+		runtime/tutor/Make_mvc.mak \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
@@ -983,11 +991,13 @@ LANG_GEN = \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \
 		runtime/lang/Makefile \
+		runtime/lang/Make_all.mak \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \
 		runtime/keymap/*.vim \
 		runtime/tutor/README.*.txt \
 		runtime/tutor/Makefile \
+		runtime/tutor/Make_all.mak \
 		runtime/tutor/tutor.utf-8 \
 		runtime/tutor/tutor.?? \
 		runtime/tutor/tutor.??.utf-8 \
@@ -1042,10 +1052,12 @@ LANG_SRC = \
 		src/po/vim.desktop.in \
 		src/po/gvim.desktop.in \
 		src/po/sjiscorr.c \
+		src/po/big5corr.c \
 		src/po/*.po \
 
 # the language files for the Win32 lang archive
 LANG_DOS = \
 		src/po/*.mo \
+		runtime/lang/Make_mvc.mak \
 
 # vim: set ft=make:

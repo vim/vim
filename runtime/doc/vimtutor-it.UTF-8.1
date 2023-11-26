@@ -1,6 +1,6 @@
 .TH VIMTUTOR 1 "2 aprile 2001"
 .SH NOME
-vimtutor \- Un breve corso per imparare Vim
+vimtutor \- Un breve corso introduttivo a Vim
 .SH SINTASSI
 .br
 .B vimtutor [\-g] [lingua]
@@ -8,51 +8,50 @@ vimtutor \- Un breve corso per imparare Vim
 .B Vimtutor
 inizia il
 .B Vim
-tutor (una breve corso per imparare Vim).
-Per prima cosa viene creata una copia del file di lavoro, che può così essere
-modificato senza alterare il file usato come modello.
+tutor (un breve corso introduttivo a Vim).
+Viene utilizzata una copia del file di lavoro, che può così essere modificato
+a piacere senza alterare il file usato come modello.
 .PP
 Il comando
 .B Vimtutor
-è utile a chi voglia imparare i primi comandi
+è utile a chi voglia imparare i primi comandi di
 .B Vim
 .
 .PP
 L'argomento opzionale \-g inizia vimtutor usando gvim invece che vim, se la
-versione GUI di vim è disponibile. oppure utilizza vim, se gvim non è
-disponibile.
+versione GUI di vim è disponibile; altrimenti viene utilizzato Vim.
 .PP
-L'arogmento opzionale [lingua] è l'abbreviazione di due lettere del nome
+L'argomento opzionale [lingua] è l'abbreviazione di due lettere del nome
 di una lingua, per esempio "it" oppure "es".
-se L'argomento [lingua] non viene specificato, si utilizza la lingua "locale"
+Se l'argomento [lingua] non viene specificato, si utilizza la lingua "locale"
 del computer.
-Se la versione in quella lingua del "tutor" è disponibile, sarà usata.
-Altrimenti sarà usata la versione inglese.
+Se la versione in tale lingua del "tutor" non è disponibile,
+verrà usata la versione inglese.
 .PP
 .B Vim
-è sempre iniziato in Modo compatibile con vi.
+è sempre iniziato in Modo compatibile con Vi.
 .SH FILE
 .TP 15
 /usr/local/lib/vim/tutor/tutor[.language]
-Il/I file di testo per
+I file di testo per
 .B Vimtutor
-
+.
 .TP 15
 /usr/local/lib/vim/tutor/tutor.vim
 Lo script di Vim usato per copiare il file di testo
 .B Vimtutor
 .
 .SH AUTORE
-The
+Il corso introduttivo
 .B Vimtutor
 è stato scritto in origine per Vi da Michael C. Pierce e Robert K. Ware,
 Colorado School of Mines, usando idee fornite da Charles Smith,
 Colorado State University.
-E\-mail: bware@mines.colorado.edu.
+E-mail: bware@mines.colorado.edu (non più valido).
 .br
 È stato modificato per
 .B Vim
 da Bram Moolenaar.
-Per i nomi dei traduttori, vedere i file usati nelle rispettive lingue.
+Per i nomi dei traduttori, vedere i file nelle rispettive lingue.
 .SH VEDERE ANCHE
 vim(1)

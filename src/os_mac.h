@@ -28,7 +28,7 @@
  */
 #if defined(__APPLE_CC__) // for Project Builder and ...
 # include <unistd.h>
-// Get stat.h or something similar. Comment: How come some OS get in in vim.h
+// Get stat.h or something similar. Comment: How come some OS get in vim.h
 # include <sys/stat.h>
 // && defined(HAVE_CURSE)
 // The curses.h from MacOS X provides by default some BACKWARD compatibility
@@ -145,25 +145,6 @@
 # define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
 #endif
 
-#ifndef FILETYPE_FILE
-# define FILETYPE_FILE	"filetype.vim"
-#endif
-#ifndef FTPLUGIN_FILE
-# define FTPLUGIN_FILE	"ftplugin.vim"
-#endif
-#ifndef INDENT_FILE
-# define INDENT_FILE	"indent.vim"
-#endif
-#ifndef FTOFF_FILE
-# define FTOFF_FILE	"ftoff.vim"
-#endif
-#ifndef FTPLUGOF_FILE
-# define FTPLUGOF_FILE	"ftplugof.vim"
-#endif
-#ifndef INDOFF_FILE
-# define INDOFF_FILE	"indoff.vim"
-#endif
-
 #ifndef SYNTAX_FNAME
 # define SYNTAX_FNAME	"$VIMRUNTIME/syntax/%s.vim"
 #endif
@@ -272,7 +253,8 @@
 
 # include <dispatch/dispatch.h>
 
-# ifndef MAC_OS_X_VERSION_10_12
+# if !defined(MAC_OS_X_VERSION_10_12) \
+	|| (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12)
 typedef int clockid_t;
 # endif
 # ifndef CLOCK_REALTIME

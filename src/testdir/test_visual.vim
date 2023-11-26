@@ -1534,4 +1534,57 @@ func Test_switch_buffer_ends_visual_mode()
   exe 'bwipe!' buf2
 endfunc
 
+" Check fix for the heap-based buffer overflow bug found in the function
+" utfc_ptr2len and reported at
+" https://huntr.dev/bounties/ae933869-a1ec-402a-bbea-d51764c6618e
+func Test_heap_buffer_overflow()
+  enew
+  set updatecount=0
+
+  norm R0
+  split other
+  norm R000
+  exe "norm \<C-V>l"
+  ball
+  call assert_equal(getpos("."), getpos("v"))
+  call assert_equal('n', mode())
+  norm zW
+
+  %bwipe!
+  set updatecount&
+endfunc
+
+" Test Visual highlight with cursor at end of screen line and 'showbreak'
+func Test_visual_hl_with_showbreak()
+  CheckScreendump
+
+  let lines =<< trim END
+    setlocal showbreak=+
+    call setline(1, repeat('a', &columns + 10))
+    normal g$v4lo
+  END
+  call writefile(lines, 'XTest_visual_sbr', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_visual_sbr', {'rows': 6, 'cols': 50})
+  call VerifyScreenDump(buf, 'Test_visual_hl_with_showbreak', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_Visual_r_CTRL_C()
+  new
+  " visual r_cmd
+  call setline(1, ['   '])
+  call feedkeys("\<c-v>$r\<c-c>", 'tx')
+  call assert_equal([''], getline(1, 1))
+
+  " visual gr_cmd
+  call setline(1, ['   '])
+  call feedkeys("\<c-v>$gr\<c-c>", 'tx')
+  call assert_equal([''], getline(1, 1))
+  bw!
+endfu
+
 " vim: shiftwidth=2 sts=2 expandtab

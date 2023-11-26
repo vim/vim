@@ -6,7 +6,7 @@
 .\"    Changes by Bram Moolenaar <Bram@vim.org>
 .SH NAME
 .I xxd
-\- make a hexdump or do the reverse.
+\- make a hex dump or do the reverse.
 .SH SYNOPSIS
 .B xxd
 \-h[elp]
@@ -57,20 +57,20 @@ are all equivalent.
 .PP
 .TP
 .IR \-a " | " \-autoskip
-Toggle autoskip: A single '*' replaces nul-lines.  Default off.
+Toggle autoskip: A single '*' replaces NUL-lines.  Default off.
 .TP
 .IR \-b " | " \-bits
-Switch to bits (binary digits) dump, rather than hexdump.
+Switch to bits (binary digits) dump, rather than hex dump.
 This option writes octets as eight digits "1"s and "0"s instead of a normal
 hexadecimal dump. Each line is preceded by a line number in hexadecimal and
-followed by an ascii (or ebcdic) representation. The command line switches
-\-r, \-p, \-i do not work with this mode.
+followed by an ASCII (or EBCDIC) representation. The command line switches
+\-p, \-i do not work with this mode.
 .TP
 .IR "\-c cols " | " \-cols cols"
 Format
 .RI < cols >
 octets per line. Default 16 (\-i: 12, \-ps: 30, \-b: 6). Max 256.
-No maxmimum for \-ps. With \-ps, 0 results in one long line of output.
+No maximum for \-ps. With \-ps, 0 results in one long line of output.
 .TP
 .IR \-C " | " \-capitalize
 Capitalize variable names in C include file style, when using \-i.
@@ -81,11 +81,11 @@ This does not change the hexadecimal representation. The option is
 meaningless in combinations with \-r, \-p or \-i.
 .TP
 .IR \-e
-Switch to little-endian hexdump.
+Switch to little-endian hex dump.
 This option treats byte groups as words in little-endian byte order.
 The default grouping of 4 bytes may be changed using
 .RI "" \-g .
-This option only applies to hexdump, leaving the ASCII (or EBCDIC)
+This option only applies to the hex dump, leaving the ASCII (or EBCDIC)
 representation unchanged.
 The command line switches
 \-r, \-p, \-i do not work with this mode.
@@ -93,13 +93,13 @@ The command line switches
 .IR "\-g bytes " | " \-groupsize bytes"
 Separate the output of every
 .RI < bytes >
-bytes (two hex characters or eight bit-digits each) by a whitespace.
+bytes (two hex characters or eight bit digits each) by a whitespace.
 Specify
 .I \-g 0
 to suppress grouping.
 .RI < Bytes "> defaults to " 2
 in normal mode, \fI4\fP in little-endian mode and \fI1\fP in bits mode.
-Grouping does not apply to postscript or include style.
+Grouping does not apply to PostScript or include style.
 .TP
 .IR \-h " | " \-help
 Print a summary of available commands and exit.  No hex dumping is performed.
@@ -123,24 +123,37 @@ Add
 to the displayed file position.
 .TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
-Output in postscript continuous hexdump style. Also known as plain hexdump
+Output in PostScript continuous hex dump style. Also known as plain hex dump
 style.
 .TP
 .IR \-r " | " \-revert
-Reverse operation: convert (or patch) hexdump into binary.
+Reverse operation: convert (or patch) hex dump into binary.
 If not writing to stdout, xxd writes into its output file without truncating
 it. Use the combination
 .I \-r \-p
 to read plain hexadecimal dumps without line number information and without a
-particular column layout. Additional Whitespace and line-breaks are allowed
-anywhere.
+particular column layout. Additional whitespace and line breaks are allowed
+anywhere. Use the combination
+.I \-r \-b
+to read a bits dump instead of a hex dump.
+.TP
+.IR \-R " " when
+In output the hex-value and the value are both colored with the same color
+depending on the hex-value. Mostly helping to differentiate printable and
+non-printable characters.
+.I \fIwhen\fP
+is
+.BR never ", " always ", or " auto .
+When the 
+.BR $NO_COLOR
+environment variable is set, colorization will be disabled.
 .TP
 .I \-seek offset
 When used after
 .IR \-r :
 revert with
 .RI < offset >
-added to file positions found in hexdump.
+added to file positions found in hex dump.
 .TP
 .I \-s [+][\-]seek
 Start at
@@ -153,28 +166,28 @@ should be that many characters from the end of the input (or if combined with
 Without \-s option, xxd starts at the current file position.
 .TP
 .I \-u
-Use upper case hex letters. Default is lower case.
+Use upper-case hex letters. Default is lower-case.
 .TP
 .IR \-v " | " \-version
 Show version string.
 .SH CAVEATS
 .PP
 .I xxd \-r
-has some builtin magic while evaluating line number information.
-If the output file is seekable, then the linenumbers at the start of each
-hexdump line may be out of order, lines may be missing, or overlapping. In
+has some built-in magic while evaluating line number information.
+If the output file is seekable, then the line numbers at the start of each
+hex dump line may be out of order, lines may be missing, or overlapping. In
 these cases xxd will lseek(2) to the next position. If the output file is not
 seekable, only gaps are allowed, which will be filled by null-bytes.
 .PP
 .I xxd \-r
 never generates parse errors. Garbage is silently skipped.
 .PP
-When editing hexdumps, please note that
+When editing hex dumps, please note that
 .I xxd \-r
 skips everything on the input line after reading enough columns of hexadecimal
-data (see option \-c). This also means, that changes to the printable ascii (or
-ebcdic) columns are always ignored. Reverting a plain (or postscript) style
-hexdump with xxd \-r \-p does not depend on the correct number of columns. Here anything that looks like a pair of hex-digits is interpreted.
+data (see option \-c). This also means that changes to the printable ASCII (or
+EBCDIC) columns are always ignored. Reverting a plain (or PostScript) style
+hex dump with xxd \-r \-p does not depend on the correct number of columns. Here, anything that looks like a pair of hex digits is interpreted.
 .PP
 Note the difference between
 .br
@@ -190,20 +203,20 @@ may be different from
 as lseek(2) is used to "rewind" input.  A '+'
 makes a difference if the input source is stdin, and if stdin's file position
 is not at the start of the file by the time xxd is started and given its input.
-The following examples may help to clarify (or further confuse!)...
+The following examples may help to clarify (or further confuse!):
 .PP
 Rewind stdin before reading; needed because the `cat' has already read to the
 end of stdin.
 .br
 \fI% sh \-c "cat > plain_copy; xxd \-s 0 > hex_copy" < file\fR
 .PP
-Hexdump from file position 0x480 (=1024+128) onwards.
+Hex dump from file position 0x480 (=1024+128) onwards.
 The `+' sign means "relative to the current position", thus the `128' adds to
 the 1k where dd left off.
 .br
 \fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet" < file\fR
 .PP
-Hexdump from file position 0x100 ( = 1024\-768) on.
+Hex dump from file position 0x100 (=1024\-768) onwards.
 .br
 \fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +\-768 > hex_snippet" < file\fR
 .PP
@@ -224,7 +237,7 @@ Print 3 lines (hex 0x30 bytes) from the end of
 \fI% xxd \-s \-0x30 file\fR
 .PP
 .br
-Print 120 bytes as continuous hexdump with 20 octets per line.
+Print 120 bytes as a continuous hex dump with 20 octets per line.
 .br
 \fI% xxd \-l 120 \-ps \-c 20 xxd.1\fR
 .br
@@ -242,7 +255,7 @@ Print 120 bytes as continuous hexdump with 20 octets per line.
 .br
 
 .br
-Hexdump the first 120 bytes of this man page with 12 octets per line.
+Hex dump the first 120 bytes of this man page with 12 octets per line.
 .br
 \fI% xxd \-l 120 \-c 12 xxd.1\fR
 .br
@@ -299,7 +312,7 @@ except for the last one which is 'A' (hex 0x41).
 \fI% echo "010000: 41" | xxd \-r > file\fR
 .PP
 .br
-Hexdump this file with autoskip.
+Hex dump this file with autoskip.
 .br
 \fI% xxd \-a \-c 12 file\fR
 .br
@@ -310,26 +323,26 @@ Hexdump this file with autoskip.
 000fffc: 0000 0000 40                   ....A
 .PP
 Create a 1 byte file containing a single 'A' character.
-The number after '\-r \-s' adds to the linenumbers found in the file;
+The number after '\-r \-s' adds to the line numbers found in the file;
 in effect, the leading bytes are suppressed.
 .br
 \fI% echo "010000: 41" | xxd \-r \-s \-0x10000 > file\fR
 .PP
 Use xxd as a filter within an editor such as
 .B vim(1)
-to hexdump a region marked between `a' and `z'.
+to hex dump a region marked between `a' and `z'.
 .br
 \fI:'a,'z!xxd\fR
 .PP
 Use xxd as a filter within an editor such as
 .B vim(1)
-to recover a binary hexdump marked between `a' and `z'.
+to recover a binary hex dump marked between `a' and `z'.
 .br
 \fI:'a,'z!xxd \-r\fR
 .PP
 Use xxd as a filter within an editor such as
 .B vim(1)
-to recover one line of a hexdump.  Move the cursor over the line and type:
+to recover one line of a hex dump.  Move the cursor over the line and type:
 .br
 \fI!!xxd \-r\fR
 .PP
@@ -348,8 +361,9 @@ The following error values are returned:
 no errors encountered.
 .TP
 \-1
-operation not supported (
-.I xxd \-r \-i
+operation not supported
+\%(\c
+.I \%xxd \-r \-i
 still impossible).
 .TP
 1
@@ -367,7 +381,7 @@ desired seek position is unreachable.
 uuencode(1), uudecode(1), patch(1)
 .br
 .SH WARNINGS
-The tools weirdness matches its creators brain.
+The tool's weirdness matches its creator's brain.
 Use entirely at your own risk. Copy files. Trace it. Become a wizard.
 .br
 .SH VERSION

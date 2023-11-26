@@ -24,7 +24,7 @@ profile_start(proftime_T *tm)
 # ifdef MSWIN
     QueryPerformanceCounter(tm);
 # else
-    gettimeofday(tm, NULL);
+    PROF_GET_TIME(tm);
 # endif
 }
 
@@ -40,12 +40,12 @@ profile_end(proftime_T *tm)
     QueryPerformanceCounter(&now);
     tm->QuadPart = now.QuadPart - tm->QuadPart;
 # else
-    gettimeofday(&now, NULL);
-    tm->tv_usec = now.tv_usec - tm->tv_usec;
+    PROF_GET_TIME(&now);
+    tm->tv_fsec = now.tv_fsec - tm->tv_fsec;
     tm->tv_sec = now.tv_sec - tm->tv_sec;
-    if (tm->tv_usec < 0)
+    if (tm->tv_fsec < 0)
     {
-	tm->tv_usec += 1000000;
+	tm->tv_fsec += TV_FSEC_SEC;
 	--tm->tv_sec;
     }
 # endif
@@ -60,11 +60,11 @@ profile_sub(proftime_T *tm, proftime_T *tm2)
 # ifdef MSWIN
     tm->QuadPart -= tm2->QuadPart;
 # else
-    tm->tv_usec -= tm2->tv_usec;
+    tm->tv_fsec -= tm2->tv_fsec;
     tm->tv_sec -= tm2->tv_sec;
-    if (tm->tv_usec < 0)
+    if (tm->tv_fsec < 0)
     {
-	tm->tv_usec += 1000000;
+	tm->tv_fsec += TV_FSEC_SEC;
 	--tm->tv_sec;
     }
 # endif
@@ -85,7 +85,7 @@ profile_msg(proftime_T *tm)
     QueryPerformanceFrequency(&fr);
     sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
 # else
-    sprintf(buf, "%3ld.%06ld", (long)tm->tv_sec, (long)tm->tv_usec);
+    sprintf(buf, PROF_TIME_FORMAT, (long)tm->tv_sec, (long)tm->tv_fsec);
 # endif
     return buf;
 }
@@ -102,7 +102,7 @@ profile_float(proftime_T *tm)
     QueryPerformanceFrequency(&fr);
     return (float_T)tm->QuadPart / (float_T)fr.QuadPart;
 # else
-    return (float_T)tm->tv_sec + (float_T)tm->tv_usec / 1000000.0;
+    return (float_T)tm->tv_sec + (float_T)tm->tv_fsec / (float_T)TV_FSEC_SEC;
 # endif
 }
 
@@ -123,12 +123,13 @@ profile_setlimit(long msec, proftime_T *tm)
 	QueryPerformanceFrequency(&fr);
 	tm->QuadPart += (LONGLONG)((double)msec / 1000.0 * (double)fr.QuadPart);
 # else
-	long	    usec;
+	varnumber_T	    fsec;	// this should be 64 bit if possible
 
-	gettimeofday(tm, NULL);
-	usec = (long)tm->tv_usec + (long)msec * 1000;
-	tm->tv_usec = usec % 1000000L;
-	tm->tv_sec += usec / 1000000L;
+	PROF_GET_TIME(tm);
+	fsec = (varnumber_T)tm->tv_fsec
+		       + (varnumber_T)msec * (varnumber_T)(TV_FSEC_SEC / 1000);
+	tm->tv_fsec = fsec % (long)TV_FSEC_SEC;
+	tm->tv_sec += fsec / (long)TV_FSEC_SEC;
 # endif
     }
 }
@@ -149,9 +150,9 @@ profile_passed_limit(proftime_T *tm)
 # else
     if (tm->tv_sec == 0)    // timer was not set
 	return FALSE;
-    gettimeofday(&now, NULL);
+    PROF_GET_TIME(&now);
     return (now.tv_sec > tm->tv_sec
-	    || (now.tv_sec == tm->tv_sec && now.tv_usec > tm->tv_usec));
+	    || (now.tv_sec == tm->tv_sec && now.tv_fsec > tm->tv_fsec));
 # endif
 }
 
@@ -164,7 +165,7 @@ profile_zero(proftime_T *tm)
 # ifdef MSWIN
     tm->QuadPart = 0;
 # else
-    tm->tv_usec = 0;
+    tm->tv_fsec = 0;
     tm->tv_sec = 0;
 # endif
 }
@@ -189,10 +190,11 @@ profile_divide(proftime_T *tm, int count, proftime_T *tm2)
 # ifdef MSWIN
 	tm2->QuadPart = tm->QuadPart / count;
 # else
-	double usec = (tm->tv_sec * 1000000.0 + tm->tv_usec) / count;
+	double fsec = (tm->tv_sec * (float_T)TV_FSEC_SEC + tm->tv_fsec)
+								       / count;
 
-	tm2->tv_sec = floor(usec / 1000000.0);
-	tm2->tv_usec = vim_round(usec - (tm2->tv_sec * 1000000.0));
+	tm2->tv_sec = floor(fsec / (float_T)TV_FSEC_SEC);
+	tm2->tv_fsec = vim_round(fsec - (tm2->tv_sec * (float_T)TV_FSEC_SEC));
 # endif
     }
 }
@@ -213,11 +215,11 @@ profile_add(proftime_T *tm, proftime_T *tm2)
 # ifdef MSWIN
     tm->QuadPart += tm2->QuadPart;
 # else
-    tm->tv_usec += tm2->tv_usec;
+    tm->tv_fsec += tm2->tv_fsec;
     tm->tv_sec += tm2->tv_sec;
-    if (tm->tv_usec >= 1000000)
+    if (tm->tv_fsec >= TV_FSEC_SEC)
     {
-	tm->tv_usec -= 1000000;
+	tm->tv_fsec -= TV_FSEC_SEC;
 	++tm->tv_sec;
     }
 # endif
@@ -237,7 +239,7 @@ profile_self(proftime_T *self, proftime_T *total, proftime_T *children)
 #else
     if (total->tv_sec < children->tv_sec
 	    || (total->tv_sec == children->tv_sec
-		&& total->tv_usec <= children->tv_usec))
+		&& total->tv_fsec <= children->tv_fsec))
 	return;
 #endif
     profile_add(self, total);
@@ -274,7 +276,7 @@ profile_equal(proftime_T *tm1, proftime_T *tm2)
 # ifdef MSWIN
     return (tm1->QuadPart == tm2->QuadPart);
 # else
-    return (tm1->tv_usec == tm2->tv_usec && tm1->tv_sec == tm2->tv_sec);
+    return (tm1->tv_fsec == tm2->tv_fsec && tm1->tv_sec == tm2->tv_sec);
 # endif
 }
 
@@ -288,7 +290,7 @@ profile_cmp(const proftime_T *tm1, const proftime_T *tm2)
     return (int)(tm2->QuadPart - tm1->QuadPart);
 # else
     if (tm1->tv_sec == tm2->tv_sec)
-	return tm2->tv_usec - tm1->tv_usec;
+	return tm2->tv_fsec - tm1->tv_fsec;
     return tm2->tv_sec - tm1->tv_sec;
 # endif
 }
@@ -335,7 +337,7 @@ profile_reset(void)
     functbl = func_tbl_get();
     todo = (int)functbl->ht_used;
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	ufunc_T *fp;
 	int	i;
@@ -435,21 +437,13 @@ static enum
 
 static char *pexpand_cmds[] = {
 			"start",
-#define PROFCMD_START	0
 			"stop",
-#define PROFCMD_STOP	1
 			"pause",
-#define PROFCMD_PAUSE	2
 			"continue",
-#define PROFCMD_CONTINUE 3
 			"func",
-#define PROFCMD_FUNC	4
 			"file",
-#define PROFCMD_DUMP	5
 			"dump",
-#define PROFCMD_FILE	6
 			NULL
-#define PROFCMD_LAST	7
 };
 
 /*
@@ -551,16 +545,16 @@ prof_func_line(
     {
 	fprintf(fd, "%5d ", count);
 	if (prefer_self && profile_equal(total, self))
-	    fprintf(fd, "           ");
+	    fprintf(fd, PROF_TIME_BLANK);
 	else
 	    fprintf(fd, "%s ", profile_msg(total));
 	if (!prefer_self && profile_equal(total, self))
-	    fprintf(fd, "           ");
+	    fprintf(fd, PROF_TIME_BLANK);
 	else
 	    fprintf(fd, "%s ", profile_msg(self));
     }
     else
-	fprintf(fd, "                            ");
+	fprintf(fd, "      %s%s", PROF_TIME_BLANK, PROF_TIME_BLANK);
 }
 
     static void
@@ -575,7 +569,7 @@ prof_sort_list(
     ufunc_T	*fp;
 
     fprintf(fd, "FUNCTIONS SORTED ON %s TIME\n", title);
-    fprintf(fd, "count  total (s)   self (s)  function\n");
+    fprintf(fd, "%s  function\n", PROF_TOTALS_HEADER);
     for (i = 0; i < 20 && i < st_len; ++i)
     {
 	fp = sorttab[i];
@@ -670,7 +664,8 @@ script_prof_save(
     void
 profile_may_start_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller)
 {
-    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
+    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL,
+								&fp->uf_hash))
     {
 	info->pi_started_profiling = TRUE;
 	func_do_profile(fp);
@@ -825,7 +820,7 @@ func_dump_profile(FILE *fd)
 
     sorttab = ALLOC_MULT(ufunc_T *, todo);
 
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -858,7 +853,7 @@ func_dump_profile(FILE *fd)
 		fprintf(fd, "Total time: %s\n", profile_msg(&fp->uf_tm_total));
 		fprintf(fd, " Self time: %s\n", profile_msg(&fp->uf_tm_self));
 		fprintf(fd, "\n");
-		fprintf(fd, "count  total (s)   self (s)\n");
+		fprintf(fd, "%s\n", PROF_TOTALS_HEADER);
 
 		for (i = 0; i < fp->uf_lines.ga_len; ++i)
 		{
@@ -948,7 +943,7 @@ script_dump_profile(FILE *fd)
 	    fprintf(fd, "Total time: %s\n", profile_msg(&si->sn_pr_total));
 	    fprintf(fd, " Self time: %s\n", profile_msg(&si->sn_pr_self));
 	    fprintf(fd, "\n");
-	    fprintf(fd, "count  total (s)   self (s)\n");
+	    fprintf(fd, "%s\n", PROF_TOTALS_HEADER);
 
 	    sfd = mch_fopen((char *)si->sn_name, "r");
 	    if (sfd == NULL)

@@ -79,6 +79,25 @@ def Test_vim9cmd()
       legacy echo version
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Func()
+        var d: dict<string>
+        d.k .= ''
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E985:')
+  lines =<< trim END
+    vim9script
+    def Func()
+        var d: dict<string>
+        d.k ,= ''
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1017:')
 enddef
 
 def Test_defcompile_fails()

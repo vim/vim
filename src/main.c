@@ -76,6 +76,10 @@ static char *(main_errors[]) =
 // Various parameters passed between main() and other functions.
 static mparm_T	params;
 
+#ifdef _IOLBF
+static void *s_vbuf = NULL;		// buffer for setvbuf()
+#endif
+
 #ifndef NO_VIM_MAIN	// skip this for unittests
 
 static char_u *start_dir = NULL;	// current working dir on startup
@@ -305,7 +309,7 @@ main
 	params.want_full_screen = FALSE;
 
     /*
-     * When certain to start the GUI, don't check capabilities of terminal.
+     * When certain to start the GUI, don't check terminal capabilities.
      * For GTK we can't be sure, but when started from the desktop it doesn't
      * make sense to try using a terminal.
      */
@@ -353,10 +357,14 @@ main
     check_tty(&params);
 
 #ifdef _IOLBF
-    // Ensure output works usefully without a tty: buffer lines instead of
-    // fully buffered.
     if (silent_mode)
-	setvbuf(stdout, NULL, _IOLBF, 0);
+    {
+	// Ensure output works usefully without a tty: buffer lines instead of
+	// fully buffered.
+	s_vbuf = malloc(BUFSIZ);
+	if (s_vbuf != NULL)
+	    setvbuf(stdout, s_vbuf, _IOLBF, BUFSIZ);
+    }
 #endif
 
     // This message comes before term inits, but after setting "silent_mode"
@@ -1027,6 +1035,21 @@ is_not_a_term_or_gui(void)
 	;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_vbuf(void)
+{
+# ifdef _IOLBF
+    if (s_vbuf != NULL)
+    {
+	setvbuf(stdout, NULL, _IONBF, 0);
+	free(s_vbuf);
+	s_vbuf = NULL;
+    }
+# endif
+}
+#endif
+
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
  * If a --gui-dialog-file argument was given return the file name.
@@ -1290,7 +1313,11 @@ main_loop(
 	 * update cursor and redraw.
 	 */
 	if (skip_redraw || exmode_active)
+	{
 	    skip_redraw = FALSE;
+	    setcursor();
+	    cursor_on();
+	}
 	else if (do_redraw || stuff_empty())
 	{
 #ifdef FEAT_GUI
@@ -1521,7 +1548,7 @@ main_loop(
 		    && !skip_term_loop)
 	    {
 		// If terminal_loop() returns OK we got a key that is handled
-		// in Normal model.  With FAIL we first need to position the
+		// in Normal mode.  With FAIL we first need to position the
 		// cursor and the screen needs to be redrawn.
 		if (terminal_loop(TRUE) == OK)
 		    normal_cmd(&oa, TRUE);
@@ -1553,7 +1580,7 @@ getout_preserve_modified(int exitval)
     // Ignore SIGHUP, because a dropped connection causes a read error, which
     // makes Vim exit and then handling SIGHUP causes various reentrance
     // problems.
-    signal(SIGHUP, SIG_IGN);
+    mch_signal(SIGHUP, SIG_IGN);
 # endif
 
     ml_close_notmod();		    // close all not-modified buffers
@@ -1619,7 +1646,7 @@ getout(int exitval)
 	    next_tp = tp->tp_next;
 	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    {
-		if (wp->w_buffer == NULL)
+		if (wp->w_buffer == NULL || !buf_valid(wp->w_buffer))
 		    // Autocmd must have close the buffer already, skip.
 		    continue;
 		buf = wp->w_buffer;
@@ -3097,21 +3124,21 @@ exe_pre_commands(mparm_T *parmp)
     char_u	**cmds = parmp->pre_commands;
     int		cnt = parmp->n_pre_commands;
     int		i;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     if (cnt <= 0)
 	return;
 
     curwin->w_cursor.lnum = 0; // just in case..
     estack_push(ETYPE_ARGS, (char_u *)_("pre-vimrc command line"), 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 # ifdef FEAT_EVAL
-	current_sctx.sc_sid = SID_CMDARG;
+    current_sctx.sc_sid = SID_CMDARG;
 # endif
-	for (i = 0; i < cnt; ++i)
-	    do_cmdline_cmd(cmds[i]);
-    ESTACK_CHECK_NOW
-	estack_pop();
+    for (i = 0; i < cnt; ++i)
+	do_cmdline_cmd(cmds[i]);
+    ESTACK_CHECK_NOW;
+    estack_pop();
 # ifdef FEAT_EVAL
     current_sctx.sc_sid = 0;
 # endif
@@ -3125,7 +3152,7 @@ exe_pre_commands(mparm_T *parmp)
 exe_commands(mparm_T *parmp)
 {
     int		i;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     /*
      * We start commands on line 0, make "vim +/pat file" match a
@@ -3136,7 +3163,7 @@ exe_commands(mparm_T *parmp)
     if (parmp->tagname == NULL && curwin->w_cursor.lnum <= 1)
 	curwin->w_cursor.lnum = 0;
     estack_push(ETYPE_ARGS, (char_u *)"command line", 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = SID_CARG;
     current_sctx.sc_seq = 0;
@@ -3147,7 +3174,7 @@ exe_commands(mparm_T *parmp)
 	if (parmp->cmds_tofree[i])
 	    vim_free(parmp->commands[i]);
     }
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
     estack_pop();
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = 0;
@@ -3194,7 +3221,7 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)
 									 != OK)
-		emsg(e_failed_to_source_defaults);
+		emsg(_(e_failed_to_source_defaults));
 	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
@@ -3269,7 +3296,7 @@ source_startup_scripts(mparm_T *parmp)
 		// When no .vimrc file was found: source defaults.vim.
 		if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE,
 								 NULL) == FAIL)
-		    emsg(e_failed_to_source_defaults);
+		    emsg(_(e_failed_to_source_defaults));
 	    }
 	}
 
@@ -3366,8 +3393,7 @@ process_env(
 {
     char_u	*initstr;
     sctx_T	save_current_sctx;
-
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     if ((initstr = mch_getenv(env)) == NULL || *initstr == NUL)
 	return FAIL;
@@ -3375,8 +3401,8 @@ process_env(
     if (is_viminit)
 	vimrc_found(NULL, NULL);
     estack_push(ETYPE_ENV, env, 0);
-    ESTACK_CHECK_SETUP
-	save_current_sctx = current_sctx;
+    ESTACK_CHECK_SETUP;
+    save_current_sctx = current_sctx;
     current_sctx.sc_version = 1;
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = SID_ENV;
@@ -3386,8 +3412,8 @@ process_env(
 
     do_cmdline_cmd(initstr);
 
-    ESTACK_CHECK_NOW
-	estack_pop();
+    ESTACK_CHECK_NOW;
+    estack_pop();
     current_sctx = save_current_sctx;
     return OK;
 }

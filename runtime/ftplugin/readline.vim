@@ -25,9 +25,25 @@ if exists("loaded_matchit") && !exists("b:match_words")
 endif
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-  let b:browsefilter = "Readline Intialization Files (inputrc .inputrc)\tinputrc;*.inputrc\n" ..
+  let b:browsefilter = "Readline Initialization Files (inputrc .inputrc)\tinputrc;*.inputrc\n" ..
 	\	       "All Files (*.*)\t*.*\n"
   let b:undo_ftplugin ..= " | unlet! b:browsefilter"
+endif
+
+if has('unix') && executable('less')
+  if !has('gui_running')
+    command -buffer -nargs=1 ReadlineKeywordPrg
+          \ silent exe '!' . 'LESS= MANPAGER="less --pattern=''^\s+' . <q-args> . '\b'' --hilite-search" man ' . '3 readline' |
+          \ redraw!
+  elseif has('terminal')
+    command -buffer -nargs=1 ReadlineKeywordPrg
+          \ silent exe 'term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . '3 readline'
+  endif
+  if exists(':ReadlineKeywordPrg') == 2
+    setlocal iskeyword+=-
+    setlocal keywordprg=:ReadlineKeywordPrg
+    let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword< | sil! delc -buffer ReadlineKeywordPrg'
+  endif
 endif
 
 let &cpo = s:cpo_save

@@ -726,10 +726,7 @@ diff_redraw(
 clear_diffin(diffin_T *din)
 {
     if (din->din_fname == NULL)
-    {
-	vim_free(din->din_mmfile.ptr);
-	din->din_mmfile.ptr = NULL;
-    }
+	VIM_CLEAR(din->din_mmfile.ptr);
     else
 	mch_remove(din->din_fname);
 }
@@ -1313,6 +1310,9 @@ ex_diffpatch(exarg_T *eap)
     else
 #endif
     {
+	if (check_restricted())
+	    goto theend;
+
 	// Build the patch command and execute it.  Ignore errors.  Switch to
 	// cooked mode to allow the user to respond to prompts.
 	vim_snprintf((char *)buf, buflen, "patch -o %s %s < %s",
@@ -1383,7 +1383,8 @@ ex_diffpatch(exarg_T *eap)
 
 		    // Do filetype detection with the new name.
 		    if (au_has_group((char_u *)"filetypedetect"))
-			do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
+			do_cmdline_cmd(
+				     (char_u *)":doau filetypedetect BufRead");
 		}
 	    }
 	}
@@ -2265,6 +2266,7 @@ diffopt_changed(void)
     p = p_dip;
     while (*p != NUL)
     {
+	// Note: Keep this in sync with p_dip_values
 	if (STRNCMP(p, "filler", 6) == 0)
 	{
 	    p += 6;
@@ -2342,6 +2344,7 @@ diffopt_changed(void)
 	}
 	else if (STRNCMP(p, "algorithm:", 10) == 0)
 	{
+	    // Note: Keep this in sync with p_dip_algorithm_values.
 	    p += 10;
 	    if (STRNCMP(p, "myers", 5) == 0)
 	    {
@@ -2650,7 +2653,7 @@ valid_diff(diff_T *diff)
 {
     diff_T	*dp;
 
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (dp == diff)
 	    return TRUE;
     return FALSE;

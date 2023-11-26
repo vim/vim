@@ -93,7 +93,7 @@ gui_mch_create_beval_area(
 
     if (mesg != NULL && mesgCB != NULL)
     {
-	iemsg(_(e_cannot_create_ballooneval_with_both_message_and_callback));
+	iemsg(e_cannot_create_ballooneval_with_both_message_and_callback);
 	return NULL;
     }
 
@@ -404,8 +404,7 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	}
 	else
 	{
-	    beval->timerID = g_timeout_add((guint)p_bdlay,
-		    &timeout_cb, beval);
+	    beval->timerID = g_timeout_add((guint)p_bdlay, &timeout_cb, beval);
 	}
     }
 }

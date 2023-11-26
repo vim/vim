@@ -122,12 +122,14 @@ If you still have problems or any other questions, use one of the mailing
 lists to discuss them with Vim users and developers:
 	https://www.vim.org/maillist.php
 
-If nothing else works, report bugs directly:
-	Bram Moolenaar <Bram@vim.org>
+If nothing else works, report bugs directly to the vim-dev mailing list:
+	<vim-dev@vim.org>
 
 
 MAIN AUTHOR
 
-Send any other comments, patches, flowers and suggestions to:
+Most of Vim was created by Bram Moolenaar <Bram@vim.org> |Bram-Moolenaar|
 
-	Bram Moolenaar		E-mail:	Bram@vim.org
+Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
+
+	<vim-dev@vim.org>

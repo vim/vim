@@ -22,10 +22,10 @@ func Test_AAA_python3_setup()
     import sys
     import re
 
-    py33_type_error_pattern = re.compile('^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
+    py33_type_error_pattern = re.compile(r'^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
     py37_exception_repr = re.compile(r'([^\(\),])(\)+)$')
-    py39_type_error_pattern = re.compile('\w+\.([^(]+\(\) takes)')
-    py310_type_error_pattern = re.compile('takes (\d+) positional argument but (\d+) were given')
+    py39_type_error_pattern = re.compile(r'\w+\.([^(]+\(\) takes)')
+    py310_type_error_pattern = re.compile(r'takes (\d+) positional argument but (\d+) were given')
 
     def emsg(ei):
       return ei[0].__name__ + ':' + repr(ei[1].args)
@@ -375,6 +375,7 @@ func Test_python3_opt_reset_local_to_global()
         \ ['include', 'ginc', 'linc', ''],
         \ ['dict', 'gdict', 'ldict', ''],
         \ ['thesaurus', 'gtsr', 'ltsr', ''],
+        \ ['thesaurusfunc', 'Gtsrfu', 'Ltsrfu', ''],
         \ ['formatprg', 'gfprg', 'lfprg', ''],
         \ ['errorformat', '%f:%l:%m', '%s-%l-%m', ''],
         \ ['grepprg', 'ggprg', 'lgprg', ''],
@@ -408,9 +409,13 @@ func Test_python3_opt_reset_local_to_global()
   " Set the global and window-local option values and then clear the
   " window-local option value.
   let wopts = [
+        \ ['fillchars', 'fold:>', 'fold:+', ''],
+        \ ['listchars', 'tab:>>', 'tab:--', ''],
         \ ['scrolloff', 5, 10, -1],
+        \ ['showbreak', '>>', '++', ''],
         \ ['sidescrolloff', 6, 12, -1],
-        \ ['statusline', '%<%f', '%<%F', '']]
+        \ ['statusline', '%<%f', '%<%F', ''],
+        \ ['virtualedit', 'block', 'insert', '']]
   for opt in wopts
     py3 << trim
       pyopt = vim.bindeval("opt")

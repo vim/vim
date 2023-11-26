@@ -146,6 +146,16 @@ setpcmark(void)
     curwin->w_prev_pcmark = curwin->w_pcmark;
     curwin->w_pcmark = curwin->w_cursor;
 
+    if (jop_flags & JOP_STACK)
+    {
+	// jumpoptions=stack: if we're somewhere in the middle of the jumplist
+	// discard everything after the current index.
+	if (curwin->w_jumplistidx < curwin->w_jumplistlen - 1)
+	    // Discard the rest of the jumplist by cutting the length down to
+	    // contain nothing beyond the current index.
+	    curwin->w_jumplistlen = curwin->w_jumplistidx + 1;
+    }
+
     // If jumplist is full: remove oldest entry
     if (++curwin->w_jumplistlen > JUMPLISTSIZE)
     {
@@ -986,12 +996,12 @@ ex_changes(exarg_T *eap UNUSED)
     }
 
 /*
- * Adjust marks between line1 and line2 (inclusive) to move 'amount' lines.
+ * Adjust marks between "line1" and "line2" (inclusive) to move "amount" lines.
  * Must be called before changed_*(), appended_lines() or deleted_lines().
  * May be called before or after changing the text.
- * When deleting lines line1 to line2, use an 'amount' of MAXLNUM: The marks
- * within this range are made invalid.
- * If 'amount_after' is non-zero adjust marks after line2.
+ * When deleting lines "line1" to "line2", use an "amount" of MAXLNUM: The
+ * marks within this range are made invalid.
+ * If "amount_after" is non-zero adjust marks after "line2".
  * Example: Delete lines 34 and 35: mark_adjust(34, 35, MAXLNUM, -2);
  * Example: Insert two lines below 55: mark_adjust(56, MAXLNUM, 2, 0);
  *				   or: mark_adjust(56, 55, MAXLNUM, 2);
@@ -1131,7 +1141,9 @@ mark_adjust_internal(
 			else
 			    win->w_topline = line1 - 1;
 		    }
-		    else		// keep topline on the same line
+		    else if (win->w_topline > line1)
+			// keep topline on the same line, unless inserting just
+			// above it (we probably want to see that line then)
 			win->w_topline += amount;
 #ifdef FEAT_DIFF
 		    win->w_topfill = 0;
@@ -1286,6 +1298,7 @@ cleanup_jumplist(win_T *wp, int loadfiles)
 {
     int	    i;
     int	    from, to;
+    int	    mustfree;
 
     if (loadfiles)
     {
@@ -1312,10 +1325,18 @@ cleanup_jumplist(win_T *wp, int loadfiles)
 		    && wp->w_jumplist[i].fmark.mark.lnum
 				  == wp->w_jumplist[from].fmark.mark.lnum)
 		break;
-	if (i >= wp->w_jumplistlen)	    // no duplicate
-	    wp->w_jumplist[to++] = wp->w_jumplist[from];
-	else
+	if (i >= wp->w_jumplistlen)	// not duplicate
+	    mustfree = FALSE;
+	else if (i > from + 1)		// non-adjacent duplicate
+	    // jumpoptions=stack: remove duplicates only when adjacent.
+	    mustfree = !(jop_flags & JOP_STACK);
+	else				// adjacent duplicate
+	    mustfree = TRUE;
+
+	if (mustfree)
 	    vim_free(wp->w_jumplist[from].fname);
+	else
+	    wp->w_jumplist[to++] = wp->w_jumplist[from];
     }
     if (wp->w_jumplistidx == wp->w_jumplistlen)
 	wp->w_jumplistidx = to;

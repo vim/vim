@@ -308,6 +308,7 @@ prop_add_one(
 			    | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0)
 			    | ((type->pt_flags & PT_FLAG_INS_START_INCL)
 						     ? TP_FLAG_START_INCL : 0);
+	tmp_prop.tp_padleft = text_padding_left;
 	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
 							   sizeof(textprop_T));
 
@@ -642,7 +643,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 	return 0;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	iemsg(_(e_text_property_info_corrupted));
+	iemsg(e_text_property_info_corrupted);
 	return 0;
     }
     *props = text + textlen;
@@ -723,7 +724,8 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 static textprop_T	*text_prop_compare_props;
 static buf_T		*text_prop_compare_buf;
 
-/* Score for sorting on position of the text property: 0: above,
+/*
+ * Score for sorting on position of the text property: 0: above,
  * 1: after (default), 2: right, 3: below (comes last)
  */
     static int
@@ -757,13 +759,12 @@ text_prop_compare(const void *s1, const void *s2)
     tp2 = &text_prop_compare_props[idx2];
     col1 = tp1->tp_col;
     col2 = tp2->tp_col;
-    if (col1 == MAXCOL && col2 == MAXCOL)
+    if (col1 == MAXCOL || col2 == MAXCOL)
     {
 	int order1 = text_prop_order(tp1->tp_flags);
 	int order2 = text_prop_order(tp2->tp_flags);
 
-	// both props add text before or after the line, sort on order where it
-	// is added
+	// sort on order where it is added
 	if (order1 != order2)
 	    return order1 < order2 ? 1 : -1;
     }
@@ -933,7 +934,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
 	if (*array == NULL)
 	    return NULL;
 	todo = (long)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -968,10 +969,14 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
     int buflocal = TRUE;
+    int virtualtext_prop = prop->tp_id < 0;
 
-    dict_add_number(dict, "col", prop->tp_col);
-    dict_add_number(dict, "length", prop->tp_len);
-    dict_add_number(dict, "id", prop->tp_id);
+    dict_add_number(dict, "col", (prop->tp_col == MAXCOL) ? 0 : prop->tp_col);
+    if (!virtualtext_prop)
+    {
+	dict_add_number(dict, "length", prop->tp_len);
+	dict_add_number(dict, "id", prop->tp_id);
+    }
     dict_add_number(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
     dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
 
@@ -989,6 +994,33 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 	dict_add_number(dict, "type_bufnr", buf->b_fnum);
     else
 	dict_add_number(dict, "type_bufnr", 0);
+    if (virtualtext_prop)
+    {
+	// virtual text property
+	garray_T    *gap = &buf->b_textprop_text;
+	char_u	    *text;
+
+	// negate the property id to get the string index
+	text = ((char_u **)gap->ga_data)[-prop->tp_id - 1];
+	dict_add_string(dict, "text", text);
+
+	// text_align
+	char_u	    *text_align = NULL;
+	if (prop->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    text_align = (char_u *)"right";
+	else if (prop->tp_flags & TP_FLAG_ALIGN_ABOVE)
+	    text_align = (char_u *)"above";
+	else if (prop->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    text_align = (char_u *)"below";
+	if (text_align != NULL)
+	    dict_add_string(dict, "text_align", text_align);
+
+	// text_wrap
+	if (prop->tp_flags & TP_FLAG_WRAP)
+	    dict_add_string(dict, "text_wrap", (char_u *)"wrap");
+	if (prop->tp_padleft != 0)
+	    dict_add_number(dict, "text_padding_left", prop->tp_padleft);
+    }
 }
 
 /*
@@ -1717,8 +1749,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			if (ii < gap->ga_len)
 			{
 			    char_u **p = ((char_u **)gap->ga_data) + ii;
-			    vim_free(*p);
-			    *p = NULL;
+			    VIM_CLEAR(*p);
 			    did_remove_text = TRUE;
 			}
 		    }
@@ -1958,7 +1989,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     hash_remove(ht, hi, "prop type delete");
     vim_free(prop);
 
-    // currently visibile text properties will disappear
+    // currently visible text properties will disappear
     redraw_all_later(UPD_CLEAR);
     changed_window_setting_buf(buf == NULL ? curbuf : buf);
 }
@@ -2021,7 +2052,7 @@ list_types(hashtab_T *ht, list_T *l)
     hashitem_T	*hi;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -2074,7 +2105,7 @@ clear_ht_prop_types(hashtab_T *ht)
 	return;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

@@ -511,7 +511,7 @@ ex_sort(exarg_T *eap)
 
 	if (sort_nr || sort_flt)
 	{
-	    // Make sure vim_str2nr doesn't read any digits past the end
+	    // Make sure vim_str2nr() doesn't read any digits past the end
 	    // of the match, by temporarily terminating the string there
 	    s2 = s + end_col;
 	    c = *s2;
@@ -539,7 +539,7 @@ ex_sort(exarg_T *eap)
 		    nrs[lnum - eap->line1].st_u.num.is_number = TRUE;
 		    vim_str2nr(s, NULL, NULL, sort_what,
 			&nrs[lnum - eap->line1].st_u.num.value,
-			NULL, 0, FALSE);
+			NULL, 0, FALSE, NULL);
 		}
 	    }
 	    else
@@ -2269,7 +2269,11 @@ do_wqall(exarg_T *eap)
     int		save_forceit = eap->forceit;
 
     if (eap->cmdidx == CMD_xall || eap->cmdidx == CMD_wqall)
+    {
+	if (before_quit_all(eap) == FAIL)
+	    return;
 	exiting = TRUE;
+    }
 
     FOR_ALL_BUFFERS(buf)
     {
@@ -2642,11 +2646,17 @@ do_ecmd(
 	goto theend;
     }
 
-    /*
-     * End Visual mode before switching to another buffer, so the text can be
-     * copied into the GUI selection buffer.
-     */
+
+    // End Visual mode before switching to another buffer, so the text can be
+    // copied into the GUI selection buffer.
+    // Careful: may trigger ModeChanged() autocommand
+
+    // Should we block autocommands here?
     reset_VIsual();
+
+    // autocommands freed window :(
+    if (oldwin != NULL && !win_valid(oldwin))
+	oldwin = NULL;
 
 #if defined(FEAT_EVAL)
     if ((command != NULL || newlnum > (linenr_T)0)
@@ -3142,7 +3152,7 @@ do_ecmd(
     // If the window options were changed may need to set the spell language.
     // Can only do this after the buffer has been properly setup.
     if (did_get_winopts && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
-	(void)did_set_spelllang(curwin);
+	(void)parse_spelllang(curwin);
 #endif
 
     if (command == NULL)
@@ -3215,7 +3225,8 @@ do_ecmd(
 	(void)keymap_init();
 #endif
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     did_inc_redrawing_disabled = FALSE;
     if (!skip_redraw)
     {
@@ -3259,7 +3270,7 @@ do_ecmd(
 #endif
 
 theend:
-    if (did_inc_redrawing_disabled)
+    if (did_inc_redrawing_disabled && RedrawingDisabled > 0)
 	--RedrawingDisabled;
 #if defined(FEAT_EVAL)
     if (did_set_swapcommand)
@@ -3726,14 +3737,13 @@ ex_substitute(exarg_T *eap)
     int		save_do_all;		// remember user specified 'g' flag
     int		save_do_ask;		// remember user specified 'c' flag
     char_u	*pat = NULL, *sub = NULL;	// init for GCC
-    char_u	*sub_copy = NULL;
     int		delimiter;
     int		sublen;
     int		got_quit = FALSE;
     int		got_match = FALSE;
-    int		temp;
     int		which_pat;
     char_u	*cmd;
+    char_u	*p;
     int		save_State;
     linenr_T	first_line = 0;		// first changed line
     linenr_T	last_line= 0;		// below last changed line AFTER the
@@ -3817,8 +3827,12 @@ ex_substitute(exarg_T *eap)
 	 * Small incompatibility: vi sees '\n' as end of the command, but in
 	 * Vim we want to use '\n' to find/substitute a NUL.
 	 */
-	sub = cmd;	    // remember the start of the substitution
+	p = cmd;	    // remember the start of the substitution
 	cmd = skip_substitute(cmd, delimiter);
+	sub = vim_strsave(p);
+	if (sub == NULL)
+	    // out of memory
+	    return;
 
 	if (!eap->skip)
 	{
@@ -3829,14 +3843,22 @@ ex_substitute(exarg_T *eap)
 		if (old_sub == NULL)	// there is no previous command
 		{
 		    emsg(_(e_no_previous_substitute_regular_expression));
+		    vim_free(sub);
 		    return;
 		}
-		sub = old_sub;
+		vim_free(sub);
+		sub = vim_strsave(old_sub);
+		if (sub == NULL)
+		    // out of memory
+		    return;
 	    }
 	    else
 	    {
 		vim_free(old_sub);
 		old_sub = vim_strsave(sub);
+		if (old_sub == NULL)
+		    // out of memory
+		    return;
 	    }
 	}
     }
@@ -3848,7 +3870,7 @@ ex_substitute(exarg_T *eap)
 	    return;
 	}
 	pat = NULL;		// search_regcomp() will use previous pattern
-	sub = old_sub;
+	sub = vim_strsave(old_sub);
 
 	// Vi compatibility quirk: repeating with ":s" keeps the cursor in the
 	// last column after using "$".
@@ -3867,7 +3889,10 @@ ex_substitute(exarg_T *eap)
 	linenr_T    joined_lines_count;
 
 	if (eap->skip)
+	{
+	    vim_free(sub);
 	    return;
+	}
 	curwin->w_cursor.lnum = eap->line1;
 	if (*cmd == 'l')
 	    eap->flags = EXFLAG_LIST;
@@ -3894,6 +3919,7 @@ ex_substitute(exarg_T *eap)
 	    save_re_pat(RE_SUBST, pat, magic_isset());
 	// put pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
+	vim_free(sub);
 
 	return;
     }
@@ -3981,6 +4007,15 @@ ex_substitute(exarg_T *eap)
 	if (i <= 0 && !eap->skip && subflags.do_error)
 	{
 	    emsg(_(e_positive_count_required));
+	    vim_free(sub);
+	    return;
+	}
+	else if (i >= INT_MAX)
+	{
+	    char	buf[20];
+	    vim_snprintf(buf, sizeof(buf), "%ld", i);
+	    semsg(_(e_val_too_large), buf);
+	    vim_free(sub);
 	    return;
 	}
 	eap->line1 = eap->line2;
@@ -3999,17 +4034,22 @@ ex_substitute(exarg_T *eap)
 	if (eap->nextcmd == NULL)
 	{
 	    semsg(_(e_trailing_characters_str), cmd);
+	    vim_free(sub);
 	    return;
 	}
     }
 
     if (eap->skip)	    // not executing commands, only parsing
+    {
+	vim_free(sub);
 	return;
+    }
 
     if (!subflags.do_count && !curbuf->b_p_ma)
     {
 	// Substitution is not allowed in non-'modifiable' buffer
 	emsg(_(e_cannot_make_changes_modifiable_is_off));
+	vim_free(sub);
 	return;
     }
 
@@ -4017,6 +4057,7 @@ ex_substitute(exarg_T *eap)
     {
 	if (subflags.do_error)
 	    emsg(_(e_invalid_command));
+	vim_free(sub);
 	return;
     }
 
@@ -4037,20 +4078,20 @@ ex_substitute(exarg_T *eap)
      */
     if (sub[0] == '\\' && sub[1] == '=')
     {
-	sub = vim_strsave(sub);
-	if (sub == NULL)
+	p = vim_strsave(sub);
+	vim_free(sub);
+	if (p == NULL)
 	    return;
-	sub_copy = sub;
+	sub = p;
     }
     else
     {
-	char_u *newsub = regtilde(sub, magic_isset());
+	p = regtilde(sub, magic_isset());
 
-	if (newsub != sub)
+	if (p != sub)
 	{
-	    // newsub was allocated, free it later.
-	    sub_copy = newsub;
-	    sub = newsub;
+	    vim_free(sub);
+	    sub = p;
 	}
     }
 
@@ -4312,7 +4353,7 @@ ex_substitute(exarg_T *eap)
 #endif
 			    // Invert the matched string.
 			    // Remove the inversion afterwards.
-			    temp = RedrawingDisabled;
+			    int save_RedrawingDisabled = RedrawingDisabled;
 			    RedrawingDisabled = 0;
 
 			    // avoid calling update_screen() in vgetorpeek()
@@ -4382,7 +4423,7 @@ ex_substitute(exarg_T *eap)
 			    msg_scroll = i;
 			    showruler(TRUE);
 			    windgoto(msg_row, msg_col);
-			    RedrawingDisabled = temp;
+			    RedrawingDisabled = save_RedrawingDisabled;
 
 #ifdef USE_ON_FLY_SCROLL
 			    dont_scroll = FALSE; // allow scrolling here
@@ -4509,6 +4550,9 @@ ex_substitute(exarg_T *eap)
 		{
 		    nmatch = curbuf->b_ml.ml_line_count - sub_firstlnum + 1;
 		    skip_match = TRUE;
+		    // safety check
+		    if (nmatch < 0)
+			goto skip;
 		}
 
 		// Need room for:
@@ -4640,6 +4684,9 @@ ex_substitute(exarg_T *eap)
 		 */
 		mch_memmove(new_end, sub_firstline + copycol, (size_t)copy_len);
 		new_end += copy_len;
+
+		if ((int)new_start_len - copy_len < sublen)
+		    sublen = new_start_len - copy_len - 1;
 
 #ifdef FEAT_EVAL
 		++textlock;
@@ -4942,7 +4989,7 @@ outofmem:
 #endif
 
     vim_regfree(regmatch.regprog);
-    vim_free(sub_copy);
+    vim_free(sub);
 
     // Restore the flag values, they can be used for ":&&".
     subflags.do_all = save_do_all;
@@ -5107,7 +5154,8 @@ ex_global(exarg_T *eap)
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
 
-    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS,
+							    &regmatch) == FAIL)
     {
 	emsg(_(e_invalid_command));
 	return;

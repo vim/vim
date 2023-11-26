@@ -129,7 +129,6 @@ estack_sfile(estack_arg_T which UNUSED)
     size_t	len;
     int		idx;
     etype_T	last_type = ETYPE_SCRIPT;
-    char	*type_name;
 #endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
@@ -190,41 +189,47 @@ estack_sfile(estack_arg_T which UNUSED)
 	if (entry->es_name != NULL)
 	{
 	    long    lnum = 0;
-	    char    *dots;
+	    char_u  *type_name = (char_u *)"";
+	    char_u  *class_name = (char_u *)"";
 
-	    len = STRLEN(entry->es_name) + 15;
-	    type_name = "";
 	    if (entry->es_type != last_type)
 	    {
 		switch (entry->es_type)
 		{
-		    case ETYPE_SCRIPT: type_name = "script "; break;
-		    case ETYPE_UFUNC: type_name = "function "; break;
-		    default: type_name = ""; break;
+		    case ETYPE_SCRIPT: type_name = (char_u *)"script "; break;
+		    case ETYPE_UFUNC: type_name = (char_u *)"function "; break;
+		    default: type_name = (char_u *)""; break;
 		}
 		last_type = entry->es_type;
 	    }
-	    len += STRLEN(type_name);
-	    if (ga_grow(&ga, (int)len) == FAIL)
-		break;
+	    if (entry->es_type == ETYPE_UFUNC && entry->es_info.ufunc->uf_class != NULL)
+		class_name = entry->es_info.ufunc->uf_class->class_name;
 	    if (idx == exestack.ga_len - 1)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
-	    dots = idx == exestack.ga_len - 1 ? "" : "..";
-	    if (lnum == 0)
-		// For the bottom entry of <sfile>: do not add the line number,
-		// it is used in <slnum>.  Also leave it out when the number is
-		// not set.
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
-				type_name, entry->es_name, dots);
-	    else
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]%s",
-				    type_name, entry->es_name, lnum, dots);
-	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
+	    len = STRLEN(entry->es_name) + STRLEN(type_name) + STRLEN(class_name) + 26;
+	    if (ga_grow(&ga, (int)len) == FAIL)
+		break;
+	    ga_concat(&ga, type_name);
+	    if (*class_name != NUL)
+	    {
+		// For class methods prepend "<class name>." to the function name.
+		ga_concat(&ga, class_name);
+		ga_append(&ga, '.');
+	    }
+	    ga_concat(&ga, entry->es_name);
+	    // For the bottom entry of <sfile>: do not add the line number, it is used in
+	    // <slnum>.  Also leave it out when the number is not set.
+	    if (lnum != 0)
+		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
+			lnum);
+	    if (idx != exestack.ga_len - 1)
+		ga_concat(&ga, (char_u *)"..");
 	}
     }
 
+    ga_append(&ga, '\0');
     return (char_u *)ga.ga_data;
 #endif
 }
@@ -289,6 +294,15 @@ set_context_in_runtime_cmd(expand_T *xp, char_u *arg)
     char_u  *p = skiptowhite(arg);
     runtime_expand_flags
 	= *p != NUL ? get_runtime_cmd_flags(&arg, p - arg) : 0;
+    // Skip to the last argument.
+    while (*(p = skiptowhite_esc(arg)) != NUL)
+    {
+	if (runtime_expand_flags == 0)
+	    // When there are multiple arguments and [where] is not specified,
+	    // use an unrelated non-zero flag to avoid expanding [where].
+	    runtime_expand_flags = DIP_ALL;
+	arg = skipwhite(p);
+    }
     xp->xp_context = EXPAND_RUNTIME;
     xp->xp_pattern = arg;
 }
@@ -404,18 +418,19 @@ find_script_callback(char_u *fname, void *cookie)
 #endif
 
 /*
- * Find the file "name" in all directories in "path" and invoke
+ * Find the patterns in "name" in all directories in "path" and invoke
  * "callback(fname, cookie)".
- * "name" can contain wildcards.
+ * "prefix" is prepended to each pattern in "name".
  * When "flags" has DIP_ALL: source all files, otherwise only the first one.
  * When "flags" has DIP_DIR: find directories instead of files.
  * When "flags" has DIP_ERR: give an error message if there is no match.
  *
- * return FAIL when no file could be sourced, OK otherwise.
+ * Return FAIL when no file could be sourced, OK otherwise.
  */
     int
 do_in_path(
     char_u	*path,
+    char	*prefix,
     char_u	*name,
     int		flags,
     void	(*callback)(char_u *fname, void *ck),
@@ -447,8 +462,12 @@ do_in_path(
 	if (p_verbose > 10 && name != NULL)
 	{
 	    verbose_enter();
-	    smsg(_("Searching for \"%s\" in \"%s\""),
-						 (char *)name, (char *)path);
+	    if (*prefix != NUL)
+		smsg(_("Searching for \"%s\" under \"%s\" in \"%s\""),
+					   (char *)name, prefix, (char *)path);
+	    else
+		smsg(_("Searching for \"%s\" in \"%s\""),
+						   (char *)name, (char *)path);
 	    verbose_leave();
 	}
 
@@ -479,9 +498,10 @@ do_in_path(
 		if (!did_one)
 		    did_one = (cookie == NULL);
 	    }
-	    else if (buflen + STRLEN(name) + 2 < MAXPATHL)
+	    else if (buflen + 2 + STRLEN(prefix) + STRLEN(name) < MAXPATHL)
 	    {
 		add_pathsep(buf);
+		STRCAT(buf, prefix);
 		tail = buf + STRLEN(buf);
 
 		// Loop over all patterns in "name"
@@ -559,35 +579,17 @@ do_in_path_and_pp(
     void	*cookie)
 {
     int		done = FAIL;
-    char_u	*s;
-    int		len;
-    char	*start_dir = "pack/*/start/*/%s";
-    char	*opt_dir = "pack/*/opt/*/%s";
 
     if ((flags & DIP_NORTP) == 0)
-	done = do_in_path(path, name, flags, callback, cookie);
+	done = do_in_path(path, "", name, flags, callback, cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_START))
-    {
-	len = (int)(STRLEN(start_dir) + STRLEN(name));
-	s = alloc(len);
-	if (s == NULL)
-	    return FAIL;
-	vim_snprintf((char *)s, len, start_dir, name);
-	done = do_in_path(p_pp, s, flags, callback, cookie);
-	vim_free(s);
-    }
+	done = do_in_path(p_pp, "pack/*/start/*/", name, flags, callback,
+								       cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_OPT))
-    {
-	len = (int)(STRLEN(opt_dir) + STRLEN(name));
-	s = alloc(len);
-	if (s == NULL)
-	    return FAIL;
-	vim_snprintf((char *)s, len, opt_dir, name);
-	done = do_in_path(p_pp, s, flags, callback, cookie);
-	vim_free(s);
-    }
+	done = do_in_path(p_pp, "pack/*/opt/*/", name, flags, callback,
+								       cookie);
 
     return done;
 }
@@ -718,18 +720,6 @@ add_pack_dir_to_rtp(char_u *fname)
 	char_u *cur_entry = entry;
 
 	copy_option_part(&entry, buf, MAXPATHL, ",");
-	if (insp == NULL)
-	{
-	    add_pathsep(buf);
-	    rtp_ffname = fix_fname(buf);
-	    if (rtp_ffname == NULL)
-		goto theend;
-	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
-	    vim_free(rtp_ffname);
-	    if (match)
-		// Insert "ffname" after this entry (and comma).
-		insp = entry;
-	}
 
 	if ((p = (char_u *)strstr((char *)buf, "after")) != NULL
 		&& p > buf
@@ -742,6 +732,19 @@ add_pack_dir_to_rtp(char_u *fname)
 		insp = cur_entry;
 	    after_insp = cur_entry;
 	    break;
+	}
+
+	if (insp == NULL)
+	{
+	    add_pathsep(buf);
+	    rtp_ffname = fix_fname(buf);
+	    if (rtp_ffname == NULL)
+		goto theend;
+	    match = vim_fnamencmp(rtp_ffname, ffname, fname_len) == 0;
+	    vim_free(rtp_ffname);
+	    if (match)
+		// Insert "ffname" after this entry (and comma).
+		insp = entry;
 	}
     }
 
@@ -898,7 +901,7 @@ add_pack_plugin(char_u *fname, void *cookie)
     void
 add_pack_start_dirs(void)
 {
-    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+    do_in_path(p_pp, "", (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
 					       add_pack_plugin, &APP_ADD_DIR);
 }
 
@@ -909,7 +912,7 @@ add_pack_start_dirs(void)
 load_start_packages(void)
 {
     did_source_packages = TRUE;
-    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+    do_in_path(p_pp, "", (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
 						  add_pack_plugin, &APP_LOAD);
 }
 
@@ -956,7 +959,7 @@ ex_packadd(exarg_T *eap)
 	vim_snprintf(pat, len, plugpat, round == 1 ? "start" : "opt", eap->arg);
 	// The first round don't give a "not found" error, in the second round
 	// only when nothing was found in the first round.
-	res = do_in_path(p_pp, (char_u *)pat,
+	res = do_in_path(p_pp, "", (char_u *)pat,
 		DIP_ALL + DIP_DIR + (round == 2 && res == FAIL ? DIP_ERR : 0),
 		add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH);
 	vim_free(pat);
@@ -1299,7 +1302,7 @@ ex_options(
  * ":source" and associated commands.
  */
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the address holding the next breakpoint line for a source cookie.
  */
@@ -1402,7 +1405,6 @@ do_source_buffer_init(source_cookie_T *sp, exarg_T *eap)
 	    goto errret;
 	if (ga_add_string(&sp->buflines, line) == FAIL)
 	    goto errret;
-	line = NULL;
     }
     sp->buf_lnum = 0;
     sp->source_from_buf = TRUE;
@@ -1449,14 +1451,6 @@ do_source_ext(
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
     sctx_T		    save_current_sctx;
-#ifdef FEAT_EVAL
-    funccal_entry_T	    funccalp_entry;
-    int			    save_debug_break_level = debug_break_level;
-    int			    sid = -1;
-    scriptitem_T	    *si = NULL;
-    int			    save_estack_compiling = estack_compiling;
-    ESTACK_CHECK_DECLARATION
-#endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
     struct timeval	    tv_start;
@@ -1466,6 +1460,14 @@ do_source_ext(
 #endif
     int			    save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int			    trigger_source_post = FALSE;
+#ifdef FEAT_EVAL
+    funccal_entry_T	    funccalp_entry;
+    int			    save_debug_break_level = debug_break_level;
+    int			    sid = -1;
+    scriptitem_T	    *si = NULL;
+    int			    save_estack_compiling = estack_compiling;
+    ESTACK_CHECK_DECLARATION;
+#endif
 
     CLEAR_FIELD(cookie);
     if (fname == NULL)
@@ -1672,7 +1674,7 @@ do_source_ext(
 		// is encountered without the "noclear" argument.
 		ht = &SCRIPT_VARS(sid);
 		todo = (int)ht->ht_used;
-		for (hi = ht->ht_array; todo > 0; ++hi)
+		FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 		    if (!HASHITEM_EMPTY(hi))
 		    {
 			--todo;
@@ -1710,7 +1712,7 @@ do_source_ext(
 
     // Keep the sourcing name/lnum, for recursive calls.
     estack_push(ETYPE_SCRIPT, si->sn_name, 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1718,7 +1720,7 @@ do_source_ext(
 	int	forceit;
 
 	// Check if we do profiling for this script.
-	if (!si->sn_prof_on && has_profiling(TRUE, si->sn_name, &forceit))
+	if (!si->sn_prof_on && has_profiling(TRUE, si->sn_name, &forceit, NULL))
 	{
 	    script_do_profile(si);
 	    si->sn_pr_force = forceit;
@@ -1779,7 +1781,7 @@ do_source_ext(
     if (got_int)
 	emsg(_(e_interrupted));
 #ifdef FEAT_EVAL
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
 #endif
     estack_pop();
     if (p_verbose > 1)
@@ -2063,7 +2065,7 @@ get_script_local_funcs(scid_T sid)
     // looking for functions with script ID 'sid'.
     functbl = func_tbl_get();
     todo = functbl->ht_used;
-    for (hi = functbl->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(functbl, hi, todo)
     {
 	ufunc_T	*fp;
 
@@ -2096,7 +2098,6 @@ get_script_local_funcs(scid_T sid)
     void
 f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 {
-    int		i;
     list_T	*l;
     char_u	*pat = NULL;
     regmatch_T	regmatch;
@@ -2116,8 +2117,22 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_DICT)
     {
-	sid = dict_get_number_def(argvars[0].vval.v_dict, "sid", -1);
-	if (sid == -1)
+	dictitem_T *sid_di = dict_find(argvars[0].vval.v_dict,
+							   (char_u *)"sid", 3);
+	if (sid_di != NULL)
+	{
+	    int error = FALSE;
+	    sid = tv_get_number_chk(&sid_di->di_tv, &error);
+	    if (error)
+		return;
+	    if (sid <= 0)
+	    {
+		semsg(_(e_invalid_value_for_argument_str_str), "sid",
+						tv_get_string(&sid_di->di_tv));
+		return;
+	    }
+	}
+	else
 	{
 	    pat = dict_get_string(argvars[0].vval.v_dict, "name", TRUE);
 	    if (pat != NULL)
@@ -2127,7 +2142,8 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    for (i = 1; i <= script_items.ga_len; ++i)
+    for (varnumber_T i = sid > 0 ? sid : 1;
+		       (i == sid || sid <= 0) && i <= script_items.ga_len; ++i)
     {
 	scriptitem_T	*si = SCRIPT_ITEM(i);
 	dict_T		*d;
@@ -2136,9 +2152,6 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 	    continue;
 
 	if (filterpat && !vim_regexec(&regmatch, si->sn_name, (colnr_T)0))
-	    continue;
-
-	if (sid != -1 && sid != i)
 	    continue;
 
 	if ((d = dict_alloc()) == NULL
@@ -2151,10 +2164,9 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
 	    return;
 
-	// When a filter pattern is specified to return information about only
-	// specific script(s), also add the script-local variables and
-	// functions.
-	if (sid != -1)
+	// When a script ID is specified, return information about only the
+	// specified script, and add the script-local variables and functions.
+	if (sid > 0)
 	{
 	    dict_T	*var_dict;
 

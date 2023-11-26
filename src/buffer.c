@@ -218,6 +218,10 @@ open_buffer(
 	return FAIL;
     }
 
+    // Do not sync this buffer yet, may first want to read the file.
+    if (curbuf->b_ml.ml_mfp != NULL)
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES_NOSYNC;
+
     // The autocommands in readfile() may change the buffer, but only AFTER
     // reading the file.
     set_bufref(&old_curbuf, curbuf);
@@ -297,6 +301,11 @@ open_buffer(
 	if (retval == OK)
 	    retval = read_buffer(TRUE, eap, flags);
     }
+
+    // Can now sync this buffer in ml_sync_all().
+    if (curbuf->b_ml.ml_mfp != NULL
+	    && curbuf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES_NOSYNC)
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES;
 
     // if first time loading this buffer, init b_chartab[]
     if (curbuf->b_flags & BF_NEVERLOADED)
@@ -493,7 +502,7 @@ can_unload_buffer(buf_T *buf)
  * It can be:
  * 0			buffer becomes hidden
  * DOBUF_UNLOAD		buffer is unloaded
- * DOBUF_DELETE		buffer is unloaded and removed from buffer list
+ * DOBUF_DEL		buffer is unloaded and removed from buffer list
  * DOBUF_WIPE		buffer is unloaded and really deleted
  * DOBUF_WIPE_REUSE	idem, and add to buf_reuse list
  * When doing all but the first one on the current buffer, the caller should
@@ -1570,14 +1579,10 @@ do_buffer_ext(
      */
     if (action == DOBUF_SPLIT)	    // split window first
     {
-	// If 'switchbuf' contains "useopen": jump to first window containing
-	// "buf" if one exists
-	if ((swb_flags & SWB_USEOPEN) && buf_jump_open_win(buf))
+	// If 'switchbuf' is set jump to the window containing "buf".
+	if (swbuf_goto_win_with_buf(buf) != NULL)
 	    return OK;
-	// If 'switchbuf' contains "usetab": jump to first window in any tab
-	// page containing "buf" if one exists
-	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
-	    return OK;
+
 	if (win_split(0, 0) == FAIL)
 	    return FAIL;
     }
@@ -1953,7 +1958,7 @@ enter_buffer(buf_T *buf)
     maketitle();
 	// when autocmds didn't change it
     if (curwin->w_topline == 1 && !curwin->w_topline_was_set)
-	scroll_cursor_halfway(FALSE);	// redisplay at correct position
+	scroll_cursor_halfway(FALSE, FALSE);	// redisplay at correct position
 
 #ifdef FEAT_NETBEANS_INTG
     // Send fileOpened event because we've changed buffers.
@@ -1971,7 +1976,7 @@ enter_buffer(buf_T *buf)
     // May need to set the spell language.  Can only do this after the buffer
     // has been properly setup.
     if (!curbuf->b_help && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
-	(void)did_set_spelllang(curwin);
+	(void)parse_spelllang(curwin);
 #endif
 #ifdef FEAT_VIMINFO
     curbuf->b_last_used = vim_time();
@@ -2362,8 +2367,8 @@ free_buf_options(
 #endif
 #ifdef FEAT_CRYPT
 # ifdef FEAT_SODIUM
-    if ((buf->b_p_key != NULL) && (*buf->b_p_key != NUL) &&
-				(crypt_get_method_nr(buf) == CRYPT_M_SOD))
+    if (buf->b_p_key != NULL && *buf->b_p_key != NUL
+			   && crypt_method_is_sodium(crypt_get_method_nr(buf)))
 	crypt_sodium_munlock(buf->b_p_key, STRLEN(buf->b_p_key));
 # endif
     clear_string_option(&buf->b_p_key);
@@ -2375,8 +2380,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_isk);
 #ifdef FEAT_VARTABS
     clear_string_option(&buf->b_p_vsts);
-    vim_free(buf->b_p_vsts_nopaste);
-    buf->b_p_vsts_nopaste = NULL;
+    VIM_CLEAR(buf->b_p_vsts_nopaste);
     VIM_CLEAR(buf->b_p_vsts_array);
     clear_string_option(&buf->b_p_vts);
     VIM_CLEAR(buf->b_p_vts_array);
@@ -2493,15 +2497,8 @@ buflist_getfile(
 
     if (options & GETF_SWITCH)
     {
-	// If 'switchbuf' contains "useopen": jump to first window containing
-	// "buf" if one exists
-	if (swb_flags & SWB_USEOPEN)
-	    wp = buf_jump_open_win(buf);
-
-	// If 'switchbuf' contains "usetab": jump to first window in any tab
-	// page containing "buf" if one exists
-	if (wp == NULL && (swb_flags & SWB_USETAB))
-	    wp = buf_jump_open_tab(buf);
+	// If 'switchbuf' is set jump to the window containing "buf".
+	wp = swbuf_goto_win_with_buf(buf);
 
 	// If 'switchbuf' contains "split", "vsplit" or "newtab" and the
 	// current buffer isn't empty: open new tab or window
@@ -2518,11 +2515,10 @@ buflist_getfile(
     }
 
     ++RedrawingDisabled;
+    int retval = FAIL;
     if (GETFILE_SUCCESS(getfile(buf->b_fnum, NULL, NULL,
 				     (options & GETF_SETMARK), lnum, forceit)))
     {
-	--RedrawingDisabled;
-
 	// cursor is at to BOL and w_cursor.lnum is checked due to getfile()
 	if (!p_sol && col != 0)
 	{
@@ -2531,10 +2527,12 @@ buflist_getfile(
 	    curwin->w_cursor.coladd = 0;
 	    curwin->w_set_curswant = TRUE;
 	}
-	return OK;
+	retval = OK;
     }
-    --RedrawingDisabled;
-    return FAIL;
+
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
+    return retval;
 }
 
 /*
@@ -2561,7 +2559,6 @@ buflist_getfpos(void)
     }
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Find file in buffer list by name (it has to be for the current window).
  * Returns NULL if not found.
@@ -2587,7 +2584,6 @@ buflist_findname_exp(char_u *fname)
     }
     return buf;
 }
-#endif
 
 /*
  * Find file in buffer list by name (it has to be for the current window).
@@ -5112,14 +5108,6 @@ build_stl_str_hl(
 	    STRMOVE(s + 1, p);
 	    *s = '<';
 
-	    // Fill up for half a double-wide character.
-	    while (++width < maxwidth)
-	    {
-		s = s + STRLEN(s);
-		MB_CHAR2BYTES(fillchar, s);
-		*s = NUL;
-	    }
-
 	    --n;	// count the '<'
 	    for (; l < itemcnt; l++)
 	    {
@@ -5127,6 +5115,14 @@ build_stl_str_hl(
 		    stl_items[l].stl_start -= n;
 		else
 		    stl_items[l].stl_start = s;
+	    }
+
+	    // Fill up for half a double-wide character.
+	    while (++width < maxwidth)
+	    {
+		s = s + STRLEN(s);
+		MB_CHAR2BYTES(fillchar, s);
+		*s = NUL;
 	    }
 	}
 	width = maxwidth;
@@ -5232,8 +5228,8 @@ build_stl_str_hl(
 #endif // FEAT_STL_OPT
 
 /*
- * Get relative cursor position in window into "buf[buflen]", in the form 99%,
- * using "Top", "Bot" or "All" when appropriate.
+ * Get relative cursor position in window into "buf[buflen]", in the localized
+ * percentage form like %99, 99%; using "Top", "Bot" or "All" when appropriate.
  */
     void
 get_rel_pos(
@@ -5257,13 +5253,27 @@ get_rel_pos(
     below = wp->w_buffer->b_ml.ml_line_count - wp->w_botline + 1;
     if (below <= 0)
 	vim_strncpy(buf, (char_u *)(above == 0 ? _("All") : _("Bot")),
-							(size_t)(buflen - 1));
+		    (size_t)(buflen - 1));
     else if (above <= 0)
 	vim_strncpy(buf, (char_u *)_("Top"), (size_t)(buflen - 1));
     else
-	vim_snprintf((char *)buf, (size_t)buflen, "%2d%%", above > 1000000L
-				    ? (int)(above / ((above + below) / 100L))
-				    : (int)(above * 100L / (above + below)));
+    {
+	int perc = (above > 1000000L)
+			?  (int)(above / ((above + below) / 100L))
+			:  (int)(above * 100L / (above + below));
+
+	char *p = (char *)buf;
+	size_t l = buflen;
+	if (perc < 10)
+	{
+	    // prepend one space
+	    buf[0] = ' ';
+	    ++p;
+	    --l;
+	}
+	// localized percentage value
+	vim_snprintf(p, l, _("%d%%"), perc);
+    }
 }
 
 /*
@@ -5277,24 +5287,21 @@ append_arg_number(
     int		buflen,
     int		add_file)	// Add "file" before the arg number
 {
-    char_u	*p;
-
     if (ARGCOUNT <= 1)		// nothing to do
 	return FALSE;
 
-    p = buf + STRLEN(buf);	// go to the end of the buffer
-    if (p - buf + 35 >= buflen)	// getting too long
-	return FALSE;
-    *p++ = ' ';
-    *p++ = '(';
-    if (add_file)
+    char *msg;
+    switch ((wp->w_arg_idx_invalid ? 1 : 0) + (add_file ? 2 : 0))
     {
-	STRCPY(p, "file ");
-	p += 5;
+	case 0: msg = _(" (%d of %d)"); break;
+	case 1: msg = _(" ((%d) of %d)"); break;
+	case 2: msg = _(" (file %d of %d)"); break;
+	case 3: msg = _(" (file (%d) of %d)"); break;
     }
-    vim_snprintf((char *)p, (size_t)(buflen - (p - buf)),
-		wp->w_arg_idx_invalid ? "(%d) of %d)"
-				  : "%d of %d)", wp->w_arg_idx + 1, ARGCOUNT);
+
+    char_u *p = buf + STRLEN(buf);	// go to the end of the buffer
+    vim_snprintf((char *)p, (size_t)(buflen - (p - buf)), msg,
+						  wp->w_arg_idx + 1, ARGCOUNT);
     return TRUE;
 }
 
@@ -5401,6 +5408,10 @@ ex_buffer_all(exarg_T *eap)
 	all = FALSE;
     else
 	all = TRUE;
+
+    // Stop Visual mode, the cursor and "VIsual" may very well be invalid after
+    // switching to another buffer.
+    reset_VIsual_and_resel();
 
     setpcmark();
 
@@ -5638,8 +5649,7 @@ chk_modeline(
     int		end;
     int		retval = OK;
     sctx_T	save_current_sctx;
-
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     prev = -1;
     for (s = ml_get(lnum); *s != NUL; ++s)
@@ -5683,7 +5693,7 @@ chk_modeline(
 
 	// prepare for emsg()
 	estack_push(ETYPE_MODELINE, (char_u *)"modelines", lnum);
-	ESTACK_CHECK_SETUP
+	ESTACK_CHECK_SETUP;
 
 	end = FALSE;
 	while (end == FALSE)
@@ -5744,7 +5754,7 @@ chk_modeline(
 	    s = e + 1;			// advance to next part
 	}
 
-	ESTACK_CHECK_NOW
+	ESTACK_CHECK_NOW;
 	estack_pop();
 	vim_free(linecopy);
     }
@@ -5767,7 +5777,7 @@ bt_normal(buf_T *buf)
 bt_quickfix(buf_T *buf UNUSED)
 {
 #ifdef FEAT_QUICKFIX
-    return buf != NULL && buf->b_p_bt[0] == 'q';
+    return buf != NULL && buf_valid(buf) && buf->b_p_bt[0] == 'q';
 #else
     return FALSE;
 #endif
@@ -6003,6 +6013,9 @@ buf_contents_changed(buf_T *buf)
 	return TRUE;
     }
 
+    // We don't want to trigger autocommands now, they may have nasty
+    // side-effects like wiping buffers
+    block_autocmds();
     if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,
 				  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
@@ -6027,6 +6040,8 @@ buf_contents_changed(buf_T *buf)
 
     if (curbuf != newbuf)	// safety check
 	wipe_buffer(newbuf, FALSE);
+
+    unblock_autocmds();
 
     return differ;
 }

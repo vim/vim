@@ -481,6 +481,11 @@ cmdcomplete_str_to_type(char_u *complete_str)
 {
     int i;
 
+    if (STRNCMP(complete_str, "custom,", 7) == 0)
+	return EXPAND_USER_DEFINED;
+    if (STRNCMP(complete_str, "customlist,", 11) == 0)
+	return EXPAND_USER_LIST;
+
     for (i = 0; command_complete[i].expand != 0; ++i)
 	if (STRCMP(complete_str, command_complete[i].name) == 0)
 	    return command_complete[i].expand;
@@ -990,7 +995,7 @@ uc_add_command(
     char_u	*rep_buf = NULL;
     garray_T	*gap;
 
-    replace_termcodes(rep, &rep_buf, 0, NULL);
+    replace_termcodes(rep, &rep_buf, 0, 0, NULL);
     if (rep_buf == NULL)
     {
 	// can't replace termcodes - try using the string as is
@@ -1838,7 +1843,7 @@ do_ucmd(exarg_T *eap)
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
     else
-	cmd = USER_CMD_GA(&curbuf->b_ucmds, eap->useridx);
+	cmd = USER_CMD_GA(&prevwin_curwin()->w_buffer->b_ucmds, eap->useridx);
 
     /*
      * Replace <> in the command by the arguments.

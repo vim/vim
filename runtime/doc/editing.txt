@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.0.  Last change: 2022 Nov 02
+*editing.txt*   For Vim version 9.0.  Last change: 2023 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -385,7 +385,9 @@ as a wildcard when "[" is in the 'isfname' option.  A simple way to avoid this
 is to use "path\[[]abc]", this matches the file "path\[abc]".
 
 					*starstar-wildcard*
-Expanding "**" is possible on Unix, Win32, macOS and a few other systems.
+Expanding "**" is possible on Unix, Win32, macOS and a few other systems (but
+it may depend on your 'shell' setting on Unix and macOS. It's known to work
+correctly for zsh; for bash this requires at least bash version >= 4.X).
 This allows searching a directory tree.  This goes up to 100 directories deep.
 Note there are some commands where this works slightly differently, see
 |file-searching|.
@@ -1095,6 +1097,13 @@ will get the ACL info of the original file.
    The ACL info is also used to check if a file is read-only (when opening the
 file).
 
+					*xattr* *E1506* *E1508* *E1509*
+xattr stands for Extended Attributes.  It is an advanced way to save metadata
+alongside the file in the filesystem.  It depends on the actual filesystem
+being used and Vim supports it only on a Linux system.
+   Vim attempts to preserve the extended attribute info when writing a file.
+The backup file will get the extended attribute of the original file.
+
 						*read-only-share*
 When MS-Windows shares a drive on the network it can be marked as read-only.
 This means that even if the file read-only attribute is absent, and the ACL
@@ -1533,9 +1542,10 @@ To disable the encryption, reset the 'key' option to an empty value: >
 
 You can use the 'cryptmethod' option to select the type of encryption, use one
 of these: >
-	:setlocal cm=zip        " weak method, backwards compatible
-	:setlocal cm=blowfish   " method with flaws
-	:setlocal cm=blowfish2  " medium strong method
+	:setlocal cm=zip          " weak method, backwards compatible
+	:setlocal cm=blowfish     " method with flaws, do not use
+	:setlocal cm=blowfish2    " medium strong method
+	:setlocal cm=xchacha20v2  " medium strong method using libsodium
 
 Do this before writing the file.  When reading an encrypted file it will be
 set automatically to the method used when that file was written.  You can

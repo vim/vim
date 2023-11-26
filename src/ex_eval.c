@@ -748,6 +748,48 @@ finish_exception(except_T *excp)
 }
 
 /*
+ * Save the current exception state in "estate"
+ */
+    void
+exception_state_save(exception_state_T *estate)
+{
+    estate->estate_current_exception = current_exception;
+    estate->estate_did_throw = did_throw;
+    estate->estate_need_rethrow = need_rethrow;
+    estate->estate_trylevel = trylevel;
+    estate->estate_did_emsg = did_emsg;
+}
+
+/*
+ * Restore the current exception state from "estate"
+ */
+    void
+exception_state_restore(exception_state_T *estate)
+{
+    // Handle any outstanding exceptions before restoring the state
+    if (did_throw)
+	handle_did_throw();
+    current_exception = estate->estate_current_exception;
+    did_throw = estate->estate_did_throw;
+    need_rethrow = estate->estate_need_rethrow;
+    trylevel = estate->estate_trylevel;
+    did_emsg = estate->estate_did_emsg;
+}
+
+/*
+ * Clear the current exception state
+ */
+    void
+exception_state_clear(void)
+{
+    current_exception = NULL;
+    did_throw = FALSE;
+    need_rethrow = FALSE;
+    trylevel = 0;
+    did_emsg = 0;
+}
+
+/*
  * Flags specifying the message displayed by report_pending.
  */
 #define RP_MAKE		0

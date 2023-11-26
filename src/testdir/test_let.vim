@@ -266,15 +266,35 @@ endfunc
 func Test_let_option_error()
   let _w = &tw
   let &tw = 80
-  call assert_fails('let &tw .= 1', 'E734:')
+  call assert_fails('let &tw .= 1', ['E734:', 'E734:'])
+  call assert_fails('let &tw .= []', ['E734:', 'E734:'])
+  call assert_fails('let &tw = []', ['E745:', 'E745:'])
+  call assert_fails('let &tw += []', ['E745:', 'E745:'])
   call assert_equal(80, &tw)
   let &tw = _w
 
+  let _w = &autoread
+  let &autoread = 1
+  call assert_fails('let &autoread .= 1', ['E734:', 'E734:'])
+  call assert_fails('let &autoread .= []', ['E734:', 'E734:'])
+  call assert_fails('let &autoread = []', ['E745:', 'E745:'])
+  call assert_fails('let &autoread += []', ['E745:', 'E745:'])
+  call assert_equal(1, &autoread)
+  let &autoread = _w
+
   let _w = &fillchars
   let &fillchars = "vert:|"
-  call assert_fails('let &fillchars += "diff:-"', 'E734:')
+  call assert_fails('let &fillchars += "diff:-"', ['E734:', 'E734:'])
+  call assert_fails('let &fillchars += []', ['E734:', 'E734:'])
+  call assert_fails('let &fillchars = []', ['E730:', 'E730:'])
+  call assert_fails('let &fillchars .= []', ['E730:', 'E730:'])
   call assert_equal("vert:|", &fillchars)
   let &fillchars = _w
+
+  call assert_fails('let &nosuchoption = 1', ['E355:', 'E355:'])
+  call assert_fails('let &nosuchoption = ""', ['E355:', 'E355:'])
+  call assert_fails('let &nosuchoption = []', ['E355:', 'E355:'])
+  call assert_fails('let &t_xx = []', ['E730:', 'E730:'])
 endfunc
 
 " Errors with the :let statement
@@ -337,7 +357,43 @@ func Test_let_heredoc_fails()
     call assert_report('No exception thrown')
   catch /E488:/
   catch
-    call assert_report("Caught exception: " .. v:exception)
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let &commentstring =<< trim TEXT
+      change
+      insert
+      append
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E730:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let $SOME_ENV_VAR =<< trim TEXT
+      change
+      insert
+      append
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E730:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
+    let @r =<< trim TEXT
+      change
+      insert
+      append
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E730:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
   endtry
 
   let text =<< trim END
@@ -506,6 +562,32 @@ E
      z
 END
   call assert_equal(['     x', '     \y', '     z'], [a, b, c])
+
+  " unpack assignment without whitespace
+  let[a,b,c]=<<END
+change
+insert
+append
+END
+  call assert_equal(['change', 'insert', 'append'], [a, b, c])
+
+  " curly braces name and list slice assignment
+  let foo_3_bar = ['', '', '']
+  let foo_{1 + 2}_bar[ : ] =<< END
+change
+insert
+append
+END
+  call assert_equal(['change', 'insert', 'append'], foo_3_bar)
+
+  " dictionary key containing brackets and spaces
+  let d = {'abc] 123': 'baz'}
+  let d[d['abc] 123'] .. '{'] =<< END
+change
+insert
+append
+END
+  call assert_equal(['change', 'insert', 'append'], d['baz{'])
 endfunc
 
 " Test for evaluating Vim expressions in a heredoc using {expr}

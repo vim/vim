@@ -174,7 +174,13 @@
 #include "version.h"
 
 #ifdef DYNAMIC_RUBY
-# if !defined(MSWIN)  // must come after including vim.h, where it is defined
+# ifdef MSWIN	// must come after including vim.h, where it is defined
+#  define RUBY_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define HINSTANCE void*
 #  define RUBY_PROC void*
@@ -182,12 +188,6 @@
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
 #  define load_dll_error dlerror
-# else
-#  define RUBY_PROC FARPROC
-#  define load_dll vimLoadLib
-#  define symbol_from_dll GetProcAddress
-#  define close_dll FreeLibrary
-#  define load_dll_error GetWin32Error
 # endif
 #endif
 
@@ -1147,7 +1147,7 @@ vim_to_ruby(typval_T *tv)
 	    hashitem_T  *hi;
 	    dictitem_T  *di;
 
-	    for (hi = ht->ht_array; todo > 0; ++hi)
+	    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{

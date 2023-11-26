@@ -1566,6 +1566,8 @@ aucmd_prepbuf(
     aco->save_curwin_id = curwin->w_id;
     aco->save_curbuf = curbuf;
     aco->save_prevwin_id = prevwin == NULL ? 0 : prevwin->w_id;
+    aco->save_State = State;
+
     if (win != NULL)
     {
 	// There is a window for "buf" in the current tab page, make it the
@@ -1600,10 +1602,7 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
-	// no redrawing and don't set the window title
-	++RedrawingDisabled;
 	(void)win_split_ins(0, WSP_TOP, auc_win, 0);
-	--RedrawingDisabled;
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
@@ -1636,7 +1635,6 @@ aucmd_restbuf(
     {
 	win_T *awp = aucmd_win[aco->use_aucmd_win_idx].auc_win;
 
-	--curbuf->b_nwindows;
 	// Find "awp", it can't be closed, but it may be in another tab
 	// page. Do not trigger autocommands here.
 	block_autocmds();
@@ -1657,7 +1655,15 @@ aucmd_restbuf(
 	    }
 	}
 win_found:
-
+	--curbuf->b_nwindows;
+#ifdef FEAT_JOB_CHANNEL
+	int save_stop_insert_mode = stop_insert_mode;
+	// May need to stop Insert mode if we were in a prompt buffer.
+	leaving_window(curwin);
+	// Do not stop Insert mode when already in Insert mode before.
+	if (aco->save_State & MODE_INSERT)
+	    stop_insert_mode = save_stop_insert_mode;
+#endif
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);
 	win_remove(curwin, NULL);
@@ -2011,8 +2017,7 @@ apply_autocmds_group(
     int		did_save_redobuff = FALSE;
     save_redo_T	save_redo;
     int		save_KeyTyped = KeyTyped;
-    int		save_did_emsg;
-    ESTACK_CHECK_DECLARATION
+    ESTACK_CHECK_DECLARATION;
 
     /*
      * Quickly return if there are no autocommands for this event or
@@ -2218,7 +2223,7 @@ apply_autocmds_group(
 
     // name and lnum are filled in later
     estack_push(ETYPE_AUCMD, NULL, 0);
-    ESTACK_CHECK_SETUP
+    ESTACK_CHECK_SETUP;
 
     save_current_sctx = current_sctx;
 
@@ -2303,12 +2308,14 @@ apply_autocmds_group(
 	else
 	    check_lnums_nested(TRUE);
 
-	save_did_emsg = did_emsg;
+	int save_did_emsg = did_emsg;
+	int save_ex_pressedreturn = get_pressedreturn();
 
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
 	did_emsg += save_did_emsg;
+	set_pressedreturn(save_ex_pressedreturn);
 
 	if (nesting == 1)
 	    // restore cursor and topline, unless they were changed
@@ -2326,12 +2333,13 @@ apply_autocmds_group(
 	    active_apc_list = patcmd.next;
     }
 
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
     autocmd_busy = save_autocmd_busy;
     filechangeshell_busy = FALSE;
     autocmd_nested = save_autocmd_nested;
     vim_free(SOURCING_NAME);
-    ESTACK_CHECK_NOW
+    ESTACK_CHECK_NOW;
     estack_pop();
     vim_free(autocmd_fname);
     autocmd_fname = save_autocmd_fname;
@@ -2519,6 +2527,7 @@ auto_next_pat(
     }
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get the script context where autocommand "acp" is defined.
  */
@@ -2527,6 +2536,7 @@ acp_script_ctx(AutoPatCmd_T *acp)
 {
     return &acp->script_ctx;
 }
+#endif
 
 /*
  * Get next autocommand command.
@@ -2725,6 +2735,16 @@ get_event_name(expand_T *xp UNUSED, int idx)
 	return AUGROUP_NAME(idx);	// return a name
     }
     return (char_u *)event_names[idx - augroups.ga_len].name;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of event names. Don't
+ * include groups.
+ */
+    char_u *
+get_event_name_no_group(expand_T *xp UNUSED, int idx)
+{
+    return (char_u *)event_names[idx].name;
 }
 
 

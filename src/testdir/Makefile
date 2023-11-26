@@ -18,7 +18,7 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C L
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
 #   This will make testing about 10 times as slow.
-# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=35 --log-file=valgrind.$*
+# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=45 --log-file=valgrind.$*
 
 # To execute one test, e.g. in gdb, use something like this:
 # run -f -u unix.vim --gui-dialog-file guidialog -U NONE --noplugin --not-a-term -S runtest.vim test_name.vim

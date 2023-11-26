@@ -389,8 +389,8 @@ func Test_m_M_R()
   call delete('Xtestout')
 endfunc
 
-" Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
-func Test_A_F_H_arg()
+" Test the -A and -H arguments (Arabic and Hebrew modes).
+func Test_A_H_arg()
   let after =<< trim [CODE]
     call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")
     qall
@@ -401,11 +401,6 @@ func Test_A_F_H_arg()
   if has('arabic') && &encoding == 'utf-8' && RunVim([], after, '-e -s -A')
     let lines = readfile('Xtestout')
     call assert_equal(['1', '1', '0', '0'], lines)
-  endif
-
-  if has('farsi') && RunVim([], after, '-F')
-    let lines = readfile('Xtestout')
-    call assert_equal(['1', '0', '1', '0'], lines)
   endif
 
   if has('rightleft') && RunVim([], after, '-H')
@@ -1356,5 +1351,27 @@ func Test_rename_buffer_on_startup()
   call delete('Xresult')
 endfunc
 
+" Test that -cq works as expected
+func Test_cq_zero_exmode()
+  CheckFeature channel
+
+  let logfile = 'Xcq_log.txt'
+  let out = system(GetVimCommand() .. ' --clean --log ' .. logfile .. ' -es -X -c "argdelete foobar" -c"7cq"')
+  call assert_equal(8, v:shell_error)
+  let log = filter(readfile(logfile), {idx, val -> val =~ "E480"})
+  call assert_match('E480: No match: foobar', log[0])
+  call delete(logfile)
+
+  " wrap-around on Unix
+  let out = system(GetVimCommand() .. ' --clean --log ' .. logfile .. ' -es -X -c "argdelete foobar" -c"255cq"')
+  if !has('win32')
+    call assert_equal(0, v:shell_error)
+  else
+    call assert_equal(256, v:shell_error)
+  endif
+  let log = filter(readfile(logfile), {idx, val -> val =~ "E480"})
+  call assert_match('E480: No match: foobar', log[0])
+  call delete('Xcq_log.txt')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
