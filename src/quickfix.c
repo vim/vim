@@ -964,7 +964,7 @@ typedef struct {
  * Return the matched value in "fields->namebuf".
  */
     static int
-qf_parse_fmt_f(regmatch_T *rmp, int midx, qffields_T *fields, int prefix)
+qf_parse_fmt_f(regmatch_T *rmp, int midx, qffields_T *fields)
 {
     int c;
 
@@ -977,13 +977,8 @@ qf_parse_fmt_f(regmatch_T *rmp, int midx, qffields_T *fields, int prefix)
     expand_env(rmp->startp[midx], fields->namebuf, CMDBUFFSIZE);
     *rmp->endp[midx] = c;
 
-    // For separate filename patterns (%O, %P and %Q), the specified file
-    // should exist.
-    if (vim_strchr((char_u *)"OPQ", prefix) != NULL
-	    && mch_getperm(fields->namebuf) == -1)
-	return QF_FAIL;
-
-    return QF_OK;
+    // The specified file should exist.
+    return mch_getperm(fields->namebuf) == -1 ? QF_FAIL : QF_OK;
 }
 
 /*
@@ -1283,7 +1278,7 @@ qf_parse_match(
 	status = QF_OK;
 	midx = (int)fmt_ptr->addr[i];
 	if (i == 0 && midx > 0)				// %f
-	    status = qf_parse_fmt_f(regmatch, midx, fields, idx);
+	    status = qf_parse_fmt_f(regmatch, midx, fields);
 	else if (i == FMT_PATTERN_M)
 	{
 	    if (fmt_ptr->flags == '+' && !qf_multiscan)	// %+
