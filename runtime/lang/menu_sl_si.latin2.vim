@@ -15,7 +15,7 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding latin2
+scriptencoding iso-8859-2
 
 " {{{ FILE / DATOTEKA
 menutrans &File				&Datoteka
