@@ -3114,7 +3114,7 @@ did_set_langmap(optset_T *args UNUSED)
 		    {
 			if (p[0] != ',')
 			{
-			    sprintf(args->os_errbuf,
+			    snprintf(args->os_errbuf, args->os_errbuflen,
 				    _(e_langmap_extra_characters_after_semicolon_str),
 				    p);
 			    return args->os_errbuf;
