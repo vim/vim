@@ -213,6 +213,7 @@ SRC_ALL =	\
 		src/testdir/dumps/*.dump \
 		src/testdir/dumps/*.vim \
 		src/testdir/samples/*.txt \
+		src/testdir/samples/*.vim \
 		src/testdir/samples/test000 \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
@@ -1073,5 +1074,18 @@ LANG_SRC = \
 LANG_DOS = \
 		src/po/*.mo \
 		runtime/lang/Make_mvc.mak \
+
+# Files in the repository that are deliberately not listed above, and will thus
+# be excluded from distribution tarballs and the like.
+# This excludes them from the CI check for unlisted files.
+IGNORE = \
+		.appveyor.yml \
+		.github/FUNDING.yml \
+		.github/labeler.yml \
+		.github/workflows/label.yml \
+		SECURITY.md \
+		ci/unlisted.make \
+		src/libvterm/CODE-MAP \
+		runtime/syntax/testdir/input/html_html \
 
 # vim: set ft=make:

@@ -81,6 +81,12 @@ jobs:
       - name: Checkout repository from github
         uses: actions/checkout@v4
 
+      - name: Check Filelist (for packaging)
+        run: |
+          # If any files in the repository are not listed in Filelist this will
+          # exit with an error code and list the missing entries.
+          make -f ci/unlisted.make
+
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'
 
