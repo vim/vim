@@ -1730,7 +1730,7 @@ parse_cino(buf_T *buf)
     char_u	*p;
     char_u	*l;
     char_u	*digits;
-    long long	n;
+    vimlong_T	n;
     int		divider;
     int		fraction = 0;
     int		sw;
@@ -1902,7 +1902,7 @@ parse_cino(buf_T *buf)
 	    {
 		n *= sw;
 		if (divider)
-		    n += ((long long)sw * fraction + divider / 2) / divider;
+		    n += ((vimlong_T)sw * fraction + divider / 2) / divider;
 	    }
 	    ++p;
 	}

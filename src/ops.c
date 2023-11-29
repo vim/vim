@@ -229,11 +229,11 @@ shift_line(
     int	amount,
     int call_changed_bytes)	// call changed_bytes()
 {
-    long long	count;
+    vimlong_T	count;
     int		i, j;
     int		sw_val = trim_to_int(get_sw_value_indent(curbuf));
 
-    count = (long long)get_indent();	// get current indent
+    count = get_indent();	// get current indent
 
     if (round)			// round off indent
     {
@@ -249,18 +249,18 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = (long long)i * (long long)sw_val;
+	count = (vimlong_T)i * (vimlong_T)sw_val;
     }
     else		// original vi indent
     {
 	if (left)
 	{
-	    count -= (long long)sw_val * (long long)amount;
+	    count -= (vimlong_T)sw_val * (vimlong_T)amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	    count += (long long)sw_val * (long long)amount;
+	    count += (vimlong_T)sw_val * (vimlong_T)amount;
     }
 
     // Set new indent

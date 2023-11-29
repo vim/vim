@@ -55,5 +55,5 @@ void restore_v_event(dict_T *v_event, save_v_event_T *sve);
 void may_trigger_modechanged(void);
 int vim_append_digit_int(int *value, int digit);
 int vim_append_digit_long(long *value, int digit);
-int trim_to_int(long long x);
+int trim_to_int(vimlong_T x);
 /* vim: set ft=c : */
