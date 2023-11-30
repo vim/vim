@@ -2843,7 +2843,7 @@ vim_append_digit_long(long *value, int digit)
 
 // Return something that fits into an int.
     int
-trim_to_int(long long x)
+trim_to_int(vimlong_T x)
 {
     return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
 }
