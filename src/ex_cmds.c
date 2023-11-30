@@ -4650,7 +4650,7 @@ ex_substitute(exarg_T *eap)
 		     * too many calls to alloc()/free()).
 		     */
 		    new_start_len = needed_len + 50;
-		    if ((new_start = alloc(new_start_len)) == NULL)
+		    if ((new_start = alloc_clear(new_start_len)) == NULL)
 			goto outofmem;
 		    *new_start = NUL;
 		    new_end = new_start;
@@ -4667,7 +4667,7 @@ ex_substitute(exarg_T *eap)
 		    if (needed_len > (int)new_start_len)
 		    {
 			new_start_len = needed_len + 50;
-			if ((p1 = alloc(new_start_len)) == NULL)
+			if ((p1 = alloc_clear(new_start_len)) == NULL)
 			{
 			    vim_free(new_start);
 			    goto outofmem;
