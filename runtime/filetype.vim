@@ -95,6 +95,9 @@ au BufNewFile,BufRead *.aidl			setf aidl
 " AMPL
 au BufNewFile,BufRead *.run			setf ampl
 
+" Angular in HTML
+au BufNewFile,BufRead *.component.html		setf html.angular
+
 " Ant
 au BufNewFile,BufRead build.xml			setf ant
 
@@ -1396,6 +1399,9 @@ au BufRead,BufNewFile *.mu			setf mupad
 
 " Mush
 au BufNewFile,BufRead *.mush			setf mush
+
+" Mustache
+au BufNewFile,BufRead *.mustache		setf mustache
 
 " Mutt setup file (also for Muttng)
 au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
