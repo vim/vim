@@ -120,6 +120,8 @@ eval_clear(void)
 
     // functions not garbage collected
     free_all_functions();
+
+    ga_clear(&exestack);
 }
 #endif
 

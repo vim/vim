@@ -543,6 +543,8 @@ free_all_mem(void)
 # ifdef FEAT_TIMERS
     timer_free_all();
 # endif
+    // must be before eval_clear() because of option context
+    free_termoptions();
 # ifdef FEAT_EVAL
     // must be after channel_free_all() with unrefs partials
     eval_clear();
@@ -552,7 +554,6 @@ free_all_mem(void)
     job_free_all();
 # endif
 
-    free_termoptions();
     free_cur_term();
 
     // screenlines (can't display anything now!)
