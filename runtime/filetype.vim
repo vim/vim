@@ -95,9 +95,6 @@ au BufNewFile,BufRead *.aidl			setf aidl
 " AMPL
 au BufNewFile,BufRead *.run			setf ampl
 
-" Angular in HTML
-au BufNewFile,BufRead *.component.html		setf html.angular
-
 " Ant
 au BufNewFile,BufRead build.xml			setf ant
 
