@@ -1,7 +1,8 @@
 " Vim settings file
-" Language:	Fortran 2008 (and older: Fortran 2003, 95, 90, 77, 66)
-" Version:	(v53) 2021 April 06 (updated 2022 May 22)
-" Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www2.unb.ca/~ajit/>
+" Language:	Fortran 2008 (and Fortran 2003, 95, 90, and 77)
+" Version:	(v53) 2023 December 2
+" Maintainers:	Ajit J. Thakkar <ajit@unb.ca>; <https://ajit.ext.unb.ca/>
+" 	        Joshua Hollett <j.hollett@uwinnipeg.ca>
 " Usage:	For instructions, do :help fortran-plugin from Vim
 " Credits:
 "  Version 0.1 was created in September 2000 by Ajit Thakkar.
