@@ -1,6 +1,6 @@
 " Vim indent file
 " Language:	Fortran 2008 (and Fortran 2003, 95, 90, and 77)
-" Version:	(v106) 2023 December 1
+" Version:	(v49) 2023 December 1
 " Maintainers:	Ajit J. Thakkar <ajit@unb.ca>; <https://ajit.ext.unb.ca/>
 " 	        Joshua Hollett <j.hollett@uwinnipeg.ca>
 " Usage:	For instructions, do :help fortran-indent from Vim
