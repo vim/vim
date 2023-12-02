@@ -51,6 +51,7 @@ void f_getchar(typval_T *argvars, typval_T *rettv);
 void f_getcharstr(typval_T *argvars, typval_T *rettv);
 void f_getcharmod(typval_T *argvars, typval_T *rettv);
 void parse_queued_messages(void);
+int key_protocol_enabled(void);
 void vungetc(int c);
 int fix_input_buffer(char_u *buf, int len);
 int input_available(void);

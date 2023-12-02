@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.0.  Last change: 2019 May 23
+*usr_05.txt*	For Vim version 9.0.  Last change: 2023 Sep 12
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -427,6 +427,15 @@ an archive or as a repository.  For an archive you can follow these steps:
 	   Here "fancytext" is the name of the package, it can be anything
 	   else.
 
+Adding the editorconfig package				*editorconfig-install*
+
+Similar to the matchit package, to load the distributed editorconfig plugin
+when Vim starts, add the following line to your vimrc file: >
+	packadd! editorconfig
+
+After restarting your Vim, the plugin is active and you can read about it at: >
+	:h editorconfig.txt
+
 More information about packages can be found here: |packages|.
 
 ==============================================================================
@@ -446,13 +455,18 @@ The global plugins will be discussed first, then the filetype ones
 |add-filetype-plugin|.
 
 
-GLOBAL PLUGINS						*standard-plugin*
+GLOBAL PLUGINS				*standard-plugin* *distributed-plugins*
 
 When you start Vim, it will automatically load a number of global plugins.
 You don't have to do anything for this.  They add functionality that most
 people will want to use, but which was implemented as a Vim script instead of
 being compiled into Vim.  You can find them listed in the help index
-|standard-plugin-list|.  Also see |load-plugins|.
+|standard-plugin-list|.
+
+For locally installed plugins and packages (which come with a separated help
+file) a similar list can be found in the help section |local-additions|.
+
+Also see |load-plugins|.
 
 							*add-global-plugin*
 You can add a global plugin to add functionality that will always be present

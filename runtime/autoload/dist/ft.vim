@@ -62,7 +62,7 @@ export def FTasmsyntax()
   endif
 enddef
 
-var ft_visual_basic_content = '\cVB_Name\|Begin VB\.\(Form\|MDIForm\|UserControl\)'
+var ft_visual_basic_content = '\c^\s*\%(Attribute\s\+VB_Name\|Begin\s\+\%(VB\.\|{\%(\x\+-\)\+\x\+}\)\)'
 
 # See FTfrm() for Visual Basic form file detection
 export def FTbas()
@@ -146,12 +146,20 @@ export def FTcls()
     return
   endif
 
-  if getline(1) =~ '^\v%(\%|\\)'
-    setf tex
-  elseif getline(1)[0] == '#' && getline(1) =~ 'rexx'
+  var line1 = getline(1)
+  if line1 =~ '^#!.*\<\%(rexx\|regina\)\>'
     setf rexx
-  elseif getline(1) == 'VERSION 1.0 CLASS'
+    return
+  elseif line1 == 'VERSION 1.0 CLASS'
     setf vb
+    return
+  endif
+
+  var nonblank1 = getline(nextnonblank(1))
+  if nonblank1 =~ '^\v%(\%|\\)'
+    setf tex
+  elseif nonblank1 =~ '^\s*\%(/\*\|::\w\)'
+    setf rexx
   else
     setf st
   endif
@@ -287,9 +295,45 @@ export def FTe()
   endif
 enddef
 
+def IsForth(): bool
+  var first_line = nextnonblank(1)
+
+  # SwiftForth block comment (line is usually filled with '-' or '=') or
+  # OPTIONAL (sometimes precedes the header comment)
+  if getline(first_line) =~? '^\%({\%(\s\|$\)\|OPTIONAL\s\)'
+    return true
+  endif
+
+  var n = first_line
+  while n < 100 && n <= line("$")
+    # Forth comments and colon definitions
+    if getline(n) =~ '^[:(\\] '
+      return true
+    endif
+    n += 1
+  endwhile
+  return false
+enddef
+
+# Distinguish between Forth and Fortran
+export def FTf()
+  if exists("g:filetype_f")
+    exe "setf " .. g:filetype_f
+  elseif IsForth()
+    setf forth
+  else
+    setf fortran
+  endif
+enddef
+
 export def FTfrm()
   if exists("g:filetype_frm")
     exe "setf " .. g:filetype_frm
+    return
+  endif
+
+  if getline(1) == "VERSION 5.00"
+    setf vb
     return
   endif
 
@@ -302,21 +346,13 @@ export def FTfrm()
   endif
 enddef
 
-# Distinguish between Forth and F#.
-# Provided by Doug Kearns.
+# Distinguish between Forth and F#
 export def FTfs()
   if exists("g:filetype_fs")
     exe "setf " .. g:filetype_fs
+  elseif IsForth()
+    setf forth
   else
-    var n = 1
-    while n < 100 && n <= line("$")
-      # Forth comments and colon definitions
-      if getline(n) =~ "^[:(\\\\] "
-        setf forth
-        return
-      endif
-      n += 1
-    endwhile
     setf fsharp
   endif
 enddef
@@ -554,23 +590,27 @@ export def FTprogress_cweb()
   endif
 enddef
 
-export def FTprogress_asm()
+# These include the leading '%' sign
+var ft_swig_keywords = '^\s*%\%(addmethods\|apply\|beginfile\|clear\|constant\|define\|echo\|enddef\|endoffile\|extend\|feature\|fragment\|ignore\|import\|importfile\|include\|includefile\|inline\|insert\|keyword\|module\|name\|namewarn\|native\|newobject\|parms\|pragma\|rename\|template\|typedef\|typemap\|types\|varargs\|warn\)'
+# This is the start/end of a block that is copied literally to the processor file (C/C++)
+var ft_swig_verbatim_block_start = '^\s*%{'
+
+export def FTi()
   if exists("g:filetype_i")
     exe "setf " .. g:filetype_i
     return
   endif
-  # This function checks for an assembly comment the first ten lines.
+  # This function checks for an assembly comment or a SWIG keyword or verbatim block in the first 50 lines.
   # If not found, assume Progress.
   var lnum = 1
-  while lnum <= 10 && lnum < line('$')
+  while lnum <= 50 && lnum < line('$')
     var line = getline(lnum)
     if line =~ '^\s*;' || line =~ '^\*'
       FTasm()
       return
-    elseif line !~ '^\s*$' || line =~ '^/\*'
-      # Not an empty line: Doesn't look like valid assembly code.
-      # Or it looks like a Progress /* comment
-      break
+    elseif line =~ ft_swig_keywords || line =~ ft_swig_verbatim_block_start
+      setf swig
+      return
     endif
     lnum += 1
   endwhile
@@ -1172,6 +1212,14 @@ export def FTv()
 
   # No line matched, fall back to "v".
   setf v
+enddef
+
+export def FTvba()
+  if getline(1) =~ '^["#] Vimball Archiver'
+    setf vim
+  else
+    setf vb
+  endif
 enddef
 
 # Uncomment this line to check for compilation errors early

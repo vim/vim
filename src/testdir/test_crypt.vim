@@ -255,7 +255,7 @@ func Test_uncrypt_xchacha20_2()
   call assert_match("Note: Encryption of swapfile not supported, disabling swap file", execute(':messages'))
   w!
   " encrypted using xchacha20
-  call assert_match("\[xchacha20\]", execute(':messages'))
+  call assert_match('\[xchacha20\]', execute(':messages'))
   bw!
   call feedkeys(":sp Xcrypt_sodium.txt\<CR>sodium\<CR>", 'xt')
   " successfully decrypted
@@ -288,9 +288,13 @@ func Test_uncrypt_xchacha20v2_2()
     throw 'Skipped: sodium_mlock() not possible'
   endtry
   " encrypted using xchacha20
-  call assert_match("\[xchachav2\]", execute(':messages'))
+  call assert_match('\[xchacha20v2\]', execute(':messages'))
   bw!
-  call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
+	try
+		call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   " successfully decrypted
   call assert_equal(range(1, 4000)->map( {_, v -> string(v)}), getline(1,'$'))
   call assert_match('xchacha20v2: using default \w\+ "\d\+" for Key derivation.', execute(':messages'))
@@ -332,7 +336,11 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
     endtry
     call assert_equal(0, &undofile)
     bw!
-    call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
+    try
+      call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
+    catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+    endtry
     " should fail
     norm! u
     call assert_match('Already at oldest change', execute(':1mess'))
@@ -426,6 +434,29 @@ func Test_crypt_set_key_segfault()
   bwipe!
 
   set cryptmethod&
+  set key=
+  bwipe!
+endfunc
+
+func Test_crypt_set_key_disallow_append_subtract()
+  new Xtest4
+
+  set key=foobar
+  call assert_true(&modified)
+  setl nomodified
+
+  call assert_fails('set key-=foo', 'E474:')
+  call assert_fails('set key-=bar', 'E474:')
+  call assert_fails('set key-=foobar', 'E474:')
+  call assert_fails('set key-=test1', 'E474:')
+
+  call assert_false(&modified)
+  call assert_equal('*****', &key)
+
+  call assert_fails('set key+=test2', 'E474:')
+  call assert_fails('set key^=test3', 'E474:')
+
+  call assert_false(&modified)
   set key=
   bwipe!
 endfunc

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.0.  Last change: 2023 May 30
+*starting.txt*  For Vim version 9.0.  Last change: 2023 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -249,10 +249,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 					*-Z* *restricted-mode* *E145* *E981*
 -Z		Restricted mode.  All commands that make use of an external
 		shell are disabled.  This includes suspending with CTRL-Z,
-		":sh", filtering, the system() function, backtick expansion
+		":sh", filtering, the |system()| function, backtick expansion
 		and libcall().
-		Also disallowed are delete(), rename(), mkdir(), job_start(),
-		etc.
+		Also disallowed are |delete()|, |rename()|, |mkdir()|,
+		|job_start()|, |setenv()| etc.
 		Interfaces, such as Python, Ruby and Lua, are also disabled,
 		since they could be used to execute shell commands.  Perl uses
 		the Safe module.
@@ -348,7 +348,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Start logging and write entries to {filename}.
 		This works like calling `ch_logfile({filename}, 'ao')` very
 		early during startup.
-		{only available with the |+eval| feature}
+		{only available with the |+eval| and |+channel| feature}
 
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
@@ -1704,6 +1704,6 @@ most of the information will be restored).
 			If you get the |press-enter| prompt you can press "q"
 			and still get the prompt to enter a file number.
 			Use ! to abandon a modified buffer. |abandon|
-			{not when compiled with tiny or small features}
+			{not when compiled with tiny features}
 
  vim:tw=78:ts=8:noet:ft=help:norl:

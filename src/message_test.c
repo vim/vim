@@ -40,6 +40,7 @@ char *fmt_012p = "%012p";
 char *fmt_5S   = "%5S";
 char *fmt_06b  = "%06b";
 char *fmt_06pb = "%1$0.*2$b";
+char *fmt_06pb2 = "%2$0*1$b";
 char *fmt_212s = "%2$s %1$s %2$s";
 char *fmt_21s  = "%2$s %1$s";
 
@@ -224,7 +225,6 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "one two", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-#ifdef FEAT_FLOAT
 	n = vim_snprintf(buf, bsize, "%f", 1.234);
 	assert(n == 8);
 	assert(bsize == 0 || STRNCMP(buf, "1.234000", bsize_int) == 0);
@@ -254,7 +254,6 @@ test_vim_snprintf(void)
 	assert(n == 9);
 	assert(bsize == 0 || STRNCMP(buf, "-0.000000", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
-#endif
 
 	n = vim_snprintf(buf, bsize, "%s", "漢語");
 	assert(n == 6);
@@ -402,11 +401,6 @@ test_vim_snprintf_positional(void)
 	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, "%2$d %1$llu %3$lu", 1234567LLU, 9, 7654321UL);
-	assert(n == 17);
-	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
-	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
-
 	n = vim_snprintf(buf, bsize, "%2$d %1$x %3$lu", 0xdeadbeef, 9, 7654321UL);
 	assert(n == 18);
 	assert(bsize == 0 || STRNCMP(buf, "9 deadbeef 7654321", bsize_int) == 0);
@@ -445,6 +439,11 @@ test_vim_snprintf_positional(void)
 	n = vim_snprintf(buf, bsize, "%1$x", 0xdeadbeef);
 	assert(n == 8);
 	assert(bsize == 0 || STRNCMP(buf, "deadbeef", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_06pb2, 6, (uvarnumber_T)12);
+	assert(n == 6);
+	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
 	n = vim_snprintf(buf, bsize, fmt_06pb, (uvarnumber_T)12, 6);

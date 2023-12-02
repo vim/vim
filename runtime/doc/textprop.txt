@@ -335,6 +335,12 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		   length	length in bytes, one more if line break is
 				included
 		   id		property ID
+		   text		text to be displayed before {col}.  Only
+				present for |virtual-text| properties.
+		   text_align	alignment property of |virtual-text|.
+		   text_padding_left
+				left padding used for virtual text.
+		   text_wrap	specifies whether |virtual-text| is wrapped.
 		   type		name of the property type, omitted if
 				the type was deleted
 		   type_bufnr	buffer number for which this type was defined;

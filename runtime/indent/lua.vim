@@ -27,6 +27,16 @@ if exists("*GetLuaIndent")
 endif
 
 function! GetLuaIndent()
+    let ignorecase_save = &ignorecase
+  try
+    let &ignorecase = 0
+    return GetLuaIndentIntern()
+  finally
+    let &ignorecase = ignorecase_save
+  endtry
+endfunction
+
+function! GetLuaIndentIntern()
   " Find a non-blank line above the current line.
   let prevlnum = prevnonblank(v:lnum - 1)
 
@@ -41,7 +51,7 @@ function! GetLuaIndent()
   let prevline = getline(prevlnum)
   let midx = match(prevline, '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>\)')
   if midx == -1
-    let midx = match(prevline, '{\s*$')
+    let midx = match(prevline, '{\s*\%(--\%([^[].*\)\?\)\?$')
     if midx == -1
       let midx = match(prevline, '\<function\>\s*\%(\k\|[.:]\)\{-}\s*(')
     endif

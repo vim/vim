@@ -213,10 +213,12 @@ SRC_ALL =	\
 		src/testdir/dumps/*.dump \
 		src/testdir/dumps/*.vim \
 		src/testdir/samples/*.txt \
+		src/testdir/samples/*.vim \
 		src/testdir/samples/test000 \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
+		src/testdir/crash/* \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/alloc.pro \
@@ -697,6 +699,7 @@ RT_ALL =	\
 		runtime/doc/*.pl \
 		runtime/doc/*.txt \
 		runtime/doc/Makefile \
+		runtime/doc/Make_all.mak \
 		runtime/doc/doctags.c \
 		runtime/doc/doctags.vim \
 		runtime/doc/test_urls.vim \
@@ -755,6 +758,17 @@ RT_ALL =	\
 		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
 		runtime/pack/dist/opt/editexisting/plugin/editexisting.vim \
+		runtime/pack/dist/opt/editorconfig/.editorconfig \
+		runtime/pack/dist/opt/editorconfig/CONTRIBUTORS \
+		runtime/pack/dist/opt/editorconfig/LICENSE* \
+		runtime/pack/dist/opt/editorconfig/mkzip.sh \
+		runtime/pack/dist/opt/editorconfig/README.md \
+		runtime/pack/dist/opt/editorconfig/autoload/*.vim \
+		runtime/pack/dist/opt/editorconfig/autoload/editorconfig_core/*.vim \
+		runtime/pack/dist/opt/editorconfig/doc/tags \
+		runtime/pack/dist/opt/editorconfig/doc/editorconfig.txt \
+		runtime/pack/dist/opt/editorconfig/ftdetect/editorconfig.vim \
+		runtime/pack/dist/opt/editorconfig/plugin/editorconfig.vim \
 		runtime/pack/dist/opt/justify/plugin/justify.vim \
 		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
@@ -780,7 +794,9 @@ RT_SCRIPTS =	\
 		runtime/makemenu.vim \
 		runtime/autoload/*.vim \
 		runtime/autoload/README.txt \
+		runtime/autoload/cargo/*.vim \
 		runtime/autoload/dist/*.vim \
+		runtime/autoload/rust/*.vim \
 		runtime/autoload/xml/*.vim \
 		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
@@ -845,6 +861,8 @@ RT_AMI_DOS =	\
 # DOS runtime (also in the extra archive)
 RT_DOS =	\
 		README_dos.txt \
+		runtime/doc/Make_mvc.mak \
+		runtime/tutor/Make_mvc.mak \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
@@ -951,6 +969,7 @@ IN_README_DIR = \
 		README_bindos.txt \
 		README_dos.txt \
 		README_extra.txt \
+		README_haiku.txt \
 		README_mac.txt \
 		README_ole.txt \
 		README_os2.txt \
@@ -987,11 +1006,13 @@ LANG_GEN = \
 		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \
 		runtime/lang/Makefile \
+		runtime/lang/Make_all.mak \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \
 		runtime/keymap/*.vim \
 		runtime/tutor/README.*.txt \
 		runtime/tutor/Makefile \
+		runtime/tutor/Make_all.mak \
 		runtime/tutor/tutor.utf-8 \
 		runtime/tutor/tutor.?? \
 		runtime/tutor/tutor.??.utf-8 \
@@ -1046,10 +1067,25 @@ LANG_SRC = \
 		src/po/vim.desktop.in \
 		src/po/gvim.desktop.in \
 		src/po/sjiscorr.c \
+		src/po/big5corr.c \
 		src/po/*.po \
 
 # the language files for the Win32 lang archive
 LANG_DOS = \
 		src/po/*.mo \
+		runtime/lang/Make_mvc.mak \
+
+# Files in the repository that are deliberately not listed above, and will thus
+# be excluded from distribution tarballs and the like.
+# This excludes them from the CI check for unlisted files.
+IGNORE = \
+		.appveyor.yml \
+		.github/FUNDING.yml \
+		.github/labeler.yml \
+		.github/workflows/label.yml \
+		SECURITY.md \
+		ci/unlisted.make \
+		src/libvterm/CODE-MAP \
+		runtime/syntax/testdir/input/html_html \
 
 # vim: set ft=make:

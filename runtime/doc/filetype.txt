@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 9.0.  Last change: 2023 Apr 29
+*filetype.txt*  For Vim version 9.0.  Last change: 2023 Sep 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,34 +138,38 @@ what kind of file it is.  This doesn't always work.  A number of global
 variables can be used to overrule the filetype used for certain extensions:
 
 	file name	variable ~
-	*.asa		g:filetype_asa	|ft-aspvbs-syntax| |ft-aspperl-syntax|
-	*.asm		g:asmsyntax	|ft-asm-syntax|
-	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
-	*.bas		g:filetype_bas	|ft-basic-syntax|
+	*.asa		g:filetype_asa		|ft-aspperl-syntax|
+						|ft-aspvbs-syntax|
+	*.asm		g:asmsyntax		|ft-asm-syntax|
+	*.asp		g:filetype_asp		|ft-aspperl-syntax|
+						|ft-aspvbs-syntax|
+	*.bas		g:filetype_bas		|ft-basic-syntax|
 	*.cfg		g:filetype_cfg
 	*.cls		g:filetype_cls
-	*.csh		g:filetype_csh	|ft-csh-syntax|
+	*.csh		g:filetype_csh		|ft-csh-syntax|
 	*.dat		g:filetype_dat
-	*.frm		g:filetype_frm	|ft-form-syntax|
-	*.fs		g:filetype_fs	|ft-forth-syntax|
-	*.i		g:filetype_i	|ft-progress-syntax|
+	*.f		g:filetype_f		|ft-forth-syntax|
+	*.frm		g:filetype_frm		|ft-form-syntax|
+	*.fs		g:filetype_fs		|ft-forth-syntax|
+	*.h		g:c_syntax_for_h	|ft-c-syntax|
+	*.i		g:filetype_i		|ft-progress-syntax|
 	*.inc		g:filetype_inc
 	*.lsl		g:filetype_lsl
-	*.m		g:filetype_m	|ft-mathematica-syntax|
+	*.m		g:filetype_m		|ft-mathematica-syntax|
 	*.mod		g:filetype_mod
-	*.p		g:filetype_p	|ft-pascal-syntax|
+	*.p		g:filetype_p		|ft-pascal-syntax|
 	*.pl		g:filetype_pl
-	*.pp		g:filetype_pp	|ft-pascal-syntax|
+	*.pp		g:filetype_pp		|ft-pascal-syntax|
 	*.prg		g:filetype_prg
 	*.r		g:filetype_r
 	*.sig		g:filetype_sig
-	*.sql		g:filetype_sql	|ft-sql-syntax|
+	*.sql		g:filetype_sql		|ft-sql-syntax|
 	*.src		g:filetype_src
 	*.sys		g:filetype_sys
-	*.sh		g:bash_is_sh	|ft-sh-syntax|
-	*.tex		g:tex_flavor	|ft-tex-plugin|
+	*.sh		g:bash_is_sh		|ft-sh-syntax|
+	*.tex		g:tex_flavor		|ft-tex-plugin|
 	*.typ		g:filetype_typ
-	*.w		g:filetype_w	|ft-cweb-syntax|
+	*.w		g:filetype_w		|ft-cweb-syntax|
 
 For a few filetypes the global variable is used only when the filetype could
 not be detected:
@@ -418,11 +422,24 @@ ways to change this:
 3.  Docs for the default filetype plugins.		*ftplugin-docs*
 
 
+					*plugin_exec* *g:plugin_exec*
+Enable executing of external commands.  This was done historically for e.g.
+the perl filetype plugin (and a few others) to set the search path.
+Disabled by default for security reasons: >
+	:let g:plugin_exec = 1
+It is also possible to enable this only for certain filetypes: >
+	:let g:<filetype>_exec = 1
+So to enable this only for ruby, set the following variable: >
+	:let g:ruby_exec = 1
+
+If both, the global `plugin_exec` and the `<filetype>_exec` specific variable
+are set, the filetype specific variable should have precedent.
+
 AWK							*ft-awk-plugin*
 
 Support for features specific to GNU Awk, like @include, can be enabled by
 setting: >
-	let g:awk_is_gawk = 1
+	:let g:awk_is_gawk = 1
 
 
 CHANGELOG						*ft-changelog-plugin*

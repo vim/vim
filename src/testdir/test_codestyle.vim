@@ -6,48 +6,44 @@ def s:ReportError(fname: string, lnum: number, msg: string)
   endif
 enddef
 
+def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
+  var lnum = 1
+  while (lnum > 0)
+    cursor(lnum, 1)
+    lnum = search(pattern, 'W', 0, 0, skip)
+    ReportError(fname, lnum, msg)
+    if (lnum > 0)
+      lnum += 1
+    endif
+  endwhile
+enddef
+
 def Test_source_files()
-  for fname in glob('../*.[ch]', 0, 1)
+  for fname in glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
     bwipe!
     g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
 
-    cursor(1, 1)
-    var lnum = search(' \t')
-    ReportError(fname, lnum, 'space before Tab')
+    PerformCheck(fname, ' \t', 'space before Tab', '')
 
-    cursor(1, 1)
-    lnum = search('\s$')
-    ReportError(fname, lnum, 'trailing white space')
+    PerformCheck(fname, '\s$', 'trailing white space', '')
 
     # some files don't stick to the Vim style rules
     if fname =~ 'iscygpty.c'
       continue
     endif
 
-    # Examples in comments use "condition) {", skip them.
-    # Skip if a double quote or digit comes after the "{".
-    # Skip specific string used in os_unix.c.
-    # Also skip fold markers.
     var skip = 'getline(".") =~ "condition) {" || getline(".") =~ "vimglob_func" || getline(".") =~ "{\"" || getline(".") =~ "{\\d" || getline(".") =~ "{{{"'
-    cursor(1, 1)
-    lnum = search(')\s*{', '', 0, 0, skip)
-    ReportError(fname, lnum, 'curly after closing paren')
+    PerformCheck(fname, ')\s*{', 'curly after closing paren', skip)
 
     # Examples in comments use double quotes.
     skip = "getline('.') =~ '\"'"
 
-    cursor(1, 1)
-    lnum = search('}\s*else', '', 0, 0, skip)
-    ReportError(fname, lnum, 'curly before "else"')
+    PerformCheck(fname, '}\s*else', 'curly before "else"', skip)
 
-    cursor(1, 1)
-    lnum = search('else\s*{', '', 0, 0, skip)
-    ReportError(fname, lnum, 'curly after "else"')
+    PerformCheck(fname, 'else\s*{', 'curly after "else"', skip)
 
-    cursor(1, 1)
-    lnum = search('\<\(if\|while\|for\)(', '', 0, 0, skip)
-    ReportError(fname, lnum, 'missing white space after "if"/"while"/"for"')
+    PerformCheck(fname, '\<\(if\|while\|for\)(', 'missing white space after "if"/"while"/"for"', skip)
   endfor
 
   bwipe!

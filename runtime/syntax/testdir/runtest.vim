@@ -231,14 +231,14 @@ for fname in glob('input/*.*', 1, 1)
   endif
 endfor
 
-" Matching "if 1" at the start.
-endif
-
 call Message(s:test_run_message)
 call Message('OK: ' .. ok_count)
 call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
 call Message('skipped: ' .. skipped_count)
 call AppendMessages('== SUMMARY ==')
+
+" Matching "if 1" at the start.
+endif
 
 if len(failed_tests) > 0
   " have make report an error

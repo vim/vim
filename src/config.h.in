@@ -226,6 +226,7 @@
 #undef HAVE_MBLEN
 #undef HAVE_TIMER_CREATE
 #undef HAVE_CLOCK_GETTIME
+#undef HAVE_XATTR
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES
@@ -353,6 +354,9 @@
 
 /* Define for linking via dlopen() or LoadLibrary() */
 #undef DYNAMIC_PYTHON3
+
+/* Define if compiled against Python 3 stable ABI / limited API */
+#undef DYNAMIC_PYTHON3_STABLE_ABI
 
 /* Define if dynamic python does not require RTLD_GLOBAL */
 #undef PY_NO_RTLD_GLOBAL

@@ -15,7 +15,7 @@ function s:screen_lines(lnum, width) abort
 endfunction
 
 func s:compare_lines(expect, actual)
-  call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))
+  call assert_equal(a:expect, a:actual)
 endfunc
 
 function s:test_windows(...)
@@ -326,6 +326,62 @@ func Test_list_with_tab_and_skipping_first_chars()
 \ "---------------aaaaa",
 \ "---------------aaaaa",
 \ "iiiiiiiii>-----aaaaa",
+\ ]
+  call s:compare_lines(expect, lines)
+  call s:close_windows()
+endfunc
+
+func Test_ctrl_char_on_wrap_column()
+  call s:test_windows("setl nolbr wrap sbr=")
+  call setline(1, 'aaa' .. repeat("\<C-A>", 150) .. 'bbb')
+  call cursor(1,1)
+  norm! $
+  redraw!
+  let expect=[
+\ '<<<^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^A^A^A^A^A^A^A^A^A^',
+\ 'A^Abbb              ']
+  let lines = s:screen_lines([1, 10], winwidth(0))
+  call s:compare_lines(expect, lines)
+  call assert_equal(len(expect), winline())
+  call assert_equal(strwidth(trim(expect[-1], ' ', 2)), wincol())
+  setl sbr=!!
+  redraw!
+  let expect=[
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^A^A^A^',
+\ '!!A^A^A^A^A^A^Abbb  ']
+  let lines = s:screen_lines([1, 10], winwidth(0))
+  call s:compare_lines(expect, lines)
+  call assert_equal(len(expect), winline())
+  call assert_equal(strwidth(trim(expect[-1], ' ', 2)), wincol())
+  call s:close_windows()
+endfunc
+
+func Test_linebreak_no_break_after_whitespace_only()
+  call s:test_windows('setl ts=4 linebreak wrap')
+  call setline(1, "\tabcdefghijklmnopqrstuvwxyz" ..
+        \ "abcdefghijklmnopqrstuvwxyz")
+  let lines = s:screen_lines([1, 4], winwidth(0))
+  let expect = [
+\ "    abcdefghijklmnop",
+\ "qrstuvwxyzabcdefghij",
+\ "klmnopqrstuvwxyz    ",
+\ "~                   ",
 \ ]
   call s:compare_lines(expect, lines)
   call s:close_windows()

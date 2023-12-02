@@ -3,7 +3,7 @@
 " Maintainer:		Tim Pope <vimNOSPAM@tpope.org>
 " URL:			https://github.com/vim-ruby/vim-ruby
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
-" Last Change:		2022 Mar 21
+" Last Change:		2023 Sep 1st
 
 if (exists("b:did_ftplugin"))
   finish
@@ -61,6 +61,10 @@ if !exists('g:ruby_version_paths')
 endif
 
 function! s:query_path(root) abort
+  " Disabled by default for security reasons.  
+  if !get(g:, 'ruby_exec', get(g:, 'plugin_exec', 0))
+    return []
+  endif
   let code = "print $:.join %q{,}"
   if &shell =~# 'sh' && empty(&shellxquote)
     let prefix = 'env PATH='.shellescape($PATH).' '
@@ -77,7 +81,14 @@ function! s:query_path(root) abort
   let cwd = fnameescape(getcwd())
   try
     exe cd fnameescape(a:root)
-    let path = split(system(path_check),',')
+    let s:tmp_cwd = getcwd()
+    if (fnamemodify(exepath('ruby'), ':p:h') ==# cwd
+          \ && (index(split($PATH,has("win32")? ';' : ':'), s:tmp_cwd) == -1 || s:tmp_cwd == '.'))
+      let path = []
+    else
+      let path = split(system(path_check),',')
+    endif
+    unlet! s:tmp_cwd
     exe cd cwd
     return path
   finally

@@ -373,7 +373,7 @@ func Test_dict_big()
   endtry
   call assert_equal('Vim(let):E716: "1500"', str)
 
-  " lookup each items
+  " lookup each item
   for i in range(1500)
     call assert_equal(3000 - i, d[i])
   endfor
@@ -435,13 +435,13 @@ func Test_dict_assign()
     let n = 0
     let n.key = 3
   END
-  call v9.CheckScriptFailure(lines, 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  call v9.CheckScriptFailure(lines, 'E1203: Dot not allowed after a number: n.key = 3')
   let lines =<< trim END
     vim9script
     var n = 0
     n.key = 3
   END
-  call v9.CheckScriptFailure(lines, 'E1203: Dot can only be used on a dictionary: n.key = 3')
+  call v9.CheckScriptFailure(lines, 'E1203: Dot not allowed after a number: n.key = 3')
   let lines =<< trim END
     var n = 0
     n.key = 3
@@ -1037,6 +1037,10 @@ func Test_reduce()
       call assert_equal('Å,s,t,r,ö,m', reduce('Åström', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
       call assert_equal('Å,s,t,r,ö,m', reduce('Åström', LSTART acc, val LMIDDLE acc .. ',' .. val LEND))
       call assert_equal(',a,b,c', reduce('abc', LSTART acc, val LMIDDLE acc .. ',' .. val LEND, test_null_string()))
+
+      call assert_equal(0x7d, reduce([0x30, 0x25, 0x08, 0x61], 'or'))
+      call assert_equal(0x7d, reduce(0z30250861, 'or'))
+      call assert_equal('β', reduce('ββββ', 'matchstr'))
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -1052,7 +1056,7 @@ func Test_reduce()
 
   call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1098:')
   call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1098:')
-  call assert_fails("call reduce([1, 2], 'Xdoes_not_exist')", 'E121:')
+  call assert_fails("call reduce([1, 2], 'Xdoes_not_exist')", 'E117:')
   call assert_fails("echo reduce(0z01, { acc, val -> 2 * acc + val }, '')", 'E1210:')
 
   call assert_fails("vim9 reduce(0, (acc, val) => (acc .. val), '')", 'E1252:')

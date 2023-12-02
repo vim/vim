@@ -130,7 +130,12 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define HINSTANCE long_u		// for generating prototypes
 # endif
 
-# ifndef MSWIN
+# ifdef MSWIN
+#  define load_dll vimLoadLib
+#  define close_dll FreeLibrary
+#  define symbol_from_dll GetProcAddress
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define FARPROC void*
 #  define HINSTANCE void*
@@ -142,11 +147,6 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define close_dll dlclose
 #  define symbol_from_dll dlsym
 #  define load_dll_error dlerror
-# else
-#  define load_dll vimLoadLib
-#  define close_dll FreeLibrary
-#  define symbol_from_dll GetProcAddress
-#  define load_dll_error GetWin32Error
 # endif
 
 // This makes if_python.c compile without warnings against Python 2.5
@@ -317,7 +317,7 @@ struct PyMethodDef { Py_ssize_t a; };
  */
 static int(*dll_PyArg_Parse)(PyObject *, char *, ...);
 static int(*dll_PyArg_ParseTuple)(PyObject *, char *, ...);
-static int(*dll_PyMem_Free)(void *);
+static void(*dll_PyMem_Free)(void *);
 static void* (*dll_PyMem_Malloc)(size_t);
 static int(*dll_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static int(*dll_PyErr_BadArgument)(void);
@@ -496,14 +496,14 @@ static struct
     PYTHON_PROC *ptr;
 } python_funcname_table[] =
 {
-# ifndef PY_SSIZE_T_CLEAN
-    {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
-    {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
-    {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
-# else
+# ifdef PY_SSIZE_T_CLEAN
     {"_PyArg_Parse_SizeT", (PYTHON_PROC*)&dll_PyArg_Parse},
     {"_PyArg_ParseTuple_SizeT", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
     {"_Py_BuildValue_SizeT", (PYTHON_PROC*)&dll_Py_BuildValue},
+# else
+    {"PyArg_Parse", (PYTHON_PROC*)&dll_PyArg_Parse},
+    {"PyArg_ParseTuple", (PYTHON_PROC*)&dll_PyArg_ParseTuple},
+    {"Py_BuildValue", (PYTHON_PROC*)&dll_Py_BuildValue},
 # endif
     {"PyMem_Free", (PYTHON_PROC*)&dll_PyMem_Free},
     {"PyMem_Malloc", (PYTHON_PROC*)&dll_PyMem_Malloc},
@@ -1103,7 +1103,7 @@ ex_python(exarg_T *eap)
 	    p_pyx = 2;
 
 	DoPyCommand(script == NULL ? (char *) eap->arg : (char *) script,
-		(rangeinitializer) init_range_cmd,
+		init_range_cmd,
 		(runner) run_cmd,
 		(void *) eap);
     }
@@ -1154,7 +1154,7 @@ ex_pyfile(exarg_T *eap)
 
     // Execute the file
     DoPyCommand(buffer,
-	    (rangeinitializer) init_range_cmd,
+	    init_range_cmd,
 	    (runner) run_cmd,
 	    (void *) eap);
 }
@@ -1166,7 +1166,7 @@ ex_pydo(exarg_T *eap)
 	p_pyx = 2;
 
     DoPyCommand((char *)eap->arg,
-	    (rangeinitializer) init_range_cmd,
+	    init_range_cmd,
 	    (runner)run_do,
 	    (void *)eap);
 }
@@ -1524,7 +1524,7 @@ FunctionGetattr(PyObject *self, char *name)
 do_pyeval(char_u *str, typval_T *rettv)
 {
     DoPyCommand((char *) str,
-	    (rangeinitializer) init_range_eval,
+	    init_range_eval,
 	    (runner) run_eval,
 	    (void *) rettv);
     if (rettv->v_type == VAR_UNKNOWN)

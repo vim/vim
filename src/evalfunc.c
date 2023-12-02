@@ -277,6 +277,19 @@ arg_number(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is an object.
+ */
+    static int
+arg_object(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    if (type->tt_type == VAR_OBJECT
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_object, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
  * Check "type" is a dict of 'any'.
  */
     static int
@@ -647,6 +660,7 @@ check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
 	    t_func_exp.tt_argcount = -1;
 
 	where.wt_index = 2;
+	where.wt_kind = WT_ARGUMENT;
 	return check_type(&t_func_exp, type, TRUE, where);
     }
     return OK;
@@ -714,6 +728,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    if (type->tt_argcount == -1)
 		t_func_exp.tt_argcount = -1;
 	    where.wt_index = 2;
+	    where.wt_kind = WT_ARGUMENT;
 	    return check_type(&t_func_exp, type, TRUE, where);
 	}
 
@@ -739,6 +754,20 @@ arg_string_or_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context
 	    || type_any_or_unknown(type))
 	return OK;
     arg_type_mismatch(&t_func_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" is a list of 'any' or a class.
+ */
+    static int
+arg_class_or_list(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    if (type->tt_type == VAR_CLASS
+	    || type->tt_type == VAR_LIST
+	    || type_any_or_unknown(type))
+	return OK;
+    arg_type_mismatch(&t_class, type, context->arg_idx + 1);
     return FAIL;
 }
 
@@ -1070,7 +1099,6 @@ static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
 static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
-static argcheck_T arg2_string_or_list_bool[] = {arg_string_or_list_any, arg_bool};
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg3_any_list_dict[] = {NULL, arg_list_any, arg_dict_any};
@@ -1094,6 +1122,7 @@ static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
 static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
 static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
 static argcheck_T arg3_string_or_dict_bool_dict[] = {arg_string_or_dict_any, arg_bool, arg_dict_any};
+static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, arg_bool, arg_number};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
@@ -1123,6 +1152,7 @@ static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
+static argcheck_T arg2_instanceof[] = {arg_object, arg_class_or_list};
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
 static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, NULL};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
@@ -1569,7 +1599,7 @@ ret_virtcol(int argcount,
 	type_T	**decl_type)
 {
     // Assume that if the second argument is passed it's non-zero
-    if (argcount == 2)
+    if (argcount > 1)
     {
 	*decl_type = &t_list_any;
 	return &t_list_number;
@@ -2122,6 +2152,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
+    {"instanceof",	2, 2, FEARG_1,	    arg2_instanceof,
+			ret_bool,	    f_instanceof},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
     {"invert",		1, 1, FEARG_1,	    arg1_number,
@@ -2806,7 +2838,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_utf16idx},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_member,    f_values},
-    {"virtcol",		1, 2, FEARG_1,	    arg2_string_or_list_bool,
+    {"virtcol",		1, 3, FEARG_1,	    arg3_string_or_list_bool_number,
 			ret_virtcol,	    f_virtcol},
     {"virtcol2col",	3, 3, FEARG_1,	    arg3_number,
 			ret_number,	    f_virtcol2col},
@@ -3858,6 +3890,12 @@ f_empty(typval_T *argvars, typval_T *rettv)
 			       || !channel_is_open(argvars[0].vval.v_channel);
 	    break;
 #endif
+	case VAR_TYPEALIAS:
+	    n = argvars[0].vval.v_typealias == NULL
+		|| argvars[0].vval.v_typealias->ta_name == NULL
+		|| *argvars[0].vval.v_typealias->ta_name == NUL;
+	    break;
+
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
@@ -3936,7 +3974,7 @@ f_err_teapot(typval_T *argvars, typval_T *rettv UNUSED)
 	if (argvars[0].v_type == VAR_STRING)
 	{
 	    char_u *s = tv_get_string_strict(&argvars[0]);
-	    if (s == NULL || *skipwhite(s) == NUL)
+	    if (*skipwhite(s) == NUL)
 		return;
 	}
 
@@ -4769,6 +4807,9 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    pt->pt_auto = arg_pt->pt_auto;
 		    if (pt->pt_dict != NULL)
 			++pt->pt_dict->dv_refcount;
+		    pt->pt_obj = arg_pt->pt_obj;
+		    if (pt->pt_obj != NULL)
+			++pt->pt_obj->obj_refcount;
 		}
 
 		pt->pt_refcount = 1;
@@ -6165,6 +6206,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"python3_stable",
+#if defined(FEAT_PYTHON3) && defined(DYNAMIC_PYTHON3_STABLE_ABI)
+		1
+#else
+		0
+#endif
+		},
 	{"python3",
 #if defined(FEAT_PYTHON3) && !defined(DYNAMIC_PYTHON3)
 		1
@@ -6420,6 +6468,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"writebackup",
 #ifdef FEAT_WRITEBACKUP
+		1
+#else
+		0
+#endif
+		},
+	{"xattr",
+#ifdef FEAT_XATTR
 		1
 #else
 		0
@@ -6938,7 +6993,7 @@ indexof_eval_expr(typval_T *expr)
     argv[1] = *get_vim_var_tv(VV_VAL);
     newtv.v_type = VAR_UNKNOWN;
 
-    if (eval_expr_typval(expr, argv, 2, NULL, &newtv) == FAIL)
+    if (eval_expr_typval(expr, FALSE, argv, 2, NULL, &newtv) == FAIL)
 	return FALSE;
 
     found = tv_get_bool_chk(&newtv, &error);
@@ -7262,6 +7317,67 @@ f_invert(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Free resources in lval_root allocated by fill_exec_lval_root().
+ */
+    static void
+free_lval_root(lval_root_T *root)
+{
+    if (root->lr_tv != NULL)
+	free_tv(root->lr_tv);
+    class_unref(root->lr_cl_exec);
+    root->lr_tv = NULL;
+    root->lr_cl_exec = NULL;
+}
+
+/*
+ * This is used if executing in a method, the argument string is a
+ * variable/item expr/reference. It may start with a potential class/object
+ * variable.
+ *
+ * Adjust "root" as needed; lr_tv may be changed or freed.
+ *
+ * Always returns OK.
+ * Free resources and return FAIL if the root should not be used. Otherwise OK.
+ */
+
+    static int
+fix_variable_reference_lval_root(lval_root_T *root, char_u *name)
+{
+
+    // Check if lr_tv is the name of an object/class reference: name start with
+    // "this" or name is class variable. Clear lr_tv if neither.
+    int found_member = FALSE;
+    if (root->lr_tv->v_type == VAR_OBJECT)
+    {
+	if (STRNCMP("this.", name, 5) == 0 ||STRCMP("this", name) == 0)
+	    found_member = TRUE;
+    }
+    if (!found_member)	// not object member, try class member
+    {
+	// Explicitly check if the name is a class member.
+	// If it's not then do nothing.
+	char_u	*end;
+	for (end = name; ASCII_ISALNUM(*end) || *end == '_'; ++end)
+	    ;
+	int idx = class_member_idx(root->lr_cl_exec, name, end - name);
+	if (idx >= 0)
+	{
+	    // A class variable, replace lr_tv with it
+	    clear_tv(root->lr_tv);
+	    copy_tv(&root->lr_cl_exec->class_members_tv[idx], root->lr_tv);
+	    found_member = TRUE;
+	}
+    }
+    if (!found_member)
+    {
+	free_tv(root->lr_tv);
+	root->lr_tv = NULL;	    // Not a member variable
+    }
+    // If FAIL, then must free_lval_root(root);
+    return OK;
+}
+
+/*
  * "islocked()" function
  */
     static void
@@ -7276,9 +7392,30 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    end = get_lval(tv_get_string(&argvars[0]), NULL, &lv, FALSE, FALSE,
+    char_u *name = tv_get_string(&argvars[0]);
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: f_islocked(): name: %s", name);
+#endif
+
+    lval_root_T	aroot;	// fully initialized in fill_exec_lval_root
+    lval_root_T *root = NULL;
+
+    // Set up lval_root if executing in a method.
+    if (fill_exec_lval_root(&aroot) == OK)
+    {
+	// Almost always produces a valid lval_root since lr_cl_exec is used
+	// for access verification, lr_tv may be set to NULL.
+	if (fix_variable_reference_lval_root(&aroot, name) == OK)
+	    root = &aroot;
+    }
+
+    lval_root_T	*lval_root_save = lval_root;
+    lval_root = root;
+    end = get_lval(name, NULL, &lv, FALSE, FALSE,
 			     GLV_NO_AUTOLOAD | GLV_READ_ONLY | GLV_NO_DECL,
 			     FNE_CHECK_START);
+    lval_root = lval_root_save;
+
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
@@ -7301,6 +7438,26 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 						   || tv_islocked(&di->di_tv));
 		}
 	    }
+	    else if (lv.ll_is_root)
+	    {
+		rettv->vval.v_number = tv_islocked(lv.ll_tv);
+	    }
+	    else if (lv.ll_object != NULL)
+	    {
+		typval_T *tv = ((typval_T *)(lv.ll_object + 1)) + lv.ll_oi;
+		rettv->vval.v_number = tv_islocked(tv);
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR: f_islocked(): name %s (obj)", lv.ll_name);
+#endif
+	    }
+	    else if (lv.ll_class != NULL)
+	    {
+		typval_T *tv = &lv.ll_class->class_members_tv[lv.ll_oi];
+		rettv->vval.v_number = tv_islocked(tv);
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR: f_islocked(): name %s (cl)", lv.ll_name);
+#endif
+	    }
 	    else if (lv.ll_range)
 		emsg(_(e_range_not_allowed));
 	    else if (lv.ll_newkey != NULL)
@@ -7314,6 +7471,8 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	}
     }
 
+    if (root != NULL)
+	free_lval_root(root);
     clear_lval(&lv);
 }
 
@@ -7386,6 +7545,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -8486,7 +8646,10 @@ f_range(typval_T *argvars, typval_T *rettv)
     list->lv_u.nonmat.lv_start = start;
     list->lv_u.nonmat.lv_end = end;
     list->lv_u.nonmat.lv_stride = stride;
-    list->lv_len = (end - start) / stride + 1;
+    if (stride > 0 ? end < start : end > start)
+	list->lv_len = 0;
+    else
+	list->lv_len = (end - start) / stride + 1;
 }
 
 /*
@@ -9568,6 +9731,12 @@ f_setenv(typval_T *argvars, typval_T *rettv UNUSED)
     char_u  *name;
 
     if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+
+    // setting an environment variable may be dangerous, e.g. you could
+    // setenv GCONV_PATH=/tmp and then have iconv() unexpectedly call
+    // a shell command using some shared library:
+    if (check_restricted() || check_secure())
 	return;
 
     name = tv_get_string_buf(&argvars[0], namebuf);
@@ -10726,6 +10895,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_CLASS:   n = VAR_TYPE_CLASS; break;
 	case VAR_OBJECT:  n = VAR_TYPE_OBJECT; break;
+	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
@@ -10737,7 +10907,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "virtcol(string, bool)" function
+ * "virtcol({expr}, [, {list} [, {winid}]])" function
  */
     static void
 f_virtcol(typval_T *argvars, typval_T *rettv)
@@ -10745,15 +10915,35 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
     colnr_T	vcol_start = 0;
     colnr_T	vcol_end = 0;
     pos_T	*fp;
-    int		fnum = curbuf->b_fnum;
+    switchwin_T	switchwin;
+    int		winchanged = FALSE;
     int		len;
 
     if (in_vim9script()
 	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
 		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_bool_arg(argvars, 1) == FAIL)))
+		    && (check_for_bool_arg(argvars, 1) == FAIL
+			|| check_for_opt_number_arg(argvars, 2) == FAIL))))
 	return;
 
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN)
+    {
+	tabpage_T	*tp;
+	win_T		*wp;
+
+	// use the window specified in the third argument
+	wp = win_id2wp_tp((int)tv_get_number(&argvars[2]), &tp);
+	if (wp == NULL || tp == NULL)
+	    goto theend;
+
+	if (switch_win_noblock(&switchwin, wp, tp, TRUE) != OK)
+	    goto theend;
+
+	check_cursor();
+	winchanged = TRUE;
+    }
+
+    int fnum = curbuf->b_fnum;
     fp = var2fpos(&argvars[0], FALSE, &fnum, FALSE);
     if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
 	    && fnum == curbuf->b_fnum)
@@ -10772,6 +10962,7 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 	++vcol_end;
     }
 
+theend:
     if (argvars[1].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[1]))
     {
 	if (rettv_list_alloc(rettv) == OK)
@@ -10784,6 +10975,9 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
     }
     else
 	rettv->vval.v_number = vcol_end;
+
+    if (winchanged)
+	restore_win_noblock(&switchwin, TRUE);
 }
 
 /*

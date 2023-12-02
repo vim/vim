@@ -172,9 +172,7 @@ get_fpos_of_mouse(pos_T *mpos)
     if (mouse_comp_pos(curwin, &row, &col, &mpos->lnum, NULL))
 	return IN_STATUS_LINE; // past bottom
 
-    mpos->col = vcol2col(wp, mpos->lnum, col);
-
-    mpos->coladd = 0;
+    mpos->col = vcol2col(wp, mpos->lnum, col, &mpos->coladd);
     return IN_BUFFER;
 }
 #endif
@@ -2060,7 +2058,7 @@ retnomove:
 	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
 	// for tests, a user would not click before redrawing.
 	// Do not use when 'virtualedit' is active.
-	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE && !virtual_active())
+	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE)
 	    col_from_screen = ScreenCols[off];
 #ifdef FEAT_FOLDING
 	// Remember the character under the mouse, it might be a '-' or '+' in
@@ -2098,40 +2096,51 @@ retnomove:
 	    redraw_cmdline = TRUE;	// show visual mode later
     }
 
-    if (col_from_screen >= 0)
+    if (col_from_screen == MAXCOL)
     {
-	// Use the column from ScreenCols[], it is accurate also after
-	// concealed characters.
-	curwin->w_cursor.col = col_from_screen;
-	if (col_from_screen == MAXCOL)
+	// When clicking after end of line, still need to set correct curswant
+	int off_l = LineOffset[prev_row] + curwin->w_wincol;
+	if (ScreenCols[off_l] < MAXCOL)
 	{
-	    curwin->w_curswant = col_from_screen;
-	    curwin->w_set_curswant = FALSE;	// May still have been TRUE
-	    mouse_past_eol = TRUE;
-	    if (inclusive != NULL)
-		*inclusive = TRUE;
+	    // Binary search to find last char in line
+	    int off_r = LineOffset[prev_row] + prev_col;
+	    int off_click = off_r;
+	    while (off_l < off_r)
+	    {
+		int off_m = (off_l + off_r + 1) / 2;
+		if (ScreenCols[off_m] < MAXCOL)
+		    off_l = off_m;
+		else
+		    off_r = off_m - 1;
+	    }
+	    colnr_T eol_vcol = ScreenCols[off_r];
+	    if (eol_vcol < 0)
+		// Empty line or whole line before w_leftcol,
+		// with columns before buffer text
+		eol_vcol = curwin->w_leftcol - 1;
+	    col = eol_vcol + (off_click - off_r);
 	}
 	else
-	{
-	    curwin->w_set_curswant = TRUE;
-	    if (inclusive != NULL)
-		*inclusive = FALSE;
-	}
-	check_cursor_col();
+	    // Empty line or whole line before w_leftcol
+	    col = prev_col - curwin->w_wincol + curwin->w_leftcol;
     }
-    else
+    else if (col_from_screen >= 0)
     {
-	curwin->w_curswant = col;
-	curwin->w_set_curswant = FALSE;	// May still have been TRUE
-	if (coladvance(col) == FAIL)	// Mouse click beyond end of line
-	{
-	    if (inclusive != NULL)
-		*inclusive = TRUE;
-	    mouse_past_eol = TRUE;
-	}
-	else if (inclusive != NULL)
-	    *inclusive = FALSE;
+	// Use the virtual column from ScreenCols[], it is accurate also after
+	// concealed characters.
+	col = col_from_screen;
     }
+
+    curwin->w_curswant = col;
+    curwin->w_set_curswant = FALSE;	// May still have been TRUE
+    if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+    {
+	if (inclusive != NULL)
+	    *inclusive = TRUE;
+	mouse_past_eol = TRUE;
+    }
+    else if (inclusive != NULL)
+	*inclusive = FALSE;
 
     count = IN_BUFFER;
     if (curwin != old_curwin || curwin->w_cursor.lnum != old_cursor.lnum
@@ -2156,7 +2165,7 @@ retnomove:
 do_mousescroll_horiz(long_u leftcol)
 {
     if (curwin->w_p_wrap)
-	return FALSE;  // no wrapping, no scrolling
+	return FALSE;  // no horizontal scrolling when wrapping
 
     if (curwin->w_leftcol == (colnr_T)leftcol)
 	return FALSE;  // already there
@@ -3190,10 +3199,10 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 	|| defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
- * The first column is one.
+ * The first column is zero.
  */
     int
-vcol2col(win_T *wp, linenr_T lnum, int vcol)
+vcol2col(win_T *wp, linenr_T lnum, int vcol, colnr_T *coladdp)
 {
     char_u	    *line;
     chartabsize_T   cts;
@@ -3203,11 +3212,16 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
     while (cts.cts_vcol < vcol && *cts.cts_ptr != NUL)
     {
-	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	int size = win_lbr_chartabsize(&cts, NULL);
+	if (cts.cts_vcol + size > vcol)
+	    break;
+	cts.cts_vcol += size;
 	MB_PTR_ADV(cts.cts_ptr);
     }
     clear_chartabsize_arg(&cts);
 
+    if (coladdp != NULL)
+	*coladdp = vcol - cts.cts_vcol;
     return (int)(cts.cts_ptr - line);
 }
 #endif
@@ -3228,6 +3242,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     varnumber_T wincol = 0;
     linenr_T	lnum = 0;
     varnumber_T column = 0;
+    colnr_T	coladd = 0;
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
@@ -3261,7 +3276,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
 		(void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
-		col = vcol2col(wp, lnum, col);
+		col = vcol2col(wp, lnum, col, &coladd);
 		column = col + 1;
 	    }
 	}
@@ -3271,5 +3286,6 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(d, "wincol", wincol);
     dict_add_number(d, "line", (varnumber_T)lnum);
     dict_add_number(d, "column", column);
+    dict_add_number(d, "coladd", coladd);
 }
 #endif

@@ -5,6 +5,7 @@ void init_term_props(int all);
 void f_terminalprops(typval_T *argvars, typval_T *rettv);
 void set_color_count(int nr);
 keyprot_T match_keyprotocol(char_u *term);
+void apply_keyprotocol(char_u *term, keyprot_T prot);
 int set_termname(char_u *term);
 void free_cur_term(void);
 void getlinecol(long *cp, long *rp);

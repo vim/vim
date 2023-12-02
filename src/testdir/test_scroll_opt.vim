@@ -1,4 +1,4 @@
-" Test for reset 'scroll' and 'smoothscroll'
+" Test for 'scroll', 'scrolloff', 'smoothscroll', etc.
 
 source check.vim
 source screendump.vim
@@ -39,20 +39,74 @@ func Test_reset_scroll()
 endfunc
 
 func Test_scolloff_even_line_count()
-   new
-   resize 6
-   setlocal scrolloff=3
-   call setline(1, range(20))
-   normal 2j
-   call assert_equal(1, getwininfo(win_getid())[0].topline)
-   normal j
-   call assert_equal(1, getwininfo(win_getid())[0].topline)
-   normal j
-   call assert_equal(2, getwininfo(win_getid())[0].topline)
-   normal j
-   call assert_equal(3, getwininfo(win_getid())[0].topline)
+  new
+  resize 6
+  setlocal scrolloff=3
+  call setline(1, range(20))
+  normal 2j
+  call assert_equal(1, getwininfo(win_getid())[0].topline)
+  normal j
+  call assert_equal(1, getwininfo(win_getid())[0].topline)
+  normal j
+  call assert_equal(2, getwininfo(win_getid())[0].topline)
+  normal j
+  call assert_equal(3, getwininfo(win_getid())[0].topline)
 
-   bwipe!
+  bwipe!
+endfunc
+
+func Test_mouse_scroll_inactive_with_cursorbind()
+  for scb in [0, 1]
+    for so in [0, 1, 2]
+      let msg = $'scb={scb} so={so}'
+
+      new | only
+      let w1 = win_getid()
+      setlocal cursorbind
+      let &l:scb = scb
+      let &l:so = so
+      call setline(1, range(101, 109))
+      rightbelow vnew
+      let w2 = win_getid()
+      setlocal cursorbind
+      let &l:scb = scb
+      let &l:so = so
+      call setline(1, range(101, 109))
+
+      normal! $
+      call assert_equal(3, col('.', w1), msg)
+      call assert_equal(3, col('.', w2), msg)
+      call test_setmouse(1, 1)
+      call feedkeys("\<ScrollWheelDown>", 'xt')
+      call assert_equal(4, line('w0', w1), msg)
+      call assert_equal(4 + so, line('.', w1), msg)
+      call assert_equal(1, line('w0', w2), msg)
+      call assert_equal(1, line('.', w2), msg)
+      call feedkeys("\<ScrollWheelDown>", 'xt')
+      call assert_equal(7, line('w0', w1), msg)
+      call assert_equal(7 + so, line('.', w1), msg)
+      call assert_equal(1, line('w0', w2), msg)
+      call assert_equal(1, line('.', w2), msg)
+      call feedkeys("\<ScrollWheelUp>", 'xt')
+      call assert_equal(4, line('w0', w1), msg)
+      call assert_equal(7 + so, line('.', w1), msg)
+      call assert_equal(1, line('w0', w2), msg)
+      call assert_equal(1, line('.', w2), msg)
+      call feedkeys("\<ScrollWheelUp>", 'xt')
+      call assert_equal(1, line('w0', w1), msg)
+      call assert_equal(7 + so, line('.', w1), msg)
+      call assert_equal(1, line('w0', w2), msg)
+      call assert_equal(1, line('.', w2), msg)
+      normal! 0
+      call assert_equal(1, line('.', w1), msg)
+      call assert_equal(1, col('.', w1), msg)
+      call assert_equal(1, line('.', w2), msg)
+      call assert_equal(1, col('.', w2), msg)
+
+      bwipe!
+      bwipe!
+    endfor
+  endfor
 endfunc
 
 func Test_CtrlE_CtrlY_stop_at_end()
@@ -851,6 +905,42 @@ func Test_smoothscroll_zero_width_scroll_cursor_bot()
   call writefile(lines, 'XSmoothScrollZeroBot', 'D')
   let buf = RunVimInTerminal('-u NONE -S XSmoothScrollZeroBot', #{rows: 19})
   call VerifyScreenDump(buf, 'Test_smoothscroll_zero_bot', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" scroll_cursor_top() should reset skipcol when it changes topline
+func Test_smoothscroll_cursor_top()
+  CheckScreendump
+
+  let lines =<< trim END
+      set smoothscroll scrolloff=2
+      new | 11resize | wincmd j
+      call setline(1, ['line1', 'line2', 'line3'->repeat(20), 'line4'])
+      exe "norm G3\<C-E>k"
+  END
+  call writefile(lines, 'XSmoothScrollCursorTop', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCursorTop', #{rows: 12, cols:40})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_cursor_top', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Division by zero, shouldn't crash
+func Test_smoothscroll_crash()
+  CheckScreendump
+
+  let lines =<< trim END
+      20 new
+      vsp
+      put =repeat('aaaa', 20)
+      set nu fdc=1  smoothscroll cpo+=n
+      vert resize 0
+      exe "norm! 0\<c-e>"
+  END
+  call writefile(lines, 'XSmoothScrollCrash', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollCrash', #{rows: 12, cols:40})
+  call term_sendkeys(buf, "2\<C-E>\<C-L>")
 
   call StopVimInTerminal(buf)
 endfunc

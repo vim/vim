@@ -39,6 +39,7 @@ int has_autocmd(event_T event, char_u *sfname, buf_T *buf);
 char_u *get_augroup_name(expand_T *xp, int idx);
 char_u *set_context_in_autocmd(expand_T *xp, char_u *arg, int doautocmd);
 char_u *get_event_name(expand_T *xp, int idx);
+char_u *get_event_name_no_group(expand_T *xp, int idx);
 int autocmd_supported(char_u *name);
 int au_exists(char_u *arg);
 void f_autocmd_add(typval_T *argvars, typval_T *rettv);

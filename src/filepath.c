@@ -1616,7 +1616,7 @@ checkitem_common(void *context, char_u *name, dict_T *dict)
 	argv[0].vval.v_dict = dict;
     }
 
-    if (eval_expr_typval(expr, argv, 1, NULL, &rettv) == FAIL)
+    if (eval_expr_typval(expr, FALSE, argv, 1, NULL, &rettv) == FAIL)
 	goto theend;
 
     // We want to use -1, but also true/false should be allowed.
@@ -2159,7 +2159,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 		if (q > p && *q == NUL)
 		{
 		    // Ignore trailing path separator.
-		    q[-1] = NUL;
+		    p[q - p - 1] = NUL;
 		    q = gettail(p);
 		}
 		if (q > p && !mch_isFullName(buf))

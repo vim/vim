@@ -1635,7 +1635,6 @@ aucmd_restbuf(
     {
 	win_T *awp = aucmd_win[aco->use_aucmd_win_idx].auc_win;
 
-	--curbuf->b_nwindows;
 	// Find "awp", it can't be closed, but it may be in another tab
 	// page. Do not trigger autocommands here.
 	block_autocmds();
@@ -1656,8 +1655,8 @@ aucmd_restbuf(
 	    }
 	}
 win_found:
+	--curbuf->b_nwindows;
 #ifdef FEAT_JOB_CHANNEL
-	;
 	int save_stop_insert_mode = stop_insert_mode;
 	// May need to stop Insert mode if we were in a prompt buffer.
 	leaving_window(curwin);
@@ -2736,6 +2735,16 @@ get_event_name(expand_T *xp UNUSED, int idx)
 	return AUGROUP_NAME(idx);	// return a name
     }
     return (char_u *)event_names[idx - augroups.ga_len].name;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of event names. Don't
+ * include groups.
+ */
+    char_u *
+get_event_name_no_group(expand_T *xp UNUSED, int idx)
+{
+    return (char_u *)event_names[idx].name;
 }
 
 

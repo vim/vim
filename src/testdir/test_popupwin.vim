@@ -2671,21 +2671,21 @@ func Test_popupwin_filter_mouse()
     eval a:tests->add(#{clickrow: a:row, clickcol: a:col, result: #{
 	  \ screenrow: a:row, screencol: a:col,
 	  \ winid: win_getid(), winrow: a:row, wincol: a:col,
-	  \ line: a:row, column: a:col,
+	  \ line: a:row, column: a:col, coladd: 0,
 	  \ }})
   endfunc
   func AddItemInPopupBorder(tests, winid, row, col)
     eval a:tests->add(#{clickrow: a:row, clickcol: a:col, result: #{
 	  \ screenrow: a:row, screencol: a:col,
 	  \ winid: a:winid, winrow: a:row - 1, wincol: a:col - 3,
-	  \ line: 0, column: 0,
+	  \ line: 0, column: 0, coladd: 0,
 	  \ }})
   endfunc
-  func AddItemInPopupText(tests, winid, row, col, textline, textcol)
+  func AddItemInPopupText(tests, winid, row, col, textline, textcol, coladd = 0)
     eval a:tests->add(#{clickrow: a:row, clickcol: a:col, result: #{
 	  \ screenrow: a:row, screencol: a:col,
 	  \ winid: a:winid, winrow: a:row - 1, wincol: a:col - 3,
-	  \ line: a:textline, column: a:textcol,
+	  \ line: a:textline, column: a:textcol, coladd: a:coladd,
 	  \ }})
   endfunc
 
@@ -2717,7 +2717,7 @@ func Test_popupwin_filter_mouse()
   call AddItemInPopupText(tests, winid, 4, 6, 1, 1)
   call AddItemInPopupText(tests, winid, 4, 10, 1, 5)
   call AddItemInPopupText(tests, winid, 4, 11, 1, 6)
-  call AddItemInPopupText(tests, winid, 4, 17, 1, 6)
+  call AddItemInPopupText(tests, winid, 4, 17, 1, 6, 6)
   " text "long line th"
   call AddItemInPopupText(tests, winid, 5, 6, 2, 1)
   call AddItemInPopupText(tests, winid, 5, 10, 2, 5)
@@ -2730,7 +2730,7 @@ func Test_popupwin_filter_mouse()
   call AddItemInPopupText(tests, winid, 7, 6, 3, 1)
   call AddItemInPopupText(tests, winid, 7, 10, 3, 5)
   call AddItemInPopupText(tests, winid, 7, 11, 3, 6)
-  call AddItemInPopupText(tests, winid, 7, 17, 3, 6)
+  call AddItemInPopupText(tests, winid, 7, 17, 3, 6, 6)
 
   for item in tests
     call test_setmouse(item.clickrow, item.clickcol)
@@ -4205,5 +4205,11 @@ func Test_popupwin_with_error()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_popup_close_callback_recursive()
+  " this invokes the callback recursively
+  let winid = popup_create('something', #{callback: 'popup_close'})
+  redraw
+  call assert_fails('call popup_close(winid)', 'E169')
+endfunc
 
 " vim: shiftwidth=2 sts=2

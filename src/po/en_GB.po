@@ -3,17 +3,21 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# FIRST AUTHOR Mike Williams <mrw@eandem.co.uk>, 2003.
+# FIRST AUTHOR Mike Williams <mrmrdubya@gmail.com>, 2003.
 #
 # Style Guide:
 # o English spelling!
 # o Colour, not color
+# o -iour, not -ior
 # o -ise, not -ize.
 # o No contractions.
 # o Cannot, not can not.
+# o White space, not whitespace
 # o Backward (no s) when used as an adjective.
-# o Consistent capitalisation for first word after Ennn:
-# o Consistent capitalisation of NetBeans and JSON
+# o Command line for noun, command-line for adjective
+# o Improve consistency of messages ...
+# o - capitalisation for first English word after Ennn:
+# o - capitalisation of: NetBeans, JSON, Python, Lisp, Cscope
 # o TBC ...
 #
 # As with all guides, they should be followed unless there is a reason why they
@@ -21,12 +25,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 8.2 (UK English)\n"
+"Project-Id-Version: Vim 9.0 (UK English)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-11 17:36+1000\n"
+"POT-Creation-Date: 2023-08-28 09:49+0100\n"
 "PO-Revision-Date: 2022-05-12 10:05+1000\n"
 "Last-Translator: Doug Kearns <dougkearns@gmail.com>\n"
-"Language-Team: Mike Williams <mrw@eandem.co.uk>\n"
+"Language-Team: Mike Williams <mrmrdubya@gmail.com>\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
@@ -56,11 +60,21 @@ msgstr "Cannot find temp file for conversion"
 msgid "can't read output of 'charconvert'"
 msgstr "cannot read output of 'charconvert'"
 
-msgid "cscope connection %s closed"
-msgstr "Cscope connection %s closed"
+#, c-format
+msgid "Added cscope database %s"
+msgstr "Added Cscope database %s"
+
+msgid "All cscope databases reset"
+msgstr "All Cscope databases reset"
+
+msgid "no cscope connections\n"
+msgstr "no Cscope connections\n"
 
 msgid "couldn't open buffer"
 msgstr "could not open buffer"
+
+msgid " Command-line completion (^V^N^P)"
+msgstr " Command line completion (^V^N^P)"
 
 msgid "netbeans is not supported with this GUI\n"
 msgstr "NetBeans is not supported with this GUI\n"
@@ -95,7 +109,7 @@ msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgstr "+reverse\t\tDo not use reverse video (also: +rv)"
 
 msgid "Messages maintainer: The Vim Project"
-msgstr "Messages maintainer: Mike Williams <mrw@eandem.co.uk>"
+msgstr "Messages maintainer: Mike Williams <mrmrdubya@gmail.com>"
 
 msgid "VIM: Can't open window!\n"
 msgstr "VIM: Cannot open window!\n"
@@ -140,11 +154,11 @@ msgstr "E166: Cannot open linked file for writing"
 msgid "E185: Cannot find color scheme '%s'"
 msgstr "E185: Cannot find colour scheme '%s'"
 
-msgid "E205: Patchmode: Can't save original file"
-msgstr "E205: Patchmode: Cannot save original file"
+msgid "E205: Patchmode: can't save original file"
+msgstr "E205: Patchmode: cannot save original file"
 
-msgid "E206: Patchmode: Can't touch empty original file"
-msgstr "E206: Patchmode: Cannot touch empty original file"
+msgid "E206: Patchmode: can't touch empty original file"
+msgstr "E206: Patchmode: cannot touch empty original file"
 
 msgid "E207: Can't delete backup file"
 msgstr "E207: Cannot delete backup file"
@@ -158,6 +172,9 @@ msgstr "E214: Cannot find temp file for writing"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Cannot execute autocommands for ALL events"
 
+msgid "E242: Can't split a window while closing another"
+msgstr "E242: Cannot split a window while closing another"
+
 #, c-format
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: Cannot allocate colour %s"
@@ -165,23 +182,19 @@ msgstr "E254: Cannot allocate colour %s"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Could not read in sign data"
 
+#, c-format
+msgid "E259: No matches found for cscope query %s of %s"
+msgstr "E259: No matches found for Cscope query %s of %s"
+
+#, c-format
+msgid "E262: Error reading cscope connection %d"
+msgstr "E262: Error reading Cscope connection %d"
+
 msgid "E288: Input method doesn't support any style"
 msgstr "E288: Input method does not support any style"
 
 msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: Input method does not support my preedit type"
-
-msgid "E298: Didn't get block nr 0?"
-msgstr "E298: Did not get block nr 0?"
-
-msgid "E298: Didn't get block nr 1?"
-msgstr "E298: Did not get block nr 1?"
-
-msgid "E298: Didn't get block nr 2?"
-msgstr "E298: Did not get block nr 2?"
-
-msgid "E304: ml_upd_block0(): Didn't get block 0??"
-msgstr "E304: ml_upd_block0(): Did not get block 0??"
 
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: Cannot open PostScript output file"
@@ -203,6 +216,9 @@ msgstr "E389: Could not find pattern"
 #, c-format
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Did not find region item for %s"
+
+msgid "E418: I'm a teapot"
+msgstr "E418: I am a teapot"
 
 msgid "E419: FG color unknown"
 msgstr "E419: FG colour unknown"
@@ -272,18 +288,18 @@ msgstr "E508: Cannot read file for backup (add ! to write anyway)"
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr "E510: Cannot make backup file (add ! to write anyway)"
 
-msgid ""
-"E513: Write error, conversion failed in line %ld (make 'fenc' empty to "
-"override)"
-msgstr ""
-"E513: Write error, conversion failed in line %ld (make 'fenc' empty to "
-"override)"
-
 msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr "E532: Highlighting colour name too long in defineAnnoType"
 
 msgid "E533: Can't select wide font"
 msgstr "E533: Cannot select wide font"
+
+#, c-format
+msgid "E564: %s is not a directory or a valid cscope database"
+msgstr "E564: %s is not a directory or a valid Cscope database"
+
+msgid "E568: Duplicate cscope database not added"
+msgstr "E568: Duplicate Cscope database not added"
 
 msgid "E597: Can't select fontset"
 msgstr "E597: Cannot select fontset"
@@ -291,6 +307,13 @@ msgstr "E597: Cannot select fontset"
 #, c-format
 msgid "E624: Can't open file \"%s\""
 msgstr "E624: Cannot open file \"%s\""
+
+#, c-format
+msgid "E625: Cannot open cscope database: %s"
+msgstr "E625: Cannot open Cscope database: %s"
+
+msgid "E626: Cannot get cscope database information"
+msgstr "E626: Cannot get Cscope database information"
 
 #, c-format
 msgid "E738: Can't list variables for %s"
@@ -315,16 +338,12 @@ msgstr "E871: (NFA regexp) Cannot have a multi follow a multi"
 msgid "E880: Can't handle SystemExit of python exception in vim"
 msgstr "E880: Cannot handle SystemExit of Python exception in vim"
 
-msgid ""
-"E883: Search pattern and expression register may not contain two or more "
-"lines"
-msgstr ""
-"E883: Search pattern and expression register may not contain two or more "
-"lines"
-
 #, c-format
 msgid "E886: Can't rename viminfo file to %s!"
 msgstr "E886: Cannot rename viminfo file to %s!"
+
+msgid "E952: Autocommand caused recursive behavior"
+msgstr "E952: Autocommand caused recursive behaviour"
 
 msgid "E954: 24-bit colors are not supported on this environment"
 msgstr "E954: 24-bit colours are not supported on this environment"
@@ -332,6 +351,9 @@ msgstr "E954: 24-bit colours are not supported on this environment"
 #, c-format
 msgid "E1010: Type not recognized: %s"
 msgstr "E1010: Type not recognised: %s"
+
+msgid "E1022: Type or initialization required"
+msgstr "E1022: Type or initialisation required"
 
 #, c-format
 msgid "E1146: Command not recognized: %s"
@@ -341,12 +363,41 @@ msgstr "E1146: Command not recognised: %s"
 msgid "E1161: Cannot json encode a %s"
 msgstr "E1161: Cannot JSON encode a %s"
 
+msgid "E1188: Cannot open a terminal from the command line window"
+msgstr "E1188: Cannot open a terminal from the command-line window"
+
 #, c-format
 msgid "E1244: Bad color string: %s"
 msgstr "E1244: Bad colour string: %s"
 
+#, c-format
+msgid "E1329: Cannot get object member type from initializer: %s"
+msgstr "E1329: Cannot get object member type from initialiser: %s"
+
+msgid "E1344: Cannot initialize a member in an interface"
+msgstr "E1344: Cannot initialise a member in an interface"
+
+msgid "E1361: Cannot use color \"none\", did you mean \"NONE\"?"
+msgstr "E1361: Cannot use colour \"none\", did you mean \"NONE\"?"
+
 msgid "can't delete OutputObject attributes"
 msgstr "cannot delete OutputObject attributes"
+
+msgid "give messages when adding a cscope database"
+msgstr "give messages when adding a Cscope database"
+
+msgid "file names in a cscope file are relative to that file"
+msgstr "file names in a Cscope file are relative to that file"
+
+msgid ""
+"include \"lastline\" to show the last line even if it doesn't fit\n"
+"include \"uhex\" to show unprintable characters as a hex number"
+msgstr ""
+"include \"lastline\" to show the last line even if it does not fit\n"
+"include \"uhex\" to show unprintable characters as a hex number"
+
+msgid "number of lines used for the command-line"
+msgstr "number of lines used for the command line"
 
 msgid "don't redraw while executing macros"
 msgstr "do not redraw while executing macros"
@@ -360,6 +411,9 @@ msgstr "use GUI colours for the terminal"
 msgid "don't unload a buffer when no longer shown in a window"
 msgstr "do not unload a buffer when no longer shown in a window"
 
+msgid "determines scroll behavior for split windows"
+msgstr "determines scroll behaviour for split windows"
+
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "recognise keys that start with <Esc> in Insert mode"
 
@@ -372,5 +426,36 @@ msgstr "add 's' flag in 'shortmess' (do not show search message)"
 msgid "pattern to recognize a numbered list"
 msgstr "pattern to recognise a numbered list"
 
+msgid ""
+"\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\n"
+"recognized for CTRL-A and CTRL-X commands"
+msgstr ""
+"\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\n"
+"recognised for CTRL-A and CTRL-X commands"
+
+msgid "copy whitespace for indenting from previous line"
+msgstr "copy white space for indenting from previous line"
+
+msgid "preserve kind of whitespace when changing indent"
+msgstr "preserve kind of white space when changing indent"
+
+msgid "enable lisp mode"
+msgstr "enable Lisp mode"
+
+msgid "words that change how lisp indenting works"
+msgstr "words that change how Lisp indenting works"
+
 msgid "recognize mappings in mapped keys"
 msgstr "recognise mappings in mapped keys"
+
+msgid "key that triggers command-line expansion"
+msgstr "key that triggers command line expansion"
+
+msgid "command-line completion shows a list of matches"
+msgstr "command line completion shows a list of matches"
+
+msgid "when to edit the command-line right-to-left"
+msgstr "when to edit the command line right-to-left"
+
+msgid "what happens with a buffer when it's no longer in a window"
+msgstr "what happens with a buffer when it is no longer in a window"

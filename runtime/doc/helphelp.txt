@@ -394,17 +394,25 @@ highlighting.  So do these:
 
 You can find the details in $VIMRUNTIME/syntax/help.vim
 
-							*inclusion*
-Vim is for everybody, no matter race, gender or anything.  Some people make a
-big deal about using "he" or "his" when referring to the user, thinking it
-means we assume the user is male.  That is not the case, it's just a habit of
-writing help text, which quite often is many years old.  Also, a lot of the
-text is written by contributors for whom English is not their first language.
-We do not make any assumptions about the gender of the user, no matter how the
-text is phrased.  Some people have suggested using "they", but that is not
-regular English. We do not want to spend much time on this discussion.  The
-goal is that the reader understands how Vim works, the exact wording is
+
+GENDER NEUTRAL LANGUAGE
+
+						*gender-neutral* *inclusion*
+Vim is for everybody, no matter race, gender or anything. For new or updated
+help text, gender neutral language is recommended. Some of the help text is
+many years old and there is no need to change it. We do not make any
+assumptions about the gender of the user, no matter how the text is phrased.
+The goal is that the reader understands how Vim works, the exact wording is
 secondary.
 
+Many online technical style guides include sections about gender neutral
+language. Here are a few: >
+
+	https://developers.google.com/style/pronouns
+	https://techwhirl.com/gender-neutral-technical-writing/
+	https://www.skillsyouneed.com/write/gender-neutral-language.html
+	https://ualr.edu/writingcenter/avoid-sexist-language/
+<
+Note: gender neutral language does not require using singular "they".
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -297,5 +297,11 @@ instead of DYNAMIC_PERL_DLL file what was specified at compile time.  The
 version of the shared library must match the Perl version Vim was compiled
 with.
 
+Note: If you are building Perl locally, you have to use a version compiled
+with threading support for it for Vim to successfully link against it. You can
+use the `-Dusethreads` flags when configuring Perl, and check that a Perl
+binary has it enabled by running `perl -V` and verify that `USE_ITHREADS` is
+under "Compile-time options".
+
 ==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:

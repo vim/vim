@@ -32,7 +32,7 @@ typedef enum {
 
     ISN_SOURCE,	    // source autoload script, isn_arg.number is the script ID
     ISN_INSTR,	    // instructions compiled from expression
-    ISN_CONSTRUCT,  // construct an object, using contstruct_T
+    ISN_CONSTRUCT,  // construct an object, using construct_T
     ISN_GET_OBJ_MEMBER, // object member, index is isn_arg.number
     ISN_GET_ITF_MEMBER, // interface member, index is isn_arg.classmember
     ISN_STORE_THIS, // store value in "this" object member, index is
@@ -125,7 +125,6 @@ typedef enum {
     ISN_NEWFUNC,    // create a global function from a lambda function
     ISN_DEF,	    // list functions
     ISN_DEFER,	    // :defer  argument count is isn_arg.number
-    ISN_DEFEROBJ,   // idem, function is an object method
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
@@ -383,6 +382,7 @@ typedef struct {
     char_u	  *fre_func_name;	// function name for legacy function
     loopvarinfo_T fre_loopvar_info;	// info about variables inside loops
     class_T	  *fre_class;		// class for a method
+    int		  fre_object_method;	// class or object method
     int		  fre_method_idx;	// method index on "fre_class"
 } funcref_extra_T;
 
@@ -499,11 +499,19 @@ typedef struct {
     class_T	*cm_class;
     int		cm_idx;
 } classmember_T;
+
 // arguments to ISN_STOREINDEX
 typedef struct {
     vartype_T	si_vartype;
     class_T	*si_class;
 } storeindex_T;
+
+// arguments to ISN_LOCKUNLOCK
+typedef struct {
+    char_u	*lu_string;	// for exec_command
+    class_T	*lu_cl_exec;	// executing, null if not class/obj method
+    int		lu_is_arg;	// is lval_root a function arg
+} lockunlock_T;
 
 /*
  * Instruction
@@ -561,6 +569,7 @@ struct isn_S {
 	construct_T	    construct;
 	classmember_T	    classmember;
 	storeindex_T	    storeindex;
+	lockunlock_T	    lockunlock;
     } isn_arg;
 };
 

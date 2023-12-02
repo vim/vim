@@ -2025,8 +2025,8 @@ endfunc
 " Test for BufUnload autocommand that unloads all the other buffers
 func Test_bufunload_all()
   let g:test_is_flaky = 1
-  call writefile(['Test file Xxx1'], 'Xxx1', 'D')"
-  call writefile(['Test file Xxx2'], 'Xxx2', 'D')"
+  call writefile(['Test file Xxx1'], 'Xxx1', 'D')
+  call writefile(['Test file Xxx2'], 'Xxx2', 'D')
 
   let content =<< trim [CODE]
     func UnloadAllBufs()
@@ -3610,6 +3610,35 @@ func Test_Changed_ChangedI()
   " call assert_equal('N4', g:autocmd_n)
   call assert_equal('I3', g:autocmd_i)
 
+  " TextChangedI should only trigger if change was done in Insert mode
+  let g:autocmd_i = ''
+  call feedkeys("yypi\<esc>", 'tnix')
+  call assert_equal('', g:autocmd_i)
+
+  " TextChanged should only trigger if change was done in Normal mode
+  let g:autocmd_n = ''
+  call feedkeys("ibar\<esc>", 'tnix')
+  call assert_equal('', g:autocmd_n)
+
+  " If change is a mix of Normal and Insert modes, TextChangedI should trigger
+  func s:validate_mixed_textchangedi(keys)
+    call feedkeys("ifoo\<esc>", 'tnix')
+    let g:autocmd_i = ''
+    let g:autocmd_n = ''
+    call feedkeys(a:keys, 'tnix')
+    call assert_notequal('', g:autocmd_i)
+    call assert_equal('', g:autocmd_n)
+  endfunc
+
+  call s:validate_mixed_textchangedi("o\<esc>")
+  call s:validate_mixed_textchangedi("O\<esc>")
+  call s:validate_mixed_textchangedi("ciw\<esc>")
+  call s:validate_mixed_textchangedi("cc\<esc>")
+  call s:validate_mixed_textchangedi("C\<esc>")
+  call s:validate_mixed_textchangedi("s\<esc>")
+  call s:validate_mixed_textchangedi("S\<esc>")
+
+
   " CleanUp
   call test_override("char_avail", 0)
   au! TextChanged  <buffer>
@@ -3630,9 +3659,20 @@ func Test_closing_autocmd_window()
   END
   call v9.CheckScriptFailure(lines, 'E814:')
   au! BufEnter
-  only!
   bwipe Xa.txt
   bwipe Xb.txt
+endfunc
+
+func Test_switch_window_in_autocmd_window()
+  edit Xa.txt
+  tabnew Xb.txt
+  autocmd BufEnter Xa.txt wincmd w
+  doautoall BufEnter
+  au! BufEnter
+  bwipe Xa.txt
+  call assert_false(bufexists('Xa.txt'))
+  bwipe Xb.txt
+  call assert_false(bufexists('Xb.txt'))
 endfunc
 
 func Test_bufwipeout_changes_window()
@@ -3740,8 +3780,6 @@ func Test_mode_changes()
   call assert_equal(len(g:mode_seq) - 1, g:index)
   call assert_equal(2, g:n_to_c)
   call assert_equal(2, g:c_to_n)
-  unlet g:n_to_c
-  unlet g:c_to_n
 
   let g:n_to_v = 0
   au ModeChanged n:v let g:n_to_v += 1
@@ -3752,8 +3790,10 @@ func Test_mode_changes()
   call assert_equal(len(g:mode_seq) - 1, g:index)
   call assert_equal(1, g:n_to_v)
   call assert_equal(1, g:v_to_n)
-  unlet g:n_to_v
-  unlet g:v_to_n
+
+  let g:mode_seq += ['c', 'cr', 'c', 'cr', 'n']
+  call feedkeys(":\<Insert>\<Insert>\<Insert>\<CR>", 'tnix')
+  call assert_equal(len(g:mode_seq) - 1, g:index)
 
   au! ModeChanged
   delfunc TestMode
@@ -3768,6 +3808,10 @@ func Test_mode_changes()
   unlet! g:i_to_n
   unlet! g:nori_to_any
   unlet! g:i_to_any
+  unlet! g:n_to_c
+  unlet! g:c_to_n
+  unlet! g:n_to_v
+  unlet! g:v_to_n
 endfunc
 
 func Test_recursive_ModeChanged()

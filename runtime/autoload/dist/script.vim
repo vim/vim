@@ -209,6 +209,22 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ 'nix-shell'
     return 'nix'
 
+    # Crystal
+  elseif name =~ '^crystal\>'
+    return 'crystal'
+
+    # Rexx
+  elseif name =~ '^\%(rexx\|regina\)\>'
+    return 'rexx'
+
+    # Janet
+  elseif name =~ '^janet\>'
+    return 'janet'
+
+    # Dart
+  elseif name =~ '^dart\>'
+    return 'dart'
+
   endif
 
   return ''
@@ -353,7 +369,7 @@ def DetectFromText(line1: string)
 
     # Strace
     # inaccurate fast match first, then use accurate slow match
-  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:.]* *execve(')
+  elseif (line1 =~ 'execve(' && line1 =~ '^[0-9:. ]*execve(')
 	   || line1 =~ '^__libc_start_main'
     setl ft=strace
 

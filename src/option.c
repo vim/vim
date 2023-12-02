@@ -68,6 +68,21 @@ static void check_winopt(winopt_T *wop);
 static int wc_use_keyname(char_u *varp, long *wcp);
 static void compatible_set(void);
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+static char *(p_bin_dep_opts[])    = {"textwidth", "wrapmargin", "modeline", "expandtab", NULL};
+static char *(p_paste_dep_opts[])  = {"autoindent", "expandtab", "ruler", "showmatch", "smarttab",
+    "softtabstop", "textwidth", "wrapmargin",
+#ifdef FEAT_RIGHTLEFT
+    "hkmap", "revins",
+#endif
+#ifdef FEAT_VARTABS
+    "varsofttabstop",
+#endif
+    NULL};
+static void didset_options_sctx(int opt_flags, char **buf);
+#endif
+
+
 /*
  * Initialize the 'shell' option to a default value.
  */
@@ -1297,15 +1312,8 @@ ex_set(exarg_T *eap)
 }
 
 /*
- * :set operator types
+ * :set boolean option prefix
  */
-typedef enum {
-    OP_NONE = 0,
-    OP_ADDING,		// "opt+=arg"
-    OP_PREPENDING,	// "opt^=arg"
-    OP_REMOVING,	// "opt-=arg"
-} set_op_T;
-
 typedef enum {
     PREFIX_NO = 0,	// "no" prefix
     PREFIX_NONE,	// no prefix
@@ -1617,7 +1625,7 @@ stropt_copy_value(
     // For MS-DOS and WIN32 backslashes before normal file name characters
     // are not removed, and keep backslash at start, for "\\machine\path",
     // but do remove it for "\\\\machine\\path".
-    // The reverse is found in ExpandOldSetting().
+    // The reverse is found in escape_option_str_cmdline().
     while (*arg != NUL && !VIM_ISWHITE(*arg))
     {
 	int i;
@@ -1920,10 +1928,11 @@ do_set_option_string(
 	char_u	    **argp,
 	int	    nextchar,
 	set_op_T    op_arg,
-	int	    flags,
+	long_u	    flags,
 	int	    cp_val,
 	char_u	    *varp_arg,
 	char	    *errbuf,
+	int	    errbuflen,
 	int	    *value_checked,
 	char	    **errmsg)
 {
@@ -2022,7 +2031,7 @@ do_set_option_string(
 	// be triggered that can cause havoc.
 	*errmsg = did_set_string_option(
 			opt_idx, (char_u **)varp, oldval, newval, errbuf,
-			opt_flags, value_checked);
+			errbuflen, opt_flags, op, value_checked);
 
 	secure = secure_saved;
     }
@@ -2279,7 +2288,7 @@ do_set_option_value(
 	{
 	    // string option
 	    if (do_set_option_string(opt_idx, opt_flags, &arg, nextchar, op,
-					flags, cp_val, varp, errbuf,
+					flags, cp_val, varp, errbuf, errbuflen,
 					&value_checked, &errmsg) == FAIL)
 	    {
 		if (errmsg != NULL)
@@ -2571,12 +2580,12 @@ do_set(
 	{
 	    int		stopopteval = FALSE;
 	    char	*errmsg = NULL;
-	    char	errbuf[80];
+	    char	errbuf[ERR_BUFLEN];
 	    char_u	*startarg = arg;
 
 	    errmsg = do_set_option(opt_flags, &arg, arg_start, &startarg,
 					&did_show, &stopopteval, errbuf,
-					sizeof(errbuf));
+					ERR_BUFLEN);
 	    if (stopopteval)
 		break;
 
@@ -2763,6 +2772,10 @@ set_options_bin(
 	    p_et = p_et_nobin;
 	}
     }
+#if defined(FEAT_EVAL) || defined(PROTO)
+    // Remember where the dependent option were reset
+    didset_options_sctx(opt_flags, p_bin_dep_opts);
+#endif
 }
 
 /*
@@ -2963,7 +2976,8 @@ insecure_flag(int opt_idx, int opt_flags)
 /*
  * Redraw the window title and/or tab page text later.
  */
-void redraw_titles(void)
+    void
+redraw_titles(void)
 {
     need_maketitle = TRUE;
     redraw_tabline = TRUE;
@@ -3667,7 +3681,6 @@ did_set_modifiable(optset_T *args UNUSED)
 		    && curbuf->b_term != NULL && !term_is_finished(curbuf))))
     {
 	curbuf->b_p_ma = FALSE;
-	args->os_doskip = TRUE;
 	return e_cannot_make_terminal_with_running_job_modifiable;
     }
 # endif
@@ -3846,6 +3859,7 @@ did_set_paste(optset_T *args UNUSED)
 	p_wm = 0;
 	p_sts = 0;
 	p_ai = 0;
+	p_et = 0;
 #ifdef FEAT_VARTABS
 	if (p_vsts)
 	    free_string_option(p_vsts);
@@ -3902,6 +3916,11 @@ did_set_paste(optset_T *args UNUSED)
 
     old_p_paste = p_paste;
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+    // Remember where the dependent options were reset
+    didset_options_sctx((OPT_LOCAL | OPT_GLOBAL), p_paste_dep_opts);
+#endif
+
     return NULL;
 }
 
@@ -3923,7 +3942,6 @@ did_set_previewwindow(optset_T *args)
 	if (win->w_p_pvw && win != curwin)
 	{
 	    curwin->w_p_pvw = FALSE;
-	    args->os_doskip = TRUE;
 	    return e_preview_window_already_exists;
 	}
 
@@ -4062,11 +4080,9 @@ did_set_showtabline(optset_T *args UNUSED)
     char *
 did_set_smoothscroll(optset_T *args UNUSED)
 {
-    if (curwin->w_p_sms)
-	return NULL;
+    if (!curwin->w_p_sms)
+	curwin->w_skipcol = 0;
 
-    curwin->w_skipcol = 0;
-    changed_line_abv_curs();
     return NULL;
 }
 
@@ -4113,7 +4129,6 @@ did_set_termguicolors(optset_T *args UNUSED)
 	    !has_vtp_working())
     {
 	p_tgc = 0;
-	args->os_doskip = TRUE;
 	return e_24_bit_colors_are_not_supported_on_this_environment;
     }
     if (is_term_win32())
@@ -4374,6 +4389,21 @@ did_set_weirdinvert(optset_T *args)
 }
 
 /*
+ * Process the new 'wildchar' / 'wildcharm' option value.
+ */
+    char *
+did_set_wildchar(optset_T *args)
+{
+    long c = *(long *)args->os_varp;
+
+    // Don't allow key values that wouldn't work as wildchar.
+    if (c == Ctrl_C || c == '\n' || c == '\r' || c == K_KENTER)
+	return e_invalid_argument;
+
+    return NULL;
+}
+
+/*
  * Process the new 'window' option value.
  */
     char *
@@ -4501,9 +4531,12 @@ did_set_winwidth(optset_T *args UNUSED)
     char *
 did_set_wrap(optset_T *args UNUSED)
 {
-    // If 'wrap' is set, set w_leftcol to zero.
+    // Set w_leftcol or w_skipcol to zero.
     if (curwin->w_p_wrap)
 	curwin->w_leftcol = 0;
+    else
+	curwin->w_skipcol = 0;
+
     return NULL;
 }
 
@@ -4567,7 +4600,7 @@ set_bool_option(
 	args.os_newval.boolean = value;
 	args.os_errbuf = NULL;
 	errmsg = options[opt_idx].opt_did_set_cb(&args);
-	if (args.os_doskip)
+	if (errmsg != NULL)
 	    return errmsg;
     }
 
@@ -5315,7 +5348,8 @@ set_option_value(
     int		opt_idx;
     char_u	*varp;
     long_u	flags;
-    static char	errbuf[80];
+    static char	errbuf[ERR_BUFLEN];
+    int		errbuflen = ERR_BUFLEN;
 
     opt_idx = findoption(name);
     if (opt_idx < 0)
@@ -5358,7 +5392,7 @@ set_option_value(
 	}
 #endif
 	if (flags & P_STRING)
-	    return set_string_option(opt_idx, string, opt_flags, errbuf);
+	    return set_string_option(opt_idx, string, opt_flags, errbuf, errbuflen);
 
 	varp = get_varp_scope(&(options[opt_idx]), opt_flags);
 	if (varp != NULL)	// hidden option is not changed
@@ -7206,8 +7240,10 @@ set_imsearch_global(void)
 }
 
 static int expand_option_idx = -1;
+static int expand_option_start_col = 0;
 static char_u expand_option_name[5] = {'t', '_', NUL, NUL, NUL};
 static int expand_option_flags = 0;
+static int expand_option_append = FALSE;
 
     void
 set_context_in_set_cmd(
@@ -7322,8 +7358,14 @@ set_context_in_set_cmd(
 	}
     }
     // handle "-=" and "+="
+    expand_option_append = FALSE;
+    int expand_option_subtract = FALSE;
     if ((nextchar == '-' || nextchar == '+' || nextchar == '^') && p[1] == '=')
     {
+	if (nextchar == '-')
+	    expand_option_subtract = TRUE;
+	if (nextchar == '+' || nextchar == '^')
+	    expand_option_append = TRUE;
 	++p;
 	nextchar = '=';
     }
@@ -7333,22 +7375,68 @@ set_context_in_set_cmd(
 	xp->xp_context = EXPAND_UNSUCCESSFUL;
 	return;
     }
-    if (xp->xp_context != EXPAND_BOOL_SETTINGS && p[1] == NUL)
+
+    // Below are for handling expanding a specific option's value after the '='
+    // or ':'
+
+    if (is_term_option)
+	expand_option_idx = -1;
+    else
+	expand_option_idx = opt_idx;
+
+    if (!is_term_option)
     {
-	xp->xp_context = EXPAND_OLD_SETTING;
-	if (is_term_option)
-	    expand_option_idx = -1;
-	else
-	    expand_option_idx = opt_idx;
-	xp->xp_pattern = p + 1;
+	if (options[opt_idx].flags & P_NO_CMD_EXPAND)
+	{
+	    xp->xp_context=EXPAND_UNSUCCESSFUL;
+	    return;
+	}
+    }
+
+    xp->xp_pattern = p + 1;
+    expand_option_start_col = (int)(p + 1 - xp->xp_line);
+
+    // Certain options currently have special case handling to reuse the
+    // expansion logic with other commands.
+#ifdef FEAT_SYN_HL
+    if (options[opt_idx].var == (char_u *)&p_syn)
+    {
+	xp->xp_context = EXPAND_OWNSYNTAX;
 	return;
     }
-    xp->xp_context = EXPAND_NOTHING;
+#endif
+    if (options[opt_idx].var == (char_u *)&p_ft)
+    {
+	xp->xp_context = EXPAND_FILETYPE;
+	return;
+    }
+
+    // Now pick. If the option has a custom expander, use that. Otherwise, just
+    // fill with the existing option value.
+    if (expand_option_subtract)
+    {
+	xp->xp_context = EXPAND_SETTING_SUBTRACT;
+	return;
+    }
+    else if (expand_option_idx >= 0 &&
+	    options[expand_option_idx].opt_expand_cb != NULL)
+    {
+	xp->xp_context = EXPAND_STRING_SETTING;
+    }
+    else if (*xp->xp_pattern == NUL)
+    {
+	xp->xp_context = EXPAND_OLD_SETTING;
+	return;
+    }
+    else
+	xp->xp_context = EXPAND_NOTHING;
+
     if (is_term_option || (flags & P_NUM))
 	return;
 
-    xp->xp_pattern = p + 1;
+    // Only string options below
 
+    // Options that have P_EXPAND are considered to all use file/dir expansion.
     if (flags & P_EXPAND)
     {
 	p = options[opt_idx].var;
@@ -7369,10 +7457,6 @@ set_context_in_set_cmd(
 	    else
 		xp->xp_backslash = XP_BS_ONE;
 	}
-	else if (p == (char_u *)&p_ft)
-	{
-	    xp->xp_context = EXPAND_FILETYPE;
-	}
 	else
 	{
 	    xp->xp_context = EXPAND_FILES;
@@ -7382,36 +7466,63 @@ set_context_in_set_cmd(
 	    else
 		xp->xp_backslash = XP_BS_ONE;
 	}
+	if (flags & P_COMMA)
+	    xp->xp_backslash |= XP_BS_COMMA;
     }
 
-    // For an option that is a list of file names, find the start of the
-    // last file name.
-    for (p = arg + STRLEN(arg) - 1; p > xp->xp_pattern; --p)
+    // For an option that is a list of file names, or comma/colon-separated
+    // values, split it by the delimiter and find the start of the current
+    // pattern, while accounting for backslash-escaped space/commas/colons.
+    // Triple-backslashed escaped file names (e.g. 'path') can also be
+    // delimited by space.
+    if ((flags & P_EXPAND) || (flags & P_COMMA) || (flags & P_COLON))
     {
-	// count number of backslashes before ' ' or ','
-	if (*p == ' ' || *p == ',')
+	for (p = arg + STRLEN(arg) - 1; p >= xp->xp_pattern; --p)
 	{
-	    s = p;
-	    while (s > xp->xp_pattern && *(s - 1) == '\\')
-		--s;
-	    if ((*p == ' ' && (xp->xp_backslash == XP_BS_THREE && (p - s) < 3))
-		    || (*p == ',' && (flags & P_COMMA) && ((p - s) & 1) == 0))
+	    // count number of backslashes before ' ' or ',' or ':'
+	    if (*p == ' ' || *p == ',' ||
+		    (*p == ':' && (flags & P_COLON)))
 	    {
-		xp->xp_pattern = p + 1;
-		break;
+		s = p;
+		while (s > xp->xp_pattern && *(s - 1) == '\\')
+		    --s;
+		if ((*p == ' ' && ((xp->xp_backslash & XP_BS_THREE) && (p - s) < 3))
+#if defined(BACKSLASH_IN_FILENAME)
+			|| (*p == ',' && (flags & P_COMMA) && (p - s) < 1)
+#else
+			|| (*p == ',' && (flags & P_COMMA) && (p - s) < 2)
+#endif
+			|| (*p == ':' && (flags & P_COLON)))
+		{
+		    xp->xp_pattern = p + 1;
+		    break;
+		}
 	    }
 	}
-
-#ifdef FEAT_SPELL
-	// for 'spellsuggest' start at "file:"
-	if (options[opt_idx].var == (char_u *)&p_sps
-					       && STRNCMP(p, "file:", 5) == 0)
-	{
-	    xp->xp_pattern = p + 5;
-	    break;
-	}
-#endif
     }
+
+    // An option that is a list of single-character flags should always start
+    // at the end as we don't complete words.
+    if (flags & P_FLAGLIST)
+	xp->xp_pattern = arg + STRLEN(arg);
+
+    // Some options can either be using file/dir expansions, or custom value
+    // expansion depending on what the user typed. Unfortunately we have to
+    // manually handle it here to make sure we have the correct xp_context set.
+#ifdef FEAT_SPELL
+    if (options[opt_idx].var == (char_u *)&p_sps)
+    {
+	if (STRNCMP(xp->xp_pattern, "file:", 5) == 0)
+	{
+	    xp->xp_pattern += 5;
+	    return;
+	}
+	else if (options[expand_option_idx].opt_expand_cb != NULL)
+	{
+	    xp->xp_context = EXPAND_STRING_SETTING;
+	}
+    }
+#endif
 }
 
 /*
@@ -7677,6 +7788,37 @@ ExpandSettings(
     return OK;
 }
 
+// Escape an option value that can be used on the command-line with :set.
+// Caller needs to free the returned string, unless NULL is returned.
+    static char_u*
+escape_option_str_cmdline(char_u *var)
+{
+    char_u *buf;
+
+    // A backslash is required before some characters.  This is the reverse of
+    // what happens in do_set().
+    buf = vim_strsave_escaped(var, escape_chars);
+    if (buf == NULL)
+	return NULL;
+
+#ifdef BACKSLASH_IN_FILENAME
+    // For MS-Windows et al. we don't double backslashes at the start and
+    // before a file name character.
+    // The reverse is found at stropt_copy_value().
+    for (var = buf; *var != NUL; MB_PTR_ADV(var))
+	if (var[0] == '\\' && var[1] == '\\'
+		&& expand_option_idx >= 0
+		&& (options[expand_option_idx].flags & P_EXPAND)
+		&& vim_isfilec(var[2])
+		&& (var[2] != '\\' || (var == buf && var[4] != '\\')))
+	    STRMOVE(var, var + 1);
+#endif
+    return buf;
+}
+
+/*
+ * Expansion handler for :set= when we just want to fill in with the existing value.
+ */
     int
 ExpandOldSetting(int *numMatches, char_u ***matches)
 {
@@ -7684,7 +7826,7 @@ ExpandOldSetting(int *numMatches, char_u ***matches)
     char_u  *buf;
 
     *numMatches = 0;
-    *matches = ALLOC_ONE(char_u *);
+    *matches = ALLOC_MULT(char_u *, 1);
     if (*matches == NULL)
 	return FAIL;
 
@@ -7705,31 +7847,208 @@ ExpandOldSetting(int *numMatches, char_u ***matches)
     else if (var == NULL)
 	var = (char_u *)"";
 
-    // A backslash is required before some characters.  This is the reverse of
-    // what happens in do_set().
-    buf = vim_strsave_escaped(var, escape_chars);
-
+    buf = escape_option_str_cmdline(var);
     if (buf == NULL)
     {
 	VIM_CLEAR(*matches);
 	return FAIL;
     }
 
-#ifdef BACKSLASH_IN_FILENAME
-    // For MS-Windows et al. we don't double backslashes at the start and
-    // before a file name character.
-    for (var = buf; *var != NUL; MB_PTR_ADV(var))
-	if (var[0] == '\\' && var[1] == '\\'
-		&& expand_option_idx >= 0
-		&& (options[expand_option_idx].flags & P_EXPAND)
-		&& vim_isfilec(var[2])
-		&& (var[2] != '\\' || (var == buf && var[4] != '\\')))
-	    STRMOVE(var, var + 1);
-#endif
-
-    *matches[0] = buf;
+    (*matches)[0] = buf;
     *numMatches = 1;
     return OK;
+}
+
+/*
+ * Expansion handler for :set=/:set+= when the option has a custom expansion handler.
+ */
+    int
+ExpandStringSetting(
+    expand_T	*xp,
+    regmatch_T	*regmatch,
+    int		*numMatches,
+    char_u	***matches)
+{
+    char_u  *var = NULL;	// init for GCC
+    char_u  *buf;
+
+    if (expand_option_idx < 0 ||
+	    options[expand_option_idx].opt_expand_cb == NULL)
+    {
+	// Not supposed to reach this. This function is only for options with
+	// custom expansion callbacks.
+	return FAIL;
+    }
+
+    optexpand_T args;
+    args.oe_varp = get_varp_scope(&options[expand_option_idx], expand_option_flags);
+    args.oe_append = expand_option_append;
+    args.oe_regmatch = regmatch;
+    args.oe_xp = xp;
+    args.oe_set_arg = xp->xp_line + expand_option_start_col;
+    args.oe_include_orig_val =
+	!expand_option_append &&
+	(*args.oe_set_arg == NUL);
+
+    // Retrieve the existing value, but escape it as a reverse of setting it.
+    // We technically only need to do this when oe_append or
+    // oe_include_orig_val is true.
+    option_value2string(&options[expand_option_idx], expand_option_flags);
+    var = NameBuff;
+    buf = escape_option_str_cmdline(var);
+    if (buf == NULL)
+	return FAIL;
+
+    args.oe_opt_value = buf;
+
+    int num_ret = options[expand_option_idx].opt_expand_cb(&args, numMatches, matches);
+
+    vim_free(buf);
+    return num_ret;
+}
+
+/*
+ * Expansion handler for :set-=
+ */
+    int
+ExpandSettingSubtract(
+    expand_T	*xp,
+    regmatch_T	*regmatch,
+    int		*numMatches,
+    char_u	***matches)
+{
+    if (expand_option_idx < 0)
+	// term option
+	return ExpandOldSetting(numMatches, matches);
+
+    char_u *option_val = *(char_u**)get_option_varp_scope(
+	expand_option_idx, expand_option_flags);
+
+    long_u option_flags =  options[expand_option_idx].flags;
+
+    if (option_flags & P_NUM)
+	return ExpandOldSetting(numMatches, matches);
+    else if (option_flags & P_COMMA)
+    {
+	// Split the option by comma, then present each option to the user if
+	// it matches the pattern.
+	// This condition needs to go first, because 'whichwrap' has both
+	// P_COMMA and P_FLAGLIST.
+	garray_T    ga;
+
+	char_u	    *item;
+	char_u	    *option_copy;
+	char_u	    *next_val;
+	char_u	    *comma;
+
+	if (*option_val == NUL)
+	    return FAIL;
+
+	// Make a copy as we need to inject null characters destructively.
+	option_copy = vim_strsave(option_val);
+	if (option_copy == NULL)
+	    return FAIL;
+	next_val = option_copy;
+
+	ga_init2(&ga, sizeof(char_u *), 10);
+
+	do
+	{
+	    item = next_val;
+	    comma = vim_strchr(next_val, ',');
+	    while (comma != NULL && comma != next_val && *(comma - 1) == '\\')
+	    {
+		// "\," is interpreted as a literal comma rather than option
+		// separator when reading options in copy_option_part(). Skip
+		// it.
+		comma = vim_strchr(comma + 1, ',');
+	    }
+	    if (comma != NULL)
+	    {
+		*comma = NUL; // null-terminate this value, required by later functions
+		next_val = comma + 1;
+	    }
+	    else
+		next_val = NULL;
+
+	    if (*item == NUL)
+		// empty value, don't add to list
+		continue;
+
+	    if (!vim_regexec(regmatch, item, (colnr_T)0))
+		continue;
+
+	    char_u *buf = escape_option_str_cmdline(item);
+	    if (buf == NULL)
+	    {
+		vim_free(option_copy);
+		ga_clear_strings(&ga);
+		return FAIL;
+	    }
+	    if (ga_add_string(&ga, buf) != OK)
+	    {
+		vim_free(buf);
+		break;
+	    }
+	} while (next_val != NULL);
+
+	vim_free(option_copy);
+
+	*matches = ga.ga_data;
+	*numMatches = ga.ga_len;
+	return OK;
+    }
+    else if (option_flags & P_FLAGLIST)
+    {
+	// Only present the flags that are set on the option as the other flags
+	// are not meaningful to do set-= on.
+
+	if (*xp->xp_pattern != NUL)
+	{
+	    // Don't suggest anything if cmdline is non-empty. Vim's set-=
+	    // behavior requires consecutive strings and it's usually
+	    // unintuitive to users if they try to subtract multiple flags at
+	    // once.
+	    return FAIL;
+	}
+
+	size_t num_flags = STRLEN(option_val);
+	if (num_flags == 0)
+	    return FAIL;
+
+	*matches = ALLOC_MULT(char_u *, num_flags + 1);
+	if (*matches == NULL)
+	    return FAIL;
+
+	int count = 0;
+	char_u *p;
+
+	p = vim_strsave(option_val);
+	if (p == NULL)
+	{
+	    VIM_CLEAR(*matches);
+	    return FAIL;
+	}
+	(*matches)[count++] = p;
+
+	if (num_flags > 1)
+	{
+	    // If more than one flags, split the flags up and expose each
+	    // character as individual choice.
+	    for (char_u *flag = option_val; *flag != NUL; flag++)
+	    {
+		p = vim_strnsave(flag, 1);
+		if (p == NULL)
+		    break;
+		(*matches)[count++] = p;
+	    }
+	}
+
+	*numMatches = count;
+	return OK;
+    }
+
+    return ExpandOldSetting(numMatches, matches);
 }
 
 /*
@@ -8063,6 +8382,7 @@ fill_culopt_flags(char_u *val, win_T *wp)
 	p = val;
     while (*p != NUL)
     {
+	// Note: Keep this in sync with p_culopt_values.
 	if (STRNCMP(p, "line", 4) == 0)
 	{
 	    p += 4;
@@ -8170,3 +8490,19 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
     return FAIL;
 #endif
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    static void
+didset_options_sctx(int opt_flags, char **buf)
+{
+	for (int i = 0; ; ++i)
+	{
+	    if (buf[i] == NULL)
+		break;
+
+	    int idx = findoption((char_u *)buf[i]);
+	    if (idx >= 0)
+		set_option_sctx_idx(idx, opt_flags, current_sctx);
+	}
+}
+#endif

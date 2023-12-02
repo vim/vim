@@ -189,10 +189,15 @@ compile_lock_unlock(
     int		cc = *name_end;
     char_u	*p = lvp->ll_name;
     int		ret = OK;
-    size_t	len;
     char_u	*buf;
     isntype_T	isn = ISN_EXEC;
     char	*cmd = eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar";
+    int		is_arg = FALSE;
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: compile_lock_unlock(): cookie %p, name %s",
+								coookie, p);
+#endif
 
     if (cctx->ctx_skip == SKIP_YES)
 	return OK;
@@ -208,19 +213,86 @@ compile_lock_unlock(
     {
 	char_u *end = find_name_end(p, NULL, NULL, FNE_CHECK_START);
 
-	if (lookup_local(p, end - p, NULL, cctx) == OK)
-	{
-	    char_u *s = p;
+	// The most important point is that something like
+	// name[idx].member... needs to be resolved at runtime, get_lval(),
+	// starting from the root "name".
 
-	    if (*end != '.' && *end != '[')
+	// These checks are reminiscent of the variable_exists function.
+	// But most of the matches require special handling.
+
+	// If bare name is is locally accessible, except for local var,
+	// then put it on the stack to use with ISN_LOCKUNLOCK.
+	// This could be v.memb, v[idx_key]; bare class variable,
+	// function arg. The item on the stack, will be passed
+	// to ex_lockvar() indirectly and be used as the root for get_lval.
+	// A bare script variable name needs no special handling.
+
+	char_u	*name = NULL;
+	int	len = end - p;
+
+	if (lookup_local(p, len, NULL, cctx) == OK)
+	{
+	    // Handle "this", "this.val", "anyvar[idx]"
+	    if (*end != '.' && *end != '['
+				&& (len != 4 || STRNCMP("this", p, len) != 0))
 	    {
 		emsg(_(e_cannot_lock_unlock_local_variable));
 		return FAIL;
 	    }
-
-	    // For "d.member" put the local variable on the stack, it will be
-	    // passed to ex_lockvar() indirectly.
-	    if (compile_load(&s, end, cctx, FALSE, FALSE) == FAIL)
+	    // Push the local on the stack, could be "this".
+	    name = p;
+#ifdef LOG_LOCKVAR
+	    ch_log(NULL, "LKVAR:    ... lookup_local: name %s", name);
+#endif
+	}
+	if (name == NULL)
+	{
+	    class_T *cl;
+	    if (cctx_class_member_idx(cctx, p, len, &cl) >= 0)
+	    {
+		if (*end != '.' && *end != '[')
+		{
+		    // Push the class of the bare class variable name
+		    name = cl->class_name;
+		    len = (int)STRLEN(name);
+#ifdef LOG_LOCKVAR
+		    ch_log(NULL, "LKVAR:    ... cctx_class_member: name %s",
+			   name);
+#endif
+		}
+	    }
+	}
+	if (name == NULL)
+	{
+	    // Can lockvar any function arg.
+	    if (arg_exists(p, len, NULL, NULL, NULL, cctx) == OK)
+	    {
+		name = p;
+		is_arg = TRUE;
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR:    ... arg_exists: name %s", name);
+#endif
+	    }
+	}
+	if (name == NULL)
+	{
+	    // No special handling for a bare script variable; but
+	    // if followed by '[' or '.', it's a root for get_lval().
+	    if (script_var_exists(p, len, cctx, NULL) == OK
+		&& (*end == '.' || *end == '['))
+	    {
+		name = p;
+#ifdef LOG_LOCKVAR
+		ch_log(NULL, "LKVAR:    ... script_var_exists: name %s", name);
+#endif
+	    }
+	}
+	if (name != NULL)
+	{
+#ifdef LOG_LOCKVAR
+	    ch_log(NULL, "LKVAR:    ... INS_LOCKUNLOCK %s", name);
+#endif
+	    if (compile_load(&name, name + len, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    isn = ISN_LOCKUNLOCK;
 	}
@@ -228,7 +300,7 @@ compile_lock_unlock(
 
     // Checking is done at runtime.
     *name_end = NUL;
-    len = name_end - p + 20;
+    size_t len = name_end - p + 20;
     buf = alloc(len);
     if (buf == NULL)
 	ret = FAIL;
@@ -238,7 +310,13 @@ compile_lock_unlock(
 	    vim_snprintf((char *)buf, len, "%s! %s", cmd, p);
 	else
 	    vim_snprintf((char *)buf, len, "%s %d %s", cmd, deep, p);
-	ret = generate_EXEC_copy(cctx, isn, buf);
+#ifdef LOG_LOCKVAR
+	ch_log(NULL, "LKVAR:    ... buf %s", buf);
+#endif
+	if (isn == ISN_LOCKUNLOCK)
+	    ret = generate_LOCKUNLOCK(cctx, buf, is_arg);
+	else
+	    ret = generate_EXEC_copy(cctx, isn, buf);
 
 	vim_free(buf);
 	*name_end = cc;
@@ -1045,8 +1123,11 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		}
 
 		// Reserve a variable to store "var".
-		where.wt_index = var_list ? idx + 1 : 0;
-		where.wt_variable = TRUE;
+		if (var_list)
+		{
+		    where.wt_index = idx + 1;
+		    where.wt_kind = WT_VARIABLE;
+		}
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown
@@ -1919,7 +2000,6 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     int		defer_var_idx;
     type_T	*type;
     int		func_idx;
-    int		obj_method = 0;
 
     // Get a funcref for the function name.
     // TODO: better way to find the "(".
@@ -1935,15 +2015,8 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
 	// TODO: better type
 	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
 							   &t_func_any, FALSE);
-    else
-    {
-	int typecount = cctx->ctx_type_stack.ga_len;
-	if (compile_expr0(&arg, cctx) == FAIL)
-	    return NULL;
-	if (cctx->ctx_type_stack.ga_len >= typecount + 2)
-	    // must have seen "obj.Func", pushed an object and a function
-	    obj_method = 1;
-    }
+    else if (compile_expr0(&arg, cctx) == FAIL)
+	return NULL;
     *paren = '(';
 
     // check for function type
@@ -1975,7 +2048,7 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     defer_var_idx = get_defer_var_idx(cctx);
     if (defer_var_idx == 0)
 	return NULL;
-    if (generate_DEFER(cctx, defer_var_idx - 1, obj_method, argcount) == FAIL)
+    if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
 	return NULL;
 
     return skipwhite(arg);
@@ -2614,8 +2687,16 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    return NULL;
 	}
 
-	// No argument, return zero.
-	generate_PUSHNR(cctx, 0);
+	if (IS_CONSTRUCTOR_METHOD(cctx->ctx_ufunc))
+	{
+	    // For a class new() constructor, return an object of the class.
+	    generate_instr(cctx, ISN_RETURN_OBJECT);
+	    cctx->ctx_ufunc->uf_ret_type =
+		&cctx->ctx_ufunc->uf_class->class_object_type;
+	}
+	else
+	    // No argument, return zero.
+	    generate_PUSHNR(cctx, 0);
     }
 
     // may need ENDLOOP when inside a :for or :while loop

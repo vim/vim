@@ -32,7 +32,7 @@ EXTERN long	Columns INIT(= 80);	// nr of columns in the screen
  * The characters that are currently on the screen are kept in ScreenLines[].
  * It is a single block of characters, the size of the screen plus one line.
  * The attributes for those characters are kept in ScreenAttrs[].
- * The byte offset in the line is kept in ScreenCols[].
+ * The virtual column in the line is kept in ScreenCols[].
  *
  * "LineOffset[n]" is the offset from ScreenLines[] for the start of line 'n'.
  * The same value is used for ScreenLinesUC[], ScreenAttrs[] and ScreenCols[].
@@ -534,7 +534,13 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_super			(static_types[80])
 #define t_const_super		(static_types[81])
 
-EXTERN type_T static_types[82]
+#define t_object		(static_types[82])
+#define t_const_object		(static_types[83])
+
+#define t_class			(static_types[84])
+#define t_const_class		(static_types[85])
+
+EXTERN type_T static_types[86]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
@@ -700,6 +706,14 @@ EXTERN type_T static_types[82]
     // 80: t_super (VAR_CLASS with tt_member set to &t_bool
     {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
     {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
+
+    // 82: t_object
+    {VAR_OBJECT, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_OBJECT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
+
+    // 84: t_class
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 }
 #endif
 ;
@@ -1939,7 +1953,7 @@ EXTERN int  timer_busy INIT(= 0);   // when timer is inside vgetc() then > 0
 #ifdef FEAT_EVAL
 EXTERN int  input_busy INIT(= 0);   // when inside get_user_input() then > 0
 
-EXTERN typval_T	*lval_root INIT(= NULL);
+EXTERN lval_root_T	*lval_root INIT(= NULL);
 #endif
 
 #ifdef FEAT_BEVAL_TERM

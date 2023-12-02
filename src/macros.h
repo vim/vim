@@ -14,11 +14,6 @@
  */
 
 /*
- * PBYTE(lp, c) - put byte 'c' at position 'lp'
- */
-#define PBYTE(lp, c) (*(ml_get_buf(curbuf, (lp).lnum, TRUE) + (lp).col) = (c))
-
-/*
  * Position comparisons
  */
 #define LT_POS(a, b) (((a).lnum != (b).lnum) \
@@ -43,6 +38,7 @@
  */
 #define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
 #define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
+#define IS_WHITE_NL_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == '\n' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty

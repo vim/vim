@@ -380,7 +380,7 @@ func Test_normal06_formatprg()
 endfunc
 
 func Test_normal07_internalfmt()
-  " basic test for internal formmatter to textwidth of 12
+  " basic test for internal formatter to textwidth of 12
   let list=range(1,11)
   call map(list, 'v:val."    "')
   10new
@@ -2582,7 +2582,7 @@ func Test_normal33_g_cmd2()
   exe "norm! G0\<c-v>4k4ly"
   exe "norm! gvood"
   call assert_equal(['', 'abfgh', 'abfgh', 'abfgh', 'fgh', 'fgh', 'fgh', 'fgh', 'fgh'], getline(1,'$'))
-  " gv cannot be used  in operator pending mode
+  " gv cannot be used in operator pending mode
   call assert_beeps('normal! cgv')
   " gv should beep without a previously selected visual area
   new
@@ -4049,13 +4049,13 @@ func Test_normal_click_on_ctrl_char()
   call assert_equal([0, 1, 1, 0, 1], getcurpos())
   call test_setmouse(1, 2)
   call feedkeys("\<LeftMouse>", 'xt')
-  call assert_equal([0, 1, 2, 0, 8], getcurpos())
+  call assert_equal([0, 1, 2, 0, 2], getcurpos())
   call test_setmouse(1, 3)
   call feedkeys("\<LeftMouse>", 'xt')
-  call assert_equal([0, 1, 2, 0, 8], getcurpos())
+  call assert_equal([0, 1, 2, 0, 3], getcurpos())
   call test_setmouse(1, 7)
   call feedkeys("\<LeftMouse>", 'xt')
-  call assert_equal([0, 1, 2, 0, 8], getcurpos())
+  call assert_equal([0, 1, 2, 0, 7], getcurpos())
   call test_setmouse(1, 8)
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal([0, 1, 2, 0, 8], getcurpos())
@@ -4067,16 +4067,101 @@ func Test_normal_click_on_ctrl_char()
   call assert_equal([0, 1, 4, 0, 10], getcurpos())
   call test_setmouse(1, 11)
   call feedkeys("\<LeftMouse>", 'xt')
-  call assert_equal([0, 1, 4, 0, 10], getcurpos())
+  call assert_equal([0, 1, 4, 0, 11], getcurpos())
   call test_setmouse(1, 12)
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal([0, 1, 5, 0, 12], getcurpos())
   call test_setmouse(1, 13)
   call feedkeys("\<LeftMouse>", 'xt')
-  call assert_equal([0, 1, 5, 0, v:maxcol], getcurpos())
+  call assert_equal([0, 1, 5, 0, 13], getcurpos())
 
   bwipe!
   let &mouse = save_mouse
+endfunc
+
+" Test clicking on a double-width character in Normal mode
+func Test_normal_click_on_double_width_char()
+  let save_mouse = &mouse
+  set mouse=a
+  new
+
+  call setline(1, "口口")
+  redraw
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 1, 0, 1], getcurpos())
+  call test_setmouse(1, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 1, 0, 2], getcurpos())
+  call test_setmouse(1, 3)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 4, 0, 3], getcurpos())
+  call test_setmouse(1, 4)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 4, 0, 4], getcurpos())
+
+  bwipe!
+  let &mouse = save_mouse
+endfunc
+
+func Test_normal_click_on_empty_line()
+  let save_mouse = &mouse
+  set mouse=a
+  botright new
+  call setline(1, ['', '', ''])
+  let row = win_screenpos(0)[0] + 2
+  20vsplit
+  redraw
+
+  call test_setmouse(row, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 1], getcurpos())
+  call test_setmouse(row, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 2], getcurpos())
+  call test_setmouse(row, 10)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 10], getcurpos())
+
+  call test_setmouse(row, 21 + 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 1], getcurpos())
+  call test_setmouse(row, 21 + 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 2], getcurpos())
+  call test_setmouse(row, 21 + 10)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 10], getcurpos())
+
+  bwipe!
+  let &mouse = save_mouse
+endfunc
+
+func Test_normal33_g_cmd_nonblank()
+  " Test that g<End> goes to the last non-blank char and g$ to the last
+  " visible column
+  20vnew
+  setlocal nowrap nonumber signcolumn=no
+  call setline(1, ['fooo   fooo         fooo   fooo         fooo   fooo         fooo   fooo        '])
+  exe "normal 0g\<End>"
+  call assert_equal(11, col('.'))
+  normal 0g$
+  call assert_equal(20, col('.'))
+  exe "normal 0g\<kEnd>"
+  call assert_equal(11, col('.'))
+  setlocal wrap
+  exe "normal 0g\<End>"
+  call assert_equal(11, col('.'))
+  normal 0g$
+  call assert_equal(20, col('.'))
+  exe "normal 0g\<kEnd>"
+  call assert_equal(11, col('.'))
+  bw!
+endfunc
+
+func Test_normal34_zet_large()
+  " shouldn't cause overflow
+  norm! z9765405999999999999
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

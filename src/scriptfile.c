@@ -129,7 +129,6 @@ estack_sfile(estack_arg_T which UNUSED)
     size_t	len;
     int		idx;
     etype_T	last_type = ETYPE_SCRIPT;
-    char	*type_name;
 #endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
@@ -190,41 +189,47 @@ estack_sfile(estack_arg_T which UNUSED)
 	if (entry->es_name != NULL)
 	{
 	    long    lnum = 0;
-	    char    *dots;
+	    char_u  *type_name = (char_u *)"";
+	    char_u  *class_name = (char_u *)"";
 
-	    len = STRLEN(entry->es_name) + 15;
-	    type_name = "";
 	    if (entry->es_type != last_type)
 	    {
 		switch (entry->es_type)
 		{
-		    case ETYPE_SCRIPT: type_name = "script "; break;
-		    case ETYPE_UFUNC: type_name = "function "; break;
-		    default: type_name = ""; break;
+		    case ETYPE_SCRIPT: type_name = (char_u *)"script "; break;
+		    case ETYPE_UFUNC: type_name = (char_u *)"function "; break;
+		    default: type_name = (char_u *)""; break;
 		}
 		last_type = entry->es_type;
 	    }
-	    len += STRLEN(type_name);
-	    if (ga_grow(&ga, (int)len) == FAIL)
-		break;
+	    if (entry->es_type == ETYPE_UFUNC && entry->es_info.ufunc->uf_class != NULL)
+		class_name = entry->es_info.ufunc->uf_class->class_name;
 	    if (idx == exestack.ga_len - 1)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
-	    dots = idx == exestack.ga_len - 1 ? "" : "..";
-	    if (lnum == 0)
-		// For the bottom entry of <sfile>: do not add the line number,
-		// it is used in <slnum>.  Also leave it out when the number is
-		// not set.
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
-				type_name, entry->es_name, dots);
-	    else
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]%s",
-				    type_name, entry->es_name, lnum, dots);
-	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
+	    len = STRLEN(entry->es_name) + STRLEN(type_name) + STRLEN(class_name) + 26;
+	    if (ga_grow(&ga, (int)len) == FAIL)
+		break;
+	    ga_concat(&ga, type_name);
+	    if (*class_name != NUL)
+	    {
+		// For class methods prepend "<class name>." to the function name.
+		ga_concat(&ga, class_name);
+		ga_append(&ga, '.');
+	    }
+	    ga_concat(&ga, entry->es_name);
+	    // For the bottom entry of <sfile>: do not add the line number, it is used in
+	    // <slnum>.  Also leave it out when the number is not set.
+	    if (lnum != 0)
+		ga.ga_len += vim_snprintf((char *)ga.ga_data + ga.ga_len, 23, "[%ld]",
+			lnum);
+	    if (idx != exestack.ga_len - 1)
+		ga_concat(&ga, (char_u *)"..");
 	}
     }
 
+    ga_append(&ga, '\0');
     return (char_u *)ga.ga_data;
 #endif
 }
@@ -289,6 +294,15 @@ set_context_in_runtime_cmd(expand_T *xp, char_u *arg)
     char_u  *p = skiptowhite(arg);
     runtime_expand_flags
 	= *p != NUL ? get_runtime_cmd_flags(&arg, p - arg) : 0;
+    // Skip to the last argument.
+    while (*(p = skiptowhite_esc(arg)) != NUL)
+    {
+	if (runtime_expand_flags == 0)
+	    // When there are multiple arguments and [where] is not specified,
+	    // use an unrelated non-zero flag to avoid expanding [where].
+	    runtime_expand_flags = DIP_ALL;
+	arg = skipwhite(p);
+    }
     xp->xp_context = EXPAND_RUNTIME;
     xp->xp_pattern = arg;
 }
@@ -404,18 +418,19 @@ find_script_callback(char_u *fname, void *cookie)
 #endif
 
 /*
- * Find the file "name" in all directories in "path" and invoke
+ * Find the patterns in "name" in all directories in "path" and invoke
  * "callback(fname, cookie)".
- * "name" can contain wildcards.
+ * "prefix" is prepended to each pattern in "name".
  * When "flags" has DIP_ALL: source all files, otherwise only the first one.
  * When "flags" has DIP_DIR: find directories instead of files.
  * When "flags" has DIP_ERR: give an error message if there is no match.
  *
- * return FAIL when no file could be sourced, OK otherwise.
+ * Return FAIL when no file could be sourced, OK otherwise.
  */
     int
 do_in_path(
     char_u	*path,
+    char	*prefix,
     char_u	*name,
     int		flags,
     void	(*callback)(char_u *fname, void *ck),
@@ -447,8 +462,12 @@ do_in_path(
 	if (p_verbose > 10 && name != NULL)
 	{
 	    verbose_enter();
-	    smsg(_("Searching for \"%s\" in \"%s\""),
-						 (char *)name, (char *)path);
+	    if (*prefix != NUL)
+		smsg(_("Searching for \"%s\" under \"%s\" in \"%s\""),
+					   (char *)name, prefix, (char *)path);
+	    else
+		smsg(_("Searching for \"%s\" in \"%s\""),
+						   (char *)name, (char *)path);
 	    verbose_leave();
 	}
 
@@ -479,9 +498,10 @@ do_in_path(
 		if (!did_one)
 		    did_one = (cookie == NULL);
 	    }
-	    else if (buflen + STRLEN(name) + 2 < MAXPATHL)
+	    else if (buflen + 2 + STRLEN(prefix) + STRLEN(name) < MAXPATHL)
 	    {
 		add_pathsep(buf);
+		STRCAT(buf, prefix);
 		tail = buf + STRLEN(buf);
 
 		// Loop over all patterns in "name"
@@ -559,35 +579,17 @@ do_in_path_and_pp(
     void	*cookie)
 {
     int		done = FAIL;
-    char_u	*s;
-    int		len;
-    char	*start_dir = "pack/*/start/*/%s";
-    char	*opt_dir = "pack/*/opt/*/%s";
 
     if ((flags & DIP_NORTP) == 0)
-	done = do_in_path(path, name, flags, callback, cookie);
+	done = do_in_path(path, "", name, flags, callback, cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_START))
-    {
-	len = (int)(STRLEN(start_dir) + STRLEN(name));
-	s = alloc(len);
-	if (s == NULL)
-	    return FAIL;
-	vim_snprintf((char *)s, len, start_dir, name);
-	done = do_in_path(p_pp, s, flags, callback, cookie);
-	vim_free(s);
-    }
+	done = do_in_path(p_pp, "pack/*/start/*/", name, flags, callback,
+								       cookie);
 
     if ((done == FAIL || (flags & DIP_ALL)) && (flags & DIP_OPT))
-    {
-	len = (int)(STRLEN(opt_dir) + STRLEN(name));
-	s = alloc(len);
-	if (s == NULL)
-	    return FAIL;
-	vim_snprintf((char *)s, len, opt_dir, name);
-	done = do_in_path(p_pp, s, flags, callback, cookie);
-	vim_free(s);
-    }
+	done = do_in_path(p_pp, "pack/*/opt/*/", name, flags, callback,
+								       cookie);
 
     return done;
 }
@@ -899,7 +901,7 @@ add_pack_plugin(char_u *fname, void *cookie)
     void
 add_pack_start_dirs(void)
 {
-    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+    do_in_path(p_pp, "", (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
 					       add_pack_plugin, &APP_ADD_DIR);
 }
 
@@ -910,7 +912,7 @@ add_pack_start_dirs(void)
 load_start_packages(void)
 {
     did_source_packages = TRUE;
-    do_in_path(p_pp, (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
+    do_in_path(p_pp, "", (char_u *)"pack/*/start/*", DIP_ALL + DIP_DIR,
 						  add_pack_plugin, &APP_LOAD);
 }
 
@@ -957,7 +959,7 @@ ex_packadd(exarg_T *eap)
 	vim_snprintf(pat, len, plugpat, round == 1 ? "start" : "opt", eap->arg);
 	// The first round don't give a "not found" error, in the second round
 	// only when nothing was found in the first round.
-	res = do_in_path(p_pp, (char_u *)pat,
+	res = do_in_path(p_pp, "", (char_u *)pat,
 		DIP_ALL + DIP_DIR + (round == 2 && res == FAIL ? DIP_ERR : 0),
 		add_pack_plugin, eap->forceit ? &APP_ADD_DIR : &APP_BOTH);
 	vim_free(pat);
@@ -1403,7 +1405,6 @@ do_source_buffer_init(source_cookie_T *sp, exarg_T *eap)
 	    goto errret;
 	if (ga_add_string(&sp->buflines, line) == FAIL)
 	    goto errret;
-	line = NULL;
     }
     sp->buf_lnum = 0;
     sp->source_from_buf = TRUE;
@@ -1719,7 +1720,7 @@ do_source_ext(
 	int	forceit;
 
 	// Check if we do profiling for this script.
-	if (!si->sn_prof_on && has_profiling(TRUE, si->sn_name, &forceit))
+	if (!si->sn_prof_on && has_profiling(TRUE, si->sn_name, &forceit, NULL))
 	{
 	    script_do_profile(si);
 	    si->sn_pr_force = forceit;

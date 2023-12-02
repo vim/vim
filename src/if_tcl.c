@@ -160,7 +160,13 @@ static struct ref refsdeleted;	// dummy object for deleted ref list
 typedef int HANDLE;
 # endif
 
-# ifndef MSWIN
+# ifdef MSWIN
+#  define TCL_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define HANDLE void*
 #  define TCL_PROC void*
@@ -168,19 +174,13 @@ typedef int HANDLE;
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
 #  define load_dll_error dlerror
-# else
-#  define TCL_PROC FARPROC
-#  define load_dll vimLoadLib
-#  define symbol_from_dll GetProcAddress
-#  define close_dll FreeLibrary
-#  define load_dll_error GetWin32Error
 # endif
 
 /*
  * Declare HANDLE for tcl.dll and function pointers.
  */
 static HANDLE hTclLib = NULL;
-Tcl_Interp* (*dll_Tcl_CreateInterp)();
+Tcl_Interp* (*dll_Tcl_CreateInterp)(void);
 void (*dll_Tcl_FindExecutable)(const void *);
 
 /*
@@ -242,10 +242,10 @@ static char *find_executable_arg = NULL;
     void
 vim_tcl_init(char *arg)
 {
-#ifndef DYNAMIC_TCL
-    Tcl_FindExecutable(arg);
-#else
+#ifdef DYNAMIC_TCL
     find_executable_arg = arg;
+#else
+    Tcl_FindExecutable(arg);
 #endif
 }
 

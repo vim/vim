@@ -61,8 +61,6 @@ without all the help files.
 SpellCap highlight not updated - PR #12428
 
 Virtual text problems:
--  Deleting character before a wrapping virtual text, causes for the following
-   lines to dissapear (Issue #12244)
 -  If 'list' is on, 'below' virtual text which includes 1 or 2 characters are
    gone (Issue #12028)
 -  Virtual text aligned "above": Wrong indentation when using tabs  (Issue
@@ -74,14 +72,6 @@ Virtual text problems:
 -  Window screen gets wrong when a virtual text is placed on 'above' or
    'below' on an empty line (Issue #11959)
 -  truncated Virtual text below an empty line causes display error #12493
-
-include #12403: window for Termdebug showing local variables
-
-include #12140: positional arguments in printf(), fixes #10577
-
-Include #11818: attach custom data to quickfix items.
-
-Include #12292: buffer argument for undotree()?
 
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
 highlighted. (van-de-bugger, 2018 Jan 23, #2576)
@@ -130,36 +120,16 @@ Upcoming larger works:
    - example plugin: https://github.com/uga-rosa/dps-vsctm.vim
 
 
-Further Vim9 improvements, possibly after launch:
-- implement :class and :interface: See |vim9-classes
-  - Change access: public by default, private by prefixing "_".
-	Check for error: can't have same name twice (ignoring "_" prefix).
-  - Private methods?
-	either: private def Func()
-	    or: def _Func()
-    Perhaps use "private" keyword instead of "_" prefix?
+Further Vim9 improvements:
+- Classes and Interfaces. See |vim9-classes|
   - "final" object members - can only be set in the constructor.
   - Cannot use class type of itself in the method (Issue #12369)
   - Cannot use an object method in a lambda  #12417
 	Define all methods before compiling them?
-  - class members initialized during definition (Issue #12041)
   - Cannot call class member of funcref type  (Issue #12324)
 	Also #12081 first case.
   - Using list of functions does not work #12081 (repro in later message).
-  - Weird `class X not found on interface X` error (Issue #12023)
   - First argument of call() cannot be "obj.Func". (#11865)
-  - "return this" required for early return from constructor (inconsistent)
-    (Issue #12040)
-  - class/method confusion inside ":def" when using "class extends" (Issue
-    #12089)
-  - null_object - constant type 17 not supported (Issue #12043)
-  - problem compiling object method call as function call argument (Issue
-    #12081)
-  - Make ":defcompile ClassName" compile all functions and methods in the
-    class.
-  - object's method in stacktrace missing information (Issue #12078)
-  - Forward declaration of a class?  E.g. for Clone() function.
-	email lifepillar 2023 Mar 26
   - Getting member of variable with "any" type should be handled at runtime.
     Remove temporary solution from #12096 / patch 9.0.1375.
   - "obj.Method()" does not always work in a compiled function, assumes "obj"
@@ -167,20 +137,23 @@ Further Vim9 improvements, possibly after launch:
     Issue #11822: any.Func() can be a dict or an object call, need to handle
     this at runtime.  Also see #12198 for an example.
     Possibly issue #11981 can be fixed at the same time (has two examples).
-  - accept line breaks in member initialization.  #11957
+  - Support export/import of classes and interfaces.
+  - Make ":defcompile ClassName" compile all functions and methods in the
+    class.
+  - Forward declaration of a class?  E.g. for Clone() function.
+	Email lifepillar 2023 Mar 26
   - object empty(), len() - can class define a method to be used for them?
   - add to help: when using a default new() method then reordering object
     members may cause trouble.  Can define new() without arguments to avoid.
-  - TODO items: check types for "implements" - members and methods
   - When "Meta" is a class, is "const MetaAlias = Meta" allowed?  It should
-    either work or given an error. possibly give an error now and implement it
+    either work or given an error. Possibly give an error now and implement it
     later (using a typedef).  #12006
   - how about lock/unlock?
-  - When checking "implements" also check types of members and function args.
   - For chaining, allow using the class name as type for function return
     value.
+  - Implement "specifies" interface
   - Implement generics
-  - Add "instanceof" (exact class name).  And "assignable" (class or child)?
+  - Add "assignable" (class or child)?
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
@@ -3552,8 +3525,6 @@ Macintosh:
 8   Dragging the status line doesn't scroll but redraw.
 8   When performing incremental search, should abort searching as soon as a
     character is typed.
-8   When the value of $MAKE contains a path, configure can't handle this.
-    It's an autoconf bug.  Remove the path from $MAKE to work around it.
 8   How to set VIMRC_FILE to \"something\" for configure?  Why does this not
     work: CFLAGS='-DVIMRC_FILE=\"/mydir/myfile\"' ./configure
 8   The temporary file is sometimes not writable.  Check for this, and use an
@@ -5974,8 +5945,6 @@ Various improvements:
 7   Instead of filtering errors with a shell script it should be possible to
     do this with Vim script.  A function that filters the raw text that comes
     from the 'makeprg'?
--   Add %b to 'errorformat': buffer number. (Yegappan Lakshmanan / Suresh
-    Govindachar)
 7   Allow a window not to have a statusline.  Makes it possible to use a
     window as a buffer-tab selection.
 8   Allow non-active windows to have a different statusline. (Yakov Lerner)

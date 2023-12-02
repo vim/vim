@@ -1792,7 +1792,8 @@ win_update(win_T *wp)
 		j = wp->w_lines[0].wl_lnum - wp->w_topline;
 	    if (j < wp->w_height - 2)		// not too far off
 	    {
-		i = plines_m_win(wp, wp->w_topline, wp->w_lines[0].wl_lnum - 1);
+		i = plines_m_win(wp, wp->w_topline, wp->w_lines[0].wl_lnum - 1,
+									 TRUE);
 #ifdef FEAT_DIFF
 		// insert extra lines for previously invisible filler lines
 		if (wp->w_lines[0].wl_lnum != wp->w_topline)
@@ -2342,7 +2343,7 @@ win_update(win_T *wp)
 			    {
 				int n = plines_win_nofill(wp, l, FALSE)
 								+ wp->w_topfill;
-				n = adjust_plines_for_skipcol(wp, n);
+				n -= adjust_plines_for_skipcol(wp);
 				if (n > wp->w_height)
 				    n = wp->w_height;
 				new_rows += n;

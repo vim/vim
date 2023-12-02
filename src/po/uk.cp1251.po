@@ -12,18 +12,18 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 8.1\n"
+"Project-Id-Version: Vim Ukrainian\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-02 17:40+0300\n"
-"PO-Revision-Date: 2022-05-20 17:12+0300\n"
+"POT-Creation-Date: 2023-08-24 11:51+0300\n"
+"PO-Revision-Date: 2023-08-27 07:48+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1251\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3;     plural=n%10==1 && n%100!=11 ? 0 :            n"
-"%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3;     plural=n%10==1 && n%100!=11 ? 0 :            "
+"n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 msgid "ERROR: "
 msgstr "ПОМИЛКА: "
@@ -97,23 +97,23 @@ msgstr "[Список виправлень]"
 #, c-format
 msgid "%d buffer unloaded"
 msgid_plural "%d buffers unloaded"
-msgstr[0] "Вивантажено %d буфер"
-msgstr[1] "Вивантажено %d буфери"
-msgstr[2] "Вивантажено %d буферів"
+msgstr[0] "%d буфер вивантажено"
+msgstr[1] "%d буфери вивантажено"
+msgstr[2] "%d буферів вивантажено"
 
 #, c-format
 msgid "%d buffer deleted"
 msgid_plural "%d buffers deleted"
-msgstr[0] "Знищено %d буфер"
-msgstr[1] "Знищено %d буфери"
-msgstr[2] "Знищено %d буфері"
+msgstr[0] "%d буфер знищено"
+msgstr[1] "%d буфери знищено"
+msgstr[2] "%d буферів знищено"
 
 #, c-format
 msgid "%d buffer wiped out"
 msgid_plural "%d buffers wiped out"
-msgstr[0] "Витерто %d буфер"
-msgstr[1] "Витерто %d буфери"
-msgstr[2] "Витерто %d буферів"
+msgstr[0] "%d буфер стерто"
+msgstr[1] "%d буфери стерто"
+msgstr[2] "%d буферів стерто"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Обережно: Список назв файлів переповнено"
@@ -169,8 +169,28 @@ msgstr "Знизу"
 msgid "Top"
 msgstr "Вгорі"
 
+#, c-format
+msgid "%d%%"
+msgstr "%d%%"
+
+#, c-format
+msgid " (%d of %d)"
+msgstr " (%d з %d)"
+
+#, c-format
+msgid " ((%d) of %d)"
+msgstr " ((%d) з %d)"
+
+#, c-format
+msgid " (file %d of %d)"
+msgstr " (файл %d з %d)"
+
+#, c-format
+msgid " (file (%d) of %d)"
+msgstr " (файл (%d) з %d)"
+
 msgid "[Prompt]"
-msgstr "[Підказка]"
+msgstr "[Запит]"
 
 msgid "[Popup]"
 msgstr "[Спливаюче]"
@@ -283,6 +303,33 @@ msgstr "Ключі не однакові!"
 msgid "[crypted]"
 msgstr "[зашифровано]"
 
+#, c-format
+msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
+msgstr "xchacha20v2: застосовується власний opslimit «%llu» у виведенні ключа."
+
+#, c-format
+msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
+msgstr ""
+"xchacha20v2: застосовується початковий opslimit «%llu» у виведенні ключа."
+
+#, c-format
+msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
+msgstr "xchacha20v2: застосовується власний memlimit «%lu» у виведенні ключа."
+
+#, c-format
+msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
+msgstr ""
+"xchacha20v2: застосовується початковий memlimit «%lu» у виведенні ключа."
+
+#, c-format
+msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
+msgstr "xchacha20v2: застосовується власний алгоритм «%d» у виведенні ключа."
+
+#, c-format
+msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
+msgstr ""
+"xchacha20v2: застосовується початковий алгоритм «%d» у виведенні ключа."
+
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Режим налагодження.  Щоб продовжити введіть «cont»."
 
@@ -336,7 +383,7 @@ msgid "Patch file"
 msgstr "Латка"
 
 msgid "Custom"
-msgstr "Власний"
+msgstr "Власне"
 
 msgid "Latin supplement"
 msgstr "Доповнення латиниці"
@@ -372,7 +419,7 @@ msgid "Other"
 msgstr "Інше"
 
 msgid "Roman numbers"
-msgstr "Римські числа"
+msgstr "Римські цифри"
 
 msgid "Arrows"
 msgstr "Стрілки"
@@ -387,7 +434,7 @@ msgid "Box drawing"
 msgstr "Малювання прямокутників"
 
 msgid "Block elements"
-msgstr "Елементи блоків"
+msgstr "Частини блоків"
 
 msgid "Geometric shapes"
 msgstr "Геометричні фігури"
@@ -411,7 +458,8 @@ msgid "Bopomofo"
 msgstr "Чжуїнь"
 
 msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr "Недостатньо пам’яті, щоб встановити посилання, збір сміття скасовано!"
+msgstr ""
+"Недостатньо пам’яті для встановлення посилань, збирання сміття припинено!"
 
 msgid ""
 "\n"
@@ -495,7 +543,7 @@ msgstr "Записати частину файлу?"
 
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
-msgstr "Переписати існуючий файл «%s»?"
+msgstr "Переписати наявний файл «%s»?"
 
 #, c-format
 msgid "Swap file \"%s\" exists, overwrite anyway?"
@@ -584,12 +632,6 @@ msgstr "Кінець функції"
 msgid "Backwards range given, OK to swap"
 msgstr "Інтервал задано навиворіт, щоб поміняти місцями — ГАРАЗД"
 
-msgid ""
-"INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
-msgstr ""
-"ВНУТРІШНЄ: Не можна вжити EX_DFLALL з ADDR_NONE, ADDR_UNSIGNED чи "
-"ADDR_QUICKFIX"
-
 #, c-format
 msgid "%d more file to edit.  Quit anyway?"
 msgid_plural "%d more files to edit.  Quit anyway?"
@@ -598,7 +640,7 @@ msgstr[1] "Ще є %d не редаговані файли. Все одно вийти?"
 msgstr[2] "Ще є %d не редагованих файлів. Все одно вийти?"
 
 msgid "unknown"
-msgstr "Невідомо"
+msgstr "невідомо"
 
 msgid "Greetings, Vim user!"
 msgstr "Вітання, користувачу Vim!"
@@ -683,7 +725,7 @@ msgid "Interrupt"
 msgstr "Перервано"
 
 msgid "[Command Line]"
-msgstr "[Рядок команд]"
+msgstr "[Рядок Команд]"
 
 msgid "is a directory"
 msgstr "каталог"
@@ -718,7 +760,7 @@ msgid "[fifo]"
 msgstr "[канал]"
 
 msgid "[socket]"
-msgstr "[гніздо]"
+msgstr "[розетка]"
 
 msgid "[character special]"
 msgstr "[спец. символьний]"
@@ -727,7 +769,7 @@ msgid "[CR missing]"
 msgstr "[Бракує CR]"
 
 msgid "[long lines split]"
-msgstr "[Розбито довгі рядки]"
+msgstr "[довгі рядки розбито]"
 
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
@@ -848,13 +890,15 @@ msgstr "без збігів"
 msgid "+--%3ld line folded "
 msgid_plural "+--%3ld lines folded "
 msgstr[0] "+--%3ld рядок згорнуто "
-msgstr[1] "+--%3ld рядків згорнуто "
+msgstr[1] "+--%3ld рядки згорнуто "
+msgstr[2] "+--%3ld рядків згорнуто "
 
 #, c-format
 msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld рядок: "
-msgstr[1] "+-%s%3ld рядків: "
+msgstr[1] "+-%s%3ld рядки: "
+msgstr[2] "+-%s%3ld рядків: "
 
 msgid "No match at cursor, finding next"
 msgstr "Немає над курсором, пошук триває"
@@ -1165,7 +1209,7 @@ msgstr "З'єднання з cscope %s закінчено"
 
 #, c-format
 msgid "Cscope tag: %s"
-msgstr "Теґ cscope: %s"
+msgstr "Мітка cscope: %s"
 
 msgid ""
 "\n"
@@ -1190,7 +1234,7 @@ msgid "Lua library cannot be loaded."
 msgstr "Не вдалося завантажити бібліотеку Lua"
 
 msgid "cannot save undo information"
-msgstr "не вдалося зберегти інформацію для скасування"
+msgstr "Не вдалося зберегти історію змін"
 
 msgid "invalid expression"
 msgstr "некоректний вираз"
@@ -1319,7 +1363,7 @@ msgid " File name completion (^F^N^P)"
 msgstr " Доповнення назви файлу (^F^N^P)"
 
 msgid " Tag completion (^]^N^P)"
-msgstr " Доповнення міток (^]^N^P)"
+msgstr " Доповнення з міток (^]^N^P)"
 
 msgid " Path pattern completion (^N^P)"
 msgstr " Доповнення шляху за зразком (^N^P)"
@@ -1348,9 +1392,6 @@ msgstr " Орфографічна підказка (s^N^P)"
 msgid " Keyword Local completion (^N^P)"
 msgstr " Доповнення місцевих ключових слів (^N^P)"
 
-msgid "Hit end of paragraph"
-msgstr "Трапився кінець параграфа"
-
 msgid "'dictionary' option is empty"
 msgstr "Опція 'dictionary' порожня"
 
@@ -1362,7 +1403,7 @@ msgid "Scanning dictionary: %s"
 msgstr "Сканується словник: %s"
 
 msgid " (insert) Scroll (^E/^Y)"
-msgstr " (вставка) Прогорнути (^E/^Y)"
+msgstr " (вставити) Прогорнути (^E/^Y)"
 
 msgid " (replace) Scroll (^E/^Y)"
 msgstr " (заміна) Прогорнути (^E/^Y)"
@@ -1382,6 +1423,12 @@ msgstr " Додається"
 
 msgid "-- Searching..."
 msgstr "-- Пошук..."
+
+msgid "Hit end of paragraph"
+msgstr "Трапився кінець параграфа"
+
+msgid "Pattern not found"
+msgstr "Зразок не знайдено"
 
 msgid "Back at original"
 msgstr "Початковий варіант"
@@ -1648,6 +1695,9 @@ msgstr "-T <термінал>\tВстановити тип терміналу у <термінал>"
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\tПропустити попередження вводу/виводу не в термінал"
 
+msgid "--gui-dialog-file {fname}  For testing: write dialog text"
+msgstr "--gui-dialog-file {fname}  Для тестування: записати текст діалогу"
+
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tВийти, якщо введення/виведення не в термінал"
 
@@ -1667,7 +1717,7 @@ msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tВідкрити N вікон (або по одному для кожного файлу)"
 
 msgid "-O[N]\t\tLike -o but split vertically"
-msgstr "-O[N]\t\tНіби -o, але поділити вікна вертикально"
+msgstr "-O[N]\t\tНіби -o, але розщепити вікна вертикально"
 
 msgid "+\t\t\tStart at end of file"
 msgstr "+\t\t\tРозпочати в кінці файлу"
@@ -1831,14 +1881,40 @@ msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <заголовок батька>\tВідкрити Vim всередині батьківського вікна"
 
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
-msgstr "--windowid <HWND>\tВідкрити Vim всередині іншого елементу win32"
+msgstr "--windowid <HWND>\tВідкрити Vim всередині іншого елемента win32"
+
+msgid "Seen modifyOtherKeys: true\n"
+msgstr "Трапилося modifyOtherKeys: true\n"
+
+msgid "Unknown"
+msgstr "Невідомо"
+
+msgid "Off"
+msgstr "Вимк"
+
+msgid "On"
+msgstr "Увімк"
+
+msgid "Disabled"
+msgstr "Вимкнено"
+
+msgid "Cleared"
+msgstr "Очищено"
+
+#, c-format
+msgid "modifyOtherKeys detected: %s\n"
+msgstr "Помічено modifyOtherKeys: %s\n"
+
+#, c-format
+msgid "Kitty keyboard protocol: %s\n"
+msgstr "Протокол клавіатури Kitty: %s\n"
 
 # msgstr "E227: "
 msgid "No abbreviation found"
 msgstr "Скорочення не знайдено"
 
 msgid "No mapping found"
-msgstr "Заміни не знайдено"
+msgstr "Заміни клавіш не знайдено"
 
 msgid "No marks set"
 msgstr "Не встановлено жодної помітки"
@@ -1965,6 +2041,9 @@ msgstr "??? звідси і до `??? КІНЕЦЬ' рядки, можливо, сплутані"
 msgid "??? from here until ???END lines may have been inserted/deleted"
 msgstr "??? звідси і до `??? КІНЕЦЬ' рядки, можливо, були додані/знищені"
 
+msgid "??? lines may be missing"
+msgstr "??? рядків може бракувати"
+
 msgid "???END"
 msgstr "??? КІНЕЦЬ"
 
@@ -1992,14 +2071,14 @@ msgid ""
 "You may want to delete the .swp file now."
 msgstr ""
 "\n"
-"Можливо, тепер ви хочете знищити файл обміну .swp."
+"Тепер ви можете знищити файл обміну .swp."
 
 msgid ""
 "\n"
 "Note: process STILL RUNNING: "
 msgstr ""
 "\n"
-"Нотатка: процес ВСЕ ЩЕ ПРАЦЮЄ: "
+"Примітка: процес ЩЕ ВИКОНУЄТЬСЯ: "
 
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr "Для текстового файлу використовується ключ шифру з файлу обміну.\n"
@@ -2075,7 +2154,7 @@ msgstr ""
 "         ID процесу: "
 
 msgid " (STILL RUNNING)"
-msgstr " (ВСЕ ЩЕ ПРАЦЮЄ)"
+msgstr " (ЩЕ ВИКОНУЄТЬСЯ)"
 
 msgid ""
 "\n"
@@ -2140,9 +2219,8 @@ msgid ""
 msgstr ""
 "\n"
 "(1) Можливо, інша програма вже редагує цей самий файл. Якщо це так,\n"
-"    будьте обережні, щоб не залишилися два різні екземпляри\n"
-"    одного й того самого файлу після змін.  Вийдіть чи продовжуйте з "
-"обережністю.\n"
+"    будьте обережні, щоб не залишилися два різні екземпляри одного й того\n"
+"    самого файлу після змін.  Вийдіть чи продовжуйте обережно.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
 msgstr "(2) Сеанс редагування цього файлу зазнав краху.\n"
@@ -2168,7 +2246,7 @@ msgstr ""
 "    щоб позбутися цього повідомлення.\n"
 
 msgid "Found a swap file that is not useful, deleting it"
-msgstr "Знайдено файл обміну, яким не можна скористатися, видаляємо"
+msgstr "Знайдено файл обміну, яким не можна скористатися, знищуємо"
 
 msgid "Swap file \""
 msgstr "Файл обміну «"
@@ -2244,9 +2322,6 @@ msgstr "Перервано: "
 msgid "Press ENTER or type command to continue"
 msgstr "Натисніть ENTER або введіть команду для продовження"
 
-msgid "Unknown"
-msgstr "Невідомо"
-
 #, c-format
 msgid "%s line %ld"
 msgstr "%s рядок %ld"
@@ -2281,24 +2356,24 @@ msgstr ""
 "&C:Скасувати"
 
 msgid "Type number and <Enter> or click with the mouse (q or empty cancels): "
-msgstr "Наберіть число й <Enter> чи клацніть мишкою (q або порожнє скасовує): "
+msgstr "Наберіть число й <Enter> чи клацніть мишкою (q чи порожнє скасовує): "
 
 msgid "Type number and <Enter> (q or empty cancels): "
-msgstr "Наберіть число й <Enter> (q або порожнє скасовує): "
+msgstr "Наберіть число й <Enter> (q чи порожнє скасовує): "
 
 #, c-format
 msgid "%ld more line"
 msgid_plural "%ld more lines"
-msgstr[0] "додано %ld рядок"
-msgstr[1] "додано %ld рядки"
-msgstr[2] "додано %ld рядків"
+msgstr[0] "ще %ld рядок"
+msgstr[1] "ще %ld рядки"
+msgstr[2] "ще %ld рядків"
 
 #, c-format
 msgid "%ld line less"
 msgid_plural "%ld fewer lines"
-msgstr[0] "знищено %ld рядок"
-msgstr[1] "знищено %ld рядки"
-msgstr[2] "знищено %ld рядків"
+msgstr[0] "на %ld рядок менше"
+msgstr[1] "на %ld рядки менше"
+msgstr[2] "на %ld рядків менше"
 
 msgid " (Interrupted)"
 msgstr " (Перервано)"
@@ -2416,10 +2491,6 @@ msgid ""
 msgstr ""
 "\n"
 "--- Опції ---"
-
-#, c-format
-msgid "For option %s"
-msgstr "Для опції %s"
 
 # msgstr "E358: "
 msgid "cannot open "
@@ -2632,7 +2703,7 @@ msgstr " (рядок знищено)"
 
 #, c-format
 msgid "%serror list %d of %d; %d errors "
-msgstr "%sсписок помилок %d з %d; %d помилок"
+msgstr "%sсписок помилок %d з %d; %d помилок "
 
 msgid "No entries"
 msgstr "Нічого"
@@ -2652,7 +2723,7 @@ msgid "External submatches:\n"
 msgstr "Зовнішні під-збіги:\n"
 
 msgid "Switching to backtracking RE engine for pattern: "
-msgstr "Перемикаємося до пошуку з поверненням для шаблона: "
+msgstr "Перемикання до простого рушія регулярних виразів: "
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
@@ -2682,7 +2753,7 @@ msgid ""
 "Type Name Content"
 msgstr ""
 "\n"
-"Тип  Назва Вміст "
+"Тип  Наз. Вміст  "
 
 msgid " VREPLACE"
 msgstr " ВІРТ ЗАМІНА"
@@ -2694,13 +2765,13 @@ msgid " REVERSE"
 msgstr " НАВИВОРІТ"
 
 msgid " INSERT"
-msgstr " ВСТАВКА"
+msgstr " ВСТАВИТИ"
 
 msgid " (insert)"
-msgstr " (вставка)"
+msgstr " (вставити)"
 
 msgid " (replace)"
-msgstr " (заміна)"
+msgstr " (замінити)"
 
 msgid " (vreplace)"
 msgstr " (вірт заміна)"
@@ -2737,6 +2808,11 @@ msgstr "йде запис"
 
 # msgstr "E195: "
 #, c-format
+msgid "Searching for \"%s\" under \"%s\" in \"%s\""
+msgstr "Пошук «%s» за «%s» в «%s»"
+
+# msgstr "E195: "
+#, c-format
 msgid "Searching for \"%s\" in \"%s\""
 msgstr "Пошук «%s» в «%s»"
 
@@ -2746,7 +2822,7 @@ msgstr "Пошук «%s»"
 
 #, c-format
 msgid "not found in '%s': \"%s\""
-msgstr "не знайдено у '%s': «%s»"
+msgstr "не знайдено в '%s': «%s»"
 
 msgid "Source Vim script"
 msgstr "Прочитати скрипт Vim"
@@ -2864,7 +2940,7 @@ msgstr "  група=%s"
 
 #, c-format
 msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
-msgstr "    рядок=%ld  id=%d%s  назва=%s  пріоритет=%d"
+msgstr "    рядок=%ld id=%d%s  назва=%s пріоритет=%d"
 
 msgid " (NOT FOUND)"
 msgstr " (НЕ ЗНАЙДЕНО)"
@@ -2926,7 +3002,7 @@ msgid ""
 "Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
 "%d"
 msgstr ""
-"Визначення COMPOUNDFORBIDFLAG після елементу PFX може дати неправильний "
+"Визначення COMPOUNDFORBIDFLAG після елемента PFX може дати неправильний "
 "результат у %s у рядку %d"
 
 #, c-format
@@ -2934,7 +3010,7 @@ msgid ""
 "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
 "%d"
 msgstr ""
-"Визначення COMPOUNDPERMITFLAG після елементу PFX можу дати неправильний "
+"Визначення COMPOUNDPERMITFLAG після елемента PFX можу дати неправильний "
 "результат у %s у рядку %d"
 
 #, c-format
@@ -2971,7 +3047,7 @@ msgid ""
 "Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
 "line %d: %s"
 msgstr ""
-"Афікс також використовується для BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/"
+"Афікс також вживається для BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/"
 "NOSUGGEST у %s у рядку %d: %s"
 
 #, c-format
@@ -3166,7 +3242,7 @@ msgid "No Syntax items defined for this buffer"
 msgstr "Для буфера не визначено елементів синтаксису"
 
 msgid "'redrawtime' exceeded, syntax highlighting disabled"
-msgstr "вичерпано 'redrawtime', вимкнено підсвічування синтаксису"
+msgstr "'redrawtime' вичерпано, підсвічування синтаксису вимкнено"
 
 msgid "syntax iskeyword not set"
 msgstr "синтаксис iskeyword не встановлено"
@@ -3240,7 +3316,7 @@ msgid " or more"
 msgstr " або більше"
 
 msgid "  Using tag with different case!"
-msgstr "  Використано мітку, не розрізняючи великі й малі літери"
+msgstr "  Використано мітку, не розрізняючи великі й малі літери!"
 
 # msgstr "E426: "
 msgid "  # pri kind tag"
@@ -3434,6 +3510,11 @@ msgstr "%s повертає #%ld"
 msgid "%s returning %s"
 msgstr "%s повертає %s"
 
+# msgstr "E428: "
+#, c-format
+msgid "Function %s does not need compiling"
+msgstr "Функцію %s не потрібно компілювати"
+
 #, c-format
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s, скомпільовано %s)"
@@ -3540,24 +3621,10 @@ msgstr ""
 
 msgid ""
 "\n"
-"Big version "
-msgstr ""
-"\n"
-"Велика версія "
-
-msgid ""
-"\n"
 "Normal version "
 msgstr ""
 "\n"
 "Нормальна версія "
-
-msgid ""
-"\n"
-"Small version "
-msgstr ""
-"\n"
-"Мала версія "
 
 msgid ""
 "\n"
@@ -3911,12 +3978,12 @@ msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: За \\ має йти /, ? або &"
 
 # msgstr "E10: "
-msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr "E11: Неприпустимо у вікні команд, <CR> виконує, CTRL-C виходить"
+msgid "E11: Invalid in command-line window; :q<CR> closes the window"
+msgstr "E11: Неприпустимо у вікні команд; :q<CR> закриває вікно"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Команда не дозволена у exrc/vimrc у пошуку поточного каталогу чи теґу"
+"E12: Команда не дозволена у exrc/vimrc у пошуку поточного каталогу чи мітки"
 
 msgid "E13: File exists (add ! to override)"
 msgstr "E13: Файл існує (! щоб не зважати)"
@@ -4010,13 +4077,10 @@ msgid "E36: Not enough room"
 msgstr "E36: Місця не вистачить"
 
 msgid "E37: No write since last change"
-msgstr "E37: Не записано попередні зміни"
+msgstr "E37: Не записано найновіші зміни"
 
 msgid "E37: No write since last change (add ! to override)"
 msgstr "E37: Зміни не було записано (! щоб не зважати)"
-
-msgid "E38: Null argument"
-msgstr "E38: Відсутній аргумент"
 
 msgid "E39: Number expected"
 msgstr "E39: Очікується число"
@@ -4030,12 +4094,6 @@ msgstr "E41: Забракло пам'яті!"
 
 msgid "E42: No Errors"
 msgstr "E42: Жодної помилки"
-
-msgid "E43: Damaged match string"
-msgstr "E43: Текст збігу пошкоджено"
-
-msgid "E44: Corrupted regexp program"
-msgstr "E44: Зіпсована програма регулярних виразів"
 
 msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr "E45: Встановлено опцію 'readonly' (! щоб не зважати)"
@@ -4080,7 +4138,7 @@ msgstr "E55: Немає пари %s)"
 
 #, c-format
 msgid "E59: Invalid character after %s@"
-msgstr "E59: Недозволений символ після %s@"
+msgstr "E59: Некоректний символ після %s@"
 
 #, c-format
 msgid "E60: Too many complex %s{...}s"
@@ -4345,7 +4403,7 @@ msgid "E133: :return not inside a function"
 msgstr "E133: :return поза межами функції"
 
 msgid "E134: Cannot move a range of lines into itself"
-msgstr "E134: Неможливо перемістити діапазон рядків самого в себе"
+msgstr "E134: Неможливо перемістити діапазон рядків сам у себе"
 
 msgid "E135: *Filter* Autocommands must not change current buffer"
 msgstr "E135: Автокоманди *Filter* не повинні змінювати поточний буфер"
@@ -4388,7 +4446,7 @@ msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Регулярні вирази не можна розділяти літерами"
 
 msgid "E147: Cannot do :global recursive with a range"
-msgstr "E147: :global не можна вживати рекурсивно з діапазоном"
+msgstr "E147: :global не можна застосовувати рекурсивно з діапазоном"
 
 msgid "E148: Regular expression missing from :global"
 msgstr "E148: У global бракує регулярного виразу"
@@ -4445,7 +4503,7 @@ msgstr "E161: Точку зупинки не знайдено: %s"
 
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Буфер «%s» має не збережені зміни"
+msgstr "E162: Буфер «%s» має незбережені зміни"
 
 msgid "E163: There is only one file to edit"
 msgstr "E163: Редагується лише один файл"
@@ -4478,15 +4536,14 @@ msgid "E171: Missing :endif"
 msgstr "E171: Бракує :endif"
 
 msgid "E172: Missing marker"
-msgstr "E172: Бракує позначки кінця"
+msgstr "E172: Бракує позначки"
 
 #, c-format
 msgid "E173: %d more file to edit"
-msgstr "E173: Залишилося %d не редагованих файлів"
-
-#, c-format
-msgid "E173: %d more files to edit"
-msgstr "E173: Залишилося %d не редагованих файлів"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: Ще редагувати %d файл"
+msgstr[1] "E173: Ще редагувати %d файли"
+msgstr[2] "E173: Ще редагувати %d файлів"
 
 #, c-format
 msgid "E174: Command already exists: add ! to replace it: %s"
@@ -4611,7 +4668,7 @@ msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Латання: не вдалося зберегти оригінал"
 
 msgid "E206: Patchmode: can't touch empty original file"
-msgstr "E206: Латання: Не вдалося створити оригінал"
+msgstr "E206: Латання: не вдалося створити оригінал"
 
 msgid "E207: Can't delete backup file"
 msgstr "E207: Не вдалося знищити резервний файл"
@@ -4672,11 +4729,8 @@ msgstr "E220: Бракує }."
 msgid "E221: Marker cannot start with lower case letter"
 msgstr "E221: Позначка повинна починатися з великої літери"
 
-msgid "E222: Add to internal buffer that was already read from"
-msgstr "E222: Додавання до внутрішнього буфера, з якого вже прочитано"
-
 msgid "E223: Recursive mapping"
-msgstr "E223: Заміна рекурсивна"
+msgstr "E223: Заміна клавіш рекурсивна"
 
 # msgstr "E223: "
 #, c-format
@@ -4698,9 +4752,6 @@ msgstr "E226: Вже є скорочення для %s"
 msgid "E227: Mapping already exists for %s"
 msgstr "E227: Вже є заміна для %s"
 
-msgid "E228: makemap: Illegal mode"
-msgstr "E228: makemap: Неприпустимий режим"
-
 # msgstr "E228: "
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Не вдалося запустити GUI"
@@ -4713,9 +4764,6 @@ msgstr "E230: Не вдалося прочитати з «%s»"
 # msgstr "E230: "
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: Некоректний 'guifontwide'"
-
-msgid "E232: Cannot create BalloonEval with both message and callback"
-msgstr "E232: Не вдалося створити BalloonEval з повідомленням і функцією"
 
 msgid "E233: Cannot open display"
 msgstr "E233: Не вдалося відкрити дисплей"
@@ -4755,7 +4803,7 @@ msgstr "E241: Не вдалося відіслати до %s"
 
 # msgstr "E344: "
 msgid "E242: Can't split a window while closing another"
-msgstr "E242: Неможливо розбити вікно, поки закривається інше"
+msgstr "E242: Неможливо розщепити вікно, поки закривається інше"
 
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
@@ -4879,20 +4927,13 @@ msgstr "E275: Неможливо додати текстову властивість до вивантаженого буфера"
 
 #, c-format
 msgid "E276: Cannot use function as a method: %s"
-msgstr "E276: Не можна вжити функцію, як метод: %s"
+msgstr "E276: Не можна вжити функцію як метод: %s"
 
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Не вдалося прочитати відповідь сервера"
 
 msgid "E279: Sorry, ++shell is not supported on this system"
 msgstr "E279: Даруйте, ++shell не підтримується у ній системі"
-
-msgid ""
-"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
-"org"
-msgstr ""
-"E280: ФАТАЛЬНА ПОМИЛКА TCL: можливо пошкоджено список посилань!? Будь ласка, "
-"повідомте у vim-dev@vim.org"
 
 #, c-format
 msgid "E282: Cannot read from \"%s\""
@@ -4928,14 +4969,6 @@ msgstr "E289: Метод вводу не підтримує відредаговані типи"
 msgid "E290: List or number required"
 msgstr "E290: Потрібен список чи число"
 
-# msgstr "E177: "
-#, c-format
-msgid "E292: Invalid count for del_bytes(): %ld"
-msgstr "E292: Некоректна кількість у del_bytes(): %ld"
-
-msgid "E293: Block was not locked"
-msgstr "E293: Блок не було зафіксовано"
-
 # msgstr "E293: "
 msgid "E294: Seek error in swap file read"
 msgstr "E294: Помилка зміни позиції у файлі обміну"
@@ -4948,16 +4981,6 @@ msgstr "E296: Помилка зміни позиції під час запису у файл обміну"
 
 msgid "E297: Write error in swap file"
 msgstr "E297: Помилка запису файлу обміну"
-
-msgid "E298: Didn't get block nr 0?"
-msgstr "E298: Немає блоку 0?"
-
-msgid "E298: Didn't get block nr 1?"
-msgstr "E298: Немає блоку 1?"
-
-# msgstr "E298: "
-msgid "E298: Didn't get block nr 2?"
-msgstr "E298: Немає блоку 2?"
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr "E299: Обчислення виразів Perl заборонене у пісочниці без модуля Safe"
@@ -4976,9 +4999,6 @@ msgstr "E302: Не вдалося перейменувати файлу обміну"
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr "E303: Не вдалося прочитати файл обміну для «%s», відновлення неможливе"
-
-msgid "E304: ml_upd_block0(): Didn't get block 0??"
-msgstr "E304: ml_upd_block0(): Немає блоку 0??"
 
 #, c-format
 msgid "E305: No swap file found for %s"
@@ -5019,51 +5039,12 @@ msgstr "E313: Не вдалося заготовити, немає файлу обміну"
 msgid "E314: Preserve failed"
 msgstr "E314: Збереження не вдалося"
 
-# msgstr "E314: "
-#, c-format
-msgid "E315: ml_get: Invalid lnum: %ld"
-msgstr "E315: ml_get: Неправильний lnum: %ld"
-
-# msgstr "E315: "
-#, c-format
-msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: Не знайшов рядок %ld у буфері %d %s"
-
-msgid "E317: Pointer block id wrong"
-msgstr "E317: Вказівник блоку помилковий"
-
-msgid "E317: Pointer block id wrong 2"
-msgstr "E317: Вказівник блоку помилковий 2"
-
-# msgstr "E316: "
-msgid "E317: Pointer block id wrong 3"
-msgstr "E317: Вказівник блоку помилковий 3"
-
-msgid "E317: Pointer block id wrong 4"
-msgstr "E317: Вказівник блоку помилковий 4"
-
-msgid "E318: Updated too many blocks?"
-msgstr "E318: Поновлено забагато блоків?"
-
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Вибачте, цієї команди немає у цій версії"
 
 #, c-format
-msgid "E320: Cannot find line %ld"
-msgstr "E320: Не вдалося знайти рядок %ld"
-
-#, c-format
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Не вдалося перечитати «%s»"
-
-#, c-format
-msgid "E322: Line number out of range: %ld past the end"
-msgstr "E322: Номер рядка вийшов за межі: %ld за кінцем"
-
-# msgstr "E322: "
-#, c-format
-msgid "E323: Line count wrong in block %ld"
-msgstr "E323: Кількість рядків у блоці %ld"
 
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: Не вдалося відкрити файл PostScript для виводу"
@@ -5128,9 +5109,8 @@ msgstr "E338: Вибачте, але в консолі немає діалогу вибору файлу"
 msgid "E339: Pattern too long"
 msgstr "E339: Зразок занадто довгий"
 
-# msgstr "E340: "
-msgid "E341: Internal error: lalloc(0, )"
-msgstr "E341: Внутрішня помилка: lalloc(0, )"
+msgid "E340: Internal error; if you can reproduce please report a bug"
+msgstr "E340: Внутрішня помилка; якщо можете відтворити, будь ласка, повідомте"
 
 # msgstr "E341: "
 #, c-format
@@ -5194,9 +5174,6 @@ msgstr "E354: Неправильна назва регістру: '%s'"
 msgid "E355: Unknown option: %s"
 msgstr "E355: Невідома опція: %s"
 
-msgid "E356: get_varp ERROR"
-msgstr "E356: Помилка get_varp"
-
 # msgstr "E356: "
 #, c-format
 msgid "E357: 'langmap': Matching character missing for %s"
@@ -5217,7 +5194,7 @@ msgid "E362: Using a boolean value as a Float"
 msgstr "E362: Логічне значення вжито як Float"
 
 msgid "E363: Pattern uses more memory than 'maxmempattern'"
-msgstr "E363: Зразок використовує більше, ніж 'maxmempattern', пам'яті"
+msgstr "E363: Зразок використовує більше пам’яті, ніж 'maxmempattern'"
 
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
@@ -5300,11 +5277,11 @@ msgstr "E383: Неправильний зразок для пошуку: %s"
 
 #, c-format
 msgid "E384: Search hit TOP without match for: %s"
-msgstr "E384: Пошук дійшов до ПОЧАТКУ без збігів з %s"
+msgstr "E384: Пошук дійшов до ПОЧАТКУ без збігів з: %s"
 
 #, c-format
 msgid "E385: Search hit BOTTOM without match for: %s"
-msgstr "E385: Пошук дійшов до КІНЦЯ без збігів з %s"
+msgstr "E385: Пошук дійшов до КІНЦЯ без збігів з: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
 msgstr "E386: Після `;' має бути `?' або `/'"
@@ -5438,6 +5415,9 @@ msgstr "E417: Пропущено аргумент: %s"
 msgid "E418: Illegal value: %s"
 msgstr "E418: Неправильне значення: %s"
 
+msgid "E418: I'm a teapot"
+msgstr "E418: Я — чайник"
+
 # msgstr "E418: "
 msgid "E419: FG color unknown"
 msgstr "E419: Невідомий колір тексту"
@@ -5516,26 +5496,16 @@ msgstr "E436: Немає запису «%s» про можливості терміналу"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: Потрібна можливість терміналу «cm»"
 
-msgid "E438: u_undo: Line numbers wrong"
-msgstr "E438: u_undo: Неправильні номери рядків"
-
-msgid "E439: Undo list corrupt"
-msgstr "E439: Список скасування пошкоджено"
-
-# msgstr "E439: "
-msgid "E440: Undo line missing"
-msgstr "E440: Відсутній рядок скасування"
-
 msgid "E441: There is no preview window"
 msgstr "E441: Немає вікна перегляду"
 
 # msgstr "E441: "
 msgid "E442: Can't split topleft and botright at the same time"
-msgstr "E442: Не вдалося одночасно розбити topleft і botright"
+msgstr "E442: Не вдалося одночасно розщепити topleft і botright"
 
 # msgstr "E442: "
 msgid "E443: Cannot rotate when another window is split"
-msgstr "E443: Не вдалося перемістити вікно, заважають інші"
+msgstr "E443: Не вдалося перемістити по колу, інше вікно розщеплене"
 
 # msgstr "E443: "
 msgid "E444: Cannot close last window"
@@ -5631,7 +5601,7 @@ msgid "E467: Custom completion requires a function argument"
 msgstr "E467: Користувацьке доповнення вимагає аргумент-функцію"
 
 msgid "E468: Completion argument only allowed for custom completion"
-msgstr "E468: Аргумент дозволений тільки для доповнення користувача"
+msgstr "E468: Аргумент дозволений тільки для користувацького доповнення"
 
 #, c-format
 msgid "E469: Invalid cscopequickfix flag %c for %c"
@@ -5646,9 +5616,6 @@ msgstr "E471: Необхідно вказати аргумент"
 msgid "E472: Command failed"
 msgstr "E472: Команда на вдалась"
 
-msgid "E473: Internal error in regexp"
-msgstr "E473: Внутрішня помилка у регулярному виразі"
-
 # msgstr "E14: "
 msgid "E474: Invalid argument"
 msgstr "E474: Некоректний аргумент"
@@ -5659,11 +5626,11 @@ msgstr "E475: Некоректний аргумент: %s"
 
 #, c-format
 msgid "E475: Invalid value for argument %s"
-msgstr "E475: Некоректне значення у аргументі %s"
+msgstr "E475: Некоректне значення аргументу %s"
 
 #, c-format
 msgid "E475: Invalid value for argument %s: %s"
-msgstr "E475: Некоректне значення у аргументі %s: %s"
+msgstr "E475: Некоректне значення аргументу %s: %s"
 
 # msgstr "E16: "
 msgid "E476: Invalid command"
@@ -5673,6 +5640,11 @@ msgstr "E476: Некоректна команда"
 #, c-format
 msgid "E476: Invalid command: %s"
 msgstr "E476: Некоректна команда: %s"
+
+# msgstr "E16: "
+#, c-format
+msgid "E476: Invalid command: %s, expected %s"
+msgstr "E476: Некоректна команда: %s, очікується %s"
 
 # msgstr "E24: "
 msgid "E477: No ! allowed"
@@ -5718,6 +5690,10 @@ msgstr "E486: Зразок не знайдено: %s"
 
 msgid "E487: Argument must be positive"
 msgstr "E487: Аргумент має бути додатний"
+
+#, c-format
+msgid "E487: Argument must be positive: %s"
+msgstr "E487: Аргумент має бути додатний: %s"
 
 msgid "E488: Trailing characters"
 msgstr "E488: Надлишкові символи"
@@ -5775,6 +5751,9 @@ msgstr "Не придатний для запису"
 msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: «%s» не файл або не пристрій для запису"
 
+msgid "E503: Coffee is currently not available"
+msgstr "E503: Кави поки що немає"
+
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "лише для читання (неможливо обійти: «W» у 'cpoptions')"
 
@@ -5809,14 +5788,15 @@ msgid "E512: Close failed"
 msgstr "E512: Не вдалося закрити"
 
 msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
-msgstr "E513: Помилка запису, конвертація не вдалася (скиньте 'fenc')"
+msgstr "E513: Помилка запису, перетворення не вдалося (скиньте 'fenc')"
 
 #, c-format
 msgid ""
-"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"E513: Write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Помилка запису, конвертація не вдалася у рядку %ld (скиньте 'fenc')"
+"E513: Помилка запису, перетворення не вдалася у рядку %ld (скиньте 'fenc', "
+"щоб подолати)"
 
 msgid "E514: Write error (file system full?)"
 msgstr "E514: Помилка запису (скінчилось вільне місце?)"
@@ -5927,7 +5907,7 @@ msgid "E547: Illegal mouseshape"
 msgstr "E547: Неправильний вигляд миші"
 
 msgid "E548: Digit expected"
-msgstr "E548: Потрібна цифра"
+msgstr "E548: Очікується цифра"
 
 msgid "E549: Illegal percentage"
 msgstr "E549: Неправильний відсоток"
@@ -5952,10 +5932,10 @@ msgstr "E554: Синтаксична помилка в %s{...}"
 
 # msgstr "E424: "
 msgid "E555: At bottom of tag stack"
-msgstr "E555: Кінець стеку міток"
+msgstr "E555: На дні стеку міток"
 
 msgid "E556: At top of tag stack"
-msgstr "E556: Вершина стеку міток"
+msgstr "E556: На вершині стеку міток"
 
 msgid "E557: Cannot open termcap file"
 msgstr "E557: Не вдалося відкрити файл можливостей терміналів"
@@ -5997,9 +5977,6 @@ msgstr "E567: Жодного з'єднання із cscope"
 msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Повторна база даних cscope не додана"
 
-msgid "E570: Fatal error in cs_manage_matches"
-msgstr "E570: Фатальна помилка в cs_manage_matches"
-
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
 msgstr ""
@@ -6025,9 +6002,6 @@ msgstr "Пропущено '>'"
 
 msgid "Illegal register name"
 msgstr "Неправильна назва регістру"
-
-msgid "E578: Not allowed to change text here"
-msgstr "E578: Змінювати текст тут не дозволено"
 
 msgid "E579: :if nesting too deep"
 msgstr "E579: Занадто багато вкладених :if"
@@ -6133,7 +6107,7 @@ msgid "E609: Cscope error: %s"
 msgstr "E609: Помилка cscope: %s"
 
 msgid "E610: No argument to delete"
-msgstr "E610: Немає аргументів щоб видалити"
+msgstr "E610: Немає аргументів для знищення"
 
 msgid "E611: Using a Special as a Number"
 msgstr "E611: Special вжито як Number"
@@ -6144,6 +6118,18 @@ msgstr "E612: Визначено забагато надписів"
 #, c-format
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Невідомий шрифт принтера: %s"
+
+# msgstr "E396: "
+msgid "E614: Class required"
+msgstr "E614: Потрібен клас"
+
+# msgstr "E396: "
+msgid "E615: Object required"
+msgstr "E615: Потрібен об’єкт"
+
+#, c-format
+msgid "E616: Object required for argument %d"
+msgstr "E616: Потрібен об’єкт в аргументі %d"
 
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: Не можна змінити в GUI GTK"
@@ -6182,6 +6168,15 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: Не вдалося отримати інформацію з бази даних cscope"
 
 #, c-format
+msgid "E627: Missing colon: %s"
+msgstr "E627: Бракує двокрапки: %s"
+
+# msgstr "E415: "
+#, c-format
+msgid "E628: Missing ! or / in: %s"
+msgstr "E628: Пропущено ! чи / у: %s"
+
+#, c-format
 msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): Запис до під’єднання"
 
@@ -6189,9 +6184,73 @@ msgstr "E630: %s(): Запис до під’єднання"
 msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Збереження не вдалося"
 
+msgid "E632: Invalid buffer identifier in getLength"
+msgstr "E632: Некоректний ідентифікатор буфера у getLength"
+
+msgid "E633: Invalid buffer identifier in getText"
+msgstr "E633: Некоректний ідентифікатор буфера у getText"
+
+msgid "E634: Invalid buffer identifier in remove"
+msgstr "E634: Некоректний ідентифікатор буфера у delete"
+
+msgid "E635: Invalid buffer identifier in insert"
+msgstr "E635: Некоректний ідентифікатор буфера в insert"
+
+msgid "E636: Invalid buffer identifier in create"
+msgstr "E636: Некоректний ідентифікатор буфера у create"
+
+msgid "E637: Invalid buffer identifier in startDocumentListen"
+msgstr "E637: Некоректний ідентифікатор буфера у startDocumentListen"
+
+msgid "E638: Invalid buffer identifier in stopDocumentListen"
+msgstr "E638: Некоректний ідентифікатор буфера у stopDocumentListen"
+
+msgid "E639: Invalid buffer identifier in setTitle"
+msgstr "E639: Некоректний ідентифікатор буфера у setTitle"
+
+msgid "E640: Invalid buffer identifier in initDone"
+msgstr "E640: Некоректний ідентифікатор буфера в initDone"
+
+msgid "E641: Invalid buffer identifier in setBufferNumber"
+msgstr "E641: Некоректний ідентифікатор буфера у setBufferNumber"
+
+#, c-format
+msgid "E642: File %s not found in setBufferNumber"
+msgstr "E642: Файл %s не знайдено у setBufferNumber"
+
+msgid "E643: Invalid buffer identifier in setFullName"
+msgstr "E643: Некоректний ідентифікатор буфера у setFullName"
+
+msgid "E644: Invalid buffer identifier in editFile"
+msgstr "E644: Некоректний ідентифікатор буфера в editFile"
+
+msgid "E645: Invalid buffer identifier in setVisible"
+msgstr "E645: Некоректний ідентифікатор буфера у setVisible"
+
+msgid "E646: Invalid buffer identifier in setModified"
+msgstr "E646: Некоректний ідентифікатор буфера у setModified"
+
+msgid "E647: Invalid buffer identifier in setDot"
+msgstr "E647: Некоректний ідентифікатор буфера в setDot"
+
+msgid "E648: Invalid buffer identifier in close"
+msgstr "E648: Некоректний ідентифікатор буфера у close"
+
+msgid "E649: Invalid buffer identifier in close"
+msgstr "E649: Некоректний ідентифікатор буфера у close"
+
+msgid "E650: Invalid buffer identifier in defineAnnoType"
+msgstr "E650: Некоректний ідентифікатор буфера у defineAnnoType"
+
+msgid "E651: Invalid buffer identifier in addAnno"
+msgstr "E651: Некоректний ідентифікатор буфера в addAnno"
+
+msgid "E652: Invalid buffer identifier in getAnno"
+msgstr "E652: Некоректний ідентифікатор буфера в getAnno"
+
 #, c-format
 msgid "E654: Missing delimiter after search pattern: %s"
-msgstr "E654: Бракує розділювача після зразку для пошуку: %s"
+msgstr "E654: Бракує роздільника після шаблону пошуку: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Забагато символьних посилань (цикл?)"
@@ -6264,8 +6323,9 @@ msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Не зазначено шрифт для багатобайтового друку."
 
 # msgstr "E217: "
-msgid "E676: No matching autocommands for acwrite buffer"
-msgstr "E676: Немає відповідних автокоманд"
+#, c-format
+msgid "E676: No matching autocommands for buftype=%s buffer"
+msgstr "E676: Немає відповідних автокоманд для буфера buftype=%s"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: Не вдалося записати тимчасовий файл"
@@ -6309,7 +6369,7 @@ msgid "E688: More targets than List items"
 msgstr "E688: Цілей більше, ніж елементів списку"
 
 msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr "E689: Індексний доступ може бути тільки до List, Dicionary чи Blob"
+msgstr "E689: Індексний доступ може бути тільки до List, Dictionary чи Blob"
 
 msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Пропущено «in» після :for"
@@ -6319,6 +6379,10 @@ msgstr "E691: Список можна порівняти тільки зі списком"
 
 msgid "E692: Invalid operation for List"
 msgstr "E692: Некоректна операція над списком"
+
+#, c-format
+msgid "E693: List or Class required for argument %d"
+msgstr "E693: Потрібен List або Class в аргументі %d"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Некоректна операція над функцією"
@@ -6362,7 +6426,11 @@ msgstr "E704: Назва змінної Funcref має починатися з великої літери: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Назва змінної співпадає з існуючою функцією: %s"
+msgstr "E705: Назва змінної співпадає з наявною функцією: %s"
+
+#, c-format
+msgid "E706: Argument of %s must be a List, String or Dictionary"
+msgstr "E706: Аргумент у %s має бути List, String чи Dictionary"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -6372,7 +6440,7 @@ msgid "E708: [:] must come last"
 msgstr "E708: [:] має бути останньою"
 
 msgid "E709: [:] requires a List or Blob value"
-msgstr "E709: [:] вимагає значення типу List або Blob"
+msgstr "E709: [:] потребує List чи Blob"
 
 msgid "E710: List value has more items than targets"
 msgstr "E710: Значення типу List має більше елементів, ніж цілить"
@@ -6392,7 +6460,7 @@ msgid "E714: List required"
 msgstr "E714: Потрібен список"
 
 msgid "E715: Dictionary required"
-msgstr "E715: Потрібен словник"
+msgstr "E715: Потрібен Dictionary"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: \"%s\""
@@ -6816,14 +6884,11 @@ msgstr "E828: Не вдалося відкрити файл історії для запису: %s"
 
 #, c-format
 msgid "E829: Write error in undo file: %s"
-msgstr "E829: Помилка запису у файлі історії: %s"
+msgstr "E829: Помилка запису в файл історії: %s"
 
 #, c-format
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Зміну %ld не знайдено в історії"
-
-msgid "E831: bf_key_init() called with empty password"
-msgstr "E831: Викликано bf_key_init() з порожнім паролем"
 
 #, c-format
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
@@ -6854,7 +6919,7 @@ msgstr "E840: Функція доповнення знищила текст"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr ""
-"E841: Зарезервована назва, не можна використати для команди користувача"
+"E841: Зарезервована назва, не можна використати для користувацької команди"
 
 msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: Немає номера рядка, щоб використати з «<sfile>»"
@@ -6895,7 +6960,7 @@ msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Назва аргументу повторюється: %s"
 
 msgid "E854: Path too long for completion"
-msgstr "E854: Шлях занадто довгий для доповнення"
+msgstr "E854: Шлях задовгий для доповнення"
 
 msgid "E855: Autocommands caused command to abort"
 msgstr "E855: Автокоманди призвели до скасування команди"
@@ -6905,7 +6970,7 @@ msgid ""
 "or two strings"
 msgstr ""
 "E856: Другий аргумент «assert_fails()» має бути текстовим рядком чи список з "
-"одним-двома текстовими рядками"
+"одним-двома символьними рядками"
 
 #, c-format
 msgid "E857: Dictionary key \"%s\" required"
@@ -6917,8 +6982,8 @@ msgstr "E858: Eval не повернув дійсний об’єкт python"
 msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Не вдалося перетворити об’єкт python у значення vim"
 
-msgid "E860: Need 'id' and 'type' with 'both'"
-msgstr "E860: Потрібні 'id' і 'type' у 'both'"
+msgid "E860: Need 'id' and 'type' or 'types' with 'both'"
+msgstr "E860: Потрібні 'id' і 'type' або 'types' із 'both'"
 
 msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Не можна відкрити ще одне спливаюче вікно з допомогою терміналу"
@@ -6984,10 +7049,6 @@ msgstr ""
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr "E876: (NFA regexp) Недостатньо пам’яті, щоб зберегти весь NFA"
 
-#, c-format
-msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "E877: (NFA regexp) Неправильний клас символу: %d"
-
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA regexp) Не вдалося отримати пам’ять для обходу гілок!"
 
@@ -7008,8 +7069,7 @@ msgid ""
 "E883: Search pattern and expression register may not contain two or more "
 "lines"
 msgstr ""
-"E883: Шаблон пошуку і регістровий вираз не можуть містити два чи більше "
-"рядків"
+"E883: Шаблон пошуку і регістр виразу не можуть містити два чи більше рядків"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -7032,14 +7092,14 @@ msgstr ""
 
 #, c-format
 msgid "E888: (NFA regexp) cannot repeat %s"
-msgstr "E888: (NFA regexp) не можна повторити %s"
+msgstr "E888: (NFA regexp) неможливо повторити %s"
 
 msgid "E889: Number required"
 msgstr "E889: Треба вказати Number"
 
 #, c-format
 msgid "E890: Trailing char after ']': %s]%s"
-msgstr "E890: Надлишкові символи після ']': %s]%s"
+msgstr "E890: Зайвий символ після ']': %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
 msgstr "E891: Funcref вжито як Float"
@@ -7101,8 +7161,8 @@ msgstr "E904: Третій аргумент у виклику має бути списком"
 msgid "E905: Received unknown command: %s"
 msgstr "E905: Отримано невідому команду: %s"
 
-msgid "E906: not an open channel"
-msgstr "E906: не відкритий канал"
+msgid "E906: Not an open channel"
+msgstr "E906: Це не відкритий канал"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Спеціальне значення вжито як Float"
@@ -7110,7 +7170,7 @@ msgstr "E907: Спеціальне значення вжито як Float"
 # msgstr "E373: "
 #, c-format
 msgid "E908: Using an invalid value as a String: %s"
-msgstr "E908: Неправильне значення вжито як String: %s"
+msgstr "E908: Некоректне значення вжито як String: %s"
 
 msgid "E909: Cannot index a special variable"
 msgstr "E909: Не можна індексувати спеціальну змінну"
@@ -7147,7 +7207,7 @@ msgstr "E918: Буфер має бути завантажений: %s"
 
 #, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
-msgstr "E919: Теку не знайдено: '%s': «%s»"
+msgstr "E919: Каталог не знайдено у '%s': «%s»"
 
 msgid "E920: _io file requires _name to be set"
 msgstr "E920: файл _io потребує встановленого _name"
@@ -7156,14 +7216,11 @@ msgstr "E920: файл _io потребує встановленого _name"
 msgid "E921: Invalid callback argument"
 msgstr "E921: Некоректний аргумент зворотного виклику"
 
-msgid "E922: Expected a dict"
-msgstr "E922: Очікується dict"
-
 msgid "E923: Second argument of function() must be a list or a dict"
 msgstr "E923: Другий аргумент function() має бути списком чи словником"
 
 msgid "E924: Current window was closed"
-msgstr "E924: Поточне вікно було закрито"
+msgstr "E924: Активне вікно було закрито"
 
 msgid "E925: Current quickfix list was changed"
 msgstr "E925: Список quickfix змінився"
@@ -7173,7 +7230,7 @@ msgstr "E926: Поточний список місць змінився"
 
 #, c-format
 msgid "E927: Invalid action: '%s'"
-msgstr "E927: Неправильна дія: '%s'"
+msgstr "E927: Неправильна дія: «%s»"
 
 # msgstr "E396: "
 msgid "E928: String required"
@@ -7198,11 +7255,11 @@ msgid "E933: Function was deleted: %s"
 msgstr "E933: Функцію видалено: %s"
 
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Не можна перейти до буфера, який не має назви"
+msgstr "E934: Не можна перейти до буфера без назви"
 
 #, c-format
 msgid "E935: Invalid submatch number: %d"
-msgstr "E935: Неправильний номер під-збігу: %d"
+msgstr "E935: неправильний номер групи збігу: %d"
 
 msgid "E936: Cannot delete the current group"
 msgstr "E936: Не вдалося знищити цю групу"
@@ -7229,9 +7286,6 @@ msgstr "E941: Сервер вже запущено"
 msgid "E942: +clientserver feature not available"
 msgstr "E942: можливість +clientserver відсутня"
 
-msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
-msgstr "E943: Таблицю команд потрібно поновити, запустіть 'make cmdidxs'"
-
 msgid "E944: Reverse range in character class"
 msgstr "E944: Зворотній діапазон у класі символів"
 
@@ -7246,10 +7300,10 @@ msgid "E947: Job still running in buffer \"%s\""
 msgstr "E947: Завдання вже ще виконується у буфері «%s»"
 
 msgid "E948: Job still running"
-msgstr "E948: Завдання вже ще виконується"
+msgstr "E948: Завдання все ще виконується"
 
 msgid "E948: Job still running (add ! to end the job)"
-msgstr "E948: Завдання все ще виконується (додайте ! щоб закінчити)"
+msgstr "E948: Завдання все ще виконується (! щоб закінчити)"
 
 # msgstr "E79: "
 msgid "E949: File changed while writing"
@@ -7278,7 +7332,7 @@ msgid "E955: Not a terminal buffer"
 msgstr "E955: Не буфер терміналу"
 
 msgid "E956: Cannot use pattern recursively"
-msgstr "E956: Не можна вжити шаблон рекурсивно"
+msgstr "E956: Не можна застосувати шаблон рекурсивно"
 
 msgid "E957: Invalid window number"
 msgstr "E957: Некоректний номер вікна"
@@ -7297,7 +7351,7 @@ msgstr "E961: Немає номера рядка, щоб використати з «<sflnum>»"
 
 #, c-format
 msgid "E962: Invalid action: '%s'"
-msgstr "E962: Неправильна дія: '%s'"
+msgstr "E962: Неправильна дія: «%s»"
 
 #, c-format
 msgid "E963: Setting %s to value with wrong type"
@@ -7316,9 +7370,6 @@ msgstr "E965: Бракує назви типу властивості"
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Некоректний номер рядка: %ld"
 
-msgid "E967: Text property info corrupted"
-msgstr "E967: Пошкоджена інформація текстової властивості"
-
 msgid "E968: Need at least one of 'id' or 'type'"
 msgstr "E968: Потрібно щонайменше одне з 'id' або 'type'"
 
@@ -7335,11 +7386,10 @@ msgid "E971: Property type %s does not exist"
 msgstr "E971: Тип властивості %s не існує"
 
 msgid "E972: Blob value does not have the right number of bytes"
-msgstr "E972: Значення типу Blob має неправильну кількість байтів"
+msgstr "E972: Неправильна кількість байтів у значенні Blob"
 
 msgid "E973: Blob literal should have an even number of hex characters"
-msgstr ""
-"E973: Буквальне значення Blob має мати парну кількість шітнадцяткових знаків"
+msgstr "E973: Запис Blob повинен мати парну кількість шістнадцяткових символів"
 
 msgid "E974: Using a Blob as a Number"
 msgstr "E974: Blob вжито як Number"
@@ -7372,7 +7422,7 @@ msgstr "E982: ConPTY не доступний"
 
 #, c-format
 msgid "E983: Duplicate argument: %s"
-msgstr "E983: Аргументу повторюється: %s"
+msgstr "E983: Аргумент повторюється: %s"
 
 msgid "E984: :scriptversion used outside of a sourced file"
 msgstr "E984: :scriptversion використано поза підчитуваним файлом"
@@ -7391,14 +7441,16 @@ msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
 msgstr "E988: Не можна використати GUI. Не можна запустити gvim.exe."
 
 msgid "E989: Non-default argument follows default argument"
-msgstr "E989: Обов’язковий аргумент після необов’язкового аргументу"
+msgstr ""
+"E989: Аргумент без домовленого значення після аргументу з домовленим "
+"значенням"
 
 #, c-format
 msgid "E990: Missing end marker '%s'"
-msgstr "E990: Бракує позначки кінця '%s'"
+msgstr "E990: Бракує позначки кінця «%s»"
 
 msgid "E991: Cannot use =<< here"
-msgstr "E991: Тут не можна вжити =<<"
+msgstr "E991: Тут не можна застосувати =<<"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr "E992: Не дозволено у modeline, коли 'modelineexpr' вимкнено"
@@ -7411,7 +7463,7 @@ msgid "E994: Not allowed in a popup window"
 msgstr "E994: Не дозволено у спливаючому вікні"
 
 msgid "E995: Cannot modify existing variable"
-msgstr "E995: Неможливо змінити вже задану змінну"
+msgstr "E995: Неможливо змінити наявну змінну"
 
 # msgstr "E443: "
 msgid "E996: Cannot lock a range"
@@ -7468,11 +7520,13 @@ msgstr "E1006: %s вжито як аргумент"
 msgid "E1007: Mandatory argument after optional argument"
 msgstr "E1007: Обов’язковий аргумент після необов’язкового аргументу"
 
-msgid "E1008: Missing <type>"
-msgstr "E1008: Бракує <type>"
+#, c-format
+msgid "E1008: Missing <type> after %s"
+msgstr "E1008: Бракує <type> після %s"
 
-msgid "E1009: Missing > after type"
-msgstr "E1009: Бракує > після типу"
+#, c-format
+msgid "E1009: Missing > after type: %s"
+msgstr "E1009: Бракує > після типу: %s"
 
 # msgstr "E420: "
 #, c-format
@@ -7598,14 +7652,14 @@ msgid "E1038: \"vim9script\" can only be used in a script"
 msgstr "E1038: «vim9script» можна вжити тільки у скрипті"
 
 msgid "E1039: \"vim9script\" must be the first command in a script"
-msgstr "E1039: «vim9script» має бути першою командою в скрипті"
+msgstr "E1039: «vim9script» має бути першою командою скрипту"
 
 msgid "E1040: Cannot use :scriptversion after :vim9script"
 msgstr "E1040: Не можна вжити :scriptversion після :vim9script"
 
 #, c-format
 msgid "E1041: Redefining script item: \"%s\""
-msgstr "E1041: Повторне визначення елемента скрипта: «%s»"
+msgstr "E1041: Повторне визначення елемента скрипту: «%s»"
 
 # msgstr "E327: "
 msgid "E1042: Export can only be used in vim9script"
@@ -7626,7 +7680,7 @@ msgstr "E1047: Синтаксична помилка у import: %s"
 
 #, c-format
 msgid "E1048: Item not found in script: %s"
-msgstr "E1048: Елемента не знайдено в скрипті: %s"
+msgstr "E1048: Елемента не знайдено у скрипті: %s"
 
 #, c-format
 msgid "E1049: Item not exported in script: %s"
@@ -7728,11 +7782,6 @@ msgstr "E1074: Після крапки не дозволено пропуск"
 msgid "E1075: Namespace not supported: %s"
 msgstr "E1075: Простір імен не підтримується: %s"
 
-msgid "E1076: This Vim is not compiled with float support"
-msgstr ""
-"E1076: Ця версія Vim не була скомпільована з підтримкою чисел із плаваючою "
-"комою."
-
 #, c-format
 msgid "E1077: Missing argument type for %s"
 msgstr "E1077: Пропущено тип аргументу у %s"
@@ -7792,10 +7841,11 @@ msgstr "E1093: Очікується %d елементи(ів) але є %d"
 
 # msgstr "E327: "
 msgid "E1094: Import can only be used in a script"
-msgstr "E1094: Import можна вжити тільки в скрипті"
+msgstr "E1094: Import можна вжити тільки у скрипті"
 
-msgid "E1095: Unreachable code after :return"
-msgstr "E1095: Недосяжний код після :return"
+#, c-format
+msgid "E1095: Unreachable code after :%s"
+msgstr "E1095: Недосяжний код після :%s"
 
 msgid "E1096: Returning a value in a function without a return type"
 msgstr "E1096: Повернення значення з функції без типу повернення"
@@ -7834,20 +7884,16 @@ msgstr "E1104: Пропущено >"
 msgid "E1105: Cannot convert %s to string"
 msgstr "E1105: Неможливо перетворити %s у текстовий рядок"
 
-msgid "E1106: One argument too many"
-msgstr "E1106: Один аргумент забагато"
-
 #, c-format
-msgid "E1106: %d arguments too many"
-msgstr "E1106: %d аргументи(ів) забагато"
+msgid "E1106: One argument too many"
+msgid_plural "E1106: %d arguments too many"
+msgstr[0] "E1106: На %d аргумент забагато"
+msgstr[1] "E1106: На %d аргументи забагато"
+msgstr[2] "E1106: На %d аргументів забагато"
 
 # msgstr "E396: "
 msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: Потрібен String, List, Dict або Blob"
-
-#, c-format
-msgid "E1108: Item not found: %s"
-msgstr "E1108: Елемент не знайдено: %s"
 
 #, c-format
 msgid "E1109: List item %d is not a List"
@@ -7855,22 +7901,22 @@ msgstr "E1109: Елемент %d списку не List"
 
 #, c-format
 msgid "E1110: List item %d does not contain 3 numbers"
-msgstr "E1110: Елемент %d списку не має 3 числа"
+msgstr "E1110: Елемент %d списку не містить 3 числа"
 
 #, c-format
 msgid "E1111: List item %d range invalid"
-msgstr "E1111: Діапазон елементу %d списку некоректний"
+msgstr "E1111: Діапазон елемента %d списку некоректний"
 
 #, c-format
 msgid "E1112: List item %d cell width invalid"
-msgstr "E1112: Ширина комірки елементу %d списку некоректна"
+msgstr "E1112: Ширина комірки елемента %d списку некоректна"
 
 #, c-format
 msgid "E1113: Overlapping ranges for 0x%lx"
-msgstr "E1113: Перекриття діапазонів у 0x%lx"
+msgstr "E1113: Накладання діапазонів у 0x%lx"
 
 msgid "E1114: Only values of 0x80 and higher supported"
-msgstr "E1114: Підтримуються тільки значення 0x80 і вищі"
+msgstr "E1114: Підтримуються тільки значення 0x80 і вище"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: Четвертий аргумент «assert_fails()» має бути числом"
@@ -7940,11 +7986,7 @@ msgid "E1135: Using a String as a Bool: \"%s\""
 msgstr "E1135: String вжито як Bool: «%s»"
 
 msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
-msgstr "E1136: Заміна <Cmd> має завершитися <CR> перед другою <Cmd>"
-
-#, c-format
-msgid "E1137: <Cmd> mapping must not include %s key"
-msgstr "E1137: Заміна <Cmd> не повинно містити клавішу %s"
+msgstr "E1136: Заміна клавіш <Cmd> має завершитися <CR> перед другою <Cmd>"
 
 msgid "E1138: Using a Bool as a Number"
 msgstr "E1138: Bool вжито як Number"
@@ -8019,7 +8061,7 @@ msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
 msgstr "E1158: Неможливо вжити flatten() у скрипті Vim9, беріть flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
-msgstr "E1159: Неможливо розбити вікно при закритті буфера"
+msgstr "E1159: Неможливо розщепити вікно при закритті буфера"
 
 msgid "E1160: Cannot use a default for variable arguments"
 msgstr "E1160: Неможливо задати початкове значення для змінних аргументів"
@@ -8057,7 +8099,7 @@ msgstr "E1167: Назва аргументу затінює існуючу змінну: %s"
 
 #, c-format
 msgid "E1168: Argument already declared in the script: %s"
-msgstr "E1168: Аргумент вже оголошено в скрипті: %s"
+msgstr "E1168: Аргумент вже оголошено у скрипті: %s"
 
 #, c-format
 msgid "E1169: Expression too recursive: %s"
@@ -8079,7 +8121,7 @@ msgstr "E1173: Трапився текст після %s: %s"
 # msgstr "E178: "
 #, c-format
 msgid "E1174: String required for argument %d"
-msgstr "E1174: У аргументі %d потрібен текстовий рядок"
+msgstr "E1174: У аргументі %d потрібен String"
 
 #, c-format
 msgid "E1175: Non-empty string required for argument %d"
@@ -8138,12 +8180,12 @@ msgstr "E1188: Неможливо відкрити термінал з вікна командного рядка"
 msgid "E1189: Cannot use :legacy with this command: %s"
 msgstr "E1189: Неможливо вжити :legacy з цією командою: %s"
 
-msgid "E1190: One argument too few"
-msgstr "E1190: Бракує одного аргументу"
-
 #, c-format
-msgid "E1190: %d arguments too few"
-msgstr "E1190: Бракує %d аргументи(ів)"
+msgid "E1190: One argument too few"
+msgid_plural "E1190: %d arguments too few"
+msgstr[0] "E1190: Бракує %d аргументу"
+msgstr[1] "E1190: Бракує %d аргументи"
+msgstr[2] "E1190: Бракує %d аргументів"
 
 #, c-format
 msgid "E1191: Call to function that failed to compile: %s"
@@ -8189,14 +8231,14 @@ msgstr "E1203: Крапку можна вжити тільки із словником: %s"
 
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
-msgstr "E1204: Number не дозволене після .: '\\%%%c'"
+msgstr "E1204: Number не можна після .: '\\%%%c'"
 
 msgid "E1205: No white space allowed between option and"
 msgstr "E1205: Пропуск не дозволено між опцією і"
 
 #, c-format
 msgid "E1206: Dictionary required for argument %d"
-msgstr "E1206: Потрібен словник у аргументі %d"
+msgstr "E1206: Потрібен Dictionary в аргументі %d"
 
 #, c-format
 msgid "E1207: Expression without an effect: %s"
@@ -8211,15 +8253,15 @@ msgstr "E1209: Некоректне значення для номера рядка: «%s»"
 
 #, c-format
 msgid "E1210: Number required for argument %d"
-msgstr "E1210: Потрібне число у аргументі %d"
+msgstr "E1210: Потрібне число в аргументі %d"
 
 #, c-format
 msgid "E1211: List required for argument %d"
-msgstr "E1211: Потрібен список у аргументі %d"
+msgstr "E1211: Потрібен список в аргументі %d"
 
 #, c-format
 msgid "E1212: Bool required for argument %d"
-msgstr "E1212: Потрібен Bool у аргументі %d"
+msgstr "E1212: Потрібен Bool в аргументі %d"
 
 #, c-format
 msgid "E1213: Redefining imported item \"%s\""
@@ -8227,11 +8269,11 @@ msgstr "E1213: Повторне визначення імпортованого елемента «%s»"
 
 #, c-format
 msgid "E1214: Digraph must be just two characters: %s"
-msgstr "E1214: Диграф має складатися тільки двох символів: %s"
+msgstr "E1214: Диграф має бути з двох символів: %s"
 
 #, c-format
 msgid "E1215: Digraph must be one character: %s"
-msgstr "E1215: Диграф має складатися із одного символу: %s"
+msgstr "E1215: Диграф має бути одним символом: %s"
 
 msgid ""
 "E1216: digraph_setlist() argument must be a list of lists with two items"
@@ -8241,53 +8283,53 @@ msgstr ""
 
 #, c-format
 msgid "E1217: Channel or Job required for argument %d"
-msgstr "E1217: Потрібен Channel чи Job у аргументі %d"
+msgstr "E1217: Потрібен Channel чи Job в аргументі %d"
 
 #, c-format
 msgid "E1218: Job required for argument %d"
-msgstr "E1218: Потрібен Job у аргументі %d"
+msgstr "E1218: Потрібен Job в аргументі %d"
 
 # msgstr "E178: "
 #, c-format
 msgid "E1219: Float or Number required for argument %d"
-msgstr "E1219: Потрібен Float або Number у аргументі %d"
+msgstr "E1219: Потрібен Float або Number в аргументі %d"
 
 # msgstr "E396: "
 #, c-format
 msgid "E1220: String or Number required for argument %d"
-msgstr "E1220: Потрібен String або Number у аргументі %d"
+msgstr "E1220: Потрібен String або Number в аргументі %d"
 
 #, c-format
 msgid "E1221: String or Blob required for argument %d"
-msgstr "E1221: Потрібен String або Blob у аргументі %d"
+msgstr "E1221: Потрібен String або Blob в аргументі %d"
 
 #, c-format
 msgid "E1222: String or List required for argument %d"
-msgstr "E1222: Потрібен String або List у аргументі %d"
+msgstr "E1222: Потрібен String або List в аргументі %d"
 
 #, c-format
 msgid "E1223: String or Dictionary required for argument %d"
-msgstr "E1223: Потрібен String або Dictionary у аргументі %d"
+msgstr "E1223: Потрібен String або Dictionary в аргументі %d"
 
 #, c-format
 msgid "E1224: String, Number or List required for argument %d"
-msgstr "E1224: Потрібен String, Number або List у аргументі %d"
+msgstr "E1224: Потрібен String, Number або List в аргументі %d"
 
 #, c-format
 msgid "E1225: String, List or Dictionary required for argument %d"
-msgstr "E1225: Потрібен String, List або Dictionary у аргументі %d"
+msgstr "E1225: Потрібен String, List або Dictionary в аргументі %d"
 
 #, c-format
 msgid "E1226: List or Blob required for argument %d"
-msgstr "E1226: Потрібен List або Blob у аргументі %d"
+msgstr "E1226: Потрібен List або Blob в аргументі %d"
 
 #, c-format
 msgid "E1227: List or Dictionary required for argument %d"
-msgstr "E1227: Потрібен List або Dictionary у аргументі %d"
+msgstr "E1227: Потрібен List або Dictionary в аргументі %d"
 
 #, c-format
 msgid "E1228: List, Dictionary or Blob required for argument %d"
-msgstr "E1228: Потрібен List, Dictionary або Blob у аргументі %d"
+msgstr "E1228: Потрібен List, Dictionary або Blob в аргументі %d"
 
 #, c-format
 msgid "E1229: Expected dictionary for using key \"%s\", but got %s"
@@ -8369,25 +8411,21 @@ msgstr "E1250: Аргумент у %s має бути List, String, Dictionary або Blob"
 
 #, c-format
 msgid "E1251: List, Dictionary, Blob or String required for argument %d"
-msgstr "E1251: List, Dictionary, Blob або String потрібен у аргументі %d"
+msgstr "E1251: List, Dictionary, Blob або String потрібен в аргументі %d"
 
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
-msgstr "E1252: String, List або Blob потрібен у аргументі %d"
-
-#, c-format
-msgid "E1253: String expected for argument %d"
-msgstr "E1253: Очікується String у аргументі %d"
+msgstr "E1252: String, List або Blob потрібен в аргументі %d"
 
 msgid "E1254: Cannot use script variable in for loop"
 msgstr "E1254: Неможливо вжити змінну скрипту у циклі for"
 
 msgid "E1255: <Cmd> mapping must end with <CR>"
-msgstr "E1255: Заміна <Cmd> має закінчуватися <CR>"
+msgstr "E1255: Заміна клавіш <Cmd> має закінчуватися <CR>"
 
 #, c-format
 msgid "E1256: String or function required for argument %d"
-msgstr "E1256: Потрібен текстовий рядок або функція у аргументі %d"
+msgstr "E1256: Потрібен текстовий рядок або функція в аргументі %d"
 
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
@@ -8456,7 +8494,7 @@ msgstr "E1271: Компіляція замикання без контексту: %s"
 
 #, c-format
 msgid "E1272: Using type not in a script context: %s"
-msgstr "E1272: Тип вжито поза контексту скрипту: %s"
+msgstr "E1272: Тип вжито поза контекстом скрипту: %s"
 
 #, c-format
 msgid "E1273: (NFA regexp) missing value in '\\%%%c'"
@@ -8468,9 +8506,408 @@ msgstr "E1274: Немає назви файлу скрипту для заміни «<script>»"
 msgid "E1275: String or function required for ->(expr)"
 msgstr "E1275: Потрібен текстовий рядок або функція для ->(expr)"
 
+#, c-format
+msgid "E1276: Illegal map mode string: '%s'"
+msgstr "E1276: Некоректний рядок в режимі відображення: «%s»"
+
+msgid "E1277: Channel and job feature is not available"
+msgstr "E1277: Можливість каналів і завдань недоступна"
+
+#, c-format
+msgid "E1278: Stray '}' without a matching '{': %s"
+msgstr "E1278: Заблудла '}' без відповідної '{': %s"
+
+#, c-format
+msgid "E1279: Missing '}': %s"
+msgstr "E1279: Пропущено '}': %s"
+
+msgid "E1280: Illegal character in word"
+msgstr "E1280: Недозволений символ у слові"
+
+#, c-format
+msgid "E1281: Atom '\\%%#=%c' must be at the start of the pattern"
+msgstr "E1281: Атом '\\%%#=%c' має бути на початку шаблону"
+
+msgid "E1282: Bitshift operands must be numbers"
+msgstr "E1282: Операнди бітового зсуву мають бути числами"
+
+msgid "E1283: Bitshift amount must be a positive number"
+msgstr "E1283: Обсяг бітового зсуву має бути додатним числом"
+
+#, c-format
+msgid "E1284: Argument 1, list item %d: Dictionary required"
+msgstr "E1284: Аргумент 1, елемент списку %d: потрібен Dictionary"
+
+#, c-format
+msgid "E1285: Could not clear timeout: %s"
+msgstr "E1285: Не вдалося скасувати таймер: %s"
+
+#, c-format
+msgid "E1286: Could not set timeout: %s"
+msgstr "E1286: Не вдалося встановити таймер: %s"
+
+#, c-format
+msgid "E1287: Could not set handler for timeout: %s"
+msgstr "E1287: Не вдалося встановити обробник таймера: %s"
+
+#, c-format
+msgid "E1288: Could not reset handler for timeout: %s"
+msgstr "E1288: Не вдалося скинути обробник таймера: %s"
+
+#, c-format
+msgid "E1289: Could not check for pending SIGALRM: %s"
+msgstr "E1289: Не вдалося перевірити очікуваний SIGALRM: %s"
+
+msgid "E1290: substitute nesting too deep"
+msgstr "E1290: Забагато вкладених замін"
+
+#, c-format
+msgid "E1291: Invalid argument: %ld"
+msgstr "E1291: Некоректний аргумент: %ld"
+
+msgid "E1292: Command-line window is already open"
+msgstr "E1292: Вікно командного рядка вже відкрите"
+
+msgid "E1293: Cannot use a negative id after adding a textprop with text"
+msgstr ""
+"E1293: Не можна вживати негативний id після додавання textprop з текстом"
+
+msgid "E1294: Can only use text_align when column is zero"
+msgstr "E1294: Можна вжити text_align тільки тоді, коли стовпець нуль"
+
+msgid "E1295: Cannot specify both 'type' and 'types'"
+msgstr "E1295: Не можна задати одночасно 'type' і 'types'"
+
+msgid "E1296: Can only use left padding when column is zero"
+msgstr "E1296: Можна задати лівий відступ тільки тоді, коли стовпець нуль"
+
+#, c-format
+msgid "E1297: Non-NULL Dictionary required for argument %d"
+msgstr "E1297: Для аргументу %d потрібен не-NULL словник"
+
+#, c-format
+msgid "E1298: Non-NULL List required for argument %d"
+msgstr "E1298: Для аргументу %d потрібен не-NULL список"
+
+msgid "E1299: Window unexpectedly closed while searching for tags"
+msgstr "E1299: Вікно несподівано закрилося під час пошуку міток"
+
+msgid "E1300: Cannot use a partial with dictionary for :defer"
+msgstr "E1300: Неможливо вжити часткову функцію зі словником у :defer"
+
+#, c-format
+msgid "E1301: String, Number, List or Blob required for argument %d"
+msgstr "E1301: String, Number, List або Blob потрібен в аргументі %d"
+
+msgid "E1302: Script variable was deleted"
+msgstr "E1302: Змінну скрипту було видалено"
+
+#, c-format
+msgid "E1303: Custom list completion function does not return a List but a %s"
+msgstr "E1303: Власна функція доповнення списка повертає не список, а %s"
+
+#, c-format
+msgid "E1304: Cannot use type with this variable: %s"
+msgstr "E1304: Не можна вжити тип із цією змінною: %s"
+
+msgid ""
+"E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
+msgstr "E1305: Не можна використати «length», «end_col» і «end_lnum» у «text»"
+
+msgid "E1306: Loop nesting too deep"
+msgstr "E1306: Забагато вкладених циклів"
+
+#, c-format
+msgid "E1307: Argument %d: Trying to modify a const %s"
+msgstr "E1307: Аргумент %d: Спроба зміни константи %s"
+
+msgid "E1308: Cannot resize a window in another tab page"
+msgstr "E1308: Неможливо змінити розмір вікна у іншій вкладці"
+
+msgid "E1309: Cannot change mappings while listing"
+msgstr "E1309: Неможливо змінити заміну при виведенні списку"
+
+msgid "E1310: Cannot change menus while listing"
+msgstr "E1310: Неможливо змінити меню при виведенні списку"
+
+msgid "E1311: Cannot change user commands while listing"
+msgstr "E1311: Неможливо змінити команду користувача при виведенні списку"
+
+msgid "E1312: Not allowed to change the window layout in this autocmd"
+msgstr "E1312: Не дозволено змінити розміщення вікон у цій автокоманді"
+
+#, c-format
+msgid "E1313: Not allowed to add or remove entries (%s)"
+msgstr "E1313: Не дозволено додавати або прибирати елементи (%s)"
+
+# msgstr "E182: "
+#, c-format
+msgid "E1314: Class name must start with an uppercase letter: %s"
+msgstr "E1314: Назва класу має починатися з великої літери: %s"
+
+#, c-format
+msgid "E1315: White space required after name: %s"
+msgstr "E1315: Потрібен пропуск після назви: %s"
+
+# msgstr "E327: "
+msgid "E1316: Class can only be defined in Vim9 script"
+msgstr "E1316: Клас можна визначити тільки у скрипті Vim9"
+
+#, c-format
+msgid "E1317: Invalid object member declaration: %s"
+msgstr "E1317: Некоректне оголошення члена об’єкта: %s"
+
+# msgstr "E181: "
+#, c-format
+msgid "E1318: Not a valid command in a class: %s"
+msgstr "E1318: Некоректна команда в класі: %s"
+
+msgid "E1319: Using a class as a Number"
+msgstr "E1319: Клас вжито як Number"
+
+msgid "E1320: Using an object as a Number"
+msgstr "E1320: Об’єкт вжито як Number"
+
+msgid "E1321: Using a class as a Float"
+msgstr "E1321: Клас вжито як Float"
+
+msgid "E1322: Using an object as a Float"
+msgstr "E1322: Об’єкт вжито як Float"
+
+# msgstr "E373: "
+msgid "E1323: Using a class as a String"
+msgstr "E1323: Клас вжито як String"
+
+msgid "E1324: Using an object as a String"
+msgstr "E1324: Об’єкт вжито як String"
+
+#, c-format
+msgid "E1325: Method not found on class \"%s\": %s"
+msgstr "E1325: Метод не знайдено в класі «%s»: %s"
+
+#, c-format
+msgid "E1326: Member not found on object \"%s\": %s"
+msgstr "E1326: Член не знайдено в об’єкті «%s»: %s"
+
+# msgstr "E178: "
+#, c-format
+msgid "E1327: Object required, found %s"
+msgstr "E1327: Потрібен об’єкт, трапився %s"
+
+#, c-format
+msgid "E1328: Constructor default value must be v:none: %s"
+msgstr "E1328: Початкове значення конструктора має бути v:none: %s"
+
+#, c-format
+msgid "E1329: Cannot get object member type from initializer: %s"
+msgstr "E1329: Не можна дістати тип члена об’єкта з ініціалізатора: %s"
+
+#, c-format
+msgid "E1330: Invalid type for object member: %s"
+msgstr "E1330: Некоректний тип для члена об’єкта: %s"
+
+msgid "E1331: Public must be followed by \"this\" or \"static\""
+msgstr "E1331: За public має йти «this» або «static»"
+
+#, c-format
+msgid "E1332: Public member name cannot start with underscore: %s"
+msgstr ""
+"E1332: Назва відкритого члена (public) не може починатися із підкреслення: %s"
+
+#, c-format
+msgid "E1333: Cannot access private member: %s"
+msgstr "E1333: Неможливо доступитися до приватного члена: %s"
+
+# msgstr "E333: "
+#, c-format
+msgid "E1334: Object member not found: %s"
+msgstr "E1334: Член об’єкта не знайдено: %s"
+
+#, c-format
+msgid "E1335: Member is not writable: %s"
+msgstr "E1335: Член не доступний для запису: %s"
+
+# msgstr "E333: "
+#, c-format
+msgid "E1337: Class member not found: %s"
+msgstr "E1337: Член класу не знайдено: %s"
+
+#, c-format
+msgid "E1338: Member not found on class \"%s\": %s"
+msgstr "E1338: Член не знайдено в класі «%s»: %s"
+
+msgid ""
+"E1339: Cannot add a textprop with text after using a textprop with a "
+"negative id"
+msgstr ""
+"E1339: Не можна додати textprop з текстом після вжитку textprop з від’ємним "
+"id"
+
+#, c-format
+msgid "E1340: Argument already declared in the class: %s"
+msgstr "E1340: Аргумент вже оголошено у класі: %s"
+
+#, c-format
+msgid "E1341: Variable already declared in the class: %s"
+msgstr "E1341: Змінну вже оголошено у класі: %s"
+
+# msgstr "E327: "
+msgid "E1342: Interface can only be defined in Vim9 script"
+msgstr "E1342: Інтерфейс можна визначити тільки у скрипті Vim9"
+
+# msgstr "E182: "
+#, c-format
+msgid "E1343: Interface name must start with an uppercase letter: %s"
+msgstr "E1343: Назва інтерфейсу повинна починатися з великої літери: %s"
+
+msgid "E1344: Cannot initialize a member in an interface"
+msgstr "E1344: Неможливо ініціалізувати член в інтерфейсі"
+
+#, c-format
+msgid "E1345: Not a valid command in an interface: %s"
+msgstr "E1345: Некоректна команда в інтерфейсі: %s"
+
+#, c-format
+msgid "E1346: Interface name not found: %s"
+msgstr "E1346: Назву інтерфейсу не знайдено: %s"
+
+#, c-format
+msgid "E1347: Not a valid interface: %s"
+msgstr "E1347: Некоректний інтерфейс: %s"
+
+#, c-format
+msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
+msgstr "E1348: Член «%s» інтерфейсу «%s» не втілено"
+
+#, c-format
+msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
+msgstr "E1349: Функцію «%s» інтерфейсу «%s» не втілено"
+
+msgid "E1350: Duplicate \"implements\""
+msgstr "E1350: Повторення «implements»"
+
+#, c-format
+msgid "E1351: Duplicate interface after \"implements\": %s"
+msgstr "E1351: Інтерфейс повторюється після «implements»: %s"
+
+msgid "E1352: Duplicate \"extends\""
+msgstr "E1352: Повторюється «extends»"
+
+# msgstr "E333: "
+#, c-format
+msgid "E1353: Class name not found: %s"
+msgstr "E1353: Назву класу не знайдено: %s"
+
+#, c-format
+msgid "E1354: Cannot extend %s"
+msgstr "E1354: Неможливо розширити %s"
+
+#, c-format
+msgid "E1355: Duplicate function: %s"
+msgstr "E1355: Функція повторюється: %s"
+
+msgid "E1356: \"super\" must be followed by a dot"
+msgstr "E1356: За «super» має йти крапка"
+
+msgid "E1357: Using \"super\" not in a class function"
+msgstr "E1357: «super» вжито поза функцією класу"
+
+msgid "E1358: Using \"super\" not in a child class"
+msgstr "E1358: «super» вжито не в похідному класі"
+
+msgid "E1359: Cannot define a \"new\" function in an abstract class"
+msgstr "E1359: Неможливо визначити функцію «new» в абстрактному класі"
+
+msgid "E1360: Using a null object"
+msgstr "E1360: Застосовано об’єкт null"
+
+msgid "E1361: Cannot use color \"none\", did you mean \"NONE\"?"
+msgstr "E1361: Неможливо вжити колір «none», може, «NONE»?"
+
+msgid "E1362: Cannot use a non-null object"
+msgstr "E1362: Неможливо використати не-null об’єкт"
+
+msgid "E1363: Incomplete type"
+msgstr "E1363: Неповний тип"
+
+msgid "E1364: Warning: Pointer block corrupted"
+msgstr "E1364: Попередження: Пошкоджено блок вказівника"
+
+msgid "E1365: Cannot use a return type with the \"new\" function"
+msgstr "E1365: Неможливо вжити тип повернення у функції «new»"
+
+#, c-format
+msgid "E1400: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1400: Неможливо змішувати позиційні й непозиційні аргументи: %s"
+
+#, c-format
+msgid "E1401: format argument %d unused in $-style format: %s"
+msgstr "E1401: аргумент %d формату не використано у $-форматуванні: %s"
+
+#, c-format
+msgid ""
+"E1402: Positional argument %d used as field width reused as different type: "
+"%s/%s"
+msgstr ""
+"E1402: Позиційний аргумент %d, що задає ширину поля, вжито як інший тип: %s/"
+"%s"
+
+#, c-format
+msgid "E1403: Positional argument %d out of bounds: %s"
+msgstr "E1403: Позиційний аргумент %d поза межами: %s"
+
+#, c-format
+msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
+msgstr "E1404: Тип позиційного аргументу %d вжито нерегулярно: %s/%s"
+
+#, c-format
+msgid "E1405: Invalid format specifier: %s"
+msgstr "E1405: Некоректний специфікатор формату: %s"
+
+#, c-format
+msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1406: Член «%s»: неспівпадіння типів, очікується %s, а отримано %s"
+
+#, c-format
+msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1407: Член «%s»: неспівпадіння типів, очікується %s, а отримано %s"
+
 # msgstr "E447: "
 msgid "--No lines in buffer--"
 msgstr "--Жодного рядка--"
+
+msgid "int"
+msgstr "int"
+
+msgid "long int"
+msgstr "long int"
+
+msgid "long long int"
+msgstr "long long int"
+
+msgid "unsigned int"
+msgstr "unsigned int"
+
+msgid "unsigned long int"
+msgstr "unsigned long int"
+
+msgid "unsigned long long int"
+msgstr "unsigned long long int"
+
+msgid "pointer"
+msgstr "pointer"
+
+msgid "percent"
+msgstr "percent"
+
+msgid "char"
+msgstr "char"
+
+msgid "string"
+msgstr "string"
+
+msgid "float"
+msgstr "float"
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Пошук дійшов до ПОЧАТКУ, продовжується з КІНЦЯ"
@@ -8799,20 +9236,21 @@ msgstr "Vim"
 
 # msgstr "E444: "
 msgid "(local to window)"
-msgstr "(стосується вікна)"
+msgstr "(тільки у вікні)"
 
 msgid "(local to buffer)"
-msgstr "(стосується буфера)"
+msgstr "(тільки в буфері)"
 
 msgid "(global or local to buffer)"
-msgstr "(глобально або стосується буфера)"
+msgstr "(всюди або тільки в буфері)"
 
 msgid ""
 "\" Each \"set\" line shows the current value of an option (on the left)."
-msgstr "\" Кожен рядок «set» показує актуальне значення опції (ліворуч)."
+msgstr ""
+"\" Кожен рядок «set» показує теперішнє значення опції (ліворуч)."
 
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
-msgstr "\" Натисніть <Enter> на рядку «set» щоб виконати."
+msgstr "\" Натисніть <Enter> у рядку «set» щоб виконати."
 
 msgid "\"            A boolean option will be toggled."
 msgstr "\"            Опцію-перемикач буде перемкнено."
@@ -8830,10 +9268,10 @@ msgstr ""
 "цю опцію."
 
 msgid "\" Hit <Enter> on an index line to jump there."
-msgstr "\" Натисніть <Enter> на рядку з індексом щоб туди перестрибнути."
+msgstr "\" Натисність <Enter> на рядку вказівника щоб туди перестрибнути."
 
 msgid "\" Hit <Space> on a \"set\" line to refresh it."
-msgstr "\" Натисніть <Space> на рядку «set» щоб оновити."
+msgstr "\" Натисніть <Пробіл> на рядку «set» для оновлення."
 
 msgid "important"
 msgstr "важливо"
@@ -8848,38 +9286,38 @@ msgid "use Insert mode as the default mode"
 msgstr "режим Insert як початковий режим"
 
 msgid "paste mode, insert typed text literally"
-msgstr "режим вставляння, вставити набраний текст буквально"
+msgstr "режим вклеювання, вставити набраний текст буквально"
 
 msgid "key sequence to toggle paste mode"
-msgstr "послідовність клавіш для перемикання режиму вставляння"
+msgstr "послідовність клавіш для перемикання режиму вклеювання"
 
 msgid "list of directories used for runtime files and plugins"
-msgstr "список директорій для файлів часу виконання і плагінів"
+msgstr "список директорій з файлами часу виконання і плагінами"
 
 msgid "list of directories used for plugin packages"
-msgstr "список директорій для пакунків плагінів"
+msgstr "список директорій з пакунками плагінів"
 
 msgid "name of the main help file"
-msgstr "назва головного файла допомоги"
+msgstr "назва головного файлу допомоги"
 
 msgid "moving around, searching and patterns"
 msgstr "переміщення, пошук і шаблони"
 
 msgid "list of flags specifying which commands wrap to another line"
-msgstr "список прапорців, які визначають команди, що переносять на новий рядок"
+msgstr "список прапорців, які задають, котрі команди переносять на новий рядок"
 
 msgid ""
 "many jump commands move the cursor to the first non-blank\n"
 "character of a line"
 msgstr ""
 "багато команд стрибків переміщують курсор до першого непорожнього\n"
-"символа рядка"
+"символу рядка"
 
 msgid "nroff macro names that separate paragraphs"
 msgstr "назви макросів nroff, які розділяють параграфи"
 
 msgid "nroff macro names that separate sections"
-msgstr "назви макросів nroff, які розділяють розділи"
+msgstr "назви макросів nroff, що розділяють розділи"
 
 msgid "list of directory names used for file searching"
 msgstr "список назв директорій для пошуку файлів"
@@ -8900,19 +9338,19 @@ msgid "search commands wrap around the end of the buffer"
 msgstr "команди пошуку починають спочатку після кінця буфера"
 
 msgid "show match for partly typed search command"
-msgstr "показувати збіг для частково набраної команди пошуку"
+msgstr "показувати збіг частково набраної команди пошуку"
 
 msgid "change the way backslashes are used in search patterns"
-msgstr "поміняти спосіб вжитку зворотних косих рисок у шаблонах пошуку"
+msgstr "змінити спосіб вжитку \\ у шаблонах пошуку"
 
 msgid "select the default regexp engine used"
-msgstr "вибрати основний механізм регулярних виразів"
+msgstr "вибрати основний рушій регулярних виразів"
 
 msgid "ignore case when using a search pattern"
-msgstr "ігнорувати регістр символів у шаблоні пошуку"
+msgstr "нехтувати регістром у шаблоні пошуку"
 
 msgid "override 'ignorecase' when pattern has upper case characters"
-msgstr "перевизначити 'ignorecase', коли шаблон має символи верхнього регістру"
+msgstr "відкинути 'ignorecase', коли шаблон має символи верхнього регістру"
 
 msgid "what method to use for changing case of letters"
 msgstr "який метод використати для зміни регістру букв"
@@ -8940,7 +9378,7 @@ msgid "number of significant characters in a tag name or zero"
 msgstr "кількість значущих символів у назві мітки або нуль"
 
 msgid "list of file names to search for tags"
-msgstr "список назв файлів пошуку міток"
+msgstr "список назв файлів для пошуку міток"
 
 msgid ""
 "how to handle case when searching in tags files:\n"
@@ -8989,6 +9427,9 @@ msgstr "показування тексту"
 msgid "number of lines to scroll for CTRL-U and CTRL-D"
 msgstr "кількість рядків прокручування при CTRL-U і CTRL-D"
 
+msgid "scroll by screen line"
+msgstr "прокручувати по рядках на екрані"
+
 msgid "number of screen lines to show around the cursor"
 msgstr "кількість екранних рядків, які показувати навколо курсору"
 
@@ -8996,7 +9437,7 @@ msgid "long lines wrap"
 msgstr "перенесення довгих рядків"
 
 msgid "wrap long lines at a character in 'breakat'"
-msgstr "переносити довгі рядки на символах у 'breakat'"
+msgstr "переносити довгі рядки по символах у 'breakat'"
 
 msgid "preserve indentation in wrapped text"
 msgstr "зберегти відступи у перенесеному тексті"
@@ -9009,7 +9450,7 @@ msgstr "які символи можуть спричинити розбиття рядка"
 
 msgid "string to put before wrapped screen lines"
 msgstr ""
-"послідовність символів, які розмістити перед перенесеними екранними рядками"
+"символи, які розмістити перед перенесеними екранними рядками"
 
 msgid "minimal number of columns to scroll horizontally"
 msgstr "найменша кількість стовпців горизонтального прокручування"
@@ -9022,8 +9463,8 @@ msgid ""
 "include \"lastline\" to show the last line even if it doesn't fit\n"
 "include \"uhex\" to show unprintable characters as a hex number"
 msgstr ""
-"додайте «lastline» щоб показувати останній рядок навіть якщо він не влазить\n"
-"додайте «uhex» щоб показувати недруковні символи як шістнадцяткові числа"
+"додайте «lastline» щоб показати останній рядок навіть якщо він не влазить\n"
+"додайте «uhex» щоб показати недруковні символи як шістнадцяткові числа"
 
 msgid "characters to use for the status line, folds and filler lines"
 msgstr "символи для рядка стану, згорток і заповнювачів"
@@ -9072,7 +9513,7 @@ msgid "controls whether concealable text is hidden"
 msgstr "контролює приховування замаскованого тексту"
 
 msgid "modes in which text in the cursor line can be concealed"
-msgstr "режими, в яких текст в рядку з курсором замаскується"
+msgstr "режими, в яких текст в рядку з курсором маскується"
 
 msgid "syntax, highlighting and spelling"
 msgstr "синтаксис, підсвічування і орфографія"
@@ -9081,13 +9522,13 @@ msgid "\"dark\" or \"light\"; the background color brightness"
 msgstr "«dark» або «light»; яскравість кольору фону"
 
 msgid "type of file; triggers the FileType event when set"
-msgstr "тип файлу; коли встановлено, активувати подію FileType"
+msgstr "тип файлу; запускає подію FileType при встановленні"
 
 msgid "name of syntax highlighting used"
 msgstr "назва схеми підсвічування синтаксису"
 
 msgid "maximum column to look for syntax items"
-msgstr "найбільший стовпець для пошуку елементів синтаксису"
+msgstr "крайній стовпець для пошуку елементів синтаксису"
 
 msgid "which highlighting to use for various occasions"
 msgstr "яке підсвічування застосовувати у різних випадках"
@@ -9121,7 +9562,7 @@ msgid "list of accepted languages"
 msgstr "список мов перевірки орфографії"
 
 msgid "file that \"zg\" adds good words to"
-msgstr "файл, у який команда \"zg\" додає хороші слова"
+msgstr "файл, у який команда «zg» додає хороші слова"
 
 msgid "pattern to locate the end of a sentence"
 msgstr "шаблон для пошуку кінця речення"
@@ -9142,7 +9583,7 @@ msgid "0, 1 or 2; when to use a status line for the last window"
 msgstr "0, 1 або 2; коли показувати рядок стану в останньому вікні"
 
 msgid "alternate format to be used for a status line"
-msgstr "альтернативний формат рядка стану"
+msgstr "змінний формат рядка стану"
 
 msgid "make all windows the same size when adding/removing windows"
 msgstr "зробити всі вікна однакового розміру при додаванні/закритті вікон"
@@ -9192,6 +9633,9 @@ msgstr ""
 
 msgid "a new window is put below the current one"
 msgstr "нове вікно розміщується під активним"
+
+msgid "determines scroll behavior for split windows"
+msgstr "визначає поведінку прокручування у розщеплених вікнах"
 
 msgid "a new window is put right of the current one"
 msgstr "нове вікно розміщується праворуч від активного"
@@ -9260,6 +9704,9 @@ msgstr "зробити запит кодів клавіш терміналу, коли визначено xterm"
 
 msgid "terminal that requires extra redrawing"
 msgstr "термінал потребує додаткового перемальовування"
+
+msgid "what keyboard protocol to use for which terminal"
+msgstr "який протокол клавіатури застосовувати для якого терміналу"
 
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "розпізнавати клавіші, що починаються з <Esc> в режимі Insert"
@@ -9431,8 +9878,11 @@ msgstr "додати прапорець 's' у 'shortmess' (не показувати повідомлення пошуку)"
 msgid "list of flags to make messages shorter"
 msgstr "список прапорців щоб зробити повідомлення коротшими"
 
-msgid "show (partial) command keys in the status line"
-msgstr "показувати клавіші (частини) команди у рядку стану"
+msgid "show (partial) command keys in location given by 'showcmdloc'"
+msgstr "показувати клавіші (частини) команди у місці, заданому 'showcmdloc'"
+
+msgid "location where to show the (partial) command keys for 'showcmd'"
+msgstr "місце, де показувати клавіші (частини) команди для 'showcmd'"
 
 msgid "display the current mode in the status line"
 msgstr "показувати актуальний режим у рядку стану"
@@ -9441,7 +9891,7 @@ msgid "show cursor position below each window"
 msgstr "показувати положення курсору під кожним вікном"
 
 msgid "alternate format to be used for the ruler"
-msgstr "власний формат лінійки"
+msgstr "змінний формат лінійки"
 
 msgid "threshold for reporting number of changed lines"
 msgstr "поріг доповіді кількості змінених рядків"
@@ -9450,7 +9900,7 @@ msgid "the higher the more messages are given"
 msgstr "чим більше, тим більше буде видано повідомлень"
 
 msgid "file to write messages in"
-msgstr "файл, У який записувати повідомлення"
+msgstr "файл, у який записувати повідомлення"
 
 msgid "pause listings when the screen is full"
 msgstr "спинити виведення, коли екран заповнено"
@@ -9523,7 +9973,7 @@ msgid "line length above which to break a line"
 msgstr "довжина рядка, понад якою рядок розбивати"
 
 msgid "margin from the right in which to break a line"
-msgstr "відступ з правого краю, з якого розбивати рядок"
+msgstr "відступ з правого краю, по якому розбивати рядок"
 
 msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
 msgstr "визначає, що <BS>, CTRL-W тощо можуть робити у режимі Insert"
@@ -9637,7 +10087,7 @@ msgid "do clever autoindenting"
 msgstr "інтелектуальний автоматичний відступ"
 
 msgid "enable specific indenting for C code"
-msgstr "увімкнути специфічні віступи в коді С"
+msgstr "увімкнути специфічні відступи в коді С"
 
 msgid "options for C-indenting"
 msgstr "опції відступу С"
@@ -9670,6 +10120,9 @@ msgstr "увімкнути режим lisp"
 
 msgid "words that change how lisp indenting works"
 msgstr "слова, які змінюють, як працює підбивання відступів у lisp"
+
+msgid "options for Lisp indenting"
+msgstr "опції відступу Lisp"
 
 msgid "folding"
 msgstr "згортання"
@@ -9775,6 +10228,9 @@ msgstr "редагування двійкових файлів"
 msgid "last line in the file has an end-of-line"
 msgstr "останній рядок файлу має символ кінця рядка"
 
+msgid "last line in the file followed by CTRL-Z"
+msgstr "останній рядок файлу закінчується CTRL-Z"
+
 msgid "fixes missing end-of-line at end of text file"
 msgstr "виправляє символ кінця рядку, якого бракує наприкінці файлу"
 
@@ -9803,7 +10259,7 @@ msgid "keep a backup after overwriting a file"
 msgstr "зберегти резервний копію після перезапису файлу"
 
 msgid "patterns that specify for which files a backup is not made"
-msgstr "шаблони, які визначають, для яких файлів зробити резервну копію"
+msgstr "шаблони, які зазначають, для яких файлів не робиться резервну копію"
 
 msgid "whether to make the backup as a copy or rename the existing file"
 msgstr ""
@@ -9872,7 +10328,7 @@ msgid "how many command lines are remembered"
 msgstr "скільки рядків команд запам’ятати"
 
 msgid "key that triggers command-line expansion"
-msgstr "клавіша, яка запускає доповнення рядка команд"
+msgstr "клавіша, яка запускає розгортання рядка команд"
 
 msgid "like 'wildchar' but can also be used in a mapping"
 msgstr "ніби 'wildchar', але також можна вжити у заміні клавіш"
@@ -10208,3 +10664,6 @@ msgstr "назва динамічної бібліотеки MzScheme"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "назва динамічної бібліотеки MzScheme GC"
+
+msgid "You discovered the command-line window! You can close it with \":q\"."
+msgstr "Ви виявили вікно командного рядка! Його можна закрити командою «:q»."

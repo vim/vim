@@ -21,6 +21,10 @@ typedef unsigned char		uint8_t;
 typedef unsigned short		uint16_t;
 typedef unsigned int		uint32_t;
 
+// VIM: define max screen cols and rows
+#define VTERM_MAX_COLS 1000
+#define VTERM_MAX_ROWS 1000
+
 #define VTERM_VERSION_MAJOR 0
 #define VTERM_VERSION_MINOR 3
 #define VTERM_VERSION_PATCH 3

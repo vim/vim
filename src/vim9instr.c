@@ -145,7 +145,8 @@ generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
     if (isn == NULL)
 	return FAIL;
 
-    isn->isn_arg.number = idx;
+    isn->isn_arg.classmember.cm_class = NULL;
+    isn->isn_arg.classmember.cm_idx = idx;
     return push_type_stack2(cctx, type, &t_any);
 }
 
@@ -239,6 +240,7 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 			 to_string_error(type->tt_type);
 			 return FAIL;
     }
@@ -662,11 +664,11 @@ generate_SETTYPE(
 /*
  * Generate an ISN_PUSHOBJ instruction.  Object is always NULL.
  */
-    static int
+    int
 generate_PUSHOBJ(cctx_T *cctx)
 {
     RETURN_OK_IF_SKIP(cctx);
-    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_any) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHOBJ, &t_object) == NULL)
 	return FAIL;
     return OK;
 }
@@ -1374,15 +1376,18 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
  * Generate an ISN_FUNCREF instruction.
  * For "obj.Method" "cl" is the class of the object (can be an interface or a
  * base class) and "fi" the index of the method on that class.
- * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
+ * "isn_idx" is set to the index of the instruction, so that fr_dfunc_idx can
+ * be set later.  The index is used instead of a pointer to the instruction
+ * because the instruction memory can be reallocated.
  */
     int
 generate_FUNCREF(
 	cctx_T	    *cctx,
 	ufunc_T	    *ufunc,
 	class_T	    *cl,
+	int	    object_method,
 	int	    fi,
-	isn_T	    **isnp)
+	int	    *isn_idx)
 {
     isn_T	    *isn;
     type_T	    *type;
@@ -1393,8 +1398,9 @@ generate_FUNCREF(
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
-    if (isnp != NULL)
-	*isnp = isn;
+    if (isn_idx != NULL)
+	// save the index of the new instruction
+	*isn_idx = cctx->ctx_instr.ga_len - 1;
 
     has_vars = get_loop_var_info(cctx, &loopinfo);
     if (ufunc->uf_def_status == UF_NOT_COMPILED || has_vars || cl != NULL)
@@ -1408,6 +1414,7 @@ generate_FUNCREF(
 	{
 	    extra->fre_class = cl;
 	    ++cl->class_refcount;
+	    extra->fre_object_method = object_method;
 	    extra->fre_method_idx = fi;
 	}
     }
@@ -1415,7 +1422,7 @@ generate_FUNCREF(
 	extra->fre_func_name = vim_strsave(ufunc->uf_name);
     if (ufunc->uf_def_status != UF_NOT_COMPILED && cl == NULL)
     {
-	if (isnp == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
+	if (isn_idx == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
 	    // compile the function now, we need the uf_dfunc_idx value
 	    (void)compile_def_function(ufunc, FALSE, CT_NONE, NULL);
 	isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
@@ -1880,6 +1887,16 @@ generate_CALL(
     // drop the argument types
     cctx->ctx_type_stack.ga_len -= argcount;
 
+    // For an object or class method call, drop the object/class type.
+    if (ufunc->uf_class != NULL)
+    {
+	// When a class method is called without the class name prefix, then
+	// the type will not be in the stack.
+	type_T *stype = get_type_on_stack(cctx, 0);
+	if (stype->tt_type == VAR_CLASS || stype->tt_type == VAR_OBJECT)
+	    cctx->ctx_type_stack.ga_len--;
+    }
+
     // add return type
     return push_type_stack(cctx, ufunc->uf_ret_type);
 }
@@ -2023,17 +2040,14 @@ generate_PCALL(
 
 /*
  * Generate an ISN_DEFER instruction.
- * "obj_method" is one for "obj.Method()", zero otherwise.
  */
     int
-generate_DEFER(cctx_T *cctx, int var_idx, int obj_method, int argcount)
+generate_DEFER(cctx_T *cctx, int var_idx, int argcount)
 {
     isn_T *isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_drop(cctx,
-		    obj_method == 0 ? ISN_DEFER : ISN_DEFEROBJ,
-		    argcount + 1)) == NULL)
+    if ((isn = generate_instr_drop(cctx, ISN_DEFER, argcount + 1)) == NULL)
 	return FAIL;
     isn->isn_arg.defer.defer_var_idx = var_idx;
     isn->isn_arg.defer.defer_argcount = argcount;
@@ -2152,6 +2166,31 @@ generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
 	return FAIL;
     isn->isn_arg.put.put_regname = regname;
     isn->isn_arg.put.put_lnum = lnum;
+    return OK;
+}
+
+/*
+ * Generate a LOCKUNLOCK instruction.The root item, where the indexing starts
+ * to find the variable, is on the stack. The instr takes
+ * - the string to parse, "root.b[idx1][idx2].d.val", to find the variable
+ * - the class, if any, in which the string executes.
+ * - if the root item is a function argument
+ * A copy is made of "line".
+ */
+    int
+generate_LOCKUNLOCK(cctx_T *cctx, char_u *line, int is_arg)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_LOCKUNLOCK)) == NULL)
+	return FAIL;
+    class_T *cl = cctx->ctx_ufunc != NULL ? cctx->ctx_ufunc->uf_class : NULL;
+    isn->isn_arg.lockunlock.lu_string = vim_strsave(line);
+    isn->isn_arg.lockunlock.lu_cl_exec = cl;
+    if (cl != NULL)
+	++cl->class_refcount;
+    isn->isn_arg.lockunlock.lu_is_arg = is_arg;
     return OK;
 }
 
@@ -2459,7 +2498,6 @@ delete_instr(isn_T *isn)
 	case ISN_LOADOPT:
 	case ISN_LOADT:
 	case ISN_LOADW:
-	case ISN_LOCKUNLOCK:
 	case ISN_PUSHEXC:
 	case ISN_PUSHFUNC:
 	case ISN_PUSHS:
@@ -2472,6 +2510,11 @@ delete_instr(isn_T *isn)
 	case ISN_STOREW:
 	case ISN_STRINGMEMBER:
 	    vim_free(isn->isn_arg.string);
+	    break;
+
+	case ISN_LOCKUNLOCK:
+	    class_unref(isn->isn_arg.lockunlock.lu_cl_exec);
+	    vim_free(isn->isn_arg.lockunlock.lu_string);
 	    break;
 
 	case ISN_SUBSTITUTE:
@@ -2666,7 +2709,6 @@ delete_instr(isn_T *isn)
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
 	case ISN_DEFER:
-	case ISN_DEFEROBJ:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOCONSOLE:

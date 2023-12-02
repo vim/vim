@@ -14,6 +14,11 @@ expat can be found at:
 expat will install into its own directory.  You should copy libexpat.dll into
 the bin directory created from the gettext/libiconv packages.
 
+Or Michele Locati kindly provides precompiled binaries gettext 0.21 and
+iconv 1.16 for Windows on his site: 
+
+	https://mlocati.github.io/articles/gettext-iconv-windows.html
+
 First read the README.txt file in this directory for general remarks on
 translating Vim messages.
 
@@ -26,9 +31,9 @@ characters and you can find a list of them at:
 
 	http://www.geocities.com/click2speak/languages.html
 
-Another possibility is to use the gnuwin32 port of gettext. This is
+Another possibility is to use the GnuWin32 port of gettext. This is
 recommended especially if you use already gnuwin32 tools to gunzip, bunzip,
-patch etc. these files. You find the gnuwin32 version of gettext here:
+patch etc. these files. You find the GnuWin32 version of gettext here:
 
         http://gnuwin32.sourceforge.net/packages/gettext.htm
 
@@ -51,7 +56,7 @@ the installation.
 CREATING A NEW TRANSLATION
 
 When creating a new translation you must add your language code to the
-Make_mvc.mak file in the lines defining LANGUAGES and MOFILES.  To create the
+Make_all.mak file in the lines defining LANGUAGES and MOFILES.  To create the
 initial .po file for your language you must use the command:
 
 	make -f make_mvc.mak first_time
@@ -64,11 +69,11 @@ highlighting turned on then untranslated messages will stand out more easily.
 
 You will also need to edit the file names in the comments in the .po file.
 You need to remove the absolute directory specification (which has the form
-c:\vim61\src\).  You can do this in Vim with the following command with the
+c:\vim91\src\).  You can do this in Vim with the following command with the
 appropriate directory specification for where you have installed the Vim
 source:
 
-	%s/c:\\vim61\\src\\//g
+	%s/c:\\vim91\\src\\//g
 
 
 UPDATING A TRANSLATION

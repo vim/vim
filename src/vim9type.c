@@ -144,7 +144,7 @@ alloc_type(type_T *type)
     if (ret->tt_member != NULL)
 	ret->tt_member = alloc_type(ret->tt_member);
 
-    if (type->tt_args != NULL)
+    if (type->tt_argcount > 0 && type->tt_args != NULL)
     {
 	int i;
 
@@ -153,6 +153,8 @@ alloc_type(type_T *type)
 	    for (i = 0; i < type->tt_argcount; ++i)
 		ret->tt_args[i] = alloc_type(type->tt_args[i]);
     }
+    else
+	ret->tt_args = NULL;
 
     return ret;
 }
@@ -426,7 +428,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	if (tv->vval.v_number == VVAL_NONE)
 	    return &t_none;
 	if (tv->vval.v_number == VVAL_TRUE
-		|| tv->vval.v_number == VVAL_TRUE)
+		|| tv->vval.v_number == VVAL_FALSE)
 	    return &t_bool;
 	return &t_unknown;
     }
@@ -648,7 +650,7 @@ valid_declaration_type(type_T *type)
     {
 	char *tofree = NULL;
 	char *name = type_name(type, &tofree);
-	semsg(_(e_invalid_type_for_object_member_str), name);
+	semsg(_(e_invalid_type_for_object_variable_str), name);
 	vim_free(tofree);
 	return FALSE;
     }
@@ -678,7 +680,11 @@ check_typval_arg_type(
 {
     where_T	where = WHERE_INIT;
 
-    where.wt_index = arg_idx;
+    if (arg_idx > 0)
+    {
+	where.wt_index = arg_idx;
+	where.wt_kind = WT_ARGUMENT;
+    }
     where.wt_func_name = func_name;
     return check_typval_type(expected, actual_tv, where);
 }
@@ -718,7 +724,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 	{
 	    // If a type check is needed that means assigning "any" or
 	    // "unknown" to a more specific type, which fails here.
-	    // Execpt when it looks like a lambda, since they have an
+	    // Except when it looks like a lambda, since they have an
 	    // incomplete type.
 	    type_mismatch_where(expected, actual_type, where);
 	    res = FAIL;
@@ -733,7 +739,11 @@ arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx)
 {
     where_T	where = WHERE_INIT;
 
-    where.wt_index = arg_idx;
+    if (arg_idx > 0)
+    {
+	where.wt_index = arg_idx;
+	where.wt_kind = WT_ARGUMENT;
+    }
     type_mismatch_where(expected, actual, where);
 }
 
@@ -744,25 +754,44 @@ type_mismatch_where(type_T *expected, type_T *actual, where_T where)
     char *typename1 = type_name(expected, &tofree1);
     char *typename2 = type_name(actual, &tofree2);
 
-    if (where.wt_index > 0)
+    switch (where.wt_kind)
     {
-	if (where.wt_func_name == NULL)
-	    semsg(_(where.wt_variable
-			 ? e_variable_nr_type_mismatch_expected_str_but_got_str
-		       : e_argument_nr_type_mismatch_expected_str_but_got_str),
-					 where.wt_index, typename1, typename2);
-	else
-	    semsg(_(where.wt_variable
-		  ? e_variable_nr_type_mismatch_expected_str_but_got_str_in_str
-		: e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
-		     where.wt_index, typename1, typename2, where.wt_func_name);
+	case WT_MEMBER:
+	    semsg(_(e_variable_str_type_mismatch_expected_str_but_got_str),
+		    where.wt_func_name, typename1, typename2);
+	    break;
+	case WT_METHOD:
+	case WT_METHOD_ARG:
+	case WT_METHOD_RETURN:
+	    semsg(_(e_method_str_type_mismatch_expected_str_but_got_str),
+		    where.wt_func_name, typename1, typename2);
+	    break;
+	case WT_VARIABLE:
+	    if (where.wt_func_name == NULL)
+		semsg(_(e_variable_nr_type_mismatch_expected_str_but_got_str),
+			where.wt_index, typename1, typename2);
+	    else
+		semsg(_(e_variable_nr_type_mismatch_expected_str_but_got_str_in_str),
+			where.wt_index, typename1, typename2, where.wt_func_name);
+	    break;
+	case WT_ARGUMENT:
+	    if (where.wt_func_name == NULL)
+		semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str),
+			where.wt_index, typename1, typename2);
+	    else
+		semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str_in_str),
+			where.wt_index, typename1, typename2, where.wt_func_name);
+	    break;
+	case WT_UNKNOWN:
+	    if (where.wt_func_name == NULL)
+		semsg(_(e_type_mismatch_expected_str_but_got_str),
+			typename1, typename2);
+	    else
+		semsg(_(e_type_mismatch_expected_str_but_got_str_in_str),
+			typename1, typename2, where.wt_func_name);
+	    break;
     }
-    else if (where.wt_func_name == NULL)
-	semsg(_(e_type_mismatch_expected_str_but_got_str),
-							 typename1, typename2);
-    else
-	semsg(_(e_type_mismatch_expected_str_but_got_str_in_str),
-				     typename1, typename2, where.wt_func_name);
+
     vim_free(tofree1);
     vim_free(tofree2);
 }
@@ -844,11 +873,22 @@ check_type_maybe(
 	    {
 		if (actual->tt_member != NULL
 					    && actual->tt_member != &t_unknown)
+		{
+		    where_T  func_where = where;
+
+		    func_where.wt_kind = WT_METHOD_RETURN;
 		    ret = check_type_maybe(expected->tt_member,
-					      actual->tt_member, FALSE, where);
+					    actual->tt_member, FALSE,
+					    func_where);
+		}
 		else
 		    ret = MAYBE;
 	    }
+	    if (ret != FAIL
+		    && ((expected->tt_flags & TTFLAG_VARARGS)
+			!= (actual->tt_flags & TTFLAG_VARARGS))
+		    && expected->tt_argcount != -1)
+		ret = FAIL;
 	    if (ret != FAIL && expected->tt_argcount != -1
 		    && actual->tt_min_argcount != -1
 		    && (actual->tt_argcount == -1
@@ -862,14 +902,19 @@ check_type_maybe(
 
 		for (i = 0; i < expected->tt_argcount
 					       && i < actual->tt_argcount; ++i)
+		{
+		    where_T  func_where = where;
+		    func_where.wt_kind = WT_METHOD_ARG;
+
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
 			    expected->tt_args[i], actual->tt_args[i], FALSE,
-								where) == FAIL)
+							func_where) == FAIL)
 		    {
 			ret = FAIL;
 			break;
 		    }
+		}
 	    }
 	    if (ret == OK && expected->tt_argcount >= 0
 						  && actual->tt_argcount == -1)
@@ -882,21 +927,17 @@ check_type_maybe(
 		return MAYBE;	// use runtime type check
 	    if (actual->tt_type != VAR_OBJECT)
 		return FAIL;	// don't use tt_class
+	    if (actual->tt_class == NULL)
+		return OK;	// A null object matches
 
-	    // check the class, base class or an implemented interface matches
-	    class_T *cl;
-	    for (cl = actual->tt_class; cl != NULL; cl = cl->class_extends)
+	    // For object method arguments, do a invariant type check in
+	    // an extended class.  For all others, do a covariance type check.
+	    if (where.wt_kind == WT_METHOD_ARG)
 	    {
-		if (expected->tt_class == cl)
-		    break;
-		int i;
-		for (i = cl->class_interface_count - 1; i >= 0; --i)
-		    if (expected->tt_class == cl->class_interfaces_cl[i])
-			break;
-		if (i >= 0)
-		    break;
+		if (actual->tt_class != expected->tt_class)
+		    ret = FAIL;
 	    }
-	    if (cl == NULL)
+	    else if (!class_instance_of(actual->tt_class, expected->tt_class))
 		ret = FAIL;
 	}
 
@@ -1190,6 +1231,15 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 			type = parse_type(&p, type_gap, give_error);
 			if (type == NULL)
 			    return NULL;
+			if ((flags & TTFLAG_VARARGS) != 0
+				&& type->tt_type != VAR_LIST)
+			{
+			    char *tofree;
+			    semsg(_(e_variable_arguments_type_must_be_list_str),
+				  type_name(type, &tofree));
+			    vim_free(tofree);
+			    return NULL;
+			}
 			arg_type[argcount++] = type;
 
 			// Nothing comes after "...{type}".
@@ -1304,7 +1354,9 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     }
 
     // It can be a class or interface name, possibly imported.
-    typval_T tv;
+    int		did_emsg_before = did_emsg;
+    typval_T	tv;
+
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(*arg, &tv) == OK)
     {
@@ -1327,11 +1379,22 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		return type;
 	    }
 	}
+	else if (tv.v_type == VAR_TYPEALIAS)
+	{
+	    // user defined type
+	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
+	    *arg += len;
+	    clear_tv(&tv);
+	    // Skip over ".TypeName".
+	    while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		++*arg;
+	    return type;
+	}
 
 	clear_tv(&tv);
     }
 
-    if (give_error)
+    if (give_error && (did_emsg == did_emsg_before))
 	semsg(_(e_type_not_recognized_str), *arg);
     return NULL;
 }
@@ -1366,6 +1429,7 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    break;  // not composite is always OK
 	case VAR_LIST:
 	case VAR_DICT:
@@ -1616,6 +1680,7 @@ vartype_name(vartype_T type)
 	case VAR_INSTR: return "instr";
 	case VAR_CLASS: return "class";
 	case VAR_OBJECT: return "object";
+	case VAR_TYPEALIAS: return "typealias";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -1745,12 +1810,31 @@ f_typename(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     ga_init2(&type_list, sizeof(type_T *), 10);
-    type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
-    name = type_name(type, &tofree);
-    if (tofree != NULL)
-	rettv->vval.v_string = (char_u *)tofree;
+    if (argvars[0].v_type == VAR_TYPEALIAS)
+    {
+	type = copy_type(argvars[0].vval.v_typealias->ta_type, &type_list);
+	// A type alias for a class has the type set to VAR_OBJECT.  Change it
+	// to VAR_CLASS, so that the name is "typealias<class<xxx>>"
+	if (type->tt_type == VAR_OBJECT)
+	    type->tt_type = VAR_CLASS;
+    }
     else
-	rettv->vval.v_string = vim_strsave((char_u *)name);
+	type = typval2type(argvars, get_copyID(), &type_list, TVTT_DO_MEMBER);
+    name = type_name(type, &tofree);
+    if (argvars[0].v_type == VAR_TYPEALIAS)
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, "typealias<%s>", name);
+	rettv->vval.v_string = vim_strsave((char_u *)IObuff);
+	if (tofree != NULL)
+	    vim_free(tofree);
+    }
+    else
+    {
+	if (tofree != NULL)
+	    rettv->vval.v_string = (char_u *)tofree;
+	else
+	    rettv->vval.v_string = vim_strsave((char_u *)name);
+    }
     clear_type_list(&type_list);
 }
 

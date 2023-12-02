@@ -89,7 +89,7 @@ SynMenu AB.Assembly.PIC:pic
 SynMenu AB.Assembly.Turbo:tasm
 SynMenu AB.Assembly.VAX\ Macro\ Assembly:vmasm
 SynMenu AB.Assembly.Z-80:z8a
-SynMenu AB.Assembly.xa\ 6502\ cross\ assember:a65
+SynMenu AB.Assembly.xa\ 6502\ cross\ assembler:a65
 SynMenu AB.ASN\.1:asn
 SynMenu AB.Asterisk\ config:asterisk
 SynMenu AB.Asterisk\ voicemail\ config:asteriskvm
@@ -327,7 +327,7 @@ SynMenu HIJK.Kivy:kivy
 SynMenu HIJK.KixTart:kix
 
 SynMenu L.Lace:lace
-SynMenu L.LamdaProlog:lprolog
+SynMenu L.LambdaProlog:lprolog
 SynMenu L.Latte:latte
 SynMenu L.Ld\ script:ld
 SynMenu L.LDAP.LDIF:ldif
@@ -651,7 +651,7 @@ SynMenu UV.VSE\ JCL:vsejcl
 SynMenu WXYZ.WEB.CWEB:cweb
 SynMenu WXYZ.WEB.WEB:web
 SynMenu WXYZ.WEB.WEB\ Changes:change
-SynMenu WXYZ.WebAssembly:wast
+SynMenu WXYZ.WebAssembly:wat
 SynMenu WXYZ.Webmacro:webmacro
 SynMenu WXYZ.Website\ MetaLanguage:wml
 SynMenu WXYZ.wDiff:wdiff
@@ -678,6 +678,7 @@ SynMenu WXYZ.XFree86\ Config:xf86conf
 SynMenu WXYZ.YAML:yaml
 SynMenu WXYZ.Yacc:yacc
 SynMenu WXYZ.Zimbu:zimbu
+SynMenu WXYZ.Zserio:zserio
 
 append(lnum, "")
 

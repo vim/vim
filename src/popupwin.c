@@ -654,7 +654,7 @@ popup_show_curline(win_T *wp)
 	    wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
 	while (wp->w_topline < wp->w_cursor.lnum
 		&& wp->w_topline < wp->w_buffer->b_ml.ml_line_count
-		&& plines_m_win(wp, wp->w_topline, wp->w_cursor.lnum)
+		&& plines_m_win(wp, wp->w_topline, wp->w_cursor.lnum, TRUE)
 								> wp->w_height)
 	    ++wp->w_topline;
     }
@@ -817,7 +817,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     }
 
     if (set_padding_border(dict, wp->w_popup_padding, "padding", 999) == FAIL ||
-        set_padding_border(dict, wp->w_popup_border, "border", 1) == FAIL)
+	set_padding_border(dict, wp->w_popup_border, "border", 1) == FAIL)
 	return FAIL;
 
     di = dict_find(dict, (char_u *)"borderhighlight", -1);
@@ -1803,6 +1803,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	dig = e + 1;
 	x = getdigits(&dig);
 
+	// Note: Keep this in sync with p_popup_option_values.
 	if (STRNCMP(s, "height:", 7) == 0)
 	{
 	    if (dig != p)
@@ -1840,6 +1841,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	}
 	else if (STRNCMP(s, "border:", 7) == 0)
 	{
+	    // Note: Keep this in sync with p_popup_option_border_values.
 	    char_u	*arg = s + 7;
 	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
 	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
@@ -1858,6 +1860,7 @@ parse_popup_option(win_T *wp, int is_preview)
 	}
 	else if (STRNCMP(s, "align:", 6) == 0)
 	{
+	    // Note: Keep this in sync with p_popup_option_align_values.
 	    char_u	*arg = s + 6;
 	    int		item = STRNCMP(arg, "item", 4) == 0 && arg + 4 == p;
 	    int		menu = STRNCMP(arg, "menu", 4) == 0 && arg + 4 == p;
@@ -2378,6 +2381,8 @@ invoke_popup_callback(win_T *wp, typval_T *result)
 {
     typval_T	rettv;
     typval_T	argv[3];
+
+    rettv.v_type = VAR_UNKNOWN;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = (varnumber_T)wp->w_id;

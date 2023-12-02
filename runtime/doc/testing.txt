@@ -21,7 +21,7 @@ Vim can be tested after building it, usually with "make test".
 The tests are located in the directory "src/testdir".
 
 There are two types of tests added over time:
-	test20.in		oldest, only for tiny and small builds
+	test20.in		oldest, only for tiny builds
 	test_something.vim	new style tests
 
 						*new-style-testing*

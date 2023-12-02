@@ -1374,7 +1374,8 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_INSTR:
 		    case VAR_CLASS:
 		    case VAR_OBJECT:
-				     continue;
+		    case VAR_TYPEALIAS:
+				      continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
 		if (this_var->di_tv.v_type == VAR_BOOL
@@ -1803,6 +1804,11 @@ handle_viminfo_register(garray_T *values, int force)
 	{
 	    y_ptr->y_array[i] = vp[i + 6].bv_string;
 	    vp[i + 6].bv_string = NULL;
+	}
+	else if (vp[i + 6].bv_type != BVAL_STRING)
+	{
+	    free(y_ptr->y_array);
+	    y_ptr->y_array = NULL;
 	}
 	else
 	    y_ptr->y_array[i] = vim_strsave(vp[i + 6].bv_string);

@@ -190,7 +190,7 @@ map I   G$?.^GYKeDP0S2Gl
 "            into the Macro register
 "      GVJ - on bottom line, create a command to restore the current character
 "       0H - and save the command into the second Macro register
-"     `a@r - go back to the current position and exectute the macro to restore
+"     `a@r - go back to the current position and execute the macro to restore
 "            the current character
 "       @m - execute the action associated with this state
 "        U - and repeat
