@@ -501,9 +501,12 @@ edit(
 	 * something.
 	 * Don't do this when the topline changed already, it has
 	 * already been adjusted (by insertchar() calling open_line())).
+	 * Also don't do this when 'smoothscroll' is set, as the window should
+	 * then be scrolled by screen lines.
 	 */
 	if (curbuf->b_mod_set
 		&& curwin->w_p_wrap
+		&& !curwin->w_p_sms
 		&& !did_backspace
 		&& curwin->w_topline == old_topline
 #ifdef FEAT_DIFF
