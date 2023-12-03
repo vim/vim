@@ -131,10 +131,10 @@ jobs:
 
       - name: Install gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
         if: (matrix.compiler == 'gcc') && (matrix.architecture == 'i386')
-        uses: tecolicom/actions-use-apt-tools@main
-        with:
-          tools: gcc-${{ env.GCC_VER }}:${{ matrix.architecture }} binutils:${{ matrix.architecture }} binutils-common:${{ matrix.architecture }} binutils-i686-linux-gnu:${{ matrix.architecture }} cpp-13:${{ matrix.architecture }} libasan8:${{ matrix.architecture }} libatomic1:${{ matrix.architecture }} libbinutils:${{ matrix.architecture }} libcc1-0:${{ matrix.architecture }} libctf-nobfd0:${{ matrix.architecture }} libctf0:${{ matrix.architecture }} libgcc-13-dev:${{ matrix.architecture }} libgomp1:${{ matrix.architecture }} libisl23:${{ matrix.architecture }} libitm1:${{ matrix.architecture }} libmpc3:${{ matrix.architecture }} libmpfr6:${{ matrix.architecture }} libquadmath0:${{ matrix.architecture }} libubsan1:${{ matrix.architecture }}
-          method: timestamp
+        run: |
+          sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
         
       - name: Setup gcc-${{ env.GCC_VER }}
         if: matrix.compiler == 'gcc'
