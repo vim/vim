@@ -630,7 +630,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     size_t textlen;
     size_t proplen;
 
-    // Be quick when no text property types have been defined or the buffer,
+    // Be quick when no text property types have been defined for the buffer,
     // unless we are adding one.
     if ((!buf->b_has_textprop && !will_change) || buf->b_ml.ml_mfp == NULL)
 	return 0;
@@ -714,8 +714,7 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 	// previous line, or when not in the last line and it is virtual text
 	// after the line.
 	if ((only_starting && (prop.tp_flags & TP_FLAG_CONT_PREV))
-		|| (!last_line && prop.tp_col == MAXCOL)
-		|| !text_prop_type_valid(curbuf, &prop))
+		|| (!last_line && prop.tp_col == MAXCOL))
 	    --result;
     }
     return result;
