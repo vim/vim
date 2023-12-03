@@ -126,10 +126,22 @@ jobs:
         if:  matrix.compiler == 'gcc'
         uses: tecolicom/actions-use-apt-tools@main
         with:
-          tools: gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+          tools: gcc-${{ env.GCC_VER }}
 
       - name: Setup gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
+
+      - name: Install gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+        if: matrix.architecture == 'i386'
+        uses: tecolicom/actions-use-apt-tools@main
+        with:
+          tools: gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+
+      - name: Setup gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+        if: matrix.architecture == 'i386'
         run: |
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
