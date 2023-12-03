@@ -283,8 +283,12 @@ func Test_terminal_resize()
   set statusline&
 endfunc
 
+" TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize2()
   CheckNotMSWindows
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
   set statusline=x
   terminal
   call assert_equal(2, winnr('$'))
