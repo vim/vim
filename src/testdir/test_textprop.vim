@@ -1424,6 +1424,43 @@ func Test_textprop_text_priority()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_textprop_in_empty_popup()
+  CheckScreendump
+
+  let lines =<< trim END
+    vim9script
+
+    hi def link FilterMenuMatch Constant
+    prop_type_add('FilterMenuMatch', {
+      highlight: "FilterMenuMatch",
+      override: true,
+      priority: 1000,
+      combine: true,
+    })
+
+    var winid = popup_create([{text: "hello", props: [
+      {col: 1, length: 1, type: 'FilterMenuMatch'},
+      {col: 2, length: 1, type: 'FilterMenuMatch'},
+    ]}], {
+      minwidth: 20,
+      minheight: 10,
+      cursorline: false,
+      highlight: "None",
+      border: [],
+    })
+
+    win_execute(winid, "setl nu cursorline cursorlineopt=both")
+    popup_settext(winid, [])
+    redraw
+  END
+  call writefile(lines, 'XtestPropEmptyPopup', 'D')
+  let buf = RunVimInTerminal('-S XtestPropEmptyPopup', #{rows: 20, cols: 40})
+  call VerifyScreenDump(buf, 'Test_prop_in_empty_popup', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_textprop_with_syntax()
   CheckScreendump
 
