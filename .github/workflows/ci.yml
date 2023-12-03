@@ -126,7 +126,7 @@ jobs:
         if:  matrix.compiler == 'gcc'
         uses: tecolicom/actions-use-apt-tools@main
         with:
-          tools: gcc-${{ env.GCC_VER }}
+          tools: gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
 
       - name: Setup gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
@@ -145,7 +145,7 @@ jobs:
         if: matrix.compiler == 'clang'
         uses: tecolicom/actions-use-apt-tools@main
         with:
-          tools: clang-${{ env.CLANG_VER }}
+          tools: clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
 
       - name: Setup clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
