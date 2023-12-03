@@ -127,6 +127,7 @@ jobs:
         uses: tecolicom/actions-use-apt-tools@main
         with:
           tools: gcc-${{ env.GCC_VER }}
+          method: timestamp
 
       - name: Setup gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
@@ -139,6 +140,7 @@ jobs:
         uses: tecolicom/actions-use-apt-tools@main
         with:
           tools: gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
+          method: timestamp
 
       - name: Setup gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
         if: matrix.architecture == 'i386'
