@@ -4410,4 +4410,19 @@ func Test_virtual_text_get()
   bwipe!
 endfunc
 
+" This used to throw: E967
+func Test_textprop_notype_join()
+  new Xtextprop_no_type_join
+  call setline(1, range(1, 3))
+  call cursor(1, 1)
+  let name = 'a'
+  call prop_type_add(name, {})
+  call prop_add(line('.'), col('.'), { 'type': name })
+  call prop_type_delete(name, {})
+  join
+  call assert_equal(["1 2", "3"], getline(1, '$'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
