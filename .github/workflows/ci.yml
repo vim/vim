@@ -158,6 +158,7 @@ jobs:
         uses: tecolicom/actions-use-apt-tools@main
         with:
           tools: clang-${{ env.CLANG_VER }} llvm-${{ env.CLANG_VER }}
+          method: timestamp
 
       - name: Setup clang-${{ env.CLANG_VER }}
         if: matrix.compiler == 'clang'
