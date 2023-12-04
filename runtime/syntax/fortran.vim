@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Fortran 2008 (and Fortran 2003, 95, 90, and 77)
-" Version:	(v106) 2023 December 1
+" Version:	(v106) 2023 December 4
 " Maintainers:	Ajit J. Thakkar <ajit@unb.ca>; <https://ajit.ext.unb.ca/>
 " 	        Joshua Hollett <j.hollett@uwinnipeg.ca>
 " Usage:	For instructions, do :help fortran-syntax from Vim
@@ -356,7 +356,7 @@ syn match	cIncluded		contained "<[^>]*>"
 syn match	cInclude		"^\s*#\s*include\>\s*["<]" contains=cIncluded
 
 "Synchronising limits assume that comment and continuation lines are not mixed
-if exists("fortran_fold") || exists("fortran_more_precise")
+if exists("fortran_fold")
   syn sync fromstart
 elseif (b:fortran_fixed_source == 0)
   syn sync linecont "&" minlines=30
@@ -412,7 +412,6 @@ if exists("fortran_fold")
 endif
 
 " Define the default highlighting.
-" The default highlighting differs for each dialect.
 " Transparent groups:
 " fortranParen, fortranLeftMargin
 " fortranProgram, fortranModule, fortranSubroutine, fortranFunction,
