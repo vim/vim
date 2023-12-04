@@ -1521,6 +1521,9 @@ au BufNewFile,BufRead *.hook
 	\   setf confini |
 	\ endif
 
+" Pacman log
+au BufNewFile,BufRead pacman.log			setf pacmanlog
+
 " Pam conf
 au BufNewFile,BufRead */etc/pam.conf			setf pamconf
 
