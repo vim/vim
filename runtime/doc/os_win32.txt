@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 9.0.  Last change: 2022 Sep 18
+*os_win32.txt*  For Vim version 9.0.  Last change: 2023 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -304,7 +304,7 @@ A. When using :! to run an external command, you can run it with "start". For
    treated as the start of the command.
 						*windows-asynchronously*
 Q. How do I avoid getting a window for programs that I run asynchronously?
-A. You have two possible solutions depending on what you want:
+A. You have three possible solutions depending on what you want:
    1) You may use the /min flag in order to run program in a minimized state
       with no other changes. It will work equally for console and GUI
       applications.
@@ -313,6 +313,9 @@ A. You have two possible solutions depending on what you want:
       should use this flag only if the application you run doesn't require any
       input.  Otherwise it will get an EOF error because its input stream
       (stdin) would be redirected to \\.\NUL (stdout and stderr too).
+   3) Set the '!' flag in the 'guioptions' option |'go-!'|. This will make Vim
+      run the "start" command inside Vims terminal window and not open a
+      console window.
 
    Example for a console application, run Exuberant ctags: >
         :!start /min ctags -R .
