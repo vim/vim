@@ -233,7 +233,7 @@ illegal_char(char *errbuf, int errbuflen, int c)
 {
     if (errbuf == NULL)
 	return "";
-    snprintf((char *)errbuf, errbuflen, _(e_illegal_character_str),
+    vim_snprintf((char *)errbuf, errbuflen, _(e_illegal_character_str),
 		    (char *)transchar(c));
     return errbuf;
 }
@@ -1541,7 +1541,7 @@ did_set_complete(optset_T *args)
 	    {
 		if (args->os_errbuf != NULL)
 		{
-		    snprintf((char *)args->os_errbuf, args->os_errbuflen,
+		    vim_snprintf((char *)args->os_errbuf, args->os_errbuflen,
 			    _(e_illegal_character_after_chr), *--s);
 		    return args->os_errbuf;
 		}
@@ -4069,7 +4069,7 @@ did_set_viminfo(optset_T *args)
 	    {
 		if (args->os_errbuf != NULL)
 		{
-		    snprintf(args->os_errbuf, args->os_errbuflen,
+		    vim_snprintf(args->os_errbuf, args->os_errbuflen,
 			    _(e_missing_number_after_angle_str_angle),
 			    transchar_byte(*(s - 1)));
 		    errmsg = args->os_errbuf;
