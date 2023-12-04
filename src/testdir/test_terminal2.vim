@@ -247,13 +247,11 @@ endfunc
 
 " Resizing the terminal window caused an ml_get error.
 " TODO: This does not reproduce the original problem.
-" TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize()
-  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
-    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
-  endif
   set statusline=x
-  terminal
+  " Sometimes the terminal hangs in gui mode, kill the shell forcefully after
+  " waiting 30s the test should be finished by then
+  exe "terminal timeout -k 5 30 " .. &shell
   call assert_equal(2, winnr('$'))
   let buf = bufnr()
 
@@ -286,11 +284,10 @@ endfunc
 " TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize2()
   CheckNotMSWindows
-  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
-    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
-  endif
   set statusline=x
-  terminal
+  " Sometimes the terminal hangs in gui mode, kill the shell forcefully after
+  " waiting 30s the test should be finished by then
+  exe "terminal timeout -k 5 30 " .. &shell
   call assert_equal(2, winnr('$'))
   let buf = bufnr()
 
