@@ -3070,8 +3070,6 @@ def Test_type_check()
     var l: list<number> = []
     var b: blob = 0z10
     var Fn: func = function('min')
-    var j: job = test_null_job()
-    var ch: channel = test_null_channel()
     var o: A = A.new()
 
     # Assign a number
@@ -3079,8 +3077,6 @@ def Test_type_check()
     assert_fails('l = N', 'E1012: Type mismatch; expected list<number> but got number')
     assert_fails('b = N', 'E1012: Type mismatch; expected blob but got number')
     assert_fails('Fn = N', 'E1012: Type mismatch; expected func(...): unknown but got number')
-    assert_fails('j = N', 'E1012: Type mismatch; expected job but got number')
-    assert_fails('ch = N', 'E1012: Type mismatch; expected channel but got number')
     assert_fails('A = N', 'E1012: Type mismatch; expected class<A> but got number')
     assert_fails('o = N', 'E1012: Type mismatch; expected object<A> but got number')
 
@@ -3089,8 +3085,6 @@ def Test_type_check()
     assert_fails('l += N', 'E734: Wrong variable type for +=')
     assert_fails('b += N', 'E734: Wrong variable type for +=')
     assert_fails('Fn += N', 'E734: Wrong variable type for +=')
-    assert_fails('j += N', 'E734: Wrong variable type for +=')
-    assert_fails('ch += N', 'E734: Wrong variable type for +=')
     assert_fails('A += N', 'E734: Wrong variable type for +=')
     assert_fails('o += N', 'E734: Wrong variable type for +=')
 
@@ -3099,8 +3093,6 @@ def Test_type_check()
     assert_fails('N = l', 'E1012: Type mismatch; expected number but got list<number>')
     assert_fails('N = b', 'E1012: Type mismatch; expected number but got blob')
     assert_fails('N = Fn', 'E1012: Type mismatch; expected number but got func([unknown]): number')
-    assert_fails('N = j', 'E1012: Type mismatch; expected number but got job')
-    assert_fails('N = ch', 'E1012: Type mismatch; expected number but got channel')
     assert_fails('N = A', 'E1012: Type mismatch; expected number but got class<A>')
     assert_fails('N = o', 'E1012: Type mismatch; expected number but got object<A>')
 
@@ -3109,8 +3101,6 @@ def Test_type_check()
     assert_fails('N += l', 'E734: Wrong variable type for +=')
     assert_fails('N += b', 'E974: Using a Blob as a Number')
     assert_fails('N += Fn', 'E734: Wrong variable type for +=')
-    assert_fails('N += j', 'E910: Using a Job as a Number')
-    assert_fails('N += ch', 'E913: Using a Channel as a Number')
     assert_fails('N += A', 'E1319: Using a Class as a Number')
     assert_fails('N += o', 'E1320: Using an Object as a Number')
 
@@ -3119,8 +3109,6 @@ def Test_type_check()
     assert_fails('var [X2: number, Y: number] = [1, l]', 'E1012: Type mismatch; expected number but got list<number>')
     assert_fails('var [X3: number, Y: number] = [1, b]', 'E1012: Type mismatch; expected number but got blob')
     assert_fails('var [X4: number, Y: number] = [1, Fn]', 'E1012: Type mismatch; expected number but got func([unknown]): number')
-    assert_fails('var [X5: number, Y: number] = [1, j]', 'E1012: Type mismatch; expected number but got job')
-    assert_fails('var [X6: number, Y: number] = [1, ch]', 'E1012: Type mismatch; expected number but got channel')
     assert_fails('var [X7: number, Y: number] = [1, A]', 'E1012: Type mismatch; expected number but got class<A>')
     assert_fails('var [X8: number, Y: number] = [1, o]', 'E1012: Type mismatch; expected number but got object<A>')
 
@@ -3129,8 +3117,6 @@ def Test_type_check()
     assert_fails('S ..= l', 'E734: Wrong variable type for .=')
     assert_fails('S ..= b', 'E976: Using a Blob as a String')
     assert_fails('S ..= Fn', 'E734: Wrong variable type for .=')
-    assert_fails('S ..= j', 'E908: Using an invalid value as a String: job')
-    assert_fails('S ..= ch', 'E908: Using an invalid value as a String: channel')
     assert_fails('S ..= A', 'E1323: Using a Class as a String')
     assert_fails('S ..= o', 'E1324: Using an Object as a String')
 
@@ -3139,12 +3125,35 @@ def Test_type_check()
     assert_fails('l ..= S', 'E734: Wrong variable type for .=')
     assert_fails('b ..= S', 'E734: Wrong variable type for .=')
     assert_fails('Fn ..= S', 'E734: Wrong variable type for .=')
-    assert_fails('j ..= S', 'E734: Wrong variable type for .=')
-    assert_fails('ch ..= S', 'E734: Wrong variable type for .=')
     assert_fails('A ..= S', 'E734: Wrong variable type for .=')
     assert_fails('o ..= S', 'E734: Wrong variable type for .=')
   END
   v9.CheckSourceSuccess(lines)
+
+  if has('channel')
+    lines =<< trim END
+      vim9script
+      var N: number = 1
+      var S: string = 'abc'
+      var j: job = test_null_job()
+      var ch: channel = test_null_channel()
+      assert_fails('j = N', 'E1012: Type mismatch; expected job but got number')
+      assert_fails('ch = N', 'E1012: Type mismatch; expected channel but got number')
+      assert_fails('j += N', 'E734: Wrong variable type for +=')
+      assert_fails('ch += N', 'E734: Wrong variable type for +=')
+      assert_fails('N = j', 'E1012: Type mismatch; expected number but got job')
+      assert_fails('N = ch', 'E1012: Type mismatch; expected number but got channel')
+      assert_fails('N += j', 'E910: Using a Job as a Number')
+      assert_fails('N += ch', 'E913: Using a Channel as a Number')
+      assert_fails('var [X5: number, Y: number] = [1, j]', 'E1012: Type mismatch; expected number but got job')
+      assert_fails('var [X6: number, Y: number] = [1, ch]', 'E1012: Type mismatch; expected number but got channel')
+      assert_fails('S ..= j', 'E908: Using an invalid value as a String: job')
+      assert_fails('S ..= ch', 'E908: Using an invalid value as a String: channel')
+      assert_fails('j ..= S', 'E734: Wrong variable type for .=')
+      assert_fails('ch ..= S', 'E734: Wrong variable type for .=')
+    END
+    v9.CheckSourceSuccess(lines)
+  endif
 enddef
 
 " Test for checking the argument type of a def function
@@ -3164,16 +3173,18 @@ def Test_func_argtype_check()
     var l: list<number> = []
     var b: blob = 0z10
     var Fn: func = function('min')
-    var j: job = test_null_job()
-    var ch: channel = test_null_channel()
     var o: A = A.new()
 
     assert_fails('IntArg(d)', 'E1013: Argument 1: type mismatch, expected number but got dict<number>')
     assert_fails('IntArg(l)', 'E1013: Argument 1: type mismatch, expected number but got list<number>')
     assert_fails('IntArg(b)', 'E1013: Argument 1: type mismatch, expected number but got blob')
     assert_fails('IntArg(Fn)', 'E1013: Argument 1: type mismatch, expected number but got func([unknown]): number')
-    assert_fails('IntArg(j)', 'E1013: Argument 1: type mismatch, expected number but got job')
-    assert_fails('IntArg(ch)', 'E1013: Argument 1: type mismatch, expected number but got channel')
+    if has('channel')
+      var j: job = test_null_job()
+      var ch: channel = test_null_channel()
+      assert_fails('IntArg(j)', 'E1013: Argument 1: type mismatch, expected number but got job')
+      assert_fails('IntArg(ch)', 'E1013: Argument 1: type mismatch, expected number but got channel')
+    endif
     assert_fails('IntArg(A)', 'E1013: Argument 1: type mismatch, expected number but got class<A>')
     assert_fails('IntArg(o)', 'E1013: Argument 1: type mismatch, expected number but got object<A>')
 
@@ -3194,13 +3205,15 @@ def Test_func_argtype_check()
     enddef
     assert_fails('FuncArg(N)', 'E1013: Argument 1: type mismatch, expected func(...): unknown but got number')
 
-    def JobArg(_: job)
-    enddef
-    assert_fails('JobArg(N)', 'E1013: Argument 1: type mismatch, expected job but got number')
+    if has('channel')
+      def JobArg(_: job)
+      enddef
+      assert_fails('JobArg(N)', 'E1013: Argument 1: type mismatch, expected job but got number')
 
-    def ChannelArg(_: channel)
-    enddef
-    assert_fails('ChannelArg(N)', 'E1013: Argument 1: type mismatch, expected channel but got number')
+      def ChannelArg(_: channel)
+      enddef
+      assert_fails('ChannelArg(N)', 'E1013: Argument 1: type mismatch, expected channel but got number')
+    endif
 
     def ObjectArg(_: A)
     enddef
@@ -3230,10 +3243,12 @@ def Test_func_argtype_check()
   v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got blob', 2)
   lines = pre_lines + ['var Fn: func = function("min")', 'IntArg(Fn)'] + post_lines
   v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got func(...): unknown', 2)
-  lines = pre_lines + ['var j: job = test_null_job()', 'IntArg(j)'] + post_lines
-  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got job', 2)
-  lines = pre_lines + ['var ch: channel = test_null_channel()', 'IntArg(ch)'] + post_lines
-  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got channel', 2)
+  if has('channel')
+    lines = pre_lines + ['var j: job = test_null_job()', 'IntArg(j)'] + post_lines
+    v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got job', 2)
+    lines = pre_lines + ['var ch: channel = test_null_channel()', 'IntArg(ch)'] + post_lines
+    v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got channel', 2)
+  endif
   lines = pre_lines + ['IntArg(A)'] + post_lines
   v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got class<A>', 1)
   lines = pre_lines + ['var o: A = A.new()', 'IntArg(o)'] + post_lines
