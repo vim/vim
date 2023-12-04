@@ -278,6 +278,10 @@
      static inline int isnan(double x)
 	{ return x != x; }
 #   endif
+#   if defined(VMS) && defined(X86_64)
+     static inline int isinf(double x)
+        { return !isnan(x) && !finite(x); }
+#   endif
 #   ifndef HAVE_ISINF
      static inline int isinf(double x)
 	{ return !isnan(x) && isnan(x - x); }

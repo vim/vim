@@ -1,6 +1,13 @@
 /*
  * os_vms_conf.h.  Replaces auto/config.h for VMS
+ *
  */
+
+#if defined(__VMS) || defined(__vms)
+#if !defined(VMS)
+#define VMS
+#endif
+#endif
 
 #define CASE_INSENSITIVE_FILENAME   // Open VMS is case insensitive
 #define SPACE_IN_FILENAME	    // There could be space between user and passwd
@@ -24,9 +31,6 @@
 
 // Define when __DATE__ " " __TIME__ can be used
 #define HAVE_DATE_TIME
-
-// Defined to the size of an int
-#define VIM_SIZEOF_INT  4
 
 // #undef USEBCOPY
 #define USEMEMMOVE
@@ -138,8 +142,11 @@
 #undef  HAVE_LSTAT
 #undef  HAVE_STDINT_H
 
+// Default features
+#define FEAT_IPV6
+
 // Hardware specific
-#ifdef  VAX
+#if defined(__VAX) || defined(VAX)
 #undef  HAVE_GETTIMEOFDAY
 #undef  HAVE_USLEEP
 #undef  HAVE_STRCASECMP
@@ -148,27 +155,39 @@
 #undef  HAVE_ISNAN
 #undef  HAVE_XOS_R_H
 #define HAVE_NO_LONG_LONG
+#define VIM_SIZEOF_INT  4
 #define VIM_SIZEOF_LONG 4
 #define LONG_LONG_MIN  (-2147483647-1)
 #define LONG_LONG_MAX  (2147483647)
 #define ULONG_LONG_MAX (4294967295U)
-#else // AXP and IA64
+
+#else // ALPHA, IA64, X86_64
 #define HAVE_GETTIMEOFDAY
 #define HAVE_USLEEP
 #define HAVE_STRCASECMP
 #define HAVE_STRINGS_H
 #define HAVE_SIGSETJMP
 #define HAVE_ISNAN
-#define HAVE_XOS_R_H
-#define HAVE_NO_LONG_LONG
+#undef  HAVE_XOS_R_H
+#undef  HAVE_NO_LONG_LONG
+#define VIM_SIZEOF_INT  4
 #define VIM_SIZEOF_LONG 8
 #define LONG_LONG_MIN  (-9223372036854775807-1)
 #define LONG_LONG_MAX  (9223372036854775807)
 #define ULONG_LONG_MAX (18446744073709551615U)
+
+#if defined(__x86_64) || defined(__x86_64__)
+#if !defined(X86_64)
+#define X86_64
+#endif
+#define HAVE_ISNAN
+#define HAVE_ISINF
+#define HAVE_XOS_R_H
+#endif
 #endif
 
 // Compiler specific
-#ifdef  VAXC
+#if defined(VAXC) || defined(__VAXC)
 #undef  HAVE_SELECT
 #undef  HAVE_FCNTL_H
 #undef  HAVE_UNISTD_H
@@ -202,7 +221,7 @@
 #define XUSE_MTSAFE_API
 #define HAVE_X11
 #define WANT_X11
-#ifdef HAVE_XPM
+#ifdef  HAVE_XPM
 #define HAVE_X11_XPM_H
 #endif
 #define USE_FONTSET

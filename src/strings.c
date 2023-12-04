@@ -2789,7 +2789,11 @@ skip_to_arg(
     {
 	// Reset ap to ap_start and skip arg_idx - 1 types
 	va_end(*ap);
-	va_copy(*ap, ap_start);
+#ifdef  va_copy
+	va_copy (*ap, ap_start);
+#else
+	*ap = ap_start;
+#endif
     }
     else
     {
@@ -2888,7 +2892,11 @@ vim_vsnprintf_typval(
     if (parse_fmt_types(&ap_types, &num_posarg, fmt, tvs) == FAIL)
 	return 0;
 
-    va_copy(ap, ap_start);
+#ifdef va_copy
+    va_copy (ap, ap_start);
+#else
+    ap = ap_start;
+#endif
 
     if (p == NULL)
 	p = "";
