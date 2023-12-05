@@ -2789,11 +2789,7 @@ skip_to_arg(
     {
 	// Reset ap to ap_start and skip arg_idx - 1 types
 	va_end(*ap);
-#ifdef  va_copy
 	va_copy (*ap, ap_start);
-#else
-	*ap = ap_start;
-#endif
     }
     else
     {

@@ -502,6 +502,10 @@ typedef long long vimlong_T;
 # include <wctype.h>
 #endif
 #include <stdarg.h>
+// older compilers do not define va_copy
+#ifndef va_copy
+# define va_copy(dst, src)	((dst) = (src))
+#endif
 
 // for offsetof()
 #include <stddef.h>
