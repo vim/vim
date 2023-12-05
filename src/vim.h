@@ -439,7 +439,8 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
  * The vimlong_T has sizeof(vimlong_T) >= 2 * sizeof(int).
  * One use is simple handling of overflow in int calculations.
  */
-#ifdef HAVE_NO_LONG_LONG
+#if defined(VMS) && defined(VAX)
+// unsupported compiler
 typedef long      vimlong_T;
 #else
 typedef long long vimlong_T;
