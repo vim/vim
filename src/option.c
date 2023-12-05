@@ -1932,7 +1932,7 @@ do_set_option_string(
 	int	    cp_val,
 	char_u	    *varp_arg,
 	char	    *errbuf,
-	int	    errbuflen,
+	size_t	    errbuflen,
 	int	    *value_checked,
 	char	    **errmsg)
 {

@@ -4969,7 +4969,7 @@ typedef struct
     // message (when it is not NULL).
     char	*os_errbuf;
     // length of the error buffer
-    int		os_errbuflen;
+    size_t	os_errbuflen;
 } optset_T;
 
 /*

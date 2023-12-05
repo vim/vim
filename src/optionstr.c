@@ -229,7 +229,7 @@ trigger_optionset_string(
 #endif
 
     static char *
-illegal_char(char *errbuf, int errbuflen, int c)
+illegal_char(char *errbuf, size_t errbuflen, int c)
 {
     if (errbuf == NULL)
 	return "";
@@ -527,7 +527,7 @@ set_string_option(
     char_u	*value,
     int		opt_flags,	// OPT_LOCAL and/or OPT_GLOBAL
     char	*errbuf,
-    int		errbuflen)
+    size_t	errbuflen)
 {
     char_u	*s;
     char_u	**varp;
@@ -726,7 +726,7 @@ did_set_option_listflag(
 	char_u *val,
 	char_u *flags,
 	char *errbuf,
-	int errbuflen)
+	size_t errbuflen)
 {
     char_u	*s;
 
@@ -4354,7 +4354,7 @@ did_set_string_option(
     char_u	*oldval,		// previous value of the option
     char_u	*value,			// new value of the option
     char	*errbuf,		// buffer for errors, or NULL
-    int		errbuflen,		// length of error buffer
+    size_t	errbuflen,		// length of error buffer
     int		opt_flags,		// OPT_LOCAL and/or OPT_GLOBAL
     set_op_T    op,			// OP_ADDING/OP_PREPENDING/OP_REMOVING
     int		*value_checked)		// value was checked to be safe, no
