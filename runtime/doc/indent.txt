@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 9.0.  Last change: 2022 Oct 10
+*indent.txt*    For Vim version 9.0.  Last change: 2023 Dec 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -727,14 +727,13 @@ All do loops are left unindented by default.  Do loops can be unstructured in
 Fortran with (possibly multiple) loops ending on a labeled executable
 statement of almost arbitrary type.  Correct indentation requires
 compiler-quality parsing.  Old code with do loops ending on labeled statements
-of arbitrary type can be indented with elaborate programs such as Tidy. Structured 
-do/continue loops are
-also left unindented because continue statements are used for purposes
-other than ending a do loop.  Programs such as Tidy can convert structured
-do/continue loops to the do/enddo form.  Do loops of the do/enddo variety can
-be indented.  If you use only structured loops of the do/enddo form, you should
-declare this by setting the fortran_do_enddo variable in your .vimrc as
-follows >
+of arbitrary type can be indented with elaborate programs such as Tidy.
+Structured do/continue loops are also left unindented because continue
+statements are used for purposes other than ending a do loop.  Programs such
+as Tidy can convert structured do/continue loops to the do/enddo form.  Do
+loops of the do/enddo variety can be indented.  If you use only structured
+loops of the do/enddo form, you should declare this by setting the
+fortran_do_enddo variable in your .vimrc as follows >
 
    let fortran_do_enddo=1
 
@@ -749,8 +748,8 @@ other extensions such as .for.
 
 Program units ~
 Indenting of program units (subroutines, functions, modules, and program
-blocks) can be increased by setting the variable fortran_indent_more and 
-can be decreased by setting the variable fortran_indent_less.  These variables 
+blocks) can be increased by setting the variable fortran_indent_more and can
+be decreased by setting the variable fortran_indent_less.  These variables
 can be set for all fortran files in your .vimrc as follows >
 
   let fortran_indent_less=1
