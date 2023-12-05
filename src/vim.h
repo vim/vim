@@ -445,6 +445,7 @@ typedef long      vimlong_T;
 #else
 typedef long long vimlong_T;
 #endif
+
 #ifndef UNIX		    // For Unix this is included in os_unix.h
 # include <stdio.h>
 # include <ctype.h>
