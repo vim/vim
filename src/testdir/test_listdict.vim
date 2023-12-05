@@ -516,7 +516,7 @@ func Test_dict_func_remove()
       var d = {1: 'a', 3: 'c'}
       call remove(d, [])
   END
-  call v9.CheckDefExecFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got list<unknown>')
+  call v9.CheckDefExecFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got list<any>')
 endfunc
 
 " Nasty: remove func from Dict that's being called (works)

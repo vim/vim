@@ -552,7 +552,7 @@ def Test_disassemble_store_index()
         '\d PUSHS "dd"\_s*' ..
         '\d NEWDICT size 0\_s*' ..
         '\d NEWDICT size 1\_s*' ..
-        '\d SETTYPE dict<dict<unknown>>\_s*' ..
+        '\d SETTYPE dict<dict<any>>\_s*' ..
         '\d STORE $0\_s*' ..
         'd.dd\[0\] = 0\_s*' ..
         '\d PUSHNR 0\_s*' ..

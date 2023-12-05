@@ -8561,7 +8561,7 @@ def Test_dict_member_key_type_check()
     var a = A.new()
     a.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected string but got dict<unknown>', 2)
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected string but got dict<any>', 2)
 
   lines =<< trim END
     vim9script
@@ -8582,7 +8582,7 @@ def Test_dict_member_key_type_check()
     var a = A.new()
     a.Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got dict<any>', 3)
 enddef
 
 def Test_compile_many_def_functions_in_funcref_instr()
