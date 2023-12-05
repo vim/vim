@@ -2983,7 +2983,7 @@ term_delete_lines(int line_count)
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
 
-#if defined(UNIX) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 term_enable_mouse(int enable)
 {

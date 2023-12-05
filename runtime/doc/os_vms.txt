@@ -44,14 +44,16 @@ You can download precompiled executables from:
 
 To use the precompiled binary version, you need one of these archives:
 
-  vim-XX-exe-ia64-gui.zip       IA64 GUI/Motif executables
-  vim-XX-exe-ia64-gtk.zip       IA64 GUI/GTK executables
-  vim-XX-exe-ia64-term.zip      IA64 console executables
+  vim-XX-exe-x86-gui.zip	X86_64 GUI/Motif executables
+  vim-XX-exe-x86-term.zip	X86_64 console executables
+  vim-XX-exe-ia64-gui.zip	IA64 GUI/Motif executables
+  vim-XX-exe-ia64-gtk.zip	IA64 GUI/GTK executables
+  vim-XX-exe-ia64-term.zip	IA64 console executables
   vim-XX-exe-axp-gui.zip	Alpha GUI/Motif executables
   vim-XX-exe-axp-gtk.zip	Alpha GUI/GTK executables
-  vim-XX-exe-axp-term.zip       Alpha console executables
+  vim-XX-exe-axp-term.zip	Alpha console executables
   vim-XX-exe-vax-gui.zip	VAX GUI executables
-  vim-XX-exe-vax-term.zip       VAX console executables
+  vim-XX-exe-vax-term.zip	VAX console executables
 
 and of course (optional)
   vim-XX-runtime.zip		runtime files
@@ -59,7 +61,7 @@ and of course (optional)
 The binary archives contain: vim.exe, ctags.exe, xxd.exe files.
 
 For GTK executables you will need GTKLIB that is available for
-Alpha and IA64 platform.
+Alpha and IA64 platforms.
 
 ==============================================================================
 
@@ -71,9 +73,9 @@ See the file [.SRC]INSTALLVMS.TXT.
 
 4. Problems						*vms-problems*
 
-The code has been tested under Open VMS 6.2 - 8.2 on Alpha, VAX and IA64
-platforms with the DEC C compiler. It should work without major problems.
-If your system does not have some include libraries you can tune up in
+The code has been tested under Open VMS 6.2 - 9.2 on Alpha, VAX, IA64 and
+X86_64 platforms with the DEC C compiler. It should work without major problems.
+If your system does not have some include libraries you can tune in the
 OS_VMS_CONF.H file.
 
 If you decided to build Vim with +perl, +python, etc. options, first you need
@@ -88,8 +90,7 @@ VAX C compiler is not fully ANSI C compatible in pre-processor directives
 semantics, therefore you have to use a converter program that will do the lion
 part of the job.  For detailed instructions read file INSTALLvms.txt
 
-MMS_VIM.EXE is built together with VIM.EXE, but for XXD.EXE you should
-change to a subdirectory and build it separately.
+To build XXD.EXE, you should change to the subdirectory and build it separately.
 
 CTAGS is not part of the Vim source distribution anymore, however the OpenVMS
 specific source might contain CTAGS source files as described above.
@@ -206,6 +207,7 @@ Example LOGIN.COM: >
 	$ define/nolog VIM DKA0:[UTIL.VIM81]
 	$ vi*m :== mcr VIM:VIM.EXE
 	$ gv*im:== spawn/nowait/input=NLA0 mcr VIM:VIM.EXE -g -GEOMETRY 80x40
+	$ set term/inq/ins ! inquire the terminal capabilities
 	$ set disp/create/node=192.168.10.202/trans=tcpip
 
 Note: This set-up should be enough, if you are working on a standalone server or
@@ -443,7 +445,12 @@ Terminal entry not found in termcap
     builtin_dumb
 defaulting to 'vt320'
 ---
-The solution is to define the default terminal name: >
+
+Try to force to inquire the terminal capabilities with: >
+
+	$ set term/inquire
+
+If the inquire did not help, the solutions is to define the default terminal name: >
 
 	$ ! unknown terminal name.  Let us use vt320 or ansi instead.
 	$ ! Note: it's case sensitive
@@ -758,7 +765,18 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 9. VMS related changes					*vms-changes*
 
-Version 8.2
+Version 9.0 (2023 Nov 27)
+- Vim is ported to the X86_64 architecture
+	- IMPORTANT: because of the getline function name used in stucts like in ex_cmds.h
+	on X86_64 the CRTL_VER is kept under 80500000 level. The proper solution would be
+	to rename the getline function to something else in the struct (and in all places
+	it is used) - and avoiding to use POSIX functions in structs, but this change would
+	impact on all other operating systems. (added the the VMS TODO list)
+	Read more about at https://forum.vmssoftware.com/viewtopic.php?f=38&t=8914&p=20049
+- os_vms_conf.h includes have been reviewed for all architectures
+- added support for the MODIFIED_BY define
+
+Version 8.2 (2020 Feb 6)
 - make all changes needed for clean compile build of v8.2 on VMS on all platforms
 - fix the call mkdir bug (vicente_polo@yahoo.es)
 - test on VSI OpenVMS Alpha and Itanium platforms
@@ -767,17 +785,18 @@ Version 8.2
 - XPM v3.4.11 libraries for IA64, AXP and VAX are added
 - start integrating the new test scripts
 
-Version 8.1
+Version 8.1 (2019 Jan 9)
 - make necessary changes to build v8.1 on VMS
+- GTK1.2.10 on VAX
 
-Version 8.0
+Version 8.0 (2016 Nov 21)
 - solve the 100% cpu usage issue while waiting for a keystroke
 - correct the VMS warnings and errors around handling the INFINITY (used in json.c)
 - minor VMS port related changes
 - correct the make_vms.mms file for 8.0
 - fix [.TESTDIR]make_vms.mms for 8.0
 
-Version 7.4
+Version 7.4 (2013 Aug 10)
 - Undo: VMS can not handle more than one dot in the filenames use "dir/name" -> "dir/_un_name"
   add _un_ at the beginning to keep the extension
 - correct swap file name wildcard handling
@@ -793,7 +812,7 @@ Version 7.4
 - minor compiler warnings fixed
 - CTAGS 5.8 +regex included
 
-Version 7.3
+Version 7.3 (2010 Aug 15)
 - CTAGS 5.8 included
 - VMS compile warnings fixed - floating-point overflow warning corrected on VAX
 - filepath completion corrected - too many chars were escaped in filename
@@ -956,7 +975,7 @@ Version 4.5 (1996 Dec 16)
 10. Authors						*vms-authors*
 
 OpenVMS documentation and executables are maintained by:
-Zoltan Arpadffy <arpadffy@polarhome.com>
+Zoltan Arpadffy <zoltan.arpadffy@gmail.com>
 OpenVMS Vim page: http://www.polarhome.com/vim/
 
 This document uses parts and remarks from earlier authors and contributors

@@ -439,7 +439,12 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
  * The vimlong_T has sizeof(vimlong_T) >= 2 * sizeof(int).
  * One use is simple handling of overflow in int calculations.
  */
+#if defined(VMS) && defined(VAX)
+// unsupported compiler
+typedef long      vimlong_T;
+#else
 typedef long long vimlong_T;
+#endif
 
 #ifndef UNIX		    // For Unix this is included in os_unix.h
 # include <stdio.h>
@@ -499,6 +504,10 @@ typedef long long vimlong_T;
 # include <wctype.h>
 #endif
 #include <stdarg.h>
+// older compilers do not define va_copy
+#ifndef va_copy
+# define va_copy(dst, src)	((dst) = (src))
+#endif
 
 // for offsetof()
 #include <stddef.h>

@@ -1308,7 +1308,7 @@ crypt_sodium_init(void)
     return sodium_init();
 }
 
-    uint32_t
+    UINT32_T
 crypt_sodium_randombytes_random(void)
 {
     return randombytes_random();
