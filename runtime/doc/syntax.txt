@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2023 Apr 24
+*syntax.txt*	For Vim version 9.0.  Last change: 2023 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
