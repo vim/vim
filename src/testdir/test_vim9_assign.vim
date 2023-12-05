@@ -620,7 +620,7 @@ def Test_assign_index()
       l3[0] = []
       l3[0][0] = []
   END
-  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 3)
+  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got list<any>', 3)
 
   # dict of dict
   var d1: dict<number>
@@ -663,7 +663,7 @@ def Test_assign_index()
       d3.one = {}
       d3.one.two = {}
   END
-  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
+  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got dict<any>', 3)
 
   lines =<< trim END
     var lines: list<string>
@@ -687,7 +687,7 @@ def Test_assign_index()
       var ld: list<dict<number>>
       ld[0] = []
   END
-  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
+  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected dict<number> but got list<any>', 2)
 
   # dict of list
   var dl: dict<list<number>>
@@ -699,7 +699,7 @@ def Test_assign_index()
       var dl: dict<list<number>>
       dl.one = {}
   END
-  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<unknown>', 2)
+  v9.CheckDefFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<any>', 2)
 
   lines =<< trim END
       g:l = [1, 2]

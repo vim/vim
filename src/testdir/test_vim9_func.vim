@@ -1313,7 +1313,7 @@ def Test_call_wrong_args()
     enddef
     Func([])
   END
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<any>', 5)
 
   # argument name declared earlier is found when declaring a function
   lines =<< trim END
