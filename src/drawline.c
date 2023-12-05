@@ -498,10 +498,11 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
     {
 	wlv->draw_state = WL_BRI;
 	// if wlv->need_showbreak is set, breakindent also applies
-	if (wp->w_p_bri && (wlv->row != wlv->startrow || wlv->need_showbreak)
+	if (wp->w_p_bri && (wlv->row > wlv->startrow
 # ifdef FEAT_DIFF
-		&& wlv->filler_lines == 0
+		    + wlv->filler_lines
 # endif
+		    || wlv->need_showbreak)
 # ifdef FEAT_PROP_POPUP
 		&& !wlv->dont_use_showbreak
 # endif
