@@ -4,6 +4,7 @@
 " Last Change:	May 09, 2023
 " 	2023 Nov 12 by Vim Project (:let-heredoc improvements)
 " 	2023 Nov 20 by Vim Project (:loadkeymap improvements)
+" 	2023 Dec 06 by Vim Project (add missing :let{op}= assignment operators)
 " Version:	9.0-25
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
@@ -233,7 +234,7 @@ syn keyword vimAugroupKey contained	aug[roup]
 " Operators: {{{2
 " =========
 syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimType,vimRegister,vimContinue,vim9Comment,vimVar
-syn match	vimOper	"||\|&&\|[-+.!]"				skipwhite nextgroup=vimString,vimSpecFile
+syn match	vimOper	"||\|&&\|[-+*/%.!]"				skipwhite nextgroup=vimString,vimSpecFile
 syn match	vimOper	"\%#=1\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\|!\~#\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimSpecFile
 syn match	vimOper	"\(\<is\|\<isnot\)[?#]\{0,2}\>"			skipwhite nextgroup=vimString,vimSpecFile
 syn region	vimOperParen 	matchgroup=vimParenSep	start="(" end=")" contains=vimoperStar,@vimOperGroup
