@@ -124,12 +124,6 @@ Further Vim9 improvements:
 - Classes and Interfaces. See |vim9-classes|
   - "final" object members - can only be set in the constructor.
   - Cannot use class type of itself in the method (Issue #12369)
-  - Cannot use an object method in a lambda  #12417
-	Define all methods before compiling them?
-  - Cannot call class member of funcref type  (Issue #12324)
-	Also #12081 first case.
-  - Using list of functions does not work #12081 (repro in later message).
-  - First argument of call() cannot be "obj.Func". (#11865)
   - Getting member of variable with "any" type should be handled at runtime.
     Remove temporary solution from #12096 / patch 9.0.1375.
   - "obj.Method()" does not always work in a compiled function, assumes "obj"
@@ -137,14 +131,11 @@ Further Vim9 improvements:
     Issue #11822: any.Func() can be a dict or an object call, need to handle
     this at runtime.  Also see #12198 for an example.
     Possibly issue #11981 can be fixed at the same time (has two examples).
-  - Support export/import of classes and interfaces.
   - Make ":defcompile ClassName" compile all functions and methods in the
     class.
   - Forward declaration of a class?  E.g. for Clone() function.
 	Email lifepillar 2023 Mar 26
   - object empty(), len() - can class define a method to be used for them?
-  - add to help: when using a default new() method then reordering object
-    members may cause trouble.  Can define new() without arguments to avoid.
   - When "Meta" is a class, is "const MetaAlias = Meta" allowed?  It should
     either work or given an error. Possibly give an error now and implement it
     later (using a typedef).  #12006
@@ -157,7 +148,6 @@ Further Vim9 improvements:
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
-- implement :type
 - implement :enum
 - Promise class, could be used to wait on a popup close callback?
 - class local to a function
@@ -166,6 +156,8 @@ Further Vim9 improvements:
 - When evaluating constants for script variables, some functions could work:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
+- The use of the literal value "null" and the type specific "null_xxx"
+  values is confusing (#13458, #11770).
 
 Information missing in terminfo:
 - Codes used for focus gained and lost termcodes are hard-coded in

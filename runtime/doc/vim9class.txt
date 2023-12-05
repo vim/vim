@@ -700,7 +700,13 @@ the name, you can define the constructor like this: >
 
 	def new(this.name, this.age = v:none, this.gender = v:none)
 	enddef
-<							*E1328*
+<
+When using the default new() method, if the order of the object variables in
+the class is changed later, then all the callers of the default new() method
+needs to change.  To avoid this, the new() method can be explicitly defined
+without any arguments.
+
+							*E1328*
 Note that you cannot use another default value than "v:none" here.  If you
 want to initialize the object variables, do it where they are declared.  This
 way you only need to look in one place for the default values.
