@@ -3930,7 +3930,7 @@ did_set_paste(optset_T *args UNUSED)
  * Process the updated 'previewwindow' option value.
  */
     char *
-did_set_previewwindow(optset_T *args)
+did_set_previewwindow(optset_T *args UNUSED)
 {
     if (!curwin->w_p_pvw)
 	return NULL;
