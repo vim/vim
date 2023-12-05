@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 9.0.  Last change: 2023 Dec 05
+*indent.txt*    For Vim version 9.0.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -718,7 +718,7 @@ subroutines, functions, modules, and program blocks is optional.  Comments,
 labeled statements, and continuation lines are indented if the Fortran is in
 free source form, whereas they are not indented if the Fortran is in fixed
 source form because of the left margin requirements.  Hence manual indent
-corrections will be necessary for labelled statements and continuation lines
+corrections will be necessary for labeled statements and continuation lines
 when fixed source form is being used.  For further discussion of the method
 used for the detection of source format see |ft-fortran-syntax|.
 

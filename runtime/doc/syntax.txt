@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2023 Dec 05
+*syntax.txt*	For Vim version 9.0.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1643,7 +1643,7 @@ script allows a maximum line length of 80 characters as do all compilers
 created in the last three decades.  An even longer line length of 132
 characters is allowed if you set the variable fortran_extended_line_length
 with a command such as >
-    :let fortran_line_length=1
+    :let fortran_extended_line_length=1
 placed prior to the :syntax on command.
 
 If you want additional highlighting of the CUDA Fortran extensions, you should
