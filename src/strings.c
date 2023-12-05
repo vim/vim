@@ -2888,7 +2888,7 @@ vim_vsnprintf_typval(
     if (parse_fmt_types(&ap_types, &num_posarg, fmt, tvs) == FAIL)
 	return 0;
 
-    va_copy (ap, ap_start);
+    va_copy(ap, ap_start);
 
     if (p == NULL)
 	p = "";
