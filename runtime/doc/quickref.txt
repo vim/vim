@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.0.  Last change: 2022 Dec 16
+*quickref.txt*  For Vim version 9.0.  Last change: 2023 Dec 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -604,12 +604,12 @@ Short explanation of each option:		*option-list*
 'altkeymap'	  'akm'	    obsolete option for Farsi
 'ambiwidth'	  'ambw'    what to do with Unicode chars of ambiguous width
 'antialias'	  'anti'    Mac OS X: use smooth, antialiased fonts
-'autochdir'	  'acd'     change directory to the file in the current window
-'autoshelldir'	  'asd'     change directory to the shell's current directory
 'arabic'	  'arab'    for Arabic as a default second language
 'arabicshape'	  'arshape' do shaping for Arabic characters
+'autochdir'	  'acd'     change directory to the file in the current window
 'autoindent'	  'ai'	    take indent for new line from previous line
 'autoread'	  'ar'	    autom. read file when changed outside of Vim
+'autoshelldir'	  'asd'     change directory to the shell's current directory
 'autowrite'	  'aw'	    automatically write file if changed
 'autowriteall'	  'awa'     as 'autowrite', but works with more commands
 'background'	  'bg'	    "dark" or "light", used for highlight colors
@@ -642,8 +642,8 @@ Short explanation of each option:		*option-list*
 'cindent'	  'cin'     do C program indenting
 'cinkeys'	  'cink'    keys that trigger indent when 'cindent' is set
 'cinoptions'	  'cino'    how to do indenting when 'cindent' is set
-'cinwords'	  'cinw'    words where 'si' and 'cin' add an indent
 'cinscopedecls'	  'cinsd'   words that are recognized by 'cino-g'
+'cinwords'	  'cinw'    words where 'si' and 'cin' add an indent
 'clipboard'	  'cb'	    use the clipboard as the unnamed register
 'cmdheight'	  'ch'	    number of lines to use for the command-line
 'cmdwinheight'	  'cwh'     height of the command-line window
@@ -1005,9 +1005,9 @@ Short explanation of each option:		*option-list*
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'wincolor'	  'wcr'	    window-local highlighting
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
-'winheight'	  'wh'	    minimum number of lines for the current window
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
 'winfixwidth'	  'wfw'     keep window width when opening/closing windows
+'winheight'	  'wh'	    minimum number of lines for the current window
 'winminheight'	  'wmh'     minimum number of lines for any window
 'winminwidth'	  'wmw'     minimal number of columns for any window
 'winptydll'		    name of the winpty dynamic library
