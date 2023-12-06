@@ -3557,10 +3557,16 @@ EXTERN char e_using_typealias_as_float[]
 	INIT(= N_("E1401: Using type alias \"%s\" as a Float"));
 EXTERN char e_using_typealias_as_string[]
 	INIT(= N_("E1402: Using type alias \"%s\" as a String"));
-EXTERN char e_using_typealias_as_value[]
+EXTERN char e_using_typealias_as_value_str[]
 	INIT(= N_("E1403: Type alias \"%s\" cannot be used as a value"));
 EXTERN char e_abstract_cannot_be_used_in_interface[]
 	INIT(= N_("E1404: Abstract cannot be used in an interface"));
+EXTERN char e_using_class_as_value_str[]
+	INIT(= N_("E1403: Class \"%s\" cannot be used as a value"));
+EXTERN char e_using_class_as_var_val[]
+	INIT(= N_("E1405: Cannot use a Class as a variable or value"));
+EXTERN char e_using_typealias_as_var_val[]
+	INIT(= N_("E1406: Cannot use a Typealias as a variable or value"));
 #endif
 // E1405 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
