@@ -939,7 +939,7 @@ to avoid running out of stack and crashing. *E1169*
 expr1				*expr1* *ternary* *falsy-operator* *??* *E109*
 -----
 
-The ternary operator: expr2 ? expr1 : expr1
+The ternary operator: expr2 ? expr2 : expr1
 The falsy operator:   expr2 ?? expr1
 
 Ternary operator ~
