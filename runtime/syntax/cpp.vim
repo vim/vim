@@ -125,5 +125,6 @@ hi def link cppFloat		Number
 hi def link cppModule		Include
 
 let b:current_syntax = "cpp"
+unlet b:filetype_in_cpp_family
 
 " vim: ts=8

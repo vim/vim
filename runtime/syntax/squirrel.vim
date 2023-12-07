@@ -46,5 +46,6 @@ hi def link squirrelRepeat		cRepeat
 hi def link squirrelShComment		Comment
 
 let b:current_syntax = "squirrel"
+unlet b:filetype_in_cpp_family
 
 " vim: ts=8
