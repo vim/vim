@@ -3323,4 +3323,30 @@ def Test_func_rettype_check()
   v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected object<A> but got number', 1)
 enddef
 
+" Test for assigning different types of value to a variable of type "any"
+def Test_assign_to_any()
+  for [typestr, val] in [
+                          ["'bool'", 'true'],
+                          ["'number'", '100'],
+                          ["'float'", '1.1'],
+                          ["'string'", '"abc"'],
+                          ["'blob'", '0z10'],
+                          ["'list<number>'", '[1, 2, 3]'],
+                          ["'dict<number>'", '{a: 1}'],
+                        ]
+    var lines =<< trim eval END
+      vim9script
+      var x: any = {val}
+      assert_equal({typestr}, typename(x))
+      x = [{{a: 1}}, {{b: 2}}]
+      assert_equal('list<dict<number>>', typename(x))
+      def Foo(xarg: any, s: string)
+        assert_equal(s, typename(xarg))
+      enddef
+      Foo({val}, {typestr})
+    END
+    v9.CheckSourceSuccess(lines)
+  endfor
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

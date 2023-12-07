@@ -201,6 +201,10 @@ set_tv_type_recurse(type_T *type)
     void
 set_tv_type(typval_T *tv, type_T *type)
 {
+    if (type->tt_type == VAR_ANY)
+	// If the variable type is "any", then keep the value type.
+	// e.g.  var x: any = [1, 2] or var y: any = {v: 1}
+	return;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
 	dict_T *d = tv->vval.v_dict;
