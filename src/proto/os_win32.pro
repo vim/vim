@@ -1,14 +1,17 @@
 /* os_win32.c */
+void mch_get_exe_name(void);
 HINSTANCE vimLoadLib(const char *name);
 int mch_is_gui_executable(void);
 HINSTANCE find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname);
 void *get_dll_import_func(HINSTANCE hInst, const char *funcname);
 void *hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook);
+HINSTANCE get_forwarded_dll(HINSTANCE hInst);
 int dyn_libintl_init(void);
 void dyn_libintl_end(void);
 void PlatformId(void);
 void mch_setmouse(int on);
 void mch_bevalterm_changed(void);
+int test_mswin_event(char_u *event, dict_T *args);
 void mch_update_cursor(void);
 int mch_char_avail(void);
 int mch_check_messages(void);
@@ -72,7 +75,6 @@ void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
 int vtp_printf(char *format, ...);
-int use_wt(void);
 void get_default_console_color(int *cterm_fg, int *cterm_bg, guicolor_T *gui_fg, guicolor_T *gui_bg);
 void control_console_color_rgb(void);
 int use_vtp(void);

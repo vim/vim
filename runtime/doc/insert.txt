@@ -127,7 +127,11 @@ CTRL-R {register}				*i_CTRL-R*
 			'/'	the last search pattern
 			':'	the last command-line
 			'.'	the last inserted text
+							*i_CTRL-R_-*
 			'-'	the last small (less than a line) delete
+				register. This is repeatable using |.| since
+				it remembers the register to put instead of
+				the literal text to insert.
 							*i_CTRL-R_=*
 			'='	the expression register: you are prompted to
 				enter an expression (see |expression|)
@@ -877,7 +881,7 @@ Groß): >
 
     func Thesaur(findstart, base)
       if a:findstart
-    	return searchpos('\<', 'bnW', line('.'))[1] - 1
+	return searchpos('\<', 'bnW', line('.'))[1] - 1
       endif
       let res = []
       let h = ''
@@ -892,7 +896,7 @@ Groß): >
       endfor
       return res
     endfunc
-    
+
     if exists('+thesaurusfunc')
       set thesaurusfunc=Thesaur
     endif
@@ -1118,8 +1122,8 @@ cursor column will be replaced with the matches.  If the returned value is
 larger than the cursor column, the cursor column is used.
 
 Negative return values:
-   -2 	To cancel silently and stay in completion mode.
-   -3 	To cancel silently and leave completion mode.
+   -2	To cancel silently and stay in completion mode.
+   -3	To cancel silently and leave completion mode.
    Another negative value: completion starts at the cursor column
 
 On the second invocation the arguments are:
@@ -1176,7 +1180,7 @@ items:
 			item with the same word is already present.
 	empty		when non-zero this match will be added even when it is
 			an empty string
-	user_data 	custom data which is associated with the item and
+	user_data	custom data which is associated with the item and
 			available in |v:completed_item|; it can be any type;
 			defaults to an empty string
 

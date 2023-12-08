@@ -249,9 +249,10 @@ func Test_normal_formatexpr_returns_nonzero()
   setlocal formatexpr=Format()
   normal VGgq
   call assert_equal(['one two'], getline(1, '$'))
+
   setlocal formatexpr=
   delfunc Format
-  close!
+  bwipe!
 endfunc
 
 " Test for using a script-local function for 'formatexpr'
@@ -261,6 +262,7 @@ func Test_formatexpr_scriptlocal_func()
   endfunc
   set formatexpr=s:Format()
   call assert_equal(expand('<SID>') .. 'Format()', &formatexpr)
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
   new | only
   call setline(1, range(1, 40))
   let g:FormatArgs = []
@@ -269,6 +271,7 @@ func Test_formatexpr_scriptlocal_func()
   bw!
   set formatexpr=<SID>Format()
   call assert_equal(expand('<SID>') .. 'Format()', &formatexpr)
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
   new | only
   call setline(1, range(1, 40))
   let g:FormatArgs = []
@@ -276,6 +279,7 @@ func Test_formatexpr_scriptlocal_func()
   call assert_equal([4, 2], g:FormatArgs)
   bw!
   let &formatexpr = 's:Format()'
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
   new | only
   call setline(1, range(1, 40))
   let g:FormatArgs = []
@@ -283,12 +287,55 @@ func Test_formatexpr_scriptlocal_func()
   call assert_equal([6, 2], g:FormatArgs)
   bw!
   let &formatexpr = '<SID>Format()'
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
   new | only
   call setline(1, range(1, 40))
   let g:FormatArgs = []
   normal! 8GVjgq
   call assert_equal([8, 2], g:FormatArgs)
+  bw!
   setlocal formatexpr=
+  setglobal formatexpr=s:Format()
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
+  call assert_equal('', &formatexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'Format()', &formatexpr)
+  call setline(1, range(1, 40))
+  let g:FormatArgs = []
+  normal! 10GVjgq
+  call assert_equal([10, 2], g:FormatArgs)
+  bw!
+  setglobal formatexpr=<SID>Format()
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
+  call assert_equal('', &formatexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'Format()', &formatexpr)
+  call setline(1, range(1, 40))
+  let g:FormatArgs = []
+  normal! 12GVjgq
+  call assert_equal([12, 2], g:FormatArgs)
+  bw!
+  let &g:formatexpr = 's:Format()'
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
+  call assert_equal('', &formatexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'Format()', &formatexpr)
+  call setline(1, range(1, 40))
+  let g:FormatArgs = []
+  normal! 14GVjgq
+  call assert_equal([14, 2], g:FormatArgs)
+  bw!
+  let &g:formatexpr = '<SID>Format()'
+  call assert_equal(expand('<SID>') .. 'Format()', &g:formatexpr)
+  call assert_equal('', &formatexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'Format()', &formatexpr)
+  call setline(1, range(1, 40))
+  let g:FormatArgs = []
+  normal! 16GVjgq
+  call assert_equal([16, 2], g:FormatArgs)
+  bw!
+  set formatexpr=
   delfunc s:Format
   bw!
 endfunc
@@ -333,7 +380,7 @@ func Test_normal06_formatprg()
 endfunc
 
 func Test_normal07_internalfmt()
-  " basic test for internal formmatter to textwidth of 12
+  " basic test for internal formatter to textwidth of 12
   let list=range(1,11)
   call map(list, 'v:val."    "')
   10new
@@ -1279,7 +1326,7 @@ func Test_vert_scroll_cmds()
   call assert_equal(15, line('w$'))
 
   set foldenable&
-  close!
+  bwipe!
 endfunc
 
 func Test_scroll_in_ex_mode()
@@ -2162,7 +2209,7 @@ func Test_normal29_brace()
     a character like this:
     .NH
     End of text here
-  
+
   [DATA]
   call assert_equal(expected, getline(1, '$'))
 
@@ -2290,7 +2337,7 @@ func Test_normal_section()
   call assert_equal(2, line('.'))
   call assert_equal(-1, foldclosedend(line('.')))
 
-  close!
+  bwipe!
 endfunc
 
 " Test for changing case using u, U, gu, gU and ~ (tilde) commands
@@ -2387,7 +2434,8 @@ func Test_normal_changecase_turkish()
     " can't use Turkish locale
     throw 'Skipped: Turkish locale not available'
   endtry
-  close!
+
+  bwipe!
 endfunc
 
 " Test for r (replace) command
@@ -2478,6 +2526,11 @@ func Test_normal33_g_cmd2()
   norm! g'a
   call assert_equal('>', a[-1:])
   call assert_equal(1, line('.'))
+  let v:errmsg = ''
+  call assert_nobeep("normal! g`\<Esc>")
+  call assert_equal('', v:errmsg)
+  call assert_nobeep("normal! g'\<Esc>")
+  call assert_equal('', v:errmsg)
 
   " Test for g; and g,
   norm! g;
@@ -2529,7 +2582,7 @@ func Test_normal33_g_cmd2()
   exe "norm! G0\<c-v>4k4ly"
   exe "norm! gvood"
   call assert_equal(['', 'abfgh', 'abfgh', 'abfgh', 'fgh', 'fgh', 'fgh', 'fgh', 'fgh'], getline(1,'$'))
-  " gv cannot be used  in operator pending mode
+  " gv cannot be used in operator pending mode
   call assert_beeps('normal! cgv')
   " gv should beep without a previously selected visual area
   new
@@ -2915,7 +2968,8 @@ func Test_normal_nvend()
   call assert_equal([4, 5], [line('.'), col('.')])
   exe "normal! \<C-End>"
   call assert_equal([10, 6], [line('.'), col('.')])
-  close!
+
+  bwipe!
 endfunc
 
 " Test for cw cW ce
@@ -3102,15 +3156,18 @@ endfunc
 func Test_normal50_commandline()
   CheckFeature timers
   CheckFeature cmdline_hist
+
   func! DoTimerWork(id)
     call assert_equal('[Command Line]', bufname(''))
+
     " should fail, with E11, but does fail with E23?
     "call feedkeys("\<c-^>", 'tm')
 
-    " should also fail with E11
+    " should fail with E11 - "Invalid in command-line window"
     call assert_fails(":wincmd p", 'E11:')
-    " return from commandline window
-    call feedkeys("\<cr>")
+
+    " Return from commandline window.
+    call feedkeys("\<CR>", 't')
   endfunc
 
   let oldlang=v:lang
@@ -3123,7 +3180,9 @@ func Test_normal50_commandline()
   catch /E23/
     " no-op
   endtry
+
   " clean up
+  delfunc DoTimerWork
   set updatetime=4000
   exe "lang" oldlang
   bw!
@@ -3219,9 +3278,9 @@ func Test_delete_until_paragraph()
 endfunc
 
 " Test for the gr (virtual replace) command
-" Test for the bug fixed by 7.4.387
 func Test_gr_command()
   enew!
+  " Test for the bug fixed by 7.4.387
   let save_cpo = &cpo
   call append(0, ['First line', 'Second line', 'Third line'])
   exe "normal i\<C-G>u"
@@ -3234,10 +3293,12 @@ func Test_gr_command()
   normal 4gro
   call assert_equal('ooooecond line', getline(2))
   let &cpo = save_cpo
+
   normal! ggvegrx
   call assert_equal('xxxxx line', getline(1))
   exe "normal! gggr\<C-V>122"
   call assert_equal('zxxxx line', getline(1))
+
   set virtualedit=all
   normal! 15|grl
   call assert_equal('zxxxx line    l', getline(1))
@@ -3245,8 +3306,26 @@ func Test_gr_command()
   set nomodifiable
   call assert_fails('normal! grx', 'E21:')
   call assert_fails('normal! gRx', 'E21:')
+  call assert_nobeep("normal! gr\<Esc>")
   set modifiable&
-  enew!
+
+  call assert_nobeep("normal! gr\<Esc>")
+  call assert_nobeep("normal! cgr\<Esc>")
+  call assert_beeps("normal! cgrx")
+
+  call assert_equal('zxxxx line    l', getline(1))
+  exe "normal! 2|gr\<C-V>\<Esc>"
+  call assert_equal("z\<Esc>xx line    l", getline(1))
+
+  call setline(1, 'abcdef')
+  exe "normal! 0gr\<C-O>lx"
+  call assert_equal("\<C-O>def", getline(1))
+
+  call setline(1, 'abcdef')
+  exe "normal! 0gr\<C-G>lx"
+  call assert_equal("\<C-G>def", getline(1))
+
+  bwipe!
 endfunc
 
 func Test_nv_hat_count()
@@ -3390,7 +3469,7 @@ func Test_java_motion()
   call assert_equal([7, 8, 15], [line('.'), col('.'), virtcol('.')])
   call assert_equal(-1, foldclosedend(7))
 
-  close!
+  bwipe!
 endfunc
 
 " Tests for g cmds
@@ -3505,7 +3584,8 @@ func Test_normal_yank_with_excmd()
   let @a = ''
   call feedkeys("\"ay:if v:true\<CR>normal l\<CR>endif\<CR>", 'xt')
   call assert_equal('f', @a)
-  close!
+
+  bwipe!
 endfunc
 
 " Test for supplying a count to a normal-mode command across a cursorhold call
@@ -3526,7 +3606,8 @@ func Test_normal_cursorhold_with_count()
     au!
   augroup END
   au! normalcHoldTest
-  close!
+
+  bwipe!
   delfunc s:cHold
 endfunc
 
@@ -3550,15 +3631,37 @@ func Test_horiz_motion()
   call assert_equal(11, col('.'))
   exe "normal! $\<C-BS>"
   call assert_equal(10, col('.'))
-  close!
+
+  bwipe!
 endfunc
 
-" Test for using a : command in operator pending mode
+" Test for using a ":" command in operator pending mode
 func Test_normal_colon_op()
   new
   call setline(1, ['one', 'two'])
   call assert_beeps("normal! Gc:d\<CR>")
-  close!
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one…two…three!'])
+  normal! $
+  " Using ":" as a movement is characterwise exclusive
+  call feedkeys("d:normal! F…\<CR>", 'xt')
+  call assert_equal(['one…two!'], getline(1, '$'))
+  " Check that redoing a command with 0x80 bytes works
+  call feedkeys('.', 'xt')
+  call assert_equal(['one!'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three', 'four', 'five'])
+  " Add this to the command history
+  call feedkeys(":normal! G0\<CR>", 'xt')
+  " Use :normal! with control characters in operator pending mode
+  call feedkeys("d:normal! \<C-V>\<C-P>\<C-V>\<C-P>\<CR>", 'xt')
+  call assert_equal(['one', 'two', 'five'], getline(1, '$'))
+  " Check that redoing a command with control characters works
+  call feedkeys('.', 'xt')
+  call assert_equal(['five'], getline(1, '$'))
+
+  bwipe!
 endfunc
 
 " Test for d and D commands
@@ -3583,7 +3686,7 @@ func Test_normal_delete_cmd()
   call assert_fails('normal D', 'E21:')
   call assert_fails('normal d$', 'E21:')
 
-  close!
+  bwipe!
 endfunc
 
 " Test for deleting or changing characters across lines with 'whichwrap'
@@ -3603,7 +3706,8 @@ func Test_normal_op_across_lines()
   call setline(1, ['one two', 'three four'])
   exe "norm! $3x"
   call assert_equal(['one twhree four'], getline(1, '$'))
-  close!
+
+  bwipe!
   set whichwrap&
 endfunc
 
@@ -3641,11 +3745,11 @@ func Test_normal_word_move()
   normal 3Gyb
   call assert_equal("two\n  ", @")
 
-  close!
+  bwipe!
 endfunc
 
 " Test for 'scrolloff' with a long line that doesn't fit in the screen
-func Test_normal_scroloff()
+func Test_normal_scrolloff()
   10new
   60vnew
   call setline(1, ' 1 ' .. repeat('a', 57)
@@ -3686,8 +3790,9 @@ func Test_normal_scroloff()
   call assert_equal(1, winline())
   normal $
   call assert_equal(10, winline())
+
   set scrolloff&
-  close!
+  bwipe!
 endfunc
 
 " Test for vertical scrolling with CTRL-F and CTRL-B with a long line
@@ -3707,7 +3812,8 @@ func Test_normal_vert_scroll_longline()
   exe "normal \<C-B>\<C-B>"
   call assert_equal(5, line('.'))
   call assert_equal(5, winline())
-  close!
+
+  bwipe!
 endfunc
 
 " Test for jumping in a file using %
@@ -3720,7 +3826,8 @@ func Test_normal_percent_jump()
   call feedkeys('50%', 'xt')
   call assert_equal(50, line('.'))
   call assert_equal(-1, foldclosedend(50))
-  close!
+
+  bwipe!
 endfunc
 
 " Test for << and >> commands to shift text by 'shiftwidth'
@@ -3805,6 +3912,256 @@ func Test_normal_count_out_of_range()
   normal 44444444444y44444444444|
   call assert_equal(999999999, v:count)
   bwipe!
+endfunc
+
+" Test that mouse shape is restored to Normal mode after failed "c" operation.
+func Test_mouse_shape_after_failed_change()
+  CheckFeature mouseshape
+  CheckCanRunGui
+
+  let lines =<< trim END
+    vim9script
+    set mouseshape+=o:busy
+    setlocal nomodifiable
+    var mouse_shapes = []
+
+    feedkeys('c')
+    timer_start(50, (_) => {
+      mouse_shapes += [getmouseshape()]
+      timer_start(50, (_) => {
+        feedkeys('c')
+        timer_start(50, (_) => {
+          mouse_shapes += [getmouseshape()]
+          timer_start(50, (_) => {
+            writefile(mouse_shapes, 'Xmouseshapes')
+            quit
+          })
+        })
+      })
+    })
+  END
+  call writefile(lines, 'Xmouseshape.vim', 'D')
+  call RunVim([], [], "-g -S Xmouseshape.vim")
+  sleep 300m
+  call assert_equal(['busy', 'arrow'], readfile('Xmouseshapes'))
+
+  call delete('Xmouseshapes')
+endfunc
+
+" Test that mouse shape is restored to Normal mode after cancelling "gr".
+func Test_mouse_shape_after_cancelling_gr()
+  CheckFeature mouseshape
+  CheckCanRunGui
+
+  let lines =<< trim END
+    vim9script
+    var mouse_shapes = []
+
+    feedkeys('gr')
+    timer_start(50, (_) => {
+      mouse_shapes += [getmouseshape()]
+      timer_start(50, (_) => {
+        feedkeys("\<Esc>")
+        timer_start(50, (_) => {
+          mouse_shapes += [getmouseshape()]
+          timer_start(50, (_) => {
+            writefile(mouse_shapes, 'Xmouseshapes')
+            quit
+          })
+        })
+      })
+    })
+  END
+  call writefile(lines, 'Xmouseshape.vim', 'D')
+  call RunVim([], [], "-g -S Xmouseshape.vim")
+  sleep 300m
+  call assert_equal(['beam', 'arrow'], readfile('Xmouseshapes'))
+
+  call delete('Xmouseshapes')
+endfunc
+
+" Test that "j" does not skip lines when scrolling below botline and
+" 'foldmethod' is not "manual".
+func Test_normal_j_below_botline()
+  CheckScreendump
+
+  let lines =<< trim END
+    set number foldmethod=diff scrolloff=0
+    call setline(1, map(range(1, 9), 'repeat(v:val, 200)'))
+    norm Lj
+  END
+  call writefile(lines, 'XNormalJBelowBotline', 'D')
+  let buf = RunVimInTerminal('-S XNormalJBelowBotline', #{rows: 19, cols: 40})
+
+  call VerifyScreenDump(buf, 'Test_normal_j_below_botline', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for r (replace) command with CTRL_V and CTRL_Q
+func Test_normal_r_ctrl_v_cmd()
+  new
+  call append(0, 'This is a simple test: abcd')
+  exe "norm! 1gg$r\<C-V>\<C-V>"
+  call assert_equal(['This is a simple test: abc', ''], getline(1,'$'))
+  exe "norm! 1gg$hr\<C-Q>\<C-Q>"
+  call assert_equal(['This is a simple test: ab', ''], getline(1,'$'))
+  exe "norm! 1gg$2hr\<C-V>x7e"
+  call assert_equal(['This is a simple test: a~', ''], getline(1,'$'))
+  exe "norm! 1gg$3hr\<C-Q>x7e"
+  call assert_equal(['This is a simple test: ~~', ''], getline(1,'$'))
+
+  if &encoding == 'utf-8'
+    exe "norm! 1gg$4hr\<C-V>u20ac"
+    call assert_equal(['This is a simple test:€~~', ''], getline(1,'$'))
+    exe "norm! 1gg$5hr\<C-Q>u20ac"
+    call assert_equal(['This is a simple test€€~~', ''], getline(1,'$'))
+    exe "norm! 1gg0R\<C-V>xff WAS  \<esc>"
+    call assert_equal(['ÿ WAS   a simple test€€~~', ''], getline(1,'$'))
+    exe "norm! 1gg0elR\<C-Q>xffNOT\<esc>"
+    call assert_equal(['ÿ WASÿNOT simple test€€~~', ''], getline(1,'$'))
+  endif
+
+  call setline(1, 'This is a simple test: abcd')
+  exe "norm! 1gg$gr\<C-V>\<C-V>"
+  call assert_equal(['This is a simple test: abc', ''], getline(1,'$'))
+  exe "norm! 1gg$hgr\<C-Q>\<C-Q>"
+  call assert_equal(['This is a simple test: ab ', ''], getline(1,'$'))
+  exe "norm! 1gg$2hgr\<C-V>x7e"
+  call assert_equal(['This is a simple test: a~ ', ''], getline(1,'$'))
+  exe "norm! 1gg$3hgr\<C-Q>x7e"
+  call assert_equal(['This is a simple test: ~~ ', ''], getline(1,'$'))
+
+  " clean up
+  bw!
+endfunc
+
+" Test clicking on a TAB or an unprintable character in Normal mode
+func Test_normal_click_on_ctrl_char()
+  let save_mouse = &mouse
+  set mouse=a
+  new
+
+  call setline(1, "a\<Tab>b\<C-K>c")
+  redraw
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 1, 0, 1], getcurpos())
+  call test_setmouse(1, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 2, 0, 2], getcurpos())
+  call test_setmouse(1, 3)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 2, 0, 3], getcurpos())
+  call test_setmouse(1, 7)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 2, 0, 7], getcurpos())
+  call test_setmouse(1, 8)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 2, 0, 8], getcurpos())
+  call test_setmouse(1, 9)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 3, 0, 9], getcurpos())
+  call test_setmouse(1, 10)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 4, 0, 10], getcurpos())
+  call test_setmouse(1, 11)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 4, 0, 11], getcurpos())
+  call test_setmouse(1, 12)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 5, 0, 12], getcurpos())
+  call test_setmouse(1, 13)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 5, 0, 13], getcurpos())
+
+  bwipe!
+  let &mouse = save_mouse
+endfunc
+
+" Test clicking on a double-width character in Normal mode
+func Test_normal_click_on_double_width_char()
+  let save_mouse = &mouse
+  set mouse=a
+  new
+
+  call setline(1, "口口")
+  redraw
+  call test_setmouse(1, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 1, 0, 1], getcurpos())
+  call test_setmouse(1, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 1, 0, 2], getcurpos())
+  call test_setmouse(1, 3)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 4, 0, 3], getcurpos())
+  call test_setmouse(1, 4)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 1, 4, 0, 4], getcurpos())
+
+  bwipe!
+  let &mouse = save_mouse
+endfunc
+
+func Test_normal_click_on_empty_line()
+  let save_mouse = &mouse
+  set mouse=a
+  botright new
+  call setline(1, ['', '', ''])
+  let row = win_screenpos(0)[0] + 2
+  20vsplit
+  redraw
+
+  call test_setmouse(row, 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 1], getcurpos())
+  call test_setmouse(row, 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 2], getcurpos())
+  call test_setmouse(row, 10)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 10], getcurpos())
+
+  call test_setmouse(row, 21 + 1)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 1], getcurpos())
+  call test_setmouse(row, 21 + 2)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 2], getcurpos())
+  call test_setmouse(row, 21 + 10)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal([0, 3, 1, 0, 10], getcurpos())
+
+  bwipe!
+  let &mouse = save_mouse
+endfunc
+
+func Test_normal33_g_cmd_nonblank()
+  " Test that g<End> goes to the last non-blank char and g$ to the last
+  " visible column
+  20vnew
+  setlocal nowrap nonumber signcolumn=no
+  call setline(1, ['fooo   fooo         fooo   fooo         fooo   fooo         fooo   fooo        '])
+  exe "normal 0g\<End>"
+  call assert_equal(11, col('.'))
+  normal 0g$
+  call assert_equal(20, col('.'))
+  exe "normal 0g\<kEnd>"
+  call assert_equal(11, col('.'))
+  setlocal wrap
+  exe "normal 0g\<End>"
+  call assert_equal(11, col('.'))
+  normal 0g$
+  call assert_equal(20, col('.'))
+  exe "normal 0g\<kEnd>"
+  call assert_equal(11, col('.'))
+  bw!
+endfunc
+
+func Test_normal34_zet_large()
+  " shouldn't cause overflow
+  norm! z9765405999999999999
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

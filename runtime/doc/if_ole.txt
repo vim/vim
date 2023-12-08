@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 9.0.  Last change: 2022 Oct 08
+*if_ole.txt*    For Vim version 9.0.  Last change: 2023 Nov 19
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -59,7 +59,7 @@ Vim exposes four methods for use by clients.
 SendKeys(keys)		Execute a series of keys.
 
 This method takes a single parameter, which is a string of keystrokes.  These
-keystrokes are executed exactly as if they had been types in at the keyboard.
+keystrokes are executed exactly as if they had been typed in at the keyboard.
 Special keys can be given using their <..> names, as for the right hand side
 of a mapping.  Note: Execution of the Ex "normal" command is not supported -
 see below |ole-normal|.

@@ -4406,6 +4406,18 @@ def Test_cindent_47()
   inline/* test */namespace {
     111111111111111111;
   }
+  export namespace {
+    111111111111111111;
+  }
+  export inline namespace {
+    111111111111111111;
+  }
+  export/* test */inline namespace {
+    111111111111111111;
+  }
+  inline export namespace {
+    111111111111111111;
+  }
 
   /* invalid namespaces use block indent */
   namespace test test2 {
@@ -4507,6 +4519,18 @@ def Test_cindent_47()
   111111111111111111;
   }
   inline/* test */namespace {
+  111111111111111111;
+  }
+  export namespace {
+  111111111111111111;
+  }
+  export inline namespace {
+  111111111111111111;
+  }
+  export/* test */inline namespace {
+  111111111111111111;
+  }
+  inline export namespace {
   111111111111111111;
   }
 

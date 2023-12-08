@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.0.  Last change: 2022 Oct 17
+*various.txt*   For Vim version 9.0.  Last change: 2023 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -298,7 +298,8 @@ g8			Print the hex values of the bytes used in the
 				:silent !{cmd}
 <			The screen is not redrawn then, thus you have to use
 			CTRL-L or ":redraw!" if the command did display
-			something.
+			something.  However, this depends on what the |t_ti|
+			and |t_te| termcap entries are set to.
 			Also see |shell-window|.
 
 							*:!!*
@@ -319,15 +320,13 @@ g8			Print the hex values of the bytes used in the
 			The first column shows the smallest version in which
 			they are included:
 			   T	tiny (always)
-			   S	small
 			   N	normal
-			   B	big
 			   H	huge
 			   m	manually enabled or depends on other features
 			   -    never, feature was removed
 			 (none) system dependent
 			Thus if a feature is marked with "N", it is included
-			in the normal, big and huge versions of Vim.
+			in the normal and huge versions of Vim.
 
 							*+feature-list*
    *+acl*		|ACL| support included
@@ -449,6 +448,9 @@ m  *+python*		Python 2 interface |python|
 m  *+python/dyn*	Python 2 interface |python-dynamic| |/dyn|
 m  *+python3*		Python 3 interface |python|
 m  *+python3/dyn*	Python 3 interface |python-dynamic| |/dyn|
+m  *+python3/dyn-stable*
+			Python 3 interface |python-dynamic| |python-stable|
+			|/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option
@@ -495,11 +497,12 @@ T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
 T  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
-T  *+wildmenu*		|'wildmenu'||  Always enabled since 9.0.0279
+T  *+wildmenu*		|'wildmenu'|  Always enabled since 9.0.0279
 T  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|
+N  *+xattr*		compiled with extended attribute support (Linux only)
    *+xpm*		pixmap support
 m  *+xpm_w32*		Win32 GUI only: pixmap support |w32-xpm-support|
    *+xsmp*		XSMP (X session management) support

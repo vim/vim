@@ -192,6 +192,16 @@ func Test_if_while()
     call assert_equal('ab3j3b2c2b1f1h1km', g:Xpath)
 endfunc
 
+" Check double quote after skipped "elseif" does not give error E15
+func Test_skipped_elseif()
+  if "foo" ==? "foo"
+      let result = "first"
+  elseif "foo" ==? "foo"
+      let result = "second"
+  endif
+  call assert_equal('first', result)
+endfunc
+
 "-------------------------------------------------------------------------------
 " Test 4:   :return							    {{{1
 "-------------------------------------------------------------------------------
@@ -3095,7 +3105,7 @@ endfunc
 "	    should be given.
 "
 "	    This test reuses the function MESSAGES() from the previous test.
-"	    This functions checks the messages in g:msgfile.
+"	    This function checks the messages in g:msgfile.
 "-------------------------------------------------------------------------------
 
 func Test_nested_while_error()
@@ -3220,7 +3230,7 @@ endfunc
 "	    error messages should be given.
 "
 "	    This test reuses the function MESSAGES() from the previous test.
-"	    This functions checks the messages in g:msgfile.
+"	    This function checks the messages in g:msgfile.
 "-------------------------------------------------------------------------------
 
 func Test_nested_cont_break_error()
@@ -3326,7 +3336,7 @@ endfunc
 "	    should be given.
 "
 "	    This test reuses the function MESSAGES() from the previous test.
-"	    This functions checks the messages in g:msgfile.
+"	    This function check the messages in g:msgfile.
 "-------------------------------------------------------------------------------
 
 func Test_nested_endtry_error()
@@ -5967,6 +5977,9 @@ endfunc
 
 " interrupt right before a catch is invoked in a script
 func Test_ignore_catch_after_intr_1()
+  " for unknown reasons this test sometimes fails on MS-Windows.
+  let g:test_is_flaky = 1
+
   XpathINIT
   let lines =<< trim [CODE]
     try
@@ -6004,6 +6017,9 @@ endfunc
 
 " interrupt right before a catch is invoked inside a function.
 func Test_ignore_catch_after_intr_2()
+  " for unknown reasons this test sometimes fails on MS-Windows.
+  let g:test_is_flaky = 1
+
   XpathINIT
   func F()
     try
@@ -6508,8 +6524,8 @@ func Test_type()
     endif
     call assert_equal(v:t_blob, type(test_null_blob()))
 
-    call assert_fails("call type(test_void())", 'E685:')
-    call assert_fails("call type(test_unknown())", 'E685:')
+    call assert_fails("call type(test_void())", ['E340:', 'E685:'])
+    call assert_fails("call type(test_unknown())", ['E340:', 'E685:'])
 
     call assert_equal(0, 0 + v:false)
     call assert_equal(1, 0 + v:true)
@@ -7061,7 +7077,7 @@ func Test_compound_assignment_operators()
     call assert_equal(6, &scrolljump)
     let &scrolljump %= 5
     call assert_equal(1, &scrolljump)
-    call assert_fails('let &scrolljump .= "j"', 'E734:')
+    call assert_fails('let &scrolljump .= "j"', ['E734:', 'E734:'])
     set scrolljump&vim
 
     let &foldlevelstart = 2

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Oct 17
+*syntax.txt*	For Vim version 9.0.  Last change: 2023 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -214,10 +214,10 @@ A syntax group name is to be used for syntax items that match the same kind of
 thing.  These are then linked to a highlight group that specifies the color.
 A syntax group name doesn't specify any color or attributes itself.
 
-The name for a highlight or syntax group must consist of ASCII letters, digits
-and the underscore.  As a regexp: "[a-zA-Z0-9_]*".  However, Vim does not give
-an error when using other characters.  The maximum length of a group name is
-about 200 bytes.  *E1249*
+The name for a highlight or syntax group must consist of ASCII letters,
+digits, underscores, dots, or hyphens.  As a regexp: "[a-zA-Z0-9_.-]*".
+However, Vim does not give an error when using other characters.  The maximum
+length of a group name is about 200 bytes.  *E1249*
 
 To be able to allow each user to pick their favorite set of colors, there must
 be preferred names for highlight groups that are common for many languages.
@@ -596,7 +596,7 @@ The method used to prevent copying in the generated page depends on the value
 of |g:html_use_input_for_pc|.
 
 						    *g:html_use_input_for_pc*
-Default: "fallback"
+Default: "none"
 If |g:html_prevent_copy| is non-empty, then:
 
 When "all", read-only <input> elements are used in place of normal text for
@@ -1307,18 +1307,32 @@ When not set 4 is used.
 
 DOSBATCH				*dosbatch.vim* *ft-dosbatch-syntax*
 
-There is one option with highlighting DOS batch files.	This covers new
-extensions to the Command Interpreter introduced with Windows 2000 and
-is controlled by the variable dosbatch_cmdextversion.  For Windows NT
-this should have the value 1, and for Windows 2000 it should be 2.
+Select the set of Windows Command interpreter extensions that should be
+supported with the variable dosbatch_cmdextversion.  For versions of Windows
+NT (before Windows 2000) this should have the value of 1.  For Windows 2000
+and later it should be 2.
 Select the version you want with the following line: >
 
    :let dosbatch_cmdextversion = 1
 
 If this variable is not defined it defaults to a value of 2 to support
-Windows 2000.
+Windows 2000 and later.
 
-A second option covers whether *.btm files should be detected as type
+The original MS-DOS supports an idiom of using a double colon (::) as an
+alternative way to enter a comment line.  This idiom can be used with the
+current Windows Command Interpreter, but it can lead to problems when used
+inside ( ... ) command blocks.  You can find a discussion about this on
+Stack Overflow -
+
+https://stackoverflow.com/questions/12407800/which-comment-style-should-i-use-in-batch-files
+
+To allow the use of the :: idiom for comments in the Windows Command
+Interpreter or working with MS-DOS bat files, set the
+dosbatch_colons_comment variable to anything: >
+
+   :let dosbatch_colons_comment = 1
+
+There is an option that covers whether *.btm files should be detected as type
 "dosbatch" (MS-DOS batch files) or type "btm" (4DOS batch files).  The latter
 is used by default.  You may select the former with the following line: >
 
@@ -1565,9 +1579,10 @@ example, FORM files, use this in your startup vimrc: >
 
 FORTH						*forth.vim* *ft-forth-syntax*
 
-Files matching "*.fs" could be F# or Forth.  If the automatic detection
-doesn't work for you, or you don't edit F# at all, use this in your
-startup vimrc: >
+Files matching "*.f" could be Fortran or Forth and those matching "*.fs" could
+be F# or Forth.  If the automatic detection doesn't work for you, or you don't
+edit F# or Fortran at all, use this in your startup vimrc: >
+   :let filetype_f  = "forth"
    :let filetype_fs = "forth"
 
 
@@ -1576,7 +1591,15 @@ FORTRAN					*fortran.vim* *ft-fortran-syntax*
 Default highlighting and dialect ~
 Highlighting appropriate for Fortran 2008 is used by default.  This choice
 should be appropriate for most users most of the time because Fortran 2008 is
-almost a superset of previous versions (Fortran 2003, 95, 90, and 77).
+almost a superset of previous versions (Fortran 2003, 95, 90, and 77).  A
+small number of features new to Fortran 2018 and Fortran 2023 are supported
+and the complete transition to Fortran 2023 will be completed in the future.
+A few legacy constructs deleted or declared obsolescent in recent Fortran
+standards are highlighted as todo items.
+
+The syntax script no longer supports Fortran dialects.  The variable
+fortran_dialect is now silently ignored.  Since computers are much faster now,
+the variable fortran_more_precise is no longer needed and is silently ignored.
 
 Fortran source code form ~
 Fortran code can be in either fixed or free source form.  Note that the
@@ -1603,14 +1626,36 @@ neither of these variables have been set, the syntax script attempts to
 determine which source form has been used by examining the file extension
 using conventions common to the ifort, gfortran, Cray, NAG, and PathScale
 compilers (.f, .for, .f77 for fixed-source, .f90, .f95, .f03, .f08 for
-free-source). If none of this works, then the script examines the first five
-columns of the first 500 lines of your file.  If no signs of free source form
-are detected, then the file is assumed to be in fixed source form.  The
-algorithm should work in the vast majority of cases.  In some cases, such as a
-file that begins with 500 or more full-line comments, the script may
-incorrectly decide that the fortran code is in fixed form.  If that happens,
-just add a non-comment statement beginning anywhere in the first five columns
-of the first twenty-five lines, save (:w) and then reload (:e!) the file.
+free-source). No default is used for the .fpp and .ftn file extensions because
+different compilers treat them differently. If none of this works, then the
+script examines the first five columns of the first 500 lines of your file. If
+no signs of free source form are detected, then the file is assumed to be in
+fixed source form.  The algorithm should work in the vast majority of cases.
+In some cases, such as a file that begins with 500 or more full-line comments,
+the script may incorrectly decide that the code is in fixed form.  If that
+happens, just add a non-comment statement beginning anywhere in the first five
+columns of the first twenty-five lines, save (:w), and then reload (:e!) the
+file.
+
+Vendor extensions ~
+Fixed-form Fortran requires a maximum line length of 72 characters but the
+script allows a maximum line length of 80 characters as do all compilers
+created in the last three decades.  An even longer line length of 132
+characters is allowed if you set the variable fortran_extended_line_length
+with a command such as >
+    :let fortran_line_length=1
+placed prior to the :syntax on command.
+
+If you want additional highlighting of the CUDA Fortran extensions, you should
+set the variable fortran_CUDA with a command such as >
+    :let fortran_CUDA=1
+placed prior to the :syntax on command.
+
+To activate recognition of some common, non-standard, vendor-supplied
+intrinsics, you should set the variable fortran_vendor_intrinsics with a
+command such as >
+    :let fortran_vendor_intrinsics=1
+placed prior to the :syntax on command.
 
 Tabs in fortran files ~
 Tabs are not recognized by the Fortran standards.  Tabs are not a good idea in
@@ -1632,8 +1677,8 @@ subprograms, block data subprograms, interface blocks, and modules.  If you
 also set the variable fortran_fold_conditionals with a command such as >
     :let fortran_fold_conditionals=1
 then fold regions will also be defined for do loops, if blocks, and select
-case constructs.  If you also set the variable
-fortran_fold_multilinecomments with a command such as >
+case constructs.  If you also set the variable fortran_fold_multilinecomments
+with a command such as >
     :let fortran_fold_multilinecomments=1
 then fold regions will also be defined for three or more consecutive comment
 lines.  Note that defining fold regions can be slow for large files.
@@ -1643,58 +1688,6 @@ fortran_fold_multilinecomments, have been set, then vim will fold your file if
 you set foldmethod=syntax.  Comments or blank lines placed between two program
 units are not folded because they are seen as not belonging to any program
 unit.
-
-More precise fortran syntax ~
-If you set the variable fortran_more_precise with a command such as >
-    :let fortran_more_precise=1
-then the syntax coloring will be more precise but slower.  In particular,
-statement labels used in do, goto and arithmetic if statements will be
-recognized, as will construct names at the end of a do, if, select or forall
-construct.
-
-Non-default fortran dialects ~
-The syntax script supports two Fortran dialects: f08 and F. You will probably
-find the default highlighting (f08) satisfactory.  A few legacy constructs
-deleted or declared obsolescent in the 2008 standard are highlighted as todo
-items.
-
-If you use F, the advantage of setting the dialect appropriately is that
-other legacy features excluded from F will be highlighted as todo items and
-that free source form will be assumed.
-
-The dialect can be selected in various ways.  If all your fortran files use
-the same dialect, set the global variable fortran_dialect in your .vimrc prior
-to your syntax on statement.  The case-sensitive, permissible values of
-fortran_dialect are "f08" or "F".  Invalid values of fortran_dialect are
-ignored.
-
-If the dialect depends upon the file extension, then it is most convenient to
-set a buffer-local variable in a ftplugin file.  For more information on
-ftplugin files, see |ftplugin|.  For example, if all your fortran files with
-an .f90 extension are written in the F subset, your ftplugin file should
-contain the code >
-    let s:extfname = expand("%:e")
-    if s:extfname ==? "f90"
-	let b:fortran_dialect="F"
-    else
-	unlet! b:fortran_dialect
-    endif
-Note that this will work only if the "filetype plugin indent on" command
-precedes the "syntax on" command in your .vimrc file.
-
-Finer control is necessary if the file extension does not uniquely identify
-the dialect.  You can override the default dialect, on a file-by-file basis,
-by including a comment with the directive "fortran_dialect=xx" (where xx=F or
-f08) in one of the first three lines in your file.  For example, your older .f
-files may be legacy code but your newer ones may be F codes, and you would
-identify the latter by including in the first three lines of those files a
-Fortran comment of the form >
-  ! fortran_dialect=F
-
-For previous versions of the syntax, you may have set fortran_dialect to the
-now-obsolete values "f77", "f90", "f95", or "elf". Such settings will be
-silently handled as "f08". Users of "elf" may wish to experiment with "F"
-instead.
 
 The syntax/fortran.vim script contains embedded comments that tell you how to
 comment and/or uncomment some lines to (a) activate recognition of some
@@ -1887,6 +1880,16 @@ following two lines to the syntax coloring file for that language
 
 Now you just need to make sure that you add all regions that contain
 the preprocessor language to the cluster htmlPreproc.
+
+							*html-folding*
+The HTML syntax file provides syntax |folding| (see |:syn-fold|) between start
+and end tags.  This can be turned on by >
+
+	:let g:html_syntax_folding = 1
+	:set foldmethod=syntax
+
+Note: Syntax folding might slow down syntax highlighting significantly,
+especially for large files.
 
 
 HTML/OS (by Aestiva)				*htmlos.vim* *ft-htmlos-syntax*
@@ -2135,11 +2138,11 @@ should set a variable in your .vimrc file: >
 	:let lpc_syntax_for_c = 1
 
 If it doesn't work properly for some particular C or LPC files, use a
-modeline.  For a LPC file:
+modeline.  For a LPC file: >
 
 	// vim:set ft=lpc:
 
-For a C file that is recognized as LPC:
+For a C file that is recognized as LPC: >
 
 	// vim:set ft=c:
 
@@ -2171,7 +2174,7 @@ LUA						*lua.vim* *ft-lua-syntax*
 The Lua syntax file can be used for versions 4.0, 5.0, 5.1 and 5.2 (5.2 is
 the default). You can select one of these versions using the global variables
 lua_version and lua_subversion. For example, to activate Lua
-5.1 syntax highlighting, set the variables like this:
+5.1 syntax highlighting, set the variables like this: >
 
 	:let lua_version = 5
 	:let lua_subversion = 1
@@ -2416,7 +2419,7 @@ you set the variable: >
 
 	:let papp_include_html=1
 
-in your startup file it will try to syntax-hilight html code inside phtml
+in your startup file it will try to syntax-highlight html code inside phtml
 sections, but this is relatively slow and much too colourful to be able to
 edit sensibly. ;)
 
@@ -2767,17 +2770,25 @@ For highlighted doctests and code inside: >
 	:let python_no_doctest_highlight = 1
 or >
 	:let python_no_doctest_code_highlight = 1
-(first option implies second one).
+The first option implies the second one.
 
 For highlighted trailing whitespace and mix of spaces and tabs: >
 	:let python_space_error_highlight = 1
 
-If you want all possible Python highlighting (the same as setting the
-preceding last option and unsetting all other ones): >
+If you want all possible Python highlighting: >
 	:let python_highlight_all = 1
+This has the same effect as setting python_space_error_highlight and
+unsetting all the other ones.
 
-Note: Only existence of these options matter, not their value. You can replace
-      1 above with anything.
+If you use Python 2 or straddling code (Python 2 and 3 compatible),
+you can enforce the use of an older syntax file with support for
+Python 2 and up to Python 3.5. >
+	:let python_use_python2_syntax = 1
+This option will exclude all modern Python 3.6 or higher features.
+
+Note: Only existence of these options matters, not their value.
+      You can replace 1 above with anything.
+
 
 QUAKE						*quake.vim* *ft-quake-syntax*
 
@@ -3611,6 +3622,14 @@ highlighting is to put the following line in your |vimrc|: >
 <
 
 
+WDL							*wdl.vim* *wdl-syntax*
+
+The Workflow Description Language is a way to specify data processing workflows
+with a human-readable and writeable syntax.  This is used a lot in
+bioinformatics.  More info on the spec can be found here:
+https://github.com/openwdl/wdl
+
+
 XF86CONFIG				*xf86conf.vim* *ft-xf86conf-syntax*
 
 The syntax of XF86Config file differs in XFree86 v3.x and v4.x.  Both
@@ -3708,11 +3727,12 @@ The syntax script for zsh allows for syntax-based folding: >
 Vim understands three types of syntax items:
 
 1. Keyword
-   It can only contain keyword characters, according to the 'iskeyword'
-   option.  It cannot contain other syntax items.  It will only match with a
-   complete word (there are no keyword characters before or after the match).
-   The keyword "if" would match in "if(a=b)", but not in "ifdef x", because
-   "(" is not a keyword character and "d" is.
+   It can only contain keyword characters, according to the characters
+   specified with |:syn-iskeyword| or the 'iskeyword' option.  It cannot
+   contain other syntax items.  It will only match with a complete word (there
+   are no keyword characters before or after the match).  The keyword "if"
+   would match in "if(a=b)", but not in "ifdef x", because "(" is not a
+   keyword character and "d" is.
 
 2. Match
    This is a match with a single regexp pattern.
@@ -3818,7 +3838,7 @@ SYNTAX ISKEYWORD SETTING				*:syn-iskeyword*
 
 	clear:		Syntax specific iskeyword setting is disabled and the
 			buffer-local 'iskeyword' setting is used.
-	{option}       	Set the syntax 'iskeyword' option to a new value.
+	{option}	Set the syntax 'iskeyword' option to a new value.
 
 	Example: >
   :syntax iskeyword @,48-57,192-255,$,_
@@ -4888,10 +4908,10 @@ is mostly used, because it looks better.
 ==============================================================================
 13. Colorschemes				*color-schemes*
 
-In the next section you can find information about indivisual highlight groups
+In the next section you can find information about individual highlight groups
 and how to specify colors for them.  Most likely you want to just select a set
 of colors by using the `:colorscheme` command, for example: >
-	
+
 	    colorscheme pablo
 <
 						*:colo* *:colorscheme* *E185*
@@ -4943,7 +4963,7 @@ Change a couple more colors: >
 	augroup my_colorschemes
 	  au!
 	  au Colorscheme pablo hi Normal ctermbg=NONE
-		      \ | higlight Special ctermfg=63
+		      \ | highlight Special ctermfg=63
 		      \ | highlight Identifier ctermfg=44
 	augroup END
 
@@ -4985,7 +5005,7 @@ in their own color.
 
 						*highlight-clear* *:hi-clear*
 :hi[ghlight] clear	Reset all highlighting to the defaults.  Removes all
-			highlighting for groups added by the user!
+			highlighting for groups added by the user.
 			Uses the current value of 'background' to decide which
 			default colors to use.
 			If there was a default link, restore it. |:hi-link|
@@ -5265,7 +5285,7 @@ guisp={color-name}					*highlight-guisp*
 	(guisp) color to use in the GUI.  "guisp" is used for undercurl and
 	strikethrough.
 	There are a few special names:
-		NONE		no color (transparent)
+		NONE		no color (transparent)		*E1361*
 		bg		use normal background color
 		background	use normal background color
 		fg		use normal foreground color
@@ -5338,7 +5358,7 @@ ColorColumn	Used for the columns set with 'colorcolumn'.
 							*hl-Conceal*
 Conceal		Placeholder characters substituted for concealed
 		text (see 'conceallevel').
-							*hl-Cursor*
+						*hl-Cursor* *hl-lCursor*
 Cursor		Character under the cursor.
 lCursor		Character under the cursor when |language-mapping|
 		is used (see 'guicursor').
@@ -5386,16 +5406,16 @@ LineNrBelow	Line number for when the 'relativenumber'
 							*hl-CursorLineNr*
 CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt'
 		contains "number" or is "both", for the cursor line.
-							*hl-CursorLineSign*
-CursorLineSign	Like SignColumn when 'cursorline' is set for the cursor line.
 							*hl-CursorLineFold*
 CursorLineFold	Like FoldColumn when 'cursorline' is set for the cursor line.
+							*hl-CursorLineSign*
+CursorLineSign	Like SignColumn when 'cursorline' is set for the cursor line.
 							*hl-MatchParen*
 MatchParen	Character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|
 							*hl-MessageWindow*
-MessageWindow	Messages popup window used when 'cmdheight' is zero.  If not
-		defined |hl-WarningMsg| is used.
+MessageWindow	Messages popup window used by `:echowindow`.  If not defined
+		|hl-WarningMsg| is used.
 							*hl-ModeMsg*
 ModeMsg		'showmode' message (e.g., "-- INSERT --").
 							*hl-MoreMsg*
@@ -5412,6 +5432,14 @@ Normal		Normal text.
 Pmenu		Popup menu: Normal item.
 							*hl-PmenuSel*
 PmenuSel	Popup menu: Selected item.
+							*hl-PmenuKind*
+PmenuKind	Popup menu: Normal item "kind".
+							*hl-PmenuKindSel*
+PmenuKindSel	Popup menu: Selected item "kind".
+							*hl-PmenuExtra*
+PmenuExtra	Popup menu: Normal item "extra text".
+							*hl-PmenuExtraSel*
+PmenuExtraSel	Popup menu: Selected item "extra text".
 							*hl-PmenuSbar*
 PmenuSbar	Popup menu: Scrollbar.
 							*hl-PmenuThumb*

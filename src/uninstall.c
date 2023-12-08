@@ -49,7 +49,8 @@ reg_delete_key(HKEY hRootKey, const char *key, DWORD flag)
 	if (advapi_lib != NULL)
 	    delete_key_ex = (LONG (WINAPI *)(HKEY, LPCTSTR, REGSAM, DWORD))GetProcAddress(advapi_lib, "RegDeleteKeyExA");
     }
-    if (delete_key_ex != NULL) {
+    if (delete_key_ex != NULL)
+    {
 	return (*delete_key_ex)(hRootKey, key, flag, 0);
     }
     return RegDeleteKey(hRootKey, key);
@@ -204,18 +205,18 @@ batfile_thisversion(char *path)
     int		found = FALSE;
 
     fd = fopen(path, "r");
-    if (fd != NULL)
+    if (fd == NULL)
+	return FALSE;
+
+    while (fgets(line, sizeof(line), fd) != NULL)
     {
-	while (fgets(line, sizeof(line), fd) != NULL)
+	if (strncmp(line, VIMBAT_UNINSTKEY, key_len) == 0)
 	{
-	    if (strncmp(line, VIMBAT_UNINSTKEY, key_len) == 0)
-	    {
-		found = TRUE;
-		break;
-	    }
+	    found = TRUE;
+	    break;
 	}
-	fclose(fd);
     }
+    fclose(fd);
     return found;
 }
 
@@ -260,12 +261,12 @@ remove_if_exists(char *path, char *filename)
     sprintf(buf, "%s\\%s", path, filename);
 
     fd = fopen(buf, "r");
-    if (fd != NULL)
-    {
-	fclose(fd);
-	printf("removing %s\n", buf);
-	remove(buf);
-    }
+    if (fd == NULL)
+	return;
+
+    fclose(fd);
+    printf("removing %s\n", buf);
+    remove(buf);
 }
 
     static void
@@ -286,21 +287,21 @@ remove_start_menu(void)
     int		i;
     struct stat st;
 
-    if (get_shell_folder_path(path, VIM_STARTMENU))
+    if (get_shell_folder_path(path, VIM_STARTMENU) == FAIL)
+	return;
+
+    for (i = 1; i < TARGET_COUNT; ++i)
+	remove_if_exists(path, targets[i].lnkname);
+    remove_if_exists(path, "uninstall.lnk");
+    remove_if_exists(path, "Help.lnk");
+    // Win95 uses .pif, WinNT uses .lnk
+    remove_if_exists(path, "Vim tutor.pif");
+    remove_if_exists(path, "Vim tutor.lnk");
+    remove_if_exists(path, "Vim online.url");
+    if (stat(path, &st) == 0)
     {
-	for (i = 1; i < TARGET_COUNT; ++i)
-	    remove_if_exists(path, targets[i].lnkname);
-	remove_if_exists(path, "uninstall.lnk");
-	remove_if_exists(path, "Help.lnk");
-	// Win95 uses .pif, WinNT uses .lnk
-	remove_if_exists(path, "Vim tutor.pif");
-	remove_if_exists(path, "Vim tutor.lnk");
-	remove_if_exists(path, "Vim online.url");
-	if (stat(path, &st) == 0)
-	{
-	    printf("removing %s\n", path);
-	    rmdir(path);
-	}
+	printf("removing %s\n", path);
+	rmdir(path);
     }
 }
 

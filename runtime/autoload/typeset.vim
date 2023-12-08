@@ -97,7 +97,7 @@ enddef
 
 # Public interface {{{
 # When a TeX document is split into several source files, each source file
-# may contain a "magic line" specifiying the "root" file, e.g.:
+# may contain a "magic line" specifying the "root" file, e.g.:
 #
 #   % !TEX root = main.tex
 #

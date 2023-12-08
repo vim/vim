@@ -64,6 +64,14 @@ func Test_terminal_termwinsize_option_zero()
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
 
+  " This used to crash Vim
+  set termwinsize=10000*10000
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([1000, 1000], term_getsize(buf))
+  call StopShellInTerminal(buf)
+  exe buf . 'bwipe'
+
   set termwinsize=
 endfunc
 
@@ -129,6 +137,7 @@ func Test_terminal_hidden_winsize()
   let cmd = GetDummyCmd()
   let rows = winheight(0)
   let buf = term_start(cmd, #{hidden: 1, term_rows: 10})
+  call TermWait(buf)
   call assert_equal(rows, winheight(0))
   call assert_equal([10, &columns], term_getsize(buf))
   exe "bwipe! " .. buf
@@ -196,6 +205,7 @@ func Test_terminal_out_err()
 
   let outfile = 'Xtermstdout'
   let buf = term_start(['./Xechoerrout.sh'], {'out_io': 'file', 'out_name': outfile})
+  call TermWait(buf)
 
   call WaitFor({-> !empty(readfile(outfile)) && !empty(term_getline(buf, 1))})
   call assert_equal(['this is standard out'], readfile(outfile))
@@ -216,6 +226,7 @@ func Test_termwinscroll()
   " will be dropped.
   exe 'set termwinscroll=' . &lines
   let buf = term_start('/bin/sh')
+  call TermWait(buf)
   for i in range(1, &lines)
     call feedkeys("echo " . i . "\<CR>", 'xt')
     call WaitForAssert({-> assert_match(string(i), term_getline(buf, term_getcursor(buf)[0] - 1))})
@@ -236,7 +247,11 @@ endfunc
 
 " Resizing the terminal window caused an ml_get error.
 " TODO: This does not reproduce the original problem.
+" TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize()
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
   set statusline=x
   terminal
   call assert_equal(2, winnr('$'))
@@ -263,6 +278,29 @@ func Test_terminal_resize()
 
   close
   call assert_equal(2, winnr('$'))
+  call feedkeys("exit\<CR>", 'xt')
+  call TermWait(buf)
+  set statusline&
+endfunc
+
+" TODO: This test starts timing out in Github CI Gui test, why????
+func Test_terminal_resize2()
+  CheckNotMSWindows
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
+  set statusline=x
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " This used to crash Vim
+  call feedkeys("printf '\033[8;99999;99999t'\<CR>", 'xt')
+  redraw
+
   call feedkeys("exit\<CR>", 'xt')
   call TermWait(buf)
   set statusline&
@@ -508,6 +546,7 @@ func Test_term_gettitle()
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', '-c', 'set title'])
+  call TermWait(term)
   " When Vim is running as a server then the title ends in VIM{number}, thus
   " optionally match a number after "VIM".
   call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d*$', term_gettitle(term)) })

@@ -1765,7 +1765,7 @@ msgstr ""
 "-- startuptime <archivo>\tGuardar los mensajes de tiempo de inicio en "
 "<archivo>"
 
-msgid "--log <file>\tStart logging to <file> early"
+msgid "--log <file>\t\tStart logging to <file> early"
 msgstr "--log <archivo>\tIniciar registro en <archivo> pronto"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
@@ -2266,7 +2266,7 @@ msgstr "Se ha detectado un error al procesar %s:"
 msgid "line %4ld:"
 msgstr "línea %4ld:"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "Traducción: Proyecto vim-doc-es <https://www.assembla.com/wiki/show/vim-doc-"
 "es>, Victorhck <victorhck@opensuse.org>"
@@ -7809,8 +7809,8 @@ msgstr "E1112: Elemento %d de lista, ancho de celda no válido"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Rangos superpuestos para 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Solo se admiten valores de 0x100 y superiores"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Solo se admiten valores de 0x80 y superiores"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: El cuarto argumento \"assert_fails()\" debe ser un número"

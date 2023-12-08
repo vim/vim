@@ -85,6 +85,10 @@
 # define COBJMACROS	// For OLE: Enable "friendlier" access to objects
 #endif
 #ifndef PROTO
+// Must include winsock2.h before windows.h since it conflicts with winsock.h
+// (included in windows.h).
+# include <winsock2.h>
+# include <ws2tcpip.h>
 # include <windows.h>
 
 // Weird: rpcndr.h defines "small" to "char", which causes trouble
@@ -94,6 +98,8 @@
 #  define SM_CXPADDEDBORDER     92
 # endif
 #endif
+
+typedef void (*sighandler_T)(int, int);
 
 /*
  * Win32 has plenty of memory, use large buffers

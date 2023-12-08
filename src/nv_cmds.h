@@ -25,7 +25,8 @@
 /*
  * Used when building Vim.
  */
-# define NVCMD(a, b, c, d)  {a, b, c, d}
+# define NVCMD(a, b, c, d) \
+	{a, b, c, d}
 
 #ifdef FEAT_GUI
 #define NV_VER_SCROLLBAR	nv_ver_scrollbar

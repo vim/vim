@@ -835,24 +835,24 @@ check_str_len(char_u *str)
     GetSystemInfo(&si);
 
     // get memory information
-    if (VirtualQuery(str, &mbi, sizeof(mbi)))
-    {
-	// pre cast these (typing savers)
-	long_u dwStr = (long_u)str;
-	long_u dwBaseAddress = (long_u)mbi.BaseAddress;
+    if (!VirtualQuery(str, &mbi, sizeof(mbi)))
+	return 0;
 
-	// get start address of page that str is on
-	long_u strPage = dwStr - (dwStr - dwBaseAddress) % si.dwPageSize;
+    // pre cast these (typing savers)
+    long_u dwStr = (long_u)str;
+    long_u dwBaseAddress = (long_u)mbi.BaseAddress;
 
-	// get length from str to end of page
-	long_u pageLength = si.dwPageSize - (dwStr - strPage);
+    // get start address of page that str is on
+    long_u strPage = dwStr - (dwStr - dwBaseAddress) % si.dwPageSize;
 
-	for (p = str; !IsBadReadPtr(p, (UINT)pageLength);
-				  p += pageLength, pageLength = si.dwPageSize)
-	    for (i = 0; i < pageLength; ++i, ++length)
-		if (p[i] == NUL)
-		    return length + 1;
-    }
+    // get length from str to end of page
+    long_u pageLength = si.dwPageSize - (dwStr - strPage);
+
+    for (p = str; !IsBadReadPtr(p, (UINT)pageLength);
+	    p += pageLength, pageLength = si.dwPageSize)
+	for (i = 0; i < pageLength; ++i, ++length)
+	    if (p[i] == NUL)
+		return length + 1;
 
     return 0;
 }
@@ -1213,43 +1213,43 @@ PrintHookProc(
     RECT	rc, rcDlg, rcOwner;
     PRINTDLGW	*pPD;
 
-    if (uiMsg == WM_INITDIALOG)
-    {
-	// Get the owner window and dialog box rectangles.
-	if ((hwndOwner = GetParent(hDlg)) == NULL)
-	    hwndOwner = GetDesktopWindow();
+    if (uiMsg != WM_INITDIALOG)
+	return FALSE;
 
-	GetWindowRect(hwndOwner, &rcOwner);
-	GetWindowRect(hDlg, &rcDlg);
-	CopyRect(&rc, &rcOwner);
+    // Get the owner window and dialog box rectangles.
+    if ((hwndOwner = GetParent(hDlg)) == NULL)
+	hwndOwner = GetDesktopWindow();
 
-	// Offset the owner and dialog box rectangles so that
-	// right and bottom values represent the width and
-	// height, and then offset the owner again to discard
-	// space taken up by the dialog box.
+    GetWindowRect(hwndOwner, &rcOwner);
+    GetWindowRect(hDlg, &rcDlg);
+    CopyRect(&rc, &rcOwner);
 
-	OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
-	OffsetRect(&rc, -rc.left, -rc.top);
-	OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
+    // Offset the owner and dialog box rectangles so that
+    // right and bottom values represent the width and
+    // height, and then offset the owner again to discard
+    // space taken up by the dialog box.
 
-	// The new position is the sum of half the remaining
-	// space and the owner's original position.
+    OffsetRect(&rcDlg, -rcDlg.left, -rcDlg.top);
+    OffsetRect(&rc, -rc.left, -rc.top);
+    OffsetRect(&rc, -rcDlg.right, -rcDlg.bottom);
 
-	SetWindowPos(hDlg,
-		HWND_TOP,
-		rcOwner.left + (rc.right / 2),
-		rcOwner.top + (rc.bottom / 2),
-		0, 0,		// ignores size arguments
-		SWP_NOSIZE);
+    // The new position is the sum of half the remaining
+    // space and the owner's original position.
 
-	//  tackle the printdlg copiesctrl problem
-	pPD = (PRINTDLGW *)lParam;
-	pPD->nCopies = (WORD)pPD->lCustData;
-	SetDlgItemInt( hDlg, edt3, pPD->nCopies, FALSE );
-	//  Bring the window to top
-	BringWindowToTop(GetParent(hDlg));
-	SetForegroundWindow(hDlg);
-    }
+    SetWindowPos(hDlg,
+	    HWND_TOP,
+	    rcOwner.left + (rc.right / 2),
+	    rcOwner.top + (rc.bottom / 2),
+	    0, 0,		// ignores size arguments
+	    SWP_NOSIZE);
+
+    //  tackle the printdlg copiesctrl problem
+    pPD = (PRINTDLGW *)lParam;
+    pPD->nCopies = (WORD)pPD->lCustData;
+    SetDlgItemInt( hDlg, edt3, pPD->nCopies, FALSE );
+    //  Bring the window to top
+    BringWindowToTop(GetParent(hDlg));
+    SetForegroundWindow(hDlg);
 
     return FALSE;
 }
@@ -1389,6 +1389,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     DEVMODEW		*mem;
     DEVNAMES		*devname;
     int			i;
+    DWORD		err;
 
     bUserAbort = &(psettings->user_abort);
     CLEAR_FIELD(prt_dlg);
@@ -1571,29 +1572,26 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     return TRUE;
 
 init_fail_dlg:
+    err = CommDlgExtendedError();
+    if (err)
     {
-	DWORD err = CommDlgExtendedError();
+	char_u *buf;
 
-	if (err)
-	{
-	    char_u *buf;
-
-	    // I suspect FormatMessage() doesn't work for values returned by
-	    // CommDlgExtendedError().  What does?
-	    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-			  FORMAT_MESSAGE_FROM_SYSTEM |
-			  FORMAT_MESSAGE_IGNORE_INSERTS,
-			  NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
-	    semsg(_(e_print_error_str),
-				  buf == NULL ? (char_u *)_("Unknown") : buf);
-	    LocalFree((LPVOID)(buf));
-	}
-	else
-	    msg_clr_eos(); // Maybe canceled
-
-	mch_print_cleanup();
-	return FALSE;
+	// I suspect FormatMessage() doesn't work for values returned by
+	// CommDlgExtendedError().  What does?
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL, err, 0, (LPTSTR)(&buf), 0, NULL);
+	semsg(_(e_print_error_str),
+		buf == NULL ? (char_u *)_("Unknown") : buf);
+	LocalFree((LPVOID)(buf));
     }
+    else
+	msg_clr_eos(); // Maybe canceled
+
+    mch_print_cleanup();
+    return FALSE;
 }
 
 
@@ -1777,7 +1775,11 @@ is_reparse_point_included(LPCWSTR fname)
     return FALSE;
 }
 
-    static char_u *
+/*
+ * Return the resolved file path, NULL if "fname" is an AppExecLink reparse
+ * point, already fully resolved, or it doesn't exists.
+ */
+    char_u *
 resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;
@@ -1999,11 +2001,11 @@ serverSendEnc(HWND target)
     static void
 CleanUpMessaging(void)
 {
-    if (message_window != 0)
-    {
-	DestroyWindow(message_window);
-	message_window = 0;
-    }
+    if (message_window == 0)
+	return;
+
+    DestroyWindow(message_window);
+    message_window = 0;
 }
 
 static int save_reply(HWND server, char_u *reply, int expr);
@@ -2817,6 +2819,32 @@ points_to_pixels(WCHAR *str, WCHAR **end, int vertical, long_i pprinter_dc)
     return pixels;
 }
 
+/*
+ * Convert pixel into point size. This is a reverse of points_to_pixels.
+ */
+    static double
+pixels_to_points(int pixels, int vertical, long_i pprinter_dc)
+{
+    double	points = 0;
+    HWND	hwnd = (HWND)0;
+    HDC		hdc;
+    HDC		printer_dc = (HDC)pprinter_dc;
+
+    if (printer_dc == NULL)
+    {
+	hwnd = GetDesktopWindow();
+	hdc = GetWindowDC(hwnd);
+    }
+    else
+	hdc = printer_dc;
+
+    points = pixels * 72.0 / GetDeviceCaps(hdc, vertical ? LOGPIXELSY : LOGPIXELSX);
+    if (printer_dc == NULL)
+	ReleaseDC(hwnd, hdc);
+
+    return points;
+}
+
     static int CALLBACK
 font_enumproc(
     ENUMLOGFONTW    *elf,
@@ -2885,6 +2913,100 @@ init_logfont(LOGFONTW *lf)
 
     // Return success
     return OK;
+}
+
+/*
+ * Call back for EnumFontFamiliesW in expand_font_enumproc.
+ *
+ */
+    static int CALLBACK
+expand_font_enumproc(
+    ENUMLOGFONTW    *elf,
+    NEWTEXTMETRICW  *ntm UNUSED,
+    DWORD	    type UNUSED,
+    LPARAM	    lparam)
+{
+    LOGFONTW *lf = (LOGFONTW*)elf;
+
+# ifndef FEAT_PROPORTIONAL_FONTS
+    // Ignore non-monospace fonts without further ado
+    if ((ntm->tmPitchAndFamily & 1) != 0)
+	return 1;
+# endif
+
+    // Filter only on ANSI. Otherwise will see a lot of random fonts that we
+    // usually don't want.
+    if (lf->lfCharSet != ANSI_CHARSET)
+        return 1;
+
+    int (*add_match)(char_u *) = (int (*)(char_u *))lparam;
+
+    WCHAR *faceNameW = lf->lfFaceName;
+    char_u *faceName = utf16_to_enc(faceNameW, NULL);
+    if (!faceName)
+	return 0;
+
+    add_match(faceName);
+    vim_free(faceName);
+
+    return 1;
+}
+
+/*
+ * Cmdline expansion for setting 'guifont'. Will enumerate through all
+ * monospace fonts for completion. If used after ':', will expand to possible
+ * font configuration options like font sizes.
+ *
+ * This function has "gui" in its name because in some platforms (GTK) font
+ * handling is done by the GUI code, whereas in Windows it's part of the
+ * platform code.
+ */
+    void
+gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char_u *val))
+{
+    expand_T	    *xp = args->oe_xp;
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	char buf[30];
+
+	// Always fill in with the current font size as first option for
+	// convenience. We simply round to the closest integer for simplicity.
+        int font_height = (int)round(
+		pixels_to_points(-current_font_height, TRUE, (long_i)NULL));
+	vim_snprintf(buf, ARRAY_LENGTH(buf), "h%d", font_height);
+	add_match((char_u *)buf);
+
+	// Note: Keep this in sync with get_logfont(). Don't include 'c' and
+	// 'q' as we fill in all the values below.
+	static char *(p_gfn_win_opt_values[]) = {
+	    "h" , "w" , "W" , "b" , "i" , "u" , "s"};
+	for (size_t i = 0; i < ARRAY_LENGTH(p_gfn_win_opt_values); i++)
+	    add_match((char_u *)p_gfn_win_opt_values[i]);
+
+	struct charset_pair *cp;
+	for (cp = charset_pairs; cp->name != NULL; ++cp)
+	{
+	    vim_snprintf(buf, ARRAY_LENGTH(buf), "c%s", cp->name);
+	    add_match((char_u *)buf);
+	}
+	struct quality_pair *qp;
+	for (qp = quality_pairs; qp->name != NULL; ++qp)
+	{
+	    vim_snprintf(buf, ARRAY_LENGTH(buf), "q%s", qp->name);
+	    add_match((char_u *)buf);
+	}
+	return;
+    }
+
+    HWND	hwnd = GetDesktopWindow();
+    HDC		hdc = GetWindowDC(hwnd);
+
+    EnumFontFamiliesW(hdc,
+	    NULL,
+	    (FONTENUMPROCW)expand_font_enumproc,
+	    (LPARAM)add_match);
+
+    ReleaseDC(hwnd, hdc);
 }
 
 /*
@@ -2993,6 +3115,7 @@ get_logfont(
     {
 	switch (*p++)
 	{
+	    // Note: Keep this in sync with gui_mch_expand_font().
 	    case L'h':
 		lf->lfHeight = - points_to_pixels(p, &p, TRUE, (long_i)printer_dc);
 		break;

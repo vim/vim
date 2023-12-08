@@ -10,7 +10,6 @@ void reset_screen_attr(void);
 void screen_line(win_T *wp, int row, int coloff, int endcol, int clear_width, int flags);
 void rl_mirror(char_u *str);
 void draw_vsep_win(win_T *wp, int row);
-void win_redr_status_matches(expand_T *xp, int num_matches, char_u **matches, int match, int showtail);
 int stl_connected(win_T *wp);
 int get_keymap_str(win_T *wp, char_u *fmt, char_u *buf, int len);
 void win_redr_custom(win_T *wp, int draw_ruler);
@@ -56,6 +55,9 @@ void comp_col(void);
 int number_width(win_T *wp);
 int screen_screencol(void);
 int screen_screenrow(void);
-char *set_chars_option(win_T *wp, char_u **varp, int apply);
+char *set_fillchars_option(win_T *wp, char_u *val, int apply);
+char *set_listchars_option(win_T *wp, char_u *val, int apply);
+char_u * get_fillchars_name(expand_T *xp, int idx);
+char_u * get_listchars_name(expand_T *xp, int idx);
 char *check_chars_options(void);
 /* vim: set ft=c : */

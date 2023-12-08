@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 9.0.  Last change: 2022 Jun 18
+*visual.txt*    For Vim version 9.0.  Last change: 2023 Sep 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -116,7 +116,7 @@ gn			Search forward for the last used search pattern, like
 			E.g., "dgn" deletes the text of the next match.
 			If Visual mode is active, extends the selection
 			until the end of the next match.
-			'wrapscan' applies
+			'wrapscan' applies.
 			Note: Unlike `n` the search direction does not depend
 			on the previous search command.
 
@@ -152,6 +152,11 @@ gN			Like |gn| but searches backward, like with `N`.
 			environment variable or the -display argument).  Only
 			when 'mouse' option contains 'n' or 'a'.
 
+<LeftMouseNM>		Internal mouse code, used for clicking on the status
+<LeftReleaseNM>		line to focus a window.  NM stands for non-mappable.
+			You cannot use these, but they might show up in some
+			places.
+
 If Visual mode is not active and the "v", "V" or CTRL-V is preceded with a
 count, the size of the previously highlighted area is used for a start.  You
 can then move the end of the highlighted area and give an operator.  The type
@@ -178,6 +183,8 @@ If you want to highlight exactly the same area as the last time, you can use
 CTRL-C			In Visual mode: Stop Visual mode.  When insert mode is
 			pending (the mode message shows
 			"-- (insert) VISUAL --"), it is also stopped.
+			On MS-Windows, you may need to press CTRL-Break
+			|dos-CTRL-Break|.
 
 ==============================================================================
 3. Changing the Visual area				*visual-change*
@@ -510,11 +517,11 @@ mode Vim automatically switches to Visual mode, so that the same behavior as
 in Visual mode is effective.  If you don't want this use |:xmap| or |:smap|.
 
 One particular edge case: >
-  	:vnoremap <C-K> <Esc>
+	:vnoremap <C-K> <Esc>
 This ends Visual mode when in Visual mode, but in Select mode it does not
 work, because Select mode is restored after executing the mapped keys.  You
 need to use: >
-  	:snoremap <C-K> <Esc>
+	:snoremap <C-K> <Esc>
 <
 Users will expect printable characters to replace the selected area.
 Therefore avoid mapping printable characters in Select mode.  Or use

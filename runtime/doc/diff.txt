@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.0.  Last change: 2022 Oct 01
+*diff.txt*      For Vim version 9.0.  Last change: 2023 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -109,6 +109,7 @@ While already in Vim you can start diff mode in three ways.
 		accidentally being patched.  But it may still result in
 		various ".rej" files to be created.  And when absolute path
 		names are present these files may get patched anyway.
+		Using the "patch" command is not allowed in |restricted-mode|.
 
 To make these commands use a vertical split, prepend |:vertical|.  Examples: >
 
@@ -136,7 +137,7 @@ file for a moment and come back to the same file and be in diff mode again.
 		buffers.
 
 The `:diffoff` command resets the relevant options to the values they had when
-using `:diffsplit`, `:diffpatch` , `:diffthis`. or starting Vim in diff mode.
+using `:diffsplit`, `:diffpatch`, `:diffthis`. or starting Vim in diff mode.
 When using `:diffoff` twice the last saved values are restored.
 Otherwise they are set to their default value:
 
@@ -147,6 +148,10 @@ Otherwise they are set to their default value:
 	'wrap'		on, or leave as-is if 'diffopt' includes "followwrap"
 	'foldmethod'	"manual"
 	'foldcolumn'	0
+
+'foldenable' will most-likely be reset to off.  That is when 'foldmethod' is
+is restored to "manual".  The folds themselves are not cleared but they should
+not show up, resetting 'foldenable' is the best way to do that.
 
 ==============================================================================
 2. Viewing diffs						*view-diffs*
@@ -177,7 +182,7 @@ possible to view the changes you have made to a buffer since the file was
 loaded.  Since Vim doesn't allow having two buffers for the same file, you
 need another buffer.  This command is useful: >
 	 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
-	 	\ | diffthis | wincmd p | diffthis
+		\ | diffthis | wincmd p | diffthis
 (this is in |defaults.vim|).  Use ":DiffOrig" to see the differences between
 the current buffer and the file it was loaded from.
 

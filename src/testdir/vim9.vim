@@ -110,6 +110,40 @@ export def CheckScriptSuccess(lines: list<string>)
   endtry
 enddef
 
+# :source a list of "lines" and check whether it fails with "error"
+export def CheckSourceFailure(lines: list<string>, error: string, lnum = -3)
+  new
+  setline(1, lines)
+  try
+    assert_fails('source', error, lines, lnum)
+  finally
+    bw!
+  endtry
+enddef
+
+# :source a list of "lines" and check whether it fails with the list of
+# "errors"
+export def CheckSourceFailureList(lines: list<string>, errors: list<string>, lnum = -3)
+  new
+  setline(1, lines)
+  try
+    assert_fails('source', errors, lines, lnum)
+  finally
+    bw!
+  endtry
+enddef
+
+# :source a list of "lines" and check whether it succeeds
+export def CheckSourceSuccess(lines: list<string>)
+  new
+  setline(1, lines)
+  try
+    :source
+  finally
+    bw!
+  endtry
+enddef
+
 export def CheckDefAndScriptSuccess(lines: list<string>)
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
@@ -195,14 +229,14 @@ endfunc
 # CheckLegacyAndVim9Success()
 export def CheckTransLegacySuccess(lines: list<string>)
   var legacylines = lines->mapnew((_, v) =>
-  				v->substitute('\<VAR\>', 'let', 'g')
-		           	 ->substitute('\<LET\>', 'let', 'g')
-		           	 ->substitute('\<LSTART\>', '{', 'g')
-		           	 ->substitute('\<LMIDDLE\>', '->', 'g')
+				v->substitute('\<VAR\>', 'let', 'g')
+				 ->substitute('\<LET\>', 'let', 'g')
+				 ->substitute('\<LSTART\>', '{', 'g')
+				 ->substitute('\<LMIDDLE\>', '->', 'g')
 				 ->substitute('\<LEND\>', '}', 'g')
 				 ->substitute('\<TRUE\>', '1', 'g')
 				 ->substitute('\<FALSE\>', '0', 'g')
-		           	 ->substitute('#"', ' "', 'g'))
+				 ->substitute('#"', ' "', 'g'))
   CheckLegacySuccess(legacylines)
 enddef
 
@@ -262,14 +296,14 @@ export def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
   endif
 
   var legacylines = lines->mapnew((_, v) =>
-  				v->substitute('\<VAR\>', 'let', 'g')
-		           	 ->substitute('\<LET\>', 'let', 'g')
-		           	 ->substitute('#"', ' "', 'g'))
+				v->substitute('\<VAR\>', 'let', 'g')
+				 ->substitute('\<LET\>', 'let', 'g')
+				 ->substitute('#"', ' "', 'g'))
   CheckLegacyFailure(legacylines, legacyError)
 
   var vim9lines = lines->mapnew((_, v) =>
-  				v->substitute('\<VAR\>', 'var', 'g')
-		           	 ->substitute('\<LET ', '', 'g'))
+				v->substitute('\<VAR\>', 'var', 'g')
+				 ->substitute('\<LET ', '', 'g'))
   CheckDefExecFailure(vim9lines, defError)
   CheckScriptFailure(['vim9script'] + vim9lines, scriptError)
 enddef

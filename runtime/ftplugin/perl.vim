@@ -5,6 +5,8 @@
 " Bugs/requests: https://github.com/vim-perl/vim-perl/issues
 " License:       Vim License (see :help license)
 " Last Change:   2021 Nov 10
+"                2023 Sep 07 by Vim Project (safety check: don't execute perl
+"                    from current directory)
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1
@@ -54,7 +56,8 @@ endif
 
 " Set this once, globally.
 if !exists("perlpath")
-    if executable("perl")
+    " safety check: don't execute perl binary by default
+    if dist#vim#IsSafeExecutable('perl', 'perl')
       try
 	if &shellxquote != '"'
 	    let perlpath = system('perl -e "print join(q/,/,@INC)"')

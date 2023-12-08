@@ -39,7 +39,7 @@ void f_setcmdline(typval_T *argvars, typval_T *rettv);
 void f_setcmdpos(typval_T *argvars, typval_T *rettv);
 int get_cmdline_firstc(void);
 int get_list_range(char_u **str, int *num1, int *num2);
-char *check_cedit(void);
+char *did_set_cedit(optset_T *args);
 int is_in_cmdwin(void);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int secret);

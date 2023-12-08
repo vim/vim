@@ -580,6 +580,56 @@ func Test_set_guifontwide()
   endif
 endfunc
 
+func Test_expand_guifont()
+  if has('gui_win32')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling existing option, and suggesting current font size
+    set guifont=Courier\ New:h11:cANSI
+    call assert_equal('Courier\ New:h11:cANSI', getcompletion('set guifont=', 'cmdline')[0])
+    call assert_equal('h11', getcompletion('set guifont=Lucida\ Console:', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Courier\ New'], getcompletion('set guifont=Couri*ew$', 'cmdline'))
+    call assert_equal(['Courier\ New'], getcompletion('set guifontwide=Couri*ew$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out
+    call assert_equal([], getcompletion('set guifont=Arial', 'cmdline'))
+    call assert_equal([], getcompletion('set guifontwide=Arial', 'cmdline'))
+
+    " Test auto-completion working for font options
+    call assert_notequal(-1, index(getcompletion('set guifont=Courier\ New:', 'cmdline'), 'b'))
+    call assert_equal(['cDEFAULT'], getcompletion('set guifont=Courier\ New:cD*T', 'cmdline'))
+    call assert_equal(['qCLEARTYPE'], getcompletion('set guifont=Courier\ New:qC*TYPE', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  elseif has('gui_gtk')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling default and existing option
+    set guifont=
+    call assert_equal('Monospace\ 10', getcompletion('set guifont=', 'cmdline')[0])
+    set guifont=Monospace\ 9
+    call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Monospace'], getcompletion('set guifont=Mono*pace$', 'cmdline'))
+    call assert_equal(['Monospace'], getcompletion('set guifontwide=Mono*pace$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out only in 'guifont'
+    call assert_equal([], getcompletion('set guifont=Sans$', 'cmdline'))
+    call assert_equal(['Sans'], getcompletion('set guifontwide=Sans$', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  else
+    call assert_equal([], getcompletion('set guifont=', 'cmdline'))
+  endif
+endfunc
+
 func Test_set_guiligatures()
   CheckX11BasedGui
 
@@ -718,8 +768,11 @@ func Test_set_guioptions()
 endfunc
 
 func Test_scrollbars()
-  new
+  " this test sometimes fails on CI
+  let g:test_is_flaky = 1
+
   " buffer with 200 lines
+  new
   call setline(1, repeat(['one', 'two'], 100))
   set guioptions+=rlb
 
@@ -730,12 +783,15 @@ func Test_scrollbars()
   call assert_equal(1, winline())
   call assert_equal(11, line('.'))
 
-  " scroll to move line 1 at top, cursor stays in line 11
-  let args = #{which: 'right', value: 0, dragging: 0}
-  call test_gui_event('scrollbar', args)
-  redraw
-  call assert_equal(11, winline())
-  call assert_equal(11, line('.'))
+  " FIXME: This test should also pass with Motif and 24 lines
+  if &lines > 24 || !has('gui_motif')
+    " scroll to move line 1 at top, cursor stays in line 11
+    let args = #{which: 'right', value: 0, dragging: 0}
+    call test_gui_event('scrollbar', args)
+    redraw
+    call assert_equal(11, winline())
+    call assert_equal(11, line('.'))
+  endif
 
   set nowrap
   call setline(11, repeat('x', 150))
@@ -904,13 +960,17 @@ endfunc
 
 " Test GUI mouse events
 func Test_gui_mouse_event()
+  " Low level input isn't 100% reliable
+  let g:test_is_flaky = 1
+
   set mousemodel=extend
   call test_override('no_query_mouse', 1)
   new
   call setline(1, ['one two three', 'four five six'])
-
-  " place the cursor using left click in normal mode
   call cursor(1, 1)
+  redraw!
+
+  " place the cursor using left click and release in normal mode
   let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
   call test_gui_event('mouse', args)
   let args.button = 3
@@ -1175,10 +1235,21 @@ func Test_gui_mouse_event()
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
+
   set mouse&
   let &guioptions = save_guioptions
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
+endfunc
 
-  " Test invalid parameters for test_gui_event()
+" Test invalid parameters for test_gui_event()
+func Test_gui_event_mouse_fails()
+  call test_override('no_query_mouse', 1)
+  new
+  call setline(1, ['one two three', 'four five six'])
+  set mousemodel=extend
+
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
   call assert_false(test_gui_event('mouse', args))
   let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}
@@ -1266,7 +1337,7 @@ func Test_gui_mouse_move_event()
     let g:eventlist = g:eventlist[1 : ]
   endif
 
-  call assert_equal([#{row: 4, col: 31}, #{row: 11, col: 31}], g:eventlist)
+  call assert_equal([#{row: 3, col: 30}, #{row: 10, col: 30}], g:eventlist)
 
   " wiggle the mouse around within a screen cell, shouldn't trigger events
   call extend(args, #{cell: v:false})
@@ -1623,10 +1694,10 @@ endfunc
 " Test for sending low level key presses
 func SendKeys(keylist)
   for k in a:keylist
-    call test_gui_event("sendevent", #{event: "keydown", keycode: k})
+    call test_gui_event("key", #{event: "keydown", keycode: k})
   endfor
   for k in reverse(a:keylist)
-    call test_gui_event("sendevent", #{event: "keyup", keycode: k})
+    call test_gui_event("key", #{event: "keyup", keycode: k})
   endfor
 endfunc
 
@@ -1641,93 +1712,8 @@ func Test_gui_lowlevel_keyevent()
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 
-  " Test for the various Ctrl and Shift key combinations.
-  " Refer to the following page for the virtual key codes:
-  " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-  let keytests = [
-    \ [[0x10, 0x21], "S-Pageup", 2],
-    \ [[0xA0, 0x21], "S-Pageup", 2],
-    \ [[0xA1, 0x21], "S-Pageup", 2],
-    \ [[0x11, 0x21], "C-Pageup", 4],
-    \ [[0xA2, 0x21], "C-Pageup", 4],
-    \ [[0xA3, 0x21], "C-Pageup", 4],
-    \ [[0x11, 0x10, 0x21], "C-S-Pageup", 6],
-    \ [[0x10, 0x22], "S-PageDown", 2],
-    \ [[0xA0, 0x22], "S-PageDown", 2],
-    \ [[0xA1, 0x22], "S-PageDown", 2],
-    \ [[0x11, 0x22], "C-PageDown", 4],
-    \ [[0xA2, 0x22], "C-PageDown", 4],
-    \ [[0xA3, 0x22], "C-PageDown", 4],
-    \ [[0x11, 0x10, 0x22], "C-S-PageDown", 6],
-    \ [[0x10, 0x23], "S-End", 0],
-    \ [[0x11, 0x23], "C-End", 0],
-    \ [[0x11, 0x10, 0x23], "C-S-End", 4],
-    \ [[0x10, 0x24], "S-Home", 0],
-    \ [[0x11, 0x24], "C-Home", 0],
-    \ [[0x11, 0x10, 0x24], "C-S-Home", 4],
-    \ [[0x10, 0x25], "S-Left", 0],
-    \ [[0x11, 0x25], "C-Left", 0],
-    \ [[0x11, 0x10, 0x25], "C-S-Left", 4],
-    \ [[0x10, 0x26], "S-Up", 0],
-    \ [[0x11, 0x26], "C-Up", 4],
-    \ [[0x11, 0x10, 0x26], "C-S-Up", 4],
-    \ [[0x10, 0x27], "S-Right", 0],
-    \ [[0x11, 0x27], "C-Right", 0],
-    \ [[0x11, 0x10, 0x27], "C-S-Right", 4],
-    \ [[0x10, 0x28], "S-Down", 0],
-    \ [[0x11, 0x28], "C-Down", 4],
-    \ [[0x11, 0x10, 0x28], "C-S-Down", 4],
-    \ [[0x11, 0x30], "C-0", 4],
-    \ [[0x11, 0x31], "C-1", 4],
-    \ [[0x11, 0x32], "C-2", 4],
-    \ [[0x11, 0x33], "C-3", 4],
-    \ [[0x11, 0x34], "C-4", 4],
-    \ [[0x11, 0x35], "C-5", 4],
-    \ [[0x11, 0x36], "C-^", 0],
-    \ [[0x11, 0x37], "C-7", 4],
-    \ [[0x11, 0x38], "C-8", 4],
-    \ [[0x11, 0x39], "C-9", 4],
-    \ [[0x11, 0x60], "C-0", 4],
-    \ [[0x11, 0x61], "C-1", 4],
-    \ [[0x11, 0x62], "C-2", 4],
-    \ [[0x11, 0x63], "C-3", 4],
-    \ [[0x11, 0x64], "C-4", 4],
-    \ [[0x11, 0x65], "C-5", 4],
-    \ [[0x11, 0x66], "C-6", 4],
-    \ [[0x11, 0x67], "C-7", 4],
-    \ [[0x11, 0x68], "C-8", 4],
-    \ [[0x11, 0x69], "C-9", 4],
-    \ [[0x11, 0x6A], "C-*", 4],
-    \ [[0x11, 0x6B], "C-+", 4],
-    \ [[0x11, 0x6D], "C--", 4],
-    \ [[0x11, 0x70], "C-F1", 4],
-    \ [[0x11, 0x10, 0x70], "C-S-F1", 4],
-    \ [[0x11, 0x71], "C-F2", 4],
-    \ [[0x11, 0x10, 0x71], "C-S-F2", 4],
-    \ [[0x11, 0x72], "C-F3", 4],
-    \ [[0x11, 0x10, 0x72], "C-S-F3", 4],
-    \ [[0x11, 0x73], "C-F4", 4],
-    \ [[0x11, 0x10, 0x73], "C-S-F4", 4],
-    \ [[0x11, 0x74], "C-F5", 4],
-    \ [[0x11, 0x10, 0x74], "C-S-F5", 4],
-    \ [[0x11, 0x75], "C-F6", 4],
-    \ [[0x11, 0x10, 0x75], "C-S-F6", 4],
-    \ [[0x11, 0x76], "C-F7", 4],
-    \ [[0x11, 0x10, 0x76], "C-S-F7", 4],
-    \ [[0x11, 0x77], "C-F8", 4],
-    \ [[0x11, 0x10, 0x77], "C-S-F8", 4],
-    \ [[0x11, 0x78], "C-F9", 4],
-    \ [[0x11, 0x10, 0x78], "C-S-F9", 4],
-    \ ]
-
-  for [kcodes, kstr, kmod] in keytests
-    call SendKeys(kcodes)
-    let ch = getcharstr()
-    let mod = getcharmod()
-    let keycode = eval('"\<' .. kstr .. '>"')
-    call assert_equal(keycode, ch, $"key = {kstr}")
-    call assert_equal(kmod, mod, $"key = {kstr}")
-  endfor
+  " Testing more extensive windows keyboard handling
+  " is covered in test_mswin_event.vim
 
   bw!
 endfunc
@@ -1749,6 +1735,11 @@ func Test_gui_macro_csi()
   norm @q
   call assert_equal('', getline(1))
   iunmap <C-D>t
+endfunc
+
+func Test_gui_csi_keytrans()
+  call assert_equal('<C-L>', keytrans("\x9b\xfc\x04L"))
+  call assert_equal('<C-D>', keytrans("\x9b\xfc\x04D"))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

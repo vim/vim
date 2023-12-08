@@ -81,21 +81,20 @@ DEFINE_GUID(CLSID_ShellExtension, 0x51eee242, 0xad87, 0x11d3, 0x9c, 0x1e, 0x0, 0
 class CShellExtClassFactory : public IClassFactory
 {
 protected:
-	ULONG	m_cRef;
+    ULONG	m_cRef;
 
 public:
-	CShellExtClassFactory();
-	~CShellExtClassFactory();
+    CShellExtClassFactory();
+    ~CShellExtClassFactory();
 
-	//IUnknown members
-	STDMETHODIMP			QueryInterface(REFIID, LPVOID FAR *);
-	STDMETHODIMP_(ULONG)	AddRef();
-	STDMETHODIMP_(ULONG)	Release();
+    //IUnknown members
+    STDMETHODIMP		QueryInterface(REFIID, LPVOID FAR *);
+    STDMETHODIMP_(ULONG)	AddRef();
+    STDMETHODIMP_(ULONG)	Release();
 
-	//IClassFactory members
-	STDMETHODIMP		CreateInstance(LPUNKNOWN, REFIID, LPVOID FAR *);
-	STDMETHODIMP		LockServer(BOOL);
-
+    //IClassFactory members
+    STDMETHODIMP		CreateInstance(LPUNKNOWN, REFIID, LPVOID FAR *);
+    STDMETHODIMP		LockServer(BOOL);
 };
 typedef CShellExtClassFactory *LPCSHELLEXTCLASSFACTORY;
 #define MAX_HWND 100

@@ -4,7 +4,8 @@
 " Previous Maintainer:	Max Ischenko <mfi@ukr.net>
 " Contributor:		Dorai Sitaram <ds26@gte.com>
 "			C.D. MacEachern <craig.daniel.maceachern@gmail.com>
-" Last Change:		2022 Oct 15
+"			Tyler Miller <tmillr@proton.me>
+" Last Change:		2023 Mar 24
 
 if exists("b:did_ftplugin")
   finish
@@ -14,14 +15,14 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal comments=:--
+setlocal comments=:---,:--
 setlocal commentstring=--\ %s
 setlocal formatoptions-=t formatoptions+=croql
 
 let &l:define = '\<function\|\<local\%(\s\+function\)\='
 
 " TODO: handle init.lua
-setlocal includeexpr=substitute(v:fname,'\\.','/','g')
+setlocal includeexpr=tr(v:fname,'.','/')
 setlocal suffixesadd=.lua
 
 let b:undo_ftplugin = "setlocal cms< com< def< fo< inex< sua<"

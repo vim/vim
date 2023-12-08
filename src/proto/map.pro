@@ -26,7 +26,7 @@ void init_mappings(void);
 void add_map(char_u *map, int mode, int nore);
 int langmap_adjust_mb(int c);
 void langmap_init(void);
-void langmap_set(void);
+char *did_set_langmap(optset_T *args);
 void ex_abbreviate(exarg_T *eap);
 void ex_map(exarg_T *eap);
 void ex_unmap(exarg_T *eap);

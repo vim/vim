@@ -173,9 +173,8 @@ enabled from the Makefile.
 
 	--prefix={directory}		Top directory where to install Vim.
 
-	--with-features=tiny		Compile with many features disabled.
-	--with-features=small		Compile with some features disabled.
-	--with-features=big		Compile with more features enabled.
+	--with-features=tiny		Compile with some features disabled.
+	--with-features=normal		Compile with more features enabled.
 	--with-features=huge		Compile with most features enabled.
 					See |+feature-list| for which feature
 					is enabled in which case.

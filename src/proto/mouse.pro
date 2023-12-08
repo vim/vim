@@ -14,12 +14,13 @@ int mouse_has(int c);
 int mouse_model_popup(void);
 void reset_dragwin(void);
 int jump_to_mouse(int flags, int *inclusive, int which_button);
+int do_mousescroll_horiz(long_u leftcol);
 void nv_mousescroll(cmdarg_T *cap);
 void nv_mouse(cmdarg_T *cap);
 void reset_held_button(void);
 int check_termcode_mouse(char_u *tp, int *slen, char_u *key_name, char_u *modifiers_start, int idx, int *modifiers);
 int mouse_comp_pos(win_T *win, int *rowp, int *colp, linenr_T *lnump, int *plines_cache);
 win_T *mouse_find_win(int *rowp, int *colp, mouse_find_T popup);
-int vcol2col(win_T *wp, linenr_T lnum, int vcol);
+int vcol2col(win_T *wp, linenr_T lnum, int vcol, colnr_T *coladdp);
 void f_getmousepos(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

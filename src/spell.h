@@ -280,8 +280,6 @@ typedef struct spelltab_S
 #endif
 
 #ifdef FEAT_SPELL
-// First language that is loaded, start of the linked list of loaded
-// languages.
 # ifdef IN_SPELL_C
 #  define SPELL_EXTERN
 #  define SPELL_INIT(x) x
@@ -290,6 +288,8 @@ typedef struct spelltab_S
 #  define SPELL_INIT(x)
 # endif
 
+// First language that is loaded, start of the linked list of loaded
+// languages.
 SPELL_EXTERN slang_T	*first_lang SPELL_INIT(= NULL);
 
 // file used for "zG" and "zW"

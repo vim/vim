@@ -3928,7 +3928,7 @@ msgstr "linha %4ld:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Nome de registrador inválido: '%s'"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Tradutor das mensagens: Eduardo Dobay <edudobay@gmail.com>"
 
 msgid "Interrupt: "

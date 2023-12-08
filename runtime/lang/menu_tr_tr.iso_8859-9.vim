@@ -9,7 +9,7 @@ endif
 let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
-scriptencoding iso8859-9
+scriptencoding iso-8859-9
 
 " Top
 menutrans &File	&Dosya
@@ -37,7 +37,7 @@ menutrans &About	&Hakkýnda
 " File menu
 menutrans &Open\.\.\.<Tab>:e		&Aç\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	&Yeni\ Bölümde\ Aç\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	S&ekme\ Aç\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	S&ekme\ Aç\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew	        Yeni\ &Sekme<Tab>:enew
 menutrans &Close<Tab>:close		Ka&pat<Tab>:close
 "--------------------

@@ -2,7 +2,7 @@
 " Language: reStructuredText documentation format with R code
 " Maintainer: Jakson Alves de Aquino <jalvesaq@gmail.com>
 " Homepage: https://github.com/jalvesaq/R-Vim-runtime
-" Last Change:	Sat Aug 15, 2020  12:02PM
+" Last Change:	Mon Feb 27, 2023  07:16PM
 " Original work by Alex Zvoleff
 
 " Only do this when not yet done for this buffer
@@ -22,7 +22,7 @@ setlocal formatoptions+=tcqln
 setlocal formatlistpat=^\\s*\\d\\+\\.\\s\\+\\\|^\\s*[-*+]\\s\\+
 setlocal iskeyword=@,48-57,_,.
 
-function! FormatRrst()
+function FormatRrst()
   if search('^\.\. {r', "bncW") > search('^\.\. \.\.$', "bncW")
     setlocal comments=:#',:###,:##,:#
   else
@@ -38,7 +38,7 @@ if !exists("g:rrst_dynamic_comments") || (exists("g:rrst_dynamic_comments") && g
 endif
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-  let b:browsefilter = "R Source Files (*.R *.Rnw *.Rd *.Rmd *.Rrst)\t*.R;*.Rnw;*.Rd;*.Rmd;*.Rrst\n" .
+  let b:browsefilter = "R Source Files (*.R *.Rnw *.Rd *.Rmd *.Rrst *.qmd)\t*.R;*.Rnw;*.Rd;*.Rmd;*.Rrst;*.qmd\n" .
         \ "All Files (*.*)\t*.*\n"
 endif
 

@@ -1,6 +1,6 @@
 " Vim Plugin:	Edit the file with an existing Vim if possible
-" Maintainer:	Bram Moolenaar
-" Last Change:	2022 Jun 17
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 13
 
 " To use add ":packadd! editexisting" in your vimrc file.
 

@@ -281,7 +281,7 @@ free_all_script_vars(scriptitem_T *si)
 
     hash_lock(ht);
     todo = (int)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -838,7 +838,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL || check_reserved_name(name) == FAIL)
+    if (type == NULL || check_reserved_name(name, FALSE) == FAIL)
     {
 	vim_free(name);
 	return p;
@@ -922,7 +922,7 @@ update_vim9_script_var(
 	    // svar_T and create a new sallvar_T.
 	    sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
 	    newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(name));
+			      offsetof(sallvar_T, sav_key) + STRLEN(name) + 1);
 	    if (newsav == NULL)
 		return;
 
@@ -942,7 +942,8 @@ update_vim9_script_var(
 
 	    if (HASHITEM_EMPTY(hi))
 		// new variable name
-		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key,
+							       "add variable");
 	    else if (sav != NULL)
 		// existing name in a new block, append to the list
 		sav->sav_next = newsav;
@@ -1006,42 +1007,43 @@ hide_script_var(scriptitem_T *si, int idx, int func_defined)
     // The typval is moved into the sallvar_T.
     script_hi = hash_find(script_ht, sv->sv_name);
     all_hi = hash_find(all_ht, sv->sv_name);
-    if (!HASHITEM_EMPTY(script_hi) && !HASHITEM_EMPTY(all_hi))
-    {
-	dictitem_T	*di = HI2DI(script_hi);
-	sallvar_T	*sav = HI2SAV(all_hi);
-	sallvar_T	*sav_prev = NULL;
 
-	// There can be multiple entries with the same name in different
-	// blocks, find the right one.
-	while (sav != NULL && sav->sav_var_vals_idx != idx)
-	{
-	    sav_prev = sav;
-	    sav = sav->sav_next;
-	}
-	if (sav != NULL)
-	{
-	    if (func_defined)
-	    {
-		// move the typval from the dictitem to the sallvar
-		sav->sav_tv = di->di_tv;
-		di->di_tv.v_type = VAR_UNKNOWN;
-		sav->sav_flags = di->di_flags;
-		sav->sav_di = NULL;
-		sv->sv_tv = &sav->sav_tv;
-	    }
-	    else
-	    {
-		if (sav_prev == NULL)
-		    hash_remove(all_ht, all_hi);
-		else
-		    sav_prev->sav_next = sav->sav_next;
-		sv->sv_name = NULL;
-		vim_free(sav);
-	    }
-	    delete_var(script_ht, script_hi);
-	}
+    if (HASHITEM_EMPTY(script_hi) || HASHITEM_EMPTY(all_hi))
+	return;
+
+    dictitem_T	*di = HI2DI(script_hi);
+    sallvar_T	*sav = HI2SAV(all_hi);
+    sallvar_T	*sav_prev = NULL;
+
+    // There can be multiple entries with the same name in different
+    // blocks, find the right one.
+    while (sav != NULL && sav->sav_var_vals_idx != idx)
+    {
+	sav_prev = sav;
+	sav = sav->sav_next;
     }
+    if (sav == NULL)
+	return;
+
+    if (func_defined)
+    {
+	// move the typval from the dictitem to the sallvar
+	sav->sav_tv = di->di_tv;
+	di->di_tv.v_type = VAR_UNKNOWN;
+	sav->sav_flags = di->di_flags;
+	sav->sav_di = NULL;
+	sv->sv_tv = &sav->sav_tv;
+    }
+    else
+    {
+	if (sav_prev == NULL)
+	    hash_remove(all_ht, all_hi, "hide variable");
+	else
+	    sav_prev->sav_next = sav->sav_next;
+	sv->sv_name = NULL;
+	vim_free(sav);
+    }
+    delete_var(script_ht, script_hi);
 }
 
 /*
@@ -1120,19 +1122,21 @@ static char *reserved[] = {
     "null_string",
     "null_channel",
     "null_job",
+    "super",
     "this",
     NULL
 };
 
     int
-check_reserved_name(char_u *name)
+check_reserved_name(char_u *name, int is_objm_access)
 {
     int idx;
 
     for (idx = 0; reserved[idx] != NULL; ++idx)
-	if (STRCMP(reserved[idx], name) == 0)
+	if (STRCMP(reserved[idx], name) == 0
+		&& !(STRCMP("this", name) == 0 && is_objm_access))
 	{
-	    semsg(_(e_cannot_use_reserved_name), name);
+	    semsg(_(e_cannot_use_reserved_name_str), name);
 	    return FAIL;
 	}
     return OK;

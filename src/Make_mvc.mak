@@ -222,8 +222,12 @@ CPU = i386
 !  endif
 ! else  # !CPU
 CPU = i386
-!  if !defined(PLATFORM) && defined(TARGET_CPU)
+!  ifndef PLATFORM
+!   ifdef TARGET_CPU
 PLATFORM = $(TARGET_CPU)
+!   elseif defined(VSCMD_ARG_TGT_ARCH)
+PLATFORM = $(VSCMD_ARG_TGT_ARCH)
+!   endif
 !  endif
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
@@ -416,7 +420,6 @@ NBDEBUG_DEFS	= -DNBDEBUG
 NBDEBUG_INCL	= nbdebug.h
 NBDEBUG_SRC	= nbdebug.c
 !  endif
-NETBEANS_LIB	= WSock32.lib
 ! endif
 
 # DirectWrite (DirectX)
@@ -469,7 +472,7 @@ CHANNEL_PRO	= proto/job.pro proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/job.obj $(OBJDIR)/channel.obj
 CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6 -DHAVE_INET_NTOP
 
-NETBEANS_LIB	= WSock32.lib Ws2_32.lib
+NETBEANS_LIB	= Ws2_32.lib
 !endif
 
 # need advapi32.lib for GetUserName()
@@ -681,6 +684,7 @@ OBJ = \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\locale.obj \
+	$(OUTDIR)\logfile.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\map.obj \
 	$(OUTDIR)\mark.obj \
@@ -730,6 +734,7 @@ OBJ = \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\vim9class.obj \
 	$(OUTDIR)\vim9cmds.obj \
 	$(OUTDIR)\vim9compile.obj \
 	$(OUTDIR)\vim9execute.obj \
@@ -873,7 +878,7 @@ TCL_LIB = "$(TCL)\lib\tclstub$(TCL_VER).lib"
 CFLAGS  = $(CFLAGS) -DFEAT_TCL
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
 TCL_INC	= /I "$(TCL)\Include" /I "$(TCL)"
-TCL_LIB = $(TCL)\lib\tcl$(TCL_VER)vc.lib
+TCL_LIB = "$(TCL)\lib\tcl$(TCL_VER)vc.lib"
 ! endif
 !endif
 
@@ -922,7 +927,7 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON \
 		-DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
 PYTHON_LIB = /nodefaultlib:python$(PYTHON_VER).lib
 ! else
-PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
+PYTHON_LIB = "$(PYTHON)\libs\python$(PYTHON_VER).lib"
 ! endif
 !endif
 
@@ -931,8 +936,13 @@ PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
 ! ifndef PYTHON3_VER
 PYTHON3_VER = 36
 ! endif
+! if "$(DYNAMIC_PYTHON3_STABLE_ABI)" == "yes"
+PYTHON3_NAME = python3
+! else
+PYTHON3_NAME = python$(PYTHON3_VER)
+! endif
 ! ifndef DYNAMIC_PYTHON3_DLL
-DYNAMIC_PYTHON3_DLL = python$(PYTHON3_VER).dll
+DYNAMIC_PYTHON3_DLL = $(PYTHON3_NAME).dll
 ! endif
 ! message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
 ! if "$(DYNAMIC_PYTHON3)" == "yes"
@@ -944,10 +954,14 @@ PYTHON3_INC = /I "$(PYTHON3)\Include" /I "$(PYTHON3)\PC"
 ! if "$(DYNAMIC_PYTHON3)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
 		-DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
+!  if "$(DYNAMIC_PYTHON3_STABLE_ABI)" == "yes"
+CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3_STABLE_ABI
+PYTHON3_INC = $(PYTHON3_INC) -DPy_LIMITED_API=0x3080000
+!  endif
+PYTHON3_LIB = /nodefaultlib:$(PYTHON3_NAME).lib
 ! else
 CFLAGS = $(CFLAGS) -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
+PYTHON3_LIB = "$(PYTHON3)\libs\$(PYTHON3_NAME).lib"
 ! endif
 !endif
 
@@ -1105,7 +1119,7 @@ RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
 RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
+RUBY_LIB = "$(RUBY)\lib\$(RUBY_INSTALL_NAME).lib"
 # Do we want to load Ruby dynamically?
 ! if "$(DYNAMIC_RUBY)" == "yes"
 !  message Ruby DLL will be loaded dynamically
@@ -1258,7 +1272,7 @@ $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 $(VIM): $(VIM).exe
 
 $(OUTDIR):
-	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
+	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR:/=\)
 
 CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 
@@ -1582,6 +1596,8 @@ $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
 
 $(OUTDIR)/locale.obj:	$(OUTDIR) locale.c  $(INCL)
 
+$(OUTDIR)/logfile.obj:	$(OUTDIR) logfile.c  $(INCL)
+
 $(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL) $(CUI_INCL)
 
 $(OUTDIR)/map.obj:	$(OUTDIR) map.c  $(INCL)
@@ -1700,6 +1716,8 @@ $(OUTDIR)/usercmd.obj:	$(OUTDIR) usercmd.c  $(INCL)
 $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/version.obj:	$(OUTDIR) version.c  $(INCL) version.h
+
+$(OUTDIR)/vim9class.obj:	$(OUTDIR) vim9class.c  $(INCL) vim9.h
 
 $(OUTDIR)/vim9cmds.obj:	$(OUTDIR) vim9cmds.c  $(INCL) vim9.h
 
@@ -1858,6 +1876,7 @@ proto.h: \
 	proto/json.pro \
 	proto/list.pro \
 	proto/locale.pro \
+	proto/logfile.pro \
 	proto/main.pro \
 	proto/map.pro \
 	proto/mark.pro \
@@ -1907,6 +1926,7 @@ proto.h: \
 	proto/undo.pro \
 	proto/usercmd.pro \
 	proto/userfunc.pro \
+	proto/vim9class.pro \
 	proto/vim9cmds.pro \
 	proto/vim9compile.pro \
 	proto/vim9execute.pro \

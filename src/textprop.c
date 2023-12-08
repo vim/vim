@@ -98,7 +98,7 @@ lookup_prop_type(char_u *name, buf_T *buf)
     if (type == NULL)
 	type = find_prop_type(name, NULL);
     if (type == NULL)
-	semsg(_(e_type_not_exist), name);
+	semsg(_(e_property_type_str_does_not_exist), name);
     return type;
 }
 
@@ -308,6 +308,7 @@ prop_add_one(
 			    | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0)
 			    | ((type->pt_flags & PT_FLAG_INS_START_INCL)
 						     ? TP_FLAG_START_INCL : 0);
+	tmp_prop.tp_padleft = text_padding_left;
 	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
 							   sizeof(textprop_T));
 
@@ -423,6 +424,10 @@ get_textprop_id(buf_T *buf)
     // TODO: recycle deleted entries
     return -(buf->b_textprop_text.ga_len + 1);
 }
+
+// Flag that is set when a negative ID isused for a normal text property.
+// It is then impossible to use virtual text properties.
+static int did_use_negative_pop_id = FALSE;
 
 /*
  * Shared between prop_add() and popup_create().
@@ -576,13 +581,25 @@ prop_add_common(
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	goto theend;
 
-    if (id < 0 && buf->b_textprop_text.ga_len > 0)
+    if (id < 0)
     {
-	emsg(_(e_cannot_use_negative_id_after_adding_textprop_with_text));
-	goto theend;
+	if (buf->b_textprop_text.ga_len > 0)
+	{
+	    emsg(_(e_cannot_use_negative_id_after_adding_textprop_with_text));
+	    goto theend;
+	}
+	did_use_negative_pop_id = TRUE;
     }
+
     if (text != NULL)
+    {
+	if (did_use_negative_pop_id)
+	{
+	    emsg(_(e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id));
+	    goto theend;
+	}
 	id = get_textprop_id(buf);
+    }
 
     // This must be done _before_ we add the property because property changes
     // trigger buffer (memline) reorganisation, which needs this flag to be
@@ -613,7 +630,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     size_t textlen;
     size_t proplen;
 
-    // Be quick when no text property types have been defined or the buffer,
+    // Be quick when no text property types have been defined for the buffer,
     // unless we are adding one.
     if ((!buf->b_has_textprop && !will_change) || buf->b_ml.ml_mfp == NULL)
 	return 0;
@@ -626,7 +643,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 	return 0;
     if (proplen % sizeof(textprop_T) != 0)
     {
-	iemsg(_(e_text_property_info_corrupted));
+	iemsg(e_text_property_info_corrupted);
 	return 0;
     }
     *props = text + textlen;
@@ -653,7 +670,7 @@ prop_count_above_below(buf_T *buf, linenr_T lnum)
     for (i = 0; i < count; ++i)
     {
 	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
-	if (prop.tp_col == MAXCOL)
+	if (prop.tp_col == MAXCOL && text_prop_type_valid(buf, &prop))
 	{
 	    if ((prop.tp_flags & TP_FLAG_ALIGN_BELOW)
 		    || (next_right_goes_below
@@ -706,7 +723,8 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 static textprop_T	*text_prop_compare_props;
 static buf_T		*text_prop_compare_buf;
 
-/* Score for sorting on position of the text property: 0: above,
+/*
+ * Score for sorting on position of the text property: 0: above,
  * 1: after (default), 2: right, 3: below (comes last)
  */
     static int
@@ -740,13 +758,12 @@ text_prop_compare(const void *s1, const void *s2)
     tp2 = &text_prop_compare_props[idx2];
     col1 = tp1->tp_col;
     col2 = tp2->tp_col;
-    if (col1 == MAXCOL && col2 == MAXCOL)
+    if (col1 == MAXCOL || col2 == MAXCOL)
     {
 	int order1 = text_prop_order(tp1->tp_flags);
 	int order2 = text_prop_order(tp2->tp_flags);
 
-	// both props add text before or after the line, sort on order where it
-	// is added
+	// sort on order where it is added
 	if (order1 != order2)
 	    return order1 < order2 ? 1 : -1;
     }
@@ -801,20 +818,24 @@ sort_text_props(
  * Returns FAIL when not found.
  */
     int
-find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop,
-							  linenr_T *found_lnum)
+find_visible_prop(
+	win_T	    *wp,
+	int	    type_id,
+	int	    id,
+	textprop_T  *prop,
+	linenr_T    *found_lnum)
 {
-    linenr_T		lnum;
-    char_u		*props;
-    int			count;
-    int			i;
+    // return when "type_id" no longer exists
+    if (text_prop_type_by_id(wp->w_buffer, type_id) == NULL)
+	return FAIL;
 
     // w_botline may not have been updated yet.
     validate_botline_win(wp);
-    for (lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
+    for (linenr_T lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
     {
-	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
-	for (i = 0; i < count; ++i)
+	char_u	*props;
+	int	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
+	for (int i = 0; i < count; ++i)
 	{
 	    mch_memmove(prop, props + i * sizeof(textprop_T),
 							   sizeof(textprop_T));
@@ -912,7 +933,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
 	if (*array == NULL)
 	    return NULL;
 	todo = (long)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
+	FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
 	{
 	    if (!HASHITEM_EMPTY(hi))
 	    {
@@ -947,10 +968,14 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 {
     proptype_T *pt;
     int buflocal = TRUE;
+    int virtualtext_prop = prop->tp_id < 0;
 
-    dict_add_number(dict, "col", prop->tp_col);
-    dict_add_number(dict, "length", prop->tp_len);
-    dict_add_number(dict, "id", prop->tp_id);
+    dict_add_number(dict, "col", (prop->tp_col == MAXCOL) ? 0 : prop->tp_col);
+    if (!virtualtext_prop)
+    {
+	dict_add_number(dict, "length", prop->tp_len);
+	dict_add_number(dict, "id", prop->tp_id);
+    }
     dict_add_number(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
     dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
 
@@ -968,6 +993,33 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
 	dict_add_number(dict, "type_bufnr", buf->b_fnum);
     else
 	dict_add_number(dict, "type_bufnr", 0);
+    if (virtualtext_prop)
+    {
+	// virtual text property
+	garray_T    *gap = &buf->b_textprop_text;
+	char_u	    *text;
+
+	// negate the property id to get the string index
+	text = ((char_u **)gap->ga_data)[-prop->tp_id - 1];
+	dict_add_string(dict, "text", text);
+
+	// text_align
+	char_u	    *text_align = NULL;
+	if (prop->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    text_align = (char_u *)"right";
+	else if (prop->tp_flags & TP_FLAG_ALIGN_ABOVE)
+	    text_align = (char_u *)"above";
+	else if (prop->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    text_align = (char_u *)"below";
+	if (text_align != NULL)
+	    dict_add_string(dict, "text_align", text_align);
+
+	// text_wrap
+	if (prop->tp_flags & TP_FLAG_WRAP)
+	    dict_add_string(dict, "text_wrap", (char_u *)"wrap");
+	if (prop->tp_padleft != 0)
+	    dict_add_number(dict, "text_padding_left", prop->tp_padleft);
+    }
 }
 
 /*
@@ -983,6 +1035,15 @@ text_prop_type_by_id(buf_T *buf, int id)
     if (type == NULL)
 	type = find_type_by_id(global_proptypes, &global_proparray, id);
     return type;
+}
+
+/*
+ * Return TRUE if "prop" is a valid text property type.
+ */
+    int
+text_prop_type_valid(buf_T *buf, textprop_T *prop)
+{
+    return text_prop_type_by_id(buf, prop->tp_type) != NULL;
 }
 
 /*
@@ -1687,8 +1748,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			if (ii < gap->ga_len)
 			{
 			    char_u **p = ((char_u **)gap->ga_data) + ii;
-			    vim_free(*p);
-			    *p = NULL;
+			    VIM_CLEAR(*p);
 			    did_remove_text = TRUE;
 			}
 		    }
@@ -1745,7 +1805,7 @@ prop_type_set(typval_T *argvars, int add)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg(_(e_invalid_argument));
+	semsg(_(e_invalid_argument_str), "\"\"");
 	return;
     }
 
@@ -1789,13 +1849,13 @@ prop_type_set(typval_T *argvars, int add)
 	    }
 	    hash_init(*htp);
 	}
-	hash_add(*htp, PT2HIKEY(prop));
+	hash_add(*htp, PT2HIKEY(prop), "prop type");
     }
     else
     {
 	if (prop == NULL)
 	{
-	    semsg(_(e_type_not_exist), name);
+	    semsg(_(e_property_type_str_does_not_exist), name);
 	    return;
 	}
     }
@@ -1898,7 +1958,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg(_(e_invalid_argument));
+	semsg(_(e_invalid_argument_str), "\"\"");
 	return;
     }
 
@@ -1909,24 +1969,28 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     hi = find_prop_type_hi(name, buf);
-    if (hi != NULL)
-    {
-	hashtab_T	*ht;
-	proptype_T	*prop = HI2PT(hi);
+    if (hi == NULL)
+	return;
 
-	if (buf == NULL)
-	{
-	    ht = global_proptypes;
-	    VIM_CLEAR(global_proparray);
-	}
-	else
-	{
-	    ht = buf->b_proptypes;
-	    VIM_CLEAR(buf->b_proparray);
-	}
-	hash_remove(ht, hi);
-	vim_free(prop);
+    hashtab_T	*ht;
+    proptype_T	*prop = HI2PT(hi);
+
+    if (buf == NULL)
+    {
+	ht = global_proptypes;
+	VIM_CLEAR(global_proparray);
     }
+    else
+    {
+	ht = buf->b_proptypes;
+	VIM_CLEAR(buf->b_proparray);
+    }
+    hash_remove(ht, hi, "prop type delete");
+    vim_free(prop);
+
+    // currently visible text properties will disappear
+    redraw_all_later(UPD_CLEAR);
+    changed_window_setting_buf(buf == NULL ? curbuf : buf);
 }
 
 /*
@@ -1945,38 +2009,39 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv)
     name = tv_get_string(&argvars[0]);
     if (*name == NUL)
     {
-	emsg(_(e_invalid_argument));
+	semsg(_(e_invalid_argument_str), "\"\"");
 	return;
     }
-    if (rettv_dict_alloc(rettv) == OK)
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    proptype_T  *prop = NULL;
+    buf_T	    *buf = NULL;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	proptype_T  *prop = NULL;
-	buf_T	    *buf = NULL;
-
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)
-		return;
-	}
-
-	prop = find_prop_type(name, buf);
-	if (prop != NULL)
-	{
-	    dict_T *d = rettv->vval.v_dict;
-
-	    if (prop->pt_hl_id > 0)
-		dict_add_string(d, "highlight", syn_id2name(prop->pt_hl_id));
-	    dict_add_number(d, "priority", prop->pt_priority);
-	    dict_add_number(d, "combine",
-				   (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
-	    dict_add_number(d, "start_incl",
-			    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
-	    dict_add_number(d, "end_incl",
-			      (prop->pt_flags & PT_FLAG_INS_END_INCL) ? 1 : 0);
-	    if (buf != NULL)
-		dict_add_number(d, "bufnr", buf->b_fnum);
-	}
+	if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)
+	    return;
     }
+
+    prop = find_prop_type(name, buf);
+    if (prop == NULL)
+	return;
+
+    dict_T *d = rettv->vval.v_dict;
+
+    if (prop->pt_hl_id > 0)
+	dict_add_string(d, "highlight", syn_id2name(prop->pt_hl_id));
+    dict_add_number(d, "priority", prop->pt_priority);
+    dict_add_number(d, "combine",
+	    (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
+    dict_add_number(d, "start_incl",
+	    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
+    dict_add_number(d, "end_incl",
+	    (prop->pt_flags & PT_FLAG_INS_END_INCL) ? 1 : 0);
+    if (buf != NULL)
+	dict_add_number(d, "bufnr", buf->b_fnum);
 }
 
     static void
@@ -1986,7 +2051,7 @@ list_types(hashtab_T *ht, list_T *l)
     hashitem_T	*hi;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -2006,24 +2071,24 @@ f_prop_type_list(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T *buf = NULL;
 
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
-	    return;
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
 
-	if (argvars[0].v_type != VAR_UNKNOWN)
-	{
-	    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
-		return;
-	}
-	if (buf == NULL)
-	{
-	    if (global_proptypes != NULL)
-		list_types(global_proptypes, rettv->vval.v_list);
-	}
-	else if (buf->b_proptypes != NULL)
-	    list_types(buf->b_proptypes, rettv->vval.v_list);
+    if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	    return;
     }
+    if (buf == NULL)
+    {
+	if (global_proptypes != NULL)
+	    list_types(global_proptypes, rettv->vval.v_list);
+    }
+    else if (buf->b_proptypes != NULL)
+	list_types(buf->b_proptypes, rettv->vval.v_list);
 }
 
 /*
@@ -2039,7 +2104,7 @@ clear_ht_prop_types(hashtab_T *ht)
 	return;
 
     todo = (long)ht->ht_used;
-    for (hi = ht->ht_array; todo > 0; ++hi)
+    FOR_ALL_HASHTAB_ITEMS(ht, hi, todo)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

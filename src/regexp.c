@@ -710,10 +710,11 @@ peekchr(void)
 {
     static int	after_slash = FALSE;
 
-    if (curchr == -1)
+    if (curchr != -1)
+	return curchr;
+
+    switch (curchr = regparse[0])
     {
-	switch (curchr = regparse[0])
-	{
 	case '.':
 	case '[':
 	case '~':
@@ -743,7 +744,7 @@ peekchr(void)
 	case ';':	// future ext.
 	case '`':	// future ext.
 	case '/':	// Can't be used in / command
-	    // magic only after "\v"
+			// magic only after "\v"
 	    if (reg_magic == MAGIC_ALL)
 		curchr = Magic(curchr);
 	    break;
@@ -788,8 +789,8 @@ peekchr(void)
 
 		// ignore \c \C \m \M \v \V and \Z after '$'
 		while (p[0] == '\\' && (p[1] == 'c' || p[1] == 'C'
-				|| p[1] == 'm' || p[1] == 'M'
-				|| p[1] == 'v' || p[1] == 'V' || p[1] == 'Z'))
+			    || p[1] == 'm' || p[1] == 'M'
+			    || p[1] == 'v' || p[1] == 'V' || p[1] == 'Z'))
 		{
 		    if (p[1] == 'v')
 			is_magic_all = TRUE;
@@ -802,7 +803,7 @@ peekchr(void)
 			    && (p[1] == '|' || p[1] == '&' || p[1] == ')'
 				|| p[1] == 'n'))
 			|| (is_magic_all
-			       && (p[0] == '|' || p[0] == '&' || p[0] == ')'))
+			    && (p[0] == '|' || p[0] == '&' || p[0] == ')'))
 			|| reg_magic == MAGIC_ALL)
 		    curchr = Magic('$');
 	    }
@@ -858,7 +859,6 @@ peekchr(void)
 	default:
 	    if (has_mbyte)
 		curchr = (*mb_ptr2char)(regparse);
-	}
     }
 
     return curchr;
@@ -1093,7 +1093,6 @@ static void	cleanup_subexpr(void);
 #ifdef FEAT_SYN_HL
 static void	cleanup_zsubexpr(void);
 #endif
-static void	reg_nextline(void);
 static int	match_with_backref(linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen);
 
 /*
@@ -1124,10 +1123,12 @@ static unsigned	reg_tofreelen;
 typedef struct {
     regmatch_T		*reg_match;
     regmmatch_T		*reg_mmatch;
+
     char_u		**reg_startp;
     char_u		**reg_endp;
     lpos_T		*reg_startpos;
     lpos_T		*reg_endpos;
+
     win_T		*reg_win;
     buf_T		*reg_buf;
     linenr_T		reg_firstlnum;
@@ -1369,7 +1370,7 @@ prog_magic_wrong(void)
 
     if (UCHARAT(((bt_regprog_T *)prog)->program) != REGMAGIC)
     {
-	emsg(_(e_corrupted_regexp_program));
+	iemsg(e_corrupted_regexp_program);
 	return TRUE;
     }
     return FALSE;
@@ -1383,42 +1384,42 @@ prog_magic_wrong(void)
     static void
 cleanup_subexpr(void)
 {
-    if (rex.need_clear_subexpr)
+    if (!rex.need_clear_subexpr)
+	return;
+
+    if (REG_MULTI)
     {
-	if (REG_MULTI)
-	{
-	    // Use 0xff to set lnum to -1
-	    vim_memset(rex.reg_startpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	    vim_memset(rex.reg_endpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	}
-	else
-	{
-	    vim_memset(rex.reg_startp, 0, sizeof(char_u *) * NSUBEXP);
-	    vim_memset(rex.reg_endp, 0, sizeof(char_u *) * NSUBEXP);
-	}
-	rex.need_clear_subexpr = FALSE;
+	// Use 0xff to set lnum to -1
+	vim_memset(rex.reg_startpos, 0xff, sizeof(lpos_T) * NSUBEXP);
+	vim_memset(rex.reg_endpos, 0xff, sizeof(lpos_T) * NSUBEXP);
     }
+    else
+    {
+	vim_memset(rex.reg_startp, 0, sizeof(char_u *) * NSUBEXP);
+	vim_memset(rex.reg_endp, 0, sizeof(char_u *) * NSUBEXP);
+    }
+    rex.need_clear_subexpr = FALSE;
 }
 
 #ifdef FEAT_SYN_HL
     static void
 cleanup_zsubexpr(void)
 {
-    if (rex.need_clear_zsubexpr)
+    if (!rex.need_clear_zsubexpr)
+	return;
+
+    if (REG_MULTI)
     {
-	if (REG_MULTI)
-	{
-	    // Use 0xff to set lnum to -1
-	    vim_memset(reg_startzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	    vim_memset(reg_endzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
-	}
-	else
-	{
-	    vim_memset(reg_startzp, 0, sizeof(char_u *) * NSUBEXP);
-	    vim_memset(reg_endzp, 0, sizeof(char_u *) * NSUBEXP);
-	}
-	rex.need_clear_zsubexpr = FALSE;
+	// Use 0xff to set lnum to -1
+	vim_memset(reg_startzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
+	vim_memset(reg_endzpos, 0xff, sizeof(lpos_T) * NSUBEXP);
     }
+    else
+    {
+	vim_memset(reg_startzp, 0, sizeof(char_u *) * NSUBEXP);
+	vim_memset(reg_endzp, 0, sizeof(char_u *) * NSUBEXP);
+    }
+    rex.need_clear_zsubexpr = FALSE;
 }
 #endif
 
@@ -1708,46 +1709,20 @@ cstrchr(char_u *s, int c)
 //		      regsub stuff			      //
 ////////////////////////////////////////////////////////////////
 
-/*
- * We should define ftpr as a pointer to a function returning a pointer to
- * a function returning a pointer to a function ...
- * This is impossible, so we declare a pointer to a function returning a
- * void pointer. This should work for all compilers.
- */
-typedef void (*(*fptr_T)(int *, int));
+typedef void (*fptr_T)(int *, int);
 
 static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int destlen, int flags);
 
-    static fptr_T
+    static void
 do_upper(int *d, int c)
 {
     *d = MB_TOUPPER(c);
-
-    return (fptr_T)NULL;
 }
 
-    static fptr_T
-do_Upper(int *d, int c)
-{
-    *d = MB_TOUPPER(c);
-
-    return (fptr_T)do_Upper;
-}
-
-    static fptr_T
+    static void
 do_lower(int *d, int c)
 {
     *d = MB_TOLOWER(c);
-
-    return (fptr_T)NULL;
-}
-
-    static fptr_T
-do_Lower(int *d, int c)
-{
-    *d = MB_TOLOWER(c);
-
-    return (fptr_T)do_Lower;
 }
 
 /*
@@ -1766,10 +1741,7 @@ do_Lower(int *d, int c)
 regtilde(char_u *source, int magic)
 {
     char_u	*newsub = source;
-    char_u	*tmpsub;
     char_u	*p;
-    int		len;
-    int		prevlen;
 
     for (p = newsub; *p; ++p)
     {
@@ -1778,24 +1750,35 @@ regtilde(char_u *source, int magic)
 	    if (reg_prev_sub != NULL)
 	    {
 		// length = len(newsub) - 1 + len(prev_sub) + 1
-		prevlen = (int)STRLEN(reg_prev_sub);
-		tmpsub = alloc(STRLEN(newsub) + prevlen);
+		// Avoid making the text longer than MAXCOL, it will cause
+		// trouble at some point.
+		size_t	prevsublen = STRLEN(reg_prev_sub);
+		size_t  newsublen = STRLEN(newsub);
+		if (prevsublen > MAXCOL || newsublen > MAXCOL
+					    || newsublen + prevsublen > MAXCOL)
+		{
+		    emsg(_(e_resulting_text_too_long));
+		    break;
+		}
+
+		char_u *tmpsub = alloc(newsublen + prevsublen);
 		if (tmpsub != NULL)
 		{
 		    // copy prefix
-		    len = (int)(p - newsub);	// not including ~
-		    mch_memmove(tmpsub, newsub, (size_t)len);
+		    size_t prefixlen = p - newsub;	// not including ~
+		    mch_memmove(tmpsub, newsub, prefixlen);
 		    // interpret tilde
-		    mch_memmove(tmpsub + len, reg_prev_sub, (size_t)prevlen);
+		    mch_memmove(tmpsub + prefixlen, reg_prev_sub,
+							       prevsublen);
 		    // copy postfix
 		    if (!magic)
 			++p;			// back off backslash
-		    STRCPY(tmpsub + len + prevlen, p + 1);
+		    STRCPY(tmpsub + prefixlen + prevsublen, p + 1);
 
-		    if (newsub != source)	// already allocated newsub
+		    if (newsub != source)	// allocated newsub before
 			vim_free(newsub);
 		    newsub = tmpsub;
-		    p = newsub + len + prevlen;
+		    p = newsub + prefixlen + prevsublen;
 		}
 	    }
 	    else if (magic)
@@ -2013,7 +1996,7 @@ vim_regsub_both(
     // Be paranoid...
     if ((source == NULL && expr == NULL) || dest == NULL)
     {
-	emsg(_(e_null_argument));
+	iemsg(e_null_argument);
 	return 0;
     }
     if (prog_magic_wrong())
@@ -2042,7 +2025,8 @@ vim_regsub_both(
 	// "flags & REGSUB_COPY" != 0.
 	if (copy)
 	{
-	    if (eval_result[nested] != NULL)
+	    if (eval_result[nested] != NULL &&
+		    (int)STRLEN(eval_result[nested]) < destlen)
 	    {
 		STRCPY(dest, eval_result[nested]);
 		dst += STRLEN(eval_result[nested]);
@@ -2193,13 +2177,13 @@ vim_regsub_both(
 	    {
 		switch (*src++)
 		{
-		case 'u':   func_one = (fptr_T)do_upper;
+		case 'u':   func_one = do_upper;
 			    continue;
-		case 'U':   func_all = (fptr_T)do_Upper;
+		case 'U':   func_all = do_upper;
 			    continue;
-		case 'l':   func_one = (fptr_T)do_lower;
+		case 'l':   func_one = do_lower;
 			    continue;
-		case 'L':   func_all = (fptr_T)do_Lower;
+		case 'L':   func_all = do_lower;
 			    continue;
 		case 'e':
 		case 'E':   func_one = func_all = (fptr_T)NULL;
@@ -2266,11 +2250,12 @@ vim_regsub_both(
 
 	    // Write to buffer, if copy is set.
 	    if (func_one != (fptr_T)NULL)
-		// Turbo C complains without the typecast
-		func_one = (fptr_T)(func_one(&cc, c));
+	    {
+		func_one(&cc, c);
+		func_one = NULL;
+	    }
 	    else if (func_all != (fptr_T)NULL)
-		// Turbo C complains without the typecast
-		func_all = (fptr_T)(func_all(&cc, c));
+		func_all(&cc, c);
 	    else // just copy
 		cc = c;
 
@@ -2380,7 +2365,7 @@ vim_regsub_both(
 		    else if (*s == NUL) // we hit NUL.
 		    {
 			if (copy)
-			    iemsg(_(e_damaged_match_string));
+			    iemsg(e_damaged_match_string);
 			goto exit;
 		    }
 		    else
@@ -2414,11 +2399,12 @@ vim_regsub_both(
 				c = *s;
 
 			    if (func_one != (fptr_T)NULL)
-				// Turbo C complains without the typecast
-				func_one = (fptr_T)(func_one(&cc, c));
+			    {
+				func_one(&cc, c);
+				func_one = NULL;
+			    }
 			    else if (func_all != (fptr_T)NULL)
-				// Turbo C complains without the typecast
-				func_all = (fptr_T)(func_all(&cc, c));
+				func_all(&cc, c);
 			    else // just copy
 				cc = c;
 
@@ -2947,6 +2933,7 @@ vim_regexec_string(
     return result > 0;
 }
 
+#if defined(FEAT_SPELL) || defined(FEAT_EVAL) || defined(FEAT_X11) || defined(PROTO)
 /*
  * Note: "*prog" may be freed and changed.
  * Return TRUE if there is a match, FALSE if not.
@@ -2967,6 +2954,7 @@ vim_regexec_prog(
     *prog = regmatch.regprog;
     return r;
 }
+#endif
 
 /*
  * Note: "rmp->regprog" may be freed and changed.

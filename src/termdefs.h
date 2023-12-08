@@ -14,8 +14,8 @@
 
 #if defined(SASC) && SASC < 658
 /*
- * The SAS C compiler has a bug that makes typedefs being forgot in include
- * files.  Has been fixed in version 6.58.
+ * The SAS C compiler has a bug that makes typedefs being forgotten
+ * in include files.  Has been fixed in version 6.58.
  */
 typedef unsigned char char_u;
 #endif
@@ -69,6 +69,7 @@ enum SpecialKey
     KS_KE,	// out of "keypad transmit" mode
     KS_TI,	// put terminal in termcap mode
     KS_CTI,	// put terminal in "raw" mode
+    KS_CRK,	// request keyboard protocol state
     KS_TE,	// end of termcap mode
     KS_CTE,	// end of "raw" mode
     KS_BC,	// backspace character (cursor left)
@@ -94,6 +95,7 @@ enum SpecialKey
     KS_CGP,	// get window position
     KS_CWS,	// set window size in characters
     KS_CRV,	// request version string
+    KS_CXM,	// enable/disable mouse reporting
     KS_RFG,	// request foreground color
     KS_RBG,	// request background color
     KS_CSI,	// start insert mode (bar cursor)
@@ -107,8 +109,6 @@ enum SpecialKey
     KS_8U,	// set underline color (RGB)
     KS_CBE,	// enable bracketed paste mode
     KS_CBD,	// disable bracketed paste mode
-    KS_CPS,	// start of bracketed paste
-    KS_CPE,	// end of bracketed paste
     KS_CST,	// save window title
     KS_CRT,	// restore window title
     KS_SSI,	// save icon text
@@ -177,6 +177,7 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_KE	(TERM_STR(KS_KE))	// out of "keypad transmit" mode
 #define T_TI	(TERM_STR(KS_TI))	// put terminal in termcap mode
 #define T_CTI	(TERM_STR(KS_CTI))	// put terminal in "raw" mode
+#define T_CRK	(TERM_STR(KS_CRK))	// request keyboard protocol status
 #define T_TE	(TERM_STR(KS_TE))	// end of termcap mode
 #define T_CTE	(TERM_STR(KS_CTE))	// end of "raw" mode
 #define T_BC	(TERM_STR(KS_BC))	// backspace character
@@ -205,6 +206,7 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_CEI	(TERM_STR(KS_CEI))	// end insert mode
 #define T_CSR	(TERM_STR(KS_CSR))	// start replace mode
 #define T_CRV	(TERM_STR(KS_CRV))	// request version string
+#define T_CXM	(TERM_STR(KS_CXM))	// enable/disable mouse reporting
 #define T_RFG	(TERM_STR(KS_RFG))	// request foreground RGB
 #define T_RBG	(TERM_STR(KS_RBG))	// request background RGB
 #define T_OP	(TERM_STR(KS_OP))	// original color pair
@@ -214,8 +216,6 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_8U	(TERM_STR(KS_8U))	// set underline color (RGB)
 #define T_BE	(TERM_STR(KS_CBE))	// enable bracketed paste mode
 #define T_BD	(TERM_STR(KS_CBD))	// disable bracketed paste mode
-#define T_PS	(TERM_STR(KS_CPS))	// start of bracketed paste
-#define T_PE	(TERM_STR(KS_CPE))	// end of bracketed paste
 #define T_CST	(TERM_STR(KS_CST))	// save window title
 #define T_CRT	(TERM_STR(KS_CRT))	// restore window title
 #define T_SSI	(TERM_STR(KS_SSI))	// save icon text

@@ -7,6 +7,8 @@
 # FIRST RELEASE Thu Jun 14 14:24:17 CST 2001
 # MAINTAINER: Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 #
+# Original translations.
+#
 # Last update: $LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
 #
 # XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
@@ -2559,7 +2561,7 @@ msgstr ""
 "gvim 認得的參數 (Athena 版):\n"
 
 msgid "-display <display>\tRun Vim on <display>"
-msgstr "-display <display>\t在視窗 <display> 執行 vim"
+msgstr "-display <display>\t在視窗 <display> 執行 Vim"
 
 msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\t啟動後圖示化(iconified)"
@@ -3221,7 +3223,7 @@ msgstr "行 %4ld:"
 msgid "[string too long]"
 msgstr "[此行過長]"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "正體中文訊息維護者: Francis S.Lin <piaip@csie.ntu.edu."
 "tw>,                                 Cecil Sheng   <b7506022@csie.ntu.edu.tw>"

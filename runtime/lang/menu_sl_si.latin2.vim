@@ -15,13 +15,13 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding latin2
+scriptencoding iso-8859-2
 
 " {{{ FILE / DATOTEKA
 menutrans &File				&Datoteka
 menutrans &Open\.\.\.<Tab>:e		&Odpri\ \.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Odpri\ de&ljeno\ \.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Odpri\ v\ zavi&hku\ \.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Odpri\ v\ zavi&hku\ \.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Nova<Tab>:enew
 menutrans &Close<Tab>:close		&Zapri<Tab>:close
 menutrans &Save<Tab>:w			&Shrani<Tab>:w

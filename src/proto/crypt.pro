@@ -4,12 +4,13 @@ int crypt_method_nr_from_name(char_u *name);
 int crypt_method_nr_from_magic(char *ptr, int len);
 int crypt_works_inplace(cryptstate_T *state);
 int crypt_get_method_nr(buf_T *buf);
+int crypt_method_is_sodium(int method);
 int crypt_whole_undofile(int method_nr);
 int crypt_get_header_len(int method_nr);
 int crypt_get_max_header_len(void);
 void crypt_set_cm_option(buf_T *buf, int method_nr);
 int crypt_self_test(void);
-cryptstate_T *crypt_create(int method_nr, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+cryptstate_T *crypt_create(int method_nr, char_u *key, crypt_arg_T *crypt_arg);
 cryptstate_T *crypt_create_from_header(int method_nr, char_u *key, char_u *header);
 cryptstate_T *crypt_create_from_file(FILE *fp, char_u *key);
 cryptstate_T *crypt_create_for_writing(int method_nr, char_u *key, char_u **header, int *header_len);
@@ -21,9 +22,13 @@ void crypt_encode_inplace(cryptstate_T *state, char_u *buf, size_t len, int last
 void crypt_decode_inplace(cryptstate_T *state, char_u *buf, size_t len, int last);
 void crypt_free_key(char_u *key);
 void crypt_check_method(int method);
+void crypt_check_swapfile_curbuf(void);
 void crypt_check_current_method(void);
 char_u *crypt_get_key(int store, int twice);
 void crypt_append_msg(buf_T *buf);
+void crypt_sodium_lock_key(char_u *key);
 int crypt_sodium_munlock(void *const addr, const size_t len);
 void crypt_sodium_randombytes_buf(void *const buf, const size_t size);
+int crypt_sodium_init(void);
+UINT32_T crypt_sodium_randombytes_random(void);
 /* vim: set ft=c : */

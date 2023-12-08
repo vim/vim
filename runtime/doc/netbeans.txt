@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 9.0.  Last change: 2022 Apr 03
+*netbeans.txt*  For Vim version 9.0.  Last change: 2023 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -846,7 +846,7 @@ REJECT		Not used.
 These errors occur when a message violates the protocol:
 *E627* *E628* *E629* *E632* *E633* *E634* *E635* *E636*
 *E637* *E638* *E639* *E640* *E641* *E642* *E643* *E644* *E645* *E646*
-*E647* *E648* *E649* *E650* *E651* *E652*
+*E647* *E648* *E650* *E651* *E652*
 
 
 ==============================================================================

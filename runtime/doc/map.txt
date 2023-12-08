@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Oct 19
+*map.txt*       For Vim version 9.0.  Last change: 2023 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,18 +10,20 @@ This subject is introduced in sections |05.4|, |24.7| and |40.1| of the user
 manual.
 
 1. Key mapping			|key-mapping|
-   1.1 MAP COMMANDS			|:map-commands|
-   1.2 Special arguments		|:map-arguments|
-   1.3 Mapping and modes		|:map-modes|
-   1.4 Listing mappings			|map-listing|
-   1.5 Mapping special keys		|:map-special-keys|
-   1.6 Special characters		|:map-special-chars|
-   1.7 What keys to map			|map-which-keys|
-   1.8 Examples				|map-examples|
-   1.9 Using mappings			|map-typing|
-   1.10 Mapping alt-keys		|:map-alt-keys|
-   1.11 Mapping in modifyOtherKeys mode	|modifyOtherKeys|
-   1.12 Mapping an operator		|:map-operator|
+   1.1 MAP COMMANDS				|:map-commands|
+   1.2 Special arguments			|:map-arguments|
+   1.3 Mapping and modes			|:map-modes|
+   1.4 Listing mappings				|map-listing|
+   1.5 Mapping special keys			|:map-special-keys|
+   1.6 Special characters			|:map-special-chars|
+   1.7 What keys to map				|map-which-keys|
+   1.8 Examples					|map-examples|
+   1.9 Using mappings				|map-typing|
+   1.10 Mapping alt-keys			|:map-alt-keys|
+   1.11 Mapping meta-keys			|:map-meta-keys|
+   1.12 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
+   1.13 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
+   1.14 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -234,6 +236,9 @@ The search string will not be echoed when using this mapping.  Messages from
 the executed command are still given though.  To shut them up too, add a
 ":silent" in the executed command: >
 	:map <silent> ,h :exe ":silent normal /Header\r"<CR>
+Note that the effect of a command might also be silenced, e.g., when the
+mapping selects another entry for command line completion it won't be
+displayed.
 Prompts will still be given, e.g., for inputdialog().
 Using "<silent>" for an abbreviation is possible, but will cause redrawing of
 the command line to fail.
@@ -395,17 +400,13 @@ Note:
 - The command is not echo'ed, no need for <silent>.
 - The {rhs} is not subject to abbreviations nor to other mappings, even if the
   mapping is recursive.
-- In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
+- In Visual mode you can use `line('v')` and `col('v')` to get one end of the
   Visual area, the cursor is at the other end.
 
 							*E1255* *E1136*
 <Cmd> and <ScriptCmd> commands must terminate, that is, they must be followed
 by <CR> in the {rhs} of the mapping definition.  |Command-line| mode is never
 entered.
-
-							*E1137*
-<Cmd> and <ScriptCmd> commands can have only normal characters and cannot
-contain special characters like function keys.
 
 
 1.3 MAPPING AND MODES					*:map-modes*
@@ -580,6 +581,9 @@ is the start of the last selected Visual area in the current buffer |'<|.
 
 The |:filter| command can be used to select what mappings to list.  The
 pattern is matched against the {lhs} and {rhs} in the raw form.
+
+While mappings are being listed, it is not possible to add or clear mappings,
+e.g. from a timer callback. *E1309*
 
 							*:map-verbose*
 When 'verbose' is non-zero, listing a key map will also display where it was
@@ -770,8 +774,8 @@ To avoid mapping of the characters you type in insert or Command-line mode,
 type a CTRL-V first.  The mapping in Insert mode is disabled if the 'paste'
 option is on.
 							*map-error*
-Note that when an error is encountered (that causes an error message or beep)
-the rest of the mapping is not executed.  This is Vi-compatible.
+Note that when an error is encountered (that causes an error message or might
+cause a beep) the rest of the mapping is not executed.  This is Vi-compatible.
 
 Note that the second character (argument) of the commands @zZtTfF[]rm'`"v
 and CTRL-X is not mapped.  This was done to be able to use all the named
@@ -787,8 +791,8 @@ otherwise you would not be able to use those commands anymore.  Here are a few
 suggestions:
 - Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
   <S-F2>, etc.  Note that <F1> is already used for the help command.
-- Meta-keys (with the ALT key pressed).  Depending on your keyboard accented
-  characters may be used as well. |:map-alt-keys|
+- Any key with the Alt or Meta key pressed.  Depending on your keyboard
+  accented characters may be used as well. |:map-alt-keys|
 - Use the '_' or ',' character and then any other character.  The "_" and ","
   commands do exist in Vim (see |_| and |,|), but you probably never use them.
 - Use a key that is a synonym for another command.  For example: CTRL-P and
@@ -837,7 +841,7 @@ option).  After that it assumes that the 'q' is to be interpreted as such.  If
 you type slowly, or your system is slow, reset the 'timeout' option.  Then you
 might want to set the 'ttimeout' option.
 
-			      				*map-precedence*
+							*map-precedence*
 Buffer-local mappings (defined using |:map-<buffer>|) take precedence over
 global mappings.  When a buffer-local mapping is the same as a global mapping,
 Vim will use the buffer-local mapping.  In addition, Vim will use a complete
@@ -915,12 +919,19 @@ in the original Vi, you would get back the text before the first undo).
 
 1.10 MAPPING ALT-KEYS					*:map-alt-keys*
 
+For a readable mapping command the <A-k> form can be used.  Note that <A-k>
+and <A-K> are different, the latter will use an upper case letter.  Actually,
+<A-K> and <A-S-K> are the same.  Instead of "A" you can use "M".  If you have
+an actual Meta modifier key, please see |:map-meta-keys|.
+
 In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
 always work.  But in a terminal Vim gets a sequence of bytes and has to figure
 out whether ALT was pressed or not.
 
 If the terminal supports the modifyOtherKeys mode and it has been enabled,
 then Vim can recognize more key combinations, see |modifyOtherKeys| below.
+The Kitty keyboard protocol works in a similar way, see
+|kitty-keyboard-protocol|.
 
 By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
 character.  Most decent terminals can work that way, such as xterm, aterm and
@@ -959,17 +970,36 @@ on the terminal; that's a good last resource in case you want to send ESC when
 using other applications but not when inside Vim.
 
 
-1.11 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
+1.11 MAPPING META-KEYS					*:map-meta-keys*
+
+Mapping keys with the Meta modifier works very similar to using the Alt key.
+What key on your keyboard produces the Meta modifier depends on your keyboard
+and configuration.
+
+Note that mapping <M-a> actually is for using the Alt key.  That can be
+confusing!  It cannot be changed, it would not be backwards compatible.
+
+For the Meta modifier the "T" character is used.  For example, to map Meta-b
+in Insert mode: >
+	:imap <T-b> terrible
+
+
+1.12 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
 
 Xterm and a few other terminals can be put in a mode where keys with modifiers
 are sent with a special escape code.  Vim recognizes these codes and can then
 make a difference between CTRL-H and Backspace, even when Backspace sends the
-character 8.  And many more special keys.
+character 8.  And many more special keys, such as Tab and CTRL-I, which cannot
+be mapped separately otherwise.
 
 For xterm modifyOtherKeys is enabled in the builtin termcap entry.  If this is
 not used you can enable modifyOtherKeys with these lines in your vimrc: >
       let &t_TI = "\<Esc>[>4;2m"
       let &t_TE = "\<Esc>[>4;m"
+
+This sets modifyOtherKeys to level 2.  Note that modifyOtherKeys level 1 does
+not work.  Some terminals do not support level 2 and then send key codes that
+Vim will not be able to correctly recognize.
 
 In case the modifyOtherKeys mode causes problems you can disable it: >
       let &t_TI = ""
@@ -989,21 +1019,61 @@ mapping, see |map-bar|.
 WARNING: if you map <C-[> you may very well break any key codes that start
 with Esc.  Make sure it comes AFTER other mappings.
 
-Vim automatically detects if the modifyOtherKeys mode was enabled when it
-spots an escape sequence that must have been created by it.  To see if Vim
-detected such an escape sequence use `:verbose map`, the first line will then
-show "Seen modifyOtherKeys: true" (possibly translated).
+Starting with xterm version 377 Vim can detect the modifyOtherKeys state by
+requesting it.  For this the 't_RK' termcap entry is used.  When the response
+is found then Vim will know whether modifyOtherKeys level 2 is enabled, and
+handle mappings accordingly.
+
+Before version 377 Vim automatically detects if the modifyOtherKeys mode was
+enabled when it spots an escape sequence that must have been created by it.
+To see if Vim detected such an escape sequence use `:verbose map`, the first
+line will then show "Seen modifyOtherKeys: true" (possibly translated).
+
+This automatic detection depends on receiving an escape code starting with
+"<1b>[27;".  This is the normal way xterm sends these key codes.  However, if
+the *formatOtherKeys* resource is set another form is used that is not
+recognized, therefore you must not set formatOtherKeys.
 
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
 enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
-modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
+modifyOtherKeys is off, if you get <1b>[27;5;118~ then it is on.
+
+Note that xterm up to version 376 has a bug that makes Shift-Esc send a
+regular Esc code, the Shift modifier is dropped.
 
 When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
-1.12 MAPPING AN OPERATOR				*:map-operator*
+1.13 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
+
+If the value of 'term' contains "kitty" then Vim will send out an escape
+sequence to enable the Kitty keyboard protocol.  This can be changed with the
+'keyprotocol' option.
+
+Like modifyOtherKeys, this will make it possible to distinguish between more
+keys with modifiers.  Also, this protocol sends an escape sequence for the Esc
+key, so that Vim does not need to use a timeout to know whether receiving an
+Esc character means the Esc key was pressed or it's the start of an escape
+sequence.
+
+Vim automatically detects if the Kitty keyboard protocol was enabled when it
+spots the response to the status request (this should be part of the |t_TI|
+termcap entry).  To see if Vim detected such an escape sequence use: >
+	:verbose map
+The first line will then show "Kitty keyboard protocol: {value}" (possibly
+translated).  The meaning of {value}:
+	Unknown		no status received yet
+	Off		protocol is not used
+	On		protocol is used
+	Disabled	protocol was used but expected to have been disabled
+			by 't_TE'
+	Cleared		protocol expected to have been disabled by 't_TE',
+			previous state is unknown
+
+
+1.14 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create a mapping that first sets the 'operatorfunc' option and then
@@ -1143,7 +1213,7 @@ non-id	  The "non-id" type ends in a non-keyword character, the other
 Examples of strings that cannot be abbreviations: "a.b", "#def", "a b", "_$r"
 
 An abbreviation is only recognized when you type a non-keyword character.
-This can also be the <Esc> that ends insert mode or the <CR> that ends a
+This can also be the <Esc> that ends Insert mode or the <CR> that ends a
 command.  The non-keyword character which ends the abbreviation is inserted
 after the expanded abbreviation.  An exception to this is the character <C-]>,
 which is used to expand an abbreviation without inserting any extra
@@ -1347,12 +1417,13 @@ this, they can be made local to the script.
 
 						*<SID>* *<SNR>* *E81*
 The string "<SID>" can be used in a mapping or menu.  This requires that the
-'<' flag is not present in 'cpoptions'.
+'<' flag is not present in 'cpoptions'.  This is useful if you have a
+script-local function that you want to call from a mapping in the same script.
    When executing the map command, Vim will replace "<SID>" with the special
 key code <SNR>, followed by a number that's unique for the script, and an
 underscore.  Example: >
 	:map <SID>Add
-could define a mapping "<SNR>23_Add".
+would define a mapping "<SNR>23_Add".
 
 When defining a function in a script, "s:" can be prepended to the name to
 make it local to the script (in |Vim9| script functions without a prefix are
@@ -1473,6 +1544,8 @@ See |:verbose-cmd| for more information.
 
 :delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
 			Delete the user-defined command {cmd}.
+			This is not allowed while listing commands, e.g. from
+			a timer. *E1311*
 
 :delc[ommand] -buffer {cmd}					*E1237*
 			Delete the user-defined command {cmd} that was defined
@@ -1488,6 +1561,11 @@ User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
 command's attributes, which are specified when the command is defined.
+
+When defining a user command in a script, it will be able to call functions
+local to the script and use mappings local to the script.  When the user
+invokes the user command, it will run in the context of the script it was
+defined in.  This matters if |<SID>| is used in a command.
 
 There are a number of attributes, split into four categories: argument
 handling, completion behavior, range handling, and special cases.  The
@@ -1641,7 +1719,7 @@ Possible attributes are:
 		    number.
 	-count=N    A count (default N) which is specified either in the line
 		    number position, or as an initial argument (like |:Next|).
-	-count	    acts like -count=0
+	-count	    Acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
@@ -1652,14 +1730,14 @@ by default correspond to the current line, last line and the whole buffer,
 relate to arguments, (loaded) buffers, windows or tab pages.
 
 Possible values are (second column is the short name used in listing):
-    -addr=lines		  	Range of lines (this is the default for -range)
+    -addr=lines			Range of lines (this is the default for -range)
     -addr=arguments	  arg	Range for arguments
     -addr=buffers	  buf	Range for buffers (also not loaded buffers)
     -addr=loaded_buffers  load	Range for loaded buffers
     -addr=windows	  win	Range for windows
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
-    -addr=other		  ?	other kind of range; can use ".", "$" and "%"
+    -addr=other		  ?	Other kind of range; can use ".", "$" and "%"
 				as with "lines" (this is the default for
 				-count)
 
@@ -1703,6 +1781,11 @@ There must be white space before the "{".  No nesting is supported, inline
 functions cannot be used.  Commands where a "|" may appear in the argument,
 such as commands with an expression argument, cannot be followed by a "|" and
 another command.
+
+If the command is defined in Vim9 script (a script that starts with
+`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
+script.  Thus this depends on where the command is defined, not where it is
+used.
 
 The replacement text {repl} for a user defined command is scanned for special
 escape sequences, using <...> notation.  Escape sequences are replaced with
@@ -1790,7 +1873,13 @@ remains unmodified.  Also see |f-args-example| below.  Overview:
 	XX a\\\ b	   'a\ b'
 	XX a\\\\b	   'a\\b'
 	XX a\\\\ b	   'a\\', 'b'
+	XX		   [nothing]
 
+
+Note that if the "no arguments" situation is to be handled, you have to make
+sure that the function can be called without arguments.  For a compiled
+function you might want to use variable arguments, see
+|vim9-variable-arguments|.
 
 Examples for user commands: >
 
@@ -1817,7 +1906,7 @@ When executed as: >
 This will invoke: >
 	:call Myfunc("arg1","arg2")
 
-<						*q-args-example* 
+<						*q-args-example*
 A more substantial example: >
    :function Allargs(command)
    :   let i = 0
@@ -1838,14 +1927,5 @@ errors and the "update" command to write modified buffers): >
 This will invoke: >
 	:call Allargs("%s/foo/bar/ge|update")
 <
-If the command is defined in Vim9 script (a script that starts with
-`:vim9script` and in a `:def` function) then {repl} will be executed as in Vim9
-script.  Thus this depends on where the command is defined, not where it is
-used.
-
-When defining a user command in a script, it will be able to call functions
-local to the script and use mappings local to the script.  When the user
-invokes the user command, it will run in the context of the script it was
-defined in.  This matters if |<SID>| is used in a command.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

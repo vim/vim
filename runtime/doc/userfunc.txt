@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Sep 09
+*userfunc.txt*	For Vim version 9.0.  Last change: 2023 May 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8,8 +8,8 @@ Defining and using functions.
 
 This is introduced in section |41.7| of the user manual.
 
-1. Defining a fuction			|define-function|
-2. Calling a fuction			|:call|
+1. Defining a function			|define-function|
+2. Calling a function			|:call|
 3. Cleaning up in a function		|:defer|
 4. Automatically loading functions	|autoload-functions|
 
@@ -51,6 +51,13 @@ define a global function.
 			{name} can also be a |Dictionary| entry that is a
 			|Funcref|: >
 				:function dict.init
+<			Note that {name} is not an expression, you cannot use
+			a variable that is a function reference.  You can use
+			this dirty trick to list the function referred to with
+			variable "Funcref": >
+				let g:MyFuncref = Funcref
+				func g:MyFuncref
+				unlet g:MyFuncref
 
 :fu[nction] /{pattern}	List functions with a name matching {pattern}.
 			Example that lists all functions ending with "File": >
@@ -187,12 +194,21 @@ See |:verbose-cmd| for more information.
 			If "[expr]" is not given, the number 0 is returned.
 			When a function ends without an explicit ":return",
 			the number 0 is returned.
+
 			In a :def function *E1095* is given if unreachable
 			code follows after the `:return`.
 			In legacy script there is no check for unreachable
 			lines, thus there is no warning if commands follow
-			`:return`.
-
+			`:return`.  Also, there is no check if the following
+			line contains a valid command.  Forgetting the line
+			continuation backslash may go unnoticed: >
+				return 'some text'
+				       .. ' some more text'
+<			Will happily return "some text" without an error.  It
+			should have been: >
+				return 'some text'
+				       \ .. ' some more text'
+<
 			If the ":return" is used after a |:try| but before the
 			matching |:finally| (if present), the commands
 			following the ":finally" up to the matching |:endtry|
@@ -202,7 +218,8 @@ See |:verbose-cmd| for more information.
 
 						*function-argument* *a:var*
 An argument can be defined by giving its name.  In the function this can then
-be used as "a:name" ("a:" for argument).
+be used as "a:name" ("a:" for argument) (in a `:def` function "a:" is not
+used).
 					*a:0* *a:1* *a:000* *E740* *...*
 Up to 20 arguments can be given, separated by commas.  After the named
 arguments an argument "..." can be specified, which means that more arguments
@@ -237,9 +254,10 @@ Example: >
   call Something('key', 20)	"key: 20"
 
 The argument default expressions are evaluated at the time of the function
-call, not definition.  Thus it is possible to use an expression which is
-invalid the moment the function is defined.  The expressions are also only
-evaluated when arguments are not specified during a call.
+call, not when the function is defined.  Thus it is possible to use an
+expression which is invalid the moment the function is defined.  The
+expressions are also only evaluated when arguments are not specified during a
+call.
 						*none-function_argument*
 You can pass |v:none| to use the default expression.  Note that this means you
 cannot pass v:none as an ordinary value when an argument has a default
@@ -405,7 +423,7 @@ function to abort.  `:defer` can be used to avoid that: >
 	  call Handle('Outfile')
 	endfunc
 
-Note that deleting "Outfile" is scheduled before calling system(), since it
+Note that deleting "Outfile" is scheduled before calling `system()`, since it
 can be created even when `system()` fails.
 
 The deferred functions are called in reverse order, the last one added is
@@ -425,7 +443,8 @@ Any return value of the deferred function is discarded.  The function cannot
 be followed by anything, such as "->func" or ".member".  Currently `:defer
 GetArg()->TheFunc()` does not work, it may work in a later version.
 
-Errors are reported but do not cause aborting execution of deferred functions.
+Errors are reported but do not cause aborting execution of deferred functions
+or altering execution outside of deferred functions.
 
 No range is accepted.  The function can be a partial with extra arguments, but
 not with a dictionary. *E1300*

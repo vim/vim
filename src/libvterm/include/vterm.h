@@ -21,8 +21,13 @@ typedef unsigned char		uint8_t;
 typedef unsigned short		uint16_t;
 typedef unsigned int		uint32_t;
 
+// VIM: define max screen cols and rows
+#define VTERM_MAX_COLS 1000
+#define VTERM_MAX_ROWS 1000
+
 #define VTERM_VERSION_MAJOR 0
 #define VTERM_VERSION_MINOR 3
+#define VTERM_VERSION_PATCH 3
 
 #define VTERM_CHECK_VERSION \
         vterm_check_version(VTERM_VERSION_MAJOR, VTERM_VERSION_MINOR)
@@ -255,6 +260,7 @@ typedef enum {
   VTERM_PROP_REVERSE,           // bool
   VTERM_PROP_CURSORSHAPE,       // number
   VTERM_PROP_MOUSE,             // number
+  VTERM_PROP_FOCUSREPORT,       // bool
   VTERM_PROP_CURSORCOLOR,       // VIM - string
 
   VTERM_N_PROPS
@@ -368,6 +374,7 @@ size_t vterm_output_get_buffer_remaining(const VTerm *vt);
 size_t vterm_output_read(VTerm *vt, char *buffer, size_t len);
 
 int vterm_is_modify_other_keys(VTerm *vt);
+int vterm_is_kitty_keyboard(VTerm *vt);
 void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod);
 void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod);
 
@@ -420,6 +427,11 @@ typedef struct {
 
 void  vterm_parser_set_callbacks(VTerm *vt, const VTermParserCallbacks *callbacks, void *user);
 void *vterm_parser_get_cbdata(VTerm *vt);
+
+/* Normally NUL, CAN, SUB and DEL are ignored. Setting this true causes them
+ * to be emitted by the 'control' callback
+ */
+void vterm_parser_set_emit_nul(VTerm *vt, int emit);
 
 // -----------
 // State layer
@@ -643,6 +655,12 @@ int vterm_screen_is_eol(const VTermScreen *screen, VTermPos pos);
  * instance.
  */
 void vterm_screen_convert_color_to_rgb(const VTermScreen *screen, VTermColor *col);
+
+/**
+ * Similar to vterm_state_set_default_colors(), but also resets colours in the
+ * screen buffer(s)
+ */
+void vterm_screen_set_default_colors(VTermScreen *screen, const VTermColor *default_fg, const VTermColor *default_bg);
 
 // ---------
 // Utilities

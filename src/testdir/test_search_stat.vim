@@ -153,7 +153,6 @@ func Test_search_stat()
     let g:a = execute(':unsilent :norm! n')
     let stat = 'W \[20/1\]'
     call assert_match(pat .. stat, g:a)
-    call assert_match('search hit BOTTOM, continuing at TOP', g:a)
     set norl
   endif
 
@@ -164,7 +163,6 @@ func Test_search_stat()
   let g:a = execute(':unsilent :norm! N')
   let stat = 'W \[20/20\]'
   call assert_match(pat .. stat, g:a)
-  call assert_match('search hit TOP, continuing at BOTTOM', g:a)
   call assert_match('W \[20/20\]', Screenline(&lines))
 
   " normal, no match
@@ -268,6 +266,29 @@ func Test_searchcount_fails()
   call assert_fails('echo searchcount({"pos" : [[], 2, 3]})', 'E745:')
   call assert_fails('echo searchcount({"pos" : [1, [], 3]})', 'E745:')
   call assert_fails('echo searchcount({"pos" : [1, 2, []]})', 'E745:')
+endfunc
+
+func Test_search_stat_narrow_screen()
+  " This used to crash Vim
+  let save_columns = &columns
+  try
+    let after =<< trim [CODE]
+      set laststatus=2
+      set columns=16
+      set shortmess-=S showcmd
+      call setline(1, 'abc')
+      call feedkeys("/abc\<CR>:quit!\<CR>")
+      autocmd VimLeavePre * call writefile(["done"], "Xdone")
+    [CODE]
+
+    if !RunVim([], after, '--clean')
+      return
+    endif
+    call assert_equal("done", readfile("Xdone")[0])
+    call delete('Xdone')
+  finally
+    let &columns = save_columns
+  endtry
 endfunc
 
 func Test_searchcount_in_statusline()
@@ -409,5 +430,33 @@ func Test_search_stat_and_incsearch()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_search_stat_backwards()
+  CheckScreendump
+
+  let lines =<< trim END
+    set shm-=S
+    call setline(1, ['test', ''])
+  END
+  call writefile(lines, 'Xsearchstat_back', 'D')
+
+  let buf = RunVimInTerminal('-S Xsearchstat_back', #{rows: 10})
+  call term_sendkeys(buf, "*")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_searchstat_back_1', {})
+
+  call term_sendkeys(buf, "N")
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_searchstat_back_2', {})
+
+  call term_sendkeys(buf, ":set shm+=S\<cr>N")
+  call TermWait(buf)
+  " shows "Search Hit Bottom.."
+  call VerifyScreenDump(buf, 'Test_searchstat_back_3', {})
+
+  call term_sendkeys(buf, "\<esc>:qa\<cr>")
+  call TermWait(buf)
+
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

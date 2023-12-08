@@ -10,6 +10,6 @@ int debug_has_expr_breakpoint(void);
 void ex_breakdel(exarg_T *eap);
 void ex_breaklist(exarg_T *eap);
 linenr_T dbg_find_breakpoint(int file, char_u *fname, linenr_T after);
-int has_profiling(int file, char_u *fname, int *fp);
+int has_profiling(int file, char_u *fname, int *fp, hash_T *hash);
 void dbg_breakpoint(char_u *name, linenr_T lnum);
 /* vim: set ft=c : */

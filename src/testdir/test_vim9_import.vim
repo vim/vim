@@ -2034,6 +2034,15 @@ def Test_source_vim9_from_legacy()
   source Xlegacy_script.vim
   assert_equal('global', g:global)
   unlet g:global
+
+  legacy_lines =<< trim END
+    import './Xvim9_script.vim'
+    let g:global = s:Xvim9_script.GetText()
+  END
+  writefile(legacy_lines, 'Xlegacyimport.vim', 'D')
+  source Xlegacyimport.vim
+  assert_equal('text', g:global)
+  unlet g:global
 enddef
 
 def Test_import_vim9_from_legacy()
@@ -2647,7 +2656,7 @@ def Test_autoload_mapping()
 
       import autoload 'toggle.vim'
 
-      nnoremap <silent> <expr> tt toggle.Toggle() 
+      nnoremap <silent> <expr> tt toggle.Toggle()
       nnoremap <silent> xx <ScriptCmd>toggle.Doit()<CR>
       nnoremap <silent> yy <Cmd>toggle.Doit()<CR>
   END
@@ -2908,6 +2917,16 @@ def Test_vim9_import_symlink()
     &rtp = save_rtp
     delete('Xfrom', 'rf')
   endif
+enddef
+
+def Test_export_in_conditional_block()
+  var lines =<< trim END
+      vim9script
+      if exists('this_will_fail')
+        export var MyVar = "hello"
+      endif
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 

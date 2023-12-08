@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.0.  Last change: 2022 May 13
+*help.txt*	For Vim version 9.0.  Last change: 2022 Dec 03
 
 			VIM - main help file
 									 k
@@ -153,6 +153,7 @@ Special issues ~
 |terminal.txt|	Terminal window support
 |popup.txt|	popup window support
 |vim9.txt|	using Vim9 script
+|vim9class.txt|	using Vim9 script classes
 
 Programming language support ~
 |indent.txt|	automatic indenting for C and other languages
@@ -161,6 +162,8 @@ Programming language support ~
 |filetype.txt|	settings done specifically for a type of file
 |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |ft_ada.txt|	Ada (the programming language) support
+|ft_context.txt|	Filetype plugin for ConTeXt
+|ft_mp.txt|	Filetype plugin for METAFONT and MetaPost
 |ft_ps1.txt|	Filetype plugin for Windows PowerShell
 |ft_raku.txt|	Filetype plugin for Raku
 |ft_rust.txt|	Filetype plugin for Rust

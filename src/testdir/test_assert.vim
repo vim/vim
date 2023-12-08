@@ -1,16 +1,19 @@
 " Test that the methods used for testing work.
 
+source check.vim
+source term_util.vim
+
 func Test_assert_false()
   call assert_equal(0, assert_false(0))
   call assert_equal(0, assert_false(v:false))
   call assert_equal(0, v:false->assert_false())
 
   call assert_equal(1, assert_false(123))
-  call assert_match("Expected 'False' but got 123", v:errors[0])
+  call assert_match("Expected False but got 123", v:errors[0])
   call remove(v:errors, 0)
 
   call assert_equal(1, 123->assert_false())
-  call assert_match("Expected 'False' but got 123", v:errors[0])
+  call assert_match("Expected False but got 123", v:errors[0])
   call remove(v:errors, 0)
 endfunc
 
@@ -21,11 +24,11 @@ func Test_assert_true()
   call assert_equal(0, v:true->assert_true())
 
   call assert_equal(1, assert_true(0))
-  call assert_match("Expected 'True' but got 0", v:errors[0])
+  call assert_match("Expected True but got 0", v:errors[0])
   call remove(v:errors, 0)
 
   call assert_equal(1, 0->assert_true())
-  call assert_match("Expected 'True' but got 0", v:errors[0])
+  call assert_match("Expected True but got 0", v:errors[0])
   call remove(v:errors, 0)
 endfunc
 
@@ -187,9 +190,9 @@ func Test_wrong_error_type()
 endfunc
 
 func Test_compare_fail()
-  let s:v = {}          
-  let s:x = {"a": s:v} 
-  let s:v["b"] = s:x   
+  let s:v = {}
+  let s:x = {"a": s:v}
+  let s:v["b"] = s:x
   let s:w = {"c": s:x, "d": ''}
   try
     call assert_equal(s:w, '')
@@ -332,10 +335,44 @@ func Test_assert_fail_fails()
   call remove(v:errors, 0)
 endfunc
 
+func Test_assert_wrong_arg_emsg_off()
+  CheckFeature folding
+
+  new
+  call setline(1, ['foo', 'bar'])
+  1,2fold
+
+  " This used to crash Vim
+  let &l:foldtext = 'assert_match({}, {})'
+  redraw!
+
+  let &l:foldtext = 'assert_equalfile({}, {})'
+  redraw!
+
+  bwipe!
+endfunc
+
 func Test_assert_fails_in_try_block()
   try
     call assert_equal(0, assert_fails('throw "error"'))
   endtry
+endfunc
+
+" Test that assert_fails() in a timer does not cause a hit-enter prompt.
+" Requires using a terminal, in regular tests the hit-enter prompt won't be
+" triggered.
+func Test_assert_fails_in_timer()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', {'rows': 6})
+  let cmd = ":call timer_start(0, {-> assert_fails('call', 'E471:')})"
+  call term_sendkeys(buf, cmd)
+  call WaitForAssert({-> assert_equal(cmd, term_getline(buf, 6))})
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 100)
+  call assert_match('E471: Argument required', term_getline(buf, 6))
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_assert_beeps()
@@ -396,8 +433,11 @@ func Test_assert_inrange()
   call remove(v:errors, 0)
 
   " Use a custom message
+  call assert_equal(1, assert_inrange(5, 7, 8, "Higher"))
+  call assert_match("Higher: Expected range 5 - 7, but got 8", v:errors[0])
+  call remove(v:errors, 0)
   call assert_equal(1, assert_inrange(5, 7, 8.0, "Higher"))
-  call assert_match("Higher", v:errors[0])
+  call assert_match("Higher: Expected range 5.0 - 7.0, but got 8.0", v:errors[0])
   call remove(v:errors, 0)
 
   " Invalid arguments

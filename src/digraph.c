@@ -853,6 +853,7 @@ static digr_T digraphdefault[] = {
 	{'1', '\'', 0x2032},
 	{'2', '\'', 0x2033},
 	{'3', '\'', 0x2034},
+	{'4', '\'', 0x2057},
 	{'1', '"', 0x2035},
 	{'2', '"', 0x2036},
 	{'3', '"', 0x2037},
@@ -1533,29 +1534,30 @@ get_digraph(
     c = plain_vgetc();
     --no_mapping;
     --allow_keys;
-    if (c != ESC)		// ESC cancels CTRL-K
+
+    if (c == ESC)		// ESC cancels CTRL-K
+	return NUL;
+
+    if (IS_SPECIAL(c))	// insert special key code
+	return c;
+    if (cmdline)
     {
-	if (IS_SPECIAL(c))	// insert special key code
-	    return c;
-	if (cmdline)
-	{
-	    if (char2cells(c) == 1
+	if (char2cells(c) == 1
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-		    && cmdline_star == 0
+		&& cmdline_star == 0
 #endif
-		    )
-		putcmdline(c, TRUE);
-	}
-	else
-	    add_to_showcmd(c);
-	++no_mapping;
-	++allow_keys;
-	cc = plain_vgetc();
-	--no_mapping;
-	--allow_keys;
-	if (cc != ESC)	    // ESC cancels CTRL-K
-	    return digraph_get(c, cc, TRUE);
+	   )
+	    putcmdline(c, TRUE);
     }
+    else
+	add_to_showcmd(c);
+    ++no_mapping;
+    ++allow_keys;
+    cc = plain_vgetc();
+    --no_mapping;
+    --allow_keys;
+    if (cc != ESC)	    // ESC cancels CTRL-K
+	return digraph_get(c, cc, TRUE);
     return NUL;
 }
 
@@ -1681,14 +1683,14 @@ registerdigraph(int char1, int char2, int n)
     }
 
     // Add a new digraph to the table.
-    if (ga_grow(&user_digraphs, 1) == OK)
-    {
-	dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
-	dp->char1 = char1;
-	dp->char2 = char2;
-	dp->result = n;
-	++user_digraphs.ga_len;
-    }
+    if (ga_grow(&user_digraphs, 1) == FAIL)
+	return;
+
+    dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
+    dp->char1 = char1;
+    dp->char2 = char2;
+    dp->result = n;
+    ++user_digraphs.ga_len;
 }
 
 /*
@@ -1948,54 +1950,54 @@ printdigraph(digr_T *dp, result_T *previous)
     else
 	list_width = 11;
 
-    if (dp->result != 0)
-    {
+    if (dp->result == 0)
+	return;
+
 #if defined(USE_UNICODE_DIGRAPHS)
-	if (previous != NULL)
-	{
-	    int i;
+    if (previous != NULL)
+    {
+	int i;
 
-	    for (i = 0; header_table[i].dg_header != NULL; ++i)
-		if (*previous < header_table[i].dg_start
-			&& dp->result >= header_table[i].dg_start
-			&& dp->result < header_table[i + 1].dg_start)
-		{
-		    digraph_header(_(header_table[i].dg_header));
-		    break;
-		}
-	    *previous = dp->result;
-	}
-#endif
-	if (msg_col > Columns - list_width)
-	    msg_putchar('\n');
-	if (msg_col)
-	    while (msg_col % list_width != 0)
-		msg_putchar(' ');
-
-	p = buf;
-	*p++ = dp->char1;
-	*p++ = dp->char2;
-	*p++ = ' ';
-	*p = NUL;
-	msg_outtrans(buf);
-	p = buf;
-	if (has_mbyte)
-	{
-	    // add a space to draw a composing char on
-	    if (enc_utf8 && utf_iscomposing(dp->result))
-		*p++ = ' ';
-	    p += (*mb_char2bytes)(dp->result, p);
-	}
-	else
-	    *p++ = (char_u)dp->result;
-	*p = NUL;
-	msg_outtrans_attr(buf, HL_ATTR(HLF_8));
-	p = buf;
-	if (char2cells(dp->result) == 1)
-	    *p++ = ' ';
-	vim_snprintf((char *)p, sizeof(buf) - (p - buf), " %3d", dp->result);
-	msg_outtrans(buf);
+	for (i = 0; header_table[i].dg_header != NULL; ++i)
+	    if (*previous < header_table[i].dg_start
+		    && dp->result >= header_table[i].dg_start
+		    && dp->result < header_table[i + 1].dg_start)
+	    {
+		digraph_header(_(header_table[i].dg_header));
+		break;
+	    }
+	*previous = dp->result;
     }
+#endif
+    if (msg_col > Columns - list_width)
+	msg_putchar('\n');
+    if (msg_col)
+	while (msg_col % list_width != 0)
+	    msg_putchar(' ');
+
+    p = buf;
+    *p++ = dp->char1;
+    *p++ = dp->char2;
+    *p++ = ' ';
+    *p = NUL;
+    msg_outtrans(buf);
+    p = buf;
+    if (has_mbyte)
+    {
+	// add a space to draw a composing char on
+	if (enc_utf8 && utf_iscomposing(dp->result))
+	    *p++ = ' ';
+	p += (*mb_char2bytes)(dp->result, p);
+    }
+    else
+	*p++ = (char_u)dp->result;
+    *p = NUL;
+    msg_outtrans_attr(buf, HL_ATTR(HLF_8));
+    p = buf;
+    if (char2cells(dp->result) == 1)
+	*p++ = ' ';
+    vim_snprintf((char *)p, sizeof(buf) - (p - buf), " %3d", dp->result);
+    msg_outtrans(buf);
 }
 
 # ifdef FEAT_EVAL
@@ -2092,7 +2094,8 @@ f_digraph_get(typval_T *argvars, typval_T *rettv)
 
     if (has_mbyte)
 	buf[(*mb_char2bytes)(code, buf)] = NUL;
-    else {
+    else
+    {
 	buf[0] = code;
 	buf[1] = NUL;
     }

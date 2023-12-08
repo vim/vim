@@ -37,6 +37,7 @@ int mch_print_text_out(char_u *p, int len);
 void mch_print_set_font(int iBold, int iItalic, int iUnderline);
 void mch_print_set_bg(long_u bgcol);
 void mch_print_set_fg(long_u fgcol);
+char_u *resolve_reparse_point(char_u *fname);
 char_u *mch_resolve_path(char_u *fname, int reparse_point);
 void win32_set_foreground(void);
 void serverInitMessaging(void);
@@ -50,5 +51,6 @@ void serverProcessPendingMessages(void);
 char *charset_id2name(int id);
 char *quality_id2name(DWORD id);
 int get_logfont(LOGFONTW *lf, char_u *name, HDC printer_dc, int verbose);
+void gui_mch_expand_font(optexpand_T *args, void *param, int (*cb)(char_u *val));
 void channel_init_winsock(void);
 /* vim: set ft=c : */

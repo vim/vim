@@ -555,7 +555,8 @@ same_leader(
 		return FALSE;
 	    if (*p == COM_START)
 	    {
-		if (*(ml_get(lnum) + leader1_len) == NUL)
+		int line_len = (int)STRLEN(ml_get(lnum));
+		if (line_len <= leader1_len)
 		    return FALSE;
 		if (leader2_flags == NULL || leader2_len == 0)
 		    return FALSE;
@@ -751,26 +752,26 @@ check_auto_format(
     int		c = ' ';
     int		cc;
 
-    if (did_add_space)
+    if (!did_add_space)
+	return;
+
+    cc = gchar_cursor();
+    if (!WHITECHAR(cc))
+	// Somehow the space was removed already.
+	did_add_space = FALSE;
+    else
     {
-	cc = gchar_cursor();
-	if (!WHITECHAR(cc))
-	    // Somehow the space was removed already.
-	    did_add_space = FALSE;
-	else
+	if (!end_insert)
 	{
-	    if (!end_insert)
-	    {
-		inc_cursor();
-		c = gchar_cursor();
-		dec_cursor();
-	    }
-	    if (c != NUL)
-	    {
-		// The space is no longer at the end of the line, delete it.
-		del_char(FALSE);
-		did_add_space = FALSE;
-	    }
+	    inc_cursor();
+	    c = gchar_cursor();
+	    dec_cursor();
+	}
+	if (c != NUL)
+	{
+	    // The space is no longer at the end of the line, delete it.
+	    del_char(FALSE);
+	    did_add_space = FALSE;
 	}
     }
 }
@@ -988,7 +989,7 @@ format_lines(
     // length of a line to force formatting: 3 * 'tw'
     max_len = comp_textwidth(TRUE) * 3;
 
-    // check for 'q', '2' and '1' in 'formatoptions'
+    // check for 'q', '2', 'n' and 'w' in 'formatoptions'
     do_comments = has_format_option(FO_Q_COMS);
     do_second_indent = has_format_option(FO_Q_SECOND);
     do_number_indent = has_format_option(FO_Q_NUMBER);

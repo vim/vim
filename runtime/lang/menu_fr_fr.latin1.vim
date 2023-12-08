@@ -42,7 +42,7 @@ menutrans &File				&Fichier
 
 menutrans &Open\.\.\.<Tab>:e			&Ouvrir\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp		Ouvrir\ à\ p&art\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew		Ouvrir\ dans\ un\ onglet\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew		Ouvrir\ dans\ un\ onglet\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew			&Nouveau<Tab>:enew
 menutrans &Close<Tab>:close			&Fermer<Tab>:close
 " -SEP1-

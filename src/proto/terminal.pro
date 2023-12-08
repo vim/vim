@@ -2,6 +2,7 @@
 void init_job_options(jobopt_T *opt);
 buf_T *term_start(typval_T *argvar, char **argv, jobopt_T *opt, int flags);
 void ex_terminal(exarg_T *eap);
+int expand_terminal_opt(char_u *pat, expand_T *xp, regmatch_T *rmp, char_u ***matches, int *numMatches);
 int term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs);
 int term_should_restore(buf_T *buf);
 void free_terminal(buf_T *buf);
@@ -15,6 +16,7 @@ int term_try_stop_job(buf_T *buf);
 int term_check_timers(int next_due_arg, proftime_T *now);
 int term_in_normal_mode(void);
 void term_enter_job_mode(void);
+void check_no_reduce_keys(void);
 int send_keys_to_term(term_T *term, int c, int modmask, int typed);
 int terminal_is_active(void);
 cursorentry_T *term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg);

@@ -122,6 +122,7 @@ empty_pattern_magic(char_u *p, size_t len, magic_T magic_val)
 typedef struct {
     colnr_T	vs_curswant;
     colnr_T	vs_leftcol;
+    colnr_T	vs_skipcol;
     linenr_T	vs_topline;
 # ifdef FEAT_DIFF
     int		vs_topfill;
@@ -135,6 +136,7 @@ save_viewstate(viewstate_T *vs)
 {
     vs->vs_curswant = curwin->w_curswant;
     vs->vs_leftcol = curwin->w_leftcol;
+    vs->vs_skipcol = curwin->w_skipcol;
     vs->vs_topline = curwin->w_topline;
 # ifdef FEAT_DIFF
     vs->vs_topfill = curwin->w_topfill;
@@ -148,6 +150,7 @@ restore_viewstate(viewstate_T *vs)
 {
     curwin->w_curswant = vs->vs_curswant;
     curwin->w_leftcol = vs->vs_leftcol;
+    curwin->w_skipcol = vs->vs_skipcol;
     curwin->w_topline = vs->vs_topline;
 # ifdef FEAT_DIFF
     curwin->w_topfill = vs->vs_topfill;
@@ -368,35 +371,36 @@ finish_incsearch_highlighting(
 	incsearch_state_T *is_state,
 	int call_update_screen)
 {
-    if (is_state->did_incsearch)
+    if (!is_state->did_incsearch)
+	return;
+
+    is_state->did_incsearch = FALSE;
+    if (gotesc)
+	curwin->w_cursor = is_state->save_cursor;
+    else
     {
-	is_state->did_incsearch = FALSE;
-	if (gotesc)
-	    curwin->w_cursor = is_state->save_cursor;
-	else
+	if (!EQUAL_POS(is_state->save_cursor, is_state->search_start))
 	{
-	    if (!EQUAL_POS(is_state->save_cursor, is_state->search_start))
-	    {
-		// put the '" mark at the original position
-		curwin->w_cursor = is_state->save_cursor;
-		setpcmark();
-	    }
-	    curwin->w_cursor = is_state->search_start;
+	    // put the '" mark at the original position
+	    curwin->w_cursor = is_state->save_cursor;
+	    setpcmark();
 	}
-	restore_viewstate(&is_state->old_viewstate);
-	highlight_match = FALSE;
-
-	// by default search all lines
-	search_first_line = 0;
-	search_last_line = MAXLNUM;
-
-	magic_overruled = is_state->magic_overruled_save;
-
-	validate_cursor();	// needed for TAB
-	redraw_all_later(UPD_SOME_VALID);
-	if (call_update_screen)
-	    update_screen(UPD_SOME_VALID);
+	curwin->w_cursor = is_state->search_start;
     }
+    restore_viewstate(&is_state->old_viewstate);
+    highlight_match = FALSE;
+
+    // by default search all lines
+    search_first_line = 0;
+    search_last_line = MAXLNUM;
+
+    magic_overruled = is_state->magic_overruled_save;
+
+    validate_cursor();	// needed for TAB
+    status_redraw_all();
+    redraw_all_later(UPD_SOME_VALID);
+    if (call_update_screen)
+	update_screen(UPD_SOME_VALID);
 }
 
 /*
@@ -559,6 +563,7 @@ may_do_incsearch_highlighting(
     }
 
     validate_cursor();
+
     // May redraw the status line to show the cursor position.
     if (p_ru && curwin->w_status_height > 0)
 	curwin->w_redr_status = TRUE;
@@ -796,12 +801,13 @@ cmdline_init(void)
 }
 
 /*
- * Handle the backslash key pressed in the command-line mode.  CTRL-\ CTRL-N
- * goes to Normal mode, CTRL-\ CTRL-G goes to Insert mode when 'insertmode' is
- * set, CTRL-\ e prompts for an expression.
+ * Handle CTRL-\ pressed in Command-line mode:
+ * - CTRL-\ CTRL-N goes to Normal mode
+ * - CTRL-\ CTRL-G goes to Insert mode when 'insertmode' is set
+ * - CTRL-\ e prompts for an expression.
  */
     static int
-cmdline_handle_backslash_key(int c, int *gotesc)
+cmdline_handle_ctrl_bsl(int c, int *gotesc)
 {
     ++no_mapping;
     ++allow_keys;
@@ -830,8 +836,7 @@ cmdline_handle_backslash_key(int c, int *gotesc)
 
 	/*
 	 * Replace the command line with the result of an expression.
-	 * Need to save and restore the current command line, to be
-	 * able to enter a new one...
+	 * This will call getcmdline() recursively in get_expr_register().
 	 */
 	if (ccline.cmdpos == ccline.cmdlen)
 	    new_cmdpos = 99999;	// keep it at the end
@@ -841,9 +846,8 @@ cmdline_handle_backslash_key(int c, int *gotesc)
 	c = get_expr_register();
 	if (c == '=')
 	{
-	    // Need to save and restore ccline.  And set "textlock"
-	    // to avoid nasty things like going to another buffer when
-	    // evaluating an expression.
+	    // Evaluate the expression.  Set "textlock" to avoid nasty things
+	    // like going to another buffer.
 	    ++textlock;
 	    p = get_expr_line();
 	    --textlock;
@@ -1182,6 +1186,7 @@ cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
+    int		literally = FALSE;
 #ifdef FEAT_EVAL
     int		save_new_cmdpos = new_cmdpos;
 #endif
@@ -1219,7 +1224,13 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #endif
     if (c != ESC)	    // use ESC to cancel inserting register
     {
-	cmdline_paste(c, i == Ctrl_R, FALSE);
+	literally = i == Ctrl_R
+#ifdef FEAT_CLIPBOARD
+			|| (clip_star.available && c == '*')
+			|| (clip_plus.available && c == '+')
+#endif
+			;
+	cmdline_paste(c, literally, FALSE);
 
 #ifdef FEAT_EVAL
 	// When there was a serious error abort getting the
@@ -1250,8 +1261,9 @@ cmdline_insert_reg(int *gotesc UNUSED)
     // remove the double quote
     redrawcmd();
 
-    // The text has been stuffed, the command line didn't change yet.
-    return CMDLINE_NOT_CHANGED;
+    // With "literally": the command line has already changed.
+    // Else: the text has been stuffed, but the command line didn't change yet.
+    return literally ? CMDLINE_CHANGED : CMDLINE_NOT_CHANGED;
 }
 
 /*
@@ -1587,7 +1599,7 @@ getcmdline_int(
     cmdline_info_T save_ccline;
     int		did_save_ccline = FALSE;
     int		cmdline_type;
-    int		wild_type;
+    int		wild_type = 0;
 
     // one recursion level deeper
     ++depth;
@@ -1785,10 +1797,15 @@ getcmdline_int(
 	if (c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	{
 	    int	    clen = ccline.cmdlen;
+	    int	    cc_count = aucmd_cmdline_changed_count;
 
 	    if (do_cmdkey_command(c, DOCMD_NOWAIT) == OK)
 	    {
-		if (clen == ccline.cmdlen)
+		// Do not trigger CmdlineChanged below if:
+		// - the length of the command line didn't change
+		// - the <Cmd> mapping already triggered the event
+		if (clen == ccline.cmdlen
+				    || cc_count != aucmd_cmdline_changed_count)
 		    trigger_cmdlinechanged = FALSE;
 		goto cmdline_changed;
 	    }
@@ -1860,7 +1877,8 @@ getcmdline_int(
 	if (p_wmnu)
 	    c = wildmenu_translate_key(&ccline, c, &xpc, did_wild_list);
 
-	if (cmdline_pum_active())
+	int key_is_wc = (c == p_wc && KeyTyped) || c == p_wcm;
+	if ((cmdline_pum_active() || did_wild_list) && !key_is_wc)
 	{
 	    // Ctrl-Y: Accept the current selection and close the popup menu.
 	    // Ctrl-E: cancel the cmdline popup menu and return the original
@@ -1871,7 +1889,6 @@ getcmdline_int(
 		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
 							firstc != '@') == FAIL)
 		    break;
-		c = Ctrl_E;
 	    }
 	}
 
@@ -1880,7 +1897,7 @@ getcmdline_int(
 	// 'wildcharm' or Ctrl-N or Ctrl-P or Ctrl-A or Ctrl-L).
 	// If the popup menu is displayed, then PageDown and PageUp keys are
 	// also used to navigate the menu.
-	end_wildmenu = (!(c == p_wc && KeyTyped) && c != p_wcm
+	end_wildmenu = (!key_is_wc
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A && c != Ctrl_L);
 	end_wildmenu = end_wildmenu && (!cmdline_pum_active() ||
 			    (c != K_PAGEDOWN && c != K_PAGEUP
@@ -1907,7 +1924,7 @@ getcmdline_int(
 	// mode when 'insertmode' is set, CTRL-\ e prompts for an expression.
 	if (c == Ctrl_BSL)
 	{
-	    res = cmdline_handle_backslash_key(c, &gotesc);
+	    res = cmdline_handle_ctrl_bsl(c, &gotesc);
 	    if (res == CMDLINE_CHANGED)
 		goto cmdline_changed;
 	    else if (res == CMDLINE_NOT_CHANGED)
@@ -1915,7 +1932,7 @@ getcmdline_int(
 	    else if (res == GOTO_NORMAL_MODE)
 		goto returncmd;		// back to cmd mode
 	    c = Ctrl_BSL;		// backslash key not processed by
-					// cmdline_handle_backslash_key()
+					// cmdline_handle_ctrl_bsl()
 	}
 
 	if (c == cedit_key || c == K_CMDWIN)
@@ -1998,6 +2015,14 @@ getcmdline_int(
 
 	do_abbr = TRUE;		// default: check for abbreviation
 
+	// If already used to cancel/accept wildmenu, don't process the key
+	// further.
+	if (wild_type == WILD_CANCEL || wild_type == WILD_APPLY)
+	{
+	    wild_type = 0;
+	    goto cmdline_not_changed;
+	}
+
 	/*
 	 * Big switch for a typed command line character.
 	 */
@@ -2025,6 +2050,9 @@ getcmdline_int(
 #ifdef CURSOR_SHAPE
 		ui_cursor_shape();	// may show different cursor shape
 #endif
+		may_trigger_modechanged();
+		status_redraw_curbuf();
+		redraw_statuslines();
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
@@ -2075,11 +2103,11 @@ getcmdline_int(
 
 	case Ctrl_R:			// insert register
 		res = cmdline_insert_reg(&gotesc);
-		if (res == CMDLINE_NOT_CHANGED)
-		    goto cmdline_not_changed;
-		else if (res == GOTO_NORMAL_MODE)
+		if (res == GOTO_NORMAL_MODE)
 		    goto returncmd;
-		goto cmdline_changed;
+		if (res == CMDLINE_CHANGED)
+		    goto cmdline_changed;
+		goto cmdline_not_changed;
 
 	case Ctrl_D:
 		if (showmatches(&xpc, FALSE) == EXPAND_NOTHING)
@@ -2221,7 +2249,7 @@ getcmdline_int(
 	case K_HOR_SCROLLBAR:
 		if (msg_scrolled == 0)
 		{
-		    gui_do_horiz_scroll(scrollbar_value, FALSE);
+		    do_mousescroll_horiz(scrollbar_value);
 		    redrawcmd();
 		}
 		goto cmdline_not_changed;
@@ -2287,7 +2315,7 @@ getcmdline_int(
 		    wild_type = (c == Ctrl_P) ? WILD_PREV : WILD_NEXT;
 		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_not_changed;
+		    goto cmdline_changed;
 		}
 		// FALLTHROUGH
 	case K_UP:
@@ -2309,7 +2337,7 @@ getcmdline_int(
 			wild_type = WILD_PAGEDOWN;
 		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_not_changed;
+		    goto cmdline_changed;
 		}
 		else
 		{
@@ -2487,6 +2515,15 @@ returncmd:
     cmdmsg_rl = FALSE;
 #endif
 
+    // We could have reached here without having a chance to clean up wild menu
+    // if certain special keys like <Esc> or <C-\> were used as wildchar. Make
+    // sure to still clean up to avoid memory corruption.
+    if (cmdline_pum_active())
+	cmdline_pum_remove();
+    wildmenu_cleanup(&ccline);
+    did_wild_list = FALSE;
+    wim_index = 0;
+
     ExpandCleanup(&xpc);
     ccline.xpc = NULL;
 
@@ -2633,6 +2670,7 @@ check_opt_wim(void)
 
     for (p = p_wim; *p; ++p)
     {
+	// Note: Keep this in sync with p_wim_values.
 	for (i = 0; ASCII_ISALPHA(p[i]); ++i)
 	    ;
 	if (p[i] != NUL && p[i] != ',' && p[i] != ':')
@@ -2906,6 +2944,9 @@ getexmodeline(
 	long    sw;
 	char_u *s;
 
+	// May request the keyboard protocol state now.
+	may_send_t_RK();
+
 	if (ga_grow(&line_ga, 40) == FAIL)
 	    break;
 
@@ -3131,8 +3172,6 @@ redraw:
     return (char_u *)line_ga.ga_data;
 }
 
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if ccline.overstrike is on.
  */
@@ -3142,6 +3181,8 @@ cmdline_overstrike(void)
     return ccline.overstrike;
 }
 
+# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
+	 || defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if the cursor is at the end of the cmdline.
  */
@@ -4023,13 +4064,13 @@ escape_fname(char_u **pp)
     char_u	*p;
 
     p = alloc(STRLEN(*pp) + 2);
-    if (p != NULL)
-    {
-	p[0] = '\\';
-	STRCPY(p + 1, *pp);
-	vim_free(*pp);
-	*pp = p;
-    }
+    if (p == NULL)
+	return;
+
+    p[0] = '\\';
+    STRCPY(p + 1, *pp);
+    vim_free(*pp);
+    *pp = p;
 }
 
 /*
@@ -4132,23 +4173,33 @@ get_cmdline_str(void)
 get_cmdline_completion(void)
 {
     cmdline_info_T *p;
+    char_u	*buffer;
 
     if (cmdline_star > 0)
 	return NULL;
 
     p = get_ccline_ptr();
-    if (p != NULL && p->xpc != NULL)
+    if (p == NULL || p->xpc == NULL)
+	return NULL;
+
+    set_expand_context(p->xpc);
+    if (p->xpc->xp_context == EXPAND_UNSUCCESSFUL)
+	return NULL;
+
+    char_u *cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
+    if (cmd_compl == NULL)
+	return NULL;
+
+    if (p->xpc->xp_context == EXPAND_USER_LIST || p->xpc->xp_context == EXPAND_USER_DEFINED)
     {
-	char_u *cmd_compl;
-
-	set_expand_context(p->xpc);
-
-	cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
-	if (cmd_compl != NULL)
-	    return vim_strsave(cmd_compl);
+	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
+	if (buffer == NULL)
+	    return NULL;
+	sprintf((char *)buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
+	return buffer;
     }
 
-    return NULL;
+    return vim_strsave(cmd_compl);
 }
 
 /*
@@ -4201,11 +4252,11 @@ f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = alloc(2);
-    if (rettv->vval.v_string != NULL)
-    {
-	rettv->vval.v_string[0] = get_cmdline_type();
-	rettv->vval.v_string[1] = NUL;
-    }
+    if (rettv->vval.v_string == NULL)
+	return;
+
+    rettv->vval.v_string[0] = get_cmdline_type();
+    rettv->vval.v_string[1] = NUL;
 }
 
 // Set the command line str to "str".
@@ -4282,7 +4333,8 @@ f_setcmdline(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    rettv->vval.v_number = set_cmdline_str(argvars[0].vval.v_string, pos);
+    // Use tv_get_string() to handle a NULL string like an empty string.
+    rettv->vval.v_number = set_cmdline_str(tv_get_string(&argvars[0]), pos);
 }
 
 /*
@@ -4326,8 +4378,12 @@ get_list_range(char_u **str, int *num1, int *num2)
     *str = skipwhite(*str);
     if (**str == '-' || vim_isdigit(**str))  // parse "from" part of range
     {
-	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE);
+	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE, NULL);
 	*str += len;
+	// overflow
+	if (num > INT_MAX)
+	    return FAIL;
+
 	*num1 = (int)num;
 	first = TRUE;
     }
@@ -4335,11 +4391,15 @@ get_list_range(char_u **str, int *num1, int *num2)
     if (**str == ',')			// parse "to" part of range
     {
 	*str = skipwhite(*str + 1);
-	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE);
+	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE, NULL);
 	if (len > 0)
 	{
-	    *num2 = (int)num;
 	    *str = skipwhite(*str + len);
+	    // overflow
+	    if (num > INT_MAX)
+		return FAIL;
+
+	    *num2 = (int)num;
 	}
 	else if (!first)		// no number given at all
 	    return FAIL;
@@ -4354,7 +4414,7 @@ get_list_range(char_u **str, int *num1, int *num2)
  * Returns NULL if value is OK, error message otherwise.
  */
     char *
-check_cedit(void)
+did_set_cedit(optset_T *args UNUSED)
 {
     int n;
 
@@ -4473,8 +4533,12 @@ open_cmdwin(void)
     {
 	if (p_wc == TAB)
 	{
+	    // Make Tab start command-line completion: CTRL-X CTRL-V
 	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", MODE_INSERT, TRUE);
 	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", MODE_NORMAL, TRUE);
+
+	    // Make S-Tab work like CTRL-P in command-line completion
+	    add_map((char_u *)"<buffer> <S-Tab> <C-P>", MODE_INSERT, TRUE);
 	}
 	set_option_value_give_err((char_u *)"ft",
 					       0L, (char_u *)"vim", OPT_LOCAL);
@@ -4528,7 +4592,7 @@ open_cmdwin(void)
     if (restart_edit != 0)	// autocmd with ":startinsert"
 	stuffcharReadbuff(K_NOP);
 
-    i = RedrawingDisabled;
+    int save_RedrawingDisabled = RedrawingDisabled;
     RedrawingDisabled = 0;
 
     /*
@@ -4536,7 +4600,7 @@ open_cmdwin(void)
      */
     main_loop(TRUE, FALSE);
 
-    RedrawingDisabled = i;
+    RedrawingDisabled = save_RedrawingDisabled;
 
 # ifdef FEAT_FOLDING
     save_KeyTyped = KeyTyped;
@@ -4587,11 +4651,6 @@ open_cmdwin(void)
 		stuffReadbuff((char_u *)p);
 		stuffcharReadbuff(CAR);
 	    }
-	}
-	else if (cmdwin_result == K_XF2)	// :qa typed
-	{
-	    ccline.cmdbuff = vim_strsave((char_u *)"qa");
-	    cmdwin_result = CAR;
 	}
 	else if (cmdwin_result == Ctrl_C)
 	{

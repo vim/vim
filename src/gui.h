@@ -12,17 +12,14 @@
 #endif
 
 #ifdef FEAT_GUI_GTK
-# ifdef VMS // undef MIN and MAX because Intrinsic.h redefines them anyway
-#  ifdef MAX
-#   undef MAX
-#  endif
-#  ifdef MIN
-#   undef MIN
-#  endif
+# ifdef VMS
 #  include "gui_gtk_vms.h"
-# endif // VMS
+# endif
 # include <X11/Intrinsic.h>
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstrict-prototypes"
 # include <gtk/gtk.h>
+# pragma GCC diagnostic pop
 #endif
 
 #ifdef FEAT_GUI_HAIKU

@@ -75,8 +75,6 @@ extern "C" {
 #include <syslog.h>
 
 #include "vim.h"
-#include "globals.h"
-#include "proto.h"
 #include "version.h"
 
 }   // extern "C"
@@ -787,8 +785,8 @@ VimApp::ReadyToRun()
      * Apparently signals are inherited by the created thread -
      * disable the most annoying ones.
      */
-    signal(SIGINT, SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
+    mch_signal(SIGINT, SIG_IGN);
+    mch_signal(SIGQUIT, SIG_IGN);
 }
 
     void
@@ -1069,8 +1067,8 @@ VimFormView::AllAttached()
      * Apparently signals are inherited by the created thread -
      * disable the most annoying ones.
      */
-    signal(SIGINT, SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
+    mch_signal(SIGINT, SIG_IGN);
+    mch_signal(SIGQUIT, SIG_IGN);
 
     if (menuBar && textArea) {
 	/*
@@ -4518,7 +4516,7 @@ gui_mch_add_menu(
 	    //	when we add a BMenu to another Menu, it creates the interconnecting BMenuItem
 	    tmp->AddItem(bmenu);
 
-	    //	Now its safe to query the menu for the associated MenuItem....
+	    //	Now it's safe to query the menu for the associated MenuItem...
 	    menu->id = tmp->FindItem((const char *) menu->dname);
 
 	}
