@@ -1075,6 +1075,7 @@ fold_line(
     int		txtcol;
     int		off = (int)(current_ScreenLine - ScreenLines);
     int		ri;
+    int		hlf = HL_ATTR(HLF_FL);
 
     // Build the fold line:
     // 1. Add the cmdwin_type for the command-line window
@@ -1160,10 +1161,13 @@ fold_line(
 	RL_MEMSET(col, HL_ATTR(HLF_FC), fdc);
 	col += fdc;
     }
+    if (*wp->w_p_wcr != NUL)
+	hlf = hl_combine_attr(get_wcr_attr(wp), HL_ATTR(HLF_FL));
+
 
     // Set all attributes of the 'number' or 'relativenumber' column and the
     // text
-    RL_MEMSET(col, HL_ATTR(HLF_FL), wp->w_width - col);
+    RL_MEMSET(col, hlf, wp->w_width - col);
 
 #ifdef FEAT_SIGNS
     // If signs are being displayed, add two spaces.
@@ -1178,10 +1182,10 @@ fold_line(
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
 		copy_text_attr(off + wp->w_width - len - col,
-					(char_u *)"  ", len, HL_ATTR(HLF_FL));
+					(char_u *)"  ", len, hlf);
 	    else
 # endif
-		copy_text_attr(off + col, (char_u *)"  ", len, HL_ATTR(HLF_FL));
+		copy_text_attr(off + col, (char_u *)"  ", len, hlf);
 	    col += len;
 	}
     }
@@ -1220,11 +1224,10 @@ fold_line(
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
-		copy_text_attr(off + wp->w_width - len - col, buf, len,
-							     HL_ATTR(HLF_FL));
+		copy_text_attr(off + wp->w_width - len - col, buf, len, hlf);
 	    else
 #endif
-		copy_text_attr(off + col, buf, len, HL_ATTR(HLF_FL));
+		copy_text_attr(off + col, buf, len, hlf);
 	    col += len;
 	}
     }
