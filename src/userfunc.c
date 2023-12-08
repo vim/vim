@@ -243,6 +243,7 @@ get_function_args(
     int		c;
     int		any_default = FALSE;
     char_u	*whitep = *argp;
+    int		need_expr = FALSE;
 
     if (newargs != NULL)
 	ga_init2(newargs, sizeof(char_u *), 3);
@@ -282,7 +283,7 @@ get_function_args(
 		semsg(_(e_invalid_argument_str), *argp);
 	    goto err_ret;
 	}
-	if (*p == endchar)
+	if (*p == endchar && !need_expr)
 	    break;
 
 	if (p[0] == '.' && p[1] == '.' && p[2] == '.')
@@ -435,6 +436,8 @@ get_function_args(
 			if (ga_grow(default_args, 1) == FAIL)
 			    goto err_ret;
 
+			if (need_expr)
+			    need_expr = FALSE;
 			// trim trailing whitespace
 			while (p > expr && VIM_ISWHITE(p[-1]))
 			    p--;
@@ -453,7 +456,11 @@ get_function_args(
 		    }
 		}
 		else
+		{
 		    mustend = TRUE;
+		    if (*skipwhite(p) == NUL)
+			need_expr = TRUE;
+		}
 	    }
 	    else if (any_default)
 	    {
