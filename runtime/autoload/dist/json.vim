@@ -1,5 +1,7 @@
 vim9script
 
+# Maintainer: Maxim Kim <habamax@gmail.com>
+#
 # Set of functions to format/beautify JSON data structures.
 #
 # Could be used to reformat a minified json in a buffer (put it into ~/.vim/ftplugin/json.vim):
