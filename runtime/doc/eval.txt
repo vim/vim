@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Dec 7
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -879,7 +879,8 @@ Expression syntax summary, from least to most significant:
 	expr5 isnot expr5	different |List|, |Dictionary| or |Blob|
 				instance
 
-|expr5|	expr6 << expr6		bitwise left shift
+|expr5|	expr6
+	expr6 << expr6		bitwise left shift
 	expr6 >> expr6		bitwise right shift
 
 |expr6|	expr7
