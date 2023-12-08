@@ -964,6 +964,9 @@ func Test_set_one_column()
   let out_mult = execute('set all')->split("\n")
   let out_one = execute('set! all')->split("\n")
   call assert_true(len(out_mult) < len(out_one))
+  call assert_equal(out_one[0], '--- Options ---')
+  let options = out_one[1:]->mapnew({_, line -> line[2:]})
+  call assert_equal(sort(copy(options)), options)
 endfunc
 
 func Test_set_values()
