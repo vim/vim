@@ -2,6 +2,7 @@
 type_T *get_type_ptr(garray_T *type_gap);
 type_T *copy_type(type_T *type, garray_T *type_gap);
 void clear_type_list(garray_T *gap);
+void clear_func_type_list(garray_T *gap, type_T **func_type);
 type_T *alloc_type(type_T *type);
 void free_type(type_T *type);
 void set_tv_type(typval_T *tv, type_T *type);

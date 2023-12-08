@@ -2533,7 +2533,7 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_arg_types);
     VIM_CLEAR(fp->uf_block_ids);
     VIM_CLEAR(fp->uf_va_name);
-    clear_type_list(&fp->uf_type_list);
+    clear_func_type_list(&fp->uf_type_list, &fp->uf_func_type);
 
     // Increment the refcount of this function to avoid it being freed
     // recursively when the partial is freed.
@@ -5435,7 +5435,7 @@ errret_2:
     {
 	VIM_CLEAR(fp->uf_arg_types);
 	VIM_CLEAR(fp->uf_va_name);
-	clear_type_list(&fp->uf_type_list);
+	clear_func_type_list(&fp->uf_type_list, &fp->uf_func_type);
     }
     if (free_fp)
 	VIM_CLEAR(fp);
