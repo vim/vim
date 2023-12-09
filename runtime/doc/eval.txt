@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Dec 7
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4828,7 +4828,7 @@ have Vim execute random executables or may have forbidden to do so for
 specific filetypes by setting the "<filetype>_exec" variable (|plugin_exec|).
 
 It returns |true| or |false| to indicate whether the plugin should run the given
-exectuable.  It takes the following arguments:
+executable.  It takes the following arguments:
 
 	argument	type ~
 

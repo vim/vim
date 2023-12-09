@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.0.  Last change: 2022 Nov 25
+*os_vms.txt*    For Vim version 9.0.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL
@@ -767,7 +767,7 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 Version 9.0 (2023 Nov 27)
 - Vim is ported to the X86_64 architecture
-	- IMPORTANT: because of the getline function name used in stucts like in ex_cmds.h
+	- IMPORTANT: because of the getline function name used in structs like in ex_cmds.h
 	on X86_64 the CRTL_VER is kept under 80500000 level. The proper solution would be
 	to rename the getline function to something else in the struct (and in all places
 	it is used) - and avoiding to use POSIX functions in structs, but this change would
