@@ -152,6 +152,71 @@ func Test_termdebug_basic()
   %bw!
 endfunc
 
+func Test_termdebug_tbreak()
+  " the same as the first half part of Test_termdebug_basic(),
+  " but only 'debugPC' sign should be present after the breakpoint
+  " was hit once
+  let lines =<< trim END
+    #include <stdio.h>
+    #include <stdlib.h>
+
+    int isprime(int n)
+    {
+      if (n <= 1)
+        return 0;
+
+      for (int i = 2; i <= n / 2; i++)
+        if (n % i == 0)
+          return 0;
+
+      return 1;
+    }
+
+    int main(int argc, char *argv[])
+    {
+      int n = 7;
+
+      printf("%d is %s prime\n", n, isprime(n) ? "a" : "not a");
+
+      return 0;
+    }
+  END
+  call writefile(lines, 'XTD_basic.c', 'D')
+  call system($'{g:GCC} -g -o XTD_basic XTD_basic.c')
+
+  edit XTD_basic.c
+  Termdebug ./XTD_basic
+  let gdb_buf = winbufnr(1)
+  wincmd b
+  Tbreak 9
+  call term_wait(gdb_buf)
+  redraw!
+  call assert_equal([
+        \ {'lnum': 9, 'id': 1014, 'name': 'debugBreakpoint1.0',
+        \  'priority': 110, 'group': 'TermDebug'}],
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+  Run
+  call term_wait(gdb_buf, 400)
+  redraw!
+  call WaitForAssert({-> assert_equal([
+        \ {'lnum': 9, 'id': 12, 'name': 'debugPC', 'priority': 110,
+        \  'group': 'TermDebug'}],
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
+  Finish
+  call term_wait(gdb_buf)
+  redraw!
+  call WaitForAssert({-> assert_equal([
+        \ {'lnum': 20, 'id': 12, 'name': 'debugPC',
+        \  'priority': 110, 'group': 'TermDebug'}],
+        \ sign_getplaced('', #{group: 'TermDebug'})[0].signs)})
+  Continue
+  call term_wait(gdb_buf)
+  call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
+
+  call delete('XTD_basic')
+  %bw!
+endfunc
+
 func Test_termdebug_mapping()
   %bw!
   call assert_equal(maparg('K', 'n', 0, 1)->empty(), 1)
