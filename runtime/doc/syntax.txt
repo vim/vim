@@ -1605,7 +1605,7 @@ Fortran source code form ~
 Fortran code can be in either fixed or free source form.  Note that the
 syntax highlighting will not be correct if the form is incorrectly set.
 
-When you create a new fortran file, the syntax script assumes fixed source
+When you create a new Fortran file, the syntax script assumes fixed source
 form.  If you always use free source form, then >
     :let fortran_free_source=1
 in your .vimrc prior to the :syntax on command.  If you always use fixed
@@ -1619,10 +1619,10 @@ file.  For more information on ftplugin files, see |ftplugin|. Note that this
 will work only if the "filetype plugin indent on" command precedes the "syntax
 on" command in your .vimrc file.
 
-When you edit an existing fortran file, the syntax script will assume free
+When you edit an existing Fortran file, the syntax script will assume free
 source form if the fortran_free_source variable has been set, and assumes
-fixed source form if the fortran_fixed_source variable has been set.  If
-neither of these variables have been set, the syntax script attempts to
+fixed source form if the fortran_fixed_source variable has been set.  Suppose
+neither of these variables have been set. In that case, the syntax script attempts to
 determine which source form has been used by examining the file extension
 using conventions common to the ifort, gfortran, Cray, NAG, and PathScale
 compilers (.f, .for, .f77 for fixed-source, .f90, .f95, .f03, .f08 for
