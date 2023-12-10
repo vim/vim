@@ -23,6 +23,7 @@ runtime/autoload/tar.vim		@cecamp
 runtime/autoload/vimball.vim		@cecamp
 runtime/autoload/xmlformat.vim		@chrisbra
 runtime/autoload/zip.vim		@cecamp
+runtime/autoload/dist/json.vim		@habamax
 runtime/colors/blue.vim			@habamax @romainl @neutaaaaan
 runtime/colors/darkblue.vim		@habamax @romainl @neutaaaaan
 runtime/colors/default.vim		@habamax @romainl @neutaaaaan
