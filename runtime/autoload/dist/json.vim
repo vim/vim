@@ -1,6 +1,7 @@
 vim9script
 
 # Maintainer: Maxim Kim <habamax@gmail.com>
+# Last update: 2023-12-10
 #
 # Set of functions to format/beautify JSON data structures.
 #
