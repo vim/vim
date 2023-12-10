@@ -610,6 +610,18 @@ The mapping can be disabled with: >
 	let g:no_gprof_maps = 1
 
 
+JSON-FORMAT						*ft-json-plugin*
+
+JSON filetype can be extended to use 'formatexpr' and "json.FormatExpr()"
+function for json formatting (using |gq|).
+
+Add following lines to $HOME/.vim/ftplugin/json.vim: >
+
+	vim9script
+	import autoload 'dist/json.vim'
+	setl formatexpr=json.FormatExpr()
+
+
 MAIL							*ft-mail-plugin*
 
 Options:
