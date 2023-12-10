@@ -4,7 +4,8 @@
 " Last Change:	May 09, 2023
 " 	2023 Nov 12 by Vim Project (:let-heredoc improvements)
 " 	2023 Nov 20 by Vim Project (:loadkeymap improvements)
-" 	2023 Dec 06 by Vim Project (add missing :let{op}= assignment operators)
+" 	2023 Dec 06 by Vim Project (add missing assignment operators)
+" 	2023 Dec 10 by Vim Project (improve variable matching)
 " Version:	9.0-25
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
@@ -187,7 +188,9 @@ syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=vimAddress,vimAutoCmd,vimEcho,v
 syn match vimIsCommand	"\<\h\w*\>"	contains=vimCommand
 syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"
 syn match vimVar		"\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"
-syn match vimVar	      	"\s\zs&\a\+\>"
+syn match vimVar	      	"\s\zs&\%([lg]:\)\=\a\+\>"
+syn match vimVar		"\s\zs&t_\S[a-zA-Z0-9]\>"
+syn match vimVar        	"\s\zs&t_k;"
 syn match vimFBVar      contained   "\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"
 syn keyword vimCommand  contained	in
 
@@ -395,6 +398,7 @@ syn match	vimRegister	'\<norm\s\+\zs"[a-zA-Z0-9]'
 syn match	vimRegister	'\<normal\s\+\zs"[a-zA-Z0-9]'
 syn match	vimRegister	'@"'
 syn match	vimPlainRegister contained	'"[a-zA-Z0-9\-:.%#*+=]'
+syn match	vimLetRegister	contained	'@["0-9\-a-zA-Z#=*+_/]'
 
 syn match	vimAddress	",\zs[.$]"	skipwhite nextgroup=vimSubst1
 syn match	vimAddress	"%\ze\a"	skipwhite nextgroup=vimString,vimSubst1
@@ -417,10 +421,20 @@ syn match	vimSetMod	contained	"&vim\=\|[!&?<]\|all&"
 
 " Let And Var: {{{2
 " ===========
-syn keyword	vimLet	let	unl[et]	skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
+syn keyword	vimLet	let		skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc,vimLetRegister,vimVarList
+syn keyword	vimConst	cons[t]		skipwhite nextgroup=vimVar,vimLetHereDoc,vimVarList
+syn region	vimVarList	contained	start="\[" end="]" contains=vimVar,vimContinue
+
+syn keyword	vimUnlet	unl[et]		skipwhite nextgroup=vimUnletBang,vimUnletVars
+syn match	vimUnletBang	contained	"!"	skipwhite nextgroup=vimUnletVars
+syn region	vimUnletVars	contained	start="$\I\|\h" skip="\n\s*\\" end="$" end="|" contains=vimVar,vimEnvvar,vimContinue,vimString,vimNumber
+
 VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*\%(trim\s\+\%(eval\s\+\)\=\|eval\s\+\%(trim\s\+\)\=\)\=\z(\L\S*\)' matchgroup=vimLetHereDocStop end='^\s*\z1\s*$'
 syn keyword	vimLet	var		skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
 
+" For: {{{2
+" ===
+syn keyword	vimFor	for	skipwhite nextgroup=vimVar,vimVarList
 " Abbreviations: {{{2
 " =============
 syn keyword vimAbb	ab[breviate] ca[bbrev] inorea[bbrev] cnorea[bbrev] norea[bbrev] ia[bbrev] skipwhite nextgroup=vimMapMod,vimMapLhs
@@ -909,6 +923,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimCommentString	vimString
  hi def link vimCommentTitle	PreProc
  hi def link vimCondHL	vimCommand
+ hi def link vimConst	vimCommand
  hi def link vimContinue	Special
  hi def link vimCtrlChar	SpecialChar
  hi def link vimEchoHLNone	vimGroup
@@ -959,6 +974,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimLetHereDoc	vimString
  hi def link vimLetHereDocStart	Special
  hi def link vimLetHereDocStop	Special
+ hi def link vimLetRegister	Special
  hi def link vimLineComment	vimComment
  hi def link vim9LineComment	vimComment
  hi def link vimMapBang	vimCommand
@@ -1035,6 +1051,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSynType	vimSpecial
  hi def link vimTodo	Todo
  hi def link vimType	Type
+ hi def link vimUnlet	vimCommand
+ hi def link vimUnletBang	vimCommand
  hi def link vimUnmap	vimMap
  hi def link vimUserAttrbCmpltFunc	Special
  hi def link vimUserAttrbCmplt	vimSpecial
