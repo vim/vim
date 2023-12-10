@@ -1778,6 +1778,13 @@ get_lval(
 							  p, flags) == FAIL)
 			    return NULL;
 
+			// When lhs is used to modify the variable, check it is
+			// not a read-only variable.
+			if ((flags & GLV_READ_ONLY) == 0
+				&& (*p != '.' && *p != '[')
+				&& oc_var_check_ro(cl, om))
+			    return NULL;
+
 			lp->ll_valtype = om->ocm_type;
 
 			if (v_type == VAR_OBJECT)

@@ -364,6 +364,78 @@ super class.  Depending on the class where the member is used the
 corresponding class member will be used.  The type of the class member in a
 child class can be different from that in the super class.
 
+					*object-final-variable* *E1409*
+The |:final| keyword can be used to make a class or object variable a
+constant.  Examples: >
+
+    class A
+	final v1 = [1, 2]		# final object variable
+	public final v2 = {x: 1}	# final object variable
+	static final v3 = 'abc'		# final class variable
+	public static final v4 = 0z10	# final class variable
+    endclass
+<
+A final variable can be changed only from a constructor function.  Example: >
+
+    class A
+	final v1: list<number>
+	def new()
+	    this.v1 = [1, 2]
+	enddef
+    endclass
+    var a = A.new()
+    echo a.v1
+<
+Note that the value of a final variable can be changed.  Example: >
+
+    class A
+	public final v1 = [1, 2]
+    endclass
+    var a = A.new()
+    a.v1[0] = 6			# OK
+    a.v1->add(3)		# OK
+    a.v1 = [3, 4]		# Error
+<
+							*E1408*
+Final variables are not supported in an interface.  A class or object method
+cannot be final.
+
+					*object-const-variable*
+The |:const| keyword can be used to make a class or object variable and the
+value a constant.  Examples: >
+
+    class A
+	const v1 = [1, 2]		# const object variable
+	public const v2 = {x: 1}	# const object variable
+	static const v3 = 'abc'		# const class variable
+	public static const v4 = 0z10	# const class variable
+    endclass
+<
+A const variable can be changed only from a constructor function. Example: >
+
+    class A
+	const v1: list<number>
+	def new()
+	    this.v1 = [1, 2]
+	enddef
+    endclass
+    var a = A.new()
+    echo a.v1
+<
+A const variable and its value cannot be changed.  Example: >
+
+    class A
+	public const v1 = [1, 2]
+    endclass
+    var a = A.new()
+    a.v1[0] = 6			# Error
+    a.v1->add(3)		# Error
+    a.v1 = [3, 4]		# Error
+<
+							 *E1410*
+Const variables are not supported in an interface.  A class or object method
+cannot be a const.
+
 ==============================================================================
 
 4.  Using an abstract class			*Vim9-abstract-class*
@@ -981,8 +1053,6 @@ However, it is more common for languages to reuse their general variable and
 function declaration syntax for class/object variables and methods.  Vim9 also
 reuses the general function declaration syntax for methods.  So, for the sake
 of consistency, we require "var" in these declarations.
-
-This also allows for a natural use of "final" and "const" in the future.
 
 
 Using "ClassName.new()" to construct an object ~

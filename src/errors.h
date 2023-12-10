@@ -3406,8 +3406,8 @@ EXTERN char e_invalid_class_variable_declaration_str[]
 	INIT(= N_("E1329: Invalid class variable declaration: %s"));
 EXTERN char e_invalid_type_for_object_variable_str[]
 	INIT(= N_("E1330: Invalid type for object variable: %s"));
-EXTERN char e_public_must_be_followed_by_var_or_static[]
-	INIT(= N_("E1331: Public must be followed by \"var\" or \"static\""));
+EXTERN char e_public_must_be_followed_by_var_static_final_or_const[]
+	INIT(= N_("E1331: Public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_protected_variable_str[]
@@ -3488,8 +3488,8 @@ EXTERN char e_cannot_access_protected_method_str[]
 	INIT(= N_("E1366: Cannot access protected method: %s"));
 EXTERN char e_variable_str_of_interface_str_has_different_access[]
 	INIT(= N_("E1367: Access level of variable \"%s\" of interface \"%s\" is different"));
-EXTERN char e_static_must_be_followed_by_var_or_def[]
-	INIT(= N_("E1368: Static must be followed by \"var\" or \"def\""));
+EXTERN char e_static_must_be_followed_by_var_def_final_or_const[]
+	INIT(= N_("E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const\""));
 EXTERN char e_duplicate_variable_str[]
 	INIT(= N_("E1369: Duplicate variable: %s"));
 EXTERN char e_cannot_define_new_method_as_static[]
@@ -3568,8 +3568,14 @@ EXTERN char e_using_class_as_var_val[]
 	INIT(= N_("E1406: Cannot use a Class as a variable or value"));
 EXTERN char e_using_typealias_as_var_val[]
 	INIT(= N_("E1407: Cannot use a Typealias as a variable or value"));
+EXTERN char e_final_variable_not_supported_in_interface[]
+	INIT(= N_("E1408: Final variable not supported in an interface"));
+EXTERN char e_cannot_change_readonly_variable_str_in_class_str[]
+	INIT(= N_("E1409: Cannot change read-only variable \"%s\" in class \"%s\""));
+EXTERN char e_const_variable_not_supported_in_interface[]
+	INIT(= N_("E1410: Const variable not supported in an interface"));
 #endif
-// E1408 - E1499 unused (reserved for Vim9 class support)
+// E1411 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

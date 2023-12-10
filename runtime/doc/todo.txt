@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Jun 08
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -122,7 +122,6 @@ Upcoming larger works:
 
 Further Vim9 improvements:
 - Classes and Interfaces. See |vim9-classes|
-  - "final" object members - can only be set in the constructor.
   - Cannot use class type of itself in the method (Issue #12369)
   - Getting member of variable with "any" type should be handled at runtime.
     Remove temporary solution from #12096 / patch 9.0.1375.
