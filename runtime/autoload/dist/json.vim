@@ -96,19 +96,19 @@ enddef
 
 # Format JSON string or dict/list as JSON
 # import autoload 'dist/json.vim'
-# echo json.FormatStr('{"hello": "world"}', {use_tabs: false, indent: 2, indent_base: 0})
+# echo json.Format('{"hello": "world"}', {use_tabs: false, indent: 2, indent_base: 0})
 
 # {
 #   "hello": "world"
 # }
 
-# echo json.FormatStr({'hello': 'world'}, {use_tabs: false, indent: 2, indent_base: 0})
+# echo json.Format({'hello': 'world'}, {use_tabs: false, indent: 2, indent_base: 0})
 # {
 #   "hello": "world"
 # }
 #
 # Note, when `obj` is dict, order of the `key: value` pairs might be different:
-# echo json.FormatStr({'hello': 1, 'world': 2})
+# echo json.Format({'hello': 1, 'world': 2})
 # {
 #   "world": 2,
 #   "hello": 1
