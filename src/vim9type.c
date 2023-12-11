@@ -122,6 +122,19 @@ clear_type_list(garray_T *gap)
     ga_clear(gap);
 }
 
+    void
+clear_func_type_list(garray_T *gap, type_T **func_type)
+{
+    while (gap->ga_len > 0)
+    {
+	// func_type pointing to the uf_type_list, so reset pointer
+	if (*func_type == ((type_T **)gap->ga_data)[--gap->ga_len])
+	    *func_type = &t_func_any;
+	vim_free(((type_T **)gap->ga_data)[gap->ga_len]);
+    }
+    ga_clear(gap);
+}
+
 /*
  * Take a type that is using entries in a growarray and turn it into a type
  * with allocated entries.
