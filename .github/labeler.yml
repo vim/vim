@@ -62,9 +62,12 @@ if_python:
               - 'src/proto/if_python3.pro'
 
 if_ruby:
-- 'src/if_ruby.c'
-- 'src/proto/if_ruby.pro'
-- 'runtime/doc/if_ruby.txt'
+  - all:
+      - changed-files:
+          - any-glob-to-all-files:
+              - 'src/if_ruby.c'
+              - 'src/proto/if_ruby.pro'
+              - 'runtime/doc/if_ruby.txt'
 
 if_tcl:
   - all:
