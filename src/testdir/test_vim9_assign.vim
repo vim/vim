@@ -3057,6 +3057,18 @@ def Test_dict_item_assign()
   v9.CheckSourceSuccess(lines)
 enddef
 
+def Test_class_assign()
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    class D
+    endclass
+    assert_fails('C = D', 'E1403: Class "D" cannot be used as a value')
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Test for using various types (dict, list, blob, funcref, class) as variable
 " in assignments with a different type
 def Test_type_check()
@@ -3093,7 +3105,7 @@ def Test_type_check()
     assert_fails('N = l', 'E1012: Type mismatch; expected number but got list<number>')
     assert_fails('N = b', 'E1012: Type mismatch; expected number but got blob')
     assert_fails('N = Fn', 'E1012: Type mismatch; expected number but got func([unknown]): number')
-    assert_fails('N = A', 'E1012: Type mismatch; expected number but got class<A>')
+    assert_fails('N = A', 'E1403: Class "A" cannot be used as a value')
     assert_fails('N = o', 'E1012: Type mismatch; expected number but got object<A>')
 
     # Use a compound operator with different RHS types
@@ -3101,7 +3113,7 @@ def Test_type_check()
     assert_fails('N += l', 'E734: Wrong variable type for +=')
     assert_fails('N += b', 'E974: Using a Blob as a Number')
     assert_fails('N += Fn', 'E734: Wrong variable type for +=')
-    assert_fails('N += A', 'E1319: Using a Class as a Number')
+    assert_fails('N += A', 'E1403: Class "A" cannot be used as a value')
     assert_fails('N += o', 'E1320: Using an Object as a Number')
 
     # Initialize multiple variables using []
@@ -3109,7 +3121,7 @@ def Test_type_check()
     assert_fails('var [X2: number, Y: number] = [1, l]', 'E1012: Type mismatch; expected number but got list<number>')
     assert_fails('var [X3: number, Y: number] = [1, b]', 'E1012: Type mismatch; expected number but got blob')
     assert_fails('var [X4: number, Y: number] = [1, Fn]', 'E1012: Type mismatch; expected number but got func([unknown]): number')
-    assert_fails('var [X7: number, Y: number] = [1, A]', 'E1012: Type mismatch; expected number but got class<A>')
+    assert_fails('var [X7: number, Y: number] = [1, A]', 'E1403: Class "A" cannot be used as a value')
     assert_fails('var [X8: number, Y: number] = [1, o]', 'E1012: Type mismatch; expected number but got object<A>')
 
     # String concatenation with various LHS types
@@ -3117,7 +3129,7 @@ def Test_type_check()
     assert_fails('S ..= l', 'E734: Wrong variable type for .=')
     assert_fails('S ..= b', 'E976: Using a Blob as a String')
     assert_fails('S ..= Fn', 'E734: Wrong variable type for .=')
-    assert_fails('S ..= A', 'E1323: Using a Class as a String')
+    assert_fails('S ..= A', 'E1403: Class "A" cannot be used as a value')
     assert_fails('S ..= o', 'E1324: Using an Object as a String')
 
     # String concatenation with various RHS types

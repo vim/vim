@@ -1846,4 +1846,66 @@ f_typename(typval_T *argvars, typval_T *rettv)
     clear_type_list(&type_list);
 }
 
+/*
+ * Check if the typval_T is a value type; report an error if it is not.
+ * Note: a type, user defined or typealias, is not a value type.
+ *
+ * Return OK if it's a value type, else FAIL
+ */
+    int
+check_typval_is_value(typval_T *tv)
+{
+    if (tv->v_type == VAR_CLASS)
+    {
+        semsg(_(e_using_class_as_value_str), tv->vval.v_class->class_name);
+	return FAIL;
+    }
+    else if (tv->v_type == VAR_TYPEALIAS)
+    {
+        semsg(_(e_using_typealias_as_value_str), tv->vval.v_typealias->ta_name);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Same as above, except check type_T.
+ */
+    int
+check_type_is_value(type_T *type)
+{
+    if (type->tt_type == VAR_CLASS)
+    {
+        semsg(_(e_using_class_as_value_str), type->tt_class->class_name);
+	return FAIL;
+    }
+    else if (type->tt_type == VAR_TYPEALIAS)
+    {
+	// Not sure what could be done here to get a name
+	// TODO: MAYBE AN OPTIONAL ARGUMENT
+        emsg(_(e_using_typealias_as_var_val));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Same as above, except check vartype_T.
+ */
+    int
+check_vartype_is_value(vartype_T typ)
+{
+    if (typ == VAR_CLASS)
+    {
+	emsg(_(e_using_class_as_var_val));
+	return FAIL;
+    }
+    else if (typ == VAR_TYPEALIAS)
+    {
+        emsg(_(e_using_typealias_as_var_val));
+        return FAIL;
+    }
+    return OK;
+}
+
 #endif // FEAT_EVAL

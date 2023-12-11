@@ -3813,10 +3813,8 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_STORE:
 		--ectx->ec_stack.ga_len;
 		tv = STACK_TV_VAR(iptr->isn_arg.number);
-		if (STACK_TV_BOT(0)->v_type == VAR_TYPEALIAS)
+		if (check_typval_is_value(STACK_TV_BOT(0)) == FAIL)
 		{
-		    semsg(_(e_using_typealias_as_value),
-				STACK_TV_BOT(0)->vval.v_typealias->ta_name);
 		    clear_tv(STACK_TV_BOT(0));
 		    goto on_error;
 		}

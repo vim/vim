@@ -2797,6 +2797,8 @@ compile_assignment(
 
 		rhs_type = cctx->ctx_type_stack.ga_len == 0 ? &t_void
 						  : get_type_on_stack(cctx, 0);
+		if (check_type_is_value(rhs_type) == FAIL)
+		    goto theend;
 		if (lhs.lhs_lvar != NULL && (is_decl || !lhs.lhs_has_type))
 		{
 		    if ((rhs_type->tt_type == VAR_FUNC

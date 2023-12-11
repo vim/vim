@@ -212,7 +212,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 1)
+  v9.CheckSourceFailure(lines, 'E1406: Cannot use a Typealias as a variable or value', 1)
 
   # Using type alias in an expression (script level)
   lines =<< trim END
