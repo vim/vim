@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2023 Oct 23
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1684,7 +1684,7 @@ the type must match: >
 	FuncVA = (v1: string, v: string2): number => 333     # Error!
 	FuncVA = (v: list<string>): number => 3	    # Error!
 
-If the destinataion funcref has no specified arguments, then there is no
+If the destination funcref has no specified arguments, then there is no
 argument type checking: >
 	var FuncUnknownArgs: func: number
 	FuncUnknownArgs = (v): number => v			# OK

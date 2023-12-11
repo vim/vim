@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2023 Nov 20
+*term.txt*      For Vim version 9.0.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -313,7 +313,7 @@ convert all key sequences to their 8-bit variants.
 
 						*xterm-terminfo-entries*
 For some time the terminfo entries were insufficient to describe all the
-features tht Vim can use.  The builtin xterm termcap entries did have these,
+features that Vim can use.  The builtin xterm termcap entries did have these,
 with the result that several terminals that were similar enough to xterm took
 advantage of these by prefixing "xterm-" to the terminal name in $TERM.
 
