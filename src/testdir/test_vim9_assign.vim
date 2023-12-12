@@ -3197,7 +3197,7 @@ def Test_func_argtype_check()
       assert_fails('IntArg(j)', 'E1013: Argument 1: type mismatch, expected number but got job')
       assert_fails('IntArg(ch)', 'E1013: Argument 1: type mismatch, expected number but got channel')
     endif
-    assert_fails('IntArg(A)', 'E1013: Argument 1: type mismatch, expected number but got class<A>')
+    assert_fails('IntArg(A)', 'E1405: Class "A" cannot be used as a value')
     assert_fails('IntArg(o)', 'E1013: Argument 1: type mismatch, expected number but got object<A>')
 
     # Passing a number to functions accepting different argument types
@@ -3262,7 +3262,7 @@ def Test_func_argtype_check()
     v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got channel', 2)
   endif
   lines = pre_lines + ['IntArg(A)'] + post_lines
-  v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got class<A>', 1)
+  v9.CheckSourceFailure(lines, 'E1405: Class "A" cannot be used as a value', 1)
   lines = pre_lines + ['var o: A = A.new()', 'IntArg(o)'] + post_lines
   v9.CheckSourceFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got object<A>', 2)
 enddef

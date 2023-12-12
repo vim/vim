@@ -7,7 +7,7 @@ char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **type, int no_autoload, int new_function, int *found_var);
 void emsg_funcname(char *ermsg, char_u *name);
-int get_func_arguments(char_u **arg, evalarg_T *evalarg, int partial_argc, typval_T *argvars, int *argcount);
+int get_func_arguments(char_u **arg, evalarg_T *evalarg, int partial_argc, typval_T *argvars, int *argcount, int is_builtin);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, funcerror_T *error);
 void func_name_with_sid(char_u *name, int sid, char_u *buffer);

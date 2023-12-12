@@ -4093,7 +4093,7 @@ def Test_lockvar_argument()
 
     Lock2(C)
   END
-  v9.CheckSourceSuccess(lines)
+  v9.CheckSourceFailure(lines, 'E1405: Class "C" cannot be used as a value')
 
   # Lock an object.
   lines =<< trim END

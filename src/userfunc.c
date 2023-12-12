@@ -1905,7 +1905,8 @@ get_func_arguments(
 	evalarg_T   *evalarg,
 	int	    partial_argc,
 	typval_T    *argvars,
-	int	    *argcount)
+	int	    *argcount,
+	int	    is_builtin)
 {
     char_u	*argp = *arg;
     int		ret = OK;
@@ -1920,12 +1921,20 @@ get_func_arguments(
 
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	if (eval1(&argp, &argvars[*argcount], evalarg) == FAIL)
+
+	int arg_idx = *argcount;
+	if (eval1(&argp, &argvars[arg_idx], evalarg) == FAIL)
 	{
 	    ret = FAIL;
 	    break;
 	}
 	++*argcount;
+	if (!is_builtin && check_typval_is_value(&argvars[arg_idx]) == FAIL)
+	{
+	    ret = FAIL;
+	    break;
+	}
+
 	// The comma should come right after the argument, but this wasn't
 	// checked previously, thus only enforce it in Vim9 script.
 	if (vim9script)
@@ -1985,7 +1994,7 @@ get_func_tv(
     argp = *arg;
     ret = get_func_arguments(&argp, evalarg,
 	    (funcexe->fe_partial == NULL ? 0 : funcexe->fe_partial->pt_argc),
-							   argvars, &argcount);
+			       argvars, &argcount, builtin_function(name, -1));
 
     if (ret == OK)
     {
@@ -6125,8 +6134,9 @@ ex_defer_inner(
 		copy_tv(&partial->pt_argv[i], &argvars[i]);
 	}
     }
+    int is_builtin = builtin_function(name, -1);
     r = get_func_arguments(arg, evalarg, FALSE,
-					    argvars + partial_argc, &argcount);
+				argvars + partial_argc, &argcount, is_builtin);
     argcount += partial_argc;
 
     if (r == OK)
@@ -6136,7 +6146,7 @@ ex_defer_inner(
 	    // Check that the arguments are OK for the types of the funcref.
 	    r = check_argument_types(type, argvars, argcount, NULL, name);
 	}
-	else if (builtin_function(name, -1))
+	else if (is_builtin)
 	{
 	    int idx = find_internal_func(name);
 
