@@ -5058,12 +5058,12 @@ insert({object}, {item} [, {idx}])			*insert()*
 					*instanceof()* *E614* *E616* *E693*
 instanceof({object}, {class})
 		The result is a Number, which is |TRUE| when the {object}
-		argument is a direct or indirect instance of a |Class|
-		specified by {class}.
-		When {class} is a |List| the function returns |TRUE| when
+		argument is a direct or indirect instance of a |Class|,
+		|Interface|, or class |:type| alias specified by {class}.
+		If {class} is varargs, the function returns |TRUE| when
 		{object} is an instance of any of the specified classes.
 		Example: >
-			instanceof(animal, [Dog, Cat])
+			instanceof(animal, Dog, Cat)
 
 <		Can also be used as a |method|: >
 			myobj->instanceof(mytype)

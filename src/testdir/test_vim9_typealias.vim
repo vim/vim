@@ -212,7 +212,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1406: Cannot use a Typealias as a variable or value', 1)
+  v9.CheckSourceFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Using type alias in an expression (script level)
   lines =<< trim END
@@ -516,8 +516,18 @@ def Test_typealias_instanceof()
     var o = C.new()
     assert_equal(1, instanceof(o, Ctype))
     type Ntype = number
-    assert_fails('instanceof(o, Ntype)', 'E693: List or Class required for argument 2')
-    assert_equal(1, instanceof(o, [Ctype]))
+    assert_fails('instanceof(o, Ntype)', 'E693: Class or class typealias required for argument 2')
+    assert_fails('instanceof(o, Ctype, Ntype)', 'E693: Class or class typealias required for argument 3')
+
+    def F()
+      var x = instanceof(o, Ntype)
+    enddef
+    assert_fails('F()', 'E693: Class or class typealias required for argument 2')
+
+    def G(): bool
+      return instanceof(o, Ctype)
+    enddef
+    assert_equal(1, G())
   END
   v9.CheckScriptSuccess(lines)
 enddef

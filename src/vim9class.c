@@ -3161,58 +3161,37 @@ class_instance_of(class_T *cl, class_T *other_cl)
 }
 
 /*
- * "instanceof(object, classinfo)" function
+ * "instanceof(object, classinfo, ...)" function
  */
     void
 f_instanceof(typval_T *argvars, typval_T *rettv)
 {
     typval_T	*object_tv = &argvars[0];
     typval_T	*classinfo_tv = &argvars[1];
-    listitem_T	*li;
     class_T	*c;
 
     rettv->vval.v_number = VVAL_FALSE;
 
     if (check_for_object_arg(argvars, 0) == FAIL
-	    || check_for_class_or_list_arg(argvars, 1) == FAIL)
+	    || check_for_class_or_typealias_args(argvars, 1) == FAIL)
 	return;
 
     if (object_tv->vval.v_object == NULL)
 	return;
 
-    if (classinfo_tv->v_type == VAR_LIST)
+    for (; classinfo_tv->v_type != VAR_UNKNOWN; ++classinfo_tv)
     {
-	FOR_ALL_LIST_ITEMS(classinfo_tv->vval.v_list, li)
+	if (classinfo_tv->v_type == VAR_TYPEALIAS)
+	    c = classinfo_tv->vval.v_typealias->ta_type->tt_class;
+	else
+	    c = classinfo_tv->vval.v_class;
+
+	if (class_instance_of(object_tv->vval.v_object->obj_class, c))
 	{
-	    if (li->li_tv.v_type != VAR_CLASS && !tv_class_alias(&li->li_tv))
-	    {
-		emsg(_(e_class_required));
-		return;
-	    }
-
-	    if (li->li_tv.v_type == VAR_TYPEALIAS)
-		c = li->li_tv.vval.v_typealias->ta_type->tt_class;
-	    else
-		c = li->li_tv.vval.v_class;
-
-	    if (class_instance_of(object_tv->vval.v_object->obj_class, c)
-								== TRUE)
-	    {
-		rettv->vval.v_number = VVAL_TRUE;
-		return;
-	    }
+	    rettv->vval.v_number = VVAL_TRUE;
+	    return;
 	}
-
-	return;
     }
-
-    if (classinfo_tv->v_type == VAR_TYPEALIAS)
-	c = classinfo_tv->vval.v_typealias->ta_type->tt_class;
-    else
-	c = classinfo_tv->vval.v_class;
-
-    rettv->vval.v_number =
-		class_instance_of(object_tv->vval.v_object->obj_class, c);
 }
 
 #endif // FEAT_EVAL

@@ -1778,8 +1778,8 @@ EXTERN char e_can_only_compare_list_with_list[]
 	INIT(= N_("E691: Can only compare List with List"));
 EXTERN char e_invalid_operation_for_list[]
 	INIT(= N_("E692: Invalid operation for List"));
-EXTERN char e_list_or_class_required_for_argument_nr[]
-	INIT(= N_("E693: List or Class required for argument %d"));
+EXTERN char e_class_or_typealias_required_for_argument_nr[]
+	INIT(= N_("E693: Class or class typealias required for argument %d"));
 EXTERN char e_invalid_operation_for_funcrefs[]
 	INIT(= N_("E694: Invalid operation for Funcrefs"));
 EXTERN char e_cannot_index_a_funcref[]
@@ -3562,13 +3562,13 @@ EXTERN char e_using_typealias_as_value_str[]
 EXTERN char e_abstract_cannot_be_used_in_interface[]
 	INIT(= N_("E1404: Abstract cannot be used in an interface"));
 EXTERN char e_using_class_as_value_str[]
-	INIT(= N_("E1403: Class \"%s\" cannot be used as a value"));
+	INIT(= N_("E1405: Class \"%s\" cannot be used as a value"));
 EXTERN char e_using_class_as_var_val[]
-	INIT(= N_("E1405: Cannot use a Class as a variable or value"));
+	INIT(= N_("E1406: Cannot use a Class as a variable or value"));
 EXTERN char e_using_typealias_as_var_val[]
-	INIT(= N_("E1406: Cannot use a Typealias as a variable or value"));
+	INIT(= N_("E1407: Cannot use a Typealias as a variable or value"));
 #endif
-// E1405 - E1499 unused (reserved for Vim9 class support)
+// E1408 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

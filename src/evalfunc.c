@@ -758,17 +758,23 @@ arg_string_or_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context
 }
 
 /*
- * Check "type" is a list of 'any' or a class.
+ * Check varargs' "type" are class.
  */
     static int
-arg_class_or_list(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+varargs_class(type_T *type UNUSED,
+	      type_T *decl_type UNUSED,
+	      argcontext_T *context)
 {
-    if (type->tt_type == VAR_CLASS
-	    || type->tt_type == VAR_LIST
-	    || type_any_or_unknown(type))
-	return OK;
-    arg_type_mismatch(&t_class, type, context->arg_idx + 1);
-    return FAIL;
+    for (int i = context->arg_idx; i < context->arg_count; ++i)
+    {
+	type2_T *types = &context->arg_types[i];
+	if (types->type_curr->tt_type != VAR_CLASS)
+	{
+	    semsg(_(e_class_or_typealias_required_for_argument_nr), i + 1);
+	    return FAIL;
+	}
+    }
+    return OK;
 }
 
 /*
@@ -1152,7 +1158,7 @@ static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
-static argcheck_T arg2_instanceof[] = {arg_object, arg_class_or_list};
+static argcheck_T arg2_instanceof[] = {arg_object, varargs_class, NULL };
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
 static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, NULL};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
@@ -1621,6 +1627,12 @@ ret_maparg(int argcount,
 /*
  * Array with names and number of arguments of all internal functions
  * MUST BE KEPT SORTED IN strcmp() ORDER FOR BINARY SEARCH!
+ *
+ * The function may be varargs. In that case
+ *	- f_max_argc == VARGS
+ *	- f_argcheck must be NULL terminated. Last non-null argument
+ *	  should check all the remaining args.
+ *	  NOTE: if varargs, there can only be one NULL in f_argcheck array.
  */
 typedef struct
 {
@@ -1635,6 +1647,9 @@ typedef struct
     void	(*f_func)(typval_T *args, typval_T *rvar);
 				// implementation of function
 } funcentry_T;
+
+// Set f_max_argc to VARGS for varargs.
+#define VARGS    CHAR_MAX
 
 // values for f_argtype; zero means it cannot be used as a method
 #define FEARG_1    1	    // base is the first argument
@@ -2152,7 +2167,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
-    {"instanceof",	2, 2, FEARG_1,	    arg2_instanceof,
+    {"instanceof",	2, VARGS, FEARG_1,  arg2_instanceof,
 			ret_bool,	    f_instanceof},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
@@ -3035,13 +3050,20 @@ internal_func_check_arg_types(
     if (argchecks == NULL)
 	return OK;
 
+    int has_varargs = global_functions[idx].f_max_argc == VARGS;
+
     argcontext_T context;
 
     context.arg_count = argcount;
     context.arg_types = types;
     context.arg_cctx = cctx;
     for (int i = 0; i < argcount; ++i)
-	if (argchecks[i] != NULL)
+	if (argchecks[i] == NULL)
+	{
+	    if (has_varargs)
+		break;
+	}
+	else
 	{
 	    context.arg_idx = i;
 	    if (argchecks[i](types[i].type_curr, types[i].type_decl,
