@@ -18,9 +18,8 @@ if g:GCC->empty()
   throw 'Skipped: gcc is not found in $PATH'
 endif
 
-packadd termdebug
-
-func Test_termdebug_basic()
+function s:generate_files(bin_name) 
+  let src_name = a:bin_name . '.c'
   let lines =<< trim END
     #include <stdio.h>
     #include <stdlib.h>
@@ -46,8 +45,21 @@ func Test_termdebug_basic()
       return 0;
     }
   END
-  call writefile(lines, 'XTD_basic.c', 'D')
-  call system($'{g:GCC} -g -o XTD_basic XTD_basic.c')
+  call writefile(lines, src_name)
+  call system($'{g:GCC} -g -o {a:bin_name} {src_name}')
+endfunction 
+
+function s:cleanup_files(bin_name)
+  call delete(a:bin_name)
+  call delete(a:bin_name . '.c')
+endfunction
+
+packadd termdebug
+
+func Test_termdebug_basic()
+  let bin_name = 'XTD_basic'
+  let src_name = bin_name . '.c'
+  call s:generate_files(bin_name)
 
   edit XTD_basic.c
   Termdebug ./XTD_basic
@@ -148,7 +160,7 @@ func Test_termdebug_basic()
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call assert_equal([], sign_getplaced('', #{group: 'TermDebug'})[0].signs)
 
-  call delete('XTD_basic')
+  call s:cleanup_files(bin_name)
   %bw!
 endfunc
 
