@@ -277,7 +277,7 @@ def Test_typealias()
     type B = number
     sort([1.1, B], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1401: Using type alias "B" as a Float', 3)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "B" cannot be used as a value', 3)
 
   # Creating a typealias in a def function
   lines =<< trim END

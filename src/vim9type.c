@@ -1660,17 +1660,16 @@ get_member_type_from_stack(
     // Use "unknown" for an empty list or dict.
     if (count == 0)
 	return &t_unknown;
-
-    // Use the first value type for the list member type, then find the common
-    // type from following items.
+    // Find the common type from following items.
     typep = ((type2_T *)stack->ga_data) + stack->ga_len;
-    result = (typep -(count * skip) + skip - 1)->type_curr;
-    for (i = 1; i < count; ++i)
+    result = &t_unknown;
+    for (i = 0; i < count; ++i)
     {
-	if (result == &t_any)
-	    break;  // won't get more common
 	type = (typep -((count - i) * skip) + skip - 1)->type_curr;
-	common_type(type, result, &result, type_gap);
+	if (check_type_is_value(type) == FAIL)
+	    return NULL;
+	if (result != &t_any)
+	    common_type(type, result, &result, type_gap);
     }
 
     return result;

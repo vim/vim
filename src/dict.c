@@ -1015,6 +1015,15 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		clear_tv(&tvkey);
 	    goto failret;
 	}
+	if (check_typval_is_value(&tv) == FAIL)
+	{
+	    if (evaluate)
+	    {
+		clear_tv(&tvkey);
+		clear_tv(&tv);
+	    }
+	    goto failret;
+	}
 	if (evaluate)
 	{
 	    item = dict_find(d, key, -1);
