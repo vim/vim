@@ -3,7 +3,7 @@
 CI:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - '.cirrus.yml'
               - '.github/dependabot.yml'
               - '.github/labeler.yml'
@@ -20,13 +20,13 @@ documentation:
 translation:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/po/*.po'
 
 if_lua:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/if_lua.c'
               - 'src/proto/if_lua.pro'
               - 'runtime/doc/if_lua.txt'
@@ -34,7 +34,7 @@ if_lua:
 if_mzscheme:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/if_mzsch.c'
               - 'src/if_mzsch.h'
               - 'src/proto/if_mzsch.pro'
@@ -43,7 +43,7 @@ if_mzscheme:
 if_perl:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/if_perl.xs'
               - 'src/if_perlsfio.c'
               - 'src/proto/if_perl.pro'
@@ -53,7 +53,7 @@ if_perl:
 if_python:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/if_py_both.h'
               - 'runtime/doc/if_pyth.txt'
               - 'src/if_python.c'
@@ -64,7 +64,7 @@ if_python:
 if_ruby:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/if_ruby.c'
               - 'src/proto/if_ruby.pro'
               - 'runtime/doc/if_ruby.txt'
@@ -72,7 +72,7 @@ if_ruby:
 if_tcl:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/if_tcl.c'
               - 'src/proto/if_tcl.pro'
               - 'runtime/doc/if_tcl.txt'
@@ -80,7 +80,7 @@ if_tcl:
 installer:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'nsis/**'
               - 'src/dosinst.*'
               - 'src/uninstall.c'
@@ -88,7 +88,7 @@ installer:
 platform-mac:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/INSTALLmac.txt'
               - 'src/os_mac*'
               - 'src/proto/os_mac*'
@@ -96,7 +96,7 @@ platform-mac:
 platform-windows:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'nsis/**'
               - 'src/*.bat'
               - 'src/*.bmp'
@@ -129,7 +129,7 @@ platform-windows:
 runtime:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'runtime/ftplugin'
               - 'runtime/syntax'
               - 'runtime/indent'
@@ -138,18 +138,18 @@ runtime:
 termdebug:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'runtime/pack/dist/opt/termdebug/plugin/termdebug.vim'
 
 plugin-netrw:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'runtime/plugin/netrwPlugin.vim'
               - 'runtime/autoload/netrw*'
 
 xxd:
   - all:
       - changed-files:
-          - any-glob-to-all-files:
+          - any-glob-to-any-file:
               - 'src/xxd/*'
