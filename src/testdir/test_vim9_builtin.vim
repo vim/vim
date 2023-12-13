@@ -5048,4 +5048,153 @@ def Test_writefile()
   v9.CheckDefExecAndScriptFailure(['writefile(["a"], "")'], 'E482: Can''t create file <empty>')
 enddef
 
+def Test_passing_type_to_builtin()
+  # type, typename, string, instanceof are allowed type argument
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type T = number
+    type U = C
+    var x: any
+    x = type(C)
+    x = type(T)
+    x = typename(C)
+    x = typename(T)
+    x = string(C)
+    x = string(T)
+    x = instanceof(C.new(), U, C)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # check argument to add at script level
+  # Note: add() is special cased in compile_call in vim9expr
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    add([], C)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check argument to add in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def F()
+      add([], C)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check member call argument to add at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    []->add(C)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check member call argument to add in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def F()
+      []->add(C)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # Try "empty()" builtin
+  # check argument to empty at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    empty(C)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check argument to empty in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def F()
+      empty(C)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check member call argument to empty at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    C->empty()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check member call argument to empty in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def F()
+      C->empty()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # Try "abs()" builtin
+  # check argument to abs at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    abs(C)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check argument to abs in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def F()
+      abs(C)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check member call argument to abs at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    C->abs()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  # check member call argument to abs in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    def F()
+      C->abs()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

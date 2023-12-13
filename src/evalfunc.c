@@ -1651,7 +1651,7 @@ typedef struct
     char	*f_name;	// function name
     char	f_min_argc;	// minimal number of arguments
     char	f_max_argc;	// maximal number of arguments
-    char	f_argtype;	// for method: FEARG_ values
+    char	f_argtype;	// for method: FEARG_ values; bits FE_
     argcheck_T	*f_argcheck;	// list of functions to check argument types;
 				// use "arg_any" (not NULL) to accept an
 				// argument of any type
@@ -1666,10 +1666,12 @@ typedef struct
 #define VARGS    CHAR_MAX
 
 // values for f_argtype; zero means it cannot be used as a method
-#define FEARG_1    1	    // base is the first argument
-#define FEARG_2    2	    // base is the second argument
-#define FEARG_3    3	    // base is the third argument
-#define FEARG_4    4	    // base is the fourth argument
+#define FEARG_1	    0x01    // base is the first argument
+#define FEARG_2     0x02    // base is the second argument
+#define FEARG_3     0x03    // base is the third argument
+#define FEARG_4     0x04    // base is the fourth argument
+#define FEARG_MASK  0x0F    // bits in f_argtype used as argument index
+#define FE_X	    0x10    // builtin accepts a non-value (class, typealias)
 
 #if defined(HAVE_MATH_H)
 # define MATH_FUNC(name) name
@@ -2181,7 +2183,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
-    {"instanceof",	2, VARGS, FEARG_1,  arg2_instanceof,
+    {"instanceof",	2, VARGS, FEARG_1|FE_X,	arg2_instanceof,
 			ret_bool,	    f_instanceof},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
@@ -2659,7 +2661,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_strgetchar},
     {"stridx",		2, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number,	    f_stridx},
-    {"string",		1, 1, FEARG_1,	    NULL,
+    {"string",		1, 1, FEARG_1|FE_X, NULL,
 			ret_string,	    f_string},
     {"strlen",		1, 1, FEARG_1,	    arg1_string_or_nr,
 			ret_number,	    f_strlen},
@@ -2821,7 +2823,7 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_option_not_set},
     {"test_override",	2, 2, FEARG_2,	    arg2_string_number,
 			ret_void,	    f_test_override},
-    {"test_refcount",	1, 1, FEARG_1,	    NULL,
+    {"test_refcount",	1, 1, FEARG_1|FE_X, NULL,
 			ret_number,	    f_test_refcount},
     {"test_setmouse",	2, 2, 0,	    arg2_number,
 			ret_void,	    f_test_setmouse},
@@ -2853,9 +2855,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
-    {"type",		1, 1, FEARG_1,	    NULL,
+    {"type",		1, 1, FEARG_1|FE_X, NULL,
 			ret_number,	    f_type},
-    {"typename",	1, 1, FEARG_1,	    NULL,
+    {"typename",	1, 1, FEARG_1|FE_X, NULL,
 			ret_string,	    f_typename},
     {"undofile",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_undofile},
@@ -2926,6 +2928,15 @@ static funcentry_T global_functions[] =
     {"xor",		2, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_xor},
 };
+
+/*
+ * Return true if specified function allows a type as an argument.
+ */
+    static int
+func_allows_type(int idx)
+{
+    return (global_functions[idx].f_argtype & FE_X) != 0;
+}
 
 /*
  * Function given to ExpandGeneric() to obtain the list of internal
@@ -3059,6 +3070,15 @@ internal_func_check_arg_types(
 	int	argcount,
 	cctx_T	*cctx)
 {
+    // Some internal functions accept types like Class as arguments. For other
+    // functions, check the arguments are not types.
+    if (!(func_allows_type(idx)))
+    {
+        for (int i = 0; i < argcount; ++i)
+            if (check_type_is_value(types[i].type_curr) == FAIL)
+		return FAIL;
+    }
+
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
 
     if (argchecks == NULL)
@@ -3143,7 +3163,7 @@ check_internal_func(int idx, int argcount)
     else if (argcount > global_functions[idx].f_max_argc)
 	res = FCERR_TOOMANY;
     else
-	return global_functions[idx].f_argtype;
+	return global_functions[idx].f_argtype & FEARG_MASK;
 
     name = internal_func_name(idx);
     if (res == FCERR_TOOMANY)
@@ -3151,6 +3171,24 @@ check_internal_func(int idx, int argcount)
     else
 	semsg(_(e_not_enough_arguments_for_function_str), name);
     return -1;
+}
+
+/*
+ * Some internal functions accept types like Class as arguments. For other
+ * functions, check the arguments are not types.
+ *
+ * Return OK/FAIL.
+ */
+    static int
+check_args_for_type(int idx, int argcount, typval_T *argvars)
+{
+    if (!func_allows_type(idx))
+    {
+	for (int i = 0; i < argcount; ++i)
+	    if (check_typval_is_value(&argvars[i]) == FAIL)
+		return FAIL;
+    }
+    return OK;
 }
 
     funcerror_T
@@ -3169,6 +3207,8 @@ call_internal_func(
 	return FCERR_TOOFEW;
     if (argcount > global_functions[i].f_max_argc)
 	return FCERR_TOOMANY;
+    if (check_args_for_type(i, argcount, argvars) == FAIL)
+	return FCERR_OTHER;
     argvars[argcount].v_type = VAR_UNKNOWN;
     global_functions[i].f_func(argvars, rettv);
     return FCERR_NONE;
@@ -3200,14 +3240,16 @@ call_internal_method(
     fi = find_internal_func(name);
     if (fi < 0)
 	return FCERR_UNKNOWN;
-    if (global_functions[fi].f_argtype == 0)
+    if ((global_functions[fi].f_argtype & FEARG_MASK) == 0)
 	return FCERR_NOTMETHOD;
     if (argcount + 1 < global_functions[fi].f_min_argc)
 	return FCERR_TOOFEW;
     if (argcount + 1 > global_functions[fi].f_max_argc)
 	return FCERR_TOOMANY;
+    if (check_args_for_type(fi, argcount, argvars) == FAIL)
+	return FCERR_OTHER;
 
-    if (global_functions[fi].f_argtype == FEARG_2)
+    if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_2)
     {
 	if (argcount < 1)
 	    return FCERR_TOOFEW;
@@ -3218,7 +3260,7 @@ call_internal_method(
 	for (int i = 1; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
-    else if (global_functions[fi].f_argtype == FEARG_3)
+    else if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_3)
     {
 	if (argcount < 2)
 	    return FCERR_TOOFEW;
@@ -3230,7 +3272,7 @@ call_internal_method(
 	for (int i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
-    else if (global_functions[fi].f_argtype == FEARG_4)
+    else if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_4)
     {
 	if (argcount < 3)
 	    return FCERR_TOOFEW;
@@ -3251,6 +3293,9 @@ call_internal_method(
 	    argv[i + 1] = argvars[i];
     }
     argv[argcount + 1].v_type = VAR_UNKNOWN;
+
+    if (check_args_for_type(fi, argcount + 1, argv) == FAIL)
+	return FCERR_OTHER;
 
     global_functions[fi].f_func(argv, rettv);
     return FCERR_NONE;
