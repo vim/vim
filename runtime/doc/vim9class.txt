@@ -752,16 +752,38 @@ constructor methods.
 
 7.  Type definition					*Vim9-type* *:type*
 
-A type definition is giving a name to a type specification.  This also known
-type alias.  For Example: >
+					*E1393* *E1395* *E1396* *E1397* *E1398*
+A type definition is giving a name to a type specification.  This is also
+known as a "type alias".  The type alias can be used wherever a built-in type
+can be used.  Example: >
 
-	:type ListOfStrings = list<string>
+    type ListOfStrings = list<string>
+    var s: ListOfStrings = ['a', 'b']
 
-The type alias can be used wherever a built-in type can be used.  The type
-alias name must start with an upper case character.  A type alias can be
-created only at the script level and not inside a function.  A type alias can
-be exported and used across scripts.
+    def ProcessStr(str: ListOfStrings): ListOfStrings
+	return str
+    enddef
+    echo ProcessStr(s)
+<
+							*E1394*
+A type alias name must start with an upper case character.  Only existing
+types can be aliased.
 
+							*E1399*
+A type alias can be created only at the script level and not inside a
+function.  A type alias can be exported and used across scripts.
+
+					*E1400* *E1401* *E1402* *E1403* *E1407*
+A type alias cannot be used as an expression.  A type alias cannot be used in
+the left-hand-side of an assignment.
+
+For a type alias name, the |typename()| function returns the type that is
+aliased: >
+
+    type ListOfStudents = list<dict<any>>
+    echo typename(ListOfStudents)
+    typealias<list<dict<any>>>
+<
 ==============================================================================
 
 8.  Enum					*Vim9-enum* *:enum* *:endenum*

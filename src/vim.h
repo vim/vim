@@ -2181,7 +2181,7 @@ typedef int sock_T;
 #define VAR_TYPE_INSTR	    11
 #define VAR_TYPE_CLASS	    12
 #define VAR_TYPE_OBJECT	    13
-#define VAR_TYPE_TYPEALIAS  15
+#define VAR_TYPE_TYPEALIAS  14
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
