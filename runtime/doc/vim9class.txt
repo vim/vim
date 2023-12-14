@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -220,7 +220,7 @@ see this pattern: >
 <
 							*E1390*
 Not only is this text you need to write, it also has the type of each
-variables twice.  Since this is so common a shorter way to write new() is
+variable twice.  Since this is so common a shorter way to write new() is
 provided: >
 
 	   def new(this.lnum, this.col)
@@ -265,7 +265,7 @@ always returns an object of the class.
 
 							*E1386*
 When invoking an object method, the method name should be preceded by the
-object variable name.  A object method cannot be invoked using the class
+object variable name.  An object method cannot be invoked using the class
 name.
 
 ==============================================================================
