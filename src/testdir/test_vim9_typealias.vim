@@ -393,7 +393,7 @@ def Test_typealias_import()
   lines =<< trim END
     vim9script
     export class MyClass
-      this.val = 10
+      var val = 10
     endclass
   END
   writefile(lines, 'Xtypeexport4.vim', 'D')
@@ -537,7 +537,7 @@ def Test_typealias_class()
   var lines =<< trim END
     vim9script
     class C
-      this.color = 'green'
+      var color = 'green'
     endclass
     type MyClass = C
     var o: MyClass = MyClass.new()
