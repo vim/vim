@@ -205,6 +205,8 @@ typedef struct {
 // A function to check one argument type.  The first argument is the type to
 // check.  If needed, other argument types can be obtained with the context.
 // E.g. if "arg_idx" is 1, then (type - 1) is the first argument type.
+// NOTE:    Use "arg_any", not NULL, in funcentry_T.f_argcheck array
+//	    to accept an argument of any type.
 typedef int (*argcheck_T)(type_T *, type_T *, argcontext_T *);
 
 /*
@@ -251,6 +253,17 @@ arg_type_modifiable(type_T *type, int arg_idx)
 	    arg_idx, type_name(type, &tofree));
     vim_free(tofree);
     return FAIL;
+}
+
+/*
+ *  Return OK for any type unconditionally.
+ */
+    static int
+arg_any(type_T *type UNUSED,
+	type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
+{
+    return OK;
 }
 
 /*
@@ -1067,8 +1080,8 @@ static argcheck_T arg1_string[] = {arg_string};
 static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
-static argcheck_T arg2_any_buffer[] = {NULL, arg_buffer};
-static argcheck_T arg2_buffer_any[] = {arg_buffer, NULL};
+static argcheck_T arg2_any_buffer[] = {arg_any, arg_buffer};
+static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
 static argcheck_T arg2_buffer_lnum[] = {arg_buffer, arg_lnum};
@@ -1090,7 +1103,7 @@ static argcheck_T arg2_listblobmod_item[] = {arg_list_or_blob_mod, arg_item_of_p
 static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
 static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
 static argcheck_T arg2_number[] = {arg_number, arg_number};
-static argcheck_T arg2_number_any[] = {arg_number, NULL};
+static argcheck_T arg2_number_any[] = {arg_number, arg_any};
 static argcheck_T arg2_number_bool[] = {arg_number, arg_bool};
 static argcheck_T arg2_number_dict_any[] = {arg_number, arg_dict_any};
 static argcheck_T arg2_number_list[] = {arg_number, arg_list_any};
@@ -1098,7 +1111,7 @@ static argcheck_T arg2_number_string[] = {arg_number, arg_string};
 static argcheck_T arg2_number_string_or_list[] = {arg_number, arg_string_or_list_any};
 static argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
-static argcheck_T arg2_string_any[] = {arg_string, NULL};
+static argcheck_T arg2_string_any[] = {arg_string, arg_any};
 static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
 static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
@@ -1107,23 +1120,23 @@ static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
-static argcheck_T arg3_any_list_dict[] = {NULL, arg_list_any, arg_dict_any};
+static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
-static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, NULL};
+static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, arg_any};
 static argcheck_T arg3_buffer_string_dict[] = {arg_buffer, arg_string, arg_dict_any};
 static argcheck_T arg3_dict_number_number[] = {arg_dict_any, arg_number, arg_number};
 static argcheck_T arg3_list_string_dict[] = {arg_list_any, arg_string, arg_dict_any};
 static argcheck_T arg3_lnum_number_bool[] = {arg_lnum, arg_number, arg_bool};
 static argcheck_T arg3_number[] = {arg_number, arg_number, arg_number};
-static argcheck_T arg3_number_any_dict[] = {arg_number, NULL, arg_dict_any};
+static argcheck_T arg3_number_any_dict[] = {arg_number, arg_any, arg_dict_any};
 static argcheck_T arg3_number_number_dict[] = {arg_number, arg_number, arg_dict_any};
-static argcheck_T arg3_number_string_any[] = {arg_number, arg_string, NULL};
+static argcheck_T arg3_number_string_any[] = {arg_number, arg_string, arg_any};
 static argcheck_T arg3_number_string_buffer[] = {arg_number, arg_string, arg_buffer};
 static argcheck_T arg3_number_string_string[] = {arg_number, arg_string, arg_string};
 static argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
-static argcheck_T arg3_string_any_dict[] = {arg_string, NULL, arg_dict_any};
-static argcheck_T arg3_string_any_string[] = {arg_string, NULL, arg_string};
+static argcheck_T arg3_string_any_dict[] = {arg_string, arg_any, arg_dict_any};
+static argcheck_T arg3_string_any_string[] = {arg_string, arg_any, arg_string};
 static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
 static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
 static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
@@ -1132,23 +1145,23 @@ static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, a
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
-static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
+static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
+static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
 static argcheck_T arg4_string_number_bool_bool[] = {arg_string, arg_number, arg_bool, arg_bool};
 /* Function specific argument types (not covered by the above) */
-static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
+static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, arg_any, arg_number, arg_string};
 static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
 static argcheck_T arg4_browse[] = {arg_bool, arg_string, arg_string, arg_string};
-static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, NULL, arg_dict_any};
+static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, arg_any, arg_dict_any};
 static argcheck_T arg23_chanraw[] = {arg_chan_or_job, arg_string_or_blob, arg_dict_any};
-static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, NULL, arg_bool, arg_number};
+static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, arg_any, arg_bool, arg_number};
 static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
-static argcheck_T arg12_deepcopy[] = {NULL, arg_bool};
+static argcheck_T arg12_deepcopy[] = {arg_any, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
 static argcheck_T arg23_extend[] = {arg_list_or_dict_mod, arg_same_as_prev, arg_extend3};
 static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
-static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
+static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, arg_any};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
@@ -1160,18 +1173,18 @@ static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
 static argcheck_T arg2_instanceof[] = {arg_object, varargs_class, NULL };
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
-static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, NULL};
+static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, arg_any};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
-static argcheck_T arg119_printf[] = {arg_string_or_nr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-static argcheck_T arg23_reduce[] = {arg_string_list_or_blob, NULL, NULL};
+static argcheck_T arg119_printf[] = {arg_string_or_nr, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any};
+static argcheck_T arg23_reduce[] = {arg_string_list_or_blob, arg_any, arg_any};
 static argcheck_T arg24_remote_expr[] = {arg_string, arg_string, arg_string, arg_number};
 static argcheck_T arg23_remove[] = {arg_list_or_dict_or_blob_mod, arg_remove2, arg_number};
 static argcheck_T arg2_repeat[] = {arg_repeat1, arg_number};
 static argcheck_T arg15_search[] = {arg_string, arg_string, arg_number, arg_number, arg_string_or_func};
 static argcheck_T arg37_searchpair[] = {arg_string, arg_string, arg_string, arg_string, arg_string_or_func, arg_number, arg_number};
 static argcheck_T arg3_setbufline[] = {arg_buffer, arg_lnum, arg_str_or_nr_or_list};
-static argcheck_T arg2_setline[] = {arg_lnum, NULL};
+static argcheck_T arg2_setline[] = {arg_lnum, arg_any};
 static argcheck_T arg24_setloclist[] = {arg_number, arg_list_any, arg_string, arg_dict_any};
 static argcheck_T arg13_setqflist[] = {arg_list_any, arg_string, arg_dict_any};
 static argcheck_T arg23_settagstack[] = {arg_number, arg_dict_any, arg_string};
@@ -1628,11 +1641,10 @@ ret_maparg(int argcount,
  * Array with names and number of arguments of all internal functions
  * MUST BE KEPT SORTED IN strcmp() ORDER FOR BINARY SEARCH!
  *
- * The function may be varargs. In that case
+ * The builtin function may be varargs. In that case
  *	- f_max_argc == VARGS
- *	- f_argcheck must be NULL terminated. Last non-null argument
- *	  should check all the remaining args.
- *	  NOTE: if varargs, there can only be one NULL in f_argcheck array.
+ *	- For varargs, f_argcheck must be NULL terminated. The last non-null
+ *	  entry in f_argcheck should validate all the remaining args.
  */
 typedef struct
 {
@@ -1640,7 +1652,9 @@ typedef struct
     char	f_min_argc;	// minimal number of arguments
     char	f_max_argc;	// maximal number of arguments
     char	f_argtype;	// for method: FEARG_ values
-    argcheck_T	*f_argcheck;	// list of functions to check argument types
+    argcheck_T	*f_argcheck;	// list of functions to check argument types;
+				// use "arg_any" (not NULL) to accept an
+				// argument of any type
     type_T	*(*f_retfunc)(int argcount, type2_T *argtypes,
 							   type_T **decl_type);
 				// return type function
@@ -3050,26 +3064,18 @@ internal_func_check_arg_types(
     if (argchecks == NULL)
 	return OK;
 
-    int has_varargs = global_functions[idx].f_max_argc == VARGS;
-
     argcontext_T context;
 
     context.arg_count = argcount;
     context.arg_types = types;
     context.arg_cctx = cctx;
-    for (int i = 0; i < argcount; ++i)
-	if (argchecks[i] == NULL)
-	{
-	    if (has_varargs)
-		break;
-	}
-	else
-	{
-	    context.arg_idx = i;
-	    if (argchecks[i](types[i].type_curr, types[i].type_decl,
-			&context) == FAIL)
-		return FAIL;
-	}
+    for (int i = 0; i < argcount && argchecks[i] != NULL; ++i)
+    {
+	context.arg_idx = i;
+	if (argchecks[i](types[i].type_curr, types[i].type_decl,
+							    &context) == FAIL)
+	    return FAIL;
+    }
     return OK;
 }
 
