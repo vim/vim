@@ -1331,6 +1331,9 @@ gdb:
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
 		set a breakpoint at the specified position
+ *:Tbreak*	set a temporary breakpoint at the cursor position
+ :Tbreak {position}
+		set a temporary breakpoint at the specified position
  *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command
