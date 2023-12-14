@@ -190,7 +190,7 @@ def Test_class_basic()
     endclass
     sort([1.1, A], 'f')
   END
-  v9.CheckSourceFailure(lines, 'E1321: Using a Class as a Float', 4)
+  v9.CheckSourceFailure(lines, 'E1405: Class "A" cannot be used as a value', 4)
 
   # Test for using object as a float
   lines =<< trim END

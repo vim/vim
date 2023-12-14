@@ -3361,4 +3361,94 @@ def Test_assign_to_any()
   endfor
 enddef
 
+def Test_assign_type_to_list_dict()
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    var x = [C]
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type T = C
+
+    def F()
+      var x = [3, T, C]
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    type T = number
+
+    def F()
+      var x = [3, T]
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    var x = {e: C}
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    def F()
+      var x = {e: C}
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    type T = number
+
+    def F()
+      var x = {e: T}
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+
+    def F()
+      var x = {e: [C]}
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    type T = number
+
+    def F()
+      var x = {e: [T]}
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
