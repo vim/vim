@@ -4491,7 +4491,19 @@ E139	message.txt	/*E139*
 E1390	vim9class.txt	/*E1390*
 E1391	eval.txt	/*E1391*
 E1392	eval.txt	/*E1392*
+E1393	vim9class.txt	/*E1393*
+E1394	vim9class.txt	/*E1394*
+E1395	vim9class.txt	/*E1395*
+E1396	vim9class.txt	/*E1396*
+E1397	vim9class.txt	/*E1397*
+E1398	vim9class.txt	/*E1398*
+E1399	vim9class.txt	/*E1399*
 E140	message.txt	/*E140*
+E1400	vim9class.txt	/*E1400*
+E1401	vim9class.txt	/*E1401*
+E1402	vim9class.txt	/*E1402*
+E1403	vim9class.txt	/*E1403*
+E1407	vim9class.txt	/*E1407*
 E141	message.txt	/*E141*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
@@ -10285,6 +10297,7 @@ t_ti	term.txt	/*t_ti*
 t_tp	version4.txt	/*t_tp*
 t_ts	term.txt	/*t_ts*
 t_ts_old	version4.txt	/*t_ts_old*
+t_typealias-variable	eval.txt	/*t_typealias-variable*
 t_u7	term.txt	/*t_u7*
 t_ue	term.txt	/*t_ue*
 t_undo	version4.txt	/*t_undo*
@@ -10785,6 +10798,7 @@ v:t_none	eval.txt	/*v:t_none*
 v:t_number	eval.txt	/*v:t_number*
 v:t_object	eval.txt	/*v:t_object*
 v:t_string	eval.txt	/*v:t_string*
+v:t_typealias	eval.txt	/*v:t_typealias*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
 v:termrbgresp	eval.txt	/*v:termrbgresp*
 v:termresponse	eval.txt	/*v:termresponse*

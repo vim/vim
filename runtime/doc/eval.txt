@@ -2558,6 +2558,8 @@ v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
 v:t_class	Value of |class| type.  Read-only.  See: |type()|
 					*v:t_object* *t_object-variable*
 v:t_object	Value of |object| type.  Read-only.  See: |type()|
+					*v:t_typealias* *t_typealias-variable*
+v:t_typealias	Value of |typealias| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|

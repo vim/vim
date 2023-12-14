@@ -10181,6 +10181,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Blob:	   10  |v:t_blob|
 			Class:	   12  |v:t_class|
 			Object:	   13  |v:t_object|
+			Typealias: 14  |v:t_typealias|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
