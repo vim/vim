@@ -5315,7 +5315,8 @@ fun! s:NetrwBrowseUpDir(islocal)
    endif
    call s:RestorePosn(s:netrw_posn)
    let curdir= substitute(curdir,'^.*[\/]','','')
-   call search('\<'.curdir.'/','wc')
+   let curdir= '\<'. escape(curdir, '~'). '/'
+   call search(curdir,'wc')
   endif
 "  call Dret("s:NetrwBrowseUpDir")
 endfun
