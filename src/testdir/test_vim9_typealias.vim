@@ -546,4 +546,238 @@ def Test_typealias_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for typealias as function arg and return value
+def Test_type_as_func_argument_or_return_value()
+  # check typealias as arg, function call in script level
+  var lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(arg: any)
+    enddef
+    Foo(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 5)
+
+  # check typealias as function return, function call in script level
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(): any
+      return A
+    enddef
+    Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check typealias as arg, function call in :def
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(arg: any)
+    enddef
+    def F()
+      Foo(A)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check typealias as function return, function call in :def
+  lines =<< trim END
+    vim9script
+    type A = number
+    def Foo(): any
+      return A
+    enddef
+    def F()
+      Foo()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check funcref using typealias as arg at script level
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    Fref(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 9)
+
+  # check funcref using typealias as arg in :def
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    def G()
+      Fref(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check funcref using typealias as return
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(): any
+      return A
+    enddef
+    var Fref: func(): any
+    Fref = F
+
+    Fref()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+
+  # check defered function using typealias as arg
+  lines =<< trim END
+    vim9script
+    type A = number
+    def F(arg: any)
+    enddef
+    def G()
+      defer F(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
+enddef
+
+" Test for class typealias as function arg and return value
+def Test_class_as_func_argument_or_return_value()
+  # check class typealias as arg, function call in script level
+  var lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(arg: any)
+    enddef
+    Foo(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 7)
+
+  # check class typealias as function return, function call in script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(): any
+      return A
+    enddef
+    Foo()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check class typealias as arg, function call in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(arg: any)
+    enddef
+    def F()
+      Foo(A)
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check class typealias as function return, function call in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def Foo(): any
+      return A
+    enddef
+    def F()
+      Foo()
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check funcref using class typealias as arg at script level
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    Fref(A)
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 11)
+
+  # check funcref using class typealias as arg in :def
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(arg: any)
+      echo typename(arg)
+    enddef
+    var Fref: func(any)
+    Fref = F
+
+    def G()
+      Fref(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check funcref using class typealias as return
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(): any
+      return A
+    enddef
+    var Fref: func(): any
+    Fref = F
+
+    Fref()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+
+  # check defered function using class typealias as arg
+  lines =<< trim END
+    vim9script
+    class C
+    endclass
+    type A = C
+    def F(arg: any)
+    enddef
+    def G()
+      defer F(A)
+    enddef
+    G()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

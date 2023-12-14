@@ -1821,6 +1821,8 @@ generate_CALL(
 	    type_T *actual;
 
 	    actual = get_type_on_stack(cctx, argcount - i - 1);
+	    if (check_type_is_value(actual) == FAIL)
+		return FAIL;
 	    if (actual->tt_type == VAR_SPECIAL
 			      && i >= regular_args - ufunc->uf_def_args.ga_len)
 	    {
@@ -1960,6 +1962,8 @@ check_func_args_from_type(
 		type_T	*actual = get_type_on_stack(cctx, -1 - offset);
 		type_T	*expected;
 
+		if (check_type_is_value(actual) == FAIL)
+		    return FAIL;
 		if (varargs && i >= type->tt_argcount - 1)
 		{
 		    expected = type->tt_args[type->tt_argcount - 1];
