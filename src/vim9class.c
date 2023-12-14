@@ -1305,6 +1305,24 @@ add_classfuncs_objmethods(
 }
 
 /*
+ * Return the end of the class name starting at "arg".  Valid characters in a
+ * class name are alphanumeric characters and "_".  Also handles imported class
+ * names.
+ */
+    static char_u *
+find_class_name_end(char_u *arg)
+{
+    char_u *end = arg;
+
+    while (ASCII_ISALNUM(*end) || *end == '_'
+	    || (*end == '.' && (ASCII_ISALNUM(end[1]) || end[1] == '_')))
+	++end;
+
+    return end;
+}
+
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":interface" up to ":endinterface".
  */
@@ -1383,7 +1401,8 @@ ex_class(exarg_T *eap)
 		goto early_ret;
 	    }
 	    arg = skipwhite(arg + 7);
-	    char_u *end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
+
+	    char_u *end = find_class_name_end(arg);
 	    if (!IS_WHITE_OR_NUL(*end))
 	    {
 		semsg(_(e_white_space_required_after_name_str), arg);
@@ -1413,8 +1432,7 @@ ex_class(exarg_T *eap)
 
 	    for (;;)
 	    {
-		char_u *impl_end = find_name_end(arg, NULL, NULL,
-							      FNE_CHECK_START);
+		char_u *impl_end = find_class_name_end(arg);
 		if ((!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
 			|| (*impl_end == ','
 			    && !IS_WHITE_OR_NUL(*(impl_end + 1))))

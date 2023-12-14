@@ -3030,6 +3030,62 @@ def Test_class_import()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for implementing an imported interface
+def Test_implement_imported_interface()
+  var lines =<< trim END
+    vim9script
+    export interface Imp_Intf1
+      def Fn1(): number
+    endinterface
+    export interface Imp_Intf2
+      def Fn2(): number
+    endinterface
+  END
+  writefile(lines, 'Ximportinterface.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './Ximportinterface.vim' as Xintf
+
+    class A implements Xintf.Imp_Intf1, Xintf.Imp_Intf2
+      def Fn1(): number
+        return 10
+      enddef
+      def Fn2(): number
+        return 20
+      enddef
+    endclass
+    var a = A.new()
+    assert_equal(10, a.Fn1())
+    assert_equal(20, a.Fn2())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for extending an imported class
+def Test_extend_imported_class()
+  var lines =<< trim END
+    vim9script
+    export class Imp_C1
+      def Fn1(): number
+        return 5
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xextendimportclass.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './Xextendimportclass.vim' as XClass
+
+    class A extends XClass.Imp_C1
+    endclass
+    var a = A.new()
+    assert_equal(5, a.Fn1())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_abstract_class()
   var lines =<< trim END
     vim9script
