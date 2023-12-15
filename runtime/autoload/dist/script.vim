@@ -225,6 +225,10 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^dart\>'
     return 'dart'
 
+    # Execline (s6)
+  elseif name =~ '^execlineb\>'
+    return 'execline'
+
   endif
 
   return ''
