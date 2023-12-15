@@ -1629,6 +1629,7 @@ completion can be enabled:
 	-complete=help		help subjects
 	-complete=highlight	highlight groups
 	-complete=history	:history suboptions
+	-complete=keymap	keyboard mappings
 	-complete=locale	locale names (as output of locale -a)
 	-complete=mapclear	buffer argument
 	-complete=mapping	mapping name
