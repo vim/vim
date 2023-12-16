@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-23 21:51+0000\n"
+"POT-Creation-Date: 2023-12-15 23:11+0000\n"
 "PO-Revision-Date: 2023-08-24 15:41-0500\n"
 "Last-Translator: Kevin Patrick Scannell <kscanne@gmail.com>\n"
 "Language-Team: Irish <gaeilge-gnulinux@lists.sourceforge.net>\n"
@@ -298,27 +298,39 @@ msgstr "[criptithe]"
 
 #, c-format
 msgid "xchacha20v2: using custom opslimit \"%llu\" for Key derivation."
-msgstr "xchacha20v2: ag baint úsáide as opslimit saincheaptha \"%llu\" agus an eochair á díorthú."
+msgstr ""
+"xchacha20v2: ag baint úsáide as opslimit saincheaptha \"%llu\" agus an "
+"eochair á díorthú."
 
 #, c-format
 msgid "xchacha20v2: using default opslimit \"%llu\" for Key derivation."
-msgstr "xchacha20v2: ag baint úsáide as an opslimit réamhshocraithe \"%llu\" agus an eochair á díorthú."
+msgstr ""
+"xchacha20v2: ag baint úsáide as an opslimit réamhshocraithe \"%llu\" agus an "
+"eochair á díorthú."
 
 #, c-format
 msgid "xchacha20v2: using custom memlimit \"%lu\" for Key derivation."
-msgstr "xchacha20v2: ag baint úsáide as memlimit saincheaptha \"%lu\" agus an eochair á díorthú."
+msgstr ""
+"xchacha20v2: ag baint úsáide as memlimit saincheaptha \"%lu\" agus an "
+"eochair á díorthú."
 
 #, c-format
 msgid "xchacha20v2: using default memlimit \"%lu\" for Key derivation."
-msgstr "xchacha20v2: ag baint úsáide as an memlimit réamhshocraithe \"%lu\" agus an eochair á díorthú."
+msgstr ""
+"xchacha20v2: ag baint úsáide as an memlimit réamhshocraithe \"%lu\" agus an "
+"eochair á díorthú."
 
 #, c-format
 msgid "xchacha20v2: using custom algorithm \"%d\" for Key derivation."
-msgstr "xchacha20v2: ag baint úsáide as algartam saincheaptha \"%d\" agus an eochair á díorthú."
+msgstr ""
+"xchacha20v2: ag baint úsáide as algartam saincheaptha \"%d\" agus an eochair "
+"á díorthú."
 
 #, c-format
 msgid "xchacha20v2: using default algorithm \"%d\" for Key derivation."
-msgstr "xchacha20v2: ag baint úsáide as an algartam réamhshocraithe \"%d\" agus an eochair á díorthú."
+msgstr ""
+"xchacha20v2: ag baint úsáide as an algartam réamhshocraithe \"%d\" agus an "
+"eochair á díorthú."
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Mód dífhabhtaithe á thosú.  Clóscríobh \"cont\" le dul ar aghaidh."
@@ -1693,7 +1705,8 @@ msgstr ""
 "teirminéal"
 
 msgid "--gui-dialog-file {fname}  For testing: write dialog text"
-msgstr "--gui-dialog-file {fname}  Le haghaidh tástála: scríobh téacs na dialóige"
+msgstr ""
+"--gui-dialog-file {fname}  Le haghaidh tástála: scríobh téacs na dialóige"
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tScoir mura bhfuil ionchur nó aschur ina theirminéal"
@@ -4000,7 +4013,8 @@ msgstr "E10: Ba chóir /, ? nó & a chur i ndiaidh \\"
 
 msgid "E11: Invalid in command-line window; :q<CR> closes the window"
 msgstr ""
-"E11: Neamhbhailí i bhfuinneog líne na n-orduithe; :q<CR> chun an fhuinneog a dhúnadh"
+"E11: Neamhbhailí i bhfuinneog líne na n-orduithe; :q<CR> chun an fhuinneog a "
+"dhúnadh"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -5076,7 +5090,9 @@ msgid "E339: Pattern too long"
 msgstr "E339: Slonn rófhada"
 
 msgid "E340: Internal error; if you can reproduce please report a bug"
-msgstr "E340: Earráid inmheánach: más féidir leat an fhadhb a chruthú arís, cuir tuairisc chugainn, le do thoil"
+msgstr ""
+"E340: Earráid inmheánach: más féidir leat an fhadhb a chruthú arís, cuir "
+"tuairisc chugainn, le do thoil"
 
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
@@ -5373,7 +5389,7 @@ msgid "E423: Illegal argument: %s"
 msgstr "E423: Argóint neamhcheadaithe: %s"
 
 msgid "E424: Too many different highlighting attributes in use"
-msgstr "E424: An iomarca tréithe aibhsithe in úsáid"
+msgstr "E424: An iomarca aitreabúidí aibhsithe in úsáid"
 
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Ní féidir a dhul roimh an chéad chlib chomhoiriúnach"
@@ -6043,9 +6059,6 @@ msgstr "E613: Clófhoireann anaithnid printéara: %s"
 msgid "E614: Class required"
 msgstr "E614: Aicme ag teastáil"
 
-msgid "E615: Object required"
-msgstr "E615: Réad ag teastáil"
-
 #, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: Réad ag teastáil in argóint %d"
@@ -6153,9 +6166,6 @@ msgstr "E647: Aitheantóir maoláin neamhbhailí in setDot"
 
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Aitheantóir maoláin neamhbhailí in close"
-
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: Aitheantóir maoláin neamhbhailí in close"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Aitheantóir maoláin neamhbhailí in defineAnnoType"
@@ -6284,8 +6294,9 @@ msgstr "E687: Níos lú spriocanna ná míreanna Liosta"
 msgid "E688: More targets than List items"
 msgstr "E688: Níos mó spriocanna ná míreanna Liosta"
 
-msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr "E689: Ní féidir ach Liosta, Foclóir, nó Bloba a innéacsú"
+#, c-format
+msgid "E689: Index not allowed after a %s: %s"
+msgstr "E689: Ní cheadaítear innéacs tar éis %s: %s"
 
 msgid "E690: Missing \"in\" after :for"
 msgstr "E690: \"in\" ar iarraidh i ndiaidh :for"
@@ -6297,8 +6308,8 @@ msgid "E692: Invalid operation for List"
 msgstr "E692: Oibríocht neamhbhailí ar Liostaí"
 
 #, c-format
-msgid "E693: List or Class required for argument %d"
-msgstr "E693: Liosta nó Aicme ag teastáil le hargóint %d"
+msgid "E693: Class or class typealias required for argument %d"
+msgstr "E693: Aicme nó ailias aicme ag teastáil le hargóint %d"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Oibríocht neamhbhailí ar Funcref"
@@ -7251,8 +7262,8 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Gníomh neamhbhailí: '%s'"
 
 #, c-format
-msgid "E963: Setting %s to value with wrong type"
-msgstr "E963: %s á shocrú go dtí luach den chineál mícheart"
+msgid "E963: Setting v:%s to value with wrong type"
+msgstr "E963: v:%s á shocrú le luach den chineál mícheart"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
@@ -7667,7 +7678,8 @@ msgid "E1077: Missing argument type for %s"
 msgstr "E1077: Cineál argóinte ar iarraidh le haghaidh %s"
 
 msgid "E1078: Invalid command \"nested\", did you mean \"++nested\"?"
-msgstr "E1078: Ordú \"nested\" neamhbhailí; an é \"++nested\" a bhí i gceist agat?"
+msgstr ""
+"E1078: Ordú \"nested\" neamhbhailí; an é \"++nested\" a bhí i gceist agat?"
 
 msgid "E1079: Cannot declare a variable on the command line"
 msgstr "E1079: Ní féidir athróg a fhógairt ar líne na n-orduithe"
@@ -8117,8 +8129,8 @@ msgid "E1202: No white space allowed after '%s': %s"
 msgstr "E1202: Ní cheadaítear spás bán tar éis '%s': %s"
 
 #, c-format
-msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E1203: Is féidir an ponc a úsáid le foclóirí amháin: %s"
+msgid "E1203: Dot not allowed after a %s: %s"
+msgstr "E1203: Ní cheadaítear ponc tar éis %s: %s"
 
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
@@ -8342,7 +8354,8 @@ msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: Ní féidir an script chéanna a iompórtáil faoi dhó: %s"
 
 msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
-msgstr "E1263: Ní féidir ainm le # a úsáid i script Vim9; úsáid easpórtáil ina áit"
+msgstr ""
+"E1263: Ní féidir ainm le # a úsáid i script Vim9; úsáid easpórtáil ina áit"
 
 #, c-format
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
@@ -8357,12 +8370,12 @@ msgid ""
 "E1266: Critical error in python3 initialization, check your python3 "
 "installation"
 msgstr ""
-"E1266: Earráid chriticiúil agus python3 á thosú; seiceáil python3 ar do ríomhaire"
+"E1266: Earráid chriticiúil agus python3 á thosú; seiceáil python3 ar do "
+"ríomhaire"
 
 #, c-format
 msgid "E1267: Function name must start with a capital: %s"
-msgstr ""
-"E1267: Caithfidh ceannlitir a bheith ar dtús ainm feidhme: %s"
+msgstr "E1267: Caithfidh ceannlitir a bheith ar dtús ainm feidhme: %s"
 
 #, c-format
 msgid "E1268: Cannot use s: in Vim9 script: %s"
@@ -8460,13 +8473,15 @@ msgid "E1293: Cannot use a negative id after adding a textprop with text"
 msgstr "E1293: Ní féidir ID diúltach a úsáid tar éis airíonna a chur le téacs"
 
 msgid "E1294: Can only use text_align when column is zero"
-msgstr "E1294: Ní féidir text_align a úsáid mura bhfuil an colún cothrom le náid"
+msgstr ""
+"E1294: Ní féidir text_align a úsáid mura bhfuil an colún cothrom le náid"
 
 msgid "E1295: Cannot specify both 'type' and 'types'"
 msgstr "E1295: Ní féidir 'type' agus 'types' araon a shonrú"
 
 msgid "E1296: Can only use left padding when column is zero"
-msgstr "E1296: Ní féidir stuáil ar chlé a úsáid mura bhfuil an colún cothrom le náid"
+msgstr ""
+"E1296: Ní féidir stuáil ar chlé a úsáid mura bhfuil an colún cothrom le náid"
 
 #, c-format
 msgid "E1297: Non-NULL Dictionary required for argument %d"
@@ -8500,7 +8515,8 @@ msgstr "E1304: Ní féidir cineál a úsáid leis an athróg seo: %s"
 msgid ""
 "E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
 msgstr ""
-"E1305: Ní féidir \"length\", \"end_col\" agus \"end_lnum\" a úsáid le \"text\""
+"E1305: Ní féidir \"length\", \"end_col\" agus \"end_lnum\" a úsáid le "
+"\"text\""
 
 msgid "E1306: Loop nesting too deep"
 msgstr "E1306: Neadú ródhomhain i lúb"
@@ -8522,7 +8538,8 @@ msgid "E1311: Cannot change user commands while listing"
 msgstr "E1311: Ní féidir an t-ordú úsáideora a athrú le linn liostaithe"
 
 msgid "E1312: Not allowed to change the window layout in this autocmd"
-msgstr "E1312: Níl cead agat leagan amach na fuinneoige a athrú san uathordú seo"
+msgstr ""
+"E1312: Níl cead agat leagan amach na fuinneoige a athrú san uathordú seo"
 
 #, c-format
 msgid "E1313: Not allowed to add or remove entries (%s)"
@@ -8540,38 +8557,38 @@ msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: Is féidir aicme a shainmhíniú i script Vim9 amháin"
 
 #, c-format
-msgid "E1317: Invalid object member declaration: %s"
-msgstr "E1317: Fógairt neamhbhailí ar bhall réada: %s"
+msgid "E1317: Invalid object variable declaration: %s"
+msgstr "E1317: Fógairt neamhbhailí ar athróg réada: %s"
 
 #, c-format
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Ní ordú bailí in aicme é seo: %s"
 
-msgid "E1319: Using a class as a Number"
+msgid "E1319: Using a Class as a Number"
 msgstr "E1319: Aicme á húsáid mar Uimhir"
 
-msgid "E1320: Using an object as a Number"
+msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Réad á úsáid mar Uimhir"
 
-msgid "E1321: Using a class as a Float"
+msgid "E1321: Using a Class as a Float"
 msgstr "E1321: Aicme á húsáid mar Shnámhphointe"
 
-msgid "E1322: Using an object as a Float"
+msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Réad á úsáid mar Shnámhphointe"
 
-msgid "E1323: Using a class as a String"
+msgid "E1323: Using a Class as a String"
 msgstr "E1323: Aicme á húsáid mar Theaghrán"
 
-msgid "E1324: Using an object as a String"
+msgid "E1324: Using an Object as a String"
 msgstr "E1324: Réad á úsáid mar Theaghrán"
 
 #, c-format
-msgid "E1325: Method not found on class \"%s\": %s"
-msgstr "E1325: Modh gan aimsiú san aicme \"%s\": %s"
+msgid "E1325: Method \"%s\" not found in class \"%s\""
+msgstr "E1325: Modh \"%s\" gan aimsiú in aicme \"%s\""
 
 #, c-format
-msgid "E1326: Member not found on object \"%s\": %s"
-msgstr "E1326: Ball gan aimsiú sa réad \"%s\": %s"
+msgid "E1326: Variable \"%s\" not found in object \"%s\""
+msgstr "E1326: Athróg \"%s\" gan aimsiú i réad \"%s\""
 
 #, c-format
 msgid "E1327: Object required, found %s"
@@ -8579,47 +8596,42 @@ msgstr "E1327: Réad ag teastáil ach fuarthas %s"
 
 #, c-format
 msgid "E1328: Constructor default value must be v:none: %s"
-msgstr "E1328: Ní mór v:none: a shonrú mar luach réamhshocraithe i gcruthaitheoir: %s"
+msgstr ""
+"E1328: Ní mór v:none: a shonrú mar luach réamhshocraithe i gcruthaitheoir: %s"
 
 #, c-format
-msgid "E1329: Cannot get object member type from initializer: %s"
-msgstr "E1329: Ní féídir cineál an bhaill a fháil ó thúsaitheoir: %s"
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Fógairt neamhbhailí ar athróg aicme: %s"
 
 #, c-format
-msgid "E1330: Invalid type for object member: %s"
-msgstr "E1330: Cineál neamhbhailí ar bhall réada: %s"
+msgid "E1330: Invalid type for object variable: %s"
+msgstr "E1330: Cineál neamhbhailí ar athróg réada: %s"
 
-msgid "E1331: Public must be followed by \"this\" or \"static\""
-msgstr "E1331: \"this\" nó \"static\" ag teastáil tar éis \"public\""
-
-#, c-format
-msgid "E1332: Public member name cannot start with underscore: %s"
-msgstr "E1332: Ní féidir fostríoc a úsáid ag tús ainm baill phoiblí: %s"
+msgid "E1331: Public must be followed by \"var\" or \"static\""
+msgstr "E1331: \"var\" nó \"static\" ag teastáil tar éis \"public\""
 
 #, c-format
-msgid "E1333: Cannot access private member: %s"
-msgstr "E1333: Ní féidir ball príobháideach a rochtain: %s"
+msgid "E1332: Public variable name cannot start with underscore: %s"
+msgstr "E1332: Ní cheadaítear fostríoc ag tús athróige poiblí: %s"
 
 #, c-format
-msgid "E1334: Object member not found: %s"
-msgstr "E1334: Ball réada gan aimsiú: %s"
+msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
+msgstr "E1333: Ní féidir athróg chosanta \"%s\" in aicme \"%s\" a rochtain"
 
 #, c-format
-msgid "E1335: Member is not writable: %s"
-msgstr "E1335: Ní féidir scríobh ar an mball: %s"
+msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
+msgstr "E1335: Níl athróg \"%s\" in aicme \"%s\" inscríofa"
 
 #, c-format
-msgid "E1337: Class member not found: %s"
-msgstr "E1337: Ball aicme gan aimsiú: %s"
-
-#, c-format
-msgid "E1338: Member not found on class \"%s\": %s"
-msgstr "E1338: Ball gan aimsiú in aicme \"%s\": %s"
+msgid "E1337: Class variable \"%s\" not found in class \"%s\""
+msgstr "E1337: Athróg aicme \"%s\" gan aimsiú in aicme \"%s\""
 
 msgid ""
 "E1339: Cannot add a textprop with text after using a textprop with a "
 "negative id"
-msgstr "E1339: Ní féidir airíonna a chur le téacs tar éis airíonna a úsáid le ID diúltach"
+msgstr ""
+"E1339: Ní féidir airíonna a chur le téacs tar éis airíonna a úsáid le ID "
+"diúltach"
 
 #, c-format
 msgid "E1340: Argument already declared in the class: %s"
@@ -8636,8 +8648,8 @@ msgstr "E1342: Is féidir comhéadan a shainmhíniú i script Vim9 amháin"
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr "E1343: Caithfidh ceannlitir a bheith ag tús ainm an chomhéadain: %s"
 
-msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1344: Ní féidir ball a thúsú i gcomhéadan"
+msgid "E1344: Cannot initialize a variable in an interface"
+msgstr "E1344: Ní féidir athróg a thúsú i gcomhéadan"
 
 #, c-format
 msgid "E1345: Not a valid command in an interface: %s"
@@ -8652,12 +8664,12 @@ msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: Ní comhéadan bailí é seo: %s"
 
 #, c-format
-msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
-msgstr "E1348: Ball \"%s\" i gcomhéadan \"%s\" gan feidhmiú"
+msgid "E1348: Variable \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1348: Níor cuireadh athróg \"%s\" i gcomhéadan \"%s\" i bhfeidhm"
 
 #, c-format
-msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
-msgstr "E1349: Feidhm \"%s\" i gcomhéadan \"%s\" gan feidhmiú"
+msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1349: Níor cuireadh modh \"%s\" i gcomhéadan \"%s\" i bhfeidhm"
 
 msgid "E1350: Duplicate \"implements\""
 msgstr "E1350: \"implements\" dúbailte"
@@ -8684,14 +8696,14 @@ msgstr "E1355: Feidhm dhúbailte: %s"
 msgid "E1356: \"super\" must be followed by a dot"
 msgstr "E1356: Ní mór ponc a chur i ndiaidh \"super\""
 
-msgid "E1357: Using \"super\" not in a class function"
-msgstr "E1357: \"super\" taobh amuigh d'fheidhm aicme"
+msgid "E1357: Using \"super\" not in a class method"
+msgstr "E1357: Ag baint úsáide as \"super\" taobh amuigh de mhodh aicme"
 
 msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: \"super\" taobh amuigh de mhacaicme"
 
-msgid "E1359: Cannot define a \"new\" function in an abstract class"
-msgstr "E1359: Ní féidir feidhm \"new\" a shainmhíniú in aicme theibí"
+msgid "E1359: Cannot define a \"new\" method in an abstract class"
+msgstr "E1359: Ní féidir modh \"new\" a shainmhíniú in aicme theibí"
 
 msgid "E1360: Using a null object"
 msgstr "E1360: Ag baint úsáide as réad nialasach"
@@ -8708,42 +8720,205 @@ msgstr "E1363: Cineál neamhiomlán"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Rabhadh: Bloc pointeoirí truaillithe"
 
-msgid "E1365: Cannot use a return type with the \"new\" function"
-msgstr "E1365: Ní féidir luach a aischur ó fheidhm \"new\""
+msgid "E1365: Cannot use a return type with the \"new\" method"
+msgstr "E1365: Ní féidir luach a aischur ón modh \"new\""
 
 #, c-format
-msgid "E1400: Cannot mix positional and non-positional arguments: %s"
-msgstr "E1400: Ní féidir argóintí suíomhacha agus neamhshuíomhacha a úsáid le chéile: %s"
+msgid "E1366: Cannot access protected method: %s"
+msgstr "E1366: Ní féidir modh cosanta a rochtain: %s"
 
 #, c-format
-msgid "E1401: format argument %d unused in $-style format: %s"
-msgstr "E1401: argóint formáide %d gan úsáid i bhformáid $-stíle: %s"
+msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
+msgstr "E1367: Leibhéal rochtana difriúil ar athróg \"%s\" i gcomhéadan \"%s\""
+
+msgid "E1368: Static must be followed by \"var\" or \"def\""
+msgstr "E1368: \"var\" nó \"def\" ag teastáil tar éis \"static\""
+
+#, c-format
+msgid "E1369: Duplicate variable: %s"
+msgstr "E1369: Athróg dhúbailte: %s"
+
+msgid "E1370: Cannot define a \"new\" method as static"
+msgstr "E1370: Ní féidir modh \"new\" a shainmhíniú mar mhodh statach"
+
+msgid "E1371: Abstract must be followed by \"def\""
+msgstr "E1371: \"def\" ag teastáil tar éis \"abstract\""
+
+#, c-format
+msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
+msgstr "E1372: Ní cheadaítear modh teibí \"%s\" in aicme choincréiteach"
+
+#, c-format
+msgid "E1373: Abstract method \"%s\" is not implemented"
+msgstr "E1373: Níor cuireadh modh teibí \"%s\" i bhfeidhm"
+
+#, c-format
+msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
+msgstr "E1374: Ní féidir athróg aicme \"%s\" a úsáid taobh amuigh den aicme \"%s\""
+
+#, c-format
+msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
+msgstr "E1375: Ní féidir athróg aicme \"%s\" a úsáid gan aicme \"%s\""
+
+#, c-format
+msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
+msgstr "E1376: Ní féidir athróg réada \"%s\" a úsáid gan réad den aicme \"%s\""
+
+#, c-format
+msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
+msgstr "E1377: Tá leibhéal rochtana an mhodha \"%s\" difriúil in aicme \"%s\""
+
+msgid "E1378: Static member not supported in an interface"
+msgstr "E1378: Ní thacaítear le ball statach i gcomhéadan"
+
+msgid "E1379: Protected variable not supported in an interface"
+msgstr "E1379: Ní thacaítear le hathróg chosanta i gcomhéadan"
+
+msgid "E1380: Protected method not supported in an interface"
+msgstr "E1380: Ní thacaítear le modh cosanta i gcomhéadan"
+
+msgid "E1381: Interface cannot use \"implements\""
+msgstr "E1381: Ní féidir \"implements\" a úsáid i gcomhéadan"
+
+#, c-format
+msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1382: Athróg \"%s\": neamhréir cineálacha, bhíothas ag súil le %s ach fuarthas %s"
+
+#, c-format
+msgid "E1383: Method \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1383: Modh \"%s\": neamhréir cineálacha, bhíothas ag súil le %s ach fuarthas %s"
+
+#, c-format
+msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
+msgstr "E1384: Ní féidir modh aicme \"%s\" a úsáid taobh amuigh den aicme \"%s\""
+
+#, c-format
+msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
+msgstr "E1385: Ní féidir modh aicme \"%s\" a úsáid gan aicme \"%s\""
+
+#, c-format
+msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
+msgstr "E1386: Ní féidir modh réada \"%s\" a úsáid gan réad den aicme \"%s\""
+
+msgid "E1387: Public variable not supported in an interface"
+msgstr "E1387: Ní thacaítear le hathróg phoiblí i gcomhéadan"
+
+msgid "E1388: Public keyword not supported for a method"
+msgstr "E1388: Ní féidir an eochairfhocal \"public\" a úsáid le modh"
+
+msgid "E1389: Missing name after implements"
+msgstr "E1389: Ainm ar iarraidh tar éis \"implements\""
 
 #, c-format
 msgid ""
-"E1402: Positional argument %d used as field width reused as different type: "
+"E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
+"method"
+msgstr "E1390: Ní féidir athróg réada \"this.%s\" a úsáid seachas taobh istigh de mhodh \"new\""
+
+#, c-format
+msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
+msgstr "E1391: Ní féidir athróg \"%s\" a ghlasáil nó a dhíghlasáil in aicme \"%s\""
+
+#, c-format
+msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
+msgstr "E1392: Ní féidir athróg aicme \"%s\" a ghlasáil nó a dhíghlasáil in aicme \"%s\""
+
+msgid "E1393: Type can only be defined in Vim9 script"
+msgstr "E1393: Is i script Vim9 amháin gur féidir cineál a shainmhíniú"
+
+#, c-format
+msgid "E1394: Type name must start with an uppercase letter: %s"
+msgstr "E1394: Caithfidh ceannlitir a bheith ag tús ainm na haicme: %s"
+
+#, c-format
+msgid "E1395: Type alias \"%s\" cannot be modified"
+msgstr "E1395: Ní féidir ailias cineáil \"%s\" a athrú"
+
+#, c-format
+msgid "E1396: Type alias \"%s\" already exists"
+msgstr "E1396: Tá ailias cineáil \"%s\" ann cheana"
+
+msgid "E1397: Missing type alias name"
+msgstr "E1397: Ainm an ailiais ar iarraidh"
+
+msgid "E1398: Missing type alias type"
+msgstr "E1398: Cineál ar iarraidh ó ailias cineáil"
+
+msgid "E1399: Type can only be used in a script"
+msgstr "E1399: Ní féidir an cineál a úsáid ach i script"
+
+#, c-format
+msgid "E1400: Using type alias \"%s\" as a Number"
+msgstr "E1400: Ailias cineáil \"%s\" á úsáid mar Uimhir"
+
+#, c-format
+msgid "E1401: Using type alias \"%s\" as a Float"
+msgstr "E1401: Ailias cineáil \"%s\" á úsáid mar Shnámhphointe"
+
+#, c-format
+msgid "E1402: Using type alias \"%s\" as a String"
+msgstr "E1402: Ailias cineáil \"%s\" á úsáid mar Theaghrán"
+
+#, c-format
+msgid "E1403: Type alias \"%s\" cannot be used as a value"
+msgstr "E1403: Ní féidir ailias cineáil \"%s\" a úsáid mar luach"
+
+msgid "E1404: Abstract cannot be used in an interface"
+msgstr "E1404: Ní féidir \"abstract\" a úsáid i gcomhéadan"
+
+#, c-format
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405: Ní féidir aicme \"%s\" a úsáid mar luach"
+
+msgid "E1406: Cannot use a Class as a variable or value"
+msgstr "E1406: Ní féidir aicme a úsáid mar athróg ná mar luach"
+
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr "E1407: Ní féidir ailias cineáil a úsáid mar athróg ná mar luach"
+
+#, c-format
+msgid "E1500: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1500: Ní féidir argóintí suíomhacha agus neamhshuíomhacha a úsáid le chéile: %s"
+
+#, c-format
+msgid "E1501: format argument %d unused in $-style format: %s"
+msgstr "E1501: argóint formáide %d gan úsáid i bhformáid $-stíle: %s"
+
+#, c-format
+msgid ""
+"E1502: Positional argument %d used as field width reused as different type: "
 "%s/%s"
-msgstr "E1402: Úsáideadh argóint shuíomhach %d mar leithead réimse, ansin mar chineál difriúil: %s/%s"
+msgstr ""
+"E1502: Úsáideadh argóint shuíomhach %d mar leithead réimse, ansin mar "
+"chineál difriúil: %s/%s"
 
 #, c-format
-msgid "E1403: Positional argument %d out of bounds: %s"
-msgstr "E1403: Argóint shuíomhach %d thar teorainn: %s"
+msgid "E1503: Positional argument %d out of bounds: %s"
+msgstr "E1503: Argóint shuíomhach %d thar teorainn: %s"
 
 #, c-format
-msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
-msgstr "E1404: Úsáideadh cineál argóint shuíomhach %d ar bhealaí difriúla: %s/%s"
+msgid "E1504: Positional argument %d type used inconsistently: %s/%s"
+msgstr ""
+"E1504: Úsáideadh cineál argóint shuíomhach %d ar bhealaí difriúla: %s/%s"
 
 #, c-format
-msgid "E1405: Invalid format specifier: %s"
-msgstr "E1405: Sonraitheoir formáide neamhbhailí: %s"
+msgid "E1505: Invalid format specifier: %s"
+msgstr "E1505: Sonraitheoir formáide neamhbhailí: %s"
+
+msgid "E1506: Buffer too small to copy xattr value or key"
+msgstr "E1506: Tá an maolán róbheag le luach nó eochair xattr a chóipeáil"
+
+#~ msgid ""
+#~ "E1508: Size of the extended attribute value is larger than the maximum size "
+#~ "allowed"
+#~ msgstr ""
+
+msgid "E1509: Error occurred when reading or writing extended attribute"
+msgstr "E1509: Tharla earráid agus aitreabúid bhreisithe á léamh nó á scríobh"
 
 #, c-format
-msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1406: Ball \"%s\": neamhréir cineálacha; bhíothas ag súil le %s ach fuarthas %s"
-
-#, c-format
-msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1407: Ball \"%s\": neamhréir cineálacha; bhíothas ag súil le %s ach fuarthas %s"
+msgid "E1510: Value too large: %s"
+msgstr "E1510: Luach rómhór: %s"
 
 msgid "--No lines in buffer--"
 msgstr "--Tá an maolán folamh--"
@@ -8844,7 +9019,7 @@ msgid "number must be greater or equal to zero"
 msgstr "ní mór don uimhir a bheith >= 0"
 
 msgid "can't delete OutputObject attributes"
-msgstr "ní féidir tréithe OutputObject a scriosadh"
+msgstr "ní féidir aitreabúidí OutputObject a scriosadh"
 
 #, c-format
 msgid "invalid attribute: %s"
@@ -8869,14 +9044,14 @@ msgid "internal error: imp.find_module returned tuple with NULL"
 msgstr "earráid inmheánach: fuarthas codach NULL ar ais ó imp.find_module"
 
 msgid "cannot delete vim.Dictionary attributes"
-msgstr "ní féidir tréithe vim.Dictionary a scriosadh"
+msgstr "ní féidir aitreabúidí vim.Dictionary a scriosadh"
 
 msgid "cannot modify fixed dictionary"
 msgstr "ní féidir foclóir socraithe a athrú"
 
 #, c-format
 msgid "cannot set attribute %s"
-msgstr "ní féidir tréith %s a shocrú"
+msgstr "ní féidir aitreabúid %s a shocrú"
 
 msgid "hashtab changed during iteration"
 msgstr "athraíodh an haistáb le linn atriallta"
@@ -8920,7 +9095,7 @@ msgid "failed to add item to list"
 msgstr "níorbh fhéidir mír a chur leis an liosta"
 
 msgid "cannot delete vim.List attributes"
-msgstr "ní féidir tréithe vim.List a scriosadh"
+msgstr "ní féidir aitreabúidí vim.List a scriosadh"
 
 msgid "cannot modify fixed list"
 msgstr "ní féidir liosta socraithe a athrú"
@@ -8964,7 +9139,7 @@ msgid "attempt to refer to deleted window"
 msgstr "rinneadh iarracht ar fhuinneog scriosta a rochtain"
 
 msgid "readonly attribute: buffer"
-msgstr "tréith inléite amháin: maolán"
+msgstr "aitreabúid inléite amháin: maolán"
 
 msgid "cursor position outside buffer"
 msgstr "cúrsóir taobh amuigh den mhaolán"
@@ -10478,4 +10653,5 @@ msgstr "lódáil scripteanna breiseáin ag am tosaithe"
 #~ msgstr ""
 
 msgid "You discovered the command-line window! You can close it with \":q\"."
-msgstr "D'aimsigh tú fuinneog líne na n-orduithe! Is féidir í a dhúnadh le \":q\"."
+msgstr ""
+"D'aimsigh tú fuinneog líne na n-orduithe! Is féidir í a dhúnadh le \":q\"."

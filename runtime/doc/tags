@@ -4505,7 +4505,10 @@ E1401	vim9class.txt	/*E1401*
 E1402	vim9class.txt	/*E1402*
 E1403	vim9class.txt	/*E1403*
 E1407	vim9class.txt	/*E1407*
+E1408	vim9class.txt	/*E1408*
+E1409	vim9class.txt	/*E1409*
 E141	message.txt	/*E141*
+E1410	vim9class.txt	/*E1410*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
@@ -9096,6 +9099,8 @@ o_V	motion.txt	/*o_V*
 o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
 object	vim9class.txt	/*object*
+object-const-variable	vim9class.txt	/*object-const-variable*
+object-final-variable	vim9class.txt	/*object-final-variable*
 object-motions	motion.txt	/*object-motions*
 object-select	motion.txt	/*object-select*
 objects	index.txt	/*objects*

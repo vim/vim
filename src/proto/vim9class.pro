@@ -18,6 +18,8 @@ ocmember_T *member_lookup(class_T *cl, vartype_T v_type, char_u *name, size_t na
 void emsg_var_cl_define(char *msg, char_u *name, size_t len, class_T *cl);
 ufunc_T *method_lookup(class_T *cl, vartype_T v_type, char_u *name, size_t namelen, int *idx);
 int inside_class(cctx_T *cctx_arg, class_T *cl);
+int oc_var_check_ro(class_T *cl, ocmember_T *m);
+void obj_lock_const_vars(object_T *obj);
 void copy_object(typval_T *from, typval_T *to);
 void copy_class(typval_T *from, typval_T *to);
 void class_unref(class_T *cl);

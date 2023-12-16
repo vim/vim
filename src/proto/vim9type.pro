@@ -36,7 +36,6 @@ type_T *get_member_type_from_stack(int count, int skip, cctx_T *cctx);
 char *vartype_name(vartype_T type);
 char *type_name(type_T *type, char **tofree);
 void f_typename(typval_T *argvars, typval_T *rettv);
-int check_vartype_is_value(vartype_T typ);
 int check_typval_is_value(typval_T *tv);
 int check_type_is_value(type_T *type);
 /* vim: set ft=c : */

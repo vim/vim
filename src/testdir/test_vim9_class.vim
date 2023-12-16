@@ -9051,4 +9051,612 @@ def Test_compile_many_def_functions_in_funcref_instr()
   assert_equal(0, v:shell_error)
 enddef
 
+" Test for 'final' class and object variables
+def Test_final_class_object_variable()
+  # Test for changing a final object variable from an object function
+  var lines =<< trim END
+    vim9script
+    class A
+      final foo: string = "abc"
+      def Foo()
+        this.foo = "def"
+      enddef
+    endclass
+    defcompile A.Foo
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "foo" in class "A"', 1)
+
+  # Test for changing a final object variable from the 'new' function
+  lines =<< trim END
+    vim9script
+    class A
+      final s1: string
+      final s2: string
+      def new(this.s1)
+        this.s2 = 'def'
+      enddef
+    endclass
+    var a = A.new('abc')
+    assert_equal('abc', a.s1)
+    assert_equal('def', a.s2)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for a final class variable
+  lines =<< trim END
+    vim9script
+    class A
+      static final s1: string = "abc"
+    endclass
+    assert_equal('abc', A.s1)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for changing a final class variable from a class function
+  lines =<< trim END
+    vim9script
+    class A
+      static final s1: string = "abc"
+      static def Foo()
+        s1 = "def"
+      enddef
+    endclass
+    A.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for changing a public final class variable at script level
+  lines =<< trim END
+    vim9script
+    class A
+      public static final s1: string = "abc"
+    endclass
+    assert_equal('abc', A.s1)
+    A.s1 = 'def'
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 6)
+
+  # Test for changing a public final class variable from a class function
+  lines =<< trim END
+    vim9script
+    class A
+      public static final s1: string = "abc"
+      static def Foo()
+        s1 = "def"
+      enddef
+    endclass
+    A.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for changing a public final class variable from a function
+  lines =<< trim END
+    vim9script
+    class A
+      public static final s1: string = "abc"
+    endclass
+    def Foo()
+      A.s1 = 'def'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for using a final variable of composite type
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number>
+      def new()
+        this.l = [1, 2]
+      enddef
+      def Foo()
+        this.l[0] = 3
+        this.l->add(4)
+      enddef
+    endclass
+    var a = A.new()
+    assert_equal([1, 2], a.l)
+    a.Foo()
+    assert_equal([3, 2, 4], a.l)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for changing a final variable of composite type from another object
+  # function
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+      def Foo()
+        this.l = [3, 4]
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 1)
+
+  # Test for modifying a final variable of composite type at script level
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+    endclass
+    var a = A.new()
+    a.l[0] = 3
+    a.l->add(4)
+    assert_equal([3, 2, 4], a.l)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for modifying a final variable of composite type from a function
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+    endclass
+    def Foo()
+      var a = A.new()
+      a.l[0] = 3
+      a.l->add(4)
+      assert_equal([3, 2, 4], a.l)
+    enddef
+    Foo()
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for modifying a final variable of composite type from another object
+  # function
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+      def Foo()
+        this.l[0] = 3
+        this.l->add(4)
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+    assert_equal([3, 2, 4], a.l)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for assigning a new value to a final variable of composite type at
+  # script level
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+    endclass
+    var a = A.new()
+    a.l = [3, 4]
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 6)
+
+  # Test for assigning a new value to a final variable of composite type from
+  # another object function
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+      def Foo()
+        this.l = [3, 4]
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 1)
+
+  # Test for assigning a new value to a final variable of composite type from
+  # another function
+  lines =<< trim END
+    vim9script
+    class A
+      public final l: list<number> = [1, 2]
+    endclass
+    def Foo()
+      var a = A.new()
+      a.l = [3, 4]
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 2)
+
+  # Error case: Use 'final' with just a variable name
+  lines =<< trim END
+    vim9script
+    class A
+      final foo
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: Use 'final' followed by 'public'
+  lines =<< trim END
+    vim9script
+    class A
+      final public foo: number
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: Use 'final' followed by 'static'
+  lines =<< trim END
+    vim9script
+    class A
+      final static foo: number
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: 'final' cannot be used in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      final foo: number = 10
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1408: Final variable not supported in an interface', 3)
+
+  # Error case: 'final' not supported for an object method
+  lines =<< trim END
+    vim9script
+    class A
+      final def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: 'final' not supported for a class method
+  lines =<< trim END
+    vim9script
+    class A
+      static final def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+enddef
+
+" Test for 'const' class and object variables
+def Test_const_class_object_variable()
+  # Test for changing a const object variable from an object function
+  var lines =<< trim END
+    vim9script
+    class A
+      const foo: string = "abc"
+      def Foo()
+        this.foo = "def"
+      enddef
+    endclass
+    defcompile A.Foo
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "foo" in class "A"', 1)
+
+  # Test for changing a const object variable from the 'new' function
+  lines =<< trim END
+    vim9script
+    class A
+      const s1: string
+      const s2: string
+      def new(this.s1)
+        this.s2 = 'def'
+      enddef
+    endclass
+    var a = A.new('abc')
+    assert_equal('abc', a.s1)
+    assert_equal('def', a.s2)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for changing a const object variable from an object method called from
+  # the 'new' function
+  lines =<< trim END
+    vim9script
+    class A
+      const s1: string = 'abc'
+      def new()
+        this.ChangeStr()
+      enddef
+      def ChangeStr()
+        this.s1 = 'def'
+      enddef
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for a const class variable
+  lines =<< trim END
+    vim9script
+    class A
+      static const s1: string = "abc"
+    endclass
+    assert_equal('abc', A.s1)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for changing a const class variable from a class function
+  lines =<< trim END
+    vim9script
+    class A
+      static const s1: string = "abc"
+      static def Foo()
+        s1 = "def"
+      enddef
+    endclass
+    A.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for changing a public const class variable at script level
+  lines =<< trim END
+    vim9script
+    class A
+      public static const s1: string = "abc"
+    endclass
+    assert_equal('abc', A.s1)
+    A.s1 = 'def'
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 6)
+
+  # Test for changing a public const class variable from a class function
+  lines =<< trim END
+    vim9script
+    class A
+      public static const s1: string = "abc"
+      static def Foo()
+        s1 = "def"
+      enddef
+    endclass
+    A.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for changing a public const class variable from a function
+  lines =<< trim END
+    vim9script
+    class A
+      public static const s1: string = "abc"
+    endclass
+    def Foo()
+      A.s1 = 'def'
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "s1" in class "A"', 1)
+
+  # Test for changing a const List item from an object function
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number>
+      def new()
+        this.l = [1, 2]
+      enddef
+      def Foo()
+        this.l[0] = 3
+      enddef
+    endclass
+    var a = A.new()
+    assert_equal([1, 2], a.l)
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1119: Cannot change locked list item', 1)
+
+  # Test for adding a value to a const List from an object function
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number>
+      def new()
+        this.l = [1, 2]
+      enddef
+      def Foo()
+        this.l->add(3)
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: add() argument', 1)
+
+  # Test for reassigning a const List from an object function
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+      def Foo()
+        this.l = [3, 4]
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 1)
+
+  # Test for changing a const List item at script level
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+    endclass
+    var a = A.new()
+    a.l[0] = 3
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked:',  6)
+
+  # Test for adding a value to a const List item at script level
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+    endclass
+    var a = A.new()
+    a.l->add(4)
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked:', 6)
+
+  # Test for changing a const List item from a function
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+    endclass
+    def Foo()
+      var a = A.new()
+      a.l[0] = 3
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1119: Cannot change locked list item', 2)
+
+  # Test for adding a value to a const List item from a function
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+    endclass
+    def Foo()
+      var a = A.new()
+      a.l->add(4)
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: add() argument', 2)
+
+  # Test for changing a const List item from an object method
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+      def Foo()
+        this.l[0] = 3
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1119: Cannot change locked list item', 1)
+
+  # Test for adding a value to a const List item from an object method
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+      def Foo()
+        this.l->add(4)
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E741: Value is locked: add() argument', 1)
+
+  # Test for reassigning a const List object variable at script level
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+    endclass
+    var a = A.new()
+    a.l = [3, 4]
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 6)
+
+  # Test for reassigning a const List object variable from an object method
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+      def Foo()
+        this.l = [3, 4]
+      enddef
+    endclass
+    var a = A.new()
+    a.Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 1)
+
+  # Test for reassigning a const List object variable from another function
+  lines =<< trim END
+    vim9script
+    class A
+      public const l: list<number> = [1, 2]
+    endclass
+    def Foo()
+      var a = A.new()
+      a.l = [3, 4]
+    enddef
+    Foo()
+  END
+  v9.CheckSourceFailure(lines, 'E1409: Cannot change read-only variable "l" in class "A"', 2)
+
+  # Error case: Use 'const' with just a variable name
+  lines =<< trim END
+    vim9script
+    class A
+      const foo
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: Use 'const' followed by 'public'
+  lines =<< trim END
+    vim9script
+    class A
+      const public foo: number
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: Use 'const' followed by 'static'
+  lines =<< trim END
+    vim9script
+    class A
+      const static foo: number
+    endclass
+    var a = A.new()
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: 'const' cannot be used in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      const foo: number = 10
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1410: Const variable not supported in an interface', 3)
+
+  # Error case: 'const' not supported for an object method
+  lines =<< trim END
+    vim9script
+    class A
+      const def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+
+  # Error case: 'const' not supported for a class method
+  lines =<< trim END
+    vim9script
+    class A
+      static const def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

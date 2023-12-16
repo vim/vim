@@ -337,10 +337,6 @@ static struct vimoption options[] =
 			    (char_u *)224L,
 #endif
 					    (char_u *)0L} SCTX_INIT},
-    {"antialias",   "anti", P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
-			    (char_u *)NULL, PV_NONE, NULL, NULL,
-			    {(char_u *)FALSE, (char_u *)FALSE}
-			    SCTX_INIT},
     {"allowrevins", "ari",  P_BOOL|P_VI_DEF|P_VIM,
 #ifdef FEAT_RIGHTLEFT
 			    (char_u *)&p_ari, PV_NONE, NULL, NULL,
@@ -354,6 +350,10 @@ static struct vimoption options[] =
     {"ambiwidth",  "ambw",  P_STRING|P_VI_DEF|P_RCLR,
 			    (char_u *)&p_ambw, PV_NONE, did_set_ambiwidth, expand_set_ambiwidth,
 			    {(char_u *)"single", (char_u *)0L}
+			    SCTX_INIT},
+    {"antialias",   "anti", P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+			    {(char_u *)FALSE, (char_u *)FALSE}
 			    SCTX_INIT},
     {"arabic",	    "arab", P_BOOL|P_VI_DEF|P_VIM|P_CURSWANT,
 #ifdef FEAT_ARABIC
@@ -1762,6 +1762,13 @@ static struct vimoption options[] =
     {"mousetime",   "mouset",	P_NUM|P_VI_DEF,
 			    (char_u *)&p_mouset, PV_NONE, NULL, NULL,
 			    {(char_u *)500L, (char_u *)0L} SCTX_INIT},
+    {"mzquantum",  "mzq",   P_NUM,
+#ifdef FEAT_MZSCHEME
+			    (char_u *)&p_mzq, PV_NONE, did_set_mzquantum, NULL,
+#else
+			    (char_u *)NULL, PV_NONE, NULL, NULL,
+#endif
+			    {(char_u *)100L, (char_u *)100L} SCTX_INIT},
     {"mzschemedll", NULL,   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #if defined(DYNAMIC_MZSCHEME)
 			    (char_u *)&p_mzschemedll, PV_NONE, NULL, NULL,
@@ -1780,13 +1787,6 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L}
 #endif
 			    SCTX_INIT},
-    {"mzquantum",  "mzq",   P_NUM,
-#ifdef FEAT_MZSCHEME
-			    (char_u *)&p_mzq, PV_NONE, did_set_mzquantum, NULL,
-#else
-			    (char_u *)NULL, PV_NONE, NULL, NULL,
-#endif
-			    {(char_u *)100L, (char_u *)100L} SCTX_INIT},
     {"novice",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
@@ -2793,10 +2793,10 @@ static struct vimoption options[] =
     {"visualbell",  "vb",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_vb, PV_NONE, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"w300",	    NULL,   P_NUM|P_VI_DEF,
+    {"w1200",	    NULL,   P_NUM|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"w1200",	    NULL,   P_NUM|P_VI_DEF,
+    {"w300",	    NULL,   P_NUM|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"w9600",	    NULL,   P_NUM|P_VI_DEF,

@@ -1770,6 +1770,12 @@ compile_lhs(
 								lhs->lhs_name);
 		    return FAIL;
 		}
+
+		ocmember_T	*m =
+			&defcl->class_class_members[lhs->lhs_classmember_idx];
+		if (oc_var_check_ro(defcl, m))
+		    return FAIL;
+
 		lhs->lhs_dest = dest_class_member;
 		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
 		lhs->lhs_type =
@@ -2039,6 +2045,10 @@ compile_lhs(
 		emsg_var_cl_define(msg, m->ocm_name, 0, cl);
 		return FAIL;
 	    }
+
+	    if (!IS_CONSTRUCTOR_METHOD(cctx->ctx_ufunc)
+						&& oc_var_check_ro(cl, m))
+		return FAIL;
 
 	    lhs->lhs_member_type = m->ocm_type;
 	}
@@ -3356,7 +3366,7 @@ compile_def_function(
 
 		    type_T	*type = get_type_on_stack(&cctx, 0);
 		    if (m->ocm_type->tt_type == VAR_ANY
-			    && !m->ocm_has_type
+			    && !(m->ocm_flags & OCMFLAG_HAS_TYPE)
 			    && type->tt_type != VAR_SPECIAL)
 		    {
 			// If the member variable type is not yet set, then use
