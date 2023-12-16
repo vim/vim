@@ -4753,7 +4753,7 @@ script_get(exarg_T *eap UNUSED, char_u *cmd UNUSED)
     char_u	*s;
     garray_T	ga;
 
-    if (cmd[0] != '<' || cmd[1] != '<' || eap->getline == NULL)
+    if (cmd[0] != '<' || cmd[1] != '<' || eap->ea_getline == NULL)
 	return NULL;
     cmd += 2;
 

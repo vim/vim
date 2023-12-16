@@ -3347,7 +3347,7 @@ ex_append(exarg_T *eap)
 		indent = get_indent_lnum(lnum);
 	}
 	ex_keep_indent = FALSE;
-	if (eap->getline == NULL)
+	if (eap->ea_getline == NULL)
 	{
 	    // No getline() function, use the lines that follow. This ends
 	    // when there is no more.
@@ -3368,7 +3368,7 @@ ex_append(exarg_T *eap)
 	    // Set State to avoid the cursor shape to be set to MODE_INSERT
 	    // state when getline() returns.
 	    State = MODE_CMDLINE;
-	    theline = eap->getline(
+	    theline = eap->ea_getline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif

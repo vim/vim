@@ -971,7 +971,7 @@ exarg_getline(
     void
 fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx)
 {
-    eap->getline = exarg_getline;
+    eap->ea_getline = exarg_getline;
     eap->cookie = cctx;
     eap->skip = cctx->ctx_skip == SKIP_YES;
 }
@@ -2618,7 +2618,7 @@ compile_assignment(
 	list_T	   *l;
 
 	// [let] varname =<< [trim] {end}
-	eap->getline = exarg_getline;
+	eap->ea_getline = exarg_getline;
 	eap->cookie = cctx;
 	l = heredoc_get(eap, op + 3, FALSE, TRUE);
 	if (l == NULL)

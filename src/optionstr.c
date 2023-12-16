@@ -2956,10 +2956,11 @@ did_set_mousemodel(optset_T *args UNUSED)
     if (check_opt_strings(p_mousem, p_mousem_values, FALSE) != OK)
 	return e_invalid_argument;
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU) && (XmVersion <= 1002)
-    else if (*p_mousem != *oldval)
+    // else if (*p_mousem != *oldval) // comment out while somebody explains where
+                                      // the *oldval is defined and gets its value                              
 	// Changed from "extend" to "popup" or "popup_setpos" or vv: need
 	// to create or delete the popup menus.
-	gui_motif_update_mousemodel(root_menu);
+	// gui_motif_update_mousemodel(root_menu);
 #endif
 
     return NULL;
