@@ -2020,11 +2020,14 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     *paren = '(';
 
     // check for function type
-    type = get_type_on_stack(cctx, 0);
-    if (type->tt_type != VAR_FUNC)
+    if (cctx->ctx_skip != SKIP_YES)
     {
-	emsg(_(e_function_name_required));
-	return NULL;
+	type = get_type_on_stack(cctx, 0);
+	if (type->tt_type != VAR_FUNC)
+	{
+	    emsg(_(e_function_name_required));
+	    return NULL;
+	}
     }
 
     // compile the arguments
@@ -2032,24 +2035,27 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     if (compile_arguments(&arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
 	return NULL;
 
-    if (func_idx >= 0)
+    if (cctx->ctx_skip != SKIP_YES)
     {
-	type2_T	*argtypes = NULL;
-	type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
+	if (func_idx >= 0)
+	{
+	    type2_T	*argtypes = NULL;
+	    type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
 
-	if (check_internal_func_args(cctx, func_idx, argcount, FALSE,
-					 &argtypes, shuffled_argtypes) == FAIL)
+	    if (check_internal_func_args(cctx, func_idx, argcount, FALSE,
+			&argtypes, shuffled_argtypes) == FAIL)
+		return NULL;
+	}
+	else if (check_func_args_from_type(cctx, type, argcount, TRUE,
+		    arg_start) == FAIL)
+	    return NULL;
+
+	defer_var_idx = get_defer_var_idx(cctx);
+	if (defer_var_idx == 0)
+	    return NULL;
+	if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
 	    return NULL;
     }
-    else if (check_func_args_from_type(cctx, type, argcount, TRUE,
-							    arg_start) == FAIL)
-	return NULL;
-
-    defer_var_idx = get_defer_var_idx(cctx);
-    if (defer_var_idx == 0)
-	return NULL;
-    if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
-	return NULL;
 
     return skipwhite(arg);
 }

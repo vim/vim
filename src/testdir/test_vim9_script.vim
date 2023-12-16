@@ -4783,6 +4783,19 @@ def Test_multidefer_with_exception()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using ":defer" inside an if statement with a false condition
+def Test_defer_skipped()
+  var lines =<< trim END
+    def Foo()
+      if false
+        defer execute('echow "hello"', "")
+      endif
+    enddef
+    defcompile
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
