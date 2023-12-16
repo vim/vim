@@ -1088,6 +1088,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		}
 		p = skipwhite(p + 1);
 		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+		if (lhs_type == NULL)
+		    goto failed;
 	    }
 
 	    if (get_var_dest(name, &dest, CMD_for, &opt_flags,
