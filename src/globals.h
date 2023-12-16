@@ -792,8 +792,9 @@ EXTERN int	is_mac_terminal INIT(= FALSE);  // recognized Terminal.app
 #endif
 
 EXTERN int	autocmd_busy INIT(= FALSE);	// Is apply_autocmds() busy?
-EXTERN int	autocmd_no_enter INIT(= FALSE); // *Enter autocmds disabled
-EXTERN int	autocmd_no_leave INIT(= FALSE); // *Leave autocmds disabled
+EXTERN int	autocmd_no_enter INIT(= FALSE); // Buf/WinEnter autocmds disabled
+EXTERN int	autocmd_no_leave INIT(= FALSE); // Buf/WinLeave autocmds disabled
+EXTERN int	tabpage_move_disallowed INIT(= FALSE);  // moving tabpages around disallowed
 
 EXTERN int	modified_was_set;		// did ":set modified"
 EXTERN int	did_filetype INIT(= FALSE);	// FileType event found
