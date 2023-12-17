@@ -1501,6 +1501,7 @@ struct type_S {
     char_u	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
     class_T	    *tt_class;	    // for class and object
+    typealias_T	    *tt_typealias;  // for type alias
     type_T	    **tt_args;	    // func argument types, allocated
 };
 
@@ -1516,6 +1517,14 @@ typedef struct {
 #define TTFLAG_STATIC	    0x10    // one of the static types, e.g. t_any
 #define TTFLAG_CONST	    0x20    // cannot be changed
 #define TTFLAG_SUPER	    0x40    // object from "super".
+
+/*
+ * For a type alias, return the aliased type.  For other types, return the
+ * type.
+ */
+#define RESOLVE_TYPEALIAS(t) \
+		(((t)->tt_type == VAR_TYPEALIAS && (t)->tt_typealias != NULL) \
+				? (t)->tt_typealias->ta_type : (t))
 
 typedef enum {
     VIM_ACCESS_PRIVATE,	// read/write only inside the class

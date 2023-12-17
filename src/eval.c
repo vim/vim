@@ -4029,6 +4029,8 @@ eval8(
 	    clear_type_list(&type_list);
 	    return FAIL;
 	}
+	// When <typealias> cast is used, use the underlying alised type.
+	want_type = RESOLVE_TYPEALIAS(want_type);
 
 	if (**arg != '>')
 	{
@@ -4145,18 +4147,21 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 	case 9:
 		if (STRNCMP(s, "null_", 5) != 0)
 		    break;
+		// null_list
 		if (STRNCMP(s + 5, "list", 4) == 0)
 		{
 		    rettv->v_type = VAR_LIST;
 		    rettv->vval.v_list = NULL;
 		    return OK;
 		}
+		// null_dict
 		if (STRNCMP(s + 5, "dict", 4) == 0)
 		{
 		    rettv->v_type = VAR_DICT;
 		    rettv->vval.v_dict = NULL;
 		    return OK;
 		}
+		// null_blob
 		if (STRNCMP(s + 5, "blob", 4) == 0)
 		{
 		    rettv->v_type = VAR_BLOB;

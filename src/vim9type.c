@@ -431,6 +431,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
     type_T  *type;
     type_T  *member_type = NULL;
     class_T *class_type = NULL;
+    typealias_T *typealias_type = NULL;
     int	    argcount = 0;
     int	    min_argcount = 0;
 
@@ -599,6 +600,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	class_type = tv->vval.v_class;
     else if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL)
 	class_type = tv->vval.v_object->obj_class;
+    else if (tv->v_type == VAR_TYPEALIAS)
+	typealias_type = tv->vval.v_typealias;
 
     type = get_type_ptr(type_gap);
     if (type == NULL)
@@ -614,6 +617,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
     }
     type->tt_member = member_type;
     type->tt_class = class_type;
+    type->tt_typealias = typealias_type;
 
     return type;
 }
@@ -844,6 +848,10 @@ check_type_maybe(
 	where_T where)
 {
     int ret = OK;
+
+    // For a typealias type, check the underlying aliased type
+    expected = RESOLVE_TYPEALIAS(expected);
+    actual = RESOLVE_TYPEALIAS(actual);
 
     // When expected is "unknown" we accept any actual type.
     // When expected is "any" we accept any actual type except "void".
@@ -1398,14 +1406,21 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	}
 	else if (tv.v_type == VAR_TYPEALIAS)
 	{
-	    // user defined type
-	    type_T *type = copy_type(tv.vval.v_typealias->ta_type, type_gap);
-	    *arg += len;
-	    clear_tv(&tv);
-	    // Skip over ".TypeName".
-	    while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
-		++*arg;
-	    return type;
+	    // user defined type alias
+	    type_T *type = get_type_ptr(type_gap);
+	    if (type != NULL)
+	    {
+		type->tt_type = VAR_TYPEALIAS;
+		type->tt_typealias = tv.vval.v_typealias;
+
+		*arg += len;
+		clear_tv(&tv);
+		// Skip over ".TypeName".
+		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		    ++*arg;
+
+		return type;
+	    }
 	}
 
 	clear_tv(&tv);
@@ -1736,8 +1751,7 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
-
-    if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
+    else if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
     {
 	char_u *class_name = type->tt_class == NULL ? (char_u *)"Unknown"
 				    : type->tt_class->class_name;
@@ -1749,8 +1763,7 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
-
-    if (type->tt_type == VAR_FUNC)
+    else if (type->tt_type == VAR_FUNC)
     {
 	garray_T    ga;
 	int	    i;
@@ -1812,6 +1825,19 @@ failed:
 	vim_free(arg_free);
 	ga_clear(&ga);
 	return "[unknown]";
+    }
+    else if (type->tt_type == VAR_TYPEALIAS)
+    {
+	char_u *typealias_name = type->tt_typealias == NULL
+					? (char_u *)"Unknown"
+					: type->tt_typealias->ta_name;
+	size_t len = STRLEN(name) + STRLEN(typealias_name) + 3;
+	*tofree = alloc(len);
+	if (*tofree != NULL)
+	{
+	    vim_snprintf(*tofree, len, "%s<%s>", name, typealias_name);
+	    return *tofree;
+	}
     }
 
     return name;
@@ -1900,9 +1926,9 @@ check_type_is_value(type_T *type)
     }
     else if (type->tt_type == VAR_TYPEALIAS)
     {
-	// TODO: Not sure what could be done here to get a name.
-	//       Maybe an optional argument?
-        emsg(_(e_using_typealias_as_var_val));
+	semsg(_(e_using_typealias_as_value_str),
+		type->tt_typealias == NULL ? (char_u *)"Unknown"
+					: type->tt_typealias->ta_name);
 	return FAIL;
     }
     return OK;

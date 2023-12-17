@@ -2779,6 +2779,8 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	++*arg;
 	if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 	    return FAIL;
+	// When <typealias> cast is used, use the underlying alised type.
+	want_type = RESOLVE_TYPEALIAS(want_type);
     }
 
     if (compile_expr9(arg, cctx, ppconst) == FAIL)

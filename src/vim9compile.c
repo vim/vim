@@ -3011,6 +3011,11 @@ compile_assignment(
 		// Set the type in the list or dict, so that it can be checked,
 		// also in legacy script.
 		generate_SETTYPE(cctx, inferred_type);
+	    else if (lhs.lhs_type->tt_type == VAR_TYPEALIAS)
+		// When assigning a value to a variable with a typealias type,
+		// set the typealias type explicitly.  Otherwise, the new
+		// variable will get the rhs type.
+		generate_SETTYPE(cctx, lhs.lhs_type);
 
 	    if (!skip_store && generate_store_lhs(cctx, &lhs,
 						 instr_count, is_decl) == FAIL)

@@ -3564,10 +3564,8 @@ EXTERN char e_abstract_cannot_be_used_in_interface[]
 	INIT(= N_("E1404: Abstract cannot be used in an interface"));
 EXTERN char e_using_class_as_value_str[]
 	INIT(= N_("E1405: Class \"%s\" cannot be used as a value"));
-EXTERN char e_using_class_as_var_val[]
-	INIT(= N_("E1406: Cannot use a Class as a variable or value"));
-EXTERN char e_using_typealias_as_var_val[]
-	INIT(= N_("E1407: Cannot use a Typealias as a variable or value"));
+// E1406 unused
+// E1407 unused
 EXTERN char e_final_variable_not_supported_in_interface[]
 	INIT(= N_("E1408: Final variable not supported in an interface"));
 EXTERN char e_cannot_change_readonly_variable_str_in_class_str[]
