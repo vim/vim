@@ -1014,16 +1014,19 @@ tv_class_alias(typval_T *tv)
 }
 
 /*
- * Give an error and return FAIL unless "args[idx]" is a class or a list.
+ * Give an error and return FAIL unless "args[idx]" is a class
+ * or class typealias.
  */
     int
-check_for_class_or_list_arg(typval_T *args, int idx)
+check_for_class_or_typealias_args(typval_T *args, int idx)
 {
-    if (args[idx].v_type != VAR_CLASS && args[idx].v_type != VAR_LIST
-					&& !tv_class_alias(&args[idx]))
+    for (int i = idx; args[i].v_type != VAR_UNKNOWN; ++i)
     {
-	semsg(_(e_list_or_class_required_for_argument_nr), idx + 1);
-	return FAIL;
+	if (args[i].v_type != VAR_CLASS && !tv_class_alias(&args[idx]))
+	{
+	    semsg(_(e_class_or_typealias_required_for_argument_nr), i + 1);
+	    return FAIL;
+	}
     }
     return OK;
 }

@@ -1531,6 +1531,8 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
     }
     pos.col = tv_get_number(&argvars[2]) - 1;
+    if (pos.col < 0)
+	pos.col = 0;
     pos.coladd = 0;
     textpos2screenpos(wp, &pos, &row, &scol, &ccol, &ecol);
 

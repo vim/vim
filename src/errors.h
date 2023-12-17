@@ -1778,8 +1778,8 @@ EXTERN char e_can_only_compare_list_with_list[]
 	INIT(= N_("E691: Can only compare List with List"));
 EXTERN char e_invalid_operation_for_list[]
 	INIT(= N_("E692: Invalid operation for List"));
-EXTERN char e_list_or_class_required_for_argument_nr[]
-	INIT(= N_("E693: List or Class required for argument %d"));
+EXTERN char e_class_or_typealias_required_for_argument_nr[]
+	INIT(= N_("E693: Class or class typealias required for argument %d"));
 EXTERN char e_invalid_operation_for_funcrefs[]
 	INIT(= N_("E694: Invalid operation for Funcrefs"));
 EXTERN char e_cannot_index_a_funcref[]
@@ -3402,11 +3402,12 @@ EXTERN char e_object_required_found_str[]
 	INIT(= N_("E1327: Object required, found %s"));
 EXTERN char e_constructor_default_value_must_be_vnone_str[]
 	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
-// E1329 unused
+EXTERN char e_invalid_class_variable_declaration_str[]
+	INIT(= N_("E1329: Invalid class variable declaration: %s"));
 EXTERN char e_invalid_type_for_object_variable_str[]
 	INIT(= N_("E1330: Invalid type for object variable: %s"));
-EXTERN char e_public_must_be_followed_by_this_or_static[]
-	INIT(= N_("E1331: Public must be followed by \"this\" or \"static\""));
+EXTERN char e_public_must_be_followed_by_var_static_final_or_const[]
+	INIT(= N_("E1331: Public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
 	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_protected_variable_str[]
@@ -3487,8 +3488,8 @@ EXTERN char e_cannot_access_protected_method_str[]
 	INIT(= N_("E1366: Cannot access protected method: %s"));
 EXTERN char e_variable_str_of_interface_str_has_different_access[]
 	INIT(= N_("E1367: Access level of variable \"%s\" of interface \"%s\" is different"));
-EXTERN char e_static_cannot_be_followed_by_this[]
-	INIT(= N_("E1368: Static cannot be followed by \"this\" in a variable name"));
+EXTERN char e_static_must_be_followed_by_var_def_final_or_const[]
+	INIT(= N_("E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const\""));
 EXTERN char e_duplicate_variable_str[]
 	INIT(= N_("E1369: Duplicate variable: %s"));
 EXTERN char e_cannot_define_new_method_as_static[]
@@ -3557,12 +3558,24 @@ EXTERN char e_using_typealias_as_float[]
 	INIT(= N_("E1401: Using type alias \"%s\" as a Float"));
 EXTERN char e_using_typealias_as_string[]
 	INIT(= N_("E1402: Using type alias \"%s\" as a String"));
-EXTERN char e_using_typealias_as_value[]
+EXTERN char e_using_typealias_as_value_str[]
 	INIT(= N_("E1403: Type alias \"%s\" cannot be used as a value"));
 EXTERN char e_abstract_cannot_be_used_in_interface[]
 	INIT(= N_("E1404: Abstract cannot be used in an interface"));
+EXTERN char e_using_class_as_value_str[]
+	INIT(= N_("E1405: Class \"%s\" cannot be used as a value"));
+EXTERN char e_using_class_as_var_val[]
+	INIT(= N_("E1406: Cannot use a Class as a variable or value"));
+EXTERN char e_using_typealias_as_var_val[]
+	INIT(= N_("E1407: Cannot use a Typealias as a variable or value"));
+EXTERN char e_final_variable_not_supported_in_interface[]
+	INIT(= N_("E1408: Final variable not supported in an interface"));
+EXTERN char e_cannot_change_readonly_variable_str_in_class_str[]
+	INIT(= N_("E1409: Cannot change read-only variable \"%s\" in class \"%s\""));
+EXTERN char e_const_variable_not_supported_in_interface[]
+	INIT(= N_("E1410: Const variable not supported in an interface"));
 #endif
-// E1405 - E1499 unused (reserved for Vim9 class support)
+// E1411 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

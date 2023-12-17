@@ -2159,6 +2159,7 @@ $quote	eval.txt	/*$quote*
 :Stop	terminal.txt	/*:Stop*
 :TOhtml	syntax.txt	/*:TOhtml*
 :TarDiff	pi_tar.txt	/*:TarDiff*
+:Tbreak	terminal.txt	/*:Tbreak*
 :Termdebug	terminal.txt	/*:Termdebug*
 :TermdebugCommand	terminal.txt	/*:TermdebugCommand*
 :Texplore	pi_netrw.txt	/*:Texplore*
@@ -4491,8 +4492,23 @@ E139	message.txt	/*E139*
 E1390	vim9class.txt	/*E1390*
 E1391	eval.txt	/*E1391*
 E1392	eval.txt	/*E1392*
+E1393	vim9class.txt	/*E1393*
+E1394	vim9class.txt	/*E1394*
+E1395	vim9class.txt	/*E1395*
+E1396	vim9class.txt	/*E1396*
+E1397	vim9class.txt	/*E1397*
+E1398	vim9class.txt	/*E1398*
+E1399	vim9class.txt	/*E1399*
 E140	message.txt	/*E140*
+E1400	vim9class.txt	/*E1400*
+E1401	vim9class.txt	/*E1401*
+E1402	vim9class.txt	/*E1402*
+E1403	vim9class.txt	/*E1403*
+E1407	vim9class.txt	/*E1407*
+E1408	vim9class.txt	/*E1408*
+E1409	vim9class.txt	/*E1409*
 E141	message.txt	/*E141*
+E1410	vim9class.txt	/*E1410*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
@@ -7217,6 +7233,7 @@ ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-json-plugin	filetype.txt	/*ft-json-plugin*
 ft-json-syntax	syntax.txt	/*ft-json-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
@@ -9082,6 +9099,8 @@ o_V	motion.txt	/*o_V*
 o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
 object	vim9class.txt	/*object*
+object-const-variable	vim9class.txt	/*object-const-variable*
+object-final-variable	vim9class.txt	/*object-final-variable*
 object-motions	motion.txt	/*object-motions*
 object-select	motion.txt	/*object-select*
 objects	index.txt	/*objects*
@@ -10284,6 +10303,7 @@ t_ti	term.txt	/*t_ti*
 t_tp	version4.txt	/*t_tp*
 t_ts	term.txt	/*t_ts*
 t_ts_old	version4.txt	/*t_ts_old*
+t_typealias-variable	eval.txt	/*t_typealias-variable*
 t_u7	term.txt	/*t_u7*
 t_ue	term.txt	/*t_ue*
 t_undo	version4.txt	/*t_undo*
@@ -10784,6 +10804,7 @@ v:t_none	eval.txt	/*v:t_none*
 v:t_number	eval.txt	/*v:t_number*
 v:t_object	eval.txt	/*v:t_object*
 v:t_string	eval.txt	/*v:t_string*
+v:t_typealias	eval.txt	/*v:t_typealias*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
 v:termrbgresp	eval.txt	/*v:termrbgresp*
 v:termresponse	eval.txt	/*v:termresponse*

@@ -2698,6 +2698,37 @@ def Test_for_loop_fails()
   v9.CheckDefSuccess(lines)
 
   v9.CheckDefFailure(['for x in range(3)'] + lines + ['endfor'], 'E1306:')
+
+  # Test for too many for loops
+  lines =<< trim END
+    vim9script
+    def Foo()
+      for a in range(1)
+        for b in range(1)
+          for c in range(1)
+            for d in range(1)
+              for e in range(1)
+                for f in range(1)
+                  for g in range(1)
+                    for h in range(1)
+                      for i in range(1)
+                        for j in range(1)
+                          for k in range(1)
+                          endfor
+                        endfor
+                      endfor
+                    endfor
+                  endfor
+                endfor
+              endfor
+            endfor
+          endfor
+        endfor
+      endfor
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1306: Loop nesting too deep', 11)
 enddef
 
 def Test_for_loop_script_var()
@@ -4781,6 +4812,98 @@ def Test_multidefer_with_exception()
     assert_equal([11, 9, 10, 7, 8, 5, 1, 3, 4, 12, 15, 16], callTrace)
   END
   v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using ":defer" inside an if statement with a false condition
+def Test_defer_skipped()
+  var lines =<< trim END
+    def Foo()
+      if false
+        defer execute('echow "hello"', "")
+      endif
+    enddef
+    defcompile
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using defer without parenthesis for the function name
+def Test_defer_func_without_paren()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      defer Bar
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E107: Missing parentheses: Bar', 1)
+enddef
+
+" Test for using defer without parenthesis for the function name
+def Test_defer_non_existing_func()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      defer Bar()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1001: Variable not found: Bar', 1)
+enddef
+
+" Test for using defer with an invalid function name
+def Test_defer_invalid_func()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      var Abc = 10
+      defer Abc()
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E129: Function name required', 2)
+enddef
+
+" Test for using defer with an invalid argument to a function
+def Test_defer_invalid_func_arg()
+  var lines =<< trim END
+    vim9script
+    def Bar(x: number)
+    enddef
+    def Foo()
+      defer Bar(a)
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1001: Variable not found: a', 1)
+enddef
+
+" Test for using an non-existing type in a "for" statement.
+def Test_invalid_type_in_for()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      for b: x in range(10)
+      endfor
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: x in range(10)', 1)
+enddef
+
+" Test for using a line break between the variable name and the type in a for
+" statement.
+def Test_for_stmt_space_before_type()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      for a
+           :number in range(10)
+      endfor
+    enddef
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1059: No white space allowed before colon: :number in range(10)', 2)
 enddef
 
 " Keep this last, it messes up highlighting.

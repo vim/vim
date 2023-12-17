@@ -1576,6 +1576,12 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
     {
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	    goto failret;
+	if (check_typval_is_value(&tv) == FAIL)
+	{
+	    if (evaluate)
+		clear_tv(&tv);
+	    goto failret;
+	}
 	if (evaluate)
 	{
 	    item = listitem_alloc();

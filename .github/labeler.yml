@@ -1,106 +1,155 @@
 # list of labels and minimatch globs to match to apply the label.
 
 CI:
-- any: ['.cirrus.yml']
-- any: ['.github/dependabot.yml']
-- any: ['.github/labeler.yml']
-- any: ['.github/workflows/*']
-- any: ['.appveyor.yml']
-- any: ['.codecov.yml']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - '.cirrus.yml'
+        - '.github/dependabot.yml'
+        - '.github/labeler.yml'
+        - '.github/workflows/*'
+        - '.appveyor.yml'
+        - '.codecov.yml'
 
 documentation:
-- all: ['*/doc/*']
+  - all:
+    - changed-files:
+      - any-glob-to-all-files:
+        - '*/doc/*'
 
 translation:
-- any: ['src/po/*.po']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/po/*.po'
 
 if_lua:
-- any: ['src/if_lua.c']
-- any: ['src/proto/if_lua.pro']
-- any: ['runtime/doc/if_lua.txt']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/if_lua.c'
+        - 'src/proto/if_lua.pro'
+        - 'runtime/doc/if_lua.txt'
 
 if_mzscheme:
-- any: ['src/if_mzsch.c']
-- any: ['src/if_mzsch.h']
-- any: ['src/proto/if_mzsch.pro']
-- any: ['runtime/doc/if_mzsch.txt']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/if_mzsch.c'
+        - 'src/if_mzsch.h'
+        - 'src/proto/if_mzsch.pro'
+        - 'runtime/doc/if_mzsch.txt'
 
 if_perl:
-- any: ['src/if_perl.xs']
-- any: ['src/if_perlsfio.c']
-- any: ['src/proto/if_perl.pro']
-- any: ['src/proto/if_perlsfio.pro']
-- any: ['runtime/doc/if_perl.txt']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/if_perl.xs'
+        - 'src/if_perlsfio.c'
+        - 'src/proto/if_perl.pro'
+        - 'src/proto/if_perlsfio.pro'
+        - 'runtime/doc/if_perl.txt'
 
 if_python:
-- any: ['src/if_py_both.h']
-- any: ['runtime/doc/if_pyth.txt']
-- any: ['src/if_python.c']
-- any: ['src/if_python3.c']
-- any: ['src/proto/if_python.pro']
-- any: ['src/proto/if_python3.pro']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/if_py_both.h'
+        - 'runtime/doc/if_pyth.txt'
+        - 'src/if_python.c'
+        - 'src/if_python3.c'
+        - 'src/proto/if_python.pro'
+        - 'src/proto/if_python3.pro'
 
 if_ruby:
-- any: ['src/if_ruby.c']
-- any: ['src/proto/if_ruby.pro']
-- any: ['runtime/doc/if_ruby.txt']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/if_ruby.c'
+        - 'src/proto/if_ruby.pro'
+        - 'runtime/doc/if_ruby.txt'
 
 if_tcl:
-- any: ['src/if_tcl.c']
-- any: ['src/proto/if_tcl.pro']
-- any: ['runtime/doc/if_tcl.txt']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/if_tcl.c'
+        - 'src/proto/if_tcl.pro'
+        - 'runtime/doc/if_tcl.txt'
 
 installer:
-- any: ['nsis/**']
-- any: ['src/dosinst.*']
-- any: ['src/uninstall.c']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'nsis/**'
+        - 'src/dosinst.*'
+        - 'src/uninstall.c'
 
 platform-mac:
-- any: ['src/INSTALLmac.txt']
-- any: ['src/os_mac*']
-- any: ['src/proto/os_mac*']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/INSTALLmac.txt'
+        - 'src/os_mac*'
+        - 'src/proto/os_mac*'
 
 platform-windows:
-- any: ['nsis/**']
-- any: ['src/*.bat']
-- any: ['src/*.bmp']
-- any: ['src/*.ico']
-- any: ['src/GvimExt/*']
-- any: ['src/INSTALLpc.txt']
-- any: ['src/Make_cyg*.mak']
-- any: ['src/Make_ming.mak']
-- any: ['src/Make_mvc.mak']
-- any: ['src/dosinst.*']
-- any: ['src/gui_dwrite.*']
-- any: ['src/gui_w32*']
-- any: ['src/if_ole.*']
-- any: ['src/iid_ole.c']
-- any: ['src/os_mswin*']
-- any: ['src/os_w32*']
-- any: ['src/os_win32.*']
-- any: ['src/proto/gui_w32.pro']
-- any: ['src/proto/os_mswin.pro']
-- any: ['src/proto/os_win32.pro']
-- any: ['src/proto/winclip.pro']
-- any: ['src/uninstall.c']
-- any: ['src/vim.manifest']
-- any: ['src/vim.rc']
-- any: ['src/vimrun.c']
-- any: ['src/winclip.c']
-- any: ['src/xpm/**']
-- any: ['src/xpm_w32.*']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'nsis/**'
+        - 'src/*.bat'
+        - 'src/*.bmp'
+        - 'src/*.ico'
+        - 'src/GvimExt/*'
+        - 'src/INSTALLpc.txt'
+        - 'src/Make_cyg*.mak'
+        - 'src/Make_ming.mak'
+        - 'src/Make_mvc.mak'
+        - 'src/dosinst.*'
+        - 'src/gui_dwrite.*'
+        - 'src/gui_w32*'
+        - 'src/if_ole.*'
+        - 'src/iid_ole.c'
+        - 'src/os_mswin*'
+        - 'src/os_w32*'
+        - 'src/os_win32.*'
+        - 'src/proto/gui_w32.pro'
+        - 'src/proto/os_mswin.pro'
+        - 'src/proto/os_win32.pro'
+        - 'src/proto/winclip.pro'
+        - 'src/uninstall.c'
+        - 'src/vim.manifest'
+        - 'src/vim.rc'
+        - 'src/vimrun.c'
+        - 'src/winclip.c'
+        - 'src/xpm/**'
+        - 'src/xpm_w32.*'
 
 runtime:
-- any: ['runtime/ftplugin']
-- any: ['runtime/syntax']
-- any: ['runtime/indent']
-- any: ['runtime/pack/dist/opt/termdebug/plugin/termdebug.vim']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'runtime/ftplugin'
+        - 'runtime/syntax'
+        - 'runtime/indent'
+        - 'runtime/pack/dist/opt/termdebug/plugin/termdebug.vim'
 
-termdebug: runtime/pack/dist/opt/termdebug/plugin/termdebug.vim
+termdebug:
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'runtime/pack/dist/opt/termdebug/plugin/termdebug.vim'
 
 plugin-netrw:
-- any: ['runtime/plugin/netrwPlugin.vim']
-- any: ['runtime/autoload/netrw*']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'runtime/plugin/netrwPlugin.vim'
+        - 'runtime/autoload/netrw*'
 
 xxd:
-- any: ['src/xxd/*']
+  - all:
+    - changed-files:
+      - any-glob-to-any-file:
+        - 'src/xxd/*'

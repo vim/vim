@@ -205,6 +205,8 @@ typedef struct {
 // A function to check one argument type.  The first argument is the type to
 // check.  If needed, other argument types can be obtained with the context.
 // E.g. if "arg_idx" is 1, then (type - 1) is the first argument type.
+// NOTE:    Use "arg_any", not NULL, in funcentry_T.f_argcheck array
+//	    to accept an argument of any type.
 typedef int (*argcheck_T)(type_T *, type_T *, argcontext_T *);
 
 /*
@@ -251,6 +253,17 @@ arg_type_modifiable(type_T *type, int arg_idx)
 	    arg_idx, type_name(type, &tofree));
     vim_free(tofree);
     return FAIL;
+}
+
+/*
+ *  Return OK for any type unconditionally.
+ */
+    static int
+arg_any(type_T *type UNUSED,
+	type_T *decl_type UNUSED,
+	argcontext_T *context UNUSED)
+{
+    return OK;
 }
 
 /*
@@ -758,17 +771,23 @@ arg_string_or_func(type_T *type, type_T *decl_type UNUSED, argcontext_T *context
 }
 
 /*
- * Check "type" is a list of 'any' or a class.
+ * Check varargs' "type" are class.
  */
     static int
-arg_class_or_list(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+varargs_class(type_T *type UNUSED,
+	      type_T *decl_type UNUSED,
+	      argcontext_T *context)
 {
-    if (type->tt_type == VAR_CLASS
-	    || type->tt_type == VAR_LIST
-	    || type_any_or_unknown(type))
-	return OK;
-    arg_type_mismatch(&t_class, type, context->arg_idx + 1);
-    return FAIL;
+    for (int i = context->arg_idx; i < context->arg_count; ++i)
+    {
+	type2_T *types = &context->arg_types[i];
+	if (types->type_curr->tt_type != VAR_CLASS)
+	{
+	    semsg(_(e_class_or_typealias_required_for_argument_nr), i + 1);
+	    return FAIL;
+	}
+    }
+    return OK;
 }
 
 /*
@@ -1061,8 +1080,8 @@ static argcheck_T arg1_string[] = {arg_string};
 static argcheck_T arg1_string_or_list_any[] = {arg_string_or_list_any};
 static argcheck_T arg1_string_or_list_string[] = {arg_string_or_list_string};
 static argcheck_T arg1_string_or_nr[] = {arg_string_or_nr};
-static argcheck_T arg2_any_buffer[] = {NULL, arg_buffer};
-static argcheck_T arg2_buffer_any[] = {arg_buffer, NULL};
+static argcheck_T arg2_any_buffer[] = {arg_any, arg_buffer};
+static argcheck_T arg2_buffer_any[] = {arg_buffer, arg_any};
 static argcheck_T arg2_buffer_bool[] = {arg_buffer, arg_bool};
 static argcheck_T arg2_buffer_list_any[] = {arg_buffer, arg_list_any};
 static argcheck_T arg2_buffer_lnum[] = {arg_buffer, arg_lnum};
@@ -1084,7 +1103,7 @@ static argcheck_T arg2_listblobmod_item[] = {arg_list_or_blob_mod, arg_item_of_p
 static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
 static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
 static argcheck_T arg2_number[] = {arg_number, arg_number};
-static argcheck_T arg2_number_any[] = {arg_number, NULL};
+static argcheck_T arg2_number_any[] = {arg_number, arg_any};
 static argcheck_T arg2_number_bool[] = {arg_number, arg_bool};
 static argcheck_T arg2_number_dict_any[] = {arg_number, arg_dict_any};
 static argcheck_T arg2_number_list[] = {arg_number, arg_list_any};
@@ -1092,7 +1111,7 @@ static argcheck_T arg2_number_string[] = {arg_number, arg_string};
 static argcheck_T arg2_number_string_or_list[] = {arg_number, arg_string_or_list_any};
 static argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
-static argcheck_T arg2_string_any[] = {arg_string, NULL};
+static argcheck_T arg2_string_any[] = {arg_string, arg_any};
 static argcheck_T arg2_string_bool[] = {arg_string, arg_bool};
 static argcheck_T arg2_string_chan_or_job[] = {arg_string, arg_chan_or_job};
 static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
@@ -1101,23 +1120,23 @@ static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
-static argcheck_T arg3_any_list_dict[] = {NULL, arg_list_any, arg_dict_any};
+static argcheck_T arg3_any_list_dict[] = {arg_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
 static argcheck_T arg3_buffer_number_number[] = {arg_buffer, arg_number, arg_number};
-static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, NULL};
+static argcheck_T arg3_buffer_string_any[] = {arg_buffer, arg_string, arg_any};
 static argcheck_T arg3_buffer_string_dict[] = {arg_buffer, arg_string, arg_dict_any};
 static argcheck_T arg3_dict_number_number[] = {arg_dict_any, arg_number, arg_number};
 static argcheck_T arg3_list_string_dict[] = {arg_list_any, arg_string, arg_dict_any};
 static argcheck_T arg3_lnum_number_bool[] = {arg_lnum, arg_number, arg_bool};
 static argcheck_T arg3_number[] = {arg_number, arg_number, arg_number};
-static argcheck_T arg3_number_any_dict[] = {arg_number, NULL, arg_dict_any};
+static argcheck_T arg3_number_any_dict[] = {arg_number, arg_any, arg_dict_any};
 static argcheck_T arg3_number_number_dict[] = {arg_number, arg_number, arg_dict_any};
-static argcheck_T arg3_number_string_any[] = {arg_number, arg_string, NULL};
+static argcheck_T arg3_number_string_any[] = {arg_number, arg_string, arg_any};
 static argcheck_T arg3_number_string_buffer[] = {arg_number, arg_string, arg_buffer};
 static argcheck_T arg3_number_string_string[] = {arg_number, arg_string, arg_string};
 static argcheck_T arg3_string[] = {arg_string, arg_string, arg_string};
-static argcheck_T arg3_string_any_dict[] = {arg_string, NULL, arg_dict_any};
-static argcheck_T arg3_string_any_string[] = {arg_string, NULL, arg_string};
+static argcheck_T arg3_string_any_dict[] = {arg_string, arg_any, arg_dict_any};
+static argcheck_T arg3_string_any_string[] = {arg_string, arg_any, arg_string};
 static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
 static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
 static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
@@ -1126,23 +1145,23 @@ static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, a
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
-static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, NULL};
-static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, NULL, arg_string};
+static argcheck_T arg4_number_number_string_any[] = {arg_number, arg_number, arg_string, arg_any};
+static argcheck_T arg4_string_string_any_string[] = {arg_string, arg_string, arg_any, arg_string};
 static argcheck_T arg4_string_string_number_string[] = {arg_string, arg_string, arg_number, arg_string};
 static argcheck_T arg4_string_number_bool_bool[] = {arg_string, arg_number, arg_bool, arg_bool};
 /* Function specific argument types (not covered by the above) */
-static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, NULL, arg_number, arg_string};
+static argcheck_T arg15_assert_fails[] = {arg_string_or_nr, arg_string_or_list_any, arg_any, arg_number, arg_string};
 static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, arg_float_or_nr, arg_string};
 static argcheck_T arg4_browse[] = {arg_bool, arg_string, arg_string, arg_string};
-static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, NULL, arg_dict_any};
+static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, arg_any, arg_dict_any};
 static argcheck_T arg23_chanraw[] = {arg_chan_or_job, arg_string_or_blob, arg_dict_any};
-static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, NULL, arg_bool, arg_number};
+static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, arg_any, arg_bool, arg_number};
 static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
-static argcheck_T arg12_deepcopy[] = {NULL, arg_bool};
+static argcheck_T arg12_deepcopy[] = {arg_any, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
 static argcheck_T arg23_extend[] = {arg_list_or_dict_mod, arg_same_as_prev, arg_extend3};
 static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
-static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
+static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, arg_any};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
@@ -1152,20 +1171,20 @@ static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
 static argcheck_T arg14_maparg[] = {arg_string, arg_string, arg_bool, arg_bool};
 static argcheck_T arg2_filter[] = {arg_list_or_dict_or_blob_or_string_mod, arg_filter_func};
-static argcheck_T arg2_instanceof[] = {arg_object, arg_class_or_list};
+static argcheck_T arg2_instanceof[] = {arg_object, varargs_class, NULL };
 static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_func};
-static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, NULL};
+static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, arg_any};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
-static argcheck_T arg119_printf[] = {arg_string_or_nr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
-static argcheck_T arg23_reduce[] = {arg_string_list_or_blob, NULL, NULL};
+static argcheck_T arg119_printf[] = {arg_string_or_nr, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any};
+static argcheck_T arg23_reduce[] = {arg_string_list_or_blob, arg_any, arg_any};
 static argcheck_T arg24_remote_expr[] = {arg_string, arg_string, arg_string, arg_number};
 static argcheck_T arg23_remove[] = {arg_list_or_dict_or_blob_mod, arg_remove2, arg_number};
 static argcheck_T arg2_repeat[] = {arg_repeat1, arg_number};
 static argcheck_T arg15_search[] = {arg_string, arg_string, arg_number, arg_number, arg_string_or_func};
 static argcheck_T arg37_searchpair[] = {arg_string, arg_string, arg_string, arg_string, arg_string_or_func, arg_number, arg_number};
 static argcheck_T arg3_setbufline[] = {arg_buffer, arg_lnum, arg_str_or_nr_or_list};
-static argcheck_T arg2_setline[] = {arg_lnum, NULL};
+static argcheck_T arg2_setline[] = {arg_lnum, arg_any};
 static argcheck_T arg24_setloclist[] = {arg_number, arg_list_any, arg_string, arg_dict_any};
 static argcheck_T arg13_setqflist[] = {arg_list_any, arg_string, arg_dict_any};
 static argcheck_T arg23_settagstack[] = {arg_number, arg_dict_any, arg_string};
@@ -1621,14 +1640,21 @@ ret_maparg(int argcount,
 /*
  * Array with names and number of arguments of all internal functions
  * MUST BE KEPT SORTED IN strcmp() ORDER FOR BINARY SEARCH!
+ *
+ * The builtin function may be varargs. In that case
+ *	- f_max_argc == VARGS
+ *	- For varargs, f_argcheck must be NULL terminated. The last non-null
+ *	  entry in f_argcheck should validate all the remaining args.
  */
 typedef struct
 {
     char	*f_name;	// function name
     char	f_min_argc;	// minimal number of arguments
     char	f_max_argc;	// maximal number of arguments
-    char	f_argtype;	// for method: FEARG_ values
-    argcheck_T	*f_argcheck;	// list of functions to check argument types
+    char	f_argtype;	// for method: FEARG_ values; bits FE_
+    argcheck_T	*f_argcheck;	// list of functions to check argument types;
+				// use "arg_any" (not NULL) to accept an
+				// argument of any type
     type_T	*(*f_retfunc)(int argcount, type2_T *argtypes,
 							   type_T **decl_type);
 				// return type function
@@ -1636,11 +1662,16 @@ typedef struct
 				// implementation of function
 } funcentry_T;
 
+// Set f_max_argc to VARGS for varargs.
+#define VARGS    CHAR_MAX
+
 // values for f_argtype; zero means it cannot be used as a method
-#define FEARG_1    1	    // base is the first argument
-#define FEARG_2    2	    // base is the second argument
-#define FEARG_3    3	    // base is the third argument
-#define FEARG_4    4	    // base is the fourth argument
+#define FEARG_1	    0x01    // base is the first argument
+#define FEARG_2     0x02    // base is the second argument
+#define FEARG_3     0x03    // base is the third argument
+#define FEARG_4     0x04    // base is the fourth argument
+#define FEARG_MASK  0x0F    // bits in f_argtype used as argument index
+#define FE_X	    0x10    // builtin accepts a non-value (class, typealias)
 
 #if defined(HAVE_MATH_H)
 # define MATH_FUNC(name) name
@@ -2152,7 +2183,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_inputsecret},
     {"insert",		2, 3, FEARG_1,	    arg23_insert,
 			ret_first_arg,	    f_insert},
-    {"instanceof",	2, 2, FEARG_1,	    arg2_instanceof,
+    {"instanceof",	2, VARGS, FEARG_1|FE_X,	arg2_instanceof,
 			ret_bool,	    f_instanceof},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
@@ -2630,7 +2661,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_strgetchar},
     {"stridx",		2, 3, FEARG_1,	    arg3_string_string_number,
 			ret_number,	    f_stridx},
-    {"string",		1, 1, FEARG_1,	    NULL,
+    {"string",		1, 1, FEARG_1|FE_X, NULL,
 			ret_string,	    f_string},
     {"strlen",		1, 1, FEARG_1,	    arg1_string_or_nr,
 			ret_number,	    f_strlen},
@@ -2792,7 +2823,7 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_option_not_set},
     {"test_override",	2, 2, FEARG_2,	    arg2_string_number,
 			ret_void,	    f_test_override},
-    {"test_refcount",	1, 1, FEARG_1,	    NULL,
+    {"test_refcount",	1, 1, FEARG_1|FE_X, NULL,
 			ret_number,	    f_test_refcount},
     {"test_setmouse",	2, 2, 0,	    arg2_number,
 			ret_void,	    f_test_setmouse},
@@ -2824,9 +2855,9 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_trunc},
-    {"type",		1, 1, FEARG_1,	    NULL,
+    {"type",		1, 1, FEARG_1|FE_X, NULL,
 			ret_number,	    f_type},
-    {"typename",	1, 1, FEARG_1,	    NULL,
+    {"typename",	1, 1, FEARG_1|FE_X, NULL,
 			ret_string,	    f_typename},
     {"undofile",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_undofile},
@@ -2897,6 +2928,15 @@ static funcentry_T global_functions[] =
     {"xor",		2, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_xor},
 };
+
+/*
+ * Return true if specified function allows a type as an argument.
+ */
+    static int
+func_allows_type(int idx)
+{
+    return (global_functions[idx].f_argtype & FE_X) != 0;
+}
 
 /*
  * Function given to ExpandGeneric() to obtain the list of internal
@@ -3030,6 +3070,15 @@ internal_func_check_arg_types(
 	int	argcount,
 	cctx_T	*cctx)
 {
+    // Some internal functions accept types like Class as arguments. For other
+    // functions, check the arguments are not types.
+    if (!(func_allows_type(idx)))
+    {
+        for (int i = 0; i < argcount; ++i)
+            if (check_type_is_value(types[i].type_curr) == FAIL)
+		return FAIL;
+    }
+
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
 
     if (argchecks == NULL)
@@ -3040,14 +3089,13 @@ internal_func_check_arg_types(
     context.arg_count = argcount;
     context.arg_types = types;
     context.arg_cctx = cctx;
-    for (int i = 0; i < argcount; ++i)
-	if (argchecks[i] != NULL)
-	{
-	    context.arg_idx = i;
-	    if (argchecks[i](types[i].type_curr, types[i].type_decl,
-			&context) == FAIL)
-		return FAIL;
-	}
+    for (int i = 0; i < argcount && argchecks[i] != NULL; ++i)
+    {
+	context.arg_idx = i;
+	if (argchecks[i](types[i].type_curr, types[i].type_decl,
+							    &context) == FAIL)
+	    return FAIL;
+    }
     return OK;
 }
 
@@ -3115,7 +3163,7 @@ check_internal_func(int idx, int argcount)
     else if (argcount > global_functions[idx].f_max_argc)
 	res = FCERR_TOOMANY;
     else
-	return global_functions[idx].f_argtype;
+	return global_functions[idx].f_argtype & FEARG_MASK;
 
     name = internal_func_name(idx);
     if (res == FCERR_TOOMANY)
@@ -3123,6 +3171,24 @@ check_internal_func(int idx, int argcount)
     else
 	semsg(_(e_not_enough_arguments_for_function_str), name);
     return -1;
+}
+
+/*
+ * Some internal functions accept types like Class as arguments. For other
+ * functions, check the arguments are not types.
+ *
+ * Return OK/FAIL.
+ */
+    static int
+check_args_for_type(int idx, int argcount, typval_T *argvars)
+{
+    if (!func_allows_type(idx))
+    {
+	for (int i = 0; i < argcount; ++i)
+	    if (check_typval_is_value(&argvars[i]) == FAIL)
+		return FAIL;
+    }
+    return OK;
 }
 
     funcerror_T
@@ -3141,6 +3207,8 @@ call_internal_func(
 	return FCERR_TOOFEW;
     if (argcount > global_functions[i].f_max_argc)
 	return FCERR_TOOMANY;
+    if (check_args_for_type(i, argcount, argvars) == FAIL)
+	return FCERR_OTHER;
     argvars[argcount].v_type = VAR_UNKNOWN;
     global_functions[i].f_func(argvars, rettv);
     return FCERR_NONE;
@@ -3172,14 +3240,16 @@ call_internal_method(
     fi = find_internal_func(name);
     if (fi < 0)
 	return FCERR_UNKNOWN;
-    if (global_functions[fi].f_argtype == 0)
+    if ((global_functions[fi].f_argtype & FEARG_MASK) == 0)
 	return FCERR_NOTMETHOD;
     if (argcount + 1 < global_functions[fi].f_min_argc)
 	return FCERR_TOOFEW;
     if (argcount + 1 > global_functions[fi].f_max_argc)
 	return FCERR_TOOMANY;
+    if (check_args_for_type(fi, argcount, argvars) == FAIL)
+	return FCERR_OTHER;
 
-    if (global_functions[fi].f_argtype == FEARG_2)
+    if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_2)
     {
 	if (argcount < 1)
 	    return FCERR_TOOFEW;
@@ -3190,7 +3260,7 @@ call_internal_method(
 	for (int i = 1; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
-    else if (global_functions[fi].f_argtype == FEARG_3)
+    else if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_3)
     {
 	if (argcount < 2)
 	    return FCERR_TOOFEW;
@@ -3202,7 +3272,7 @@ call_internal_method(
 	for (int i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
-    else if (global_functions[fi].f_argtype == FEARG_4)
+    else if ((global_functions[fi].f_argtype & FEARG_MASK) == FEARG_4)
     {
 	if (argcount < 3)
 	    return FCERR_TOOFEW;
@@ -3223,6 +3293,9 @@ call_internal_method(
 	    argv[i + 1] = argvars[i];
     }
     argv[argcount + 1].v_type = VAR_UNKNOWN;
+
+    if (check_args_for_type(fi, argcount + 1, argv) == FAIL)
+	return FCERR_OTHER;
 
     global_functions[fi].f_func(argv, rettv);
     return FCERR_NONE;

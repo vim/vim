@@ -152,6 +152,19 @@ parse_member(
     return OK;
 }
 
+typedef struct oc_newmember_S oc_newmember_T;
+struct oc_newmember_S
+{
+    garray_T	*gap;
+    char_u	*varname;
+    char_u	*varname_end;
+    int		has_public;
+    int		has_final;
+    int		has_type;
+    type_T	*type;
+    char_u	*init_expr;
+};
+
 /*
  * Add a member to an object or a class.
  * Returns OK when successful, "init_expr" will be consumed then.
@@ -163,6 +176,8 @@ add_member(
     char_u	*varname,
     char_u	*varname_end,
     int		has_public,
+    int		has_final,
+    int		has_const,
     int		has_type,
     type_T	*type,
     char_u	*init_expr)
@@ -173,7 +188,12 @@ add_member(
     m->ocm_name = vim_strnsave(varname, varname_end - varname);
     m->ocm_access = has_public ? VIM_ACCESS_ALL
 		      : *varname == '_' ? VIM_ACCESS_PRIVATE : VIM_ACCESS_READ;
-    m->ocm_has_type = has_type;
+    if (has_final)
+	m->ocm_flags |= OCMFLAG_FINAL;
+    if (has_const)
+	m->ocm_flags |= OCMFLAG_CONST;
+    if (has_type)
+	m->ocm_flags |= OCMFLAG_HAS_TYPE;
     m->ocm_type = type;
     if (init_expr != NULL)
 	m->ocm_init = init_expr;
@@ -1132,7 +1152,7 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 	    if (etv != NULL)
 	    {
 		if (m->ocm_type->tt_type == VAR_ANY
-			&& !m->ocm_has_type
+			&& !(m->ocm_flags & OCMFLAG_HAS_TYPE)
 			&& etv->v_type != VAR_SPECIAL)
 		    // If the member variable type is not yet set, then use
 		    // the initialization expression type.
@@ -1149,6 +1169,8 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 	    tv->v_type = m->ocm_type->tt_type;
 	    tv->vval.v_string = NULL;
 	}
+	if (m->ocm_flags & OCMFLAG_CONST)
+	    item_lock(tv, DICT_MAXNEST, TRUE, TRUE);
     }
 }
 
@@ -1305,6 +1327,24 @@ add_classfuncs_objmethods(
 }
 
 /*
+ * Return the end of the class name starting at "arg".  Valid characters in a
+ * class name are alphanumeric characters and "_".  Also handles imported class
+ * names.
+ */
+    static char_u *
+find_class_name_end(char_u *arg)
+{
+    char_u *end = arg;
+
+    while (ASCII_ISALNUM(*end) || *end == '_'
+	    || (*end == '.' && (ASCII_ISALNUM(end[1]) || end[1] == '_')))
+	++end;
+
+    return end;
+}
+
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":interface" up to ":endinterface".
  */
@@ -1383,7 +1423,8 @@ ex_class(exarg_T *eap)
 		goto early_ret;
 	    }
 	    arg = skipwhite(arg + 7);
-	    char_u *end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
+
+	    char_u *end = find_class_name_end(arg);
 	    if (!IS_WHITE_OR_NUL(*end))
 	    {
 		semsg(_(e_white_space_required_after_name_str), arg);
@@ -1413,8 +1454,7 @@ ex_class(exarg_T *eap)
 
 	    for (;;)
 	    {
-		char_u *impl_end = find_name_end(arg, NULL, NULL,
-							      FNE_CHECK_START);
+		char_u *impl_end = find_class_name_end(arg);
 		if ((!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
 			|| (*impl_end == ','
 			    && !IS_WHITE_OR_NUL(*(impl_end + 1))))
@@ -1540,9 +1580,10 @@ early_ret:
 	    has_public = TRUE;
 	    p = skipwhite(line + 6);
 
-	    if (STRNCMP(p, "this", 4) != 0 && STRNCMP(p, "static", 6) != 0)
+	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "static", 6) != 0
+		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
 	    {
-		emsg(_(e_public_must_be_followed_by_this_or_static));
+		emsg(_(e_public_must_be_followed_by_var_static_final_or_const));
 		break;
 	    }
 	}
@@ -1597,29 +1638,76 @@ early_ret:
 	    }
 	    has_static = TRUE;
 	    p = skipwhite(ps + 6);
+
+	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "def", 3) != 0
+		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
+	    {
+		emsg(_(e_static_must_be_followed_by_var_def_final_or_const));
+		break;
+	    }
 	}
 
-	// object members (public, read access, private):
-	//	"this._varname"
-	//	"this.varname"
-	//	"public this.varname"
-	if (STRNCMP(p, "this", 4) == 0)
+	int has_final = FALSE;
+	int has_var = FALSE;
+	int has_const = FALSE;
+	if (checkforcmd(&p, "var", 3))
+	    has_var = TRUE;
+	else if (checkforcmd(&p, "final", 5))
 	{
-	    if (p[4] != '.' || !eval_isnamec1(p[5]))
+	    if (!is_class)
 	    {
-		semsg(_(e_invalid_object_variable_declaration_str), p);
+		emsg(_(e_final_variable_not_supported_in_interface));
 		break;
 	    }
-	    if (has_static)
+	    has_final = TRUE;
+	}
+	else if (checkforcmd(&p, "const", 5))
+	{
+	    if (!is_class)
 	    {
-		emsg(_(e_static_cannot_be_followed_by_this));
+		emsg(_(e_const_variable_not_supported_in_interface));
 		break;
 	    }
-	    char_u *varname = p + 5;
+	    has_const = TRUE;
+	}
+	p = skipwhite(p);
+
+	// object members (public, read access, private):
+	//	"var _varname"
+	//	"var varname"
+	//	"public var varname"
+	//	"final _varname"
+	//	"final varname"
+	//	"public final varname"
+	//	"const _varname"
+	//	"const varname"
+	//	"public const varname"
+	// class members (public, read access, private):
+	//	"static var _varname"
+	//	"static var varname"
+	//	"public static var varname"
+	//	"static final _varname"
+	//	"static final varname"
+	//	"public static final varname"
+	//	"static const _varname"
+	//	"static const varname"
+	//	"public static const varname"
+	if (has_var || has_final || has_const)
+	{
+	    char_u *varname = p;
 	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
 	    int	    has_type = FALSE;
+
+	    if (!eval_isnamec1(*p))
+	    {
+		if (has_static)
+		    semsg(_(e_invalid_class_variable_declaration_str), line);
+		else
+		    semsg(_(e_invalid_object_variable_declaration_str), line);
+		break;
+	    }
 
 	    if (!is_class && *varname == '_')
 	    {
@@ -1644,8 +1732,9 @@ early_ret:
 		vim_free(init_expr);
 		break;
 	    }
-	    if (add_member(&objmembers, varname, varname_end,
-				has_public, has_type, type, init_expr) == FAIL)
+	    if (add_member(has_static ? &classmembers : &objmembers, varname,
+				varname_end, has_public, has_final, has_const,
+				has_type, type, init_expr) == FAIL)
 	    {
 		vim_free(init_expr);
 		break;
@@ -1743,42 +1832,6 @@ early_ret:
 		    ((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
 		    ++fgap->ga_len;
 		}
-	    }
-	}
-
-	// class members
-	else if (has_static)
-	{
-	    // class members (public, read access, private):
-	    //	"static _varname"
-	    //	"static varname"
-	    //	"public static varname"
-	    char_u  *varname = p;
-	    char_u  *varname_end = NULL;
-	    int	    has_type = FALSE;
-	    type_T  *type = NULL;
-	    char_u  *init_expr = NULL;
-
-	    if (parse_member(eap, line, varname, has_public,
-		      &varname_end, &has_type, &type_list, &type,
-		      &init_expr) == FAIL)
-		break;
-	    if (is_reserved_varname(varname, varname_end))
-	    {
-		vim_free(init_expr);
-		break;
-	    }
-	    if (is_duplicate_variable(&classmembers, &objmembers, varname,
-								varname_end))
-	    {
-		vim_free(init_expr);
-		break;
-	    }
-	    if (add_member(&classmembers, varname, varname_end,
-			      has_public, has_type, type, init_expr) == FAIL)
-	    {
-		vim_free(init_expr);
-		break;
 	    }
 	}
 
@@ -2324,7 +2377,7 @@ call_oc_method(
     }
 
     char_u *argp = name_end;
-    int ret = get_func_arguments(&argp, evalarg, 0, argvars, &argcount);
+    int ret = get_func_arguments(&argp, evalarg, 0, argvars, &argcount, FALSE);
     if (ret == FAIL)
 	return FAIL;
 
@@ -2789,6 +2842,40 @@ inside_class(cctx_T *cctx_arg, class_T *cl)
 }
 
 /*
+ * Return TRUE if object/class variable "m" is read-only.
+ * Also give an error message.
+ */
+    int
+oc_var_check_ro(class_T *cl, ocmember_T *m)
+{
+    if (m->ocm_flags & (OCMFLAG_FINAL | OCMFLAG_CONST))
+    {
+	semsg(_(e_cannot_change_readonly_variable_str_in_class_str),
+		m->ocm_name, cl->class_name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Lock all the constant object variables.  Called after creating and
+ * initializing a new object.
+ */
+    void
+obj_lock_const_vars(object_T *obj)
+{
+    for (int i = 0; i < obj->obj_class->class_obj_member_count; i++)
+    {
+	ocmember_T *ocm = &obj->obj_class->class_obj_members[i];
+	if (ocm->ocm_flags & OCMFLAG_CONST)
+	{
+	    typval_T *mtv = ((typval_T *)(obj + 1)) + i;
+	    item_lock(mtv, DICT_MAXNEST, TRUE, TRUE);
+	}
+    }
+}
+
+/*
  * Make a copy of an object.
  */
     void
@@ -3161,58 +3248,37 @@ class_instance_of(class_T *cl, class_T *other_cl)
 }
 
 /*
- * "instanceof(object, classinfo)" function
+ * "instanceof(object, classinfo, ...)" function
  */
     void
 f_instanceof(typval_T *argvars, typval_T *rettv)
 {
     typval_T	*object_tv = &argvars[0];
     typval_T	*classinfo_tv = &argvars[1];
-    listitem_T	*li;
     class_T	*c;
 
     rettv->vval.v_number = VVAL_FALSE;
 
     if (check_for_object_arg(argvars, 0) == FAIL
-	    || check_for_class_or_list_arg(argvars, 1) == FAIL)
+	    || check_for_class_or_typealias_args(argvars, 1) == FAIL)
 	return;
 
     if (object_tv->vval.v_object == NULL)
 	return;
 
-    if (classinfo_tv->v_type == VAR_LIST)
+    for (; classinfo_tv->v_type != VAR_UNKNOWN; ++classinfo_tv)
     {
-	FOR_ALL_LIST_ITEMS(classinfo_tv->vval.v_list, li)
+	if (classinfo_tv->v_type == VAR_TYPEALIAS)
+	    c = classinfo_tv->vval.v_typealias->ta_type->tt_class;
+	else
+	    c = classinfo_tv->vval.v_class;
+
+	if (class_instance_of(object_tv->vval.v_object->obj_class, c))
 	{
-	    if (li->li_tv.v_type != VAR_CLASS && !tv_class_alias(&li->li_tv))
-	    {
-		emsg(_(e_class_required));
-		return;
-	    }
-
-	    if (li->li_tv.v_type == VAR_TYPEALIAS)
-		c = li->li_tv.vval.v_typealias->ta_type->tt_class;
-	    else
-		c = li->li_tv.vval.v_class;
-
-	    if (class_instance_of(object_tv->vval.v_object->obj_class, c)
-								== TRUE)
-	    {
-		rettv->vval.v_number = VVAL_TRUE;
-		return;
-	    }
+	    rettv->vval.v_number = VVAL_TRUE;
+	    return;
 	}
-
-	return;
     }
-
-    if (classinfo_tv->v_type == VAR_TYPEALIAS)
-	c = classinfo_tv->vval.v_typealias->ta_type->tt_class;
-    else
-	c = classinfo_tv->vval.v_class;
-
-    rettv->vval.v_number =
-		class_instance_of(object_tv->vval.v_object->obj_class, c);
 }
 
 #endif // FEAT_EVAL

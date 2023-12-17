@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
+*builtin.txt*	For Vim version 9.0.  Last change: 2023 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5058,12 +5058,12 @@ insert({object}, {item} [, {idx}])			*insert()*
 					*instanceof()* *E614* *E616* *E693*
 instanceof({object}, {class})
 		The result is a Number, which is |TRUE| when the {object}
-		argument is a direct or indirect instance of a |Class|
-		specified by {class}.
-		When {class} is a |List| the function returns |TRUE| when
+		argument is a direct or indirect instance of a |Class|,
+		|Interface|, or class |:type| alias specified by {class}.
+		If {class} is varargs, the function returns |TRUE| when
 		{object} is an instance of any of the specified classes.
 		Example: >
-			instanceof(animal, [Dog, Cat])
+			instanceof(animal, Dog, Cat)
 
 <		Can also be used as a |method|: >
 			myobj->instanceof(mytype)
@@ -6688,9 +6688,9 @@ printf({fmt}, {expr1} ...)				*printf()*
 <		This limits the length of the text used from "line" to
 		"width" bytes.
 
-		If the argument to be formatted is specified using a posional
-		argument specifier, and a '*' is used to indicate that a
-		number argument is to be used to specify the width or
+		If the argument to be formatted is specified using a
+		positional argument specifier, and a '*' is used to indicate
+		that a number argument is to be used to specify the width or
 		precision, the argument(s) to be used must also be specified
 		using a {n$} positional argument specifier. See |printf-$|.
 
@@ -10181,6 +10181,7 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Blob:	   10  |v:t_blob|
 			Class:	   12  |v:t_class|
 			Object:	   13  |v:t_object|
+			Typealias: 14  |v:t_typealias|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")

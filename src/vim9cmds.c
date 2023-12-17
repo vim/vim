@@ -1088,6 +1088,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		}
 		p = skipwhite(p + 1);
 		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+		if (lhs_type == NULL)
+		    goto failed;
 	    }
 
 	    if (get_var_dest(name, &dest, CMD_for, &opt_flags,
@@ -2020,11 +2022,14 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     *paren = '(';
 
     // check for function type
-    type = get_type_on_stack(cctx, 0);
-    if (type->tt_type != VAR_FUNC)
+    if (cctx->ctx_skip != SKIP_YES)
     {
-	emsg(_(e_function_name_required));
-	return NULL;
+	type = get_type_on_stack(cctx, 0);
+	if (type->tt_type != VAR_FUNC)
+	{
+	    emsg(_(e_function_name_required));
+	    return NULL;
+	}
     }
 
     // compile the arguments
@@ -2032,24 +2037,27 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     if (compile_arguments(&arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
 	return NULL;
 
-    if (func_idx >= 0)
+    if (cctx->ctx_skip != SKIP_YES)
     {
-	type2_T	*argtypes = NULL;
-	type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
+	if (func_idx >= 0)
+	{
+	    type2_T	*argtypes = NULL;
+	    type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
 
-	if (check_internal_func_args(cctx, func_idx, argcount, FALSE,
-					 &argtypes, shuffled_argtypes) == FAIL)
+	    if (check_internal_func_args(cctx, func_idx, argcount, FALSE,
+			&argtypes, shuffled_argtypes) == FAIL)
+		return NULL;
+	}
+	else if (check_func_args_from_type(cctx, type, argcount, TRUE,
+		    arg_start) == FAIL)
+	    return NULL;
+
+	defer_var_idx = get_defer_var_idx(cctx);
+	if (defer_var_idx == 0)
+	    return NULL;
+	if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
 	    return NULL;
     }
-    else if (check_func_args_from_type(cctx, type, argcount, TRUE,
-							    arg_start) == FAIL)
-	return NULL;
-
-    defer_var_idx = get_defer_var_idx(cctx);
-    if (defer_var_idx == 0)
-	return NULL;
-    if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
-	return NULL;
 
     return skipwhite(arg);
 }
@@ -2661,6 +2669,8 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    // for an inline function without a specified return type.  Set the
 	    // return type here.
 	    stack_type = get_type_on_stack(cctx, 0);
+	    if (check_type_is_value(stack_type) == FAIL)
+		return NULL;
 	    if ((check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
 				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 		    || (!check_return_type

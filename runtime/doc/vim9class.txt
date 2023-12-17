@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Nov 20
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -78,8 +78,8 @@ Let's start with a simple example: a class that stores a text position (see
 below for how to do this more efficiently): >
 
 	class TextPosition
-	   this.lnum: number
-	   this.col: number
+	   var lnum: number
+	   var col: number
 
 	   def new(lnum: number, col: number)
 	      this.lnum = lnum
@@ -156,8 +156,8 @@ On the other hand, if you do not want the object variables to be read directly
 from outside the class or its sub-classes, you can make them protected.  This
 is done by prefixing an underscore to the name: >
 
-	this._lnum: number
-	this._col number
+	var _lnum: number
+	var _col number
 
 Now you need to provide methods to get the value of the protected variables.
 These are commonly called getters.  We recommend using a name that starts with
@@ -209,8 +209,8 @@ Many constructors take values for the object variables.  Thus you very often
 see this pattern: >
 
 	 class SomeClass
-	   this.lnum: number
-	   this.col: number
+	   var lnum: number
+	   var col: number
 
 	   def new(lnum: number, col: number)
 	      this.lnum = lnum
@@ -220,7 +220,7 @@ see this pattern: >
 <
 							*E1390*
 Not only is this text you need to write, it also has the type of each
-variables twice.  Since this is so common a shorter way to write new() is
+variable twice.  Since this is so common a shorter way to write new() is
 provided: >
 
 	   def new(this.lnum, this.col)
@@ -235,8 +235,8 @@ Putting together this way of using new() and making the variables public
 results in a much shorter class definition than what we started with: >
 
 	class TextPosition
-	   public this.lnum: number
-	   public this.col: number
+	   public var lnum: number
+	   public var col: number
 
 	   def new(this.lnum, this.col)
 	   enddef
@@ -265,7 +265,7 @@ always returns an object of the class.
 
 							*E1386*
 When invoking an object method, the method name should be preceded by the
-object variable name.  A object method cannot be invoked using the class
+object variable name.  An object method cannot be invoked using the class
 name.
 
 ==============================================================================
@@ -277,8 +277,8 @@ Class members are declared with "static".  They are used by the name without a
 prefix in the class where they are defined: >
 
 	class OtherThing
-	   this.size: number
-	   static totalSize: number
+	   var size: number
+	   static var totalSize: number
 
 	   def new(this.size)
 	      totalSize += this.size
@@ -297,9 +297,9 @@ underscore as the first character in the name, and it can be made public by
 prefixing "public": >
 
     class OtherThing
-	static total: number	      # anybody can read, only class can write
-	static _sum: number	      # only class can read and write
-	public static result: number  # anybody can read and write
+	static var total: number	  # anybody can read, only class can write
+	static var _sum: number	          # only class can read and write
+	public static var result: number  # anybody can read and write
     endclass
 <
 							*class-method*
@@ -308,8 +308,8 @@ variables but they have no access to the object variables, they cannot use the
 "this" keyword:
 >
 	class OtherThing
-	   this.size: number
-	   static totalSize: number
+	   var size: number
+	   static var totalSize: number
 
 	   # Clear the total size and return the value it had before.
 	   static def ClearTotalSize(): number
@@ -345,14 +345,14 @@ outside of the defining class: >
 
     vim9script
     class Vehicle
-	static nextID: number = 1000
+	static var nextID: number = 1000
 	static def GetID(): number
 	    nextID += 1
 	    return nextID
 	enddef
     endclass
     class Car extends Vehicle
-	this.myID: number
+	var myID: number
 	def new()
 	    this.myID = Vehicle.GetID()
 	enddef
@@ -363,6 +363,78 @@ can declare a static variable or a method with the same name as the one in the
 super class.  Depending on the class where the member is used the
 corresponding class member will be used.  The type of the class member in a
 child class can be different from that in the super class.
+
+					*object-final-variable* *E1409*
+The |:final| keyword can be used to make a class or object variable a
+constant.  Examples: >
+
+    class A
+	final v1 = [1, 2]		# final object variable
+	public final v2 = {x: 1}	# final object variable
+	static final v3 = 'abc'		# final class variable
+	public static final v4 = 0z10	# final class variable
+    endclass
+<
+A final variable can be changed only from a constructor function.  Example: >
+
+    class A
+	final v1: list<number>
+	def new()
+	    this.v1 = [1, 2]
+	enddef
+    endclass
+    var a = A.new()
+    echo a.v1
+<
+Note that the value of a final variable can be changed.  Example: >
+
+    class A
+	public final v1 = [1, 2]
+    endclass
+    var a = A.new()
+    a.v1[0] = 6			# OK
+    a.v1->add(3)		# OK
+    a.v1 = [3, 4]		# Error
+<
+							*E1408*
+Final variables are not supported in an interface.  A class or object method
+cannot be final.
+
+					*object-const-variable*
+The |:const| keyword can be used to make a class or object variable and the
+value a constant.  Examples: >
+
+    class A
+	const v1 = [1, 2]		# const object variable
+	public const v2 = {x: 1}	# const object variable
+	static const v3 = 'abc'		# const class variable
+	public static const v4 = 0z10	# const class variable
+    endclass
+<
+A const variable can be changed only from a constructor function. Example: >
+
+    class A
+	const v1: list<number>
+	def new()
+	    this.v1 = [1, 2]
+	enddef
+    endclass
+    var a = A.new()
+    echo a.v1
+<
+A const variable and its value cannot be changed.  Example: >
+
+    class A
+	public const v1 = [1, 2]
+    endclass
+    var a = A.new()
+    a.v1[0] = 6			# Error
+    a.v1->add(3)		# Error
+    a.v1 = [3, 4]		# Error
+<
+							 *E1410*
+Const variables are not supported in an interface.  A class or object method
+cannot be a const.
 
 ==============================================================================
 
@@ -380,20 +452,20 @@ it is.  The Shape class functions as the base for a Square and a Triangle
 class, for which objects can be created.  Example: >
 
 	abstract class Shape
-	   this.color = Color.Black
-	   this.thickness = 10
+	   var color = Color.Black
+	   var thickness = 10
 	endclass
 
 	class Square extends Shape
-	   this.size: number
+	   var size: number
 
 	   def new(this.size)
 	   enddef
 	endclass
 
 	class Triangle extends Shape
-	   this.base: number
-	   this.height: number
+	   var base: number
+	   var height: number
 
 	   def new(this.base, this.height)
 	   enddef
@@ -430,8 +502,8 @@ interface called HasSurface, which specifies one method Surface() that returns
 a number.  This example extends the one above: >
 
 	abstract class Shape
-	   this.color = Color.Black
-	   this.thickness = 10
+	   var color = Color.Black
+	   var thickness = 10
 	endclass
 
 	interface HasSurface
@@ -439,7 +511,7 @@ a number.  This example extends the one above: >
 	endinterface
 
 	class Square extends Shape implements HasSurface
-	   this.size: number
+	   var size: number
 
 	   def new(this.size)
 	   enddef
@@ -450,8 +522,8 @@ a number.  This example extends the one above: >
 	endclass
 
 	class Triangle extends Shape implements HasSurface
-	   this.base: number
-	   this.height: number
+	   var base: number
+	   var height: number
 
 	   def new(this.base, this.height)
 	   enddef
@@ -598,13 +670,13 @@ Items in a class ~
 						*E1318* *E1325* *E1388*
 Inside a class, in between `:class` and `:endclass`, these items can appear:
 - An object variable declaration: >
-	this._protectedVariableName: memberType
-	this.readonlyVariableName: memberType
-	public this.readwriteVariableName: memberType
+	var _protectedVariableName: memberType
+	var readonlyVariableName: memberType
+	public var readwriteVariableName: memberType
 - A class variable declaration: >
-	static _protectedClassVariableName: memberType
-	static readonlyClassVariableName: memberType
-	static public readwriteClassVariableName: memberType
+	static var _protectedClassVariableName: memberType
+	static var readonlyClassVariableName: memberType
+	static var public readwriteClassVariableName: memberType
 - A constructor method: >
 	def new(arguments)
 	def newName(arguments)
@@ -620,9 +692,9 @@ this explicitly with ": {type}".  For simple types you can also use an
 initializer, such as "= 123", and Vim will see that the type is a number.
 Avoid doing this for more complex types and when the type will be incomplete.
 For example: >
-	this.nameList = []
+	var nameList = []
 This specifies a list, but the item type is unknown.  Better use: >
-	this.nameList: list<string>
+	var nameList: list<string>
 The initialization isn't needed, the list is empty by default.
 							*E1330*
 Some types cannot be used, such as "void", "null" and "v:none".
@@ -646,7 +718,7 @@ An interface can declare methods with `:def`, including the arguments and
 return type, but without the body and without `:enddef`.  Example: >
 
 	interface HasSurface
-	   this.size: number
+	   var size: number
 	   def Surface(): number
 	endinterface
 
@@ -674,9 +746,9 @@ defined.  This default constructor will have arguments for all the object
 variables, in the order they were specified.  Thus if your class looks like: >
 
 	class AutoNew
-	   this.name: string
-	   this.age: number
-	   this.gender: Gender
+	   var name: string
+	   var age: number
+	   var gender: Gender
 	endclass
 
 Then the default constructor will be: >
@@ -690,8 +762,8 @@ value for the object variables will be used.  This is a more useful example,
 with default values: >
 
 	class TextPosition
-	   this.lnum: number = 1
-	   this.col: number = 1
+	   var lnum: number = 1
+	   var col: number = 1
 	endclass
 
 If you want the constructor to have mandatory arguments, you need to write it
@@ -752,16 +824,38 @@ constructor methods.
 
 7.  Type definition					*Vim9-type* *:type*
 
-A type definition is giving a name to a type specification.  This also known
-type alias.  For Example: >
+					*E1393* *E1395* *E1396* *E1397* *E1398*
+A type definition is giving a name to a type specification.  This is also
+known as a "type alias".  The type alias can be used wherever a built-in type
+can be used.  Example: >
 
-	:type ListOfStrings = list<string>
+    type ListOfStrings = list<string>
+    var s: ListOfStrings = ['a', 'b']
 
-The type alias can be used wherever a built-in type can be used.  The type
-alias name must start with an upper case character.  A type alias can be
-created only at the script level and not inside a function.  A type alias can
-be exported and used across scripts.
+    def ProcessStr(str: ListOfStrings): ListOfStrings
+	return str
+    enddef
+    echo ProcessStr(s)
+<
+							*E1394*
+A type alias name must start with an upper case character.  Only existing
+types can be aliased.
 
+							*E1399*
+A type alias can be created only at the script level and not inside a
+function.  A type alias can be exported and used across scripts.
+
+					*E1400* *E1401* *E1402* *E1403* *E1407*
+A type alias cannot be used as an expression.  A type alias cannot be used in
+the left-hand-side of an assignment.
+
+For a type alias name, the |typename()| function returns the type that is
+aliased: >
+
+    type ListOfStudents = list<dict<any>>
+    echo typename(ListOfStudents)
+    typealias<list<dict<any>>>
+<
 ==============================================================================
 
 8.  Enum					*Vim9-enum* *:enum* *:endenum*
@@ -925,26 +1019,26 @@ Following that Vim object variables could be declared like this: >
 Some users pointed out that this looks more like an assignment than a
 declaration.  Adding "var" changes that: >
 	class Point
-	  var this.x: number
-	  var this.y = 0
+	  var x: number
+	  var y = 0
 	endclass
 
 We also need to be able to declare class variables using the "static" keyword.
 There we can also choose to leave out "var": >
 	class Point
-	  var this.x: number
+	  var x: number
 	  static count = 0
 	endclass
 
 Or do use it, before "static": >
 	class Point
-	  var this.x: number
+	  var x: number
 	  var static count = 0
 	endclass
 
 Or after "static": >
 	class Point
-	  var this.x: number
+	  var x: number
 	  static var count = 0
 	endclass
 
@@ -952,8 +1046,13 @@ This is more in line with "static def Func()".
 
 There is no clear preference whether to use "var" or not.  The two main
 reasons to leave it out are:
-1. TypeScript, Java and other popular languages do not use it.
+1. TypeScript and other popular languages do not use it.
 2. Less clutter.
+
+However, it is more common for languages to reuse their general variable and
+function declaration syntax for class/object variables and methods.  Vim9 also
+reuses the general function declaration syntax for methods.  So, for the sake
+of consistency, we require "var" in these declarations.
 
 
 Using "ClassName.new()" to construct an object ~
