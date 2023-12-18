@@ -2000,7 +2000,7 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     char_u	*arg = arg_start;
     int		argcount = 0;
     int		defer_var_idx;
-    type_T	*type;
+    type_T	*type = NULL;
     int		func_idx;
 
     // Get a funcref for the function name.
