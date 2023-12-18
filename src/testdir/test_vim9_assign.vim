@@ -3076,6 +3076,7 @@ def Test_type_check()
     vim9script
     class A
     endclass
+    type T = number
     var N: number = 1
     var S: string = 'abc'
     var d: dict<number> = {}
@@ -3091,6 +3092,7 @@ def Test_type_check()
     assert_fails('Fn = N', 'E1012: Type mismatch; expected func(...): unknown but got number')
     assert_fails('A = N', 'E1012: Type mismatch; expected class<A> but got number')
     assert_fails('o = N', 'E1012: Type mismatch; expected object<A> but got number')
+    assert_fails('T = N', 'E1395: Type alias "T" cannot be modified')
 
     # Use a compound operator with different LHS types
     assert_fails('d += N', 'E734: Wrong variable type for +=')
@@ -3099,6 +3101,7 @@ def Test_type_check()
     assert_fails('Fn += N', 'E734: Wrong variable type for +=')
     assert_fails('A += N', 'E734: Wrong variable type for +=')
     assert_fails('o += N', 'E734: Wrong variable type for +=')
+    assert_fails('T += N', 'E1395: Type alias "T" cannot be modified')
 
     # Assign to a number variable
     assert_fails('N = d', 'E1012: Type mismatch; expected number but got dict<number>')
@@ -3107,6 +3110,7 @@ def Test_type_check()
     assert_fails('N = Fn', 'E1012: Type mismatch; expected number but got func([unknown]): number')
     assert_fails('N = A', 'E1405: Class "A" cannot be used as a value')
     assert_fails('N = o', 'E1012: Type mismatch; expected number but got object<A>')
+    assert_fails('N = T', 'E1403: Type alias "T" cannot be used as a value')
 
     # Use a compound operator with different RHS types
     assert_fails('N += d', 'E734: Wrong variable type for +=')
@@ -3115,6 +3119,7 @@ def Test_type_check()
     assert_fails('N += Fn', 'E734: Wrong variable type for +=')
     assert_fails('N += A', 'E1405: Class "A" cannot be used as a value')
     assert_fails('N += o', 'E1320: Using an Object as a Number')
+    assert_fails('N += T', 'E1403: Type alias "T" cannot be used as a value')
 
     # Initialize multiple variables using []
     assert_fails('var [X1: number, Y: number] = [1, d]', 'E1012: Type mismatch; expected number but got dict<number>')
@@ -3123,6 +3128,7 @@ def Test_type_check()
     assert_fails('var [X4: number, Y: number] = [1, Fn]', 'E1012: Type mismatch; expected number but got func([unknown]): number')
     assert_fails('var [X7: number, Y: number] = [1, A]', 'E1405: Class "A" cannot be used as a value')
     assert_fails('var [X8: number, Y: number] = [1, o]', 'E1012: Type mismatch; expected number but got object<A>')
+    assert_fails('var [X8: number, Y: number] = [1, T]', 'E1403: Type alias "T" cannot be used as a value')
 
     # String concatenation with various LHS types
     assert_fails('S ..= d', 'E734: Wrong variable type for .=')
@@ -3131,6 +3137,7 @@ def Test_type_check()
     assert_fails('S ..= Fn', 'E734: Wrong variable type for .=')
     assert_fails('S ..= A', 'E1405: Class "A" cannot be used as a value')
     assert_fails('S ..= o', 'E1324: Using an Object as a String')
+    assert_fails('S ..= T', 'E1403: Type alias "T" cannot be used as a value')
 
     # String concatenation with various RHS types
     assert_fails('d ..= S', 'E734: Wrong variable type for .=')
@@ -3139,6 +3146,7 @@ def Test_type_check()
     assert_fails('Fn ..= S', 'E734: Wrong variable type for .=')
     assert_fails('A ..= S', 'E734: Wrong variable type for .=')
     assert_fails('o ..= S', 'E734: Wrong variable type for .=')
+    assert_fails('T ..= S', 'E1395: Type alias "T" cannot be modified')
   END
   v9.CheckSourceSuccess(lines)
 
