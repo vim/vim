@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-11-26 23:30+0100\n"
+"PO-Revision-Date: 2023-12-16 20:11+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -1403,7 +1403,7 @@ msgid "netbeans is not supported with this GUI\n"
 msgstr "netbeans non è supportato con questa GUI\n"
 
 msgid "'-nb' cannot be used: not enabled at compile time\n"
-msgstr "'-nb' non disponibile: non abilitato in compilazione\n"
+msgstr "Impossibile usare '-nb': non abilitato in compilazione\n"
 
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Vim non compilato con funzionalità 'diff'."
@@ -1841,13 +1841,13 @@ msgstr ""
 "Forse non ci sono state modifiche oppure Vim non ha aggiornato lo swap file."
 
 msgid " cannot be used with this version of Vim.\n"
-msgstr " non può essere usato con questa versione di Vim.\n"
+msgstr " impossibile da usare con questa versione di Vim.\n"
 
 msgid "Use Vim version 3.0.\n"
 msgstr "Usa Vim versione 3.0.\n"
 
 msgid " cannot be used on this computer.\n"
-msgstr " non può essere usato su questo computer.\n"
+msgstr " impossibile da usare su questo computer.\n"
 
 msgid "The file was created on "
 msgstr "Il file è stato creato il "
@@ -3181,7 +3181,7 @@ msgid "Reading undo file: %s"
 msgstr "Lettura file Undo: %s"
 
 msgid "File contents changed, cannot use undo info"
-msgstr "File ulteriormente modificato, non posso usare informazioni di Undo"
+msgstr "File ulteriormente modificato, impossibile usare informazioni di Undo"
 
 msgid "Finished reading undo file %s"
 msgstr "Lettura del file Undo %s effettuata"
@@ -3755,10 +3755,10 @@ msgid "E24: No such abbreviation"
 msgstr "E24: Abbreviazione inesistente"
 
 msgid "E25: GUI cannot be used: Not enabled at compile time"
-msgstr "E25: GUI non utilizzabile: Non abilitata in compilazione"
+msgstr "E25: Impossibile usare GUI: Non abilitata in compilazione"
 
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
-msgstr "E26: Ebraico non utilizzabile: Non abilitato in compilazione\n"
+msgstr "E26: Impossibile usare Ebraico: Non abilitato in compilazione\n"
 
 msgid "E27: Farsi support has been removed\n"
 msgstr "E27: Il supporto per la lingua farsi non è più disponibile\n"
@@ -4503,7 +4503,7 @@ msgid "E275: Cannot add text property to unloaded buffer"
 msgstr "E275: Non posso aggiungere proprietà di testo a un buffer scaricato"
 
 msgid "E276: Cannot use function as a method: %s"
-msgstr "E276: Non posso usare la funzione come un metodo: %s"
+msgstr "E276: Impossibile usare la funzione come un metodo: %s"
 
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Non riesco a leggere una risposta del server"
@@ -5621,9 +5621,6 @@ msgstr "E647: Identificativo buffer non valido in setDot"
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Identificativo buffer non valido in close"
 
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: Identificativo buffer non valido in close"
-
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Identificativo buffer non valido in defineAnnoType"
 
@@ -5748,8 +5745,8 @@ msgstr "E691: Posso confrontare una Lista solo con un'altra Lista"
 msgid "E692: Invalid operation for List"
 msgstr "E692: Operazione non valida per Liste"
 
-msgid "E693: List or Class required for argument %d"
-msgstr "E693: Lista o Classe richiesta per argomento %d"
+msgid "E693: Class or class typealias required for argument %d"
+msgstr "E693: Classe o Tipo alias della Classe richiesto per argomento %d"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Operazione non valida per Funcref"
@@ -5811,7 +5808,7 @@ msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: L'argomento di %s dev'essere una Lista o un Dizionario"
 
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: Non posso usare una chiave nulla per Dizionario"
+msgstr "E713: Impossibile usare una chiave nulla per Dizionario"
 
 msgid "E714: List required"
 msgstr "E714: È necessaria una Lista"
@@ -6087,7 +6084,7 @@ msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
 msgstr "E799: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
-msgstr "E800: Arabo non utilizzabile: Non abilitato in compilazione\n"
+msgstr "E800: Impossibile usare Arabo: Non abilitato in compilazione\n"
 
 msgid "E801: ID already taken: %d"
 msgstr "E801: ID già utilizzato: %d"
@@ -6100,7 +6097,7 @@ msgstr "E803: ID non trovato: %d"
 
 #, no-c-format
 msgid "E804: Cannot use '%' with Float"
-msgstr "E804: Non si può usare '%' con un Numero-a-virgola-mobile"
+msgstr "E804: Impossibile usare '%' con un Numero-a-virgola-mobile"
 
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Uso di un Numero-a-virgola-mobile come un Numero"
@@ -6200,10 +6197,10 @@ msgid "E835: Conflicts with value of 'fillchars'"
 msgstr "E835: Conflitto con il valore di 'fillchars'"
 
 msgid "E836: This Vim cannot execute :python after using :py3"
-msgstr "E836: Python: Impossibile usare :py e :py3 nella stessa sessione"
+msgstr "E836: Impossibile eseguire :python dopo aver usato :py3"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
-msgstr "E837: Impossibile usare ora :py3 dopo aver usato :python"
+msgstr "E837: Impossibile eseguire :py3 dopo aver usato :python"
 
 msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: NetBeans non è supportato con questa GUI"
@@ -6212,7 +6209,8 @@ msgid "E840: Completion function deleted text"
 msgstr "E840: La funzione di completamento ha eliminato del testo"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
-msgstr "E841: Nome riservato, non usabile in un comando definito dall'utente"
+msgstr ""
+"E841: Nome riservato, impossibile da usare in un comando definito dall'utente"
 
 msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: Nessun numero di riga da usare per \"<slnum>\""
@@ -6280,7 +6278,7 @@ msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Non posso aprire una seconda finestra dinamica con un terminale"
 
 msgid "E862: Cannot use g: here"
-msgstr "E862: Non si può usare g: qui"
+msgstr "E862: Impossibile usare g: qui"
 
 msgid "E863: Not allowed for a terminal in a popup window"
 msgstr "E863: Non consentito per un terminale in una finestra dinamica"
@@ -6463,7 +6461,7 @@ msgid "E911: Using a Job as a Float"
 msgstr "E911: Uso di un Job come un Numero-a-virgola-mobile"
 
 msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
-msgstr "E912: Non posso usare ch_evalexpr() con un canale grezzo o nl"
+msgstr "E912: Impossibile usare ch_evalexpr() con un canale grezzo o nl"
 
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Uso di un Canale come un Numero"
@@ -6478,7 +6476,7 @@ msgid "E916: Not a valid job"
 msgstr "E916: Job non valido"
 
 msgid "E917: Cannot use a callback with %s()"
-msgstr "E917: Non posso usare callback con %s()"
+msgstr "E917: Impossibile usare callback con %s()"
 
 msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: Il buffer dev'essere caricato: %s"
@@ -6515,7 +6513,7 @@ msgid "E929: Too many viminfo temp files, like %s!"
 msgstr "E929: Troppi file temporanei viminfo, come %s!"
 
 msgid "E930: Cannot use :redir inside execute()"
-msgstr "E930: Non si può usare :redir all'interno di execute()"
+msgstr "E930: Impossibile usare :redir all'interno di execute()"
 
 msgid "E931: Buffer cannot be registered"
 msgstr "E931: Non riesco a registrare il buffer"
@@ -6597,7 +6595,7 @@ msgid "E955: Not a terminal buffer"
 msgstr "E955: Il buffer non è un terminale"
 
 msgid "E956: Cannot use pattern recursively"
-msgstr "E956: Uso ricorsivo di espressione di ricerca non consentito"
+msgstr "E956: Impossibile usare espressione di ricerca ricorsivamente"
 
 msgid "E957: Invalid window number"
 msgstr "E957: Numero di finestra non valido"
@@ -6691,7 +6689,7 @@ msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: Valore non valido restituito da tagfunc"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
-msgstr "E988: GUI non utilizzabile. Non riesco a eseguire gvim.exe."
+msgstr "E988: Impossibile usare GUI. Non riesco a eseguire gvim.exe."
 
 msgid "E989: Non-default argument follows default argument"
 msgstr "E989: Argomento non predefinito dopo argomento predefinito"
@@ -6700,7 +6698,7 @@ msgid "E990: Missing end marker '%s'"
 msgstr "E990: Manca marcatore di fine '%s'"
 
 msgid "E991: Cannot use =<< here"
-msgstr "E991: Non posso usare =<< qui"
+msgstr "E991: Impossibile usare =<< qui"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr "E992: Non consentito in una modeline quando a 'modelineexpr' vale off"
@@ -6808,7 +6806,7 @@ msgid "E1019: Can only concatenate to string"
 msgstr "E1019: Posso solo concatenare a una stringa"
 
 msgid "E1020: Cannot use an operator on a new variable: %s"
-msgstr "E1020: Non posso usare un operatore su una variabile nuova: %s"
+msgstr "E1020: Impossibile usare un operatore su una variabile nuova: %s"
 
 msgid "E1021: Const requires a value"
 msgstr "E1021: Const richiede un valore"
@@ -6841,7 +6839,7 @@ msgid "E1030: Using a String as a Number: \"%s\""
 msgstr "E1030: Uso di una Stringa come un Numero: \"%s\""
 
 msgid "E1031: Cannot use void value"
-msgstr "E1031: Non posso usare valore nullo"
+msgstr "E1031: Impossibile usare valore nullo"
 
 msgid "E1032: Missing :catch or :finally"
 msgstr "E1032: Manca :catch o :finally"
@@ -6850,7 +6848,7 @@ msgid "E1033: Catch unreachable after catch-all"
 msgstr "E1033: Catch non raggiungibile dopo aver richiesto catch-all"
 
 msgid "E1034: Cannot use reserved name %s"
-msgstr "E1034: Non posso usare il nome riservato %s"
+msgstr "E1034: Impossibile usare il nome riservato %s"
 
 #, no-c-format
 msgid "E1035: % requires number arguments"
@@ -6861,7 +6859,7 @@ msgstr ""
 "E1036: %c richiede come argomenti dei Numeri o dei Numeri-a-virgola-mobile"
 
 msgid "E1037: Cannot use \"%s\" with %s"
-msgstr "E1037: Non posso usare \"%s\" con %s"
+msgstr "E1037: Impossibile usare \"%s\" con %s"
 
 msgid "E1038: \"vim9script\" can only be used in a script"
 msgstr "E1038: \"vim9script\" può solo essere usato in uno script"
@@ -6870,7 +6868,7 @@ msgid "E1039: \"vim9script\" must be the first command in a script"
 msgstr "E1039: \"vim9script\" dev'essere il primo comando in uno script"
 
 msgid "E1040: Cannot use :scriptversion after :vim9script"
-msgstr "E1040: Non si può usare :scriptversion dopo :vim9script"
+msgstr "E1040: Impossibile usare :scriptversion dopo :vim9script"
 
 msgid "E1041: Redefining script item: \"%s\""
 msgstr "E1041: Ridefinisco elemento di script \"%s\""
@@ -6996,7 +6994,7 @@ msgid "E1085: Not a callable type: %s"
 msgstr "E1085: Tipo che non può essere chiamato: %s"
 
 msgid "E1087: Cannot use an index when declaring a variable"
-msgstr "E1087: Non posso usare un indice nella dichiarazione di una variabile"
+msgstr "E1087: Impossibile usare un indice nella dichiarazione di una variabile"
 
 msgid "E1088: Script cannot import itself"
 msgstr "E1088: Uno script non può importare se stesso"
@@ -7089,7 +7087,7 @@ msgstr ""
 "E1116: Il quinto argomento di \"assert_fails()\" dev'essere una Stringa"
 
 msgid "E1117: Cannot use ! with nested :def"
-msgstr "E1117: Non posso usare ! con :def nidificate"
+msgstr "E1117: Impossibile usare ! con :def nidificate"
 
 msgid "E1118: Cannot change locked list"
 msgstr "E1118: Non posso cambiare Lista non modificabile"
@@ -7110,13 +7108,13 @@ msgid "E1123: Missing comma before argument: %s"
 msgstr "E1123: Manca virgola prima dell'argomento: %s"
 
 msgid "E1124: \"%s\" cannot be used in legacy Vim script"
-msgstr "E1124: \"%s\" non si può usare negli script Vim tradizionali"
+msgstr "E1124: Impossibile usare \"%s\" negli script Vim tradizionali"
 
 msgid "E1125: Final requires a value"
 msgstr "E1125: :final richiede un valore"
 
 msgid "E1126: Cannot use :let in Vim9 script"
-msgstr "E1126: Non si può usare :let negli script Vim9"
+msgstr "E1126: Impossibile usare :let negli script Vim9"
 
 msgid "E1127: Missing name after dot"
 msgstr "E1127: Manca il nome dopo il punto"
@@ -7214,7 +7212,7 @@ msgstr "E1157: Manca Tipo di valore restituito"
 
 msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
 msgstr ""
-"E1158: Non si può usare flatten() negli script Vim9, usare flattennew()"
+"E1158: Impossibile usare flatten() in script Vim9, usare flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr ""
@@ -7222,7 +7220,7 @@ msgstr ""
 
 msgid "E1160: Cannot use a default for variable arguments"
 msgstr ""
-"E1160: Non posso usare un valore predefinito per argomenti di tipo variabile"
+"E1160: Impossibile usare un valore predefinito per argomenti di tipo variabile"
 
 msgid "E1161: Cannot json encode a %s"
 msgstr "E1161: Non si può codificare JSON un/a %s"
@@ -7242,10 +7240,10 @@ msgid "E1164: vim9cmd must be followed by a command"
 msgstr "E1164: vim9cmd dev'essere seguito da un comando"
 
 msgid "E1165: Cannot use a range with an assignment: %s"
-msgstr "E1165: Non posso usare un intervallo in un'assegnazione: %s"
+msgstr "E1165: Impossibile usare un intervallo in un'assegnazione: %s"
 
 msgid "E1166: Cannot use a range with a dictionary"
-msgstr "E1166: Non posso usare un intervallo con un Dizionario"
+msgstr "E1166: Impossibile usare un intervallo con un Dizionario"
 
 msgid "E1167: Argument name shadows existing variable: %s"
 msgstr "E1167: Il nome dell'argomento nasconde una variabile esistente: %s"
@@ -7257,14 +7255,14 @@ msgid "E1169: Expression too recursive: %s"
 msgstr "E1169: Espressione troppo ricorsiva: %s"
 
 msgid "E1170: Cannot use #{ to start a comment"
-msgstr "E1170: Non si può usare #{ per iniziare un commento"
+msgstr "E1170: Impossibile usare #{ per iniziare un commento"
 
 msgid "E1171: Missing } after inline function"
 msgstr "E1171: Manca } dopo una funzione in-linea"
 
 msgid "E1172: Cannot use default values in a lambda"
 msgstr ""
-"E1172: Non si possono usare valori predefiniti in un'espressione lambda"
+"E1172: Impossibile usare valori predefiniti in un'espressione lambda"
 
 msgid "E1173: Text found after %s: %s"
 msgstr "E1173: Trovato del testo dopo %s: %s"
@@ -7295,14 +7293,14 @@ msgid "E1180: Variable arguments type must be a list: %s"
 msgstr "E1180: Il tipo di argomento delle variabili dev'essere una Lista: %s"
 
 msgid "E1181: Cannot use an underscore here"
-msgstr "E1181: Non si può usare un trattino basso qui"
+msgstr "E1181: Impossibile usare un trattino basso qui"
 
 msgid "E1182: Cannot define a dict function in Vim9 script: %s"
 msgstr "E1182: Non posso definire una funzione dict negli script Vim9: %s"
 
 msgid "E1183: Cannot use a range with an assignment operator: %s"
 msgstr ""
-"E1183: Non si può usare un intervallo con un operatore di assegnazione: %s"
+"E1183: Impossibile usare un intervallo con un operatore di assegnazione: %s"
 
 msgid "E1184: Blob not set"
 msgstr "E1184: Blob non impostato"
@@ -7321,7 +7319,7 @@ msgstr ""
 "E1188: Non riesco ad aprire un terminale dalla finestra della riga-di-comando"
 
 msgid "E1189: Cannot use :legacy with this command: %s"
-msgstr "E1189: Non si può usare :legacy con questo comando: %s"
+msgstr "E1189: Impossibile usare :legacy con questo comando: %s"
 
 msgid "E1190: One argument too few"
 msgid_plural "E1190: %d arguments too few"
@@ -7454,7 +7452,7 @@ msgid "E1230: Encryption: sodium_mlock() failed"
 msgstr "E1230: CIfratura: sodium_mlock() fallita"
 
 msgid "E1231: Cannot use a bar to separate commands here: %s"
-msgstr "E1231: Non si può usare una barra per separare comandi qui: %s"
+msgstr "E1231: Impossibile usare qui una barra per separare comandi: %s"
 
 msgid "E1232: Argument of exists_compiled() must be a literal string"
 msgstr ""
@@ -7467,7 +7465,7 @@ msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy dev'essere seguito da un comando"
 
 msgid "E1236: Cannot use %s itself, it is imported"
-msgstr "E1236: Non posso usare %s stesso, è importato"
+msgstr "E1236: Impossibile usare %s stesso, è importato"
 
 msgid "E1237: No such user-defined command in current buffer: %s"
 msgstr "E1237: Questo comando utente non c'è nel buffer corrente: %s"
@@ -7520,7 +7518,7 @@ msgid "E1252: String, List or Blob required for argument %d"
 msgstr "E1252: Stringa, Lista o Blob richiesto per argomento %d"
 
 msgid "E1254: Cannot use script variable in for loop"
-msgstr "E1254: Non si può usare una variabile di script in un ciclo for"
+msgstr "E1254: Impossibile usare una variabile di script in un ciclo for"
 
 msgid "E1255: <Cmd> mapping must end with <CR>"
 msgstr "E1255: La mappatura di <Cmd> deve terminare con <CR>"
@@ -7548,14 +7546,15 @@ msgstr "E1262: Non posso importare lo stesso script due volte: %s"
 
 msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
 msgstr ""
-"E1263: Non si può usare nome con # negli script Vim9, usare invece export"
+"E1263: Impossibile usare nome con # negli script Vim9, usare invece export"
 
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
 msgstr ""
-"E1264: Import di Autoload non riesce a usare percorso assoluto o relativo: %s"
+"E1264: Impossibile usare percorso assoluto o relativo in import di "
+"Autoload: %s"
 
 msgid "E1265: Cannot use a partial here"
-msgstr "E1265: Non posso usare un nome parziale qui"
+msgstr "E1265: Impossibile usare un \"partial\" qui"
 
 msgid ""
 "E1266: Critical error in python3 initialization, check your python3 "
@@ -7568,14 +7567,14 @@ msgid "E1267: Function name must start with a capital: %s"
 msgstr "E1267: Il nome funzione deve iniziare con maiuscola: %s"
 
 msgid "E1268: Cannot use s: in Vim9 script: %s"
-msgstr "E1268: Non si può usare s: negli script Vim9: %s"
+msgstr "E1268: Impossibile usare s: negli script Vim9: %s"
 
 msgid "E1269: Cannot create a Vim9 script variable in a function: %s"
 msgstr ""
 "E1269: Non si può creare una variabile di script Vim9 in una funzione: %s"
 
 msgid "E1270: Cannot use :s\\/sub/ in Vim9 script"
-msgstr "E1270: Non si può usare :s\\/sub/ negli script Vim9"
+msgstr "E1270: Impossibile usare :s\\/sub/ negli script Vim9"
 
 msgid "E1271: Compiling closure without context: %s"
 msgstr "E1271: Compilazione di \"closure\" senza un contesto: %s"
@@ -7645,7 +7644,7 @@ msgstr "E1292: Finestra della riga-di-comando già aperta"
 
 msgid "E1293: Cannot use a negative id after adding a textprop with text"
 msgstr ""
-"E1293: Non posso usare un id negativo dopo aver aggiunto del testo a una "
+"E1293: Impossibile usare un id negativo dopo aver aggiunto del testo a una "
 "'textprop'"
 
 msgid "E1294: Can only use text_align when column is zero"
@@ -7668,7 +7667,7 @@ msgid "E1299: Window unexpectedly closed while searching for tags"
 msgstr "E1299: Chiusura inattesa di finestra durante ricerca di tag"
 
 msgid "E1300: Cannot use a partial with dictionary for :defer"
-msgstr "E1300: Non si può usare un Partial con un Dizionario per :defer"
+msgstr "E1300: Impossibile usare un \"partial\" con un Dizionario per :defer"
 
 msgid "E1301: String, Number, List or Blob required for argument %d"
 msgstr "E1301: Stringa, Numero, Lista o Blob richiesto per argomento %d"
@@ -7682,12 +7681,12 @@ msgstr ""
 "restituisce una Lista ma un %s"
 
 msgid "E1304: Cannot use type with this variable: %s"
-msgstr "E1304: Non si può assegnare il Tipo a questa variabile: %s"
+msgstr "E1304: Impossibile usare il Tipo con questa variabile: %s"
 
 msgid ""
 "E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
 msgstr ""
-"E1305: Non si può usare \"length\", \"end_col\" e \"end_lnum\" con \"text\""
+"E1305: Impossibile usare \"length\", \"end_col\" e \"end_lnum\" con \"text\""
 
 msgid "E1306: Loop nesting too deep"
 msgstr "E1306: Nidificazione troppo estesa"
@@ -7761,19 +7760,23 @@ msgstr "E1327: Object necessario, trovato %s"
 msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Il valore predefinito del costruttore dev'essere v:none: %s"
 
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Dichiarazione di variabile Classe non valida: %s"
+
 msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Tipo non valido per variabile Object: %s"
 
-msgid "E1331: Public must be followed by \"this\" or \"static\""
-msgstr "E1331: Public dev'essere seguito da \"this\" o \"static\""
+msgid "E1331: Public must be followed by \"var\" or \"static\""
+msgstr "E1331: Public dev'essere seguito da \"var\" o \"static\""
 
 msgid "E1332: Public variable name cannot start with underscore: %s"
-msgstr "E1332: Il nome di un elemento Pubblico non può iniziare con un "
-"trattino basso: %s"
+msgstr ""
+"E1332: Il nome di un elemento Pubblico non può iniziare con un trattino "
+"basso: %s"
 
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
-msgstr "E1333: Non posso accedere alla variabile protetta \"%s\" nella "
-" Classe \"%s\""
+msgstr ""
+"E1333: Non posso accedere alla variabile protetta \"%s\" nella  Classe \"%s\""
 
 msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
 msgstr "E1335: La variabile \"%s\" nella Classe \"%s\" è in sola-lettura"
@@ -7785,8 +7788,8 @@ msgid ""
 "E1339: Cannot add a textprop with text after using a textprop with a "
 "negative id"
 msgstr ""
-"E1339: Non posso aggiungere textprop a un testo dopo aver usato una "
-" textprop con un identificativo negativo"
+"E1339: Non posso aggiungere textprop a un testo dopo aver usato una  "
+"textprop con un identificativo negativo"
 
 msgid "E1340: Argument already declared in the class: %s"
 msgstr "E1340: Argomento già dichiarato nella Classe: %s"
@@ -7795,30 +7798,30 @@ msgid "E1341: Variable already declared in the class: %s"
 msgstr "E1341: Variabile già dichiarata nella Classe: %s"
 
 msgid "E1342: Interface can only be defined in Vim9 script"
-msgstr "E1342: L'interfaccia può essere definita solo negli script Vim9"
+msgstr "E1342: L'Interfaccia può essere definita solo negli script Vim9"
 
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr ""
-"E1343: I comandi definiti dall'utente devono iniziare con lettera maiuscola: "
+"E1343: Il nome dell'Interfaccia deve iniziare con lettera maiuscola: "
 "%s"
 
 msgid "E1344: Cannot initialize a variable in an interface"
-msgstr "E1344: Non riesco a inizializzare una variabile in un'interfaccia"
+msgstr "E1344: Non riesco a inizializzare una variabile in un'Interfaccia"
 
 msgid "E1345: Not a valid command in an interface: %s"
-msgstr "E1345: Comando non valido in un'interfaccia: %s"
+msgstr "E1345: Comando non valido in un'Interfaccia: %s"
 
 msgid "E1346: Interface name not found: %s"
-msgstr "E1346: Nome interfaccia non trovato: %s"
+msgstr "E1346: Nome Interfaccia non trovato: %s"
 
 msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: Interfaccia non valida: %s"
 
 msgid "E1348: Variable \"%s\" of interface \"%s\" is not implemented"
-msgstr "E1348: Variabile \"%s\" dell'interfaccia \"%s\" non implementata"
+msgstr "E1348: Variabile \"%s\" dell'Interfaccia \"%s\" non implementata"
 
 msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
-msgstr "E1349: Metodo \"%s\" dell'interfaccia \"%s\" non implementato"
+msgstr "E1349: Metodo \"%s\" dell'Interfaccia \"%s\" non implementato"
 
 msgid "E1350: Duplicate \"implements\""
 msgstr "E1350: \"implements\" specificato due volte"
@@ -7854,10 +7857,10 @@ msgid "E1360: Using a null object"
 msgstr "E1360: Uso di un Object nullo"
 
 msgid "E1361: Cannot use color \"none\", did you mean \"NONE\"?"
-msgstr "E1361: Non posso usare il colore \"none\", si intendeva \"NONE\"?"
+msgstr "E1361: Impossibile usare colore \"none\", si intendeva \"NONE\"?"
 
 msgid "E1362: Cannot use a non-null object"
-msgstr "E1362: Non posso usare un Object non-NULL"
+msgstr "E1362: Impossibile usare un Object non-null"
 
 msgid "E1363: Incomplete type"
 msgstr "E1363: Tipo incompleto"
@@ -7866,18 +7869,18 @@ msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Attenzione: Blocco puntatore non valido"
 
 msgid "E1365: Cannot use a return type with the \"new\" method"
-msgstr ""
-"E1365: Impossibile usare un tipo di ritorno con il Metodo \"new\""
+msgstr "E1365: Impossibile usare un tipo di ritorno con il Metodo \"new\""
 
 msgid "E1366: Cannot access protected method: %s"
 msgstr "E1366: Non posso accedere a Metodo protetto: %s"
 
 msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
-msgstr "E1367: Il livello di accesso alla variable \"%s\" di interfaccia "
-"\"%s\" è differente"
+msgstr ""
+"E1367: Il livello di accesso alla variable \"%s\" di Interfaccia \"%s\" è "
+"differente"
 
-msgid "E1368: Static cannot be followed by \"this\" in a variable name"
-msgstr "E1368: Static non può essere seguito da \"this\" in un nome di variabile"
+msgid "E1368: Static must be followed by \"var\" or \"def\""
+msgstr "E1368: \"Static\" deve essere seguito da \"var\" o \"def\""
 
 msgid "E1369: Duplicate variable: %s"
 msgstr "E1369: Variabile duplicata: %s"
@@ -7889,39 +7892,43 @@ msgid "E1371: Abstract must be followed by \"def\""
 msgstr "E1371: \"Abstract\" deve essere seguito da \"def\""
 
 msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
-msgstr "E1372: Il Metodo Astratto \"%s\" non può essere definito in una "
-"Classe concreta"
+msgstr ""
+"E1372: Il Metodo Astratto \"%s\" non può essere definito in una Classe "
+"concreta"
 
 msgid "E1373: Abstract method \"%s\" is not implemented"
 msgstr "E1373: Il Metodo astratto \"%s\" non è implementato"
 
 msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
-msgstr "E1374: Variabile di classe \"%s\" accessibile solo all'interno "
-"della Classe \"%s\""
+msgstr ""
+"E1374: Variabile di classe \"%s\" accessibile solo all'interno della Classe "
+"\"%s\""
 
 msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
-msgstr "E1375: Variabile di classe \"%s\" accessibile solo usando "
-"la Classe \"%s\""
+msgstr ""
+"E1375: Variabile di classe \"%s\" accessibile solo usando la Classe \"%s\""
 
 msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
-msgstr "E1376: Variabile di classe \"%s\" accessibile solo usando "
-"l'Object di classe \"%s\""
+msgstr ""
+"E1376: Variabile di classe \"%s\" accessibile solo usando l'Object di classe "
+"\"%s\""
 
 msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
-msgstr "E1377: Il livello di accesso del metodo \"%s\" è differente "
-"nella Classe \"%s\""
+msgstr ""
+"E1377: Il livello di accesso del metodo \"%s\" è differente nella Classe "
+"\"%s\""
 
 msgid "E1378: Static member not supported in an interface"
-msgstr "E1378: Membro statico non supportato in un'interfaccia"
+msgstr "E1378: Membro statico non supportato in un'Interfaccia"
 
 msgid "E1379: Protected variable not supported in an interface"
-msgstr "E1379: Variabile protetta non supportata in un'interfaccia"
+msgstr "E1379: Variabile protetta non supportata in un'Interfaccia"
 
 msgid "E1380: Protected method not supported in an interface"
-msgstr "E1380: Metodo protetto non supportato in un'interfaccia"
+msgstr "E1380: Metodo protetto non supportato in un'Interfaccia"
 
 msgid "E1381: Interface cannot use \"implements\""
-msgstr "E1381: L'interfaccia non può usare \"implements\""
+msgstr "E1381: Impossibile usare \"implements\" con un'Interfaccia"
 
 msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
 msgstr ""
@@ -7932,19 +7939,20 @@ msgstr ""
 "E1383: Metodo \"%s\": Tipo non corrispondente, atteso %s ma ottenuto %s"
 
 msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
-msgstr "E1384: Metodo di Classe \"%s\" accessibile solo all'interno della "
-"Classe \"%s\""
+msgstr ""
+"E1384: Metodo di Classe \"%s\" accessibile solo all'interno della Classe "
+"\"%s\""
 
 msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
-msgstr "E1385: Metodo di Classe \"%s\" accessibile solo usando la "
-"Classe \"%s\""
+msgstr ""
+"E1385: Metodo di Classe \"%s\" accessibile solo usando la Classe \"%s\""
 
 msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
-msgstr "E1386: Metodo Object \"%s\" accessibile solo usando la "
-"Classe \"%s\" object"
+msgstr ""
+"E1386: Metodo Object \"%s\" accessibile solo usando la Classe \"%s\" object"
 
 msgid "E1387: Public variable not supported in an interface"
-msgstr "E1387: Variabile pubblica non supportata in un'interfaccia"
+msgstr "E1387: Variabile pubblica non supportata in un'Interfaccia"
 
 msgid "E1388: Public keyword not supported for a method"
 msgstr "E1388: Attributo public non supportato per un Metodo"
@@ -7956,23 +7964,21 @@ msgid ""
 "E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
 "method"
 msgstr ""
-"E1390: Impossibile usare variabile Object \"this.%s\" tranne che "
-"con \"new\" "
+"E1390: Impossibile usare variabile Object \"this.%s\" tranne che con \"new\" "
 
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
-msgstr "E1391: Non riesco a (s)bloccare variabile \"%s\" "
-"nella Classe \"%s\""
+msgstr "E1391: Non riesco a (s)bloccare variabile \"%s\" nella Classe \"%s\""
 
 msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
-msgstr "E1392: Non riesco a (s)bloccare variabile di Classe \"%s\" "
-"nella Classe \"%s\""
+msgstr ""
+"E1392: Non riesco a (s)bloccare variabile di Classe \"%s\" nella Classe "
+"\"%s\""
 
 msgid "E1393: Type can only be defined in Vim9 script"
 msgstr "E1393: Il Tipo può essere definito solo negli script Vim9"
 
 msgid "E1394: Type name must start with an uppercase letter: %s"
-msgstr "E1394: Il nome di un Tipo deve iniziare con una "
-"lettera maiuscola: %s"
+msgstr "E1394: Il nome di un Tipo deve iniziare con una lettera maiuscola: %s"
 
 msgid "E1395: Type alias \"%s\" cannot be modified"
 msgstr "E1395: Il Tipo alias \"%s\" non può essere modificato"
@@ -7999,10 +8005,19 @@ msgid "E1402: Using type alias \"%s\" as a String"
 msgstr "E1402: Uso del Tipo alias \"%s\" come una Stringa"
 
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
-msgstr "E1403: Il Tipo alias \"%s\" non può essere usato come valore"
+msgstr "E1403: Impossibile usare il Tipo alias \"%s\" come valore"
 
 msgid "E1404: Abstract cannot be used in an interface"
-msgstr "E1404: \"Abstract\" non può essere usato in un'interfaccia"
+msgstr "E1404: Impossibile usare \"Abstract\" in un'Interfaccia"
+
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405: Impossibile usare Classe \"%s\" come valore"
+
+msgid "E1406: Cannot use a Class as a variable or value"
+msgstr "E1406: Impossibile usare una Classe come variabile o valore"
+
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr "E1407: Impossibile usare un Tipo alias come variabile o valore"
 
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
@@ -8029,8 +8044,8 @@ msgid "E1505: Invalid format specifier: %s"
 msgstr "E1505: Specificazione di formato non valida: %s"
 
 msgid "E1506: Buffer too small to copy xattr value or key"
-msgstr "E1506: Buffer troppo piccolo per copiare il valore di xattr o la "
-"sua chiave"
+msgstr ""
+"E1506: Buffer troppo piccolo per copiare il valore di xattr o la sua chiave"
 
 msgid ""
 "E1508: Size of the extended attribute value is larger than the maximum size "
