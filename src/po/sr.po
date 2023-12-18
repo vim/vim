@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-17 09:18+0400\n"
-"PO-Revision-Date: 2023-11-17 09:34+0400\n"
+"POT-Creation-Date: 2023-12-18 13:24+0400\n"
+"PO-Revision-Date: 2023-12-18 13:32+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -6037,9 +6037,6 @@ msgstr "E647: Неисправни идентификатор бафера у se
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Неисправни идентификатор бафера у close"
 
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: Неисправни идентификатор бафера у close"
-
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Неисправни идентификатор бафера у defineAnnoType"
 
@@ -6178,8 +6175,8 @@ msgid "E692: Invalid operation for List"
 msgstr "E692: Неисправна операција за Листу"
 
 #, c-format
-msgid "E693: List or Class required for argument %d"
-msgstr "E693: За аргумент %d се захтева Листа или Класа"
+msgid "E693: Class or class typealias required for argument %d"
+msgstr "E693: За аргумент %d се захтева класа или алијас типа класе"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Неисправна операција за Funcrefs"
@@ -8442,11 +8439,18 @@ msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Подразумевана вредност конструктора мора бити v:none: %s"
 
 #, c-format
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Неисправна декларација променљиве класе: %s"
+
+#, c-format
 msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Неисправан тип променљиве објекта: %s"
 
-msgid "E1331: Public must be followed by \"this\" or \"static\""
-msgstr "E1331: Након Public мора да следи „this” или „static”"
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
+msgstr ""
+"E1331: Након Public мора да следи „var” или „static” или „final” или „const”"
 
 #, c-format
 msgid "E1332: Public variable name cannot start with underscore: %s"
@@ -8569,8 +8573,11 @@ msgstr "E1366: Не може да се приступи заштићеној м�
 msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
 msgstr "E1367: Ниво приступа променљиве „%s” интерфејса „%s” се разликује"
 
-msgid "E1368: Static cannot be followed by \"this\" in a variable name"
-msgstr "E1368: У имену променљиве након static не може да следи „this”"
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
+msgstr ""
+"E1368: Након static мора да следи „var” или „def” или „final” или „const”"
 
 #, c-format
 msgid "E1369: Duplicate variable: %s"
@@ -8713,6 +8720,29 @@ msgstr "E1403: Алијас типа „%s” не може да се корис
 
 msgid "E1404: Abstract cannot be used in an interface"
 msgstr "E1404: Abstract не може да се користи у интерфејсу"
+
+#, c-format
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405: Класа „%s” не може да се користи као вредност"
+
+msgid "E1406: Cannot use a Class as a variable or value"
+msgstr ""
+"E1406: Класа не може да се користи као променљива или вредност"
+
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr ""
+"E1407: Алијас типа не може да се користи као променљива или вредност"
+
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: У интерфејсу се не подржава final променљива"
+
+#, c-format
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr ""
+"E1409: Променљива само за читање „%s” не може да се измени у класи „%s”"
+
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: У интерфејсу се не подржава const променљива"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
