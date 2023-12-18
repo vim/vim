@@ -3978,7 +3978,6 @@ set_var_const(
 	    {
 		semsg(_(e_cannot_modify_typealias),
 					    di->di_tv.vval.v_typealias->ta_name);
-		clear_tv(&di->di_tv);
 		goto failed;
 	    }
 
