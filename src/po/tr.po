@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-23 15:34+0300\n"
-"PO-Revision-Date: 2023-08-23 17:00+0300\n"
+"POT-Creation-Date: 2023-12-17 12:57+0300\n"
+"PO-Revision-Date: 2023-12-17 17:00+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -516,7 +516,7 @@ msgstr "Mevcut \"%s\" dosyasının üzerine yazılsın mı?"
 
 #, c-format
 msgid "Swap file \"%s\" exists, overwrite anyway?"
-msgstr "Takas dosyası \"%s\" mevcut, yine de üzerine yazılsın mı?"
+msgstr "Takas dosyası \"%s\" var, yine de üzerine yazılsın mı?"
 
 #, c-format
 msgid ""
@@ -537,7 +537,7 @@ msgstr ""
 "Denemek ister misiniz?"
 
 msgid "Edit File"
-msgstr "Dosya Düzenle"
+msgstr "Dosyayı Düzenle"
 
 #, c-format
 msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
@@ -3216,7 +3216,7 @@ msgstr ""
 
 #, c-format
 msgid "File \"%s\" does not exist"
-msgstr "Dosya \"%s\" mevcut değil"
+msgstr "\"%s\" dosyası yok"
 
 #, c-format
 msgid "tag %d of %d%s"
@@ -3810,7 +3810,7 @@ msgstr ""
 "\n"
 
 msgid "# Value of 'encoding' when this file was written\n"
-msgstr "# Bu dosya yazıldığı sırada mevcut 'encoding'in değeri\n"
+msgstr "# Bu dosya yazıldığı sıradaki 'encoding'in değeri\n"
 
 #, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s%s"
@@ -3884,7 +3884,7 @@ msgstr ""
 "verilmiyor"
 
 msgid "E13: File exists (add ! to override)"
-msgstr "E13: Dosya mevcut (geçersiz kılmak için ! ekleyin)"
+msgstr "E13: Dosya var (geçersiz kılmak için ! ekleyin)"
 
 #, c-format
 msgid "E15: Invalid expression: \"%s\""
@@ -4110,7 +4110,7 @@ msgstr "E85: Listelenmiş bir arabellek yok"
 
 #, c-format
 msgid "E86: Buffer %ld does not exist"
-msgstr "E86: Arabellek %ld mevcut değil"
+msgstr "E86: Arabellek %ld yok"
 
 msgid "E87: Cannot go beyond last buffer"
 msgstr "E87: Son arabellekten öteye gidilemez"
@@ -4243,7 +4243,7 @@ msgstr "E121: Tanımlanmamış değişken: %c:%s"
 
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
-msgstr "E122: %s işlevi hâlihazırda mevcut, değiştirmek için ! ekleyin"
+msgstr "E122: %s işlevi hâlihazırda var, değiştirmek için ! ekleyin"
 
 #, c-format
 msgid "E123: Undefined function: %s"
@@ -4332,7 +4332,7 @@ msgstr "E148: Düzenli ifade :global'den eksik"
 
 #, c-format
 msgid "E149: Sorry, no help for %s"
-msgstr "E149: Üzgünüm, %s için yardım mevcut değil"
+msgstr "E149: Üzgünüm, %s için yardım yok"
 
 #, c-format
 msgid "E150: Not a directory: %s"
@@ -4425,7 +4425,7 @@ msgstr[1] "E173: Düzenlenecek %d dosya daha var"
 
 #, c-format
 msgid "E174: Command already exists: add ! to replace it: %s"
-msgstr "E174: Komut zaten mevcut: Değiştirmek için ! ekleyin: %s"
+msgstr "E174: Komut halihazırda var: Değiştirmek için ! ekleyin: %s"
 
 msgid "E175: No attribute specified"
 msgstr "E175: Bir öznitelik belirtilmemiş"
@@ -4476,7 +4476,7 @@ msgid "E187: Directory unknown"
 msgstr "E187: Dizin bilinmiyor"
 
 msgid "E188: Obtaining window position not implemented for this platform"
-msgstr "E188: Pencere konumunu alma özelliği bu platformda mevcut değil"
+msgstr "E188: Pencere konumunu alma özelliği bu platformda gerçeklenmemiş"
 
 #, c-format
 msgid "E189: \"%s\" exists (add ! to override)"
@@ -4550,7 +4550,7 @@ msgstr "E210: \"%s\" okunurken hata"
 
 #, c-format
 msgid "E211: File \"%s\" no longer available"
-msgstr "E211: \"%s\" dosyası artık mevcut değil"
+msgstr "E211: \"%s\" dosyası artık kullanılamıyor"
 
 msgid "E212: Can't open file for writing"
 msgstr "E212: Dosya yazma için açılamıyor"
@@ -4873,7 +4873,7 @@ msgid "E314: Preserve failed"
 msgstr "E314: Koruma başarısız oldu"
 
 msgid "E319: Sorry, the command is not available in this version"
-msgstr "E319: Üzgünüm, komut bu sürümde mevcut değil"
+msgstr "E319: Üzgünüm, komut bu sürümde kullanılamıyor"
 
 #, c-format
 msgid "E321: Could not reload \"%s\""
@@ -4892,7 +4892,7 @@ msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: Menü öge yolunun bir kısmı alt menü değil"
 
 msgid "E328: Menu only exists in another mode"
-msgstr "E328: Menü yalnızca başka bir kipte mevcut"
+msgstr "E328: Menü yalnızca başka bir kipte var"
 
 #, c-format
 msgid "E329: No menu \"%s\""
@@ -5188,7 +5188,7 @@ msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Çok fazla argüman: \":highlight link %s\""
 
 msgid "E414: Group has settings, highlight link ignored"
-msgstr "E414: Grup ayarları mevcut, vurgulama bağlantısı yok sayıldı"
+msgstr "E414: Grup ayarları var, vurgulama bağlantısı yok sayıldı"
 
 #, c-format
 msgid "E415: Unexpected equal sign: %s"
@@ -5245,7 +5245,7 @@ msgstr "E428: Son eşleşen etiketten öteye gidilemiyor"
 
 #, c-format
 msgid "E429: File \"%s\" does not exist"
-msgstr "E429: Dosya \"%s\" mevcut değil"
+msgstr "E429: \"%s\" dosyası artık yok"
 
 #, c-format
 msgid "E430: Tag file path truncated for %s\n"
@@ -5802,7 +5802,7 @@ msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' ve 'patchmode' birbirine eşit"
 
 msgid "E590: A preview window already exists"
-msgstr "E590: Bir önizleme penceresi hâlihazırda mevcut"
+msgstr "E590: Bir önizleme penceresi halihazırda var"
 
 msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
 msgstr "E591: 'winheight' değeri 'winminheight' değerinden küçük olamaz"
@@ -5877,6 +5877,13 @@ msgstr "E612: Çok fazla işaret tanımlanmış"
 #, c-format
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Bilinmeyen yazıcı fontu: %s"
+
+msgid "E614: Class required"
+msgstr "E614: Sınıf gerekiyor"
+
+#, c-format
+msgid "E616: Object required for argument %d"
+msgstr "E616: %d argümanı için nesne gerekiyor"
 
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: GTK grafik arabiriminde değiştirilemez"
@@ -5982,9 +5989,6 @@ msgstr "E647: setDot'ta geçersiz arabellek tanımlayıcısı"
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: close'da geçersiz arabellek tanımlayıcısı"
 
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: close'da geçersiz arabellek tanımlayıcısı"
-
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: defineAnnoType'da geçersiz arabellek tanımlayıcısı"
 
@@ -6016,7 +6020,7 @@ msgstr "E659: Python özyineli olarak çalıştırılamıyor"
 
 #, c-format
 msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E661: Üzgünüm, '%s' yardımı %s için mevcut değil"
+msgstr "E661: Üzgünüm, '%2$s' için '%1$s' yardımı yok"
 
 msgid "E662: At start of changelist"
 msgstr "E662: Değişiklik listesinin başında"
@@ -6110,9 +6114,9 @@ msgstr "E687: Liste ögelerinden daha az hedef var"
 msgid "E688: More targets than List items"
 msgstr "E688: Liste ögelerinden daha fazla hedef var"
 
-msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr ""
-"E689: Yalnızca bir liste, sözlük, veya ikili geniş nesne dizinlenebilir"
+#, c-format
+msgid "E689: Index not allowed after a %s: %s"
+msgstr "E689: Bir %s sonrası indekse izin verilmiyor: %s"
 
 msgid "E690: Missing \"in\" after :for"
 msgstr "E690: :for sonrası \"in\" eksik"
@@ -6122,6 +6126,10 @@ msgstr "E691: Bir liste yalnızca başka bir liste ile karşılaştırılabilir"
 
 msgid "E692: Invalid operation for List"
 msgstr "E692: Geçersiz liste işlemi"
+
+#, c-format
+msgid "E693: Class or class typealias required for argument %d"
+msgstr "E693: %d argümanı için sınıf veya sınıf tür arması gerekiyor"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Geçersiz Funcref işlemi"
@@ -6162,7 +6170,7 @@ msgstr "E704: Funcref değişkeni BÜYÜK harf ile başlamalıdır: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Değişken adı mevcut işlevle çakışıyor: %s"
+msgstr "E705: Değişken adı var olan işlevle çakışıyor: %s"
 
 #, c-format
 msgid "E706: Argument of %s must be a List, String or Dictionary"
@@ -6199,10 +6207,10 @@ msgstr "E715: Sözlük gerekiyor"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: \"%s\""
-msgstr "E716: Anahtar sözlükte mevcut değil: \"%s\""
+msgstr "E716: Anahtar sözlükte yok: \"%s\""
 
 msgid "E717: Dictionary entry already exists"
-msgstr "E717: Sözlük girdisi hâlihazırda mevcut"
+msgstr "E717: Sözlük girdisi halihazırda var"
 
 msgid "E718: Funcref required"
 msgstr "E718: Funcref gerekiyor"
@@ -6383,7 +6391,7 @@ msgstr "E767: printf() için çok fazla argüman"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "E768: Takas dosyası mevcut: %s (:silent! geçersiz kılar)"
+msgstr "E768: Takas dosyası var: %s (:silent! geçersiz kılar)"
 
 #, c-format
 msgid "E769: Missing ] after %s["
@@ -6406,7 +6414,7 @@ msgid "E774: 'operatorfunc' is empty"
 msgstr "E774: 'operatorfunc' boş"
 
 msgid "E775: Eval feature not available"
-msgstr "E775: Eval özelliği mevcut değil"
+msgstr "E775: Eval özelliği kullanılamıyor"
 
 msgid "E776: No location list"
 msgstr "E776: Konum listesi yok"
@@ -6991,7 +6999,7 @@ msgid "E941: Already started a server"
 msgstr "E941: Sunucu hâlihazırda çalışıyor"
 
 msgid "E942: +clientserver feature not available"
-msgstr "E942: +clientserver özelliği mevcut değil"
+msgstr "E942: +clientserver özelliği kullanılamıyor"
 
 msgid "E944: Reverse range in character class"
 msgstr "E944: Karakter sınıfında geriye dönük erim"
@@ -7028,7 +7036,7 @@ msgstr "E952: Otokomut özyineli davranışa neden oldu"
 
 #, c-format
 msgid "E953: File exists: %s"
-msgstr "E953: Dosya mevcut: %s"
+msgstr "E953: Dosya var: %s"
 
 msgid "E954: 24-bit colors are not supported on this environment"
 msgstr "E954: 24 bit renkler bu ortamda desteklenmiyor"
@@ -7059,8 +7067,8 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Geçersiz eylem: '%s'"
 
 #, c-format
-msgid "E963: Setting %s to value with wrong type"
-msgstr "E963: %s yanlış türe sahip değere ayarlanıyor"
+msgid "E963: Setting v:%s to value with wrong type"
+msgstr "E963: v:%s yanlış türe sahip değere ayarlanıyor"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
@@ -7086,7 +7094,7 @@ msgstr "E970: Bilinmeyen vurgulama grup adı: '%s'"
 
 #, c-format
 msgid "E971: Property type %s does not exist"
-msgstr "E971: Özellik türü %s mevcut değil"
+msgstr "E971: Özellik türü %s yok"
 
 msgid "E972: Blob value does not have the right number of bytes"
 msgstr "E972: İkili geniş nesne değeri doğru bayt sayısına sahip değil"
@@ -7124,7 +7132,7 @@ msgid "E981: Command not allowed in rvim"
 msgstr "E981: Bu komuta rvim'de izin verilmiyor"
 
 msgid "E982: ConPTY is not available"
-msgstr "E982: ConPTY mevcut değil"
+msgstr "E982: ConPTY kullanılamıyor"
 
 #, c-format
 msgid "E983: Duplicate argument: %s"
@@ -7906,8 +7914,8 @@ msgid "E1202: No white space allowed after '%s': %s"
 msgstr "E1202: '%s' sonrası boşluğa izin verilmiyor: %s"
 
 #, c-format
-msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E1203: Nokta yalnızca bir sözlükte kullanılabilir: %s"
+msgid "E1203: Dot not allowed after a %s: %s"
+msgstr "E1203: Bir %s sonrası noktaya izin verilmiyor: %s"
 
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
@@ -8325,38 +8333,38 @@ msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: Sınıf, yalnızca Vim9 betiğinde kullanılabilir"
 
 #, c-format
-msgid "E1317: Invalid object member declaration: %s"
-msgstr "E1317: Geçersiz nesne üyesi beyanı: %s"
+msgid "E1317: Invalid object variable declaration: %s"
+msgstr "E1317: Geçersiz nesne değişkeni beyanı: %s"
 
 #, c-format
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Bir sınıfta geçerli olmayan bir komut: %s"
 
-msgid "E1319: Using a class as a Number"
+msgid "E1319: Using a Class as a Number"
 msgstr "E1319: Bir sınıf, sayı olarak kullanılıyor"
 
-msgid "E1320: Using an object as a Number"
+msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Bir nesne, sayı olarak kullanılıyor"
 
-msgid "E1321: Using a class as a Float"
+msgid "E1321: Using a Class as a Float"
 msgstr "E1321: Bir sınıf, kayan noktalı değer olarak kullanılıyor"
 
-msgid "E1322: Using an object as a Float"
+msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Bir nesne, kayan noktalı değer olarak kullanılıyor"
 
-msgid "E1323: Using a class as a String"
+msgid "E1323: Using a Class as a String"
 msgstr "E1323: Bir sınıf, dizi olarak kullanılıyor"
 
-msgid "E1324: Using an object as a String"
+msgid "E1324: Using an Object as a String"
 msgstr "E1324: Bir nesne, dizi olarak kullanılıyor"
 
 #, c-format
-msgid "E1325: Method not found on class \"%s\": %s"
-msgstr "E1325: Yöntem, \"%s\" sınıfında bulunamadı: %s"
+msgid "E1325: Method \"%s\" not found in class \"%s\""
+msgstr "E1325: \"%2$s\" sınıfında \"%1$s\" yöntemi bulunamadı"
 
 #, c-format
-msgid "E1326: Member not found on object \"%s\": %s"
-msgstr "E1326: Üye, \"%s\" nesnesinde bulunamadı: %s"
+msgid "E1326: Variable \"%s\" not found in object \"%s\""
+msgstr "E1326: \"%2$s\" nesnesinde \"%1$s\" değişkeni bulunamadı"
 
 #, c-format
 msgid "E1327: Object required, found %s"
@@ -8367,39 +8375,34 @@ msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Yapıcı öntanımlı değeri v:none olmalı: %s"
 
 #, c-format
-msgid "E1329: Cannot get object member type from initializer: %s"
-msgstr "E1329: İlklendiriciden nesne üye türü alınamıyor: %s"
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Geçersiz nesne değişkeni beyanı: %s"
 
 #, c-format
-msgid "E1330: Invalid type for object member: %s"
-msgstr "E1330: Nesne üyesi için geçersiz tür: %s"
+msgid "E1330: Invalid type for object variable: %s"
+msgstr "E1330: Nesne değişkeni için geçersiz tür: %s"
 
-msgid "E1331: Public must be followed by \"this\" or \"static\""
-msgstr "E1331: Public sonrası \"this\" veya \"static\" gelmelidir"
-
-#, c-format
-msgid "E1332: Public member name cannot start with underscore: %s"
-msgstr "E1332: Genel üye adı bir alt çizgiyle başlayamaz: %s"
-
-#, c-format
-msgid "E1333: Cannot access private member: %s"
-msgstr "E1333: Özel üyeye erişilemiyor: %s"
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
+msgstr "E1331: Public sonrası \"var\", \"static\", \"final\" veya \"const\" "
+"gelmelidir"
 
 #, c-format
-msgid "E1334: Object member not found: %s"
-msgstr "E1334: Nesne üyesi bulunamadı: %s"
+msgid "E1332: Public variable name cannot start with underscore: %s"
+msgstr "E1332: Genel değişken adı bir alt çizgiyle başlayamaz: %s"
 
 #, c-format
-msgid "E1335: Member is not writable: %s"
-msgstr "E1335: Üye yazılabilir değil: %s"
+msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
+msgstr "E1333: \"%2$s\" sınıfındaki \"%1$s\" korunan değişkenine erişilemiyor"
 
 #, c-format
-msgid "E1337: Class member not found: %s"
-msgstr "E1337: Sınıf üyesi bulunamadı: %s"
+msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
+msgstr "E1335: \"%2$s\" sınıfındaki \"%1$s\" değişkeni yazılabilir değil"
 
 #, c-format
-msgid "E1338: Member not found on class \"%s\": %s"
-msgstr "E1338: \"%s\" sınıfında üye bulunamadı: %s"
+msgid "E1337: Class variable \"%s\" not found in class \"%s\""
+msgstr "E1337: \"%2$s\" sınfında \"%1$s\" sınıf değişkeni bulunamadı"
 
 msgid ""
 "E1339: Cannot add a textprop with text after using a textprop with a "
@@ -8423,8 +8426,8 @@ msgstr "E1342: Arayüz yalnızca Vim9 betiğinde tanımlanabilir"
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr "E1343: Arayüz adı bir BÜYÜK harfle başlamalıdır: %s"
 
-msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1344: Bir arayüzde bir üye ilklendirilemiyor"
+msgid "E1344: Cannot initialize a variable in an interface"
+msgstr "E1344: Bir arayüzde bir değişken ilklendirilemiyor"
 
 #, c-format
 msgid "E1345: Not a valid command in an interface: %s"
@@ -8439,12 +8442,12 @@ msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: Geçerli bir arayüz değil: %s"
 
 #, c-format
-msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
-msgstr "E1348: \"%2$\" arayüzünün \"%1$s\" üyesi ilklendirilemiyor"
+msgid "E1348: Variable \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1348: \"%2$s\" arayüzünün \"%1$s\" değişkeni gerçeklenmemiş"
 
 #, c-format
-msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
-msgstr "E1349: \"%2$\" arayüzünün \"%1$s\" işlevi gerçeklenmemiş"
+msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1349: \"%2$s\" arayüzünün \"%1$s\" yöntemi gerçeklenmemiş"
 
 msgid "E1350: Duplicate \"implements\""
 msgstr "E1350: Yinelenen \"implements\""
@@ -8471,14 +8474,14 @@ msgstr "E1355: Yinelenen işlev: %s"
 msgid "E1356: \"super\" must be followed by a dot"
 msgstr "E1356: \"super\" sonrası bir nokta gelmelidir "
 
-msgid "E1357: Using \"super\" not in a class function"
-msgstr "E1357: \"super\" bir sınıf işlevi dışında kullanılıyor"
+msgid "E1357: Using \"super\" not in a class method"
+msgstr "E1357: \"super\" bir sınıf yöntemi dışında kullanılıyor"
 
 msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: \"super\", bir alt sınıfta kullanılmıyor"
 
-msgid "E1359: Cannot define a \"new\" function in an abstract class"
-msgstr "E1359: Soyut bir sınıfta bir \"new\" işlevi tanımlanamıyor"
+msgid "E1359: Cannot define a \"new\" method in an abstract class"
+msgstr "E1359: Soyut bir sınıfta bir \"new\" yöntemi tanımlanamıyor"
 
 msgid "E1360: Using a null object"
 msgstr "E1360: Bir null nesne kullanılıyor"
@@ -8495,44 +8498,231 @@ msgstr "E1363: Tam olmayan tür"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Uyarı: İşaretçi bloku hasar görmüş"
 
-msgid "E1365: Cannot use a return type with the \"new\" function"
-msgstr "E1365: \"new\" işleviyle bir dönüş türü kullanılamıyor"
+msgid "E1365: Cannot use a return type with the \"new\" method"
+msgstr "E1365: \"new\" yöntemiyle bir dönüş türü kullanılamıyor"
 
 #, c-format
-msgid "E1400: Cannot mix positional and non-positional arguments: %s"
-msgstr "E1400: Konumsal ve konumsal olmayan argümanlar karıştırılamıyor: %s"
+msgid "E1366: Cannot access protected method: %s"
+msgstr "E1366: Korunan yönteme erişilemiyor: %s"
 
 #, c-format
-msgid "E1401: format argument %d unused in $-style format: %s"
-msgstr "E1401: Biçim argümanı %d, $-tarzı biçimde kullanılmıyor: %s"
+msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
+msgstr "E1367: \"%2$s\" arayüzünün \"%1$s\" değişkeninin erişim düzeyi farklı"
+
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
+msgstr "E1368: Static sonrası \"var\", \"def\", \"final\" veya \"const\" "
+"gelmelidir"
+
+#, c-format
+msgid "E1369: Duplicate variable: %s"
+msgstr "E1369: Yinelenen değişken: %s"
+
+msgid "E1370: Cannot define a \"new\" method as static"
+msgstr "E1370: Bir \"new\" yöntemi static olarak tanımlanamıyor"
+
+msgid "E1371: Abstract must be followed by \"def\""
+msgstr "E1371: Abstract sonrası \"def\" gelmelidir "
+
+#, c-format
+msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
+msgstr "E1372: Soyut yöntem \"%s\", bir kesin sınıfta tanımlanamıyor"
+
+#, c-format
+msgid "E1373: Abstract method \"%s\" is not implemented"
+msgstr "E1373: Soyut yöntem \"%s\" gerçeklenmemiş"
+
+#, c-format
+msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
+msgstr "E1374: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfının içinde "
+"erişilebilirdir"
+
+#, c-format
+msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
+msgstr "E1375: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
+"erişilebilirdir"
+
+#, c-format
+msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
+msgstr "E1376: Nesne değişkeni \"%s\", yalnızca sınıf \"%s\" nesnesi "
+"kullanılarak erişilebilirdir"
+
+#, c-format
+msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
+msgstr "E1377: \"%s\" yönteminin erişim düzeyi \"%s\" sınıfında farklı"
+
+msgid "E1378: Static member not supported in an interface"
+msgstr "E1378: Durgun üye bir arayüzde desteklenmiyor"
+
+msgid "E1379: Protected variable not supported in an interface"
+msgstr "E1379: Korunan değişken bir arayüzde desteklenmiyor"
+
+msgid "E1380: Protected method not supported in an interface"
+msgstr "E1380: Korunan yöntem bir arayüzde desteklenmiyor"
+
+msgid "E1381: Interface cannot use \"implements\""
+msgstr "E1381: Arayüz \"implements\" kullanamıyor"
+
+#, c-format
+msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
+msgstr ""
+"E1382: \"%s\" değişkeni: Tür uyumsuzluğu, %s bekleniyordu; ancak %s alındı"
+
+#, c-format
+msgid "E1383: Method \"%s\": type mismatch, expected %s but got %s"
+msgstr ""
+"E1383: \"%s\" yöntemi: Tür uyumsuzluğu, %s bekleniyordu; ancak %s alındı"
+
+#, c-format
+msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
+msgstr "E1384: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfının içinde "
+"erişilebilirdir"
+
+#, c-format
+msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
+msgstr "E1385: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
+"erişilebilirdir"
+
+#, c-format
+msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
+msgstr "E1386: Nesne yöntemi \"%s\", yalnızca sınıf \"%s\" nesnesi "
+"kullanılarak erişilebilirdir"
+
+msgid "E1387: Public variable not supported in an interface"
+msgstr "E1387: Bir arayüzde genel değişken desteklenmiyor"
+
+msgid "E1388: Public keyword not supported for a method"
+msgstr "E1388: Bir yöntem için genel anahtar sözcük desteklenmiyor"
+
+msgid "E1389: Missing name after implements"
+msgstr "E1389: implements sonrası ad eksik"
 
 #, c-format
 msgid ""
-"E1402: Positional argument %d used as field width reused as different type: "
+"E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
+"method"
+msgstr ""
+"E1390: \"new\" yöntemi dışında bir \"this.%s\" nesne değişkeni kullanılamıyor"
+
+#, c-format
+msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
+msgstr "E1391: \"%2$s\" sınıfındaki \"%1$s\" değişkeni kilitlenemiyor/açılamıyor"
+
+#, c-format
+msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
+msgstr "E1392: \"%2$s\" sınıfındaki \"%1$s\" sınıf değişkeni "
+"kilitlenemiyor/açılamıyor"
+
+msgid "E1393: Type can only be defined in Vim9 script"
+msgstr "E1393: Tür, yalnızca Vim9 betiğinde tanımlanabilir"
+
+#, c-format
+msgid "E1394: Type name must start with an uppercase letter: %s"
+msgstr "E1394: Tür adı bir BÜYÜK harfle başlamalıdır: %s"
+
+#, c-format
+msgid "E1395: Type alias \"%s\" cannot be modified"
+msgstr "E1395: Tür arması \"%s\" değiştirilemiyor"
+
+#, c-format
+msgid "E1396: Type alias \"%s\" already exists"
+msgstr "E1396: Tür arması \"%s\" halihazırda var"
+
+msgid "E1397: Missing type alias name"
+msgstr "E1397: Tür arması adı eksik"
+
+msgid "E1398: Missing type alias type"
+msgstr "E1398: Tür arması türü eksik"
+
+msgid "E1399: Type can only be used in a script"
+msgstr "E1399: Tür yalnızca bir betikte kullanılabilir"
+
+#, c-format
+msgid "E1400: Using type alias \"%s\" as a Number"
+msgstr "E1400: Tür arması \"%s\", sayı olarak kullanılıyor"
+
+#, c-format
+msgid "E1401: Using type alias \"%s\" as a Float"
+msgstr "E1401: Tür arması \"%s\", kayan noktalı değer olarak kullanılıyor"
+
+#, c-format
+msgid "E1402: Using type alias \"%s\" as a String"
+msgstr "E1402: Tür arması \"%s\", dizi olarak kullanılıyor"
+
+#, c-format
+msgid "E1403: Type alias \"%s\" cannot be used as a value"
+msgstr "E1403: Tür arması \"%s\", bir değer olarak kullanılamıyor"
+
+msgid "E1404: Abstract cannot be used in an interface"
+msgstr "E1404: Abstract yalnızca bir betikte kullanılabilir"
+
+#, c-format
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405: \"%s\" sınıfı yalnızca bir değer olarak kullanılabilir"
+
+msgid "E1406: Cannot use a Class as a variable or value"
+msgstr "E1406: Sınıf, bir değişken veya değer olarak kullanılamıyor"
+
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr "E1407: Tür arması, bir değişken veya değer olarak kullanılamıyor"
+
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: Final değişkeni bir arayüzde desteklenmiyor"
+
+#, c-format
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr "E1409: \"%2$s\" sınıfındaki \"%1$s\" saltokunur değişken "
+"değiştirilemiyor"
+
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: Bir arayüzde bir bir Const değişken desteklenmiyor"
+
+#, c-format
+msgid "E1500: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1500: Konumsal ve konumsal olmayan argümanlar karıştırılamıyor: %s"
+
+#, c-format
+msgid "E1501: format argument %d unused in $-style format: %s"
+msgstr "E1501: Biçim argümanı %d, $-tarzı biçimde kullanılmıyor: %s"
+
+#, c-format
+msgid ""
+"E1502: Positional argument %d used as field width reused as different type: "
 "%s/%s"
 msgstr ""
-"E1402: Konumsal argüman %d, başka türle yeniden kullanılan alan olarak "
-"kullanılıyor: %s/%s"
+"E1502: Konumsal argüman %d, başka türle yeniden kullanılan alan genişliği "
+"olarak kullanılıyor: %s/%s"
 
 #, c-format
-msgid "E1403: Positional argument %d out of bounds: %s"
-msgstr "E1403: Konumsal argüman %d, sınırlar dışında: %s"
+msgid "E1503: Positional argument %d out of bounds: %s"
+msgstr "E1503: Konumsal argüman %d, sınırlar dışında: %s"
 
 #, c-format
-msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
-msgstr "E1404: Konumsal argüman %d türü tutarsız olarak kullanıldı: %s/%s"
+msgid "E1504: Positional argument %d type used inconsistently: %s/%s"
+msgstr "E1504: Konumsal argüman %d türü tutarsız olarak kullanıldı: %s/%s"
 
 #, c-format
-msgid "E1405: Invalid format specifier: %s"
-msgstr "E1405: Geçersiz biçim belirteci: %s"
+msgid "E1505: Invalid format specifier: %s"
+msgstr "E1505: Geçersiz biçim belirteci: %s"
+
+msgid "E1506: Buffer too small to copy xattr value or key"
+msgstr ""
+"E1506: Arabellek, xattr değerini veya anahtarını kopyalamak için pek küçük"
+
+msgid ""
+"E1508: Size of the extended attribute value is larger than the maximum size "
+"allowed"
+msgstr ""
+"E1508: Genişletilmiş özniteliğin değeri, izin verilen en büyük boyuttan daha "
+"büyük"
+
+msgid "E1509: Error occurred when reading or writing extended attribute"
+msgstr "E1509: Genişletilmiş öznitelik okunurken veya yazılırken hata oluştu"
 
 #, c-format
-msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1406: \"%s\" üyesi türü uyumsuzluğu, %s bekleniyordu; ancak %s alındı"
-
-#, c-format
-msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1407: \"%s\" üyesi türü uyumsuzluğu, %s bekleniyordu; ancak %s alındı"
+msgid "E1510: Value too large: %s"
+msgstr "E1510: Değer pek büyük: %s"
 
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
@@ -8713,11 +8903,11 @@ msgstr "sabit liste değiştirilemiyor"
 
 #, c-format
 msgid "unnamed function %s does not exist"
-msgstr "adsız %s işlevi mevcut değil"
+msgstr "adsız %s işlevi yok"
 
 #, c-format
 msgid "function %s does not exist"
-msgstr "%s işlevi mevcut değil"
+msgstr "%s işlevi yok"
 
 #, c-format
 msgid "failed to run function %s"
@@ -8780,7 +8970,7 @@ msgid "expected vim.Window object, but got %s"
 msgstr "vim.Window nesnesi bekleniyordu, %s geldi"
 
 msgid "failed to find window in the current tab page"
-msgstr "mevcut sekme sayfasında pencere bulunamadı"
+msgstr "geçerli sekme sayfasında pencere bulunamadı"
 
 msgid "did not switch to the specified window"
 msgstr "belirtilen pencereye geçilemedi"
