@@ -2050,7 +2050,9 @@ retnomove:
 	}
     }
 
-    if (prev_row >= 0 && prev_row < Rows && prev_col >= 0 && prev_col <= Columns
+    if (prev_row >= W_WINROW(curwin)
+	&& prev_row < W_WINROW(curwin) + curwin->w_height
+	&& prev_col >= curwin->w_wincol && prev_col < W_ENDCOL(curwin)
 						       && ScreenLines != NULL)
     {
 	int off = LineOffset[prev_row] + prev_col;
