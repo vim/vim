@@ -112,8 +112,8 @@ CCVER	=
 CC_DEF  = cc
 PREFIX  = /prefix=all/name=(upper,short)
 OPTIMIZE= /opt
-.IFDEF MMSX86_64 # This is needed because of getline function name used in stucts like ex_cmds.h  
-ARCH_DEF= ,__CRTL_VER_OVERRIDE=80400000
+.IFDEF MMSX86_64
+ARCH_DEF=        # ,__CRTL_VER_OVERRIDE=80400000 
 .ENDIF
 .ENDIF
 

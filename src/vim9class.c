@@ -1369,7 +1369,7 @@ ex_class(exarg_T *eap)
 
     if (!current_script_is_vim9()
 		|| (cmdmod.cmod_flags & CMOD_LEGACY)
-		|| !getline_equal(eap->getline, eap->cookie, getsourceline))
+		|| !getline_equal(eap->ea_getline, eap->cookie, getsourceline))
     {
 	if (is_class)
 	    emsg(_(e_class_can_only_be_defined_in_vim9_script));
@@ -1530,7 +1530,7 @@ early_ret:
     for (;;)
     {
 	vim_free(theline);
-	theline = eap->getline(':', eap->cookie, 0, GETLINE_CONCAT_ALL);
+	theline = eap->ea_getline(':', eap->cookie, 0, GETLINE_CONCAT_ALL);
 	if (theline == NULL)
 	    break;
 	char_u *line = skipwhite(theline);
@@ -1778,7 +1778,7 @@ early_ret:
 	    ea.cmd = line;
 	    ea.arg = p;
 	    ea.cmdidx = CMD_def;
-	    ea.getline = eap->getline;
+	    ea.ea_getline = eap->ea_getline;
 	    ea.cookie = eap->cookie;
 
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
@@ -2177,7 +2177,7 @@ ex_type(exarg_T *eap UNUSED)
 
     if (!current_script_is_vim9()
 		|| (cmdmod.cmod_flags & CMOD_LEGACY)
-		|| !getline_equal(eap->getline, eap->cookie, getsourceline))
+		|| !getline_equal(eap->ea_getline, eap->cookie, getsourceline))
     {
 	emsg(_(e_type_can_only_be_defined_in_vim9_script));
 	return;

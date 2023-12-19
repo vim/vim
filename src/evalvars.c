@@ -776,7 +776,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
     cctx_T	*cctx = vim9compile ? eap->cookie : NULL;
     int		count = 0;
 
-    if (eap->getline == NULL)
+    if (eap->ea_getline == NULL)
     {
 	emsg(_(e_cannot_use_heredoc_here));
 	return NULL;
@@ -856,7 +856,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	int	ti = 0;
 
 	vim_free(theline);
-	theline = eap->getline(NUL, eap->cookie, 0, FALSE);
+	theline = eap->ea_getline(NUL, eap->cookie, 0, FALSE);
 	if (theline == NULL)
 	{
 	    semsg(_(e_missing_end_marker_str), marker);

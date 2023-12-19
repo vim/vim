@@ -1110,7 +1110,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
     char_u *retp = p;
 
     if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
-						       && eap->getline != NULL)
+						    && eap->ea_getline != NULL)
     {
 	garray_T    ga;
 	char_u	    *line = NULL;
@@ -1127,7 +1127,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 	    for (;;)
 	    {
 		vim_free(line);
-		if ((line = eap->getline(':', eap->cookie,
+		if ((line = eap->ea_getline(':', eap->cookie,
 					   0, GETLINE_CONCAT_CONTBAR)) == NULL)
 		{
 		    emsg(_(e_missing_rcurly));
@@ -1955,7 +1955,7 @@ do_ucmd(exarg_T *eap)
 #endif
     }
 
-    (void)do_cmdline(buf, eap->getline, eap->cookie,
+    (void)do_cmdline(buf, eap->ea_getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);
 
     // Careful: Do not use "cmd" here, it may have become invalid if a user

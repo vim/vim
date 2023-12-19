@@ -357,7 +357,7 @@ mch_openpty(char **ttyn)
 static char PtyProto[] = "/dev/ptym/ptyXY";
 static char TtyProto[] = "/dev/pty/ttyXY";
 # else
-#  ifdef(__HAIKU__)
+#  ifdef __HAIKU__
 static char PtyProto[] = "/dev/pt/XY";
 static char TtyProto[] = "/dev/tt/XY";
 #  else

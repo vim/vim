@@ -133,9 +133,9 @@ fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip)
 	return;
 
     evalarg->eval_cstack = eap->cstack;
-    if (sourcing_a_script(eap) || eap->getline == get_list_line)
+    if (sourcing_a_script(eap) || eap->ea_getline == get_list_line)
     {
-	evalarg->eval_getline = eap->getline;
+	evalarg->eval_getline = eap->ea_getline;
 	evalarg->eval_cookie = eap->cookie;
     }
 }
@@ -7542,7 +7542,7 @@ ex_execute(exarg_T *eap)
 	    sticky_cmdmod_flags = cmdmod.cmod_flags
 						& (CMOD_LEGACY | CMOD_VIM9CMD);
 	    do_cmdline((char_u *)ga.ga_data,
-		       eap->getline, eap->cookie, DOCMD_NOWAIT|DOCMD_VERBOSE);
+		       eap->ea_getline, eap->cookie, DOCMD_NOWAIT|DOCMD_VERBOSE);
 	    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 	}
     }
