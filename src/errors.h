@@ -3574,8 +3574,10 @@ EXTERN char e_cannot_change_readonly_variable_str_in_class_str[]
 	INIT(= N_("E1409: Cannot change read-only variable \"%s\" in class \"%s\""));
 EXTERN char e_const_variable_not_supported_in_interface[]
 	INIT(= N_("E1410: Const variable not supported in an interface"));
+EXTERN char e_missing_dot_after_object_str[]
+	INIT(= N_("E1411: Missing dot after object \"%s\""));
 #endif
-// E1411 - E1499 unused (reserved for Vim9 class support)
+// E1412 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]
