@@ -1871,7 +1871,10 @@ check_typval_is_value(typval_T *tv)
 	return OK;
     if (tv->v_type == VAR_CLASS)
     {
-        semsg(_(e_using_class_as_value_str), tv->vval.v_class->class_name);
+	if (tv->vval.v_class != NULL)
+	    semsg(_(e_using_class_as_value_str), tv->vval.v_class->class_name);
+	else
+	    emsg(e_using_class_as_var_val);
 	return FAIL;
     }
     else if (tv->v_type == VAR_TYPEALIAS)

@@ -3974,12 +3974,8 @@ set_var_const(
 		goto failed;
 	    }
 
-	    if (di->di_tv.v_type == VAR_TYPEALIAS)
-	    {
-		semsg(_(e_cannot_modify_typealias),
-					    di->di_tv.vval.v_typealias->ta_name);
+	    if (check_typval_is_value(&di->di_tv) == FAIL)
 		goto failed;
-	    }
 
 	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
 	    {

@@ -550,6 +550,12 @@ need_type_where(
 {
     int ret;
 
+    if (expected->tt_type != VAR_CLASS && expected->tt_type != VAR_TYPEALIAS)
+    {
+	if (check_type_is_value(actual) == FAIL)
+	    return FAIL;
+    }
+
     if (expected == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
     {

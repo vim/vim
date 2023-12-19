@@ -1890,10 +1890,8 @@ set_var_lval(
 	    if (eval_variable(lp->ll_name, (int)STRLEN(lp->ll_name),
 				 lp->ll_sid, &tv, &di, EVAL_VAR_VERBOSE) == OK)
 	    {
-		if (di != NULL && di->di_tv.v_type == VAR_TYPEALIAS)
+		if (di != NULL && check_typval_is_value(&di->di_tv) == FAIL)
 		{
-		    semsg(_(e_cannot_modify_typealias),
-					di->di_tv.vval.v_typealias->ta_name);
 		    clear_tv(&tv);
 		    return;
 		}
@@ -2007,9 +2005,10 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
     char_u	*s;
     int		failed = FALSE;
 
-    // Can't do anything with a Funcref or Dict on the right.
+    // Can't do anything with a Funcref or Dict or Type on the right.
     // v:true and friends only work with "..=".
     if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT
+		    && tv2->v_type != VAR_CLASS && tv2->v_type != VAR_TYPEALIAS
 		    && ((tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)
 								|| *op == '.'))
     {
@@ -2026,10 +2025,12 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
 	    case VAR_INSTR:
-	    case VAR_CLASS:
 	    case VAR_OBJECT:
-	    case VAR_TYPEALIAS:
 		break;
+	    case VAR_CLASS:
+	    case VAR_TYPEALIAS:
+		check_typval_is_value(tv1);
+		return FAIL;
 
 	    case VAR_BLOB:
 		if (*op != '+' || tv2->v_type != VAR_BLOB)
@@ -2142,7 +2143,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	}
     }
 
-    semsg(_(e_wrong_variable_type_for_str_equal), op);
+    if (check_typval_is_value(tv2) == OK)
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
     return FAIL;
 }
 
@@ -5019,11 +5021,14 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
-	case VAR_CLASS:
 	case VAR_OBJECT:
-	case VAR_TYPEALIAS:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
+	    return FAIL;
+	case VAR_CLASS:
+	case VAR_TYPEALIAS:
+	    if (verbose)
+		check_typval_is_value(rettv);
 	    return FAIL;
 	case VAR_UNKNOWN:
 	case VAR_ANY:

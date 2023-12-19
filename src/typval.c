@@ -262,17 +262,14 @@ tv_get_bool_or_number_chk(
 	    emsg(_(e_using_blob_as_number));
 	    break;
 	case VAR_CLASS:
-	    emsg(_(e_using_class_as_number));
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
 	    emsg(_(e_using_object_as_number));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
-	    break;
-	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_number),
-					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -383,17 +380,14 @@ tv_get_float_chk(typval_T *varp, int *error)
 	    emsg(_(e_using_blob_as_float));
 	    break;
 	case VAR_CLASS:
-	    emsg(_(e_using_class_as_float));
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
 	    emsg(_(e_using_object_as_float));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
-	    break;
-	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_float),
-					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -1131,7 +1125,8 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    emsg(_(e_using_blob_as_string));
 	    break;
 	case VAR_CLASS:
-	    emsg(_(e_using_class_as_string));
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
 	    emsg(_(e_using_object_as_string));
@@ -1158,10 +1153,6 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
-	    break;
-	case VAR_TYPEALIAS:
-	    semsg(_(e_using_typealias_as_string),
-					varp->vval.v_typealias->ta_name);
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
@@ -1358,7 +1349,13 @@ typval_compare(
     int		res = 0;
     int		type_is = type == EXPR_IS || type == EXPR_ISNOT;
 
-    if (type_is && tv1->v_type != tv2->v_type)
+    if (check_typval_is_value(tv1) == FAIL
+	|| check_typval_is_value(tv2) == FAIL)
+    {
+	clear_tv(tv1);
+	return FAIL;
+    }
+    else if (type_is && tv1->v_type != tv2->v_type)
     {
 	// For "is" a different type always means FALSE, for "isnot"
 	// it means TRUE.
@@ -1391,15 +1388,6 @@ typval_compare(
     else if (tv1->v_type == VAR_LIST || tv2->v_type == VAR_LIST)
     {
 	if (typval_compare_list(tv1, tv2, type, ic, &res) == FAIL)
-	{
-	    clear_tv(tv1);
-	    return FAIL;
-	}
-	n1 = res;
-    }
-    else if (tv1->v_type == VAR_CLASS || tv2->v_type == VAR_CLASS)
-    {
-	if (typval_compare_class(tv1, tv2, type, ic, &res) == FAIL)
 	{
 	    clear_tv(tv1);
 	    return FAIL;

@@ -242,7 +242,7 @@ def Test_class_basic()
     if A
     endif
   END
-  v9.CheckSourceFailure(lines, 'E1319: Using a Class as a Number', 4)
+  v9.CheckSourceFailure(lines, 'E1405: Class "A" cannot be used as a value', 4)
 
   # Test for using object as a bool
   lines =<< trim END
@@ -281,7 +281,7 @@ def Test_class_basic()
     endclass
     :exe 'call ' .. A
   END
-  v9.CheckSourceFailure(lines, 'E1323: Using a Class as a String', 4)
+  v9.CheckSourceFailure(lines, 'E1405: Class "A" cannot be used as a value', 4)
 
   # Test for using object as a string
   lines =<< trim END
