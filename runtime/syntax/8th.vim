@@ -1,16 +1,13 @@
 " Vim syntax file
 " Language:     8th
 " Version:      23.09.01
-" Last Change:  2023 Dec 18
+" Last Change:  2023 Dec 19
 " Maintainer:   Ron Aaron <ron@aaron-tech.com>
 " URL:          https://8th-dev.com/
 " Filetypes:    *.8th
 " NOTE:         You should also have the ftplugin/8th.vim file to set 'isk'
 
-if version < 600
-  syntax clear
-  finish
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
    finish
 endif
 
@@ -419,46 +416,41 @@ syn match eighthBuiltin /db:col\[]/
 " TODO
 syn region eighthComment start="\zs\\" end="$" contains=eighthTodo
 
-" Define the default highlighting.
-if !exists("did_eighth_syntax_inits")
-    let did_eighth_syntax_inits=1
-
-    " The default methods for highlighting. Can be overriden later.
-    hi def link eighthTodo Todo
-    hi def link eighthNeeds2 Include
-    hi def link eighthNeeds Error
-    hi def link eighthOperators Operator
-    hi def link eighthMath Number
-    hi def link eighthInteger Number
-    hi def link eighthStack Special
-    hi def link eighthFStack Special
-    hi def link eighthFname Operator
-    hi def link eighthSP Special
-    hi def link eighthColonDef Define
-    hi def link eighthColonName Operator
-    hi def link eighthEndOfColonDef Define
-    hi def link eighthDefine Define
-    hi def link eighthDebug Debug
-    hi def link eighthCharOps Character
-    hi def link eighthConversion String
-    hi def link eighthForth Statement
-    hi def link eighthVocs Statement
-    hi def link eighthString String
-    hi def link eighthComment Comment
-    hi def link eighthClassDef Define
-    hi def link eighthEndOfClassDef Define
-    hi def link eighthObjectDef Define
-    hi def link eighthEndOfObjectDef Define
-    hi def link eighthInclude Include
-    hi def link eighthBuiltin Define
-    hi def link eighthClasses Define
-    hi def link eighthClassWord Keyword
-    hi def link jsonObject Delimiter
-    hi def link jsonObjEntry Label
-    hi def link jsonArray Special
-    hi def link jsonNull Function
-    hi def link jsonBool Boolean
-endif
+" The default methods for highlighting. Can be overriden later.
+hi def link eighthTodo Todo
+hi def link eighthNeeds2 Include
+hi def link eighthNeeds Error
+hi def link eighthOperators Operator
+hi def link eighthMath Number
+hi def link eighthInteger Number
+hi def link eighthStack Special
+hi def link eighthFStack Special
+hi def link eighthFname Operator
+hi def link eighthSP Special
+hi def link eighthColonDef Define
+hi def link eighthColonName Operator
+hi def link eighthEndOfColonDef Define
+hi def link eighthDefine Define
+hi def link eighthDebug Debug
+hi def link eighthCharOps Character
+hi def link eighthConversion String
+hi def link eighthForth Statement
+hi def link eighthVocs Statement
+hi def link eighthString String
+hi def link eighthComment Comment
+hi def link eighthClassDef Define
+hi def link eighthEndOfClassDef Define
+hi def link eighthObjectDef Define
+hi def link eighthEndOfObjectDef Define
+hi def link eighthInclude Include
+hi def link eighthBuiltin Define
+hi def link eighthClasses Define
+hi def link eighthClassWord Keyword
+hi def link jsonObject Delimiter
+hi def link jsonObjEntry Label
+hi def link jsonArray Special
+hi def link jsonNull Function
+hi def link jsonBool Boolean
 
 let b:current_syntax = "8th"
 let &cpo = s:cpo_save
