@@ -3174,6 +3174,31 @@ def Test_type_check()
     END
     v9.CheckSourceSuccess(lines)
   endif
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    def F()
+      A += 3
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1405: Class "A" cannot be used as a value')
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    var o = A.new()
+    def F()
+      o += 4
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E1411: Missing dot after object "o"')
 enddef
 
 " Test for checking the argument type of a def function

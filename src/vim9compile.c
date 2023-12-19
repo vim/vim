@@ -2265,7 +2265,10 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	// Also for "obj.value".
        char_u *dot = vim_strchr(var_start, '.');
        if (dot == NULL)
+       {
+	   semsg(_(e_missing_dot_after_object_str), lhs->lhs_name);
 	   return FAIL;
+       }
 
 	class_T	*cl = lhs->lhs_type->tt_class;
 	type_T	*type = oc_member_type(cl, TRUE, dot + 1,
@@ -2294,7 +2297,10 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	// "<classname>.value": load class variable "classname.value"
        char_u *dot = vim_strchr(var_start, '.');
        if (dot == NULL)
+       {
+	   check_type_is_value(lhs->lhs_type);
 	   return FAIL;
+       }
 
 	class_T	*cl = lhs->lhs_type->tt_class;
 	ocmember_T *m = class_member_lookup(cl, dot + 1,
