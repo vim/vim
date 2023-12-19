@@ -6158,6 +6158,7 @@ bug-fixes-6	version6.txt	/*bug-fixes-6*
 bug-fixes-7	version7.txt	/*bug-fixes-7*
 bug-fixes-8	version8.txt	/*bug-fixes-8*
 bug-fixes-9	version9.txt	/*bug-fixes-9*
+bug-fixes-9.1	version9.txt	/*bug-fixes-9.1*
 bug-reports	intro.txt	/*bug-reports*
 bugreport.vim	intro.txt	/*bugreport.vim*
 bugs	intro.txt	/*bugs*
@@ -9188,6 +9189,7 @@ patches-8.2	version8.txt	/*patches-8.2*
 patches-9	version9.txt	/*patches-9*
 patches-9.1	version9.txt	/*patches-9.1*
 patches-after-8.2	version9.txt	/*patches-after-8.2*
+patches-after-9.0	version9.txt	/*patches-after-9.0*
 pathshorten()	builtin.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
