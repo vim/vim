@@ -1110,7 +1110,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
     char_u *retp = p;
 
     if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
-						       && eap->ea_getline != NULL)
+						    && eap->ea_getline != NULL)
     {
 	garray_T    ga;
 	char_u	    *line = NULL;
