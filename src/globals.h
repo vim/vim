@@ -1377,7 +1377,7 @@ EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
 EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 // Flag set when peeking a character and found the end of executed register
-EXTERN int pending_end_reg_executing INIT(= 0);
+EXTERN int pending_end_reg_executing INIT(= FALSE);
 
 // Set when a modifyOtherKeys sequence was seen, then simplified mappings will
 // no longer be used.  To be combined with modify_otherkeys_state.

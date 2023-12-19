@@ -703,6 +703,7 @@ do_execreg(
 		return FAIL;
 	}
 	reg_executing = regname == 0 ? '"' : regname; // disable "q" command
+	pending_end_reg_executing = FALSE;
     }
     return retval;
 }
