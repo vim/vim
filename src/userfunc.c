@@ -14,9 +14,6 @@
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-
-#define MAX_CALLBACK_DEPTH 20
-
 /*
  * All user-defined functions are found in this hashtable.
  */
@@ -3603,7 +3600,7 @@ call_callback(
     if (callback->cb_name == NULL || *callback->cb_name == NUL)
 	return FAIL;
 
-    if (callback_depth > MAX_CALLBACK_DEPTH)
+    if (callback_depth > p_mfd)
     {
 	emsg(_(e_command_too_recursive));
 	return FAIL;
