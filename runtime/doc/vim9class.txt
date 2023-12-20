@@ -364,6 +364,9 @@ super class.  Depending on the class where the member is used the
 corresponding class member will be used.  The type of the class member in a
 child class can be different from that in the super class.
 
+The double underscore (__) prefix for a class or object method name is
+reserved for future use.
+
 					*object-final-variable* *E1409*
 The |:final| keyword can be used to make a class or object variable a
 constant.  Examples: >

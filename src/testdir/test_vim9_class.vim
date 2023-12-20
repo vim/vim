@@ -9659,4 +9659,31 @@ def Test_const_class_object_variable()
   v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
 enddef
 
+" Test for using double underscore prefix in a class/object method name.
+def Test_method_double_underscore_prefix()
+  # class method
+  var lines =<< trim END
+    vim9script
+    class A
+      static def __foo()
+        echo "foo"
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
+
+  # object method
+  lines =<< trim END
+    vim9script
+    class A
+      def __foo()
+        echo "foo"
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

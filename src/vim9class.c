@@ -1774,6 +1774,15 @@ early_ret:
 		break;
 	    }
 
+	    if (*p == '_' && *(p + 1) == '_')
+	    {
+		// double underscore prefix for a method name is currently
+		// reserved.  This could be used in the future to support
+		// object methods called by Vim builtin functions.
+		semsg(_(e_cannot_use_reserved_name_str), p);
+		break;
+	    }
+
 	    CLEAR_FIELD(ea);
 	    ea.cmd = line;
 	    ea.arg = p;
