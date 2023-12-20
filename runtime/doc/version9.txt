@@ -31694,7 +31694,7 @@ features are supported:
     - Defining classes and instantiating objects
     - Multiple constructors
     - Class variables and methods
-    - Instances variables and methods
+    - Object variables and methods
     - Public and protected access for variables and methods
     - Constant and final object/class variables
     - Extending classes (single inheritance)
