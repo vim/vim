@@ -1,0 +1,160 @@
+name: vim normal ruby33 nowarning
+
+on: workflow_dispatch
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  vim_patch:
+    runs-on: ubuntu-22.04
+    env:
+      # ref: v9.0.2138
+      REF: fda700cb04612fe2f9301a9ba820309175decabf
+      CONFIG: "--disable-gui --disable-libsodium --with-features=normal"
+      LOGDIR: logdir
+      PATCHDIR: patch_and_test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        patch: [nopatch, patch]
+        interp: [yes, dynamic]
+
+    steps:
+      - name: Prepare patchdir and logdir
+        run: |
+          mkdir ${{ env.PATCHDIR }}
+          mkdir ${{ env.LOGDIR }}
+
+      - name: Checkout vim
+        uses: actions/checkout@v4
+        with:
+          repository: svardew/vim
+          ref: ${{ env.REF }}
+          path: ./vim
+
+      - name: Prepare patches
+        id: patches
+        shell: bash {0}
+        run: |
+          echo '/* File: patch-if_ruby'
+          echo ' * ruby-3.3 remove transient_heap.'
+          echo ' * this patch disable rb_ary_detransient, etc.'
+          echo ' */'
+          touch patch-if_ruby
+          cat <<'HERE_DOCU_MENT' | sed 's/^:\ //' > patch-if_ruby
+          : --- ./if_ruby.c.orig
+          : +++ ./if_ruby.c.mod
+          : @@ -86 +86 @@
+          : -# if RUBY_VERSION >= 26
+          : +# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
+          : @@ -459 +459 @@
+          : -# if RUBY_VERSION >= 26
+          : +# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
+          : @@ -494 +494 @@
+          : -# if RUBY_VERSION >= 26
+          : +# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
+          : @@ -564 +564 @@
+          : -#  if RUBY_VERSION >= 26
+          : +#  if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
+          : @@ -721 +721 @@
+          : -# if RUBY_VERSION >= 26
+          : +# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
+          HERE_DOCU_MENT
+          echo '/* File: patch-test_ruby'
+          echo ' * ruby-3.3 change NoMethodError format.'
+          echo ' * this patch loose pattern in Test_ruby_Vim_buffer_get()'
+          echo ' */'
+          touch patch-test_ruby
+          cp ./vim/src/testdir/test_ruby.vim ./test_ruby.vim.orig
+          cp ./vim/src/testdir/test_ruby.vim ./test_ruby.vim.mod
+          sed -i '/NoMethodError/ s,nil:NilClass,nil, ;' ./test_ruby.vim.mod
+          diff -U 0 ./test_ruby.vim.orig ./test_ruby.vim.mod > patch-test_ruby
+          rm ./test_ruby.vim.*
+          mv patch-* ./${{ env.PATCHDIR }}
+
+      - name: Install ruby-3.3.0-rc1
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ruby-3.3.0-rc1
+
+      - name: Set ruby-3.3 environment
+        id: rb33env
+        run: |
+          which ruby
+          ruby -v
+          rb33libdir=$(ruby -rrbconfig -e 'print RbConfig::CONFIG["libdir"]')
+          rb33pkgconfigdir=${rb33libdir}'/pkgconfig'
+          echo "rb33_ldlibrarypath=${rb33libdir}" >> $GITHUB_OUTPUT
+          echo "rb33_pkgconfigpath=${rb33pkgconfigdir}" >> $GITHUB_OUTPUT
+
+      - name: configure, build
+        id: build
+        run: |
+          export PKG_CONFIG_PATH=${{ steps.rb33env.outputs.rb33_pkgconfigpath }}
+          export LD_LIBRARY_PATH=${{ steps.rb33env.outputs.rb33_ldlibrarypath }}
+          cd ./vim
+          if ${{ matrix.patch == 'patch' }}; then
+            patch src/if_ruby.c --input ../${{ env.PATCHDIR }}/patch-if_ruby
+            patch src/testdir/test_ruby.vim --input ../${{ env.PATCHDIR }}/patch-test_ruby
+          fi
+          ./configure ${{ env.CONFIG }} --enable-rubyinterp=${{ matrix.interp }}
+          make
+          ./src/vim --version
+
+      - name: test
+        id: test
+        run: |
+          if ${{ matrix.interp == 'dynamic' }}; then
+            export LD_LIBRARY_PATH=${{ steps.rb33env.outputs.rb33_ldlibrarypath }}
+          fi
+          cd ./vim/src/testdir
+          make test_ruby.res
+          echo '/* test_*.res count. if 0, no test success'
+          echo ' */'
+          find . -maxdepth 1 -type f -name 'test_*.res' | wc -l
+          echo '/* cat messages'
+          echo ' */'
+          cat messages
+          cat messages | sed '/^\s*$/ d; /^From/ s:^:--> :' > messages-x
+          mv messages-x ../../../${{ env.LOGDIR }}/messages-${{ matrix.interp }}-${{ matrix.patch }}
+
+      - uses: actions/upload-artifact@v4
+        id: upload-artifact-log
+        with:
+          name: messages-${{ matrix.interp }}-${{ matrix.patch }}
+          compression-level: 0
+          retention-days: 1
+          path: |
+            ./logdir/
+
+  patch_summary:
+    # check patched +ruby and +ruby/dyn pass test_ruby.vim
+    needs: vim_patch
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download messages from artifact.
+        uses: actions/download-artifact@v4
+        with:
+          path: ./logdir
+          merge-multiple: true
+
+      - name: Show matrix test result
+        shell: bash {0}
+        run: |
+          cd ./logdir
+          echo '### matrix test result ...'
+          echo ''
+          for f in messages-*
+          do
+            echo '===' $f '==='
+            cat $f | sed '/^\s*$/ d; /^From/ s:^:--> :'
+            echo ''
+          done
+          echo "/* expect patched +ruby and +ruby/dyn pass test_ruby.vim"
+          echo " */"
+
+# vim: set tw=2 autoindent fdm=marker :
+
