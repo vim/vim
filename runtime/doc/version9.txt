@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2023 Dec 19
+*version9.txt*  For Vim version 9.0.  Last change: 2023 Dec 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31689,6 +31689,20 @@ are many minor improvements.
 
 Vim9 classes
 ------------
+Support for classes and objects in a Vim9 script are added.  The following
+features are supported:
+    - Defining classes and instantiating objects
+    - Multiple constructors
+    - Class variables and methods
+    - Object variables and methods
+    - Public and protected access for variables and methods
+    - Constant and final object/class variables
+    - Extending classes (single inheritance)
+    - Interfaces
+    - Abstract classes
+    - Exporting classes
+
+Support for creating a type alias for an existing type is added.
 
 Virtual text
 ------------
@@ -31744,6 +31758,7 @@ Commands: ~
 |:public|		prefix for a class or object member
 |:static|		prefix for a class member or function
 |:this|			prefix for an object member
+|:type|			create a type alias
 
 
 Options: ~
