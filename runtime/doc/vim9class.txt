@@ -103,17 +103,27 @@ below for how to do this more efficiently): >
 You can create an object from this class with the new() method: >
 
 	var pos = TextPosition.new(1, 1)
-
+<
 The object variables "lnum" and "col" can be accessed directly: >
 
 	echo $'The text position is ({pos.lnum}, {pos.col})'
 <							*E1317* *E1327*
-If you have been using other object-oriented languages you will notice that
-in Vim the object members are consistently referred to with the "this."
-prefix.  This is different from languages like Java and TypeScript.  The
-naming convention makes the object members easy to spot.  Also, when a
-variable does not have the "this." prefix you know it is not an object
-variable.
+If you have been using other object-oriented languages you will notice that in
+Vim, within a class definition, the object members are consistently referred
+to with the "this." prefix.  This is different from languages like Java and
+TypeScript.  The naming convention makes the object members easy to spot.
+Also, when a variable does not have the "this." prefix you know it is not an
+object variable.
+								*E1411*
+From outside the class definition, access an object's methods and variables by
+using the object name followed by a dot following by the member: >
+
+	pos.lnum
+	pos.setCol(10)
+<
+							*E1405* *E1406*
+A class name cannot be used as an expression.  A class name cannot be used in
+the left-hand-side of an assignment.
 
 
 Object variable write access ~
