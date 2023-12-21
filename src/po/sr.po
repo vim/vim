@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-18 13:24+0400\n"
-"PO-Revision-Date: 2023-12-18 13:32+0400\n"
+"POT-Creation-Date: 2023-12-20 12:15+0400\n"
+"PO-Revision-Date: 2023-12-20 12:17+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -8726,12 +8726,10 @@ msgid "E1405: Class \"%s\" cannot be used as a value"
 msgstr "E1405: Класа „%s” не може да се користи као вредност"
 
 msgid "E1406: Cannot use a Class as a variable or value"
-msgstr ""
-"E1406: Класа не може да се користи као променљива или вредност"
+msgstr "E1406: Класа не може да се користи као променљива или вредност"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
-msgstr ""
-"E1407: Алијас типа не може да се користи као променљива или вредност"
+msgstr "E1407: Алијас типа не може да се користи као променљива или вредност"
 
 msgid "E1408: Final variable not supported in an interface"
 msgstr "E1408: У интерфејсу се не подржава final променљива"
@@ -8743,6 +8741,10 @@ msgstr ""
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: У интерфејсу се не подржава const променљива"
+
+#, c-format
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: Недостаје тачка након објекта „%s”"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
