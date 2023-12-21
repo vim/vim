@@ -18,7 +18,7 @@ def Test_typealias()
     assert_equal('typealias<list<string>>', typename(ListOfStrings))
     assert_equal(v:t_typealias, type(ListOfStrings))
     assert_equal('ListOfStrings', string(ListOfStrings))
-    assert_equal(false, null == ListOfStrings)
+    assert_fails('var x = null == ListOfStrings', 'E1403: Type alias "ListOfStrings" cannot be used as a value')
   END
   v9.CheckSourceSuccess(lines)
 
@@ -36,7 +36,7 @@ def Test_typealias()
       assert_equal('typealias<list<string>>', typename(ListOfStrings))
       assert_equal(v:t_typealias, type(ListOfStrings))
       assert_equal('ListOfStrings', string(ListOfStrings))
-      assert_equal(false, null == ListOfStrings)
+      #assert_equal(false, null == ListOfStrings)
     enddef
     Bar()
   END
@@ -201,7 +201,7 @@ def Test_typealias()
     type MyType = list<number>
     MyType = [1, 2, 3]
   END
-  v9.CheckSourceFailure(lines, 'E1395: Type alias "MyType" cannot be modified', 3)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "MyType" cannot be used as a value', 3)
 
   # Assigning a type alias (def function level)
   lines =<< trim END
@@ -219,11 +219,11 @@ def Test_typealias()
     vim9script
     type MyType = list<number>
     assert_fails('var m = MyType', 'E1403: Type alias "MyType" cannot be used as a value')
-    assert_fails('var i = MyType + 1', 'E1400: Using type alias "MyType" as a Number')
-    assert_fails('var f = 1.0 + MyType', 'E1400: Using type alias "MyType" as a Number')
-    assert_fails('MyType += 10', 'E1395: Type alias "MyType" cannot be modified')
-    assert_fails('var x = $"-{MyType}-"', 'E1402: Using type alias "MyType" as a String')
-    assert_fails('var x = MyType[1]', 'E909: Cannot index a special variable')
+    assert_fails('var i = MyType + 1', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var f = 1.0 + MyType', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('MyType += 10', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var x = $"-{MyType}-"', 'E1403: Type alias "MyType" cannot be used as a value')
+    assert_fails('var x = MyType[1]', 'E1403: Type alias "MyType" cannot be used as a value')
   END
   v9.CheckSourceSuccess(lines)
 
@@ -236,7 +236,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1051: Wrong argument type for +', 1)
+  v9.CheckSourceFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
   # Using type alias in an expression (def function level)
   lines =<< trim END
@@ -305,7 +305,7 @@ def Test_typealias()
     var n: number
     var x = A == n
   END
-  v9.CheckSourceFailure(lines, 'E1072: Cannot compare typealias with number', 4)
+  v9.CheckSourceFailure(lines, 'E1403: Type alias "A" cannot be used as a value', 4)
 
   # Comparing type alias with a number (def function level)
   lines =<< trim END
@@ -317,7 +317,7 @@ def Test_typealias()
     enddef
     Foo()
   END
-  v9.CheckSourceFailure(lines, 'E1072: Cannot compare typealias with number', 2)
+  v9.CheckSourceFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 2)
 
   # casting a number to a type alias (script level)
   lines =<< trim END

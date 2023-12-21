@@ -255,13 +255,18 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 }
 
     static int
-check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
+check_number_or_float(type_T *typ1, type_T *typ2, char_u *op)
 {
+    vartype_T	    type1 = typ1->tt_type;
+    vartype_T	    type2 = typ2->tt_type;
     if (!((type1 == VAR_NUMBER || type1 == VAR_FLOAT
 				   || type1 == VAR_ANY || type1 == VAR_UNKNOWN)
 	    && (type2 == VAR_NUMBER || type2 == VAR_FLOAT
 				 || type2 == VAR_ANY || type2 == VAR_UNKNOWN)))
     {
+	if (check_type_is_value(typ1) == FAIL
+		|| check_type_is_value(typ2) == FAIL)
+	    return FAIL;
 	if (*op == '+')
 	    emsg(_(e_wrong_argument_type_for_plus));
 	else
@@ -294,8 +299,7 @@ generate_add_instr(
 	    && type1->tt_type != VAR_UNKNOWN
 	    && type2->tt_type != VAR_ANY
 	    && type2->tt_type != VAR_UNKNOWN
-	    && check_number_or_float(
-			type1->tt_type, type2->tt_type, (char_u *)"+") == FAIL)
+	    && check_number_or_float(type1, type2, (char_u *)"+") == FAIL)
 	return FAIL;
 
     if (isn != NULL)
@@ -362,8 +366,7 @@ generate_two_op(cctx_T *cctx, char_u *op)
 
 	case '-':
 	case '*':
-	case '/': if (check_number_or_float(type1->tt_type, type2->tt_type,
-								   op) == FAIL)
+	case '/': if (check_number_or_float(type1, type2, op) == FAIL)
 		      return FAIL;
 		  if (vartype == VAR_NUMBER)
 		      isn = generate_instr_drop(cctx, ISN_OPNR, 1);
@@ -409,6 +412,19 @@ generate_two_op(cctx_T *cctx, char_u *op)
 }
 
 /*
+ * Choose correct error message for the specified type information.
+ */
+    static isntype_T
+compare_isn_not_values(typval_T *tv, type_T *type)
+{
+    if (tv != NULL)
+	check_typval_is_value(tv);
+    else
+	check_type_is_value(type);
+    return ISN_DROP;
+}
+
+/*
  * Get the instruction to use for comparing two values with specified types.
  * Either "tv1" and "tv2" are passed or "type1" and "type2".
  * Return ISN_DROP when failed.
@@ -425,6 +441,11 @@ get_compare_isn(
     vartype_T	vartype1 = tv1 != NULL ? tv1->v_type : type1->tt_type;
     vartype_T	vartype2 = tv2 != NULL ? tv2->v_type : type2->tt_type;
 
+    if (vartype1 == VAR_CLASS || vartype1 == VAR_TYPEALIAS)
+	return compare_isn_not_values(tv1, type1);
+    if (vartype2 == VAR_CLASS || vartype2 == VAR_TYPEALIAS)
+	return compare_isn_not_values(tv2, type2);
+
     if (vartype1 == vartype2)
     {
 	switch (vartype1)
@@ -438,7 +459,6 @@ get_compare_isn(
 	    case VAR_LIST: isntype = ISN_COMPARELIST; break;
 	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
 	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
-	    case VAR_CLASS: isntype = ISN_COMPARECLASS; break;
 	    case VAR_OBJECT: isntype = ISN_COMPAREOBJECT; break;
 	    default: isntype = ISN_COMPAREANY; break;
 	}
@@ -481,7 +501,7 @@ get_compare_isn(
     }
     if (!(exprtype == EXPR_IS || exprtype == EXPR_ISNOT
 		|| exprtype == EXPR_EQUAL || exprtype == EXPR_NEQUAL)
-	    && (isntype == ISN_COMPAREOBJECT || isntype == ISN_COMPARECLASS))
+	    && (isntype == ISN_COMPAREOBJECT))
     {
 	semsg(_(e_invalid_operation_for_str), vartype_name(vartype1));
 	return ISN_DROP;
@@ -2700,7 +2720,6 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREANY:
 	case ISN_COMPAREBLOB:
 	case ISN_COMPAREBOOL:
-	case ISN_COMPARECLASS:
 	case ISN_COMPAREDICT:
 	case ISN_COMPAREFLOAT:
 	case ISN_COMPAREFUNC:
