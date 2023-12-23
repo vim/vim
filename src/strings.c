@@ -2469,6 +2469,28 @@ adjust_types(
     return OK;
 }
 
+    static void
+format_overflow_error(const char *pstart)
+{
+    size_t	arglen = 0;
+    char	*argcopy = NULL;
+    const char	*p = pstart;
+
+    while (VIM_ISDIGIT((int)(*p)))
+	++p;
+
+    arglen = p - pstart;
+    argcopy = ALLOC_CLEAR_MULT(char *, arglen + 1);
+    if (argcopy != NULL)
+    {
+	strncpy(argcopy, pstart, arglen);
+	semsg(_( e_val_too_large), argcopy);
+	free(argcopy);
+    }
+    else
+	semsg(_(e_out_of_memory_allocating_nr_bytes), arglen);
+}
+
     static int
 parse_fmt_types(
     const char  ***ap_types,
@@ -2539,10 +2561,7 @@ parse_fmt_types(
 		    uj = 10 * uj + (unsigned int)(*p++ - '0');
 		if (uj > 6400)
 		{
-		    while (VIM_ISDIGIT((int)(*p)))
-			++p;
-		    *(char *)p = '\0';
-		    semsg(_( e_val_too_large), pstart);
+		    format_overflow_error(pstart);
 		    goto error;
 		}
 		pos_arg = uj;
@@ -2587,10 +2606,7 @@ parse_fmt_types(
 			uj = 10 * uj + (unsigned int)(*p++ - '0');
 		    if (uj > 6400)
 		    {
-			while (VIM_ISDIGIT((int)(*p)))
-			    ++p;
-			*(char *)p = '\0';
-			semsg(_( e_val_too_large), arg);
+			format_overflow_error(arg + 1);
 			goto error;
 		    }
 
@@ -2619,17 +2635,14 @@ parse_fmt_types(
 	    {
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
-		const char *arg = p;
+		const char *digstart = p;
 		unsigned int uj = *p++ - '0';
 
 		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 		    uj = 10 * uj + (unsigned int)(*p++ - '0');
 		if (uj > 6400)
 		{
-		    while (VIM_ISDIGIT((int)(*p)))
-			++p;
-		    *(char *)p = '\0';
-		    semsg(_( e_val_too_large), arg);
+		    format_overflow_error(digstart);
 		    goto error;
 		}
 
@@ -2658,10 +2671,7 @@ parse_fmt_types(
 			    uj = 10 * uj + (unsigned int)(*p++ - '0');
 			if (uj > 6400)
 			{
-			    while (VIM_ISDIGIT((int)(*p)))
-				++p;
-			    *(char *)p = '\0';
-			    semsg(_( e_val_too_large), arg+1);
+			    format_overflow_error(arg + 1);
 			    goto error;
 			}
 
@@ -2691,17 +2701,14 @@ parse_fmt_types(
 		{
 		    // size_t could be wider than unsigned int; make sure we
 		    // treat argument like common implementations do
-		    const char *arg = p;
+		    const char *digstart = p;
 		    unsigned int uj = *p++ - '0';
 
 		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 			uj = 10 * uj + (unsigned int)(*p++ - '0');
 		    if (uj > 6400)
 		    {
-			while (VIM_ISDIGIT((int)(*p)))
-			    ++p;
-			*(char *)p = '\0';
-			semsg(_( e_val_too_large), arg);
+			format_overflow_error(digstart);
 			goto error;
 		    }
 
@@ -3013,17 +3020,14 @@ vim_vsnprintf_typval(
 	    if (*ptype == '$')
 	    {
 		// Positional argument
-		const char *arg = p;
+		const char *digstart = p;
 		unsigned int uj = *p++ - '0';
 
 		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 		    uj = 10 * uj + (unsigned int)(*p++ - '0');
 		if (uj > 6400)
 		{
-		    while (VIM_ISDIGIT((int)(*p)))
-			++p;
-		    *(char *)p = '\0';
-		    semsg(_( e_val_too_large), arg);
+		    format_overflow_error(digstart);
 		    goto error;
 		}
 		pos_arg = uj;
@@ -3062,17 +3066,14 @@ vim_vsnprintf_typval(
 		if (VIM_ISDIGIT((int)(*p)))
 		{
 		    // Positional argument field width
-		    const char *arg = p;
+		    const char *digstart = p;
 		    unsigned int uj = *p++ - '0';
 
 		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 			uj = 10 * uj + (unsigned int)(*p++ - '0');
 		    if (uj > 6400)
 		    {
-			while (VIM_ISDIGIT((int)(*p)))
-			    ++p;
-			*(char *)p = '\0';
-			semsg(_( e_val_too_large), arg);
+			format_overflow_error(digstart);
 			goto error;
 		    }
 		    arg_idx = uj;
@@ -3100,17 +3101,14 @@ vim_vsnprintf_typval(
 	    {
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
-		const char *arg = p;
+		const char *digstart = p;
 		unsigned int uj = *p++ - '0';
 
 		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 		    uj = 10 * uj + (unsigned int)(*p++ - '0');
 		if (uj > 6400)
 		{
-		    while (VIM_ISDIGIT((int)(*p)))
-			++p;
-		    *(char *)p = '\0';
-		    semsg(_( e_val_too_large), arg);
+		    format_overflow_error(digstart);
 		    goto error;
 		}
 		min_field_width = uj;
@@ -3126,17 +3124,14 @@ vim_vsnprintf_typval(
 		{
 		    // size_t could be wider than unsigned int; make sure we
 		    // treat argument like common implementations do
-		    const char *arg = p;
+		    const char *digstart = p;
 		    unsigned int uj = *p++ - '0';
 
 		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 			uj = 10 * uj + (unsigned int)(*p++ - '0');
 		    if (uj > 6400)
 		    {
-			while (VIM_ISDIGIT((int)(*p)))
-			    ++p;
-			*(char *)p = '\0';
-			semsg(_( e_val_too_large), arg);
+			format_overflow_error(digstart);
 			goto error;
 		    }
 		    precision = uj;
@@ -3150,17 +3145,14 @@ vim_vsnprintf_typval(
 		    if (VIM_ISDIGIT((int)(*p)))
 		    {
 			// positional argument
-			const char *arg = p;
+			const char *digstart = p;
 			unsigned int uj = *p++ - '0';
 
 			while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
 			    uj = 10 * uj + (unsigned int)(*p++ - '0');
 			if (uj > 6400)
 			{
-			    while (VIM_ISDIGIT((int)(*p)))
-				++p;
-			    *(char *)p = '\0';
-			    semsg(_( e_val_too_large), arg);
+			    format_overflow_error(digstart);
 			    goto error;
 			}
 			arg_idx = uj;
