@@ -2480,7 +2480,7 @@ format_overflow_error(const char *pstart)
 	++p;
 
     arglen = p - pstart;
-    argcopy = ALLOC_CLEAR_MULT(char *, arglen + 1);
+    argcopy = ALLOC_CLEAR_MULT(char, arglen + 1);
     if (argcopy != NULL)
     {
 	strncpy(argcopy, pstart, arglen);
