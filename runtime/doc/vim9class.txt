@@ -346,8 +346,8 @@ underscore as the first character in the method name: >
     endclass
 <
 							*E1370*
-Note that constructors cannot be declared as "static", because they always
-are.
+Note that constructors cannot be declared as "static". They are called like a
+static but execute as an object method; they have access to "this".
 
 To access the class methods and class variables of a super class in an
 extended class, the class name prefix should be used just as from anywhere
