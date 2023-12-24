@@ -5,7 +5,7 @@
 " 		      Tom Payne <tom@tompayne.org>
 " Contributor:        Johannes Ranke <jranke@uni-bremen.de>
 " Homepage:           https://github.com/jalvesaq/R-Vim-runtime
-" Last Change:	      Sun Dec 24, 2023  07:20AM
+" Last Change:	      Sun Dec 24, 2023  08:05AM
 " Filenames:	      *.R *.r *.Rhistory *.Rt
 "
 " NOTE: The highlighting of R functions might be defined in
@@ -26,7 +26,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-setlocal iskeyword=@,48-57,_,.
+syn iskeyword @,48-57,_,.
 
 " The variables g:r_hl_roxygen and g:r_syn_minlines were renamed on April 8, 2017.
 if exists("g:r_hl_roxygen")
