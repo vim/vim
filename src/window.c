@@ -5381,11 +5381,15 @@ win_enter_ext(win_T *wp, int flags)
     // may have to copy the buffer options when 'cpo' contains 'S'
     if (wp->w_buffer != curbuf)
 	buf_copy_options(wp->w_buffer, BCO_ENTER | BCO_NOHELP);
+
     if (curwin_invalid == 0)
     {
 	prevwin = curwin;	// remember for CTRL-W p
 	curwin->w_redr_status = TRUE;
     }
+    else if (wp == prevwin)
+	prevwin = NULL;		// don't want it to be the new curwin
+
     curwin = wp;
     curbuf = wp->w_buffer;
     check_cursor();
