@@ -11039,6 +11039,7 @@ vim9	vim9.txt	/*vim9*
 vim9-access-modes	vim9class.txt	/*vim9-access-modes*
 vim9-autoload	vim9.txt	/*vim9-autoload*
 vim9-boolean	vim9.txt	/*vim9-boolean*
+vim9-class	vim9class.txt	/*vim9-class*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-curly	vim9.txt	/*vim9-curly*

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 May 28
+*map.txt*       For Vim version 9.0.  Last change: 2023 December 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -406,7 +406,7 @@ Note:
 							*E1255* *E1136*
 <Cmd> and <ScriptCmd> commands must terminate, that is, they must be followed
 by <CR> in the {rhs} of the mapping definition.  |Command-line| mode is never
-entered.
+entered.  To use a literal <CR> in the {rhs}, use |<lt>|.
 
 
 1.3 MAPPING AND MODES					*:map-modes*
