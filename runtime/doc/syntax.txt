@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jan 06
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1026,6 +1026,8 @@ Variable		Highlight ~
 *c_no_c99*		don't highlight C99 standard items
 *c_no_c11*		don't highlight C11 standard items
 *c_no_bsd*		don't highlight BSD specific types
+*c_functions*		highlight function calls and definitions
+*c_function_pointers*	highlight function pointers definitions
 
 When 'foldmethod' is set to "syntax" then /* */ comments and { } blocks will
 become a fold.  If you don't want comments to become a fold use: >
