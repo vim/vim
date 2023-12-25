@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim Ukrainian\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-24 11:51+0300\n"
-"PO-Revision-Date: 2023-08-27 07:48+0300\n"
+"POT-Creation-Date: 2023-12-23 18:03+0200\n"
+"PO-Revision-Date: 2023-12-24 17:01+0200\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Ukrainian\n"
 "Language: uk\n"
@@ -6123,10 +6123,6 @@ msgstr "E613: Невідомий шрифт принтера: %s"
 msgid "E614: Class required"
 msgstr "E614: Потрібен клас"
 
-# msgstr "E396: "
-msgid "E615: Object required"
-msgstr "E615: Потрібен об’єкт"
-
 #, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: Потрібен об’єкт в аргументі %d"
@@ -6235,9 +6231,6 @@ msgstr "E647: Некоректний ідентифікатор буфера в 
 
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Некоректний ідентифікатор буфера у close"
-
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: Некоректний ідентифікатор буфера у close"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Некоректний ідентифікатор буфера у defineAnnoType"
@@ -6368,8 +6361,9 @@ msgstr "E687: Цілей менше, ніж елементів списку"
 msgid "E688: More targets than List items"
 msgstr "E688: Цілей більше, ніж елементів списку"
 
-msgid "E689: Can only index a List, Dictionary or Blob"
-msgstr "E689: Індексний доступ може бути тільки до List, Dictionary чи Blob"
+#, c-format
+msgid "E689: Index not allowed after a %s: %s"
+msgstr "E689: Індекс не дозволено після %s: %s"
 
 msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Пропущено «in» після :for"
@@ -6381,8 +6375,8 @@ msgid "E692: Invalid operation for List"
 msgstr "E692: Некоректна операція над списком"
 
 #, c-format
-msgid "E693: List or Class required for argument %d"
-msgstr "E693: Потрібен List або Class в аргументі %d"
+msgid "E693: Class or class typealias required for argument %d"
+msgstr "E693: Потрібен клас або псевдонім класу в аргументі %d"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Некоректна операція над функцією"
@@ -7354,8 +7348,8 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Неправильна дія: «%s»"
 
 #, c-format
-msgid "E963: Setting %s to value with wrong type"
-msgstr "E963: Встановлення значення з неправильним типом у %s"
+msgid "E963: Setting v:%s to value with wrong type"
+msgstr "E963: Встановлення значення з неправильним типом у v:%s"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
@@ -8226,8 +8220,8 @@ msgid "E1202: No white space allowed after '%s': %s"
 msgstr "E1202: Не дозволено пропуск після '%s': %s"
 
 #, c-format
-msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E1203: Крапку можна вжити тільки із словником: %s"
+msgid "E1203: Dot not allowed after a %s: %s"
+msgstr "E1203: Не дозволено після %s: %s"
 
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
@@ -8654,40 +8648,40 @@ msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: Клас можна визначити тільки у скрипті Vim9"
 
 #, c-format
-msgid "E1317: Invalid object member declaration: %s"
-msgstr "E1317: Некоректне оголошення члена об’єкта: %s"
+msgid "E1317: Invalid object variable declaration: %s"
+msgstr "E1317: Некоректне оголошення змінної об’єкта: %s"
 
 # msgstr "E181: "
 #, c-format
 msgid "E1318: Not a valid command in a class: %s"
 msgstr "E1318: Некоректна команда в класі: %s"
 
-msgid "E1319: Using a class as a Number"
+msgid "E1319: Using a Class as a Number"
 msgstr "E1319: Клас вжито як Number"
 
-msgid "E1320: Using an object as a Number"
+msgid "E1320: Using an Object as a Number"
 msgstr "E1320: Об’єкт вжито як Number"
 
-msgid "E1321: Using a class as a Float"
+msgid "E1321: Using a Class as a Float"
 msgstr "E1321: Клас вжито як Float"
 
-msgid "E1322: Using an object as a Float"
+msgid "E1322: Using an Object as a Float"
 msgstr "E1322: Об’єкт вжито як Float"
 
 # msgstr "E373: "
-msgid "E1323: Using a class as a String"
+msgid "E1323: Using a Class as a String"
 msgstr "E1323: Клас вжито як String"
 
-msgid "E1324: Using an object as a String"
+msgid "E1324: Using an Object as a String"
 msgstr "E1324: Об’єкт вжито як String"
 
 #, c-format
-msgid "E1325: Method not found on class \"%s\": %s"
-msgstr "E1325: Метод не знайдено в класі «%s»: %s"
+msgid "E1325: Method \"%s\" not found in class \"%s\""
+msgstr "E1325: Метод «%s» не знайдено в класі «%s»"
 
 #, c-format
-msgid "E1326: Member not found on object \"%s\": %s"
-msgstr "E1326: Член не знайдено в об’єкті «%s»: %s"
+msgid "E1326: Variable \"%s\" not found in object \"%s\""
+msgstr "E1326: Змінну «%s» не знайдено в об’єкті «%s»"
 
 # msgstr "E178: "
 #, c-format
@@ -8699,42 +8693,36 @@ msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Початкове значення конструктора має бути v:none: %s"
 
 #, c-format
-msgid "E1329: Cannot get object member type from initializer: %s"
-msgstr "E1329: Не можна дістати тип члена об’єкта з ініціалізатора: %s"
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Некоректне оголошення змінної об’єкта: %s"
 
 #, c-format
-msgid "E1330: Invalid type for object member: %s"
-msgstr "E1330: Некоректний тип для члена об’єкта: %s"
+msgid "E1330: Invalid type for object variable: %s"
+msgstr "E1330: Некоректний тип для змінної об’єкта: %s"
 
-msgid "E1331: Public must be followed by \"this\" or \"static\""
-msgstr "E1331: За public має йти «this» або «static»"
-
-#, c-format
-msgid "E1332: Public member name cannot start with underscore: %s"
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
 msgstr ""
-"E1332: Назва відкритого члена (public) не може починатися із підкреслення: %s"
+"E1331: За public має йти «var» або «static» або «final» або "
+"«const»"
 
 #, c-format
-msgid "E1333: Cannot access private member: %s"
-msgstr "E1333: Неможливо доступитися до приватного члена: %s"
-
-# msgstr "E333: "
-#, c-format
-msgid "E1334: Object member not found: %s"
-msgstr "E1334: Член об’єкта не знайдено: %s"
+msgid "E1332: Public variable name cannot start with underscore: %s"
+msgstr ""
+"E1332: Назва відкритої (public) змінної класу не може починатися із підкреслення: %s"
 
 #, c-format
-msgid "E1335: Member is not writable: %s"
-msgstr "E1335: Член не доступний для запису: %s"
-
-# msgstr "E333: "
-#, c-format
-msgid "E1337: Class member not found: %s"
-msgstr "E1337: Член класу не знайдено: %s"
+msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
+msgstr "E1333: Неможливо доступитися до захищеної змінної «%s» у класі «%s»"
 
 #, c-format
-msgid "E1338: Member not found on class \"%s\": %s"
-msgstr "E1338: Член не знайдено в класі «%s»: %s"
+msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
+msgstr "E1335: У змінну «%s» класу «%s» не дозволено запис"
+
+#, c-format
+msgid "E1337: Class variable \"%s\" not found in class \"%s\""
+msgstr "E1337: Змінну «%s» класу не знайдено в класі «%s»"
 
 msgid ""
 "E1339: Cannot add a textprop with text after using a textprop with a "
@@ -8760,8 +8748,8 @@ msgstr "E1342: Інтерфейс можна визначити тільки у 
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr "E1343: Назва інтерфейсу повинна починатися з великої літери: %s"
 
-msgid "E1344: Cannot initialize a member in an interface"
-msgstr "E1344: Неможливо ініціалізувати член в інтерфейсі"
+msgid "E1344: Cannot initialize a variable in an interface"
+msgstr "E1344: Неможливо ініціалізувати змінну в інтерфейсі"
 
 #, c-format
 msgid "E1345: Not a valid command in an interface: %s"
@@ -8776,12 +8764,12 @@ msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: Некоректний інтерфейс: %s"
 
 #, c-format
-msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
-msgstr "E1348: Член «%s» інтерфейсу «%s» не втілено"
+msgid "E1348: Variable \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1348: Змінну «%s» інтерфейсу «%s» не втілено"
 
 #, c-format
-msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
-msgstr "E1349: Функцію «%s» інтерфейсу «%s» не втілено"
+msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
+msgstr "E1349: Метод «%s» інтерфейсу «%s» не втілено"
 
 msgid "E1350: Duplicate \"implements\""
 msgstr "E1350: Повторення «implements»"
@@ -8809,14 +8797,14 @@ msgstr "E1355: Функція повторюється: %s"
 msgid "E1356: \"super\" must be followed by a dot"
 msgstr "E1356: За «super» має йти крапка"
 
-msgid "E1357: Using \"super\" not in a class function"
-msgstr "E1357: «super» вжито поза функцією класу"
+msgid "E1357: Using \"super\" not in a class method"
+msgstr "E1357: «super» вжито поза методом класу"
 
 msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: «super» вжито не в похідному класі"
 
-msgid "E1359: Cannot define a \"new\" function in an abstract class"
-msgstr "E1359: Неможливо визначити функцію «new» в абстрактному класі"
+msgid "E1359: Cannot define a \"new\" method in an abstract class"
+msgstr "E1359: Неможливо визначити метод «new» в абстрактному класі"
 
 msgid "E1360: Using a null object"
 msgstr "E1360: Застосовано об’єкт null"
@@ -8833,44 +8821,230 @@ msgstr "E1363: Неповний тип"
 msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Попередження: Пошкоджено блок вказівника"
 
-msgid "E1365: Cannot use a return type with the \"new\" function"
-msgstr "E1365: Неможливо вжити тип повернення у функції «new»"
+msgid "E1365: Cannot use a return type with the \"new\" method"
+msgstr "E1365: Неможливо вжити тип повернення у методі «new»"
 
 #, c-format
-msgid "E1400: Cannot mix positional and non-positional arguments: %s"
-msgstr "E1400: Неможливо змішувати позиційні й непозиційні аргументи: %s"
+msgid "E1366: Cannot access protected method: %s"
+msgstr "E1366: Неможливо доступитися до захищеного члена: %s"
 
 #, c-format
-msgid "E1401: format argument %d unused in $-style format: %s"
-msgstr "E1401: аргумент %d формату не використано у $-форматуванні: %s"
+msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
+msgstr "E1367: Рівень доступу змінної «%s» інтерфейсу «%s» інший"
+
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
+msgstr ""
+"E1368: За static має йти «var» або «def» або «final» або "
+"«const»"
+
+#, c-format
+msgid "E1369: Duplicate variable: %s"
+msgstr "E1369: Змінна повторюється: %s"
+
+msgid "E1370: Cannot define a \"new\" method as static"
+msgstr "E1370: Неможливо визначити метод «new» статично"
+
+msgid "E1371: Abstract must be followed by \"def\""
+msgstr "E1371: За «abstract» має йти «def»"
+
+# msgstr "E327: "
+#, c-format
+msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
+msgstr "E1372: Абстрактний метод «%s» не можна визначити у конкретному класі"
+
+#, c-format
+msgid "E1373: Abstract method \"%s\" is not implemented"
+msgstr "E1373: Абстрактний метод «%s» не втілено"
+
+#, c-format
+msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
+msgstr "E1374: Змінна «%s» класу доступна тільки всередині класу «%s»"
+
+#, c-format
+msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
+msgstr "E1375: Змінна «%s» класу доступна тільки через клас «%s»"
+
+#, c-format
+msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
+msgstr "E1376: Змінна «%s» об’єкту доступна тільки через об’єкт класу «%s»"
+
+#, c-format
+msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
+msgstr "E1377: Рівень доступу методу «%s» відрізняється у класі «%s»"
+
+msgid "E1378: Static member not supported in an interface"
+msgstr "E1378: Статичний метод не підтримується в інтерфейсі"
+
+msgid "E1379: Protected variable not supported in an interface"
+msgstr "E1379: Захищена змінна не підтримується в інтерфейсі"
+
+msgid "E1380: Protected method not supported in an interface"
+msgstr "E1380: Захищений метод не підтримується в інтерфейсі"
+
+msgid "E1381: Interface cannot use \"implements\""
+msgstr "E1381: Інтерфейс не може застосувати «implements»"
+
+#, c-format
+msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1382: Змінна «%s»: неспівпадіння типу, очікується %s, а отримано %s"
+
+#, c-format
+msgid "E1383: Method \"%s\": type mismatch, expected %s but got %s"
+msgstr "E1383: Метод «%s»: неспівпадіння типу, очікується %s, а отримано %s"
+
+#, c-format
+msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
+msgstr "E1384: Метод «%s» класу доступний тільки всередині класу «%s»"
+
+#, c-format
+msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
+msgstr "E1385: Метод «%s» класу доступний тільки з класом «%s»"
+
+#, c-format
+msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
+msgstr "E1386: Метод «%s» класу доступний тільки з об’єктом класу «%s»"
+
+msgid "E1387: Public variable not supported in an interface"
+msgstr "E1387: Відкрита (public) змінна не підтримується в інтерфейсі"
+
+msgid "E1388: Public keyword not supported for a method"
+msgstr "E1388: Ключове слово public не підтримується у методі"
+
+msgid "E1389: Missing name after implements"
+msgstr "E1389: Бракує назви після implements"
 
 #, c-format
 msgid ""
-"E1402: Positional argument %d used as field width reused as different type: "
+"E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
+"method"
+msgstr "E1365: Неможливо вжити тип повернення у функції «new»"
+"E1390: Неможливо вжити змінну об’єкту «this.%s», хіба що з методом «new»"
+
+#, c-format
+msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
+msgstr "E1391: Неможливо (роз)блокувати змінну «%s» у класі «%s»"
+
+#, c-format
+msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
+msgstr "E1392: Неможливо (роз)блокувати змінну «%s» класу «%s»"
+
+# msgstr "E327: "
+msgid "E1393: Type can only be defined in Vim9 script"
+msgstr "E1393: Тип можна визначити тільки у скрипті Vim9"
+
+# msgstr "E182: "
+#, c-format
+msgid "E1394: Type name must start with an uppercase letter: %s"
+msgstr "E1394: Назва типу має починатися з великої літери: %s"
+
+#, c-format
+msgid "E1395: Type alias \"%s\" cannot be modified"
+msgstr "E1395: Псевдонім «%s» типу змінити неможливо"
+
+#, c-format
+msgid "E1396: Type alias \"%s\" already exists"
+msgstr "E1396: Псевдонім «%s» типу вже існує"
+
+msgid "E1397: Missing type alias name"
+msgstr "E1397: Пропущено назву псевдоніму типу"
+
+msgid "E1398: Missing type alias type"
+msgstr "E1398: Бракує типу псевдоніму типу"
+
+# msgstr "E327: "
+msgid "E1399: Type can only be used in a script"
+msgstr "E1399: Тип можна вжити тільки у скрипті"
+
+#, c-format
+msgid "E1400: Using type alias \"%s\" as a Number"
+msgstr "E1400: Псевдонім «%s» типу вжито як Number"
+
+#, c-format
+msgid "E1401: Using type alias \"%s\" as a Float"
+msgstr "E1401: Псевдонім «%s» типу вжито як Float"
+
+# msgstr "E373: "
+#, c-format
+msgid "E1402: Using type alias \"%s\" as a String"
+msgstr "E1402: Псевдонім «%s» типу вжито як String"
+
+#, c-format
+msgid "E1403: Type alias \"%s\" cannot be used as a value"
+msgstr "E1403: Псевдонім «%s» типу не можна вжити як величину"
+
+# msgstr "E327: "
+msgid "E1404: Abstract cannot be used in an interface"
+msgstr "E1404: Abstract не можна вжити в інтерфейсі"
+
+#, c-format
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405: Клас «%s» неможливо вжити як величину"
+
+msgid "E1406: Cannot use a Class as a variable or value"
+msgstr "E1406: Неможливо вжити клас як змінну чи величину"
+
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr "E1407: Неможливо вжити псевдонім типу як змінну чи величину"
+
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: Фіналізована (final) змінна не підтримується в інтерфейсі"
+
+#, c-format
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr "E1409: Неможливо змінити змінну «%s» тільки для читання у класі «%s»"
+
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: Стала (const) змінна не підтримується в інтерфейсі"
+
+#, c-format
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: Бракує крапки після об’єкту «%s»"
+
+#, c-format
+msgid "E1500: Cannot mix positional and non-positional arguments: %s"
+msgstr "E1500: Неможливо змішувати позиційні й непозиційні аргументи: %s"
+
+#, c-format
+msgid "E1501: format argument %d unused in $-style format: %s"
+msgstr "E1501: аргумент %d формату не використано у $-форматуванні: %s"
+
+#, c-format
+msgid ""
+"E1502: Positional argument %d used as field width reused as different type: "
 "%s/%s"
 msgstr ""
-"E1402: Позиційний аргумент %d, що задає ширину поля, вжито як інший тип: %s/"
+"E1502: Позиційний аргумент %d, що задає ширину поля, вжито повторно з іншим типом: %s/"
 "%s"
 
 #, c-format
-msgid "E1403: Positional argument %d out of bounds: %s"
-msgstr "E1403: Позиційний аргумент %d поза межами: %s"
+msgid "E1503: Positional argument %d out of bounds: %s"
+msgstr "E1503: Позиційний аргумент %d поза межами: %s"
 
 #, c-format
-msgid "E1404: Positional argument %d type used inconsistently: %s/%s"
-msgstr "E1404: Тип позиційного аргументу %d вжито нерегулярно: %s/%s"
+msgid "E1504: Positional argument %d type used inconsistently: %s/%s"
+msgstr "E1504: Тип позиційного аргументу %d вжито нерегулярно: %s/%s"
 
 #, c-format
-msgid "E1405: Invalid format specifier: %s"
-msgstr "E1405: Некоректний специфікатор формату: %s"
+msgid "E1505: Invalid format specifier: %s"
+msgstr "E1505: Некоректний специфікатор формату: %s"
+
+msgid "E1506: Buffer too small to copy xattr value or key"
+msgstr "E1506: Буфер замалий для копіювання величини або ключа xattr"
+
+msgid ""
+"E1508: Size of the extended attribute value is larger than the maximum size "
+"allowed"
+msgstr ""
+"E1508: Розмір значення розширеного атрибуту більший, ніж максимальний дозволений розмір"
+
+msgid "E1509: Error occurred when reading or writing extended attribute"
+msgstr "E1509: Сталася помилка читання або запису розширеного атрибуту"
 
 #, c-format
-msgid "E1406: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1406: Член «%s»: неспівпадіння типів, очікується %s, а отримано %s"
-
-#, c-format
-msgid "E1407: Member \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1407: Член «%s»: неспівпадіння типів, очікується %s, а отримано %s"
+msgid "E1510: Value too large: %s"
+msgstr "E1510: Значення завелике: %s"
 
 # msgstr "E447: "
 msgid "--No lines in buffer--"
@@ -9246,8 +9420,7 @@ msgstr "(всюди або тільки в буфері)"
 
 msgid ""
 "\" Each \"set\" line shows the current value of an option (on the left)."
-msgstr ""
-"\" Кожен рядок «set» показує теперішнє значення опції (ліворуч)."
+msgstr "\" Кожен рядок «set» показує теперішнє значення опції (ліворуч)."
 
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
 msgstr "\" Натисніть <Enter> у рядку «set» щоб виконати."
@@ -9449,8 +9622,7 @@ msgid "which characters might cause a line break"
 msgstr "які символи можуть спричинити розбиття рядка"
 
 msgid "string to put before wrapped screen lines"
-msgstr ""
-"символи, які розмістити перед перенесеними екранними рядками"
+msgstr "символи, які розмістити перед перенесеними екранними рядками"
 
 msgid "minimal number of columns to scroll horizontally"
 msgstr "найменша кількість стовпців горизонтального прокручування"
