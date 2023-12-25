@@ -1757,8 +1757,7 @@ be inferred, then the type is "any": >
 Declaring a function, see |vim9-func-declaration|, is particularly unique.
 
 						*null-compare*
-For familiar null compare semantics, where a null container is not equal to
-an empty container, do not use null_<type> in a comparison: >
+It maybe a bit confusing to use null or null_<type> in a comparison: >
 	vim9script
 	def F(arg: list<string> = null_list)
 	    if arg == null
@@ -1771,16 +1770,17 @@ an empty container, do not use null_<type> in a comparison: >
 	F(null_list)	# output: "null"
 	F([])		# output: "not null, empty"
 	F([''])		# output: "not null, not empty"
+<
 The above function takes a `list of strings` and reports on it.
 Change the above function signature to accept different types of arguments: >
 	def F(arg: list<any> = null_list)   # any type of list
 	def F(arg: any = null)		    # any type
 <
-In the above example, where the goal is to distinguish a null list from an
-empty list, comparing against `null` instead of `null_list` is the correct
-choice. The basic reason is because "null_list == null" and "[] != null".
-Comparing to `null_list` fails since "[] == null_list". In the following section
-there are details about comparison results.
+NOTE: In the above example, the arg was assigned to a null container,
+comparing against `null` instead of `null_list` is ok. The basic reason is
+because "null_list == null" and "[] != null". Comparing to `null_list` fails
+since "[] == null_list". In the following section there are details about
+comparison results.
 
 					*null-details* *null-anomalies*
 This section describes issues about using null and null_<type>; included below
@@ -1804,6 +1804,9 @@ Here's an example: >
 	echo s1->add('a')   # output: "['a']"
 	echo s2->add('a')   # E1130: Can not add to null list
 <
+NOTE: the un-initialized var their type or value maybe unusual like other
+coding languages, specially e.g "var a: any" and "var s: string", see `E1134`.
+
 Two values equal to a null_<type> are not necessarily equal to each other: >
 	vim9script
 	echo {} == null_dict      # true
