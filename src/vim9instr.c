@@ -418,9 +418,9 @@ generate_two_op(cctx_T *cctx, char_u *op)
 compare_isn_not_values(typval_T *tv, type_T *type)
 {
     if (tv != NULL)
-	check_typval_is_value(tv);
+	(void)check_typval_is_value(tv);
     else
-	check_type_is_value(type);
+	(void)check_type_is_value(type);
     return ISN_DROP;
 }
 

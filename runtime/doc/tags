@@ -7302,6 +7302,7 @@ ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
 ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
 ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
+ft-rnoweb-plugin	filetype.txt	/*ft-rnoweb-plugin*
 ft-rrst-plugin	filetype.txt	/*ft-rrst-plugin*
 ft-rrst-syntax	syntax.txt	/*ft-rrst-syntax*
 ft-rst-plugin	filetype.txt	/*ft-rst-plugin*
@@ -9081,7 +9082,11 @@ notepad	gui_w32.txt	/*notepad*
 nr2char()	builtin.txt	/*nr2char()*
 nroff.vim	syntax.txt	/*nroff.vim*
 null	vim9.txt	/*null*
+null-anomalies	vim9.txt	/*null-anomalies*
+null-compare	vim9.txt	/*null-compare*
+null-details	vim9.txt	/*null-details*
 null-variable	eval.txt	/*null-variable*
+null-variables	vim9.txt	/*null-variables*
 null_blob	vim9.txt	/*null_blob*
 null_channel	vim9.txt	/*null_channel*
 null_class	vim9.txt	/*null_class*
@@ -10944,6 +10949,7 @@ val-variable	eval.txt	/*val-variable*
 valgrind	debug.txt	/*valgrind*
 values()	builtin.txt	/*values()*
 var-functions	usr_41.txt	/*var-functions*
+variable-categories	vim9.txt	/*variable-categories*
 variable-scope	eval.txt	/*variable-scope*
 variable-types	vim9.txt	/*variable-types*
 variables	eval.txt	/*variables*
@@ -11039,6 +11045,7 @@ vim9	vim9.txt	/*vim9*
 vim9-access-modes	vim9class.txt	/*vim9-access-modes*
 vim9-autoload	vim9.txt	/*vim9-autoload*
 vim9-boolean	vim9.txt	/*vim9-boolean*
+vim9-class	vim9class.txt	/*vim9-class*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-curly	vim9.txt	/*vim9-curly*

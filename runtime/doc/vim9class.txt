@@ -1,13 +1,10 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 14
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-NOTE - This is not finished yet, anything can still change! - NOTE
-
-
-Vim9 classes, objects, interfaces, types and enums.
+Vim9 classes, objects, interfaces, types and enums.		*vim9-class*
 
 1.  Overview			|Vim9-class-overview|
 2.  A simple class		|Vim9-simple-class|
@@ -346,8 +343,8 @@ underscore as the first character in the method name: >
     endclass
 <
 							*E1370*
-Note that constructors cannot be declared as "static", because they always
-are.
+Note that constructors cannot be declared as "static". They are called like a
+static but execute as an object method; they have access to "this".
 
 To access the class methods and class variables of a super class in an
 extended class, the class name prefix should be used just as from anywhere

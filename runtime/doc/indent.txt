@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 9.0.  Last change: 2023 Dec 09
+*indent.txt*    For Vim version 9.0.  Last change: 2023 Dec 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1040,8 +1040,8 @@ r_indent_comment_column, as in the example below:
    let r_indent_comment_column = 30
 <
 Any code after a line that ends with "<-" is indented. Emacs/ESS does not
-indent the code if it is a top level function. If you prefer that the
-Vim-R-plugin behaves like Emacs/ESS in this regard, put in your |vimrc|:
+indent the code if it is a top-level function. If you prefer a behavior like
+Emacs/ESS one in this regard, put in your |vimrc|:
 >
    let r_indent_ess_compatible = 1
 <
