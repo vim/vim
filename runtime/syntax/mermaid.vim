@@ -107,9 +107,8 @@ highlight link mermaidStatement Statement
 "syntax match mermaidIdentifier "[\+-]\?\w\+(.*)[\$\*]\?"
 "highlight link mermaidIdentifier Identifier
 
-syntax match mermaidType "[\+-\#\~]\?\cint\>"
-syntax match mermaidType "[\+-\#\~]\?\cString\>"
-syntax match mermaidType "[\+-\#\~]\?\cbool\>"
+syntax match mermaidType "[\+-\#\~]\?\c\%(const\s\+\|\*\s*\)*\%(unsigned\s\+\)\?\%(int\|u\?int\%(8\|16\|32\|64\)_t\|char\|long\|long\s\+long\)\>\%(\s\+const\|\s*[\*&]\)*"
+syntax match mermaidType "[\+-\#\~]\?\c\%(const\s\+\|\*\s*\)*\%(double\|float\|String\|bool\)\>\%(\s\+const\|\s*[\*&]\)*"
 syntax match mermaidType "[\+-\#\~]\?\cBigDecimal\>"
 syntax match mermaidType "[\+-\#\~]\?\cList\~.\+\~"
 syntax match mermaidType "<<\w\+>>"
