@@ -103,8 +103,9 @@ syntax match mermaidStatement ":::"
 syntax match mermaidStatement "||--o{"
 highlight link mermaidStatement Statement
 
-syntax match mermaidIdentifier "[\+-]\?\w\+(.*)[\$\*]\?"
-highlight link mermaidIdentifier Identifier
+" FIXME: This unexpectedly matches flow chart node `id1(text)` or others.
+"syntax match mermaidIdentifier "[\+-]\?\w\+(.*)[\$\*]\?"
+"highlight link mermaidIdentifier Identifier
 
 syntax match mermaidType "[\+-\#\~]\?\cint\>"
 syntax match mermaidType "[\+-\#\~]\?\cString\>"
