@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Fortran 2023 (and Fortran 2018, 2008, 2003, 95, 90, and 77)
-" Version:	(v108) 2023 December 22
+" Version:	(v108) 2023 December 27
 " Maintainers:	Ajit J. Thakkar <ajit@unb.ca>; <https://ajit.ext.unb.ca/>
 " 	        Joshua Hollett <j.hollett@uwinnipeg.ca>
 " Usage:	For instructions, do :help fortran-syntax from Vim
@@ -349,6 +349,9 @@ endif
 
 if exists("fortran_fold")
 
+  if has("folding")
+    setlocal foldmethod=syntax
+  endif
   if (b:fortran_fixed_source == 1)
     syn region fortranProgram transparent fold keepend start="^\s*program\s\+\z(\a\w*\)" skip="^\([!c*]\|\s*#\).*$" excludenl end="\<end\s*\(program\(\s\+\z1\>\)\=\|$\)" contains=ALLBUT,fortranModule
     syn region fortranModule transparent fold keepend start="^\s*submodule\s\+(\a\w*\s*\(:\a\w*\s*\)*)\s*\z\(\a\w*\)" skip="^\([!c*]\|\s*#\).*$" excludenl end="\<end\s*\(submodule\(\s\+\z1\>\)\=\|$\)" contains=ALLBUT,fortranProgram,fortranModule
