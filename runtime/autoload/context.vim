@@ -3,7 +3,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2022 Sep 19
+# Latest Revision:    2023 Dec 26
 
 # Typesetting {{{
 import autoload './typeset.vim'

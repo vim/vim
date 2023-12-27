@@ -1,4 +1,4 @@
-*ft_context.txt*	For Vim version 9.0.  Last change: 2022 Sep 27
+*ft_context.txt*	For Vim version 9.0.  Last change: 2023 Dec 26
 
 This is the documentation for the ConTeXt filetype plugin.
 
@@ -103,13 +103,13 @@ Stop all the ConTeXt jobs currently running in the background.
 Settings ~
 					*'b:context_ignore_makefile'*
 					*'g:context_ignore_makefile'*
-`:make` can be used to (synchronously) typeset a document. If a Makefile exists
+|make| can be used to (synchronously) typeset a document. If a Makefile exists
 and this option is not set, standard `make` is used. If this option is set,
 `mtxrun` is invoked instead, even if a Makefile exists.
 >
 	g:context_ignore_makefile = 0
 <
-NOTE: before using `:make`, set the working directory of the buffer to the
+NOTE: before using |make|, set the working directory of the buffer to the
 directory of the file to be typeset.
 
 					*'g:context_extra_options'*
