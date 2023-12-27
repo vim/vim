@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-12-16 20:11+0100\n"
+"PO-Revision-Date: 2023-12-27 16:38+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -5173,7 +5173,7 @@ msgid "E503: Coffee is currently not available"
 msgstr "E503: Caffè non disponibile al momento"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
-msgstr "è in sola lettura (non posso annullare: \"W\" in 'cpoptions')"
+msgstr "è in sola-lettura (non posso annullare: \"W\" in 'cpoptions')"
 
 msgid "is read-only (add ! to override)"
 msgstr "è in sola-lettura (aggiungi ! per eseguire comunque)"
@@ -6994,7 +6994,8 @@ msgid "E1085: Not a callable type: %s"
 msgstr "E1085: Tipo che non può essere chiamato: %s"
 
 msgid "E1087: Cannot use an index when declaring a variable"
-msgstr "E1087: Impossibile usare un indice nella dichiarazione di una variabile"
+msgstr ""
+"E1087: Impossibile usare un indice nella dichiarazione di una variabile"
 
 msgid "E1088: Script cannot import itself"
 msgstr "E1088: Uno script non può importare se stesso"
@@ -7211,8 +7212,7 @@ msgid "E1157: Missing return type"
 msgstr "E1157: Manca Tipo di valore restituito"
 
 msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
-msgstr ""
-"E1158: Impossibile usare flatten() in script Vim9, usare flattennew()"
+msgstr "E1158: Impossibile usare flatten() in script Vim9, usare flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr ""
@@ -7220,7 +7220,8 @@ msgstr ""
 
 msgid "E1160: Cannot use a default for variable arguments"
 msgstr ""
-"E1160: Impossibile usare un valore predefinito per argomenti di tipo variabile"
+"E1160: Impossibile usare un valore predefinito per argomenti di tipo "
+"variabile"
 
 msgid "E1161: Cannot json encode a %s"
 msgstr "E1161: Non si può codificare JSON un/a %s"
@@ -7261,8 +7262,7 @@ msgid "E1171: Missing } after inline function"
 msgstr "E1171: Manca } dopo una funzione in-linea"
 
 msgid "E1172: Cannot use default values in a lambda"
-msgstr ""
-"E1172: Impossibile usare valori predefiniti in un'espressione lambda"
+msgstr "E1172: Impossibile usare valori predefiniti in un'espressione lambda"
 
 msgid "E1173: Text found after %s: %s"
 msgstr "E1173: Trovato del testo dopo %s: %s"
@@ -7550,8 +7550,8 @@ msgstr ""
 
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
 msgstr ""
-"E1264: Impossibile usare percorso assoluto o relativo in import di "
-"Autoload: %s"
+"E1264: Impossibile usare percorso assoluto o relativo in import di Autoload: "
+"%s"
 
 msgid "E1265: Cannot use a partial here"
 msgstr "E1265: Impossibile usare un \"partial\" qui"
@@ -7766,8 +7766,11 @@ msgstr "E1329: Dichiarazione di variabile Classe non valida: %s"
 msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Tipo non valido per variabile Object: %s"
 
-msgid "E1331: Public must be followed by \"var\" or \"static\""
-msgstr "E1331: Public dev'essere seguito da \"var\" o \"static\""
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
+msgstr "E1331: Public dev'essere seguito da \"var\" o \"static\" o "
+"\"const\""
 
 msgid "E1332: Public variable name cannot start with underscore: %s"
 msgstr ""
@@ -7802,8 +7805,7 @@ msgstr "E1342: L'Interfaccia può essere definita solo negli script Vim9"
 
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr ""
-"E1343: Il nome dell'Interfaccia deve iniziare con lettera maiuscola: "
-"%s"
+"E1343: Il nome dell'Interfaccia deve iniziare con lettera maiuscola: %s"
 
 msgid "E1344: Cannot initialize a variable in an interface"
 msgstr "E1344: Non riesco a inizializzare una variabile in un'Interfaccia"
@@ -7879,8 +7881,12 @@ msgstr ""
 "E1367: Il livello di accesso alla variable \"%s\" di Interfaccia \"%s\" è "
 "differente"
 
-msgid "E1368: Static must be followed by \"var\" or \"def\""
-msgstr "E1368: \"Static\" deve essere seguito da \"var\" o \"def\""
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
+msgstr ""
+"E1368: \"Static\" deve essere seguito da \"var\" o \"def\" o "
+"\"const\""
 
 msgid "E1369: Duplicate variable: %s"
 msgstr "E1369: Variabile duplicata: %s"
@@ -8018,6 +8024,19 @@ msgstr "E1406: Impossibile usare una Classe come variabile o valore"
 
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Impossibile usare un Tipo alias come variabile o valore"
+
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: Variabile Finale non supportata in un'Interfaccia"
+
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr "E1409: Non posso cambiare variabile in sola-lettura \"%s\" "
+"in Classe \"%s\""
+
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: Variabile di tipo \"Const\" non supportata in un'Interfaccia"
+
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: Manca un punto dopo \"Object\" \"%s\""
 
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
