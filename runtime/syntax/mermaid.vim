@@ -2,7 +2,7 @@
 " Language:     Mermaid
 " Maintainer:   Craig MacEahern <https://github.com/craigmac/vim-mermaid>
 " Filenames:    *.mmd
-" Last Change:  2022 Nov 22
+" Last Change:  2023 Dec 26
 
 if exists("b:current_syntax")
   finish
