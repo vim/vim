@@ -6,7 +6,7 @@
 # Sergey Alyoshin, <alyoshin.s@gmail.com>, 2013-2014, 2016, 2018-2019
 # Matvey Tarasov, <matthewtarasov@yandex.ru>, 2022
 # Restorer, <restorer@mail2k.ru>, 2017, 2020-2023
-# URL: https://github.com/RestorerZ/RuVim
+#
 # Generated from ru.po, DO NOT EDIT.
 #
 #   Restorer
@@ -21,18 +21,18 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9002091.051123\n"
+"Project-Id-Version: RuVim_0.9002185.251223\n"
 "Report-Msgid-Bugs-To: The Vim Project, <vim-dev@vim.org>\n"
-"POT-Creation-Date: 2023-11-05 18:50+0300\n"
-"PO-Revision-Date: 2023-11-05 19:57+0300\n"
+"POT-Creation-Date: 2023-12-25 16:17+0300\n"
+"PO-Revision-Date: 2023-12-25 18:57+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CP1251\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 # #Restorer: выводится при анализе (профилировании) программы, функции и т. п.
 # ~!: earlier
@@ -552,8 +552,8 @@ msgstr "аргумента функции extend()"
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
 msgstr ""
-"Встроенному механизму сравнения недостаточно памяти на считывание буфера \"%s"
-"\""
+"Встроенному механизму сравнения недостаточно памяти на считывание буфера "
+"\"%s\""
 
 # #Restorer: выводится в заголовке окна выбора файла
 # :!~ Restorer
@@ -911,7 +911,7 @@ msgstr ""
 # :!~ Restorer
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr ""
-"Переключение в Ex-режим. Чтобы переключить в режим команд, наберите :visual"
+"Переключение в Ex-режим. Чтобы переключить в режим команд, наберите visual"
 
 # #Restorer: выводится при значении 'verbose'>=9
 # ~!: earlier
@@ -1246,7 +1246,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "See \":help W12\" for more info."
-msgstr "Чтобы получить дополнительную информацию, наберите \":help W12\""
+msgstr "Чтобы получить дополнительную информацию, наберите `:help W12`"
 
 # :!~ Restorer
 #, c-format
@@ -1256,18 +1256,18 @@ msgstr ""
 
 # :!~ Restorer
 msgid "See \":help W11\" for more info."
-msgstr "Чтобы получить дополнительную информацию, наберите \":help W11\""
+msgstr "Чтобы получить дополнительную информацию, наберите `:help W11`"
 
 # :!~ Restorer
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
-"W16: Внимание! После считывания в буфер, изменены права доступа к файлу \"%s"
-"\""
+"W16: Внимание! После считывания в буфер, изменены права доступа к файлу "
+"\"%s\""
 
 # :!~ Restorer
 msgid "See \":help W16\" for more info."
-msgstr "Чтобы получить дополнительную информацию, наберите \":help W16\""
+msgstr "Чтобы получить дополнительную информацию, наберите `:help W16`"
 
 # :!~ Restorer
 #, c-format
@@ -2944,7 +2944,7 @@ msgstr "???END"
 
 # :!~ Restorer
 msgid "See \":help E312\" for more information."
-msgstr "Чтобы получить дополнительную информацию, наберите \":help E312\""
+msgstr "Чтобы получить дополнительную информацию, наберите `:help E312`"
 
 # ~!: earlier
 msgid "Recovery completed. You should check if everything is OK."
@@ -3181,7 +3181,7 @@ msgstr ""
 # #Restorer: сдвинут к границе экрана
 # :!~ Restorer
 msgid "    If this is the case, use \":recover\" or \"vim -r "
-msgstr "В этом случае используйте команду \":recover\" или \"vim -r "
+msgstr "В этом случае используйте команду :recover или \"vim -r "
 
 # :!~ Restorer
 msgid ""
@@ -3189,7 +3189,7 @@ msgid ""
 "    to recover the changes (see \":help recovery\").\n"
 msgstr ""
 "\",\n"
-"чтобы выполнить восстановление данных (подробнее см. \":help recovery\").\n"
+"чтобы выполнить восстановление данных (подробнее см. `:help recovery`).\n"
 
 # :!~ Restorer
 msgid "    If you did this already, delete the swap file \""
@@ -3503,7 +3503,8 @@ msgstr " (+%lld с учётом МПБ)"
 # :!~ Restorer
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
 msgstr ""
-"W17: Для работы с арабской письменностью введите команду :set encoding=utf-8"
+"W17: Для работы с арабской письменностью введите команду `:set "
+"encoding=utf-8`"
 
 # #Restorer: выводится по команде `:set termcap`
 # :!~ Restorer
@@ -4824,7 +4825,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "No undo possible; continue anyway"
-msgstr "Отмена изменений не доступна. Продолжить?"
+msgstr "Отмена изменений недоступна. Продолжить?"
 
 # #Restorer: выводится, например, для команд `:wundo` и `:rundo` при 'verbose'>0
 # :!~ Restorer
@@ -5684,7 +5685,8 @@ msgstr "Прервано"
 
 # :!~ Restorer
 msgid "E10: \\ should be followed by /, ? or &"
-msgstr "E10: После символа \\ требуется указать одну из команд /, ? или &"
+msgstr ""
+"E10: После символа '\\' требуется указать одну из команд `/`, `?` или `&`"
 
 # :!~ Restorer
 msgid "E11: Invalid in command-line window; :q<CR> closes the window"
@@ -6601,7 +6603,7 @@ msgstr "E210: Ошибка считывания файла \"%s\""
 # :!~ Restorer
 #, c-format
 msgid "E211: File \"%s\" no longer available"
-msgstr "E211: Не доступен файл \"%s\""
+msgstr "E211: Этот файл стал недоступен \"%s\""
 
 # :!~ Restorer
 msgid "E212: Can't open file for writing"
@@ -7214,8 +7216,7 @@ msgstr "E357: Отсутствует сопоставленный символ в параметре 'langmap' для %s"
 #, c-format
 msgid "E358: 'langmap': Extra characters after semicolon: %s"
 msgstr ""
-"E358: В значении параметра 'langmap' посторонние символы после разделителя ; "
-"%s"
+"E358: В параметре 'langmap' посторонние символы после разделителя ';' %s"
 
 # :!~ Restorer
 msgid "E359: Screen mode setting not supported"
@@ -7343,7 +7344,7 @@ msgstr "E385: Достигнута нижняя граница документа. Нет совпадений с %s"
 # :!~ Restorer
 msgid "E386: Expected '?' or '/'  after ';'"
 msgstr ""
-"E386: В поисковом запросе после символа ';' указывается команда '?' или '/'"
+"E386: В поисковом запросе после символа ';' указывается команда `?` или `/`"
 
 # :!~ Restorer
 msgid "E387: Match is on current line"
@@ -7415,17 +7416,17 @@ msgstr "E402: Посторонние символы после шаблона %s"
 
 # :!~ Restorer
 msgid "E403: syntax sync: Line continuations pattern specified twice"
-msgstr "E403: Параметр linecont для команды :syntax sync указан дважды"
+msgstr "E403: Параметр linecont для команды `:syntax sync` указан дважды"
 
 # :!~ Restorer
 #, c-format
 msgid "E404: Illegal arguments: %s"
-msgstr "E404: Недопустимые параметры команды :syntax sync %s"
+msgstr "E404: Недопустимые параметры команды `:syntax sync` %s"
 
 # :!~ Restorer
 #, c-format
 msgid "E405: Missing equal sign: %s"
-msgstr "E405: Не указан символ знака равенства после %s"
+msgstr "E405: Не указан знак равенства после %s"
 
 # :!~ Restorer
 #, c-format
@@ -7461,12 +7462,12 @@ msgstr "E411: Не найдена группу подсветки %s"
 #, c-format
 msgid "E412: Not enough arguments: \":highlight link %s\""
 msgstr ""
-"E412: Указаны не все требуемые параметры в команде \":highlight link %s\""
+"E412: Указаны не все требуемые параметры в команде `:highlight link %s`"
 
 # :!~ Restorer
 #, c-format
 msgid "E413: Too many arguments: \":highlight link %s\""
-msgstr "E413: Превышено количество параметров в команде \":highlight link %s\""
+msgstr "E413: Превышено количество параметров в команде `:highlight link %s`"
 
 # :!~ Restorer
 msgid "E414: Group has settings, highlight link ignored"
@@ -7550,8 +7551,7 @@ msgstr "E429: Не существует файл индексов \"%s\""
 # :!~ Restorer
 #, c-format
 msgid "E430: Tag file path truncated for %s\n"
-msgstr ""
-"E430: Выполнено усечение маршрута до допустимой длины к файлу индексов %s\n"
+msgstr "E430: Выполнено усечение маршрута для файла индексов %s\n"
 
 # :!~ Restorer
 #, c-format
@@ -7596,7 +7596,7 @@ msgstr ""
 # :!~ Restorer
 msgid "E443: Cannot rotate when another window is split"
 msgstr ""
-"E443: Не применимо к окнам, имеющим различие либо по высоте, либо по ширине"
+"E443: Неприменимо к окнам, имеющим различие либо по высоте, либо по ширине"
 
 # :!~ Restorer
 msgid "E444: Cannot close last window"
@@ -7605,7 +7605,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "E445: Other window contains changes"
-msgstr "E445: В других окнах имеются не сохранённые данные"
+msgstr "E445: В других окнах имеются несохранённые данные"
 
 # :!~ Restorer
 msgid "E446: No file name under cursor"
@@ -7849,7 +7849,7 @@ msgstr "E488: Посторонние завершающие символы %s"
 msgid "E489: No call stack to substitute for \"<stack>\""
 msgstr ""
 "E489: Отсутствует командный файл в стеке вызовов для замещения спецсимвола "
-"\"<stack>\""
+"<stack>"
 
 # :!~ Restorer
 msgid "E490: No fold found"
@@ -7876,26 +7876,23 @@ msgstr "E494: Необходимо указать команду :write или :write>>"
 
 # :!~ Restorer
 msgid "E495: No autocommand file name to substitute for \"<afile>\""
-msgstr ""
-"E495: Отсутствует файл для замещения в автокоманде спецсимвола \"<afile>\""
+msgstr "E495: Отсутствует файл для замещения в автокоманде спецсимвола <afile>"
 
 # :!~ Restorer
 msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr ""
-"E496: Отсутствует номер буфер для замещения в автокоманде спецсимвола "
-"\"<abuf>\""
+"E496: Отсутствует номер буфер для замещения в автокоманде спецсимвола <abuf>"
 
 # :!~ Restorer
 msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr ""
-"E497: Отсутствует образец для замещения в автокоманде спецсимвола \"<amatch>"
-"\""
+"E497: Отсутствует образец для замещения в автокоманде спецсимвола <amatch>"
 
 # :!~ Restorer
 msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr ""
 "E498: Отсутствует командный файл для замещения в команде :source спецсимвола "
-"\"<sfile>\""
+"<sfile>"
 
 # :!~ Restorer
 #, no-c-format
@@ -7915,12 +7912,12 @@ msgstr "E501: Достигнуто окончание файла"
 # #Restorer: ошибка E503:
 # ~!: earlier
 msgid "is not a file or writable device"
-msgstr "не является файлом или устройством, доступным для записи"
+msgstr "не является файлом или доступным на запись устройством"
 
 # :!~ Restorer
 #, c-format
 msgid "E503: \"%s\" is not a file or writable device"
-msgstr "E503: \"%s\" не является файлом или устройством, доступным для записи"
+msgstr "E503: \"%s\" не является файлом или доступным на запись устройством"
 
 # :!~ Restorer
 msgid "E503: Coffee is currently not available"
@@ -8028,7 +8025,7 @@ msgstr "E520: В режимной строке запрещена установка параметра"
 
 # :!~ Restorer
 msgid "E521: Number required after ="
-msgstr "E521: Требуется числовое значение сразу после знака равно"
+msgstr "E521: Требуется числовое значение сразу после знака равенства"
 
 # :!~ Restorer
 #, c-format
@@ -8076,7 +8073,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "E531: Use \":gui\" to start the GUI"
-msgstr "E531: Чтобы запустить графический интерфейс, наберите команду \":gui\""
+msgstr "E531: Чтобы запустить графический интерфейс, наберите команду :gui"
 
 # :!~ Restorer
 msgid "E532: Highlighting color name too long in defineAnnoType"
@@ -8284,15 +8281,15 @@ msgstr "E579: Превышено количество вложений блоков команд"
 
 # :!~ Restorer
 msgid "E580: :endif without :if"
-msgstr "E580: Для команды :endif нет команды :if"
+msgstr "E580: Для команды :endif нет соответствующей команды :if"
 
 # :!~ Restorer
 msgid "E581: :else without :if"
-msgstr "E581: Для команды :else нет команда :if"
+msgstr "E581: Для команды :else нет соответствующей команда :if"
 
 # :!~ Restorer
 msgid "E582: :elseif without :if"
-msgstr "E582: Для команды :elseif нет команды :if"
+msgstr "E582: Для команды :elseif нет соответствующей команды :if"
 
 # :!~ Restorer
 msgid "E583: Multiple :else"
@@ -8383,7 +8380,7 @@ msgstr "E601: Превышено количество вложений команд :try"
 
 # :!~ Restorer
 msgid "E602: :endtry without :try"
-msgstr "E602: Для команды :endtry нет команды :try"
+msgstr "E602: Для команды :endtry нет соответствующей команды :try"
 
 # :!~ Restorer
 msgid "E603: :catch without :try"
@@ -8582,10 +8579,6 @@ msgstr "E647: Недопустимый идентификатор буфера в команде setDot"
 # :!~ Restorer
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Недопустимый идентификатор буфера в команде close"
-
-# :!~ Restorer
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: Недопустимый идентификатор буфера в команде close"
 
 # :!~ Restorer
 msgid "E650: Invalid buffer identifier in defineAnnoType"
@@ -8787,8 +8780,9 @@ msgstr "E692: Недопустимая операция сравнения для типа данных List"
 
 # :!~ Restorer
 #, c-format
-msgid "E693: List or Class required for argument %d"
-msgstr "E693: Тип данных аргумента номер %d должен быть List или Class"
+msgid "E693: Class or class typealias required for argument %d"
+msgstr ""
+"E693: Тип данных аргумента номер %d должен быть Class или псевдоним класса"
 
 # :!~ Restorer
 msgid "E694: Invalid operation for Funcrefs"
@@ -9303,7 +9297,7 @@ msgstr ""
 # :!~ Restorer
 #, c-format
 msgid "E798: ID is reserved for \":match\": %d"
-msgstr "E798: Идентификатор %d зарезервирован за командой \":match\""
+msgstr "E798: Идентификатор %d зарезервирован за командой :match"
 
 # :!~ Restorer
 #, c-format
@@ -9518,7 +9512,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "E842: No line number to use for \"<slnum>\""
-msgstr "E842: Отсутствует номер строки для замещения спецсимвола \"<slnum>\""
+msgstr "E842: Отсутствует номер строки для замещения спецсимвола <slnum>"
 
 # :!~ Restorer
 msgid "E843: Error while updating swap file crypt"
@@ -10090,7 +10084,7 @@ msgstr "E960: Ошибка при активации встроенного механизма сравнения"
 
 # :!~ Restorer
 msgid "E961: No line number to use for \"<sflnum>\""
-msgstr "E961: Отсутствует номер строки для замещения спецсимвола \"<sflnum>\""
+msgstr "E961: Отсутствует номер строки для замещения спецсимвола <sflnum>"
 
 # :!~ Restorer
 #, c-format
@@ -10177,7 +10171,7 @@ msgstr "E980: Эмуляция низкоуровневого ввода не поддерживается"
 
 # :!~ Restorer
 msgid "E981: Command not allowed in rvim"
-msgstr "E981: Команда запрещена в варианте программы rvim"
+msgstr "E981: Команда запрещена в варианте программы rVim"
 
 # :!~ Restorer
 msgid "E982: ConPTY is not available"
@@ -10874,7 +10868,7 @@ msgstr "E1126: Не допускается указание команда :let в командном файле Vim9"
 
 # :!~ Restorer
 msgid "E1127: Missing name after dot"
-msgstr "E1127: Не указано наименование ключа после знака точки"
+msgstr "E1127: Не указано наименование ключа после символа точки"
 
 # :!~ Restorer
 msgid "E1128: } without {"
@@ -11156,7 +11150,7 @@ msgstr "E1184: Пустой BLOB"
 
 # :!~ Restorer
 msgid "E1185: Missing :redir END"
-msgstr "E1185: Не указана команда :redir END"
+msgstr "E1185: Не указана команда `:redir END`"
 
 # :!~ Restorer
 #, c-format
@@ -11593,8 +11587,7 @@ msgstr "E1273: НКА. Не указано значение в \\%%%c"
 
 # :!~ Restorer
 msgid "E1274: No script file name to substitute for \"<script>\""
-msgstr ""
-"E1274: Отсутствует командный файл для замещения спецсимвола \"<script>\""
+msgstr "E1274: Отсутствует командный файл для замещения спецсимвола <script>"
 
 # :!~ Restorer
 msgid "E1275: String or function required for ->(expr)"
@@ -11761,7 +11754,8 @@ msgstr "E1306: Превышено количество вложенных циклов"
 #, c-format
 msgid "E1307: Argument %d: Trying to modify a const %s"
 msgstr ""
-"E1307: Для аргумента номер %d попытка изменения константного значения %s"
+"E1307: Обнаружена попытка изменения константного значения %2$s у аргумента "
+"номер %1$d"
 
 # :!~ Restorer
 msgid "E1308: Cannot resize a window in another tab page"
@@ -11861,14 +11855,21 @@ msgstr "E1328: В конструкторе начальным значением должно быть v:none, а не %s"
 
 # :!~ Restorer
 #, c-format
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Недопустимое объявление переменной класса %s"
+
+# :!~ Restorer
+#, c-format
 msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Недопустимый тип данных переменной объекта %s"
 
 # :!~ Restorer
-msgid "E1331: Public must be followed by \"this\" or \"static\""
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
 msgstr ""
-"E1331: После модификатора доступа \"public\" требуется ключевое слово \"this"
-"\" или \"static\""
+"E1331: После модификатора доступа \"public\" требуется команда :var либо "
+"ключевое слово \"static\", \"final\" или \"const\""
 
 # :!~ Restorer
 #, c-format
@@ -11878,9 +11879,8 @@ msgstr ""
 
 # :!~ Restorer
 #, c-format
-msgid "E1333: Cannot access private variable \"%s\" in class \"%s\""
-msgstr ""
-"E1333: Отсутствует доступ к внутренней переменной \"%s\" в классе \"%s\""
+msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
+msgstr "E1333: Ограничен доступ к защищённой переменной \"%s\" в классе \"%s\""
 
 # :!~ Restorer
 #, c-format
@@ -11922,7 +11922,7 @@ msgstr "E1343: Наименование интерфейса должно начинаться с прописной буквы %s"
 
 # :!~ Restorer
 msgid "E1344: Cannot initialize a variable in an interface"
-msgstr "E1344: Не удалось инициализировать переменную в интерфейсе"
+msgstr "E1344: Не допускается инициализировать переменные в интерфейсе"
 
 # :!~ Restorer
 #, c-format
@@ -12021,8 +12021,8 @@ msgstr ""
 
 # :!~ Restorer
 #, c-format
-msgid "E1366: Cannot access private method: %s"
-msgstr "E1366: Отсутствует доступ к внутреннему методу %s"
+msgid "E1366: Cannot access protected method: %s"
+msgstr "E1366: Ограничен доступ к защищённому методу %s"
 
 # :!~ Restorer
 #, c-format
@@ -12032,10 +12032,12 @@ msgstr ""
 "\"%s\""
 
 # :!~ Restorer
-msgid "E1368: Static cannot be followed by \"this\" in a variable name"
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
 msgstr ""
-"E1368: Не допускается указание после ключевого слова \"static\" ключевого "
-"слова \"this\""
+"E1368: После ключевого слова \"static\" требуется команда :var или :def, "
+"либо ключевое слово \"final\" или \"const\""
 
 # :!~ Restorer
 #, c-format
@@ -12048,15 +12050,14 @@ msgstr "E1370: Не допускается определение метода \"new\" как статического"
 
 # :!~ Restorer
 msgid "E1371: Abstract must be followed by \"def\""
-msgstr ""
-"E1371: После ключевого слова \"abstract\" требуется ключевое слово \"def\""
+msgstr "E1371: После ключевого слова \"abstract\" требуется команда :def"
 
 # :!~ Restorer
 #, c-format
 msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
 msgstr ""
-"E1372: Не допускается определение в реальном классе абстрактного метода \"%s"
-"\""
+"E1372: Не допускается определение в реальном классе абстрактного метода "
+"\"%s\""
 
 # :!~ Restorer
 #, c-format
@@ -12087,19 +12088,19 @@ msgstr ""
 
 # :!~ Restorer
 msgid "E1378: Static member not supported in an interface"
-msgstr "E1378: Статические члены не поддерживаются в интерфейсах"
+msgstr "E1378: Интерфейсы не поддерживают статические члены"
 
 # :!~ Restorer
-msgid "E1379: Private variable not supported in an interface"
-msgstr "E1379: Внутренние переменные не поддерживаются в интерфейсах"
+msgid "E1379: Protected variable not supported in an interface"
+msgstr "E1379: Интерфейсы не поддерживают защищённые переменные"
 
 # :!~ Restorer
-msgid "E1380: Private method not supported in an interface"
-msgstr "E1380: Внутренние методы не поддерживаются в интерфейсах"
+msgid "E1380: Protected method not supported in an interface"
+msgstr "E1380: Интерфейсы не поддерживают защищённые методы"
 
 # :!~ Restorer
 msgid "E1381: Interface cannot use \"implements\""
-msgstr "E1381: Интерфейс не может использовать ключевое слово \"implements\""
+msgstr "E1381: Для интерфейса неприменимо ключевое слово \"implements\""
 
 # :!~ Restorer
 #, c-format
@@ -12130,11 +12131,11 @@ msgstr "E1386: Метод объекта \"%s\" доступен только через объект класса \"%s\""
 
 # :!~ Restorer
 msgid "E1387: Public variable not supported in an interface"
-msgstr "E1387: Общие переменные не поддерживаются в интерфейсах"
+msgstr "E1387: Интерфейсы не поддерживают общие переменные"
 
 # :!~ Restorer
 msgid "E1388: Public keyword not supported for a method"
-msgstr "E1388: Ключевое слово \"public\" не применимо к методу"
+msgstr "E1388: Ключевое слово \"public\" неприменимо к методу"
 
 # :!~ Restorer
 msgid "E1389: Missing name after implements"
@@ -12146,8 +12147,8 @@ msgid ""
 "E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
 "method"
 msgstr ""
-"E1390: Переменная объекта \"this.%s\" может указываться только в методе \"new"
-"\""
+"E1390: Переменная объекта \"this.%s\" может указываться только в методе "
+"\"new\""
 
 # :!~ Restorer
 #, c-format
@@ -12165,14 +12166,12 @@ msgstr ""
 
 # :!~ Restorer
 msgid "E1393: Type can only be defined in Vim9 script"
-msgstr ""
-"E1393: Псевдоним типа может быть определён только в командном файле Vim9"
+msgstr "E1393: Тип может быть определён только в командном файле Vim9"
 
 # :!~ Restorer
 #, c-format
 msgid "E1394: Type name must start with an uppercase letter: %s"
-msgstr ""
-"E1394: Наименование псевдонима типа должно начинаться с прописной буквы %s"
+msgstr "E1394: Наименование типа должно начинаться с прописной буквы %s"
 
 # :!~ Restorer
 #, c-format
@@ -12182,7 +12181,7 @@ msgstr "E1395: Не допускается изменение псевдонима типа \"%s\""
 # :!~ Restorer
 #, c-format
 msgid "E1396: Type alias \"%s\" already exists"
-msgstr "E1396: Псеводним типа уже определён \"%s\""
+msgstr "E1396: Псевдоним типа уже определён \"%s\""
 
 # :!~ Restorer
 msgid "E1397: Missing type alias name"
@@ -12195,7 +12194,7 @@ msgstr "E1398: Не указан тип для псевдонима типа"
 # :!~ Restorer
 msgid "E1399: Type can only be used in a script"
 msgstr ""
-"E1399: Псевдоним типа можжет быть определён только на уровне командного файла"
+"E1399: Псевдоним типа может быть определён только на уровне командного файла"
 
 # :!~ Restorer
 #, c-format
@@ -12216,12 +12215,47 @@ msgstr "E1402: Ожидался тип данных String, а получен псевдоним типа \"%s\""
 #, c-format
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr ""
-"E1403: Недопускается в качестве значения указывать псевдоним типа \"%s\""
+"E1403: Не допускается в качестве значения указывать псевдоним типа \"%s\""
 
 # :!~ Restorer
 msgid "E1404: Abstract cannot be used in an interface"
+msgstr "E1404: Интерфейсы не поддерживают ключевое слово \"abstract\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405: Не допускается в качестве значения указывать класс \"%s\""
+
+# :!~ Restorer
+msgid "E1406: Cannot use a Class as a variable or value"
 msgstr ""
-"E1404: Недопускается использование ключевого слова \"abstract\" в интерфейсах"
+"E1406: Не допускается в качестве переменной или значения указывать тип Class"
+
+# :!~ Restorer
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr ""
+"E1407: Не допускается в качестве переменной или значения указывать псевдоним "
+"типа"
+
+# :!~ Restorer
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: Интерфейсы не поддерживают финализированные переменные"
+
+# :!~ Restorer
+#, c-format
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr ""
+"E1409: Не допускается изменение доступной только для чтения переменной "
+"\"%s\" в классе \"%s\""
+
+# :!~ Restorer
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: Интерфейсы не поддерживают константные переменные"
+
+# :!~ Restorer
+#, c-format
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: Не указан символ точки после наименования объекта %s"
 
 # :!~ Restorer
 #, c-format
@@ -12882,12 +12916,12 @@ msgstr "каталоги, в которых выполняется поиск файлов"
 # :!~ Restorer
 msgid ":cd without argument goes to the home directory"
 msgstr ""
-"разрешить переход в домашний каталог по команде \":cd\"\n"
+"разрешить переход в домашний каталог по команде :cd\n"
 "набранной без параметров"
 
 # :!~ Restorer
 msgid "list of directory names used for :cd"
-msgstr "каталоги, используемые при исполнении команды \":cd\""
+msgstr "каталоги, используемые при исполнении команды :cd"
 
 # :!~ Restorer
 msgid "change to directory of file in buffer"
@@ -12983,7 +13017,7 @@ msgstr "интерпретировать расположение файлов относительно файла индексов"
 
 # :!~ Restorer
 msgid "a :tag command will use the tagstack"
-msgstr "для команды \":tag\" используется стек индексов"
+msgstr "для команды :tag используется стек индексов"
 
 # :!~ Restorer
 msgid "when completing tags in Insert mode show more info"
@@ -12997,11 +13031,11 @@ msgstr "функция, используемая для поиска индексов"
 
 # :!~ Restorer
 msgid "command for executing cscope"
-msgstr "программа, исполняемая по команде \":cscope\""
+msgstr "программа, исполняемая по команде :cscope"
 
 # :!~ Restorer
 msgid "use cscope for tag commands"
-msgstr "интерпретировать команду \":cscope\" как команду \":tag\""
+msgstr "интерпретировать команду :cscope как команду :tag"
 
 # :!~ Restorer
 msgid "0 or 1; the order in which \":cstag\" performs a search"
@@ -13115,7 +13149,7 @@ msgstr "не перерисовывать экран при исполнении макрокоманд"
 
 # :!~ Restorer
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
-msgstr "задержка в мс для параметра 'hlsearch' и команды \":match\""
+msgstr "задержка в мс для параметра 'hlsearch' и команды :match"
 
 # :!~ Restorer
 msgid ""
@@ -13220,7 +13254,7 @@ msgstr "языки, для которых будет выполняться проверка правописания"
 
 # :!~ Restorer
 msgid "file that \"zg\" adds good words to"
-msgstr "словарь пользователя, используемый для команды \"zg\""
+msgstr "словарь пользователя, используемый для команды `zg`"
 
 # :!~ Restorer
 msgid "pattern to locate the end of a sentence"
@@ -13236,7 +13270,7 @@ msgstr "способ предоставления вариантов написания"
 
 # :!~ Restorer
 msgid "amount of memory used by :mkspell before compressing"
-msgstr "размер выделяемой памяти, используемой командой \":mkspell\""
+msgstr "размер выделяемой памяти, используемой командой :mkspell"
 
 # :!~ Restorer
 msgid "multiple windows"
@@ -13378,7 +13412,7 @@ msgstr ""
 msgid "maximum number of tab pages to open for -p and \"tab all\""
 msgstr ""
 "максимальное количество вкладок, создаваемых\n"
-"через аргумент командной строки -p или по команде \":tab all\""
+"через аргумент командной строки -p или по команде `:tab all`"
 
 # :!~ Restorer
 msgid "custom tab pages line"
@@ -13428,7 +13462,7 @@ msgstr "используемый терминалом протокол обмена данных с клавиатурой"
 
 # :!~ Restorer
 msgid "recognize keys that start with <Esc> in Insert mode"
-msgstr "распознавать в режиме вставки коды клавиш начинающиеся с <Esc>"
+msgstr "распознавать в режиме вставки коды клавиш начинающиеся с <ESC>"
 
 # :!~ Restorer
 msgid "minimal number of lines to scroll at a time"
@@ -13566,7 +13600,7 @@ msgstr "область экрана, остающаяся не занятой окном программы (в пикселях)"
 
 # :!~ Restorer
 msgid "list of ASCII characters that can be combined into complex shapes"
-msgstr "перечень символов в кодировке ASCII, используемых для составных знаков"
+msgstr "перечень символов в кодировке ASCII, используемых в составных символах"
 
 # :!~ Restorer
 msgid "options for text rendering"
@@ -13630,7 +13664,7 @@ msgstr "настройки форматирования при выводе на печать"
 
 # :!~ Restorer
 msgid "name of the printer to be used for :hardcopy"
-msgstr "принтер, используемый при исполнении команды \":hardcopy\""
+msgstr "принтер, используемый при исполнении команды :hardcopy"
 
 # :!~ Restorer
 msgid "expression used to print the PostScript file for :hardcopy"
@@ -13824,7 +13858,7 @@ msgstr "шаблон, используемый для распознавания нумерованных списков"
 
 # :!~ Restorer
 msgid "expression used for \"gq\" to format lines"
-msgstr "функция, используемая для форматирования строк по команде \"gq\""
+msgstr "функция, используемая для форматирования строк по команде `gq`"
 
 # :!~ Restorer
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
@@ -13880,11 +13914,11 @@ msgstr "ввод диграфов с использованием клавиши BACKSPACE; сим1 <BS> сим2"
 
 # :!~ Restorer
 msgid "the \"~\" command behaves like an operator"
-msgstr "использовать команду \"~\" как оператор"
+msgstr "использовать команду `~` как оператор"
 
 # :!~ Restorer
 msgid "function called for the \"g@\" operator"
-msgstr "функция, вызываемая для оператора \"g@\""
+msgstr "функция, вызываемая для оператора `g@`"
 
 # :!~ Restorer
 msgid "when inserting a bracket, briefly jump to its match"
@@ -13900,7 +13934,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "list of pairs that match for the \"%\" command"
-msgstr "парные элементы, поиск которых выполняется по команде \"%\""
+msgstr "парные элементы, поиск которых выполняется по команде `%`"
 
 # :!~ Restorer
 msgid "use two spaces after '.' when joining a line"
@@ -13950,7 +13984,7 @@ msgstr "количество пробелов, вставляемых при нажатии клавиши <TAB>"
 msgid "round to 'shiftwidth' for \"<<\" and \">>\""
 msgstr ""
 "приводить к значению, заданному в параметре 'shiftwidth'\n"
-"для команд \"<<\" и \">>\""
+"для команд :<< и :>>"
 
 # :!~ Restorer
 msgid "expand <Tab> to spaces in Insert mode"
@@ -14218,7 +14252,7 @@ msgstr ""
 # :!~ Restorer
 msgid "whether to make the backup as a copy or rename the existing file"
 msgstr ""
-"метод создания резервной копии: или копированием, или переименованием\n"
+"метод создания резервной копии — или копированием, или переименованием\n"
 "файла"
 
 # :!~ Restorer
@@ -14401,15 +14435,15 @@ msgstr "для команд оболочки использовать временный файл вместо конвейера"
 
 # :!~ Restorer
 msgid "program used for \"=\" command"
-msgstr "программа, которая будет исполнена по команде \"=\""
+msgstr "программа, которая будет исполнена по команде `=`"
 
 # :!~ Restorer
 msgid "program used to format lines with \"gq\" command"
-msgstr "программа, используемая для форматирования строк по команде \"gq\""
+msgstr "программа, используемая для форматирования строк по команде `gq`"
 
 # :!~ Restorer
 msgid "program used for the \"K\" command"
-msgstr "программа, которая будет исполнена по команде \"K\""
+msgstr "программа, которая будет исполнена по команде `K`"
 
 # :!~ Restorer
 msgid "warn when using a shell command and a buffer has changes"
@@ -14429,11 +14463,11 @@ msgstr "спецификаторы формата для разбора файла списка результатов"
 
 # :!~ Restorer
 msgid "program used for the \":make\" command"
-msgstr "программа, которая будет исполнена по команде \":make\""
+msgstr "программа, которая будет исполнена по команде :make"
 
 # :!~ Restorer
 msgid "string used to put the output of \":make\" in the error file"
-msgstr "строка для записи вывода команды \":make\" в список результатов"
+msgstr "строка для записи вывода команды :make в список результатов"
 
 # :!~ Restorer
 msgid "name of the errorfile for the 'makeprg' command"
@@ -14443,7 +14477,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "program used for the \":grep\" command"
-msgstr "программа, которая будет исполнена по команде \":grep\""
+msgstr "программа, которая будет исполнена по команде :grep"
 
 # :!~ Restorer
 msgid "list of formats for output of 'grepprg'"
@@ -14453,7 +14487,7 @@ msgstr ""
 
 # :!~ Restorer
 msgid "encoding of the \":make\" and \":grep\" output"
-msgstr "кодировка символов вывода внешних команд для \":make\" и \":grep\""
+msgstr "кодировка символов вывода внешних команд для :make и :grep"
 
 # #Matvey Tarasov: <space>\n из-за того, что имя опции 'quickfixtextfunc'
 # #Matvey Tarasov: слишком длинное
@@ -14675,11 +14709,11 @@ msgstr "безопасная обработка командных файлов в текущем каталоге"
 
 # :!~ Restorer
 msgid "use the 'g' flag for \":substitute\""
-msgstr "флаг 'g' для команды \":substitute\" установлен всегда"
+msgstr "флаг 'g' для команды :substitute установлен всегда"
 
 # :!~ Restorer
 msgid "'g' and 'c' flags of \":substitute\" toggle"
-msgstr "переключать флаги 'g' и 'c' для команды \":substitute\""
+msgstr "переключать флаги 'g' и 'c' для команды :substitute"
 
 # :!~ Restorer
 msgid "allow reading/writing devices"
@@ -14697,13 +14731,13 @@ msgstr "настройки, указывающие, что будет записываться в файл сессии"
 msgid "list of words that specifies what to save for :mkview"
 msgstr ""
 "настройки, указывающие, что будет записываться в файл,\n"
-"создаваемый по команде \":mkview\""
+"создаваемый по команде :mkview"
 
 # :!~ Restorer
 msgid "directory where to store files with :mkview"
 msgstr ""
 "каталог куда будут сохраняться файлы, создаваемые по команде\n"
-"\":mkview\""
+":mkview"
 
 # :!~ Restorer
 msgid "list that specifies what to write in the viminfo file"
@@ -14793,4 +14827,4 @@ msgstr "подключаемый файл динамической библиотеки MzScheme GC"
 # :!~ Restorer
 msgid "You discovered the command-line window! You can close it with \":q\"."
 msgstr ""
-"Активировано окно командной строки. Чтобы его закрыть, введите команду \":q\""
+"Активировано окно командной строки. Чтобы его закрыть, введите команду  :q"
