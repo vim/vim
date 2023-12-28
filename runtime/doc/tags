@@ -8686,6 +8686,7 @@ multilang	mlang.txt	/*multilang*
 multilang-menus	mlang.txt	/*multilang-menus*
 multilang-messages	mlang.txt	/*multilang-messages*
 multilang-scripts	mlang.txt	/*multilang-scripts*
+multiple-constructors	vim9class.txt	/*multiple-constructors*
 myfiletypefile	syntax.txt	/*myfiletypefile*
 myscriptsfile	syntax.txt	/*myscriptsfile*
 mysql	ft_sql.txt	/*mysql*

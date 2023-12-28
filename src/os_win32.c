@@ -156,7 +156,10 @@ static HANDLE g_hConOut = INVALID_HANDLE_VALUE;
 
 // Win32 Screen buffer,coordinate,console I/O information
 static SMALL_RECT g_srScrollRegion;
-static COORD	  g_coord;  // 0-based, but external coords are 1-based
+// This is explicitly initialised to work around a LTCG issue on Windows ARM64
+// (at least of 19.39.33321).  This pushes this into the `.data` rather than
+// `.bss` which corrects code generation in `write_chars` (#13453).
+static COORD	  g_coord = {0, 0};  // 0-based, but external coords are 1-based
 
 // The attribute of the screen when the editor was started
 static WORD  g_attrDefault = 7;  // lightgray text on black background

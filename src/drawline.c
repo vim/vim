@@ -527,6 +527,12 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
 	    if (wp->w_skipcol > 0 && wlv->startrow == 0
 					   && wp->w_p_wrap && wp->w_briopt_sbr)
 		wlv->need_showbreak = FALSE;
+
+	    // Correct start of highlighted area for 'breakindent',
+	    if (wlv->fromcol >= wlv->vcol
+				    && wlv->fromcol < wlv->vcol + wlv->n_extra)
+		wlv->fromcol = wlv->vcol + wlv->n_extra;
+
 	    // Correct end of highlighted area for 'breakindent',
 	    // required when 'linebreak' is also set.
 	    if (wlv->tocol == wlv->vcol)

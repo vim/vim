@@ -4,7 +4,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2022 Aug 12
+# Latest Revision:    2023 Dec 26
 
 if exists("b:did_ftplugin")
   finish
