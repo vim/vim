@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 25
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -144,8 +144,8 @@ the closest valid value.
 If you don't care about side effects and want to allow the object variable to
 be changed at any time, you can make it public: >
 
-	public this.lnum: number
-	public this.col: number
+	public var lnum: number
+	public var col: number
 
 Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
 "pos.lnum" directly above will no longer give an error.
