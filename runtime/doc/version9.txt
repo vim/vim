@@ -31714,14 +31714,16 @@ Smooth Scroll
 Support for scrolling text using screen lines instead of file lines is added.
 Refer to the 'smoothscroll' option.
 
-EditorConfig and JSON formatting plugins are included.
+The EditorConfig (|editorconfig-install|) and the JSON formatting
+(|ft-json-plugin|) plugins are included.
 
 OpenVMS x86_64 platform port.
 
 Other improvements				*new-other-9.1*
 ------------------
 - Support for undercurl (|t_Ce|), double underline (|t_Us|), dotted underline
-  (|t_ds|) and dashed underline (|t_Ds|) termcap entries.
+  (|t_ds|) and dashed underline (|t_Ds|) termcap entries and
+  highlight modes (|highlight-term|).
 - The 'fillchars' option is now a global-local option.
 - The |vertical| and |horizontal| modifiers can be used with ":wincmd ="
   command to equalize windows vertically or horizontally.
@@ -31735,11 +31737,9 @@ Other improvements				*new-other-9.1*
 - Support for multiple "%=" items in 'statusline'
 - Support for the PmenuKind, PmenuKindSel, PmenuExtra and PmenuExtraSel
   highlight groups.
-- xxd: support for using colors in the hex dump output
-- xxd: reversing a bit dump
 - Text properties can override 'cursorline' highlight.
 - Support for echoing messages in a popup window |:echowindow|.
-- Control scroll behavior when spliting windows 'splitkeep'.
+- Control scroll behavior when splitting windows 'splitkeep'.
 - Specify the character used for the last window line 'fillchars'
 - Support for mouse scrolling in the MS-Windows console.
 - Support for using different keyboard protocols 'keyprotocol'
@@ -31750,13 +31750,18 @@ Other improvements				*new-other-9.1*
 - |undotree()| can be used with any buffer.
 - |printf()| supports positional arguments
 - Support for custom completion using |getcompletion()|
-- Support for Python3 stable ABI
+- Support for Python3 stable ABI (|python-stable|)
 - Use |jumplist| like a stack
 - Command-line completion support for option values
-- Support for writing extended attributes in Linux
+- Support for writing extended attributes in Linux (|xattr|)
 - 'errorformat' supports parsing a buffer number (|%b|)
-- Termdebug: Support for variables window, moving up/down the stack frames and
-  setting temporary breakpoints
+- Support for building the python interface using Python 3.12.
+- Termdebug: Support for the variables window (|termdebug_variables_window|),
+  moving up/down the stack frames (|termdebug-frames|) and setting temporary
+  breakpoints (|:Tbreak|)
+- xxd: support for using colors in the hex dump output (xxd -R)
+- xxd: reversing a bit dump (xxd -r)
+- xxd: customize the variable name used in the C include output (xxd -n)
 
 Changed						*changed-9.1*
 -------
@@ -31773,8 +31778,9 @@ Changed						*changed-9.1*
 - Ctrl-Q works like Ctrl-V in replace mode.
 - |popup_filter_menu()| now wraps around.
 - |g<End>| now jumps to the last non-blank character
-- dot and hypen are supported in highlight group names
+- dot and hyphen are supported in highlight group names
 - |executable()| resolves symlinks on MS-Windows.
+- Ruby 1.8 support is dropped.
 
 Added						*added-9.1*
 -----
