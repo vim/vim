@@ -133,10 +133,8 @@ syn keyword fortranAttribute    abstract external private public protected inten
 syn keyword fortranAttribute	pointer target allocatable dimension codimension sequence parameter save
 
 syn keyword fortranUnitHeader	result operator assignment
-syn match fortranUnitHeader     "\<\(subroutine\|function\|module\|program\|submodule\)\>"
-syn match fortranUnitHeader     "\<end\s*\(subroutine\|function\|module\|program\|submodule\)\>"
-syn match fortranBlock          "\<\(block\|critical\|associate\)\>"
-syn match fortranBlock          "\<end\s*\(block\|critical\|associate\)\>"
+syn match fortranUnitHeader     "\<\(end\s*\)\?\(subroutine\|function\|module\|program\|submodule\)\>"
+syn match fortranBlock          "\<\(end\s*\)\?\(block\|critical\|associate\)\>"
 syn match fortranCalled		"\(call\s\+\)\@7<=\a\w*"
 syn match fortranRepeat		"\<do\>"
 syn keyword fortranRepeat       concurrent
