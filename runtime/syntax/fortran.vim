@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Fortran 2023 (and Fortran 2018, 2008, 2003, 95, 90, and 77)
-" Version:	(v108) 2023 December 27
+" Version:	(v109) 2023 December 29
 " Maintainers:	Ajit J. Thakkar <ajit@unb.ca>; <https://ajit.ext.unb.ca/>
 " 	        Joshua Hollett <j.hollett@uwinnipeg.ca>
 " Usage:	For instructions, do :help fortran-syntax from Vim
@@ -133,8 +133,10 @@ syn keyword fortranAttribute    abstract external private public protected inten
 syn keyword fortranAttribute	pointer target allocatable dimension codimension sequence parameter save
 
 syn keyword fortranUnitHeader	result operator assignment
-syn match fortranUnitHeader     "\(end\s*\)\?\(subroutine\|function\|module\|program\|submodule\)\>"
-syn match fortranBlock          "\(end\s*\)\?\(block\|critical\|associate\)\>"
+syn match fortranUnitHeader     "\<\(subroutine\|function\|module\|program\|submodule\)\>"
+syn match fortranUnitHeader     "\<end\s*\(subroutine\|function\|module\|program\|submodule\)\>"
+syn match fortranBlock          "\<\(block\|critical\|associate\)\>"
+syn match fortranBlock          "\<end\s*\(block\|critical\|associate\)\>"
 syn match fortranCalled		"\(call\s\+\)\@7<=\a\w*"
 syn match fortranRepeat		"\<do\>"
 syn keyword fortranRepeat       concurrent
