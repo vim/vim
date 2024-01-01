@@ -1186,26 +1186,46 @@ export def FTv()
     # ":setf" will do nothing, bail out early
     return
   endif
+  if exists("g:filetype_v")
+    exe "setf " .. g:filetype_v
+    return
+  endif
 
-  for line in getline(1, 200)
-    if line[0] =~ '^\s*/'
+  var in_comment = 0
+  for lnum in range(1, min([line("$"), 200]))
+    var line = getline(lnum)
+    # Skip Verilog and V comments (lines and blocks).
+    if line =~ '^\s*/\*'
+      # start comment block
+      in_comment = 1
+    endif
+    if in_comment == 1
+      if line =~ '\*/'
+        # end comment block
+        in_comment = 0
+      endif
+      # skip comment-block line
+      continue
+    endif
+    if line =~ '^\s*//'
       # skip comment line
       continue
+    endif
+
+    # Coq: line ends with a '.' followed by an optional variable number of
+    # spaces or contains the start of a comment, but not inside a Verilog or V
+    # comment.
+    # Example: "Definition x := 10. (*".
+    if (line =~ '\.\s*$' && line !~ '/[/*]') || (line =~ '(\*' && line !~ '/[/*].*(\*')
+      setf coq
+      return
     endif
 
     # Verilog: line ends with ';' followed by an optional variable number of
     # spaces and an optional start of a comment.
     # Example: " b <= a + 1; // Add 1".
-    if line =~ ';\(\s*\)\?\(/.*\)\?$'
+    if line =~ ';\s*\(/[/*].*\)\?$'
       setf verilog
-      return
-    endif
-
-    # Coq: line ends with a '.' followed by an optional variable number of
-    # spaces and an optional start of a comment.
-    # Example: "Definition x := 10. (*".
-    if line =~ '\.\(\s*\)\?\((\*.*\)\?$'
-      setf coq
       return
     endif
   endfor
