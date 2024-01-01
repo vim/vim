@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2023 Dec 24
+*version9.txt*  For Vim version 9.0.  Last change: 2023 Dec 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -28,6 +28,11 @@ IMPROVEMENTS					|improvements-9|
 COMPILE TIME CHANGES				|compile-changes-9|
 
 PATCHES						|patches-9|
+
+VERSION 9.1					|version-9.1|
+Changed						|changed-9.1|
+Added						|added-9.1|
+Patches						|patches-9.1|
 
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 9.0.
@@ -31683,6 +31688,8 @@ Files:      runtime/makemenu.vim
 VERSION 9.1				*version-9.1* *version9.1* *vim-9.1*
 
 This section is about improvements made between version 9.0 and 9.1.
+The release 9.1 is dedicated to Vims Benevolent dictator for life
+|Bram-Moolenaar|.
 
 This release has hundreds of bug fixes, there are a few new features and there
 are many minor improvements.
@@ -31717,14 +31724,15 @@ Refer to the 'smoothscroll' option.
 The EditorConfig (|editorconfig-install|) and the JSON formatting
 (|ft-json-plugin|) plugins are included.
 
-OpenVMS x86_64 platform port.
+OpenVMS x86_64 platform port: http://www.polarhome.com/vim/
 
 Other improvements				*new-other-9.1*
 ------------------
 - Support for undercurl (|t_Ce|), double underline (|t_Us|), dotted underline
   (|t_ds|) and dashed underline (|t_Ds|) termcap entries and
   highlight modes (|highlight-term|).
-- The 'fillchars' option is now a global-local option.
+- The 'fillchars' option is now a global-local option and allows to
+  specify the character used for the last window line.
 - The |vertical| and |horizontal| modifiers can be used with ":wincmd ="
   command to equalize windows vertically or horizontally.
 - |:defer| command to defer the execution of a function till the end of a
@@ -31733,35 +31741,47 @@ Other improvements				*new-other-9.1*
 - Sound support in MacOS.
 - The |prop_remove()| function can now remove multiple text properties.
 - The |items()| function now supports a List or a String argument.
+- The |repeat()| function now supports blob repeat.
 - Command line completion support for |:runtime| command.
-- Support for multiple "%=" items in 'statusline'
+- Support for custom completion using |getcompletion()|.
+- Command-line completion support for option values.
+- Support for multiple "%=" items in 'statusline'.
 - Support for the PmenuKind, PmenuKindSel, PmenuExtra and PmenuExtraSel
   highlight groups.
 - Text properties can override 'cursorline' highlight.
 - Support for echoing messages in a popup window |:echowindow|.
 - Control scroll behavior when splitting windows 'splitkeep'.
-- Specify the character used for the last window line 'fillchars'
 - Support for mouse scrolling in the MS-Windows console.
 - Support for using different keyboard protocols 'keyprotocol'
+  (xterm |modifyOtherKeys| and Kitty terminal protocol (CSI u) support).
 - Support for UTF-16 string index.
 - Quickfix list items can have associated custom user data.
-- |reverse()| supports reversing a string
+- |reverse()| supports reversing a string.
 - 'switchbuf' is used by more commands.
 - |undotree()| can be used with any buffer.
-- |printf()| supports positional arguments
-- Support for custom completion using |getcompletion()|
-- Support for Python3 stable ABI (|python-stable|)
-- Use |jumplist| like a stack
-- Command-line completion support for option values
-- Support for writing extended attributes in Linux (|xattr|)
-- 'errorformat' supports parsing a buffer number (|%b|)
+- |printf()| supports positional arguments.
+- |col()|, |charcol()| and |virtcol()| can be used with different windows.
+- Support for Python3 stable ABI (|python-stable|).
+- Use |jumplist| like a stack 'jumpoptions'.
+- Support for writing extended attributes in Linux (|xattr|).
+- 'errorformat' supports parsing a buffer number (|%b|).
 - Support for building the python interface using Python 3.12.
+- |matchaddpos()| is no longer limited to 8 positions.
+- |readblob()| allows to read part of a file.
+- 'shortmess' allows to suppress "scanning" messages.
+- Add the XChaCha20v2 encryption method 'cryptmethod'.
+- Add support for testing syntax files.
+- Support "**" for filename expansion with bash using globstar setting.
+- Add quadruple prime digraph using 4'.
+- Better high dpi support on Windows.
+- Varous fixes for unsafe memory access, memory leaks, buffer overflows
+  and potential crashes.
 - Termdebug: Support for the variables window (|termdebug_variables_window|),
   moving up/down the stack frames (|termdebug-frames|) and setting temporary
-  breakpoints (|:Tbreak|)
-- xxd: support for using colors in the hex dump output (xxd -R)
-- xxd: reversing a bit dump (xxd -r)
-- xxd: customize the variable name used in the C include output (xxd -n)
+  breakpoints (|:Tbreak|).
+- xxd: support for using colors in the hex dump output (xxd -R).
+- xxd: reversing a bit dump (xxd -r).
+- xxd: customize the variable name used in the C include output (xxd -n).
 
 Changed						*changed-9.1*
 -------
@@ -31769,18 +31789,31 @@ Changed						*changed-9.1*
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
   available in all the builds.
 - Support for Windows-XP is dropped.
+- Support for VisVim is removed.
 - The "small" and "big" builds are dropped in favor of "tiny" and "huge"
   builds.
-- Support for VisVim is removed.
+- Mention the detected 'keyprotocol' on ":verbose map" when listing mappings.
 - The optional Content-Type header is removed from the LSP messages.
 - |charidx()| returns the character length when the index is one more than the
   last byte index.
 - Ctrl-Q works like Ctrl-V in replace mode.
 - |popup_filter_menu()| now wraps around.
-- |g<End>| now jumps to the last non-blank character
-- dot and hyphen are supported in highlight group names
+- |popup_create()| now aborts on an error.
+- |g<End>| now jumps to the last non-blank character.
+- dot and hyphen are supported in highlight group names.
 - |executable()| resolves symlinks on MS-Windows.
 - Ruby 1.8 support is dropped.
+- 'ttyfast' is always set.
+- |virtcol2col()| returns the first byte for a multi-byte character.
+- |i_CTRL-O| resets Select Mode.
+- |mode()| returns more submodes.
+- r with CTRL-C on a visual area replaces using CTRL-C consistently.
+- The matchparen plugin no longer uses hard coded match id 3.
+- The Statusline no longer uses hard coded values "^" and "=" if the
+  highlighting groups for the statusline have been cleared.
+- 'maxfuncdepth' setting is also used for the maximum callback depth.
+- Migrate to autoconf 2.71.
+- Start using C99 feature (declare variable in for loops).
 
 Added						*added-9.1*
 -----
@@ -31790,7 +31823,7 @@ Various syntax, indent and other plugins were added.
 Functions: ~
 
 |err_teapot()|		produce error 418 or 503
-|getbufoneline()|	get a one line from the specified buffer
+|getbufoneline()|	get a single line from the specified buffer
 |getcellwidths()|	get character cell width overrides
 |getmouseshape()|	get name of the current mouse shape
 |getscriptinfo()|	get list of sourced vim scripts
@@ -31813,13 +31846,13 @@ Autocommands: ~
 
 Commands: ~
 
-|:abstract|		define an Vim9 abstract class
+|:abstract|		define a Vim9 abstract class
 |:class|		start of a class specification
 |:defer|		call function when current function is done
 |:echowindow|		same as :echomsg, but use a popup window
 |:endinterface|		end of an interface specification
 |:endclass|		end of a class specification
-|:horizontal|		following window command work horizontally
+|:horizontal|		following window command works horizontally
 |:interface|		start of an interface specification
 |:public|		prefix for a class or object member
 |:static|		prefix for a class member or function
@@ -41428,5 +41461,74 @@ Solution:   do not clear typeval, add missing patch number
 Patch 9.0.2175
 Problem:    Compiler warning for uninitialized var
 Solution:   initialize variable to NULL
+
+Patch 9.0.2176
+Problem:    Compile error with Motif UI + mouse support (after v9.0.1262)
+Solution:   Use correct oldval option pointer
+
+Patch 9.0.2177
+Problem:    Wrong cursor position when dragging out of window.
+Solution:   Don't use ScreenCols[] when mouse is not in current window.
+
+Patch 9.0.2178
+Problem:    reg_executing() returns wrong result in :normal with range
+            when 'showcmd' is set (after 8.2.4705).
+Solution:   Reset "pending_end_reg_executing" when executing a register.
+
+Patch 9.0.2179
+Problem:    no filetype detection for execline scripts
+Solution:   Add filetype detection for execline
+
+Patch 9.0.2180
+Problem:    POSIX function name in exarg struct causes issues
+            on OpenVMS
+Solution:   Rename getline member in exarg struct to ea_getline,
+            remove isinf() workaround for VMS
+
+Patch 9.0.2181
+Problem:    Vim9: missing error messages
+Solution:   Add one more error message
+
+Patch 9.0.2182
+Problem:    Vim9: need a way to reserve future extension
+Solution:   reserve double underscore prefix for future use
+            (Yegappan Lakshmanan)
+
+Patch 9.0.2183
+Problem:    Maximum callback depth is not configurable.
+Solution:   Revert patch 9.0.2103.  Set 'maxfuncdepth' in test.
+            (zeertzjq)
+
+Patch 9.0.2184
+Problem:    Vim9: inconsistent :type/:class messages
+Solution:   Update the Messages (Ernie Rael)
+
+Patch 9.0.2185
+Problem:    Coverity complains about not checking return value
+            in compare_isn_not_values (after 9.0.2184)
+Solution:   cast return value to "(void)" to make intention clear
+
+Patch 9.0.2186
+Problem:    LTCG compile error on Win/ARM64 for `write_chars()`
+Solution:   Explicitly initialise the storage to use data rather than BSS
+            (Saleem Abdulrasool)
+
+Patch 9.0.2187
+Problem:    Visual selection isn't drawn with 'breakindent' when the line
+            doesn't fit in the window (Jaehwang Jung)
+Solution:   Adjust wlv->fromcol also for 'breakindent' (zeertzjq)
+
+Patch 9.0.2188
+Problem:    cursor wrong after { in single line buffer
+            (Edwin Chan)
+Solution:   do not place the cursor at the end for a single
+            line buffer when moving backwards (Gary Johnson)
+
+Patch 9.0.2189
+Problem:    Wrong display when 'breakindentopt' contains "sbr" and
+            'showbreak' and 'nobreakindent' are set.
+Solution:   Always reset wlv->need_showbreak regardless of the values of
+            'breakindent' and 'showbreak', as they aren't checked when
+            setting wlv->need_showbreak (zeertzjq)
 
  vim:tw=78:ts=8:noet:ft=help:norl:

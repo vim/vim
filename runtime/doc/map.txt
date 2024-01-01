@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 December 24
+*map.txt*       For Vim version 9.0.  Last change: 2023 December 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -586,10 +586,12 @@ While mappings are being listed, it is not possible to add or clear mappings,
 e.g. from a timer callback. *E1309*
 
 							*:map-verbose*
-When 'verbose' is non-zero, listing a key map will also display where it was
+When 'verbose' is non-zero, the detected and used 'keyprotocol' value will be
+displayed in the first line. Also a key map will also display where it was
 last defined.  Example: >
 
 	:verbose map <C-W>*
+        Kitty keyboard protocol: Cleared
 	n  <C-W>*      * <C-W><C-S>*
 		Last set from /home/abcd/.vimrc
 
