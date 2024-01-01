@@ -37,7 +37,7 @@ int gui_mch_init_font(char_u *font_name, int fontset);
 GuiFont gui_mch_get_font(char_u *name, int report_error);
 char_u *gui_mch_get_fontname(GuiFont font, char_u *name);
 void gui_mch_free_font(GuiFont font);
-void gui_mch_expand_font(optexpand_T *args, void *param, int (*cb)(char_u *val));
+void gui_mch_expand_font(optexpand_T *args, void *param, int (*add_match)(char_u *val));
 guicolor_T gui_mch_get_color(char_u *name);
 guicolor_T gui_mch_get_rgb_color(int r, int g, int b);
 void gui_mch_set_fg_color(guicolor_T color);

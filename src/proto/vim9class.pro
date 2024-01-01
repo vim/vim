@@ -15,7 +15,6 @@ int class_method_idx(class_T *cl, char_u *name, size_t namelen);
 ocmember_T *object_member_lookup(class_T *cl, char_u *name, size_t namelen, int *idx);
 int object_method_idx(class_T *cl, char_u *name, size_t namelen);
 ocmember_T *member_lookup(class_T *cl, vartype_T v_type, char_u *name, size_t namelen, int *idx);
-void emsg_var_cl_define(char *msg, char_u *name, size_t len, class_T *cl);
 ufunc_T *method_lookup(class_T *cl, vartype_T v_type, char_u *name, size_t namelen, int *idx);
 int inside_class(cctx_T *cctx_arg, class_T *cl);
 int oc_var_check_ro(class_T *cl, ocmember_T *m);
@@ -29,8 +28,9 @@ void object_created(object_T *obj);
 void object_unref(object_T *obj);
 int object_free_nonref(int copyID);
 void object_free_items(int copyID);
+void emsg_var_cl_define(char *msg, char_u *name, size_t len, class_T *cl);
 void method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
 void member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
-void f_instanceof(typval_T *argvars, typval_T *rettv);
 int class_instance_of(class_T *cl, class_T *other_cl);
+void f_instanceof(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
