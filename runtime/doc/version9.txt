@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2023 Dec 30
+*version9.txt*  For Vim version 9.0.  Last change: 2024 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31733,7 +31733,7 @@ Other improvements				*new-other-9.1*
   highlight modes (|highlight-term|).
 - The 'fillchars' option is now a global-local option and allows to
   specify the character used for the last window line.
-- The |vertical| and |horizontal| modifiers can be used with ":wincmd ="
+- The |:vertical| and |:horizontal| modifiers can be used with ":wincmd ="
   command to equalize windows vertically or horizontally.
 - |:defer| command to defer the execution of a function till the end of a
   function.
@@ -31764,7 +31764,7 @@ Other improvements				*new-other-9.1*
 - Support for Python3 stable ABI (|python-stable|).
 - Use |jumplist| like a stack 'jumpoptions'.
 - Support for writing extended attributes in Linux (|xattr|).
-- 'errorformat' supports parsing a buffer number (|%b|).
+- 'errorformat' supports parsing a buffer number ("%b").
 - Support for building the python interface using Python 3.12.
 - |matchaddpos()| is no longer limited to 8 positions.
 - |readblob()| allows to read part of a file.

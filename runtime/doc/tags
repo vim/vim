@@ -3470,6 +3470,7 @@ $quote	eval.txt	/*$quote*
 :tf	tagsrch.txt	/*:tf*
 :tfirst	tagsrch.txt	/*:tfirst*
 :th	eval.txt	/*:th*
+:this	vim9class.txt	/*:this*
 :throw	eval.txt	/*:throw*
 :tj	tagsrch.txt	/*:tj*
 :tjump	tagsrch.txt	/*:tjump*
@@ -5513,6 +5514,7 @@ InsertEnter	autocmd.txt	/*InsertEnter*
 InsertLeave	autocmd.txt	/*InsertLeave*
 InsertLeavePre	autocmd.txt	/*InsertLeavePre*
 Integer	eval.txt	/*Integer*
+Interface	vim9class.txt	/*Interface*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
 Job	eval.txt	/*Job*
@@ -7592,6 +7594,7 @@ g:rust_conceal_mod_path	ft_rust.txt	/*g:rust_conceal_mod_path*
 g:rust_conceal_pub	ft_rust.txt	/*g:rust_conceal_pub*
 g:rust_fold	ft_rust.txt	/*g:rust_fold*
 g:rust_keep_autopairs_default	ft_rust.txt	/*g:rust_keep_autopairs_default*
+g:rust_playpen_url	ft_rust.txt	/*g:rust_playpen_url*
 g:rust_recommended_style	ft_rust.txt	/*g:rust_recommended_style*
 g:rust_shortener_url	ft_rust.txt	/*g:rust_shortener_url*
 g:rust_use_custom_ctags_defs	ft_rust.txt	/*g:rust_use_custom_ctags_defs*
@@ -10633,6 +10636,7 @@ type-casting	vim9.txt	/*type-casting*
 type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
+typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*

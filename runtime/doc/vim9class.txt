@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 28
+*vim9class.txt*	For Vim version 9.0.  Last change: 2024 Jan 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -104,7 +104,7 @@ You can create an object from this class with the new() method: >
 The object variables "lnum" and "col" can be accessed directly: >
 
 	echo $'The text position is ({pos.lnum}, {pos.col})'
-<							*E1317* *E1327*
+<						    *E1317* *E1327* *:this*
 If you have been using other object-oriented languages you will notice that in
 Vim, within a class definition, the object members are consistently referred
 to with the "this." prefix.  This is different from languages like Java and
@@ -713,7 +713,7 @@ Some types cannot be used, such as "void", "null" and "v:none".
 
 
 Defining an interface ~
-						*:interface* *:endinterface*
+					*Interface* *:interface* *:endinterface*
 An interface is defined between `:interface` and `:endinterface`.  It may be
 prefixed with `:export`: >
 
@@ -834,7 +834,7 @@ constructor methods.
 
 ==============================================================================
 
-7.  Type definition					*Vim9-type* *:type*
+7.  Type definition				*typealias* *Vim9-type* *:type*
 
 					*E1393* *E1395* *E1396* *E1397* *E1398*
 A type definition is giving a name to a type specification.  This is also
