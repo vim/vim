@@ -17,10 +17,10 @@
 
 // Values that change for a new release.
 #define VIM_VERSION_MAJOR		9
-#define VIM_VERSION_MINOR		0
-#define VIM_VERSION_BUILD		284
-#define VIM_VERSION_BUILD_BCD		0x11c
-#define VIM_VERSION_DATE_ONLY		"2022 Jun 28"
+#define VIM_VERSION_MINOR		1
+#define VIM_VERSION_BUILD		285
+#define VIM_VERSION_BUILD_BCD		0x11d
+#define VIM_VERSION_DATE_ONLY		"2024 Jan 02"
 
 // Values based on the above
 #define VIM_VERSION_MAJOR_STR		VIM_TOSTR(VIM_VERSION_MAJOR)

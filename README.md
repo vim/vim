@@ -150,4 +150,4 @@ Most of Vim was created by Bram Moolenaar `<Bram@vim.org>`
 Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
 	`<vim-dev@vim.org>`
 
-This is `README.md` for version 9.0 of Vim: Vi IMproved.
+This is `README.md` for version 9.1 of Vim: Vi IMproved.

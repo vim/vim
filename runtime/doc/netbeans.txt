@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 9.0.  Last change: 2023 Nov 26
+*netbeans.txt*  For Vim version 9.1.  Last change: 2023 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.

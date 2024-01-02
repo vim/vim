@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 9.0.  Last change: 2023 Dec 20
+*message.txt*   For Vim version 9.1.  Last change: 2023 Dec 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

@@ -1,4 +1,4 @@
-*pi_gzip.txt*   For Vim version 9.0.  Last change: 2023 Nov 14
+*pi_gzip.txt*   For Vim version 9.1.  Last change: 2023 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
