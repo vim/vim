@@ -746,11 +746,11 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
 
     For 32-bit version:
 
-      xcopy /s .ext\include C:\Ruby24\include\ruby-2.4.0
+      xcopy /s .ext\include\i386-mswin32_140\config.h C:\Ruby24\include\ruby-2.4.0\ruby
 
     For 64-bit version:
 
-      xcopy /s .ext\include C:\Ruby24-x64\include\ruby-2.4.0
+      xcopy /s .ext\include\x64-mswin64_140 C:\Ruby24-x64\include\ruby-2.4.0\ruby
 
     Note that 2.4.0 is Ruby API version of Ruby 2.4.X.
     You may need to close the console and reopen it to pick up the new $PATH.
