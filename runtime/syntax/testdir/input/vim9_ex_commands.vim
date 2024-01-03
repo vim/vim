@@ -93,7 +93,6 @@ vim9script
 :checktime
 :chistory
 :class
-:class
 :clast
 :clearjumps
 :clist
@@ -171,7 +170,6 @@ vim9script
 :else
 :elseif
 :emenu
-:endclass
 :endclass
 :enddef
 :endenum
@@ -385,8 +383,6 @@ vim9script
 :ptprevious
 :ptrewind
 :ptselect
-:public
-:public
 :put
 :pwd
 :py3
@@ -479,8 +475,6 @@ vim9script
 :startgreplace
 :startinsert
 :startreplace
-:static
-:static
 :stjump
 :stop
 :stopinsert
@@ -681,7 +675,6 @@ Foo() | checkpath
 Foo() | checktime
 Foo() | chistory
 Foo() | class
-Foo() | class
 Foo() | clast
 Foo() | clearjumps
 Foo() | clist
@@ -759,7 +752,6 @@ Foo() | edit
 Foo() | else
 Foo() | elseif
 Foo() | emenu
-Foo() | endclass
 Foo() | endclass
 Foo() | enddef
 Foo() | endenum
@@ -972,8 +964,6 @@ Foo() | ptNext
 Foo() | ptprevious
 Foo() | ptrewind
 Foo() | ptselect
-Foo() | public
-Foo() | public
 Foo() | put
 Foo() | pwd
 Foo() | py3
@@ -1066,8 +1056,6 @@ Foo() | stag
 Foo() | startgreplace
 Foo() | startinsert
 Foo() | startreplace
-Foo() | static
-Foo() | static
 Foo() | stjump
 Foo() | stop
 Foo() | stopinsert
