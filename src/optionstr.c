@@ -1050,10 +1050,14 @@ expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
  * The 'background' option is changed.
  */
     char *
-did_set_background(optset_T *args UNUSED)
+did_set_background(optset_T *args)
 {
     if (check_opt_strings(p_bg, p_bg_values, FALSE) == FAIL)
 	return e_invalid_argument;
+
+    if (args->os_oldval.string != NULL && args->os_oldval.string[0] == *p_bg)
+	// Value was not changed
+	return NULL;
 
 #ifdef FEAT_EVAL
     int dark = (*p_bg == 'd');
