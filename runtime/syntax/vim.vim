@@ -271,6 +271,23 @@ syn keyword	vimPattern   contained	start	skip	end
 " vimTypes : new for vim9
 syn match	vimType	":\s*\zs\<\(bool\|number\|float\|string\|blob\|list<\|dict<\|job\|channel\|func\)\>"
 
+" Classes And Interfaces: {{{2
+" ======================
+
+syn cluster	vimClassBodyList	contains=vim9Comment,vimContinue,vimEnvvar,vimFunction,vimLet,vimLetHereDoc,vimNumber,vimOper,vimOperParen,vimString,vimClassKeyword,vimClassThis
+
+" TODO: some keywords redefined for now
+syn keyword	vimClassKeyword	contained	extends implements public static
+syn keyword	vimClassThis	contained	this
+
+if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'c'
+ syn region	vimClass	fold matchgroup=vimCommand start="\%(^\s*\%(export\s\+\)\=\(abstract\s\+\)\=\)\@16<=class\>" end="\<endclass\>"     contains=@vimClassBodyList
+ syn region	vimInterface	fold matchgroup=vimCommand start="\%(^\s*\%(export\s\+\)\=\)\@16<=interface\>"	   end="\<endinterface\>" contains=@vimClassBodyList
+else
+ syn region	vimClass	matchgroup=vimCommand start="\%(^\s*\%(export\s\+\)\=\(abstract\s\+\)\=\)\@16<=class\>"	   end="\<endclass\>"     contains=@vimClassBodyList
+ syn region	vimInterface	matchgroup=vimCommand start="\%(^\s*\%(export\s\+\)\=\)\@16<=interface\>"	   end="\<endinterface\>" contains=@vimClassBodyList
+endif
+
 " Keymaps: (Vim Project Addition) {{{2
 " =======
 
@@ -431,7 +448,7 @@ syn match	vimUnletBang	contained	"!"	skipwhite nextgroup=vimUnletVars
 syn region	vimUnletVars	contained	start="$\I\|\h" skip="\n\s*\\" end="$" end="|" contains=vimVar,vimEnvvar,vimContinue,vimString,vimNumber
 
 VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s*\%(trim\s\+\%(eval\s\+\)\=\|eval\s\+\%(trim\s\+\)\=\)\=\z(\L\S*\)' matchgroup=vimLetHereDocStop end='^\s*\z1\s*$'
-syn keyword	vimLet	var		skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
+syn keyword	vimLet	var	final	skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
 
 " For: {{{2
 " ===
