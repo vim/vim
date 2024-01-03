@@ -1,8 +1,8 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 10
-" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last Change:	2024 Jan 3
+" Former Maintainer:	Shixian Li <lsx7@sina.com>
 
 " Bail out if this isn't wanted.
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
@@ -39,6 +39,23 @@ if has("clipboard")
 
     cmap <C-V>		<C-R>+
     cmap <S-Insert>		<C-R>+
+else
+    " Use unnamed register while clipboard not exist
+
+    " CTRL-X and SHIFT-Del are Cut
+    vnoremap <C-X>   ""x
+    vnoremap <S-Del> ""x
+
+    " CTRL-C and CTRL-Insert are Copy
+    vnoremap <C-C>      ""y
+    vnoremap <C-Insert> ""y
+
+    " CTRL-V and SHIFT-Insert are Paste
+    noremap <C-V>      ""gP
+    noremap <S-Insert> ""gP
+
+    inoremap <C-V>      <C-R>"
+    inoremap <S-Insert> <C-R>"
 endif
 
 " Pasting blockwise and linewise selections is not possible in Insert and
@@ -47,7 +64,7 @@ endif
 " Uses the paste.vim autoload script.
 " Use CTRL-G u to have CTRL-Z only undo the paste.
 
-if 1
+if has("clipboard")
     exe 'inoremap <script> <C-V> <C-G>u' . paste#paste_cmd['i']
     exe 'vnoremap <script> <C-V> ' . paste#paste_cmd['v']
 endif
