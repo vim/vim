@@ -3470,6 +3470,7 @@ $quote	eval.txt	/*$quote*
 :tf	tagsrch.txt	/*:tf*
 :tfirst	tagsrch.txt	/*:tfirst*
 :th	eval.txt	/*:th*
+:this	vim9class.txt	/*:this*
 :throw	eval.txt	/*:throw*
 :tj	tagsrch.txt	/*:tj*
 :tjump	tagsrch.txt	/*:tjump*
@@ -4504,11 +4505,14 @@ E1400	vim9class.txt	/*E1400*
 E1401	vim9class.txt	/*E1401*
 E1402	vim9class.txt	/*E1402*
 E1403	vim9class.txt	/*E1403*
+E1405	vim9class.txt	/*E1405*
+E1406	vim9class.txt	/*E1406*
 E1407	vim9class.txt	/*E1407*
 E1408	vim9class.txt	/*E1408*
 E1409	vim9class.txt	/*E1409*
 E141	message.txt	/*E141*
 E1410	vim9class.txt	/*E1410*
+E1411	vim9class.txt	/*E1411*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
@@ -5510,6 +5514,7 @@ InsertEnter	autocmd.txt	/*InsertEnter*
 InsertLeave	autocmd.txt	/*InsertLeave*
 InsertLeavePre	autocmd.txt	/*InsertLeavePre*
 Integer	eval.txt	/*Integer*
+Interface	vim9class.txt	/*Interface*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
 Job	eval.txt	/*Job*
@@ -7299,6 +7304,7 @@ ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
 ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
 ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
+ft-rnoweb-plugin	filetype.txt	/*ft-rnoweb-plugin*
 ft-rrst-plugin	filetype.txt	/*ft-rrst-plugin*
 ft-rrst-syntax	syntax.txt	/*ft-rrst-syntax*
 ft-rst-plugin	filetype.txt	/*ft-rst-plugin*
@@ -7588,6 +7594,7 @@ g:rust_conceal_mod_path	ft_rust.txt	/*g:rust_conceal_mod_path*
 g:rust_conceal_pub	ft_rust.txt	/*g:rust_conceal_pub*
 g:rust_fold	ft_rust.txt	/*g:rust_fold*
 g:rust_keep_autopairs_default	ft_rust.txt	/*g:rust_keep_autopairs_default*
+g:rust_playpen_url	ft_rust.txt	/*g:rust_playpen_url*
 g:rust_recommended_style	ft_rust.txt	/*g:rust_recommended_style*
 g:rust_shortener_url	ft_rust.txt	/*g:rust_shortener_url*
 g:rust_use_custom_ctags_defs	ft_rust.txt	/*g:rust_use_custom_ctags_defs*
@@ -8682,6 +8689,7 @@ multilang	mlang.txt	/*multilang*
 multilang-menus	mlang.txt	/*multilang-menus*
 multilang-messages	mlang.txt	/*multilang-messages*
 multilang-scripts	mlang.txt	/*multilang-scripts*
+multiple-constructors	vim9class.txt	/*multiple-constructors*
 myfiletypefile	syntax.txt	/*myfiletypefile*
 myscriptsfile	syntax.txt	/*myscriptsfile*
 mysql	ft_sql.txt	/*mysql*
@@ -9078,7 +9086,11 @@ notepad	gui_w32.txt	/*notepad*
 nr2char()	builtin.txt	/*nr2char()*
 nroff.vim	syntax.txt	/*nroff.vim*
 null	vim9.txt	/*null*
+null-anomalies	vim9.txt	/*null-anomalies*
+null-compare	vim9.txt	/*null-compare*
+null-details	vim9.txt	/*null-details*
 null-variable	eval.txt	/*null-variable*
+null-variables	vim9.txt	/*null-variables*
 null_blob	vim9.txt	/*null_blob*
 null_channel	vim9.txt	/*null_channel*
 null_class	vim9.txt	/*null_class*
@@ -10624,6 +10636,7 @@ type-casting	vim9.txt	/*type-casting*
 type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
+typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*
@@ -10941,6 +10954,7 @@ val-variable	eval.txt	/*val-variable*
 valgrind	debug.txt	/*valgrind*
 values()	builtin.txt	/*values()*
 var-functions	usr_41.txt	/*var-functions*
+variable-categories	vim9.txt	/*variable-categories*
 variable-scope	eval.txt	/*variable-scope*
 variable-types	vim9.txt	/*variable-types*
 variables	eval.txt	/*variables*
@@ -11036,6 +11050,7 @@ vim9	vim9.txt	/*vim9*
 vim9-access-modes	vim9class.txt	/*vim9-access-modes*
 vim9-autoload	vim9.txt	/*vim9-autoload*
 vim9-boolean	vim9.txt	/*vim9-boolean*
+vim9-class	vim9class.txt	/*vim9-class*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-curly	vim9.txt	/*vim9-curly*

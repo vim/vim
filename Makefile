@@ -94,7 +94,7 @@ syntaxtest:
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 9
-MINOR = 0
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #

@@ -226,7 +226,7 @@ findpar(
     if (both && *ml_get(curr) == '}')	// include line with '}'
 	++curr;
     curwin->w_cursor.lnum = curr;
-    if (curr == curbuf->b_ml.ml_line_count && what != '}')
+    if (curr == curbuf->b_ml.ml_line_count && what != '}' && dir == FORWARD)
     {
 	char_u *line = ml_get(curr);
 

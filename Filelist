@@ -4,7 +4,6 @@
 # source files for all source archives
 SRC_ALL =	\
 		.cirrus.yml \
-		.coveralls.yml \
 		.gitattributes \
 		.github/CODEOWNERS \
 		.github/ISSUE_TEMPLATE/bug_report.yml \
@@ -863,6 +862,7 @@ RT_DOS =	\
 		README_dos.txt \
 		runtime/doc/Make_mvc.mak \
 		runtime/tutor/Make_mvc.mak \
+		runtime/lang/Make_mvc.mak \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
@@ -1073,7 +1073,6 @@ LANG_SRC = \
 # the language files for the Win32 lang archive
 LANG_DOS = \
 		src/po/*.mo \
-		runtime/lang/Make_mvc.mak \
 
 # Files in the repository that are deliberately not listed above, and will thus
 # be excluded from distribution tarballs and the like.

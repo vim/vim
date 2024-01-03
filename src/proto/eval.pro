@@ -7,7 +7,7 @@ void fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip);
 int eval_to_bool(char_u *arg, int *error, exarg_T *eap, int skip, int use_simple_function);
 int eval_expr_valid_arg(typval_T *tv);
 funccall_T *eval_expr_get_funccal(typval_T *expr, typval_T *rettv);
-int eval_expr_typval(typval_T *expr, int prefer_func, typval_T *argv, int argc, funccall_T *fc_arg, typval_T *rettv);
+int eval_expr_typval(typval_T *expr, int want_func, typval_T *argv, int argc, funccall_T *fc_arg, typval_T *rettv);
 int eval_expr_to_bool(typval_T *expr, int *error);
 char_u *eval_to_string_skip(char_u *arg, exarg_T *eap, int skip);
 void init_evalarg(evalarg_T *evalarg);

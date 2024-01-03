@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-26 15:13+0100\n"
+"POT-Creation-Date: 2023-12-29 00:02+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -161,15 +161,19 @@ msgstr "Anfang"
 msgid "%d%%"
 msgstr "%d%%"
 
+#, c-format
 msgid " (%d of %d)"
 msgstr "(%d von %d)"
 
+#, c-format
 msgid " ((%d) of %d)"
 msgstr "((%d) von %d)"
 
+#, c-format
 msgid " (file %d of %d)"
 msgstr " (Datei %d von %d)"
 
+#, c-format
 msgid " (file (%d) of %d)"
 msgstr " (Datei (%d) von %d)"
 
@@ -2791,6 +2795,7 @@ msgstr " AUSWAHL BLOCK"
 msgid "recording"
 msgstr "aufzeichnen"
 
+#, c-format
 msgid "Searching for \"%s\" under \"%s\" in \"%s\""
 msgstr "Suche nach \"%s\" unterhalb \"%s\" in \"%s\""
 
@@ -4506,6 +4511,7 @@ msgstr "E171: Fehlendes :endif"
 msgid "E172: Missing marker"
 msgstr "E172: Fehlende Markierung"
 
+#, c-format
 msgid "E173: %d more file to edit"
 msgid_plural "E173: %d more files to edit"
 msgstr[0] "E173: %d weitere Datei zum Editieren"
@@ -6064,6 +6070,7 @@ msgstr "E613: Unbekannte Druckerschriftart: %s"
 msgid "E614: Class required"
 msgstr "E614: Klasse benötigt"
 
+#, c-format
 msgid "E616: Object required for argument %d"
 msgstr "E616: Objekt erforderlich für Argument %d"
 
@@ -6108,10 +6115,12 @@ msgstr "E625: Kann cscope Datenbank nicht öffnen: %s"
 msgid "E626: Cannot get cscope database information"
 msgstr "E626: Kann cscope Datenbank-Informationen nicht bekommen"
 
+#, c-format
 msgid "E627: Missing colon: %s"
 msgstr "E627: Fehlender Doppelpunkt: %s"
 
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E628: Missing ! or / in: %s"
 msgstr "E628: Fehlendes ! oder / in: %s"
 
@@ -6155,6 +6164,7 @@ msgstr "E640: Ungültiger Buffer-Bezeichner in initDone"
 msgid "E641: Invalid buffer identifier in setBufferNumber"
 msgstr "E641: Ungültiger Buffer-Bezeichner in setBufferNumber"
 
+#, c-format
 msgid "E642: File %s not found in setBufferNumber"
 msgstr "E642: Datei %s in setBufferNumber nicht gefunden"
 
@@ -6175,9 +6185,6 @@ msgstr "E647: Ungültiger Buffer-Bezeichner in setDot"
 
 msgid "E648: Invalid buffer identifier in close"
 msgstr "E648: Ungültiger Buffer-Bezeichner in close"
-
-msgid "E649: Invalid buffer identifier in close"
-msgstr "E649: Ungültiger Buffer-Bezeichner in close"
 
 msgid "E650: Invalid buffer identifier in defineAnnoType"
 msgstr "E650: Ungültiger Buffer-Bezeichner in defineAnnoType"
@@ -6311,6 +6318,7 @@ msgstr "E687: Weniger Ziele als Einträge in der Liste"
 msgid "E688: More targets than List items"
 msgstr "E688: Mehr Ziele als Einträge in der Liste"
 
+#, c-format
 msgid "E689: Index not allowed after a %s: %s"
 msgstr "E689: Index nach %s nicht erlaubt in: %s"
 
@@ -6323,8 +6331,9 @@ msgstr "E691: Kann nur eine Liste mit einer Liste vergleichen"
 msgid "E692: Invalid operation for List"
 msgstr "E692: Unzulässige Operation für Listen"
 
-msgid "E693: List or Class required for argument %d"
-msgstr "E693: Liste oder Klasse erforderlich für Argument %d"
+#, c-format
+msgid "E693: Class or class typealias required for argument %d"
+msgstr "E693: Klasse Klassentypalias erforderlich für Argument %d"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Unzulässige Operation für Funktionsreferenzen"
@@ -6369,8 +6378,11 @@ msgstr ""
 msgid "E705: Variable name conflicts with existing function: %s"
 msgstr "E705: Konflikt eines Variablennamens mit bestehender Funktion: %s"
 
+#, c-format
 msgid "E706: Argument of %s must be a List, String or Dictionary"
-msgstr "E706: Argument von %s muss eine Liste, eine Zeichenkette oder ein Dictionary sein"
+msgstr ""
+"E706: Argument von %s muss eine Liste, eine Zeichenkette oder ein Dictionary "
+"sein"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -7308,6 +7320,7 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Ungültige Aktion '%s'"
 
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E963: Setting v:%s to value with wrong type"
 msgstr "E963: Setzen von v:%s auf Wert mit falschem Typ"
 
@@ -7782,6 +7795,7 @@ msgstr "E1093: Erwartete %d Einträge, aber erhielt %d"
 msgid "E1094: Import can only be used in a script"
 msgstr "E1094: import kann nur innerhalb eines Scripts verwendet werden"
 
+#, c-format
 msgid "E1095: Unreachable code after :%s"
 msgstr "E1095: Nicht erreichbarer Code nach :%s"
 
@@ -7821,10 +7835,11 @@ msgstr "E1104: Fehlendes >"
 msgid "E1105: Cannot convert %s to string"
 msgstr "E1105: kann %s nicht in Zeichenkette umwandeln"
 
+#, c-format
 msgid "E1106: One argument too many"
 msgid_plural "E1106: %d arguments too many"
 msgstr[0] "E1106: Ein Argument zu viel"
-msgstr[1] "E1106: zu viele Argumente"
+msgstr[1] "E1106: %d Argumente zu viel"
 
 msgid "E1107: String, List, Dict or Blob required"
 msgstr "E1107: Zeichenkette, Liste, Dictionary oder Blob benötigt"
@@ -8117,10 +8132,11 @@ msgstr "E1188: Kann Terminal nicht aus dem Kommandozeilen-Fenster öffnen"
 msgid "E1189: Cannot use :legacy with this command: %s"
 msgstr "E1189: Kann :legacy nicht mit diesem Befehl verwenden: %s"
 
+#, c-format
 msgid "E1190: One argument too few"
 msgid_plural "E1190: %d arguments too few"
 msgstr[0] "E1190: Ein Argument zu wenig"
-msgstr[1] "E1190: zu wenig Argumente"
+msgstr[1] "E1190: %d Argumente zu wenig"
 
 #, c-format
 msgid "E1191: Call to function that failed to compile: %s"
@@ -8160,6 +8176,7 @@ msgstr "E1201: Entschlüsselung fehlgeschlagen: vorzeitiges Ende der Datei!"
 msgid "E1202: No white space allowed after '%s': %s"
 msgstr "E1202: Keine Leerzeichen nach '%s': %s erlaubt"
 
+#, c-format
 msgid "E1203: Dot not allowed after a %s: %s"
 msgstr "E1203: Punkt nicht erlaubt nach %s: %s"
 
@@ -8589,6 +8606,7 @@ msgstr "E1315: Leerzeichen erforderlich nach Name: %s"
 msgid "E1316: Class can only be defined in Vim9 script"
 msgstr "E1316: Klasse kann nur in Vim9-Script definiert werden"
 
+#, c-format
 msgid "E1317: Invalid object variable declaration: %s"
 msgstr "E1317: Ungültige Objekt-Variablen-Deklaration: %s"
 
@@ -8614,9 +8632,11 @@ msgstr "E1323: Klasse als Zeichenkette verwendet"
 msgid "E1324: Using an Object as a String"
 msgstr "E1324: Objekt als Zeichenkette verwendet"
 
+#, c-format
 msgid "E1325: Method \"%s\" not found in class \"%s\""
 msgstr "E1325: Methode \"%s\" in Klasse nicht gefunden \"%s\""
 
+#, c-format
 msgid "E1326: Variable \"%s\" not found in object \"%s\""
 msgstr "E1326: Variable \"%s\" in Objekt nicht gefunden \"%s\""
 
@@ -8629,21 +8649,35 @@ msgstr "E1327: Objekt benötigt, gefunden %s"
 msgid "E1328: Constructor default value must be v:none: %s"
 msgstr "E1328: Der Standardwert des Konstruktors muss v:none sein: %s"
 
+#, c-format
+msgid "E1329: Invalid class variable declaration: %s"
+msgstr "E1329: Ungültige Klassen-Variablen-Deklaration: %s"
+
+#, c-format
 msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Ungültiger Typ für Objekt-Variable: %s"
 
-msgid "E1331: Public must be followed by \"this\" or \"static\""
-msgstr "E1331: Auf \"pubic\" muss \"this\" oder \"static\" folgen"
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
+msgstr ""
+"E1331: Public muss von \"var\" oder \"static\" oder \"final\" oder \"const\""
+"gefolgt werden"
 
+#, c-format
 msgid "E1332: Public variable name cannot start with underscore: %s"
 msgstr "E1332: Public Variable darf nicht mit einem Unterstrich beginnen: %s"
 
+#, c-format
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
-msgstr "E1333: Kann nicht auf protected Variable \"%s\" in Klasse \"%s\" zugreifen"
+msgstr ""
+"E1333: Kann nicht auf protected Variable \"%s\" in Klasse \"%s\" zugreifen"
 
+#, c-format
 msgid "E1335: Variable \"%s\" in class \"%s\" is not writable"
 msgstr "E1335: Variable \"%s\" in Klasse \"%s\" ist nicht schreibbar"
 
+#, c-format
 msgid "E1337: Class variable \"%s\" not found in class \"%s\""
 msgstr "E1337: Klassen Variable \"%s\" nicht in Klasse gefunden \"%s\""
 
@@ -8684,9 +8718,11 @@ msgstr "E1346: Interfacename nicht gefunden: %s"
 msgid "E1347: Not a valid interface: %s"
 msgstr "E1347: Kein gültiges Interface: %s"
 
+#, c-format
 msgid "E1348: Variable \"%s\" of interface \"%s\" is not implemented"
 msgstr "E1348: Variable \"%s\" des Interfaces \"%s\" nicht implementiert"
 
+#, c-format
 msgid "E1349: Method \"%s\" of interface \"%s\" is not implemented"
 msgstr "E1349: Methode \"%s\" des Interfaces \"%s\" nicht implementiert"
 
@@ -8722,7 +8758,8 @@ msgid "E1358: Using \"super\" not in a child class"
 msgstr "E1358: Verwendung von \"super\" nicht in einer untergeordneten Klasse"
 
 msgid "E1359: Cannot define a \"new\" method in an abstract class"
-msgstr "E1359: In einer abstrakten Klasse kann keine \"new\" Methode definiert werden"
+msgstr ""
+"E1359: In einer abstrakten Klasse kann keine \"new\" Methode definiert werden"
 
 msgid "E1360: Using a null object"
 msgstr "E1360: Verwenden eines Null-Objekts"
@@ -8740,17 +8777,27 @@ msgid "E1364: Warning: Pointer block corrupted"
 msgstr "E1364: Warnung: Pointer-Block korrupt"
 
 msgid "E1365: Cannot use a return type with the \"new\" method"
-msgstr "E1365: Es kann kein Rückgabetyp mit der Methode \"new\" verwendet werden"
+msgstr ""
+"E1365: Es kann kein Rückgabetyp mit der Methode \"new\" verwendet werden"
 
+#, c-format
 msgid "E1366: Cannot access protected method: %s"
 msgstr "E1366: Kann nicht auf protected Methode zugreifen: %s"
 
+#, c-format
 msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
-msgstr "E1367: Zugriffslevel der Variable \"%s\" des Interfaces \"%s\" ist unterschiedlich"
+msgstr ""
+"E1367: Zugriffslevel der Variable \"%s\" des Interfaces \"%s\" ist "
+"unterschiedlich"
 
-msgid "E1368: Static cannot be followed by \"this\" in a variable name"
-msgstr "E1368: Static kann nicht von \"this\" in einem Variablennamen gefolgt werden"
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const"
+"\""
+msgstr ""
+"E1368: Static muss von \"var\" oder \"def\" oder \"final\" oder \"const\""
+"gefolgt werden"
 
+#, c-format
 msgid "E1369: Duplicate variable: %s"
 msgstr "E1369: Doppelte Variable: %s"
 
@@ -8760,14 +8807,20 @@ msgstr "E1370: Kann eine \"new\" Methode nicht als static definieren"
 msgid "E1371: Abstract must be followed by \"def\""
 msgstr "E1371: Abstract muss von \"def\" gefolgt werden"
 
+#, c-format
 msgid "E1372: Abstract method \"%s\" cannot be defined in a concrete class"
-msgstr "E1372: Abstrakte Methode \"%s\" kann nicht in einer konkreten Klasse definiert werden"
+msgstr ""
+"E1372: Abstrakte Methode \"%s\" kann nicht in einer konkreten Klasse "
+"definiert werden"
 
+#, c-format
 msgid "E1373: Abstract method \"%s\" is not implemented"
 msgstr "E1373: Abstrakte Methode \"%s\" ist nicht implementiert"
 
+#, c-format
 msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
-msgstr "E1374: Klassenvariable \"%s\" nur innerhalb der Klasse \"%s\" zugänglich"
+msgstr ""
+"E1374: Klassenvariable \"%s\" nur innerhalb der Klasse \"%s\" zugänglich"
 
 #, c-format
 msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
@@ -8779,7 +8832,8 @@ msgstr "E1376: Objektvariable \"%s\" nur über die Klasse \"%s\" zugänglich"
 
 #, c-format
 msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
-msgstr "E1377: Zugriffslevel der Methode \"%s\" ist unterschiedlich in Klasse \"%s\""
+msgstr ""
+"E1377: Zugriffslevel der Methode \"%s\" ist unterschiedlich in Klasse \"%s\""
 
 msgid "E1378: Static member not supported in an interface"
 msgstr "E1378: Statisches Element in einem Interface nicht unterstützt"
@@ -8793,12 +8847,16 @@ msgstr "E1380: Protected Methode in einem Interface nicht unterstützt"
 msgid "E1381: Interface cannot use \"implements\""
 msgstr "E1381: Interface kann nicht \"implements\" verwenden"
 
+#, c-format
 msgid "E1382: Variable \"%s\": type mismatch, expected %s but got %s"
-msgstr "E1382: Variable \"%s\": Typendiskrepanz, erwartete %s erhielt jedoch %s"
+msgstr ""
+"E1382: Variable \"%s\": Typendiskrepanz, erwartete %s erhielt jedoch %s"
 
+#, c-format
 msgid "E1383: Method \"%s\": type mismatch, expected %s but got %s"
 msgstr "E1383: Methode \"%s\": Typendiskrepanz, erwartete %s erhielt jedoch %s"
 
+#, c-format
 msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
 msgstr "E1384: Klassenmethode \"%s\" nur innerhalb Klasse \"%s\" zugänglich"
 
@@ -8823,18 +8881,25 @@ msgstr "E1389: Fehlender Name nach implements"
 msgid ""
 "E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
 "method"
-msgstr "E1390: Objektvariable \"this.%s\" kann nicht verwendet werden, außer mit"
-"der \"new\" Methode"
+msgstr ""
+"E1390: Objektvariable \"this.%s\" kann nicht verwendet werden, außer mitder "
+"\"new\" Methode"
 
+#, c-format
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
-msgstr "E1391: Kann Variable \"%s\" in Klasse \"%s\" nicht sperren bzw. entsperren"
+msgstr ""
+"E1391: Kann Variable \"%s\" in Klasse \"%s\" nicht sperren bzw. entsperren"
 
+#, c-format
 msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
-msgstr "E1392: Kann Klassen-Variable \"%s\" in Klasse \"%s\" nicht sperren bzw. entsperren"
+msgstr ""
+"E1392: Kann Klassen-Variable \"%s\" in Klasse \"%s\" nicht sperren bzw. "
+"entsperren"
 
 msgid "E1393: Type can only be defined in Vim9 script"
 msgstr "E1393: Type kann nur in Vim9 Script verwendet werden"
 
+#, c-format
 msgid "E1394: Type name must start with an uppercase letter: %s"
 msgstr "E1394: Typname muss mit einen Großbuchstaben anfangen: %s"
 
@@ -8842,6 +8907,7 @@ msgstr "E1394: Typname muss mit einen Großbuchstaben anfangen: %s"
 msgid "E1395: Type alias \"%s\" cannot be modified"
 msgstr "E1395: Typ Alias \"%s\" kann nicht verändert werden"
 
+#, c-format
 msgid "E1396: Type alias \"%s\" already exists"
 msgstr "E1396: Typ Alias \"%s\" existiert bereits"
 
@@ -8854,25 +8920,56 @@ msgstr "E1398: Fehlender Typ Alias Typ"
 msgid "E1399: Type can only be used in a script"
 msgstr "E1399: Typ kann nur in einem Script verwendet werden"
 
+#, c-format
 msgid "E1400: Using type alias \"%s\" as a Number"
 msgstr "E1400: Typ Alias \"%s\" als Zahl verwendet"
 
+#, c-format
 msgid "E1401: Using type alias \"%s\" as a Float"
 msgstr "E1401: Typ Alias \"%s\" als Float verwendet"
 
+#, c-format
 msgid "E1402: Using type alias \"%s\" as a String"
 msgstr "E1402: Typ Alias \"%s\" als Zeichenkette verwendet"
 
+#, c-format
 msgid "E1403: Type alias \"%s\" cannot be used as a value"
 msgstr "E1403: Typ Alias \"%s\" kann nicht als Wert verwendet werden"
 
 msgid "E1404: Abstract cannot be used in an interface"
 msgstr "E1404: Abstract kann nicht in einem Interface verwendet werden"
 
-msgid "E1500: Cannot mix positional and non-positional arguments: %s"
-msgstr "E1500: positionsbezogene und nicht-positionsbezogene Argumente können nicht"
-"gemischt werden: %s"
+#, c-format
+msgid "E1405: Class \"%s\" cannot be used as a value"
+msgstr "E1405:  Klasse \"%s\" kann nicht als Wert verwendet werden"
 
+msgid "E1406: Cannot use a Class as a variable or value"
+msgstr "E1406: Kann Klasse nicht als Variable oder Wert verwenden"
+
+msgid "E1407: Cannot use a Typealias as a variable or value"
+msgstr "E1407: Kann Typenalias nicht as Variable oder Wert verwenden"
+
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: Final variable in einem Interface nicht unterstützt"
+
+#, c-format
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr "E1409: Kann eine read-only Variable \"%s\" in Klasse \"%s\" nicht verändern"
+
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: Const Variable in einem Interface nicht unterstützt"
+
+#, c-format
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: Fehlender Punkt nach Object \"%s\""
+
+#, c-format
+msgid "E1500: Cannot mix positional and non-positional arguments: %s"
+msgstr ""
+"E1500: positionsbezogene und nicht-positionsbezogene Argumente können "
+"nichtgemischt werden: %s"
+
+#, c-format
 msgid "E1501: format argument %d unused in $-style format: %s"
 msgstr "E1501: Format Argument %d nicht verwendet in $-style Format: %s"
 
@@ -8880,15 +8977,20 @@ msgstr "E1501: Format Argument %d nicht verwendet in $-style Format: %s"
 msgid ""
 "E1502: Positional argument %d used as field width reused as different type: "
 "%s/%s"
-msgstr "E1502: Positionsbezogenes Argument %d als Feldweite verwendet mit anderem Typ:"
-"%s/%s"
+msgstr ""
+"E1502: Positionsbezogenes Argument %d als Feldweite verwendet mit anderem "
+"Typ:%s/%s"
 
+#, c-format
 msgid "E1503: Positional argument %d out of bounds: %s"
-msgstr "E1503: positionsbezogenes Argument %d außerhalb des zulässigen Bereichs: %s"
+msgstr ""
+"E1503: positionsbezogenes Argument %d außerhalb des zulässigen Bereichs: %s"
 
+#, c-format
 msgid "E1504: Positional argument %d type used inconsistently: %s/%s"
 msgstr "E1504: positionsbezogenes Argument %d Typ inkosistent verwendet: %s/%s"
 
+#, c-format
 msgid "E1505: Invalid format specifier: %s"
 msgstr "E1505: Ungültige Formatangabe: %s"
 
@@ -8898,12 +9000,16 @@ msgstr "E1506: Puffer zu klein um Xattr Wert oder Schlüssel zu kopieren"
 msgid ""
 "E1508: Size of the extended attribute value is larger than the maximum size "
 "allowed"
-msgstr "E1508: Größe des erweiterten Attributwerts ist größer als der maximal "
+msgstr ""
+"E1508: Größe des erweiterten Attributwerts ist größer als der maximal "
 "zulässige Größe"
 
 msgid "E1509: Error occurred when reading or writing extended attribute"
-msgstr "E1509:  Fehler beim Lesen oder Schreiben des erweiterten Attributs aufgetreten"
+msgstr ""
+"E1509:  Fehler beim Lesen oder Schreiben des erweiterten Attributs "
+"aufgetreten"
 
+#, c-format
 msgid "E1510: Value too large: %s"
 msgstr "E1510: Wert zu groß: %s"
 

@@ -160,7 +160,7 @@ g:rustfmt_emit_files~
 	provided) instead of '--write-mode=overwrite'. >
 	    let g:rustfmt_emit_files = 0
 
-
+<
                                                           *g:rust_playpen_url*
 g:rust_playpen_url~
 	Set this option to override the url for the playpen to use: >

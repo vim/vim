@@ -1,13 +1,10 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 14
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Jan 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-NOTE - This is not finished yet, anything can still change! - NOTE
-
-
-Vim9 classes, objects, interfaces, types and enums.
+Vim9 classes, objects, interfaces, types and enums.		*vim9-class*
 
 1.  Overview			|Vim9-class-overview|
 2.  A simple class		|Vim9-simple-class|
@@ -103,17 +100,27 @@ below for how to do this more efficiently): >
 You can create an object from this class with the new() method: >
 
 	var pos = TextPosition.new(1, 1)
-
+<
 The object variables "lnum" and "col" can be accessed directly: >
 
 	echo $'The text position is ({pos.lnum}, {pos.col})'
-<							*E1317* *E1327*
-If you have been using other object-oriented languages you will notice that
-in Vim the object members are consistently referred to with the "this."
-prefix.  This is different from languages like Java and TypeScript.  The
-naming convention makes the object members easy to spot.  Also, when a
-variable does not have the "this." prefix you know it is not an object
-variable.
+<						    *E1317* *E1327* *:this*
+If you have been using other object-oriented languages you will notice that in
+Vim, within a class definition, the object members are consistently referred
+to with the "this." prefix.  This is different from languages like Java and
+TypeScript.  The naming convention makes the object members easy to spot.
+Also, when a variable does not have the "this." prefix you know it is not an
+object variable.
+								*E1411*
+From outside the class definition, access an object's methods and variables by
+using the object name followed by a dot following by the member: >
+
+	pos.lnum
+	pos.setCol(10)
+<
+							*E1405* *E1406*
+A class name cannot be used as an expression.  A class name cannot be used in
+the left-hand-side of an assignment.
 
 
 Object variable write access ~
@@ -137,8 +144,8 @@ the closest valid value.
 If you don't care about side effects and want to allow the object variable to
 be changed at any time, you can make it public: >
 
-	public this.lnum: number
-	public this.col: number
+	public var lnum: number
+	public var col: number
 
 Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
 "pos.lnum" directly above will no longer give an error.
@@ -205,6 +212,8 @@ the above class): >
 <
 Simplifying the new() method ~
 						*new()* *constructor*
+See also |default-constructor| and |multiple-constructors|.
+
 Many constructors take values for the object variables.  Thus you very often
 see this pattern: >
 
@@ -336,8 +345,8 @@ underscore as the first character in the method name: >
     endclass
 <
 							*E1370*
-Note that constructors cannot be declared as "static", because they always
-are.
+Note that constructors cannot be declared as "static". They are called like a
+static but execute as an object method; they have access to "this".
 
 To access the class methods and class variables of a super class in an
 extended class, the class name prefix should be used just as from anywhere
@@ -363,6 +372,9 @@ can declare a static variable or a method with the same name as the one in the
 super class.  Depending on the class where the member is used the
 corresponding class member will be used.  The type of the class member in a
 child class can be different from that in the super class.
+
+The double underscore (__) prefix for a class or object method name is
+reserved for future use.
 
 					*object-final-variable* *E1409*
 The |:final| keyword can be used to make a class or object variable a
@@ -701,7 +713,7 @@ Some types cannot be used, such as "void", "null" and "v:none".
 
 
 Defining an interface ~
-						*:interface* *:endinterface*
+					*Interface* *:interface* *:endinterface*
 An interface is defined between `:interface` and `:endinterface`.  It may be
 prefixed with `:export`: >
 
@@ -791,7 +803,7 @@ first.
 
 
 Multiple constructors ~
-
+						*multiple-constructors*
 Normally a class has just one new() constructor.  In case you find that the
 constructor is often called with the same arguments you may want to simplify
 your code by putting those arguments into a second constructor method.  For
@@ -822,7 +834,7 @@ constructor methods.
 
 ==============================================================================
 
-7.  Type definition					*Vim9-type* *:type*
+7.  Type definition				*typealias* *Vim9-type* *:type*
 
 					*E1393* *E1395* *E1396* *E1397* *E1398*
 A type definition is giving a name to a type specification.  This is also

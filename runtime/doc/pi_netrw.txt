@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 9.0.  Last change: 2023 May 14
+*pi_netrw.txt*  For Vim version 9.1.  Last change: 2023 May 14
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell

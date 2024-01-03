@@ -242,7 +242,7 @@ def Test_class_basic()
     if A
     endif
   END
-  v9.CheckSourceFailure(lines, 'E1319: Using a Class as a Number', 4)
+  v9.CheckSourceFailure(lines, 'E1405: Class "A" cannot be used as a value', 4)
 
   # Test for using object as a bool
   lines =<< trim END
@@ -281,7 +281,7 @@ def Test_class_basic()
     endclass
     :exe 'call ' .. A
   END
-  v9.CheckSourceFailure(lines, 'E1323: Using a Class as a String', 4)
+  v9.CheckSourceFailure(lines, 'E1405: Class "A" cannot be used as a value', 4)
 
   # Test for using object as a string
   lines =<< trim END
@@ -9657,6 +9657,33 @@ def Test_const_class_object_variable()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
+enddef
+
+" Test for using double underscore prefix in a class/object method name.
+def Test_method_double_underscore_prefix()
+  # class method
+  var lines =<< trim END
+    vim9script
+    class A
+      static def __foo()
+        echo "foo"
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
+
+  # object method
+  lines =<< trim END
+    vim9script
+    class A
+      def __foo()
+        echo "foo"
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

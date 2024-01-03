@@ -524,14 +524,21 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
 		if (wlv->n_extra < 0)
 		    wlv->n_extra = 0;
 	    }
-	    if (wp->w_skipcol > 0 && wlv->startrow == 0
-					   && wp->w_p_wrap && wp->w_briopt_sbr)
-		wlv->need_showbreak = FALSE;
+
+	    // Correct start of highlighted area for 'breakindent',
+	    if (wlv->fromcol >= wlv->vcol
+				    && wlv->fromcol < wlv->vcol + wlv->n_extra)
+		wlv->fromcol = wlv->vcol + wlv->n_extra;
+
 	    // Correct end of highlighted area for 'breakindent',
 	    // required when 'linebreak' is also set.
 	    if (wlv->tocol == wlv->vcol)
 		wlv->tocol += wlv->n_extra;
 	}
+
+	if (wp->w_skipcol > 0 && wlv->startrow == 0 && wp->w_p_wrap
+							   && wp->w_briopt_sbr)
+	    wlv->need_showbreak = FALSE;
     }
 }
 #endif
@@ -573,8 +580,6 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	wlv->c_extra = NUL;
 	wlv->c_final = NUL;
 	wlv->n_extra = (int)STRLEN(sbr);
-	if (wp->w_skipcol == 0 || wlv->startrow != 0 || !wp->w_p_wrap)
-	    wlv->need_showbreak = FALSE;
 	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
 
 	// Correct start of highlighted area for 'showbreak'.
@@ -593,6 +598,10 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	    wlv->char_attr = hl_combine_attr(wlv->char_attr, wlv->cul_attr);
 #  endif
     }
+
+    if (wp->w_skipcol == 0 || wlv->startrow > 0 || !wp->w_p_wrap
+							  || !wp->w_briopt_sbr)
+	wlv->need_showbreak = FALSE;
 # endif
 }
 #endif

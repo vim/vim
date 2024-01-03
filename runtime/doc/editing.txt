@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.0.  Last change: 2023 Sep 27
+*editing.txt*   For Vim version 9.1.  Last change: 2023 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

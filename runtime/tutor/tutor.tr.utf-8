@@ -31,7 +31,7 @@
   ** İmleci hareket ettirmek için h,j,k,l düğmelerine basın. **
         ^
         k		İpucu:  h düğmesi soldadır ve sola doğru hareket eder.
-    < h	  l >		    l düğmesi sağdadır ve sağa doğru hareket eder.
+    < h	  l >		        l düğmesi sağdadır ve sağa doğru hareket eder.
         j		        j düğmesi aşağı doğru bir oka benzer.
         v
 
@@ -41,7 +41,7 @@
 
   3. Aşağı düğmesini kullanarak, Ders 1.2'ye geçin.
 
-  NOT: Eğer yazdığınız bir şeyden emin değilseniz, Normal kipe geçmek için
+  NOT: Eğer yazdığınız bir şeyden emin değilseniz Normal kipe geçmek için
        <ESC> düğmesine basın. Daha sonra istediğiniz komutu yeniden yazın.
 
   NOT: Ok düğmeleri de aynı işe yarar. Ancak hjkl düğmelerini kullanarak çok
@@ -62,6 +62,9 @@
 
   4. Eğer bu adımları ezberlediyseniz ve kendinizden eminseniz, 1'den 3'e
      kadar olan adımları yeniden uygulayın.
+
+  NOT: :q! <ENTER>, yaptığınız tüm değişiklikleri atar. Birkaç ders sonra,
+       değişiklikleri dosyaya kaydetmeyi öğreneceksiniz.
 
   5. İmleci Ders 1.3'e taşıyın.
 
@@ -352,24 +355,27 @@
 
   1. İmleçten itibaren bir sözcüğü silmek için dw yazın.
 
-  2. İmleçten itibaren bir satırı silmek için d$ yazın.
+  2. İmleçten itibaren bir sözcüğün sonuna kadar silmek için de yazın.
 
-  3. Bütün bir satırı silmek için dd yazın.
+  3. İmleçten itibaren bir satırı silmek için d$ yazın.
 
-  4. Bir hareketi yenilemek için önüne sayı takısı getirin, 2w gibi.
+  4. Bütün bir satırı silmek için dd yazın.
 
-  5. Normal kipte bir komut biçimi şöyledir:
+  5. Bir hareketi yenilemek için önüne sayı takısı getirin, 2w gibi.
+
+  6. Normal kipte bir komut biçimi şöyledir:
 
       işleç [sayı] hareket
 
     burada:
-      işleç - ne yapılacağı, silmek için d örneğinde olduğu gibi
-      [sayı] - komutun kaç kere tekrar edeceğini gösteren isteğe bağlı sayı
-      hareket - işlecin nice davranacağı, w (sözcük), $ (satır sonu) gibi
+      işleç   - ne yapılacağı, silmek için d örneğinde olduğu gibi
+      [sayı]  - komutun kaç kere tekrar edeceğini gösteren isteğe bağlı sayı
+      hareket - işlecin nice davranacağı; w (sözcük), e (sözcük sonu),
+                $ (satır sonu) gibi
 
-  6. Bir satırın başına gelmek için sıfır (0) kullanın.
+  7. Bir satırın başına gelmek için sıfır (0) kullanın.
 
-  7. Önceki hareketleri geri almak için u (küçük u) yazın.
+  8. Önceki hareketleri geri almak için u (küçük u) yazın.
      Bir satırdaki tüm değişiklikleri geri almak için U (büyük U) yazın.
      Geri almaları geri almak için <CTRL> R kullanın.
 
@@ -975,7 +981,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   Türkçe çeviri:
   Serkan "heartsmagic" Çalış (2005), adresimeyaz (at) yahoo (dot) com
   
-  2019 Güncelleme:
+  2019 güncellemesi:
   Emir SARI, bitigchi (at) me (dot) com
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

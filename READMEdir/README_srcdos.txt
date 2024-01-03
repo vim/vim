@@ -1,4 +1,4 @@
-README_srcdos.txt for version 9.0 of Vim: Vi IMproved.
+README_srcdos.txt for version 9.1 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-Windows.

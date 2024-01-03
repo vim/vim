@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2023 Dec 17
+*syntax.txt*	For Vim version 9.1.  Last change: 2023 Dec 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1001,21 +1001,21 @@ An alternative is to switch to the C++ highlighting: >
 Variable		Highlight ~
 *c_gnu*			GNU gcc specific items
 *c_comment_strings*	strings and numbers inside a comment
-*c_space_errors*		trailing white space and spaces before a <Tab>
-*c_no_trail_space_error*	 ... but no trailing spaces
+*c_space_errors*	trailing white space and spaces before a <Tab>
+*c_no_trail_space_error*   ... but no trailing spaces
 *c_no_tab_space_error*	 ... but no spaces before a <Tab>
 *c_no_bracket_error*	don't highlight {}; inside [] as errors
 *c_no_curly_error*	don't highlight {}; inside [] and () as errors;
-				except { and } in first column
-				Default is to highlight them, otherwise you
-				can't spot a missing ")".
+			 ...except { and } in first column
+			Default is to highlight them, otherwise you
+			can't spot a missing ")".
 *c_curly_error*		highlight a missing } by finding all pairs; this
 			forces syncing from the start of the file, can be slow
 *c_no_ansi*		don't do standard ANSI types and constants
-*c_ansi_typedefs*		 ... but do standard ANSI types
+*c_ansi_typedefs*	 ... but do standard ANSI types
 *c_ansi_constants*	 ... but do standard ANSI constants
 *c_no_utf*		don't highlight \u and \U in strings
-*c_syntax_for_h*		for *.h files use C syntax instead of C++ and use objc
+*c_syntax_for_h*	for *.h files use C syntax instead of C++ and use objc
 			syntax instead of objcpp
 *c_no_if0*		don't highlight "#if 0" blocks as comments
 *c_no_cformat*		don't highlight %-formats in strings
@@ -1674,21 +1674,22 @@ fortran_fold with a command such as >
     :let fortran_fold=1
 to instruct the syntax script to define fold regions for program units, that
 is main programs starting with a program statement, subroutines, function
-subprograms, block data subprograms, interface blocks, and modules.  If you
-also set the variable fortran_fold_conditionals with a command such as >
+subprograms, modules, submodules, and block data units. Block, interface,
+associate, critical, type definition, and change team constructs will also be
+folded.  If you also set the variable fortran_fold_conditionals with a command
+such as >
     :let fortran_fold_conditionals=1
-then fold regions will also be defined for do loops, if blocks, and select
-case constructs.  If you also set the variable fortran_fold_multilinecomments
-with a command such as >
+then fold regions will also be defined for do loops, if blocks, select case,
+select type, and select rank constructs.  If you also set the variable
+fortran_fold_multilinecomments with a command such as >
     :let fortran_fold_multilinecomments=1
 then fold regions will also be defined for three or more consecutive comment
 lines.  Note that defining fold regions can be slow for large files.
 
 If fortran_fold, and possibly fortran_fold_conditionals and/or
-fortran_fold_multilinecomments, have been set, then vim will fold your file if
-you set foldmethod=syntax.  Comments or blank lines placed between two program
-units are not folded because they are seen as not belonging to any program
-unit.
+fortran_fold_multilinecomments, have been set, then vim will fold your file.
+Comments or blank lines placed between two program units are not folded
+because they are seen as not belonging to any program unit.
 
 The syntax/fortran.vim script contains embedded comments that tell you how to
 comment and/or uncomment some lines to (a) activate recognition of some
@@ -2842,10 +2843,20 @@ To highlight R code in knitr chunk headers: >
 	let rmd_syn_hl_chunk = 1
 
 By default, chunks of R code will be highlighted following the rules of R
-language. If you want proper syntax highlighting of chunks of other languages,
-you should add them to either `markdown_fenced_languages` or
-`rmd_fenced_languages`. For example to properly highlight both R and Python,
-you may add this to your |vimrc|: >
+language. Moreover, whenever the buffer is saved, Vim scans the buffer and
+highlights other languages if they are present in new chunks. LaTeX code also
+is automatically recognized and highlighted when the buffer is saved. This
+behavior can be controlled with the variables `rmd_dynamic_fenced_languages`,
+and `rmd_include_latex` whose valid values are: >
+	let rmd_dynamic_fenced_languages = 0 " No autodetection of languages
+	let rmd_dynamic_fenced_languages = 1 " Autodetection of languages
+	let rmd_include_latex = 0 " Don't highlight LaTeX code
+	let rmd_include_latex = 1 " Autodetect LaTeX code
+	let rmd_include_latex = 2 " Always include LaTeX highlighting
+
+If the value of `rmd_dynamic_fenced_languages` is 0, you still can set the
+list of languages whose chunks of code should be properly highlighted, as in
+the example: >
 	let rmd_fenced_languages = ['r', 'python']
 
 

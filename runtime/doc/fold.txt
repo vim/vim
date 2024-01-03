@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 9.0.  Last change: 2023 Mar 24
+*fold.txt*      For Vim version 9.1.  Last change: 2023 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
