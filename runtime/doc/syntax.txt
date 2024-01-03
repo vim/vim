@@ -3956,10 +3956,13 @@ mzscheme and embedded perl).
 Some folding is now supported with when 'foldmethod' is set to "syntax": >
 
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
-   g:vimsyn_folding =~ 'a' : augroups
+   g:vimsyn_folding =~ 'a' : fold augroups
+   g:vimsyn_folding =~ 'c' : fold Vim9 classes
+   g:vimsyn_folding =~ 'e' : fold Vim9 enums
    g:vimsyn_folding =~ 'f' : fold functions
    g:vimsyn_folding =~ 'h' : fold heredocs
-   g:vimsyn_folding =~ 'H' : fold Vim9-script legacy headers
+   g:vimsyn_folding =~ 'i' : fold Vim9 interfaces
+   g:vimsyn_folding =~ 'H' : fold Vim9 legacy headers
    g:vimsyn_folding =~ 'l' : fold Lua      script
    g:vimsyn_folding =~ 'm' : fold MzScheme script
    g:vimsyn_folding =~ 'p' : fold Perl     script

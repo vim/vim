@@ -76,7 +76,7 @@ popup! &Foo | echo "Foo"
 
 " a menu item name cannot start with '.'
 
-export def HistoryJumpMenu()
+def HistoryJumpMenu()
     popup.FilterMenu("Jump history", dir_hist,
         (res, _) => {
             HistoryJump(res.text)
