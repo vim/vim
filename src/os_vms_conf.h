@@ -144,6 +144,7 @@
 
 // Default features
 #define FEAT_IPV6
+#define FEAT_XTERM_SAVE
 
 // Hardware specific
 #if defined(__VAX) || defined(VAX)
