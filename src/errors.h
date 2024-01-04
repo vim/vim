@@ -1749,9 +1749,11 @@ EXTERN char e_recursive_loop_loading_syncolor_vim[]
 #endif
 EXTERN char e_buffer_nr_invalid_buffer_number[]
 	INIT(= N_("E680: <buffer=%d>: invalid buffer number"));
-#ifdef FEAT_QUICKFIX
+#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL)
 EXTERN char e_buffer_is_not_loaded[]
 	INIT(= N_("E681: Buffer is not loaded"));
+#endif
+#ifdef FEAT_QUICKFIX
 EXTERN char e_invalid_search_pattern_or_delimiter[]
 	INIT(= N_("E682: Invalid search pattern or delimiter"));
 EXTERN char e_file_name_missing_or_invalid_pattern[]

@@ -8594,6 +8594,7 @@ match-parens	tips.txt	/*match-parens*
 matchadd()	builtin.txt	/*matchadd()*
 matchaddpos()	builtin.txt	/*matchaddpos()*
 matcharg()	builtin.txt	/*matcharg()*
+matchbufline()	builtin.txt	/*matchbufline()*
 matchdelete()	builtin.txt	/*matchdelete()*
 matchend()	builtin.txt	/*matchend()*
 matchfuzzy()	builtin.txt	/*matchfuzzy()*
@@ -8602,6 +8603,7 @@ matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	builtin.txt	/*matchlist()*
 matchparen	pi_paren.txt	/*matchparen*
 matchstr()	builtin.txt	/*matchstr()*
+matchstrlist()	builtin.txt	/*matchstrlist()*
 matchstrpos()	builtin.txt	/*matchstrpos()*
 matlab-indent	indent.txt	/*matlab-indent*
 matlab-indenting	indent.txt	/*matlab-indenting*

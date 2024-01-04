@@ -100,9 +100,11 @@ static void f_line2byte(typval_T *argvars, typval_T *rettv);
 static void f_luaeval(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_match(typval_T *argvars, typval_T *rettv);
+static void f_matchbufline(typval_T *argvars, typval_T *rettv);
 static void f_matchend(typval_T *argvars, typval_T *rettv);
 static void f_matchlist(typval_T *argvars, typval_T *rettv);
 static void f_matchstr(typval_T *argvars, typval_T *rettv);
+static void f_matchstrlist(typval_T *argvars, typval_T *rettv);
 static void f_matchstrpos(typval_T *argvars, typval_T *rettv);
 static void f_max(typval_T *argvars, typval_T *rettv);
 static void f_min(typval_T *argvars, typval_T *rettv);
@@ -1176,6 +1178,8 @@ static argcheck_T arg2_map[] = {arg_list_or_dict_or_blob_or_string_mod, arg_map_
 static argcheck_T arg2_mapnew[] = {arg_list_or_dict_or_blob_or_string, arg_any};
 static argcheck_T arg25_matchadd[] = {arg_string, arg_string, arg_number, arg_number, arg_dict_any};
 static argcheck_T arg25_matchaddpos[] = {arg_string, arg_list_any, arg_number, arg_number, arg_dict_any};
+static argcheck_T arg23_matchstrlist[] = {arg_list_string, arg_string, arg_dict_any};
+static argcheck_T arg45_matchbufline[] = {arg_buffer, arg_string, arg_lnum, arg_lnum, arg_dict_any};
 static argcheck_T arg119_printf[] = {arg_string_or_nr, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any, arg_any};
 static argcheck_T arg23_reduce[] = {arg_string_list_or_blob, arg_any, arg_any};
 static argcheck_T arg24_remote_expr[] = {arg_string, arg_string, arg_string, arg_number};
@@ -2285,6 +2289,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_matchaddpos},
     {"matcharg",	1, 1, FEARG_1,	    arg1_number,
 			ret_list_string,    f_matcharg},
+    {"matchbufline",	4, 5, FEARG_1,	    arg45_matchbufline,
+			ret_list_any,	    f_matchbufline},
     {"matchdelete",	1, 2, FEARG_1,	    arg2_number,
 			ret_number_bool,    f_matchdelete},
     {"matchend",	2, 4, FEARG_1,	    arg24_match_func,
@@ -2297,6 +2303,8 @@ static funcentry_T global_functions[] =
 			ret_list_string,    f_matchlist},
     {"matchstr",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_string,	    f_matchstr},
+    {"matchstrlist",	2, 3, FEARG_1,	    arg23_matchstrlist,
+			ret_list_any,	    f_matchstrlist},
     {"matchstrpos",	2, 4, FEARG_1,	    arg24_match_func,
 			ret_list_any,	    f_matchstrpos},
     {"max",		1, 1, FEARG_1,	    arg1_list_or_dict,
@@ -8024,6 +8032,183 @@ theend:
 }
 
 /*
+ * Return all the matches in string "str" for pattern "rmp".
+ * The matches are returned in the List "mlist".
+ * If "submatches" is TRUE, then submatch information is also returned.
+ * "matchbuf" is TRUE when called for matchbufline().
+ */
+    static int
+get_matches_in_str(
+    char_u	*str,
+    regmatch_T	*rmp,
+    list_T	*mlist,
+    int		idx,
+    int		submatches,
+    int		matchbuf)
+{
+    long	len = (long)STRLEN(str);
+    int		match = 0;
+    colnr_T	startidx = 0;
+
+    for (;;)
+    {
+	match = vim_regexec_nl(rmp, str, startidx);
+	if (!match)
+	    break;
+
+	dict_T *d = dict_alloc();
+	if (d == NULL)
+	    return FAIL;
+	if (list_append_dict(mlist, d) == FAIL)
+	    return FAIL;;
+
+	if (dict_add_number(d, matchbuf ? "lnum" : "idx", idx) == FAIL)
+	    return FAIL;
+
+	if (dict_add_number(d, "byteidx",
+		    (colnr_T)(rmp->startp[0] - str)) == FAIL)
+	    return FAIL;
+
+	if (dict_add_string_len(d, "text", rmp->startp[0],
+		    (int)(rmp->endp[0] - rmp->startp[0])) == FAIL)
+	    return FAIL;
+
+	if (submatches)
+	{
+	    list_T *sml = list_alloc();
+	    if (sml == NULL)
+		return FAIL;
+
+	    if (dict_add_list(d, "submatches", sml) == FAIL)
+		return FAIL;
+
+	    // return a list with the submatches
+	    for (int i = 1; i < NSUBEXP; ++i)
+	    {
+		if (rmp->endp[i] == NULL)
+		{
+		    if (list_append_string(sml, (char_u *)"", 0) == FAIL)
+			return FAIL;
+		}
+		else if (list_append_string(sml, rmp->startp[i],
+			    (int)(rmp->endp[i] - rmp->startp[i])) == FAIL)
+		    return FAIL;
+	    }
+	}
+	startidx = (colnr_T)(rmp->endp[0] - str);
+	if (startidx >= (colnr_T)len || str + startidx <= rmp->startp[0])
+	    break;
+    }
+
+    return OK;
+}
+
+/*
+ * "matchbufline()" function
+ */
+    static void
+f_matchbufline(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*retlist = NULL;
+    char_u	*save_cpo;
+    char_u	patbuf[NUMBUFLEN];
+    regmatch_T	regmatch;
+
+    rettv->vval.v_number = -1;
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+    retlist = rettv->vval.v_list;
+
+    if (check_for_buffer_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_lnum_arg(argvars, 2) == FAIL
+	    || check_for_lnum_arg(argvars, 3) == FAIL
+	    || check_for_opt_dict_arg(argvars, 4) == FAIL)
+	return;
+
+    int prev_did_emsg = did_emsg;
+    buf_T *buf = tv_get_buf(&argvars[0], FALSE);
+    if (buf == NULL)
+    {
+	if (did_emsg == prev_did_emsg)
+	    semsg(_(e_invalid_buffer_name_str), tv_get_string(&argvars[0]));
+	return;
+    }
+    if (buf->b_ml.ml_mfp == NULL)
+    {
+	emsg(_(e_buffer_is_not_loaded));
+	return;
+    }
+
+    char_u *pat = tv_get_string_buf(&argvars[1], patbuf);
+
+    int		did_emsg_before = did_emsg;
+    linenr_T slnum = tv_get_lnum_buf(&argvars[2], buf);
+    if (did_emsg > did_emsg_before)
+	return;
+    if (slnum < 1)
+    {
+	semsg(_(e_invalid_value_for_argument_str), "lnum");
+	return;
+    }
+
+    linenr_T elnum = tv_get_lnum_buf(&argvars[3], buf);
+    if (did_emsg > did_emsg_before)
+	return;
+    if (elnum < 1 || elnum < slnum)
+    {
+	semsg(_(e_invalid_value_for_argument_str), "end_lnum");
+	return;
+    }
+
+    if (elnum > buf->b_ml.ml_line_count)
+	elnum = buf->b_ml.ml_line_count;
+
+    int		submatches = FALSE;
+    if (argvars[4].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d = argvars[4].vval.v_dict;
+	if (d != NULL)
+	{
+	    dictitem_T *di = dict_find(d, (char_u *)"submatches", -1);
+	    if (di != NULL)
+	    {
+		if (di->di_tv.v_type != VAR_BOOL)
+		{
+		    semsg(_(e_invalid_value_for_argument_str), "submatches");
+		    return;
+		}
+		submatches = tv_get_bool(&di->di_tv);
+	    }
+	}
+    }
+
+    // Make 'cpoptions' empty, the 'l' flag should not be used here.
+    save_cpo = p_cpo;
+    p_cpo = empty_option;
+
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    if (regmatch.regprog == NULL)
+	goto theend;
+    regmatch.rm_ic = p_ic;
+
+    while (slnum <= elnum)
+    {
+	char_u *str = ml_get_buf(buf, slnum, FALSE);
+	if (get_matches_in_str(str, &regmatch, retlist, slnum, submatches,
+								TRUE) == FAIL)
+	    goto cleanup;
+	slnum++;
+    }
+
+cleanup:
+    vim_regfree(regmatch.regprog);
+
+theend:
+    p_cpo = save_cpo;
+}
+
+/*
  * "match()" function
  */
     static void
@@ -8057,6 +8242,85 @@ f_matchlist(typval_T *argvars, typval_T *rettv)
 f_matchstr(typval_T *argvars, typval_T *rettv)
 {
     find_some_match(argvars, rettv, MATCH_STR);
+}
+
+/*
+ * "matchstrlist()" function
+ */
+    static void
+f_matchstrlist(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*retlist = NULL;
+    char_u	*save_cpo;
+    list_T	*l = NULL;
+    listitem_T	*li = NULL;
+    char_u	patbuf[NUMBUFLEN];
+    regmatch_T	regmatch;
+
+    rettv->vval.v_number = -1;
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+    retlist = rettv->vval.v_list;
+
+    if (check_for_list_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
+	return;
+
+    if ((l = argvars[0].vval.v_list) == NULL)
+	return;
+
+    char_u *pat = tv_get_string_buf_chk(&argvars[1], patbuf);
+    if (pat == NULL)
+	return;
+
+    // Make 'cpoptions' empty, the 'l' flag should not be used here.
+    save_cpo = p_cpo;
+    p_cpo = empty_option;
+
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    if (regmatch.regprog == NULL)
+	goto theend;
+    regmatch.rm_ic = p_ic;
+
+    int		submatches = FALSE;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	dict_T *d = argvars[2].vval.v_dict;
+	if (d != NULL)
+	{
+	    dictitem_T *di = dict_find(d, (char_u *)"submatches", -1);
+	    if (di != NULL)
+	    {
+		if (di->di_tv.v_type != VAR_BOOL)
+		{
+		    semsg(_(e_invalid_value_for_argument_str), "submatches");
+		    goto cleanup;
+		}
+		submatches = tv_get_bool(&di->di_tv);
+	    }
+	}
+    }
+
+    int idx = 0;
+    CHECK_LIST_MATERIALIZE(l);
+    FOR_ALL_LIST_ITEMS(l, li)
+    {
+	if (li->li_tv.v_type == VAR_STRING && li->li_tv.vval.v_string != NULL)
+	{
+	    char_u *str = li->li_tv.vval.v_string;
+	    if (get_matches_in_str(str, &regmatch, retlist, idx, submatches,
+								FALSE) == FAIL)
+		goto cleanup;
+	}
+	idx++;
+    }
+
+cleanup:
+    vim_regfree(regmatch.regprog);
+
+theend:
+    p_cpo = save_cpo;
 }
 
 /*
