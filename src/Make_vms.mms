@@ -582,7 +582,7 @@ OBJ = \
 	$(GUI_OBJ) \
 	$(XDIFF_OBJ) \
 	$(LUA_OBJ) \                                                                                                                                         
-    $(MZSCHEME_OBJ) \ 
+	$(MZSCHEME_OBJ) \ 
 	$(PERL_OBJ) \
 	$(PYTHON_OBJ) \
 	$(PYTHON3_OBJ) \
