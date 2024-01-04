@@ -50,6 +50,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_FILES_IN_PATH
 	    && xp->xp_context != EXPAND_FILETYPE
 	    && xp->xp_context != EXPAND_HELP
+	    && xp->xp_context != EXPAND_KEYMAP
 	    && xp->xp_context != EXPAND_OLD_SETTING
 	    && xp->xp_context != EXPAND_STRING_SETTING
 	    && xp->xp_context != EXPAND_SETTING_SUBTRACT
@@ -1394,6 +1395,7 @@ addstar(
 		|| context == EXPAND_COMPILER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
+		|| context == EXPAND_KEYMAP
 		|| context == EXPAND_PACKADD
 		|| context == EXPAND_RUNTIME
 		|| ((context == EXPAND_TAGS_LISTFILES
@@ -3131,6 +3133,13 @@ ExpandFromContext(
 	char *directories[] = {"syntax", "indent", "ftplugin", NULL};
 	return ExpandRTDir(pat, 0, numMatches, matches, directories);
     }
+#ifdef FEAT_KEYMAP
+    if (xp->xp_context == EXPAND_KEYMAP)
+    {
+	char *directories[] = {"keymap", NULL};
+	return ExpandRTDir(pat, 0, numMatches, matches, directories);
+    }
+#endif
 #if defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
 	return ExpandUserList(xp, matches, numMatches);

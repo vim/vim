@@ -841,6 +841,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_SETTING_SUBTRACT	55
 #define EXPAND_ARGOPT		56
 #define EXPAND_TERMINALOPT	57
+#define EXPAND_KEYMAP		58
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1

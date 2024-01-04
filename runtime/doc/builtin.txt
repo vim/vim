@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2023 Dec 24
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3570,6 +3570,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		help		help subjects
 		highlight	highlight groups
 		history		|:history| suboptions
+		keymap		keyboard mappings
 		locale		locale names (as output of locale -a)
 		mapclear	buffer argument
 		mapping		mapping name

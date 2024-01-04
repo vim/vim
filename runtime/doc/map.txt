@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.1.  Last change: 2023 December 31
+*map.txt*       For Vim version 9.1.  Last change: 2024 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1631,6 +1631,7 @@ completion can be enabled:
 	-complete=help		help subjects
 	-complete=highlight	highlight groups
 	-complete=history	:history suboptions
+	-complete=keymap	keyboard mappings
 	-complete=locale	locale names (as output of locale -a)
 	-complete=mapclear	buffer argument
 	-complete=mapping	mapping name

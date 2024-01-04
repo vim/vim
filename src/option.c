@@ -7412,6 +7412,13 @@ set_context_in_set_cmd(
 	xp->xp_context = EXPAND_FILETYPE;
 	return;
     }
+#ifdef FEAT_KEYMAP
+    if (options[opt_idx].var == (char_u *)&p_keymap)
+    {
+	xp->xp_context = EXPAND_KEYMAP;
+	return;
+    }
+#endif
 
     // Now pick. If the option has a custom expander, use that. Otherwise, just
     // fill with the existing option value.
