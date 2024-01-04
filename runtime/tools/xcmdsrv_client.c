@@ -336,7 +336,7 @@ LookupName(
     for (p = regProp; (p - regProp) < numItems; )
     {
 	entry = p;
-	while ((*p != 0) && (!isspace(*p)))
+	while ((*p != 0) && (!isspace((unsigned char)*p)))
 	    p++;
 	if ((*p != 0) && (strcasecmp(name, p + 1) == 0))
 	{
@@ -353,7 +353,7 @@ LookupName(
 	for (p = regProp; (p - regProp) < numItems; )
 	{
 	    entry = p;
-	    while ((*p != 0) && (!isspace(*p)))
+	    while ((*p != 0) && (!isspace((unsigned char)*p)))
 		p++;
 	    if ((*p != 0) && IsSerialName(p + 1)
 		    && (strncmp(name, p + 1, strlen(name)) == 0))
@@ -574,5 +574,5 @@ IsSerialName(char *str)
 {
     int len = strlen(str);
 
-    return (len > 1 && isdigit(str[len - 1]));
+    return (len > 1 && isdigit((unsigned char)str[len - 1]));
 }

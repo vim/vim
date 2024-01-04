@@ -3332,7 +3332,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     dictitem_T *
 find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload)
 {
-    if (STRNCMP(name, "<SNR>", 5) == 0 && isdigit(name[5]))
+    if (STRNCMP(name, "<SNR>", 5) == 0 && SAFE_isdigit(name[5]))
     {
 	char_u	    *p = name + 5;
 	int	    sid = getdigits(&p);
@@ -4975,7 +4975,7 @@ get_callback(typval_T *arg)
     else
     {
 	if (arg->v_type == VAR_STRING && arg->vval.v_string != NULL
-					       && isdigit(*arg->vval.v_string))
+					       && SAFE_isdigit(*arg->vval.v_string))
 	    r = FAIL;
 	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{

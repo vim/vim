@@ -3240,7 +3240,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
     if (self == NULL)
 	return NULL;
 
-    if (isdigit(*name))
+    if (isdigit((unsigned char)*name))
     {
 	if (!translated_function_exists(name, FALSE))
 	{

@@ -50,6 +50,28 @@
  */
 #define BUFEMPTY() (curbuf->b_ml.ml_line_count == 1 && *ml_get((linenr_T)1) == NUL)
 
+// The is*() and to*() functions declared in <ctype.h> have
+// undefined behavior for values other than EOF outside the range of
+// unsigned char.  If plain char is signed, a call with a negative
+// value has undefined behavior.  These macros cast the argument to
+// unsigned char.  (Most implementations behave more or less sanely
+// with negative values, and most character values in practice are
+// positive, but we want to avoid undefined behavior anyway.)
+#define SAFE_isalnum(c)  (isalnum ((unsigned char)(c)))
+#define SAFE_isalpha(c)  (isalpha ((unsigned char)(c)))
+#define SAFE_isblank(c)  (isblank ((unsigned char)(c)))
+#define SAFE_iscntrl(c)  (iscntrl ((unsigned char)(c)))
+#define SAFE_isdigit(c)  (isdigit ((unsigned char)(c)))
+#define SAFE_isgraph(c)  (isgraph ((unsigned char)(c)))
+#define SAFE_islower(c)  (islower ((unsigned char)(c)))
+#define SAFE_isprint(c)  (isprint ((unsigned char)(c)))
+#define SAFE_ispunct(c)  (ispunct ((unsigned char)(c)))
+#define SAFE_isspace(c)  (isspace ((unsigned char)(c)))
+#define SAFE_isupper(c)  (isupper ((unsigned char)(c)))
+#define SAFE_isxdigit(c) (isxdigit((unsigned char)(c)))
+#define SAFE_tolower(c)  (tolower ((unsigned char)(c)))
+#define SAFE_toupper(c)  (toupper ((unsigned char)(c)))
+
 /*
  * toupper() and tolower() that use the current locale.
  * On some systems toupper()/tolower() only work on lower/uppercase
@@ -64,11 +86,11 @@
 #  define TOLOWER_LOC(c)	tolower_tab[(c) & 255]
 #else
 # ifdef BROKEN_TOUPPER
-#  define TOUPPER_LOC(c)	(islower(c) ? toupper(c) : (c))
-#  define TOLOWER_LOC(c)	(isupper(c) ? tolower(c) : (c))
+#  define TOUPPER_LOC(c)	(SAFE_islower(c) ? SAFE_toupper(c) : (c))
+#  define TOLOWER_LOC(c)	(SAFE_isupper(c) ? SAFE_tolower(c) : (c))
 # else
-#  define TOUPPER_LOC		toupper
-#  define TOLOWER_LOC		tolower
+#  define TOUPPER_LOC		SAFE_toupper
+#  define TOLOWER_LOC		SAFE_tolower
 # endif
 #endif
 

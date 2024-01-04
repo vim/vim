@@ -7443,7 +7443,7 @@ notsgr:
 	{
 	    int l = 2;
 
-	    if (isdigit(s[l]))
+	    if (SAFE_isdigit(s[l]))
 		l++;
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {

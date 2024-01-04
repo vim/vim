@@ -977,7 +977,7 @@ gui_ph_is_buffer_item(vimmenu_T *menu, vimmenu_T *parent)
 	if (mark != NULL)
 	{
 	    mark++;
-	    while (isdigit(*mark))
+	    while (SAFE_isdigit(*mark))
 		mark++;
 
 	    if (*mark == ')')
@@ -2545,7 +2545,7 @@ gui_mch_add_menu(vimmenu_T *menu, int index)
 
 	    if (menu->mnemonic != 0)
 	    {
-		PtAddHotkeyHandler(gui.vimWindow, tolower(menu->mnemonic),
+		PtAddHotkeyHandler(gui.vimWindow, SAFE_tolower(menu->mnemonic),
 			Pk_KM_Alt, 0, menu, gui_ph_handle_pulldown_menu);
 	    }
 	}
@@ -2829,7 +2829,7 @@ gui_ph_parse_font_name(
 	{
 	    while (*mark != NUL && *mark++ == ':')
 	    {
-		switch (tolower(*mark++))
+		switch (SAFE_tolower(*mark++))
 		{
 		    case 'a': *font_flags |= PF_STYLE_ANTIALIAS; break;
 		    case 'b': *font_flags |= PF_STYLE_BOLD; break;

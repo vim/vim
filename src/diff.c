@@ -1712,7 +1712,7 @@ diff_read(
 		// --- file1       2018-03-20 13:23:35.783153140 +0100
 		// +++ file2       2018-03-20 13:23:41.183156066 +0100
 		// @@ -1,3 +1,5 @@
-		if (isdigit(*line))
+		if (SAFE_isdigit(*line))
 		    diffstyle = DIFF_ED;
 		else if ((STRNCMP(line, "@@ ", 3) == 0))
 		    diffstyle = DIFF_UNIFIED;
@@ -1730,7 +1730,7 @@ diff_read(
 
 	    if (diffstyle == DIFF_ED)
 	    {
-		if (!isdigit(*line))
+		if (!SAFE_isdigit(*line))
 		    continue;	// not the start of a diff block
 		if (parse_diff_ed(line, hunk) == FAIL)
 		    continue;

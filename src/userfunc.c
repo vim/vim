@@ -77,7 +77,7 @@ one_function_arg(
 
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
-    if (arg == p || isdigit(*arg)
+    if (arg == p || SAFE_isdigit(*arg)
 	    || (argtypes == NULL
 		&& ((p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
 		    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))))
@@ -2272,7 +2272,7 @@ func_requires_g_prefix(ufunc_T *ufunc)
     return ufunc->uf_name[0] != K_SPECIAL
 	    && (ufunc->uf_flags & FC_LAMBDA) == 0
 	    && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
-	    && !isdigit(ufunc->uf_name[0]);
+	    && !SAFE_isdigit(ufunc->uf_name[0]);
 }
 
 /*
@@ -2448,8 +2448,8 @@ cleanup_function_call(funccall_T *fc)
     static int
 numbered_function(char_u *name)
 {
-    return isdigit(*name)
-	    || (name[0] == 'g' && name[1] == ':' && isdigit(name[2]));
+    return SAFE_isdigit(*name)
+	    || (name[0] == 'g' && name[1] == ':' && SAFE_isdigit(name[2]));
 }
 
 /*
@@ -4653,7 +4653,7 @@ list_functions(regmatch_T *regmatch)
 		    && (regmatch == NULL
 			? !message_filtered(fp->uf_name)
 			    && !func_name_refcount(fp->uf_name)
-			: !isdigit(*fp->uf_name)
+			: !SAFE_isdigit(*fp->uf_name)
 			    && vim_regexec(regmatch, fp->uf_name, 0)))
 	    {
 		if (list_func_head(fp, FALSE) == FAIL)

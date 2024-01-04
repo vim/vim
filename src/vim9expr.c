@@ -1950,7 +1950,7 @@ get_compare_type(char_u *p, int *len, int *type_is)
 			if (p[2] == 'n' && p[3] == 'o' && p[4] == 't')
 			    *len = 5;
 			i = p[*len];
-			if (!isalnum(i) && i != '_')
+			if (!SAFE_isalnum(i) && i != '_')
 			{
 			    type = *len == 2 ? EXPR_IS : EXPR_ISNOT;
 			    *type_is = TRUE;

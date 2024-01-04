@@ -4276,7 +4276,7 @@ eval9(
 	return FAIL;
     end_leader = *arg;
 
-    if (**arg == '.' && (!isdigit(*(*arg + 1)) || in_old_script(2)))
+    if (**arg == '.' && (!SAFE_isdigit(*(*arg + 1)) || in_old_script(2)))
     {
 	semsg(_(e_invalid_expression_str), *arg);
 	++*arg;

@@ -2953,7 +2953,7 @@ get_past_head(char_u *path)
 
 #if defined(MSWIN)
     // may skip "c:"
-    if (isalpha(path[0]) && path[1] == ':')
+    if (SAFE_isalpha(path[0]) && path[1] == ':')
 	retval = path + 2;
     else
 	retval = path;

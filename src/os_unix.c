@@ -6171,7 +6171,7 @@ mch_signal_job(job_T *job, char_u *how)
     else if (STRCMP(how, "winch") == 0)
 	sig = SIGWINCH;
 #endif
-    else if (isdigit(*how))
+    else if (SAFE_isdigit(*how))
 	sig = atoi((char *)how);
     else
 	return FAIL;

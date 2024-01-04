@@ -6744,7 +6744,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 				     && has_patch(atoi(end + 3))))));
 		}
 	    }
-	    else if (isdigit(name[5]))
+	    else if (SAFE_isdigit(name[5]))
 		n = has_patch(atoi((char *)name + 5));
 	}
 	else if (STRICMP(name, "vim_starting") == 0)

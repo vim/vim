@@ -870,7 +870,7 @@ start_redo(long count, int old_redo)
 	{
 	    c = read_redo(FALSE, old_redo);
 	    add_char_buff(&readbuf2, c);
-	    if (!isdigit(c))
+	    if (!SAFE_isdigit(c))
 		break;
 	}
 	c = read_redo(FALSE, old_redo);
@@ -1873,7 +1873,7 @@ vgetc(void)
 
 		    // Handle <SID>{sid};  Do up to 20 digits for safety.
 		    last_used_sid = 0;
-		    for (j = 0; j < 20 && isdigit(c = vgetorpeek(TRUE)); ++j)
+		    for (j = 0; j < 20 && SAFE_isdigit(c = vgetorpeek(TRUE)); ++j)
 			last_used_sid = last_used_sid * 10 + (c - '0');
 		    last_used_map = NULL;
 		    continue;

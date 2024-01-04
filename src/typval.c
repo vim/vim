@@ -2425,7 +2425,7 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate, int interpolate)
 			  if (vim_isxdigit(p[1]))
 			  {
 			      int	n, nr;
-			      int	c = toupper(*p);
+			      int	c = SAFE_toupper(*p);
 
 			      if (c == 'X')
 				  n = 2;

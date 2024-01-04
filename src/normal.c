@@ -4470,11 +4470,11 @@ nv_brackets(cmdarg_T *cap)
 		return;
 
 	    find_pattern_in_path(ptr, 0, len, TRUE,
-		cap->count0 == 0 ? !isupper(cap->nchar) : FALSE,
+		cap->count0 == 0 ? !SAFE_isupper(cap->nchar) : FALSE,
 		((cap->nchar & 0xf) == ('d' & 0xf)) ?  FIND_DEFINE : FIND_ANY,
 		cap->count1,
-		isupper(cap->nchar) ? ACTION_SHOW_ALL :
-			    islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
+		SAFE_isupper(cap->nchar) ? ACTION_SHOW_ALL :
+			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
 		(linenr_T)MAXLNUM);
 	    vim_free(ptr);
@@ -5217,7 +5217,7 @@ v_visop(cmdarg_T *cap)
 
     // Uppercase means linewise, except in block mode, then "D" deletes till
     // the end of the line, and "C" replaces till EOL
-    if (isupper(cap->cmdchar))
+    if (SAFE_isupper(cap->cmdchar))
     {
 	if (VIsual_mode != Ctrl_V)
 	{
