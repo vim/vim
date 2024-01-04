@@ -416,7 +416,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim.ico
 
 	SetOutPath $0\syntax
-	File /r ${VIMRT}\syntax\*.*
+	File /r /x testdir ${VIMRT}\syntax\*.*
 
 	SetOutPath $0\spell
 	File ${VIMRT}\spell\*.txt
