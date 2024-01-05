@@ -643,7 +643,7 @@ endfunc
 
 func Test_inner_block_empty_paren()
   new
-  call setline(1, ["(text)()", "", "(text)(", ")", "", "()()"])
+  call setline(1, ["(text)()", "", "(text)(", ")", "", "()()", "", "text()"])
 
   " Example 1
   call cursor(1, 1)
@@ -665,12 +665,18 @@ func Test_inner_block_empty_paren()
   call assert_beeps('call feedkeys("0f(viby", "xt")')
   call assert_equal(3, getpos('.')[2])
   call assert_equal('(', @")
+
+  " Change empty inner block
+  call cursor(8, 1)
+  call feedkeys("0cibtext", "xt")
+  call assert_equal("text(text)", getline('.'))
+
   bwipe!
 endfunc
 
 func Test_inner_block_empty_bracket()
   new
-  call setline(1, ["[text][]", "", "[text][", "]", "", "[][]"])
+  call setline(1, ["[text][]", "", "[text][", "]", "", "[][]", "", "text[]"])
 
   " Example 1
   call cursor(1, 1)
@@ -692,12 +698,18 @@ func Test_inner_block_empty_bracket()
   call assert_beeps('call feedkeys("0f[viby", "xt")')
   call assert_equal(3, getpos('.')[2])
   call assert_equal('[', @")
+
+  " Change empty inner block
+  call cursor(8, 1)
+  call feedkeys("0ci[text", "xt")
+  call assert_equal("text[text]", getline('.'))
+
   bwipe!
 endfunc
 
 func Test_inner_block_empty_brace()
   new
-  call setline(1, ["{text}{}", "", "{text}{", "}", "", "{}{}"])
+  call setline(1, ["{text}{}", "", "{text}{", "}", "", "{}{}", "", "text{}"])
 
   " Example 1
   call cursor(1, 1)
@@ -719,6 +731,12 @@ func Test_inner_block_empty_brace()
   call assert_beeps('call feedkeys("0f{viby", "xt")')
   call assert_equal(3, getpos('.')[2])
   call assert_equal('{', @")
+
+  " Change empty inner block
+  call cursor(8, 1)
+  call feedkeys("0ciBtext", "xt")
+  call assert_equal("text{text}", getline('.'))
+
   bwipe!
 endfunc
 
