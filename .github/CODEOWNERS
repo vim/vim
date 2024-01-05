@@ -13,6 +13,7 @@ runtime/autoload/freebasic.vim		@dkearns
 runtime/autoload/getscript.vim		@cecamp
 runtime/autoload/haskell.vim		@alx741
 runtime/autoload/javascript.vim		@jsit
+runtime/autoload/modula2.vim		@dkearns
 runtime/autoload/netrw.vim		@cecamp
 runtime/autoload/netrwFileHandlers.vim	@cecamp
 runtime/autoload/netrwSettings.vim	@cecamp
@@ -65,6 +66,7 @@ runtime/compiler/eruby.vim		@dkearns
 runtime/compiler/fbc.vim		@dkearns
 runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
+runtime/compiler/gm2.vim		@dkearns
 runtime/compiler/go.vim			@dbarnett
 runtime/compiler/haml.vim		@tpope
 runtime/compiler/hare.vim		@rsaihe
@@ -182,6 +184,7 @@ runtime/ftplugin/m3quake.vim		@dkearns
 runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/matlab.vim		@cecamp
 runtime/ftplugin/meson.vim		@Liambeguin
+runtime/ftplugin/modula2.vim		@dkearns
 runtime/ftplugin/modula3.vim		@dkearns
 runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nroff.vim		@a-vrma
@@ -442,6 +445,10 @@ runtime/syntax/maple.vim		@cecamp
 runtime/syntax/markdown.vim		@tpope
 runtime/syntax/mason.vim		@petdance
 runtime/syntax/meson.vim		@Liambeguin
+runtime/syntax/modula2.vim		@dkearns
+runtime/syntax/modula2/opt/iso.vim	@trijezdci
+runtime/syntax/modula2/opt/pim.vim	@trijezdci
+runtime/syntax/modula2/opt/r10.vim	@trijezdci
 runtime/syntax/modula3.vim		@dkearns
 runtime/syntax/n1ql.vim			@pr3d4t0r
 runtime/syntax/netrw.vim		@cecamp

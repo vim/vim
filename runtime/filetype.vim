@@ -619,8 +619,12 @@ au BufNewFile,BufRead *.intr			setf dylanintr
 " Dylan
 au BufNewFile,BufRead *.dylan			setf dylan
 
-" Microsoft Module Definition
-au BufNewFile,BufRead *.def			setf def
+" Microsoft Module Definition or Modula-2
+au BufNewFile,BufRead *.def			call dist#ft#FTdef()
+
+if has("fname_case")
+  au BufNewFile,BufRead *.DEF			setf modula2
+endif
 
 " Dracula
 au BufNewFile,BufRead *.drac,*.drc,*lvs,*lpe	setf dracula
@@ -1338,9 +1342,6 @@ au BufNewFile,BufRead *.mmp			setf mmp
 
 " ABB Rapid, Modula-2, Modsim III or LambdaProlog
 au BufNewFile,BufRead *.mod\c			call dist#ft#FTmod()
-
-" Modula-2  (.md removed in favor of Markdown, see dist#ft#FTmod for *.MOD)
-au BufNewFile,BufRead *.m2,*.DEF,*.mi		setf modula2
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3

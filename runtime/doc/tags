@@ -7270,6 +7270,7 @@ ft-metapost-intro	ft_mp.txt	/*ft-metapost-intro*
 ft-metapost-mappings	ft_mp.txt	/*ft-metapost-mappings*
 ft-metapost-settings	ft_mp.txt	/*ft-metapost-settings*
 ft-mma-syntax	syntax.txt	/*ft-mma-syntax*
+ft-modula2-syntax	syntax.txt	/*ft-modula2-syntax*
 ft-moo-syntax	syntax.txt	/*ft-moo-syntax*
 ft-msql-syntax	syntax.txt	/*ft-msql-syntax*
 ft-n1ql-syntax	syntax.txt	/*ft-n1ql-syntax*
@@ -8659,6 +8660,14 @@ modeline	options.txt	/*modeline*
 modeline-local	options.txt	/*modeline-local*
 modeline-version	options.txt	/*modeline-version*
 modifyOtherKeys	map.txt	/*modifyOtherKeys*
+modula2.vim	syntax.txt	/*modula2.vim*
+modula2_iso_allow_lowline	syntax.txt	/*modula2_iso_allow_lowline*
+modula2_iso_disallow_octals	syntax.txt	/*modula2_iso_disallow_octals*
+modula2_iso_disallow_synonyms	syntax.txt	/*modula2_iso_disallow_synonyms*
+modula2_pim_allow_lowline	syntax.txt	/*modula2_pim_allow_lowline*
+modula2_pim_disallow_octals	syntax.txt	/*modula2_pim_disallow_octals*
+modula2_pim_disallow_synonyms	syntax.txt	/*modula2_pim_disallow_synonyms*
+modula2_r10_allow_lowline	syntax.txt	/*modula2_r10_allow_lowline*
 moo.vim	syntax.txt	/*moo.vim*
 more-compatible	version5.txt	/*more-compatible*
 more-prompt	message.txt	/*more-prompt*
