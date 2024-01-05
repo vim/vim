@@ -1,8 +1,8 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2024 Jan 3
-" Former Maintainer:	Shixian Li <lsx7@sina.com>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Bail out if this isn't wanted.
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
