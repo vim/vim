@@ -4181,4 +4181,4 @@ func Test_brace_single_line()
   bw!
 endfunc
 
-" vim: shiftwidth=2 sts=2 expandtab
+" vim: shiftwidth=2 sts=2 expandtab nofoldenable
