@@ -330,7 +330,8 @@ variables but they have no access to the object variables, they cannot use the
 
 Inside the class the class method can be called by name directly, outside the
 class the class name must be prefixed: `OtherThing.ClearTotalSize()`.  To use
-a super class method in a child class, the class name must be prefixed.
+a class method from a parent class in a child class, the class name must be
+prefixed.
 
 Just like object methods the access can be made protected by using an
 underscore as the first character in the method name: >
