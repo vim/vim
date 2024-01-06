@@ -2567,9 +2567,9 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		that starts with ESC [ or CSI, then '>' or '?' and ends in a
 		'c', with only digits and ';' in between.
 		When this option is set, the TermResponse autocommand event is
-		fired, so that you can react to the response from the
-		terminal.  You can use |terminalprops()| to see what Vim
-		figured out about the terminal.
+		fired, with <amatch> set to "ver", so that you can react to
+		the response from the terminal.  You can use |terminalprops()|
+		to see what Vim figured out about the terminal.
 		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
@@ -2581,27 +2581,37 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 						*v:termblinkresp*
 v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
 		termcap entry.  This is used to find out whether the terminal
-		cursor is blinking. This is used by |term_getcursor()|.
+		cursor is blinking. This is used by |term_getcursor()|.  When
+		this option is set, the TermResponse autocommand event is
+		fired, with <amatch> set to "blink".
 
 						*v:termstyleresp*
 v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 		termcap entry.  This is used to find out what the shape of the
-		cursor is.  This is used by |term_getcursor()|.
+		cursor is.  This is used by |term_getcursor()|.  When this
+		option is set, the TermResponse autocommand event is fired,
+		with <amatch> set to "style".
 
 						*v:termrbgresp*
 v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
-		background color is, see 'background'.
+		background color is; see 'background'.  When this option is
+		set, the TermResponse autocommand event is fired, with
+		<amatch> set to "rbg".
 
 						*v:termrfgresp*
 v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
 		termcap entry.  This is used to find out what the terminal
-		foreground color is.
+		foreground color is.  When this option is set, the
+		TermResponse autocommand event is fired, with <amatch> set to
+		"rfg".
 
 						*v:termu7resp*
 v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
 		termcap entry.  This is used to find out what the terminal
-		does with ambiguous width characters, see 'ambiwidth'.
+		does with ambiguous width characters, see 'ambiwidth'.  When
+		this option is set, the TermResponse autocommand event is
+		fired, with <amatch> set to "u7".
 
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.

@@ -2100,7 +2100,8 @@ apply_autocmds_group(
     {
 	if (event == EVENT_COLORSCHEME || event == EVENT_COLORSCHEMEPRE
 						 || event == EVENT_OPTIONSET
-						 || event == EVENT_MODECHANGED)
+						 || event == EVENT_MODECHANGED
+						 || event == EVENT_TERMRESPONSE)
 	    autocmd_fname = NULL;
 	else if (fname != NULL && !ends_excmd(*fname))
 	    autocmd_fname = fname;
@@ -2180,7 +2181,8 @@ apply_autocmds_group(
 		|| event == EVENT_USER
 		|| event == EVENT_WINCLOSED
 		|| event == EVENT_WINRESIZED
-		|| event == EVENT_WINSCROLLED)
+		|| event == EVENT_WINSCROLLED
+		|| event == EVENT_TERMRESPONSE)
 	{
 	    fname = vim_strsave(fname);
 	    autocmd_fname_full = TRUE; // don't expand it later

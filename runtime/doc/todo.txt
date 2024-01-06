@@ -1123,9 +1123,6 @@ When t_Co is changed from termresponse, the OptionSet autocommand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
 
-Add another autocommand like TermResponse that is fired for the other terminal
-responses, such as bg and fg.  Use "bg", "fg", "blink", etc. for the name.
-
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
 Add some way to get the nested state.  Although CmdwinEnter is obviously
