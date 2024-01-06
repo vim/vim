@@ -492,7 +492,6 @@ prefix when defining the method: >
 
 	abstract class Shape
 	   abstract def Draw()
-	   abstract static def SetColor()
 	endclass
 <
 A static method in an abstract class cannot be an abstract method.
@@ -501,8 +500,7 @@ A static method in an abstract class cannot be an abstract method.
 A class extending the abstract class must implement all the abstract methods.
 The signature (arguments, argument types and return type) must be exactly the
 same.  If the return type of a method is a class, then that class or one of
-its subclasses can be used in the extended method.  Class methods in an
-abstract class can also be abstract methods.
+its subclasses can be used in the extended method.
 
 ==============================================================================
 
