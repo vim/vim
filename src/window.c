@@ -7131,17 +7131,17 @@ command_height(void)
 
     // If the space for the command line is already more than 'cmdheight' there
     // is nothing to do (window size must have decreased).
+    // Note: this makes curtab->tp_ch_used unreliable
     if (p_ch > old_p_ch && cmdline_row <= Rows - p_ch)
 	return;
 
     // Update cmdline_row to what it should be: just below the last window.
     cmdline_row = topframe->fr_height + tabline_height();
 
-    // If cmdline_row is smaller than what it is supposed to be for 'cmdheight'
-    // then set old_p_ch to what it would be, so that the windows get resized
+    // old_p_ch may be unreliable, because of the early return above, so
+    // set old_p_ch to what it would be, so that the windows get resized
     // properly for the new value.
-    if (cmdline_row < Rows - p_ch)
-	old_p_ch = Rows - cmdline_row;
+    old_p_ch = Rows - cmdline_row;
 
     // Find bottom frame with width of screen.
     frp = lastwin->w_frame;
