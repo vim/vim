@@ -7207,7 +7207,6 @@ ft-cynlib-syntax	syntax.txt	/*ft-cynlib-syntax*
 ft-dart-syntax	syntax.txt	/*ft-dart-syntax*
 ft-dash-syntax	syntax.txt	/*ft-dash-syntax*
 ft-desktop-syntax	syntax.txt	/*ft-desktop-syntax*
-ft-diff-syntax	syntax.txt	/*ft-diff-syntax*
 ft-dircolors-syntax	syntax.txt	/*ft-dircolors-syntax*
 ft-docbk-syntax	syntax.txt	/*ft-docbk-syntax*
 ft-docbksgml-syntax	syntax.txt	/*ft-docbksgml-syntax*
