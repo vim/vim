@@ -832,7 +832,8 @@ insert_reg(
 		    if ((State & REPLACE_FLAG) != 0)
 		    {
 			pos_T curpos;
-			u_save_cursor();
+			if (u_save_cursor() == FAIL)
+			    return FAIL;
 			del_bytes((long)STRLEN(y_current->y_array[0]), TRUE, FALSE);
 			curpos = curwin->w_cursor;
 			if (oneright() == FAIL)
