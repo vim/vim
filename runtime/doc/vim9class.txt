@@ -116,7 +116,7 @@ From outside the class definition, access an object's methods and variables by
 using the object name followed by a dot following by the member: >
 
 	pos.lnum
-	pos.setCol(10)
+	pos.SetCol(10)
 <
 							*E1405* *E1406*
 A class name cannot be used as an expression.  A class name cannot be used in
@@ -164,7 +164,7 @@ from outside the class or its sub-classes, you can make them protected.  This
 is done by prefixing an underscore to the name: >
 
 	var _lnum: number
-	var _col number
+	var _col: number
 
 Now you need to provide methods to get the value of the protected variables.
 These are commonly called getters.  We recommend using a name that starts with
@@ -174,7 +174,7 @@ These are commonly called getters.  We recommend using a name that starts with
 	   return this._lnum
 	enddef
 
-	def GetCol() number
+	def GetCol(): number
 	   return this._col
 	enddef
 
@@ -688,7 +688,7 @@ Inside a class, in between `:class` and `:endclass`, these items can appear:
 - A class variable declaration: >
 	static var _protectedClassVariableName: memberType
 	static var readonlyClassVariableName: memberType
-	static var public readwriteClassVariableName: memberType
+	public static var readwriteClassVariableName: memberType
 - A constructor method: >
 	def new(arguments)
 	def newName(arguments)
