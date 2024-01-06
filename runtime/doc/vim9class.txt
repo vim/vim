@@ -106,11 +106,11 @@ The object variables "lnum" and "col" can be accessed directly: >
 	echo $'The text position is ({pos.lnum}, {pos.col})'
 <						    *E1317* *E1327* *:this*
 If you have been using other object-oriented languages you will notice that in
-Vim, within a class definition, the object members are consistently referred
-to with the "this." prefix.  This is different from languages like Java and
-TypeScript.  The naming convention makes the object members easy to spot.
-Also, when a variable does not have the "this." prefix you know it is not an
-object variable.
+Vim, within a class definition, the declared object members are consistently
+referred to with the "this." prefix.  This is different from languages like
+Java and TypeScript.  The naming convention makes the object members easy to
+spot.  Also, when a variable does not have the "this." prefix you know it is
+not an object variable.
 								*E1411*
 From outside the class definition, access an object's methods and variables by
 using the object name followed by a dot following by the member: >
@@ -991,7 +991,7 @@ in the body, while for other variables this is not needed and often omitted.
 This leads to a mix of variables with and without "this.", which is
 inconsistent.
 
-For |Vim9| classes the "this." prefix is always used.  Also for declaring the
+For |Vim9| classes the "this." prefix is always used for declared methods and
 variables.  Simple and consistent.  When looking at the code inside a class
 it's also directly clear which variable references are object variables and
 which aren't.
@@ -1027,7 +1027,7 @@ Following that Vim object variables could be declared like this: >
 	endclass
 
 Some users pointed out that this looks more like an assignment than a
-declaration.  Adding "var" changes that: >
+declaration.  Adding "var" and omitting "this." changes that: >
 	class Point
 	  var x: number
 	  var y = 0
