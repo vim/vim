@@ -468,9 +468,9 @@ fun! tar#Write(fname)
    let compress= "xz -- ".shellescape(tarfile,0)
 "   call Decho("compress<".compress.">")
   elseif tarfile =~# '\.zst'
-   call system("zstd --decompress -- ".shellescape(tarfile,0))
+   call system("zstd --decompress --rm -- ".shellescape(tarfile,0))
    let tarfile = substitute(tarfile,'\.zst','','e')
-   let compress= "zstd -- ".shellescape(tarfile,0)
+   let compress= "zstd --rm -- ".shellescape(tarfile,0)
   elseif tarfile =~# '\.lzma'
    call system("lzma -d -- ".shellescape(tarfile,0))
    let tarfile = substitute(tarfile,'\.lzma','','e')
@@ -699,7 +699,7 @@ fun! tar#Extract()
   elseif filereadable(tarbase.".tzs")
    let extractcmd= substitute(extractcmd,"-","--zstd","")
 "   call Decho("system(".extractcmd." ".shellescape(tarbase).".tzs ".shellescape(fname).")")
-   call system(extractcmd." ".shellescape(tarbase).".txz ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarbase).".tzs ".shellescape(fname))
    if v:shell_error != 0
     echohl Error | echo "***error*** ".extractcmd." ".tarbase.".tzs ".fname.": failed!" | echohl NONE
 "    call Decho("***error*** ".extractcmd." ".tarbase.".tzs ".fname.": failed!")
@@ -710,7 +710,7 @@ fun! tar#Extract()
   elseif filereadable(tarbase.".tar.zst")
    let extractcmd= substitute(extractcmd,"-","--zstd","")
 "   call Decho("system(".extractcmd." ".shellescape(tarbase).".tar.zst ".shellescape(fname).")")
-   call system(extractcmd." ".shellescape(tarbase).".tar.xz ".shellescape(fname))
+   call system(extractcmd." ".shellescape(tarbase).".tar.zst ".shellescape(fname))
    if v:shell_error != 0
     echohl Error | echo "***error*** ".extractcmd." ".tarbase.".tar.zst ".fname.": failed!" | echohl NONE
 "    call Decho("***error*** ".extractcmd." ".tarbase.".tar.zst ".fname.": failed!")
