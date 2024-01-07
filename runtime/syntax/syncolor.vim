@@ -41,6 +41,9 @@ if &background == "dark"
   SynColor Type		term=underline cterm=NONE ctermfg=LightGreen ctermbg=NONE gui=bold guifg=#60ff60 guibg=NONE
   SynColor Underlined	term=underline cterm=underline ctermfg=LightBlue gui=underline guifg=#80a0ff
   SynColor Ignore	term=NONE cterm=NONE ctermfg=black ctermbg=NONE gui=NONE guifg=bg guibg=NONE
+  SynColor Added	term=NONE cterm=NONE ctermfg=Green ctermbg=NONE gui=NONE guifg=LimeGreen guibg=NONE
+  SynColor Changed	term=NONE cterm=NONE ctermfg=Blue ctermbg=NONE gui=NONE guifg=DodgerBlue guibg=NONE
+  SynColor Removed	term=NONE cterm=NONE ctermfg=Red ctermbg=NONE gui=NONE guifg=Red guibg=NONE
 else
   SynColor Comment	term=bold cterm=NONE ctermfg=DarkBlue ctermbg=NONE gui=NONE guifg=Blue guibg=NONE
   SynColor Constant	term=underline cterm=NONE ctermfg=DarkRed ctermbg=NONE gui=NONE guifg=Magenta guibg=NONE
@@ -53,6 +56,9 @@ else
   SynColor Type		term=underline cterm=NONE ctermfg=DarkGreen ctermbg=NONE gui=bold guifg=SeaGreen guibg=NONE
   SynColor Underlined	term=underline cterm=underline ctermfg=DarkMagenta gui=underline guifg=SlateBlue
   SynColor Ignore	term=NONE cterm=NONE ctermfg=white ctermbg=NONE gui=NONE guifg=bg guibg=NONE
+  SynColor Added	term=NONE cterm=NONE ctermfg=DarkGreen ctermbg=NONE gui=NONE guifg=SeaGreen guibg=NONE
+  SynColor Changed	term=NONE cterm=NONE ctermfg=Blue ctermbg=NONE gui=NONE guifg=DodgerBlue guibg=NONE
+  SynColor Removed	term=NONE cterm=NONE ctermfg=Red ctermbg=NONE gui=NONE guifg=Red guibg=NONE
 endif
 SynColor Error		term=reverse cterm=NONE ctermfg=White ctermbg=Red gui=NONE guifg=White guibg=Red
 SynColor Todo		term=standout cterm=NONE ctermfg=Black ctermbg=Yellow gui=NONE guifg=Blue guibg=Yellow
