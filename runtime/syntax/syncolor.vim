@@ -56,7 +56,7 @@ else
   SynColor Type		term=underline cterm=NONE ctermfg=DarkGreen ctermbg=NONE gui=bold guifg=SeaGreen guibg=NONE
   SynColor Underlined	term=underline cterm=underline ctermfg=DarkMagenta gui=underline guifg=SlateBlue
   SynColor Ignore	term=NONE cterm=NONE ctermfg=white ctermbg=NONE gui=NONE guifg=bg guibg=NONE
-  SynColor diffAdded	term=NONE cterm=NONE ctermfg=green ctermbg=NONE gui=NONE guifg=green guibg=NONE
+  SynColor diffAdded	term=NONE cterm=NONE ctermfg=darkgreen ctermbg=NONE gui=NONE guifg=darkgreen guibg=NONE
   SynColor diffChanged	term=NONE cterm=NONE ctermfg=blue ctermbg=NONE gui=NONE guifg=blue guibg=NONE
   SynColor diffRemoved	term=NONE cterm=NONE ctermfg=red ctermbg=NONE gui=NONE guifg=red guibg=NONE
 endif
