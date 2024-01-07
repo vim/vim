@@ -141,6 +141,10 @@ syn match helpTodo		"\t[* ]Todo\t\+[a-z].*"
 
 syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-zA-Z0-9/]`
 
+syn match helpDiffAdded		"\t[* ]diffAdded\t\+[a-z].*"
+syn match helpDiffChanged	"\t[* ]diffChanged\t\+[a-z].*"
+syn match helpDiffRemoved	"\t[* ]diffRemoved\t\+[a-z].*"
+
 " Additionally load a language-specific syntax file "help_ab.vim".
 let s:i = match(expand("%"), '\.\a\ax$')
 if s:i > 0
@@ -216,6 +220,9 @@ hi def link helpUnderlined	Underlined
 hi def link helpError		Error
 hi def link helpTodo		Todo
 hi def link helpURL		String
+hi def link helpDiffAdded	diffAdded
+hi def link helpDiffChanged	diffChanged
+hi def link helpDiffRemoved	diffRemoved
 
 if has('textprop') && expand('%:p') =~ '[/\\]doc[/\\]syntax.txt'
   " highlight groups with their respective color

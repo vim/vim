@@ -271,6 +271,10 @@ you can see the actual color, except for "Ignore"):
 	*Todo		anything that needs extra attention; mostly the
 			keywords TODO FIXME and XXX
 
+	*diffAdded	added line in a diff
+	*diffChanged	changed line in a diff
+	*diffRemoved	removed line in a diff
+
 The names marked with * are the preferred groups; the others are minor groups.
 For the preferred groups, the "syntax.vim" file contains default highlighting.
 The minor groups are linked to the preferred groups, so they get the same

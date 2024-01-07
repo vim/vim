@@ -42,7 +42,7 @@ if &background == "dark"
   SynColor Underlined	term=underline cterm=underline ctermfg=LightBlue gui=underline guifg=#80a0ff
   SynColor Ignore	term=NONE cterm=NONE ctermfg=black ctermbg=NONE gui=NONE guifg=bg guibg=NONE
   SynColor diffAdded	term=NONE cterm=NONE ctermfg=green ctermbg=NONE gui=NONE guifg=green guibg=NONE
-  SynColor diffChanged	term=NONE cterm=NONE ctermfg=blue ctermbg=NONE gui=NONE guifg=blue guibg=NONE
+  SynColor diffChanged	term=NONE cterm=NONE ctermfg=blue ctermbg=NONE gui=NONE guifg=dodgerblue guibg=NONE
   SynColor diffRemoved	term=NONE cterm=NONE ctermfg=red ctermbg=NONE gui=NONE guifg=red guibg=NONE
 else
   SynColor Comment	term=bold cterm=NONE ctermfg=DarkBlue ctermbg=NONE gui=NONE guifg=Blue guibg=NONE
@@ -57,7 +57,7 @@ else
   SynColor Underlined	term=underline cterm=underline ctermfg=DarkMagenta gui=underline guifg=SlateBlue
   SynColor Ignore	term=NONE cterm=NONE ctermfg=white ctermbg=NONE gui=NONE guifg=bg guibg=NONE
   SynColor diffAdded	term=NONE cterm=NONE ctermfg=darkgreen ctermbg=NONE gui=NONE guifg=darkgreen guibg=NONE
-  SynColor diffChanged	term=NONE cterm=NONE ctermfg=blue ctermbg=NONE gui=NONE guifg=blue guibg=NONE
+  SynColor diffChanged	term=NONE cterm=NONE ctermfg=blue ctermbg=NONE gui=NONE guifg=dodgerblue guibg=NONE
   SynColor diffRemoved	term=NONE cterm=NONE ctermfg=red ctermbg=NONE gui=NONE guifg=red guibg=NONE
 endif
 SynColor Error		term=reverse cterm=NONE ctermfg=White ctermbg=Red gui=NONE guifg=White guibg=Red
