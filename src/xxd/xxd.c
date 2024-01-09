@@ -587,7 +587,7 @@ begin_coloring_char (char *l, int *c, int e, int ebcdic)
     }
   else  /* ASCII */
     {
-      #ifdef __MVS__
+      #if defined(__MVS__) && __CHARSET_LIB == 0
       if (e >= 64)
         l[(*c)++] = COLOR_GREEN;
       #else
@@ -905,6 +905,10 @@ main(int argc, char *argv[])
 	}
       rewind(fpo);
     }
+#ifdef __MVS__
+  // Disable auto-conversion on input file descriptors
+  __disableautocvt(fileno(fp));
+#endif
 
   if (revert)
     switch (hextype)
@@ -1066,7 +1070,7 @@ main(int argc, char *argv[])
 
           COLOR_PROLOGUE
           begin_coloring_char(l,&c,e,ebcdic);
-#ifdef __MVS__
+#if defined(__MVS__) && __CHARSET_LIB == 0
           if (e >= 64)
             l[c++] = e;
           else
@@ -1094,7 +1098,7 @@ main(int argc, char *argv[])
 
           c += addrlen + 3 + p;
           l[c++] =
-#ifdef __MVS__
+#if defined(__MVS__) && __CHARSET_LIB == 0
               (e >= 64)
 #else
               (e > 31 && e < 127)
