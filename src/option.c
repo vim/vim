@@ -450,9 +450,10 @@ set_init_default_encoding(void)
     char_u	*p;
     int		opt_idx;
 
-# ifdef MSWIN
+# if defined(MSWIN) || defined(__MVS__)
     // MS-Windows has builtin support for conversion to and from Unicode, using
     // "utf-8" for 'encoding' should work best for most users.
+    // z/OS built should default to UTF-8 mode as setlocale does not respect utf-8 environment variable locales
     p = vim_strsave((char_u *)ENC_DFLT);
 # else
     // enc_locale() will try to find the encoding of the current locale.
