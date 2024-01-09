@@ -1,4 +1,4 @@
-README_vms.txt for version 9.0 of Vim: Vi IMproved.
+README_vms.txt for version 9.1 of Vim: Vi IMproved.
 
 This file explains the installation of Vim on VMS systems.
 See "README.txt" in the runtime archive for information about Vim.
@@ -19,14 +19,16 @@ src/INSTALLvms.txt.
 
 To use the binary version, you need one of these archives:
 
-  vim-XX-exe-ia64-gui.zip       IA64 GUI/Motif executables
-  vim-XX-exe-ia64-gtk.zip       IA64 GUI/GTK executables
-  vim-XX-exe-ia64-term.zip      IA64 console executables
+  vim-XX-exe-x86-gui.zip	X86_64 GUI/Motif executables
+  vim-XX-exe-x86-term.zip	X86_64 console executables
+  vim-XX-exe-ia64-gui.zip	IA64 GUI/Motif executables
+  vim-XX-exe-ia64-gtk.zip	IA64 GUI/GTK executables
+  vim-XX-exe-ia64-term.zip	IA64 console executables
   vim-XX-exe-axp-gui.zip	Alpha GUI/Motif executables
   vim-XX-exe-axp-gtk.zip	Alpha GUI/GTK executables
-  vim-XX-exe-axp-term.zip       Alpha console executables
+  vim-XX-exe-axp-term.zip	Alpha console executables
   vim-XX-exe-vax-gui.zip	VAX GUI executables
-  vim-XX-exe-vax-term.zip       VAX console executables
+  vim-XX-exe-vax-term.zip	VAX console executables
 
 and of course
   vim-XX-runtime.zip		runtime files
@@ -34,6 +36,8 @@ and of course
 The binary archives contain: vim.exe, ctags.exe, xxd.exe files,
 but there are also prepared "deploy ready" archives:
 
+vim-XX-x86.zip			GUI and console executables with runtime and
+				help files for X86_64 systems
 vim-XX-ia64.zip			GUI and console executables with runtime and
 				help files for IA64 systems
 vim-XX-axp.zip			GUI and console executables with runtime and

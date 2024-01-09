@@ -1068,7 +1068,7 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    }
 	}
 
-	if (isdigit(*p))
+	if (SAFE_isdigit(*p))
 	{
 	    value->bv_type = BVAL_NR;
 	    value->bv_nr = getdigits(&p);
@@ -1374,7 +1374,8 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_INSTR:
 		    case VAR_CLASS:
 		    case VAR_OBJECT:
-				     continue;
+		    case VAR_TYPEALIAS:
+				      continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
 		if (this_var->di_tv.v_type == VAR_BOOL
@@ -1803,6 +1804,11 @@ handle_viminfo_register(garray_T *values, int force)
 	{
 	    y_ptr->y_array[i] = vp[i + 6].bv_string;
 	    vp[i + 6].bv_string = NULL;
+	}
+	else if (vp[i + 6].bv_type != BVAL_STRING)
+	{
+	    free(y_ptr->y_array);
+	    y_ptr->y_array = NULL;
 	}
 	else
 	    y_ptr->y_array[i] = vim_strsave(vp[i + 6].bv_string);
@@ -2479,7 +2485,7 @@ read_viminfo_filemark(vir_T *virp, int force)
     str = virp->vir_line + 1;
     if (*str <= 127
 	    && ((*virp->vir_line == '\''
-				       && (VIM_ISDIGIT(*str) || isupper(*str)))
+				       && (VIM_ISDIGIT(*str) || SAFE_isupper(*str)))
 	     || (*virp->vir_line == '-' && *str == '\'')))
     {
 	if (*str == '\'')

@@ -30,10 +30,12 @@ The distributed files are generated on Unix, but this should also be possible
 on MS-Windows.  Download the gettext packages, for example from:
 
 	http://sourceforge.net/projects/gettext
+	or
+	https://mlocati.github.io/articles/gettext-iconv-windows.html
 
 You might have to do the commands manually.  Example:
 
-   cd c:\vim\vim81
+   cd c:\vim\vim91
    mkdir runtime\lang\ja\LC_MESSAGES
    msgfmt -o runtime\lang\ja\LC_MESSAGES\vim.mo src\po\ja.po
 
@@ -41,7 +43,7 @@ You might have to do the commands manually.  Example:
 WHEN THERE IS A MISTAKE
 
 If you find there is a mistake in one of the translations, please report this
-to the maintainer of the translation.  His/her E-mail address is in the
+to the maintainer of the translation.  His/her e-mail address is in the
 comments at the start of the file.  You can also see this with the ":messages"
 command in Vim when the translation is being used.
 
@@ -51,7 +53,7 @@ CREATING A NEW PO FILE
 We will use "xx.po" as an example here, replace "xx" with the name of your
 language.
 
-- Edit Makefile to add xx to LANGUAGES and xx.mo to MOFILES.
+- Edit Make_all.mak to add xx to LANGUAGES and xx.mo to MOFILES.
 - If you haven't done so already, run ./configure in the top vim directory
   (i.e. go up two directories) and then come back here afterwards.
 - Execute these commands:
@@ -90,7 +92,7 @@ language.
     Remove the "#, fuzzy" line after adding the translation.
 
     There is one special message:
-	msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+	msgid "Messages maintainer: The Vim Project"
     You should include your name and E-mail address instead, for example:
 	msgstr "Berichten übersetzt bei: John Doe <john@doe.org>"
 

@@ -728,6 +728,13 @@ msgstr "E131: functie %s wordt gebruikt en kan niet worden verwijderd"
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
 msgstr "E132: diepte functieaanroep overstijgt 'maxfuncdepth'"
 
+#: ../errors.h:2848
+#, c-format
+msgid "E1106: One argument too many"
+msgid_plural "E1106: %d arguments too many"
+msgstr[0] "E1106: Een argument te veel"
+msgstr[1] "E1106: %d argumenten te veel"
+
 #, c-format
 msgid "calling %s"
 msgstr "%s aanroepen"
@@ -3340,7 +3347,7 @@ msgstr "regel %4ld:"
 #~ msgid "E354: Invalid register name: '%s'"
 #~ msgstr ""
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Vertaald door: Erwin Poeze <erwin.poeze@gmail.com>"
 
 #~ msgid "Interrupt: "

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2023 May 06
+*usr_41.txt*	For Vim version 9.1.  Last change: 2023 May 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -743,10 +743,13 @@ String manipulation:					*string-functions*
 	toupper()		turn a string to uppercase
 	charclass()		class of a character
 	match()			position where a pattern matches in a string
+	matchbufline()		all the matches of a pattern in a buffer
 	matchend()		position where a pattern match ends in a string
 	matchfuzzy()		fuzzy matches a string in a list of strings
 	matchfuzzypos()		fuzzy matches a string in a list of strings
 	matchstr()		match of a pattern in a string
+	matchstrlist()		all the matches of a pattern in a List of
+				strings
 	matchstrpos()		match and positions of a pattern in a string
 	matchlist()		like matchstr() and also return submatches
 	stridx()		first index of a short string in a long string
@@ -877,6 +880,8 @@ Other computation:					*bitwise-function*
 	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
+	instanceof()		check if a variable is an instance of a given
+				class
 	type()			type of a variable as a number
 	typename()		type of a variable as text
 	islocked()		check if a variable is locked
@@ -1232,6 +1237,7 @@ Inter-process communication:		    *channel-functions*
 	json_decode()		decode a JSON string to Vim types
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
+	err_teapot()		give error 418 or 503
 
 Jobs:						*job-functions*
 	job_start()		start a job
@@ -1372,7 +1378,7 @@ Various:					*various-functions*
 	libcallnr()		idem, returning a number
 
 	undofile()		get the name of the undo file
-	undotree()		return the state of the undo tree
+	undotree()		return the state of the undo tree for a buffer
 
 	shiftwidth()		effective value of 'shiftwidth'
 

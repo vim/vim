@@ -76,6 +76,10 @@ static char *(main_errors[]) =
 // Various parameters passed between main() and other functions.
 static mparm_T	params;
 
+#ifdef _IOLBF
+static void *s_vbuf = NULL;		// buffer for setvbuf()
+#endif
+
 #ifndef NO_VIM_MAIN	// skip this for unittests
 
 static char_u *start_dir = NULL;	// current working dir on startup
@@ -353,10 +357,14 @@ main
     check_tty(&params);
 
 #ifdef _IOLBF
-    // Ensure output works usefully without a tty: buffer lines instead of
-    // fully buffered.
     if (silent_mode)
-	setvbuf(stdout, NULL, _IOLBF, 0);
+    {
+	// Ensure output works usefully without a tty: buffer lines instead of
+	// fully buffered.
+	s_vbuf = malloc(BUFSIZ);
+	if (s_vbuf != NULL)
+	    setvbuf(stdout, s_vbuf, _IOLBF, BUFSIZ);
+    }
 #endif
 
     // This message comes before term inits, but after setting "silent_mode"
@@ -1027,6 +1035,21 @@ is_not_a_term_or_gui(void)
 	;
 }
 
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_vbuf(void)
+{
+# ifdef _IOLBF
+    if (s_vbuf != NULL)
+    {
+	setvbuf(stdout, NULL, _IONBF, 0);
+	free(s_vbuf);
+	s_vbuf = NULL;
+    }
+# endif
+}
+#endif
+
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
  * If a --gui-dialog-file argument was given return the file name.
@@ -1525,7 +1548,7 @@ main_loop(
 		    && !skip_term_loop)
 	    {
 		// If terminal_loop() returns OK we got a key that is handled
-		// in Normal model.  With FAIL we first need to position the
+		// in Normal mode.  With FAIL we first need to position the
 		// cursor and the screen needs to be redrawn.
 		if (terminal_loop(TRUE) == OK)
 		    normal_cmd(&oa, TRUE);
@@ -1623,7 +1646,7 @@ getout(int exitval)
 	    next_tp = tp->tp_next;
 	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    {
-		if (wp->w_buffer == NULL)
+		if (wp->w_buffer == NULL || !buf_valid(wp->w_buffer))
 		    // Autocmd must have close the buffer already, skip.
 		    continue;
 		buf = wp->w_buffer;
@@ -3198,7 +3221,7 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL)
 									 != OK)
-		emsg(e_failed_to_source_defaults);
+		emsg(_(e_failed_to_source_defaults));
 	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
@@ -3273,7 +3296,7 @@ source_startup_scripts(mparm_T *parmp)
 		// When no .vimrc file was found: source defaults.vim.
 		if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE,
 								 NULL) == FAIL)
-		    emsg(e_failed_to_source_defaults);
+		    emsg(_(e_failed_to_source_defaults));
 	    }
 	}
 

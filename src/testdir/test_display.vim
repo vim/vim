@@ -215,59 +215,6 @@ func Test_unprintable_fileformats()
   call StopVimInTerminal(buf)
 endfunc
 
-" Test for scrolling that modifies buffer during visual block
-func Test_visual_block_scroll()
-  CheckScreendump
-
-  let lines =<< trim END
-    source $VIMRUNTIME/plugin/matchparen.vim
-    set scrolloff=1
-    call setline(1, ['a', 'b', 'c', 'd', 'e', '', '{', '}', '{', 'f', 'g', '}'])
-    call cursor(5, 1)
-  END
-
-  let filename = 'Xvisualblockmodifiedscroll'
-  call writefile(lines, filename, 'D')
-
-  let buf = RunVimInTerminal('-S '.filename, #{rows: 7})
-  call term_sendkeys(buf, "V\<C-D>\<C-D>")
-
-  call VerifyScreenDump(buf, 'Test_display_visual_block_scroll', {})
-
-  call StopVimInTerminal(buf)
-endfunc
-
-" Test for clearing paren highlight when switching buffers
-func Test_matchparen_clear_highlight()
-  CheckScreendump
-
-  let lines =<< trim END
-    source $VIMRUNTIME/plugin/matchparen.vim
-    set hidden
-    call setline(1, ['()'])
-    normal 0
-
-    func OtherBuffer()
-       enew
-       exe "normal iaa\<Esc>0"
-    endfunc
-  END
-  call writefile(lines, 'XMatchparenClear', 'D')
-  let buf = RunVimInTerminal('-S XMatchparenClear', #{rows: 5})
-  call VerifyScreenDump(buf, 'Test_matchparen_clear_highlight_1', {})
-
-  call term_sendkeys(buf, ":call OtherBuffer()\<CR>:\<Esc>")
-  call VerifyScreenDump(buf, 'Test_matchparen_clear_highlight_2', {})
-
-  call term_sendkeys(buf, "\<C-^>:\<Esc>")
-  call VerifyScreenDump(buf, 'Test_matchparen_clear_highlight_1', {})
-
-  call term_sendkeys(buf, "\<C-^>:\<Esc>")
-  call VerifyScreenDump(buf, 'Test_matchparen_clear_highlight_2', {})
-
-  call StopVimInTerminal(buf)
-endfunc
-
 func Test_display_scroll_at_topline()
   CheckScreendump
 
@@ -410,12 +357,19 @@ func Test_display_linebreak_breakat()
   new
   vert resize 25
   let _breakat = &breakat
-  setl signcolumn=yes linebreak breakat=) showbreak=+\ 
+  setl signcolumn=yes linebreak breakat=) showbreak=++
   call setline(1, repeat('x', winwidth(0) - 2) .. ')abc')
   let lines = ScreenLines([1, 2], 25)
   let expected = [
           \ '  xxxxxxxxxxxxxxxxxxxxxxx',
-          \ '  + )abc                 '
+          \ '  ++)abc                 ',
+          \ ]
+  call assert_equal(expected, lines)
+  setl breakindent breakindentopt=shift:2
+  let lines = ScreenLines([1, 2], 25)
+  let expected = [
+          \ '  xxxxxxxxxxxxxxxxxxxxxxx',
+          \ '    ++)abc               ',
           \ ]
   call assert_equal(expected, lines)
   %bw!
@@ -507,14 +461,29 @@ func Test_display_cursor_long_line()
   CheckScreendump
 
   let lines =<< trim END
-    call setline(1, ['a', 'bbbbb '->repeat(100), 'c'])
+    call setline(1, ['a', 'b ' .. 'bbbbb'->repeat(150), 'c'])
     norm $j
   END
 
   call writefile(lines, 'XdispCursorLongline', 'D')
   let buf = RunVimInTerminal('-S XdispCursorLongline', #{rows: 8})
 
-  call VerifyScreenDump(buf, 'Test_display_cursor_long_line', {})
+  call VerifyScreenDump(buf, 'Test_display_cursor_long_line_1', {})
+
+  " FIXME: moving the cursor above the topline does not set w_skipcol
+  " correctly with cpo+=n and zero scrolloff (curs_columns() extra == 1).
+  call term_sendkeys(buf, ":set number cpo+=n scrolloff=0\<CR>")
+  call term_sendkeys(buf, '$0')
+  call VerifyScreenDump(buf, 'Test_display_cursor_long_line_2', {})
+
+  " Going to the start of the line with "b" did not set w_skipcol correctly
+  " with 'smoothscroll'.
+   call term_sendkeys(buf, ":set smoothscroll\<CR>")
+   call term_sendkeys(buf, '$b')
+   call VerifyScreenDump(buf, 'Test_display_cursor_long_line_3', {})
+  " Same for "ge".
+   call term_sendkeys(buf, '$ge')
+   call VerifyScreenDump(buf, 'Test_display_cursor_long_line_4', {})
 
   call StopVimInTerminal(buf)
 endfunc

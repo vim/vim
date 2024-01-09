@@ -1,10 +1,10 @@
 " vi:set ts=8 sts=8 sw=8 tw=0:
 "
 " Menu Translations:	Japanese (EUC-JP)
-" Last Translator:	MURAOKA Taro  <koron.kaoriya@gmail.com>
-" Last Change:		20-Feb-2022.
+" Last Translator:	MURAOKA Taro <koron.kaoriya@gmail.com>
+" Last Change:		18-Dec-2023.
 "
-" Copyright (C) 2001-2022 MURAOKA Taro <koron.kaoriya@gmail.com>,
+" Copyright (C) 2001-2023 MURAOKA Taro <koron.kaoriya@gmail.com>,
 "			  vim-jp <http://vim-jp.org/>
 "
 " THIS FILE IS DISTRIBUTED UNDER THE VIM LICENSE.
@@ -39,7 +39,7 @@ let g:menutrans_help_dialog = "¥Ø¥ë¥×¤ò¸¡º÷¤·¤¿¤¤¥³¥Þ¥ó¥É¤â¤·¤¯¤ÏÃ±¸ì¤òÆþÎÏ¤·¤Æ¤
 menutrans &File				¥Õ¥¡¥¤¥ë(&F)
 menutrans &Open\.\.\.<Tab>:e		³«¤¯(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Ê¬³ä¤·¤Æ³«¤¯(&L)\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	¥¿¥Ö¥Ú¡¼¥¸¤Ç³«¤¯<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	¥¿¥Ö¥Ú¡¼¥¸¤Ç³«¤¯(&T)<Tab>:tabnew
 menutrans &New<Tab>:enew		¿·µ¬ºîÀ®(&N)<Tab>:enew
 menutrans &Close<Tab>:close		ÊÄ¤¸¤ë(&C)<Tab>:close
 menutrans &Save<Tab>:w			ÊÝÂ¸(&S)<Tab>:w

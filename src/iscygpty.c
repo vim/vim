@@ -2,7 +2,7 @@
  * iscygpty.c -- part of ptycheck
  * https://github.com/k-takata/ptycheck
  *
- * Copyright (c) 2015-2017 K.Takata
+ * Copyright (c) 2015-2023 K.Takata
  *
  * You can redistribute it and/or modify it under the terms of either
  * the MIT license (as described below) or the Vim license.
@@ -116,7 +116,7 @@ int is_cygpty(int fd)
 	return 0;
 #else
 	HANDLE h;
-	int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
+	const int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
 	FILE_NAME_INFO *nameinfo;
 	WCHAR *p = NULL;
 
@@ -135,7 +135,7 @@ int is_cygpty(int fd)
 		return 0;
 	}
 	// Check the name of the pipe:
-	// '\{cygwin,msys}-XXXXXXXXXXXXXXXX-ptyN-{from,to}-master'
+	// "\\{cygwin,msys}-XXXXXXXXXXXXXXXX-ptyN-{from,to}-master"
 	if (pGetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size)) {
 		nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = L'\0';
 		p = nameinfo->FileName;
@@ -147,7 +147,8 @@ int is_cygpty(int fd)
 			p = NULL;
 		}
 		if (p != NULL) {
-			while (*p && isxdigit(*p))	// Skip 16-digit hexadecimal.
+			// Skip 16-digit hexadecimal.
+			while (*p && iswascii(*p) && isxdigit(*p))
 				++p;
 			if (is_wprefix(p, L"-pty")) {
 				p += 4;
@@ -156,7 +157,8 @@ int is_cygpty(int fd)
 			}
 		}
 		if (p != NULL) {
-			while (*p && isdigit(*p))	// Skip pty number.
+			// Skip pty number.
+			while (*p && iswascii(*p) && isdigit(*p))
 				++p;
 			if (is_wprefix(p, L"-from-master")) {
 				//p += 12;

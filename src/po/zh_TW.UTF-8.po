@@ -3223,7 +3223,7 @@ msgstr "行 %4ld:"
 msgid "[string too long]"
 msgstr "[此行過長]"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "正體中文訊息維護者: Francis S.Lin <piaip@csie.ntu.edu."
 "tw>,                                 Cecil Sheng   <b7506022@csie.ntu.edu.tw>"

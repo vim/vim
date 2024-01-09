@@ -1755,4 +1755,40 @@ func Test_fold_screenrow_motion()
   call assert_equal(1, line('.'))
 endfunc
 
+" This was using freed memory
+func Test_foldcolumn_linebreak_control_char()
+  CheckFeature linebreak
+
+  5vnew
+  setlocal foldcolumn=1 linebreak
+  call setline(1, "aaa\<C-A>b")
+  redraw
+  call assert_equal([' aaa^', ' Ab  '], ScreenLines([1, 2], 5))
+  call assert_equal(screenattr(1, 5), screenattr(2, 2))
+
+  bwipe!
+endfunc
+
+" This used to cause invalid memory access
+func Test_foldexpr_return_empty_string()
+  new
+  setlocal foldexpr='' foldmethod=expr
+  redraw
+
+  bwipe!
+endfunc
+
+" Make sure that when ending a fold that hasn't been started, it does not
+" start a new fold.
+func Test_foldexpr_end_fold()
+  new
+  setlocal foldmethod=expr
+  let &l:foldexpr = 'v:lnum == 2 ? "<2" : "="'
+  call setline(1, range(1, 3))
+  redraw
+  call assert_equal([0, 0, 0], range(1, 3)->map('foldlevel(v:val)'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

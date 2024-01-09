@@ -32,7 +32,7 @@ EXTERN long	Columns INIT(= 80);	// nr of columns in the screen
  * The characters that are currently on the screen are kept in ScreenLines[].
  * It is a single block of characters, the size of the screen plus one line.
  * The attributes for those characters are kept in ScreenAttrs[].
- * The byte offset in the line is kept in ScreenCols[].
+ * The virtual column in the line is kept in ScreenCols[].
  *
  * "LineOffset[n]" is the offset from ScreenLines[] for the start of line 'n'.
  * The same value is used for ScreenLinesUC[], ScreenAttrs[] and ScreenCols[].
@@ -534,7 +534,13 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_super			(static_types[80])
 #define t_const_super		(static_types[81])
 
-EXTERN type_T static_types[82]
+#define t_object		(static_types[82])
+#define t_const_object		(static_types[83])
+
+#define t_class			(static_types[84])
+#define t_const_class		(static_types[85])
+
+EXTERN type_T static_types[86]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
@@ -700,6 +706,14 @@ EXTERN type_T static_types[82]
     // 80: t_super (VAR_CLASS with tt_member set to &t_bool
     {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL, NULL},
     {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL, NULL},
+
+    // 82: t_object
+    {VAR_OBJECT, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_OBJECT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
+
+    // 84: t_class
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 }
 #endif
 ;
@@ -778,8 +792,9 @@ EXTERN int	is_mac_terminal INIT(= FALSE);  // recognized Terminal.app
 #endif
 
 EXTERN int	autocmd_busy INIT(= FALSE);	// Is apply_autocmds() busy?
-EXTERN int	autocmd_no_enter INIT(= FALSE); // *Enter autocmds disabled
-EXTERN int	autocmd_no_leave INIT(= FALSE); // *Leave autocmds disabled
+EXTERN int	autocmd_no_enter INIT(= FALSE); // Buf/WinEnter autocmds disabled
+EXTERN int	autocmd_no_leave INIT(= FALSE); // Buf/WinLeave autocmds disabled
+EXTERN int	tabpage_move_disallowed INIT(= FALSE);  // moving tabpages around disallowed
 
 EXTERN int	modified_was_set;		// did ":set modified"
 EXTERN int	did_filetype INIT(= FALSE);	// FileType event found
@@ -1362,7 +1377,7 @@ EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
 EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 // Flag set when peeking a character and found the end of executed register
-EXTERN int pending_end_reg_executing INIT(= 0);
+EXTERN int pending_end_reg_executing INIT(= FALSE);
 
 // Set when a modifyOtherKeys sequence was seen, then simplified mappings will
 // no longer be used.  To be combined with modify_otherkeys_state.
@@ -1674,6 +1689,19 @@ EXTERN int	cmdwin_result INIT(= 0); // result of cmdline window or 0
 
 EXTERN char_u no_lines_msg[]	INIT(= N_("--No lines in buffer--"));
 
+EXTERN char typename_unknown[]	INIT(= N_("unknown"));
+EXTERN char typename_int[]	INIT(= N_("int"));
+EXTERN char typename_longint[]	INIT(= N_("long int"));
+EXTERN char typename_longlongint[]	INIT(= N_("long long int"));
+EXTERN char typename_unsignedint[]	INIT(= N_("unsigned int"));
+EXTERN char typename_unsignedlongint[]	INIT(= N_("unsigned long int"));
+EXTERN char typename_unsignedlonglongint[]	INIT(= N_("unsigned long long int"));
+EXTERN char typename_pointer[]	INIT(= N_("pointer"));
+EXTERN char typename_percent[]	INIT(= N_("percent"));
+EXTERN char typename_char[] INIT(= N_("char"));
+EXTERN char typename_string[]	INIT(= N_("string"));
+EXTERN char typename_float[]	INIT(= N_("float"));
+
 /*
  * When ":global" is used to number of substitutions and changed lines is
  * accumulated until it's finished.
@@ -1914,6 +1942,7 @@ EXTERN int  disable_vterm_title_for_testing INIT(= FALSE);
 EXTERN long override_sysinfo_uptime INIT(= -1);
 EXTERN int  override_autoload INIT(= FALSE);
 EXTERN int  ml_get_alloc_lines INIT(= FALSE);
+EXTERN int  ignore_unreachable_code_for_testing INIT(= FALSE);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif
@@ -1925,7 +1954,7 @@ EXTERN int  timer_busy INIT(= 0);   // when timer is inside vgetc() then > 0
 #ifdef FEAT_EVAL
 EXTERN int  input_busy INIT(= 0);   // when inside get_user_input() then > 0
 
-EXTERN typval_T	*lval_root INIT(= NULL);
+EXTERN lval_root_T	*lval_root INIT(= NULL);
 #endif
 
 #ifdef FEAT_BEVAL_TERM

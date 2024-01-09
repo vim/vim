@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 9.0.  Last change: 2023 Mar 07
+*change.txt*    For Vim version 9.1.  Last change: 2023 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -210,6 +210,7 @@ gR			Enter Virtual Replace mode: Each character you type
 
 							*v_r*
 {Visual}r{char}		Replace all selected characters by {char}.
+			CTRL-C will be inserted literally.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
@@ -451,9 +452,12 @@ octal number.
 Note that when 'nrformats' includes "octal", decimal numbers with leading
 zeros cause mistakes, because they can be confused with octal numbers.
 
-Note similarly, when 'nrformats' includes "bin", binary numbers with a leading
-'0x' or '0X' can be interpreted as hexadecimal rather than binary since '0b'
-are valid hexadecimal digits.
+Note similarly, when 'nrformats' includes both "bin" and "hex", binary numbers
+with a leading '0x' or '0X' can be interpreted as hexadecimal rather than
+binary since '0b' are valid hexadecimal digits.  CTRL-A on "0x0b11" results in
+"0x0b12", not "0x0b100".
+When 'nrformats' includes "bin" and doesn't include "hex", CTRL-A on "0b11" in
+"0x0b11" results in "0x0b100".
 
 When the number under the cursor is too big to fit into 32 or 64 bit
 (depending on how Vim was build), it will be rounded off to the nearest number
@@ -515,7 +519,7 @@ SHIFTING LINES LEFT OR RIGHT				*shift-left-right*
 			lines to [indent] (default 0).
 
 							*:>*
-:[range]> [flags]	Shift {count} [range] lines one 'shiftwidth' right.
+:[range]> [flags]	Shift [range] lines one 'shiftwidth' right.
 			Repeat '>' for shifting multiple 'shiftwidth's.
 			See |ex-flags| for [flags].
 
@@ -643,9 +647,9 @@ For other systems the tmpnam() library function is used.
 			current line only.  When [count] is given, replace in
 			[count] lines, starting with the last line in [range].
 			When [range] is omitted start in the current line.
-							*E939*
-			[count] must be a positive number.  Also see
-			|cmdline-ranges|.
+							*E939* *E1510*
+			[count] must be a positive number (max 2147483647)
+			Also see |cmdline-ranges|.
 
 			See |:s_flags| for [flags].
 			The delimiter doesn't need to be /, see

@@ -1554,5 +1554,72 @@ func Test_heap_buffer_overflow()
   set updatecount&
 endfunc
 
+" Test Visual highlight with cursor at end of screen line and 'showbreak'
+func Test_visual_hl_with_showbreak()
+  CheckScreendump
+
+  let lines =<< trim END
+    setlocal showbreak=+
+    call setline(1, repeat('a', &columns + 10))
+    normal g$v4lo
+  END
+  call writefile(lines, 'XTest_visual_sbr', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_visual_sbr', {'rows': 6, 'cols': 50})
+  call VerifyScreenDump(buf, 'Test_visual_hl_with_showbreak', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_Visual_r_CTRL_C()
+  new
+  " visual r_cmd
+  call setline(1, ['   '])
+  call feedkeys("\<c-v>$r\<c-c>", 'tx')
+  call assert_equal([''], getline(1, 1))
+
+  " visual gr_cmd
+  call setline(1, ['   '])
+  call feedkeys("\<c-v>$gr\<c-c>", 'tx')
+  call assert_equal([''], getline(1, 1))
+  bw!
+endfunc
+
+func Test_visual_drag_out_of_window()
+  rightbelow vnew
+  call setline(1, '123456789')
+  set mouse=a
+  func ClickExpr(off)
+    call test_setmouse(1, getwininfo(win_getid())[0].wincol + a:off)
+    return "\<LeftMouse>"
+  endfunc
+  func DragExpr(off)
+    call test_setmouse(1, getwininfo(win_getid())[0].wincol + a:off)
+    return "\<LeftDrag>"
+  endfunc
+
+  nnoremap <expr> <F2> ClickExpr(5)
+  nnoremap <expr> <F3> DragExpr(-1)
+  redraw
+  call feedkeys("\<F2>\<F3>\<LeftRelease>", 'tx')
+  call assert_equal([1, 6], [col('.'), col('v')])
+  call feedkeys("\<Esc>", 'tx')
+
+  nnoremap <expr> <F2> ClickExpr(6)
+  nnoremap <expr> <F3> DragExpr(-2)
+  redraw
+  call feedkeys("\<F2>\<F3>\<LeftRelease>", 'tx')
+  call assert_equal([1, 7], [col('.'), col('v')])
+  call feedkeys("\<Esc>", 'tx')
+
+  nunmap <F2>
+  nunmap <F3>
+  delfunc ClickExpr
+  delfunc DragExpr
+  set mouse&
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

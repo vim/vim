@@ -24,7 +24,7 @@
 #define XMACROS_H
 
 
-#ifdef __hpux
+#if defined(__hpux) || defined(VMS)
 # ifndef SIZE_MAX
 #  define SIZE_MAX ((size_t)(-1))
 # endif

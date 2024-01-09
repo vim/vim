@@ -127,7 +127,74 @@ func Test_screenpos()
 	\ 'curscol': wincol + 7,
 	\ 'endcol': wincol + 7}, winid->screenpos(line('$'), 8))
   call assert_equal({'row': 0, 'col': 0, 'curscol': 0, 'endcol': 0},
-        \ winid->screenpos(line('$'), 22))
+	\ winid->screenpos(line('$'), 22))
+
+  1split
+
+  " w_leftcol should be subtracted
+  setlocal nowrap
+  normal G050zl$
+  redraw
+  call assert_equal({'row': winrow + 0,
+	\ 'col': wincol + 10 - 1,
+	\ 'curscol': wincol + 10 - 1,
+	\ 'endcol': wincol + 10 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+
+  " w_skipcol should be taken into account
+  setlocal wrap
+  normal $
+  redraw
+  call assert_equal({'row': winrow + 0,
+	\ 'col': wincol + 20 - 1,
+	\ 'curscol': wincol + 20 - 1,
+	\ 'endcol': wincol + 20 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  call assert_equal({'row': 0, 'col': 0, 'curscol': 0, 'endcol': 0},
+	\ screenpos(win_getid(), line('.'), col('.') - 20))
+  setlocal number
+  redraw
+  call assert_equal({'row': winrow + 0,
+	\ 'col': wincol + 16 - 1,
+	\ 'curscol': wincol + 16 - 1,
+	\ 'endcol': wincol + 16 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  call assert_equal({'row': 0, 'col': 0, 'curscol': 0, 'endcol': 0},
+	\ screenpos(win_getid(), line('.'), col('.') - 16))
+  set cpoptions+=n
+  redraw
+  call assert_equal({'row': winrow + 0,
+	\ 'col': wincol + 4 - 1,
+	\ 'curscol': wincol + 4 - 1,
+	\ 'endcol': wincol + 4 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  call assert_equal({'row': 0, 'col': 0, 'curscol': 0, 'endcol': 0},
+	\ screenpos(win_getid(), line('.'), col('.') - 4))
+
+  wincmd +
+  call setline(line('$') + 1, 'last line')
+  setlocal smoothscroll
+  normal G$
+  redraw
+  call assert_equal({'row': winrow + 1,
+	\ 'col': wincol + 4 + 9 - 1,
+	\ 'curscol': wincol + 4 + 9 - 1,
+	\ 'endcol': wincol + 4 + 9 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  set cpoptions-=n
+  redraw
+  call assert_equal({'row': winrow + 1,
+	\ 'col': wincol + 4 + 9 - 1,
+	\ 'curscol': wincol + 4 + 9 - 1,
+	\ 'endcol': wincol + 4 + 9 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
+  setlocal nonumber
+  redraw
+  call assert_equal({'row': winrow + 1,
+	\ 'col': wincol + 9 - 1,
+	\ 'curscol': wincol + 9 - 1,
+	\ 'endcol': wincol + 9 - 1},
+	\ screenpos(win_getid(), line('.'), col('.')))
 
   close
   call assert_equal({}, screenpos(999, 1, 1))
@@ -139,6 +206,11 @@ func Test_screenpos()
   nmenu WinBar.TEST :
   call assert_equal(#{col: 1, row: 2, endcol: 1, curscol: 1}, screenpos(win_getid(), 1, 1))
   nunmenu WinBar.TEST
+  call assert_equal(#{col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(win_getid(), 1, 1))
+
+  call assert_equal(#{col: 0, row: 0, endcol: 0, curscol: 0}, screenpos(0, 0, 1))
+  call assert_equal(#{col: 0, row: 0, endcol: 0, curscol: 0}, screenpos(0, -1, 1))
+  call assert_equal(#{col: 1, row: 1, endcol: 1, curscol: 1}, screenpos(0, 1, -v:maxcol))
 endfunc
 
 func Test_screenpos_fold()
@@ -170,6 +242,19 @@ func Test_screenpos_diff()
   windo diffthis
   wincmd w
   call assert_equal(#{col: 3, row: 7, endcol: 3, curscol: 3}, screenpos(0, 4, 1))
+  call assert_equal(#{col: 3, row: 8, endcol: 3, curscol: 3}, screenpos(0, 5, 1))
+  exe "normal! 3\<C-E>"
+  call assert_equal(#{col: 3, row: 4, endcol: 3, curscol: 3}, screenpos(0, 4, 1))
+  call assert_equal(#{col: 3, row: 5, endcol: 3, curscol: 3}, screenpos(0, 5, 1))
+  exe "normal! \<C-E>"
+  call assert_equal(#{col: 3, row: 3, endcol: 3, curscol: 3}, screenpos(0, 4, 1))
+  call assert_equal(#{col: 3, row: 4, endcol: 3, curscol: 3}, screenpos(0, 5, 1))
+  exe "normal! \<C-E>"
+  call assert_equal(#{col: 3, row: 2, endcol: 3, curscol: 3}, screenpos(0, 4, 1))
+  call assert_equal(#{col: 3, row: 3, endcol: 3, curscol: 3}, screenpos(0, 5, 1))
+  exe "normal! \<C-E>"
+  call assert_equal(#{col: 3, row: 1, endcol: 3, curscol: 3}, screenpos(0, 4, 1))
+  call assert_equal(#{col: 3, row: 2, endcol: 3, curscol: 3}, screenpos(0, 5, 1))
 
   windo diffoff
   bwipe!
@@ -484,9 +569,42 @@ func Test_virtcol2col()
   call assert_equal(-1, virtcol2col(0, -1, 1))
   call assert_equal(-1, virtcol2col(0, 1, -1))
   call assert_equal(5, virtcol2col(0, 1, 20))
+
+  " Multibyte character
+  call setline(1, ['a✅✅✅'])
+  call assert_equal(1, virtcol2col(0, 1, 1))
+  call assert_equal(2, virtcol2col(0, 1, 3))
+  call assert_equal(5, virtcol2col(0, 1, 5))
+  call assert_equal(8, virtcol2col(0, 1, 7))
+  call assert_equal(8, virtcol2col(0, 1, 8))
+
+  " These used to cause invalid memory access
+  call setline(1, '')
+  call assert_equal(0, virtcol2col(0, 1, 1))
+  call assert_equal(0, virtcol2col(0, 1, 2))
+
+  let w = winwidth(0)
+  call setline(2, repeat('a', w + 2))
+  let win_nosbr = win_getid()
+  split
+  setlocal showbreak=!!
+  let win_sbr = win_getid()
+  call assert_equal(w, virtcol2col(win_nosbr, 2, w))
+  call assert_equal(w + 1, virtcol2col(win_nosbr, 2, w + 1))
+  call assert_equal(w + 2, virtcol2col(win_nosbr, 2, w + 2))
+  call assert_equal(w + 2, virtcol2col(win_nosbr, 2, w + 3))
+  call assert_equal(w, virtcol2col(win_sbr, 2, w))
+  call assert_equal(w + 1, virtcol2col(win_sbr, 2, w + 1))
+  call assert_equal(w + 1, virtcol2col(win_sbr, 2, w + 2))
+  call assert_equal(w + 1, virtcol2col(win_sbr, 2, w + 3))
+  call assert_equal(w + 2, virtcol2col(win_sbr, 2, w + 4))
+  call assert_equal(w + 2, virtcol2col(win_sbr, 2, w + 5))
+  close
+
   call assert_fails('echo virtcol2col("0", 1, 20)', 'E1210:')
   call assert_fails('echo virtcol2col(0, "1", 20)', 'E1210:')
   call assert_fails('echo virtcol2col(0, 1, "1")', 'E1210:')
+
   bw!
 endfunc
 

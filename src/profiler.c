@@ -123,10 +123,11 @@ profile_setlimit(long msec, proftime_T *tm)
 	QueryPerformanceFrequency(&fr);
 	tm->QuadPart += (LONGLONG)((double)msec / 1000.0 * (double)fr.QuadPart);
 # else
-	long	    fsec;
+	varnumber_T	    fsec;	// this should be 64 bit if possible
 
 	PROF_GET_TIME(tm);
-	fsec = (long)tm->tv_fsec + (long)msec * (TV_FSEC_SEC / 1000);
+	fsec = (varnumber_T)tm->tv_fsec
+		       + (varnumber_T)msec * (varnumber_T)(TV_FSEC_SEC / 1000);
 	tm->tv_fsec = fsec % (long)TV_FSEC_SEC;
 	tm->tv_sec += fsec / (long)TV_FSEC_SEC;
 # endif
@@ -663,7 +664,8 @@ script_prof_save(
     void
 profile_may_start_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller)
 {
-    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
+    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL,
+								&fp->uf_hash))
     {
 	info->pi_started_profiling = TRUE;
 	func_do_profile(fp);

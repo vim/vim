@@ -1,10 +1,10 @@
 #
 # Makefile for Vim on OpenVMS
 #
-# Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2021 Dec 20
+# Maintainer:   Zoltan Arpadffy <zoltan.arpadffy@gmail.com>
+# Last change:  2024 Jan 03
 #
-# This script has been tested on VMS 6.2 to 8.4 on DEC Alpha, VAX and IA64
+# This script has been tested on VMS 6.2 to 9.2 on VAX, ALPHA, IA64 and X86_64
 # with MMS and MMK
 #
 # The following could be built:
@@ -65,6 +65,7 @@ CCVER = YES
 # VIM_TCL    = YES
 # VIM_PERL   = YES
 # VIM_PYTHON = YES
+# VIM_PYTHON3= YES
 # VIM_RUBY   = YES
 # VIM_LUA    = YES
 
@@ -81,7 +82,11 @@ CCVER = YES
 # VIM_MZSCHEME = YES
 
 # Use ICONV
-# VIM_ICONV  = YES
+# VIM_ICONV = YES
+
+# If you modified the source code and plan to distribute the build
+# please, let the users know that.
+# MODIFIED_BY = "name surname <your@email.com>"
 
 ######################################################################
 # Directory, library and include files configuration section.
@@ -104,12 +109,14 @@ PREFIX	=
 OPTIMIZE= /noopt
 CCVER	=
 .ENDIF
-.ELSE		     # AXP and IA64 with DECC
+.ELSE		     # AXP, IA64, X86 with DECC
 CC_DEF  = cc
 PREFIX  = /prefix=all/name=(upper,short)
 OPTIMIZE= /opt
+.IFDEF MMSX86_64
+ARCH_DEF=        # ,__CRTL_VER_OVERRIDE=80400000
 .ENDIF
-
+.ENDIF
 
 LD_DEF  = link
 C_INC   = [.proto]
@@ -162,9 +169,9 @@ GTK = ""
 # please note: directory should end with . in order to /trans=conc work
 # This value for GTK_DIR is an example.
 GTK_DIR  = DKA0:[WORK.GTK1210.]
-DEFS     = "HAVE_CONFIG_H","FEAT_GUI_GTK"
+DEFS     = ,"HAVE_CONFIG_H","FEAT_GUI_GTK"
 LIBS     = ,OS_VMS_GTK.OPT/OPT
-GUI_FLAG = /float=ieee/ieee=denorm
+GUI_FLAG = /float=ieee/ieee=denorm/WARNINGS=(DISABLE=MACROREDEF)
 GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk_x11.c gui_beval.c pty.c
 GUI_OBJ  = gui.obj gui_gtk.obj gui_gtk_f.obj gui_gtk_x11.obj gui_beval.obj pty.obj
 GUI_INC  = ,"/gtk_root/gtk","/gtk_root/glib"
@@ -174,15 +181,15 @@ GUI_INC_VER= ,\""/gtk_root/gtk\"",\""/gtk_root/glib\""
 .ELSE
 MOTIF	 = YES
 .IFDEF XPM
-DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF","HAVE_XPM"
+DEFS     = ,"HAVE_CONFIG_H","FEAT_GUI_MOTIF","HAVE_XPM"
 XPM_INC  = ,[.xpm.include]
 XPM_LIB  = ,OS_VMS_XPM.OPT/OPT
 .ELSE
-DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF"
+DEFS     = ,"HAVE_CONFIG_H","FEAT_GUI_MOTIF"
 XPM_INC  =
 .ENDIF
 LIBS     = ,OS_VMS_MOTIF.OPT/OPT
-GUI_FLAG =
+GUI_FLAG = /WARNINGS=(DISABLE=MACROREDEF)
 GUI_SRC  = gui.c gui_motif.c gui_x11.c gui_beval.c gui_xmdlg.c gui_xmebw.c
 GUI_OBJ  = gui.obj gui_motif.obj gui_x11.obj gui_beval.obj gui_xmdlg.obj gui_xmebw.obj
 GUI_INC  =
@@ -195,7 +202,7 @@ GUI_INC_DIR = ,decw$include:
 
 .ELSE
 # Character terminal only executable
-DEFS	 = "HAVE_CONFIG_H"
+DEFS	 = ,"HAVE_CONFIG_H"
 LIBS	 =
 .ENDIF
 
@@ -217,6 +224,16 @@ PYTHON_OBJ = if_python.obj
 PYTHON_LIB = ,OS_VMS_PYTHON.OPT/OPT
 PYTHON_INC = ,PYTHON_INCLUDE
 .ENDIF
+
+.IFDEF VIM_PYTHON3
+# Python related setup.
+PYTHON3_DEF = ,"FEAT_PYTHON3"
+PYTHON3_SRC = if_python3.c
+PYTHON3_OBJ = if_python3.obj
+PYTHON3_LIB = ,OS_VMS_PYTHON3.OPT/OPT
+PYTHON3_INC = ,PYTHON3_INCLUDE
+.ENDIF
+
 
 .IFDEF VIM_TCL
 # TCL related setup.
@@ -254,9 +271,9 @@ XIM_DEF = ,"FEAT_XIM"
 
 .IFDEF VIM_MZSCHEME
 # MZSCHEME related setup
-MZSCH_DEF = ,"FEAT_MZSCHEME"
-MZSCH_SRC = if_mzsch.c
-MZSCH_OBJ = if_mzsch.obj
+MZSCHEME_DEF = ,"FEAT_MZSCHEME"
+MZSCHEME_SRC = if_mzsch.c
+MZSCHEME_OBJ = if_mzsch.obj
 .ENDIF
 
 .IFDEF VIM_ICONV
@@ -269,12 +286,18 @@ XDIFF_SRC = xdiffi.c,xemit.c,xprepare.c,xutils.c,xhistogram.c,xpatience.c
 XDIFF_OBJ = xdiffi.obj,xemit.obj,xprepare.obj,xutils.obj,xhistogram.obj,xpatience.obj
 XDIFF_INC = ,[.xdiff]
 
+.IFDEF MODIFIED_BY
+DEF_MODIFIED = YES
+.ELSE
+DEF_MODIFIED = NO
+.ENDIF
+
 ######################################################################
 # End of configuration section.
 # Please, do not change anything below without programming experience.
 ######################################################################
 
-MODEL_DEF = "FEAT_$(MODEL)",
+MODEL_DEF = "FEAT_$(MODEL)"
 
 # These go into pathdef.c
 VIMUSER = "''F$EDIT(F$GETJPI(" ","USERNAME"),"TRIM")'"
@@ -282,26 +305,26 @@ VIMHOST = "''F$TRNLNM("SYS$NODE")'''F$TRNLNM("UCX$INET_HOST")'.''F$TRNLNM("UCX$I
 
 .SUFFIXES : .obj .c
 
-ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
- $(ICONV_DEF)) -
+ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF)$(PYTHON3_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCHEME_DEF) -
+ $(ICONV_DEF)$(ARCH_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
- /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC) -
+ /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC)$(PYTHON3_INC) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 # CFLAGS displayed in :ver information
 # It is specially formatted for correct display of unix like includes
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
-ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
- $(ICONV_DEF)) -
+ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF)$(PYTHON3_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCHEME_DEF) -
+ $(ICONV_DEF)$(ARCH_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
- /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
+ /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC)$(PYTHON3_INC) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) $(XPM_LIB)\
-	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB) $(LUA_LIB)
+	   $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(TCL_LIB) $(RUBY_LIB) $(LUA_LIB)
 
 SRC = \
 	alloc.c \
@@ -314,6 +337,7 @@ SRC = \
 	buffer.c \
 	bufwrite.c \
 	change.c \
+	channel.c \
 	charset.c \
 	cindent.c \
 	clientserver.c \
@@ -354,6 +378,7 @@ SRC = \
 	if_xcmdsrv.c \
 	indent.c \
 	insexpand.c \
+	job.c \
 	json.c \
 	list.c \
 	locale.c \
@@ -381,6 +406,7 @@ SRC = \
 	popupmenu.c \
 	popupwin.c \
 	profiler.c \
+	pty.c \
 	quickfix.c \
 	regexp.c \
 	register.c \
@@ -390,6 +416,7 @@ SRC = \
 	session.c \
 	sha256.c \
 	sign.c \
+	sound.c \
 	spell.c \
 	spellfile.c \
 	spellsuggest.c \
@@ -397,6 +424,7 @@ SRC = \
 	syntax.c \
 	tag.c \
 	term.c \
+	terminal.c \
 	termlib.c \
 	testing.c \
 	textformat.c \
@@ -420,13 +448,14 @@ SRC = \
 	viminfo.c \
 	window.c \
 	$(GUI_SRC) \
+	$(XDIFF_SRC) \
+	$(LUA_SRC) \
+	$(MZSCHEME_SRC) \
 	$(PERL_SRC) \
 	$(PYTHON_SRC) \
+	$(PYTHON3_SRC) \
 	$(TCL_SRC) \
-	$(RUBY_SRC) \
-	$(LUA_SRC) \
-	$(MZSCH_SRC) \
-	$(XDIFF_SRC)
+	$(RUBY_SRC)
 
 OBJ = \
 	alloc.obj \
@@ -439,6 +468,7 @@ OBJ = \
 	buffer.obj \
 	bufwrite.obj \
 	change.obj \
+	channel.obj \
 	charset.obj \
 	cindent.obj \
 	clientserver.obj \
@@ -480,6 +510,7 @@ OBJ = \
 	if_xcmdsrv.obj \
 	indent.obj \
 	insexpand.obj \
+	job.obj \
 	json.obj \
 	list.obj \
 	locale.obj \
@@ -507,6 +538,7 @@ OBJ = \
 	popupmenu.obj \
 	popupwin.obj \
 	profiler.obj \
+	pty.obj \
 	quickfix.obj \
 	regexp.obj \
 	register.obj \
@@ -516,6 +548,7 @@ OBJ = \
 	session.obj \
 	sha256.obj \
 	sign.obj \
+	sound.obj \
 	spell.obj \
 	spellfile.obj \
 	spellsuggest.obj \
@@ -523,6 +556,7 @@ OBJ = \
 	syntax.obj \
 	tag.obj \
 	term.obj \
+	terminal.obj \
 	termlib.obj \
 	testing.obj \
 	textformat.obj \
@@ -546,13 +580,14 @@ OBJ = \
 	viminfo.obj \
 	window.obj \
 	$(GUI_OBJ) \
+	$(XDIFF_OBJ) \
+	$(LUA_OBJ) \
+	$(MZSCHEME_OBJ) \
 	$(PERL_OBJ) \
 	$(PYTHON_OBJ) \
+	$(PYTHON3_OBJ) \
 	$(TCL_OBJ) \
-	$(RUBY_OBJ) \
-	$(LUA_OBJ) \
-	$(MZSCH_OBJ) \
-	$(XDIFF_OBJ)
+	$(RUBY_OBJ)
 
 # Default target is making the executable
 all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env ruby_env lua_env $(TARGET)
@@ -560,6 +595,11 @@ all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env r
 
 [.auto]config.h : $(CONFIG_H)
 	copy/nolog $(CONFIG_H) [.auto]config.h
+	-@ open/append ac [.auto]config.h
+        -@ hash[0,8]=35
+	-@ quotes[0,8]=34
+        -@ if ""$(DEF_MODIFIED)"" .EQS. "YES" then write ac ''hash',"define MODIFIED_BY ",''quotes',$(MODIFIED_BY),''quotes'
+	-@ close ac
 
 mmk_compat :
 	-@ open/write pd pathdef.c
@@ -708,6 +748,20 @@ python_env :
 	-@ !
 .ENDIF
 
+.IFDEF VIM_PYTHON3
+python3_env :
+	-@ write sys$output "using PYTHON3 environment:"
+	-@ show logical PYTHON3_INCLUDE
+	-@ show logical PYTHON3_OLB
+	-@ write sys$output "creating OS_VMS_PYTHON3.OPT file."
+	-@ open/write opt_file OS_VMS_PYTHON3.OPT
+	-@ write opt_file "PYTHON3_OLB:PYTHON3.OLB /share"
+	-@ close opt_file
+.ELSE
+python3_env :
+	-@ !
+.ENDIF
+
 .IFDEF VIM_TCL
 tcl_env :
 	-@ write sys$output "using TCL environment:"
@@ -772,6 +826,7 @@ charset.obj : charset.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h
+channel.obj : channel.c vim.h [.auto]config.h feature.h
 cindent.obj : cindent.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
@@ -921,6 +976,7 @@ if_mzsch.obj : if_mzsch.c vim.h [.auto]config.h feature.h os_unix.h \
  errors.h globals.h if_mzsch.h
 indent.obj : indent.c vim.h [.auto]config.h feature.h os_unix.h
 insexpand.obj : insexpand.c vim.h [.auto]config.h feature.h os_unix.h
+job.obj : job.c vim.h [.auto]config.h feature.h os_unix.h
 json.obj : json.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h
@@ -1015,6 +1071,7 @@ popupwin.obj : popupwin.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h
+pty.obj : pty.c vim.h [.auto]config.h feature.h os_unix.h
 profiler.obj : profiler.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
@@ -1055,6 +1112,7 @@ sign.obj : sign.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h structs.h regexp.h gui.h \
  beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h proto.h \
  errors.h globals.h
+sound.obj : sound.c vim.h [.auto]config.h feature.h
 spell.obj : spell.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
@@ -1081,6 +1139,7 @@ tag.obj : tag.c vim.h [.auto]config.h feature.h os_unix.h   \
 term.obj : term.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h
+terminal.obj : terminal.c vim.h [.auto]config.h feature.h os_unix.h
 termlib.obj : termlib.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h errors.h globals.h

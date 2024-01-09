@@ -336,6 +336,41 @@ func Test_message_more_scrollback()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_message_not_cleared_after_mode()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      nmap <silent> gx :call DebugSilent('normal')<CR>
+      vmap <silent> gx :call DebugSilent('visual')<CR>
+      function DebugSilent(arg)
+          echomsg "from DebugSilent" a:arg
+      endfunction
+      set showmode
+      set cmdheight=1
+      call test_settime(1)
+      call setline(1, ['one', 'NoSuchFile', 'three'])
+  END
+  call writefile(lines, 'XmessageMode', 'D')
+  let buf = RunVimInTerminal('-S XmessageMode', {'rows': 10})
+
+  call term_sendkeys(buf, 'gx')
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_message_not_cleared_after_mode_1', {})
+
+  " removing the mode message used to also clear the intended message
+  call term_sendkeys(buf, 'vEgx')
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_message_not_cleared_after_mode_2', {})
+
+  " removing the mode message used to also clear the error message
+  call term_sendkeys(buf, ":set cmdheight=2\<CR>")
+  call term_sendkeys(buf, '2GvEgf')
+  call TermWait(buf)
+  call VerifyScreenDump(buf, 'Test_message_not_cleared_after_mode_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test verbose message before echo command
 func Test_echo_verbose_system()
   CheckRunVimInTerminal
@@ -441,6 +476,29 @@ func Test_echo_string_partial()
   function CountSpaces()
   endfunction
   call assert_equal("function('CountSpaces', [{'ccccccccccc': ['ab', 'cd'], 'aaaaaaaaaaa': v:false, 'bbbbbbbbbbbb': ''}])", string(function('CountSpaces', [#{aaaaaaaaaaa: v:false, bbbbbbbbbbbb: '', ccccccccccc: ['ab', 'cd']}])))
+endfunc
+
+" Test that fileinfo is shown properly when 'cmdheight' has just decreased
+" due to switching tabpage and 'shortmess' doesn't contain 'o' or 'O'.
+func Test_fileinfo_tabpage_cmdheight()
+  CheckRunVimInTerminal
+
+  let content =<< trim END
+    set shortmess-=o
+    set shortmess-=O
+    set shortmess-=F
+    tabnew
+    set cmdheight=2
+    tabprev
+    edit Xfileinfo.txt
+  END
+
+  call writefile(content, 'Xtest_fileinfo_tabpage_cmdheight', 'D')
+  let buf = RunVimInTerminal('-S Xtest_fileinfo_tabpage_cmdheight', #{rows: 6})
+  call WaitForAssert({-> assert_match('^"Xfileinfo.txt" \[New\]', term_getline(buf, 6))})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 " Message output was previously overwritten by the fileinfo display, shown

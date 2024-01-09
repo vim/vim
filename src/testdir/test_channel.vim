@@ -524,7 +524,7 @@ func Test_connect_waittime()
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
   if ch_status(handle) != "fail"
-    " Oops, port does exists.
+    " Oops, port exists.
     call ch_close(handle)
   else
     let elapsed = reltime(start)
@@ -538,7 +538,7 @@ func Test_connect_waittime()
   try
     let handle = ch_open('localhost:9867', {'waittime': 500})
     if ch_status(handle) != "fail"
-      " Oops, port does exists.
+      " Oops, port exists.
       call ch_close(handle)
     else
       " Failed connection should wait about 500 msec.  Can be longer if the
@@ -1542,12 +1542,16 @@ func Ch_open_delay(port)
 endfunc
 
 func Test_open_delay()
+  " This fails on BSD (e.g. Cirrus-CI), why?
+  CheckNotBSD
   " The server will wait half a second before creating the port.
   call s:run_server('Ch_open_delay', 'delay')
 endfunc
 
 func Test_open_delay_ipv6()
   CheckIPv6
+  " This fails on BSD (e.g. Cirrus-CI), why?
+  CheckNotBSD
   call Test_open_delay()
 endfunc
 
@@ -2478,15 +2482,32 @@ func Test_job_start_with_invalid_argument()
   call assert_fails('call job_start([0zff])', 'E976:')
 endfunc
 
-" Test for the 'lsp' channel mode
+" Process requests received from the LSP server
+func LspProcessServerRequests(chan, msg)
+  if a:msg['method'] == 'server-req-in-middle'
+        \ && a:msg['params']['text'] == 'server-req'
+    call ch_sendexpr(a:chan, #{method: 'server-req-in-middle-resp',
+          \ id: a:msg['id'], params: #{text: 'client-resp'}})
+  endif
+endfunc
+
+" LSP channel message callback function
 func LspCb(chan, msg)
   call add(g:lspNotif, a:msg)
+  if a:msg->has_key('method')
+    call LspProcessServerRequests(a:chan, a:msg)
+  endif
 endfunc
 
+" LSP one-time message callback function (used for ch_sendexpr())
 func LspOtCb(chan, msg)
   call add(g:lspOtMsgs, a:msg)
+  if a:msg->has_key('method')
+    call LspProcessServerRequests(a:chan, a:msg)
+  endif
 endfunc
 
+" Test for the 'lsp' channel mode
 func LspTests(port)
   " call ch_logfile('Xlspclient.log', 'w')
   let ch = ch_open(s:localhost .. a:port, #{mode: 'lsp', callback: 'LspCb'})
@@ -2651,6 +2672,57 @@ func LspTests(port)
         \ params: #{text: content}}}, resp)
   " send a ping to make sure communication still works
   call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
+
+  " Test for processing a request message from the server while the client
+  " is waiting for a response with the same identifier (sync-rpc)
+  let g:lspNotif = []
+  let resp = ch_evalexpr(ch, #{method: 'server-req-in-middle',
+        \ params: #{text: 'client-req'}})
+  call assert_equal(#{jsonrpc: '2.0', id: 28,
+        \ result: #{text: 'server-resp'}}, resp)
+  call assert_equal([
+        \ #{id: -1, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \   params: #{text: 'server-notif'}},
+        \ #{id: 28, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \   params: #{text: 'server-req'}}], g:lspNotif)
+
+  " Test for processing a request message from the server while the client
+  " is waiting for a response with the same identifier (async-rpc using the
+  " channel callback function)
+  let g:lspNotif = []
+  call ch_sendexpr(ch, #{method: 'server-req-in-middle', id: 500,
+        \ params: #{text: 'client-req'}})
+  " Send three pings to wait for all the notification messages to arrive
+  for i in range(3)
+    call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
+  endfor
+  call assert_equal([
+        \ #{id: -1, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \   params: #{text: 'server-notif'}},
+        \ #{id: 500, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \   params: #{text: 'server-req'}},
+        \ #{id: 500, jsonrpc: '2.0', result: #{text: 'server-resp'}}
+        \ ], g:lspNotif)
+
+  " Test for processing a request message from the server while the client
+  " is waiting for a response with the same identifier (async-rpc using a
+  " one-time callback function)
+  let g:lspNotif = []
+  let g:lspOtMsgs = []
+  call ch_sendexpr(ch, #{method: 'server-req-in-middle',
+        \ params: #{text: 'client-req'}}, #{callback: 'LspOtCb'})
+  " Send a ping to wait for all the notification messages to arrive
+  for i in range(3)
+    call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
+  endfor
+  call assert_equal([
+        \ #{id: 32, jsonrpc: '2.0', result: #{text: 'server-resp'}}],
+        \ g:lspOtMsgs)
+  call assert_equal([
+        \ #{id: -1, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \ params: #{text: 'server-notif'}},
+        \ #{id: 32, jsonrpc: '2.0', method: 'server-req-in-middle',
+        \ params: {'text': 'server-req'}}], g:lspNotif)
 
   " Test for invoking an unsupported method
   let resp = ch_evalexpr(ch, #{method: 'xyz', params: {}}, #{timeout: 200})

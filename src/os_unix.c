@@ -35,8 +35,12 @@
 static int selinux_enabled = -1;
 #endif
 
+#ifdef FEAT_XATTR
+# include <sys/xattr.h>
+#endif
+
 #ifdef HAVE_SMACK
-# include <attr/xattr.h>
+# include <sys/xattr.h>
 # include <linux/xattr.h>
 # ifndef SMACK_LABEL_LEN
 #  define SMACK_LABEL_LEN 1024
@@ -444,7 +448,12 @@ resize_func(int check_only)
     if (check_only)
 	return do_resize;
     while (do_resize)
+    {
+#ifdef FEAT_EVAL
+	ch_log(NULL, "calling handle_resize() in resize_func()");
+#endif
 	handle_resize();
+    }
     return FALSE;
 }
 
@@ -1853,7 +1862,7 @@ ex_xrestore(exarg_T *eap)
     static int
 test_x11_window(Display *dpy)
 {
-    int			(*old_handler)();
+    int			(*old_handler)(Display*, XErrorEvent*);
     XTextProperty	text_prop;
 
     old_handler = XSetErrorHandler(x_error_check);
@@ -3038,6 +3047,11 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
     if (from_file == NULL)
 	return;
 
+    size = listxattr((char *)from_file, NULL, 0);
+    // not supported or no attributes to copy
+    if (errno == ENOTSUP || size == 0)
+	return;
+
     for (index = 0 ; index < (int)(sizeof(smack_copied_attributes)
 			      / sizeof(smack_copied_attributes)[0]) ; index++)
     {
@@ -3090,6 +3104,97 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
     }
 }
 #endif // HAVE_SMACK
+
+#ifdef FEAT_XATTR
+/*
+ * Copy extended attributes from_file to to_file
+ */
+    void
+mch_copy_xattr(char_u *from_file, char_u *to_file)
+{
+    char	*xattr_buf;
+    size_t	size;
+    size_t	tsize;
+    ssize_t	keylen, vallen, max_vallen = 0;
+    char	*key;
+    char	*val = NULL;
+    char	*errmsg = NULL;
+
+    if (from_file == NULL)
+	return;
+
+    // get the length of the extended attributes
+    size = listxattr((char *)from_file, NULL, 0);
+    // not supported or no attributes to copy
+    if (errno == ENOTSUP || size == 0)
+	return;
+    xattr_buf = (char*)alloc(size);
+    if (xattr_buf == NULL)
+	return;
+    size = listxattr((char *)from_file, xattr_buf, size);
+    tsize = size;
+
+    errno = 0;
+
+    for (int round = 0; round < 2; round++)
+    {
+
+	key = xattr_buf;
+	if (round == 1)
+	    size = tsize;
+
+	while (size > 0)
+	{
+	    vallen = getxattr((char *)from_file, key,
+		    val, round ? max_vallen : 0);
+	    // only set the attribute in the second round
+	    if (vallen >= 0 && round &&
+		setxattr((char *)to_file, key, val, vallen, 0) == 0)
+		;
+	    else if (errno)
+	    {
+		switch (errno)
+		{
+		    case E2BIG:
+			errmsg = e_xattr_e2big;
+			goto error_exit;
+		    case ENOTSUP:
+		    case EACCES:
+		    case EPERM:
+			break;
+		    case ERANGE:
+			errmsg = e_xattr_erange;
+			goto error_exit;
+		    default:
+			errmsg = e_xattr_other;
+			goto error_exit;
+		}
+	    }
+
+	    if (round == 0 && vallen > max_vallen)
+		max_vallen = vallen;
+
+	    // add one for terminating null
+	    keylen = STRLEN(key) + 1;
+	    size -= keylen;
+	    key += keylen;
+	}
+	if (round)
+	    break;
+
+	val = (char*)alloc(max_vallen + 1);
+	if (val == NULL)
+	    goto error_exit;
+
+    }
+error_exit:
+    vim_free(xattr_buf);
+    vim_free(val);
+
+    if (errmsg != NULL)
+	emsg(_(errmsg));
+}
+#endif
 
 /*
  * Return a pointer to the ACL of file "fname" in allocated memory.
@@ -4166,6 +4271,9 @@ mch_get_shellsize(void)
 	{
 	    columns = ws.ws_col;
 	    rows = ws.ws_row;
+#  ifdef FEAT_EVAL
+	    ch_log(NULL, "Got size with TIOCGWINSZ: %ld x %ld", columns, rows);
+#  endif
 	}
     }
 # else // TIOCGWINSZ
@@ -4181,6 +4289,9 @@ mch_get_shellsize(void)
 	{
 	    columns = ts.ts_cols;
 	    rows = ts.ts_lines;
+#  ifdef FEAT_EVAL
+	    ch_log(NULL, "Got size with TIOCGSIZE: %ld x %ld", columns, rows);
+#  endif
 	}
     }
 #  endif // TIOCGSIZE
@@ -4194,9 +4305,19 @@ mch_get_shellsize(void)
     if (columns == 0 || rows == 0 || vim_strchr(p_cpo, CPO_TSIZE) != NULL)
     {
 	if ((p = (char_u *)getenv("LINES")))
+	{
 	    rows = atoi((char *)p);
+#  ifdef FEAT_EVAL
+	    ch_log(NULL, "Got 'lines' from $LINES: %ld", rows);
+#  endif
+	}
 	if ((p = (char_u *)getenv("COLUMNS")))
+	{
 	    columns = atoi((char *)p);
+#  ifdef FEAT_EVAL
+	    ch_log(NULL, "Got 'columns' from $COLUMNS: %ld", columns);
+#  endif
+	}
     }
 
 #ifdef HAVE_TGETENT
@@ -4204,7 +4325,12 @@ mch_get_shellsize(void)
      * 3. try reading "co" and "li" entries from termcap
      */
     if (columns == 0 || rows == 0)
+    {
 	getlinecol(&columns, &rows);
+# ifdef FEAT_EVAL
+	ch_log(NULL, "Got size from termcap: %ld x %ld", columns, rows);
+# endif
+    }
 #endif
 
     /*
@@ -4241,16 +4367,14 @@ mch_report_winsize(int fd, int rows, int cols)
     ws.ws_xpixel = cols * 5;
     ws.ws_ypixel = rows * 10;
     retval = ioctl(tty_fd, TIOCSWINSZ, &ws);
-    ch_log(NULL, "ioctl(TIOCSWINSZ) %s",
-	    retval == 0 ? "success" : "failed");
+    ch_log(NULL, "ioctl(TIOCSWINSZ) %s", retval == 0 ? "success" : "failed");
 # elif defined(TIOCSSIZE)
     struct ttysize ts;
 
     ts.ts_cols = cols;
     ts.ts_lines = rows;
     retval = ioctl(tty_fd, TIOCSSIZE, &ts);
-    ch_log(NULL, "ioctl(TIOCSSIZE) %s",
-	    retval == 0 ? "success" : "failed");
+    ch_log(NULL, "ioctl(TIOCSSIZE) %s", retval == 0 ? "success" : "failed");
 # endif
     if (tty_fd != fd)
 	close(tty_fd);
@@ -4594,7 +4718,7 @@ mch_call_shell_terminal(
 
     // Only require pressing Enter when redrawing, to avoid that system() gets
     // the hit-enter prompt even though it didn't output anything.
-    if (!RedrawingDisabled)
+    if (RedrawingDisabled == 0)
 	wait_return(TRUE);
     do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
 
@@ -6047,7 +6171,7 @@ mch_signal_job(job_T *job, char_u *how)
     else if (STRCMP(how, "winch") == 0)
 	sig = SIGWINCH;
 #endif
-    else if (isdigit(*how))
+    else if (SAFE_isdigit(*how))
 	sig = atoi((char *)how);
     else
 	return FAIL;
@@ -6506,7 +6630,12 @@ select_eintr:
 	    // Check whether window has been resized, EINTR may be caused by
 	    // SIGWINCH.
 	    if (do_resize)
+	    {
+#  ifdef FEAT_EVAL
+		ch_log(NULL, "calling handle_resize() in RealWaitForChar()");
+#  endif
 		handle_resize();
+	    }
 
 	    // Interrupted by a signal, need to try again.  We ignore msec
 	    // here, because we do want to check even after a timeout if
@@ -6672,14 +6801,17 @@ mch_expand_wildcards(
 #define STYLE_GLOB	1	// use "glob", for csh
 #define STYLE_VIMGLOB	2	// use "vimglob", for Posix sh
 #define STYLE_PRINT	3	// use "print -N", for zsh
-#define STYLE_BT	4	// `cmd` expansion, execute the pattern
-				// directly
+#define STYLE_BT	4	// `cmd` expansion, execute the pattern directly
+#define STYLE_GLOBSTAR	5	// use extended shell glob for bash (this uses extended
+				// globbing functionality using globstar, needs bash > 4)
     int		shell_style = STYLE_ECHO;
     int		check_spaces;
     static int	did_find_nul = FALSE;
     int		ampersand = FALSE;
 		// vimglob() function to define for Posix shell
     static char *sh_vimglob_func = "vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >";
+		// vimglob() function with globstar setting enabled, only for bash >= 4.X
+    static char *sh_globstar_opt = "[[ ${BASH_VERSINFO[0]} -ge 4 ]] && shopt -s globstar; ";
 
     *num_file = 0;	// default: no files found
     *file = NULL;
@@ -6726,6 +6858,8 @@ mch_expand_wildcards(
      *	    If we use *zsh, "print -N" will work better than "glob".
      * STYLE_VIMGLOB:	NL separated
      *	    If we use *sh*, we define "vimglob()".
+     * STYLE_GLOBSTAR:	NL separated
+     *	    If we use *bash*, we define "vimglob() and enable globstar option".
      * STYLE_ECHO:	space separated.
      *	    A shell we don't know, stay safe and use "echo".
      */
@@ -6740,9 +6874,13 @@ mch_expand_wildcards(
 	else if (STRCMP(p_sh + len - 3, "zsh") == 0)
 	    shell_style = STYLE_PRINT;
     }
-    if (shell_style == STYLE_ECHO && strstr((char *)gettail(p_sh),
-								"sh") != NULL)
-	shell_style = STYLE_VIMGLOB;
+    if (shell_style == STYLE_ECHO)
+    {
+       if (strstr((char *)gettail(p_sh), "bash") != NULL)
+	    shell_style = STYLE_GLOBSTAR;
+       else if (strstr((char *)gettail(p_sh), "sh") != NULL)
+	    shell_style = STYLE_VIMGLOB;
+    }
 
     // Compute the length of the command.  We need 2 extra bytes: for the
     // optional '&' and for the NUL.
@@ -6750,6 +6888,9 @@ mch_expand_wildcards(
     len = STRLEN(tempname) + 29;
     if (shell_style == STYLE_VIMGLOB)
 	len += STRLEN(sh_vimglob_func);
+    else if (shell_style == STYLE_GLOBSTAR)
+	len += STRLEN(sh_vimglob_func)
+	     + STRLEN(sh_globstar_opt);
 
     for (i = 0; i < num_pat; ++i)
     {
@@ -6818,6 +6959,11 @@ mch_expand_wildcards(
 	    STRCAT(command, "print -N >");
 	else if (shell_style == STYLE_VIMGLOB)
 	    STRCAT(command, sh_vimglob_func);
+	else if (shell_style == STYLE_GLOBSTAR)
+	{
+	    STRCAT(command, sh_globstar_opt);
+	    STRCAT(command, sh_vimglob_func);
+	}
 	else
 	    STRCAT(command, "echo >");
     }
@@ -7002,7 +7148,9 @@ mch_expand_wildcards(
 	}
     }
     // file names are separated with NL
-    else if (shell_style == STYLE_BT || shell_style == STYLE_VIMGLOB)
+    else if (shell_style == STYLE_BT ||
+	    shell_style == STYLE_VIMGLOB ||
+	    shell_style == STYLE_GLOBSTAR)
     {
 	buffer[len] = NUL;		// make sure the buffer ends in NUL
 	p = buffer;
@@ -7083,7 +7231,7 @@ mch_expand_wildcards(
 	(*file)[i] = p;
 	// Space or NL separates
 	if (shell_style == STYLE_ECHO || shell_style == STYLE_BT
-					      || shell_style == STYLE_VIMGLOB)
+		|| shell_style == STYLE_VIMGLOB || shell_style == STYLE_GLOBSTAR)
 	{
 	    while (!(shell_style == STYLE_ECHO && *p == ' ')
 						   && *p != '\n' && *p != NUL)
@@ -7705,7 +7853,7 @@ mch_libcall(
 	    for (i = 0; signal_info[i].sig != -1; i++)
 		if (lc_signal == signal_info[i].sig)
 		    break;
-	    semsg(e_got_sig_str_in_libcall, signal_info[i].name);
+	    semsg(_(e_got_sig_str_in_libcall), signal_info[i].name);
 	}
 #  endif
 # endif
@@ -7752,9 +7900,9 @@ setup_term_clip(void)
     open_app_context();
     if (app_context != NULL && xterm_Shell == (Widget)0)
     {
-	int (*oldhandler)();
+	int (*oldhandler)(Display*, XErrorEvent*);
 # if defined(USING_SETJMP)
-	int (*oldIOhandler)();
+	int (*oldIOhandler)(Display*);
 # endif
 # ifdef ELAPSED_FUNC
 	elapsed_T start_tv;

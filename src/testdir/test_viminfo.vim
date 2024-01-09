@@ -614,6 +614,26 @@ func Test_viminfo_bad_syntax2()
   rviminfo Xviminfo
 endfunc
 
+" This used to crash Vim (GitHub issue #12652)
+func Test_viminfo_bad_syntax3()
+  let lines =<< trim END
+    call writefile([], 'Xvbs3.result')
+    qall!
+  END
+  call writefile(lines, 'Xvbs3script', 'D')
+
+  let lines = []
+  call add(lines, '|1,4')
+  " bad viminfo syntax for register barline
+  call add(lines, '|3,1,1,1,1,0,71489,,125') " empty line1
+  call writefile(lines, 'Xviminfo', 'D')
+
+  call RunVim([], [], '--clean -i Xviminfo -S Xvbs3script')
+  call assert_true(filereadable('Xvbs3.result'))
+
+  call delete('Xvbs3.result')
+endfunc
+
 func Test_viminfo_file_marks()
   silent! bwipe test_viminfo.vim
   silent! bwipe Xviminfo

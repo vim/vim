@@ -394,7 +394,7 @@ ex_menu(
 	else if (modes & MENU_TIP_MODE)
 	    map_buf = NULL;	// Menu tips are plain text.
 	else
-	    map_to = replace_termcodes(map_to, &map_buf,
+	    map_to = replace_termcodes(map_to, &map_buf, 0,
 			REPTERM_DO_LT | (special ? REPTERM_SPECIAL : 0), NULL);
 	menuarg.modes = modes;
 #ifdef FEAT_TOOLBAR

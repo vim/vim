@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 9.0.  Last change: 2022 Oct 10
+*indent.txt*    For Vim version 9.1.  Last change: 2023 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -712,29 +712,29 @@ clojure-mode.el:
 
 FORTRAN							*ft-fortran-indent*
 
-Block if, select case, where, and forall constructs are indented.  So are
-type, interface, associate, block, and enum constructs.  The indenting of
-subroutines, functions, modules, and program blocks is optional.  Comments,
-labelled statements and continuation lines are indented if the Fortran is in
-free source form, whereas they are not indented if the Fortran is in fixed
-source form because of the left margin requirements.  Hence manual indent
-corrections will be necessary for labelled statements and continuation lines
-when fixed source form is being used.  For further discussion of the method
-used for the detection of source format see |ft-fortran-syntax|.
+Block if, select case, select type, select rank,  where, forall, type,
+interface, associate, block, enum, critical, and change team constructs are
+indented. The indenting of subroutines, functions, modules, and program blocks
+is optional. Comments, labeled statements, and continuation lines are indented
+if the Fortran is in free source form, whereas they are not indented if the
+Fortran is in fixed source form because of the left margin requirements. Hence
+manual indent corrections will be necessary for labeled statements and
+continuation lines when fixed source form is being used.  For further
+discussion of the method used for the detection of source format see
+|ft-fortran-syntax|.
 
 Do loops ~
 All do loops are left unindented by default.  Do loops can be unstructured in
-Fortran with (possibly multiple) loops ending on a labelled executable
+Fortran with (possibly multiple) loops ending on a labeled executable
 statement of almost arbitrary type.  Correct indentation requires
-compiler-quality parsing.  Old code with do loops ending on labelled statements
-of arbitrary type can be indented with elaborate programs such as Tidy
-(http://www.unb.ca/chem/ajit/f_tidy.htm).  Structured do/continue loops are
-also left unindented because continue statements are also used for purposes
-other than ending a do loop.  Programs such as Tidy can convert structured
-do/continue loops to the do/enddo form.  Do loops of the do/enddo variety can
-be indented.  If you use only structured loops of the do/enddo form, you should
-declare this by setting the fortran_do_enddo variable in your .vimrc as
-follows >
+compiler-quality parsing.  Old code with do loops ending on labeled statements
+of arbitrary type can be indented with elaborate programs such as Tidy.
+Structured do/continue loops are also left unindented because continue
+statements are used for purposes other than ending a do loop.  Programs such
+as Tidy can convert structured do/continue loops to the do/enddo form.  Do
+loops of the do/enddo variety can be indented.  If you use only structured
+loops of the do/enddo form, you should declare this by setting the
+fortran_do_enddo variable in your .vimrc as follows >
 
    let fortran_do_enddo=1
 
@@ -748,15 +748,14 @@ to get do loops indented in .f90 files and left alone in Fortran files with
 other extensions such as .for.
 
 Program units ~
-The indenting of program units (subroutines, functions, modules, and program
-blocks) is enabled by default but can be suppressed if a lighter, screen-width
-preserving indent style is desired.  To suppress the indenting of program
-units for all fortran files set the global fortran_indent_less variable in
-your .vimrc as follows >
+Indenting of program units (subroutines, functions, modules, and program
+blocks) can be increased by setting the variable fortran_indent_more and can
+be decreased by setting the variable fortran_indent_less.  These variables
+can be set for all fortran files in your .vimrc as follows >
 
   let fortran_indent_less=1
 
-A finer level of suppression can be achieved by setting the corresponding
+A finer level of control can be achieved by setting the corresponding
 buffer-local variable as follows >
 
   let b:fortran_indent_less=1
@@ -1042,8 +1041,8 @@ r_indent_comment_column, as in the example below:
    let r_indent_comment_column = 30
 <
 Any code after a line that ends with "<-" is indented. Emacs/ESS does not
-indent the code if it is a top level function. If you prefer that the
-Vim-R-plugin behaves like Emacs/ESS in this regard, put in your |vimrc|:
+indent the code if it is a top-level function. If you prefer a behavior like
+Emacs/ESS one in this regard, put in your |vimrc|:
 >
    let r_indent_ess_compatible = 1
 <
@@ -1236,7 +1235,7 @@ variable.  It supports 3 keys, `line_continuation`, `more_in_bracket_block`,
 and `searchpair_timeout`.
 `line_continuation` expects a number which will be added to the indent level of
 a continuation line starting with a backslash, and defaults to
-`shiftwidth() * 3`.  It also accepts a string, which is evaluated at runtime.
+`shiftwidth() * 3` .  It also accepts a string, which is evaluated at runtime.
 `more_in_bracket_block` expects a boolean value; when on, an extra
 `shiftwidth()` is added inside blocks surrounded with brackets.  It defaults to
 `v:false`.
@@ -1244,14 +1243,14 @@ a continuation line starting with a backslash, and defaults to
 a timeout.  Increasing the value might give more accurate results, but also
 causes the indentation to take more time.  It defaults to 100 (milliseconds).
 
-Example of configuration:
+Example of configuration: >
 
 	let g:vim_indent = #{
 	    \ line_continuation: shiftwidth() * 3,
 	    \ more_in_bracket_block: v:false,
 	    \ searchpair_timeout: 100,
 	    \ }
-
+<
 							*g:vim_indent_cont*
 This variable is equivalent to `g:vim_indent.line_continuation`.
 It's supported for backward compatibility.

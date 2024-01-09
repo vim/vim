@@ -3510,7 +3510,7 @@ msgstr "riadok %4ld:"
 msgid "E354: Invalid register name: '%s'"
 msgstr "E354: '%s' nie je prístupné meno registru"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr "Správca prekladu: Lubomir Host <rajo@platon.sk>"
 
 msgid "Interrupt: "

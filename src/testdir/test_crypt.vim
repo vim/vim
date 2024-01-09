@@ -1,5 +1,6 @@
 " Tests for encryption.
 
+source shared.vim
 source check.vim
 CheckFeature cryptv
 
@@ -21,11 +22,11 @@ endif
 
 func Common_head_only(text)
   " This was crashing Vim
-  split Xtest.txt
+  split Xtest_head.txt
   call setline(1, a:text)
   wq
-  call feedkeys(":split Xtest.txt\<CR>foobar\<CR>", "tx")
-  call delete('Xtest.txt')
+  call feedkeys(":split Xtest_head.txt\<CR>foobar\<CR>", "tx")
+  call delete('Xtest_head.txt')
   call assert_match('VimCrypt', getline(1))
   bwipe!
 endfunc
@@ -48,7 +49,7 @@ func Crypt_uncrypt(method)
   " If the blowfish test fails 'cryptmethod' will be 'zip' now.
   call assert_equal(a:method, &cryptmethod)
 
-  split Xtest.txt
+  split Xtest_uncrypt.txt
   let text =<< trim END
   01234567890123456789012345678901234567,
   line 2  foo bar blah,
@@ -59,11 +60,11 @@ func Crypt_uncrypt(method)
   call assert_equal('*****', &key)
   w!
   bwipe!
-  call feedkeys(":split Xtest.txt\<CR>foobar\<CR>", 'xt')
+  call feedkeys(":split Xtest_uncrypt.txt\<CR>foobar\<CR>", 'xt')
   call assert_equal(text, getline(1, 3))
   set key= cryptmethod&
   bwipe!
-  call delete('Xtest.txt')
+  call delete('Xtest_uncrypt.txt')
 endfunc
 
 func Test_crypt_zip()
@@ -88,18 +89,41 @@ func Test_crypt_sodium_v2()
   call Crypt_uncrypt('xchacha20v2')
 endfunc
 
+func Test_crypt_sodium_v2_startup()
+  CheckFeature sodium
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('--cmd "set cm=xchacha20v2" -x Xfoo', #{wait_for_ruler: 0, rows: 6})
+  call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
+  call term_sendkeys(buf, "foo\<CR>foo\<CR>")
+  call term_sendkeys(buf, "ifoo\<Esc>")
+  call term_sendkeys(buf, "ZZ")
+  call TermWait(buf)
+
+  " Wait for Vim to write the file and exit.  Then wipe out the terminal buffer.
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+  exe buf .. 'bwipe!'
+  call assert_true(filereadable('Xfoo'))
+
+  let buf = RunVimInTerminal('--cmd "set ch=3 cm=xchacha20v2 key=foo" Xfoo', #{wait_for_ruler: 0, rows: 10})
+  call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
+  call StopVimInTerminal(buf)
+
+  call delete('Xfoo')
+endfunc
+
 func Uncrypt_stable(method, crypted_text, key, uncrypted_text)
-  split Xtest.txt
+  split Xtest_stable.txt
   set bin noeol key= fenc=latin1
   exe "set cryptmethod=" . a:method
   call setline(1, a:crypted_text)
   w!
   bwipe!
   set nobin
-  call feedkeys(":split Xtest.txt\<CR>" . a:key . "\<CR>", 'xt')
+  call feedkeys(":split Xtest_stable.txt\<CR>" . a:key . "\<CR>", 'xt')
   call assert_equal(a:uncrypted_text, getline(1, len(a:uncrypted_text)))
   bwipe!
-  call delete('Xtest.txt')
+  call delete('Xtest_stable.txt')
   set key=
 endfunc
 
@@ -108,13 +132,13 @@ func Uncrypt_stable_xxd(method, hex, key, uncrypted_text, verbose)
     throw 'Skipped: xxd program missing'
   endif
   " use xxd to write the binary content
-  call system(s:xxd_cmd .. ' -r >Xtest.txt', a:hex)
+  call system(s:xxd_cmd .. ' -r >Xtest_stable_xxd.txt', a:hex)
   let cmd = (a:verbose ? ':verbose' : '') ..
-        \ ":split Xtest.txt\<CR>" . a:key . "\<CR>"
+        \ ":split Xtest_stable_xxd.txt\<CR>" . a:key . "\<CR>"
   call feedkeys(cmd, 'xt')
   call assert_equal(a:uncrypted_text, getline(1, len(a:uncrypted_text)))
   bwipe!
-  call delete('Xtest.txt')
+  call delete('Xtest_stable_xxd.txt')
   set key=
 endfunc
 
@@ -165,7 +189,11 @@ func Test_uncrypt_xchacha20v2_custom()
   00000060: a4cf 33d2 7507 ec38 ba62 a327 9068 d8ad  ..3.u..8.b.'.h..
   00000070: 2607 3fa6 f95d 7ea8 9799 f997 4820 0c    &.?..]~.....H .
   END
-  call Uncrypt_stable_xxd('xchacha20v2', hex, "foobar", ["", "foo", "bar", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], 1)
+  try
+    call Uncrypt_stable_xxd('xchacha20v2', hex, "foobar", ["", "foo", "bar", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], 1)
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   call assert_match('xchacha20v2: using custom \w\+ "\d\+" for Key derivation.', execute(':messages'))
 endfunc
 
@@ -185,7 +213,11 @@ func Test_uncrypt_xchacha20v2()
   00000090: 2416 205a 8c4c 5fde 4dac 2611 8a48 24f0  $. Z.L_.M.&..H$.
   000000a0: ba00 92c1 60                             ....`
   END
-  call Uncrypt_stable_xxd('xchacha20v2', hex, "foo1234", ["abcdefghijklmnopqrstuvwxyzäöü", 'ZZZ_äüöÄÜÖ_!@#$%^&*()_+=-`~"'], 0)
+  try
+    call Uncrypt_stable_xxd('xchacha20v2', hex, "foo1234", ["abcdefghijklmnopqrstuvwxyzäöü", 'ZZZ_äüöÄÜÖ_!@#$%^&*()_+=-`~"'], 0)
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
 endfunc
 
 func Test_uncrypt_xchacha20_invalid()
@@ -196,6 +228,8 @@ func Test_uncrypt_xchacha20_invalid()
   try
     call feedkeys(":split samples/crypt_sodium_invalid.txt\<CR>sodium\<CR>", 'xt')
     call assert_false(1, 'should not happen')
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
   catch
     call assert_exception('pre-mature')
   endtry
@@ -221,7 +255,7 @@ func Test_uncrypt_xchacha20_2()
   call assert_match("Note: Encryption of swapfile not supported, disabling swap file", execute(':messages'))
   w!
   " encrypted using xchacha20
-  call assert_match("\[xchacha20\]", execute(':messages'))
+  call assert_match('\[xchacha20\]', execute(':messages'))
   bw!
   call feedkeys(":sp Xcrypt_sodium.txt\<CR>sodium\<CR>", 'xt')
   " successfully decrypted
@@ -248,11 +282,19 @@ func Test_uncrypt_xchacha20v2_2()
   " swapfile disabled
   call assert_equal(0, &swapfile)
   call assert_match("Note: Encryption of swapfile not supported, disabling swap file", execute(':messages'))
-  w!
+  try
+    w!
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   " encrypted using xchacha20
-  call assert_match("\[xchachav2\]", execute(':messages'))
+  call assert_match('\[xchacha20v2\]', execute(':messages'))
   bw!
-  call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
+	try
+		call feedkeys(":verbose :sp Xcrypt_sodium_v2.txt\<CR>sodium\<CR>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+  endtry
   " successfully decrypted
   call assert_equal(range(1, 4000)->map( {_, v -> string(v)}), getline(1,'$'))
   call assert_match('xchacha20v2: using default \w\+ "\d\+" for Key derivation.', execute(':messages'))
@@ -287,10 +329,18 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
     set undolevels=100
     normal dd
     set undolevels=100
-    w!
+    try
+      w!
+    catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+    endtry
     call assert_equal(0, &undofile)
     bw!
-    call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
+    try
+      call feedkeys(":sp Xcrypt_sodium_undo.txt\<CR>sodium\<CR>", 'xt')
+    catch /^Vim\%((\a\+)\)\=:E1230:/ " sodium_mlock() not possible, may happen at Github CI
+    throw 'Skipped: sodium_mlock() not possible'
+    endtry
     " should fail
     norm! u
     call assert_match('Already at oldest change', execute(':1mess'))
@@ -330,7 +380,7 @@ endfunc
 func Test_crypt_key_mismatch()
   set cryptmethod=blowfish
 
-  split Xtest.txt
+  split Xtest_mismatch.txt
   call setline(1, 'nothing')
   call feedkeys(":X\<CR>foobar\<CR>nothing\<CR>", 'xt')
   call assert_match("Keys don't match!", execute(':2messages'))
@@ -366,6 +416,49 @@ func Test_crypt_set_key_changes_buffer()
   set key=
   bwipe!
   call delete('Xtest1.txt')
+endfunc
+
+func Test_crypt_set_key_segfault()
+  CheckFeature sodium
+
+  defer delete('Xtest2.txt')
+  new Xtest2.txt
+  call setline(1, 'nothing')
+  set cryptmethod=xchacha20
+  set key=foobar
+  w
+  new Xtest3
+  put ='other content'
+  setl modified
+  sil! preserve
+  bwipe!
+
+  set cryptmethod&
+  set key=
+  bwipe!
+endfunc
+
+func Test_crypt_set_key_disallow_append_subtract()
+  new Xtest4
+
+  set key=foobar
+  call assert_true(&modified)
+  setl nomodified
+
+  call assert_fails('set key-=foo', 'E474:')
+  call assert_fails('set key-=bar', 'E474:')
+  call assert_fails('set key-=foobar', 'E474:')
+  call assert_fails('set key-=test1', 'E474:')
+
+  call assert_false(&modified)
+  call assert_equal('*****', &key)
+
+  call assert_fails('set key+=test2', 'E474:')
+  call assert_fails('set key^=test3', 'E474:')
+
+  call assert_false(&modified)
+  set key=
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

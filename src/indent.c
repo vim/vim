@@ -871,6 +871,7 @@ briopt_check(win_T *wp)
     p = wp->w_p_briopt;
     while (*p != NUL)
     {
+	// Note: Keep this in sync with p_briopt_values
 	if (STRNCMP(p, "shift:", 6) == 0
 		 && ((p[6] == '-' && VIM_ISDIGIT(p[7])) || VIM_ISDIGIT(p[6])))
 	{

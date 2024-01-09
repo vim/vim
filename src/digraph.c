@@ -853,6 +853,7 @@ static digr_T digraphdefault[] = {
 	{'1', '\'', 0x2032},
 	{'2', '\'', 0x2033},
 	{'3', '\'', 0x2034},
+	{'4', '\'', 0x2057},
 	{'1', '"', 0x2035},
 	{'2', '"', 0x2036},
 	{'3', '"', 0x2037},
@@ -2314,7 +2315,7 @@ ex_loadkeymap(exarg_T *eap)
      */
     for (;;)
     {
-	line = eap->getline(0, eap->cookie, 0, TRUE);
+	line = eap->ea_getline(0, eap->cookie, 0, TRUE);
 	if (line == NULL)
 	    break;
 

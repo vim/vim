@@ -167,13 +167,15 @@ func XlistTests(cchar)
 	      \ {'lnum':20,'col':10,'type':'e','text':'Error','nr':22},
 	      \ {'lnum':30,'col':15,'type':'i','text':'Info','nr':33},
 	      \ {'lnum':40,'col':20,'type':'x', 'text':'Other','nr':44},
-	      \ {'lnum':50,'col':25,'type':"\<C-A>",'text':'one','nr':55}])
+	      \ {'lnum':50,'col':25,'type':"\<C-A>",'text':'one','nr':55},
+	      \ {'lnum':0,'type':'e','text':'Check type field is output even when lnum==0. ("error" was not output by v9.0.0736.)','nr':66}])
   let l = split(execute('Xlist', ""), "\n")
   call assert_equal([' 1:10 col 5 warning  11: Warning',
 	      \ ' 2:20 col 10 error  22: Error',
 	      \ ' 3:30 col 15 info  33: Info',
 	      \ ' 4:40 col 20 x  44: Other',
-	      \ ' 5:50 col 25  55: one'], l)
+	      \ ' 5:50 col 25  55: one',
+              \ ' 6 error  66: Check type field is output even when lnum==0. ("error" was not output by v9.0.0736.)'], l)
 
   " Test for module names, one needs to explicitly set `'valid':v:true` so
   call g:Xsetlist([
@@ -1200,7 +1202,7 @@ func Test_efm1()
     ﻿"Xtestfile", line 6 col 19; this is an error
     gcc -c -DHAVE_CONFIsing-prototypes -I/usr/X11R6/include  version.c
     Xtestfile:9: parse error before `asd'
-    make: *** [vim] Error 1
+    make: *** [src/vim/testdir/Makefile:100: test_quickfix] Error 1
     in file "Xtestfile" linenr 10: there is an error
 
     2 returned
@@ -1806,13 +1808,23 @@ func SetXlistTests(cchar, bnum)
   call s:setup_commands(a:cchar)
 
   call g:Xsetlist([{'bufnr': a:bnum, 'lnum': 1},
-	      \  {'bufnr': a:bnum, 'lnum': 2, 'end_lnum': 3, 'col': 4, 'end_col': 5}])
+        \  {'bufnr': a:bnum, 'lnum': 2, 'end_lnum': 3, 'col': 4, 'end_col': 5, 'user_data': {'6': [7, 8]}}])
   let l = g:Xgetlist()
   call assert_equal(2, len(l))
   call assert_equal(2, l[1].lnum)
   call assert_equal(3, l[1].end_lnum)
   call assert_equal(4, l[1].col)
   call assert_equal(5, l[1].end_col)
+  call assert_equal({'6': [7, 8]}, l[1].user_data)
+
+  " Test that user_data is garbage collected
+  call g:Xsetlist([{'user_data': ['high', 5]},
+        \  {'user_data': {'this': [7, 'eight'], 'is': ['a', 'dictionary']}}])
+  call test_garbagecollect_now()
+  let l = g:Xgetlist()
+  call assert_equal(2, len(l))
+  call assert_equal(['high', 5], l[0].user_data)
+  call assert_equal({'this': [7, 'eight'], 'is': ['a', 'dictionary']}, l[1].user_data)
 
   Xnext
   call g:Xsetlist([{'bufnr': a:bnum, 'lnum': 3}], 'a')
@@ -6404,5 +6416,84 @@ func Test_setqflist_cb_arg()
   call setqflist([], 'f')
 endfunc
 
+" Test that setqflist() should not prevent :stopinsert from working
+func Test_setqflist_stopinsert()
+  new
+  call setqflist([], 'f')
+  copen
+  cclose
+  func StopInsert()
+    stopinsert
+    call setqflist([{'text': 'foo'}])
+    return ''
+  endfunc
+
+  call setline(1, 'abc')
+  call cursor(1, 1)
+  call feedkeys("i\<C-R>=StopInsert()\<CR>$", 'tnix')
+  call assert_equal('foo', getqflist()[0].text)
+  call assert_equal([0, 1, 3, 0, v:maxcol], getcurpos())
+  call assert_equal(['abc'], getline(1, '$'))
+
+  delfunc StopInsert
+  call setqflist([], 'f')
+  bwipe!
+endfunc
+
+func Test_quickfix_buffer_contents()
+  call setqflist([{'filename':'filename', 'pattern':'pattern', 'text':'text'}])
+  copen
+  call assert_equal(['filename|pattern| text'], getline(1, '$'))  " The assert failed with Vim v9.0.0736; '| text' did not appear after the pattern.
+  call setqflist([], 'f')
+endfunc
+
+" Test for "%b" in "errorformat"
+func Test_efm_format_b()
+  call setqflist([], 'f')
+  new
+  call setline(1, ['1: abc', '1: def', '1: ghi'])
+  let b1 = bufnr()
+  new
+  call setline(1, ['2: abc', '2: def', '2: ghi'])
+  let b2 = bufnr()
+  new
+  call setline(1, ['3: abc', '3: def', '3: ghi'])
+  let b3 = bufnr()
+  new
+  let lines =<< trim eval END
+    {b1}:1:1
+    {b2}:2:2
+    {b3}:3:3
+  END
+  call setqflist([], ' ', #{lines: lines, efm: '%b:%l:%c'})
+  cfirst
+  call assert_equal([b1, 1, 1], [bufnr(), line('.'), col('.')])
+  cnext
+  call assert_equal([b2, 2, 2], [bufnr(), line('.'), col('.')])
+  cnext
+  call assert_equal([b3, 3, 3], [bufnr(), line('.'), col('.')])
+  enew!
+
+  " Use a non-existing buffer
+  let lines =<< trim eval END
+    9991:1:1:m1
+    9992:2:2:m2
+    {b3}:3:3:m3
+  END
+  call setqflist([], ' ', #{lines: lines, efm: '%b:%l:%c:%m'})
+  cfirst | cnext
+  call assert_equal([b3, 3, 3], [bufnr(), line('.'), col('.')])
+  " Lines with non-existing buffer numbers should be used as non-error lines
+  call assert_equal([
+    \ #{lnum: 0, bufnr: 0, end_lnum: 0, pattern: '', valid: 0, vcol: 0, nr: -1,
+    \   module: '', type: '', end_col: 0, col: 0, text: '9991:1:1:m1'},
+    \ #{lnum: 0, bufnr: 0, end_lnum: 0, pattern: '', valid: 0, vcol: 0, nr: -1,
+    \   module: '', type: '', end_col: 0, col: 0, text: '9992:2:2:m2'},
+    \ #{lnum: 3, bufnr: b3, end_lnum: 0, pattern: '', valid: 1, vcol: 0,
+    \   nr: -1, module: '', type: '', end_col: 0, col: 3, text: 'm3'}],
+    \ getqflist())
+  %bw!
+  call setqflist([], 'f')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

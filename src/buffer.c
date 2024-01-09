@@ -218,6 +218,10 @@ open_buffer(
 	return FAIL;
     }
 
+    // Do not sync this buffer yet, may first want to read the file.
+    if (curbuf->b_ml.ml_mfp != NULL)
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES_NOSYNC;
+
     // The autocommands in readfile() may change the buffer, but only AFTER
     // reading the file.
     set_bufref(&old_curbuf, curbuf);
@@ -297,6 +301,11 @@ open_buffer(
 	if (retval == OK)
 	    retval = read_buffer(TRUE, eap, flags);
     }
+
+    // Can now sync this buffer in ml_sync_all().
+    if (curbuf->b_ml.ml_mfp != NULL
+	    && curbuf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES_NOSYNC)
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES;
 
     // if first time loading this buffer, init b_chartab[]
     if (curbuf->b_flags & BF_NEVERLOADED)
@@ -493,7 +502,7 @@ can_unload_buffer(buf_T *buf)
  * It can be:
  * 0			buffer becomes hidden
  * DOBUF_UNLOAD		buffer is unloaded
- * DOBUF_DELETE		buffer is unloaded and removed from buffer list
+ * DOBUF_DEL		buffer is unloaded and removed from buffer list
  * DOBUF_WIPE		buffer is unloaded and really deleted
  * DOBUF_WIPE_REUSE	idem, and add to buf_reuse list
  * When doing all but the first one on the current buffer, the caller should
@@ -2506,11 +2515,10 @@ buflist_getfile(
     }
 
     ++RedrawingDisabled;
+    int retval = FAIL;
     if (GETFILE_SUCCESS(getfile(buf->b_fnum, NULL, NULL,
 				     (options & GETF_SETMARK), lnum, forceit)))
     {
-	--RedrawingDisabled;
-
 	// cursor is at to BOL and w_cursor.lnum is checked due to getfile()
 	if (!p_sol && col != 0)
 	{
@@ -2519,10 +2527,12 @@ buflist_getfile(
 	    curwin->w_cursor.coladd = 0;
 	    curwin->w_set_curswant = TRUE;
 	}
-	return OK;
+	retval = OK;
     }
-    --RedrawingDisabled;
-    return FAIL;
+
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
+    return retval;
 }
 
 /*
@@ -4012,7 +4022,7 @@ maketitle(void)
 					buf + off, SPACE_FOR_DIR - off, TRUE);
 #ifdef BACKSLASH_IN_FILENAME
 		// avoid "c:/name" to be reduced to "c"
-		if (isalpha(buf[off]) && buf[off + 1] == ':')
+		if (SAFE_isalpha(buf[off]) && buf[off + 1] == ':')
 		    off += 2;
 #endif
 		// remove the file name
@@ -5098,14 +5108,6 @@ build_stl_str_hl(
 	    STRMOVE(s + 1, p);
 	    *s = '<';
 
-	    // Fill up for half a double-wide character.
-	    while (++width < maxwidth)
-	    {
-		s = s + STRLEN(s);
-		MB_CHAR2BYTES(fillchar, s);
-		*s = NUL;
-	    }
-
 	    --n;	// count the '<'
 	    for (; l < itemcnt; l++)
 	    {
@@ -5113,6 +5115,14 @@ build_stl_str_hl(
 		    stl_items[l].stl_start -= n;
 		else
 		    stl_items[l].stl_start = s;
+	    }
+
+	    // Fill up for half a double-wide character.
+	    while (++width < maxwidth)
+	    {
+		s = s + STRLEN(s);
+		MB_CHAR2BYTES(fillchar, s);
+		*s = NUL;
 	    }
 	}
 	width = maxwidth;
@@ -5277,24 +5287,21 @@ append_arg_number(
     int		buflen,
     int		add_file)	// Add "file" before the arg number
 {
-    char_u	*p;
-
     if (ARGCOUNT <= 1)		// nothing to do
 	return FALSE;
 
-    p = buf + STRLEN(buf);	// go to the end of the buffer
-    if (p - buf + 35 >= buflen)	// getting too long
-	return FALSE;
-    *p++ = ' ';
-    *p++ = '(';
-    if (add_file)
+    char *msg;
+    switch ((wp->w_arg_idx_invalid ? 1 : 0) + (add_file ? 2 : 0))
     {
-	STRCPY(p, "file ");
-	p += 5;
+	case 0: msg = _(" (%d of %d)"); break;
+	case 1: msg = _(" ((%d) of %d)"); break;
+	case 2: msg = _(" (file %d of %d)"); break;
+	case 3: msg = _(" (file (%d) of %d)"); break;
     }
-    vim_snprintf((char *)p, (size_t)(buflen - (p - buf)),
-		wp->w_arg_idx_invalid ? "(%d) of %d)"
-				  : "%d of %d)", wp->w_arg_idx + 1, ARGCOUNT);
+
+    char_u *p = buf + STRLEN(buf);	// go to the end of the buffer
+    vim_snprintf((char *)p, (size_t)(buflen - (p - buf)), msg,
+						  wp->w_arg_idx + 1, ARGCOUNT);
     return TRUE;
 }
 
@@ -5664,7 +5671,7 @@ chk_modeline(
 			&& (s[0] != 'V'
 				  || STRNCMP(skipwhite(e + 1), "set", 3) == 0)
 			&& (s[3] == ':'
-			    || (VIM_VERSION_100 >= vers && isdigit(s[3]))
+			    || (VIM_VERSION_100 >= vers && SAFE_isdigit(s[3]))
 			    || (VIM_VERSION_100 < vers && s[3] == '<')
 			    || (VIM_VERSION_100 > vers && s[3] == '>')
 			    || (VIM_VERSION_100 == vers && s[3] == '=')))
@@ -5770,7 +5777,7 @@ bt_normal(buf_T *buf)
 bt_quickfix(buf_T *buf UNUSED)
 {
 #ifdef FEAT_QUICKFIX
-    return buf != NULL && buf->b_p_bt[0] == 'q';
+    return buf != NULL && buf_valid(buf) && buf->b_p_bt[0] == 'q';
 #else
     return FALSE;
 #endif
@@ -6006,6 +6013,9 @@ buf_contents_changed(buf_T *buf)
 	return TRUE;
     }
 
+    // We don't want to trigger autocommands now, they may have nasty
+    // side-effects like wiping buffers
+    block_autocmds();
     if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,
 				  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
@@ -6030,6 +6040,8 @@ buf_contents_changed(buf_T *buf)
 
     if (curbuf != newbuf)	// safety check
 	wipe_buffer(newbuf, FALSE);
+
+    unblock_autocmds();
 
     return differ;
 }

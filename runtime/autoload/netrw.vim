@@ -400,7 +400,7 @@ if !exists("g:netrw_localcopycmd")
   if g:netrw_cygwin
    let g:netrw_localcopycmd= "cp"
   else
-   let g:netrw_localcopycmd   = expand("$COMSPEC")
+   let g:netrw_localcopycmd   = expand("$COMSPEC", v:true)
    let g:netrw_localcopycmdopt= " /c copy"
   endif
  elseif has("unix") || has("macunix")
@@ -415,7 +415,7 @@ if !exists("g:netrw_localcopydircmd")
    let g:netrw_localcopydircmd   = "cp"
    let g:netrw_localcopydircmdopt= " -R"
   else
-   let g:netrw_localcopydircmd   = expand("$COMSPEC")
+   let g:netrw_localcopydircmd   = expand("$COMSPEC", v:true)
    let g:netrw_localcopydircmdopt= " /c xcopy /e /c /h /i /k"
   endif
  elseif has("unix")
@@ -436,7 +436,7 @@ if has("win32") || has("win95") || has("win64") || has("win16")
   if g:netrw_cygwin
    call s:NetrwInit("g:netrw_localmkdir","mkdir")
   else
-   let g:netrw_localmkdir   = expand("$COMSPEC")
+   let g:netrw_localmkdir   = expand("$COMSPEC", v:true)
    let g:netrw_localmkdiropt= " /c mkdir"
   endif
 else
@@ -452,7 +452,7 @@ if !exists("g:netrw_localmovecmd")
   if g:netrw_cygwin
    let g:netrw_localmovecmd= "mv"
   else
-   let g:netrw_localmovecmd   = expand("$COMSPEC")
+   let g:netrw_localmovecmd   = expand("$COMSPEC", v:true)
    let g:netrw_localmovecmdopt= " /c move"
   endif
  elseif has("unix") || has("macunix")
@@ -1166,7 +1166,6 @@ fun! netrw#Explore(indx,dosplit,style,...)
    2match none
    if exists("s:explore_match")  | unlet s:explore_match  | endif
    if exists("s:explore_prvdir") | unlet s:explore_prvdir | endif
-   echo " "
 "   call Decho("cleared explore match list",'~'.expand("<slnum>"))
   endif
 
@@ -1961,7 +1960,7 @@ endfun
 "                        Doing this means that netrw will not come up as having changed a
 "                        setting last when it really didn't actually change it.
 "
-"                        Used by s:NetrwOptionsRestore() to restore each netrw-senstive setting
+"                        Used by s:NetrwOptionsRestore() to restore each netrw-sensitive setting
 "                        keepvars are set up by s:NetrwOptionsSave
 fun! s:NetrwRestoreSetting(keepvar,setting)
 """  call Dfunc("s:NetrwRestoreSetting(a:keepvar<".a:keepvar."> a:setting<".a:setting.">)")
@@ -2998,7 +2997,7 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
    " to process this detection correctly.
 "   call Decho("detect filetype of local version of remote file<".rfile.">",'~'.expand("<slnum>"))
 "   call Decho("..did_filetype()=".did_filetype())
-   setl ft=
+"   setl ft=
 "   call Decho("..initial filetype<".&ft."> for buf#".bufnr()."<".bufname().">")
    let iskkeep= &isk
    setl isk-=/
@@ -3516,6 +3515,11 @@ fun! s:NetrwBookHistHandler(chg,curdir)
     echo "bookmarked the current directory"
    endif
 
+   try
+    call s:NetrwBookHistSave()
+   catch
+   endtry
+
   elseif a:chg == 1
    " change to the bookmarked directory
 "   call Decho("(user: <".v:count."gb>) change to the bookmarked directory",'~'.expand("<slnum>"))
@@ -3660,6 +3664,11 @@ fun! s:NetrwBookHistHandler(chg,curdir)
 "    call Decho("g:netrw_bookmarklist=".string(g:netrw_bookmarklist),'~'.expand("<slnum>"))
    endif
 "   call Decho("resulting g:netrw_bookmarklist=".string(g:netrw_bookmarklist),'~'.expand("<slnum>"))
+
+   try
+    call s:NetrwBookHistSave()
+   catch
+   endtry
   endif
   call s:NetrwBookmarkMenu()
   call s:NetrwTgtMenu()
@@ -5303,7 +5312,8 @@ fun! s:NetrwBrowseUpDir(islocal)
    endif
    call s:RestorePosn(s:netrw_posn)
    let curdir= substitute(curdir,'^.*[\/]','','')
-   call search('\<'.curdir.'/','wc')
+   let curdir= '\<'. escape(curdir, '~'). '/'
+   call search(curdir,'wc')
   endif
 "  call Dret("s:NetrwBrowseUpDir")
 endfun
@@ -5552,7 +5562,7 @@ fun! netrw#BrowseX(fname,remote)
   " cleanup: remove temporary file,
   "          delete current buffer if success with handler,
   "          return to prior buffer (directory listing)
-  "          Feb 12, 2008: had to de-activiate removal of
+  "          Feb 12, 2008: had to de-activate removal of
   "          temporary file because it wasn't getting seen.
 "  if remote == 1 && fname != a:fname
 ""   call Decho("deleting temporary file<".fname.">",'~'.expand("<slnum>"))
@@ -5720,8 +5730,6 @@ fun! s:NetrwClearExplore()
   if exists("w:netrw_explore_list")   |unlet w:netrw_explore_list   |endif
   if exists("w:netrw_explore_bufnr")  |unlet w:netrw_explore_bufnr  |endif
 "   redraw!
-  echo " "
-  echo " "
 "  call Dret("s:NetrwClearExplore")
 endfun
 
@@ -7382,8 +7390,7 @@ fun! s:NetrwMarkFileDiff(islocal)
      exe "NetrwKeepj e ".fnameescape(fname)
      diffthis
     elseif cnt == 2 || cnt == 3
-     vsplit
-     wincmd l
+     below vsplit
 "     call Decho("diffthis: ".fname,'~'.expand("<slnum>"))
      exe "NetrwKeepj e ".fnameescape(fname)
      diffthis
@@ -10371,7 +10378,7 @@ fun! s:NetrwRemoteListing()
    let w:netrw_bannercnt= s:bannercnt
   endif
   if !exists("w:netrw_bannercnt") && exists("b:bannercnt")
-   let w:netrw_bannercnt= s:bannercnt
+   let w:netrw_bannercnt= b:bannercnt
   endif
 
   call s:RemotePathAnalysis(b:netrw_curdir)
@@ -10953,6 +10960,10 @@ fun! s:LocalBrowseRefresh()
 "   call Dret("s:LocalBrowseRefresh : don't refresh when focus not on netrw window")
    return
   endif
+  if !empty(getcmdwintype())
+    " cannot move away from cmdline window, see :h E11
+    return
+  endif
   if exists("s:netrw_events") && s:netrw_events == 1
    " s:LocalFastBrowser gets called (indirectly) from a
    let s:netrw_events= 2
@@ -11208,9 +11219,6 @@ fun! s:LocalListing()
 "    call Decho("implementing g:netrw_sort_by=".g:netrw_sort_by." (size)")
 "    call Decho("getfsize(".filename.")=".getfsize(filename),'~'.expand("<slnum>"))
     let sz   = getfsize(filename)
-    if g:netrw_sizestyle =~# "[hH]"
-     let sz= s:NetrwHumanReadable(sz)
-    endif
     let fsz  = printf("%018d",sz)
 "    call Decho("exe NetrwKeepj put ='".fsz.'/'.filename."'",'~'.expand("<slnum>"))
     let fszpfile= fsz.'/'.pfile
@@ -11267,6 +11275,10 @@ endfun
 " s:NetrwLocalRename: rename a local file or directory {{{2
 fun! s:NetrwLocalRename(path) range
 "  call Dfunc("NetrwLocalRename(path<".a:path.">)")
+
+  if !exists("w:netrw_bannercnt")
+   let w:netrw_bannercnt= b:netrw_bannercnt
+  endif
 
   " preparation for removing multiple files/directories
   let ykeep     = @@
@@ -11368,6 +11380,10 @@ endfun
 fun! s:NetrwLocalRm(path) range
 "  call Dfunc("s:NetrwLocalRm(path<".a:path.">)")
 "  call Decho("firstline=".a:firstline." lastline=".a:lastline,'~'.expand("<slnum>"))
+
+  if !exists("w:netrw_bannercnt")
+   let w:netrw_bannercnt= b:netrw_bannercnt
+  endif
 
   " preparation for removing multiple files/directories
   let ykeep = @@
@@ -12044,9 +12060,9 @@ fun! s:NetrwBufRemover(bufid)
 "  call Decho("buf#".a:bufid." has name <".bufname(a:bufid).">","~".expand("<slnum>"))
 "  call Decho("buf#".a:bufid." has winid#".bufwinid(a:bufid),"~".expand("<slnum>"))
 
-  if a:bufid > 1 && !buflisted(a:bufid) && bufname(a:bufid) == "" && bufwinid(a:bufid) == -1
+  if a:bufid > 1 && !buflisted(a:bufid) && bufloaded(a:bufid) && bufname(a:bufid) == "" && bufwinid(a:bufid) == -1
 "   call Decho("(s:NetrwBufRemover) removing buffer#".a:bufid,"~".expand("<slnum>"))
-   exe "bd! ".a:bufid
+   exe "sil! bd! ".a:bufid
   endif
 
 "  call Dret("s:NetrwBufRemover")

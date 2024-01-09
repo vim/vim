@@ -215,11 +215,14 @@ The following package groups are required for building Vim:
 * base-devel
 * mingw-w64-i686-toolchain (for building 32-bit Vim)
 * mingw-w64-x86_64-toolchain (for building 64-bit Vim)
+* git (optional, to clone the repository)
+* pactoys (optional for the pacboy command)
 
 (These groups also include some useful packages which are not used by Vim.)
 Use the following command to install them:
 
-    $ pacman -S base-devel mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain
+    $ pacman -S base-devel mingw-w64-i686-toolchain \
+      mingw-w64-x86_64-toolchain pactoys git
 
 Or you can use the `pacboy` command to avoid long package names:
 

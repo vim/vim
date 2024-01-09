@@ -5,15 +5,11 @@ env:
 freebsd_task:
   name: FreeBSD
   matrix:
-    - name: FreeBSD 13.1
+    - name: FreeBSD 14.0
       freebsd_instance:
-        image_family: freebsd-13-1
-    - name: FreeBSD 12.4
-      freebsd_instance:
-        image_family: freebsd-12-4
+        image_family: freebsd-14-0
   timeout_in: 20m
   install_script:
-    - pkg update -f
     - pkg install -y gettext
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
@@ -25,22 +21,3 @@ freebsd_task:
     - pw useradd cirrus -m
     - chown -R cirrus:cirrus .
     - sudo -u cirrus make test
-
-macos_task:
-  name: macOS m1
-  macos_instance:
-    image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
-  env:
-    # only run with clang, gcc is not real, it is a link to clang
-    CC: clang
-  timeout_in: 20m
-  install_script:
-    - brew update
-    - brew install gettext libtool diffutils
-  build_script:
-    - NPROC=$(getconf _NPROCESSORS_ONLN)
-    - ./configure --with-features=${FEATURES}
-    - make -j${NPROC}
-  test_script:
-    - src/vim --version
-    - make test

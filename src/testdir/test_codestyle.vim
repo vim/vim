@@ -1,45 +1,49 @@
 " Test for checking the source code style.
 
+def s:ReportError(fname: string, lnum: number, msg: string)
+  if lnum > 0
+    assert_report(fname .. ' line ' .. lnum .. ': ' .. msg)
+  endif
+enddef
+
+def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
+  var lnum = 1
+  while (lnum > 0)
+    cursor(lnum, 1)
+    lnum = search(pattern, 'W', 0, 0, skip)
+    ReportError(fname, lnum, msg)
+    if (lnum > 0)
+      lnum += 1
+    endif
+  endwhile
+enddef
+
 def Test_source_files()
-  for fname in glob('../*.[ch]', 0, 1)
+  for fname in glob('../*.[ch]', 0, 1) + ['../xxd/xxd.c']
+    bwipe!
+    g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
 
-    cursor(1, 1)
-    var lnum = search(' \t')
-    assert_equal(0, lnum, fname .. ': space before tab')
+    PerformCheck(fname, ' \t', 'space before Tab', '')
 
-    cursor(1, 1)
-    lnum = search('\s$')
-    assert_equal(0, lnum, fname .. ': trailing white space')
+    PerformCheck(fname, '\s$', 'trailing white space', '')
 
     # some files don't stick to the Vim style rules
     if fname =~ 'iscygpty.c'
       continue
     endif
 
-    # Examples in comments use "condition) {", skip them.
-    # Skip if a double quote or digit comes after the "{".
-    # Skip specific string used in os_unix.c.
-    # Also skip fold markers.
     var skip = 'getline(".") =~ "condition) {" || getline(".") =~ "vimglob_func" || getline(".") =~ "{\"" || getline(".") =~ "{\\d" || getline(".") =~ "{{{"'
-    cursor(1, 1)
-    lnum = search(')\s*{', '', 0, 0, skip)
-    assert_equal(0, lnum, fname .. ': curly after closing paren')
+    PerformCheck(fname, ')\s*{', 'curly after closing paren', skip)
 
-    cursor(1, 1)
     # Examples in comments use double quotes.
     skip = "getline('.') =~ '\"'"
-    # Avoid examples that contain: "} else
-    lnum = search('[^"]}\s*else', '', 0, 0, skip)
-    assert_equal(0, lnum, fname .. ': curly before "else"')
 
-    cursor(1, 1)
-    lnum = search('else\s*{', '', 0, 0, skip)
-    assert_equal(0, lnum, fname .. ': curly after "else"')
+    PerformCheck(fname, '}\s*else', 'curly before "else"', skip)
 
-    cursor(1, 1)
-    lnum = search('\<\(if\|while\|for\)(', '', 0, 0, skip)
-    assert_equal(0, lnum, fname .. ': missing white space after "if"/"while"/"for"')
+    PerformCheck(fname, 'else\s*{', 'curly after "else"', skip)
+
+    PerformCheck(fname, '\<\(if\|while\|for\)(', 'missing white space after "if"/"while"/"for"', skip)
   endfor
 
   bwipe!
@@ -47,6 +51,7 @@ enddef
 
 def Test_test_files()
   for fname in glob('*.vim', 0, 1)
+    g:ignoreSwapExists = 'e'
     exe 'edit ' .. fname
 
     # some files intentionally have misplaced white space
@@ -60,7 +65,7 @@ def Test_test_files()
         && fname !~ 'test_visual.vim'
       cursor(1, 1)
       var lnum = search(fname =~ "test_regexp_latin" ? '[^á] \t' : ' \t')
-      assert_equal(0, lnum, 'testdir/' .. fname .. ': space before tab')
+      ReportError('testdir/' .. fname, lnum, 'space before Tab')
     endif
 
     # skip files that are known to have trailing white space
@@ -75,7 +80,7 @@ def Test_test_files()
           : fname =~ 'test_vim9_script.vim' ? '[^,:3]\s$'
           : fname =~ 'test_visual.vim' ? '[^/]\s$'
           : '[^\\]\s$')
-      assert_equal(0, lnum, 'testdir/' .. fname .. ': trailing white space')
+      ReportError('testdir/' .. fname, lnum, 'trailing white space')
     endif
   endfor
 
@@ -87,6 +92,7 @@ def Test_help_files()
   set nowrapscan
 
   for fpath in glob('../../runtime/doc/*.txt', 0, 1)
+    g:ignoreSwapExists = 'e'
     exe 'edit ' .. fpath
 
     var fname = fnamemodify(fpath, ":t")
@@ -105,7 +111,7 @@ def Test_help_files()
         || fname == 'usr_27.txt' && getline(lnum) =~ "\[^\? \t\]"
         continue
       endif
-      assert_equal(0, lnum, fpath .. ': space before tab')
+      ReportError(fpath, lnum, 'space before tab')
       if lnum == 0
         break
       endif
@@ -122,18 +128,17 @@ def Test_help_files()
         || fname == 'change.txt' && getline(lnum) =~ "foobar bla $"
         continue
       endif
-      assert_equal(0, lnum, fpath .. ': trailing white space')
+      ReportError('testdir' .. fpath, lnum, 'trailing white space')
       if lnum == 0
         break
       endif
     endwhile
 
-    # TODO: Do check and fix help files
-#    # Check over 80 columns
+#    # TODO: Check for line over 80 columns
 #    cursor(1, 1)
 #    while 1
 #      lnum = search('\%>80v.*$')
-#      assert_equal(0, lnum, fpath .. ': line over 80 columns')
+#      ReportError(fpath, lnum, 'line over 80 columns')
 #      if lnum == 0
 #        break
 #      endif

@@ -3,6 +3,7 @@ int vim_main2(void);
 void common_init(mparm_T *paramp);
 int is_not_a_term(void);
 int is_not_a_term_or_gui(void);
+void free_vbuf(void);
 char_u *get_gui_dialog_file(void);
 int op_pending(void);
 void may_trigger_safestate(int safe);

@@ -39,6 +39,10 @@
 char *fmt_012p = "%012p";
 char *fmt_5S   = "%5S";
 char *fmt_06b  = "%06b";
+char *fmt_06pb = "%1$0.*2$b";
+char *fmt_06pb2 = "%2$0*1$b";
+char *fmt_212s = "%2$s %1$s %2$s";
+char *fmt_21s  = "%2$s %1$s";
 
 /*
  * Test trunc_string().
@@ -181,6 +185,11 @@ test_vim_snprintf(void)
 	// buffer and its content should then never be used.
 	char *buf = malloc(bsize);
 
+	n = vim_snprintf(buf, bsize, "%.8g", 10000000.1);
+	assert(n == 12);
+	assert(bsize == 0 || STRNCMP(buf, "1.00000001e7", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
 	n = vim_snprintf(buf, bsize, "%d", 1234567);
 	assert(n == 7);
 	assert(bsize == 0 || STRNCMP(buf, "1234567", bsize_int) == 0);
@@ -209,6 +218,11 @@ test_vim_snprintf(void)
 	n = vim_snprintf(buf, bsize, fmt_06b, (uvarnumber_T)12);
 	assert(n == 6);
 	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%s %s", "one", "two");
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "one two", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
 	n = vim_snprintf(buf, bsize, "%f", 1.234);
@@ -304,6 +318,190 @@ test_vim_snprintf(void)
     }
 }
 
+/*
+ * Test vim_snprintf() with a focus on checking that positional
+ * arguments are correctly applied and skipped
+ */
+    static void
+test_vim_snprintf_positional(void)
+{
+    int		n;
+    size_t	bsize;
+    int		bsize_int;
+
+    // Loop on various buffer sizes to make sure that truncation of
+    // vim_snprintf() is correct.
+    for (bsize = 0; bsize < 25; ++bsize)
+    {
+	bsize_int = (int)bsize - 1;
+
+	// buf is the heap rather than in the stack
+	// so valgrind can detect buffer overflows if any.
+	// Use malloc() rather than alloc() as test checks with 0-size
+	// buffer and its content should then never be used.
+	char *buf = malloc(bsize);
+
+	n = vim_snprintf(buf, bsize, "%1$*2$ld", 1234567L, -9);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "1234567  ", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$*2$.*3$ld", 1234567L, -9, 5);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "1234567  ", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$*3$.*2$ld", 1234567L, 5, -9);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "1234567  ", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%3$*1$.*2$ld", -9, 5, 1234567L);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "1234567  ", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$ld", 1234567L);
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "1234567", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$*2$ld", 1234567L, 9);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "  1234567", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$ld %1$d %3$lu", 12345, 9L, 7654321UL);
+	assert(n == 15);
+	assert(bsize == 0 || STRNCMP(buf, "9 12345 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$d %1$ld %3$lu", 1234567L, 9, 7654321UL);
+	assert(n == 17);
+	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$d %1$lld %3$lu", 1234567LL, 9, 7654321UL);
+	assert(n == 17);
+	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$ld %1$u %3$lu", 12345U, 9L, 7654321UL);
+	assert(n == 15);
+	assert(bsize == 0 || STRNCMP(buf, "9 12345 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$d %1$lu %3$lu", 1234567UL, 9, 7654321UL);
+	assert(n == 17);
+	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$d %1$llu %3$lu", 1234567LLU, 9, 7654321UL);
+	assert(n == 17);
+	assert(bsize == 0 || STRNCMP(buf, "9 1234567 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$d %1$x %3$lu", 0xdeadbeef, 9, 7654321UL);
+	assert(n == 18);
+	assert(bsize == 0 || STRNCMP(buf, "9 deadbeef 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$ld %1$c %3$lu", 'c', 9L, 7654321UL);
+	assert(n == 11);
+	assert(bsize == 0 || STRNCMP(buf, "9 c 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$ld %1$s %3$lu", "hi", 9L, 7654321UL);
+	assert(n == 12);
+	assert(bsize == 0 || STRNCMP(buf, "9 hi 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%2$ld %1$e %3$lu", 0.0, 9L, 7654321UL);
+	assert(n == 22);
+	assert(bsize == 0 || STRNCMP(buf, "9 0.000000e+00 7654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_212s, "one", "two", "three");
+	assert(n == 11);
+	assert(bsize == 0 || STRNCMP(buf, "two one two", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%3$s %1$s %2$s", "one", "two", "three");
+	assert(n == 13);
+	assert(bsize == 0 || STRNCMP(buf, "three one two", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$d", 1234567);
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "1234567", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$x", 0xdeadbeef);
+	assert(n == 8);
+	assert(bsize == 0 || STRNCMP(buf, "deadbeef", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_06pb2, 6, (uvarnumber_T)12);
+	assert(n == 6);
+	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_06pb, (uvarnumber_T)12, 6);
+	assert(n == 6);
+	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$s %2$s", "one", "two");
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "one two", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_06b, (uvarnumber_T)12);
+	assert(n == 6);
+	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_21s, "one", "two", "three");
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "two one", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+#ifdef FEAT_FLOAT
+	n = vim_snprintf(buf, bsize, "%1$f", 1.234);
+	assert(n == 8);
+	assert(bsize == 0 || STRNCMP(buf, "1.234000", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$e", 1.234);
+	assert(n == 12);
+	assert(bsize == 0 || STRNCMP(buf, "1.234000e+00", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$f", 0.0/0.0);
+	assert(n == 3);
+	assert(bsize == 0 || STRNCMP(buf, "nan", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$f", 1.0/0.0);
+	assert(n == 3);
+	assert(bsize == 0 || STRNCMP(buf, "inf", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$f", -1.0/0.0);
+	assert(n == 4);
+	assert(bsize == 0 || STRNCMP(buf, "-inf", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%1$f", -0.0);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "-0.000000", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+#endif
+
+	free(buf);
+    }
+}
+
     int
 main(int argc, char **argv)
 {
@@ -317,11 +515,13 @@ main(int argc, char **argv)
     test_trunc_string();
     test_trunc_string_mbyte();
     test_vim_snprintf();
+    test_vim_snprintf_positional();
 
     set_option_value_give_err((char_u *)"encoding", 0, (char_u *)"latin1", 0);
     init_chartab();
     test_trunc_string();
     test_vim_snprintf();
+    test_vim_snprintf_positional();
 
     return 0;
 }

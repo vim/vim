@@ -214,7 +214,7 @@ add_buff(
     }
     else if (buf->bh_curr == NULL)	// buffer has already been read
     {
-	iemsg(_(e_add_to_internal_buffer_that_was_already_read_from));
+	iemsg(e_add_to_internal_buffer_that_was_already_read_from);
 	return;
     }
     else if (buf->bh_index != 0)
@@ -870,7 +870,7 @@ start_redo(long count, int old_redo)
 	{
 	    c = read_redo(FALSE, old_redo);
 	    add_char_buff(&readbuf2, c);
-	    if (!isdigit(c))
+	    if (!SAFE_isdigit(c))
 		break;
 	}
 	c = read_redo(FALSE, old_redo);
@@ -1339,6 +1339,16 @@ gotchars(char_u *chars, int len)
 }
 
 /*
+ * Record a <Nop> key.
+ */
+    void
+gotchars_nop(void)
+{
+    char_u nop_buf[3] = { K_SPECIAL, KS_EXTRA, KE_NOP };
+    gotchars(nop_buf, 3);
+}
+
+/*
  * Undo the last gotchars() for "len" bytes.  To be used when putting a typed
  * character back into the typeahead buffer, thus gotchars() will be called
  * again.
@@ -1645,8 +1655,8 @@ updatescript(int c)
 }
 
 /*
- * Convert "c" plus "modifiers" to merge the effect of modifyOtherKeys into the
- * character.  Also for when the Kitty key protocol is used.
+ * Convert "c_arg" plus "modifiers" to merge the effect of modifyOtherKeys into
+ * the character.  Also for when the Kitty key protocol is used.
  */
     int
 merge_modifyOtherKeys(int c_arg, int *modifiers)
@@ -1863,7 +1873,7 @@ vgetc(void)
 
 		    // Handle <SID>{sid};  Do up to 20 digits for safety.
 		    last_used_sid = 0;
-		    for (j = 0; j < 20 && isdigit(c = vgetorpeek(TRUE)); ++j)
+		    for (j = 0; j < 20 && SAFE_isdigit(c = vgetorpeek(TRUE)); ++j)
 			last_used_sid = last_used_sid * 10 + (c - '0');
 		    last_used_map = NULL;
 		    continue;
@@ -2480,14 +2490,14 @@ check_simplify_modifier(int max_offset)
 		{
 		    if (put_string_in_typebuf(offset, 4, new_string, len,
 							NULL, 0, NULL) == FAIL)
-		    return -1;
+			return -1;
 		}
 		else
 		{
 		    tp[2] = modifier;
 		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
 							NULL, 0, NULL) == FAIL)
-		    return -1;
+			return -1;
 		}
 		return len;
 	    }
@@ -2501,7 +2511,7 @@ check_simplify_modifier(int max_offset)
  * modifyOtherKeys level 2 is enabled or the kitty keyboard protocol is
  * enabled.
  */
-    static int
+    int
 key_protocol_enabled(void)
 {
     // If xterm has responded to XTQMODKEYS it overrules seenModifyOtherKeys.
@@ -2798,9 +2808,9 @@ handle_mapping(
 	if (no_mapping == 0 || allow_keys != 0)
 	{
 	    if ((typebuf.tb_maplen == 0
-		    || (p_remap && typebuf.tb_noremap[
+			    || (p_remap && typebuf.tb_noremap[
 						    typebuf.tb_off] == RM_YES))
-		&& !*timedout)
+		    && !*timedout)
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else
 		keylen = 0;
@@ -3282,7 +3292,7 @@ vgetorpeek(int advance)
  * get a character: 2. from the typeahead buffer
  */
 			c = typebuf.tb_buf[typebuf.tb_off];
-			if (advance)	// remove chars from tb_buf
+			if (advance)	// remove chars from typebuf
 			{
 			    cmd_silent = (typebuf.tb_silent > 0);
 			    if (typebuf.tb_maplen > 0)
@@ -3294,8 +3304,7 @@ vgetorpeek(int advance)
 				gotchars(typebuf.tb_buf
 						 + typebuf.tb_off, 1);
 			    }
-			    KeyNoremap = typebuf.tb_noremap[
-						      typebuf.tb_off];
+			    KeyNoremap = typebuf.tb_noremap[typebuf.tb_off];
 			    del_typebuf(1, 0);
 			}
 			break;  // got character, break the for loop
@@ -3657,14 +3666,9 @@ vgetorpeek(int advance)
 #endif
     if (timedout && c == ESC)
     {
-	char_u nop_buf[3];
-
 	// When recording there will be no timeout.  Add a <Nop> after the ESC
 	// to avoid that it forms a key code with following characters.
-	nop_buf[0] = K_SPECIAL;
-	nop_buf[1] = KS_EXTRA;
-	nop_buf[2] = KE_NOP;
-	gotchars(nop_buf, 3);
+	gotchars_nop();
     }
 
     --vgetc_busy;

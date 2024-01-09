@@ -3121,8 +3121,10 @@ update_window_manager_hints(int force_width, int force_height)
 			       |GDK_HINT_MIN_SIZE;
 	// Using gui.formwin as geometry widget doesn't work as expected
 	// with GTK+ 2 -- dunno why.  Presumably all the resizing hacks
-	// in Vim confuse GTK+.
-	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.mainwin,
+	// in Vim confuse GTK+.  For GTK 3 the second argument should be NULL
+	// to make the width/height inc works, despite the docs saying
+	// something else.
+	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), NULL,
 				      &geometry, geometry_mask);
 	old_width       = width;
 	old_height      = height;
@@ -4000,8 +4002,8 @@ gui_mch_init(void)
     }
 
     // Real windows can get focus ... GtkPlug, being a mere container can't,
-    // only its widgets.  Arguably, this could be common code and we not use
-    // the window focus at all, but let's be safe.
+    // only its widgets.  Arguably, this could be common code and we do not
+    // use the window focus at all, but let's be safe.
     if (gtk_socket_id == 0)
     {
 	g_signal_connect(G_OBJECT(gui.mainwin), "focus-out-event",
@@ -4843,7 +4845,11 @@ is_cjk_font(PangoFontDescription *font_desc)
 	{
 	    uc = (cjk_langs[i][0] == 'k') ? 0xAC00 : 0x4E00;
 	    is_cjk = (pango_coverage_get(coverage, uc) == PANGO_COVERAGE_EXACT);
+#if PANGO_VERSION_CHECK(1, 52, 0)
+	    g_object_unref(coverage);
+#else
 	    pango_coverage_unref(coverage);
+#endif
 	}
     }
 
@@ -5042,7 +5048,8 @@ get_styled_font_variants(void)
     }
 
     pango_font_description_free(bold_font_desc);
-    g_object_unref(plain_font);
+    if (bold_font != NULL && gui.font_can_bold)
+	g_object_unref(plain_font);
 }
 
 static PangoEngineShape *default_shape_engine = NULL;
@@ -5307,6 +5314,62 @@ gui_mch_free_font(GuiFont font)
 {
     if (font != NOFONT)
 	pango_font_description_free(font);
+}
+
+/*
+ * Cmdline expansion for setting 'guifont' / 'guifontwide'. Will enumerate
+ * through all fonts for completion. When setting 'guifont' it will only show
+ * monospace fonts as it's unlikely other fonts would be useful.
+ */
+    void
+gui_mch_expand_font(optexpand_T *args, void *param, int (*add_match)(char_u *val))
+{
+    PangoFontFamily	**font_families = NULL;
+    int			n_families = 0;
+    int			wide = *(int *)param;
+
+    if (args->oe_include_orig_val && *args->oe_opt_value == NUL && !wide)
+    {
+	// If guifont is empty, and we want to fill in the orig value, suggest
+	// the default so the user can modify it.
+	if (add_match((char_u *)DEFAULT_FONT) != OK)
+	    return;
+    }
+
+    pango_context_list_families(
+	    gui.text_context,
+	    &font_families,
+	    &n_families);
+
+    for (int i = 0; i < n_families; i++)
+    {
+	if (!wide && !pango_font_family_is_monospace(font_families[i]))
+	    continue;
+
+	const char* fam_name = pango_font_family_get_name(font_families[i]);
+	if (input_conv.vc_type != CONV_NONE)
+	{
+	    char_u *buf = string_convert(&input_conv, (char_u*)fam_name, NULL);
+	    if (buf != NULL)
+	    {
+		if (add_match(buf) != OK)
+		{
+		    vim_free(buf);
+		    break;
+		}
+		vim_free(buf);
+	    }
+	    else
+		break;
+	}
+	else
+	{
+	    if (add_match((char_u *)fam_name) != OK)
+		break;
+	}
+    }
+
+    g_free(font_families);
 }
 
 /*

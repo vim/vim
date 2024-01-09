@@ -1015,6 +1015,15 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		clear_tv(&tvkey);
 	    goto failret;
 	}
+	if (check_typval_is_value(&tv) == FAIL)
+	{
+	    if (evaluate)
+	    {
+		clear_tv(&tvkey);
+		clear_tv(&tv);
+	    }
+	    goto failret;
+	}
 	if (evaluate)
 	{
 	    item = dict_find(d, key, -1);
@@ -1497,7 +1506,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 
     d = argvars[0].vval.v_dict;
     if (d == NULL)
-	// empty dict behaves like an empty dict
+	// NULL dict behaves like an empty dict
 	return;
 
     todo = (int)d->dv_hashtab.ht_used;

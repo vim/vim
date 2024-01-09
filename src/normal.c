@@ -543,27 +543,37 @@ normal_cmd_get_more_chars(
 	    }
 	}
 
-	// When getting a text character and the next character is a
-	// multi-byte character, it could be a composing character.
-	// However, don't wait for it to arrive. Also, do enable mapping,
-	// because if it's put back with vungetc() it's too late to apply
-	// mapping.
-	--no_mapping;
-	while (enc_utf8 && lang && (c = vpeekc()) > 0
-		&& (c >= 0x100 || MB_BYTE2LEN(vpeekc()) > 1))
+	if (enc_utf8 && lang)
 	{
-	    c = plain_vgetc();
-	    if (!utf_iscomposing(c))
+	    // When getting a text character and the next character is a
+	    // multi-byte character, it could be a composing character.
+	    // However, don't wait for it to arrive. Also, do enable mapping,
+	    // because if it's put back with vungetc() it's too late to apply
+	    // mapping.
+	    --no_mapping;
+	    while ((c = vpeekc()) > 0
+		    && (c >= 0x100 || MB_BYTE2LEN(vpeekc()) > 1))
 	    {
-		vungetc(c);		// it wasn't, put it back
-		break;
+		c = plain_vgetc();
+		if (!utf_iscomposing(c))
+		{
+		    vungetc(c);		// it wasn't, put it back
+		    break;
+		}
+		else if (cap->ncharC1 == 0)
+		    cap->ncharC1 = c;
+		else
+		    cap->ncharC2 = c;
 	    }
-	    else if (cap->ncharC1 == 0)
-		cap->ncharC1 = c;
-	    else
-		cap->ncharC2 = c;
+	    ++no_mapping;
+	    // Vim may be in a different mode when the user types the next key,
+	    // but when replaying a recording the next key is already in the
+	    // typeahead buffer, so record a <Nop> before that to prevent the
+	    // vpeekc() above from applying wrong mappings when replaying.
+	    ++no_u_sync;
+	    gotchars_nop();
+	    --no_u_sync;
 	}
-	++no_mapping;
     }
     --no_mapping;
     --allow_keys;
@@ -2296,7 +2306,7 @@ find_decl(
     static int
 nv_screengo(oparg_T *oap, int dir, long dist)
 {
-    int		linelen = linetabsize_str(ml_get_curline());
+    int		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
     int		retval = OK;
     int		atend = FALSE;
     int		n;
@@ -2359,12 +2369,14 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    else
 	    {
 		// to previous line
-		if (!cursor_up_inner(curwin, 1))
+		if (curwin->w_cursor.lnum <= 1)
 		{
 		    retval = FAIL;
 		    break;
 		}
-		linelen = linetabsize_str(ml_get_curline());
+		cursor_up_inner(curwin, 1);
+
+		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2386,19 +2398,22 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    else
 	    {
 		// to next line
-		if (!cursor_down_inner(curwin, 1))
+		if (curwin->w_cursor.lnum
+				       >= curwin->w_buffer->b_ml.ml_line_count)
 		{
 		    retval = FAIL;
 		    break;
 		}
+		cursor_down_inner(curwin, 1);
 		curwin->w_curswant %= width2;
+
 		// Check if the cursor has moved below the number display
 		// when width1 < width2 (with cpoptions+=n). Subtract width2
 		// to get a negative value for w_curswant, which will get
 		// clipped to column 0.
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
-		linelen = linetabsize_str(ml_get_curline());
+		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
 	    }
 	}
       }
@@ -2547,7 +2562,13 @@ nv_z_get_count(cmdarg_T *cap, int *nchar_arg)
 	if (nchar == K_DEL || nchar == K_KDEL)
 	    n /= 10;
 	else if (VIM_ISDIGIT(nchar))
-	    n = n * 10 + (nchar - '0');
+	{
+	    if (vim_append_digit_long(&n, nchar - '0') == FAIL)
+	    {
+		clearopbeep(cap->oap);
+		break;
+	    }
+	}
 	else if (nchar == CAR)
 	{
 #ifdef FEAT_GUI
@@ -4449,11 +4470,11 @@ nv_brackets(cmdarg_T *cap)
 		return;
 
 	    find_pattern_in_path(ptr, 0, len, TRUE,
-		cap->count0 == 0 ? !isupper(cap->nchar) : FALSE,
+		cap->count0 == 0 ? !SAFE_isupper(cap->nchar) : FALSE,
 		((cap->nchar & 0xf) == ('d' & 0xf)) ?  FIND_DEFINE : FIND_ANY,
 		cap->count1,
-		isupper(cap->nchar) ? ACTION_SHOW_ALL :
-			    islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
+		SAFE_isupper(cap->nchar) ? ACTION_SHOW_ALL :
+			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
 		(linenr_T)MAXLNUM);
 	    vim_free(ptr);
@@ -4762,7 +4783,7 @@ nv_replace(cmdarg_T *cap)
 #endif
 
     // get another character
-    if (cap->nchar == Ctrl_V)
+    if (cap->nchar == Ctrl_V || cap->nchar == Ctrl_Q)
     {
 	had_ctrl_v = Ctrl_V;
 	cap->nchar = get_literal(FALSE);
@@ -4784,7 +4805,7 @@ nv_replace(cmdarg_T *cap)
     if (VIsual_active)
     {
 	if (got_int)
-	    reset_VIsual();
+	    got_int = FALSE;
 	if (had_ctrl_v)
 	{
 	    // Use a special (negative) number to make a difference between a
@@ -5046,7 +5067,8 @@ nv_vreplace(cmdarg_T *cap)
 	emsg(_(e_cannot_make_changes_modifiable_is_off));
     else
     {
-	if (cap->extra_char == Ctrl_V)	// get another character
+	if (cap->extra_char == Ctrl_V || cap->extra_char == Ctrl_Q)
+	    // get another character
 	    cap->extra_char = get_literal(FALSE);
 	if (cap->extra_char < ' ')
 	    // Prefix a control character with CTRL-V to avoid it being used as
@@ -5195,7 +5217,7 @@ v_visop(cmdarg_T *cap)
 
     // Uppercase means linewise, except in block mode, then "D" deletes till
     // the end of the line, and "C" replaces till EOL
-    if (isupper(cap->cmdchar))
+    if (SAFE_isupper(cap->cmdchar))
     {
 	if (VIsual_mode != Ctrl_V)
 	{
@@ -5807,6 +5829,10 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     oparg_T	*oap = cap->oap;
     int		i;
     int		col_off = curwin_col_off();
+    int		flag = FALSE;
+
+    if (cap->nchar == K_END || cap->nchar == K_KEND)
+	flag = TRUE;
 
     oap->motion_type = MCHAR;
     oap->inclusive = TRUE;
@@ -5871,6 +5897,13 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 
 	// Make sure we stick in this column.
 	update_curswant_force();
+    }
+    if (flag)
+    {
+	do
+	    i = gchar_cursor();
+	while (VIM_ISWHITE(i) && oneleft() == OK);
+	curwin->w_valid &= ~VALID_WCOL;
     }
 }
 
@@ -6027,7 +6060,7 @@ nv_g_cmd(cmdarg_T *cap)
 	{
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-	    i = linetabsize_str(ml_get_curline());
+	    i = linetabsize(curwin, curwin->w_cursor.lnum);
 	    if (cap->count0 > 0 && cap->count0 <= 100)
 		coladvance((colnr_T)(i * cap->count0 / 100));
 	    else
@@ -6265,6 +6298,8 @@ n_opencmd(cmdarg_T *cap)
 	(void)hasFolding(curwin->w_cursor.lnum,
 		NULL, &curwin->w_cursor.lnum);
 #endif
+    // trigger TextChangedI for the 'o/O' command
+    curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
     if (u_save((linenr_T)(curwin->w_cursor.lnum -
 		    (cap->cmdchar == 'O' ? 1 : 0)),
 		(linenr_T)(curwin->w_cursor.lnum +
@@ -7056,6 +7091,10 @@ invoke_edit(
     // Always reset "restart_edit", this is not a restarted edit.
     restart_edit = 0;
 
+    // Reset Changedtick_i, so that TextChangedI will only be triggered for stuff
+    // from insert mode, for 'o/O' this has already been done in n_opencmd
+    if (cap->cmdchar != 'O' && cap->cmdchar != 'o')
+	curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
     if (edit(cmd, startln, cap->count1))
 	cap->retval |= CA_COMMAND_BUSY;
 

@@ -93,6 +93,65 @@ func FillBuffer()
   endfor
 endfunc
 
+func Test_undotree_bufnr()
+  new
+  let buf1 = bufnr()
+
+  normal! Aabc
+  set ul=100
+
+  " Save undo tree without bufnr as ground truth for buffer 1
+  let d1 = undotree()
+
+  new
+  let buf2 = bufnr()
+
+  normal! Adef
+  set ul=100
+
+  normal! Aghi
+  set ul=100
+
+  " Save undo tree without bufnr as ground truth for buffer 2
+  let d2 = undotree()
+
+  " Check undotree() with bufnr argument
+  let d = undotree(buf1)
+  call assert_equal(d1, d)
+  call assert_notequal(d2, d)
+
+  let d = undotree(buf2)
+  call assert_notequal(d1, d)
+  call assert_equal(d2, d)
+
+  " Switch buffers and check again
+  wincmd p
+
+  let d = undotree(buf1)
+  call assert_equal(d1, d)
+
+  let d = undotree(buf2)
+  call assert_notequal(d1, d)
+  call assert_equal(d2, d)
+
+  " error cases
+  call assert_fails('call undotree(-1)', 'E158:')
+  call assert_fails('call undotree("nosuchbuf")', 'E158:')
+
+  " after creating a buffer nosuchbuf, undotree('nosuchbuf') should
+  " not error out
+  new nosuchbuf
+  let d = {'seq_last': 0, 'entries': [], 'time_cur': 0, 'save_last': 0, 'synced': 1, 'save_cur': 0, 'seq_cur': 0}
+  call assert_equal(d, undotree("nosuchbuf"))
+  " clean up
+  bw nosuchbuf
+
+  " Drop created windows
+  set ul&
+  new
+  only!
+endfunc
+
 func Test_global_local_undolevels()
   new one
   set undolevels=5
@@ -801,7 +860,18 @@ func Test_undo_after_write()
 
   call StopVimInTerminal(buf)
   call delete('Xtestfile.txt')
+  call delete('.Xtestfile.txt.un~')
 endfunc
 
+func Test_undo_range_normal()
+  new
+  call setline(1, ['asa', 'bsb'])
+  let &l:undolevels = &l:undolevels
+  %normal dfs
+  call assert_equal(['a', 'b'], getline(1, '$'))
+  undo
+  call assert_equal(['asa', 'bsb'], getline(1, '$'))
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

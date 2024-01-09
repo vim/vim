@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2023 Mar 07
+*vim9.txt*	For Vim version 9.1.  Last change: 2023 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -117,6 +117,9 @@ script and `:def` functions; details are below:
 - Unless mentioned specifically, the highest |scriptversion| is used.
 - When defining an expression mapping, the expression will be evaluated in the
   context of the script where it was defined.
+- When indexing a string the index is counted in characters, not bytes:
+  |vim9-string-index|
+- Some possibly unexpected differences: |vim9-gotchas|.
 
 
 Comments starting with # ~
@@ -190,8 +193,8 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 used for the command or the error was caught a `:try` block), does not get a
 range passed, cannot be a "dict" function, and can always be a closure.
 						*vim9-no-dict-function*
-Later classes will be added, which replaces the "dict function" mechanism.
-For now you will need to pass the dictionary explicitly: >
+You can use a Vim9 Class (|Vim9-class|) instead of a "dict function".
+You can also pass the dictionary explicitly: >
 	def DictFunc(self: dict<any>, arg: string)
 	   echo self[arg]
 	enddef
@@ -1022,18 +1025,21 @@ always converted to string: >
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
 			*false* *true* *null* *null_blob* *null_channel*
-			*null_dict* *null_function* *null_job* *null_list*
-			*null_partial* *null_string* *E1034*
+			*null_class* *null_dict* *null_function* *null_job*
+			*null_list* *null_object* *null_partial* *null_string*
+			*E1034*
 In Vim9 script one can use the following predefined values: >
 	true
 	false
 	null
 	null_blob
 	null_channel
+	null_class
 	null_dict
 	null_function
 	null_job
 	null_list
+	null_object
 	null_partial
 	null_string
 `true` is the same as `v:true`, `false` the same as `v:false`, `null` the same
@@ -1049,18 +1055,21 @@ variable, since they cannot be deleted with `:unlet`.  E.g.: >
 
 The values can also be useful as the default value for an argument: >
 	def MyFunc(b: blob = null_blob)
-	   if b == null_blob
-	      # b argument was not given
+	    # Note: compare against null, not null_blob,
+	    #       to distinguish the default value from an empty blob.
+	    if b == null
+	        # b argument was not given
+See |null-compare| for more information about testing against null.
 
 It is possible to compare `null`  with any value, this will not give a type
 error.  However, comparing `null` with a number, float or bool will always
 result in `false`.  This is different from legacy script, where comparing
 `null` with zero or `false` would return `true`.
-
+							*vim9-false-true*
 When converting a boolean to a string `false` and `true` are used, not
 `v:false` and `v:true` like in legacy script.  `v:none` has no `none`
 replacement, it has no equivalent in other languages.
-
+							*vim9-string-index*
 Indexing a string with [idx] or taking a slice with [idx : idx] uses character
 indexes instead of byte indexes.  Composing characters are included.
 Example: >
@@ -1463,7 +1472,7 @@ return value) results in error *E1031*  *E1186* .
 There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating a lot of small pieces
 of memory.
-							*E1005* *E1007*
+				    *vim9-func-declaration* *E1005* *E1007*
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
 				checking for arguments or return value
@@ -1482,13 +1491,14 @@ func({type})			function with argument type, does not return
 func({type}): {type}		function with argument type and return type
 func(?{type})			function with type of optional argument, does
 				not return a value
-func(...{type})			function with type of variable number of
-				arguments, does not return a value
-func({type}, ?{type}, ...{type}): {type}
+func(...list<{type}>)		function with type of list for variable number
+				of arguments, does not return a value
+func({type}, ?{type}, ...list<{type}>): {type}
 				function with:
 				- type of mandatory argument
 				- type of optional argument
-				- type of variable number of arguments
+				- type of list for variable number of
+				  arguments
 				- return type
 
 If the return type is "void" the function does not return a value.
@@ -1552,7 +1562,7 @@ string to a number.
 
 If a type is given where it is not expected you can get *E1272* .
 
-If a type is incomplete you get *E1363*, e.g. when you have an object for
+If a type is incomplete you get *E1363* , e.g. when you have an object for
 which the class is not known (usually that is a null object).
 
 Type inference ~
@@ -1664,12 +1674,181 @@ Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.  Since |flatten()| is intended to always change the
 type, it can not be used in Vim9 script.
 
+Assigning to a funcref with specified arguments (see |vim9-func-declaration|)
+does strict type checking of the arguments. For variable number of arguments
+the type must match: >
+	var FuncRef: func(string, number, bool): number
+	FuncRef = (v1: string, v2: number, v3: bool) => 777	# OK
+	FuncRef = (v1: string, v2: number, v3: number) => 777	# Error!
+	# variable number of arguments must have same type
+	var FuncVA: func(...list<string>): number
+	FuncVA = (...v: list<number>): number => v  # Error!
+	FuncVA = (...v: list<any>): number => v	    # OK, `any` runtime check
+	FuncVA = (v1: string, v: string2): number => 333     # Error!
+	FuncVA = (v: list<string>): number => 3	    # Error!
+
+If the destination funcref has no specified arguments, then there is no
+argument type checking: >
+	var FuncUnknownArgs: func: number
+	FuncUnknownArgs = (v): number => v			# OK
+	FuncUnknownArgs = (v1: string, v2: string): number => 3	# OK
+	FuncUnknownArgs = (...v1: list<string>): number => 333	# OK
+<
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1256*
 			 *E1297* *E1298* *E1301*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
+
+Categories of variables, defaults and null handling ~
+				*variable-categories* *null-variables*
+There are categories of variables:
+	primitive	number, float, boolean
+	container	string, blob, list, dict
+	specialized	function, job, channel, user-defined-object
+
+When declaring a variable without an initializer, an explicit type must be
+provided. Each category has different default initialization semantics. Here's
+an example for each category: >
+	var num: number		# primitives default to a 0 equivalent
+	var cont: list<string>	# containers default to an empty container
+	var spec: job		# specialized variables default to null
+<
+Vim does not have a familiar null value; it has various null_<type> predefined
+values, for example |null_string|, |null_list|, |null_job|. Primitives do not
+have a null_<type>. The typical use cases for null_<type> are:
+- to `clear a variable` and release its resources;
+- as a `default for a parameter` in a function definition, see |null-compare|.
+
+For a specialized variable, like `job`, null_<type> is used to clear the
+resources. For a container variable, resources can also be cleared by
+assigning an empty container to the variable. For example: >
+	var j: job = job_start(...)
+	# ... job does its work
+	j = null_job	# clear the variable and release the job's resources
+
+	var l: list<any>
+	# ... add lots of stuff to list
+	l = []  # clear the variable and release container resources
+Using the empty container, rather than null_<type>, to clear a container
+variable may avoid null complications as described in |null-anomalies|.
+
+The initialization semantics of container variables and specialized variables
+differ. An uninitialized container defaults to an empty container: >
+	var l1: list<string>		    # empty container
+	var l2: list<string> = []	    # empty container
+	var l3: list<string> = null_list    # null container
+"l1" and "l2" are equivalent and indistinguishable initializations; but "l3"
+is a null container. A null container is similar to, but different from, an
+empty container, see |null-anomalies|.
+
+Specialized variables default to null. These job initializations are
+equivalent and indistinguishable: >
+	var j1: job
+	var j2: job = null_job
+	var j3 = null_job
+
+When a list or dict is declared, if the item type is not specified and can not
+be inferred, then the type is "any": >
+	var d1 = {}		# type is "dict<any>"
+	var d2 = null_dict	# type is "dict<any>"
+
+Declaring a function, see |vim9-func-declaration|, is particularly unique.
+
+						*null-compare*
+For familiar null compare semantics, where a null container is not equal to
+an empty container, do not use null_<type> in a comparison: >
+	vim9script
+	def F(arg: list<string> = null_list)
+	    if arg == null
+	       echo "null"
+	    else
+		echo printf("not null, %sempty", empty(arg) ? '' : 'not ')
+	    endif
+	enddef
+	F()		# output: "null"
+	F(null_list)	# output: "null"
+	F([])		# output: "not null, empty"
+	F([''])		# output: "not null, not empty"
+The above function takes a `list of strings` and reports on it.
+Change the above function signature to accept different types of arguments: >
+	def F(arg: list<any> = null_list)   # any type of list
+	def F(arg: any = null)		    # any type
+<
+In the above example, where the goal is to distinguish a null list from an
+empty list, comparing against `null` instead of `null_list` is the correct
+choice. The basic reason is because "null_list == null" and "[] != null".
+Comparing to `null_list` fails since "[] == null_list". In the following section
+there are details about comparison results.
+
+					*null-details* *null-anomalies*
+This section describes issues about using null and null_<type>; included below
+are the enumerated results of null comparisons. In some cases, if familiar
+with vim9 null semantics, the programmer may chose to use null_<type> in
+comparisons and/or other situations.
+
+Elsewhere in the documentation it says:
+	Quite often a null value is handled the same as an
+	empty value, but not always
+Here's an example: >
+	vim9script
+	var s1: list<string>
+	var s2: list<string> = null_list
+	echo s1		    # output: "[]"
+	echo s2		    # output: "[]"
+	
+	echo s1 + ['a']     # output: "['a']"
+	echo s2 + ['a']     # output: "['a']"
+	
+	echo s1->add('a')   # output: "['a']"
+	echo s2->add('a')   # E1130: Can not add to null list
+<
+Two values equal to a null_<type> are not necessarily equal to each other: >
+	vim9script
+	echo {} == null_dict      # true
+	echo null_dict == null    # true
+	echo {} == null           # false
+<
+Unlike the other containers, an uninitialized string is equal to null. The
+'is' operator can be used to determine if it is a null_string: >
+	vim9script
+	var s1: string
+	var s2 = null_string
+	echo s1 == null		# true - this is unexpected
+	echo s2 == null		# true
+	echo s2 is null_string	# true
+
+	var b1: blob
+	var b2 = null_blob
+	echo b1 == null		# false
+	echo b2 == null		# true
+<
+Any variable initialized to the null_<type> is equal to the null_<type> and is
+also equal to null. For example: >
+	vim9script
+	var x = null_blob
+	echo x == null_blob	# true
+	echo x == null		# true
+<
+An uninitialized variable is usually equal to null; it depends on its type:
+	var s: string		s == null
+	var b: blob		b != null   ***
+	var l: list<any>	l != null   ***
+	var d: dict<any>	d != null   ***
+	var f: func		f == null
+	var j: job		j == null
+	var c: channel		c == null
+	var o: Class		o == null
+
+A variable initialized to empty equals null_<type>; but not null:
+	var s2: string = ""	  == null_string	!= null
+	var b2: blob = 0z	  == null_blob		!= null
+	var l2: list<any> = []	  == null_list		!= null
+	var d2: dict<any> = {}	  == null_dict		!= null
+
+NOTE: the specialized variables, like job, default to null value and have no
+corresponding empty value.
 
 ==============================================================================
 
@@ -1751,7 +1930,7 @@ Exporting an item can be written as: >
 	export interface MyClass ...
 <							*E1043* *E1044*
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported. {not implemented yet: class, interface}
+be exported.
 
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
@@ -1784,7 +1963,7 @@ filename.  For example: >
 Then you can use "that.item", etc.  You are free to choose the name "that".
 Use something that will be recognized as referring to the imported script.
 Avoid command names, command modifiers and builtin function names, because the
-name will shadow them.  Better not start the name starts with a capital
+name will shadow them.  It's better not to start the name with a capital
 letter, since it can then also shadow global user commands and functions.
 Also, you cannot use the name for something else in the script, such as a
 function or variable name.
@@ -1857,9 +2036,9 @@ However, the namespace cannot be resolved on its own: >
 <
 This also affects the use of |<SID>| in the legacy mapping context.  Since
 |<SID>| is only a valid prefix for a function and NOT for a namespace, you
-cannot use it
-to scope a function in a script local namespace. Instead of prefixing the
-function with |<SID>| you should use|<ScriptCmd>|. For example: >
+cannot use it to scope a function in a script local namespace. Instead of
+prefixing the function with |<SID>| you should use|<ScriptCmd>|. For example:
+>
 	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
 <
 							*:import-cycle*

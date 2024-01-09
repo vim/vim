@@ -48,8 +48,8 @@
  *
  * ATTENTION:
  * ==========
- *	Also we use an allocated search context here, this functions are NOT
- *	thread-safe!!!!!
+ *	Also we use an allocated search context here, these functions are NOT
+ *	thread-safe!
  *
  *	To minimize parameter passing (or because I'm to lazy), only the
  *	external visible functions get a search context as a parameter. This is
@@ -1847,7 +1847,7 @@ grab_file_name(long count, linenr_T *file_lnum)
 	if (get_visual_text(NULL, &ptr, &len) == FAIL)
 	    return NULL;
 	// Only recognize ":123" here
-	if (file_lnum != NULL && ptr[len] == ':' && isdigit(ptr[len + 1]))
+	if (file_lnum != NULL && ptr[len] == ':' && SAFE_isdigit(ptr[len + 1]))
 	{
 	    char_u *p = ptr + len + 1;
 
@@ -1981,10 +1981,10 @@ file_name_in_line(
 	    p = skipwhite(p);
 	if (*p != NUL)
 	{
-	    if (!isdigit(*p))
+	    if (!SAFE_isdigit(*p))
 		++p;		    // skip the separator
 	    p = skipwhite(p);
-	    if (isdigit(*p))
+	    if (SAFE_isdigit(*p))
 		*file_lnum = (int)getdigits(&p);
 	}
     }

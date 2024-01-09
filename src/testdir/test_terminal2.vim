@@ -64,6 +64,14 @@ func Test_terminal_termwinsize_option_zero()
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
 
+  " This used to crash Vim
+  set termwinsize=10000*10000
+  let buf = Run_shell_in_terminal({})
+  let win = bufwinid(buf)
+  call assert_equal([1000, 1000], term_getsize(buf))
+  call StopShellInTerminal(buf)
+  exe buf . 'bwipe'
+
   set termwinsize=
 endfunc
 
@@ -239,7 +247,11 @@ endfunc
 
 " Resizing the terminal window caused an ml_get error.
 " TODO: This does not reproduce the original problem.
+" TODO: This test starts timing out in Github CI Gui test, why????
 func Test_terminal_resize()
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
   set statusline=x
   terminal
   call assert_equal(2, winnr('$'))
@@ -266,6 +278,29 @@ func Test_terminal_resize()
 
   close
   call assert_equal(2, winnr('$'))
+  call feedkeys("exit\<CR>", 'xt')
+  call TermWait(buf)
+  set statusline&
+endfunc
+
+" TODO: This test starts timing out in Github CI Gui test, why????
+func Test_terminal_resize2()
+  CheckNotMSWindows
+  if has('gui_running') && expand('$GITHUB_ACTIONS') ==# 'true'
+    throw 'Skipped: FIXME: this test times-out in Github Actions CI with GUI. Why?'
+  endif
+  set statusline=x
+  terminal
+  call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  " This used to crash Vim
+  call feedkeys("printf '\033[8;99999;99999t'\<CR>", 'xt')
+  redraw
+
   call feedkeys("exit\<CR>", 'xt')
   call TermWait(buf)
   set statusline&

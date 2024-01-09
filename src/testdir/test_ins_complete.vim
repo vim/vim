@@ -818,7 +818,7 @@ func Test_complete_add_onechar()
   setlocal complete=.
   call setline(1, ['workhorse', 'workload'])
   normal Go
-  exe "normal aWOR\<C-P>\<bs>\<bs>\<bs>\<bs>\<bs>\<bs>\<C-L>r\<C-L>\<C-L>"
+  exe "normal aWOR\<C-P>\<bs>\<bs>\<bs>\<bs>\<bs>\<bs>\<C-L>\<C-L>\<C-L>"
   call assert_equal('workh', getline(3))
   set ignorecase& backspace&
   close!
@@ -2243,5 +2243,120 @@ func Test_ins_complete_popup_position()
   call StopVimInTerminal(buf)
 endfunc
 
+func GetCompleteInfo()
+  let g:compl_info = complete_info()
+  return ''
+endfunc
+
+func Test_completion_restart()
+  new
+  set complete=. completeopt=menuone backspace=2
+  call setline(1, 'workhorse workhorse')
+  exe "normal $a\<C-N>\<BS>\<BS>\<C-R>=GetCompleteInfo()\<CR>"
+  call assert_equal(1, len(g:compl_info['items']))
+  call assert_equal('workhorse', g:compl_info['items'][0]['word'])
+  set complete& completeopt& backspace&
+  bwipe!
+endfunc
+
+func Test_complete_info_index()
+  new
+  call setline(1, ["aaa", "bbb", "ccc", "ddd", "eee", "fff"])
+  inoremap <buffer><F5> <C-R>=GetCompleteInfo()<CR>
+
+  " Ensure 'index' in complete_info() is coherent with the 'items' array.
+
+  set completeopt=menu,preview
+  " Search forward
+  call feedkeys("Go\<C-X>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("aaa", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("bbb", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("ccc", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("ddd", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("eee", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("fff", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  " Search forward: unselected item
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal(6 , len(g:compl_info['items']))
+  call assert_equal(-1 , g:compl_info['selected'])
+
+  " Search backward
+  call feedkeys("Go\<C-X>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("fff", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("eee", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("ddd", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("ccc", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<C-P>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("bbb", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<C-P>\<C-P>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("aaa", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  " search backwards: unselected item
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<C-P>\<C-P>\<C-P>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal(6 , len(g:compl_info['items']))
+  call assert_equal(-1 , g:compl_info['selected'])
+
+  " switch direction: forwards, then backwards
+  call feedkeys("Go\<C-X>\<C-N>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("fff", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  " switch direction: forwards, then backwards, then forwards again
+  call feedkeys("Go\<C-X>\<C-N>\<C-P>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-P>\<C-P>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("aaa", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+
+  " switch direction: backwards, then forwards
+  call feedkeys("Go\<C-X>\<C-P>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("aaa", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  " switch direction: backwards, then forwards, then backwards again
+  call feedkeys("Go\<C-X>\<C-P>\<C-P>\<C-N>\<C-N>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("fff", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+
+  " Add 'noselect', check that 'selected' is -1 when nothing is selected.
+  set completeopt+=noselect
+  " Search forward.
+  call feedkeys("Go\<C-X>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal(-1, g:compl_info['selected'])
+
+  " Search backward.
+  call feedkeys("Go\<C-X>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal(-1, g:compl_info['selected'])
+
+  call feedkeys("Go\<C-X>\<C-N>\<C-P>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal(0, g:compl_info['selected'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call assert_equal("fff", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call feedkeys("Go\<C-X>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal("aaa", g:compl_info['items'][g:compl_info['selected']]['word'])
+  call assert_equal(6 , len(g:compl_info['items']))
+  call feedkeys("Go\<C-X>\<C-N>\<F5>\<Esc>_dd", 'tx')
+  call assert_equal(-1, g:compl_info['selected'])
+  call assert_equal(6 , len(g:compl_info['items']))
+
+  set completeopt&
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

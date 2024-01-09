@@ -39,14 +39,15 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 	@echo "Starting make in the src directory."
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
-	@# When the target is "test" also run the indent tests.
-	@if test "$@" = "test"; then \
+	@# When the target is "test" also run the indent and syntax tests.
+	@if test "$@" = "test" -o "$@" = "testtiny"; then \
 		$(MAKE) indenttest; \
+		$(MAKE) syntaxtest; \
 	fi
-	@# When the target is "clean" also clean for the indent tests.
+	@# When the target is "clean" also clean for the indent and syntax tests.
 	@if test "$@" = "clean" -o "$@" = "distclean" -o "$@" = "testclean"; then \
-		cd runtime/indent && \
-			$(MAKE) clean; \
+		(cd runtime/indent && $(MAKE) clean); \
+		(cd runtime/syntax && $(MAKE) clean); \
 	fi
 
 # Executable used for running the indent tests.
@@ -56,6 +57,14 @@ indenttest:
 	cd runtime/indent && \
 		$(MAKE) clean && \
 		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
+
+# Executable used for running the syntax tests.
+VIM_FOR_SYNTAXTEST = ../../src/vim
+
+syntaxtest:
+	cd runtime/syntax && \
+		$(MAKE) clean && \
+		$(MAKE) test VIMPROG="$(VIM_FOR_SYNTAXTEST)"
 
 
 #########################################################################
@@ -85,7 +94,7 @@ indenttest:
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 9
-MINOR = 0
+MINOR = 1
 
 # CHECKLIST for creating a new version:
 #

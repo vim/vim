@@ -2080,6 +2080,30 @@ func Test_incsearch_substitute_dump2()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_incsearch_restore_view()
+  CheckOption incsearch
+  CheckScreendump
+
+  let lines =<< trim [CODE]
+    set incsearch nohlsearch
+    setlocal scrolloff=0 smoothscroll
+    call setline(1, [join(range(25), ' '), '', '', '', '', 'xxx'])
+    call feedkeys("2\<C-E>", 't')
+  [CODE]
+  call writefile(lines, 'Xincsearch_restore_view', 'D')
+  let buf = RunVimInTerminal('-S Xincsearch_restore_view', {'rows': 6, 'cols': 20})
+
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_01', {})
+  call term_sendkeys(buf, '/xx')
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_02', {})
+  call term_sendkeys(buf, 'x')
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_03', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call VerifyScreenDump(buf, 'Test_incsearch_restore_view_01', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_pattern_is_uppercase_smartcase()
   new
   let input=['abc', 'ABC', 'Abc', 'abC']

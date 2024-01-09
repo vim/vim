@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.0.  Last change: 2023 May 04
+*testing.txt*	For Vim version 9.1.  Last change: 2023 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -21,7 +21,7 @@ Vim can be tested after building it, usually with "make test".
 The tests are located in the directory "src/testdir".
 
 There are two types of tests added over time:
-	test20.in		oldest, only for tiny and small builds
+	test20.in		oldest, only for tiny builds
 	test_something.vim	new style tests
 
 						*new-style-testing*
@@ -166,15 +166,17 @@ test_gui_event({event}, {args})
 		  Set or drag the left, right or horizontal scrollbar.  Only
 		  works when the scrollbar actually exists.  The supported
 		  items in {args} are:
-		    which:	scrollbar. The supported values are:
+		    which:	Selects the scrollbar. The supported values
+				are:
 				    left  Left scrollbar of the current window
 				    right Right scrollbar of the current window
 				    hor   Horizontal scrollbar
-		    value:	amount to scroll.  For the vertical scrollbars
-				the value can be 1 to the line-count of the
-				buffer.  For the horizontal scrollbar the
-				value can be between 1 and the maximum line
-				length, assuming 'wrap' is not set.
+		    value:	Amount to scroll.  For the vertical scrollbars
+				the value can be between 0 to the line-count
+				of the buffer minus one.  For the horizontal
+				scrollbar the value can be between 1 and the
+				maximum line length, assuming 'wrap' is not
+				set.
 		    dragging:	1 to drag the scrollbar and 0 to click in the
 				scrollbar.
 
@@ -369,6 +371,7 @@ test_override({name}, {val})				*test_override()*
 			     string is detected
 		ui_delay     time in msec to use in ui_delay(); overrules a
 			     wait time of up to 3 seconds for messages
+		unreachable  no error for code after `:throw` and `:return`
 		uptime	     overrules sysinfo.uptime
 		vterm_title  setting the window title by a job running in a
 			     terminal window
@@ -378,12 +381,17 @@ test_override({name}, {val})				*test_override()*
 		"starting" is to be used when a test should behave like
 		startup was done.  Since the tests are run by sourcing a
 		script the "starting" variable is non-zero. This is usually a
-		good thing (tests run faster), but sometimes changes behavior
-		in a way that the test doesn't work properly.
+		good thing (tests run faster), but sometimes this changes
+		behavior in a way that the test doesn't work properly.
 		When using: >
 			call test_override('starting', 1)
 <		The value of "starting" is saved.  It is restored by: >
 			call test_override('starting', 0)
+
+<		To make sure the flag is reset later using `:defer` can be
+		useful: >
+			call test_override('unreachable', 1)
+			defer call test_override('unreachable', 0)
 
 <		Can also be used as a |method|: >
 			GetOverrideVal()-> test_override('starting')

@@ -40,7 +40,7 @@ menutrans Split\ Patched\ &By\.\.\.	Podziel\ ³atane\ przez\.\.\.
 menutrans &Print			&Drukuj
 menutrans Sa&ve-Exit<Tab>:wqa		W&yj¶cie\ z\ zapisem<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Wyj¶cie<Tab>:qa
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otwórz\ &kartê\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Otwórz\ &kartê\.\.\.<Tab>:tabnew
 
 " Edit menu
 menutrans &Edit				&Edycja

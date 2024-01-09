@@ -88,4 +88,5 @@ char_u *string_convert_ext(vimconv_T *vcp, char_u *ptr, int *lenp, int *unconvle
 void f_setcellwidths(typval_T *argvars, typval_T *rettv);
 void f_getcellwidths(typval_T *argvars, typval_T *rettv);
 void f_charclass(typval_T *argvars, typval_T *rettv);
+char_u *get_encoding_name(expand_T *xp, int idx);
 /* vim: set ft=c : */

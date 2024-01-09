@@ -292,7 +292,11 @@ static int erase_internal(VTermRect rect, int selective, void *user)
         continue;
 
       cell->chars[0] = 0;
-      cell->pen = screen->pen;
+      cell->pen = (ScreenPen){
+        /* Only copy .fg and .bg; leave things like rv in reset state */
+        .fg = screen->pen.fg,
+        .bg = screen->pen.bg,
+      };
       cell->pen.dwl = info->doublewidth;
       cell->pen.dhl = info->doubleheight;
     }
@@ -603,8 +607,15 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
         new_row_start, new_row_end, old_row_start, old_row_end, width);
 #endif
 
-    if(new_row_start < 0)
+    if(new_row_start < 0) {
+      if(old_row_start <= old_cursor.row && old_cursor.row < old_row_end) {
+        new_cursor.row = 0;
+        new_cursor.col = old_cursor.col;
+        if(new_cursor.col >= new_cols)
+          new_cursor.col = new_cols-1;
+      }
       break;
+    }
 
     for(new_row = new_row_start, old_row = old_row_start; new_row <= new_row_end; new_row++) {
       int count = width >= new_cols ? new_cols : width;
@@ -674,8 +685,9 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
 
   if(old_row >= 0 && bufidx == BUFIDX_PRIMARY) {
     /* Push spare lines to scrollback buffer */
-    for(int row = 0; row <= old_row; row++)
-      sb_pushline_from_row(screen, row);
+    if(screen->callbacks && screen->callbacks->sb_pushline)
+      for(int row = 0; row <= old_row; row++)
+        sb_pushline_from_row(screen, row);
     if(active)
       statefields->pos.row -= (old_row + 1);
   }
@@ -764,8 +776,14 @@ static int resize(int new_rows, int new_cols, VTermStateFields *fields, void *us
     if(screen->sb_buffer)
       vterm_allocator_free(screen->vt, screen->sb_buffer);
 
+    if (new_cols > VTERM_MAX_COLS)
+      new_cols = VTERM_MAX_COLS;
+
     screen->sb_buffer = vterm_allocator_malloc(screen->vt, sizeof(VTermScreenCell) * new_cols);
   }
+
+  if (new_rows > VTERM_MAX_ROWS)
+    new_rows = VTERM_MAX_ROWS;
 
   resize_buffer(screen, 0, new_rows, new_cols, !altscreen_active, fields);
   if(screen->buffers[BUFIDX_ALTSCREEN])
@@ -1203,4 +1221,37 @@ int vterm_screen_get_attrs_extent(const VTermScreen *screen, VTermRect *extent, 
 void vterm_screen_convert_color_to_rgb(const VTermScreen *screen, VTermColor *col)
 {
   vterm_state_convert_color_to_rgb(screen->state, col);
+}
+
+static void reset_default_colours(VTermScreen *screen, ScreenCell *buffer)
+{
+  for(int row = 0; row <= screen->rows - 1; row++)
+    for(int col = 0; col <= screen->cols - 1; col++) {
+      ScreenCell *cell = &buffer[row * screen->cols + col];
+      if(VTERM_COLOR_IS_DEFAULT_FG(&cell->pen.fg))
+        cell->pen.fg = screen->pen.fg;
+      if(VTERM_COLOR_IS_DEFAULT_BG(&cell->pen.bg))
+        cell->pen.bg = screen->pen.bg;
+    }
+}
+
+void vterm_screen_set_default_colors(VTermScreen *screen, const VTermColor *default_fg, const VTermColor *default_bg)
+{
+  vterm_state_set_default_colors(screen->state, default_fg, default_bg);
+
+  if(default_fg && VTERM_COLOR_IS_DEFAULT_FG(&screen->pen.fg)) {
+    screen->pen.fg = *default_fg;
+    screen->pen.fg.type = (screen->pen.fg.type & ~VTERM_COLOR_DEFAULT_MASK)
+                        | VTERM_COLOR_DEFAULT_FG;
+  }
+
+  if(default_bg && VTERM_COLOR_IS_DEFAULT_BG(&screen->pen.bg)) {
+    screen->pen.bg = *default_bg;
+    screen->pen.bg.type = (screen->pen.bg.type & ~VTERM_COLOR_DEFAULT_MASK)
+                        | VTERM_COLOR_DEFAULT_BG;
+  }
+
+  reset_default_colours(screen, screen->buffers[0]);
+  if(screen->buffers[1])
+    reset_default_colours(screen, screen->buffers[1]);
 }

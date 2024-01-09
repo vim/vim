@@ -501,9 +501,12 @@ edit(
 	 * something.
 	 * Don't do this when the topline changed already, it has
 	 * already been adjusted (by insertchar() calling open_line())).
+	 * Also don't do this when 'smoothscroll' is set, as the window should
+	 * then be scrolled by screen lines.
 	 */
 	if (curbuf->b_mod_set
 		&& curwin->w_p_wrap
+		&& !curwin->w_p_sms
 		&& !did_backspace
 		&& curwin->w_topline == old_topline
 #ifdef FEAT_DIFF
@@ -522,8 +525,8 @@ edit(
 #else
 		(int)curwin->w_wcol < mincol - curbuf->b_p_ts
 #endif
-		    && curwin->w_wrow == W_WINROW(curwin)
-				 + curwin->w_height - 1 - get_scrolloff_value()
+		    && curwin->w_wrow ==
+				   curwin->w_height - 1 - get_scrolloff_value()
 		    && (curwin->w_cursor.lnum != curwin->w_topline
 #ifdef FEAT_DIFF
 			|| curwin->w_topfill > 0
@@ -840,6 +843,7 @@ doESCkey:
 		if (cmdchar != 'r' && cmdchar != 'v' && c != Ctrl_C)
 		    ins_apply_autocmds(EVENT_INSERTLEAVE);
 		did_cursorhold = FALSE;
+		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 		return (c == Ctrl_O);
 	    }
 	    continue;
@@ -2755,17 +2759,12 @@ oneleft(void)
 /*
  * Move the cursor up "n" lines in window "wp".
  * Takes care of closed folds.
- * Returns the new cursor line or zero for failure.
  */
-    linenr_T
+    void
 cursor_up_inner(win_T *wp, long n)
 {
     linenr_T	lnum = wp->w_cursor.lnum;
 
-    // This fails if the cursor is already in the first line or the count is
-    // larger than the line number and '-' is in 'cpoptions'
-    if (lnum <= 1 || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL))
-	return 0;
     if (n >= lnum)
 	lnum = 1;
     else
@@ -2798,7 +2797,6 @@ cursor_up_inner(win_T *wp, long n)
 	lnum -= n;
 
     wp->w_cursor.lnum = lnum;
-    return lnum;
 }
 
     int
@@ -2806,8 +2804,13 @@ cursor_up(
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
-    if (n > 0 && cursor_up_inner(curwin, n) == 0)
+    // This fails if the cursor is already in the first line or the count is
+    // larger than the line number and '-' is in 'cpoptions'
+    linenr_T lnum = curwin->w_cursor.lnum;
+    if (n > 0 && (lnum <= 1
+		       || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL)))
 	return FAIL;
+    cursor_up_inner(curwin, n);
 
     // try to advance to the column we want to be at
     coladvance(curwin->w_curswant);
@@ -2821,23 +2824,13 @@ cursor_up(
 /*
  * Move the cursor down "n" lines in window "wp".
  * Takes care of closed folds.
- * Returns the new cursor line or zero for failure.
  */
-    linenr_T
+    void
 cursor_down_inner(win_T *wp, long n)
 {
     linenr_T	lnum = wp->w_cursor.lnum;
     linenr_T	line_count = wp->w_buffer->b_ml.ml_line_count;
 
-#ifdef FEAT_FOLDING
-    // Move to last line of fold, will fail if it's the end-of-file.
-    (void)hasFoldingWin(wp, lnum, NULL, &lnum, TRUE, NULL);
-#endif
-    // This fails if the cursor is already in the last line or would move
-    // beyond the last line and '-' is in 'cpoptions'
-    if (lnum >= line_count
-	    || (lnum + n > line_count && vim_strchr(p_cpo, CPO_MINUS) != NULL))
-	return FAIL;
     if (lnum + n >= line_count)
 	lnum = line_count;
     else
@@ -2849,6 +2842,7 @@ cursor_down_inner(win_T *wp, long n)
 	// count each sequence of folded lines as one logical line
 	while (n--)
 	{
+	    // Move to last line of fold, will fail if it's the end-of-file.
 	    if (hasFoldingWin(wp, lnum, NULL, &last, TRUE, NULL))
 		lnum = last + 1;
 	    else
@@ -2864,7 +2858,6 @@ cursor_down_inner(win_T *wp, long n)
 	lnum += n;
 
     wp->w_cursor.lnum = lnum;
-    return lnum;
 }
 
 /*
@@ -2875,8 +2868,16 @@ cursor_down(
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
-    if (n > 0 &&  cursor_down_inner(curwin, n) == 0)
+    linenr_T	lnum = curwin->w_cursor.lnum;
+    linenr_T	line_count = curwin->w_buffer->b_ml.ml_line_count;
+    // This fails if the cursor is already in the last line or would move
+    // beyond the last line and '-' is in 'cpoptions'
+    if (n > 0
+	    && (lnum >= line_count
+		|| (lnum + n > line_count
+				     && vim_strchr(p_cpo, CPO_MINUS) != NULL)))
 	return FAIL;
+    cursor_down_inner(curwin, n);
 
     // try to advance to the column we want to be at
     coladvance(curwin->w_curswant);
@@ -3613,7 +3614,8 @@ ins_esc(
     temp = curwin->w_cursor.col;
     if (disabled_redraw)
     {
-	--RedrawingDisabled;
+	if (RedrawingDisabled > 0)
+	    --RedrawingDisabled;
 	disabled_redraw = FALSE;
     }
     if (!arrow_used)
@@ -3707,8 +3709,13 @@ ins_esc(
 
     State = MODE_NORMAL;
     may_trigger_modechanged();
-    // need to position cursor again when on a TAB
-    if (gchar_cursor() == TAB)
+    // need to position cursor again when on a TAB and when on a char with
+    // virtual text.
+    if (gchar_cursor() == TAB
+#ifdef FEAT_PROP_POPUP
+	    || curbuf->b_has_textprop
+#endif
+       )
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     setmouse();
@@ -3856,6 +3863,7 @@ ins_insert(int replaceState)
     static void
 ins_ctrl_o(void)
 {
+    restart_VIsual_select = 0;
     if (State & VREPLACE_FLAG)
 	restart_edit = 'V';
     else if (State & REPLACE_FLAG)
@@ -5310,7 +5318,7 @@ ins_ctrl_ey(int tc)
 	    // was typed after a CTRL-V, and pretend 'textwidth'
 	    // wasn't set.  Digits, 'o' and 'x' are special after a
 	    // CTRL-V, don't use it for these.
-	    if (c < 256 && !isalnum(c))
+	    if (c < 256 && !SAFE_isalnum(c))
 		AppendToRedobuff((char_u *)CTRL_V_STR);	// CTRL-V
 	    tw_save = curbuf->b_p_tw;
 	    curbuf->b_p_tw = -1;

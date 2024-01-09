@@ -57,6 +57,11 @@ if !exists("g:zip_extractcmd")
  let g:zip_extractcmd= g:zip_unzipcmd
 endif
 
+if !dist#vim#IsSafeExecutable('zip', g:zip_unzipcmd)
+ echoerr "Warning: NOT executing " .. g:zip_unzipcmd .. " from current directory!"
+ finish
+endif
+
 " ----------------
 "  Functions: {{{1
 " ----------------

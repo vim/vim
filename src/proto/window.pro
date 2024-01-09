@@ -81,6 +81,7 @@ void win_comp_scroll(win_T *wp);
 void command_height(void);
 void last_status(int morewin);
 int tabline_height(void);
+int last_stl_height(int morewin);
 int min_rows(void);
 int only_one_window(void);
 void check_lnums(int do_curwin);

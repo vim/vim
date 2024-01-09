@@ -835,7 +835,6 @@ pum_set_selected(int n, int repeat UNUSED)
 	{
 	    win_T	*curwin_save = curwin;
 	    tabpage_T   *curtab_save = curtab;
-	    int		res = OK;
 # ifdef FEAT_PROP_POPUP
 	    use_popup_T	use_popup;
 # else
@@ -865,7 +864,8 @@ pum_set_selected(int n, int repeat UNUSED)
 	    ++no_u_sync;
 	    resized = prepare_tagpreview(FALSE, FALSE, use_popup);
 	    --no_u_sync;
-	    --RedrawingDisabled;
+	    if (RedrawingDisabled > 0)
+		--RedrawingDisabled;
 	    g_do_tagpreview = 0;
 
 	    if (curwin->w_p_pvw
@@ -874,6 +874,8 @@ pum_set_selected(int n, int repeat UNUSED)
 # endif
 		    )
 	    {
+		int	res = OK;
+
 		if (!resized
 			&& curbuf->b_nwindows == 1
 			&& curbuf->b_fname == NULL
@@ -919,13 +921,10 @@ pum_set_selected(int n, int repeat UNUSED)
 			    ml_append(lnum++, p, 0, FALSE);
 			    break;
 			}
-			else
-			{
-			    *e = NUL;
-			    ml_append(lnum++, p, (int)(e - p + 1), FALSE);
-			    *e = '\n';
-			    p = e + 1;
-			}
+			*e = NUL;
+			ml_append(lnum++, p, (int)(e - p + 1), FALSE);
+			*e = '\n';
+			p = e + 1;
 		    }
 		    // delete the empty last line
 		    ml_delete(curbuf->b_ml.ml_line_count);

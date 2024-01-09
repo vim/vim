@@ -1,8 +1,9 @@
 " Vim syntax file
 " Language:	Diff (context or unified)
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-"               Translations by Jakson Alves de Aquino.
-" Last Change:	2020 Dec 30
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+"		Translations by Jakson Alves de Aquino.
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -377,9 +378,9 @@ hi def link diffBDiffer		Constant
 hi def link diffIsA		Constant
 hi def link diffNoEOL		Constant
 hi def link diffCommon		Constant
-hi def link diffRemoved		Special
-hi def link diffChanged		PreProc
-hi def link diffAdded		Identifier
+hi def link diffRemoved		Removed
+hi def link diffChanged		Changed
+hi def link diffAdded		Added
 hi def link diffLine		Statement
 hi def link diffSubname		PreProc
 hi def link diffComment		Comment

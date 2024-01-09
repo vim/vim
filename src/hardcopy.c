@@ -1745,7 +1745,7 @@ prt_resfile_skip_nonws(int offset)
     idx = prt_resfile.line_start + offset;
     while (idx < prt_resfile.line_end)
     {
-	if (isspace(prt_resfile.buffer[idx]))
+	if (SAFE_isspace(prt_resfile.buffer[idx]))
 	    return idx - prt_resfile.line_start;
 	idx++;
     }
@@ -1760,7 +1760,7 @@ prt_resfile_skip_ws(int offset)
     idx = prt_resfile.line_start + offset;
     while (idx < prt_resfile.line_end)
     {
-	if (!isspace(prt_resfile.buffer[idx]))
+	if (!SAFE_isspace(prt_resfile.buffer[idx]))
 	    return idx - prt_resfile.line_start;
 	idx++;
     }

@@ -1,8 +1,9 @@
 " Vim support file to define the default menus
 " You can also use this as a start for your own set of menus.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 May 03
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -121,7 +122,7 @@ enddef
 " File menu
 an 10.310 &File.&Open\.\.\.<Tab>:e		:browse confirm e<CR>
 an 10.320 &File.Sp&lit-Open\.\.\.<Tab>:sp	:browse sp<CR>
-an 10.320 &File.Open\ Tab\.\.\.<Tab>:tabnew	:browse tabnew<CR>
+an 10.320 &File.Open\ &Tab\.\.\.<Tab>:tabnew	:browse tabnew<CR>
 an 10.325 &File.&New<Tab>:enew			:confirm enew<CR>
 an <silent> 10.330 &File.&Close<Tab>:close
 	\ :if winheight(2) < 0 && tabpagewinnr(2) == 0 <Bar>

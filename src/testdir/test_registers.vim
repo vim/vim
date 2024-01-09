@@ -51,8 +51,9 @@ func Test_display_registers()
     call feedkeys("i\<C-R>=2*4\n\<esc>")
     call feedkeys(":ls\n", 'xt')
 
-    let a = execute('display')
-    let b = execute('registers')
+    " these commands work in the sandbox
+    let a = execute('sandbox display')
+    let b = execute('sandbox registers')
 
     call assert_equal(a, b)
     call assert_match('^\nType Name Content\n'
@@ -796,8 +797,9 @@ func Test_record_in_select_mode()
   bwipe!
 endfunc
 
-" mapping that ends macro recording should be removed from recorded macro
+" A mapping that ends recording should be removed from the recorded register.
 func Test_end_record_using_mapping()
+  new
   call setline(1, 'aaa')
   nnoremap s q
   call feedkeys('safas', 'tx')
@@ -817,7 +819,10 @@ func Test_end_record_using_mapping()
   bwipe!
 endfunc
 
+" Starting a new recording should work immediately after replaying a recording
+" that ends with a <Nop> mapping or a character search.
 func Test_end_reg_executing()
+  new
   nnoremap s <Nop>
   let @a = 's'
   call feedkeys("@aqaq\<Esc>", 'tx')
@@ -832,6 +837,43 @@ func Test_end_reg_executing()
   call assert_equal('aaa', getline(1))
 
   nunmap s
+  bwipe!
+endfunc
+
+func Test_reg_executing_in_range_normal()
+  new
+  set showcmd
+  call setline(1, range(10))
+  let g:log = []
+  nnoremap s <Cmd>let g:log += [reg_executing()]<CR>
+  let @r = 's'
+
+  %normal @r
+  call assert_equal(repeat(['r'], 10), g:log)
+
+  nunmap s
+  unlet g:log
+  set showcmd&
+  bwipe!
+endfunc
+
+" An operator-pending mode mapping shouldn't be applied to keys typed in
+" Insert mode immediately after a character search when replaying.
+func Test_replay_charsearch_omap()
+  CheckFeature timers
+
+  new
+  call setline(1, 'foo[blah]')
+  onoremap , k
+  call timer_start(10, {-> feedkeys(",bar\<Esc>q", 't')})
+  call feedkeys('qrct[', 'xt!')
+  call assert_equal(',bar[blah]', getline(1))
+  undo
+  call assert_equal('foo[blah]', getline(1))
+  call feedkeys('@r', 'xt!')
+  call assert_equal(',bar[blah]', getline(1))
+
+  ounmap ,
   bwipe!
 endfunc
 
@@ -901,6 +943,26 @@ func Test_register_y_append_reset()
     \ '7',
     \ '8 ----------------------------------------------------',
     \ '9'], getline(1,'$'))
+  bwipe!
+endfunc
+
+func Test_insert_small_delete_replace_mode()
+  new
+  call setline(1, ['foo', 'bar', 'foobar',  'bar'])
+  let @-='foo'
+  call cursor(2, 1)
+  exe ":norm! R\<C-R>-\<C-R>-"
+  call assert_equal('foofoo', getline(2))
+  call cursor(3, 1)
+  norm! D
+  call assert_equal(['foo', 'foofoo', '',  'bar'], getline(1, 4))
+  call cursor(4, 2)
+  exe ":norm! R\<C-R>-ZZZZ"
+  call assert_equal(['foo', 'foofoo', '',  'bfoobarZZZZ'], getline(1, 4))
+  call cursor(1, 1)
+  let @-=''
+  exe ":norm! R\<C-R>-ZZZ"
+  call assert_equal(['ZZZ', 'foofoo', '',  'bfoobarZZZZ'], getline(1, 4))
   bwipe!
 endfunc
 

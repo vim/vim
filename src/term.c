@@ -1608,6 +1608,23 @@ apply_builtin_tcap(char_u *term, tcap_entry_T *entries, int overwrite)
 }
 
 /*
+ * Apply builtin termcap entries for a given keyprotocol.
+ */
+    void
+apply_keyprotocol(char_u *term, keyprot_T prot)
+{
+    if (prot == KEYPROTOCOL_KITTY)
+	apply_builtin_tcap(term, builtin_kitty, TRUE);
+    if (prot == KEYPROTOCOL_MOK2)
+	apply_builtin_tcap(term, builtin_mok2, TRUE);
+
+    if (prot != KEYPROTOCOL_NONE)
+	// Some function keys may accept modifiers even though the
+	// terminfo/termcap entry does not indicate this.
+	accept_modifiers_for_function_keys();
+}
+
+/*
  * Parsing of the builtin termcap entries.
  * Caller should check if "term" is a valid builtin terminal name.
  * The terminal's name is not set, as this is already done in termcapinit().
@@ -1896,6 +1913,7 @@ match_keyprotocol(char_u *term)
 	*colon = NUL;
 
 	keyprot_T prot;
+	// Note: Keep this in sync with p_kpc_protocol_values.
 	if (STRCMP(colon + 1, "none") == 0)
 	    prot = KEYPROTOCOL_NONE;
 	else if (STRCMP(colon + 1, "mok2") == 0)
@@ -2083,10 +2101,7 @@ set_termname(char_u *term)
 	// Use the 'keyprotocol' option to adjust the t_TE and t_TI
 	// termcap entries if there is an entry matching "term".
 	keyprot_T kpc = match_keyprotocol(term);
-	if (kpc == KEYPROTOCOL_KITTY)
-	    apply_builtin_tcap(term, builtin_kitty, TRUE);
-	else if (kpc == KEYPROTOCOL_MOK2)
-	    apply_builtin_tcap(term, builtin_mok2, TRUE);
+	apply_keyprotocol(term, kpc);
 
 #ifdef FEAT_TERMGUICOLORS
 	// There is no good way to detect that the terminal supports RGB
@@ -2098,11 +2113,6 @@ set_termname(char_u *term)
 		&& term_strings_not_set(KS_8U))
 	    apply_builtin_tcap(term, builtin_rgb, TRUE);
 #endif
-
-	if (kpc != KEYPROTOCOL_NONE)
-	    // Some function keys may accept modifiers even though the
-	    // terminfo/termcap entry does not indicate this.
-	    accept_modifiers_for_function_keys();
     }
 
 /*
@@ -2221,7 +2231,9 @@ set_termname(char_u *term)
     // We hard-code the received escape sequences here.  There are the terminfo
     // entries kxIN and kxOUT, but they are rarely used and do hot have a
     // two-letter termcap name.
-    if (use_xterm_like_mouse(term))
+    // This used to be done only for xterm-like terminals, but some others also
+    // may produce these codes.  Always recognize them, as the chance of them
+    // being used for something else is very small.
     {
 	char_u name[3];
 
@@ -2971,7 +2983,7 @@ term_delete_lines(int line_count)
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
 
-#if defined(UNIX) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 term_enable_mouse(int enable)
 {
@@ -3422,7 +3434,7 @@ ttest(int pairs)
 #endif
     {
 	env_colors = mch_getenv((char_u *)"COLORS");
-	if (env_colors != NULL && isdigit(*env_colors))
+	if (env_colors != NULL && SAFE_isdigit(*env_colors))
 	{
 	    int colors = atoi((char *)env_colors);
 
@@ -5837,7 +5849,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	// characters.
 	for (i = j + 3; i < len; ++i)
 	{
-	    if (i - j == 3 && !isdigit(tp[i]))
+	    if (i - j == 3 && !SAFE_isdigit(tp[i]))
 		break;
 	    if (i - j == 4 && tp[i] != ' ')
 		break;
@@ -6071,7 +6083,7 @@ check_termcode(
 			// The mouse termcode "ESC [" is also the prefix of
 			// "ESC [ I" (focus gained) and other keys.  Check some
 			// more bytes to find out.
-			if (!isdigit(tp[2]))
+			if (!SAFE_isdigit(tp[2]))
 			{
 			    // ESC [ without number following: Only use it when
 			    // there is no other match.
@@ -6154,7 +6166,7 @@ check_termcode(
 			    // Skip over the digits, the final char must
 			    // follow. URXVT can use a negative value, thus
 			    // also accept '-'.
-			    for (j = slen - 2; j < len && (isdigit(tp[j])
+			    for (j = slen - 2; j < len && (SAFE_isdigit(tp[j])
 				       || tp[j] == '-' || tp[j] == ';'); ++j)
 				;
 			    ++j;
@@ -6447,7 +6459,7 @@ check_termcode(
 # endif // !USE_ON_FLY_SCROLL
 #endif // FEAT_GUI
 
-#if (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 	/*
 	 * Handle FocusIn/FocusOut event sequences reported by XTerm.
 	 * (CSI I/CSI O)
@@ -6589,6 +6601,8 @@ term_get_bg_color(char_u *r, char_u *g, char_u *b)
 replace_termcodes(
     char_u	*from,
     char_u	**bufp,
+    scid_T	sid_arg UNUSED,	// script ID to use for <SID>,
+				// or 0 to use current_sctx
     int		flags,
     int		*did_simplify)
 {
@@ -6651,19 +6665,19 @@ replace_termcodes(
 #ifdef FEAT_EVAL
 	    /*
 	     * Change <SID>Func to K_SNR <script-nr> _Func.  This name is used
-	     * for script-locla user functions.
+	     * for script-local user functions.
 	     * (room: 5 * 6 = 30 bytes; needed: 3 + <nr> + 1 <= 14)
 	     * Also change <SID>name.Func to K_SNR <import-script-nr> _Func.
 	     * Only if "name" is recognized as an import.
 	     */
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
-		if (current_sctx.sc_sid <= 0)
+		if (sid_arg < 0 || (sid_arg == 0 && current_sctx.sc_sid <= 0))
 		    emsg(_(e_using_sid_not_in_script_context));
 		else
 		{
 		    char_u  *dot;
-		    long    sid = current_sctx.sc_sid;
+		    long    sid = sid_arg != 0 ? sid_arg : current_sctx.sc_sid;
 
 		    src += 5;
 		    if (in_vim9script()

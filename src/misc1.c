@@ -342,12 +342,13 @@ plines(linenr_T lnum)
 plines_win(
     win_T	*wp,
     linenr_T	lnum,
-    int		winheight)	// when TRUE limit to window height
+    int		limit_winheight)	// when TRUE limit to window height
 {
 #if defined(FEAT_DIFF) || defined(PROTO)
     // Check for filler lines above this buffer line.  When folded the result
     // is one line anyway.
-    return plines_win_nofill(wp, lnum, winheight) + diff_check_fill(wp, lnum);
+    return plines_win_nofill(wp, lnum, limit_winheight)
+						   + diff_check_fill(wp, lnum);
 }
 
 /*
@@ -364,7 +365,7 @@ plines_nofill(linenr_T lnum)
 plines_win_nofill(
     win_T	*wp,
     linenr_T	lnum,
-    int		winheight)	// when TRUE limit to window height
+    int		limit_winheight)	// when TRUE limit to window height
 {
 #endif
     int		lines;
@@ -389,7 +390,7 @@ plines_win_nofill(
     else
 	lines = plines_win_nofold(wp, lnum);
 
-    if (winheight > 0 && lines > wp->w_height)
+    if (limit_winheight && lines > wp->w_height)
 	return wp->w_height;
     return lines;
 }
@@ -497,7 +498,7 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 }
 
     int
-plines_m_win(win_T *wp, linenr_T first, linenr_T last)
+plines_m_win(win_T *wp, linenr_T first, linenr_T last, int limit_winheight)
 {
     int		count = 0;
 
@@ -519,10 +520,11 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last)
 	{
 #ifdef FEAT_DIFF
 	    if (first == wp->w_topline)
-		count += plines_win_nofill(wp, first, TRUE) + wp->w_topfill;
+		count += plines_win_nofill(wp, first, limit_winheight)
+							       + wp->w_topfill;
 	    else
 #endif
-		count += plines_win(wp, first, TRUE);
+		count += plines_win(wp, first, limit_winheight);
 	    ++first;
 	}
     }
@@ -662,7 +664,11 @@ get_mode(char_u *buf)
     }
 #ifdef FEAT_TERMINAL
     else if (term_use_loop())
+    {
+	if (State & MODE_CMDLINE)
+	    buf[i++] = 'c';
 	buf[i++] = 't';
+    }
 #endif
     else if (VIsual_active)
     {
@@ -714,6 +720,8 @@ get_mode(char_u *buf)
 	    buf[i++] = 'v';
 	else if (exmode_active == EXMODE_NORMAL)
 	    buf[i++] = 'e';
+	if ((State & MODE_CMDLINE) && cmdline_overstrike())
+	    buf[i++] = 'r';
     }
     else
     {
@@ -969,7 +977,8 @@ get_number(
 	c = safe_vgetc();
 	if (VIM_ISDIGIT(c))
 	{
-	    n = n * 10 + c - '0';
+	    if (vim_append_digit_int(&n, c - '0') == FAIL)
+		return 0;
 	    msg_putchar(c);
 	    ++typed;
 	}
@@ -2809,3 +2818,33 @@ may_trigger_modechanged(void)
     restore_v_event(v_event, &save_v_event);
 #endif
 }
+
+// For overflow detection, add a digit safely to an int value.
+    int
+vim_append_digit_int(int *value, int digit)
+{
+    int x = *value;
+    if (x > ((INT_MAX - digit) / 10))
+	return FAIL;
+    *value = x * 10 + digit;
+    return OK;
+}
+
+// For overflow detection, add a digit safely to a long value.
+    int
+vim_append_digit_long(long *value, int digit)
+{
+    long x = *value;
+    if (x > ((LONG_MAX - (long)digit) / 10))
+	return FAIL;
+    *value = x * 10 + (long)digit;
+    return OK;
+}
+
+// Return something that fits into an int.
+    int
+trim_to_int(vimlong_T x)
+{
+    return x > INT_MAX ? INT_MAX : x < INT_MIN ? INT_MIN : x;
+}
+

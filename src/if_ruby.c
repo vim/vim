@@ -83,7 +83,7 @@
 #  define rb_gc_writebarrier_unprotect	rb_gc_writebarrier_unprotect_stub
 # endif
 
-# if RUBY_VERSION >= 26
+# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
 #  define rb_ary_detransient	rb_ary_detransient_stub
 # endif
 
@@ -174,7 +174,13 @@
 #include "version.h"
 
 #ifdef DYNAMIC_RUBY
-# if !defined(MSWIN)  // must come after including vim.h, where it is defined
+# ifdef MSWIN	// must come after including vim.h, where it is defined
+#  define RUBY_PROC FARPROC
+#  define load_dll vimLoadLib
+#  define symbol_from_dll GetProcAddress
+#  define close_dll FreeLibrary
+#  define load_dll_error GetWin32Error
+# else
 #  include <dlfcn.h>
 #  define HINSTANCE void*
 #  define RUBY_PROC void*
@@ -182,12 +188,6 @@
 #  define symbol_from_dll dlsym
 #  define close_dll dlclose
 #  define load_dll_error dlerror
-# else
-#  define RUBY_PROC FARPROC
-#  define load_dll vimLoadLib
-#  define symbol_from_dll GetProcAddress
-#  define close_dll FreeLibrary
-#  define load_dll_error GetWin32Error
 # endif
 #endif
 
@@ -456,7 +456,7 @@ static VALUE (*dll_rb_float_new) (double);
 static VALUE (*dll_rb_ary_new) (void);
 static VALUE (*dll_rb_ary_new4) (long n, const VALUE *elts);
 static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
-# if RUBY_VERSION >= 26
+# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
 static void (*dll_rb_ary_detransient) (VALUE);
 # endif
 # ifdef __ia64
@@ -491,7 +491,7 @@ NORETURN(static void (*dll_ruby_malloc_size_overflow)(size_t, size_t));
 #  endif
 # endif
 
-# if RUBY_VERSION >= 26
+# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
 void rb_ary_detransient_stub(VALUE x);
 # endif
 
@@ -561,7 +561,7 @@ rb_gc_writebarrier_unprotect_stub(VALUE obj)
 }
 #   endif
 #  endif
-#  if RUBY_VERSION >= 26
+#  if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
     void
 rb_ary_detransient_stub(VALUE x)
 {
@@ -718,7 +718,7 @@ static struct
     {"rb_ary_new4", (RUBY_PROC*)&dll_rb_ary_new4},
 # endif
     {"rb_ary_push", (RUBY_PROC*)&dll_rb_ary_push},
-# if RUBY_VERSION >= 26
+# if RUBY_VERSION >= 26 && RUBY_VERSION <= 32
     {"rb_ary_detransient", (RUBY_PROC*)&dll_rb_ary_detransient},
 # endif
     {"rb_int2big", (RUBY_PROC*)&dll_rb_int2big},

@@ -82,6 +82,26 @@ static void print_color(const VTermColor *col)
   printf(")");
 }
 
+static VTermColor strpe_color(char **strp)
+{
+  uint8_t r, g, b, idx;
+  int len = 0;
+  VTermColor col;
+
+  if(sscanf(*strp, "rgb(%hhu,%hhu,%hhu)%n", &r, &g, &b, &len) == 3 && len > 0) {
+    *strp += len;
+    vterm_color_rgb(&col, r, g, b);
+  }
+  else if(sscanf(*strp, "idx(%hhu)%n", &idx, &len) == 1 && len > 0) {
+    *strp += len;
+    vterm_color_indexed(&col, idx);
+  }
+  else
+    vterm_color_rgb(&col, 127, 127, 127);
+
+  return col;
+}
+
 static VTerm *vt;
 static VTermState *state;
 static VTermScreen *screen;
@@ -669,7 +689,10 @@ int main(int argc UNUSED, char **argv UNUSED)
       if(!state) {
         state = vterm_obtain_state(vt);
         vterm_state_set_callbacks(state, &state_cbs, NULL);
-        vterm_state_set_selection_callbacks(state, &selection_cbs, NULL, NULL, 1024);
+        /* In some tests we want to check the behaviour of overflowing the
+         * buffer, so make it nicely small
+         */
+        vterm_state_set_selection_callbacks(state, &selection_cbs, NULL, NULL, 16);
         vterm_state_set_bold_highbright(state, 1);
         vterm_state_reset(state, 1);
       }
@@ -940,6 +963,23 @@ int main(int argc UNUSED, char **argv UNUSED)
     else if(strstartswith(line, "DAMAGEFLUSH")) {
       assert(screen);
       vterm_screen_flush_damage(screen);
+    }
+
+    else if(strstartswith(line, "SETDEFAULTCOL ")) {
+      assert(screen);
+      char *linep = line + 14;
+      while(linep[0] == ' ')
+        linep++;
+      VTermColor fg = strpe_color(&linep);
+      if(linep[0]) {
+        while(linep[0] == ' ')
+          linep++;
+        VTermColor bg = strpe_color(&linep);
+
+        vterm_screen_set_default_colors(screen, &fg, &bg);
+      }
+      else
+        vterm_screen_set_default_colors(screen, &fg, NULL);
     }
 
     else if(line[0] == '?') {

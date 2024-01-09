@@ -13,14 +13,13 @@ jobs:
 
     env:
       CC: gcc
-      CFLAGS: -Wno-deprecated-declarations
       DEBIAN_FRONTEND: noninteractive
       TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
     steps:
       - name: Checkout repository from github
         if: env.TOKEN
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Coverity
         if: env.TOKEN

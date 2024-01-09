@@ -15,9 +15,6 @@
 
 static int	cmd_showtail;	// Only show path tail in lists ?
 
-static int      ExpandGeneric(char_u *pat, expand_T *xp, regmatch_T *regmatch,
-			      char_u ***matches, int *numMatches,
-			      char_u *((*func)(expand_T *, int)), int escaped);
 static int	ExpandFromContext(expand_T *xp, char_u *, char_u ***, int *, int);
 static char_u	*showmatches_gettail(char_u *s);
 static int	expand_showtail(expand_T *xp);
@@ -53,7 +50,10 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_FILES_IN_PATH
 	    && xp->xp_context != EXPAND_FILETYPE
 	    && xp->xp_context != EXPAND_HELP
+	    && xp->xp_context != EXPAND_KEYMAP
 	    && xp->xp_context != EXPAND_OLD_SETTING
+	    && xp->xp_context != EXPAND_STRING_SETTING
+	    && xp->xp_context != EXPAND_SETTING_SUBTRACT
 	    && xp->xp_context != EXPAND_OWNSYNTAX
 	    && xp->xp_context != EXPAND_PACKADD
 	    && xp->xp_context != EXPAND_RUNTIME
@@ -114,9 +114,10 @@ wildescape(
 	for (int i = 0; i < numfiles; ++i)
 	{
 	    // for ":set path=" we need to escape spaces twice
-	    if (xp->xp_backslash == XP_BS_THREE)
+	    if (xp->xp_backslash & XP_BS_THREE)
 	    {
-		p = vim_strsave_escaped(files[i], (char_u *)" ");
+		char *pat = (xp->xp_backslash & XP_BS_COMMA) ?  " ," : " ";
+		p = vim_strsave_escaped(files[i], (char_u *)pat);
 		if (p != NULL)
 		{
 		    vim_free(files[i]);
@@ -129,6 +130,18 @@ wildescape(
 			files[i] = p;
 		    }
 #endif
+		}
+	    }
+	    else if (xp->xp_backslash & XP_BS_COMMA)
+	    {
+		if (vim_strchr(files[i], ',') != NULL)
+		{
+		    p = vim_strsave_escaped(files[i], (char_u *)",");
+		    if (p != NULL)
+		    {
+			vim_free(files[i]);
+			files[i] = p;
+		    }
 		}
 	    }
 #ifdef BACKSLASH_IN_FILENAME
@@ -248,7 +261,7 @@ nextwild(
     {
 	if (cmdline_fuzzy_completion_supported(xp))
 	    // If fuzzy matching, don't modify the search string
-	    p1 = vim_strsave(xp->xp_pattern);
+	    p1 = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
 	else
 	    p1 = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
 
@@ -691,16 +704,14 @@ win_redr_status_matches(
 
 /*
  * Get the next or prev cmdline completion match. The index of the match is set
- * in "p_findex"
+ * in "xp->xp_selected"
  */
     static char_u *
 get_next_or_prev_match(
 	int		mode,
-	expand_T	*xp,
-	int		*p_findex,
-	char_u		*orig_save)
+	expand_T	*xp)
 {
-    int findex = *p_findex;
+    int findex = xp->xp_selected;
     int ht;
 
     if (xp->xp_numfiles <= 0)
@@ -758,14 +769,14 @@ get_next_or_prev_match(
     // When wrapping around, return the original string, set findex to -1.
     if (findex < 0)
     {
-	if (orig_save == NULL)
+	if (xp->xp_orig == NULL)
 	    findex = xp->xp_numfiles - 1;
 	else
 	    findex = -1;
     }
     if (findex >= xp->xp_numfiles)
     {
-	if (orig_save == NULL)
+	if (xp->xp_orig == NULL)
 	    findex = 0;
 	else
 	    findex = -1;
@@ -778,10 +789,10 @@ get_next_or_prev_match(
     else if (p_wmnu)
 	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files,
 		findex, cmd_showtail);
-    *p_findex = findex;
+    xp->xp_selected = findex;
 
     if (findex == -1)
-	return vim_strsave(orig_save);
+	return vim_strsave(xp->xp_orig);
 
     return vim_strsave(xp->xp_files[findex]);
 }
@@ -916,8 +927,8 @@ find_longest_match(expand_T *xp, int options)
  * Return NULL for failure.
  *
  * "orig" is the originally expanded string, copied to allocated memory.  It
- * should either be kept in orig_save or freed.  When "mode" is WILD_NEXT or
- * WILD_PREV "orig" should be NULL.
+ * should either be kept in "xp->xp_orig" or freed.  When "mode" is WILD_NEXT
+ * or WILD_PREV "orig" should be NULL.
  *
  * Results are cached in xp->xp_files and xp->xp_numfiles, except when "mode"
  * is WILD_EXPAND_FREE or WILD_ALL.
@@ -957,8 +968,6 @@ ExpandOne(
     int		mode)
 {
     char_u	*ss = NULL;
-    static int	findex;
-    static char_u *orig_save = NULL;	// kept value of orig
     int		orig_saved = FALSE;
     int		i;
     long_u	len;
@@ -966,34 +975,35 @@ ExpandOne(
     // first handle the case of using an old match
     if (mode == WILD_NEXT || mode == WILD_PREV
 	    || mode == WILD_PAGEUP || mode == WILD_PAGEDOWN)
-	return get_next_or_prev_match(mode, xp, &findex, orig_save);
+	return get_next_or_prev_match(mode, xp);
 
     if (mode == WILD_CANCEL)
-	ss = vim_strsave(orig_save ? orig_save : (char_u *)"");
+	ss = vim_strsave(xp->xp_orig ? xp->xp_orig : (char_u *)"");
     else if (mode == WILD_APPLY)
-	ss = vim_strsave(findex == -1 ? (orig_save ?
-		    orig_save : (char_u *)"") : xp->xp_files[findex]);
+	ss = vim_strsave(xp->xp_selected == -1
+			    ? (xp->xp_orig ? xp->xp_orig : (char_u *)"")
+			    : xp->xp_files[xp->xp_selected]);
 
     // free old names
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
-	VIM_CLEAR(orig_save);
+	VIM_CLEAR(xp->xp_orig);
 
 	// The entries from xp_files may be used in the PUM, remove it.
 	if (compl_match_array != NULL)
 	    cmdline_pum_remove();
     }
-    findex = 0;
+    xp->xp_selected = 0;
 
     if (mode == WILD_FREE)	// only release file name
 	return NULL;
 
     if (xp->xp_numfiles == -1 && mode != WILD_APPLY && mode != WILD_CANCEL)
     {
-	vim_free(orig_save);
-	orig_save = orig;
+	vim_free(xp->xp_orig);
+	xp->xp_orig = orig;
 	orig_saved = TRUE;
 
 	ss = ExpandOne_start(mode, xp, str, options);
@@ -1003,7 +1013,7 @@ ExpandOne(
     if (mode == WILD_LONGEST && xp->xp_numfiles > 0)
     {
 	ss = find_longest_match(xp, options);
-	findex = -1;			    // next p_wc gets first one
+	xp->xp_selected = -1;			// next p_wc gets first one
     }
 
     // Concatenate all matching names.  Unless interrupted, this can be slow
@@ -1046,7 +1056,7 @@ ExpandOne(
     if (mode == WILD_EXPAND_FREE || mode == WILD_ALL)
 	ExpandCleanup(xp);
 
-    // Free "orig" if it wasn't stored in "orig_save".
+    // Free "orig" if it wasn't stored in "xp->xp_orig".
     if (!orig_saved)
 	vim_free(orig);
 
@@ -1076,6 +1086,7 @@ ExpandCleanup(expand_T *xp)
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
     }
+    VIM_CLEAR(xp->xp_orig);
 }
 
 /*
@@ -1384,6 +1395,7 @@ addstar(
 		|| context == EXPAND_COMPILER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
+		|| context == EXPAND_KEYMAP
 		|| context == EXPAND_PACKADD
 		|| context == EXPAND_RUNTIME
 		|| ((context == EXPAND_TAGS_LISTFILES
@@ -1757,6 +1769,45 @@ set_context_for_wildcard_arg(
 	}
     }
 }
+
+/*
+ * Set the completion context for the "++opt=arg" argument.  Always returns
+ * NULL.
+ */
+    static char_u *
+set_context_in_argopt(expand_T *xp, char_u *arg)
+{
+    char_u	*p;
+
+    p = vim_strchr(arg, '=');
+    if (p == NULL)
+	xp->xp_pattern = arg;
+    else
+	xp->xp_pattern = p + 1;
+
+    xp->xp_context = EXPAND_ARGOPT;
+    return NULL;
+}
+
+#ifdef FEAT_TERMINAL
+/*
+ * Set the completion context for :terminal's [options].  Always returns NULL.
+ */
+    static char_u *
+set_context_in_terminalopt(expand_T *xp, char_u *arg)
+{
+    char_u	*p;
+
+    p = vim_strchr(arg, '=');
+    if (p == NULL)
+	xp->xp_pattern = arg;
+    else
+	xp->xp_pattern = p + 1;
+
+    xp->xp_context = EXPAND_TERMINALOPT;
+    return NULL;
+}
+#endif
 
 /*
  * Set the completion context for the :filter command. Returns a pointer to the
@@ -2481,13 +2532,28 @@ set_one_cmd_context(
 
     arg = skipwhite(p);
 
-    // Skip over ++argopt argument
-    if ((ea.argt & EX_ARGOPT) && *arg != NUL && STRNCMP(arg, "++", 2) == 0)
+    // Does command allow "++argopt" argument?
+    if ((ea.argt & EX_ARGOPT) || ea.cmdidx == CMD_terminal)
     {
-	p = arg;
-	while (*p && !vim_isspace(*p))
-	    MB_PTR_ADV(p);
-	arg = skipwhite(p);
+	while (*arg != NUL && STRNCMP(arg, "++", 2) == 0)
+	{
+	    p = arg + 2;
+	    while (*p && !vim_isspace(*p))
+		MB_PTR_ADV(p);
+
+	    // Still touching the command after "++"?
+	    if (*p == NUL)
+	    {
+		if (ea.argt & EX_ARGOPT)
+		    return set_context_in_argopt(xp, arg + 2);
+#ifdef FEAT_TERMINAL
+		if (ea.cmdidx == CMD_terminal)
+		    return set_context_in_terminalopt(xp, arg + 2);
+#endif
+	    }
+
+	    arg = skipwhite(p);
+	}
     }
 
     if (ea.cmdidx == CMD_write || ea.cmdidx == CMD_update)
@@ -2733,14 +2799,23 @@ expand_files_and_dirs(
 	for (i = 0; pat[i]; ++i)
 	    if (pat[i] == '\\')
 	    {
-		if (xp->xp_backslash == XP_BS_THREE
+		if (xp->xp_backslash & XP_BS_THREE
 			&& pat[i + 1] == '\\'
 			&& pat[i + 2] == '\\'
 			&& pat[i + 3] == ' ')
 		    STRMOVE(pat + i, pat + i + 3);
-		if (xp->xp_backslash == XP_BS_ONE
+		else if (xp->xp_backslash & XP_BS_ONE
 			&& pat[i + 1] == ' ')
 		    STRMOVE(pat + i, pat + i + 1);
+		else if ((xp->xp_backslash & XP_BS_COMMA)
+			&& pat[i + 1] == '\\'
+			&& pat[i + 2] == ',')
+		    STRMOVE(pat + i, pat + i + 2);
+#ifdef BACKSLASH_IN_FILENAME
+		else if ((xp->xp_backslash & XP_BS_COMMA)
+			&& pat[i + 1] == ',')
+		    STRMOVE(pat + i, pat + i + 1);
+#endif
 	    }
     }
 
@@ -3058,6 +3133,13 @@ ExpandFromContext(
 	char *directories[] = {"syntax", "indent", "ftplugin", NULL};
 	return ExpandRTDir(pat, 0, numMatches, matches, directories);
     }
+#ifdef FEAT_KEYMAP
+    if (xp->xp_context == EXPAND_KEYMAP)
+    {
+	char *directories[] = {"keymap", NULL};
+	return ExpandRTDir(pat, 0, numMatches, matches, directories);
+    }
+#endif
 #if defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
 	return ExpandUserList(xp, matches, numMatches);
@@ -3095,8 +3177,18 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_SETTINGS
 	    || xp->xp_context == EXPAND_BOOL_SETTINGS)
 	ret = ExpandSettings(xp, &regmatch, pat, numMatches, matches, fuzzy);
+    else if (xp->xp_context == EXPAND_STRING_SETTING)
+	ret = ExpandStringSetting(xp, &regmatch, numMatches, matches);
+    else if (xp->xp_context == EXPAND_SETTING_SUBTRACT)
+	ret = ExpandSettingSubtract(xp, &regmatch, numMatches, matches);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(pat, &regmatch, numMatches, matches);
+    else if (xp->xp_context == EXPAND_ARGOPT)
+	ret = expand_argopt(pat, xp, &regmatch, matches, numMatches);
+#if defined(FEAT_TERMINAL)
+    else if (xp->xp_context == EXPAND_TERMINALOPT)
+	ret = expand_terminal_opt(pat, xp, &regmatch, matches, numMatches);
+#endif
 #if defined(FEAT_EVAL)
     else if (xp->xp_context == EXPAND_USER_DEFINED)
 	ret = ExpandUserDefined(pat, xp, &regmatch, matches, numMatches);
@@ -3123,7 +3215,7 @@ ExpandFromContext(
  *
  * Returns OK when no problems encountered, FAIL for error (out of memory).
  */
-    static int
+    int
 ExpandGeneric(
     char_u	*pat,
     expand_T	*xp,
@@ -3228,8 +3320,11 @@ ExpandGeneric(
     // applies to the completion context. Menus and scriptnames should be kept
     // in the specified order.
     if (!fuzzy && xp->xp_context != EXPAND_MENUNAMES
+					&& xp->xp_context != EXPAND_STRING_SETTING
 					&& xp->xp_context != EXPAND_MENUS
-					&& xp->xp_context != EXPAND_SCRIPTNAMES)
+					&& xp->xp_context != EXPAND_SCRIPTNAMES
+					&& xp->xp_context != EXPAND_ARGOPT
+					&& xp->xp_context != EXPAND_TERMINALOPT)
 	sort_matches = TRUE;
 
     // <SNR> functions should be sorted to the end.
@@ -3937,14 +4032,12 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 {
     int skt = KeyTyped;
-#ifdef FEAT_EVAL
-    int old_RedrawingDisabled = RedrawingDisabled;
-#endif
 
     if (!p_wmnu || wild_menu_showing == 0)
 	return;
 
 #ifdef FEAT_EVAL
+    int save_RedrawingDisabled = RedrawingDisabled;
     if (cclp->input_fn)
 	RedrawingDisabled = 0;
 #endif
@@ -3974,7 +4067,7 @@ wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
     wild_menu_showing = 0;
 #ifdef FEAT_EVAL
     if (cclp->input_fn)
-	RedrawingDisabled = old_RedrawingDisabled;
+	RedrawingDisabled = save_RedrawingDisabled;
 #endif
 }
 
@@ -4016,20 +4109,46 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     ExpandInit(&xpc);
     if (STRCMP(type, "cmdline") == 0)
     {
-	set_one_cmd_context(&xpc, pat);
+	int cmdline_len = (int)STRLEN(pat);
+	set_cmd_context(&xpc, pat, cmdline_len, cmdline_len, FALSE);
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-	xpc.xp_col = (int)STRLEN(pat);
+	xpc.xp_col = cmdline_len;
     }
     else
     {
 	xpc.xp_pattern = pat;
 	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	xpc.xp_line = pat;
 
 	xpc.xp_context = cmdcomplete_str_to_type(type);
 	if (xpc.xp_context == EXPAND_NOTHING)
 	{
 	    semsg(_(e_invalid_argument_str), type);
 	    return;
+	}
+
+	if (xpc.xp_context == EXPAND_USER_DEFINED)
+	{
+	    // Must be "custom,funcname" pattern
+	    if (STRNCMP(type, "custom,", 7) != 0)
+	    {
+		semsg(_(e_invalid_argument_str), type);
+		return;
+	    }
+
+	    xpc.xp_arg = type + 7;
+	}
+
+	if (xpc.xp_context == EXPAND_USER_LIST)
+	{
+	    // Must be "customlist,funcname" pattern
+	    if (STRNCMP(type, "customlist,", 11) != 0)
+	    {
+		semsg(_(e_invalid_argument_str), type);
+		return;
+	    }
+
+	    xpc.xp_arg = type + 11;
 	}
 
 # if defined(FEAT_MENU)

@@ -131,6 +131,64 @@ func Test_window_quit()
   bw Xa Xb
 endfunc
 
+func Test_window_curwin_not_prevwin()
+  botright split
+  call assert_equal(2, winnr())
+  call assert_equal(1, winnr('#'))
+  quit
+  call assert_equal(1, winnr())
+  call assert_equal(0, winnr('#'))
+
+  botright split
+  botright split
+  call assert_equal(3, winnr())
+  call assert_equal(2, winnr('#'))
+  1quit
+  call assert_equal(2, winnr())
+  call assert_equal(1, winnr('#'))
+
+  botright split
+  call assert_equal(1, tabpagenr())
+  call assert_equal(3, winnr())
+  call assert_equal(2, winnr('#'))
+  wincmd T
+  call assert_equal(2, tabpagenr())
+  call assert_equal(1, winnr())
+  call assert_equal(0, winnr('#'))
+  tabfirst
+  call assert_equal(1, tabpagenr())
+  call assert_equal(2, winnr())
+  call assert_equal(0, winnr('#'))
+
+  tabonly
+  botright split
+  wincmd t
+  wincmd p
+  call assert_equal(3, winnr())
+  call assert_equal(1, winnr('#'))
+  quit
+  call assert_equal(2, winnr())
+  call assert_equal(1, winnr('#'))
+
+  botright split
+  wincmd t
+  wincmd p
+  call assert_equal(1, tabpagenr())
+  call assert_equal(3, winnr())
+  call assert_equal(1, winnr('#'))
+  wincmd T
+  call assert_equal(2, tabpagenr())
+  call assert_equal(1, winnr())
+  call assert_equal(0, winnr('#'))
+  tabfirst
+  call assert_equal(1, tabpagenr())
+  call assert_equal(2, winnr())
+  call assert_equal(1, winnr('#'))
+
+  tabonly
+  only
+endfunc
+
 func Test_window_horizontal_split()
   call assert_equal(1, winnr('$'))
   3wincmd s
@@ -1819,9 +1877,20 @@ endfunc
 
 func Test_splitkeep_misc()
   set splitkeep=screen
-  set splitbelow
 
   call setline(1, range(1, &lines))
+  " Cursor is adjusted to start and end of buffer
+  norm M
+  wincmd s
+  resize 1
+  call assert_equal(1, line('.'))
+  wincmd j
+  norm GM
+  resize 1
+  call assert_equal(&lines, line('.'))
+  only!
+
+  set splitbelow
   norm Gzz
   let top = line('w0')
   " No scroll when aucmd_win is opened
@@ -1848,6 +1917,33 @@ func Test_splitkeep_misc()
   %bwipeout!
   set splitbelow&
   set splitkeep&
+endfunc
+
+func Test_splitkeep_cursor()
+  CheckScreendump
+  let lines =<< trim END
+    set splitkeep=screen
+    autocmd CursorMoved * wincmd p | wincmd p
+    call setline(1, range(1, 200))
+    func CursorEqualize()
+      call cursor(100, 1)
+      wincmd =
+    endfunc
+    wincmd s
+    call CursorEqualize()
+  END
+  call writefile(lines, 'XTestSplitkeepCallback', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepCallback', #{rows: 8})
+
+  call VerifyScreenDump(buf, 'Test_splitkeep_cursor_1', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_splitkeep_cursor_2', {})
+
+  call term_sendkeys(buf, ":set scrolloff=0\<CR>G")
+  call VerifyScreenDump(buf, 'Test_splitkeep_cursor_3', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_splitkeep_callback()

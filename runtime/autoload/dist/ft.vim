@@ -2,8 +2,9 @@ vim9script
 
 # Vim functions for file type detection
 #
-# Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2023 Apr 22
+# Maintainer:		The Vim Project <https://github.com/vim/vim>
+# Last Change:		2024 Jan 05
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -61,7 +62,7 @@ export def FTasmsyntax()
   endif
 enddef
 
-var ft_visual_basic_content = '\cVB_Name\|Begin VB\.\(Form\|MDIForm\|UserControl\)'
+var ft_visual_basic_content = '\c^\s*\%(Attribute\s\+VB_Name\|Begin\s\+\%(VB\.\|{\%(\x\+-\)\+\x\+}\)\)'
 
 # See FTfrm() for Visual Basic form file detection
 export def FTbas()
@@ -145,12 +146,20 @@ export def FTcls()
     return
   endif
 
-  if getline(1) =~ '^\v%(\%|\\)'
-    setf tex
-  elseif getline(1)[0] == '#' && getline(1) =~ 'rexx'
+  var line1 = getline(1)
+  if line1 =~ '^#!.*\<\%(rexx\|regina\)\>'
     setf rexx
-  elseif getline(1) == 'VERSION 1.0 CLASS'
+    return
+  elseif line1 == 'VERSION 1.0 CLASS'
     setf vb
+    return
+  endif
+
+  var nonblank1 = getline(nextnonblank(1))
+  if nonblank1 =~ '^\v%(\%|\\)'
+    setf tex
+  elseif nonblank1 =~ '^\s*\%(/\*\|::\w\)'
+    setf rexx
   else
     setf st
   endif
@@ -270,6 +279,19 @@ export def DtraceCheck()
   endif
 enddef
 
+export def FTdef()
+  if get(g:, "filetype_def", "") == "modula2" || IsModula2()
+    SetFiletypeModula2()
+    return
+  endif
+
+  if exists("g:filetype_def")
+    exe "setf " .. g:filetype_def
+  else
+    setf def
+  endif
+enddef
+
 export def FTe()
   if exists('g:filetype_euphoria')
     exe 'setf ' .. g:filetype_euphoria
@@ -286,9 +308,45 @@ export def FTe()
   endif
 enddef
 
+def IsForth(): bool
+  var first_line = nextnonblank(1)
+
+  # SwiftForth block comment (line is usually filled with '-' or '=') or
+  # OPTIONAL (sometimes precedes the header comment)
+  if getline(first_line) =~? '^\%({\%(\s\|$\)\|OPTIONAL\s\)'
+    return true
+  endif
+
+  var n = first_line
+  while n < 100 && n <= line("$")
+    # Forth comments and colon definitions
+    if getline(n) =~ '^[:(\\] '
+      return true
+    endif
+    n += 1
+  endwhile
+  return false
+enddef
+
+# Distinguish between Forth and Fortran
+export def FTf()
+  if exists("g:filetype_f")
+    exe "setf " .. g:filetype_f
+  elseif IsForth()
+    setf forth
+  else
+    setf fortran
+  endif
+enddef
+
 export def FTfrm()
   if exists("g:filetype_frm")
     exe "setf " .. g:filetype_frm
+    return
+  endif
+
+  if getline(1) == "VERSION 5.00"
+    setf vb
     return
   endif
 
@@ -301,21 +359,13 @@ export def FTfrm()
   endif
 enddef
 
-# Distinguish between Forth and F#.
-# Provided by Doug Kearns.
+# Distinguish between Forth and F#
 export def FTfs()
   if exists("g:filetype_fs")
     exe "setf " .. g:filetype_fs
+  elseif IsForth()
+    setf forth
   else
-    var n = 1
-    while n < 100 && n <= line("$")
-      # Forth comments and colon definitions
-      if getline(n) =~ "^[:(\\\\] "
-        setf forth
-        return
-      endif
-      n += 1
-    endwhile
     setf fsharp
   endif
 enddef
@@ -362,8 +412,8 @@ export def ProtoCheck(default: string)
   else
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
-    var l = getline(nextnonblank(1))
-    if l =~ '\<prolog\>' || l =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || l =~ ':-'
+    var lnum = getline(nextnonblank(1))
+    if lnum =~ '\<prolog\>' || lnum =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || lnum =~ ':-'
       setf prolog
     else
       exe 'setf ' .. default
@@ -472,26 +522,63 @@ enddef
 def IsLProlog(): bool
   # skip apparent comments and blank lines, what looks like
   # LambdaProlog comment may be RAPID header
-  var l: number = nextnonblank(1)
-  while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
-    l = nextnonblank(l + 1)
+  var lnum: number = nextnonblank(1)
+  while lnum > 0 && lnum < line('$') && getline(lnum) =~ '^\s*%' # LambdaProlog comment
+    lnum = nextnonblank(lnum + 1)
   endwhile
   # this pattern must not catch a go.mod file
-  return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+  return getline(lnum) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+enddef
+
+def IsModula2(): bool
+  return getline(nextnonblank(1)) =~ '\<MODULE\s\+\w\+\s*;\|^\s*(\*'
+enddef
+
+def SetFiletypeModula2()
+  const KNOWN_DIALECTS = ["iso", "pim", "r10"]
+  const KNOWN_EXTENSIONS = ["gm2"]
+  const LINE_COUNT = 200
+  const TAG = '(\*!m2\(\w\+\)\%(+\(\w\+\)\)\=\*)'
+
+  var dialect = get(g:, "modula2_default_dialect", "pim")
+  var extension = get(g:, "modula2_default_extension", "")
+
+  var matches = []
+
+  # ignore unknown dialects or badly formatted tags
+  for lnum in range(1, min([line("$"), LINE_COUNT]))
+    matches = matchlist(getline(lnum), TAG)
+    if !empty(matches)
+      if index(KNOWN_DIALECTS, matches[1]) >= 0
+         dialect = matches[1]
+      endif
+      if index(KNOWN_EXTENSIONS, matches[2]) >= 0
+         extension = matches[2]
+      endif
+      break
+    endif
+  endfor
+
+  modula2#SetDialect(dialect, extension)
+
+  setf modula2
 enddef
 
 # Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
 export def FTmod()
+  if get(g:, "filetype_mod", "") == "modula2" || IsModula2()
+    SetFiletypeModula2()
+    return
+  endif
+
   if exists("g:filetype_mod")
     exe "setf " .. g:filetype_mod
-  elseif IsLProlog()
-    setf lprolog
-  elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
-    setf modula2
-  elseif IsRapid()
-    setf rapid
   elseif expand("<afile>") =~ '\<go.mod$'
     setf gomod
+  elseif IsLProlog()
+    setf lprolog
+  elseif IsRapid()
+    setf rapid
   else
     # Nothing recognized, assume modsim3
     setf modsim3
@@ -504,8 +591,8 @@ export def FTpl()
   else
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
-    var l = getline(nextnonblank(1))
-    if l =~ '\<prolog\>' || l =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || l =~ ':-'
+    var line = getline(nextnonblank(1))
+    if line =~ '\<prolog\>' || line =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || line =~ ':-'
       setf prolog
     else
       setf perl
@@ -553,23 +640,27 @@ export def FTprogress_cweb()
   endif
 enddef
 
-export def FTprogress_asm()
+# These include the leading '%' sign
+var ft_swig_keywords = '^\s*%\%(addmethods\|apply\|beginfile\|clear\|constant\|define\|echo\|enddef\|endoffile\|extend\|feature\|fragment\|ignore\|import\|importfile\|include\|includefile\|inline\|insert\|keyword\|module\|name\|namewarn\|native\|newobject\|parms\|pragma\|rename\|template\|typedef\|typemap\|types\|varargs\|warn\)'
+# This is the start/end of a block that is copied literally to the processor file (C/C++)
+var ft_swig_verbatim_block_start = '^\s*%{'
+
+export def FTi()
   if exists("g:filetype_i")
     exe "setf " .. g:filetype_i
     return
   endif
-  # This function checks for an assembly comment the first ten lines.
+  # This function checks for an assembly comment or a SWIG keyword or verbatim block in the first 50 lines.
   # If not found, assume Progress.
   var lnum = 1
-  while lnum <= 10 && lnum < line('$')
+  while lnum <= 50 && lnum < line('$')
     var line = getline(lnum)
     if line =~ '^\s*;' || line =~ '^\*'
       FTasm()
       return
-    elseif line !~ '^\s*$' || line =~ '^/\*'
-      # Not an empty line: Doesn't look like valid assembly code.
-      # Or it looks like a Progress /* comment
-      break
+    elseif line =~ ft_swig_keywords || line =~ ft_swig_verbatim_block_start
+      setf swig
+      return
     endif
     lnum += 1
   endwhile
@@ -678,26 +769,24 @@ export def McSetf()
 enddef
 
 # Called from filetype.vim and scripts.vim.
-export def SetFileTypeSH(name: string)
-  if did_filetype()
+# When "setft" is passed and false then the 'filetype' option is not set.
+export def SetFileTypeSH(name: string, setft = true): string
+  if setft && did_filetype()
     # Filetype was already detected
-    return
+    return ''
   endif
-  if expand("<amatch>") =~ g:ft_ignore_pat
-    return
+  if setft && expand("<amatch>") =~ g:ft_ignore_pat
+    return ''
   endif
   if name =~ '\<csh\>'
     # Some .sh scripts contain #!/bin/csh.
-    SetFileTypeShell("csh")
-    return
+    return SetFileTypeShell("csh", setft)
   elseif name =~ '\<tcsh\>'
     # Some .sh scripts contain #!/bin/tcsh.
-    SetFileTypeShell("tcsh")
-    return
+    return SetFileTypeShell("tcsh", setft)
   elseif name =~ '\<zsh\>'
     # Some .sh scripts contain #!/bin/zsh.
-    SetFileTypeShell("zsh")
-    return
+    return SetFileTypeShell("zsh", setft)
   elseif name =~ '\<ksh\>'
     b:is_kornshell = 1
     if exists("b:is_bash")
@@ -724,34 +813,43 @@ export def SetFileTypeSH(name: string)
       unlet b:is_bash
     endif
   endif
-  SetFileTypeShell("sh")
+
+  return SetFileTypeShell("sh", setft)
 enddef
 
 # For shell-like file types, check for an "exec" command hidden in a comment,
 # as used for Tcl.
+# When "setft" is passed and false then the 'filetype' option is not set.
 # Also called from scripts.vim, thus can't be local to this script.
-export def SetFileTypeShell(name: string)
-  if did_filetype()
+export def SetFileTypeShell(name: string, setft = true): string
+  if setft && did_filetype()
     # Filetype was already detected
-    return
+    return ''
   endif
-  if expand("<amatch>") =~ g:ft_ignore_pat
-    return
+  if setft && expand("<amatch>") =~ g:ft_ignore_pat
+    return ''
   endif
-  var l = 2
-  while l < 20 && l < line("$") && getline(l) =~ '^\s*\(#\|$\)'
+
+  var lnum = 2
+  while lnum < 20 && lnum < line("$") && getline(lnum) =~ '^\s*\(#\|$\)'
     # Skip empty and comment lines.
-    l += 1
+    lnum += 1
   endwhile
-  if l < line("$") && getline(l) =~ '\s*exec\s' && getline(l - 1) =~ '^\s*#.*\\$'
+  if lnum < line("$") && getline(lnum) =~ '\s*exec\s' && getline(lnum - 1) =~ '^\s*#.*\\$'
     # Found an "exec" line after a comment with continuation
-    var n = substitute(getline(l), '\s*exec\s\+\([^ ]*/\)\=', '', '')
+    var n = substitute(getline(lnum), '\s*exec\s\+\([^ ]*/\)\=', '', '')
     if n =~ '\<tclsh\|\<wish'
-      setf tcl
-      return
+      if setft
+	setf tcl
+      endif
+      return 'tcl'
     endif
   endif
-  exe "setf " .. name
+
+  if setft
+    exe "setf " .. name
+  endif
+  return name
 enddef
 
 export def CSH()
@@ -1138,26 +1236,46 @@ export def FTv()
     # ":setf" will do nothing, bail out early
     return
   endif
+  if exists("g:filetype_v")
+    exe "setf " .. g:filetype_v
+    return
+  endif
 
-  for line in getline(1, 200)
-    if line[0] =~ '^\s*/'
+  var in_comment = 0
+  for lnum in range(1, min([line("$"), 200]))
+    var line = getline(lnum)
+    # Skip Verilog and V comments (lines and blocks).
+    if line =~ '^\s*/\*'
+      # start comment block
+      in_comment = 1
+    endif
+    if in_comment == 1
+      if line =~ '\*/'
+        # end comment block
+        in_comment = 0
+      endif
+      # skip comment-block line
+      continue
+    endif
+    if line =~ '^\s*//'
       # skip comment line
       continue
+    endif
+
+    # Coq: line ends with a '.' followed by an optional variable number of
+    # spaces or contains the start of a comment, but not inside a Verilog or V
+    # comment.
+    # Example: "Definition x := 10. (*".
+    if (line =~ '\.\s*$' && line !~ '/[/*]') || (line =~ '(\*' && line !~ '/[/*].*(\*')
+      setf coq
+      return
     endif
 
     # Verilog: line ends with ';' followed by an optional variable number of
     # spaces and an optional start of a comment.
     # Example: " b <= a + 1; // Add 1".
-    if line =~ ';\(\s*\)\?\(/.*\)\?$'
+    if line =~ ';\s*\(/[/*].*\)\?$'
       setf verilog
-      return
-    endif
-
-    # Coq: line ends with a '.' followed by an optional variable number of
-    # spaces and an optional start of a comment.
-    # Example: "Definition x := 10. (*".
-    if line =~ '\.\(\s*\)\?\((\*.*\)\?$'
-      setf coq
       return
     endif
   endfor
@@ -1166,5 +1284,13 @@ export def FTv()
   setf v
 enddef
 
+export def FTvba()
+  if getline(1) =~ '^["#] Vimball Archiver'
+    setf vim
+  else
+    setf vb
+  endif
+enddef
+
 # Uncomment this line to check for compilation errors early
-# defcompile
+defcompile

@@ -73,6 +73,9 @@ static struct
     {EXPAND_HELP, "help"},
     {EXPAND_HIGHLIGHT, "highlight"},
     {EXPAND_HISTORY, "history"},
+#if defined(FEAT_KEYMAP)
+    {EXPAND_KEYMAP, "keymap"},
+#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif
@@ -480,6 +483,11 @@ cmdcomplete_type_to_str(int expand)
 cmdcomplete_str_to_type(char_u *complete_str)
 {
     int i;
+
+    if (STRNCMP(complete_str, "custom,", 7) == 0)
+	return EXPAND_USER_DEFINED;
+    if (STRNCMP(complete_str, "customlist,", 11) == 0)
+	return EXPAND_USER_LIST;
 
     for (i = 0; command_complete[i].expand != 0; ++i)
 	if (STRCMP(complete_str, command_complete[i].name) == 0)
@@ -990,7 +998,7 @@ uc_add_command(
     char_u	*rep_buf = NULL;
     garray_T	*gap;
 
-    replace_termcodes(rep, &rep_buf, 0, NULL);
+    replace_termcodes(rep, &rep_buf, 0, 0, NULL);
     if (rep_buf == NULL)
     {
 	// can't replace termcodes - try using the string as is
@@ -1105,7 +1113,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
     char_u *retp = p;
 
     if (*p == '{' && ends_excmd2(eap->arg, skipwhite(p + 1))
-						       && eap->getline != NULL)
+						    && eap->ea_getline != NULL)
     {
 	garray_T    ga;
 	char_u	    *line = NULL;
@@ -1122,7 +1130,7 @@ may_get_cmd_block(exarg_T *eap, char_u *p, char_u **tofree, int *flags)
 	    for (;;)
 	    {
 		vim_free(line);
-		if ((line = eap->getline(':', eap->cookie,
+		if ((line = eap->ea_getline(':', eap->cookie,
 					   0, GETLINE_CONCAT_CONTBAR)) == NULL)
 		{
 		    emsg(_(e_missing_rcurly));
@@ -1950,7 +1958,7 @@ do_ucmd(exarg_T *eap)
 #endif
     }
 
-    (void)do_cmdline(buf, eap->getline, eap->cookie,
+    (void)do_cmdline(buf, eap->ea_getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);
 
     // Careful: Do not use "cmd" here, it may have become invalid if a user

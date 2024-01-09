@@ -17,9 +17,9 @@
  * ScreenLines[off]  Contains a copy of the whole screen, as it is currently
  *		     displayed (excluding text written by external commands).
  * ScreenAttrs[off]  Contains the associated attributes.
- * ScreenCols[off]   Contains the byte offset in the line. -1 means not
- *		     available (below last line), MAXCOL means after the end
- *		     of the line.
+ * ScreenCols[off]   Contains the virtual columns in the line. -1 means not
+ *		     available or before buffer text, MAXCOL means after the
+ *		     end of the line.
  *
  * LineOffset[row]   Contains the offset into ScreenLines*[], ScreenAttrs[]
  *		     and ScreenCols[] for each line.
@@ -743,7 +743,7 @@ screen_line(
 
 	ScreenCols[off_to] = ScreenCols[off_from];
 	if (char_cells == 2)
-	    ScreenCols[off_to + 1] = ScreenCols[off_from];
+	    ScreenCols[off_to + 1] = ScreenCols[off_from + 1];
 
 	off_to += char_cells;
 	off_from += char_cells;
@@ -1199,8 +1199,9 @@ screen_putchar(int c, int row, int col, int attr)
 }
 
 /*
- * Get a single character directly from ScreenLines into "bytes[]".
- * Also return its attribute in *attrp;
+ * Get a single character directly from ScreenLines into "bytes", which must
+ * have a size of "MB_MAXBYTES + 1".
+ * If "attrp" is not NULL, return the character's attribute in "*attrp".
  */
     void
 screen_getbytes(int row, int col, char_u *bytes, int *attrp)
@@ -1212,7 +1213,8 @@ screen_getbytes(int row, int col, char_u *bytes, int *attrp)
 	return;
 
     off = LineOffset[row] + col;
-    *attrp = ScreenAttrs[off];
+    if (attrp != NULL)
+	*attrp = ScreenAttrs[off];
     bytes[0] = ScreenLines[off];
     bytes[1] = NUL;
 
@@ -2696,7 +2698,8 @@ give_up:
 #endif
 
     entered = FALSE;
-    --RedrawingDisabled;
+    if (RedrawingDisabled > 0)
+	--RedrawingDisabled;
 
     /*
      * Do not apply autocommands more than 3 times to avoid an endless loop
@@ -4459,16 +4462,7 @@ fillchar_status(int *attr, win_T *wp)
 	*attr = HL_ATTR(HLF_SNC);
 	fill = wp->w_fill_chars.stlnc;
     }
-    // Use fill when there is highlighting, and highlighting of current
-    // window differs, or the fillchars differ, or this is not the
-    // current window
-    if (*attr != 0 && ((HL_ATTR(HLF_S) != HL_ATTR(HLF_SNC)
-			|| wp != curwin || ONE_WINDOW)
-		    || (wp->w_fill_chars.stl != wp->w_fill_chars.stlnc)))
-	return fill;
-    if (wp == curwin)
-	return '^';
-    return '=';
+    return fill;
 }
 
 /*
@@ -4496,7 +4490,7 @@ redrawing(void)
 	return 0;
     else
 #endif
-	return ((!RedrawingDisabled
+	return ((RedrawingDisabled == 0
 #ifdef FEAT_EVAL
 		    || ignore_redraw_flag_for_testing
 #endif
@@ -4524,7 +4518,7 @@ messaging(void)
     void
 comp_col(void)
 {
-    int last_has_status = (p_ls == 2 || (p_ls == 1 && !ONE_WINDOW));
+    int last_has_status = last_stl_height(FALSE) > 0;
 
     sc_col = 0;
     ru_col = 0;
@@ -4655,6 +4649,45 @@ get_encoded_char_adv(char_u **p)
     return mb_ptr2char_adv(p);
 }
 
+struct charstab
+{
+    int	    *cp;
+    char    *name;
+};
+static fill_chars_T fill_chars;
+static struct charstab filltab[] =
+{
+    {&fill_chars.stl,		"stl"},
+    {&fill_chars.stlnc,		"stlnc"},
+    {&fill_chars.vert,		"vert"},
+    {&fill_chars.fold,		"fold"},
+    {&fill_chars.foldopen,	"foldopen"},
+    {&fill_chars.foldclosed,	"foldclose"},
+    {&fill_chars.foldsep,	"foldsep"},
+    {&fill_chars.diff,		"diff"},
+    {&fill_chars.eob,		"eob"},
+    {&fill_chars.lastline,	"lastline"},
+};
+static lcs_chars_T lcs_chars;
+static struct charstab lcstab[] =
+{
+    {&lcs_chars.eol,		"eol"},
+    {&lcs_chars.ext,		"extends"},
+    {&lcs_chars.nbsp,		"nbsp"},
+    {&lcs_chars.prec,		"precedes"},
+    {&lcs_chars.space,		"space"},
+    {&lcs_chars.tab2,		"tab"},
+    {&lcs_chars.trail,		"trail"},
+    {&lcs_chars.lead,		"lead"},
+#ifdef FEAT_CONCEAL
+    {&lcs_chars.conceal,	"conceal"},
+#else
+    {NULL,			"conceal"},
+#endif
+    {NULL,			"multispace"},
+    {NULL,			"leadmultispace"},
+};
+
 /*
  * Handle setting 'listchars' or 'fillchars'.
  * "value" points to either the global or the window-local value.
@@ -4666,7 +4699,7 @@ get_encoded_char_adv(char_u **p)
     static char *
 set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 {
-    int	    round, i, len, len2, entries;
+    int	    round, i, len, entries;
     char_u  *p, *s;
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
@@ -4674,45 +4707,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
 
-    struct charstab
-    {
-	int	*cp;
-	char	*name;
-    };
     struct charstab *tab;
-
-    static fill_chars_T fill_chars;
-    static struct charstab filltab[] =
-    {
-	{&fill_chars.stl,	"stl"},
-	{&fill_chars.stlnc,	"stlnc"},
-	{&fill_chars.vert,	"vert"},
-	{&fill_chars.fold,	"fold"},
-	{&fill_chars.foldopen,	"foldopen"},
-	{&fill_chars.foldclosed, "foldclose"},
-	{&fill_chars.foldsep,	"foldsep"},
-	{&fill_chars.diff,	"diff"},
-	{&fill_chars.eob,	"eob"},
-	{&fill_chars.lastline,	"lastline"},
-    };
-
-    static lcs_chars_T lcs_chars;
-    struct charstab lcstab[] =
-    {
-	{&lcs_chars.eol,	"eol"},
-	{&lcs_chars.ext,	"extends"},
-	{&lcs_chars.nbsp,	"nbsp"},
-	{&lcs_chars.prec,	"precedes"},
-	{&lcs_chars.space,	"space"},
-	{&lcs_chars.tab2,	"tab"},
-	{&lcs_chars.trail,	"trail"},
-	{&lcs_chars.lead,	"lead"},
-#ifdef FEAT_CONCEAL
-	{&lcs_chars.conceal,	"conceal"},
-#else
-	{NULL,			"conceal"},
-#endif
-    };
 
     if (is_listchars)
     {
@@ -4731,7 +4726,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
     }
 
     // first round: check for valid value, second round: assign values
-    for (round = 0; round <= 1; ++round)
+    for (round = 0; round <= (apply ? 1 : 0); ++round)
     {
 	if (round > 0)
 	{
@@ -4782,58 +4777,12 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	    for (i = 0; i < entries; ++i)
 	    {
 		len = (int)STRLEN(tab[i].name);
-		if (STRNCMP(p, tab[i].name, len) == 0
+		if (!(STRNCMP(p, tab[i].name, len) == 0
 			&& p[len] == ':'
-			&& p[len + 1] != NUL)
-		{
-		    c2 = c3 = 0;
-		    s = p + len + 1;
-		    c1 = get_encoded_char_adv(&s);
-		    if (char2cells(c1) > 1)
-			return e_invalid_argument;
-		    if (tab[i].cp == &lcs_chars.tab2)
-		    {
-			if (*s == NUL)
-			    return e_invalid_argument;
-			c2 = get_encoded_char_adv(&s);
-			if (char2cells(c2) > 1)
-			    return e_invalid_argument;
-			if (!(*s == ',' || *s == NUL))
-			{
-			    c3 = get_encoded_char_adv(&s);
-			    if (char2cells(c3) > 1)
-				return e_invalid_argument;
-			}
-		    }
+			&& p[len + 1] != NUL))
+		    continue;
 
-		    if (*s == ',' || *s == NUL)
-		    {
-			if (round > 0)
-			{
-			    if (tab[i].cp == &lcs_chars.tab2)
-			    {
-				lcs_chars.tab1 = c1;
-				lcs_chars.tab2 = c2;
-				lcs_chars.tab3 = c3;
-			    }
-			    else if (tab[i].cp != NULL)
-				*(tab[i].cp) = c1;
-
-			}
-			p = s;
-			break;
-		    }
-		}
-	    }
-
-	    if (i == entries)
-	    {
-		len = (int)STRLEN("multispace");
-		len2 = (int)STRLEN("leadmultispace");
-		if (is_listchars
-			&& STRNCMP(p, "multispace", len) == 0
-			&& p[len] == ':'
-			&& p[len + 1] != NUL)
+		if (is_listchars && strcmp(tab[i].name, "multispace") == 0)
 		{
 		    s = p + len + 1;
 		    if (round == 0)
@@ -4865,14 +4814,12 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			}
 			p = s;
 		    }
+		    break;
 		}
 
-		else if (is_listchars
-			&& STRNCMP(p, "leadmultispace", len2) == 0
-			&& p[len2] == ':'
-			&& p[len2 + 1] != NUL)
+		if (is_listchars && strcmp(tab[i].name, "leadmultispace") == 0)
 		{
-		    s = p + len2 + 1;
+		    s = p + len + 1;
 		    if (round == 0)
 		    {
 			// get length of lcs-leadmultispace string in first
@@ -4903,10 +4850,50 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			}
 			p = s;
 		    }
+		    break;
 		}
-		else
+
+		c2 = c3 = 0;
+		s = p + len + 1;
+		c1 = get_encoded_char_adv(&s);
+		if (char2cells(c1) > 1)
 		    return e_invalid_argument;
+		if (tab[i].cp == &lcs_chars.tab2)
+		{
+		    if (*s == NUL)
+			return e_invalid_argument;
+		    c2 = get_encoded_char_adv(&s);
+		    if (char2cells(c2) > 1)
+			return e_invalid_argument;
+		    if (!(*s == ',' || *s == NUL))
+		    {
+			c3 = get_encoded_char_adv(&s);
+			if (char2cells(c3) > 1)
+			    return e_invalid_argument;
+		    }
+		}
+
+		if (*s == ',' || *s == NUL)
+		{
+		    if (round > 0)
+		    {
+			if (tab[i].cp == &lcs_chars.tab2)
+			{
+			    lcs_chars.tab1 = c1;
+			    lcs_chars.tab2 = c2;
+			    lcs_chars.tab3 = c3;
+			}
+			else if (tab[i].cp != NULL)
+			    *(tab[i].cp) = c1;
+
+		    }
+		    p = s;
+		    break;
+		}
 	    }
+
+	    if (i == entries)
+		return e_invalid_argument;
 
 	    if (*p == ',')
 		++p;
@@ -4925,11 +4912,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	{
 	    wp->w_fill_chars = fill_chars;
 	}
-    }
-    else if (is_listchars)
-    {
-	vim_free(lcs_chars.multispace);
-	vim_free(lcs_chars.leadmultispace);
     }
 
     return NULL;	// no error
@@ -4951,6 +4933,32 @@ set_fillchars_option(win_T *wp, char_u *val, int apply)
 set_listchars_option(win_T *wp, char_u *val, int apply)
 {
     return set_chars_option(wp, val, TRUE, apply);
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain possible arguments of the
+ * 'fillchars' option.
+ */
+    char_u *
+get_fillchars_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(filltab) / sizeof(filltab[0])))
+	return NULL;
+
+    return (char_u*)filltab[idx].name;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain possible arguments of the
+ * 'listchars' option.
+ */
+    char_u *
+get_listchars_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(lcstab) / sizeof(lcstab[0])))
+	return NULL;
+
+    return (char_u*)lcstab[idx].name;
 }
 
 /*

@@ -395,15 +395,20 @@ DYNAMIC_PYTHON3=yes
  ifndef PYTHON3_VER
 PYTHON3_VER=36
  endif
+ ifeq ($(DYNAMIC_PYTHON3_STABLE_ABI),yes)
+PYTHON3_NAME=python3
+ else
+PYTHON3_NAME=python$(PYTHON3_VER)
+ endif
  ifndef DYNAMIC_PYTHON3_DLL
-DYNAMIC_PYTHON3_DLL=python$(PYTHON3_VER).dll
+DYNAMIC_PYTHON3_DLL=$(PYTHON3_NAME).dll
  endif
  ifdef PYTHON3_HOME
 PYTHON3_HOME_DEF=-DPYTHON3_HOME=L\"$(PYTHON3_HOME)\"
  endif
 
  ifeq (no,$(DYNAMIC_PYTHON3))
-PYTHON3LIB=-L$(PYTHON3)/libs -lpython$(PYTHON3_VER)
+PYTHON3LIB=-L$(PYTHON3)/libs -l$(PYTHON3_NAME)
  endif
 
  ifndef PYTHON3INC
@@ -411,6 +416,9 @@ PYTHON3LIB=-L$(PYTHON3)/libs -lpython$(PYTHON3_VER)
 PYTHON3INC=-I $(PYTHON3)/include
   else
 PYTHON3INC=-I $(PYTHON3)/win32inc
+  endif
+  ifeq ($(DYNAMIC_PYTHON3_STABLE_ABI),yes)
+PYTHON3INC += -DPy_LIMITED_API=0x3080000
   endif
  endif
 endif
@@ -505,9 +513,6 @@ endif # RUBY
 DEF_GUI=-DFEAT_GUI_MSWIN -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	-DHAVE_PATHDEF -DFEAT_$(FEATURES) -DHAVE_STDINT_H
-ifeq ($(ARCH),x86-64)
-DEFINES+=-DMS_WIN64
-endif
 
 #>>>>> end of choices
 ###########################################################################
@@ -594,6 +599,9 @@ ifdef PYTHON3
 CFLAGS += -DFEAT_PYTHON3
  ifeq (yes, $(DYNAMIC_PYTHON3))
 CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
+  ifeq (yes, $(DYNAMIC_PYTHON3_STABLE_ABI))
+CFLAGS += -DDYNAMIC_PYTHON3_STABLE_ABI
+  endif
  else
 CFLAGS += -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
  endif
@@ -915,7 +923,7 @@ endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/job.o $(OUTDIR)/channel.o
-LIB += -lwsock32 -lws2_32
+LIB += -lws2_32
 endif
 
 ifeq ($(DIRECTX),yes)

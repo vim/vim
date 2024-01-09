@@ -1376,7 +1376,7 @@ regatom(int *flagp)
 	if (one_exactly)
 	    EMSG_ONE_RET_NULL;
 	// Supposed to be caught earlier.
-	IEMSG_RET_NULL(_(e_internal_error_in_regexp));
+	IEMSG_RET_NULL(e_internal_error_in_regexp);
 	// NOTREACHED
 
       case Magic('='):
@@ -2477,7 +2477,7 @@ bt_regcomp(char_u *expr, int re_flags)
     int		flags;
 
     if (expr == NULL)
-	IEMSG_RET_NULL(_(e_null_argument));
+	IEMSG_RET_NULL(e_null_argument);
 
     init_class_tab();
 
@@ -3103,7 +3103,7 @@ do_class:
 	break;
 
       default:			// Oh dear.  Called inappropriately.
-	iemsg(_(e_corrupted_regexp_program));
+	iemsg(e_corrupted_regexp_program);
 #ifdef DEBUG
 	printf("Called regrepeat with op code %d\n", OP(p));
 #endif
@@ -3743,13 +3743,38 @@ regmatch(
 
 	  case ANYOF:
 	  case ANYBUT:
-	    if (c == NUL)
-		status = RA_NOMATCH;
-	    else if ((cstrchr(OPERAND(scan), c) == NULL) == (op == ANYOF))
-		status = RA_NOMATCH;
-	    else
-		ADVANCE_REGINPUT();
-	    break;
+	    {
+		char_u  *q = OPERAND(scan);
+
+		if (c == NUL)
+		    status = RA_NOMATCH;
+		else if ((cstrchr(q, c) == NULL) == (op == ANYOF))
+		    status = RA_NOMATCH;
+		else
+		{
+		    // Check following combining characters
+		    int	len = 0;
+		    int i;
+
+		    if (enc_utf8)
+			len = utfc_ptr2len(q) - utf_ptr2len(q);
+
+		    MB_CPTR_ADV(rex.input);
+		    MB_CPTR_ADV(q);
+
+		    if (!enc_utf8 || len == 0)
+			break;
+
+		    for (i = 0; i < len; ++i)
+			if (q[i] != rex.input[i])
+			{
+			    status = RA_NOMATCH;
+			    break;
+			}
+		    rex.input += len;
+		}
+		break;
+	    }
 
 	  case MULTIBYTECODE:
 	    if (has_mbyte)
@@ -4327,7 +4352,7 @@ regmatch(
 	    break;
 
 	  default:
-	    iemsg(_(e_corrupted_regexp_program));
+	    iemsg(e_corrupted_regexp_program);
 #ifdef DEBUG
 	    printf("Illegal op code %d\n", op);
 #endif
@@ -4740,7 +4765,7 @@ regmatch(
 	{
 	    // We get here only if there's trouble -- normally "case END" is
 	    // the terminating point.
-	    iemsg(_(e_corrupted_regexp_program));
+	    iemsg(e_corrupted_regexp_program);
 #ifdef DEBUG
 	    printf("Premature EOL\n");
 #endif
@@ -4889,7 +4914,7 @@ bt_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	iemsg(_(e_null_argument));
+	iemsg(e_null_argument);
 	goto theend;
     }
 

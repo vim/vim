@@ -20,7 +20,7 @@ The make utility must be run from the po directory.
 First of all you must set the environment variable LANGUAGE to xx, where xx is
 the name of your language. You can do it from the command line or adding a
 line to your autoexec.bat file: set LANGUAGE=xx. You must also add your
-language to the Make_ming.mak file in the lines LANGUAGES, MOFILES, AND
+language to the Make_all.mak file in the lines LANGUAGES, MOFILES, AND
 POFILES.
 
 If you don't have a xx.po file, you must create it with the command:
@@ -59,8 +59,8 @@ the same as in the Unix case, only the commands change):
     Remove "#~" and "#, fuzzy" after adding the translation.
 
     There is one special message:
-	msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
-    You should include your name and E-mail address instead, for example:
+	msgid "Messages maintainer: The Vim Project"
+    You should include your name and e-mail address instead, for example:
 	msgstr "Berichten übersetzt bei: John Doe <john@doe.org>"
 
 (3) Clean up

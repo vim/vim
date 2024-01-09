@@ -19,7 +19,7 @@ scriptencoding utf-8
 menutrans &File				&Soubor
 menutrans &Open\.\.\.<Tab>:e		&Otevřít\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Otevřít\ v\ no&vém\ okně\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otevřít\ tab\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Otevřít\ tab\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Nový<Tab>:enew
 menutrans &Close<Tab>:close		&Zavřít<Tab>:close
 menutrans &Save<Tab>:w			&Uložit<Tab>:w

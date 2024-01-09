@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2023 May 12
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -156,6 +156,7 @@ digraph_setlist({digraphlist})	Boolean	register multiple |digraph|s
 echoraw({expr})			none	output {expr} as-is
 empty({expr})			Number	|TRUE| if {expr} is empty
 environ()			Dict	return environment variables
+err_teapot([{expr}])		none	give E418, or E503 if {expr} is |TRUE|
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
 eval({string})			any	evaluate {string} into its value
 eventhandler()			Number	|TRUE| if inside an event handler
@@ -309,6 +310,7 @@ inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret({prompt} [, {text}]) String	like input() but hiding the text
 insert({object}, {item} [, {idx}]) List	insert {item} in {object} [before {idx}]
+instanceof({object}, {class})	Number	|TRUE| if {object} is an instance of {class}
 interrupt()			none	interrupt script execution
 invert({expr})			Number	bitwise invert
 isabsolutepath({path})		Number	|TRUE| if {path} is an absolute path
@@ -368,6 +370,8 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 				Number	highlight positions with {group}
 matcharg({nr})			List	arguments of |:match|
+matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict})
+				List	all the {pat} matches in buffer {buf}
 matchdelete({id} [, {win}])	Number	delete match identified by {id}
 matchend({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} ends in {expr}
@@ -379,6 +383,8 @@ matchlist({expr}, {pat} [, {start} [, {count}]])
 				List	match and submatches of {pat} in {expr}
 matchstr({expr}, {pat} [, {start} [, {count}]])
 				String	{count}'th match of {pat} in {expr}
+matchstrlist({list}, {pat} [, {dict})
+				List	all the {pat} matches in {list}
 matchstrpos({expr}, {pat} [, {start} [, {count}]])
 				List	{count}'th match of {pat} in {expr}
 max({expr})			Number	maximum value of items in {expr}
@@ -706,13 +712,14 @@ trunc({expr})			Float	truncate Float {expr}
 type({expr})			Number	type of value {expr}
 typename({expr})		String	representation of the type of {expr}
 undofile({name})		String	undo file name for {name}
-undotree()			List	undo file tree
+undotree([{buf}])		List	undo file tree for buffer {buf}
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 				Number	UTF-16 index of byte {idx} in {string}
 values({dict})			List	values in {dict}
-virtcol({expr} [, {list}])	Number or List
+virtcol({expr} [, {list} [, {winid}])
+				Number or List
 					screen column of cursor or mark
 virtcol2col({winid}, {lnum}, {col})
 				Number  byte index of a character on screen
@@ -1248,7 +1255,7 @@ bufload({buf})						*bufload()*
 		refers to an existing file then the file is read.  Otherwise
 		the buffer will be empty.  If the buffer was already loaded
 		then there is no change.  If the buffer is not related to a
-		file the no file is read (e.g., when 'buftype' is "nofile").
+		file then no file is read (e.g., when 'buftype' is "nofile").
 		If there is an existing swap file for the file of the buffer,
 		there will be no dialog, the buffer will be loaded anyway.
 		The {buf} argument is used like with |bufexists()|.
@@ -1528,11 +1535,13 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 		When {utf16} is present and TRUE, {idx} is used as the UTF-16
 		index in the String {expr} instead of as the byte index.
 
-		Returns -1 if the arguments are invalid or if {idx} is greater
-		than the index of the last byte in {string}.  An error is
-		given if the first argument is not a string, the second
-		argument is not a number or when the third argument is present
-		and is not zero or one.
+		Returns -1 if the arguments are invalid or if there are less
+		than {idx} bytes. If there are exactly {idx} bytes the length
+		of the string in characters is returned.
+
+		An error is given and -1 is returned if the first argument is
+		not a string, the second argument is not a number or when the
+		third argument is present and is not zero or one.
 
 		See |byteidx()| and |byteidxcomp()| for getting the byte index
 		from the character index and |utf16idx()| for getting the
@@ -1592,7 +1601,7 @@ clearmatches([{win}])					*clearmatches()*
 		Can also be used as a |method|: >
 			GetWin()->clearmatches()
 <
-col({expr} [, {winid})					*col()*
+col({expr} [, {winid}])					*col()*
 		The result is a Number, which is the byte index of the column
 		position given with {expr}.  The accepted positions are:
 		    .	    the cursor position
@@ -1655,7 +1664,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 		Example: >
 	inoremap <F5> <C-R>=ListMonths()<CR>
 
-	func! ListMonths()
+	func ListMonths()
 	  call complete(col('.'), ['January', 'February', 'March',
 		\ 'April', 'May', 'June', 'July', 'August', 'September',
 		\ 'October', 'November', 'December'])
@@ -1850,7 +1859,7 @@ cosh({expr})						*cosh()*
 			Compute()->cosh()
 
 
-count({comp}, {expr} [, {ic} [, {start}]])			*count()*
+count({comp}, {expr} [, {ic} [, {start}]])		*count()* *E706*
 		Return the number of times an item with value {expr} appears
 		in |String|, |List| or |Dictionary| {comp}.
 
@@ -1920,7 +1929,7 @@ cursor({list})
 		This is like the return value of |getpos()| or |getcurpos()|,
 		but without the first item.
 
-		To position the cursor using the character count, use
+		To position the cursor using {col} as the character count, use
 		|setcursorcharpos()|.
 
 		Does not change the jumplist.
@@ -2198,6 +2207,15 @@ environ()						*environ()*
 <		Note that the variable name may be CamelCase; to ignore case
 		use this: >
 			:echo index(keys(environ()), 'HOME', 0, 1) != -1
+
+
+err_teapot([{expr}])					*err_teapot()*
+		Produce an error with number 418, needed for implementation of
+		RFC 2324.
+		If {expr} is present and it is TRUE error 503 is given,
+		indicating that coffee is temporarily not available.
+		If {expr} is present it must be a String.
+
 
 escape({string}, {chars})				*escape()*
 		Escape the characters in {chars} that occur in {string} with a
@@ -3538,6 +3556,8 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		cmdline		|cmdline-completion| result
 		compiler	compilers
 		cscope		|:cscope| suboptions
+		custom,{func}	custom completion, defined via {func}
+		customlist,{func} custom completion, defined via {func}
 		diff_buffer     |:diffget| and |:diffput| completion
 		dir		directory names
 		environment	environment variable names
@@ -3550,6 +3570,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		help		help subjects
 		highlight	highlight groups
 		history		|:history| suboptions
+		keymap		keyboard mappings
 		locale		locale names (as output of locale -a)
 		mapclear	buffer argument
 		mapping		mapping name
@@ -3912,6 +3933,8 @@ getmousepos()						*getmousepos()*
 			wincol		column inside "winid"
 			line		text line inside "winid"
 			column		text column inside "winid"
+			coladd		offset (in screen columns) from the
+					start of the clicked char
 		All numbers are 1-based.
 
 		If not over a window, e.g. when in the command line, then only
@@ -3990,6 +4013,9 @@ getqflist([{what}])					*getqflist()*
 			text	description of the error
 			type	type of the error, 'E', '1', etc.
 			valid	|TRUE|: recognized error message
+			user_data
+				custom data associated with the item, can be
+				any type.
 
 		When there is no error list or it's empty, an empty list is
 		returned. Quickfix list entries with a non-existing buffer
@@ -4180,7 +4206,7 @@ getscriptinfo([{opts}])					*getscriptinfo()*
 				Note that this is a copy, the value of
 				script-local variables cannot be changed using
 				this dictionary.
-		    version	Vimscript version (|scriptversion|)
+		    version	Vim script version (|scriptversion|)
 
 		Examples: >
 			:echo getscriptinfo({'name': 'myscript'})
@@ -5033,6 +5059,19 @@ insert({object}, {item} [, {idx}])			*insert()*
 
 		Can also be used as a |method|: >
 			mylist->insert(item)
+<
+					*instanceof()* *E614* *E616* *E693*
+instanceof({object}, {class})
+		The result is a Number, which is |TRUE| when the {object}
+		argument is a direct or indirect instance of a |Class|,
+		|Interface|, or class |:type| alias specified by {class}.
+		If {class} is varargs, the function returns |TRUE| when
+		{object} is an instance of any of the specified classes.
+		Example: >
+			instanceof(animal, Dog, Cat)
+
+<		Can also be used as a |method|: >
+			myobj->instanceof(mytype)
 
 interrupt()						*interrupt()*
 		Interrupt script execution.  It works more or less like the
@@ -5129,8 +5168,12 @@ items({dict})						*items()*
 			for [key, value] in items(mydict)
 			   echo key .. ': ' .. value
 			endfor
+<
+		A List or a String argument is also supported.  In these
+		cases, items() returns a List with the index and the value at
+		the index.
 
-<		Can also be used as a |method|: >
+		Can also be used as a |method|: >
 			mydict->items()
 
 job_ functions are documented here: |job-functions-details|
@@ -6016,6 +6059,51 @@ matcharg({nr})							*matcharg()*
 
 		Can also be used as a |method|: >
 			GetMatch()->matcharg()
+<
+							*matchbufline()*
+matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
+		Returns the |List| of matches in lines from {lnum} to {end} in
+		buffer {buf} where {pat} matches.
+
+		{lnum} and {end} can either be a line number or the string "$"
+		to refer to the last line in {buf}.
+
+		The {dict} argument supports following items:
+		    submatches	include submatch information (|/\(|)
+
+		For each match, a |Dict| with the following items is returned:
+		    byteidx	starting byte index of the match
+		    lnum	line number where there is a match
+		    text	matched string
+		Note that there can be multiple matches in a single line.
+
+		This function works only for loaded buffers. First call
+		|bufload()| if needed.
+
+		When {buf} is not a valid buffer, the buffer is not loaded or
+		{lnum} or {end} is not valid then an error is given and an
+		empty |List| is returned.
+
+		Examples: >
+		    " Assuming line 3 in buffer 5 contains "a"
+		    :echo matchbufline(5, '\<\k\+\>', 3, 3)
+		    [{'lnum': 3, 'byteidx': 0, 'text': 'a'}]
+		    " Assuming line 4 in buffer 10 contains "tik tok"
+		    :echo matchbufline(10, '\<\k\+\>', 1, 4)
+		    [{'lnum': 4, 'byteidx': 0, 'text': 'tik'}, {'lnum': 4, 'byteidx': 4, 'text': 'tok'}]
+<
+		If {submatch} is present and is v:true, then submatches like
+		"\1", "\2", etc. are also returned.  Example: >
+		    " Assuming line 2 in buffer 2 contains "acd"
+		    :echo matchbufline(2, '\(a\)\?\(b\)\?\(c\)\?\(.*\)', 2, 2
+						\ {'submatches': v:true})
+		    [{'lnum': 2, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+<		The "submatches" List always contains 9 items.  If a submatch
+		is not found, then an empty string is returned for that
+		submatch.
+
+		Can also be used as a |method|: >
+			GetBuffer()->matchbufline('mypat', 1, '$')
 
 matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
@@ -6149,6 +6237,40 @@ matchlist({expr}, {pat} [, {start} [, {count}]])		*matchlist()*
 
 		Can also be used as a |method|: >
 			GetText()->matchlist('word')
+<
+						*matchstrlist()*
+matchstrlist({list}, {pat} [, {dict}])
+		Returns the |List| of matches in {list} where {pat} matches.
+		{list} is a |List| of strings.  {pat} is matched against each
+		string in {list}.
+
+		The {dict} argument supports following items:
+		    submatches	include submatch information (|/\(|)
+
+		For each match, a |Dict| with the following items is returned:
+		    byteidx	starting byte index of the match.
+		    idx		index in {list} of the match.
+		    text	matched string
+		    submatches	a List of submatches.  Present only if
+				"submatches" is set to v:true in {dict}.
+
+		Example: >
+		    :echo matchstrlist(['tik tok'], '\<\k\+\>')
+		    [{'idx': 0, 'byteidx': 0, 'text': 'tik'}, {'idx': 0, 'byteidx': 4, 'text': 'tok'}]
+		    :echo matchstrlist(['a', 'b'], '\<\k\+\>')
+		    [{'idx': 0, 'byteidx': 0, 'text': 'a'}, {'idx': 1, 'byteidx': 0, 'text': 'b'}]
+<
+		If "submatches" is present and is v:true, then submatches like
+		"\1", "\2", etc. are also returned.  Example: >
+		    :echo matchstrlist(['acd'], '\(a\)\?\(b\)\?\(c\)\?\(.*\)',
+						\ #{submatches: v:true})
+		    [{'idx': 0, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+<		The "submatches" List always contains 9 items.  If a submatch
+		is not found, then an empty string is returned for that
+		submatch.
+
+		Can also be used as a |method|: >
+			GetListOfStrings()->matchstrlist('mypat')
 
 matchstr({expr}, {pat} [, {start} [, {count}]])			*matchstr()*
 		Same as |match()|, but return the matched string.  Example: >
@@ -6378,7 +6500,10 @@ mode([expr])	Return a string that indicates the current mode.
 		   Rvc	    Virtual Replace mode completion |compl-generic|
 		   Rvx	    Virtual Replace mode |i_CTRL-X| completion
 		   c	    Command-line editing
+		   ct	    Command-line editing via Terminal-Job mode
+		   cr	    Command-line editing overstrike mode |c_<Insert>|
 		   cv	    Vim Ex mode |gQ|
+		   cvr	    Vim Ex mode while in overstrike mode |c_<Insert>|
 		   ce	    Normal Ex mode |Q|
 		   r	    Hit-enter prompt
 		   rm	    The -- more -- prompt
@@ -6575,7 +6700,11 @@ printf({fmt}, {expr1} ...)				*printf()*
 		The "%" starts a conversion specification.  The following
 		arguments appear in sequence:
 
-			%  [flags]  [field-width]  [.precision]  type
+			% [pos-argument] [flags] [field-width] [.precision] type
+
+		pos-argument
+			At most one positional argument specifier. These
+			take the form {n$}, where n is >= 1.
 
 		flags
 			Zero or more of the following flags:
@@ -6647,6 +6776,12 @@ printf({fmt}, {expr1} ...)				*printf()*
 <		This limits the length of the text used from "line" to
 		"width" bytes.
 
+		If the argument to be formatted is specified using a
+		positional argument specifier, and a '*' is used to indicate
+		that a number argument is to be used to specify the width or
+		precision, the argument(s) to be used must also be specified
+		using a {n$} positional argument specifier. See |printf-$|.
+
 		The conversion specifiers and their meanings are:
 
 				*printf-d* *printf-b* *printf-B* *printf-o*
@@ -6665,8 +6800,13 @@ printf({fmt}, {expr1} ...)				*printf()*
 			a conversion is wider than the field width, the field
 			is expanded to contain the conversion result.
 			The 'h' modifier indicates the argument is 16 bits.
-			The 'l' modifier indicates the argument is 32 bits.
-			The 'L' modifier indicates the argument is 64 bits.
+			The 'l' modifier indicates the argument is a long
+			integer.  The size will be 32 bits or 64 bits
+			depending on your platform.
+			The "ll" modifier indicates the argument is 64 bits.
+			The b and B conversion specifiers never take a width
+			modifier and always assume their argument is a 64 bit
+			integer.
 			Generally, these modifiers are not useful. They are
 			ignored when type is known from the argument.
 
@@ -6735,6 +6875,111 @@ printf({fmt}, {expr1} ...)				*printf()*
 		The number of {exprN} arguments must exactly match the number
 		of "%" items.  If there are not sufficient or too many
 		arguments an error is given.  Up to 18 arguments can be used.
+
+							*printf-$*
+		In certain languages, error and informative messages are
+		more readable when the order of words is different from the
+		corresponding message in English. To accommodate translations
+		having a different word order, positional arguments may be
+		used to indicate this. For instance: >
+
+		    #, c-format
+		    msgid "%s returning %s"
+		    msgstr "waarde %2$s komt terug van %1$s"
+<
+		In this example, the sentence has its 2 string arguments
+		reversed in the output. >
+
+		    echo printf(
+			"In The Netherlands, vim's creator's name is: %1$s %2$s",
+			"Bram", "Moolenaar")
+<		    In The Netherlands, vim's creator's name is: Bram Moolenaar >
+
+		    echo printf(
+			"In Belgium, vim's creator's name is: %2$s %1$s",
+			"Bram", "Moolenaar")
+<		    In Belgium, vim's creator's name is: Moolenaar Bram
+
+		Width (and precision) can be specified using the '*' specifier.
+		In this case, you must specify the field width position in the
+		argument list. >
+
+		    echo printf("%1$*2$.*3$d", 1, 2, 3)
+<		    001 >
+		    echo printf("%2$*3$.*1$d", 1, 2, 3)
+<		      2 >
+		    echo printf("%3$*1$.*2$d", 1, 2, 3)
+<		    03 >
+		    echo printf("%1$*2$.*3$g", 1.4142, 2, 3)
+<		    1.414
+
+		You can mix specifying the width and/or precision directly
+		and via positional arguments: >
+
+		    echo printf("%1$4.*2$f", 1.4142135, 6)
+<		    1.414214 >
+		    echo printf("%1$*2$.4f", 1.4142135, 6)
+<		    1.4142 >
+		    echo printf("%1$*2$.*3$f", 1.4142135, 6, 2)
+<		      1.41
+
+							*E1500*
+		You cannot mix positional and non-positional arguments: >
+		    echo printf("%s%1$s", "One", "Two")
+<		    E1500: Cannot mix positional and non-positional arguments:
+		    %s%1$s
+
+							*E1501*
+		You cannot skip a positional argument in a format string: >
+		    echo printf("%3$s%1$s", "One", "Two", "Three")
+<		    E1501: format argument 2 unused in $-style format:
+		    %3$s%1$s
+
+							*E1502*
+		You can re-use a [field-width] (or [precision]) argument: >
+		    echo printf("%1$d at width %2$d is: %01$*2$d", 1, 2)
+<		    1 at width 2 is: 01
+
+		However, you can't use it as a different type: >
+		    echo printf("%1$d at width %2$ld is: %01$*2$d", 1, 2)
+<		    E1502: Positional argument 2 used as field width reused as
+		    different type: long int/int
+
+							*E1503*
+		When a positional argument is used, but not the correct number
+		or arguments is given, an error is raised: >
+		    echo printf("%1$d at width %2$d is: %01$*2$.*3$d", 1, 2)
+<		    E1503: Positional argument 3 out of bounds: %1$d at width
+		    %2$d is: %01$*2$.*3$d
+
+		Only the first error is reported: >
+		    echo printf("%01$*2$.*3$d %4$d", 1, 2)
+<		    E1503: Positional argument 3 out of bounds: %01$*2$.*3$d
+		    %4$d
+
+							*E1504*
+		A positional argument can be used more than once: >
+		    echo printf("%1$s %2$s %1$s", "One", "Two")
+<		    One Two One
+
+		However, you can't use a different type the second time: >
+		    echo printf("%1$s %2$s %1$d", "One", "Two")
+<		    E1504: Positional argument 1 type used inconsistently:
+		    int/string
+
+							*E1505*
+		Various other errors that lead to a format string being
+		wrongly formatted lead to: >
+		    echo printf("%1$d at width %2$d is: %01$*2$.3$d", 1, 2)
+<		    E1505: Invalid format specifier: %1$d at width %2$d is:
+		    %01$*2$.3$d
+
+							*E1507*
+		This internal error indicates that the logic to parse a
+		positional format argument ran into a problem that couldn't be
+		otherwise reported.  Please file a bug against Vim if you run
+		into this, copying the exact format string and parameters that
+		were used.
 
 
 prompt_getprompt({buf})					*prompt_getprompt()*
@@ -7143,9 +7388,9 @@ reltime({start}, {end})					*reltime()*
 			echo startTime->reltime()->reltimestr()
 <
 		Without an argument reltime() returns the current time (the
-		representation is system-dependent, it can not be used as the
+		representation is system-dependent, it cannot be used as the
 		wall-clock time, see |localtime()| for that).
-		With one argument is returns the time passed since the time
+		With one argument it returns the time passed since the time
 		specified in the argument.
 		With two arguments it returns the time passed between {start}
 		and {end}.
@@ -8286,6 +8531,8 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		    text	description of the error
 		    type	single-character error type, 'E', 'W', etc.
 		    valid	recognized error message
+		    user_data   custom data associated with the item, can be
+				any type.
 
 		The "col", "vcol", "nr", "type" and "text" entries are
 		optional.  Either "lnum" or "pattern" entry can be used to
@@ -9297,7 +9544,7 @@ strutf16len({string} [, {countcc}])			*strutf16len()*
 		    echo strutf16len('😊')		returns 2
 		    echo strutf16len('ą́')		returns 1
 		    echo strutf16len('ą́', v:true)	returns 3
-
+<
 		Can also be used as a |method|: >
 			GetText()->strutf16len()
 <
@@ -9962,9 +10209,9 @@ trim({text} [, {mask} [, {dir}]])				*trim()*
 		Return {text} as a String where any character in {mask} is
 		removed from the beginning and/or end of {text}.
 
-		If {mask} is not given, {mask} is all characters up to 0x20,
-		which includes Tab, space, NL and CR, plus the non-breaking
-		space character 0xa0.
+		If {mask} is not given, or is an empty string, {mask} is all
+		characters up to 0x20, which includes Tab, space, NL and CR,
+		plus the non-breaking space character 0xa0.
 
 		The optional {dir} argument specifies where to remove the
 		characters:
@@ -10020,8 +10267,9 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Job:	    8  |v:t_job|
 			Channel:    9  |v:t_channel|
 			Blob:	   10  |v:t_blob|
-			Class	   12  |v:t_class|
-			Object	   13  |v:t_object|
+			Class:	   12  |v:t_class|
+			Object:	   13  |v:t_object|
+			Typealias: 14  |v:t_typealias|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")
@@ -10061,9 +10309,10 @@ undofile({name})					*undofile()*
 		Can also be used as a |method|: >
 			GetFilename()->undofile()
 
-undotree()						*undotree()*
-		Return the current state of the undo tree in a dictionary with
-		the following items:
+undotree([{buf}])					*undotree()*
+		Return the current state of the undo tree for the current
+		buffer, or for a specific buffer if {buf} is given.  The
+		result is a dictionary with the following items:
 		  "seq_last"	The highest undo sequence number used.
 		  "seq_cur"	The sequence number of the current position in
 				the undo tree.  This differs from "seq_last"
@@ -10119,14 +10368,18 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 <
 							*utf16idx()*
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
-		Same as |charidx()| but returns the UTF-16 index of the byte
-		at {idx} in {string} (after converting it to UTF-16).
+		Same as |charidx()| but returns the UTF-16 code unit index of
+		the byte at {idx} in {string} (after converting it to UTF-16).
 
 		When {charidx} is present and TRUE, {idx} is used as the
 		character index in the String {string} instead of as the byte
 		index.
-		An {idx} in the middle of a UTF-8 sequence is rounded upwards
-		to the end of that sequence.
+		An {idx} in the middle of a UTF-8 sequence is rounded
+		downwards to the beginning of that sequence.
+
+		Returns -1 if the arguments are invalid or if there are less
+		than {idx} bytes in {string}. If there are exactly {idx} bytes
+		the length of the string in UTF-16 code units is returned.
 
 		See |byteidx()| and |byteidxcomp()| for getting the byte index
 		from the UTF-16 index and |charidx()| for getting the
@@ -10153,7 +10406,7 @@ values({dict})						*values()*
 		Can also be used as a |method|: >
 			mydict->values()
 
-virtcol({expr} [, {list}])				*virtcol()*
+virtcol({expr} [, {list} [, {winid}]])			*virtcol()*
 		The result is a Number, which is the screen column of the file
 		position given with {expr}.  That is, the last screen position
 		occupied by the character at that position, when the screen
@@ -10185,9 +10438,12 @@ virtcol({expr} [, {list}])				*virtcol()*
 			    returns the cursor position.  Differs from |'<| in
 			    that it's updated right away.
 
-		If {list} is present and non-zero then virtcol() returns a List
-		with the first and last screen position occupied by the
+		If {list} is present and non-zero then virtcol() returns a
+		List with the first and last screen position occupied by the
 		character.
+
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.
 
 		Note that only marks in the current file can be used.
 		Examples: >
@@ -10200,7 +10456,7 @@ virtcol({expr} [, {list}])				*virtcol()*
 			" With text "	  there", with 't at 'h':
 
 			virtcol("'t")	" returns 6
-<		The first column is 1.  0 is returned for an error.
+<		The first column is 1.  0 or [0, 0] is returned for an error.
 		A more advanced example that echoes the maximum length of
 		all lines: >
 		    echo max(map(range(1, line('$')), "virtcol([v:val, '$'])"))
@@ -10213,9 +10469,14 @@ virtcol2col({winid}, {lnum}, {col})			*virtcol2col()*
 		character in window {winid} at buffer line {lnum} and virtual
 		column {col}.
 
+		If buffer line {lnum} is an empty line, 0 is returned.
+
 		If {col} is greater than the last virtual column in line
 		{lnum}, then the byte index of the character at the last
 		virtual column is returned.
+
+		For a multi-byte character, the column number of the first
+		byte in the character is returned.
 
 		The {winid} argument can be the window number or the
 		|window-ID|. If this is zero, then the current window is used.
@@ -10847,6 +11108,7 @@ python_dynamic		Python 2.x interface is dynamically loaded. |has-python|
 python3			Python 3.x interface available. |has-python|
 python3_compiled	Compiled with Python 3.x interface. |has-python|
 python3_dynamic		Python 3.x interface is dynamically loaded. |has-python|
+python3_stable		Python 3.x interface is using Python Stable ABI. |has-python|
 pythonx			Python 2.x and/or 3.x interface available. |python_x|
 qnx			QNX version of Vim.
 quickfix		Compiled with |quickfix| support.
@@ -10924,6 +11186,8 @@ winaltkeys		Compiled with 'winaltkeys' option.
 windows			Compiled with support for more than one window.
 			(always true)
 writebackup		Compiled with 'writebackup' default on.
+xattr			Compiled with extended attributes support |xattr|
+			(currently only supported on Linux).
 xfontset		Compiled with X fontset support |xfontset|.
 xim			Compiled with X input method support |xim|.
 xpm			Compiled with pixmap support.

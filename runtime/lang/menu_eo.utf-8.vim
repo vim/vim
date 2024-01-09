@@ -34,7 +34,7 @@ menutrans &File				&Dosiero
 
 menutrans &Open\.\.\.<Tab>:e			&Malfermi\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp		Malfermi\ &divide\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew		Malfermi\ &langeton\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew		Malfermi\ &langeton\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew			&Nova<Tab>:enew
 menutrans &Close<Tab>:close			&Fermi<Tab>:close
 " -SEP1-

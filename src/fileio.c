@@ -125,6 +125,7 @@ readfile(
     exarg_T	*eap,			// can be NULL!
     int		flags)
 {
+    int		retval = FAIL;	// jump to "theend" instead of returning
     int		fd = 0;
     int		newfile = (flags & READ_NEW);
     int		check_readonly;
@@ -148,9 +149,9 @@ readfile(
     char_u	*p;
     off_T	filesize = 0;
     int		skip_read = FALSE;
+#ifdef FEAT_CRYPT
     off_T       filesize_disk = 0;      // file size read from disk
     off_T       filesize_count = 0;     // counter
-#ifdef FEAT_CRYPT
     char_u	*cryptkey = NULL;
     int		did_ask_for_key = FALSE;
 #endif
@@ -217,7 +218,9 @@ readfile(
     int		using_b_ffname;
     int		using_b_fname;
     static char *msg_is_a_directory = N_("is a directory");
-    int		eof;
+#ifdef FEAT_CRYPT
+    int		eof = FALSE;
+#endif
 #ifdef FEAT_SODIUM
     int		may_need_lseek = FALSE;
 #endif
@@ -239,7 +242,7 @@ readfile(
 	    && !(flags & READ_DUMMY))
     {
 	if (set_rw_fname(fname, sfname) == FAIL)
-	    return FAIL;
+	    goto theend;
     }
 
     // Remember the initial values of curbuf, curbuf->b_ffname and
@@ -289,35 +292,41 @@ readfile(
 	    if (apply_autocmds_exarg(EVENT_BUFREADCMD, NULL, sfname,
 							  FALSE, curbuf, eap))
 	    {
-		int status = OK;
+		retval = OK;
 #ifdef FEAT_EVAL
 		if (aborting())
-		    status = FAIL;
+		    retval = FAIL;
 #endif
 		// The BufReadCmd code usually uses ":read" to get the text and
 		// perhaps ":file" to change the buffer name. But we should
 		// consider this to work like ":edit", thus reset the
 		// BF_NOTEDITED flag.  Then ":write" will work to overwrite the
 		// same file.
-		if (status == OK)
+		if (retval == OK)
 		    curbuf->b_flags &= ~BF_NOTEDITED;
-		return status;
+		goto theend;
 	    }
 	}
 	else if (apply_autocmds_exarg(EVENT_FILEREADCMD, sfname, sfname,
 							    FALSE, NULL, eap))
+	{
 #ifdef FEAT_EVAL
-	    return aborting() ? FAIL : OK;
+	    retval = aborting() ? FAIL : OK;
 #else
-	    return OK;
+	    retval = OK;
 #endif
+	    goto theend;
+	}
 
 	curbuf->b_op_start = orig_start;
 
 	if (flags & READ_NOFILE)
+	{
 	    // Return NOTDONE instead of FAIL so that BufEnter can be triggered
 	    // and other operations don't fail.
-	    return NOTDONE;
+	    retval = NOTDONE;
+	    goto theend;
+	}
     }
 
     if ((shortmess(SHM_OVER) || curbuf->b_help) && p_verbose == 0)
@@ -335,7 +344,7 @@ readfile(
 	    filemess(curbuf, fname, (char_u *)_("Illegal file name"), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
-	    return FAIL;
+	    goto theend;
 	}
 
 	// If the name ends in a path separator, we can't open it.  Check here,
@@ -346,7 +355,8 @@ readfile(
 	    filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
-	    return NOTDONE;
+	    retval = NOTDONE;
+	    goto theend;
 	}
     }
 
@@ -367,8 +377,6 @@ readfile(
 # endif
 						)
 	{
-	    int retval = FAIL;
-
 	    if (S_ISDIR(perm))
 	    {
 		filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);
@@ -378,7 +386,7 @@ readfile(
 		filemess(curbuf, fname, (char_u *)_("is not a file"), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
-	    return retval;
+	    goto theend;
 	}
 #endif
 #if defined(MSWIN)
@@ -391,7 +399,7 @@ readfile(
 	    filemess(curbuf, fname, (char_u *)_("is a device (disabled with 'opendevice' option)"), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
-	    return FAIL;
+	    goto theend;
 	}
 #endif
     }
@@ -417,7 +425,9 @@ readfile(
 	    buf_store_time(curbuf, &st, fname);
 	    curbuf->b_mtime_read = curbuf->b_mtime;
 	    curbuf->b_mtime_read_ns = curbuf->b_mtime_ns;
+#ifdef FEAT_CRYPT
 	    filesize_disk = st.st_size;
+#endif
 #ifdef UNIX
 	    /*
 	     * Use the protection bits of the original file for the swap file.
@@ -534,7 +544,7 @@ readfile(
 					 && (old_b_fname != curbuf->b_fname)))
 			{
 			    emsg(_(e_autocommands_changed_buffer_or_buffer_name));
-			    return FAIL;
+			    goto theend;
 			}
 		    }
 		    if (dir_of_file_exists(fname))
@@ -557,10 +567,10 @@ readfile(
 		    save_file_ff(curbuf);
 
 #if defined(FEAT_EVAL)
-		    if (aborting())   // autocmds may abort script processing
-			return FAIL;
+		    if (!aborting())   // autocmds may abort script processing
 #endif
-		    return OK;	    // a new file is not an error
+			retval = OK;	    // a new file is not an error
+		    goto theend;
 		}
 		else
 		{
@@ -576,7 +586,7 @@ readfile(
 		}
 	    }
 
-	return FAIL;
+	goto theend;
     }
 
     /*
@@ -614,7 +624,7 @@ readfile(
 	    emsg(_(e_autocommands_changed_buffer_or_buffer_name));
 	    if (!read_buffer)
 		close(fd);
-	    return FAIL;
+	    goto theend;
 	}
 #ifdef UNIX
 	// Set swap file protection bits after creating it.
@@ -654,7 +664,7 @@ readfile(
     {
 	if (!read_buffer && !read_stdin)
 	    close(fd);
-	return FAIL;
+	goto theend;
     }
 
     ++no_wait_return;	    // don't wait for return yet
@@ -715,7 +725,7 @@ readfile(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    curbuf->b_p_ro = TRUE;	// must use "w!" now
-	    return FAIL;
+	    goto theend;
 	}
 #endif
 	/*
@@ -737,7 +747,7 @@ readfile(
 	    else
 		emsg(_(e_readpre_autocommands_must_not_change_current_buffer));
 	    curbuf->b_p_ro = TRUE;	// must use "w!" now
-	    return FAIL;
+	    goto theend;
 	}
     }
 
@@ -1098,7 +1108,9 @@ retry:
     {
 	linerest = 0;
 	filesize = 0;
+#ifdef FEAT_CRYPT
 	filesize_count = 0;
+#endif
 	skip_count = lines_to_skip;
 	read_count = lines_to_read;
 	conv_restlen = 0;
@@ -1223,7 +1235,6 @@ retry:
 		     * Read bytes from curbuf.  Used for converting text read
 		     * from stdin.
 		     */
-		    eof = FALSE;
 		    if (read_buf_lnum > from)
 			size = 0;
 		    else
@@ -1271,10 +1282,11 @@ retry:
 				if (!curbuf->b_p_eol)
 				    --tlen;
 				size = tlen;
+#ifdef FEAT_CRYPT
 				eof = TRUE;
+#endif
 				break;
 			    }
-
 			}
 		    }
 		}
@@ -1283,7 +1295,7 @@ retry:
 		    /*
 		     * Read bytes from the file.
 		     */
-# ifdef FEAT_SODIUM
+#ifdef FEAT_SODIUM
 		    // Let the crypt layer work with a buffer size of 8192
 		    //
 		    // Sodium encryption requires a fixed block size to
@@ -1301,8 +1313,8 @@ retry:
 		    {
 			// set size to 8K + Sodium Crypt Metadata
 			size = WRITEBUFSIZE + crypt_get_max_header_len()
-		     + crypto_secretstream_xchacha20poly1305_HEADERBYTES
-		     + crypto_secretstream_xchacha20poly1305_ABYTES;
+			    + crypto_secretstream_xchacha20poly1305_HEADERBYTES
+				+ crypto_secretstream_xchacha20poly1305_ABYTES;
 			may_need_lseek = TRUE;
 		    }
 
@@ -1322,12 +1334,14 @@ retry:
 			    may_need_lseek = FALSE;
 			}
 		    }
-# endif
-		    eof = size;
-		    size = read_eintr(fd, ptr, size);
+#endif
+		    long read_size = size;
+		    size = read_eintr(fd, ptr, read_size);
+#ifdef FEAT_CRYPT
+		    // Did we reach end of file?
 		    filesize_count += size;
-		    // hit end of file
-		    eof = (size < eof || filesize_count == filesize_disk);
+		    eof = (size < read_size || filesize_count == filesize_disk);
+#endif
 		}
 
 #ifdef FEAT_CRYPT
@@ -2461,7 +2475,8 @@ failed:
 #ifdef FEAT_VIMINFO
 	    check_marks_read();
 #endif
-	    return OK;		// an interrupt isn't really an error
+	    retval = OK;	// an interrupt isn't really an error
+	    goto theend;
 	}
 
 	if (!filtering && !(flags & READ_DUMMY))
@@ -2696,13 +2711,20 @@ failed:
 	    msg_scroll = m;
 # ifdef FEAT_EVAL
 	if (aborting())	    // autocmds may abort script processing
-	    return FAIL;
+	    goto theend;
 # endif
     }
 
-    if (recoverymode && error)
-	return FAIL;
-    return OK;
+    if (!(recoverymode && error))
+	retval = OK;
+
+theend:
+    if (curbuf->b_ml.ml_mfp != NULL
+		       && curbuf->b_ml.ml_mfp->mf_dirty == MF_DIRTY_YES_NOSYNC)
+	// OK to sync the swap file now
+	curbuf->b_ml.ml_mfp->mf_dirty = MF_DIRTY_YES;
+
+    return retval;
 }
 
 #if defined(OPEN_CHR_FILES) || defined(PROTO)
@@ -2941,7 +2963,10 @@ check_for_cryptkey(
 	if (cryptkey == NULL && !*did_ask)
 	{
 	    if (*curbuf->b_p_key)
+	    {
 		cryptkey = curbuf->b_p_key;
+		crypt_check_swapfile_curbuf();
+	    }
 	    else
 	    {
 		// When newfile is TRUE, store the typed key in the 'key'
@@ -5460,7 +5485,7 @@ match_file_pat(
     int
 match_file_list(char_u *list, char_u *sfname, char_u *ffname)
 {
-    char_u	buf[100];
+    char_u	buf[MAXPATHL];
     char_u	*tail;
     char_u	*regpat;
     char	allow_dirs;
@@ -5473,7 +5498,7 @@ match_file_list(char_u *list, char_u *sfname, char_u *ffname)
     p = list;
     while (*p)
     {
-	copy_option_part(&p, buf, 100, ",");
+	copy_option_part(&p, buf, MAXPATHL, ",");
 	regpat = file_pat_to_reg_pat(buf, NULL, &allow_dirs, FALSE);
 	if (regpat == NULL)
 	    break;

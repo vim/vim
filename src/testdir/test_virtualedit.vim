@@ -236,7 +236,7 @@ func Test_ve_completion()
   set virtualedit=
 endfunc
 
-" Using "C" then then <CR> moves the last remaining character to the next
+" Using "C" then <CR> moves the last remaining character to the next
 " line.  (Mary Ellen Foster)
 func Test_ve_del_to_eol()
   new
@@ -564,31 +564,115 @@ func Test_virtualedit_mouse()
   let save_mouse = &mouse
   set mouse=a
   set virtualedit=all
-  new
+  botright new
+  let row = win_screenpos(0)[0]
+  20vsplit
+  wincmd p
 
   call setline(1, ["text\tword"])
   redraw
-  call test_setmouse(1, 4)
+  call test_setmouse(row, 21 + 4)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 4, 0, 4], getcurpos())
-  call test_setmouse(1, 5)
+  call test_setmouse(row, 21 + 5)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 0, 5], getcurpos())
-  call test_setmouse(1, 6)
+  call test_setmouse(row, 21 + 6)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 1, 6], getcurpos())
-  call test_setmouse(1, 7)
+  call test_setmouse(row, 21 + 7)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 2, 7], getcurpos())
-  call test_setmouse(1, 8)
+  call test_setmouse(row, 21 + 8)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 5, 3, 8], getcurpos())
-  call test_setmouse(1, 9)
+  call test_setmouse(row, 21 + 9)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 6, 0, 9], getcurpos())
-  call test_setmouse(1, 15)
+  call test_setmouse(row, 21 + 12)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 9, 0, 12], getcurpos())
+  call test_setmouse(row, 21 + 13)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 10, 0, 13], getcurpos())
+  call test_setmouse(row, 21 + 15)
   call feedkeys("\<LeftMouse>", "xt")
   call assert_equal([0, 1, 10, 2, 15], getcurpos())
+  call test_setmouse(row, 21 + 20)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 10, 7, 20], getcurpos())
+
+  setlocal nowrap
+  call setline(2, repeat('a', 19))
+  normal! j14zl
+  redraw
+  call test_setmouse(row, 21 + 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 10, 2, 15], getcurpos())
+  call test_setmouse(row, 21 + 11)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 10, 12, 25], getcurpos())
+  call test_setmouse(row + 1, 21 + 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 2, 15, 0, 15], getcurpos())
+  call test_setmouse(row + 1, 21 + 11)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 2, 20, 5, 25], getcurpos())
+
+  setlocal number numberwidth=2
+  redraw
+  call test_setmouse(row, 21 + 3)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 10, 2, 15], getcurpos())
+  call test_setmouse(row, 21 + 13)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 10, 12, 25], getcurpos())
+  call test_setmouse(row + 1, 21 + 3)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 2, 15, 0, 15], getcurpos())
+  call test_setmouse(row + 1, 21 + 13)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 2, 20, 5, 25], getcurpos())
+  setlocal nonumber
+
+  if has('signs')
+    sign define Sign1 text=口
+    sign place 1 name=Sign1 line=1
+    sign place 2 name=Sign1 line=2
+    redraw
+    call test_setmouse(row, 21 + 3)
+    call feedkeys("\<LeftMouse>", "xt")
+    call assert_equal([0, 1, 10, 2, 15], getcurpos())
+    call test_setmouse(row, 21 + 13)
+    call feedkeys("\<LeftMouse>", "xt")
+    call assert_equal([0, 1, 10, 12, 25], getcurpos())
+    call test_setmouse(row + 1, 21 + 3)
+    call feedkeys("\<LeftMouse>", "xt")
+    call assert_equal([0, 2, 15, 0, 15], getcurpos())
+    call test_setmouse(row + 1, 21 + 13)
+    call feedkeys("\<LeftMouse>", "xt")
+    call assert_equal([0, 2, 20, 5, 25], getcurpos())
+    sign unplace 1
+    sign unplace 2
+    sign undefine Sign1
+  endif
+
+  wincmd h
+  4wincmd >
+  normal! gg24I.
+  redraw
+  call test_setmouse(row + 1, 12)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 24 + 9, 0, 24 + 12], getcurpos())
+  call test_setmouse(row + 1, 13)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 24 + 10, 0, 24 + 13], getcurpos())
+  call test_setmouse(row + 1, 15)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 24 + 10, 2, 24 + 15], getcurpos())
+  call test_setmouse(row + 1, 20)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 24 + 10, 7, 24 + 20], getcurpos())
 
   bwipe!
   let &mouse = save_mouse

@@ -2717,7 +2717,7 @@ u_undoredo(int undo)
 				      || bot > curbuf->b_ml.ml_line_count + 1)
 	{
 	    unblock_autocmds();
-	    iemsg(_(e_u_undo_line_numbers_wrong));
+	    iemsg(e_u_undo_line_numbers_wrong);
 	    changed();		// don't want UNCHANGED now
 	    return;
 	}
@@ -3307,7 +3307,7 @@ u_get_headentry(void)
 {
     if (curbuf->b_u_newhead == NULL || curbuf->b_u_newhead->uh_entry == NULL)
     {
-	iemsg(_(e_undo_list_corrupt));
+	iemsg(e_undo_list_corrupt);
 	return NULL;
     }
     return curbuf->b_u_newhead->uh_entry;
@@ -3339,7 +3339,7 @@ u_getbot(void)
 	uep->ue_bot = uep->ue_top + uep->ue_size + 1 + extra;
 	if (uep->ue_bot < 1 || uep->ue_bot > curbuf->b_ml.ml_line_count)
 	{
-	    iemsg(_(e_undo_line_missing));
+	    iemsg(e_undo_line_missing);
 	    uep->ue_bot = uep->ue_top + 1;  // assume all lines deleted, will
 					    // get all the old lines back
 					    // without deleting the current
@@ -3629,7 +3629,7 @@ curbufIsChanged(void)
  * Recursive.
  */
     static void
-u_eval_tree(u_header_T *first_uhp, list_T *list)
+u_eval_tree(buf_T *buf, u_header_T *first_uhp, list_T *list)
 {
     u_header_T  *uhp = first_uhp;
     dict_T	*dict;
@@ -3641,9 +3641,9 @@ u_eval_tree(u_header_T *first_uhp, list_T *list)
 	    return;
 	dict_add_number(dict, "seq", uhp->uh_seq);
 	dict_add_number(dict, "time", (long)uhp->uh_time);
-	if (uhp == curbuf->b_u_newhead)
+	if (uhp == buf->b_u_newhead)
 	    dict_add_number(dict, "newhead", 1);
-	if (uhp == curbuf->b_u_curhead)
+	if (uhp == buf->b_u_curhead)
 	    dict_add_number(dict, "curhead", 1);
 	if (uhp->uh_save_nr > 0)
 	    dict_add_number(dict, "save", uhp->uh_save_nr);
@@ -3655,7 +3655,7 @@ u_eval_tree(u_header_T *first_uhp, list_T *list)
 	    if (alt_list != NULL)
 	    {
 		// Recursive call to add alternate undo tree.
-		u_eval_tree(uhp->uh_alt_next.ptr, alt_list);
+		u_eval_tree(buf, uhp->uh_alt_next.ptr, alt_list);
 		dict_add_list(dict, "alt", alt_list);
 	    }
 	}
@@ -3721,28 +3721,35 @@ u_undofile_reset_and_delete(buf_T *buf)
  #endif
 
 /*
- * "undotree()" function
+ * "undotree(expr)" function
  */
     void
 f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
+	return;
+
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 
+    typval_T	*tv = &argvars[0];
+    buf_T	*buf = tv->v_type == VAR_UNKNOWN ? curbuf : get_buf_arg(tv);
+    if (buf == NULL)
+	return;
+
     dict_T *dict = rettv->vval.v_dict;
-    list_T *list;
 
-    dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
-    dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
-    dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
-    dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
-    dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
-    dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
+    dict_add_number(dict, "synced", (long)buf->b_u_synced);
+    dict_add_number(dict, "seq_last", buf->b_u_seq_last);
+    dict_add_number(dict, "save_last", buf->b_u_save_nr_last);
+    dict_add_number(dict, "seq_cur", buf->b_u_seq_cur);
+    dict_add_number(dict, "time_cur", (long)buf->b_u_time_cur);
+    dict_add_number(dict, "save_cur", buf->b_u_save_nr_cur);
 
-    list = list_alloc();
+    list_T *list = list_alloc();
     if (list != NULL)
     {
-	u_eval_tree(curbuf->b_u_oldhead, list);
+	u_eval_tree(buf, buf->b_u_oldhead, list);
 	dict_add_list(dict, "entries", list);
     }
 }
