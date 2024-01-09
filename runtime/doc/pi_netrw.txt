@@ -1085,8 +1085,8 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	 <c-tab> Shrink/expand a netrw/explore window                |netrw-c-tab|
 	   -	Makes Netrw go up one directory                      |netrw--|
 	   a	Cycles between normal display,                       |netrw-a|
-	    	hiding (suppress display of files matching g:netrw_list_hide)
-	    	and showing (display only files which match g:netrw_list_hide)
+		hiding (suppress display of files matching g:netrw_list_hide)
+		and showing (display only files which match g:netrw_list_hide)
 	   cd	Make browsing directory the current directory        |netrw-cd|
 	   C	Setting the editing window                           |netrw-C|
 	   d	Make a directory                                     |netrw-d|
@@ -1118,7 +1118,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   mX	Apply arbitrary shell command to marked files en bloc|netrw-mX|
 	   mz	Compress/decompress marked files                     |netrw-mz|
 	   o	Enter the file/directory under the cursor in a new   |netrw-o|
-	    	browser window.  A horizontal split is used.
+		browser window.  A horizontal split is used.
 	   O	Obtain a file specified by cursor                    |netrw-O|
 	   p	Preview the file                                     |netrw-p|
 	   P	Browse in the previously used window                 |netrw-P|
@@ -1134,7 +1134,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   u	Change to recently-visited directory                 |netrw-u|
 	   U	Change to subsequently-visited directory             |netrw-U|
 	   v	Enter the file/directory under the cursor in a new   |netrw-v|
-	    	browser window.  A vertical split is used.
+		browser window.  A vertical split is used.
 	   x	View file with an associated program                 |netrw-x|
 	   X	Execute filename under cursor via |system()|           |netrw-X|
 
@@ -1198,7 +1198,7 @@ If there are marked files and/or directories, mb will add them to the bookmark
 list.
 
 								*netrw-:NetrwMB*
-Addtionally, one may use :NetrwMB to bookmark files or directories. >
+Additionally, one may use :NetrwMB to bookmark files or directories. >
 
 	:NetrwMB[!] [files/directories]
 
@@ -1976,7 +1976,7 @@ To use this function, simply assign its output to |g:netrw_list_hide| option.  >
 	Example: let g:netrw_list_hide= netrw_gitignore#Hide('my_gitignore_file')
 		Function can take additional files with git-ignore patterns.
 
-	Example: g:netrw_list_hide= netrw_gitignore#Hide() . '.*\.swp$'
+	Example: let g:netrw_list_hide= netrw_gitignore#Hide() .. '.*\.swp$'
 		Combining 'netrw_gitignore#Hide' with custom patterns.
 <
 
@@ -2816,7 +2816,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				= 2: wide listing (multiple files in columns)
 				= 3: tree style listing
 
-  *g:netrw_list_hide*		comma separated pattern list for hiding files
+  *g:netrw_list_hide*		comma-separated pattern list for hiding files
 				Patterns are regular expressions (see |regexp|)
 				There's some special support for git-ignore
 				files: you may add the output from the helper
@@ -2826,7 +2826,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 
 				Examples:
 				 let g:netrw_list_hide= '.*\.swp$'
-				 let g:netrw_list_hide= netrw_gitignore#Hide().'.*\.swp$'
+				 let g:netrw_list_hide= netrw_gitignore#Hide() .. '.*\.swp$'
 				default: ""
 
   *g:netrw_localcopycmd*	="cp"           Linux/Unix/MacOS/Cygwin
