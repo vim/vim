@@ -58,6 +58,7 @@
  * 20.06.2022  Permit setting the variable names used by -i by David Gow
  * 31.08.2023  -R never/auto/always prints colored output
  * 06.10.2023  enable -r -b to reverse bit dumps
+ * 12.01.2024  disable auto-conversion for z/OS (MVS)
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -138,7 +139,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2023-10-25 by Juergen Weigert et al.";
+char version[] = "xxd 2024-01-12 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -587,7 +588,7 @@ begin_coloring_char (char *l, int *c, int e, int ebcdic)
     }
   else  /* ASCII */
     {
-      #ifdef __MVS__
+      #if defined(__MVS__) && __CHARSET_LIB == 0
       if (e >= 64)
         l[(*c)++] = COLOR_GREEN;
       #else
@@ -905,6 +906,10 @@ main(int argc, char *argv[])
 	}
       rewind(fpo);
     }
+#ifdef __MVS__
+  // Disable auto-conversion on input file descriptors
+  __disableautocvt(fileno(fp));
+#endif
 
   if (revert)
     switch (hextype)
@@ -1066,7 +1071,7 @@ main(int argc, char *argv[])
 
           COLOR_PROLOGUE
           begin_coloring_char(l,&c,e,ebcdic);
-#ifdef __MVS__
+#if defined(__MVS__) && __CHARSET_LIB == 0
           if (e >= 64)
             l[c++] = e;
           else
@@ -1094,7 +1099,7 @@ main(int argc, char *argv[])
 
           c += addrlen + 3 + p;
           l[c++] =
-#ifdef __MVS__
+#if defined(__MVS__) && __CHARSET_LIB == 0
               (e >= 64)
 #else
               (e > 31 && e < 127)
