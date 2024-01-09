@@ -3991,7 +3991,8 @@ netrw:
 		Nov 09, 2016	* Broke apart the command from the options,
 				  mostly for Windows.  Introduced new netrw
 				  settings: |g:netrw_localcopycmdopt|
-				  |g:netrw_localcopydircmdopt| |g:netrw_localmkdiropt|
+				  |g:netrw_localcopydircmdopt|
+				  |g:netrw_localmkdiropt|
 				  |g:netrw_localmovecmdopt|
 		Nov 21, 2016	* (mattn) provided a patch for preview; swapped
 				  winwidth() with winheight()
