@@ -12219,7 +12219,7 @@ fun! s:NetrwLcd(newdir)
      if (has("win32") || has("win95") || has("win64") || has("win16")) && !g:netrw_cygwin
        if a:newdir =~ '^\\\\\w\+' || a:newdir =~ '^//\w\+'
          let dirname = '\'
-       exe 'NetrwKeepj sil lcd '.fnameescape(dirname)
+         exe 'NetrwKeepj sil lcd '.fnameescape(dirname)
        endif
      endif
   catch /^Vim\%((\a\+)\)\=:E472/
