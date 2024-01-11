@@ -1260,10 +1260,10 @@ Script-local variables in a |Vim9| script must be declared at the script
 level.  They cannot be created in a function, also not in a legacy function.
 
 						*:defc* *:defcompile*
-:defc[ompile]		Compile functions defined in the current script that
-			were not compiled yet.
-			This will report any errors found during compilation.
-			This excludes functions defined inside a class.
+:defc[ompile]		Compile functions and classes (|class-compile|)
+			defined in the current script that were not compiled
+			yet.  This will report any errors found during
+			compilation.
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}

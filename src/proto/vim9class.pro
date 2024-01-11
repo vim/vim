@@ -31,6 +31,9 @@ void object_free_items(int copyID);
 void emsg_var_cl_define(char *msg, char_u *name, size_t len, class_T *cl);
 void method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
 void member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len);
+void defcompile_class(class_T *cl);
+void defcompile_classes_in_script(void);
+int is_class_name(char_u *name, typval_T *rettv);
 int class_instance_of(class_T *cl, class_T *other_cl);
 void f_instanceof(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

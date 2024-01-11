@@ -5546,6 +5546,60 @@ find_func_by_name(char_u *name, compiletype_T *compile_type)
 }
 
 /*
+ * Compile the :def function "ufunc".  If "cl" is not NULL, then compile the
+ * class or object method "ufunc" in "cl".
+ */
+    void
+defcompile_function(ufunc_T *ufunc, class_T *cl)
+{
+    compiletype_T compile_type = CT_NONE;
+
+    if (func_needs_compiling(ufunc, compile_type))
+	(void)compile_def_function(ufunc, FALSE, compile_type, NULL);
+    else
+	smsg(_("Function %s%s%s does not need compiling"),
+				cl != NULL ? cl->class_name : (char_u *)"",
+				cl != NULL ? (char_u *)"." : (char_u *)"",
+				ufunc->uf_name);
+}
+
+/*
+ * Compile all the :def functions defined in the current script
+ */
+    static void
+defcompile_funcs_in_script(void)
+{
+    long	todo = (long)func_hashtab.ht_used;
+    int		changed = func_hashtab.ht_changed;
+    hashitem_T	*hi;
+
+    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    ufunc_T *ufunc = HI2UF(hi);
+	    if (ufunc->uf_script_ctx.sc_sid == current_sctx.sc_sid
+		    && ufunc->uf_def_status == UF_TO_BE_COMPILED
+		    && (ufunc->uf_flags & FC_DEAD) == 0)
+	    {
+		(void)compile_def_function(ufunc, FALSE, CT_NONE, NULL);
+
+		if (func_hashtab.ht_changed != changed)
+		{
+		    // a function has been added or removed, need to start
+		    // over
+		    todo = (long)func_hashtab.ht_used;
+		    changed = func_hashtab.ht_changed;
+		    hi = func_hashtab.ht_array;
+		    --hi;
+		}
+	    }
+	}
+    }
+}
+
+/*
  * :defcompile - compile all :def functions in the current script that need to
  * be compiled or the one specified by the argument.
  * Skips dead functions.  Doesn't do profiling.
@@ -5555,46 +5609,29 @@ ex_defcompile(exarg_T *eap)
 {
     if (*eap->arg != NUL)
     {
-	compiletype_T compile_type = CT_NONE;
-	ufunc_T *ufunc = find_func_by_name(eap->arg, &compile_type);
-	if (ufunc != NULL)
+	typval_T tv;
+
+	if (is_class_name(eap->arg, &tv))
 	{
-	    if (func_needs_compiling(ufunc, compile_type))
-		(void)compile_def_function(ufunc, FALSE, compile_type, NULL);
-	    else
-		smsg(_("Function %s does not need compiling"), eap->arg);
+	    class_T *cl = tv.vval.v_class;
+
+	    if (cl != NULL)
+		defcompile_class(cl);
+	}
+	else
+	{
+	    compiletype_T compile_type = CT_NONE;
+	    ufunc_T *ufunc = find_func_by_name(eap->arg, &compile_type);
+	    if (ufunc != NULL)
+		defcompile_function(ufunc, NULL);
 	}
     }
     else
     {
-	long	todo = (long)func_hashtab.ht_used;
-	int		changed = func_hashtab.ht_changed;
-	hashitem_T	*hi;
+	defcompile_funcs_in_script();
 
-	for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
-	{
-	    if (!HASHITEM_EMPTY(hi))
-	    {
-		--todo;
-		ufunc_T *ufunc = HI2UF(hi);
-		if (ufunc->uf_script_ctx.sc_sid == current_sctx.sc_sid
-			&& ufunc->uf_def_status == UF_TO_BE_COMPILED
-			&& (ufunc->uf_flags & FC_DEAD) == 0)
-		{
-		    (void)compile_def_function(ufunc, FALSE, CT_NONE, NULL);
-
-		    if (func_hashtab.ht_changed != changed)
-		    {
-			// a function has been added or removed, need to start
-			// over
-			todo = (long)func_hashtab.ht_used;
-			changed = func_hashtab.ht_changed;
-			hi = func_hashtab.ht_array;
-			--hi;
-		    }
-		}
-	    }
-	}
+	// compile all the class defined in the current script
+	defcompile_classes_in_script();
     }
 }
 

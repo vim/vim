@@ -130,8 +130,6 @@ Further Vim9 improvements:
     Issue #11822: any.Func() can be a dict or an object call, need to handle
     this at runtime.  Also see #12198 for an example.
     Possibly issue #11981 can be fixed at the same time (has two examples).
-  - Make ":defcompile ClassName" compile all functions and methods in the
-    class.
   - Forward declaration of a class?  E.g. for Clone() function.
 	Email lifepillar 2023 Mar 26
   - object empty(), len() - can class define a method to be used for them?
