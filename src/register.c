@@ -832,8 +832,9 @@ insert_reg(
 		    if ((State & REPLACE_FLAG) != 0)
 		    {
 			pos_T curpos;
-			u_save_cursor();
-			del_bytes((long)STRLEN(y_current->y_array[0]), TRUE, FALSE);
+			if (u_save_cursor() == FAIL)
+			    return FAIL;
+			del_chars((long)mb_charlen(y_current->y_array[0]), TRUE);
 			curpos = curwin->w_cursor;
 			if (oneright() == FAIL)
 			    // hit end of line, need to put forward (after the current position)
