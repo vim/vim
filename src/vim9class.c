@@ -3225,6 +3225,54 @@ member_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
 }
 
 /*
+ * Compile all the class and object methods in "cl".
+ */
+    void
+defcompile_class(class_T *cl)
+{
+    for (int loop = 1; loop <= 2; ++loop)
+    {
+	int func_count = loop == 1 ? cl->class_class_function_count
+						: cl->class_obj_method_count;
+	for (int i = 0; i < func_count; i++)
+	{
+	    ufunc_T *ufunc = loop == 1 ? cl->class_class_functions[i]
+						: cl->class_obj_methods[i];
+	    defcompile_function(ufunc, cl);
+	}
+    }
+}
+
+/*
+ * Compile all the classes defined in the current script
+ */
+    void
+defcompile_classes_in_script(void)
+{
+    for (class_T *cl = first_class; cl != NULL; cl = cl->class_next_used)
+    {
+	if (eval_variable(cl->class_name, 0, 0, NULL, NULL,
+			EVAL_VAR_NOAUTOLOAD | EVAL_VAR_NO_FUNC) != FAIL)
+	    defcompile_class(cl);
+    }
+}
+
+/*
+ * Returns TRUE if "name" is the name of a class.  The typval for the class is
+ * returned in "rettv".
+ */
+    int
+is_class_name(char_u *name, typval_T *rettv)
+{
+    rettv->v_type = VAR_UNKNOWN;
+
+    if (eval_variable(name, 0, 0, rettv, NULL, EVAL_VAR_NOAUTOLOAD |
+						EVAL_VAR_NO_FUNC) != FAIL)
+	return rettv->v_type == VAR_CLASS;
+    return FALSE;
+}
+
+/*
  * Return TRUE when the class "cl", its base class or one of the implemented
  * interfaces matches the class "other_cl".
  */

@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Jan 06
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Jan 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -830,7 +830,14 @@ Note that the method name must start with "new".  If there is no method called
 "new()" then the default constructor is added, even though there are other
 constructor methods.
 
+Compiling methods in a Class ~
+							*class-compile*
+The |:defcompile| command can be used to compile all the class and object
+methods defined in a class: >
 
+	defcompile MyClass	# Compile class "MyClass"
+	defcompile		# Compile the classes in the current script
+<
 ==============================================================================
 
 7.  Type definition				*typealias* *Vim9-type* *:type*

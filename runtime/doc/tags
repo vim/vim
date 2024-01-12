@@ -6428,6 +6428,7 @@ cino-{	indent.txt	/*cino-{*
 cino-}	indent.txt	/*cino-}*
 cinoptions-values	indent.txt	/*cinoptions-values*
 class	vim9class.txt	/*class*
+class-compile	vim9class.txt	/*class-compile*
 class-method	vim9class.txt	/*class-method*
 clear-undo	undo.txt	/*clear-undo*
 clearmatches()	builtin.txt	/*clearmatches()*

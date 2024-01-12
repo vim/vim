@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2023 Dec 24
+*vim9.txt*	For Vim version 9.1.  Last change: 2024 Jan 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1260,10 +1260,12 @@ Script-local variables in a |Vim9| script must be declared at the script
 level.  They cannot be created in a function, also not in a legacy function.
 
 						*:defc* *:defcompile*
-:defc[ompile]		Compile functions defined in the current script that
-			were not compiled yet.
-			This will report any errors found during compilation.
-			This excludes functions defined inside a class.
+:defc[ompile]		Compile functions and classes (|class-compile|)
+			defined in the current script that were not compiled
+			yet.  This will report any errors found during
+			compilation.
+
+:defc[ompile] MyClass  Compile all methods in a class |class-compile|.
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
