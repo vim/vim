@@ -176,7 +176,7 @@ typedef struct GuiScrollbar
 				// to reduce the count.
 #endif
 
-#if FEAT_GUI_HAIKU
+#ifdef FEAT_GUI_HAIKU
     VimScrollBar *id;		// Pointer to real scroll bar
 #endif
 #ifdef FEAT_GUI_PHOTON
