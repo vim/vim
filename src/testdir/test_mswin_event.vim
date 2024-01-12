@@ -727,14 +727,14 @@ func Test_mswin_event_mouse()
   if has('gui_running')
     let args = { }
     let args.row = 9
-    let args.col = 7
+    let args.col = 5
     let args.move = 1
     let args.cell = 1
     call test_mswin_event("mouse", args)
     call feedkeys("\<Esc>", 'Lx!')
     let pos = getmousepos()
     call assert_equal(9, pos.screenrow)
-    call assert_equal(7, pos.screencol)
+    call assert_equal(5, pos.screencol)
 
     let args.cell = 0
     call test_mswin_event("mouse", args)

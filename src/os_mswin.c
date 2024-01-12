@@ -2747,19 +2747,22 @@ quality_id2name(DWORD id)
     return qp->name;
 }
 
+// The default font height in 100% scaling (96dpi).
+// (-12 in 96dpi equates to roughly 9pt)
+#define DEFAULT_FONT_HEIGHT	(-12)
+
 static const LOGFONTW s_lfDefault =
 {
-    -12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    DEFAULT_FONT_HEIGHT,
+    0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
     OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
     PROOF_QUALITY, FIXED_PITCH | FF_DONTCARE,
-    L"Fixedsys"	// see _ReadVimIni
+    L""	// Default font name will be set later based on current language.
 };
 
-// Initialise the "current height" to -12 (same as s_lfDefault) just
-// in case the user specifies a font in "guifont" with no size before a font
-// with an explicit size has been set. This defaults the size to this value
-// (-12 equates to roughly 9pt).
-int current_font_height = -12;		// also used in gui_w32.c
+// This will be initialized when set_default_logfont() is called first time.
+// The value will be based on the system DPI.
+int current_font_height = 0;		// also used in gui_w32.c
 
 /*
  * Convert a string representing a point size into pixels. The string should
@@ -3027,6 +3030,47 @@ utf16ascncmp(const WCHAR *w, const char *p, size_t n)
 }
 
 /*
+ * Equivalent of GetDpiForSystem().
+ */
+    UINT WINAPI
+vimGetDpiForSystem(void)
+{
+    HWND hwnd = GetDesktopWindow();
+    HDC hdc = GetWindowDC(hwnd);
+    UINT dpi = GetDeviceCaps(hdc, LOGPIXELSY);
+    ReleaseDC(hwnd, hdc);
+    return dpi;
+}
+
+/*
+ * Set default logfont based on current language.
+ */
+    static void
+set_default_logfont(LOGFONTW *lf)
+{
+    // Default font name for current language on MS-Windows.
+    // If not translated, falls back to "Consolas".
+    // This must be a fixed-pitch font.
+    const char *defaultfontname = N_("DefaultFontNameForWindows");
+    char *fontname = _(defaultfontname);
+
+    if (strcmp(fontname, defaultfontname) == 0)
+	fontname = "Consolas";
+
+    *lf = s_lfDefault;
+    lf->lfHeight = DEFAULT_FONT_HEIGHT * (int)vimGetDpiForSystem() / 96;
+    if (current_font_height == 0)
+	current_font_height = lf->lfHeight;
+
+    WCHAR *wfontname = enc_to_utf16((char_u*)fontname, NULL);
+    if (wfontname != NULL)
+    {
+	wcscpy_s(lf->lfFaceName, LF_FACESIZE, wfontname);
+	vim_free(wfontname);
+    }
+}
+
+/*
  * Get font info from "name" into logfont "lf".
  * Return OK for a valid name, FAIL otherwise.
  */
@@ -3043,7 +3087,7 @@ get_logfont(
     static LOGFONTW *lastlf = NULL;
     WCHAR	*wname;
 
-    *lf = s_lfDefault;
+    set_default_logfont(lf);
     if (name == NULL)
 	return OK;
 
@@ -3083,7 +3127,7 @@ get_logfont(
 	lf->lfFaceName[p - wname] = NUL;
 
     // First set defaults
-    lf->lfHeight = -12;
+    lf->lfHeight = DEFAULT_FONT_HEIGHT * (int)vimGetDpiForSystem() / 96;
     lf->lfWidth = 0;
     lf->lfWeight = FW_NORMAL;
     lf->lfItalic = FALSE;

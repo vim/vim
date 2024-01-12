@@ -392,16 +392,6 @@ static int (WINAPI *pGetSystemMetricsForDpi)(int, UINT) = NULL;
 static DPI_AWARENESS_CONTEXT (WINAPI *pSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT dpiContext) = NULL;
 static DPI_AWARENESS (WINAPI *pGetAwarenessFromDpiAwarenessContext)(DPI_AWARENESS_CONTEXT) = NULL;
 
-    static UINT WINAPI
-stubGetDpiForSystem(void)
-{
-    HWND hwnd = GetDesktopWindow();
-    HDC hdc = GetWindowDC(hwnd);
-    UINT dpi = GetDeviceCaps(hdc, LOGPIXELSY);
-    ReleaseDC(hwnd, hdc);
-    return dpi;
-}
-
     static int WINAPI
 stubGetSystemMetricsForDpi(int nIndex, UINT dpi UNUSED)
 {
@@ -5286,7 +5276,7 @@ load_dpi_func(void)
 
 fail:
     // Disable PerMonitorV2 APIs.
-    pGetDpiForSystem = stubGetDpiForSystem;
+    pGetDpiForSystem = vimGetDpiForSystem;
     pGetDpiForWindow = NULL;
     pGetSystemMetricsForDpi = stubGetSystemMetricsForDpi;
     pSetThreadDpiAwarenessContext = NULL;
