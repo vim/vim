@@ -2699,6 +2699,9 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 /*
  * To be called after eval_next_non_blank() sets "getnext" to TRUE.
  * Only called for Vim9 script.
+ *
+ * If "arg" is not NULL, then the caller should assign the return value to
+ * "arg".
  */
     char_u *
 eval_next_line(char_u *arg, evalarg_T *evalarg)
@@ -2747,8 +2750,12 @@ eval_next_line(char_u *arg, evalarg_T *evalarg)
     }
 
     // Advanced to the next line, "arg" no longer points into the previous
-    // line.
-    evalarg->eval_using_cmdline = FALSE;
+    // line.  The caller assigns the return value to "arg".
+    // If "arg" is NULL, then the return value is discarded.  In that case,
+    // "arg" still points to the previous line.  So don't reset
+    // "eval_using_cmdline".
+    if (arg != NULL)
+	evalarg->eval_using_cmdline = FALSE;
     return skipwhite(line);
 }
 

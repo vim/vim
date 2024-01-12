@@ -4906,6 +4906,31 @@ def Test_for_stmt_space_before_type()
   v9.CheckSourceFailure(lines, 'E1059: No white space allowed before colon: :number in range(10)', 2)
 enddef
 
+" This test used to cause an use-after-free memory access
+def Test_for_empty_line_after_lambda()
+  var lines =<< trim END
+    vim9script
+    echomsg range(0, 2)->map((_, v) => {
+      return 1
+    })
+
+    assert_equal('[1, 1, 1]', v:statusmsg)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    echomsg range(0, 1)->map((_, v) => {
+      return 1
+    }) range(0, 1)->map((_, v) => {
+      return 2
+    }) # comment
+
+    assert_equal('[1, 1] [2, 2]', v:statusmsg)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
