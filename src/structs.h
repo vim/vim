@@ -4879,11 +4879,12 @@ typedef struct {
     hashtab_T	sve_hashtab;
 } save_v_event_T;
 
-// Enum used by filter(), map() and mapnew()
+// Enum used by filter(), map(), mapnew() and foreach()
 typedef enum {
     FILTERMAP_FILTER,
     FILTERMAP_MAP,
-    FILTERMAP_MAPNEW
+    FILTERMAP_MAPNEW,
+    FILTERMAP_FOREACH
 } filtermap_T;
 
 // Structure used by switch_win() to pass values to restore_win()

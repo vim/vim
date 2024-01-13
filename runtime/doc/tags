@@ -5167,6 +5167,7 @@ E738	eval.txt	/*E738*
 E739	builtin.txt	/*E739*
 E74	message.txt	/*E74*
 E740	userfunc.txt	/*E740*
+E741	builtin.txt	/*E741*
 E741	eval.txt	/*E741*
 E742	userfunc.txt	/*E742*
 E743	eval.txt	/*E743*
@@ -7148,6 +7149,7 @@ foldtextresult()	builtin.txt	/*foldtextresult()*
 font-sizes	gui_x11.txt	/*font-sizes*
 fontset	mbyte.txt	/*fontset*
 forced-motion	motion.txt	/*forced-motion*
+foreach()	builtin.txt	/*foreach()*
 foreground()	builtin.txt	/*foreground()*
 fork	os_unix.txt	/*fork*
 form.vim	syntax.txt	/*form.vim*
