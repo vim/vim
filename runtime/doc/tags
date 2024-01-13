@@ -5889,6 +5889,9 @@ ZZ	editing.txt	/*ZZ*
 ]}	motion.txt	/*]}*
 ^	motion.txt	/*^*
 _	motion.txt	/*_*
+__empty()	vim9class.txt	/*__empty()*
+__len()	vim9class.txt	/*__len()*
+__string()	vim9class.txt	/*__string()*
 _exrc	starting.txt	/*_exrc*
 _gvimrc	gui.txt	/*_gvimrc*
 _vimrc	starting.txt	/*_vimrc*
@@ -6837,6 +6840,7 @@ drag-status-line	term.txt	/*drag-status-line*
 drop_file	gui.txt	/*drop_file*
 dtd.vim	syntax.txt	/*dtd.vim*
 dtd2vim	insert.txt	/*dtd2vim*
+dunder-methods	vim9class.txt	/*dunder-methods*
 dying-variable	eval.txt	/*dying-variable*
 e	motion.txt	/*e*
 easy	starting.txt	/*easy*

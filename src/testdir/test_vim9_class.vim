@@ -7483,6 +7483,206 @@ func Test_class_variable_complex_type_check()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Test for cases common to all the dunder methods
+def Test_object_dunder_method()
+  var lines =<< trim END
+    vim9script
+    class A
+      def __abc()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1412: Dunder method "__abc" not supported', 4)
+
+  lines =<< trim END
+    vim9script
+    class A
+      static def __len(): number
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1417: Dunder class method not supported', 3)
+
+  # define __len method in an interface
+  lines =<< trim END
+    vim9script
+    interface A
+      def __len(): number
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, 'E1416: Dunder method not supported in interface', 3)
+enddef
+
+" Test for using __len() with object
+" This is legacy function to use the test_garbagecollect_now() function.
+func Test_object_length()
+  let lines =<< trim END
+    vim9script
+    class A
+      var mylen: number = 0
+      def new(n: number)
+        this.mylen = n
+      enddef
+      def __len(): number
+        return this.mylen
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new(12)
+      assert_equal(12, len(afoo))
+      assert_equal(12, afoo->len())
+    enddef
+
+    var a = A.new(22)
+    assert_equal(22, len(a))
+    assert_equal(22, a->len())
+    test_garbagecollect_now()
+    assert_equal(22, len(a))
+    Foo()
+    test_garbagecollect_now()
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " len() should return 0 without the dunder method
+  let lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal(0, len(afoo))
+    enddef
+
+    var a = A.new()
+    assert_equal(0, len(a))
+    Foo()
+  END
+  call v9.CheckSourceFailure(lines, 'E701: Invalid type for len()', 11)
+
+  " Unsupported signature for the __len() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __len()
+      enddef
+    endclass
+  END
+  call v9.CheckSourceFailure(lines, 'E1383: Method "__len": type mismatch, expected func(): number but got func()', 4)
+
+  " Error when calling the __len() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __len(): number
+        throw "Failed to compute length"
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      var i = len(afoo)
+    enddef
+
+    var a = A.new()
+    assert_fails('len(a)', 'Failed to compute length')
+    assert_fails('Foo()', 'Failed to compute length')
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call __len() using an object from a script
+  let lines =<< trim END
+    vim9script
+    class A
+      def __len(): number
+        return 1
+      enddef
+    endclass
+    var afoo = A.new()
+    var i = afoo.__len()
+  END
+  call v9.CheckSourceFailure(lines, 'E1415: Cannot access dunder method: __len', 8)
+
+  " call __len() using an object from a method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __len(): number
+        return 1
+      enddef
+    endclass
+    def Foo()
+      var afoo = A.new()
+      var i = afoo.__len()
+    enddef
+    Foo()
+  END
+  call v9.CheckSourceFailure(lines, 'E1414: Dunder method "__len" cannot be directly used', 2)
+
+  " call __len() using "this" from an object method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __len(): number
+        return 1
+      enddef
+      def Foo(): number
+        return this.__len()
+      enddef
+    endclass
+    def Bar()
+      var abar = A.new()
+      var i = abar.Foo()
+    enddef
+    Bar()
+  END
+  call v9.CheckSourceFailure(lines, 'E1414: Dunder method "__len" cannot be directly used', 1)
+
+  " Call __len() from a derived object
+  let lines =<< trim END
+    vim9script
+    class A
+      def __len(): number
+        return 10
+      enddef
+    endclass
+    class B extends A
+      def __len(): number
+        return 20
+      enddef
+    endclass
+    def Foo(afoo: A)
+      assert_equal(20, len(afoo))
+      var bfoo = B.new()
+      assert_equal(20, len(bfoo))
+    enddef
+    var b = B.new()
+    assert_equal(20, len(b))
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Invoking __len method using an interface
+  let lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B implements A
+      def __len(): number
+        return 123
+      enddef
+    endclass
+    def Foo(a: A)
+      assert_equal(123, len(a))
+    enddef
+    var b = B.new()
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
 " Test type checking for object variable in assignments
 func Test_object_variable_complex_type_check()
   " object variable with a specific type.  Try assigning a different type at
@@ -9659,32 +9859,338 @@ def Test_const_class_object_variable()
   v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
 enddef
 
-" Test for using double underscore prefix in a class/object method name.
-def Test_method_double_underscore_prefix()
-  # class method
-  var lines =<< trim END
+" Test for using __empty() with object
+" This is legacy function to use the test_garbagecollect_now() function.
+func Test_object_empty()
+  let lines =<< trim END
     vim9script
     class A
-      static def __foo()
-        echo "foo"
+      def __empty(): bool
+        return true
       enddef
     endclass
-    defcompile
-  END
-  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
 
-  # object method
-  lines =<< trim END
+    def Foo()
+      var afoo = A.new()
+      assert_equal(1, empty(afoo))
+      assert_equal(1, afoo->empty())
+    enddef
+
+    var a = A.new()
+    assert_equal(1, empty(a))
+    assert_equal(1, a->empty())
+    test_garbagecollect_now()
+    assert_equal(1, empty(a))
+    Foo()
+    test_garbagecollect_now()
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " empty() should return 1 without the dunder method
+  let lines =<< trim END
     vim9script
     class A
-      def __foo()
-        echo "foo"
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal(1, empty(afoo))
+    enddef
+
+    var a = A.new()
+    assert_equal(1, empty(a))
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Unsupported signature for the __empty() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __empty()
       enddef
     endclass
-    defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
-enddef
+  call v9.CheckSourceFailure(lines, 'E1383: Method "__empty": type mismatch, expected func(): bool but got func()', 4)
+
+  " Error when calling the __empty() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __empty(): bool
+        throw "Failed to check emptiness"
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      var i = empty(afoo)
+    enddef
+
+    var a = A.new()
+    assert_fails('empty(a)', 'Failed to check emptiness')
+    assert_fails('Foo()', 'Failed to check emptiness')
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call __empty() using an object from a script
+  let lines =<< trim END
+    vim9script
+    class A
+      def __empty(): bool
+        return true
+      enddef
+    endclass
+    var afoo = A.new()
+    var i = afoo.__empty()
+  END
+  call v9.CheckSourceFailure(lines, 'E1415: Cannot access dunder method: __empty', 8)
+
+  " call __empty() using an object from a method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __empty(): bool
+        return true
+      enddef
+    endclass
+    def Foo()
+      var afoo = A.new()
+      var i = afoo.__empty()
+    enddef
+    Foo()
+  END
+  call v9.CheckSourceFailure(lines, 'E1414: Dunder method "__empty" cannot be directly used', 2)
+
+  " call __empty() using "this" from an object method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __empty(): bool
+        return true
+      enddef
+      def Foo(): bool
+        return this.__empty()
+      enddef
+    endclass
+    def Bar()
+      var abar = A.new()
+      var i = abar.__empty()
+    enddef
+    Bar()
+  END
+  call v9.CheckSourceFailure(lines, 'E1414: Dunder method "__empty" cannot be directly used', 2)
+
+  " Call __empty() from a derived object
+  let lines =<< trim END
+    vim9script
+    class A
+      def __empty(): bool
+        return false
+      enddef
+    endclass
+    class B extends A
+      def __empty(): bool
+        return true
+      enddef
+    endclass
+    def Foo(afoo: A)
+      assert_equal(1, empty(afoo))
+      var bfoo = B.new()
+      assert_equal(1, empty(bfoo))
+    enddef
+    var b = B.new()
+    assert_equal(1, empty(b))
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Invoking __empty method using an interface
+  let lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B implements A
+      def __empty(): bool
+        return false
+      enddef
+    endclass
+    def Foo(a: A)
+      assert_equal(0, empty(a))
+    enddef
+    var b = B.new()
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for using __string() with object
+" This is legacy function to use the test_garbagecollect_now() function.
+func Test_object_string()
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string(): string
+        return 'Class-A'
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal('Class-A', string(afoo))
+      assert_equal('Class-A', afoo->string())
+    enddef
+
+    var a = A.new()
+    assert_equal('Class-A', string(a))
+    assert_equal('Class-A', a->string())
+    assert_equal(['Class-A'], execute('echo a')->split("\n"))
+    test_garbagecollect_now()
+    assert_equal('Class-A', string(a))
+    Foo()
+    test_garbagecollect_now()
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " string() should return "object of A {}" without the dunder method
+  let lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal('object of A {}', string(afoo))
+    enddef
+
+    var a = A.new()
+    assert_equal('object of A {}', string(a))
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Unsupported signature for the __string() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string()
+      enddef
+    endclass
+  END
+  call v9.CheckSourceFailure(lines, 'E1383: Method "__string": type mismatch, expected func(): string but got func()', 4)
+
+  " Error when calling the __string() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string(): string
+        throw "Failed to get text"
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      var i = string(afoo)
+    enddef
+
+    var a = A.new()
+    assert_fails('string(a)', 'Failed to get text')
+    assert_fails('Foo()', 'Failed to get text')
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call __string() using an object from a script
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string(): string
+        return 'A'
+      enddef
+    endclass
+    var afoo = A.new()
+    var s = afoo.__string()
+  END
+  call v9.CheckSourceFailure(lines, 'E1415: Cannot access dunder method: __string', 8)
+
+  " call __string() using an object from a method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string(): string
+        return 'A'
+      enddef
+    endclass
+    def Foo()
+      var afoo = A.new()
+      var s = afoo.__string()
+    enddef
+    Foo()
+  END
+  call v9.CheckSourceFailure(lines, 'E1414: Dunder method "__string" cannot be directly used', 2)
+
+  " call __string() using "this" from an object method
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string(): string
+        return 'A'
+      enddef
+      def Foo(): string
+        return this.__string()
+      enddef
+    endclass
+    def Bar()
+      var abar = A.new()
+      var s = abar.__string()
+    enddef
+    Bar()
+  END
+  call v9.CheckSourceFailure(lines, 'E1414: Dunder method "__string" cannot be directly used', 2)
+
+  " Call __string() from a derived object
+  let lines =<< trim END
+    vim9script
+    class A
+      def __string(): string
+        return 'A'
+      enddef
+    endclass
+    class B extends A
+      def __string(): string
+        return 'B'
+      enddef
+    endclass
+    def Foo(afoo: A)
+      assert_equal('B', string(afoo))
+      var bfoo = B.new()
+      assert_equal('B', string(bfoo))
+    enddef
+    var b = B.new()
+    assert_equal('B', string(b))
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Invoking __string method using an interface
+  let lines =<< trim END
+    vim9script
+    interface A
+    endinterface
+    class B implements A
+      def __string(): string
+        return 'B'
+      enddef
+    endclass
+    def Foo(a: A)
+      assert_equal('B', string(a))
+    enddef
+    var b = B.new()
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
 
 " Test for compiling class/object methods using :defcompile
 def Test_defcompile_class()

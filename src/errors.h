@@ -3579,8 +3579,20 @@ EXTERN char e_const_variable_not_supported_in_interface[]
 	INIT(= N_("E1410: Const variable not supported in an interface"));
 EXTERN char e_missing_dot_after_object_str[]
 	INIT(= N_("E1411: Missing dot after object \"%s\""));
+EXTERN char e_dunder_method_str_not_supported[]
+	INIT(= N_("E1412: Dunder method \"%s\" not supported"));
+EXTERN char e_dunder_method_str_incorrect_signature[]
+	INIT(= N_("E1413: Dunder method \"%s\" signature not correct"));
+EXTERN char e_dunder_method_cannot_be_used_directly[]
+	INIT(= N_("E1414: Dunder method \"%s\" cannot be directly used"));
+EXTERN char e_cannot_access_dunder_method_str[]
+	INIT(= N_("E1415: Cannot access dunder method: %s"));
+EXTERN char e_dunder_method_not_supported_in_interface[]
+	INIT(= N_("E1416: Dunder method not supported in interface"));
+EXTERN char e_dunder_class_method_not_supported[]
+	INIT(= N_("E1417: Dunder class method not supported"));
 #endif
-// E1412 - E1499 unused (reserved for Vim9 class support)
+// E1418 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
 	INIT(= N_("E1500: Cannot mix positional and non-positional arguments: %s"));
 EXTERN char e_fmt_arg_nr_unused_str[]

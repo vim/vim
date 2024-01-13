@@ -974,6 +974,79 @@ is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
 }
 
 /*
+ * Returns TRUE if 'uf' is a supported double underscore (dunder) method and
+ * has the correct method signature.
+ * Assumes the caller has validated that uf->uf_name starts with "__".
+ */
+    static int
+is_valid_dunder_method(ufunc_T *uf)
+{
+    char_u  *name = uf->uf_name + 2;
+    int	    valid = FALSE;
+    type_T  method_sig;
+    type_T  method_rt;
+    where_T where = WHERE_INIT;
+
+    // validate the method signature
+    CLEAR_FIELD(method_sig);
+    CLEAR_FIELD(method_rt);
+    method_sig.tt_type = VAR_FUNC;
+
+    if (STRCMP(name, "len") == 0)
+    {
+	// def __len(): number
+	method_rt.tt_type = VAR_NUMBER;
+	method_sig.tt_member = &method_rt;
+	valid = TRUE;
+    }
+    else if (STRCMP(name, "empty") == 0)
+    {
+	// def __empty(): bool
+	method_rt.tt_type = VAR_BOOL;
+	method_sig.tt_member = &method_rt;
+	valid = TRUE;
+    }
+    else if (STRCMP(name, "string") == 0)
+    {
+	// def __string(): string
+	method_rt.tt_type = VAR_STRING;
+	method_sig.tt_member = &method_rt;
+	valid = TRUE;
+    }
+    else
+	semsg(_(e_dunder_method_str_not_supported), uf->uf_name);
+
+    where.wt_func_name = (char *)uf->uf_name;
+    where.wt_kind = WT_METHOD;
+    if (valid && !check_type(&method_sig, uf->uf_func_type, TRUE, where))
+	valid = FALSE;
+
+    return valid;
+}
+
+/*
+ * Returns the dunder method "name" in object "obj".  Returns NULL if the
+ * method is not found.
+ */
+    static ufunc_T *
+get_dunder_method(object_T *obj, char_u *name)
+{
+    class_T *cl = obj->obj_class;
+
+    if (cl == NULL)
+	return NULL;
+
+    for (int i = 0; i < cl->class_obj_method_count; i++)
+    {
+	ufunc_T *uf = cl->class_obj_methods[i];
+	if (STRCMP(uf->uf_name, name) == 0)
+	    return uf;
+    }
+
+    return NULL;
+}
+
+/*
  * Update the interface class lookup table for the member index on the
  * interface to the member index in the class implementing the interface.
  * And a lookup table for the object method index on the interface
@@ -1721,13 +1794,10 @@ early_ret:
 			  &varname_end, &has_type, &type_list, &type,
 			  is_class ? &init_expr: NULL) == FAIL)
 		break;
-	    if (is_reserved_varname(varname, varname_end))
-	    {
-		vim_free(init_expr);
-		break;
-	    }
-	    if (is_duplicate_variable(&classmembers, &objmembers, varname,
-								varname_end))
+
+	    if (is_reserved_varname(varname, varname_end)
+		    || is_duplicate_variable(&classmembers, &objmembers,
+							varname, varname_end))
 	    {
 		vim_free(init_expr);
 		break;
@@ -1774,12 +1844,19 @@ early_ret:
 		break;
 	    }
 
-	    if (*p == '_' && *(p + 1) == '_')
+	    if (!is_class && *p == '_')
 	    {
-		// double underscore prefix for a method name is currently
-		// reserved.  This could be used in the future to support
-		// object methods called by Vim builtin functions.
-		semsg(_(e_cannot_use_reserved_name_str), p);
+		// private methods are not supported in an interface
+		if (*(p + 1) == '_')
+		    emsg(_(e_dunder_method_not_supported_in_interface));
+		else
+		    semsg(_(e_protected_method_not_supported_in_interface), p);
+		break;
+	    }
+
+	    if (has_static && *p == '_' && *(p + 1) == '_')
+	    {
+		semsg(_(e_dunder_class_method_not_supported), p);
 		break;
 	    }
 
@@ -1805,7 +1882,8 @@ early_ret:
 		char_u	*name = uf->uf_name;
 		int	is_new = STRNCMP(name, "new", 3) == 0;
 
-		if (!is_class && *name == '_')
+		if (is_new && !is_valid_constructor(uf, is_abstract,
+								has_static))
 		{
 		    // private variables are not supported in an interface
 		    semsg(_(e_protected_method_not_supported_in_interface),
@@ -1813,8 +1891,10 @@ early_ret:
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
-		if (is_new && !is_valid_constructor(uf, is_abstract,
-								has_static))
+
+		// check for dunder method
+		if (*name == '_' && *(name + 1) == '_'
+						&& !is_valid_dunder_method(uf))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;
@@ -2381,7 +2461,7 @@ call_oc_method(
     if (ocm == NULL && *fp->uf_name == '_')
     {
 	// Cannot access a private method outside of a class
-	semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
+	protected_method_access_errmsg(fp->uf_name);
 	return FAIL;
     }
 
@@ -2499,7 +2579,7 @@ class_object_index(
 	    // Private methods are not accessible outside the class
 	    if (*name == '_')
 	    {
-		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
+		protected_method_access_errmsg(fp->uf_name);
 		return FAIL;
 	    }
 
@@ -3146,6 +3226,15 @@ object_free_items(int copyID)
     }
 }
 
+    void
+protected_method_access_errmsg(char_u *method_name)
+{
+    if (*(method_name + 1) == '_')
+	semsg(_(e_cannot_access_dunder_method_str), method_name);
+    else
+	semsg(_(e_cannot_access_protected_method_str), method_name);
+}
+
 /*
  * Output message which takes a variable name and the class that defines it.
  * "cl" is that class where the name was found. Search "cl"'s hierarchy to
@@ -3174,7 +3263,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	// If this is a class method, then give a different error
 	if (*name == '_')
-	    semsg(_(e_cannot_access_protected_method_str), method_name);
+	    protected_method_access_errmsg(method_name);
 	else
 	    semsg(_(e_class_method_str_accessible_only_using_class_str),
 		    method_name, cl->class_name);
@@ -3184,7 +3273,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	// If this is an object method, then give a different error
 	if (*name == '_')
-	    semsg(_(e_cannot_access_protected_method_str), method_name);
+	    protected_method_access_errmsg(method_name);
 	else
 	    semsg(_(e_object_method_str_accessible_only_using_object_str),
 		    method_name, cl->class_name);
@@ -3270,6 +3359,124 @@ is_class_name(char_u *name, typval_T *rettv)
 						EVAL_VAR_NO_FUNC) != FAIL)
 	return rettv->v_type == VAR_CLASS;
     return FALSE;
+}
+
+/*
+ * Calls the object dunder method "name" with arguments "argv".  The value
+ * returned by the dunder method is in "rettv".  Returns OK or FAIL.
+ */
+    static int
+object_call_dunder_method(
+    object_T	*obj,
+    char	*name,
+    int		argc,
+    typval_T	*argv,
+    typval_T	*rettv)
+{
+    ufunc_T *uf;
+
+    if (obj == NULL)
+	return FAIL;
+
+    uf = get_dunder_method(obj, (char_u *)name);
+    if (uf == NULL)
+	return FAIL;
+
+    funccall_T  *fc = create_funccal(uf, rettv);
+    int		r;
+
+    if (fc == NULL)
+	return FAIL;
+
+    ++obj->obj_refcount;
+
+    r = call_def_function(uf, argc, argv, 0, NULL, obj, fc, rettv);
+
+    remove_funccal();
+
+    return r;
+}
+
+/*
+ * Calls the object "__empty()" method and returns the method retun value.  In
+ * case of an error, returns TRUE.
+ */
+    int
+object_empty(object_T *obj)
+{
+    typval_T	rettv;
+
+    if (object_call_dunder_method(obj, "__empty", 0, NULL, &rettv) == FAIL)
+	return TRUE;
+
+    return tv_get_bool(&rettv);
+}
+
+/*
+ * Use the object "__len()" method to get an object length.  Returns 0 if the
+ * method is not found or there is an error.
+ */
+    int
+object_len(object_T *obj)
+{
+    typval_T	rettv;
+
+    if (object_call_dunder_method(obj, "__len", 0, NULL, &rettv) == FAIL)
+    {
+	emsg(_(e_invalid_type_for_len));
+	return 0;
+    }
+
+    return tv_to_number(&rettv);
+}
+
+/*
+ * Return a textual representation of object "obj"
+ */
+    char_u *
+object_string(
+    object_T	*obj,
+    char_u	*numbuf,
+    int		copyID,
+    int		echo_style,
+    int		restore_copyID,
+    int		composite_val)
+{
+    typval_T	rettv;
+
+    if (object_call_dunder_method(obj, "__string", 0, NULL, &rettv) == OK
+					&& rettv.vval.v_string != NULL)
+	return rettv.vval.v_string;
+    else
+    {
+	garray_T ga;
+	ga_init2(&ga, 1, 50);
+
+	ga_concat(&ga, (char_u *)"object of ");
+	class_T *cl = obj == NULL ? NULL : obj->obj_class;
+	ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
+		: cl->class_name);
+	if (cl != NULL)
+	{
+	    ga_concat(&ga, (char_u *)" {");
+	    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	    {
+		if (i > 0)
+		    ga_concat(&ga, (char_u *)", ");
+		ocmember_T *m = &cl->class_obj_members[i];
+		ga_concat(&ga, m->ocm_name);
+		ga_concat(&ga, (char_u *)": ");
+		char_u *tf = NULL;
+		ga_concat(&ga, echo_string_core(
+			    (typval_T *)(obj + 1) + i,
+			    &tf, numbuf, copyID, echo_style,
+			    restore_copyID, composite_val));
+		vim_free(tf);
+	    }
+	    ga_concat(&ga, (char_u *)"}");
+	}
+	return ga.ga_data;
+    }
 }
 
 /*
