@@ -265,7 +265,12 @@ jobs:
         if: contains(matrix.extra, 'vimtags')
         run: |
           # This will exit with an error code if the generated vim tags differs from source.
-          git diff --exit-code -- runtime/doc/tags
+          (
+            cd runtime/doc
+            git diff --exit-code -- tags
+            make html; rm *.html tags.ref;
+            test -f errors.log && exit 3;
+          )
 
       - name: Generate gcov files
         if: matrix.coverage
