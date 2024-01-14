@@ -5706,6 +5706,7 @@ TabNew	autocmd.txt	/*TabNew*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
+TermResponseAll	autocmd.txt	/*TermResponseAll*
 TermdebugStartPost	terminal.txt	/*TermdebugStartPost*
 TermdebugStartPre	terminal.txt	/*TermdebugStartPre*
 TermdebugStopPost	terminal.txt	/*TermdebugStopPost*
