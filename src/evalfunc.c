@@ -6632,7 +6632,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"fgbg_event", 1},
 	{NULL, 0}
     };
 

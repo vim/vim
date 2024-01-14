@@ -339,7 +339,8 @@ Name			triggered by ~
 |VimEnter|		after doing all the startup stuff
 |GUIEnter|		after starting the GUI successfully
 |GUIFailed|		after starting the GUI failed
-|TermResponse|		after the terminal response to |t_RV| and others are received
+|TermResponse|		after the terminal response to |t_RV| is received
+|TermResponseAll|	after the terminal response to |t_RV| and others is received
 
 |QuitPre|		when using `:quit`, before deciding whether to exit
 |ExitPre|		when using a command that may make Vim exit
@@ -1213,14 +1214,23 @@ TerminalWinOpen			Just after a terminal buffer was created, with
 				with a window.  Can be used to set window
 				local options for the terminal window.
 							*TermResponse*
-TermResponse			After the response to |t_RV|, |t_RC|, |t_RS|,
+TermResponse			After the response to |t_RV| is received from
+				the terminal.  The value of |v:termresponse|
+				can be used to do things depending on the
+				terminal version.  Note that this event may be
+				triggered halfway executing another event,
+				especially if file I/O, a shell command or
+				anything else that takes time is involved.
+							*TermResponseAll*
+TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				|t_RB|, |t_RF|, or |t_u7| are received from
 				the terminal.  The value of |v:termresponse|,
 				|v:termblinkresp|, |v:termstyleresp|,
 				|v:termrbgresp|, |v:termrfgresp|, and
 				|v:termu7resp|, correspondingly, can be used.
-				<amatch> will be set to "ver", "blink",
-				"style", "rbg", "rfg", or "u7".
+				<amatch> will be set to "version",
+				"cursorblink", "cursorshape", "bg", "fg", or
+				"ambiguouswidth".
 				Note that this event may be
 				triggered halfway executing another event,
 				especially if file I/O, a shell command or
