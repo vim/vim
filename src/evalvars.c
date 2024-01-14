@@ -4924,6 +4924,10 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     if (*varname == '&')
     {
 	aco_save_T	aco;
+	// safe the current window position, it could
+	// change because of 'scrollbind' window-local
+	// options
+	linenr_T	old_topline = curwin->w_topline;
 
 	// Set curbuf to be our buf, temporarily.
 	aucmd_prepbuf(&aco, buf);
@@ -4935,6 +4939,7 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 	    // reset notion of buffer
 	    aucmd_restbuf(&aco);
 	}
+	curwin->w_topline = old_topline;
     }
     else
     {

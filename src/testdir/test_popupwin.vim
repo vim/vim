@@ -4215,4 +4215,22 @@ func Test_popup_close_callback_recursive()
   set maxfuncdepth&
 endfunc
 
+func Test_popupwin_setbufvar_changing_window_view()
+  " Test for Github Issue https://github.com/vim/vim/issues/13863
+  " using setbufvar(buf, '&option') should not scroll
+  " the current window
+  20new
+  call append(0, range(1, 25))
+  setlocal scrollbind
+  norm! G
+  let topline = winsaveview()['topline']
+  call setbufvar(winbufnr(popup_atcursor(['foobar'], {})), '&syntax', 'python')
+  " close popup
+  call popup_clear()
+  call assert_equal(topline, winsaveview()['topline'])
+
+  " clean up
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2
