@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 9.1.  Last change: 2023 Sep 27
+*editing.txt*   For Vim version 9.1.  Last change: 2024 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1329,8 +1329,9 @@ b:browsefilter variable.  You would most likely set b:browsefilter in a
 filetype plugin, so that the browse dialog would contain entries related to
 the type of file you are currently editing.  Disadvantage: This makes it
 difficult to start editing a file of a different type.  To overcome this, you
-may want to add "All Files\t*.*\n" as the final filter, so that the user can
-still access any desired file.
+may want to add "All Files (*.*)\t*\n" as the final filter on Windows or "All
+Files (*)\t*\n" on other platforms, so that the user can still access any
+desired file.
 
 To avoid setting browsefilter when Vim does not actually support it, you can
 use has("browsefilter"): >
