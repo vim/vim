@@ -974,14 +974,13 @@ is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
 }
 
 /*
- * Returns TRUE if 'uf' is a supported double underscore (dunder) method and
- * has the correct method signature.
- * Assumes the caller has validated that uf->uf_name starts with "__".
+ * Returns TRUE if 'uf' is a supported builtin method and has the correct
+ * method signature.
  */
     static int
-is_valid_dunder_method(ufunc_T *uf)
+object_check_builtin_method_sig(ufunc_T *uf)
 {
-    char_u  *name = uf->uf_name + 2;
+    char_u  *name = uf->uf_name;
     int	    valid = FALSE;
     type_T  method_sig;
     type_T  method_rt;
@@ -1014,7 +1013,7 @@ is_valid_dunder_method(ufunc_T *uf)
 	valid = TRUE;
     }
     else
-	semsg(_(e_dunder_method_str_not_supported), uf->uf_name);
+	semsg(_(e_builtin_object_method_str_not_supported), uf->uf_name);
 
     where.wt_func_name = (char *)uf->uf_name;
     where.wt_kind = WT_METHOD;
@@ -1025,11 +1024,36 @@ is_valid_dunder_method(ufunc_T *uf)
 }
 
 /*
- * Returns the dunder method "name" in object "obj".  Returns NULL if the
+ * Returns TRUE if "funcname" is a supported builtin object method name
+ */
+    int
+is_valid_builtin_obj_methodname(char_u *funcname)
+{
+    switch (funcname[0])
+    {
+	case 'e':
+	    return STRNCMP(funcname, "empty", 5) == 0;
+
+	case 'l':
+	    return STRNCMP(funcname, "len", 3) == 0;
+
+	case 'n':
+	    return STRNCMP(funcname, "new", 3) == 0;
+
+	case 's':
+	    return STRNCMP(funcname, "string", 6) == 0;
+    }
+
+    return FALSE;
+}
+
+
+/*
+ * Returns the builtin method "name" in object "obj".  Returns NULL if the
  * method is not found.
  */
     static ufunc_T *
-get_dunder_method(object_T *obj, char_u *name)
+object_get_builtin_method(object_T *obj, char_u *name)
 {
     class_T *cl = obj->obj_class;
 
@@ -1828,6 +1852,7 @@ early_ret:
 	{
 	    exarg_T	ea;
 	    garray_T	lines_to_free;
+	    int		is_new = STRNCMP(p, "new", 3) == 0;
 
 	    if (has_public)
 	    {
@@ -1847,16 +1872,14 @@ early_ret:
 	    if (!is_class && *p == '_')
 	    {
 		// private methods are not supported in an interface
-		if (*(p + 1) == '_')
-		    emsg(_(e_dunder_method_not_supported_in_interface));
-		else
-		    semsg(_(e_protected_method_not_supported_in_interface), p);
+		semsg(_(e_protected_method_not_supported_in_interface), p);
 		break;
 	    }
 
-	    if (has_static && *p == '_' && *(p + 1) == '_')
+	    if (has_static && !is_new && SAFE_islower(*p) &&
+					is_valid_builtin_obj_methodname(p))
 	    {
-		semsg(_(e_dunder_class_method_not_supported), p);
+		semsg(_(e_builtin_class_method_not_supported), p);
 		break;
 	    }
 
@@ -1880,7 +1903,6 @@ early_ret:
 	    if (uf != NULL)
 	    {
 		char_u	*name = uf->uf_name;
-		int	is_new = STRNCMP(name, "new", 3) == 0;
 
 		if (is_new && !is_valid_constructor(uf, is_abstract,
 								has_static))
@@ -1892,9 +1914,9 @@ early_ret:
 		    break;
 		}
 
-		// check for dunder method
-		if (*name == '_' && *(name + 1) == '_'
-						&& !is_valid_dunder_method(uf))
+		// check for builtin method
+		if (!is_new && SAFE_islower(*name) &&
+					!object_check_builtin_method_sig(uf))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;
@@ -2461,7 +2483,7 @@ call_oc_method(
     if (ocm == NULL && *fp->uf_name == '_')
     {
 	// Cannot access a private method outside of a class
-	protected_method_access_errmsg(fp->uf_name);
+	semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 	return FAIL;
     }
 
@@ -2579,7 +2601,7 @@ class_object_index(
 	    // Private methods are not accessible outside the class
 	    if (*name == '_')
 	    {
-		protected_method_access_errmsg(fp->uf_name);
+		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
 		return FAIL;
 	    }
 
@@ -3226,15 +3248,6 @@ object_free_items(int copyID)
     }
 }
 
-    void
-protected_method_access_errmsg(char_u *method_name)
-{
-    if (*(method_name + 1) == '_')
-	semsg(_(e_cannot_access_dunder_method_str), method_name);
-    else
-	semsg(_(e_cannot_access_protected_method_str), method_name);
-}
-
 /*
  * Output message which takes a variable name and the class that defines it.
  * "cl" is that class where the name was found. Search "cl"'s hierarchy to
@@ -3263,7 +3276,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	// If this is a class method, then give a different error
 	if (*name == '_')
-	    protected_method_access_errmsg(method_name);
+	    semsg(_(e_cannot_access_protected_method_str), method_name);
 	else
 	    semsg(_(e_class_method_str_accessible_only_using_class_str),
 		    method_name, cl->class_name);
@@ -3273,7 +3286,7 @@ method_not_found_msg(class_T *cl, vartype_T v_type, char_u *name, size_t len)
     {
 	// If this is an object method, then give a different error
 	if (*name == '_')
-	    protected_method_access_errmsg(method_name);
+	    semsg(_(e_cannot_access_protected_method_str), method_name);
 	else
 	    semsg(_(e_object_method_str_accessible_only_using_object_str),
 		    method_name, cl->class_name);
@@ -3362,11 +3375,11 @@ is_class_name(char_u *name, typval_T *rettv)
 }
 
 /*
- * Calls the object dunder method "name" with arguments "argv".  The value
- * returned by the dunder method is in "rettv".  Returns OK or FAIL.
+ * Calls the object builtin method "name" with arguments "argv".  The value
+ * returned by the builtin method is in "rettv".  Returns OK or FAIL.
  */
     static int
-object_call_dunder_method(
+object_call_builtin_method(
     object_T	*obj,
     char	*name,
     int		argc,
@@ -3378,7 +3391,7 @@ object_call_dunder_method(
     if (obj == NULL)
 	return FAIL;
 
-    uf = get_dunder_method(obj, (char_u *)name);
+    uf = object_get_builtin_method(obj, (char_u *)name);
     if (uf == NULL)
 	return FAIL;
 
@@ -3398,7 +3411,7 @@ object_call_dunder_method(
 }
 
 /*
- * Calls the object "__empty()" method and returns the method retun value.  In
+ * Calls the object "empty()" method and returns the method retun value.  In
  * case of an error, returns TRUE.
  */
     int
@@ -3406,14 +3419,14 @@ object_empty(object_T *obj)
 {
     typval_T	rettv;
 
-    if (object_call_dunder_method(obj, "__empty", 0, NULL, &rettv) == FAIL)
+    if (object_call_builtin_method(obj, "empty", 0, NULL, &rettv) == FAIL)
 	return TRUE;
 
     return tv_get_bool(&rettv);
 }
 
 /*
- * Use the object "__len()" method to get an object length.  Returns 0 if the
+ * Use the object "len()" method to get an object length.  Returns 0 if the
  * method is not found or there is an error.
  */
     int
@@ -3421,7 +3434,7 @@ object_len(object_T *obj)
 {
     typval_T	rettv;
 
-    if (object_call_dunder_method(obj, "__len", 0, NULL, &rettv) == FAIL)
+    if (object_call_builtin_method(obj, "len", 0, NULL, &rettv) == FAIL)
     {
 	emsg(_(e_invalid_type_for_len));
 	return 0;
@@ -3444,7 +3457,7 @@ object_string(
 {
     typval_T	rettv;
 
-    if (object_call_dunder_method(obj, "__string", 0, NULL, &rettv) == OK
+    if (object_call_builtin_method(obj, "string", 0, NULL, &rettv) == OK
 					&& rettv.vval.v_string != NULL)
 	return rettv.vval.v_string;
     else
