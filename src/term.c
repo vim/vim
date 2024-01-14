@@ -5791,7 +5791,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 						  : VV_TERMRFGRESP, tp, *slen);
 #endif
 		apply_autocmds(EVENT_TERMRESPONSEALL,
-			    is_bg ? (char_u *)"bg" : (char_u *)"fg", NULL, FALSE, curbuf);
+			    is_bg ? (char_u *)"background" : (char_u *)"foreground", NULL, FALSE, curbuf);
 		break;
 	    }
     if (i == len)

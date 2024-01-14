@@ -1229,8 +1229,8 @@ TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
 				|v:termrbgresp|, |v:termrfgresp|, and
 				|v:termu7resp|, correspondingly, can be used.
 				<amatch> will be set to "version",
-				"cursorblink", "cursorshape", "bg", "fg", or
-				"ambiguouswidth".
+				"cursorblink", "cursorshape", "background",
+				"foreground", or "ambiguouswidth".
 				Note that this event may be
 				triggered halfway executing another event,
 				especially if file I/O, a shell command or
