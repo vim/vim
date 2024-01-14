@@ -5176,7 +5176,7 @@ mch_system_piped(char *cmd, int options)
 		{
 		    /*
 		     * For pipes: Check for CTRL-C: send interrupt signal to
-		     * child.  Check for CTRL-D: EOF, close pipe to child.
+		     * child.
 		     */
 		    if (len == 1 && cmd != NULL)
 		    {
@@ -5186,10 +5186,22 @@ mch_system_piped(char *cmd, int options)
 			// now put 9 as SIGKILL
 			    TerminateProcess(pi.hProcess, 9);
 			}
-			if (ta_buf[ta_len] == Ctrl_D)
+		    }
+
+		    /*
+		     * Check for CTRL-D: EOF, close pipe to child.
+		     * Ctrl_D may be decorated by _OnChar()
+		     */
+		    if ((len == 1 || len == 4 ) && cmd != NULL)
+		    {
+			if (ta_buf[0] == Ctrl_D
+			    || (ta_buf[0] == CSI
+				&& ta_buf[1] == KS_MODIFIER
+				&& ta_buf[3] == Ctrl_D))
 			{
 			    CloseHandle(g_hChildStd_IN_Wr);
 			    g_hChildStd_IN_Wr = NULL;
+			    len = 0;
 			}
 		    }
 
