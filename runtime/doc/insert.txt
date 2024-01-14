@@ -269,6 +269,7 @@ CTRL-^		Toggle the use of typing language characters.
 
 						*i_CTRL-]*
 CTRL-]		Trigger abbreviation, without inserting a character.
+		Triggers the event |InsertCharPre|.
 
 						*i_<Insert>*
 <Insert>	Toggle between Insert and Replace mode.

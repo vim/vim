@@ -947,6 +947,7 @@ InsertCharPre			When a character is typed in Insert mode,
 				It is not allowed to change the text |textlock|.
 				The event is not triggered when 'paste' is
 				set. {only with the +eval feature}
+				The event is triggered by |i_ctrl-]|.
 							*InsertEnter*
 InsertEnter			Just before starting Insert mode.  Also for
 				Replace mode and Virtual Replace mode.  The
