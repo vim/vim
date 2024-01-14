@@ -5194,7 +5194,7 @@ mch_system_piped(char *cmd, int options)
 		     */
 		    if ((len == 1 || len == 4 ) && cmd != NULL)
 		    {
-			if (ta_buf[0] == Ctrl_C
+			if (ta_buf[0] == Ctrl_D
 			    || (ta_buf[0] == CSI
 				&& ta_buf[1] == KS_MODIFIER
 				&& ta_buf[3] == Ctrl_D))
