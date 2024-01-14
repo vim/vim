@@ -5190,13 +5190,14 @@ mch_system_piped(char *cmd, int options)
 
 		    /*
 		     * Check for CTRL-D: EOF, close pipe to child.
-		     * Ctrl_D receives no special treatment in _OnChar() as Ctrl_C does
+		     * Ctrl_D may be decorated by _OnChar()
 		     */
-		    if (len == 4 && cmd != NULL)
+		    if ((len == 1 || len == 4 ) && cmd != NULL)
 		    {
-			if (ta_buf[0] == CSI &&
-			    ta_buf[1] == KS_MODIFIER &&
-			    ta_buf[3] == Ctrl_D)
+			if (ta_buf[0] == Ctrl_C
+			    || (ta_buf[0] == CSI
+				&& ta_buf[1] == KS_MODIFIER
+				&& ta_buf[3] == Ctrl_D))
 			{
 			    CloseHandle(g_hChildStd_IN_Wr);
 			    g_hChildStd_IN_Wr = NULL;
