@@ -179,6 +179,7 @@ static struct event_name
     {"TerminalOpen",	EVENT_TERMINALOPEN},
     {"TerminalWinOpen", EVENT_TERMINALWINOPEN},
     {"TermResponse",	EVENT_TERMRESPONSE},
+    {"TermResponseAll",	EVENT_TERMRESPONSEALL},
     {"TextChanged",	EVENT_TEXTCHANGED},
     {"TextChangedI",	EVENT_TEXTCHANGEDI},
     {"TextChangedP",	EVENT_TEXTCHANGEDP},
@@ -2100,7 +2101,8 @@ apply_autocmds_group(
     {
 	if (event == EVENT_COLORSCHEME || event == EVENT_COLORSCHEMEPRE
 						 || event == EVENT_OPTIONSET
-						 || event == EVENT_MODECHANGED)
+						 || event == EVENT_MODECHANGED
+						 || event == EVENT_TERMRESPONSEALL)
 	    autocmd_fname = NULL;
 	else if (fname != NULL && !ends_excmd(*fname))
 	    autocmd_fname = fname;
@@ -2180,7 +2182,8 @@ apply_autocmds_group(
 		|| event == EVENT_USER
 		|| event == EVENT_WINCLOSED
 		|| event == EVENT_WINRESIZED
-		|| event == EVENT_WINSCROLLED)
+		|| event == EVENT_WINSCROLLED
+		|| event == EVENT_TERMRESPONSEALL)
 	{
 	    fname = vim_strsave(fname);
 	    autocmd_fname_full = TRUE; // don't expand it later
@@ -2418,6 +2421,11 @@ BYPASS_AU:
 
 # ifdef FEAT_EVAL
 static char_u	*old_termresponse = NULL;
+static char_u	*old_termu7resp = NULL;
+static char_u	*old_termblinkresp = NULL;
+static char_u	*old_termrbgresp = NULL;
+static char_u	*old_termrfgresp = NULL;
+static char_u	*old_termstyleresp = NULL;
 # endif
 
 /*
@@ -2430,7 +2438,14 @@ block_autocmds(void)
 # ifdef FEAT_EVAL
     // Remember the value of v:termresponse.
     if (autocmd_blocked == 0)
+    {
 	old_termresponse = get_vim_var_str(VV_TERMRESPONSE);
+	old_termu7resp = get_vim_var_str(VV_TERMU7RESP);
+	old_termblinkresp = get_vim_var_str(VV_TERMBLINKRESP);
+	old_termrbgresp = get_vim_var_str(VV_TERMRBGRESP);
+	old_termrfgresp = get_vim_var_str(VV_TERMRFGRESP);
+	old_termstyleresp = get_vim_var_str(VV_TERMSTYLERESP);
+    }
 # endif
     ++autocmd_blocked;
 }
@@ -2441,12 +2456,37 @@ unblock_autocmds(void)
     --autocmd_blocked;
 
 # ifdef FEAT_EVAL
-    // When v:termresponse was set while autocommands were blocked, trigger
-    // the autocommands now.  Esp. useful when executing a shell command
-    // during startup (vimdiff).
-    if (autocmd_blocked == 0
-		      && get_vim_var_str(VV_TERMRESPONSE) != old_termresponse)
-	apply_autocmds(EVENT_TERMRESPONSE, NULL, NULL, FALSE, curbuf);
+    // When v:termresponse, etc, were set while autocommands were blocked,
+    // trigger the autocommands now.  Esp. useful when executing a shell
+    // command during startup (vimdiff).
+    if (autocmd_blocked == 0)
+    {
+	if (get_vim_var_str(VV_TERMRESPONSE) != old_termresponse)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSE, NULL, NULL, FALSE, curbuf);
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"version", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMU7RESP) != old_termu7resp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"ambiguouswidth", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMBLINKRESP) != old_termblinkresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"cursorblink", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMRBGRESP) != old_termrbgresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"background", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMRFGRESP) != old_termrfgresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"foreground", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMSTYLERESP) != old_termstyleresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"cursorshape", NULL, FALSE, curbuf);
+	}
+    }
 # endif
 }
 

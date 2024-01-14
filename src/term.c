@@ -4986,6 +4986,8 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 #ifdef FEAT_EVAL
 	    set_vim_var_string(VV_TERMU7RESP, tp, csi_len);
 #endif
+	    apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"ambiguouswidth", NULL, FALSE, curbuf);
 	}
     }
     else if (arg[0] == 3)
@@ -5595,6 +5597,8 @@ handle_csi(
 #endif
 	apply_autocmds(EVENT_TERMRESPONSE,
 					NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"version", NULL, FALSE, curbuf);
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
     }
@@ -5621,6 +5625,8 @@ handle_csi(
 # ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMBLINKRESP, tp, *slen);
 # endif
+	apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"cursorblink", NULL, FALSE, curbuf);
     }
 #endif
 
@@ -5784,6 +5790,8 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		set_vim_var_string(is_bg ? VV_TERMRBGRESP
 						  : VV_TERMRFGRESP, tp, *slen);
 #endif
+		apply_autocmds(EVENT_TERMRESPONSEALL,
+			    is_bg ? (char_u *)"background" : (char_u *)"foreground", NULL, FALSE, curbuf);
 		break;
 	    }
     if (i == len)
@@ -5882,6 +5890,8 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 #ifdef FEAT_EVAL
 		set_vim_var_string(VV_TERMSTYLERESP, tp, *slen);
 #endif
+		apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"cursorshape", NULL, FALSE, curbuf);
 		break;
 	    }
 	}

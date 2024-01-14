@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2023 May 20
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -340,6 +340,7 @@ Name			triggered by ~
 |GUIEnter|		after starting the GUI successfully
 |GUIFailed|		after starting the GUI failed
 |TermResponse|		after the terminal response to |t_RV| is received
+|TermResponseAll|	after the terminal response to |t_RV| and others is received
 
 |QuitPre|		when using `:quit`, before deciding whether to exit
 |ExitPre|		when using a command that may make Vim exit
@@ -1220,6 +1221,24 @@ TermResponse			After the response to |t_RV| is received from
 				triggered halfway executing another event,
 				especially if file I/O, a shell command or
 				anything else that takes time is involved.
+							*TermResponseAll*
+TermResponseAll			After the response to |t_RV|, |t_RC|, |t_RS|,
+				|t_RB|, |t_RF|, or |t_u7| are received from
+				the terminal.  The value of |v:termresponse|,
+				|v:termblinkresp|, |v:termstyleresp|,
+				|v:termrbgresp|, |v:termrfgresp|, and
+				|v:termu7resp|, correspondingly, can be used.
+				<amatch> will be set to any of:
+				    "version",
+				    "cursorblink",
+				    "cursorshape",
+				    "background",
+				    "foreground",
+				    "ambiguouswidth"
+				Note that this event may be triggered halfway
+				executing another event, especially if file I/O,
+				a shell command or anything else that takes time
+				is involved.
 							*TextChanged*
 TextChanged			After a change was made to the text in the
 				current buffer in Normal mode.  That is after

@@ -1422,6 +1422,7 @@ enum auto_event
     EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and
 				// entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
+    EVENT_TERMRESPONSEALL,	// after setting terminal response vars
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,		// text was modified in Insert mode
     EVENT_TEXTCHANGEDP,		// TextChangedI with popup menu visible
