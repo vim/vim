@@ -3001,7 +3001,7 @@ foldtextresult({lnum})					*foldtextresult()*
 foreach({expr1}, {expr2})					*foreach()*
 		{expr1} must be a |List|, |String|, |Blob| or |Dictionary|.
 		For each item in {expr1} execute {expr2}. {expr1} is not
-		modified; its values may be, as with |:lockvar| 1. *E741*
+		modified; its values may be, as with |:lockvar| 1. |E741|
 		See |map()| and |filter()| to modify {expr1}.
 
 		{expr2} must be a |string| or |Funcref|.
