@@ -19,33 +19,77 @@ setlocal cinkeys=0{,0},0),0],!^F,:,o,O
 
 setlocal indentexpr=GetOdinIndent(v:lnum)
 
+def PrevLine(lnum: number): number
+    var plnum = lnum - 1
+    var pline: string
+    while plnum > 1
+        plnum = prevnonblank(plnum)
+        pline = getline(plnum)
+        # XXX: take into account nested multiline /* /* */ */ comments
+        if pline =~ '\*/\s*$'
+            while getline(plnum) !~ '/\*' && plnum > 1
+                plnum -= 1
+            endwhile
+            if getline(plnum) =~ '^\s*/\*'
+                plnum -= 1
+            else
+                break
+            endif
+        elseif pline =~ '^\s*//'
+            plnum -= 1
+        else
+            break
+        endif
+    endwhile
+    return plnum
+enddef
+
 def GetOdinIndent(lnum: number): number
-    var plnum = prevnonblank(lnum - 1)
-
+    var plnum = PrevLine(lnum)
     var pline = getline(plnum)
-    var line = getline(lnum)
+    var pindent = indent(plnum)
+    # workaround of cindent "hang"
+    # if the previous line looks like:
+    # : #{}
+    # : #whatever{whateverelse}
+    # and variations where : # { } are in the string
+    # cindent(lnum) hangs
+    if pline =~ ':\s\+#.*{.*}'
+        return pindent
+    endif
 
-    var indent = indent(plnum)
+    var indent = cindent(lnum)
+    var line = getline(lnum)
 
     if line =~ '^\s*#\k\+'
         if pline =~ '[{:]\s*$'
-            return indent + shiftwidth()
+            indent = pindent + shiftwidth()
         else
-            return indent
+            indent = pindent
         endif
-    elseif pline =~ 'case:\s*$'
-        return indent + shiftwidth()
-    elseif pline =~ '{[^{]*}\s*$' # https://github.com/habamax/vim-odin/issues/2
-        return indent
-    elseif pline =~ '}\s$' # https://github.com/habamax/vim-odin/issues/3
+    elseif pline =~ ':[:=].*}\s*$'
+        indent = pindent
+    elseif pline =~ '^\s*}\s*$'
+        if line !~ '^\s*}\s*$'
+            indent = pindent
+        else
+            indent = pindent - shiftwidth()
+        endif
+    elseif pline =~ 'case:\s*$' && line !~ '^\s*}\s*$'
+        indent = pindent + shiftwidth()
+    elseif pline =~ '{[^{]*}\s*$' && line !~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/2
+        indent = pindent
+    elseif pline =~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/3
         # Find line with opening { and check if there is a label:
         # If there is, return indent of the closing }
-        silent! $":{plnum}"
-        silent! $"$F}%"
-        if plnum != line('.') && getline('.') =~ '^\s*\k\+:'
-            return indent
+        cursor(plnum, 1)
+        silent normal! %
+        var brlnum = line('.')
+        var brline = getline('.')
+        if plnum != brlnum && (brline =~ '^\s*\k\+:\s\+for' || brline =~ '^\s*\k\+\s*:=')
+            indent = pindent
         endif
     endif
 
-    return cindent(lnum)
+    return indent
 enddef
