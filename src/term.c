@@ -2121,8 +2121,10 @@ set_termname(char_u *term)
 		&& term_strings_not_set(KS_8U))
 	    apply_builtin_tcap(term, builtin_rgb, TRUE);
 #endif
+#ifdef HAVE_TGETENT
 	if (term_strings_not_set(KS_CF))
 	    apply_builtin_tcap(term, special_term, TRUE);
+#endif
     }
 
 /*
