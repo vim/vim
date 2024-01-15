@@ -270,6 +270,7 @@ jobs:
             git diff --exit-code -- tags
             make html; rm *.html tags.ref;
             test -f errors.log && exit 3;
+            true
           )
 
       - name: Generate gcov files
