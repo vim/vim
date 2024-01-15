@@ -67,7 +67,7 @@ syntax match odinMacro "#\<\w\+\>" display
 syntax match odinTemplate "$\<\w\+\>"
 
 syntax region odinLineComment start=/\/\// end=/$/  contains=@Spell,odinTodo
-syntax region odinBlockComment start=/\v\/\*/ end=/\v\*\// contains=@Spell,odinTodo
+syntax region odinBlockComment start=/\v\/\*/ end=/\v\*\// contains=@Spell,odinTodo,odinBlockComment
 syn sync ccomment odinBlockComment
 
 highlight def link odinKeyword Statement
