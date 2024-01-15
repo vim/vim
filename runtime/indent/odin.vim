@@ -67,16 +67,38 @@ def GetOdinIndent(lnum: number): number
         else
             indent = pindent
         endif
+    elseif pline =~ 'switch\s.*{\s*$'
+        indent = pindent
+    elseif pline =~ 'case\s*.*,\s*$' # https://github.com/habamax/vim-odin/issues/8
+        indent = pindent + matchstr(pline, 'case\s*')->strcharlen()
+    elseif line =~ '^\s*case\s\+.*,\s*$'
+        indent = pindent - shiftwidth()
+    elseif pline =~ 'case\s*.*:\s*\(//.*\)\?$' && line !~ '^\s*}\s*$'
+        indent = pindent + shiftwidth()
+    elseif pline =~ '^\s*@.*' && line !~ '^\s*}'
+        indent = pindent
     elseif pline =~ ':[:=].*}\s*$'
         indent = pindent
     elseif pline =~ '^\s*}\s*$'
-        if line !~ '^\s*}\s*$' && line !~ 'case\s*.*:\s*$'
+        if line !~ '^\s*}' && line !~ 'case\s*.*:\s*$'
             indent = pindent
         else
             indent = pindent - shiftwidth()
         endif
-    elseif pline =~ 'case\s*.*:\s*$' && line !~ '^\s*}\s*$'
-        indent = pindent + shiftwidth()
+    elseif pline =~ '\S:\s*$'
+        # looking up for a case something,
+        #                       whatever,
+        #                       anything:
+        # ... 20 lines before
+        for idx in range(plnum - 1, plnum - 21, -1)
+            if plnum < 1
+                break
+            endif
+            if getline(idx) =~ '^\s*case\s.*,\s*$'
+                indent = indent(idx) + shiftwidth()
+                break
+            endif
+        endfor
     elseif pline =~ '{[^{]*}\s*$' && line !~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/2
         indent = pindent
     elseif pline =~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/3
