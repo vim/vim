@@ -69,12 +69,14 @@ def GetOdinIndent(lnum: number): number
         endif
     elseif pline =~ 'switch\s.*{\s*$'
         indent = pindent
-    elseif pline =~ 'case\s*.*,\s*$' # https://github.com/habamax/vim-odin/issues/8
+    elseif pline =~ 'case\s*.*,\s*\(//.*\)\?$' # https://github.com/habamax/vim-odin/issues/8
         indent = pindent + matchstr(pline, 'case\s*')->strcharlen()
     elseif line =~ '^\s*case\s\+.*,\s*$'
         indent = pindent - shiftwidth()
-    elseif pline =~ 'case\s*.*:\s*\(//.*\)\?$' && line !~ '^\s*}\s*$'
-        indent = pindent + shiftwidth()
+    elseif pline =~ 'case\s*.*:\s*\(//.*\)\?$'
+        if line !~ '^\s*}\s*$' && line !~ '^\s*case[[:space:]:]'
+            indent = pindent + shiftwidth()
+        endif
     elseif pline =~ '^\s*@.*' && line !~ '^\s*}'
         indent = pindent
     elseif pline =~ ':[:=].*}\s*$'
@@ -99,7 +101,7 @@ def GetOdinIndent(lnum: number): number
                 break
             endif
         endfor
-    elseif pline =~ '{[^{]*}\s*$' && line !~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/2
+    elseif pline =~ '{[^{]*}\s*$' && line !~ '^\s*[})]\s*$' # https://github.com/habamax/vim-odin/issues/2
         indent = pindent
     elseif pline =~ '^\s*}\s*$' # https://github.com/habamax/vim-odin/issues/3
         # Find line with opening { and check if there is a label:
