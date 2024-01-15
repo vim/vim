@@ -1,7 +1,7 @@
 vim9script
 
 # Vim indent plugin file
-# Language: odin
+# Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
 # Last Change: 2024-01-15
@@ -35,6 +35,16 @@ def GetOdinIndent(lnum: number): number
         endif
     elseif pline =~ 'case:\s*$'
         return indent + shiftwidth()
+    elseif pline =~ '{[^{]*}\s*$' # https://github.com/habamax/vim-odin/issues/2
+        return indent
+    elseif pline =~ '}\s$' # https://github.com/habamax/vim-odin/issues/3
+        # Find line with opening { and check if there is a label:
+        # If there is, return indent of the closing }
+        silent! $":{plnum}"
+        silent! $"$F}%"
+        if plnum != line('.') && getline('.') =~ '^\s*\k\+:'
+            return indent
+        endif
     endif
 
     return cindent(lnum)

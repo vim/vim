@@ -1,7 +1,7 @@
 vim9script
 
 # Vim indent plugin file
-# Language: odin
+# Language: Odin
 # Maintainer: Maxim Kim <habamax@gmail.com>
 # Website: https://github.com/habamax/vim-odin
 # Last Change: 2024-01-15
@@ -67,7 +67,7 @@ syntax match odinMacro "#\<\w\+\>" display
 syntax match odinTemplate "$\<\w\+\>"
 
 syntax region odinLineComment start=/\/\// end=/$/  contains=@Spell,odinTodo
-syntax region odinBlockComment start=/\v\/\*/ end=/\v\*\// contains=@Spell,odinTodo,odinBlockComment
+syntax region odinBlockComment start=/\/\*/ end=/\*\// contains=@Spell,odinTodo,odinBlockComment
 syn sync ccomment odinBlockComment
 
 highlight def link odinKeyword Statement
