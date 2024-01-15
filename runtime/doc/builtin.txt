@@ -6114,8 +6114,8 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 
 		For each match, a |Dict| with the following items is returned:
 		    byteidx	starting byte index of the match
-		    lnum	line number where there is a match
-		    text	matched string
+		    lnum	line number where there is a match
+		    text	matched string
 		Note that there can be multiple matches in a single line.
 
 		This function works only for loaded buffers. First call
@@ -6126,19 +6126,19 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 		empty |List| is returned.
 
 		Examples: >
-		    " Assuming line 3 in buffer 5 contains "a"
-		    :echo matchbufline(5, '\<\k\+\>', 3, 3)
-		    [{'lnum': 3, 'byteidx': 0, 'text': 'a'}]
-		    " Assuming line 4 in buffer 10 contains "tik tok"
-		    :echo matchbufline(10, '\<\k\+\>', 1, 4)
-		    [{'lnum': 4, 'byteidx': 0, 'text': 'tik'}, {'lnum': 4, 'byteidx': 4, 'text': 'tok'}]
+		    " Assuming line 3 in buffer 5 contains "a"
+		    :echo matchbufline(5, '\<\k\+\>', 3, 3)
+		    [{'lnum': 3, 'byteidx': 0, 'text': 'a'}]
+		    " Assuming line 4 in buffer 10 contains "tik tok"
+		    :echo matchbufline(10, '\<\k\+\>', 1, 4)
+		    [{'lnum': 4, 'byteidx': 0, 'text': 'tik'}, {'lnum': 4, 'byteidx': 4, 'text': 'tok'}]
 <
 		If {submatch} is present and is v:true, then submatches like
-		"\1", "\2", etc. are also returned.  Example: >
-		    " Assuming line 2 in buffer 2 contains "acd"
-		    :echo matchbufline(2, '\(a\)\?\(b\)\?\(c\)\?\(.*\)', 2, 2
+		"\1", "\2", etc. are also returned.  Example: >
+		    " Assuming line 2 in buffer 2 contains "acd"
+		    :echo matchbufline(2, '\(a\)\?\(b\)\?\(c\)\?\(.*\)', 2, 2
 						\ {'submatches': v:true})
-		    [{'lnum': 2, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+		    [{'lnum': 2, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
 <		The "submatches" List always contains 9 items.  If a submatch
 		is not found, then an empty string is returned for that
 		submatch.
@@ -6296,10 +6296,10 @@ matchstrlist({list}, {pat} [, {dict}])
 				"submatches" is set to v:true in {dict}.
 
 		Example: >
-		    :echo matchstrlist(['tik tok'], '\<\k\+\>')
-		    [{'idx': 0, 'byteidx': 0, 'text': 'tik'}, {'idx': 0, 'byteidx': 4, 'text': 'tok'}]
-		    :echo matchstrlist(['a', 'b'], '\<\k\+\>')
-		    [{'idx': 0, 'byteidx': 0, 'text': 'a'}, {'idx': 1, 'byteidx': 0, 'text': 'b'}]
+		    :echo matchstrlist(['tik tok'], '\<\k\+\>')
+		    [{'idx': 0, 'byteidx': 0, 'text': 'tik'}, {'idx': 0, 'byteidx': 4, 'text': 'tok'}]
+		    :echo matchstrlist(['a', 'b'], '\<\k\+\>')
+		    [{'idx': 0, 'byteidx': 0, 'text': 'a'}, {'idx': 1, 'byteidx': 0, 'text': 'b'}]
 <
 		If "submatches" is present and is v:true, then submatches like
 		"\1", "\2", etc. are also returned.  Example: >
