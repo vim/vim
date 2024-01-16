@@ -2362,7 +2362,7 @@ leaving_window(win_T *win)
     // When leaving the window (or closing the window) was done from a
     // callback we need to break out of the Insert mode loop and restart Insert
     // mode when entering the window again.
-    if (State & MODE_INSERT)
+    if ((State & MODE_INSERT) && !stop_insert_mode)
     {
 	stop_insert_mode = TRUE;
 	if (win->w_buffer->b_prompt_insert == NUL)
