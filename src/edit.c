@@ -5371,6 +5371,9 @@ do_insert_char_pre(int c)
     if (!has_insertcharpre())
 	return NULL;
 
+    if (c == Ctrl_RSB)
+	return NULL;
+
     if (has_mbyte)
 	buf[(*mb_char2bytes)(c, buf)] = NUL;
     else
