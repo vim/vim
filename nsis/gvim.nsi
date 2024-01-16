@@ -397,6 +397,9 @@ Section "$(str_section_exe)" id_section_exe
 	SetOutPath $0\indent
 	File ${VIMRT}\indent\*.*
 
+	SetOutPath $0\keymap
+	File ${VIMRT}\keymap\*.*
+
 	SetOutPath $0\macros
 	File /r ${VIMRT}\macros\*.*
 
