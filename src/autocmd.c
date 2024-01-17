@@ -1565,9 +1565,12 @@ aucmd_prepbuf(
     }
 
     aco->save_curwin_id = curwin->w_id;
-    aco->save_curbuf = curbuf;
     aco->save_prevwin_id = prevwin == NULL ? 0 : prevwin->w_id;
     aco->save_State = State;
+#ifdef FEAT_JOB_CHANNEL
+    if (bt_prompt(curbuf))
+	aco->save_prompt_insert = curbuf->b_prompt_insert;
+#endif
 
     if (win != NULL)
     {
@@ -1692,6 +1695,8 @@ win_found:
 #ifdef FEAT_JOB_CHANNEL
 	// May need to restore insert mode for a prompt buffer.
 	entering_window(curwin);
+	if (bt_prompt(curbuf))
+	    curbuf->b_prompt_insert = aco->save_prompt_insert;
 #endif
 	prevwin = win_find_by_id(aco->save_prevwin_id);
 #ifdef FEAT_EVAL
