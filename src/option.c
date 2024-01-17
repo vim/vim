@@ -2858,10 +2858,10 @@ didset_options2(void)
     check_opt_wim();
 
     // Parse default for 'listchars'.
-    (void)set_listchars_option(curwin, curwin->w_p_lcs, TRUE);
+    (void)set_listchars_option(curwin, curwin->w_p_lcs, TRUE, NULL, 0);
 
     // Parse default for 'fillchars'.
-    (void)set_fillchars_option(curwin, curwin->w_p_fcs, TRUE);
+    (void)set_fillchars_option(curwin, curwin->w_p_fcs, TRUE, NULL, 0);
 
 #ifdef FEAT_CLIPBOARD
     // Parse default for 'clipboard'
@@ -6219,12 +6219,14 @@ unset_global_local_option(char_u *name, void *from)
 	    break;
 	case PV_LCS:
 	    clear_string_option(&((win_T *)from)->w_p_lcs);
-	    set_listchars_option((win_T *)from, ((win_T *)from)->w_p_lcs, TRUE);
+	    set_listchars_option((win_T *)from, ((win_T *)from)->w_p_lcs, TRUE,
+								      NULL, 0);
 	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_FCS:
 	    clear_string_option(&((win_T *)from)->w_p_fcs);
-	    set_fillchars_option((win_T *)from, ((win_T *)from)->w_p_fcs, TRUE);
+	    set_fillchars_option((win_T *)from, ((win_T *)from)->w_p_fcs, TRUE,
+								      NULL, 0);
 	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_VE:
@@ -6630,8 +6632,8 @@ after_copy_winopt(win_T *wp)
     fill_culopt_flags(NULL, wp);
     check_colorcolumn(wp);
 #endif
-    set_listchars_option(wp, wp->w_p_lcs, TRUE);
-    set_fillchars_option(wp, wp->w_p_fcs, TRUE);
+    set_listchars_option(wp, wp->w_p_lcs, TRUE, NULL, 0);
+    set_fillchars_option(wp, wp->w_p_fcs, TRUE, NULL, 0);
 }
 
     static char_u *

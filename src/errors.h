@@ -3602,3 +3602,7 @@ EXTERN char e_xattr_other[]
 	INIT(= N_("E1509: Error occurred when reading or writing extended attribute"));
 EXTERN char e_val_too_large[]
 	INIT(= N_("E1510: Value too large: %s"));
+EXTERN char e_wrong_number_of_characters_for_field_str[]
+	INIT(= N_("E1511: Wrong number of characters for field \"%s\""));
+EXTERN char e_wrong_character_width_for_field_str[]
+	INIT(= N_("E1512: Wrong character width for field \"%s\""));
