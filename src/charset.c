@@ -971,6 +971,9 @@ init_chartabsize_arg(
     cts->cts_vcol = col;
     cts->cts_line = line;
     cts->cts_ptr = ptr;
+#ifdef FEAT_LINEBREAK
+    cts->cts_bri_size = -1;
+#endif
 #ifdef FEAT_PROP_POPUP
     if (lnum > 0 && !ignore_text_props)
     {
@@ -1282,7 +1285,11 @@ win_lbr_chartabsize(
 	    if (*sbr != NUL)
 		head_prev += vim_strsize(sbr);
 	    if (wp->w_p_bri)
-		head_prev += get_breakindent_win(wp, line);
+	    {
+		if (cts->cts_bri_size < 0)
+		    cts->cts_bri_size = get_breakindent_win(wp, line);
+		head_prev += cts->cts_bri_size;
+	    }
 	    if (wcol < head_prev)
 	    {
 		head_prev -= wcol;
@@ -1303,7 +1310,11 @@ win_lbr_chartabsize(
 	    if (*sbr != NUL)
 		head_mid += vim_strsize(sbr);
 	    if (wp->w_p_bri)
-		head_mid += get_breakindent_win(wp, line);
+	    {
+		if (cts->cts_bri_size < 0)
+		    cts->cts_bri_size = get_breakindent_win(wp, line);
+		head_mid += cts->cts_bri_size;
+	    }
 	    if (head_mid > 0 && wcol + size > wp->w_width)
 	    {
 		// Calculate effective window width.
