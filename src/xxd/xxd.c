@@ -59,6 +59,7 @@
  * 31.08.2023  -R never/auto/always prints colored output
  * 06.10.2023  enable -r -b to reverse bit dumps
  * 12.01.2024  disable auto-conversion for z/OS (MVS)
+ * 17.01.2024  use size_t instead of usigned int for code-generation (-i), #13876
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -139,7 +140,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2024-01-12 by Juergen Weigert et al.";
+char version[] = "xxd 2024-01-17 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -977,7 +978,7 @@ main(int argc, char *argv[])
       if (varname != NULL)
 	{
 	  fputs_or_die("};\n", fpo);
-	  FPRINTF_OR_DIE((fpo, "unsigned int %s", isdigit((unsigned char)varname[0]) ? "__" : ""));
+	  FPRINTF_OR_DIE((fpo, "size_t %s", isdigit((unsigned char)varname[0]) ? "__" : ""));
 	  for (e = 0; (c = varname[e]) != 0; e++)
 	    putc_or_die(isalnum((unsigned char)c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  FPRINTF_OR_DIE((fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p));
