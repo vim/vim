@@ -637,11 +637,13 @@ static tcap_entry_T builtin_rgb[] = {
 };
 #endif
 
+#ifdef HAVE_TGETENT
 static tcap_entry_T special_term[] = {
     // These are printf strings, not terminal codes.
     {(int)KS_CF,	"\033[%dm"},
     {(int)KS_NAME,	NULL}  // end marker
 };
+#endif
 
 /*
  * iris-ansi for Silicon Graphics machines.
