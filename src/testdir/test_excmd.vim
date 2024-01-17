@@ -84,18 +84,27 @@ endfunc
 " Test for the :drop command
 func Test_drop_cmd()
   call writefile(['L1', 'L2'], 'Xdropfile', 'D')
+  " Test for reusing the current buffer
   enew | only
+  let expected_nr = bufnr()
   drop Xdropfile
+  call assert_equal(expected_nr, bufnr())
   call assert_equal('L2', getline(2))
   " Test for switching to an existing window
   below new
   drop Xdropfile
   call assert_equal(1, winnr())
-  " Test for splitting the current window
+  " Test for splitting the current window (set nohidden)
   enew | only
   set modified
   drop Xdropfile
   call assert_equal(2, winnr('$'))
+  " Not splitting the current window even if modified (set hidden)
+  set hidden
+  enew | only
+  set modified
+  drop Xdropfile
+  call assert_equal(1, winnr('$'))
   " Check for setting the argument list
   call assert_equal(['Xdropfile'], argv())
   enew | only!

@@ -5425,8 +5425,7 @@ ex_smile(exarg_T *eap UNUSED)
 
 /*
  * ":drop"
- * Opens the first argument in a window.  When there are two or more arguments
- * the argument list is redefined.
+ * Opens the first argument in a window, and the argument list is redefined.
  */
     void
 ex_drop(exarg_T *eap)
@@ -5463,6 +5462,8 @@ ex_drop(exarg_T *eap)
 	// edited in a window yet.  It's like ":tab all" but without closing
 	// windows or tabs.
 	ex_all(eap);
+	cmdmod.cmod_tab = 0;
+	ex_rewind(eap);
 	return;
     }
 
@@ -5486,7 +5487,6 @@ ex_drop(exarg_T *eap)
 		buf_check_timestamp(curbuf, FALSE);
 		curbuf->b_p_ar = save_ar;
 	    }
-	    return;
 	}
     }
 
