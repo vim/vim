@@ -7923,6 +7923,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  :    if exists(a:var) | return a:val | else | return '' | endif
 	  :endfunction
 <
+						*'stickybuf'*
+'stickybuf' 'stb'	boolean	(default off)
+			local to window
+	If enabled, the buffer and any window that displays it are paired.
+	For example, attempting to change the buffer with :edit will fail.
+	Other commands which change a window's buffer such as :cnext will also
+	skip any window with stickybuf enabled. However if a command has an
+	! option, a window can be forced to switch buffers.
+
 						*'suffixes'* *'su'*
 'suffixes' 'su'		string	(default ".bak,~,.o,.h,.info,.swp,.obj")
 			global

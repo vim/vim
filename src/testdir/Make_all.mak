@@ -280,6 +280,7 @@ NEW_TESTS = \
 	test_startup_utf8 \
 	test_stat \
 	test_statusline \
+	test_stickybuf \
 	test_substitute \
 	test_suspend \
 	test_swap \

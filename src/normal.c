@@ -3323,6 +3323,12 @@ nv_ctrlo(cmdarg_T *cap)
     static void
 nv_hat(cmdarg_T *cap)
 {
+    if (curwin->w_p_stb)
+    {
+        semsg("%s", e_stickybuf_cannot_go_to_buffer_disabled);
+        return;
+    }
+
     if (!checkclearopq(cap->oap))
 	(void)buflist_getfile((int)cap->count0, (linenr_T)0,
 						GETF_SETMARK|GETF_ALT, FALSE);
@@ -4074,6 +4080,12 @@ nv_gotofile(cmdarg_T *cap)
 	return;
 #endif
 
+    if (curwin->w_p_stb)
+    {
+        semsg("%s", e_stickybuf_cannot_go_to_buffer_disabled);
+        return;
+    }
+
     ptr = grab_file_name(cap->count1, &lnum);
 
     if (ptr != NULL)
@@ -4476,7 +4488,8 @@ nv_brackets(cmdarg_T *cap)
 		SAFE_isupper(cap->nchar) ? ACTION_SHOW_ALL :
 			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
-		(linenr_T)MAXLNUM);
+		(linenr_T)MAXLNUM,
+	        FALSE);
 	    vim_free(ptr);
 	    curwin->w_set_curswant = TRUE;
 	}

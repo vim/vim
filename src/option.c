@@ -6431,6 +6431,7 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_SCROLL:	return (char_u *)&(curwin->w_p_scr);
 	case PV_SMS:	return (char_u *)&(curwin->w_p_sms);
+	case PV_STB:	return (char_u *)&(curwin->w_p_stb);
 	case PV_WRAP:	return (char_u *)&(curwin->w_p_wrap);
 #ifdef FEAT_LINEBREAK
 	case PV_LBR:	return (char_u *)&(curwin->w_p_lbr);

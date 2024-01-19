@@ -32,7 +32,7 @@ int check_linecomment(char_u *line);
 void showmatch(int c);
 int current_search(long count, int forward);
 int linewhite(linenr_T lnum);
-void find_pattern_in_path(char_u *ptr, int dir, int len, int whole, int skip_comments, int type, long count, int action, linenr_T start_lnum, linenr_T end_lnum);
+void find_pattern_in_path(char_u *ptr, int dir, int len, int whole, int skip_comments, int type, long count, int action, linenr_T start_lnum, linenr_T end_lnum, int forceit);
 spat_T *get_spat(int idx);
 int get_spat_last_idx(void);
 void f_searchcount(typval_T *argvars, typval_T *rettv);

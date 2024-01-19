@@ -197,6 +197,7 @@
 #define PV_SCBIND	OPT_WIN(WV_SCBIND)
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
 #define PV_SMS		OPT_WIN(WV_SMS)
+#define PV_STB		OPT_WIN(WV_STB)
 #define PV_SISO		OPT_BOTH(OPT_WIN(WV_SISO))
 #define PV_SO		OPT_BOTH(OPT_WIN(WV_SO))
 #ifdef FEAT_SPELL
@@ -2424,6 +2425,9 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"stickybuf", "stb", P_BOOL|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_STB, NULL, NULL,
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"suffixes",    "su",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_su, PV_NONE, NULL, NULL,
 			    {(char_u *)".bak,~,.o,.h,.info,.swp,.obj",
