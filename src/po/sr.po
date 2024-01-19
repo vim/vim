@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-20 12:15+0400\n"
-"PO-Revision-Date: 2023-12-20 12:17+0400\n"
+"POT-Creation-Date: 2024-01-19 11:15+0400\n"
+"PO-Revision-Date: 2024-01-19 11:31+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -1451,6 +1451,9 @@ msgstr "mapnew() аргумент"
 msgid "filter() argument"
 msgstr "filter() аргумент"
 
+msgid "foreach() argument"
+msgstr "foreach() аргумент"
+
 msgid "extendnew() argument"
 msgstr "extendnew() аргумент"
 
@@ -2508,6 +2511,9 @@ msgstr "у %s на %s"
 msgid "Printing '%s'"
 msgstr "Штампа се ’%s’"
 
+msgid "DefaultFontNameForWindows"
+msgstr "Consolas"
+
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Отварање X приказа је трајало %ld мсек"
@@ -3456,8 +3462,8 @@ msgid "%s returning %s"
 msgstr "%s враћа %s"
 
 #, c-format
-msgid "Function %s does not need compiling"
-msgstr "Није потребно да се функција %s компајлира"
+msgid "Function %s%s%s does not need compiling"
+msgstr "Није потребно да се функција %s%s%s компајлира"
 
 #, c-format
 msgid "%s (%s, compiled %s)"
@@ -8791,6 +8797,14 @@ msgstr ""
 #, c-format
 msgid "E1510: Value too large: %s"
 msgstr "E1510: Вредност је превелика: %s"
+
+#, c-format
+msgid "E1511: Wrong number of characters for field \"%s\""
+msgstr "E1511: Погрешан број карактера за поље „%s”"
+
+#, c-format
+msgid "E1512: Wrong character width for field \"%s\""
+msgstr "E1512: Погрешна ширина карактера за поље „%s”"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
