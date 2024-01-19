@@ -317,6 +317,9 @@ au BufRead,BufNewFile *.chai			setf chaiscript
 " Chatito
 au BufNewFile,BufRead *.chatito			setf chatito
 
+" Chuck
+au BufNewFile,BufRead *.ck			setf chuck
+
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
 
