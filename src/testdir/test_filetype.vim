@@ -150,6 +150,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     chatito: ['file.chatito'],
     chill: ['file..ch'],
     chordpro: ['file.chopro', 'file.crd', 'file.cho', 'file.crdpro', 'file.chordpro'],
+    chuck: ['file.ck'],
     cl: ['file.eni'],
     clean: ['file.dcl', 'file.icl'],
     clojure: ['file.clj', 'file.cljs', 'file.cljx', 'file.cljc'],
