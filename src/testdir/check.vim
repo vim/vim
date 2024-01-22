@@ -184,6 +184,14 @@ func CheckNotRoot()
   endif
 endfunc
 
+" Command to check that we can make use of --servername and similar
+command CheckRemoteCapability call CheckRemoteCapability()
+func CheckRemoteCapability()
+  if empty(v:servername)
+    throw 'Skipped: Servername not defined'
+  endif
+endfunc
+
 " Command to check that the current language is English
 command CheckEnglish call CheckEnglish()
 func CheckEnglish()
