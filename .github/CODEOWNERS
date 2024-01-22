@@ -358,6 +358,7 @@ runtime/syntax/cabalconfig.vim		@coot
 runtime/syntax/cabalproject.vim		@coot
 runtime/syntax/cf.vim			@ernstvanderlinden
 runtime/syntax/chatito.vim		@ObserverOfTime
+runtime/syntax/chuck.vim		@gacallea
 runtime/syntax/clojure.vim		@axvr
 runtime/syntax/cs.vim			@nickspoons
 runtime/syntax/csh.vim			@cecamp
