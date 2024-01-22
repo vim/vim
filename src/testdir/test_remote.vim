@@ -3,7 +3,6 @@
 source check.vim
 CheckFeature clientserver
 CheckFeature terminal
-"CheckRemoteCapability
 
 source shared.vim
 source screendump.vim
