@@ -30,7 +30,7 @@ The distributed files are generated on Unix, but this should also be possible
 on MS-Windows.  Download the gettext packages, for example from:
 
 	http://sourceforge.net/projects/gettext
-	or
+or
 	https://mlocati.github.io/articles/gettext-iconv-windows.html
 
 You might have to do the commands manually.  Example:
@@ -53,7 +53,10 @@ CREATING A NEW PO FILE
 We will use "xx.po" as an example here, replace "xx" with the name of your
 language.
 
-- Edit Make_all.mak to add xx to LANGUAGES and xx.mo to MOFILES.
+- Edit Make_all.mak to add xx to LANGUAGES and xx.mo to MOFILES, xx.po to
+  POFILES and xx.ck to CHECKFILES.
+- If the encoding of the translation text differs from the default UTF-8, add a
+  corresponding entry in MOCONVERTED, specifying the required encoding.
 - If you haven't done so already, run ./configure in the top vim directory
   (i.e. go up two directories) and then come back here afterwards.
 - Execute these commands:
@@ -147,13 +150,13 @@ convert ja.po to EUC-JP (supposed as your system encoding):
 (1) Convert the file encoding:
 
 	mv ja.po ja.po.orig
-	iconv -f utf-8 -t euc-jp ja.po.orig > ja.po
+	iconv -f UTF-8 -t EUC-JP ja.po.orig > ja.po
 
 (2) Rewrite charset declaration in the file:
 
     Open ja.po find this line:
-	"Content-Type: text/plain; charset=utf-8\n"
+	"Content-Type: text/plain; charset=UTF-8\n"
     You should change "charset" like this:
-	"Content-Type: text/plain; charset=euc-jp\n"
+	"Content-Type: text/plain; charset=EUC-JP\n"
 
 There are examples in the Makefile for the conversions already supported.

@@ -2070,7 +2070,7 @@ xxd/xxd$(EXEEXT): xxd/xxd.c
 languages:
 	@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); \
-		  CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix); \
+		  CC="$(CC)" $(MAKE) prefix=$(DESTDIR)$(prefix) originals; \
 	fi
 	-@if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); \
