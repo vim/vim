@@ -25,100 +25,94 @@ ICONV = "$(ICONV_PATH)\iconv.exe"
 !ENDIF
 
 RM = del /q
+PS = PowerShell.exe
+
+PSFLAGS = -NoLogo -NoProfile -Command
 
 
 all : $(CONVERTED)
 
 # Convert menu_zh_cn.utf-8.vim to create menu_chinese_gb.936.vim.
 menu_chinese_gb.936.vim : menu_zh_cn.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP936 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(936))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(936)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp936' -replace \
-		' Original translations', ' Generated from menu_zh_cn.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(936))
 
 # Convert menu_zh_tw.utf-8.vim to create menu_chinese_taiwan.950.vim.
 menu_chinese_taiwan.950.vim : menu_zh_tw.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP950 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(950))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(950)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp950' -replace \
-		' Original translations', ' Generated from menu_zh_tw.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
 
 # Convert menu_cs_cz.utf-8.vim to create menu_cs_cz.iso_8859-2.vim.
 menu_cs_cz.iso_8859-2.vim : menu_cs_cz.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28592))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28592)) -replace \
 		' Czech \(UTF-8\)', ' Czech (ISO-8859-2)' -replace \
 		\"scriptencoding utf-8\", \"scriptencoding iso-8859-2\" -replace \
-		\" Original translations\", \" Generated from menu_cs_cz.utf-8.vim, DO NOT EDIT\"; \
+		\" Original translations\", \" Generated from $?, DO NOT EDIT\"; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28592))
 
 # Convert menu_cs_cz.utf-8.vim to create menu_czech_czech_republic.1250.vim.
 menu_czech_czech_republic.1250.vim : menu_cs_cz.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1250 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		' Czech \(UTF-8\)', ' Czech (CP1250)' -replace \
 		\"scriptencoding utf-8\", \"scriptencoding cp1250\" -replace \
-		\" Original translations\", \" Generated from menu_cs_cz.utf-8.vim, DO NOT EDIT\"; \
+		\" Original translations\", \" Generated from $?, DO NOT EDIT\"; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 
 # Convert menu_cs_cz.utf-8.vim to create menu_czech_czech_republic.ascii.vim.
 menu_czech_czech_republic.ascii.vim : menu_cs_cz.utf-8.vim
-	$(RM) $@
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	-$(RM) $@
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)) -replace \
 		'scriptencoding utf-8', 'scriptencoding latin1' -replace \
-		' Original translations', ' Generated from menu_cs_cz.utf-8.vim, DO NOT EDIT' -replace \
+		' Original translations', ' Generated from $?, DO NOT EDIT' -replace \
 		'Czech \(UTF-8\)', 'Czech (ASCII - without diacritics)' -creplace \
 		[char]193, 'A' -creplace [char]225, 'a' -creplace [char]268, 'C' -creplace \
 		[char]269, 'c' -creplace [char]270, 'D' -creplace [char]271, 'd' -creplace \
@@ -134,234 +128,211 @@ menu_czech_czech_republic.ascii.vim : menu_cs_cz.utf-8.vim
 
 # Convert menu_hu_hu.utf-8.vim to create menu_hu_hu.iso_8859-2.vim.
 menu_hu_hu.iso_8859-2.vim : menu_hu_hu.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28592))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28592)) -replace \
 		'scriptencoding utf-8', 'scriptencoding iso-8859-2' -replace \
-		' Original translations', ' Generated from menu_hu_hu.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28592))
 
 # Convert menu_ja_jp.utf-8.vim to create menu_ja_jp.euc-jp.vim.
 menu_ja_jp.euc-jp.vim : menu_ja_jp.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-JP $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(51932))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(51932)) -replace \
 		'Japanese \(UTF-8\)', 'Japanese (EUC-JP)' -replace \
 		'scriptencoding utf-8', 'scriptencoding euc-jp' -replace \
-		' Original translations', ' Generated from menu_ja_jp.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(51932))
 
 # Convert menu_ja_jp.utf-8.vim to create menu_japanese_japan.932.vim.
 menu_japanese_japan.932.vim : menu_ja_jp.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP932 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(932))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(932)) -replace \
 		'Japanese \(UTF-8\)', 'Japanese (CP932)' -replace \
 		'scriptencoding utf-8', 'scriptencoding cp932' -replace \
-		' Original translations', ' Generated from menu_ja_jp.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(932))
 
 # Convert menu_ko_kr.utf-8.vim to create menu_ko_kr.euckr.vim.
 menu_ko_kr.euckr.vim : menu_ko_kr.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-KR $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(51949))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(51949)) -replace \
 		'scriptencoding utf-8', 'scriptencoding euc-kr' -replace \
-		' Original translations', ' Generated from menu_ko_kr.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(51949))
 
 # Convert menu_pl_pl.utf-8.vim to create menu_pl_pl.iso_8859-2.vim.
 menu_pl_pl.iso_8859-2.vim : menu_pl_pl.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28592))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28592)) -replace \
 		'scriptencoding utf-8', 'scriptencoding iso-8859-2' -replace \
-		' Original translations', ' Generated from menu_pl_pl.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28592))
 
 # Convert menu_pl_pl.utf-8.vim to create menu_polish_poland.1250.vim.
 menu_polish_poland.1250.vim : menu_pl_pl.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1250 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp1250' -replace \
-		' Original translations', ' Generated from menu_pl_pl.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 
 # Convert menu_ru_ru.utf-8.vim to create menu_ru_ru.cp1251.vim.
 menu_ru_ru.cp1251.vim : menu_ru_ru.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp1251' -replace \
-		' Original translations', ' Generated from menu_ru_ru.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 
 # Convert menu_ru_ru.utf-8.vim to create menu_ru_ru.koi8-r.vim.
 menu_ru_ru.koi8-r.vim : menu_ru_ru.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t KOI8-R $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(20866))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(20866)) -replace \
 		'scriptencoding utf-8', 'scriptencoding koi8-r' -replace \
-		' Original translations', ' Generated from menu_ru_ru.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(20866))
 
 # Convert menu_slovak_slovak_republic.1250.vim to create menu_sk_sk.iso_8859-2.vim.
 menu_sk_sk.iso_8859-2.vim : menu_slovak_slovak_republic.1250.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f CP1250 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(1250)), \
 		[System.Text.Encoding]::GetEncoding(28592))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28592)) -replace \
 		'scriptencoding cp1250', 'scriptencoding iso-8859-2' -replace \
-		' Original translations', ' Generated from menu_slovak_slovak_republic.1250.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28592))
 
 # Convert menu_sl_si.utf-8.vim to create menu_sl_si.cp1250.vim.
 menu_sl_si.cp1250.vim : menu_sl_si.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1250 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp1250' -replace \
-		' Original translations', ' Generated from menu_sl_si.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 
 # Convert menu_sl_si.utf-8.vim to create menu_sl_si.latin2.vim.
 menu_sl_si.latin2.vim : menu_sl_si.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28592))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28592)) -replace \
 		'scriptencoding utf-8', 'scriptencoding iso-8859-2' -replace \
-		' Original translations', ' Generated from menu_sl_si.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28592))
 
 # Convert menu_sr_rs.utf-8.vim to create menu_sr_rs.ascii.vim.
 menu_sr_rs.ascii.vim : menu_sr_rs.utf-8.vim
-	$(RM) $@
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	-$(RM) $@
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)) -replace \
 		'scriptencoding utf-8', 'scriptencoding latin1' -replace \
-		' Original translations', ' Generated from menu_sr_rs.utf-8.vim, DO NOT EDIT' -creplace \
+		' Original translations', ' Generated from $?, DO NOT EDIT' -creplace \
 		[char]1072, 'a' -creplace [char]1073, 'b' -creplace [char]1074, 'v' -creplace \
 		[char]1075, 'g' -creplace [char]1076, 'd' -creplace [char]1106, 'dj' -creplace \
 		[char]1077, 'e' -creplace [char]1078, 'z' -creplace [char]1079, 'z' -creplace \
@@ -386,9 +357,8 @@ menu_sr_rs.ascii.vim : menu_sr_rs.utf-8.vim
 
 # Convert menu_sr_rs.utf-8.vim to create menu_sr_rs.iso_8859-2.vim.
 menu_sr_rs.iso_8859-2.vim : menu_sr_rs.utf-8.vim
-	$(RM) $@
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$?\", \
+	-$(RM) $@
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)) -creplace \
 		[char]1072, 'a' -creplace [char]1073, 'b' -creplace [char]1074, 'v' -creplace \
 		[char]1075, 'g' -creplace [char]1076, 'd' -creplace [char]1106, [char]273 -creplace \
@@ -411,107 +381,100 @@ menu_sr_rs.iso_8859-2.vim : menu_sr_rs.utf-8.vim
 		[char]1060, 'F' -creplace [char]1061, 'H' -creplace [char]1062, 'C' -creplace \
 		[char]1063, [char]268 -creplace [char]1039, 'Dz' -creplace [char]1064, [char]352 -replace \
 		'scriptencoding utf-8', 'scriptencoding iso-8859-2' -replace \
-		' Original translations', ' Generated from menu_sr_rs.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, [System.Text.Encoding]::GetEncoding(28592))
 
 # Convert menu_sr_rs.utf-8.vim to create menu_sr_rs.iso_8859-5.vim.
 menu_sr_rs.iso_8859-5.vim : menu_sr_rs.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-5 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28595))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28595)) -replace \
 		'scriptencoding utf-8', 'scriptencoding iso-8859-5' -replace \
-		' Original translations', ' Generated from menu_sr_rs.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28595))
 
 # Convert menu_tr_tr.utf-8.vim to create menu_tr_tr.cp1254.vim.
 menu_tr_tr.cp1254.vim : menu_tr_tr.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1254 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1254))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1254)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp1254' -replace \
-		' Original translations', ' Generated from menu_tr_tr.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1254))
 
 # Convert menu_tr_tr.utf-8.vim to create menu_tr_tr.iso_8859-9.vim.
 menu_tr_tr.iso_8859-9.vim : menu_tr_tr.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-9 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28599))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(28599)) -replace \
 		'scriptencoding utf-8', 'scriptencoding iso-8859-9' -replace \
-		' Original translations', ' Generated from menu_tr_tr.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(28599))
 
 # Convert menu_uk_ua.utf-8.vim to create menu_uk_ua.cp1251.vim.
 menu_uk_ua.cp1251.vim : menu_uk_ua.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'scriptencoding utf-8', 'scriptencoding cp1251' -replace \
-		' Original translations', ' Generated from menu_uk_ua.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 
 # Convert menu_uk_ua.utf-8.vim to create menu_uk_ua.koi8-u.vim.
 menu_uk_ua.koi8-u.vim : menu_uk_ua.utf-8.vim
-	$(RM) $@
+	-$(RM) $@
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t KOI8-U $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(21866))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(21866)) -replace \
 		'scriptencoding utf-8', 'scriptencoding koi8-u' -replace \
-		' Original translations', ' Generated from menu_uk_ua.utf-8.vim, DO NOT EDIT'; \
+		' Original translations', ' Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(21866))
+
+clean :
+	@for %%G in ($(CONVERTED)) do (if exist .\%%G ($(RM) %%G))
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:
