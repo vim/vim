@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jan 14
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1098,7 +1098,7 @@ SafeState			When nothing is pending, going to wait for the
 				- Command line completion is active
 				You can use `mode()` to find out what state
 				Vim is in.  That may be:
-				- VIsual mode
+				- Visual mode
 				- Normal mode
 				- Insert mode
 				- Command-line mode
