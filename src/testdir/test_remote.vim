@@ -57,7 +57,7 @@ func Test_remote_servername()
   botright new
   let buf2 = RunVimInTerminal('--servername XVIMTEST --remote-silent XTEST.txt', {'rows': 5, 'wait_for_ruler': 0})
   exe buf2 .. 'bw!'
-  call term_sendkeys(buf, ":3,$d\<CR>")
+  call term_sendkeys(buf, ":5,$d\<CR>")
   call term_sendkeys(buf, ":wq!\<CR>")
   call StopVimInTerminal(buf)
   let buf_contents = readfile('XTEST.txt')
