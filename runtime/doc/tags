@@ -11189,6 +11189,7 @@ vt100-cursor-keys	term.txt	/*vt100-cursor-keys*
 vt100-function-keys	term.txt	/*vt100-function-keys*
 w	motion.txt	/*w*
 w32-clientserver	remote.txt	/*w32-clientserver*
+w32-experimental-keycode-trans-strategy	gui_w32.txt	/*w32-experimental-keycode-trans-strategy*
 w32-xpm-support	gui_w32.txt	/*w32-xpm-support*
 w:	eval.txt	/*w:*
 w:current_syntax	syntax.txt	/*w:current_syntax*

@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2023 May 18
+*testing.txt*	For Vim version 9.1.  Last change: 2024 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -234,6 +234,8 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 		{event} is a String and the supported values are:
 		    "mouse"	mouse event.
 		    "key"	keyboard event.
+		    "set_keycode_trans_strategy"
+				Change the key transation method
 
 		"mouse":
 		  Inject either a mouse button click, or a mouse move, event.
@@ -289,6 +291,14 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 				(non-zero) then Vim will process any buffered
 				unprocessed key events.  All other {args}
 				items are optional when this is set and true.
+
+		"set_keycode_trans_strategy":
+		  |w32-experimental-keycode-trans-strategy|
+		  Switch the keycode translation method. The supported methods are:
+		    experimental:   The method used after Patch v8.2.4807
+				    using ToUnicode() Win API call.
+		    classic:	    The method used pre Patch v8.2.4807
+				    using the TranslateMessage() Win API call.
 
 		Returns TRUE if the event is successfully added or executed,
 		FALSE if there is a failure.

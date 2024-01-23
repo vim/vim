@@ -50,6 +50,86 @@ static int gui_mswin_get_menu_height(int fix_window);
 # define gui_mswin_get_menu_height(fix_window)	0
 #endif
 
+typedef struct keycode_trans_strategy {
+    void (*ptr_on_char) (HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
+    void (*ptr_on_sys_char) (HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
+    void (*ptr_process_message_usual_key) (UINT /*vk*/, const MSG* /*pmsg*/);
+    int  (*ptr_get_active_modifiers)(void);
+    int  (*is_experimental)(void);
+} keycode_trans_strategy;
+
+// forward declarations for input instance initializer
+static void _OnChar_experimental(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
+static void _OnSysChar_experimental(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
+static void process_message_usual_key_experimental(UINT /*vk*/, const MSG* /*pmsg*/);
+static int  get_active_modifiers_experimental(void);
+static int  is_experimental_true(void);
+
+keycode_trans_strategy keycode_trans_strategy_experimental = {
+      _OnChar_experimental      // ptr_on_char
+    , _OnSysChar_experimental // ptr_on_sys_char
+    , process_message_usual_key_experimental // ptr_process_message_usual_key
+    , get_active_modifiers_experimental
+    , is_experimental_true
+};
+
+// forward declarations for input instance initializer
+static void _OnChar_classic(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
+static void _OnSysChar_classic(HWND /*hwnd UNUSED*/, UINT /*cch*/, int /*cRepeat UNUSED*/);
+static void process_message_usual_key_classic(UINT /*vk*/, const MSG* /*pmsg*/);
+static int  get_active_modifiers_classic(void);
+static int  is_experimental_false(void);
+
+keycode_trans_strategy keycode_trans_strategy_classic = {
+      _OnChar_classic      // ptr_on_char
+    , _OnSysChar_classic // ptr_on_sys_char
+    , process_message_usual_key_classic // ptr_process_message_usual_key
+    , get_active_modifiers_classic
+    , is_experimental_false
+};
+
+keycode_trans_strategy *keycode_trans_strategy_used = NULL;
+
+static int is_experimental_true(void)
+{
+    return 1;
+}
+
+static int is_experimental_false(void)
+{
+    return 0;
+}
+
+/*
+ * Initialize the keycode translation strategy.
+ */
+static void keycode_trans_strategy_init(void)
+{
+    const char *strategy = NULL;
+
+    // set default value as fallback
+    keycode_trans_strategy_used = &keycode_trans_strategy_classic;
+
+    strategy = getenv("VIM_KEYCODE_TRANS_STRATEGY");
+    if (strategy == NULL)
+    {
+	return;
+    }
+
+    if (STRICMP(strategy, "classic") == 0)
+    {
+	keycode_trans_strategy_used = &keycode_trans_strategy_classic;
+	return;
+    }
+
+    if (STRICMP(strategy, "experimental") == 0)
+    {
+	keycode_trans_strategy_used = &keycode_trans_strategy_experimental;
+	return;
+    }
+
+}
+
 #if defined(FEAT_RENDER_OPTIONS) || defined(PROTO)
     int
 gui_mch_set_rendering_options(char_u *s)
@@ -734,7 +814,7 @@ _OnDeadChar(
     UINT ch UNUSED,
     int cRepeat UNUSED)
 {
-    dead_key = 1;
+    dead_key = DEAD_KEY_SET_DEFAULT;
 }
 
 /*
@@ -831,8 +911,17 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
     return len;
 }
 
+/*
+ * Experimental implementation, introduced in v8.2.4807
+ * "processing key event in Win32 GUI is not ideal"
+ *
+ * TODO: since introduction, this experimental function started
+ * to be used as well outside of original key press/processing
+ * area, and usages not via "get_active_modifiers_via_ptr" should
+ * be watched.
+ */
     static int
-get_active_modifiers(void)
+get_active_modifiers_experimental(void)
 {
     int modifiers = 0;
 
@@ -859,10 +948,64 @@ get_active_modifiers(void)
 }
 
 /*
+ * "Classic" implementation, existing prior to v8.2.4807
+ */
+    static int
+get_active_modifiers_classic(void)
+{
+    int modifiers = 0;
+
+    if (GetKeyState(VK_SHIFT) & 0x8000)
+	modifiers |= MOD_MASK_SHIFT;
+    /*
+     * Don't use caps-lock as shift, because these are special keys
+     * being considered here, and we only want letters to get
+     * shifted -- webb
+     */
+    /*
+    if (GetKeyState(VK_CAPITAL) & 0x0001)
+	modifiers ^= MOD_MASK_SHIFT;
+    */
+    if (GetKeyState(VK_CONTROL) & 0x8000)
+	modifiers |= MOD_MASK_CTRL;
+    if (GetKeyState(VK_MENU) & 0x8000)
+	modifiers |= MOD_MASK_ALT;
+
+    return modifiers;
+}
+
+    static int
+get_active_modifiers(void)
+{
+    return get_active_modifiers_experimental();
+}
+
+    static int
+get_active_modifiers_via_ptr(void)
+{
+    // marshal to corresponding implementation
+    return keycode_trans_strategy_used->ptr_get_active_modifiers();
+}
+
+/*
  * Key hit, add it to the input buffer.
  */
     static void
 _OnChar(
+    HWND hwnd UNUSED,
+    UINT cch,
+    int cRepeat UNUSED)
+{
+    // marshal to corresponding implementation
+    keycode_trans_strategy_used->ptr_on_char(hwnd, cch, cRepeat);
+}
+
+/*
+ * Experimental implementation, introduced in v8.2.4807
+ * "processing key event in Win32 GUI is not ideal"
+ */
+    static void
+_OnChar_experimental(
     HWND hwnd UNUSED,
     UINT cch,
     int cRepeat UNUSED)
@@ -880,7 +1023,7 @@ _OnChar(
     if (dead_key != DEAD_KEY_TRANSIENT_IN_ON_CHAR)
 	dead_key = DEAD_KEY_OFF;
 
-    modifiers = get_active_modifiers();
+    modifiers = get_active_modifiers_experimental();
 
     ch = simplify_key(ch, &modifiers);
 
@@ -917,10 +1060,48 @@ _OnChar(
 }
 
 /*
+ * "Classic" implementation, existing prior to v8.2.4807
+ */
+    static void
+_OnChar_classic(
+    HWND hwnd UNUSED,
+    UINT ch,
+    int cRepeat UNUSED)
+{
+    char_u	string[40];
+    int		len = 0;
+
+    dead_key = 0;
+
+    len = char_to_string(ch, string, 40, FALSE);
+    if (len == 1 && string[0] == Ctrl_C && ctrl_c_interrupts)
+    {
+	trash_input_buf();
+	got_int = TRUE;
+    }
+
+    add_to_input_buf(string, len);
+}
+
+/*
  * Alt-Key hit, add it to the input buffer.
  */
     static void
 _OnSysChar(
+    HWND hwnd UNUSED,
+    UINT cch,
+    int cRepeat UNUSED)
+{
+    // marshal to corresponding implementation
+    keycode_trans_strategy_used->ptr_on_sys_char(hwnd, cch, cRepeat);
+}
+
+/*
+ * Experimental implementation, introduced in v8.2.4807
+ * "processing key event in Win32 GUI is not ideal"
+ */
+    static void
+_OnSysChar_experimental(
     HWND hwnd UNUSED,
     UINT cch,
     int cRepeat UNUSED)
@@ -936,7 +1117,69 @@ _OnSysChar(
     // ALT key pressed. Eg, if the user presses Alt-A, then ch == 'A'. Note
     // that the system distinguishes Alt-a and Alt-A (Alt-Shift-a unless
     // CAPSLOCK is pressed) at this point.
-    modifiers = get_active_modifiers();
+    modifiers = get_active_modifiers_experimental();
+    ch = simplify_key(ch, &modifiers);
+    // remove the SHIFT modifier for keys where it's already included, e.g.,
+    // '(' and '*'
+    modifiers = may_remove_shift_modifier(modifiers, ch);
+
+    // Unify modifiers somewhat.  No longer use ALT to set the 8th bit.
+    ch = extract_modifiers(ch, &modifiers, FALSE, NULL);
+    if (ch == CSI)
+	ch = K_CSI;
+
+    len = 0;
+    if (modifiers)
+    {
+	string[len++] = CSI;
+	string[len++] = KS_MODIFIER;
+	string[len++] = modifiers;
+    }
+
+    if (IS_SPECIAL((int)ch))
+    {
+	string[len++] = CSI;
+	string[len++] = K_SECOND((int)ch);
+	string[len++] = K_THIRD((int)ch);
+    }
+    else
+    {
+	// Although the documentation isn't clear about it, we assume "ch" is
+	// a Unicode character.
+	len += char_to_string(ch, string + len, 40 - len, TRUE);
+    }
+
+    add_to_input_buf(string, len);
+}
+
+/*
+ * "Classic" implementation, existing prior to v8.2.4807
+ */
+    static void
+_OnSysChar_classic(
+    HWND hwnd UNUSED,
+    UINT cch,
+    int cRepeat UNUSED)
+{
+    char_u	string[40]; // Enough for multibyte character
+    int		len;
+    int		modifiers;
+    int		ch = cch;   // special keys are negative
+
+    dead_key = 0;
+
+    // TRACE("OnSysChar(%d, %c)\n", ch, ch);
+
+    // OK, we have a character key (given by ch) which was entered with the
+    // ALT key pressed. Eg, if the user presses Alt-A, then ch == 'A'. Note
+    // that the system distinguishes Alt-a and Alt-A (Alt-Shift-a unless
+    // CAPSLOCK is pressed) at this point.
+    modifiers = MOD_MASK_ALT;
+    if (GetKeyState(VK_SHIFT) & 0x8000)
+	modifiers |= MOD_MASK_SHIFT;
+    if (GetKeyState(VK_CONTROL) & 0x8000)
+	modifiers |= MOD_MASK_CTRL;
+
     ch = simplify_key(ch, &modifiers);
     // remove the SHIFT modifier for keys where it's already included, e.g.,
     // '(' and '*'
@@ -1905,6 +2148,137 @@ outputDeadKey_rePost(MSG originalMsg)
 }
 
 /*
+ * Refactored out part of process_message(), responsible for
+ * handling the case of "not a special key"
+ */
+static void process_message_usual_key(UINT vk, const MSG *pmsg)
+{
+    // marshal to corresponding implementation
+    keycode_trans_strategy_used->ptr_process_message_usual_key(vk, pmsg);
+}
+
+/*
+ * Experimental implementation, introduced in v8.2.4807
+ * "processing key event in Win32 GUI is not ideal"
+ */
+static void process_message_usual_key_experimental(UINT vk, const MSG *pmsg)
+{
+    WCHAR	ch[8];
+    int		len;
+    int		i;
+    UINT	scan_code;
+    BYTE	keyboard_state[256];
+
+    // Construct the state table with only a few modifiers, we don't
+    // really care about the presence of Ctrl/Alt as those modifiers are
+    // handled by Vim separately.
+    memset(keyboard_state, 0, 256);
+    if (GetKeyState(VK_SHIFT) & 0x8000)
+	keyboard_state[VK_SHIFT] = 0x80;
+    if (GetKeyState(VK_CAPITAL) & 0x0001)
+	keyboard_state[VK_CAPITAL] = 0x01;
+    // Alt-Gr is synthesized as Alt + Ctrl.
+    if ((GetKeyState(VK_RMENU) & 0x8000)
+				 && (GetKeyState(VK_CONTROL) & 0x8000))
+    {
+	keyboard_state[VK_MENU] = 0x80;
+	keyboard_state[VK_CONTROL] = 0x80;
+    }
+
+    // Translate the virtual key according to the current keyboard
+    // layout.
+    scan_code = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
+    // Convert the scan-code into a sequence of zero or more unicode
+    // codepoints.
+    // If this is a dead key ToUnicode returns a negative value.
+    len = ToUnicode(vk, scan_code, keyboard_state, ch, ARRAY_LENGTH(ch),
+	    0);
+    if (len < 0)
+	dead_key = DEAD_KEY_SET_DEFAULT;
+
+    if (len <= 0)
+    {
+	int wm_char = NUL;
+
+	if (dead_key == DEAD_KEY_SET_DEFAULT
+		&& (GetKeyState(VK_CONTROL) & 0x8000))
+	{
+	    if (   // AZERTY CTRL+dead_circumflex
+		   (vk == 221 && scan_code == 26)
+		   // QWERTZ CTRL+dead_circumflex
+		|| (vk == 220 && scan_code == 41))
+		wm_char = '[';
+	    if (   // QWERTZ CTRL+dead_two-overdots
+		   (vk == 192 && scan_code == 27))
+		wm_char = ']';
+	}
+	if (wm_char != NUL)
+	{
+	    // post WM_CHAR='[' - which will be interpreted with CTRL
+	    // still hold as ESC
+	    PostMessageW(pmsg->hwnd, WM_CHAR, wm_char, pmsg->lParam);
+	    // ask _OnChar() to not touch this state, wait for next key
+	    // press and maintain knowledge that we are "poisoned" with
+	    // "dead state"
+	    dead_key = DEAD_KEY_TRANSIENT_IN_ON_CHAR;
+	}
+	return;
+    }
+
+    // Post the message as TranslateMessage would do.
+    if (pmsg->message == WM_KEYDOWN)
+    {
+	for (i = 0; i < len; i++)
+	    PostMessageW(pmsg->hwnd, WM_CHAR, ch[i], pmsg->lParam);
+    }
+    else
+    {
+	for (i = 0; i < len; i++)
+	    PostMessageW(pmsg->hwnd, WM_SYSCHAR, ch[i], pmsg->lParam);
+    }
+}
+
+/*
+ * "Classic" implementation, existing prior to v8.2.4807
+ */
+static void process_message_usual_key_classic(UINT vk, const MSG *pmsg)
+{
+    char_u	string[40];
+
+    // Some keys need C-S- where they should only need C-.
+    // Ignore 0xff, Windows XP sends it when NUMLOCK has changed since
+    // system startup (Helmut Stiegler, 2003 Oct 3).
+    if (vk != 0xff
+	    && (GetKeyState(VK_CONTROL) & 0x8000)
+	    && !(GetKeyState(VK_SHIFT) & 0x8000)
+	    && !(GetKeyState(VK_MENU) & 0x8000))
+    {
+	// CTRL-6 is '^'; Japanese keyboard maps '^' to vk == 0xDE
+	if (vk == '6' || MapVirtualKey(vk, 2) == (UINT)'^')
+	{
+	    string[0] = Ctrl_HAT;
+	    add_to_input_buf(string, 1);
+	}
+	// vk == 0xBD AZERTY for CTRL-'-', but CTRL-[ for * QWERTY!
+	else if (vk == 0xBD)	// QWERTY for CTRL-'-'
+	{
+	    string[0] = Ctrl__;
+	    add_to_input_buf(string, 1);
+	}
+	// CTRL-2 is '@'; Japanese keyboard maps '@' to vk == 0xC0
+	else if (vk == '2' || MapVirtualKey(vk, 2) == (UINT)'@')
+	{
+	    string[0] = Ctrl_AT;
+	    add_to_input_buf(string, 1);
+	}
+	else
+	    TranslateMessage(pmsg);
+    }
+    else
+	TranslateMessage(pmsg);
+}
+
+/*
  * Process a single Windows message.
  * If one is not available we hang until one is.
  */
@@ -1920,7 +2294,14 @@ process_message(void)
 #ifdef FEAT_MENU
     static char_u k10[] = {K_SPECIAL, 'k', ';', 0};
 #endif
-    BYTE	keyboard_state[256];
+    static int  keycode_trans_strategy_initialized = 0;
+
+    // lazy initialize - first time only
+    if (!keycode_trans_strategy_initialized)
+    {
+	keycode_trans_strategy_initialized = 1;
+	keycode_trans_strategy_init();
+    }
 
     GetMessageW(&msg, NULL, 0, 0);
 
@@ -1980,8 +2361,11 @@ process_message(void)
 	 * We are at the moment after WM_CHAR with DEAD_KEY_SKIP_ON_CHAR event
 	 * was handled by _WndProc, this keypress we want to process normally
 	 */
-	if (dead_key == DEAD_KEY_SKIP_ON_CHAR)
+	if (keycode_trans_strategy_used->is_experimental()
+		&& dead_key == DEAD_KEY_SKIP_ON_CHAR)
+	{
 	    dead_key = DEAD_KEY_OFF;
+	}
 
 	if (dead_key != DEAD_KEY_OFF)
 	{
@@ -2003,7 +2387,8 @@ process_message(void)
 	     * outputDeadKey_rePost() since we do not wish to reset dead_key
 	     * value.
 	     */
-	    if (dead_key == DEAD_KEY_TRANSIENT_IN_ON_CHAR)
+	    if (keycode_trans_strategy_used->is_experimental() &&
+		    dead_key == DEAD_KEY_TRANSIENT_IN_ON_CHAR)
 	    {
 		outputDeadKey_rePost_Ex(msg,
 				       /*dead_key2set=*/DEAD_KEY_SKIP_ON_CHAR);
@@ -2090,7 +2475,7 @@ process_message(void)
 							  NULL, NULL) == NULL)
 		    break;
 #endif
-		modifiers = get_active_modifiers();
+		modifiers = get_active_modifiers_via_ptr();
 
 		if (special_keys[i].vim_code1 == NUL)
 		    key = special_keys[i].vim_code0;
@@ -2131,78 +2516,7 @@ process_message(void)
 	// Not a special key.
 	if (special_keys[i].key_sym == 0)
 	{
-	    WCHAR	ch[8];
-	    int		len;
-	    int		i;
-	    UINT	scan_code;
-
-	    // Construct the state table with only a few modifiers, we don't
-	    // really care about the presence of Ctrl/Alt as those modifiers are
-	    // handled by Vim separately.
-	    memset(keyboard_state, 0, 256);
-	    if (GetKeyState(VK_SHIFT) & 0x8000)
-		keyboard_state[VK_SHIFT] = 0x80;
-	    if (GetKeyState(VK_CAPITAL) & 0x0001)
-		keyboard_state[VK_CAPITAL] = 0x01;
-	    // Alt-Gr is synthesized as Alt + Ctrl.
-	    if ((GetKeyState(VK_RMENU) & 0x8000)
-					 && (GetKeyState(VK_CONTROL) & 0x8000))
-	    {
-		keyboard_state[VK_MENU] = 0x80;
-		keyboard_state[VK_CONTROL] = 0x80;
-	    }
-
-	    // Translate the virtual key according to the current keyboard
-	    // layout.
-	    scan_code = MapVirtualKey(vk, MAPVK_VK_TO_VSC);
-	    // Convert the scan-code into a sequence of zero or more unicode
-	    // codepoints.
-	    // If this is a dead key ToUnicode returns a negative value.
-	    len = ToUnicode(vk, scan_code, keyboard_state, ch, ARRAY_LENGTH(ch),
-		    0);
-	    if (len < 0)
-		dead_key = DEAD_KEY_SET_DEFAULT;
-
-	    if (len <= 0)
-	    {
-		int wm_char = NUL;
-
-		if (dead_key == DEAD_KEY_SET_DEFAULT
-			&& (GetKeyState(VK_CONTROL) & 0x8000))
-		{
-		    if (   // AZERTY CTRL+dead_circumflex
-			   (vk == 221 && scan_code == 26)
-			   // QWERTZ CTRL+dead_circumflex
-			|| (vk == 220 && scan_code == 41))
-			wm_char = '[';
-		    if (   // QWERTZ CTRL+dead_two-overdots
-			   (vk == 192 && scan_code == 27))
-			wm_char = ']';
-		}
-		if (wm_char != NUL)
-		{
-		    // post WM_CHAR='[' - which will be interpreted with CTRL
-		    // still hold as ESC
-		    PostMessageW(msg.hwnd, WM_CHAR, wm_char, msg.lParam);
-		    // ask _OnChar() to not touch this state, wait for next key
-		    // press and maintain knowledge that we are "poisoned" with
-		    // "dead state"
-		    dead_key = DEAD_KEY_TRANSIENT_IN_ON_CHAR;
-		}
-		return;
-	    }
-
-	    // Post the message as TranslateMessage would do.
-	    if (msg.message == WM_KEYDOWN)
-	    {
-		for (i = 0; i < len; i++)
-		    PostMessageW(msg.hwnd, WM_CHAR, ch[i], msg.lParam);
-	    }
-	    else
-	    {
-		for (i = 0; i < len; i++)
-		    PostMessageW(msg.hwnd, WM_SYSCHAR, ch[i], msg.lParam);
-	    }
+	    process_message_usual_key(vk, &msg);
 	}
     }
 #ifdef FEAT_MBYTE_IME
@@ -8875,6 +9189,43 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
     return TRUE;
 }
 
+    static int
+test_gui_w32_sendevent_set_keycode_trans_strategy(dict_T *args)
+{
+    int handled = 0;
+    char_u *strategy = dict_get_string(args, "strategy", TRUE);
+
+    if (strategy)
+    {
+	if (STRICMP(strategy, "classic") == 0)
+	{
+	    handled = 1;
+	    keycode_trans_strategy_used = &keycode_trans_strategy_classic;
+	}
+	else if (STRICMP(strategy, "experimental") == 0)
+	{
+	    handled = 1;
+	    keycode_trans_strategy_used = &keycode_trans_strategy_experimental;
+	}
+    }
+
+    if (!handled)
+    {
+	if (strategy == NULL)
+	{
+	    semsg(_(e_missing_argument_str), "strategy");
+	}
+	else
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "strategy", strategy);
+	    vim_free(strategy);
+	}
+	return FALSE;
+    }
+    return TRUE;
+}
+
+
     int
 test_gui_w32_sendevent(char_u *event, dict_T *args)
 {
@@ -8882,6 +9233,8 @@ test_gui_w32_sendevent(char_u *event, dict_T *args)
 	return test_gui_w32_sendevent_keyboard(args);
     else if (STRICMP(event, "mouse") == 0)
 	return test_gui_w32_sendevent_mouse(args);
+    else if (STRICMP(event, "set_keycode_trans_strategy") == 0)
+	return test_gui_w32_sendevent_set_keycode_trans_strategy(args);
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "event", event);

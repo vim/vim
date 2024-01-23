@@ -1539,7 +1539,7 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
 #  endif
 #  ifdef MSWIN
-    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0)
+    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0 || STRCMP(event, "set_keycode_trans_strategy") == 0)
 	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
 #  endif
     else if (STRCMP(event, "mouse") == 0)
