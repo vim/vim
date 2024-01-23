@@ -6282,6 +6282,8 @@ c_ansi_typedefs	syntax.txt	/*c_ansi_typedefs*
 c_comment_strings	syntax.txt	/*c_comment_strings*
 c_curly_error	syntax.txt	/*c_curly_error*
 c_digraph	cmdline.txt	/*c_digraph*
+c_function_pointers	syntax.txt	/*c_function_pointers*
+c_functions	syntax.txt	/*c_functions*
 c_gnu	syntax.txt	/*c_gnu*
 c_no_ansi	syntax.txt	/*c_no_ansi*
 c_no_bracket_error	syntax.txt	/*c_no_bracket_error*
