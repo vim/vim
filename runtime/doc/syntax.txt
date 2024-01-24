@@ -1601,7 +1601,6 @@ choice should be appropriate for most users most of the time because Fortran
 respectively, in recent Fortran standards are highlighted as errors and todo
 items.
 
-
 The syntax script no longer supports Fortran dialects.  The variable
 fortran_dialect is now silently ignored.  Since computers are much faster now,
 the variable fortran_more_precise is no longer needed and is silently ignored.
