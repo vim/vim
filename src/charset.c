@@ -1126,7 +1126,6 @@ win_lbr_chartabsize(
     int		n;
     char_u	*sbr;
     int		no_sbr = FALSE;
-    colnr_T	vcol_start = 0; // start from where to consider linebreak
 #endif
 
 #if defined(FEAT_PROP_POPUP)
@@ -1352,22 +1351,21 @@ win_lbr_chartabsize(
     if (headp != NULL)
 	*headp = head;
 
+    int need_lbr = FALSE;
     /*
      * If 'linebreak' set check at a blank before a non-blank if the line
-     * needs a break here
+     * needs a break here.
      */
-    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_width != 0)
+    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_width != 0
+	    && VIM_ISBREAK((int)s[0]) && !VIM_ISBREAK((int)s[1]))
     {
 	char_u	*t = cts->cts_line;
 	while (VIM_ISBREAK((int)t[0]))
 	    t++;
-	vcol_start = t - cts->cts_line;
+	// 'linebreak' is only needed when not in leading whitespace.
+	need_lbr = s >= t;
     }
-    if (wp->w_p_lbr && vcol_start <= vcol
-	    && VIM_ISBREAK((int)s[0])
-	    && !VIM_ISBREAK((int)s[1])
-	    && wp->w_p_wrap
-	    && wp->w_width != 0)
+    if (need_lbr)
     {
 	/*
 	 * Count all characters from first non-blank after a blank up to next
