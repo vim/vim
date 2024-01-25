@@ -468,16 +468,21 @@ func Test_mswin_event_character_keys()
     endfor
   endfor
 
-  " Test for <Ctrl-A> to <Ctrl-Z> keys
- "  Expect the unicode characters 0x01 to 0x1A
+" Test for <Ctrl-A> to <Ctrl-Z> keys
+" Expect the unicode characters 0x01 to 0x1A
+" Note: May cause an Interrupt to be triggered for Ctrl-C
    for modkey in [s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL]
     for kc in range(65, 90)
-      call SendKeyGroup([modkey, kc])
-      let ch = Getcharstr()
-      call assert_equal(nr2char(kc - 64), ch)
-      call SendKeyWithModifiers(kc, s:MOD_MASK_CTRL)
-      let ch = Getcharstr()
-      call assert_equal(nr2char(kc - 64), ch)
+      try
+        call SendKeyGroup([modkey, kc])
+        let ch = Getcharstr()
+        call assert_equal(nr2char(kc - 64), ch)
+        call SendKeyWithModifiers(kc, s:MOD_MASK_CTRL)
+        let ch = Getcharstr()
+        call assert_equal(nr2char(kc - 64), ch)
+      catch /^Vim:Interrupt$/
+        " ignore
+      endtry
     endfor
   endfor
 
