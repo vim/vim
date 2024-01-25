@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.1.  Last change: 2024 Jan 04
+*map.txt*       For Vim version 9.1.  Last change: 2024 Jan 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,9 +21,10 @@ manual.
    1.9 Using mappings				|map-typing|
    1.10 Mapping alt-keys			|:map-alt-keys|
    1.11 Mapping meta-keys			|:map-meta-keys|
-   1.12 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
-   1.13 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
-   1.14 Mapping an operator			|:map-operator|
+   1.12 Mapping super-keys or command keys	|:map-super-keys|
+   1.13 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
+   1.14 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
+   1.15 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -985,8 +986,17 @@ For the Meta modifier the "T" character is used.  For example, to map Meta-b
 in Insert mode: >
 	:imap <T-b> terrible
 
+1.12 MAPPING SUPER-KEYS or COMMAND-KEYS		*:map-super-keys* *:map-cmd-key*
 
-1.12 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
+The Super modifier is available in GUI mode (when |gui_running| is 1) for
+GVim on Linux and MacVim on Mac OS. If you're on a Mac, this represents the
+Command key, on Linux with the GTK GUI it represents the Super key.
+The character "D" is used for the Super / Command modifier.
+
+For example, to map Command-b in Insert mode: >
+	:imap <D-b> barritone
+
+1.13 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
 
 Xterm and a few other terminals can be put in a mode where keys with modifiers
 are sent with a special escape code.  Vim recognizes these codes and can then
@@ -1048,7 +1058,7 @@ When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
-1.13 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
+1.14 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
 
 If the value of 'term' contains "kitty" then Vim will send out an escape
 sequence to enable the Kitty keyboard protocol.  This can be changed with the
@@ -1075,7 +1085,7 @@ translated).  The meaning of {value}:
 			previous state is unknown
 
 
-1.14 MAPPING AN OPERATOR				*:map-operator*
+1.15 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create a mapping that first sets the 'operatorfunc' option and then

@@ -2873,6 +2873,7 @@ $quote	eval.txt	/*$quote*
 :map-arguments	map.txt	/*:map-arguments*
 :map-buffer	map.txt	/*:map-buffer*
 :map-cmd	map.txt	/*:map-cmd*
+:map-cmd-key	map.txt	/*:map-cmd-key*
 :map-commands	map.txt	/*:map-commands*
 :map-expression	map.txt	/*:map-expression*
 :map-local	map.txt	/*:map-local*
@@ -2885,6 +2886,7 @@ $quote	eval.txt	/*$quote*
 :map-special	map.txt	/*:map-special*
 :map-special-chars	map.txt	/*:map-special-chars*
 :map-special-keys	map.txt	/*:map-special-keys*
+:map-super-keys	map.txt	/*:map-super-keys*
 :map-undo	map.txt	/*:map-undo*
 :map-unique	map.txt	/*:map-unique*
 :map-verbose	map.txt	/*:map-verbose*
