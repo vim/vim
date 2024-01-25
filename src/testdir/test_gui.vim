@@ -1708,7 +1708,11 @@ func Test_gui_lowlevel_keyevent()
   " Test for <Ctrl-A> to <Ctrl-Z> keys
   for kc in range(65, 90)
     call SendKeys([0x11, kc])
-    let ch = getcharstr()
+    try
+      let ch = getcharstr()
+    catch /^Vim:Interrupt$/
+      let ch = "\<c-c>"
+    endtry
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 
