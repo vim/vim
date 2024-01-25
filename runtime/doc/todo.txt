@@ -4667,7 +4667,6 @@ GUI:
 
 
 Autocommands:
-9   Add WinNewPre - before creating a new window. #10635
 9   When triggering WinNew provide the window ID somehow.  #10633
 9   Rework the code from FEAT_OSFILETYPE for autocmd-osfiletypes to use
     'filetype'.  Only for when the current buffer is known.
