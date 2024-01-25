@@ -103,7 +103,7 @@ func Test_xxd()
     unsigned char XXDfile[] = {
       0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
     };
-    size_t XXDfile_len = 11;
+    unsigned int XXDfile_len = 11;
   [CODE]
 
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
@@ -119,7 +119,7 @@ func Test_xxd()
       unsigned char XXDFILE[] = {
         0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
       };
-      size_t XXDFILE_LEN = 11;
+      unsigned int XXDFILE_LEN = 11;
     [CODE]
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
@@ -233,7 +233,7 @@ func Test_xxd()
       unsigned char varName[] = {
         0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
       };
-      size_t varName_len = 11;
+      unsigned int varName_len = 11;
     [CODE]
 
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
@@ -247,7 +247,7 @@ func Test_xxd()
     unsigned char StdIn[] = {
       0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
     };
-    size_t StdIn_len = 11;
+    unsigned int StdIn_len = 11;
   [CODE]
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
@@ -263,7 +263,7 @@ func Test_xxd()
       unsigned char VARNAME[] = {
         0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
       };
-      size_t VARNAME_LEN = 11;
+      unsigned int VARNAME_LEN = 11;
     [CODE]
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
