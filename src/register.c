@@ -1903,10 +1903,10 @@ do_put(
 		spaces = y_width + 1;
 		init_chartabsize_arg(&cts, curwin, 0, 0,
 						      y_array[i], y_array[i]);
-		for (j = 0; j < yanklen; j++)
+
+		while (*cts.cts_ptr != NUL)
 		{
-		    spaces -= lbr_chartabsize(&cts);
-		    ++cts.cts_ptr;
+		    spaces -= lbr_chartabsize_adv(&cts);
 		    cts.cts_vcol = 0;
 		}
 		clear_chartabsize_arg(&cts);
