@@ -90,12 +90,13 @@ jobs:
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'
 
-      - name: Install packages
+      - name: Install packages v1
         if: matrix.features != 'huge'
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: gettext libgtk2.0-dev:${{ matrix.architecture }} desktop-file-utils libtool-bin libncurses-dev:${{ matrix.architecture }} libxt-dev:${{ matrix.architecture }}
-      - name: Install packages
+    
+      - name: Install packages v2
         if: (contains(matrix.features != 'huge') && contains(matrix.lua_ver || '5.4')))
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
