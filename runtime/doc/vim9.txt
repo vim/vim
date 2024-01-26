@@ -1265,7 +1265,7 @@ level.  They cannot be created in a function, also not in a legacy function.
 			yet.  This will report any errors found during
 			compilation.
 
-:defc[ompile] MyClass  Compile all methods in a class |class-compile|.
+:defc[ompile] MyClass	Compile all methods in a class. |class-compile|
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
@@ -1720,8 +1720,8 @@ an example for each category: >
 Vim does not have a familiar null value; it has various null_<type> predefined
 values, for example |null_string|, |null_list|, |null_job|. Primitives do not
 have a null_<type>. The typical use cases for null_<type> are:
-- to `clear a variable` and release its resources;
-- as a `default for a parameter` in a function definition, see |null-compare|.
+- to clear a variable and release its resources;
+- as a default for a parameter in a function definition, see |null-compare|.
 
 For a specialized variable, like `job`, null_<type> is used to clear the
 resources. For a container variable, resources can also be cleared by
@@ -1773,7 +1773,7 @@ an empty container, do not use null_<type> in a comparison: >
 	F(null_list)	# output: "null"
 	F([])		# output: "not null, empty"
 	F([''])		# output: "not null, not empty"
-The above function takes a `list of strings` and reports on it.
+The above function takes a list of strings and reports on it.
 Change the above function signature to accept different types of arguments: >
 	def F(arg: list<any> = null_list)   # any type of list
 	def F(arg: any = null)		    # any type
@@ -1791,18 +1791,18 @@ with vim9 null semantics, the programmer may chose to use null_<type> in
 comparisons and/or other situations.
 
 Elsewhere in the documentation it says:
-	Quite often a null value is handled the same as an
-	empty value, but not always
+	Quite often a null value is handled the same as an empty value, but
+	not always
 Here's an example: >
 	vim9script
 	var s1: list<string>
 	var s2: list<string> = null_list
 	echo s1		    # output: "[]"
 	echo s2		    # output: "[]"
-	
+
 	echo s1 + ['a']     # output: "['a']"
 	echo s2 + ['a']     # output: "['a']"
-	
+
 	echo s1->add('a')   # output: "['a']"
 	echo s2->add('a')   # E1130: Can not add to null list
 <
