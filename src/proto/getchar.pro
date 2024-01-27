@@ -30,7 +30,7 @@ int typebuf_changed(int tb_change_cnt);
 int typebuf_typed(void);
 int typebuf_maplen(void);
 void del_typebuf(int len, int offset);
-void gotchars_nop(void);
+void gotchars_ignore(void);
 void ungetchars(int len);
 int save_typebuf(void);
 void save_typeahead(tasave_T *tp);

@@ -1339,12 +1339,12 @@ gotchars(char_u *chars, int len)
 }
 
 /*
- * Record a <Nop> key.
+ * Record an <Ignore> key.
  */
     void
-gotchars_nop(void)
+gotchars_ignore(void)
 {
-    char_u nop_buf[3] = { K_SPECIAL, KS_EXTRA, KE_NOP };
+    char_u nop_buf[3] = { K_SPECIAL, KS_EXTRA, KE_IGNORE };
     gotchars(nop_buf, 3);
 }
 
@@ -3666,9 +3666,9 @@ vgetorpeek(int advance)
 #endif
     if (timedout && c == ESC)
     {
-	// When recording there will be no timeout.  Add a <Nop> after the ESC
-	// to avoid that it forms a key code with following characters.
-	gotchars_nop();
+	// When recording there will be no timeout.  Add an <Ignore> after the
+	// ESC to avoid that it forms a key code with following characters.
+	gotchars_ignore();
     }
 
     --vgetc_busy;
