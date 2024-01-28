@@ -13,7 +13,7 @@
 " 	2024 Jan 23 by Vim Project (add :[23]match commands)
 " 	2024 Jan 25 by Vim Project (WinNewPre autocommand)
 " 	2024 Jan 27 by Vim Project (add foreach() function)
-" 	2024 Jan 28 by Vim Project (improve line-continuation matching)
+" 	2024 Jan 28 by Vim Project (improve line-continuation matching & string interpolation)
 " Version:	9.0-25
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
