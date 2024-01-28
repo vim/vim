@@ -221,8 +221,8 @@ static char *(highlight_init_light[]) = {
     CENT("SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue",
 	 "SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue"),
 #endif
-    CENT("Visual term=reverse",
-	 "Visual term=reverse guibg=LightGrey"),
+    CENT("Visual ctermbg=DarkGrey ctermfg=White",
+	 "Visual ctermbg=DarkGrey ctermfg=White guibg=LightGrey"),
 #ifdef FEAT_DIFF
     CENT("DiffAdd term=bold ctermbg=LightBlue",
 	 "DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue"),
@@ -310,8 +310,8 @@ static char *(highlight_init_dark[]) = {
     CENT("SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan",
 	 "SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan"),
 #endif
-    CENT("Visual term=reverse",
-	 "Visual term=reverse guibg=DarkGrey"),
+    CENT("Visual ctermbg=Grey ctermfg=Black",
+	 "Visual ctermbg=Grey ctermfg=Black guibg=#575757"),
 #ifdef FEAT_DIFF
     CENT("DiffAdd term=bold ctermbg=DarkBlue",
 	 "DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue"),
@@ -438,14 +438,8 @@ init_highlight(
     // With 8 colors brown is equal to yellow, need to use black for Search fg
     // to avoid Statement highlighted text disappears.
     // Clear the attributes, needed when changing the t_Co value.
-    if (t_colors > 8)
-	do_highlight((char_u *)(*p_bg == 'l'
-		    ? "Visual cterm=NONE ctermbg=LightGrey"
-		    : "Visual cterm=NONE ctermbg=DarkGrey"), FALSE, TRUE);
-    else
+    if (t_colors <= 8)
     {
-	do_highlight((char_u *)"Visual cterm=reverse ctermbg=NONE",
-								 FALSE, TRUE);
 	if (*p_bg == 'l')
 	    do_highlight((char_u *)"Search ctermfg=black", FALSE, TRUE);
     }
