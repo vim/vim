@@ -160,6 +160,14 @@ func CheckEnv(name)
   endif
 endfunc
 
+" Command to Check for pure X11 (no Wayland)
+command -nargs=0 CheckX11 call CheckX11()
+func CheckX11()
+  if !empty($WAYLAND_DISPLAY) || empty($DISPLAY)
+    throw 'Skipped: not pure X11 environment'
+  endif
+endfunc
+
 " Command to check that we are using the GUI
 command CheckGui call CheckGui()
 func CheckGui()

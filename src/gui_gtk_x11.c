@@ -793,6 +793,36 @@ draw_event(GtkWidget *widget UNUSED,
 
     return FALSE;
 }
+
+# if GTK_CHECK_VERSION(3,10,0)
+    static gboolean
+scale_factor_event(GtkWidget *widget,
+	           GParamSpec* pspec UNUSED,
+	           gpointer   user_data UNUSED)
+{
+    if (gui.surface != NULL)
+	cairo_surface_destroy(gui.surface);
+
+    int	    w, h;
+    gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
+    gui.surface = gdk_window_create_similar_surface(
+	    gtk_widget_get_window(widget),
+	    CAIRO_CONTENT_COLOR_ALPHA,
+	    w, h);
+
+    int	    usable_height = h;
+    if (gtk_socket_id != 0)
+	usable_height -= (gui.char_height - (gui.char_height/2)); // sic.
+
+    gui_gtk_form_freeze(GTK_FORM(gui.formwin));
+    gui.force_redraw = 1;
+    gui_resize_shell(w, usable_height);
+    gui_gtk_form_thaw(GTK_FORM(gui.formwin));
+
+    return TRUE;
+}
+# endif // GTK_CHECK_VERSION(3,10,0)
+
 #else // !GTK_CHECK_VERSION(3,0,0)
     static gint
 expose_event(GtkWidget *widget UNUSED,
@@ -1667,11 +1697,12 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
     int
 gui_mch_early_init_check(int give_message)
 {
-    char_u *p;
+    char_u *p, *q;
 
     // Guess that when $DISPLAY isn't set the GUI can't start.
     p = mch_getenv((char_u *)"DISPLAY");
-    if (p == NULL || *p == NUL)
+    q = mch_getenv((char_u *)"WAYLAND_DISPLAY");
+    if ((p == NULL || *p == NUL) && (q == NULL || *q == NUL))
     {
 	gui.dying = TRUE;
 	if (give_message)
@@ -1704,7 +1735,10 @@ gui_mch_init_check(void)
 #if GTK_CHECK_VERSION(3,10,0)
     // Vim currently assumes that Gtk means X11, so it cannot use native Gtk
     // support for other backends such as Wayland.
-    gdk_set_allowed_backends ("x11");
+    //
+    // Use an environment variable to enable unfinished Wayland support.
+    if (getenv("GVIM_ENABLE_WAYLAND") == NULL)
+	gdk_set_allowed_backends ("x11");
 #endif
 
 #ifdef FEAT_GUI_GNOME
@@ -2024,6 +2058,10 @@ scroll_event(GtkWidget *widget,
 {
     int	    button;
     int_u   vim_modifiers;
+#if GTK_CHECK_VERSION(3,4,0)
+    static double  acc_x, acc_y;
+    static guint32 last_smooth_event_time;
+#endif
 
     if (gtk_socket_id != 0 && !gtk_widget_has_focus(widget))
 	gtk_widget_grab_focus(widget);
@@ -2042,6 +2080,16 @@ scroll_event(GtkWidget *widget,
 	case GDK_SCROLL_RIGHT:
 	    button = MOUSE_6;
 	    break;
+#if GTK_CHECK_VERSION(3,4,0)
+	case GDK_SCROLL_SMOOTH:
+	    if (event->time - last_smooth_event_time > 50)
+		// reset our accumulations after 50ms of silence
+		acc_x = acc_y = 0;
+	    acc_x += event->delta_x;
+	    acc_y += event->delta_y;
+	    last_smooth_event_time = event->time;
+	    break;
+#endif
 	default: // This shouldn't happen
 	    return FALSE;
     }
@@ -2054,8 +2102,38 @@ scroll_event(GtkWidget *widget,
 
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
-    gui_send_mouse_event(button, (int)event->x, (int)event->y,
-							FALSE, vim_modifiers);
+#if GTK_CHECK_VERSION(3,4,0)
+    if (event->direction == GDK_SCROLL_SMOOTH)
+    {
+	while (acc_x > 1.0)
+	{ // right
+	    acc_x = MAX(0.0, acc_x - 1.0);
+	    gui_send_mouse_event(MOUSE_6, (int)event->x, (int)event->y,
+		    FALSE, vim_modifiers);
+	}
+	while (acc_x < -1.0)
+	{ // left
+	    acc_x = MIN(0.0, acc_x + 1.0);
+	    gui_send_mouse_event(MOUSE_7, (int)event->x, (int)event->y,
+		    FALSE, vim_modifiers);
+	}
+	while (acc_y > 1.0)
+	{ // down
+	    acc_y = MAX(0.0, acc_y - 1.0);
+	    gui_send_mouse_event(MOUSE_5, (int)event->x, (int)event->y,
+		    FALSE, vim_modifiers);
+	}
+	while (acc_y < -1.0)
+	{ // up
+	    acc_y = MIN(0.0, acc_y + 1.0);
+	    gui_send_mouse_event(MOUSE_4, (int)event->x, (int)event->y,
+		    FALSE, vim_modifiers);
+	}
+    }
+    else
+#endif
+	gui_send_mouse_event(button, (int)event->x, (int)event->y,
+		FALSE, vim_modifiers);
 
     return TRUE;
 }
@@ -2509,10 +2587,12 @@ setup_save_yourself(void)
 	// Fall back to old method
 
 	// first get the existing value
-	GdkWindow * const mainwin_win = gtk_widget_get_window(gui.mainwin);
+	Display * dpy = gui_mch_get_display();
+	if (!dpy)
+	    return;
 
-	if (XGetWMProtocols(GDK_WINDOW_XDISPLAY(mainwin_win),
-		    GDK_WINDOW_XID(mainwin_win),
+	GdkWindow * const mainwin_win = gtk_widget_get_window(gui.mainwin);
+	if (XGetWMProtocols(dpy, GDK_WINDOW_XID(mainwin_win),
 		    &existing_atoms, &count))
 	{
 	    Atom	*new_atoms;
@@ -2620,7 +2700,10 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
     // When started with "--echo-wid" argument, write window ID on stdout.
     if (echo_wid_arg)
     {
-	printf("WID: %ld\n", (long)GDK_WINDOW_XID(mainwin_win));
+	if (gui_mch_get_display())
+	    printf("WID: %ld\n", (long)GDK_WINDOW_XID(mainwin_win));
+	else
+	    printf("WID: 0\n");
 	fflush(stdout);
     }
 
@@ -2655,27 +2738,30 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	setup_save_yourself();
 
 #ifdef FEAT_CLIENTSERVER
-    if (serverName == NULL && serverDelayedStartName != NULL)
+    if (gui_mch_get_display())
     {
-	// This is a :gui command in a plain vim with no previous server
-	commWindow = GDK_WINDOW_XID(mainwin_win);
+	if (serverName == NULL && serverDelayedStartName != NULL)
+	{
+	    // This is a :gui command in a plain vim with no previous server
+	    commWindow = GDK_WINDOW_XID(mainwin_win);
 
-	(void)serverRegisterName(GDK_WINDOW_XDISPLAY(mainwin_win),
-				 serverDelayedStartName);
+	    (void)serverRegisterName(GDK_WINDOW_XDISPLAY(mainwin_win),
+				    serverDelayedStartName);
+	}
+	else
+	{
+	    /*
+	    * Cannot handle "XLib-only" windows with gtk event routines, we'll
+	    * have to change the "server" registration to that of the main window
+	    * If we have not registered a name yet, remember the window.
+	    */
+	    serverChangeRegisteredWindow(GDK_WINDOW_XDISPLAY(mainwin_win),
+					GDK_WINDOW_XID(mainwin_win));
+	}
+	gtk_widget_add_events(gui.mainwin, GDK_PROPERTY_CHANGE_MASK);
+	g_signal_connect(G_OBJECT(gui.mainwin), "property-notify-event",
+			G_CALLBACK(property_event), NULL);
     }
-    else
-    {
-	/*
-	 * Cannot handle "XLib-only" windows with gtk event routines, we'll
-	 * have to change the "server" registration to that of the main window
-	 * If we have not registered a name yet, remember the window.
-	 */
-	serverChangeRegisteredWindow(GDK_WINDOW_XDISPLAY(mainwin_win),
-				     GDK_WINDOW_XID(mainwin_win));
-    }
-    gtk_widget_add_events(gui.mainwin, GDK_PROPERTY_CHANGE_MASK);
-    g_signal_connect(G_OBJECT(gui.mainwin), "property-notify-event",
-		     G_CALLBACK(property_event), NULL);
 #endif
 }
 
@@ -3919,6 +4005,9 @@ gui_mch_init(void)
 			  GDK_BUTTON_PRESS_MASK |
 			  GDK_BUTTON_RELEASE_MASK |
 			  GDK_SCROLL_MASK |
+#if GTK_CHECK_VERSION(3,4,0)
+			  GDK_SMOOTH_SCROLL_MASK |
+#endif
 			  GDK_KEY_PRESS_MASK |
 			  GDK_KEY_RELEASE_MASK |
 			  GDK_POINTER_MOTION_MASK |
@@ -4520,6 +4609,10 @@ gui_mch_open(void)
 #endif
     g_signal_connect(G_OBJECT(gui.formwin), "configure-event",
 				       G_CALLBACK(form_configure_event), NULL);
+#if GTK_CHECK_VERSION(3,10,0)
+    g_signal_connect(G_OBJECT(gui.formwin), "notify::scale-factor",
+		     G_CALLBACK(scale_factor_event), NULL);
+#endif
 
 #ifdef FEAT_DND
     // Set up for receiving DND items.
@@ -4603,8 +4696,12 @@ gui_mch_exit(int rc UNUSED)
     int
 gui_mch_get_winpos(int *x, int *y)
 {
-    gtk_window_get_position(GTK_WINDOW(gui.mainwin), x, y);
-    return OK;
+    if (gui_mch_get_display())
+    {
+	gtk_window_get_position(GTK_WINDOW(gui.mainwin), x, y);
+	return OK;
+    }
+    return FAIL;
 }
 
 /*
@@ -6229,9 +6326,10 @@ gui_mch_haskey(char_u *name)
     int
 gui_get_x11_windis(Window *win, Display **dis)
 {
-    if (gui.mainwin != NULL && gtk_widget_get_window(gui.mainwin) != NULL)
+    Display * dpy = gui_mch_get_display();
+    if (dpy)
     {
-	*dis = GDK_WINDOW_XDISPLAY(gtk_widget_get_window(gui.mainwin));
+	*dis = dpy;
 	*win = GDK_WINDOW_XID(gtk_widget_get_window(gui.mainwin));
 	return OK;
     }
@@ -6242,18 +6340,18 @@ gui_get_x11_windis(Window *win, Display **dis)
 }
 #endif
 
-#if defined(FEAT_CLIENTSERVER) \
-	|| (defined(FEAT_X11) && defined(FEAT_CLIPBOARD)) || defined(PROTO)
-
     Display *
 gui_mch_get_display(void)
 {
-    if (gui.mainwin != NULL && gtk_widget_get_window(gui.mainwin) != NULL)
+    if (gui.mainwin != NULL && gtk_widget_get_window(gui.mainwin) != NULL
+#if GTK_CHECK_VERSION(3,0,0)
+	    && GDK_IS_X11_DISPLAY(gtk_widget_get_display(gui.mainwin))
+#endif
+	)
 	return GDK_WINDOW_XDISPLAY(gtk_widget_get_window(gui.mainwin));
     else
 	return NULL;
 }
-#endif
 
     void
 gui_mch_beep(void)
@@ -6915,9 +7013,10 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	    return;
     }
 
-    // Final fallback position - use the X CUT_BUFFER0 store
-    yank_cut_buffer0(GDK_WINDOW_XDISPLAY(gtk_widget_get_window(gui.mainwin)),
-	    cbd);
+    if (gui_mch_get_display())
+	// Final fallback position - use the X CUT_BUFFER0 store
+	yank_cut_buffer0(GDK_WINDOW_XDISPLAY(gtk_widget_get_window(gui.mainwin)),
+		cbd);
 }
 
 /*
@@ -7083,9 +7182,11 @@ gui_mch_setmouse(int x, int y)
     // Sorry for the Xlib call, but we can't avoid it, since there is no
     // internal GDK mechanism present to accomplish this.  (and for good
     // reason...)
-    XWarpPointer(GDK_WINDOW_XDISPLAY(gtk_widget_get_window(gui.drawarea)),
-		 (Window)0, GDK_WINDOW_XID(gtk_widget_get_window(gui.drawarea)),
-		 0, 0, 0U, 0U, x, y);
+    Display * dpy = gui_mch_get_display();
+    if (dpy)
+	XWarpPointer(dpy, (Window)0,
+		GDK_WINDOW_XID(gtk_widget_get_window(gui.drawarea)),
+		0, 0, 0U, 0U, x, y);
 }
 
 

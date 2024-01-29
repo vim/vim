@@ -13,7 +13,7 @@ source shared.vim
 
 func Check_X11_Connection()
   if has('x11')
-    CheckEnv DISPLAY
+    CheckX11
     try
       call remote_send('xxx', '')
     catch

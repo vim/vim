@@ -111,6 +111,8 @@ func Test_getfontname_without_arg()
 endfunc
 
 func Test_getwinpos()
+  CheckX11
+
   call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
   call assert_true(getwinposx() >= 0)
   call assert_true(getwinposy() >= 0)
@@ -897,7 +899,7 @@ func Test_set_term()
 endfunc
 
 func Test_windowid_variable()
-  if g:x11_based_gui || has('win32')
+  if (g:x11_based_gui && empty($WAYLAND_DISPLAY)) || has('win32')
     call assert_true(v:windowid > 0)
   else
     call assert_equal(0, v:windowid)

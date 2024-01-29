@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 25
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4424,14 +4424,16 @@ getwinpos([{timeout}])					*getwinpos()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
 		the left hand side of the GUI Vim window. Also works for an
 		xterm (uses a timeout of 100 msec).
-		The result will be -1 if the information is not available.
+		The result will be -1 if the information is not available
+		(e.g. on the Wayland backend).
 		The value can be used with `:winpos`.
 
 							*getwinposy()*
 getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 		the top of the GUI Vim window.  Also works for an xterm (uses
 		a timeout of 100 msec).
-		The result will be -1 if the information is not available.
+		The result will be -1 if the information is not available
+		(e.g. on the Wayland backend).
 		The value can be used with `:winpos`.
 
 getwinvar({winnr}, {varname} [, {def}])				*getwinvar()*
