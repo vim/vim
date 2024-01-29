@@ -2320,12 +2320,11 @@ mch_settitle(char_u *title, char_u *icon)
 #ifdef FEAT_X11
     if (get_x11_windis() == OK)
 	type = 1;
-#else
-# if defined(FEAT_GUI_PHOTON) \
+#endif
+#if defined(FEAT_GUI_PHOTON) \
     || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU)
     if (gui.in_use)
 	type = 1;
-# endif
 #endif
 
     /*
