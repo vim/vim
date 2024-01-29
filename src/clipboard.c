@@ -217,11 +217,8 @@ clip_copy_selection(Clipboard_T *clip)
     if (VIsual_active && (State & MODE_NORMAL) && clip->available)
     {
 	clip_update_selection(clip);
-	clip_free_selection(clip);
-	clip_own_selection(clip);
 	if (clip->owned)
 	    clip_get_selection(clip);
-	clip_gen_set_selection(clip);
     }
 }
 
@@ -1334,7 +1331,6 @@ did_set_clipboard(optset_T *args UNUSED)
 #ifdef FEAT_GUI_GTK
 	if (gui.in_use)
 	{
-	    gui_gtk_set_selection_targets();
 	    gui_gtk_set_dnd_targets();
 	}
 #endif
