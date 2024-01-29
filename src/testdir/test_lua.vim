@@ -28,21 +28,37 @@ func TearDown()
 endfunc
 
 " Check that switching to another buffer does not trigger ml_get error.
-func Test_lua_command_new_no_ml_get_error()
+func Test_lua_luado_change_buffer()
   new
+
   let wincount = winnr('$')
   call setline(1, ['one', 'two', 'three'])
   luado vim.command("new")
   call assert_equal(wincount + 1, winnr('$'))
+
   %bwipe!
 endfunc
 
-" Test vim.command()
-func Test_lua_command()
+" Check that :luado deleting lines does not trigger ml_get error.
+func Test_lua_luado_delete_lines()
   new
+
+  call setline(1, ['one', 'two', 'three'])
+  luado vim.command("%d_")
+  call assert_equal([''], getline(1, '$'))
+
   call setline(1, ['one', 'two', 'three'])
   luado vim.command("1,2d_")
   call assert_equal(['three'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  luado vim.command("2,3d_"); return "REPLACED"
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3luado vim.command("1,2d_"); return "REPLACED"
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 endfunc
 

@@ -2692,9 +2692,12 @@ ex_luado(exarg_T *eap)
 	    luaV_emsg(L);
 	    break;
 	}
+
 	// Catch the command switching to another buffer.
-	if (curbuf != was_curbuf)
+	// Check the line number, the command may have deleted lines.
+	if (curbuf != was_curbuf || l > curbuf->b_ml.ml_line_count)
 	    break;
+
 	if (lua_isstring(L, -1)) // update line?
 	{
 #ifdef HAVE_SANDBOX

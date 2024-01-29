@@ -11,10 +11,25 @@ func Test_ruby_change_buffer()
 endfunc
 
 func Test_rubydo()
-  " Check deleting lines does not trigger ml_get error.
   new
+
+  " Check deleting lines does not trigger ml_get error.
   call setline(1, ['one', 'two', 'three'])
   rubydo Vim.command("%d_")
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  rubydo Vim.command("1,2d_")
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  rubydo Vim.command("2,3d_"); $_ = "REPLACED"
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3rubydo Vim.command("1,2d_"); $_ = "REPLACED"
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 
   " Check switching to another buffer does not trigger ml_get error.

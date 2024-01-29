@@ -2012,7 +2012,8 @@ ex_tcldo(exarg_T *eap)
 #if (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 5) || TCL_MAJOR_VERSION > 8
 	    || Tcl_LimitExceeded(tclinfo.interp)
 #endif
-	    || curbuf != was_curbuf)
+	    || curbuf != was_curbuf
+	    || (linenr_T)rs > curbuf->b_ml.ml_line_count)
 	    break;
 	line = (char *)Tcl_GetVar(tclinfo.interp, var_line, 0);
 	if (line)

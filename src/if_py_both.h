@@ -6136,7 +6136,8 @@ run_do(const char *cmd, void *arg UNUSED
 	    goto err;
 
 	// Check that the command didn't switch to another buffer.
-	if (curbuf != was_curbuf)
+	// Check the line number, the command my have deleted lines.
+	if (curbuf != was_curbuf || lnum > curbuf->b_ml.ml_line_count)
 	{
 	    Py_XDECREF(ret);
 	    goto err;

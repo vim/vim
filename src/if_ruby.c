@@ -885,7 +885,7 @@ ex_rubydo(exarg_T *eap)
 	    error_print(state);
 	    break;
 	}
-	if (was_curbuf != curbuf)
+	if (was_curbuf != curbuf || i > curbuf->b_ml.ml_line_count)
 	    break;
 	line = rb_lastline_get();
 	if (!NIL_P(line))
