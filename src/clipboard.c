@@ -1334,7 +1334,8 @@ did_set_clipboard(optset_T *args UNUSED)
 #ifdef FEAT_GUI_GTK
 	if (gui.in_use)
 	{
-	    gui_gtk_set_selection_targets();
+	    gui_gtk_set_selection_targets((GdkAtom)GDK_SELECTION_PRIMARY);
+	    gui_gtk_set_selection_targets((GdkAtom)clip_plus.gtk_sel_atom);
 	    gui_gtk_set_dnd_targets();
 	}
 #endif

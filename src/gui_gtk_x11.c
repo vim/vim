@@ -116,6 +116,7 @@ enum
     TARGET_TEXT,
     TARGET_TEXT_URI_LIST,
     TARGET_TEXT_PLAIN,
+    TARGET_TEXT_PLAIN_UTF8,
     TARGET_VIM,
     TARGET_VIMENC
 };
@@ -132,7 +133,9 @@ static const GtkTargetEntry selection_targets[] =
     {"UTF8_STRING",	0, TARGET_UTF8_STRING},
     {"COMPOUND_TEXT",	0, TARGET_COMPOUND_TEXT},
     {"TEXT",		0, TARGET_TEXT},
-    {"STRING",		0, TARGET_STRING}
+    {"STRING",		0, TARGET_STRING},
+    {"text/plain;charset=utf-8", 0, TARGET_TEXT_PLAIN_UTF8},
+    {"text/plain",	0, TARGET_TEXT_PLAIN}
 };
 #define N_SELECTION_TARGETS ARRAY_LENGTH(selection_targets)
 
@@ -1531,6 +1534,8 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	    && info != (guint)TARGET_VIMENC
 	    && info != (guint)TARGET_VIM
 	    && info != (guint)TARGET_COMPOUND_TEXT
+	    && info != (guint)TARGET_TEXT_PLAIN
+	    && info != (guint)TARGET_TEXT_PLAIN_UTF8
 	    && info != (guint)TARGET_TEXT)
 	return;
 
@@ -3536,30 +3541,28 @@ gui_mch_set_curtab(int nr)
  * Add selection targets for PRIMARY and CLIPBOARD selections.
  */
     void
-gui_gtk_set_selection_targets(void)
+gui_gtk_set_selection_targets(GdkAtom selection)
 {
     int		    i, j = 0;
-    int		    n_targets = N_SELECTION_TARGETS;
-    GtkTargetEntry  targets[N_SELECTION_TARGETS];
+    static int	    n_targets = N_SELECTION_TARGETS;
+    static GtkTargetEntry  targets[N_SELECTION_TARGETS];
 
-    for (i = 0; i < (int)N_SELECTION_TARGETS; ++i)
+    if (targets[0].target == NULL)
     {
-	// OpenOffice tries to use TARGET_HTML and fails when we don't
-	// return something, instead of trying another target. Therefore only
-	// offer TARGET_HTML when it works.
-	if (!clip_html && selection_targets[i].info == TARGET_HTML)
-	    n_targets--;
-	else
-	    targets[j++] = selection_targets[i];
+	for (i = 0; i < (int)N_SELECTION_TARGETS; ++i)
+	{
+	    // OpenOffice tries to use TARGET_HTML and fails when we don't
+	    // return something, instead of trying another target. Therefore only
+	    // offer TARGET_HTML when it works.
+	    if (!clip_html && selection_targets[i].info == TARGET_HTML)
+		n_targets--;
+	    else
+		targets[j++] = selection_targets[i];
+	}
     }
 
-    gtk_selection_clear_targets(gui.drawarea, (GdkAtom)GDK_SELECTION_PRIMARY);
-    gtk_selection_clear_targets(gui.drawarea, (GdkAtom)clip_plus.gtk_sel_atom);
-    gtk_selection_add_targets(gui.drawarea,
-			      (GdkAtom)GDK_SELECTION_PRIMARY,
-			      targets, n_targets);
-    gtk_selection_add_targets(gui.drawarea,
-			      (GdkAtom)clip_plus.gtk_sel_atom,
+    gtk_selection_clear_targets(gui.drawarea, selection);
+    gtk_selection_add_targets(gui.drawarea, selection,
 			      targets, n_targets);
 }
 
@@ -4035,20 +4038,7 @@ gui_mch_init(void)
     g_signal_connect(G_OBJECT(gui.drawarea), "button-release-event",
 		     G_CALLBACK(button_release_event), NULL);
     g_signal_connect(G_OBJECT(gui.drawarea), "scroll-event",
-		     G_CALLBACK(&scroll_event), NULL);
-
-    /*
-     * Add selection handler functions.
-     */
-    g_signal_connect(G_OBJECT(gui.drawarea), "selection-clear-event",
-		     G_CALLBACK(selection_clear_event), NULL);
-    g_signal_connect(G_OBJECT(gui.drawarea), "selection-received",
-		     G_CALLBACK(selection_received_cb), NULL);
-
-    gui_gtk_set_selection_targets();
-
-    g_signal_connect(G_OBJECT(gui.drawarea), "selection-get",
-		     G_CALLBACK(selection_get_cb), NULL);
+		     G_CALLBACK(scroll_event), NULL);
 
     // Pretend we don't have input focus, we will get an event if we do.
     gui.in_focus = FALSE;
@@ -4581,6 +4571,17 @@ gui_mch_open(void)
 # endif
 #endif
     }
+
+    /*
+     * Add selection handler functions.
+     */
+    g_signal_connect(G_OBJECT(gui.drawarea), "selection-clear-event",
+		     G_CALLBACK(selection_clear_event), NULL);
+    g_signal_connect(G_OBJECT(gui.drawarea), "selection-received",
+		     G_CALLBACK(selection_received_cb), NULL);
+
+    g_signal_connect(G_OBJECT(gui.drawarea), "selection-get",
+		     G_CALLBACK(selection_get_cb), NULL);
 
     return OK;
 }
@@ -6938,10 +6939,18 @@ clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
     int
 clip_mch_own_selection(Clipboard_T *cbd)
 {
+    // If we're blocking autocmds, we are filling the register to offer the
+    // selection (inside selection-get)
+    if (is_autocmd_blocked())
+	return OK;
+
     int success;
 
     success = gtk_selection_owner_set(gui.drawarea, cbd->gtk_sel_atom,
 				      gui.event_time);
+    // don't update on every visual selection change
+    if (!(cbd->owned && VIsual_active))
+	gui_gtk_set_selection_targets(cbd->gtk_sel_atom);
     gui_mch_update();
     return (success) ? OK : FAIL;
 }
