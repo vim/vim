@@ -69,3 +69,46 @@ echo -0B11111111
 echo 0zFF00ED015DAF
 echo 0zFF00.ED01.5DAF
 echo 0zFF.00.ED.01.5D.AF
+
+" Multiline (continued) strings
+
+let s = "
+      "\ comment
+      \ line 1
+      "\ comment
+      \ line 2
+      "\ comment
+      \" " tail comment
+
+let s = "
+      \ line 1
+      "\ escape sequence
+      \\" line 2
+      \" " tail comment
+
+let s = '
+      "\ comment
+      \ line 1
+      "\ comment
+      \ line 2
+      "\ comment
+      \' " tail comment
+
+let s = $"
+      "\ comment
+      \ line 1
+      "\ comment
+      \ line 2
+      "\ comment
+      \" " tail comment
+
+let s = $'
+      "\ comment
+      \ line 1
+      "\ comment
+      \ line 2
+      "\ comment
+      \' " tail comment
+
+" line comment
+foo() " tail comment
