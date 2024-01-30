@@ -730,7 +730,7 @@ overview.
 	\(an\_s\+\)\@<=file	"file" after "an" and white space or an
 				end-of-line
 	For speed it's often much better to avoid this multi.  Try using "\zs"
-	instead |/\zs|.  To match the same as the above example:
+	instead "\@<=".  To match the same as the above example:
 		an\_s\+\zsfile
 	At least set a limit for the look-behind, see below.
 
