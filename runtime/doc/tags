@@ -7869,6 +7869,7 @@ gui-w32-start	gui_w32.txt	/*gui-w32-start*
 gui-w32-various	gui_w32.txt	/*gui-w32-various*
 gui-w32-windowid	gui_w32.txt	/*gui-w32-windowid*
 gui-w32s	os_win32.txt	/*gui-w32s*
+gui-wayland	gui_x11.txt	/*gui-wayland*
 gui-win32-maximized	gui_w32.txt	/*gui-win32-maximized*
 gui-x11	gui_x11.txt	/*gui-x11*
 gui-x11-athena	gui_x11.txt	/*gui-x11-athena*
