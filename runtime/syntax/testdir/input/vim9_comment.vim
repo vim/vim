@@ -28,6 +28,29 @@ autocmd BufNewFile * {
 }
 
 
+# Multiline comments
+
+# comment
+  \ continuing comment
+  \ continuing comment
+
+# :Foo
+      \ arg1
+      #\ comment
+      \ arg2
+
+echo "TOP"
+
+
+# Line-continuation comments
+
+:Foo
+      #\ line continuation comment
+      \ arg1
+      #\ line continuation comment
+      \ arg2
+
+
 # Issue: #13047
 
 if !exists(":DiffOrig")

@@ -3,7 +3,7 @@
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
 " URL:	   https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	   2024 Jun 05
+" Last Change:	   2024 Jun 11
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -857,16 +857,17 @@ syn match	vimCtrlChar	"[--]"
 " Beginners - Patterns that involve ^ {{{2
 " =========
 if s:vim9script
-  syn match	vimLineComment	+^[ \t:]*".*$+	contains=@vimCommentGroup,vimCommentString,vimCommentTitle contained
-  syn match	vim9LineComment	+^[ \t:]*#.*$+	contains=@vimCommentGroup,vimCommentString,vim9CommentTitle
+  syn region	vim9LineComment	start=+^[ \t:]*\zs#.*$+ skip=+\n\s*\\\|\n\s*#\\ + end="$" contains=@vimCommentGroup,vimCommentString,vim9CommentTitle
+  syn region	vimLineComment	start=+^[ \t:]*\zs".*$+ skip=+\n\s*\\\|\n\s*"\\ + end="$" contains=@vimCommentGroup,vimCommentString,vimCommentTitle contained
 else
-  syn match	vimLineComment	+^[ \t:]*".*$+	contains=@vimCommentGroup,vimCommentString,vimCommentTitle
-  syn match	vim9LineComment	+^[ \t:]*#.*$+	contains=@vimCommentGroup,vimCommentString,vim9CommentTitle contained
+  syn region	vimLineComment	start=+^[ \t:]*\zs".*$+ skip=+\n\s*\\\|\n\s*"\\ + end="$" contains=@vimCommentGroup,vimCommentString,vimCommentTitle
+  syn region	vim9LineComment	start=+^[ \t:]*\zs#.*$+ skip=+\n\s*\\\|\n\s*#\\ + end="$" contains=@vimCommentGroup,vimCommentString,vim9CommentTitle contained
 endif
 syn match	vimCommentTitle	'"\s*\%([sS]:\|\h\w*#\)\=\u\w*\(\s\+\u\w*\)*:'hs=s+1	contained contains=vimCommentTitleLeader,vimTodo,@vimCommentGroup
 syn match	vim9CommentTitle	'#\s*\%([sS]:\|\h\w*#\)\=\u\w*\(\s\+\u\w*\)*:'hs=s+1	contained contains=vim9CommentTitleLeader,vimTodo,@vimCommentGroup
+
 syn match	vimContinue		"^\s*\zs\\"
-syn match         vimContinueComment	'^\s*\zs["#]\\ .*' contained
+syn match         vimContinueComment	'^\s*\zs["#]\\ .*'
 syn cluster	vimContinue contains=vimContinue,vimContinueComment
 syn region	vimString	start="^\s*\\\z(['"]\)" skip='\\\\\|\\\z1' end="\z1" oneline keepend contains=@vimStringGroup,vimContinue
 syn match	vimCommentTitleLeader	'"\s\+'ms=s+1	contained
