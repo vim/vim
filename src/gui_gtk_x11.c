@@ -1985,7 +1985,7 @@ button_press_event(GtkWidget *widget,
 		   GdkEventButton *event,
 		   gpointer data UNUSED)
 {
-    int button = 0;  // silence gcc
+    int button;
     int repeated_click = FALSE;
     int x, y;
     int_u vim_modifiers;
@@ -2056,7 +2056,7 @@ scroll_event(GtkWidget *widget,
 	     GdkEventScroll *event,
 	     gpointer data UNUSED)
 {
-    int	    button;
+    int	    button = 0;  // silence gcc
     int_u   vim_modifiers;
 #if GTK_CHECK_VERSION(3,4,0)
     static double  acc_x, acc_y;
