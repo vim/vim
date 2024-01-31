@@ -10,14 +10,4 @@ Pin-Priority: -10
 EOF
 popd
 snap remove --purge $(snap list | awk '!/^Name|^core/ {print $1}')
-systemctl stop snapd
-systemctl stop snapd.socket
-systemctl disable snapd
-systemctl disable snapd.socket
-apt-get purge -y snapd gnome-software-plugin-snap
-systemctl daemon-reload
-rm -rf ~/snap
-rm -rf /snap
-rm -rf /var/snap
-rm -rf /var/lib/snapd
-rm -rf /var/cache/snapd
+apt-get purge -y snapd
