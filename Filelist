@@ -980,6 +980,7 @@ IN_README_DIR = \
 		README_src.txt \
 		README_srcdos.txt \
 		README_unix.txt \
+		README_vimlogo.txt \
 		README_vms.txt \
 		README_w32s.txt \
 		Contents \
