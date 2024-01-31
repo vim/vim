@@ -90,6 +90,10 @@ jobs:
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'
 
+      - name: Uninstall snap
+        run: |
+          sudo bash ci/remove_snap.sh
+
       - name: Install packages
         run: |
           PKGS=( \
