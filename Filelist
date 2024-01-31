@@ -873,6 +873,7 @@ RT_DOS_BIN =	\
 		runtime/vimlogo.eps \
 		runtime/vimlogo.gif \
 		runtime/vimlogo.pdf \
+		runtime/vimlogo.svg \
 
 # Amiga runtime (also in the extra archive)
 RT_AMI =	\
