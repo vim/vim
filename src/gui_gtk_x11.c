@@ -1985,7 +1985,7 @@ button_press_event(GtkWidget *widget,
 		   GdkEventButton *event,
 		   gpointer data UNUSED)
 {
-    int button;
+    int button = 0;  // silence gcc
     int repeated_click = FALSE;
     int x, y;
     int_u vim_modifiers;
