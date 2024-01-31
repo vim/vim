@@ -15,6 +15,9 @@ func Test_play_event()
   if has('win32')
     throw 'Skipped: Playing event with callback is not supported on Windows'
   endif
+  if has('osx') && !empty($CI) && system('uname -m') =~# 'arm64'
+    throw 'Skipped: FIXME: Running this test on M1 Mac hangs on GitHub Actions'
+  endif
   let g:playcallback_count = 0
   let g:id = 0
   let event_name = 'bell'
@@ -35,6 +38,10 @@ func Test_play_event()
 endfunc
 
 func Test_play_silent()
+  if has('osx') && !empty($CI) && system('uname -m') =~# 'arm64'
+    throw 'Skipped: FIXME: Running this test on M1 Mac hangs on GitHub Actions'
+  endif
+
   let fname = fnamemodify('silent.wav', '%p')
   let g:playcallback_count = 0
 

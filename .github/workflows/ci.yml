@@ -295,7 +295,7 @@ jobs:
           done
 
   macos:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.runner }}
 
     env:
       CC: clang
@@ -308,16 +308,23 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, normal, huge]
+        runner: [macos-latest, macos-14]
 
     steps:
       - name: Checkout repository from github
         uses: actions/checkout@v4
 
-      - name: Install packages
-        if: matrix.features == 'huge'
+      - name: Install packages on Intel Mac
+        if: matrix.features == 'huge' && matrix.runner == 'macos-latest'
         run: |
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
+
+      - name: Install packages on M1 Mac
+        if: matrix.features == 'huge' && matrix.runner == 'macos-14'
+        run: |
+          brew install lua libtool
+          echo "LUA_PREFIX=/opt/homebrew" >> $GITHUB_ENV
 
       - name: Set up environment
         run: |
