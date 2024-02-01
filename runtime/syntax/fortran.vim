@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Fortran 2023 (and Fortran 2018, 2008, 2003, 95, 90, and 77)
-" Version:	(v113) 2024 January 31
+" Version:	(v113) 2024 February 01
 " Maintainers:	Ajit J. Thakkar <ajit@unb.ca>; <https://ajit.ext.unb.ca/>
 " 	        Joshua Hollett <j.hollett@uwinnipeg.ca>
 " Usage:	For instructions, do :help fortran-syntax from Vim
@@ -116,7 +116,7 @@ syn keyword fortranIntrinsic	out_of_range reduce random_init coshape get_team sp
 syn keyword fortranIntrinsic    acosd asind atand atan2d cosd sind tand acospi asinpi atanpi atan2pi cospi sinpi tanpi
 syn match fortranIntrinsic      "\%(^\s*\|type *is *(\s*\)\@12<!\<real\ze\s*("
 syn match fortranIntrinsic      '\<\%(logical\|not\|len\|kind\|rank\)\>\ze\s*('
-syn match fortranIntrinsic      '\<\%(size\|team_number\)\>\ze\s*('
+syn match fortranIntrinsic      '\<\%(sign\|size\|team_number\)\>\ze\s*('
 " Obsolescent type-specific intrinsics
 syn keyword fortranIntrinsicOb	alog alog10 amax0 amax1 amin0 amin1 amod cabs ccos cexp clog csin csqrt dabs dacos dasin datan datan2 dcos dcosh ddim dexp dint dlog dlog10 dmax1 dmin1 dmod dnint dsign dsin dsinh dsqrt dtan dtanh float iabs idim idint idnint ifix isign max0 max1 min0 min1 sngl
 if exists("fortran_vendor_intrinsics")
