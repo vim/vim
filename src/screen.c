@@ -2569,6 +2569,25 @@ give_up:
 	    new_LineOffset[new_row] = new_row * Columns;
 	    new_LineWraps[new_row] = FALSE;
 
+	    (void)vim_memset(new_ScreenLines + new_row * Columns,
+				  ' ', (size_t)Columns * sizeof(schar_T));
+	    if (enc_utf8)
+	    {
+		(void)vim_memset(new_ScreenLinesUC + new_row * Columns,
+				   0, (size_t)Columns * sizeof(u8char_T));
+		for (int i = 0; i < p_mco; ++i)
+		    (void)vim_memset(new_ScreenLinesC[i]
+						      + new_row * Columns,
+				   0, (size_t)Columns * sizeof(u8char_T));
+	    }
+	    if (enc_dbcs == DBCS_JPNU)
+		(void)vim_memset(new_ScreenLines2 + new_row * Columns,
+				   0, (size_t)Columns * sizeof(schar_T));
+	    (void)vim_memset(new_ScreenAttrs + new_row * Columns,
+				    0, (size_t)Columns * sizeof(sattr_T));
+	    (void)vim_memset(new_ScreenCols + new_row * Columns,
+				    0, (size_t)Columns * sizeof(colnr_T));
+
 	    /*
 	     * If the screen is not going to be cleared, copy as much as
 	     * possible from the old screen to the new one and clear the rest
@@ -2577,24 +2596,6 @@ give_up:
 	     */
 	    if (!doclear)
 	    {
-		(void)vim_memset(new_ScreenLines + new_row * Columns,
-				      ' ', (size_t)Columns * sizeof(schar_T));
-		if (enc_utf8)
-		{
-		    (void)vim_memset(new_ScreenLinesUC + new_row * Columns,
-				       0, (size_t)Columns * sizeof(u8char_T));
-		    for (int i = 0; i < p_mco; ++i)
-			(void)vim_memset(new_ScreenLinesC[i]
-							  + new_row * Columns,
-				       0, (size_t)Columns * sizeof(u8char_T));
-		}
-		if (enc_dbcs == DBCS_JPNU)
-		    (void)vim_memset(new_ScreenLines2 + new_row * Columns,
-				       0, (size_t)Columns * sizeof(schar_T));
-		(void)vim_memset(new_ScreenAttrs + new_row * Columns,
-					0, (size_t)Columns * sizeof(sattr_T));
-		(void)vim_memset(new_ScreenCols + new_row * Columns,
-					0, (size_t)Columns * sizeof(colnr_T));
 		old_row = new_row + (screen_Rows - Rows);
 		if (old_row >= 0 && ScreenLines != NULL)
 		{
