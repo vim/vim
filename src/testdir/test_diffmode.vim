@@ -1716,5 +1716,182 @@ func Test_diff_put_and_undo()
   set nodiff
 endfunc
 
+" Test for the diff() function
+def Test_diff_func()
+  # string is added/removed/modified at the beginning
+  assert_equal("@@ -0,0 +1 @@\n+abc\n",
+               diff(['def'], ['abc', 'def'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 0, to_idx: 0, to_count: 1}],
+               diff(['def'], ['abc', 'def'], {output: 'indices'}))
+  assert_equal("@@ -1 +0,0 @@\n-abc\n",
+               diff(['abc', 'def'], ['def'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 0}],
+               diff(['abc', 'def'], ['def'], {output: 'indices'}))
+  assert_equal("@@ -1 +1 @@\n-abc\n+abx\n",
+               diff(['abc', 'def'], ['abx', 'def'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['abc', 'def'], ['abx', 'def'], {output: 'indices'}))
+
+  # string is added/removed/modified at the end
+  assert_equal("@@ -1,0 +2 @@\n+def\n",
+               diff(['abc'], ['abc', 'def'], {output: 'unified'}))
+  assert_equal([{from_idx: 1, from_count: 0, to_idx: 1, to_count: 1}],
+               diff(['abc'], ['abc', 'def'], {output: 'indices'}))
+  assert_equal("@@ -2 +1,0 @@\n-def\n",
+               diff(['abc', 'def'], ['abc'], {output: 'unified'}))
+  assert_equal([{from_idx: 1, from_count: 1, to_idx: 1, to_count: 0}],
+               diff(['abc', 'def'], ['abc'], {output: 'indices'}))
+  assert_equal("@@ -2 +2 @@\n-def\n+xef\n",
+               diff(['abc', 'def'], ['abc', 'xef'], {output: 'unified'}))
+  assert_equal([{from_idx: 1, from_count: 1, to_idx: 1, to_count: 1}],
+               diff(['abc', 'def'], ['abc', 'xef'], {output: 'indices'}))
+
+  # string is added/removed/modified in the middle
+  assert_equal("@@ -2,0 +3 @@\n+xxx\n",
+               diff(['111', '222', '333'], ['111', '222', 'xxx', '333'], {output: 'unified'}))
+  assert_equal([{from_idx: 2, from_count: 0, to_idx: 2, to_count: 1}],
+               diff(['111', '222', '333'], ['111', '222', 'xxx', '333'], {output: 'indices'}))
+  assert_equal("@@ -3 +2,0 @@\n-333\n",
+               diff(['111', '222', '333', '444'], ['111', '222', '444'], {output: 'unified'}))
+  assert_equal([{from_idx: 2, from_count: 1, to_idx: 2, to_count: 0}],
+               diff(['111', '222', '333', '444'], ['111', '222', '444'], {output: 'indices'}))
+  assert_equal("@@ -3 +3 @@\n-333\n+xxx\n",
+               diff(['111', '222', '333', '444'], ['111', '222', 'xxx', '444'], {output: 'unified'}))
+  assert_equal([{from_idx: 2, from_count: 1, to_idx: 2, to_count: 1}],
+               diff(['111', '222', '333', '444'], ['111', '222', 'xxx', '444'], {output: 'indices'}))
+
+  # new strings are added to an empty List
+  assert_equal("@@ -0,0 +1,2 @@\n+abc\n+def\n",
+               diff([], ['abc', 'def'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 0, to_idx: 0, to_count: 2}],
+               diff([], ['abc', 'def'], {output: 'indices'}))
+
+  # all the strings are removed from a List
+  assert_equal("@@ -1,2 +0,0 @@\n-abc\n-def\n",
+               diff(['abc', 'def'], [], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 2, to_idx: 0, to_count: 0}],
+               diff(['abc', 'def'], [], {output: 'indices'}))
+
+  # First character is added/removed/different
+  assert_equal("@@ -1 +1 @@\n-abc\n+bc\n",
+               diff(['abc'], ['bc'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['abc'], ['bc'], {output: 'indices'}))
+  assert_equal("@@ -1 +1 @@\n-bc\n+abc\n",
+               diff(['bc'], ['abc'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['bc'], ['abc'], {output: 'indices'}))
+  assert_equal("@@ -1 +1 @@\n-abc\n+xbc\n",
+               diff(['abc'], ['xbc'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['abc'], ['xbc'], {output: 'indices'}))
+
+  # Last character is added/removed/different
+  assert_equal("@@ -1 +1 @@\n-abc\n+abcd\n",
+               diff(['abc'], ['abcd'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['abc'], ['abcd'], {output: 'indices'}))
+  assert_equal("@@ -1 +1 @@\n-abcd\n+abc\n",
+               diff(['abcd'], ['abc'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['abcd'], ['abc'], {output: 'indices'}))
+  assert_equal("@@ -1 +1 @@\n-abc\n+abx\n",
+               diff(['abc'], ['abx'], {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+               diff(['abc'], ['abx'], {output: 'indices'}))
+
+  # partial string modification at the start and at the end.
+  var fromlist =<< trim END
+    one two
+    three four
+    five six
+  END
+  var tolist =<< trim END
+    one
+    six
+  END
+  assert_equal("@@ -1,3 +1,2 @@\n-one two\n-three four\n-five six\n+one\n+six\n", diff(fromlist, tolist, {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 3, to_idx: 0, to_count: 2}],
+               diff(fromlist, tolist, {output: 'indices'}))
+
+  # non-contiguous modifications
+  fromlist =<< trim END
+    one two
+    three four
+    five abc six
+  END
+  tolist =<< trim END
+    one abc two
+    three four
+    five six
+  END
+  assert_equal("@@ -1 +1 @@\n-one two\n+one abc two\n@@ -3 +3 @@\n-five abc six\n+five six\n",
+               diff(fromlist, tolist, {output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1},
+                {from_idx: 2, from_count: 1, to_idx: 2, to_count: 1}],
+               diff(fromlist, tolist, {output: 'indices'}))
+
+  # add/remove blank lines
+  assert_equal("@@ -2,2 +1,0 @@\n-\n-\n",
+               diff(['one', '', '', 'two'], ['one', 'two'], {output: 'unified'}))
+  assert_equal([{from_idx: 1, from_count: 2, to_idx: 1, to_count: 0}],
+               diff(['one', '', '', 'two'], ['one', 'two'], {output: 'indices'}))
+  assert_equal("@@ -1,0 +2,2 @@\n+\n+\n",
+               diff(['one', 'two'], ['one', '', '', 'two'], {output: 'unified'}))
+  assert_equal([{'from_idx': 1, 'from_count': 0, 'to_idx': 1, 'to_count': 2}],
+               diff(['one', 'two'], ['one', '', '', 'two'], {output: 'indices'}))
+
+  # diff ignoring case
+  assert_equal('', diff(['abc', 'def'], ['ABC', 'DEF'], {icase: true, output: 'unified'}))
+  assert_equal([], diff(['abc', 'def'], ['ABC', 'DEF'], {icase: true, output: 'indices'}))
+
+  # diff ignoring all whitespace changes except leading whitespace changes
+  assert_equal('', diff(['abc def'], ['abc  def '], {iwhite: true}))
+  assert_equal("@@ -1 +1 @@\n- abc\n+  xxx\n", diff([' abc'], ['  xxx'], {iwhite: v:true}))
+  assert_equal("@@ -1 +1 @@\n- abc\n+  xxx\n", diff([' abc'], ['  xxx'], {iwhite: v:false}))
+  assert_equal("@@ -1 +1 @@\n-abc \n+xxx  \n", diff(['abc '], ['xxx  '], {iwhite: v:true}))
+  assert_equal("@@ -1 +1 @@\n-abc \n+xxx  \n", diff(['abc '], ['xxx  '], {iwhite: v:false}))
+
+  # diff ignoring all whitespace changes
+  assert_equal('', diff(['abc def'], [' abc  def '], {iwhiteall: true}))
+  assert_equal("@@ -1 +1 @@\n- abc \n+  xxx  \n", diff([' abc '], ['  xxx  '], {iwhiteall: v:true}))
+  assert_equal("@@ -1 +1 @@\n- abc \n+  xxx  \n", diff([' abc '], ['  xxx  '], {iwhiteall: v:false}))
+
+  # diff ignoring trailing whitespace changes
+  assert_equal('', diff(['abc'], ['abc  '], {iwhiteeol: true}))
+
+  # diff ignoring blank lines
+  assert_equal('', diff(['one', '', '', 'two'], ['one', 'two'], {iblank: true}))
+  assert_equal('', diff(['one', 'two'], ['one', '', '', 'two'], {iblank: true}))
+
+  # same string
+  assert_equal('', diff(['abc', 'def', 'ghi'], ['abc', 'def', 'ghi']))
+  assert_equal('', diff([''], ['']))
+  assert_equal('', diff([], []))
+
+  # different xdiff algorithms
+  for algo in ['myers', 'minimal', 'patience', 'histogram']
+    assert_equal("@@ -1 +1 @@\n- abc \n+  xxx  \n",
+      diff([' abc '], ['  xxx  '], {algorithm: algo, output: 'unified'}))
+    assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+      diff([' abc '], ['  xxx  '], {algorithm: algo, output: 'indices'}))
+  endfor
+  assert_equal("@@ -1 +1 @@\n- abc \n+  xxx  \n",
+    diff([' abc '], ['  xxx  '], {indent-heuristic: true, output: 'unified'}))
+  assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
+    diff([' abc '], ['  xxx  '], {indent-heuristic: true, output: 'indices'}))
+
+  # identical strings
+  assert_equal('', diff(['111', '222'], ['111', '222'], {output: 'unified'}))
+  assert_equal([], diff(['111', '222'], ['111', '222'], {output: 'indices'}))
+  assert_equal('', diff([], [], {output: 'unified'}))
+  assert_equal([], diff([], [], {output: 'indices'}))
+
+  # Error cases
+  assert_fails('call diff({}, ["a"])', 'E1211:')
+  assert_fails('call diff(["a"], {})', 'E1211:')
+  assert_fails('call diff(["a"], ["a"], [])', 'E1206:')
+  assert_fails('call diff(["a"], ["a"], {output: "xyz"})', 'E106: Unsupported diff output format: xyz')
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.1.  Last change: 2023 Apr 04
+*diff.txt*      For Vim version 9.1.  Last change: 2024 Feb 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -475,5 +475,44 @@ with the script ID (|local-function|). Example: >
 Otherwise, the expression is evaluated in the context of the script where the
 option was set, thus script-local items are available.
 
+
+DIFF FUNCTION EXAMPLES				*diff-func-examples*
+
+Some examples for using the |diff()| function to compute the diff indices
+between two Lists of strings are below.
+>
+  " some lines are changed
+  :echo diff(['abc', 'def', 'ghi'], ['abx', 'rrr', 'xhi'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 3, 'to_idx': 0, 'to_count': 3}]
+
+  " few lines added at the beginning
+  :echo diff(['ghi'], ['abc', 'def', 'ghi'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 0, 'to_idx': 0, 'to_count': 2}]
+
+  " few lines removed from the beginning
+  :echo diff(['abc', 'def', 'ghi'], ['ghi'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 2, 'to_idx': 0, 'to_count': 0}]
+
+  " few lines added in the middle
+  :echo diff(['abc', 'jkl'], ['abc', 'def', 'ghi', 'jkl'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 0, 'to_idx': 1, 'to_count': 2}]
+
+  " few lines removed in the middle
+  :echo diff(['abc', 'def', 'ghi', 'jkl'], ['abc', 'jkl'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 2, 'to_idx': 1, 'to_count': 0}]
+
+  " few lines added at the end
+  :echo diff(['abc'], ['abc', 'def', 'ghi'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 0, 'to_idx': 1, 'to_count': 2}]
+
+  " few lines removed from the end
+  :echo diff(['abc', 'def', 'ghi'], ['abc'], {'output': 'indices'})
+   [{'from_idx': 1, 'from_count': 2, 'to_idx': 1, 'to_count': 0}]
+
+  " disjointed changes
+  :echo diff(['ab', 'def', 'ghi', 'jkl'], ['abc', 'def', 'ghi', 'jk'], {'output': 'indices'})
+   [{'from_idx': 0, 'from_count': 1, 'to_idx': 0, 'to_count': 1},
+    {'from_idx': 3, 'from_count': 1, 'to_idx': 3, 'to_count': 1}]
+<
 
  vim:tw=78:ts=8:noet:ft=help:norl:

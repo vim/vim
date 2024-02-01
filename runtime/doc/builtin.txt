@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jan 29
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -147,6 +147,8 @@ delete({fname} [, {flags}])	Number	delete the file or directory {fname}
 deletebufline({buf}, {first} [, {last}])
 				Number	delete lines from buffer {buf}
 did_filetype()			Number	|TRUE| if FileType autocmd event used
+diff({fromlist}, {tolist} [, {options}])
+				List	diff two Lists of strings
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 digraph_get({chars})		String	get the |digraph| of {chars}
@@ -2046,6 +2048,67 @@ did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		editing another buffer to set 'filetype' and load a syntax
 		file.
 
+diff({fromlist}, {tolist} [, {options}])		*diff()*
+		Returns a String or a List containing the diff between the
+		strings in {fromlist} and {tolist}.  Uses the Vim internal
+		diff library to compute the diff.
+
+							*E106*
+		The optional "output" item in {options} specifies the returned
+		diff format.  The following values are supported:
+		    indices	Return a List of the starting and ending
+				indices and a count of the strings in each
+				diff hunk.
+		    unified	Return the unified diff output as a String.
+				This is the default.
+
+		If the "output" item in {options} is "indices", then a List is
+		returned.  Each List item contains a Dict with the following
+		items for each diff hunk:
+		    from_idx	start index in {fromlist} for this diff hunk.
+		    from_count	number of strings in {fromlist} that are
+				added/removed/modified in this diff hunk.
+		    to_idx	start index in {tolist} for this diff hunk.
+		    to_count	number of strings in {tolist} that are
+				added/removed/modified in this diff hunk.
+
+		The {options} Dict argument also specifies diff options
+		(similar to 'diffopt') and supports the following items:
+		    iblank		ignore changes where lines are all
+					blank.
+		    icase		ignore changes in case of text.
+		    iwhite		ignore changes in amount of white
+					space.
+		    iwhiteall		ignore all white space changes.
+		    iwhiteeol		ignore white space changes at end of
+					line.
+		    indent-heuristic	use the indent heuristic for the
+					internal diff library.
+		    algorithm		Dict specifying the diff algorithm to
+					use.  Supported boolean items are
+					"myers", "minimal", "patience" and
+					"histogram".
+		For more information about these options, refer to 'diffopt'.
+
+		Returns an empty List or String if {fromlist} and {tolist} are
+		identical.
+
+		Examples:
+		    :echo diff(['abc'], ['xxx'])
+		     @@ -1 +1 @@
+		     -abc
+		     +xxx
+
+		    :echo diff(['abc'], ['xxx'], {'output': 'indices'})
+		     [{'from_idx': 0, 'from_count': 1, 'to_idx': 0, 'to_count': 1}]
+		    :echo diff(readfile('oldfile'), readfile('newfile'))
+		    :echo diff(getbufline(5, 1, '$'), getbufline(6, 1, '$'))
+
+		For more examples, refer to |diff-func-examples|
+
+		Can also be used as a |method|: >
+			GetFromList->diff(to_list)
+<
 diff_filler({lnum})					*diff_filler()*
 		Returns the number of filler lines above line {lnum}.
 		These are the lines that were inserted at this point in

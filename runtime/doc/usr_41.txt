@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Jan 13
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Feb 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1368,6 +1368,7 @@ Various:					*various-functions*
 	changenr()		return number of most recent change
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
+	diff()			diff two Lists of strings
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
 	getscriptinfo()		get list of sourced vim scripts
