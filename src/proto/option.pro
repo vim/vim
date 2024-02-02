@@ -29,7 +29,6 @@ char *did_set_autochdir(optset_T *args);
 char *did_set_ballooneval(optset_T *args);
 char *did_set_balloonevalterm(optset_T *args);
 char *did_set_binary(optset_T *args);
-char *did_set_breakat(optset_T *args);
 char *did_set_buflisted(optset_T *args);
 char *did_set_cmdheight(optset_T *args);
 char *did_set_compatible(optset_T *args);

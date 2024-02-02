@@ -20,6 +20,7 @@ int expand_set_backupcopy(optexpand_T *args, int *numMatches, char_u ***matches)
 char *did_set_backupext_or_patchmode(optset_T *args);
 char *did_set_belloff(optset_T *args);
 int expand_set_belloff(optexpand_T *args, int *numMatches, char_u ***matches);
+char *did_set_breakat(optset_T *args);
 char *did_set_breakindentopt(optset_T *args);
 int expand_set_breakindentopt(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_browsedir(optset_T *args);
