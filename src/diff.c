@@ -3394,12 +3394,12 @@ xdiff_out_unified(
     void
 f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     if (in_vim9script() && check_for_lnum_arg(argvars, 0) == FAIL)
 	return;
 
     rettv->vval.v_number = diff_check_fill(curwin, tv_get_lnum(argvars));
-#endif
+# endif
 }
 
 /*
@@ -3408,7 +3408,7 @@ f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     linenr_T		lnum;
     static linenr_T	prev_lnum = 0;
     static varnumber_T	changedtick = 0;
@@ -3463,9 +3463,10 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    hlID = HLF_CHD;			// changed line
     }
     rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
-#endif
+# endif
 }
 
+# ifdef FEAT_DIFF
 /*
  * Parse the diff options passed in "optarg" to the diff() function and return
  * the options in "diffopts" and the diff algorithm in "diffalgo".
@@ -3575,6 +3576,7 @@ get_diff_hunk_indices(diffhunk_T *hunk)
 
     return hunk_dict;
 }
+# endif
 
 /*
  * "diff()" function
@@ -3582,7 +3584,7 @@ get_diff_hunk_indices(diffhunk_T *hunk)
     void
 f_diff(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     diffio_T dio;
 
     if (check_for_nonnull_list_arg(argvars, 0) == FAIL
@@ -3664,7 +3666,7 @@ done:
     diff_flags = save_diff_flags;
     diff_algorithm = save_diff_algorithm;
     diff_internal_output_fmt = save_diff_output_fmt;
-#endif
+# endif
 }
 
 #endif
