@@ -1244,6 +1244,9 @@ au BufNewFile,BufRead *.lua			setf lua
 " Luau
 au BufNewFile,BufRead *.luau		setf luau
 
+" Luau config
+au BufNewFile,BufRead .luaurc		setf jsonc
+
 " Luacheck
 au BufNewFile,BufRead .luacheckrc		setf lua
 
