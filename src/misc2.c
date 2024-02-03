@@ -1130,11 +1130,7 @@ simplify_key(int key, int *modifiers)
     int	    key0;
     int	    key1;
 
-    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT
-#ifdef FEAT_GUI_GTK
-	    | MOD_MASK_CMD
-#endif
-    )))
+    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
 	return key;
 
     // TAB is a special case
