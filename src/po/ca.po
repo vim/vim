@@ -256,7 +256,7 @@ msgid "Warning: Using a weak encryption method; see :help 'cm'"
 msgstr "Atenció: esteu utilitzant un xifratge poc potent; vegeu :help 'cm'"
 
 msgid "Note: Encryption of swapfile not supported, disabling swap file"
-msgstr "Nota: No es suporta xifratge en el fitxer d'intercanvi, es desabilita"
+msgstr "Nota: No se suporta xifratge en el fitxer d'intercanvi, es deshabilita"
 
 msgid "Enter encryption key: "
 msgstr "Introduïu la clau de xifratge: "
@@ -265,7 +265,7 @@ msgid "Enter same key again: "
 msgstr "Introduïu la mateixa clau un altre cop: "
 
 msgid "Keys don't match!"
-msgstr "La claus no coincideixen!"
+msgstr "Les claus no coincideixen!"
 
 msgid "[crypted]"
 msgstr "[xifrat]"
@@ -499,7 +499,7 @@ msgid ""
 "Do you wish to try?"
 msgstr ""
 "El fitxer \"%s\" és de només lectura.\n"
-"Tot i això pot ser possible escriure-hi.\n"
+"Tot i això és possible escriure-hi.\n"
 "Voleu intentar-ho?"
 
 # :browse edit
@@ -1554,7 +1554,7 @@ msgid "-register\t\tRegister this gvim for OLE"
 msgstr "-register\t\tRegistra aquest gvim a OLE"
 
 msgid "-unregister\t\tUnregister gvim for OLE"
-msgstr "-unregister\t\tDóna de baixa aquest gvim a OLE"
+msgstr "-unregister\t\tDona de baixa aquest gvim a OLE"
 
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\tUsa la interfície gràfica (com \"gvim\")"
@@ -2158,7 +2158,7 @@ msgstr ""
 "    amb precaució.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
-msgstr "(2) El Vim es va estrellar mentre s'editava aquest fitxer.\n"
+msgstr "(2) El Vim va fallar mentre s'editava aquest fitxer.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    En aquest cas, useu \":recover\" o bé \"vim -r "
@@ -3182,7 +3182,7 @@ msgid "No Syntax items defined for this buffer"
 msgstr "No s'han definit elements de sintaxi per a aquest buffer"
 
 msgid "'redrawtime' exceeded, syntax highlighting disabled"
-msgstr "s'ha excedit 'redrawtime', es desabilita el ressaltat"
+msgstr "s'ha excedit 'redrawtime', es deshabilita el ressaltat"
 
 # todo: not set
 # valor de 'iskeyword' o "not set"
@@ -4442,7 +4442,7 @@ msgstr "E151: Cap coincidència: %s"
 
 #, c-format
 msgid "E152: Cannot open %s for writing"
-msgstr "E152: No es obrir %s per a escriptura"
+msgstr "E152: No es pot obrir %s per a escriptura"
 
 #, c-format
 msgid "E153: Unable to open %s for reading"
@@ -7199,7 +7199,7 @@ msgid "E966: Invalid line number: %ld"
 msgstr "E966: El número de línia no és vàlid: %ld"
 
 msgid "E967: Text property info corrupted"
-msgstr "E967: L'informació de la propietat de text s'ha corromput"
+msgstr "E967: La informació de la propietat de text s'ha corromput"
 
 msgid "E968: Need at least one of 'id' or 'type'"
 msgstr "E968: Es requereix 'id' o 'type'"
@@ -7240,7 +7240,7 @@ msgstr "E978: Operació no vàlida per a un Blob"
 
 #, c-format
 msgid "E979: Blob index out of range: %ld"
-msgstr "E979: índexació d'un Blob fora d'interval: %ld"
+msgstr "E979: indexació d'un Blob fora d'interval: %ld"
 
 msgid "E980: Lowlevel input not supported"
 msgstr "E980: L'entrada de baix nivell no està suportada"
@@ -8800,7 +8800,7 @@ msgstr ""
 "\" Cada línia \"set\" mostra el valor actual de l'opció (a l'esquerra)."
 
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
-msgstr "\" Premeu <Entrar> en una lína \"set\" per a executar-la."
+msgstr "\" Premeu <Entrar> en una línia \"set\" per a executar-la."
 
 msgid "\"            A boolean option will be toggled."
 msgstr "\"            Una opció booleana canviarà d'estat."
@@ -9024,7 +9024,7 @@ msgid "characters to use for the status line, folds and filler lines"
 msgstr "caràcters per a la línia d'estat, plecs i final del buffer"
 
 msgid "number of lines used for the command-line"
-msgstr "numero de línies de text per a la línia d'ordres"
+msgstr "número de línies de text per a la línia d'ordres"
 
 msgid "width of the display"
 msgstr "amplada de la pantalla"
@@ -9623,7 +9623,7 @@ msgstr "funció que es crida per a l'operador \"g@\""
 msgid "when inserting a bracket, briefly jump to its match"
 msgstr ""
 "quan s'insereix un parèntesi, salta momentàniament al\n"
-"parèntesis corresponent"
+"parèntesi corresponent"
 
 msgid "tenth of a second to show a match for 'showmatch'"
 msgstr ""
@@ -9656,7 +9656,7 @@ msgid "list of number of spaces a tab counts for"
 msgstr "llista de quantitats d'espais que avança una tabulació"
 
 msgid "list of number of spaces a soft tabsstop counts for"
-msgstr "llista de quatitats d'espais que avança una tabulació tabsstop"
+msgstr "llista de qualitats d'espais que avança una tabulació tabsstop"
 
 msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
 msgstr "un <Tab> en una sagnia insereix 'shiftwidth' espais"
@@ -9992,7 +9992,7 @@ msgid "characters to escape when 'shellxquote' is ("
 msgstr "caràcters que s'escapen quan 'shellxquote' és ("
 
 msgid "argument for 'shell' to execute a command"
-msgstr "argument per a 'shell' per a excutar una ordre"
+msgstr "argument per a 'shell' per a executar una ordre"
 
 msgid "used to redirect command output to a file"
 msgstr "utilitzat per a redirigir la sortida d'una ordre a un fitxer"
@@ -10056,7 +10056,7 @@ msgid "specifies slash/backslash used for completion"
 msgstr "especifica el tipus de barra utilitzat en la compleció"
 
 msgid "language specific"
-msgstr "paràmetres específics del llengüatge"
+msgstr "paràmetres específics del llenguatge"
 
 msgid "specifies the characters in a file name"
 msgstr "especifica els caràcters en un nom de fitxer"
@@ -10068,7 +10068,7 @@ msgid "specifies the characters in a keyword"
 msgstr "especifica els caràcters en una paraula clau"
 
 msgid "specifies printable characters"
-msgstr "especifica el caràcters imprimibles"
+msgstr "especifica els caràcters imprimibles"
 
 msgid "specifies escape characters in a string"
 msgstr "especifica els caràcters d'escapada en una cadena"
@@ -10100,7 +10100,7 @@ msgid "prepare for editing Arabic text"
 msgstr "efectua les preparacions per a editar textos en àrab"
 
 msgid "perform shaping of Arabic characters"
-msgstr "dóna forma als caràcters àrabs"
+msgstr "dona forma als caràcters àrabs"
 
 msgid "terminal will perform bidi handling"
 msgstr "el terminal gestiona el text bi-direccional"
