@@ -29,4 +29,3 @@ echo $'Highlight interpolation:\t{{ { string({'foo': 'bar'}) } }}'
 echo $'Highlight interpolation:\t{{ { $'nested: {{ {1 + 2} }}' } }}'
 echo $"Highlight interpolation:\t{{ { string({"foo": "bar"}) } }}"
 echo $"Highlight interpolation:\t{{ { $"nested: {{ {1 + 2} }}" } }}"
-
