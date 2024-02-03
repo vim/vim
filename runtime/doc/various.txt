@@ -185,7 +185,7 @@ g8			Print the hex values of the bytes used in the
 := [flags]		Print the last line number.
 			See |ex-flags| for [flags].
 
-:{range}= [flags]	Prints the last line number in {range}.  For example,
+:[range]= [flags]	Prints the last line number in [range].  For example,
 			this prints the current line number: >
 				:.=
 <			See |ex-flags| for [flags].
@@ -230,9 +230,9 @@ g8			Print the hex values of the bytes used in the
 			Example: >
 				:exe "normal \<c-w>\<c-w>"
 
-:{range}norm[al][!] {commands}				*:normal-range*
+:[range]norm[al][!] {commands}				*:normal-range*
 			Execute Normal mode commands {commands} for each line
-			in the {range}.  Before executing the {commands}, the
+			in the [range].  Before executing the {commands}, the
 			cursor is positioned in the first column of the range,
 			for each line.  Otherwise it's the same as the
 			":normal" command without a range.

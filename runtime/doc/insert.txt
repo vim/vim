@@ -1972,8 +1972,8 @@ too long when appending characters a line break is automatically inserted.
 9. Ex insert commands					*inserting-ex*
 
 							*:a* *:append*
-:{range}a[ppend][!]	Insert several lines of text below the specified
-			line.  If the {range} is missing, the text will be
+:[range]a[ppend][!]	Insert several lines of text below the specified
+			line.  If the [range] is missing, the text will be
 			inserted after the current line.
 			Adding [!] toggles 'autoindent' for the time this
 			command is executed.
@@ -1982,8 +1982,8 @@ too long when appending characters a line break is automatically inserted.
 			name.
 
 							*:i* *:in* *:insert*
-:{range}i[nsert][!]	Insert several lines of text above the specified
-			line.  If the {range} is missing, the text will be
+:[range]i[nsert][!]	Insert several lines of text above the specified
+			line.  If the [range] is missing, the text will be
 			inserted before the current line.
 			Adding [!] toggles 'autoindent' for the time this
 			command is executed.
@@ -2043,7 +2043,7 @@ NOTE: These commands cannot be used with |:global| or |:vglobal|.
 			the cursor.
 			See |++opt| for the possible values of [++opt].
 
-:{range}r[ead] [++opt] [name]
+:[range]r[ead] [++opt] [name]
 			Insert the file [name] (default: current file) below
 			the specified line.
 			See |++opt| for the possible values of [++opt].

@@ -297,8 +297,8 @@ zf{motion}  or
 							*zF*
 zF		Create a fold for [count] lines.  Works like "zf".
 
-:{range}fo[ld]						*:fold* *:fo*
-		Create a fold for the lines in {range}.  Works like "zf".
+:[range]fo[ld]						*:fold* *:fo*
+		Create a fold for the lines in [range].  Works like "zf".
 
 							*zd* *E351*
 zd		Delete one fold at the cursor.  When the cursor is on a folded
@@ -399,15 +399,15 @@ zr		Reduce folding: Add |v:count1| to 'foldlevel'.
 zR		Open all folds.  This sets 'foldlevel' to highest fold level.
 
 							*:foldo* *:foldopen*
-:{range}foldo[pen][!]
-		Open folds in {range}.  When [!] is added all folds are
-		opened.  Useful to see all the text in {range}.  Without [!]
+:[range]foldo[pen][!]
+		Open folds in [range].  When [!] is added all folds are
+		opened.  Useful to see all the text in [range].  Without [!]
 		one level of folds is opened.
 
 							*:foldc* *:foldclose*
-:{range}foldc[lose][!]
-		Close folds in {range}.  When [!] is added all folds are
-		closed.  Useful to hide all the text in {range}.  Without [!]
+:[range]foldc[lose][!]
+		Close folds in [range].  When [!] is added all folds are
+		closed.  Useful to hide all the text in [range].  Without [!]
 		one level of folds is closed.
 
 							*zn*

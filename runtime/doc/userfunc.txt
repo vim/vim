@@ -116,7 +116,7 @@ See |:verbose-cmd| for more information.
 			When the [range] argument is added, the function is
 			expected to take care of a range itself.  The range is
 			passed as "a:firstline" and "a:lastline".  If [range]
-			is excluded, ":{range}call" will call the function for
+			is excluded, ":[range]call" will call the function for
 			each line in the range, with the cursor on the start
 			of each line.  See |function-range-example|.
 			The cursor is still moved to the first line of the

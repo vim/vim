@@ -1279,7 +1279,7 @@ Implement named arguments for functions with optional arguments:
     call Foo(12, all = 0)
 
 Add a command to take a range of lines, filter them and put the output
-somewhere else.  :{range}copy {dest} !cmd
+somewhere else.  :[range]copy {dest} !cmd
 
 The TermResponse event is not triggered when a plugin has set 'eventignore' to
 "all".  Netrw does this. (Gary Johnson, 2017 Jan 24)

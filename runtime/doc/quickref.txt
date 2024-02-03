@@ -1455,7 +1455,7 @@ Context-sensitive completion on the command-line:
 		set foldmethod=marker	folding by 'foldmarker'
 
 |zf|		zf{motion}		operator: Define a fold manually
-|:fold|		:{range}fold		define a fold for {range} lines
+|:fold|		:[range]fold		define a fold for [range] lines
 |zd|		zd			delete one fold under the cursor
 |zD|		zD			delete all folds under the cursor
 

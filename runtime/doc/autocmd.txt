@@ -1121,7 +1121,7 @@ ShellCmdPost			After executing a shell command with |:!cmd|,
 				check for any changed files.
 							*ShellFilterPost*
 ShellFilterPost			After executing a shell command with
-				":{range}!cmd", ":w !cmd" or ":r !cmd".
+				":[range]!cmd", ":w !cmd" or ":r !cmd".
 				Can be used to check for any changed files.
 							*SourcePre*
 SourcePre			Before sourcing a Vim script. |:source|
