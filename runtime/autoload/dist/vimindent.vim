@@ -381,7 +381,7 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     # It can be the start of a dictionary or a block.
     # We only want to match the former.
     .. '\|' .. $'^\%({STARTS_CURLY_BLOCK}\)\@!.*\zs{{'
-    .. '\)\s*\%(\s#.*\)\=$'
+    .. '\)\s*\%(\s#[^{].*\)\=$'
 # }}}2
 # SOL {{{2
 # BACKSLASH_AT_SOL {{{3
