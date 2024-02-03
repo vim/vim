@@ -1208,6 +1208,25 @@ expand_set_belloff(optexpand_T *args, int *numMatches, char_u ***matches)
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
+ * The 'breakat' option is changed.
+ */
+    char *
+did_set_breakat(optset_T *args UNUSED)
+{
+    char_u	*p;
+    int		i;
+
+    for (i = 0; i < 256; i++)
+	breakat_flags[i] = FALSE;
+
+    if (p_breakat != NULL)
+	for (p = p_breakat; *p; p++)
+	    breakat_flags[*p] = TRUE;
+
+    return NULL;
+}
+
+/*
  * The 'breakindentopt' option is changed.
  */
     char *

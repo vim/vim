@@ -3269,27 +3269,6 @@ did_set_binary(optset_T *args)
     return NULL;
 }
 
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
-/*
- * Called when the 'breakat' option changes value.
- */
-    char *
-did_set_breakat(optset_T *args UNUSED)
-{
-    char_u	*p;
-    int		i;
-
-    for (i = 0; i < 256; i++)
-	breakat_flags[i] = FALSE;
-
-    if (p_breakat != NULL)
-	for (p = p_breakat; *p; p++)
-	    breakat_flags[*p] = TRUE;
-
-    return NULL;
-}
-#endif
-
 /*
  * Process the updated 'buflisted' option value.
  */
