@@ -1161,7 +1161,7 @@ The commands are sorted on the non-optional part of their name.
 tag		command		action ~
 ------------------------------------------------------------------------------
 |:|		:		nothing
-|:range|	:{range}	go to last line in {range} (normally denoted |[range]|)
+|:[range]|	:{range}	go to last line in {range} (normally denoted |[range]|)
 |:!|		:!		filter lines or execute an external command
 |:!!|		:!!		repeat last ":!" command
 |:#|		:#		same as ":number"
