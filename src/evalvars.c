@@ -3977,7 +3977,8 @@ set_var_const(
 	    if (check_typval_is_value(&di->di_tv) == FAIL)
 		goto failed;
 
-	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
+	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0
+		    && (flags & ASSIGN_COMPOUND_OP) == 0)
 	    {
 		where_T where = WHERE_INIT;
 		svar_T  *sv = find_typval_in_script(&di->di_tv, sid, TRUE);
@@ -3998,7 +3999,8 @@ set_var_const(
 		}
 	    }
 
-	    if ((flags & ASSIGN_FOR_LOOP) == 0
+	    if (((flags & ASSIGN_FOR_LOOP) == 0
+			&& (flags & ASSIGN_COMPOUND_OP) == 0)
 				 ? var_check_permission(di, name) == FAIL
 				 : var_check_ro(di->di_flags, name, FALSE))
 		goto failed;

@@ -3484,4 +3484,43 @@ def Test_assign_type_to_list_dict()
   v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value')
 enddef
 
+" Test for modifying a final variable with a List value
+def Test_final_var_with_list_value()
+  var lines =<< trim END
+    vim9script
+
+    final l: list<string> = []
+    var l1 = l
+
+    l1->add('a')
+    assert_true(l is l1)
+    assert_equal(['a'], l)
+    assert_equal(['a'], l1)
+
+    l1 += ['b']
+    assert_true(l is l1)
+    assert_equal(['a', 'b'], l)
+    assert_equal(['a', 'b'], l1)
+
+    l->add('c')
+    assert_true(l is l1)
+    assert_equal(['a', 'b', 'c'], l)
+    assert_equal(['a', 'b', 'c'], l1)
+
+    l += ['d']
+    assert_true(l is l1)
+    assert_equal(['a', 'b', 'c', 'd'], l)
+    assert_equal(['a', 'b', 'c', 'd'], l1)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for modifying a final variable with a List value using "+=" from a legacy
+" function.
+func Test_final_var_with_list_value_legacy()
+  vim9cmd final g:TestVar = ['a']
+  vim9cmd g:TestVar += ['b']
+  call assert_equal(['a', 'b'], g:TestVar)
+endfunc
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
