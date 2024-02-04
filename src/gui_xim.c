@@ -325,7 +325,7 @@ im_preedit_window_open(void)
 #if GTK_CHECK_VERSION(3,16,0)
     {
 	GtkStyleContext * const context
-				  = gtk_widget_get_style_context(gui.drawarea);
+				  = gtk_widget_get_style_context(preedit_label);
 	GtkCssProvider * const provider = gtk_css_provider_new();
 	gchar		   *css = NULL;
 	const char * const fontname
@@ -349,7 +349,7 @@ im_preedit_window_open(void)
 	    fontsize_propval = g_strdup_printf("inherit");
 
 	css = g_strdup_printf(
-		"widget#vim-gui-preedit-area {\n"
+		"#vim-gui-preedit-area {\n"
 		"  font-family: %s,monospace;\n"
 		"  font-size: %s;\n"
 		"  color: #%.2lx%.2lx%.2lx;\n"
