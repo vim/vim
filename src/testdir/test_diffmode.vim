@@ -1318,7 +1318,7 @@ func Test_diff_rnu()
     setlocal number rnu foldcolumn=0
   END
   call writefile(content, 'Xtest_diff_rnu', 'D')
-  let buf = RunVimInTerminal('-S Xtest_diff_rnu', {})
+  let buf = RunVimInTerminal('-S Xtest_diff_rnu', {'rows': 15})
 
   call VerifyScreenDump(buf, 'Test_diff_rnu_01', {})
 
@@ -1326,6 +1326,10 @@ func Test_diff_rnu()
   call VerifyScreenDump(buf, 'Test_diff_rnu_02', {})
   call term_sendkeys(buf, "j")
   call VerifyScreenDump(buf, 'Test_diff_rnu_03', {})
+  call term_sendkeys(buf, "\<C-W>h4Gyy10P\<C-W>l")
+  call VerifyScreenDump(buf, 'Test_diff_rnu_04', {})
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_diff_rnu_05', {})
 
   " clean up
   call StopVimInTerminal(buf)

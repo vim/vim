@@ -1933,6 +1933,36 @@ win_line(
 		wlv.draw_state = WL_NR;
 		handle_lnum_col(wp, &wlv, sign_present, num_attr);
 	    }
+
+	    // When only displaying the (relative) line number and that's done,
+	    // stop here.
+	    if (number_only && wlv.draw_state == WL_NR && wlv.n_extra == 0)
+	    {
+		wlv_screen_line(wp, &wlv, TRUE);
+#ifdef FEAT_DIFF
+		if (wlv.filler_todo > 0)
+		{
+		    ++wlv.row;
+		    ++wlv.screen_row;
+		    if (wlv.row < endrow)
+		    {
+			--wlv.filler_todo;
+			if (wlv.filler_todo == 0 && wp->w_botfill)
+			    break;
+			else
+			{
+			    win_line_start(wp, &wlv, TRUE);
+			    continue;
+			}
+		    }
+		    else
+			break;
+		}
+		else
+#endif
+		    break;
+	    }
+
 #ifdef FEAT_LINEBREAK
 	    // Check if 'breakindent' applies and show it.
 	    // May change wlv.draw_state to WL_BRI or WL_BRI - 1.
@@ -1957,22 +1987,13 @@ win_line(
 	if (wlv.cul_screenline && wlv.draw_state == WL_LINE
 		&& wlv.vcol >= left_curline_col
 		&& wlv.vcol < right_curline_col)
-	{
 	    apply_cursorline_highlight(&wlv, sign_present);
-	}
 #endif
 
 	// When still displaying '$' of change command, stop at cursor.
-	// When only displaying the (relative) line number and that's done,
-	// stop here.
-	if (((dollar_vcol >= 0 && wp == curwin
-			       && lnum == wp->w_cursor.lnum
-			       && wlv.vcol >= (long)wp->w_virtcol)
-		|| (number_only && wlv.draw_state > WL_NR))
-#ifdef FEAT_DIFF
-				   && wlv.filler_todo <= 0
-#endif
-		)
+	if (dollar_vcol >= 0 && wp == curwin
+		&& lnum == wp->w_cursor.lnum
+		&& wlv.vcol >= (long)wp->w_virtcol)
 	{
 	    wlv_screen_line(wp, &wlv, TRUE);
 	    // Pretend we have finished updating the window.  Except when
