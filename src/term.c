@@ -5768,8 +5768,8 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		    int rval, gval, bval;
 
 		    rval = hexhex2nr(tp_r);
-		    gval = hexhex2nr(tp_b);
-		    bval = hexhex2nr(tp_g);
+		    gval = hexhex2nr(tp_g);
+		    bval = hexhex2nr(tp_b);
 #endif
 		    if (is_bg)
 		    {
