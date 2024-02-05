@@ -3210,16 +3210,11 @@ term_ul_color(int n)
 }
 
 /*
- * Return "dark" or "light" depending on the kind of terminal.
- * This is just guessing!  Recognized are:
- * "linux"	    Linux console
- * "screen.linux"   Linux console with screen
- * "cygwin.*"	    Cygwin shell
- * "putty.*"	    Putty program
+ * Return "dark" or "light" assuming most terminals are dark.
  * We also check the COLORFGBG environment variable, which is set by
  * rxvt and derivatives. This variable contains either two or three
  * values separated by semicolons; we want the last value in either
- * case. If this value is 0-6 or 8, our background is dark.
+ * case. If this value is 7 or 9-15, our background is light.
  */
     char_u *
 term_bg_default(void)
@@ -3230,16 +3225,12 @@ term_bg_default(void)
 #else
     char_u	*p;
 
-    if (STRCMP(T_NAME, "linux") == 0
-	    || STRCMP(T_NAME, "screen.linux") == 0
-	    || STRNCMP(T_NAME, "cygwin", 6) == 0
-	    || STRNCMP(T_NAME, "putty", 5) == 0
-	    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
-		&& (p = vim_strrchr(p, ';')) != NULL
-		&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
-		&& p[2] == NUL))
-	return (char_u *)"dark";
-    return (char_u *)"light";
+    if ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
+	    && (p = vim_strrchr(p, ';')) != NULL
+	    && (((p[1] == '9' || p[1] == '7') && (p[2] == NUL))
+		|| (p[1] == '1' && p[2] >= '0' && p[2] <= '5')))
+	return (char_u *)"light";
+    return (char_u *)"dark";
 #endif
 }
 
