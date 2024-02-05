@@ -75,8 +75,8 @@ func RunVimInTerminal(arguments, options)
   split
   vsplit
 
-  " Always do this with 256 colors and a light background.
-  set t_Co=256 background=light
+  " Always do this with 256 colors and a dark background.
+  set t_Co=256 background=dark
   hi Normal ctermfg=NONE ctermbg=NONE
 
   " Make the window 20 lines high and 75 columns, unless told otherwise or
