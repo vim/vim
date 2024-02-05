@@ -2224,10 +2224,6 @@ nv_mousescroll(cmdarg_T *cap)
     // Call the common mouse scroll function shared with other modes.
     do_mousescroll(cap);
 
-#ifdef FEAT_SYN_HL
-    if (curwin != old_curwin && curwin->w_p_cul)
-	redraw_for_cursorline(curwin);
-#endif
     curwin->w_redr_status = TRUE;
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
