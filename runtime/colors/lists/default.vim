@@ -6,6 +6,8 @@
 " time the highlight command fails to recognize a gui color. You can override
 " these colors by introducing a new colors/lists/default.vim file earlier in
 " the runtimepath.
+" Note: the color names should be in lower case, because Vim will lookup the
+" a color by its lower case name.
 
 " make sure line continuation works
 let s:keepcpo = &cpo
@@ -801,6 +803,14 @@ call extend(v:colornames, {
 			\ 'silver': '#c0c0c0',
 			\ 'teal': '#008080'
 			\ }, 'keep')
+
+" all keys should be in lower case, convert keys that are not yet
+for [key, val] in items(filter(copy(v:colornames), { key -> key  =~ '\u'}))
+  call remove(v:colornames, key)
+  if !has_key(v:colornames, tolower(key))
+    call extend(v:colornames, {tolower(key): val}, 'keep')
+  endif
+endfor
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

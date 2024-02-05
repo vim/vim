@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jan 24
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Feb 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5265,7 +5265,8 @@ ctermul={color-nr}				*highlight-ctermul*
 	"cterm=" argument AFTER the "ctermfg=" or "ctermbg=" argument.	Or use
 	a number instead of a color name.
 
-	The case of the color names is ignored.
+	The case of the color names is ignored, however Vim will use lower
+	case color names when reading from the |v:colornames| dictionary.
 	Note that for 16 color ansi style terminals (including xterms), the
 	numbers in the NR-8 column is used.  Here '*' means 'add 8' so that
 	Blue is 12, DarkGray is 8 etc.
@@ -5384,8 +5385,8 @@ guisp={color-name}					*highlight-guisp*
 	    :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
 	If you are authoring a color scheme and use the same hexadecimal value
-	repeatedly, you can define a name for it in |v:colornames|. For
-	example: >
+	repeatedly, you can define a (lower case) name for it in |v:colornames|.
+	For example: >
 
 	    # provide a default value for this color but allow the user to
 	    # override it.
