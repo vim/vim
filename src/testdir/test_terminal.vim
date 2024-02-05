@@ -1652,7 +1652,7 @@ func Test_terminal_dumpdiff()
   call assert_equal(62, line('$'))
   call Check_dump01(0)
   call Check_dump01(42)
-  call assert_equal('           bbbbbbbbbbbbbbbbbb ', getline(26)[0:29])
+  call assert_equal('           ffffffffffffffffff ', getline(26)[0:29])
   quit
 
   call assert_fails('call term_dumpdiff("X1.dump", [])', 'E730:')
