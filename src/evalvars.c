@@ -3977,7 +3977,14 @@ set_var_const(
 	    if (check_typval_is_value(&di->di_tv) == FAIL)
 		goto failed;
 
-	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
+	    // List and Blob types can be modified in-place using the "+="
+	    // compound operator.  For other types, this is not allowed.
+	    int type_inplace_modifiable =
+		(di->di_tv.v_type == VAR_LIST || di->di_tv.v_type == VAR_BLOB);
+
+	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0
+		    && ((flags & ASSIGN_COMPOUND_OP) == 0
+			|| !type_inplace_modifiable))
 	    {
 		where_T where = WHERE_INIT;
 		svar_T  *sv = find_typval_in_script(&di->di_tv, sid, TRUE);
@@ -3998,7 +4005,11 @@ set_var_const(
 		}
 	    }
 
-	    if ((flags & ASSIGN_FOR_LOOP) == 0
+	    // Modifying a final variable with a List value using the "+="
+	    // operator is allowed.  For other types, it is not allowed.
+	    if (((flags & ASSIGN_FOR_LOOP) == 0
+			&& ((flags & ASSIGN_COMPOUND_OP) == 0
+			    || !type_inplace_modifiable))
 				 ? var_check_permission(di, name) == FAIL
 				 : var_check_ro(di->di_flags, name, FALSE))
 		goto failed;

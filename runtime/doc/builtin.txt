@@ -2093,7 +2093,7 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 		Returns an empty List or String if {fromlist} and {tolist} are
 		identical.
 
-		Examples:
+		Examples: >
 		    :echo diff(['abc'], ['xxx'])
 		     @@ -1 +1 @@
 		     -abc
@@ -2103,7 +2103,7 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 		     [{'from_idx': 0, 'from_count': 1, 'to_idx': 0, 'to_count': 1}]
 		    :echo diff(readfile('oldfile'), readfile('newfile'))
 		    :echo diff(getbufline(5, 1, '$'), getbufline(6, 1, '$'))
-
+<
 		For more examples, refer to |diff-func-examples|
 
 		Can also be used as a |method|: >

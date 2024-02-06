@@ -1901,7 +1901,7 @@ set_var_lval(
 			   && !tv_check_lock(&di->di_tv, lp->ll_name, FALSE)))
 			&& tv_op(&tv, rettv, op) == OK)
 		    set_var_const(lp->ll_name, lp->ll_sid, NULL, &tv, FALSE,
-							    ASSIGN_NO_DECL, 0);
+				ASSIGN_NO_DECL | ASSIGN_COMPOUND_OP, 0);
 		clear_tv(&tv);
 	    }
 	}

@@ -2379,6 +2379,7 @@ typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***mat
 #define ASSIGN_FOR_LOOP 0x40 // assigning to loop variable
 #define ASSIGN_INIT	0x80 // not assigning a value, just a declaration
 #define ASSIGN_UPDATE_BLOCK_ID 0x100  // update sav_block_id
+#define ASSIGN_COMPOUND_OP 0x200  // compound operator e.g. "+="
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
