@@ -19,6 +19,7 @@
 
 #include "vim.h"
 
+static void redraw_for_cursorline(win_T *wp);
 static int scrolljump_value(void);
 static int check_top_offset(void);
 static void curs_rows(win_T *wp);
@@ -155,7 +156,7 @@ comp_botline(win_T *wp)
  * Redraw when w_cline_row changes and 'relativenumber' or 'cursorline' is
  * set.
  */
-    void
+    static void
 redraw_for_cursorline(win_T *wp)
 {
     if ((wp->w_p_rnu
