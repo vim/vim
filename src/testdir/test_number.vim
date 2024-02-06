@@ -278,9 +278,7 @@ func Test_relativenumber_colors()
   [CODE]
   call writefile(lines, 'XTest_relnr', 'D')
 
-  " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_relnr', {'rows': 10, 'cols': 50})
-  call TermWait(buf, 50)
   " Default colors
   call VerifyScreenDump(buf, 'Test_relnr_colors_1', {})
 
@@ -292,6 +290,36 @@ func Test_relativenumber_colors()
 
   call term_sendkeys(buf, ":hi clear LineNrAbove\<CR>")
   call VerifyScreenDump(buf, 'Test_relnr_colors_4', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_relativenumber_colors_wrapped()
+  CheckScreendump
+
+  let lines =<< trim [CODE]
+    set display=lastline scrolloff=0
+    call setline(1, range(200)->map('v:val->string()->repeat(40)'))
+    111
+    set number relativenumber
+    hi LineNr ctermbg=red ctermfg=black
+    hi LineNrAbove ctermbg=blue ctermfg=black
+    hi LineNrBelow ctermbg=green ctermfg=black
+  [CODE]
+  call writefile(lines, 'XTest_relnr_wrap', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_relnr_wrap', {'rows': 20, 'cols': 50})
+
+  call VerifyScreenDump(buf, 'Test_relnr_colors_wrapped_1', {})
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_relnr_colors_wrapped_2', {})
+  call term_sendkeys(buf, "2j")
+  call VerifyScreenDump(buf, 'Test_relnr_colors_wrapped_3', {})
+  call term_sendkeys(buf, "2j")
+  call VerifyScreenDump(buf, 'Test_relnr_colors_wrapped_4', {})
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_relnr_colors_wrapped_5', {})
 
   " clean up
   call StopVimInTerminal(buf)

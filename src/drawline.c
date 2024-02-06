@@ -1091,7 +1091,8 @@ apply_cursorline_highlight(
 /*
  * Display line "lnum" of window "wp" on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
- * When "number_only" is TRUE only update the number column.
+ * When only updating the number column, "number_only" is set to the height of
+ * the line, otherwise it is set to 0.
  * "spv" is used to store information for spell checking, kept between
  * sequential calls for the same window.
  * wp->w_virtcol needs to be valid.
@@ -1273,7 +1274,7 @@ win_line(
     wlv.vcol_sbr = -1;
 #endif
 
-    if (!number_only)
+    if (number_only == 0)
     {
 	// To speed up the loop below, set extra_check when there is linebreak,
 	// trailing white space and/or syntax processing to be done.
@@ -1486,7 +1487,7 @@ win_line(
 #endif
 
 #ifdef FEAT_SPELL
-    if (spv->spv_has_spell && !number_only)
+    if (spv->spv_has_spell && number_only == 0)
     {
 	// Prepare for spell checking.
 	extra_check = TRUE;
@@ -1667,7 +1668,7 @@ win_line(
 	}
     }
 
-    if (number_only)
+    if (number_only > 0)
     {
 	// skip over rows only used for virtual text above
 	wlv.row += wlv.text_prop_above_count;
@@ -1679,7 +1680,7 @@ win_line(
 
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     colnr_T vcol_first_char = 0;
-    if (wp->w_p_lbr && !number_only)
+    if (wp->w_p_lbr && number_only == 0)
     {
 	chartabsize_T cts;
 	init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
@@ -1695,7 +1696,7 @@ win_line(
 	v = startrow == 0 ? wp->w_skipcol - skipcol_in_text_prop_above : 0;
     else
 	v = wp->w_leftcol;
-    if (v > 0 && !number_only)
+    if (v > 0 && number_only == 0)
     {
 	char_u		*prev_ptr = ptr;
 	chartabsize_T	cts;
@@ -1840,7 +1841,7 @@ win_line(
     }
 
 #ifdef FEAT_SEARCH_EXTRA
-    if (!number_only)
+    if (number_only == 0)
     {
 	v = (long)(ptr - line);
 	area_highlighting |= prepare_search_hl_line(wp, lnum, (colnr_T)v,
@@ -1933,6 +1934,38 @@ win_line(
 		wlv.draw_state = WL_NR;
 		handle_lnum_col(wp, &wlv, sign_present, num_attr);
 	    }
+
+	    // When only displaying the (relative) line number and that's done,
+	    // stop here.
+	    if (number_only > 0 && wlv.draw_state == WL_NR && wlv.n_extra == 0)
+	    {
+		wlv_screen_line(wp, &wlv, TRUE);
+		// Need to update more screen lines if:
+		// - LineNrAbove or LineNrBelow is used, or
+		// - still drawing filler lines.
+		if ((wlv.row + 1 - wlv.startrow < number_only
+			&& (HL_ATTR(HLF_LNA) != 0 || HL_ATTR(HLF_LNB) != 0))
+#ifdef FEAT_DIFF
+			|| wlv.filler_todo > 0
+#endif
+			)
+		{
+		    ++wlv.row;
+		    ++wlv.screen_row;
+		    if (wlv.row == endrow)
+			break;
+#ifdef FEAT_DIFF
+		    --wlv.filler_todo;
+		    if (wlv.filler_todo == 0 && wp->w_botfill)
+			break;
+#endif
+		    win_line_start(wp, &wlv, TRUE);
+		    continue;
+		}
+		else
+		    break;
+	    }
+
 #ifdef FEAT_LINEBREAK
 	    // Check if 'breakindent' applies and show it.
 	    // May change wlv.draw_state to WL_BRI or WL_BRI - 1.
@@ -1957,22 +1990,13 @@ win_line(
 	if (wlv.cul_screenline && wlv.draw_state == WL_LINE
 		&& wlv.vcol >= left_curline_col
 		&& wlv.vcol < right_curline_col)
-	{
 	    apply_cursorline_highlight(&wlv, sign_present);
-	}
 #endif
 
 	// When still displaying '$' of change command, stop at cursor.
-	// When only displaying the (relative) line number and that's done,
-	// stop here.
-	if (((dollar_vcol >= 0 && wp == curwin
-			       && lnum == wp->w_cursor.lnum
-			       && wlv.vcol >= (long)wp->w_virtcol)
-		|| (number_only && wlv.draw_state > WL_NR))
-#ifdef FEAT_DIFF
-				   && wlv.filler_todo <= 0
-#endif
-		)
+	if (dollar_vcol >= 0 && wp == curwin
+		&& lnum == wp->w_cursor.lnum
+		&& wlv.vcol >= (long)wp->w_virtcol)
 	{
 	    wlv_screen_line(wp, &wlv, TRUE);
 	    // Pretend we have finished updating the window.  Except when
