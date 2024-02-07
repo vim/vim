@@ -2413,6 +2413,80 @@ block_prep(
 #endif
 }
 
+    void
+charwise_block_prep(
+    pos_T start,
+    pos_T end,
+    struct block_def *bdp,
+    linenr_T lnum,
+    int inclusive)
+{
+    colnr_T startcol = 0, endcol = MAXCOL;
+    int	    is_oneChar = FALSE;
+    colnr_T cs, ce;
+
+    p = ml_get(lnum);
+    bdp->startspaces = 0;
+    bdp->endspaces = 0;
+
+    if (lnum == oap->start.lnum)
+    {
+	startcol = oap->start.col;
+	if (virtual_op)
+	{
+	    getvcol(curwin, &oap->start, &cs, NULL, &ce);
+	    if (ce != cs && oap->start.coladd > 0)
+	    {
+		// Part of a tab selected -- but don't
+		// double-count it.
+		bdp->startspaces = (ce - cs + 1)
+		    - oap->start.coladd;
+		if (bdp->startspaces < 0)
+		    bdp->startspaces = 0;
+		startcol++;
+	    }
+	}
+    }
+
+    if (lnum == oap->end.lnum)
+    {
+	endcol = oap->end.col;
+	if (virtual_op)
+	{
+	    getvcol(curwin, &oap->end, &cs, NULL, &ce);
+	    if (p[endcol] == NUL || (cs + oap->end.coladd < ce
+			// Don't add space for double-wide
+			// char; endcol will be on last byte
+			// of multi-byte char.
+			&& (*mb_head_off)(p, p + endcol) == 0))
+	    {
+		if (oap->start.lnum == oap->end.lnum
+			&& oap->start.col == oap->end.col)
+		{
+		    // Special case: inside a single char
+		    is_oneChar = TRUE;
+		    bdp->startspaces = oap->end.coladd
+			- oap->start.coladd + oap->inclusive;
+		    endcol = startcol;
+		}
+		else
+		{
+		    bdp->endspaces = oap->end.coladd
+			+ oap->inclusive;
+		    endcol -= oap->inclusive;
+		}
+	    }
+	}
+    }
+    if (endcol == MAXCOL)
+	endcol = (colnr_T)STRLEN(p);
+    if (startcol > endcol || is_oneChar)
+	bdp->textlen = 0;
+    else
+	bdp->textlen = endcol - startcol + oap->inclusive;
+    bdp->textstart = p + startcol;
+}
+
 /*
  * Handle the add/subtract operator.
  */

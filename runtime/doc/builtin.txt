@@ -10615,6 +10615,20 @@ visualmode([{expr}])						*visualmode()*
 		a non-empty String, then the Visual mode will be cleared and
 		the old value is returned.  See |non-zero-arg|.
 
+visualtext()						*visualtext()*
+		The result is a list of strings where each item is a line
+		from the current visual selection. The result is the same as
+		as what would be yanked to register on yank operation of current
+		sellection. In particular:
+		- in virtualmode enabled, if selection is past the end of line,
+		  result is filled with spaces
+		- if selection starts/ends somewhere in the middle of
+		  multiwidth character (ex. tab), the whole character is not
+		  included, instead its selected part is substituted with
+		  spaces
+
+		In modes other then visual, emty list is returned.
+
 wildmenumode()					*wildmenumode()*
 		Returns |TRUE| when the wildmenu is active and |FALSE|
 		otherwise.  See 'wildmenu' and 'wildmode'.
