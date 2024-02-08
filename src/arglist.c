@@ -1253,10 +1253,6 @@ do_arg_all(
     // When the ":tab" modifier was used do this for all tab pages.
     arg_all_close_unused_windows(&aall);
 
-    // Now set the last used tabpage to where we started.
-    if (valid_tabpage(new_lu_tp))
-	lastused_tabpage = new_lu_tp;
-
     // Open a window for files in the argument list that don't have one.
     // ARGCOUNT may change while doing this, because of autocommands.
     if (count > aall.opened_len || count <= 0)
@@ -1291,6 +1287,11 @@ do_arg_all(
     // to window with first arg
     if (valid_tabpage(aall.new_curtab))
 	goto_tabpage_tp(aall.new_curtab, TRUE, TRUE);
+
+    // Now set the last used tabpage to where we started.
+    if (valid_tabpage(new_lu_tp))
+	lastused_tabpage = new_lu_tp;
+
     if (win_valid(aall.new_curwin))
 	win_enter(aall.new_curwin, FALSE);
 
