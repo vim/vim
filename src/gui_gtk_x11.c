@@ -2105,25 +2105,25 @@ scroll_event(GtkWidget *widget,
 #if GTK_CHECK_VERSION(3,4,0)
     if (event->direction == GDK_SCROLL_SMOOTH)
     {
-	while (acc_x > 1.0)
+	while (acc_x >= 1.0)
 	{ // right
 	    acc_x = MAX(0.0, acc_x - 1.0);
 	    gui_send_mouse_event(MOUSE_6, (int)event->x, (int)event->y,
 		    FALSE, vim_modifiers);
 	}
-	while (acc_x < -1.0)
+	while (acc_x <= -1.0)
 	{ // left
 	    acc_x = MIN(0.0, acc_x + 1.0);
 	    gui_send_mouse_event(MOUSE_7, (int)event->x, (int)event->y,
 		    FALSE, vim_modifiers);
 	}
-	while (acc_y > 1.0)
+	while (acc_y >= 1.0)
 	{ // down
 	    acc_y = MAX(0.0, acc_y - 1.0);
 	    gui_send_mouse_event(MOUSE_5, (int)event->x, (int)event->y,
 		    FALSE, vim_modifiers);
 	}
-	while (acc_y < -1.0)
+	while (acc_y <= -1.0)
 	{ // up
 	    acc_y = MIN(0.0, acc_y + 1.0);
 	    gui_send_mouse_event(MOUSE_4, (int)event->x, (int)event->y,
