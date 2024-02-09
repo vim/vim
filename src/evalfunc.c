@@ -5484,10 +5484,10 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     struct block_def bd;
     char_u *akt;
     int inclusive = TRUE;
-    int		fnum = -1;
+    int fnum = -1;
     pos_T p1, p2;
     pos_T *fp = NULL;
-    char_u	*str1, *str2;
+    char_u *str1, *str2;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
@@ -5511,7 +5511,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     str1 = tv_get_string(&argvars[0]);
     str2 = tv_get_string(&argvars[1]);
 
-    if (!LT_POS(p1, p2)) {
+    if (!LT_POS(p1, p2))
+    {
 	// swap position
 	pos_T p;
 
@@ -5520,19 +5521,24 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	p2 = p;
     }
 
-    if (str1[0] == 'v' && str1[1] == NUL || str2[0] == 'v' && str2[1] == NUL) {
-	if (VIsual_mode == 'v') {
+    if (str1[0] == 'v' && str1[1] == NUL || str2[0] == 'v' && str2[1] == NUL)
+    {
+	if (VIsual_mode == 'v')
+	{
 	    // handle 'selection' == "exclusive"
 	    if (*p_sel == 'e' && !EQUAL_POS(p1, p2)) {
-		if (p2.coladd > 0) {
+		if (p2.coladd > 0)
 		    p2.coladd--;
-		} else if (p2.col > 0) {
+		else if (p2.col > 0)
+		{
 		    p2.col--;
 		    mb_adjustpos(curbuf, &p2);
-		} else if (p2.lnum > 1) {
+		} else if (p2.lnum > 1)
+		{
 		    p2.lnum--;
 		    p2.col = (colnr_T)STRLEN(ml_get(p2.lnum));
-		    if (p2.col > 0) {
+		    if (p2.col > 0)
+		    {
 			p2.col--;
 			mb_adjustpos(curbuf, &p2);
 		    }
@@ -5560,12 +5566,13 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 
     // Include the trailing byte of a multi-byte char.
     const int l = utfc_ptr2len((char *)ml_get_pos(&p2));
-    if (l > 1) {
+    if (l > 1)
 	p2.col += l - 1;
-    }
 
-    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++) {
-	switch (VIsual_mode) {
+    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
+    {
+	switch (VIsual_mode)
+	{
 	    case 'V':
 		akt = vim_strsave(ml_get(lnum));
 		break;
@@ -5576,9 +5583,9 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 		break;
 
 	    default:
-		if (p1.lnum < lnum && lnum < p2.lnum) {
+		if (p1.lnum < lnum && lnum < p2.lnum)
 		    akt = vim_strsave(ml_get(lnum));
-		} else {
+		else {
 		    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
 		    akt = block_def2str(&bd);
 		}
@@ -5586,7 +5593,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 
 	}
 
-	if (akt == NULL ||  list_append_string_move(rettv->vval.v_list, akt) == FAIL) {
+	if (akt == NULL ||  list_append_string_move(rettv->vval.v_list, akt) == FAIL)
+	{
 	    list_free(rettv->vval.v_list);
 	    break;
 	}
