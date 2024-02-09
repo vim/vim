@@ -5613,7 +5613,8 @@ tv_nr_compare(const void *a1, const void *a2)
     listitem_T *li1 = *(listitem_T **)a1;
     listitem_T *li2 = *(listitem_T **)a2;
 
-    return li1->li_tv.vval.v_number - li2->li_tv.vval.v_number;
+    return li1->li_tv.vval.v_number == li2->li_tv.vval.v_number ? 0 :
+	li1->li_tv.vval.v_number > li2->li_tv.vval.v_number ? 1 : -1;
 }
 
     void
