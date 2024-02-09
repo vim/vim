@@ -4266,7 +4266,7 @@ getregion({pos1}, {pos2}				*getregion()*
 		from {pos1} to {pos2}.
 		For possible values of {pos1} and {pos2} see |line()|.
 		The result is the same as as what would be yanked to register
-		on yank operation of current sellection. In particular:
+		on yank operation of current selection. In particular:
 		- in virtualmode enabled, if selection is past the end of line,
 		  result is filled with spaces
 		- if selection starts/ends somewhere in the middle of

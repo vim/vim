@@ -699,7 +699,7 @@ list_append_string(list_T *l, char_u *str, int len)
 
 
 /*
- * Simmilar to list_append_string() but does not make copy of the 'str'.
+ * Similar to list_append_string() but does not make copy of the 'str'.
  * Returns FAIL when out of memory.
  */
     int
