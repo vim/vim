@@ -946,3 +946,8 @@ Blue
 Black
 endenum
 " END_INDENT
+
+" START_INDENT
+call prop_type_add('indent_after_literal_dict', #{ foo: 'bar' })
+call prop_type_delete('indent_after_literal_dict')
+" END_INDENT
