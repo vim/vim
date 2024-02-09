@@ -5485,7 +5485,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     char_u *akt;
     int inclusive = TRUE;
     int		fnum = -1;
-    pos_T *fp1 = NULL, *fp2 = NULL;
+    pos_T p1, p2;
+    pos_T *fp = NULL;
     char_u	*str1, *str2;
 
     if (rettv_list_alloc(rettv) == FAIL)
@@ -5496,53 +5497,59 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_STRING)
 	return;
 
-    fp1 = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
-    fp2 = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
-    if (fp1 == NULL || fp2 == NULL)
+    // NOTE: var2fpos() returns static pointer.
+    fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
+    if (fp == NULL)
 	return;
+    p1 = *fp;
+
+    fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
+    if (fp == NULL)
+	return;
+    p2 = *fp;
 
     str1 = tv_get_string(&argvars[0]);
     str2 = tv_get_string(&argvars[1]);
 
-    if (!LT_POS(*fp1, *fp2)) {
+    if (!LT_POS(p1, p2)) {
 	// swap position
 	pos_T p;
 
-	p = *fp1;
-	*fp1 = *fp2;
-	*fp2 = p;
+	p = p1;
+	p1 = p2;
+	p2 = p;
     }
 
-    if (STRCMP(str1, "v") == 0 || STRCMP(str2, "v") == 0) {
+    if (str1[0] == 'v' && str1[1] == NUL || str2[0] == 'v' && str2[1] == NUL) {
 	if (VIsual_mode == 'v') {
 	    // handle 'selection' == "exclusive"
-	    if (*p_sel == 'e' && !EQUAL_POS(*fp1, *fp2)) {
-		if (fp2->coladd > 0) {
-		    fp2->coladd--;
-		} else if (fp2->col > 0) {
-		    fp2->col--;
-		    mb_adjustpos(curbuf, fp2);
-		} else if (fp2->lnum > 1) {
-		    fp2->lnum--;
-		    fp2->col = (colnr_T)STRLEN(ml_get(fp2->lnum));
-		    if (fp2->col > 0) {
-			fp2->col--;
-			mb_adjustpos(curbuf, fp2);
+	    if (*p_sel == 'e' && !EQUAL_POS(p1, p2)) {
+		if (p2.coladd > 0) {
+		    p2.coladd--;
+		} else if (p2.col > 0) {
+		    p2.col--;
+		    mb_adjustpos(curbuf, &p2);
+		} else if (p2.lnum > 1) {
+		    p2.lnum--;
+		    p2.col = (colnr_T)STRLEN(ml_get(p2.lnum));
+		    if (p2.col > 0) {
+			p2.col--;
+			mb_adjustpos(curbuf, &p2);
 		    }
 		}
 	    }
 	    // if fp2 is on NUL (empty line) inclusive becomes false
-	    if (*ml_get_pos(fp2) == NUL && !virtual_op) {
+	    if (*ml_get_pos(&p2) == NUL && !virtual_op) {
 		inclusive = FALSE;
 	    }
 	} else if (VIsual_mode == Ctrl_V) {
 	    colnr_T sc1, ec1, sc2, ec2;
-	    getvvcol(curwin, fp1, &sc1, NULL, &ec1);
-	    getvvcol(curwin, fp2, &sc2, NULL, &ec2);
+	    getvvcol(curwin, &p1, &sc1, NULL, &ec1);
+	    getvvcol(curwin, &p2, &sc2, NULL, &ec2);
 	    oap.motion_type = OP_NOP;
 	    oap.inclusive = TRUE;
-	    oap.start = *fp1;
-	    oap.end = *fp2;
+	    oap.start = p1;
+	    oap.end = p2;
 	    oap.start_vcol = MIN(sc1, sc2);
 	    if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
 		oap.end_vcol = sc2 - 1;
@@ -5552,12 +5559,12 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     }
 
     // Include the trailing byte of a multi-byte char.
-    const int l = utfc_ptr2len((char *)ml_get_pos(fp2));
+    const int l = utfc_ptr2len((char *)ml_get_pos(&p2));
     if (l > 1) {
-	fp2->col += l - 1;
+	p2.col += l - 1;
     }
 
-    for (lnum = fp1->lnum; lnum <= fp2->lnum; lnum++) {
+    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++) {
 	switch (VIsual_mode) {
 	    case 'V':
 		akt = vim_strsave(ml_get(lnum));
@@ -5569,10 +5576,10 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 		break;
 
 	    default:
-		if (fp1->lnum < lnum && lnum < fp2->lnum) {
+		if (p1.lnum < lnum && lnum < p2.lnum) {
 		    akt = vim_strsave(ml_get(lnum));
 		} else {
-		    charwise_block_prep(*fp1, *fp2, &bd, lnum, inclusive);
+		    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
 		    akt = block_def2str(&bd);
 		}
 		break;
