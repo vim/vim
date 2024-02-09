@@ -4042,7 +4042,8 @@ gui_mch_init(void)
 	//
 	// *: https://bugzilla.gnome.org/show_bug.cgi?id=675959
 	event_mask |= GDK_SCROLL_MASK;
-    } else
+    }
+    else
     {
 	// for Wayland, touchpads don't generate "unsmooth" scroll events. Both
 	// touchpads and wheels generate smooth scroll events expectedly.
