@@ -185,7 +185,7 @@ static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_type(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
-static void f_visualtext(typval_T *argvars, typval_T *rettv);
+static void f_getregion(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
@@ -2132,6 +2132,8 @@ static funcentry_T global_functions[] =
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
+    {"getregion",	2, 2, FEARG_2,	    NULL,
+			ret_list_string,    f_getregion},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
     {"getscriptinfo",	0, 1, 0,	    arg1_dict_any,
@@ -2910,8 +2912,6 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_virtcol2col},
     {"visualmode",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_visualmode},
-    {"visualtext",	0, 0, 0,	    NULL,
-			ret_list_string,    f_visualtext},
     {"wildmenumode",	0, 0, 0,	    NULL,
 			ret_number,	    f_wildmenumode},
     {"win_execute",	2, 3, FEARG_2,	    arg23_win_execute,
@@ -5453,6 +5453,158 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 	return;
 
     getpos_both(argvars, rettv, FALSE, FALSE);
+}
+
+    char_u *
+block_def2str(struct block_def *bd)
+{
+    char_u *p, *ret;
+    size_t size = bd->startspaces + bd->endspaces + bd->textlen;
+
+    ret = alloc(size + 1);
+    if (ret != NULL) {
+	p = ret;
+	memset(p, ' ', bd->startspaces);
+	p += bd->startspaces;
+	memmove(p, bd->textstart, bd->textlen);
+	p += bd->textlen;
+	memset(p, ' ', bd->endspaces);
+	*(p + bd->endspaces) = NUL;
+    }
+    return ret;
+}
+
+/*
+ * "getregion()" function
+ */
+static void f_getregion(typval_T *argvars, typval_T *rettv)
+{
+    linenr_T lnum;
+    oparg_T oap;
+    struct block_def bd;
+    char_u *akt;
+    int inclusive = TRUE;
+    int		fnum = -1;
+    pos_T *fp1 = NULL, *fp2 = NULL;
+    char_u	*str1, *str2;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    virtual_op = virtual_active();
+
+    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_STRING)
+	return;
+
+    fp1 = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
+    fp2 = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
+    if (fp1 == NULL || fp2 == NULL)
+	return;
+
+    str1 = tv_get_string(&argvars[0]);
+    str2 = tv_get_string(&argvars[1]);
+
+    if (!LT_POS(*fp1, *fp2)) {
+	// swap position
+	pos_T p;
+
+	p = *fp1;
+	*fp1 = *fp2;
+	*fp2 = p;
+    }
+
+    if (STRCMP(str1, "v") == 0 || STRCMP(str2, "v") == 0) {
+	if (VIsual_mode == 'v') {
+	    // handle 'selection' == "exclusive"
+	    if (*p_sel == 'e' && !EQUAL_POS(*fp1, *fp2)) {
+		if (fp2->coladd > 0) {
+		    fp2->coladd--;
+		} else if (fp2->col > 0) {
+		    fp2->col--;
+		    mb_adjustpos(curbuf, fp2);
+		} else if (fp2->lnum > 1) {
+		    fp2->lnum--;
+		    fp2->col = (colnr_T)STRLEN(ml_get(fp2->lnum));
+		    if (fp2->col > 0) {
+			fp2->col--;
+			mb_adjustpos(curbuf, fp2);
+		    }
+		}
+	    }
+	    // if fp2 is on NUL (empty line) inclusive becomes false
+	    if (*ml_get_pos(fp2) == NUL && !virtual_op) {
+		inclusive = FALSE;
+	    }
+	} else if (VIsual_mode == Ctrl_V) {
+	    colnr_T sc1, ec1, sc2, ec2;
+	    getvvcol(curwin, fp1, &sc1, NULL, &ec1);
+	    getvvcol(curwin, fp2, &sc2, NULL, &ec2);
+	    oap.motion_type = OP_NOP;
+	    oap.inclusive = TRUE;
+	    oap.start = *fp1;
+	    oap.end = *fp2;
+	    oap.start_vcol = MIN(sc1, sc2);
+	    if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+		oap.end_vcol = sc2 - 1;
+	    else
+		oap.end_vcol = MAX(ec1, ec2);
+	}
+    }
+
+    // Include the trailing byte of a multi-byte char.
+    const int l = utfc_ptr2len((char *)ml_get_pos(fp2));
+    if (l > 1) {
+	fp2->col += l - 1;
+    }
+
+    for (lnum = fp1->lnum; lnum <= fp2->lnum; lnum++) {
+	switch (VIsual_mode) {
+	    case 'V':
+		akt = vim_strsave(ml_get(lnum));
+		break;
+
+	    case Ctrl_V:
+		block_prep(&oap, &bd, lnum, FALSE);
+		akt = block_def2str(&bd);
+		break;
+
+	    default:
+		if (fp1->lnum < lnum && lnum < fp2->lnum) {
+		    akt = vim_strsave(ml_get(lnum));
+		} else {
+		    charwise_block_prep(*fp1, *fp2, &bd, lnum, inclusive);
+		    akt = block_def2str(&bd);
+		}
+		break;
+
+	}
+
+	if (akt == NULL ||  list_append_string_move(rettv->vval.v_list, akt) == FAIL) {
+	    list_free(rettv->vval.v_list);
+	    break;
+	}
+    }
+    virtual_op = MAYBE;
+}
+
+/*
+ * "wildmenumode()" function
+ */
+    static void
+f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    if (wild_menu_showing || ((State & MODE_CMDLINE) && cmdline_pum_active()))
+	rettv->vval.v_number = 1;
+}
+
+/*
+ * "windowsversion()" function
+ */
+    static void
+f_windowsversion(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strsave((char_u *)windowsVersion);
 }
 
 /*
@@ -11365,149 +11517,6 @@ f_visualmode(typval_T *argvars, typval_T *rettv)
     // A non-zero number or non-empty string argument: reset mode.
     if (non_zero_arg(&argvars[0]))
 	curbuf->b_visual_mode_eval = NUL;
-}
-
-    char_u *
-block_def2str(struct block_def *bd)
-{
-    char_u *p, *ret;
-    size_t size = bd->startspaces + bd->endspaces + bd->textlen;
-
-    ret = alloc(size + 1);
-    if (ret != NULL) {
-	p = ret;
-	memset(p, ' ', bd->startspaces);
-	p += bd->startspaces;
-	memmove(p, bd->textstart, bd->textlen);
-	p += bd->textlen;
-	memset(p, ' ', bd->endspaces);
-	*(p + bd->endspaces) = NUL;
-    }
-    return ret;
-}
-
-/*
- * "visualtext()" function
- */
-static void f_visualtext(typval_T *argvars, typval_T *rettv)
-{
-    pos_T p1, p2;
-    linenr_T lnum;
-    oparg_T oap;
-    struct block_def bd;
-    char_u *akt;
-    int inclusive = TRUE;
-
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
-
-    if (!VIsual_active) {
-	return;
-    }
-
-    virtual_op = virtual_active();
-
-    if (LT_POS(VIsual, curwin->w_cursor)) {
-	p1 = VIsual;
-	p2 = curwin->w_cursor;
-    } else {
-	p1 = curwin->w_cursor;
-	p2 = VIsual;
-    }
-
-    if (VIsual_mode == 'v') {
-	// handle 'selection' == "exclusive"
-	if (*p_sel == 'e' && !EQUAL_POS(p1, p2)) {
-	    if (p2.coladd > 0) {
-		p2.coladd--;
-	    } else if (p2.col > 0) {
-		p2.col--;
-		mb_adjustpos(curbuf, &p2);
-	    } else if (p2.lnum > 1) {
-		p2.lnum--;
-		p2.col = (colnr_T)STRLEN(ml_get(p2.lnum));
-		if (p2.col > 0) {
-		    p2.col--;
-		    mb_adjustpos(curbuf, &p2);
-		}
-	    }
-	}
-	// if p2 is on NUL (empty line) inclusive becomes false
-	if (*ml_get_pos(&p2) == NUL && !virtual_op) {
-	    inclusive = FALSE;
-	}
-    } else if (VIsual_mode == Ctrl_V) {
-	colnr_T sc1, ec1, sc2, ec2;
-	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
-	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
-	oap.motion_type = OP_NOP;
-	oap.inclusive = TRUE;
-	oap.start = p1;
-	oap.end = p2;
-	oap.start_vcol = MIN(sc1, sc2);
-	if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
-	    oap.end_vcol = sc2 - 1;
-	else
-	    oap.end_vcol = MAX(ec1, ec2);
-    }
-
-    // Include the trailing byte of a multi-byte char.
-    const int l = utfc_ptr2len((char *)ml_get_pos(&p2));
-    if (l > 1) {
-	p2.col += l - 1;
-    }
-
-    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++) {
-	switch (VIsual_mode) {
-	    case 'V':
-		akt = vim_strsave(ml_get(lnum));
-		break;
-
-	    case 'v':
-		if (p1.lnum < lnum && lnum < p2.lnum) {
-		    akt = vim_strsave(ml_get(lnum));
-		} else {
-		    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
-		    akt = block_def2str(&bd);
-		}
-		break;
-
-	    case Ctrl_V:
-		block_prep(&oap, &bd, lnum, FALSE);
-		akt = block_def2str(&bd);
-		break;
-
-	    // NOTREACHED
-	    default:
-		abort();
-	}
-
-	if (akt == NULL ||  list_append_string_move(rettv->vval.v_list, akt) == FAIL) {
-	    list_free(rettv->vval.v_list);
-	    break;
-	}
-    }
-    virtual_op = MAYBE;
-}
-
-/*
- * "wildmenumode()" function
- */
-    static void
-f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-    if (wild_menu_showing || ((State & MODE_CMDLINE) && cmdline_pum_active()))
-	rettv->vval.v_number = 1;
-}
-
-/*
- * "windowsversion()" function
- */
-    static void
-f_windowsversion(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave((char_u *)windowsVersion);
 }
 
 /*
