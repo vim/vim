@@ -4263,7 +4263,8 @@ getreginfo([{regname}])					*getreginfo()*
 
 getregion({pos1}, {pos2}				*getregion()*
 		The result is a list of strings where each item is a line
-		from {pos1} to {pos2}.
+		from {pos1} to {pos2}.  {pos1} and {pos2} are swapped if
+		{pos1} is after {pos2}.
 		For possible values of {pos1} and {pos2} see |line()|.
 		The result is the same as as what would be yanked to register
 		on yank operation of current selection. In particular:
