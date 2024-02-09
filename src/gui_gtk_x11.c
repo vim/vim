@@ -2049,7 +2049,7 @@ button_press_event(GtkWidget *widget,
 }
 
 /*
- * GTK+ 2 abstracts scrolling via the GdkEventScroll.
+ * GTK+ abstracts scrolling via the GdkEventScroll.
  */
     static gboolean
 scroll_event(GtkWidget *widget,
@@ -2060,7 +2060,9 @@ scroll_event(GtkWidget *widget,
     int_u   vim_modifiers;
 #if GTK_CHECK_VERSION(3,4,0)
     static double  acc_x, acc_y;
+#if !GTK_CHECK_VERSION(3,22,0)
     static guint32 last_smooth_event_time;
+#endif
 #define DT_X11     1
 #define DT_WAYLAND 2
     static display_type;
@@ -2087,12 +2089,25 @@ scroll_event(GtkWidget *widget,
 	    break;
 #if GTK_CHECK_VERSION(3,4,0)
 	case GDK_SCROLL_SMOOTH:
+	    if (event->is_stop)
+	    {
+		acc_x = acc_y = 0;
+		// this event tells us to stop, without an actual moving
+		return FALSE;
+	    }
+#if GTK_CHECK_VERSION(3,22,0)
+	    if (gdk_device_get_axes(event->device) & GDK_AXIS_FLAG_WHEEL)
+		// this is from a wheel (as oppose to a touchpad / trackpoint)
+#else
 	    if (event->time - last_smooth_event_time > 50)
 		// reset our accumulations after 50ms of silence
+#endif
 		acc_x = acc_y = 0;
 	    acc_x += event->delta_x;
 	    acc_y += event->delta_y;
+#if !GTK_CHECK_VERSION(3,22,0)
 	    last_smooth_event_time = event->time;
+#endif
 	    break;
 #endif
 	default: // This shouldn't happen
