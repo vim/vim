@@ -2061,6 +2061,11 @@ scroll_event(GtkWidget *widget,
 #if GTK_CHECK_VERSION(3,4,0)
     static double  acc_x, acc_y;
     static guint32 last_smooth_event_time;
+#define DT_X11     1
+#define DT_WAYLAND 2
+    static display_type;
+    if (!display_type)
+	display_type = gui_mch_get_display() ? DT_X11 : DT_WAYLAND;
 #endif
 
     if (gtk_socket_id != 0 && !gtk_widget_has_focus(widget))
@@ -2103,7 +2108,9 @@ scroll_event(GtkWidget *widget,
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
 #if GTK_CHECK_VERSION(3,4,0)
-    if (event->direction == GDK_SCROLL_SMOOTH)
+    // on x11, despite not requested, when we copy into primary clipboard,
+    // we'll get smooth events. Unsmooth ones will also come along.
+    if (event->direction == GDK_SCROLL_SMOOTH && display_type == DT_WAYLAND)
     {
 	while (acc_x >= 1.0)
 	{ // right
@@ -2131,6 +2138,8 @@ scroll_event(GtkWidget *widget,
 	}
     }
     else
+#undef DT_X11
+#undef DT_WAYLAND
 #endif
 	gui_send_mouse_event(button, (int)event->x, (int)event->y,
 		FALSE, vim_modifiers);
@@ -3998,20 +4007,37 @@ gui_mch_init(void)
 #endif
 
     // Determine which events we will filter.
-    gtk_widget_set_events(gui.drawarea,
-			  GDK_EXPOSURE_MASK |
-			  GDK_ENTER_NOTIFY_MASK |
-			  GDK_LEAVE_NOTIFY_MASK |
-			  GDK_BUTTON_PRESS_MASK |
-			  GDK_BUTTON_RELEASE_MASK |
-			  GDK_SCROLL_MASK |
+    gint event_mask =
+	GDK_EXPOSURE_MASK |
+	GDK_ENTER_NOTIFY_MASK |
+	GDK_LEAVE_NOTIFY_MASK |
+	GDK_BUTTON_PRESS_MASK |
+	GDK_BUTTON_RELEASE_MASK |
+	GDK_KEY_PRESS_MASK |
+	GDK_KEY_RELEASE_MASK |
+	GDK_POINTER_MOTION_MASK |
+	GDK_POINTER_MOTION_HINT_MASK;
 #if GTK_CHECK_VERSION(3,4,0)
-			  GDK_SMOOTH_SCROLL_MASK |
+    if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
+    {
+	// for X11, if we were using smooth scroll events, we
+	// would get an scroll without deltas on the very first user scroll* and
+	// get both "unsmooth" scroll and smooth scroll events after
+	// copying into the primary selection
+	//
+	// *: https://bugzilla.gnome.org/show_bug.cgi?id=675959
+	event_mask |= GDK_SCROLL_MASK;
+    }
+    else
+    {
+	// for Wayland, touchpads don't generate "unsmooth" scroll events. Both
+	// touchpads and wheels generate smooth scroll events expectedly.
+	event_mask |= GDK_SMOOTH_SCROLL_MASK;
+    }
+#else
+    event_mask |= GDK_SCROLL_MASK;
 #endif
-			  GDK_KEY_PRESS_MASK |
-			  GDK_KEY_RELEASE_MASK |
-			  GDK_POINTER_MOTION_MASK |
-			  GDK_POINTER_MOTION_HINT_MASK);
+    gtk_widget_set_events(gui.drawarea, event_mask);
 
     gtk_widget_show(gui.drawarea);
     gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
