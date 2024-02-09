@@ -289,6 +289,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: ASan logs
         if: contains(matrix.extra, 'asan') && !cancelled()
@@ -681,3 +682,4 @@ jobs:
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
+          token: ${{ secrets.CODECOV_TOKEN }}
