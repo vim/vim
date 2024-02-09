@@ -589,7 +589,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	// Correct end of highlighted area for 'showbreak',
 	// required when 'linebreak' is also set.
 	if (wlv->tocol == wlv->vcol)
-	    wlv->tocol += wlv->n_extra;
+	    wlv->tocol = wlv->vcol_sbr;
 	// combine 'showbreak' with 'wincolor'
 	wlv->char_attr = hl_combine_attr(wlv->win_attr, HL_ATTR(HLF_AT));
 #  ifdef FEAT_SYN_HL
