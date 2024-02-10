@@ -5462,7 +5462,8 @@ block_def2str(struct block_def *bd)
     size_t size = bd->startspaces + bd->endspaces + bd->textlen;
 
     ret = alloc(size + 1);
-    if (ret != NULL) {
+    if (ret != NULL)
+    {
 	p = ret;
 	memset(p, ' ', bd->startspaces);
 	p += bd->startspaces;
@@ -5528,7 +5529,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	if (VIsual_mode == 'v')
 	{
 	    // handle 'selection' == "exclusive"
-	    if (*p_sel == 'e' && !EQUAL_POS(p1, p2)) {
+	    if (*p_sel == 'e' && !EQUAL_POS(p1, p2))
+	    {
 		if (p2.coladd > 0)
 		    p2.coladd--;
 		else if (p2.col > 0)
@@ -5547,10 +5549,13 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 		}
 	    }
 	    // if fp2 is on NUL (empty line) inclusive becomes false
-	    if (*ml_get_pos(&p2) == NUL && !virtual_op) {
+	    if (*ml_get_pos(&p2) == NUL && !virtual_op)
+	    {
 		inclusive = FALSE;
 	    }
-	} else if (VIsual_mode == Ctrl_V) {
+	}
+	else if (VIsual_mode == Ctrl_V)
+	{
 	    colnr_T sc1, ec1, sc2, ec2;
 	    getvvcol(curwin, &p1, &sc1, NULL, &ec1);
 	    getvvcol(curwin, &p2, &sc2, NULL, &ec2);
@@ -5579,9 +5584,11 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	{
 		block_prep(&oap, &bd, lnum, FALSE);
 		akt = block_def2str(&bd);
-	} else if (p1.lnum < lnum && lnum < p2.lnum)
+	}
+	else if (p1.lnum < lnum && lnum < p2.lnum)
 	    akt = vim_strsave(ml_get(lnum));
-	else {
+	else
+	{
 	    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
 	    akt = block_def2str(&bd);
 	}
