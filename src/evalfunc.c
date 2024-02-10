@@ -72,6 +72,7 @@ static void f_getcursorcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getreginfo(typval_T *argvars, typval_T *rettv);
+static void f_getregion(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
 static void f_gettext(typval_T *argvars, typval_T *rettv);
@@ -185,7 +186,6 @@ static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 static void f_type(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
-static void f_getregion(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
 static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
@@ -5537,7 +5537,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 		{
 		    p2.col--;
 		    mb_adjustpos(curbuf, &p2);
-		} else if (p2.lnum > 1)
+		}
+		else if (p2.lnum > 1)
 		{
 		    p2.lnum--;
 		    p2.col = (colnr_T)STRLEN(ml_get(p2.lnum));
