@@ -42,10 +42,6 @@ static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER | DIFF_CLOSE_OFF;
 
 static long diff_algorithm = 0;
 
-#define DIFF_INTERNAL_OUTPUT_UNIFIED	1
-#define DIFF_INTERNAL_OUTPUT_INDICES	2
-static int diff_internal_output_fmt = DIFF_INTERNAL_OUTPUT_INDICES;
-
 #define LBUFLEN 50		// length of line in diff file
 
 static int diff_a_works = MAYBE; // TRUE when "diff -a" works, FALSE when it
@@ -76,12 +72,19 @@ typedef struct {
     long     count_new;
 } diffhunk_T;
 
+typedef enum {
+    DIO_OUTPUT_INDICES = 0,	// default
+    DIO_OUTPUT_UNIFIED = 1	// unified diff format
+} dio_outfmt_T;
+
 // two diff inputs and one result
 typedef struct {
-    diffin_T	dio_orig;     // original file input
-    diffin_T	dio_new;      // new file input
-    diffout_T	dio_diff;     // diff result
-    int		dio_internal; // using internal diff
+    diffin_T	    dio_orig;     // original file input
+    diffin_T	    dio_new;      // new file input
+    diffout_T	    dio_diff;     // diff result
+    int		    dio_internal; // using internal diff
+    dio_outfmt_T    dio_outfmt;   // internal diff output format
+    int		    dio_ctxlen;   // unified diff context length
 } diffio_T;
 
 static int diff_buf_idx(buf_T *buf);
@@ -1145,9 +1148,9 @@ diff_file_internal(diffio_T *diffio)
     if (diff_flags & DIFF_IBLANK)
 	param.flags |= XDF_IGNORE_BLANK_LINES;
 
-    emit_cfg.ctxlen = 0; // don't need any diff_context here
+    emit_cfg.ctxlen = diffio->dio_ctxlen;
     emit_cb.priv = &diffio->dio_diff;
-    if (diff_internal_output_fmt == DIFF_INTERNAL_OUTPUT_INDICES)
+    if (diffio->dio_outfmt == DIO_OUTPUT_INDICES)
 	emit_cfg.hunk_func = xdiff_out_indices;
     else
 	emit_cb.out_line = xdiff_out_unified;
@@ -3473,10 +3476,11 @@ f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
  */
     static int
 parse_diff_optarg(
-    typval_T	*opts,
-    int		*diffopts,
-    long	*diffalgo,
-    int		*diff_output_fmt)
+    typval_T	    *opts,
+    int		    *diffopts,
+    long	    *diffalgo,
+    dio_outfmt_T    *diff_output_fmt,
+    int		    *diff_ctxlen)
 {
     dict_T *d = opts->vval.v_dict;
 
@@ -3497,15 +3501,19 @@ parse_diff_optarg(
     if (output_fmt != NULL)
     {
 	if (STRNCMP(output_fmt, "unified", 7) == 0)
-	    *diff_output_fmt = DIFF_INTERNAL_OUTPUT_UNIFIED;
+	    *diff_output_fmt = DIO_OUTPUT_UNIFIED;
 	else if (STRNCMP(output_fmt, "indices", 7) == 0)
-	    *diff_output_fmt = DIFF_INTERNAL_OUTPUT_INDICES;
+	    *diff_output_fmt = DIO_OUTPUT_INDICES;
 	else
 	{
 	    semsg(_(e_unsupported_diff_output_format_str), output_fmt);
 	    return FAIL;
 	}
     }
+
+    *diff_ctxlen = dict_get_number_def(d, "context", 1);
+    if (*diff_ctxlen < 0)
+	*diff_ctxlen = 1;
 
     if (dict_get_bool(d, "iblank", FALSE))
 	*diffopts |= DIFF_IBLANK;
@@ -3602,25 +3610,35 @@ f_diff(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     // Save the 'diffopt' option value and restore it after getting the diff.
     int		save_diff_flags = diff_flags;
     long	save_diff_algorithm = diff_algorithm;
-    long	save_diff_output_fmt = diff_internal_output_fmt;
     diff_flags = DIFF_INTERNAL;
     diff_algorithm = 0;
-    diff_internal_output_fmt = DIFF_INTERNAL_OUTPUT_UNIFIED;
+    dio.dio_outfmt = DIO_OUTPUT_UNIFIED;
     if (argvars[2].v_type != VAR_UNKNOWN)
 	if (parse_diff_optarg(&argvars[2], &diff_flags, &diff_algorithm,
-					&diff_internal_output_fmt) == FAIL)
-	{
-	    diff_internal_output_fmt = save_diff_output_fmt;
+			&dio.dio_outfmt, &dio.dio_ctxlen) == FAIL)
 	    return;
-	}
 
     // Concatenate the List of strings into a single string using newline
     // separator.  Internal diff library expects a single string.
     list_to_diffin(orig_list, &dio.dio_orig, diff_flags & DIFF_ICASE);
     list_to_diffin(new_list, &dio.dio_new, diff_flags & DIFF_ICASE);
 
+    // If 'diffexpr' is set, then the internal diff is not used.  Set
+    // 'diffexpr' to an empty string temporarily.
+    int	    restore_diffexpr = FALSE;
+    char_u  cc = *p_dex;
+    if (*p_dex != NUL)
+    {
+	restore_diffexpr = TRUE;
+	*p_dex = NUL;
+    }
+
     // Compute the diff
     int diff_status = diff_file(&dio);
+
+    // restore 'diffexpr'
+    if (restore_diffexpr)
+	*p_dex = cc;
 
     if (diff_status == FAIL)
 	goto done;
@@ -3628,7 +3646,7 @@ f_diff(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     int		hunk_idx = 0;
     dict_T	*hunk_dict;
 
-    if (diff_internal_output_fmt == DIFF_INTERNAL_OUTPUT_INDICES)
+    if (dio.dio_outfmt == DIO_OUTPUT_INDICES)
     {
 	if (rettv_list_alloc(rettv) != OK)
 	    goto done;
@@ -3657,7 +3675,7 @@ f_diff(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
 done:
     clear_diffin(&dio.dio_new);
-    if (diff_internal_output_fmt == DIFF_INTERNAL_OUTPUT_INDICES)
+    if (dio.dio_outfmt == DIO_OUTPUT_INDICES)
 	clear_diffout(&dio.dio_diff);
     else
 	ga_clear(&dio.dio_diff.dout_ga);
@@ -3665,7 +3683,6 @@ done:
     // Restore the 'diffopt' option value.
     diff_flags = save_diff_flags;
     diff_algorithm = save_diff_algorithm;
-    diff_internal_output_fmt = save_diff_output_fmt;
 # endif
 }
 
