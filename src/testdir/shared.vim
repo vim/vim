@@ -364,7 +364,7 @@ func RunVimPiped(before, after, arguments, pipecmd)
   " Optionally run Vim under valgrind
   " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
 
-  exe "silent !" . a:pipecmd . cmd . args . ' ' . a:arguments
+  exe "silent !" .. a:pipecmd .. ' ' ..  cmd .. args .. ' ' .. a:arguments
 
   if len(a:before) > 0
     call delete('Xbefore.vim')
