@@ -4561,7 +4561,10 @@ fuzzy_match_item_compare(const void *s1, const void *s2)
     int		idx1 = ((fuzzyItem_T *)s1)->idx;
     int		idx2 = ((fuzzyItem_T *)s2)->idx;
 
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*
