@@ -61,6 +61,7 @@
  * 12.01.2024  disable auto-conversion for z/OS (MVS)
  * 17.01.2024  use size_t instead of usigned int for code-generation (-i), #13876
  * 25.01.2024  revert the previous patch (size_t instead of unsigned int)
+ * 10.02.2024  fix buffer-overflow when writing color output to buffer, #14003
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -141,7 +142,7 @@ extern void perror __P((char *));
 # endif
 #endif
 
-char version[] = "xxd 2024-01-25 by Juergen Weigert et al.";
+char version[] = "xxd 2024-02-10 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
 #else
@@ -200,7 +201,33 @@ char osver[] = "";
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
 #define COLS 256	/* change here, if you ever need more columns */
-#define LLEN ((2*(int)sizeof(unsigned long)) + 4 + (9*COLS-1) + COLS + 2)
+
+/*
+ * LLEN is the maximum length of a line; other than the visible characters
+ * we need to consider also the escape color sequence prologue/epilogue ,
+ * (11 bytes for each character). The most larger format is the default one:
+ * addr + 1 word for each col/2 + 1 char for each col
+ *
+ *   addr        1st group       2nd group
+ * +-------+ +-----------------+ +------+
+ * 01234567: 1234 5678 9abc def0 12345678
+ *
+ * - addr: typically 012345678:    -> from 10 up to 18 bytes (including trailing
+ *                                    space)
+ * - 1st group: 1234 5678 9abc ... -> each byte may be colored, so add 11
+ *                                    for each byte
+ * - space                         -> 1 byte
+ * - 2nd group: 12345678           -> each char may be colore so add 11
+ *                                    for each byte
+ * - new line                      -> 1 byte
+ * - zero (end line)               -> 1 byte
+ */
+#define LLEN (2*(int)sizeof(unsigned long) + 2 +     /* addr + ": " */ \
+             (11 * 2 + 4 + 1) * (COLS / 2) +         /* 1st group */   \
+	     1 +                                     /* space */       \
+	     (1 + 11) * COLS +                       /* 2nd group */   \
+	     1 +                                     /* new line */    \
+	     1)                                      /* zero */
 
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
