@@ -2065,7 +2065,7 @@ scroll_event(GtkWidget *widget,
 #endif
 #define DT_X11     1
 #define DT_WAYLAND 2
-    static display_type;
+    static int display_type;
     if (!display_type)
 	display_type = gui_mch_get_display() ? DT_X11 : DT_WAYLAND;
 #endif
