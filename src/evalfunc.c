@@ -5455,7 +5455,7 @@ f_getpos(typval_T *argvars, typval_T *rettv)
     getpos_both(argvars, rettv, FALSE, FALSE);
 }
 
-    char_u *
+   static char_u *
 block_def2str(struct block_def *bd)
 {
     char_u *p, *ret;
@@ -5521,7 +5521,7 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	p2 = p;
     }
 
-    if (str1[0] == 'v' && str1[1] == NUL || str2[0] == 'v' && str2[1] == NUL)
+    if ((str1[0] == 'v' && str1[1] == NUL) || (str2[0] == 'v' && str2[1] == NUL))
     {
 	if (VIsual_mode == 'v')
 	{
@@ -5565,7 +5565,7 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     }
 
     // Include the trailing byte of a multi-byte char.
-    const int l = utfc_ptr2len((char *)ml_get_pos(&p2));
+    const int l = utfc_ptr2len((char_u *)ml_get_pos(&p2));
     if (l > 1)
 	p2.col += l - 1;
 
