@@ -9,12 +9,12 @@ function miranda#GetFileTypeInfo() abort
   endif
 
   if exists("g:miranda_default_literate")
-    let s:literate = g:miranda_default_literate
+    let literate = g:miranda_default_literate
   else
-    let s:literate = v:false
+    let literate = v:false
   endif
 
-  return #{ literate: s:literate }
+  return #{ literate: literate }
 endfunction
 
 function miranda#SetFileTypeInfo(info) abort
