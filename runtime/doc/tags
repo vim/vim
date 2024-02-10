@@ -7753,8 +7753,8 @@ getpos()	builtin.txt	/*getpos()*
 getqflist()	builtin.txt	/*getqflist()*
 getqflist-examples	quickfix.txt	/*getqflist-examples*
 getreg()	builtin.txt	/*getreg()*
-getregion()	builtin.txt	/*getregion()*
 getreginfo()	builtin.txt	/*getreginfo()*
+getregion()	builtin.txt	/*getregion()*
 getregtype()	builtin.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
 getscript-autoinstall	pi_getscript.txt	/*getscript-autoinstall*
