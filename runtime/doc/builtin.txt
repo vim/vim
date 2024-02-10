@@ -263,6 +263,7 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
+getregion({pos1}, {pos2})	String	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
