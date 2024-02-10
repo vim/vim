@@ -42,6 +42,8 @@ static int pum_win_width;
 static int pum_pretend_not_visible = FALSE;
 
 static int pum_set_selected(int n, int repeat);
+static char_u* pum_get_render_text(pumitem_T *item, int round);
+static void pum_set_ordering(int rounds[3]);
 
 #define PUM_DEF_HEIGHT 10
 
@@ -416,6 +418,43 @@ pum_under_menu(int row, int col, int only_redrawing)
 	    && col < pum_col + pum_width + pum_scrollbar;
 }
 
+    static char_u*
+pum_get_render_text(
+    pumitem_T	*item,
+    int round)
+{
+    switch (round)
+    {
+	case 0:
+	    return item->pum_text;
+	case 1:
+	    return item->pum_kind;
+	case 2:
+	    return item->pum_extra;
+    }
+
+    return NULL;
+}
+
+    static void
+pum_set_ordering(
+    int rounds[3])
+{
+    int len = (int)STRLEN(p_po);
+    int i = 0;
+    if (len > 3)
+    {
+	len = 3;
+    }
+    for (i = 0; i < len; ++i)
+    {
+	if (isdigit(p_po[i]))
+	{
+	    rounds[i] = p_po[i] - '0';
+	}
+    }
+}
+
 /*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
@@ -435,8 +474,11 @@ pum_redraw(void)
     int		totwidth, width, w;
     int		thumb_pos = 0;
     int		thumb_height = 1;
-    int		round;
-    int		n;
+    int		round = 0;
+    int		rounds[3];
+    int		prefix_pum_widths[3];
+    int		r;
+    int		pw;
 
     int		attrsNorm[3];
     int		attrsSel[3];
@@ -449,6 +491,27 @@ pum_redraw(void)
     // "extra text"
     attrsNorm[2] = highlight_attr[HLF_PNX];
     attrsSel[2] = highlight_attr[HLF_PSX];
+
+    rounds[0] = 0;
+    rounds[1] = 1;
+    rounds[2] = 2;
+    prefix_pum_widths[0] = pum_base_width;
+    prefix_pum_widths[1] = pum_kind_width;
+    prefix_pum_widths[2] = pum_extra_width;
+
+    pum_set_ordering(rounds);
+    // precompute widths
+    for (r = 0; r < 3; ++r)
+    {
+	if (prefix_pum_widths[rounds[r]] > 0)
+	{
+	    prefix_pum_widths[rounds[r]]++;
+	}
+	if (r > 0)
+	{
+	    prefix_pum_widths[rounds[r]] += prefix_pum_widths[rounds[r-1]];
+	}
+    }
 
     if (call_update_screen)
     {
@@ -484,7 +547,7 @@ pum_redraw(void)
     {
 	idx = i + pum_first;
 	attrs = (idx == pum_selected) ? attrsSel : attrsNorm;
-	attr = attrs[0]; // start with "word" highlight
+	attr = attrs[rounds[0]];
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -505,17 +568,13 @@ pum_redraw(void)
 	// 2 - extra info
 	col = pum_col;
 	totwidth = 0;
-	for (round = 0; round < 3; ++round)
+	for (r = 0; r < 3; ++r)
 	{
+	    round = rounds[r];
 	    attr = attrs[round];
 	    width = 0;
 	    s = NULL;
-	    switch (round)
-	    {
-		case 0: p = pum_array[idx].pum_text; break;
-		case 1: p = pum_array[idx].pum_kind; break;
-		case 2: p = pum_array[idx].pum_extra; break;
-	    }
+	    p = pum_get_render_text(&pum_array[idx], round);
 	    if (p != NULL)
 		for ( ; ; MB_PTR_ADV(p))
 		{
@@ -627,33 +686,31 @@ pum_redraw(void)
 			width += w;
 		}
 
-	    if (round > 0)
-		n = pum_kind_width + 1;
-	    else
-		n = 1;
+	    pw = prefix_pum_widths[round];
+
 
 	    // Stop when there is nothing more to display.
-	    if (round == 2
-		    || (round == 1 && pum_array[idx].pum_extra == NULL)
-		    || (round == 0 && pum_array[idx].pum_kind == NULL
-					  && pum_array[idx].pum_extra == NULL)
-		    || pum_base_width + n >= pum_width)
+	    if (r == 2
+		    || (r == 1 && pum_get_render_text(&pum_array[idx], rounds[r+1]) == NULL)
+		    || (r == 0 && pum_get_render_text(&pum_array[idx], rounds[r+1]) == NULL
+					  && pum_get_render_text(&pum_array[idx], rounds[r+2]) == NULL)
+		    || pw >= pum_width)
 		break;
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 	    {
-		screen_fill(row, row + 1, pum_col - pum_base_width - n + 1,
+		screen_fill(row, row + 1, pum_col - pw + 1,
 						    col + 1, ' ', ' ', attr);
-		col = pum_col - pum_base_width - n + 1;
+		col = pum_col - pw + 1;
 	    }
 	    else
 #endif
 	    {
-		screen_fill(row, row + 1, col, pum_col + pum_base_width + n,
+		screen_fill(row, row + 1, col, pum_col + pw,
 							      ' ', ' ', attr);
-		col = pum_col + pum_base_width + n;
+		col = pum_col + pw;
 	    }
-	    totwidth = pum_base_width + n;
+	    totwidth = pw;
 	}
 
 #ifdef FEAT_RIGHTLEFT

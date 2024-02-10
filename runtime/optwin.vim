@@ -850,6 +850,8 @@ if has("insert_expand")
   endif
   call <SID>AddOption("pumheight", gettext("maximum height of the popup menu"))
   call <SID>OptionG("ph", &ph)
+  call <SID>AddOption("pumordering", gettext("popup menu item ordering"))
+  call <SID>OptionG("po", &po)
   call <SID>AddOption("pumwidth", gettext("minimum width of the popup menu"))
   call <SID>OptionG("pw", &pw)
   call <SID>AddOption("completefunc", gettext("user defined function for Insert mode completion"))
