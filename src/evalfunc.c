@@ -5488,6 +5488,7 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
     pos_T p1, p2;
     pos_T *fp = NULL;
     char_u *str1, *str2;
+    int is_visual = FALSE;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
@@ -5521,7 +5522,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	p2 = p;
     }
 
-    if ((str1[0] == 'v' && str1[1] == NUL) || (str2[0] == 'v' && str2[1] == NUL))
+    is_visual = (str1[0] == 'v' && str1[1] == NUL) || (str2[0] == 'v' && str2[1] == NUL);
+    if (is_visual)
     {
 	if (VIsual_mode == 'v')
 	{
@@ -5571,9 +5573,9 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	if (VIsual_mode == 'v')
+	if (is_visual && VIsual_mode == 'v')
 		akt = vim_strsave(ml_get(lnum));
-	else if (VIsual_mode == Ctrl_V)
+	else if (is_visual && VIsual_mode == Ctrl_V)
 	{
 		block_prep(&oap, &bd, lnum, FALSE);
 		akt = block_def2str(&bd);
