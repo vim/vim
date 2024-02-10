@@ -944,6 +944,7 @@ Working with text in the current buffer:		*text-functions*
 	searchdecl()		search for the declaration of a name
 	getcharsearch()		return character search information
 	setcharsearch()		set character search information
+	getregion()		get a region text from the buffer
 
 Working with text in another buffer:
 	getbufline()		get a list of lines from the specified buffer
