@@ -5571,29 +5571,20 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	switch (VIsual_mode)
-	{
-	    case 'V':
+	if (VIsual_mode == 'v')
 		akt = vim_strsave(ml_get(lnum));
-		break;
-
-	    case Ctrl_V:
+	else if (VIsual_mode == Ctrl_V)
+	{
 		block_prep(&oap, &bd, lnum, FALSE);
 		akt = block_def2str(&bd);
-		break;
-
-	    default:
-		if (p1.lnum < lnum && lnum < p2.lnum)
-		    akt = vim_strsave(ml_get(lnum));
-		else {
-		    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
-		    akt = block_def2str(&bd);
-		}
-		break;
-
+	} else if (p1.lnum < lnum && lnum < p2.lnum)
+	    akt = vim_strsave(ml_get(lnum));
+	else {
+	    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
+	    akt = block_def2str(&bd);
 	}
 
-	if (akt == NULL ||  list_append_string_move(rettv->vval.v_list, akt) == FAIL)
+	if (akt == NULL || list_append_string_move(rettv->vval.v_list, akt) == FAIL)
 	{
 	    list_free(rettv->vval.v_list);
 	    break;
