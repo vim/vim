@@ -300,7 +300,8 @@ func GetVimCommand(...)
   endif
   let cmd .= ' --not-a-term'
   let cmd .= ' --gui-dialog-file guidialogfile'
-  let cmd = substitute(cmd, 'VIMRUNTIME=\S\+', '', '')
+  " remove any environment variables
+  let cmd = substitute(cmd, '[A-Z_]*=\S\+ *', '', 'g')
 
   " If using valgrind, make sure every run uses a different log file.
   if cmd =~ 'valgrind.*--log-file='
