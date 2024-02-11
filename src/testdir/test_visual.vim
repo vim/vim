@@ -1630,4 +1630,29 @@ func Test_visual_substitute_visual()
   bwipe!
 endfunc
 
+func Test_visual_getregion()
+  new
+  call setline(1, ['one', 'two', 'three'])
+
+  normal! 0vl
+  call assert_equal(['on'], getregion('v', '.'))
+  call assert_equal(['on'], getregion('.', 'v'))
+  call assert_equal(['o'], getregion('v', 'v'))
+  call assert_equal(['n'], getregion('.', '.'))
+
+  normal! 0Vll
+  call assert_equal(['one'], getregion('v', '.'))
+  call assert_equal(['one'], getregion('.', 'v'))
+  call assert_equal(['one'], getregion('v', 'v'))
+  call assert_equal(['e'], getregion('.', '.'))
+
+  execute "normal!" "0\<C-v>ll"
+  call assert_equal(['one'], getregion('v', '.'))
+  call assert_equal(['one'], getregion('.', 'v'))
+  call assert_equal(['o'], getregion('v', 'v'))
+  call assert_equal(['e'], getregion('.', '.'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
