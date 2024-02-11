@@ -1952,7 +1952,7 @@ static funcentry_T global_functions[] =
     {"did_filetype",	0, 0, 0,	    NULL,
 			ret_number_bool,    f_did_filetype},
     {"diff",		2, 3, FEARG_1,	    arg3_diff,
-			ret_list_dict_any,  f_diff},
+			ret_any,  f_diff},
     {"diff_filler",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_diff_filler},
     {"diff_hlID",	2, 2, FEARG_1,	    arg2_lnum_number,

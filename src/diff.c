@@ -3511,9 +3511,9 @@ parse_diff_optarg(
 	}
     }
 
-    *diff_ctxlen = dict_get_number_def(d, "context", 1);
+    *diff_ctxlen = dict_get_number_def(d, "context", 0);
     if (*diff_ctxlen < 0)
-	*diff_ctxlen = 1;
+	*diff_ctxlen = 0;
 
     if (dict_get_bool(d, "iblank", FALSE))
 	*diffopts |= DIFF_IBLANK;

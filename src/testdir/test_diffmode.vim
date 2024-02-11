@@ -1719,43 +1719,43 @@ endfunc
 " Test for the diff() function
 def Test_diff_func()
   # string is added/removed/modified at the beginning
-  assert_equal("@@ -1 +1,2 @@\n+abc\n def\n",
+  assert_equal("@@ -0,0 +1 @@\n+abc\n",
                diff(['def'], ['abc', 'def'], {output: 'unified'}))
   assert_equal([{from_idx: 0, from_count: 0, to_idx: 0, to_count: 1}],
                diff(['def'], ['abc', 'def'], {output: 'indices'}))
-  assert_equal("@@ -1,2 +1 @@\n-abc\n def\n",
+  assert_equal("@@ -1 +0,0 @@\n-abc\n",
                diff(['abc', 'def'], ['def'], {output: 'unified'}))
   assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 0}],
                diff(['abc', 'def'], ['def'], {output: 'indices'}))
-  assert_equal("@@ -1,2 +1,2 @@\n-abc\n+abx\n def\n",
+  assert_equal("@@ -1 +1 @@\n-abc\n+abx\n",
                diff(['abc', 'def'], ['abx', 'def'], {output: 'unified'}))
   assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
                diff(['abc', 'def'], ['abx', 'def'], {output: 'indices'}))
 
   # string is added/removed/modified at the end
-  assert_equal("@@ -1 +1,2 @@\n abc\n+def\n",
+  assert_equal("@@ -1,0 +2 @@\n+def\n",
                diff(['abc'], ['abc', 'def'], {output: 'unified'}))
   assert_equal([{from_idx: 1, from_count: 0, to_idx: 1, to_count: 1}],
                diff(['abc'], ['abc', 'def'], {output: 'indices'}))
-  assert_equal("@@ -1,2 +1 @@\n abc\n-def\n",
+  assert_equal("@@ -2 +1,0 @@\n-def\n",
                diff(['abc', 'def'], ['abc'], {output: 'unified'}))
   assert_equal([{from_idx: 1, from_count: 1, to_idx: 1, to_count: 0}],
                diff(['abc', 'def'], ['abc'], {output: 'indices'}))
-  assert_equal("@@ -1,2 +1,2 @@\n abc\n-def\n+xef\n",
+  assert_equal("@@ -2 +2 @@\n-def\n+xef\n",
                diff(['abc', 'def'], ['abc', 'xef'], {output: 'unified'}))
   assert_equal([{from_idx: 1, from_count: 1, to_idx: 1, to_count: 1}],
                diff(['abc', 'def'], ['abc', 'xef'], {output: 'indices'}))
 
   # string is added/removed/modified in the middle
-  assert_equal("@@ -2,2 +2,3 @@\n 222\n+xxx\n 333\n",
+  assert_equal("@@ -2,0 +3 @@\n+xxx\n",
                diff(['111', '222', '333'], ['111', '222', 'xxx', '333'], {output: 'unified'}))
   assert_equal([{from_idx: 2, from_count: 0, to_idx: 2, to_count: 1}],
                diff(['111', '222', '333'], ['111', '222', 'xxx', '333'], {output: 'indices'}))
-  assert_equal("@@ -2,3 +2,2 @@\n 222\n-333\n 444\n",
+  assert_equal("@@ -3 +2,0 @@\n-333\n",
                diff(['111', '222', '333', '444'], ['111', '222', '444'], {output: 'unified'}))
   assert_equal([{from_idx: 2, from_count: 1, to_idx: 2, to_count: 0}],
                diff(['111', '222', '333', '444'], ['111', '222', '444'], {output: 'indices'}))
-  assert_equal("@@ -2,3 +2,3 @@\n 222\n-333\n+xxx\n 444\n",
+  assert_equal("@@ -3 +3 @@\n-333\n+xxx\n",
                diff(['111', '222', '333', '444'], ['111', '222', 'xxx', '444'], {output: 'unified'}))
   assert_equal([{from_idx: 2, from_count: 1, to_idx: 2, to_count: 1}],
                diff(['111', '222', '333', '444'], ['111', '222', 'xxx', '444'], {output: 'indices'}))
@@ -1795,10 +1795,12 @@ def Test_diff_func()
                diff(['abcd'], ['abc'], {output: 'unified'}))
   assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
                diff(['abcd'], ['abc'], {output: 'indices'}))
-  assert_equal("@@ -1 +1 @@\n-abc\n+abx\n",
-               diff(['abc'], ['abx'], {output: 'unified'}))
+  var diff_unified: string = diff(['abc'], ['abx'], {output: 'unified'})
+  assert_equal("@@ -1 +1 @@\n-abc\n+abx\n", diff_unified)
+  var diff_indices: list<dict<number>> =
+    diff(['abc'], ['abx'], {output: 'indices'})
   assert_equal([{from_idx: 0, from_count: 1, to_idx: 0, to_count: 1}],
-               diff(['abc'], ['abx'], {output: 'indices'}))
+               diff_indices)
 
   # partial string modification at the start and at the end.
   var fromlist =<< trim END
@@ -1825,17 +1827,18 @@ def Test_diff_func()
     three four
     five six
   END
-  assert_equal("@@ -1,3 +1,3 @@\n-one two\n+one abc two\n three four\n-five abc six\n+five six\n",
+  assert_equal("@@ -1 +1 @@\n-one two\n+one abc two\n@@ -3 +3 @@\n-five abc six\n+five six\n",
                diff(fromlist, tolist, {output: 'unified'}))
-  assert_equal([{from_idx: 0, from_count: 3, to_idx: 0, to_count: 3}],
+  assert_equal([{'from_count': 1, 'to_idx': 0, 'to_count': 1, 'from_idx': 0},
+                {'from_count': 1, 'to_idx': 2, 'to_count': 1, 'from_idx': 2}],
                diff(fromlist, tolist, {output: 'indices'}))
 
   # add/remove blank lines
-  assert_equal("@@ -1,4 +1,2 @@\n one\n-\n-\n two\n",
+  assert_equal("@@ -2,2 +1,0 @@\n-\n-\n",
                diff(['one', '', '', 'two'], ['one', 'two'], {output: 'unified'}))
   assert_equal([{from_idx: 1, from_count: 2, to_idx: 1, to_count: 0}],
                diff(['one', '', '', 'two'], ['one', 'two'], {output: 'indices'}))
-  assert_equal("@@ -1,2 +1,4 @@\n one\n+\n+\n two\n",
+  assert_equal("@@ -1,0 +2,2 @@\n+\n+\n",
                diff(['one', 'two'], ['one', '', '', 'two'], {output: 'unified'}))
   assert_equal([{'from_idx': 1, 'from_count': 0, 'to_idx': 1, 'to_count': 2}],
                diff(['one', 'two'], ['one', '', '', 'two'], {output: 'indices'}))
@@ -1911,7 +1914,7 @@ def Test_diff_func()
                diff(['a', 'b', 'c'], ['x', 'a', 'b', 'c'], {context: 3}))
   assert_equal("@@ -1,3 +1,4 @@\n+x\n a\n b\n c\n",
                diff(['a', 'b', 'c'], ['x', 'a', 'b', 'c'], {context: 4}))
-  assert_equal("@@ -1 +1,2 @@\n+x\n a\n",
+  assert_equal("@@ -0,0 +1 @@\n+x\n",
                diff(['a', 'b', 'c'], ['x', 'a', 'b', 'c'], {context: -1}))
 
   # Error cases
@@ -1921,5 +1924,33 @@ def Test_diff_func()
   assert_fails('call diff(["a"], ["a"], {output: "xyz"})', 'E106: Unsupported diff output format: xyz')
   assert_fails('call diff(["a"], ["a"], {context: []})', 'E745: Using a List as a Number')
 enddef
+
+" Test for using the diff() function with 'diffexpr'
+func Test_diffexpr_with_diff_func()
+  CheckScreendump
+
+  let lines =<< trim END
+    def DiffFuncExpr()
+      var in: list<string> = readfile(v:fname_in)
+      var new: list<string> = readfile(v:fname_new)
+      var out: string = diff(in, new)
+      writefile(split(out, "\n"), v:fname_out)
+    enddef
+    set diffexpr=DiffFuncExpr()
+
+    edit Xdifffunc1.txt
+    diffthis
+    vert split Xdifffunc2.txt
+    diffthis
+  END
+  call writefile(lines, 'XsetupDiffFunc.vim', 'D')
+
+  call writefile(['zero', 'one', 'two', 'three'], 'Xdifffunc1.txt', 'D')
+  call writefile(['one', 'twox', 'three', 'four'], 'Xdifffunc2.txt', 'D')
+
+  let buf = RunVimInTerminal('-S XsetupDiffFunc.vim', {'rows': 12})
+  call VerifyScreenDump(buf, 'Test_difffunc_diffexpr_1', {})
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
