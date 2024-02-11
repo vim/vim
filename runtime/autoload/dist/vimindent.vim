@@ -3,6 +3,9 @@ vim9script
 # Language:     Vim script
 # Maintainer:   github user lacygoill
 # Last Change:  2023 Jun 29
+#
+# Includes Changes from Vim:
+#  - 2024 Feb 09: Fix indent after literal Dict (A. Radev via #13966)
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -381,7 +384,7 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     # It can be the start of a dictionary or a block.
     # We only want to match the former.
     .. '\|' .. $'^\%({STARTS_CURLY_BLOCK}\)\@!.*\zs{{'
-    .. '\)\s*\%(\s#.*\)\=$'
+    .. '\)\s*\%(\s#[^{].*\)\=$'
 # }}}2
 # SOL {{{2
 # BACKSLASH_AT_SOL {{{3

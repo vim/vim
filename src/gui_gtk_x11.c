@@ -2049,7 +2049,7 @@ button_press_event(GtkWidget *widget,
 }
 
 /*
- * GTK+ 2 abstracts scrolling via the GdkEventScroll.
+ * GTK+ abstracts scrolling via the GdkEventScroll.
  */
     static gboolean
 scroll_event(GtkWidget *widget,
@@ -2060,7 +2060,14 @@ scroll_event(GtkWidget *widget,
     int_u   vim_modifiers;
 #if GTK_CHECK_VERSION(3,4,0)
     static double  acc_x, acc_y;
+#if !GTK_CHECK_VERSION(3,22,0)
     static guint32 last_smooth_event_time;
+#endif
+#define DT_X11     1
+#define DT_WAYLAND 2
+    static int display_type;
+    if (!display_type)
+	display_type = gui_mch_get_display() ? DT_X11 : DT_WAYLAND;
 #endif
 
     if (gtk_socket_id != 0 && !gtk_widget_has_focus(widget))
@@ -2082,12 +2089,25 @@ scroll_event(GtkWidget *widget,
 	    break;
 #if GTK_CHECK_VERSION(3,4,0)
 	case GDK_SCROLL_SMOOTH:
+	    if (event->is_stop)
+	    {
+		acc_x = acc_y = 0;
+		// this event tells us to stop, without an actual moving
+		return FALSE;
+	    }
+#if GTK_CHECK_VERSION(3,22,0)
+	    if (gdk_device_get_axes(event->device) & GDK_AXIS_FLAG_WHEEL)
+		// this is from a wheel (as oppose to a touchpad / trackpoint)
+#else
 	    if (event->time - last_smooth_event_time > 50)
 		// reset our accumulations after 50ms of silence
+#endif
 		acc_x = acc_y = 0;
 	    acc_x += event->delta_x;
 	    acc_y += event->delta_y;
+#if !GTK_CHECK_VERSION(3,22,0)
 	    last_smooth_event_time = event->time;
+#endif
 	    break;
 #endif
 	default: // This shouldn't happen
@@ -2103,27 +2123,29 @@ scroll_event(GtkWidget *widget,
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
 #if GTK_CHECK_VERSION(3,4,0)
-    if (event->direction == GDK_SCROLL_SMOOTH)
+    // on x11, despite not requested, when we copy into primary clipboard,
+    // we'll get smooth events. Unsmooth ones will also come along.
+    if (event->direction == GDK_SCROLL_SMOOTH && display_type == DT_WAYLAND)
     {
-	while (acc_x > 1.0)
+	while (acc_x >= 1.0)
 	{ // right
 	    acc_x = MAX(0.0, acc_x - 1.0);
 	    gui_send_mouse_event(MOUSE_6, (int)event->x, (int)event->y,
 		    FALSE, vim_modifiers);
 	}
-	while (acc_x < -1.0)
+	while (acc_x <= -1.0)
 	{ // left
 	    acc_x = MIN(0.0, acc_x + 1.0);
 	    gui_send_mouse_event(MOUSE_7, (int)event->x, (int)event->y,
 		    FALSE, vim_modifiers);
 	}
-	while (acc_y > 1.0)
+	while (acc_y >= 1.0)
 	{ // down
 	    acc_y = MAX(0.0, acc_y - 1.0);
 	    gui_send_mouse_event(MOUSE_5, (int)event->x, (int)event->y,
 		    FALSE, vim_modifiers);
 	}
-	while (acc_y < -1.0)
+	while (acc_y <= -1.0)
 	{ // up
 	    acc_y = MIN(0.0, acc_y + 1.0);
 	    gui_send_mouse_event(MOUSE_4, (int)event->x, (int)event->y,
@@ -2131,6 +2153,8 @@ scroll_event(GtkWidget *widget,
 	}
     }
     else
+#undef DT_X11
+#undef DT_WAYLAND
 #endif
 	gui_send_mouse_event(button, (int)event->x, (int)event->y,
 		FALSE, vim_modifiers);
@@ -3998,20 +4022,37 @@ gui_mch_init(void)
 #endif
 
     // Determine which events we will filter.
-    gtk_widget_set_events(gui.drawarea,
-			  GDK_EXPOSURE_MASK |
-			  GDK_ENTER_NOTIFY_MASK |
-			  GDK_LEAVE_NOTIFY_MASK |
-			  GDK_BUTTON_PRESS_MASK |
-			  GDK_BUTTON_RELEASE_MASK |
-			  GDK_SCROLL_MASK |
+    gint event_mask =
+	GDK_EXPOSURE_MASK |
+	GDK_ENTER_NOTIFY_MASK |
+	GDK_LEAVE_NOTIFY_MASK |
+	GDK_BUTTON_PRESS_MASK |
+	GDK_BUTTON_RELEASE_MASK |
+	GDK_KEY_PRESS_MASK |
+	GDK_KEY_RELEASE_MASK |
+	GDK_POINTER_MOTION_MASK |
+	GDK_POINTER_MOTION_HINT_MASK;
 #if GTK_CHECK_VERSION(3,4,0)
-			  GDK_SMOOTH_SCROLL_MASK |
+    if (GDK_IS_X11_DISPLAY(gdk_display_get_default()))
+    {
+	// for X11, if we were using smooth scroll events, we
+	// would get an scroll without deltas on the very first user scroll* and
+	// get both "unsmooth" scroll and smooth scroll events after
+	// copying into the primary selection
+	//
+	// *: https://bugzilla.gnome.org/show_bug.cgi?id=675959
+	event_mask |= GDK_SCROLL_MASK;
+    }
+    else
+    {
+	// for Wayland, touchpads don't generate "unsmooth" scroll events. Both
+	// touchpads and wheels generate smooth scroll events expectedly.
+	event_mask |= GDK_SMOOTH_SCROLL_MASK;
+    }
+#else
+    event_mask |= GDK_SCROLL_MASK;
 #endif
-			  GDK_KEY_PRESS_MASK |
-			  GDK_KEY_RELEASE_MASK |
-			  GDK_POINTER_MOTION_MASK |
-			  GDK_POINTER_MOTION_HINT_MASK);
+    gtk_widget_set_events(gui.drawarea, event_mask);
 
     gtk_widget_show(gui.drawarea);
     gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);

@@ -843,7 +843,12 @@ doESCkey:
 		if (cmdchar != 'r' && cmdchar != 'v' && c != Ctrl_C)
 		    ins_apply_autocmds(EVENT_INSERTLEAVE);
 		did_cursorhold = FALSE;
-		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
+
+		// ins_redraw() triggers TextChangedI only when no characters
+		// are in the typeahead buffer, so only reset curbuf->b_last_changedtick
+		// if the TextChangedI was not blocked by char_avail() (e.g. using :norm!)
+		if (!char_avail())
+		    curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 		return (c == Ctrl_O);
 	    }
 	    continue;

@@ -1699,11 +1699,6 @@ win_update(win_T *wp)
 		top_end = 1;
 #endif
 	}
-
-	// When line numbers are displayed need to redraw all lines below
-	// inserted/deleted lines.
-	if (mod_top != 0 && buf->b_mod_xlines != 0 && wp->w_p_nu)
-	    mod_bot = MAXLNUM;
     }
     wp->w_redraw_top = 0;	// reset for next time
     wp->w_redraw_bot = 0;
@@ -2540,11 +2535,16 @@ win_update(win_T *wp)
 	}
 	else
 	{
-	    if (wp->w_p_rnu && wp->w_last_cursor_lnum_rnu != wp->w_cursor.lnum)
+	    // If:
+	    // - 'number' is set and below inserted/deleted lines, or
+	    // - 'relativenumber' is set and cursor moved vertically,
+	    // the text doesn't need to be redrawn, but the number column does.
+	    if ((wp->w_p_nu && mod_top != 0
+			&& lnum >= mod_bot && buf->b_mod_xlines != 0)
+		    || (wp->w_p_rnu
+			&& wp->w_last_cursor_lnum_rnu != wp->w_cursor.lnum))
 	    {
 #ifdef FEAT_FOLDING
-		// 'relativenumber' set and the cursor moved vertically: The
-		// text doesn't need to be drawn, but the number column does.
 		fold_count = foldedCount(wp, lnum, &win_foldinfo);
 		if (fold_count != 0)
 		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);

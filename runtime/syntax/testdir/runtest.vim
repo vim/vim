@@ -237,11 +237,12 @@ call Message('FAILED: ' .. len(failed_tests) .. ': ' .. string(failed_tests))
 call Message('skipped: ' .. skipped_count)
 call AppendMessages('== SUMMARY ==')
 
-" Matching "if 1" at the start.
-endif
-
 if len(failed_tests) > 0
   " have make report an error
   cquit
 endif
+
+" Matching "if 1" at the start.
+endif
+
 qall!
