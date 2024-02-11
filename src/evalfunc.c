@@ -5579,7 +5579,7 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	if (is_visual && VIsual_mode == 'v')
+	if (is_visual && VIsual_mode == 'V')
 		akt = vim_strsave(ml_get(lnum));
 	else if (is_visual && VIsual_mode == Ctrl_V)
 	{
