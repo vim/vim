@@ -6494,10 +6494,11 @@ printf "%s\n" "$vi_cv_perl_xsubpp" >&6; }
       fi
 
 
-                              perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
+                                    perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[^ ]*//' \
 		-e 's/-fdebug-prefix-map[^ ]*//g' \
 		-e 's/-pipe //' \
+		-e 's/-flto\(=auto\)\? //' \
 		-e 's/-W[^ ]*//g' \
 		-e 's/-D_FORTIFY_SOURCE=.//g'`
             perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
@@ -10402,8 +10403,11 @@ system ("touch conf.gtktest");
 tmp_version = g_strdup("$min_gtk_version");
 if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
    printf("%s, bad version string\n", "$min_gtk_version");
+   g_free(tmp_version);
    exit(1);
  }
+
+g_free(tmp_version);
 
 if ((gtk_major_version > major) ||
     ((gtk_major_version == major) && (gtk_minor_version > minor)) ||
