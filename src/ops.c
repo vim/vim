@@ -1431,18 +1431,19 @@ swapchar(int op_type, pos_T *pos)
     if (c >= 0x80 && op_type == OP_ROT13)
 	return FALSE;
 
-    if (op_type == OP_UPPER && c == 0xdf
-		      && (enc_latin1like || STRCMP(p_enc, "iso-8859-2") == 0))
+    // ~ is OP_NOP, g~ is OP_TILDE, gU is OP_UPPER
+    if ((op_type == OP_UPPER || op_type == OP_NOP || op_type == OP_TILDE)
+	    && c == 0xdf
+	    && (enc_latin1like || STRCMP(p_enc, "iso-8859-2") == 0))
     {
 	pos_T   sp = curwin->w_cursor;
 
-	// Special handling of German sharp s: change to "SS".
+	// Special handling for lowercase German sharp s (ß): convert to uppercase (ẞ).
 	curwin->w_cursor = *pos;
 	del_char(FALSE);
-	ins_char('S');
-	ins_char('S');
+	ins_char(0x1E9E);
 	curwin->w_cursor = sp;
-	inc(pos);
+	return TRUE;
     }
 
     if (enc_dbcs != 0 && c >= 0x100)	// No lower/uppercase letter
