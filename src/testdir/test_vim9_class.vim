@@ -67,7 +67,7 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | echo 'done'", 3)
 
-  # Use old "this." prefixed member variable declaration syntax (without intialization)
+  # Use old "this." prefixed member variable declaration syntax (without initialization)
   lines =<< trim END
     vim9script
     class Something
@@ -76,7 +76,7 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, 'E1318: Not a valid command in a class: this.count: number', 3)
 
-  # Use old "this." prefixed member variable declaration syntax (with intialization)
+  # Use old "this." prefixed member variable declaration syntax (with initialization)
   lines =<< trim END
     vim9script
     class Something
