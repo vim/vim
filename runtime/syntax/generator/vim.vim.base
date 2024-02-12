@@ -3,7 +3,7 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	2024 Mar 19
+" Last Change:	2024 Mar 22
 " Former Maintainer: Charles E. Campbell
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
@@ -79,7 +79,7 @@ syn case match
 " Special Vim Highlighting (not automatic) {{{1
 
 " Set up folding commands for this syntax highlighting file {{{2
-if exists("g:vimsyn_folding") && g:vimsyn_folding =~# '[afhlmpPrt]'
+if exists("g:vimsyn_folding") && g:vimsyn_folding =~# '[afhilmpPrt]'
  if g:vimsyn_folding =~# 'a'
   com! -nargs=* VimFolda <args> fold
  else
@@ -94,6 +94,11 @@ if exists("g:vimsyn_folding") && g:vimsyn_folding =~# '[afhlmpPrt]'
   com! -nargs=* VimFoldh <args> fold
  else
   com! -nargs=* VimFoldh <args>
+ endif
+ if g:vimsyn_folding =~# 'i'
+  com! -nargs=* VimFoldi <args> fold
+ else
+  com! -nargs=* VimFoldi <args>
  endif
  if g:vimsyn_folding =~# 'l'
   com! -nargs=* VimFoldl <args> fold
@@ -129,6 +134,7 @@ else
  com! -nargs=*	VimFolda	<args>
  com! -nargs=*	VimFoldf	<args>
  com! -nargs=*	VimFoldh	<args>
+ com! -nargs=*	VimFoldi	<args>
  com! -nargs=*	VimFoldl	<args>
  com! -nargs=*	VimFoldm	<args>
  com! -nargs=*	VimFoldp	<args>
@@ -184,9 +190,11 @@ syn cluster vimExprList contains=vimEnvvar,vimFunc,vimFuncVar,vimNumber,vimOper,
 "   (buftype != nofile test avoids having append, change, insert show up in the command window)
 " =======================
 if &buftype != 'nofile'
- syn region vimInsert	matchgroup=vimCommand start="^[: \t]*\(\d\+\(,\d\+\)\=\)\=a\%[ppend]$"		matchgroup=vimCommand end="^\.$""
- syn region vimInsert	matchgroup=vimCommand start="^[: \t]*\(\d\+\(,\d\+\)\=\)\=c\%[hange]$"		matchgroup=vimCommand end="^\.$""
- syn region vimInsert	matchgroup=vimCommand start="^[: \t]*\(\d\+\(,\d\+\)\=\)\=i\%[nsert]$"		matchgroup=vimCommand end="^\.$""
+ syn match  vimInsert	"^[: \t]*\%(\d\+\(,\d\+\)\=\)\=a\%[ppend]\>" skipwhite skipnl nextgroup=vimInsertBang,vimInsertText
+ syn match  vimInsert	"^[: \t]*\%(\d\+\(,\d\+\)\=\)\=c\%[hange]\>" skipwhite skipnl nextgroup=vimInsertBang,vimInsertText
+ syn match  vimInsert	"^[: \t]*\%(\d\+\(,\d\+\)\=\)\=i\%[nsert]\>" skipwhite skipnl nextgroup=vimInsertBang,vimInsertText
+ VimFoldi syn region vimInsertText	contained start="^" matchgroup=vimCommand end="^\.$"
+ syn match  vimInsertBang	contained "\a\@1<=!" skipwhite skipnl nextgroup=vimInsertText
 endif
 
 " Behave! {{{2
@@ -1026,7 +1034,9 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimHiTerm	Type
  hi def link vimHLGroup	vimGroup
  hi def link vimHLMod	PreProc
- hi def link vimInsert	vimString
+ hi def link vimInsert	vimCommand
+ hi def link vimInsertBang	vimBang
+ hi def link vimInsertText	vimString
  hi def link vimIskSep	Delimiter
  hi def link vimKeyCode	vimSpecFile
  hi def link vimKeymapLineComment	vimComment
@@ -1146,6 +1156,7 @@ let b:current_syntax = "vim"
 " Cleanup: {{{1
 delc VimFolda
 delc VimFoldf
+delc VimFoldi
 delc VimFoldl
 delc VimFoldm
 delc VimFoldp

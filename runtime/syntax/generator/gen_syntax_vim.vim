@@ -280,7 +280,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'echo', 'echoconsole', 'echoerr', 'echohl', 'echomsg', 'echon', 'echowindow',
 	\	'execute',
 	\	'behave', 'augroup', 'normal', 'syntax',
-	\	'append', 'insert',
+	\	'append', 'insert', 'change',
 	\	'Next', 'Print', 'X',
 	\	'new', 'popup',
 	\ ]

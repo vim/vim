@@ -292,7 +292,8 @@
 :lnewer
 :lnfile
 :lnoremap
-:loadkeymap
+" consumes the rest of the file
+" :loadkeymap
 :loadview
 :lockmarks
 :lockvar
@@ -313,8 +314,7 @@
 :move
 :mark
 :make
-" requires trailing whitespace to distinguish from map()
-:map 
+:map
 :mapclear
 :marks
 :match
@@ -907,8 +907,7 @@ call Foo() | lwindow
 call Foo() | move
 call Foo() | mark
 call Foo() | make
-" requires trailing whitespace to distinguish from map()
-call Foo() | map 
+call Foo() | map
 call Foo() | mapclear
 call Foo() | marks
 call Foo() | match
