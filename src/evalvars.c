@@ -4843,6 +4843,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
     tabpage_T	*save_curtab;
     tabpage_T	*tp;
+    tabpage_T	*save_lu_tp;
     char_u	*varname, *tabvarname;
     typval_T	*varp;
 
@@ -4862,6 +4863,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     save_curtab = curtab;
+    save_lu_tp = lastused_tabpage;
     goto_tabpage_tp(tp, FALSE, FALSE);
 
     tabvarname = alloc(STRLEN(varname) + 3);
@@ -4873,9 +4875,13 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 	vim_free(tabvarname);
     }
 
-    // Restore current tabpage
+    // Restore current tabpage and last accessed tabpage.
     if (valid_tabpage(save_curtab))
+    {
 	goto_tabpage_tp(save_curtab, FALSE, FALSE);
+	if (valid_tabpage(save_lu_tp))
+	    lastused_tabpage = save_lu_tp;
+    }
 }
 
 /*
