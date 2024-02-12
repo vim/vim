@@ -3899,8 +3899,8 @@ may_update_popup_mask(int type)
 
 			// The screen position "line" / "col" needs to be
 			// redrawn.  Figure out what window that is and update
-			// w_redraw_top and w_redr_bot.  Only needs to be done
-			// once for each window line.
+			// w_redraw_top and w_redraw_bot.  Only needs to be
+			// done once for each window line.
 			wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
 			if (wp != NULL)
 			{

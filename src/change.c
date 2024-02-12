@@ -559,6 +559,12 @@ changed_common(
 	    if (!redraw_not_allowed && wp->w_redr_type < UPD_VALID)
 		wp->w_redr_type = UPD_VALID;
 
+	    // When inserting/deleting lines and the window has specific lines
+	    // to be redrawn, w_redraw_top and w_redraw_bot may now be invalid,
+	    // so just redraw everything.
+	    if (xtra != 0 && wp->w_redraw_top != 0)
+		redraw_win_later(wp, UPD_NOT_VALID);
+
 	    // Reset "w_skipcol" if the topline length has become smaller to
 	    // such a degree that nothing will be visible anymore, accounting
 	    // for 'smoothscroll' <<< or 'listchars' "precedes" marker.
