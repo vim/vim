@@ -1634,23 +1634,34 @@ func Test_visual_getregion()
   new
   call setline(1, ['one', 'two', 'three'])
 
-  normal! 0vl
+  call cursor(1, 1)
+  execute "normal!" "\<ESC>vl"
   call assert_equal(['on'], getregion('v', '.'))
   call assert_equal(['on'], getregion('.', 'v'))
   call assert_equal(['o'], getregion('v', 'v'))
   call assert_equal(['n'], getregion('.', '.'))
 
-  normal! 0Vll
+  call cursor(1, 1)
+  execute "normal!" "\<ESC>Vll"
   call assert_equal(['one'], getregion('v', '.'))
   call assert_equal(['one'], getregion('.', 'v'))
   call assert_equal(['one'], getregion('v', 'v'))
   call assert_equal(['e'], getregion('.', '.'))
 
-  execute "normal!" "0\<C-v>ll"
+  call cursor(1, 1)
+  execute "normal!" "\<ESC>\<C-v>ll"
   call assert_equal(['one'], getregion('v', '.'))
   call assert_equal(['one'], getregion('.', 'v'))
   call assert_equal(['o'], getregion('v', 'v'))
   call assert_equal(['e'], getregion('.', '.'))
+
+  call cursor(1, 1)
+  execute "normal!" "\<ESC>\<C-v>jj"
+  call assert_equal(['o', 't', 't'], getregion('v', '.'))
+
+  call cursor(1, 1)
+  execute "normal!" "\<ESC>\<C-v>jj$"
+  call assert_equal(['one', 'two', 'three'], getregion('v', '.'))
 
   bwipe!
 endfunc
