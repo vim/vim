@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 01
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2074,20 +2074,22 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 
 		The {options} Dict argument also specifies diff options
 		(similar to 'diffopt') and supports the following items:
+		    algorithm		Dict specifying the diff algorithm to
+					use.  Supported boolean items are
+					"myers", "minimal", "patience" and
+					"histogram".
+		    context		unified diff context length.  Default
+					is 1.
 		    iblank		ignore changes where lines are all
 					blank.
 		    icase		ignore changes in case of text.
+		    indent-heuristic	use the indent heuristic for the
+					internal diff library.
 		    iwhite		ignore changes in amount of white
 					space.
 		    iwhiteall		ignore all white space changes.
 		    iwhiteeol		ignore white space changes at end of
 					line.
-		    indent-heuristic	use the indent heuristic for the
-					internal diff library.
-		    algorithm		Dict specifying the diff algorithm to
-					use.  Supported boolean items are
-					"myers", "minimal", "patience" and
-					"histogram".
 		For more information about these options, refer to 'diffopt'.
 
 		Returns an empty List or String if {fromlist} and {tolist} are

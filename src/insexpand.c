@@ -1350,7 +1350,13 @@ ins_compl_show_pum(void)
     }
 
     if (compl_match_array == NULL)
+    {
+#ifdef FEAT_EVAL
+	if (compl_started && has_completechanged())
+	    trigger_complete_changed_event(cur);
+#endif
 	return;
+    }
 
     // In Replace mode when a $ is displayed at the end of the line only
     // part of the screen would be updated.  We do need to redraw here.

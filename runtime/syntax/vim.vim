@@ -3,19 +3,22 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
 " Last Change:	May 09, 2023
-" 	2023 Nov 12 by Vim Project (:let-heredoc improvements)
-" 	2023 Nov 20 by Vim Project (:loadkeymap improvements)
-" 	2023 Dec 06 by Vim Project (add missing assignment operators)
-" 	2023 Dec 10 by Vim Project (improve variable matching)
-" 	2023 Dec 21 by Vim Project (improve ex command matching)
-" 	2023 Dec 30 by Vim Project (:syntax improvements)
-" 	2024 Jan 14 by Vim Project (TermResponseAll autocommand)
-" 	2024 Jan 15 by Vim Project (:hi ctermfont attribute)
-" 	2024 Jan 23 by Vim Project (add :[23]match commands)
-" 	2024 Jan 25 by Vim Project (WinNewPre autocommand)
-" 	2024 Jan 27 by Vim Project (add foreach() function)
-" 	2024 Jan 28 by Vim Project (improve line-continuation matching & string interpolation)
-" 	2024 Feb 01 by Vim Project (improve special key matching)
+" 	Vim Project changes: {{{1
+" 	2023 Nov 12 (:let-heredoc improvements)
+" 	2023 Nov 20 (:loadkeymap improvements)
+" 	2023 Dec 06 (add missing assignment operators)
+" 	2023 Dec 10 (improve variable matching)
+" 	2023 Dec 21 (improve ex command matching)
+" 	2023 Dec 30 (:syntax improvements)
+" 	2024 Jan 14 (TermResponseAll autocommand)
+" 	2024 Jan 15 (:hi ctermfont attribute)
+" 	2024 Jan 23 (add :[23]match commands)
+" 	2024 Jan 25 (WinNewPre autocommand)
+" 	2024 Jan 27 (add foreach() function)
+" 	2024 Jan 28 (improve line-continuation matching & string interpolation)
+" 	2024 Feb 01 (improve special key matching)
+" 	2024 Feb 10 (improve :highlight and :map)
+" }}}
 " Base File Author:  Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 " Base File Version: 9.0-25
 " Base File URL:	   http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
@@ -28,13 +31,9 @@
 
 " Quit when a syntax file was already loaded {{{2
 if exists("b:current_syntax")
-  if !exists("b:loaded_syntax_vim_ex")
-    syntax clear
-  else
-    finish
-  endif
+  finish
 endif
-let b:loaded_syntax_vim_ex="2024-02-13T01:05:49+09:00"
+let b:loaded_syntax_vim_ex="2024-02-13T01:28:35+09:00"
 let s:keepcpo= &cpo
 set cpo&vim
 
@@ -509,7 +508,8 @@ syn case match
 
 " Maps: {{{2
 " ====
-syn match	vimMap		"\<map\>!\=\ze\s*[^(]" skipwhite nextgroup=vimMapMod,vimMapLhs
+syn match	vimMap		"\<map\>\ze\s*(\@!" 	    skipwhite nextgroup=vimMapMod,vimMapLhs
+syn match	vimMap		"\<map!"	  contains=vimMapBang skipwhite nextgroup=vimMapMod,vimMapLhs
 " GEN_SYN_VIM: vimCommand map, START_STR='syn keyword vimMap', END_STR='skipwhite nextgroup=vimMapBang,vimMapMod,vimMapLhs'
 syn keyword vimMap cm[ap] cno[remap] im[ap] ino[remap] lm[ap] ln[oremap] nm[ap] nn[oremap] no[remap] om[ap] ono[remap] smap snor[emap] tma[p] tno[remap] vm[ap] vn[oremap] xm[ap] xn[oremap] skipwhite nextgroup=vimMapBang,vimMapMod,vimMapLhs
 " GEN_SYN_VIM: vimCommand mapclear, START_STR='syn keyword vimMap', END_STR=''
@@ -710,7 +710,7 @@ syn match	vimHiBang	contained	"!"	skipwhite nextgroup=@vimHighlightCluster
 
 syn match	vimHiGroup	contained	"\i\+"
 syn case ignore
-syn keyword	vimHiAttrib	contained	none bold inverse italic nocombine reverse standout strikethrough underline undercurl
+syn keyword	vimHiAttrib	contained	none bold inverse italic nocombine reverse standout strikethrough underline undercurl underdashed underdotted underdouble
 syn keyword	vimFgBgAttrib	contained	none bg background fg foreground
 syn case match
 syn match	vimHiAttribList	contained	"\i\+"	contains=vimHiAttrib
@@ -725,7 +725,7 @@ syn match	vimHiGuiFontname	contained	"'[a-zA-Z\-* ]\+'"
 syn match	vimHiGuiRgb	contained	"#\x\{6}"
 
 " Highlighting: hi group key=arg ... {{{2
-syn cluster	vimHiCluster contains=vimGroup,vimHiGroup,vimHiTerm,vimHiCTerm,vimHiStartStop,vimHiCtermFgBg,vimHiCtermul,vimHiCtermfont,vimHiGui,vimHiGuiFont,vimHiGuiFgBg,vimHiKeyError,vimNotation
+syn cluster	vimHiCluster contains=vimGroup,vimHiGroup,vimHiTerm,vimHiCTerm,vimHiStartStop,vimHiCtermFgBg,vimHiCtermul,vimHiCtermfont,vimHiGui,vimHiGuiFont,vimHiGuiFgBg,vimHiKeyError,vimNotation,vimComment,vim9comment
 syn region	vimHiKeyList	contained oneline start="\i\+" skip="\\\\\|\\|" end="$\||"	contains=@vimHiCluster
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_vimhikeyerror")
  syn match	vimHiKeyError	contained	"\i\+="he=e-1
@@ -992,6 +992,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimAutoEvent	Type
  hi def link vimAutoCmdMod	Special
  hi def link vimAutoSet	vimCommand
+ hi def link vimBang	vimOper
  hi def link vimBehaveModel	vimBehave
  hi def link vimBehave	vimCommand
  hi def link vimBracket	Delimiter
@@ -1032,6 +1033,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimGroupSpecial	Special
  hi def link vimGroup	Type
  hi def link vimHiAttrib	PreProc
+ hi def link vimHiBang	vimBang
  hi def link vimHiClear	vimHighlight
  hi def link vimHiCtermFgBg	vimHiTerm
  hi def link vimHiCTerm	vimHiTerm
@@ -1059,12 +1061,13 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimLetRegister	Special
  hi def link vimLineComment	vimComment
  hi def link vim9LineComment	vimComment
- hi def link vimMapBang	vimCommand
+ hi def link vimMapBang	vimBang
  hi def link vimMapModKey	vimFuncSID
  hi def link vimMapMod	vimBracket
  hi def link vimMap	vimCommand
  hi def link vimMark	Number
  hi def link vimMarkNumber	vimNumber
+ hi def link vimMenuBang	vimBang
  hi def link vimMenuMod	vimMapMod
  hi def link vimMenuNameMore	vimMenuName
  hi def link vimMenuName	PreProc
@@ -1139,7 +1142,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimTodo	Todo
  hi def link vimType	Type
  hi def link vimUnlet	vimCommand
- hi def link vimUnletBang	vimCommand
+ hi def link vimUnletBang	vimBang
  hi def link vimUnmap	vimMap
  hi def link vimUserAttrbCmpltFunc	Special
  hi def link vimUserAttrbCmplt	vimSpecial
