@@ -993,4 +993,40 @@ func Test_tabpage_drop_tabmove()
   bwipe!
 endfunc
 
+" Using settabvar() shouldn't change the last accessed tabpage.
+func Test_lastused_tabpage_settabvar()
+  tabonly!
+  tabnew
+  tabnew
+  tabnew
+  call assert_equal(3, tabpagenr('#'))
+
+  call settabvar(2, 'myvar', 'tabval')
+  call assert_equal('tabval', gettabvar(2, 'myvar'))
+  call assert_equal(3, tabpagenr('#'))
+
+  bwipe!
+  bwipe!
+  bwipe!
+endfunc
+
+" Setting options using Python shouldn't change the last accessed tabpage.
+func Test_lastused_tabpage_python3_options()
+  CheckFeature python3
+
+  tabonly!
+  tabnew
+  tabnew
+  tabnew
+  call assert_equal(3, tabpagenr('#'))
+
+  python3 vim.tabpages[1].windows[0].options['number'] = True
+  call assert_equal(1, gettabwinvar(2, 1, '&number'))
+  call assert_equal(3, tabpagenr('#'))
+
+  bwipe!
+  bwipe!
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
