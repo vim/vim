@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 11
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2078,8 +2078,7 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 					use.  Supported boolean items are
 					"myers", "minimal", "patience" and
 					"histogram".
-		    context		unified diff context length.  Default
-					is 1.
+		    context		diff context length.  Default is 0.
 		    iblank		ignore changes where lines are all
 					blank.
 		    icase		ignore changes in case of text.
@@ -2091,6 +2090,10 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 		    iwhiteeol		ignore white space changes at end of
 					line.
 		For more information about these options, refer to 'diffopt'.
+
+		To compute the unified diff, all the items in {fromlist} are
+		concatenated into a string using a newline separator and the
+		same for {tolist}.  The unified diff output uses line numbers.
 
 		Returns an empty List or String if {fromlist} and {tolist} are
 		identical.
