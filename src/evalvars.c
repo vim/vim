@@ -4841,11 +4841,6 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     void
 f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    tabpage_T	*save_curtab;
-    tabpage_T	*tp;
-    char_u	*varname, *tabvarname;
-    typval_T	*varp;
-
     if (check_secure())
 	return;
 
@@ -4854,17 +4849,18 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 		|| check_for_string_arg(argvars, 1) == FAIL))
 	return;
 
-    tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
-    varname = tv_get_string_chk(&argvars[1]);
-    varp = &argvars[2];
+    tabpage_T	*tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
+    char_u	*varname = tv_get_string_chk(&argvars[1]);
+    typval_T	*varp = &argvars[2];
 
     if (varname == NULL || tp == NULL)
 	return;
 
-    save_curtab = curtab;
+    tabpage_T	*save_curtab = curtab;
+    tabpage_T	*save_lu_tp = lastused_tabpage;
     goto_tabpage_tp(tp, FALSE, FALSE);
 
-    tabvarname = alloc(STRLEN(varname) + 3);
+    char_u	*tabvarname = alloc(STRLEN(varname) + 3);
     if (tabvarname != NULL)
     {
 	STRCPY(tabvarname, "t:");
@@ -4875,7 +4871,11 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 
     // Restore current tabpage
     if (valid_tabpage(save_curtab))
+    {
 	goto_tabpage_tp(save_curtab, FALSE, FALSE);
+	if (valid_tabpage(save_lu_tp))
+	    lastused_tabpage = save_lu_tp;
+    }
 }
 
 /*

@@ -993,4 +993,29 @@ func Test_tabpage_drop_tabmove()
   bwipe!
 endfunc
 
+" settabvar() and settabwinvar() shouldn't change the last accessed tabpage
+func Test_settabvar_lastused_tabpage()
+  tabonly!
+  tabnew
+  tabnew
+  tabnew
+  call assert_equal(3, tabpagenr('#'))
+
+  call settabvar(2, 'myvar', 'tabval')
+  call assert_equal('tabval', gettabvar(2, 'myvar'))
+  call assert_equal(3, tabpagenr('#'))
+
+  call settabwinvar(2, 1, 'myvar', 'winval')
+  call assert_equal('winval', gettabwinvar(2, 1, 'myvar'))
+  call assert_equal(3, tabpagenr('#'))
+
+  call settabwinvar(2, 1, '&number', 1)
+  call assert_equal(1, gettabwinvar(2, 1, '&number'))
+  call assert_equal(3, tabpagenr('#'))
+
+  bwipe!
+  bwipe!
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

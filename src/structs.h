@@ -4894,6 +4894,7 @@ typedef enum {
 typedef struct {
     win_T	*sw_curwin;
     tabpage_T	*sw_curtab;
+    tabpage_T	*sw_lu_tp;	    // saved lastused_tabpage value
     int		sw_same_win;	    // VIsual_active was not reset
     int		sw_visual_active;
 } switchwin_T;

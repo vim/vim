@@ -1382,7 +1382,10 @@ switch_win_noblock(
 	    topframe = curtab->tp_topframe;
 	}
 	else
+	{
+	    switchwin->sw_lu_tp = lastused_tabpage;
 	    goto_tabpage_tp(tp, FALSE, FALSE);
+	}
     }
     if (!win_valid(win))
 	return FAIL;
@@ -1426,7 +1429,11 @@ restore_win_noblock(
 	    topframe = curtab->tp_topframe;
 	}
 	else
+	{
 	    goto_tabpage_tp(switchwin->sw_curtab, FALSE, FALSE);
+	    if (valid_tabpage(switchwin->sw_lu_tp))
+		lastused_tabpage = switchwin->sw_lu_tp;
+	}
     }
 
     if (!switchwin->sw_same_win)
