@@ -1436,11 +1436,11 @@ swapchar(int op_type, pos_T *pos)
     {
 	pos_T   sp = curwin->w_cursor;
 
-	// Special handling of German sharp s: change to "SS".
+	// Special handling for lowercase German sharp s (ß): convert to uppercase (ẞ).
 	curwin->w_cursor = *pos;
 	del_char(FALSE);
-	ins_char('S');
-	ins_char('S');
+	ins_char(0x1E9E);
+	pos->col -= 1;
 	curwin->w_cursor = sp;
 	inc(pos);
     }
