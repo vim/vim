@@ -5455,6 +5455,9 @@ f_getpos(typval_T *argvars, typval_T *rettv)
     getpos_both(argvars, rettv, FALSE, FALSE);
 }
 
+/*
+ * Convert from block_def to string
+ */
    static char_u *
 block_def2str(struct block_def *bd)
 {
@@ -5524,7 +5527,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	p2 = p;
     }
 
-    is_visual = (str1[0] == 'v' && str1[1] == NUL) || (str2[0] == 'v' && str2[1] == NUL);
+    is_visual = (str1[0] == 'v' && str1[1] == NUL)
+	|| (str2[0] == 'v' && str2[1] == NUL);
     if (is_visual)
     {
 	if (VIsual_mode == 'v')
@@ -5559,6 +5563,7 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 	else if (VIsual_mode == Ctrl_V)
 	{
 	    colnr_T sc1, ec1, sc2, ec2;
+
 	    getvvcol(curwin, &p1, &sc1, NULL, &ec1);
 	    getvvcol(curwin, &p2, &sc2, NULL, &ec2);
 	    oap.motion_type = OP_NOP;
