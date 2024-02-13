@@ -1635,32 +1635,32 @@ func Test_visual_getregion()
   call setline(1, ['one', 'two', 'three'])
 
   call cursor(1, 1)
-  execute "normal!" "\<ESC>vl"
+  call feedkeys("\<ESC>vl", 'tx')
   call assert_equal(['on'], getregion('v', '.'))
   call assert_equal(['on'], getregion('.', 'v'))
   call assert_equal(['o'], getregion('v', 'v'))
   call assert_equal(['n'], getregion('.', '.'))
 
   call cursor(1, 1)
-  execute "normal!" "\<ESC>Vll"
+  call feedkeys("\<ESC>Vll", 'tx')
   call assert_equal(['one'], getregion('v', '.'))
   call assert_equal(['one'], getregion('.', 'v'))
   call assert_equal(['one'], getregion('v', 'v'))
   call assert_equal(['e'], getregion('.', '.'))
 
   call cursor(1, 1)
-  execute "normal!" "\<ESC>\<C-v>ll"
+  call feedkeys("\<ESC>\<C-v>ll", 'tx')
   call assert_equal(['one'], getregion('v', '.'))
   call assert_equal(['one'], getregion('.', 'v'))
   call assert_equal(['o'], getregion('v', 'v'))
   call assert_equal(['e'], getregion('.', '.'))
 
   call cursor(1, 1)
-  execute "normal!" "\<ESC>\<C-v>jj"
+  call feedkeys("\<ESC>\<C-v>jj", 'tx')
   call assert_equal(['o', 't', 't'], getregion('v', '.'))
 
   call cursor(1, 1)
-  execute "normal!" "\<ESC>\<C-v>jj$"
+  call feedkeys("\<ESC>\<C-v>jj$", 'tx')
   call assert_equal(['one', 'two', 'three'], getregion('v', '.'))
 
   bwipe!
