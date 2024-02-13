@@ -5468,11 +5468,11 @@ block_def2str(struct block_def *bd)
     if (ret != NULL)
     {
 	p = ret;
-	memset(p, ' ', bd->startspaces);
+	vim_memset(p, ' ', bd->startspaces);
 	p += bd->startspaces;
-	memmove(p, bd->textstart, bd->textlen);
+	mch_memmove(p, bd->textstart, bd->textlen);
 	p += bd->textlen;
-	memset(p, ' ', bd->endspaces);
+	vim_memset(p, ' ', bd->endspaces);
 	*(p + bd->endspaces) = NUL;
     }
     return ret;
