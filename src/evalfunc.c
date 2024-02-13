@@ -5496,7 +5496,8 @@ static void f_getregion(typval_T *argvars, typval_T *rettv)
 
     virtual_op = virtual_active();
 
-    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_STRING)
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
     // NOTE: var2fpos() returns static pointer.
