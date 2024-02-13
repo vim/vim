@@ -4268,11 +4268,11 @@ getregion({pos1}, {pos2})				*getregion()*
 		It is useful to get text starting and ending in different
 		columns, such as |characterwise-visual| selection.
 
-		Note that
+		Note that:
 		- {pos1} and {pos2} are swapped if {pos1} is after {pos2}.
-		- if |virtualmode| is enabled and selection is past the end of
-		  line, result lines are filled with spaces,
-		- if selection starts or ends in the middle of multiwidth
+		- If |virtualmode| is enabled and selection is past the end of
+		  line, result lines are filled with spaces.
+		- If selection starts or ends in the middle of multiwidth
 		  character (e.g. ), it is not included but it's selected part
 		  is substituted with spaces.
 
