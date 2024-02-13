@@ -2418,11 +2418,11 @@ block_prep(
  */
     void
 charwise_block_prep(
-    pos_T start,
-    pos_T end,
-    struct block_def *bdp,
-    linenr_T lnum,
-    int inclusive)
+    pos_T		start,
+    pos_T		end,
+    struct block_defy	*bdp,
+    linenr_T		lnum,
+    int			inclusive)
 {
     colnr_T startcol = 0, endcol = MAXCOL;
     int	    is_oneChar = FALSE;
