@@ -16,7 +16,6 @@ vim.vim: vim.vim.rc update_date.vim
 	@echo "Generating vim.vim ..."
 	@cp -f vim.vim.rc ../vim.vim
 	@$(RUN_VIM) -S update_date.vim
-	@sed -i -e 's/__REVISION__/$(REVISION)/' ../vim.vim
 	@echo "done."
 
 vim.vim.rc: gen_syntax_vim.vim vim.vim.base $(SRC)
