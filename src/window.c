@@ -17,7 +17,6 @@ static void frame_setheight(frame_T *curfrp, int height);
 static void frame_setwidth(frame_T *curfrp, int width);
 static void win_exchange(long);
 static void win_rotate(int, int);
-static void win_totop(int size, int flags);
 static void win_equal_rec(win_T *next_curwin, int current, frame_T *topfr, int dir, int col, int row, int width, int height);
 static void trigger_winnewpre(void);
 static void trigger_winclosed(win_T *win);
@@ -31,7 +30,7 @@ static void win_fix_cursor(int normal);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
-static void frame_add_statusline(frame_T *frp);
+static void frame_add_statusline(frame_T *frp, int adjust_winheight);
 static void frame_new_width(frame_T *topfrp, int width, int leftfirst, int wfw);
 static void frame_add_vsep(frame_T *frp);
 static int frame_minwidth(frame_T *topfrp, win_T *next_curwin);
@@ -55,12 +54,15 @@ static void win_goto_hor(int left, long count);
 static void frame_add_height(frame_T *frp, int n);
 static void last_status_rec(frame_T *fr, int statusline);
 
-static void make_snapshot_rec(frame_T *fr, frame_T **frp);
+static int make_snapshot_rec(frame_T *fr, frame_T **frp, int snap_wins);
 static void clear_snapshot(tabpage_T *tp, int idx);
 static void clear_snapshot_rec(frame_T *fr);
 static int check_snapshot_rec(frame_T *sn, frame_T *fr);
 static win_T *restore_snapshot_rec(frame_T *sn, frame_T *fr);
 static win_T *get_snapshot_curwin(int idx);
+static frame_T *make_full_snapshot(void);
+static void restore_full_snapshot(frame_T *sn);
+static void restore_full_snapshot_rec(frame_T *sn);
 
 static int frame_check_height(frame_T *topfrp, int height);
 static int frame_check_width(frame_T *topfrp, int width);
@@ -494,9 +496,15 @@ newwindow:
     case 'H':
     case 'L':
 		CHECK_CMDWIN;
-		win_totop((int)Prenum,
-			((nchar == 'H' || nchar == 'L') ? WSP_VERT : 0)
-			| ((nchar == 'H' || nchar == 'K') ? WSP_TOP : WSP_BOT));
+		if (ONE_WINDOW)
+		    beep_flush();
+		else
+		{
+		    int dir = ((nchar == 'H' || nchar == 'L') ? WSP_VERT : 0)
+			 | ((nchar == 'H' || nchar == 'K') ? WSP_TOP : WSP_BOT);
+
+		    win_splitmove(curwin, (int)Prenum, dir);
+		}
 		break;
 
 // make all windows the same width and/or height
@@ -858,18 +866,18 @@ cmd_with_count(
 }
 
 /*
- * If "split_disallowed" is set give an error and return FAIL.
+ * If "split_disallowed" is set for "wp", give an error and return FAIL.
  * Otherwise return OK.
  */
-    static int
-check_split_disallowed(void)
+    int
+check_split_disallowed(win_T *wp)
 {
     if (split_disallowed > 0)
     {
 	emsg(_(e_cant_split_window_while_closing_another));
 	return FAIL;
     }
-    if (curwin->w_buffer->b_locked_split)
+    if (wp->w_buffer->b_locked_split)
     {
 	emsg(_(e_cannot_split_window_when_closing_buffer));
 	return FAIL;
@@ -898,7 +906,7 @@ win_split(int size, int flags)
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return FAIL;
 
-    if (check_split_disallowed() == FAIL)
+    if (check_split_disallowed(curwin) == FAIL)
 	return FAIL;
 
     // When the ":tab" modifier was used open a new tab page instead.
@@ -968,7 +976,7 @@ win_split_ins(
     // add a status line when p_ls == 1 and splitting the first window
     if (ONE_WINDOW && p_ls == 1 && oldwin->w_status_height == 0)
     {
-	if (VISIBLE_HEIGHT(oldwin) <= p_wmh && new_wp == NULL)
+	if (!(flags & WSP_FORCE_ROOM) && VISIBLE_HEIGHT(oldwin) <= p_wmh)
 	{
 	    emsg(_(e_not_enough_room));
 	    goto theend;
@@ -1026,7 +1034,7 @@ win_split_ins(
 	    available = oldwin->w_frame->fr_width;
 	    needed += minwidth;
 	}
-	if (available < needed && new_wp == NULL)
+	if (!(flags & WSP_FORCE_ROOM) && available < needed)
 	{
 	    emsg(_(e_not_enough_room));
 	    goto theend;
@@ -1109,7 +1117,7 @@ win_split_ins(
 	    available = oldwin->w_frame->fr_height;
 	    needed += minheight;
 	}
-	if (available < needed && new_wp == NULL)
+	if (!(flags & WSP_FORCE_ROOM) && available < needed)
 	{
 	    emsg(_(e_not_enough_room));
 	    goto theend;
@@ -1360,7 +1368,7 @@ win_split_ins(
 	    if (!((flags & WSP_BOT) && p_ls == 0))
 		new_fr_height -= STATUS_HEIGHT;
 	    if (flags & WSP_BOT)
-		frame_add_statusline(curfrp);
+		frame_add_statusline(curfrp, FALSE);
 	    frame_new_height(curfrp, new_fr_height, flags & WSP_TOP, FALSE);
 	}
 	else
@@ -1900,35 +1908,69 @@ win_rotate(int upwards, int count)
 }
 
 /*
- * Move the current window to the very top/bottom/left/right of the screen.
+ * Move "wp" into a new split in a given direction, possibly relative to the
+ * current window.
+ * "wp" must be valid in the current tabpage.
+ * Returns FAIL for failure, OK otherwise.
  */
-    static void
-win_totop(int size, int flags)
+    int
+win_splitmove(win_T *wp, int size, int flags)
 {
     int		dir;
-    int		height = curwin->w_height;
+    int		height = wp->w_height;
+    frame_T	*frp;
 
     if (ONE_WINDOW)
+	return OK;	// nothing to do
+    if (check_split_disallowed(wp) == FAIL)
+	return FAIL;
+
+    // Undoing changes to frames if splitting fails is complicated.
+    // Save a full snapshot to restore instead.
+    frp = make_full_snapshot();
+    if (frp == NULL)
     {
-	beep_flush();
-	return;
+	emsg(_(e_out_of_memory));
+	return FAIL;
     }
-    if (check_split_disallowed() == FAIL)
-	return;
 
     // Remove the window and frame from the tree of frames.
-    (void)winframe_remove(curwin, &dir, NULL);
-    win_remove(curwin, NULL);
+    winframe_remove(wp, &dir, NULL);
+    win_remove(wp, NULL);
     last_status(FALSE);	    // may need to remove last status line
     (void)win_comp_pos();   // recompute window positions
 
-    // Split a window on the desired side and put the window there.
-    (void)win_split_ins(size, flags, curwin, dir);
-    if (!(flags & WSP_VERT))
+    // Split a window on the desired side and put "wp" there.
+    if (win_split_ins(size, flags, wp, dir) == FAIL)
     {
-	win_setheight(height);
+	// Restore the previous layout from the snapshot.
+	vim_free(wp->w_frame);
+	restore_full_snapshot(frp);
+
+	// Vertical separators to the left may have been lost.  Restore them.
+	frp = wp->w_frame;
+	if (frp->fr_parent->fr_layout == FR_ROW && frp->fr_prev != NULL)
+	    frame_add_vsep(frp->fr_prev);
+
+	// Statuslines above may have been lost.  Restore them.
+	if (frp->fr_parent->fr_layout == FR_COL && frp->fr_prev != NULL)
+	    frame_add_statusline(frp->fr_prev, TRUE);
+
+	win_append(wp->w_prev, wp);
+	return FAIL;
+    }
+    clear_snapshot_rec(frp);
+
+    // If splitting horizontally, try to preserve height.
+    if (size == 0 && !(flags & WSP_VERT))
+    {
+	win_setheight_win(height, wp);
 	if (p_ea)
-	    win_equal(curwin, TRUE, 'v');
+	{
+	    // Equalize windows.  Note that win_split_ins autocommands may have
+	    // made a window other than "wp" current.
+	    win_equal(curwin, curwin == wp, 'v');
+	}
     }
 
 #if defined(FEAT_GUI)
@@ -1936,6 +1978,7 @@ win_totop(int size, int flags)
     // scrollbars.  Have to update them anyway.
     gui_may_update_scrollbars();
 #endif
+    return OK;
 }
 
 /*
@@ -3849,30 +3892,34 @@ frame_fixed_width(frame_T *frp)
 
 /*
  * Add a status line to windows at the bottom of "frp".
- * Note: Does not check if there is room!
+ * If "adjust_winheight" is set, reduce the height of windows without a
+ * statusline to accommodate one; otherwise, there is no check for room!
  */
     static void
-frame_add_statusline(frame_T *frp)
+frame_add_statusline(frame_T *frp, int adjust_winheight)
 {
     win_T	*wp;
 
     if (frp->fr_layout == FR_LEAF)
     {
 	wp = frp->fr_win;
+        if (adjust_winheight && wp->w_status_height == 0
+            && wp->w_height >= STATUS_HEIGHT)	// don't make it negative
+            wp->w_height -= STATUS_HEIGHT - wp->w_status_height;
 	wp->w_status_height = STATUS_HEIGHT;
     }
     else if (frp->fr_layout == FR_ROW)
     {
 	// Handle all the frames in the row.
 	FOR_ALL_FRAMES(frp, frp->fr_child)
-	    frame_add_statusline(frp);
+	    frame_add_statusline(frp, adjust_winheight);
     }
     else // frp->fr_layout == FR_COL
     {
 	// Only need to handle the last frame in the column.
 	for (frp = frp->fr_child; frp->fr_next != NULL; frp = frp->fr_next)
 	    ;
-	frame_add_statusline(frp);
+	frame_add_statusline(frp, adjust_winheight);
     }
 }
 
@@ -7498,29 +7545,44 @@ reset_lnums(void)
 /*
  * Create a snapshot of the current frame sizes.
  * "idx" is SNAP_HELP_IDX or SNAP_AUCMD_IDX.
+ * Return FAIL if out of memory, OK otherwise.
  */
-    void
+    int
 make_snapshot(int idx)
 {
     clear_snapshot(curtab, idx);
-    make_snapshot_rec(topframe, &curtab->tp_snapshot[idx]);
+    if (make_snapshot_rec(topframe, &curtab->tp_snapshot[idx], FALSE) == FAIL)
+    {
+	clear_snapshot(curtab, idx);
+	return FAIL;
+    }
+    return OK;
 }
 
-    static void
-make_snapshot_rec(frame_T *fr, frame_T **frp)
+    static int
+make_snapshot_rec(frame_T *fr, frame_T **frp, int snap_wins)
 {
     *frp = ALLOC_CLEAR_ONE(frame_T);
     if (*frp == NULL)
-	return;
+	return FAIL;
     (*frp)->fr_layout = fr->fr_layout;
     (*frp)->fr_width = fr->fr_width;
     (*frp)->fr_height = fr->fr_height;
     if (fr->fr_next != NULL)
-	make_snapshot_rec(fr->fr_next, &((*frp)->fr_next));
+    {
+	if (make_snapshot_rec(fr->fr_next, &((*frp)->fr_next), snap_wins)
+		== FAIL)
+	    return FAIL;
+    }
     if (fr->fr_child != NULL)
-	make_snapshot_rec(fr->fr_child, &((*frp)->fr_child));
-    if (fr->fr_layout == FR_LEAF && fr->fr_win == curwin)
-	(*frp)->fr_win = curwin;
+    {
+	if (make_snapshot_rec(fr->fr_child, &((*frp)->fr_child), snap_wins)
+		== FAIL)
+	    return FAIL;
+    }
+    if (fr->fr_layout == FR_LEAF && (snap_wins || fr->fr_win == curwin))
+	(*frp)->fr_win = fr->fr_win;
+    return OK;
 }
 
 /*
@@ -7655,6 +7717,86 @@ restore_snapshot_rec(frame_T *sn, frame_T *fr)
 	    wp = wp2;
     }
     return wp;
+}
+
+/*
+ * Return a snapshot of all frames in the current tabpage and which windows are
+ * in them, or NULL if out of memory.
+ * Use clear_snapshot_rec to free the snapshot.
+ */
+    static frame_T *
+make_full_snapshot(void)
+{
+    frame_T	*frp;
+
+    if (make_snapshot_rec(topframe, &frp, TRUE) == FAIL)
+    {
+	clear_snapshot_rec(frp);
+	return NULL;
+    }
+    return frp;
+}
+
+/*
+ * Restore all frames in the full snapshot "sn" for the current tabpage.
+ * Caller must ensure that the screen size didn't change, no windows with frames
+ * in the snapshot were freed, and windows with frames not in the snapshot are
+ * removed from their frames!
+ * Doesn't restore changed window vertical separators or statuslines.
+ * Frees the old frames.  Don't call clear_snapshot_rec on "sn" afterwards!
+ */
+    static void
+restore_full_snapshot(frame_T *sn)
+{
+    if (sn == NULL)
+	return;
+
+    clear_snapshot_rec(topframe);
+    restore_full_snapshot_rec(sn);
+    curtab->tp_topframe = topframe = sn;
+    last_status(FALSE);
+
+    // If the amount of space available changed, first try setting the sizes of
+    // windows with 'winfix{width,height}'. If that doesn't result in the right
+    // size, forget about that option.
+    if (topframe->fr_width != Columns)
+    {
+	frame_new_width(topframe, Columns, FALSE, TRUE);
+	if (!frame_check_width(topframe, Columns))
+	    frame_new_width(topframe, Columns, FALSE, FALSE);
+    }
+    if (topframe->fr_height != ROWS_AVAIL)
+    {
+	frame_new_height(topframe, ROWS_AVAIL, FALSE, TRUE);
+	if (!frame_check_height(topframe, ROWS_AVAIL))
+	    frame_new_height(topframe, ROWS_AVAIL, FALSE, FALSE);
+    }
+
+    win_comp_pos();
+}
+
+    static void
+restore_full_snapshot_rec(frame_T *sn)
+{
+    if (sn == NULL)
+	return;
+
+    if (sn->fr_child != NULL)
+	sn->fr_child->fr_parent = sn;
+    if (sn->fr_next != NULL)
+    {
+	sn->fr_next->fr_parent = sn->fr_parent;
+	sn->fr_next->fr_prev = sn;
+    }
+    if (sn->fr_win != NULL)
+    {
+	sn->fr_win->w_frame = sn;
+	// Resize window to fit the frame.
+	frame_new_height(sn, sn->fr_height, FALSE, FALSE);
+	frame_new_width(sn, sn->fr_width, FALSE, FALSE);
+    }
+    restore_full_snapshot_rec(sn->fr_child);
+    restore_full_snapshot_rec(sn->fr_next);
 }
 
 #if defined(FEAT_GUI) || defined(PROTO)
