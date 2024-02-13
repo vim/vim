@@ -2413,6 +2413,9 @@ block_prep(
 #endif
 }
 
+/*
+ * Get block text from "start" to "end"
+ */
     void
 charwise_block_prep(
     pos_T start,
