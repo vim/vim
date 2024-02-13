@@ -536,10 +536,6 @@ endfunc
 
 " Test for term_gettitle()
 func Test_term_gettitle()
-  if has('osx') && !empty($CI) && system('uname -m') =~# 'arm64'
-    throw 'Skipped: FIXME: Title got on M1 Mac is broken on GitHub Actions'
-  endif
-
   " term_gettitle() returns an empty string for a non-terminal buffer
   " and for a non-existing buffer.
   call assert_equal('', bufnr('%')->term_gettitle())
