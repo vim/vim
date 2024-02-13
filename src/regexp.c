@@ -1318,8 +1318,7 @@ reg_match_visual(void)
 	    top = curbuf->b_visual.vi_end;
 	    bot = curbuf->b_visual.vi_start;
 	}
-	// a substitue command may have
-	// removed some lines
+	// a substitute command may have removed some lines
 	if (bot.lnum > curbuf->b_ml.ml_line_count)
 	    bot.lnum = curbuf->b_ml.ml_line_count;
 	mode = curbuf->b_visual.vi_mode;
