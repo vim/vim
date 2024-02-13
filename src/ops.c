@@ -2420,7 +2420,7 @@ block_prep(
 charwise_block_prep(
     pos_T		start,
     pos_T		end,
-    struct block_defy	*bdp,
+    struct block_def	*bdp,
     linenr_T		lnum,
     int			inclusive)
 {
