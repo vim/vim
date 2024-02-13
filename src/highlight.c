@@ -222,7 +222,7 @@ static char *(highlight_init_light[]) = {
 	 "SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue"),
 #endif
     CENT("Visual ctermbg=Grey ctermfg=Black",
-	 "Visual ctermbg=Grey ctermfg=Black guibg=LightGrey"),
+	 "Visual ctermbg=Grey ctermfg=Black guibg=LightGrey guifg=Black"),
 #ifdef FEAT_DIFF
     CENT("DiffAdd term=bold ctermbg=LightBlue",
 	 "DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue"),
@@ -311,7 +311,7 @@ static char *(highlight_init_dark[]) = {
 	 "SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan"),
 #endif
     CENT("Visual ctermbg=Grey ctermfg=Black",
-	 "Visual ctermbg=Grey ctermfg=Black guibg=#575757"),
+	 "Visual ctermbg=Grey ctermfg=Black guibg=#575757 guifg=LightGrey"),
 #ifdef FEAT_DIFF
     CENT("DiffAdd term=bold ctermbg=DarkBlue",
 	 "DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue"),
