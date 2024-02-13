@@ -4265,6 +4265,8 @@ getreginfo([{regname}])					*getreginfo()*
 getregion({pos1}, {pos2})				*getregion()*
 		Returns the list of strings from {pos1} to {pos2}.
 		For possible values of {pos1} and {pos2} see |line()|.
+		This function uses the line and column number from the
+		specified position.
 		It is useful to get text starting and ending in different
 		columns, such as |characterwise-visual| selection.
 
