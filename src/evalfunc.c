@@ -5484,15 +5484,15 @@ block_def2str(struct block_def *bd)
     static void
 f_getregion(typval_T *argvars, typval_T *rettv)
 {
-    linenr_To		lnum;
+    linenr_T		lnum;
     oparg_T		oap;
     struct block_def	bd;
-    char_up		*akt;
+    char_u		*akt;
     int			inclusive = TRUE;
     int			fnum = -1;
     pos_T		p1, p2;
-    pos_To		*fp = NULL;
-    char_up		*str1, *str2;
+    pos_T		*fp = NULL;
+    char_u		*str1, *str2;
     int			is_visual = FALSE;
 
     if (rettv_list_alloc(rettv) == FAIL)
