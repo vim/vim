@@ -319,17 +319,17 @@ jobs:
       - name: Checkout repository from github
         uses: actions/checkout@v4
 
-      - name: Install packages on Intel Mac
-        if: matrix.features == 'huge' && matrix.runner == 'macos-latest'
-        run: |
-          brew install lua
-          echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
-
-      - name: Install packages on M1 Mac
-        if: matrix.features == 'huge' && matrix.runner == 'macos-14'
+      - name: Install packages
+        if: matrix.features == 'huge'
         run: |
           brew install lua libtool
-          echo "LUA_PREFIX=/opt/homebrew" >> $GITHUB_ENV
+          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+
+      - name: Grant microphone access for macos-14
+        if: matrix.runner == 'macos-14'
+        run: |
+          # Temporary fix to fix microphone permission issues for macos-14 when playing sound.
+          sqlite3 $HOME/Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR IGNORE INTO access VALUES ('kTCCServiceMicrophone','/usr/local/opt/runner/provisioner/provisioner',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687786159,NULL,NULL,'UNUSED',1687786159);"
 
       - name: Set up environment
         run: |
