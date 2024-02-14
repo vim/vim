@@ -1632,6 +1632,7 @@ endfunc
 
 func Test_visual_getregion()
   new
+
   call setline(1, ['one', 'two', 'three'])
 
   " Visual mode
@@ -1672,12 +1673,34 @@ func Test_visual_getregion()
   call feedkeys("\<ESC>\<C-v>jj$", 'tx')
   call assert_equal(['one', 'two', 'three'], getregion('v', '.'))
 
+  " 'virtualedit'
+  set virtualedit=all
+  call cursor(1, 1)
+  call feedkeys("\<ESC>\<C-v>10ljj$", 'tx')
+  call assert_equal(['one   ', 'two   ', 'three '], getregion('v', '.'))
+  set virtualedit&
+
   " Invalid pattern
   call cursor(1, 1)
   call feedkeys("\<ESC>\<C-v>jj$", 'tx')
   call assert_fails("call getregion(1, 2)")
   call assert_fails("call getregion('.', {})")
   call assert_equal([], getregion('', '.'))
+
+  bwipe!
+
+  " Selection in starts or ends in the middle of a multibyte character
+  new
+  call setline(1, ['abcdefghijk', "\U0001f1e6\u00ab\U0001f1e7\u00ab\U0001f1e8\u00ab\U0001f1e9", '1234567890'])
+  call cursor(1, 3)
+  call feedkeys("\<Esc>\<C-v>ljj", 'xt')
+  call assert_equal(['cd', "\u00ab ", '34'], getregion('v', '.'))
+  call cursor(1, 4)
+  call feedkeys("\<Esc>\<C-v>ljj", 'xt')
+  call assert_equal(['de', "\U0001f1e7", '45'], getregion('v', '.'))
+  call cursor(1, 5)
+  call feedkeys("\<Esc>\<C-v>jj", 'xt')
+  call assert_equal(['e', ' ', '5'], getregion('v', '.'))
 
   bwipe!
 endfunc
