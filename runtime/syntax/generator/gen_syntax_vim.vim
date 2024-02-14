@@ -445,6 +445,16 @@ function! s:parse_vim_hlgroup(li)
 		let item.type = 'gui'
 		call add(a:li, copy(item))
 
+		" The following highlight groups cannot be extracted from highlight.c
+		" (TODO: extract from HIGHLIGHT_INIT ?)
+		let item.name = 'LineNrAbove'
+		let item.type = 'both'
+		call add(a:li, copy(item))
+
+		let item.name = 'LineNrBelow'
+		let item.type = 'both'
+		call add(a:li, copy(item))
+
 		quit!
 
 		if empty(a:li)
