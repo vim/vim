@@ -2,7 +2,7 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: 2024 Apr 07
+" Last Change: 2024 Jul 05
 " Version: 2.1.1
 
 let s:keepcpo= &cpo
@@ -315,6 +315,7 @@ function! s:get_vim_command_type(cmd_name)
 		throw
 		var
 		vim9script
+		z
 	EOL
 	" Required for original behavior
 	" \	'global', 'vglobal'
