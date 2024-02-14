@@ -1663,6 +1663,13 @@ func Test_visual_getregion()
   call feedkeys("\<ESC>\<C-v>jj$", 'tx')
   call assert_equal(['one', 'two', 'three'], getregion('v', '.'))
 
+  " Invalid pattern
+  call cursor(1, 1)
+  call feedkeys("\<ESC>\<C-v>jj$", 'tx')
+  call assert_fails("call getregion(1, 2)")
+  call assert_fails("call getregion('.', {})")
+  call assert_equal([], getregion('', '.'))
+
   bwipe!
 endfunc
 
