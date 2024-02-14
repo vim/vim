@@ -2132,7 +2132,7 @@ static funcentry_T global_functions[] =
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
-    {"getregion",	2, 2, FEARG_2,	    arg2_string,
+    {"getregion",	2, 2, FEARG_1,	    arg2_string,
 			ret_list_string,    f_getregion},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
@@ -5481,7 +5481,8 @@ block_def2str(struct block_def *bd)
 /*
  * "getregion()" function
  */
-static void f_getregion(typval_T *argvars, typval_T *rettv)
+    static void
+f_getregion(typval_T *argvars, typval_T *rettv)
 {
     linenr_T lnum;
     oparg_T oap;
