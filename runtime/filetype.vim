@@ -1141,7 +1141,7 @@ au BufNewFile,BufRead *.kt,*.ktm,*.kts		setf kotlin
 au BufNewFile,BufRead *.ks			setf kscript
 
 " Kconfig
-au BufNewFile,BufRead Kconfig,Kconfig.debug	setf kconfig
+au BufNewFile,BufRead Kconfig,Kconfig.debug,Config.in	setf kconfig
 
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
@@ -2780,7 +2780,7 @@ au! BufNewFile,BufRead *jarg*
 au BufNewFile,BufRead *.properties_??_??_*	call s:StarSetf('jproperties')
 
 " Kconfig
-au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
+au BufNewFile,BufRead Kconfig.*,Config.in.*	call s:StarSetf('kconfig')
 
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf*		call s:StarSetf('lilo')
