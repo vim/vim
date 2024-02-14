@@ -248,6 +248,7 @@ function! s:parse_vim_command(cmd)
 		let item.syn_str = item.name
 		call add(a:cmd, copy(item))
 		let item.name = 'i'		" insert
+		let item.syn_str = item.name
 		call add(a:cmd, copy(item))
 
 		if empty(a:cmd)
