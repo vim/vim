@@ -1638,10 +1638,10 @@ func Test_visual_getregion()
   " Visual mode
   call cursor(1, 1)
   call feedkeys("\<ESC>vl", 'tx')
-  call assert_equal(['on'], getregion('v', '.'))
-  call assert_equal(['on'], getregion('.', 'v'))
-  call assert_equal(['o'], getregion('v', 'v'))
-  call assert_equal(['n'], getregion('.', '.'))
+  call assert_equal(['on'], 'v'->getregion('.'))
+  call assert_equal(['on'], '.'->getregion('v'))
+  call assert_equal(['o'], 'v'->getregion('v'))
+  call assert_equal(['n'], '.'->getregion('.'))
 
   " Line visual mode
   call cursor(1, 1)
@@ -1683,8 +1683,8 @@ func Test_visual_getregion()
   " Invalid pattern
   call cursor(1, 1)
   call feedkeys("\<ESC>\<C-v>jj$", 'tx')
-  call assert_fails("call getregion(1, 2)")
-  call assert_fails("call getregion('.', {})")
+  call assert_fails("call getregion(1, 2)", 'E1174:')
+  call assert_fails("call getregion('.', {})", 'E731:')
   call assert_equal([], getregion('', '.'))
 
   bwipe!
