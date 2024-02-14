@@ -299,7 +299,7 @@ syn cluster vimExprList	contains=@vimSpecialVar,@vimFunc,vimNumber,vimOper,vimOp
 syn cluster vim9ExprList	contains=vim9Boolean,vim9LambdaParams,vim9Null
 
 " Commands {{{2
-syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefcompile,vimDisassemble,vimDefFold,vimDefer,vimDelcommand,vimDelete,vimDelfunction,vimDoCommand,vimDoautocmd,vimTextInputFold,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEquals,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepadd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMzScheme,vimNormal,vimPackadd,vimPerl,vimPound,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimRuntime,vimSet,vimShiftLeft,vimShiftRight,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite
+syn cluster vimCmdList	contains=@vim9CmdList,@vimExUserCmdList,vimAbb,vimAt,vimAugroup,vimAutocmd,vimBehave,vimBreakadd,vimBreakdel,vimBreaklist,vimBuffer,vimCall,vimCatch,vimCd,vimCommand,vimCommandModifier,vimConst,vimCopy,vimDebug,vimDebuggreedy,vimDef,vimDefcompile,vimDisassemble,vimDefFold,vimDefer,vimDelcommand,vimDelete,vimDelfunction,vimDoCommand,vimDoautocmd,vimTextInputFold,@vimEcho,vimElse,vimElseif,vimEnddef,vimEndfunction,vimEndif,vimEquals,vimEval,vimExFilter,vimExecute,vimExtCmd,vimFiletype,vimFor,vimFunction,vimFunctionFold,vimGlobal,vimGrep,vimGrepadd,vimHelp,vimHelpgrep,vimHighlight,vimHistory,vimIf,vimImport,vimLanguage,vimLet,vimLoadkeymap,vimLockvar,vimLua,vimMake,vimMap,vimMark,vimMatch,vimMenu,vimMenutranslate,vimMzScheme,vimNormal,vimPackadd,vimPerl,vimPound,vimProfdel,vimProfile,vimPrompt,vimPython,vimPython3,vimPythonX,vimRedir,vimReturn,vimRuby,vimRuntime,vimSet,vimShiftLeft,vimShiftRight,vimSleep,vimSort,vimSubst,vimSynColor,vimSynLink,vimSyntax,vimSyntime,vimTcl,vimTerminal,vimThrow,vimUniq,vimUnlet,vimUnlockvar,vimUnmap,vimUserCmd,vimUsrCmd,vimVimgrep,vimVimgrepadd,vimWhile,vimWincmd,vimWrite,vimZ
 syn cluster vim9CmdList	contains=vim9Abstract,vim9ClassBody,vim9Const,vim9EnumBody,vim9Export,vim9Final,vim9For,vim9InterfaceBody,vim9Type,vim9Var,vim9Wincmd
 
 syn match	vimCmdStart	contained	":\+"	skipwhite nextgroup=vimCmdStart,@vimRange,@vimCmdList,vimComment
@@ -1692,8 +1692,19 @@ syn match	vimWrite_	contained	"w\%[rite]\>"	nextgroup=vimBang
 
 " :z {{{3
 " ==
-syn match   vimCommand_ contained	"z[-+^.=]\=\>"
-syn match   vimCommand contained	"\<z[-+^.=]\=\>"
+syn match	vimZ	contained	"z\a\@!"	skipwhite nextgroup=vimZBang,vimZType,vimZCount,vimZFlags
+
+syn match	vimZBang	contained	"z\@1<=!"		nextgroup=vimZType,vimZCount,vimZFlags
+syn match	vimZType	contained	"\S\@1<=\%([-+^]\+\|[=.]\)"	nextgroup=vimZCount,vimZFlags
+syn match	vimZCount	contained	"\d\+"		nextgroup=vimZFlags
+" matched out of order after bang (bad Vim implementation)
+syn match	vimZFlags	contained	"[lp#]\+"	skipwhite nextgroup=vimZType,vimZCount,vimZFlags
+
+hi def link vimZ vimCommand
+hi def link vimZBang vimBang
+hi def link vimZType Special
+hi def link vimZCount vimCount
+hi def link vimZFlags Special
 
 " Operators: {{{2
 " =========
