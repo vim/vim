@@ -248,6 +248,7 @@ function! s:parse_vim_command(cmd)
 		let item.syn_str = item.name
 		call add(a:cmd, copy(item))
 		let item.name = 'i'		" insert
+		let item.syn_str = item.name
 		call add(a:cmd, copy(item))
 
 		if empty(a:cmd)
@@ -443,6 +444,16 @@ function! s:parse_vim_hlgroup(li)
 
 		let item.name = 'CursorIM'
 		let item.type = 'gui'
+		call add(a:li, copy(item))
+
+		" The following highlight groups cannot be extracted from highlight.c
+		" (TODO: extract from HIGHLIGHT_INIT ?)
+		let item.name = 'LineNrAbove'
+		let item.type = 'both'
+		call add(a:li, copy(item))
+
+		let item.name = 'LineNrBelow'
+		let item.type = 'both'
 		call add(a:li, copy(item))
 
 		quit!
