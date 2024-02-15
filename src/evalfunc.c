@@ -5604,7 +5604,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    akt = block_def2str(&bd);
 	}
 
-	if (akt == NULL || list_append_string_move(rettv->vval.v_list, akt) == FAIL)
+	if (akt == NULL || list_append_string(rettv->vval.v_list, akt, -1) == FAIL)
 	{
 	    list_free(rettv->vval.v_list);
 	    break;
