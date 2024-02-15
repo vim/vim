@@ -263,7 +263,7 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
-getregion({pos1}, {pos2})	String	get the text from {pos1} to {pos2}
+getregion({pos1}, {pos2})	List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
@@ -4271,7 +4271,9 @@ getregion({pos1}, {pos2})				*getregion()*
 		columns, such as |characterwise-visual| selection.
 
 		Note that:
-		- {pos1} and {pos2} are swapped if {pos1} is after {pos2}.
+		- Order of {pos1} and {pos2} doesn't matter, it will always
+		  return content from the upper left position to the lower
+		  right position.
 		- If 'virtualedit' is enabled and selection is past the end of
 		  line, result lines are filled.
 		- If selection starts or ends in the middle of multibyte
