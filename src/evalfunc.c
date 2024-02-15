@@ -5494,11 +5494,11 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     pos_T		*fp = NULL;
     char_u		*str1, *str2;
     int			is_visual = FALSE;
+    int			save_virtual = -1;
+    int			l;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
-
-    virtual_op = virtual_active();
 
     if (check_for_string_arg(argvars, 0) == FAIL
 	    || check_for_string_arg(argvars, 0) == FAIL)
@@ -5517,6 +5517,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     str1 = tv_get_string(&argvars[0]);
     str2 = tv_get_string(&argvars[1]);
+
+    save_virtual = virtual_op;
+    virtual_op = virtual_active();
 
     if (!LT_POS(p1, p2))
     {
@@ -5542,6 +5545,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 		else if (p2.col > 0)
 		{
 		    p2.col--;
+
 		    mb_adjustpos(curbuf, &p2);
 		}
 		else if (p2.lnum > 1)
@@ -5551,15 +5555,14 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 		    if (p2.col > 0)
 		    {
 			p2.col--;
+
 			mb_adjustpos(curbuf, &p2);
 		    }
 		}
 	    }
 	    // if fp2 is on NUL (empty line) inclusive becomes false
 	    if (*ml_get_pos(&p2) == NUL && !virtual_op)
-	    {
 		inclusive = FALSE;
-	    }
 	}
 	else if (VIsual_mode == Ctrl_V)
 	{
@@ -5580,18 +5583,18 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     }
 
     // Include the trailing byte of a multi-byte char.
-    const int l = utfc_ptr2len((char_u *)ml_get_pos(&p2));
+    l = utfc_ptr2len((char_u *)ml_get_pos(&p2));
     if (l > 1)
 	p2.col += l - 1;
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
 	if (is_visual && VIsual_mode == 'V')
-		akt = vim_strsave(ml_get(lnum));
+	    akt = vim_strsave(ml_get(lnum));
 	else if (is_visual && VIsual_mode == Ctrl_V)
 	{
-		block_prep(&oap, &bd, lnum, FALSE);
-		akt = block_def2str(&bd);
+	    block_prep(&oap, &bd, lnum, FALSE);
+	    akt = block_def2str(&bd);
 	}
 	else if (p1.lnum < lnum && lnum < p2.lnum)
 	    akt = vim_strsave(ml_get(lnum));
@@ -5607,27 +5610,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    break;
 	}
     }
-    virtual_op = MAYBE;
-}
 
-/*
- * "wildmenumode()" function
- */
-    static void
-f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-    if (wild_menu_showing || ((State & MODE_CMDLINE) && cmdline_pum_active()))
-	rettv->vval.v_number = 1;
-}
-
-/*
- * "windowsversion()" function
- */
-    static void
-f_windowsversion(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave((char_u *)windowsVersion);
+    virtual_op = save_virtual;
 }
 
 /*
@@ -11540,6 +11524,26 @@ f_visualmode(typval_T *argvars, typval_T *rettv)
     // A non-zero number or non-empty string argument: reset mode.
     if (non_zero_arg(&argvars[0]))
 	curbuf->b_visual_mode_eval = NUL;
+}
+
+/*
+ * "wildmenumode()" function
+ */
+    static void
+f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    if (wild_menu_showing || ((State & MODE_CMDLINE) && cmdline_pum_active()))
+	rettv->vval.v_number = 1;
+}
+
+/*
+ * "windowsversion()" function
+ */
+    static void
+f_windowsversion(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strsave((char_u *)windowsVersion);
 }
 
 /*
