@@ -6420,6 +6420,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_LINEBREAK
 	case PV_NUW:	return (char_u *)&(curwin->w_p_nuw);
 #endif
+	case PV_WFB:	return (char_u *)&(curwin->w_p_wfb);
 	case PV_WFH:	return (char_u *)&(curwin->w_p_wfh);
 	case PV_WFW:	return (char_u *)&(curwin->w_p_wfw);
 #if defined(FEAT_QUICKFIX)
@@ -6431,7 +6432,6 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_SCROLL:	return (char_u *)&(curwin->w_p_scr);
 	case PV_SMS:	return (char_u *)&(curwin->w_p_sms);
-	case PV_STB:	return (char_u *)&(curwin->w_p_stb);
 	case PV_WRAP:	return (char_u *)&(curwin->w_p_wrap);
 #ifdef FEAT_LINEBREAK
 	case PV_LBR:	return (char_u *)&(curwin->w_p_lbr);

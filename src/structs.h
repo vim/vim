@@ -246,6 +246,8 @@ typedef struct
     long	wo_nuw;
 # define w_p_nuw w_onebuf_opt.wo_nuw	// 'numberwidth'
 #endif
+    int wo_wfb;
+#define w_p_wfb w_onebuf_opt.wo_wfb	// 'winfixbuf'
     int		wo_wfh;
 # define w_p_wfh w_onebuf_opt.wo_wfh	// 'winfixheight'
     int		wo_wfw;
@@ -268,8 +270,6 @@ typedef struct
     int		wo_spell;
 # define w_p_spell w_onebuf_opt.wo_spell // 'spell'
 #endif
-    int wo_stickybuf;
-#define w_p_stb w_onebuf_opt.wo_stickybuf     // 'stickybuf'
 #if defined(FEAT_SYN_HL) || defined(FEAT_FOLDING) || defined(FEAT_DIFF)
     int		wo_cuc;
 # define w_p_cuc w_onebuf_opt.wo_cuc	// 'cursorcolumn'

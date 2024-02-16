@@ -458,21 +458,21 @@ ex_listdo(exarg_T *eap)
     buf_T	*buf = curbuf;
     int		next_fnum = 0;
 
-    if (curwin->w_p_stb)
+    if (curwin->w_p_wfb)
     {
-        if (eap->cmdidx == CMD_ldo && !eap->forceit)
+        if ((eap->cmdidx == CMD_ldo || eap->cmdidx == CMD_lfdo) && !eap->forceit)
         {
-            // Disallow :ldo if 'stickybuf' is applied
-            semsg("%s", e_stickybuf_cannot_go_to_buffer_forceit);
+            // Disallow :ldo if 'winfixbuf' is applied
+            semsg("%s", e_winfixbuf_cannot_go_to_buffer);
             return;
         }
 
         if (win_valid(prevwin))
-            // Change the current window to another because 'stickybuf' is enabled
+            // Change the current window to another because 'winfixbuf' is enabled
             curwin = prevwin;
         else
         {
-            // Split the window, which will be 'nostickybuf', and set curwin to that
+            // Split the window, which will be 'nowinfixbuf', and set curwin to that
             exarg_T new_eap;
             CLEAR_FIELD(new_eap);
             new_eap.cmdidx = CMD_split;

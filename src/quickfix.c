@@ -3146,7 +3146,7 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 	    // Didn't find it, go to the window before the quickfix
 	    // window, unless 'switchbuf' contains 'uselast': in this case we
 	    // try to jump to the previously used window first.
-	    if ((swb_flags & SWB_USELAST) && !prevwin->w_p_stb && win_valid(prevwin))
+	    if ((swb_flags & SWB_USELAST) && !prevwin->w_p_wfb && win_valid(prevwin))
 		win = prevwin;
 	    else if (altwin != NULL)
 		win = altwin;
@@ -3158,7 +3158,7 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 	}
 
 	// Remember a usable window.
-	if (altwin == NULL && !win->w_p_pvw && !win->w_p_stb && bt_normal(win->w_buffer))
+	if (altwin == NULL && !win->w_p_pvw && !win->w_p_wfb && bt_normal(win->w_buffer))
 	    altwin = win;
     }
 
@@ -3262,22 +3262,22 @@ qf_jump_edit_buffer(
     }
     else
     {
-	if (!forceit && curwin->w_p_stb)
+	if (!forceit && curwin->w_p_wfb)
 	{
 	    if (qi->qfl_type == QFLT_LOCATION)
 	    {
 	        // Location lists cannot split or reassign their window
-	        // so 'stickybuf' windows must fail
-	        semsg("%s", e_stickybuf_cannot_go_to_buffer_forceit);
+	        // so 'winfixbuf' windows must fail
+	        semsg("%s", e_winfixbuf_cannot_go_to_buffer);
 	        return QF_ABORT;
 	    }
 
 	    if (win_valid(prevwin))
-	        // Change the current window to another because 'stickybuf' is enabled
+	        // Change the current window to another because 'winfixbuf' is enabled
 	        curwin = prevwin;
 	    else
 	    {
-	        // Split the window, which will be 'nostickybuf', and set curwin to that
+	        // Split the window, which will be 'nowinfixbuf', and set curwin to that
 	        exarg_T new_eap;
 	        CLEAR_FIELD(new_eap);
 	        new_eap.cmdidx = CMD_split;
@@ -5019,7 +5019,7 @@ qf_jump_first(qf_info_T *qi, int_u save_qfid, int forceit)
 	return;
 
 
-    if (!forceit && curwin->w_p_stb)
+    if (!check_can_set_curbuf_forceit(forceit))
 	return;
 
 
@@ -6529,6 +6529,9 @@ ex_vimgrep(exarg_T *eap)
     char_u	*au_name =  NULL;
     int		status;
 
+    if (!check_can_set_curbuf_forceit(eap->forceit))
+	return;
+
     au_name = vgr_get_auname(eap->cmdidx);
     if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
 					       curbuf->b_fname, TRUE, curbuf))
@@ -6545,6 +6548,9 @@ ex_vimgrep(exarg_T *eap)
 
     if (vgr_process_args(eap, &args) == FAIL)
 	goto theend;
+
+    if (eap->cmdidx == CMD_vimgrep && !check_can_set_curbuf_forceit(eap->forceit))
+	return;
 
     if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd
 		&& eap->cmdidx != CMD_vimgrepadd
@@ -6590,12 +6596,14 @@ ex_vimgrep(exarg_T *eap)
 	goto theend;
     }
 
-    // Jump to first match if the current window is not 'stickybuf'
+    // Jump to first match if the current window is not 'winfixbuf'
     if (!qf_list_empty(qf_get_curlist(qi)))
     {
-	if ((eap->forceit || !curwin->w_p_stb) && (args.flags & VGR_NOJUMP) == 0)
+        if ((args.flags & VGR_NOJUMP) == 0)
+	{
 	    vgr_jump_to_match(qi, eap->forceit, &redraw_for_dummy,
 		    first_match_buf, target_dir);
+	}
     }
     else
 	semsg(_(e_no_match_str_2), args.spat);

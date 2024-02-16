@@ -289,7 +289,7 @@ do_tag(
     static char_u	**matches = NULL;
     static int		flags;
 
-    if (!check_can_set_curbuf(forceit))
+    if (!check_can_set_curbuf_forceit(forceit))
         return FALSE;
 
 #ifdef FEAT_EVAL
@@ -3708,7 +3708,7 @@ jumpto_tag(
     size_t	len;
     char_u	*lbuf;
 
-    if (postponed_split == 0 && !check_can_set_curbuf(forceit))
+    if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
         return FAIL;
 
     // Make a copy of the line, it can become invalid when an autocommand calls

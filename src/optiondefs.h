@@ -197,7 +197,6 @@
 #define PV_SCBIND	OPT_WIN(WV_SCBIND)
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
 #define PV_SMS		OPT_WIN(WV_SMS)
-#define PV_STB		OPT_WIN(WV_STB)
 #define PV_SISO		OPT_BOTH(OPT_WIN(WV_SISO))
 #define PV_SO		OPT_BOTH(OPT_WIN(WV_SO))
 #ifdef FEAT_SPELL
@@ -216,6 +215,7 @@
 # define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
 #endif
 #define PV_UL		OPT_BOTH(OPT_BUF(BV_UL))
+# define PV_WFB		OPT_WIN(WV_WFB)
 # define PV_WFH		OPT_WIN(WV_WFH)
 # define PV_WFW		OPT_WIN(WV_WFW)
 #define PV_WRAP		OPT_WIN(WV_WRAP)
@@ -2425,9 +2425,6 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
-    {"stickybuf", "stb", P_BOOL|P_VI_DEF|P_RWIN,
-			    (char_u *)VAR_WIN, PV_STB, NULL, NULL,
-			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"suffixes",    "su",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_su, PV_NONE, NULL, NULL,
 			    {(char_u *)".bak,~,.o,.h,.info,.swp,.obj",
@@ -2854,6 +2851,9 @@ static struct vimoption options[] =
     {"window",	    "wi",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_window, PV_NONE, did_set_window, NULL,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
+    {"winfixbuf", "wfb", P_BOOL|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_WFB, NULL, NULL,
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"winfixheight", "wfh", P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)VAR_WIN, PV_WFH, NULL, NULL,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},

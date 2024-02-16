@@ -1099,17 +1099,13 @@ goto_buffer(
     int		count)
 {
     bufref_T	old_curbuf;
-    int		is_split_cmd = *eap->cmd == 's';
     int		save_sea = swap_exists_action;
-
-    if (!is_split_cmd && !check_can_set_curbuf(eap->forceit))
-	return;
 
     set_bufref(&old_curbuf, curbuf);
 
     if (swap_exists_action == SEA_NONE)
 	swap_exists_action = SEA_DIALOG;
-    (void)do_buffer(is_split_cmd ? DOBUF_SPLIT : DOBUF_GOTO,
+    (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
     {
@@ -1374,6 +1370,13 @@ do_buffer_ext(
     if ((flags & DOBUF_NOPOPUP) && bt_popup(buf) && !bt_terminal(buf))
 	return OK;
 #endif
+    if (
+	action == DOBUF_GOTO
+	&& buf != curbuf
+	&& !check_can_set_curbuf_forceit((flags & DOBUF_FORCEIT) ? TRUE : FALSE))
+      // disallow navigating to another buffer when 'winfixbuf' is applied
+      return FAIL;
+
     if ((action == DOBUF_GOTO || action == DOBUF_SPLIT)
 						  && (buf->b_flags & BF_DUMMY))
     {

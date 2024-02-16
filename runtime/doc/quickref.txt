@@ -928,7 +928,6 @@ Short explanation of each option:		*option-list*
 'splitright'	  'spr'     new window is put right of the current one
 'startofline'	  'sol'     commands move cursor to first non-blank in line
 'statusline'	  'stl'     custom format for the status line
-'stickybuf'	  'stb'     prevent buffers from being switched in its window
 'suffixes'	  'su'	    suffixes that are ignored with multiple match
 'suffixesadd'	  'sua'     suffixes added when searching for a file
 'swapfile'	  'swf'     whether to use a swapfile for a buffer
@@ -1006,6 +1005,7 @@ Short explanation of each option:		*option-list*
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'wincolor'	  'wcr'	    window-local highlighting
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
+'winfixbuf'	  'wfb'     keep window focused on a single buffer
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
 'winfixwidth'	  'wfw'     keep window width when opening/closing windows
 'winheight'	  'wh'	    minimum number of lines for the current window

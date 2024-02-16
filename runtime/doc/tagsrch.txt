@@ -410,7 +410,7 @@ performed actions depend on whether the current file was changed, whether a !
 is added to the command and on the 'autowrite' option:
 
   tag in       file	                autowrite			~
-current file  changed	!   stickybuf   option	      action	~
+current file  changed	!   winfixbuf   option	      action	~
  -----------------------------------------------------------------------------
     yes		x	x      no         x         goto tag
     no		no	x      no         x         read other file, goto tag
@@ -440,7 +440,7 @@ current file  changed	!   stickybuf   option	      action	~
   the changes, use the ":w" command and then use ":tag" without an argument.
   This works because the tag is put on the stack anyway.  If you want to lose
   the changes you can use the ":tag!" command.
-- If the tag is in another file and the window includes 'stickybuf', the
+- If the tag is in another file and the window includes 'winfixbuf', the
   command will fail. If the tag is in the same file then it may succeed.
 
 							*tag-security*

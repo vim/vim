@@ -1,4 +1,4 @@
-" Test 'stickybuf'
+" Test 'winfixbuf'
 
 source check.vim
 
@@ -20,7 +20,8 @@ func s:make_buffers_list()
   enew
   file last
   let l:last = bufnr()
-  set stickybuf
+
+  set winfixbuf
 
   return [l:first, l:last]
 endfunc
@@ -34,14 +35,15 @@ func s:make_args_list()
   return [l:first, l:last]
 endfunc
 
-" Create two buffers and then set the window to 'stickybuf'
+" Create two buffers and then set the window to 'winfixbuf'
 func s:make_buffer_pairs(...)
   let l:reversed = get(a:, 1, 0)
 
   if l:reversed == 1
     enew
     file original
-    set stickybuf
+
+    set winfixbuf
 
     enew!
     file other
@@ -56,18 +58,21 @@ func s:make_buffer_pairs(...)
 
   enew
   file current
-  set stickybuf
+
+  set winfixbuf
 
   return l:other
 endfunc
 
-" Create 3 quick buffers and set the window to 'stickybuf'
+" Create 3 quick buffers and set the window to 'winfixbuf'
 func s:make_buffer_trio()
   edit first
   let l:first = bufnr()
   edit second
   let l:second = bufnr()
-  set stickybuf
+
+  set winfixbuf
+
   edit! third
   let l:third = bufnr()
 
@@ -76,12 +81,12 @@ func s:make_buffer_trio()
   return [l:first, l:second, l:third]
 endfunc
 
-" Create a location list with at least 2 entries + a 'stickybuf' window.
+" Create a location list with at least 2 entries + a 'winfixbuf' window.
 func s:make_simple_location_list()
   enew
   file middle
   let l:middle = bufnr()
-  call append(0, ["sticky search-term", "another line"])
+  call append(0, ["winfix search-term", "another line"])
 
   enew!
   file first
@@ -119,17 +124,17 @@ func s:make_simple_location_list()
   \  ]
   \)
 
-  set stickybuf
+  set winfixbuf
 
   return [l:first, l:middle, l:last]
 endfunc
 
-" Create a quickfix with at least 2 entries that are in the current 'stickybuf' window.
+" Create a quickfix with at least 2 entries that are in the current 'winfixbuf' window.
 func s:make_simple_quickfix()
   enew
   file current
   let l:current = bufnr()
-  call append(0, ["sticky search-term", "another line"])
+  call append(0, ["winfix search-term", "another line"])
 
   enew!
   file first
@@ -166,12 +171,12 @@ func s:make_simple_quickfix()
   \  ]
   \)
 
-  set stickybuf
+  set winfixbuf
 
   return [l:current, l:last]
 endfunc
 
-" Create a quickfix with at least 2 entries that are in the current 'stickybuf' window.
+" Create a quickfix with at least 2 entries that are in the current 'winfixbuf' window.
 func s:make_quickfix_windows()
   let [l:current, _] = s:make_simple_quickfix()
   execute "buffer! " . l:current
@@ -179,19 +184,19 @@ func s:make_quickfix_windows()
   split
   let l:first_window = win_getid()
   execute "normal \<C-w>j"
-  let l:sticky_window = win_getid()
+  let l:winfix_window = win_getid()
 
   " Open the quickfix in a separate split and go to it
   copen
   let l:quickfix_window = win_getid()
 
-  return [l:first_window, l:sticky_window, l:quickfix_window]
+  return [l:first_window, l:winfix_window, l:quickfix_window]
 endfunc
 
 " Revert all changes that occurred in any past test
 func s:reset_all_buffers()
   %bwipeout!
-  set nostickybuf
+  set nowinfixbuf
 
   call setqflist([])
 
@@ -200,21 +205,6 @@ func s:reset_all_buffers()
   endfor
 
   delmarks A-Z0-9
-endfunc
-
-" Try to run `command` and remember if the command raises a known error code
-func s:execute_try_catch(command)
-  let l:caught = 0
-
-  try
-    execute a:command
-  catch /E1513:/
-    return 1
-  catch /E1514:/
-    return 1
-  endtry
-
-  return 0
 endfunc
 
 " Find and set the first quickfix entry that points to `buffer`
@@ -233,58 +223,54 @@ func s:set_quickfix_by_buffer(buffer)
   echoerr 'No quickfix entry matching "' . a:buffer . '" could be found.'
 endfunc
 
-" Fail to call :Next on a 'stickybuf' window unless :Next! is used.
+" Fail to call :Next on a 'winfixbuf' window unless :Next! is used.
 func Test_Next()
-  CheckFeature quickfix
   call s:reset_all_buffers()
 
   let [l:first, _] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("Next")
-  call assert_equal(1, l:caught)
+  call assert_fails("Next", "E1513:")
   call assert_notequal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("Next!")
-  call assert_equal(0, l:caught)
+  Next!
   call assert_equal(l:first, bufnr())
 endfunc
 
-" Call :argdo and choose the next available 'nostickybuf' window.
+" Call :argdo and choose the next available 'nowinfixbuf' window.
 func Test_argdo_choose_available_window()
   call s:reset_all_buffers()
+
   let [_, l:last] = s:make_args_list()
 
-  " Make a split window that is 'nostickybuf' but make it the second-to-last
-  " window so that :argdo will first try the 'stickybuf' window, pass over it,
-  " and prefer the other 'nostickybuf' window, instead.
+  " Make a split window that is 'nowinfixbuf' but make it the second-to-last
+  " window so that :argdo will first try the 'winfixbuf' window, pass over it,
+  " and prefer the other 'nowinfixbuf' window, instead.
   "
   " +-------------------+
-  " |   'nostickybuf'   |
+  " |   'nowinfixbuf'   |
   " +-------------------+
-  " |    'stickybuf'    |  <-- Cursor is here
+  " |    'winfixbuf'    |  <-- Cursor is here
   " +-------------------+
   split
-  let l:nostickybuf_window = win_getid()
-  " Move to the 'stickybuf' window now
+  let l:nowinfixbuf_window = win_getid()
+  " Move to the 'winfixbuf' window now
   execute "normal \<C-w>j"
-  let l:stickybuf_window = win_getid()
+  let l:winfixbuf_window = win_getid()
 
-  let l:caught = s:execute_try_catch("argdo echo ''")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:nostickybuf_window, win_getid())
+  argdo echo ''
+  call assert_equal(l:nowinfixbuf_window, win_getid())
   call assert_equal(l:last, bufnr())
 endfunc
 
-" Call :argdo and create a new split window if all available windows are 'stickybuf'.
+" Call :argdo and create a new split window if all available windows are 'winfixbuf'.
 func Test_argdo_make_new_window()
   call s:reset_all_buffers()
-  let [l:first, l:last] = s:make_args_list()
 
+  let [l:first, l:last] = s:make_args_list()
   let l:current = win_getid()
 
-  let l:caught = s:execute_try_catch("argdo echo ''")
-  call assert_equal(0, l:caught)
+  argdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
@@ -308,15 +294,13 @@ func Test_argedit()
   file last
   let l:last = bufnr()
 
-  set stickybuf
+  set winfixbuf
 
   let l:current = bufnr()
-  let l:caught = s:execute_try_catch("argedit first middle last")
-  call assert_equal(1, l:caught)
+  call assert_fails("argedit first middle last", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("argedit! first middle last")
-  call assert_equal(0, l:caught)
+  argedit! first middle last
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -329,12 +313,10 @@ func Test_arglocal()
   argglobal! other
   execute "buffer! " . l:current
 
-  let l:caught = s:execute_try_catch("arglocal other")
-  call assert_equal(1, l:caught)
+  call assert_fails("arglocal other", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("arglocal! other")
-  call assert_equal(0, l:caught)
+  arglocal! other
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -345,12 +327,10 @@ func Test_argglobal()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("argglobal other")
-  call assert_equal(1, l:caught)
+  call assert_fails("argglobal other", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("argglobal! other")
-  call assert_equal(0, l:caught)
+  argglobal! other
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -359,14 +339,12 @@ func Test_args()
   call s:reset_all_buffers()
 
   let [l:first, _] = s:make_buffers_list()
-
   let l:current = bufnr()
-  let l:caught = s:execute_try_catch("args first middle last")
-  call assert_equal(1, l:caught)
+
+  call assert_fails("args first middle last", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("args! first middle last")
-  call assert_equal(0, l:caught)
+  args! first middle last
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -375,14 +353,12 @@ func Test_bNext()
   call s:reset_all_buffers()
 
   let l:other = s:make_buffer_pairs()
-
-  let l:caught = s:execute_try_catch("bNext")
+  call assert_fails("bNext", "E1513:")
   let l:current = bufnr()
-  call assert_equal(1, l:caught)
+
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("bNext!")
-  call assert_equal(0, l:caught)
+  bNext!
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -393,8 +369,7 @@ func Test_badd()
   call s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("badd other")
-  call assert_equal(0, l:caught)
+  badd other
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -403,11 +378,9 @@ func Test_balt()
   call s:reset_all_buffers()
 
   call s:make_buffer_pairs()
-
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("balt other")
-  call assert_equal(0, l:caught)
+  balt other
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -418,12 +391,10 @@ func Test_bfirst()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("bfirst")
-  call assert_equal(1, l:caught)
+  call assert_fails("bfirst", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("bfirst!")
-  call assert_equal(0, l:caught)
+  bfirst!
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -435,12 +406,10 @@ func Test_blast()
   bfirst!
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("blast")
-  call assert_equal(1, l:caught)
+  call assert_fails("blast", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("blast!")
-  call assert_equal(0, l:caught)
+  blast!
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -455,12 +424,10 @@ func Test_bmodified()
   set modified
   execute "buffer! " . l:current
 
-  let l:caught = s:execute_try_catch("bmodified")
-  call assert_equal(1, l:caught)
+  call assert_fails("bmodified", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("bmodified!")
-  call assert_equal(0, l:caught)
+  bmodified!
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -471,12 +438,10 @@ func Test_bnext()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("bnext")
-  call assert_equal(1, l:caught)
+  call assert_fails("bnext", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("bnext!")
-  call assert_equal(0, l:caught)
+  bnext!
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -487,12 +452,10 @@ func Test_bprevious()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("bprevious")
-  call assert_equal(1, l:caught)
+  call assert_fails("bprevious", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("bprevious!")
-  call assert_equal(0, l:caught)
+  bprevious!
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -503,55 +466,77 @@ func Test_brewind()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("brewind")
-  call assert_equal(1, l:caught)
+  call assert_fails("brewind", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("brewind!")
-  call assert_equal(0, l:caught)
+  brewind!
   call assert_equal(l:other, bufnr())
 endfunc
 
-" Call :bufdo and choose the next available 'nostickybuf' window.
+" Fail :browse edit but :browse edit! is allowed
+func Test_browse_edit_fail()
+  call s:reset_all_buffers()
+
+  let l:other = s:make_buffer_pairs()
+  let l:current = bufnr()
+
+  call assert_fails("browse edit other", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  browse edit! other
+  call assert_equal(l:other, bufnr())
+endfunc
+
+" Allow :browse w because it doesn't change the buffer in the current file
+func Test_browse_edit_pass()
+  call s:reset_all_buffers()
+
+  let l:other = s:make_buffer_pairs()
+  let l:current = bufnr()
+
+  browse write other
+
+  call delete("other")
+endfunc
+
+" Call :bufdo and choose the next available 'nowinfixbuf' window.
 func Test_bufdo_choose_available_window()
   call s:reset_all_buffers()
 
   let l:other = s:make_buffer_pairs()
 
-  " Make a split window that is 'nostickybuf' but make it the second-to-last
-  " window so that :bufdo will first try the 'stickybuf' window, pass over it,
-  " and prefer the other 'nostickybuf' window, instead.
+  " Make a split window that is 'nowinfixbuf' but make it the second-to-last
+  " window so that :bufdo will first try the 'winfixbuf' window, pass over it,
+  " and prefer the other 'nowinfixbuf' window, instead.
   "
   " +-------------------+
-  " |   'nostickybuf'   |
+  " |   'nowinfixbuf'   |
   " +-------------------+
-  " |    'stickybuf'    |  <-- Cursor is here
+  " |    'winfixbuf'    |  <-- Cursor is here
   " +-------------------+
   split
-  let l:nostickybuf_window = win_getid()
-  " Move to the 'stickybuf' window now
+  let l:nowinfixbuf_window = win_getid()
+  " Move to the 'winfixbuf' window now
   execute "normal \<C-w>j"
-  let l:stickybuf_window = win_getid()
+  let l:winfixbuf_window = win_getid()
 
   let l:current = bufnr()
   call assert_notequal(l:current, l:other)
 
-  let l:caught = s:execute_try_catch("bufdo echo ''")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:nostickybuf_window, win_getid())
+  bufdo echo ''
+  call assert_equal(l:nowinfixbuf_window, win_getid())
   call assert_notequal(l:other, bufnr())
 endfunc
 
-" Call :bufdo and create a new split window if all available windows are 'stickybuf'.
+" Call :bufdo and create a new split window if all available windows are 'winfixbuf'.
 func Test_bufdo_make_new_window()
   call s:reset_all_buffers()
+
   let [l:first, l:last] = s:make_buffers_list()
   execute "buffer! " . l:first
-
   let l:current = win_getid()
 
-  let l:caught = s:execute_try_catch("bufdo echo ''")
-  call assert_equal(0, l:caught)
+  bufdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
@@ -565,57 +550,93 @@ func Test_buffer()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("buffer " . l:other)
-  call assert_equal(1, l:caught)
+  call assert_fails("buffer " . l:other, "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("buffer! " . l:other)
-  call assert_equal(0, l:caught)
+  execute "buffer! " . l:other
   call assert_equal(l:other, bufnr())
 endfunc
 
-" Allow :cNext but the 'nostickybuf' window is selected, instead
+" Allow :buffer on a 'winfixbuf' window if there is no change in buffer
+func Test_buffer_same_buffer()
+  call s:reset_all_buffers()
+
+  call s:make_buffer_pairs()
+  let l:current = bufnr()
+
+  execute "buffer " . l:current
+  call assert_equal(l:current, bufnr())
+
+  execute "buffer! " . l:current
+  call assert_equal(l:current, bufnr())
+endfunc
+
+" Allow :cNext but the 'nowinfixbuf' window is selected, instead
 func Test_cNext()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cNext` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cNext` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cNext")
-  call assert_equal(0, l:caught)
+  cNext
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :cNfile but the 'nostickybuf' window is selected, instead
+" Allow :cNfile but the 'nowinfixbuf' window is selected, instead
 func Test_cNfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cNfile` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cNfile` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
   cnext!
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cNfile")
-  call assert_equal(0, l:caught)
+  cNfile
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :cbuffer but don't switch to the first much unless :cbuffer! is used
+" Allow :caddexpr because it doesn't change the current buffer
+func Test_caddexpr()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let l:file_path = tempname()
+  call writefile(["Error - bad-thing-found"], l:file_path)
+  execute "edit " . l:file_path
+  let l:file_buffer = bufnr()
+  let l:current = bufnr()
+
+  edit first.unittest
+  call append(0, ["some-search-term bad-thing-found"])
+
+  edit! other.unittest
+
+  set winfixbuf
+
+  execute "buffer! " . l:file_buffer
+
+  execute 'caddexpr expand("%") .. ":" .. line(".") .. ":" .. getline(".")'
+  call assert_equal(l:current, bufnr())
+
+  call delete(l:file_path)
+endfunc
+
+" Fail :cbuffer but :cbuffer! is allowed
 func Test_cbuffer()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -630,113 +651,158 @@ func Test_cbuffer()
   call append(0, ["some-search-term bad-thing-found"])
 
   edit! other.unittest
-  set stickybuf
+
+  set winfixbuf
 
   execute "buffer! " . l:file_buffer
 
-  let l:caught = s:execute_try_catch("cbuffer " . l:file_buffer)
-  call assert_equal(0, l:caught)
+  call assert_fails("cbuffer " . l:file_buffer)
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("cbuffer! " . l:file_buffer)
-  call assert_equal(0, l:caught)
+  execute "cbuffer! " . l:file_buffer
   call assert_equal("first.unittest", expand("%:t"))
+
+  call delete(l:file_path)
 endfunc
 
-" Allow :cc but the 'nostickybuf' window is selected, instead
+" Allow :cc but the 'nowinfixbuf' window is selected, instead
 func Test_cc()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cnext` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cnext` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
   " Go up one line in the quickfix window to an quickfix entry that doesn't
-  " point to a stickybuf buffer
+  " point to a winfixbuf buffer
   normal k
-  " Attempt to make the previous window, stickbuf buffer, to go to the
-  " non-stickybuf quickfix entry
+  " Attempt to make the previous window, winfixbuf buffer, to go to the
+  " non-winfixbuf quickfix entry
   .cc
 
-  " Confirm that :.cc did not change the stickbuf-enabled window
+  " Confirm that :.cc did not change the winfixbuf-enabled window
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Call :cdo and choose the next available 'nostickybuf' window.
+" Call :cdo and choose the next available 'nowinfixbuf' window.
 func Test_cdo_choose_available_window()
   CheckFeature quickfix
   call s:reset_all_buffers()
+
   let [l:current, l:last] = s:make_simple_quickfix()
   execute "buffer! " . l:current
 
-  " Make a split window that is 'nostickybuf' but make it the second-to-last
-  " window so that :cdo will first try the 'stickybuf' window, pass over it,
-  " and prefer the other 'nostickybuf' window, instead.
+  " Make a split window that is 'nowinfixbuf' but make it the second-to-last
+  " window so that :cdo will first try the 'winfixbuf' window, pass over it,
+  " and prefer the other 'nowinfixbuf' window, instead.
   "
   " +-------------------+
-  " |   'nostickybuf'   |
+  " |   'nowinfixbuf'   |
   " +-------------------+
-  " |    'stickybuf'    |  <-- Cursor is here
+  " |    'winfixbuf'    |  <-- Cursor is here
   " +-------------------+
   split
-  let l:nostickybuf_window = win_getid()
-  " Move to the 'stickybuf' window now
+  let l:nowinfixbuf_window = win_getid()
+  " Move to the 'winfixbuf' window now
   execute "normal \<C-w>j"
-  let l:stickybuf_window = win_getid()
+  let l:winfixbuf_window = win_getid()
 
-  let l:caught = s:execute_try_catch("cdo echo ''")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:nostickybuf_window, win_getid())
+  cdo echo ''
+  call assert_equal(l:nowinfixbuf_window, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:current, bufnr())
 endfunc
 
-" Call :cdo and create a new split window if all available windows are 'stickybuf'.
+" Call :cdo and create a new split window if all available windows are 'winfixbuf'.
 func Test_cdo_make_new_window()
   CheckFeature quickfix
   call s:reset_all_buffers()
+
   let [l:current_buffer, l:last] = s:make_simple_quickfix()
   execute "buffer! " . l:current_buffer
 
   let l:current_window = win_getid()
 
-  let l:caught = s:execute_try_catch("cdo echo ''")
-  call assert_equal(0, l:caught)
+  cdo echo ''
   call assert_notequal(l:current_window, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:current_buffer, bufnr())
 endfunc
 
-" Allow :cexpr but don't switch to the first much unless :cexpr! is used
+" Fail :cexpr but :cexpr! is allowed
 func Test_cexpr()
   CheckFeature quickfix
   call s:reset_all_buffers()
-
 
   let l:file = tempname()
   let l:entry = '["' . l:file . ':1:bar"]'
   let l:current = bufnr()
 
-  set stickybuf
+  set winfixbuf
 
-  let l:caught = s:execute_try_catch('cexpr ' . l:entry)
-  call assert_equal(0, l:caught)
+  call assert_fails("cexpr " . l:entry)
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch('cexpr! ' . l:entry)
-  call assert_equal(0, l:caught)
+  execute "cexpr! " . l:entry
   call assert_equal(fnamemodify(l:file, ":t"), expand("%:t"))
 endfunc
 
-" Allow :cfile but don't swap to the first file unless ':cfile! is used
+" Call :cfdo and choose the next available 'nowinfixbuf' window.
+func Test_cfdo_choose_available_window()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let [l:current, l:last] = s:make_simple_quickfix()
+  execute "buffer! " . l:current
+
+  " Make a split window that is 'nowinfixbuf' but make it the second-to-last
+  " window so that :cfdo will first try the 'winfixbuf' window, pass over it,
+  " and prefer the other 'nowinfixbuf' window, instead.
+  "
+  " +-------------------+
+  " |   'nowinfixbuf'   |
+  " +-------------------+
+  " |    'winfixbuf'    |  <-- Cursor is here
+  " +-------------------+
+  split
+  let l:nowinfixbuf_window = win_getid()
+  " Move to the 'winfixbuf' window now
+  execute "normal \<C-w>j"
+  let l:winfixbuf_window = win_getid()
+
+  cfdo echo ''
+  call assert_equal(l:nowinfixbuf_window, win_getid())
+  call assert_equal(l:last, bufnr())
+  execute "normal \<C-w>j"
+  call assert_equal(l:current, bufnr())
+endfunc
+
+" Call :cfdo and create a new split window if all available windows are 'winfixbuf'.
+func Test_cfdo_make_new_window()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let [l:current_buffer, l:last] = s:make_simple_quickfix()
+  execute "buffer! " . l:current_buffer
+
+  let l:current_window = win_getid()
+
+  cfdo echo ''
+  call assert_notequal(l:current_window, win_getid())
+  call assert_equal(l:last, bufnr())
+  execute "normal \<C-w>j"
+  call assert_equal(l:current_buffer, bufnr())
+endfunc
+
+" Fail :cfile but :cfile! is allowed
 func Test_cfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -754,14 +820,13 @@ func Test_cfile()
   call writefile(["first.unittest:1:Error - bad-thing-found was detected"], l:file)
 
   let l:current = bufnr()
-  set stickybuf
 
-  let l:caught = s:execute_try_catch(":cfile " . l:file)
-  call assert_equal(0, l:caught)
+  set winfixbuf
+
+  call assert_fails(":cfile " . l:file)
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch(":cfile! " . l:file)
-  call assert_equal(0, l:caught)
+  execute ":cfile! " . l:file
   call assert_equal(l:first, bufnr())
 
   call delete(l:file)
@@ -769,68 +834,65 @@ func Test_cfile()
   call delete("second.unittest")
 endfunc
 
-" Allow :cfirst but the 'nostickybuf' window is selected, instead
+" Allow :cfirst but the 'nowinfixbuf' window is selected, instead
 func Test_cfirst()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cfirst` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cfirst` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cfirst")
-  call assert_equal(0, l:caught)
+  cfirst
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :clast but the 'nostickybuf' window is selected, instead
+" Allow :clast but the 'nowinfixbuf' window is selected, instead
 func Test_clast()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:clast` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:clast` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("clast")
-  call assert_equal(0, l:caught)
+  clast
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :cnext but the 'nostickybuf' window is selected, instead
+" Allow :cnext but the 'nowinfixbuf' window is selected, instead
 func Test_cnext()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cnext` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cnext` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
   cnext!
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cnext")
-  call assert_equal(0, l:caught)
+  cnext
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :cnext and create a 'nostickybuf' window if none exists
+" Allow :cnext and create a 'nowinfixbuf' window if none exists
 func Test_cnext_make_new_window()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -843,95 +905,89 @@ func Test_cnext_make_new_window()
   let l:windows = s:get_windows_count()
   let l:expected = l:windows + 1  " We're about to create a new split window
 
-  let l:caught = s:execute_try_catch("cnext")
-  call assert_equal(0, l:caught)
+  cnext
   call assert_equal(l:expected, s:get_windows_count())
 
-  let l:caught = s:execute_try_catch("cnext!")
-  call assert_equal(0, l:caught)
+  cnext!
   call assert_equal(l:expected, s:get_windows_count())
 endfunc
 
-" Allow :cprevious but the 'nostickybuf' window is selected, instead
+" Allow :cprevious but the 'nowinfixbuf' window is selected, instead
 func Test_cprevious()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cprevious` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cprevious` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cprevious")
-  call assert_equal(0, l:caught)
+  cprevious
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :cnfile but the 'nostickybuf' window is selected, instead
+" Allow :cnfile but the 'nowinfixbuf' window is selected, instead
 func Test_cnfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cnfile` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cnfile` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
   cnext!
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cnfile")
-  call assert_equal(0, l:caught)
+  cnfile
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :cpfile but the 'nostickybuf' window is selected, instead
+" Allow :cpfile but the 'nowinfixbuf' window is selected, instead
 func Test_cpfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:cpfile` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:cpfile` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
   cnext!
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("cpfile")
-  call assert_equal(0, l:caught)
+  cpfile
   call assert_equal(l:first_window, win_getid())
 endfunc
 
-" Allow :crewind but the 'nostickybuf' window is selected, instead
+" Allow :crewind but the 'nowinfixbuf' window is selected, instead
 func Test_crewind()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
-  let [l:first_window, l:sticky_window, l:quickfix_window] = s:make_quickfix_windows()
+  let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
 
-  " The call to `:crewind` succeeds but it selects the window with 'nostickybuf' instead
-  call s:set_quickfix_by_buffer(winbufnr(l:sticky_window))
+  " The call to `:crewind` succeeds but it selects the window with 'nowinfixbuf' instead
+  call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
   cnext!
 
-  " Make sure the previous window has 'stickybuf' so we can test that our
-  " "skip 'stickybuf' window" logic works.
-  call win_gotoid(l:sticky_window)
+  " Make sure the previous window has 'winfixbuf' so we can test that our
+  " "skip 'winfixbuf' window" logic works.
+  call win_gotoid(l:winfix_window)
   call win_gotoid(l:quickfix_window)
 
-  let l:caught = s:execute_try_catch("crewind")
-  call assert_equal(0, l:caught)
+  crewind
   call assert_equal(l:first_window, win_getid())
 endfunc
 
@@ -946,16 +1002,15 @@ func Test_djump()
         \ "main.c")
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
   edit main.c
-  set stickybuf
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("djump 1 /min/")
-  call assert_equal(1, l:caught)
+  call assert_fails("djump 1 /min/", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("djump! 1 /min/")
-  call assert_equal(0, l:caught)
+  djump! 1 /min/
   call assert_notequal(l:current, bufnr())
 
   set tags&
@@ -963,16 +1018,18 @@ func Test_djump()
   call delete(l:include_file)
 endfunc
 
-" Fail :drop
+" Fail :drop but :drop! is allowed
 func Test_drop()
   call s:reset_all_buffers()
 
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("drop other")
-  call assert_equal(1, l:caught)
+  call assert_fails("drop other", "E1513:")
   call assert_equal(l:current, bufnr())
+
+  drop! other
+  call assert_equal(l:other, bufnr())
 endfunc
 
 " Fail :edit but :edit! is allowed
@@ -982,12 +1039,10 @@ func Test_edit()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("edit other")
-  call assert_equal(1, l:caught)
+  call assert_fails("edit other", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("edit! other")
-  call assert_equal(0, l:caught)
+  edit! other
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -998,12 +1053,10 @@ func Test_enew()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("enew")
-  call assert_equal(1, l:caught)
+  call assert_fails("enew", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("enew!")
-  call assert_equal(0, l:caught)
+  enew!
   call assert_notequal(l:other, bufnr())
   call assert_notequal(3, bufnr())
 endfunc
@@ -1015,12 +1068,10 @@ func Test_ex()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("ex other")
-  call assert_equal(1, l:caught)
+  call assert_fails("ex other", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("ex! other")
-  call assert_equal(0, l:caught)
+  ex! other
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -1037,14 +1088,12 @@ func Test_find()
   let l:original_path = &path
   execute "set path=" . l:directory
 
-  set stickybuf
+  set winfixbuf
 
-  let l:caught = s:execute_try_catch("find " . l:name)
-  call assert_equal(1, l:caught)
+  call assert_fails("execute 'find " . l:name . "'", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("find! " . l:name)
-  call assert_equal(0, l:caught)
+  execute "find! " . l:name
   call assert_equal(l:file, expand("%:p"))
 
   execute "set path=" . l:original_path
@@ -1058,16 +1107,14 @@ func Test_first()
   let [l:first, _] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("first")
-  call assert_equal(1, l:caught)
+  call assert_fails("first", "E1513:")
   call assert_notequal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("first!")
-  call assert_equal(0, l:caught)
+  first!
   call assert_equal(l:first, bufnr())
 endfunc
 
-" Allow :grep but don't change the 'stickybuf' window to another buffer
+" Fail :grep but :grep! is allowed
 func Test_grep()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -1075,31 +1122,28 @@ func Test_grep()
   edit first.unittest
   call append(0, ["some-search-term"])
   write
+  let l:first = bufnr()
 
   edit current.unittest
   call append(0, ["some-search-term"])
   write
   let l:current = bufnr()
 
-  set stickybuf
-
   edit! last.unittest
   call append(0, ["some-search-term"])
   write
   let l:last = bufnr()
 
+  set winfixbuf
+
   buffer! current.unittest
 
-  " Don't error but don't swap to the first match because the current window
-  " has 'stickybuf' enabled
-  let l:caught = s:execute_try_catch("silent! grep some-search-term *.unittest")
-  call assert_equal(0, l:caught)
+  call assert_fails("silent! grep some-search-term *.unittest", "E1513:")
   call assert_equal(l:current, bufnr())
+  execute "edit! " . l:first
 
-  " Don't error and also do not swap to the first match because ! was included
-  let l:caught = s:execute_try_catch("silent! grep! some-search-term *.unittest")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:current, bufnr())
+  silent! grep! some-search-term *.unittest
+  call assert_notequal(l:first, bufnr())
 
   call delete("first.unittest")
   call delete("current.unittest")
@@ -1117,7 +1161,8 @@ func Test_ijump()
         \ "main.c")
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
   edit main.c
-  set stickybuf
+
+  set winfixbuf
 
   let l:current = bufnr()
 
@@ -1125,13 +1170,12 @@ func Test_ijump()
   set include=^\\s*#\\s*include
   set path=.,/usr/include,,
 
-  let l:caught = s:execute_try_catch("ijump /min/")
-  call assert_equal(1, l:caught)
+  call assert_fails("ijump /min/", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  set nostickybuf
-  let l:caught = s:execute_try_catch("ijump! /min/")
-  call assert_equal(0, l:caught)
+  set nowinfixbuf
+
+  ijump! /min/
   call assert_notequal(l:current, bufnr())
 
   set tags&
@@ -1146,18 +1190,16 @@ endfunc
 func Test_lNext()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:middle, _] = s:make_simple_location_list()
 
+  let [l:first, l:middle, _] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("lNext")
-  call assert_equal(1, l:caught)
+  call assert_fails("lNext", "E1513:")
   call assert_equal(l:middle, bufnr())
 
   lnext!  " Reset for the next test
 
-  let l:caught = s:execute_try_catch("lNext!")
-  call assert_equal(0, l:caught)
+  lNext!
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -1165,19 +1207,43 @@ endfunc
 func Test_lNfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:current, _] = s:make_simple_location_list()
 
+  let [l:first, l:current, _] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("lNfile")
-  call assert_equal(1, l:caught)
+  call assert_fails("lNfile", "E1513:")
   call assert_equal(l:current, bufnr())
 
   lnext!  " Reset for the next test
 
-  let l:caught = s:execute_try_catch("lNfile!")
-  call assert_equal(0, l:caught)
+  lNfile!
   call assert_equal(l:first, bufnr())
+endfunc
+
+" Allow :laddexpr because it doesn't change the current buffer
+func Test_laddexpr()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let l:file_path = tempname()
+  call writefile(["Error - bad-thing-found"], l:file_path)
+  execute "edit " . l:file_path
+  let l:file_buffer = bufnr()
+  let l:current = bufnr()
+
+  edit first.unittest
+  call append(0, ["some-search-term bad-thing-found"])
+
+  edit! other.unittest
+
+  set winfixbuf
+
+  execute "buffer! " . l:file_buffer
+
+  execute 'laddexpr expand("%") .. ":" .. line(".") .. ":" .. getline(".")'
+  call assert_equal(l:current, bufnr())
+
+  call delete(l:file_path)
 endfunc
 
 " Fail :last but :last! is allowed
@@ -1187,16 +1253,14 @@ func Test_last()
   let [_, l:last] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("last")
-  call assert_equal(1, l:caught)
+  call assert_fails("last", "E1513:")
   call assert_notequal(l:last, bufnr())
 
-  let l:caught = s:execute_try_catch("last!")
-  call assert_equal(0, l:caught)
+  last!
   call assert_equal(l:last, bufnr())
 endfunc
 
-" Allow :lbuffer but don't switch to the first much unless :lbuffer! is used
+" Fail :lbuffer but :lbuffer! is allowed
 func Test_lbuffer()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -1211,36 +1275,67 @@ func Test_lbuffer()
   call append(0, ["some-search-term bad-thing-found"])
 
   edit! other.unittest
-  set stickybuf
+
+  set winfixbuf
 
   execute "buffer! " . l:file_buffer
 
-  let l:caught = s:execute_try_catch("lbuffer " . l:file_buffer)
-  call assert_equal(0, l:caught)
+  call assert_fails("lbuffer " . l:file_buffer)
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("lbuffer! " . l:file_buffer)
-  call assert_equal(0, l:caught)
+  execute "lbuffer! " . l:file_buffer
   call assert_equal("first.unittest", expand("%:t"))
+
+  call delete(l:file_path)
 endfunc
 
 " Fail :ldo but :ldo! is allowed
 func Test_ldo()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:middle, l:last] = s:make_simple_location_list()
 
+  let [l:first, l:middle, l:last] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("ldo buffer " . l:first)
-  call assert_equal(1, l:caught)
+  call assert_fails('execute "ldo buffer ' . l:first . '"', "E1513:")
   call assert_equal(l:middle, bufnr())
-  let l:caught = s:execute_try_catch("ldo! buffer " . l:first)
-  call assert_equal(0, l:caught)
+  execute "ldo! buffer " . l:first
   call assert_notequal(l:last, bufnr())
 endfunc
 
-" Allow :lfile but don't swap to the first file unless ':lfile! is used
+" Fail :lfdo but :lfdo! is allowed
+func Test_lexpr()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let l:file = tempname()
+  let l:entry = '["' . l:file . ':1:bar"]'
+  let l:current = bufnr()
+
+  set winfixbuf
+
+  call assert_fails("lexpr " . l:entry)
+  call assert_equal(l:current, bufnr())
+
+  execute "lexpr! " . l:entry
+  call assert_equal(fnamemodify(l:file, ":t"), expand("%:t"))
+endfunc
+
+" Fail :lfdo but :lfdo! is allowed
+func Test_lfdo()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let [l:first, l:middle, l:last] = s:make_simple_location_list()
+  lnext!
+
+  call assert_fails('execute "lfdo buffer ' . l:first . '"', "E1513:")
+  call assert_equal(l:middle, bufnr())
+  execute "lfdo! buffer " . l:first
+  call assert_notequal(l:last, bufnr())
+endfunc
+
+" Fail :lfile but :lfile! is allowed
 func Test_lfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -1258,14 +1353,13 @@ func Test_lfile()
   call writefile(["first.unittest:1:Error - bad-thing-found was detected"], l:file)
 
   let l:current = bufnr()
-  set stickybuf
 
-  let l:caught = s:execute_try_catch(":lfile " . l:file)
-  call assert_equal(0, l:caught)
+  set winfixbuf
+
+  call assert_fails(":lfile " . l:file)
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch(":lfile! " . l:file)
-  call assert_equal(0, l:caught)
+  execute ":lfile! " . l:file
   call assert_equal(l:first, bufnr())
 
   call delete(l:file)
@@ -1277,20 +1371,18 @@ endfunc
 func Test_ll()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:middle, l:last] = s:make_simple_location_list()
 
+  let [l:first, l:middle, l:last] = s:make_simple_location_list()
   lopen
   lfirst!
   execute "normal \<C-w>j"
   normal j
 
-  let l:caught = s:execute_try_catch(".ll")
-  call assert_equal(1, l:caught)
+  call assert_fails(".ll", "E1513:")
   execute "normal \<C-w>k"
   call assert_equal(l:first, bufnr())
   execute "normal \<C-w>j"
-  let l:caught = s:execute_try_catch(".ll!")
-  call assert_equal(0, l:caught)
+  .ll!
   execute "normal \<C-w>k"
   call assert_equal(l:middle, bufnr())
 endfunc
@@ -1303,12 +1395,10 @@ func Test_llast()
   let [l:first, _, l:last] = s:make_simple_location_list()
   lfirst!
 
-  let l:caught = s:execute_try_catch("llast")
-  call assert_equal(1, l:caught)
+  call assert_fails("llast", "E1513:")
   call assert_equal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("llast!")
-  call assert_equal(0, l:caught)
+  llast!
   call assert_equal(l:last, bufnr())
 endfunc
 
@@ -1316,16 +1406,14 @@ endfunc
 func Test_lnext()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:middle, l:last] = s:make_simple_location_list()
 
+  let [l:first, l:middle, l:last] = s:make_simple_location_list()
   ll!
 
-  let l:caught = s:execute_try_catch("lnext")
-  call assert_equal(1, l:caught)
+  call assert_fails("lnext", "E1513:")
   call assert_equal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("lnext!")
-  call assert_equal(0, l:caught)
+  lnext!
   call assert_equal(l:middle, bufnr())
 endfunc
 
@@ -1333,18 +1421,16 @@ endfunc
 func Test_lnfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [_, l:current, l:last] = s:make_simple_location_list()
 
+  let [_, l:current, l:last] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("lnfile")
-  call assert_equal(1, l:caught)
+  call assert_fails("lnfile", "E1513:")
   call assert_equal(l:current, bufnr())
 
   lprevious!  " Reset for the next test call
 
-  let l:caught = s:execute_try_catch("lnfile!")
-  call assert_equal(0, l:caught)
+  lnfile!
   call assert_equal(l:last, bufnr())
 endfunc
 
@@ -1352,18 +1438,16 @@ endfunc
 func Test_lpfile()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:current, _] = s:make_simple_location_list()
 
+  let [l:first, l:current, _] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("lpfile")
-  call assert_equal(1, l:caught)
+  call assert_fails("lpfile", "E1513:")
   call assert_equal(l:current, bufnr())
 
   lnext!  " Reset for the next test call
 
-  let l:caught = s:execute_try_catch("lpfile!")
-  call assert_equal(0, l:caught)
+  lpfile!
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -1371,18 +1455,16 @@ endfunc
 func Test_lprevious()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:middle, _] = s:make_simple_location_list()
 
+  let [l:first, l:middle, _] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("lprevious")
-  call assert_equal(1, l:caught)
+  call assert_fails("lprevious", "E1513:")
   call assert_equal(l:middle, bufnr())
 
   lnext!  " Reset for the next test call
 
-  let l:caught = s:execute_try_catch("lprevious!")
-  call assert_equal(0, l:caught)
+  lprevious!
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -1390,16 +1472,14 @@ endfunc
 func Test_lrewind()
   CheckFeature quickfix
   call s:reset_all_buffers()
-  let [l:first, l:middle, _] = s:make_simple_location_list()
 
+  let [l:first, l:middle, _] = s:make_simple_location_list()
   lnext!
 
-  let l:caught = s:execute_try_catch("lrewind")
-  call assert_equal(1, l:caught)
+  call assert_fails("lrewind", "E1513:")
   call assert_equal(l:middle, bufnr())
 
-  let l:caught = s:execute_try_catch("lrewind!")
-  call assert_equal(0, l:caught)
+  lrewind!
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -1414,25 +1494,25 @@ func Test_ltag()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
+  call writefile(["one"], "Xother")
+  edit Xother
   execute "normal \<C-]>"
-  set stickybuf
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("ltag one")
-  call assert_equal(1, l:caught)
+  call assert_fails("ltag one", "E1513:")
 
-  let l:caught = s:execute_try_catch("ltag! one")
-  call assert_equal(0, l:caught)
+  ltag! one
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Allow :lvimgrep but 'stickybuf' windows will not jump to the first match
-" unless [!] is used.
+" Fail :lvimgrep but :lvimgrep! is allowed
 func Test_lvimgrep()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -1441,38 +1521,32 @@ func Test_lvimgrep()
   call append(0, ["some-search-term"])
   write
 
-  edit sticky.unittest
+  edit winfix.unittest
   call append(0, ["some-search-term"])
   write
   let l:current = bufnr()
 
-  set stickybuf
+  set winfixbuf
 
   edit! last.unittest
   call append(0, ["some-search-term"])
   write
   let l:last = bufnr()
 
-  buffer! sticky.unittest
+  buffer! winfix.unittest
 
-  " Don't error but don't swap to the first match because the current window
-  " has 'stickybuf' enabled
-  let l:caught = s:execute_try_catch("lvimgrep /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  call assert_fails("lvimgrep /some-search-term/ *.unittest", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  " Don't error and also do swap to the first match because ! was included
-  let l:caught = s:execute_try_catch("lvimgrep! /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  lvimgrep! /some-search-term/ *.unittest
   call assert_notequal(l:current, bufnr())
 
   call delete("first.unittest")
-  call delete("sticky.unittest")
+  call delete("winfix.unittest")
   call delete("last.unittest")
 endfunc
 
-" Allow :lvimgrepadd but 'stickybuf' windows will not jump to the first match
-" unless [!] is used.
+" Fail :lvimgrepadd but :lvimgrepadd! is allowed
 func Test_lvimgrepadd()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -1481,37 +1555,32 @@ func Test_lvimgrepadd()
   call append(0, ["some-search-term"])
   write
 
-  edit sticky.unittest
+  edit winfix.unittest
   call append(0, ["some-search-term"])
   write
   let l:current = bufnr()
 
-  set stickybuf
+  set winfixbuf
 
   edit! last.unittest
   call append(0, ["some-search-term"])
   write
   let l:last = bufnr()
 
-  buffer! sticky.unittest
+  buffer! winfix.unittest
 
-  " Don't error but don't swap to the first match because the current window
-  " has 'stickybuf' enabled
-  let l:caught = s:execute_try_catch("lvimgrepadd /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  call assert_fails("lvimgrepadd /some-search-term/ *.unittest")
   call assert_equal(l:current, bufnr())
 
-  " Don't error and also do swap to the first match because ! was included
-  let l:caught = s:execute_try_catch("lvimgrepadd! /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  lvimgrepadd! /some-search-term/ *.unittest
   call assert_notequal(l:current, bufnr())
 
   call delete("first.unittest")
-  call delete("sticky.unittest")
+  call delete("winfix.unittest")
   call delete("last.unittest")
 endfunc
 
-" Don't allow global marks to change the current 'stickybuf' window
+" Don't allow global marks to change the current 'winfixbuf' window
 func Test_marks_mappings_fail()
   call s:reset_all_buffers()
 
@@ -1522,22 +1591,19 @@ func Test_marks_mappings_fail()
   execute "buffer! " . l:current
   normal mB
 
-  let l:caught = s:execute_try_catch("normal `A")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal `A", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("normal 'A")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal 'A", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  set nostickybuf
+  set nowinfixbuf
 
-  let l:caught = s:execute_try_catch("normal `A")
-  call assert_equal(0, l:caught)
+  normal `A
   call assert_equal(l:other, bufnr())
 endfunc
 
-" Allow global marks in a 'stickybuf' window if the jump is the same buffer
+" Allow global marks in a 'winfixbuf' window if the jump is the same buffer
 func Test_marks_mappings_pass_intra_move()
   call s:reset_all_buffers()
 
@@ -1547,10 +1613,9 @@ func Test_marks_mappings_pass_intra_move()
   normal j
   normal mB
 
-  set stickybuf
+  set winfixbuf
 
-  let l:caught = s:execute_try_catch("normal `A")
-  call assert_equal(0, l:caught)
+  normal `A
   call assert_equal(l:current, bufnr())
 endfunc
 
@@ -1558,19 +1623,68 @@ endfunc
 func Test_next()
   call s:reset_all_buffers()
 
-  let [_, l:last] = s:make_args_list()
+  let [l:first, _] = s:make_args_list()
+  first!
+
+  call assert_fails("next", "E1513:")
+  call assert_equal(l:first, bufnr())
+
   next!
-
-  let l:caught = s:execute_try_catch("next")
-  call assert_equal(1, l:caught)
-  call assert_notequal(l:last, bufnr())
-
-  let l:caught = s:execute_try_catch("next!")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:last, bufnr())
+  call assert_notequal(l:first, bufnr())
 endfunc
 
-" Fail to jump to a tag with g<C-]> if 'stickybuf' is enabled
+" Ensure :mksession saves 'winfixbuf' details
+func Test_mksession()
+  CheckFeature mksession
+  call s:reset_all_buffers()
+
+  set sessionoptions+=options
+  set winfixbuf
+
+  mksession test_winfixbuf_Test_mksession.vim
+
+  call s:reset_all_buffers()
+  let l:winfixbuf = &winfixbuf
+  call assert_equal(0, l:winfixbuf)
+
+  source test_winfixbuf_Test_mksession.vim
+
+  let l:winfixbuf = &winfixbuf
+  call assert_equal(1, l:winfixbuf)
+
+  set sessionoptions&
+  call delete("test_winfixbuf_Test_mksession.vim")
+endfunc
+
+" Allow :next if the next index is the same as the current buffer
+func Test_next_same_buffer()
+  call s:reset_all_buffers()
+
+  enew
+  file foo
+  enew
+  file bar
+  enew
+  file fizz
+  enew
+  file buzz
+  args foo foo bar fizz buzz
+
+  edit foo
+  set winfixbuf
+  let l:current = bufnr()
+
+  " Allow :next because the args list is `[foo] foo bar fizz buzz
+  next
+  call assert_equal(l:current, bufnr())
+
+  " Fail :next because the args list is `foo [foo] bar fizz buzz
+  " and the next buffer would be bar, which is a different buffer
+  call assert_fails("next", "E1513:")
+  call assert_equal(l:current, bufnr())
+endfunc
+
+" Fail to jump to a tag with g<C-]> if 'winfixbuf' is enabled
 func Test_normal_g_ctrl_square_bracket_right()
   call s:reset_all_buffers()
 
@@ -1581,21 +1695,53 @@ func Test_normal_g_ctrl_square_bracket_right()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal g\<C-]>")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal g\<C-]>", "E1513:")
   call assert_equal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Fail to jump to a tag with g] if 'stickybuf' is enabled
+" Fail to jump to a tag with g<RightMouse> if 'winfixbuf' is enabled
+func Test_normal_g_rightmouse()
+  call s:reset_all_buffers()
+  set mouse=n
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile\t1",
+        \ "three\tXfile\t3",
+        \ "two\tXfile\t2"],
+        \ "Xtags")
+  call writefile(["one", "two", "three"], "Xfile")
+  call writefile(["one"], "Xother")
+  edit Xother
+  execute "normal \<C-]>"
+
+  set winfixbuf
+
+  let l:current = bufnr()
+
+  call assert_fails("normal g\<RightMouse>", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  set tags&
+  set mouse&
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
+endfunc
+
+" Fail to jump to a tag with g] if 'winfixbuf' is enabled
 func Test_normal_g_square_bracket_right()
   call s:reset_all_buffers()
 
@@ -1606,22 +1752,54 @@ func Test_normal_g_square_bracket_right()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal g]")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal g]", "E1513:")
   call assert_equal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Fail to jump to a tag with <C-t> if 'stickybuf' is enabled
-func Test_normal_ctrl_T()
+" Fail to jump to a tag with <C-RightMouse> if 'winfixbuf' is enabled
+func Test_normal_ctrl_rightmouse()
+  call s:reset_all_buffers()
+  set mouse=n
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile\t1",
+        \ "three\tXfile\t3",
+        \ "two\tXfile\t2"],
+        \ "Xtags")
+  call writefile(["one", "two", "three"], "Xfile")
+  call writefile(["one"], "Xother")
+  edit Xother
+  execute "normal \<C-]>"
+
+  set winfixbuf
+
+  let l:current = bufnr()
+
+  call assert_fails("normal \<C-RightMouse>", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  set tags&
+  set mouse&
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
+endfunc
+
+" Fail to jump to a tag with <C-t> if 'winfixbuf' is enabled
+func Test_normal_ctrl_t()
   call s:reset_all_buffers()
 
   set tags=Xtags
@@ -1631,23 +1809,24 @@ func Test_normal_ctrl_T()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
+  call writefile(["one"], "Xother")
+  edit Xother
   execute "normal \<C-]>"
 
-  set stickybuf
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal \<C-t>")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal \<C-t>", "E1513:")
   call assert_equal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Disallow <C-^> in 'stickybuf' windows
+" Disallow <C-^> in 'winfixbuf' windows
 func Test_normal_ctrl_hat()
   call s:reset_all_buffers()
   clearjumps
@@ -1659,14 +1838,14 @@ func Test_normal_ctrl_hat()
   enew
   file current
   let l:current = bufnr()
-  set stickybuf
 
-  let l:caught = s:execute_try_catch("normal \<C-^>")
-  call assert_equal(1, l:caught)
+  set winfixbuf
+
+  call assert_fails("normal \<C-^>", "E1513:")
   call assert_equal(l:current, bufnr())
 endfunc
 
-" Allow <C-i> in 'stickybuf' windows if the movement stays within the buffer
+" Allow <C-i> in 'winfixbuf' windows if the movement stays within the buffer
 func Test_normal_ctrl_i_pass()
   call s:reset_all_buffers()
   clearjumps
@@ -1685,14 +1864,15 @@ func Test_normal_ctrl_i_pass()
   normal m`
   normal k
   execute "normal \<C-o>"
-  set stickybuf
 
-  let l:caught = s:execute_try_catch("normal \\<C-i>")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:current, bufnr())
+  set winfixbuf
+
+  let l:line = getcurpos()[1]
+  execute "normal 1\<C-i>"
+  call assert_notequal(l:line, getcurpos()[1])
 endfunc
 
-" Disallow <C-o> in 'stickybuf' windows if it would cause the buffer to switch
+" Disallow <C-o> in 'winfixbuf' windows if it would cause the buffer to switch
 func Test_normal_ctrl_o_fail()
   call s:reset_all_buffers()
   clearjumps
@@ -1704,14 +1884,14 @@ func Test_normal_ctrl_o_fail()
   enew
   file current
   let l:current = bufnr()
-  set stickybuf
 
-  let l:caught = s:execute_try_catch("normal \<C-o>")
-  call assert_equal(1, l:caught)
+  set winfixbuf
+
+  call assert_fails("normal \<C-o>", "E1513:")
   call assert_equal(l:current, bufnr())
 endfunc
 
-" Allow <C-o> in 'stickybuf' windows if the movement stays within the buffer
+" Allow <C-o> in 'winfixbuf' windows if the movement stays within the buffer
 func Test_normal_ctrl_o_pass()
   call s:reset_all_buffers()
   clearjumps
@@ -1729,14 +1909,14 @@ func Test_normal_ctrl_o_pass()
   " Go up another line
   normal m`
   normal k
-  set stickybuf
 
-  let l:caught = s:execute_try_catch("normal \<C-o>")
-  call assert_equal(0, l:caught)
+  set winfixbuf
+
+  execute "normal \<C-o>"
   call assert_equal(l:current, bufnr())
 endfunc
 
-" Fail to jump to a tag with <C-]> if 'stickybuf' is enabled
+" Fail to jump to a tag with <C-]> if 'winfixbuf' is enabled
 func Test_normal_ctrl_square_bracket_right()
   call s:reset_all_buffers()
 
@@ -1747,21 +1927,23 @@ func Test_normal_ctrl_square_bracket_right()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal \<C-]>")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal \<C-]>", "E1513:")
   call assert_equal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Allow <C-w><C-]> with 'stickybuf' enabled because it runs in a new, split window
+" Allow <C-w><C-]> with 'winfixbuf' enabled because it runs in a new, split window
 func Test_normal_ctrl_w_ctrl_square_bracket_right()
   call s:reset_all_buffers()
 
@@ -1772,18 +1954,44 @@ func Test_normal_ctrl_w_ctrl_square_bracket_right()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one"], "Xother")
+  edit Xother
 
-  let l:caught = s:execute_try_catch("normal \<C-w><C-]>")
-  call assert_equal(0, l:caught)
+  set winfixbuf
+
+  call assert_fails("normal \<C-w>\<C-]>", "E1513:")
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Fail to jump to a tag with <C-]> if 'stickybuf' is enabled
+" Allow <C-w>g<C-]> with 'winfixbuf' enabled because it runs in a new, split window
+func Test_normal_ctrl_w_g_ctrl_square_bracket_right()
+  call s:reset_all_buffers()
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile\t1",
+        \ "three\tXfile\t3",
+        \ "two\tXfile\t2"],
+        \ "Xtags")
+  call writefile(["one", "two", "three"], "Xfile")
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
+
+  call assert_fails("normal \<C-w>g\<C-]>", "E1513:")
+
+  set tags&
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
+endfunc
+
+" Fail to jump to a tag with <C-]> if 'winfixbuf' is enabled
 func Test_normal_gt()
   call s:reset_all_buffers()
 
@@ -1794,24 +2002,25 @@ func Test_normal_gt()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one", "two", "three"], "Xother")
+  edit Xother
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal \<C-]>")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal \<C-]>", "E1513:")
   call assert_equal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Prevent gF from switching a 'stickybuf' window's buffer
+" Prevent gF from switching a 'winfixbuf' window's buffer
 func Test_normal_gF()
   call s:reset_all_buffers()
-
 
   let l:file = tempname()
   call append(0, [l:file])
@@ -1822,25 +2031,24 @@ func Test_normal_gF()
   " line" when we try to call gF, later.
   set hidden
 
-  set stickybuf
+  set winfixbuf
+
   let l:buffer = bufnr()
 
-  let l:caught = s:execute_try_catch("normal gF")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal gF", "E1513:")
   call assert_equal(l:buffer, bufnr())
 
-  set nostickybuf
+  set nowinfixbuf
 
-  let l:caught = s:execute_try_catch("normal gF")
-  call assert_equal(0, l:caught)
+  normal gF
   call assert_notequal(l:buffer, bufnr())
+
   call delete(l:file)
 endfunc
 
-" Prevent gf from switching a 'stickybuf' window's buffer
+" Prevent gf from switching a 'winfixbuf' window's buffer
 func Test_normal_gf()
   call s:reset_all_buffers()
-
 
   let l:file = tempname()
   call append(0, [l:file])
@@ -1851,18 +2059,18 @@ func Test_normal_gf()
   " line" when we try to call gf, later.
   set hidden
 
-  set stickybuf
+  set winfixbuf
+
   let l:buffer = bufnr()
 
-  let l:caught = s:execute_try_catch("normal gf")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal gf", "E1513:")
   call assert_equal(l:buffer, bufnr())
 
-  set nostickybuf
+  set nowinfixbuf
 
-  let l:caught = s:execute_try_catch("normal gf")
-  call assert_equal(0, l:caught)
+  normal gf
   call assert_notequal(l:buffer, bufnr())
+
   call delete(l:file)
 endfunc
 
@@ -1870,7 +2078,6 @@ endfunc
 func Test_normal_square_bracket_left_f()
   call s:reset_all_buffers()
 
-
   let l:file = tempname()
   call append(0, [l:file])
   call writefile([], l:file)
@@ -1880,22 +2087,52 @@ func Test_normal_square_bracket_left_f()
   " line" when we try to call gf, later.
   set hidden
 
-  set stickybuf
+  set winfixbuf
+
   let l:buffer = bufnr()
 
-  let l:caught = s:execute_try_catch("normal [f")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal [f", "E1513:")
   call assert_equal(l:buffer, bufnr())
 
-  set nostickybuf
+  set nowinfixbuf
 
-  let l:caught = s:execute_try_catch("normal [f")
-  call assert_equal(0, l:caught)
+  normal [f
   call assert_notequal(l:buffer, bufnr())
+
   call delete(l:file)
 endfunc
 
-" Fail to go to a C macro with ]<C-d> if 'stickybuf' is enabled
+" Fail to go to a C macro with [<C-d> if 'winfixbuf' is enabled
+func Test_normal_square_bracket_left_ctrl_d()
+  call s:reset_all_buffers()
+
+  let l:include_file = tempname() . ".h"
+  call writefile(["min(1, 12);",
+        \ '#include "' . l:include_file . '"'
+        \ ],
+        \ "main.c")
+  call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
+  edit main.c
+  normal ]\<C-d>
+
+  set winfixbuf
+
+  let l:current = bufnr()
+
+  call assert_fails("normal [\<C-d>", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  set nowinfixbuf
+
+  execute "normal [\<C-d>"
+  call assert_notequal(l:current, bufnr())
+
+  set tags&
+  call delete("main.c")
+  call delete(l:include_file)
+endfunc
+
+" Fail to go to a C macro with ]<C-d> if 'winfixbuf' is enabled
 func Test_normal_square_bracket_right_ctrl_d()
   call s:reset_all_buffers()
 
@@ -1906,17 +2143,17 @@ func Test_normal_square_bracket_right_ctrl_d()
         \ "main.c")
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
   edit main.c
-  set stickybuf
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal ]\<C-d>")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal ]\<C-d>", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  set nostickybuf
-  let l:caught = s:execute_try_catch("normal ]\<C-d>")
-  call assert_equal(0, l:caught)
+  set nowinfixbuf
+
+  execute "normal ]\<C-d>"
   call assert_notequal(l:current, bufnr())
 
   set tags&
@@ -1924,7 +2161,44 @@ func Test_normal_square_bracket_right_ctrl_d()
   call delete(l:include_file)
 endfunc
 
-" Fail to go to a C macro with ]<C-i> if 'stickybuf' is enabled
+" Fail to go to a C macro with [<C-i> if 'winfixbuf' is enabled
+func Test_normal_square_bracket_left_ctrl_i()
+  call s:reset_all_buffers()
+
+  let l:include_file = tempname() . ".h"
+  call writefile(['#include "' . l:include_file . '"',
+        \ "min(1, 12);",
+        \ ],
+        \ "main.c")
+  call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
+  edit main.c
+  " Move to the line with `min(1, 12);` on it"
+  normal j
+
+  set define=^\\s*#\\s*define
+  set include=^\\s*#\\s*include
+  set path=.,/usr/include,,
+
+  let l:current = bufnr()
+
+  set winfixbuf
+
+  call assert_fails("normal [\<C-i>", "E1513:")
+
+  set nowinfixbuf
+
+  execute "normal [\<C-i>"
+  call assert_notequal(l:current, bufnr())
+
+  set tags&
+  set define&
+  set include&
+  set path&
+  call delete("main.c")
+  call delete(l:include_file)
+endfunc
+
+" Fail to go to a C macro with ]<C-i> if 'winfixbuf' is enabled
 func Test_normal_square_bracket_right_ctrl_i()
   call s:reset_all_buffers()
 
@@ -1935,20 +2209,27 @@ func Test_normal_square_bracket_right_ctrl_i()
         \ "main.c")
   call writefile(["#define min(X, Y)  ((X) < (Y) ? (X) : (Y))"], l:include_file)
   edit main.c
-  set stickybuf
+
+  set winfixbuf
+
+  set define=^\\s*#\\s*define
+  set include=^\\s*#\\s*include
+  set path=.,/usr/include,,
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("normal ]\<C-i>")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal ]\<C-i>", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  set nostickybuf
-  let l:caught = s:execute_try_catch("normal ]\<C-i>")
-  call assert_equal(0, l:caught)
+  set nowinfixbuf
+
+  execute "normal ]\<C-i>"
   call assert_notequal(l:current, bufnr())
 
   set tags&
+  set define&
+  set include&
+  set path&
   call delete("main.c")
   call delete(l:include_file)
 endfunc
@@ -1956,7 +2237,6 @@ endfunc
 " Fail "goto file under the cursor" (using ]f, which is the same as `:normal gf`)
 func Test_normal_square_bracket_right_f()
   call s:reset_all_buffers()
-
 
   let l:file = tempname()
   call append(0, [l:file])
@@ -1967,19 +2247,73 @@ func Test_normal_square_bracket_right_f()
   " line" when we try to call gf, later.
   set hidden
 
-  set stickybuf
+  set winfixbuf
+
   let l:buffer = bufnr()
 
-  let l:caught = s:execute_try_catch("normal ]f")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal ]f", "E1513:")
   call assert_equal(l:buffer, bufnr())
 
-  set nostickybuf
+  set nowinfixbuf
 
-  let l:caught = s:execute_try_catch("normal ]f")
-  call assert_equal(0, l:caught)
+  normal ]f
   call assert_notequal(l:buffer, bufnr())
+
   call delete(l:file)
+endfunc
+
+" Fail to jump to a tag with v<C-]> if 'winfixbuf' is enabled
+func Test_normal_v_ctrl_square_bracket_right()
+  call s:reset_all_buffers()
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile\t1",
+        \ "three\tXfile\t3",
+        \ "two\tXfile\t2"],
+        \ "Xtags")
+  call writefile(["one", "two", "three"], "Xfile")
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
+
+  let l:current = bufnr()
+
+  call assert_fails("normal v\<C-]>", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  set tags&
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
+endfunc
+
+" Fail to jump to a tag with vg<C-]> if 'winfixbuf' is enabled
+func Test_normal_v_g_ctrl_square_bracket_right()
+  call s:reset_all_buffers()
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile\t1",
+        \ "three\tXfile\t3",
+        \ "two\tXfile\t2"],
+        \ "Xtags")
+  call writefile(["one", "two", "three"], "Xfile")
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
+
+  let l:current = bufnr()
+
+  call assert_fails("normal vg\<C-]>", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  set tags&
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 " Allow :pedit because, unlike :edit, it uses a separate window
@@ -1987,9 +2321,9 @@ func Test_pedit()
   call s:reset_all_buffers()
 
   let l:other = s:make_buffer_pairs()
-  let l:caught = s:execute_try_catch("pedit other")
 
-  call assert_equal(0, l:caught)
+  pedit other
+
   execute "normal \<C-w>w"
   call assert_equal(l:other, bufnr())
 endfunc
@@ -2004,29 +2338,27 @@ func Test_pop()
         \ "thesame\tXfile\t2;\"\td\tfile:",
         \ "thesame\tXfile\t3;\"\td\tfile:",
         \ ],
-        \ 'Xtags')
-  new Xfile
-  call setline(1, ['thesame one', 'thesame two', 'thesame three'])
-  write
+        \ "Xtags")
+  call writefile(["thesame one", "thesame two", "thesame three"], "Xfile")
+  call writefile(["thesame one"], "Xother")
+  edit Xother
 
   tag thesame
-  execute "normal \<C-^>"
 
-  set stickybuf
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("pop")
-  call assert_equal(1, l:caught)
+  call assert_fails("pop", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("pop!")
-  call assert_equal(0, l:caught)
+  pop!
   call assert_notequal(l:current, bufnr())
 
   set tags&
-  call delete('Xtags')
-  call delete('Xfile')
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 " Fail :previous but :previous! is allowed
@@ -2036,12 +2368,10 @@ func Test_previous()
   let [l:first, _] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("previous")
-  call assert_equal(1, l:caught)
+  call assert_fails("previous", "E1513:")
   call assert_notequal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("previous!")
-  call assert_equal(0, l:caught)
+  previous!
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -2056,12 +2386,12 @@ func Test_remap_key_fail()
   enew
   file current
   let l:current = bufnr()
-  set stickybuf
+
+  set winfixbuf
 
   nnoremap g <C-^>
 
-  let l:caught = s:execute_try_catch("normal g")
-  call assert_equal(1, l:caught)
+  call assert_fails("normal g", "E1513:")
   call assert_equal(l:current, bufnr())
 
   nunmap g
@@ -2078,17 +2408,16 @@ func Test_remap_key_pass()
   enew
   file current
   let l:current = bufnr()
-  set stickybuf
 
-  let l:caught = s:execute_try_catch("normal \<C-^>")
-  call assert_equal(1, l:caught)
+  set winfixbuf
+
+  call assert_fails("normal \<C-^>", "E1513:")
   call assert_equal(l:current, bufnr())
 
   " Disallow <C-^> by default but allow it if the command does something else
   nnoremap <C-^> :echo "hello!"
 
-  let l:caught = s:execute_try_catch("normal \<C-^>")
-  call assert_equal(0, l:caught)
+  execute "normal \<C-^>"
   call assert_equal(l:current, bufnr())
 
   nunmap <C-^>
@@ -2101,12 +2430,10 @@ func Test_rewind()
   let [l:first, _] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("rewind")
-  call assert_equal(1, l:caught)
+  call assert_fails("rewind", "E1513:")
   call assert_notequal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("rewind!")
-  call assert_equal(0, l:caught)
+  rewind!
   call assert_equal(l:first, bufnr())
 endfunc
 
@@ -2118,8 +2445,7 @@ func Test_sblast()
   bfirst!
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("sblast")
-  call assert_equal(0, l:caught)
+  sblast
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -2130,24 +2456,56 @@ func Test_sbprevious()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("sbprevious")
-  call assert_equal(0, l:caught)
+  sbprevious
   call assert_equal(l:other, bufnr())
 endfunc
 
-" Ensure the first has 'stickybuf' and a new split window is 'nostickybuf'
+" Make sure 'winfixbuf' can be set using 'winfixbuf' or 'wfb'
+func Test_short_option()
+  call s:reset_all_buffers()
+
+  call s:make_buffer_pairs()
+
+  set winfixbuf
+  call assert_fails("edit something_else", "E1513")
+
+  set nowinfixbuf
+  set wfb
+  call assert_fails("edit another_place", "E1513")
+
+  set nowfb
+  edit last_place
+endfunc
+
+" Allow :snext because it makes a new window
+func Test_snext()
+  call s:reset_all_buffers()
+
+  let [l:first, _] = s:make_args_list()
+  first!
+
+  let l:current_window = win_getid()
+
+  snext
+  call assert_notequal(l:current_window, win_getid())
+  call assert_notequal(l:first, bufnr())
+endfunc
+
+" Ensure the first has 'winfixbuf' and a new split window is 'nowinfixbuf'
 func Test_split_window()
   call s:reset_all_buffers()
 
   split
   execute "normal \<C-w>j"
-  set stickybuf
-  let l:sticky_window_1 = win_getid()
-  vsplit
-  let l:sticky_window_2 = win_getid()
 
-  call assert_equal(1, getwinvar(l:sticky_window_1, "&stickybuf"))
-  call assert_equal(0, getwinvar(l:sticky_window_2, "&stickybuf"))
+  set winfixbuf
+
+  let l:winfix_window_1 = win_getid()
+  vsplit
+  let l:winfix_window_2 = win_getid()
+
+  call assert_equal(1, getwinvar(l:winfix_window_1, "&winfixbuf"))
+  call assert_equal(0, getwinvar(l:winfix_window_2, "&winfixbuf"))
 endfunc
 
 " Fail :tNext but :tNext! is allowed
@@ -2160,67 +2518,66 @@ func Test_tNext()
         \ "thesame\tXfile\t2;\"\td\tfile:",
         \ "thesame\tXfile\t3;\"\td\tfile:",
         \ ],
-        \ 'Xtags')
-  new Xfile
-  call setline(1, ['thesame one', 'thesame two', 'thesame three'])
-  write
+        \ "Xtags")
+  call writefile(["thesame one", "thesame two", "thesame three"], "Xfile")
+  call writefile(["thesame one"], "Xother")
+  edit Xother
 
   tag thesame
   execute "normal \<C-^>"
   tnext!
 
-  set stickybuf
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tNext")
-  call assert_equal(1, l:caught)
+  call assert_fails("tNext", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tNext!")
-  call assert_equal(0, l:caught)
+  tNext!
 
   set tags&
-  call delete('Xtags')
-  call delete('Xfile')
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
 endfunc
 
-" Call :tabdo and choose the next available 'nostickybuf' window.
+" Call :tabdo and choose the next available 'nowinfixbuf' window.
 func Test_tabdo_choose_available_window()
   call s:reset_all_buffers()
+
   let [l:first, _] = s:make_args_list()
 
-  " Make a split window that is 'nostickybuf' but make it the second-to-last
-  " window so that :tabdo will first try the 'stickybuf' window, pass over it,
-  " and prefer the other 'nostickybuf' window, instead.
+  " Make a split window that is 'nowinfixbuf' but make it the second-to-last
+  " window so that :tabdo will first try the 'winfixbuf' window, pass over it,
+  " and prefer the other 'nowinfixbuf' window, instead.
   "
   " +-------------------+
-  " |   'nostickybuf'   |
+  " |   'nowinfixbuf'   |
   " +-------------------+
-  " |    'stickybuf'    |  <-- Cursor is here
+  " |    'winfixbuf'    |  <-- Cursor is here
   " +-------------------+
   split
-  let l:nostickybuf_window = win_getid()
-  " Move to the 'stickybuf' window now
+  let l:nowinfixbuf_window = win_getid()
+  " Move to the 'winfixbuf' window now
   execute "normal \<C-w>j"
-  let l:stickybuf_window = win_getid()
+  let l:winfixbuf_window = win_getid()
 
-  let l:caught = s:execute_try_catch("tabdo echo ''")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:nostickybuf_window, win_getid())
+  tabdo echo ''
+  call assert_equal(l:nowinfixbuf_window, win_getid())
   call assert_equal(l:first, bufnr())
 endfunc
 
-" Call :tabdo and create a new split window if all available windows are 'stickybuf'.
+" Call :tabdo and create a new split window if all available windows are 'winfixbuf'.
 func Test_tabdo_make_new_window()
   call s:reset_all_buffers()
+
   let [l:first, _] = s:make_buffers_list()
   execute "buffer! " . l:first
 
   let l:current = win_getid()
 
-  let l:caught = s:execute_try_catch("tabdo echo ''")
-  call assert_equal(0, l:caught)
+  tabdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:first, bufnr())
   execute "normal \<C-w>j"
@@ -2238,22 +2595,23 @@ func Test_tag()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tag one")
-  call assert_equal(1, l:caught)
+  call assert_fails("tag one", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tag! one")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:current, bufnr())
+  tag! one
+  call assert_notequal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 
@@ -2268,24 +2626,23 @@ func Test_tfirst()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  tjump one
-  edit Xfile
+  call writefile(["one"], "Xother")
+  edit Xother
 
-  set stickybuf
+  set winfixbuf
+
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tfirst")
-  call assert_equal(1, l:caught)
+  call assert_fails("tfirst", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tfirst!")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:current, bufnr())
+  tfirst!
+  call assert_notequal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 " Fail :tjump but :tjump! is allowed
@@ -2299,22 +2656,23 @@ func Test_tjump()
         \ "two\tXfile\t2"],
         \ "Xtags")
   call writefile(["one", "two", "three"], "Xfile")
-  edit Xfile
-  set stickybuf
+  call writefile(["one"], "Xother")
+  edit Xother
+
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tjump one")
-  call assert_equal(1, l:caught)
+  call assert_fails("tjump one", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tjump! one")
-  call assert_equal(0, l:caught)
-  call assert_equal(l:current, bufnr())
+  tjump! one
+  call assert_notequal(l:current, bufnr())
 
   set tags&
   call delete("Xtags")
   call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 " Fail :tlast but :tlast! is allowed
@@ -2332,15 +2690,14 @@ func Test_tlast()
   tjump one
   edit Xfile
 
-  set stickybuf
+  set winfixbuf
+
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tlast")
-  call assert_equal(1, l:caught)
+  call assert_fails("tlast", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tlast!")
-  call assert_equal(0, l:caught)
+  tlast!
   call assert_equal(l:current, bufnr())
 
   set tags&
@@ -2358,29 +2715,28 @@ func Test_tnext()
         \ "thesame\tXfile\t2;\"\td\tfile:",
         \ "thesame\tXfile\t3;\"\td\tfile:",
         \ ],
-        \ 'Xtags')
-  new Xfile
-  call setline(1, ['thesame one', 'thesame two', 'thesame three'])
-  write
+        \ "Xtags")
+  call writefile(["thesame one", "thesame two", "thesame three"], "Xfile")
+  call writefile(["thesame one"], "Xother")
+  edit Xother
 
   tag thesame
   execute "normal \<C-^>"
 
-  set stickybuf
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tnext")
-  call assert_equal(1, l:caught)
+  call assert_fails("tnext", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tnext!")
-  call assert_equal(0, l:caught)
+  tnext!
   call assert_notequal(l:current, bufnr())
 
   set tags&
-  call delete('Xtags')
-  call delete('Xfile')
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 " Fail :tprevious but :tprevious! is allowed
@@ -2393,29 +2749,28 @@ func Test_tprevious()
         \ "thesame\tXfile\t2;\"\td\tfile:",
         \ "thesame\tXfile\t3;\"\td\tfile:",
         \ ],
-        \ 'Xtags')
-  new Xfile
-  call setline(1, ['thesame one', 'thesame two', 'thesame three'])
-  write
+        \ "Xtags")
+  call writefile(["thesame one", "thesame two", "thesame three"], "Xfile")
+  call writefile(["thesame one"], "Xother")
+  edit Xother
 
   tag thesame
   execute "normal \<C-^>"
   tnext!
 
-  set stickybuf
+  set winfixbuf
 
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("tprevious")
-  call assert_equal(1, l:caught)
+  call assert_fails("tprevious", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("tprevious!")
-  call assert_equal(0, l:caught)
+  tprevious!
 
   set tags&
-  call delete('Xtags')
-  call delete('Xfile')
+  call delete("Xtags")
+  call delete("Xfile")
+  call delete("Xother")
 endfunc
 
 " Fail :view but :view! is allowed
@@ -2423,15 +2778,12 @@ func Test_view()
   call s:reset_all_buffers()
 
   let l:other = s:make_buffer_pairs()
-
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("view other")
-  call assert_equal(1, l:caught)
+  call assert_fails("view other", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("view! other")
-  call assert_equal(0, l:caught)
+  view! other
   call assert_equal(l:other, bufnr())
 endfunc
 
@@ -2442,17 +2794,14 @@ func Test_visual()
   let l:other = s:make_buffer_pairs()
   let l:current = bufnr()
 
-  let l:caught = s:execute_try_catch("visual other")
-  call assert_equal(1, l:caught)
+  call assert_fails("visual other", "E1513:")
   call assert_equal(l:current, bufnr())
 
-  let l:caught = s:execute_try_catch("visual! other")
-  call assert_equal(0, l:caught)
+  visual! other
   call assert_equal(l:other, bufnr())
 endfunc
 
-" Allow :vimgrep but 'stickybuf' windows will not jump to the first match
-" unless [!] is used.
+" Fail :vimgrep but :vimgrep! is allowed
 func Test_vimgrep()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -2461,38 +2810,33 @@ func Test_vimgrep()
   call append(0, ["some-search-term"])
   write
 
-  edit sticky.unittest
+  edit winfix.unittest
   call append(0, ["some-search-term"])
   write
   let l:current = bufnr()
 
-  set stickybuf
+  set winfixbuf
 
   edit! last.unittest
   call append(0, ["some-search-term"])
   write
   let l:last = bufnr()
 
-  buffer! sticky.unittest
+  buffer! winfix.unittest
 
-  " Don't error but don't swap to the first match because the current window
-  " has 'stickybuf' enabled
-  let l:caught = s:execute_try_catch("vimgrep /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  call assert_fails("vimgrep /some-search-term/ *.unittest")
   call assert_equal(l:current, bufnr())
 
   " Don't error and also do swap to the first match because ! was included
-  let l:caught = s:execute_try_catch("vimgrep! /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  vimgrep! /some-search-term/ *.unittest
   call assert_notequal(l:current, bufnr())
 
   call delete("first.unittest")
-  call delete("sticky.unittest")
+  call delete("winfix.unittest")
   call delete("last.unittest")
 endfunc
 
-" Allow :vimgrepadd but 'stickybuf' windows will not jump to the first match
-" unless [!] is used.
+" Fail :vimgrepadd but ::vimgrepadd! is allowed
 func Test_vimgrepadd()
   CheckFeature quickfix
   call s:reset_all_buffers()
@@ -2501,33 +2845,27 @@ func Test_vimgrepadd()
   call append(0, ["some-search-term"])
   write
 
-  edit sticky.unittest
+  edit winfix.unittest
   call append(0, ["some-search-term"])
   write
   let l:current = bufnr()
 
-  set stickybuf
+  set winfixbuf
 
   edit! last.unittest
   call append(0, ["some-search-term"])
   write
   let l:last = bufnr()
 
-  buffer! sticky.unittest
+  buffer! winfix.unittest
 
-  " Don't error but don't swap to the first match because the current window
-  " has 'stickybuf' enabled
-  let l:caught = s:execute_try_catch("vimgrepadd /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  call assert_fails("vimgrepadd /some-search-term/ *.unittest")
   call assert_equal(l:current, bufnr())
 
-  " Don't error and also do swap to the first match because ! was included
-  let l:caught = s:execute_try_catch("vimgrepadd! /some-search-term/ *.unittest")
-  call assert_equal(0, l:caught)
+  vimgrepadd! /some-search-term/ *.unittest
   call assert_notequal(l:current, bufnr())
-
   call delete("first.unittest")
-  call delete("sticky.unittest")
+  call delete("winfix.unittest")
   call delete("last.unittest")
 endfunc
 
@@ -2538,12 +2876,10 @@ func Test_wNext()
   let [l:first, _] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("wNext")
-  call assert_equal(1, l:caught)
+  call assert_fails("wNext", "E1513:")
   call assert_notequal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("wNext!")
-  call assert_equal(0, l:caught)
+  wNext!
   call assert_equal(l:first, bufnr())
 
   call delete("first")
@@ -2551,28 +2887,27 @@ func Test_wNext()
   call delete("last")
 endfunc
 
-" Allow :windo unless `:windo foo` would change a 'stickybuf' window's buffer
+" Allow :windo unless `:windo foo` would change a 'winfixbuf' window's buffer
 func Test_windo()
   call s:reset_all_buffers()
 
   let l:current_window = win_getid()
   let l:current_buffer = bufnr()
   split
-  execute "normal \<C-w>j"
-  set stickybuf
+  enew
+  file some_other_buffer
+
+  set winfixbuf
 
   let l:current = win_getid()
 
-  let l:caught = s:execute_try_catch("windo echo ''")
-  call assert_equal(0, l:caught)
+  windo echo ''
   call assert_equal(l:current_window, win_getid())
 
-  let l:caught = s:execute_try_catch("windo buffer " . l:current_buffer)
-  call assert_equal(1, l:caught)
+  call assert_fails('execute "windo buffer ' . l:current_buffer . '"', "E1513:")
   call assert_equal(l:current_window, win_getid())
 
-  let l:caught = s:execute_try_catch("windo buffer! " . l:current_buffer)
-  call assert_equal(0, l:caught)
+  execute "windo buffer! " . l:current_buffer
   call assert_equal(l:current_window, win_getid())
 endfunc
 
@@ -2583,12 +2918,10 @@ func Test_wnext()
   let [_, l:last] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("wnext")
-  call assert_equal(1, l:caught)
+  call assert_fails("wnext", "E1513:")
   call assert_notequal(l:last, bufnr())
 
-  let l:caught = s:execute_try_catch("wnext!")
-  call assert_equal(0, l:caught)
+  wnext!
   call assert_equal(l:last, bufnr())
 
   call delete("first")
@@ -2603,12 +2936,10 @@ func Test_wprevious()
   let [l:first, _] = s:make_args_list()
   next!
 
-  let l:caught = s:execute_try_catch("wprevious")
-  call assert_equal(1, l:caught)
+  call assert_fails("wprevious", "E1513:")
   call assert_notequal(l:first, bufnr())
 
-  let l:caught = s:execute_try_catch("wprevious!")
-  call assert_equal(0, l:caught)
+  wprevious!
   call assert_equal(l:first, bufnr())
 
   call delete("first")

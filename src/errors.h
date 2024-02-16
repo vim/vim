@@ -3607,7 +3607,5 @@ EXTERN char e_wrong_number_of_characters_for_field_str[]
 	INIT(= N_("E1511: Wrong number of characters for field \"%s\""));
 EXTERN char e_wrong_character_width_for_field_str[]
 	INIT(= N_("E1512: Wrong character width for field \"%s\""));
-EXTERN char e_stickybuf_cannot_go_to_buffer_disabled[]
-	INIT(= N_("E1513: Cannot edit buffer. 'stickybuf' is enabled"));
-EXTERN char e_stickybuf_cannot_go_to_buffer_forceit[]
-	INIT(= N_("E1514: Cannot edit buffer. 'stickybuf' is enabled. Use ! to force it"));
+EXTERN char e_winfixbuf_cannot_go_to_buffer[]
+	INIT(= N_("E1513: Cannot edit buffer. 'winfixbuf' is enabled"));

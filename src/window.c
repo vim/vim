@@ -159,14 +159,29 @@ log_frame_layout(frame_T *frame)
 
 /*
  * Check if the current window is allowed to move to a different buffer.
- * If the window has 'stickybuf', then forceit must be TRUE or this function
+ * If the window has 'winfixbuf', this function will return FALSE.
+ */
+int check_can_set_curbuf_disabled(void)
+{
+    if (curwin->w_p_wfb)
+    {
+	semsg("%s", e_winfixbuf_cannot_go_to_buffer);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Check if the current window is allowed to move to a different buffer.
+ * If the window has 'winfixbuf', then forceit must be TRUE or this function
  * will return FALSE.
  */
-int check_can_set_curbuf(int forceit)
+int check_can_set_curbuf_forceit(int forceit)
 {
-    if (!forceit && curwin->w_p_stb)
+    if (!forceit && curwin->w_p_wfb)
     {
-	semsg("%s", e_stickybuf_cannot_go_to_buffer_forceit);
+	semsg("%s", e_winfixbuf_cannot_go_to_buffer);
 	return FALSE;
     }
 
@@ -588,6 +603,9 @@ newwindow:
 		// FALLTHROUGH
     case ']':
     case Ctrl_RSB:
+		if (!check_can_set_curbuf_disabled())
+		    break;
+
 		CHECK_CMDWIN;
 		// keep Visual mode, can select words to use as a tag
 		if (Prenum)

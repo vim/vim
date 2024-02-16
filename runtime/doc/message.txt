@@ -122,17 +122,12 @@ wiped out a buffer which contains a mark or is referenced in another way.
 You cannot have two buffers with exactly the same name.  This includes the
 path leading to the file.
 
-							*E1513*
-  Cannot edit buffer. 'stickybuf' is enabled
+							*E1513* >
+  Cannot edit buffer. 'winfixbuf' is enabled
 
-If a window has 'stickybuf' enabled, you cannot change that window's current
-buffer. You need to set 'nostickybuf' before continuing.
-
-							*E1514*
-  Cannot edit buffer. 'stickybuf' is enabled. Use ! to force it
-
-If a window has 'stickybuf' enabled, you cannot change that window's current
-buffer unless the command includes [!]. e.g. :edit fails but :edit! is allowed.
+If a window has 'winfixbuf' enabled, you cannot change that window's current
+buffer. You need to set 'nowinfixbuf' before continuing. You may use [!] to
+force the window to switch buffers, if your command supports it.
 
 							*E72*
   Close error on swap file ~

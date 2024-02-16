@@ -1292,7 +1292,6 @@ enum
     , WV_SCBIND
     , WV_SCROLL
     , WV_SMS
-    , WV_STB
     , WV_SISO
     , WV_SO
 #ifdef FEAT_SPELL
@@ -1310,6 +1309,7 @@ enum
 #ifdef FEAT_STL_OPT
     , WV_STL
 #endif
+    , WV_WFB
     , WV_WFH
     , WV_WFW
     , WV_WRAP

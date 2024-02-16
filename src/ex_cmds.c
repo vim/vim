@@ -2428,7 +2428,7 @@ getfile(
     int		retval;
     char_u	*free_me = NULL;
 
-    if (!check_can_set_curbuf(forceit))
+    if (!check_can_set_curbuf_forceit(forceit))
 	return GETFILE_ERROR;
 
     if (text_locked())
@@ -5447,6 +5447,9 @@ ex_drop(exarg_T *eap)
     win_T	*wp;
     buf_T	*buf;
     tabpage_T	*tp;
+
+    if (!check_can_set_curbuf_forceit(eap->forceit))
+	return;
 
     if (ERROR_IF_POPUP_WINDOW || ERROR_IF_TERM_POPUP_WINDOW)
 	return;

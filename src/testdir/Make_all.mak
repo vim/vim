@@ -280,7 +280,6 @@ NEW_TESTS = \
 	test_startup_utf8 \
 	test_stat \
 	test_statusline \
-	test_stickybuf \
 	test_substitute \
 	test_suspend \
 	test_swap \
@@ -326,6 +325,7 @@ NEW_TESTS = \
 	test_window_cmd \
 	test_window_id \
 	test_windows_home \
+	test_winfixbuf \
 	test_wnext \
 	test_wordcount \
 	test_writefile \
