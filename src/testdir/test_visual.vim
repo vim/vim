@@ -1703,6 +1703,37 @@ func Test_visual_getregion()
   call assert_equal(['e', ' ', '5'], getregion('v', '.'))
 
   bwipe!
+
+  " Exclusive selection
+  new
+  set selection=exclusive
+  call setline(1, ["a\tc", "x\tz", '', ''])
+  call cursor(1, 1)
+  call feedkeys("\<Esc>v2l", 'xt')
+  call assert_equal(["a\t"], getregion('v', '.'))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>v$G", 'xt')
+  call assert_equal(["a\tc", "x\tz", ''], getregion('v', '.'))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>v$j", 'xt')
+  call assert_equal(["a\tc", "x\tz"], getregion('v', '.'))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>\<C-v>$j", 'xt')
+  call assert_equal(["a\tc", "x\tz"], getregion('v', '.'))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>\<C-v>$G", 'xt')
+  call assert_equal(["a", "x", '', ''], getregion('v', '.'))
+  set virtualedit=all
+  call cursor(1, 1)
+  call feedkeys("\<Esc>2lv2lj", 'xt')
+  call assert_equal(['      c', 'x   '], getregion('v', '.'))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>2l\<C-v>2l2j", 'xt')
+  call assert_equal(['  ', '  ', '  '], getregion('v', '.'))
+  set virtualedit&
+  set selection&
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
