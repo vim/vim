@@ -4510,7 +4510,8 @@ did_set_string_option(
 #endif
 
     if (curwin->w_curswant != MAXCOL
-		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
+		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0
+				&& (get_option_flags(opt_idx) & P_HLONLY) == 0)
 	curwin->w_set_curswant = TRUE;
 
     if ((opt_flags & OPT_NO_REDRAW) == 0)
