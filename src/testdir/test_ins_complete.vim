@@ -2373,4 +2373,38 @@ func Test_complete_changed_complete_info()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_complete_cursorchangedi_textchangedi()
+  new
+  set completeopt=menu,menuone,noinsert,noselect
+  let g:count = 0
+  let g:count_a = 0
+  func MovedI()
+    let g:count += 1
+  endfunc
+  func ChangedI()
+    let g:count_a += 1
+  endfunc
+  augroup foo
+    autocmd!
+    autocmd CursorMovedI * call MovedI()
+    autocmd TextChangedI * call ChangedI()
+  augroup end
+
+  func! g:Foo()
+    call complete(1,['abc'])
+    return ''
+  endfunc
+
+  call feedkeys("iab\<c-r>=g:Foo()\<CR>\<CR>", 'tx')
+  call assert_equal(3, g:count)
+  call assert_equal(2, g:count_a)
+
+  set completeopt&
+  augroup! foo
+  delfunc g:Foo
+  delfunc MovedI
+  delfunc ChangedI
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable

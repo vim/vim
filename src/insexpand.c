@@ -3991,15 +3991,23 @@ ins_compl_delete(void)
 ins_compl_insert(int in_compl_func)
 {
     int compl_len = get_compl_len();
+    varnumber_T curr_changedtick_i = curbuf->b_last_changedtick_i;
+    int matched_original = match_at_original_text(compl_shown_match);
 
     // Make sure we don't go over the end of the string, this can happen with
     // illegal bytes.
     if (compl_len < (int)STRLEN(compl_shown_match->cp_str))
 	ins_bytes(compl_shown_match->cp_str + compl_len);
-    if (match_at_original_text(compl_shown_match))
-	compl_used_match = FALSE;
-    else
-	compl_used_match = TRUE;
+    compl_used_match = matched_original ? FALSE : TRUE;
+    // if matched original text shouldn't trigger events like TextchangedI and CursorMovedI
+    if (matched_original) {
+      // restore before changedticki avoid trigger TextChangedI
+      curbuf->b_last_changedtick_i = curr_changedtick_i;
+      // avoid trigger CursorMovedI
+      if (!EQUAL_POS(last_cursormoved, curwin->w_cursor)) {
+	last_cursormoved = curwin->w_cursor;
+      }
+    }
 #ifdef FEAT_EVAL
     {
 	dict_T *dict = ins_compl_dict_alloc(compl_shown_match);
