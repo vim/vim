@@ -263,7 +263,8 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
-getregion({pos1}, {pos2})	List	get the text from {pos1} to {pos2}
+getregion({pos1}, {pos2}, {type})
+				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
@@ -4262,9 +4263,14 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
-getregion({pos1}, {pos2})				*getregion()*
+getregion({pos1}, {pos2}, {type})			*getregion()*
 		Returns the list of strings from {pos1} to {pos2}.
 		For possible values of {pos1} and {pos2} see |line()|.
+		The {type} is region type:
+			"v" for |charwise| mode
+			"V" for |linewise| mode
+			"<CTRL-V>" for |blockwise-visual| mode
+		You can get current selection type by |visualmode()|.
 		This function uses the line and column number from the
 		specified position.
 		It is useful to get text starting and ending in different
@@ -4281,7 +4287,8 @@ getregion({pos1}, {pos2})				*getregion()*
 		  is substituted with spaces.
 
 		Examples: >
-			:xnoremap <CR>  <Cmd>echo getregion('v', '.')<CR>
+			:xnoremap <CR>
+			\ <Cmd>echo getregion('v', '.', visualmode())<CR>
 <
 		Can also be used as a |method|: >
 			StartPos->getregion(endpos)
