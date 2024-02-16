@@ -5492,7 +5492,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			fnum = -1;
     pos_T		p1, p2;
     pos_T		*fp = NULL;
-    char_u		*str1, *str2, *type;
+    char_u		*type;
     int			save_virtual = -1;
     int			l;
     int			region_type = -1;
@@ -5516,8 +5516,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	return;
     p2 = *fp;
 
-    str1 = tv_get_string(&argvars[0]);
-    str2 = tv_get_string(&argvars[1]);
     type = tv_get_string(&argvars[2]);
 
     if (type[0] == 'v' && type[1] == NUL)
