@@ -5522,7 +5522,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     type = tv_get_string(&argvars[2]);
 
     is_visual = (pos1[0] == 'v' && pos1[1] == NUL)
-	|| (pos1[0] == 'v' && pos1[1] == NUL);
+	|| (pos2[0] == 'v' && pos2[1] == NUL);
 
     if (is_visual && !VIsual_active)
 	return;
