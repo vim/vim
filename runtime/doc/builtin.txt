@@ -4282,9 +4282,9 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 		  right position.
 		- If 'virtualedit' is enabled and selection is past the end of
 		  line, result lines are filled.
-		- If selection starts or ends in the middle of multibyte
-		  character, it is not included but it's selected part
-		  is substituted with spaces.
+		- If selection starts or ends in the middle of a multibyte
+		  character, it is not included but its selected part is
+		  substituted with spaces.
 
 		Examples: >
 			:xnoremap <CR>
