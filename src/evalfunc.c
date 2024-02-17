@@ -5487,7 +5487,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     linenr_T		lnum;
     oparg_T		oap;
     struct block_def	bd;
-    char_u		*akt;
+    char_u		*akt = NULL;
     int			inclusive = TRUE;
     int			fnum = -1;
     pos_T		p1, p2;
@@ -5593,6 +5593,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
+	int ret = 0;
+
 	if (region_type == MLINE)
 	    akt = vim_strsave(ml_get(lnum));
 	else if (region_type == MBLOCK)
@@ -5608,7 +5610,13 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    akt = block_def2str(&bd);
 	}
 
-	if (akt == NULL || list_append_string(rettv->vval.v_list, akt, -1) == FAIL)
+	if (akt)
+	{
+	    ret = list_append_string(rettv->vval.v_list, akt, -1);
+	    vim_free(akt);
+	}
+
+	if (akt == NULL || ret == FAIL)
 	{
 	    list_free(rettv->vval.v_list);
 	    break;
