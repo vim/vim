@@ -3,7 +3,7 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	Feb 13, 2024
+" Last Change:	Feb 18, 2024
 " Former Maintainer: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
@@ -31,6 +31,8 @@ syn cluster vimCommentGroup	contains=vimTodo,@Spell
 
 syn keyword vimCommand contained	2mat[ch] 3mat[ch]
 
+" Lower priority for _new_ to distinguish constructors from the command.
+syn match   vimCommand contained	"\<new\>(\@!"
 syn match   vimCommand contained	"\<z[-+^.=]\=\>"
 syn keyword vimStdPlugin contained	Arguments Asm Break Cfilter Clear Continue DiffOrig Evaluate Finish Gdb Lfilter Man Over Program Run S Source Step Stop Termdebug TermdebugCommand TOhtml Until Winbar XMLent XMLns
 
@@ -233,6 +235,7 @@ endif
 syn cluster	vimFuncList	contains=vimCommand,vimFunctionError,vimFuncKey,Tag,vimFuncSID
 syn cluster	vimFuncBodyList	contains=vimAbb,vimAddress,vimAugroupKey,vimAutoCmd,vimCmplxRepeat,vimComment,vim9Comment,vimContinue,vimCtrlChar,vimEcho,vimEchoHL,vimEnvvar,vimExecute,vimIsCommand,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimGlobal,vimHighlight,vimIsCommand,vimLet,vimLetHereDoc,vimLineComment,vimMap,vimMark,vimNorm,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSearch,vimSet,vimSpecFile,vimString,vimSubst,vimSynLine,vimUnmap,vimUserCommand
 syn match	vimFunction	"\<\(fu\%[nction]\)!\=\s\+\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*("	contains=@vimFuncList nextgroup=vimFuncBody
+syn match	vimFunction	"\<def\s\+new\i\{-}(" contains=@vimFuncList nextgroup=vimFuncBody
 syn match	vimFunction	"\<def!\=\s\+\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*(" contains=@vimFuncList nextgroup=vimFuncBody
 "syn match	vimFunction	"\<def!\=\ze\s*(" contains=@vimFuncList nextgroup=vimFuncBody
 
@@ -510,7 +513,8 @@ syn match vimUsrCmd	'^\s*\zs\u\%(\w*\)\@>\%([(#[]\|\s\+\%([-+*/%]\=\|\.\.\)=\)\@
 " Errors And Warnings: {{{2
 " ====================
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimfunctionerror")
- syn match	vimFunctionError	"\s\zs[a-z0-9]\i\{-}\ze\s*("			contained contains=vimFuncKey,vimFuncBlank
+ " TODO: The new-prefix exception should only apply to constructor definitions.
+ syn match	vimFunctionError	"\s\zs\%(new\)\@![a-z0-9]\i\{-}\ze\s*("			contained contains=vimFuncKey,vimFuncBlank
  syn match	vimFunctionError	"\s\zs\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\d\i\{-}\ze\s*("	contained contains=vimFuncKey,vimFuncBlank
  syn match	vimElseIfErr	"\<else\s\+if\>"
  syn match	vimBufnrWarn	/\<bufnr\s*(\s*["']\.['"]\s*)/
