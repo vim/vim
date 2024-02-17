@@ -1688,6 +1688,8 @@ func Test_visual_getregion()
   call assert_fails("call getregion('.', {}, 'v')", 'E1174:')
   call assert_equal([], getregion('', '.', 'v'))
   call assert_equal([], getregion('.', '.', ''))
+  call feedkeys("\<ESC>", 'tx')
+  call assert_equal([], getregion('v', '.', 'v'))
 
   bwipe!
 
