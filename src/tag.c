@@ -395,7 +395,7 @@ do_tag(
 		    tagstack_clear_entry(&tagstack[0]);
 		    for (i = 1; i < tagstacklen; ++i)
 			tagstack[i - 1] = tagstack[i];
-		    --tagstackidx;
+		    tagstack[--tagstackidx].user_data = NULL;
 		}
 
 		/*
