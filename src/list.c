@@ -697,7 +697,6 @@ list_append_string(list_T *l, char_u *str, int len)
     return OK;
 }
 
-
 /*
  * Append "n" to list "l".
  * Returns FAIL when out of memory.
