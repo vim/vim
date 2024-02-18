@@ -440,17 +440,35 @@ pum_get_render_text(
 pum_set_ordering(
     int rounds[3])
 {
+    const char* labels[3] = {"word", "kind", "extra"};
+    rounds[0] = 0;
+    rounds[1] = 1;
+    rounds[2] = 2;
+
     int len = (int)STRLEN(p_po);
     int i = 0;
-    if (len > 3)
+    int k = 0;
+    int r = 0;
+    int offset = 0;
+    int current_len = 0;
+    for (i = 0; i <= len && r < 3; ++i)
     {
-	len = 3;
-    }
-    for (i = 0; i < len; ++i)
-    {
-	if (isdigit(p_po[i]))
+	if (i == len || p_po[i] == ',')
 	{
-	    rounds[i] = p_po[i] - '0';
+	    for (k = 0; k < 3; ++k)
+	    {
+		if (STRNCMP(labels[k], p_po+offset, MIN(current_len, STRLEN(labels[k]))) == 0)
+		{
+		    rounds[r++] = k;
+		    break;
+		}
+	    }
+	    offset = i+1;
+	    current_len = 0;
+	}
+	else
+	{
+	    current_len++;
 	}
     }
 }
