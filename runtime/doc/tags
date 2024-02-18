@@ -6185,6 +6185,7 @@ bugs	intro.txt	/*bugs*
 builtin-function-details	builtin.txt	/*builtin-function-details*
 builtin-function-list	builtin.txt	/*builtin-function-list*
 builtin-functions	builtin.txt	/*builtin-functions*
+builtin-interfaces	vim9class.txt	/*builtin-interfaces*
 builtin-object-methods	vim9class.txt	/*builtin-object-methods*
 builtin-terms	term.txt	/*builtin-terms*
 builtin-tools	gui.txt	/*builtin-tools*
@@ -11141,6 +11142,8 @@ vim9.txt	vim9.txt	/*vim9.txt*
 vim9class.txt	vim9class.txt	/*vim9class.txt*
 vim9script	vim9.txt	/*vim9script*
 vim:	options.txt	/*vim:*
+vimContainer	vim9class.txt	/*vimContainer*
+vimObject	vim9class.txt	/*vimObject*
 vim_announce	intro.txt	/*vim_announce*
 vim_dev	intro.txt	/*vim_dev*
 vim_did_enter-variable	eval.txt	/*vim_did_enter-variable*
