@@ -4291,7 +4291,7 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 			\ <Cmd>echo getregion('v', '.', visualmode())<CR>
 <
 		Can also be used as a |method|: >
-			StartPos->getregion(endpos)
+			startpos->getregion(endpos)
 <
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
