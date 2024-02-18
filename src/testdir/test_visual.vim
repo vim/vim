@@ -1717,6 +1717,9 @@ func Test_visual_getregion()
   call cursor(1, 5)
   call feedkeys("\<Esc>\<C-v>jj", 'xt')
   call assert_equal(['e', ' ', '5'], getregion('v', '.', "\<C-v>"))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>vj", 'xt')
+  call assert_equal(['abcdefghijk', "\U0001f1e6"], getregion('v', '.', "v"))
 
   bwipe!
 
@@ -1739,6 +1742,9 @@ func Test_visual_getregion()
   call cursor(1, 1)
   call feedkeys("\<Esc>\<C-v>$G", 'xt')
   call assert_equal(["a", "x", '', ''], getregion('v', '.', "\<C-v>"))
+  call cursor(1, 1)
+  call feedkeys("\<Esc>wv2j", 'xt')
+  call assert_equal(["c", "x\tz"], getregion('v', '.', 'v'))
   set virtualedit=all
   call cursor(1, 1)
   call feedkeys("\<Esc>2lv2lj", 'xt')
