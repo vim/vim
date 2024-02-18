@@ -4270,7 +4270,9 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 			"v" for |characterwise| mode
 			"V" for |linewise| mode
 			"<CTRL-V>" for |blockwise-visual| mode
-		You can get current selection type by |visualmode()|.
+		You can get the last selection type by |visualmode()|.
+		If Visual mode is active, use |mode()| to get the Visual mode
+		(e.g., in a |:vmap|).
 		This function uses the line and column number from the
 		specified position.
 		It is useful to get text starting and ending in different
@@ -4288,7 +4290,7 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 
 		Examples: >
 			:xnoremap <CR>
-			\ <Cmd>echo getregion('v', '.', visualmode())<CR>
+			\ <Cmd>echo getregion('v', '.', mode())<CR>
 <
 		Can also be used as a |method|: >
 			startpos->getregion(endpos)
