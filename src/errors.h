@@ -3583,6 +3583,8 @@ EXTERN char e_builtin_object_method_str_not_supported[]
 	INIT(= N_("E1412: Builtin object method \"%s\" not supported"));
 EXTERN char e_builtin_class_method_not_supported[]
 	INIT(= N_("E1413: Builtin class method not supported"));
+EXTERN char e_builtin_interface_creation_failed[]
+	INIT(= N_("E1414: Failed to create builtin interface \"%s\""));
 #endif
 // E1415 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]

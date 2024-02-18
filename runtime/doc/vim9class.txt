@@ -864,6 +864,33 @@ methods defined in a class: >
 	defcompile MyClass	# Compile class "MyClass"
 	defcompile		# Compile the classes in the current script
 <
+Builtin Interfaces ~
+						*builtin-interfaces*
+Vim automatically creates the following builtin interfaces:
+>
+    vimObject
+    vimContainer
+<
+The builtin interface names start with a lower case character.
+
+						*vimObject*
+The "vimObject" interface contains the following methods:
+>
+    def String(): string
+<
+If a class implements the "vimObject" interface, then the builtin |string()|
+function will invoke the String() object method.
+
+						*vimContainer*
+The "vimContainer" interface contains the following methods:
+>
+    def Empty(): bool
+    def Len(): number
+<
+If a class implements the "vimContainer" interface, then the builtin |empty()|
+and |len()| functions will invoke the Empty() and Len() object methods
+respectively.
+
 ==============================================================================
 
 7.  Type definition				*typealias* *Vim9-type* *:type*

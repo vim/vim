@@ -762,6 +762,23 @@ validate_interface_methods(
     return TRUE;
 }
 
+#define MAX_BUILTIN_INTERFACES 10
+static typval_T builtin_interfaces[MAX_BUILTIN_INTERFACES];
+static int builtin_interfaces_count = 0;
+
+    static typval_T *
+get_builtin_interface_tv(char_u *intf_name)
+{
+    for (int i = 0; i < builtin_interfaces_count; i++)
+    {
+	if (STRCMP(builtin_interfaces[i].vval.v_class->class_name,
+							intf_name) == 0)
+	    return &builtin_interfaces[i];
+    }
+
+    return NULL;
+}
+
 /*
  * Validate all the "implements" classes when creating a new class.  The
  * classes are returned in "intf_classes".  The class functions, class members,
@@ -784,7 +801,19 @@ validate_implements_classes(
 	char_u *impl = ((char_u **)impl_gap->ga_data)[i];
 	typval_T tv;
 	tv.v_type = VAR_UNKNOWN;
-	if (eval_variable_import(impl, &tv) == FAIL)
+	if (SAFE_islower(*impl))
+	{
+	    typval_T *builtin_tv;
+	    builtin_tv = get_builtin_interface_tv(impl);
+	    if (builtin_tv == NULL)
+	    {
+		semsg(_(e_interface_name_not_found_str), impl);
+		success = FALSE;
+		break;
+	    }
+	    copy_tv(builtin_tv, &tv);
+	}
+	else if (eval_variable_import(impl, &tv) == FAIL)
 	{
 	    semsg(_(e_interface_name_not_found_str), impl);
 	    success = FALSE;
@@ -981,79 +1010,25 @@ is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
 }
 
 /*
- * Returns TRUE if 'uf' is a supported builtin method and has the correct
- * method signature.
+ * Returns TRUE if class "cl" or one of its ancestor classes implement
+ * interface "intf_name".
  */
     static int
-object_check_builtin_method_sig(ufunc_T *uf)
+class_implements_interface(class_T *cl, char *intf_name)
 {
-    char_u  *name = uf->uf_name;
-    int	    valid = FALSE;
-    type_T  method_sig;
-    type_T  method_rt;
-    where_T where = WHERE_INIT;
+    for (int i = 0; i < cl->class_interface_count; i++)
+	if (STRCMP(cl->class_interfaces[i], intf_name) == 0)
+	    return TRUE;
 
-    // validate the method signature
-    CLEAR_FIELD(method_sig);
-    CLEAR_FIELD(method_rt);
-    method_sig.tt_type = VAR_FUNC;
-
-    if (STRCMP(name, "len") == 0)
+    // Check whether any of the parent classes implement this interface
+    for (cl = cl->class_extends; cl != NULL; cl = cl->class_extends)
     {
-	// def __len(): number
-	method_rt.tt_type = VAR_NUMBER;
-	method_sig.tt_member = &method_rt;
-	valid = TRUE;
-    }
-    else if (STRCMP(name, "empty") == 0)
-    {
-	// def __empty(): bool
-	method_rt.tt_type = VAR_BOOL;
-	method_sig.tt_member = &method_rt;
-	valid = TRUE;
-    }
-    else if (STRCMP(name, "string") == 0)
-    {
-	// def __string(): string
-	method_rt.tt_type = VAR_STRING;
-	method_sig.tt_member = &method_rt;
-	valid = TRUE;
-    }
-    else
-	semsg(_(e_builtin_object_method_str_not_supported), uf->uf_name);
-
-    where.wt_func_name = (char *)uf->uf_name;
-    where.wt_kind = WT_METHOD;
-    if (valid && !check_type(&method_sig, uf->uf_func_type, TRUE, where))
-	valid = FALSE;
-
-    return valid;
-}
-
-/*
- * Returns TRUE if "funcname" is a supported builtin object method name
- */
-    int
-is_valid_builtin_obj_methodname(char_u *funcname)
-{
-    switch (funcname[0])
-    {
-	case 'e':
-	    return STRNCMP(funcname, "empty", 5) == 0;
-
-	case 'l':
-	    return STRNCMP(funcname, "len", 3) == 0;
-
-	case 'n':
-	    return STRNCMP(funcname, "new", 3) == 0;
-
-	case 's':
-	    return STRNCMP(funcname, "string", 6) == 0;
+	if (class_implements_interface(cl, intf_name))
+	    return TRUE;
     }
 
     return FALSE;
 }
-
 
 /*
  * Returns the builtin method "name" in object "obj".  Returns NULL if the
@@ -1471,6 +1446,144 @@ find_class_name_end(char_u *arg)
     return end;
 }
 
+    static ufunc_T *
+define_builtin_interface_method(char *method_signature)
+{
+    garray_T fga;
+
+    ga_init2(&fga, 1, 10);
+    ga_concat(&fga, (char_u *)method_signature);
+    ga_append(&fga, NUL);
+
+    exarg_T fea;
+    CLEAR_FIELD(fea);
+    fea.cmdidx = CMD_def;
+    fea.cmd = fea.arg = fga.ga_data;
+
+    garray_T lines_to_free;
+    ga_init2(&lines_to_free, sizeof(char_u *), 10);
+
+    ufunc_T *fp = define_function(&fea, NULL, &lines_to_free, CF_INTERFACE,
+	    NULL, 0);
+    ga_clear_strings(&lines_to_free);
+    vim_free(fga.ga_data);
+
+    return fp;
+}
+
+    static int
+create_builtin_interface(
+	char *intf_name,
+	char *method_sigs[],
+	int methodcount)
+{
+    class_T *cl = NULL;
+    garray_T type_list;     // list of pointers to allocated types
+
+    ga_init2(&type_list, sizeof(type_T *), 10);
+
+    cl = ALLOC_CLEAR_ONE(class_T);
+    if (cl == NULL)
+	return FAIL;
+
+    cl->class_flags = CLASS_INTERFACE;
+
+    cl->class_refcount = 1;
+    cl->class_name = vim_strsave((char_u *)intf_name);
+    if (cl->class_name == NULL)
+	return FAIL;
+
+    garray_T classmethods;
+    ga_init2(&classmethods, sizeof(ufunc_T *), 10);
+
+    garray_T objmethods;
+    ga_init2(&objmethods, sizeof(ufunc_T *), 10);
+
+    for (int i = 0; i < methodcount; i++)
+    {
+	ufunc_T *nf = define_builtin_interface_method(method_sigs[i]);
+	if (nf == NULL || ga_grow(&objmethods, 1) != OK)
+	    // FIXME: Memory leak
+	    return FAIL;
+
+	((ufunc_T **)objmethods.ga_data)[objmethods.ga_len] = nf;
+	++objmethods.ga_len;
+    }
+
+    // Move all the functions into the created class.
+    if (add_classfuncs_objmethods(cl, NULL, &classmethods,
+		&objmethods) == FAIL)
+	return FAIL;
+
+    cl->class_type.tt_type = VAR_CLASS;
+    cl->class_type.tt_class = cl;
+    cl->class_object_type.tt_type = VAR_OBJECT;
+    cl->class_object_type.tt_class = cl;
+    cl->class_type_list = type_list;
+
+    class_created(cl);
+
+    // TODO:
+    // - Fill hashtab with object members and methods ?
+
+    // Add the class to the script-local variables.
+    // TODO: handle other context, e.g. in a function
+    // TODO: does uf_hash need to be cleared?
+    typval_T tv;
+    tv.v_type = VAR_CLASS;
+    tv.vval.v_class = cl;
+    is_export = TRUE;
+    copy_tv(&tv, &builtin_interfaces[builtin_interfaces_count++]);
+    set_var_const(cl->class_name, current_sctx.sc_sid, NULL, &tv, FALSE, 0, 0);
+
+    return OK;
+}
+
+/*
+ * create the "vimContainer" builtin interface
+ */
+    static int
+create_builtin_interface_vimContainer(void)
+{
+    static int created_vimContainer = FALSE;
+    char *method_sigs[] = {"Empty(): bool", "Len(): number"};
+
+    if (created_vimContainer)
+	return OK;
+
+    if (create_builtin_interface("vimContainer", method_sigs,
+	    ARRAY_LENGTH(method_sigs)) == FAIL)
+    {
+	semsg(_(e_builtin_interface_creation_failed), "vimContainer");
+	return FAIL;
+    }
+
+    created_vimContainer = TRUE;
+    return OK;
+}
+
+/*
+ * create the "vimObject" builtin interface
+ */
+    static int
+create_builtin_interface_vimObject(void)
+{
+    static int created_vimObject = FALSE;
+    char *method_sigs[] = {"String(): string"};
+
+    if (created_vimObject)
+	return OK;
+
+    if (create_builtin_interface("vimObject", method_sigs,
+	    ARRAY_LENGTH(method_sigs)) == FAIL)
+    {
+	semsg(_(e_builtin_interface_creation_failed), "vimObject");
+	return FAIL;
+    }
+
+    created_vimObject = TRUE;
+    return OK;
+}
 
 /*
  * Handle ":class" and ":abstract class" up to ":endclass".
@@ -1483,6 +1596,14 @@ ex_class(exarg_T *eap)
     long	start_lnum = SOURCING_LNUM;
     char_u	*arg = eap->arg;
     int		is_abstract = eap->cmdidx == CMD_abstract;
+    static int created_builtin_interfaces = FALSE;
+
+    if (!created_builtin_interfaces)
+    {
+	if (create_builtin_interface_vimContainer() == OK
+		&& create_builtin_interface_vimObject() == OK)
+	    created_builtin_interfaces = TRUE;
+    }
 
     if (is_abstract)
     {
@@ -1937,13 +2058,6 @@ early_ret:
 		break;
 	    }
 
-	    if (has_static && !is_new && SAFE_islower(*p) &&
-					is_valid_builtin_obj_methodname(p))
-	    {
-		semsg(_(e_builtin_class_method_not_supported), p);
-		break;
-	    }
-
 	    CLEAR_FIELD(ea);
 	    ea.cmd = line;
 	    ea.arg = p;
@@ -1975,9 +2089,8 @@ early_ret:
 		    break;
 		}
 
-		// check for builtin method
-		if (!is_new && SAFE_islower(*name) &&
-					!object_check_builtin_method_sig(uf))
+		if (is_new && !is_valid_constructor(uf, is_abstract,
+								has_static))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;

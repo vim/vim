@@ -2265,8 +2265,9 @@ empty({expr})						*empty()*
 		- A |Job| is empty when it failed to start.
 		- A |Channel| is empty when it is closed.
 		- A |Blob| is empty when its length is zero.
-		- An |Object| is empty, when the |empty()| builtin method in
-		  the object (if present) returns true.
+		- An |Object| is empty, if the class implements the
+		  |vimContainer| builtin interface and the |Empty()| object
+		  method returns true.
 
 		For a long |List| this is much faster than comparing the
 		length with zero.
@@ -9598,9 +9599,10 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 		replaced by "[...]" or "{...}".  Using eval() on the result
 		will then fail.
 
-		For an object, invokes the |string()| method to get a textual
-		representation of the object.  If the method is not present,
-		then the default representation is used.
+		For an |Object|, if the class implements the |vimObject|
+		builtin interface, invokes the |String()| object method to get
+		a textual representation of the object.  If the method is not
+		present, then the default representation is used.
 
 		Can also be used as a |method|: >
 			mylist->string()

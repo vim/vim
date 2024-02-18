@@ -9768,17 +9768,6 @@ def Test_object_builtin_method()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1267: Function name must start with a capital: abc()', 3)
-
-  for funcname in ["len", "string", "empty"]
-    lines =<< trim eval END
-      vim9script
-      class A
-        static def {funcname}(): number
-        enddef
-      endclass
-    END
-    v9.CheckSourceFailure(lines, 'E1413: Builtin class method not supported', 3)
-  endfor
 enddef
 
 " Test for using the empty() builtin method with an object
@@ -9786,9 +9775,12 @@ enddef
 func Test_object_empty()
   let lines =<< trim END
     vim9script
-    class A
-      def empty(): bool
+    class A implements vimContainer
+      def Empty(): bool
         return true
+      enddef
+      def Len(): number
+        return 1
       enddef
     endclass
 
@@ -9829,19 +9821,22 @@ func Test_object_empty()
   " Unsupported signature for the empty() method
   let lines =<< trim END
     vim9script
-    class A
-      def empty()
+    class A implements vimContainer
+      def Empty()
       enddef
     endclass
   END
-  call v9.CheckSourceFailure(lines, 'E1383: Method "empty": type mismatch, expected func(): bool but got func()', 4)
+  call v9.CheckSourceFailure(lines, 'E1383: Method "Empty": type mismatch, expected func(): bool but got func()', 5)
 
   " Error when calling the empty() method
   let lines =<< trim END
     vim9script
-    class A
-      def empty(): bool
+    class A implements vimContainer
+      def Empty(): bool
         throw "Failed to check emptiness"
+      enddef
+      def Len(): number
+        return 1
       enddef
     endclass
 
@@ -9859,27 +9854,33 @@ func Test_object_empty()
   " call empty() using an object from a script
   let lines =<< trim END
     vim9script
-    class A
-      def empty(): bool
+    class A implements vimContainer
+      def Empty(): bool
         return true
+      enddef
+      def Len(): number
+        return 1
       enddef
     endclass
     var afoo = A.new()
-    assert_equal(true, afoo.empty())
+    assert_equal(true, afoo.Empty())
   END
   call v9.CheckSourceSuccess(lines)
 
   " call empty() using an object from a method
   let lines =<< trim END
     vim9script
-    class A
-      def empty(): bool
+    class A implements vimContainer
+      def Empty(): bool
         return true
+      enddef
+      def Len(): number
+        return 1
       enddef
     endclass
     def Foo()
       var afoo = A.new()
-      assert_equal(true, afoo.empty())
+      assert_equal(true, afoo.Empty())
     enddef
     Foo()
   END
@@ -9888,12 +9889,15 @@ func Test_object_empty()
   " call empty() using "this" from an object method
   let lines =<< trim END
     vim9script
-    class A
-      def empty(): bool
+    class A implements vimContainer
+      def Empty(): bool
         return true
       enddef
+      def Len(): number
+        return 1
+      enddef
       def Foo(): bool
-        return this.empty()
+        return this.Empty()
       enddef
     endclass
     def Bar()
@@ -9907,14 +9911,17 @@ func Test_object_empty()
   " Call empty() from a derived object
   let lines =<< trim END
     vim9script
-    class A
-      def empty(): bool
-        return false
+    class A implements vimContainer
+      def Empty(): bool
+        return true
+      enddef
+      def Len(): number
+        return 1
       enddef
     endclass
     class B extends A
-      def empty(): bool
-        return true
+      def Empty(): bool
+        return false
       enddef
     endclass
     def Foo(afoo: A)
@@ -9923,7 +9930,7 @@ func Test_object_empty()
       assert_equal(true, empty(bfoo))
     enddef
     var b = B.new()
-    assert_equal(1, empty(b))
+    assert_equal(0, empty(b))
     Foo(b)
   END
   call v9.CheckSourceSuccess(lines)
@@ -9932,11 +9939,14 @@ func Test_object_empty()
   let lines =<< trim END
     vim9script
     interface A
-      def empty(): bool
+      def Empty(): bool
     endinterface
-    class B implements A
-      def empty(): bool
+    class B implements A, vimContainer
+      def Empty(): bool
         return false
+      enddef
+      def Len(): number
+        return 1
       enddef
     endclass
     def Foo(a: A)
@@ -9953,12 +9963,15 @@ endfunc
 func Test_object_length()
   let lines =<< trim END
     vim9script
-    class A
+    class A implements vimContainer
       var mylen: number = 0
       def new(n: number)
         this.mylen = n
       enddef
-      def len(): number
+      def Empty(): bool
+        return false
+      enddef
+      def Len(): number
         return this.mylen
       enddef
     endclass
@@ -10000,19 +10013,25 @@ func Test_object_length()
   " Unsupported signature for the len() method
   let lines =<< trim END
     vim9script
-    class A
-      def len()
+    class A implements vimContainer
+      def Len()
+      enddef
+      def Empty(): bool
+        return false
       enddef
     endclass
   END
-  call v9.CheckSourceFailure(lines, 'E1383: Method "len": type mismatch, expected func(): number but got func()', 4)
+  call v9.CheckSourceFailure(lines, 'E1383: Method "Len": type mismatch, expected func(): number but got func()', 8)
 
   " Error when calling the len() method
   let lines =<< trim END
     vim9script
-    class A
-      def len(): number
+    class A implements vimContainer
+      def Len(): number
         throw "Failed to compute length"
+      enddef
+      def Empty(): bool
+        return false
       enddef
     endclass
 
@@ -10030,27 +10049,33 @@ func Test_object_length()
   " call len() using an object from a script
   let lines =<< trim END
     vim9script
-    class A
-      def len(): number
+    class A implements vimContainer
+      def Len(): number
         return 5
+      enddef
+      def Empty(): bool
+        return false
       enddef
     endclass
     var afoo = A.new()
-    assert_equal(5, afoo.len())
+    assert_equal(5, afoo.Len())
   END
   call v9.CheckSourceSuccess(lines)
 
   " call len() using an object from a method
   let lines =<< trim END
     vim9script
-    class A
-      def len(): number
+    class A implements vimContainer
+      def Len(): number
         return 5
+      enddef
+      def Empty(): bool
+        return false
       enddef
     endclass
     def Foo()
       var afoo = A.new()
-      assert_equal(5, afoo.len())
+      assert_equal(5, afoo.Len())
     enddef
     Foo()
   END
@@ -10059,12 +10084,15 @@ func Test_object_length()
   " call len() using "this" from an object method
   let lines =<< trim END
     vim9script
-    class A
-      def len(): number
+    class A implements vimContainer
+      def Len(): number
         return 8
       enddef
+      def Empty(): bool
+        return false
+      enddef
       def Foo(): number
-        return this.len()
+        return this.Len()
       enddef
     endclass
     def Bar()
@@ -10078,13 +10106,16 @@ func Test_object_length()
   " Call len() from a derived object
   let lines =<< trim END
     vim9script
-    class A
-      def len(): number
+    class A implements vimContainer
+      def Len(): number
         return 10
+      enddef
+      def Empty(): bool
+        return false
       enddef
     endclass
     class B extends A
-      def len(): number
+      def Len(): number
         return 20
       enddef
     endclass
@@ -10103,11 +10134,14 @@ func Test_object_length()
   let lines =<< trim END
     vim9script
     interface A
-      def len(): number
+      def Len(): number
     endinterface
-    class B implements A
-      def len(): number
+    class B implements A, vimContainer
+      def Len(): number
         return 123
+      enddef
+      def Empty(): bool
+        return false
       enddef
     endclass
     def Foo(a: A)
@@ -10169,18 +10203,18 @@ func Test_object_string()
   " Unsupported signature for the string() method
   let lines =<< trim END
     vim9script
-    class A
-      def string()
+    class A implements vimObject
+      def String()
       enddef
     endclass
   END
-  call v9.CheckSourceFailure(lines, 'E1383: Method "string": type mismatch, expected func(): string but got func()', 4)
+  call v9.CheckSourceFailure(lines, 'E1383: Method "String": type mismatch, expected func(): string but got func()', 5)
 
   " Error when calling the string() method
   let lines =<< trim END
     vim9script
-    class A
-      def string(): string
+    class A implements vimObject
+      def String(): string
         throw "Failed to get text"
       enddef
     endclass
@@ -10199,27 +10233,27 @@ func Test_object_string()
   " call string() using an object from a script
   let lines =<< trim END
     vim9script
-    class A
-      def string(): string
+    class A implements vimObject
+      def String(): string
         return 'A'
       enddef
     endclass
     var afoo = A.new()
-    assert_equal('A', afoo.string())
+    assert_equal('A', afoo.String())
   END
   call v9.CheckSourceSuccess(lines)
 
   " call string() using an object from a method
   let lines =<< trim END
     vim9script
-    class A
-      def string(): string
+    class A implements vimObject
+      def String(): string
         return 'A'
       enddef
     endclass
     def Foo()
       var afoo = A.new()
-      assert_equal('A', afoo.string())
+      assert_equal('A', afoo.String())
     enddef
     Foo()
   END
@@ -10228,17 +10262,17 @@ func Test_object_string()
   " call string() using "this" from an object method
   let lines =<< trim END
     vim9script
-    class A
-      def string(): string
+    class A implements vimObject
+      def String(): string
         return 'A'
       enddef
       def Foo(): string
-        return this.string()
+        return this.String()
       enddef
     endclass
     def Bar()
       var abar = A.new()
-      assert_equal('A', abar.string())
+      assert_equal('A', abar.String())
     enddef
     Bar()
   END
@@ -10247,13 +10281,13 @@ func Test_object_string()
   " Call string() from a derived object
   let lines =<< trim END
     vim9script
-    class A
-      def string(): string
+    class A implements vimObject
+      def String(): string
         return 'A'
       enddef
     endclass
     class B extends A
-      def string(): string
+      def String(): string
         return 'B'
       enddef
     endclass
@@ -10272,10 +10306,10 @@ func Test_object_string()
   let lines =<< trim END
     vim9script
     interface A
-      def string(): string
+      def String(): string
     endinterface
-    class B implements A
-      def string(): string
+    class B implements A, vimObject
+      def String(): string
         return 'B'
       enddef
     endclass
