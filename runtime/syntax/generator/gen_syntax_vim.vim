@@ -2,8 +2,8 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: Feb 11, 2024
-" Version: 2.0.0
+" Last Change: Feb 18, 2024
+" Version: 2.0.1
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -281,6 +281,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'behave', 'augroup', 'normal', 'syntax',
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
+	\	'new',
 	\ ]
 	" Required for original behavior
 	" \	'global', 'vglobal'
