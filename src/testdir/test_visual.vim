@@ -1637,12 +1637,13 @@ func Test_visual_getregion()
 
   " Visual mode
   call cursor(1, 1)
-  call feedkeys("\<ESC>vl", 'tx')
-  call assert_equal(['on'], 'v'->getregion('.', 'v'))
-  call assert_equal(['on'], '.'->getregion('v', 'v'))
+  call feedkeys("\<ESC>vjl", 'tx')
+  call assert_equal(['one', 'tw'], 'v'->getregion('.', 'v'))
+  call assert_equal(['one', 'tw'], '.'->getregion('v', 'v'))
   call assert_equal(['o'], 'v'->getregion('v', 'v'))
-  call assert_equal(['n'], '.'->getregion('.', 'v'))
-  call assert_equal(['one'], '.'->getregion('v', 'V'))
+  call assert_equal(['w'], '.'->getregion('.', 'v'))
+  call assert_equal(['one', 'two'], '.'->getregion('v', 'V'))
+  call assert_equal(['on', 'tw'], '.'->getregion('v', "\<C-v>"))
 
   " Line visual mode
   call cursor(1, 1)
@@ -1652,6 +1653,7 @@ func Test_visual_getregion()
   call assert_equal(['one'], getregion('v', 'v', 'V'))
   call assert_equal(['one'], getregion('.', '.', 'V'))
   call assert_equal(['on'], '.'->getregion('v', 'v'))
+  call assert_equal(['on'], '.'->getregion('v', "\<C-v>"))
 
   " Block visual mode
   call cursor(1, 1)
@@ -1661,6 +1663,7 @@ func Test_visual_getregion()
   call assert_equal(['o'], getregion('v', 'v', "\<C-v>"))
   call assert_equal(['e'], getregion('.', '.', "\<C-v>"))
   call assert_equal(['one'], '.'->getregion('v', 'V'))
+  call assert_equal(['one'], '.'->getregion('v', 'v'))
 
   " Multiline with line visual mode
   call cursor(1, 1)
