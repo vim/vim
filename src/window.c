@@ -935,6 +935,8 @@ win_split(int size, int flags)
  * When "new_wp" is NULL: split the current window in two.
  * When "new_wp" is not NULL: insert this window at the far
  * top/left/right/bottom.
+ * On failure, if "new_wp" was not NULL, no changes will have been made to the
+ * window layout or sizes.
  * Return FAIL for failure, OK otherwise.
  */
     int
@@ -964,7 +966,8 @@ win_split_ins(
     // Do not redraw here, curwin->w_buffer may be invalid.
     ++RedrawingDisabled;
 
-    trigger_winnewpre();
+    if (new_wp == NULL)
+	trigger_winnewpre();
 
     if (flags & WSP_TOP)
 	oldwin = firstwin;
@@ -1444,7 +1447,7 @@ win_split_ins(
     /*
      * make the new window the current window
      */
-    (void)win_enter_ext(wp, WEE_TRIGGER_NEW_AUTOCMDS
+    (void)win_enter_ext(wp, (new_wp == NULL ? WEE_TRIGGER_NEW_AUTOCMDS : 0)
 		    | WEE_TRIGGER_ENTER_AUTOCMDS | WEE_TRIGGER_LEAVE_AUTOCMDS);
     if (flags & WSP_VERT)
 	p_wiw = i;
