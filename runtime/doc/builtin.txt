@@ -4264,7 +4264,8 @@ getreginfo([{regname}])					*getreginfo()*
 			GetRegname()->getreginfo()
 
 getregion({pos1}, {pos2}, {type})			*getregion()*
-		Returns the list of strings from {pos1} to {pos2}.
+		Returns the list of strings from {pos1} to {pos2} as if it's
+		selected in visual mode of {type}.
 		For possible values of {pos1} and {pos2} see |line()|.
 		The {type} is region type:
 			"v" for |characterwise| mode
