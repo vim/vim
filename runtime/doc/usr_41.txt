@@ -929,6 +929,7 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
+	getregion()		get a region text from the buffer
 	setline()		replace a line in the buffer
 	append()		append line or list of lines in the buffer
 	indent()		indent of a specific line
@@ -944,7 +945,6 @@ Working with text in the current buffer:		*text-functions*
 	searchdecl()		search for the declaration of a name
 	getcharsearch()		return character search information
 	setcharsearch()		set character search information
-	getregion()		get a region text from the buffer
 
 Working with text in another buffer:
 	getbufline()		get a list of lines from the specified buffer
