@@ -1,5 +1,6 @@
 " vimballPlugin : construct a file containing both paths and files
-" Author: Charles E. Campbell
+" Maintainer:	This runtime file is looking for a new maintainer.
+" Original Author: Charles E. Campbell
 " Copyright: (c) 2004-2014 by Charles E. Campbell
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
 "            (see |copyright|) except use "Vimball" instead of "Vim".

@@ -4,7 +4,7 @@
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
 " Last Change:	Feb 18, 2024
-" Former Maintainer: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
+" Former Maintainer: Charles E. Campbell
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
 
