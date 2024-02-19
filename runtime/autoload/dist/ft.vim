@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2024 Jan 05
+# Last Change:		2024 Feb 18
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -531,7 +531,7 @@ def IsLProlog(): bool
 enddef
 
 def IsModula2(): bool
-  return getline(nextnonblank(1)) =~ '\<MODULE\s\+\w\+\s*;\|^\s*(\*'
+  return getline(nextnonblank(1)) =~ '\<MODULE\s\+\w\+\s*\%(\[.*]\s*\)\=;\|^\s*(\*'
 enddef
 
 def SetFiletypeModula2()
@@ -1293,4 +1293,4 @@ export def FTvba()
 enddef
 
 # Uncomment this line to check for compilation errors early
-defcompile
+# defcompile
