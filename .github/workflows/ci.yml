@@ -373,6 +373,11 @@ jobs:
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
 
+      - name: Install packages for testing
+        run: |
+          # Apple diff is broken. Use GNU diff instead. See #14032.
+          brew install diffutils
+
       - name: Test
         timeout-minutes: 20
         run: |
