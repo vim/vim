@@ -63,15 +63,16 @@ static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
+static void f_getcurpos(typval_T *argvars, typval_T *rettv);
+static void f_getcursorcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
 static void f_getpid(typval_T *argvars, typval_T *rettv);
-static void f_getcurpos(typval_T *argvars, typval_T *rettv);
-static void f_getcursorcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getreginfo(typval_T *argvars, typval_T *rettv);
+static void f_getregion(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
 static void f_gettext(typval_T *argvars, typval_T *rettv);
@@ -2131,6 +2132,8 @@ static funcentry_T global_functions[] =
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
+    {"getregion",	3, 3, FEARG_1,	    arg3_string,
+			ret_list_string,    f_getregion},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
     {"getscriptinfo",	0, 1, 0,	    arg1_dict_any,
@@ -5450,6 +5453,186 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 	return;
 
     getpos_both(argvars, rettv, FALSE, FALSE);
+}
+
+/*
+ * Convert from block_def to string
+ */
+   static char_u *
+block_def2str(struct block_def *bd)
+{
+    char_u *p, *ret;
+    size_t size = bd->startspaces + bd->endspaces + bd->textlen;
+
+    ret = alloc(size + 1);
+    if (ret != NULL)
+    {
+	p = ret;
+	vim_memset(p, ' ', bd->startspaces);
+	p += bd->startspaces;
+	mch_memmove(p, bd->textstart, bd->textlen);
+	p += bd->textlen;
+	vim_memset(p, ' ', bd->endspaces);
+	*(p + bd->endspaces) = NUL;
+    }
+    return ret;
+}
+
+/*
+ * "getregion()" function
+ */
+    static void
+f_getregion(typval_T *argvars, typval_T *rettv)
+{
+    linenr_T		lnum;
+    oparg_T		oap;
+    struct block_def	bd;
+    char_u		*akt = NULL;
+    int			inclusive = TRUE;
+    int			fnum = -1;
+    pos_T		p1, p2;
+    pos_T		*fp = NULL;
+    char_u		*pos1, *pos2, *type;
+    int			save_virtual = -1;
+    int			l;
+    int			region_type = -1;
+    int			is_visual;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL
+	    || check_for_string_arg(argvars, 2) == FAIL)
+	return;
+
+    // NOTE: var2fpos() returns static pointer.
+    fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
+    if (fp == NULL)
+	return;
+    p1 = *fp;
+
+    fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
+    if (fp == NULL)
+	return;
+    p2 = *fp;
+
+    pos1 = tv_get_string(&argvars[0]);
+    pos2 = tv_get_string(&argvars[1]);
+    type = tv_get_string(&argvars[2]);
+
+    is_visual = (pos1[0] == 'v' && pos1[1] == NUL)
+	|| (pos2[0] == 'v' && pos2[1] == NUL);
+
+    if (is_visual && !VIsual_active)
+	return;
+
+    if (type[0] == 'v' && type[1] == NUL)
+	region_type = MCHAR;
+    else if (type[0] == 'V' && type[1] == NUL)
+	region_type = MLINE;
+    else if (type[0] == Ctrl_V && type[1] == NUL)
+	region_type = MBLOCK;
+    else
+	return;
+
+    save_virtual = virtual_op;
+    virtual_op = virtual_active();
+
+    if (!LT_POS(p1, p2))
+    {
+	// swap position
+	pos_T p;
+
+	p = p1;
+	p1 = p2;
+	p2 = p;
+    }
+
+    if (region_type == MCHAR)
+    {
+	// handle 'selection' == "exclusive"
+	if (*p_sel == 'e' && !EQUAL_POS(p1, p2))
+	{
+	    if (p2.coladd > 0)
+		p2.coladd--;
+	    else if (p2.col > 0)
+	    {
+		p2.col--;
+
+		mb_adjustpos(curbuf, &p2);
+	    }
+	    else if (p2.lnum > 1)
+	    {
+		p2.lnum--;
+		p2.col = (colnr_T)STRLEN(ml_get(p2.lnum));
+		if (p2.col > 0)
+		{
+		    p2.col--;
+
+		    mb_adjustpos(curbuf, &p2);
+		}
+	    }
+	}
+	// if fp2 is on NUL (empty line) inclusive becomes false
+	if (*ml_get_pos(&p2) == NUL && !virtual_op)
+	    inclusive = FALSE;
+    }
+    else if (region_type == MBLOCK)
+    {
+	colnr_T sc1, ec1, sc2, ec2;
+
+	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
+	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
+	oap.motion_type = OP_NOP;
+	oap.inclusive = TRUE;
+	oap.start = p1;
+	oap.end = p2;
+	oap.start_vcol = MIN(sc1, sc2);
+	if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+	    oap.end_vcol = sc2 - 1;
+	else
+	    oap.end_vcol = MAX(ec1, ec2);
+    }
+
+    // Include the trailing byte of a multi-byte char.
+    l = utfc_ptr2len((char_u *)ml_get_pos(&p2));
+    if (l > 1)
+	p2.col += l - 1;
+
+    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
+    {
+	int ret = 0;
+
+	if (region_type == MLINE)
+	    akt = vim_strsave(ml_get(lnum));
+	else if (region_type == MBLOCK)
+	{
+	    block_prep(&oap, &bd, lnum, FALSE);
+	    akt = block_def2str(&bd);
+	}
+	else if (p1.lnum < lnum && lnum < p2.lnum)
+	    akt = vim_strsave(ml_get(lnum));
+	else
+	{
+	    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
+	    akt = block_def2str(&bd);
+	}
+
+	if (akt)
+	{
+	    ret = list_append_string(rettv->vval.v_list, akt, -1);
+	    vim_free(akt);
+	}
+
+	if (akt == NULL || ret == FAIL)
+	{
+	    list_free(rettv->vval.v_list);
+	    break;
+	}
+    }
+
+    virtual_op = save_virtual;
 }
 
 /*

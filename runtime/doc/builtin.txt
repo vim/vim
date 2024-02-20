@@ -263,6 +263,8 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
+getregion({pos1}, {pos2}, {type})
+				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
@@ -4266,6 +4268,43 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
+getregion({pos1}, {pos2}, {type})			*getregion()*
+		Returns the list of strings from {pos1} to {pos2} as if it's
+		selected in visual mode of {type}.
+		For possible values of {pos1} and {pos2} see |line()|.
+		{type} is the selection type:
+			"v" for |characterwise| mode
+			"V" for |linewise| mode
+			"<CTRL-V>" for |blockwise-visual| mode
+		You can get the last selection type by |visualmode()|.
+		If Visual mode is active, use |mode()| to get the Visual mode
+		(e.g., in a |:vmap|).
+		This function uses the line and column number from the
+		specified position.
+		It is useful to get text starting and ending in different
+		columns, such as |characterwise-visual| selection.
+
+		Note that:
+		- Order of {pos1} and {pos2} doesn't matter, it will always
+		  return content from the upper left position to the lower
+		  right position.
+		- If 'virtualedit' is enabled and selection is past the end of
+		  line, resulting lines are filled with blanks.
+		- If the selection starts or ends in the middle of a multibyte
+		  character, it is not included but its selected part is
+		  substituted with spaces.
+		- If {pos1} or {pos2} equals "v" (see |line()|) and it is not in
+		  |visual-mode|, an empty list is returned.
+		- If {pos1}, {pos2} or {type} is an invalid string, an empty
+		  list is returned.
+
+		Examples: >
+			:xnoremap <CR>
+			\ <Cmd>echo getregion('v', '.', mode())<CR>
+<
+		Can also be used as a |method|: >
+			'.'->getregion("'a', 'v')
+<
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
 		The value will be one of:
