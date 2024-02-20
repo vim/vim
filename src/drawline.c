@@ -2288,7 +2288,7 @@ win_line(
 
 			// If another text prop follows the condition below at
 			// the last window column must know.
-			// If this is an "above" text prop and 'nowrap' the we
+			// If this is an "above" text prop and 'nowrap' then we
 			// must wrap anyway.
 			text_prop_above = above;
 			text_prop_follows |= other_tpi != -1
