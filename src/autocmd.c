@@ -1607,7 +1607,7 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
-	(void)win_split_ins(0, WSP_TOP, auc_win, 0);
+	(void)win_split_ins(0, WSP_TOP | WSP_FORCE_ROOM, auc_win, 0);
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
