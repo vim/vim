@@ -164,7 +164,8 @@ syn keyword tmuxCommands
 syn keyword tmuxEnums
 \ absolute-centre all always any arrows bar blinking-bar blinking-block
 \ blinking-underline block both bottom centre color colour current default
-\ double emacs external failed heavy largest latest left manual next
+\ double emacs external failed heavy keep-group keep-last
+\ largest latest left manual next
 \ no-detached none number off on other padded previous right rounded simple
 \ single smallest top underline vi
 
