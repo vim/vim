@@ -28,7 +28,7 @@ void may_make_initial_scroll_size_snapshot(void);
 void may_trigger_win_scrolled_resized(void);
 void win_close_othertab(win_T *win, int free_buf, tabpage_T *tp);
 void win_free_all(void);
-win_T *winframe_remove(win_T *win, int *dirp, tabpage_T *tp, frame_T **to_flatten);
+win_T *winframe_remove(win_T *win, int *dirp, tabpage_T *tp, frame_T **unflat_altfr);
 void close_others(int message, int forceit);
 void unuse_tabpage(tabpage_T *tp);
 void use_tabpage(tabpage_T *tp);
