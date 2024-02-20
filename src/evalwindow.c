@@ -824,11 +824,8 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	return;
 
     id = tv_get_number(&argvars[0]);
-    if (cmdwin_type != 0)
-    {
-	emsg(_(e_invalid_in_cmdline_window));
+    if (text_or_buf_locked())
 	return;
-    }
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
     if (popup_is_popup(curwin) && curbuf->b_term != NULL)
     {
@@ -998,7 +995,7 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
     }
 
     // Check if we can split the target before we bother switching windows.
-    if (check_split_disallowed(targetwin) == FAIL)
+    if (text_or_buf_locked() || check_split_disallowed(targetwin) == FAIL)
 	return;
 
     if (curwin != targetwin)
