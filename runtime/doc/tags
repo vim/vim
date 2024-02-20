@@ -5972,6 +5972,7 @@ added-7.4	version7.txt	/*added-7.4*
 added-8.1	version8.txt	/*added-8.1*
 added-8.2	version8.txt	/*added-8.2*
 added-9.1	version9.txt	/*added-9.1*
+added-9.2	version9.txt	/*added-9.2*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -6173,6 +6174,7 @@ bug-fixes-7	version7.txt	/*bug-fixes-7*
 bug-fixes-8	version8.txt	/*bug-fixes-8*
 bug-fixes-9	version9.txt	/*bug-fixes-9*
 bug-fixes-9.1	version9.txt	/*bug-fixes-9.1*
+bug-fixes-9.2	version9.txt	/*bug-fixes-9.2*
 bug-reports	intro.txt	/*bug-reports*
 bugreport.vim	intro.txt	/*bugreport.vim*
 bugs	intro.txt	/*bugs*
@@ -6357,6 +6359,7 @@ changed-7.4	version7.txt	/*changed-7.4*
 changed-8.1	version8.txt	/*changed-8.1*
 changed-8.2	version8.txt	/*changed-8.2*
 changed-9.1	version9.txt	/*changed-9.1*
+changed-9.2	version9.txt	/*changed-9.2*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	builtin.txt	/*changenr()*
@@ -6495,6 +6498,7 @@ compile-changes-6	version6.txt	/*compile-changes-6*
 compile-changes-7	version7.txt	/*compile-changes-7*
 compile-changes-8	version8.txt	/*compile-changes-8*
 compile-changes-9	version9.txt	/*compile-changes-9*
+compile-changes-9.2	version9.txt	/*compile-changes-9.2*
 compiler-compaqada	ft_ada.txt	/*compiler-compaqada*
 compiler-decada	ft_ada.txt	/*compiler-decada*
 compiler-dotnet	quickfix.txt	/*compiler-dotnet*
@@ -8245,6 +8249,7 @@ improvements-6	version6.txt	/*improvements-6*
 improvements-7	version7.txt	/*improvements-7*
 improvements-8	version8.txt	/*improvements-8*
 improvements-9	version9.txt	/*improvements-9*
+improvements-9.2	version9.txt	/*improvements-9.2*
 in_bot	channel.txt	/*in_bot*
 in_buf	channel.txt	/*in_buf*
 in_io-buffer	channel.txt	/*in_io-buffer*
@@ -8261,6 +8266,7 @@ incompatible-6	version6.txt	/*incompatible-6*
 incompatible-7	version7.txt	/*incompatible-7*
 incompatible-8	version8.txt	/*incompatible-8*
 incompatible-9	version9.txt	/*incompatible-9*
+incompatible-9.2	version9.txt	/*incompatible-9.2*
 indent()	builtin.txt	/*indent()*
 indent-expression	indent.txt	/*indent-expression*
 indent.txt	indent.txt	/*indent.txt*
@@ -9059,6 +9065,7 @@ new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*
 new-other-8.2	version8.txt	/*new-other-8.2*
 new-other-9.1	version9.txt	/*new-other-9.1*
+new-other-9.2	version9.txt	/*new-other-9.2*
 new-perl-python	version5.txt	/*new-perl-python*
 new-persistent-undo	version7.txt	/*new-persistent-undo*
 new-plugins	version6.txt	/*new-plugins*
@@ -9228,8 +9235,10 @@ patches-8.1	version8.txt	/*patches-8.1*
 patches-8.2	version8.txt	/*patches-8.2*
 patches-9	version9.txt	/*patches-9*
 patches-9.1	version9.txt	/*patches-9.1*
+patches-9.2	version9.txt	/*patches-9.2*
 patches-after-8.2	version9.txt	/*patches-after-8.2*
 patches-after-9.0	version9.txt	/*patches-after-9.0*
+patches-after-9.1	version9.txt	/*patches-after-9.1*
 pathshorten()	builtin.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
@@ -11017,6 +11026,7 @@ version-8.1	version8.txt	/*version-8.1*
 version-8.2	version8.txt	/*version-8.2*
 version-9.0	version9.txt	/*version-9.0*
 version-9.1	version9.txt	/*version-9.1*
+version-9.2	version9.txt	/*version-9.2*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -11033,6 +11043,7 @@ version8.2	version8.txt	/*version8.2*
 version8.txt	version8.txt	/*version8.txt*
 version9.0	version9.txt	/*version9.0*
 version9.1	version9.txt	/*version9.1*
+version9.2	version9.txt	/*version9.2*
 version9.txt	version9.txt	/*version9.txt*
 versionlong-variable	eval.txt	/*versionlong-variable*
 vi	intro.txt	/*vi*
@@ -11052,6 +11063,7 @@ vim-8.2	version8.txt	/*vim-8.2*
 vim-9	version9.txt	/*vim-9*
 vim-9.0	version9.txt	/*vim-9.0*
 vim-9.1	version9.txt	/*vim-9.1*
+vim-9.2	version9.txt	/*vim-9.2*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*
