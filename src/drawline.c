@@ -1633,16 +1633,6 @@ win_line(
 		if (text_props[i].tp_id < 0)
 		    last_textprop_text_idx = i;
 
-	    // When skipping virtual text the props need to be sorted.  The
-	    // order is reversed!
-	    if (lnum == wp->w_topline && wp->w_skipcol > 0)
-	    {
-		for (int i = 0; i < text_prop_count; ++i)
-		    text_prop_idxs[i] = i;
-		sort_text_props(wp->w_buffer, text_props,
-					      text_prop_idxs, text_prop_count);
-	    }
-
 	    // Text props "above" move the line number down to where the text
 	    // is.  Only count the ones that are visible, not those that are
 	    // skipped because of w_skipcol.
