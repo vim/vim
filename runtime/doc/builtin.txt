@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 20
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4300,10 +4300,10 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 
 		Examples: >
 			:xnoremap <CR>
-			\ <Cmd>echo getregion('v', '.', mode())<CR>
+			\ <Cmd>echow getregion('v', '.', mode())<CR>
 <
 		Can also be used as a |method|: >
-			'.'->getregion("'a', 'v')
+			'.'->getregion("'a", 'v')
 <
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
