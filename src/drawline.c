@@ -4116,7 +4116,7 @@ win_line(
 		    || text_prop_next <= last_textprop_text_idx
 #endif
 		    || (wp->w_p_list && wp->w_lcs_chars.eol != NUL
-						&& wlv.p_extra != at_end_str)
+						&& lcs_eol_one != -1)
 		    || (wlv.n_extra != 0 && (wlv.c_extra != NUL
 						      || *wlv.p_extra != NUL)))
 		)
@@ -4135,16 +4135,13 @@ win_line(
 
 	    // When not wrapping and finished diff lines, or when displayed
 	    // '$' and highlighting until last column, break here.
-	    if (((!wp->w_p_wrap
+	    if (!wp->w_p_wrap
 #ifdef FEAT_DIFF
 			&& wlv.filler_todo <= 0
 #endif
 #ifdef FEAT_PROP_POPUP
 			&& !text_prop_above
-#endif
-		 ) || lcs_eol_one == -1)
-#ifdef FEAT_PROP_POPUP
-		    && !text_prop_follows
+			&& !text_prop_follows
 #endif
 		       )
 		break;
