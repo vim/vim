@@ -4090,6 +4090,46 @@ func Test_text_below_nowrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_virtual_text_overlap_with_highlight()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two', 'three', 'four', 'five'])
+      set number
+
+      prop_type_add('demo_highlight_warning', {highlight: 'WarningMsg'})
+      prop_type_add('demo_virtual_text_error', {highlight: 'Error'})
+
+      prop_add(2, 4, {
+        type: 'demo_highlight_warning',
+        end_col: 4,
+      })
+      prop_add(2, 0, {
+        type: 'demo_virtual_text_error',
+        text: 'syntax error',
+        text_align: 'below',
+      })
+      normal 2j
+
+      prop_add(4, 4, {
+        type: 'demo_highlight_warning',
+        end_lnum: 5,
+        end_col: 1,
+      })
+      prop_add(4, 0, {
+        type: 'demo_virtual_text_error',
+        text: 'other error',
+        text_align: 'right',
+      })
+  END
+  call writefile(lines, 'XVirtualTextOverlapWithHighlight', 'D')
+  let buf = RunVimInTerminal('-S XVirtualTextOverlapWithHighlight', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_virtual_text_overlap_with_highlight_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_virtual_text_in_popup_highlight()
   CheckRunVimInTerminal
 
