@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2023 Nov 08
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -208,6 +208,7 @@ Command syntax ~
 			[command].  Use `:execute` if you must have a Vim
 			command following in the same line.
 
+							*terminal-bufname*
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
 			by this name already exists a number is added in
