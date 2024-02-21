@@ -5584,8 +5584,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
 	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
-	oap.motion_type = OP_NOP;
+	oap.motion_type = MBLOCK;
 	oap.inclusive = TRUE;
+	oap.op_type = OP_NOP;
 	oap.start = p1;
 	oap.end = p2;
 	oap.start_vcol = MIN(sc1, sc2);
