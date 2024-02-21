@@ -54,7 +54,7 @@ static void win_goto_hor(int left, long count);
 static void frame_add_height(frame_T *frp, int n);
 static void last_status_rec(frame_T *fr, int statusline);
 static void frame_flatten(frame_T *frp);
-static void winframe_restore(win_T *wp, int dir, frame_T *to_flatten);
+static void winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr);
 
 static int make_snapshot_rec(frame_T *fr, frame_T **frp);
 static void clear_snapshot(tabpage_T *tp, int idx);

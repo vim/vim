@@ -322,14 +322,18 @@ func Test_window_split_no_room()
   call assert_equal(restcmd, winrestcmd())
 
   " Check that the last statusline isn't lost.
-  set laststatus=0
-  let restcmd = winrestcmd()
+  " Set its window's width to 2 for the test.
   wincmd j
+  set laststatus=0 winminwidth=0
+  vertical resize 2
+  set winminwidth&
   call setwinvar(winnr('k'), '&statusline', '@#')
   let last_stl_row = win_screenpos(0)[0] - 1
   redraw
   call assert_equal('@#|', GetScreenStr(last_stl_row))
   call assert_equal('~ |', GetScreenStr(&lines - &cmdheight))
+
+  let restcmd = winrestcmd()
   call assert_fails('wincmd H', 'E36:')
   call assert_fails('wincmd L', 'E36:')
   call assert_equal(layout, winlayout())
@@ -2153,19 +2157,6 @@ func Test_new_help_window_on_error()
   call assert_equal(expand("<cword>"), "'mod'")
 endfunc
 
-func Test_smoothscroll_in_zero_width_window()
-  set cpo+=n number smoothscroll
-  set winwidth=99999 winminwidth=0
-
-  vsplit
-  call assert_equal(0, winwidth(winnr('#')))
-  call win_execute(win_getid(winnr('#')), "norm! \<C-Y>")
-
-  only!
-  set winwidth& winminwidth&
-  set cpo-=n nonumber nosmoothscroll
-endfunc
-
 func Test_splitmove_flatten_frame()
   split
   vsplit
@@ -2179,7 +2170,7 @@ func Test_splitmove_flatten_frame()
   only!
 endfunc
 
-func Test_splitmove_autocmd_window_no_room()
+func Test_autocmd_window_force_room()
   " Open as many windows as possible
   while v:true
     try
@@ -2206,7 +2197,7 @@ func Test_splitmove_autocmd_window_no_room()
   edit unload me
   enew
   bunload! unload\ me
-  augroup SplitMoveAucmdWin
+  augroup AucmdWinForceRoom
     au!
     au BufEnter * ++once let s:triggered = v:true
                       \| call assert_equal('autocmd', win_gettype())
@@ -2220,8 +2211,8 @@ func Test_splitmove_autocmd_window_no_room()
   call assert_equal(winrestcmd(), restcmd)
 
   unlet! s:triggered
-  au! SplitMoveAucmdWin
-  augroup! SplitMoveAucmdWin
+  au! AucmdWinForceRoom
+  augroup! AucmdWinForceRoom
   %bw!
 endfunc
 
