@@ -3225,8 +3225,7 @@ nv_colon(cmdarg_T *cap)
 	clearop(cap->oap);
     else if (cap->oap->op_type != OP_NOP
 	    && (cap->oap->start.lnum > curbuf->b_ml.ml_line_count
-		|| cap->oap->start.col >
-				  (colnr_T)STRLEN(ml_get(cap->oap->start.lnum))
+		|| cap->oap->start.col > ml_get_len(cap->oap->start.lnum)
 		|| did_emsg
 	       ))
 	// The start of the operator has become invalid by the Ex command.
