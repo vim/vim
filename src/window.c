@@ -1954,7 +1954,8 @@ win_splitmove(win_T *wp, int size, int flags)
     }
 
     // If splitting horizontally, try to preserve height.
-    if (size == 0 && !(flags & WSP_VERT))
+    // Note that win_split_ins autocommands may have immediately closed "wp"!
+    if (size == 0 && !(flags & WSP_VERT) && win_valid(wp))
     {
 	win_setheight_win(height, wp);
 	if (p_ea)
