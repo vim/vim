@@ -3674,7 +3674,7 @@ get_visual_text(
     if (VIsual_mode == 'V')
     {
 	*pp = ml_get_curline();
-	*lenp = (int)STRLEN(*pp);
+	*lenp = (int)ml_get_curline_len();
     }
     else
     {
