@@ -273,7 +273,7 @@ function! s:get_vim_command_type(cmd_name)
 	let menu_prefix = '^\%([acinosvx]\?\|tl\)'
 	let map_prefix  = '^[acilnostvx]\?'
 	let exclude_list = [
-	\	'map',
+	\	'map', 'mapclear',
 	\	'substitute', 'smagic', 'snomagic',
 	\	'setlocal', 'setglobal', 'set', 'var',
 	\	'autocmd', 'doautocmd', 'doautoall',
@@ -288,7 +288,7 @@ function! s:get_vim_command_type(cmd_name)
 
 	if index(exclude_list, a:cmd_name) != -1
 		let ret = 99
-	elseif a:cmd_name =~# '^\%(abbreviate\|noreabbrev\|\l\%(nore\)\?abbrev\)$'
+	elseif a:cmd_name =~# '^\%(\%(un\)\?abbreviate\|noreabbrev\|\l\%(nore\|un\)\?abbrev\)$'
 		let ret = 2
 	elseif a:cmd_name =~# menu_prefix . '\%(nore\|un\)\?menu$'
 		let ret = 3
