@@ -3225,7 +3225,8 @@ nv_colon(cmdarg_T *cap)
 	clearop(cap->oap);
     else if (cap->oap->op_type != OP_NOP
 	    && (cap->oap->start.lnum > curbuf->b_ml.ml_line_count
-		|| cap->oap->start.col > ml_get_len(cap->oap->start.lnum)
+		|| cap->oap->start.col >
+				  (colnr_T)STRLEN(ml_get(cap->oap->start.lnum))
 		|| did_emsg
 	       ))
 	// The start of the operator has become invalid by the Ex command.
@@ -3674,7 +3675,7 @@ get_visual_text(
     if (VIsual_mode == 'V')
     {
 	*pp = ml_get_curline();
-	*lenp = (int)ml_get_curline_len();
+	*lenp = (int)STRLEN(*pp);
     }
     else
     {
@@ -4767,6 +4768,7 @@ nv_kundo(cmdarg_T *cap)
     static void
 nv_replace(cmdarg_T *cap)
 {
+    char_u	*ptr;
     int		had_ctrl_v;
     long	n;
 
@@ -4833,8 +4835,9 @@ nv_replace(cmdarg_T *cap)
     }
 
     // Abort if not enough characters to replace.
-    if ((size_t)ml_get_cursor_len() < (unsigned)cap->count1
-	    || (has_mbyte && mb_charlen(ml_get_cursor()) < cap->count1))
+    ptr = ml_get_cursor();
+    if (STRLEN(ptr) < (unsigned)cap->count1
+	    || (has_mbyte && mb_charlen(ptr) < cap->count1))
     {
 	clearopbeep(cap->oap);
 	return;
@@ -4914,8 +4917,6 @@ nv_replace(cmdarg_T *cap)
 	}
 	else
 	{
-	    char_u *ptr = ml_get_cursor();
-
 	    // Replace the characters within one line.
 	    for (n = cap->count1; n > 0; --n)
 	    {
@@ -5129,7 +5130,7 @@ n_swapchar(cmdarg_T *cap)
 		    if (did_change)
 		    {
 			ptr = ml_get(pos.lnum);
-			count = (int)ml_get_len(pos.lnum) - pos.col;
+			count = (int)STRLEN(ptr) - pos.col;
 			netbeans_removed(curbuf, pos.lnum, pos.col,
 								 (long)count);
 			// line may have been flushed, get it again
@@ -5918,7 +5919,7 @@ nv_gi_cmd(cmdarg_T *cap)
     {
 	curwin->w_cursor = curbuf->b_last_insert;
 	check_cursor_lnum();
-	i = (int)ml_get_curline_len();
+	i = (int)STRLEN(ml_get_curline());
 	if (curwin->w_cursor.col > (colnr_T)i)
 	{
 	    if (virtual_active())
@@ -6716,7 +6717,7 @@ unadjust_for_sel(void)
 	else if (pp->lnum > 1)
 	{
 	    --pp->lnum;
-	    pp->col = ml_get_len(pp->lnum);
+	    pp->col = (colnr_T)STRLEN(ml_get(pp->lnum));
 	    return TRUE;
 	}
     }
@@ -6912,7 +6913,7 @@ set_cursor_for_append_to_line(void)
 	State = save_State;
     }
     else
-	curwin->w_cursor.col += ml_get_cursor_len();
+	curwin->w_cursor.col += (colnr_T)STRLEN(ml_get_cursor());
 }
 
 /*
