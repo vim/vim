@@ -5508,12 +5508,12 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     // NOTE: var2fpos() returns static pointer.
     fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
-    if (fp == NULL)
+    if (fp == NULL || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
     p1 = *fp;
 
     fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
-    if (fp == NULL)
+    if (fp == NULL || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
     p2 = *fp;
 

@@ -4300,6 +4300,8 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 		  |visual-mode|, an empty list is returned.
 		- If {pos1}, {pos2} or {type} is an invalid string, an empty
 		  list is returned.
+		- If {pos1} or {pos2} is a mark in non-current buffer, an
+		  empty list is returned.
 
 		Examples: >
 			:xnoremap <CR>
