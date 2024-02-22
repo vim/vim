@@ -824,6 +824,13 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	return;
 
     id = tv_get_number(&argvars[0]);
+    if (curwin->w_id == id)
+    {
+	// Nothing to do.
+	rettv->vval.v_number = 1;
+	return;
+    }
+
     if (text_or_buf_locked())
 	return;
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
