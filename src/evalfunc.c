@@ -5485,7 +5485,7 @@ block_def2str(struct block_def *bd)
 f_getregion(typval_T *argvars, typval_T *rettv)
 {
     linenr_T		lnum;
-    oparg_T		oap;
+    oparg_T		oa;
     struct block_def	bd;
     char_u		*akt = NULL;
     int			inclusive = TRUE;
@@ -5584,16 +5584,16 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
 	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
-	oap.motion_type = MBLOCK;
-	oap.inclusive = TRUE;
-	oap.op_type = OP_NOP;
-	oap.start = p1;
-	oap.end = p2;
-	oap.start_vcol = MIN(sc1, sc2);
+	oa.motion_type = MBLOCK;
+	oa.inclusive = TRUE;
+	oa.op_type = OP_NOP;
+	oa.start = p1;
+	oa.end = p2;
+	oa.start_vcol = MIN(sc1, sc2);
 	if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
-	    oap.end_vcol = sc2 - 1;
+	    oa.end_vcol = sc2 - 1;
 	else
-	    oap.end_vcol = MAX(ec1, ec2);
+	    oa.end_vcol = MAX(ec1, ec2);
     }
 
     // Include the trailing byte of a multi-byte char.
@@ -5609,7 +5609,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    akt = vim_strsave(ml_get(lnum));
 	else if (region_type == MBLOCK)
 	{
-	    block_prep(&oap, &bd, lnum, FALSE);
+	    block_prep(&oa, &bd, lnum, FALSE);
 	    akt = block_def2str(&bd);
 	}
 	else if (p1.lnum < lnum && lnum < p2.lnum)
@@ -5628,7 +5628,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
 	if (akt == NULL || ret == FAIL)
 	{
-	    list_free(rettv->vval.v_list);
+	    clear_tv(rettv);
+	    (void)rettv_list_alloc(rettv);
 	    break;
 	}
     }
