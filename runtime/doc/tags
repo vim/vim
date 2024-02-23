@@ -8615,6 +8615,7 @@ masm.vim	syntax.txt	/*masm.vim*
 match()	builtin.txt	/*match()*
 match-highlight	pattern.txt	/*match-highlight*
 match-parens	tips.txt	/*match-parens*
+match-pattern	builtin.txt	/*match-pattern*
 matchadd()	builtin.txt	/*matchadd()*
 matchaddpos()	builtin.txt	/*matchaddpos()*
 matcharg()	builtin.txt	/*matcharg()*
