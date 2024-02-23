@@ -1121,8 +1121,6 @@ win_line(
 #if defined(FEAT_LINEBREAK) && defined(FEAT_PROP_POPUP)
     int		in_linebreak = FALSE;	// n_extra set for showing linebreak
 #endif
-    static char_u *at_end_str = (char_u *)""; // used for p_extra when
-					// displaying eol at end-of-line
     int		lcs_eol_one = wp->w_lcs_chars.eol; // eol until it's been used
     int		lcs_prec_todo = wp->w_lcs_chars.prec;
 					// prec until it's been used
@@ -3304,7 +3302,7 @@ win_line(
 			if (!(area_highlighting && virtual_active()
 				       && wlv.tocol != MAXCOL
 				       && wlv.vcol < wlv.tocol))
-			    wlv.p_extra = at_end_str;
+			    wlv.p_extra = (char_u *)"";
 			wlv.n_extra = 0;
 		    }
 		    if (wp->w_p_list && wp->w_lcs_chars.eol > 0)
