@@ -6716,7 +6716,7 @@ unadjust_for_sel(void)
 	else if (pp->lnum > 1)
 	{
 	    --pp->lnum;
-	    pp->col = (colnr_T)STRLEN(ml_get(pp->lnum));
+	    pp->col = ml_get_len(pp->lnum);
 	    return TRUE;
 	}
     }
