@@ -4133,8 +4133,7 @@ win_line(
 	    ++wlv.row;
 	    ++wlv.screen_row;
 
-	    // When not wrapping and finished diff lines, or when displayed
-	    // '$' and highlighting until last column, break here.
+	    // When not wrapping and finished diff lines, break here.
 	    if (!wp->w_p_wrap
 #ifdef FEAT_DIFF
 			&& wlv.filler_todo <= 0
