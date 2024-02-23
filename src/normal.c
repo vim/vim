@@ -5918,7 +5918,7 @@ nv_gi_cmd(cmdarg_T *cap)
     {
 	curwin->w_cursor = curbuf->b_last_insert;
 	check_cursor_lnum();
-	i = (int)STRLEN(ml_get_curline());
+	i = (int)ml_get_curline_len();
 	if (curwin->w_cursor.col > (colnr_T)i)
 	{
 	    if (virtual_active())
