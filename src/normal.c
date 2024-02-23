@@ -4767,7 +4767,6 @@ nv_kundo(cmdarg_T *cap)
     static void
 nv_replace(cmdarg_T *cap)
 {
-    char_u	*ptr;
     int		had_ctrl_v;
     long	n;
 
@@ -4834,9 +4833,8 @@ nv_replace(cmdarg_T *cap)
     }
 
     // Abort if not enough characters to replace.
-    ptr = ml_get_cursor();
-    if (STRLEN(ptr) < (unsigned)cap->count1
-	    || (has_mbyte && mb_charlen(ptr) < cap->count1))
+    if ((size_t)ml_get_cursor_len() < (unsigned)cap->count1
+	    || (has_mbyte && mb_charlen(ml_get_cursor()) < cap->count1))
     {
 	clearopbeep(cap->oap);
 	return;
@@ -4916,6 +4914,8 @@ nv_replace(cmdarg_T *cap)
 	}
 	else
 	{
+	    char_u  *ptr = ml_get_cursor();
+
 	    // Replace the characters within one line.
 	    for (n = cap->count1; n > 0; --n)
 	    {
@@ -5129,7 +5129,7 @@ n_swapchar(cmdarg_T *cap)
 		    if (did_change)
 		    {
 			ptr = ml_get(pos.lnum);
-			count = (int)STRLEN(ptr) - pos.col;
+			count = (int)ml_get_len(pos.lnum) - pos.col;
 			netbeans_removed(curbuf, pos.lnum, pos.col,
 								 (long)count);
 			// line may have been flushed, get it again
