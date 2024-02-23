@@ -4914,7 +4914,7 @@ nv_replace(cmdarg_T *cap)
 	}
 	else
 	{
-	    char_u  *ptr = ml_get_cursor();
+	    char_u *ptr = ml_get_cursor();
 
 	    // Replace the characters within one line.
 	    for (n = cap->count1; n > 0; --n)
