@@ -4944,7 +4944,7 @@ nv_replace(cmdarg_T *cap)
 	    if (netbeans_active())
 	    {
 		colnr_T  start = (colnr_T)(curwin->w_cursor.col - cap->count1);
-		ptr = ml_get_buf(cufbuf, curwin->w_cursor.lnum);
+		ptr = ml_get_curline();
 
 		netbeans_removed(curbuf, curwin->w_cursor.lnum, start,
 							   cap->count1);
