@@ -366,14 +366,14 @@ created, thus they behave slightly differently:
 			shown (but that might change in the future).
 
 :se[t] {option}<	Set the effective value of {option} to its global
-                        value.
+			value.
 			For string |global-local| options, the local value is
 			removed, so that the global value will be used.
 			For all other options, the global value is copied to
 			the local value.
 
 :setl[ocal] {option}<	Set the effective value of {option} to its global
-                        value.
+			value.
 			For number and boolean |global-local| options, the
 			local value is removed, so that the global value will
 			be used.
@@ -2932,7 +2932,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				Use the indent heuristic for the internal
 				diff library.
 
-                algorithm:{text} Use the specified diff algorithm with the
+		algorithm:{text} Use the specified diff algorithm with the
 				internal diff engine. Currently supported
 				algorithms are:
 				myers      the default algorithm
@@ -6467,7 +6467,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	this option at the default "on".  Only switch it off when working with
 	old Vi scripts.
 
-                                               *'renderoptions'* *'rop'*
+						*'renderoptions'* *'rop'*
 'renderoptions' 'rop'	string  (default: empty)
 			global
 			{only available when compiled with GUI and DIRECTX on
