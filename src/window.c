@@ -603,9 +603,6 @@ newwindow:
 		// FALLTHROUGH
     case ']':
     case Ctrl_RSB:
-		if (!check_can_set_curbuf_disabled())
-		    break;
-
 		CHECK_CMDWIN;
 		// keep Visual mode, can select words to use as a tag
 		if (Prenum)
