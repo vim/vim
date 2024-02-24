@@ -990,13 +990,20 @@ setmarks:
     static void
 mb_adjust_opend(oparg_T *oap)
 {
-    char_u	*p;
+    char_u	*line;
+    char_u	*ptr;
 
     if (!oap->inclusive)
 	return;
 
-    p = ml_get(oap->end.lnum);
-    oap->end.col += mb_tail_off(p, p + oap->end.col);
+    line = ml_get(oap->end.lnum);
+    ptr = line + oap->end.col;
+    if (*ptr != NUL)
+    {
+	ptr -= (*mb_head_off)(line, ptr);
+	ptr += (*mb_ptr2len)(ptr) - 1;
+	oap->end.col = ptr - line;
+    }
 }
 
 /*
