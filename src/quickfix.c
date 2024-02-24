@@ -6549,9 +6549,6 @@ ex_vimgrep(exarg_T *eap)
     if (vgr_process_args(eap, &args) == FAIL)
 	goto theend;
 
-    if (eap->cmdidx == CMD_vimgrep && !check_can_set_curbuf_forceit(eap->forceit))
-	return;
-
     if ((eap->cmdidx != CMD_grepadd && eap->cmdidx != CMD_lgrepadd
 		&& eap->cmdidx != CMD_vimgrepadd
 		&& eap->cmdidx != CMD_lvimgrepadd)
