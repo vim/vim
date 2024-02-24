@@ -3323,10 +3323,8 @@ nv_ctrlo(cmdarg_T *cap)
     static void
 nv_hat(cmdarg_T *cap)
 {
-    if (curwin->w_p_wfb)
-    {
-        semsg("%s", e_winfixbuf_cannot_go_to_buffer);
-        return;
+    if (!check_can_set_curbuf_disabled()) {
+      return;
     }
 
     if (!checkclearopq(cap->oap))
@@ -4080,10 +4078,8 @@ nv_gotofile(cmdarg_T *cap)
 	return;
 #endif
 
-    if (curwin->w_p_wfb)
-    {
-        semsg("%s", e_winfixbuf_cannot_go_to_buffer);
-        return;
+    if (!check_can_set_curbuf_disabled()) {
+      return;
     }
 
     ptr = grab_file_name(cap->count1, &lnum);
