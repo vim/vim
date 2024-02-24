@@ -6912,7 +6912,7 @@ set_cursor_for_append_to_line(void)
 	State = save_State;
     }
     else
-	curwin->w_cursor.col += ml_get_cursor_len();
+	curwin->w_cursor.col += (colnr_T)STRLEN(ml_get_cursor());
 }
 
 /*
