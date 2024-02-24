@@ -1212,7 +1212,7 @@ static struct vimoption options[] =
 			    {(char_u *)50L, (char_u *)0L} SCTX_INIT},
 
     {"guiligatures", "gli", P_STRING|P_VI_DEF|P_RCLR|P_ONECOMMA|P_NODUP,
-#if defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 			    (char_u *)&p_guiligatures, PV_NONE,
 			    did_set_guiligatures, NULL,
 			    {(char_u *)"", (char_u *)0L}

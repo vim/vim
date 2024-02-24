@@ -2438,7 +2438,7 @@ did_set_guifontwide(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * The 'guiligatures' option is changed.
  */
