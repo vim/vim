@@ -4914,13 +4914,13 @@ nv_replace(cmdarg_T *cap)
 	}
 	else
 	{
-	    char_u *ptr = ml_get_cursor();
+	    char_u *ptr;
 
 	    // Replace the characters within one line.
 	    for (n = cap->count1; n > 0; --n)
 	    {
-		// Get ptr again, because u_save and/or showmatch() will have
-		// released the line.  This may also happen in ins_copychar().
+		// Get ptr again, because ins_copychar() and showmatch()
+		// will have released the line.
 		// At the same time we let know that the line will be changed.
 		if (cap->nchar == Ctrl_E || cap->nchar == Ctrl_Y)
 		{
@@ -4944,6 +4944,7 @@ nv_replace(cmdarg_T *cap)
 	    if (netbeans_active())
 	    {
 		colnr_T  start = (colnr_T)(curwin->w_cursor.col - cap->count1);
+		ptr = ml_get_buf(cufbuf, curwin->w_cursor.lnum);
 
 		netbeans_removed(curbuf, curwin->w_cursor.lnum, start,
 							   cap->count1);
