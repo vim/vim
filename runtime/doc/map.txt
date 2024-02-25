@@ -592,7 +592,7 @@ displayed in the first line. Also a key map will also display where it was
 last defined.  Example: >
 
 	:verbose map <C-W>*
-        Kitty keyboard protocol: Cleared
+	Kitty keyboard protocol: Cleared
 	n  <C-W>*      * <C-W><C-S>*
 		Last set from /home/abcd/.vimrc
 

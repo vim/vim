@@ -2024,7 +2024,7 @@ Note that this does not work for variables, only for functions.
 					    *import-legacy* *legacy-import*
 `:import` can also be used in legacy Vim script.  The imported namespace still
 becomes script-local, even when the "s:" prefix is not given. For example: >
-        import "myfile.vim"
+	import "myfile.vim"
 	call s:myfile.MyFunc()
 
 And using the "as name" form: >
