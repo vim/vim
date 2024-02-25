@@ -4277,7 +4277,7 @@ getregion({pos1}, {pos2}, {type} [, {opts}])			*getregion()*
 
 		For possible values of {pos1} and {pos2} are |List| or |string|.
 		When {pos1} or {pos2} is |string|, see |line()|.
-		When {pos1} or {pos2} is |List|, with two, three or four item:
+		When {pos1} or {pos2} is |List|, with two or three items:
 			[{lnum}, {col}]
 			[{lnum}, {col}, {off}]
 
