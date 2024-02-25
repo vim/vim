@@ -4282,7 +4282,6 @@ getregion({pos1}, {pos2}, {type} [, {opts}])			*getregion()*
 
 		The optional argument {opts} is a Dict and supports the
 		following items:
-		    winid	Specify the window instead of current window.
 
 		    exclusive	Specify whether the ending column is exclusive
 		    		instead of 'selection' value.

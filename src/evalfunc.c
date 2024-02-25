@@ -5497,13 +5497,15 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			l;
     int			region_type = -1;
     int			is_visual;
+    int			is_select_exclusive;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (check_for_string_arg(argvars, 0) == FAIL
 	    || check_for_string_arg(argvars, 1) == FAIL
-	    || check_for_string_arg(argvars, 2) == FAIL)
+	    || check_for_string_arg(argvars, 2) == FAIL
+	    || check_for_opt_dict_arg(argvars, 3) == FAIL)
 	return;
 
     // NOTE: var2fpos() returns static pointer.
@@ -5520,6 +5522,12 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     pos1 = tv_get_string(&argvars[0]);
     pos2 = tv_get_string(&argvars[1]);
     type = tv_get_string(&argvars[2]);
+
+    if (argvars[2].v_type == VAR_DICT)
+	is_select_exclusive = dict_get_bool(
+		argvars[3].vval.v_dict, "exclusive", *p_sel == 'e');
+    else
+        is_select_exclusive = *p_sel == 'e';
 
     is_visual = (pos1[0] == 'v' && pos1[1] == NUL)
 	|| (pos2[0] == 'v' && pos2[1] == NUL);
@@ -5552,7 +5560,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     if (region_type == MCHAR)
     {
 	// handle 'selection' == "exclusive"
-	if (*p_sel == 'e' && !EQUAL_POS(p1, p2))
+	if (is_select_exclusive && !EQUAL_POS(p1, p2))
 	{
 	    if (p2.coladd > 0)
 		p2.coladd--;
@@ -5590,7 +5598,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	oa.start = p1;
 	oa.end = p2;
 	oa.start_vcol = MIN(sc1, sc2);
-	if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+	if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
 	    oa.end_vcol = sc2 - 1;
 	else
 	    oa.end_vcol = MAX(ec1, ec2);
