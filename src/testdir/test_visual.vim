@@ -1674,6 +1674,14 @@ func Test_visual_getregion()
   call assert_equal(['two'], "'a"->getregion("'a", 'V'))
   call assert_equal(['one', 'two'], "."->getregion("'a", "\<c-v>"))
 
+  " Using List
+  call cursor(1, 1)
+  call assert_equal(['one', 'two'], [0, 2, 3, 0]->getregion('.', 'v'))
+  call assert_equal(['one', 'two'], '.'->getregion([0, 2, 3, 0], 'v'))
+  call assert_equal(['one', 'two'], '.'->getregion([0, 2, 3, 0], 'V'))
+  call assert_equal(['two'], [0, 2, 3, 0]->getregion([0, 2, 3, 0], 'V'))
+  call assert_equal(['one', 'two'], '.'->getregion([0, 2, 3, 0], "\<c-v>"))
+
   " Multiline with line visual mode
   call cursor(1, 1)
   call feedkeys("\<ESC>Vjj", 'tx')
