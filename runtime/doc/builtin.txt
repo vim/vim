@@ -4290,8 +4290,8 @@ getregion({pos1}, {pos2}, {type} [, {opts}])			*getregion()*
 		The optional argument {opts} is a Dict and supports the
 		following items:
 
-		    exclusive	Specify whether the ending column is exclusive
-		    		instead of 'selection' value.
+		exclusive	Specify whether the ending column is exclusive
+				instead of 'selection' value.
 
 		You can get the last selection type by |visualmode()|.
 		If Visual mode is active, use |mode()| to get the Visual mode
