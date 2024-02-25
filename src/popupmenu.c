@@ -457,7 +457,7 @@ pum_set_ordering(
 	{
 	    for (k = 0; k < 3; ++k)
 	    {
-		if (STRNCMP(labels[k], p_po+offset, MIN(current_len, STRLEN(labels[k]))) == 0)
+		if (STRNCMP(labels[k], p_po+offset, MIN(current_len, (int)STRLEN(labels[k]))) == 0)
 		{
 		    rounds[r++] = k;
 		    break;
@@ -521,7 +521,7 @@ pum_redraw(void)
     // precompute widths
     for (r = 0; r < 3; ++r)
     {
-	if (prefix_pum_widths[rounds[r]] > 0)
+	if (rounds[r] == 0 && prefix_pum_widths[rounds[r]] > 0)
 	{
 	    prefix_pum_widths[rounds[r]]++;
 	}
