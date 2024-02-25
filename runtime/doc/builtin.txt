@@ -4280,7 +4280,6 @@ getregion({pos1}, {pos2}, {type} [, {opts}])			*getregion()*
 		When {pos1} or {pos2} is |List|, with two, three or four item:
 			[{lnum}, {col}]
 			[{lnum}, {col}, {off}]
-			[{lnum}, {col}, {off}, {curswant}]
 
 		{type} is the selection type:
 			"v" for |characterwise| mode

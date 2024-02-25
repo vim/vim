@@ -5512,35 +5512,15 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	return;
 
     // NOTE: var2fpos() returns static pointer.
-    if (argvars[0].v_type == VAR_LIST)
-    {
-	if (!list2fpos(&argvars[0], &p1, &fnum, &curswant, FALSE))
-	    return;
-    }
-    else
-    {
-	fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
-	if (fp == NULL)
-	    return;
-	p1 = *fp;
-    }
-    if (fnum >= 0 && fnum != curbuf->b_fnum)
+    fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
+    if (fp == NULL || fnum >= 0 && fnum != curbuf->b_fnum)
 	return;
+    p1 = *fp;
 
-    if (argvars[1].v_type == VAR_LIST)
-    {
-	if (!list2fpos(&argvars[1], &p2, &fnum, &curswant, FALSE))
-	    return;
-    }
-    else
-    {
-	fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
-	if (fp == NULL)
-	    return;
-	p2 = *fp;
-    }
-    if (fnum >= 0 && fnum != curbuf->b_fnum)
+    fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
+    if (fp == NULL || fnum >= 0 && fnum != curbuf->b_fnum)
 	return;
+    p2 = *fp;
 
     if (argvars[0].v_type == VAR_STRING)
 	pos1 = tv_get_string(&argvars[0]);
