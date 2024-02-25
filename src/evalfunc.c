@@ -5493,7 +5493,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			curswant = -1;
     pos_T		p1, p2;
     pos_T		*fp = NULL;
-    char_u		*pos1 = "", *pos2 = "", *type;
+    char_u		*pos1 = (char_u *)"";
+    char_u		*pos2 = (char_u *)"";
+    char_u		*type;
     int			save_virtual = -1;
     int			l;
     int			region_type = -1;
