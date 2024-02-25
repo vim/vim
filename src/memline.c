@@ -2679,30 +2679,31 @@ ml_get_cursor(void)
     colnr_T
 ml_get_len(linenr_T lnum)
 {
-    if (*ml_get_buf(curbuf, lnum, FALSE) == NUL)
-        return 0;
-
-    return curbuf->b_ml.ml_line_len - 1;
+    return ml_get_buf_len(curbuf, lnum);
 }
 
 // return length (excluding the NUL) of the cursor line
     colnr_T
 ml_get_curline_len(void)
 {
-    if (*ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE) == NUL)
-        return 0;
-
-    return curbuf->b_ml.ml_line_len - 1;
+    return ml_get_buf_len(curbuf, curwin->w_cursor.lnum);
 }
 
 // return length (excluding the NUL) of the cursor position
     colnr_T
 ml_get_cursor_len(void)
 {
-    if (*ml_get_buf(curbuf, curwin->w_cursor.lnum, FALSE) == NUL)
+    return ml_get_buf_len(curbuf, curwin->w_cursor.lnum) - curwin->w_cursor.col;
+}
+
+// return length (excluding the NUL) of the given line in the given buffer
+    colnr_T
+ml_get_buf_len(buf_T *buf, linenr_T lnum)
+{
+    if (*ml_get_buf(buf, lnum, FALSE) == NUL)
         return 0;
 
-    return (curbuf->b_ml.ml_line_len - 1) - curwin->w_cursor.col;
+    return buf->b_ml.ml_line_len - 1;
 }
 
 /*
