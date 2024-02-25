@@ -5490,37 +5490,60 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     char_u		*akt = NULL;
     int			inclusive = TRUE;
     int			fnum = -1;
+    int			curswant = -1;
     pos_T		p1, p2;
     pos_T		*fp = NULL;
-    char_u		*pos1, *pos2, *type;
+    char_u		*pos1 = "", *pos2 = "", *type;
     int			save_virtual = -1;
     int			l;
     int			region_type = -1;
-    int			is_visual;
+    int			is_visual = FALSE;
     int			is_select_exclusive;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (check_for_string_arg(argvars, 0) == FAIL
-	    || check_for_string_arg(argvars, 1) == FAIL
+    if (check_for_string_or_list_arg(argvars, 0) == FAIL
+	    || check_for_string_or_list_arg(argvars, 1) == FAIL
 	    || check_for_string_arg(argvars, 2) == FAIL
 	    || check_for_opt_dict_arg(argvars, 3) == FAIL)
 	return;
 
     // NOTE: var2fpos() returns static pointer.
-    fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
-    if (fp == NULL || (fnum >= 0 && fnum != curbuf->b_fnum))
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	if (!list2fpos(&argvars[0], &p1, &fnum, &curswant, FALSE))
+	    return;
+    }
+    else
+    {
+	fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
+	if (fp == NULL)
+	    return;
+	p1 = *fp;
+    }
+    if (fnum >= 0 && fnum != curbuf->b_fnum)
 	return;
-    p1 = *fp;
 
-    fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
-    if (fp == NULL || (fnum >= 0 && fnum != curbuf->b_fnum))
+    if (argvars[1].v_type == VAR_LIST)
+    {
+	if (!list2fpos(&argvars[1], &p2, &fnum, &curswant, FALSE))
+	    return;
+    }
+    else
+    {
+	fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
+	if (fp == NULL)
+	    return;
+	p2 = *fp;
+    }
+    if (fnum >= 0 && fnum != curbuf->b_fnum)
 	return;
-    p2 = *fp;
 
-    pos1 = tv_get_string(&argvars[0]);
-    pos2 = tv_get_string(&argvars[1]);
+    if (argvars[0].v_type == VAR_STRING)
+	pos1 = tv_get_string(&argvars[0]);
+    if (argvars[1].v_type == VAR_STRING)
+	pos2 = tv_get_string(&argvars[1]);
     type = tv_get_string(&argvars[2]);
 
     if (argvars[2].v_type == VAR_DICT)
