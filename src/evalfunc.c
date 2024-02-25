@@ -5548,7 +5548,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	pos2 = tv_get_string(&argvars[1]);
     type = tv_get_string(&argvars[2]);
 
-    if (argvars[2].v_type == VAR_DICT)
+    if (argvars[3].v_type == VAR_DICT)
 	is_select_exclusive = dict_get_bool(
 		argvars[3].vval.v_dict, "exclusive", *p_sel == 'e');
     else
