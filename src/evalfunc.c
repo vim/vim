@@ -5490,7 +5490,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     char_u		*akt = NULL;
     int			inclusive = TRUE;
     int			fnum = -1;
-    int			curswant = -1;
     pos_T		p1, p2;
     pos_T		*fp = NULL;
     char_u		*pos1 = (char_u *)"";
