@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Feb 20
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -69,7 +69,7 @@ The output of the example code is:
 
 In the first line the `vim9script` command makes clear this is a new, |Vim9|
 script file.  That matters for how the rest of the file is used.  It is
-recommended to put it in the very fist line, before any comments.
+recommended to put it in the very first line, before any comments.
 							*vim9-declarations*
 The `var i = 1` command declares the "i" variable and initializes it.  The
 generic form is: >
