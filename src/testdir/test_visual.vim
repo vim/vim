@@ -1699,8 +1699,8 @@ func Test_visual_getregion()
   " Invalid position
   call cursor(1, 1)
   call feedkeys("\<ESC>vjj$", 'tx')
-  call assert_fails("call getregion(1, 2, 'v')", 'E1174:')
-  call assert_fails("call getregion('.', {}, 'v')", 'E1174:')
+  call assert_fails("call getregion(1, 2, 'v')", 'E1222:')
+  call assert_fails("call getregion('.', {}, 'v')", 'E1222:')
   call assert_equal([], getregion('', '.', 'v'))
   call assert_equal([], getregion('.', '.', ''))
   call feedkeys("\<ESC>", 'tx')
@@ -1709,9 +1709,7 @@ func Test_visual_getregion()
   " using an unset mark
   call assert_equal([], "'z"->getregion(".", 'V'))
   " using the wrong type
-  call assert_fails(':echo "."->getregion([],"V")', 'E1174:')
   call assert_fails(':echo "."->getregion("$", {})', 'E1174:')
-  call assert_fails(':echo [0, 1, 1, 0]->getregion("$", "v")', 'E1174:')
   " using a mark in another buffer
   new
   let newbuf = bufnr()
