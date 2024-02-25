@@ -9778,8 +9778,8 @@ func Test_object_empty()
 
     def Foo()
       var afoo = A.new()
-      assert_equal(1, empty(afoo))
-      assert_equal(1, afoo->empty())
+      assert_equal(true, empty(afoo))
+      assert_equal(true, afoo->empty())
     enddef
 
     var a = A.new()
@@ -9902,9 +9902,9 @@ func Test_object_empty()
       enddef
     endclass
     def Foo(afoo: A)
-      assert_equal(1, empty(afoo))
+      assert_equal(true, empty(afoo))
       var bfoo = B.new()
-      assert_equal(1, empty(bfoo))
+      assert_equal(true, empty(bfoo))
     enddef
     var b = B.new()
     assert_equal(1, empty(b))
@@ -9924,7 +9924,7 @@ func Test_object_empty()
       enddef
     endclass
     def Foo(a: A)
-      assert_equal(0, empty(a))
+      assert_equal(false, empty(a))
     enddef
     var b = B.new()
     Foo(b)

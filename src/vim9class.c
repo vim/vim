@@ -1052,22 +1052,19 @@ is_valid_builtin_obj_methodname(char_u *funcname)
  * Returns the builtin method "name" in object "obj".  Returns NULL if the
  * method is not found.
  */
-    static ufunc_T *
-object_get_builtin_method(object_T *obj, char_u *name)
+    ufunc_T *
+class_get_builtin_method(
+    class_T		*cl,
+    class_builtin_T	builtin_method,
+    int			*method_idx)
 {
-    class_T *cl = obj->obj_class;
+    *method_idx = -1;
 
     if (cl == NULL)
 	return NULL;
 
-    for (int i = 0; i < cl->class_obj_method_count; i++)
-    {
-	ufunc_T *uf = cl->class_obj_methods[i];
-	if (STRCMP(uf->uf_name, name) == 0)
-	    return uf;
-    }
-
-    return NULL;
+    *method_idx = cl->class_builtin_methods[builtin_method];
+    return *method_idx != -1 ? cl->class_obj_methods[*method_idx] : NULL;
 }
 
 /*
@@ -1421,6 +1418,33 @@ add_classfuncs_objmethods(
     }
 
     return OK;
+}
+
+/*
+ * Update the index of object methods called by builtin functions.
+ */
+    static void
+update_builtin_method_index(class_T *cl)
+{
+    int	i;
+
+    for (i = 0; i < CLASS_BUILTIN_MAX; i++)
+	cl->class_builtin_methods[i] = -1;
+
+    for (i = 0; i < cl->class_obj_method_count; i++)
+    {
+	ufunc_T *uf = cl->class_obj_methods[i];
+
+	if (cl->class_builtin_methods[CLASS_BUILTIN_STRING] == -1
+		&& STRCMP(uf->uf_name, "string") == 0)
+	    cl->class_builtin_methods[CLASS_BUILTIN_STRING] = i;
+	else if (cl->class_builtin_methods[CLASS_BUILTIN_EMPTY] == -1 &&
+		STRCMP(uf->uf_name, "empty") == 0)
+	    cl->class_builtin_methods[CLASS_BUILTIN_EMPTY] = i;
+	else if (cl->class_builtin_methods[CLASS_BUILTIN_LEN] == -1 &&
+		STRCMP(uf->uf_name, "len") == 0)
+	    cl->class_builtin_methods[CLASS_BUILTIN_LEN] = i;
+    }
 }
 
 /*
@@ -2098,6 +2122,8 @@ early_ret:
 	if (add_classfuncs_objmethods(cl, extends_cl, &classfunctions,
 							&objmethods) == FAIL)
 	    goto cleanup;
+
+	update_builtin_method_index(cl);
 
 	cl->class_type.tt_type = VAR_CLASS;
 	cl->class_type.tt_class = cl;
@@ -3380,18 +3406,19 @@ is_class_name(char_u *name, typval_T *rettv)
  */
     static int
 object_call_builtin_method(
-    object_T	*obj,
-    char	*name,
-    int		argc,
-    typval_T	*argv,
-    typval_T	*rettv)
+    object_T		*obj,
+    class_builtin_T	builtin_method,
+    int			argc,
+    typval_T		*argv,
+    typval_T		*rettv)
 {
     ufunc_T *uf;
+    int	    midx;
 
     if (obj == NULL)
 	return FAIL;
 
-    uf = object_get_builtin_method(obj, (char_u *)name);
+    uf = class_get_builtin_method(obj->obj_class, builtin_method, &midx);
     if (uf == NULL)
 	return FAIL;
 
@@ -3419,7 +3446,8 @@ object_empty(object_T *obj)
 {
     typval_T	rettv;
 
-    if (object_call_builtin_method(obj, "empty", 0, NULL, &rettv) == FAIL)
+    if (object_call_builtin_method(obj, CLASS_BUILTIN_EMPTY, 0, NULL, &rettv)
+								== FAIL)
 	return TRUE;
 
     return tv_get_bool(&rettv);
@@ -3434,7 +3462,8 @@ object_len(object_T *obj)
 {
     typval_T	rettv;
 
-    if (object_call_builtin_method(obj, "len", 0, NULL, &rettv) == FAIL)
+    if (object_call_builtin_method(obj, CLASS_BUILTIN_LEN, 0, NULL, &rettv)
+								== FAIL)
     {
 	emsg(_(e_invalid_type_for_len));
 	return 0;
@@ -3457,7 +3486,8 @@ object_string(
 {
     typval_T	rettv;
 
-    if (object_call_builtin_method(obj, "string", 0, NULL, &rettv) == OK
+    if (object_call_builtin_method(obj, CLASS_BUILTIN_STRING, 0, NULL, &rettv)
+								== OK
 					&& rettv.vval.v_string != NULL)
 	return rettv.vval.v_string;
     else
