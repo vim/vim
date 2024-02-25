@@ -2132,7 +2132,7 @@ static funcentry_T global_functions[] =
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
-    {"getregion",	3, 3, FEARG_1,	    arg3_string,
+    {"getregion",	3, 4, FEARG_1,	    arg3_string,
 			ret_list_string,    f_getregion},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
