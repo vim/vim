@@ -271,14 +271,14 @@ func Test_argdo_make_new_window()
 
   let [l:first, l:last] = s:make_args_list()
   let l:current = win_getid()
-  let l:expected_windows = s:get_windows_count()
+  let l:current_windows = s:get_windows_count()
 
   argdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:first, bufnr())
-  call assert_equal(l:expected_windows + 1, s:get_windows_count())
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
 
 " Fail :argedit but :argedit! is allowed
@@ -542,14 +542,14 @@ func Test_bufdo_make_new_window()
   let [l:first, l:last] = s:make_buffers_list()
   execute "buffer! " . l:first
   let l:current = win_getid()
-  let l:expected_windows = s:get_windows_count()
+  let l:current_windows = s:get_windows_count()
 
   bufdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:first, bufnr())
-  call assert_equal(l:expected_windows + 1, s:get_windows_count())
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
 
 " Fail :buffer but :buffer! is allowed
@@ -741,14 +741,14 @@ func Test_cdo_make_new_window()
   execute "buffer! " . l:current_buffer
 
   let l:current_window = win_getid()
-  let l:expected_windows = s:get_windows_count()
+  let l:current_windows = s:get_windows_count()
 
   cdo echo ''
   call assert_notequal(l:current_window, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:current_buffer, bufnr())
-  call assert_equal(l:expected_windows + 1, s:get_windows_count())
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
 
 " Fail :cexpr but :cexpr! is allowed
@@ -811,14 +811,14 @@ func Test_cfdo_make_new_window()
   execute "buffer! " . l:current_buffer
 
   let l:current_window = win_getid()
-  let l:expected_windows = s:get_windows_count()
+  let l:current_windows = s:get_windows_count()
 
   cfdo echo ''
   call assert_notequal(l:current_window, win_getid())
   call assert_equal(l:last, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:current_buffer, bufnr())
-  call assert_equal(l:expected_windows + 1, s:get_windows_count())
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
 
 " Fail :cfile but :cfile! is allowed
@@ -1997,7 +1997,9 @@ func Test_normal_ctrl_w_ctrl_square_bracket_right()
 
   set winfixbuf
 
+  let l:current_windows = s:get_windows_count()
   execute "normal \<C-w>\<C-]>"
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 
   set tags&
   call delete("Xtags")
@@ -2021,7 +2023,9 @@ func Test_normal_ctrl_w_g_ctrl_square_bracket_right()
 
   set winfixbuf
 
+  let l:current_windows = s:get_windows_count()
   execute "normal \<C-w>g\<C-]>"
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 
   set tags&
   call delete("Xtags")
@@ -2409,9 +2413,74 @@ func Test_previous()
   call assert_equal(l:first, bufnr())
 endfunc
 
+" Fail pydo if it changes a window with 'winfixbuf' is set
+func Test_python_pydo()
+  CheckFeature pythonx
+  call s:reset_all_buffers()
+
+  enew
+  file first
+  let g:_previous_buffer = bufnr()
+
+  enew
+  file second
+
+  set winfixbuf
+
+  python << EOF
+import vim
+
+def test_winfixbuf_Test_python_pydo_set_buffer():
+    buffer = vim.vars['_previous_buffer']
+    vim.current.buffer = vim.buffers[buffer]
+EOF
+
+  try
+    pydo test_winfixbuf_Test_python_pydo_set_buffer()
+  catch /Vim(pydo):vim.error: Vim:E1513: Cannot edit buffer. 'winfixbuf' is enabled/
+    let l:caught = 1
+  endtry
+
+  call assert_equal(1, l:caught)
+
+  unlet g:_previous_buffer
+endfunc
+
+" Fail pyfile if it changes a window with 'winfixbuf' is set
+func Test_python_pyfile()
+  CheckFeature pythonx
+  call s:reset_all_buffers()
+
+  enew
+  file first
+  let g:_previous_buffer = bufnr()
+
+  enew
+  file second
+
+  set winfixbuf
+
+  call writefile(["import vim",
+        \ "buffer = vim.vars['_previous_buffer']",
+        \ "vim.current.buffer = vim.buffers[buffer]",
+        \ ],
+        \ "file.py")
+
+  try
+    pyfile file.py
+  catch /Vim(pyfile):vim.error: Vim:E1513: Cannot edit buffer. 'winfixbuf' is enabled/
+    let l:caught = 1
+  endtry
+
+  call assert_equal(1, l:caught)
+
+  call delete("file.py")
+  unlet g:_previous_buffer
+endfunc
+
 " Fail vim.current.buffer if 'winfixbuf' is set
 func Test_python_vim_current_buffer()
-  CheckFeature python
+  CheckFeature pythonx
   call s:reset_all_buffers()
 
   enew
@@ -2643,14 +2712,14 @@ func Test_tabdo_make_new_window()
   execute "buffer! " . l:first
 
   let l:current = win_getid()
-  let l:expected_windows = s:get_windows_count()
+  let l:current_windows = s:get_windows_count()
 
   tabdo echo ''
   call assert_notequal(l:current, win_getid())
   call assert_equal(l:first, bufnr())
   execute "normal \<C-w>j"
   call assert_equal(l:first, bufnr())
-  call assert_equal(l:expected_windows + 1, s:get_windows_count())
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
 endfunc
 
 " Fail :tag but :tag! is allowed
