@@ -1677,10 +1677,10 @@ func Test_visual_getregion()
   " Using List
   call cursor(1, 1)
   call assert_equal(['one', 'two'], [2, 3]->getregion('.', #{ type: 'v' }))
-  call assert_equal(['one', 'two'], '.'->getregion([2, 3], #{ type: 'v' }))
+  call assert_equal(['one', 'two'], '.'->getregion([2, 3, 0], #{ type: 'v' }))
   call assert_equal(['one', 'two'], '.'->getregion([2, 3], #{ type: 'V' }))
   call assert_equal(['two'], [2, 3]->getregion([2, 3], #{ type: 'V' }))
-  call assert_equal(['one', 'two'], '.'->getregion([2, 3], #{ type: "\<c-v>" }))
+  call assert_equal(['one', 'two'], '.'->getregion([2, 3, 0], #{ type: "\<c-v>" }))
 
   " Multiline with line visual mode
   call cursor(1, 1)
