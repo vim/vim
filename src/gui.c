@@ -456,7 +456,11 @@ gui_init_check(void)
     gui.prev_wrap = -1;
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
-    CLEAR_FIELD(gui.ligatures_map);
+    // Note: gui_set_ligatures() might already have been called e.g. from .vimrc,
+    // and in that case we don't want to overwrite ligatures map that has already
+    // been correctly populated (as that would lead to a cleared ligatures maps).
+    if (*p_guiligatures == NUL)
+        CLEAR_FIELD(gui.ligatures_map);
 #endif
 
 #if defined(ALWAYS_USE_GUI) || defined(VIMDLL)
