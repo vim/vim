@@ -1794,15 +1794,15 @@ func Test_visual_getregion()
   call cursor(1, 1)
   call feedkeys("\<Esc>v2l", 'xt')
   call assert_equal(["a\t"],
-        \ getregion('v', '.', #{ exclusive: v:true, type: 'v' }))
+        \ getregion('v', '.', #{ exclusive: v:true }))
   call cursor(1, 1)
   call feedkeys("\<Esc>v$G", 'xt')
   call assert_equal(["a\tc", "x\tz", ''],
-        \ getregion('v', '.', #{ exclusive: v:true, type: 'v' }))
+        \ getregion('v', '.', #{ exclusive: v:true }))
   call cursor(1, 1)
   call feedkeys("\<Esc>v$j", 'xt')
   call assert_equal(["a\tc", "x\tz"],
-        \ getregion('v', '.', #{ exclusive: v:true, type: 'v' }))
+        \ getregion('v', '.', #{ exclusive: v:true }))
   call cursor(1, 1)
   call feedkeys("\<Esc>\<C-v>$j", 'xt')
   call assert_equal(["a\tc", "x\tz"],
@@ -1814,7 +1814,7 @@ func Test_visual_getregion()
   call cursor(1, 1)
   call feedkeys("\<Esc>wv2j", 'xt')
   call assert_equal(["c", "x\tz"],
-        \ getregion('v', '.', #{ exclusive: v:true, type: 'v' }))
+        \ getregion('v', '.', #{ exclusive: v:true }))
 
   " virtualedit
   set selection=exclusive
