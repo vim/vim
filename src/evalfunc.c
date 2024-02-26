@@ -5533,7 +5533,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     if (is_visual && !VIsual_active)
 	return;
 
-    default_type[0] = curbuf->b_visual_mode_eval;
+    default_type[0] = VIsual_mode;
     default_type[1] = NUL;
 
     if (argvars[2].v_type == VAR_DICT)

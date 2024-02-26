@@ -1717,7 +1717,7 @@ func Test_visual_getregion()
   " using an unset mark
   call assert_equal([], "'z"->getregion(".", #{ type: 'V' }))
   " using the wrong type
-  call assert_fails(':echo "."->getregion("$", {})', 'E1174:')
+  call assert_fails(':echo "."->getregion("$", [])', 'E1206:')
   " using a mark in another buffer
   new
   let newbuf = bufnr()
