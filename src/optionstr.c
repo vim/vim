@@ -4530,7 +4530,7 @@ did_set_string_option(
 		|| varp == &p_guifontset	// 'guifontset'
 # endif
 		|| varp == &p_guifontwide	// 'guifontwide'
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 		|| varp == &p_guiligatures	// 'guiligatures'
 # endif
 	    )
