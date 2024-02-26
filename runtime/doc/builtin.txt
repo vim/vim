@@ -263,7 +263,7 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
-getregion({pos1}, {pos2}[, {opts}])
+getregion({pos1}, {pos2} [, {opts}])
 				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
@@ -4271,10 +4271,12 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
-getregion({pos1}, {pos2}[, {opts}])			*getregion()*
-		Returns the list of strings from {pos1} to {pos2}.
+getregion({pos1}, {pos2} [, {opts}])			*getregion()*
+		Returns the list of strings from {pos1} to {pos2} in current
+		buffer.
 
-		For possible values of {pos1} and {pos2} are |List| or |string|.
+		For possible values of {pos1} and {pos2} are |List| or
+		|string|.
 		When {pos1} or {pos2} is |string|, see |line()|.
 		When {pos1} or {pos2} is |List|, with two or three items:
 			[{lnum}, {col}]
@@ -4286,7 +4288,7 @@ getregion({pos1}, {pos2}[, {opts}])			*getregion()*
 		following items:
 
 			type		Specify the selection type instead of
-					|visualmode()| value.
+					"v" value.
 
 					"v" for |characterwise| mode
 					"V" for |linewise| mode
@@ -4296,6 +4298,7 @@ getregion({pos1}, {pos2}[, {opts}])			*getregion()*
 					exclusive instead of 'selection'
 					value.
 
+		You can get the last selection type by |visualmode()|.
 		If Visual mode is active, use |mode()| to get the Visual mode
 		(e.g., in a |:vmap|).
 		This function uses the line and column number from the
@@ -4321,7 +4324,7 @@ getregion({pos1}, {pos2}[, {opts}])			*getregion()*
 
 		Examples: >
 			:xnoremap <CR>
-			\ <Cmd>echow getregion('v', '.')<CR>
+			\ <Cmd>echow getregion('v', '.', #{ type: mode() })<CR>
 <
 		Can also be used as a |method|: >
 			'.'->getregion("'a")

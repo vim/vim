@@ -5496,7 +5496,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     char_u		*pos1 = (char_u *)"";
     char_u		*pos2 = (char_u *)"";
     char_u		*type;
-    char_u		default_type[2];
+    char_u		default_type[] = "v";
     int			save_virtual = -1;
     int			l;
     int			region_type = -1;
@@ -5532,9 +5532,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     if (is_visual && !VIsual_active)
 	return;
-
-    default_type[0] = VIsual_mode;
-    default_type[1] = NUL;
 
     if (argvars[2].v_type == VAR_DICT)
     {
