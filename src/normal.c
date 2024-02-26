@@ -3323,9 +3323,6 @@ nv_ctrlo(cmdarg_T *cap)
     static void
 nv_hat(cmdarg_T *cap)
 {
-    if (!check_can_set_curbuf_disabled())
-      return;
-
     if (!checkclearopq(cap->oap))
 	(void)buflist_getfile((int)cap->count0, (linenr_T)0,
 						GETF_SETMARK|GETF_ALT, FALSE);

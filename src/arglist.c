@@ -836,9 +836,6 @@ ex_argedit(exarg_T *eap)
     // Whether curbuf will be reused, curbuf->b_ffname will be set.
     int curbuf_is_reusable = curbuf_reusable();
 
-    if (!check_can_set_curbuf_forceit(eap->forceit))
-	return;
-
     if (do_arglist(eap->arg, AL_ADD, i, TRUE) == FAIL)
 	return;
     maketitle();

@@ -9184,9 +9184,6 @@ ex_stag(exarg_T *eap)
     static void
 ex_tag(exarg_T *eap)
 {
-    if (!check_can_set_curbuf_forceit(eap->forceit))
-        return;
-
     ex_tag_cmd(eap, cmdnames[eap->cmdidx].cmd_name);
 }
 

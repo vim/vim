@@ -5448,9 +5448,6 @@ ex_drop(exarg_T *eap)
     buf_T	*buf;
     tabpage_T	*tp;
 
-    if (!check_can_set_curbuf_forceit(eap->forceit))
-	return;
-
     if (ERROR_IF_POPUP_WINDOW || ERROR_IF_TERM_POPUP_WINDOW)
 	return;
 

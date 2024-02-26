@@ -289,7 +289,7 @@ do_tag(
     static char_u	**matches = NULL;
     static int		flags;
 
-    if (!check_can_set_curbuf_forceit(forceit))
+    if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
         return FALSE;
 
 #ifdef FEAT_EVAL
