@@ -1166,6 +1166,7 @@ static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool}
 static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
 static argcheck_T arg3_string_or_dict_bool_dict[] = {arg_string_or_dict_any, arg_bool, arg_dict_any};
 static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, arg_bool, arg_number};
+static argcheck_T arg3_string_or_list_string_or_list_dict[] = {arg_string_or_list_any, arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
@@ -2132,7 +2133,7 @@ static funcentry_T global_functions[] =
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
-    {"getregion",	3, 4, FEARG_1,	    arg3_string,
+    {"getregion",	2, 3, FEARG_1,	    arg3_string_or_list_string_or_list_dict,
 			ret_list_string,    f_getregion},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
@@ -5495,6 +5496,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     char_u		*pos1 = (char_u *)"";
     char_u		*pos2 = (char_u *)"";
     char_u		*type;
+    char_u		default_type[2];
     int			save_virtual = -1;
     int			l;
     int			region_type = -1;
@@ -5506,8 +5508,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     if (check_for_string_or_list_arg(argvars, 0) == FAIL
 	    || check_for_string_or_list_arg(argvars, 1) == FAIL
-	    || check_for_string_arg(argvars, 2) == FAIL
-	    || check_for_opt_dict_arg(argvars, 3) == FAIL)
+	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
     // NOTE: var2fpos() returns static pointer.
@@ -5525,19 +5526,30 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	pos1 = tv_get_string(&argvars[0]);
     if (argvars[1].v_type == VAR_STRING)
 	pos2 = tv_get_string(&argvars[1]);
-    type = tv_get_string(&argvars[2]);
-
-    if (argvars[3].v_type == VAR_DICT)
-	is_select_exclusive = dict_get_bool(
-		argvars[3].vval.v_dict, "exclusive", *p_sel == 'e');
-    else
-        is_select_exclusive = *p_sel == 'e';
 
     is_visual = (pos1[0] == 'v' && pos1[1] == NUL)
 	|| (pos2[0] == 'v' && pos2[1] == NUL);
 
     if (is_visual && !VIsual_active)
 	return;
+
+    default_type[0] = curbuf->b_visual_mode_eval;
+    default_type[1] = NUL;
+
+    if (argvars[2].v_type == VAR_DICT)
+    {
+	is_select_exclusive = dict_get_bool(
+		argvars[2].vval.v_dict, "exclusive", *p_sel == 'e');
+	type = dict_get_string(
+		argvars[2].vval.v_dict, "type", FALSE);
+	if (type == NULL)
+	    type = default_type;
+    }
+    else
+    {
+	is_select_exclusive = *p_sel == 'e';
+	type = default_type;
+    }
 
     if (type[0] == 'v' && type[1] == NUL)
 	region_type = MCHAR;
