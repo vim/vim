@@ -7940,3 +7940,9 @@ skip:
     return NULL;  // no error
 }
 #endif
+
+    int
+get_last_winid(void)
+{
+    return last_win_id;
+}
