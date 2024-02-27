@@ -758,6 +758,11 @@ text_prop_compare(const void *s1, const void *s2)
     tp2 = &text_prop_compare_props[idx2];
     col1 = tp1->tp_col;
     col2 = tp2->tp_col;
+
+    // property that inserts text has priority over one that doesn't
+    if ((tp1->tp_id < 0) != (tp2->tp_id < 0))
+	return tp1->tp_id < 0 ? 1 : -1;
+
     if (col1 == MAXCOL || col2 == MAXCOL)
     {
 	int order1 = text_prop_order(tp1->tp_flags);
@@ -767,10 +772,6 @@ text_prop_compare(const void *s1, const void *s2)
 	if (order1 != order2)
 	    return order1 < order2 ? 1 : -1;
     }
-
-    // property that inserts text has priority over one that doesn't
-    if ((tp1->tp_id < 0) != (tp2->tp_id < 0))
-	return tp1->tp_id < 0 ? 1 : -1;
 
     // check highest priority, defined by the type
     pt1 = text_prop_type_by_id(text_prop_compare_buf, tp1->tp_type);

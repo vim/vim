@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jan 05
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41534,5 +41534,82 @@ Solution:   Always reset wlv->need_showbreak regardless of the values of
 Patch 9.0.2190
 Problem:    proto files need update
 Solution:   re-generate them
+
+==============================================================================
+VERSION 9.2				*version-9.2* *version9.2* *vim-9.2*
+
+This section is about improvements made between version 9.1 and 9.2
+and is a work in progress.
+
+Support for Wayland UI.
+
+Other improvements				*new-other-9.2*
+------------------
+
+Changed						*changed-9.2*
+-------
+
+Added						*added-9.2*
+-----
+
+Various syntax, indent and other plugins were added.
+
+Functions: ~
+
+|diff()|		diff two Lists of strings
+|foreach()|		apply function to List items
+|matchbufline()|	all the matches of a pattern in a buffer
+|matchstrlist()|	all the matches of a pattern in a List of strings
+|getregion()|		get a region of text from a buffer
+
+
+Autocommands: ~
+
+|TermResponseAll|	after the terminal response to |t_RV| and others is
+			received
+|WinNewPre|		before creating a new window
+
+
+Commands: ~
+
+
+Options: ~
+
+==============================================================================
+INCOMPATIBLE CHANGES				*incompatible-9.2*
+
+Improved/Different MS-Windows mapping support
+|w32-experimental-keycode-trans-strategy|
+
+==============================================================================
+IMPROVEMENTS					*improvements-9.2*
+
+Support for command-line completion of 'keymap' option values.
+
+Support for compiling all the methods in a Vim9 class using |:defcompile|.
+
+Support for alternate font highlighting using |t_CF| terminal code.
+
+Support for Super key mappings in GTK using <D-Key>.
+
+Improved visual highlighting.
+
+Python3 support in OpenVMS.
+
+==============================================================================
+COMPILE TIME CHANGES				*compile-changes-9.2*
+
+Support for building with Ruby 3.3.
+
+Support for building Vim 9 in z/OS (MVS).
+
+==============================================================================
+PATCHES						*patches-9.2* *bug-fixes-9.2*
+						*patches-after-9.1*
+
+The list of patches that got included since 9.1.0.  This includes all the new
+features, but does not include runtime file changes (syntax, indent, ftplugin,
+documentation, etc.)
+
 
  vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:

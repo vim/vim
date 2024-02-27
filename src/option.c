@@ -4596,8 +4596,10 @@ set_bool_option(
 #endif
 
     comp_col();			    // in case 'ruler' or 'showcmd' changed
+
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0
+				   && (options[opt_idx].flags & P_HLONLY) == 0)
 	curwin->w_set_curswant = TRUE;
 
     if ((opt_flags & OPT_NO_REDRAW) == 0)
@@ -4839,9 +4841,12 @@ set_num_option(
 #endif
 
     comp_col();			    // in case 'columns' or 'ls' changed
+
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0
+				   && (options[opt_idx].flags & P_HLONLY) == 0)
 	curwin->w_set_curswant = TRUE;
+
     if ((opt_flags & OPT_NO_REDRAW) == 0)
 	check_redraw(options[opt_idx].flags);
 
@@ -4862,11 +4867,14 @@ check_redraw(long_u flags)
 	status_redraw_all();
 
     if ((flags & P_RBUF) || (flags & P_RWIN) || all)
-	changed_window_setting();
+    {
+	if (flags & P_HLONLY)
+	    redraw_later(UPD_NOT_VALID);
+	else
+	    changed_window_setting();
+    }
     if (flags & P_RBUF)
 	redraw_curbuf_later(UPD_NOT_VALID);
-    if (flags & P_RWINONLY)
-	redraw_later(UPD_NOT_VALID);
     if (doclear)
 	redraw_all_later(UPD_CLEAR);
     else if (all)

@@ -1,6 +1,7 @@
 " ---------------------------------------------------------------------
 " getscript.vim
-"  Author:	Charles E. Campbell
+"  Maintainer: This runtime file is looking for a new maintainer.
+"  Original Author: Charles E. Campbell
 "  Date:	Jan 21, 2014
 "  Version:	36
 "  Installing:	:help glvs-install

@@ -753,7 +753,7 @@ Solution 2.  Different directories: >
 	$      say "IA64 platform"
 	$      define/nolog VIM RF10:[UTIL.IA64_EXE] ! IA64 executables
 	$ endif
-        $! VIMRUNTIME must be defined in order to find runtime files
+	$! VIMRUNTIME must be defined in order to find runtime files
 	$ define/nolog VIMRUNTIME RF10:[UTIL.VIM73]
 
 A good example for this approach is the [GNU]gnu_tools.com script from

@@ -1121,8 +1121,6 @@ win_line(
 #if defined(FEAT_LINEBREAK) && defined(FEAT_PROP_POPUP)
     int		in_linebreak = FALSE;	// n_extra set for showing linebreak
 #endif
-    static char_u *at_end_str = (char_u *)""; // used for p_extra when
-					// displaying eol at end-of-line
     int		lcs_eol_one = wp->w_lcs_chars.eol; // eol until it's been used
     int		lcs_prec_todo = wp->w_lcs_chars.prec;
 					// prec until it's been used
@@ -1632,16 +1630,6 @@ win_line(
 	    for (int i = 0; i < text_prop_count; ++i)
 		if (text_props[i].tp_id < 0)
 		    last_textprop_text_idx = i;
-
-	    // When skipping virtual text the props need to be sorted.  The
-	    // order is reversed!
-	    if (lnum == wp->w_topline && wp->w_skipcol > 0)
-	    {
-		for (int i = 0; i < text_prop_count; ++i)
-		    text_prop_idxs[i] = i;
-		sort_text_props(wp->w_buffer, text_props,
-					      text_prop_idxs, text_prop_count);
-	    }
 
 	    // Text props "above" move the line number down to where the text
 	    // is.  Only count the ones that are visible, not those that are
@@ -2298,7 +2286,7 @@ win_line(
 
 			// If another text prop follows the condition below at
 			// the last window column must know.
-			// If this is an "above" text prop and 'nowrap' the we
+			// If this is an "above" text prop and 'nowrap' then we
 			// must wrap anyway.
 			text_prop_above = above;
 			text_prop_follows |= other_tpi != -1
@@ -3314,7 +3302,7 @@ win_line(
 			if (!(area_highlighting && virtual_active()
 				       && wlv.tocol != MAXCOL
 				       && wlv.vcol < wlv.tocol))
-			    wlv.p_extra = at_end_str;
+			    wlv.p_extra = (char_u *)"";
 			wlv.n_extra = 0;
 		    }
 		    if (wp->w_p_list && wp->w_lcs_chars.eol > 0)
@@ -4126,7 +4114,7 @@ win_line(
 		    || text_prop_next <= last_textprop_text_idx
 #endif
 		    || (wp->w_p_list && wp->w_lcs_chars.eol != NUL
-						&& wlv.p_extra != at_end_str)
+						&& lcs_eol_one != -1)
 		    || (wlv.n_extra != 0 && (wlv.c_extra != NUL
 						      || *wlv.p_extra != NUL)))
 		)
@@ -4143,18 +4131,14 @@ win_line(
 	    ++wlv.row;
 	    ++wlv.screen_row;
 
-	    // When not wrapping and finished diff lines, or when displayed
-	    // '$' and highlighting until last column, break here.
-	    if (((!wp->w_p_wrap
+	    // When not wrapping and finished diff lines, break here.
+	    if (!wp->w_p_wrap
 #ifdef FEAT_DIFF
 			&& wlv.filler_todo <= 0
 #endif
 #ifdef FEAT_PROP_POPUP
 			&& !text_prop_above
-#endif
-		 ) || lcs_eol_one == -1)
-#ifdef FEAT_PROP_POPUP
-		    && !text_prop_follows
+			&& !text_prop_follows
 #endif
 		       )
 		break;

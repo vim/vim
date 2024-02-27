@@ -455,8 +455,12 @@ gui_init_check(void)
     gui.scrollbar_width = gui.scrollbar_height = SB_DEFAULT_WIDTH;
     gui.prev_wrap = -1;
 
-#ifdef FEAT_GUI_GTK
-    CLEAR_FIELD(gui.ligatures_map);
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
+    // Note: gui_set_ligatures() might already have been called e.g. from .vimrc,
+    // and in that case we don't want to overwrite ligatures map that has already
+    // been correctly populated (as that would lead to a cleared ligatures maps).
+    if (*p_guiligatures == NUL)
+        CLEAR_FIELD(gui.ligatures_map);
 #endif
 
 #if defined(ALWAYS_USE_GUI) || defined(VIMDLL)
@@ -1064,7 +1068,7 @@ gui_get_wide_font(void)
     return OK;
 }
 
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * Set list of ascii characters that combined can create ligature.
  * Store them in char map for quick access from gui_gtk2_draw_string.
@@ -2691,7 +2695,7 @@ gui_undraw_cursor(void)
     int startcol = gui.cursor_col > 0 ? gui.cursor_col - 1 : gui.cursor_col;
     int endcol = gui.cursor_col;
 
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
     gui_adjust_undraw_cursor_for_ligatures(&startcol, &endcol);
 #endif
     gui_redraw_block(gui.cursor_row, startcol,

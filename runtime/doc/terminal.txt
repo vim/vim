@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2023 Nov 08
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -208,6 +208,7 @@ Command syntax ~
 			[command].  Use `:execute` if you must have a Vim
 			command following in the same line.
 
+							*terminal-bufname*
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
 			by this name already exists a number is added in
@@ -1024,17 +1025,17 @@ This can be used to pass the current directory from a shell to Vim.
 Put this in your .vimrc: >
 	def g:Tapi_lcd(_, path: string)
 	    if isdirectory(path)
-                execute 'silent lcd ' .. fnameescape(path)
-            endif
+		execute 'silent lcd ' .. fnameescape(path)
+	    endif
 	enddef
 <
 And, in a bash init file: >
-        if [[ -n "$VIM_TERMINAL" ]]; then
-            PROMPT_COMMAND='_vim_sync_PWD'
-            function _vim_sync_PWD() {
-              printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
-            }
-        fi
+	if [[ -n "$VIM_TERMINAL" ]]; then
+	    PROMPT_COMMAND='_vim_sync_PWD'
+	    function _vim_sync_PWD() {
+		printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+	    }
+	fi
 <
 Or, for zsh: >
 	if [[ -n "$VIM_TERMINAL" ]]; then
@@ -1402,8 +1403,8 @@ Other commands ~
  *:Asm*	     jump to the window with the disassembly, create it if there
 	     isn't one
  *:Var*	     jump to the window with the local and argument variables,
-             create it if there isn't one. This window updates whenever the
-             program is stopped
+	     create it if there isn't one. This window updates whenever the
+	     program is stopped
 
 Events ~
 							*termdebug-events*

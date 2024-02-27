@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 12
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -263,6 +263,8 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
+getregion({pos1}, {pos2}, {type})
+				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
@@ -2403,11 +2405,11 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 			varname		internal variable (see
 			dict.key	|internal-variables|).  Also works
 			list[i]		for |curly-braces-names|, |Dictionary|
-			import.Func	entries, |List| items, imported
-					items, etc.
-					Does not work for local variables in a
-					compiled `:def` function.
-					Also works for a function in |Vim9|
+			import.Func	entries, |List| items, class and
+			class.Func	object methods, imported items, etc.
+			object.Func	Does not work for local variables in a
+			class.varname	compiled `:def` function.
+			object.varname	Also works for a function in |Vim9|
 					script, since it can be used as a
 					function reference.
 					Beware that evaluating an index may
@@ -2537,6 +2539,9 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 		If the expansion fails, the result is an empty string.  A name
 		for a non-existing file is not included, unless {string} does
 		not start with '%', '#' or '<', see below.
+
+		For a |:terminal| window '%' expands to a '!' followed by
+		the command or shell that is run |terminal-bufname|
 
 		When {string} starts with '%', '#' or '<', the expansion is
 		done like for the |cmdline-special| variables with their
@@ -4266,6 +4271,45 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
+getregion({pos1}, {pos2}, {type})			*getregion()*
+		Returns the list of strings from {pos1} to {pos2} as if it's
+		selected in visual mode of {type}.
+		For possible values of {pos1} and {pos2} see |line()|.
+		{type} is the selection type:
+			"v" for |characterwise| mode
+			"V" for |linewise| mode
+			"<CTRL-V>" for |blockwise-visual| mode
+		You can get the last selection type by |visualmode()|.
+		If Visual mode is active, use |mode()| to get the Visual mode
+		(e.g., in a |:vmap|).
+		This function uses the line and column number from the
+		specified position.
+		It is useful to get text starting and ending in different
+		columns, such as |characterwise-visual| selection.
+
+		Note that:
+		- Order of {pos1} and {pos2} doesn't matter, it will always
+		  return content from the upper left position to the lower
+		  right position.
+		- If 'virtualedit' is enabled and selection is past the end of
+		  line, resulting lines are filled with blanks.
+		- If the selection starts or ends in the middle of a multibyte
+		  character, it is not included but its selected part is
+		  substituted with spaces.
+		- If {pos1} or {pos2} equals "v" (see |line()|) and it is not in
+		  |visual-mode|, an empty list is returned.
+		- If {pos1}, {pos2} or {type} is an invalid string, an empty
+		  list is returned.
+		- If {pos1} or {pos2} is a mark in different buffer, an empty
+		  list is returned.
+
+		Examples: >
+			:xnoremap <CR>
+			\ <Cmd>echow getregion('v', '.', mode())<CR>
+<
+		Can also be used as a |method|: >
+			'.'->getregion("'a", 'v')
+<
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
 		The value will be one of:
@@ -6046,6 +6090,7 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 		Note that when {count} is added the way {start} works changes,
 		see above.
 
+						*match-pattern*
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of
 		the pattern.  'smartcase' is NOT used.  The matching is always
@@ -6192,6 +6237,9 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 
 		This function works only for loaded buffers. First call
 		|bufload()| if needed.
+
+		See |match-pattern| for information about the effect of some
+		option settings on the pattern.
 
 		When {buf} is not a valid buffer, the buffer is not loaded or
 		{lnum} or {end} is not valid then an error is given and an
@@ -6366,6 +6414,9 @@ matchstrlist({list}, {pat} [, {dict}])
 		    text	matched string
 		    submatches	a List of submatches.  Present only if
 				"submatches" is set to v:true in {dict}.
+
+		See |match-pattern| for information about the effect of some
+		option settings on the pattern.
 
 		Example: >
 		    :echo matchstrlist(['tik tok'], '\<\k\+\>')
@@ -10762,10 +10813,10 @@ win_screenpos({nr})					*win_screenpos()*
 			GetWinid()->win_screenpos()
 <
 win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
-		Move the window {nr} to a new split of the window {target}.
-		This is similar to moving to {target}, creating a new window
-		using |:split| but having the same contents as window {nr}, and
-		then closing {nr}.
+		Temporarily switch to window {target}, then move window {nr}
+		to a new split adjacent to {target}.
+		Unlike commands such as |:split|, no new windows are created
+		(the |window-ID| of window {nr} is unchanged after the move).
 
 		Both {nr} and {target} can be window numbers or |window-ID|s.
 		Both must be in the current tab page.

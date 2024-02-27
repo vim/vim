@@ -1,6 +1,7 @@
 " ---------------------------------------------------------------------
 " getscriptPlugin.vim
-"  Author:	Charles E. Campbell
+"  Maintainer:	This runtime file is looking for a new maintainer.
+"  Original Author:	Charles E. Campbell
 "  Date:	Nov 29, 2013
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
