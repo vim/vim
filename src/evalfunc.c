@@ -1151,6 +1151,7 @@ static argcheck_T arg3_buffer_string_dict[] = {arg_buffer, arg_string, arg_dict_
 static argcheck_T arg3_dict_number_number[] = {arg_dict_any, arg_number, arg_number};
 static argcheck_T arg3_diff[] = {arg_list_string, arg_list_string, arg_dict_any};
 static argcheck_T arg3_list_string_dict[] = {arg_list_any, arg_string, arg_dict_any};
+static argcheck_T arg3_list_list_dict[] = {arg_list_any, arg_list_any, arg_dict_any};
 static argcheck_T arg3_lnum_number_bool[] = {arg_lnum, arg_number, arg_bool};
 static argcheck_T arg3_number[] = {arg_number, arg_number, arg_number};
 static argcheck_T arg3_number_any_dict[] = {arg_number, arg_any, arg_dict_any};
@@ -1166,7 +1167,6 @@ static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool}
 static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
 static argcheck_T arg3_string_or_dict_bool_dict[] = {arg_string_or_dict_any, arg_bool, arg_dict_any};
 static argcheck_T arg3_string_or_list_bool_number[] = {arg_string_or_list_any, arg_bool, arg_number};
-static argcheck_T arg3_string_or_list_string_or_list_dict[] = {arg_string_or_list_any, arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
 static argcheck_T arg3_string_string_number[] = {arg_string, arg_string, arg_number};
@@ -2133,7 +2133,7 @@ static funcentry_T global_functions[] =
 			ret_getreg,	    f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_getreginfo},
-    {"getregion",	2, 3, FEARG_1,	    arg3_string_or_list_string_or_list_dict,
+    {"getregion",	2, 3, FEARG_1,	    arg3_list_list_dict,
 			ret_list_string,    f_getregion},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
@@ -5492,45 +5492,28 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			inclusive = TRUE;
     int			fnum = -1;
     pos_T		p1, p2;
-    pos_T		*fp = NULL;
-    char_u		*pos1 = (char_u *)"";
-    char_u		*pos2 = (char_u *)"";
     char_u		*type;
     char_u		default_type[] = "v";
     int			save_virtual = -1;
     int			l;
     int			region_type = -1;
-    int			is_visual = FALSE;
     int			is_select_exclusive;
+    colnr_T		curswant = -1;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (check_for_string_or_list_arg(argvars, 0) == FAIL
-	    || check_for_string_or_list_arg(argvars, 1) == FAIL
+    if (check_for_list_arg(argvars, 0) == FAIL
+	    || check_for_list_arg(argvars, 1) == FAIL
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    // NOTE: var2fpos() returns static pointer.
-    fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
-    if (fp == NULL || (fnum >= 0 && fnum != curbuf->b_fnum))
+    if (list2fpos(&argvars[0], &p1, &fnum, &curswant, FALSE) != OK
+	    || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
-    p1 = *fp;
 
-    fp = var2fpos(&argvars[1], TRUE, &fnum, FALSE);
-    if (fp == NULL || (fnum >= 0 && fnum != curbuf->b_fnum))
-	return;
-    p2 = *fp;
-
-    if (argvars[0].v_type == VAR_STRING)
-	pos1 = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type == VAR_STRING)
-	pos2 = tv_get_string(&argvars[1]);
-
-    is_visual = (pos1[0] == 'v' && pos1[1] == NUL)
-	|| (pos2[0] == 'v' && pos2[1] == NUL);
-
-    if (is_visual && !VIsual_active)
+    if (list2fpos(&argvars[1], &p2, &fnum, &curswant, FALSE) != OK
+	    || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
 
     if (argvars[2].v_type == VAR_DICT)
@@ -5559,6 +5542,10 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 
     save_virtual = virtual_op;
     virtual_op = virtual_active();
+
+    // NOTE: Adjust is needed.
+    p1.col--;
+    p2.col--;
 
     if (!LT_POS(p1, p2))
     {
