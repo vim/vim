@@ -3075,8 +3075,9 @@ func Test_prop_with_text_above_below_empty()
       let vt = 'test'
       call prop_type_add(vt, {'highlight': 'ToDo'})
       for ln in range(1, line('$'))
-        call prop_add(ln, 0, {'type': vt, 'text': '---', 'text_align': 'above'})
-        call prop_add(ln, 0, {'type': vt, 'text': '+++', 'text_align': 'below'})
+        " use 1 character text to test for off-by-one regressions
+        call prop_add(ln, 0, {'type': vt, 'text': '-', 'text_align': 'above'})
+        call prop_add(ln, 0, {'type': vt, 'text': '+', 'text_align': 'below'})
       endfor
       normal G
   END
