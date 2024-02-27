@@ -2,8 +2,8 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: Feb 18, 2024
-" Version: 2.0.1
+" Last Change: Feb 27, 2024
+" Version: 2.0.3
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -264,20 +264,23 @@ function! s:get_vim_command_type(cmd_name)
 	" Return value:
 	"   0: normal
 	"   1: (Reserved)
-	"   2: abbrev (without un)
-	"   3: menu
-	"   4: map
-	"   5: mapclear
-	"   6: unmap
+	"   2: abbrev
+	"   3: echo
+	"   4: menu
+	"   5: map
+	"   6: mapclear
+	"   7: unmap
 	"   99: (Exclude registration of "syn keyword")
 	let menu_prefix = '^\%([acinosvx]\?\|tl\)'
 	let map_prefix  = '^[acilnostvx]\?'
+	let echo_suffix = '\%(n\|hl\|msg\|window\|err\|console\|\)$'
 	let exclude_list = [
 	\	'map', 'mapclear',
 	\	'substitute', 'smagic', 'snomagic',
 	\	'setlocal', 'setglobal', 'set', 'var',
 	\	'autocmd', 'doautocmd', 'doautoall',
-	\	'echo', 'echohl', 'execute',
+	\	'echohl',
+	\ 'execute',
 	\	'behave', 'augroup', 'normal', 'syntax',
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
@@ -290,14 +293,16 @@ function! s:get_vim_command_type(cmd_name)
 		let ret = 99
 	elseif a:cmd_name =~# '^\%(\%(un\)\?abbreviate\|noreabbrev\|\l\%(nore\|un\)\?abbrev\)$'
 		let ret = 2
-	elseif a:cmd_name =~# menu_prefix . '\%(nore\|un\)\?menu$'
+	elseif a:cmd_name =~# '^echo' . echo_suffix
 		let ret = 3
-	elseif a:cmd_name =~# map_prefix . '\%(nore\)\?map$'
+	elseif a:cmd_name =~# menu_prefix . '\%(nore\|un\)\?menu$'
 		let ret = 4
-	elseif a:cmd_name =~# map_prefix . 'mapclear$'
+	elseif a:cmd_name =~# map_prefix . '\%(nore\)\?map$'
 		let ret = 5
-	elseif a:cmd_name =~# map_prefix . 'unmap$'
+	elseif a:cmd_name =~# map_prefix . 'mapclear$'
 		let ret = 6
+	elseif a:cmd_name =~# map_prefix . 'unmap$'
+		let ret = 7
 	else
 		let ret = 0
 	endif
@@ -566,10 +571,6 @@ function! s:update_syntax_vim_file(vim_info)
 		" vimCommand - normal
 		let lnum = s:search_and_check('vimCommand normal', base_fname, str_info)
 		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 0)
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 3)		" menu
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 4)		" map
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 5)		" mapclear
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 6)		" unmap
 
 		" vimOption
 		let kword = 'vimOption'
@@ -620,16 +621,19 @@ function! s:update_syntax_vim_file(vim_info)
 		let li = a:vim_info.cmd
 		let lnum = s:search_and_check(kword . ' abbrev', base_fname, str_info)
 		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 2)
-		" vimCommand - map
-		let lnum = s:search_and_check(kword . ' map', base_fname, str_info)
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 4)
-		let lnum = s:search_and_check(kword . ' mapclear', base_fname, str_info)
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 5)
-		let lnum = s:search_and_check(kword . ' unmap', base_fname, str_info)
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 6)
+		" vimCommand - echo
+		let lnum = s:search_and_check(kword . ' echo', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 3)
 		" vimCommand - menu
 		let lnum = s:search_and_check(kword . ' menu', base_fname, str_info)
-		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 3)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 4)
+		" vimCommand - map
+		let lnum = s:search_and_check(kword . ' map', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 5)
+		let lnum = s:search_and_check(kword . ' mapclear', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 6)
+		let lnum = s:search_and_check(kword . ' unmap', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 7)
 
 		update
 		quit!
