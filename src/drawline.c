@@ -2323,15 +2323,17 @@ win_line(
 		else if (text_prop_next < text_prop_count
 			   && text_props[text_prop_next].tp_col == MAXCOL
 			   && ((*ptr != NUL && ptr[mb_ptr2len(ptr)] == NUL)
-			       || (!wp->w_p_wrap
-				       && wlv.col == wp->w_width - 1
-				       && (text_props[text_prop_next].tp_flags
-						      & TP_FLAG_ALIGN_BELOW))))
+			       || (!wp->w_p_wrap && wlv.col == wp->w_width - 1)))
+		{
 		    // When at last-but-one character and a text property
 		    // follows after it, we may need to flush the line after
 		    // displaying that character.
 		    // Or when not wrapping and at the rightmost column.
-		    text_prop_follows = TRUE;
+		    int only_below_follows = !wp->w_p_wrap && wlv.col == wp->w_width - 1;
+		    if (!only_below_follows
+			    || (text_props[text_prop_next].tp_flags & TP_FLAG_ALIGN_BELOW))
+			text_prop_follows = TRUE;
+		}
 	    }
 
 	    if (wlv.start_extra_for_textprop)
