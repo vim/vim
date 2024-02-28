@@ -124,7 +124,7 @@ jobs:
               libattr1-dev
             )
           fi
-          sudo apt-get update && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
