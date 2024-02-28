@@ -1639,11 +1639,11 @@ func Test_visual_getregion()
   call cursor(1, 1)
   call feedkeys("\<ESC>vjl", 'tx')
   call assert_equal(['one', 'tw'],
-        \ 'v'->getpos()->getregion(getpos('.'), #{ type: 'v' }))
+        \ 'v'->getpos()->getregion(getpos('.')))
   call assert_equal(['one', 'tw'],
-        \ '.'->getpos()->getregion(getpos('v'), #{ type: 'v' }))
+        \ '.'->getpos()->getregion(getpos('v')))
   call assert_equal(['o'],
-        \ 'v'->getpos()->getregion(getpos('v'), #{ type: 'v' }))
+        \ 'v'->getpos()->getregion(getpos('v')))
   call assert_equal(['w'],
         \ '.'->getpos()->getregion(getpos('.'), #{ type: 'v' }))
   call assert_equal(['one', 'two'],
