@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.1.  Last change: 2024 Jan 15
+*term.txt*      For Vim version 9.1.  Last change: 2024 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -345,7 +345,7 @@ versions (and will then also end up in terminfo/termcap).
 
 						*xterm-kitty* *kitty-terminal*
 The Kitty terminal is a special case.  Mainly because it works differently
-from most other terminals, but also because, instead of trying the fit in and
+from most other terminals, but also because, instead of trying to fit in and
 make it behave like other terminals by default, it dictates how applications
 need to work when using Kitty.  This makes it very difficult for Vim to work
 in a Kitty terminal.  Some exceptions have been hard coded, but it is not at
