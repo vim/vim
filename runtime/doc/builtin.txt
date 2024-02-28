@@ -4281,10 +4281,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 		is the buffer number of the mark.
 		"lnum" and "col" are the position in the buffer.  The first
 		column is 1.
-		The "off" number is zero, unless 'virtualedit' is used.  Then
-		it is the offset in screen columns from the start of the
-		character.  E.g., a position within a <Tab> or after the last
-		character.
+		The "off" number is ignored.
 
 		{type} is the selection type:
 
@@ -4319,7 +4316,6 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 		- If the selection starts or ends in the middle of a multibyte
 		  character, it is not included but its selected part is
 		  substituted with spaces.
-		- If {type} is an invalid string, an empty list is returned.
 		- If {pos1} or {pos2} is not current buffer, an empty list is
 		  returned.
 
@@ -4329,7 +4325,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 			\ getpos('v'), getpos('.'), #{ type: mode() })<CR>
 <
 		Can also be used as a |method|: >
-			'.'->getregion(getpos("'a"))
+			getpos('.')->getregion(getpos("'a"))
 <
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
