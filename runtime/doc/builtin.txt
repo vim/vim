@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -263,7 +263,7 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
-getregion({pos1}, {pos2}, {type})
+getregion({pos1}, {pos2} [, {opts}])
 				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
@@ -4271,14 +4271,25 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
-getregion({pos1}, {pos2}, {type})			*getregion()*
-		Returns the list of strings from {pos1} to {pos2} as if it's
-		selected in visual mode of {type}.
-		For possible values of {pos1} and {pos2} see |line()|.
-		{type} is the selection type:
-			"v" for |characterwise| mode
-			"V" for |linewise| mode
-			"<CTRL-V>" for |blockwise-visual| mode
+getregion({pos1}, {pos2} [, {opts}])			*getregion()*
+		Returns the list of strings from {pos1} to {pos2} in current
+		buffer.
+
+		{pos1} and {pos2} must both be |List|s with four numbers.
+		See |getpos()| for the format of the list.
+
+		The optional argument {opts} is a Dict and supports the
+		following items:
+
+			type		Specify the selection type
+					(default: "v"):
+			    "v"		for |characterwise| mode
+			    "V"		for |linewise| mode
+			    "<CTRL-V>"	for |blockwise-visual| mode
+
+			exclusive	If |true|, use exclusive selection
+					for the end position 'selection'.
+
 		You can get the last selection type by |visualmode()|.
 		If Visual mode is active, use |mode()| to get the Visual mode
 		(e.g., in a |:vmap|).
@@ -4296,19 +4307,16 @@ getregion({pos1}, {pos2}, {type})			*getregion()*
 		- If the selection starts or ends in the middle of a multibyte
 		  character, it is not included but its selected part is
 		  substituted with spaces.
-		- If {pos1} or {pos2} equals "v" (see |line()|) and it is not in
-		  |visual-mode|, an empty list is returned.
-		- If {pos1}, {pos2} or {type} is an invalid string, an empty
-		  list is returned.
-		- If {pos1} or {pos2} is a mark in different buffer, an empty
+		- If {pos1} or {pos2} is not current in the buffer, an empty
 		  list is returned.
 
 		Examples: >
 			:xnoremap <CR>
-			\ <Cmd>echow getregion('v', '.', mode())<CR>
+			\ <Cmd>echow getregion(
+			\ getpos('v'), getpos('.'), #{ type: mode() })<CR>
 <
 		Can also be used as a |method|: >
-			'.'->getregion("'a", 'v')
+			getpos('.')->getregion(getpos("'a"))
 <
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.

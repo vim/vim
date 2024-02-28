@@ -5198,12 +5198,11 @@ def Test_passing_type_to_builtin()
 enddef
 
 def Test_getregion()
-  assert_equal(['x'], getregion('.', '.', 'v')->map((_, _) => 'x'))
+  assert_equal(['x'], getregion(getpos('.'), getpos('.'))->map((_, _) => 'x'))
 
-  v9.CheckDefAndScriptFailure(['getregion(10, ".", "v")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  assert_equal([''], getregion('.', '.', 'v'))
-  v9.CheckDefExecFailure(['getregion("a", ".", "v")'], 'E1209:')
-  v9.CheckDefExecAndScriptFailure(['getregion("", ".", "v")'], 'E1209: Invalid value for a line number')
+  v9.CheckDefAndScriptFailure(['getregion(10, getpos("."))'], ['E1013: Argument 1: type mismatch, expected list<any> but got number', 'E1211: List required for argument 1'])
+  assert_equal([''], getregion(getpos('.'), getpos('.')))
+  v9.CheckDefExecFailure(['getregion(getpos("a"), getpos("."))'], 'E1209:')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
