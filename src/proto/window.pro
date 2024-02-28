@@ -96,4 +96,5 @@ int win_hasvertsplit(void);
 int get_win_number(win_T *wp, win_T *first_win);
 int get_tab_number(tabpage_T *tp);
 char *check_colorcolumn(win_T *wp);
+int get_last_winid(void);
 /* vim: set ft=c : */
