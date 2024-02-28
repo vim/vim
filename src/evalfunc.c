@@ -5498,7 +5498,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			l;
     int			region_type = -1;
     int			is_select_exclusive;
-    colnr_T		curswant = -1;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
