@@ -5511,7 +5511,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
 
-    if (list2fpos(&argvars[1], &p2, &fnum, &curswant, FALSE) != OK
+    if (list2fpos(&argvars[1], &p2, &fnum, NULL, FALSE) != OK
 	    || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
 
