@@ -5507,7 +5507,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if (list2fpos(&argvars[0], &p1, &fnum, &curswant, FALSE) != OK
+    if (list2fpos(&argvars[0], &p1, &fnum, NULL, FALSE) != OK
 	    || (fnum >= 0 && fnum != curbuf->b_fnum))
 	return;
 
