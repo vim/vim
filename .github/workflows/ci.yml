@@ -94,11 +94,6 @@ jobs:
         run: |
           sudo bash ci/remove_snap.sh
 
-      - name: Install package updates for i386
-        if: matrix.architecture == 'i386'
-        run: |
-          sudo apt-get update && sudo apt-get upgrade -y
-
       - name: Install packages
         run: |
           PKGS=( \
@@ -129,7 +124,7 @@ jobs:
               libattr1-dev
             )
           fi
-          sudo apt-get update && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
