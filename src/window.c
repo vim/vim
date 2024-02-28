@@ -865,8 +865,8 @@ cmd_with_count(
 }
 
 /*
- * If "split_disallowed" is set for "wp", give an error and return FAIL.
- * Otherwise return OK.
+ * If "split_disallowed" is set, or if "wp" is not NULL and its buffer is
+ * closing, give an error and return FAIL. Otherwise return OK.
  */
     int
 check_split_disallowed(win_T *wp)
@@ -876,7 +876,7 @@ check_split_disallowed(win_T *wp)
 	emsg(_(e_cant_split_window_while_closing_another));
 	return FAIL;
     }
-    if (wp->w_buffer->b_locked_split)
+    if (wp != NULL && wp->w_buffer->b_locked_split)
     {
 	emsg(_(e_cannot_split_window_when_closing_buffer));
 	return FAIL;
@@ -1932,7 +1932,7 @@ win_splitmove(win_T *wp, int size, int flags)
 
     if (ONE_WINDOW)
 	return OK;	// nothing to do
-    if (check_split_disallowed(wp) == FAIL)
+    if (check_split_disallowed(NULL) == FAIL)
 	return FAIL;
 
     // Remove the window and frame from the tree of frames.  Don't flatten any

@@ -1181,18 +1181,9 @@ func Test_win_splitmove()
   call assert_equal(v:true, s:triggered)
   unlet! s:triggered
 
-  new
-  augroup WinSplitMove
-    au!
-    au BufHidden * ++once let s:triggered = v:true
-          \| call assert_fails('call win_splitmove(winnr("#"), winnr())', 'E1159:')
-  augroup END
-  hide
-  call assert_equal(v:true, s:triggered)
-  unlet! s:triggered
-
   split
-  let close_win = winnr('#')
+  let close_win = win_getid(winnr('#'))
+  call assert_equal(winnr('#'), win_id2win(close_win))
   augroup WinSplitMove
     au!
     au WinEnter * ++once quit!
@@ -2257,6 +2248,38 @@ func Test_win_gotoid_splitmove_textlock_cmdwin()
            \ .. ":call assert_equal(1, win_gotoid(win_getid()))\<CR>"
            \ .. ":call assert_equal('command', win_gettype())\<CR>"
            \ .. ":call assert_equal('', win_gettype(winnr('#')))\<CR>", 'ntx')
+endfunc
+
+func Test_splitmove_closing_buffer()
+  split
+  new
+  let s:wipe_buf = bufnr()
+
+  augroup SplitMoveClosingBuffer
+    au!
+    au BufWipeout * ++once let s:triggered = v:true
+          "\ If splitting was allowed, these actions would cause a window to
+          "\ remain with a view into the buffer after it's freed.
+          \| execute s:wipe_buf 'buffer'
+          \| call assert_fails('split', 'E1159:')
+          \
+          "\ However, split-moving instead is OK.
+          \| call assert_equal(0, win_splitmove(winnr(), winnr('$')))
+          \| call assert_equal(0, win_splitmove(winnr('$'), winnr()))
+          \| wincmd H | wincmd J | wincmd K | wincmd L
+          \
+          "\ Needed, as buf_freeall won't free it if it becomes curbuf.
+          \| buffer #
+  augroup END
+  bwipe!
+  redraw!
+  call assert_equal(v:true, s:triggered)
+  call assert_equal(0, bufexists(s:wipe_buf))
+
+  unlet! s:triggered s:wipe_buf
+  au! SplitMoveClosingBuffer
+  augroup! SplitMoveClosingBuffer
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
