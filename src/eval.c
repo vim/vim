@@ -1901,7 +1901,7 @@ set_var_lval(
 			   && !tv_check_lock(&di->di_tv, lp->ll_name, FALSE)))
 			&& tv_op(&tv, rettv, op) == OK)
 		    set_var_const(lp->ll_name, lp->ll_sid, NULL, &tv, FALSE,
-							    ASSIGN_NO_DECL, 0);
+				ASSIGN_NO_DECL | ASSIGN_COMPOUND_OP, 0);
 		clear_tv(&tv);
 	    }
 	}
@@ -2699,6 +2699,9 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 /*
  * To be called after eval_next_non_blank() sets "getnext" to TRUE.
  * Only called for Vim9 script.
+ *
+ * If "arg" is not NULL, then the caller should assign the return value to
+ * "arg".
  */
     char_u *
 eval_next_line(char_u *arg, evalarg_T *evalarg)
@@ -2747,8 +2750,12 @@ eval_next_line(char_u *arg, evalarg_T *evalarg)
     }
 
     // Advanced to the next line, "arg" no longer points into the previous
-    // line.
-    evalarg->eval_using_cmdline = FALSE;
+    // line.  The caller assigns the return value to "arg".
+    // If "arg" is NULL, then the return value is discarded.  In that case,
+    // "arg" still points to the previous line.  So don't reset
+    // "eval_using_cmdline".
+    if (arg != NULL)
+	evalarg->eval_using_cmdline = FALSE;
     return skipwhite(line);
 }
 
@@ -4276,7 +4283,7 @@ eval9(
 	return FAIL;
     end_leader = *arg;
 
-    if (**arg == '.' && (!isdigit(*(*arg + 1)) || in_old_script(2)))
+    if (**arg == '.' && (!SAFE_isdigit(*(*arg + 1)) || in_old_script(2)))
     {
 	semsg(_(e_invalid_expression_str), *arg);
 	++*arg;

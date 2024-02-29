@@ -853,13 +853,13 @@ ex_terminal(exarg_T *eap)
 	    else
 		opt.jo_term_api = NULL;
 	}
-	else if (OPTARG_HAS("rows") && ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("rows") && ep != NULL && SAFE_isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_ROWS;
 	    opt.jo_term_rows = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if (OPTARG_HAS("cols") && ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("cols") && ep != NULL && SAFE_isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_COLS;
 	    opt.jo_term_cols = atoi((char *)ep + 1);
@@ -5463,11 +5463,11 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 		    // use same attr as previous cell
 		    c = fgetc(fd);
 		}
-		else if (isdigit(c))
+		else if (SAFE_isdigit(c))
 		{
 		    // get the decimal attribute
 		    attr = 0;
-		    while (isdigit(c))
+		    while (SAFE_isdigit(c))
 		    {
 			attr = attr * 10 + (c - '0');
 			c = fgetc(fd);
@@ -5499,9 +5499,9 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 			    c = fgetc(fd);
 			    blue = (blue << 4) + hex2nr(c);
 			    c = fgetc(fd);
-			    if (!isdigit(c))
+			    if (!SAFE_isdigit(c))
 				dump_is_corrupt(&ga_text);
-			    while (isdigit(c))
+			    while (SAFE_isdigit(c))
 			    {
 				index = index * 10 + (c - '0');
 				c = fgetc(fd);
@@ -5565,7 +5565,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 		for (;;)
 		{
 		    c = fgetc(fd);
-		    if (!isdigit(c))
+		    if (!SAFE_isdigit(c))
 			break;
 		    count = count * 10 + (c - '0');
 		}

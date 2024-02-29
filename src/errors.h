@@ -258,8 +258,9 @@ EXTERN char e_escape_not_allowed_in_digraph[]
 EXTERN char e_using_loadkeymap_not_in_sourced_file[]
 	INIT(= N_("E105: Using :loadkeymap not in a sourced file"));
 #endif
-// E106 unused
 #ifdef FEAT_EVAL
+EXTERN char e_unsupported_diff_output_format_str[]
+	INIT(= N_("E106: Unsupported diff output format: %s"));
 EXTERN char e_missing_parenthesis_str[]
 	INIT(= N_("E107: Missing parentheses: %s"));
 EXTERN char e_no_such_variable_str[]
@@ -471,8 +472,8 @@ EXTERN char e_no_digraphs_version[]
 EXTERN char e_cannot_set_language_to_str[]
 	INIT(= N_("E197: Cannot set language to \"%s\""));
 // E198 unused
-EXTERN char e_active_window_or_buffer_deleted[]
-	INIT(= N_("E199: Active window or buffer deleted"));
+EXTERN char e_active_window_or_buffer_changed_or_deleted[]
+	INIT(= N_("E199: Active window or buffer changed or deleted"));
 EXTERN char e_readpre_autocommands_made_file_unreadable[]
 	INIT(= N_("E200: *ReadPre autocommands made the file unreadable"));
 EXTERN char e_readpre_autocommands_must_not_change_current_buffer[]
@@ -1749,9 +1750,11 @@ EXTERN char e_recursive_loop_loading_syncolor_vim[]
 #endif
 EXTERN char e_buffer_nr_invalid_buffer_number[]
 	INIT(= N_("E680: <buffer=%d>: invalid buffer number"));
-#ifdef FEAT_QUICKFIX
+#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL)
 EXTERN char e_buffer_is_not_loaded[]
 	INIT(= N_("E681: Buffer is not loaded"));
+#endif
+#ifdef FEAT_QUICKFIX
 EXTERN char e_invalid_search_pattern_or_delimiter[]
 	INIT(= N_("E682: Invalid search pattern or delimiter"));
 EXTERN char e_file_name_missing_or_invalid_pattern[]
@@ -3182,7 +3185,7 @@ EXTERN char e_separator_not_supported_str[]
 EXTERN char e_no_white_space_allowed_before_separator_str[]
 	INIT(= N_("E1242: No white space allowed before separator: %s"));
 #endif
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 EXTERN char e_ascii_code_not_in_range[]
 	INIT(= N_("E1243: ASCII code not in 32-127 range"));
 #endif
@@ -3600,3 +3603,7 @@ EXTERN char e_xattr_other[]
 	INIT(= N_("E1509: Error occurred when reading or writing extended attribute"));
 EXTERN char e_val_too_large[]
 	INIT(= N_("E1510: Value too large: %s"));
+EXTERN char e_wrong_number_of_characters_for_field_str[]
+	INIT(= N_("E1511: Wrong number of characters for field \"%s\""));
+EXTERN char e_wrong_character_width_for_field_str[]
+	INIT(= N_("E1512: Wrong character width for field \"%s\""));

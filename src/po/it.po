@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-12-16 20:11+0100\n"
+"PO-Revision-Date: 2024-02-27 10:30+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -162,6 +162,9 @@ msgstr " (file %d di %d)"
 
 msgid " (file (%d) of %d)"
 msgstr " (file (%d) di %d)"
+
+msgid "[Command Line]"
+msgstr "[Riga-di-comando]"
 
 msgid "[Prompt]"
 msgstr "[Richiesta]"
@@ -646,9 +649,6 @@ msgstr "Errore"
 #. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "Interruzione"
-
-msgid "[Command Line]"
-msgstr "[Riga-di-comando]"
 
 msgid "is a directory"
 msgstr "è una directory"
@@ -1365,6 +1365,9 @@ msgstr "argomento di mapnew()"
 
 msgid "filter() argument"
 msgstr "argomento di filter()"
+
+msgid "foreach() argument"
+msgstr "argomento di foreach()"
 
 msgid "extendnew() argument"
 msgstr "argomento di extendnew()"
@@ -2404,6 +2407,12 @@ msgstr "a %s su %s"
 msgid "Printing '%s'"
 msgstr "Stampato: '%s'"
 
+#. Default font name for current language on MS-Windows.
+#. If not translated, falls back to "Consolas".
+#. This must be a fixed-pitch font.
+msgid "DefaultFontNameForWindows"
+msgstr "NomeCarattereDefaultPerWindows"
+
 msgid "Opening the X display took %ld msec"
 msgstr "Attivazione visualizzazione X ha richiesto %ld msec"
 
@@ -3250,11 +3259,11 @@ msgstr "%s ritorno #%ld"
 msgid "%s returning %s"
 msgstr "%s ritorno %s"
 
-msgid "Function %s does not need compiling"
-msgstr "La funzione %s non ha bisogno di compilazione"
+msgid "Function %s%s%s does not need compiling"
+msgstr "La funzione %s%s%s non ha bisogno di compilazione"
 
 msgid "%s (%s, compiled %s)"
-msgstr "%s (%s, compilato %s)"
+msgstr "%s (%s, compilata %s)"
 
 msgid ""
 "\n"
@@ -3986,6 +3995,9 @@ msgstr "E104: Escape non consentito nei digrammi"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Uso di :loadkeymap fuori da un file di comandi"
 
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: Formato output di diff non supportato: %s"
+
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Mancano parentesi: %s"
 
@@ -4272,8 +4284,8 @@ msgstr "E196: Digrammi non supportati in questa versione"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: Non posso impostare lingua a \"%s\""
 
-msgid "E199: Active window or buffer deleted"
-msgstr "E199: Finestra attiva o buffer cancellato"
+msgid "E199: Active window or buffer changed or deleted"
+msgstr "E199: Finestra attiva o buffer modificato o cancellato"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: Gli autocomandi *ReadPre hanno reso il file illeggibile"
@@ -5173,7 +5185,7 @@ msgid "E503: Coffee is currently not available"
 msgstr "E503: Caffè non disponibile al momento"
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
-msgstr "è in sola lettura (non posso annullare: \"W\" in 'cpoptions')"
+msgstr "è in sola-lettura (non posso annullare: \"W\" in 'cpoptions')"
 
 msgid "is read-only (add ! to override)"
 msgstr "è in sola-lettura (aggiungi ! per eseguire comunque)"
@@ -6994,7 +7006,8 @@ msgid "E1085: Not a callable type: %s"
 msgstr "E1085: Tipo che non può essere chiamato: %s"
 
 msgid "E1087: Cannot use an index when declaring a variable"
-msgstr "E1087: Impossibile usare un indice nella dichiarazione di una variabile"
+msgstr ""
+"E1087: Impossibile usare un indice nella dichiarazione di una variabile"
 
 msgid "E1088: Script cannot import itself"
 msgstr "E1088: Uno script non può importare se stesso"
@@ -7211,8 +7224,7 @@ msgid "E1157: Missing return type"
 msgstr "E1157: Manca Tipo di valore restituito"
 
 msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
-msgstr ""
-"E1158: Impossibile usare flatten() in script Vim9, usare flattennew()"
+msgstr "E1158: Impossibile usare flatten() in script Vim9, usare flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr ""
@@ -7220,7 +7232,8 @@ msgstr ""
 
 msgid "E1160: Cannot use a default for variable arguments"
 msgstr ""
-"E1160: Impossibile usare un valore predefinito per argomenti di tipo variabile"
+"E1160: Impossibile usare un valore predefinito per argomenti di tipo "
+"variabile"
 
 msgid "E1161: Cannot json encode a %s"
 msgstr "E1161: Non si può codificare JSON un/a %s"
@@ -7261,8 +7274,7 @@ msgid "E1171: Missing } after inline function"
 msgstr "E1171: Manca } dopo una funzione in-linea"
 
 msgid "E1172: Cannot use default values in a lambda"
-msgstr ""
-"E1172: Impossibile usare valori predefiniti in un'espressione lambda"
+msgstr "E1172: Impossibile usare valori predefiniti in un'espressione lambda"
 
 msgid "E1173: Text found after %s: %s"
 msgstr "E1173: Trovato del testo dopo %s: %s"
@@ -7550,8 +7562,8 @@ msgstr ""
 
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
 msgstr ""
-"E1264: Impossibile usare percorso assoluto o relativo in import di "
-"Autoload: %s"
+"E1264: Impossibile usare percorso assoluto o relativo in import di Autoload: "
+"%s"
 
 msgid "E1265: Cannot use a partial here"
 msgstr "E1265: Impossibile usare un \"partial\" qui"
@@ -7766,8 +7778,10 @@ msgstr "E1329: Dichiarazione di variabile Classe non valida: %s"
 msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Tipo non valido per variabile Object: %s"
 
-msgid "E1331: Public must be followed by \"var\" or \"static\""
-msgstr "E1331: Public dev'essere seguito da \"var\" o \"static\""
+msgid ""
+"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"\"const\""
+msgstr "E1331: Public dev'essere seguito da \"var\" o \"static\" o \"const\""
 
 msgid "E1332: Public variable name cannot start with underscore: %s"
 msgstr ""
@@ -7802,8 +7816,7 @@ msgstr "E1342: L'Interfaccia può essere definita solo negli script Vim9"
 
 msgid "E1343: Interface name must start with an uppercase letter: %s"
 msgstr ""
-"E1343: Il nome dell'Interfaccia deve iniziare con lettera maiuscola: "
-"%s"
+"E1343: Il nome dell'Interfaccia deve iniziare con lettera maiuscola: %s"
 
 msgid "E1344: Cannot initialize a variable in an interface"
 msgstr "E1344: Non riesco a inizializzare una variabile in un'Interfaccia"
@@ -7879,8 +7892,10 @@ msgstr ""
 "E1367: Il livello di accesso alla variable \"%s\" di Interfaccia \"%s\" è "
 "differente"
 
-msgid "E1368: Static must be followed by \"var\" or \"def\""
-msgstr "E1368: \"Static\" deve essere seguito da \"var\" o \"def\""
+msgid ""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
+"\"const\""
+msgstr "E1368: \"Static\" deve essere seguito da \"var\" o \"def\" o \"const\""
 
 msgid "E1369: Duplicate variable: %s"
 msgstr "E1369: Variabile duplicata: %s"
@@ -8019,6 +8034,19 @@ msgstr "E1406: Impossibile usare una Classe come variabile o valore"
 msgid "E1407: Cannot use a Typealias as a variable or value"
 msgstr "E1407: Impossibile usare un Tipo alias come variabile o valore"
 
+msgid "E1408: Final variable not supported in an interface"
+msgstr "E1408: Variabile Finale non supportata in un'Interfaccia"
+
+msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
+msgstr ""
+"E1409: Non posso cambiare variabile in sola-lettura \"%s\" in Classe \"%s\""
+
+msgid "E1410: Const variable not supported in an interface"
+msgstr "E1410: Variabile di tipo \"Const\" non supportata in un'Interfaccia"
+
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: Manca un punto dopo \"Object\" \"%s\""
+
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 "E1500: Non si possono mischiare argomenti posizionali e non posizionali: %s"
@@ -8060,8 +8088,16 @@ msgstr "E1509: Errore in lettura o scrittura degli attributi estesi"
 msgid "E1510: Value too large: %s"
 msgstr "E1510: Valore troppo grande: %s"
 
+msgid "E1511: Wrong number of characters for field \"%s\""
+msgstr "E1511: Numero caratteri errato per campo \"%s\""
+
+msgid "E1512: Wrong character width for field \"%s\""
+msgstr "E1512: Larghezza carattere errata per campo \"%s\""
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
+#. buffer of cmdline window or NULL
+#. window of cmdline window or NULL
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 

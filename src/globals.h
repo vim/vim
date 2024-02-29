@@ -1686,6 +1686,8 @@ EXTERN int	km_startsel INIT(= FALSE);
 
 EXTERN int	cmdwin_type INIT(= 0);	// type of cmdline window or 0
 EXTERN int	cmdwin_result INIT(= 0); // result of cmdline window or 0
+EXTERN buf_T	*cmdwin_buf INIT(= NULL); // buffer of cmdline window or NULL
+EXTERN win_T	*cmdwin_win INIT(= NULL); // window of cmdline window or NULL
 
 EXTERN char_u no_lines_msg[]	INIT(= N_("--No lines in buffer--"));
 

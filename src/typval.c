@@ -623,6 +623,16 @@ check_for_opt_dict_arg(typval_T *args, int idx)
 	    || check_for_dict_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
+/*
+ * Check for an optional non-NULL dict argument at 'idx'
+ */
+    int
+check_for_opt_nonnull_dict_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_nonnull_dict_arg(args, idx) != FAIL) ? OK : FAIL;
+}
+
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
  * Give an error and return FAIL unless "args[idx]" is a channel or a job.
@@ -2425,7 +2435,7 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate, int interpolate)
 			  if (vim_isxdigit(p[1]))
 			  {
 			      int	n, nr;
-			      int	c = toupper(*p);
+			      int	c = SAFE_toupper(*p);
 
 			      if (c == 'X')
 				  n = 2;

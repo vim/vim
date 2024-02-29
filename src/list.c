@@ -2325,7 +2325,7 @@ f_uniq(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Handle one item for map() and filter().
+ * Handle one item for map(), filter(), foreach().
  * Sets v:val to "tv".  Caller must set v:key.
  */
     int
@@ -2341,6 +2341,17 @@ filter_map_one(
     int		retval = FAIL;
 
     copy_tv(tv, get_vim_var_tv(VV_VAL));
+
+    newtv->v_type = VAR_UNKNOWN;
+    if (filtermap == FILTERMAP_FOREACH && expr->v_type == VAR_STRING)
+    {
+	// foreach() is not limited to an expression
+	do_cmdline_cmd(expr->vval.v_string);
+	if (!did_emsg)
+	    retval = OK;
+	goto theend;
+    }
+
     argv[0] = *get_vim_var_tv(VV_KEY);
     argv[1] = *get_vim_var_tv(VV_VAL);
     if (eval_expr_typval(expr, FALSE, argv, 2, fc, newtv) == FAIL)
@@ -2360,6 +2371,8 @@ filter_map_one(
 	if (error)
 	    goto theend;
     }
+    else if (filtermap == FILTERMAP_FOREACH)
+	clear_tv(newtv);
     retval = OK;
 theend:
     clear_tv(get_vim_var_tv(VV_VAL));
@@ -2367,8 +2380,8 @@ theend:
 }
 
 /*
- * Implementation of map() and filter() for a List.  Apply "expr" to every item
- * in List "l" and return the result in "rettv".
+ * Implementation of map(), filter(), foreach() for a List.  Apply "expr" to
+ * every item in List "l" and return the result in "rettv".
  */
     static void
 list_filter_map(
@@ -2421,7 +2434,8 @@ list_filter_map(
 	int		stride = l->lv_u.nonmat.lv_stride;
 
 	// List from range(): loop over the numbers
-	if (filtermap != FILTERMAP_MAPNEW)
+	// NOTE: foreach() returns the range_list_item
+	if (filtermap != FILTERMAP_MAPNEW && filtermap != FILTERMAP_FOREACH)
 	{
 	    l->lv_first = NULL;
 	    l->lv_u.mat.lv_last = NULL;
@@ -2444,27 +2458,30 @@ list_filter_map(
 		clear_tv(&newtv);
 		break;
 	    }
-	    if (filtermap != FILTERMAP_FILTER)
+	    if (filtermap != FILTERMAP_FOREACH)
 	    {
-		if (filtermap == FILTERMAP_MAP && argtype != NULL
-			&& check_typval_arg_type(
-			    argtype->tt_member, &newtv,
-			    func_name, 0) == FAIL)
+		if (filtermap != FILTERMAP_FILTER)
 		{
-		    clear_tv(&newtv);
-		    break;
+		    if (filtermap == FILTERMAP_MAP && argtype != NULL
+			&& check_typval_arg_type(
+						 argtype->tt_member, &newtv,
+						 func_name, 0) == FAIL)
+		    {
+			clear_tv(&newtv);
+			break;
+		    }
+		    // map(), mapnew(): always append the new value to the
+		    // list
+		    if (list_append_tv_move(filtermap == FILTERMAP_MAP
+					    ? l : l_ret, &newtv) == FAIL)
+			break;
 		}
-		// map(), mapnew(): always append the new value to the
-		// list
-		if (list_append_tv_move(filtermap == FILTERMAP_MAP
-			    ? l : l_ret, &newtv) == FAIL)
-		    break;
-	    }
-	    else if (!rem)
-	    {
-		// filter(): append the list item value when not rem
-		if (list_append_tv_move(l, &tv) == FAIL)
-		    break;
+		else if (!rem)
+		{
+		    // filter(): append the list item value when not rem
+		    if (list_append_tv_move(l, &tv) == FAIL)
+			break;
+		}
 	    }
 
 	    val += stride;
@@ -2508,7 +2525,7 @@ list_filter_map(
 		    break;
 	    }
 	    else if (filtermap == FILTERMAP_FILTER && rem)
-		listitem_remove(l, li);
+		    listitem_remove(l, li);
 	    ++idx;
 	}
     }
@@ -2519,7 +2536,7 @@ list_filter_map(
 }
 
 /*
- * Implementation of map() and filter().
+ * Implementation of map(), filter() and foreach().
  */
     static void
 filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
@@ -2527,16 +2544,19 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     typval_T	*expr;
     char	*func_name = filtermap == FILTERMAP_MAP ? "map()"
 				  : filtermap == FILTERMAP_MAPNEW ? "mapnew()"
-				  : "filter()";
+				  : filtermap == FILTERMAP_FILTER ? "filter()"
+				  : "foreach()";
     char_u	*arg_errmsg = (char_u *)(filtermap == FILTERMAP_MAP
 							 ? N_("map() argument")
 				       : filtermap == FILTERMAP_MAPNEW
 						      ? N_("mapnew() argument")
-						    : N_("filter() argument"));
+				       : filtermap == FILTERMAP_FILTER
+						      ? N_("filter() argument")
+						   : N_("foreach() argument"));
     int		save_did_emsg;
     type_T	*type = NULL;
 
-    // map() and filter() return the first argument, also on failure.
+    // map(), filter(), foreach() return the first argument, also on failure.
     if (filtermap != FILTERMAP_MAPNEW && argvars[0].v_type != VAR_STRING)
 	copy_tv(&argvars[0], rettv);
 
@@ -2627,6 +2647,15 @@ f_map(typval_T *argvars, typval_T *rettv)
 f_mapnew(typval_T *argvars, typval_T *rettv)
 {
     filter_map(argvars, rettv, FILTERMAP_MAPNEW);
+}
+
+/*
+ * "foreach()" function
+ */
+    void
+f_foreach(typval_T *argvars, typval_T *rettv)
+{
+    filter_map(argvars, rettv, FILTERMAP_FOREACH);
 }
 
 /*

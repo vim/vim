@@ -4458,6 +4458,8 @@ open_cmdwin(void)
 #ifdef FEAT_FOLDING
     int			save_KeyTyped;
 #endif
+    int			newbuf_status;
+    int			cmdwin_valid;
 
     // Can't do this when text or buffer is locked.
     // Can't do this recursively.  Can't do it when typing a password.
@@ -4491,25 +4493,50 @@ open_cmdwin(void)
 	ga_clear(&winsizes);
 	return K_IGNORE;
     }
+    // win_split() autocommands may have messed with the old window or buffer.
+    // Treat it as abandoning this command-line.
+    if (!win_valid(old_curwin) || curwin == old_curwin
+	    || !bufref_valid(&old_curbuf)
+	    || old_curwin->w_buffer != old_curbuf.br_buf)
+    {
+	beep_flush();
+	ga_clear(&winsizes);
+	return Ctrl_C;
+    }
     // Don't let quitting the More prompt make this fail.
     got_int = FALSE;
 
-    // Set "cmdwin_type" before any autocommands may mess things up.
+    // Set "cmdwin_..." variables before any autocommands may mess things up.
     cmdwin_type = get_cmdline_type();
+    cmdwin_win = curwin;
 
-    // Create the command-line buffer empty.
-    if (do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL) == FAIL)
+    // Create empty command-line buffer.  Be especially cautious of BufLeave
+    // autocommands from do_ecmd(), as cmdwin restrictions do not apply to them!
+    newbuf_status = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE,
+					NULL);
+    cmdwin_valid = win_valid(cmdwin_win);
+    if (newbuf_status == FAIL || !cmdwin_valid || curwin != cmdwin_win ||
+	    !win_valid(old_curwin) || !bufref_valid(&old_curbuf) ||
+	    old_curwin->w_buffer != old_curbuf.br_buf)
     {
-	// Some autocommand messed it up?
-	win_close(curwin, TRUE);
-	ga_clear(&winsizes);
+	if (newbuf_status == OK)
+	    set_bufref(&bufref, curbuf);
+	if (cmdwin_valid && !last_window())
+	    win_close(cmdwin_win, TRUE);
+
+	// win_close() autocommands may have already deleted the buffer.
+	if (newbuf_status == OK && bufref_valid(&bufref) &&
+		bufref.br_buf != curbuf)
+	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE, FALSE);
+
 	cmdwin_type = 0;
+	cmdwin_win = NULL;
+	beep_flush();
+	ga_clear(&winsizes);
 	return Ctrl_C;
     }
+    cmdwin_buf = curbuf;
 
-    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
-    (void)setfname(curbuf, (char_u *)_("[Command Line]"), NULL, TRUE);
-    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
     set_option_value_give_err((char_u *)"bt",
 					    0L, (char_u *)"nofile", OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
@@ -4615,14 +4642,17 @@ open_cmdwin(void)
 # endif
 
     cmdwin_type = 0;
+    cmdwin_buf = NULL;
+    cmdwin_win = NULL;
     exmode_active = save_exmode;
 
-    // Safety check: The old window or buffer was deleted: It's a bug when
-    // this happens!
-    if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf))
+    // Safety check: The old window or buffer was changed or deleted: It's a bug
+    // when this happens!
+    if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf)
+	    || old_curwin->w_buffer != old_curbuf.br_buf)
     {
 	cmdwin_result = Ctrl_C;
-	emsg(_(e_active_window_or_buffer_deleted));
+	emsg(_(e_active_window_or_buffer_changed_or_deleted));
     }
     else
     {

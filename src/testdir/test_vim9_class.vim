@@ -67,7 +67,7 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | echo 'done'", 3)
 
-  # Use old "this." prefixed member variable declaration syntax (without intialization)
+  # Use old "this." prefixed member variable declaration syntax (without initialization)
   lines =<< trim END
     vim9script
     class Something
@@ -76,7 +76,7 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, 'E1318: Not a valid command in a class: this.count: number', 3)
 
-  # Use old "this." prefixed member variable declaration syntax (with intialization)
+  # Use old "this." prefixed member variable declaration syntax (with initialization)
   lines =<< trim END
     vim9script
     class Something
@@ -9684,6 +9684,89 @@ def Test_method_double_underscore_prefix()
     defcompile
   END
   v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
+enddef
+
+" Test for compiling class/object methods using :defcompile
+def Test_defcompile_class()
+  # defcompile all the classes in the current script
+  var lines =<< trim END
+    vim9script
+    class A
+      def Foo()
+        var i = 10
+      enddef
+    endclass
+    class B
+      def Bar()
+        var i = 20
+        xxx
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckSourceFailure(lines, 'E476: Invalid command: xxx', 2)
+
+  # defcompile a specific class
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo()
+        xxx
+      enddef
+    endclass
+    class B
+      def Bar()
+        yyy
+      enddef
+    endclass
+    defcompile B
+  END
+  v9.CheckSourceFailure(lines, 'E476: Invalid command: yyy', 1)
+
+  # defcompile a non-class
+  lines =<< trim END
+    vim9script
+    class A
+      def Foo()
+      enddef
+    endclass
+    var X: list<number> = []
+    defcompile X
+  END
+  v9.CheckSourceFailure(lines, 'E1061: Cannot find function X', 7)
+
+  # defcompile a class twice
+  lines =<< trim END
+    vim9script
+    class A
+      def new()
+      enddef
+    endclass
+    defcompile A
+    defcompile A
+    assert_equal('Function A.new does not need compiling', v:statusmsg)
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # defcompile should not compile an imported class
+  lines =<< trim END
+    vim9script
+    export class A
+      def Foo()
+        xxx
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xdefcompileimport.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import './Xdefcompileimport.vim'
+    class B
+    endclass
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

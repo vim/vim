@@ -3,7 +3,7 @@
 " Maintainer:	Jason Franklin <jason@oneway.dev>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
-" Last Change: 	2023 Jun 28
+" Last Change: 	2024 Jan 17 (make it work on AIX, see #13847)
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -13,13 +13,25 @@ let s:man_tag_depth = 0
 let s:man_sect_arg = ""
 let s:man_find_arg = "-w"
 try
-  if !has("win32") && $OSTYPE !~ 'cygwin\|linux' && system('uname -s') =~ "SunOS" && system('uname -r') =~ "^5"
-    let s:man_sect_arg = "-s"
-    let s:man_find_arg = "-l"
+  if !has("win32") && $OSTYPE !~ 'cygwin\|linux'
+    " cache the value
+    let uname_s = system('uname -s')
+
+    if uname_s =~ "SunOS" && system('uname -r') =~ "^5"
+      " Special Case for Man on SunOS
+      let s:man_sect_arg = "-s"
+      let s:man_find_arg = "-l"
+    elseif uname_s =~? 'AIX'
+      " Special Case for Man on AIX
+      let s:man_sect_arg = ""
+      let s:man_find_arg = ""
+    endif
   endif
 catch /E145:/
   " Ignore the error in restricted mode
 endtry
+
+unlet! uname_s
 
 func s:ParseIntoPageAndSection()
   " Accommodate a reference that terminates in a hyphen.

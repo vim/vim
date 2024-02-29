@@ -435,6 +435,14 @@ func Test_set_completion()
   call assert_equal('"set syntax=sshdconfig', @:)
   call feedkeys(":set syntax=a\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set syntax=' .. getcompletion('a*', 'syntax')->join(), @:)
+
+  if has('keymap')
+    " Expand values for 'keymap'
+    call feedkeys(":set keymap=acc\<Tab>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"set keymap=accents', @:)
+    call feedkeys(":set keymap=a\<C-A>\<C-B>\"\<CR>", 'xt')
+    call assert_equal('"set keymap=' .. getcompletion('a*', 'keymap')->join(), @:)
+  endif
 endfunc
 
 " Test handling of expanding individual string option values
@@ -2224,6 +2232,36 @@ func Test_set_wrap()
   call assert_equal(2, winline())
 
   set wrap& smoothscroll& scrolloff&
+endfunc
+
+func Test_delcombine()
+  new
+  set backspace=indent,eol,start
+
+  set delcombine
+  call setline(1, 'β̳̈:β̳̈')
+  normal! 0x
+  call assert_equal('β̈:β̳̈', getline(1))
+  exe "normal! A\<BS>"
+  call assert_equal('β̈:β̈', getline(1))
+  normal! 0x
+  call assert_equal('β:β̈', getline(1))
+  exe "normal! A\<BS>"
+  call assert_equal('β:β', getline(1))
+  normal! 0x
+  call assert_equal(':β', getline(1))
+  exe "normal! A\<BS>"
+  call assert_equal(':', getline(1))
+
+  set nodelcombine
+  call setline(1, 'β̳̈:β̳̈')
+  normal! 0x
+  call assert_equal(':β̳̈', getline(1))
+  exe "normal! A\<BS>"
+  call assert_equal(':', getline(1))
+
+  set backspace& delcombine&
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

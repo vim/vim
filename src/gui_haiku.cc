@@ -4031,17 +4031,6 @@ gui_mch_mousehide(int hide)
     //	TODO
 }
 
-    static int
-hex_digit(int c)
-{
-    if (isdigit(c))
-	return c - '0';
-    c = TOLOWER_ASC(c);
-    if (c >= 'a' && c <= 'f')
-	return c - 'a' + 10;
-    return -1000;
-}
-
 /*
  * This function has been lifted from gui_w32.c and extended a bit.
  *

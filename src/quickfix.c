@@ -4829,8 +4829,17 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	}
 
 	// delete all existing lines
+	//
+	// Note: we cannot store undo information, because
+	// qf buffer is usually not allowed to be modified.
+	//
+	// So we need to clean up undo information
+	// otherwise autocommands may invalidate the undo stack
 	while ((curbuf->b_ml.ml_flags & ML_EMPTY) == 0)
 	    (void)ml_delete((linenr_T)1);
+
+	// Remove all undo information
+	u_clearallandblockfree(curbuf);
     }
 
     // Check if there is anything to display

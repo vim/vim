@@ -27,6 +27,9 @@ ICONV = "$(ICONV_PATH)\iconv.exe"
 
 RM = del /q
 CP = copy /y
+PS = PowerShell.exe
+
+PSFLAGS = -NoLogo -NoProfile -Command
 
 all : $(CONVERTED)
 
@@ -34,8 +37,7 @@ tutor.utf-8 : tutor
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -44,8 +46,7 @@ tutor.bar : tutor.bar.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-1 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28591))
@@ -55,8 +56,7 @@ tutor.ca.utf-8 : tutor.ca
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -65,8 +65,7 @@ tutor.de.utf-8 : tutor.de
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -75,8 +74,7 @@ tutor.el : tutor.el.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-7 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28597))
@@ -86,8 +84,7 @@ tutor.el.cp737 : tutor.el.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP737 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(737))
@@ -97,8 +94,7 @@ tutor.eo : tutor.eo.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-3 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28593))
@@ -108,8 +104,7 @@ tutor.es : tutor.es.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-1 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28591))
@@ -119,8 +114,7 @@ tutor.fr.utf-8 : tutor.fr
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -129,8 +123,7 @@ tutor.hr : tutor.hr.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28592))
@@ -140,8 +133,7 @@ tutor.hr.cp1250 : tutor.hr.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1250 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1250))
@@ -151,8 +143,7 @@ tutor.hu : tutor.hu.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-2 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28592))
@@ -162,8 +153,7 @@ tutor.hu.cp1250 : tutor.hu.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1250 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1250))
@@ -173,8 +163,7 @@ tutor.it.utf-8 : tutor.it
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -183,8 +172,7 @@ tutor.ja.sjis : tutor.ja.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP932 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(932))
@@ -194,8 +182,7 @@ tutor.ja.euc : tutor.ja.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-JP $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(51932))
@@ -205,8 +192,7 @@ tutor.ko.euc : tutor.ko.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-KR $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(51949))
@@ -216,8 +202,7 @@ tutor.nl : tutor.nl.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-1 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28591))
@@ -227,8 +212,7 @@ tutor.no.utf-8 : tutor.no
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -244,8 +228,7 @@ tutor.ru : tutor.ru.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t KOI8-R $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(20866))
@@ -255,8 +238,7 @@ tutor.ru.cp1251 : tutor.ru.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
@@ -266,8 +248,7 @@ tutor.sv.utf-8 : tutor.sv
 !IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-1 -t UTF-8 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28591)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 !ENDIF
@@ -276,20 +257,18 @@ tutor.tr.iso9 : tutor.tr.utf-8
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t ISO-8859-9 $? >$@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(28599))
 !ENDIF
 
 tutor.zh.utf-8 : tutor.zh.big5
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(950)) ^| \
 		1>nul New-Item -Force -ItemType file -Path . -Name $@
 
-clean : $(CONVERTED)
-	!$(RM) $**
+clean :
+	@for %%G in ($(CONVERTED)) do (if exist .\%%G ($(RM) %%G))
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0 ft=make:

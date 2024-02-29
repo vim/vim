@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2023 Dec 24
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -28,6 +28,11 @@ IMPROVEMENTS					|improvements-9|
 COMPILE TIME CHANGES				|compile-changes-9|
 
 PATCHES						|patches-9|
+
+VERSION 9.1					|version-9.1|
+Changed						|changed-9.1|
+Added						|added-9.1|
+Patches						|patches-9.1|
 
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 9.0.
@@ -12952,7 +12957,7 @@ Files:      src/fileio.c
 Patch 8.2.2056
 Problem:    Configure fails when building with the
             "implicit-function-declaration" error enabled, specifically on Mac.
-Solution:   Declear the functions like in the source code. (suggestion by
+Solution:   Declare the functions like in the source code. (suggestion by
             Clemens Lang, closes #7380)
 Files:      src/configure.ac, src/auto/configure
 
@@ -18857,7 +18862,7 @@ Solution:   Do not handle text properties when deleting a line for splitting a
 Files:      src/structs.h, src/memline.c, src/testdir/test_textprop.vim
 
 Patch 8.2.3063
-Problem:    Crash when switching 'cryptmethod' to xchaha20 with an existing
+Problem:    Crash when switching 'cryptmethod' to xchacha20 with an existing
             undo file. (Martin Tournoij)
 Solution:   Disable reading undo file when decoding can't be done inplace.
             (issue #8467)
@@ -19814,7 +19819,7 @@ Solution:   Add missing changes.
 Files:      src/globals.h
 
 Patch 8.2.3218
-Problem:    When using xchaha20 crypt undo file is not removed.
+Problem:    When using xchacha20 crypt undo file is not removed.
 Solution:   Reset 'undofile' and delete the file. (Christian Brabandt,
             closes #8630, closes #8467)
 Files:      src/bufwrite.c, src/crypt.c, src/proto/undo.pro,
@@ -29038,7 +29043,7 @@ Files:      src/testdir/test_autocmd.vim
 
 Patch 8.2.4729
 Problem:    HEEx and Surface templates do not need a separate filetype.
-Solution:   Use Eelixir for the similar filetypes. (Aaron Tinio, closes #10124)
+Solution:   Use Elixir for the similar filetypes. (Aaron Tinio, closes #10124)
 Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
 Patch 8.2.4730
@@ -31683,6 +31688,8 @@ Files:      runtime/makemenu.vim
 VERSION 9.1				*version-9.1* *version9.1* *vim-9.1*
 
 This section is about improvements made between version 9.0 and 9.1.
+The release 9.1 is dedicated to Vim's Benevolent dictator for life
+|Bram-Moolenaar|.
 
 This release has hundreds of bug fixes, there are a few new features and there
 are many minor improvements.
@@ -31714,16 +31721,19 @@ Smooth Scroll
 Support for scrolling text using screen lines instead of file lines is added.
 Refer to the 'smoothscroll' option.
 
-EditorConfig and JSON formatting plugins are included.
+The EditorConfig (|editorconfig-install|) and the JSON formatting
+(|ft-json-plugin|) plugins are included.
 
-OpenVMS x86_64 platform port.
+OpenVMS x86_64 platform port: http://www.polarhome.com/vim/
 
 Other improvements				*new-other-9.1*
 ------------------
 - Support for undercurl (|t_Ce|), double underline (|t_Us|), dotted underline
-  (|t_ds|) and dashed underline (|t_Ds|) termcap entries.
-- The 'fillchars' option is now a global-local option.
-- The |vertical| and |horizontal| modifiers can be used with ":wincmd ="
+  (|t_ds|) and dashed underline (|t_Ds|) termcap entries and
+  highlight modes (|highlight-term|).
+- The 'fillchars' option is now a global-local option and allows to
+  specify the character used for the last window line.
+- The |:vertical| and |:horizontal| modifiers can be used with ":wincmd ="
   command to equalize windows vertically or horizontally.
 - |:defer| command to defer the execution of a function till the end of a
   function.
@@ -31731,32 +31741,47 @@ Other improvements				*new-other-9.1*
 - Sound support in MacOS.
 - The |prop_remove()| function can now remove multiple text properties.
 - The |items()| function now supports a List or a String argument.
+- The |repeat()| function now supports blob repeat.
 - Command line completion support for |:runtime| command.
-- Support for multiple "%=" items in 'statusline'
+- Support for custom completion using |getcompletion()|.
+- Command-line completion support for option values.
+- Support for multiple "%=" items in 'statusline'.
 - Support for the PmenuKind, PmenuKindSel, PmenuExtra and PmenuExtraSel
   highlight groups.
-- xxd: support for using colors in the hex dump output
-- xxd: reversing a bit dump
 - Text properties can override 'cursorline' highlight.
 - Support for echoing messages in a popup window |:echowindow|.
-- Control scroll behavior when spliting windows 'splitkeep'.
-- Specify the character used for the last window line 'fillchars'
+- Control scroll behavior when splitting windows 'splitkeep'.
 - Support for mouse scrolling in the MS-Windows console.
 - Support for using different keyboard protocols 'keyprotocol'
+  (xterm |modifyOtherKeys| and Kitty terminal protocol (CSI u) support).
 - Support for UTF-16 string index.
 - Quickfix list items can have associated custom user data.
-- |reverse()| supports reversing a string
+- |reverse()| supports reversing a string.
 - 'switchbuf' is used by more commands.
 - |undotree()| can be used with any buffer.
-- |printf()| supports positional arguments
-- Support for custom completion using |getcompletion()|
-- Support for Python3 stable ABI
-- Use |jumplist| like a stack
-- Command-line completion support for option values
-- Support for writing extended attributes in Linux
-- 'errorformat' supports parsing a buffer number (|%b|)
-- Termdebug: Support for variables window, moving up/down the stack frames and
-  setting temporary breakpoints
+- |printf()| supports positional arguments.
+- |col()|, |charcol()| and |virtcol()| can be used with different windows.
+- Support for Python3 stable ABI (|python-stable|).
+- Use |jumplist| like a stack 'jumpoptions'.
+- Support for writing extended attributes in Linux (|xattr|).
+- 'errorformat' supports parsing a buffer number ("%b").
+- Support for building the python interface using Python 3.12.
+- |matchaddpos()| is no longer limited to 8 positions.
+- |readblob()| allows to read part of a file.
+- 'shortmess' allows to suppress "scanning" messages.
+- Add the XChaCha20v2 encryption method 'cryptmethod'.
+- Add support for testing syntax files.
+- Support "**" for filename expansion with bash using globstar setting.
+- Add quadruple prime digraph using 4'.
+- Better high dpi support on Windows.
+- Various fixes for unsafe memory access, memory leaks, buffer overflows
+  and potential crashes.
+- Termdebug: Support for the variables window (|termdebug_variables_window|),
+  moving up/down the stack frames (|termdebug-frames|) and setting temporary
+  breakpoints (|:Tbreak|).
+- xxd: support for using colors in the hex dump output (xxd -R).
+- xxd: reversing a bit dump (xxd -r).
+- xxd: customize the variable name used in the C include output (xxd -n).
 
 Changed						*changed-9.1*
 -------
@@ -31764,17 +31789,31 @@ Changed						*changed-9.1*
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
   available in all the builds.
 - Support for Windows-XP is dropped.
+- Support for VisVim is removed.
 - The "small" and "big" builds are dropped in favor of "tiny" and "huge"
   builds.
-- Support for VisVim is removed.
+- Mention the detected 'keyprotocol' on ":verbose map" when listing mappings.
 - The optional Content-Type header is removed from the LSP messages.
 - |charidx()| returns the character length when the index is one more than the
   last byte index.
 - Ctrl-Q works like Ctrl-V in replace mode.
 - |popup_filter_menu()| now wraps around.
-- |g<End>| now jumps to the last non-blank character
-- dot and hypen are supported in highlight group names
+- |popup_create()| now aborts on an error.
+- |g<End>| now jumps to the last non-blank character.
+- dot and hyphen are supported in highlight group names.
 - |executable()| resolves symlinks on MS-Windows.
+- Ruby 1.8 support is dropped.
+- 'ttyfast' is always set.
+- |virtcol2col()| returns the first byte for a multi-byte character.
+- |i_CTRL-O| resets Select Mode.
+- |mode()| returns more submodes.
+- r with CTRL-C on a visual area replaces using CTRL-C consistently.
+- The matchparen plugin no longer uses hard coded match id 3.
+- The Statusline no longer uses hard coded values "^" and "=" if the
+  highlighting groups for the statusline have been cleared.
+- 'maxfuncdepth' setting is also used for the maximum callback depth.
+- Migrate to autoconf 2.71.
+- Start using C99 feature (declare variable in for loops).
 
 Added						*added-9.1*
 -----
@@ -31784,7 +31823,7 @@ Various syntax, indent and other plugins were added.
 Functions: ~
 
 |err_teapot()|		produce error 418 or 503
-|getbufoneline()|	get a one line from the specified buffer
+|getbufoneline()|	get a single line from the specified buffer
 |getcellwidths()|	get character cell width overrides
 |getmouseshape()|	get name of the current mouse shape
 |getscriptinfo()|	get list of sourced vim scripts
@@ -31807,13 +31846,13 @@ Autocommands: ~
 
 Commands: ~
 
-|:abstract|		define an Vim9 abstract class
+|:abstract|		define a Vim9 abstract class
 |:class|		start of a class specification
 |:defer|		call function when current function is done
 |:echowindow|		same as :echomsg, but use a popup window
 |:endinterface|		end of an interface specification
 |:endclass|		end of a class specification
-|:horizontal|		following window command work horizontally
+|:horizontal|		following window command works horizontally
 |:interface|		start of an interface specification
 |:public|		prefix for a class or object member
 |:static|		prefix for a class member or function
@@ -32059,7 +32098,7 @@ Problem:    Split else-of is confusing.
 Solution:   Join the lines. (closes #10696)
 
 Patch 9.0.0051
-Problem:    Using CTRL-C wih :append may hang Vim.
+Problem:    Using CTRL-C with :append may hang Vim.
 Solution:   Reset got_int. (closes #10729, closes #10728)
 
 Patch 9.0.0052
@@ -32448,7 +32487,7 @@ Solution:   pass the command modifier in sticky_cmdmod_flags. (Kota Kato,
             closes #10845)
 
 Patch 9.0.0141
-Problem:    "delmenu" does not remove autocmmands. Running menu test function
+Problem:    "delmenu" does not remove autocommands. Running menu test function
             alone fails.
 Solution:   Delete autocommands Make sure there is at least one menu.
             (closes #10848)
@@ -32624,7 +32663,7 @@ Solution:   Remove ch_logfile() calls.
 
 Patch 9.0.0181
 Problem:    Textprop test with line2byte() fails on MS-Windows.
-Solution:   Fix updating chuncks in ml_delete_int().
+Solution:   Fix updating chunks in ml_delete_int().
 
 Patch 9.0.0182
 Problem:    Quarto files are not recognized.
@@ -32862,7 +32901,7 @@ Problem:    Cannot make difference between the end of :normal and a character
 Solution:   Add the "typebuf_was_empty" flag. (closes #10950)
 
 Patch 9.0.0235
-Problem:    'autoshelldir' does not work with chunked respose.
+Problem:    'autoshelldir' does not work with chunked response.
 Solution:   Collect chunks before parsing OSC 7. (closes #10949)
 
 Patch 9.0.0236
@@ -32952,7 +32991,7 @@ Solution:   Add #ifdef.
 
 Patch 9.0.0256
 Problem:    Compiler warning for uninitialized variables.
-Solution:   Initilize the variables.
+Solution:   Initialize the variables.
 
 Patch 9.0.0257
 Problem:    "->" in ":scriptnames" output not tested yet.
@@ -33062,7 +33101,7 @@ Problem:    Build failure without the +eval feature.
 Solution:   Add #ifdef.
 
 Patch 9.0.0282
-Problem:    A nested timout stops the previous timeout.
+Problem:    A nested timeout stops the previous timeout.
 Solution:   Ignore any nested timeout.
 
 Patch 9.0.0283
@@ -33503,7 +33542,7 @@ Problem:    Coverity complains about unused value.
 Solution:   Use the value.
 
 Patch 9.0.0384
-Problem:    Covertity still complains about using return value of getc().
+Problem:    Coverity still complains about using return value of getc().
 Solution:   Check for EOF.
 
 Patch 9.0.0385
@@ -34232,7 +34271,7 @@ Problem:    Crash when using NUL in buffer that uses :source.
 Solution:   Don't get a next line when skipping over NL.
 
 Patch 9.0.0553
-Problem:    No error for "|" after "{" in lamda.
+Problem:    No error for "|" after "{" in lambda.
 Solution:   Check for invalid "|". (closes #11199)
 
 Patch 9.0.0554
@@ -34271,7 +34310,7 @@ Solution:   Set a timeout of 30 seconds.
 
 Patch 9.0.0562
 Problem:    HSL playlist files are not recognized.
-Solution:   Add a pattern to recognize HSL palylist files. (Benoît Ryder,
+Solution:   Add a pattern to recognize HSL playlist files. (Benoît Ryder,
             closes #11204)
 
 Patch 9.0.0563
@@ -34361,7 +34400,7 @@ Solution:   Also remove /private from the expected directory.
 
 Patch 9.0.0583
 Problem:    Only recognizing .m3u8 files is inconsistent.
-Solution:   Also matc .m3u files. (issue #11204)
+Solution:   Also match .m3u files. (issue #11204)
 
 Patch 9.0.0584
 Problem:    Cscope test with wrong executable name fails.
@@ -34639,7 +34678,7 @@ Solution:   Stop at line 1 when 'smoothscroll' is not set. (closes #11261)
 Patch 9.0.0646
 Problem:    with 'smoothscroll' set CTRL-E does not work properly when
             'foldmethod' is set to "indent". (Yee Cheng Chin)
-Solution:   Merge the code for scroling with folds and 'smoothscroll'.
+Solution:   Merge the code for scrolling with folds and 'smoothscroll'.
             (closes #11262)
 
 Patch 9.0.0647
@@ -34731,7 +34770,7 @@ Patch 9.0.0666
 Problem:    Spacing-combining characters handled as composing, causing text to
             take more space than expected.
 Solution:   Handle characters marked with "Mc" not as composing.
-            (closes #11282
+            (closes #11282)
 
 Patch 9.0.0667
 Problem:    ml_get error when 'splitkeep' is "screen". (Marius Gedminas)
@@ -34819,7 +34858,7 @@ Solution:   Use a pointer to the first char. (Yee Cheng Chin, closes #11302)
 
 Patch 9.0.0686
 Problem:    The right ALT key does not work on some MS-Windows keyboards.
-Solution:   Adjust the modifiers based on GetKeyState(). (Anoton Sharonov,
+Solution:   Adjust the modifiers based on GetKeyState(). (Anton Sharonov,
             closes #11300)
 
 Patch 9.0.0687
@@ -35100,7 +35139,7 @@ Solution:   Adjust expected result to slightly different behavior.  Correct
 
 Patch 9.0.0747
 Problem:    Too many #ifdefs.
-Solution:   Gradudate the +cmdline_info feature. (Martin Tournoij,
+Solution:   Graduate the +cmdline_info feature. (Martin Tournoij,
             closes #11330)
 
 Patch 9.0.0748
@@ -35266,7 +35305,7 @@ Solution:   Free the allocated memory when bailing out.
 
 Patch 9.0.0786
 Problem:    User command does not get number from :tab modifier.
-Solution:   Include the number. (closes #11393, closes #6801)
+Solution:   Include the number. (closes #11393, closes #6901)
 
 Patch 9.0.0787
 Problem:    MS-Windows: mouse scrolling in terminal misbehaves without dll.
@@ -35333,8 +35372,8 @@ Solution:   Remove one typedef.
 
 Patch 9.0.0801
 Problem:    The modifyOtherKeys flag is set when it should not.
-Solution:   Do not handle special key codes with a modifer value above 16 as a
-            modifyOtherKeys value. (issue #11403)
+Solution:   Do not handle special key codes with a modifier value above 16 as
+            a modifyOtherKeys value. (issue #11403)
 
 Patch 9.0.0802
 Problem:    MS-Windows: cannot map console mouse scroll events.
@@ -35346,7 +35385,7 @@ Problem:    readblob() cannot read from character device.
 Solution:   Use S_ISCHR() to not check the size. (Ken Takata, closes #11407)
 
 Patch 9.0.0804
-Problem:    Crash when trying to divice the largest negative number by -1.
+Problem:    Crash when trying to divide the largest negative number by -1.
 Solution:   Handle this case specifically.
 
 Patch 9.0.0805
@@ -35935,7 +35974,7 @@ Solution:   Improve code formatting.
 
 Patch 9.0.0935
 Problem:    When using dash it may not be recognize as filetype "sh".
-Solution:   Add checks for "dash". (Eisuke Kawashima,closes #11600)
+Solution:   Add checks for "dash". (Eisuke Kawashima, closes #11600)
 
 Patch 9.0.0936
 Problem:    Wrong type for "isunnamed" returned by getreginfo().
@@ -36426,7 +36465,7 @@ Solution:   When setting "curwin" also set "curbuf". (closes #11687)
 
 Patch 9.0.1045
 Problem:    In a class object members cannot be initialized.
-Solution:   Support initializing object members. Make "dissassemble" work on
+Solution:   Support initializing object members. Make "disassemble" work on
             an object method.
 
 Patch 9.0.1046
@@ -36629,7 +36668,7 @@ Problem:    Clang warns for unused variable.
 Solution:   Adjust #ifdef. (John Marriott)
 
 Patch 9.0.1089
-Problem:    unnessary assignment
+Problem:    unnecessary assignment
 Solution:   Remove the assignment. (Luuk van Baal, closes #1136)
 
 Patch 9.0.1090
@@ -36847,11 +36886,11 @@ Solution:   Only use the member when the type is a list. (closes #11774)
 
 Patch 9.0.1139
 Problem:    Cannot create a new object in a compiled function.
-Solution:   Compile the instructins to create a new object.
+Solution:   Compile the instructions to create a new object.
 
 Patch 9.0.1140
 Problem:    Cannot call an object method in a compiled function.
-Solution:   Compile the instructins to invoke an object method.
+Solution:   Compile the instructions to invoke an object method.
 
 Patch 9.0.1141
 Problem:    'cursorcolumn' and 'colorcolumn' wrong after concealing and
@@ -36992,7 +37031,7 @@ Solution:   Redraw the screen when the cell widths have changed. (Yasuhiro
 
 Patch 9.0.1172
 Problem:    When 'selection' is "exclusive" then "1v" is one char short.
-Solution:   Add one character when 'selection' is "exclusive. (closes #11791)
+Solution:   Add one character when 'selection' is "exclusive". (closes #11791)
 
 Patch 9.0.1173
 Problem:    Compiler warning for unused variable on non-Unix systems.
@@ -37225,7 +37264,7 @@ Problem:    Reading past the end of a line when formatting text.
 Solution:   Check for not going over the end of the line.
 
 Patch 9.0.1226
-Problem:    Spurious empty line when using text propertie and virtual text.
+Problem:    Spurious empty line when using text properties and virtual text.
 Solution:   Do not set "text_prop_follows" when the other text property is not
             virtual text. (closes #11846)
 
@@ -37465,7 +37504,7 @@ Problem:    Display shows lines scrolled down erroneously. (Yishai Lerner)
 Solution:   Do not change "wl_lnum" at index zero. (closes #11938)
 
 Patch 9.0.1280
-Problem:    Inssufficient testing for what 9.0.1265 fixes.
+Problem:    Insufficient testing for what 9.0.1265 fixes.
 Solution:   Add a couple of test cases. (issue #11885)
 
 Patch 9.0.1281
@@ -37494,7 +37533,7 @@ Problem:    Coverity warns for using a NULL pointer.
 Solution:   Bail out whan "varp" is NULL.
 
 Patch 9.0.1287
-Problem:    With the Kitty key protocl Esc with NumLock cannot be mapped.
+Problem:    With the Kitty key protocol Esc with NumLock cannot be mapped.
 Solution:   Also use K_ESC when there is a modifier. (closes #11811)
 
 Patch 9.0.1288
@@ -37667,7 +37706,7 @@ Solution:   Use the same code as used for "j"/"k" to go to the next/previous
 
 Patch 9.0.1325
 Problem:    'colorcolumn' highlight wrong with virtual text above.
-Solution:   Adjust column of 'colorcolumn' for text propertly. (closes #12004)
+Solution:   Adjust column of 'colorcolumn' for text property. (closes #12004)
 
 Patch 9.0.1326
 Problem:    Relative line number not updated with virtual text above.
@@ -37926,8 +37965,8 @@ Problem:    xxd: combination of little endian and cols fails. (Aapo
 Solution:   Round up the space taken by the hex output. (closes #12097)
 
 Patch 9.0.1384
-Problem:    Setting HOMEBREW_NO_AUTO_UPDATE is not needed with Homebew version
-            4.
+Problem:    Setting HOMEBREW_NO_AUTO_UPDATE is not needed with Homebrew
+            version 4.
 Solution:   Remove setting HOMEBREW_NO_AUTO_UPDATE. (closes #12008)
 
 Patch 9.0.1385
@@ -38374,7 +38413,7 @@ Solution:   Add entry for Xchacha, even though it is not used.
 
 Patch 9.0.1485
 Problem:    no functions for converting from/to UTF-16 index.
-Solution:   Add UTF-16 flag to existing funtions and add strutf16len() and
+Solution:   Add UTF-16 flag to existing functions and add strutf16len() and
             utf16idx(). (Yegappan Lakshmanan, closes #12216)
 
 Patch 9.0.1486
@@ -38388,7 +38427,7 @@ Solution:   Use "vscode-jsonrpc" instead of "vim-jsonrpc". (Yegappan
 
 Patch 9.0.1488
 Problem:    xchacha20v2 crypt header is platform dependent.
-Solution:   Avoid using "size_t". (Ozaki Kiichi, closses #12296)
+Solution:   Avoid using "size_t". (Ozaki Kiichi, closes #12296)
 
 Patch 9.0.1489
 Problem:    Crypt with libsodium is not tested on CI.
@@ -39681,7 +39720,7 @@ Solution:   Add a few more tests for operator pending mode and register
 Patch 9.0.1780
 Problem:    Vim9 type not defined during object creation
 Solution:   Define type during object creation and not during class
-            definition, parse mulit-line member initializers, fix lock
+            definition, parse multi-line member initializers, fix lock
             initialization
 
 Patch 9.0.1781
@@ -39747,7 +39786,7 @@ Problem:    obsolete macros in configure script
 Solution:   Remove those and start moving to autoconf 2.71
 
 Patch 9.0.1794
-Problem:    autoconf: not correctly detecing include dirs
+Problem:    autoconf: not correctly detecting include dirs
 Solution:   make use of python3 to generate includedirs
 
 Patch 9.0.1795
@@ -40078,7 +40117,7 @@ Problem:    Coverity warns about uninitialized var
 Solution:   initialize it
 
 Patch 9.0.1870
-Problem:    Vim9: disassamble does not show static
+Problem:    Vim9: disassemble does not show static
 Solution:   Show static flag
 
 Patch 9.0.1871
@@ -40821,7 +40860,7 @@ Solution:   Fix cmdline completion fuzzy/Ctrl-E/Ctrl-Y/options when not
 Patch 9.0.2038
 Problem:    Vim9: object method funcref not cleaned up after use
 Solution:   Clean up type stack after using object method funcref,
-            remove now longer used ISN_DEFEROBJ instrunction
+            remove now longer used ISN_DEFEROBJ instruction
 
 Patch 9.0.2039
 Problem:    completion shows current word after completion restart
@@ -40844,7 +40883,7 @@ Problem:    Vim9: issue with funcref assignment and varargs
 Solution:   Fix funcref type checking
 
 Patch 9.0.2044
-Problem:    Vim9: exceptions confuse defered functions
+Problem:    Vim9: exceptions confuse deferred functions
 Solution:   save and restore exception state when calling deferred
             functions
 
@@ -41423,4 +41462,154 @@ Patch 9.0.2175
 Problem:    Compiler warning for uninitialized var
 Solution:   initialize variable to NULL
 
- vim:tw=78:ts=8:noet:ft=help:norl:
+Patch 9.0.2176
+Problem:    Compile error with Motif UI + mouse support (after v9.0.1262)
+Solution:   Use correct oldval option pointer
+
+Patch 9.0.2177
+Problem:    Wrong cursor position when dragging out of window.
+Solution:   Don't use ScreenCols[] when mouse is not in current window.
+
+Patch 9.0.2178
+Problem:    reg_executing() returns wrong result in :normal with range
+            when 'showcmd' is set (after 8.2.4705).
+Solution:   Reset "pending_end_reg_executing" when executing a register.
+
+Patch 9.0.2179
+Problem:    no filetype detection for execline scripts
+Solution:   Add filetype detection for execline
+
+Patch 9.0.2180
+Problem:    POSIX function name in exarg struct causes issues
+            on OpenVMS
+Solution:   Rename getline member in exarg struct to ea_getline,
+            remove isinf() workaround for VMS
+
+Patch 9.0.2181
+Problem:    Vim9: missing error messages
+Solution:   Add one more error message
+
+Patch 9.0.2182
+Problem:    Vim9: need a way to reserve future extension
+Solution:   reserve double underscore prefix for future use
+            (Yegappan Lakshmanan)
+
+Patch 9.0.2183
+Problem:    Maximum callback depth is not configurable.
+Solution:   Revert patch 9.0.2103.  Set 'maxfuncdepth' in test.
+            (zeertzjq)
+
+Patch 9.0.2184
+Problem:    Vim9: inconsistent :type/:class messages
+Solution:   Update the Messages (Ernie Rael)
+
+Patch 9.0.2185
+Problem:    Coverity complains about not checking return value
+            in compare_isn_not_values (after 9.0.2184)
+Solution:   cast return value to "(void)" to make intention clear
+
+Patch 9.0.2186
+Problem:    LTCG compile error on Win/ARM64 for `write_chars()`
+Solution:   Explicitly initialise the storage to use data rather than BSS
+            (Saleem Abdulrasool)
+
+Patch 9.0.2187
+Problem:    Visual selection isn't drawn with 'breakindent' when the line
+            doesn't fit in the window (Jaehwang Jung)
+Solution:   Adjust wlv->fromcol also for 'breakindent' (zeertzjq)
+
+Patch 9.0.2188
+Problem:    cursor wrong after { in single line buffer
+            (Edwin Chan)
+Solution:   do not place the cursor at the end for a single
+            line buffer when moving backwards (Gary Johnson)
+
+Patch 9.0.2189
+Problem:    Wrong display when 'breakindentopt' contains "sbr" and
+            'showbreak' and 'nobreakindent' are set.
+Solution:   Always reset wlv->need_showbreak regardless of the values of
+            'breakindent' and 'showbreak', as they aren't checked when
+            setting wlv->need_showbreak (zeertzjq)
+
+Patch 9.0.2190
+Problem:    proto files need update
+Solution:   re-generate them
+
+==============================================================================
+VERSION 9.2				*version-9.2* *version9.2* *vim-9.2*
+
+This section is about improvements made between version 9.1 and 9.2
+and is a work in progress.
+
+Support for Wayland UI.
+
+Other improvements				*new-other-9.2*
+------------------
+
+Changed						*changed-9.2*
+-------
+
+Added						*added-9.2*
+-----
+
+Various syntax, indent and other plugins were added.
+
+Functions: ~
+
+|diff()|		diff two Lists of strings
+|foreach()|		apply function to List items
+|matchbufline()|	all the matches of a pattern in a buffer
+|matchstrlist()|	all the matches of a pattern in a List of strings
+|getregion()|		get a region of text from a buffer
+
+
+Autocommands: ~
+
+|TermResponseAll|	after the terminal response to |t_RV| and others is
+			received
+|WinNewPre|		before creating a new window
+
+
+Commands: ~
+
+
+Options: ~
+
+==============================================================================
+INCOMPATIBLE CHANGES				*incompatible-9.2*
+
+Improved/Different MS-Windows mapping support
+|w32-experimental-keycode-trans-strategy|
+
+==============================================================================
+IMPROVEMENTS					*improvements-9.2*
+
+Support for command-line completion of 'keymap' option values.
+
+Support for compiling all the methods in a Vim9 class using |:defcompile|.
+
+Support for alternate font highlighting using |t_CF| terminal code.
+
+Support for Super key mappings in GTK using <D-Key>.
+
+Improved visual highlighting.
+
+Python3 support in OpenVMS.
+
+==============================================================================
+COMPILE TIME CHANGES				*compile-changes-9.2*
+
+Support for building with Ruby 3.3.
+
+Support for building Vim 9 in z/OS (MVS).
+
+==============================================================================
+PATCHES						*patches-9.2* *bug-fixes-9.2*
+						*patches-after-9.1*
+
+The list of patches that got included since 9.1.0.  This includes all the new
+features, but does not include runtime file changes (syntax, indent, ftplugin,
+documentation, etc.)
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:fdm=manual:

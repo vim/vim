@@ -1350,7 +1350,13 @@ ins_compl_show_pum(void)
     }
 
     if (compl_match_array == NULL)
+    {
+#ifdef FEAT_EVAL
+	if (compl_started && has_completechanged())
+	    trigger_complete_changed_event(cur);
+#endif
 	return;
+    }
 
     // In Replace mode when a $ is displayed at the end of the line only
     // part of the screen would be updated.  We do need to redraw here.
@@ -1362,6 +1368,10 @@ ins_compl_show_pum(void)
     curwin->w_cursor.col = compl_col;
     pum_display(compl_match_array, compl_match_arraysize, cur);
     curwin->w_cursor.col = col;
+
+    // After adding leader, set the current match to shown match.
+    if (compl_started && compl_curr_match != compl_shown_match)
+	compl_curr_match = compl_shown_match;
 
 #ifdef FEAT_EVAL
     if (has_completechanged())
@@ -3075,7 +3085,8 @@ info_add_completion_info(list_T *li)
 
     // Skip the element with the CP_ORIGINAL_TEXT flag at the beginning, in case of
     // forward completion, or at the end, in case of backward completion.
-    match = forward ? match->cp_next : (compl_no_select && match_at_original_text(match) ? match->cp_prev : match->cp_prev->cp_prev);
+    match = forward || match->cp_prev == NULL ? match->cp_next :
+	(compl_no_select && match_at_original_text(match) ? match->cp_prev : match->cp_prev->cp_prev);
 
     while (match != NULL && !match_at_original_text(match))
     {

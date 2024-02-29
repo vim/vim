@@ -1318,6 +1318,9 @@ reg_match_visual(void)
 	    top = curbuf->b_visual.vi_end;
 	    bot = curbuf->b_visual.vi_start;
 	}
+	// a substitute command may have removed some lines
+	if (bot.lnum > curbuf->b_ml.ml_line_count)
+	    bot.lnum = curbuf->b_ml.ml_line_count;
 	mode = curbuf->b_visual.vi_mode;
 	curswant = curbuf->b_visual.vi_curswant;
     }
@@ -2686,7 +2689,10 @@ static regengine_T bt_regengine =
     bt_regcomp,
     bt_regfree,
     bt_regexec_nl,
-    bt_regexec_multi,
+    bt_regexec_multi
+#ifdef DEBUG
+    ,(char_u *)""
+#endif
 };
 
 #include "regexp_nfa.c"
@@ -2696,7 +2702,10 @@ static regengine_T nfa_regengine =
     nfa_regcomp,
     nfa_regfree,
     nfa_regexec_nl,
-    nfa_regexec_multi,
+    nfa_regexec_multi
+#ifdef DEBUG
+    ,(char_u *)""
+#endif
 };
 
 // Which regexp engine to use? Needed for vim_regcomp().

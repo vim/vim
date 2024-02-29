@@ -1,8 +1,8 @@
 #
 # Makefile for Vim on OpenVMS
 #
-# Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2023 Nov 27
+# Maintainer:   Zoltan Arpadffy <zoltan.arpadffy@gmail.com>
+# Last change:  2024 Jan 03
 #
 # This script has been tested on VMS 6.2 to 9.2 on VAX, ALPHA, IA64 and X86_64
 # with MMS and MMK
@@ -65,6 +65,7 @@ CCVER = YES
 # VIM_TCL    = YES
 # VIM_PERL   = YES
 # VIM_PYTHON = YES
+# VIM_PYTHON3= YES
 # VIM_RUBY   = YES
 # VIM_LUA    = YES
 
@@ -113,7 +114,7 @@ CC_DEF  = cc
 PREFIX  = /prefix=all/name=(upper,short)
 OPTIMIZE= /opt
 .IFDEF MMSX86_64
-ARCH_DEF=        # ,__CRTL_VER_OVERRIDE=80400000 
+ARCH_DEF=        # ,__CRTL_VER_OVERRIDE=80400000
 .ENDIF
 .ENDIF
 
@@ -224,6 +225,16 @@ PYTHON_LIB = ,OS_VMS_PYTHON.OPT/OPT
 PYTHON_INC = ,PYTHON_INCLUDE
 .ENDIF
 
+.IFDEF VIM_PYTHON3
+# Python related setup.
+PYTHON3_DEF = ,"FEAT_PYTHON3"
+PYTHON3_SRC = if_python3.c
+PYTHON3_OBJ = if_python3.obj
+PYTHON3_LIB = ,OS_VMS_PYTHON3.OPT/OPT
+PYTHON3_INC = ,PYTHON3_INCLUDE
+.ENDIF
+
+
 .IFDEF VIM_TCL
 # TCL related setup.
 TCL_DEF = ,"FEAT_TCL"
@@ -260,9 +271,9 @@ XIM_DEF = ,"FEAT_XIM"
 
 .IFDEF VIM_MZSCHEME
 # MZSCHEME related setup
-MZSCH_DEF = ,"FEAT_MZSCHEME"
-MZSCH_SRC = if_mzsch.c
-MZSCH_OBJ = if_mzsch.obj
+MZSCHEME_DEF = ,"FEAT_MZSCHEME"
+MZSCHEME_SRC = if_mzsch.c
+MZSCHEME_OBJ = if_mzsch.obj
 .ENDIF
 
 .IFDEF VIM_ICONV
@@ -275,7 +286,7 @@ XDIFF_SRC = xdiffi.c,xemit.c,xprepare.c,xutils.c,xhistogram.c,xpatience.c
 XDIFF_OBJ = xdiffi.obj,xemit.obj,xprepare.obj,xutils.obj,xhistogram.obj,xpatience.obj
 XDIFF_INC = ,[.xdiff]
 
-.IFDEF MODIFIED_BY 
+.IFDEF MODIFIED_BY
 DEF_MODIFIED = YES
 .ELSE
 DEF_MODIFIED = NO
@@ -294,26 +305,26 @@ VIMHOST = "''F$TRNLNM("SYS$NODE")'''F$TRNLNM("UCX$INET_HOST")'.''F$TRNLNM("UCX$I
 
 .SUFFIXES : .obj .c
 
-ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
+ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF)$(PYTHON3_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCHEME_DEF) -
  $(ICONV_DEF)$(ARCH_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
- /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC) -
+ /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC)$(PYTHON3_INC) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 # CFLAGS displayed in :ver information
 # It is specially formatted for correct display of unix like includes
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
-ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
+ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF)$(PYTHON3_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCHEME_DEF) -
  $(ICONV_DEF)$(ARCH_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
- /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
+ /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC)$(PYTHON3_INC) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) $(XPM_LIB)\
-	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB) $(LUA_LIB)
+	   $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(TCL_LIB) $(RUBY_LIB) $(LUA_LIB)
 
 SRC = \
 	alloc.c \
@@ -437,13 +448,14 @@ SRC = \
 	viminfo.c \
 	window.c \
 	$(GUI_SRC) \
+	$(XDIFF_SRC) \
+	$(LUA_SRC) \
+	$(MZSCHEME_SRC) \
 	$(PERL_SRC) \
 	$(PYTHON_SRC) \
+	$(PYTHON3_SRC) \
 	$(TCL_SRC) \
-	$(RUBY_SRC) \
-	$(LUA_SRC) \
-	$(MZSCH_SRC) \
-	$(XDIFF_SRC)
+	$(RUBY_SRC)
 
 OBJ = \
 	alloc.obj \
@@ -568,13 +580,14 @@ OBJ = \
 	viminfo.obj \
 	window.obj \
 	$(GUI_OBJ) \
+	$(XDIFF_OBJ) \
+	$(LUA_OBJ) \
+	$(MZSCHEME_OBJ) \
 	$(PERL_OBJ) \
 	$(PYTHON_OBJ) \
+	$(PYTHON3_OBJ) \
 	$(TCL_OBJ) \
-	$(RUBY_OBJ) \
-	$(LUA_OBJ) \
-	$(MZSCH_OBJ) \
-	$(XDIFF_OBJ)
+	$(RUBY_OBJ)
 
 # Default target is making the executable
 all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env ruby_env lua_env $(TARGET)
@@ -732,6 +745,20 @@ python_env :
 	-@ close opt_file
 .ELSE
 python_env :
+	-@ !
+.ENDIF
+
+.IFDEF VIM_PYTHON3
+python3_env :
+	-@ write sys$output "using PYTHON3 environment:"
+	-@ show logical PYTHON3_INCLUDE
+	-@ show logical PYTHON3_OLB
+	-@ write sys$output "creating OS_VMS_PYTHON3.OPT file."
+	-@ open/write opt_file OS_VMS_PYTHON3.OPT
+	-@ write opt_file "PYTHON3_OLB:PYTHON3.OLB /share"
+	-@ close opt_file
+.ELSE
+python3_env :
 	-@ !
 .ENDIF
 
@@ -1085,7 +1112,7 @@ sign.obj : sign.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h option.h structs.h regexp.h gui.h \
  beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h proto.h \
  errors.h globals.h
-sound.obj : sound.c vim.h [.auto]config.h feature.h 
+sound.obj : sound.c vim.h [.auto]config.h feature.h
 spell.obj : spell.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h termdefs.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \

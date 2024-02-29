@@ -317,6 +317,9 @@ au BufRead,BufNewFile *.chai			setf chaiscript
 " Chatito
 au BufNewFile,BufRead *.chatito			setf chatito
 
+" Chuck
+au BufNewFile,BufRead *.ck			setf chuck
+
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
 
@@ -619,8 +622,12 @@ au BufNewFile,BufRead *.intr			setf dylanintr
 " Dylan
 au BufNewFile,BufRead *.dylan			setf dylan
 
-" Microsoft Module Definition
-au BufNewFile,BufRead *.def			setf def
+" Microsoft Module Definition or Modula-2
+au BufNewFile,BufRead *.def			call dist#ft#FTdef()
+
+if has("fname_case")
+  au BufNewFile,BufRead *.DEF			setf modula2
+endif
 
 " Dracula
 au BufNewFile,BufRead *.drac,*.drc,*lvs,*lpe	setf dracula
@@ -639,8 +646,8 @@ au BufNewFile,BufRead *.dsl
 " DTD (Document Type Definition for XML)
 au BufNewFile,BufRead *.dtd			setf dtd
 
-" DTS/DSTI (device tree files)
-au BufNewFile,BufRead *.dts,*.dtsi		setf dts
+" DTS/DSTI/DTSO (device tree files)
+au BufNewFile,BufRead *.dts,*.dtsi,*.dtso,*.its	setf dts
 
 " EDIF (*.edf,*.edif,*.edn,*.edo) or edn
 au BufNewFile,BufRead *.ed\(f\|if\|o\)		setf edif
@@ -1134,7 +1141,7 @@ au BufNewFile,BufRead *.kt,*.ktm,*.kts		setf kotlin
 au BufNewFile,BufRead *.ks			setf kscript
 
 " Kconfig
-au BufNewFile,BufRead Kconfig,Kconfig.debug	setf kconfig
+au BufNewFile,BufRead Kconfig,Kconfig.debug,Config.in	setf kconfig
 
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
@@ -1237,6 +1244,9 @@ au BufNewFile,BufRead *.lua			setf lua
 " Luau
 au BufNewFile,BufRead *.luau		setf luau
 
+" Luau config
+au BufNewFile,BufRead .luaurc		setf jsonc
+
 " Luacheck
 au BufNewFile,BufRead .luacheckrc		setf lua
 
@@ -1338,9 +1348,6 @@ au BufNewFile,BufRead *.mmp			setf mmp
 
 " ABB Rapid, Modula-2, Modsim III or LambdaProlog
 au BufNewFile,BufRead *.mod\c			call dist#ft#FTmod()
-
-" Modula-2  (.md removed in favor of Markdown, see dist#ft#FTmod for *.MOD)
-au BufNewFile,BufRead *.m2,*.DEF,*.mi		setf modula2
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3
@@ -2001,7 +2008,7 @@ au BufNewFile,BufRead catalog			setf catalog
 " Gentoo ebuilds, Arch Linux PKGBUILDs and Alpine Linux APKBUILDs are actually
 " bash scripts.
 " NOTE: Patterns ending in a star are further down, these have lower priority.
-au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD,*.bats call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
 
@@ -2773,7 +2780,7 @@ au! BufNewFile,BufRead *jarg*
 au BufNewFile,BufRead *.properties_??_??_*	call s:StarSetf('jproperties')
 
 " Kconfig
-au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
+au BufNewFile,BufRead Kconfig.*,Config.in.*	call s:StarSetf('kconfig')
 
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf*		call s:StarSetf('lilo')

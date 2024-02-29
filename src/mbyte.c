@@ -3454,6 +3454,8 @@ static convertStruct toLower[] =
 	{0x1e900,0x1e921,1,34}
 };
 
+// Note: UnicodeData.txt does not define U+1E9E as being the corresponding upper
+// case letter for U+00DF (ß), however it is part of the toLower table
 static convertStruct toUpper[] =
 {
 	{0x61,0x7a,1,-32},
@@ -4186,32 +4188,12 @@ mb_copy_char(char_u **fp, char_u **tp)
     int
 mb_off_next(char_u *base, char_u *p)
 {
-    int		i;
-    int		j;
+    int		head_off = (*mb_head_off)(base, p);
 
-    if (enc_utf8)
-    {
-	if (*p < 0x80)		// be quick for ASCII
-	    return 0;
+    if (head_off == 0)
+	return 0;
 
-	// Find the next character that isn't 10xx.xxxx
-	for (i = 0; (p[i] & 0xc0) == 0x80; ++i)
-	    ;
-	if (i > 0)
-	{
-	    // Check for illegal sequence.
-	    for (j = 0; p - j > base; ++j)
-		if ((p[-j] & 0xc0) != 0x80)
-		    break;
-	    if (utf8len_tab[p[-j]] != i + j)
-		return 0;
-	}
-	return i;
-    }
-
-    // Only need to check if we're on a trail byte, it doesn't matter if we
-    // want the offset to the next or current character.
-    return (*mb_head_off)(base, p);
+    return (*mb_ptr2len)(p - head_off) - head_off;
 }
 
 /*
@@ -4628,7 +4610,7 @@ enc_canonize(char_u *enc)
     }
 
     // "iso-8859n" -> "iso-8859-n"
-    if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
+    if (STRNCMP(p, "iso-8859", 8) == 0 && SAFE_isdigit(p[8]))
     {
 	STRMOVE(p + 9, p + 8);
 	p[8] = '-';
@@ -4705,7 +4687,7 @@ enc_locale_env(char *locale)
     if ((p = (char *)vim_strchr((char_u *)s, '.')) != NULL)
     {
 	if (p > s + 2 && STRNICMP(p + 1, "EUC", 3) == 0
-			&& !isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
+			&& !SAFE_isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
 	{
 	    // copy "XY.EUC" to "euc-XY" to buf[10]
 	    STRCPY(buf + 10, "euc-");
@@ -4721,7 +4703,7 @@ enc_locale_env(char *locale)
     {
 	if (s[i] == '_' || s[i] == '-')
 	    buf[i] = '-';
-	else if (isalnum((int)s[i]))
+	else if (SAFE_isalnum(s[i]))
 	    buf[i] = TOLOWER_ASC(s[i]);
 	else
 	    break;
@@ -5613,7 +5595,8 @@ tv_nr_compare(const void *a1, const void *a2)
     listitem_T *li1 = *(listitem_T **)a1;
     listitem_T *li2 = *(listitem_T **)a2;
 
-    return li1->li_tv.vval.v_number - li2->li_tv.vval.v_number;
+    return li1->li_tv.vval.v_number == li2->li_tv.vval.v_number ? 0 :
+	li1->li_tv.vval.v_number > li2->li_tv.vval.v_number ? 1 : -1;
 }
 
     void

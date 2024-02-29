@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Dec 09
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Feb 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -303,10 +303,15 @@ List concatenation ~
 							*list-concatenation*
 Two lists can be concatenated with the "+" operator: >
 	:let longlist = mylist + [5, 6]
-	:let mylist += [7, 8]
+	:let longlist = [5, 6] + mylist
+To prepend or append an item, turn it into a list by putting [] around it.
 
-To prepend or append an item, turn the item into a list by putting [] around
-it.  To change a list in-place, refer to |list-modification| below.
+A list can be concatenated with another one in-place using |:let+=| or
+|extend()|: >
+	:let mylist += [7, 8]
+	:call extend(mylist, [7, 8])
+<
+See |list-modification| below for more about changing a list in-place.
 
 
 Sublist ~
@@ -425,6 +430,18 @@ To change part of a list you can specify the first and last item to be
 modified.  The value must at least have the number of items in the range: >
 	:let list[3:5] = [3, 4, 5]
 
+To add items to a List in-place, you can use |:let+=| (|list-concatenation|): >
+	:let listA = [1, 2]
+	:let listA += [3, 4]
+<
+When two variables refer to the same List, changing one List in-place will
+cause the referenced List to be changed in-place: >
+	:let listA = [1, 2]
+	:let listB = listA
+	:let listB += [3, 4]
+	:echo listA
+	[1, 2, 3, 4]
+<
 Adding and removing items from a list is done with functions.  Here are a few
 examples: >
 	:call insert(list, 'a')		" prepend item 'a'
@@ -745,12 +762,15 @@ This calls Doit() with 0x11, 0x22 and 0x33.
 
 
 Blob concatenation ~
-
+							*blob-concatenation*
 Two blobs can be concatenated with the "+" operator: >
 	:let longblob = myblob + 0z4455
+	:let longblob = 0z4455 + myblob
+<
+A blob can be concatenated with another one in-place using |:let+=|: >
 	:let myblob += 0z6677
-
-To change a blob in-place see |blob-modification| below.
+<
+See |blob-modification| below for more about changing a blob in-place.
 
 
 Part of a blob ~
@@ -793,6 +813,18 @@ To change part of a blob you can specify the first and last byte to be
 modified.  The value must have the same number of bytes in the range: >
 	:let blob[3:5] = 0z334455
 
+To add items to a Blob in-place, you can use |:let+=| (|blob-concatenation|): >
+	:let blobA = 0z1122
+	:let blobA += 0z3344
+<
+When two variables refer to the same Blob, changing one Blob in-place will
+cause the referenced Blob to be changed in-place: >
+	:let blobA = 0z1122
+	:let blobB = blobA
+	:let blobB += 0z3344
+	:echo blobA
+	0z11223344
+<
 You can also use the functions |add()|, |remove()| and |insert()|.
 
 
@@ -2005,9 +2037,14 @@ v:collate	The current locale setting for collation order of the runtime
 								*v:colornames*
 v:colornames    A dictionary that maps color names to hex color strings. These
 		color names can be used with the |highlight-guifg|,
-		|highlight-guibg|, and |highlight-guisp| parameters. Updating
-		an entry in v:colornames has no immediate effect on the syntax
-		highlighting. The highlight commands (probably in a
+		|highlight-guibg|, and |highlight-guisp| parameters.
+
+		The key values in the dictionary (the color names) should be
+		lower cased, because Vim looks up a color by its lower case
+		name.
+
+		Updating an entry in v:colornames has no immediate effect on
+		the syntax highlighting. The highlight commands (probably in a
 		colorscheme script) need to be re-evaluated in order to use
 		the updated color values. For example: >
 
@@ -2568,8 +2605,9 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		'c', with only digits and ';' in between.
 		When this option is set, the TermResponse autocommand event is
 		fired, so that you can react to the response from the
-		terminal.  You can use |terminalprops()| to see what Vim
-		figured out about the terminal.
+		terminal.  The TermResponseAll event is also fired, with
+		<amatch> set to "version".  You can use |terminalprops()| to see
+		what Vim figured out about the terminal.
 		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
@@ -2581,27 +2619,37 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 						*v:termblinkresp*
 v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
 		termcap entry.  This is used to find out whether the terminal
-		cursor is blinking. This is used by |term_getcursor()|.
+		cursor is blinking. This is used by |term_getcursor()|.  When
+		this option is set, the TermResponseAll autocommand event is
+		fired, with <amatch> set to "cursorblink".
 
 						*v:termstyleresp*
 v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 		termcap entry.  This is used to find out what the shape of the
-		cursor is.  This is used by |term_getcursor()|.
+		cursor is.  This is used by |term_getcursor()|.  When this
+		option is set, the TermResponseAll autocommand event is fired,
+		with <amatch> set to "cursorshape".
 
 						*v:termrbgresp*
 v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
-		background color is, see 'background'.
+		background color is; see 'background'.  When this option is
+		set, the TermResponseAll autocommand event is fired, with
+		<amatch> set to "background".
 
 						*v:termrfgresp*
 v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
 		termcap entry.  This is used to find out what the terminal
-		foreground color is.
+		foreground color is.  When this option is set, the
+		TermResponseAll autocommand event is fired, with <amatch> set
+		to "foreground".
 
 						*v:termu7resp*
 v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
 		termcap entry.  This is used to find out what the terminal
-		does with ambiguous width characters, see 'ambiwidth'.
+		does with ambiguous width characters, see 'ambiwidth'.  When
+		this option is set, the TermResponseAll autocommand event is
+		fired, with <amatch> set to "ambiguouswidth".
 
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.
@@ -2793,6 +2841,8 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let {var} ..= {expr1}	Like ":let {var} = {var} .. {expr1}".
 			These fail if {var} was not set yet and when the type
 			of {var} and {expr1} don't fit the operator.
+			`+=` modifies a |List| or a |Blob| in-place instead of
+			creating a new one.
 			`.=` is not supported with Vim script version 2 and
 			later, see |vimscript-version|.
 

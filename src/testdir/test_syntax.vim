@@ -193,14 +193,14 @@ func Test_syntax_completion()
   " Check that clearing "Aap" avoids it showing up before Boolean.
   hi Aap ctermfg=blue
   call feedkeys(":syn list \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"syn list Aap Boolean Character ', @:)
+  call assert_match('^"syn list Aap Added Boolean Changed Character ', @:)
   hi clear Aap
 
   call feedkeys(":syn list \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"syn list Boolean Character ', @:)
+  call assert_match('^"syn list Added Boolean Changed Character ', @:)
 
   call feedkeys(":syn match \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"syn match Boolean Character ', @:)
+  call assert_match('^"syn match Added Boolean Changed Character ', @:)
 
   syn cluster Aax contains=Aap
   call feedkeys(":syn list @A\<C-A>\<C-B>\"\<CR>", 'tx')

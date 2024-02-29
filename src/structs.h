@@ -1186,6 +1186,7 @@ typedef struct attr_entry
 	    short_u	    fg_color;	// foreground color number
 	    short_u	    bg_color;	// background color number
 	    short_u	    ul_color;	// underline color number
+	    short_u	    font;	// font number
 # ifdef FEAT_TERMGUICOLORS
 	    guicolor_T	    fg_rgb;	// foreground color RGB
 	    guicolor_T	    bg_rgb;	// background color RGB
@@ -4333,7 +4334,7 @@ struct VimMenu
     HMENU	submenu_id;	    // If this is submenu, add children here
     HWND	tearoff_handle;	    // hWnd of tearoff if created
 #endif
-#if FEAT_GUI_HAIKU
+#ifdef FEAT_GUI_HAIKU
     BMenuItem  *id;		    // Id of menu item
     BMenu  *submenu_id;		    // If this is submenu, add children here
 # ifdef FEAT_TOOLBAR
@@ -4357,7 +4358,6 @@ typedef int vimmenu_T;
  */
 typedef struct
 {
-    buf_T	*save_curbuf;	    // saved curbuf
     int		use_aucmd_win_idx;  // index in aucmd_win[] if >= 0
     int		save_curwin_id;	    // ID of saved curwin
     int		new_curwin_id;	    // ID of new curwin
@@ -4366,6 +4366,9 @@ typedef struct
     char_u	*globaldir;	    // saved value of globaldir
     int		save_VIsual_active; // saved VIsual_active
     int		save_State;	    // saved State
+#ifdef FEAT_JOB_CHANNEL
+    int		save_prompt_insert; // saved b_prompt_insert
+#endif
 } aco_save_T;
 
 /*
@@ -4879,11 +4882,12 @@ typedef struct {
     hashtab_T	sve_hashtab;
 } save_v_event_T;
 
-// Enum used by filter(), map() and mapnew()
+// Enum used by filter(), map(), mapnew() and foreach()
 typedef enum {
     FILTERMAP_FILTER,
     FILTERMAP_MAP,
-    FILTERMAP_MAPNEW
+    FILTERMAP_MAPNEW,
+    FILTERMAP_FOREACH
 } filtermap_T;
 
 // Structure used by switch_win() to pass values to restore_win()
@@ -4907,6 +4911,10 @@ typedef struct {
     win_T	*cts_win;
     char_u	*cts_line;		// start of the line
     char_u	*cts_ptr;		// current position in line
+#ifdef FEAT_LINEBREAK
+    int		cts_bri_size;		// cached size of 'breakindent', or -1
+					// if not computed yet
+#endif
 #ifdef FEAT_PROP_POPUP
     int		cts_text_prop_count;	// number of text props; when zero
 					// cts_text_props is not used

@@ -88,10 +88,25 @@ func Test_AAA_python3_setup()
 endfunc
 
 func Test_py3do()
-  " Check deleting lines does not trigger an ml_get error.
   new
+
+  " Check deleting lines does not trigger an ml_get error.
   call setline(1, ['one', 'two', 'three'])
   py3do vim.command("%d_")
+  call assert_equal([''], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  py3do vim.command("1,2d_")
+  call assert_equal(['three'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  py3do vim.command("2,3d_"); return "REPLACED"
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3py3do vim.command("1,2d_"); return "REPLACED"
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 
   " Check switching to another buffer does not trigger an ml_get error.

@@ -4514,10 +4514,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 		// Mark the buffer as unmodified and free undo info.
 		unchanged(buf, TRUE, TRUE);
 		if ((flags & READ_KEEP_UNDO) == 0)
-		{
-		    u_blockfree(buf);
-		    u_clearall(buf);
-		}
+		    u_clearallandblockfree(buf);
 		else
 		{
 		    // Mark all undo states as changed.

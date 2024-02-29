@@ -828,9 +828,23 @@ insert_reg(
 	    {
 		if (regname == '-')
 		{
+		    int dir = BACKWARD;
+		    if ((State & REPLACE_FLAG) != 0)
+		    {
+			pos_T curpos;
+			if (u_save_cursor() == FAIL)
+			    return FAIL;
+			del_chars((long)mb_charlen(y_current->y_array[0]), TRUE);
+			curpos = curwin->w_cursor;
+			if (oneright() == FAIL)
+			    // hit end of line, need to put forward (after the current position)
+			    dir = FORWARD;
+			curwin->w_cursor = curpos;
+		    }
+
 		    AppendCharToRedobuff(Ctrl_R);
 		    AppendCharToRedobuff(regname);
-		    do_put(regname, NULL, BACKWARD, 1L, PUT_CURSEND);
+		    do_put(regname, NULL, dir, 1L, PUT_CURSEND);
 		}
 		else
 		    stuffescaped(y_current->y_array[i], literally);
@@ -1134,7 +1148,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
     int			yanktype = oap->motion_type;
     long		yanklines = oap->line_count;
     linenr_T		yankendlnum = oap->end.lnum;
-    char_u		*p;
     char_u		*pnew;
     struct block_def	bd;
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
@@ -1226,70 +1239,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 	    case MCHAR:
 		{
-		    colnr_T startcol = 0, endcol = MAXCOL;
-		    int	    is_oneChar = FALSE;
-		    colnr_T cs, ce;
-
-		    p = ml_get(lnum);
-		    bd.startspaces = 0;
-		    bd.endspaces = 0;
-
-		    if (lnum == oap->start.lnum)
-		    {
-			startcol = oap->start.col;
-			if (virtual_op)
-			{
-			    getvcol(curwin, &oap->start, &cs, NULL, &ce);
-			    if (ce != cs && oap->start.coladd > 0)
-			    {
-				// Part of a tab selected -- but don't
-				// double-count it.
-				bd.startspaces = (ce - cs + 1)
-							  - oap->start.coladd;
-				if (bd.startspaces < 0)
-				    bd.startspaces = 0;
-				startcol++;
-			    }
-			}
-		    }
-
-		    if (lnum == oap->end.lnum)
-		    {
-			endcol = oap->end.col;
-			if (virtual_op)
-			{
-			    getvcol(curwin, &oap->end, &cs, NULL, &ce);
-			    if (p[endcol] == NUL || (cs + oap->end.coladd < ce
-					// Don't add space for double-wide
-					// char; endcol will be on last byte
-					// of multi-byte char.
-					&& (*mb_head_off)(p, p + endcol) == 0))
-			    {
-				if (oap->start.lnum == oap->end.lnum
-					    && oap->start.col == oap->end.col)
-				{
-				    // Special case: inside a single char
-				    is_oneChar = TRUE;
-				    bd.startspaces = oap->end.coladd
-					 - oap->start.coladd + oap->inclusive;
-				    endcol = startcol;
-				}
-				else
-				{
-				    bd.endspaces = oap->end.coladd
-							     + oap->inclusive;
-				    endcol -= oap->inclusive;
-				}
-			    }
-			}
-		    }
-		    if (endcol == MAXCOL)
-			endcol = (colnr_T)STRLEN(p);
-		    if (startcol > endcol || is_oneChar)
-			bd.textlen = 0;
-		    else
-			bd.textlen = endcol - startcol + oap->inclusive;
-		    bd.textstart = p + startcol;
+		    charwise_block_prep(oap->start, oap->end, &bd, lnum, oap->inclusive);
 		    if (yank_copy_line(&bd, y_idx, FALSE) == FAIL)
 			goto fail;
 		    break;
@@ -1889,10 +1839,10 @@ do_put(
 		spaces = y_width + 1;
 		init_chartabsize_arg(&cts, curwin, 0, 0,
 						      y_array[i], y_array[i]);
-		for (j = 0; j < yanklen; j++)
+
+		while (*cts.cts_ptr != NUL)
 		{
-		    spaces -= lbr_chartabsize(&cts);
-		    ++cts.cts_ptr;
+		    spaces -= lbr_chartabsize_adv(&cts);
 		    cts.cts_vcol = 0;
 		}
 		clear_chartabsize_arg(&cts);

@@ -1368,7 +1368,7 @@ ex_perldo(exarg_T *eap)
 	PUSHMARK(sp);
 	perl_call_pv("VIM::perldo", G_SCALAR | G_EVAL);
 	str = SvPV(GvSV(PL_errgv), length);
-	if (length || curbuf != was_curbuf)
+	if (length || curbuf != was_curbuf || i > curbuf->b_ml.ml_line_count)
 	    break;
 	SPAGAIN;
 	if (SvTRUEx(POPs))

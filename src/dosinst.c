@@ -2760,7 +2760,7 @@ main(int argc, char **argv)
 	    rewind(stdin);
 	    if (scanf("%99s", buf) == 1)
 	    {
-		if (isdigit(buf[0]))
+		if (isdigit((unsigned char)buf[0]))
 		{
 		    // Change a choice.
 		    i = atoi(buf);

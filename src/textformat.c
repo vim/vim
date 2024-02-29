@@ -90,11 +90,18 @@ internal_format(
 	colnr_T	end_col;
 	int	wcc;			// counter for whitespace chars
 	int	did_do_comment = FALSE;
+	int	first_pass;
 
-	virtcol = get_nolist_virtcol()
-				   + char2cells(c != NUL ? c : gchar_cursor());
-	if (virtcol <= (colnr_T)textwidth)
-	    break;
+	// Cursor is currently at the end of line. No need to format
+	// if line length is less than textwidth (8 * textwidth for
+	// utf safety)
+	if (curwin->w_cursor.col < 8 * textwidth)
+	{
+	    virtcol = get_nolist_virtcol()
+		+ char2cells(c != NUL ? c : gchar_cursor());
+	    if (virtcol <= (colnr_T)textwidth)
+		break;
+	}
 
 	if (no_leader)
 	    do_comments = FALSE;
@@ -144,9 +151,17 @@ internal_format(
 	coladvance((colnr_T)textwidth);
 	wantcol = curwin->w_cursor.col;
 
-	curwin->w_cursor.col = startcol;
+	// If startcol is large (a long line), formatting takes too much
+	// time. The algorithm is O(n^2), it walks from the end of the
+	// line to textwidth border every time for each line break.
+	//
+	// Ceil to 8 * textwidth to optimize.
+	curwin->w_cursor.col = startcol < 8 * textwidth ? startcol :
+	    8 * textwidth;
+
 	foundcol = 0;
 	skip_pos = 0;
+	first_pass = TRUE;
 
 	// Find position to break at.
 	// Stop at first entered white when 'formatoptions' has 'v'
@@ -155,8 +170,11 @@ internal_format(
 		    || curwin->w_cursor.lnum != Insstart.lnum
 		    || curwin->w_cursor.col >= Insstart.col)
 	{
-	    if (curwin->w_cursor.col == startcol && c != NUL)
+	    if (first_pass && c != NUL)
+	    {
 		cc = c;
+		first_pass = FALSE;
+	    }
 	    else
 		cc = gchar_cursor();
 	    if (WHITECHAR(cc))
@@ -795,7 +813,7 @@ comp_textwidth(
 	// The width is the window width minus 'wrapmargin' minus all the
 	// things that add to the margin.
 	textwidth = curwin->w_width - curbuf->b_p_wm;
-	if (cmdwin_type != 0)
+	if (curbuf == cmdwin_buf)
 	    textwidth -= 1;
 #ifdef FEAT_FOLDING
 	textwidth -= curwin->w_p_fdc;

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Dec 14
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Feb 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -130,8 +130,6 @@ Further Vim9 improvements:
     Issue #11822: any.Func() can be a dict or an object call, need to handle
     this at runtime.  Also see #12198 for an example.
     Possibly issue #11981 can be fixed at the same time (has two examples).
-  - Make ":defcompile ClassName" compile all functions and methods in the
-    class.
   - Forward declaration of a class?  E.g. for Clone() function.
 	Email lifepillar 2023 Mar 26
   - object empty(), len() - can class define a method to be used for them?
@@ -958,9 +956,6 @@ When 'sidescrolloff' is set, using "zl" to go to the end of the line, suddenly
 scrolls back.  Should allow for this scrolling, like 'scrolloff' does when
 using CTRL-E. (Yee Cheng Chin, #3721)
 
-Add function to make use of internal diff, working on two lists and returning
-unified diff (list of lines).
-
 When splitting a window with few text lines, the relative cursor position is
 kept, which means part of the text isn't displayed.  Better show all the text
 when possible. (Dylan Lloyd, #3973)
@@ -1122,9 +1117,6 @@ Nov 21)
 When t_Co is changed from termresponse, the OptionSet autocommand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
-
-Add another autocommand like TermResponse that is fired for the other terminal
-responses, such as bg and fg.  Use "bg", "fg", "blink", etc. for the name.
 
 When using command line window, CmdlineLeave is triggered without
 CmdlineEnter.  (xtal8, 2017 Oct 30, #2263)
@@ -4672,7 +4664,6 @@ GUI:
 
 
 Autocommands:
-9   Add WinNewPre - before creating a new window. #10635
 9   When triggering WinNew provide the window ID somehow.  #10633
 9   Rework the code from FEAT_OSFILETYPE for autocmd-osfiletypes to use
     'filetype'.  Only for when the current buffer is known.

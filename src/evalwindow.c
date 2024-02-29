@@ -824,11 +824,15 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	return;
 
     id = tv_get_number(&argvars[0]);
-    if (cmdwin_type != 0)
+    if (curwin->w_id == id)
     {
-	emsg(_(e_invalid_in_cmdline_window));
+	// Nothing to do.
+	rettv->vval.v_number = 1;
 	return;
     }
+
+    if (text_or_buf_locked())
+	return;
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
     if (popup_is_popup(curwin) && curbuf->b_term != NULL)
     {
@@ -953,58 +957,16 @@ f_win_screenpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Move the window wp into a new split of targetwin in a given direction
- */
-    static void
-win_move_into_split(win_T *wp, win_T *targetwin, int size, int flags)
-{
-    int	    dir;
-    int	    height = wp->w_height;
-    win_T   *oldwin = curwin;
-
-    if (wp == targetwin)
-	return;
-
-    // Jump to the target window
-    if (curwin != targetwin)
-	win_goto(targetwin);
-
-    // Remove the old window and frame from the tree of frames
-    (void)winframe_remove(wp, &dir, NULL);
-    win_remove(wp, NULL);
-    last_status(FALSE);	    // may need to remove last status line
-    (void)win_comp_pos();   // recompute window positions
-
-    // Split a window on the desired side and put the old window there
-    (void)win_split_ins(size, flags, wp, dir);
-
-    // If splitting horizontally, try to preserve height
-    if (size == 0 && !(flags & WSP_VERT))
-    {
-	win_setheight_win(height, wp);
-	if (p_ea)
-	    win_equal(wp, TRUE, 'v');
-    }
-
-#if defined(FEAT_GUI)
-    // When 'guioptions' includes 'L' or 'R' may have to remove or add
-    // scrollbars.  Have to update them anyway.
-    gui_may_update_scrollbars();
-#endif
-
-    if (oldwin != curwin)
-	win_goto(oldwin);
-}
-
-/*
  * "win_splitmove()" function
  */
     void
 f_win_splitmove(typval_T *argvars, typval_T *rettv)
 {
-    win_T   *wp;
-    win_T   *targetwin;
+    win_T   *wp, *targetwin;
+    win_T   *oldwin = curwin;
     int     flags = 0, size = 0;
+
+    rettv->vval.v_number = -1;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -1020,7 +982,6 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	    || win_valid_popup(wp) || win_valid_popup(targetwin))
     {
 	emsg(_(e_invalid_window_number));
-	rettv->vval.v_number = -1;
 	return;
     }
 
@@ -1040,7 +1001,24 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	size = (int)dict_get_number(d, "size");
     }
 
-    win_move_into_split(wp, targetwin, size, flags);
+    // Check if we can split the target before we bother switching windows.
+    if (text_or_buf_locked() || check_split_disallowed(targetwin) == FAIL)
+	return;
+
+    if (curwin != targetwin)
+	win_goto(targetwin);
+
+    // Autocommands may have sent us elsewhere or closed "wp" or "oldwin".
+    if (curwin == targetwin && win_valid(wp))
+    {
+	if (win_splitmove(wp, size, flags) == OK)
+	    rettv->vval.v_number = 0;
+    }
+    else
+	emsg(_(e_autocommands_caused_command_to_abort));
+
+    if (oldwin != curwin && win_valid(oldwin))
+	win_goto(oldwin);
 }
 
 /*
@@ -1076,7 +1054,7 @@ f_win_gettype(typval_T *argvars, typval_T *rettv)
     else if (WIN_IS_POPUP(wp))
 	rettv->vval.v_string = vim_strsave((char_u *)"popup");
 #endif
-    else if (wp == curwin && cmdwin_type != 0)
+    else if (wp == cmdwin_win)
 	rettv->vval.v_string = vim_strsave((char_u *)"command");
 #ifdef FEAT_QUICKFIX
     else if (bt_quickfix(wp->w_buffer))

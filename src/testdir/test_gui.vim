@@ -111,6 +111,8 @@ func Test_getfontname_without_arg()
 endfunc
 
 func Test_getwinpos()
+  CheckX11
+
   call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
   call assert_true(getwinposx() >= 0)
   call assert_true(getwinposy() >= 0)
@@ -633,7 +635,7 @@ endfunc
 func Test_set_guiligatures()
   CheckX11BasedGui
 
-  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3') || has('win32')
     " Try correct value
     set guiligatures=<>=ab
     call assert_equal("<>=ab", &guiligatures)
@@ -897,7 +899,7 @@ func Test_set_term()
 endfunc
 
 func Test_windowid_variable()
-  if g:x11_based_gui || has('win32')
+  if (g:x11_based_gui && empty($WAYLAND_DISPLAY)) || has('win32')
     call assert_true(v:windowid > 0)
   else
     call assert_equal(0, v:windowid)
@@ -1708,7 +1710,11 @@ func Test_gui_lowlevel_keyevent()
   " Test for <Ctrl-A> to <Ctrl-Z> keys
   for kc in range(65, 90)
     call SendKeys([0x11, kc])
-    let ch = getcharstr()
+    try
+      let ch = getcharstr()
+    catch /^Vim:Interrupt$/
+      let ch = "\<c-c>"
+    endtry
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 

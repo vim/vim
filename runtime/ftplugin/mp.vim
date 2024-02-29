@@ -5,6 +5,7 @@ vim9script
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
 # Latest Revision:    2022 Aug 12
+#                     2024 Jan 14 by Vim Project (browsefilter)
 
 if exists("b:did_ftplugin")
   finish
@@ -84,7 +85,11 @@ endif
 
 if (has('gui_win32') || has('gui_gtk')) && !exists('b:browsefilter')
   b:browsefilter = "MetaPost Source Files (*.mp)\t*.mp\n"
-  ..               "All Files (*.*)\t*.*\n"
+  if has("win32")
+    b:browsefilter ..= "All Files (*.*)\t*\n"
+  else
+    b:browsefilter ..= "All Files (*)\t*\n"
+  endif
   b:undo_ftplugin ..= ' | unlet! b:browsefilter'
 endif
 

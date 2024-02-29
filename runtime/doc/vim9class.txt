@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Dec 24
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Jan 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -104,19 +104,19 @@ You can create an object from this class with the new() method: >
 The object variables "lnum" and "col" can be accessed directly: >
 
 	echo $'The text position is ({pos.lnum}, {pos.col})'
-<							*E1317* *E1327*
+<						    *E1317* *E1327* *:this*
 If you have been using other object-oriented languages you will notice that in
-Vim, within a class definition, the object members are consistently referred
-to with the "this." prefix.  This is different from languages like Java and
-TypeScript.  The naming convention makes the object members easy to spot.
-Also, when a variable does not have the "this." prefix you know it is not an
-object variable.
+Vim, within a class definition, the declared object members are consistently
+referred to with the "this." prefix.  This is different from languages like
+Java and TypeScript.  The naming convention makes the object members easy to
+spot.  Also, when a variable does not have the "this." prefix you know it is
+not an object variable.
 								*E1411*
 From outside the class definition, access an object's methods and variables by
 using the object name followed by a dot following by the member: >
 
 	pos.lnum
-	pos.setCol(10)
+	pos.SetCol(10)
 <
 							*E1405* *E1406*
 A class name cannot be used as an expression.  A class name cannot be used in
@@ -144,8 +144,8 @@ the closest valid value.
 If you don't care about side effects and want to allow the object variable to
 be changed at any time, you can make it public: >
 
-	public this.lnum: number
-	public this.col: number
+	public var lnum: number
+	public var col: number
 
 Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
 "pos.lnum" directly above will no longer give an error.
@@ -164,7 +164,7 @@ from outside the class or its sub-classes, you can make them protected.  This
 is done by prefixing an underscore to the name: >
 
 	var _lnum: number
-	var _col number
+	var _col: number
 
 Now you need to provide methods to get the value of the protected variables.
 These are commonly called getters.  We recommend using a name that starts with
@@ -174,7 +174,7 @@ These are commonly called getters.  We recommend using a name that starts with
 	   return this._lnum
 	enddef
 
-	def GetCol() number
+	def GetCol(): number
 	   return this._col
 	enddef
 
@@ -212,6 +212,8 @@ the above class): >
 <
 Simplifying the new() method ~
 						*new()* *constructor*
+See also |default-constructor| and |multiple-constructors|.
+
 Many constructors take values for the object variables.  Thus you very often
 see this pattern: >
 
@@ -328,7 +330,8 @@ variables but they have no access to the object variables, they cannot use the
 
 Inside the class the class method can be called by name directly, outside the
 class the class name must be prefixed: `OtherThing.ClearTotalSize()`.  To use
-a super class method in a child class, the class name must be prefixed.
+a class method from a parent class in a child class, the class name must be
+prefixed.
 
 Just like object methods the access can be made protected by using an
 underscore as the first character in the method name: >
@@ -490,17 +493,15 @@ prefix when defining the method: >
 
 	abstract class Shape
 	   abstract def Draw()
-	   abstract static def SetColor()
 	endclass
 <
 A static method in an abstract class cannot be an abstract method.
 
 						*E1373*
-A class extending the abstract class must implement all the abstract methods.
-The signature (arguments, argument types and return type) must be exactly the
-same.  If the return type of a method is a class, then that class or one of
-its subclasses can be used in the extended method.  Class methods in an
-abstract class can also be abstract methods.
+A non-abstract class extending the abstract class must implement all the
+abstract methods.  The signature (arguments, argument types and return type)
+must be exactly the same.  If the return type of a method is a class, then
+that class or one of its subclasses can be used in the extended method.
 
 ==============================================================================
 
@@ -608,7 +609,7 @@ once.  They can appear in any order, although this order is recommended: >
 <							*E1355* *E1369*
 Each variable and method name can be used only once.  It is not possible to
 define a method with the same name and different type of arguments.  It is not
-possible to use a public and protected member variable with the same name.  A
+possible to use a public and protected member variable with the same name.  An
 object variable name used in a super class cannot be reused in a child class.
 
 
@@ -686,7 +687,7 @@ Inside a class, in between `:class` and `:endclass`, these items can appear:
 - A class variable declaration: >
 	static var _protectedClassVariableName: memberType
 	static var readonlyClassVariableName: memberType
-	static var public readwriteClassVariableName: memberType
+	public static var readwriteClassVariableName: memberType
 - A constructor method: >
 	def new(arguments)
 	def newName(arguments)
@@ -711,7 +712,7 @@ Some types cannot be used, such as "void", "null" and "v:none".
 
 
 Defining an interface ~
-						*:interface* *:endinterface*
+					*Interface* *:interface* *:endinterface*
 An interface is defined between `:interface` and `:endinterface`.  It may be
 prefixed with `:export`: >
 
@@ -745,7 +746,7 @@ null object ~
 When a variable is declared to have the type of an object, but it is not
 initialized, the value is null.  When trying to use this null object Vim often
 does not know what class was supposed to be used.  Vim then cannot check if
-a variable name is correct and you will get an "Using a null object" error,
+a variable name is correct and you will get a "Using a null object" error,
 even when the variable name is invalid. *E1360* *E1362*
 
 
@@ -785,7 +786,7 @@ the name, you can define the constructor like this: >
 <
 When using the default new() method, if the order of the object variables in
 the class is changed later, then all the callers of the default new() method
-needs to change.  To avoid this, the new() method can be explicitly defined
+need to change.  To avoid this, the new() method can be explicitly defined
 without any arguments.
 
 							*E1328*
@@ -801,7 +802,7 @@ first.
 
 
 Multiple constructors ~
-
+						*multiple-constructors*
 Normally a class has just one new() constructor.  In case you find that the
 constructor is often called with the same arguments you may want to simplify
 your code by putting those arguments into a second constructor method.  For
@@ -829,10 +830,17 @@ Note that the method name must start with "new".  If there is no method called
 "new()" then the default constructor is added, even though there are other
 constructor methods.
 
+Compiling methods in a Class ~
+							*class-compile*
+The |:defcompile| command can be used to compile all the class and object
+methods defined in a class: >
 
+	defcompile MyClass	# Compile class "MyClass"
+	defcompile		# Compile the classes in the current script
+<
 ==============================================================================
 
-7.  Type definition					*Vim9-type* *:type*
+7.  Type definition				*typealias* *Vim9-type* *:type*
 
 					*E1393* *E1395* *E1396* *E1397* *E1398*
 A type definition is giving a name to a type specification.  This is also
@@ -991,7 +999,7 @@ in the body, while for other variables this is not needed and often omitted.
 This leads to a mix of variables with and without "this.", which is
 inconsistent.
 
-For |Vim9| classes the "this." prefix is always used.  Also for declaring the
+For |Vim9| classes the "this." prefix is always used for declared methods and
 variables.  Simple and consistent.  When looking at the code inside a class
 it's also directly clear which variable references are object variables and
 which aren't.
@@ -1027,7 +1035,7 @@ Following that Vim object variables could be declared like this: >
 	endclass
 
 Some users pointed out that this looks more like an assignment than a
-declaration.  Adding "var" changes that: >
+declaration.  Adding "var" and omitting "this." changes that: >
 	class Point
 	  var x: number
 	  var y = 0

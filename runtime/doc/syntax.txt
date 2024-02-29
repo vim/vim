@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2023 Dec 23
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Feb 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -270,6 +270,10 @@ you can see the actual color, except for "Ignore"):
 
 	*Todo		anything that needs extra attention; mostly the
 			keywords TODO FIXME and XXX
+
+	*Added		added line in a diff
+	*Changed	changed line in a diff
+	*Removed	removed line in a diff
 
 The names marked with * are the preferred groups; the others are minor groups.
 For the preferred groups, the "syntax.vim" file contains default highlighting.
@@ -1022,6 +1026,8 @@ Variable		Highlight ~
 *c_no_c99*		don't highlight C99 standard items
 *c_no_c11*		don't highlight C11 standard items
 *c_no_bsd*		don't highlight BSD specific types
+*c_functions*		highlight function calls and definitions
+*c_function_pointers*	highlight function pointers definitions
 
 When 'foldmethod' is set to "syntax" then /* */ comments and { } blocks will
 become a fold.  If you don't want comments to become a fold use: >
@@ -1270,7 +1276,6 @@ there are very long lines in the file.  To disable translations: >
 
 Also see |diff-slow|.
 
-
 DIRCOLORS			       *dircolors.vim* *ft-dircolors-syntax*
 
 The dircolors utility highlighting definition has one option.  It exists to
@@ -1326,11 +1331,14 @@ Stack Overflow -
 
 https://stackoverflow.com/questions/12407800/which-comment-style-should-i-use-in-batch-files
 
-To allow the use of the :: idiom for comments in the Windows Command
-Interpreter or working with MS-DOS bat files, set the
-dosbatch_colons_comment variable to anything: >
+To allow the use of the :: idiom for comments in command blocks with the
+Windows Command Interpreter set the dosbatch_colons_comment variable to
+anything: >
 
    :let dosbatch_colons_comment = 1
+
+If this variable is set then a :: comment that is the last line in a command
+block will be highlighted as an error.
 
 There is an option that covers whether *.btm files should be detected as type
 "dosbatch" (MS-DOS batch files) or type "btm" (4DOS batch files).  The latter
@@ -1589,13 +1597,11 @@ edit F# or Fortran at all, use this in your startup vimrc: >
 FORTRAN					*fortran.vim* *ft-fortran-syntax*
 
 Default highlighting and dialect ~
-Vim highlights according to Fortran 2023 (the most recent standard) by
-default.  This choice should be appropriate for most users most of the time
-because Fortran 2023 is almost a superset of previous versions (Fortran 2018,
-2008, 2003, 95, 90, and 77).  A small number of features new to Fortran 2018
-and Fortran 2023 may have been omitted at present; the transition to Fortran
-2023 will be completed in the near future. A few legacy constructs deleted or
-declared obsolescent in recent Fortran standards are highlighted as todo
+Vim highlights according to Fortran 2023 (the most recent standard). This
+choice should be appropriate for most users most of the time because Fortran
+2023 is almost a superset of previous versions (Fortran 2018, 2008, 2003, 95,
+90, 77, and 66).  A few legacy constructs deleted or declared obsolescent,
+respectively, in recent Fortran standards are highlighted as errors and todo
 items.
 
 The syntax script no longer supports Fortran dialects.  The variable
@@ -1669,26 +1675,19 @@ placed prior to the :syntax on command.  Unfortunately, the use of tabs will
 mean that the syntax file will not be able to detect incorrect margins.
 
 Syntax folding of Fortran files ~
-If you wish to use foldmethod=syntax, then you must first set the variable
-fortran_fold with a command such as >
+Vim will fold your file using foldmethod=syntax, if you set the variable
+fortran_fold in your .vimrc with a command such as >
     :let fortran_fold=1
 to instruct the syntax script to define fold regions for program units, that
 is main programs starting with a program statement, subroutines, function
-subprograms, block data subprograms, interface blocks, and modules.  If you
-also set the variable fortran_fold_conditionals with a command such as >
+subprograms, modules, submodules, blocks of comment lines, and block data
+units. Block, interface, associate, critical, type definition, and change team
+constructs will also be folded.  If you also set the variable
+fortran_fold_conditionals with a command such as >
     :let fortran_fold_conditionals=1
-then fold regions will also be defined for do loops, if blocks, and select
-case constructs.  If you also set the variable fortran_fold_multilinecomments
-with a command such as >
-    :let fortran_fold_multilinecomments=1
-then fold regions will also be defined for three or more consecutive comment
-lines.  Note that defining fold regions can be slow for large files.
-
-If fortran_fold, and possibly fortran_fold_conditionals and/or
-fortran_fold_multilinecomments, have been set, then vim will fold your file if
-you set foldmethod=syntax.  Comments or blank lines placed between two program
-units are not folded because they are seen as not belonging to any program
-unit.
+then fold regions will also be defined for do loops, if blocks, select case,
+select type, and select rank constructs.  Note that defining fold regions can
+be slow for large files.
 
 The syntax/fortran.vim script contains embedded comments that tell you how to
 comment and/or uncomment some lines to (a) activate recognition of some
@@ -2249,6 +2248,56 @@ have the following in your .vimrc: >
 
 	let filetype_m = "mma"
 
+
+MODULA2					*modula2.vim* *ft-modula2-syntax*
+
+Vim will recognise comments with dialect tags to automatically select a given
+dialect.
+
+The syntax for a dialect tag comment is: >
+
+	taggedComment :=
+	  '(*!' dialectTag '*)'
+	  ;
+
+	dialectTag :=
+	  m2pim | m2iso | m2r10
+	  ;
+
+	reserved words
+	  m2pim = 'm2pim', m2iso = 'm2iso', m2r10 = 'm2r10'
+
+A dialect tag comment is recognised by Vim if it occurs within the first 200
+lines of the source file. Only the very first such comment is recognised, any
+additional dialect tag comments are ignored.
+
+Example: >
+
+	DEFINITION MODULE FooLib; (*!m2pim*)
+	...
+
+Variable g:modula2_default_dialect sets the default Modula-2 dialect when the
+dialect cannot be determined from the contents of the Modula-2 file: if
+defined and set to 'm2pim', the default dialect is PIM.
+
+Example: >
+
+	let g:modula2_default_dialect = 'm2pim'
+
+
+Highlighting is further configurable for each dialect via the following
+variables.
+
+Variable			Highlight ~
+*modula2_iso_allow_lowline*	allow low line in identifiers
+*modula2_iso_disallow_octals*	disallow octal integer literals
+*modula2_iso_disallow_synonyms*	disallow "@", "&" and "~" synonyms
+
+*modula2_pim_allow_lowline*	allow low line in identifiers
+*modula2_pim_disallow_octals*	disallow octal integer literals
+*modula2_pim_disallow_synonyms*	disallow "&" and "~" synonyms
+
+*modula2_r10_allow_lowline*	allow low line in identifiers
 
 MOO						*moo.vim* *ft-moo-syntax*
 
@@ -5219,7 +5268,8 @@ ctermul={color-nr}				*highlight-ctermul*
 	"cterm=" argument AFTER the "ctermfg=" or "ctermbg=" argument.	Or use
 	a number instead of a color name.
 
-	The case of the color names is ignored.
+	The case of the color names is ignored, however Vim will use lower
+	case color names when reading from the |v:colornames| dictionary.
 	Note that for 16 color ansi style terminals (including xterms), the
 	numbers in the NR-8 column is used.  Here '*' means 'add 8' so that
 	Blue is 12, DarkGray is 8 etc.
@@ -5258,6 +5308,14 @@ ctermul={color-nr}				*highlight-ctermul*
 	command is given.  If the Normal group colors are changed later, the
 	"fg" and "bg" colors will not be adjusted.
 
+ctermfont={font-nr}				*highlight-ctermfont*
+	This gives the alternative font number to use in the terminal. The
+	available fonts depend on the terminal, and if the terminal is not set
+	up for alternative fonts this simply won't do anything. The range of
+	{font-nr} is 0-10 where 0 resets the font to the default font, 1-9
+	selects one of the 9 alternate fonts, and 10 selects the Fraktur font.
+	For more information see your terminal's handling of SGR parameters
+	10-20. |t_CF|
 
 3. highlight arguments for the GUI
 
@@ -5330,8 +5388,8 @@ guisp={color-name}					*highlight-guisp*
 	    :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
 	If you are authoring a color scheme and use the same hexadecimal value
-	repeatedly, you can define a name for it in |v:colornames|. For
-	example: >
+	repeatedly, you can define a (lower case) name for it in |v:colornames|.
+	For example: >
 
 	    # provide a default value for this color but allow the user to
 	    # override it.

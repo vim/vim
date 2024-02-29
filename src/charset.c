@@ -971,6 +971,9 @@ init_chartabsize_arg(
     cts->cts_vcol = col;
     cts->cts_line = line;
     cts->cts_ptr = ptr;
+#ifdef FEAT_LINEBREAK
+    cts->cts_bri_size = -1;
+#endif
 #ifdef FEAT_PROP_POPUP
     if (lnum > 0 && !ignore_text_props)
     {
@@ -1123,7 +1126,6 @@ win_lbr_chartabsize(
     int		n;
     char_u	*sbr;
     int		no_sbr = FALSE;
-    colnr_T	vcol_start = 0; // start from where to consider linebreak
 #endif
 
 #if defined(FEAT_PROP_POPUP)
@@ -1158,8 +1160,12 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
-    if (*s == NUL && !has_lcs_eol)
-	size = 0;  // NUL is not displayed
+    if (*s == NUL)
+    {
+	// 1 cell for EOL list char (if present), as opposed to the two cell ^@
+	// for a NUL character in the text.
+	size = has_lcs_eol ? 1 : 0;
+    }
 # ifdef FEAT_LINEBREAK
     int is_doublewidth = has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1;
 # endif
@@ -1282,7 +1288,11 @@ win_lbr_chartabsize(
 	    if (*sbr != NUL)
 		head_prev += vim_strsize(sbr);
 	    if (wp->w_p_bri)
-		head_prev += get_breakindent_win(wp, line);
+	    {
+		if (cts->cts_bri_size < 0)
+		    cts->cts_bri_size = get_breakindent_win(wp, line);
+		head_prev += cts->cts_bri_size;
+	    }
 	    if (wcol < head_prev)
 	    {
 		head_prev -= wcol;
@@ -1303,7 +1313,11 @@ win_lbr_chartabsize(
 	    if (*sbr != NUL)
 		head_mid += vim_strsize(sbr);
 	    if (wp->w_p_bri)
-		head_mid += get_breakindent_win(wp, line);
+	    {
+		if (cts->cts_bri_size < 0)
+		    cts->cts_bri_size = get_breakindent_win(wp, line);
+		head_mid += cts->cts_bri_size;
+	    }
 	    if (head_mid > 0 && wcol + size > wp->w_width)
 	    {
 		// Calculate effective window width.
@@ -1341,22 +1355,21 @@ win_lbr_chartabsize(
     if (headp != NULL)
 	*headp = head;
 
+    int need_lbr = FALSE;
     /*
      * If 'linebreak' set check at a blank before a non-blank if the line
-     * needs a break here
+     * needs a break here.
      */
-    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_width != 0)
+    if (wp->w_p_lbr && wp->w_p_wrap && wp->w_width != 0
+	    && VIM_ISBREAK((int)s[0]) && !VIM_ISBREAK((int)s[1]))
     {
 	char_u	*t = cts->cts_line;
 	while (VIM_ISBREAK((int)t[0]))
 	    t++;
-	vcol_start = t - cts->cts_line;
+	// 'linebreak' is only needed when not in leading whitespace.
+	need_lbr = s >= t;
     }
-    if (wp->w_p_lbr && vcol_start <= vcol
-	    && VIM_ISBREAK((int)s[0])
-	    && !VIM_ISBREAK((int)s[1])
-	    && wp->w_p_wrap
-	    && wp->w_width != 0)
+    if (need_lbr)
     {
 	/*
 	 * Count all characters from first non-blank after a blank up to next
@@ -1482,7 +1495,6 @@ getvcol(
 {
     colnr_T	vcol;
     char_u	*ptr;		// points to current char
-    char_u	*posptr;	// points to char at pos->col
     char_u	*line;		// start of the line
     int		incr;
     int		head;
@@ -1498,24 +1510,6 @@ getvcol(
 
     vcol = 0;
     line = ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
-    if (pos->col == MAXCOL)
-	posptr = NULL;  // continue until the NUL
-    else
-    {
-	colnr_T i;
-
-	// In a few cases the position can be beyond the end of the line.
-	for (i = 0; i < pos->col; ++i)
-	    if (ptr[i] == NUL)
-	    {
-		pos->col = i;
-		break;
-	    }
-	posptr = ptr + pos->col;
-	if (has_mbyte)
-	    // always start on the first byte
-	    posptr -= (*mb_head_off)(line, posptr);
-    }
 
     init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
     cts.cts_max_head_vcol = -1;
@@ -1577,11 +1571,12 @@ getvcol(
 		    incr = g_chartab[c] & CT_CELL_MASK;
 	    }
 
-	    if (posptr != NULL && ptr >= posptr) // character at pos->col
+	    char_u *next_ptr = ptr + (*mb_ptr2len)(ptr);
+	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
 	    vcol += incr;
-	    MB_PTR_ADV(ptr);
+	    ptr = next_ptr;
 	}
     }
     else
@@ -1609,12 +1604,12 @@ getvcol(
 		wp->w_virtcol_first_char = cts.cts_first_char;
 #endif
 
-	    if (posptr != NULL && cts.cts_ptr >= posptr)
-		// character at pos->col
+	    char_u *next_ptr = cts.cts_ptr + (*mb_ptr2len)(cts.cts_ptr);
+	    if (next_ptr - line > pos->col) // character at pos->col
 		break;
 
 	    cts.cts_vcol += incr;
-	    MB_PTR_ADV(cts.cts_ptr);
+	    cts.cts_ptr = next_ptr;
 	}
 	vcol = cts.cts_vcol;
 	ptr = cts.cts_ptr;
@@ -1958,7 +1953,7 @@ vim_islower(int c)
 	if (enc_latin1like)
 	    return (latin1flags[c] & LATIN1LOWER) == LATIN1LOWER;
     }
-    return islower(c);
+    return SAFE_islower(c);
 }
 
     int
@@ -1982,7 +1977,7 @@ vim_isupper(int c)
 	if (enc_latin1like)
 	    return (latin1flags[c] & LATIN1UPPER) == LATIN1UPPER;
     }
-    return isupper(c);
+    return SAFE_isupper(c);
 }
 
     int

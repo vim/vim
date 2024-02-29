@@ -233,7 +233,7 @@ illegal_char(char *errbuf, size_t errbuflen, int c)
 {
     if (errbuf == NULL)
 	return "";
-    vim_snprintf((char *)errbuf, errbuflen, _(e_illegal_character_str),
+    vim_snprintf(errbuf, errbuflen, _(e_illegal_character_str),
 		    (char *)transchar(c));
     return errbuf;
 }
@@ -1050,10 +1050,14 @@ expand_set_ambiwidth(optexpand_T *args, int *numMatches, char_u ***matches)
  * The 'background' option is changed.
  */
     char *
-did_set_background(optset_T *args UNUSED)
+did_set_background(optset_T *args)
 {
     if (check_opt_strings(p_bg, p_bg_values, FALSE) == FAIL)
 	return e_invalid_argument;
+
+    if (args->os_oldval.string != NULL && args->os_oldval.string[0] == *p_bg)
+	// Value was not changed
+	return NULL;
 
 #ifdef FEAT_EVAL
     int dark = (*p_bg == 'd');
@@ -1204,6 +1208,25 @@ expand_set_belloff(optexpand_T *args, int *numMatches, char_u ***matches)
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
+ * The 'breakat' option is changed.
+ */
+    char *
+did_set_breakat(optset_T *args UNUSED)
+{
+    char_u	*p;
+    int		i;
+
+    for (i = 0; i < 256; i++)
+	breakat_flags[i] = FALSE;
+
+    if (p_breakat != NULL)
+	for (p = p_breakat; *p; p++)
+	    breakat_flags[*p] = TRUE;
+
+    return NULL;
+}
+
+/*
  * The 'breakindentopt' option is changed.
  */
     char *
@@ -1346,7 +1369,8 @@ expand_set_clipboard(optexpand_T *args, int *numMatches, char_u ***matches)
  * The global 'listchars' or 'fillchars' option is changed.
  */
     static char *
-did_set_global_listfillchars(char_u *val, int opt_lcs, int opt_flags)
+did_set_global_listfillchars(char_u *val, int opt_lcs, int opt_flags,
+						char *errbuf, size_t errbuflen)
 {
     char	*errmsg = NULL;
     char_u	**local_ptr = opt_lcs ? &curwin->w_p_lcs : &curwin->w_p_fcs;
@@ -1355,10 +1379,12 @@ did_set_global_listfillchars(char_u *val, int opt_lcs, int opt_flags)
     // local value
     if (opt_lcs)
 	errmsg = set_listchars_option(curwin, val,
-		**local_ptr == NUL || !(opt_flags & OPT_GLOBAL));
+		**local_ptr == NUL || !(opt_flags & OPT_GLOBAL),
+							    errbuf, errbuflen);
     else
 	errmsg = set_fillchars_option(curwin, val,
-		**local_ptr == NUL || !(opt_flags & OPT_GLOBAL));
+		**local_ptr == NUL || !(opt_flags & OPT_GLOBAL),
+							    errbuf, errbuflen);
     if (errmsg != NULL)
 	return errmsg;
 
@@ -1378,12 +1404,12 @@ did_set_global_listfillchars(char_u *val, int opt_lcs, int opt_flags)
 	if (opt_lcs)
 	{
 	    if (*wp->w_p_lcs == NUL)
-		(void)set_listchars_option(wp, wp->w_p_lcs, TRUE);
+		(void)set_listchars_option(wp, wp->w_p_lcs, TRUE, NULL, 0);
 	}
 	else
 	{
 	    if (*wp->w_p_fcs == NUL)
-		(void)set_fillchars_option(wp, wp->w_p_fcs, TRUE);
+		(void)set_fillchars_option(wp, wp->w_p_fcs, TRUE, NULL, 0);
 	}
     }
 
@@ -1404,11 +1430,13 @@ did_set_chars_option(optset_T *args)
     if (   varp == &p_lcs		// global 'listchars'
 	|| varp == &p_fcs)		// global 'fillchars'
 	errmsg = did_set_global_listfillchars(*varp, varp == &p_lcs,
-							       args->os_flags);
+			  args->os_flags, args->os_errbuf, args->os_errbuflen);
     else if (varp == &curwin->w_p_lcs)	// local 'listchars'
-	errmsg = set_listchars_option(curwin, *varp, TRUE);
+	errmsg = set_listchars_option(curwin, *varp, TRUE,
+					  args->os_errbuf, args->os_errbuflen);
     else if (varp == &curwin->w_p_fcs)	// local 'fillchars'
-	errmsg = set_fillchars_option(curwin, *varp, TRUE);
+	errmsg = set_fillchars_option(curwin, *varp, TRUE,
+					  args->os_errbuf, args->os_errbuflen);
 
     return errmsg;
 }
@@ -2410,7 +2438,7 @@ did_set_guifontwide(optset_T *args UNUSED)
 }
 #endif
 
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) || defined(PROTO)
 /*
  * The 'guiligatures' option is changed.
  */
@@ -4482,7 +4510,8 @@ did_set_string_option(
 #endif
 
     if (curwin->w_curswant != MAXCOL
-		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
+		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0
+				&& (get_option_flags(opt_idx) & P_HLONLY) == 0)
 	curwin->w_set_curswant = TRUE;
 
     if ((opt_flags & OPT_NO_REDRAW) == 0)
@@ -4501,7 +4530,7 @@ did_set_string_option(
 		|| varp == &p_guifontset	// 'guifontset'
 # endif
 		|| varp == &p_guifontwide	// 'guifontwide'
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)
 		|| varp == &p_guiligatures	// 'guiligatures'
 # endif
 	    )

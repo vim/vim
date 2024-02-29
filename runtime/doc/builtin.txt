@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2023 Dec 24
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -147,6 +147,8 @@ delete({fname} [, {flags}])	Number	delete the file or directory {fname}
 deletebufline({buf}, {first} [, {last}])
 				Number	delete lines from buffer {buf}
 did_filetype()			Number	|TRUE| if FileType autocmd event used
+diff({fromlist}, {tolist} [, {options}])
+				List	diff two Lists of strings
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 digraph_get({chars})		String	get the |digraph| of {chars}
@@ -198,6 +200,8 @@ foldclosedend({lnum})		Number	last line of fold at {lnum} if closed
 foldlevel({lnum})		Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
 foldtextresult({lnum})		String	text for closed fold at {lnum}
+foreach({expr1}, {expr2})	List/Dict/Blob/String
+					for each item in {expr1} call {expr2}
 foreground()			Number	bring the Vim window to the foreground
 fullcommand({name} [, {vim9}])	String	get full command from {name}
 funcref({name} [, {arglist}] [, {dict}])
@@ -259,6 +263,8 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
+getregion({pos1}, {pos2} [, {opts}])
+				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
@@ -370,6 +376,8 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 				Number	highlight positions with {group}
 matcharg({nr})			List	arguments of |:match|
+matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict})
+				List	all the {pat} matches in buffer {buf}
 matchdelete({id} [, {win}])	Number	delete match identified by {id}
 matchend({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} ends in {expr}
@@ -381,6 +389,8 @@ matchlist({expr}, {pat} [, {start} [, {count}]])
 				List	match and submatches of {pat} in {expr}
 matchstr({expr}, {pat} [, {start} [, {count}]])
 				String	{count}'th match of {pat} in {expr}
+matchstrlist({list}, {pat} [, {dict})
+				List	all the {pat} matches in {list}
 matchstrpos({expr}, {pat} [, {start} [, {count}]])
 				List	{count}'th match of {pat} in {expr}
 max({expr})			Number	maximum value of items in {expr}
@@ -2040,6 +2050,72 @@ did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		editing another buffer to set 'filetype' and load a syntax
 		file.
 
+diff({fromlist}, {tolist} [, {options}])		*diff()*
+		Returns a String or a List containing the diff between the
+		strings in {fromlist} and {tolist}.  Uses the Vim internal
+		diff library to compute the diff.
+
+							*E106*
+		The optional "output" item in {options} specifies the returned
+		diff format.  The following values are supported:
+		    indices	Return a List of the starting and ending
+				indices and a count of the strings in each
+				diff hunk.
+		    unified	Return the unified diff output as a String.
+				This is the default.
+
+		If the "output" item in {options} is "indices", then a List is
+		returned.  Each List item contains a Dict with the following
+		items for each diff hunk:
+		    from_idx	start index in {fromlist} for this diff hunk.
+		    from_count	number of strings in {fromlist} that are
+				added/removed/modified in this diff hunk.
+		    to_idx	start index in {tolist} for this diff hunk.
+		    to_count	number of strings in {tolist} that are
+				added/removed/modified in this diff hunk.
+
+		The {options} Dict argument also specifies diff options
+		(similar to 'diffopt') and supports the following items:
+		    algorithm		Dict specifying the diff algorithm to
+					use.  Supported boolean items are
+					"myers", "minimal", "patience" and
+					"histogram".
+		    context		diff context length.  Default is 0.
+		    iblank		ignore changes where lines are all
+					blank.
+		    icase		ignore changes in case of text.
+		    indent-heuristic	use the indent heuristic for the
+					internal diff library.
+		    iwhite		ignore changes in amount of white
+					space.
+		    iwhiteall		ignore all white space changes.
+		    iwhiteeol		ignore white space changes at end of
+					line.
+		For more information about these options, refer to 'diffopt'.
+
+		To compute the unified diff, all the items in {fromlist} are
+		concatenated into a string using a newline separator and the
+		same for {tolist}.  The unified diff output uses line numbers.
+
+		Returns an empty List or String if {fromlist} and {tolist} are
+		identical.
+
+		Examples: >
+		    :echo diff(['abc'], ['xxx'])
+		     @@ -1 +1 @@
+		     -abc
+		     +xxx
+
+		    :echo diff(['abc'], ['xxx'], {'output': 'indices'})
+		     [{'from_idx': 0, 'from_count': 1, 'to_idx': 0, 'to_count': 1}]
+		    :echo diff(readfile('oldfile'), readfile('newfile'))
+		    :echo diff(getbufline(5, 1, '$'), getbufline(6, 1, '$'))
+<
+		For more examples, refer to |diff-func-examples|
+
+		Can also be used as a |method|: >
+			GetFromList->diff(to_list)
+<
 diff_filler({lnum})					*diff_filler()*
 		Returns the number of filler lines above line {lnum}.
 		These are the lines that were inserted at this point in
@@ -2329,11 +2405,11 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 			varname		internal variable (see
 			dict.key	|internal-variables|).  Also works
 			list[i]		for |curly-braces-names|, |Dictionary|
-			import.Func	entries, |List| items, imported
-					items, etc.
-					Does not work for local variables in a
-					compiled `:def` function.
-					Also works for a function in |Vim9|
+			import.Func	entries, |List| items, class and
+			class.Func	object methods, imported items, etc.
+			object.Func	Does not work for local variables in a
+			class.varname	compiled `:def` function.
+			object.varname	Also works for a function in |Vim9|
 					script, since it can be used as a
 					function reference.
 					Beware that evaluating an index may
@@ -2463,6 +2539,9 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 		If the expansion fails, the result is an empty string.  A name
 		for a non-existing file is not included, unless {string} does
 		not start with '%', '#' or '<', see below.
+
+		For a |:terminal| window '%' expands to a '!' followed by
+		the command or shell that is run |terminal-bufname|
 
 		When {string} starts with '%', '#' or '<', the expansion is
 		done like for the |cmdline-special| variables with their
@@ -2991,6 +3070,45 @@ foldtextresult({lnum})					*foldtextresult()*
 
 		Can also be used as a |method|: >
 			GetLnum()->foldtextresult()
+
+foreach({expr1}, {expr2})					*foreach()*
+		{expr1} must be a |List|, |String|, |Blob| or |Dictionary|.
+		For each item in {expr1} execute {expr2}. {expr1} is not
+		modified; its values may be, as with |:lockvar| 1. |E741|
+		See |map()| and |filter()| to modify {expr1}.
+
+		{expr2} must be a |string| or |Funcref|.
+
+		If {expr2} is a |string|, inside {expr2} |v:val| has the value
+		of the current item.  For a |Dictionary| |v:key| has the key
+		of the current item and for a |List| |v:key| has the index of
+		the current item.  For a |Blob| |v:key| has the index of the
+		current byte. For a |String| |v:key| has the index of the
+		current character.
+		Examples: >
+			call foreach(mylist, 'used[v:val] = true')
+<		This records the items that are in the {expr1} list.
+
+		Note that {expr2} is the result of expression and is then used
+		as a command.  Often it is good to use a |literal-string| to
+		avoid having to double backslashes.
+
+		If {expr2} is a |Funcref| it must take two arguments:
+			1. the key or the index of the current item.
+			2. the value of the current item.
+		With a legacy script lambda you don't get an error if it only
+		accepts one argument, but with a Vim9 lambda you get "E1106:
+		One argument too many", the number of arguments must match.
+		If the function returns a value, it is ignored.
+
+		Returns {expr1} in all cases.
+		When an error is encountered while executing {expr2} no
+		further items in {expr1} are processed.
+		When {expr2} is a Funcref errors inside a function are ignored,
+		unless it was defined with the "abort" flag.
+
+		Can also be used as a |method|: >
+			mylist->foreach(expr2)
 <
 							*foreground()*
 foreground()	Move the Vim window to the foreground.  Useful when sent from
@@ -3199,6 +3317,8 @@ getbufinfo([{dict}])
 			bufnr		Buffer number.
 			changed		TRUE if the buffer is modified.
 			changedtick	Number of changes made to the buffer.
+			command		TRUE if the buffer belongs to the
+					command-line window |cmdwin|.
 			hidden		TRUE if the buffer is hidden.
 			lastused	Timestamp in seconds, like
 					|localtime()|, when the buffer was
@@ -3423,7 +3543,7 @@ getcharmod()						*getcharmod()*
 			32	mouse double click
 			64	mouse triple click
 			96	mouse quadruple click (== 32 + 64)
-			128	command (Macintosh only)
+			128	command (Mac) or super (GTK)
 		Only the modifiers that have not been included in the
 		character itself are obtained.  Thus Shift-a results in "A"
 		without a modifier.  Returns 0 if no modifiers are used.
@@ -3566,6 +3686,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		help		help subjects
 		highlight	highlight groups
 		history		|:history| suboptions
+		keymap		keyboard mappings
 		locale		locale names (as output of locale -a)
 		mapclear	buffer argument
 		mapping		mapping name
@@ -4150,6 +4271,53 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
+getregion({pos1}, {pos2} [, {opts}])			*getregion()*
+		Returns the list of strings from {pos1} to {pos2} in current
+		buffer.
+
+		{pos1} and {pos2} must both be |List|s with four numbers.
+		See |getpos()| for the format of the list.
+
+		The optional argument {opts} is a Dict and supports the
+		following items:
+
+			type		Specify the selection type
+					(default: "v"):
+			    "v"		for |characterwise| mode
+			    "V"		for |linewise| mode
+			    "<CTRL-V>"	for |blockwise-visual| mode
+
+			exclusive	If |true|, use exclusive selection
+					for the end position 'selection'.
+
+		You can get the last selection type by |visualmode()|.
+		If Visual mode is active, use |mode()| to get the Visual mode
+		(e.g., in a |:vmap|).
+		This function uses the line and column number from the
+		specified position.
+		It is useful to get text starting and ending in different
+		columns, such as |characterwise-visual| selection.
+
+		Note that:
+		- Order of {pos1} and {pos2} doesn't matter, it will always
+		  return content from the upper left position to the lower
+		  right position.
+		- If 'virtualedit' is enabled and selection is past the end of
+		  line, resulting lines are filled with blanks.
+		- If the selection starts or ends in the middle of a multibyte
+		  character, it is not included but its selected part is
+		  substituted with spaces.
+		- If {pos1} or {pos2} is not current in the buffer, an empty
+		  list is returned.
+
+		Examples: >
+			:xnoremap <CR>
+			\ <Cmd>echow getregion(
+			\ getpos('v'), getpos('.'), #{ type: mode() })<CR>
+<
+		Can also be used as a |method|: >
+			getpos('.')->getregion(getpos("'a"))
+<
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
 		The value will be one of:
@@ -4376,14 +4544,16 @@ getwinpos([{timeout}])					*getwinpos()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
 		the left hand side of the GUI Vim window. Also works for an
 		xterm (uses a timeout of 100 msec).
-		The result will be -1 if the information is not available.
+		The result will be -1 if the information is not available
+		(e.g. on the Wayland backend).
 		The value can be used with `:winpos`.
 
 							*getwinposy()*
 getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 		the top of the GUI Vim window.  Also works for an xterm (uses
 		a timeout of 100 msec).
-		The result will be -1 if the information is not available.
+		The result will be -1 if the information is not available
+		(e.g. on the Wayland backend).
 		The value can be used with `:winpos`.
 
 getwinvar({winnr}, {varname} [, {def}])				*getwinvar()*
@@ -5928,6 +6098,7 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 		Note that when {count} is added the way {start} works changes,
 		see above.
 
+						*match-pattern*
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of
 		the pattern.  'smartcase' is NOT used.  The matching is always
@@ -6054,6 +6225,54 @@ matcharg({nr})							*matcharg()*
 
 		Can also be used as a |method|: >
 			GetMatch()->matcharg()
+<
+							*matchbufline()*
+matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
+		Returns the |List| of matches in lines from {lnum} to {end} in
+		buffer {buf} where {pat} matches.
+
+		{lnum} and {end} can either be a line number or the string "$"
+		to refer to the last line in {buf}.
+
+		The {dict} argument supports following items:
+		    submatches	include submatch information (|/\(|)
+
+		For each match, a |Dict| with the following items is returned:
+		    byteidx	starting byte index of the match
+		    lnum	line number where there is a match
+		    text	matched string
+		Note that there can be multiple matches in a single line.
+
+		This function works only for loaded buffers. First call
+		|bufload()| if needed.
+
+		See |match-pattern| for information about the effect of some
+		option settings on the pattern.
+
+		When {buf} is not a valid buffer, the buffer is not loaded or
+		{lnum} or {end} is not valid then an error is given and an
+		empty |List| is returned.
+
+		Examples: >
+		    " Assuming line 3 in buffer 5 contains "a"
+		    :echo matchbufline(5, '\<\k\+\>', 3, 3)
+		    [{'lnum': 3, 'byteidx': 0, 'text': 'a'}]
+		    " Assuming line 4 in buffer 10 contains "tik tok"
+		    :echo matchbufline(10, '\<\k\+\>', 1, 4)
+		    [{'lnum': 4, 'byteidx': 0, 'text': 'tik'}, {'lnum': 4, 'byteidx': 4, 'text': 'tok'}]
+<
+		If {submatch} is present and is v:true, then submatches like
+		"\1", "\2", etc. are also returned.  Example: >
+		    " Assuming line 2 in buffer 2 contains "acd"
+		    :echo matchbufline(2, '\(a\)\?\(b\)\?\(c\)\?\(.*\)', 2, 2
+						\ {'submatches': v:true})
+		    [{'lnum': 2, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+<		The "submatches" List always contains 9 items.  If a submatch
+		is not found, then an empty string is returned for that
+		submatch.
+
+		Can also be used as a |method|: >
+			GetBuffer()->matchbufline('mypat', 1, '$')
 
 matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
@@ -6187,6 +6406,43 @@ matchlist({expr}, {pat} [, {start} [, {count}]])		*matchlist()*
 
 		Can also be used as a |method|: >
 			GetText()->matchlist('word')
+<
+						*matchstrlist()*
+matchstrlist({list}, {pat} [, {dict}])
+		Returns the |List| of matches in {list} where {pat} matches.
+		{list} is a |List| of strings.  {pat} is matched against each
+		string in {list}.
+
+		The {dict} argument supports following items:
+		    submatches	include submatch information (|/\(|)
+
+		For each match, a |Dict| with the following items is returned:
+		    byteidx	starting byte index of the match.
+		    idx		index in {list} of the match.
+		    text	matched string
+		    submatches	a List of submatches.  Present only if
+				"submatches" is set to v:true in {dict}.
+
+		See |match-pattern| for information about the effect of some
+		option settings on the pattern.
+
+		Example: >
+		    :echo matchstrlist(['tik tok'], '\<\k\+\>')
+		    [{'idx': 0, 'byteidx': 0, 'text': 'tik'}, {'idx': 0, 'byteidx': 4, 'text': 'tok'}]
+		    :echo matchstrlist(['a', 'b'], '\<\k\+\>')
+		    [{'idx': 0, 'byteidx': 0, 'text': 'a'}, {'idx': 1, 'byteidx': 0, 'text': 'b'}]
+<
+		If "submatches" is present and is v:true, then submatches like
+		"\1", "\2", etc. are also returned.  Example: >
+		    :echo matchstrlist(['acd'], '\(a\)\?\(b\)\?\(c\)\?\(.*\)',
+						\ #{submatches: v:true})
+		    [{'idx': 0, 'byteidx': 0, 'text': 'acd', 'submatches': ['a', '', 'c', 'd', '', '', '', '', '']}]
+<		The "submatches" List always contains 9 items.  If a submatch
+		is not found, then an empty string is returned for that
+		submatch.
+
+		Can also be used as a |method|: >
+			GetListOfStrings()->matchstrlist('mypat')
 
 matchstr({expr}, {pat} [, {start} [, {count}]])			*matchstr()*
 		Same as |match()|, but return the matched string.  Example: >
@@ -7304,9 +7560,9 @@ reltime({start}, {end})					*reltime()*
 			echo startTime->reltime()->reltimestr()
 <
 		Without an argument reltime() returns the current time (the
-		representation is system-dependent, it can not be used as the
+		representation is system-dependent, it cannot be used as the
 		wall-clock time, see |localtime()| for that).
-		With one argument is returns the time passed since the time
+		With one argument it returns the time passed since the time
 		specified in the argument.
 		With two arguments it returns the time passed between {start}
 		and {end}.
@@ -10565,10 +10821,10 @@ win_screenpos({nr})					*win_screenpos()*
 			GetWinid()->win_screenpos()
 <
 win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
-		Move the window {nr} to a new split of the window {target}.
-		This is similar to moving to {target}, creating a new window
-		using |:split| but having the same contents as window {nr}, and
-		then closing {nr}.
+		Temporarily switch to window {target}, then move window {nr}
+		to a new split adjacent to {target}.
+		Unlike commands such as |:split|, no new windows are created
+		(the |window-ID| of window {nr} is unchanged after the move).
 
 		Both {nr} and {target} can be window numbers or |window-ID|s.
 		Both must be in the current tab page.

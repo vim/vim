@@ -1329,8 +1329,8 @@ dict_extend_func(
 }
 
 /*
- * Implementation of map() and filter() for a Dict.  Apply "expr" to every
- * item in Dict "d" and return the result in "rettv".
+ * Implementation of map(), filter(), foreach() for a Dict.  Apply "expr" to
+ * every item in Dict "d" and return the result in "rettv".
  */
     void
 dict_filter_map(
@@ -1392,7 +1392,6 @@ dict_filter_map(
 			    arg_errmsg, TRUE)))
 		break;
 	    set_vim_var_string(VV_KEY, di->di_key, -1);
-	    newtv.v_type = VAR_UNKNOWN;
 	    r = filter_map_one(&di->di_tv, expr, filtermap, fc, &newtv, &rem);
 	    clear_tv(get_vim_var_tv(VV_KEY));
 	    if (r == FAIL || did_emsg)

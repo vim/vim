@@ -641,7 +641,7 @@ def Test_type_as_func_argument_or_return_value()
   END
   v9.CheckScriptFailure(lines, 'E1407: Cannot use a Typealias as a variable or value', 1)
 
-  # check defered function using typealias as arg
+  # check deferred function using typealias as arg
   lines =<< trim END
     vim9script
     type A = number
@@ -764,7 +764,7 @@ def Test_class_as_func_argument_or_return_value()
   END
   v9.CheckScriptFailure(lines, 'E1405: Class "C" cannot be used as a value', 1)
 
-  # check defered function using class typealias as arg
+  # check deferred function using class typealias as arg
   lines =<< trim END
     vim9script
     class C

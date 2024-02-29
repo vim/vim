@@ -1,13 +1,33 @@
 # Makefile for the Vim message translations for MSVC
 # (based on make_ming.mak)
 #
-# Mike Williams <mrw@eandem.co.uk>
+# Mike Williams, <mrw@eandem.co.uk>
+# 06.01.24, Restorer, <restorer@mail2k.ru>
 #
 # Please read README_mvc.txt before using this file.
 #
 
-!IF [powershell -nologo -noprofile "exit $$psversiontable.psversion.major"] == 2
+!IF [powershell.exe -nologo -noprofile "exit $$psversiontable.psversion.major"] == 2
 !ERROR The program "PowerShell" version 3.0 or higher is required to work
+!ENDIF
+
+!IFNDEF LANGUAGE
+! IF [powershell.exe -nologo -noprofile $$lng=(Get-UICulture).TwoLetterISOLanguageName;$$Env:LANGUAGE=$$lng;Set-Content -Path .\lng.tmp -Value "LANGUAGE=$$lng"]
+#! IF [powershell.exe -nologo -noprofile -command $$Env:LANGUAGE=(Get-UICulture).TwoLetterISOLanguageName]
+! ENDIF
+# In order for the "install" and "cleanup-po" rule to work.
+# The others work with just setting the environment variable.
+# And to show in the message.
+! INCLUDE lng.tmp
+! IF [del /q .\lng.tmp]
+! ENDIF
+! MESSAGE
+! MESSAGE The %LANGUAGE% environment variable is not set.
+! MESSAGE This variable will be temporarily set to "$(LANGUAGE)" while "nmake.exe" is running.
+! MESSAGE See README_mvc.txt for more information on the %LANGUAGE% environment variable.
+! MESSAGE
+!ELSE
+! MESSAGE LANGUAGE is already set "$(LANGUAGE)"
 !ENDIF
 
 # get LANGUAGES, MOFILES, MOCONVERTED and others
@@ -18,16 +38,17 @@ VIMRUNTIME = ..\..\runtime
 !ENDIF
 
 PACKAGE = vim
-# Correct the following line for the where executeable file vim is installed.
-VIM = ..\vim
+# Correct the following line for the where executeable file vim is
+# installed.  Please do not put the path in quotes.
+VIM = ..\vim.exe
 
 # Correct the following line for the directory where gettext et al is
 # installed.  Please do not put the path in quotes.
 GETTEXT_PATH = D:\Programs\GetText\bin
 
-MSGFMT = "$(GETTEXT_PATH)\msgfmt" -v
-XGETTEXT = "$(GETTEXT_PATH)\xgettext"
-MSGMERGE = "$(GETTEXT_PATH)\msgmerge"
+MSGFMT = "$(GETTEXT_PATH)\msgfmt.exe" -v
+XGETTEXT = "$(GETTEXT_PATH)\xgettext.exe"
+MSGMERGE = "$(GETTEXT_PATH)\msgmerge.exe"
 
 # In case some package like GnuWin32, UnixUtils, gettext
 # or something similar is installed on the system.
@@ -54,8 +75,10 @@ CP = copy /y
 RM = del /q
 MKD = mkdir
 LS = dir
+PS = PowerShell.exe
 
 LSFLAGS = /b /on /l /s
+PSFLAGS = -NoLogo -NoProfile -Command
 
 INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 
@@ -64,8 +87,12 @@ INSTALLDIR = $(VIMRUNTIME)\lang\$(LANGUAGE)\LC_MESSAGES
 
 all: $(MOFILES) $(MOCONVERTED)
 
+originals : $(MOFILES)
+
+converted: $(MOCONVERTED)
+
 .po.ck:
-	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+	"$(VIM)" -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
 		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	$(TOUCH_TARGET)
 
@@ -74,13 +101,8 @@ check: $(CHECKFILES)
 checkclean:
 	$(RM) *.ck
 
-converted: $(MOCONVERTED)
-
-checklanguage:
-	@if "$(LANGUAGE)"=="" (echo Set the environment variable ^%LANGUAGE^%. See README_mvc.txt. && exit 1)
-
 nl.po:
-	@( echo \# > nl.po )
+	@( echo ^# >> nl.po )
 
 # Norwegian/Bokmal: "nb" is an alias for "no".
 nb.po: no.po
@@ -95,16 +117,14 @@ ja.sjis.po: ja.po
 !ELSEIF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP932 $? | .\sjiscorr.exe > $@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(932))
 	type $@ | .\sjiscorr.exe > tmp.$@
 	@$(MV) tmp.$@ $@
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(932)) \
 		-replace \"`r`n\", \"`n\"; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
@@ -122,24 +142,21 @@ ja.euc-jp.po: ja.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-JP $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(20932))
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(20932)) -replace \
 		'charset=utf-8', 'charset=EUC-JP'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(20932))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(20932)) -replace \
 		'# Original translations', \
-		'# Generated from ja.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(20932))
 
@@ -152,24 +169,21 @@ cs.cp1250.po: cs.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28592)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'charset=iso-8859-2', 'charset=CP1250'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'# Original translations', \
-		'# Generated from cs.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 
@@ -182,24 +196,21 @@ pl.cp1250.po: pl.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28592)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'charset=iso-8859-2', 'charset=CP1250'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'# Original translations', \
-		'# Generated from pl.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 
@@ -212,20 +223,17 @@ pl.UTF-8.po: pl.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28592)))
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		(Get-Content -Raw -Encoding UTF8 $@ \
+	$(PS) $(PSFLAGS) (Get-Content -Raw -Encoding UTF8 $@ \
 		^| % {$$_-replace 'charset=iso-8859-2', 'charset=UTF-8'}) \
 		^| 1>nul New-Item -Force -Path . -ItemType file -Name $@
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		(Get-Content -Raw -Encoding UTF8 $@ \
+	$(PS) $(PSFLAGS) (Get-Content -Raw -Encoding UTF8 $@ \
 		^| % {$$_-replace '# Original translations', \
-		'# Generated from pl.po, DO NOT EDIT'}) \
+		'# Generated from $?, DO NOT EDIT'}) \
 		^| 1>nul New-Item -Force -Path . -ItemType file -Name $@
 
 # Convert sk.po to create sk.cp1250.po.
@@ -237,24 +245,21 @@ sk.cp1250.po: sk.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(28592)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'charset=iso-8859-2', 'charset=CP1250'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'# Original translations', \
-		'# Generated from sk.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 
@@ -267,25 +272,22 @@ zh_CN.po: zh_CN.UTF-8.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t GB2312 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(936))
 
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(936)) -replace \
 		'charset=UTF-8', 'charset=GB2312'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(936))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(936)) -replace \
 		'# Original translations', \
-		'# Generated from zh_CN.UTF-8.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(936))
 
@@ -297,19 +299,17 @@ zh_CN.cp936.po: zh_CN.UTF-8.po
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP936 $? > $@
 !ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(20936))
 
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(20936)) \
 		-replace 'charset=UTF-8', 'charset=GBK'\
 		-replace '# Original translations', \
-		'# Generated from zh_CN.UTF-8.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(20936))
 
@@ -322,31 +322,29 @@ zh_TW.po: zh_TW.UTF-8.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t BIG5 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(950))
 
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(950)) -replace \
 		'charset=UTF-8', 'charset=BIG5'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(950)) -replace \
 		'# Original translations', \
-		'# Generated from zh_TW.UTF-8.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
 
 # Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters
 # Requires doubling backslashes in the second byte.  Don't depend on big5corr,
 # it should only be compiled when zh_TW.po is outdated.
+
 #
 #  06.11.23, added by Restorer:
 #  For more details, see:
@@ -368,16 +366,14 @@ zh_TW.po: zh_TW.UTF-8.po
 #!ELSEIF DEFINED (ICONV)
 #	$(ICONV) -f UTF-8 -t BIG5 $? | .\big5corr.exe > $@
 #!ELSE
-#	powershell -nologo -noprofile -Command \
-#		[System.IO.File]::WriteAllText(\"$@\", \
+#	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 #		[System.IO.File]::ReadAllText(\"$?\", \
 #		[System.Text.Encoding]::GetEncoding(65001)), \
 #		[System.Text.Encoding]::GetEncoding(950))
 #	type $@ | .\big5corr.exe > tmp.$@
 #	@$(MV) tmp.$@ $@
 #!ENDIF
-#	powershell -nologo -noprofile -Command \
-#		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+#	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 #		[System.Text.Encoding]::GetEncoding(950)) \
 #		-replace \"`r`n\", \"`n\"; \
 #		[System.IO.File]::WriteAllText(\"$@\", $$out, \
@@ -396,25 +392,22 @@ ko.po: ko.UTF-8.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-KR $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(51949))
 
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(51949)) -replace \
 		'charset=UTF-8', 'charset=EUC-KR'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(51949))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(51949)) -replace \
 		'# Original translations', \
-		'# Generated from ko.UTF-8.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(51949))
 
@@ -427,25 +420,22 @@ ru.cp1251.po: ru.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
 
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'charset=UTF-8', 'charset=CP1251'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'# Original translations', \
-		'# Generated from ru.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 
@@ -458,25 +448,22 @@ uk.cp1251.po: uk.po
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? > $@
 ! ELSE
-	powershell -nologo -noprofile -Command \
-		[System.IO.File]::WriteAllText(\"$@\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
 		[System.IO.File]::ReadAllText(\"$?\", \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
 
 ! ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'charset=UTF-8', 'charset=CP1251'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 !ENDIF
-	powershell -nologo -noprofile -Command \
-		$$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'# Original translations', \
-		'# Generated from uk.po, DO NOT EDIT'; \
+		'# Generated from $?, DO NOT EDIT'; \
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 
@@ -498,42 +485,42 @@ PO_INPUTLIST = \
 files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
-first_time: checklanguage files
-	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
+first_time: files
+	"$(VIM)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
-	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
+	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
 $(PACKAGE).pot: files
-	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
+	"$(VIM)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
-	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
+	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
-# When updating ja.sjis.po there are a bunch of errors and a crash.
+# Only original translations with default encoding should be updated.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
 update-po: $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually
 $(LANGUAGES):
-	@$(MAKE) -nologo -f Make_mvc.mak $(PACKAGE).pot GETTEXT_PATH="$(GETTEXT_PATH)"
+	@$(MAKE) -nologo -f Make_mvc.mak GETTEXT_PATH="$(GETTEXT_PATH)" $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
 	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
 	$(RM) $@.po.old
 
-install: checklanguage $(LANGUAGE).mo
+install: $(LANGUAGE).mo
 	if not exist $(INSTALLDIR) $(MKD) $(INSTALLDIR)
 	$(CP) $(LANGUAGE).mo $(INSTALLDIR)\$(PACKAGE).mo
 
@@ -543,15 +530,16 @@ install-all: all
 	for %%l in ($(LANGUAGES)) do @$(CP) %%l.mo \
 		$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
 
-cleanup-po: checklanguage $(LANGUAGE).po
-	$(VIM) -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
+cleanup-po: $(LANGUAGE).po
+	"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
 
 cleanup-po-all: $(POFILES)
-	!$(VIM) -u NONE -e -X -S cleanup.vim -c wq $**
+	!"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $**
 
 clean: checkclean
 	$(RM) *.mo
 	$(RM) *.pot
+	$(RM) *.orig
 	$(RM) files
 	$(RM) sjiscorr.obj sjiscorr.exe
 #	$(RM) big5corr.obj big5corr.exe

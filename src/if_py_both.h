@@ -3240,7 +3240,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
     if (self == NULL)
 	return NULL;
 
-    if (isdigit(*name))
+    if (isdigit((unsigned char)*name))
     {
 	if (!translated_function_exists(name, FALSE))
 	{
@@ -6136,7 +6136,8 @@ run_do(const char *cmd, void *arg UNUSED
 	    goto err;
 
 	// Check that the command didn't switch to another buffer.
-	if (curbuf != was_curbuf)
+	// Check the line number, the command my have deleted lines.
+	if (curbuf != was_curbuf || lnum > curbuf->b_ml.ml_line_count)
 	{
 	    Py_XDECREF(ret);
 	    goto err;

@@ -1754,7 +1754,7 @@ ml_recover(int checkext)
 	for (idx = 1; idx <= lnum; ++idx)
 	{
 	    // Need to copy one line, fetching the other one may flush it.
-	    p = vim_strsave(ml_get(idx));
+	    p = vim_strnsave(ml_get(idx), ml_get_len(idx));
 	    i = STRCMP(p, ml_get(idx + lnum));
 	    vim_free(p);
 	    if (i != 0)
@@ -2675,6 +2675,37 @@ ml_get_cursor(void)
 							curwin->w_cursor.col);
 }
 
+// return length (excluding the NUL) of the given line
+    colnr_T
+ml_get_len(linenr_T lnum)
+{
+    return ml_get_buf_len(curbuf, lnum);
+}
+
+// return length (excluding the NUL) of the cursor line
+    colnr_T
+ml_get_curline_len(void)
+{
+    return ml_get_buf_len(curbuf, curwin->w_cursor.lnum);
+}
+
+// return length (excluding the NUL) of the cursor position
+    colnr_T
+ml_get_cursor_len(void)
+{
+    return ml_get_buf_len(curbuf, curwin->w_cursor.lnum) - curwin->w_cursor.col;
+}
+
+// return length (excluding the NUL) of the given line in the given buffer
+    colnr_T
+ml_get_buf_len(buf_T *buf, linenr_T lnum)
+{
+    if (*ml_get_buf(buf, lnum, FALSE) == NUL)
+        return 0;
+
+    return buf->b_ml.ml_line_len - 1;
+}
+
 /*
  * Return a pointer to a line in a specific buffer
  *
@@ -2727,7 +2758,6 @@ errorret:
     if (buf->b_ml.ml_line_lnum != lnum || mf_dont_release)
     {
 	unsigned    start, end;
-	colnr_T	    len;
 	int	    idx;
 
 	ml_flush_line(buf);
@@ -2763,10 +2793,9 @@ errorret:
 	    end = dp->db_txt_end;
 	else
 	    end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
-	len = end - start;
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
-	buf->b_ml.ml_line_len = len;
+	buf->b_ml.ml_line_len = end - start;
 	buf->b_ml.ml_line_lnum = lnum;
 	buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     }
@@ -3400,10 +3429,10 @@ ml_append_int(
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
     {
-	if (STRLEN(line) > 0)
-	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, (int)STRLEN(line));
-	netbeans_inserted(buf, lnum+1, (colnr_T)STRLEN(line),
-							   (char_u *)"\n", 1);
+	int line_len = (int)STRLEN(line);
+	if (line_len > 0)
+	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, line_len);
+	netbeans_inserted(buf, lnum+1, (colnr_T)line_len, (char_u *)"\n", 1);
     }
 #endif
 #ifdef FEAT_JOB_CHANNEL
@@ -3571,7 +3600,7 @@ ml_replace_len(
 #ifdef FEAT_NETBEANS_INTG
     if (netbeans_active())
     {
-	netbeans_removed(curbuf, lnum, 0, (long)STRLEN(ml_get(lnum)));
+	netbeans_removed(curbuf, lnum, 0, (long)ml_get_len(lnum));
 	netbeans_inserted(curbuf, lnum, 0, line, (int)STRLEN(line));
     }
 #endif
@@ -5192,15 +5221,15 @@ findswapname(
 		    {
 			char_u	*name;
 			int	dialog_result;
+			size_t  len = STRLEN(_("Swap file \""));
 
 			name = alloc(STRLEN(fname)
-				+ STRLEN(_("Swap file \""))
+				+ len
 				+ STRLEN(_("\" already exists!")) + 5);
 			if (name != NULL)
 			{
 			    STRCPY(name, _("Swap file \""));
-			    home_replace(NULL, fname, name + STRLEN(name),
-								  1000, TRUE);
+			    home_replace(NULL, fname, name + len, 1000, TRUE);
 			    STRCAT(name, _("\" already exists!"));
 			}
 			dialog_result = do_dialog(VIM_WARNING,

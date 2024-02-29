@@ -3159,7 +3159,7 @@ get_cmd_count(char_u *line, exarg_T *eap)
     // skip over colons and white space
     for (p = line; *p == ':' || VIM_ISWHITE(*p); ++p)
 	;
-    if (!isdigit(*p))
+    if (!SAFE_isdigit(*p))
     {
 	// The command or modifiers must be following.  Assume a lower case
 	// character means there is a modifier.

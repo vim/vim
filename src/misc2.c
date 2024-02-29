@@ -817,7 +817,7 @@ static struct modmasktable
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_2CLICK,	(char_u)'2'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_3CLICK,	(char_u)'3'},
     {MOD_MASK_MULTI_CLICK,	MOD_MASK_4CLICK,	(char_u)'4'},
-#ifdef MACOS_X
+#if defined(MACOS_X) || defined(FEAT_GUI_GTK)
     {MOD_MASK_CMD,		MOD_MASK_CMD,		(char_u)'D'},
 #endif
     // 'A' must be the last one
@@ -1130,7 +1130,7 @@ simplify_key(int key, int *modifiers)
     int	    key0;
     int	    key1;
 
-    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT)))
+    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
 	return key;
 
     // TAB is a special case
@@ -1582,6 +1582,9 @@ may_remove_shift_modifier(int modifiers, int key)
 {
     if ((modifiers == MOD_MASK_SHIFT
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+#ifdef FEAT_GUI_GTK
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_CMD)
+#endif
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
 	    && ((key >= '!' && key <= '/')
 		|| (key >= ':' && key <= 'Z')

@@ -22,7 +22,7 @@ jobs:
     env:
       CC: ${{ matrix.compiler }}
       GCC_VER: 13
-      CLANG_VER: 17
+      CLANG_VER: 18
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
@@ -89,6 +89,10 @@ jobs:
 
       - run: sudo dpkg --add-architecture i386
         if: matrix.architecture == 'i386'
+
+      - name: Uninstall snap
+        run: |
+          sudo bash ci/remove_snap.sh
 
       - name: Install packages
         run: |
@@ -265,7 +269,13 @@ jobs:
         if: contains(matrix.extra, 'vimtags')
         run: |
           # This will exit with an error code if the generated vim tags differs from source.
-          git diff --exit-code -- runtime/doc/tags
+          (
+            cd runtime/doc
+            git diff --exit-code -- tags
+            make html; rm *.html tags.ref;
+            test -f errors.log && exit 3;
+            true
+          )
 
       - name: Generate gcov files
         if: matrix.coverage
@@ -276,9 +286,10 @@ jobs:
       - name: Codecov
         timeout-minutes: 20
         if: matrix.coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: ASan logs
         if: contains(matrix.extra, 'asan') && !cancelled()
@@ -289,7 +300,7 @@ jobs:
           done
 
   macos:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.runner }}
 
     env:
       CC: clang
@@ -302,6 +313,7 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, normal, huge]
+        runner: [macos-latest, macos-14]
 
     steps:
       - name: Checkout repository from github
@@ -310,8 +322,14 @@ jobs:
       - name: Install packages
         if: matrix.features == 'huge'
         run: |
-          brew install lua
-          echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
+          brew install lua libtool
+          echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+
+      - name: Grant microphone access for macos-14
+        if: matrix.runner == 'macos-14'
+        run: |
+          # Temporary fix to fix microphone permission issues for macos-14 when playing sound.
+          sqlite3 $HOME/Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR IGNORE INTO access VALUES ('kTCCServiceMicrophone','/usr/local/opt/runner/provisioner/provisioner',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687786159,NULL,NULL,'UNUSED',1687786159);"
 
       - name: Set up environment
         run: |
@@ -354,6 +372,11 @@ jobs:
           "${SRCDIR}"/vim --version
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+
+      - name: Install packages for testing
+        run: |
+          # Apple diff is broken. Use GNU diff instead. See #14032.
+          brew install diffutils
 
       - name: Test
         timeout-minutes: 20
@@ -477,7 +500,7 @@ jobs:
           echo %SODIUM_VER%>> urls.txt
 
       - name: Cache downloaded files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: downloads
           key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
@@ -660,7 +683,8 @@ jobs:
       - name: Codecov
         timeout-minutes: 20
         if: matrix.coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
+          token: ${{ secrets.CODECOV_TOKEN }}

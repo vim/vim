@@ -5,6 +5,8 @@ include Make_all.mak
 
 SED = LANG=C sed
 
+.PHONY: all clean
+
 all: $(CONVERTED)
 
 
@@ -30,7 +32,7 @@ menu_cs_cz.iso_8859-2.vim: menu_cs_cz.utf-8.vim
 	iconv -f UTF-8 -t ISO-8859-2 $< | \
 		$(SED) -e 's/scriptencoding utf-8/scriptencoding iso-8859-2/' \
 			-e 's/" Original translations/" Generated from $<, DO NOT EDIT/' \
-			-e 's/\(" Menu Translations:.*\)(.*)/\1(ISO8859-2)/' \
+			-e 's/\(" Menu Translations:.*\)(.*)/\1(ISO-8859-2)/' \
 			> $@
 
 # Convert menu_cs_cz.utf-8.vim to create menu_czech_czech_republic.1250.vim.
@@ -226,3 +228,7 @@ menu_sk_sk.iso_8859-2.vim: menu_slovak_slovak_republic.1250.vim
 		$(SED) -e 's/scriptencoding cp1250/scriptencoding iso-8859-2/' \
 			-e 's/" Original translations/" Generated from $<, DO NOT EDIT/' \
 			> $@
+
+clean:
+	for G in $(CONVERTED); do if [ -f $$G ]; then rm -f $$G; fi; done
+#	-rm -f $(CONVERTED)

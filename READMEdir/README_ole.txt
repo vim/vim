@@ -1,4 +1,4 @@
-README_ole.txt for version 9.0 of Vim: Vi IMproved.
+README_ole.txt for version 9.1 of Vim: Vi IMproved.
 
 This archive contains gvim.exe with OLE interface.
 This version of gvim.exe can also load a number of interface dynamically (you

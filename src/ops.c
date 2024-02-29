@@ -990,13 +990,20 @@ setmarks:
     static void
 mb_adjust_opend(oparg_T *oap)
 {
-    char_u	*p;
+    char_u	*line;
+    char_u	*ptr;
 
     if (!oap->inclusive)
 	return;
 
-    p = ml_get(oap->end.lnum);
-    oap->end.col += mb_tail_off(p, p + oap->end.col);
+    line = ml_get(oap->end.lnum);
+    ptr = line + oap->end.col;
+    if (*ptr != NUL)
+    {
+	ptr -= (*mb_head_off)(line, ptr);
+	ptr += (*mb_ptr2len)(ptr) - 1;
+	oap->end.col = ptr - line;
+    }
 }
 
 /*
@@ -1431,18 +1438,19 @@ swapchar(int op_type, pos_T *pos)
     if (c >= 0x80 && op_type == OP_ROT13)
 	return FALSE;
 
-    if (op_type == OP_UPPER && c == 0xdf
-		      && (enc_latin1like || STRCMP(p_enc, "iso-8859-2") == 0))
+    // ~ is OP_NOP, g~ is OP_TILDE, gU is OP_UPPER
+    if ((op_type == OP_UPPER || op_type == OP_NOP || op_type == OP_TILDE)
+	    && c == 0xdf
+	    && (enc_latin1like || STRCMP(p_enc, "iso-8859-2") == 0))
     {
 	pos_T   sp = curwin->w_cursor;
 
-	// Special handling of German sharp s: change to "SS".
+	// Special handling for lowercase German sharp s (ß): convert to uppercase (ẞ).
 	curwin->w_cursor = *pos;
 	del_char(FALSE);
-	ins_char('S');
-	ins_char('S');
+	ins_char(0x1E9E);
 	curwin->w_cursor = sp;
-	inc(pos);
+	return TRUE;
     }
 
     if (enc_dbcs != 0 && c >= 0x100)	// No lower/uppercase letter
@@ -2414,6 +2422,84 @@ block_prep(
 }
 
 /*
+ * Get block text from "start" to "end"
+ */
+    void
+charwise_block_prep(
+    pos_T		start,
+    pos_T		end,
+    struct block_def	*bdp,
+    linenr_T		lnum,
+    int			inclusive)
+{
+    colnr_T startcol = 0, endcol = MAXCOL;
+    int	    is_oneChar = FALSE;
+    colnr_T cs, ce;
+    char_u *p;
+
+    p = ml_get(lnum);
+    bdp->startspaces = 0;
+    bdp->endspaces = 0;
+
+    if (lnum == start.lnum)
+    {
+	startcol = start.col;
+	if (virtual_op)
+	{
+	    getvcol(curwin, &start, &cs, NULL, &ce);
+	    if (ce != cs && start.coladd > 0)
+	    {
+		// Part of a tab selected -- but don't
+		// double-count it.
+		bdp->startspaces = (ce - cs + 1)
+		    - start.coladd;
+		if (bdp->startspaces < 0)
+		    bdp->startspaces = 0;
+		startcol++;
+	    }
+	}
+    }
+
+    if (lnum == end.lnum)
+    {
+	endcol = end.col;
+	if (virtual_op)
+	{
+	    getvcol(curwin, &end, &cs, NULL, &ce);
+	    if (p[endcol] == NUL || (cs + end.coladd < ce
+			// Don't add space for double-wide
+			// char; endcol will be on last byte
+			// of multi-byte char.
+			&& (*mb_head_off)(p, p + endcol) == 0))
+	    {
+		if (start.lnum == end.lnum
+			&& start.col == end.col)
+		{
+		    // Special case: inside a single char
+		    is_oneChar = TRUE;
+		    bdp->startspaces = end.coladd
+			- start.coladd + inclusive;
+		    endcol = startcol;
+		}
+		else
+		{
+		    bdp->endspaces = end.coladd
+			+ inclusive;
+		    endcol -= inclusive;
+		}
+	    }
+	}
+    }
+    if (endcol == MAXCOL)
+	endcol = (colnr_T)STRLEN(p);
+    if (startcol > endcol || is_oneChar)
+	bdp->textlen = 0;
+    else
+	bdp->textlen = endcol - startcol + inclusive;
+    bdp->textstart = p + startcol;
+}
+
+/*
  * Handle the add/subtract operator.
  */
     void
@@ -2734,7 +2820,7 @@ do_addsub(
 	{
 	    if (CharOrd(firstdigit) < Prenum1)
 	    {
-		if (isupper(firstdigit))
+		if (SAFE_isupper(firstdigit))
 		    firstdigit = 'A';
 		else
 		    firstdigit = 'a';
@@ -2746,7 +2832,7 @@ do_addsub(
 	{
 	    if (26 - CharOrd(firstdigit) - 1 < Prenum1)
 	    {
-		if (isupper(firstdigit))
+		if (SAFE_isupper(firstdigit))
 		    firstdigit = 'Z';
 		else
 		    firstdigit = 'z';
@@ -2875,9 +2961,9 @@ do_addsub(
 	save_pos = curwin->w_cursor;
 	for (i = 0; i < todel; ++i)
 	{
-	    if (c < 0x100 && isalpha(c))
+	    if (c < 0x100 && SAFE_isalpha(c))
 	    {
-		if (isupper(c))
+		if (SAFE_isupper(c))
 		    hexupper = TRUE;
 		else
 		    hexupper = FALSE;

@@ -156,14 +156,85 @@ func Test_tabpage_drop()
   tab split f3
   normal! gt
   call assert_equal(1, tabpagenr())
+  tab drop f4
+  call assert_equal(1, tabpagenr('#'))
 
   tab drop f3
-  call assert_equal(3, tabpagenr())
-  call assert_equal(1, tabpagenr('#'))
+  call assert_equal(4, tabpagenr())
+  call assert_equal(2, tabpagenr('#'))
+  bwipe!
   bwipe!
   bwipe!
   bwipe!
   call assert_equal(1, tabpagenr('$'))
+
+  call assert_equal(1, winnr('$'))
+  call assert_equal('', bufname(''))
+  call writefile(['L1', 'L2'], 'Xdropfile', 'D')
+
+  " Test for ':tab drop single-file': reuse current buffer
+  let expected_nr = bufnr()
+  tab drop Xdropfile
+  call assert_equal(1, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  call assert_equal('L2', getline(2))
+  bwipe!
+
+  " Test for ':tab drop single-file': not reuse modified buffer
+  set modified
+  let expected_nr = bufnr() + 1
+  tab drop Xdropfile
+  call assert_equal(2, tabpagenr())
+  call assert_equal(2, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  call assert_equal('L2', getline(2))
+  bwipe!
+
+  " Test for ':tab drop single-file': multiple tabs already exist
+  tab split f2
+  tab split f3
+  let expected_nr = bufnr() + 1
+  tab drop Xdropfile
+  call assert_equal(4, tabpagenr())
+  call assert_equal(4, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  call assert_equal('L2', getline(2))
+  %bwipe!
+
+  " Test for ':tab drop multi-files': reuse current buffer
+  let expected_nr = bufnr()
+  tab drop Xdropfile f1 f2 f3
+  call assert_equal(1, tabpagenr())
+  call assert_equal(4, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  call assert_equal('L2', getline(2))
+  %bwipe!
+
+  " Test for ':tab drop multi-files': not reuse modified buffer
+  set modified
+  let expected_nr = bufnr() + 1
+  tab drop Xdropfile f1 f2 f3
+  call assert_equal(2, tabpagenr())
+  call assert_equal(5, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  call assert_equal('L2', getline(2))
+  %bwipe!
+
+  " Test for ':tab drop multi-files': multiple tabs already exist
+  tab split f2
+  tab split f3
+  let expected_nr = bufnr() + 1
+  tab drop a b c
+  call assert_equal(4, tabpagenr())
+  call assert_equal(6, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  let expected_nr = bufnr() + 3
+  tab drop Xdropfile f1 f2 f3
+  call assert_equal(5, tabpagenr())
+  call assert_equal(8, tabpagenr('$'))
+  call assert_equal(expected_nr, bufnr())
+  call assert_equal('L2', getline(2))
+  %bwipe!
 endfunc
 
 " Test autocommands
@@ -260,14 +331,14 @@ function Test_tabpage_with_autocmd_tab_drop()
 
   let s:li = []
   tab drop test1
-  call assert_equal(['BufLeave', 'BufEnter'], s:li)
+  call assert_equal(['BufEnter'], s:li)
 
   let s:li = []
   tab drop test2 test3
   call assert_equal([
         \ 'TabLeave', 'TabEnter', 'TabLeave', 'TabEnter',
         \ 'TabLeave', 'WinEnter', 'TabEnter', 'BufEnter',
-        \ 'TabLeave', 'WinEnter', 'TabEnter', 'BufEnter'], s:li)
+        \ 'TabLeave', 'WinEnter', 'TabEnter', 'BufEnter', 'BufEnter'], s:li)
 
   autocmd! TestTabpageGroup
   augroup! TestTabpageGroup
@@ -917,6 +988,23 @@ func Test_tabpage_drop_tabmove()
   augroup! TestTabpageTabmove
 
   " clean up
+  bwipe!
+  bwipe!
+  bwipe!
+endfunc
+
+" Test that settabvar() shouldn't change the last accessed tabpage.
+func Test_lastused_tabpage_settabvar()
+  tabonly!
+  tabnew
+  tabnew
+  tabnew
+  call assert_equal(3, tabpagenr('#'))
+
+  call settabvar(2, 'myvar', 'tabval')
+  call assert_equal('tabval', gettabvar(2, 'myvar'))
+  call assert_equal(3, tabpagenr('#'))
+
   bwipe!
   bwipe!
   bwipe!

@@ -323,7 +323,7 @@ sort_compare(const void *s1, const void *s2)
     if (sort_nr)
     {
 	if (l1.st_u.num.is_number != l2.st_u.num.is_number)
-	    result = l1.st_u.num.is_number - l2.st_u.num.is_number;
+	    result = l1.st_u.num.is_number > l2.st_u.num.is_number ? 1 : -1;
 	else
 	    result = l1.st_u.num.value == l2.st_u.num.value ? 0
 			     : l1.st_u.num.value > l2.st_u.num.value ? 1 : -1;
@@ -2782,9 +2782,16 @@ do_ecmd(
 	{
 	    bufref_T	save_au_new_curbuf;
 	    int		save_cmdwin_type = cmdwin_type;
+	    win_T	*save_cmdwin_win = cmdwin_win;
+
+	    // Should only be possible to get here if the cmdwin is closed, or
+	    // if it's opening and its buffer hasn't been set yet (the new
+	    // buffer is for it).
+	    assert(cmdwin_buf == NULL);
 
 	    // BufLeave applies to the old buffer.
 	    cmdwin_type = 0;
+	    cmdwin_win = NULL;
 
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
@@ -2801,7 +2808,10 @@ do_ecmd(
 	    save_au_new_curbuf = au_new_curbuf;
 	    set_bufref(&au_new_curbuf, buf);
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
+
 	    cmdwin_type = save_cmdwin_type;
+	    cmdwin_win = save_cmdwin_win;
+
 	    if (!bufref_valid(&au_new_curbuf))
 	    {
 		// new buffer has been deleted
@@ -3707,7 +3717,7 @@ skip_substitute(char_u *start, int delimiter)
     static int
 check_regexp_delim(int c)
 {
-    if (isalpha(c))
+    if (SAFE_isalpha(c))
     {
 	emsg(_(e_regular_expressions_cant_be_delimited_by_letters));
 	return FAIL;
@@ -5425,8 +5435,7 @@ ex_smile(exarg_T *eap UNUSED)
 
 /*
  * ":drop"
- * Opens the first argument in a window.  When there are two or more arguments
- * the argument list is redefined.
+ * Opens the first argument in a window, and the argument list is redefined.
  */
     void
 ex_drop(exarg_T *eap)
@@ -5463,6 +5472,8 @@ ex_drop(exarg_T *eap)
 	// edited in a window yet.  It's like ":tab all" but without closing
 	// windows or tabs.
 	ex_all(eap);
+	cmdmod.cmod_tab = 0;
+	ex_rewind(eap);
 	return;
     }
 
@@ -5486,6 +5497,7 @@ ex_drop(exarg_T *eap)
 		buf_check_timestamp(curbuf, FALSE);
 		curbuf->b_p_ar = save_ar;
 	    }
+	    ex_rewind(eap);
 	    return;
 	}
     }

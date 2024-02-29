@@ -450,9 +450,10 @@ set_init_default_encoding(void)
     char_u	*p;
     int		opt_idx;
 
-# ifdef MSWIN
+# if defined(MSWIN) || defined(__MVS__)
     // MS-Windows has builtin support for conversion to and from Unicode, using
     // "utf-8" for 'encoding' should work best for most users.
+    // z/OS built should default to UTF-8 mode as setlocale does not respect utf-8 environment variable locales
     p = vim_strsave((char_u *)ENC_DFLT);
 # else
     // enc_locale() will try to find the encoding of the current locale.
@@ -2857,10 +2858,10 @@ didset_options2(void)
     check_opt_wim();
 
     // Parse default for 'listchars'.
-    (void)set_listchars_option(curwin, curwin->w_p_lcs, TRUE);
+    (void)set_listchars_option(curwin, curwin->w_p_lcs, TRUE, NULL, 0);
 
     // Parse default for 'fillchars'.
-    (void)set_fillchars_option(curwin, curwin->w_p_fcs, TRUE);
+    (void)set_fillchars_option(curwin, curwin->w_p_fcs, TRUE, NULL, 0);
 
 #ifdef FEAT_CLIPBOARD
     // Parse default for 'clipboard'
@@ -3267,27 +3268,6 @@ did_set_binary(optset_T *args)
 
     return NULL;
 }
-
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
-/*
- * Called when the 'breakat' option changes value.
- */
-    char *
-did_set_breakat(optset_T *args UNUSED)
-{
-    char_u	*p;
-    int		i;
-
-    for (i = 0; i < 256; i++)
-	breakat_flags[i] = FALSE;
-
-    if (p_breakat != NULL)
-	for (p = p_breakat; *p; p++)
-	    breakat_flags[*p] = TRUE;
-
-    return NULL;
-}
-#endif
 
 /*
  * Process the updated 'buflisted' option value.
@@ -4616,8 +4596,10 @@ set_bool_option(
 #endif
 
     comp_col();			    // in case 'ruler' or 'showcmd' changed
+
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0
+				   && (options[opt_idx].flags & P_HLONLY) == 0)
 	curwin->w_set_curswant = TRUE;
 
     if ((opt_flags & OPT_NO_REDRAW) == 0)
@@ -4859,9 +4841,12 @@ set_num_option(
 #endif
 
     comp_col();			    // in case 'columns' or 'ls' changed
+
     if (curwin->w_curswant != MAXCOL
-		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
+		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0
+				   && (options[opt_idx].flags & P_HLONLY) == 0)
 	curwin->w_set_curswant = TRUE;
+
     if ((opt_flags & OPT_NO_REDRAW) == 0)
 	check_redraw(options[opt_idx].flags);
 
@@ -4882,11 +4867,14 @@ check_redraw(long_u flags)
 	status_redraw_all();
 
     if ((flags & P_RBUF) || (flags & P_RWIN) || all)
-	changed_window_setting();
+    {
+	if (flags & P_HLONLY)
+	    redraw_later(UPD_NOT_VALID);
+	else
+	    changed_window_setting();
+    }
     if (flags & P_RBUF)
 	redraw_curbuf_later(UPD_NOT_VALID);
-    if (flags & P_RWINONLY)
-	redraw_later(UPD_NOT_VALID);
     if (doclear)
 	redraw_all_later(UPD_CLEAR);
     else if (all)
@@ -6218,12 +6206,14 @@ unset_global_local_option(char_u *name, void *from)
 	    break;
 	case PV_LCS:
 	    clear_string_option(&((win_T *)from)->w_p_lcs);
-	    set_listchars_option((win_T *)from, ((win_T *)from)->w_p_lcs, TRUE);
+	    set_listchars_option((win_T *)from, ((win_T *)from)->w_p_lcs, TRUE,
+								      NULL, 0);
 	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_FCS:
 	    clear_string_option(&((win_T *)from)->w_p_fcs);
-	    set_fillchars_option((win_T *)from, ((win_T *)from)->w_p_fcs, TRUE);
+	    set_fillchars_option((win_T *)from, ((win_T *)from)->w_p_fcs, TRUE,
+								      NULL, 0);
 	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_VE:
@@ -6629,8 +6619,8 @@ after_copy_winopt(win_T *wp)
     fill_culopt_flags(NULL, wp);
     check_colorcolumn(wp);
 #endif
-    set_listchars_option(wp, wp->w_p_lcs, TRUE);
-    set_fillchars_option(wp, wp->w_p_fcs, TRUE);
+    set_listchars_option(wp, wp->w_p_lcs, TRUE, NULL, 0);
+    set_fillchars_option(wp, wp->w_p_fcs, TRUE, NULL, 0);
 }
 
     static char_u *
@@ -7412,6 +7402,13 @@ set_context_in_set_cmd(
 	xp->xp_context = EXPAND_FILETYPE;
 	return;
     }
+#ifdef FEAT_KEYMAP
+    if (options[opt_idx].var == (char_u *)&p_keymap)
+    {
+	xp->xp_context = EXPAND_KEYMAP;
+	return;
+    }
+#endif
 
     // Now pick. If the option has a custom expander, use that. Otherwise, just
     // fill with the existing option value.
@@ -7697,7 +7694,7 @@ ExpandSettings(
 	{
 	    for (opt_idx = 0; (str = get_termcode(opt_idx)) != NULL; opt_idx++)
 	    {
-		if (!isprint(str[0]) || !isprint(str[1]))
+		if (!SAFE_isprint(str[0]) || !SAFE_isprint(str[1]))
 		    continue;
 
 		name_buf[0] = 't';

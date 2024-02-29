@@ -4561,7 +4561,10 @@ fuzzy_match_item_compare(const void *s1, const void *s2)
     int		idx1 = ((fuzzyItem_T *)s1)->idx;
     int		idx2 = ((fuzzyItem_T *)s2)->idx;
 
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*
@@ -4908,7 +4911,10 @@ fuzzy_match_str_compare(const void *s1, const void *s2)
     int		idx1 = ((fuzmatch_str_T *)s1)->idx;
     int		idx2 = ((fuzmatch_str_T *)s2)->idx;
 
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*
@@ -4936,9 +4942,14 @@ fuzzy_match_func_compare(const void *s1, const void *s2)
     char_u	*str1 = ((fuzmatch_str_T *)s1)->str;
     char_u	*str2 = ((fuzmatch_str_T *)s2)->str;
 
-    if (*str1 != '<' && *str2 == '<') return -1;
-    if (*str1 == '<' && *str2 != '<') return 1;
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (*str1 != '<' && *str2 == '<')
+	return -1;
+    if (*str1 == '<' && *str2 != '<')
+	return 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*

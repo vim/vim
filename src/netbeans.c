@@ -1285,8 +1285,7 @@ nb_do_cmd(
 		netbeansFireChanges = oldFire;
 		netbeansSuppressNoLines = oldSuppress;
 
-		u_blockfree(buf->bufp);
-		u_clearall(buf->bufp);
+		u_clearallandblockfree(buf->bufp);
 	    }
 	    nb_reply_nil(cmdno);
 // =====================================================================
@@ -1456,8 +1455,7 @@ nb_do_cmd(
 		netbeansFireChanges = oldFire;
 
 		// Undo info is invalid now...
-		u_blockfree(curbuf);
-		u_clearall(curbuf);
+		u_clearallandblockfree(curbuf);
 	    }
 	    vim_free(to_free);
 	    nb_reply_nil(cmdno); // or !error

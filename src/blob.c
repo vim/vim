@@ -641,25 +641,28 @@ blob_filter_map(
 	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
 	    break;
-	if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
+	if (filtermap != FILTERMAP_FOREACH)
 	{
-	    clear_tv(&newtv);
-	    emsg(_(e_invalid_operation_for_blob));
-	    break;
-	}
-	if (filtermap != FILTERMAP_FILTER)
-	{
-	    if (newtv.vval.v_number != val)
-		blob_set(b_ret, i, newtv.vval.v_number);
-	}
-	else if (rem)
-	{
-	    char_u *p = (char_u *)blob_arg->bv_ga.ga_data;
+	    if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
+	    {
+		clear_tv(&newtv);
+		emsg(_(e_invalid_operation_for_blob));
+		break;
+	    }
+	    if (filtermap != FILTERMAP_FILTER)
+	    {
+		if (newtv.vval.v_number != val)
+		    blob_set(b_ret, i, newtv.vval.v_number);
+	    }
+	    else if (rem)
+	    {
+		char_u *p = (char_u *)blob_arg->bv_ga.ga_data;
 
-	    mch_memmove(p + i, p + i + 1,
-		    (size_t)b->bv_ga.ga_len - i - 1);
-	    --b->bv_ga.ga_len;
-	    --i;
+		mch_memmove(p + i, p + i + 1,
+			    (size_t)b->bv_ga.ga_len - i - 1);
+		--b->bv_ga.ga_len;
+		--i;
+	    }
 	}
 	++idx;
     }

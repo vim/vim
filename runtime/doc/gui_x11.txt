@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.0.  Last change: 2022 Apr 03
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -580,7 +580,8 @@ command line argument).
 							*gui-x11-kde*
 There is no KDE version of Vim.  There has been some work on a port using the
 Qt toolkit, but it never worked properly and it has been abandoned.  Work
-continues on Yzis: https://github.com/chrizel/Yzis.
+continues on Yzis: https://github.com/chrizel/Yzis but it seems also
+abandoned.
 
 ==============================================================================
 8. Compiling						*gui-x11-compiling*
@@ -646,6 +647,15 @@ In general, do not try to mix files from different GTK+, Motif and X11
 versions.  This will cause problems.  For example, using header files for
 X11R5 with a library for X11R6 probably doesn't work (although the linking
 won't give an error message, Vim will crash later).
+
+							*gui-wayland*
+Initial support for the Wayland display server protocol has landed in patch
+9.1.0064. To enable it, you need to set the environment variable
+"$GVIM_ENABLE_WAYLAND" in your shell.
+
+Note: The Wayland protocol is subject to some restrictions, so the following
+functions won't work: |getwinpos()|, |getwinposx()|, |getwinposy()| and the
+|v:windowid| variable won't be available.
 
 ==============================================================================
 9. X11 selection mechanism				*x11-selection*

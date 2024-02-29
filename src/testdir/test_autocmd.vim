@@ -270,6 +270,7 @@ func Test_win_tab_autocmd()
   let g:record = []
 
   augroup testing
+    au WinNewPre * call add(g:record, 'WinNewPre')
     au WinNew * call add(g:record, 'WinNew')
     au WinClosed * call add(g:record, 'WinClosed')
     au WinEnter * call add(g:record, 'WinEnter')
@@ -286,8 +287,8 @@ func Test_win_tab_autocmd()
   close
 
   call assert_equal([
-	\ 'WinLeave', 'WinNew', 'WinEnter',
-	\ 'WinLeave', 'TabLeave', 'WinNew', 'WinEnter', 'TabNew', 'TabEnter',
+	\ 'WinNewPre', 'WinLeave', 'WinNew', 'WinEnter',
+	\ 'WinLeave', 'TabLeave', 'WinNewPre', 'WinNew', 'WinEnter', 'TabNew', 'TabEnter',
 	\ 'WinLeave', 'TabLeave', 'WinClosed', 'TabClosed', 'WinEnter', 'TabEnter',
 	\ 'WinLeave', 'WinClosed', 'WinEnter'
 	\ ], g:record)
@@ -298,15 +299,94 @@ func Test_win_tab_autocmd()
   bwipe somefile
 
   call assert_equal([
-	\ 'WinLeave', 'TabLeave', 'WinNew', 'WinEnter', 'TabNew', 'TabEnter',
+	\ 'WinLeave', 'TabLeave', 'WinNewPre', 'WinNew', 'WinEnter', 'TabNew', 'TabEnter',
 	\ 'WinLeave', 'TabLeave', 'WinEnter', 'TabEnter',
 	\ 'WinClosed', 'TabClosed'
+	\ ], g:record)
+
+  let g:record = []
+  copen
+  help
+  tabnext
+  vnew
+
+  call assert_equal([
+	\ 'WinNewPre', 'WinLeave', 'WinNew', 'WinEnter',
+	\ 'WinNewPre', 'WinLeave', 'WinNew', 'WinEnter',
+	\ 'WinNewPre', 'WinLeave', 'WinNew', 'WinEnter'
 	\ ], g:record)
 
   augroup testing
     au!
   augroup END
   unlet g:record
+endfunc
+
+func Test_WinNewPre()
+  " Test that the old window layout can be accessed before a new window is created.
+  let g:layouts_pre = []
+  let g:layouts_post = []
+  augroup testing
+    au WinNewPre * call add(g:layouts_pre, winlayout())
+    au WinNew * call add(g:layouts_post, winlayout())
+  augroup END
+  split
+  call assert_notequal(g:layouts_pre[0], g:layouts_post[0])
+  split
+  call assert_equal(g:layouts_pre[1], g:layouts_post[0])
+  call assert_notequal(g:layouts_pre[1], g:layouts_post[1])
+  tabnew
+  call assert_notequal(g:layouts_pre[2], g:layouts_post[1])
+  call assert_notequal(g:layouts_pre[2], g:layouts_post[2])
+  augroup testing
+    au!
+  augroup END
+  unlet g:layouts_pre
+  unlet g:layouts_post
+
+  " Test modifying window layout during WinNewPre throws.
+  let g:caught = 0
+  augroup testing
+    au!
+    au WinNewPre * split
+  augroup END
+  try
+    vnew
+  catch
+    let g:caught += 1
+  endtry
+  augroup testing
+    au!
+    au WinNewPre * tabnew
+  augroup END
+  try
+    vnew
+  catch
+    let g:caught += 1
+  endtry
+  augroup testing
+    au!
+    au WinNewPre * close
+  augroup END
+  try
+    vnew
+  catch
+    let g:caught += 1
+  endtry
+  augroup testing
+    au!
+    au WinNewPre * tabclose
+  augroup END
+  try
+    vnew
+  catch
+    let g:caught += 1
+  endtry
+  call assert_equal(4, g:caught)
+  augroup testing
+    au!
+  augroup END
+  unlet g:caught
 endfunc
 
 func Test_WinResized()
@@ -2626,6 +2706,24 @@ func Test_TextChangedI_with_setline()
   bwipe!
 endfunc
 
+func Test_TextChanged_with_norm()
+  " For unknown reason this fails on MS-Windows
+  CheckNotMSWindows
+  CheckFeature terminal
+  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
+  call assert_equal('running', term_getstatus(buf))
+  call term_sendkeys(buf, ":let g:a=0\<cr>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":au! TextChanged * :let g:a+=1\<cr>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":norm! ia\<cr>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":echo g:a\<cr>")
+  call term_wait(buf, 50)
+  call WaitForAssert({-> assert_match('^1.*$', term_getline(buf, 3))})
+  bwipe!
+endfunc
+
 func Test_Changed_FirstTime()
   CheckFeature terminal
   CheckNotGui
@@ -4313,6 +4411,46 @@ func Test_autocmd_shortmess()
   call assert_equal(3, bytes->len())
 
   delfunc SetupVimTest_shm
+endfunc
+
+func Test_autocmd_invalidates_undo_on_textchanged()
+  CheckRunVimInTerminal
+  let script =<< trim END
+    set hidden
+    " create quickfix list (at least 2 lines to move line)
+    vimgrep /u/j %
+
+    " enter quickfix window
+    cwindow
+
+    " set modifiable
+    setlocal modifiable
+
+    " set autocmd to clear quickfix list
+
+    autocmd! TextChanged <buffer> call setqflist([])
+    " move line
+    move+1
+  END
+  call writefile(script, 'XTest_autocmd_invalidates_undo_on_textchanged', 'D')
+  let buf = RunVimInTerminal('XTest_autocmd_invalidates_undo_on_textchanged', {'rows': 20})
+  call term_sendkeys(buf, ":so %\<cr>")
+  call term_sendkeys(buf, "G")
+  call WaitForAssert({-> assert_match('^XTest_autocmd_invalidates_undo_on_textchanged\s*$', term_getline(buf, 20))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_autocmd_creates_new_buffer_on_bufleave()
+  e a.txt
+  e b.txt
+  setlocal bufhidden=wipe
+  autocmd BufLeave <buffer> diffsplit c.txt
+  bn
+  call assert_equal(1, winnr('$'))
+  call assert_equal('a.txt', bufname('%'))
+  bw a.txt
+  bw c.txt
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -73,6 +73,9 @@ static struct
     {EXPAND_HELP, "help"},
     {EXPAND_HIGHLIGHT, "highlight"},
     {EXPAND_HISTORY, "history"},
+#if defined(FEAT_KEYMAP)
+    {EXPAND_KEYMAP, "keymap"},
+#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif

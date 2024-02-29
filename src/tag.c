@@ -395,7 +395,7 @@ do_tag(
 		    tagstack_clear_entry(&tagstack[0]);
 		    for (i = 1; i < tagstacklen; ++i)
 			tagstack[i - 1] = tagstack[i];
-		    --tagstackidx;
+		    tagstack[--tagstackidx].user_data = NULL;
 		}
 
 		/*
@@ -1194,7 +1194,7 @@ add_llist_tags(
 	// Get the line number or the search pattern used to locate
 	// the tag.
 	lnum = 0;
-	if (isdigit(*tagp.command))
+	if (SAFE_isdigit(*tagp.command))
 	    // Line number is used to locate the tag
 	    lnum = atol((char *)tagp.command);
 	else
