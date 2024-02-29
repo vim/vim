@@ -3440,6 +3440,7 @@ did_set_showbreak(optset_T *args)
     char *
 did_set_showcmdloc(optset_T *args UNUSED)
 {
+    comp_col();
     return did_set_opt_strings(p_sloc, p_sloc_values, FALSE);
 }
 
