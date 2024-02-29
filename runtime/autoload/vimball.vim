@@ -1,6 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
-" Author:	Charles E. Campbell
-" Date:		Apr 11, 2016
+" Maintainer: This runtime file is looking for a new maintainer.
+" Original Author:	Charles E. Campbell
+" Date:			Apr 11, 2016
 " Version:	37
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2011 by Charles E. Campbell

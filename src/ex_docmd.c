@@ -400,7 +400,7 @@ struct loop_cookie
     int		current_line;		// last read line from growarray
     int		repeating;		// TRUE when looping a second time
     // When "repeating" is FALSE use "getline" and "cookie" to get lines
-    char_u	*(*getline)(int, void *, int, getline_opt_T);
+    char_u	*(*lc_getline)(int, void *, int, getline_opt_T);
     void	*cookie;
 };
 
@@ -940,7 +940,7 @@ do_cmdline(
 	    cmd_cookie = (void *)&cmd_loop_cookie;
 	    cmd_loop_cookie.lines_gap = &lines_ga;
 	    cmd_loop_cookie.current_line = current_line;
-	    cmd_loop_cookie.getline = fgetline;
+	    cmd_loop_cookie.lc_getline = fgetline;
 	    cmd_loop_cookie.cookie = cookie;
 	    cmd_loop_cookie.repeating = (current_line < lines_ga.ga_len);
 
@@ -1468,10 +1468,10 @@ get_loop_line(int c, void *cookie, int indent, getline_opt_T options)
 	    return NULL;	// trying to read past ":endwhile"/":endfor"
 
 	// First time inside the ":while"/":for": get line normally.
-	if (cp->getline == NULL)
+	if (cp->lc_getline == NULL)
 	    line = getcmdline(c, 0L, indent, 0);
 	else
-	    line = cp->getline(c, cp->cookie, indent, options);
+	    line = cp->lc_getline(c, cp->cookie, indent, options);
 	if (line != NULL && store_loop_line(cp->lines_gap, line) == OK)
 	    ++cp->current_line;
 
@@ -1534,7 +1534,7 @@ getline_equal(
     cp = (struct loop_cookie *)cookie;
     while (gp == get_loop_line)
     {
-	gp = cp->getline;
+	gp = cp->lc_getline;
 	cp = cp->cookie;
     }
     return gp == func;
@@ -1563,7 +1563,7 @@ getline_cookie(
     cp = (struct loop_cookie *)cookie;
     while (gp == get_loop_line)
     {
-	gp = cp->getline;
+	gp = cp->lc_getline;
 	cp = cp->cookie;
     }
     return cp;
@@ -1598,7 +1598,7 @@ getline_peek(
 	    wp = (wcmd_T *)(cp->lines_gap->ga_data) + cp->current_line + 1;
 	    return wp->line;
 	}
-	gp = cp->getline;
+	gp = cp->lc_getline;
 	cp = cp->cookie;
     }
     if (gp == getsourceline)
@@ -1780,7 +1780,7 @@ do_one_cmd(
     // The "ea" structure holds the arguments that can be used.
     ea.cmd = *cmdlinep;
     ea.cmdlinep = cmdlinep;
-    ea.getline = fgetline;
+    ea.ea_getline = fgetline;
     ea.cookie = cookie;
 #ifdef FEAT_EVAL
     ea.cstack = cstack;
@@ -2586,8 +2586,8 @@ do_one_cmd(
 
 #ifdef FEAT_EVAL
     // A command will reset "is_export" when exporting an item.  If it is still
-    // set something went wrong.
-    if (is_export)
+    // set something went wrong or the command was never executed.
+    if (!ea.skip && is_export)
     {
 	if (errormsg == NULL)
 	    errormsg = _(e_export_with_invalid_argument);
@@ -2844,8 +2844,8 @@ parse_command_modifiers(
 
 	// in ex mode, an empty command (after modifiers) works like :+
 	if (*eap->cmd == NUL && exmode_active
-		   && (getline_equal(eap->getline, eap->cookie, getexmodeline)
-		       || getline_equal(eap->getline, eap->cookie, getexline))
+		   && (getline_equal(eap->ea_getline, eap->cookie, getexmodeline)
+		       || getline_equal(eap->ea_getline, eap->cookie, getexline))
 			&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	{
 	    use_plus_cmd = TRUE;
@@ -3954,7 +3954,7 @@ find_ex_command(
 #ifdef FEAT_EVAL
     if (eap->cmdidx < CMD_SIZE
 	    && vim9
-	    && !IS_WHITE_OR_NUL(*p) && *p != '\n' && *p != '!' && *p != '|'
+	    && !IS_WHITE_NL_OR_NUL(*p) && *p != '!' && *p != '|'
 	    && (eap->cmdidx < 0 ||
 		(cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0))
     {
@@ -4087,7 +4087,7 @@ f_fullcommand(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
 	return;
 
-    name = argvars[0].vval.v_string;
+    name = tv_get_string(&argvars[0]);
     if (name == NULL)
 	return;
 
@@ -4644,7 +4644,7 @@ get_address(
 		    lnum -= n;
 		else
 		{
-		    if (n >= LONG_MAX - lnum)
+		    if (lnum >= 0 && n >= LONG_MAX - lnum)
 		    {
 			emsg(_(e_line_number_out_of_range));
 			goto error;
@@ -5408,6 +5408,25 @@ get_bad_opt(char_u *p, exarg_T *eap)
 }
 
 /*
+ * Function given to ExpandGeneric() to obtain the list of bad= names.
+ */
+    static char_u *
+get_bad_name(expand_T *xp UNUSED, int idx)
+{
+    // Note: Keep this in sync with getargopt.
+    static char *(p_bad_values[]) =
+    {
+	"?",
+	"keep",
+	"drop",
+    };
+
+    if (idx < (int)ARRAY_LENGTH(p_bad_values))
+	return (char_u*)p_bad_values[idx];
+    return NULL;
+}
+
+/*
  * Get "++opt=arg" argument.
  * Return FAIL or OK.
  */
@@ -5418,6 +5437,8 @@ getargopt(exarg_T *eap)
     int		*pp = NULL;
     int		bad_char_idx;
     char_u	*p;
+
+    // Note: Keep this in sync with get_argopt_name.
 
     // ":edit ++[no]bin[ary] file"
     if (STRNCMP(arg, "bin", 3) == 0 || STRNCMP(arg, "nobin", 5) == 0)
@@ -5497,6 +5518,97 @@ getargopt(exarg_T *eap)
     }
 
     return OK;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of ++opt names.
+ */
+    static char_u *
+get_argopt_name(expand_T *xp UNUSED, int idx)
+{
+    // Note: Keep this in sync with getargopt.
+    static char *(p_opt_values[]) =
+    {
+	"fileformat=",
+	"encoding=",
+	"binary",
+	"nobinary",
+	"bad=",
+	"edit",
+    };
+
+    if (idx < (int)ARRAY_LENGTH(p_opt_values))
+	return (char_u*)p_opt_values[idx];
+    return NULL;
+}
+
+/*
+ * Command-line expansion for ++opt=name.
+ */
+    int
+expand_argopt(
+	char_u	    *pat,
+	expand_T    *xp,
+	regmatch_T  *rmp,
+	char_u	    ***matches,
+	int	    *numMatches)
+{
+    if (xp->xp_pattern > xp->xp_line && *(xp->xp_pattern-1) == '=')
+    {
+	char_u *(*cb)(expand_T *, int) = NULL;
+
+	char_u *name_end = xp->xp_pattern - 1;
+	if (name_end - xp->xp_line >= 2
+		&& STRNCMP(name_end - 2, "ff", 2) == 0)
+	    cb = get_fileformat_name;
+	else if (name_end - xp->xp_line >= 10
+		&& STRNCMP(name_end - 10, "fileformat", 10) == 0)
+	    cb = get_fileformat_name;
+	else if (name_end - xp->xp_line >= 3
+		&& STRNCMP(name_end - 3, "enc", 3) == 0)
+	    cb = get_encoding_name;
+	else if (name_end - xp->xp_line >= 8
+		&& STRNCMP(name_end - 8, "encoding", 8) == 0)
+	    cb = get_encoding_name;
+	else if (name_end - xp->xp_line >= 3
+		&& STRNCMP(name_end - 3, "bad", 3) == 0)
+	    cb = get_bad_name;
+
+	if (cb != NULL)
+	{
+	    return ExpandGeneric(
+		    pat,
+		    xp,
+		    rmp,
+		    matches,
+		    numMatches,
+		    cb,
+		    FALSE);
+	}
+	return FAIL;
+    }
+
+    // Special handling of "ff" which acts as a short form of
+    // "fileformat", as "ff" is not a substring of it.
+    if (xp->xp_pattern_len == 2
+	    && STRNCMP(xp->xp_pattern, "ff", xp->xp_pattern_len) == 0)
+    {
+	*matches = ALLOC_MULT(char_u *, 1);
+	if (*matches == NULL)
+	    return FAIL;
+	*numMatches = 1;
+	(*matches)[0] = vim_strsave((char_u*)"fileformat=");
+	return OK;
+    }
+
+    return ExpandGeneric(
+	    pat,
+	    xp,
+	    rmp,
+	    matches,
+	    numMatches,
+	    get_argopt_name,
+	    FALSE);
 }
 
     static void
@@ -7884,7 +7996,7 @@ ex_winsize(exarg_T *eap)
     char_u	*arg = eap->arg;
     char_u	*p;
 
-    if (!isdigit(*arg))
+    if (!SAFE_isdigit(*arg))
     {
 	semsg(_(e_invalid_argument_str), arg);
 	return;
@@ -8275,7 +8387,7 @@ ex_later(exarg_T *eap)
 
     if (*p == NUL)
 	count = 1;
-    else if (isdigit(*p))
+    else if (SAFE_isdigit(*p))
     {
 	count = getdigits(&p);
 	switch (*p)
@@ -8378,7 +8490,7 @@ ex_redir(exarg_T *eap)
 			arg++;
 		    // Make register empty when not using @A-@Z and the
 		    // command is valid.
-		    if (*arg == NUL && !isupper(redir_reg))
+		    if (*arg == NUL && !SAFE_isupper(redir_reg))
 			write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
 		}
 	    }

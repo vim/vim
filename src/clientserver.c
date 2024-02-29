@@ -566,6 +566,10 @@ build_drop_cmd(
     char_u	*p;
     char_u	*cdp;
     char_u	*cwd;
+    // reset wildignore temporarily
+    const char *wig[] =
+    { "<CR><C-\\><C-N>:let g:_wig=&wig|set wig=",
+      "<C-\\><C-N>:let &wig=g:_wig|unlet g:_wig<CR>"};
 
     if (filec > 0 && filev[0][0] == '+')
     {
@@ -599,6 +603,8 @@ build_drop_cmd(
     ga_init2(&ga, 1, 100);
     ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
     ga_concat(&ga, cdp);
+    // reset wildignorecase temporarily
+    ga_concat(&ga, (char_u *)wig[0]);
 
     // Call inputsave() so that a prompt for an encryption key works.
     ga_concat(&ga, (char_u *)
@@ -650,6 +656,8 @@ build_drop_cmd(
     ga_concat(&ga, cdp);
     ga_concat(&ga, (char_u *)"'|cd -|endif|endif<CR>");
     vim_free(cdp);
+    // reset wildignorecase
+    ga_concat(&ga, (char_u *)wig[1]);
 
     if (sendReply)
 	ga_concat(&ga, (char_u *)":call SetupRemoteReplies()<CR>");

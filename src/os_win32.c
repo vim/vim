@@ -156,7 +156,10 @@ static HANDLE g_hConOut = INVALID_HANDLE_VALUE;
 
 // Win32 Screen buffer,coordinate,console I/O information
 static SMALL_RECT g_srScrollRegion;
-static COORD	  g_coord;  // 0-based, but external coords are 1-based
+// This is explicitly initialised to work around a LTCG issue on Windows ARM64
+// (at least of 19.39.33321).  This pushes this into the `.data` rather than
+// `.bss` which corrects code generation in `write_chars` (#13453).
+static COORD	  g_coord = {0, 0};  // 0-based, but external coords are 1-based
 
 // The attribute of the screen when the editor was started
 static WORD  g_attrDefault = 7;  // lightgray text on black background
@@ -626,15 +629,20 @@ get_imported_func_info(HINSTANCE hInst, const char *funcname, int info,
     PIMAGE_THUNK_DATA		pIAT;	    // Import Address Table
     PIMAGE_THUNK_DATA		pINT;	    // Import Name Table
     PIMAGE_IMPORT_BY_NAME	pImpName;
+    DWORD			ImpVA;
 
     if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
 	return NULL;
     pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
     if (pPE->Signature != IMAGE_NT_SIGNATURE)
 	return NULL;
-    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage
-	    + pPE->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT]
-							    .VirtualAddress);
+
+    ImpVA = pPE->OptionalHeader
+		.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    if (ImpVA == 0)
+	return NULL;	// No Import Table
+    pImpDesc = (PIMAGE_IMPORT_DESCRIPTOR)(pImage + ImpVA);
+
     for (; pImpDesc->FirstThunk; ++pImpDesc)
     {
 	if (!pImpDesc->OriginalFirstThunk)
@@ -706,6 +714,65 @@ get_dll_import_func(HINSTANCE hInst, const char *funcname)
 hook_dll_import_func(HINSTANCE hInst, const char *funcname, const void *hook)
 {
     return get_imported_func_info(hInst, funcname, 2, hook);
+}
+#endif
+
+#if defined(FEAT_PYTHON3) || defined(PROTO)
+/*
+ * Check if the specified DLL is a function forwarder.
+ * If yes, return the instance of the forwarded DLL.
+ * If no, return the specified DLL.
+ * If error, return NULL.
+ * This assumes that the DLL forwards all the function to a single DLL.
+ */
+    HINSTANCE
+get_forwarded_dll(HINSTANCE hInst)
+{
+    PBYTE			pImage = (PBYTE)hInst;
+    PIMAGE_DOS_HEADER		pDOS = (PIMAGE_DOS_HEADER)hInst;
+    PIMAGE_NT_HEADERS		pPE;
+    PIMAGE_EXPORT_DIRECTORY	pExpDir;
+    DWORD			ExpVA;
+    DWORD			ExpSize;
+    LPDWORD			pFunctionTable;
+
+    if (pDOS->e_magic != IMAGE_DOS_SIGNATURE)
+	return NULL;
+    pPE = (PIMAGE_NT_HEADERS)(pImage + pDOS->e_lfanew);
+    if (pPE->Signature != IMAGE_NT_SIGNATURE)
+	return NULL;
+
+    ExpVA = pPE->OptionalHeader
+		.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
+    ExpSize = pPE->OptionalHeader
+		.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].Size;
+    if (ExpVA == 0)
+	return hInst;	// No Export Directory
+    pExpDir = (PIMAGE_EXPORT_DIRECTORY)(pImage + ExpVA);
+    pFunctionTable = (LPDWORD)(pImage + pExpDir->AddressOfFunctions);
+
+    if (pExpDir->NumberOfNames == 0)
+	return hInst;	// No export names.
+
+    // Check only the first entry.
+    if ((pFunctionTable[0] < ExpVA) || (pFunctionTable[0] >= ExpVA + ExpSize))
+	// The first entry is not a function forwarder.
+	return hInst;
+
+    // The first entry is a function forwarder.
+    // The name is represented as "DllName.FunctionName".
+    const char *name = (const char *)(pImage + pFunctionTable[0]);
+    const char *p = strchr(name, '.');
+    if (p == NULL)
+	return hInst;
+
+    // Extract DllName.
+    char buf[MAX_PATH];
+    if (p - name + 1 > sizeof(buf))
+	return NULL;
+    strncpy(buf, name, p - name);
+    buf[p - name] = '\0';
+    return GetModuleHandleA(buf);
 }
 #endif
 
@@ -2720,6 +2787,8 @@ executable_file(char *name, char_u **path)
     if (attrs & FILE_ATTRIBUTE_REPARSE_POINT)
     {
 	char_u	*res = resolve_appexeclink((char_u *)name);
+	if (res == NULL)
+	    res = resolve_reparse_point((char_u *)name);
 	if (res == NULL)
 	    return FALSE;
 	// The path is already absolute.
@@ -5086,8 +5155,7 @@ mch_system_piped(char *cmd, int options)
 	    )
 	{
 	    len = 0;
-	    if (!(options & SHELL_EXPAND)
-		&& ((options &
+	    if (((options &
 			(SHELL_READ|SHELL_WRITE|SHELL_COOKED))
 		    != (SHELL_READ|SHELL_WRITE|SHELL_COOKED)
 # ifdef FEAT_GUI
@@ -5107,7 +5175,7 @@ mch_system_piped(char *cmd, int options)
 		{
 		    /*
 		     * For pipes: Check for CTRL-C: send interrupt signal to
-		     * child.  Check for CTRL-D: EOF, close pipe to child.
+		     * child.
 		     */
 		    if (len == 1 && cmd != NULL)
 		    {
@@ -5117,10 +5185,22 @@ mch_system_piped(char *cmd, int options)
 			// now put 9 as SIGKILL
 			    TerminateProcess(pi.hProcess, 9);
 			}
-			if (ta_buf[ta_len] == Ctrl_D)
+		    }
+
+		    /*
+		     * Check for CTRL-D: EOF, close pipe to child.
+		     * Ctrl_D may be decorated by _OnChar()
+		     */
+		    if ((len == 1 || len == 4 ) && cmd != NULL)
+		    {
+			if (ta_buf[0] == Ctrl_D
+			    || (ta_buf[0] == CSI
+				&& ta_buf[1] == KS_MODIFIER
+				&& ta_buf[3] == Ctrl_D))
 			{
 			    CloseHandle(g_hChildStd_IN_Wr);
 			    g_hChildStd_IN_Wr = NULL;
+			    len = 0;
 			}
 		    }
 
@@ -5786,7 +5866,7 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
 	    p++;
 	}
-	FreeEnvironmentStrings(base);
+	FreeEnvironmentStringsW(base);
 	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
     }
 
@@ -7374,7 +7454,7 @@ notsgr:
 	{
 	    int l = 2;
 
-	    if (isdigit(s[l]))
+	    if (SAFE_isdigit(s[l]))
 		l++;
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {
@@ -8511,6 +8591,9 @@ vtp_printf(
     va_list list;
     DWORD   result;
     int	    len;
+
+    if (silent_mode)
+	return 0;
 
     va_start(list, format);
     len = vim_vsnprintf((char *)buf, 100, (char *)format, list);

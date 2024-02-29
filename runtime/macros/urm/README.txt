@@ -10,7 +10,7 @@ in vim:		 :so urm.vim<RETURN>
 in vim:		 *	(to load the registers and boot the URM-machine :-)
 in vim:		 g	(for 'go') and watch the fun. Per default, 3 and 4
 			are multiplied. Watch the Program counter, it is
-			visible as a komma moving around.
+			visible as a comma moving around.
 
 This is a "standard URM" (Universal register machine)  interpreter. The URM
 concept is used in theoretical computer science to aid in theorem proving.

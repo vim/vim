@@ -557,22 +557,23 @@ func Test_cursorline_after_yank()
   call StopVimInTerminal(buf)
 endfunc
 
-" test for issue #4862
+" Test for issue #4862: pasting above 'cursorline' redraws properly.
 func Test_put_before_cursorline()
   new
   only!
-  call setline(1, 'A')
+  call setline(1, ['A', 'B', 'C'])
+  call cursor(2, 1)
   redraw
-  let std_attr = screenattr(1, 1)
+  let std_attr = screenattr(2, 1)
   set cursorline
   redraw
-  let cul_attr = screenattr(1, 1)
+  let cul_attr = screenattr(2, 1)
   normal yyP
   redraw
-  " Line 1 has cursor so it should be highlighted with CursorLine.
-  call assert_equal(cul_attr, screenattr(1, 1))
-  " And CursorLine highlighting from the second line should be gone.
-  call assert_equal(std_attr, screenattr(2, 1))
+  " Line 2 has cursor so it should be highlighted with CursorLine.
+  call assert_equal(cul_attr, screenattr(2, 1))
+  " And CursorLine highlighting from line 3 should be gone.
+  call assert_equal(std_attr, screenattr(3, 1))
   set nocursorline
   bwipe!
 endfunc
@@ -744,8 +745,8 @@ func Test_colorcolumn_sbr()
   let lines =<< trim END
 	call setline(1, 'The quick brown fox jumped over the lazy dogs')
   END
-  call writefile(lines, 'Xtest_colorcolumn_srb', 'D')
-  let buf = RunVimInTerminal('-S Xtest_colorcolumn_srb', {'rows': 10,'columns': 40})
+  call writefile(lines, 'Xtest_colorcolumn_sbr', 'D')
+  let buf = RunVimInTerminal('-S Xtest_colorcolumn_sbr', {'rows': 10,'columns': 40})
   call term_sendkeys(buf, ":set co=40 showbreak=+++>\\  cc=40,41,43\<CR>")
   call VerifyScreenDump(buf, 'Test_colorcolumn_3', {})
 
@@ -878,7 +879,7 @@ func Test_highlight_default()
   hi clear
 endfunc
 
-" Test for 'ctermul in a highlight group
+" Test for 'ctermul' in a highlight group
 func Test_highlight_ctermul()
   CheckNotGui
   call assert_notmatch('ctermul=', HighlightArgs('Normal'))
@@ -886,6 +887,16 @@ func Test_highlight_ctermul()
   call assert_match('ctermul=3', HighlightArgs('Normal'))
   call assert_equal('3', synIDattr(synIDtrans(hlID('Normal')), 'ul'))
   highlight Normal ctermul=NONE
+endfunc
+
+" Test for 'ctermfont' in a highlight group
+func Test_highlight_ctermfont()
+  CheckNotGui
+  call assert_notmatch('ctermfont=', HighlightArgs('Normal'))
+  highlight Normal ctermfont=3
+  call assert_match('ctermfont=3', HighlightArgs('Normal'))
+  call assert_equal('3', synIDattr(synIDtrans(hlID('Normal')), 'font'))
+  highlight Normal ctermfont=NONE
 endfunc
 
 " Test for specifying 'start' and 'stop' in a highlight group
@@ -1314,6 +1325,7 @@ func Test_hlset()
   call hlset([{'name': 'hlg11', 'ctermfg': ''}])
   call hlset([{'name': 'hlg11', 'ctermbg': ''}])
   call hlset([{'name': 'hlg11', 'ctermul': ''}])
+  call hlset([{'name': 'hlg11', 'ctermfont': ''}])
   call hlset([{'name': 'hlg11', 'font': ''}])
   call hlset([{'name': 'hlg11', 'gui': {}}])
   call hlset([{'name': 'hlg11', 'guifg': ''}])

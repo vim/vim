@@ -120,7 +120,7 @@ func Test_map_langmap()
   unmap x
   bwipe!
 
-  " 'langnoremap' follows 'langremap' and vise versa
+  " 'langnoremap' follows 'langremap' and vice versa
   set langremap
   set langnoremap
   call assert_equal(0, &langremap)
@@ -245,6 +245,24 @@ func Test_map_meta_multibyte()
   imap <M-á> foo
   call assert_match('i  <M-á>\s*foo', execute('imap'))
   iunmap <M-á>
+endfunc
+
+func Test_map_super_quotes()
+  if has('gui_gtk') || has('gui_gtk3') || has("macos")
+    imap <D-"> foo
+    call feedkeys("Go-\<*D-\">-\<Esc>", "xt")
+    call assert_equal("-foo-", getline('$'))
+    set nomodified
+    iunmap <D-">
+  endif
+endfunc
+
+func Test_map_super_multibyte()
+  if has('gui_gtk') || has('gui_gtk3') || has("macos")
+    imap <D-á> foo
+    call assert_match('i  <D-á>\s*foo', execute('imap'))
+    iunmap <D-á>
+  endif
 endfunc
 
 func Test_abbr_after_line_join()

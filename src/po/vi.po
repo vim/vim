@@ -3234,7 +3234,7 @@ msgstr "dòng %4ld:"
 msgid "[string too long]"
 msgstr "[chuỗi quá dài]"
 
-msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
+msgid "Messages maintainer: The Vim Project"
 msgstr ""
 "Bản dịch các thông báo sang tiếng Việt: Phan Vĩnh Thịnh <teppi@vnlinux.org>"
 

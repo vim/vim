@@ -1,6 +1,6 @@
 " Menu Translations:	Nederlands
-" Maintainer:		Bram Moolenaar
-" Last Change:	2012 May 01
+" Maintainer:		The Vim Project <https://github.com/vim/vim>
+" Last Change:		2023 Aug 13
 " Original translations
 
 " Quit when menu translations have already been done.

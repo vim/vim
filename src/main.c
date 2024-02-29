@@ -1548,7 +1548,7 @@ main_loop(
 		    && !skip_term_loop)
 	    {
 		// If terminal_loop() returns OK we got a key that is handled
-		// in Normal model.  With FAIL we first need to position the
+		// in Normal mode.  With FAIL we first need to position the
 		// cursor and the screen needs to be redrawn.
 		if (terminal_loop(TRUE) == OK)
 		    normal_cmd(&oa, TRUE);
@@ -1646,7 +1646,7 @@ getout(int exitval)
 	    next_tp = tp->tp_next;
 	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    {
-		if (wp->w_buffer == NULL)
+		if (wp->w_buffer == NULL || !buf_valid(wp->w_buffer))
 		    // Autocmd must have close the buffer already, skip.
 		    continue;
 		buf = wp->w_buffer;

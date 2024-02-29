@@ -840,6 +840,23 @@ func Test_end_reg_executing()
   bwipe!
 endfunc
 
+func Test_reg_executing_in_range_normal()
+  new
+  set showcmd
+  call setline(1, range(10))
+  let g:log = []
+  nnoremap s <Cmd>let g:log += [reg_executing()]<CR>
+  let @r = 's'
+
+  %normal @r
+  call assert_equal(repeat(['r'], 10), g:log)
+
+  nunmap s
+  unlet g:log
+  set showcmd&
+  bwipe!
+endfunc
+
 " An operator-pending mode mapping shouldn't be applied to keys typed in
 " Insert mode immediately after a character search when replaying.
 func Test_replay_charsearch_omap()
@@ -851,6 +868,8 @@ func Test_replay_charsearch_omap()
   call timer_start(10, {-> feedkeys(",bar\<Esc>q", 't')})
   call feedkeys('qrct[', 'xt!')
   call assert_equal(',bar[blah]', getline(1))
+  call assert_equal("ct[\<Ignore>,bar\<Esc>", @r)
+  call assert_equal('ct[<Ignore>,bar<Esc>', keytrans(@r))
   undo
   call assert_equal('foo[blah]', getline(1))
   call feedkeys('@r', 'xt!')
@@ -926,6 +945,38 @@ func Test_register_y_append_reset()
     \ '7',
     \ '8 ----------------------------------------------------',
     \ '9'], getline(1,'$'))
+  bwipe!
+endfunc
+
+func Test_insert_small_delete_replace_mode()
+  new
+  call setline(1, ['foo', 'bar', 'foobar',  'bar'])
+  let @- = 'foo'
+  call cursor(2, 1)
+  exe ":norm! R\<C-R>-\<C-R>-"
+  call assert_equal('foofoo', getline(2))
+  call cursor(3, 1)
+  norm! D
+  call assert_equal(['foo', 'foofoo', '',  'bar'], getline(1, 4))
+  call cursor(4, 2)
+  exe ":norm! R\<C-R>-ZZZZ"
+  call assert_equal(['foo', 'foofoo', '',  'bfoobarZZZZ'], getline(1, 4))
+  call cursor(1, 1)
+  let @- = ''
+  exe ":norm! R\<C-R>-ZZZ"
+  call assert_equal(['ZZZ', 'foofoo', '',  'bfoobarZZZZ'], getline(1, 4))
+  let @- = 'βbβ'
+  call cursor(4, 1)
+  exe ":norm! R\<C-R>-"
+  call assert_equal(['ZZZ', 'foofoo', '',  'βbβobarZZZZ'], getline(1, 4))
+  let @- = 'bβb'
+  call cursor(4, 1)
+  exe ":norm! R\<C-R>-"
+  call assert_equal(['ZZZ', 'foofoo', '',  'bβbobarZZZZ'], getline(1, 4))
+  let @- = 'βbβ'
+  call cursor(4, 1)
+  exe ":norm! R\<C-R>-"
+  call assert_equal(['ZZZ', 'foofoo', '',  'βbβobarZZZZ'], getline(1, 4))
   bwipe!
 endfunc
 

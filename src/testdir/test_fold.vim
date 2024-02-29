@@ -1769,4 +1769,26 @@ func Test_foldcolumn_linebreak_control_char()
   bwipe!
 endfunc
 
+" This used to cause invalid memory access
+func Test_foldexpr_return_empty_string()
+  new
+  setlocal foldexpr='' foldmethod=expr
+  redraw
+
+  bwipe!
+endfunc
+
+" Make sure that when ending a fold that hasn't been started, it does not
+" start a new fold.
+func Test_foldexpr_end_fold()
+  new
+  setlocal foldmethod=expr
+  let &l:foldexpr = 'v:lnum == 2 ? "<2" : "="'
+  call setline(1, range(1, 3))
+  redraw
+  call assert_equal([0, 0, 0], range(1, 3)->map('foldlevel(v:val)'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

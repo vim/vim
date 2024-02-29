@@ -111,6 +111,8 @@ func Test_getfontname_without_arg()
 endfunc
 
 func Test_getwinpos()
+  CheckX11
+
   call assert_match('Window position: X \d\+, Y \d\+', execute('winpos'))
   call assert_true(getwinposx() >= 0)
   call assert_true(getwinposy() >= 0)
@@ -580,10 +582,60 @@ func Test_set_guifontwide()
   endif
 endfunc
 
+func Test_expand_guifont()
+  if has('gui_win32')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling existing option, and suggesting current font size
+    set guifont=Courier\ New:h11:cANSI
+    call assert_equal('Courier\ New:h11:cANSI', getcompletion('set guifont=', 'cmdline')[0])
+    call assert_equal('h11', getcompletion('set guifont=Lucida\ Console:', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Courier\ New'], getcompletion('set guifont=Couri*ew$', 'cmdline'))
+    call assert_equal(['Courier\ New'], getcompletion('set guifontwide=Couri*ew$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out
+    call assert_equal([], getcompletion('set guifont=Arial', 'cmdline'))
+    call assert_equal([], getcompletion('set guifontwide=Arial', 'cmdline'))
+
+    " Test auto-completion working for font options
+    call assert_notequal(-1, index(getcompletion('set guifont=Courier\ New:', 'cmdline'), 'b'))
+    call assert_equal(['cDEFAULT'], getcompletion('set guifont=Courier\ New:cD*T', 'cmdline'))
+    call assert_equal(['qCLEARTYPE'], getcompletion('set guifont=Courier\ New:qC*TYPE', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  elseif has('gui_gtk')
+    let guifont_saved = &guifont
+    let guifontwide_saved = &guifontwide
+
+    " Test recalling default and existing option
+    set guifont=
+    call assert_equal('Monospace\ 10', getcompletion('set guifont=', 'cmdline')[0])
+    set guifont=Monospace\ 9
+    call assert_equal('Monospace\ 9', getcompletion('set guifont=', 'cmdline')[0])
+
+    " Test auto-completion working for font names
+    call assert_equal(['Monospace'], getcompletion('set guifont=Mono*pace$', 'cmdline'))
+    call assert_equal(['Monospace'], getcompletion('set guifontwide=Mono*pace$', 'cmdline'))
+
+    " Make sure non-monospace fonts are filtered out only in 'guifont'
+    call assert_equal([], getcompletion('set guifont=Sans$', 'cmdline'))
+    call assert_equal(['Sans'], getcompletion('set guifontwide=Sans$', 'cmdline'))
+
+    let &guifontwide = guifontwide_saved
+    let &guifont     = guifont_saved
+  else
+    call assert_equal([], getcompletion('set guifont=', 'cmdline'))
+  endif
+endfunc
+
 func Test_set_guiligatures()
   CheckX11BasedGui
 
-  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3') || has('win32')
     " Try correct value
     set guiligatures=<>=ab
     call assert_equal("<>=ab", &guiligatures)
@@ -847,7 +899,7 @@ func Test_set_term()
 endfunc
 
 func Test_windowid_variable()
-  if g:x11_based_gui || has('win32')
+  if (g:x11_based_gui && empty($WAYLAND_DISPLAY)) || has('win32')
     call assert_true(v:windowid > 0)
   else
     call assert_equal(0, v:windowid)
@@ -1658,7 +1710,11 @@ func Test_gui_lowlevel_keyevent()
   " Test for <Ctrl-A> to <Ctrl-Z> keys
   for kc in range(65, 90)
     call SendKeys([0x11, kc])
-    let ch = getcharstr()
+    try
+      let ch = getcharstr()
+    catch /^Vim:Interrupt$/
+      let ch = "\<c-c>"
+    endtry
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 
@@ -1685,6 +1741,11 @@ func Test_gui_macro_csi()
   norm @q
   call assert_equal('', getline(1))
   iunmap <C-D>t
+endfunc
+
+func Test_gui_csi_keytrans()
+  call assert_equal('<C-L>', keytrans("\x9b\xfc\x04L"))
+  call assert_equal('<C-D>', keytrans("\x9b\xfc\x04D"))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

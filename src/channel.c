@@ -10,13 +10,6 @@
  * Implements communication through a socket or any file handle.
  */
 
-#ifdef WIN32
-// Must include winsock2.h before windows.h since it conflicts with winsock.h
-// (included in windows.h).
-# include <winsock2.h>
-# include <ws2tcpip.h>
-#endif
-
 #include "vim.h"
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -2466,6 +2459,12 @@ channel_get_json(
 		d = item->jq_value->vval.v_dict;
 		if (d == NULL)
 		    goto nextitem;
+		// When looking for a response message from the LSP server,
+		// ignore new LSP request and notification messages.  LSP
+		// request and notification messages have the "method" field in
+		// the header and the response messages do not have this field.
+		if (dict_has_key(d, "method"))
+		    goto nextitem;
 		di = dict_find(d, (char_u *)"id", -1);
 		if (di == NULL)
 		    goto nextitem;
@@ -3046,13 +3045,27 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
     {
 	// JSON or JS or LSP mode: invoke the one-time callback with the
 	// matching nr
-	for (cbitem = cbhead->cq_next; cbitem != NULL; cbitem = cbitem->cq_next)
-	    if (cbitem->cq_seq_nr == seq_nr)
+	int lsp_req_msg = FALSE;
+
+	// Don't use a LSP server request message with the same sequence number
+	// as the client request message as the response message.
+	if (ch_mode == CH_MODE_LSP && argv[1].v_type == VAR_DICT
+		&& dict_has_key(argv[1].vval.v_dict, "method"))
+	    lsp_req_msg = TRUE;
+
+	if (!lsp_req_msg)
+	{
+	    for (cbitem = cbhead->cq_next; cbitem != NULL;
+		    cbitem = cbitem->cq_next)
 	    {
-		invoke_one_time_callback(channel, cbhead, cbitem, argv);
-		called_otc = TRUE;
-		break;
+		if (cbitem->cq_seq_nr == seq_nr)
+		{
+		    invoke_one_time_callback(channel, cbhead, cbitem, argv);
+		    called_otc = TRUE;
+		    break;
+		}
 	    }
+	}
     }
 
     if (seq_nr > 0 && (ch_mode != CH_MODE_LSP || called_otc))

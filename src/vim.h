@@ -102,6 +102,11 @@
 # define ROOT_UID 0
 #endif
 
+/* Include MAC_OS_X_VERSION_* macros */
+#ifdef HAVE_AVAILABILITYMACROS_H
+# include <AvailabilityMacros.h>
+#endif
+
 /*
  * MACOS_X	    compiling for Mac OS X
  * MACOS_X_DARWIN   integrating the darwin feature into MACOS_X
@@ -167,7 +172,9 @@
 # if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
-# if defined(FEAT_HUGE) && !defined(FEAT_SOUND)
+# if defined(FEAT_HUGE) && !defined(FEAT_SOUND) && \
+	defined(__clang_major__) && __clang_major__ >= 7 && \
+	defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
 #  define FEAT_SOUND
 # endif
 # if defined(FEAT_SOUND)
@@ -428,6 +435,17 @@ typedef unsigned short sattr_T;
  */
 typedef unsigned int u8char_T;	// int is 32 bits or more
 
+/*
+ * The vimlong_T has sizeof(vimlong_T) >= 2 * sizeof(int).
+ * One use is simple handling of overflow in int calculations.
+ */
+#if defined(VMS) && defined(VAX)
+// unsupported compiler
+typedef long      vimlong_T;
+#else
+typedef long long vimlong_T;
+#endif
+
 #ifndef UNIX		    // For Unix this is included in os_unix.h
 # include <stdio.h>
 # include <ctype.h>
@@ -486,6 +504,10 @@ typedef unsigned int u8char_T;	// int is 32 bits or more
 # include <wctype.h>
 #endif
 #include <stdarg.h>
+// older compilers do not define va_copy
+#ifndef va_copy
+# define va_copy(dst, src)	((dst) = (src))
+#endif
 
 // for offsetof()
 #include <stddef.h>
@@ -815,6 +837,11 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_BREAKPOINT	51
 #define EXPAND_SCRIPTNAMES	52
 #define EXPAND_RUNTIME		53
+#define EXPAND_STRING_SETTING	54
+#define EXPAND_SETTING_SUBTRACT	55
+#define EXPAND_ARGOPT		56
+#define EXPAND_TERMINALOPT	57
+#define EXPAND_KEYMAP		58
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -1228,6 +1255,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WSP_BELOW	0x40	// put new window below/right
 #define WSP_ABOVE	0x80	// put new window above/left
 #define WSP_NEWLOC	0x100	// don't copy location list
+#define WSP_FORCE_ROOM	0x200	// ignore "not enough room" errors
 
 /*
  * arguments for gui_set_shellsize()
@@ -1395,6 +1423,7 @@ enum auto_event
     EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and
 				// entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
+    EVENT_TERMRESPONSEALL,	// after setting terminal response vars
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,		// text was modified in Insert mode
     EVENT_TEXTCHANGEDP,		// TextChangedI with popup menu visible
@@ -1407,7 +1436,8 @@ enum auto_event
     EVENT_VIMRESIZED,		// after Vim window was resized
     EVENT_WINENTER,		// after entering a window
     EVENT_WINLEAVE,		// before leaving a window
-    EVENT_WINNEW,		// when entering a new window
+    EVENT_WINNEWPRE,		// before creating a new window
+    EVENT_WINNEW,		// after creating a new window
     EVENT_WINCLOSED,		// after closing a window
     EVENT_VIMSUSPEND,		// before Vim is suspended
     EVENT_VIMRESUME,		// after Vim is resumed
@@ -2130,7 +2160,9 @@ typedef int sock_T;
 #define VV_SIZEOFLONG	103
 #define VV_SIZEOFPOINTER 104
 #define VV_MAXCOL	105
-#define VV_LEN		106	// number of v: vars
+#define VV_PYTHON3_VERSION 106
+#define VV_TYPE_TYPEALIAS 107
+#define VV_LEN		108	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2153,6 +2185,7 @@ typedef int sock_T;
 #define VAR_TYPE_INSTR	    11
 #define VAR_TYPE_CLASS	    12
 #define VAR_TYPE_OBJECT	    13
+#define VAR_TYPE_TYPEALIAS  14
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
@@ -2322,6 +2355,20 @@ typedef enum {
  */
 typedef char *(*opt_did_set_cb_T)(optset_T *args);
 
+/*
+ * Type for the callback function that is invoked when expanding possible
+ * string option values during cmdline completion.
+ *
+ * Strings in returned matches will be managed and freed by caller.
+ *
+ * Returns OK if the expansion succeeded (numMatches and matches have to be
+ * set). Otherwise returns FAIL.
+ *
+ * Note: If returned FAIL or *numMatches is 0, *matches will NOT be freed by
+ * caller.
+ */
+typedef int (*opt_expand_cb_T)(optexpand_T *args, int *numMatches, char_u ***matches);
+
 // Flags for assignment functions.
 #define ASSIGN_VAR	0     // ":var" (nothing special)
 #define ASSIGN_FINAL	0x01  // ":final"
@@ -2333,6 +2380,7 @@ typedef char *(*opt_did_set_cb_T)(optset_T *args);
 #define ASSIGN_FOR_LOOP 0x40 // assigning to loop variable
 #define ASSIGN_INIT	0x80 // not assigning a value, just a declaration
 #define ASSIGN_UPDATE_BLOCK_ID 0x100  // update sav_block_id
+#define ASSIGN_COMPOUND_OP 0x200  // compound operator e.g. "+="
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
@@ -2752,6 +2800,7 @@ typedef char *(*opt_did_set_cb_T)(optset_T *args);
 #define GLV_COMPILING	TFN_COMPILING	// variable may be defined later
 #define GLV_ASSIGN_WITH_OP TFN_ASSIGN_WITH_OP // assignment with operator
 #define GLV_PREFER_FUNC	0x10000		// prefer function above variable
+#define GLV_FOR_LOOP	0x20000		// assigning to a loop variable
 
 #define DO_NOT_FREE_CNT 99999	// refcount for dict or list that should not
 				// be freed.
@@ -2914,5 +2963,6 @@ long elapsed(DWORD start_tick);
 // Flags used by "class_flags" of define_function()
 #define CF_CLASS	1	// inside a class
 #define CF_INTERFACE	2	// inside an interface
+#define CF_ABSTRACT_METHOD	4	// inside an abstract class
 
 #endif // VIM__H

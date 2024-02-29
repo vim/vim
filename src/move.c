@@ -19,6 +19,7 @@
 
 #include "vim.h"
 
+static void redraw_for_cursorline(win_T *wp);
 static int scrolljump_value(void);
 static int check_top_offset(void);
 static void curs_rows(win_T *wp);
@@ -36,29 +37,20 @@ static void topline_back(lineoff_T *lp);
 static void botline_forw(lineoff_T *lp);
 
 /*
- * Reduce "n" for the screen lines skipped with "wp->w_skipcol".
+ * Get the number of screen lines skipped with "wp->w_skipcol".
  */
     int
-adjust_plines_for_skipcol(win_T *wp, int n)
+adjust_plines_for_skipcol(win_T *wp)
 {
     if (wp->w_skipcol == 0)
-	return n;
+	return 0;
 
-    int off = 0;
     int width = wp->w_width - win_col_off(wp);
-    if (wp->w_skipcol >= width)
-    {
-	++off;
-	int skip = wp->w_skipcol - width;
-	width += win_col_off2(wp);
-	while (skip >= width)
-	{
-	    ++off;
-	    skip -= width;
-	}
-    }
-    wp->w_valid &= ~VALID_WROW;
-    return n - off;
+    int w2 = width + win_col_off2(wp);
+    if (wp->w_skipcol >= width && w2 > 0)
+	return (wp->w_skipcol - width) / w2 + 1;
+
+    return 0;
 }
 
 /*
@@ -77,7 +69,7 @@ plines_correct_topline(win_T *wp, linenr_T lnum)
 #endif
 	n = plines_win(wp, lnum, FALSE);
     if (lnum == wp->w_topline)
-	n = adjust_plines_for_skipcol(wp, n);
+	n -= adjust_plines_for_skipcol(wp);
     if (n > wp->w_height)
 	n = wp->w_height;
     return n;
@@ -164,7 +156,7 @@ comp_botline(win_T *wp)
  * Redraw when w_cline_row changes and 'relativenumber' or 'cursorline' is
  * set.
  */
-    void
+    static void
 redraw_for_cursorline(win_T *wp)
 {
     if ((wp->w_p_rnu
@@ -1076,7 +1068,7 @@ validate_cursor_col(void)
 win_col_off(win_T *wp)
 {
     return (((wp->w_p_nu || wp->w_p_rnu) ? number_width(wp) + 1 : 0)
-	    + (cmdwin_type == 0 || wp != curwin ? 0 : 1)
+	    + (wp != cmdwin_win ? 0 : 1)
 #ifdef FEAT_FOLDING
 	    + wp->w_p_fdc
 #endif
@@ -1215,16 +1207,6 @@ curs_columns(
 	    n = (curwin->w_wcol - curwin->w_width) / width2 + 1;
 	    curwin->w_wcol -= n * width2;
 	    curwin->w_wrow += n;
-
-#ifdef FEAT_LINEBREAK
-	    // When cursor wraps to first char of next line in Insert
-	    // mode, the 'showbreak' string isn't shown, backup to first
-	    // column
-	    char_u *sbr = get_showbreak_value(curwin);
-	    if (*sbr && *ml_get_cursor() == NUL
-				    && curwin->w_wcol == vim_strsize(sbr))
-		curwin->w_wcol = 0;
-#endif
 	}
     }
 
@@ -1356,7 +1338,10 @@ curs_columns(
 	    // don't skip more than necessary
 	    if (n > p_lines - curwin->w_height + 1)
 		n = p_lines - curwin->w_height + 1;
-	    curwin->w_skipcol = n * width2;
+	    if (n > 0)
+		curwin->w_skipcol = width1 + (n - 1) * width2;
+	    else
+		curwin->w_skipcol = 0;
 	}
 	else if (extra == 1)
 	{
@@ -1443,7 +1428,6 @@ textpos2screenpos(
 {
     colnr_T	scol = 0, ccol = 0, ecol = 0;
     int		row = 0;
-    int		rowoff = 0;
     colnr_T	coloff = 0;
 
     if (pos->lnum >= wp->w_topline && pos->lnum <= wp->w_botline)
@@ -1456,7 +1440,10 @@ textpos2screenpos(
 
 	is_folded = hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 #endif
-	row = plines_m_win(wp, wp->w_topline, lnum - 1) + 1;
+	row = plines_m_win(wp, wp->w_topline, lnum - 1, FALSE);
+	// "row" should be the screen line where line "lnum" begins, which can
+	// be negative if "lnum" is "w_topline" and "w_skipcol" is non-zero.
+	row -= adjust_plines_for_skipcol(wp);
 
 #ifdef FEAT_DIFF
 	// Add filler lines above this buffer line.
@@ -1468,7 +1455,7 @@ textpos2screenpos(
 #ifdef FEAT_FOLDING
 	if (is_folded)
 	{
-	    row += W_WINROW(wp);
+	    row += W_WINROW(wp) + 1;
 	    coloff = wp->w_wincol + 1 + off;
 	}
 	else
@@ -1481,32 +1468,30 @@ textpos2screenpos(
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
 
-	    if (lnum == wp->w_topline)
-		col -= wp->w_skipcol;
-
 	    // long line wrapping, adjust row
 	    if (wp->w_p_wrap
 		    && col >= (colnr_T)wp->w_width
 		    && width > 0)
 	    {
 		// use same formula as what is used in curs_columns()
-		rowoff = ((col - wp->w_width) / width + 1);
+		int rowoff = ((col - wp->w_width) / width + 1);
 		col -= rowoff * width;
+		row += rowoff;
 	    }
 	    col -= wp->w_leftcol;
 	    if (col >= wp->w_width)
 		col = -1;
-	    if (col >= 0 && row + rowoff <= wp->w_height)
+	    if (col >= 0 && row >= 0 && row < wp->w_height)
 	    {
 		coloff = col - scol + wp->w_wincol + 1;
-		row += W_WINROW(wp);
+		row += W_WINROW(wp) + 1;
 	    }
 	    else
-		// character is left, right or below of the window
-		row = rowoff = scol = ccol = ecol = 0;
+		// character is out of the window
+		row = scol = ccol = ecol = 0;
 	}
     }
-    *rowp = row + rowoff;
+    *rowp = row;
     *scolp = scol + coloff;
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
@@ -1547,6 +1532,8 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
     }
     pos.col = tv_get_number(&argvars[2]) - 1;
+    if (pos.col < 0)
+	pos.col = 0;
     pos.coladd = 0;
     textpos2screenpos(wp, &pos, &row, &scol, &ccol, &ecol);
 
@@ -1554,6 +1541,28 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(dict, "col", scol);
     dict_add_number(dict, "curscol", ccol);
     dict_add_number(dict, "endcol", ecol);
+}
+
+/*
+ * Convert a virtual (screen) column to a character column.  The first column
+ * is one.  For a multibyte character, the column number of the first byte is
+ * returned.
+ */
+    static int
+virtcol2col(win_T *wp, linenr_T lnum, int vcol)
+{
+    int		offset = vcol2col(wp, lnum, vcol - 1, NULL);
+    char_u	*line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    char_u	*p = line + offset;
+
+    if (*p == NUL)
+    {
+	if (p == line)  // empty line
+	    return 0;
+	// Move to the first byte of the last char.
+	MB_PTR_BACK(line, p);
+    }
+    return (int)(p - line + 1);
 }
 
 /*
@@ -1586,7 +1595,7 @@ f_virtcol2col(typval_T *argvars UNUSED, typval_T *rettv)
     if (error || screencol < 0)
 	return;
 
-    rettv->vval.v_number = vcol2col(wp, lnum, screencol);
+    rettv->vval.v_number = virtcol2col(wp, lnum, screencol);
 }
 #endif
 
@@ -1753,6 +1762,8 @@ scrolldown(
 	if (col > width2 && width2 > 0)
 	{
 	    row += col / width2;
+	    // even so col is not used anymore,
+	    // make sure it is correct, just in case
 	    col = col % width2;
 	}
 	if (row >= curwin->w_height)
@@ -1989,6 +2000,8 @@ adjust_skipcol(void)
     if (col > width2)
     {
 	row += col / width2;
+	// col may no longer be used, but make
+	// sure it is correct anyhow, just in case
 	col = col % width2;
     }
     if (row >= curwin->w_height)
@@ -2414,7 +2427,9 @@ scroll_cursor_top(int min_scroll, int always)
 	}
 	check_topfill(curwin, FALSE);
 #endif
-	if (curwin->w_topline == curwin->w_cursor.lnum)
+	if (curwin->w_topline != old_topline)
+	    reset_skipcol();
+	else if (curwin->w_topline == curwin->w_cursor.lnum)
 	{
 	    validate_virtcol();
 	    if (curwin->w_skipcol >= curwin->w_virtcol)
@@ -3260,6 +3275,7 @@ onepage(int dir, long count)
 #ifdef FEAT_DIFF
 			curwin->w_topfill = 0;
 #endif
+			curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
 		    }
 		    comp_botline(curwin);
 		    curwin->w_cursor.lnum = curwin->w_botline - 1;
@@ -3568,6 +3584,14 @@ halfpage(int flag, linenr_T Prenum)
     void
 do_check_cursorbind(void)
 {
+    static win_T	*prev_curwin = NULL;
+    static pos_T	prev_cursor = {0, 0, 0};
+
+    if (curwin == prev_curwin && EQUAL_POS(curwin->w_cursor, prev_cursor))
+	return;
+    prev_curwin = curwin;
+    prev_cursor = curwin->w_cursor;
+
     linenr_T	line = curwin->w_cursor.lnum;
     colnr_T	col = curwin->w_cursor.col;
     colnr_T	coladd = curwin->w_cursor.coladd;
@@ -3585,7 +3609,7 @@ do_check_cursorbind(void)
     FOR_ALL_WINDOWS(curwin)
     {
 	curbuf = curwin->w_buffer;
-	// skip original window  and windows with 'noscrollbind'
+	// skip original window and windows with 'nocursorbind'
 	if (curwin != old_curwin && curwin->w_p_crb)
 	{
 # ifdef FEAT_DIFF

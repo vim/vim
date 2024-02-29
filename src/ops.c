@@ -17,6 +17,9 @@
 static void shift_block(oparg_T *oap, int amount);
 static void	mb_adjust_opend(oparg_T *oap);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
+static void	pbyte(pos_T lp, int c);
+#define PBYTE(lp, c) pbyte(lp, c)
+
 
 // Flags for third item in "opchars".
 #define OPF_LINES  1	// operator always works on lines
@@ -226,9 +229,9 @@ shift_line(
     int	amount,
     int call_changed_bytes)	// call changed_bytes()
 {
-    int		count;
+    vimlong_T	count;
     int		i, j;
-    int		sw_val = (int)get_sw_value_indent(curbuf);
+    int		sw_val = trim_to_int(get_sw_value_indent(curbuf));
 
     count = get_indent();	// get current indent
 
@@ -246,25 +249,25 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = i * sw_val;
+	count = (vimlong_T)i * (vimlong_T)sw_val;
     }
     else		// original vi indent
     {
 	if (left)
 	{
-	    count -= sw_val * amount;
+	    count -= (vimlong_T)sw_val * (vimlong_T)amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	    count += sw_val * amount;
+	    count += (vimlong_T)sw_val * (vimlong_T)amount;
     }
 
     // Set new indent
     if (State & VREPLACE_FLAG)
-	change_indent(INDENT_SET, count, FALSE, NUL, call_changed_bytes);
+	change_indent(INDENT_SET, trim_to_int(count), FALSE, NUL, call_changed_bytes);
     else
-	(void)set_indent(count, call_changed_bytes ? SIN_CHANGED : 0);
+	(void)set_indent(trim_to_int(count), call_changed_bytes ? SIN_CHANGED : 0);
 }
 
 /*
@@ -987,13 +990,20 @@ setmarks:
     static void
 mb_adjust_opend(oparg_T *oap)
 {
-    char_u	*p;
+    char_u	*line;
+    char_u	*ptr;
 
     if (!oap->inclusive)
 	return;
 
-    p = ml_get(oap->end.lnum);
-    oap->end.col += mb_tail_off(p, p + oap->end.col);
+    line = ml_get(oap->end.lnum);
+    ptr = line + oap->end.col;
+    if (*ptr != NUL)
+    {
+	ptr -= (*mb_head_off)(line, ptr);
+	ptr += (*mb_ptr2len)(ptr) - 1;
+	oap->end.col = ptr - line;
+    }
 }
 
 /*
@@ -1428,18 +1438,19 @@ swapchar(int op_type, pos_T *pos)
     if (c >= 0x80 && op_type == OP_ROT13)
 	return FALSE;
 
-    if (op_type == OP_UPPER && c == 0xdf
-		      && (enc_latin1like || STRCMP(p_enc, "iso-8859-2") == 0))
+    // ~ is OP_NOP, g~ is OP_TILDE, gU is OP_UPPER
+    if ((op_type == OP_UPPER || op_type == OP_NOP || op_type == OP_TILDE)
+	    && c == 0xdf
+	    && (enc_latin1like || STRCMP(p_enc, "iso-8859-2") == 0))
     {
 	pos_T   sp = curwin->w_cursor;
 
-	// Special handling of German sharp s: change to "SS".
+	// Special handling for lowercase German sharp s (ß): convert to uppercase (ẞ).
 	curwin->w_cursor = *pos;
 	del_char(FALSE);
-	ins_char('S');
-	ins_char('S');
+	ins_char(0x1E9E);
 	curwin->w_cursor = sp;
-	inc(pos);
+	return TRUE;
     }
 
     if (enc_dbcs != 0 && c >= 0x100)	// No lower/uppercase letter
@@ -2411,6 +2422,84 @@ block_prep(
 }
 
 /*
+ * Get block text from "start" to "end"
+ */
+    void
+charwise_block_prep(
+    pos_T		start,
+    pos_T		end,
+    struct block_def	*bdp,
+    linenr_T		lnum,
+    int			inclusive)
+{
+    colnr_T startcol = 0, endcol = MAXCOL;
+    int	    is_oneChar = FALSE;
+    colnr_T cs, ce;
+    char_u *p;
+
+    p = ml_get(lnum);
+    bdp->startspaces = 0;
+    bdp->endspaces = 0;
+
+    if (lnum == start.lnum)
+    {
+	startcol = start.col;
+	if (virtual_op)
+	{
+	    getvcol(curwin, &start, &cs, NULL, &ce);
+	    if (ce != cs && start.coladd > 0)
+	    {
+		// Part of a tab selected -- but don't
+		// double-count it.
+		bdp->startspaces = (ce - cs + 1)
+		    - start.coladd;
+		if (bdp->startspaces < 0)
+		    bdp->startspaces = 0;
+		startcol++;
+	    }
+	}
+    }
+
+    if (lnum == end.lnum)
+    {
+	endcol = end.col;
+	if (virtual_op)
+	{
+	    getvcol(curwin, &end, &cs, NULL, &ce);
+	    if (p[endcol] == NUL || (cs + end.coladd < ce
+			// Don't add space for double-wide
+			// char; endcol will be on last byte
+			// of multi-byte char.
+			&& (*mb_head_off)(p, p + endcol) == 0))
+	    {
+		if (start.lnum == end.lnum
+			&& start.col == end.col)
+		{
+		    // Special case: inside a single char
+		    is_oneChar = TRUE;
+		    bdp->startspaces = end.coladd
+			- start.coladd + inclusive;
+		    endcol = startcol;
+		}
+		else
+		{
+		    bdp->endspaces = end.coladd
+			+ inclusive;
+		    endcol -= inclusive;
+		}
+	    }
+	}
+    }
+    if (endcol == MAXCOL)
+	endcol = (colnr_T)STRLEN(p);
+    if (startcol > endcol || is_oneChar)
+	bdp->textlen = 0;
+    else
+	bdp->textlen = endcol - startcol + inclusive;
+    bdp->textstart = p + startcol;
+}
+
+/*
  * Handle the add/subtract operator.
  */
     void
@@ -2731,7 +2820,7 @@ do_addsub(
 	{
 	    if (CharOrd(firstdigit) < Prenum1)
 	    {
-		if (isupper(firstdigit))
+		if (SAFE_isupper(firstdigit))
 		    firstdigit = 'A';
 		else
 		    firstdigit = 'a';
@@ -2743,7 +2832,7 @@ do_addsub(
 	{
 	    if (26 - CharOrd(firstdigit) - 1 < Prenum1)
 	    {
-		if (isupper(firstdigit))
+		if (SAFE_isupper(firstdigit))
 		    firstdigit = 'Z';
 		else
 		    firstdigit = 'z';
@@ -2872,9 +2961,9 @@ do_addsub(
 	save_pos = curwin->w_cursor;
 	for (i = 0; i < todel; ++i)
 	{
-	    if (c < 0x100 && isalpha(c))
+	    if (c < 0x100 && SAFE_isalpha(c))
 	    {
-		if (isupper(c))
+		if (SAFE_isupper(c))
 		    hexupper = TRUE;
 		else
 		    hexupper = FALSE;
@@ -2919,7 +3008,7 @@ do_addsub(
 	    for (bit = bits; bit > 0; bit--)
 		if ((n >> (bit - 1)) & 0x1) break;
 
-	    for (i = 0; bit > 0; bit--)
+	    for (i = 0; bit > 0 && i < (NUMBUFLEN - 1); bit--)
 		buf2[i++] = ((n >> (bit - 1)) & 0x1) ? '1' : '0';
 
 	    buf2[i] = '\0';
@@ -4131,6 +4220,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
+		// trigger TextChangedI
+		curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
+
 		if (op_change(oap))	// will call edit()
 		    cap->retval |= CA_COMMAND_BUSY;
 		if (restart_edit == 0)
@@ -4241,6 +4333,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
+		// trigger TextChangedI
+		curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
+
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
 		// Reset linebreak, so that formatting works correctly.
@@ -4348,4 +4443,19 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
     restore_lbr(lbr_saved);
 #endif
+}
+
+// put byte 'c' at position 'lp', but
+// verify, that the position to place
+// is actually safe
+    static void
+pbyte(pos_T lp, int c)
+{
+    char_u *p = ml_get_buf(curbuf, lp.lnum, TRUE);
+    int	len = curbuf->b_ml.ml_line_len;
+
+    // safety check
+    if (lp.col >= len)
+	lp.col = (len > 1 ? len - 2 : 0);
+    *(p + lp.col) = c;
 }

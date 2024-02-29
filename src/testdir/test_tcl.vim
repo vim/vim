@@ -11,10 +11,25 @@ func TclEval(tcl_expr)
 endfunc
 
 func Test_tcldo()
-  " Check deleting lines does not trigger ml_get error.
   new
+
+  " Check deleting lines does not trigger ml_get error.
   call setline(1, ['one', 'two', 'three'])
   tcldo ::vim::command %d_
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  tcldo ::vim::command 1,2d_
+  call assert_equal(['one'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  tcldo ::vim::command 2,3d_ ; set line REPLACED
+  call assert_equal(['REPLACED'], getline(1, '$'))
+
+  call setline(1, ['one', 'two', 'three'])
+  2,3tcldo ::vim::command 1,2d_ ; set line REPLACED
+  call assert_equal(['three'], getline(1, '$'))
+
   bwipe!
 
   " Check that switching to another buffer does not trigger ml_get error.

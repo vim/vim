@@ -387,7 +387,7 @@ def Test_expr2_fails()
   v9.CheckDefAndScriptFailure(["if 3"], 'E1023:', 1)
   v9.CheckDefExecAndScriptFailure(['var x = 3', 'if x', 'endif'], 'E1023:', 2)
 
-  v9.CheckDefAndScriptFailure(["var x = [] || false"], ['E1012: Type mismatch; expected bool but got list<unknown>', 'E745:'], 1)
+  v9.CheckDefAndScriptFailure(["var x = [] || false"], ['E1012: Type mismatch; expected bool but got list<any>', 'E745:'], 1)
 
   var lines =<< trim END
     vim9script
@@ -2795,7 +2795,7 @@ def Test_expr9_dict()
       var ds = {k: null_string}
       assert_equal('dict<string>', typename(ds))
       var dl = {a: null_list}
-      assert_equal('dict<list<unknown>>', typename(dl))
+      assert_equal('dict<list<any>>', typename(dl))
   END
   v9.CheckDefAndScriptSuccess(lines)
 
@@ -3038,7 +3038,7 @@ def Test_expr_member()
 
   v9.CheckDefAndScriptFailure(["var x = g:dict_one.#$!"], ['E1002:', 'E15:'], 1)
   v9.CheckDefExecAndScriptFailure(["var d: dict<any>", "echo d['a']"], 'E716:', 2)
-  v9.CheckDefExecAndScriptFailure(["var d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
+  v9.CheckDefExecAndScriptFailure(["var d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<any>', 2)
 enddef
 
 def Test_expr9_any_index_slice()

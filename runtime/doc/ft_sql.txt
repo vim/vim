@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 9.0.  Last change: 2022 Apr 06
+*ft_sql.txt*	For Vim version 9.1.  Last change: 2022 Apr 06
 
 by David Fishburn
 
@@ -371,7 +371,7 @@ This command breaks down as: >
     'sqlKeyword'	   - Display the items for the sqlKeyword highlight
 			     group
     'sqlKeyword\w*'	   - A second option available with Vim 7.4 which
-                             uses a regular expression to determine which
+			     uses a regular expression to determine which
 			     syntax groups to use
     )<CR>		   - Execute the :let command
     <C-X><C-O>		   - Trigger the standard omni completion key stroke.

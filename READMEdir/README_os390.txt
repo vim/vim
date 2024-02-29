@@ -1,4 +1,4 @@
-README_os390.txt for version 9.0 of Vim: Vi IMproved.
+README_os390.txt for version 9.1 of Vim: Vi IMproved.
 
 This readme explains how to build Vim on z/OS.  Formerly called OS/390.
 See "README.txt" for general information about Vim.
@@ -46,7 +46,7 @@ Change to the vim directory and do:
 
     $ export CC=cc
     $ export _CC_CCMODE=1
-    $./configure --with-features=big --without-x --enable-gui=no
+    $./configure --with-features=normal --without-x --enable-gui=no
     $ cd src
     $ make
 

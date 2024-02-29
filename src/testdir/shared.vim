@@ -113,6 +113,8 @@ func RunServer(cmd, testfunc, args)
     endif
 
     call call(function(a:testfunc), [port])
+  catch /E901.*Address family for hostname not supported/
+    throw 'Skipped: Invalid network setup ("' .. v:exception .. '" in ' .. v:throwpoint .. ')'
   catch
     call assert_report('Caught exception: "' . v:exception . '" in ' . v:throwpoint)
   finally
@@ -298,7 +300,8 @@ func GetVimCommand(...)
   endif
   let cmd .= ' --not-a-term'
   let cmd .= ' --gui-dialog-file guidialogfile'
-  let cmd = substitute(cmd, 'VIMRUNTIME=\S\+', '', '')
+  " remove any environment variables
+  let cmd = substitute(cmd, '[A-Z_]*=\S\+ *', '', 'g')
 
   " If using valgrind, make sure every run uses a different log file.
   if cmd =~ 'valgrind.*--log-file='
@@ -361,7 +364,7 @@ func RunVimPiped(before, after, arguments, pipecmd)
   " Optionally run Vim under valgrind
   " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
 
-  exe "silent !" . a:pipecmd . cmd . args . ' ' . a:arguments
+  exe "silent !" .. a:pipecmd .. ' ' ..  cmd .. args .. ' ' .. a:arguments
 
   if len(a:before) > 0
     call delete('Xbefore.vim')

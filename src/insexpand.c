@@ -1330,11 +1330,6 @@ ins_compl_show_pum(void)
     if (!pum_wanted() || !pum_enough_matches())
 	return;
 
-#if defined(FEAT_EVAL)
-    // Dirty hard-coded hack: remove any matchparen highlighting.
-    do_cmdline_cmd((char_u *)"if exists('g:loaded_matchparen')|:3match none|endif");
-#endif
-
     // Update the screen later, before drawing the popup menu over it.
     pum_call_update_screen();
 
@@ -1355,7 +1350,13 @@ ins_compl_show_pum(void)
     }
 
     if (compl_match_array == NULL)
+    {
+#ifdef FEAT_EVAL
+	if (compl_started && has_completechanged())
+	    trigger_complete_changed_event(cur);
+#endif
 	return;
+    }
 
     // In Replace mode when a $ is displayed at the end of the line only
     // part of the screen would be updated.  We do need to redraw here.
@@ -1367,6 +1368,10 @@ ins_compl_show_pum(void)
     curwin->w_cursor.col = compl_col;
     pum_display(compl_match_array, compl_match_arraysize, cur);
     curwin->w_cursor.col = col;
+
+    // After adding leader, set the current match to shown match.
+    if (compl_started && compl_curr_match != compl_shown_match)
+	compl_curr_match = compl_shown_match;
 
 #ifdef FEAT_EVAL
     if (has_completechanged())
@@ -3040,6 +3045,74 @@ ins_compl_update_sequence_numbers(void)
     }
 }
 
+    static int
+info_add_completion_info(list_T *li)
+{
+    compl_T	*match;
+    int		forward = compl_dir_forward();
+
+    if (compl_first_match == NULL)
+	return OK;
+
+    match = compl_first_match;
+    // There are four cases to consider here:
+    // 1) when just going forward through the menu,
+    //    compl_first_match should point to the initial entry with
+    //    number zero and CP_ORIGINAL_TEXT flag set
+    // 2) when just going backwards,
+    //    compl-first_match should point to the last entry before
+    //    the entry with the CP_ORIGINAL_TEXT flag set
+    // 3) when first going forwards and then backwards, e.g.
+    //    pressing C-N, C-P, compl_first_match points to the
+    //    last entry before the entry with the CP_ORIGINAL_TEXT
+    //    flag set and next-entry moves opposite through the list
+    //    compared to case 2, so pretend the direction is forward again
+    // 4) when first going backwards and then forwards, e.g.
+    //    pressing C-P, C-N, compl_first_match points to the
+    //    first entry with the CP_ORIGINAL_TEXT
+    //    flag set and next-entry moves in opposite direction through the list
+    //    compared to case 1, so pretend the direction is backwards again
+    //
+    // But only do this when the 'noselect' option is not active!
+
+    if (!compl_no_select)
+    {
+	if (forward && !match_at_original_text(match))
+	    forward = FALSE;
+	else if (!forward && match_at_original_text(match))
+	    forward = TRUE;
+    }
+
+    // Skip the element with the CP_ORIGINAL_TEXT flag at the beginning, in case of
+    // forward completion, or at the end, in case of backward completion.
+    match = forward || match->cp_prev == NULL ? match->cp_next :
+	(compl_no_select && match_at_original_text(match) ? match->cp_prev : match->cp_prev->cp_prev);
+
+    while (match != NULL && !match_at_original_text(match))
+    {
+	dict_T *di = dict_alloc();
+
+	if (di == NULL)
+	    return FAIL;
+	if (list_append_dict(li, di) == FAIL)
+	    return FAIL;
+	dict_add_string(di, "word", match->cp_str);
+	dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
+	dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
+	dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
+	dict_add_string(di, "info", match->cp_text[CPT_INFO]);
+	if (match->cp_user_data.v_type == VAR_UNKNOWN)
+	    // Add an empty string for backwards compatibility
+	    dict_add_string(di, "user_data", (char_u *)"");
+	else
+	    dict_add_tv(di, "user_data", &match->cp_user_data);
+
+	match = forward ? match->cp_next : match->cp_prev;
+    }
+
+    return OK;
+}
+
 /*
  * Get complete information
  */
@@ -3088,41 +3161,13 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     if (ret == OK && (what_flag & CI_WHAT_ITEMS))
     {
 	list_T	    *li;
-	dict_T	    *di;
-	compl_T     *match;
 
 	li = list_alloc();
 	if (li == NULL)
 	    return;
 	ret = dict_add_list(retdict, "items", li);
-	if (ret == OK && compl_first_match != NULL)
-	{
-	    match = compl_first_match;
-	    do
-	    {
-		if (!match_at_original_text(match))
-		{
-		    di = dict_alloc();
-		    if (di == NULL)
-			return;
-		    ret = list_append_dict(li, di);
-		    if (ret != OK)
-			return;
-		    dict_add_string(di, "word", match->cp_str);
-		    dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
-		    dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
-		    dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
-		    dict_add_string(di, "info", match->cp_text[CPT_INFO]);
-		    if (match->cp_user_data.v_type == VAR_UNKNOWN)
-			// Add an empty string for backwards compatibility
-			dict_add_string(di, "user_data", (char_u *)"");
-		    else
-			dict_add_tv(di, "user_data", &match->cp_user_data);
-		}
-		match = match->cp_next;
-	    }
-	    while (match != NULL && !is_first_match(match));
-	}
+	if (ret == OK)
+	    ret = info_add_completion_info(li);
     }
 
     if (ret == OK && (what_flag & CI_WHAT_SELECTED))
@@ -3789,7 +3834,7 @@ ins_compl_get_exp(pos_T *ini)
 	st.found_all = FALSE;
 	st.ins_buf = curbuf;
 	vim_free(st.e_cpt_copy);
-	// Make a copy of 'complete', if case the buffer is wiped out.
+	// Make a copy of 'complete', in case the buffer is wiped out.
 	st.e_cpt_copy = vim_strsave((compl_cont_status & CONT_LOCAL)
 					    ? (char_u *)"." : curbuf->b_p_cpt);
 	st.e_cpt = st.e_cpt_copy == NULL ? (char_u *)"" : st.e_cpt_copy;
@@ -3850,7 +3895,7 @@ ins_compl_get_exp(pos_T *ini)
 	else
 	{
 	    // Mark a buffer scanned when it has been scanned completely
-	    if (type == 0 || type == CTRL_X_PATH_PATTERNS)
+	    if (buf_valid(st.ins_buf) && (type == 0 || type == CTRL_X_PATH_PATTERNS))
 		st.ins_buf->b_scanned = TRUE;
 
 	    compl_started = FALSE;
@@ -4148,7 +4193,7 @@ ins_compl_next(
 	ins_compl_update_shown_match();
 
     if (allow_get_expansion && insert_match
-	    && (!(compl_get_longest || compl_restarting) || compl_used_match))
+	    && (!compl_get_longest || compl_used_match))
 	// Delete old text to be replaced
 	ins_compl_delete();
 

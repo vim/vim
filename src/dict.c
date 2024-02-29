@@ -1015,6 +1015,15 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		clear_tv(&tvkey);
 	    goto failret;
 	}
+	if (check_typval_is_value(&tv) == FAIL)
+	{
+	    if (evaluate)
+	    {
+		clear_tv(&tvkey);
+		clear_tv(&tv);
+	    }
+	    goto failret;
+	}
 	if (evaluate)
 	{
 	    item = dict_find(d, key, -1);
@@ -1320,8 +1329,8 @@ dict_extend_func(
 }
 
 /*
- * Implementation of map() and filter() for a Dict.  Apply "expr" to every
- * item in Dict "d" and return the result in "rettv".
+ * Implementation of map(), filter(), foreach() for a Dict.  Apply "expr" to
+ * every item in Dict "d" and return the result in "rettv".
  */
     void
 dict_filter_map(
@@ -1383,7 +1392,6 @@ dict_filter_map(
 			    arg_errmsg, TRUE)))
 		break;
 	    set_vim_var_string(VV_KEY, di->di_key, -1);
-	    newtv.v_type = VAR_UNKNOWN;
 	    r = filter_map_one(&di->di_tv, expr, filtermap, fc, &newtv, &rem);
 	    clear_tv(get_vim_var_tv(VV_KEY));
 	    if (r == FAIL || did_emsg)
@@ -1497,7 +1505,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 
     d = argvars[0].vval.v_dict;
     if (d == NULL)
-	// empty dict behaves like an empty dict
+	// NULL dict behaves like an empty dict
 	return;
 
     todo = (int)d->dv_hashtab.ht_used;

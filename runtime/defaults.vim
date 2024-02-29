@@ -1,7 +1,8 @@
 " The default vimrc file.
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2023 May 10
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".

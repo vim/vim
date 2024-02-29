@@ -123,6 +123,7 @@ static void serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 static void unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 #endif
 static void u_saveline(linenr_T lnum);
+static void u_blockfree(buf_T *buf);
 
 #define U_ALLOC_LINE(size) lalloc(size, FALSE)
 
@@ -3472,7 +3473,7 @@ u_freeentry(u_entry_T *uep, long n)
 /*
  * invalidate the undo buffer; called when storage has already been released
  */
-    void
+    static void
 u_clearall(buf_T *buf)
 {
     buf->b_u_newhead = buf->b_u_oldhead = buf->b_u_curhead = NULL;
@@ -3482,6 +3483,30 @@ u_clearall(buf_T *buf)
     buf->b_u_line_ptr.ul_len = 0;
     buf->b_u_line_lnum = 0;
 }
+
+/*
+ * Free all allocated memory blocks for the buffer 'buf'.
+ */
+    static void
+u_blockfree(buf_T *buf)
+{
+    while (buf->b_u_oldhead != NULL)
+	u_freeheader(buf, buf->b_u_oldhead, NULL);
+    vim_free(buf->b_u_line_ptr.ul_line);
+}
+
+/*
+ * Free all allocated memory blocks for the buffer 'buf'.
+ * and invalidate the undo buffer
+ */
+    void
+u_clearallandblockfree(buf_T *buf)
+{
+    u_blockfree(buf);
+    u_clearall(buf);
+}
+
+
 
 /*
  * Save the line "lnum" for the "U" command.
@@ -3560,17 +3585,6 @@ u_undoline(void)
     curwin->w_cursor.col = t;
     curwin->w_cursor.lnum = curbuf->b_u_line_lnum;
     check_cursor_col();
-}
-
-/*
- * Free all allocated memory blocks for the buffer 'buf'.
- */
-    void
-u_blockfree(buf_T *buf)
-{
-    while (buf->b_u_oldhead != NULL)
-	u_freeheader(buf, buf->b_u_oldhead, NULL);
-    vim_free(buf->b_u_line_ptr.ul_line);
 }
 
 /*
@@ -3726,23 +3740,18 @@ u_undofile_reset_and_delete(buf_T *buf)
     void
 f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    typval_T	*tv = &argvars[0];
-    buf_T	*buf;
-    dict_T	*dict;
-    list_T	*list;
-
     if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)
 	return;
-
-    if (tv->v_type == VAR_UNKNOWN)
-	buf = curbuf;
-    else
-	buf = tv_get_buf_from_arg(tv);
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 
-    dict = rettv->vval.v_dict;
+    typval_T	*tv = &argvars[0];
+    buf_T	*buf = tv->v_type == VAR_UNKNOWN ? curbuf : get_buf_arg(tv);
+    if (buf == NULL)
+	return;
+
+    dict_T *dict = rettv->vval.v_dict;
 
     dict_add_number(dict, "synced", (long)buf->b_u_synced);
     dict_add_number(dict, "seq_last", buf->b_u_seq_last);
@@ -3751,7 +3760,7 @@ f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(dict, "time_cur", (long)buf->b_u_time_cur);
     dict_add_number(dict, "save_cur", buf->b_u_save_nr_cur);
 
-    list = list_alloc();
+    list_T *list = list_alloc();
     if (list != NULL)
     {
 	u_eval_tree(buf, buf->b_u_oldhead, list);

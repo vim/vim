@@ -568,9 +568,11 @@ normal_cmd_get_more_chars(
 	    ++no_mapping;
 	    // Vim may be in a different mode when the user types the next key,
 	    // but when replaying a recording the next key is already in the
-	    // typeahead buffer, so record a <Nop> before that to prevent the
-	    // vpeekc() above from applying wrong mappings when replaying.
-	    gotchars_nop();
+	    // typeahead buffer, so record an <Ignore> before that to prevent
+	    // the vpeekc() above from applying wrong mappings when replaying.
+	    ++no_u_sync;
+	    gotchars_ignore();
+	    --no_u_sync;
 	}
     }
     --no_mapping;
@@ -2304,7 +2306,7 @@ find_decl(
     static int
 nv_screengo(oparg_T *oap, int dir, long dist)
 {
-    int		linelen = linetabsize_str(ml_get_curline());
+    int		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
     int		retval = OK;
     int		atend = FALSE;
     int		n;
@@ -2374,7 +2376,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		}
 		cursor_up_inner(curwin, 1);
 
-		linelen = linetabsize_str(ml_get_curline());
+		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2411,7 +2413,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		// clipped to column 0.
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
-		linelen = linetabsize_str(ml_get_curline());
+		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
 	    }
 	}
       }
@@ -2560,7 +2562,13 @@ nv_z_get_count(cmdarg_T *cap, int *nchar_arg)
 	if (nchar == K_DEL || nchar == K_KDEL)
 	    n /= 10;
 	else if (VIM_ISDIGIT(nchar))
-	    n = n * 10 + (nchar - '0');
+	{
+	    if (vim_append_digit_long(&n, nchar - '0') == FAIL)
+	    {
+		clearopbeep(cap->oap);
+		break;
+	    }
+	}
 	else if (nchar == CAR)
 	{
 #ifdef FEAT_GUI
@@ -3217,8 +3225,7 @@ nv_colon(cmdarg_T *cap)
 	clearop(cap->oap);
     else if (cap->oap->op_type != OP_NOP
 	    && (cap->oap->start.lnum > curbuf->b_ml.ml_line_count
-		|| cap->oap->start.col >
-				  (colnr_T)STRLEN(ml_get(cap->oap->start.lnum))
+		|| cap->oap->start.col > ml_get_len(cap->oap->start.lnum)
 		|| did_emsg
 	       ))
 	// The start of the operator has become invalid by the Ex command.
@@ -3667,7 +3674,7 @@ get_visual_text(
     if (VIsual_mode == 'V')
     {
 	*pp = ml_get_curline();
-	*lenp = (int)STRLEN(*pp);
+	*lenp = (int)ml_get_curline_len();
     }
     else
     {
@@ -4462,11 +4469,11 @@ nv_brackets(cmdarg_T *cap)
 		return;
 
 	    find_pattern_in_path(ptr, 0, len, TRUE,
-		cap->count0 == 0 ? !isupper(cap->nchar) : FALSE,
+		cap->count0 == 0 ? !SAFE_isupper(cap->nchar) : FALSE,
 		((cap->nchar & 0xf) == ('d' & 0xf)) ?  FIND_DEFINE : FIND_ANY,
 		cap->count1,
-		isupper(cap->nchar) ? ACTION_SHOW_ALL :
-			    islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
+		SAFE_isupper(cap->nchar) ? ACTION_SHOW_ALL :
+			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
 		(linenr_T)MAXLNUM);
 	    vim_free(ptr);
@@ -4760,7 +4767,6 @@ nv_kundo(cmdarg_T *cap)
     static void
 nv_replace(cmdarg_T *cap)
 {
-    char_u	*ptr;
     int		had_ctrl_v;
     long	n;
 
@@ -4797,7 +4803,7 @@ nv_replace(cmdarg_T *cap)
     if (VIsual_active)
     {
 	if (got_int)
-	    reset_VIsual();
+	    got_int = FALSE;
 	if (had_ctrl_v)
 	{
 	    // Use a special (negative) number to make a difference between a
@@ -4827,9 +4833,8 @@ nv_replace(cmdarg_T *cap)
     }
 
     // Abort if not enough characters to replace.
-    ptr = ml_get_cursor();
-    if (STRLEN(ptr) < (unsigned)cap->count1
-	    || (has_mbyte && mb_charlen(ptr) < cap->count1))
+    if ((size_t)ml_get_cursor_len() < (unsigned)cap->count1
+	    || (has_mbyte && mb_charlen(ml_get_cursor()) < cap->count1))
     {
 	clearopbeep(cap->oap);
 	return;
@@ -4909,11 +4914,13 @@ nv_replace(cmdarg_T *cap)
 	}
 	else
 	{
+	    char_u *ptr;
+
 	    // Replace the characters within one line.
 	    for (n = cap->count1; n > 0; --n)
 	    {
-		// Get ptr again, because u_save and/or showmatch() will have
-		// released the line.  This may also happen in ins_copychar().
+		// Get ptr again, because ins_copychar() and showmatch()
+		// will have released the line.
 		// At the same time we let know that the line will be changed.
 		if (cap->nchar == Ctrl_E || cap->nchar == Ctrl_Y)
 		{
@@ -4937,6 +4944,7 @@ nv_replace(cmdarg_T *cap)
 	    if (netbeans_active())
 	    {
 		colnr_T  start = (colnr_T)(curwin->w_cursor.col - cap->count1);
+		ptr = ml_get_curline();
 
 		netbeans_removed(curbuf, curwin->w_cursor.lnum, start,
 							   cap->count1);
@@ -5122,7 +5130,7 @@ n_swapchar(cmdarg_T *cap)
 		    if (did_change)
 		    {
 			ptr = ml_get(pos.lnum);
-			count = (int)STRLEN(ptr) - pos.col;
+			count = (int)ml_get_len(pos.lnum) - pos.col;
 			netbeans_removed(curbuf, pos.lnum, pos.col,
 								 (long)count);
 			// line may have been flushed, get it again
@@ -5209,7 +5217,7 @@ v_visop(cmdarg_T *cap)
 
     // Uppercase means linewise, except in block mode, then "D" deletes till
     // the end of the line, and "C" replaces till EOL
-    if (isupper(cap->cmdchar))
+    if (SAFE_isupper(cap->cmdchar))
     {
 	if (VIsual_mode != Ctrl_V)
 	{
@@ -5821,6 +5829,10 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     oparg_T	*oap = cap->oap;
     int		i;
     int		col_off = curwin_col_off();
+    int		flag = FALSE;
+
+    if (cap->nchar == K_END || cap->nchar == K_KEND)
+	flag = TRUE;
 
     oap->motion_type = MCHAR;
     oap->inclusive = TRUE;
@@ -5886,6 +5898,13 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	// Make sure we stick in this column.
 	update_curswant_force();
     }
+    if (flag)
+    {
+	do
+	    i = gchar_cursor();
+	while (VIM_ISWHITE(i) && oneleft() == OK);
+	curwin->w_valid &= ~VALID_WCOL;
+    }
 }
 
 /*
@@ -5900,7 +5919,7 @@ nv_gi_cmd(cmdarg_T *cap)
     {
 	curwin->w_cursor = curbuf->b_last_insert;
 	check_cursor_lnum();
-	i = (int)STRLEN(ml_get_curline());
+	i = (int)ml_get_curline_len();
 	if (curwin->w_cursor.col > (colnr_T)i)
 	{
 	    if (virtual_active())
@@ -6041,7 +6060,7 @@ nv_g_cmd(cmdarg_T *cap)
 	{
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-	    i = linetabsize_str(ml_get_curline());
+	    i = linetabsize(curwin, curwin->w_cursor.lnum);
 	    if (cap->count0 > 0 && cap->count0 <= 100)
 		coladvance((colnr_T)(i * cap->count0 / 100));
 	    else
@@ -6279,6 +6298,8 @@ n_opencmd(cmdarg_T *cap)
 	(void)hasFolding(curwin->w_cursor.lnum,
 		NULL, &curwin->w_cursor.lnum);
 #endif
+    // trigger TextChangedI for the 'o/O' command
+    curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
     if (u_save((linenr_T)(curwin->w_cursor.lnum -
 		    (cap->cmdchar == 'O' ? 1 : 0)),
 		(linenr_T)(curwin->w_cursor.lnum +
@@ -6696,7 +6717,7 @@ unadjust_for_sel(void)
 	else if (pp->lnum > 1)
 	{
 	    --pp->lnum;
-	    pp->col = (colnr_T)STRLEN(ml_get(pp->lnum));
+	    pp->col = ml_get_len(pp->lnum);
 	    return TRUE;
 	}
     }
@@ -7070,6 +7091,10 @@ invoke_edit(
     // Always reset "restart_edit", this is not a restarted edit.
     restart_edit = 0;
 
+    // Reset Changedtick_i, so that TextChangedI will only be triggered for stuff
+    // from insert mode, for 'o/O' this has already been done in n_opencmd
+    if (cap->cmdchar != 'O' && cap->cmdchar != 'o')
+	curbuf->b_last_changedtick_i = CHANGEDTICK(curbuf);
     if (edit(cmd, startln, cap->count1))
 	cap->retval |= CA_COMMAND_BUSY;
 
@@ -7298,6 +7323,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		keep_registers = FALSE;
+#ifdef FEAT_FOLDING
+    int		save_fen = curwin->w_p_fen;
+#endif
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7363,6 +7391,12 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    reg1 = get_register(regname, TRUE);
 	}
 
+#ifdef FEAT_FOLDING
+	// Temporarily disable folding, as deleting a fold marker may cause
+	// the cursor to be included in a fold.
+	curwin->w_p_fen = FALSE;
+#endif
+
 	// Now delete the selected text. Avoid messages here.
 	cap->cmdchar = 'd';
 	cap->nchar = NUL;
@@ -7410,10 +7444,14 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     if (reg2 != NULL)
 	put_register(regname, reg2);
 
-    // What to reselect with "gv"?  Selecting the just put text seems to
-    // be the most useful, since the original text was removed.
     if (was_visual)
     {
+#ifdef FEAT_FOLDING
+	if (save_fen)
+	    curwin->w_p_fen = TRUE;
+#endif
+	// What to reselect with "gv"?  Selecting the just put text seems to
+	// be the most useful, since the original text was removed.
 	curbuf->b_visual.vi_start = curbuf->b_op_start;
 	curbuf->b_visual.vi_end = curbuf->b_op_end;
 	// need to adjust cursor position

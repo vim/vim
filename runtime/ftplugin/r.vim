@@ -1,8 +1,11 @@
 " Vim filetype plugin file
 " Language: R
-" Maintainer: Jakson Alves de Aquino <jalvesaq@gmail.com>
-" Homepage: https://github.com/jalvesaq/R-Vim-runtime
-" Last Change:	Sun Apr 24, 2022  09:14AM
+" Maintainer: This runtime file is looking for a new maintainer.
+" Former Maintainer: Jakson Alves de Aquino <jalvesaq@gmail.com>
+" Former Repository: https://github.com/jalvesaq/R-Vim-runtime
+" Last Change:	2022 Apr 24  09:14AM
+"		2024 Jan 14 by Vim Project (browsefilter)
+"		2024 Feb 19 by Vim Project (announce adoption)
 
 " Only do this when not yet done for this buffer
 if exists("b:did_ftplugin")
@@ -22,8 +25,12 @@ setlocal comments=:#',:###,:##,:#
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   let b:browsefilter = "R Source Files (*.R)\t*.R\n" .
-        \ "Files that include R (*.Rnw *.Rd *.Rmd *.Rrst *.qmd)\t*.Rnw;*.Rd;*.Rmd;*.Rrst;*.qmd\n" .
-        \ "All Files (*.*)\t*.*\n"
+        \ "Files that include R (*.Rnw *.Rd *.Rmd *.Rrst *.qmd)\t*.Rnw;*.Rd;*.Rmd;*.Rrst;*.qmd\n"
+  if has("win32")
+    let b:browsefilter .= "All Files (*.*)\t*\n"
+  else
+    let b:browsefilter .= "All Files (*)\t*\n"
+  endif
 endif
 
 let b:undo_ftplugin = "setl cms< com< fo< isk< | unlet! b:browsefilter"

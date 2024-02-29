@@ -25,7 +25,7 @@ endif
 menutrans &File				&Datei
 menutrans &Open\.\.\.<Tab>:e		&Öffnen\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	In\ geteiltem\ &Fenster\ öffnen\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ öffnen\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ öffnen\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Neue\ Datei<Tab>:enew
 menutrans &Close<Tab>:close		S&chließen<Tab>:close
 menutrans &Save<Tab>:w			&Speichern<Tab>:w

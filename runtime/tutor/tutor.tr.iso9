@@ -31,7 +31,7 @@
   ** Ýmleci hareket ettirmek için h,j,k,l düðmelerine basýn. **
         ^
         k		Ýpucu:  h düðmesi soldadýr ve sola doðru hareket eder.
-    < h	  l >		    l düðmesi saðdadýr ve saða doðru hareket eder.
+    < h	  l >		        l düðmesi saðdadýr ve saða doðru hareket eder.
         j		        j düðmesi aþaðý doðru bir oka benzer.
         v
 
@@ -41,7 +41,7 @@
 
   3. Aþaðý düðmesini kullanarak, Ders 1.2'ye geçin.
 
-  NOT: Eðer yazdýðýnýz bir þeyden emin deðilseniz, Normal kipe geçmek için
+  NOT: Eðer yazdýðýnýz bir þeyden emin deðilseniz Normal kipe geçmek için
        <ESC> düðmesine basýn. Daha sonra istediðiniz komutu yeniden yazýn.
 
   NOT: Ok düðmeleri de ayný iþe yarar. Ancak hjkl düðmelerini kullanarak çok
@@ -62,6 +62,9 @@
 
   4. Eðer bu adýmlarý ezberlediyseniz ve kendinizden eminseniz, 1'den 3'e
      kadar olan adýmlarý yeniden uygulayýn.
+
+  NOT: :q! <ENTER>, yaptýðýnýz tüm deðiþiklikleri atar. Birkaç ders sonra,
+       deðiþiklikleri dosyaya kaydetmeyi öðreneceksiniz.
 
   5. Ýmleci Ders 1.3'e taþýyýn.
 
@@ -352,24 +355,27 @@
 
   1. Ýmleçten itibaren bir sözcüðü silmek için dw yazýn.
 
-  2. Ýmleçten itibaren bir satýrý silmek için d$ yazýn.
+  2. Ýmleçten itibaren bir sözcüðün sonuna kadar silmek için de yazýn.
 
-  3. Bütün bir satýrý silmek için dd yazýn.
+  3. Ýmleçten itibaren bir satýrý silmek için d$ yazýn.
 
-  4. Bir hareketi yenilemek için önüne sayý takýsý getirin, 2w gibi.
+  4. Bütün bir satýrý silmek için dd yazýn.
 
-  5. Normal kipte bir komut biçimi þöyledir:
+  5. Bir hareketi yenilemek için önüne sayý takýsý getirin, 2w gibi.
+
+  6. Normal kipte bir komut biçimi þöyledir:
 
       iþleç [sayý] hareket
 
     burada:
-      iþleç - ne yapýlacaðý, silmek için d örneðinde olduðu gibi
-      [sayý] - komutun kaç kere tekrar edeceðini gösteren isteðe baðlý sayý
-      hareket - iþlecin nice davranacaðý, w (sözcük), $ (satýr sonu) gibi
+      iþleç   - ne yapýlacaðý, silmek için d örneðinde olduðu gibi
+      [sayý]  - komutun kaç kere tekrar edeceðini gösteren isteðe baðlý sayý
+      hareket - iþlecin nice davranacaðý; w (sözcük), e (sözcük sonu),
+                $ (satýr sonu) gibi
 
-  6. Bir satýrýn baþýna gelmek için sýfýr (0) kullanýn.
+  7. Bir satýrýn baþýna gelmek için sýfýr (0) kullanýn.
 
-  7. Önceki hareketleri geri almak için u (küçük u) yazýn.
+  8. Önceki hareketleri geri almak için u (küçük u) yazýn.
      Bir satýrdaki tüm deðiþiklikleri geri almak için U (büyük U) yazýn.
      Geri almalarý geri almak için <CTRL> R kullanýn.
 
@@ -975,7 +981,7 @@ Not: Arama dosyanýn sonuna ulaþtýðýnda dosyanýn baþýndan sürecektir. Bunu
   Türkçe çeviri:
   Serkan "heartsmagic" Çalýþ (2005), adresimeyaz (at) yahoo (dot) com
   
-  2019 Güncelleme:
+  2019 güncellemesi:
   Emir SARI, bitigchi (at) me (dot) com
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

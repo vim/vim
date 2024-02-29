@@ -1132,6 +1132,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    if (argvars[0].vval.v_dict != NULL)
 		retval = argvars[0].vval.v_dict->dv_refcount - 1;
 	    break;
+	case VAR_TYPEALIAS:
+	    if (argvars[0].vval.v_typealias != NULL)
+		retval = argvars[0].vval.v_typealias->ta_refcount - 1;
+	    break;
     }
 
     rettv->v_type = VAR_NUMBER;
@@ -1535,7 +1539,7 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
 #  endif
 #  ifdef MSWIN
-    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0)
+    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0 || STRCMP(event, "set_keycode_trans_strategy") == 0)
 	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
 #  endif
     else if (STRCMP(event, "mouse") == 0)

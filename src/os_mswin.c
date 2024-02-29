@@ -675,7 +675,7 @@ display_errors(void)
 	{
 	    // avoid putting up a message box with blanks only
 	    for (p = (char_u *)error_ga.ga_data; *p; ++p)
-		if (!isspace(*p))
+		if (!SAFE_isspace(*p))
 		{
 		    // Only use a dialog when not using --gui-dialog-file:
 		    // write text to a file.
@@ -759,7 +759,7 @@ mch_chdir(char *path)
 	smsg("chdir(%s)", path);
 	verbose_leave();
     }
-    if (isalpha(path[0]) && path[1] == ':')	// has a drive name
+    if (SAFE_isalpha(path[0]) && path[1] == ':')	// has a drive name
     {
 	// If we can change to the drive, skip that part of the path.  If we
 	// can't then the current directory may be invalid, try using chdir()
@@ -1751,7 +1751,7 @@ is_reparse_point_included(LPCWSTR fname)
     WCHAR	buf[MAX_PATH];
     DWORD	attr;
 
-    if (isalpha(p[0]) && p[1] == L':' && is_path_sep(p[2]))
+    if (SAFE_isalpha(p[0]) && p[1] == L':' && is_path_sep(p[2]))
 	p += 3;
     else if (is_path_sep(p[0]) && is_path_sep(p[1]))
 	p += 2;
@@ -1775,7 +1775,11 @@ is_reparse_point_included(LPCWSTR fname)
     return FALSE;
 }
 
-    static char_u *
+/*
+ * Return the resolved file path, NULL if "fname" is an AppExecLink reparse
+ * point, already fully resolved, or it doesn't exists.
+ */
+    char_u *
 resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;
@@ -2743,19 +2747,22 @@ quality_id2name(DWORD id)
     return qp->name;
 }
 
+// The default font height in 100% scaling (96dpi).
+// (-12 in 96dpi equates to roughly 9pt)
+#define DEFAULT_FONT_HEIGHT	(-12)
+
 static const LOGFONTW s_lfDefault =
 {
-    -12, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+    DEFAULT_FONT_HEIGHT,
+    0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
     OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
     PROOF_QUALITY, FIXED_PITCH | FF_DONTCARE,
-    L"Fixedsys"	// see _ReadVimIni
+    L""	// Default font name will be set later based on current language.
 };
 
-// Initialise the "current height" to -12 (same as s_lfDefault) just
-// in case the user specifies a font in "guifont" with no size before a font
-// with an explicit size has been set. This defaults the size to this value
-// (-12 equates to roughly 9pt).
-int current_font_height = -12;		// also used in gui_w32.c
+// This will be initialized when set_default_logfont() is called first time.
+// The value will be based on the system DPI.
+int current_font_height = 0;		// also used in gui_w32.c
 
 /*
  * Convert a string representing a point size into pixels. The string should
@@ -2813,6 +2820,32 @@ points_to_pixels(WCHAR *str, WCHAR **end, int vertical, long_i pprinter_dc)
 
     *end = str;
     return pixels;
+}
+
+/*
+ * Convert pixel into point size. This is a reverse of points_to_pixels.
+ */
+    static double
+pixels_to_points(int pixels, int vertical, long_i pprinter_dc)
+{
+    double	points = 0;
+    HWND	hwnd = (HWND)0;
+    HDC		hdc;
+    HDC		printer_dc = (HDC)pprinter_dc;
+
+    if (printer_dc == NULL)
+    {
+	hwnd = GetDesktopWindow();
+	hdc = GetWindowDC(hwnd);
+    }
+    else
+	hdc = printer_dc;
+
+    points = pixels * 72.0 / GetDeviceCaps(hdc, vertical ? LOGPIXELSY : LOGPIXELSX);
+    if (printer_dc == NULL)
+	ReleaseDC(hwnd, hdc);
+
+    return points;
 }
 
     static int CALLBACK
@@ -2886,6 +2919,100 @@ init_logfont(LOGFONTW *lf)
 }
 
 /*
+ * Call back for EnumFontFamiliesW in expand_font_enumproc.
+ *
+ */
+    static int CALLBACK
+expand_font_enumproc(
+    ENUMLOGFONTW    *elf,
+    NEWTEXTMETRICW  *ntm UNUSED,
+    DWORD	    type UNUSED,
+    LPARAM	    lparam)
+{
+    LOGFONTW *lf = (LOGFONTW*)elf;
+
+# ifndef FEAT_PROPORTIONAL_FONTS
+    // Ignore non-monospace fonts without further ado
+    if ((ntm->tmPitchAndFamily & 1) != 0)
+	return 1;
+# endif
+
+    // Filter only on ANSI. Otherwise will see a lot of random fonts that we
+    // usually don't want.
+    if (lf->lfCharSet != ANSI_CHARSET)
+        return 1;
+
+    int (*add_match)(char_u *) = (int (*)(char_u *))lparam;
+
+    WCHAR *faceNameW = lf->lfFaceName;
+    char_u *faceName = utf16_to_enc(faceNameW, NULL);
+    if (!faceName)
+	return 0;
+
+    add_match(faceName);
+    vim_free(faceName);
+
+    return 1;
+}
+
+/*
+ * Cmdline expansion for setting 'guifont'. Will enumerate through all
+ * monospace fonts for completion. If used after ':', will expand to possible
+ * font configuration options like font sizes.
+ *
+ * This function has "gui" in its name because in some platforms (GTK) font
+ * handling is done by the GUI code, whereas in Windows it's part of the
+ * platform code.
+ */
+    void
+gui_mch_expand_font(optexpand_T *args, void *param UNUSED, int (*add_match)(char_u *val))
+{
+    expand_T	    *xp = args->oe_xp;
+    if (xp->xp_pattern > args->oe_set_arg && *(xp->xp_pattern-1) == ':')
+    {
+	char buf[30];
+
+	// Always fill in with the current font size as first option for
+	// convenience. We simply round to the closest integer for simplicity.
+        int font_height = (int)round(
+		pixels_to_points(-current_font_height, TRUE, (long_i)NULL));
+	vim_snprintf(buf, ARRAY_LENGTH(buf), "h%d", font_height);
+	add_match((char_u *)buf);
+
+	// Note: Keep this in sync with get_logfont(). Don't include 'c' and
+	// 'q' as we fill in all the values below.
+	static char *(p_gfn_win_opt_values[]) = {
+	    "h" , "w" , "W" , "b" , "i" , "u" , "s"};
+	for (size_t i = 0; i < ARRAY_LENGTH(p_gfn_win_opt_values); i++)
+	    add_match((char_u *)p_gfn_win_opt_values[i]);
+
+	struct charset_pair *cp;
+	for (cp = charset_pairs; cp->name != NULL; ++cp)
+	{
+	    vim_snprintf(buf, ARRAY_LENGTH(buf), "c%s", cp->name);
+	    add_match((char_u *)buf);
+	}
+	struct quality_pair *qp;
+	for (qp = quality_pairs; qp->name != NULL; ++qp)
+	{
+	    vim_snprintf(buf, ARRAY_LENGTH(buf), "q%s", qp->name);
+	    add_match((char_u *)buf);
+	}
+	return;
+    }
+
+    HWND	hwnd = GetDesktopWindow();
+    HDC		hdc = GetWindowDC(hwnd);
+
+    EnumFontFamiliesW(hdc,
+	    NULL,
+	    (FONTENUMPROCW)expand_font_enumproc,
+	    (LPARAM)add_match);
+
+    ReleaseDC(hwnd, hdc);
+}
+
+/*
  * Compare a UTF-16 string and an ASCII string literally.
  * Only works all the code points are inside ASCII range.
  */
@@ -2900,6 +3027,47 @@ utf16ascncmp(const WCHAR *w, const char *p, size_t n)
 	    return w[i] - p[i];
     }
     return 0;
+}
+
+/*
+ * Equivalent of GetDpiForSystem().
+ */
+    UINT WINAPI
+vimGetDpiForSystem(void)
+{
+    HWND hwnd = GetDesktopWindow();
+    HDC hdc = GetWindowDC(hwnd);
+    UINT dpi = GetDeviceCaps(hdc, LOGPIXELSY);
+    ReleaseDC(hwnd, hdc);
+    return dpi;
+}
+
+/*
+ * Set default logfont based on current language.
+ */
+    static void
+set_default_logfont(LOGFONTW *lf)
+{
+    // Default font name for current language on MS-Windows.
+    // If not translated, falls back to "Consolas".
+    // This must be a fixed-pitch font.
+    const char *defaultfontname = N_("DefaultFontNameForWindows");
+    char *fontname = _(defaultfontname);
+
+    if (strcmp(fontname, defaultfontname) == 0)
+	fontname = "Consolas";
+
+    *lf = s_lfDefault;
+    lf->lfHeight = DEFAULT_FONT_HEIGHT * (int)vimGetDpiForSystem() / 96;
+    if (current_font_height == 0)
+	current_font_height = lf->lfHeight;
+
+    WCHAR *wfontname = enc_to_utf16((char_u*)fontname, NULL);
+    if (wfontname != NULL)
+    {
+	wcscpy_s(lf->lfFaceName, LF_FACESIZE, wfontname);
+	vim_free(wfontname);
+    }
 }
 
 /*
@@ -2919,7 +3087,7 @@ get_logfont(
     static LOGFONTW *lastlf = NULL;
     WCHAR	*wname;
 
-    *lf = s_lfDefault;
+    set_default_logfont(lf);
     if (name == NULL)
 	return OK;
 
@@ -2959,7 +3127,7 @@ get_logfont(
 	lf->lfFaceName[p - wname] = NUL;
 
     // First set defaults
-    lf->lfHeight = -12;
+    lf->lfHeight = DEFAULT_FONT_HEIGHT * (int)vimGetDpiForSystem() / 96;
     lf->lfWidth = 0;
     lf->lfWeight = FW_NORMAL;
     lf->lfItalic = FALSE;
@@ -2991,6 +3159,7 @@ get_logfont(
     {
 	switch (*p++)
 	{
+	    // Note: Keep this in sync with gui_mch_expand_font().
 	    case L'h':
 		lf->lfHeight = - points_to_pixels(p, &p, TRUE, (long_i)printer_dc);
 		break;

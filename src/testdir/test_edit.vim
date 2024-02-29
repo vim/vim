@@ -1219,7 +1219,7 @@ func Test_edit_LEFT_RIGHT()
 endfunc
 
 func Test_edit_MOUSE()
-  " This is a simple test, since we not really using the mouse here
+  " This is a simple test, since we're not really using the mouse here
   CheckFeature mouse
   10new
   call setline(1, range(1, 100))
@@ -1797,7 +1797,7 @@ func Test_edit_charconvert()
   close!
   set charconvert&
 
-  " 'charconvert' function doesn't create a output file
+  " 'charconvert' function doesn't create an output file
   func Cconv1()
   endfunc
   set charconvert=Cconv1()
@@ -2121,6 +2121,41 @@ func Test_edit_shift_bs()
 
   " clean up
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_edit_Ctrl_RSB()
+  new
+  let g:triggered = []
+  autocmd InsertCharPre <buffer> let g:triggered += [v:char]
+
+  " i_CTRL-] should not trigger InsertCharPre
+  exe "normal! A\<C-]>"
+  call assert_equal([], g:triggered)
+
+  " i_CTRL-] should expand abbreviations but not trigger InsertCharPre
+  inoreabbr <buffer> f foo
+  exe "normal! Af\<C-]>a"
+  call assert_equal(['f', 'f', 'o', 'o', 'a'], g:triggered)
+  call assert_equal('fooa', getline(1))
+
+  " CTRL-] followed by i_CTRL-V should not expand abbreviations
+  " i_CTRL-V doesn't trigger InsertCharPre
+  call setline(1, '')
+  exe "normal! Af\<C-V>\<C-]>"
+  call assert_equal("f\<C-]>", getline(1))
+
+  let g:triggered = []
+  call setline(1, '')
+
+  " Also test assigning to v:char
+  autocmd InsertCharPre <buffer> let v:char = 'f'
+  exe "normal! Ag\<C-]>h"
+  call assert_equal(['g', 'f', 'o', 'o', 'h'], g:triggered)
+  call assert_equal('ffff', getline(1))
+
+  autocmd! InsertCharPre
+  unlet g:triggered
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

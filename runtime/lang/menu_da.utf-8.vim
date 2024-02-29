@@ -36,7 +36,7 @@ menut &File	Fil
 
 menut &Open\.\.\.<Tab>:e	Åbn\.\.\.<Tab>:e
 menut Sp&lit-Open\.\.\.<Tab>:sp	Opdel-åbn\.\.\.<Tab>:sp
-menut Open\ Tab\.\.\.<Tab>:tabnew	Åbn\ faneblad\.\.\.<Tab>:tabnew
+menut Open\ &Tab\.\.\.<Tab>:tabnew	Åbn\ faneblad\.\.\.<Tab>:tabnew
 menut &New<Tab>:enew	Ny<Tab>:enew
 menut &Close<Tab>:close	Luk<Tab>:close
 " -SEP1-

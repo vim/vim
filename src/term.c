@@ -625,7 +625,7 @@ static tcap_entry_T builtin_kitty[] = {
 
 #ifdef FEAT_TERMGUICOLORS
 /*
- * Additions for using the RGB colors
+ * Additions for using the RGB colors and terminal font
  */
 static tcap_entry_T builtin_rgb[] = {
     // These are printf strings, not terminal codes.
@@ -633,6 +633,14 @@ static tcap_entry_T builtin_rgb[] = {
     {(int)KS_8B,	"\033[48;2;%lu;%lu;%lum"},
     {(int)KS_8U,	"\033[58;2;%lu;%lu;%lum"},
 
+    {(int)KS_NAME,	NULL}  // end marker
+};
+#endif
+
+#ifdef HAVE_TGETENT
+static tcap_entry_T special_term[] = {
+    // These are printf strings, not terminal codes.
+    {(int)KS_CF,	"\033[%dm"},
     {(int)KS_NAME,	NULL}  // end marker
 };
 #endif
@@ -1235,6 +1243,7 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_U7,	"[U7]"},
     {(int)KS_RFG,	"[RFG]"},
     {(int)KS_RBG,	"[RBG]"},
+    {(int)KS_CF,	"[CF%d]"},
     {K_UP,		"[KU]"},
     {K_DOWN,		"[KD]"},
     {K_LEFT,		"[KL]"},
@@ -1608,6 +1617,23 @@ apply_builtin_tcap(char_u *term, tcap_entry_T *entries, int overwrite)
 }
 
 /*
+ * Apply builtin termcap entries for a given keyprotocol.
+ */
+    void
+apply_keyprotocol(char_u *term, keyprot_T prot)
+{
+    if (prot == KEYPROTOCOL_KITTY)
+	apply_builtin_tcap(term, builtin_kitty, TRUE);
+    if (prot == KEYPROTOCOL_MOK2)
+	apply_builtin_tcap(term, builtin_mok2, TRUE);
+
+    if (prot != KEYPROTOCOL_NONE)
+	// Some function keys may accept modifiers even though the
+	// terminfo/termcap entry does not indicate this.
+	accept_modifiers_for_function_keys();
+}
+
+/*
  * Parsing of the builtin termcap entries.
  * Caller should check if "term" is a valid builtin terminal name.
  * The terminal's name is not set, as this is already done in termcapinit().
@@ -1737,6 +1763,7 @@ get_term_entries(int *height, int *width)
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
 			{KS_CST, "ST"}, {KS_CRT, "RT"},
 			{KS_SSI, "Si"}, {KS_SRI, "Ri"},
+			{KS_CF, "CF"},
 			{(enum SpecialKey)0, NULL}
 		    };
     int		    i;
@@ -1896,6 +1923,7 @@ match_keyprotocol(char_u *term)
 	*colon = NUL;
 
 	keyprot_T prot;
+	// Note: Keep this in sync with p_kpc_protocol_values.
 	if (STRCMP(colon + 1, "none") == 0)
 	    prot = KEYPROTOCOL_NONE;
 	else if (STRCMP(colon + 1, "mok2") == 0)
@@ -2083,10 +2111,7 @@ set_termname(char_u *term)
 	// Use the 'keyprotocol' option to adjust the t_TE and t_TI
 	// termcap entries if there is an entry matching "term".
 	keyprot_T kpc = match_keyprotocol(term);
-	if (kpc == KEYPROTOCOL_KITTY)
-	    apply_builtin_tcap(term, builtin_kitty, TRUE);
-	else if (kpc == KEYPROTOCOL_MOK2)
-	    apply_builtin_tcap(term, builtin_mok2, TRUE);
+	apply_keyprotocol(term, kpc);
 
 #ifdef FEAT_TERMGUICOLORS
 	// There is no good way to detect that the terminal supports RGB
@@ -2098,11 +2123,10 @@ set_termname(char_u *term)
 		&& term_strings_not_set(KS_8U))
 	    apply_builtin_tcap(term, builtin_rgb, TRUE);
 #endif
-
-	if (kpc != KEYPROTOCOL_NONE)
-	    // Some function keys may accept modifiers even though the
-	    // terminfo/termcap entry does not indicate this.
-	    accept_modifiers_for_function_keys();
+#ifdef HAVE_TGETENT
+	if (term_strings_not_set(KS_CF))
+	    apply_builtin_tcap(term, special_term, TRUE);
+#endif
     }
 
 /*
@@ -2973,7 +2997,7 @@ term_delete_lines(int line_count)
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
 
-#if defined(UNIX) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 term_enable_mouse(int enable)
 {
@@ -3105,6 +3129,17 @@ term_set_winsize(int height, int width)
     OUT_STR(tgoto((char *)T_CWS, width, height));
 }
 #endif
+
+    void
+term_font(int n)
+{
+    if (*T_CFO)
+    {
+	char buf[20];
+	sprintf(buf, (char *)T_CFO, 9 + n);
+	OUT_STR(buf);
+    }
+}
 
     static void
 term_color(char_u *s, int n)
@@ -3424,7 +3459,7 @@ ttest(int pairs)
 #endif
     {
 	env_colors = mch_getenv((char_u *)"COLORS");
-	if (env_colors != NULL && isdigit(*env_colors))
+	if (env_colors != NULL && SAFE_isdigit(*env_colors))
 	{
 	    int colors = atoi((char *)env_colors);
 
@@ -4976,6 +5011,8 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 #ifdef FEAT_EVAL
 	    set_vim_var_string(VV_TERMU7RESP, tp, csi_len);
 #endif
+	    apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"ambiguouswidth", NULL, FALSE, curbuf);
 	}
     }
     else if (arg[0] == 3)
@@ -5585,6 +5622,8 @@ handle_csi(
 #endif
 	apply_autocmds(EVENT_TERMRESPONSE,
 					NULL, NULL, FALSE, curbuf);
+	apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"version", NULL, FALSE, curbuf);
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
     }
@@ -5611,6 +5650,8 @@ handle_csi(
 # ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMBLINKRESP, tp, *slen);
 # endif
+	apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"cursorblink", NULL, FALSE, curbuf);
     }
 #endif
 
@@ -5727,8 +5768,8 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		    int rval, gval, bval;
 
 		    rval = hexhex2nr(tp_r);
-		    gval = hexhex2nr(tp_b);
-		    bval = hexhex2nr(tp_g);
+		    gval = hexhex2nr(tp_g);
+		    bval = hexhex2nr(tp_b);
 #endif
 		    if (is_bg)
 		    {
@@ -5774,6 +5815,8 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		set_vim_var_string(is_bg ? VV_TERMRBGRESP
 						  : VV_TERMRFGRESP, tp, *slen);
 #endif
+		apply_autocmds(EVENT_TERMRESPONSEALL,
+			    is_bg ? (char_u *)"background" : (char_u *)"foreground", NULL, FALSE, curbuf);
 		break;
 	    }
     if (i == len)
@@ -5839,7 +5882,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	// characters.
 	for (i = j + 3; i < len; ++i)
 	{
-	    if (i - j == 3 && !isdigit(tp[i]))
+	    if (i - j == 3 && !SAFE_isdigit(tp[i]))
 		break;
 	    if (i - j == 4 && tp[i] != ' ')
 		break;
@@ -5872,6 +5915,8 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 #ifdef FEAT_EVAL
 		set_vim_var_string(VV_TERMSTYLERESP, tp, *slen);
 #endif
+		apply_autocmds(EVENT_TERMRESPONSEALL,
+					(char_u *)"cursorshape", NULL, FALSE, curbuf);
 		break;
 	    }
 	}
@@ -6073,7 +6118,7 @@ check_termcode(
 			// The mouse termcode "ESC [" is also the prefix of
 			// "ESC [ I" (focus gained) and other keys.  Check some
 			// more bytes to find out.
-			if (!isdigit(tp[2]))
+			if (!SAFE_isdigit(tp[2]))
 			{
 			    // ESC [ without number following: Only use it when
 			    // there is no other match.
@@ -6156,7 +6201,7 @@ check_termcode(
 			    // Skip over the digits, the final char must
 			    // follow. URXVT can use a negative value, thus
 			    // also accept '-'.
-			    for (j = slen - 2; j < len && (isdigit(tp[j])
+			    for (j = slen - 2; j < len && (SAFE_isdigit(tp[j])
 				       || tp[j] == '-' || tp[j] == ';'); ++j)
 				;
 			    ++j;
@@ -6655,7 +6700,7 @@ replace_termcodes(
 #ifdef FEAT_EVAL
 	    /*
 	     * Change <SID>Func to K_SNR <script-nr> _Func.  This name is used
-	     * for script-locla user functions.
+	     * for script-local user functions.
 	     * (room: 5 * 6 = 30 bytes; needed: 3 + <nr> + 1 <= 14)
 	     * Also change <SID>name.Func to K_SNR <import-script-nr> _Func.
 	     * Only if "name" is recognized as an import.

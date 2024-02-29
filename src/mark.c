@@ -146,6 +146,16 @@ setpcmark(void)
     curwin->w_prev_pcmark = curwin->w_pcmark;
     curwin->w_pcmark = curwin->w_cursor;
 
+    if (jop_flags & JOP_STACK)
+    {
+	// jumpoptions=stack: if we're somewhere in the middle of the jumplist
+	// discard everything after the current index.
+	if (curwin->w_jumplistidx < curwin->w_jumplistlen - 1)
+	    // Discard the rest of the jumplist by cutting the length down to
+	    // contain nothing beyond the current index.
+	    curwin->w_jumplistlen = curwin->w_jumplistidx + 1;
+    }
+
     // If jumplist is full: remove oldest entry
     if (++curwin->w_jumplistlen > JUMPLISTSIZE)
     {
@@ -1288,6 +1298,7 @@ cleanup_jumplist(win_T *wp, int loadfiles)
 {
     int	    i;
     int	    from, to;
+    int	    mustfree;
 
     if (loadfiles)
     {
@@ -1314,10 +1325,18 @@ cleanup_jumplist(win_T *wp, int loadfiles)
 		    && wp->w_jumplist[i].fmark.mark.lnum
 				  == wp->w_jumplist[from].fmark.mark.lnum)
 		break;
-	if (i >= wp->w_jumplistlen)	    // no duplicate
-	    wp->w_jumplist[to++] = wp->w_jumplist[from];
-	else
+	if (i >= wp->w_jumplistlen)	// not duplicate
+	    mustfree = FALSE;
+	else if (i > from + 1)		// non-adjacent duplicate
+	    // jumpoptions=stack: remove duplicates only when adjacent.
+	    mustfree = !(jop_flags & JOP_STACK);
+	else				// adjacent duplicate
+	    mustfree = TRUE;
+
+	if (mustfree)
 	    vim_free(wp->w_jumplist[from].fname);
+	else
+	    wp->w_jumplist[to++] = wp->w_jumplist[from];
     }
     if (wp->w_jumplistidx == wp->w_jumplistlen)
 	wp->w_jumplistidx = to;

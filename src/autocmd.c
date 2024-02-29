@@ -179,6 +179,7 @@ static struct event_name
     {"TerminalOpen",	EVENT_TERMINALOPEN},
     {"TerminalWinOpen", EVENT_TERMINALWINOPEN},
     {"TermResponse",	EVENT_TERMRESPONSE},
+    {"TermResponseAll",	EVENT_TERMRESPONSEALL},
     {"TextChanged",	EVENT_TEXTCHANGED},
     {"TextChangedI",	EVENT_TEXTCHANGEDI},
     {"TextChangedP",	EVENT_TEXTCHANGEDP},
@@ -187,6 +188,7 @@ static struct event_name
     {"VimEnter",	EVENT_VIMENTER},
     {"VimLeave",	EVENT_VIMLEAVE},
     {"VimLeavePre",	EVENT_VIMLEAVEPRE},
+    {"WinNewPre",	EVENT_WINNEWPRE},
     {"WinNew",		EVENT_WINNEW},
     {"WinClosed",	EVENT_WINCLOSED},
     {"WinEnter",	EVENT_WINENTER},
@@ -1564,9 +1566,12 @@ aucmd_prepbuf(
     }
 
     aco->save_curwin_id = curwin->w_id;
-    aco->save_curbuf = curbuf;
     aco->save_prevwin_id = prevwin == NULL ? 0 : prevwin->w_id;
     aco->save_State = State;
+#ifdef FEAT_JOB_CHANNEL
+    if (bt_prompt(curbuf))
+	aco->save_prompt_insert = curbuf->b_prompt_insert;
+#endif
 
     if (win != NULL)
     {
@@ -1602,7 +1607,7 @@ aucmd_prepbuf(
 	p_acd = FALSE;
 #endif
 
-	(void)win_split_ins(0, WSP_TOP, auc_win, 0);
+	(void)win_split_ins(0, WSP_TOP | WSP_FORCE_ROOM, auc_win, 0, NULL);
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
 #ifdef FEAT_AUTOCHDIR
@@ -1635,7 +1640,6 @@ aucmd_restbuf(
     {
 	win_T *awp = aucmd_win[aco->use_aucmd_win_idx].auc_win;
 
-	--curbuf->b_nwindows;
 	// Find "awp", it can't be closed, but it may be in another tab
 	// page. Do not trigger autocommands here.
 	block_autocmds();
@@ -1656,8 +1660,8 @@ aucmd_restbuf(
 	    }
 	}
 win_found:
+	--curbuf->b_nwindows;
 #ifdef FEAT_JOB_CHANNEL
-	;
 	int save_stop_insert_mode = stop_insert_mode;
 	// May need to stop Insert mode if we were in a prompt buffer.
 	leaving_window(curwin);
@@ -1666,7 +1670,7 @@ win_found:
 	    stop_insert_mode = save_stop_insert_mode;
 #endif
 	// Remove the window and frame from the tree of frames.
-	(void)winframe_remove(curwin, &dummy, NULL);
+	(void)winframe_remove(curwin, &dummy, NULL, NULL);
 	win_remove(curwin, NULL);
 
 	// The window is marked as not used, but it is not freed, it can be
@@ -1692,6 +1696,8 @@ win_found:
 #ifdef FEAT_JOB_CHANNEL
 	// May need to restore insert mode for a prompt buffer.
 	entering_window(curwin);
+	if (bt_prompt(curbuf))
+	    curbuf->b_prompt_insert = aco->save_prompt_insert;
 #endif
 	prevwin = win_find_by_id(aco->save_prevwin_id);
 #ifdef FEAT_EVAL
@@ -2101,7 +2107,8 @@ apply_autocmds_group(
     {
 	if (event == EVENT_COLORSCHEME || event == EVENT_COLORSCHEMEPRE
 						 || event == EVENT_OPTIONSET
-						 || event == EVENT_MODECHANGED)
+						 || event == EVENT_MODECHANGED
+						 || event == EVENT_TERMRESPONSEALL)
 	    autocmd_fname = NULL;
 	else if (fname != NULL && !ends_excmd(*fname))
 	    autocmd_fname = fname;
@@ -2181,7 +2188,8 @@ apply_autocmds_group(
 		|| event == EVENT_USER
 		|| event == EVENT_WINCLOSED
 		|| event == EVENT_WINRESIZED
-		|| event == EVENT_WINSCROLLED)
+		|| event == EVENT_WINSCROLLED
+		|| event == EVENT_TERMRESPONSEALL)
 	{
 	    fname = vim_strsave(fname);
 	    autocmd_fname_full = TRUE; // don't expand it later
@@ -2419,6 +2427,11 @@ BYPASS_AU:
 
 # ifdef FEAT_EVAL
 static char_u	*old_termresponse = NULL;
+static char_u	*old_termu7resp = NULL;
+static char_u	*old_termblinkresp = NULL;
+static char_u	*old_termrbgresp = NULL;
+static char_u	*old_termrfgresp = NULL;
+static char_u	*old_termstyleresp = NULL;
 # endif
 
 /*
@@ -2431,7 +2444,14 @@ block_autocmds(void)
 # ifdef FEAT_EVAL
     // Remember the value of v:termresponse.
     if (autocmd_blocked == 0)
+    {
 	old_termresponse = get_vim_var_str(VV_TERMRESPONSE);
+	old_termu7resp = get_vim_var_str(VV_TERMU7RESP);
+	old_termblinkresp = get_vim_var_str(VV_TERMBLINKRESP);
+	old_termrbgresp = get_vim_var_str(VV_TERMRBGRESP);
+	old_termrfgresp = get_vim_var_str(VV_TERMRFGRESP);
+	old_termstyleresp = get_vim_var_str(VV_TERMSTYLERESP);
+    }
 # endif
     ++autocmd_blocked;
 }
@@ -2442,12 +2462,37 @@ unblock_autocmds(void)
     --autocmd_blocked;
 
 # ifdef FEAT_EVAL
-    // When v:termresponse was set while autocommands were blocked, trigger
-    // the autocommands now.  Esp. useful when executing a shell command
-    // during startup (vimdiff).
-    if (autocmd_blocked == 0
-		      && get_vim_var_str(VV_TERMRESPONSE) != old_termresponse)
-	apply_autocmds(EVENT_TERMRESPONSE, NULL, NULL, FALSE, curbuf);
+    // When v:termresponse, etc, were set while autocommands were blocked,
+    // trigger the autocommands now.  Esp. useful when executing a shell
+    // command during startup (vimdiff).
+    if (autocmd_blocked == 0)
+    {
+	if (get_vim_var_str(VV_TERMRESPONSE) != old_termresponse)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSE, NULL, NULL, FALSE, curbuf);
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"version", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMU7RESP) != old_termu7resp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"ambiguouswidth", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMBLINKRESP) != old_termblinkresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"cursorblink", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMRBGRESP) != old_termrbgresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"background", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMRFGRESP) != old_termrfgresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"foreground", NULL, FALSE, curbuf);
+	}
+	if (get_vim_var_str(VV_TERMSTYLERESP) != old_termstyleresp)
+	{
+	    apply_autocmds(EVENT_TERMRESPONSEALL, (char_u *)"cursorshape", NULL, FALSE, curbuf);
+	}
+    }
 # endif
 }
 
@@ -2736,6 +2781,16 @@ get_event_name(expand_T *xp UNUSED, int idx)
 	return AUGROUP_NAME(idx);	// return a name
     }
     return (char_u *)event_names[idx - augroups.ga_len].name;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of event names. Don't
+ * include groups.
+ */
+    char_u *
+get_event_name_no_group(expand_T *xp UNUSED, int idx)
+{
+    return (char_u *)event_names[idx].name;
 }
 
 

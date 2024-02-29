@@ -1419,14 +1419,13 @@ utf_char2cells(int c)
 	{0x2e80, 0x2e99},
 	{0x2e9b, 0x2ef3},
 	{0x2f00, 0x2fd5},
-	{0x2ff0, 0x2ffb},
-	{0x3000, 0x303e},
+	{0x2ff0, 0x303e},
 	{0x3041, 0x3096},
 	{0x3099, 0x30ff},
 	{0x3105, 0x312f},
 	{0x3131, 0x318e},
 	{0x3190, 0x31e3},
-	{0x31f0, 0x321e},
+	{0x31ef, 0x321e},
 	{0x3220, 0x3247},
 	{0x3250, 0x4dbf},
 	{0x4e00, 0xa48c},
@@ -3152,8 +3151,10 @@ static convertStruct foldCase[] =
 	{0x1fbe,0x1fbe,-1,-7173},
 	{0x1fc8,0x1fcb,1,-86},
 	{0x1fcc,0x1fcc,-1,-9},
+	{0x1fd3,0x1fd3,-1,-7235},
 	{0x1fd8,0x1fd9,1,-8},
 	{0x1fda,0x1fdb,1,-100},
+	{0x1fe3,0x1fe3,-1,-7219},
 	{0x1fe8,0x1fe9,1,-8},
 	{0x1fea,0x1feb,1,-112},
 	{0x1fec,0x1fec,-1,-7},
@@ -3210,6 +3211,7 @@ static convertStruct foldCase[] =
 	{0xa7d0,0xa7d6,6,1},
 	{0xa7d8,0xa7f5,29,1},
 	{0xab70,0xabbf,1,-38864},
+	{0xfb05,0xfb05,-1,1},
 	{0xff21,0xff3a,1,32},
 	{0x10400,0x10427,1,40},
 	{0x104b0,0x104d3,1,40},
@@ -3452,6 +3454,8 @@ static convertStruct toLower[] =
 	{0x1e900,0x1e921,1,34}
 };
 
+// Note: UnicodeData.txt does not define U+1E9E as being the corresponding upper
+// case letter for U+00DF (ß), however it is part of the toLower table
 static convertStruct toUpper[] =
 {
 	{0x61,0x7a,1,-32},
@@ -4050,7 +4054,7 @@ utf_allow_break_before(int cc)
 	0x2021, // ‡ double dagger
 	0x2026, // … horizontal ellipsis
 	0x2030, // ‰ per mille sign
-	0x2031, // ‱ per then thousand sign
+	0x2031, // ‱ per ten thousand sign
 	0x203c, // ‼ double exclamation mark
 	0x2047, // ⁇ double question mark
 	0x2048, // ⁈ question exclamation mark
@@ -4184,32 +4188,12 @@ mb_copy_char(char_u **fp, char_u **tp)
     int
 mb_off_next(char_u *base, char_u *p)
 {
-    int		i;
-    int		j;
+    int		head_off = (*mb_head_off)(base, p);
 
-    if (enc_utf8)
-    {
-	if (*p < 0x80)		// be quick for ASCII
-	    return 0;
+    if (head_off == 0)
+	return 0;
 
-	// Find the next character that isn't 10xx.xxxx
-	for (i = 0; (p[i] & 0xc0) == 0x80; ++i)
-	    ;
-	if (i > 0)
-	{
-	    // Check for illegal sequence.
-	    for (j = 0; p - j > base; ++j)
-		if ((p[-j] & 0xc0) != 0x80)
-		    break;
-	    if (utf8len_tab[p[-j]] != i + j)
-		return 0;
-	}
-	return i;
-    }
-
-    // Only need to check if we're on a trail byte, it doesn't matter if we
-    // want the offset to the next or current character.
-    return (*mb_head_off)(base, p);
+    return (*mb_ptr2len)(p - head_off) - head_off;
 }
 
 /*
@@ -4626,7 +4610,7 @@ enc_canonize(char_u *enc)
     }
 
     // "iso-8859n" -> "iso-8859-n"
-    if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
+    if (STRNCMP(p, "iso-8859", 8) == 0 && SAFE_isdigit(p[8]))
     {
 	STRMOVE(p + 9, p + 8);
 	p[8] = '-';
@@ -4703,7 +4687,7 @@ enc_locale_env(char *locale)
     if ((p = (char *)vim_strchr((char_u *)s, '.')) != NULL)
     {
 	if (p > s + 2 && STRNICMP(p + 1, "EUC", 3) == 0
-			&& !isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
+			&& !SAFE_isalnum((int)p[4]) && p[4] != '-' && p[-3] == '_')
 	{
 	    // copy "XY.EUC" to "euc-XY" to buf[10]
 	    STRCPY(buf + 10, "euc-");
@@ -4719,7 +4703,7 @@ enc_locale_env(char *locale)
     {
 	if (s[i] == '_' || s[i] == '-')
 	    buf[i] = '-';
-	else if (isalnum((int)s[i]))
+	else if (SAFE_isalnum(s[i]))
 	    buf[i] = TOLOWER_ASC(s[i]);
 	else
 	    break;
@@ -5611,7 +5595,8 @@ tv_nr_compare(const void *a1, const void *a2)
     listitem_T *li1 = *(listitem_T **)a1;
     listitem_T *li2 = *(listitem_T **)a2;
 
-    return li1->li_tv.vval.v_number - li2->li_tv.vval.v_number;
+    return li1->li_tv.vval.v_number == li2->li_tv.vval.v_number ? 0 :
+	li1->li_tv.vval.v_number > li2->li_tv.vval.v_number ? 1 : -1;
 }
 
     void
@@ -5782,3 +5767,16 @@ f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }
 #endif
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * encoding options.
+ */
+    char_u *
+get_encoding_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(enc_canon_table) / sizeof(enc_canon_table[0])))
+	return NULL;
+
+    return (char_u*)enc_canon_table[idx].name;
+}

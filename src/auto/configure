@@ -707,6 +707,7 @@ PYTHON3_SRC
 PYTHON3_CFLAGS_EXTRA
 PYTHON3_CFLAGS
 PYTHON3_LIBS
+vi_cv_var_python3_stable_abi
 vi_cv_path_python3
 PYTHON_OBJ
 PYTHON_SRC
@@ -824,6 +825,7 @@ with_global_runtime
 with_modified_by
 enable_smack
 enable_selinux
+enable_xattr
 with_features
 with_compiledby
 enable_xsmp
@@ -834,11 +836,13 @@ with_luajit
 enable_mzschemeinterp
 with_plthome
 enable_perlinterp
+with_xsubpp
 enable_pythoninterp
 with_python_command
 with_python_config_dir
 enable_python3interp
 with_python3_command
+with_python3_stable_abi
 with_python3_config_dir
 enable_tclinterp
 with_tclsh
@@ -1512,6 +1516,7 @@ Optional Features:
   --disable-darwin        Disable Darwin (Mac OS X) support.
   --disable-smack	  Do not check for Smack support.
   --disable-selinux	  Do not check for SELinux support.
+  --disable-xattr	  Do not check for XATTR support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
   --enable-luainterp=OPTS      Include Lua interpreter.  default=no OPTS=no/yes/dynamic
@@ -1565,9 +1570,11 @@ Optional Packages:
   --with-lua-prefix=PFX   Prefix where Lua is installed.
   --with-luajit           Link with LuaJIT instead of Lua.
   --with-plthome=PLTHOME   Use PLTHOME.
+  --with-xsubpp=PATH  path to the xsubpp command
   --with-python-command=NAME  name of the Python 2 command (default: python2 or python)
   --with-python-config-dir=PATH  Python's config directory (deprecated)
   --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)
+  --with-python3-stable-abi=VERSION  stable ABI version to target (e.g. 3.8)
   --with-python3-config-dir=PATH  Python's config directory (deprecated)
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
@@ -1794,39 +1801,6 @@ fi
 
 } # ac_fn_c_try_link
 
-# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists and can be compiled using the include files in
-# INCLUDES, setting the cache variable VAR accordingly.
-ac_fn_c_check_header_compile ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-printf %s "checking for $2... " >&6; }
-if eval test \${$3+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  eval "$3=yes"
-else $as_nop
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-printf "%s\n" "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_header_compile
-
 # ac_fn_c_try_run LINENO
 # ----------------------
 # Try to run conftest.$ac_ext, and return whether this succeeded. Assumes that
@@ -1869,6 +1843,39 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_run
+
+# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
+# -------------------------------------------------------
+# Tests whether HEADER exists and can be compiled using the include files in
+# INCLUDES, setting the cache variable VAR accordingly.
+ac_fn_c_check_header_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+printf %s "checking for $2... " >&6; }
+if eval test \${$3+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  eval "$3=yes"
+else $as_nop
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_header_compile
 
 # ac_fn_c_check_func LINENO FUNC VAR
 # ----------------------------------
@@ -1931,120 +1938,6 @@ printf "%s\n" "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_func
-
-# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
-# -------------------------------------------
-# Tests whether TYPE exists after having included INCLUDES, setting cache
-# variable VAR accordingly.
-ac_fn_c_check_type ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-printf %s "checking for $2... " >&6; }
-if eval test \${$3+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  eval "$3=no"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main (void)
-{
-if (sizeof ($2))
-	 return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main (void)
-{
-if (sizeof (($2)))
-	    return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-
-else $as_nop
-  eval "$3=yes"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-printf "%s\n" "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_type
-
-# ac_fn_c_find_uintX_t LINENO BITS VAR
-# ------------------------------------
-# Finds an unsigned integer type with width BITS, setting cache variable VAR
-# accordingly.
-ac_fn_c_find_uintX_t ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for uint$2_t" >&5
-printf %s "checking for uint$2_t... " >&6; }
-if eval test \${$3+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  eval "$3=no"
-     # Order is important - never check a type that is potentially smaller
-     # than half of the expected target width.
-     for ac_type in uint$2_t 'unsigned int' 'unsigned long int' \
-	 'unsigned long long int' 'unsigned short int' 'unsigned char'; do
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$ac_includes_default
-int
-main (void)
-{
-static int test_array [1 - 2 * !((($ac_type) -1 >> ($2 / 2 - 1)) >> ($2 / 2 - 1) == 3)];
-test_array [0] = 0;
-return test_array [0];
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  case $ac_type in #(
-  uint$2_t) :
-    eval "$3=yes" ;; #(
-  *) :
-    eval "$3=\$ac_type" ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-       if eval test \"x\$"$3"\" = x"no"
-then :
-
-else $as_nop
-  break
-fi
-     done
-fi
-eval ac_res=\$$3
-	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-printf "%s\n" "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_find_uintX_t
 
 # ac_fn_c_compute_int LINENO EXPR VAR INCLUDES
 # --------------------------------------------
@@ -2234,6 +2127,120 @@ rm -f conftest.val
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_compute_int
+
+# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
+# -------------------------------------------
+# Tests whether TYPE exists after having included INCLUDES, setting cache
+# variable VAR accordingly.
+ac_fn_c_check_type ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+printf %s "checking for $2... " >&6; }
+if eval test \${$3+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  eval "$3=no"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main (void)
+{
+if (sizeof ($2))
+	 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main (void)
+{
+if (sizeof (($2)))
+	    return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+else $as_nop
+  eval "$3=yes"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_type
+
+# ac_fn_c_find_uintX_t LINENO BITS VAR
+# ------------------------------------
+# Finds an unsigned integer type with width BITS, setting cache variable VAR
+# accordingly.
+ac_fn_c_find_uintX_t ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for uint$2_t" >&5
+printf %s "checking for uint$2_t... " >&6; }
+if eval test \${$3+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  eval "$3=no"
+     # Order is important - never check a type that is potentially smaller
+     # than half of the expected target width.
+     for ac_type in uint$2_t 'unsigned int' 'unsigned long int' \
+	 'unsigned long long int' 'unsigned short int' 'unsigned char'; do
+       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_includes_default
+int
+main (void)
+{
+static int test_array [1 - 2 * !((($ac_type) -1 >> ($2 / 2 - 1)) >> ($2 / 2 - 1) == 3)];
+test_array [0] = 0;
+return test_array [0];
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  case $ac_type in #(
+  uint$2_t) :
+    eval "$3=yes" ;; #(
+  *) :
+    eval "$3=\$ac_type" ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+       if eval test \"x\$"$3"\" = x"no"
+then :
+
+else $as_nop
+  break
+fi
+     done
+fi
+eval ac_res=\$$3
+	       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+printf "%s\n" "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_find_uintX_t
 ac_configure_args_raw=
 for ac_arg
 do
@@ -2916,6 +2923,7 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 ac_config_headers="$ac_config_headers auto/config.h:config.h.in"
@@ -3950,7 +3958,6 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
 		ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4082,9 +4089,7 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
 printf %s "checking for grep that handles long lines and -e... " >&6; }
 if test ${ac_cv_path_GREP+y}
 then :
@@ -4225,18 +4230,7 @@ fi
 printf "%s\n" "$ac_cv_path_EGREP" >&6; }
  EGREP="$ac_cv_path_EGREP"
 
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "" >/dev/null 2>&1
-then :
-
-fi
-rm -rf conftest*
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fgrep" >&5
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for fgrep" >&5
 printf %s "checking for fgrep... " >&6; }
 if test ${ac_cv_path_FGREP+y}
 then :
@@ -4308,64 +4302,6 @@ fi
 printf "%s\n" "$ac_cv_path_FGREP" >&6; }
  FGREP="$ac_cv_path_FGREP"
 
-		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing strerror" >&5
-printf %s "checking for library containing strerror... " >&6; }
-if test ${ac_cv_search_strerror+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-char strerror ();
-int
-main (void)
-{
-return strerror ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' cposix
-do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_search_strerror=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext
-  if test ${ac_cv_search_strerror+y}
-then :
-  break
-fi
-done
-if test ${ac_cv_search_strerror+y}
-then :
-
-else $as_nop
-  ac_cv_search_strerror=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_strerror" >&5
-printf "%s\n" "$ac_cv_search_strerror" >&6; }
-ac_res=$ac_cv_search_strerror
-if test "$ac_res" != no
-then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
 		for ac_prog in gawk mawk nawk awk
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -4457,111 +4393,6 @@ fi
 
 
 
-
-
-ac_header= ac_cache=
-for ac_item in $ac_header_c_list
-do
-  if test $ac_cache; then
-    ac_fn_c_check_header_compile "$LINENO" $ac_header ac_cv_header_$ac_cache "$ac_includes_default"
-    if eval test \"x\$ac_cv_header_$ac_cache\" = xyes; then
-      printf "%s\n" "#define $ac_item 1" >> confdefs.h
-    fi
-    ac_header= ac_cache=
-  elif test $ac_header; then
-    ac_cache=$ac_item
-  else
-    ac_header=$ac_item
-  fi
-done
-
-
-
-
-
-
-
-
-if test $ac_cv_header_stdlib_h = yes && test $ac_cv_header_string_h = yes
-then :
-
-printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
-
-fi
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
-
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for egrep" >&5
-printf %s "checking for egrep... " >&6; }
-if test ${ac_cv_path_EGREP+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  if echo a | $GREP -E '(a|b)' >/dev/null 2>&1
-   then ac_cv_path_EGREP="$GREP -E"
-   else
-     if test -z "$EGREP"; then
-  ac_path_EGREP_found=false
-  # Loop through the user's path and test for each of PROGNAME-LIST
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_prog in egrep
-   do
-    for ac_exec_ext in '' $ac_executable_extensions; do
-      ac_path_EGREP="$as_dir$ac_prog$ac_exec_ext"
-      as_fn_executable_p "$ac_path_EGREP" || continue
-# Check for GNU ac_path_EGREP and select it if it is found.
-  # Check for GNU $ac_path_EGREP
-case `"$ac_path_EGREP" --version 2>&1` in
-*GNU*)
-  ac_cv_path_EGREP="$ac_path_EGREP" ac_path_EGREP_found=:;;
-*)
-  ac_count=0
-  printf %s 0123456789 >"conftest.in"
-  while :
-  do
-    cat "conftest.in" "conftest.in" >"conftest.tmp"
-    mv "conftest.tmp" "conftest.in"
-    cp "conftest.in" "conftest.nl"
-    printf "%s\n" 'EGREP' >> "conftest.nl"
-    "$ac_path_EGREP" 'EGREP$' < "conftest.nl" >"conftest.out" 2>/dev/null || break
-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
-    as_fn_arith $ac_count + 1 && ac_count=$as_val
-    if test $ac_count -gt ${ac_path_EGREP_max-0}; then
-      # Best one so far, save it but keep looking for a better one
-      ac_cv_path_EGREP="$ac_path_EGREP"
-      ac_path_EGREP_max=$ac_count
-    fi
-    # 10*(2^10) chars as input seems more than enough
-    test $ac_count -gt 10 && break
-  done
-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-esac
-
-      $ac_path_EGREP_found && break 3
-    done
-  done
-  done
-IFS=$as_save_IFS
-  if test -z "$ac_cv_path_EGREP"; then
-    as_fn_error $? "no acceptable egrep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
-  fi
-else
-  ac_cv_path_EGREP=$EGREP
-fi
-
-   fi
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_EGREP" >&5
-printf "%s\n" "$ac_cv_path_EGREP" >&6; }
- EGREP="$ac_cv_path_EGREP"
 
 
 
@@ -5154,6 +4985,35 @@ else
 printf "%s\n" "no" >&6; }
 fi
 
+ac_header= ac_cache=
+for ac_item in $ac_header_c_list
+do
+  if test $ac_cache; then
+    ac_fn_c_check_header_compile "$LINENO" $ac_header ac_cv_header_$ac_cache "$ac_includes_default"
+    if eval test \"x\$ac_cv_header_$ac_cache\" = xyes; then
+      printf "%s\n" "#define $ac_item 1" >> confdefs.h
+    fi
+    ac_header= ac_cache=
+  elif test $ac_header; then
+    ac_cache=$ac_item
+  else
+    ac_header=$ac_item
+  fi
+done
+
+
+
+
+
+
+
+
+if test $ac_cv_header_stdlib_h = yes && test $ac_cv_header_string_h = yes
+then :
+
+printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "AvailabilityMacros.h" "ac_cv_header_AvailabilityMacros_h" "$ac_includes_default"
 if test "x$ac_cv_header_AvailabilityMacros_h" = xyes
 then :
@@ -5421,8 +5281,8 @@ else
 printf "%s\n" "yes" >&6; }
 fi
 if test "$enable_smack" = "yes"; then
-  ac_fn_c_check_header_compile "$LINENO" "attr/xattr.h" "ac_cv_header_attr_xattr_h" "$ac_includes_default"
-if test "x$ac_cv_header_attr_xattr_h" = xyes
+  ac_fn_c_check_header_compile "$LINENO" "sys/xattr.h" "ac_cv_header_sys_xattr_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_xattr_h" = xyes
 then :
   true
 else $as_nop
@@ -5433,7 +5293,8 @@ fi
 if test "$enable_smack" = "yes"; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for XATTR_NAME_SMACKEXEC in linux/xattr.h" >&5
 printf %s "checking for XATTR_NAME_SMACKEXEC in linux/xattr.h... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <linux/xattr.h>
 _ACEOF
@@ -5560,6 +5421,31 @@ fi
      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
   fi
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --enable-xattr argument" >&5
+printf %s "checking --enable-xattr argument... " >&6; }
+# Check whether --enable-xattr was given.
+if test ${enable_xattr+y}
+then :
+  enableval=$enable_xattr;
+else $as_nop
+  enable_xattr="yes"
+fi
+
+if test "$enable_xattr" = "yes"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+  ac_fn_c_check_header_compile "$LINENO" "sys/xattr.h" "ac_cv_header_sys_xattr_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_xattr_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_XATTR 1" >>confdefs.h
+
+fi
+
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 fi
 
 
@@ -5792,7 +5678,7 @@ if test ${vi_cv_version_luajit+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-   vi_cv_version_luajit=`${vi_cv_path_luajit} -v 2>&1 | sed 's/LuaJIT \([0-9.]*\)\.[0-9]\(-[a-z0-9]*\)* .*/\1/'`
+   vi_cv_version_luajit=`${vi_cv_path_luajit} -v 2>&1 | sed 's/LuaJIT \([0-9.]*\)\.[0-9]\(-*[a-z0-9]*\)* .*/\1/'`
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_version_luajit" >&5
 printf "%s\n" "$vi_cv_version_luajit" >&6; }
@@ -6571,17 +6457,48 @@ printf "%s\n" "OK" >&6; }
       vi_cv_perllib=`$vi_cv_path_perl -MConfig -e 'print $Config{privlibexp}'`
 
       vi_cv_perl_extutils=unknown_perl_extutils_path
-      for extutils_rel_path in ExtUtils vendor_perl/ExtUtils; do
-	xsubpp_path="$vi_cv_perllib/$extutils_rel_path/xsubpp"
-	if test -f "$xsubpp_path"; then
-	  vi_cv_perl_xsubpp="$xsubpp_path"
-	fi
-      done
 
-                              perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-xsubpp path" >&5
+printf %s "checking --with-xsubpp path... " >&6; }
+      vi_cv_perl_xsubpp=
+
+# Check whether --with-xsubpp was given.
+if test ${with_xsubpp+y}
+then :
+  withval=$with_xsubpp;
+            if test -f "$withval"
+            then
+	      vi_cv_perl_xsubpp="$withval"
+            fi
+
+fi
+
+
+      if test "x$vi_cv_perl_xsubpp" = "x"
+      then
+	for extutils_rel_path in ExtUtils vendor_perl/ExtUtils; do
+	  xsubpp_path="$vi_cv_perllib/$extutils_rel_path/xsubpp"
+	  if test -f "$xsubpp_path"; then
+	    vi_cv_perl_xsubpp="$xsubpp_path"
+	  fi
+	done
+      fi
+
+      if test "x$vi_cv_perl_xsubpp" = "x"
+      then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: empty" >&5
+printf "%s\n" "empty" >&6; }
+      else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_perl_xsubpp" >&5
+printf "%s\n" "$vi_cv_perl_xsubpp" >&6; }
+      fi
+
+
+                                    perlcppflags=`$vi_cv_path_perl -Mlib=$srcdir -MExtUtils::Embed \
 		-e 'ccflags;perl_inc;print"\n"' | sed -e 's/-fno[^ ]*//' \
 		-e 's/-fdebug-prefix-map[^ ]*//g' \
 		-e 's/-pipe //' \
+		-e 's/-flto\(=auto\)\? //' \
 		-e 's/-W[^ ]*//g' \
 		-e 's/-D_FORTIFY_SOURCE=.//g'`
             perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
@@ -6672,6 +6589,7 @@ printf "%s\n" ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
       printf "%s\n" "#define DYNAMIC_PERL 1" >>confdefs.h
 
       PERL_CFLAGS="-DDYNAMIC_PERL_DLL=\\\"$libperl\\\" $PERL_CFLAGS"
+      PERL_LIBS=""
     fi
   fi
 
@@ -7162,6 +7080,36 @@ printf %s "checking Python is 3.0 or better... " >&6; }
       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yep" >&5
 printf "%s\n" "yep" >&6; }
 
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking --with-python3-stable-abi argument" >&5
+printf %s "checking --with-python3-stable-abi argument... " >&6; }
+
+
+# Check whether --with-python3-stable-abi was given.
+if test ${with_python3_stable_abi+y}
+then :
+  withval=$with_python3_stable_abi; vi_cv_var_python3_stable_abi="$withval"; { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
+printf "%s\n" "$vi_cv_var_python3_stable_abi" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+      if test "X$vi_cv_var_python3_stable_abi" != "X"; then
+        if test ${vi_cv_var_python3_stable_abi_hex+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+
+         vi_cv_var_python3_stable_abi_hex=`
+         ${vi_cv_path_python3} -c \
+         "major_minor='${vi_cv_var_python3_stable_abi}'.split('.'); print('0x{0:X}'.format( (int(major_minor.__getitem__(0))<<24) + (int(major_minor.__getitem__(1))<<16) ))"`
+fi
+
+        if test "X$vi_cv_var_python3_stable_abi_hex" = "X"; then
+          as_fn_error $? "can't parse Python 3 stable ABI version. It should be \"<major>.<minor>\"" "$LINENO" 5
+        fi
+      fi
+
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking Python's abiflags" >&5
 printf %s "checking Python's abiflags... " >&6; }
 if test ${vi_cv_var_python3_abiflags+y}
@@ -7205,6 +7153,32 @@ else $as_nop
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3_epfx" >&5
 printf "%s\n" "$vi_cv_path_python3_epfx" >&6; }
+
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking Python's include path" >&5
+printf %s "checking Python's include path... " >&6; }
+if test ${vi_cv_path_python3_include+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+   vi_cv_path_python3_include=`
+       ${vi_cv_path_python3} -c \
+       "import sysconfig; print(sysconfig.get_path(\"include\"))"`
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3_include" >&5
+printf "%s\n" "$vi_cv_path_python3_include" >&6; }
+
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking Python's include path" >&5
+printf %s "checking Python's include path... " >&6; }
+if test ${vi_cv_path_python3_platinclude+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+   vi_cv_path_python3_platinclude=`
+       ${vi_cv_path_python3} -c \
+       "import sysconfig; print(sysconfig.get_path(\"platinclude\"))"`
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $vi_cv_path_python3_platinclude" >&5
+printf "%s\n" "$vi_cv_path_python3_platinclude" >&6; }
 
 
       if test ${vi_cv_path_python3path+y}
@@ -7309,14 +7283,17 @@ fi
 printf "%s\n" "$vi_cv_dll_name_python3" >&6; }
 
         PYTHON3_LIBS="${vi_cv_path_python3_plibs}"
-        if test "${vi_cv_path_python3_pfx}" = "${vi_cv_path_python3_epfx}"; then
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+        if test "${vi_cv_path_python3_include}" = "${vi_cv_path_python3_platinclude}"; then
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_include}"
         else
-          PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
+          PYTHON3_CFLAGS="-I${vi_cv_path_python3_include} -I${vi_cv_path_python3_platinclude}"
         fi
-	if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
-	  	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
-	fi
+        if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
+                    PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+        fi
+        if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+          PYTHON3_CFLAGS="${PYTHON3_CFLAGS} -DPy_LIMITED_API=${vi_cv_var_python3_stable_abi_hex}"
+        fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
 
@@ -7428,6 +7405,10 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
 
   printf "%s\n" "#define DYNAMIC_PYTHON3 1" >>confdefs.h
 
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    printf "%s\n" "#define DYNAMIC_PYTHON3_STABLE_ABI 1" >>confdefs.h
+
+  fi
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether we can do without RTLD_GLOBAL for Python" >&5
 printf %s "checking whether we can do without RTLD_GLOBAL for Python... " >&6; }
   cflags_save=$CFLAGS
@@ -7614,6 +7595,10 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   printf "%s\n" "#define DYNAMIC_PYTHON3 1" >>confdefs.h
 
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    printf "%s\n" "#define DYNAMIC_PYTHON3_STABLE_ABI 1" >>confdefs.h
+
+  fi
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${vi_cv_dll_name_python3}\\\""
@@ -8150,7 +8135,7 @@ printf "%s\n" "$rubyhdrdir" >&6; }
 	librubyarg=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG['LIBRUBYARG'])"`
 	librubya=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG['LIBRUBY_A'])"`
 	rubylibdir=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig.expand($ruby_rbconfig::CONFIG['libdir'])"`
-	if test -f "$rubylibdir/$librubya" || expr "$librubyarg" : "-lruby"; then
+	if test -f "$rubylibdir/$librubya" || expr "$librubyarg" : "-lruby" >/dev/null; then
 	  RUBY_LIBS="$RUBY_LIBS -L$rubylibdir"
 	elif test "$librubyarg" = "libruby.a"; then
 	  	  librubyarg="-lruby"
@@ -9716,46 +9701,40 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
     LDFLAGS="$ac_save_LDFLAGS"
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking size of wchar_t is 2 bytes" >&5
-printf %s "checking size of wchar_t is 2 bytes... " >&6; }
-    if test ${ac_cv_small_wchar_t+y}
+    # The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking size of wchar_t" >&5
+printf %s "checking size of wchar_t... " >&6; }
+if test ${ac_cv_sizeof_wchar_t+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  if test "$cross_compiling" = yes
+  if ac_fn_c_compute_int "$LINENO" "(long int) (sizeof (wchar_t))" "ac_cv_sizeof_wchar_t"        "$ac_includes_default"
 then :
-  as_fn_error $? "failed to compile test program" "$LINENO" 5
+
 else $as_nop
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <X11/Xlib.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-		int main()
-		{
-		  if (sizeof(wchar_t) <= 2)
-		    exit(1);
-		  exit(0);
-		}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"
-then :
-  ac_cv_small_wchar_t="no"
-else $as_nop
-  ac_cv_small_wchar_t="yes"
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
+  if test "$ac_cv_type_wchar_t" = yes; then
+     { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (wchar_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_wchar_t=0
+   fi
 fi
 
 fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_wchar_t" >&5
+printf "%s\n" "$ac_cv_sizeof_wchar_t" >&6; }
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_small_wchar_t" >&5
-printf "%s\n" "$ac_cv_small_wchar_t" >&6; }
-    if test "x$ac_cv_small_wchar_t" = "xyes" ; then
+
+
+printf "%s\n" "#define SIZEOF_WCHAR_T $ac_cv_sizeof_wchar_t" >>confdefs.h
+
+
+    if test "$ac_cv_sizeof_wchar_t" -le 2; then
       printf "%s\n" "#define SMALL_WCHAR_T 1" >>confdefs.h
 
     fi
@@ -10158,8 +10137,11 @@ system ("touch conf.gtktest");
 tmp_version = g_strdup("$min_gtk_version");
 if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
    printf("%s, bad version string\n", "$min_gtk_version");
+   g_free(tmp_version);
    exit(1);
  }
+
+g_free(tmp_version);
 
 if ((gtk_major_version > major) ||
     ((gtk_major_version == major) && (gtk_minor_version > minor)) ||
@@ -10421,8 +10403,11 @@ system ("touch conf.gtktest");
 tmp_version = g_strdup("$min_gtk_version");
 if (sscanf(tmp_version, "%d.%d.%d", &major, &minor, &micro) != 3) {
    printf("%s, bad version string\n", "$min_gtk_version");
+   g_free(tmp_version);
    exit(1);
  }
+
+g_free(tmp_version);
 
 if ((gtk_major_version > major) ||
     ((gtk_major_version == major) && (gtk_minor_version > minor)) ||
@@ -12302,13 +12287,6 @@ printf "%s\n" "#define uint32_t $ac_cv_c_uint32_t" >>confdefs.h
 
 
 
-# Obsolete code to be removed.
-if test $ac_cv_header_sys_time_h = yes; then
-
-printf "%s\n" "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
-
-fi
-# End of obsolete code.
 
 ac_fn_c_check_type "$LINENO" "ino_t" "ac_cv_type_ino_t" "$ac_includes_default"
 if test "x$ac_cv_type_ino_t" = xyes
@@ -13183,7 +13161,6 @@ else $as_nop
 printf "%s\n" "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for /dev/ptc" >&5
 printf %s "checking for /dev/ptc... " >&6; }

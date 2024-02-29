@@ -157,6 +157,8 @@ static struct vimvar
     {VV_NAME("sizeoflong",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("sizeofpointer",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("maxcol",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("python3_version",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
@@ -259,10 +261,15 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
     set_vim_var_nr(VV_TYPE_CLASS,   VAR_TYPE_CLASS);
     set_vim_var_nr(VV_TYPE_OBJECT,  VAR_TYPE_OBJECT);
+    set_vim_var_nr(VV_TYPE_TYPEALIAS,  VAR_TYPE_TYPEALIAS);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
     set_vim_var_dict(VV_COLORNAMES, dict_alloc());
+
+#ifdef FEAT_PYTHON3
+    set_vim_var_nr(VV_PYTHON3_VERSION, python3_version());
+#endif
 
     // Default for v:register is not 0 but '"'.  This is adjusted once the
     // clipboard has been setup by calling reset_reg_var().
@@ -769,7 +776,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
     cctx_T	*cctx = vim9compile ? eap->cookie : NULL;
     int		count = 0;
 
-    if (eap->getline == NULL)
+    if (eap->ea_getline == NULL)
     {
 	emsg(_(e_cannot_use_heredoc_here));
 	return NULL;
@@ -849,7 +856,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	int	ti = 0;
 
 	vim_free(theline);
-	theline = eap->getline(NUL, eap->cookie, 0, FALSE);
+	theline = eap->ea_getline(NUL, eap->cookie, 0, FALSE);
 	if (theline == NULL)
 	{
 	    semsg(_(e_missing_end_marker_str), marker);
@@ -1829,6 +1836,9 @@ ex_let_one(
 	return NULL;
     }
 
+    if (check_typval_is_value(tv) == FAIL)
+	return NULL;
+
     if (*arg == '$')
     {
 	// ":let $VAR = expr": Set environment variable.
@@ -1853,6 +1863,7 @@ ex_let_one(
 	char_u	*p;
 	int	lval_flags = (flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
 							     ? GLV_NO_DECL : 0;
+	lval_flags |= (flags & ASSIGN_FOR_LOOP) ? GLV_FOR_LOOP : 0;
 	if (op != NULL && *op != '=')
 	    lval_flags |= GLV_ASSIGN_WITH_OP;
 
@@ -2118,6 +2129,30 @@ do_unlet(char_u *name, int forceit)
     return FAIL;
 }
 
+    static void
+report_lockvar_member(char *msg, lval_T *lp)
+{
+    int did_alloc = FALSE;
+    char_u *vname = (char_u *)"";
+    char_u *class_name = lp->ll_class != NULL
+				    ? lp->ll_class->class_name : (char_u *)"";
+    if (lp->ll_name != NULL)
+    {
+	if (lp->ll_name_end == NULL)
+	    vname = lp->ll_name;
+	else
+	{
+	    vname = vim_strnsave(lp->ll_name, lp->ll_name_end - lp->ll_name);
+	    if (vname == NULL)
+		return;
+	    did_alloc = TRUE;
+	}
+    }
+    semsg(_(msg), vname, class_name);
+    if (did_alloc)
+	vim_free(vname);
+}
+
 /*
  * Lock or unlock variable indicated by "lp".
  * "deep" is the levels to go (-1 for unlimited);
@@ -2135,6 +2170,10 @@ do_lock_var(
     int		ret = OK;
     int		cc;
     dictitem_T	*di;
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: do_lock_var(): name %s, is_root %d", lp->ll_name, lp->ll_is_root);
+#endif
 
     if (lp->ll_tv == NULL)
     {
@@ -2196,10 +2235,13 @@ do_lock_var(
 	}
 	*name_end = cc;
     }
-    else if (deep == 0)
+    else if (deep == 0 && lp->ll_object == NULL && lp->ll_class == NULL)
     {
 	// nothing to do
     }
+    else if (lp->ll_is_root)
+	// (un)lock the item.
+	item_lock(lp->ll_tv, deep, lock, FALSE);
     else if (lp->ll_range)
     {
 	listitem_T    *li = lp->ll_li;
@@ -2215,9 +2257,29 @@ do_lock_var(
     else if (lp->ll_list != NULL)
 	// (un)lock a List item.
 	item_lock(&lp->ll_li->li_tv, deep, lock, FALSE);
+    else if (lp->ll_object != NULL)  // This check must be before ll_class.
+    {
+	// (un)lock an object variable.
+	report_lockvar_member(e_cannot_lock_object_variable_str, lp);
+	ret = FAIL;
+    }
+    else if (lp->ll_class != NULL)
+    {
+	// (un)lock a class variable.
+	report_lockvar_member(e_cannot_lock_class_variable_str, lp);
+	ret = FAIL;
+    }
     else
+    {
 	// (un)lock a Dictionary item.
-	item_lock(&lp->ll_di->di_tv, deep, lock, FALSE);
+	if (lp->ll_di == NULL)
+	{
+	    emsg(_(e_dictionary_required));
+	    ret = FAIL;
+	}
+	else
+	    item_lock(&lp->ll_di->di_tv, deep, lock, FALSE);
+    }
 
     return ret;
 }
@@ -2237,6 +2299,10 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
     blob_T	*b;
     hashitem_T	*hi;
     int		todo;
+
+#ifdef LOG_LOCKVAR
+    ch_log(NULL, "LKVAR: item_lock(): type %s", vartype_name(tv->v_type));
+#endif
 
     if (recurse >= DICT_MAXNEST)
     {
@@ -2270,6 +2336,7 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 	case VAR_INSTR:
 	case VAR_CLASS:
 	case VAR_OBJECT:
+	case VAR_TYPEALIAS:
 	    break;
 
 	case VAR_BLOB:
@@ -2937,7 +3004,7 @@ eval_variable(
     }
 
     // Check for local variable when debugging.
-    if ((tv = lookup_debug_var(name)) == NULL)
+    if ((sid == 0) && (tv = lookup_debug_var(name)) == NULL)
     {
 	// Check for user-defined variables.
 	dictitem_T	*v = find_var(name, &ht, flags & EVAL_VAR_NOAUTOLOAD);
@@ -3053,6 +3120,25 @@ eval_variable(
 		}
 	    }
 
+	    if ((tv->v_type == VAR_TYPEALIAS || tv->v_type == VAR_CLASS)
+		    && sid != 0)
+	    {
+		// type alias or class imported from another script.  Check
+		// whether it is exported from the other script.
+		sv = find_typval_in_script(tv, sid, TRUE);
+		if (sv == NULL)
+		{
+		    ret = FAIL;
+		    goto done;
+		}
+		if ((sv->sv_flags & SVFLAG_EXPORTED) == 0)
+		{
+		    semsg(_(e_item_not_exported_in_script_str), name);
+		    ret = FAIL;
+		    goto done;
+		}
+	    }
+
 	    // If a list or dict variable wasn't initialized and has meaningful
 	    // type, do it now.  Not for global variables, they are not
 	    // declared.
@@ -3101,6 +3187,7 @@ eval_variable(
 	}
     }
 
+done:
     if (len > 0)
 	name[len] = cc;
 
@@ -3245,7 +3332,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     dictitem_T *
 find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload)
 {
-    if (STRNCMP(name, "<SNR>", 5) == 0 && isdigit(name[5]))
+    if (STRNCMP(name, "<SNR>", 5) == 0 && SAFE_isdigit(name[5]))
     {
 	char_u	    *p = name + 5;
 	int	    sid = getdigits(&p);
@@ -3668,6 +3755,62 @@ list_one_var_a(
 }
 
 /*
+ * Addition handling for setting a v: variable.
+ * Return TRUE if the variable should be set normally,
+ *        FALSE if nothing else needs to be done.
+ */
+    int
+before_set_vvar(
+    char_u	*varname,
+    dictitem_T	*di,
+    typval_T	*tv,
+    int		copy,
+    int		*type_error)
+{
+    if (di->di_tv.v_type == VAR_STRING)
+    {
+	VIM_CLEAR(di->di_tv.vval.v_string);
+	if (copy || tv->v_type != VAR_STRING)
+	{
+	    char_u *val = tv_get_string(tv);
+
+	    // Careful: when assigning to v:errmsg and
+	    // tv_get_string() causes an error message the variable
+	    // will already be set.
+	    if (di->di_tv.vval.v_string == NULL)
+		di->di_tv.vval.v_string = vim_strsave(val);
+	}
+	else
+	{
+	    // Take over the string to avoid an extra alloc/free.
+	    di->di_tv.vval.v_string = tv->vval.v_string;
+	    tv->vval.v_string = NULL;
+	}
+	return FALSE;
+    }
+    else if (di->di_tv.v_type == VAR_NUMBER)
+    {
+	di->di_tv.vval.v_number = tv_get_number(tv);
+	if (STRCMP(varname, "searchforward") == 0)
+	    set_search_direction(di->di_tv.vval.v_number ? '/' : '?');
+#ifdef FEAT_SEARCH_EXTRA
+	else if (STRCMP(varname, "hlsearch") == 0)
+	{
+	    no_hlsearch = !di->di_tv.vval.v_number;
+	    redraw_all_later(UPD_SOME_VALID);
+	}
+#endif
+	return FALSE;
+    }
+    else if (di->di_tv.v_type != tv->v_type)
+    {
+	*type_error = TRUE;
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * Set variable "name" to value in "tv".
  * If the variable already exists, the value is updated.
  * Otherwise the variable is created.
@@ -3831,7 +3974,17 @@ set_var_const(
 		goto failed;
 	    }
 
-	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0)
+	    if (check_typval_is_value(&di->di_tv) == FAIL)
+		goto failed;
+
+	    // List and Blob types can be modified in-place using the "+="
+	    // compound operator.  For other types, this is not allowed.
+	    int type_inplace_modifiable =
+		(di->di_tv.v_type == VAR_LIST || di->di_tv.v_type == VAR_BLOB);
+
+	    if (var_in_vim9script && (flags & ASSIGN_FOR_LOOP) == 0
+		    && ((flags & ASSIGN_COMPOUND_OP) == 0
+			|| !type_inplace_modifiable))
 	    {
 		where_T where = WHERE_INIT;
 		svar_T  *sv = find_typval_in_script(&di->di_tv, sid, TRUE);
@@ -3839,8 +3992,11 @@ set_var_const(
 		if (sv != NULL)
 		{
 		    // check the type and adjust to bool if needed
-		    where.wt_index = var_idx;
-		    where.wt_variable = TRUE;
+		    if (var_idx > 0)
+		    {
+			where.wt_index = var_idx;
+			where.wt_kind = WT_VARIABLE;
+		    }
 		    if (check_script_var_type(sv, tv, name, where) == FAIL)
 			goto failed;
 		    if (type == NULL)
@@ -3849,7 +4005,11 @@ set_var_const(
 		}
 	    }
 
-	    if ((flags & ASSIGN_FOR_LOOP) == 0
+	    // Modifying a final variable with a List value using the "+="
+	    // operator is allowed.  For other types, it is not allowed.
+	    if (((flags & ASSIGN_FOR_LOOP) == 0
+			&& ((flags & ASSIGN_COMPOUND_OP) == 0
+			    || !type_inplace_modifiable))
 				 ? var_check_permission(di, name) == FAIL
 				 : var_check_ro(di->di_flags, name, FALSE))
 		goto failed;
@@ -3869,51 +4029,15 @@ set_var_const(
 
 	// existing variable, need to clear the value
 
-	// Handle setting internal di: variables separately where needed to
+	// Handle setting internal v: variables separately where needed to
 	// prevent changing the type.
-	if (ht == &vimvarht)
+	int type_error = FALSE;
+	if (ht == &vimvarht
+		&& !before_set_vvar(varname, di, tv, copy, &type_error))
 	{
-	    if (di->di_tv.v_type == VAR_STRING)
-	    {
-		VIM_CLEAR(di->di_tv.vval.v_string);
-		if (copy || tv->v_type != VAR_STRING)
-		{
-		    char_u *val = tv_get_string(tv);
-
-		    // Careful: when assigning to v:errmsg and
-		    // tv_get_string() causes an error message the variable
-		    // will already be set.
-		    if (di->di_tv.vval.v_string == NULL)
-			di->di_tv.vval.v_string = vim_strsave(val);
-		}
-		else
-		{
-		    // Take over the string to avoid an extra alloc/free.
-		    di->di_tv.vval.v_string = tv->vval.v_string;
-		    tv->vval.v_string = NULL;
-		}
-		goto failed;
-	    }
-	    else if (di->di_tv.v_type == VAR_NUMBER)
-	    {
-		di->di_tv.vval.v_number = tv_get_number(tv);
-		if (STRCMP(varname, "searchforward") == 0)
-		    set_search_direction(di->di_tv.vval.v_number
-							      ? '/' : '?');
-#ifdef FEAT_SEARCH_EXTRA
-		else if (STRCMP(varname, "hlsearch") == 0)
-		{
-		    no_hlsearch = !di->di_tv.vval.v_number;
-		    redraw_all_later(UPD_SOME_VALID);
-		}
-#endif
-		goto failed;
-	    }
-	    else if (di->di_tv.v_type != tv->v_type)
-	    {
-		semsg(_(e_setting_str_to_value_with_wrong_type), name);
-		goto failed;
-	    }
+	    if (type_error)
+		semsg(_(e_setting_v_str_to_value_with_wrong_type), varname);
+	    goto failed;
 	}
 
 	clear_tv(&di->di_tv);
@@ -4719,6 +4843,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
     tabpage_T	*save_curtab;
     tabpage_T	*tp;
+    tabpage_T	*save_lu_tp;
     char_u	*varname, *tabvarname;
     typval_T	*varp;
 
@@ -4738,6 +4863,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     save_curtab = curtab;
+    save_lu_tp = lastused_tabpage;
     goto_tabpage_tp(tp, FALSE, FALSE);
 
     tabvarname = alloc(STRLEN(varname) + 3);
@@ -4749,9 +4875,13 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 	vim_free(tabvarname);
     }
 
-    // Restore current tabpage
+    // Restore current tabpage and last accessed tabpage.
     if (valid_tabpage(save_curtab))
+    {
 	goto_tabpage_tp(save_curtab, FALSE, FALSE);
+	if (valid_tabpage(save_lu_tp))
+	    lastused_tabpage = save_lu_tp;
+    }
 }
 
 /*
@@ -4811,6 +4941,10 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     if (*varname == '&')
     {
 	aco_save_T	aco;
+	// safe the current window position, it could
+	// change because of 'scrollbind' window-local
+	// options
+	linenr_T	old_topline = curwin->w_topline;
 
 	// Set curbuf to be our buf, temporarily.
 	aucmd_prepbuf(&aco, buf);
@@ -4822,6 +4956,7 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 	    // reset notion of buffer
 	    aucmd_restbuf(&aco);
 	}
+	curwin->w_topline = old_topline;
     }
     else
     {
@@ -4862,7 +4997,7 @@ get_callback(typval_T *arg)
     else
     {
 	if (arg->v_type == VAR_STRING && arg->vval.v_string != NULL
-					       && isdigit(*arg->vval.v_string))
+					       && SAFE_isdigit(*arg->vval.v_string))
 	    r = FAIL;
 	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{

@@ -22,7 +22,7 @@ menutrans &File				&Tiedosto
 " Accels: AJTUSNIDPOE
 menutrans &Open\.\.\.<Tab>:e			&Avaa\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp		Avaa\ &jaettuna\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew		Avaa\ &tabissa\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew		Avaa\ &tabissa\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew			&Uusi<Tab>:enew
 menutrans &Close<Tab>:close			&Sulje<Tab>:close
 " -SEP1-

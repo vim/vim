@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 9.0.  Last change: 2023 May 20
+*cmdline.txt*   For Vim version 9.1.  Last change: 2023 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -90,9 +90,11 @@ CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		In the GUI the |key-notation| is inserted without simplifying.
 
 							*c_<Left>* *c_Left*
-<Left>		cursor left
+<Left>		cursor left.  See 'wildmenu' for behavior during wildmenu
+		completion mode.
 							*c_<Right>* *c_Right*
-<Right>		cursor right
+<Right>		cursor right.  See 'wildmenu' for behavior during wildmenu
+		completion mode.
 							*c_<S-Left>*
 <S-Left> or <C-Left>					*c_<C-Left>*
 		cursor one WORD left
@@ -102,7 +104,8 @@ CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 CTRL-B or <Home>				*c_CTRL-B* *c_<Home>* *c_Home*
 		cursor to beginning of command-line
 CTRL-E or <End>					*c_CTRL-E* *c_<End>* *c_End*
-		cursor to end of command-line
+		cursor to end of command-line.  See 'wildmenu' for behavior
+		during wildmenu completion mode.
 
 							*c_<LeftMouse>*
 <LeftMouse>	Move the cursor to the position of the mouse click.
@@ -237,6 +240,7 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 CTRL-Y		When there is a modeless selection, copy the selection into
 		the clipboard. |modeless-selection|
 		If there is no selection CTRL-Y is inserted as a character.
+		See 'wildmenu' for behavior during wildmenu completion mode.
 
 CTRL-M or CTRL-J		*c_CTRL-M* *c_CTRL-J* *c_<NL>* *c_<CR>* *c_CR*
 <CR> or <NL>	start entered command
@@ -252,12 +256,14 @@ CTRL-C		quit command-line without executing
 
 							*c_<Up>* *c_Up*
 <Up>		recall older command-line from history, whose beginning
-		matches the current command-line (see below).
+		matches the current command-line (see below).  See 'wildmenu'
+		for behavior during wildmenu completion mode.
 		{not available when compiled without the |+cmdline_hist|
 		feature}
 							*c_<Down>* *c_Down*
 <Down>		recall more recent command-line from history, whose beginning
-		matches the current command-line (see below).
+		matches the current command-line (see below).  See 'wildmenu'
+		for behavior during wildmenu completion mode.
 		{not available when compiled without the |+cmdline_hist|
 		feature}
 
@@ -356,6 +362,7 @@ terminals)
 		A positive number represents the absolute index of an entry
 		as it is given in the first column of a :history listing.
 		This number remains fixed even if other entries are deleted.
+		(see |E1510|)
 
 		A negative number means the relative position of an entry,
 		counted from the newest entry (which has index -1) backwards.
@@ -381,6 +388,7 @@ When editing the command-line, a few commands can be used to complete the
 word before the cursor.  This is available for:
 
 - Command names: At the start of the command-line.
+- |++opt| values.
 - Tags: Only after the ":tag" command.
 - File names: Only after a command that accepts a file name or a setting for
   an option that can be set to a file name.  This is called file name
@@ -455,18 +463,22 @@ CTRL-T		When 'incsearch' is set, entering a search pattern for "/" or
 		keyboard T is above G.
 
 The 'wildchar' option defaults to <Tab> (CTRL-E when in Vi compatible mode; in
-a previous version <Esc> was used).  In the pattern standard wildcards '*' and
-'?' are accepted when matching file names.  '*' matches any string, '?'
-matches exactly one character.
+a previous version <Esc> was used).  In the pattern standard |wildcards| are
+accepted when matching file names.
 
 When repeating 'wildchar' or CTRL-N you cycle through the matches, eventually
 ending up back to what was typed.  If the first match is not what you wanted,
 you can use <S-Tab> or CTRL-P to go straight back to what you typed.
 
-The 'wildignorecase' option can be set to ignore case in filenames.
-
 The 'wildmenu' option can be set to show the matches just above the command
 line.
+
+The 'wildoptions' option provides additional configuration to use a popup menu
+for 'wildmenu', and to use fuzzy matching.
+
+The 'wildignorecase' option can be set to ignore case in filenames.  For
+completing other texts (e.g. command names), the 'ignorecase' option is used
+instead (fuzzy matching always ignores case, however).
 
 If you like tcsh's autolist completion, you can use this mapping:
 	:cnoremap X <C-L><C-D>
@@ -517,16 +529,26 @@ example, to match only files that end in ".c": >
 	:e *.c$
 This will not match a file ending in ".cpp".  Without the "$" it does match.
 
-The old value of an option can be obtained by hitting 'wildchar' just after
-the '='.  For example, typing 'wildchar' after ":set dir=" will insert the
-current value of 'dir'.  This overrules file name completion for the options
-that take a file name.
-
 If you would like using <S-Tab> for CTRL-P in an xterm, put this command in
 your .cshrc: >
 	xmodmap -e "keysym Tab = Tab Find"
 And this in your .vimrc: >
 	:cmap <Esc>[1~ <C-P>
+<						*complete-set-option*
+When setting an option using |:set=|, the old value of an option can be
+obtained by hitting 'wildchar' just after the '='.  For example, typing
+'wildchar' after ":set dir=" will insert the current value of 'dir'.  This
+overrules file name completion for the options that take a file name.
+
+When using |:set=|, |:set+=|, or |:set^=|, string options that have
+pre-defined names or syntax (e.g. 'diffopt', 'listchars') or are a list of
+single-character flags (e.g. 'shortmess') will also present a list of possible
+values for completion when using 'wildchar'.
+
+When using |:set-=|, comma-separated options like 'diffopt' or 'backupdir'
+will show each item separately.  Flag list options like 'shortmess' will show
+both the entire old value and the individual flags.  Otherwise completion will
+just fill in with the entire old value.
 
 ==============================================================================
 3. Ex command-lines					*cmdline-lines*
@@ -778,7 +800,7 @@ An example for subtracting (which isn't very useful): >
 On this text:
 	1 one ~
 	2 two ~
-	3 three FOLDED~
+	3 three FOLDED ~
 	4 four FOLDED ~
 	5 five FOLDED ~
 	6 six FOLDED ~

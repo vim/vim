@@ -1,8 +1,9 @@
 vim9script
 
 # Script to define the syntax menu in synmenu.vim
-# Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Jun 27
+# Maintainer:	The Vim Project <https://github.com/vim/vim>
+# Last Change:	2023 Aug 10
+# Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -88,7 +89,7 @@ SynMenu AB.Assembly.PIC:pic
 SynMenu AB.Assembly.Turbo:tasm
 SynMenu AB.Assembly.VAX\ Macro\ Assembly:vmasm
 SynMenu AB.Assembly.Z-80:z8a
-SynMenu AB.Assembly.xa\ 6502\ cross\ assember:a65
+SynMenu AB.Assembly.xa\ 6502\ cross\ assembler:a65
 SynMenu AB.ASN\.1:asn
 SynMenu AB.Asterisk\ config:asterisk
 SynMenu AB.Asterisk\ voicemail\ config:asteriskvm
@@ -326,7 +327,7 @@ SynMenu HIJK.Kivy:kivy
 SynMenu HIJK.KixTart:kix
 
 SynMenu L.Lace:lace
-SynMenu L.LamdaProlog:lprolog
+SynMenu L.LambdaProlog:lprolog
 SynMenu L.Latte:latte
 SynMenu L.Ld\ script:ld
 SynMenu L.LDAP.LDIF:ldif
@@ -383,8 +384,10 @@ SynMenu M.MMIX:mmix
 SynMenu M.Modconf:modconf
 SynMenu M.Model:model
 SynMenu M.Modsim\ III:modsim3
-SynMenu M.Modula\ 2:modula2
-SynMenu M.Modula\ 3:modula3
+SynMenu M.Modula-2.R10\ (2010):modula2:r10
+SynMenu M.Modula-2.ISO\ (1994):modula2:iso
+SynMenu M.Modula-2.PIM\ (1985):modula2:pim
+SynMenu M.Modula-3:modula3
 SynMenu M.Monk:monk
 SynMenu M.Motorola\ S-Record:srec
 SynMenu M.Mplayer\ config:mplayerconf
@@ -650,7 +653,7 @@ SynMenu UV.VSE\ JCL:vsejcl
 SynMenu WXYZ.WEB.CWEB:cweb
 SynMenu WXYZ.WEB.WEB:web
 SynMenu WXYZ.WEB.WEB\ Changes:change
-SynMenu WXYZ.WebAssembly:wast
+SynMenu WXYZ.WebAssembly:wat
 SynMenu WXYZ.Webmacro:webmacro
 SynMenu WXYZ.Website\ MetaLanguage:wml
 SynMenu WXYZ.wDiff:wdiff
@@ -677,6 +680,7 @@ SynMenu WXYZ.XFree86\ Config:xf86conf
 SynMenu WXYZ.YAML:yaml
 SynMenu WXYZ.Yacc:yacc
 SynMenu WXYZ.Zimbu:zimbu
+SynMenu WXYZ.Zserio:zserio
 
 append(lnum, "")
 

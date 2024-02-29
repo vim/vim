@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2023 Jun 01
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Feb 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,6 +36,7 @@ a remark is given.
 11. No +eval feature		|no-eval-feature|
 12. The sandbox			|eval-sandbox|
 13. Textlock			|textlock|
+14. Vim script library		|vim-script-library|
 
 Testing support is documented in |testing.txt|.
 Profiling is documented at |profiling|.
@@ -302,10 +303,15 @@ List concatenation ~
 							*list-concatenation*
 Two lists can be concatenated with the "+" operator: >
 	:let longlist = mylist + [5, 6]
-	:let mylist += [7, 8]
+	:let longlist = [5, 6] + mylist
+To prepend or append an item, turn it into a list by putting [] around it.
 
-To prepend or append an item, turn the item into a list by putting [] around
-it.  To change a list in-place, refer to |list-modification| below.
+A list can be concatenated with another one in-place using |:let+=| or
+|extend()|: >
+	:let mylist += [7, 8]
+	:call extend(mylist, [7, 8])
+<
+See |list-modification| below for more about changing a list in-place.
 
 
 Sublist ~
@@ -424,6 +430,18 @@ To change part of a list you can specify the first and last item to be
 modified.  The value must at least have the number of items in the range: >
 	:let list[3:5] = [3, 4, 5]
 
+To add items to a List in-place, you can use |:let+=| (|list-concatenation|): >
+	:let listA = [1, 2]
+	:let listA += [3, 4]
+<
+When two variables refer to the same List, changing one List in-place will
+cause the referenced List to be changed in-place: >
+	:let listA = [1, 2]
+	:let listB = listA
+	:let listB += [3, 4]
+	:echo listA
+	[1, 2, 3, 4]
+<
 Adding and removing items from a list is done with functions.  Here are a few
 examples: >
 	:call insert(list, 'a')		" prepend item 'a'
@@ -744,12 +762,15 @@ This calls Doit() with 0x11, 0x22 and 0x33.
 
 
 Blob concatenation ~
-
+							*blob-concatenation*
 Two blobs can be concatenated with the "+" operator: >
 	:let longblob = myblob + 0z4455
+	:let longblob = 0z4455 + myblob
+<
+A blob can be concatenated with another one in-place using |:let+=|: >
 	:let myblob += 0z6677
-
-To change a blob in-place see |blob-modification| below.
+<
+See |blob-modification| below for more about changing a blob in-place.
 
 
 Part of a blob ~
@@ -792,6 +813,18 @@ To change part of a blob you can specify the first and last byte to be
 modified.  The value must have the same number of bytes in the range: >
 	:let blob[3:5] = 0z334455
 
+To add items to a Blob in-place, you can use |:let+=| (|blob-concatenation|): >
+	:let blobA = 0z1122
+	:let blobA += 0z3344
+<
+When two variables refer to the same Blob, changing one Blob in-place will
+cause the referenced Blob to be changed in-place: >
+	:let blobA = 0z1122
+	:let blobB = blobA
+	:let blobB += 0z3344
+	:echo blobA
+	0z11223344
+<
 You can also use the functions |add()|, |remove()| and |insert()|.
 
 
@@ -878,7 +911,8 @@ Expression syntax summary, from least to most significant:
 	expr5 isnot expr5	different |List|, |Dictionary| or |Blob|
 				instance
 
-|expr5|	expr6 << expr6		bitwise left shift
+|expr5|	expr6
+	expr6 << expr6		bitwise left shift
 	expr6 >> expr6		bitwise right shift
 
 |expr6|	expr7
@@ -2003,9 +2037,14 @@ v:collate	The current locale setting for collation order of the runtime
 								*v:colornames*
 v:colornames    A dictionary that maps color names to hex color strings. These
 		color names can be used with the |highlight-guifg|,
-		|highlight-guibg|, and |highlight-guisp| parameters. Updating
-		an entry in v:colornames has no immediate effect on the syntax
-		highlighting. The highlight commands (probably in a
+		|highlight-guibg|, and |highlight-guisp| parameters.
+
+		The key values in the dictionary (the color names) should be
+		lower cased, because Vim looks up a color by its lower case
+		name.
+
+		Updating an entry in v:colornames has no immediate effect on
+		the syntax highlighting. The highlight commands (probably in a
 		colorscheme script) need to be re-evaluated in order to use
 		the updated color values. For example: >
 
@@ -2424,6 +2463,25 @@ v:progpath	Contains the command with which Vim was invoked, in a form
 		".exe" is not added to v:progpath.
 		Read-only.
 
+				*v:python3_version* *python3-version-variable*
+v:python3_version
+		Version of Python 3 that Vim was built against.  When
+		Python is loaded dynamically (|python-dynamic|), this version
+		should exactly match the Python library up to the minor
+		version (e.g.  3.10.2 and 3.10.3 are compatible as the minor
+		version is "10", whereas 3.9.4 and 3.10.3 are not compatible).
+		When |python-stable-abi| is used, this will be the minimum Python
+		version that you can use instead. (e.g. if v:python3_version
+		indicates 3.9, you can use 3.9, 3.10, or anything above).
+
+		This number is encoded as a hex number following Python ABI
+		versioning conventions.  Do the following to have a
+		human-readable full version in hex: >
+			echo printf("%08X", v:python3_version)
+<		You can obtain only the minor version by doing: >
+			echo and(v:python3_version>>16,0xff)
+<		Read-only.
+
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
 		command (regardless of whether that command actually used a
@@ -2537,6 +2595,8 @@ v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
 v:t_class	Value of |class| type.  Read-only.  See: |type()|
 					*v:t_object* *t_object-variable*
 v:t_object	Value of |object| type.  Read-only.  See: |type()|
+					*v:t_typealias* *t_typealias-variable*
+v:t_typealias	Value of |typealias| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -2545,8 +2605,9 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		'c', with only digits and ';' in between.
 		When this option is set, the TermResponse autocommand event is
 		fired, so that you can react to the response from the
-		terminal.  You can use |terminalprops()| to see what Vim
-		figured out about the terminal.
+		terminal.  The TermResponseAll event is also fired, with
+		<amatch> set to "version".  You can use |terminalprops()| to see
+		what Vim figured out about the terminal.
 		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
@@ -2558,27 +2619,37 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 						*v:termblinkresp*
 v:termblinkresp	The escape sequence returned by the terminal for the |t_RC|
 		termcap entry.  This is used to find out whether the terminal
-		cursor is blinking. This is used by |term_getcursor()|.
+		cursor is blinking. This is used by |term_getcursor()|.  When
+		this option is set, the TermResponseAll autocommand event is
+		fired, with <amatch> set to "cursorblink".
 
 						*v:termstyleresp*
 v:termstyleresp	The escape sequence returned by the terminal for the |t_RS|
 		termcap entry.  This is used to find out what the shape of the
-		cursor is.  This is used by |term_getcursor()|.
+		cursor is.  This is used by |term_getcursor()|.  When this
+		option is set, the TermResponseAll autocommand event is fired,
+		with <amatch> set to "cursorshape".
 
 						*v:termrbgresp*
 v:termrbgresp	The escape sequence returned by the terminal for the |t_RB|
 		termcap entry.  This is used to find out what the terminal
-		background color is, see 'background'.
+		background color is; see 'background'.  When this option is
+		set, the TermResponseAll autocommand event is fired, with
+		<amatch> set to "background".
 
 						*v:termrfgresp*
 v:termrfgresp	The escape sequence returned by the terminal for the |t_RF|
 		termcap entry.  This is used to find out what the terminal
-		foreground color is.
+		foreground color is.  When this option is set, the
+		TermResponseAll autocommand event is fired, with <amatch> set
+		to "foreground".
 
 						*v:termu7resp*
 v:termu7resp	The escape sequence returned by the terminal for the |t_u7|
 		termcap entry.  This is used to find out what the terminal
-		does with ambiguous width characters, see 'ambiwidth'.
+		does with ambiguous width characters, see 'ambiwidth'.  When
+		this option is set, the TermResponseAll autocommand event is
+		fired, with <amatch> set to "ambiguouswidth".
 
 					*v:testing* *testing-variable*
 v:testing	Must be set before using `test_garbagecollect_now()`.
@@ -2770,6 +2841,8 @@ declarations and assignments do not use a command.  |vim9-declaration|
 :let {var} ..= {expr1}	Like ":let {var} = {var} .. {expr1}".
 			These fail if {var} was not set yet and when the type
 			of {var} and {expr1} don't fit the operator.
+			`+=` modifies a |List| or a |Blob| in-place instead of
+			creating a new one.
 			`.=` is not supported with Vim script version 2 and
 			later, see |vimscript-version|.
 
@@ -3108,6 +3181,10 @@ text...
 				:let cl[1] = 99		" won't work!
 <			You may want to make a copy of a list to avoid this.
 			See |deepcopy()|.
+
+							*E1391* *E1392*
+			Locking and unlocking object and class variables is
+			currently NOT supported.
 
 
 :unlo[ckvar][!] [depth] {name} ...		*:unlockvar* *:unlo* *E1246*
@@ -4777,6 +4854,38 @@ This is not allowed when the textlock is active:
 	- editing another file
 	- closing a window or quitting Vim
 	- etc.
+
+==============================================================================
+14. Vim script library					*vim-script-library*
+
+Vim comes bundled with a Vim script library, that can be used by runtime,
+script authors.  Currently, it only includes very few functions, but it may
+grow over time.
+
+The functions are available as |Vim9-script| as well as using legacy Vim
+script (to be used for non Vim 9.0 versions and Neovim).
+
+							*dist#vim* *dist#vim9*
+The functions make use of the autoloaded prefix "dist#vim" (for legacy Vim
+script and Neovim) and "dist#vim9" for Vim9 script.
+
+The following functions are available:
+
+dist#vim#IsSafeExecutable(filetype, executable) ~
+dist#vim9#IsSafeExecutable(filetype:string, executable:string): bool ~
+
+This function takes a filetype and an executable and checks whether it is safe
+to execute the given executable.  For security reasons users may not want to
+have Vim execute random executables or may have forbidden to do so for
+specific filetypes by setting the "<filetype>_exec" variable (|plugin_exec|).
+
+It returns |true| or |false| to indicate whether the plugin should run the given
+executable.  It takes the following arguments:
+
+	argument	type ~
+
+	filetype	string
+	executable	string
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

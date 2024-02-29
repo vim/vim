@@ -1,6 +1,7 @@
 " Vim autoload file for editing compressed files.
-" Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2016 Sep 28
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer: Bram Moolenaar <Bram@vim.org>
 
 " These functions are used by the gzip plugin.
 
@@ -9,12 +10,17 @@
 fun s:check(cmd)
   let name = substitute(a:cmd, '\(\S*\).*', '\1', '')
   if !exists("s:have_" . name)
+    " safety check, don't execute anything from the current directory
+    let f = dist#vim#IsSafeExecutable('gzip', name)
+    if !f
+      echoerr "Warning: NOT executing " .. name .. " from current directory!"
+    endif
     let e = executable(name)
     if e < 0
       let r = system(name . " --version")
       let e = (r !~ "not found" && r != "")
     endif
-    exe "let s:have_" . name . "=" . e
+    exe "let s:have_" . name . "=" . (e && f)
   endif
   exe "return s:have_" . name
 endfun

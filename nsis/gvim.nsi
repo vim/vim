@@ -397,6 +397,9 @@ Section "$(str_section_exe)" id_section_exe
 	SetOutPath $0\indent
 	File ${VIMRT}\indent\*.*
 
+	SetOutPath $0\keymap
+	File ${VIMRT}\keymap\*.*
+
 	SetOutPath $0\macros
 	File /r ${VIMRT}\macros\*.*
 
@@ -416,7 +419,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim.ico
 
 	SetOutPath $0\syntax
-	File /r ${VIMRT}\syntax\*.*
+	File /r /x testdir /x generator ${VIMRT}\syntax\*.*
 
 	SetOutPath $0\spell
 	File ${VIMRT}\spell\*.txt

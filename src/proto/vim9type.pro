@@ -2,6 +2,7 @@
 type_T *get_type_ptr(garray_T *type_gap);
 type_T *copy_type(type_T *type, garray_T *type_gap);
 void clear_type_list(garray_T *gap);
+void clear_func_type_list(garray_T *gap, type_T **func_type);
 type_T *alloc_type(type_T *type);
 void free_type(type_T *type);
 void set_tv_type(typval_T *tv, type_T *type);
@@ -35,4 +36,6 @@ type_T *get_member_type_from_stack(int count, int skip, cctx_T *cctx);
 char *vartype_name(vartype_T type);
 char *type_name(type_T *type, char **tofree);
 void f_typename(typval_T *argvars, typval_T *rettv);
+int check_typval_is_value(typval_T *tv);
+int check_type_is_value(type_T *type);
 /* vim: set ft=c : */

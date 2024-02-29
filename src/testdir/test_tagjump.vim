@@ -900,18 +900,33 @@ func Test_tag_stack()
   endfor
   call writefile(l, 'Xfoo', 'D')
 
-  " Jump to a tag when the tag stack is full. Oldest entry should be removed.
   enew
+  " Jump to a tag when the tag stack is full. Oldest entry should be removed.
   for i in range(10, 30)
     exe "tag var" .. i
   endfor
-  let l = gettagstack()
-  call assert_equal(20, l.length)
-  call assert_equal('var11', l.items[0].tagname)
+  let t = gettagstack()
+  call assert_equal(20, t.length)
+  call assert_equal('var11', t.items[0].tagname)
+  let full = deepcopy(t.items)
   tag var31
-  let l = gettagstack()
-  call assert_equal('var12', l.items[0].tagname)
-  call assert_equal('var31', l.items[19].tagname)
+  let t = gettagstack()
+  call assert_equal('var12', t.items[0].tagname)
+  call assert_equal('var31', t.items[19].tagname)
+
+  " Jump to a tag when the tag stack is full, but with user data this time.
+  call foreach(full, {i, item -> extend(item, {'user_data': $'udata{i}'})})
+  call settagstack(0, {'items': full})
+  let t = gettagstack()
+  call assert_equal(20, t.length)
+  call assert_equal('var11', t.items[0].tagname)
+  call assert_equal('udata0', t.items[0].user_data)
+  tag var31
+  let t = gettagstack()
+  call assert_equal('var12', t.items[0].tagname)
+  call assert_equal('udata1', t.items[0].user_data)
+  call assert_equal('var31', t.items[19].tagname)
+  call assert_false(has_key(t.items[19], 'user_data'))
 
   " Use tnext with a single match
   call assert_fails('tnext', 'E427:')

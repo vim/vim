@@ -3,7 +3,7 @@
 " Maintainer:   Debian Vim Maintainers <team+vim@tracker.debian.org>
 " Former Maintainers:   Michael Piefel <piefel@informatik.hu-berlin.de>
 "                       Stefano Zacchiroli <zack@debian.org>
-" Last Change:  2023 Jan 16
+" Last Change:  2023 Aug 18
 " License:      Vim License
 " URL:          https://salsa.debian.org/vim-team/vim-debian/blob/main/ftplugin/debchangelog.vim
 
@@ -122,7 +122,7 @@ function NewVersion()
     normal! 1G0
     call search(')')
     normal! h
-    " ':normal' doens't support key annotation (<c-a>) directly.
+    " ':normal' doesn't support key annotation (<c-a>) directly.
     " Vim's manual recommends using ':exe' to use key annotation indirectly (backslash-escaping needed though).
     exe "normal! \<c-a>"
     call setline(1, substitute(getline(1), '-\$\$', '-', ''))

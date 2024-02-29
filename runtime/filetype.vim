@@ -1,7 +1,8 @@
 " Vim support file to detect file types
 "
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 Jun 09
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Dec 06
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -183,6 +184,9 @@ au BufNewFile,BufRead *.atl,*.as		setf atlas
 " Atom is based on XML
 au BufNewFile,BufRead *.atom			setf xml
 
+" Authzed
+au BufNewFile,BufRead *.zed			setf authzed
+
 " Autoit v3
 au BufNewFile,BufRead *.au3			setf autoit
 
@@ -207,9 +211,6 @@ au BufNewFile,BufRead *.bi,*.bm			call dist#ft#FTbas()
 
 " Bass
 au BufNewFile,BufRead *.bass			setf bass
-
-" Visual Basic Script (close to Visual Basic) or Visual Basic .NET
-au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
 
 " IBasic file (similar to QBasic)
 au BufNewFile,BufRead *.iba,*.ibi		setf ibasic
@@ -244,7 +245,7 @@ au BufNewFile,BufRead *.bib			setf bib
 au BufNewFile,BufRead *.bst			setf bst
 
 " Bicep
-au BufNewFile,BufRead *.bicep			setf bicep
+au BufNewFile,BufRead *.bicep,*.bicepparam			setf bicep
 
 " BIND configuration
 " sudoedit uses namedXXXX.conf
@@ -316,6 +317,9 @@ au BufRead,BufNewFile *.chai			setf chaiscript
 " Chatito
 au BufNewFile,BufRead *.chatito			setf chatito
 
+" Chuck
+au BufNewFile,BufRead *.ck			setf chuck
+
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
 
@@ -341,10 +345,13 @@ au BufNewFile,BufRead *.cc
 au BufNewFile,BufRead *.cpp
 	\ if exists("cynlib_syntax_for_cpp")|setf cynlib|else|setf cpp|endif
 
+" Cypher query language
+au BufNewFile,BufRead *.cypher			setf cypher
+
 " C++
 au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.ipp,*.moc,*.tcc,*.inl setf cpp
 if has("fname_case")
-  au BufNewFile,BufRead *.C,*.H setf cpp
+	au BufNewFile,BufRead *.C,*.H if !&fileignorecase | setf cpp | endif
 endif
 
 " C++ 20 modules (clang)
@@ -493,6 +500,10 @@ if has("fname_case")
    au BufNewFile,BufRead *.EU,*.EW,*.EX,*.EXU,*.EXW  call dist#ft#EuphoriaCheck()
 endif
 
+" Execline (s6) scripts
+au BufNewFile,BufRead *s6*/\(up\|down\|run\|finish\)    setf execline
+au BufNewFile,BufRead s6-*                              setf execline
+
 " Lynx config files
 au BufNewFile,BufRead lynx.cfg			setf lynx
 
@@ -543,6 +554,7 @@ au BufNewFile,BufRead copyright
 " Debian Sources.list
 au BufNewFile,BufRead */etc/apt/sources.list		setf debsources
 au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
+au BufNewFile,BufRead */etc/apt/sources.list.d/*.sources	setf deb822sources
 
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
@@ -610,8 +622,12 @@ au BufNewFile,BufRead *.intr			setf dylanintr
 " Dylan
 au BufNewFile,BufRead *.dylan			setf dylan
 
-" Microsoft Module Definition
-au BufNewFile,BufRead *.def			setf def
+" Microsoft Module Definition or Modula-2
+au BufNewFile,BufRead *.def			call dist#ft#FTdef()
+
+if has("fname_case")
+  au BufNewFile,BufRead *.DEF			setf modula2
+endif
 
 " Dracula
 au BufNewFile,BufRead *.drac,*.drc,*lvs,*lpe	setf dracula
@@ -630,8 +646,8 @@ au BufNewFile,BufRead *.dsl
 " DTD (Document Type Definition for XML)
 au BufNewFile,BufRead *.dtd			setf dtd
 
-" DTS/DSTI (device tree files)
-au BufNewFile,BufRead *.dts,*.dtsi		setf dts
+" DTS/DSTI/DTSO (device tree files)
+au BufNewFile,BufRead *.dts,*.dtsi,*.dtso,*.its	setf dts
 
 " EDIF (*.edf,*.edif,*.edn,*.edo) or edn
 au BufNewFile,BufRead *.ed\(f\|if\|o\)		setf edif
@@ -723,16 +739,19 @@ au BufNewFile,BufRead auto.master		setf conf
 au BufNewFile,BufRead *.mas,*.master		setf master
 
 " Forth
-au BufNewFile,BufRead *.ft,*.fth		setf forth
+au BufNewFile,BufRead *.ft,*.fth,*.4th		setf forth
 
 " Reva Forth
 au BufNewFile,BufRead *.frt			setf reva
 
 " Fortran
 if has("fname_case")
-  au BufNewFile,BufRead *.F,*.FOR,*.FPP,*.FTN,*.F77,*.F90,*.F95,*.F03,*.F08	 setf fortran
+  au BufNewFile,BufRead *.F,*.FOR,*.FPP,*.FTN,*.F77,*.F90,*.F95,*.F03,*.F08	setf fortran
 endif
-au BufNewFile,BufRead   *.f,*.for,*.fortran,*.fpp,*.ftn,*.f77,*.f90,*.f95,*.f03,*.f08  setf fortran
+au BufNewFile,BufRead *.for,*.fortran,*.fpp,*.ftn,*.f77,*.f90,*.f95,*.f03,*.f08	setf fortran
+
+" Fortran or Forth
+au BufNewFile,BufRead *.f			call dist#ft#FTf()
 
 " Framescript
 au BufNewFile,BufRead *.fsl			setf framescript
@@ -812,6 +831,9 @@ au BufNewFile,BufRead *.gleam			setf gleam
 
 " GLSL
 au BufNewFile,BufRead *.glsl			setf glsl
+
+" GN (generate ninja) files
+au BufNewFile,BufRead *.gn,*.gni		setf gn
 
 " GP scripts (2.0 and onward)
 au BufNewFile,BufRead *.gp,.gprc		setf gp
@@ -1009,7 +1031,7 @@ au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
 au BufNewFile,BufRead *.4gl,*.4gh,*.m4gl	setf fgl
 
 " .INI file for MSDOS
-au BufNewFile,BufRead *.ini			setf dosini
+au BufNewFile,BufRead *.ini,*.INI		setf dosini
 
 " SysV Inittab
 au BufNewFile,BufRead inittab			setf inittab
@@ -1025,6 +1047,9 @@ au BufNewFile,BufRead *.jal,*.JAL		setf jal
 
 " Jam
 au BufNewFile,BufRead *.jpl,*.jpr		setf jam
+
+" Janet
+au BufNewFile,BufRead *.janet			setf janet
 
 " Java
 au BufNewFile,BufRead *.java,*.jav		setf java
@@ -1089,6 +1114,9 @@ au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
 
+" Just
+au BufNewFile,BufRead [jJ]ustfile,.justfile,*.just setf just
+
 " KDL
 au BufNewFile,BufRead *.kdl			setf kdl
 
@@ -1113,7 +1141,7 @@ au BufNewFile,BufRead *.kt,*.ktm,*.kts		setf kotlin
 au BufNewFile,BufRead *.ks			setf kscript
 
 " Kconfig
-au BufNewFile,BufRead Kconfig,Kconfig.debug	setf kconfig
+au BufNewFile,BufRead Kconfig,Kconfig.debug,Config.in	setf kconfig
 
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
@@ -1180,6 +1208,9 @@ endif
 " SBCL implementation of Common Lisp
 au BufNewFile,BufRead sbclrc,.sbclrc		setf lisp
 
+" Liquidsoap
+au BufNewFile,BufRead *.liq			setf liquidsoap
+
 " Liquid
 au BufNewFile,BufRead *.liquid			setf liquid
 
@@ -1212,6 +1243,9 @@ au BufNewFile,BufRead *.lua			setf lua
 
 " Luau
 au BufNewFile,BufRead *.luau		setf luau
+
+" Luau config
+au BufNewFile,BufRead .luaurc		setf jsonc
 
 " Luacheck
 au BufNewFile,BufRead .luacheckrc		setf lua
@@ -1315,9 +1349,6 @@ au BufNewFile,BufRead *.mmp			setf mmp
 " ABB Rapid, Modula-2, Modsim III or LambdaProlog
 au BufNewFile,BufRead *.mod\c			call dist#ft#FTmod()
 
-" Modula-2  (.md removed in favor of Markdown, see dist#ft#FTmod for *.MOD)
-au BufNewFile,BufRead *.m2,*.DEF,*.mi		setf modula2
-
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3
 
@@ -1367,11 +1398,18 @@ au BufNewFile,BufRead *.rc,*.rch
 	\   setf rc |
 	\ endif
 
+" Mojo
+" Mojo files use either .mojo or .🔥 as extension
+au BufNewFile,BufRead *.mojo,*.🔥		setf mojo
+
 " MuPAD source
 au BufRead,BufNewFile *.mu			setf mupad
 
 " Mush
 au BufNewFile,BufRead *.mush			setf mush
+
+" Mustache
+au BufNewFile,BufRead *.mustache		setf mustache
 
 " Mutt setup file (also for Muttng)
 au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
@@ -1406,6 +1444,9 @@ au BufNewFile,BufRead *.ninja			setf ninja
 " Nix
 au BufRead,BufNewFile *.nix			setf nix
 
+" Norg
+au BufNewFile,BufRead *.norg		setf norg
+
 " NPM RC file
 au BufNewFile,BufRead npmrc,.npmrc		setf dosini
 
@@ -1433,10 +1474,13 @@ au BufNewFile,BufRead *.nse			setf lua
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
 " Nu
-au BufNewFile,BufRead {env,config}.nu		setf nu
+au BufNewFile,BufRead *.nu		setf nu
 
 " Oblivion Language and Oblivion Script Extender
 au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
+
+" Objdump
+au BufNewFile,BufRead *.objdump,*.cppobjdump  setf objdump
 
 " OCaml
 au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
@@ -1485,8 +1529,11 @@ au BufNewFile,BufRead *.nmconnection			setf confini
 " Pacman hooks
 au BufNewFile,BufRead *.hook
 	\ if getline(1) == '[Trigger]' |
-	\   setf conf |
+	\   setf confini |
 	\ endif
+
+" Pacman log
+au BufNewFile,BufRead pacman.log			setf pacmanlog
 
 " Pam conf
 au BufNewFile,BufRead */etc/pam.conf			setf pamconf
@@ -1658,8 +1705,8 @@ au BufNewFile,BufRead .procmail,.procmailrc	setf procmail
 " Progress or CWEB
 au BufNewFile,BufRead *.w			call dist#ft#FTprogress_cweb()
 
-" Progress or assembly
-au BufNewFile,BufRead *.i			call dist#ft#FTprogress_asm()
+" Progress or assembly or Swig
+au BufNewFile,BufRead *.i			call dist#ft#FTi()
 
 " Progress or Pascal
 au BufNewFile,BufRead *.p			call dist#ft#FTprogress_pascal()
@@ -1706,6 +1753,9 @@ au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 
 " QL
 au BufRead,BufNewFile *.ql,*.qll		setf ql
+
+" QML
+au BufRead,BufNewFile *.qml,*.qbs			setf qml
 
 " QMLdir
 au BufRead,BufNewFile qmldir			setf qmldir
@@ -1958,7 +2008,7 @@ au BufNewFile,BufRead catalog			setf catalog
 " Gentoo ebuilds, Arch Linux PKGBUILDs and Alpine Linux APKBUILDs are actually
 " bash scripts.
 " NOTE: Patterns ending in a star are further down, these have lower priority.
-au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD,*.bats call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
 
@@ -1977,9 +2027,8 @@ au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFile
 " (patterns ending in a start further below)
 au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
 
-" Zig and Zir (Zig Intermediate Representation)
-au BufNewFile,BufRead *.zig			setf zig
-au BufNewFile,BufRead *.zir			setf zir
+" Zig and Zig Object Notation (ZON)
+au BufNewFile,BufRead *.zig,*.zon		setf zig
 
 " Zserio
 au BufNewFile,BufRead *.zs			setf zserio
@@ -2150,6 +2199,9 @@ au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 
 " Swift Intermediate Language or SILE
 au BufNewFile,BufRead *.sil			call dist#ft#FTsil()
+
+" Swig
+au BufNewFile,BufRead *.swg,*.swig setf swig
 
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
@@ -2369,7 +2421,7 @@ au BufNewFile,BufRead *.tape			setf vhs
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl
 
 " Vim script
-au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim
+au BufNewFile,BufRead *.vim,.exrc,_exrc		setf vim
 
 " Viminfo file
 au BufNewFile,BufRead .viminfo,_viminfo		setf viminfo
@@ -2382,10 +2434,31 @@ au BufRead,BufNewFile *.hw,*.module,*.pkg
 	\   setf virata |
 	\ endif
 
-" Visual Basic (also uses *.bas) or FORM
+" Visual Basic (see also *.bas *.cls)
+
+" Visual Basic or FORM
 au BufNewFile,BufRead *.frm			call dist#ft#FTfrm()
 
-" SaxBasic is close to Visual Basic
+" Visual Basic
+" user control, ActiveX document form, active designer, property page
+au BufNewFile,BufRead *.ctl,*.dob,*.dsr,*.pag	setf vb
+
+" Visual Basic or Vimball Archiver
+au BufNewFile,BufRead *.vba			call dist#ft#FTvba()
+
+" Visual Basic Project
+au BufNewFile,BufRead *.vbp			setf dosini
+
+" VBScript (close to Visual Basic)
+au BufNewFile,BufRead *.vbs			setf vb
+
+" Visual Basic .NET (close to Visual Basic)
+au BufNewFile,BufRead *.vb			setf vb
+
+" Visual Studio Macro
+au BufNewFile,BufRead *.dsm			setf vb
+
+" SaxBasic (close to Visual Basic)
 au BufNewFile,BufRead *.sba			setf vb
 
 " Vgrindefs file
@@ -2401,8 +2474,7 @@ au BufNewFile,BufRead *.vroom			setf vroom
 au BufNewFile,BufRead *.vue			setf vue
 
 " WebAssembly
-au BufNewFile,BufRead *.wat			setf wat
-au BufNewFile,BufRead *.wast		setf wast
+au BufNewFile,BufRead *.wat,*.wast		setf wat
 
 " WebAssembly Interface Type (WIT)
 au BufNewFile,BufRead *.wit			setf wit
@@ -2483,6 +2555,9 @@ au BufNewFile,BufRead */etc/xinetd.conf		setf xinetd
 
 " XS Perl extension interface language
 au BufNewFile,BufRead *.xs			setf xs
+
+" X compose file
+au BufNewFile,BufRead .XCompose,Compose	setf xcompose
 
 " X resources file
 au BufNewFile,BufRead .Xdefaults,.Xpdefaults,.Xresources,xdm-config,*.ad setf xdefaults
@@ -2705,7 +2780,7 @@ au! BufNewFile,BufRead *jarg*
 au BufNewFile,BufRead *.properties_??_??_*	call s:StarSetf('jproperties')
 
 " Kconfig
-au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
+au BufNewFile,BufRead Kconfig.*,Config.in.*	call s:StarSetf('kconfig')
 
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf*		call s:StarSetf('lilo')
@@ -2817,6 +2892,9 @@ au BufNewFile,BufRead XF86Config*
 	\|  let b:xf86conf_xfree86_version = 3
 	\|endif
 	\|call s:StarSetf('xf86conf')
+
+" XKB
+au BufNewFile,BufRead */usr/share/X11/xkb/{compat,geometry,keycodes,symbols,types}/*	call s:StarSetf('xkb')
 
 " X11 xmodmap
 au BufNewFile,BufRead *xmodmap*			call s:StarSetf('xmodmap')

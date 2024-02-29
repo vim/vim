@@ -2,7 +2,8 @@
 " Language: R Markdown file
 " Maintainer: Jakson Alves de Aquino <jalvesaq@gmail.com>
 " Homepage: https://github.com/jalvesaq/R-Vim-runtime
-" Last Change:	Mon Feb 27, 2023  07:15PM
+" Last Change:	2023 May 29  06:31AM
+"		2024 Jan 14 by Vim Project (browsefilter)
 " Original work by Alex Zvoleff (adjusted from R help for rmd by Michel Kuhlmann)
 
 " Only do this when not yet done for this buffer
@@ -32,12 +33,18 @@ function FormatRmd()
   return 1
 endfunction
 
+let s:last_line = 0
 function SetRmdCommentStr()
-    if (search("^[ \t]*```[ ]*{r", "bncW") > search("^[ \t]*```$", "bncW")) || ((search('^---$', 'Wn') || search('^\.\.\.$', 'Wn')) && search('^---$', 'bnW'))
-        set commentstring=#\ %s
-    else
-        set commentstring=<!--\ %s\ -->
-    endif
+  if line('.') == s:last_line
+    return
+  endif
+  let s:last_line = line('.')
+
+  if (search("^[ \t]*```[ ]*{r", "bncW") > search("^[ \t]*```$", "bncW")) || ((search('^---$', 'Wn') || search('^\.\.\.$', 'Wn')) && search('^---$', 'bnW'))
+    set commentstring=#\ %s
+  else
+    set commentstring=<!--\ %s\ -->
+  endif
 endfunction
 
 " If you do not want both 'comments' and 'commentstring' dynamically defined,
@@ -58,8 +65,12 @@ runtime ftplugin/pandoc.vim
 let b:did_ftplugin = 1
 
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-  let b:browsefilter = "R Source Files (*.R *.Rnw *.Rd *.Rmd *.Rrst *.qmd)\t*.R;*.Rnw;*.Rd;*.Rmd;*.Rrst;*.qmd\n" .
-        \ "All Files (*.*)\t*.*\n"
+  let b:browsefilter = "R Source Files (*.R *.Rnw *.Rd *.Rmd *.Rrst *.qmd)\t*.R;*.Rnw;*.Rd;*.Rmd;*.Rrst;*.qmd\n"
+  if has("win32")
+    let b:browsefilter .= "All Files (*.*)\t*\n"
+  else
+    let b:browsefilter .= "All Files (*)\t*\n"
+  endif
 endif
 
 if exists('b:undo_ftplugin')

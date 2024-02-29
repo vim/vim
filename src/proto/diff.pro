@@ -30,4 +30,5 @@ linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1);
 linenr_T diff_lnum_win(linenr_T lnum, win_T *wp);
 void f_diff_filler(typval_T *argvars, typval_T *rettv);
 void f_diff_hlID(typval_T *argvars, typval_T *rettv);
+void f_diff(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	C
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 Mar 08
+" Maintainer:	The Vim Project <https://github.com/vim/vim>
+" Last Change:	2023 Aug 10
+" Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -443,6 +444,14 @@ syn match	cUserLabel	display "\I\i*" contained
 syn match	cBitField	display "^\s*\zs\I\i*\s*:\s*[1-9]"me=e-1 contains=cType
 syn match	cBitField	display ";\s*\zs\I\i*\s*:\s*[1-9]"me=e-1 contains=cType
 
+if exists("c_functions")
+  syn match cFunction "\<\h\w*\ze\_s*("
+ endif
+
+if exists("c_function_pointers")
+  syn match cFunctionPointer "\%((\s*\*\s*\)\@<=\h\w*\ze\s*)\_s*(.*)"
+endif
+
 if exists("c_minlines")
   let b:c_minlines = c_minlines
 else
@@ -512,6 +521,8 @@ hi def link cCppOutSkip		cCppOutIf2
 hi def link cCppInElse2		cCppOutIf2
 hi def link cCppOutIf2		cCppOut
 hi def link cCppOut		Comment
+hi def link cFunction		Function
+hi def link cFunctionPointer	Function
 
 let b:current_syntax = "c"
 

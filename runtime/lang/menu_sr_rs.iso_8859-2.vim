@@ -12,7 +12,7 @@ let did_menu_trans = 1
 let s:keepcpo= &cpo
 set cpo&vim
 
-scriptencoding iso8859-2
+scriptencoding iso-8859-2
 
 " Help menu
 menutrans &Help		      Pomo&æ
@@ -31,7 +31,7 @@ menutrans &About	      &O\ programu
 menutrans &File			    &Fajl
 menutrans &Open\.\.\.<Tab>:e	    &Otvori\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Podeli-otvori\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otvori\ karticu\.\.\.<Tab>:tabnew
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Otvori\ karticu\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew	    &Nov<Tab>:enew
 menutrans &Close<Tab>:close	    &Zatvori<Tab>:close
 menutrans &Save<Tab>:w		    &Saèuvaj<Tab>:w

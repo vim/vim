@@ -424,7 +424,7 @@ func Test_breakindent12()
 	\ "~               ",
 	\ ]
   call s:compare_lines(expect, lines)
-  call s:close_windows('set nuw=4 listchars=')
+  call s:close_windows('set nuw=4 listchars&')
 endfunc
 
 func Test_breakindent12_vartabs()
@@ -439,7 +439,7 @@ func Test_breakindent12_vartabs()
 	\ "~               ",
 	\ ]
   call s:compare_lines(expect, lines)
-  call s:close_windows('set nuw=4 listchars= vts&')
+  call s:close_windows('set nuw=4 listchars& vts&')
 endfunc
 
 func Test_breakindent13()
@@ -733,7 +733,7 @@ func Test_breakindent20_list()
 	\ "shall make no law   ",
 	\ ]
   call s:compare_lines(expect, lines)
-  " set minimum indent
+  " set minimum text width
   setl briopt=min:5
   redraw!
   let lines = s:screen_lines2(1, 6, 20)
@@ -897,7 +897,8 @@ func Test_cursor_position_with_showbreak()
   let lines =<< trim END
       vim9script
       &signcolumn = 'yes'
-      &showbreak = '+ '
+      &showbreak = '++'
+      &breakindentopt = 'shift:2'
       var leftcol: number = win_getid()->getwininfo()->get(0, {})->get('textoff')
       repeat('x', &columns - leftcol - 1)->setline(1)
       'second line'->setline(2)
@@ -906,7 +907,41 @@ func Test_cursor_position_with_showbreak()
   let buf = RunVimInTerminal('-S XscriptShowbreak', #{rows: 6})
 
   call term_sendkeys(buf, "AX")
-  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak', {})
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_1', {})
+  " No line wraps, so changing 'showbreak' should lead to the same screen.
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal showbreak=+\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_1', {})
+  " No line wraps, so setting 'breakindent' should lead to the same screen.
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal breakindent\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_1', {})
+  " The first line now wraps because of "eol" in 'listchars'.
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal list\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_2', {})
+  call term_sendkeys(buf, "\<C-\>\<C-O>:setlocal nobreakindent\<CR>")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_visual_starts_before_skipcol()
+  CheckScreendump
+
+  let lines =<< trim END
+    1new
+    setlocal breakindent
+    call setline(1, "\t" .. join(range(100)))
+  END
+  call writefile(lines, 'XvisualStartsBeforeSkipcol', 'D')
+  let buf = RunVimInTerminal('-S XvisualStartsBeforeSkipcol', #{rows: 6})
+
+  call term_sendkeys(buf, "v$")
+  call VerifyScreenDump(buf, 'Test_visual_starts_before_skipcol_1', {})
+  call term_sendkeys(buf, "\<Esc>:setlocal showbreak=+++\<CR>gv")
+  call VerifyScreenDump(buf, 'Test_visual_starts_before_skipcol_2', {})
+  call term_sendkeys(buf, "\<Esc>:setlocal breakindentopt+=sbr\<CR>gv")
+  call VerifyScreenDump(buf, 'Test_visual_starts_before_skipcol_3', {})
+  call term_sendkeys(buf, "\<Esc>:setlocal nobreakindent\<CR>gv")
+  call VerifyScreenDump(buf, 'Test_visual_starts_before_skipcol_4', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -1051,5 +1086,83 @@ func Test_linebreak_list()
   bwipe!
 endfunc
 
+func Test_breakindent_change_display_uhex()
+  call s:test_windows('setl briopt=min:0 list listchars=eol:$')
+  redraw!
+  let lines = s:screen_lines(line('.'), 20)
+  let expect = [
+        \ "^Iabcdefghijklmnopqr",
+        \ "  stuvwxyzABCDEFGHIJ",
+        \ "  KLMNOP$           "
+        \ ]
+  call s:compare_lines(expect, lines)
+  set display+=uhex
+  redraw!
+  let lines = s:screen_lines(line('.'), 20)
+  let expect = [
+        \ "<09>abcdefghijklmnop",
+        \ "    qrstuvwxyzABCDEF",
+        \ "    GHIJKLMNOP$     "
+        \ ]
+  call s:compare_lines(expect, lines)
+  set display&
+
+  call s:close_windows()
+endfunc
+
+func Test_breakindent_list_split()
+  10new
+  61vsplit
+  setlocal tabstop=8 breakindent list listchars=tab:<->,eol:$
+  put =s:input
+  30vsplit
+  setlocal listchars=eol:$
+  let expect = [
+      \ "^IabcdefghijklmnopqrstuvwxyzAB|<------>abcdefghijklmnopqrstuv",
+      \ "  CDEFGHIJKLMNOP$             |        wxyzABCDEFGHIJKLMNOP$ ",
+      \ "~                             |~                             "
+      \ ]
+  redraw!
+  let lines = s:screen_lines(line('.'), 61)
+  call s:compare_lines(expect, lines)
+  wincmd p
+  redraw!
+  let lines = s:screen_lines(line('.'), 61)
+  call s:compare_lines(expect, lines)
+
+  bwipe!
+endfunc
+
+func Test_breakindent_min_with_signcol()
+  call s:test_windows('setl briopt=min:15 signcolumn=yes')
+  redraw!
+  let expect = [
+        \ "      abcdefghijklmn",
+        \ "     opqrstuvwxyzABC",
+        \ "     DEFGHIJKLMNOP  "
+        \ ]
+  let lines = s:screen_lines(line('.'), 20)
+  call s:compare_lines(expect, lines)
+  setl briopt=min:17
+  redraw!
+  let expect = [
+        \ "      abcdefghijklmn",
+        \ "   opqrstuvwxyzABCDE",
+        \ "   FGHIJKLMNOP      "
+        \ ]
+  let lines = s:screen_lines(line('.'), 20)
+  call s:compare_lines(expect, lines)
+  setl briopt=min:19
+  redraw!
+  let expect = [
+        \ "      abcdefghijklmn",
+        \ "  opqrstuvwxyzABCDEF",
+        \ "  GHIJKLMNOP        "
+        \ ]
+  let lines = s:screen_lines(line('.'), 20)
+  call s:compare_lines(expect, lines)
+
+  call s:close_windows()
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -17,9 +17,9 @@
  * ScreenLines[off]  Contains a copy of the whole screen, as it is currently
  *		     displayed (excluding text written by external commands).
  * ScreenAttrs[off]  Contains the associated attributes.
- * ScreenCols[off]   Contains the byte offset in the line. -1 means not
- *		     available (below last line), MAXCOL means after the end
- *		     of the line.
+ * ScreenCols[off]   Contains the virtual columns in the line. -1 means not
+ *		     available or before buffer text, MAXCOL means after the
+ *		     end of the line.
  *
  * LineOffset[row]   Contains the offset into ScreenLines*[], ScreenAttrs[]
  *		     and ScreenCols[] for each line.
@@ -743,7 +743,7 @@ screen_line(
 
 	ScreenCols[off_to] = ScreenCols[off_from];
 	if (char_cells == 2)
-	    ScreenCols[off_to + 1] = ScreenCols[off_from];
+	    ScreenCols[off_to + 1] = ScreenCols[off_from + 1];
 
 	off_to += char_cells;
 	off_from += char_cells;
@@ -1667,6 +1667,8 @@ screen_start_highlight(int attr)
      */
     if (aep != NULL)
     {
+	if (aep->ae_u.cterm.font > 0 && aep->ae_u.cterm.font < 12)
+		term_font(aep->ae_u.cterm.font);
 #ifdef FEAT_TERMGUICOLORS
 	// When 'termguicolors' is set but fg or bg is unset,
 	// fall back to the cterm colors.   This helps for SpellBad,
@@ -2567,6 +2569,25 @@ give_up:
 	    new_LineOffset[new_row] = new_row * Columns;
 	    new_LineWraps[new_row] = FALSE;
 
+	    (void)vim_memset(new_ScreenLines + new_row * Columns,
+				  ' ', (size_t)Columns * sizeof(schar_T));
+	    if (enc_utf8)
+	    {
+		(void)vim_memset(new_ScreenLinesUC + new_row * Columns,
+				   0, (size_t)Columns * sizeof(u8char_T));
+		for (int i = 0; i < p_mco; ++i)
+		    (void)vim_memset(new_ScreenLinesC[i]
+						      + new_row * Columns,
+				   0, (size_t)Columns * sizeof(u8char_T));
+	    }
+	    if (enc_dbcs == DBCS_JPNU)
+		(void)vim_memset(new_ScreenLines2 + new_row * Columns,
+				   0, (size_t)Columns * sizeof(schar_T));
+	    (void)vim_memset(new_ScreenAttrs + new_row * Columns,
+				    0, (size_t)Columns * sizeof(sattr_T));
+	    (void)vim_memset(new_ScreenCols + new_row * Columns,
+				    0, (size_t)Columns * sizeof(colnr_T));
+
 	    /*
 	     * If the screen is not going to be cleared, copy as much as
 	     * possible from the old screen to the new one and clear the rest
@@ -2575,24 +2596,6 @@ give_up:
 	     */
 	    if (!doclear)
 	    {
-		(void)vim_memset(new_ScreenLines + new_row * Columns,
-				      ' ', (size_t)Columns * sizeof(schar_T));
-		if (enc_utf8)
-		{
-		    (void)vim_memset(new_ScreenLinesUC + new_row * Columns,
-				       0, (size_t)Columns * sizeof(u8char_T));
-		    for (int i = 0; i < p_mco; ++i)
-			(void)vim_memset(new_ScreenLinesC[i]
-							  + new_row * Columns,
-				       0, (size_t)Columns * sizeof(u8char_T));
-		}
-		if (enc_dbcs == DBCS_JPNU)
-		    (void)vim_memset(new_ScreenLines2 + new_row * Columns,
-				       0, (size_t)Columns * sizeof(schar_T));
-		(void)vim_memset(new_ScreenAttrs + new_row * Columns,
-					0, (size_t)Columns * sizeof(sattr_T));
-		(void)vim_memset(new_ScreenCols + new_row * Columns,
-					0, (size_t)Columns * sizeof(colnr_T));
 		old_row = new_row + (screen_Rows - Rows);
 		if (old_row >= 0 && ScreenLines != NULL)
 		{
@@ -4462,16 +4465,7 @@ fillchar_status(int *attr, win_T *wp)
 	*attr = HL_ATTR(HLF_SNC);
 	fill = wp->w_fill_chars.stlnc;
     }
-    // Use fill when there is highlighting, and highlighting of current
-    // window differs, or the fillchars differ, or this is not the
-    // current window
-    if (*attr != 0 && ((HL_ATTR(HLF_S) != HL_ATTR(HLF_SNC)
-			|| wp != curwin || ONE_WINDOW)
-		    || (wp->w_fill_chars.stl != wp->w_fill_chars.stlnc)))
-	return fill;
-    if (wp == curwin)
-	return '^';
-    return '=';
+    return fill;
 }
 
 /*
@@ -4527,7 +4521,7 @@ messaging(void)
     void
 comp_col(void)
 {
-    int last_has_status = (p_ls == 2 || (p_ls == 1 && !ONE_WINDOW));
+    int last_has_status = last_stl_height(FALSE) > 0;
 
     sc_col = 0;
     ru_col = 0;
@@ -4658,6 +4652,54 @@ get_encoded_char_adv(char_u **p)
     return mb_ptr2char_adv(p);
 }
 
+struct charstab
+{
+    int	    *cp;
+    char    *name;
+};
+static fill_chars_T fill_chars;
+static struct charstab filltab[] =
+{
+    {&fill_chars.stl,		"stl"},
+    {&fill_chars.stlnc,		"stlnc"},
+    {&fill_chars.vert,		"vert"},
+    {&fill_chars.fold,		"fold"},
+    {&fill_chars.foldopen,	"foldopen"},
+    {&fill_chars.foldclosed,	"foldclose"},
+    {&fill_chars.foldsep,	"foldsep"},
+    {&fill_chars.diff,		"diff"},
+    {&fill_chars.eob,		"eob"},
+    {&fill_chars.lastline,	"lastline"},
+};
+static lcs_chars_T lcs_chars;
+static struct charstab lcstab[] =
+{
+    {&lcs_chars.eol,		"eol"},
+    {&lcs_chars.ext,		"extends"},
+    {&lcs_chars.nbsp,		"nbsp"},
+    {&lcs_chars.prec,		"precedes"},
+    {&lcs_chars.space,		"space"},
+    {&lcs_chars.tab2,		"tab"},
+    {&lcs_chars.trail,		"trail"},
+    {&lcs_chars.lead,		"lead"},
+#ifdef FEAT_CONCEAL
+    {&lcs_chars.conceal,	"conceal"},
+#else
+    {NULL,			"conceal"},
+#endif
+    {NULL,			"multispace"},
+    {NULL,			"leadmultispace"},
+};
+
+    static char *
+field_value_err(char *errbuf, size_t errbuflen, char *fmt, char *field)
+{
+    if (errbuf == NULL)
+	return "";
+    vim_snprintf(errbuf, errbuflen, _(fmt), field);
+    return errbuf;
+}
+
 /*
  * Handle setting 'listchars' or 'fillchars'.
  * "value" points to either the global or the window-local value.
@@ -4667,9 +4709,10 @@ get_encoded_char_adv(char_u **p)
  * Returns error message, NULL if it's OK.
  */
     static char *
-set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
+set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply,
+						char *errbuf, size_t errbuflen)
 {
-    int	    round, i, len, len2, entries;
+    int	    round, i, len, entries;
     char_u  *p, *s;
     int	    c1 = 0, c2 = 0, c3 = 0;
     char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
@@ -4677,45 +4720,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
 
-    struct charstab
-    {
-	int	*cp;
-	char	*name;
-    };
     struct charstab *tab;
-
-    static fill_chars_T fill_chars;
-    static struct charstab filltab[] =
-    {
-	{&fill_chars.stl,	"stl"},
-	{&fill_chars.stlnc,	"stlnc"},
-	{&fill_chars.vert,	"vert"},
-	{&fill_chars.fold,	"fold"},
-	{&fill_chars.foldopen,	"foldopen"},
-	{&fill_chars.foldclosed, "foldclose"},
-	{&fill_chars.foldsep,	"foldsep"},
-	{&fill_chars.diff,	"diff"},
-	{&fill_chars.eob,	"eob"},
-	{&fill_chars.lastline,	"lastline"},
-    };
-
-    static lcs_chars_T lcs_chars;
-    struct charstab lcstab[] =
-    {
-	{&lcs_chars.eol,	"eol"},
-	{&lcs_chars.ext,	"extends"},
-	{&lcs_chars.nbsp,	"nbsp"},
-	{&lcs_chars.prec,	"precedes"},
-	{&lcs_chars.space,	"space"},
-	{&lcs_chars.tab2,	"tab"},
-	{&lcs_chars.trail,	"trail"},
-	{&lcs_chars.lead,	"lead"},
-#ifdef FEAT_CONCEAL
-	{&lcs_chars.conceal,	"conceal"},
-#else
-	{NULL,			"conceal"},
-#endif
-    };
 
     if (is_listchars)
     {
@@ -4734,7 +4739,7 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
     }
 
     // first round: check for valid value, second round: assign values
-    for (round = 0; round <= 1; ++round)
+    for (round = 0; round <= (apply ? 1 : 0); ++round)
     {
 	if (round > 0)
 	{
@@ -4785,58 +4790,10 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	    for (i = 0; i < entries; ++i)
 	    {
 		len = (int)STRLEN(tab[i].name);
-		if (STRNCMP(p, tab[i].name, len) == 0
-			&& p[len] == ':'
-			&& p[len + 1] != NUL)
-		{
-		    c2 = c3 = 0;
-		    s = p + len + 1;
-		    c1 = get_encoded_char_adv(&s);
-		    if (char2cells(c1) > 1)
-			return e_invalid_argument;
-		    if (tab[i].cp == &lcs_chars.tab2)
-		    {
-			if (*s == NUL)
-			    return e_invalid_argument;
-			c2 = get_encoded_char_adv(&s);
-			if (char2cells(c2) > 1)
-			    return e_invalid_argument;
-			if (!(*s == ',' || *s == NUL))
-			{
-			    c3 = get_encoded_char_adv(&s);
-			    if (char2cells(c3) > 1)
-				return e_invalid_argument;
-			}
-		    }
+		if (!(STRNCMP(p, tab[i].name, len) == 0 && p[len] == ':'))
+		    continue;
 
-		    if (*s == ',' || *s == NUL)
-		    {
-			if (round > 0)
-			{
-			    if (tab[i].cp == &lcs_chars.tab2)
-			    {
-				lcs_chars.tab1 = c1;
-				lcs_chars.tab2 = c2;
-				lcs_chars.tab3 = c3;
-			    }
-			    else if (tab[i].cp != NULL)
-				*(tab[i].cp) = c1;
-
-			}
-			p = s;
-			break;
-		    }
-		}
-	    }
-
-	    if (i == entries)
-	    {
-		len = (int)STRLEN("multispace");
-		len2 = (int)STRLEN("leadmultispace");
-		if (is_listchars
-			&& STRNCMP(p, "multispace", len) == 0
-			&& p[len] == ':'
-			&& p[len + 1] != NUL)
+		if (is_listchars && strcmp(tab[i].name, "multispace") == 0)
 		{
 		    s = p + len + 1;
 		    if (round == 0)
@@ -4848,12 +4805,16 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			{
 			    c1 = get_encoded_char_adv(&s);
 			    if (char2cells(c1) > 1)
-				return e_invalid_argument;
+				return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name);
 			    ++multispace_len;
 			}
 			if (multispace_len == 0)
 			    // lcs-multispace cannot be an empty string
-			    return e_invalid_argument;
+			    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name);
 			p = s;
 		    }
 		    else
@@ -4868,14 +4829,12 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			}
 			p = s;
 		    }
+		    break;
 		}
 
-		else if (is_listchars
-			&& STRNCMP(p, "leadmultispace", len2) == 0
-			&& p[len2] == ':'
-			&& p[len2 + 1] != NUL)
+		if (is_listchars && strcmp(tab[i].name, "leadmultispace") == 0)
 		{
-		    s = p + len2 + 1;
+		    s = p + len + 1;
 		    if (round == 0)
 		    {
 			// get length of lcs-leadmultispace string in first
@@ -4886,12 +4845,16 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			{
 			    c1 = get_encoded_char_adv(&s);
 			    if (char2cells(c1) > 1)
-				return e_invalid_argument;
+				return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name);
 			    ++lead_multispace_len;
 			}
 			if (lead_multispace_len == 0)
 			    // lcs-leadmultispace cannot be an empty string
-			    return e_invalid_argument;
+			    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name);
 			p = s;
 		    }
 		    else
@@ -4906,10 +4869,66 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 			}
 			p = s;
 		    }
+		    break;
+		}
+
+		c2 = c3 = 0;
+		s = p + len + 1;
+		if (*s == NUL)
+		    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name);
+		c1 = get_encoded_char_adv(&s);
+		if (char2cells(c1) > 1)
+		    return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name);
+		if (tab[i].cp == &lcs_chars.tab2)
+		{
+		    if (*s == NUL)
+			return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name);
+		    c2 = get_encoded_char_adv(&s);
+		    if (char2cells(c2) > 1)
+			return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name);
+		    if (!(*s == ',' || *s == NUL))
+		    {
+			c3 = get_encoded_char_adv(&s);
+			if (char2cells(c3) > 1)
+			    return field_value_err(errbuf, errbuflen,
+					 e_wrong_character_width_for_field_str,
+					 tab[i].name);
+		    }
+		}
+
+		if (*s == ',' || *s == NUL)
+		{
+		    if (round > 0)
+		    {
+			if (tab[i].cp == &lcs_chars.tab2)
+			{
+			    lcs_chars.tab1 = c1;
+			    lcs_chars.tab2 = c2;
+			    lcs_chars.tab3 = c3;
+			}
+			else if (tab[i].cp != NULL)
+			    *(tab[i].cp) = c1;
+
+		    }
+		    p = s;
+		    break;
 		}
 		else
-		    return e_invalid_argument;
+		    return field_value_err(errbuf, errbuflen,
+				    e_wrong_number_of_characters_for_field_str,
+				    tab[i].name);
 	    }
+
+	    if (i == entries)
+		return e_invalid_argument;
 
 	    if (*p == ',')
 		++p;
@@ -4929,11 +4948,6 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
 	    wp->w_fill_chars = fill_chars;
 	}
     }
-    else if (is_listchars)
-    {
-	vim_free(lcs_chars.multispace);
-	vim_free(lcs_chars.leadmultispace);
-    }
 
     return NULL;	// no error
 }
@@ -4942,18 +4956,46 @@ set_chars_option(win_T *wp, char_u *value, int is_listchars, int apply)
  * Handle the new value of 'fillchars'.
  */
     char *
-set_fillchars_option(win_T *wp, char_u *val, int apply)
+set_fillchars_option(win_T *wp, char_u *val, int apply, char *errbuf,
+							      size_t errbuflen)
 {
-    return set_chars_option(wp, val, FALSE, apply);
+    return set_chars_option(wp, val, FALSE, apply, errbuf, errbuflen);
 }
 
 /*
  * Handle the new value of 'listchars'.
  */
     char *
-set_listchars_option(win_T *wp, char_u *val, int apply)
+set_listchars_option(win_T *wp, char_u *val, int apply, char *errbuf,
+							      size_t errbuflen)
 {
-    return set_chars_option(wp, val, TRUE, apply);
+    return set_chars_option(wp, val, TRUE, apply, errbuf, errbuflen);
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain possible arguments of the
+ * 'fillchars' option.
+ */
+    char_u *
+get_fillchars_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(filltab) / sizeof(filltab[0])))
+	return NULL;
+
+    return (char_u*)filltab[idx].name;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain possible arguments of the
+ * 'listchars' option.
+ */
+    char_u *
+get_listchars_name(expand_T *xp UNUSED, int idx)
+{
+    if (idx >= (int)(sizeof(lcstab) / sizeof(lcstab[0])))
+	return NULL;
+
+    return (char_u*)lcstab[idx].name;
 }
 
 /*
@@ -4967,15 +5009,15 @@ check_chars_options(void)
     tabpage_T   *tp;
     win_T	    *wp;
 
-    if (set_listchars_option(curwin, p_lcs, FALSE) != NULL)
+    if (set_listchars_option(curwin, p_lcs, FALSE, NULL, 0) != NULL)
 	return e_conflicts_with_value_of_listchars;
-    if (set_fillchars_option(curwin, p_fcs, FALSE) != NULL)
+    if (set_fillchars_option(curwin, p_fcs, FALSE, NULL, 0) != NULL)
 	return e_conflicts_with_value_of_fillchars;
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
-	if (set_listchars_option(wp, wp->w_p_lcs, FALSE) != NULL)
+	if (set_listchars_option(wp, wp->w_p_lcs, FALSE, NULL, 0) != NULL)
 	    return e_conflicts_with_value_of_listchars;
-	if (set_fillchars_option(wp, wp->w_p_fcs, FALSE) != NULL)
+	if (set_fillchars_option(wp, wp->w_p_fcs, FALSE, NULL, 0) != NULL)
 	    return e_conflicts_with_value_of_fillchars;
     }
     return NULL;

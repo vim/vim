@@ -353,7 +353,7 @@ trunc_string(
     else
     {
 	// can't fit in the "...", just truncate it
-	buf[e - 1] = NUL;
+	buf[buflen - 1] = NUL;
     }
 }
 
@@ -1114,7 +1114,7 @@ ex_messages(exarg_T *eap)
 	    msg_attr(
 		    // Translator: Please replace the name and email address
 		    // with the appropriate text for your translation.
-		    _("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
+		    _("Messages maintainer: The Vim Project"),
 		    HL_ATTR(HLF_T));
     }
 
@@ -1445,6 +1445,9 @@ set_keep_msg_from_hist(void)
 msg_start(void)
 {
     int		did_return = FALSE;
+
+    if (msg_row < cmdline_row)
+	msg_row = cmdline_row;
 
     if (!msg_silent)
     {
@@ -1842,7 +1845,11 @@ str2special(
     }
 
     c = *str;
-    if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+    if ((c == K_SPECIAL
+#ifdef FEAT_GUI
+		|| c == CSI
+#endif
+	) && str[1] != NUL && str[2] != NUL)
     {
 	if (str[1] == KS_MODIFIER)
 	{
@@ -1850,7 +1857,11 @@ str2special(
 	    str += 3;
 	    c = *str;
 	}
-	if (c == K_SPECIAL && str[1] != NUL && str[2] != NUL)
+	if ((c == K_SPECIAL
+#ifdef FEAT_GUI
+		    || c == CSI
+#endif
+	    ) && str[1] != NUL && str[2] != NUL)
 	{
 	    c = TO_SPECIAL(str[1], str[2]);
 	    str += 2;
@@ -1997,10 +2008,13 @@ msg_prt_line(char_u *s, int list)
 	{
 	    attr = 0;
 	    c = *s++;
-	    in_multispace = c == ' '
-		&& ((col > 0 && s[-2] == ' ') || *s == ' ');
-	    if (!in_multispace)
-		multispace_pos = 0;
+	    if (list)
+	    {
+		in_multispace = c == ' ' && (*s == ' '
+						 || (col > 0 && s[-2] == ' '));
+		if (!in_multispace)
+		    multispace_pos = 0;
+	    }
 	    if (c == TAB && (!list || curwin->w_lcs_chars.tab1))
 	    {
 		// tab amount depends on current column
@@ -2054,7 +2068,7 @@ msg_prt_line(char_u *s, int list)
 	    }
 	    else if (c == ' ')
 	    {
-		if (list && lead != NULL && s <= lead && in_multispace
+		if (lead != NULL && s <= lead && in_multispace
 			&& curwin->w_lcs_chars.leadmultispace != NULL)
 		{
 		    c = curwin->w_lcs_chars.leadmultispace[multispace_pos++];
@@ -2074,7 +2088,7 @@ msg_prt_line(char_u *s, int list)
 		    c = curwin->w_lcs_chars.trail;
 		    attr = HL_ATTR(HLF_8);
 		}
-		else if (list && in_multispace
+		else if (in_multispace
 			&& curwin->w_lcs_chars.multispace != NULL)
 		{
 		    c = curwin->w_lcs_chars.multispace[multispace_pos++];

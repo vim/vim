@@ -27,16 +27,22 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
 .SUFFIXES:
 .SUFFIXES: .po .mo .pot .ck
-.PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES)
+.PHONY: all install uninstall prefixcheck originals converted check clean \
+	checkclean distclean update-po $(LANGUAGES)
+
+all: $(MOFILES) $(MOCONVERTED) $(MSGFMT_DESKTOP)
+
+originals: $(MOFILES)
+
+converted: $(MOCONVERTED)
 
 .po.mo:
 	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
-	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
+	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	touch $@
-
-all: $(MOFILES) $(MOCONVERTED) $(MSGFMT_DESKTOP)
 
 check: $(CHECKFILES)
 
@@ -84,12 +90,10 @@ tryoutinstall: $(MOFILES) $(MOCONVERTED)
 	  fi; \
 	done
 
-converted: $(MOCONVERTED)
-
 # nl.po was added later, if it does not exist use a file with just a # in it
 # (an empty file doesn't work with old msgfmt).
 nl.po:
-	@( echo \# > nl.po )
+	@( echo \# >> nl.po )
 
 # Norwegian/Bokmal: "nb" is an alias for "no".
 # Copying the file is not efficient, but I don't know of another way to make
@@ -102,84 +106,134 @@ nb.po: no.po
 # ja.sjis.po is outdated.
 ja.sjis.po: ja.po
 	@$(MAKE) sjiscorr
-	rm -f ja.sjis.po
-	iconv -f utf-8 -t cp932 ja.po | ./sjiscorr > ja.sjis.po
+	rm -f $@
+	iconv -f UTF-8 -t CP932 $< | ./sjiscorr > $@
 
 sjiscorr: sjiscorr.c
 	$(CC) -o sjiscorr sjiscorr.c
 
 ja.euc-jp.po: ja.po
-	iconv -f utf-8 -t euc-jp ja.po | \
-		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=euc-jp/' -e 's/# Original translations/# Generated from ja.po, DO NOT EDIT/' > ja.euc-jp.po
+	iconv -f UTF-8 -t EUC-JP $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=EUC-JP/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert cs.po to create cs.cp1250.po.
 cs.cp1250.po: cs.po
-	rm -f cs.cp1250.po
-	iconv -f iso-8859-2 -t cp1250 cs.po | \
-		$(SED) -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from cs.po, DO NOT EDIT/' > cs.cp1250.po
+	rm -f $@
+	iconv -f ISO-8859-2 -t CP1250 $< | \
+		$(SED) -e 's/charset=[iI][sS][oO]-8859-2/charset=CP1250/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert pl.po to create pl.cp1250.po.
 pl.cp1250.po: pl.po
-	rm -f pl.cp1250.po
-	iconv -f iso-8859-2 -t cp1250 pl.po | \
-		$(SED) -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.cp1250.po
+	rm -f $@
+	iconv -f ISO-8859-2 -t CP1250 $< | \
+		$(SED) -e 's/charset=[iI][sS][oO]-8859-2/charset=CP1250/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert pl.po to create pl.UTF-8.po.
 pl.UTF-8.po: pl.po
-	rm -f pl.UTF-8.po
-	iconv -f iso-8859-2 -t utf-8 pl.po | \
-		$(SED) -e 's/charset=ISO-8859-2/charset=UTF-8/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.UTF-8.po
+	rm -f $@
+	iconv -f ISO-8859-2 -t UTF-8 $< | \
+		$(SED) -e 's/charset=[iI][sS][oO]-8859-2/charset=UTF-8/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert sk.po to create sk.cp1250.po.
 sk.cp1250.po: sk.po
-	rm -f sk.cp1250.po
-	iconv -f iso-8859-2 -t cp1250 sk.po | \
-		$(SED) -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from sk.po, DO NOT EDIT/' > sk.cp1250.po
+	rm -f $@
+	iconv -f ISO-8859-2 -t CP1250 $< | \
+		$(SED) -e 's/charset=[iI][sS][oO]-8859-2/charset=CP1250/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert zh_CN.UTF-8.po to create zh_CN.po.
 zh_CN.po: zh_CN.UTF-8.po
-	rm -f zh_CN.po
-	iconv -f UTF-8 -t gb2312 zh_CN.UTF-8.po | \
-		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=gb2312/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.po
+	rm -f $@
+	iconv -f UTF-8 -t GB2312 $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=GB2312/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert zh_CN.UTF-8.po to create zh_CN.cp936.po.
 # Set 'charset' to gbk to avoid that msfmt generates a warning.
 # This used to convert from zh_CN.po, but that results in a conversion error.
 zh_CN.cp936.po: zh_CN.UTF-8.po
-	rm -f zh_CN.cp936.po
-	iconv -f UTF-8 -t cp936 zh_CN.UTF-8.po | \
-		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.UTF-8.po, DO NOT EDIT/' > zh_CN.cp936.po
+	rm -f $@
+	iconv -f UTF-8 -t CP936 $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=GBK/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert zh_TW.UTF-8.po to create zh_TW.po
 zh_TW.po: zh_TW.UTF-8.po
-	rm -f zh_TW.po
-	iconv -f UTF-8 -t big5 zh_TW.UTF-8.po | \
-		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=big5/' -e 's/# Original translations/# Generated from zh_TW.UTF-8.po, DO NOT EDIT/' > zh_TW.po
+	rm -f $@
+	iconv -f UTF-8 -t BIG5 $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=BIG5/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
+
+
+# Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters
+# Requires doubling backslashes in the second byte.  Don't depend on big5corr,
+# it should only be compiled when zh_TW.po is outdated.
+
+#
+#  06.11.23, added by Restorer
+#  For more details, see:
+#  https://github.com/vim/vim/pull/3261
+#  https://github.com/vim/vim/pull/3476
+#  https://github.com/vim/vim/pull/12153
+#  (read all comments)
+#
+#  I checked the workability on the list of backslash characters
+#  specified in zh_TW.UTF-8.po. It works.
+#  But it is better to have someone native speaker check it.
+#
+
+#zh_TW.po: zh_TW.UTF-8.po
+#	@$(MAKE) big5corr
+#	rm -f $@
+#	iconv -f UTF-8 -t BIG5 $< | ./big5corr > $@
+
+
+# 06.11.23, added by Restorer
+# see above in the zh_tw.po conversion section for backslashes.
+#big5corr: big5corr.c
+#	$(CC) -o big5corr big5corr.c
+
 
 # Convert ko.UTF-8.po to create ko.po.
 ko.po: ko.UTF-8.po
-	rm -f ko.po
-	iconv -f UTF-8 -t euc-kr ko.UTF-8.po | \
-		$(SED) -e 's/charset=UTF-8/charset=euc-kr/' \
-		    -e 's/# Korean translation for Vim/# Generated from ko.UTF-8.po, DO NOT EDIT/' \
-		    > ko.po
+	rm -f $@
+	iconv -f UTF-8 -t EUC-KR $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=EUC-KR/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert ru.po to create ru.cp1251.po.
 ru.cp1251.po: ru.po
-	rm -f ru.cp1251.po
-	iconv -f utf-8 -t cp1251 ru.po | \
-		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from ru.po, DO NOT EDIT/' > ru.cp1251.po
+	rm -f $@
+	iconv -f UTF-8 -t CP1251 $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=CP1251/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 # Convert uk.po to create uk.cp1251.po.
 uk.cp1251.po: uk.po
-	rm -f uk.cp1251.po
-	iconv -f utf-8 -t cp1251 uk.po | \
-		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
+	rm -f $@
+	iconv -f UTF-8 -t CP1251 $< | \
+		$(SED) -e 's/charset=[uU][tT][fF]-8/charset=CP1251/' \
+			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
+			> $@
 
 prefixcheck:
 	@if test "x" = "x$(prefix)"; then \
 	  echo "******************************************"; \
-	  echo "  please use make from the src directory  "; \
+	  echo "  Please use make from the src directory  "; \
 	  echo "******************************************"; \
 	  exit 1; \
 	fi
@@ -187,6 +241,7 @@ prefixcheck:
 clean: checkclean
 	rm -f core core.* *.old.po *.mo *.pot sjiscorr
 	rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
+#	rm -f big5corr
 
 distclean: clean
 
@@ -232,7 +287,9 @@ gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
 	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi
 	mv tmp_gvim.desktop gvim.desktop
 
-update-po: $(LANGUAGES)
+# Only original translations with default encoding should be updated.
+# The files that are converted to a different encoding clearly state "DO NOT EDIT".
+update-po: $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually
 $(LANGUAGES):

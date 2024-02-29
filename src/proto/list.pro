@@ -56,6 +56,7 @@ int filter_map_one(typval_T *tv, typval_T *expr, filtermap_T filtermap, funccall
 void f_filter(typval_T *argvars, typval_T *rettv);
 void f_map(typval_T *argvars, typval_T *rettv);
 void f_mapnew(typval_T *argvars, typval_T *rettv);
+void f_foreach(typval_T *argvars, typval_T *rettv);
 void f_add(typval_T *argvars, typval_T *rettv);
 void f_count(typval_T *argvars, typval_T *rettv);
 void f_extend(typval_T *argvars, typval_T *rettv);

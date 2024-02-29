@@ -244,9 +244,22 @@ endfunc
 " Test for making sure the key value is not stored in history
 func Test_history_crypt_key()
   CheckFeature cryptv
+
   call feedkeys(":set bs=2 key=abc ts=8\<CR>", 'xt')
   call assert_equal('set bs=2 key= ts=8', histget(':'))
+
+  call assert_fails("call feedkeys(':set bs=2 key-=abc ts=8\<CR>', 'xt')")
+  call assert_equal('set bs=2 key-= ts=8', histget(':'))
+
   set key& bs& ts&
+endfunc
+
+" The following used to overflow and causing an use-after-free
+func Test_history_max_val()
+
+  set history=10
+  call assert_fails(':history 2147483648', 'E1510:')
+  set history&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

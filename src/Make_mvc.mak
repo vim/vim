@@ -420,7 +420,6 @@ NBDEBUG_DEFS	= -DNBDEBUG
 NBDEBUG_INCL	= nbdebug.h
 NBDEBUG_SRC	= nbdebug.c
 !  endif
-NETBEANS_LIB	= WSock32.lib
 ! endif
 
 # DirectWrite (DirectX)
@@ -473,7 +472,7 @@ CHANNEL_PRO	= proto/job.pro proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/job.obj $(OBJDIR)/channel.obj
 CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6 -DHAVE_INET_NTOP
 
-NETBEANS_LIB	= WSock32.lib Ws2_32.lib
+NETBEANS_LIB	= Ws2_32.lib
 !endif
 
 # need advapi32.lib for GetUserName()
@@ -937,8 +936,13 @@ PYTHON_LIB = "$(PYTHON)\libs\python$(PYTHON_VER).lib"
 ! ifndef PYTHON3_VER
 PYTHON3_VER = 36
 ! endif
+! if "$(DYNAMIC_PYTHON3_STABLE_ABI)" == "yes"
+PYTHON3_NAME = python3
+! else
+PYTHON3_NAME = python$(PYTHON3_VER)
+! endif
 ! ifndef DYNAMIC_PYTHON3_DLL
-DYNAMIC_PYTHON3_DLL = python$(PYTHON3_VER).dll
+DYNAMIC_PYTHON3_DLL = $(PYTHON3_NAME).dll
 ! endif
 ! message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
 ! if "$(DYNAMIC_PYTHON3)" == "yes"
@@ -950,10 +954,14 @@ PYTHON3_INC = /I "$(PYTHON3)\Include" /I "$(PYTHON3)\PC"
 ! if "$(DYNAMIC_PYTHON3)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
 		-DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
+!  if "$(DYNAMIC_PYTHON3_STABLE_ABI)" == "yes"
+CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3_STABLE_ABI
+PYTHON3_INC = $(PYTHON3_INC) -DPy_LIMITED_API=0x3080000
+!  endif
+PYTHON3_LIB = /nodefaultlib:$(PYTHON3_NAME).lib
 ! else
 CFLAGS = $(CFLAGS) -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-PYTHON3_LIB = "$(PYTHON3)\libs\python$(PYTHON3_VER).lib"
+PYTHON3_LIB = "$(PYTHON3)\libs\$(PYTHON3_NAME).lib"
 ! endif
 !endif
 
@@ -1264,7 +1272,7 @@ $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 $(VIM): $(VIM).exe
 
 $(OUTDIR):
-	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
+	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR:/=\)
 
 CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 

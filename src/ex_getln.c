@@ -1599,7 +1599,7 @@ getcmdline_int(
     cmdline_info_T save_ccline;
     int		did_save_ccline = FALSE;
     int		cmdline_type;
-    int		wild_type;
+    int		wild_type = 0;
 
     // one recursion level deeper
     ++depth;
@@ -1877,7 +1877,8 @@ getcmdline_int(
 	if (p_wmnu)
 	    c = wildmenu_translate_key(&ccline, c, &xpc, did_wild_list);
 
-	if (cmdline_pum_active())
+	int key_is_wc = (c == p_wc && KeyTyped) || c == p_wcm;
+	if ((cmdline_pum_active() || did_wild_list) && !key_is_wc)
 	{
 	    // Ctrl-Y: Accept the current selection and close the popup menu.
 	    // Ctrl-E: cancel the cmdline popup menu and return the original
@@ -1888,7 +1889,6 @@ getcmdline_int(
 		if (nextwild(&xpc, wild_type, WILD_NO_BEEP,
 							firstc != '@') == FAIL)
 		    break;
-		c = Ctrl_E;
 	    }
 	}
 
@@ -1897,7 +1897,7 @@ getcmdline_int(
 	// 'wildcharm' or Ctrl-N or Ctrl-P or Ctrl-A or Ctrl-L).
 	// If the popup menu is displayed, then PageDown and PageUp keys are
 	// also used to navigate the menu.
-	end_wildmenu = (!(c == p_wc && KeyTyped) && c != p_wcm
+	end_wildmenu = (!key_is_wc
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A && c != Ctrl_L);
 	end_wildmenu = end_wildmenu && (!cmdline_pum_active() ||
 			    (c != K_PAGEDOWN && c != K_PAGEUP
@@ -2015,6 +2015,14 @@ getcmdline_int(
 
 	do_abbr = TRUE;		// default: check for abbreviation
 
+	// If already used to cancel/accept wildmenu, don't process the key
+	// further.
+	if (wild_type == WILD_CANCEL || wild_type == WILD_APPLY)
+	{
+	    wild_type = 0;
+	    goto cmdline_not_changed;
+	}
+
 	/*
 	 * Big switch for a typed command line character.
 	 */
@@ -2042,6 +2050,9 @@ getcmdline_int(
 #ifdef CURSOR_SHAPE
 		ui_cursor_shape();	// may show different cursor shape
 #endif
+		may_trigger_modechanged();
+		status_redraw_curbuf();
+		redraw_statuslines();
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
@@ -2504,6 +2515,15 @@ returncmd:
     cmdmsg_rl = FALSE;
 #endif
 
+    // We could have reached here without having a chance to clean up wild menu
+    // if certain special keys like <Esc> or <C-\> were used as wildchar. Make
+    // sure to still clean up to avoid memory corruption.
+    if (cmdline_pum_active())
+	cmdline_pum_remove();
+    wildmenu_cleanup(&ccline);
+    did_wild_list = FALSE;
+    wim_index = 0;
+
     ExpandCleanup(&xpc);
     ccline.xpc = NULL;
 
@@ -2650,6 +2670,7 @@ check_opt_wim(void)
 
     for (p = p_wim; *p; ++p)
     {
+	// Note: Keep this in sync with p_wim_values.
 	for (i = 0; ASCII_ISALPHA(p[i]); ++i)
 	    ;
 	if (p[i] != NUL && p[i] != ',' && p[i] != ':')
@@ -3151,8 +3172,6 @@ redraw:
     return (char_u *)line_ga.ga_data;
 }
 
-# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
-	|| defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if ccline.overstrike is on.
  */
@@ -3162,6 +3181,8 @@ cmdline_overstrike(void)
     return ccline.overstrike;
 }
 
+# if defined(MCH_CURSOR_SHAPE) || defined(FEAT_GUI) \
+	 || defined(FEAT_MOUSESHAPE) || defined(PROTO)
 /*
  * Return TRUE if the cursor is at the end of the cmdline.
  */
@@ -4152,6 +4173,7 @@ get_cmdline_str(void)
 get_cmdline_completion(void)
 {
     cmdline_info_T *p;
+    char_u	*buffer;
 
     if (cmdline_star > 0)
 	return NULL;
@@ -4165,10 +4187,19 @@ get_cmdline_completion(void)
 	return NULL;
 
     char_u *cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
-    if (cmd_compl != NULL)
-	return vim_strsave(cmd_compl);
+    if (cmd_compl == NULL)
+	return NULL;
 
-    return NULL;
+    if (p->xpc->xp_context == EXPAND_USER_LIST || p->xpc->xp_context == EXPAND_USER_DEFINED)
+    {
+	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
+	if (buffer == NULL)
+	    return NULL;
+	sprintf((char *)buffer, "%s,%s", cmd_compl, p->xpc->xp_arg);
+	return buffer;
+    }
+
+    return vim_strsave(cmd_compl);
 }
 
 /*
@@ -4349,6 +4380,10 @@ get_list_range(char_u **str, int *num1, int *num2)
     {
 	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE, NULL);
 	*str += len;
+	// overflow
+	if (num > INT_MAX)
+	    return FAIL;
+
 	*num1 = (int)num;
 	first = TRUE;
     }
@@ -4359,8 +4394,12 @@ get_list_range(char_u **str, int *num1, int *num2)
 	vim_str2nr(*str, NULL, &len, 0, &num, NULL, 0, FALSE, NULL);
 	if (len > 0)
 	{
-	    *num2 = (int)num;
 	    *str = skipwhite(*str + len);
+	    // overflow
+	    if (num > INT_MAX)
+		return FAIL;
+
+	    *num2 = (int)num;
 	}
 	else if (!first)		// no number given at all
 	    return FAIL;
@@ -4419,6 +4458,8 @@ open_cmdwin(void)
 #ifdef FEAT_FOLDING
     int			save_KeyTyped;
 #endif
+    int			newbuf_status;
+    int			cmdwin_valid;
 
     // Can't do this when text or buffer is locked.
     // Can't do this recursively.  Can't do it when typing a password.
@@ -4452,25 +4493,50 @@ open_cmdwin(void)
 	ga_clear(&winsizes);
 	return K_IGNORE;
     }
+    // win_split() autocommands may have messed with the old window or buffer.
+    // Treat it as abandoning this command-line.
+    if (!win_valid(old_curwin) || curwin == old_curwin
+	    || !bufref_valid(&old_curbuf)
+	    || old_curwin->w_buffer != old_curbuf.br_buf)
+    {
+	beep_flush();
+	ga_clear(&winsizes);
+	return Ctrl_C;
+    }
     // Don't let quitting the More prompt make this fail.
     got_int = FALSE;
 
-    // Set "cmdwin_type" before any autocommands may mess things up.
+    // Set "cmdwin_..." variables before any autocommands may mess things up.
     cmdwin_type = get_cmdline_type();
+    cmdwin_win = curwin;
 
-    // Create the command-line buffer empty.
-    if (do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL) == FAIL)
+    // Create empty command-line buffer.  Be especially cautious of BufLeave
+    // autocommands from do_ecmd(), as cmdwin restrictions do not apply to them!
+    newbuf_status = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE,
+					NULL);
+    cmdwin_valid = win_valid(cmdwin_win);
+    if (newbuf_status == FAIL || !cmdwin_valid || curwin != cmdwin_win ||
+	    !win_valid(old_curwin) || !bufref_valid(&old_curbuf) ||
+	    old_curwin->w_buffer != old_curbuf.br_buf)
     {
-	// Some autocommand messed it up?
-	win_close(curwin, TRUE);
-	ga_clear(&winsizes);
+	if (newbuf_status == OK)
+	    set_bufref(&bufref, curbuf);
+	if (cmdwin_valid && !last_window())
+	    win_close(cmdwin_win, TRUE);
+
+	// win_close() autocommands may have already deleted the buffer.
+	if (newbuf_status == OK && bufref_valid(&bufref) &&
+		bufref.br_buf != curbuf)
+	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE, FALSE);
+
 	cmdwin_type = 0;
+	cmdwin_win = NULL;
+	beep_flush();
+	ga_clear(&winsizes);
 	return Ctrl_C;
     }
+    cmdwin_buf = curbuf;
 
-    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
-    (void)setfname(curbuf, (char_u *)_("[Command Line]"), NULL, TRUE);
-    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
     set_option_value_give_err((char_u *)"bt",
 					    0L, (char_u *)"nofile", OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
@@ -4576,14 +4642,17 @@ open_cmdwin(void)
 # endif
 
     cmdwin_type = 0;
+    cmdwin_buf = NULL;
+    cmdwin_win = NULL;
     exmode_active = save_exmode;
 
-    // Safety check: The old window or buffer was deleted: It's a bug when
-    // this happens!
-    if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf))
+    // Safety check: The old window or buffer was changed or deleted: It's a bug
+    // when this happens!
+    if (!win_valid(old_curwin) || !bufref_valid(&old_curbuf)
+	    || old_curwin->w_buffer != old_curbuf.br_buf)
     {
 	cmdwin_result = Ctrl_C;
-	emsg(_(e_active_window_or_buffer_deleted));
+	emsg(_(e_active_window_or_buffer_changed_or_deleted));
     }
     else
     {
@@ -4612,11 +4681,6 @@ open_cmdwin(void)
 		stuffReadbuff((char_u *)p);
 		stuffcharReadbuff(CAR);
 	    }
-	}
-	else if (cmdwin_result == K_XF2)	// :qa typed
-	{
-	    ccline.cmdbuff = vim_strsave((char_u *)"qa");
-	    cmdwin_result = CAR;
 	}
 	else if (cmdwin_result == Ctrl_C)
 	{
@@ -4719,7 +4783,7 @@ script_get(exarg_T *eap UNUSED, char_u *cmd UNUSED)
     char_u	*s;
     garray_T	ga;
 
-    if (cmd[0] != '<' || cmd[1] != '<' || eap->getline == NULL)
+    if (cmd[0] != '<' || cmd[1] != '<' || eap->ea_getline == NULL)
 	return NULL;
     cmd += 2;
 

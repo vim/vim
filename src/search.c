@@ -203,47 +203,6 @@ get_search_pat(void)
     return mr_pattern;
 }
 
-#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
-/*
- * Reverse text into allocated memory.
- * Returns the allocated string, NULL when out of memory.
- */
-    char_u *
-reverse_text(char_u *s)
-{
-    unsigned	len;
-    unsigned	s_i, rev_i;
-    char_u	*rev;
-
-    /*
-     * Reverse the pattern.
-     */
-    len = (unsigned)STRLEN(s);
-    rev = alloc(len + 1);
-    if (rev == NULL)
-	return NULL;
-
-    rev_i = len;
-    for (s_i = 0; s_i < len; ++s_i)
-    {
-	if (has_mbyte)
-	{
-	    int	mb_len;
-
-	    mb_len = (*mb_ptr2len)(s + s_i);
-	    rev_i -= mb_len;
-	    mch_memmove(rev + rev_i, s + s_i, mb_len);
-	    s_i += mb_len - 1;
-	}
-	else
-	    rev[--rev_i] = s[s_i];
-
-    }
-    rev[len] = NUL;
-    return rev;
-}
-#endif
-
     void
 save_re_pat(int idx, char_u *pat, int magic)
 {
@@ -4602,7 +4561,10 @@ fuzzy_match_item_compare(const void *s1, const void *s2)
     int		idx1 = ((fuzzyItem_T *)s1)->idx;
     int		idx2 = ((fuzzyItem_T *)s2)->idx;
 
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*
@@ -4949,7 +4911,10 @@ fuzzy_match_str_compare(const void *s1, const void *s2)
     int		idx1 = ((fuzmatch_str_T *)s1)->idx;
     int		idx2 = ((fuzmatch_str_T *)s2)->idx;
 
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*
@@ -4977,9 +4942,14 @@ fuzzy_match_func_compare(const void *s1, const void *s2)
     char_u	*str1 = ((fuzmatch_str_T *)s1)->str;
     char_u	*str2 = ((fuzmatch_str_T *)s2)->str;
 
-    if (*str1 != '<' && *str2 == '<') return -1;
-    if (*str1 == '<' && *str2 != '<') return 1;
-    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+    if (*str1 != '<' && *str2 == '<')
+	return -1;
+    if (*str1 == '<' && *str2 != '<')
+	return 1;
+    if (v1 == v2)
+	return idx1 == idx2 ? 0 : idx1 > idx2 ? 1 : -1;
+    else
+	return v1 > v2 ? -1 : 1;
 }
 
 /*

@@ -1318,6 +1318,9 @@ reg_match_visual(void)
 	    top = curbuf->b_visual.vi_end;
 	    bot = curbuf->b_visual.vi_start;
 	}
+	// a substitute command may have removed some lines
+	if (bot.lnum > curbuf->b_ml.ml_line_count)
+	    bot.lnum = curbuf->b_ml.ml_line_count;
 	mode = curbuf->b_visual.vi_mode;
 	curswant = curbuf->b_visual.vi_curswant;
     }
@@ -1709,46 +1712,20 @@ cstrchr(char_u *s, int c)
 //		      regsub stuff			      //
 ////////////////////////////////////////////////////////////////
 
-/*
- * We should define ftpr as a pointer to a function returning a pointer to
- * a function returning a pointer to a function ...
- * This is impossible, so we declare a pointer to a function returning a
- * void pointer. This should work for all compilers.
- */
-typedef void (*(*fptr_T)(int *, int));
+typedef void (*fptr_T)(int *, int);
 
 static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int destlen, int flags);
 
-    static fptr_T
+    static void
 do_upper(int *d, int c)
 {
     *d = MB_TOUPPER(c);
-
-    return (fptr_T)NULL;
 }
 
-    static fptr_T
-do_Upper(int *d, int c)
-{
-    *d = MB_TOUPPER(c);
-
-    return (fptr_T)do_Upper;
-}
-
-    static fptr_T
+    static void
 do_lower(int *d, int c)
 {
     *d = MB_TOLOWER(c);
-
-    return (fptr_T)NULL;
-}
-
-    static fptr_T
-do_Lower(int *d, int c)
-{
-    *d = MB_TOLOWER(c);
-
-    return (fptr_T)do_Lower;
 }
 
 /*
@@ -2051,7 +2028,8 @@ vim_regsub_both(
 	// "flags & REGSUB_COPY" != 0.
 	if (copy)
 	{
-	    if (eval_result[nested] != NULL)
+	    if (eval_result[nested] != NULL &&
+		    (int)STRLEN(eval_result[nested]) < destlen)
 	    {
 		STRCPY(dest, eval_result[nested]);
 		dst += STRLEN(eval_result[nested]);
@@ -2202,13 +2180,13 @@ vim_regsub_both(
 	    {
 		switch (*src++)
 		{
-		case 'u':   func_one = (fptr_T)do_upper;
+		case 'u':   func_one = do_upper;
 			    continue;
-		case 'U':   func_all = (fptr_T)do_Upper;
+		case 'U':   func_all = do_upper;
 			    continue;
-		case 'l':   func_one = (fptr_T)do_lower;
+		case 'l':   func_one = do_lower;
 			    continue;
-		case 'L':   func_all = (fptr_T)do_Lower;
+		case 'L':   func_all = do_lower;
 			    continue;
 		case 'e':
 		case 'E':   func_one = func_all = (fptr_T)NULL;
@@ -2275,11 +2253,12 @@ vim_regsub_both(
 
 	    // Write to buffer, if copy is set.
 	    if (func_one != (fptr_T)NULL)
-		// Turbo C complains without the typecast
-		func_one = (fptr_T)(func_one(&cc, c));
+	    {
+		func_one(&cc, c);
+		func_one = NULL;
+	    }
 	    else if (func_all != (fptr_T)NULL)
-		// Turbo C complains without the typecast
-		func_all = (fptr_T)(func_all(&cc, c));
+		func_all(&cc, c);
 	    else // just copy
 		cc = c;
 
@@ -2423,11 +2402,12 @@ vim_regsub_both(
 				c = *s;
 
 			    if (func_one != (fptr_T)NULL)
-				// Turbo C complains without the typecast
-				func_one = (fptr_T)(func_one(&cc, c));
+			    {
+				func_one(&cc, c);
+				func_one = NULL;
+			    }
 			    else if (func_all != (fptr_T)NULL)
-				// Turbo C complains without the typecast
-				func_all = (fptr_T)(func_all(&cc, c));
+				func_all(&cc, c);
 			    else // just copy
 				cc = c;
 
@@ -2709,7 +2689,10 @@ static regengine_T bt_regengine =
     bt_regcomp,
     bt_regfree,
     bt_regexec_nl,
-    bt_regexec_multi,
+    bt_regexec_multi
+#ifdef DEBUG
+    ,(char_u *)""
+#endif
 };
 
 #include "regexp_nfa.c"
@@ -2719,7 +2702,10 @@ static regengine_T nfa_regengine =
     nfa_regcomp,
     nfa_regfree,
     nfa_regexec_nl,
-    nfa_regexec_multi,
+    nfa_regexec_multi
+#ifdef DEBUG
+    ,(char_u *)""
+#endif
 };
 
 // Which regexp engine to use? Needed for vim_regcomp().

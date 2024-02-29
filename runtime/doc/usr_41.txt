@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2023 May 06
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -69,7 +69,7 @@ The output of the example code is:
 
 In the first line the `vim9script` command makes clear this is a new, |Vim9|
 script file.  That matters for how the rest of the file is used.  It is
-recommended to put it in the very fist line, before any comments.
+recommended to put it in the very first line, before any comments.
 							*vim9-declarations*
 The `var i = 1` command declares the "i" variable and initializes it.  The
 generic form is: >
@@ -743,10 +743,13 @@ String manipulation:					*string-functions*
 	toupper()		turn a string to uppercase
 	charclass()		class of a character
 	match()			position where a pattern matches in a string
+	matchbufline()		all the matches of a pattern in a buffer
 	matchend()		position where a pattern match ends in a string
 	matchfuzzy()		fuzzy matches a string in a list of strings
 	matchfuzzypos()		fuzzy matches a string in a list of strings
 	matchstr()		match of a pattern in a string
+	matchstrlist()		all the matches of a pattern in a List of
+				strings
 	matchstrpos()		match and positions of a pattern in a string
 	matchlist()		like matchstr() and also return submatches
 	stridx()		first index of a short string in a long string
@@ -796,6 +799,7 @@ List manipulation:					*list-functions*
 	filter()		remove selected items from a List
 	map()			change each List item
 	mapnew()		make a new List with changed items
+	foreach()		apply function to List items
 	reduce()		reduce a List to a value
 	slice()			take a slice of a List
 	sort()			sort a List
@@ -827,6 +831,7 @@ Dictionary manipulation:				*dict-functions*
 	filter()		remove selected entries from a Dictionary
 	map()			change each Dictionary entry
 	mapnew()		make a new Dictionary with changed items
+	foreach()		apply function to Dictionary items
 	keys()			get List of Dictionary keys
 	values()		get List of Dictionary values
 	items()			get List of Dictionary key-value pairs
@@ -878,6 +883,8 @@ Other computation:					*bitwise-function*
 	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
+	instanceof()		check if a variable is an instance of a given
+				class
 	type()			type of a variable as a number
 	typename()		type of a variable as text
 	islocked()		check if a variable is locked
@@ -923,6 +930,7 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
+	getregion()		get a region of text from the buffer
 	setline()		replace a line in the buffer
 	append()		append line or list of lines in the buffer
 	indent()		indent of a specific line
@@ -1362,6 +1370,7 @@ Various:					*various-functions*
 	changenr()		return number of most recent change
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
+	diff()			diff two Lists of strings
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
 	getscriptinfo()		get list of sourced vim scripts

@@ -1285,8 +1285,7 @@ nb_do_cmd(
 		netbeansFireChanges = oldFire;
 		netbeansSuppressNoLines = oldSuppress;
 
-		u_blockfree(buf->bufp);
-		u_clearall(buf->bufp);
+		u_clearallandblockfree(buf->bufp);
 	    }
 	    nb_reply_nil(cmdno);
 // =====================================================================
@@ -1456,8 +1455,7 @@ nb_do_cmd(
 		netbeansFireChanges = oldFire;
 
 		// Undo info is invalid now...
-		u_blockfree(curbuf);
-		u_clearall(curbuf);
+		u_clearallandblockfree(curbuf);
 	    }
 	    vim_free(to_free);
 	    nb_reply_nil(cmdno); // or !error
@@ -1875,7 +1873,7 @@ nb_do_cmd(
 		// This message was commented out, probably because it can
 		// happen when shutting down.
 		if (p_verbose > 0)
-		    emsg(_(e_invalid_buffer_identifier_in_close_2));
+		    emsg(_(e_invalid_buffer_identifier_in_close));
 	    }
 	    nbdebug(("    CLOSE %d: %s\n", bufno, name));
 #ifdef FEAT_GUI

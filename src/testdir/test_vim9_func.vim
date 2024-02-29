@@ -862,6 +862,13 @@ def Test_func_with_comments()
   v9.CheckScriptFailure(lines, 'E125:', 1)
 
   lines =<< trim END
+      def Func(f=
+      )
+      enddef
+  END
+  v9.CheckScriptFailure(lines, 'E125:', 2)
+
+  lines =<< trim END
       def Func(
         arg: string# comment
         )
@@ -1313,7 +1320,7 @@ def Test_call_wrong_args()
     enddef
     Func([])
   END
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<any>', 5)
 
   # argument name declared earlier is found when declaring a function
   lines =<< trim END
@@ -1995,7 +2002,7 @@ def Test_varargs_mismatch()
       var res = Map((v) => str2nr(v))
       assert_equal(12, res)
   END
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1180: Variable arguments type must be a list: any')
 enddef
 
 def Test_using_var_as_arg()
@@ -2764,7 +2771,7 @@ def Test_func_type_fails()
   v9.CheckDefFailure(['var Ref1: func()', 'Ref1 = g:FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
   v9.CheckDefFailure(['var Ref1: func(bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
   v9.CheckDefFailure(['var Ref1: func(?bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
-  v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
+  v9.CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = g:FuncTwoArgNoRet'], 'E1180: Variable arguments type must be a list: bool')
 
   v9.CheckDefFailure(['var RefWrong: func(string ,number)'], 'E1068:')
   v9.CheckDefFailure(['var RefWrong: func(string,number)'], 'E1069:')
@@ -3663,6 +3670,17 @@ def Test_partial_call()
       const Call = Foo(Expr)
   END
   v9.CheckScriptFailure(lines, 'E1031:')
+
+  # Test for calling a partial that takes a single argument.
+  # This used to produce a "E340: Internal error" message.
+  lines =<< trim END
+      def Foo(n: number): number
+        return n * 2
+      enddef
+      var Fn = function(Foo, [10])
+      assert_equal(20, Fn())
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_partial_double_nested()
