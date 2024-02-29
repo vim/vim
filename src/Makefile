@@ -318,7 +318,7 @@ CClink = $(CC)
 # Uncomment this line when you don't want to get the GUI version, although you
 # have GTK and/or Motif.  Also use --without-x if you don't want X11
 # at all.
-#CONF_OPT_GUI = --disable-gui
+CONF_OPT_GUI = --disable-gui
 
 # Uncomment one of these lines if you have that GUI but don't want to use it.
 # The automatic check will use another one that can be found.
@@ -438,7 +438,7 @@ CClink = $(CC)
 #CONF_OPT_PYTHON = --enable-pythoninterp
 #CONF_OPT_PYTHON = --enable-pythoninterp --with-python-command=python2.7
 #CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
-#CONF_OPT_PYTHON3 = --enable-python3interp
+CONF_OPT_PYTHON3 = --enable-python3interp
 #CONF_OPT_PYTHON3 = --enable-python3interp --with-python3-command=python3.6
 #CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
 
@@ -478,7 +478,7 @@ CClink = $(CC)
 # Uncomment the first line when you want terminal emulator support for
 # not-huge builds.  Uncomment the second line when you don't want terminal
 # emulator support in the huge build.
-#CONF_OPT_TERMINAL = --enable-terminal
+CONF_OPT_TERMINAL = --enable-terminal
 #CONF_OPT_TERMINAL = --disable-terminal
 
 # MULTIBYTE - To edit multi-byte characters.
@@ -486,7 +486,7 @@ CClink = $(CC)
 
 # When building with "huge" features, right-left and Arabic
 # features are enabled.  Use this to disable them.
-#CONF_OPT_MULTIBYTE = --disable-rightleft --disable-arabic
+CONF_OPT_MULTIBYTE = --disable-rightleft --disable-arabic
 
 # NLS - National Language Support
 # Uncomment this when you do not want to support translated messages, even
@@ -511,19 +511,19 @@ CClink = $(CC)
 # Uncomment this when you do not want to include gpm support, even
 # though you have gpm libraries and includes.
 # For Debian/Ubuntu gpm support requires the libgpm-dev package.
-#CONF_OPT_GPM = --disable-gpm
+CONF_OPT_GPM = --disable-gpm
 # Use this to enable dynamic loading of the GPM library.
 #CONF_OPT_GPM = --enable-gpm=dynamic
 
 # sysmouse - For mouse support on FreeBSD and DragonFly console via sysmouse
 # Uncomment this when you do not want do include sysmouse support, even
 # though you have /dev/sysmouse and includes.
-#CONF_OPT_SYSMOUSE = --disable-sysmouse
+CONF_OPT_SYSMOUSE = --disable-sysmouse
 
 # libcanberra - For sound support.  Default is on for huge features.
 # Uncomment one of the two to chose otherwise.
 # CONF_OPT_CANBERRA = --enable-canberra
-# CONF_OPT_CANBERRA = --disable-canberra
+CONF_OPT_CANBERRA = --disable-canberra
 
 # libsodium - For enhanced encryption.  Default is on.
 # Uncomment the next line to not use libsodium
@@ -534,7 +534,7 @@ CClink = $(CC)
 # The default is "huge" for most systems.
 #CONF_OPT_FEAT = --with-features=tiny
 #CONF_OPT_FEAT = --with-features=normal
-#CONF_OPT_FEAT = --with-features=huge
+CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
 #CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
