@@ -2491,6 +2491,33 @@ format_overflow_error(const char *pstart)
 	semsg(_(e_out_of_memory_allocating_nr_bytes), arglen);
 }
 
+#define MAX_ALLOWED_STRING_WIDTH 6400
+
+    static int
+get_unsigned_int(
+    const char *pstart,
+    const char **p,
+    unsigned int *uj)
+{
+    *uj = **p - '0';
+    ++*p;
+
+    while (VIM_ISDIGIT((int)(**p)) && *uj < MAX_ALLOWED_STRING_WIDTH)
+    {
+	*uj = 10 * *uj + (unsigned int)(**p - '0');
+	++*p;
+    }
+
+    if (*uj > MAX_ALLOWED_STRING_WIDTH)
+    {
+	format_overflow_error(pstart);
+	return -1;
+    }
+
+    return 0;
+}
+
+
     static int
 parse_fmt_types(
     const char  ***ap_types,
@@ -2555,15 +2582,11 @@ parse_fmt_types(
 		}
 
 		// Positional argument
-		unsigned int uj = *p++ - '0';
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		if (uj > 6400)
-		{
-		    format_overflow_error(pstart);
+		if (get_unsigned_int(pstart, &p, &uj) == -1)
 		    goto error;
-		}
+
 		pos_arg = uj;
 
 		any_pos = 1;
@@ -2600,15 +2623,10 @@ parse_fmt_types(
 		if (VIM_ISDIGIT((int)(*p)))
 		{
 		    // Positional argument field width
-		    unsigned int uj = *p++ - '0';
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
-		    if (uj > 6400)
-		    {
-			format_overflow_error(arg + 1);
+		    if (get_unsigned_int(arg + 1, &p, &uj) == -1)
 			goto error;
-		    }
 
 		    if (*p != '$')
 		    {
@@ -2636,15 +2654,10 @@ parse_fmt_types(
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
 		const char *digstart = p;
-		unsigned int uj = *p++ - '0';
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		if (uj > 6400)
-		{
-		    format_overflow_error(digstart);
+		if (get_unsigned_int(digstart, &p, &uj) == -1)
 		    goto error;
-		}
 
 		if (*p == '$')
 		{
@@ -2665,15 +2678,10 @@ parse_fmt_types(
 		    if (VIM_ISDIGIT((int)(*p)))
 		    {
 			// Parse precision
-			unsigned int uj = *p++ - '0';
+			unsigned int uj;
 
-			while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-			    uj = 10 * uj + (unsigned int)(*p++ - '0');
-			if (uj > 6400)
-			{
-			    format_overflow_error(arg + 1);
+			if (get_unsigned_int(arg + 1, &p, &uj) == -1)
 			    goto error;
-			}
 
 			if (*p == '$')
 			{
@@ -2702,16 +2710,10 @@ parse_fmt_types(
 		    // size_t could be wider than unsigned int; make sure we
 		    // treat argument like common implementations do
 		    const char *digstart = p;
-		    unsigned int uj = *p++ - '0';
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
-		    if (uj > 6400)
-		    {
-			format_overflow_error(digstart);
+		    if (get_unsigned_int(digstart, &p, &uj) == -1)
 			goto error;
-		    }
-
 
 		    if (*p == '$')
 		    {
@@ -3021,15 +3023,11 @@ vim_vsnprintf_typval(
 	    {
 		// Positional argument
 		const char *digstart = p;
-		unsigned int uj = *p++ - '0';
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		if (uj > 6400)
-		{
-		    format_overflow_error(digstart);
+		if (get_unsigned_int(digstart, &p, &uj) == -1)
 		    goto error;
-		}
+
 		pos_arg = uj;
 
 		++p;
@@ -3060,22 +3058,18 @@ vim_vsnprintf_typval(
 	    if (*p == '*')
 	    {
 		int j;
+		const char *digstart = p + 1;
 
 		p++;
 
 		if (VIM_ISDIGIT((int)(*p)))
 		{
 		    // Positional argument field width
-		    const char *digstart = p;
-		    unsigned int uj = *p++ - '0';
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
-		    if (uj > 6400)
-		    {
-			format_overflow_error(digstart);
+		    if (get_unsigned_int(digstart, &p, &uj) == -1)
 			goto error;
-		    }
+
 		    arg_idx = uj;
 
 		    ++p;
@@ -3088,6 +3082,12 @@ vim_vsnprintf_typval(
 			(skip_to_arg(ap_types, ap_start, &ap, &arg_idx,
 				     &arg_cur, fmt),
 			va_arg(ap, int));
+
+		if (j > MAX_ALLOWED_STRING_WIDTH)
+		{
+		    format_overflow_error(digstart);
+		    goto error;
+		}
 
 		if (j >= 0)
 		    min_field_width = j;
@@ -3102,15 +3102,17 @@ vim_vsnprintf_typval(
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
 		const char *digstart = p;
-		unsigned int uj = *p++ - '0';
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
-		if (uj > 6400)
+		if (get_unsigned_int(digstart, &p, &uj) == -1)
+		    goto error;
+
+		if (uj > MAX_ALLOWED_STRING_WIDTH)
 		{
 		    format_overflow_error(digstart);
 		    goto error;
 		}
+
 		min_field_width = uj;
 	    }
 
@@ -3125,36 +3127,34 @@ vim_vsnprintf_typval(
 		    // size_t could be wider than unsigned int; make sure we
 		    // treat argument like common implementations do
 		    const char *digstart = p;
-		    unsigned int uj = *p++ - '0';
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
-		    if (uj > 6400)
+		    if (get_unsigned_int(digstart, &p, &uj) == -1)
+			goto error;
+
+		    if (uj > MAX_ALLOWED_STRING_WIDTH)
 		    {
 			format_overflow_error(digstart);
 			goto error;
 		    }
+
 		    precision = uj;
 		}
 		else if (*p == '*')
 		{
 		    int j;
+		    const char *digstart = p;
 
 		    p++;
 
 		    if (VIM_ISDIGIT((int)(*p)))
 		    {
 			// positional argument
-			const char *digstart = p;
-			unsigned int uj = *p++ - '0';
+			unsigned int uj;
 
-			while (VIM_ISDIGIT((int)(*p)) && uj < 6400)
-			    uj = 10 * uj + (unsigned int)(*p++ - '0');
-			if (uj > 6400)
-			{
-			    format_overflow_error(digstart);
+			if (get_unsigned_int(digstart, &p, &uj) == -1)
 			    goto error;
-			}
+
 			arg_idx = uj;
 
 			++p;
@@ -3167,6 +3167,12 @@ vim_vsnprintf_typval(
 			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx,
 					 &arg_cur, fmt),
 			    va_arg(ap, int));
+
+		    if (j > MAX_ALLOWED_STRING_WIDTH)
+		    {
+			format_overflow_error(digstart);
+			goto error;
+		    }
 
 		    if (j >= 0)
 			precision = j;
