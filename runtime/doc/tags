@@ -6122,6 +6122,7 @@ beval_text-variable	eval.txt	/*beval_text-variable*
 beval_winid-variable	eval.txt	/*beval_winid-variable*
 beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 binary-number	eval.txt	/*binary-number*
+bindtextdomain()	builtin.txt	/*bindtextdomain()*
 bitwise-function	usr_41.txt	/*bitwise-function*
 bitwise-shift	eval.txt	/*bitwise-shift*
 blob	eval.txt	/*blob*
@@ -8713,6 +8714,7 @@ movement	intro.txt	/*movement*
 mp.vim	ft_mp.txt	/*mp.vim*
 ms-dos	os_msdos.txt	/*ms-dos*
 msdos	os_msdos.txt	/*msdos*
+msgfmt	repeat.txt	/*msgfmt*
 msql.vim	syntax.txt	/*msql.vim*
 mswin.vim	gui_w32.txt	/*mswin.vim*
 multi-byte	mbyte.txt	/*multi-byte*
