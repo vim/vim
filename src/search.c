@@ -660,7 +660,7 @@ searchit(
 						    && pos->col < MAXCOL - 2)
 	{
 	    ptr = ml_get_buf(buf, pos->lnum, FALSE);
-	    if ((int)ml_get_buf_len(buf, pos->lnum) <= pos->col)
+	    if ((int)STRLEN(ptr) <= pos->col)
 		start_char_len = 1;
 	    else
 		start_char_len = (*mb_ptr2len)(ptr + pos->col);
@@ -966,7 +966,8 @@ searchit(
 			    if (pos->lnum > 1)  // just in case
 			    {
 				--pos->lnum;
-				pos->col = ml_get_buf_len(buf, pos->lnum);
+				pos->col = (colnr_T)STRLEN(ml_get_buf(buf,
+							   pos->lnum, FALSE));
 			    }
 			}
 			else
@@ -1101,7 +1102,7 @@ searchit(
     if (pos->lnum > buf->b_ml.ml_line_count)
     {
 	pos->lnum = buf->b_ml.ml_line_count;
-	pos->col = (int)buf->b_ml.ml_line_len - 1;
+	pos->col = (int)STRLEN(ml_get_buf(buf, pos->lnum, FALSE));
 	if (pos->col > 0)
 	    --pos->col;
     }
@@ -1354,7 +1355,6 @@ do_search(
 	    char_u	*trunc;
 	    char_u	off_buf[40];
 	    size_t	off_len = 0;
-	    size_t	p_len;
 
 	    // Compute msg_row early.
 	    msg_start();
@@ -1381,7 +1381,6 @@ do_search(
 		p = spats[0].pat;
 	    else
 		p = searchstr;
-	    p_len = STRLEN(p);
 
 	    if (!shortmess(SHM_SEARCHCOUNT) || cmd_silent)
 	    {
@@ -1395,12 +1394,12 @@ do_search(
 		else
 		    // Use up to 'showcmd' column.
 		    len = (int)(Rows - msg_row - 1) * Columns + sc_col - 1;
-		if (len < p_len + off_len + SEARCH_STAT_BUF_LEN + 3)
-		    len = p_len + off_len + SEARCH_STAT_BUF_LEN + 3;
+		if (len < STRLEN(p) + off_len + SEARCH_STAT_BUF_LEN + 3)
+		    len = STRLEN(p) + off_len + SEARCH_STAT_BUF_LEN + 3;
 	    }
 	    else
 		// Reserve enough space for the search pattern + offset.
-		len = p_len + off_len + 3;
+		len = STRLEN(p) + off_len + 3;
 
 	    vim_free(msgbuf);
 	    msgbuf = alloc(len);
@@ -1418,12 +1417,12 @@ do_search(
 		    {
 			// Use a space to draw the composing char on.
 			msgbuf[1] = ' ';
-			mch_memmove(msgbuf + 2, p, p_len);
+			mch_memmove(msgbuf + 2, p, STRLEN(p));
 		    }
 		    else
-			mch_memmove(msgbuf + 1, p, p_len);
+			mch_memmove(msgbuf + 1, p, STRLEN(p));
 		    if (off_len > 0)
-			mch_memmove(msgbuf + p_len + 1, off_buf, off_len);
+			mch_memmove(msgbuf + STRLEN(p) + 1, off_buf, off_len);
 
 		    trunc = msg_strtrunc(msgbuf, TRUE);
 		    if (trunc != NULL)
@@ -1773,7 +1772,7 @@ searchc(cmdarg_T *cap, int t_cmd)
 
     p = ml_get_curline();
     col = curwin->w_cursor.col;
-    len = (int)ml_get_curline_len();
+    len = (int)STRLEN(p);
 
     while (count--)
     {
@@ -2316,7 +2315,7 @@ findmatchlimit(
 		    break;
 
 		linep = ml_get(pos.lnum);
-		pos.col = ml_get_len(pos.lnum); // pos.col on trailing NUL
+		pos.col = (colnr_T)STRLEN(linep); // pos.col on trailing NUL
 		do_quotes = -1;
 		line_breakcheck();
 
@@ -2493,7 +2492,7 @@ findmatchlimit(
 		if (pos.lnum > 1)
 		{
 		    ptr = ml_get(pos.lnum - 1);
-		    if (*ptr && *(ptr + ml_get_len(pos.lnum - 1) - 1) == '\\')
+		    if (*ptr && *(ptr + STRLEN(ptr) - 1) == '\\')
 		    {
 			do_quotes = 1;
 			if (start_in_quotes == MAYBE)
@@ -2987,7 +2986,8 @@ current_search(
 		// try again from end of buffer
 		// searching backwards, so set pos to last line and col
 		pos.lnum = curwin->w_buffer->b_ml.ml_line_count;
-		pos.col  = ml_get_len(pos.lnum);
+		pos.col  = (colnr_T)STRLEN(
+				ml_get(curwin->w_buffer->b_ml.ml_line_count));
 	    }
 	}
     }
