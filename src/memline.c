@@ -2703,7 +2703,7 @@ ml_get_buf_len(buf_T *buf, linenr_T lnum)
     if (*ml_get_buf(buf, lnum, FALSE) == NUL)
         return 0;
 
-    return buf->b_ml.ml_line_len - 1;
+    return buf->b_ml.ml_line_textlen - 1;
 }
 
 /*
@@ -2737,6 +2737,7 @@ ml_get_buf(
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
+	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	return questions;
     }
@@ -2746,6 +2747,7 @@ errorret:
     if (buf->b_ml.ml_mfp == NULL)	// there are no lines
     {
 	buf->b_ml.ml_line_len = 1;
+	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	return (char_u *)"";
     }
 
@@ -2796,6 +2798,12 @@ errorret:
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = end - start;
+#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
+	if (buf->b_has_textprop)
+	    buf->b_ml.ml_line_textlen = (int)STRLEN(buf->b_ml.ml_line_ptr) + 1;
+	else
+#endif
+	    buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     }
@@ -3646,6 +3654,7 @@ ml_replace_len(
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
+    curbuf->b_ml.ml_line_textlen = len_arg + 1;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
 
