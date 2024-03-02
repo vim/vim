@@ -892,15 +892,19 @@ func Test_clast()
 endfunc
 
 " Allow :cnext but the 'nowinfixbuf' window is selected, instead
+" Make sure no new windows are created and previous windows are reused
 func Test_cnext()
   CheckFeature quickfix
   call s:reset_all_buffers()
 
   let [l:first_window, l:winfix_window, l:quickfix_window] = s:make_quickfix_windows()
+  let l:expected = s:get_windows_count()
 
   " The call to `:cnext` succeeds but it selects the window with 'nowinfixbuf' instead
   call s:set_quickfix_by_buffer(winbufnr(l:winfix_window))
+
   cnext!
+  call assert_equal(l:expected, s:get_windows_count())
 
   " Make sure the previous window has 'winfixbuf' so we can test that our
   " "skip 'winfixbuf' window" logic works.
@@ -909,6 +913,23 @@ func Test_cnext()
 
   cnext
   call assert_equal(l:first_window, win_getid())
+  call assert_equal(l:expected, s:get_windows_count())
+endfunc
+
+" Make sure :cnext creates a split window if no previous window exists
+func Test_cnext_no_previous_window()
+  CheckFeature quickfix
+  call s:reset_all_buffers()
+
+  let [l:current, _] = s:make_simple_quickfix()
+  execute "buffer! " . l:current
+
+  let l:expected = s:get_windows_count()
+
+  " Open the quickfix in a separate split and go to it
+  copen
+
+  call assert_equal(l:expected + 1, s:get_windows_count())
 endfunc
 
 " Allow :cnext and create a 'nowinfixbuf' window if none exists
@@ -1008,6 +1029,30 @@ func Test_crewind()
 
   crewind
   call assert_equal(l:first_window, win_getid())
+endfunc
+
+" Allow <C-w>f because it opens in a new split
+func Test_ctrl_w_f()
+  call s:reset_all_buffers()
+
+  enew
+  let l:file_name = tempname()
+  call writefile([], l:file_name)
+  let l:file_buffer = bufnr()
+
+  enew
+  file other
+  let l:other_buffer = bufnr()
+
+  set winfixbuf
+
+  call setline(1, l:file_name)
+  let l:current_windows = s:get_windows_count()
+  execute "normal \<C-w>f"
+
+  call assert_equal(l:current_windows + 1, s:get_windows_count())
+
+  call delete(l:file_name)
 endfunc
 
 " Fail :djump but :djump! is allowed

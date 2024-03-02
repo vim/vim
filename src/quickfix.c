@@ -3272,10 +3272,7 @@ qf_jump_edit_buffer(
 	        return QF_ABORT;
 	    }
 
-	    if (win_valid(prevwin))
-	        // Change the current window to another because 'winfixbuf' is enabled
-	        curwin = prevwin;
-	    else
+	    if (!win_valid(prevwin))
 	    {
 	        // Split the window, which will be 'nowinfixbuf', and set curwin to that
 	        exarg_T new_eap;
