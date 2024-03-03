@@ -22,20 +22,20 @@ LangString ^UninstallCaption ${LANG_RUSSIAN} \
 ##############################################################################
 
 #LangString str_dest_folder          ${LANG_RUSSIAN} \
-#    "Маршрут к каталогу установки (должен оканчиваться каталогом $\"vim$\")"
+#    "Маршрут установки программы (должен завершаться каталогом $\"vim$\")"
 
 LangString str_show_readme          ${LANG_RUSSIAN} \
-    "После окончания установки ознакомиться с кратким описанием"
+    " Ознакомиться с кратким описанием программы"
 
 # Install types:
 LangString str_type_typical         ${LANG_RUSSIAN} \
-    "Стандартная"
+    "Стандартный"
 
 LangString str_type_minimal         ${LANG_RUSSIAN} \
-    "Минимальная"
+    "Минимальный"
 
 LangString str_type_full            ${LANG_RUSSIAN} \
-    "Полная"
+    "Полный"
 
 
 ##############################################################################
@@ -50,59 +50,61 @@ LangString str_desc_old_ver         ${LANG_RUSSIAN} \
 LangString str_section_exe          ${LANG_RUSSIAN} \
     "Графический интерфейс и вспомогательные файлы"
 LangString str_desc_exe             ${LANG_RUSSIAN} \
-    "Графический интерфейс программы Vim и все необходимые для этого файлы. \
+    "Исполняемые файлы и все необходимые для работы программы файлы. \
     Это обязательный компонент"
 
 LangString str_section_console      ${LANG_RUSSIAN} \
     "Консольная программа Vim"
 LangString str_desc_console         ${LANG_RUSSIAN} \
-    "Вариант редактора Vim (vim.exe), используемый в командной оболочке"
+    "Вариант редактора Vim (vim.exe), используемый для работы в командной \
+    оболочке"
 
 LangString str_section_batch        ${LANG_RUSSIAN} \
     "Создать командные файлы"
 LangString str_desc_batch           ${LANG_RUSSIAN} \
-    "Создание командных bat-файлов позволяющих работать с редактором \
-     Vim из командной строки Windows"
+    "Создание командных bat-файлов в каталоге Windows для работы с редактором \
+    Vim из командной строки"
 
 LangString str_group_icons          ${LANG_RUSSIAN} \
     "Создать ярлыки для редактора Vim"
 LangString str_desc_icons           ${LANG_RUSSIAN} \
-    "Создание ярлыков редактора Vim для облегчения запуска программы"
+    "Создание ярлыков программы для удобного и быстрого запуска редактора Vim"
 
 LangString str_section_desktop      ${LANG_RUSSIAN} \
     "На Рабочем столе"
 LangString str_desc_desktop         ${LANG_RUSSIAN} \
-    "Создание ярлыков программы Gvim на Рабочем столе"
+    "Создание ярлыков редактора Vim на Рабочем столе"
 
 LangString str_section_start_menu   ${LANG_RUSSIAN} \
     "В меню кнопки Пуск"
 LangString str_desc_start_menu      ${LANG_RUSSIAN} \
-    "Создание ярлыков программы Gvim в меню кнопки Пуск"
+    "Создание ярлыков редактора Vim в меню кнопки Пуск"
 
 #LangString str_section_quick_launch ${LANG_RUSSIAN} \
 #    "На панели быстрого запуска"
 #LangString str_desc_quick_launch    ${LANG_RUSSIAN} \
-#    "Создание ярлыков программы GVim на панели быстрого запуска"
+#    "Создание ярлыков редактора Vim на панели быстрого запуска"
 
 LangString str_section_edit_with    ${LANG_RUSSIAN} \
-    "В контекстном меню"
+    "Запуск редактора Vim из контекстного меню"
 LangString str_desc_edit_with       ${LANG_RUSSIAN} \
-    "Добавление вызова программы Gvim в пункт $\"Открыть с помощью...$\" контекстного меню"
+    "Добавление необходимой строки в пункт контекстного меню \
+    «Открыть с помощью...»"
 
 #LangString str_section_edit_with32  ${LANG_RUSSIAN} \
-#    "32-разрядная версия программы"
+#    "Для 32-разрядной версии программы"
 #LangString str_desc_edit_with32     ${LANG_RUSSIAN} \
-#    "Добавление вызова программы Gvim в пункт $\"Открыть с помощью...$\" контекстного меню \
-#     для 32-разрядных приложений"
+#    "Добавление в пункт контекстного меню \
+#    «Открыть с помощью...» 32-разрядных приложений"
 
 #LangString str_section_edit_with64  ${LANG_RUSSIAN} \
-#    "64-разрядная версия программы"
+#    "Для 64-разрядной версии программы"
 #LangString str_desc_edit_with64     ${LANG_RUSSIAN} \
-#    "Добавление вызова программы Gvim в пункт $\"Открыть с помощью...$\" контекстного меню \
-#     для 64-разрядных приложений"
+#    "Добавление в пункт контекстного меню \
+#    «Открыть с помощью...» 64-разрядных приложений"
 
 LangString str_section_vim_rc       ${LANG_RUSSIAN} \
-    "Настройки программы по умолчанию"
+    "Начальная настройка программы"
 LangString str_desc_vim_rc          ${LANG_RUSSIAN} \
     "Создание файла _vimrc с предустановленными настройками, если нет других \
     файлов настроек"
@@ -110,25 +112,31 @@ LangString str_desc_vim_rc          ${LANG_RUSSIAN} \
 LangString str_group_plugin         ${LANG_RUSSIAN} \
     "Создать каталог для подключаемых модулей"
 LangString str_desc_plugin          ${LANG_RUSSIAN} \
-    "Создание каталога для размещения подключаемых модулей, которые расширяют \
-     возможности редактора Vim"
+    "Создание каталога для подключаемых модулей, которые расширяют возможности \
+    редактора Vim"
 
 LangString str_section_plugin_home  ${LANG_RUSSIAN} \
     "Личный каталог"
 LangString str_desc_plugin_home     ${LANG_RUSSIAN} \
-    "Создание каталога для подключаемых модулей в домашнем каталоге пользователя"
+    "В домашнем каталоге пользователя. Модули в этом каталоге доступны только \
+    этому пользователю"
 
 LangString str_section_plugin_vim   ${LANG_RUSSIAN} \
     "Общий каталог"
 LangString str_desc_plugin_vim      ${LANG_RUSSIAN} \
-    "Создание каталога для подключаемых модулей в каталоге установки редактора Vim. \
-     Модули в этом каталоге будут доступны для любого пользователя \
-     зарегистрировавшегося в системе"
+    "В каталоге установки редактора Vim. Модули в этом каталоге доступны для \
+    всех пользователей"
+
+#LangString str_section_vis_vim      ${LANG_RUSSIAN} \
+#    "Подключаемый модуль VisVim"
+#LangString str_desc_vis_vim         ${LANG_RUSSIAN} \
+#    "Подключаемый модуль VisVim используется для интеграции с \
+#    Microsoft Visual Studio"
 
 LangString str_section_nls          ${LANG_RUSSIAN} \
     "Поддержка региональных языков"
 LangString str_desc_nls             ${LANG_RUSSIAN} \
-    "Установка файлов для поддержки региональных языков операционной системы"
+    "Установка файлов для работы программе на различных региональных языках"
 
 LangString str_unsection_register   ${LANG_RUSSIAN} \
     "Отменить регистрацию компонентов программы Vim"
@@ -158,8 +166,8 @@ LangString str_desc_rm_plugin_vim   ${LANG_RUSSIAN} \
 LangString str_unsection_rootdir    ${LANG_RUSSIAN} \
     "Удалить основной каталог программы Vim"
 LangString str_desc_rm_rootdir      ${LANG_RUSSIAN} \
-    "Удаление основного каталога программы Vim. В этом каталоге находятся файлы \
-    настроек!"
+    "Удаление основного каталога программы Vim. В этом каталоге находятся \
+    файлы настроек!"
 
 
 ##############################################################################
@@ -199,10 +207,11 @@ LangString str_desc_rm_rootdir      ${LANG_RUSSIAN} \
 #    "Произошёл сбой при выполнении удаления следующих версий программы:"
 
 #LangString str_msg_no_rm_key     ${LANG_RUSSIAN} \
-#    "Не удалось найти раздел реестра, содержащий информацию об удалении программы"
+#    "Не удалось найти раздел реестра, содержащий информацию об удалении \
+#    программы"
 
 #LangString str_msg_no_rm_reg     ${LANG_RUSSIAN} \
-#    "Не удалось найти программу выполняющую удаление, указанную в разделе реестра"
+#    "Не удалось найти указанную в реестре программу, которая выполняет удаление"
 
 #LangString str_msg_no_rm_exe     ${LANG_RUSSIAN} \
 #    "Отсутствуют права на доступ к программе, выполняющей удаление"
@@ -219,14 +228,15 @@ LangString str_desc_rm_rootdir      ${LANG_RUSSIAN} \
 LangString str_msg_install_fail  ${LANG_RUSSIAN} \
     "Произошла ошибка при установке программы. Попробуйте повторить установку \
     немного попозже"
-# когда луна будет в другой фазе и ветер должен дуть с юго‐запада
+# когда Луна будет в другой фазе и ветер должен дуть с юго‐запада
 
 LangString str_msg_rm_exe_fail   ${LANG_RUSSIAN} \
     "Некоторые файлы не были удалены из каталога $0 $\r$\n\
      Необходимо выполнить их удаление самостоятельно"
 
 #LangString str_msg_rm_root_fail  ${LANG_RUSSIAN} \
-#    "Внимание! В каталоге $\"$vim_install_root$\" содержатся файлы. Удаление каталога не выполнено"
+#    "Внимание! В каталоге $\"$vim_install_root$\" содержатся файлы. Удаление \
+#    каталога не выполнено"
 
 LangString str_msg_uninstalling  ${LANG_RUSSIAN} \
     "Удаление предыдущих версий программ..."
@@ -245,7 +255,8 @@ LangString str_msg_unregistering ${LANG_RUSSIAN} \
 LangString str_vimrc_page_title    ${LANG_RUSSIAN} \
     "Установка параметров программы"
 LangString str_vimrc_page_subtitle ${LANG_RUSSIAN} \
-    "Параметры, используемые для клавиатуры, «мыши» и функциональности программы"
+    "Параметры, используемые для клавиатуры, манипулятора «мышь» и \
+    функциональности программы"
 
 LangString str_msg_compat_title    ${LANG_RUSSIAN} \
     " Варианты использования программы "
@@ -256,27 +267,26 @@ LangString str_msg_compat_vi       ${LANG_RUSSIAN} \
 LangString str_msg_compat_vim      ${LANG_RUSSIAN} \
     "Работа в варианте функциональности редактора Vim"
 LangString str_msg_compat_defaults ${LANG_RUSSIAN} \
-    "Работа редактора Vim с некоторыми улучшениями (файл defaults.vim)"
+    "Включить некоторые улучшения (из файла defaults.vim)"
 LangString str_msg_compat_all      ${LANG_RUSSIAN} \
-    "Работа редактора Vim со всеми улучшениями (файл vimrc_example.vim). \
-    Используется по умолчанию"
+    "Включить все улучшения (из файла vimrc_example.vim). Стандартно"
 
 LangString str_msg_keymap_title   ${LANG_RUSSIAN} \
     " Клавиатурные команды "
 LangString str_msg_keymap_desc    ${LANG_RUSSIAN} \
-    "Клавиатурные команды используемые в ОС Windows (CTRL+V, CTRL+C, CTRL+S, CTRL+F и т. п.)"
+    "Изменение клавиатурных команд CTRL+V, CTRL+C, CTRL+S, CTRL+F и т. п."
 LangString str_msg_keymap_default ${LANG_RUSSIAN} \
-    "Не изменять клавиатурные команды. Использовать принятые в редакторе Vim"
+    "Без изменения, использовать как принято в редакторе Vim"
 LangString str_msg_keymap_windows ${LANG_RUSSIAN} \
-    "Изменить указанные клавиатурные команды"
+    "Изменить и использовать как принято в ОС Windows"
 
 LangString str_msg_mouse_title   ${LANG_RUSSIAN} \
     " Манипулятор «мышь» "
 LangString str_msg_mouse_desc    ${LANG_RUSSIAN} \
-    "Действий правой и левой кнопки манипулятора «мышь»"
+    "Действия правой и левой кнопки манипулятора «мышь»"
 LangString str_msg_mouse_default ${LANG_RUSSIAN} \
-    "Правая кнопка — всплывающее меню, левая кнопка — режим визуальный"
+    "Правая — всплывающее меню, левая — режим визуальный (Vim)"
 LangString str_msg_mouse_windows ${LANG_RUSSIAN} \
-    "Правая кнопка — всплывающее меню, левая кнопка — режим выборки (как в ОС Windows)"
+    "Правая — всплывающее меню, левая — режим выборки (Windows)"
 LangString str_msg_mouse_unix    ${LANG_RUSSIAN} \
-    "Правая кнопка — расширяемый режим выбора, левая кнопка — режим визуальный (как в UNIX‐подобных ОС)"
+    "Правая — расширение выборки, левая — режим визуальный (UNIX)"
