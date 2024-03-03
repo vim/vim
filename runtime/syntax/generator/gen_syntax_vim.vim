@@ -2,8 +2,8 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: Feb 27, 2024
-" Version: 2.0.3
+" Last Change: Mar 02, 2024
+" Version: 2.0.4
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -278,7 +278,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'map', 'mapclear',
 	\	'substitute', 'smagic', 'snomagic',
 	\	'setlocal', 'setglobal', 'set', 'var',
-	\	'autocmd', 'doautocmd', 'doautoall',
+	\	'autocmd', 'augroup', 'doautocmd', 'doautoall',
 	\	'echohl',
 	\ 'execute',
 	\	'behave', 'augroup', 'normal', 'syntax',
