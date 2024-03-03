@@ -3464,10 +3464,7 @@ object_len(object_T *obj)
 
     if (object_call_builtin_method(obj, CLASS_BUILTIN_LEN, 0, NULL, &rettv)
 								== FAIL)
-    {
-	emsg(_(e_invalid_type_for_len));
 	return 0;
-    }
 
     return tv_to_number(&rettv);
 }

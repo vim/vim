@@ -5479,8 +5479,8 @@ len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
 		When {expr} is an |Object|, invokes the |len()| method in the
-		object (if present) to get the length.  Otherwise an error is
-		given and returns zero.
+		object (if present) to get the length.  Otherwise returns
+		zero.
 
 		Can also be used as a |method|: >
 			mylist->len()

@@ -9979,7 +9979,7 @@ func Test_object_length()
     assert_equal(0, len(a))
     Foo()
   END
-  call v9.CheckSourceFailure(lines, 'E701: Invalid type for len()', 11)
+  call v9.CheckSourceSuccess(lines)
 
   " Unsupported signature for the len() method
   let lines =<< trim END
@@ -10109,23 +10109,24 @@ func Test_object_string()
   let lines =<< trim END
     vim9script
     class A
+      var name: string
       def string(): string
-        return 'Class-A'
+        return this.name
       enddef
     endclass
 
     def Foo()
-      var afoo = A.new()
-      assert_equal('Class-A', string(afoo))
-      assert_equal('Class-A', afoo->string())
+      var afoo = A.new("foo-A")
+      assert_equal('foo-A', string(afoo))
+      assert_equal('foo-A', afoo->string())
     enddef
 
-    var a = A.new()
-    assert_equal('Class-A', string(a))
-    assert_equal('Class-A', a->string())
-    assert_equal(['Class-A'], execute('echo a')->split("\n"))
+    var a = A.new("script-A")
+    assert_equal('script-A', string(a))
+    assert_equal('script-A', a->string())
+    assert_equal(['script-A'], execute('echo a')->split("\n"))
     test_garbagecollect_now()
-    assert_equal('Class-A', string(a))
+    assert_equal('script-A', string(a))
     Foo()
     test_garbagecollect_now()
     Foo()
