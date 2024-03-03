@@ -5511,13 +5511,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if (list2fpos(&argvars[0], &p1, &fnum1, NULL, FALSE) != OK)
-	return;
-
-    if (list2fpos(&argvars[1], &p2, &fnum2, NULL, FALSE) != OK)
-	return;
-
-    if (fnum1 != fnum2)
+    if (list2fpos(&argvars[0], &p1, &fnum1, NULL, FALSE) != OK
+	    || list2fpos(&argvars[1], &p2, &fnum2, NULL, FALSE) != OK
+	    || fnum1 != fnum2)
 	return;
 
     buf = buflist_findnr(fnum1);
