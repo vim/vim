@@ -5495,7 +5495,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     pos_T		p1, p2;
     char_u		*type;
     buf_T		*buf;
-    tabpage_T		*tp;
     win_T		*wp = NULL;
     char_u		default_type[] = "v";
     int			save_virtual = -1;
@@ -5516,17 +5515,27 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    || fnum1 != fnum2)
 	return;
 
-    buf = buflist_findnr(fnum1);
-    FOR_ALL_TABPAGES(tp)
+    if (fnum1 == 0)
     {
-        FOR_ALL_WINDOWS(wp)
-        {
-            if (wp->w_buffer == buf)
-                break;
-        }
+	buf = curbuf;
+	wp = curwin;
     }
-    if (wp == NULL)
-	return;
+    else
+    {
+	tabpage_T      *tp;
+
+	buf = buflist_findnr(fnum1);
+	FOR_ALL_TABPAGES(tp)
+	{
+	    FOR_ALL_WINDOWS(wp)
+	    {
+		if (wp->w_buffer == buf)
+		    break;
+	    }
+	}
+	if (wp == NULL)
+	    return;
+    }
 
     if (argvars[2].v_type == VAR_DICT)
     {
