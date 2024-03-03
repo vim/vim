@@ -4307,8 +4307,8 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 		- If the region is blockwise and it starts or ends in the
 		  middle of a multi-cell character, it is not included but
 		  its selected part is substituted with spaces.
-		- If and {pos1} and {pos2} are not in the same buffer, an
-		  empty list is returned.
+		- If {pos1} and {pos2} are not in the same buffer, an empty
+		  list is returned.
 		- {pos1} and {pos2} must be exists in tabs.
 
 		Examples: >
