@@ -41543,6 +41543,11 @@ and is a work in progress.
 
 Support for Wayland UI.
 
+Vim9 script
+-----------
+Add support for internal builtin functions with vim9 objects, see
+|builtin-object-methods|
+
 Other improvements				*new-other-9.2*
 ------------------
 

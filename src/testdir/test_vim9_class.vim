@@ -9659,33 +9659,6 @@ def Test_const_class_object_variable()
   v9.CheckSourceFailure(lines, 'E1022: Type or initialization required', 3)
 enddef
 
-" Test for using double underscore prefix in a class/object method name.
-def Test_method_double_underscore_prefix()
-  # class method
-  var lines =<< trim END
-    vim9script
-    class A
-      static def __foo()
-        echo "foo"
-      enddef
-    endclass
-    defcompile
-  END
-  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
-
-  # object method
-  lines =<< trim END
-    vim9script
-    class A
-      def __foo()
-        echo "foo"
-      enddef
-    endclass
-    defcompile
-  END
-  v9.CheckSourceFailure(lines, 'E1034: Cannot use reserved name __foo()', 3)
-enddef
-
 " Test for compiling class/object methods using :defcompile
 def Test_defcompile_class()
   # defcompile all the classes in the current script
@@ -9768,5 +9741,535 @@ def Test_defcompile_class()
   END
   v9.CheckScriptSuccess(lines)
 enddef
+
+" Test for cases common to all the object builtin methods
+def Test_object_builtin_method()
+  var lines =<< trim END
+    vim9script
+    class A
+      def abc()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1267: Function name must start with a capital: abc()', 3)
+
+  for funcname in ["len", "string", "empty"]
+    lines =<< trim eval END
+      vim9script
+      class A
+        static def {funcname}(): number
+        enddef
+      endclass
+    END
+    v9.CheckSourceFailure(lines, 'E1413: Builtin class method not supported', 3)
+  endfor
+enddef
+
+" Test for using the empty() builtin method with an object
+" This is a legacy function to use the test_garbagecollect_now() function.
+func Test_object_empty()
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty(): bool
+        return true
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal(true, empty(afoo))
+      assert_equal(true, afoo->empty())
+    enddef
+
+    var a = A.new()
+    assert_equal(1, empty(a))
+    assert_equal(1, a->empty())
+    test_garbagecollect_now()
+    assert_equal(1, empty(a))
+    Foo()
+    test_garbagecollect_now()
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " empty() should return 1 without a builtin method
+  let lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal(1, empty(afoo))
+    enddef
+
+    var a = A.new()
+    assert_equal(1, empty(a))
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Unsupported signature for the empty() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty()
+      enddef
+    endclass
+  END
+  call v9.CheckSourceFailure(lines, 'E1383: Method "empty": type mismatch, expected func(): bool but got func()', 4)
+
+  " Error when calling the empty() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty(): bool
+        throw "Failed to check emptiness"
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      var i = empty(afoo)
+    enddef
+
+    var a = A.new()
+    assert_fails('empty(a)', 'Failed to check emptiness')
+    assert_fails('Foo()', 'Failed to check emptiness')
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call empty() using an object from a script
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty(): bool
+        return true
+      enddef
+    endclass
+    var afoo = A.new()
+    assert_equal(true, afoo.empty())
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call empty() using an object from a method
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty(): bool
+        return true
+      enddef
+    endclass
+    def Foo()
+      var afoo = A.new()
+      assert_equal(true, afoo.empty())
+    enddef
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call empty() using "this" from an object method
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty(): bool
+        return true
+      enddef
+      def Foo(): bool
+        return this.empty()
+      enddef
+    endclass
+    def Bar()
+      var abar = A.new()
+      assert_equal(true, abar.Foo())
+    enddef
+    Bar()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Call empty() from a derived object
+  let lines =<< trim END
+    vim9script
+    class A
+      def empty(): bool
+        return false
+      enddef
+    endclass
+    class B extends A
+      def empty(): bool
+        return true
+      enddef
+    endclass
+    def Foo(afoo: A)
+      assert_equal(true, empty(afoo))
+      var bfoo = B.new()
+      assert_equal(true, empty(bfoo))
+    enddef
+    var b = B.new()
+    assert_equal(1, empty(b))
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Invoking empty method using an interface
+  let lines =<< trim END
+    vim9script
+    interface A
+      def empty(): bool
+    endinterface
+    class B implements A
+      def empty(): bool
+        return false
+      enddef
+    endclass
+    def Foo(a: A)
+      assert_equal(false, empty(a))
+    enddef
+    var b = B.new()
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for using the len() builtin method with an object
+" This is a legacy function to use the test_garbagecollect_now() function.
+func Test_object_length()
+  let lines =<< trim END
+    vim9script
+    class A
+      var mylen: number = 0
+      def new(n: number)
+        this.mylen = n
+      enddef
+      def len(): number
+        return this.mylen
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new(12)
+      assert_equal(12, len(afoo))
+      assert_equal(12, afoo->len())
+    enddef
+
+    var a = A.new(22)
+    assert_equal(22, len(a))
+    assert_equal(22, a->len())
+    test_garbagecollect_now()
+    assert_equal(22, len(a))
+    Foo()
+    test_garbagecollect_now()
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " len() should return 0 without a builtin method
+  let lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal(0, len(afoo))
+    enddef
+
+    var a = A.new()
+    assert_equal(0, len(a))
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Unsupported signature for the len() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def len()
+      enddef
+    endclass
+  END
+  call v9.CheckSourceFailure(lines, 'E1383: Method "len": type mismatch, expected func(): number but got func()', 4)
+
+  " Error when calling the len() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def len(): number
+        throw "Failed to compute length"
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      var i = len(afoo)
+    enddef
+
+    var a = A.new()
+    assert_fails('len(a)', 'Failed to compute length')
+    assert_fails('Foo()', 'Failed to compute length')
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call len() using an object from a script
+  let lines =<< trim END
+    vim9script
+    class A
+      def len(): number
+        return 5
+      enddef
+    endclass
+    var afoo = A.new()
+    assert_equal(5, afoo.len())
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call len() using an object from a method
+  let lines =<< trim END
+    vim9script
+    class A
+      def len(): number
+        return 5
+      enddef
+    endclass
+    def Foo()
+      var afoo = A.new()
+      assert_equal(5, afoo.len())
+    enddef
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call len() using "this" from an object method
+  let lines =<< trim END
+    vim9script
+    class A
+      def len(): number
+        return 8
+      enddef
+      def Foo(): number
+        return this.len()
+      enddef
+    endclass
+    def Bar()
+      var abar = A.new()
+      assert_equal(8, abar.Foo())
+    enddef
+    Bar()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Call len() from a derived object
+  let lines =<< trim END
+    vim9script
+    class A
+      def len(): number
+        return 10
+      enddef
+    endclass
+    class B extends A
+      def len(): number
+        return 20
+      enddef
+    endclass
+    def Foo(afoo: A)
+      assert_equal(20, len(afoo))
+      var bfoo = B.new()
+      assert_equal(20, len(bfoo))
+    enddef
+    var b = B.new()
+    assert_equal(20, len(b))
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Invoking len method using an interface
+  let lines =<< trim END
+    vim9script
+    interface A
+      def len(): number
+    endinterface
+    class B implements A
+      def len(): number
+        return 123
+      enddef
+    endclass
+    def Foo(a: A)
+      assert_equal(123, len(a))
+    enddef
+    var b = B.new()
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
+
+" Test for using the string() builtin method with an object
+" This is a legacy function to use the test_garbagecollect_now() function.
+func Test_object_string()
+  let lines =<< trim END
+    vim9script
+    class A
+      var name: string
+      def string(): string
+        return this.name
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new("foo-A")
+      assert_equal('foo-A', string(afoo))
+      assert_equal('foo-A', afoo->string())
+    enddef
+
+    var a = A.new("script-A")
+    assert_equal('script-A', string(a))
+    assert_equal('script-A', a->string())
+    assert_equal(['script-A'], execute('echo a')->split("\n"))
+    test_garbagecollect_now()
+    assert_equal('script-A', string(a))
+    Foo()
+    test_garbagecollect_now()
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " string() should return "object of A {}" without a builtin method
+  let lines =<< trim END
+    vim9script
+    class A
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      assert_equal('object of A {}', string(afoo))
+    enddef
+
+    var a = A.new()
+    assert_equal('object of A {}', string(a))
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Unsupported signature for the string() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def string()
+      enddef
+    endclass
+  END
+  call v9.CheckSourceFailure(lines, 'E1383: Method "string": type mismatch, expected func(): string but got func()', 4)
+
+  " Error when calling the string() method
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        throw "Failed to get text"
+      enddef
+    endclass
+
+    def Foo()
+      var afoo = A.new()
+      var i = string(afoo)
+    enddef
+
+    var a = A.new()
+    assert_fails('string(a)', 'Failed to get text')
+    assert_fails('Foo()', 'Failed to get text')
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call string() using an object from a script
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        return 'A'
+      enddef
+    endclass
+    var afoo = A.new()
+    assert_equal('A', afoo.string())
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call string() using an object from a method
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        return 'A'
+      enddef
+    endclass
+    def Foo()
+      var afoo = A.new()
+      assert_equal('A', afoo.string())
+    enddef
+    Foo()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " call string() using "this" from an object method
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        return 'A'
+      enddef
+      def Foo(): string
+        return this.string()
+      enddef
+    endclass
+    def Bar()
+      var abar = A.new()
+      assert_equal('A', abar.string())
+    enddef
+    Bar()
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Call string() from a derived object
+  let lines =<< trim END
+    vim9script
+    class A
+      def string(): string
+        return 'A'
+      enddef
+    endclass
+    class B extends A
+      def string(): string
+        return 'B'
+      enddef
+    endclass
+    def Foo(afoo: A)
+      assert_equal('B', string(afoo))
+      var bfoo = B.new()
+      assert_equal('B', string(bfoo))
+    enddef
+    var b = B.new()
+    assert_equal('B', string(b))
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+
+  " Invoking string method using an interface
+  let lines =<< trim END
+    vim9script
+    interface A
+      def string(): string
+    endinterface
+    class B implements A
+      def string(): string
+        return 'B'
+      enddef
+    endclass
+    def Foo(a: A)
+      assert_equal('B', string(a))
+    enddef
+    var b = B.new()
+    Foo(b)
+  END
+  call v9.CheckSourceSuccess(lines)
+endfunc
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

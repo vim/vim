@@ -4518,6 +4518,8 @@ E1409	vim9class.txt	/*E1409*
 E141	message.txt	/*E141*
 E1410	vim9class.txt	/*E1410*
 E1411	vim9class.txt	/*E1411*
+E1412	vim9class.txt	/*E1412*
+E1413	vim9class.txt	/*E1413*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
@@ -6183,6 +6185,7 @@ bugs	intro.txt	/*bugs*
 builtin-function-details	builtin.txt	/*builtin-function-details*
 builtin-function-list	builtin.txt	/*builtin-function-list*
 builtin-functions	builtin.txt	/*builtin-functions*
+builtin-object-methods	vim9class.txt	/*builtin-object-methods*
 builtin-terms	term.txt	/*builtin-terms*
 builtin-tools	gui.txt	/*builtin-tools*
 builtin.txt	builtin.txt	/*builtin.txt*
@@ -9153,9 +9156,12 @@ o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
 object	vim9class.txt	/*object*
 object-const-variable	vim9class.txt	/*object-const-variable*
+object-empty()	vim9class.txt	/*object-empty()*
 object-final-variable	vim9class.txt	/*object-final-variable*
+object-len()	vim9class.txt	/*object-len()*
 object-motions	motion.txt	/*object-motions*
 object-select	motion.txt	/*object-select*
+object-string()	vim9class.txt	/*object-string()*
 objects	index.txt	/*objects*
 obtaining-exted	netbeans.txt	/*obtaining-exted*
 ocaml.vim	syntax.txt	/*ocaml.vim*

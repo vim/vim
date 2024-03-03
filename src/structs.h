@@ -1531,6 +1531,17 @@ typedef enum {
 #define OCMFLAG_CONST		0x04	// "const" object/class member
 
 /*
+ * Object methods called by builtin functions (e.g. string(), empty(), etc.)
+ */
+typedef enum {
+    CLASS_BUILTIN_INVALID,
+    CLASS_BUILTIN_STRING,
+    CLASS_BUILTIN_EMPTY,
+    CLASS_BUILTIN_LEN,
+    CLASS_BUILTIN_MAX
+} class_builtin_T;
+
+/*
  * Entry for an object or class member variable.
  */
 typedef struct {
@@ -1592,6 +1603,9 @@ struct class_S
     int		class_obj_method_count;		    // total count
     int		class_obj_method_count_child;	    // count without "extends"
     ufunc_T	**class_obj_methods;	// allocated
+
+					// index of builtin methods
+    int		class_builtin_methods[CLASS_BUILTIN_MAX];
 
     garray_T	class_type_list;	// used for type pointers
     type_T	class_type;		// type used for the class

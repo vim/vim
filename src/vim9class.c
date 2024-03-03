@@ -974,6 +974,100 @@ is_valid_constructor(ufunc_T *uf, int is_abstract, int has_static)
 }
 
 /*
+ * Returns TRUE if 'uf' is a supported builtin method and has the correct
+ * method signature.
+ */
+    static int
+object_check_builtin_method_sig(ufunc_T *uf)
+{
+    char_u  *name = uf->uf_name;
+    int	    valid = FALSE;
+    type_T  method_sig;
+    type_T  method_rt;
+    where_T where = WHERE_INIT;
+
+    // validate the method signature
+    CLEAR_FIELD(method_sig);
+    CLEAR_FIELD(method_rt);
+    method_sig.tt_type = VAR_FUNC;
+
+    if (STRCMP(name, "len") == 0)
+    {
+	// def __len(): number
+	method_rt.tt_type = VAR_NUMBER;
+	method_sig.tt_member = &method_rt;
+	valid = TRUE;
+    }
+    else if (STRCMP(name, "empty") == 0)
+    {
+	// def __empty(): bool
+	method_rt.tt_type = VAR_BOOL;
+	method_sig.tt_member = &method_rt;
+	valid = TRUE;
+    }
+    else if (STRCMP(name, "string") == 0)
+    {
+	// def __string(): string
+	method_rt.tt_type = VAR_STRING;
+	method_sig.tt_member = &method_rt;
+	valid = TRUE;
+    }
+    else
+	semsg(_(e_builtin_object_method_str_not_supported), uf->uf_name);
+
+    where.wt_func_name = (char *)uf->uf_name;
+    where.wt_kind = WT_METHOD;
+    if (valid && !check_type(&method_sig, uf->uf_func_type, TRUE, where))
+	valid = FALSE;
+
+    return valid;
+}
+
+/*
+ * Returns TRUE if "funcname" is a supported builtin object method name
+ */
+    int
+is_valid_builtin_obj_methodname(char_u *funcname)
+{
+    switch (funcname[0])
+    {
+	case 'e':
+	    return STRNCMP(funcname, "empty", 5) == 0;
+
+	case 'l':
+	    return STRNCMP(funcname, "len", 3) == 0;
+
+	case 'n':
+	    return STRNCMP(funcname, "new", 3) == 0;
+
+	case 's':
+	    return STRNCMP(funcname, "string", 6) == 0;
+    }
+
+    return FALSE;
+}
+
+
+/*
+ * Returns the builtin method "name" in object "obj".  Returns NULL if the
+ * method is not found.
+ */
+    ufunc_T *
+class_get_builtin_method(
+    class_T		*cl,
+    class_builtin_T	builtin_method,
+    int			*method_idx)
+{
+    *method_idx = -1;
+
+    if (cl == NULL)
+	return NULL;
+
+    *method_idx = cl->class_builtin_methods[builtin_method];
+    return *method_idx != -1 ? cl->class_obj_methods[*method_idx] : NULL;
+}
+
+/*
  * Update the interface class lookup table for the member index on the
  * interface to the member index in the class implementing the interface.
  * And a lookup table for the object method index on the interface
@@ -1324,6 +1418,33 @@ add_classfuncs_objmethods(
     }
 
     return OK;
+}
+
+/*
+ * Update the index of object methods called by builtin functions.
+ */
+    static void
+update_builtin_method_index(class_T *cl)
+{
+    int	i;
+
+    for (i = 0; i < CLASS_BUILTIN_MAX; i++)
+	cl->class_builtin_methods[i] = -1;
+
+    for (i = 0; i < cl->class_obj_method_count; i++)
+    {
+	ufunc_T *uf = cl->class_obj_methods[i];
+
+	if (cl->class_builtin_methods[CLASS_BUILTIN_STRING] == -1
+		&& STRCMP(uf->uf_name, "string") == 0)
+	    cl->class_builtin_methods[CLASS_BUILTIN_STRING] = i;
+	else if (cl->class_builtin_methods[CLASS_BUILTIN_EMPTY] == -1 &&
+		STRCMP(uf->uf_name, "empty") == 0)
+	    cl->class_builtin_methods[CLASS_BUILTIN_EMPTY] = i;
+	else if (cl->class_builtin_methods[CLASS_BUILTIN_LEN] == -1 &&
+		STRCMP(uf->uf_name, "len") == 0)
+	    cl->class_builtin_methods[CLASS_BUILTIN_LEN] = i;
+    }
 }
 
 /*
@@ -1721,13 +1842,10 @@ early_ret:
 			  &varname_end, &has_type, &type_list, &type,
 			  is_class ? &init_expr: NULL) == FAIL)
 		break;
-	    if (is_reserved_varname(varname, varname_end))
-	    {
-		vim_free(init_expr);
-		break;
-	    }
-	    if (is_duplicate_variable(&classmembers, &objmembers, varname,
-								varname_end))
+
+	    if (is_reserved_varname(varname, varname_end)
+		    || is_duplicate_variable(&classmembers, &objmembers,
+							varname, varname_end))
 	    {
 		vim_free(init_expr);
 		break;
@@ -1758,6 +1876,7 @@ early_ret:
 	{
 	    exarg_T	ea;
 	    garray_T	lines_to_free;
+	    int		is_new = STRNCMP(p, "new", 3) == 0;
 
 	    if (has_public)
 	    {
@@ -1774,12 +1893,17 @@ early_ret:
 		break;
 	    }
 
-	    if (*p == '_' && *(p + 1) == '_')
+	    if (!is_class && *p == '_')
 	    {
-		// double underscore prefix for a method name is currently
-		// reserved.  This could be used in the future to support
-		// object methods called by Vim builtin functions.
-		semsg(_(e_cannot_use_reserved_name_str), p);
+		// private methods are not supported in an interface
+		semsg(_(e_protected_method_not_supported_in_interface), p);
+		break;
+	    }
+
+	    if (has_static && !is_new && SAFE_islower(*p) &&
+					is_valid_builtin_obj_methodname(p))
+	    {
+		semsg(_(e_builtin_class_method_not_supported), p);
 		break;
 	    }
 
@@ -1803,9 +1927,9 @@ early_ret:
 	    if (uf != NULL)
 	    {
 		char_u	*name = uf->uf_name;
-		int	is_new = STRNCMP(name, "new", 3) == 0;
 
-		if (!is_class && *name == '_')
+		if (is_new && !is_valid_constructor(uf, is_abstract,
+								has_static))
 		{
 		    // private variables are not supported in an interface
 		    semsg(_(e_protected_method_not_supported_in_interface),
@@ -1813,8 +1937,10 @@ early_ret:
 		    func_clear_free(uf, FALSE);
 		    break;
 		}
-		if (is_new && !is_valid_constructor(uf, is_abstract,
-								has_static))
+
+		// check for builtin method
+		if (!is_new && SAFE_islower(*name) &&
+					!object_check_builtin_method_sig(uf))
 		{
 		    func_clear_free(uf, FALSE);
 		    break;
@@ -1996,6 +2122,8 @@ early_ret:
 	if (add_classfuncs_objmethods(cl, extends_cl, &classfunctions,
 							&objmethods) == FAIL)
 	    goto cleanup;
+
+	update_builtin_method_index(cl);
 
 	cl->class_type.tt_type = VAR_CLASS;
 	cl->class_type.tt_class = cl;
@@ -3270,6 +3398,125 @@ is_class_name(char_u *name, typval_T *rettv)
 						EVAL_VAR_NO_FUNC) != FAIL)
 	return rettv->v_type == VAR_CLASS;
     return FALSE;
+}
+
+/*
+ * Calls the object builtin method "name" with arguments "argv".  The value
+ * returned by the builtin method is in "rettv".  Returns OK or FAIL.
+ */
+    static int
+object_call_builtin_method(
+    object_T		*obj,
+    class_builtin_T	builtin_method,
+    int			argc,
+    typval_T		*argv,
+    typval_T		*rettv)
+{
+    ufunc_T *uf;
+    int	    midx;
+
+    if (obj == NULL)
+	return FAIL;
+
+    uf = class_get_builtin_method(obj->obj_class, builtin_method, &midx);
+    if (uf == NULL)
+	return FAIL;
+
+    funccall_T  *fc = create_funccal(uf, rettv);
+    int		r;
+
+    if (fc == NULL)
+	return FAIL;
+
+    ++obj->obj_refcount;
+
+    r = call_def_function(uf, argc, argv, 0, NULL, obj, fc, rettv);
+
+    remove_funccal();
+
+    return r;
+}
+
+/*
+ * Calls the object "empty()" method and returns the method retun value.  In
+ * case of an error, returns TRUE.
+ */
+    int
+object_empty(object_T *obj)
+{
+    typval_T	rettv;
+
+    if (object_call_builtin_method(obj, CLASS_BUILTIN_EMPTY, 0, NULL, &rettv)
+								== FAIL)
+	return TRUE;
+
+    return tv_get_bool(&rettv);
+}
+
+/*
+ * Use the object "len()" method to get an object length.  Returns 0 if the
+ * method is not found or there is an error.
+ */
+    int
+object_len(object_T *obj)
+{
+    typval_T	rettv;
+
+    if (object_call_builtin_method(obj, CLASS_BUILTIN_LEN, 0, NULL, &rettv)
+								== FAIL)
+	return 0;
+
+    return tv_to_number(&rettv);
+}
+
+/*
+ * Return a textual representation of object "obj"
+ */
+    char_u *
+object_string(
+    object_T	*obj,
+    char_u	*numbuf,
+    int		copyID,
+    int		echo_style,
+    int		restore_copyID,
+    int		composite_val)
+{
+    typval_T	rettv;
+
+    if (object_call_builtin_method(obj, CLASS_BUILTIN_STRING, 0, NULL, &rettv)
+								== OK
+					&& rettv.vval.v_string != NULL)
+	return rettv.vval.v_string;
+    else
+    {
+	garray_T ga;
+	ga_init2(&ga, 1, 50);
+
+	ga_concat(&ga, (char_u *)"object of ");
+	class_T *cl = obj == NULL ? NULL : obj->obj_class;
+	ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
+		: cl->class_name);
+	if (cl != NULL)
+	{
+	    ga_concat(&ga, (char_u *)" {");
+	    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	    {
+		if (i > 0)
+		    ga_concat(&ga, (char_u *)", ");
+		ocmember_T *m = &cl->class_obj_members[i];
+		ga_concat(&ga, m->ocm_name);
+		ga_concat(&ga, (char_u *)": ");
+		char_u *tf = NULL;
+		ga_concat(&ga, echo_string_core(
+			    (typval_T *)(obj + 1) + i,
+			    &tf, numbuf, copyID, echo_style,
+			    restore_copyID, composite_val));
+		vim_free(tf);
+	    }
+	    ga_concat(&ga, (char_u *)"}");
+	}
+	return ga.ga_data;
+    }
 }
 
 /*
