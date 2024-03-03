@@ -5491,9 +5491,12 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     struct block_def	bd;
     char_u		*akt = NULL;
     int			inclusive = TRUE;
-    int			fnum = -1;
+    int			fnum1 = -1, fnum2 = -1;
     pos_T		p1, p2;
     char_u		*type;
+    buf_T		*buf;
+    tabpage_T		*tp;
+    win_T		*wp = NULL;
     char_u		default_type[] = "v";
     int			save_virtual = -1;
     int			l;
@@ -5508,12 +5511,25 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if (list2fpos(&argvars[0], &p1, &fnum, NULL, FALSE) != OK
-	    || (fnum >= 0 && fnum != curbuf->b_fnum))
+    if (list2fpos(&argvars[0], &p1, &fnum1, NULL, FALSE) != OK)
 	return;
 
-    if (list2fpos(&argvars[1], &p2, &fnum, NULL, FALSE) != OK
-	    || (fnum >= 0 && fnum != curbuf->b_fnum))
+    if (list2fpos(&argvars[1], &p2, &fnum2, NULL, FALSE) != OK)
+	return;
+
+    if (fnum1 != fnum2)
+	return;
+
+    buf = buflist_findnr(fnum1);
+    FOR_ALL_TABPAGES(tp)
+    {
+        FOR_ALL_WINDOWS(wp)
+        {
+            if (wp->w_buffer == buf)
+                break;
+        }
+    }
+    if (wp == NULL)
 	return;
 
     if (argvars[2].v_type == VAR_DICT)
@@ -5568,7 +5584,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    {
 		p2.col--;
 
-		mb_adjustpos(curbuf, &p2);
+		mb_adjustpos(buf, &p2);
 	    }
 	    else if (p2.lnum > 1)
 	    {
@@ -5578,7 +5594,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 		{
 		    p2.col--;
 
-		    mb_adjustpos(curbuf, &p2);
+		    mb_adjustpos(buf, &p2);
 		}
 	    }
 	}
@@ -5590,8 +5606,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     {
 	colnr_T sc1, ec1, sc2, ec2;
 
-	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
-	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
+	getvvcol(wp, &p1, &sc1, NULL, &ec1);
+	getvvcol(wp, &p2, &sc2, NULL, &ec2);
 	oa.motion_type = MBLOCK;
 	oa.inclusive = TRUE;
 	oa.op_type = OP_NOP;
