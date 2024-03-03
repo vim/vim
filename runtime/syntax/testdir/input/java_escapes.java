@@ -11,13 +11,13 @@ class EscapesTests
 
 	static {
 		char ee[] = {
-			'\b', '\t',
+			'\b', '\s', '\t',
 			'\n', '\f', '\r',
 			'\"', '\'', '\\',
 		};
 
 		System.out.println(new String[] {
-			"\b", "\t",
+			"\b", "\s", "\t",
 			"\n", "\f", "\r",
 			"\"", "\'", "\\",
 		});
