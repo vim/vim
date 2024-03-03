@@ -19,3 +19,69 @@ imapclear <buffer>
 lmapclear <buffer>
 cmapclear <buffer>
 tmapclear <buffer>
+
+
+" :help map-bar
+
+" <Bar>     '<' is not in 'cpoptions'
+map _l :!ls <Bar> more^M:echo "rhs"<CR>
+" \|        'b' is not in 'cpoptions'
+map _l :!ls \| more^M:echo "rhs"<CR>
+" ^V|       always, in Vim and Vi
+map _l :!ls | more^M:echo "rhs"<CR>
+
+map lhs :search('foo\\|bar')<CR>:echo "rhs"<CR>
+
+
+" multiline RHS
+
+map <leader>baz 
+  \ :echo (<bar>
+  \
+  \'bar')<cr>
+  "\ comment
+
+map lhs 
+  "\ comment
+  \ echo "foo"
+
+map lhs
+  "\ comment
+  \ echo "foo"
+
+map lhs 
+  "\ comment
+  \ echo "foo"
+
+map l hs
+  "\ comment
+  \ echo "foo"
+
+map l hs 
+  "\ comment
+  \ echo "foo"
+
+map lhs rhs
+map l h s  rhs
+
+map lhs
+  "\ comment (matches as RHS but harmless)
+echo "clear"
+
+
+" Issue  #12672
+
+nnoremap <leader>foo :echo call(
+  "\ comment
+  \ {x->x},
+  \ ['foo'])<cr>
+
+nnoremap <leader>bar :echo (
+  \
+  \ 'bar')<cr>
+
+
+" Example:
+"   /autoload/netrw.vim
+
+if !hasmapto('<Plug>NetrwOpenFile')          |nmap <buffer> <silent> <nowait> %	<Plug>NetrwOpenFile|endif
