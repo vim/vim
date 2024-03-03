@@ -457,6 +457,31 @@ ex_listdo(exarg_T *eap)
     tabpage_T	*tp;
     buf_T	*buf = curbuf;
     int		next_fnum = 0;
+
+    if (curwin->w_p_wfb)
+    {
+        if ((eap->cmdidx == CMD_ldo || eap->cmdidx == CMD_lfdo) && !eap->forceit)
+        {
+            // Disallow :ldo if 'winfixbuf' is applied
+            semsg("%s", e_winfixbuf_cannot_go_to_buffer);
+            return;
+        }
+
+        if (win_valid(prevwin))
+            // Change the current window to another because 'winfixbuf' is enabled
+            curwin = prevwin;
+        else
+        {
+            // Split the window, which will be 'nowinfixbuf', and set curwin to that
+            exarg_T new_eap;
+            CLEAR_FIELD(new_eap);
+            new_eap.cmdidx = CMD_split;
+            new_eap.cmd = (char_u *)"split";
+            new_eap.arg = (char_u *)"";
+            ex_splitview(&new_eap);
+        }
+    }
+
 #if defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
 #endif

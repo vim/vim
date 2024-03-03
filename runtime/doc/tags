@@ -1294,6 +1294,7 @@ $quote	eval.txt	/*$quote*
 'winaltkeys'	options.txt	/*'winaltkeys'*
 'wincolor'	options.txt	/*'wincolor'*
 'window'	options.txt	/*'window'*
+'winfixbuf'	options.txt	/*'winfixbuf'*
 'winfixheight'	options.txt	/*'winfixheight'*
 'winfixwidth'	options.txt	/*'winfixwidth'*
 'winheight'	options.txt	/*'winheight'*
@@ -4541,6 +4542,7 @@ E151	helphelp.txt	/*E151*
 E1510	change.txt	/*E1510*
 E1511	options.txt	/*E1511*
 E1512	options.txt	/*E1512*
+E1513	message.txt	/*E1513*
 E152	helphelp.txt	/*E152*
 E153	helphelp.txt	/*E153*
 E154	helphelp.txt	/*E154*

@@ -3292,7 +3292,8 @@ find_pattern_in_path(
     long	count,
     int		action,		// What to do when we find it
     linenr_T	start_lnum,	// first line to start searching
-    linenr_T	end_lnum)	// last line for searching
+    linenr_T	end_lnum,	// last line for searching
+    int		forceit)	// If true, always switch to the found path
 {
     SearchedFile *files;		// Stack of included files
     SearchedFile *bigger;		// When we need more space
@@ -3829,7 +3830,7 @@ search_line:
 				break;
 			    if (!GETFILE_SUCCESS(getfile(
 					   curwin_save->w_buffer->b_fnum, NULL,
-						     NULL, TRUE, lnum, FALSE)))
+						     NULL, TRUE, lnum, forceit)))
 				break;	// failed to jump to file
 			}
 			else
@@ -3842,7 +3843,7 @@ search_line:
 		    {
 			if (!GETFILE_SUCCESS(getfile(
 					0, files[depth].name, NULL, TRUE,
-						    files[depth].lnum, FALSE)))
+						    files[depth].lnum, forceit)))
 			    break;	// failed to jump to file
 			// autocommands may have changed the lnum, we don't
 			// want that here

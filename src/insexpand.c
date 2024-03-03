@@ -3407,7 +3407,7 @@ get_next_include_file_completion(int compl_type)
 	    (compl_type == CTRL_X_PATH_DEFINES
 	     && !(compl_cont_status & CONT_SOL))
 	    ? FIND_DEFINE : FIND_ANY, 1L, ACTION_EXPAND,
-	    (linenr_T)1, (linenr_T)MAXLNUM);
+	    (linenr_T)1, (linenr_T)MAXLNUM, FALSE);
 }
 #endif
 

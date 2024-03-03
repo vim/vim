@@ -325,6 +325,7 @@ NEW_TESTS = \
 	test_window_cmd \
 	test_window_id \
 	test_windows_home \
+	test_winfixbuf \
 	test_wnext \
 	test_wordcount \
 	test_writefile \
