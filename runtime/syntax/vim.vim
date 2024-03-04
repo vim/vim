@@ -3,7 +3,7 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	Mar 04, 2024
+" Last Change:	2024 Mar 04
 " Former Maintainer: Charles E. Campbell
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
