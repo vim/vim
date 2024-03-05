@@ -114,8 +114,6 @@ func RunTest()
       call delete('done/' .. root)
 
       let lines =<< trim END
-	syntax on
-
 	" extra info for shell variables
 	func ShellInfo()
 	  let msg = ''
@@ -145,6 +143,25 @@ func RunTest()
 	  redraw!
 	endfunc
 
+	func SetUpVim()
+	  call cursor(1, 1)
+	  " Defend against rogue TEST_SETUP commands.
+	  for _ in range(20)
+	    let lnum = search('\<TEST_SETUP\>', 'eW', 20)
+	    if lnum < 1
+	      break
+	    endif
+	    exe substitute(getline(lnum), '.*TEST_SETUP', '', '')
+	  endfor
+	  call cursor(1, 1)
+	  " BEGIN [runtime/defaults.vim]
+	  set display=truncate ruler scrolloff=5
+	  " Provide pre-TEST_SETUP support for input/*.c.
+	  let g:c_comment_strings = 1
+	  syntax on
+	  " END [runtime/defaults.vim]
+	  redraw!
+	endfunc
       END
       call writefile(lines, 'Xtestscript')
 
@@ -157,9 +174,12 @@ func RunTest()
       " for the terminal window.
       redraw
 
-      let buf = RunVimInTerminal('-S Xtestscript', {})
+      " Let "Xtestscript#SetUpVim()" turn the syntax on.
+      let buf = RunVimInTerminal('-Nu NONE -S Xtestscript', {})
       " edit the file only after catching the SwapExists event
       call term_sendkeys(buf, ":edit " .. fname .. "\<CR>")
+      " set up the testing environment
+      call term_sendkeys(buf, ":call SetUpVim()\<CR>")
       " load filetype specific settings
       call term_sendkeys(buf, ":call LoadFiletype('" .. filetype .. "')\<CR>")
 

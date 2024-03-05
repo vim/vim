@@ -26,14 +26,30 @@ Creating a syntax plugin test
 -----------------------------
 
 Create a source file in the language you want to test in the "input"
-directory.  Make sure to include some interesting constructs with complicated
-highlighting.
-
-Use the filetype name as the base and a file name extension matching the
-filetype.  Let's use Java as an example.  The file would then be
+directory.  Use the filetype name as the base and a file name extension
+matching the filetype.  Let's use Java as an example. The file would then be
 "input/java.java".
 
+Make sure to include some interesting constructs with plenty of complicated
+highlighting.  Optionally, pre-configure the testing environment by including
+setup commands at the top of the input file. The format for these lines is:
+
+	TEST_SETUP {command}
+
+where {command} is any valid Ex command, which extends to the end of the line.
+The first 20 lines of the input file are ALWAYS scanned for setup commands and
+these will be executed before the syntax highlighting is enabled.  Typically,
+these lines would be included as comments so as not to introduce any syntax
+errors in the input file but this is not required.
+
+Continuing the Java example:
+
+	// TEST_SETUP let g:java_space_errors = 1
+	// TEST_SETUP let g:java_minlines = 5
+	class Test { }
+
 If there is no further setup required, you can now run the tests:
+
 	make test
 
 The first time this will fail with an error for a missing screendump.  The
@@ -69,8 +85,10 @@ are covered by the test.  You can follow these steps:
    pass, but if you fixed syntax highlighting that was already visible in the
    input file, carefully check that the changes in the screendump are
    intentional:
+
 	let fname = '{name}_99.dump'
 	call term_dumpdiff('failed/' .. fname, 'dumps/' .. fname)
+
    Fix the syntax plugin until the result is good.
 2. Edit the input file for your language to add the items you have improved.
    (TODO: how to add another screendump?).
@@ -91,7 +109,6 @@ test.
 
 
 
-TODO: run test for one specific filetype
 
-TODO: testing with various option values
+TODO: run test for one specific filetype
 TODO: test syncing by jumping around
