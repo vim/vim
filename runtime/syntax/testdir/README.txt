@@ -48,6 +48,19 @@ Continuing the Java example:
 	// TEST_SETUP let g:java_minlines = 5
 	class Test { }
 
+As an alternative, setup commands can be included in an external Vim script
+file in the "input/setup" directory.  This script file must have the same base
+name as the input file.
+
+So, the equivalent example configuration using this method would be to create
+an "input/setup/java.vim" script file with the following lines:
+
+	let g:java_space_errors = 1
+	let g:java_minlines = 5
+
+Both inline setup commands and setup scripts may be used at the same time, the
+script file will be sourced before any TEST_SETUP commands are executed.
+
 If there is no further setup required, you can now run the tests:
 
 	make test
@@ -100,6 +113,7 @@ are covered by the test.  You can follow these steps:
    test" should succeed.
 3. Prepare a pull request with the modified files:
 	- syntax plugin:    syntax/{name}.vim
+	- Vim setup file:   syntax/testdir/input/setup/{name}.vim (if any)
 	- test input file:  syntax/testdir/input/{name}.{ext}
 	- test dump files:  syntax/testdir/dumps/{name}_99.dump
 

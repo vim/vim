@@ -90,6 +90,10 @@ func RunTest()
   let failed_tests = []
   let skipped_count = 0
   let MAX_FAILED_COUNT = 5
+  " Create a map of setup configuration filenames with their basenames as keys.
+  let setup = glob('input/setup/*.vim', 1, 1)
+    \ ->reduce({d, f -> extend(d, {fnamemodify(f, ':t:r'): f})}, {})
+
   for fname in glob('input/*.*', 1, 1)
     if fname =~ '\~$'
       " backup file, skip
@@ -175,7 +179,13 @@ func RunTest()
       redraw
 
       " Let "Xtestscript#SetUpVim()" turn the syntax on.
-      let buf = RunVimInTerminal('-Nu NONE -S Xtestscript', {})
+      let prefix = '-Nu NONE -S Xtestscript'
+      let path = get(setup, root, '')
+      " Source the found setup configuration file.
+      let args = !empty(path)
+	\ ? prefix .. ' -S ' .. path
+	\ : prefix
+      let buf = RunVimInTerminal(args, {})
       " edit the file only after catching the SwapExists event
       call term_sendkeys(buf, ":edit " .. fname .. "\<CR>")
       " set up the testing environment
