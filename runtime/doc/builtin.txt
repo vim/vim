@@ -4309,7 +4309,8 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 		  its selected part is substituted with spaces.
 		- If {pos1} and {pos2} are not in the same buffer, an empty
 		  list is returned.
-		- {pos1} and {pos2} must be exists in tabs.
+		- {pos1} and {pos2} must belong to a buffer that is loaded in a
+		  window in any tab.
 
 		Examples: >
 			:xnoremap <CR>
