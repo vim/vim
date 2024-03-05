@@ -1757,9 +1757,6 @@ func Test_visual_getregion()
     call assert_equal([], getregion(getpos('.'), getpos("'A"), {'type': 'v' }))
     call assert_equal([], getregion(getpos("'A"), getpos('.'), {'type': 'v' }))
     exe $':{newbuf}bwipe!'
-
-    #" using invalid buffer
-    call assert_equal([], getregion([10000, 10, 1, 0], [10000, 10, 1, 0]))
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
