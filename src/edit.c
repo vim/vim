@@ -4101,12 +4101,30 @@ ins_bs(
 					   && has_format_option(FO_WHITE_PAR))
 		{
 		    char_u  *ptr = ml_get_buf(curbuf, curwin->w_cursor.lnum,
-									TRUE);
-		    int	    len;
+									FALSE);
+		    int	    len = ml_get_curline_len();
 
-		    len = (int)STRLEN(ptr);
 		    if (len > 0 && ptr[len - 1] == ' ')
-			ptr[len - 1] = NUL;
+		    {
+			char_u *newp = alloc(curbuf->b_ml.ml_line_len - 1);
+
+			if (newp != NULL)
+			{
+			    mch_memmove(newp, ptr, len - 1);
+			    newp[len - 1] = NUL;
+			    if (curbuf->b_ml.ml_line_len > len + 1)
+				mch_memmove(newp + len, ptr + len + 1,
+					   curbuf->b_ml.ml_line_len - len - 1);
+
+			    if (curbuf->b_ml.ml_flags
+					      & (ML_LINE_DIRTY | ML_ALLOCATED))
+				vim_free(curbuf->b_ml.ml_line_ptr);
+			    curbuf->b_ml.ml_line_ptr = newp;
+			    curbuf->b_ml.ml_line_len--;
+			    curbuf->b_ml.ml_line_textlen--;
+			    curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
+			}
+		    }
 		}
 
 		(void)do_join(2, FALSE, FALSE, FALSE, FALSE);

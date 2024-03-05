@@ -4466,4 +4466,23 @@ func Test_textprop_notype_join()
   bwipe!
 endfunc
 
+" This was causing text property corruption.
+func Test_textprop_backspace_fo_aw()
+  new
+  call setline(1, 'foobar')
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'type': 'test', 'length': 3})
+  set backspace=indent,eol,start
+  setlocal formatoptions+=aw
+  call feedkeys("A \<CR>\<BS>\<Esc>", 'tx')
+  call assert_equal('foobar', getline(1))
+  call assert_equal([
+        \ #{id: 0, col: 1, start: 1, end: 1, type_bufnr: 0,
+        \   type: 'test', length: 3}], prop_list(1))
+
+  bwipe!
+  set backspace&
+  call prop_type_delete('test')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
