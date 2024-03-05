@@ -1364,6 +1364,7 @@ del_bytes(
 	    mch_memmove(newp + newlen + 1, oldp + oldlen + 1,
 			       (size_t)curbuf->b_ml.ml_line_len - oldlen - 1);
 	curbuf->b_ml.ml_line_len -= count;
+	curbuf->b_ml.ml_line_textlen = (int)STRLEN(newp) + 1;
     }
 #endif
 
