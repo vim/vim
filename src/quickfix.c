@@ -3146,7 +3146,8 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 	    // Didn't find it, go to the window before the quickfix
 	    // window, unless 'switchbuf' contains 'uselast': in this case we
 	    // try to jump to the previously used window first.
-	    if ((swb_flags & SWB_USELAST) && win_valid(prevwin) && !prevwin->w_p_wfb)
+	    if ((swb_flags & SWB_USELAST) && win_valid(prevwin) &&
+		    !prevwin->w_p_wfb)
 		win = prevwin;
 	    else if (altwin != NULL)
 		win = altwin;
@@ -3158,7 +3159,8 @@ qf_goto_win_with_qfl_file(int qf_fnum)
 	}
 
 	// Remember a usable window.
-	if (altwin == NULL && !win->w_p_pvw && !win->w_p_wfb && bt_normal(win->w_buffer))
+	if (altwin == NULL && !win->w_p_pvw && !win->w_p_wfb &&
+		bt_normal(win->w_buffer))
 	    altwin = win;
     }
 
@@ -3262,30 +3264,48 @@ qf_jump_edit_buffer(
     }
     else
     {
-	if (!forceit && curwin->w_p_wfb)
+	int	fnum = qf_ptr->qf_fnum;
+
+	if (!forceit && curwin->w_p_wfb && curbuf->b_fnum != fnum)
 	{
 	    if (qi->qfl_type == QFLT_LOCATION)
 	    {
-	        // Location lists cannot split or reassign their window
-	        // so 'winfixbuf' windows must fail
-	        semsg("%s", e_winfixbuf_cannot_go_to_buffer);
-	        return QF_ABORT;
+		// Location lists cannot split or reassign their window
+		// so 'winfixbuf' windows must fail
+		emsg(_(e_winfixbuf_cannot_go_to_buffer));
+		return FAIL;
 	    }
 
-	    if (!win_valid(prevwin))
+	    if (win_valid(prevwin) && !prevwin->w_p_wfb &&
+		    !bt_quickfix(prevwin->w_buffer))
 	    {
-	        // Split the window, which will be 'nowinfixbuf', and set curwin to that
-	        exarg_T new_eap;
-	        CLEAR_FIELD(new_eap);
-	        new_eap.cmdidx = CMD_split;
-	        new_eap.cmd = (char_u *)"split";
-	        new_eap.arg = (char_u *)"";
-	        ex_splitview(&new_eap);
+		// 'winfixbuf' is set; attempt to change to a window without it
+		// that isn't a quickfix/location list window.
+		win_goto(prevwin);
+	    }
+	    if (curwin->w_p_wfb)
+	    {
+		// Split the window, which will be 'nowinfixbuf', and set curwin
+		// to that
+		if (win_split(0, 0) == OK)
+		    *opened_window = TRUE;
+
+		if (curwin->w_p_wfb)
+		{
+		    // Autocommands set 'winfixbuf' or sent us to another window
+		    // with it set.  Give up, but don't return immediately, as
+		    // they may have messed with the list.
+		    emsg(_(e_winfixbuf_cannot_go_to_buffer));
+		    retval = FAIL;
+		}
 	    }
 	}
 
-	retval = buflist_getfile(qf_ptr->qf_fnum,
-		(linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit);
+	if (retval == OK)
+	{
+	    retval = buflist_getfile(fnum,
+		    (linenr_T)1, GETF_SETMARK | GETF_SWITCH, forceit);
+	}
     }
 
     // If a location list, check whether the associated window is still

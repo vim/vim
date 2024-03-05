@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 9.1.  Last change: 2024 Mar 03
+*message.txt*   For Vim version 9.1.  Last change: 2024 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,7 +122,7 @@ wiped out a buffer which contains a mark or is referenced in another way.
 You cannot have two buffers with exactly the same name.  This includes the
 path leading to the file.
 
-							*E1513* >
+							*E1513*
   Cannot edit buffer. 'winfixbuf' is enabled ~
 
 If a window has 'winfixbuf' enabled, you cannot change that window's current
