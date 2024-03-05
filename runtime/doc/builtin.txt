@@ -4311,6 +4311,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 		  list is returned.
 		- {pos1} and {pos2} must belong to a buffer that is loaded in a
 		  window in any tab.
+		- It is evaluated in current window context.
 
 		Examples: >
 			:xnoremap <CR>

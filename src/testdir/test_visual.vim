@@ -1747,7 +1747,7 @@ func Test_visual_getregion()
     #" using the wrong type
     call assert_fails(':echo "."->getpos()->getregion("$", [])', 'E1211:')
 
-    #" using a mark in another buffer
+    #" using a mark from another buffer to current buffer
     new
     VAR newbuf = bufnr()
     call setline(1, range(10))
@@ -1757,6 +1757,17 @@ func Test_visual_getregion()
     call assert_equal([], getregion(getpos('.'), getpos("'A"), {'type': 'v' }))
     call assert_equal([], getregion(getpos("'A"), getpos('.'), {'type': 'v' }))
     exe $':{newbuf}bwipe!'
+
+    #" using a mark from another buffer to another buffer
+    new
+    VAR anotherbuf = bufnr()
+    call setline(1, range(10))
+    normal! GmA
+    normal! GmB
+    wincmd p
+    call assert_equal([anotherbuf, 10, 1, 0], getpos("'A"))
+    call assert_equal(['9'], getregion(getpos("'B"), getpos("'A"), {'type': 'v' }))
+    exe $':{anotherbuf}bwipe!'
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
