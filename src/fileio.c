@@ -4344,7 +4344,7 @@ buf_check_timestamp(
 	    }
 	    else
 	    {
-		if (!autocmd_busy)
+		if (!autocmd_busy && !shortmess(SHM_FILEINFO))
 		{
 		    msg_start();
 		    msg_puts_attr(tbuf, HL_ATTR(HLF_E) + MSG_HIST);
