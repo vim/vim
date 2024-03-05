@@ -6,7 +6,7 @@
 # fileencoding : UTF-8
 # Author       : Ivan Pešić
 
-!insertmacro MUI_LANGUAGE "Српски"
+!insertmacro MUI_LANGUAGE "Serbian"
 
 
 # Overwrite the default translation.

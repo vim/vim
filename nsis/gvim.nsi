@@ -170,6 +170,7 @@ Page custom SetCustom ValidateCustom
     !include "lang\italian.nsi"
     !include "lang\japanese.nsi"
     !include "lang\russian.nsi"
+    !include "lang\serbian.nsi"
     !include "lang\simpchinese.nsi"
     !include "lang\tradchinese.nsi"
     !include "lang\turkish.nsi"
