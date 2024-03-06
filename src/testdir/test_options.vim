@@ -1295,18 +1295,20 @@ endfunc
 
 func Test_shortmess_F3()
   defer delete('X_dummy')
+
   set hidden
+  set autoread
   e X_dummy
   e file
-  set shortmess+=FO
+
+  set shortmess+=F
   call writefile(["foo"], 'X_dummy')
   call assert_true(empty(execute('bn', '')))
   call assert_true(empty(execute('bn', '')))
+
   set shortmess&
+  set autoread&
   set hidden&
-  call writefile(["bar"], 'X_dummy')
-  call assert_match('X_dummy', execute('bn', ''))
-  call assert_match('file', execute('bn', ''))
   bwipe
   bwipe
 endfunc

@@ -4294,7 +4294,7 @@ buf_check_timestamp(
 #endif
     }
 
-    if (mesg != NULL)
+    if (mesg != NULL && !shortmess(SHM_FILEINFO))
     {
 	path = home_replace_save(buf, buf->b_fname);
 	if (path != NULL)
@@ -4344,7 +4344,7 @@ buf_check_timestamp(
 	    }
 	    else
 	    {
-		if (!autocmd_busy && !shortmess(SHM_FILEINFO))
+		if (!autocmd_busy)
 		{
 		    msg_start();
 		    msg_puts_attr(tbuf, HL_ATTR(HLF_E) + MSG_HIST);
