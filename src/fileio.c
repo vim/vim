@@ -4294,7 +4294,7 @@ buf_check_timestamp(
 #endif
     }
 
-    if (mesg != NULL)
+    if (mesg != NULL && !shortmess(SHM_FILEINFO))
     {
 	path = home_replace_save(buf, buf->b_fname);
 	if (path != NULL)

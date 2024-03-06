@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 Mar 03
+*options.txt*	For Vim version 9.1.  Last change: 2024 Mar 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7253,7 +7253,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  q	use "recording" instead of "recording @a"		*shm-q*
 	  F	don't give the file info when editing a file, like	*shm-F*
 		`:silent` was used for the command; note that this also
-		affects messages from autocommands
+		affects messages from autocommands and 'autoread' reloading
 	  S	do not show search count message when searching, e.g.	*shm-S*
 		"[1/5]"
 
