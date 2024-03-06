@@ -5491,9 +5491,10 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     struct block_def	bd;
     char_u		*akt = NULL;
     int			inclusive = TRUE;
-    int			fnum = -1;
+    int			fnum1 = -1, fnum2 = -1;
     pos_T		p1, p2;
     char_u		*type;
+    buf_T		*save_curbuf = curbuf;
     char_u		default_type[] = "v";
     int			save_virtual = -1;
     int			l;
@@ -5508,12 +5509,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if (list2fpos(&argvars[0], &p1, &fnum, NULL, FALSE) != OK
-	    || (fnum >= 0 && fnum != curbuf->b_fnum))
-	return;
-
-    if (list2fpos(&argvars[1], &p2, &fnum, NULL, FALSE) != OK
-	    || (fnum >= 0 && fnum != curbuf->b_fnum))
+    if (list2fpos(&argvars[0], &p1, &fnum1, NULL, FALSE) != OK
+	    || list2fpos(&argvars[1], &p2, &fnum2, NULL, FALSE) != OK
+	    || fnum1 != fnum2)
 	return;
 
     if (argvars[2].v_type == VAR_DICT)
@@ -5539,6 +5537,18 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	region_type = MBLOCK;
     else
 	return;
+
+    if (fnum1 != 0)
+    {
+	buf_T	*findbuf;
+
+	findbuf = buflist_findnr(fnum1);
+	// buffer not loaded
+	if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
+	    return;
+	save_curbuf = curbuf;
+	curbuf = findbuf;
+    }
 
     save_virtual = virtual_op;
     virtual_op = virtual_active();
@@ -5641,6 +5651,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	    break;
 	}
     }
+
+    if (curbuf != save_curbuf)
+        curbuf = save_curbuf;
 
     virtual_op = save_virtual;
 }
