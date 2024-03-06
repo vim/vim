@@ -2700,9 +2700,13 @@ ml_get_cursor_len(void)
     colnr_T
 ml_get_buf_len(buf_T *buf, linenr_T lnum)
 {
-    if (*ml_get_buf(buf, lnum, FALSE) == NUL)
+    char_u	*line;
+
+    if (*(line = ml_get_buf(buf, lnum, FALSE)) == NUL)
         return 0;
 
+    if (buf->b_ml.ml_line_textlen <= 0)
+	buf->b_ml.ml_line_textlen = (int)STRLEN(line) + 1;
     return buf->b_ml.ml_line_textlen - 1;
 }
 
@@ -2799,8 +2803,11 @@ errorret:
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = end - start;
 #if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
-	if (buf->b_has_textprop)
-	    buf->b_ml.ml_line_textlen = (int)STRLEN(buf->b_ml.ml_line_ptr) + 1;
+	// Text properties come after a NUL byte, so ml_line_len should be
+	// larger than the size of textprop_T if there is any.
+	if (buf->b_has_textprop
+			 && (size_t)buf->b_ml.ml_line_len > sizeof(textprop_T))
+	    buf->b_ml.ml_line_textlen = 0;  // call STRLEN() later when needed
 	else
 #endif
 	    buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
