@@ -167,6 +167,7 @@ Page custom SetCustom ValidateCustom
     !include "lang\danish.nsi"
     !include "lang\dutch.nsi"
     !include "lang\german.nsi"
+    !include "lang\greek.nsi"
     !include "lang\italian.nsi"
     !include "lang\japanese.nsi"
     !include "lang\russian.nsi"
