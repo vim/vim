@@ -75,7 +75,7 @@ LangString str_desc_desktop         ${LANG_GREEK} \
 LangString str_section_start_menu   ${LANG_GREEK} \
     "In the Start Menu Programs Folder"
 LangString str_desc_start_menu      ${LANG_GREEK} \
-    "Add Vim in the programs folder of the start menu."
+    "Προσθήκη του Vim στον φάκελο προγραμμάτων του μενού εκκίνησης."
 
 #LangString str_section_quick_launch ${LANG_GREEK} \
 #    "In the Quick Launch Bar"
@@ -118,8 +118,8 @@ LangString str_desc_plugin_home     ${LANG_GREEK} \
 LangString str_section_plugin_vim   ${LANG_GREEK} \
     "Shared"
 LangString str_desc_plugin_vim      ${LANG_GREEK} \
-    "Δημιουργία plugin directories in Vim install directory, it is used for \
-     everybody on the system."
+    "Δημιουργία καταλόγων plugin στον κατάλογο εγκατάστασης του Vim, χρησιμοποιείται από \
+     όλους στο σύστημα."
 
 LangString str_section_nls          ${LANG_GREEK} \
     "Native Language Support"
@@ -237,12 +237,12 @@ LangString str_msg_unregistering ${LANG_GREEK} \
 ##############################################################################
 
 LangString str_vimrc_page_title    ${LANG_GREEK} \
-    "Choose _vimrc settings"
+    "Επιλογή ρυθμίσεων _vimrc"
 LangString str_vimrc_page_subtitle ${LANG_GREEK} \
     "Choose the settings for enhancement, keyboard and mouse."
 
 LangString str_msg_compat_title    ${LANG_GREEK} \
-    " Vi / Vim behavior "
+    " Συμπεριφορά Vi / Vim  "
 LangString str_msg_compat_desc     ${LANG_GREEK} \
     "&Compatibility and enhancements"
 LangString str_msg_compat_vi       ${LANG_GREEK} \
@@ -264,7 +264,7 @@ LangString str_msg_keymap_windows ${LANG_GREEK} \
     "Remap a few keys"
 
 LangString str_msg_mouse_title   ${LANG_GREEK} \
-    " Mouse "
+    " Ποντίκι "
 LangString str_msg_mouse_desc    ${LANG_GREEK} \
     "&Behavior of right and left buttons"
 LangString str_msg_mouse_default ${LANG_GREEK} \
