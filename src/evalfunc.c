@@ -5546,7 +5546,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	// buffer not loaded
 	if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
 	    return;
-	save_curbuf = curbuf;
 	curbuf = findbuf;
     }
 
