@@ -3293,8 +3293,9 @@ qf_jump_edit_buffer(
 		if (curwin->w_p_wfb)
 		{
 		    // Autocommands set 'winfixbuf' or sent us to another window
-		    // with it set.  Give up, but don't return immediately, as
-		    // they may have messed with the list.
+		    // with it set, or we failed to split the window.  Give up,
+		    // but don't return immediately, as they may have messed
+		    // with the list.
 		    emsg(_(e_winfixbuf_cannot_go_to_buffer));
 		    retval = FAIL;
 		}
