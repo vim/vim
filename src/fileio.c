@@ -4294,7 +4294,7 @@ buf_check_timestamp(
 #endif
     }
 
-    if (mesg != NULL && !shortmess(SHM_FILEINFO))
+    if (mesg != NULL)
     {
 	path = home_replace_save(buf, buf->b_fname);
 	if (path != NULL)
@@ -4489,8 +4489,14 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 
 	if (saved == OK)
 	{
+	    int old_msg_silent = msg_silent;
+
 	    curbuf->b_flags |= BF_CHECK_RO;	// check for RO again
 	    keep_filetype = TRUE;		// don't detect 'filetype'
+
+	    if (shortmess(SHM_FILEINFO))
+		msg_silent = 1;
+
 	    if (readfile(buf->b_ffname, buf->b_fname, (linenr_T)0,
 			(linenr_T)0,
 			(linenr_T)MAXLNUM, &ea, flags) != OK)
@@ -4521,6 +4527,8 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 		    u_unchanged(curbuf);
 		}
 	    }
+
+	    msg_silent = old_msg_silent;
 	}
 	vim_free(ea.cmd);
 
