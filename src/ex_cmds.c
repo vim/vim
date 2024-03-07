@@ -2755,7 +2755,7 @@ do_ecmd(
 	{
 	    oldbuf = TRUE;
 	    set_bufref(&bufref, buf);
-	    (void)buf_check_timestamp(buf, FALSE);
+	    (void)buf_check_timestamp(buf, FALSE, FALSE);
 	    // Check if autocommands made the buffer invalid or changed the
 	    // current buffer.
 	    if (!bufref_valid(&bufref) || curbuf != old_curbuf.br_buf)
@@ -5497,7 +5497,7 @@ ex_drop(exarg_T *eap)
 
 		// reload the file if it is newer
 		curbuf->b_p_ar = TRUE;
-		buf_check_timestamp(curbuf, FALSE);
+		buf_check_timestamp(curbuf, FALSE, FALSE);
 		curbuf->b_p_ar = save_ar;
 	    }
 	    ex_rewind(eap);

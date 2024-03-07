@@ -1306,6 +1306,12 @@ func Test_shortmess_F3()
   call assert_true(empty(execute('bn', '')))
   call assert_true(empty(execute('bn', '')))
 
+  " :checktime works when shortmess includes "F".
+  e X_dummy
+  w!
+  call writefile(["bar"], 'X_dummy')
+  call assert_false(empty(execute('checktime', '')))
+
   set shortmess&
   set autoread&
   set hidden&

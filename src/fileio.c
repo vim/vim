@@ -4023,7 +4023,7 @@ check_timestamps(
 		bufref_T bufref;
 
 		set_bufref(&bufref, buf);
-		n = buf_check_timestamp(buf, focus);
+		n = buf_check_timestamp(buf, TRUE, focus);
 		if (didit < n)
 		    didit = n;
 		if (n > 0 && !bufref_valid(&bufref))
@@ -4102,6 +4102,7 @@ move_lines(buf_T *frombuf, buf_T *tobuf)
     int
 buf_check_timestamp(
     buf_T	*buf,
+    int		force,
     int		focus UNUSED)	// called for GUI focus event
 {
     stat_T	st;
@@ -4294,7 +4295,7 @@ buf_check_timestamp(
 #endif
     }
 
-    if (mesg != NULL && !shortmess(SHM_FILEINFO))
+    if (mesg != NULL && (!shortmess(SHM_FILEINFO) || force))
     {
 	path = home_replace_save(buf, buf->b_fname);
 	if (path != NULL)

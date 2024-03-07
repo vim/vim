@@ -890,7 +890,7 @@ diff_try_update(
 	{
 	    buf = curtab->tp_diffbuf[idx_new];
 	    if (buf_valid(buf))
-		buf_check_timestamp(buf, FALSE);
+		buf_check_timestamp(buf, FALSE, FALSE);
 	}
 
     // Write the first buffer to a tempfile or mmfile_t.
