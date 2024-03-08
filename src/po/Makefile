@@ -20,7 +20,15 @@ SED = LANG=C sed
 # tools 0.10.37, which use a slightly different .po file format that is not
 # compatible with Solaris (and old gettext implementations) unless these are
 # set.  gettext 0.10.36 will not work!
+
+# Starting from version 0.22, msgfmt forcibly converts text to UTF-8 regardless
+# of the value of the "charset" field.
+MSGFMT_VER = $(shell msgfmt --version | awk '/msgfmt/ {print $4}' | grep -o -e [0-9][0-9])
+ifeq ($(shell test $(MSGFMT_VER) -ge 22; echo $$?),0)
+MSGFMTCMD = OLD_PO_FILE_INPUT=yes $(MSGFMT) -v --no-convert
+else
 MSGFMTCMD = OLD_PO_FILE_INPUT=yes $(MSGFMT) -v
+endif
 XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes xgettext
 MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
