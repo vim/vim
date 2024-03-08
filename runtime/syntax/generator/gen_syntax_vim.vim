@@ -2,8 +2,8 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: 2024 Mar 02
-" Version: 2.0.4
+" Last Change: 2024 Mar 09
+" Version: 2.0.5
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -271,7 +271,7 @@ function! s:get_vim_command_type(cmd_name)
 	"   6: mapclear
 	"   7: unmap
 	"   99: (Exclude registration of "syn keyword")
-	let menu_prefix = '^\%([acinosvx]\?\|tl\)'
+	let menu_prefix = '^\%([acinostvx]\?\|tl\)'
 	let map_prefix  = '^[acilnostvx]\?'
 	let echo_suffix = '\%(n\|hl\|msg\|window\|err\|console\|\)$'
 	let exclude_list = [
@@ -284,7 +284,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'behave', 'augroup', 'normal', 'syntax',
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
-	\	'new',
+	\	'new', 'popup',
 	\ ]
 	" Required for original behavior
 	" \	'global', 'vglobal'
