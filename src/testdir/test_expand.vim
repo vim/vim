@@ -51,6 +51,19 @@ func Test_expand_tilde_filename()
   bwipe!
 endfunc
 
+func Test_expand_env_pathsep()
+  let $FOO = './foo'
+  call assert_equal('./foo/bar', expand('$FOO/bar'))
+  let $FOO = './foo/'
+  call assert_equal('./foo/bar', expand('$FOO/bar'))
+  let $FOO = 'C:'
+  call assert_equal('C:/bar', expand('$FOO/bar'))
+  let $FOO = 'C:/'
+  call assert_equal('C:/bar', expand('$FOO/bar'))
+
+  unlet $FOO
+endfunc
+
 func Test_expandcmd()
   let $FOO = 'Test'
   call assert_equal('e x/Test/y', expandcmd('e x/$FOO/y'))
