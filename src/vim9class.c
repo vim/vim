@@ -208,7 +208,7 @@ add_member(
  * "parent_count" is the number of members in the parent class
  * "members" will be set to the newly allocated array of members and
  * "member_count" set to the number of members.
- * Returns OK or FAIL.
+ * Returns OK on success and FAIL on memory allocation failure.
  */
     static int
 add_members_to_class(
@@ -301,12 +301,19 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
  */
     static int
 validate_extends_class(
+    class_T *cl,
     char_u  *extends_name,
     class_T **extends_clp,
     int	    is_class)
 {
     typval_T	tv;
     int		success = FALSE;
+
+    if (STRCMP(cl->class_name, extends_name) == 0)
+    {
+	semsg(_(e_cannot_extend_str), extends_name);
+	return success;
+    }
 
     tv.v_type = VAR_UNKNOWN;
     if (eval_variable_import(extends_name, &tv) == FAIL)
@@ -1642,6 +1649,36 @@ early_ret:
     garray_T objmethods;
     ga_init2(&objmethods, sizeof(ufunc_T *), 10);
 
+    class_T *cl = NULL;
+    class_T *extends_cl = NULL;  // class from "extends" argument
+    class_T **intf_classes = NULL;
+
+    cl = ALLOC_CLEAR_ONE(class_T);
+    if (cl == NULL)
+	goto cleanup;
+    if (!is_class)
+	cl->class_flags = CLASS_INTERFACE;
+    else if (is_abstract)
+	cl->class_flags = CLASS_ABSTRACT;
+
+    cl->class_refcount = 1;
+    cl->class_name = vim_strnsave(name_start, name_end - name_start);
+    if (cl->class_name == NULL)
+	goto cleanup;
+
+    // Add the class to the script-local variables.
+    // TODO: handle other context, e.g. in a function
+    // TODO: does uf_hash need to be cleared?
+    typval_T tv;
+    tv.v_type = VAR_CLASS;
+    tv.vval.v_class = cl;
+    is_export = class_export;
+    SOURCING_LNUM = start_lnum;
+    int rc = set_var_const(cl->class_name, current_sctx.sc_sid,
+						NULL, &tv, FALSE, 0, 0);
+    if (rc == FAIL)
+	goto cleanup;
+
     /*
      * Go over the body of the class/interface until "endclass" or
      * "endinterface" is found.
@@ -1981,15 +2018,13 @@ early_ret:
     }
     vim_free(theline);
 
-    class_T *extends_cl = NULL;  // class from "extends" argument
-
     /*
      * Check a few things before defining the class.
      */
 
     // Check the "extends" class is valid.
     if (success && extends != NULL)
-	success = validate_extends_class(extends, &extends_cl, is_class);
+	success = validate_extends_class(cl, extends, &extends_cl, is_class);
     VIM_CLEAR(extends);
 
     // Check the new object methods to make sure their access (public or
@@ -2016,8 +2051,6 @@ early_ret:
 	success = validate_abstract_class_methods(&classfunctions,
 						&objmethods, extends_cl);
 
-    class_T **intf_classes = NULL;
-
     // Check all "implements" entries are valid.
     if (success && ga_impl.ga_len > 0)
     {
@@ -2032,23 +2065,9 @@ early_ret:
 	success = check_func_arg_names(&classfunctions, &objmethods,
 							&classmembers);
 
-    class_T *cl = NULL;
     if (success)
     {
 	// "endclass" encountered without failures: Create the class.
-
-	cl = ALLOC_CLEAR_ONE(class_T);
-	if (cl == NULL)
-	    goto cleanup;
-	if (!is_class)
-	    cl->class_flags = CLASS_INTERFACE;
-	else if (is_abstract)
-	    cl->class_flags = CLASS_ABSTRACT;
-
-	cl->class_refcount = 1;
-	cl->class_name = vim_strnsave(name_start, name_end - name_start);
-	if (cl->class_name == NULL)
-	    goto cleanup;
 
 	if (extends_cl != NULL)
 	{
@@ -2136,41 +2155,10 @@ early_ret:
 	// TODO:
 	// - Fill hashtab with object members and methods ?
 
-	// Add the class to the script-local variables.
-	// TODO: handle other context, e.g. in a function
-	// TODO: does uf_hash need to be cleared?
-	typval_T tv;
-	tv.v_type = VAR_CLASS;
-	tv.vval.v_class = cl;
-	is_export = class_export;
-	SOURCING_LNUM = start_lnum;
-	set_var_const(cl->class_name, current_sctx.sc_sid,
-						       NULL, &tv, FALSE, 0, 0);
 	return;
     }
 
 cleanup:
-    if (cl != NULL)
-    {
-	vim_free(cl->class_name);
-	vim_free(cl->class_class_functions);
-	if (cl->class_interfaces != NULL)
-	{
-	    for (int i = 0; i < cl->class_interface_count; ++i)
-		vim_free(cl->class_interfaces[i]);
-	    vim_free(cl->class_interfaces);
-	}
-	if (cl->class_interfaces_cl != NULL)
-	{
-	    for (int i = 0; i < cl->class_interface_count; ++i)
-		class_unref(cl->class_interfaces_cl[i]);
-	    vim_free(cl->class_interfaces_cl);
-	}
-	vim_free(cl->class_obj_members);
-	vim_free(cl->class_obj_methods);
-	vim_free(cl);
-    }
-
     vim_free(extends);
     class_unref(extends_cl);
 
