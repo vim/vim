@@ -2585,7 +2585,7 @@ one_window(void)
 
 /*
  * Close the possibly last window in a tab page.
- * Returns TRUE when the window was closed already.
+ * Return FALSE if there are other windows and nothing is done, TRUE otherwise.
  */
     static int
 close_last_window_tabpage(
@@ -2723,7 +2723,7 @@ win_close(win_T *win, int free_buf)
     // and then close the window and the tab page to avoid that curwin and
     // curtab are invalid while we are freeing memory.
     if (close_last_window_tabpage(win, free_buf, prev_curtab))
-      return FAIL;
+	return FAIL;
 
     // When closing the help window, try restoring a snapshot after closing
     // the window.  Otherwise clear the snapshot, it's now invalid.
@@ -2796,9 +2796,11 @@ win_close(win_T *win, int free_buf)
 
     win_close_buffer(win, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 
-    if (only_one_window() && win_valid(win) && win->w_buffer == NULL
-	    && (last_window() || curtab != prev_curtab
-		|| close_last_window_tabpage(win, free_buf, prev_curtab)))
+    if (win_valid(win) && win->w_buffer == NULL
+#if defined(FEAT_PROP_POPUP)
+	    && !popup_is_popup(win)
+#endif
+	    && last_window())
     {
 	// Autocommands have closed all windows, quit now.  Restore
 	// curwin->w_buffer, otherwise writing viminfo may fail.
@@ -2812,10 +2814,7 @@ win_close(win_T *win, int free_buf)
 						      && win->w_buffer == NULL)
     {
 	// Need to close the window anyway, since the buffer is NULL.
-	// Don't trigger autocmds with a NULL buffer.
-	block_autocmds();
 	win_close_othertab(win, FALSE, prev_curtab);
-	unblock_autocmds();
 	return FAIL;
     }
 
@@ -3352,10 +3351,15 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	return; // window is already being closed
 
     // Trigger WinClosed just before starting to free window-related resources.
-    trigger_winclosed(win);
-    // autocmd may have freed the window already.
-    if (!win_valid_any_tab(win))
-	return;
+    // If the buffer is NULL, it isn't safe to trigger autocommands,
+    // and win_close() should have already triggered WinClosed.
+    if (win->w_buffer != NULL)
+    {
+	trigger_winclosed(win);
+	// autocmd may have freed the window already.
+	if (!win_valid_any_tab(win))
+	    return;
+    }
 
     if (win->w_buffer != NULL)
 	// Close the link to the buffer.
