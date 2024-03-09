@@ -3830,7 +3830,7 @@ set_var(
  * If the variable already exists and "is_const" is FALSE the value is updated.
  * Otherwise the variable is created.
  */
-    void
+    int
 set_var_const(
     char_u	*name,
     scid_T	sid,
@@ -3854,6 +3854,7 @@ set_var_const(
     int		var_in_autoload = FALSE;
     int		flags = flags_arg;
     int		free_tv_arg = !copy;  // free tv_arg if not used
+    int		rc = FAIL;
 
     if (sid != 0)
     {
@@ -4127,10 +4128,14 @@ set_var_const(
 	// values.
 	item_lock(dest_tv, DICT_MAXNEST, TRUE, TRUE);
 
+    rc = OK;
+
 failed:
     vim_free(name_tofree);
     if (free_tv_arg)
 	clear_tv(tv_arg);
+
+    return rc;
 }
 
 /*

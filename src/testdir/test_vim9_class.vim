@@ -67,6 +67,22 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | echo 'done'", 3)
 
+  # Try to define a class with the same name as an existing variable
+  lines =<< trim END
+    vim9script
+    var Something: list<number> = [1]
+    class Thing
+    endclass
+    interface Api
+    endinterface
+    class Something extends Thing implements Api
+      var v1: string = ''
+      def Foo()
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, 'E1041: Redefining script item: "Something"', 7)
+
   # Use old "this." prefixed member variable declaration syntax (without initialization)
   lines =<< trim END
     vim9script
@@ -10271,5 +10287,66 @@ func Test_object_string()
   END
   call v9.CheckSourceSuccess(lines)
 endfunc
+
+" Test for using a class in the class definition
+def Test_Ref_Class_Within_Same_Class()
+  var lines =<< trim END
+    vim9script
+    class A
+      var n: number = 0
+      def Equals(other: A): bool
+        return this.n == other.n
+      enddef
+    endclass
+
+    var a1 = A.new(10)
+    var a2 = A.new(10)
+    var a3 = A.new(20)
+    assert_equal(true, a1.Equals(a2))
+    assert_equal(false, a2.Equals(a3))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class Foo
+      var num: number
+      def Clone(): Foo
+        return Foo.new(this.num)
+      enddef
+    endclass
+
+    var f1 = Foo.new(1)
+
+    def F()
+      var f2: Foo = f1.Clone()
+      assert_equal(false, f2 is f1)
+      assert_equal(true, f2.num == f1.num)
+    enddef
+    F()
+
+    var f3: Foo = f1.Clone()
+    assert_equal(false, f3 is f1)
+    assert_equal(true, f3.num == f1.num)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Test for trying to use a class to extend when defining the same class
+  lines =<< trim END
+    vim9script
+    class A extends A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1354: Cannot extend A', 3)
+
+  # Test for trying to use a class to implement when defining the same class
+  lines =<< trim END
+    vim9script
+    class A implements A
+    endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1347: Not a valid interface: A', 3)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
