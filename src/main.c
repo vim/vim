@@ -3272,6 +3272,10 @@ source_startup_scripts(mparm_T *parmp)
 	{
 	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE,
 						      DOSO_VIMRC, NULL) == FAIL
+#ifdef XDG_VIMRC_FILE
+		&& do_source((char_u *)XDG_VIMRC_FILE, TRUE,
+						      DOSO_VIMRC, NULL) == FAIL
+#endif
 #ifdef USR_VIMRC_FILE2
 		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE,
 						      DOSO_VIMRC, NULL) == FAIL

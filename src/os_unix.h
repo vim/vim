@@ -210,6 +210,9 @@ typedef struct dsc$descriptor   DESC;
 #ifndef SYS_VIMRC_FILE
 # define SYS_VIMRC_FILE "$VIM/vimrc"
 #endif
+#ifndef XDG_VIMRC_FILE
+# define XDG_VIMRC_FILE "~/.config/vim/vimrc"
+#endif
 #ifndef SYS_GVIMRC_FILE
 # define SYS_GVIMRC_FILE "$VIM/gvimrc"
 #endif
