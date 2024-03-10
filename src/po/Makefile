@@ -23,8 +23,7 @@ SED = LANG=C sed
 
 # Starting from version 0.22, msgfmt forcibly converts text to UTF-8 regardless
 # of the value of the "charset" field.
-MSGFMTC = $(shell if $(MSGFMT) --help |grep -q -- --no-convert ; then \
-	  echo msgfmt -v --no-convert; else echo msgfmt -v; fi)
+MSGFMTC = $(shell if $(MSGFMT) --help |grep -q -- --no-convert ; then echo msgfmt -v --no-convert; else echo msgfmt -v; fi)
 MSGFMTCMD = OLD_PO_FILE_INPUT=yes $(MSGFMTC)
 XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes xgettext
 MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
