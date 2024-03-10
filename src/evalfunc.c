@@ -148,6 +148,7 @@ static void f_screencol(typval_T *argvars, typval_T *rettv);
 static void f_screenrow(typval_T *argvars, typval_T *rettv);
 static void f_screenstring(typval_T *argvars, typval_T *rettv);
 static void f_search(typval_T *argvars, typval_T *rettv);
+static void f_searchstr(typval_T *argvars, typval_T *rettv);
 static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
 static void f_searchpairpos(typval_T *argvars, typval_T *rettv);
@@ -2568,6 +2569,8 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_searchpairpos},
     {"searchpos",	1, 5, FEARG_1,	    arg15_search,
 			ret_list_number,    f_searchpos},
+    {"searchstr",	1, 5, FEARG_1,	    arg15_search,
+			ret_string,	    f_searchstr},
     {"server2client",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_server2client},
     {"serverlist",	0, 0, 0,	    NULL,
@@ -9503,7 +9506,7 @@ get_search_arg(typval_T *varp, int *flagsp)
 }
 
 /*
- * Shared by search() and searchpos() functions.
+ * Shared by search(), searchpos() and searchstr() functions.
  */
     static int
 search_cmn(typval_T *argvars, pos_T *match_pos, pos_T *end_pos, int *flagsp)
@@ -9827,6 +9830,64 @@ f_search(typval_T *argvars, typval_T *rettv)
     int		flags = 0;
 
     rettv->vval.v_number = search_cmn(argvars, NULL, NULL, &flags);
+}
+
+/*
+ * "searchstr()" function
+ */
+    static void
+f_searchstr(typval_T *argvars, typval_T *rettv)
+{
+    pos_T	match_pos;
+    pos_T	end_pos;
+    linenr_T	start_lnum;
+    linenr_T	end_lnum;
+    colnr_T	start_col;
+    colnr_T	end_col;
+    char_u	buf[BUFSIZ];
+    int		multi_line = 0;
+    int		matchlen = 0;
+    int		flags = 0;
+
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+    rettv->vval.v_number = search_cmn(argvars, &match_pos, &end_pos, &flags);
+    
+    if (rettv->vval.v_number > 0)
+    {
+    match_pos.col -= 1; // search_cmn increments match start col by 1, adjust it for ml_get_pos.
+    start_lnum = match_pos.lnum;
+    start_col = match_pos.col;
+    end_lnum = end_pos.lnum;
+    end_col = end_pos.col;
+    if (end_lnum == start_lnum)
+    {
+    matchlen = end_col - start_col - 1;
+    }
+    else
+    {
+    matchlen = ml_get_len(start_lnum) - start_col;
+    multi_line = 1;
+    }
+    // Copy first buffer line from match start location to a new allocated string
+    vim_strncpy(buf, ml_get_pos(&match_pos), matchlen);
+    if (multi_line)
+    {
+        // Copy entire lines before first & last
+	for (linenr_T l = start_lnum + 1; l < end_lnum; l++)
+	{
+	vim_strcat(buf, "\n", BUFSIZ);
+	vim_strcat(buf, vim_strsave(ml_get(l)), BUFSIZ);
+	}
+    // Copy last line till match end column
+    char_u * last_line = ml_get(end_lnum);
+    last_line = vim_strnsave(last_line, end_col - 1);
+    vim_strcat(buf, "\n", BUFSIZ);
+    vim_strcat(buf, last_line, BUFSIZ);
+    }
+    rettv->vval.v_string = vim_strnsave(buf, STRLEN(buf));
+    }
 }
 
 /*

@@ -195,6 +195,7 @@ New and extended functions: ~
 |readdirex()|		get a List of file information in a directory
 |reduce()|		reduce a List to a value
 |searchcount()|		get number of matches before/after the cursor
+|searchstr()|		get string that matches the pattern
 |setcellwidths()|	set character cell width overrides
 |setcharpos()|		set character position of cursor, mark, etc.
 |setcursorcharpos()|	set character position of the cursor

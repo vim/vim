@@ -518,6 +518,8 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip} [...]]])
 				List	search for other end of start/end pair
 searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 				List	search for {pattern}
+searchstr({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
+				String	get string matching {pattern}
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
@@ -8343,6 +8345,11 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 
 		Can also be used as a |method|: >
 			GetPattern()->searchpos()
+searchstr({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
+		Same as |search()|, but returns a matching string when found.
+		Example: >
+	:let year_suffix = searchstr('\<\d\{4\}[a-z]\?', 'n')
+
 
 server2client({clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}
