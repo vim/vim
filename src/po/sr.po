@@ -2,7 +2,7 @@
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
-# Copyright (C) 2023
+# Copyright (C) 2024
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR Ivan Pešić <ivan.pesic@gmail.com>, 2017.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-19 11:15+0400\n"
-"PO-Revision-Date: 2024-01-19 11:31+0400\n"
+"POT-Creation-Date: 2024-03-04 14:05+0400\n"
+"PO-Revision-Date: 2024-03-04 14:10+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -179,6 +179,9 @@ msgstr " (фајл %d од %d)"
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr " (фајл (%d) од %d)"
+
+msgid "[Command Line]"
+msgstr "[Командна линија]"
 
 msgid "[Prompt]"
 msgstr "[Одзив]"
@@ -704,9 +707,6 @@ msgstr "Грешка"
 
 msgid "Interrupt"
 msgstr "Прекид"
-
-msgid "[Command Line]"
-msgstr "[Командна линија]"
 
 msgid "is a directory"
 msgstr "је директоријум"
@@ -4220,6 +4220,10 @@ msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Коришћење :loadkeymap ван фајла који се учитава као скрипта"
 
 #, c-format
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: Није подржан diff излазни формат: %s"
+
+#, c-format
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Недостају заграде: %s"
 
@@ -4549,8 +4553,8 @@ msgstr "E196: У овој верзији нема диграфа"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: Језик не може да се постави на „%s”"
 
-msgid "E199: Active window or buffer deleted"
-msgstr "E199: Active window or buffer deleted"
+msgid "E199: Active window or buffer changed or deleted"
+msgstr "E199: Активни прозор или бафер је измењен или обрисан"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: *ReadPre аутокоманде су учиниле фајл нечитљивим"
@@ -8753,6 +8757,13 @@ msgid "E1411: Missing dot after object \"%s\""
 msgstr "E1411: Недостаје тачка након објекта „%s”"
 
 #, c-format
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: Није подржана уграђена метода објекта „%s”"
+
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: Није подржана уграђена метода класе"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Не могу да се мешају позициони и непозициони аргументи: %s"
 
@@ -8805,6 +8816,9 @@ msgstr "E1511: Погрешан број карактера за поље „%s�
 #, c-format
 msgid "E1512: Wrong character width for field \"%s\""
 msgstr "E1512: Погрешна ширина карактера за поље „%s”"
+
+msgid "E1513: Cannot edit buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Не може да се уређује бафер. Укључена је опција 'winfixbuf'"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -9538,6 +9552,9 @@ msgstr "минимални број линија који се користи з
 
 msgid "minimal number of lines used for any window"
 msgstr "минимални број линија који се користи за било који прозор"
+
+msgid "keep window focused on a single buffer"
+msgstr "одржава фокус прозора на одређени бафер"
 
 msgid "keep the height of the window"
 msgstr "задржава се висина прозора"

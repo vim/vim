@@ -1014,6 +1014,32 @@ failret:
 }
 
 /*
+ * Compile a builtin method call of an object (e.g. string(), len(), empty(),
+ * etc.) if the class implements it.
+ */
+    static int
+compile_builtin_method_call(cctx_T *cctx, class_builtin_T builtin_method)
+{
+    type_T	*type = get_decl_type_on_stack(cctx, 0);
+    int		res = FAIL;
+
+    // If the built in function is invoked on an object and the class
+    // implements the corresponding built in method, then invoke the object
+    // method.
+    if (type->tt_type == VAR_OBJECT)
+    {
+	int	method_idx;
+	ufunc_T *uf = class_get_builtin_method(type->tt_class, builtin_method,
+							&method_idx);
+	if (uf != NULL)
+	    res = generate_CALL(cctx, uf, type->tt_class, method_idx, 0);
+    }
+
+    return res;
+}
+
+
+/*
  * Compile a function call:  name(arg1, arg2)
  * "arg" points to "name", "arg + varlen" to the "(".
  * "argcount_init" is 1 for "value->method()"
@@ -1167,6 +1193,20 @@ compile_call(
 		// May have the "D" or "R" flag, reserve a variable for a
 		// deferred function call.
 		if (get_defer_var_idx(cctx) == 0)
+		    idx = -1;
+	    }
+
+	    class_builtin_T	builtin_method = CLASS_BUILTIN_INVALID;
+	    if (STRCMP(name, "string") == 0)
+		builtin_method = CLASS_BUILTIN_STRING;
+	    else if (STRCMP(name, "empty") == 0)
+		builtin_method = CLASS_BUILTIN_EMPTY;
+	    else if (STRCMP(name, "len") == 0)
+		builtin_method = CLASS_BUILTIN_LEN;
+	    if (builtin_method != CLASS_BUILTIN_INVALID)
+	    {
+		res = compile_builtin_method_call(cctx, builtin_method);
+		if (res == OK)
 		    idx = -1;
 	    }
 

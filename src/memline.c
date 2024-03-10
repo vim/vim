@@ -2700,10 +2700,14 @@ ml_get_cursor_len(void)
     colnr_T
 ml_get_buf_len(buf_T *buf, linenr_T lnum)
 {
-    if (*ml_get_buf(buf, lnum, FALSE) == NUL)
+    char_u	*line;
+
+    if (*(line = ml_get_buf(buf, lnum, FALSE)) == NUL)
         return 0;
 
-    return buf->b_ml.ml_line_len - 1;
+    if (buf->b_ml.ml_line_textlen <= 0)
+	buf->b_ml.ml_line_textlen = (int)STRLEN(line) + 1;
+    return buf->b_ml.ml_line_textlen - 1;
 }
 
 /*
@@ -2737,6 +2741,7 @@ ml_get_buf(
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
+	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	return questions;
     }
@@ -2746,6 +2751,7 @@ errorret:
     if (buf->b_ml.ml_mfp == NULL)	// there are no lines
     {
 	buf->b_ml.ml_line_len = 1;
+	buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	return (char_u *)"";
     }
 
@@ -2796,6 +2802,15 @@ errorret:
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = end - start;
+#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
+	// Text properties come after a NUL byte, so ml_line_len should be
+	// larger than the size of textprop_T if there is any.
+	if (buf->b_has_textprop
+			 && (size_t)buf->b_ml.ml_line_len > sizeof(textprop_T))
+	    buf->b_ml.ml_line_textlen = 0;  // call STRLEN() later when needed
+	else
+#endif
+	    buf->b_ml.ml_line_textlen = buf->b_ml.ml_line_len;
 	buf->b_ml.ml_line_lnum = lnum;
 	buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     }
@@ -3646,6 +3661,7 @@ ml_replace_len(
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
+    curbuf->b_ml.ml_line_textlen = len_arg + 1;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
 

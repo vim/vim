@@ -14,7 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-12-27 16:38+0100\n"
+"POT-Creation-Date: 2024-03-06 09:13+0100\n"
+"PO-Revision-Date: 2024-03-06 15:00+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -162,6 +163,9 @@ msgstr " (file %d di %d)"
 
 msgid " (file (%d) of %d)"
 msgstr " (file (%d) di %d)"
+
+msgid "[Command Line]"
+msgstr "[Riga-di-comando]"
 
 msgid "[Prompt]"
 msgstr "[Richiesta]"
@@ -646,9 +650,6 @@ msgstr "Errore"
 #. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "Interruzione"
-
-msgid "[Command Line]"
-msgstr "[Riga-di-comando]"
 
 msgid "is a directory"
 msgstr "è una directory"
@@ -1365,6 +1366,9 @@ msgstr "argomento di mapnew()"
 
 msgid "filter() argument"
 msgstr "argomento di filter()"
+
+msgid "foreach() argument"
+msgstr "argomento di foreach()"
 
 msgid "extendnew() argument"
 msgstr "argomento di extendnew()"
@@ -2404,6 +2408,12 @@ msgstr "a %s su %s"
 msgid "Printing '%s'"
 msgstr "Stampato: '%s'"
 
+#. Default font name for current language on MS-Windows.
+#. If not translated, falls back to "Consolas".
+#. This must be a fixed-pitch font.
+msgid "DefaultFontNameForWindows"
+msgstr "NomeCarattereDefaultPerWindows"
+
 msgid "Opening the X display took %ld msec"
 msgstr "Attivazione visualizzazione X ha richiesto %ld msec"
 
@@ -3250,11 +3260,11 @@ msgstr "%s ritorno #%ld"
 msgid "%s returning %s"
 msgstr "%s ritorno %s"
 
-msgid "Function %s does not need compiling"
-msgstr "La funzione %s non ha bisogno di compilazione"
+msgid "Function %s%s%s does not need compiling"
+msgstr "La funzione %s%s%s non ha bisogno di compilazione"
 
 msgid "%s (%s, compiled %s)"
-msgstr "%s (%s, compilato %s)"
+msgstr "%s (%s, compilata %s)"
 
 msgid ""
 "\n"
@@ -3986,6 +3996,9 @@ msgstr "E104: Escape non consentito nei digrammi"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Uso di :loadkeymap fuori da un file di comandi"
 
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: Formato output di diff non supportato: %s"
+
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Mancano parentesi: %s"
 
@@ -4272,8 +4285,8 @@ msgstr "E196: Digrammi non supportati in questa versione"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: Non posso impostare lingua a \"%s\""
 
-msgid "E199: Active window or buffer deleted"
-msgstr "E199: Finestra attiva o buffer cancellato"
+msgid "E199: Active window or buffer changed or deleted"
+msgstr "E199: Finestra attiva o buffer modificato o cancellato"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: Gli autocomandi *ReadPre hanno reso il file illeggibile"
@@ -8035,6 +8048,12 @@ msgstr "E1410: Variabile di tipo \"Const\" non supportata in un'Interfaccia"
 msgid "E1411: Missing dot after object \"%s\""
 msgstr "E1411: Manca un punto dopo \"Object\" \"%s\""
 
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: Metodo Object predefinito \"%s\" non supportato"
+
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: Metodo Classe predefinito non supportato"
+
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 "E1500: Non si possono mischiare argomenti posizionali e non posizionali: %s"
@@ -8076,8 +8095,19 @@ msgstr "E1509: Errore in lettura o scrittura degli attributi estesi"
 msgid "E1510: Value too large: %s"
 msgstr "E1510: Valore troppo grande: %s"
 
+msgid "E1511: Wrong number of characters for field \"%s\""
+msgstr "E1511: Numero caratteri errato per campo \"%s\""
+
+msgid "E1512: Wrong character width for field \"%s\""
+msgstr "E1512: Larghezza carattere errata per campo \"%s\""
+
+msgid "E1513: Cannot edit buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Non riesco a modificare il buffer. Opzione 'winfixbuf' attiva"
+
 #. type of cmdline window or 0
 #. result of cmdline window or 0
+#. buffer of cmdline window or NULL
+#. window of cmdline window or NULL
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
@@ -8823,6 +8853,9 @@ msgstr "numero minimo di righe usato per la finestra corrente"
 
 msgid "minimal number of lines used for any window"
 msgstr "numero minimo di righe usato per ogni finestra"
+
+msgid "keep window focused on a single buffer"
+msgstr "mantenere finestra dedicata a un solo buffer"
 
 msgid "keep the height of the window"
 msgstr "mantenere l'altezza della finestra"

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -263,7 +263,7 @@ getqflist({what})		Dict	get specific quickfix list properties
 getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
-getregion({pos1}, {pos2}, {type})
+getregion({pos1}, {pos2} [, {opts}])
 				List	get the text from {pos1} to {pos2}
 getregtype([{regname}])		String	type of a register
 getscriptinfo([{opts}])		List	list of sourced scripts
@@ -2265,6 +2265,8 @@ empty({expr})						*empty()*
 		- A |Job| is empty when it failed to start.
 		- A |Channel| is empty when it is closed.
 		- A |Blob| is empty when its length is zero.
+		- An |Object| is empty, when the |empty()| builtin method in
+		  the object (if present) returns true.
 
 		For a long |List| this is much faster than comparing the
 		length with zero.
@@ -4271,44 +4273,58 @@ getreginfo([{regname}])					*getreginfo()*
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
 
-getregion({pos1}, {pos2}, {type})			*getregion()*
-		Returns the list of strings from {pos1} to {pos2} as if it's
-		selected in visual mode of {type}.
-		For possible values of {pos1} and {pos2} see |line()|.
-		{type} is the selection type:
-			"v" for |characterwise| mode
-			"V" for |linewise| mode
-			"<CTRL-V>" for |blockwise-visual| mode
+getregion({pos1}, {pos2} [, {opts}])			*getregion()*
+		Returns the list of strings from {pos1} to {pos2} from a
+		buffer.
+
+		{pos1} and {pos2} must both be |List|s with four numbers.
+		See |getpos()| for the format of the list.  It's possible
+		to specify positions from a different buffer, but please
+		note the limitations at |getregion-notes|.
+
+		The optional argument {opts} is a Dict and supports the
+		following items:
+
+			type		Specify the region's selection type
+					(default: "v"):
+			    "v"		for |characterwise| mode
+			    "V"		for |linewise| mode
+			    "<CTRL-V>"	for |blockwise-visual| mode
+
+			exclusive	If |TRUE|, use exclusive selection
+					for the end position
+					(default: follow 'selection')
+
 		You can get the last selection type by |visualmode()|.
 		If Visual mode is active, use |mode()| to get the Visual mode
 		(e.g., in a |:vmap|).
-		This function uses the line and column number from the
-		specified position.
-		It is useful to get text starting and ending in different
-		columns, such as |characterwise-visual| selection.
+		This function is useful to get text starting and ending in
+		different columns, such as a |characterwise-visual| selection.
 
+							*getregion-notes*
 		Note that:
 		- Order of {pos1} and {pos2} doesn't matter, it will always
 		  return content from the upper left position to the lower
 		  right position.
-		- If 'virtualedit' is enabled and selection is past the end of
-		  line, resulting lines are filled with blanks.
-		- If the selection starts or ends in the middle of a multibyte
-		  character, it is not included but its selected part is
-		  substituted with spaces.
-		- If {pos1} or {pos2} equals "v" (see |line()|) and it is not in
-		  |visual-mode|, an empty list is returned.
-		- If {pos1}, {pos2} or {type} is an invalid string, an empty
+		- If 'virtualedit' is enabled and the region is past the end
+		  of the lines, resulting lines are padded with spaces.
+		- If the region is blockwise and it starts or ends in the
+		  middle of a multi-cell character, it is not included but
+		  its selected part is substituted with spaces.
+		- If {pos1} and {pos2} are not in the same buffer, an empty
 		  list is returned.
-		- If {pos1} or {pos2} is a mark in different buffer, an empty
-		  list is returned.
+		- {pos1} and {pos2} must belong to a |bufloaded()| buffer.
+		- It is evaluated in current window context, which makes a
+		  difference if the buffer is displayed in a window with
+		  different 'virtualedit' or 'list' values.
 
 		Examples: >
 			:xnoremap <CR>
-			\ <Cmd>echow getregion('v', '.', mode())<CR>
+			\ <Cmd>echow getregion(
+			\ getpos('v'), getpos('.'), #{ type: mode() })<CR>
 <
 		Can also be used as a |method|: >
-			'.'->getregion("'a", 'v')
+			getpos('.')->getregion(getpos("'a"))
 <
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
@@ -5469,7 +5485,9 @@ len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
-		Otherwise an error is given and returns zero.
+		When {expr} is an |Object|, invokes the |len()| method in the
+		object (if present) to get the length.  Otherwise returns
+		zero.
 
 		Can also be used as a |method|: >
 			mylist->len()
@@ -9579,6 +9597,10 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 		When a |List| or |Dictionary| has a recursive reference it is
 		replaced by "[...]" or "{...}".  Using eval() on the result
 		will then fail.
+
+		For an object, invokes the |string()| method to get a textual
+		representation of the object.  If the method is not present,
+		then the default representation is used.
 
 		Can also be used as a |method|: >
 			mylist->string()

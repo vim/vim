@@ -1160,8 +1160,12 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
-    if (*s == NUL && !has_lcs_eol)
-	size = 0;  // NUL is not displayed
+    if (*s == NUL)
+    {
+	// 1 cell for EOL list char (if present), as opposed to the two cell ^@
+	// for a NUL character in the text.
+	size = has_lcs_eol ? 1 : 0;
+    }
 # ifdef FEAT_LINEBREAK
     int is_doublewidth = has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1;
 # endif

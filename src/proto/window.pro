@@ -1,4 +1,6 @@
 /* window.c */
+int check_can_set_curbuf_disabled(void);
+int check_can_set_curbuf_forceit(int forceit);
 int window_layout_locked(enum CMD_index cmd);
 win_T *prevwin_curwin(void);
 win_T *swbuf_goto_win_with_buf(buf_T *buf);
@@ -96,4 +98,5 @@ int win_hasvertsplit(void);
 int get_win_number(win_T *wp, win_T *first_win);
 int get_tab_number(tabpage_T *tp);
 char *check_colorcolumn(win_T *wp);
+int get_last_winid(void);
 /* vim: set ft=c : */

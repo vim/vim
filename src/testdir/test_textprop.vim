@@ -3075,8 +3075,9 @@ func Test_prop_with_text_above_below_empty()
       let vt = 'test'
       call prop_type_add(vt, {'highlight': 'ToDo'})
       for ln in range(1, line('$'))
-        call prop_add(ln, 0, {'type': vt, 'text': '---', 'text_align': 'above'})
-        call prop_add(ln, 0, {'type': vt, 'text': '+++', 'text_align': 'below'})
+        " use 1 character text to test for off-by-one regressions
+        call prop_add(ln, 0, {'type': vt, 'text': '-', 'text_align': 'above'})
+        call prop_add(ln, 0, {'type': vt, 'text': '+', 'text_align': 'below'})
       endfor
       normal G
   END
@@ -4463,6 +4464,25 @@ func Test_textprop_notype_join()
   call assert_equal(["1 2", "3"], getline(1, '$'))
 
   bwipe!
+endfunc
+
+" This was causing text property corruption.
+func Test_textprop_backspace_fo_aw()
+  new
+  call setline(1, 'foobar')
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'type': 'test', 'length': 3})
+  set backspace=indent,eol,start
+  setlocal formatoptions+=aw
+  call feedkeys("A \<CR>\<BS>\<Esc>", 'tx')
+  call assert_equal('foobar', getline(1))
+  call assert_equal([
+        \ #{id: 0, col: 1, start: 1, end: 1, type_bufnr: 0,
+        \   type: 'test', length: 3}], prop_list(1))
+
+  bwipe!
+  set backspace&
+  call prop_type_delete('test')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

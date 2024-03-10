@@ -4073,6 +4073,9 @@ nv_gotofile(cmdarg_T *cap)
 	return;
 #endif
 
+    if (!check_can_set_curbuf_disabled())
+      return;
+
     ptr = grab_file_name(cap->count1, &lnum);
 
     if (ptr != NULL)
@@ -4475,7 +4478,8 @@ nv_brackets(cmdarg_T *cap)
 		SAFE_isupper(cap->nchar) ? ACTION_SHOW_ALL :
 			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
-		(linenr_T)MAXLNUM);
+		(linenr_T)MAXLNUM,
+	        FALSE);
 	    vim_free(ptr);
 	    curwin->w_set_curswant = TRUE;
 	}
@@ -7323,6 +7327,9 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		dir;
     int		flags = 0;
     int		keep_registers = FALSE;
+#ifdef FEAT_FOLDING
+    int		save_fen = curwin->w_p_fen;
+#endif
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7388,6 +7395,12 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    reg1 = get_register(regname, TRUE);
 	}
 
+#ifdef FEAT_FOLDING
+	// Temporarily disable folding, as deleting a fold marker may cause
+	// the cursor to be included in a fold.
+	curwin->w_p_fen = FALSE;
+#endif
+
 	// Now delete the selected text. Avoid messages here.
 	cap->cmdchar = 'd';
 	cap->nchar = NUL;
@@ -7435,10 +7448,14 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     if (reg2 != NULL)
 	put_register(regname, reg2);
 
-    // What to reselect with "gv"?  Selecting the just put text seems to
-    // be the most useful, since the original text was removed.
     if (was_visual)
     {
+#ifdef FEAT_FOLDING
+	if (save_fen)
+	    curwin->w_p_fen = TRUE;
+#endif
+	// What to reselect with "gv"?  Selecting the just put text seems to
+	// be the most useful, since the original text was removed.
 	curbuf->b_visual.vi_start = curbuf->b_op_start;
 	curbuf->b_visual.vi_end = curbuf->b_op_end;
 	// need to adjust cursor position

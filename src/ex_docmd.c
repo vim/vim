@@ -7164,6 +7164,9 @@ ex_resize(exarg_T *eap)
     static void
 ex_find(exarg_T *eap)
 {
+    if (!check_can_set_curbuf_forceit(eap->forceit))
+        return;
+
     char_u	*fname;
     int		count;
     char_u	*file_to_find = NULL;
@@ -7245,6 +7248,14 @@ ex_open(exarg_T *eap)
     static void
 ex_edit(exarg_T *eap)
 {
+    // Exclude commands which keep the window's current buffer
+    if (
+	    eap->cmdidx != CMD_badd
+	    && eap->cmdidx != CMD_balt
+	    // All other commands must obey 'winfixbuf' / ! rules
+	    && !check_can_set_curbuf_forceit(eap->forceit))
+        return;
+
     do_exedit(eap, NULL);
 }
 
@@ -9031,7 +9042,7 @@ ex_checkpath(exarg_T *eap)
 {
     find_pattern_in_path(NULL, 0, 0, FALSE, FALSE, CHECK_PATH, 1L,
 				   eap->forceit ? ACTION_SHOW_ALL : ACTION_SHOW,
-					      (linenr_T)1, (linenr_T)MAXLNUM);
+					      (linenr_T)1, (linenr_T)MAXLNUM, eap->forceit);
 }
 
 #if defined(FEAT_QUICKFIX)
@@ -9101,7 +9112,7 @@ ex_findpat(exarg_T *eap)
 	find_pattern_in_path(eap->arg, 0, (int)STRLEN(eap->arg),
 			    whole, !eap->forceit,
 			    *eap->cmd == 'd' ?	FIND_DEFINE : FIND_ANY,
-			    n, action, eap->line1, eap->line2);
+			    n, action, eap->line1, eap->line2, eap->forceit);
 }
 #endif
 

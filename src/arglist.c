@@ -682,6 +682,7 @@ do_argfile(exarg_T *eap, int argn)
     int		other;
     char_u	*p;
     int		old_arg_idx = curwin->w_arg_idx;
+    int is_split_cmd = *eap->cmd == 's';
 
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
@@ -697,13 +698,18 @@ do_argfile(exarg_T *eap, int argn)
 	return;
     }
 
+    if (!is_split_cmd
+	    && (&ARGLIST[argn])->ae_fnum != curbuf->b_fnum
+	    && !check_can_set_curbuf_forceit(eap->forceit))
+	return;
+
     setpcmark();
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
 
     // split window or create new tab page first
-    if (*eap->cmd == 's' || cmdmod.cmod_tab != 0)
+    if (is_split_cmd || cmdmod.cmod_tab != 0)
     {
 	if (win_split(0, 0) == FAIL)
 	    return;

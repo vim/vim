@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Jan 12
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -710,6 +710,32 @@ The initialization isn't needed, the list is empty by default.
 							*E1330*
 Some types cannot be used, such as "void", "null" and "v:none".
 
+Builtin Object Methods ~
+                                                       *builtin-object-methods*
+Some of the builtin functions like |empty()|, |len()| and |string()| can be
+used with an object.  An object can implement a method with the same name as
+these builtin functions to return an object-specific value.
+
+                                                       *E1412*
+The following builtin methods are supported:
+                                                       *object-empty()*
+    empty()  Invoked by the |empty()| function to check whether an object is
+	     empty.  If this method is missing, then true is returned.  This
+	     method should not accept any arguments and must return a boolean.
+                                                       *object-len()*
+    len()    Invoked by the |len()| function to return the length of an
+	     object.  If this method is missing in the class, then an error is
+	     given and zero is returned.  This method should not accept any
+	     arguments and must return a number.
+                                                       *object-string()*
+    string() Invoked by the |string()| function to get a textual
+	     representation of an object.  Also used by the |:echo| command
+	     for an object.  If this method is missing in the class, then a
+	     built-in default textual representation is used.  This method
+	     should not accept any arguments and must return a string.
+
+                                                       *E1413*
+A class method cannot be used as a builtin method.
 
 Defining an interface ~
 					*Interface* *:interface* *:endinterface*
