@@ -1690,6 +1690,8 @@ do_source_ext(
 	    // reset version, "vim9script" may have been added or removed.
 	    si->sn_version = 1;
 	}
+	if (ret_sid != NULL)
+	    *ret_sid = sid;
     }
     else
     {
