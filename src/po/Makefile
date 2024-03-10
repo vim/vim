@@ -20,10 +20,14 @@ SED = LANG=C sed
 # tools 0.10.37, which use a slightly different .po file format that is not
 # compatible with Solaris (and old gettext implementations) unless these are
 # set.  gettext 0.10.36 will not work!
-
 # Starting from version 0.22, msgfmt forcibly converts text to UTF-8 regardless
 # of the value of the "charset" field.
-MSGFMTC = $(shell if $(MSGFMT) --help |grep -q -- --no-convert ; then echo msgfmt -v --no-convert; else echo msgfmt -v; fi)
+# Two commands are made for compatibility with BSD, GNU make 3.81 and GNU make 4.3.
+# It's not great, of course, but I haven't come up with a better one yet.
+MSGFMTC = $(shell if $(MSGFMT) --help |grep -q -- --no-convert ; \
+	  then echo $(MSGFMT) -v --no-convert; else echo $(MSGFMT) -v; fi)
+MSGFMTC != if $(MSGFMT) --help |grep -q -- --no-convert ; \
+	then echo $(MSGFMT) -v --no-convert; else echo $(MSGFMT) -v; fi
 MSGFMTCMD = OLD_PO_FILE_INPUT=yes $(MSGFMTC)
 XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes xgettext
 MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
