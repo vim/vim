@@ -2194,5 +2194,13 @@ func Test_search_with_invalid_range()
   bwipe!
 endfunc
 
+func Test_searchstr()
+  new
+  call setline(1, ['  1', '  2 these', '  3 the', '  4 their', '  5 there', '  6 their', '  7 the', '  8 them', '  9 these', ' 10 foobar'])
+  call assert_equal("2 these\n  3", searchstr('\<2\s\+\_.*3\>'))
+  
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
