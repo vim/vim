@@ -9506,11 +9506,12 @@ get_search_arg(typval_T *varp, int *flagsp)
  * Shared by search() and searchpos() functions.
  */
     static int
-search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
+search_cmn(typval_T *argvars, pos_T *match_pos, pos_T *end_pos, int *flagsp)
 {
     int		flags;
     char_u	*pat;
     pos_T	pos;
+    pos_T	endpos;
     pos_T	save_cursor;
     int		save_p_ws = p_ws;
     int		dir;
@@ -9587,7 +9588,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     // Repeat until {skip} returns FALSE.
     for (;;)
     {
-	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	subpatnum = searchit(curwin, curbuf, &pos, &endpos, dir, pat, 1L,
 						     options, RE_SEARCH, &sia);
 	// finding the first match again means there is no match where {skip}
 	// evaluates to zero.
@@ -9638,6 +9639,12 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	    // Store the match cursor position
 	    match_pos->lnum = pos.lnum;
 	    match_pos->col = pos.col + 1;
+	}
+	if (end_pos != NULL)
+	{
+	    // Store the end of match cursor position
+	    end_pos->lnum = endpos.lnum;
+	    end_pos->col = endpos.col + 1;
 	}
 	// "/$" will put the cursor after the end of the line, may need to
 	// correct that here
@@ -9819,7 +9826,7 @@ f_search(typval_T *argvars, typval_T *rettv)
 {
     int		flags = 0;
 
-    rettv->vval.v_number = search_cmn(argvars, NULL, &flags);
+    rettv->vval.v_number = search_cmn(argvars, NULL, NULL, &flags);
 }
 
 /*
@@ -10171,7 +10178,7 @@ f_searchpos(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    n = search_cmn(argvars, &match_pos, &flags);
+    n = search_cmn(argvars, &match_pos, NULL, &flags);
     if (n > 0)
     {
 	lnum = match_pos.lnum;
