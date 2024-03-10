@@ -2526,9 +2526,11 @@ EXTERN char e_invalid_action_str_2[]
 EXTERN char e_setting_v_str_to_value_with_wrong_type[]
 	INIT(= N_("E963: Setting v:%s to value with wrong type"));
 #endif
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) || defined(FEAT_EVAL)
 EXTERN char_u e_invalid_column_number_nr[]
 	INIT(= N_("E964: Invalid column number: %ld"));
+#endif
+#ifdef FEAT_PROP_POPUP
 EXTERN char e_missing_property_type_name[]
 	INIT(= N_("E965: Missing property type name"));
 #endif
