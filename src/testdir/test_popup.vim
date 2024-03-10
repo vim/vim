@@ -1333,4 +1333,74 @@ func Test_pum_highlights_custom()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_set_pum_ordering()
+  CheckScreendump
+  let lines =<< trim END
+    func CompleteFunc( findstart, base )
+      if a:findstart
+        return 0
+      endif
+      return {
+            \ 'words': [
+            \ { 'word': 'aword1', 'menu': 'extra text 1', 'kind': 'W', },
+            \ { 'word': 'aword2', 'menu': 'extra text 2', 'kind': 'W', },
+            \ { 'word': 'aword3', 'menu': 'extra text 3', 'kind': 'W', },
+            \]}
+    endfunc
+    set completeopt=menu
+    set completefunc=CompleteFunc
+    set pumordering=word,kind,extra
+  END
+  call writefile(lines, 'Xscript', 'D')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_01', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=word,extra,kind\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_02', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=kind,word,extra\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_03', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=kind,extra,word\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_04', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=extra,word,kind\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_05', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=extra,kind,word\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_06', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
