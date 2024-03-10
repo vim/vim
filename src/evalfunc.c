@@ -148,10 +148,10 @@ static void f_screencol(typval_T *argvars, typval_T *rettv);
 static void f_screenrow(typval_T *argvars, typval_T *rettv);
 static void f_screenstring(typval_T *argvars, typval_T *rettv);
 static void f_search(typval_T *argvars, typval_T *rettv);
-static void f_searchstr(typval_T *argvars, typval_T *rettv);
 static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
 static void f_searchpairpos(typval_T *argvars, typval_T *rettv);
+static void f_searchstr(typval_T *argvars, typval_T *rettv);
 static void f_searchpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
@@ -9853,7 +9853,7 @@ f_searchstr(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
 
     rettv->vval.v_number = search_cmn(argvars, &match_pos, &end_pos, &flags);
-    
+
     if (rettv->vval.v_number > 0)
     {
     match_pos.col -= 1; // search_cmn increments match start col by 1, adjust it for ml_get_pos.
