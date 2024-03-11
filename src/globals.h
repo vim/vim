@@ -976,7 +976,7 @@ EXTERN int	clip_unnamed_saved INIT(= 0);
  */
 EXTERN win_T	*firstwin;		// first window
 EXTERN win_T	*lastwin;		// last window
-EXTERN win_T	*prevwin INIT(= NULL);	// previous window
+EXTERN win_T	*prevwin INIT(= NULL);	// previous window (may equal curwin)
 #define ONE_WINDOW (firstwin == lastwin)
 #define W_NEXT(wp) ((wp)->w_next)
 
