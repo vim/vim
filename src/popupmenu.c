@@ -522,13 +522,9 @@ pum_redraw(void)
     for (r = 0; r < 3; ++r)
     {
 	if (rounds[r] == 0 && prefix_pum_widths[rounds[r]] > 0)
-	{
 	    prefix_pum_widths[rounds[r]]++;
-	}
 	if (r > 0)
-	{
 	    prefix_pum_widths[rounds[r]] += prefix_pum_widths[rounds[r-1]];
-	}
     }
 
     if (call_update_screen)
