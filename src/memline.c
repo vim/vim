@@ -3661,7 +3661,7 @@ ml_replace_len(
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
-    curbuf->b_ml.ml_line_textlen = len_arg + 1;
+    curbuf->b_ml.ml_line_textlen = len_arg + !has_props;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
 
