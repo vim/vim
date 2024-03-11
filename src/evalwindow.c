@@ -1001,8 +1001,8 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	size = (int)dict_get_number(d, "size");
     }
 
-    // Check if we can split the target before we bother switching windows.
-    if (text_or_buf_locked() || check_split_disallowed(targetwin) == FAIL)
+    // Check if we can switch or move windows before we bother switching.
+    if (text_or_buf_locked() || check_split_disallowed(NULL) == FAIL)
 	return;
 
     if (curwin != targetwin)
