@@ -5494,10 +5494,10 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			fnum1 = -1, fnum2 = -1;
     pos_T		p1, p2;
     char_u		*type;
-    buf_T		*save_curbuf = curbuf;
-    buf_T		*findbuf = curbuf;
+    buf_T		*save_curbuf;
+    buf_T		*findbuf;
     char_u		default_type[] = "v";
-    int			save_virtual = -1;
+    int			save_virtual;
     int			l;
     int			region_type = -1;
     int			is_select_exclusive;
@@ -5542,15 +5542,11 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    if (fnum1 != 0)
+    findbuf = fnum1 != 0 ? buflist_findnr(fnum1) : curbuf;
+    if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
     {
-	findbuf = buflist_findnr(fnum1);
-	// buffer not loaded
-	if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
-	{
-	    emsg(_(e_buffer_is_not_loaded));
-	    return;
-	}
+	emsg(_(e_buffer_is_not_loaded));
+	return;
     }
 
     if (p1.lnum < 1 || p1.lnum > findbuf->b_ml.ml_line_count)
@@ -5574,7 +5570,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
+    save_curbuf = curbuf;
     curbuf = findbuf;
+    curwin->w_buffer = curbuf;
     save_virtual = virtual_op;
     virtual_op = virtual_active();
 
@@ -5677,9 +5675,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    if (curbuf != save_curbuf)
-        curbuf = save_curbuf;
-
+    curbuf = save_curbuf;
+    curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
 }
 
