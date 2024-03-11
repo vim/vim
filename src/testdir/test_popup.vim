@@ -1400,6 +1400,51 @@ func Test_set_pum_ordering()
   call term_sendkeys(buf, "\<C-E>\<Esc>u")
   call TermWait(buf)
 
+  " if nothing is set, the ordering remains default
+  call term_sendkeys(buf, ":set pumordering=\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_01', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  " if not all 3 values is set, the ordering not set will remain default
+  call term_sendkeys(buf, ":set pumordering=word,kind\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_01', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=word\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_01', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+  call term_sendkeys(buf, ":set pumordering=extra\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_07', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+
+  " if the value is not "word", "kind", or "extra", this ignores it
+  call term_sendkeys(buf, ":set pumordering=no-such-thing,does-not-exists\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "iaw\<C-X>\<C-u>")
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_set_pum_ordering_01', {})
+  call term_sendkeys(buf, "\<C-E>\<Esc>u")
+  call TermWait(buf)
+
+
   call StopVimInTerminal(buf)
 endfunc
 
