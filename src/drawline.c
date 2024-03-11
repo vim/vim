@@ -3113,6 +3113,10 @@ win_line(
 		{
 		    int	    tab_len = 0;
 		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
+#ifdef FEAT_PROP_POPUP
+		    if (wlv.text_prop_above_count > 0)
+			vcol_adjusted = 0;
+#endif
 #ifdef FEAT_LINEBREAK
 		    char_u  *sbr = get_showbreak_value(wp);
 
