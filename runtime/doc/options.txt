@@ -6274,13 +6274,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|ins-completion-menu|.
 
 						*'pumordering'* *'po'*
-'pumordering' 'po'	string (default "012")
+'pumordering' 'po'	string (default "word,kind,extra")
 	This option specify how the popup menu should look like
 
-	The default value:
-	0: word
-	1: kind
-	2: extra
+	The default value: word,kind,extra
 
 	So the popup menu should look like the following
 	"word"  "kind"  "extra"
