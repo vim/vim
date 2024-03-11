@@ -1614,6 +1614,13 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	return FALSE;
     }
 
+    if (IS_ENUM(cl))
+    {
+	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name,
+		m->ocm_name);
+	return FALSE;
+    }
+
     // If it is private member variable, then accessing it outside the
     // class is not allowed.
     // If it is a read only class variable, then it can be modified
@@ -2037,6 +2044,25 @@ compile_lhs(
 		return FAIL;
 	    }
 
+	    if (IS_ENUM(cl))
+	    {
+		if (!inside_class(cctx, cl))
+		{
+		    semsg(_(e_enumvalue_str_cannot_be_modified),
+			    cl->class_name, m->ocm_name);
+		    return FALSE;
+		}
+		if (lhs->lhs_type->tt_type == VAR_OBJECT &&
+			lhs->lhs_member_idx < 2)
+		{
+		    char *msg = lhs->lhs_member_idx == 0 ?
+			e_enum_str_name_cannot_be_modified :
+			e_enum_str_ordinal_cannot_be_modified;
+		    semsg(_(msg), cl->class_name);
+		    return FALSE;
+		}
+	    }
+
 	    // If it is private member variable, then accessing it outside the
 	    // class is not allowed.
 	    // If it is a read only class variable, then it can be modified
@@ -2304,7 +2330,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, cctx) == FAIL)
 		return FAIL;
 	}
-	if (cl->class_flags & CLASS_INTERFACE)
+	if (IS_INTERFACE(cl))
 	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type);
 	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
     }
@@ -2453,7 +2479,7 @@ compile_assign_unlet(
 		{
 		    class_T *cl = lhs->lhs_type->tt_class;
 
-		    if (cl->class_flags & CLASS_INTERFACE)
+		    if (IS_INTERFACE(cl))
 		    {
 			// "this.value": load "this" object and get the value
 			// at index for an object or class member get the type
@@ -3375,6 +3401,14 @@ compile_def_function(
 	    for (int i = 0; i < ufunc->uf_class->class_obj_member_count; ++i)
 	    {
 		ocmember_T *m = &ufunc->uf_class->class_obj_members[i];
+
+		if (i < 2 && IS_ENUM(ufunc->uf_class))
+		    // The first two object variables in an enum are the name
+		    // and the ordinal.  These are set by the ISN_CONSTRUCT
+		    // instruction.  So don't generate instructions to set
+		    // these variables.
+		    continue;
+
 		if (m->ocm_init != NULL)
 		{
 		    char_u *expr = m->ocm_init;
@@ -3481,8 +3515,7 @@ compile_def_function(
 
     // Compiling a function in an interface is done to get the function type.
     // No code is actually compiled.
-    if (ufunc->uf_class != NULL
-			   && (ufunc->uf_class->class_flags & CLASS_INTERFACE))
+    if (ufunc->uf_class != NULL && IS_INTERFACE(ufunc->uf_class))
     {
 	ufunc->uf_def_status = UF_NOT_COMPILED;
 	ret = OK;

@@ -1119,7 +1119,18 @@ get_lval_check_access(
 		if (*p == '[' || *p == '.')
 		    break;
 		if ((flags & GLV_READ_ONLY) == 0)
-		    msg = e_variable_is_not_writable_str;
+		{
+		    if (IS_ENUM(cl))
+		    {
+			if (om->ocm_type->tt_type == VAR_OBJECT)
+			    semsg(_(e_enumvalue_str_cannot_be_modified),
+				    cl->class_name, om->ocm_name);
+			else
+			    msg = e_variable_is_not_writable_str;
+		    }
+		    else
+			msg = e_variable_is_not_writable_str;
+		}
 		break;
 	    case VIM_ACCESS_ALL:
 		break;
@@ -6310,9 +6321,15 @@ echo_string_core(
 	case VAR_CLASS:
 	    {
 		class_T *cl = tv->vval.v_class;
-		size_t len = 6 + (cl == NULL ? 9 : STRLEN(cl->class_name)) + 1;
+		char *s = "class";
+		if (IS_INTERFACE(cl))
+		    s = "interface";
+		else if (IS_ENUM(cl))
+		    s = "enum";
+		size_t len = STRLEN(s) + 1 +
+		    (cl == NULL ? 9 : STRLEN(cl->class_name)) + 1;
 		r = *tofree = alloc(len);
-		vim_snprintf((char *)r, len, "class %s",
+		vim_snprintf((char *)r, len, "%s %s", s,
 			    cl == NULL ? "[unknown]" : (char *)cl->class_name);
 	    }
 	    break;

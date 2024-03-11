@@ -3258,6 +3258,12 @@ exec_instructions(ectx_T *ectx)
 		++tv->vval.v_object->obj_class->class_refcount;
 		tv->vval.v_object->obj_refcount = 1;
 		object_created(tv->vval.v_object);
+
+		// When creating an enum value object, initialize the name and
+		// ordinal object variables.
+		class_T *en = tv->vval.v_object->obj_class;
+		if (IS_ENUM(en))
+		    enum_set_internal_obj_vars(en, tv->vval.v_object);
 		break;
 
 	    // execute Ex command line

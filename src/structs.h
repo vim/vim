@@ -1562,9 +1562,10 @@ struct itf2class_S {
     // array with ints follows
 };
 
-#define CLASS_INTERFACE	    1
-#define CLASS_EXTENDED	    2	    // another class extends this one
-#define CLASS_ABSTRACT	    4	    // abstract class
+#define CLASS_INTERFACE	    0x1
+#define CLASS_EXTENDED	    0x2	    // another class extends this one
+#define CLASS_ABSTRACT	    0x4	    // abstract class
+#define CLASS_ENUM	    0x8	    // enum
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).
@@ -1612,6 +1613,9 @@ struct class_S
     type_T	class_type;		// type used for the class
     type_T	class_object_type;	// same as class_type but VAR_OBJECT
 };
+
+#define IS_INTERFACE(cl)	((cl)->class_flags & CLASS_INTERFACE)
+#define IS_ENUM(cl)		((cl)->class_flags & CLASS_ENUM)
 
 // Used for v_object of typval of VAR_OBJECT.
 // The member variables follow in an array of typval_T.
