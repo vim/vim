@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Feb 21
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41543,6 +41543,11 @@ and is a work in progress.
 
 Support for Wayland UI.
 
+Vim9 script
+-----------
+Add support for internal builtin functions with vim9 objects, see
+|builtin-object-methods|
+
 Other improvements				*new-other-9.2*
 ------------------
 
@@ -41574,6 +41579,8 @@ Commands: ~
 
 
 Options: ~
+
+'winfixbuf'		Keep buffer focused in a window
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-9.2*

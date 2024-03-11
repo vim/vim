@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-28 10:54+0400\n"
-"PO-Revision-Date: 2024-02-28 10:56+0400\n"
+"POT-Creation-Date: 2024-03-04 14:05+0400\n"
+"PO-Revision-Date: 2024-03-04 14:10+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -8757,6 +8757,13 @@ msgid "E1411: Missing dot after object \"%s\""
 msgstr "E1411: Недостаје тачка након објекта „%s”"
 
 #, c-format
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: Није подржана уграђена метода објекта „%s”"
+
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: Није подржана уграђена метода класе"
+
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Не могу да се мешају позициони и непозициони аргументи: %s"
 
@@ -8809,6 +8816,9 @@ msgstr "E1511: Погрешан број карактера за поље „%s�
 #, c-format
 msgid "E1512: Wrong character width for field \"%s\""
 msgstr "E1512: Погрешна ширина карактера за поље „%s”"
+
+msgid "E1513: Cannot edit buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Не може да се уређује бафер. Укључена је опција 'winfixbuf'"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -9542,6 +9552,9 @@ msgstr "минимални број линија који се користи з
 
 msgid "minimal number of lines used for any window"
 msgstr "минимални број линија који се користи за било који прозор"
+
+msgid "keep window focused on a single buffer"
+msgstr "одржава фокус прозора на одређени бафер"
 
 msgid "keep the height of the window"
 msgstr "задржава се висина прозора"

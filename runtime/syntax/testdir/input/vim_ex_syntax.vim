@@ -162,3 +162,16 @@ syn keyword testKeyword
       \ keyword5
       \ keyword6
 
+
+" leaking contained groups
+
+" Example: runtime/syntax/zsh.vim
+"   "cluster" should not be highlighted outside of :syntax commands
+
+function! s:ContainedGroup()
+  " ...
+  for cluster in ['markdownHighlight_zsh', 'zsh']
+    " ...
+  endfor
+  " ...
+endfunction

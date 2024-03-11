@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.1.  Last change: 2023 Dec 05
+*quickref.txt*  For Vim version 9.1.  Last change: 2024 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1005,6 +1005,7 @@ Short explanation of each option:		*option-list*
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'wincolor'	  'wcr'	    window-local highlighting
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
+'winfixbuf'	  'wfb'     keep window focused on a single buffer
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
 'winfixwidth'	  'wfw'     keep window width when opening/closing windows
 'winheight'	  'wh'	    minimum number of lines for the current window

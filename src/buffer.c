@@ -1370,6 +1370,13 @@ do_buffer_ext(
     if ((flags & DOBUF_NOPOPUP) && bt_popup(buf) && !bt_terminal(buf))
 	return OK;
 #endif
+    if (
+	action == DOBUF_GOTO
+	&& buf != curbuf
+	&& !check_can_set_curbuf_forceit((flags & DOBUF_FORCEIT) ? TRUE : FALSE))
+      // disallow navigating to another buffer when 'winfixbuf' is applied
+      return FAIL;
+
     if ((action == DOBUF_GOTO || action == DOBUF_SPLIT)
 						  && (buf->b_flags & BF_DUMMY))
     {

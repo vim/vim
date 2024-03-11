@@ -1,0 +1,780 @@
+===============================================================================
+=    V I M   p r a d ž i a m o k s l i s    -    Versija 1.4                  =
+===============================================================================
+
+     "ViM" yra galingas tekstų redaktorius, turintis daug komandų. Tiek daug,
+     kad tokiame pradžiamokslyje kaip šis jų visų aprašyti neįmanoma. Šio
+     pradžiamokslio tikslas -- aprašyti tas komandas, kurių pagalba lengvai
+     naudosite "ViM" kaip pilnavertį tekstų redaktorių.
+
+     Vidutiniškai šis pradžiamokslis trunka apie 25-30 minučių, tačiau viskas
+     priklauso nuo to, kiek laiko skirsite eksperimentams.
+
+     Pamokėlių metu, šis tekstas bus keičiamas, tad treniravimuisi
+     pasidarykite šios bylos kopiją (jei naudojate "vimtutor" tai ką skaitote
+     jau yra kopija).
+
+     Neužmirškite, kad šis pradžiamokslis yra praktinis. Tai reiškia, kad
+     reikia pačiam įvykdyti nurodytas komandas, jei norite jas tinkamai
+     išmokti. Jei tik skaitysite šį tekstą, užmiršite komandas!
+
+     Įsitikinkite, kad <CapsLock> yra išjungtas ir spauskite  j  klavišą tol,
+     kol 1.1 pamokos tekstas pilnai užpildys ekraną.     
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			1.1 pamoka:  ŽYMEKLIO VALDYMAS
+
+
+   ** Žymeklis valdomas h,j,k,l klavišų pagalba. **
+	     ^
+	     k		Užuomina:  h yra kairėje ir perkelia į kairę.
+       < h	 l >		   l yra dešinėje ir perkelia į dešinę.
+	     j			   j panašu į rodyklę žemyn.
+	     v
+	     
+  1. Judinkite žymeklį ekrane, kol apsiprasite.
+
+---> Dabar žinote, kaip nukeliauti iki kitos pamokos. 
+
+  2. Naudodami klavišą žemyn, keliaukite iki 1.2 pamokos.
+
+Pastaba: Jei neįsitikinę, kad nuspaudėte reikiamą klavišą, paspauskite <ESC>
+	ir taip sugrįšite į "Normalų" režimą. Tada pakartokite norimą komandą.
+
+Pastaba: Žymeklio valdymo klavišai taip pat veikia, tačiau naudodami hjkl
+	judėsite greičiau (kai tik priprasite).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     1.2 pamoka: "VIM" -- PALEISTI IR BAIGTI
+
+
+  !! PASTABA: Iš pradžių perskaitykite visą pamoką !!
+
+  1. Paspauskite <ESC> (įsitikinti, kad esate "Normal" režime).
+
+  2. Surinkite:     			:q! <ENTER>
+
+---> Tai baigs redaktoriaus darbą BE JOKIŲ pakeitimų išsaugojimų. Jei norite
+     pakeitimus išsaugoti ir baigti darbą, surinkite:
+     				:wq  <ENTER>
+
+  3. Kai atsidursite komandinėje eilutėje, vėl paleiskite komandą, kuri
+     iškvietė šį pradžiamokslį. Tai gali būti:	vimtutor <ENTER>
+     arba:					vim tutor <ENTER>
+
+---> 'vim' reiškia "vim" redaktorių, 'tutor' yra byla, kurią norite redaguoti.
+
+  4. Jei šiuos žingsnius įsiminėte, tai įvykdykite punktus nuo 1 iki 3. Tada
+     keliaukite į 1.3 pamoką. 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    1.3 pamoka: TEKSTO REDAGAVIMAS - TRYNIMAS
+
+
+** Kuomet esate "Normal" režime  x  trina simbolį, esantį po žymekliu. **
+
+  1. Nuveskite žymeklį į eilutę, pažymėtą  --->.
+
+  2. Norėdami ištaisyti klaidą, nuveskite žymeklį virš simbolio, kurį norite
+     ištrinti. 
+
+  3. Paspauskite  x  norėdami ištrinti nereikalingą simbolį.
+
+  4. Kartokite punktus nuo 2 iki 4 tol, kol sakinys bus ištaisytas.
+
+---> KKarvė nušooko įį MMMėnullį. 
+
+  5. Kuomet sakinys ištaisytas, eikite į 1.4 pamoką. 
+
+PASTABA: Šiame pradžiamokslyje komandas stenkitės atsiminti ne skaitydami
+         aprašymus, o naudodami pačias komandas.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     1.4 pamoka: TEKSTO REDAGAVIMAS - ĮTERPIMAS
+
+
+	 ** Kuomet esate "Normal" režime  i  įterpia tekstą. **
+
+  1. Nuveskite žymeklį iki pirmos eilutės, pažymėtos --->.
+
+  2. Norėdami pirmą eilutę padaryti tokią pat kaip antrą, nuveskite žymeklį
+     ant simbolio, PO kurio norite įterpti tekstą.
+
+  3. Paspauskite  i  ir surinkite reikiamą tekstą.
+
+  4. Kai baigėte taisyti klaidą, paspauskite <ESC>, kad sugrįžtumėte į "Normal"
+     režimą. 
+     Kartokite punktus nuo 2 iki 4 tol, kol sakinys bus ištaisytas.
+
+---> There is text misng this .
+---> There is some text missing from this line.
+
+  5. Kuomet įterpimą išsiaiškinote, keliaukite į žemyn į  1 pamokos santrauką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       1 PAMOKOS SANTRAUKA
+
+
+  1. Žymeklis valdomas rodyklių pagalbą arba hjkl klavišais.
+	 h (kairėn)	j (žemyn)       k (aukštyn)	    l (dešinėn)
+
+  2. Iš komandinės eilutės "ViM" paleidžiamas: vim FILENAME <ENTER>
+
+  3. Baigti darbą su ViM:   <ESC>   :q!	 <ENTER>  NEišsaugant pakeitimų.
+	     	    Arba:   <ESC>   :wq	 <ENTER>  išsaugant pakeitimus.
+
+  4. Ištrinti simbolį po žymekliu esant "Normal" režime: x
+
+  5. Įterpti tekstą už žymeklio esant "Normal" režime: 
+	 i     surinkti reikiamą tekstą  <ESC>
+
+PASTABA: <ESC> paspaudimas grąžina į "Normal" režimą arba nutraukia
+         nereikalingos komandos vykdymą.
+
+Dabar keliaukite į 2 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 2.1 pamoka: TRYNIMO KOMANDOS
+
+
+	    ** Paspauskite  dw  norėdami ištrinti žodžio pabaigos. **
+
+  1. Paspauskite <ESC> -- užsitikrinti, kad esate "Normal" režime.
+
+  2. Nuveskite žymeklį iki eilutės, pažymėtos --->.
+
+  3. Nuveskite žymeklį į norimo ištrinti žodžio pradžią.
+
+  4. Paspauskite  dw  žodžio ištrynimui.
+
+PASTABA: Raidės dw pasirodo paskutinėje ekrano (lango) eilutėje, kuomet jas
+         renkate. Jei suklydote -- spauskite  <ESC>  ir pakartokite iš naujo.
+
+---> Yra mėlynas žodžių, kurie skėtis nepriklauso juokiasi šiam sakiniui.
+
+  5. Kartokite 3 ir 4 punktus tol, kol sakinys bus ištaisytas. Tuomet
+     keliaukite į 2.2 pamoką.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      2.2 pamoka: DAUGIAU TRYNIMO KOMANDŲ
+
+
+       ** Surinkite  d$  norėdami ištrinti iki eilutės pabaigos. **
+
+  1. Paspauskite  <ESC>  -- įsitikinti, kad esate "Normal" režime.
+
+  2. Nuveskite žymeklį iki eilutės, pažymėtos --->.
+
+  3. Nuveskite žymeklį iki teisingo sakinio pabaigos (PO pirmo . ).
+
+  4. Surinkite  d$  -- taip ištrinsite nereikalingą tekstą iki eilutės
+     pabaigos. 
+
+---> Somebody typed the end of this line twice. end of this line twice.
+
+
+  5. Keliaukite į 2.3 pamoką. Ten sužinosite daugiau kaip vyksta trynimas. 
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     2.3 pamoka: KOMANDOS IR OBJEKTAI
+
+
+  Trynimo komandos  d  formatas yra toks:
+
+	 [skaičius]   d	objektas    ARBA     d	 [skaičius]   objektas
+  Kur:
+    skaičius - kiek kartų vykdyti komandą (nebūtinas, pagal nutylėjimą=1)
+    d - komanda trinti
+    objektas - kuo komanda operuoja/dirba (išvardyta žemiau)
+
+  Trumpas objektų sąrašas:
+    w - nuo žymeklio iki žodžio pabaigos, įskaitant tarpus.
+    e - nuo žymeklio iki žodžio pabaigos, NEįskaitant tarpų
+    $ - nuo žymeklio iki eilutės pabaigos.
+
+PASTABA: Esant "Normal" režime ir spaudžiant tik objekto komandą (t.y., be
+         trynimo) žymeklis keliauja kaip išvardinta sąraše.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		2.4 pamoka: IŠIMTIS 'KOMANDA-OBJEKTAS' SISTEMAI
+
+	       ** Paspauskite  dd  norėdami ištrinti visą eilutę. **
+
+  Visos eilutės ištrynimas -- labai dažna operacija, tad "ViM" projektuotojai
+  nusprendė, kad bus patogiau nuspausti du kartus  d  visos eilutės
+  ištrynimui. 
+
+  1. Nuveskite žymeklį į antrą žemiau pateiktos frazės eilutę.
+  2. Surinkite  dd  visos eilutės ištrynimui.
+  3. Tad nueikite į ketvirtą eilutę.
+  4. Surinkite  2dd  (prisimenate skaičius-komanda-objektas). Taip ištrinsite
+     dvi eilute iš karto.
+
+      1)  Roses are red,
+      2)  Mud is fun,
+      3)  Violets are blue,
+      4)  I have a car,
+      5)  Clocks tell time,
+      6)  Sugar is sweet
+      7)  And so are you.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 2.5 pamoka: ATITAISYMO KOMANDA
+
+
+   ** Spauskite  u  norėdami atitaisyti paskutinės komandos pakeitimus,
+           arba spauskite  U  norėdami atstatyti visą eilutę. **
+
+  1. Nuveskite žymeklį iki eilutės, pažymėtos ---> ir pastatykite jį ties pirma
+     klaida.
+  2. Paspauskite  x  -- taip ištrinsite nereikalingą simbolį.
+  3. Dabar paspauskite  u  idant atstatytumėte paskutinės komandos pakeitimus.
+  4. Ištaisykite visas toje eilutėje esančias klaidas naudodami  x
+     komandą.
+  5. Paspauskite didžiąją  U  -- taip atstatysite eilutę į pradinę būseną. 
+  6. Dabar keletą kartų paspauskite  u  -- taip atitaisysite  U  bei kitų
+     komandų pakeitimus.
+  7. Paspauskite  CTRL+R  keletą kartų. Tai perdarymo komanda ("redo"), t.y.,
+     atitaisymų atitaisymas.
+
+---> Fiix the errors oon thhis line and reeplace them witth undo.
+
+  8. Keliaukite į 2 pamokos santrauką.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       2 PAMOKOS SANTRAUKA
+
+
+  1. Ištrinti nuo žymeklio iki žodžio pabaigos:    	dw
+
+  2. Ištrinti nuo žymeklio iki eilutės pabaigos:	d$
+
+  3. Ištrinti visą eilutę:				dd
+
+  4. Komandos formatas "Normal" režime yra toks:
+
+    [skaičius]  komanda  objektas    ARBA    komanda   [skaičius]  objektas
+     kur:
+       skaičius - kiek kartų pakartoti komandą
+       komanda - ką padaryti, tai yra, kokią komandą įvykdyti
+       objektas - su kuo komanda operuoja/dirba: w  (žodžiu), $  (tekstu iki
+                  eilutės pabaigos) ir pan.
+
+  5. Ištaisyti paskutinės komandos pakeitimus: 		u  (mažoji u)
+     Ištaisyti visus eilutei atliktus pakeitimus:	U  (didžioji U)
+     Ištaisyti ištaisymus:				CTRL+R
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		 3.1 pamoka: PATALPINIMO KOMANDA
+
+       ** Paspauskite  p  norėdami už žymeklio patalpinti vėliausiai 
+		       ištrintą objektą. **
+
+  1. Nuveskite žymeklį į pirmą ketureilio eilutę.
+
+  2. Paspauskite  dd  -- taip ištrinsite visą eilutę ir patalpinsite į "ViM"
+     buferį. 
+
+  3. Nuveskite žymeklį eilute AUKŠČIAU nei turėtų būti ištrintoji eilutė.  
+
+  4. Būdami "Normal" režime paspauskite  p  -- taip patalpinsite ištrintą
+     eilutę į reikiamą vietą. 
+
+  5. Kartokite punktus nuo 2 iki 4 tol, kol visos eilutės bus savo vietose. 
+
+     d) Can you learn too?
+     b) Violets are blue,
+     c) Intelligence is learned,
+     a) Roses are red,
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       3.2 pamoka: PAKEITIMO KOMANDA
+
+
+  ** Paspauskite  r  ir simbolį, kuriuo norite pakeisti po žymekliu 
+		  esantį rašmenį. **
+
+  1. Nuveskite žymeklį iki pirmos eilutės, pažymėtos --->. 
+
+  2. Tada nuveskite žymeklį ant pirmo klaidingo rašmens. 
+
+  3. Paspauskite  r  ir simbolį, kuriuo norite pakeisti klaidingą. 
+
+  4. Kartokite 2 ir 3 punktą kol eilutė bus ištaisyta. 
+
+--->  Whan this lime was tuoed in, someone presswd some wrojg keys!
+--->  When this line was typed in, someone pressed some wrong keys!
+
+  5. Tuomet keliaukite į 3.3 pamoką. 
+
+PASTABA: Mokykitės ne tik skaitydami, bet ir darydami.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			3.3 pamoka: KEITIMO KOMANDA
+
+
+	   ** Norėdami pakeisti visą žodį ar jo dalį, spauskite  cw. **
+
+  1. Nuveskite žymeklį iki pirmos eilutės, pažymėtos --->. 
+
+  2. Patalpinkite žymeklį virš u raidės žodyje "lubw". 
+
+  3. Paspauskite  cw  ir ištaisykite žodį (šiuo atveju, surinkite "ine").
+
+  4. Paspauskite <ESC> ir nuveskite žymeklį virš kitos klaidos (pirmo
+     simbolio, kurį reikia pakeisti). 
+
+  5. Kartokite 3 ir 4 punktus, kol ištaisysite visą sakinį.  
+
+---> This lubw has a few wptfd that mrrf changing usf the change command.
+---> This line has a few words that need changing using the change command.
+
+cw  ne tik pakeičia žodį, bet ir įjungia "Insert" režimą.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       3.4 pamoka: KITI KEITIMAI NAUDOJANT c
+
+
+     ** Keitimo komandos naudojimo principas toks pat kaip ir trynimo. ** 
+
+  1. Keitimo komandos formatas yra toks: 
+
+       [skaičius]   c   objektas	   ARBA	    c	[skaičius]   objektas
+
+  2. Objektai kaip ir trynimo komandoje: w (žodis), $ (iki eilutės pabaigos)
+     ir pan. 
+
+  3. Nuveskite žymeklį iki pirmos eilutės, pažymėtos --->. 
+
+  4. Tuomet nuveskite žymeklį ties pirma klaida. 
+
+  5. Paspauskite  c$  ir surinkite teisingą eilutės pabaigą; grįžkite į
+    "Normal" režimą (paspauskite <ESC>).
+
+---> The end of this line needs some help to make it like the second.
+---> The end of this line needs to be corrected using the  c$  command.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			      3 PAMOKOS SANTRAUKA 
+
+
+  1. Norėdami patalpinti paskutinį ištrynimą, paspauskite  p  -- tai patalpins
+     paskutinį ištrintą objektą UŽ žymeklio. Jei buvo ištrinta visa eilutė,
+     tuomet patalpins kitoje eilutėje.
+
+  2. Vienas simbolis pakeičiamas paspaudus  r  ir rašmenį, kuriuo
+     norime pakeisti klaidingą simbolį.
+
+  3. Keitimo komanda keičia nurodytą objektą nuo žymeklio iki objekto galo.
+     Pvz.,  paspauskite  cw  norėdami pakeisti žodį,  c$  norėdami pakeisti
+     nuo žymeklio iki eilutės pabaigos.  
+
+  4. Keitimo komandos formatas yra toks: 
+
+	 [skaičius]   c	objektas      ARBA	c   [skaičius]   objektas
+
+Dabar keliaukite į kitą pamoką.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	     4.1 pamoka: PADĖTIS BYLOJE IR BYLOS BŪSENA 
+
+
+  ** Paspauskite  Ctrl+g  ir sužinosite žymeklio vietą bei bendrą bylos
+     statusą. Paspauskite  G  ir žymeklis nukeliaus į nurodytą eilutę. **
+
+Pastaba: perskaitykite visą pamoką prieš pradėdami vykdyti nurodymus.
+
+  1. Paspauskite  Ctrl+g  . Ekrano (lango) apačioje atsiras statuso eilutė,
+     kurioje nurodyta redaguojamos bylos vardas, eilutė ir stulpelis, kuriuose
+     yra žymeklis, bei kiek byloje iš viso yra eilučių. Įsidemėkite, kurioje
+     eilutėje yra žymeklis, to reikės 3 punkte. 
+
+  2. Paspauskite  G  -- taip nukeliausite į bylos galą. 
+
+  3. Surinkite eilutės numerį, kurioje prieš tai buvote ir tada paspauskite  G
+     Tai sugrąžins į nurodytą eilutę.
+
+  4. Jei aišku kaip tai atlikti, įvykdykite punktus nuo 1 iki 3. 
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			4.2 pamoka: PAIEŠKOS KOMANDA 
+
+
+     ** Paspauskite  /  po kurio surinkite ieškomą frazę. ** 
+
+  1. Būdami "Normal" režime paspauskite  /  simbolį. Jis ir žymeklis atsiras
+     ekrano (lango) apačioje, lygiai taip pat kaip ir paspaudus  :  . 
+
+  2. Surinkite  "errroor" (kabučių nereikia) ir paspauskite  <Enter> . Tai
+     žodis, kurio ieškosime. 
+
+  3. Norėdami surasti kitą tokią pat frazę, paspauskite  n .
+     Jei kitos frazės norite ieškoti ne žemyn, o aukštyn, paspauskite  N.
+
+  4. Jei norite frazės ieškoti ne pirmyn, bet atgal, vietoj  /  komandos
+     naudokite  ? . 
+
+  5. Kuomet paieška pasiekia bylos pabaigą, ji tęsiama nuo bylos pradžios. 
+
+  ---> "errroor" is not the way to spell error;  errroor is an error.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   4.3 pamoka: ATITINKAMŲ SKLIAUSTŲ PAIEŠKA 
+
+
+      ** Spauskite  %  norėdami surasti atitinkantį ),] ar } skliaustą. **
+
+  1. Patalpinkite žymeklį ties bet kuriuo (, [ ar { skliaustu, esančiu
+     eilutėje, pažymėtoje --->. 
+
+  2. Dabar paspauskite  %  simbolį.
+
+  3. Žymeklis nukeliaus ties atitinkančiu uždarančiuoju skliaustu. 
+
+  4. Dar kartą paspauskite  %  -- sugrįšite atgal ties atitinkamu
+     atidarančiuoju skliaustu.
+
+---> This ( is a test line with ('s, ['s ] and {'s } in it. ))
+
+Pastaba: Tai naudinga komanda derinant programas su skliaustų maišalyne.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      4.4 pamoka: BŪDAS TAISYTI KLAIDAS 
+
+
+	** Surinkite  :s/old/new/g  norėdami "old" pakeisti "new". **
+
+  1. Nuveskite žymeklį į eilutę, pažymėtą --->.
+
+  2. Surinkite  :s/thee/the <Enter>  . Tai pakeis pirmą eilutėje esantį "thee"
+     į "the".
+
+  3. Dabar surinkite  :s/thee/the/g <Enter> . Tai pakeis visus eilutėje
+     esančius "thee" į "the".
+
+---> thee best time to see thee flowers is in thee spring.
+
+  4. Norėdami atlikti pakeitimus tarp dviejų eilučių, surinkite:
+     :#,#s/old/new/g	kur #,# yra dviejų eilučių numeriai (pvz., 12,14).
+     Surinkite  :%s/old/new/g	-- taip atliksite pakeitimus visoje byloje.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       4 PAMOKOS SANTRAUKA
+
+
+  1. Ctrl+g  parodo padėtį byloje ir bendrą bylos statusą.  G  perkelia
+     žymeklį į bylos pabaigą. Jei prieš  G  surenkamas skaičius, žymeklis
+     nukeliamas į tą eilutę. 
+
+  2. /  su po jo einančia fraze, atlieka šios frazės paiešką PIRMYN. 
+     ?  su po jo einančia fraze, atlieka šios frazės paiešką ATGAL.
+     Suradus frazę, prie kitos peršokama paspaudus  n  (ta pačia kryptimi,
+     kaip ir vykusi paieška) arba  N  (priešinga paieškai kryptimi).
+
+  3. Paspaudus  %  kuomet esama yra virš (,),[,],{ ar }, žymeklis nukeliaus
+     ties atitinkančiu skliaustu.
+
+  4. Norėdami pirmą eilutės "old" pakeisti į "new"		:s/old/new 
+     Norėdami visus eilutės "old" pakeisti į "new"		:s/old/new/g 
+     Pakeisti "old" į "new" tarp dviejų nurodytų eilučių        :#,#s/old/new/g
+     Pakeisti visus byloje esančius "old" į "new"		:%s/old/new/g 
+     Prieš kiekvieną pakeitimą paprašyti patvirtinimo		:%s/old/new/gc 
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		5.1 pamoka: KAIP ĮVYKDYTI IŠORINĘ KOMANDĄ 
+
+
+ ** Surinkite  :! bei norimą įvykdyti išorinę komandą ir ji bus įvykdyta. **    
+
+  1. Surinkite jau pažįstamą komandą  :  ir žymeklis atsidurs ekrano (lango)
+     apačioje; galėsite įvesti reikiamą komandą.
+
+  2. Dabar surinkite  !  (šauktuką). Tai leis įvykdyti bet kokią išorinę
+     komandą. 
+
+  3. Pavyzdžiui, po šauktuko surinkite  ls  ir paspauskite <ENTER>. Tai
+     atspausdins visų kataloge esančių bylų sąrašą, kitaip sakant, atrodys,
+     kad  ls  komandą būtumėte įvykdę komandinėje eilutėje. (Jei neveikia  ls
+     pabandykite  dir  komandą.)
+
+---> Pastaba: Tokiu būdu galima įvykdyti bet kokią išorinę programą. 
+
+---> Pastaba: Visos  :  komandos pradedamos vykdyti paspaudus <ENTER> 
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      5.2 pamoka: BYLŲ RAŠYMAS 
+
+
+   ** Norėdami išsaugoti pakeitimus į bylą, surinkite  :w BYLOS_VARDAS ** 
+
+  1. Surinkite  :!dir  ar  :!ls  , kad gautumėte katalogo bylų sąrašą.
+     Neužmirškite po to paspausti <ENTER>. 
+
+  2. Sugalvokite bylos vardą, kokio dar nėra kataloge, pavyzdžiui, TEST. 
+
+  3. Dabar surinkite  :w TEST  (čia TEST, tai bylos vardas kurį pasirinkote). 
+
+  4. Tai išsaugos visą bylą  (šį pradžiamokslį)  TEST vardu. Patikrinkite tai,
+     peržiūrėdami katalogo turinį (:!ls  ar :!dir komanda).
+
+  5. Dabar ištrinkite bylą surinkdami tokią komandą:  :!delete TEST 
+     arba  :!rm TEST
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    5.3 pamoka: BYLŲ RAŠYMAS II 
+
+      ** Norėdami išsaugoti dalį bylos, surinkite   :#,# w BYLOS_VARDAS **
+
+  1. Dar kartą surinkite  :!dir  ar  :!ls  komandą, kad sužinotumėte katalogo
+     bylų sąrašą; parinkite nenaudojamą bylos vardą, pvz. TEST.
+
+  2. Nuveskite žymeklį į šio puslapio viršų ir paspauskite  Ctrl+g  -- taip
+     sužinosite viršutinės eilutės numerį. PRISIMINKITE JĮ! 
+
+  3. Dabar nuveskite žymeklį į šio puslapio apačią ir taip pat paspauskite
+     Ctrl+g.  PRISIMINKITE IR ŠIOS EILUTĖS NUMERĮ!  
+
+  4. Norėdami išsaugoti TIK DALĮ bylos, surinkite  :#,# w TEST   kur #,# yra
+     du skaičiai kuriuos įsiminėte (viršutinė ir apatinė eilutės), o TEST -- 
+     bylos vardas. Taip išsaugosite tekstą tarp nurodytų eilučių, į nurodytą
+     bylą. 
+
+  5. Įsitikinkite, kad byla buvo įrašyta, tačiau jos neištrinkite.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   5.4 pamoka: BYLOS ĮTERPIMAS 
+
+     ** Norėdami į tekstą įterpti kitą bylą, surinkite   :r BYLOS_VARDAS **
+
+  1. Surinkite  :!dir  ar  :!ls  komandą ir įsitikinkite, kad pareitoje
+     pamokoje išsaugota TEST byla egzistuoja. 
+
+  2. Nuveskite žymeklį į šio puslapio viršų. 
+
+PASTABA: Kuomet įvykdysite 3 punktą, pamatysite 5.3 pamoką. Tuomet grįžkite
+         atgal į šią pamoką. 
+
+  3. Dabar įterpkite TEST bylą į tekstą, panaudodami  :r TEST  komandą. 
+
+PASTABA: Byla, kurią įterpinėsite, bus patalpintą toje vietoje, kur yra
+         žymeklis.
+
+  4. Kad įsitikintumėte, jog komanda buvo įvykdytą, grįžkite truputį į viršų.
+  Turėtumėte rasti dvi 5.3 pamokos kopijas.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       5 PAMOKOS SANTRAUKA
+
+
+  1. :!komanda  įvykdo išorinę "komanda" komandą. 
+
+      Keletas naudingų pavyzdžių:
+      	:!ls  (arba  :!dir)		- parodo katalogo turinį
+	:!rm FILE  (arba  :!del FILE)	- ištrina FILE bylą
+
+  2. :w BYLOS_VARDAS  įrašo redaguojamą tekstą į bylą, kurios vardas -
+     BYLOS_VARDAS. 
+
+  3. :#,# w BYLOS_VARDAS  - išsaugo eilutes nuo # iki # į BYLOS_VARDAS bylą.
+
+  4. :r BYLA  įterpia į redaguojamą tekstą bylą, kurios vardas BYLA. Įterpiama
+  byla patalpinama toje vietoje, kur yra žymeklis.
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 6.1 pamoka: "OPEN" KOMANDA
+
+   ** Paspauskite  o  -- taip po žymekliu įterpsite tuščią eilutę ir
+            persijungsite į "Insert" (įterpimo) režimą. **
+ 
+  1. Nuveskite žymeklį į eilutę, pažymėtą --->.
+
+  2. Paspauskite  o  -- taip įterpsite tuščią eilutę PO žymekliu, be to, bus
+     įjungtas "Insert" (įterpimo) režimas. 
+
+  3. Suveskite ---> eilutę ir paspauskite <ESC>, kad grįžtumėte į "Normal"
+     režimą.
+
+---> After typing  o  the cursor is placed on the open line in Insert mode.
+
+  4. Kad įterptumėte tuščią eilutę virš žymeklio, paspauskite  O  .
+  Išbandykite tai su žemiau esančia eilute.
+Open up a line above this by typing Shift-O while the cursor is on this line.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			6.2 pamoka: „APPEND“ KOMANDA
+
+
+	     ** Paspauskite  a  norėdami rašyti tekstą UŽ žymeklio. **
+
+  1. Nuveskite žymeklį iki pirmos eilutės, pažymėtos --->, pabaigos
+     (pirmiausiai nueikite iki pačios eilutės, tada spauskite  $  ).
+
+  2. Paspauskite  a  --  taip įterpsite tekstą už žymeklio. Jei paspausite  A
+     papildysite tekstą eilutės pabaigoje.
+
+  3. Dabar užbaikite pirmąją eilutę. Papildymo ("Append") komanda veikia
+     panašiai kaip ir įterpimo ("Insert") komanda. Skiriasi tik vieta, nuo
+     kurios pradedamas įterpinėti tekstas.
+
+---> This line will allow you to practice
+---> This line will allow you to practice appending text to the end of a line.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    6.3 pamoka: KITAS KEITIMO BŪDAS 
+
+
+      ** Paspauskite  R  norėdami pakeisti daugiau nei vieną simbolį. **
+
+  1. Nuveskite žymeklį iki pirmos eilutės, pažymėtos --->. 
+
+  2. Patalpinkite žymeklį ties pirmu žodžiu, kuris skiriasi nuo antros eilutės
+     (žodis "last").
+
+  3. Paspauskite  R  ir perrašykite likusį pirmos eilutės tekstą pagal antrą
+     eilutę.
+
+---> To make the first line the same as the last on this page use the keys.
+---> To make the first line the same as the second, type R and the new text.
+
+  4. Kuomet paspausite <ESC> norėdami grįžti į "Normal" režimą, visas
+     nepaliestas tekstas išliks toks, koks buvo.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    6.4 pamoka: PARINKČIŲ NUSTATYMAS
+
+    ** Pakeiskite parinktį, norėdami nekreipti dėmesio į mažąsias ar
+             didžiąsias raides ieškomame tekste. **
+
+
+  1. Paieškokite "ignore" žodžio:
+     /ignore
+     Pakartokite keletą kartų paspausdami  n  klavišą.
+
+  2. Nustatykite  'ic' (Ignore case) parinktį:
+     :set ic
+
+  3. Pratęskite "ignore" paiešką paspausdami  n  .
+     Pakartokite paiešką keletą kartų dar kartą paspausdami  n  klavišą.
+
+  4. Nustatykite 'hlsearch' ir 'incsearch' parinktis:
+     :set hls is
+
+  5. Dar kartą įvykdykite paiešką ir pasižiūrėkite kas bus:
+     /ignore
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			       6 PAMOKOS SANTRAUKA 
+
+
+  1. Paspaudus  o  įterpiama nauja eilutė ŽEMIAU žymeklio, žymeklis  
+     patalpinamas tos eilutės pradžioje ir įjungiamas  "Insert" režimas.
+     O  įterpia tuščią eilutę AUKŠČIAU žymeklio.
+
+  2. Paspauskite  a  norėdami įterpti tekstą UŽ žymeklio.
+     Paspaudus  A  tekstas įterpiamas eilutės pabaigoje. 
+
+  3. Paspaudus  R  įjungiamas Keitimo ("Replace") režimas, iš kurio išeinama
+     paspaudus <ESC>.
+
+  4. Surinkus ":set xxx" yra įjungiama "xxx" parinktis.
+
+
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       7 pamoka: ViM PAGALBOS KOMANDOS
+
+      	          ** Naudokite ViM pagalbos sistemą. **
+
+  ViM turi išsamią pagalbos sistemą. Pradžiai pabandykite vieną iš šių būdų:
+  	- paspauskite <F1> klavišą
+	- surinkite  :help <Enter>
+
+  Paspauskite  :q <Enter>  norėdami uždaryti pagalbos langą.
+
+  Informacijos galima rasti įvairiausiomis temomis, perduodant  "help"
+  komandai kaip argumentą raktinį žodį. Pabandykite:
+
+  :help w <ENTER>
+  :help c_ <ENTER>
+  :help insert-index <ENTER>
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Šiuo skyreliu "ViM" pradžiamokslis ir baigiasi. Tikslas buvo pateikti trumpą
+  "ViM" redaktoriaus apžvalga, kurios pakaktų įgyti "ViM" redaktoriaus
+  pagrindus. Tačiau tai toli gražu ne visos galimybės, kurias turi "ViM"
+  redaktorius. 
+
+  Tolesniam skaitymui ir mokymuisi rekomenduojama ši knyga:
+	Linda Lamb. "Learning the Vi Editor"
+	Leidėjas: O'Reilly & Associates Inc.
+  Tai gera knyga, kurioje išnagrinėtos beveik visos "Vi" redaktoriaus
+  galimybės. Šeštame leidime pateikiama informacija ir apie "ViM".
+
+  Šį pradžiamokslį parašė Michael C. Pierce ir Robert K. Ware, Colorado School
+  of Mines, pasinaudodami Charles Smith, Colorado State University, idėjomis.
+  E-mail: bware@mines.colorado.edu.
+
+  "ViM" redaktoriui pritaikė Bram Moolenaar.
+
+  Į lietuvių kalbą išvertė Laurynas Stančikas <lasas@gim.ktu.lt>.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

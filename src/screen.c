@@ -4536,7 +4536,7 @@ comp_col(void)
 	if (!last_has_status)
 	    sc_col = ru_col;
     }
-    if (p_sc)
+    if (p_sc && *p_sloc == 'l')
     {
 	sc_col += SHOWCMD_COLS;
 	if (!p_ru || last_has_status)	    // no need for separating space

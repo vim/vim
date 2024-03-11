@@ -9,6 +9,7 @@
 # So if a pull request only touches javascript files, only these owners
 # will be requested to review.
 
+nsis/lang/russian.nsi			@RestorerZ
 runtime/autoload/freebasic.vim		@dkearns
 runtime/autoload/haskell.vim		@alx741
 runtime/autoload/javascript.vim		@jsit
@@ -303,8 +304,12 @@ runtime/indent/xml.vim			@chrisbra
 runtime/indent/zsh.vim			@chrisbra
 runtime/keymap/armenian-eastern_utf-8.vim	@blinskey
 runtime/keymap/armenian-western_utf-8.vim	@blinskey
+runtime/keymap/russian-typograph.vim	@RestorerZ
 runtime/keymap/tamil_tscii.vim		@yegappan
 runtime/lang/menu_en_gb.latin1.vim	@mrdubya
+runtime/lang/menu_ru_ru.cp1251.vim	@RestorerZ
+runtime/lang/menu_ru_ru.koi8-r.vim	@RestorerZ
+runtime/lang/menu_ru_ru.utf-8.vim	@RestorerZ
 runtime/pack/dist/opt/cfilter/plugin/cfilter.vim	@yegappan
 runtime/pack/dist/opt/matchit/		@chrisbra
 runtime/plugin/manpager.vim		@Konfekt
@@ -379,6 +384,7 @@ runtime/syntax/gyp.vim			@ObserverOfTime
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/hare.vim			@rsaihe
 runtime/syntax/haskell.vim		@coot
+runtime/syntax/help_ru.vim		@RestorerZ
 runtime/syntax/hgcommit.vim		@k-takata
 runtime/syntax/hitest.vim		@lacygoill
 runtime/syntax/hog.vim			@wtfbbqhax
@@ -501,6 +507,9 @@ runtime/tutor/tutor.eo			@dpelle
 runtime/tutor/tutor.eo.utf-8		@dpelle
 runtime/tutor/tutor.fr			@dpelle
 runtime/tutor/tutor.fr.utf-8		@dpelle
+runtime/tutor/tutor.ru			@RestorerZ
+runtime/tutor/tutor.ru.cp1251		@RestorerZ
+runtime/tutor/tutor.ru.utf-8		@RestorerZ
 src/iscygpty.*				@k-takata
 src/libvterm/				@leonerd
 src/po/ca.po				@nfdisco
@@ -512,6 +521,7 @@ src/po/fr.po				@dpelle
 src/po/ga.po				@kscanne
 src/po/it.po				@azc100
 src/po/ja.po				@k-takata
+src/po/ru.po				@RestorerZ
 src/po/sr.po				@eevan78
 src/po/tr.po				@bitigchi
 src/po/uk.po				@sakhnik

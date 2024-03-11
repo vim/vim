@@ -2428,6 +2428,9 @@ getfile(
     int		retval;
     char_u	*free_me = NULL;
 
+    if (!check_can_set_curbuf_forceit(forceit))
+	return GETFILE_ERROR;
+
     if (text_locked())
 	return GETFILE_ERROR;
     if (curbuf_locked())

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Feb 01
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -132,7 +132,6 @@ Further Vim9 improvements:
     Possibly issue #11981 can be fixed at the same time (has two examples).
   - Forward declaration of a class?  E.g. for Clone() function.
 	Email lifepillar 2023 Mar 26
-  - object empty(), len() - can class define a method to be used for them?
   - When "Meta" is a class, is "const MetaAlias = Meta" allowed?  It should
     either work or given an error. Possibly give an error now and implement it
     later (using a typedef).  #12006

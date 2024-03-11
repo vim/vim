@@ -3048,7 +3048,7 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 
     size = listxattr((char *)from_file, NULL, 0);
     // not supported or no attributes to copy
-    if (errno == ENOTSUP || size == 0)
+    if (size <= 0)
 	return;
 
     for (index = 0 ; index < (int)(sizeof(smack_copied_attributes)
@@ -3112,8 +3112,8 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 mch_copy_xattr(char_u *from_file, char_u *to_file)
 {
     char	*xattr_buf;
-    size_t	size;
-    size_t	tsize;
+    ssize_t	size;
+    ssize_t	tsize;
     ssize_t	keylen, vallen, max_vallen = 0;
     char	*key;
     char	*val = NULL;
@@ -3125,7 +3125,7 @@ mch_copy_xattr(char_u *from_file, char_u *to_file)
     // get the length of the extended attributes
     size = listxattr((char *)from_file, NULL, 0);
     // not supported or no attributes to copy
-    if (errno == ENOTSUP || size == 0)
+    if (size <= 0)
 	return;
     xattr_buf = (char*)alloc(size);
     if (xattr_buf == NULL)
