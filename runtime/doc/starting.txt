@@ -809,7 +809,8 @@ accordingly.  Vim proceeds in this order:
 	name.  Also see |vimrc-intro|.
 
 	Places for your personal initializations:
-		Unix		$HOME/.vimrc or $HOME/.vim/vimrc
+		Unix		$HOME/.vimrc, $HOME/.vim/vimrc
+                                or $XDG_CONFIG_HOME/vim/vimrc
 		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
