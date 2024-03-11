@@ -6468,7 +6468,7 @@ var2fpos(
 	if (charcol)
 	    len = (long)mb_charlen(ml_get(pos.lnum));
 	else
-	    len = (long)STRLEN(ml_get(pos.lnum));
+	    len = (long)ml_get_len(pos.lnum);
 
 	// Get the column number
 	// We accept "$" for the column number: last column.
@@ -6574,7 +6574,7 @@ var2fpos(
 	    if (charcol)
 		pos.col = (colnr_T)mb_charlen(ml_get_curline());
 	    else
-		pos.col = (colnr_T)STRLEN(ml_get_curline());
+		pos.col = ml_get_curline_len();
 	}
 	return &pos;
     }
