@@ -849,8 +849,8 @@ op_delete(oparg_T *oap)
 	    }
 	    else
 		beginline(0);		    // cursor in column 0
-	    truncate_line(FALSE);   // delete the rest of the line
-				    // leave cursor past last char in line
+	    truncate_line(FALSE);   // delete the rest of the line,
+				    // leaving cursor past last char in line
 	    if (oap->line_count > 1)
 		u_clearline();	    // "U" command not possible after "2cc"
 	}

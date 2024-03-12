@@ -6612,7 +6612,7 @@ ex_vimgrep(exarg_T *eap)
 	goto theend;
     }
 
-    // Jump to first match if the current window is not 'winfixbuf'
+    // Jump to first match.
     if (!qf_list_empty(qf_get_curlist(qi)))
     {
 	if ((args.flags & VGR_NOJUMP) == 0)
