@@ -1300,7 +1300,7 @@ fold_line(
 			&& (lnume < bot->lnum
 			    || (lnume == bot->lnum
 				&& (bot->col - (*p_sel == 'e'))
-		>= (colnr_T)STRLEN(ml_get_buf(wp->w_buffer, lnume, FALSE)))))))
+				    >= ml_get_buf_len(wp->w_buffer, lnume))))))
 	{
 	    if (VIsual_mode == Ctrl_V)
 	    {

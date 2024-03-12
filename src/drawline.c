@@ -1533,7 +1533,7 @@ win_line(
 	}
 	else
 	{
-	    v = (long)STRLEN(line);
+	    v = ml_get_buf_len(wp->w_buffer, lnum);
 	    if (v < SPWORDLEN)
 	    {
 		// Short line, use it completely and append the start of the
@@ -1570,7 +1570,7 @@ win_line(
 	// find start of trailing whitespace
 	if (wp->w_lcs_chars.trail)
 	{
-	    trailcol = (colnr_T)STRLEN(ptr);
+	    trailcol = ml_get_buf_len(wp->w_buffer, lnum);
 	    while (trailcol > (colnr_T)0 && VIM_ISWHITE(ptr[trailcol - 1]))
 		--trailcol;
 	    trailcol += (colnr_T)(ptr - line);

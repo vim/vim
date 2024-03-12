@@ -20,6 +20,7 @@ char_u *ml_get_pos(pos_T *pos);
 char_u *ml_get_curline(void);
 char_u *ml_get_cursor(void);
 colnr_T ml_get_len(linenr_T lnum);
+colnr_T ml_get_pos_len(pos_T *pos);
 colnr_T ml_get_curline_len(void);
 colnr_T ml_get_cursor_len(void);
 colnr_T ml_get_buf_len(buf_T *buf, linenr_T lnum);
