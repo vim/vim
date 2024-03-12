@@ -29,3 +29,43 @@ echo $'Highlight interpolation:\t{{ { string({'foo': 'bar'}) } }}'
 echo $'Highlight interpolation:\t{{ { $'nested: {{ {1 + 2} }}' } }}'
 echo $"Highlight interpolation:\t{{ { string({"foo": "bar"}) } }}"
 echo $"Highlight interpolation:\t{{ { $"nested: {{ {1 + 2} }}" } }}"
+
+" Number
+
+" Hexadecimal
+echo  0xFF
+echo  0XFF
+echo -0xFF
+echo -0XFF
+
+" Decimal
+echo  255
+echo -255
+
+" Octal
+echo  0377
+echo  0o377
+echo  0O377
+echo -0377
+echo -0o377
+echo -0O377
+
+" Binary
+echo  0b11111111
+echo  0B11111111
+echo -0b11111111
+echo -0B11111111
+
+" Float
+123.456
++0.0001
+55.0
+-0.123
+1.234e03
+1.0E-6
+-3.1416e+88
+
+" Blob
+echo 0zFF00ED015DAF
+echo 0zFF00.ED01.5DAF
+echo 0zFF.00.ED.01.5D.AF
