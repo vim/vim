@@ -650,6 +650,7 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 LINK_AS_NEEDED
 DEPEND_CFLAGS_FILTER
+MSGFMTCMD
 MSGFMT_DESKTOP
 MAKEMO
 MSGFMT
@@ -15962,6 +15963,18 @@ printf "%s\n" "yes" >&6; }
       else
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+      fi
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if msgfmt supports --no-convert" >&5
+printf %s "checking if msgfmt supports --no-convert... " >&6; }
+      if "$MSGFMT" --help | grep -q --  '--no-convert' >/dev/null; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        MSGFMTCMD="OLD_PO_FILE_INPUT=yes msgfmt --no-convert -v"
+      else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        MSGFMTCMD="OLD_PO_FILE_INPUT=yes msgfmt -v"
       fi
 
     fi
