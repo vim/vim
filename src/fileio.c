@@ -1246,7 +1246,7 @@ retry:
 			for (;;)
 			{
 			    p = ml_get(read_buf_lnum) + read_buf_col;
-			    n = (int)STRLEN(p);
+			    n = ml_get_len(read_buf_lnum) - read_buf_col;
 			    if ((int)tlen + n + 1 > size)
 			    {
 				// Filled up to "size", append partial line.

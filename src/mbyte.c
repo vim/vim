@@ -4378,7 +4378,7 @@ mb_adjustpos(buf_T *buf, pos_T *lp)
     if (lp->col > 0 || lp->coladd > 1)
     {
 	p = ml_get_buf(buf, lp->lnum, FALSE);
-	if (*p == NUL || (int)STRLEN(p) < lp->col)
+	if (*p == NUL || ml_get_buf_len(buf, lp->lnum) < lp->col)
 	    lp->col = 0;
 	else
 	    lp->col -= (*mb_head_off)(p, p + lp->col);

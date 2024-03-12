@@ -489,7 +489,7 @@ ex_sort(exarg_T *eap)
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
     {
 	s = ml_get(lnum);
-	len = (int)STRLEN(s);
+	len = ml_get_len(lnum);
 	if (maxlen < len)
 	    maxlen = len;
 
@@ -691,7 +691,7 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 	return FAIL;
     for (extra = 0, l = line1; l <= line2; l++)
     {
-	str = vim_strsave(ml_get(l + extra));
+	str = vim_strnsave(ml_get(l + extra), ml_get_len(l + extra));
 	if (str != NULL)
 	{
 	    ml_append(dest + l - line1, str, (colnr_T)0, FALSE);
@@ -824,9 +824,9 @@ ex_copy(linenr_T line1, linenr_T line2, linenr_T n)
     curwin->w_cursor.lnum = n;
     while (line1 <= line2)
     {
-	// need to use vim_strsave() because the line will be unlocked within
+	// need to make a copy because the line will be unlocked within
 	// ml_append()
-	p = vim_strsave(ml_get(line1));
+	p = vim_strnsave(ml_get(line1), ml_get_len(line1));
 	if (p != NULL)
 	{
 	    ml_append(curwin->w_cursor.lnum, p, (colnr_T)0, FALSE);
@@ -4225,7 +4225,8 @@ ex_substitute(exarg_T *eap)
 
 		if (sub_firstline == NULL)
 		{
-		    sub_firstline = vim_strsave(ml_get(sub_firstlnum));
+		    sub_firstline = vim_strnsave(ml_get(sub_firstlnum),
+						    ml_get_len(sub_firstlnum));
 		    if (sub_firstline == NULL)
 		    {
 			vim_free(new_start);
@@ -4379,7 +4380,8 @@ ex_substitute(exarg_T *eap)
 				// really update the line, it would change
 				// what matches.  Temporarily replace the line
 				// and change it back afterwards.
-				orig_line = vim_strsave(ml_get(lnum));
+				orig_line = vim_strnsave(ml_get(lnum),
+							     ml_get_len(lnum));
 				if (orig_line != NULL)
 				{
 				    char_u *new_line = concat_str(new_start,
@@ -4725,7 +4727,8 @@ ex_substitute(exarg_T *eap)
 		{
 		    sub_firstlnum += nmatch - 1;
 		    vim_free(sub_firstline);
-		    sub_firstline = vim_strsave(ml_get(sub_firstlnum));
+		    sub_firstline = vim_strnsave(ml_get(sub_firstlnum),
+						    ml_get_len(sub_firstlnum));
 		    // When going beyond the last line, stop substituting.
 		    if (sub_firstlnum <= line2)
 			do_again = TRUE;
