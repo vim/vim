@@ -12,8 +12,8 @@
 !ENDIF
 
 !IFNDEF LANGUAGE
-! IF [powershell.exe -nologo -noprofile $$lng=(Get-UICulture).TwoLetterISOLanguageName;$$Env:LANGUAGE=$$lng;Set-Content -Path .\lng.tmp -Value "LANGUAGE=$$lng"]
-#! IF [powershell.exe -nologo -noprofile -command $$Env:LANGUAGE=(Get-UICulture).TwoLetterISOLanguageName]
+! IF [powershell.exe -nologo -noprofile $$lng=(Get-UICulture).TwoLetterISOLanguageName; \
+	$$Env:LANGUAGE=$$lng;Set-Content -Path .\lng.tmp -Value "LANGUAGE=$$lng"]
 ! ENDIF
 # In order for the "install" and "cleanup-po" rule to work.
 # The others work with just setting the environment variable.
@@ -30,7 +30,7 @@
 ! MESSAGE LANGUAGE is already set "$(LANGUAGE)"
 !ENDIF
 
-# get LANGUAGES, MOFILES, MOCONVERTED and others
+# Get LANGUAGES, MOFILES, MOCONVERTED and others.
 !INCLUDE Make_all.mak
 
 !IFNDEF VIMRUNTIME
@@ -46,7 +46,15 @@ VIM = ..\vim.exe
 # installed.  Please do not put the path in quotes.
 GETTEXT_PATH = D:\Programs\GetText\bin
 
+# Starting from version 0.22, msgfmt forcibly converts text to UTF-8 regardless
+# of the value of the "charset" field.
+!IF [%comspec% /v:on /e:on /c "for /F "tokens=4 delims= " %G in \
+	('"$(GETTEXT_PATH)\msgfmt.exe" --version^|findstr /rc:[0-9^]\.[0-9^][0-9^]') do \
+		@(set "v=%G" && if !v:~2^,2! GEQ 22 exit /b 1)"]
+MSGFMT = "$(GETTEXT_PATH)\msgfmt.exe" -v --no-convert
+!ELSE
 MSGFMT = "$(GETTEXT_PATH)\msgfmt.exe" -v
+!ENDIF
 XGETTEXT = "$(GETTEXT_PATH)\xgettext.exe"
 MSGMERGE = "$(GETTEXT_PATH)\msgmerge.exe"
 
@@ -55,9 +63,9 @@ MSGMERGE = "$(GETTEXT_PATH)\msgmerge.exe"
 # If the "iconv" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("iconv.exe")
-ICONV = "iconv.exe"
+ICONV = iconv.exe
 !ELSEIF EXIST ("$(GETTEXT_PATH)\iconv.exe")
-ICONV="$(GETTEXT_PATH)\iconv.exe"
+ICONV = "$(GETTEXT_PATH)\iconv.exe"
 !ENDIF
 
 # In case some package like GnuWin32, UnixUtils
@@ -133,7 +141,7 @@ ja.sjis.po: ja.po
 sjiscorr: sjiscorr.c
 	$(CC) sjiscorr.c
 
-# Convert ja.po to create ja.euc-jp.po
+# Convert ja.po to create ja.euc-jp.po.
 ja.euc-jp.po: ja.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
@@ -313,7 +321,7 @@ zh_CN.cp936.po: zh_CN.UTF-8.po
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(20936))
 
-# Convert zh_TW.UTF-8.po to create zh_TW.po
+# Convert zh_TW.UTF-8.po to create zh_TW.po.
 zh_TW.po: zh_TW.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
@@ -341,7 +349,7 @@ zh_TW.po: zh_TW.UTF-8.po
 		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
 
-# Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters
+# Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters.
 # Requires doubling backslashes in the second byte.  Don't depend on big5corr,
 # it should only be compiled when zh_TW.po is outdated.
 
@@ -379,7 +387,7 @@ zh_TW.po: zh_TW.UTF-8.po
 #		[System.IO.File]::WriteAllText(\"$@\", $$out, \
 #		[System.Text.Encoding]::GetEncoding(950))
 
-# see above in the zh_TW.po conversion section for backslashes.
+# See above in the zh_TW.po conversion section for backslashes.
 #big5corr: big5corr.c
 #	$(CC) big5corr.c
 
@@ -512,7 +520,7 @@ $(PACKAGE).pot: files
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
 update-po: $(MOFILES:.mo=)
 
-# Don't add a dependency here, we only want to update the .po files manually
+# Don't add a dependency here, we only want to update the .po files manually.
 $(LANGUAGES):
 	@$(MAKE) -nologo -f Make_mvc.mak GETTEXT_PATH="$(GETTEXT_PATH)" $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
@@ -521,14 +529,14 @@ $(LANGUAGES):
 	$(RM) $@.po.old
 
 install: $(LANGUAGE).mo
-	if not exist $(INSTALLDIR) $(MKD) $(INSTALLDIR)
-	$(CP) $(LANGUAGE).mo $(INSTALLDIR)\$(PACKAGE).mo
+	if not exist "$(INSTALLDIR)" $(MKD) "$(INSTALLDIR)"
+	$(CP) $(LANGUAGE).mo "$(INSTALLDIR)\$(PACKAGE).mo"
 
 install-all: all
-	for %%l in ($(LANGUAGES)) do @if not exist $(VIMRUNTIME)\lang\%%l\LC_MESSAGES \
-		$(MKD) $(VIMRUNTIME)\lang\%%l\LC_MESSAGES
+	for %%l in ($(LANGUAGES)) do @if not exist "$(VIMRUNTIME)\lang\%%l\LC_MESSAGES" \
+		$(MKD) "$(VIMRUNTIME)\lang\%%l\LC_MESSAGES"
 	for %%l in ($(LANGUAGES)) do @$(CP) %%l.mo \
-		$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo
+		"$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo"
 
 cleanup-po: $(LANGUAGE).po
 	"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po

@@ -3,24 +3,25 @@
 # Include stuff found by configure.
 include ../auto/config.mk
 
-# get LANGUAGES, MOFILES, MOCONVERTED and others
+# Get LANGUAGES, MOFILES, MOCONVERTED and others.
 include Make_all.mak
 
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
-# not installed on Unix
+# not installed on Unix.
 
 PACKAGE = vim
 SHELL = /bin/sh
 VIM = ../vim
 
-# MacOS sed is locale aware, set $LANG to avoid problems
+# MacOS sed is locale aware, set $LANG to avoid problems.
 SED = LANG=C sed
 
 # The OLD_PO_FILE_INPUT and OLD_PO_FILE_OUTPUT are for the new GNU gettext
 # tools 0.10.37, which use a slightly different .po file format that is not
 # compatible with Solaris (and old gettext implementations) unless these are
 # set.  gettext 0.10.36 will not work!
-MSGFMTCMD = OLD_PO_FILE_INPUT=yes $(MSGFMT) -v
+
+# MSGFMTCMD is defined by Configure in ../auto/config.mk
 XGETTEXT = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes xgettext
 MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
@@ -45,7 +46,7 @@ converted: $(MOCONVERTED)
 
 check: $(CHECKFILES)
 
-# installing for real
+# Installing for real.
 install: $(MOFILES) $(MOCONVERTED)
 	@$(MAKE) prefixcheck
 	for lang in $(LANGUAGES); do \
@@ -71,7 +72,7 @@ uninstall:
 	  rm -f $(LOCALEDIR)/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
 	done
 
-# installing for local tryout into ../../runtime/lang
+# Installing for local tryout into ../../runtime/lang.
 tryoutinstall: $(MOFILES) $(MOCONVERTED)
 	@$(MAKE) prefixcheck
 	for lang in $(LANGUAGES); do \
@@ -167,7 +168,7 @@ zh_CN.cp936.po: zh_CN.UTF-8.po
 			-e 's/# Original translations/# Generated from $<, DO NOT EDIT/' \
 			> $@
 
-# Convert zh_TW.UTF-8.po to create zh_TW.po
+# Convert zh_TW.UTF-8.po to create zh_TW.po.
 zh_TW.po: zh_TW.UTF-8.po
 	rm -f $@
 	iconv -f UTF-8 -t BIG5 $< | \
@@ -176,7 +177,7 @@ zh_TW.po: zh_TW.UTF-8.po
 			> $@
 
 
-# Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters
+# Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters.
 # Requires doubling backslashes in the second byte.  Don't depend on big5corr,
 # it should only be compiled when zh_TW.po is outdated.
 
@@ -200,7 +201,7 @@ zh_TW.po: zh_TW.UTF-8.po
 
 
 # 06.11.23, added by Restorer
-# see above in the zh_tw.po conversion section for backslashes.
+# See above in the zh_tw.po conversion section for backslashes.
 #big5corr: big5corr.c
 #	$(CC) -o big5corr big5corr.c
 
@@ -259,15 +260,15 @@ PO_INPUTLIST = \
 	vim.desktop.in
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
-	# Convert the Vim scripts to (what looks like) Javascript
+	# Convert the Vim scripts to (what looks like) Javascript.
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
-	# create vim.pot
+	# Create vim.pot.
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
 		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
-	# Fix Vim scripts names, so that "gf" works
+	# Fix Vim scripts names, so that "gf" works.
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
-	# Delete the temporary files
+	# Delete the temporary files.
 	rm *.js
 
 vim.desktop: vim.desktop.in $(POFILES)
@@ -290,7 +291,7 @@ gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
 update-po: $(MOFILES:.mo=)
 
-# Don't add a dependency here, we only want to update the .po files manually
+# Don't add a dependency here, we only want to update the .po files manually.
 $(LANGUAGES):
 	@$(MAKE) $(PACKAGE).pot
 	if test ! -f $@.po.orig; then cp $@.po $@.po.orig; fi
