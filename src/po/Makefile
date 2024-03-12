@@ -37,7 +37,7 @@ originals: $(MOFILES)
 converted: $(MOCONVERTED)
 
 .po.mo:
-		$(MSGFMTCMD) -o $@ $<
+	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
 	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
