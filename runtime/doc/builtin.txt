@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 12
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10829,8 +10829,7 @@ win_screenpos({nr})					*win_screenpos()*
 		[1, 1], unless there is a tabline, then it is [2, 1].
 		{nr} can be the window number or the |window-ID|.  Use zero
 		for the current window.
-		Returns [0, 0] if the window cannot be found in the current
-		tabpage.
+		Returns [0, 0] if the window cannot be found.
 
 		Can also be used as a |method|: >
 			GetWinid()->win_screenpos()
