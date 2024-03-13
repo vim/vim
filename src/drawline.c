@@ -4121,6 +4121,47 @@ win_line(
 	{
 #ifdef FEAT_CONCEAL
 	    wlv.col -= wlv.boguscols;
+	    // Apply 'cursorline' and 'wincolor' highlight.
+	    if (wlv.boguscols != 0 && (
+# ifdef LINE_ATTR
+			wlv.line_attr != 0 ||
+# endif
+			wlv.win_attr != 0
+			)
+	       )
+	    {
+		int attr = wlv.win_attr;
+# ifdef LINE_ATTR
+		if (wlv.line_attr != 0)
+		    attr = hl_combine_attr(attr, wlv.line_attr);
+# endif
+		while ((
+# ifdef FEAT_RIGHTLEFT
+			    wp->w_p_rl ? wlv.col >= 0 :
+# endif
+			    wlv.col < wp->w_width))
+		{
+		    ScreenLines[wlv.off] = ' ';
+		    if (enc_utf8)
+			ScreenLinesUC[wlv.off] = 0;
+		    ScreenAttrs[wlv.off] = attr;
+		    ScreenCols[wlv.off] = MAXCOL;  // TODO: this is wrong
+# ifdef FEAT_RIGHTLEFT
+		    if (wp->w_p_rl)
+		    {
+			wlv.off--;
+			wlv.col--;
+			wlv.boguscols++;
+		    }
+		    else
+# endif
+		    {
+			wlv.off++;
+			wlv.col++;
+			wlv.boguscols--;
+		    }
+		}
+	    }
 	    wlv_screen_line(wp, &wlv, FALSE);
 	    wlv.col += wlv.boguscols;
 	    wlv.boguscols = 0;
