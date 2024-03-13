@@ -6203,7 +6203,7 @@ vgr_match_buflines(
 	else
 	{
 	    char_u  *str = ml_get_buf(buf, lnum, FALSE);
-	    int	    line_len = ml_get_buf_len(buf, lnum);
+	    colnr_T linelen = ml_get_buf_len(buf, lnum);
 	    int	    score;
 	    int_u   matches[MAX_FUZZY_MATCHES];
 	    int_u   sz = ARRAY_LENGTH(matches);
@@ -6242,7 +6242,7 @@ vgr_match_buflines(
 		if ((flags & VGR_GLOBAL) == 0)
 		    break;
 		col = matches[pat_len - 1] + col + 1;
-		if (col > line_len)
+		if (col > linelen)
 		    break;
 	    }
 	}
@@ -6612,7 +6612,7 @@ ex_vimgrep(exarg_T *eap)
 	goto theend;
     }
 
-    // Jump to first match if the current window is not 'winfixbuf'
+    // Jump to first match.
     if (!qf_list_empty(qf_get_curlist(qi)))
     {
 	if ((args.flags & VGR_NOJUMP) == 0)
