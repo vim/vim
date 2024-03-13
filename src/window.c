@@ -3493,12 +3493,19 @@ winframe_remove(
     frame_T	*frp, *frp2, *frp3;
     frame_T	*frp_close = win->w_frame;
     win_T	*wp;
+    int		row, col;
 
     /*
      * If there is only one window there is nothing to remove.
      */
     if (tp == NULL ? ONE_WINDOW : tp->tp_firstwin == tp->tp_lastwin)
 	return NULL;
+
+    // Save the position of the containing frame (which will also contain the
+    // altframe) before we remove anything, to recompute window positions later.
+    wp = frame2win(frp_close->fr_parent);
+    row = wp->w_winrow;
+    col = wp->w_wincol;
 
     /*
      * Remove the window from its frame.
@@ -3584,15 +3591,10 @@ winframe_remove(
 	*dirp = 'h';
     }
 
-    // If rows/columns go to a window below/right its positions need to be
-    // updated.  Can only be done after the sizes have been updated.
-    if (frp2 == frp_close->fr_next)
-    {
-	int row = win->w_winrow;
-	int col = win->w_wincol;
-
-	frame_comp_pos(frp2, &row, &col);
-    }
+    // If the altframe wasn't adjacent and left/above, resizing it will have
+    // changed window positions within the parent frame.  Recompute them.
+    if (frp2 != frp_close->fr_prev)
+	frame_comp_pos(frp_close->fr_parent, &row, &col);
 
     if (unflat_altfr == NULL)
 	frame_flatten(frp2);
@@ -3666,8 +3668,6 @@ frame_flatten(frame_T *frp)
 winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
 {
     frame_T	*frp = wp->w_frame;
-    int		row = wp->w_winrow;
-    int		col = wp->w_wincol;
 
     // Put "wp"'s frame back where it was.
     if (frp->fr_prev != NULL)
@@ -3691,19 +3691,23 @@ winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
     {
 	frame_new_height(unflat_altfr, unflat_altfr->fr_height - frp->fr_height,
 		unflat_altfr == frp->fr_next, FALSE);
-	row += frp->fr_height;
     }
     else if (dir == 'h')
     {
 	frame_new_width(unflat_altfr, unflat_altfr->fr_width - frp->fr_width,
 		unflat_altfr == frp->fr_next, FALSE);
-	col += frp->fr_width;
     }
 
-    // If rows/columns went to a window below/right, its positions need to be
-    // restored.  Can only be done after the sizes have been updated.
-    if (unflat_altfr == frp->fr_next)
-	frame_comp_pos(unflat_altfr, &row, &col);
+    // Recompute window positions within the parent frame to restore them.
+    // Positions were unchanged if the altframe was adjacent and left/above.
+    if (unflat_altfr != frp->fr_prev)
+    {
+	win_T	*topleft = frame2win(frp->fr_parent);
+	int	row = topleft->w_winrow;
+	int	col = topleft->w_wincol;
+
+	frame_comp_pos(frp->fr_parent, &row, &col);
+    }
 }
 
 /*
