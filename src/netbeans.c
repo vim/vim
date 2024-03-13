@@ -932,7 +932,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
     int lastbyte = last;
 
     oldtext = ml_get(lnum);
-    oldlen = (int)STRLEN(oldtext);
+    oldlen = ml_get_len(lnum);
     if (first >= (colnr_T)oldlen || oldlen == 0)  // just in case
 	return;
     if (lastbyte >= oldlen)
@@ -957,8 +957,8 @@ nb_joinlines(linenr_T first, linenr_T other)
     int len_first, len_other;
     char_u *p;
 
-    len_first = (int)STRLEN(ml_get(first));
-    len_other = (int)STRLEN(ml_get(other));
+    len_first = ml_get_len(first);
+    len_other = ml_get_len(other);
     p = alloc(len_first + len_other + 1);
     if (p == NULL)
 	return;
@@ -1402,7 +1402,7 @@ nb_do_cmd(
 			int	col = pos == NULL ? 0 : pos->col;
 
 			// Insert halfway a line.
-			newline = alloc(STRLEN(oldline) + len + 1);
+			newline = alloc(ml_get_len(lnum) + len + 1);
 			if (newline != NULL)
 			{
 			    mch_memmove(newline, oldline, (size_t)col);
@@ -3314,8 +3314,7 @@ get_buf_size(buf_T *bufp)
 	eol_size = 1;
     for (lnum = 1; lnum <= bufp->b_ml.ml_line_count; ++lnum)
     {
-	char_count += (long)STRLEN(ml_get_buf(bufp, lnum, FALSE))
-	    + eol_size;
+	char_count += ml_get_buf_len(bufp, lnum) + eol_size;
 	// Check for a CTRL-C every 100000 characters
 	if (char_count > last_check)
 	{

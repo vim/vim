@@ -3297,8 +3297,7 @@ process_next_cpt_value(
 	    // buffer, so that word at start of buffer is found
 	    // correctly.
 	    st->first_match_pos.lnum = st->ins_buf->b_ml.ml_line_count;
-	    st->first_match_pos.col =
-		(colnr_T)STRLEN(ml_get(st->first_match_pos.lnum));
+	    st->first_match_pos.col = ml_get_len(st->first_match_pos.lnum);
 	}
 	st->last_match_pos = st->first_match_pos;
 	compl_type = 0;

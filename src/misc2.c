@@ -130,6 +130,7 @@ coladvance2(
     colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*line;
+    int		linelen;
     colnr_T	col = 0;
     int		csize = 0;
     int		one_more;
@@ -142,10 +143,11 @@ coladvance2(
 		    || (VIsual_active && *p_sel != 'o')
 		    || ((get_ve_flags() & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
+    linelen = ml_get_buf_len(curbuf, pos->lnum);
 
     if (wcol >= MAXCOL)
     {
-	    idx = (int)STRLEN(line) - 1 + one_more;
+	    idx = linelen - 1 + one_more;
 	    col = wcol;
 
 	    if ((addspaces || finetune) && !VIsual_active)
@@ -255,7 +257,6 @@ coladvance2(
 	    else
 	    {
 		// Break a tab
-		int	linelen = (int)STRLEN(line);
 		int	correct = wcol - col - csize + 1; // negative!!
 		char_u	*newline;
 		int	t, s = 0;
@@ -412,7 +413,7 @@ dec(pos_T *lp)
     {
 	// past end of line
 	p = ml_get(lp->lnum);
-	lp->col = (colnr_T)STRLEN(p);
+	lp->col = ml_get_len(lp->lnum);
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	return 0;
@@ -435,7 +436,7 @@ dec(pos_T *lp)
 	// there is a prior line
 	lp->lnum--;
 	p = ml_get(lp->lnum);
-	lp->col = (colnr_T)STRLEN(p);
+	lp->col = ml_get_len(lp->lnum);
 	if (has_mbyte)
 	    lp->col -= (*mb_head_off)(p, p + lp->col);
 	return 1;
@@ -515,7 +516,6 @@ get_cursor_rel_lnum(
     void
 check_pos(buf_T *buf, pos_T *pos)
 {
-    char_u *line;
     colnr_T len;
 
     if (pos->lnum > buf->b_ml.ml_line_count)
@@ -523,8 +523,7 @@ check_pos(buf_T *buf, pos_T *pos)
 
     if (pos->col > 0)
     {
-	line = ml_get_buf(buf, pos->lnum, FALSE);
-	len = (colnr_T)STRLEN(line);
+	len = ml_get_buf_len(buf, pos->lnum);
 	if (pos->col > len)
 	    pos->col = len;
     }
@@ -570,7 +569,7 @@ check_cursor_col_win(win_T *win)
     colnr_T      oldcoladd = win->w_cursor.col + win->w_cursor.coladd;
     unsigned int cur_ve_flags = get_ve_flags();
 
-    len = (colnr_T)STRLEN(ml_get_buf(win->w_buffer, win->w_cursor.lnum, FALSE));
+    len = ml_get_buf_len(win->w_buffer, win->w_cursor.lnum);
     if (len == 0)
 	win->w_cursor.col = 0;
     else if (win->w_cursor.col >= len)
@@ -649,7 +648,7 @@ check_visual_pos(void)
     }
     else
     {
-	int len = (int)STRLEN(ml_get(VIsual.lnum));
+	int len = ml_get_len(VIsual.lnum);
 
 	if (VIsual.col > len)
 	{

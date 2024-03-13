@@ -1609,7 +1609,7 @@ copy_indent(int size, char_u *src)
 	{
 	    // Allocate memory for the result: the copied indent, new indent
 	    // and the rest of the line.
-	    line_len = (int)STRLEN(ml_get_curline()) + 1;
+	    line_len = ml_get_curline_len() + 1;
 	    line = alloc(ind_len + line_len);
 	    if (line == NULL)
 		return FALSE;

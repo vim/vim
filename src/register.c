@@ -1793,7 +1793,7 @@ do_put(
 	    }
 	    // get the old line and advance to the position to insert at
 	    oldp = ml_get_curline();
-	    oldlen = (int)STRLEN(oldp);
+	    oldlen = ml_get_curline_len();
 	    init_chartabsize_arg(&cts, curwin, curwin->w_cursor.lnum, 0,
 								  oldp, oldp);
 
@@ -1924,7 +1924,7 @@ do_put(
 	    curwin->w_cursor.col++;
 
 	    // in Insert mode we might be after the NUL, correct for that
-	    len = (colnr_T)STRLEN(ml_get_curline());
+	    len = ml_get_curline_len();
 	    if (curwin->w_cursor.col > len)
 		curwin->w_cursor.col = len;
 	}
@@ -2008,7 +2008,7 @@ do_put(
 		totlen = count * yanklen;
 		do {
 		    oldp = ml_get(lnum);
-		    oldlen = (int)STRLEN(oldp);
+		    oldlen = ml_get_len(lnum);
 		    if (lnum > start_lnum)
 		    {
 			pos_T   pos;
@@ -2088,7 +2088,7 @@ do_put(
 		    lnum = new_cursor.lnum;
 		    ptr = ml_get(lnum) + col;
 		    totlen = (int)STRLEN(y_array[y_size - 1]);
-		    newp = alloc(STRLEN(ptr) + totlen + 1);
+		    newp = alloc(ml_get_len(lnum) - col + totlen + 1);
 		    if (newp == NULL)
 			goto error;
 		    STRCPY(newp, y_array[y_size - 1]);
@@ -2129,7 +2129,7 @@ do_put(
 			curwin->w_cursor.lnum = lnum;
 			ptr = ml_get(lnum);
 			if (cnt == count && i == y_size - 1)
-			    lendiff = (int)STRLEN(ptr);
+			    lendiff = ml_get_len(lnum);
 			if (*ptr == '#' && preprocs_left())
 			    indent = 0;     // Leave # lines at start
 			else
@@ -2147,7 +2147,7 @@ do_put(
 			curwin->w_cursor = old_pos;
 			// remember how many chars were removed
 			if (cnt == count && i == y_size - 1)
-			    lendiff -= (int)STRLEN(ml_get(lnum));
+			    lendiff -= ml_get_len(lnum);
 		    }
 		}
 		if (cnt == 1)
@@ -2239,7 +2239,7 @@ error:
     curwin->w_set_curswant = TRUE;
 
     // Make sure the cursor is not after the NUL.
-    int len = (int)STRLEN(ml_get_curline());
+    int len = ml_get_curline_len();
     if (curwin->w_cursor.col > len)
     {
 	if (cur_ve_flags == VE_ALL)

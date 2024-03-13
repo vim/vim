@@ -1384,7 +1384,7 @@ spell_move_to(
 
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
-	len = (int)STRLEN(line);
+	len = ml_get_buf_len(wp->w_buffer, lnum);
 	if (buflen < len + MAXWLEN + 2)
 	{
 	    vim_free(buf);
@@ -2988,7 +2988,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
 						   repl_to, repl_to_len) != 0)
 	{
-	    p = alloc(STRLEN(line) + addlen + 1);
+	    p = alloc(ml_get_curline_len() + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);

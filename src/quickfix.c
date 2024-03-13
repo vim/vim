@@ -780,9 +780,9 @@ qf_get_next_buf_line(qfstate_T *state)
 	return QF_END_OF_INPUT;
 
     p_buf = ml_get_buf(state->buf, state->buflnum, FALSE);
+    len = ml_get_buf_len(state->buf, state->buflnum);
     state->buflnum += 1;
 
-    len = (int)STRLEN(p_buf);
     if (len > IOSIZE - 2)
     {
 	state->linebuf = qf_grow_linebuf(state, len);
@@ -6196,13 +6196,14 @@ vgr_match_buflines(
 		    break;
 		col = regmatch->endpos[0].col
 		    + (col == regmatch->endpos[0].col);
-		if (col > (colnr_T)STRLEN(ml_get_buf(buf, lnum, FALSE)))
+		if (col > ml_get_buf_len(buf, lnum))
 		    break;
 	    }
 	}
 	else
 	{
 	    char_u  *str = ml_get_buf(buf, lnum, FALSE);
+	    int	    line_len = ml_get_buf_len(buf, lnum);
 	    int	    score;
 	    int_u   matches[MAX_FUZZY_MATCHES];
 	    int_u   sz = ARRAY_LENGTH(matches);
@@ -6241,7 +6242,7 @@ vgr_match_buflines(
 		if ((flags & VGR_GLOBAL) == 0)
 		    break;
 		col = matches[pat_len - 1] + col + 1;
-		if (col > (colnr_T)STRLEN(str))
+		if (col > line_len)
 		    break;
 	    }
 	}
