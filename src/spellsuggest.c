@@ -508,7 +508,6 @@ spell_suggest(int count)
 	++badlen;
 	end_visual_mode();
 	// make sure we don't include the NUL at the end of the line
-	line = ml_get_curline();
 	if (badlen > ml_get_curline_len() - (int)curwin->w_cursor.col)
 	    badlen = ml_get_curline_len() - (int)curwin->w_cursor.col;
     }

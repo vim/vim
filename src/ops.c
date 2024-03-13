@@ -849,8 +849,8 @@ op_delete(oparg_T *oap)
 	    }
 	    else
 		beginline(0);		    // cursor in column 0
-	    truncate_line(FALSE);   // delete the rest of the line
-				    // leave cursor past last char in line
+	    truncate_line(FALSE);   // delete the rest of the line,
+				    // leaving cursor past last char in line
 	    if (oap->line_count > 1)
 		u_clearline();	    // "U" command not possible after "2cc"
 	}
@@ -1494,16 +1494,13 @@ swapchar(int op_type, pos_T *pos)
     void
 op_insert(oparg_T *oap, long count1)
 {
-    long		ins_len, pre_textlen = 0;
-    char_u		*firstline, *ins_text;
+    long		pre_textlen = 0;
     colnr_T		ind_pre_col = 0, ind_post_col;
     int			ind_pre_vcol = 0, ind_post_vcol = 0;
     struct block_def	bd;
     int			i;
     pos_T		t1;
     pos_T		start_insert;
-			// offset when cursor was moved in insert mode
-    int			offset = 0;
 
     // edit() changes this - record it for OP_APPEND
     bd.is_MAX = (curwin->w_curswant == MAXCOL);
@@ -1540,14 +1537,9 @@ op_insert(oparg_T *oap, long count1)
 	// Get indent information
 	ind_pre_col = (colnr_T)getwhitecols_curline();
 	ind_pre_vcol = get_indent();
-	firstline = ml_get(oap->start.lnum) + bd.textcol;
 	pre_textlen = ml_get_len(oap->start.lnum) - bd.textcol;
-
 	if (oap->op_type == OP_APPEND)
-	{
-	    firstline += bd.textlen;
 	    pre_textlen -= bd.textlen;
-	}
     }
 
     if (oap->op_type == OP_APPEND)
@@ -1601,10 +1593,14 @@ op_insert(oparg_T *oap, long count1)
 
     if (oap->block_mode)
     {
+	long			ins_len;
+	char_u			*firstline, *ins_text;
 	struct block_def	bd2;
 	int			did_indent = FALSE;
 	size_t			len;
 	int			add;
+	// offset when cursor was moved in insert mode
+	int			offset = 0;
 
 	// If indent kicked in, the firstline might have changed
 	// but only do that, if the indent actually increased.
@@ -2654,6 +2650,7 @@ do_addsub(
     uvarnumber_T	n;
     uvarnumber_T	oldn;
     char_u	*ptr;
+    int		linelen;
     int		c;
     int		todel;
     int		do_hex;
@@ -2687,9 +2684,10 @@ do_addsub(
 
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
+    linelen = ml_get_len(pos->lnum);
     col = pos->col;
 
-    if (*ptr == NUL || col + !!save_coladd >= (int)STRLEN(ptr))
+    if (col + !!save_coladd >= linelen)
 	goto theend;
 
     /*
@@ -2869,8 +2867,7 @@ do_addsub(
 	// get the number value (unsigned)
 	if (visual && VIsual_mode != 'V')
 	    maxlen = (curbuf->b_visual.vi_curswant == MAXCOL
-		    ? (int)STRLEN(ptr) - col
-		    : length);
+		    ? linelen - col : length);
 
 	int overflow = FALSE;
 	vim_str2nr(ptr + col, &pre, &length,
