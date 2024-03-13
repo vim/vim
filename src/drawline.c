@@ -3547,10 +3547,12 @@ win_line(
 #ifdef FEAT_CONCEAL
 	// In the cursor line and we may be concealing characters: correct
 	// the cursor column when we reach its position.
+	// With 'virtualedit' we may never reach cursor position, but we still
+	// need to correct the cursor column, so do that at end of line.
 	if (!did_wcol && wlv.draw_state == WL_LINE
 		&& wp == curwin && lnum == wp->w_cursor.lnum
 		&& conceal_cursor_line(wp)
-		&& (int)wp->w_virtcol <= wlv.vcol + skip_cells)
+		&& (wlv.vcol + skip_cells >= wp->w_virtcol || c == NUL))
 	{
 # ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
@@ -3558,6 +3560,9 @@ win_line(
 	    else
 # endif
 		wp->w_wcol = wlv.col - wlv.boguscols;
+	    if (wlv.vcol + skip_cells < wp->w_virtcol)
+		// Cursor beyond end of the line with 'virtualedit'.
+		wp->w_wcol += wp->w_virtcol - wlv.vcol - skip_cells;
 	    wp->w_wrow = wlv.row;
 	    did_wcol = TRUE;
 	    curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
