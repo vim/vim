@@ -1,8 +1,8 @@
 # List of distributed Vim files.
 # Used by Makefile.
 
-# Files of Git and GitHub.
-FILE_GIT =	\
+# Source files for all source archives.
+SRC_ALL =	\
 		.cirrus.yml \
 		.gitattributes \
 		.github/CODEOWNERS \
@@ -21,11 +21,6 @@ FILE_GIT =	\
 		ci/if_ver*.vim \
 		ci/setup-xvfb.sh \
 		ci/remove_snap.sh \
-		src/libvterm/.bzrignore \
-		src/libvterm/.gitignore \
-
-# The source code itself is for all source archives.
-BARE_SRC_ALL = \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.c \
@@ -343,7 +338,10 @@ BARE_SRC_ALL = \
 		src/proto/viminfo.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
+		src/libvterm/.bzrignore \
+		src/libvterm/.gitignore \
 		src/libvterm/LICENSE \
+		src/libvterm/Makefile \
 		src/libvterm/README \
 		src/libvterm/CONTRIBUTING \
 		src/libvterm/tbl2inc_c.pl \
@@ -431,11 +429,6 @@ BARE_SRC_ALL = \
 		src/xdiff/xutils.c \
 		src/xdiff/xutils.h \
 
-# Source files for all source archives.
-SRC_ALL =	\
-		$(FILE_GIT) \
-		$(BARE_SRC_ALL) \
-
 
 # Source files for Unix-like only.
 SRC_UNIX =	\
@@ -483,7 +476,6 @@ SRC_UNIX =	\
 		src/osdef1.h.in \
 		src/osdef2.h.in \
 		src/pathdef.sh \
-		src/libvterm/Makefile \
 		src/proto/gui_gtk.pro \
 		src/proto/gui_gtk_x11.pro \
 		src/proto/gui_gtk_gresources.pro \
@@ -703,12 +695,19 @@ RT_ALL =	\
 		LICENSE \
 		CONTRIBUTING.md \
 		runtime/bugreport.vim \
+		runtime/doc/*.awk \
 		runtime/doc/*.pl \
 		runtime/doc/*.txt \
+		runtime/doc/Makefile \
 		runtime/doc/Make_all.mak \
 		runtime/doc/doctags.c \
 		runtime/doc/doctags.vim \
 		runtime/doc/test_urls.vim \
+		runtime/doc/vim.1 \
+		runtime/doc/evim.1 \
+		runtime/doc/vimdiff.1 \
+		runtime/doc/vimtutor.1 \
+		runtime/doc/xxd.1 \
 		runtime/ftoff.vim \
 		runtime/gvimrc_example.vim \
 		runtime/import/dist/vimhelp.vim \
@@ -726,7 +725,7 @@ RT_ALL =	\
 		runtime/macros/life/life.vim \
 		runtime/macros/matchit.vim \
 		runtime/macros/maze/README.txt \
-		runtime/macros/maze/Makefile \
+		runtime/macros/maze/[mM]akefile \
 		runtime/macros/maze/maze.c \
 		runtime/macros/maze/maze_5.78 \
 		runtime/macros/maze/maze_mac \
@@ -762,15 +761,18 @@ RT_ALL =	\
 		runtime/pack/dist/opt/editorconfig/.editorconfig \
 		runtime/pack/dist/opt/editorconfig/CONTRIBUTORS \
 		runtime/pack/dist/opt/editorconfig/LICENSE* \
+		runtime/pack/dist/opt/editorconfig/mkzip.sh \
 		runtime/pack/dist/opt/editorconfig/README.md \
 		runtime/pack/dist/opt/editorconfig/autoload/*.vim \
 		runtime/pack/dist/opt/editorconfig/autoload/editorconfig_core/*.vim \
+		runtime/pack/dist/opt/editorconfig/doc/tags \
 		runtime/pack/dist/opt/editorconfig/doc/editorconfig.txt \
 		runtime/pack/dist/opt/editorconfig/ftdetect/editorconfig.vim \
 		runtime/pack/dist/opt/editorconfig/plugin/editorconfig.vim \
 		runtime/pack/dist/opt/justify/plugin/justify.vim \
 		runtime/pack/dist/opt/matchit/plugin/matchit.vim \
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
+		runtime/pack/dist/opt/matchit/doc/tags \
 		runtime/pack/dist/opt/matchit/autoload/*.vim \
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
@@ -779,8 +781,6 @@ RT_ALL =	\
 # Runtime files for all distributions without CR/LF translation.
 RT_ALL_BIN =	\
 		runtime/doc/tags \
-		runtime/pack/dist/opt/editorconfig/doc/tags \
-		runtime/pack/dist/opt/matchit/doc/tags \
 		runtime/print/*.ps \
 
 # Runtime script files.
@@ -807,6 +807,7 @@ RT_SCRIPTS =	\
 		runtime/compiler/README.txt \
 		runtime/indent/*.vim \
 		runtime/indent/README.txt \
+		runtime/indent/Makefile \
 		runtime/indent/testdir/README.txt \
 		runtime/indent/testdir/*.vim \
 		runtime/indent/testdir/*.in \
@@ -836,15 +837,6 @@ RT_SCRIPTS =	\
 # Unix-like runtime.
 RT_UNIX =	\
 		README_unix.txt \
-		runtime/doc/*.awk \
-		runtime/doc/Makefile \
-		runtime/doc/vim.1 \
-		runtime/doc/evim.1 \
-		runtime/doc/vimdiff.1 \
-		runtime/doc/vimtutor.1 \
-		runtime/doc/xxd.1 \
-		runtime/indent/Makefile \
-		runtime/pack/dist/opt/editorconfig/mkzip.sh \
 		runtime/hi16-action-make.png \
 		runtime/hi22-action-make.png \
 		runtime/gvim.desktop \
@@ -890,7 +882,7 @@ RT_DOS_BIN =	\
 		runtime/vimlogo.pdf \
 		runtime/vimlogo.svg \
 
-# Amiga runtime (also in the extra archive).
+# Amiga runtime (also in the extra archive)
 RT_AMI =	\
 		README.txt.info \
 		README_ami.txt \
