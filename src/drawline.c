@@ -3224,7 +3224,7 @@ win_line(
 
 			// Make sure, the highlighting for the tab char will be
 			// correctly set further below (effectively reverts the
-			// FIX_FOR_BOGSUCOLS macro).
+			// FIX_FOR_BOGUSCOLS macro).
 			if (wlv.n_extra == tab_len + vc_saved && wp->w_p_list
 						&& wp->w_lcs_chars.tab1)
 			    tab_len += vc_saved;
@@ -3493,6 +3493,21 @@ win_line(
 		    else
 			c = ' ';
 
+		    if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+			// When the first char to be concealed is double-width,
+			// need to advance one more virtual column.
+			wlv.n_extra++;
+
+		    mb_c = c;
+		    if (enc_utf8 && utf_char2len(c) > 1)
+		    {
+			mb_utf8 = TRUE;
+			u8cc[0] = 0;
+			c = 0xc0;
+		    }
+		    else
+			mb_utf8 = FALSE;	// don't draw as UTF-8
+
 		    prev_syntax_id = syntax_seqnr;
 
 		    if (wlv.n_extra > 0)
@@ -3521,15 +3536,6 @@ win_line(
 		    is_concealing = TRUE;
 		    skip_cells = 1;
 		}
-		mb_c = c;
-		if (enc_utf8 && utf_char2len(c) > 1)
-		{
-		    mb_utf8 = TRUE;
-		    u8cc[0] = 0;
-		    c = 0xc0;
-		}
-		else
-		    mb_utf8 = FALSE;	// don't draw as UTF-8
 	    }
 	    else
 	    {
@@ -3989,10 +3995,21 @@ win_line(
 #ifdef FEAT_CONCEAL
 	else if (wp->w_p_cole > 0 && is_concealing)
 	{
+	    int concealed_wide = has_mbyte && (*mb_char2cells)(mb_c) > 1;
+
 	    --skip_cells;
 	    ++wlv.vcol_off_co;
+	    if (concealed_wide)
+	    {
+		// When a double-width char is concealed,
+		// need to advance one more virtual column.
+		++wlv.vcol;
+		++wlv.vcol_off_co;
+	    }
+
 	    if (wlv.n_extra > 0)
 		wlv.vcol_off_co += wlv.n_extra;
+
 	    if (wp->w_p_wrap)
 	    {
 		// Special voodoo required if 'wrap' is on.
@@ -4025,8 +4042,7 @@ win_line(
 		    n_attr = 0;
 		}
 
-
-		if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+		if (concealed_wide)
 		{
 		    // Need to fill two screen columns.
 # ifdef FEAT_RIGHTLEFT
