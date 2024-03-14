@@ -832,9 +832,10 @@ text_prop_position(
  * Call screen_line() using values from "wlv".
  * Also takes care of putting "<<<" on the first line for 'smoothscroll'
  * when 'showbreak' is not set.
+ * When "clear_end" is TRUE clear until the end of the screen line.
  */
     static void
-wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
+wlv_screen_line(win_T *wp, winlinevars_T *wlv, int clear_end)
 {
     if (wlv->row == 0 && wp->w_skipcol > 0
 #if defined(FEAT_LINEBREAK)
@@ -872,8 +873,8 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
     }
 
     screen_line(wp, wlv->screen_row, wp->w_wincol, wlv->col,
-		    negative_width ? -wp->w_width : wp->w_width,
-		    wlv->screen_line_flags);
+		    clear_end ? wp->w_width : -wp->w_width,
+		    wlv->vcol - 1, wlv->screen_line_flags);
 }
 
 /*
@@ -939,7 +940,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 	    ScreenLines[wlv->off] = ' ';
 	    if (enc_utf8)
 		ScreenLinesUC[wlv->off] = 0;
-	    ScreenCols[wlv->off] = MAXCOL;
+	    ScreenCols[wlv->off] = wlv->vcol;
 	    ++wlv->col;
 	    if (wlv->draw_color_col)
 		wlv->draw_color_col = advance_color_col(
@@ -969,7 +970,11 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
     }
 #endif
 
-    wlv_screen_line(wp, wlv, FALSE);
+    // Set increasing virtual columns in ScreenCols[] to set correct curswant
+    // (or "coladd" for 'virtualedit') when clicking after end of line.
+    wlv->screen_line_flags |= SLF_INC_VCOL;
+    wlv_screen_line(wp, wlv, TRUE);
+    wlv->screen_line_flags &= ~SLF_INC_VCOL;
     ++wlv->row;
     ++wlv->screen_row;
 }
@@ -1928,7 +1933,7 @@ win_line(
 	    // stop here.
 	    if (number_only > 0 && wlv.draw_state == WL_NR && wlv.n_extra == 0)
 	    {
-		wlv_screen_line(wp, &wlv, TRUE);
+		wlv_screen_line(wp, &wlv, FALSE);
 		// Need to update more screen lines if:
 		// - LineNrAbove or LineNrBelow is used, or
 		// - still drawing filler lines.
@@ -1987,7 +1992,7 @@ win_line(
 		&& lnum == wp->w_cursor.lnum
 		&& wlv.vcol >= (long)wp->w_virtcol)
 	{
-	    wlv_screen_line(wp, &wlv, TRUE);
+	    wlv_screen_line(wp, &wlv, FALSE);
 	    // Pretend we have finished updating the window.  Except when
 	    // 'cursorcolumn' is set.
 #ifdef FEAT_SYN_HL
@@ -3764,7 +3769,7 @@ win_line(
 		}
 #endif
 		ScreenAttrs[wlv.off] = wlv.char_attr;
-		ScreenCols[wlv.off] = MAXCOL;
+		ScreenCols[wlv.off] = wlv.vcol;
 #ifdef FEAT_RIGHTLEFT
 		if (wp->w_p_rl)
 		{
@@ -4167,7 +4172,7 @@ win_line(
 		    if (enc_utf8)
 			ScreenLinesUC[wlv.off] = 0;
 		    ScreenAttrs[wlv.off] = attr;
-		    ScreenCols[wlv.off] = MAXCOL;  // TODO: this is wrong
+		    ScreenCols[wlv.off] = wlv.vcol - 1;
 # ifdef FEAT_RIGHTLEFT
 		    if (wp->w_p_rl)
 		    {
@@ -4184,12 +4189,12 @@ win_line(
 		    }
 		}
 	    }
-	    wlv_screen_line(wp, &wlv, FALSE);
+	    wlv_screen_line(wp, &wlv, TRUE);
 	    wlv.col += wlv.boguscols;
 	    wlv.boguscols = 0;
 	    wlv.vcol_off_co = 0;
 #else
-	    wlv_screen_line(wp, &wlv, FALSE);
+	    wlv_screen_line(wp, &wlv, TRUE);
 #endif
 	    ++wlv.row;
 	    ++wlv.screen_row;
