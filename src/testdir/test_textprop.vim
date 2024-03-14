@@ -4485,4 +4485,57 @@ func Test_textprop_backspace_fo_aw()
   call prop_type_delete('test')
 endfunc
 
+func Test_textprop_with_wincolor()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, 'some text here')
+    call setline(2, 'some much longer text here')
+    call setline(3, 'more text here')
+    call prop_type_add('afterprop', #{highlight: 'Search'})
+    call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
+    call prop_add(3, 0, #{type: 'afterprop', text: 'AFTER',
+          \ text_align: 'after', text_padding_left: 3})
+    call prop_add(1, 0, #{type: 'belowprop', text: 'BELOW',
+          \ text_align: 'below', text_padding_left: 3})
+    set wincolor=DiffChange wrap
+  END
+  call writefile(lines, 'XtextPropWincolor', 'D')
+  let buf = RunVimInTerminal('-S XtextPropWincolor', #{rows: 8, cols: 60})
+
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_1', {})
+
+  call term_sendkeys(buf, ":set cursorline\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_2', {})
+
+  call term_sendkeys(buf, ":set nowrap\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_2', {})
+
+  call term_sendkeys(buf, ":set nocursorline\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_1', {})
+
+  call term_sendkeys(buf, ":set cursorline colorcolumn=30\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_3', {})
+
+  call term_sendkeys(buf, ":hi CursorLine ctermbg=Brown\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_4', {})
+
+  call term_sendkeys(buf, ":set cursorcolumn\<CR>:\<CR>")
+  call term_sendkeys(buf, '$')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_5', {})
+
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_6', {})
+
+  call term_sendkeys(buf, ":set virtualedit=all\<CR>:\<CR>")
+  call term_sendkeys(buf, 'l')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_7', {})
+
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_8', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

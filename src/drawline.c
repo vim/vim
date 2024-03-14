@@ -812,12 +812,12 @@ text_prop_position(
 		*p_extra = l;
 		*n_extra = n_used + before + after + padding;
 		*n_attr = mb_charlen(*p_extra);
-		if (above)
-		    *n_attr -= padding + after;
-
 		// n_attr_skip will not be decremented before draw_state is
 		// WL_LINE
 		*n_attr_skip = before + (padding > 0 ? padding : 0);
+		*n_attr -= *n_attr_skip;
+		if (above)
+		    *n_attr -= after;
 	    }
 	}
     }
@@ -946,14 +946,15 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 						   VCOL_HLC, &wlv->color_cols);
 
 	    int attr = wlv->win_attr;
-	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol)
-		attr = HL_ATTR(HLF_CUC);
-	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols)
-		attr = HL_ATTR(HLF_MC);
 # ifdef LINE_ATTR
-	    else if (wlv->line_attr != 0)
-		attr = wlv->line_attr;
+	    if (wlv->line_attr != 0)
+		attr = hl_combine_attr(attr, wlv->line_attr);
 # endif
+	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol
+		    && wlv->lnum != wp->w_cursor.lnum)
+		attr = hl_combine_attr(attr, HL_ATTR(HLF_CUC));
+	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols)
+		attr = hl_combine_attr(attr, HL_ATTR(HLF_MC));
 	    ScreenAttrs[wlv->off++] = attr;
 
 	    if (VCOL_HLC >= rightmost_vcol
