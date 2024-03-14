@@ -15,6 +15,24 @@ echo "Answer = "
      "\ comment
       \ 42
 
+echo
+      \ "Answer = "
+     "\ comment
+      \ 42
+
 " :echo without {expr}
 echo| echo "Foo"
 
+" trailing comment needs |
+echo "foo" | " comment
+
+
+" Issue #9987 (parenthesised argument - not a function call)
+
+let foo = {'end': 123}
+
+if 123
+	echo (foo.end)
+else
+	echo 'bar'
+endif
