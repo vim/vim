@@ -4195,7 +4195,7 @@ highlight_get_attr_dict(int hlattr)
     if (dict == NULL)
 	return NULL;
 
-    for (i = 0; i < ARRAY_LENGTH(highlight_tab); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); ++i)
     {
 	if (hlattr & highlight_tab[i].key)
 	{
@@ -4439,7 +4439,7 @@ hldict_attr_to_str(
     }
 
     p = attr_str;
-    for (i = 0; i < ARRAY_LENGTH(highlight_tab); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); i++)
     {
 	if (dict_get_bool(attrdict, highlight_tab[i].value, VVAL_FALSE) == VVAL_TRUE)
 	{
