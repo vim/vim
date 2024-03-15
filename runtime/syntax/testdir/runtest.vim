@@ -161,8 +161,6 @@ func RunTest()
 	  " BEGIN [runtime/defaults.vim]
 	  " Also, disable italic highlighting to avoid issues on some terminals.
 	  set display=truncate ruler scrolloff=5 t_ZH= t_ZR=
-	  " Provide pre-VIM_TEST_SETUP support for input/*.c.
-	  let g:c_comment_strings = 1
 	  syntax on
 	  " END [runtime/defaults.vim]
 	  redraw!
