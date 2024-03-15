@@ -24,14 +24,21 @@
  * The "term", "cterm" and "gui" arguments can be any combination of the
  * following names, separated by commas (but no spaces!).
  */
-static char *(hl_name_table[]) =
-    {"bold", "standout", "underline",
-	"undercurl", "underdouble", "underdotted", "underdashed",
-	"italic", "reverse", "inverse", "nocombine", "strikethrough", "NONE"};
-static int hl_attr_table[] =
-    {HL_BOLD, HL_STANDOUT, HL_UNDERLINE,
-	HL_UNDERCURL, HL_UNDERDOUBLE, HL_UNDERDOTTED, HL_UNDERDASHED,
-	HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
+static keyvalue_T highlight_tab[] = {
+    KEYVALUE_ENTRY(HL_BOLD, "bold"),
+    KEYVALUE_ENTRY(HL_STANDOUT, "standout"),
+    KEYVALUE_ENTRY(HL_UNDERLINE, "underline"),
+    KEYVALUE_ENTRY(HL_UNDERCURL, "undercurl"),
+    KEYVALUE_ENTRY(HL_UNDERDOUBLE, "underdouble"),
+    KEYVALUE_ENTRY(HL_UNDERDASHED, "underdashed"),
+    KEYVALUE_ENTRY(HL_ITALIC, "italic"),
+    KEYVALUE_ENTRY(HL_INVERSE, "reverse"),
+    KEYVALUE_ENTRY(HL_INVERSE, "inverse"),
+    KEYVALUE_ENTRY(HL_NOCOMBINE, "nocombine"),
+    KEYVALUE_ENTRY(HL_STRIKETHROUGH, "strikethrough"),
+    KEYVALUE_ENTRY(0, "NONE")
+};
+
 // length of all attribute names, plus commas, together (and a bit more)
 #define MAX_ATTR_LEN 120
 
@@ -787,19 +794,17 @@ highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
     int		attr;
     int		off;
     long	i;
-    int		len;
 
     attr = 0;
     off = 0;
     while (arg[off] != NUL)
     {
-	for (i = ARRAY_LENGTH(hl_attr_table); --i >= 0; )
+	for (i = ARRAY_LENGTH(highlight_tab); --i >= 0; )
 	{
-	    len = (int)STRLEN(hl_name_table[i]);
-	    if (STRNICMP(arg + off, hl_name_table[i], len) == 0)
+	    if (STRNICMP(arg + off, highlight_tab[i].value, highlight_tab[i].length) == 0)
 	    {
-		attr |= hl_attr_table[i];
-		off += len;
+		attr |= highlight_tab[i].key;
+		off += highlight_tab[i].length;
 		break;
 	    }
 	}
@@ -2426,56 +2431,91 @@ gui_get_color_cmn(char_u *name)
 {
     int		i;
     guicolor_T  color;
-
-    struct rgbcolor_table_S {
-	char_u	    *color_name;
-	guicolor_T  color;
-    };
-
     // Only non X11 colors (not present in rgb.txt) and colors in
     // color_names[], useful when $VIMRUNTIME is not found,.
-    static struct rgbcolor_table_S rgb_table[] = {
-	    {(char_u *)"black",		RGB(0x00, 0x00, 0x00)},
-	    {(char_u *)"blue",		RGB(0x00, 0x00, 0xFF)},
-	    {(char_u *)"brown",		RGB(0xA5, 0x2A, 0x2A)},
-	    {(char_u *)"cyan",		RGB(0x00, 0xFF, 0xFF)},
-	    {(char_u *)"darkblue",	RGB(0x00, 0x00, 0x8B)},
-	    {(char_u *)"darkcyan",	RGB(0x00, 0x8B, 0x8B)},
-	    {(char_u *)"darkgray",	RGB(0xA9, 0xA9, 0xA9)},
-	    {(char_u *)"darkgreen",	RGB(0x00, 0x64, 0x00)},
-	    {(char_u *)"darkgrey",	RGB(0xA9, 0xA9, 0xA9)},
-	    {(char_u *)"darkmagenta",	RGB(0x8B, 0x00, 0x8B)},
-	    {(char_u *)"darkred",	RGB(0x8B, 0x00, 0x00)},
-	    {(char_u *)"darkyellow",	RGB(0x8B, 0x8B, 0x00)}, // No X11
-	    {(char_u *)"gray",		RGB(0xBE, 0xBE, 0xBE)},
-	    {(char_u *)"green",		RGB(0x00, 0xFF, 0x00)},
-	    {(char_u *)"grey",		RGB(0xBE, 0xBE, 0xBE)},
-	    {(char_u *)"grey40",	RGB(0x66, 0x66, 0x66)},
-	    {(char_u *)"grey50",	RGB(0x7F, 0x7F, 0x7F)},
-	    {(char_u *)"grey90",	RGB(0xE5, 0xE5, 0xE5)},
-	    {(char_u *)"lightblue",	RGB(0xAD, 0xD8, 0xE6)},
-	    {(char_u *)"lightcyan",	RGB(0xE0, 0xFF, 0xFF)},
-	    {(char_u *)"lightgray",	RGB(0xD3, 0xD3, 0xD3)},
-	    {(char_u *)"lightgreen",	RGB(0x90, 0xEE, 0x90)},
-	    {(char_u *)"lightgrey",	RGB(0xD3, 0xD3, 0xD3)},
-	    {(char_u *)"lightmagenta",	RGB(0xFF, 0x8B, 0xFF)}, // No X11
-	    {(char_u *)"lightred",	RGB(0xFF, 0x8B, 0x8B)}, // No X11
-	    {(char_u *)"lightyellow",	RGB(0xFF, 0xFF, 0xE0)},
-	    {(char_u *)"magenta",	RGB(0xFF, 0x00, 0xFF)},
-	    {(char_u *)"red",		RGB(0xFF, 0x00, 0x00)},
-	    {(char_u *)"seagreen",	RGB(0x2E, 0x8B, 0x57)},
-	    {(char_u *)"white",		RGB(0xFF, 0xFF, 0xFF)},
-	    {(char_u *)"yellow",	RGB(0xFF, 0xFF, 0x00)},
+    static keyvalue_T rgb_tab[] = {
+	KEYVALUE_ENTRY(RGB(0x00, 0x00, 0x00), "black"),
+	KEYVALUE_ENTRY(RGB(0x00, 0x00, 0xFF), "blue"),
+	KEYVALUE_ENTRY(RGB(0xA5, 0x2A, 0x2A), "brown"),
+	KEYVALUE_ENTRY(RGB(0x00, 0xFF, 0xFF), "cyan"),
+	KEYVALUE_ENTRY(RGB(0x00, 0x00, 0x8B), "darkblue"),
+	KEYVALUE_ENTRY(RGB(0x00, 0x8B, 0x8B), "darkcyan"),
+	KEYVALUE_ENTRY(RGB(0xA9, 0xA9, 0xA9), "darkgray"),
+	KEYVALUE_ENTRY(RGB(0x00, 0x64, 0x00), "darkgreen"),
+	KEYVALUE_ENTRY(RGB(0xA9, 0xA9, 0xA9), "darkgrey"),
+	KEYVALUE_ENTRY(RGB(0x8B, 0x00, 0x8B), "darkmagenta"),
+	KEYVALUE_ENTRY(RGB(0x8B, 0x00, 0x00), "darkred"),
+	KEYVALUE_ENTRY(RGB(0x8B, 0x8B, 0x00), "darkyellow"), // No X11
+	KEYVALUE_ENTRY(RGB(0xBE, 0xBE, 0xBE), "gray"),
+	KEYVALUE_ENTRY(RGB(0x00, 0xFF, 0x00), "green"),
+	KEYVALUE_ENTRY(RGB(0xBE, 0xBE, 0xBE), "grey"),
+	KEYVALUE_ENTRY(RGB(0x66, 0x66, 0x66), "grey40"),
+	KEYVALUE_ENTRY(RGB(0x7F, 0x7F, 0x7F), "grey50"),
+	KEYVALUE_ENTRY(RGB(0xE5, 0xE5, 0xE5), "grey90"),
+	KEYVALUE_ENTRY(RGB(0xAD, 0xD8, 0xE6), "lightblue"),
+	KEYVALUE_ENTRY(RGB(0xE0, 0xFF, 0xFF), "lightcyan"),
+	KEYVALUE_ENTRY(RGB(0xD3, 0xD3, 0xD3), "lightgray"),
+	KEYVALUE_ENTRY(RGB(0x90, 0xEE, 0x90), "lightgreen"),
+	KEYVALUE_ENTRY(RGB(0xD3, 0xD3, 0xD3), "lightgrey"),
+	KEYVALUE_ENTRY(RGB(0xFF, 0x8B, 0xFF), "lightmagenta"), // No XX
+	KEYVALUE_ENTRY(RGB(0xFF, 0x8B, 0x8B), "lightred"), // No XX
+	KEYVALUE_ENTRY(RGB(0xFF, 0xFF, 0xE0), "lightyellow"),
+	KEYVALUE_ENTRY(RGB(0xFF, 0x00, 0xFF), "magenta"),
+	KEYVALUE_ENTRY(RGB(0xFF, 0x00, 0x00), "red"),
+	KEYVALUE_ENTRY(RGB(0x2E, 0x8B, 0x57), "seagreen"),
+	KEYVALUE_ENTRY(RGB(0xFF, 0xFF, 0xFF), "white"),
+	KEYVALUE_ENTRY(RGB(0xFF, 0xFF, 0x00), "yellow")
     };
+#define CACHE_SIZE 3
+    static int cache_tab[CACHE_SIZE];
+    static int cache_last_index = -1;
 
     color = decode_hex_color(name);
     if (color != INVALCOLOR)
 	return color;
 
+    if (cache_last_index < 0)
+    {
+	for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	    cache_tab[i] = -1;
+	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
+    }
+
     // Check if the name is one of the colors we know
-    for (i = 0; i < (int)ARRAY_LENGTH(rgb_table); i++)
-	if (STRICMP(name, rgb_table[i].color_name) == 0)
-	    return gui_adjust_rgb(rgb_table[i].color);
+    // first look in the cache
+    // the cache is circular. to search it we start at the most recent
+    // entry and go backwards wrapping around when we get to index 0.
+    for (i = cache_last_index; cache_tab[i] >= 0; )
+    {
+	if (STRICMP(name, rgb_tab[cache_tab[i]].value) == 0)
+	    return gui_adjust_rgb((guicolor_T)rgb_tab[cache_tab[i]].key);
+
+	if (i == 0)
+	    i = ARRAY_LENGTH(cache_tab) - 1;
+	else
+	    --i;
+
+	// are we back at the start?
+	if (i == cache_last_index)
+	    break;
+    }
+
+    // Look in the main RGB table
+    for (i = 0; i < ARRAY_LENGTH(rgb_tab); i++)
+    {
+	if (STRICMP(name, rgb_tab[i].value) == 0)
+	{
+	    // store the found entry in the next position in the cache,
+	    // wrapping around when we get to the maximum index.
+	    if (cache_last_index == ARRAY_LENGTH(cache_tab) - 1)
+		cache_last_index = 0;
+	    else
+		++cache_last_index;
+	    cache_tab[cache_last_index] = i;
+
+	    return gui_adjust_rgb((guicolor_T)rgb_tab[i].key);
+	}
+    }
 
 #if defined(FEAT_EVAL)
     /*
@@ -3057,14 +3097,14 @@ highlight_list_arg(
     else // type == LIST_ATTR
     {
 	buf[0] = NUL;
-	for (i = 0; hl_attr_table[i] != 0; ++i)
+	for (i = 0; i < ARRAY_LENGTH(highlight_tab); ++i)
 	{
-	    if (iarg & hl_attr_table[i])
+	    if (iarg & highlight_tab[i].key)
 	    {
 		if (buf[0] != NUL)
 		    vim_strcat(buf, (char_u *)",", MAX_ATTR_LEN);
-		vim_strcat(buf, (char_u *)hl_name_table[i], MAX_ATTR_LEN);
-		iarg &= ~hl_attr_table[i];	    // don't want "inverse"
+		vim_strcat(buf, (char_u *)highlight_tab[i].value, MAX_ATTR_LEN);
+		iarg &= ~highlight_tab[i].key;	    // don't want "inverse"
 	    }
 	}
     }
@@ -4155,12 +4195,12 @@ highlight_get_attr_dict(int hlattr)
     if (dict == NULL)
 	return NULL;
 
-    for (i = 0; hl_attr_table[i] != 0; ++i)
+    for (i = 0; i < ARRAY_LENGTH(highlight_tab); ++i)
     {
-	if (hlattr & hl_attr_table[i])
+	if (hlattr & highlight_tab[i].key)
 	{
-	    dict_add_bool(dict, hl_name_table[i], VVAL_TRUE);
-	    hlattr &= ~hl_attr_table[i];	// don't want "inverse"
+	    dict_add_bool(dict, highlight_tab[i].value, VVAL_TRUE);
+	    hlattr &= ~highlight_tab[i].key;	// don't want "inverse"
 	}
     }
 
@@ -4377,7 +4417,6 @@ hldict_attr_to_str(
     dict_T	*attrdict;
     int		i;
     char_u	*p;
-    size_t	sz;
 
     attr_str[0] = NUL;
     di = dict_find(dict, key, -1);
@@ -4400,17 +4439,16 @@ hldict_attr_to_str(
     }
 
     p = attr_str;
-    for (i = 0; i < (int)ARRAY_LENGTH(hl_name_table); i++)
+    for (i = 0; i < ARRAY_LENGTH(highlight_tab); i++)
     {
-	if (dict_get_bool(attrdict, hl_name_table[i], VVAL_FALSE) == VVAL_TRUE)
+	if (dict_get_bool(attrdict, highlight_tab[i].value, VVAL_FALSE) == VVAL_TRUE)
 	{
 	    if (p != attr_str && (size_t)(p - attr_str + 2) < len)
 		STRCPY(p, (char_u *)",");
-	    sz = STRLEN(hl_name_table[i]);
-	    if (p - attr_str + sz + 1 < len)
+	    if (p - attr_str + highlight_tab[i].length + 1 < len)
 	    {
-		STRCPY(p, (char_u *)hl_name_table[i]);
-		p += sz;
+		STRCPY(p, (char_u *)highlight_tab[i].value);
+		p += highlight_tab[i].length;
 	    }
 	}
     }

@@ -7223,7 +7223,7 @@ ex_open(exarg_T *eap)
 	{
 	    // make a copy of the line, when searching for a mark it might be
 	    // flushed
-	    char_u *line = vim_strsave(ml_get_curline());
+	    char_u *line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
 
 	    regmatch.rm_ic = p_ic;
 	    if (vim_regexec(&regmatch, line, (colnr_T)0))
@@ -9237,6 +9237,27 @@ ex_tag_cmd(exarg_T *eap, char_u *name)
 							  eap->forceit, TRUE);
 }
 
+enum {
+    SPEC_PERC,
+    SPEC_HASH,
+    SPEC_CWORD,       // cursor word
+    SPEC_CCWORD,      // cursor WORD
+    SPEC_CEXPR,       // expr under cursor
+    SPEC_CFILE,       // cursor path name
+    SPEC_SFILE,       // ":so" file name
+    SPEC_SLNUM,       // ":so" file line number
+    SPEC_STACK,       // call stack
+    SPEC_SCRIPT,      // script file name
+    SPEC_AFILE,       // autocommand file name
+    SPEC_ABUF,        // autocommand buffer number
+    SPEC_AMATCH,      // autocommand match name
+    SPEC_SFLNUM,      // script file line number
+    SPEC_SID,         // script ID: <SNR>123_
+#ifdef FEAT_CLIENTSERVER
+    SPEC_CLIENT
+#endif
+};
+
 /*
  * Check "str" for starting with a special cmdline variable.
  * If found return one of the SPEC_ values and set "*usedlen" to the length of
@@ -9245,52 +9266,73 @@ ex_tag_cmd(exarg_T *eap, char_u *name)
     int
 find_cmdline_var(char_u *src, int *usedlen)
 {
-    int		len;
     int		i;
-    static char *(spec_str[]) = {
-		    "%",
-#define SPEC_PERC   0
-		    "#",
-#define SPEC_HASH   (SPEC_PERC + 1)
-		    "<cword>",		// cursor word
-#define SPEC_CWORD  (SPEC_HASH + 1)
-		    "<cWORD>",		// cursor WORD
-#define SPEC_CCWORD (SPEC_CWORD + 1)
-		    "<cexpr>",		// expr under cursor
-#define SPEC_CEXPR  (SPEC_CCWORD + 1)
-		    "<cfile>",		// cursor path name
-#define SPEC_CFILE  (SPEC_CEXPR + 1)
-		    "<sfile>",		// ":so" file name
-#define SPEC_SFILE  (SPEC_CFILE + 1)
-		    "<slnum>",		// ":so" file line number
-#define SPEC_SLNUM  (SPEC_SFILE + 1)
-		    "<stack>",		// call stack
-#define SPEC_STACK  (SPEC_SLNUM + 1)
-		    "<script>",		// script file name
-#define SPEC_SCRIPT (SPEC_STACK + 1)
-		    "<afile>",		// autocommand file name
-#define SPEC_AFILE  (SPEC_SCRIPT + 1)
-		    "<abuf>",		// autocommand buffer number
-#define SPEC_ABUF   (SPEC_AFILE + 1)
-		    "<amatch>",		// autocommand match name
-#define SPEC_AMATCH (SPEC_ABUF + 1)
-		    "<sflnum>",		// script file line number
-#define SPEC_SFLNUM  (SPEC_AMATCH + 1)
-		    "<SID>",		// script ID: <SNR>123_
-#define SPEC_SID  (SPEC_SFLNUM + 1)
+    static keyvalue_T spec_str_tab[] = {
+	KEYVALUE_ENTRY(SPEC_PERC, "%"),
+	KEYVALUE_ENTRY(SPEC_HASH, "#"),
+	KEYVALUE_ENTRY(SPEC_CWORD, "<cword>"), // cursor word
+	KEYVALUE_ENTRY(SPEC_CCWORD, "<cWORD>"),    // cursor WORD
+	KEYVALUE_ENTRY(SPEC_CEXPR, "<cexpr>"), // expr under cursor
+	KEYVALUE_ENTRY(SPEC_CFILE, "<cfile>"), // cursor path name
+	KEYVALUE_ENTRY(SPEC_SFILE, "<sfile>"), // ":so" file name
+	KEYVALUE_ENTRY(SPEC_SLNUM, "<slnum>"), // ":so" file line number
+	KEYVALUE_ENTRY(SPEC_SLNUM, "<stack>"), // call stack
+	KEYVALUE_ENTRY(SPEC_AFILE, "<afile>"), // autocommand file name
+	KEYVALUE_ENTRY(SPEC_ABUF, "<abuf>"),   // autocommand buffer number
+	KEYVALUE_ENTRY(SPEC_AMATCH, "<amatch>"),   // autocommand match name
+	KEYVALUE_ENTRY(SPEC_SFLNUM, "<sflnum>"),   // script file line number
+	KEYVALUE_ENTRY(SPEC_SFLNUM, "<SID>")  // script ID: <SNR>123_
 #ifdef FEAT_CLIENTSERVER
-		    "<client>"
-# define SPEC_CLIENT (SPEC_SID + 1)
+	,
+	KEYVALUE_ENTRY(SPEC_CLIENT, "<client>")
 #endif
     };
+#define CACHE_SIZE 2
+    static int cache_tab[CACHE_SIZE];
+    static int cache_last_index = -1;
 
-    for (i = 0; i < (int)ARRAY_LENGTH(spec_str); ++i)
+    if (cache_last_index < 0)
     {
-	len = (int)STRLEN(spec_str[i]);
-	if (STRNCMP(src, spec_str[i], len) == 0)
+	for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	    cache_tab[i] = -1;
+	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
+    }
+
+    // first look in the cache table.
+    // the cache is circular. to search it we start at the most recent entry
+    // and go backwards wrapping around when we get to index 0.
+    for (i = cache_last_index; cache_tab[i] >= 0; )
+    {
+	if (STRNCMP(src, spec_str_tab[cache_tab[i]].value, spec_str_tab[cache_tab[i]].length) == 0)
 	{
-	    *usedlen = len;
-	    return i;
+	    *usedlen = spec_str_tab[cache_tab[i]].length;
+	    return spec_str_tab[cache_tab[i]].key;
+	}
+
+	if (i == 0)
+	    i = ARRAY_LENGTH(cache_tab) - 1;
+	else
+	    --i;
+
+	// are we back at the start?
+	if (i == cache_last_index)
+	    break;
+    }
+
+    // now look in the special string table itself
+    for (i = 0; i < ARRAY_LENGTH(spec_str_tab); ++i)
+    {
+	if (STRNCMP(src, spec_str_tab[i].value, spec_str_tab[i].length) == 0)
+	{
+	    // store the found entry in the next position in the cache,
+	    // wrapping around when we get to the maximum index.
+	    if (cache_last_index == ARRAY_LENGTH(cache_tab) - 1)
+		cache_last_index = 0;
+	    else
+		++cache_last_index;
+	    cache_tab[cache_last_index] = i;
+	    *usedlen = spec_str_tab[i].length;
+	    return spec_str_tab[i].key;
 	}
     }
     return -1;
