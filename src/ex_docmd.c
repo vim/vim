@@ -9293,7 +9293,7 @@ find_cmdline_var(char_u *src, int *usedlen)
 
     if (cache_last_index < 0)
     {
-	for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
 	    cache_tab[i] = -1;
 	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
     }
@@ -9320,7 +9320,7 @@ find_cmdline_var(char_u *src, int *usedlen)
     }
 
     // now look in the special string table itself
-    for (i = 0; i < ARRAY_LENGTH(spec_str_tab); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(spec_str_tab); ++i)
     {
 	if (STRNCMP(src, spec_str_tab[i].value, spec_str_tab[i].length) == 0)
 	{

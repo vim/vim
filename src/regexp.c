@@ -260,7 +260,7 @@ get_char_class(char_u **pp)
 
 	if (cache_last_index < 0)
 	{
-	    for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	    for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
 		cache_tab[i] = -1;
 	    cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
 	}
@@ -286,7 +286,7 @@ get_char_class(char_u **pp)
 		break;
 	}
 
-	for (i = 0; i < ARRAY_LENGTH(char_class_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(char_class_tab); ++i)
 	{
 	    if (STRNCMP(tmp, char_class_tab[i].value, char_class_tab[i].length) == 0)
 	    {

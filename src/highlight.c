@@ -2476,7 +2476,7 @@ gui_get_color_cmn(char_u *name)
 
     if (cache_last_index < 0)
     {
-	for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
 	    cache_tab[i] = -1;
 	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
     }
@@ -2501,7 +2501,7 @@ gui_get_color_cmn(char_u *name)
     }
 
     // Look in the main RGB table
-    for (i = 0; i < ARRAY_LENGTH(rgb_tab); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(rgb_tab); i++)
     {
 	if (STRICMP(name, rgb_tab[i].value) == 0)
 	{
