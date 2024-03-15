@@ -685,7 +685,7 @@ event_name2nr(char_u *start, char_u **end)
 
     if (cache_last_index < 0)
     {
-	for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
 	    cache_tab[i] = -1;
 	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
     }
@@ -754,7 +754,7 @@ event_nr2name(event_T event)
 
     if (cache_last_index < 0)
     {
-	for (i = 0; i < ARRAY_LENGTH(cache_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
 	    cache_tab[i] = -1;
 	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
     }
