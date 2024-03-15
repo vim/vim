@@ -331,7 +331,7 @@ init_class_tab(void)
     if (done)
 	return;
 
-    for (i = 0; i < ARRAY_LENGTH(class_tab); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(class_tab); ++i)
     {
 	if (i >= '0' && i <= '7')
 	    class_tab[i] = RI_DIGIT + RI_HEX + RI_OCTAL + RI_WORD;
