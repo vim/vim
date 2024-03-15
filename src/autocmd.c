@@ -3344,7 +3344,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		event_arg = NUM_EVENTS;
 	    else
 	    {
-		for (i = 0; i < ARRAY_LENGTH(event_tab); i++)
+		for (i = 0; i < (int)ARRAY_LENGTH(event_tab); i++)
 		    if (STRICMP(event_tab[i].value, name) == 0)
 			break;
 		if (i == ARRAY_LENGTH(event_tab))
