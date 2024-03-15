@@ -2081,12 +2081,12 @@ vim_regsub_both(
 	{
 	    if (eval_result[nested] != NULL)
 	    {
-		int len = (int)STRLEN(eval_result[nested]);
+		int eval_result_len = (int)STRLEN(eval_result[nested]);
 
-		if (len < destlen)
+		if (eval_result_len < destlen)
 		{
 		    STRCPY(dest, eval_result[nested]);
-		    dst += len;
+		    dst += eval_result_len;
 		    VIM_CLEAR(eval_result[nested]);
 		}
 	    }
