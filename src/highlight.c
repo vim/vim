@@ -3097,7 +3097,7 @@ highlight_list_arg(
     else // type == LIST_ATTR
     {
 	buf[0] = NUL;
-	for (i = 0; i < ARRAY_LENGTH(highlight_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); ++i)
 	{
 	    if (iarg & highlight_tab[i].key)
 	    {
