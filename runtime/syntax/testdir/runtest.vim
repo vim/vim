@@ -160,8 +160,6 @@ func RunTest()
 	  call cursor(1, 1)
 	  " BEGIN [runtime/defaults.vim]
 	  set display=truncate ruler scrolloff=5
-	  " Provide pre-TEST_SETUP support for input/*.c.
-	  let g:c_comment_strings = 1
 	  syntax on
 	  " END [runtime/defaults.vim]
 	  redraw!
