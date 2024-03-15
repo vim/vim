@@ -1,4 +1,5 @@
 @ 2>/dev/null # 2>nul & goto:win32
+#!\bin\sh
 if test -e ../src/vim.exe ; then mv ../src/vim.exe ../src/vimw32.exe ; fi
 if test -e ../src/vim.pdb ; then mv ../src/vim.pdb ../src/vimw32.pdb ; fi
 if test -e ../src/gvim.exe ; then mv ../src/gvim.exe ../src/gvim_ole.exe ; fi
@@ -19,7 +20,8 @@ if test -e ../src/xxd/xxd.exe ;
  then
  mv ../src/xxd/xxd.exe ../src/xxdw32.exe ; 
 fi
-return
+# Uncomment return if the file is run through the command "source"
+#return
 exit
 
 :win32
