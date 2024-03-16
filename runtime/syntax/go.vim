@@ -531,12 +531,12 @@ if s:HighlightBuildConstraints() || s:FoldEnable('package_comment')
   " matched as comments to avoid looking like working build constraints.
   " The he, me, and re options let the "package" itself be highlighted by
   " the usual rules.
-  exe 'syn region  goPackageComment    start=/\v(\/\/.*\n)+\s*package/'
-        \ . ' end=/\v\n\s*package/he=e-7,me=e-7,re=e-7'
+  exe 'syn region  goPackageComment    start=/\v(\/\/.*\n)+\s*package\s/'
+        \ . ' end=/\v\n\s*package\s/he=e-8,me=e-8,re=e-8'
         \ . ' contains=@goCommentGroup,@Spell'
         \ . (s:FoldEnable('package_comment') ? ' fold' : '')
-  exe 'syn region  goPackageComment    start=/\v^\s*\/\*.*\n(.*\n)*\s*\*\/\npackage/'
-        \ . ' end=/\v\*\/\n\s*package/he=e-7,me=e-7,re=e-7'
+  exe 'syn region  goPackageComment    start=/\v^\s*\/\*.*\n(.*\n)*\s*\*\/\npackage\s/'
+        \ . ' end=/\v\*\/\n\s*package\s/he=e-8,me=e-8,re=e-8'
         \ . ' contains=@goCommentGroup,@Spell'
         \ . (s:FoldEnable('package_comment') ? ' fold' : '')
   hi def link goPackageComment    Comment
