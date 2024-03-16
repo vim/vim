@@ -5055,4 +5055,5 @@ typedef struct
     size_t  length;     // length of the value string
 } keyvalue_T;
 
-#define KEYVALUE_ENTRY(k, v) {(k), (v), STRLEN_LITERAL(v)}
+#define KEYVALUE_ENTRY(k, v) \
+    {(k), (v), STRLEN_LITERAL(v)}
