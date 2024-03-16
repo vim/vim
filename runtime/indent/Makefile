@@ -1,5 +1,8 @@
 # Portable Makefile for running indent tests.
 
+.SUFFIXES:
+.PHONY: test clean testclean
+
 VIM = vim
 VIMRUNTIME = ..
 
