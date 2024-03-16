@@ -2865,7 +2865,7 @@ get_event_name(expand_T *xp UNUSED, int idx)
 	return AUGROUP_NAME(idx);	// return a name
     }
 
-    if (idx >= (int)ARRAY_LENGTH(event_tab))
+    if (idx - augroups.ga_len >= (int)ARRAY_LENGTH(event_tab))
 	return NULL;
 
     return (char_u *)event_tab[idx - augroups.ga_len].value;
