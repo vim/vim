@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2014 Nov 5
+# Last Change:	2024 Mart 01
 
 Unicode true
 
@@ -390,20 +390,22 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\compiler\*.*
 
 	SetOutPath $0\doc
-	File ${VIMRT}\doc\*.txt
+	File /x uganda.nsis.txt ${VIMRT}\doc\*.txt
 	File ${VIMRT}\doc\tags
 
 	SetOutPath $0\ftplugin
 	File ${VIMRT}\ftplugin\*.*
 
 	SetOutPath $0\indent
-	File ${VIMRT}\indent\*.*
+	File ${VIMRT}\indent\README.txt
+	File ${VIMRT}\indent\*.vim
 
 	SetOutPath $0\keymap
-	File ${VIMRT}\keymap\*.*
+	File ${VIMRT}\keymap\README.txt
+	File ${VIMRT}\keymap\*.vim
 
 	SetOutPath $0\macros
-	File /r ${VIMRT}\macros\*.*
+	File /r /x *.info ${VIMRT}\macros\*.*
 
 	SetOutPath $0\pack
 	File /r ${VIMRT}\pack\*.*
@@ -421,7 +423,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim.ico
 
 	SetOutPath $0\syntax
-	File /r /x testdir /x generator ${VIMRT}\syntax\*.*
+	File /r /x testdir /x generator /x Makefile ${VIMRT}\syntax\*.*
 
 	SetOutPath $0\spell
 	File ${VIMRT}\spell\*.txt
@@ -433,7 +435,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\tools\*.*
 
 	SetOutPath $0\tutor
-	File ${VIMRT}\tutor\*.*
+	File /x Makefile /x *.info ${VIMRT}\tutor\*.*
 SectionEnd
 
 ##########################################################
@@ -564,10 +566,7 @@ Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
 
 	SetOutPath $0\lang
-	File /r ${VIMRT}\lang\*.*
-	SetOutPath $0\keymap
-	File ${VIMRT}\keymap\README.txt
-	File ${VIMRT}\keymap\*.vim
+	File /r /x Makefile ${VIMRT}\lang\*.*
 	SetOutPath $0
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	    "${GETTEXT}\gettext${BIT}\libintl-8.dll" \
@@ -947,7 +946,7 @@ Section "un.$(str_unsection_register)" id_unsection_register
 	SectionIn RO
 
 	# Apparently $INSTDIR is set to the directory where the uninstaller is
-	# created.  Thus the "vim61" directory is included in it.
+	# created.  Thus the "vim91" directory is included in it.
 	StrCpy $0 "$INSTDIR"
 
 	# delete the context menu entry and batch files
@@ -1044,6 +1043,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	RMDir /r $0\tutor
 	RMDir /r $0\lang
 	RMDir /r $0\keymap
+	RMDir /r $0\bitmaps
 	Delete $0\*.exe
 	Delete $0\*.bat
 	Delete $0\*.vim
@@ -1053,7 +1053,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	  MessageBox MB_OK|MB_ICONEXCLAMATION $(str_msg_rm_exe_fail) /SD IDOK
 	${EndIf}
 
-	# No error message if the "vim62" directory can't be removed, the
+	# No error message if the "vim91" directory can't be removed, the
 	# gvimext.dll may still be there.
 	RMDir $0
 SectionEnd
@@ -1081,6 +1081,12 @@ SectionGroup "un.$(str_ungroup_plugin)" id_ungroup_plugin
 		Pop $0
 
 		${If} $0 != ""
+		  ${If} ${FileExists} $0\_viminfo
+		    Delete $0\_viminfo
+		  ${EndIf}
+		  ${If} ${FileExists} $0\vimfiles\.netrwhist*
+		    Delete $0\vimfiles\.netrwhist*
+		  ${EndIf}
 		  !insertmacro RemoveVimfiles $0
 		${EndIf}
 	SectionEnd
