@@ -452,6 +452,10 @@ skip_for_popup(int row, int col)
  * SLF_RIGHTLEFT    rightleft window:
  *    When TRUE and "clear_width" > 0, clear columns 0 to "endcol"
  *    When FALSE and "clear_width" > 0, clear columns "endcol" to "clear_width"
+ * SLF_INC_VCOL:
+ *    When FALSE, use "last_vcol" for ScreenCols[] of the columns to clear.
+ *    When TRUE, use an increasing sequence starting from "last_vcol + 1" for
+ *    ScreenCols[] of the columns to clear.
  */
     void
 screen_line(
@@ -460,6 +464,7 @@ screen_line(
 	int	coloff,
 	int	endcol,
 	int	clear_width,
+	colnr_T	last_vcol,
 	int	flags UNUSED)
 {
     unsigned	    off_from;
@@ -775,7 +780,8 @@ screen_line(
 						  && ScreenAttrs[off_to] == 0
 				  && (!enc_utf8 || ScreenLinesUC[off_to] == 0))
 	{
-	    ScreenCols[off_to] = MAXCOL;
+	    ScreenCols[off_to] =
+			      (flags & SLF_INC_VCOL) ? ++last_vcol : last_vcol;
 	    ++off_to;
 	    ++col;
 	}
@@ -830,7 +836,8 @@ screen_line(
 								 ' ', ' ', 0);
 	    while (col < clear_width)
 	    {
-		ScreenCols[off_to++] = MAXCOL;
+		ScreenCols[off_to++]
+			    = (flags & SLF_INC_VCOL) ? ++last_vcol : last_vcol;
 		++col;
 	    }
 	}

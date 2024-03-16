@@ -1028,7 +1028,8 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, 0);
+    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, -1,
+									    0);
 }
 #endif
 
@@ -1363,7 +1364,7 @@ fold_line(
 #endif
 
     screen_line(wp, row + W_WINROW(wp), wp->w_wincol,
-						  wp->w_width, wp->w_width, 0);
+					      wp->w_width, wp->w_width, -1, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -3049,7 +3050,7 @@ redraw_asap(int type)
 		    mch_memmove(ScreenLines2 + off,
 				screenline2 + r * cols,
 				(size_t)cols * sizeof(schar_T));
-		screen_line(curwin, cmdline_row + r, 0, cols, cols, 0);
+		screen_line(curwin, cmdline_row + r, 0, cols, cols, -1, 0);
 	    }
 	    ret = 4;
 	}
