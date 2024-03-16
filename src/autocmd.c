@@ -194,7 +194,7 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_TEXTYANKPOST, "TextYankPost"),
     KEYVALUE_ENTRY(EVENT_VIMSUSPEND, "VimSuspend"),
     KEYVALUE_ENTRY(EVENT_VIMRESUME, "VimResume"),
-    KEYVALUE_ENTRY(NUM_EVENTS, "Unknown")
+    KEYVALUE_ENTRY(NUM_EVENTS, NULL)
 };
 
 static AutoPat *first_autopat[NUM_EVENTS] =
@@ -2864,6 +2864,10 @@ get_event_name(expand_T *xp UNUSED, int idx)
 	    return (char_u *)"";	// skip deleted entries
 	return AUGROUP_NAME(idx);	// return a name
     }
+
+    if (idx >= (int)ARRAY_LENGTH(event_tab))
+	return NULL;
+
     return (char_u *)event_tab[idx - augroups.ga_len].value;
 }
 
