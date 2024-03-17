@@ -886,6 +886,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 {
 #ifdef FEAT_SYN_HL
     long	v;
+    int		wcol;
 
     // Highlight 'cursorcolumn' & 'colorcolumn' past end of the line.
     if (wp->w_p_wrap)
@@ -893,9 +894,14 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
     else
 	v = wp->w_leftcol;
 
+    wcol =
+# ifdef FEAT_RIGHTLEFT
+	wp->w_p_rl ? wp->w_width - wlv->col - 1 :
+# endif
+	wlv->col;
     // check if line ends before left margin
-    if (wlv->vcol < v + wlv->col - win_col_off(wp))
-	wlv->vcol = v + wlv->col - win_col_off(wp);
+    if (wlv->vcol < v + wcol - win_col_off(wp))
+	wlv->vcol = v + wcol - win_col_off(wp);
 # ifdef FEAT_CONCEAL
     // Get rid of the boguscols now, we want to draw until the right
     // edge for 'cursorcolumn'.
@@ -918,11 +924,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 # ifdef LINE_ATTR
 		|| wlv->line_attr != 0
 # endif
-		|| wlv->win_attr != 0)
-# ifdef FEAT_RIGHTLEFT
-	    && !wp->w_p_rl
-# endif
-	    )
+		|| wlv->win_attr != 0))
     {
 	int	rightmost_vcol = 0;
 	int	i;
@@ -935,13 +937,16 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 		if (rightmost_vcol < wlv->color_cols[i])
 		    rightmost_vcol = wlv->color_cols[i];
 
-	while (wlv->col < wp->w_width)
+	while (
+# ifdef FEAT_RIGHTLEFT
+		wp->w_p_rl ? (wlv->col >= 0) :
+# endif
+		(wlv->col < wp->w_width))
 	{
 	    ScreenLines[wlv->off] = ' ';
 	    if (enc_utf8)
 		ScreenLinesUC[wlv->off] = 0;
-	    ScreenCols[wlv->off] = wlv->vcol;
-	    ++wlv->col;
+
 	    if (wlv->draw_color_col)
 		wlv->draw_color_col = advance_color_col(
 						   VCOL_HLC, &wlv->color_cols);
@@ -956,7 +961,20 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 		attr = hl_combine_attr(attr, HL_ATTR(HLF_CUC));
 	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols)
 		attr = hl_combine_attr(attr, HL_ATTR(HLF_MC));
-	    ScreenAttrs[wlv->off++] = attr;
+	    ScreenAttrs[wlv->off] = attr;
+	    ScreenCols[wlv->off] = wlv->vcol;
+# ifdef FEAT_RIGHTLEFT
+	    if (wp->w_p_rl)
+	    {
+		--wlv->off;
+		--wlv->col;
+	    }
+	    else
+# endif
+	    {
+		++wlv->off;
+		++wlv->col;
+	    }
 
 	    if (VCOL_HLC >= rightmost_vcol
 # ifdef LINE_ATTR

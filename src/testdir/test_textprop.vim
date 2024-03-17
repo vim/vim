@@ -4535,6 +4535,11 @@ func Test_textprop_with_wincolor()
   call term_sendkeys(buf, 'k')
   call VerifyScreenDump(buf, 'Test_prop_wincolor_8', {})
 
+  if has('rightleft')
+    call term_sendkeys(buf, ":set rightleft\<CR>:\<CR>")
+    call VerifyScreenDump(buf, 'Test_prop_wincolor_9', {})
+  endif
+
   call StopVimInTerminal(buf)
 endfunc
 
