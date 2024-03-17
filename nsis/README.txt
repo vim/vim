@@ -37,7 +37,7 @@ To build the installable .exe:
 5.  Also put "winpty32.dll" and "winpty-agent.exe" in "../.." (above the "vim91"
     directory).  This is required for the terminal window.
 
-6.  To use encryption, add a library Sodium.  You can get it here:
+6.  To use stronger encryption, add the Sodium library.  You can get it here:
 	https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19-msvc.zip
     Unpack the archive.  Put the "libsodium.dll" from
     path/to/libsodium/Win32/Release/v143/dynamic for the 32‐bit version or

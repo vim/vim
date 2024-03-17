@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2024 Mart 17
+# Last Change:	2024 Mar 17
 
 Unicode true
 
