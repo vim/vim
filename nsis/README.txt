@@ -40,8 +40,8 @@ To build the installable .exe:
 6.  To use encryption, add a library Sodium.  You can get it here:
 	https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19-msvc.zip
     Unpack the archive.  Put the "libsodium.dll" from
-    path/to/libsodium/Win32/Release/v142/dynamic for the 32‐bit version or
-    path/to/libsodium/X64/Release/v142/dynamic for the 64‐bit version in the
+    path/to/libsodium/Win32/Release/v143/dynamic for the 32‐bit version or
+    path/to/libsodium/X64/Release/v143/dynamic for the 64‐bit version in the
     "../.." directory (above the "vim91" directory, where "diff.exe" and
     "winpty32.dll").
 
