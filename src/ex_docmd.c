@@ -9277,6 +9277,7 @@ find_cmdline_var(char_u *src, int *usedlen)
 	KEYVALUE_ENTRY(SPEC_SFILE, "<sfile>"), // ":so" file name
 	KEYVALUE_ENTRY(SPEC_SLNUM, "<slnum>"), // ":so" file line number
 	KEYVALUE_ENTRY(SPEC_STACK, "<stack>"), // call stack
+	KEYVALUE_ENTRY(SPEC_SCRIPT, "<script>"), // script file name
 	KEYVALUE_ENTRY(SPEC_AFILE, "<afile>"), // autocommand file name
 	KEYVALUE_ENTRY(SPEC_ABUF, "<abuf>"),   // autocommand buffer number
 	KEYVALUE_ENTRY(SPEC_AMATCH, "<amatch>"),   // autocommand match name
