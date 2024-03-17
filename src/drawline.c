@@ -975,15 +975,14 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 		++wlv->off;
 		++wlv->col;
 	    }
+	    ++wlv->vcol;
 
-	    if (VCOL_HLC >= rightmost_vcol
+	    if (VCOL_HLC > rightmost_vcol
 # ifdef LINE_ATTR
 		    && wlv->line_attr == 0
 # endif
 		    && wlv->win_attr == 0)
 		break;
-
-	    ++wlv->vcol;
 	}
     }
 #endif
