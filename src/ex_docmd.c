@@ -9276,12 +9276,12 @@ find_cmdline_var(char_u *src, int *usedlen)
 	KEYVALUE_ENTRY(SPEC_CFILE, "<cfile>"), // cursor path name
 	KEYVALUE_ENTRY(SPEC_SFILE, "<sfile>"), // ":so" file name
 	KEYVALUE_ENTRY(SPEC_SLNUM, "<slnum>"), // ":so" file line number
-	KEYVALUE_ENTRY(SPEC_SLNUM, "<stack>"), // call stack
+	KEYVALUE_ENTRY(SPEC_STACK, "<stack>"), // call stack
 	KEYVALUE_ENTRY(SPEC_AFILE, "<afile>"), // autocommand file name
 	KEYVALUE_ENTRY(SPEC_ABUF, "<abuf>"),   // autocommand buffer number
 	KEYVALUE_ENTRY(SPEC_AMATCH, "<amatch>"),   // autocommand match name
 	KEYVALUE_ENTRY(SPEC_SFLNUM, "<sflnum>"),   // script file line number
-	KEYVALUE_ENTRY(SPEC_SFLNUM, "<SID>")  // script ID: <SNR>123_
+	KEYVALUE_ENTRY(SPEC_SID, "<SID>")  // script ID: <SNR>123_
 #ifdef FEAT_CLIENTSERVER
 	,
 	KEYVALUE_ENTRY(SPEC_CLIENT, "<client>")
@@ -9335,6 +9335,7 @@ find_cmdline_var(char_u *src, int *usedlen)
 	    return spec_str_tab[i].key;
 	}
     }
+
     return -1;
 }
 
