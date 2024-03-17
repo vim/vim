@@ -30,6 +30,7 @@ static keyvalue_T highlight_tab[] = {
     KEYVALUE_ENTRY(HL_UNDERLINE, "underline"),
     KEYVALUE_ENTRY(HL_UNDERCURL, "undercurl"),
     KEYVALUE_ENTRY(HL_UNDERDOUBLE, "underdouble"),
+    KEYVALUE_ENTRY(HL_UNDERDOTTED, "underdotted"),
     KEYVALUE_ENTRY(HL_UNDERDASHED, "underdashed"),
     KEYVALUE_ENTRY(HL_ITALIC, "italic"),
     KEYVALUE_ENTRY(HL_INVERSE, "reverse"),
