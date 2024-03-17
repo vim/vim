@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2024 Mart 01
+# Last Change:	2024 Mart 17
 
 Unicode true
 
@@ -57,6 +57,37 @@ Unicode true
 !include "nsDialogs.nsh"
 !include "Sections.nsh"
 !include "x64.nsh"
+
+# See https://nsis.sourceforge.io/LogicLib
+;FileExists is already part of LogicLib, but returns true for directories
+;as well as files
+!macro _FileExists2 _a _b _t _f
+	!insertmacro _LOGICLIB_TEMP
+	StrCpy $_LOGICLIB_TEMP "0"
+;if path is not blank, continue to next check
+	StrCmp `${_b}` `` +4 0
+;if path exists, continue to next check (IfFileExists returns true if this
+;is a directory)
+	IfFileExists `${_b}` `0` +3
+;if path is not a directory, continue to confirm exists
+	IfFileExists `${_b}\*.*` +2 0
+	StrCpy $_LOGICLIB_TEMP "1" ;file exists
+;now we have a definitive value - the file exists or it does not
+	StrCmp $_LOGICLIB_TEMP "1" `${_t}` `${_f}`
+!macroend
+!undef FileExists
+!define FileExists `"" FileExists2`
+!macro _DirExists _a _b _t _f
+	!insertmacro _LOGICLIB_TEMP
+	StrCpy $_LOGICLIB_TEMP "0"	
+;if path is not blank, continue to next check
+	StrCmp `${_b}` `` +3 0
+;if directory exists, continue to confirm exists
+	IfFileExists `${_b}\*.*` 0 +2
+	StrCpy $_LOGICLIB_TEMP "1"
+	StrCmp $_LOGICLIB_TEMP "1" `${_t}` `${_f}`
+!macroend
+!define DirExists `"" DirExists`
 
 !define PRODUCT		"Vim ${VER_MAJOR}.${VER_MINOR}"
 !define UNINST_REG_KEY	"Software\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -366,9 +397,6 @@ Section "$(str_section_exe)" id_section_exe
 !if /FileExists "${VIMSRC}\vim${BIT}.dll"
 	File ${VIMSRC}\vim${BIT}.dll
 !endif
-!if /FileExists "${VIMRT}\libsodium.dll"
-	File ${VIMRT}\libsodium.dll
-!endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstall.exe ${VIMSRC}\uninstallw32.exe
 	File ${VIMSRC}\vimrun.exe
@@ -379,9 +407,18 @@ Section "$(str_section_exe)" id_section_exe
 	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
 
+!if /FileExists "${VIMTOOLS}\diff.exe"
 	File ${VIMTOOLS}\diff.exe
+!endif
+!if /FileExists "${VIMTOOLS}\winpty${BIT}.dll"
 	File ${VIMTOOLS}\winpty${BIT}.dll
+!endif
+!if /FileExists "${VIMTOOLS}\winpty-agent.exe"
 	File ${VIMTOOLS}\winpty-agent.exe
+!endif
+!if /FileExists "${VIMTOOLS}\libsodium.dll"
+	File ${VIMTOOLS}\libsodium.dll
+!endif
 
 	SetOutPath $0\colors
 	File /r ${VIMRT}\colors\*.*
@@ -1060,7 +1097,10 @@ SectionEnd
 
 # Remove "vimfiles" directory under the specified directory.
 !macro RemoveVimfiles dir
-	${If} ${FileExists} ${dir}\vimfiles
+	${If} ${FileExists} $0\_viminfo
+	  Delete $0\_viminfo
+	${EndIf}
+	${If} ${DirExists} ${dir}\vimfiles
 	  RMDir ${dir}\vimfiles\colors
 	  RMDir ${dir}\vimfiles\compiler
 	  RMDir ${dir}\vimfiles\doc
@@ -1070,6 +1110,9 @@ SectionEnd
 	  RMDir ${dir}\vimfiles\keymap
 	  RMDir ${dir}\vimfiles\plugin
 	  RMDir ${dir}\vimfiles\syntax
+	  ${If} ${FileExists} $0\vimfiles\.netrwhist*
+	    Delete $0\vimfiles\.netrwhist*
+	  ${EndIf}
 	  RMDir ${dir}\vimfiles
 	${EndIf}
 !macroend
@@ -1081,12 +1124,6 @@ SectionGroup "un.$(str_ungroup_plugin)" id_ungroup_plugin
 		Pop $0
 
 		${If} $0 != ""
-		  ${If} ${FileExists} $0\_viminfo
-		    Delete $0\_viminfo
-		  ${EndIf}
-		  ${If} ${FileExists} $0\vimfiles\.netrwhist*
-		    Delete $0\vimfiles\.netrwhist*
-		  ${EndIf}
 		  !insertmacro RemoveVimfiles $0
 		${EndIf}
 	SectionEnd
