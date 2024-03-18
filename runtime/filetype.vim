@@ -534,6 +534,9 @@ au BufNewFile,BufRead *.csp,*.fdr		setf csp
 au BufNewFile,BufRead *.pld			setf cupl
 au BufNewFile,BufRead *.si			setf cuplsim
 
+" Dafny
+au BufNewFile,BufRead *.dfy			setf dafny
+
 " Dart
 au BufRead,BufNewfile *.dart,*.drt		setf dart
 
