@@ -2400,6 +2400,9 @@ au BufRead,BufNewFile *.vdmpp,*.vpp		setf vdmpp
 au BufRead,BufNewFile *.vdmrt			setf vdmrt
 au BufRead,BufNewFile *.vdmsl,*.vdm		setf vdmsl
 
+" Vento
+au BufNewFile,BufRead *.vto			setf vento
+
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
 
