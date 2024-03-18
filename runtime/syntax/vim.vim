@@ -3,7 +3,7 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	2024 Mar 15
+" Last Change:	2024 Mar 18
 " Former Maintainer: Charles E. Campbell
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
@@ -589,7 +589,6 @@ syn match	vimFunc              	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\
 syn match	vimUserFunc	contained        	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\|\<\u[a-zA-Z0-9.]*\>\|\<if\>"	contains=vimNotation
 syn keyword	vimFuncEcho	contained      	ec ech echo
 
-
 " User Command Highlighting: {{{2
 syn match vimUsrCmd	'^\s*\zs\u\%(\w*\)\@>\%([(#[]\|\s\+\%([-+*/%]\=\|\.\.\)=\)\@!'
 
@@ -724,7 +723,7 @@ if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimhictermerror")
  syn match	vimHiCtermError	contained	"\D\i*"
 endif
 syn match	vimHighlight	"\<hi\%[ghlight]\>"	skipwhite nextgroup=vimHiBang,@vimHighlightCluster
-syn match	vimHiBang	contained	"!"	skipwhite nextgroup=@vimHighlightCluster
+syn match	vimHiBang	contained	"\a\@1<=!"	skipwhite nextgroup=@vimHighlightCluster
 
 syn match	vimHiGroup	contained	"\i\+"
 syn case ignore
@@ -744,12 +743,12 @@ syn match	vimHiGuiRgb	contained	"#\x\{6}"
 
 " Highlighting: hi group key=arg ... {{{2
 syn cluster	vimHiCluster contains=vimGroup,vimHiGroup,vimHiTerm,vimHiCTerm,vimHiStartStop,vimHiCtermFgBg,vimHiCtermul,vimHiCtermfont,vimHiGui,vimHiGuiFont,vimHiGuiFgBg,vimHiKeyError,vimNotation,vimComment,vim9comment
-syn region	vimHiKeyList	contained oneline start="\i\+" skip="\\\\\|\\|" end="$\||"	contains=@vimHiCluster
+syn region	vimHiKeyList	contained 	start="\i\+" skip=+\\\\\|\\|\|\n\s*\\\|\n\s*"\\ + matchgroup=vimCmdSep end="|" excludenl end="$" contains=@vimContinue,@vimHiCluster
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_vimhikeyerror")
  syn match	vimHiKeyError	contained	"\i\+="he=e-1
 endif
 syn match	vimHiTerm	contained	"\cterm="he=e-1		nextgroup=vimHiAttribList
-syn match	vimHiStartStop	contained	"\c\(start\|stop\)="he=e-1	nextgroup=vimHiTermcap,vimOption
+syn match	vimHiStartStop	contained	"\c\%(start\|stop\)="he=e-1	nextgroup=vimHiTermcap,vimOption
 syn match	vimHiCTerm	contained	"\ccterm="he=e-1		nextgroup=vimHiAttribList
 syn match	vimHiCtermFgBg	contained	"\ccterm[fb]g="he=e-1	nextgroup=vimHiNmbr,vimHiCtermColor,vimFgBgAttrib,vimHiCtermError
 syn match	vimHiCtermul	contained	"\cctermul="he=e-1	nextgroup=vimHiNmbr,vimHiCtermColor,vimFgBgAttrib,vimHiCtermError
@@ -761,12 +760,13 @@ syn match	vimHiTermcap	contained	"\S\+"		contains=vimNotation
 syn match	vimHiNmbr	contained	'\d\+'
 
 " Highlight: clear {{{2
-syn keyword	vimHiClear	contained	clear	nextgroup=vimHiGroup
+syn keyword	vimHiClear	contained	clear	skipwhite nextgroup=vimGroup,vimHiGroup
 
 " Highlight: link {{{2
 " see tst24 (hi def vs hi) (Jul 06, 2018)
 "syn region	vimHiLink	contained oneline matchgroup=vimCommand start="\(\<hi\%[ghlight]\s\+\)\@<=\(\(def\%[ault]\s\+\)\=link\>\|\<def\>\)" end="$"	contains=vimHiGroup,vimGroup,vimHLGroup,vimNotation
-syn region	vimHiLink	contained oneline matchgroup=vimCommand start="\(\<hi\%[ghlight]\s\+\)\@<=\(\(def\%[ault]\s\+\)\=link\>\|\<def\>\)" end="$"	contains=@vimHiCluster
+" TODO: simplify and allow line continuations --djk
+syn region	vimHiLink	contained matchgroup=Type start="\%(\<hi\%[ghlight]!\=\s\+\)\@<=\%(\%(def\%[ault]\s\+\)\=link\>\|\<def\%[ault]\>\)" skip=+\\\\\|\\|\|\n\s*\\\|\n\s*"\\ + matchgroup=vimCmdSep end="|" excludenl end="$" contains=@vimContinue,@vimHiCluster
 
 " Control Characters: {{{2
 " ==================
@@ -1038,8 +1038,6 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimFBVar	vimVar
  hi def link vimFgBgAttrib	vimHiAttrib
  hi def link vimFuncEcho	vimCommand
- hi def link vimHiCtermul	vimHiTerm
- hi def link vimHiCtermfont	vimHiTerm
  hi def link vimFold	Folded
  hi def link vimFor	vimCommand
  hi def link vimFTCmd	vimCommand
@@ -1055,8 +1053,11 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimGroup	Type
  hi def link vimHiAttrib	PreProc
  hi def link vimHiBang	vimBang
- hi def link vimHiClear	vimHighlight
+ hi def link vimHiClear	Type
+ hi def link vimHiCtermColor	Constant
  hi def link vimHiCtermFgBg	vimHiTerm
+ hi def link vimHiCtermfont	vimHiTerm
+ hi def link vimHiCtermul	vimHiTerm
  hi def link vimHiCTerm	vimHiTerm
  hi def link vimHighlight	vimCommand
  hi def link vimHiGroup	vimGroupName
