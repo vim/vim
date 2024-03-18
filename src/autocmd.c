@@ -3348,10 +3348,10 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		event_arg = NUM_EVENTS;
 	    else
 	    {
-		for (i = 0; event_tab[i].key < NUM_EVENTS; i++)
+		for (i = 0; i < NUM_EVENTS; i++)
 		    if (STRICMP(event_tab[i].value, name) == 0)
 			break;
-		if (i == ARRAY_LENGTH(event_tab))
+		if (i == NUM_EVENTS)
 		{
 		    semsg(_(e_no_such_event_str), name);
 		    vim_free(name);
