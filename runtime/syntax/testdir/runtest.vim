@@ -149,17 +149,18 @@ func RunTest()
 
 	func SetUpVim()
 	  call cursor(1, 1)
-	  " Defend against rogue TEST_SETUP commands.
+	  " Defend against rogue VIM_TEST_SETUP commands.
 	  for _ in range(20)
-	    let lnum = search('\<TEST_SETUP\>', 'eW', 20)
+	    let lnum = search('\C\<VIM_TEST_SETUP\>', 'eW', 20)
 	    if lnum < 1
 	      break
 	    endif
-	    exe substitute(getline(lnum), '.*TEST_SETUP', '', '')
+	    exe substitute(getline(lnum), '\C.*\<VIM_TEST_SETUP\>', '', '')
 	  endfor
 	  call cursor(1, 1)
 	  " BEGIN [runtime/defaults.vim]
-	  set display=truncate ruler scrolloff=5
+	  " Also, disable italic highlighting to avoid issues on some terminals.
+	  set display=truncate ruler scrolloff=5 t_ZH= t_ZR=
 	  syntax on
 	  " END [runtime/defaults.vim]
 	  redraw!

@@ -34,7 +34,7 @@ Make sure to include some interesting constructs with plenty of complicated
 highlighting.  Optionally, pre-configure the testing environment by including
 setup commands at the top of the input file. The format for these lines is:
 
-	TEST_SETUP {command}
+	VIM_TEST_SETUP {command}
 
 where {command} is any valid Ex command, which extends to the end of the line.
 The first 20 lines of the input file are ALWAYS scanned for setup commands and
@@ -44,8 +44,8 @@ errors in the input file but this is not required.
 
 Continuing the Java example:
 
-	// TEST_SETUP let g:java_space_errors = 1
-	// TEST_SETUP let g:java_minlines = 5
+	// VIM_TEST_SETUP let g:java_space_errors = 1
+	// VIM_TEST_SETUP let g:java_minlines = 5
 	class Test { }
 
 As an alternative, setup commands can be included in an external Vim script
@@ -59,7 +59,7 @@ an "input/setup/java.vim" script file with the following lines:
 	let g:java_minlines = 5
 
 Both inline setup commands and setup scripts may be used at the same time, the
-script file will be sourced before any TEST_SETUP commands are executed.
+script file will be sourced before any VIM_TEST_SETUP commands are executed.
 
 If there is no further setup required, you can now run the tests:
 
