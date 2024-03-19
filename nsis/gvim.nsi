@@ -1097,8 +1097,8 @@ SectionEnd
 
 # Remove "vimfiles" directory under the specified directory.
 !macro RemoveVimfiles dir
-	${If} ${FileExists} $0\_viminfo
-	  Delete $0\_viminfo
+	${If} ${FileExists} ${dir}\_viminfo
+	  Delete ${dir}\_viminfo
 	${EndIf}
 	${If} ${DirExists} ${dir}\vimfiles
 	  RMDir ${dir}\vimfiles\colors
@@ -1110,8 +1110,8 @@ SectionEnd
 	  RMDir ${dir}\vimfiles\keymap
 	  RMDir ${dir}\vimfiles\plugin
 	  RMDir ${dir}\vimfiles\syntax
-	  ${If} ${FileExists} $0\vimfiles\.netrwhist*
-	    Delete $0\vimfiles\.netrwhist*
+	  ${If} ${FileExists} ${dir}\vimfiles\.netrwhist*
+	    Delete ${dir}\vimfiles\.netrwhist*
 	  ${EndIf}
 	  RMDir ${dir}\vimfiles
 	${EndIf}
