@@ -3104,7 +3104,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		return;
 	    ret = dict_add_list(retdict, "items", li);
 	}
-	if (what_flag & CI_WHAT_SELECTED)
+	if (ret == OK && what_flag & CI_WHAT_SELECTED)
 	    if (compl_curr_match != NULL && compl_curr_match->cp_number == -1)
 		ins_compl_update_sequence_numbers();
 	if (ret == OK && compl_first_match != NULL)
@@ -3115,7 +3115,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 	    {
 		if (!match_at_original_text(match))
 		{
-		    if (what_flag & CI_WHAT_SELECTED)
+		    if (what_flag & CI_WHAT_ITEMS)
 		    {
 			di = dict_alloc();
 			if (di == NULL)
@@ -3134,7 +3134,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 			else
 			    dict_add_tv(di, "user_data", &match->cp_user_data);
 		    }
-		    if (compl_curr_match->cp_number == match->cp_number)
+		    if (compl_curr_match != NULL && compl_curr_match->cp_number == match->cp_number)
 			selected_idx = list_idx;
 		    list_idx += 1;
 		}
