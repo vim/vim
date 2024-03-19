@@ -193,8 +193,7 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_VIMRESIZED, "VimResized"),
     KEYVALUE_ENTRY(EVENT_TEXTYANKPOST, "TextYankPost"),
     KEYVALUE_ENTRY(EVENT_VIMSUSPEND, "VimSuspend"),
-    KEYVALUE_ENTRY(EVENT_VIMRESUME, "VimResume"),
-    KEYVALUE_ENTRY(NUM_EVENTS, NULL)
+    KEYVALUE_ENTRY(EVENT_VIMRESUME, "VimResume")
 };
 
 static AutoPat *first_autopat[NUM_EVENTS] =
@@ -718,7 +717,7 @@ event_name2nr(char_u *start, char_u **end)
     }
 
     // look in the event table itself
-    for (i = 0; event_tab[i].key < NUM_EVENTS; ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(event_tab); ++i)
     {
 	if (event_tab[i].length == len
 	    && STRNICMP(event_tab[i].value, start, event_tab[i].length) == 0)
@@ -739,7 +738,7 @@ theend:
 	++p;
     *end = p;
 
-    return (event_T)event_tab[i].key;
+    return (i == (int)ARRAY_LENGTH(event_tab)) ? NUM_EVENTS : (event_T)event_tab[i].key;
 }
 
 /*
@@ -778,7 +777,7 @@ event_nr2name(event_T event)
     }
 
     // look in the event table itself
-    for (i = 0; event_tab[i].key < NUM_EVENTS; ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(event_tab); ++i)
     {
 	if ((event_T)event_tab[i].key == event)
 	{
@@ -793,7 +792,7 @@ event_nr2name(event_T event)
 	}
     }
 
-    return (char_u *)event_tab[i].value;
+    return (i == (int)ARRAY_LENGTH(event_tab)) ? (char_u *)"Unknown" : (char_u *)event_tab[i].value;
 }
 
 /*
@@ -3348,10 +3347,10 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		event_arg = NUM_EVENTS;
 	    else
 	    {
-		for (i = 0; i < NUM_EVENTS; i++)
+		for (i = 0; i < (int)ARRAY_LENGTH(event_tab); i++)
 		    if (STRICMP(event_tab[i].value, name) == 0)
 			break;
-		if (i == NUM_EVENTS)
+		if (i == (int)ARRAY_LENGTH(event_tab))
 		{
 		    semsg(_(e_no_such_event_str), name);
 		    vim_free(name);
