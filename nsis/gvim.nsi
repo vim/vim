@@ -79,7 +79,7 @@ Unicode true
 !define FileExists `"" FileExists2`
 !macro _DirExists _a _b _t _f
 	!insertmacro _LOGICLIB_TEMP
-	StrCpy $_LOGICLIB_TEMP "0"	
+	StrCpy $_LOGICLIB_TEMP "0"
 ;if path is not blank, continue to next check
 	StrCmp `${_b}` `` +3 0
 ;if directory exists, continue to confirm exists
