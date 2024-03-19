@@ -415,11 +415,6 @@ set_init_xdg_rtp(void)
     options[opt_idx].def_val[VI_DEFAULT] = xdg_rtp;
     p_pp = xdg_rtp;
 
-    if ((opt_idx = findoption((char_u *)"viminfo")) < 0)
-	goto theend;
-
-    options[opt_idx].def_val[VI_DEFAULT] = xdg_rtp;
-
 theend:
     vim_free(vimrc1);
     vim_free(vimrc2);
