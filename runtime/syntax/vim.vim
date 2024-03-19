@@ -3,7 +3,7 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	2024 Mar 18
+" Last Change:	2024 Mar 19
 " Former Maintainer: Charles E. Campbell
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
@@ -542,8 +542,8 @@ syn keyword vimMenu am[enu] an[oremenu] aun[menu] cme[nu] cnoreme[nu] cunme[nu] 
 syn keyword vimMenu popu[p] skipwhite nextgroup=vimMenuBang,vimMenuName
 syn region	vimMenuRhs	 contained contains=@vimContinue,vimNotation start="|\@!\S"            skip=+\\\\\|\\|\|\n\s*\\\|\n\s*"\\ + end="$" matchgroup=vimSep end="|"
 syn region	vimMenuRhsContinue contained contains=@vimContinue,vimNotation start=+^\s*\%(\\\|"\\ \)+ skip=+\\\\\|\\|\|\n\s*\\\|\n\s*"\\ + end="$" matchgroup=vimSep end="|"
-syn match	vimMenuName	"\%(\\\s\|\S\)\+"        contained contains=vimMenuNotation,vimNotation skipwhite        nextgroup=vimCmdSep,vimMenuRhs
-syn match	vimMenuName	"\%(\\\s\|\S\)\+\ze\s*$" contained contains=vimMenuNotation,vimNotation skipwhite skipnl nextgroup=vimCmdSep,vimMenuRhsContinue
+syn match	vimMenuName	"\.\@!\%(\\\s\|\S\)\+"        contained contains=vimMenuNotation,vimNotation skipwhite        nextgroup=vimCmdSep,vimMenuRhs
+syn match	vimMenuName	"\.\@!\%(\\\s\|\S\)\+\ze\s*$" contained contains=vimMenuNotation,vimNotation skipwhite skipnl nextgroup=vimCmdSep,vimMenuRhsContinue
 syn match	vimMenuNotation	"&\a\|&&\|\\\s\|\\\." contained
 syn match	vimMenuPriority	"\<\d\+\%(\.\d\+\)*\>" contained skipwhite nextgroup=vimMenuName
 syn match	vimMenuMod	"\c<\%(script\|silent\|special\)>" contained skipwhite nextgroup=vimMenuName,vimMenuPriority,vimMenuMod contains=vimMapModKey,vimMapModErr
