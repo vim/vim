@@ -3080,6 +3080,12 @@ func Test_prop_with_text_above_below_empty()
         call prop_add(ln, 0, {'type': vt, 'text': '+', 'text_align': 'below'})
       endfor
       normal G
+
+      func AddMore()
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+      endfunc
   END
   call writefile(lines, 'XscriptPropAboveBelowEmpty', 'D')
   let buf = RunVimInTerminal('-S XscriptPropAboveBelowEmpty', #{rows: 16, cols: 60})
@@ -3100,6 +3106,12 @@ func Test_prop_with_text_above_below_empty()
 
   call term_sendkeys(buf, "kk")
   call VerifyScreenDump(buf, 'Test_prop_above_below_empty_5', {})
+
+  " This was drawing line number over cmdline and leaking memory.
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call term_sendkeys(buf, "gg")
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_above_below_empty_6', {})
 
   call StopVimInTerminal(buf)
 endfunc

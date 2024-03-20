@@ -1683,8 +1683,12 @@ win_line(
     {
 	// skip over rows only used for virtual text above
 	wlv.row += wlv.text_prop_above_count;
-	if (wlv.row > endrow)
+	if (wlv.row >= endrow)
+	{
+	    vim_free(text_props);
+	    vim_free(text_prop_idxs);
 	    return wlv.row;
+	}
 	wlv.screen_row += wlv.text_prop_above_count;
     }
 #endif
