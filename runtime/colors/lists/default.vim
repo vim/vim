@@ -13,7 +13,12 @@
 let s:keepcpo = &cpo
 set cpo&vim
 
-call extend(v:colornames, {
+function! s:Cleanup()
+  let &cpo = s:keepcpo
+  unlet s:keepcpo
+endfunction
+
+let s:default_cnames = {
 			\ 'snow': '#fffafa',
 			\ 'ghost white': '#f8f8ff',
 			\ 'ghostwhite': '#f8f8ff',
@@ -802,9 +807,21 @@ call extend(v:colornames, {
 			\ 'rebeccapurple': '#663399',
 			\ 'silver': '#c0c0c0',
 			\ 'teal': '#008080'
-			\ }, 'keep')
+			\ }
+
+call extend(v:colornames, s:default_cnames, 'keep')
 
 " all keys should be in lower case, convert keys that are not yet
+
+let s:len_after = len(v:colornames)
+if s:len_after == len(s:default_cnames)
+  " after extends: v:colornames has all the keys of default_cnames
+  " checked: v:colornames also has no extra keys
+  " => keys are the same, and keys(default_cnames) are known to be ok
+  call s:Cleanup()
+  finish
+endif
+
 for [key, val] in items(filter(copy(v:colornames), { key -> key  =~ '\u'}))
   call remove(v:colornames, key)
   if !has_key(v:colornames, tolower(key))
@@ -812,7 +829,6 @@ for [key, val] in items(filter(copy(v:colornames), { key -> key  =~ '\u'}))
   endif
 endfor
 
-let &cpo = s:keepcpo
-unlet s:keepcpo
+call s:Cleanup()
 
 "vim: sw=4
