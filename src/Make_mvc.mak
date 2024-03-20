@@ -374,9 +374,9 @@ DYNAMIC_SODIUM = yes
 
 !if "$(SODIUM)" != "no"
 ! if "$(CPU)" == "AMD64"
-SOD_LIB		= $(SODIUM)\x64\Release\v140\dynamic
+SOD_LIB		= $(SODIUM)\x64\Release\v143\dynamic
 ! elseif "$(CPU)" == "i386"
-SOD_LIB		= $(SODIUM)\Win32\Release\v140\dynamic
+SOD_LIB		= $(SODIUM)\Win32\Release\v143\dynamic
 ! else
 SODIUM = no
 ! endif
