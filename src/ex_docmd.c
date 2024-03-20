@@ -7252,6 +7252,7 @@ ex_edit(exarg_T *eap)
     if (
 	    eap->cmdidx != CMD_badd
 	    && eap->cmdidx != CMD_balt
+	    && !(eap->cmdidx == CMD_edit && *eap->arg == NUL)
 	    // All other commands must obey 'winfixbuf' / ! rules
 	    && !check_can_set_curbuf_forceit(eap->forceit))
         return;

@@ -3283,4 +3283,25 @@ func Test_bufdo_cnext_splitwin_fails()
   set winminheight&vim winheight&vim
 endfunc
 
+" Fdit without filename is allowed
+func Test_edit_noarg()
+  " A GUI dialog may stall the test.
+  CheckNotGui
+
+  call s:reset_all_buffers()
+
+  let l:other = s:make_buffer_pairs()
+  let l:current = bufnr()
+
+  call assert_fails("browse edit other", "E1513:")
+  call assert_equal(l:current, bufnr())
+
+  try
+    edit
+  catch /^Vim\%((\a\+)\)\=:E1513:/
+    " should not happen
+    call assert_equal(1, 2)
+  endtry
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
