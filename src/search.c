@@ -660,7 +660,7 @@ searchit(
 						    && pos->col < MAXCOL - 2)
 	{
 	    ptr = ml_get_buf(buf, pos->lnum, FALSE);
-	    if ((int)STRLEN(ptr) <= pos->col)
+	    if (ml_get_buf_len(buf, pos->lnum) <= pos->col)
 		start_char_len = 1;
 	    else
 		start_char_len = (*mb_ptr2len)(ptr + pos->col);
@@ -966,8 +966,7 @@ searchit(
 			    if (pos->lnum > 1)  // just in case
 			    {
 				--pos->lnum;
-				pos->col = (colnr_T)STRLEN(ml_get_buf(buf,
-							   pos->lnum, FALSE));
+				pos->col = ml_get_buf_len(buf, pos->lnum);
 			    }
 			}
 			else
@@ -1102,7 +1101,7 @@ searchit(
     if (pos->lnum > buf->b_ml.ml_line_count)
     {
 	pos->lnum = buf->b_ml.ml_line_count;
-	pos->col = (int)STRLEN(ml_get_buf(buf, pos->lnum, FALSE));
+	pos->col = ml_get_buf_len(buf, pos->lnum);
 	if (pos->col > 0)
 	    --pos->col;
     }
@@ -1772,7 +1771,7 @@ searchc(cmdarg_T *cap, int t_cmd)
 
     p = ml_get_curline();
     col = curwin->w_cursor.col;
-    len = (int)STRLEN(p);
+    len = ml_get_curline_len();
 
     while (count--)
     {
@@ -2315,7 +2314,7 @@ findmatchlimit(
 		    break;
 
 		linep = ml_get(pos.lnum);
-		pos.col = (colnr_T)STRLEN(linep); // pos.col on trailing NUL
+		pos.col = ml_get_len(pos.lnum); // pos.col on trailing NUL
 		do_quotes = -1;
 		line_breakcheck();
 
@@ -2492,7 +2491,7 @@ findmatchlimit(
 		if (pos.lnum > 1)
 		{
 		    ptr = ml_get(pos.lnum - 1);
-		    if (*ptr && *(ptr + STRLEN(ptr) - 1) == '\\')
+		    if (*ptr && *(ptr + ml_get_len(pos.lnum - 1) - 1) == '\\')
 		    {
 			do_quotes = 1;
 			if (start_in_quotes == MAYBE)
@@ -2986,8 +2985,7 @@ current_search(
 		// try again from end of buffer
 		// searching backwards, so set pos to last line and col
 		pos.lnum = curwin->w_buffer->b_ml.ml_line_count;
-		pos.col  = (colnr_T)STRLEN(
-				ml_get(curwin->w_buffer->b_ml.ml_line_count));
+		pos.col  = ml_get_len(curwin->w_buffer->b_ml.ml_line_count);
 	    }
 	}
     }
@@ -3292,7 +3290,8 @@ find_pattern_in_path(
     long	count,
     int		action,		// What to do when we find it
     linenr_T	start_lnum,	// first line to start searching
-    linenr_T	end_lnum)	// last line for searching
+    linenr_T	end_lnum,	// last line for searching
+    int		forceit)	// If true, always switch to the found path
 {
     SearchedFile *files;		// Stack of included files
     SearchedFile *bigger;		// When we need more space
@@ -3829,7 +3828,7 @@ search_line:
 				break;
 			    if (!GETFILE_SUCCESS(getfile(
 					   curwin_save->w_buffer->b_fnum, NULL,
-						     NULL, TRUE, lnum, FALSE)))
+						     NULL, TRUE, lnum, forceit)))
 				break;	// failed to jump to file
 			}
 			else
@@ -3842,7 +3841,7 @@ search_line:
 		    {
 			if (!GETFILE_SUCCESS(getfile(
 					0, files[depth].name, NULL, TRUE,
-						    files[depth].lnum, FALSE)))
+						    files[depth].lnum, forceit)))
 			    break;	// failed to jump to file
 			// autocommands may have changed the lnum, we don't
 			// want that here

@@ -246,6 +246,8 @@ typedef struct
     long	wo_nuw;
 # define w_p_nuw w_onebuf_opt.wo_nuw	// 'numberwidth'
 #endif
+    int wo_wfb;
+#define w_p_wfb w_onebuf_opt.wo_wfb	// 'winfixbuf'
     int		wo_wfh;
 # define w_p_wfh w_onebuf_opt.wo_wfh	// 'winfixheight'
     int		wo_wfw;
@@ -800,7 +802,8 @@ typedef struct memline
 #define ML_ALLOCATED	0x10	// ml_line_ptr is an allocated copy
     int		ml_flags;
 
-    colnr_T	ml_line_len;	// length of the cached line, including NUL
+    colnr_T	ml_line_len;	// length of the cached line + NUL + text properties
+    colnr_T	ml_line_textlen;// length of the cached line + NUL, 0 if not known yet
     linenr_T	ml_line_lnum;	// line number of cached line, 0 if not valid
     char_u	*ml_line_ptr;	// pointer to cached line
 
@@ -1529,6 +1532,17 @@ typedef enum {
 #define OCMFLAG_CONST		0x04	// "const" object/class member
 
 /*
+ * Object methods called by builtin functions (e.g. string(), empty(), etc.)
+ */
+typedef enum {
+    CLASS_BUILTIN_INVALID,
+    CLASS_BUILTIN_STRING,
+    CLASS_BUILTIN_EMPTY,
+    CLASS_BUILTIN_LEN,
+    CLASS_BUILTIN_MAX
+} class_builtin_T;
+
+/*
  * Entry for an object or class member variable.
  */
 typedef struct {
@@ -1590,6 +1604,9 @@ struct class_S
     int		class_obj_method_count;		    // total count
     int		class_obj_method_count_child;	    // count without "extends"
     ufunc_T	**class_obj_methods;	// allocated
+
+					// index of builtin methods
+    int		class_builtin_methods[CLASS_BUILTIN_MAX];
 
     garray_T	class_type_list;	// used for type pointers
     type_T	class_type;		// type used for the class

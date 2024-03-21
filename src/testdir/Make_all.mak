@@ -328,6 +328,7 @@ NEW_TESTS = \
 	test_window_cmd \
 	test_window_id \
 	test_windows_home \
+	test_winfixbuf \
 	test_wnext \
 	test_wordcount \
 	test_writefile \
@@ -560,6 +561,7 @@ NEW_TESTS_RES = \
 	test_window_cmd.res \
 	test_window_id.res \
 	test_windows_home.res \
+	test_winfixbuf.res \
 	test_wordcount.res \
 	test_writefile.res \
 	test_xxd.res \

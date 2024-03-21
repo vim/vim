@@ -534,6 +534,9 @@ au BufNewFile,BufRead *.csp,*.fdr		setf csp
 au BufNewFile,BufRead *.pld			setf cupl
 au BufNewFile,BufRead *.si			setf cuplsim
 
+" Dafny
+au BufNewFile,BufRead *.dfy			setf dafny
+
 " Dart
 au BufRead,BufNewfile *.dart,*.drt		setf dart
 
@@ -2396,6 +2399,9 @@ au BufNewFile,BufRead *.vdf			setf vdf
 au BufRead,BufNewFile *.vdmpp,*.vpp		setf vdmpp
 au BufRead,BufNewFile *.vdmrt			setf vdmrt
 au BufRead,BufNewFile *.vdmsl,*.vdm		setf vdmsl
+
+" Vento
+au BufNewFile,BufRead *.vto			setf vento
 
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera

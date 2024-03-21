@@ -107,7 +107,7 @@ copyFoldingState(win_T *wp_from, win_T *wp_to)
 
 // hasAnyFolding() {{{2
 /*
- * Return TRUE if there may be folded lines in the current window.
+ * Return TRUE if there may be folded lines in window "win".
  */
     int
 hasAnyFolding(win_T *win)
@@ -551,7 +551,7 @@ checkCloseRec(garray_T *gap, linenr_T lnum, int level)
     return retval;
 }
 
-// foldCreateAllowed() {{{2
+// foldManualAllowed() {{{2
 /*
  * Return TRUE if it's allowed to manually create or delete a fold.
  * Give an error message and return FALSE if not.
@@ -1061,7 +1061,6 @@ find_wl_entry(win_T *win, linenr_T lnum)
 foldAdjustVisual(void)
 {
     pos_T	*start, *end;
-    char_u	*ptr;
 
     if (!VIsual_active || !hasAnyFolding(curwin))
 	return;
@@ -1082,8 +1081,7 @@ foldAdjustVisual(void)
     if (!hasFolding(end->lnum, NULL, &end->lnum))
 	return;
 
-    ptr = ml_get(end->lnum);
-    end->col = (colnr_T)STRLEN(ptr);
+    end->col = ml_get_len(end->lnum);
     if (end->col > 0 && *p_sel == 'o')
 	--end->col;
     // prevent cursor from moving on the trail byte
@@ -1091,7 +1089,7 @@ foldAdjustVisual(void)
 	mb_adjust_cursor();
 }
 
-// cursor_foldstart() {{{2
+// foldAdjustCursor() {{{2
 /*
  * Move the cursor to the first line of a closed fold.
  */
@@ -1799,7 +1797,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 
     // Allocate a new line: old-line + 'cms'-start + marker + 'cms'-end
     line = ml_get(lnum);
-    line_len = (int)STRLEN(line);
+    line_len = ml_get_len(lnum);
 
     if (u_save(lnum - 1, lnum + 1) != OK)
 	return;
@@ -1887,7 +1885,7 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 	    if (u_save(lnum - 1, lnum + 1) == OK)
 	    {
 		// Make new line: text-before-marker + text-after-marker
-		newline = alloc(STRLEN(line) - len + 1);
+		newline = alloc(ml_get_len(lnum) - len + 1);
 		if (newline != NULL)
 		{
 		    STRNCPY(newline, line, p - line);

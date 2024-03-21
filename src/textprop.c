@@ -637,7 +637,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 
     // Fetch the line to get the ml_line_len field updated.
     text = ml_get_buf(buf, lnum, will_change);
-    textlen = STRLEN(text) + 1;
+    textlen = ml_get_buf_len(buf, lnum) + 1;
     proplen = buf->b_ml.ml_line_len - textlen;
     if (proplen == 0)
 	return 0;
@@ -864,7 +864,7 @@ set_text_props(linenr_T lnum, char_u *props, int len)
     int	    textlen;
 
     text = ml_get(lnum);
-    textlen = (int)STRLEN(text) + 1;
+    textlen = ml_get_len(lnum) + 1;
     newtext = alloc(textlen + len);
     if (newtext == NULL)
 	return;
@@ -1091,7 +1091,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 	if (lnum > buf->b_ml.ml_line_count)
 	    break;
 	text = ml_get_buf(buf, lnum, FALSE);
-	len = STRLEN(text) + 1;
+	len = ml_get_buf_len(buf, lnum) + 1;
 	if ((size_t)buf->b_ml.ml_line_len > len)
 	{
 	    did_clear = TRUE;
@@ -1221,7 +1221,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     while (1)
     {
 	char_u	*text = ml_get_buf(buf, lnum, FALSE);
-	size_t	textlen = STRLEN(text) + 1;
+	size_t	textlen = ml_get_buf_len(buf, lnum) + 1;
 	int	count = (int)((buf->b_ml.ml_line_len - textlen)
 							 / sizeof(textprop_T));
 	int	    i;
@@ -1342,7 +1342,7 @@ get_props_in_line(
 	int		add_lnum)
 {
     char_u	*text = ml_get_buf(buf, lnum, FALSE);
-    size_t	textlen = STRLEN(text) + 1;
+    size_t	textlen = ml_get_buf_len(buf, lnum) + 1;
     int		count;
     int		i;
     textprop_T	prop;
@@ -1675,13 +1675,11 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	end = buf->b_ml.ml_line_count;
     for (lnum = start; lnum <= end; ++lnum)
     {
-	char_u *text;
 	size_t len;
 
 	if (lnum > buf->b_ml.ml_line_count)
 	    break;
-	text = ml_get_buf(buf, lnum, FALSE);
-	len = STRLEN(text) + 1;
+	len = ml_get_buf_len(buf, lnum) + 1;
 	if ((size_t)buf->b_ml.ml_line_len > len)
 	{
 	    static textprop_T	textprop;  // static because of alignment

@@ -2929,5 +2929,54 @@ def Test_export_in_conditional_block()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Import fails when an autoloaded script is imported again.
+" Github issue #14171
+def Test_import_autloaded_script()
+  mkdir('Ximporttwice', 'pR')
+  mkdir('Ximporttwice/plugin')
+  mkdir('Ximporttwice/autoload')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Ximporttwice'
+
+  var lines =<< trim END
+    vim9script
+
+    export def H(): number
+      return 10
+    enddef
+  END
+  writefile(lines, 'Ximporttwice/autoload/hello.vim')
+
+  lines =<< trim END
+    vim9script
+
+    import "./hello.vim"
+    export def W(): number
+      return 20
+    enddef
+  END
+  writefile(lines, 'Ximporttwice/autoload/world.vim')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload '../autoload/hello.vim'
+    import autoload '../autoload/world.vim'
+
+    command Hello echo hello.H()
+    command World echo world.W()
+  END
+  writefile(lines, 'Ximporttwice/plugin/main.vim')
+
+  lines =<< trim END
+    vim9script
+
+    source ./Ximporttwice/plugin/main.vim
+    assert_equal(['20'], execute('World')->split("\n"))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  &rtp = save_rtp
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

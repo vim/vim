@@ -1294,6 +1294,7 @@ $quote	eval.txt	/*$quote*
 'winaltkeys'	options.txt	/*'winaltkeys'*
 'wincolor'	options.txt	/*'wincolor'*
 'window'	options.txt	/*'window'*
+'winfixbuf'	options.txt	/*'winfixbuf'*
 'winfixheight'	options.txt	/*'winfixheight'*
 'winfixwidth'	options.txt	/*'winfixwidth'*
 'winheight'	options.txt	/*'winheight'*
@@ -4517,6 +4518,8 @@ E1409	vim9class.txt	/*E1409*
 E141	message.txt	/*E141*
 E1410	vim9class.txt	/*E1410*
 E1411	vim9class.txt	/*E1411*
+E1412	vim9class.txt	/*E1412*
+E1413	vim9class.txt	/*E1413*
 E142	message.txt	/*E142*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
@@ -4541,6 +4544,7 @@ E151	helphelp.txt	/*E151*
 E1510	change.txt	/*E1510*
 E1511	options.txt	/*E1511*
 E1512	options.txt	/*E1512*
+E1513	message.txt	/*E1513*
 E152	helphelp.txt	/*E152*
 E153	helphelp.txt	/*E153*
 E154	helphelp.txt	/*E154*
@@ -6182,6 +6186,7 @@ bugs	intro.txt	/*bugs*
 builtin-function-details	builtin.txt	/*builtin-function-details*
 builtin-function-list	builtin.txt	/*builtin-function-list*
 builtin-functions	builtin.txt	/*builtin-functions*
+builtin-object-methods	vim9class.txt	/*builtin-object-methods*
 builtin-terms	term.txt	/*builtin-terms*
 builtin-tools	gui.txt	/*builtin-tools*
 builtin.txt	builtin.txt	/*builtin.txt*
@@ -7365,6 +7370,7 @@ ft-xhtml-omni	insert.txt	/*ft-xhtml-omni*
 ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
+ft-yaml-indent	indent.txt	/*ft-yaml-indent*
 ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
 ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
 ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
@@ -7762,6 +7768,7 @@ getqflist-examples	quickfix.txt	/*getqflist-examples*
 getreg()	builtin.txt	/*getreg()*
 getreginfo()	builtin.txt	/*getreginfo()*
 getregion()	builtin.txt	/*getregion()*
+getregion-notes	builtin.txt	/*getregion-notes*
 getregtype()	builtin.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
 getscript-autoinstall	pi_getscript.txt	/*getscript-autoinstall*
@@ -9152,9 +9159,12 @@ o_object-select	motion.txt	/*o_object-select*
 o_v	motion.txt	/*o_v*
 object	vim9class.txt	/*object*
 object-const-variable	vim9class.txt	/*object-const-variable*
+object-empty()	vim9class.txt	/*object-empty()*
 object-final-variable	vim9class.txt	/*object-final-variable*
+object-len()	vim9class.txt	/*object-len()*
 object-motions	motion.txt	/*object-motions*
 object-select	motion.txt	/*object-select*
+object-string()	vim9class.txt	/*object-string()*
 objects	index.txt	/*objects*
 obtaining-exted	netbeans.txt	/*obtaining-exted*
 ocaml.vim	syntax.txt	/*ocaml.vim*

@@ -720,7 +720,7 @@ fix_help_buffer(void)
 	for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count; ++lnum)
 	{
 	    line = ml_get_buf(curbuf, lnum, FALSE);
-	    len = (int)STRLEN(line);
+	    len = ml_get_buf_len(curbuf, lnum);
 	    if (in_example && len > 0 && !VIM_ISWHITE(line[0]))
 	    {
 		// End of example: non-white or '<' in first column.

@@ -762,7 +762,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 
     // xdiff requires one big block of memory with all the text.
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
-	len += (long)STRLEN(ml_get_buf(buf, lnum, FALSE)) + 1;
+	len += ml_get_buf_len(buf, lnum) + 1;
     ptr = alloc(len);
     if (ptr == NULL)
     {
@@ -1520,6 +1520,7 @@ diff_win_options(
 	if (!wp->w_p_diff)
 	    wp->w_p_wrap_save = wp->w_p_wrap;
 	wp->w_p_wrap = FALSE;
+	wp->w_skipcol = 0;
     }
 # ifdef FEAT_FOLDING
     if (!wp->w_p_diff)
@@ -1583,8 +1584,11 @@ ex_diffoff(exarg_T *eap)
 		    wp->w_p_crb = wp->w_p_crb_save;
 		if (!(diff_flags & DIFF_FOLLOWWRAP))
 		{
-		    if (!wp->w_p_wrap)
-			wp->w_p_wrap = wp->w_p_wrap_save;
+		    if (!wp->w_p_wrap && wp->w_p_wrap_save)
+		    {
+			wp->w_p_wrap = TRUE;
+			wp->w_leftcol = 0;
+		    }
 		}
 #ifdef FEAT_FOLDING
 		free_string_option(wp->w_p_fdm);

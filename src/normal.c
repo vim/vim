@@ -4073,6 +4073,9 @@ nv_gotofile(cmdarg_T *cap)
 	return;
 #endif
 
+    if (!check_can_set_curbuf_disabled())
+      return;
+
     ptr = grab_file_name(cap->count1, &lnum);
 
     if (ptr != NULL)
@@ -4475,7 +4478,8 @@ nv_brackets(cmdarg_T *cap)
 		SAFE_isupper(cap->nchar) ? ACTION_SHOW_ALL :
 			    SAFE_islower(cap->nchar) ? ACTION_SHOW : ACTION_GOTO,
 		cap->cmdchar == ']' ? curwin->w_cursor.lnum + 1 : (linenr_T)1,
-		(linenr_T)MAXLNUM);
+		(linenr_T)MAXLNUM,
+	        FALSE);
 	    vim_free(ptr);
 	    curwin->w_set_curswant = TRUE;
 	}

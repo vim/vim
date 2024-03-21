@@ -593,7 +593,6 @@ syn_sync(
     int		had_sync_point;
     stateitem_T	*cur_si;
     synpat_T	*spp;
-    char_u	*line;
     int		found_flags = 0;
     int		found_match_idx = 0;
     linenr_T	found_current_lnum = 0;
@@ -651,8 +650,9 @@ syn_sync(
 	 */
 	for ( ; start_lnum > 1; --start_lnum)
 	{
-	    line = ml_get(start_lnum - 1);
-	    if (*line == NUL || *(line + STRLEN(line) - 1) != '\\')
+	    char_u	*l = ml_get(start_lnum - 1);
+
+	    if (*l == NUL || *(l + ml_get_len(start_lnum - 1) - 1) != '\\')
 		break;
 	}
 	current_lnum = start_lnum;
@@ -2775,7 +2775,6 @@ find_endpos(
     regmmatch_T	regmatch;
     regmmatch_T	best_regmatch;	    // startpos/endpos of best match
     lpos_T	pos;
-    char_u	*line;
     int		had_match = FALSE;
     char_u	buf_chartab[32];  // chartab array for syn option iskyeyword
 
@@ -2899,8 +2898,7 @@ find_endpos(
 		if (pos.lnum > startpos->lnum)
 		    break;
 
-		line = ml_get_buf(syn_buf, startpos->lnum, FALSE);
-		line_len = (int)STRLEN(line);
+		line_len = ml_get_buf_len(syn_buf, startpos->lnum);
 
 		// take care of an empty match or negative offset
 		if (pos.col <= matchcol)
@@ -3101,7 +3099,7 @@ syn_add_start_off(
     {
 	// a "\n" at the end of the pattern may take us below the last line
 	result->lnum = syn_buf->b_ml.ml_line_count;
-	col = (int)STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
+	col = ml_get_buf_len(syn_buf, result->lnum);
     }
     if (off != 0)
     {
