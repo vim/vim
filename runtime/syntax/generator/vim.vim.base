@@ -227,10 +227,10 @@ syn keyword vimAugroupKey	contained aug[roup]  skipwhite nextgroup=vimAugroupBan
 
 " Operators: {{{2
 " =========
-syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimType,vimRegister,@vimContinue,vim9Comment,vimVar
-syn match	vimOper	"||\|&&\|[-+*/%.!]"				skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\%#=1\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\|!\~#\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\(\<is\|\<isnot\)[?#]\{0,2}\>"			skipwhite nextgroup=vimString,vimSpecFile
+syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimContinueString,vimType,vimRegister,@vimContinue,vim9Comment,vimVar
+syn match	vimOper	"||\|&&\|[-+*/%.!]"			skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
+syn match	vimOper	"\%#=1\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\|!\~#\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
+syn match	vimOper	"\(\<is\|\<isnot\)[?#]\{0,2}\>"			skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
 syn region	vimOperParen 	matchgroup=vimParenSep	start="(" end=")" contains=vimoperStar,@vimOperGroup
 syn region	vimOperParen	matchgroup=vimSep		start="#\={" end="}" contains=@vimOperGroup nextgroup=vimVar,vimFuncVar
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noopererror")
@@ -357,6 +357,12 @@ syn region	vimString	oneline start=+$"+ end=+"+ contains=@vimStringGroup,vimStri
 syn region	vimStringInterpolationExpr  oneline contained matchgroup=vimSep start=+{+ end=+}+ contains=@vimExprList
 syn match	vimStringInterpolationBrace contained "{{"
 syn match	vimStringInterpolationBrace contained "}}"
+
+syn region	vimContinueString	contained	start=+$'+ end=+'+ skip=+\\\\\|\\'\|''+	contains=@vimContinue,vimStringInterpolationBrace,vimStringInterpolationExpr
+syn region	vimContinueString	contained	start=+$"+ skip=/\\\\\|\\"\|\s*"\\ / end=+"+	contains=@vimContinue,@vimStringGroup,vimStringInterpolationBrace,vimStringInterpolationExpr
+syn region	vimContinueString	contained	start=/'/ skip=/''/ end=/'/		contains=@vimContinue
+syn region	vimContinueString	contained	start=/"/ skip=/\\\\\|\\"\|\s*"\\ / end=/"/	contains=@vimContinue,@vimStringGroup
+hi def link vimContinueString vimString
 
 " Substitutions: {{{2
 " =============
@@ -730,15 +736,19 @@ syn match	vimCtrlChar	"[--]"
 
 " Beginners - Patterns that involve ^ {{{2
 " =========
-syn match	vimLineComment	+^[ \t:]*".*$+	contains=@vimCommentGroup,vimCommentString,vimCommentTitle,vimComment
-syn match	vimLineComment	+^[ \t:]*"\("[^"]*"\|[^"]\)*$+	contains=@vimCommentGroup,vimCommentString,vimCommentTitle
-syn match	vim9LineComment	+^[ \t:]\+#.*$+	contains=@vimCommentGroup,vimCommentString,vimCommentTitle
+" syn region	vimLineComment	start=+^[ \t:]*".*$+ skip="\n\s*\\" end="$"		contains=@vimCommentGroup,vimCommentString,vimCommentTitle,vimComment
+" syn region	vimLineComment	start=+^[ \t:]*"\("[^"]*"\|[^"]\)*$+ skip="\n\s*\\" end="$"	contains=@vimCommentGroup,vimCommentString,vimCommentTitle
+" syn region	vim9LineComment	start=+^[ \t:]\+#.*$+ skip="\n\s*\\" end="$"		contains=@vimCommentGroup,vimCommentString,vimCommentTitle
+syn region	vimLineComment	start=+^[ \t:]*"\%(\\ \)\@!.*$+ skip=+\n\s*\\\|\n\s*"\\ + end="$"	contains=@vimCommentGroup,vimCommentString,vimCommentTitle,vimComment,@vimContinue
+syn region	vimLineComment	start=+^[ \t:]*"\%(\\ \)\@!\("[^"]*"\|[^"]\)*$+ skip=+\n\s*\\\|\n\s*"\\ + end="$"	contains=@vimCommentGroup,vimCommentString,vimCommentTitle,@vimContinue
+syn region	vim9LineComment	start=+^[ \t:]\+#\%(\\ \)\@!.*$+ skip=+\n\s*\\\|\n\s*"\\ + end="$"	contains=@vimCommentGroup,vimCommentString,vimCommentTitle,@vimContinue
 syn match	vimCommentTitle	'"\s*\%([sS]:\|\h\w*#\)\=\u\w*\(\s\+\u\w*\)*:'hs=s+1	contained contains=vimCommentTitleLeader,vimTodo,@vimCommentGroup
-" Note: Look-behind to work around nextgroup skipnl consuming leading whitespace and preventing a match
+
 syn match	vimContinue		"^\s*\zs\\"
 syn match         vimContinueComment	'^\s*\zs["#]\\ .*' contained
 syn cluster	vimContinue contains=vimContinue,vimContinueComment
-syn region	vimString	start="^\s*\\\z(['"]\)" skip='\\\\\|\\\z1' end="\z1" oneline keepend contains=@vimStringGroup,vimContinue
+" TODO: ??? This is from v7.0 or earlier
+" syn region	vimString	start="^\s*\\\z(['"]\)" skip='\\\\\|\\\z1' end="\z1" oneline keepend contains=@vimStringGroup,vimContinue
 syn match	vimCommentTitleLeader	'"\s\+'ms=s+1	contained
 
 " Searches And Globals: {{{2
