@@ -283,7 +283,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     glsl: ['file.glsl'],
     gn: ['file.gn', 'file.gni'],
     gnash: ['gnashrc', '.gnashrc', 'gnashpluginrc', '.gnashpluginrc'],
-    gnuplot: ['file.gpi', 'file.gnuplot'],
+    gnuplot: ['file.gpi', '.gnuplot', 'file.gnuplot'],
     go: ['file.go'],
     gomod: ['go.mod'],
     gosum: ['go.sum', 'go.work.sum'],
