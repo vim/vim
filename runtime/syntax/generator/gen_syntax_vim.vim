@@ -279,6 +279,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'autocmd', 'augroup', 'doautocmd', 'doautoall',
 	\	'echo', 'echoconsole', 'echoerr', 'echohl', 'echomsg', 'echon', 'echowindow',
 	\	'execute',
+	\ 'function', 'endfunction', 'def', 'enddef',
 	\	'behave', 'augroup', 'normal', 'syntax',
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
