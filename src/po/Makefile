@@ -4,7 +4,7 @@ PO_BASEDIR = .
 # Include stuff found by configure.
 include $(PO_BASEDIR)/../auto/config.mk
 
-# get LANGUAGES, MOFILES, MOCONVERTED and others
+# Get LANGUAGES, MOFILES, MOCONVERTED and others.
 include $(PO_BASEDIR)/Make_all.mak
 
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
@@ -261,15 +261,15 @@ PO_INPUTLIST = \
 	vim.desktop.in
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
-	# Convert the Vim scripts to (what looks like) Javascript
+	# Convert the Vim scripts to (what looks like) Javascript.
 	$(VIM) -u NONE --not-a-term -S $(PO_BASEDIR)/tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
-	# create vim.pot
+	# Create vim.pot.
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
 		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
-	# Fix Vim scripts names, so that "gf" works
+	# Fix Vim scripts names, so that "gf" works.
 	$(VIM) -u NONE --not-a-term -S $(PO_BASEDIR)/fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
-	# Delete the temporary files
+	# Delete the temporary files.
 	rm *.js
 
 vim.desktop: vim.desktop.in $(POFILES)
