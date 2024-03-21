@@ -1,4 +1,4 @@
-This builds a one-click install for Vim for OS Windows using the Nullsoft
+This builds a one-click install for Vim for MS Windows using the Nullsoft
 Installation System (NSIS), available at http://nsis.sourceforge.net/
 
 To build the installable .exe file:
@@ -18,8 +18,7 @@ To build the installable .exe file:
 	tee/tee.exe,
 	xxd/xxd.exe
 
-    Then execute tools/rename.bat to rename the executables (on Unix-like,
-    it must first be made executable; chmod +x path/to/vimsrc/tools/rename.bat).
+    Then execute tools/rename.bat to rename the executables.
 
 3.  Go to the GvimExt directory and build gvimext.dll (or get it from a binary
     archive).  Both 64- and 32-bit versions are needed and should be placed
@@ -53,7 +52,7 @@ To build the installable .exe file:
     "../.." directory (above the "vim91" directory, where "diff.exe" and
     "winpty{32|64}.dll").
 
-7.  On OS Windows do "nmake.exe -f Make_mvc.mak uganda.nsis.txt" in runtime/doc.
+7.  On MS Windows do "nmake.exe -f Make_mvc.mak uganda.nsis.txt" in runtime/doc.
     On Unix-like system do "make runtime/doc/uganda.nsis.txt" in top directory
     or "make uganda.nsis.txt" in runtime/doc, and be sure to convert the file
     "uganda.nsis.txt" to DOS file format.
@@ -88,8 +87,8 @@ and put ShellExecAsUser.dll to path\to\NSIS\Plugins\x86-unicode
 
 Unpack the images:
 	cd nsis
-	unzip icons.zip (on Unix-like)
-	7z.exe x icons.zip or WinRar.exe x icons.zip (on OS Windows)
+	unzip icons.zip or 7z x icons.zip (on Unix-like or MS Windows)
+	WinRar.exe x icons.zip (on MS Windows)
 
 Then build gvim.exe:
 	cd nsis
