@@ -3,7 +3,7 @@
 " Maintainer:	Hirohito Higashi <h.east.727 ATMARK gmail.com>
 " 	Doug Kearns <dougkearns@gmail.com>
 " URL:	https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	2024 Mar 19
+" Last Change:	2024 Mar 21
 " Former Maintainer: Charles E. Campbell
 " Base File URL:     http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Base File Version: 9.0-25
@@ -33,14 +33,14 @@ syn keyword vimCommand contained com[mand] comc[lear] comp[iler] con[tinue] conf
 syn keyword vimCommand contained go[to] gr[ep] grepa[dd] gu[i] gv[im] h[elp] helpc[lose] helpf[ind] helpg[rep] helpt[ags] ha[rdcopy] hi[ghlight] hid[e] his[tory] ho[rizontal] iabc[lear] if ij[ump] il[ist] imp[ort] int[ro] inte[rface] is[earch] isp[lit] j[oin] ju[mps] k kee[pmarks] keepj[umps] keepp[atterns] keepa[lt] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] lcl[ose] lcs[cope] ld[o] le[ft] lefta[bove] let lex[pr] leg[acy] lf[ile] lfd[o] lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lgr[ep] lgrepa[dd] lh[elpgrep] lhi[story] ll lla[st] lli[st] lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] loadk[eymap] loc[kmarks] lockv[ar] lol[der] lop[en] lp[revious]
 syn keyword vimCommand contained lpf[ile] lr[ewind] lt[ag] lua luad[o] luaf[ile] lv[imgrep] lvimgrepa[dd] lw[indow] ls m[ove] ma[rk] mak[e] marks mat[ch] menut[ranslate] mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] mz[scheme] mzf[ile] n[ext] nb[key] nbc[lose] nbs[tart] noa[utocmd] noh[lsearch] nos[wapfile] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] p[rint] pa[ckadd] packl[oadall] pc[lose] pe[rl] perld[o] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] prof[ile] profd[el] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pub[lic] pw[d] py[thon] pyd[o] pyf[ile] py3 py3d[o] python3 py3f[ile] pyx pyxd[o] pythonx pyxf[ile] q[uit] quita[ll] qa[ll] r[ead] rec[over]
 syn keyword vimCommand contained red[o] redi[r] redr[aw] redraws[tatus] redrawt[abline] reg[isters] res[ize] ret[ab] retu[rn] rew[ind] ri[ght] rightb[elow] ru[ntime] rub[y] rubyd[o] rubyf[ile] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] san[dbox] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] sc[riptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] si[malt] sig[n] sil[ent] sl[eep] sla[st] sn[ext] so[urce] sor[t] sp[lit] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sr[ewind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stat[ic] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sw[apname] synti[me]
-syn keyword vimCommand contained sync[bind] smi[le] t tN[ext] ta[g] tags tab tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] tcl tcld[o] tclf[ile] te[aroff] ter[minal] tf[irst] th[row] thi[s] tj[ump] tl[ast] tn[ext] to[pleft] tp[revious] tr[ewind] try ts[elect] ty[pe] u[ndo] undoj[oin] undol[ist] unh[ide] unl[et] unlo[ckvar] uns[ilent] up[date] v[global] ve[rsion] verb[ose] vert[ical] vi[sual] vie[w] vim[grep] vimgrepa[dd] vim9[cmd] vim9s[cript] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wh[ile] wi[nsize] winc[md] wind[o] winp[os] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp
+syn keyword vimCommand contained sync[bind] smi[le] t tN[ext] ta[g] tags tab tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st] tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] tcl tcld[o] tclf[ile] te[aroff] ter[minal] tf[irst] th[row] thi[s] tj[ump] tl[ast] tn[ext] to[pleft] tp[revious] tr[ewind] try ts[elect] ty[pe] u[ndo] undoj[oin] undol[ist] unh[ide] unl[et] unlo[ckvar] uns[ilent] up[date] v[global] ve[rsion] verb[ose] vert[ical] vi[sual] vie[w] vim[grep] vimgrepa[dd] vim9[cmd] vim9s[cript] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wh[ile] wi[nsize] winc[md] wind[o] winp[os] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] dl dell delel deletl deletel dp dep delp
 syn keyword vimCommand contained delep deletp deletep a i
 
 syn keyword vimCommand contained	2mat[ch] 3mat[ch]
 
 " Lower priority for _new_ to distinguish constructors from the command.
 syn match   vimCommand contained	"\<new\>(\@!"
-syn match   vimCommand contained	"\<z[-+^.=]\=\>"
+
 syn keyword vimStdPlugin contained	Arguments Asm Break Cfilter Clear Continue DiffOrig Evaluate Finish Gdb Lfilter Man Over Program Run S Source Step Stop Termdebug TermdebugCommand TOhtml Until Winbar XMLent XMLns
 
 " vimOptions are caught only when contained in a vimSet {{{2
@@ -205,8 +205,9 @@ syn match	vimNumber	'\%(^\|\A\)\zs#\x\{6}'		skipwhite nextgroup=vimGlobal,vimSub
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,@vimEcho,vimExecute,vimIsCommand,vimExtCmd,vimFunction,vimGlobal,vimHighlight,vimLet,vimMap,vimMark,vimNotFunc,vimNorm,vimSet,vimSyntax,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,@vimEcho,vimExecute,vimIsCommand,vimExtCmd,vimFunction,vimGlobal,vimHighlight,vimLet,vimMap,vimMark,vimNotFunc,vimNorm,vimSet,vimSyntax,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate,vimZ
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
+syn match vimBang	      contained	"\a\@1<=!"
 syn match vimIsCommand	"\<\%(\h\w*\|[23]mat\%[ch]\)\>"	contains=vimCommand
 syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"
 syn match vimVar		"\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"
@@ -217,6 +218,12 @@ syn match vimFBVar      contained   "\<[bwglstav]:\h[a-zA-Z0-9#_]*\>"
 syn keyword vimCommand  contained	in
 
 syn cluster vimExprList contains=vimEnvvar,vimFunc,vimFuncVar,vimNumber,vimOper,vimOperParen,vimLetRegister,vimString,vimVar
+
+" Context lines: z {{{2
+" =======================
+
+syn match vimZ		/\<z!\=#\=[-+^.=]\=\d*\%([[:space:]|"]\|$\)\@=/ contains=vimBang,vimZCount
+syn match vimZCount     contained	"\d\+"
 
 " Insertions And Appends: insert append {{{2
 "   (buftype != nofile test avoids having append, change, insert show up in the command window)
@@ -278,7 +285,7 @@ endif
 " Functions : Tag is provided for those who wish to highlight tagged functions {{{2
 " =========
 syn cluster	vimFuncList	contains=vimCommand,vimFunctionError,vimFuncKey,Tag,vimFuncSID
-syn cluster	vimFuncBodyList	contains=@vimCmdList,vimCmplxRepeat,vimComment,vim9Comment,vimContinue,vimCtrlChar,vimEnvvar,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimLetHereDoc,vimLineComment,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSearch,vimSpecFile,vimString,vimSubst
+syn cluster	vimFuncBodyList	contains=@vimCmdList,vimCmplxRepeat,vimComment,vim9Comment,vimContinue,vimCtrlChar,vimEnvvar,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimLetHereDoc,vimLineComment,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSearch,vimSpecFile,vimString,vimSubst,vimZ
 syn match	vimFunction	"\<\(fu\%[nction]\)!\=\s\+\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*("	contains=@vimFuncList nextgroup=vimFuncBody
 syn match	vimFunction	"\<def\s\+new\i\{-}(" contains=@vimFuncList nextgroup=vimFuncBody
 syn match	vimFunction	"\<def!\=\s\+\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*(" contains=@vimFuncList nextgroup=vimFuncBody
@@ -1181,6 +1188,8 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimUserFunc	Normal
  hi def link vimVar	Identifier
  hi def link vimWarn	WarningMsg
+ hi def link vimZ		vimCommand
+ hi def link vimZCount	vimNumber
 endif
 
 " Current Syntax Variable: {{{2
