@@ -862,7 +862,7 @@ au BufNewFile,BufRead *.gts			setf typescript.glimmer
 au BufNewFile,BufRead *.gjs			setf javascript.glimmer
 
 " Gnuplot scripts
-au BufNewFile,BufRead *.gpi,.gnuplot		setf gnuplot
+au BufNewFile,BufRead *.gpi,*.gnuplot		setf gnuplot
 
 " Go (Google)
 au BufNewFile,BufRead *.go			setf go
