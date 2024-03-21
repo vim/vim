@@ -71,3 +71,17 @@ an <silent> 10.330 &File.&Close<Tab>:close :if winheight(2) < 0 && tabpagewinnr(
 popup &Foo  | echo "Foo"
 popup! &Foo | echo "Foo"
 
+
+" Issue #14230
+
+" a menu item name cannot start with '.'
+
+export def HistoryJumpMenu()
+    popup.FilterMenu("Jump history", dir_hist,
+        (res, _) => {
+            HistoryJump(res.text)
+        })
+enddef
+
+popup\.FilterMenu<Tab>Filter()<CR>
+

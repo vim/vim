@@ -2468,6 +2468,55 @@ adjust_types(
     return OK;
 }
 
+    static void
+format_overflow_error(const char *pstart)
+{
+    size_t	arglen = 0;
+    char	*argcopy = NULL;
+    const char	*p = pstart;
+
+    while (VIM_ISDIGIT((int)(*p)))
+	++p;
+
+    arglen = p - pstart;
+    argcopy = ALLOC_CLEAR_MULT(char, arglen + 1);
+    if (argcopy != NULL)
+    {
+	strncpy(argcopy, pstart, arglen);
+	semsg(_( e_val_too_large), argcopy);
+	free(argcopy);
+    }
+    else
+	semsg(_(e_out_of_memory_allocating_nr_bytes), arglen);
+}
+
+#define MAX_ALLOWED_STRING_WIDTH 6400
+
+    static int
+get_unsigned_int(
+    const char *pstart,
+    const char **p,
+    unsigned int *uj)
+{
+    *uj = **p - '0';
+    ++*p;
+
+    while (VIM_ISDIGIT((int)(**p)) && *uj < MAX_ALLOWED_STRING_WIDTH)
+    {
+	*uj = 10 * *uj + (unsigned int)(**p - '0');
+	++*p;
+    }
+
+    if (*uj > MAX_ALLOWED_STRING_WIDTH)
+    {
+	format_overflow_error(pstart);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+
     static int
 parse_fmt_types(
     const char  ***ap_types,
@@ -2511,6 +2560,7 @@ parse_fmt_types(
 	    // variable for positional arg
 	    int		pos_arg = -1;
 	    const char	*ptype = NULL;
+	    const char	*pstart = p+1;
 
 	    p++;  // skip '%'
 
@@ -2531,10 +2581,11 @@ parse_fmt_types(
 		}
 
 		// Positional argument
-		unsigned int uj = *p++ - '0';
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		if (get_unsigned_int(pstart, &p, &uj) == FAIL)
+		    goto error;
+
 		pos_arg = uj;
 
 		any_pos = 1;
@@ -2571,10 +2622,10 @@ parse_fmt_types(
 		if (VIM_ISDIGIT((int)(*p)))
 		{
 		    // Positional argument field width
-		    unsigned int uj = *p++ - '0';
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)))
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
+		    if (get_unsigned_int(arg + 1, &p, &uj) == FAIL)
+			goto error;
 
 		    if (*p != '$')
 		    {
@@ -2601,10 +2652,11 @@ parse_fmt_types(
 	    {
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
-		unsigned int uj = *p++ - '0';
+		const char *digstart = p;
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		    goto error;
 
 		if (*p == '$')
 		{
@@ -2625,10 +2677,10 @@ parse_fmt_types(
 		    if (VIM_ISDIGIT((int)(*p)))
 		    {
 			// Parse precision
-			unsigned int uj = *p++ - '0';
+			unsigned int uj;
 
-			while (VIM_ISDIGIT((int)(*p)))
-			    uj = 10 * uj + (unsigned int)(*p++ - '0');
+			if (get_unsigned_int(arg + 1, &p, &uj) == FAIL)
+			    goto error;
 
 			if (*p == '$')
 			{
@@ -2656,10 +2708,11 @@ parse_fmt_types(
 		{
 		    // size_t could be wider than unsigned int; make sure we
 		    // treat argument like common implementations do
-		    unsigned int uj = *p++ - '0';
+		    const char *digstart = p;
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)))
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
+		    if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+			goto error;
 
 		    if (*p == '$')
 		    {
@@ -2968,10 +3021,12 @@ vim_vsnprintf_typval(
 	    if (*ptype == '$')
 	    {
 		// Positional argument
-		unsigned int uj = *p++ - '0';
+		const char *digstart = p;
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		    goto error;
+
 		pos_arg = uj;
 
 		++p;
@@ -3002,16 +3057,18 @@ vim_vsnprintf_typval(
 	    if (*p == '*')
 	    {
 		int j;
+		const char *digstart = p + 1;
 
 		p++;
 
 		if (VIM_ISDIGIT((int)(*p)))
 		{
 		    // Positional argument field width
-		    unsigned int uj = *p++ - '0';
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)))
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
+		    if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+			goto error;
+
 		    arg_idx = uj;
 
 		    ++p;
@@ -3025,6 +3082,12 @@ vim_vsnprintf_typval(
 				     &arg_cur, fmt),
 			va_arg(ap, int));
 
+		if (j > MAX_ALLOWED_STRING_WIDTH)
+		{
+		    format_overflow_error(digstart);
+		    goto error;
+		}
+
 		if (j >= 0)
 		    min_field_width = j;
 		else
@@ -3037,10 +3100,18 @@ vim_vsnprintf_typval(
 	    {
 		// size_t could be wider than unsigned int; make sure we treat
 		// argument like common implementations do
-		unsigned int uj = *p++ - '0';
+		const char *digstart = p;
+		unsigned int uj;
 
-		while (VIM_ISDIGIT((int)(*p)))
-		    uj = 10 * uj + (unsigned int)(*p++ - '0');
+		if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+		    goto error;
+
+		if (uj > MAX_ALLOWED_STRING_WIDTH)
+		{
+		    format_overflow_error(digstart);
+		    goto error;
+		}
+
 		min_field_width = uj;
 	    }
 
@@ -3054,25 +3125,35 @@ vim_vsnprintf_typval(
 		{
 		    // size_t could be wider than unsigned int; make sure we
 		    // treat argument like common implementations do
-		    unsigned int uj = *p++ - '0';
+		    const char *digstart = p;
+		    unsigned int uj;
 
-		    while (VIM_ISDIGIT((int)(*p)))
-			uj = 10 * uj + (unsigned int)(*p++ - '0');
+		    if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+			goto error;
+
+		    if (uj > MAX_ALLOWED_STRING_WIDTH)
+		    {
+			format_overflow_error(digstart);
+			goto error;
+		    }
+
 		    precision = uj;
 		}
 		else if (*p == '*')
 		{
 		    int j;
+		    const char *digstart = p;
 
 		    p++;
 
 		    if (VIM_ISDIGIT((int)(*p)))
 		    {
 			// positional argument
-			unsigned int uj = *p++ - '0';
+			unsigned int uj;
 
-			while (VIM_ISDIGIT((int)(*p)))
-			    uj = 10 * uj + (unsigned int)(*p++ - '0');
+			if (get_unsigned_int(digstart, &p, &uj) == FAIL)
+			    goto error;
+
 			arg_idx = uj;
 
 			++p;
@@ -3085,6 +3166,12 @@ vim_vsnprintf_typval(
 			    (skip_to_arg(ap_types, ap_start, &ap, &arg_idx,
 					 &arg_cur, fmt),
 			    va_arg(ap, int));
+
+		    if (j > MAX_ALLOWED_STRING_WIDTH)
+		    {
+			format_overflow_error(digstart);
+			goto error;
+		    }
 
 		    if (j >= 0)
 			precision = j;
@@ -3873,6 +3960,7 @@ vim_vsnprintf_typval(
     if (tvs != NULL && tvs[num_posarg != 0 ? num_posarg : arg_idx - 1].v_type != VAR_UNKNOWN)
 	emsg(_(e_too_many_arguments_to_printf));
 
+error:
     vim_free((char*)ap_types);
     va_end(ap);
 

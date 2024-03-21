@@ -627,6 +627,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 // flags for screen_line()
 #define SLF_RIGHTLEFT	1
 #define SLF_POPUP	2
+#define SLF_INC_VCOL	4
 
 #define MB_FILLER_CHAR '<'  // character used when a double-width character
 			    // doesn't fit.

@@ -3637,7 +3637,7 @@ get_col(typval_T *argvars, typval_T *rettv, int charcol)
 	{
 	    // '> can be MAXCOL, get the length of the line then
 	    if (fp->lnum <= curbuf->b_ml.ml_line_count)
-		col = (colnr_T)STRLEN(ml_get(fp->lnum)) + 1;
+		col = ml_get_len(fp->lnum) + 1;
 	    else
 		col = MAXCOL;
 	}
@@ -5494,10 +5494,10 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			fnum1 = -1, fnum2 = -1;
     pos_T		p1, p2;
     char_u		*type;
-    buf_T		*save_curbuf = curbuf;
-    buf_T		*findbuf = curbuf;
+    buf_T		*save_curbuf;
+    buf_T		*findbuf;
     char_u		default_type[] = "v";
-    int			save_virtual = -1;
+    int			save_virtual;
     int			l;
     int			region_type = -1;
     int			is_select_exclusive;
@@ -5542,15 +5542,11 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    if (fnum1 != 0)
+    findbuf = fnum1 != 0 ? buflist_findnr(fnum1) : curbuf;
+    if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
     {
-	findbuf = buflist_findnr(fnum1);
-	// buffer not loaded
-	if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
-	{
-	    emsg(_(e_buffer_is_not_loaded));
-	    return;
-	}
+	emsg(_(e_buffer_is_not_loaded));
+	return;
     }
 
     if (p1.lnum < 1 || p1.lnum > findbuf->b_ml.ml_line_count)
@@ -5574,7 +5570,9 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
+    save_curbuf = curbuf;
     curbuf = findbuf;
+    curwin->w_buffer = curbuf;
     save_virtual = virtual_op;
     virtual_op = virtual_active();
 
@@ -5677,9 +5675,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    if (curbuf != save_curbuf)
-        curbuf = save_curbuf;
-
+    curbuf = save_curbuf;
+    curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
 }
 
@@ -11137,7 +11134,7 @@ f_synID(typval_T *argvars UNUSED, typval_T *rettv)
     trans = (int)tv_get_bool_chk(&argvars[2], &transerr);
 
     if (!transerr && lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
-	    && col >= 0 && col < (long)STRLEN(ml_get(lnum)))
+	    && col >= 0 && col < (long)ml_get_len(lnum))
 	id = syn_get_id(curwin, lnum, col, trans, NULL, FALSE);
 #endif
 
@@ -11314,7 +11311,7 @@ f_synconcealed(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv_list_alloc(rettv) == OK)
     {
 	if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
-	    && col >= 0 && col <= (long)STRLEN(ml_get(lnum))
+	    && col >= 0 && col <= (long)ml_get_len(lnum)
 	    && curwin->w_p_cole > 0)
 	{
 	    (void)syn_get_id(curwin, lnum, col, FALSE, NULL, FALSE);
@@ -11371,7 +11368,7 @@ f_synstack(typval_T *argvars UNUSED, typval_T *rettv)
     col = (colnr_T)tv_get_number(&argvars[1]) - 1;	// -1 on type error
 
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
-	    && col >= 0 && col <= (long)STRLEN(ml_get(lnum))
+	    && col >= 0 && col <= (long)ml_get_len(lnum)
 	    && rettv_list_alloc(rettv) == OK)
     {
 	(void)syn_get_id(curwin, lnum, col, FALSE, NULL, TRUE);
@@ -11549,7 +11546,7 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 	    fp->col = 0;
 	else
 	{
-	    len = (int)STRLEN(ml_get(fp->lnum));
+	    len = (int)ml_get_len(fp->lnum);
 	    if (fp->col > len)
 		fp->col = len;
 	}

@@ -1056,7 +1056,7 @@ ins_char_bytes(char_u *buf, int charlen)
 
     col = curwin->w_cursor.col;
     oldp = ml_get(lnum);
-    linelen = (int)STRLEN(oldp) + 1;
+    linelen = (int)ml_get_len(lnum) + 1;
 
     // The lengths default to the values for when not replacing.
     oldlen = 0;
@@ -1193,7 +1193,7 @@ ins_str(char_u *s)
 
     col = curwin->w_cursor.col;
     oldp = ml_get(lnum);
-    oldlen = (int)STRLEN(oldp);
+    oldlen = (int)ml_get_len(lnum);
 
     newp = alloc(oldlen + newlen + 1);
     if (newp == NULL)
@@ -1272,7 +1272,7 @@ del_bytes(
     int		fixpos = fixpos_arg;
 
     oldp = ml_get(lnum);
-    oldlen = (int)STRLEN(oldp);
+    oldlen = (int)ml_get_len(lnum);
 
     // Can't do anything when the cursor is on the NUL after the line.
     if (col >= oldlen)
@@ -1436,12 +1436,12 @@ open_line(
 #endif
 
     // make a copy of the current line so we can mess with it
-    saved_line = vim_strsave(ml_get_curline());
+    saved_line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
     if (saved_line == NULL)	    // out of memory!
 	return FALSE;
 
 #ifdef FEAT_PROP_POPUP
-    at_eol = curwin->w_cursor.col >= (int)STRLEN(saved_line);
+    at_eol = curwin->w_cursor.col >= (int)ml_get_curline_len();
 #endif
 
     if (State & VREPLACE_FLAG)
@@ -1454,7 +1454,7 @@ open_line(
 	// the line, replacing what was there before and pushing the right
 	// stuff onto the replace stack.  -- webb.
 	if (curwin->w_cursor.lnum < orig_line_count)
-	    next_line = vim_strsave(ml_get(curwin->w_cursor.lnum + 1));
+	    next_line = vim_strnsave(ml_get(curwin->w_cursor.lnum + 1), ml_get_len(curwin->w_cursor.lnum + 1));
 	else
 	    next_line = vim_strsave((char_u *)"");
 	if (next_line == NULL)	    // out of memory!
@@ -2307,7 +2307,7 @@ open_line(
     if (State & VREPLACE_FLAG)
     {
 	// Put new line in p_extra
-	p_extra = vim_strsave(ml_get_curline());
+	p_extra = vim_strnsave(ml_get_curline(), ml_get_curline_len());
 	if (p_extra == NULL)
 	    goto theend;
 
@@ -2352,7 +2352,7 @@ truncate_line(int fixpos)
 	newp = vim_strsave((char_u *)"");
     else
 	newp = vim_strnsave(old_line, col);
-    deleted = (int)STRLEN(old_line) - col;
+    deleted = (int)ml_get_len(lnum) - col;
 
     if (newp == NULL)
 	return FAIL;

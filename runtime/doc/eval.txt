@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Feb 08
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Mar 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2075,6 +2075,10 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 		result because the |:colorscheme| and |:highlight| commands will
 		both automatically load all `colors/lists/default.vim` color
 		scripts.
+
+		You can make changes to that file, but make sure to add new
+		keys instead of updating existing ones, otherwise Vim will skip
+		loading the file (thinking is hasn't been changed).
 
 				*v:completed_item* *completed_item-variable*
 v:completed_item

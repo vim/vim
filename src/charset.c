@@ -1690,7 +1690,7 @@ getvvcol(
 	endadd = 0;
 	// Cannot put the cursor on part of a wide character.
 	ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
-	if (pos->col < (colnr_T)STRLEN(ptr))
+	if (pos->col < ml_get_buf_len(wp->w_buffer, pos->lnum))
 	{
 	    int c = (*mb_ptr2char)(ptr + pos->col);
 

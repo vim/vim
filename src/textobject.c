@@ -232,7 +232,7 @@ findpar(
 
 	// Put the cursor on the last character in the last line and make the
 	// motion inclusive.
-	if ((curwin->w_cursor.col = (colnr_T)STRLEN(line)) != 0)
+	if ((curwin->w_cursor.col = ml_get_len(curr)) != 0)
 	{
 	    --curwin->w_cursor.col;
 	    curwin->w_cursor.col -=

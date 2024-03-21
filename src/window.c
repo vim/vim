@@ -896,8 +896,8 @@ cmd_with_count(
 }
 
 /*
- * If "split_disallowed" is set for "wp", give an error and return FAIL.
- * Otherwise return OK.
+ * If "split_disallowed" is set, or "wp"'s buffer is closing, give an error and
+ * return FAIL.  Otherwise return OK.
  */
     int
 check_split_disallowed(win_T *wp)
@@ -1980,7 +1980,6 @@ win_splitmove(win_T *wp, int size, int flags)
 	// existing window, so just undo winframe_remove.
 	winframe_restore(wp, dir, unflat_altfr);
 	win_append(wp->w_prev, wp);
-	(void)win_comp_pos();   // recompute window positions
 	return FAIL;
     }
 
@@ -3494,12 +3493,19 @@ winframe_remove(
     frame_T	*frp, *frp2, *frp3;
     frame_T	*frp_close = win->w_frame;
     win_T	*wp;
+    int		row, col;
 
     /*
      * If there is only one window there is nothing to remove.
      */
     if (tp == NULL ? ONE_WINDOW : tp->tp_firstwin == tp->tp_lastwin)
 	return NULL;
+
+    // Save the position of the containing frame (which will also contain the
+    // altframe) before we remove anything, to recompute window positions later.
+    wp = frame2win(frp_close->fr_parent);
+    row = wp->w_winrow;
+    col = wp->w_wincol;
 
     /*
      * Remove the window from its frame.
@@ -3585,15 +3591,10 @@ winframe_remove(
 	*dirp = 'h';
     }
 
-    // If rows/columns go to a window below/right its positions need to be
-    // updated.  Can only be done after the sizes have been updated.
-    if (frp2 == frp_close->fr_next)
-    {
-	int row = win->w_winrow;
-	int col = win->w_wincol;
-
-	frame_comp_pos(frp2, &row, &col);
-    }
+    // If the altframe wasn't adjacent and left/above, resizing it will have
+    // changed window positions within the parent frame.  Recompute them.
+    if (frp2 != frp_close->fr_prev)
+	frame_comp_pos(frp_close->fr_parent, &row, &col);
 
     if (unflat_altfr == NULL)
 	frame_flatten(frp2);
@@ -3607,7 +3608,6 @@ winframe_remove(
  * Flatten "frp" into its parent frame if it's the only child, also merging its
  * list with the grandparent if they share the same layout.
  * Frees "frp" if flattened; also "frp->fr_parent" if it has the same layout.
- * "frp" must be valid in the current tabpage.
  */
     static void
 frame_flatten(frame_T *frp)
@@ -3660,7 +3660,8 @@ frame_flatten(frame_T *frp)
 
 /*
  * Undo changes from a prior call to winframe_remove, also restoring lost
- * vertical separators and statuslines.
+ * vertical separators and statuslines, and changed window positions for
+ * windows within "unflat_altfr".
  * Caller must ensure no other changes were made to the layout or window sizes!
  */
     static void
@@ -3684,7 +3685,8 @@ winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
 	    && frp->fr_parent->fr_layout == FR_COL && frp->fr_prev != NULL)
 	frame_add_statusline(frp->fr_prev);
 
-    // Restore the lost room that was redistributed to the altframe.
+    // Restore the lost room that was redistributed to the altframe.  Also
+    // adjusts window sizes to fit restored statuslines/separators, if needed.
     if (dir == 'v')
     {
 	frame_new_height(unflat_altfr, unflat_altfr->fr_height - frp->fr_height,
@@ -3694,6 +3696,17 @@ winframe_restore(win_T *wp, int dir, frame_T *unflat_altfr)
     {
 	frame_new_width(unflat_altfr, unflat_altfr->fr_width - frp->fr_width,
 		unflat_altfr == frp->fr_next, FALSE);
+    }
+
+    // Recompute window positions within the parent frame to restore them.
+    // Positions were unchanged if the altframe was adjacent and left/above.
+    if (unflat_altfr != frp->fr_prev)
+    {
+	win_T	*topleft = frame2win(frp->fr_parent);
+	int	row = topleft->w_winrow;
+	int	col = topleft->w_wincol;
+
+	frame_comp_pos(frp->fr_parent, &row, &col);
     }
 }
 
@@ -5526,15 +5539,11 @@ win_enter_ext(win_T *wp, int flags)
     // may have to copy the buffer options when 'cpo' contains 'S'
     if (wp->w_buffer != curbuf)
 	buf_copy_options(wp->w_buffer, BCO_ENTER | BCO_NOHELP);
-
     if (curwin_invalid == 0)
     {
 	prevwin = curwin;	// remember for CTRL-W p
 	curwin->w_redr_status = TRUE;
     }
-    else if (wp == prevwin)
-	prevwin = NULL;		// don't want it to be the new curwin
-
     curwin = wp;
     curbuf = wp->w_buffer;
     check_cursor();

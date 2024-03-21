@@ -3080,6 +3080,12 @@ func Test_prop_with_text_above_below_empty()
         call prop_add(ln, 0, {'type': vt, 'text': '+', 'text_align': 'below'})
       endfor
       normal G
+
+      func AddMore()
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+      endfunc
   END
   call writefile(lines, 'XscriptPropAboveBelowEmpty', 'D')
   let buf = RunVimInTerminal('-S XscriptPropAboveBelowEmpty', #{rows: 16, cols: 60})
@@ -3100,6 +3106,12 @@ func Test_prop_with_text_above_below_empty()
 
   call term_sendkeys(buf, "kk")
   call VerifyScreenDump(buf, 'Test_prop_above_below_empty_5', {})
+
+  " This was drawing line number over cmdline and leaking memory.
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call term_sendkeys(buf, "gg")
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_above_below_empty_6', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -4483,6 +4495,64 @@ func Test_textprop_backspace_fo_aw()
   bwipe!
   set backspace&
   call prop_type_delete('test')
+endfunc
+
+func Test_textprop_with_wincolor()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, 'some text here')
+    call setline(2, 'some much longer text here')
+    call setline(3, 'more text here')
+    call prop_type_add('afterprop', #{highlight: 'Search'})
+    call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
+    call prop_add(3, 0, #{type: 'afterprop', text: 'AFTER',
+          \ text_align: 'after', text_padding_left: 3})
+    call prop_add(1, 0, #{type: 'belowprop', text: 'BELOW',
+          \ text_align: 'below', text_padding_left: 3})
+    set wincolor=DiffChange wrap
+  END
+  call writefile(lines, 'XtextPropWincolor', 'D')
+  let buf = RunVimInTerminal('-S XtextPropWincolor', #{rows: 8, cols: 60})
+
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_1', {})
+
+  call term_sendkeys(buf, ":set cursorline\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_2', {})
+
+  call term_sendkeys(buf, ":set nowrap\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_2', {})
+
+  call term_sendkeys(buf, ":set nocursorline\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_1', {})
+
+  call term_sendkeys(buf, ":set cursorline colorcolumn=30\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_3', {})
+
+  call term_sendkeys(buf, ":hi CursorLine ctermbg=Brown\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_4', {})
+
+  call term_sendkeys(buf, ":set cursorcolumn\<CR>:\<CR>")
+  call term_sendkeys(buf, '$')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_5', {})
+
+  call term_sendkeys(buf, 'j')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_6', {})
+
+  call term_sendkeys(buf, ":set virtualedit=all\<CR>:\<CR>")
+  call term_sendkeys(buf, 'l')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_7', {})
+
+  call term_sendkeys(buf, 'k')
+  call VerifyScreenDump(buf, 'Test_prop_wincolor_8', {})
+
+  if has('rightleft')
+    call term_sendkeys(buf, ":set rightleft\<CR>:\<CR>")
+    call VerifyScreenDump(buf, 'Test_prop_wincolor_9', {})
+  endif
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

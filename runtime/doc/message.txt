@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 9.1.  Last change: 2024 Mar 05
+*message.txt*   For Vim version 9.1.  Last change: 2024 Mar 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,7 +123,7 @@ You cannot have two buffers with exactly the same name.  This includes the
 path leading to the file.
 
 							*E1513*
-  Cannot edit buffer. 'winfixbuf' is enabled ~
+  Cannot switch buffer. 'winfixbuf' is enabled ~
 
 If a window has 'winfixbuf' enabled, you cannot change that window's current
 buffer. You need to set 'nowinfixbuf' before continuing. You may use [!] to

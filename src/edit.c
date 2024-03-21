@@ -3222,7 +3222,7 @@ replace_do_bs(int limit_col)
 	{
 	    // Do not adjust text properties for individual delete and insert
 	    // operations, do it afterwards on the resulting text.
-	    len_before = STRLEN(ml_get_curline());
+	    len_before = ml_get_curline_len();
 	    ++text_prop_frozen;
 	}
 #endif
@@ -3237,14 +3237,14 @@ replace_do_bs(int limit_col)
 	{
 	    (void)del_char_after_col(limit_col);
 	    if (State & VREPLACE_FLAG)
-		orig_len = (int)STRLEN(ml_get_cursor());
+		orig_len = ml_get_cursor_len();
 	    replace_push(cc);
 	}
 	else
 	{
 	    pchar_cursor(cc);
 	    if (State & VREPLACE_FLAG)
-		orig_len = (int)STRLEN(ml_get_cursor()) - 1;
+		orig_len = ml_get_cursor_len() - 1;
 	}
 	replace_pop_ins();
 
@@ -3252,7 +3252,7 @@ replace_do_bs(int limit_col)
 	{
 	    // Get the number of screen cells used by the inserted characters
 	    p = ml_get_cursor();
-	    ins_len = (int)STRLEN(p) - orig_len;
+	    ins_len = ml_get_cursor_len() - orig_len;
 	    vcol = start_vcol;
 	    for (i = 0; i < ins_len; ++i)
 	    {
@@ -3278,7 +3278,7 @@ replace_do_bs(int limit_col)
 #ifdef FEAT_PROP_POPUP
 	if (curbuf->b_has_textprop)
 	{
-	    size_t len_now = STRLEN(ml_get_curline());
+	    size_t len_now = ml_get_curline_len();
 
 	    --text_prop_frozen;
 	    adjust_prop_columns(curwin->w_cursor.lnum, curwin->w_cursor.col,
@@ -4068,7 +4068,7 @@ ins_bs(
 			       (linenr_T)(curwin->w_cursor.lnum + 1)) == FAIL)
 		return FALSE;
 	    --Insstart.lnum;
-	    Insstart.col = (colnr_T)STRLEN(ml_get(Insstart.lnum));
+	    Insstart.col = ml_get_len(Insstart.lnum);
 	}
 	/*
 	 * In replace mode:
@@ -4977,7 +4977,7 @@ ins_tab(void)
 	{
 	    pos = curwin->w_cursor;
 	    cursor = &pos;
-	    saved_line = vim_strsave(ml_get_curline());
+	    saved_line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
 	    if (saved_line == NULL)
 		return FALSE;
 	    ptr = saved_line + pos.col;
@@ -5174,7 +5174,7 @@ ins_eol(int c)
     // NL in reverse insert will always start in the end of
     // current line.
     if (revins_on)
-	curwin->w_cursor.col += (colnr_T)STRLEN(ml_get_cursor());
+	curwin->w_cursor.col += ml_get_cursor_len();
 #endif
 
     AppendToRedobuff(NL_STR);

@@ -508,9 +508,8 @@ spell_suggest(int count)
 	++badlen;
 	end_visual_mode();
 	// make sure we don't include the NUL at the end of the line
-	line = ml_get_curline();
-	if (badlen > (int)STRLEN(line) - (int)curwin->w_cursor.col)
-	    badlen = (int)STRLEN(line) - (int)curwin->w_cursor.col;
+	if (badlen > ml_get_curline_len() - (int)curwin->w_cursor.col)
+	    badlen = ml_get_curline_len() - (int)curwin->w_cursor.col;
     }
     // Find the start of the badly spelled word.
     else if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
@@ -543,7 +542,7 @@ spell_suggest(int count)
 							curwin->w_cursor.col);
 
     // Make a copy of current line since autocommands may free the line.
-    line = vim_strsave(ml_get_curline());
+    line = vim_strnsave(ml_get_curline(), ml_get_curline_len());
     if (line == NULL)
 	goto skip;
 

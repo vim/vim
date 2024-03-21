@@ -2682,6 +2682,13 @@ ml_get_len(linenr_T lnum)
     return ml_get_buf_len(curbuf, lnum);
 }
 
+// return length (excluding the NUL) of the text after position "pos"
+    colnr_T
+ml_get_pos_len(pos_T *pos)
+{
+    return ml_get_buf_len(curbuf, pos->lnum) - pos->col;
+}
+
 // return length (excluding the NUL) of the cursor line
     colnr_T
 ml_get_curline_len(void)
@@ -3575,7 +3582,7 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
  * Replace a line for the current buffer.  Like ml_replace() with:
  * "len_arg" is the length of the text, excluding NUL.
  * If "has_props" is TRUE then "line_arg" includes the text properties and
- * "len_arg" includes the NUL of the text.
+ * "len_arg" includes the NUL of the text and text properties.
  * When "copy" is TRUE copy the text into allocated memory, otherwise
  * "line_arg" must be allocated and will be consumed here.
  */
@@ -3661,7 +3668,7 @@ ml_replace_len(
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
-    curbuf->b_ml.ml_line_textlen = len_arg + 1;
+    curbuf->b_ml.ml_line_textlen = !has_props ? len_arg + 1 : 0;
     curbuf->b_ml.ml_line_lnum = lnum;
     curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
 
