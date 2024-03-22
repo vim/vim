@@ -768,7 +768,7 @@ the command after changing the plugin help: >
 The messages that are in the lang/<lang_id>/LC_MESSAGES/foo.po file need to be
 translated to a format that the |gettext()| function understands by running the
 *msgfmt* program. This will result in a lang/<lang_id>/LC_MESSAGES/foo.mo
-file.
+file. See |multilang| on how to specify languages.
 
 In your plugin, you need to call the |bindtextdomain()| function as follows.
 This assumes that the directory structure is as above: >
