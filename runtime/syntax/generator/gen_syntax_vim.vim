@@ -281,7 +281,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'execute',
 	\ 'function', 'endfunction', 'def', 'enddef',
 	\	'behave', 'augroup', 'normal', 'syntax',
-	\	'append', 'insert',
+	\	'append', 'insert', 'change',
 	\	'Next', 'Print', 'X',
 	\	'new', 'popup',
 	\ ]

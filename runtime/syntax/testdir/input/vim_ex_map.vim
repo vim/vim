@@ -1,4 +1,4 @@
-" Vim :map commands
+" Vim map commands
 
 map!
 map! lhs rhs
