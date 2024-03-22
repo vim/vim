@@ -2285,7 +2285,17 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	if (dot - var_start == 4 && STRNCMP(var_start, "this", 4) == 0)
 	{
 	    // load "this"
-	    if (generate_LOAD(cctx, ISN_LOAD, 0, NULL, lhs->lhs_type) == FAIL)
+	    lvar_T  *lvar = lhs->lhs_lvar;
+	    int	    rc;
+
+	    if (lvar->lv_from_outer > 0)
+		rc = generate_LOADOUTER(cctx, lvar->lv_idx,
+			lvar->lv_from_outer, lvar->lv_loop_depth,
+			lvar->lv_loop_idx, type);
+	    else
+		rc = generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
+
+	    if (rc == FAIL)
 		return FAIL;
 	}
 	else
