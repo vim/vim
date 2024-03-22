@@ -708,7 +708,7 @@ cmp_keyvalue_by_value(const void *a, const void *b)
     int result;
 
     result = STRNICMP((kv1->value == NULL) ? "" : kv1->value, (kv2->value == NULL) ? "" : kv2->value, kv1->length);
-    return (result == 0) ? kv1->length - kv2->length : result;
+    return (result == 0) ? (int)kv1->length - (int)kv2->length : result;
 }
 
 /*
