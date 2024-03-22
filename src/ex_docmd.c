@@ -9238,7 +9238,7 @@ ex_tag_cmd(exarg_T *eap, char_u *name)
 }
 
 enum {
-    SPEC_PERC,
+    SPEC_PERC = 0,
     SPEC_HASH,
     SPEC_CWORD,       // cursor word
     SPEC_CCWORD,      // cursor WORD
@@ -9266,75 +9266,38 @@ enum {
     int
 find_cmdline_var(char_u *src, int *usedlen)
 {
-    int		i;
+    // must be sorted by the 'value' field because it is used by bsearch()!
     static keyvalue_T spec_str_tab[] = {
-	KEYVALUE_ENTRY(SPEC_PERC, "%"),
 	KEYVALUE_ENTRY(SPEC_HASH, "#"),
-	KEYVALUE_ENTRY(SPEC_CWORD, "<cword>"), // cursor word
-	KEYVALUE_ENTRY(SPEC_CCWORD, "<cWORD>"),    // cursor WORD
-	KEYVALUE_ENTRY(SPEC_CEXPR, "<cexpr>"), // expr under cursor
-	KEYVALUE_ENTRY(SPEC_CFILE, "<cfile>"), // cursor path name
-	KEYVALUE_ENTRY(SPEC_SFILE, "<sfile>"), // ":so" file name
-	KEYVALUE_ENTRY(SPEC_SLNUM, "<slnum>"), // ":so" file line number
-	KEYVALUE_ENTRY(SPEC_STACK, "<stack>"), // call stack
-	KEYVALUE_ENTRY(SPEC_SCRIPT, "<script>"), // script file name
-	KEYVALUE_ENTRY(SPEC_AFILE, "<afile>"), // autocommand file name
-	KEYVALUE_ENTRY(SPEC_ABUF, "<abuf>"),   // autocommand buffer number
-	KEYVALUE_ENTRY(SPEC_AMATCH, "<amatch>"),   // autocommand match name
-	KEYVALUE_ENTRY(SPEC_SFLNUM, "<sflnum>"),   // script file line number
-	KEYVALUE_ENTRY(SPEC_SID, "<SID>")  // script ID: <SNR>123_
+	KEYVALUE_ENTRY(SPEC_PERC, "%"),
+	KEYVALUE_ENTRY(SPEC_SID, "<SID>"),   // script ID: <SNR>123_
+	KEYVALUE_ENTRY(SPEC_ABUF, "<abuf>"),	// autocommand buffer number
+	KEYVALUE_ENTRY(SPEC_AFILE, "<afile>"),	// autocommand file name
+	KEYVALUE_ENTRY(SPEC_AMATCH, "<amatch>"),    // autocommand match name
+	KEYVALUE_ENTRY(SPEC_CCWORD, "<cWORD>"),	// cursor WORD
+	KEYVALUE_ENTRY(SPEC_CEXPR, "<cexpr>"),	// expr under cursor
+	KEYVALUE_ENTRY(SPEC_CFILE, "<cfile>"),	// cursor path name
 #ifdef FEAT_CLIENTSERVER
-	,
-	KEYVALUE_ENTRY(SPEC_CLIENT, "<client>")
+	KEYVALUE_ENTRY(SPEC_CLIENT, "<client>"),
 #endif
+	KEYVALUE_ENTRY(SPEC_CWORD, "<cword>"),	// cursor word
+	KEYVALUE_ENTRY(SPEC_SCRIPT, "<script>"),	// script file name
+	KEYVALUE_ENTRY(SPEC_SFILE, "<sfile>"),	// ":so" file name
+	KEYVALUE_ENTRY(SPEC_SFLNUM, "<sflnum>"),    // script file line number
+	KEYVALUE_ENTRY(SPEC_SLNUM, "<slnum>"),	// ":so" file line number
+	KEYVALUE_ENTRY(SPEC_STACK, "<stack>")	// call stack
     };
-#define CACHE_SIZE 2
-    static int cache_tab[CACHE_SIZE];
-    static int cache_last_index = -1;
+    keyvalue_T target;
+    keyvalue_T *entry;
 
-    if (cache_last_index < 0)
+    target.key = 0;
+    target.value = (char *)src;
+    target.length = 0;		// not used, see cmp_keyvalue_value_2n()
+    entry = (keyvalue_T *)bsearch(&target, &spec_str_tab, ARRAY_LENGTH(spec_str_tab), sizeof(spec_str_tab[0]), cmp_keyvalue_value_2n);
+    if (entry != NULL)
     {
-	for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
-	    cache_tab[i] = -1;
-	cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
-    }
-
-    // first look in the cache table.
-    // the cache is circular. to search it we start at the most recent entry
-    // and go backwards wrapping around when we get to index 0.
-    for (i = cache_last_index; cache_tab[i] >= 0; )
-    {
-	if (STRNCMP(src, spec_str_tab[cache_tab[i]].value, spec_str_tab[cache_tab[i]].length) == 0)
-	{
-	    *usedlen = spec_str_tab[cache_tab[i]].length;
-	    return spec_str_tab[cache_tab[i]].key;
-	}
-
-	if (i == 0)
-	    i = ARRAY_LENGTH(cache_tab) - 1;
-	else
-	    --i;
-
-	// are we back at the start?
-	if (i == cache_last_index)
-	    break;
-    }
-
-    // now look in the special string table itself
-    for (i = 0; i < (int)ARRAY_LENGTH(spec_str_tab); ++i)
-    {
-	if (STRNCMP(src, spec_str_tab[i].value, spec_str_tab[i].length) == 0)
-	{
-	    // store the found entry in the next position in the cache,
-	    // wrapping around when we get to the maximum index.
-	    if (cache_last_index == ARRAY_LENGTH(cache_tab) - 1)
-		cache_last_index = 0;
-	    else
-		++cache_last_index;
-	    cache_tab[cache_last_index] = i;
-	    *usedlen = spec_str_tab[i].length;
-	    return spec_str_tab[i].key;
-	}
+	*usedlen = entry->length;
+	return entry->key;
     }
 
     return -1;

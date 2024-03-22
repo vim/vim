@@ -228,78 +228,42 @@ enum {
     static int
 get_char_class(char_u **pp)
 {
+    // must be sorted by the 'value' field because it is used by bsearch()!
     static keyvalue_T char_class_tab[] = {
 	KEYVALUE_ENTRY(CLASS_ALNUM, "alnum:]"),
 	KEYVALUE_ENTRY(CLASS_ALPHA, "alpha:]"),
+	KEYVALUE_ENTRY(CLASS_BACKSPACE, "backspace:]"),
 	KEYVALUE_ENTRY(CLASS_BLANK, "blank:]"),
 	KEYVALUE_ENTRY(CLASS_CNTRL, "cntrl:]"),
 	KEYVALUE_ENTRY(CLASS_DIGIT, "digit:]"),
+	KEYVALUE_ENTRY(CLASS_ESCAPE, "escape:]"),
+	KEYVALUE_ENTRY(CLASS_FNAME, "fname:]"),
 	KEYVALUE_ENTRY(CLASS_GRAPH, "graph:]"),
+	KEYVALUE_ENTRY(CLASS_IDENT, "ident:]"),
+	KEYVALUE_ENTRY(CLASS_KEYWORD, "keyword:]"),
 	KEYVALUE_ENTRY(CLASS_LOWER, "lower:]"),
 	KEYVALUE_ENTRY(CLASS_PRINT, "print:]"),
 	KEYVALUE_ENTRY(CLASS_PUNCT, "punct:]"),
-	KEYVALUE_ENTRY(CLASS_SPACE, "space:]"),
-	KEYVALUE_ENTRY(CLASS_UPPER, "upper:]"),
-	KEYVALUE_ENTRY(CLASS_XDIGIT, "xdigit:]"),
-	KEYVALUE_ENTRY(CLASS_TAB, "tab:]"),
 	KEYVALUE_ENTRY(CLASS_RETURN, "return:]"),
-	KEYVALUE_ENTRY(CLASS_BACKSPACE, "backspace:]"),
-	KEYVALUE_ENTRY(CLASS_ESCAPE, "escape:]"),
-	KEYVALUE_ENTRY(CLASS_IDENT, "ident:]"),
-	KEYVALUE_ENTRY(CLASS_KEYWORD, "keyword:]"),
-	KEYVALUE_ENTRY(CLASS_FNAME, "fname:]")
+	KEYVALUE_ENTRY(CLASS_SPACE, "space:]"),
+	KEYVALUE_ENTRY(CLASS_TAB, "tab:]"),
+	KEYVALUE_ENTRY(CLASS_UPPER, "upper:]"),
+	KEYVALUE_ENTRY(CLASS_XDIGIT, "xdigit:]")
     };
 
     if ((*pp)[1] == ':')
     {
-	int i;
-	char_u *tmp = *pp + 2;
-#define CACHE_SIZE 2
-	static int cache_tab[CACHE_SIZE];
-	static int cache_last_index = -1;
+	keyvalue_T target;
+	keyvalue_T *entry;
 
-	if (cache_last_index < 0)
+	target.key = 0;
+	target.value = (char *)*pp + 2;
+	target.length = 0;	// not used, see cmp_keyvalue_value_2n()
+	entry = (keyvalue_T *)bsearch(&target, &char_class_tab, ARRAY_LENGTH(char_class_tab), sizeof(char_class_tab[0]), cmp_keyvalue_value_2n);
+	if (entry != NULL)
 	{
-	    for (i = 0; i < (int)ARRAY_LENGTH(cache_tab); ++i)
-		cache_tab[i] = -1;
-	    cache_last_index = ARRAY_LENGTH(cache_tab) - 1;
-	}
-
-	// first look in the cache
-	// the cache is circular. to search it we start at the most recent entry
-	// and go backwards wrapping around when we get to index 0.
-	for (i = cache_last_index; cache_tab[i] >= 0; )
-	{
-	    if (STRNCMP(tmp, char_class_tab[cache_tab[i]].value, char_class_tab[cache_tab[i]].length) == 0)
-	    {
-		*pp += char_class_tab[cache_tab[i]].length + 2;
-		return char_class_tab[cache_tab[i]].key;
-	    }
-
-	    if (i == 0)
-		i = ARRAY_LENGTH(cache_tab) - 1;
-	    else
-		--i;
-
-	    // are we back at the start?
-	    if (i == cache_last_index)
-		break;
-	}
-
-	for (i = 0; i < (int)ARRAY_LENGTH(char_class_tab); ++i)
-	{
-	    if (STRNCMP(tmp, char_class_tab[i].value, char_class_tab[i].length) == 0)
-	    {
-		// store the found entry in the next position in the cache,
-		// wrapping around when we get to the maximum index.
-		if (cache_last_index == ARRAY_LENGTH(cache_tab) - 1)
-		    cache_last_index = 0;
-		else
-		    ++cache_last_index;
-		cache_tab[cache_last_index] = i;
-		*pp += char_class_tab[i].length + 2;
-		return char_class_tab[i].key;
-	    }
+	    *pp += entry->length + 2;
+	    return entry->key;
 	}
     }
 
@@ -1254,6 +1218,20 @@ reg_getline(linenr_T lnum)
     line = ml_get_buf(rex.reg_buf, rex.reg_firstlnum + lnum, FALSE);
     rex.line_textlen = ml_get_buf_len(rex.reg_buf, rex.reg_firstlnum + lnum);
     return line;
+}
+
+/*
+ * Get pointer to the line "lnum", which is relative to "reg_firstlnum".
+ */
+    static colnr_T
+reg_getline_len(linenr_T lnum)
+{
+    char_u *line;
+
+    if (*(line = reg_getline(lnum)) == NUL)
+	return 0;
+
+    return rex.line_textlen;
 }
 
 #ifdef FEAT_SYN_HL

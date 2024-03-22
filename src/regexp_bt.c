@@ -3406,8 +3406,7 @@ regmatch(
 		{
 		    colnr_T pos_col = pos->lnum == rex.lnum + rex.reg_firstlnum
 							  && pos->col == MAXCOL
-				      ? (colnr_T)STRLEN(reg_getline(
-						pos->lnum - rex.reg_firstlnum))
+				      ? reg_getline_len(pos->lnum - rex.reg_firstlnum)
 				      : pos->col;
 
 		    if ((pos->lnum == rex.lnum + rex.reg_firstlnum
@@ -4567,7 +4566,7 @@ regmatch(
 		    if (limit > 0
 			    && ((rp->rs_un.regsave.rs_u.pos.lnum
 						    < behind_pos.rs_u.pos.lnum
-				    ? (colnr_T)STRLEN(rex.line)
+				    ? rex.line_textlen
 				    : behind_pos.rs_u.pos.col)
 				- rp->rs_un.regsave.rs_u.pos.col >= limit))
 			no = FAIL;
@@ -4582,8 +4581,7 @@ regmatch(
 			else
 			{
 			    reg_restore(&rp->rs_un.regsave, &backpos);
-			    rp->rs_un.regsave.rs_u.pos.col =
-						 (colnr_T)STRLEN(rex.line);
+			    rp->rs_un.regsave.rs_u.pos.col = rex.line_textlen;
 			}
 		    }
 		    else
@@ -4695,7 +4693,7 @@ regmatch(
 				// right.
 				if (rex.line == NULL)
 				    break;
-				rex.input = rex.line + STRLEN(rex.line);
+				rex.input = rex.line + rex.line_textlen;
 				fast_breakcheck();
 			    }
 			    else

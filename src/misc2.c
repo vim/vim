@@ -3069,3 +3069,69 @@ get_special_pty_type(void)
     return 0;
 #endif
 }
+
+
+// compare two keyvalue_T structs by value
+    int
+cmp_keyvalue_value(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRCMP(kv1->value, kv2->value);
+}
+
+// compare two keyvalue_T structs by value, case insensitive
+    int
+cmp_keyvalue_value_i(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRICMP(kv1->value, kv2->value);
+}
+
+// compare two keyvalue_T structs by value, case insensitive
+// using the 1st arg's length
+    int
+cmp_keyvalue_value_1ni(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRNICMP(kv1->value, kv2->value, kv1->length);
+}
+
+// compare two keyvalue_T structs by value, case insensitive
+// using the 2nd arg's length
+    int
+cmp_keyvalue_value_2ni(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRNICMP(kv1->value, kv2->value, kv2->length);
+}
+
+// compare two keyvalue_T structs by value
+// using the 1st arg's length
+    int
+cmp_keyvalue_value_1n(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRNCMP(kv1->value, kv2->value, kv1->length);
+}
+
+// compare two keyvalue_T structs by value
+// using the 2nd arg's length
+    int
+cmp_keyvalue_value_2n(const void *a, const void *b)
+{
+    keyvalue_T *kv1 = (keyvalue_T *)a;
+    keyvalue_T *kv2 = (keyvalue_T *)b;
+
+    return STRNCMP(kv1->value, kv2->value, kv2->length);
+}
+

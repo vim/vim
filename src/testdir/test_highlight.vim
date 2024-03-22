@@ -921,8 +921,8 @@ endfunc
 
 " Test for setting various 'term' attributes
 func Test_highlight_term_attr()
-  hi HlGrp3 term=bold,underline,undercurl,underdouble,underdotted,underdashed,strikethrough,reverse,italic,standout
-  call assert_equal('hi HlGrp3          term=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,strikethrough', HighlightArgs('HlGrp3'))
+  hi HlGrp3 term=bold,underline,undercurl,underdouble,underdotted,underdashed,strikethrough,reverse,italic,standout,nocombine,underline
+  call assert_equal('hi HlGrp3          term=bold,inverse,italic,nocombine,standout,strikethrough,undercurl,underdashed,underdotted,underdouble,underline', HighlightArgs('HlGrp3'))
   hi HlGrp3 term=NONE
   call assert_equal('hi HlGrp3          cleared', HighlightArgs('HlGrp3'))
   hi clear
@@ -1086,8 +1086,8 @@ func Test_hlget()
   let lines =<< trim END
     call assert_notequal([], filter(hlget(), 'v:val.name == "Visual"'))
     call assert_equal([], hlget('SomeHLGroup'))
-    highlight MyHLGroup term=standout cterm=reverse ctermfg=10 ctermbg=Black
-    call assert_equal([{'id': hlID('MyHLGroup'), 'ctermfg': '10', 'name': 'MyHLGroup', 'term': {'standout': v:true}, 'ctermbg': '0', 'cterm': {'reverse': v:true}}], hlget('MyHLGroup'))
+    highlight MyHLGroup term=standout cterm=inverse ctermfg=10 ctermbg=Black
+    call assert_equal([{'id': hlID('MyHLGroup'), 'ctermfg': '10', 'name': 'MyHLGroup', 'term': {'standout': v:true}, 'ctermbg': '0', 'cterm': {'inverse': v:true}}], hlget('MyHLGroup'))
     highlight clear MyHLGroup
     call assert_equal(v:true, hlget('MyHLGroup')[0].cleared)
     highlight link MyHLGroup IncSearch
@@ -1140,8 +1140,8 @@ func Test_hlset()
     call assert_equal(0, hlset([]))
     call assert_fails('call hlset(["Search"])', 'E715:')
     call hlset(hlget())
-    call hlset([{'name': 'NewHLGroup', 'cterm': {'reverse': v:true}, 'ctermfg': '10'}])
-    call assert_equal({'reverse': v:true}, hlget('NewHLGroup')[0].cterm)
+    call hlset([{'name': 'NewHLGroup', 'cterm': {'inverse': v:true}, 'ctermfg': '10'}])
+    call assert_equal({'inverse': v:true}, hlget('NewHLGroup')[0].cterm)
     call hlset([{'name': 'NewHLGroup', 'cterm': {'bold': v:true}}])
     call assert_equal({'bold': v:true}, hlget('NewHLGroup')[0].cterm)
     call hlset([{'name': 'NewHLGroup', 'cleared': v:true}])
@@ -1207,14 +1207,10 @@ func Test_hlset()
   " Test for setting all the 'term', 'cterm' and 'gui' attributes of a
   " highlight group
   let lines =<< trim END
-    VAR attr = {'bold': v:true, 'underline': v:true,
-                \ 'undercurl': v:true, 'underdouble': v:true,
-                \ 'underdotted': v:true, 'underdashed': v:true,
-                \ 'strikethrough': v:true, 'reverse': v:true, 'italic': v:true,
-                \ 'standout': v:true, 'nocombine': v:true}
+    VAR attr = { 'bold': v:true, 'italic': v:true, 'nocombine': v:true, 'inverse': v:true, 'standout': v:true, 'strikethrough': v:true, 'undercurl': v:true, 'underdashed': v:true, 'underdotted': v:true, 'underdouble': v:true, 'underline': v:true }
     call hlset([{'name': 'myhlg2', 'term': attr, 'cterm': attr, 'gui': attr}])
     VAR id2 = hlID('myhlg2')
-    VAR expected = "myhlg2 xxx term=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough cterm=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough gui=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough"
+    VAR expected = "myhlg2 xxx term=bold,inverse,italic,nocombine,standout,strikethrough,undercurl,underdashed,underdotted,underdouble,underline cterm=bold,inverse,italic,nocombine,standout,strikethrough,undercurl,underdashed,underdotted,underdouble,underline gui=bold,inverse,italic,nocombine,standout,strikethrough,undercurl,underdashed,underdotted,underdouble,underline"
     VAR output = execute('highlight myhlg2')
     LET output = output->split("\n")->join()->substitute('\s\+', ' ', 'g')
     call assert_equal(expected, output)
@@ -1229,11 +1225,11 @@ func Test_hlset()
     VAR attr = {'bold': v:false, 'underline': v:true, 'strikethrough': v:true}
     call hlset([{'name': 'myhlg2', 'term': attr, 'cterm': attr, 'gui': attr}])
     VAR id2 = hlID('myhlg2')
-    VAR expected = "myhlg2 xxx term=underline,strikethrough cterm=underline,strikethrough gui=underline,strikethrough"
+    VAR expected = "myhlg2 xxx term=strikethrough,underline cterm=strikethrough,underline gui=strikethrough,underline"
     VAR output = execute('highlight myhlg2')
     LET output = output->split("\n")->join()->substitute('\s\+', ' ', 'g')
     call assert_equal(expected, output)
-    LET attr = {'underline': v:true, 'strikethrough': v:true}
+    LET attr = {'strikethrough': v:true, 'underline': v:true}
     call assert_equal([{'id': id2, 'name': 'myhlg2', 'gui': attr,
                       \ 'term': attr, 'cterm': attr}], hlget('myhlg2'))
   END

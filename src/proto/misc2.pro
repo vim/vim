@@ -61,4 +61,10 @@ int mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc);
 int build_argv_from_string(char_u *cmd, char ***argv, int *argc);
 int build_argv_from_list(list_T *l, char ***argv, int *argc);
 int get_special_pty_type(void);
+int cmp_keyvalue_value(const void *a, const void *b);
+int cmp_keyvalue_value_i(const void *a, const void *b);
+int cmp_keyvalue_value_1ni(const void *a, const void *b);
+int cmp_keyvalue_value_2ni(const void *a, const void *b);
+int cmp_keyvalue_value_1n(const void *a, const void *b);
+int cmp_keyvalue_value_2n(const void *a, const void *b);
 /* vim: set ft=c : */
