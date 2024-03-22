@@ -408,11 +408,11 @@ jobs:
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
-      SODIUM_VER: '1.0.18'
+      SODIUM_VER: '1.0.19'
       SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
       SODIUM_MSVC_VER: v143
       SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
-      SODIUM_MINGW_VER: 23
+      SODIUM_MINGW_VER: 26
       # Escape sequences
       COL_RED: "\x1b[31m"
       COL_GREEN: "\x1b[32m"
@@ -474,7 +474,10 @@ jobs:
             echo "SODIUM_LIB=${SODIUM_DIR}\\${{ matrix.arch == 'x64' && 'x64' || 'Win32' }}\\Release\\${SODIUM_MSVC_VER}\\dynamic" >> $GITHUB_ENV
           else
             SODIUM_DIR=D:\\libsodium-win${{ matrix.arch == 'x64' && '64' || '32' }}
+            # do not want \L to end up in pathdef.c and compiler complaining about unknown escape sequences \l
+            SODIUM_DIR_SLASH=D:/libsodium-win${{ matrix.arch == 'x64' && '64' || '32' }}
             echo "SODIUM_LIB=${SODIUM_DIR}\\bin" >> $GITHUB_ENV
+            echo "SODIUM_DIR_SLASH=${SODIUM_DIR_SLASH}" >> $GITHUB_ENV
           fi
           echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
 
@@ -598,7 +601,7 @@ jobs:
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
               DYNAMIC_PYTHON3_STABLE_ABI=${PYTHON3_STABLE} \
-              DYNAMIC_SODIUM=yes SODIUM=${SODIUM_DIR} \
+              DYNAMIC_SODIUM=yes SODIUM=${SODIUM_DIR_SLASH} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
             mingw32-make -f Make_ming.mak -j2 \

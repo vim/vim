@@ -2779,7 +2779,7 @@ compile_expr9(
     if (compile_subscript(arg, cctx, start_leader, &end_leader,
 							     ppconst) == FAIL)
 	return FAIL;
-    if (ppconst->pp_used > 0)
+    if ((ppconst->pp_used > 0) && (cctx->ctx_skip != SKIP_YES))
     {
 	// apply the '!', '-' and '+' before the constant
 	rettv = &ppconst->pp_tv[ppconst->pp_used - 1];

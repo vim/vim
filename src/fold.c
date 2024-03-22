@@ -107,7 +107,7 @@ copyFoldingState(win_T *wp_from, win_T *wp_to)
 
 // hasAnyFolding() {{{2
 /*
- * Return TRUE if there may be folded lines in the current window.
+ * Return TRUE if there may be folded lines in window "win".
  */
     int
 hasAnyFolding(win_T *win)
@@ -551,7 +551,7 @@ checkCloseRec(garray_T *gap, linenr_T lnum, int level)
     return retval;
 }
 
-// foldCreateAllowed() {{{2
+// foldManualAllowed() {{{2
 /*
  * Return TRUE if it's allowed to manually create or delete a fold.
  * Give an error message and return FALSE if not.
@@ -1089,7 +1089,7 @@ foldAdjustVisual(void)
 	mb_adjust_cursor();
 }
 
-// cursor_foldstart() {{{2
+// foldAdjustCursor() {{{2
 /*
  * Move the cursor to the first line of a closed fold.
  */

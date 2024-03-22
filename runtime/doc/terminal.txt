@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Feb 21
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -303,6 +303,12 @@ current window into a terminal window.  If there are unsaved changes this
 fails, use ! to force, as usual.
 
 							*terminal-close*
+When the terminal job finishes and no [command] was given (e.g. the 'shell'
+command was executed), the terminal window will be closed by default (unless
+the buffer in next window receiving the space has the 'nobuflisted' option set,
+in which case the terminal window would not be closed automatically, but a new
+empty buffer would be opened in that window).
+
 When the terminal window is closed, e.g. when the shell exits and "++close"
 argument was used, and this is the last normal Vim window, then Vim will exit.
 This is like using |:quit| in a normal window. Help and preview windows are

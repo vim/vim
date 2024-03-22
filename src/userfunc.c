@@ -4977,7 +4977,10 @@ define_function(
 					: eval_isnamec(name_base[i])); ++i)
 		;
 	    if (name_base[i] != NUL)
+	    {
 		emsg_funcname(e_invalid_argument_str, arg);
+		goto ret_free;
+	    }
 
 	    // In Vim9 script a function cannot have the same name as a
 	    // variable.

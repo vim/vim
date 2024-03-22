@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2014 Nov 5
+# Last Change:	2024 Mar 17
 
 Unicode true
 
@@ -57,6 +57,37 @@ Unicode true
 !include "nsDialogs.nsh"
 !include "Sections.nsh"
 !include "x64.nsh"
+
+# See https://nsis.sourceforge.io/LogicLib
+;FileExists is already part of LogicLib, but returns true for directories
+;as well as files
+!macro _FileExists2 _a _b _t _f
+	!insertmacro _LOGICLIB_TEMP
+	StrCpy $_LOGICLIB_TEMP "0"
+;if path is not blank, continue to next check
+	StrCmp `${_b}` `` +4 0
+;if path exists, continue to next check (IfFileExists returns true if this
+;is a directory)
+	IfFileExists `${_b}` `0` +3
+;if path is not a directory, continue to confirm exists
+	IfFileExists `${_b}\*.*` +2 0
+	StrCpy $_LOGICLIB_TEMP "1" ;file exists
+;now we have a definitive value - the file exists or it does not
+	StrCmp $_LOGICLIB_TEMP "1" `${_t}` `${_f}`
+!macroend
+!undef FileExists
+!define FileExists `"" FileExists2`
+!macro _DirExists _a _b _t _f
+	!insertmacro _LOGICLIB_TEMP
+	StrCpy $_LOGICLIB_TEMP "0"
+;if path is not blank, continue to next check
+	StrCmp `${_b}` `` +3 0
+;if directory exists, continue to confirm exists
+	IfFileExists `${_b}\*.*` 0 +2
+	StrCpy $_LOGICLIB_TEMP "1"
+	StrCmp $_LOGICLIB_TEMP "1" `${_t}` `${_f}`
+!macroend
+!define DirExists `"" DirExists`
 
 !define PRODUCT		"Vim ${VER_MAJOR}.${VER_MINOR}"
 !define UNINST_REG_KEY	"Software\Microsoft\Windows\CurrentVersion\Uninstall"
@@ -366,9 +397,6 @@ Section "$(str_section_exe)" id_section_exe
 !if /FileExists "${VIMSRC}\vim${BIT}.dll"
 	File ${VIMSRC}\vim${BIT}.dll
 !endif
-!if /FileExists "${VIMRT}\libsodium.dll"
-	File ${VIMRT}\libsodium.dll
-!endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstall.exe ${VIMSRC}\uninstallw32.exe
 	File ${VIMSRC}\vimrun.exe
@@ -379,9 +407,18 @@ Section "$(str_section_exe)" id_section_exe
 	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
 
+!if /FileExists "${VIMTOOLS}\diff.exe"
 	File ${VIMTOOLS}\diff.exe
+!endif
+!if /FileExists "${VIMTOOLS}\winpty${BIT}.dll"
 	File ${VIMTOOLS}\winpty${BIT}.dll
+!endif
+!if /FileExists "${VIMTOOLS}\winpty-agent.exe"
 	File ${VIMTOOLS}\winpty-agent.exe
+!endif
+!if /FileExists "${VIMTOOLS}\libsodium.dll"
+	File ${VIMTOOLS}\libsodium.dll
+!endif
 
 	SetOutPath $0\colors
 	File /r ${VIMRT}\colors\*.*
@@ -390,20 +427,22 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\compiler\*.*
 
 	SetOutPath $0\doc
-	File ${VIMRT}\doc\*.txt
+	File /x uganda.nsis.txt ${VIMRT}\doc\*.txt
 	File ${VIMRT}\doc\tags
 
 	SetOutPath $0\ftplugin
 	File ${VIMRT}\ftplugin\*.*
 
 	SetOutPath $0\indent
-	File ${VIMRT}\indent\*.*
+	File ${VIMRT}\indent\README.txt
+	File ${VIMRT}\indent\*.vim
 
 	SetOutPath $0\keymap
-	File ${VIMRT}\keymap\*.*
+	File ${VIMRT}\keymap\README.txt
+	File ${VIMRT}\keymap\*.vim
 
 	SetOutPath $0\macros
-	File /r ${VIMRT}\macros\*.*
+	File /r /x *.info ${VIMRT}\macros\*.*
 
 	SetOutPath $0\pack
 	File /r ${VIMRT}\pack\*.*
@@ -421,7 +460,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim.ico
 
 	SetOutPath $0\syntax
-	File /r /x testdir /x generator ${VIMRT}\syntax\*.*
+	File /r /x testdir /x generator /x Makefile ${VIMRT}\syntax\*.*
 
 	SetOutPath $0\spell
 	File ${VIMRT}\spell\*.txt
@@ -433,7 +472,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\tools\*.*
 
 	SetOutPath $0\tutor
-	File ${VIMRT}\tutor\*.*
+	File /x Makefile /x *.info ${VIMRT}\tutor\*.*
 SectionEnd
 
 ##########################################################
@@ -564,10 +603,7 @@ Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
 
 	SetOutPath $0\lang
-	File /r ${VIMRT}\lang\*.*
-	SetOutPath $0\keymap
-	File ${VIMRT}\keymap\README.txt
-	File ${VIMRT}\keymap\*.vim
+	File /r /x Makefile ${VIMRT}\lang\*.*
 	SetOutPath $0
 	!insertmacro InstallLib DLL NOTSHARED REBOOT_NOTPROTECTED \
 	    "${GETTEXT}\gettext${BIT}\libintl-8.dll" \
@@ -947,7 +983,7 @@ Section "un.$(str_unsection_register)" id_unsection_register
 	SectionIn RO
 
 	# Apparently $INSTDIR is set to the directory where the uninstaller is
-	# created.  Thus the "vim61" directory is included in it.
+	# created.  Thus the "vim91" directory is included in it.
 	StrCpy $0 "$INSTDIR"
 
 	# delete the context menu entry and batch files
@@ -1044,6 +1080,7 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	RMDir /r $0\tutor
 	RMDir /r $0\lang
 	RMDir /r $0\keymap
+	RMDir /r $0\bitmaps
 	Delete $0\*.exe
 	Delete $0\*.bat
 	Delete $0\*.vim
@@ -1053,14 +1090,17 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	  MessageBox MB_OK|MB_ICONEXCLAMATION $(str_msg_rm_exe_fail) /SD IDOK
 	${EndIf}
 
-	# No error message if the "vim62" directory can't be removed, the
+	# No error message if the "vim91" directory can't be removed, the
 	# gvimext.dll may still be there.
 	RMDir $0
 SectionEnd
 
 # Remove "vimfiles" directory under the specified directory.
 !macro RemoveVimfiles dir
-	${If} ${FileExists} ${dir}\vimfiles
+	${If} ${FileExists} ${dir}\_viminfo
+	  Delete ${dir}\_viminfo
+	${EndIf}
+	${If} ${DirExists} ${dir}\vimfiles
 	  RMDir ${dir}\vimfiles\colors
 	  RMDir ${dir}\vimfiles\compiler
 	  RMDir ${dir}\vimfiles\doc
@@ -1070,6 +1110,9 @@ SectionEnd
 	  RMDir ${dir}\vimfiles\keymap
 	  RMDir ${dir}\vimfiles\plugin
 	  RMDir ${dir}\vimfiles\syntax
+	  ${If} ${FileExists} ${dir}\vimfiles\.netrwhist*
+	    Delete ${dir}\vimfiles\.netrwhist*
+	  ${EndIf}
 	  RMDir ${dir}\vimfiles
 	${EndIf}
 !macroend

@@ -29,18 +29,26 @@ To build the installable .exe:
 
 4.  Get a "diff.exe" program.  If you skip this the built-in diff will always
     be used (which is fine for most users).  If you do have your own
-    "diff.exe" put it in the "../.." directory (above the "vim90" directory,
+    "diff.exe" put it in the "../.." directory (above the "vim91" directory,
     it's the same for all Vim versions).
     You can find one in previous Vim versions or in this archive:
-		http://www.mossbayeng.com/~ron/vim/diffutils.tar.gz
+	http://www.mossbayeng.com/~ron/vim/diffutils.tar.gz
 
-5   Also put winpty32.dll and winpty-agent.exe in "../.." (above the "vim90"
+5.  Also put "winpty32.dll" and "winpty-agent.exe" in "../.." (above the "vim91"
     directory).  This is required for the terminal window.
 
-6.  Do "make uganda.nsis.txt" in runtime/doc.  This requires sed, you may have
+6.  To use stronger encryption, add the Sodium library.  You can get it here:
+	https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19-msvc.zip
+    Unpack the archive.  Put the "libsodium.dll" from
+    path/to/libsodium/Win32/Release/v143/dynamic for the 32‐bit version or
+    path/to/libsodium/X64/Release/v143/dynamic for the 64‐bit version in the
+    "../.." directory (above the "vim91" directory, where "diff.exe" and
+    "winpty32.dll").
+
+7.  Do "make uganda.nsis.txt" in runtime/doc.  This requires sed, you may have
     to do this on Unix.  Make sure the file is in DOS file format!
 
-7.  Get gettext and iconv DLLs from the following site:
+8.  Get gettext and iconv DLLs from the following site:
 	https://github.com/mlocati/gettext-iconv-windows/releases
     Both 64- and 32-bit versions are needed.
     Download the files gettextX.X.X.X-iconvX.XX-shared-{32,64}.zip, extract

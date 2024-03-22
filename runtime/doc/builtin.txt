@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 12
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7105,6 +7105,9 @@ printf({fmt}, {expr1} ...)				*printf()*
 		    echo printf("%1$*2$.*3$f", 1.4142135, 6, 2)
 <		      1.41
 
+		You will get an overflow error |E1510|, when the field-width
+		or precision will result in a string longer than 6400 chars.
+
 							*E1500*
 		You cannot mix positional and non-positional arguments: >
 		    echo printf("%s%1$s", "One", "Two")
@@ -10829,8 +10832,7 @@ win_screenpos({nr})					*win_screenpos()*
 		[1, 1], unless there is a tabline, then it is [2, 1].
 		{nr} can be the window number or the |window-ID|.  Use zero
 		for the current window.
-		Returns [0, 0] if the window cannot be found in the current
-		tabpage.
+		Returns [0, 0] if the window cannot be found.
 
 		Can also be used as a |method|: >
 			GetWinid()->win_screenpos()

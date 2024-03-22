@@ -1520,6 +1520,7 @@ diff_win_options(
 	if (!wp->w_p_diff)
 	    wp->w_p_wrap_save = wp->w_p_wrap;
 	wp->w_p_wrap = FALSE;
+	wp->w_skipcol = 0;
     }
 # ifdef FEAT_FOLDING
     if (!wp->w_p_diff)
@@ -1583,8 +1584,11 @@ ex_diffoff(exarg_T *eap)
 		    wp->w_p_crb = wp->w_p_crb_save;
 		if (!(diff_flags & DIFF_FOLLOWWRAP))
 		{
-		    if (!wp->w_p_wrap)
-			wp->w_p_wrap = wp->w_p_wrap_save;
+		    if (!wp->w_p_wrap && wp->w_p_wrap_save)
+		    {
+			wp->w_p_wrap = TRUE;
+			wp->w_leftcol = 0;
+		    }
 		}
 #ifdef FEAT_FOLDING
 		free_string_option(wp->w_p_fdm);

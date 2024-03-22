@@ -3614,4 +3614,4 @@ EXTERN char e_wrong_number_of_characters_for_field_str[]
 EXTERN char e_wrong_character_width_for_field_str[]
 	INIT(= N_("E1512: Wrong character width for field \"%s\""));
 EXTERN char e_winfixbuf_cannot_go_to_buffer[]
-	INIT(= N_("E1513: Cannot edit buffer. 'winfixbuf' is enabled"));
+	INIT(= N_("E1513: Cannot switch buffer. 'winfixbuf' is enabled"));

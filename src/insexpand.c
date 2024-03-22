@@ -653,7 +653,10 @@ ins_compl_infercase_gettext(
 	    // getting to six bytes from the edge of IObuff switch to using a
 	    // growarray.  Add the character in the next round.
 	    if (ga_grow(&gap, IOSIZE) == FAIL)
+	    {
+		vim_free(wca);
 		return (char_u *)"[failed]";
+	    }
 	    *p = NUL;
 	    STRCPY(gap.ga_data, IObuff);
 	    gap.ga_len = (int)STRLEN(IObuff);
@@ -3045,74 +3048,6 @@ ins_compl_update_sequence_numbers(void)
     }
 }
 
-    static int
-info_add_completion_info(list_T *li)
-{
-    compl_T	*match;
-    int		forward = compl_dir_forward();
-
-    if (compl_first_match == NULL)
-	return OK;
-
-    match = compl_first_match;
-    // There are four cases to consider here:
-    // 1) when just going forward through the menu,
-    //    compl_first_match should point to the initial entry with
-    //    number zero and CP_ORIGINAL_TEXT flag set
-    // 2) when just going backwards,
-    //    compl-first_match should point to the last entry before
-    //    the entry with the CP_ORIGINAL_TEXT flag set
-    // 3) when first going forwards and then backwards, e.g.
-    //    pressing C-N, C-P, compl_first_match points to the
-    //    last entry before the entry with the CP_ORIGINAL_TEXT
-    //    flag set and next-entry moves opposite through the list
-    //    compared to case 2, so pretend the direction is forward again
-    // 4) when first going backwards and then forwards, e.g.
-    //    pressing C-P, C-N, compl_first_match points to the
-    //    first entry with the CP_ORIGINAL_TEXT
-    //    flag set and next-entry moves in opposite direction through the list
-    //    compared to case 1, so pretend the direction is backwards again
-    //
-    // But only do this when the 'noselect' option is not active!
-
-    if (!compl_no_select)
-    {
-	if (forward && !match_at_original_text(match))
-	    forward = FALSE;
-	else if (!forward && match_at_original_text(match))
-	    forward = TRUE;
-    }
-
-    // Skip the element with the CP_ORIGINAL_TEXT flag at the beginning, in case of
-    // forward completion, or at the end, in case of backward completion.
-    match = forward || match->cp_prev == NULL ? match->cp_next :
-	(compl_no_select && match_at_original_text(match) ? match->cp_prev : match->cp_prev->cp_prev);
-
-    while (match != NULL && !match_at_original_text(match))
-    {
-	dict_T *di = dict_alloc();
-
-	if (di == NULL)
-	    return FAIL;
-	if (list_append_dict(li, di) == FAIL)
-	    return FAIL;
-	dict_add_string(di, "word", match->cp_str);
-	dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
-	dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
-	dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
-	dict_add_string(di, "info", match->cp_text[CPT_INFO]);
-	if (match->cp_user_data.v_type == VAR_UNKNOWN)
-	    // Add an empty string for backwards compatibility
-	    dict_add_string(di, "user_data", (char_u *)"");
-	else
-	    dict_add_tv(di, "user_data", &match->cp_user_data);
-
-	match = forward ? match->cp_next : match->cp_prev;
-    }
-
-    return OK;
-}
-
 /*
  * Get complete information
  */
@@ -3158,24 +3093,60 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     if (ret == OK && (what_flag & CI_WHAT_PUM_VISIBLE))
 	ret = dict_add_number(retdict, "pum_visible", pum_visible());
 
-    if (ret == OK && (what_flag & CI_WHAT_ITEMS))
+    if (ret == OK && (what_flag & CI_WHAT_ITEMS || what_flag & CI_WHAT_SELECTED))
     {
-	list_T	    *li;
+	list_T	    *li = NULL;
+	dict_T	    *di;
+	compl_T     *match;
+	int         selected_idx = -1;
 
-	li = list_alloc();
-	if (li == NULL)
-	    return;
-	ret = dict_add_list(retdict, "items", li);
-	if (ret == OK)
-	    ret = info_add_completion_info(li);
-    }
-
-    if (ret == OK && (what_flag & CI_WHAT_SELECTED))
-    {
-	if (compl_curr_match != NULL && compl_curr_match->cp_number == -1)
-	    ins_compl_update_sequence_numbers();
-	ret = dict_add_number(retdict, "selected", compl_curr_match != NULL
-				      ? compl_curr_match->cp_number - 1 : -1);
+	if (what_flag & CI_WHAT_ITEMS)
+	{
+	    li = list_alloc();
+	    if (li == NULL)
+		return;
+	    ret = dict_add_list(retdict, "items", li);
+	}
+	if (ret == OK && what_flag & CI_WHAT_SELECTED)
+	    if (compl_curr_match != NULL && compl_curr_match->cp_number == -1)
+		ins_compl_update_sequence_numbers();
+	if (ret == OK && compl_first_match != NULL)
+	{
+	    int list_idx = 0;
+	    match = compl_first_match;
+	    do
+	    {
+		if (!match_at_original_text(match))
+		{
+		    if (what_flag & CI_WHAT_ITEMS)
+		    {
+			di = dict_alloc();
+			if (di == NULL)
+			    return;
+			ret = list_append_dict(li, di);
+			if (ret != OK)
+			    return;
+			dict_add_string(di, "word", match->cp_str);
+			dict_add_string(di, "abbr", match->cp_text[CPT_ABBR]);
+			dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
+			dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
+			dict_add_string(di, "info", match->cp_text[CPT_INFO]);
+			if (match->cp_user_data.v_type == VAR_UNKNOWN)
+			    // Add an empty string for backwards compatibility
+			    dict_add_string(di, "user_data", (char_u *)"");
+			else
+			    dict_add_tv(di, "user_data", &match->cp_user_data);
+		    }
+		    if (compl_curr_match != NULL && compl_curr_match->cp_number == match->cp_number)
+			selected_idx = list_idx;
+		    list_idx += 1;
+		}
+		match = match->cp_next;
+	    }
+	    while (match != NULL && !is_first_match(match));
+	}
+	if (ret == OK && (what_flag & CI_WHAT_SELECTED))
+	    ret = dict_add_number(retdict, "selected", selected_idx);
     }
 
     if (ret == OK && (what_flag & CI_WHAT_INSERTED))
