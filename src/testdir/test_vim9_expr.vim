@@ -311,6 +311,33 @@ def Test_expr2()
       assert_equal([1], g:vals)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # test the short-circuit operation
+  lines =<< trim END
+    assert_equal(true, true && true)
+    assert_equal(false, true && !true)
+    assert_equal(false, !true && true)
+    assert_equal(false, !true && !true)
+
+    assert_equal(true, true || true)
+    assert_equal(true, true || !true)
+    assert_equal(true, !true || true)
+    assert_equal(false, !true || !true)
+
+    assert_equal(false, false && false)
+    assert_equal(false, false && !false)
+    assert_equal(false, !false && false)
+    assert_equal(true, !false && !false)
+
+    assert_equal(false, false || false)
+    assert_equal(true, false || !false)
+    assert_equal(true, !false || false)
+    assert_equal(true, !false || !false)
+
+    assert_equal(false, !true && !true && !true)
+    assert_equal(true, !false || !false || !false)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_expr2_vimscript()
