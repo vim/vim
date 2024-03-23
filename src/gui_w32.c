@@ -2271,6 +2271,11 @@ static void process_message_usual_key_classic(UINT vk, const MSG *pmsg)
 	    string[0] = Ctrl_AT;
 	    add_to_input_buf(string, 1);
 	}
+	else if (vk == 219 || MapVirtualKey(vk, 2) == (UINT)'[')
+	{
+	    string[0] = 27; // ESC
+	    add_to_input_buf(string, 1);
+	}
 	else
 	    TranslateMessage(pmsg);
     }
