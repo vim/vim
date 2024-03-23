@@ -1661,7 +1661,7 @@ func s:CreateBreakpoint(id, subid, enabled)
       endif
     endif
     call sign_define('debugBreakpoint' .. nr,
-				\ #{text: (strchars(label) > 2 ? strpart(label, 0, 2) : label),
+				\ #{text: slice(label, 0, 2),
 				\ texthl: hiName})
   endif
 endfunc
