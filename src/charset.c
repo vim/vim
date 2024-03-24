@@ -798,6 +798,45 @@ linetabsize(win_T *wp, linenr_T lnum)
 		       ml_get_buf(wp->w_buffer, lnum, FALSE), (colnr_T)MAXCOL);
 }
 
+/*
+ * Like linetabsize(), but excludes 'above'/'after'/'right'/'below' aligned
+ * virtual text, while keeping inline virtual text.
+ */
+    int
+linetabsize_no_outer(win_T *wp, linenr_T lnum)
+{
+#ifndef FEAT_PROP_POPUP
+    return linetabsize(wp, lnum);
+#else
+    chartabsize_T cts;
+    char_u *line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+
+    if (cts.cts_text_prop_count)
+    {
+      int write_idx = 0;
+      for (int read_idx = 0; read_idx < cts.cts_text_prop_count; read_idx++)
+      {
+          textprop_T *tp = &cts.cts_text_props[read_idx];
+          if (tp->tp_col != MAXCOL)
+          {
+              if (read_idx != write_idx)
+                  cts.cts_text_props[write_idx] = *tp;
+              write_idx++;
+          }
+      }
+      cts.cts_text_prop_count = write_idx;
+      if (cts.cts_text_prop_count == 0)
+          VIM_CLEAR(cts.cts_text_props);
+    }
+
+    win_linetabsize_cts(&cts, (colnr_T)MAXCOL);
+    clear_chartabsize_arg(&cts);
+    return (int)cts.cts_vcol;
+#endif
+}
+
     void
 win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 {

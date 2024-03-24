@@ -2690,6 +2690,45 @@ func Test_prop_inserts_text_normal_gj_gk()
   call Run_test_prop_inserts_text_normal_gj_gk('set virtualedit=all')
 endfunc
 
+func Test_prop_normal_gj_gk_over_outer_virtual_text()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setlocal number
+      setline(1, ['First line fits on screen line.', '', 'Third line fits on screen line.'])
+
+      var vt = 'test'
+      prop_type_add(vt, {highlight: 'ToDo'})
+      for ln in range(1, line('$'))
+        prop_add(ln, 0, {type: vt, text: 'Above', text_align: 'above'})
+        prop_add(ln, 0, {type: vt, text: 'After text wraps to next line.', text_align: 'after', text_wrap: 'wrap'})
+        prop_add(ln, 0, {type: vt, text: 'Right text wraps to next line.', text_align: 'right', text_wrap: 'wrap'})
+        prop_add(ln, 0, {type: vt, text: 'Below', text_align: 'below'})
+      endfor
+      normal 3l
+  END
+  call writefile(lines, 'XscriptPropsNormal_gj_gk_over_outer', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsNormal_gj_gk_over_outer', #{rows: 16, cols: 40})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_1', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_2', {})
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_3', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_2', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_1', {})
+
+  call term_sendkeys(buf, "2gj")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_3', {})
+  call term_sendkeys(buf, "2gk")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_inserts_text_visual_block()
   CheckRunVimInTerminal
 

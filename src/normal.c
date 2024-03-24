@@ -2306,7 +2306,9 @@ find_decl(
     static int
 nv_screengo(oparg_T *oap, int dir, long dist)
 {
-    int		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
+
+    int		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
+
     int		retval = OK;
     int		atend = FALSE;
     int		n;
@@ -2376,7 +2378,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		}
 		cursor_up_inner(curwin, 1);
 
-		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
+		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2413,7 +2415,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		// clipped to column 0.
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
-		linelen = linetabsize(curwin, curwin->w_cursor.lnum);
+		linelen = linetabsize_no_outer(curwin, curwin->w_cursor.lnum);
 	    }
 	}
       }
