@@ -2690,7 +2690,7 @@ func Test_prop_inserts_text_normal_gj_gk()
   call Run_test_prop_inserts_text_normal_gj_gk('set virtualedit=all')
 endfunc
 
-func Test_prop_normal_gj_gk_over_outer_virtual_text()
+func Test_prop_normal_gj_gk_gM_with_outer_virtual_text()
   CheckRunVimInTerminal
 
   let lines =<< trim END
@@ -2708,23 +2708,26 @@ func Test_prop_normal_gj_gk_over_outer_virtual_text()
       endfor
       normal 3l
   END
-  call writefile(lines, 'XscriptPropsNormal_gj_gk_over_outer', 'D')
-  let buf = RunVimInTerminal('-S XscriptPropsNormal_gj_gk_over_outer', #{rows: 16, cols: 40})
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_1', {})
+  call writefile(lines, 'XscriptPropsNormal_gj_gk_gM_with_outer_text', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsNormal_gj_gk_gM_with_outer_text', #{rows: 16, cols: 40})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_1', {})
 
   call term_sendkeys(buf, "gj")
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_2', {})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_2', {})
   call term_sendkeys(buf, "gj")
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_3', {})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_3', {})
   call term_sendkeys(buf, "gk")
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_2', {})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_2', {})
   call term_sendkeys(buf, "gk")
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_1', {})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_1', {})
 
   call term_sendkeys(buf, "2gj")
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_3', {})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_3', {})
   call term_sendkeys(buf, "2gk")
-  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_over_outer_virtual_text_1', {})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_1', {})
+
+  call term_sendkeys(buf, "gM")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_4', {})
 
   call StopVimInTerminal(buf)
 endfunc
