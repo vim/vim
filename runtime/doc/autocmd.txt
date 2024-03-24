@@ -429,7 +429,7 @@ Name			triggered by ~
 |SessionLoadPost|	after loading a session file
 
 |SessionWritePost|	After writing the session file using
-			the :mksession| command.
+			the |:mksession| command.
 
 |MenuPopup|		just before showing the popup menu
 |CompleteChanged|	after Insert mode completion menu changed
