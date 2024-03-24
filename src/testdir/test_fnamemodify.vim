@@ -1,5 +1,7 @@
 " Test filename modifiers.
 
+source check.vim
+
 func Test_fnamemodify()
   let save_home = $HOME
   let save_shell = &shell
@@ -101,6 +103,20 @@ endfunc
 func Test_fnamemodify_fail()
   call assert_fails('call fnamemodify({}, ":p")', 'E731:')
   call assert_fails('call fnamemodify("x", {})', 'E731:')
+endfunc
+
+func Test_fnamemodify_windows()
+  CheckMSWindows
+  let save_shellslash = &shellslash
+
+  call assert_equal('C:', fnamemodify('C:', ':p'))
+  call assert_equal('C:/', fnamemodify('C:/', ':p'))
+  call assert_equal('C:\', fnamemodify('C:\', ':p'))
+  call assert_equal(getcwd() .. '\foobar', fnamemodify('C:foobar', ':p'))
+  set shellslash
+  call assert_equal(getcwd() .. '/foobar', fnamemodify('C:foobar', ':p'))
+
+  let &shellslash = save_shellslash
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

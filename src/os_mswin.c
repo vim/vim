@@ -393,7 +393,7 @@ mch_isFullName(char_u *fname)
     if (*fname == NUL)
 	return FALSE;
     return ((ASCII_ISALPHA(fname[0]) && fname[1] == ':'
-				      && (fname[2] == '/' || fname[2] == '\\'))
+		    && (fname[2] == NUL || fname[2] == '/' || fname[2] == '\\'))
 	    || (fname[0] == fname[1] && (fname[0] == '/' || fname[0] == '\\')));
 }
 
