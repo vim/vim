@@ -260,6 +260,7 @@ NEW_TESTS = \
 	test_search_stat \
 	test_searchpos \
 	test_selectmode \
+	test_sessionwritepost \
 	test_set \
 	test_sha256 \
 	test_shell \

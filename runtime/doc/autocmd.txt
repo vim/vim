@@ -428,6 +428,9 @@ Name			triggered by ~
 
 |SessionLoadPost|	after loading a session file
 
+|SessionWritePost|	After writing the session file using
+			the :mksession| command.
+
 |MenuPopup|		just before showing the popup menu
 |CompleteChanged|	after Insert mode completion menu changed
 |CompleteDonePre|	after Insert mode completion is done, before clearing
@@ -1114,6 +1117,9 @@ SafeStateAgain			Like SafeState but after processing any
 
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
+				the |:mksession| command.
+							*SessionWritePost*
+SessionWritePost		After writing a session file by calling
 				the |:mksession| command.
 							*ShellCmdPost*
 ShellCmdPost			After executing a shell command with |:!cmd|,
