@@ -94,12 +94,13 @@ jobs:
         run: |
           sudo bash ci/remove_snap.sh
       - name: Cache APT files
-        id: cache-aptcache
+        id: cache-apt
         uses: john-shaffer/cache@main
         with:
           path: /var/cache/apt/archives
-          key: ${{ runner.os }}-aptcache
+          key: ${{ runner.os }}-apt
       - name: Install packages
+        if: steps.cache-apt.outputs.cache-hit != 'true'
         run: |
           PKGS=( \
             gettext \
@@ -130,6 +131,9 @@ jobs:
             )
           fi
           sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
+      - name: Install packages (cached)
+        if: steps.cache-apt.outputs.cache-hit == 'true'
+        run: sudo dpkg -i /var/cache/apt/archives/*deb
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
