@@ -2258,6 +2258,11 @@ have the following in your .vimrc: >
 	let filetype_m = "mma"
 
 
+MIRANDA					*miranda.vim* *ft-miranda-syntax*
+
+    TODO
+
+
 MODULA2					*modula2.vim* *ft-modula2-syntax*
 
 Vim will recognise comments with dialect tags to automatically select a given
