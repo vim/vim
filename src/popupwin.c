@@ -3046,7 +3046,6 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
     int		top_extra;
     int		left_extra;
-    int		lnum;
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
