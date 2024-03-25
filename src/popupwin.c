@@ -3057,6 +3057,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     wp = find_popup_win(id);
     if (wp == NULL)
 	return;  // invalid {id}
+    popup_adjust_position(wp);
     top_extra = popup_top_extra(wp);
     left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
 

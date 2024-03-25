@@ -4233,4 +4233,17 @@ func Test_popupwin_setbufvar_changing_window_view()
   bw!
 endfunc
 
+func Test_popupwin_popup_getpos()
+  " Test for Github Issue https://github.com/vim/vim/issues/14290
+  " using popup_getpos(winid) should return correct 'scrollbar' information
+
+  let winid = popup_create([], { 'maxheight': 3, 'minheight': 3, 'minwidth': 19, 'maxwidth': 19, 'scrollbar': v:true, 'wrap': 1})
+  call popup_settext(winid, [ "hello world", "hello world (10)", "hello world", ])
+  call win_execute(winid, "setl nu")
+  let pos = popup_getpos(winid)
+  call assert_equal(pos.scrollbar, 1)
+
+  call popup_clear()
+endfunc
+
 " vim: shiftwidth=2 sts=2
