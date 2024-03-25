@@ -99,8 +99,36 @@ jobs:
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt
-      - name: Install packages
+      - name: Download packages
         if: steps.cache-apt.outputs.cache-hit != 'true'
+        run: |
+          PKGS=( \
+            gettext \
+            libgtk2.0-dev:${{ matrix.architecture }} \
+            desktop-file-utils \
+            libtool-bin \
+            libncurses-dev:${{ matrix.architecture }} \
+            libxt-dev:${{ matrix.architecture }} \
+            autoconf \
+            gdb \
+            lcov \
+            libcanberra-dev \
+            libperl-dev \
+            python2-dev \
+            python3-dev \
+            liblua${LUA_VER}-dev \
+            lua${LUA_VER} \
+            ruby-dev \
+            tcl-dev \
+            cscope \
+            libsodium-dev \
+            attr \
+            libattr1-dev
+            )
+          fi
+          sudo apt-get update && sudo apt-get upgrade --download-only && sudo apt-get install -d "${PKGS[@]}"
+      - name: Install packages
+        if: steps.cache-apt.outputs.cache-hit == 'true'
         run: |
           PKGS=( \
             gettext \
@@ -131,9 +159,6 @@ jobs:
             )
           fi
           sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
-      - name: Install packages (cached)
-        if: steps.cache-apt.outputs.cache-hit == 'true'
-        run: sudo dpkg -i /var/cache/apt/archives/*deb
 
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
