@@ -93,7 +93,12 @@ jobs:
       - name: Uninstall snap
         run: |
           sudo bash ci/remove_snap.sh
-
+      - name: Cache APT files
+        id: cache-aptcache
+        uses: john-shaffer/cache@main
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-aptcache
       - name: Install packages
         run: |
           PKGS=( \
