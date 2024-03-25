@@ -6317,11 +6317,19 @@ get_tabpage_arg(exarg_T *eap)
 	else
 	{
 	    tab_number = eap->line2;
-	    if (!unaccept_arg0 && *skipwhite(*eap->cmdlinep) == '-')
+	    if (!unaccept_arg0)
 	    {
-		--tab_number;
-		if (tab_number < unaccept_arg0)
-		    eap->errmsg = _(e_invalid_range);
+		char_u *cmdp = eap->cmd;
+
+		while (--cmdp > *eap->cmdlinep
+			&& (VIM_ISWHITE(*cmdp) || VIM_ISDIGIT(*cmdp)))
+		    ;
+		if (*cmdp == '-')
+		{
+		    --tab_number;
+		    if (tab_number < unaccept_arg0)
+			eap->errmsg = _(e_invalid_range);
+		}
 	    }
 	}
     }
