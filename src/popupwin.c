@@ -3059,16 +3059,10 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	return;  // invalid {id}
 
-    // recalculate scrollbar
-    if (wp->w_firstline < 0)
-	lnum = wp->w_buffer->b_ml.ml_line_count;
-    else
-	lnum = wp->w_topline;
-    wp->w_has_scrollbar = wp->w_want_scrollbar
-	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
-
     top_extra = popup_top_extra(wp);
     left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
+
+    popup_adjust_position(wp);
 
     // we know how much space we need, avoid resizing halfway
     dict = rettv->vval.v_dict;
