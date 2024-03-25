@@ -3770,19 +3770,12 @@ vim_fgets(char_u *buf, int size, FILE *fp)
     int
 vim_rename(char_u *from, char_u *to)
 {
-    int		fd_in;
-    int		fd_out;
     int		n;
-    char	*errmsg = NULL;
-    char	*buffer;
+    int		ret;
 #ifdef AMIGA
     BPTR	flock;
 #endif
     stat_T	st;
-    long	perm;
-#ifdef HAVE_ACL
-    vim_acl_T	acl;		// ACL from original file
-#endif
     int		use_tmp_file = FALSE;
 
     /*
@@ -3903,6 +3896,61 @@ vim_rename(char_u *from, char_u *to)
     /*
      * Rename() failed, try copying the file.
      */
+    ret = vim_copyfile(from, to);
+    if (ret != 0)
+	return ret;
+
+    /*
+     * Remove copied original file
+     */
+    if (mch_stat((char *)from, &st) >= 0)
+	mch_remove(from);
+
+    return 0;
+}
+
+
+/*
+ * Create the new file with same permissions as the original.
+ * Return -1 for failure, 0 for success.
+ */
+    int
+vim_copyfile(char_u *from, char_u *to)
+{
+    int		fd_in;
+    int		fd_out;
+    int		n;
+    char	*errmsg = NULL;
+    char	*buffer;
+    long	perm;
+#ifdef HAVE_ACL
+    vim_acl_T	acl;		// ACL from original file
+#endif
+
+#ifdef HAVE_READLINK
+    int		ret;
+    int		len;
+    stat_T	st;
+    char	linkbuf[MAXPATHL + 1];
+
+    ret = mch_lstat((char *)from, &st);
+    if (ret >= 0 && S_ISLNK(st.st_mode))
+    {
+        ret = -1;
+
+	len = readlink((char *)from, linkbuf, MAXPATHL);
+	if (len > 0)
+	{
+	    linkbuf[len] = NUL;
+
+	    // Create link
+	    ret = symlink(linkbuf, (char *)to);
+	}
+
+	return ret == 0 ? ret : -1;
+    }
+#endif
+
     perm = mch_getperm(from);
 #ifdef HAVE_ACL
     // For systems that support ACL: get the ACL from the original file.
@@ -3971,7 +4019,6 @@ vim_rename(char_u *from, char_u *to)
 	semsg(errmsg, to);
 	return -1;
     }
-    mch_remove(from);
     return 0;
 }
 
