@@ -74,6 +74,14 @@ typedef struct AutoPat
     char	    last;		// last pattern for apply_autocmds()
 } AutoPat;
 
+//
+// special cases:
+// BufNewFile and BufRead are searched for ALOT (especially at startup)
+// so we pre-determine their index into the event_tab[] table for fast access.
+// Keep these values in sync with event_tab[]!
+#define BUFNEWFILE_INDEX 9
+#define BUFREAD_INDEX 10
+
 // must be sorted by the 'value' field because it is used by bsearch()!
 static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_BUFADD, "BufAdd"),
@@ -85,8 +93,8 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_BUFHIDDEN, "BufHidden"),
     KEYVALUE_ENTRY(EVENT_BUFLEAVE, "BufLeave"),
     KEYVALUE_ENTRY(EVENT_BUFNEW, "BufNew"),
-    KEYVALUE_ENTRY(EVENT_BUFNEWFILE, "BufNewFile"),
-    KEYVALUE_ENTRY(EVENT_BUFREADPOST, "BufRead"),
+    KEYVALUE_ENTRY(EVENT_BUFNEWFILE, "BufNewFile"),	// BUFNEWFILE_INDEX
+    KEYVALUE_ENTRY(EVENT_BUFREADPOST, "BufRead"),	// BUFREAD_INDEX
     KEYVALUE_ENTRY(EVENT_BUFREADCMD, "BufReadCmd"),
     KEYVALUE_ENTRY(EVENT_BUFREADPOST, "BufReadPost"),
     KEYVALUE_ENTRY(EVENT_BUFREADPRE, "BufReadPre"),
@@ -194,28 +202,37 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_WINNEW, "WinNew"),
     KEYVALUE_ENTRY(EVENT_WINNEWPRE, "WinNewPre"),
     KEYVALUE_ENTRY(EVENT_WINRESIZED, "WinResized"),
-    KEYVALUE_ENTRY(EVENT_WINSCROLLED, "WinScrolled"),
-    KEYVALUE_ENTRY((event_T)0, NULL)
+    KEYVALUE_ENTRY(EVENT_WINSCROLLED, "WinScrolled")
 };
 
-static AutoPat *first_autopat[NUM_EVENTS] =
-{
+static AutoPat *first_autopat[NUM_EVENTS] = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL
 };
 
-static AutoPat *last_autopat[NUM_EVENTS] =
-{
+static AutoPat *last_autopat[NUM_EVENTS] = {
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
     NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+    NULL, NULL, NULL, NULL, NULL
 };
 
 #define AUGROUP_DEFAULT    (-1)	    // default autocmd group
@@ -262,7 +279,6 @@ static int current_augroup = AUGROUP_DEFAULT;
 static int au_need_clean = FALSE;   // need to delete marked patterns
 
 static event_T event_name2nr(char_u *start, char_u **end);
-static int cmp_keyvalue_by_value(const void *a, const void *b);
 static char_u *event_nr2name(event_T event);
 static int au_get_grouparg(char_u **argp);
 static int do_autocmd_event(event_T event, char_u *pat, int once, int nested, char_u *cmd, int forceit, int group, int flags);
@@ -680,6 +696,8 @@ event_name2nr(char_u *start, char_u **end)
     char_u	*p;
     keyvalue_T target;
     keyvalue_T *entry;
+    static keyvalue_T *bufnewfile = &event_tab[BUFNEWFILE_INDEX];
+    static keyvalue_T *bufread = &event_tab[BUFREAD_INDEX];
 
     // the event name ends with end of line, '|', a blank or a comma
     for (p = start; *p && !VIM_ISWHITE(*p) && *p != ',' && *p != '|'; ++p)
@@ -688,27 +706,23 @@ event_name2nr(char_u *start, char_u **end)
     target.key = 0;
     target.value = (char *)start;
     target.length = (size_t)(p - start);
-    entry = (keyvalue_T *)bsearch(&target, &event_tab, ARRAY_LENGTH(event_tab), sizeof(event_tab[0]), cmp_keyvalue_by_value);
+
+    // special cases:
+    // BufNewFile and BufRead are searched for ALOT (especially at startup)
+    // so we check for them first.
+    if (cmp_keyvalue_value_ni(&target, bufnewfile) == 0)
+	entry = bufnewfile;
+    else
+    if (cmp_keyvalue_value_ni(&target, bufread) == 0)
+	entry = bufread;
+    else
+	entry = (keyvalue_T *)bsearch(&target, &event_tab, ARRAY_LENGTH(event_tab), sizeof(event_tab[0]), cmp_keyvalue_value_ni);
 
     if (*p == ',')
 	++p;
     *end = p;
 
     return (entry == NULL) ? NUM_EVENTS : (event_T)entry->key;
-}
-
-
-// compare two keyvalue_T structs by the value field
-// specialised version of cmp_keyvalue_value_1ni()
-    static int
-cmp_keyvalue_by_value(const void *a, const void *b)
-{
-    keyvalue_T *kv1 = (keyvalue_T *)a;
-    keyvalue_T *kv2 = (keyvalue_T *)b;
-    int result;
-
-    result = STRNICMP((kv1->value == NULL) ? "" : kv1->value, (kv2->value == NULL) ? "" : kv2->value, kv1->length);
-    return (result == 0) ? (int)kv1->length - (int)kv2->length : result;
 }
 
 /*
@@ -748,7 +762,7 @@ event_nr2name(event_T event)
     }
 
     // look in the event table itself
-    for (i = 0; event_tab[i].value != NULL; ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(event_tab); ++i)
     {
 	if ((event_T)event_tab[i].key == event)
 	{
@@ -763,7 +777,7 @@ event_nr2name(event_T event)
 	}
     }
 
-    return (event_tab[i].value == NULL) ? (char_u *)"Unknown" : (char_u *)event_tab[i].value;
+    return (i == (int)ARRAY_LENGTH(event_tab)) ? (char_u *)"Unknown" : (char_u *)event_tab[i].value;
 }
 
 /*
@@ -2827,6 +2841,8 @@ set_context_in_autocmd(
     char_u *
 get_event_name(expand_T *xp UNUSED, int idx)
 {
+    int i;
+
     if (idx < augroups.ga_len)		// First list group names, if wanted
     {
 	if (!include_groups || AUGROUP_NAME(idx) == NULL
@@ -2835,10 +2851,11 @@ get_event_name(expand_T *xp UNUSED, int idx)
 	return AUGROUP_NAME(idx);	// return a name
     }
 
-    if (idx - augroups.ga_len >= (int)ARRAY_LENGTH(event_tab))
+    i = idx - augroups.ga_len;
+    if (i < 0 || i >= (int)ARRAY_LENGTH(event_tab))
 	return NULL;
 
-    return (char_u *)event_tab[idx - augroups.ga_len].value;
+    return (char_u *)event_tab[i].value;
 }
 
 /*
@@ -2848,6 +2865,9 @@ get_event_name(expand_T *xp UNUSED, int idx)
     char_u *
 get_event_name_no_group(expand_T *xp UNUSED, int idx)
 {
+    if (idx < 0 || idx >= (int)ARRAY_LENGTH(event_tab))
+	return NULL;
+
     return (char_u *)event_tab[idx].value;
 }
 
@@ -3322,7 +3342,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		target.key = 0;
 		target.value = (char *)name;
 		target.length = (int)STRLEN(target.value);
-		entry = (keyvalue_T *)bsearch(&target, &event_tab, ARRAY_LENGTH(event_tab), sizeof(event_tab[0]), cmp_keyvalue_by_value);
+		entry = (keyvalue_T *)bsearch(&target, &event_tab, ARRAY_LENGTH(event_tab), sizeof(event_tab[0]), cmp_keyvalue_value_ni);
 		if (entry == NULL)
 		{
 		    semsg(_(e_no_such_event_str), name);
