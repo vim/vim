@@ -1843,6 +1843,10 @@ if s:settings.use_css && !s:settings.no_doc
   " default font size for different elements
   call append('.', '* { font-size: 1em; }')
   +
+  " use color scheme styles for links
+  " browser-default blue/purple colors for links don't look like the existing theme and are unreadable on dark backgrounds
+  call append('.', 'a { color: inherit; }')
+  +
   " if we use any input elements for unselectable content, make sure they look
   " like normal text
   if !empty(s:settings.prevent_copy)
