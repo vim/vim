@@ -3958,10 +3958,9 @@ ins_del(void)
  * Delete one character for ins_bs().
  */
     static void
-ins_bs_one(colnr_T *vcolp)
+ins_bs_one(void)
 {
     dec_cursor();
-    getvcol(curwin, &curwin->w_cursor, vcolp, NULL, NULL);
     if (State & REPLACE_FLAG)
     {
 	// Don't delete characters before the insert point when in
@@ -4212,19 +4211,38 @@ ins_bs(
 				    || arrow_used))))))
 	{
 	    int		ts;
-	    colnr_T	vcol;
+	    colnr_T	vcol = 0;
 	    colnr_T	want_vcol;
-	    colnr_T	start_vcol;
+	    char_u	*line;
+	    char_u	*ptr;
+	    char_u	*end_ptr;
+	    char_u	*space_ptr;
+	    colnr_T	space_vcol = 0;
+	    int		prev_space = FALSE;
+	    colnr_T	want_col;
 
 	    *inserted_space_p = FALSE;
-	    // Compute the virtual column where we want to be.  Since
-	    // 'showbreak' may get in the way, need to get the last column of
-	    // the previous character.
-	    getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
-	    start_vcol = vcol;
-	    dec_cursor();
-	    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &want_vcol);
-	    inc_cursor();
+
+	    space_ptr = ptr = line = ml_get_curline();
+	    end_ptr = line + curwin->w_cursor.col;
+
+	    // Find the last whitespace that is preceded by non-whitespace.
+	    // Use chartabsize() so that virtual text and wrapping are ignored.
+	    do {
+		int	cur_space = VIM_ISWHITE(*ptr);
+
+		if (!prev_space && cur_space)
+		{
+		    space_ptr = ptr;
+		    space_vcol = vcol;
+		}
+		vcol += chartabsize(ptr, vcol);
+		MB_PTR_ADV(ptr);
+		prev_space = cur_space;
+	    } while (ptr < end_ptr);
+
+	    // Compute the virtual column where we want to be.
+	    want_vcol = vcol - 1;
 #ifdef FEAT_VARTABS
 	    if (p_sta && in_indent)
 	    {
@@ -4242,13 +4260,25 @@ ins_bs(
 	    want_vcol = (want_vcol / ts) * ts;
 #endif
 
-	    // delete characters until we are at or before want_vcol
-	    while (vcol > want_vcol && curwin->w_cursor.col > 0
-		    && (cc = *(ml_get_cursor() - 1), VIM_ISWHITE(cc)))
-		ins_bs_one(&vcol);
+	    // Find the position to stop backspacing.
+	    // Use chartabsize() so that virtual text and wrapping are ignored.
+	    while (TRUE)
+	    {
+		int size = chartabsize(space_ptr, space_vcol);
 
-	    // insert extra spaces until we are at want_vcol
-	    while (vcol < want_vcol)
+		if (space_vcol + size > want_vcol)
+		    break;
+		space_vcol += size;
+		MB_PTR_ADV(space_ptr);
+	    }
+	    want_col = space_ptr - line;
+
+	    // Delete characters until we are at or before want_col.
+	    while (curwin->w_cursor.col > want_col)
+		ins_bs_one();
+
+	    // Insert extra spaces until we are at want_vcol.
+	    for (; space_vcol < want_vcol; space_vcol++)
 	    {
 		// Remember the first char we inserted
 		if (curwin->w_cursor.lnum == Insstart_orig.lnum
@@ -4263,13 +4293,7 @@ ins_bs(
 		    if ((State & REPLACE_FLAG))
 			replace_push(NUL);
 		}
-		getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
 	    }
-
-	    // If we are now back where we started delete one character.  Can
-	    // happen when using 'sts' and 'linebreak'.
-	    if (vcol >= start_vcol)
-		ins_bs_one(&vcol);
 	}
 
 	/*
