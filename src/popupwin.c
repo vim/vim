@@ -3061,8 +3061,6 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     top_extra = popup_top_extra(wp);
     left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
 
-    popup_adjust_position(wp);
-
     // we know how much space we need, avoid resizing halfway
     dict = rettv->vval.v_dict;
     hash_lock_size(&dict->dv_hashtab, 11);
@@ -3079,11 +3077,13 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     dict_add_number(dict, "core_width", wp->w_width);
     dict_add_number(dict, "core_height", wp->w_height);
 
-    dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
     dict_add_number(dict, "firstline", wp->w_topline);
     dict_add_number(dict, "lastline", wp->w_botline - 1);
     dict_add_number(dict, "visible",
 	    win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
+
+    popup_adjust_position(wp);
+    dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
 
     hash_unlock(&dict->dv_hashtab);
 }
