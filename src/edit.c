@@ -4023,14 +4023,14 @@ ins_bs(
 
     if (stop_arrow() == FAIL)
 	return FALSE;
-    in_indent = inindent(0);
-    if (in_indent)
-	can_cindent = FALSE;
     end_comment_pending = NUL;	// After BS, don't auto-end comment
 #ifdef FEAT_RIGHTLEFT
     if (revins_on)	    // put cursor after last inserted char
 	inc_cursor();
 #endif
+    in_indent = inindent(0);
+    if (in_indent)
+	can_cindent = FALSE;
 
     // Virtualedit:
     //	BACKSPACE_CHAR eats a virtual space
@@ -4210,12 +4210,11 @@ ins_bs(
 				&& (!*inserted_space_p
 				    || arrow_used))))))
 	{
-	    int		ts;
 	    colnr_T	vcol = 0;
 	    colnr_T	want_vcol;
 	    char_u	*line;
 	    char_u	*ptr;
-	    char_u	*end_ptr;
+	    char_u	*cursor_ptr;
 	    char_u	*space_ptr;
 	    colnr_T	space_vcol = 0;
 	    int		prev_space = FALSE;
@@ -4224,11 +4223,22 @@ ins_bs(
 	    *inserted_space_p = FALSE;
 
 	    space_ptr = ptr = line = ml_get_curline();
-	    end_ptr = line + curwin->w_cursor.col;
+	    cursor_ptr = line + curwin->w_cursor.col;
+#ifdef FEAT_RIGHTLEFT
+	    // With 'revins', delete from the end of whitespace.
+	    if (revins_on)
+	    {
+		save_col = curwin->w_cursor.col;
+		cursor_ptr = skipwhite(cursor_ptr);
+		curwin->w_cursor.col = cursor_ptr - line;
+	    }
+#endif
 
-	    // Find the last whitespace that is preceded by non-whitespace.
+	    // Compute virtual column of cursor position, and find the last
+	    // whitespace before cursor that is preceded by non-whitespace.
 	    // Use chartabsize() so that virtual text and wrapping are ignored.
-	    do {
+	    while (ptr < cursor_ptr)
+	    {
 		int	cur_space = VIM_ISWHITE(*ptr);
 
 		if (!prev_space && cur_space)
@@ -4239,25 +4249,20 @@ ins_bs(
 		vcol += chartabsize(ptr, vcol);
 		MB_PTR_ADV(ptr);
 		prev_space = cur_space;
-	    } while (ptr < end_ptr);
+	    }
 
 	    // Compute the virtual column where we want to be.
 	    want_vcol = vcol - 1;
-#ifdef FEAT_VARTABS
-	    if (p_sta && in_indent)
-	    {
-		ts = (int)get_sw_value(curbuf);
-		want_vcol = (want_vcol / ts) * ts;
-	    }
+	    if (want_vcol <= 0)
+		want_vcol = 0;
+	    else if (p_sta && in_indent)
+		want_vcol -= want_vcol % (int)get_sw_value(curbuf);
 	    else
+#ifdef FEAT_VARTABS
 		want_vcol = tabstop_start(want_vcol, get_sts_value(),
 						       curbuf->b_p_vsts_array);
 #else
-	    if (p_sta && in_indent)
-		ts = (int)get_sw_value(curbuf);
-	    else
-		ts = (int)get_sts_value();
-	    want_vcol = (want_vcol / ts) * ts;
+		want_vcol -= want_vcol % (int)get_sts_value();
 #endif
 
 	    // Find the position to stop backspacing.
@@ -4272,6 +4277,10 @@ ins_bs(
 		MB_PTR_ADV(space_ptr);
 	    }
 	    want_col = space_ptr - line;
+#ifdef FEAT_RIGHTLEFT
+	    if (revins_on && want_col < save_col)
+		want_col = save_col;
+#endif
 
 	    // Delete characters until we are at or before want_col.
 	    while (curwin->w_cursor.col > want_col)
@@ -4294,6 +4303,11 @@ ins_bs(
 			replace_push(NUL);
 		}
 	    }
+
+#ifdef FEAT_RIGHTLEFT
+	    if (revins_on)
+		curwin->w_cursor.col = save_col;
+#endif
 	}
 
 	/*

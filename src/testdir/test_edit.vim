@@ -2044,7 +2044,10 @@ func Test_edit_revins()
   call setline(1, 'one two three')
   exe "normal! wi\nfour"
   call assert_equal(['one two three', 'ruof'], getline(1, '$'))
-  set revins&
+  set backspace=indent,eol,start
+  exe "normal! ggA\<BS>"
+  call assert_equal(['one two threeruof'], getline(1, '$'))
+  set revins& backspace&
   bw!
 endfunc
 
@@ -2161,7 +2164,7 @@ func s:check_backspace(expected)
   inoremap <buffer> <F2> <Cmd>let g:actual += [getline('.')]<CR>
   set backspace=indent,eol,start
 
-  exe "normal $i" .. repeat("\<BS>\<F2>", len(a:expected))
+  exe "normal i" .. repeat("\<BS>\<F2>", len(a:expected))
   call assert_equal(a:expected, g:actual)
 
   set backspace&
@@ -2171,9 +2174,12 @@ endfunc
 
 " Test that backspace works with 'smarttab' and mixed Tabs and spaces.
 func Test_edit_backspace_smarttab_mixed()
+  set smarttab
   call NewWindow(1, 30)
-  setlocal smarttab tabstop=4 shiftwidth=4
+  setlocal tabstop=4 shiftwidth=4
+
   call setline(1, "\t    \t         \t a")
+  normal! $
   call s:check_backspace([
         \ "\t    \t         \ta",
         \ "\t    \t        a",
@@ -2185,15 +2191,19 @@ func Test_edit_backspace_smarttab_mixed()
         \ ])
 
   call CloseWindow()
+  set smarttab&
 endfunc
 
 " Test that backspace works with 'smarttab' and 'varsofttabstop'.
 func Test_edit_backspace_smarttab_varsofttabstop()
   CheckFeature vartabs
 
+  set smarttab
   call NewWindow(1, 30)
-  setlocal smarttab tabstop=8 varsofttabstop=6,2,5,3
+  setlocal tabstop=8 varsofttabstop=6,2,5,3
+
   call setline(1, "a\t    \t a")
+  normal! $
   call s:check_backspace([
         \ "a\t    \ta",
         \ "a\t     a",
@@ -2204,13 +2214,17 @@ func Test_edit_backspace_smarttab_varsofttabstop()
         \ ])
 
   call CloseWindow()
+  set smarttab&
 endfunc
 
 " Test that backspace works with 'smarttab' when a Tab is shown as "^I".
 func Test_edit_backspace_smarttab_list()
+  set smarttab
   call NewWindow(1, 30)
-  setlocal smarttab tabstop=4 shiftwidth=4 list listchars=
+  setlocal tabstop=4 shiftwidth=4 list listchars=
+
   call setline(1, "\t    \t         \t a")
+  normal! $
   call s:check_backspace([
         \ "\t    \t        a",
         \ "\t    \t    a",
@@ -2220,15 +2234,19 @@ func Test_edit_backspace_smarttab_list()
         \ ])
 
   call CloseWindow()
+  set smarttab&
 endfunc
 
 " Test that backspace works with 'smarttab' and 'breakindent'.
 func Test_edit_backspace_smarttab_breakindent()
   CheckFeature linebreak
 
+  set smarttab
   call NewWindow(3, 17)
-  setlocal smarttab tabstop=4 shiftwidth=4 breakindent breakindentopt=min:5
+  setlocal tabstop=4 shiftwidth=4 breakindent breakindentopt=min:5
+
   call setline(1, "\t    \t         \t a")
+  normal! $
   call s:check_backspace([
         \ "\t    \t         \ta",
         \ "\t    \t        a",
@@ -2240,17 +2258,21 @@ func Test_edit_backspace_smarttab_breakindent()
         \ ])
 
   call CloseWindow()
+  set smarttab&
 endfunc
 
 " Test that backspace works with 'smarttab' and virtual text.
 func Test_edit_backspace_smarttab_virtual_text()
   CheckFeature textprop
 
+  set smarttab
   call NewWindow(1, 50)
-  setlocal smarttab tabstop=4 shiftwidth=4
+  setlocal tabstop=4 shiftwidth=4
+
   call setline(1, "\t    \t         \t a")
   call prop_type_add('theprop', {})
   call prop_add(1, 3, {'type': 'theprop', 'text': 'text'})
+  normal! $
   call s:check_backspace([
         \ "\t    \t         \ta",
         \ "\t    \t        a",
@@ -2263,6 +2285,41 @@ func Test_edit_backspace_smarttab_virtual_text()
 
   call CloseWindow()
   call prop_type_delete('theprop')
+  set smarttab&
+endfunc
+
+" Test that backspace works with 'smarttab' and 'revins'.
+func Test_edit_backspace_smarttab_revins()
+  CheckFeature rightleft
+
+  set smarttab revins
+  call NewWindow(1, 30)
+  setlocal tabstop=8 shiftwidth=4
+  call setline(1, 'foobarbaz')
+
+  call setline(2, "    a\ta")
+  normal! G0
+  call s:check_backspace([
+        \ "a\ta",
+        \ "\ta",
+        \ "    a",
+        \ "a",
+        \ "",
+        \ ])
+
+  call setline(2, "    a\ta")
+  normal! G02l
+  " With 'revins', backspace doesn't delete before cursor.
+  call s:check_backspace([
+        \ "  a\ta",
+        \ "  \ta",
+        \ "    a",
+        \ "  a",
+        \ "  ",
+        \ ])
+
+  call CloseWindow()
+  set smarttab& revins&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
