@@ -3046,6 +3046,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
     int		top_extra;
     int		left_extra;
+    int		lnum;
 
     if (rettv_dict_alloc(rettv) == FAIL)
 	return;
@@ -3057,7 +3058,15 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
     wp = find_popup_win(id);
     if (wp == NULL)
 	return;  // invalid {id}
-    popup_adjust_position(wp);
+
+    // recalculate scrollbar
+    if (wp->w_firstline < 0)
+	lnum = wp->w_buffer->b_ml.ml_line_count;
+    else
+	lnum = wp->w_topline;
+    wp->w_has_scrollbar = wp->w_want_scrollbar
+	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
+
     top_extra = popup_top_extra(wp);
     left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
 
