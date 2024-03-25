@@ -138,6 +138,8 @@ RequestExecutionLevel highest
 
 # Show all languages, despite user's codepage:
 !define MUI_LANGDLL_ALLLANGUAGES
+# Always show dialog choice language
+#!define MUI_LANGDLL_ALWAYSSHOW
 !define MUI_LANGDLL_REGISTRY_ROOT       "HKCU"
 !define MUI_LANGDLL_REGISTRY_KEY        "Software\Vim"
 !define MUI_LANGDLL_REGISTRY_VALUENAME  "Installer Language"
@@ -858,12 +860,12 @@ Function SetCustom
 
 
 	# 1st group - Compatibility
-	${NSD_CreateGroupBox} 0 0 100% 32% $(str_msg_compat_title)
+	${NSD_CreateGroupBox} 0u 0u 296u 44u $(str_msg_compat_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 10% 35% 8% $(str_msg_compat_desc)
+	${NSD_CreateLabel} 16u 14u 269u 10u $(str_msg_compat_desc)
 	Pop $3
-	${NSD_CreateDropList} 18% 19% 75% 8% ""
+	${NSD_CreateDropList} 42u 26u 237u 13u ""
 	Pop $vim_nsd_compat
 	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vi)
 	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vim)
@@ -883,12 +885,12 @@ Function SetCustom
 
 
 	# 2nd group - Key remapping
-	${NSD_CreateGroupBox} 0 35% 100% 31% $(str_msg_keymap_title)
+	${NSD_CreateGroupBox} 0u 48u 296u 44u $(str_msg_keymap_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 45% 90% 8% $(str_msg_keymap_desc)
+	${NSD_CreateLabel} 16u 62u 269u 10u $(str_msg_keymap_desc)
 	Pop $3
-	${NSD_CreateDropList} 38% 54% 55% 8% ""
+	${NSD_CreateDropList} 42u 74u 236u 13u ""
 	Pop $vim_nsd_keymap
 	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_default)
 	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_windows)
@@ -902,12 +904,12 @@ Function SetCustom
 
 
 	# 3rd group - Mouse behavior
-	${NSD_CreateGroupBox} 0 69% 100% 31% $(str_msg_mouse_title)
+	${NSD_CreateGroupBox} 0u 95u 296u 44u $(str_msg_mouse_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 79% 90% 8% $(str_msg_mouse_desc)
+	${NSD_CreateLabel} 16u 108u 269u 10u $(str_msg_mouse_desc)
 	Pop $3
-	${NSD_CreateDropList} 23% 87% 70% 8% ""
+	${NSD_CreateDropList} 42u 121u 237u 13u ""
 	Pop $vim_nsd_mouse
 	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_default)
 	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_windows)
