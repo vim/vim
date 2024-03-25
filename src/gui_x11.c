@@ -1678,7 +1678,7 @@ gui_mch_set_shellsize(
 }
 
 /*
- * Allow 10 pixels for horizontal borders, 'guiheadroom' for vertical borders.
+ * Allow 'guiheadroom' for vertical borders.
  * Is there no way in X to find out how wide the borders really are?
  */
     void
@@ -1686,8 +1686,27 @@ gui_mch_get_screen_dimensions(
     int	    *screen_w,
     int	    *screen_h)
 {
-    *screen_w = DisplayWidth(gui.dpy, DefaultScreen(gui.dpy)) - 10;
-    *screen_h = DisplayHeight(gui.dpy, DefaultScreen(gui.dpy)) - p_ghr;
+    XWindowAttributes attr;
+    Window            win, unused;
+    int               x, y, xborder = 10, yborder = p_ghr;
+    Display           *dpy;
+
+    gui_get_x11_windis(&win, &dpy);
+    if (win && dpy != NULL)
+    {
+        XGetWindowAttributes(dpy, win, &attr);
+        XTranslateCoordinates(dpy, win, attr.root, 0, 0, &x, &y, &unused);
+        xborder = x - attr.x > 0 ? x - attr.x : xborder;
+        //yborder = y - attr.y > 0 ? y - attr.y : yborder;
+    }
+#ifdef DEBUG
+    fprintf(stderr, "border corrections:\n");
+    fprintf(stderr, "xborder: %d; yborder: %d.\n", xborder, yborder);
+    fprintf(stderr, "\n");
+#endif
+
+    *screen_w = DisplayWidth(dpy, DefaultScreen(dpy)) - xborder;
+    *screen_h = DisplayHeight(dpy, DefaultScreen(dpy)) - yborder;
 }
 
 /*
