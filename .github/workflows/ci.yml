@@ -148,7 +148,7 @@ jobs:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-clang
       - name: Install clang-${{ env.CLANG_VER }}
-        if: ${{ matrix.compiler == 'clang' && matrix.architecture != 'i386' && steps.cache-clang.outputs.cache-hit != 'true' || 'true' }}
+        if: ${{ matrix.compiler == 'clang' && steps.cache-clang.outputs.cache-hit != 'true' || 'true' }}
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
