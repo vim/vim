@@ -460,11 +460,15 @@ restore_dbg_stuff(struct dbg_stuff *dsp)
 }
 #endif
 
-// @param fnum A buffer number. 0 == current buffer, 1-or-more must be a valid buffer ID.
-// @param ffname The full path to where a buffer lives on-disk or would live on-disk.
-// @return if `ffname` is the same as `fnum` buffer, return true.
-//
-static int is_other_file(int fnum, char_u *ffname)
+/*
+ * Check if ffname differs from fnum.
+ *
+ * fnum is a buffer number. 0 == current buffer, 1-or-more must be a valid buffer ID.
+ * ffname is a full path to where a buffer lives on-disk or would live on-disk.
+ *
+ */
+    static int
+is_other_file(int fnum, char_u *ffname)
 {
   if (fnum != 0)
   {
