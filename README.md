@@ -126,7 +126,7 @@ If you would like to help make Vim better, see the
 
 ## Information
 
-If you are on macOS, you can use [Macvim](https://macvim-dev.github.io/macvim/).
+If you are on macOS, you can use [MacVim](https://macvim.org).
 
 The latest news about Vim can be found on the Vim home page:
 	https://www.vim.org/
