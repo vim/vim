@@ -94,7 +94,6 @@ jobs:
         run: |
           sudo bash ci/remove_snap.sh
       - name: Cache APT files
-        if: matrix.architecture != 'i386'
         id: cache-apt
         uses: john-shaffer/cache@main
         with:
@@ -134,26 +133,35 @@ jobs:
           sudo apt-get update && sudo apt-get dist-upgrade && sudo apt-get install -y "${PKGS[@]}"
 
       - name: Cache GCC files
+        if: matrix.architecture != 'i386'
         id: cache-gcc
         uses: john-shaffer/cache@main
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-gcc
+      - name: Cache GCC:i386 files
+        if: matrix.architecture == 'i386'
+        id: cache-gcc:i386
+        uses: john-shaffer/cache@main
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-gcc:i386
       - name: Install gcc-${{ env.GCC_VER }}
-        if: ${{ matrix.compiler == 'gcc' && steps.cache-gcc.outputs.cache-hit != 'true' || 'true' }}
+        if: ${{ matrix.compiler == 'gcc' && steps.cache-gcc:i386.outputs.cache-hit != 'true' || 'true' }}
         run: |
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
       - name: Cache Clang files
+        if: matrix.architecture != 'i386'
         id: cache-clang
         uses: john-shaffer/cache@main
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-clang
       - name: Install clang-${{ env.CLANG_VER }}
-        if: ${{ matrix.compiler == 'clang' && steps.cache-clang.outputs.cache-hit != 'true' || 'true' }}
+        if: ${{ matrix.architecture != 'i386' && matrix.compiler == 'clang' && steps.cache-clang.outputs.cache-hit != 'true' || 'true' }}
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
