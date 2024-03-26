@@ -3083,12 +3083,12 @@ func Test_props_with_text_truncated_just_before_after()
       ])
 
       prop_type_add("test", {"highlight": "Error"})
-      prop_add(1, 0, {type: "test", text: "after text", text_padding_left: 1})
+      prop_add(1, 0, {type: "test", text_align: "right", text: "right text"})
       def g:AddPropBelow()
         prop_add(1, 0, {type: "test", text_align: "below", text: "below text"})
       enddef
-      def g:AddPropRight()
-        prop_add(1, 0, {type: "test", text_align: "right", text: "right text"})
+      def g:AddPropAfter()
+        prop_add(1, 0, {type: "test", text: "after text", text_padding_left: 1})
       enddef
       normal G$
   END
@@ -3099,7 +3099,7 @@ func Test_props_with_text_truncated_just_before_after()
   call term_sendkeys(buf, ":call AddPropBelow()\<CR>")
   call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
 
-  call term_sendkeys(buf, ":call AddPropRight()\<CR>:\<Esc>")
+  call term_sendkeys(buf, ":call AddPropAfter()\<CR>:\<Esc>")
   call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
 
   call StopVimInTerminal(buf)
