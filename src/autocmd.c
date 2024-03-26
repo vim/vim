@@ -160,6 +160,7 @@ static struct event_name
     {"SafeState",	EVENT_SAFESTATE},
     {"SafeStateAgain",	EVENT_SAFESTATEAGAIN},
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
+    {"SessionWritePost",EVENT_SESSIONWRITEPOST},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
     {"SigUSR1",		EVENT_SIGUSR1},

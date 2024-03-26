@@ -1404,6 +1404,7 @@ enum auto_event
     EVENT_SAFESTATE,		// going to wait for a character
     EVENT_SAFESTATEAGAIN,	// still waiting for a character
     EVENT_SESSIONLOADPOST,	// after loading a session file
+    EVENT_SESSIONWRITEPOST,	// after writing a session file
     EVENT_SHELLCMDPOST,		// after ":!cmd"
     EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
     EVENT_SIGUSR1,		// after the SIGUSR1 signal

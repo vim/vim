@@ -5682,6 +5682,7 @@ Select-mode-mapping	visual.txt	/*Select-mode-mapping*
 Session	starting.txt	/*Session*
 SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
+SessionWritePost	autocmd.txt	/*SessionWritePost*
 ShellCmdPost	autocmd.txt	/*ShellCmdPost*
 ShellFilterPost	autocmd.txt	/*ShellFilterPost*
 SigUSR1	autocmd.txt	/*SigUSR1*
