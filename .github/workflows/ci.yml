@@ -139,15 +139,15 @@ jobs:
         with:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-gcc
-      - name: Cache GCC:i386 files
+      - name: Cache GCC i386 files
         if: matrix.architecture == 'i386'
-        id: cache-gcc:i386
+        id: cache-gcci386
         uses: john-shaffer/cache@main
         with:
           path: /var/cache/apt/archives
-          key: ${{ runner.os }}-gcc:i386
+          key: ${{ runner.os }}-gcci386
       - name: Install gcc-${{ env.GCC_VER }}
-        if: ${{ matrix.compiler == 'gcc' && steps.cache-gcc:i386.outputs.cache-hit != 'true' || 'true' }}
+        if: ${{ matrix.compiler == 'gcc' && steps.cache-gcci386.outputs.cache-hit != 'true' || 'true' }}
         run: |
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
