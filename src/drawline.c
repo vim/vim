@@ -2073,29 +2073,34 @@ win_line(
 		    --bcol;
 # endif
 		// Add any text property that starts in this column.
-		while (text_prop_next < text_prop_count
-			   && (text_props[text_prop_next].tp_col == MAXCOL
-			      ? (*ptr == NUL
-			       || (bcol == 0
-					&& (text_props[text_prop_next].tp_flags
-						       & TP_FLAG_ALIGN_ABOVE)))
-			      : bcol >= text_props[text_prop_next].tp_col - 1))
+		while (text_prop_next < text_prop_count)
 		{
-		    // With 'nowrap' and not in the first screen line only "below"
-		    // text prop can show.
-		    if (text_props[text_prop_next].tp_col == MAXCOL
-			    ? (wp->w_p_wrap
-				  || wlv.row == startrow
-				  || (text_props[text_prop_next].tp_flags
-					& TP_FLAG_ALIGN_BELOW)
-				  || (bcol == 0
-					&& (text_props[text_prop_next].tp_flags
-						       & TP_FLAG_ALIGN_ABOVE)))
-			    : bcol <= text_props[text_prop_next].tp_col - 1
-					   + text_props[text_prop_next].tp_len)
+		    int active;
+		    textprop_T *tp = &text_props[text_prop_next];
+		    if (tp->tp_col == MAXCOL)
 		    {
-			text_prop_idxs[text_props_active++] = text_prop_next;
+			if (bcol == 0 && (tp->tp_flags & TP_FLAG_ALIGN_ABOVE))
+			    active = TRUE;
+			else if (*ptr != NUL)
+			    break;
+			else
+			{
+			    // With 'nowrap' and not in the first screen line only "below"
+			    // text prop can show.
+			    active = wp->w_p_wrap
+				  || wlv.row == startrow
+				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+			}
 		    }
+		    else
+		    {
+			if (bcol < tp->tp_col - 1)
+			    break;
+			active = bcol <= tp->tp_col - 1 + tp->tp_len;
+		    }
+
+		    if (active)
+			text_prop_idxs[text_props_active++] = text_prop_next;
 		    ++text_prop_next;
 		}
 
