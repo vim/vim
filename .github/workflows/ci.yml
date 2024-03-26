@@ -94,6 +94,7 @@ jobs:
         run: |
           sudo bash ci/remove_snap.sh
       - name: Cache APT files
+        if: matrix.architecture != 'i386'
         id: cache-apt
         uses: john-shaffer/cache@main
         with:
@@ -140,6 +141,7 @@ jobs:
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
       - name: Cache Clang files
+        if: matrix.architecture != 'i386'
         id: cache-clang
         uses: john-shaffer/cache@main
         with:
