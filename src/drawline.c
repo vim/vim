@@ -2072,8 +2072,6 @@ win_line(
 		    // not on the next char yet, don't start another prop
 		    --bcol;
 # endif
-		int display_text_first = FALSE;
-
 		// Add any text property that starts in this column.
 		// With 'nowrap' and not in the first screen line only "below"
 		// text prop can show.
@@ -2109,8 +2107,7 @@ win_line(
 		    text_prop_id = 0;
 		    reset_extra_attr = FALSE;
 		}
-		if (text_props_active > 0 && wlv.n_extra == 0
-							&& !display_text_first)
+		if (text_props_active > 0 && wlv.n_extra == 0)
 		{
 		    int used_tpi = -1;
 		    int used_attr = 0;
@@ -2157,8 +2154,6 @@ win_line(
 				// skip this prop, first display the '$' after
 				// the line or display an empty line
 				text_prop_follows = TRUE;
-				if (used_tpi < 0)
-				    display_text_first = TRUE;
 				continue;
 			    }
 
@@ -2172,7 +2167,6 @@ win_line(
 			    text_prop_flags = pt->pt_flags;
 			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;
-			    display_text_first = FALSE;
 			}
 		    }
 		    if (text_prop_id < 0 && used_tpi >= 0
