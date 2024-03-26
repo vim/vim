@@ -41554,6 +41554,8 @@ Other improvements				*new-other-9.2*
 Changed						*changed-9.2*
 -------
 
+- use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
+
 Added						*added-9.2*
 -----
 
