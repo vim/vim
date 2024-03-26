@@ -2073,24 +2073,29 @@ win_line(
 		    --bcol;
 # endif
 		// Add any text property that starts in this column.
-		// With 'nowrap' and not in the first screen line only "below"
-		// text prop can show.
 		while (text_prop_next < text_prop_count
 			   && (text_props[text_prop_next].tp_col == MAXCOL
-			      ? ((*ptr == NUL
-				  && (wp->w_p_wrap
-				      || wlv.row == startrow
-				      || (text_props[text_prop_next].tp_flags
-						       & TP_FLAG_ALIGN_BELOW)))
+			      ? (*ptr == NUL
 			       || (bcol == 0
 					&& (text_props[text_prop_next].tp_flags
 						       & TP_FLAG_ALIGN_ABOVE)))
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
+		    // With 'nowrap' and not in the first screen line only "below"
+		    // text prop can show.
 		    if (text_props[text_prop_next].tp_col == MAXCOL
-			    || bcol <= text_props[text_prop_next].tp_col - 1
+			    ? (wp->w_p_wrap
+				  || wlv.row == startrow
+				  || (text_props[text_prop_next].tp_flags
+					& TP_FLAG_ALIGN_BELOW)
+				  || (bcol == 0
+					&& (text_props[text_prop_next].tp_flags
+						       & TP_FLAG_ALIGN_ABOVE)))
+			    : bcol <= text_props[text_prop_next].tp_col - 1
 					   + text_props[text_prop_next].tp_len)
+		    {
 			text_prop_idxs[text_props_active++] = text_prop_next;
+		    }
 		    ++text_prop_next;
 		}
 
@@ -2321,7 +2326,6 @@ win_line(
 		    }
 		}
 		else if (text_prop_next < text_prop_count
-			   && text_props[text_prop_next].tp_col == MAXCOL
 			   && ((*ptr != NUL && ptr[mb_ptr2len(ptr)] == NUL)
 			       || (!wp->w_p_wrap && wlv.col == wp->w_width - 1)))
 		{
@@ -2329,10 +2333,21 @@ win_line(
 		    // follows after it, we may need to flush the line after
 		    // displaying that character.
 		    // Or when not wrapping and at the rightmost column.
+
 		    int only_below_follows = !wp->w_p_wrap && wlv.col == wp->w_width - 1;
-		    if (!only_below_follows
-			    || (text_props[text_prop_next].tp_flags & TP_FLAG_ALIGN_BELOW))
-			text_prop_follows = TRUE;
+		    // TODO: Store "after"/"right"/"below" text properties in order
+		    //       in the buffer so only `text_props[text_prop_count - 1]`
+		    //       needs to be checked for following "below" virtual text
+		    for (int i = text_prop_next; i < text_prop_count; ++i)
+		    {
+			if (text_props[i].tp_col == MAXCOL
+				&& (!only_below_follows
+				    || (text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)))
+			{
+			    text_prop_follows = TRUE;
+			    break;
+			}
+		    }
 		}
 	    }
 

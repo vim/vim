@@ -3099,6 +3099,9 @@ func Test_props_with_text_truncated_just_before_after()
   call term_sendkeys(buf, ":call AddPropBelow()\<CR>")
   call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
 
+  call term_sendkeys(buf, ":call AddPropRight()\<CR>:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
