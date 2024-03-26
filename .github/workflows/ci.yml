@@ -100,7 +100,7 @@ jobs:
           path: /var/cache/apt/archives
           key: ${{ runner.os }}-apt
       - name: Install packages
-        if: ${{ steps.cache-apt.outputs.cache-hit == 'true' || steps.cache-apt.outputs.cache-hit =! 'true' }}
+        if: ${{ steps.cache-apt.outputs.cache-hit != 'true' || 'true' }}
         run: |
           PKGS=( \
             gettext \
