@@ -131,17 +131,22 @@ jobs:
               libattr1-dev
             )
           fi
-          sudo apt-get update && sudo apt-get upgrade && sudo apt-get install -y "${PKGS[@]}"
+          sudo apt-get update && sudo apt-get dist-upgrade && sudo apt-get install -y "${PKGS[@]}"
 
+      - name: Cache GCC files
+        id: cache-gcc
+        uses: john-shaffer/cache@main
+        with:
+          path: /var/cache/apt/archives
+          key: ${{ runner.os }}-gcc
       - name: Install gcc-${{ env.GCC_VER }}
-        if: matrix.compiler == 'gcc'
+        if: ${{ matrix.compiler == 'gcc' && steps.cache-gcc.outputs.cache-hit != 'true' || 'true' }}
         run: |
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
 
       - name: Cache Clang files
-        if: matrix.architecture != 'i386'
         id: cache-clang
         uses: john-shaffer/cache@main
         with:
