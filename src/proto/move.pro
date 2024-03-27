@@ -46,7 +46,6 @@ void set_empty_rows(win_T *wp, int used);
 void scroll_cursor_bot(int min_scroll, int set_topbot);
 void scroll_cursor_halfway(int atend, int prefer_above);
 void cursor_correct(void);
-int onepage(int dir, long count);
-void halfpage(int flag, linenr_T Prenum);
+int pagescroll(int dir, long count, int half);
 void do_check_cursorbind(void);
 /* vim: set ft=c : */
