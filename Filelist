@@ -1057,7 +1057,6 @@ LANG_GEN = \
 
 # Generic language files, binary.
 LANG_GEN_BIN = \
-		runtime/doc/tags-?? \
 		runtime/spell/README_en.txt \
 		runtime/spell/en.ascii.spl \
 		runtime/spell/en.latin1.spl \
