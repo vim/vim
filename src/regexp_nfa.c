@@ -1733,7 +1733,7 @@ nfa_regatom(void)
 			    EMIT((int)n);
 			    break;
 			}
-			else if (c == '\'' && n == 0)
+			else if (no_Magic(c) == '\'' && n == 0)
 			{
 			    // \%'m  \%<'m  \%>'m
 			    EMIT(cmp == '<' ? NFA_MARK_LT :
