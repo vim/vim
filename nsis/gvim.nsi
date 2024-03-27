@@ -139,7 +139,7 @@ RequestExecutionLevel highest
 # Show all languages, despite user's codepage:
 !define MUI_LANGDLL_ALLLANGUAGES
 # Always show dialog choice language
-!define MUI_LANGDLL_ALWAYSSHOW
+#!define MUI_LANGDLL_ALWAYSSHOW
 !define MUI_LANGDLL_REGISTRY_ROOT       "HKCU"
 !define MUI_LANGDLL_REGISTRY_KEY        "Software\Vim"
 !define MUI_LANGDLL_REGISTRY_VALUENAME  "Installer Language"
