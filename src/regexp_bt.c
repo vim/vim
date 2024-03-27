@@ -1641,7 +1641,7 @@ regatom(int *flagp)
 				  n = n * 10 + (c - '0');
 				  c = getchr();
 			      }
-			      if (c == '\'' && n == 0)
+			      if (no_Magic(c) == '\'' && n == 0)
 			      {
 				  // "\%'m", "\%<'m" and "\%>'m": Mark
 				  c = getchr();

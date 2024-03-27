@@ -890,6 +890,7 @@ func Test_matching_marks()
   new
   set regexpengine=1
   call Regex_Mark()
+  call Regex_Mark_Verymagic()
   set regexpengine=2
   call Regex_Mark()
   call Regex_Mark_Verymagic()
