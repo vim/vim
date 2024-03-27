@@ -3,6 +3,7 @@
 # danish.nsi: Danish language strings for gvim NSIS installer.
 #
 # Locale ID    : 1030
+# Locale Name  : da
 # fileencoding : UTF-8
 # Author       : scootergrisen
 
@@ -13,6 +14,20 @@
 # These strings should be always English.  Otherwise dosinst.c fails.
 LangString ^SetupCaption     ${LANG_DANISH}         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_DANISH}         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_DANISH} "${VIMRT}\doc\uganda.nsis.dax"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_DANISH} "README.dax.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1

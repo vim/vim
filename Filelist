@@ -596,6 +596,7 @@ SRC_DOS =	\
 		nsis/gvim_version.nsh \
 		nsis/README.txt \
 		nsis/lang/*.nsi \
+		nsis/lang/README.txt \
 		uninstall.txt \
 
 # Source files for MS Windows without CR/LF translation (also in the extra archive).

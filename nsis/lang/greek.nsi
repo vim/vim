@@ -3,6 +3,7 @@
 # greek.nsi: Greek language strings for gvim NSIS installer.
 #
 # Locale ID    : 1032
+# Locale Name  : el
 # fileencoding : UTF-8
 # Author       : Christos Longros
 
@@ -15,6 +16,20 @@ LangString ^SetupCaption     ${LANG_GREEK} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_GREEK} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_GREEK} "${VIMRT}\doc\uganda.nsis.elx"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_GREEK} "README.elx.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1

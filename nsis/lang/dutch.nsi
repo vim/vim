@@ -18,6 +18,20 @@ LangString ^UninstallCaption ${LANG_DUTCH} \
         "$(^Name) Uninstall"
 
 ##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_DUTCH} "${VIMRT}\doc\uganda.nsis.nlx"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_DUTCH} "README.nlx.txt"
+
+##############################################################################
 # MUI Configuration Strings                                               {{{1
 ##############################################################################
 

@@ -4,6 +4,7 @@
 # installer.
 #
 # Locale ID    : 1028
+# Locale Name  : tw
 # fileencoding : UTF-8
 # Author       : Guopeng Wen
 
@@ -16,6 +17,21 @@ LangString ^SetupCaption     ${LANG_TRADCHINESE} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_TRADCHINESE} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_TRADCHINESE} \
+#        "${VIMRT}\doc\uganda.nsis.twx"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_TRADCHINESE} "README.twx.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1
