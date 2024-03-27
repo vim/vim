@@ -189,8 +189,8 @@ PO_VIM_INPUTLIST = \
 	../../runtime/defaults.vim
 
 PO_VIM_JSLIST = \
-	optwin.js \
-	defaults.js
+	________runtime__optwin.js \
+	________runtime__defaults.js
 
 # Arguments for xgettext to pick up messages to translate from the source code.
 XGETTEXT_KEYWORDS = --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 --keyword=PLURAL_MSG:2,4
