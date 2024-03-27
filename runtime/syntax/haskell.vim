@@ -104,8 +104,8 @@ endif
 
 
 " Comments
-syn match   hsLineComment      "---*\([^-!#$%&\*\+./<=>\?@\\^|~].*\)\?$" contains=@Spell
-syn region  hsBlockComment     start="{-"  end="-}" contains=hsBlockComment,@Spell
+syn match   hsLineComment      "---*\([^-!#$%&\*\+./<=>\?@\\^|~].*\)\?$" contains=hsTodo,@Spell
+syn region  hsBlockComment     start="{-"  end="-}" contains=hsBlockComment,hsTodo,@Spell
 syn region  hsPragma	       start="{-#" end="#-}"
 
 syn keyword hsTodo	        contained FIXME TODO XXX NOTE
@@ -164,6 +164,7 @@ hi def link hsLiterateComment		  hsComment
 hi def link hsBlockComment		  hsComment
 hi def link hsLineComment			  hsComment
 hi def link hsComment			  Comment
+hi def link hsTodo			  Todo
 hi def link hsPragma			  SpecialComment
 hi def link hsBoolean			  Boolean
 hi def link hsType			  Type
