@@ -48,7 +48,7 @@ There are four main types of jobs:
 
 For when using sockets See |job-start|, |job-start-nochannel| and
 |channel-open|.  For 2 and 3, one or more jobs using pipes, see |job-start|.
-For 4 use the ":{range}!cmd" command, see |filter|.
+For 4 use the ":[range]!cmd" command, see |filter|.
 
 Over the socket and pipes these protocols are available:
 RAW	nothing known, Vim cannot tell where a message ends
