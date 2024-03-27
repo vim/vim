@@ -266,7 +266,7 @@ dist:
 # Clean up some files to avoid they are included.
 # Copy README files to the top directory.
 prepare:
-	if test -f runtime/doc/uganda.nsis.txt then \
+	if test -f runtime/doc/uganda.nsis.txt; then \
 		rm runtime/doc/uganda.nsis.???; fi
 	for name in $(IN_README_DIR); do \
 	  cp READMEdir/"$$name" .; \
