@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 26
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41555,6 +41555,7 @@ Changed						*changed-9.2*
 -------
 
 - use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
+- use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
 
 Added						*added-9.2*
 -----
