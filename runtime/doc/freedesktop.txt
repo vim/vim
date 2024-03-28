@@ -1,0 +1,46 @@
+*freedesktop.txt* For Vim version 9.1. Last change: 2024 Mar 20
+
+
+		  VIM REFERENCE MANUAL    by Bram Moolenaar
+
+
+				      *freedesktop* *X-desktop-group* *xdg*
+This file contains some information on what it is freedesktop and the XDG
+families of specifications.
+
+Freedesktop is a project aiming to develop specifications to enable
+interoperability between Unix-like operating systems.
+
+Vim tries to conform, for some extent, to the specifications made by
+freedesktop (see |xdg-base-dir|).
+
+==============================================================================
+XDG Base Directory Specification	*xdg-base-dir* *$XDG_CONFIG_HOME*
+
+The XDG Base Directory Specification aim to define standard locations for the
+multilple data e configuration files used by applications. In order to divide
+this files by their use and not by application. This is mainly done to go
+against the legacy behavior of dumping everything in the home directory.
+
+This directories should be overwritable by the user, using environment
+variable but should also give fallback in case those variables weren't set. 
+
+This is a not exhaustive of those directories:
+  XDG_CACHE_HOME    HOME/.cache		Ephemiral data files
+  XDG_CONFIG_HOME   HOME/.config	Configuration files
+  XDG_DATA_HOME	    HOME/.local/share	Persistent data files
+  XDG_STATE_HOME    HOME/.local/state	State data files
+
+							*xdg-vimrc*
+Vim, on Unix systems, will look at `$XDG_CONFIG_HOME/vim/vimrc` for
+configuration (see |vimrc|) but it will source it only if no other rc is found
+in  `$HOME` or `$HOME/vim`.
+
+							*xdg-runtime*
+When the |xdg-vimrc| is used the |'runtimepath'| will be modified accordingly
+to respect the |xdg-base-dir|: >
+
+    "$XDG_CONFIG_HOME/vim,$VIMRUNTIME,/after,$XDG_CONFIG_HOME/vim/after"
+<
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
