@@ -2172,7 +2172,7 @@ init_users(void)
 }
 
 /*
- * Function given to ExpandGeneric() to obtain an user names.
+ * Function given to ExpandGeneric() to obtain user names.
  */
     char_u*
 get_users(expand_T *xp UNUSED, int idx)
