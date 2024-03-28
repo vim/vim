@@ -461,6 +461,7 @@ NEW_TESTS_RES = \
 	test_matchadd_conceal.res \
 	test_matchadd_conceal_utf8.res \
 	test_matchfuzzy.res \
+	test_matchparen.res \
 	test_memory_usage.res \
 	test_menu.res \
 	test_messages.res \
