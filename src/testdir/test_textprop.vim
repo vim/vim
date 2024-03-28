@@ -3601,6 +3601,38 @@ func Test_prop_above_with_indent()
   call prop_type_delete('indented')
 endfunc
 
+func Test_prop_above_tablen()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ["\t\tone", "\ttwo"])
+      prop_type_add('above', {highlight: 'NonText'})
+      prop_add(1, 0, {
+          text:  'above 1',
+          type: 'above',
+          text_align: 'above',
+          text_padding_left: 16,
+      })
+      prop_add(1, 0, {
+          text:  'above 2',
+          type: 'above',
+          text_align: 'above',
+          text_padding_left: 16,
+      })
+      prop_add(2, 0, {
+          text:  'above 1',
+          type: 'above',
+          text_align: 'above',
+          text_padding_left: 8,
+      })
+  END
+  call writefile(lines, 'XscriptPropAboveTab', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropAboveTab', #{cols: 34, rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_above_tablen_1', {})
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_above_with_number()
   CheckRunVimInTerminal
 

@@ -1218,6 +1218,9 @@ win_lbr_chartabsize(
 	int	    col = (int)(s - line);
 	garray_T    *gap = &wp->w_buffer->b_textprop_text;
 
+	if (*s == TAB)
+	    size = wp->w_buffer->b_p_ts;
+
 	// The "$" for 'list' mode will go between the EOL and
 	// the text prop, account for that.
 	if (has_lcs_eol)
