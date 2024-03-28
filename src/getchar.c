@@ -1290,26 +1290,64 @@ gotchars(char_u *chars, int len)
 {
     char_u		*s = chars;
     int			i;
-    static char_u	buf[4];
+    static char_u	c = 0;
+    static char_u	prev_c = 0;
+    static char_u	prev_prev_c = 0;
+    static char_u	buf[MB_MAXBYTES * 3 + 4];
     static int		buflen = 0;
+    static int		pending = 0;
+    static int		in_mbyte = FALSE;
     int			todo = len;
 
     while (todo--)
     {
-	buf[buflen++] = *s++;
+	int	key;
+
+	prev_prev_c = prev_c;
+	prev_c = c;
+	c = buf[buflen++] = *s++;
+	if (pending > 0)
+	    pending--;
 
 	// When receiving a special key sequence, store it until we have all
 	// the bytes and we can decide what to do with it.
-	if (buflen == 1 && buf[0] == K_SPECIAL)
+	if ((pending == 0 || in_mbyte)
+		&& (c == K_SPECIAL
+#ifdef FEAT_GUI
+		    || c == CSI
+#endif
+	   ))
+	    pending += 2;
+
+	if (pending > 0)
 	    continue;
-	if (buflen == 2)
-	    continue;
-	if (buflen == 3 && buf[1] == KS_EXTRA
-		       && (buf[2] == KE_FOCUSGAINED || buf[2] == KE_FOCUSLOST))
+
+	key = c;
+	in_mbyte = FALSE;
+
+	if (prev_prev_c == K_SPECIAL
+#ifdef FEAT_GUI
+		|| prev_prev_c == CSI
+#endif
+		)
 	{
-	    // Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful in a
-	    // recording.
-	    buflen = 0;
+	    if (prev_c == KS_MODIFIER)
+		// When receiving a modifier, wait for the modified key.
+		continue;
+	    key = TO_SPECIAL(prev_c, c);
+	    if (key == K_FOCUSGAINED || key == K_FOCUSLOST)
+		// Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful in a
+		// recording.
+		buflen -= 3;
+	}
+
+	// When receiving a multibyte character, store it until we have all
+	// the bytes, so that it won't be split between two buffers, and
+	// delete_buff_tail() can work properly.
+	pending = MB_BYTE2LEN_CHECK(key) - 1;
+	if (pending > 0)
+	{
+	    in_mbyte = TRUE;
 	    continue;
 	}
 
@@ -1326,6 +1364,7 @@ gotchars(char_u *chars, int len)
 	}
 	buflen = 0;
     }
+
     may_sync_undo();
 
 #ifdef FEAT_EVAL

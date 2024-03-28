@@ -299,37 +299,33 @@ endfunc
 func Run_test_recording_with_select_mode_utf8()
   new
 
-  " No escaping
-  call feedkeys("qacc12345\<Esc>gH哦\<Esc>q", "tx")
-  call assert_equal("哦", getline(1))
-  call assert_equal("cc12345\<Esc>gH哦\<Esc>", @a)
-  call setline(1, 'asdf')
-  normal! @a
-  call assert_equal("哦", getline(1))
+  " Test with different text lengths: 5, 7, 9, 11, 13, 15
+  for s in ['12345', '口=口', '口口口', '口=口=口', '口口=口口', '口口口口口']
+    " 0x80 is K_SPECIAL
+    " 0x9B is CSI
+    " 哦: 0xE5 0x93 0xA6
+    " 固: 0xE5 0x9B 0xBA
+    " 四: 0xE5 0x9B 0x9B
+    " 倒: 0xE5 0x80 0x92
+    " 倀: 0xE5 0x80 0x80
+    for c in ['哦', '固', '四', '倒', '倀']
+      call feedkeys($"qacc{s}\<Esc>gH{c}\<Esc>q", "tx")
+      call assert_equal(c, getline(1))
+      call assert_equal($"cc{s}\<Esc>gH{c}\<Esc>", @a)
+      call setline(1, 'asdf')
+      normal! @a
+      call assert_equal(c, getline(1))
 
-  " 固 is 0xE5 0x9B 0xBA where 0x9B is CSI
-  call feedkeys("qacc12345\<Esc>gH固\<Esc>q", "tx")
-  call assert_equal("固", getline(1))
-  call assert_equal("cc12345\<Esc>gH固\<Esc>", @a)
-  call setline(1, 'asdf')
-  normal! @a
-  call assert_equal("固", getline(1))
-
-  " 四 is 0xE5 0x9B 0x9B where 0x9B is CSI
-  call feedkeys("qacc12345\<Esc>gH四\<Esc>q", "tx")
-  call assert_equal("四", getline(1))
-  call assert_equal("cc12345\<Esc>gH四\<Esc>", @a)
-  call setline(1, 'asdf')
-  normal! @a
-  call assert_equal("四", getline(1))
-
-  " 倒 is 0xE5 0x80 0x92 where 0x80 is K_SPECIAL
-  call feedkeys("qacc12345\<Esc>gH倒\<Esc>q", "tx")
-  call assert_equal("倒", getline(1))
-  call assert_equal("cc12345\<Esc>gH倒\<Esc>", @a)
-  call setline(1, 'asdf')
-  normal! @a
-  call assert_equal("倒", getline(1))
+      " Also test with Shift modifier
+      let shift_c = eval($'"\<S-{c}>"')
+      call feedkeys($"qacc{s}\<Esc>gH{shift_c}\<Esc>q", "tx")
+      call assert_equal(c, getline(1))
+      call assert_equal($"cc{s}\<Esc>gH{shift_c}\<Esc>", @a)
+      call setline(1, 'asdf')
+      normal! @a
+      call assert_equal(c, getline(1))
+    endfor
+  endfor
 
   bwipe!
 endfunc
