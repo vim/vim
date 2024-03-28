@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Mar 20
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2601,6 +2601,10 @@ v:t_class	Value of |class| type.  Read-only.  See: |type()|
 v:t_object	Value of |object| type.  Read-only.  See: |type()|
 					*v:t_typealias* *t_typealias-variable*
 v:t_typealias	Value of |typealias| type.  Read-only.  See: |type()|
+					*v:t_enum* *t_enum-variable*
+v:t_enum	Value of |enum| type.  Read-only.  See: |type()|
+					*v:t_enumvalue* *t_enumvalue-variable*
+v:t_enumvalue	Value of |enumvalue| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|

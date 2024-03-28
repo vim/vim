@@ -719,7 +719,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 
     if (expected == NULL)
 	return OK;  // didn't expect anything.
-		    //
+
     ga_init2(&type_list, sizeof(type_T *), 10);
 
     // A null_function and null_partial are special cases, they can be used to
@@ -1739,8 +1739,15 @@ type_name(type_T *type, char **tofree)
 
     if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
     {
-	char_u *class_name = type->tt_class == NULL ? (char_u *)"Unknown"
-				    : type->tt_class->class_name;
+	char_u *class_name;
+	if (type->tt_class != NULL)
+	{
+	    class_name = type->tt_class->class_name;
+	    if (IS_ENUM(type->tt_class))
+		name = "enum";
+	}
+	else
+	    class_name = (char_u *)"Unknown";
 	size_t len = STRLEN(name) + STRLEN(class_name) + 3;
 	*tofree = alloc(len);
 	if (*tofree != NULL)
@@ -1869,18 +1876,26 @@ check_typval_is_value(typval_T *tv)
 {
     if (tv == NULL)
 	return OK;
-    if (tv->v_type == VAR_CLASS)
+
+    switch (tv->v_type)
     {
-	if (tv->vval.v_class != NULL)
-	    semsg(_(e_using_class_as_value_str), tv->vval.v_class->class_name);
-	else
-	    emsg(e_using_class_as_var_val);
-	return FAIL;
-    }
-    else if (tv->v_type == VAR_TYPEALIAS)
-    {
-        semsg(_(e_using_typealias_as_value_str), tv->vval.v_typealias->ta_name);
-	return FAIL;
+	case VAR_CLASS:
+	    {
+		class_T *cl = tv->vval.v_class;
+		if (IS_ENUM(cl))
+		    semsg(_(e_using_enum_as_value_str), cl->class_name);
+		else
+		    semsg(_(e_using_class_as_value_str), cl->class_name);
+	    }
+	    return FAIL;
+
+	case VAR_TYPEALIAS:
+	    semsg(_(e_using_typealias_as_value_str),
+		    tv->vval.v_typealias->ta_name);
+	    return FAIL;
+
+	default:
+	    break;
     }
     return OK;
 }
@@ -1893,17 +1908,25 @@ check_type_is_value(type_T *type)
 {
     if (type == NULL)
 	return OK;
-    if (type->tt_type == VAR_CLASS)
+    switch (type->tt_type)
     {
-        semsg(_(e_using_class_as_value_str), type->tt_class->class_name);
-	return FAIL;
-    }
-    else if (type->tt_type == VAR_TYPEALIAS)
-    {
-	// TODO: Not sure what could be done here to get a name.
-	//       Maybe an optional argument?
-        emsg(_(e_using_typealias_as_var_val));
-	return FAIL;
+	case VAR_CLASS:
+	    if (IS_ENUM(type->tt_class))
+		semsg(_(e_using_enum_as_value_str),
+			type->tt_class->class_name);
+	    else
+		semsg(_(e_using_class_as_value_str),
+			type->tt_class->class_name);
+	    return FAIL;
+
+	case VAR_TYPEALIAS:
+	    // TODO: Not sure what could be done here to get a name.
+	    //       Maybe an optional argument?
+	    emsg(_(e_using_typealias_as_var_val));
+	    return FAIL;
+
+	default:
+	    break;
     }
     return OK;
 }

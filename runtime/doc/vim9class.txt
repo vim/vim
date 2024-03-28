@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Mar 03
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -904,19 +904,125 @@ aliased: >
 
 8.  Enum					*Vim9-enum* *:enum* *:endenum*
 
-{not implemented yet}
-
+						*enum* *E1418* *E1419* *E1420*
 An enum is a type that can have one of a list of values.  Example: >
 
-	:enum Color
-		White
-		Red
-		Green
-		Blue
-		Black
-	:endenum
+    :enum Color
+	White,
+	Red,
+	Green, Blue, Black
+    :endenum
+<
+						*enumvalue* *E1422*
+The enum values are separated by commas.  More than one enum value can be
+listed in a single line.  The final enum value should not be followed by a
+comma.
 
+An enum value is accessed using the enum name followed by the value name: >
 
+    var a: Color = Color.Blue
+<
+Enums are treated as classes, where each enum value is essentially an instance
+of that class.  Unlike typical object instantiation with the |new()| method,
+enum instances cannot be created this way.
+
+An enum can only be defined in a |Vim9| script file.	*E1414*
+An enum cannot be defined inside a function.
+
+							*E1415*
+An enum name must start with an uppercase letter.  The name of an enum value
+in an enum can start with an upper or lowercase letter.
+
+							*E1416*
+An enum can implement an interface but cannot extend a class: >
+
+    enum MyEnum implements MyIntf
+	Value1,
+	Value2
+
+	def SomeMethod()
+	enddef
+    endenum
+<
+							*enum-constructor*
+The enum value objects in an enum are constructed like any other objects using
+the |new()| method.  Arguments can be passed to the enum constructor by
+specifying them after the enum value name, just like calling a function.  The
+default constructor doesn't have any arguments.
+
+							*E1417*
+An enum can contain class variables, class methods, object variables and
+object methods.  The methods in an enum cannot be |:abstract| methods.
+
+The following example shows an enum with object variables and methods: >
+
+    vim9script
+    enum Planet
+	Earth(1, false),
+	Jupiter(95, true),
+	Saturn(146, true)
+
+	var moons: number
+	var has_rings: bool
+	def GetMoons(): number
+	    return this.moons
+	enddef
+    endenum
+    echo Planet.Jupiter.GetMoons()
+    echo Planet.Earth.has_rings
+<
+						*E1421* *E1423* *E1424* *E1425*
+Enums and their values are immutable. They cannot be modified after
+declaration and cannot be utilized as numerical or string types.
+
+						*enum-name*
+Each enum value object has a "name" instance variable which contains the name
+of the enum value.  This is a readonly variable.
+
+						*enum-ordinal* *E1426*
+Each enum value has an associated ordinal number starting with 0.  The ordinal
+number of an enum value can be accessed using the "ordinal" instance variable.
+This is a readonly variable.  Note that if the ordering of the enum values in
+an enum is changed, then their ordinal values will also change.
+
+						*enum-values*
+All the values in an enum can be accessed using the "values" class variable
+which is a List of the enum objects.  This is a readonly variable.
+
+Example: >
+    enum Planet
+	Mercury,
+	Venus,
+	Earth
+    endenum
+
+    echo Planet.Mercury
+    echo Planet.Venus.name
+    echo Planet.Venus.ordinal
+    for p in Planet.values
+	# ...
+    endfor
+<
+An enum is a class with class variables for the enum value objects and object
+variables for the enum value name and the enum value ordinal: >
+
+    enum Planet
+	Mercury,
+	Venus
+    endenum
+<
+The above enum definition is equivalent to the following class definition: >
+
+    class Planet
+      public static final Mercury: Planet = Planet.new('Mercury', 0)
+      public static final Venus: Planet = Planet.new('Venus', 1)
+
+      public static const values: list<Planet> = [Planet.Mercury, Planet.Venus]
+
+      public const name: string
+      public const ordinal: number
+    endclass
+<
 ==============================================================================
 
 9.  Rationale

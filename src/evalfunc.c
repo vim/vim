@@ -11486,15 +11486,31 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
-	case VAR_CLASS:   n = VAR_TYPE_CLASS; break;
-	case VAR_OBJECT:  n = VAR_TYPE_OBJECT; break;
 	case VAR_TYPEALIAS: n = VAR_TYPE_TYPEALIAS; break;
+	case VAR_CLASS:
+	    {
+		class_T *cl = argvars[0].vval.v_class;
+		if (IS_ENUM(cl))
+		    n = VAR_TYPE_ENUM;
+		else
+		    n = VAR_TYPE_CLASS;
+		break;
+	    }
+	case VAR_OBJECT:
+	    {
+		class_T *cl = argvars[0].vval.v_object->obj_class;
+		if (IS_ENUM(cl))
+		    n = VAR_TYPE_ENUMVALUE;
+		else
+		    n = VAR_TYPE_OBJECT;
+		break;
+	    }
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
-	     internal_error_no_abort("f_type(UNKNOWN)");
-	     n = -1;
-	     break;
+	    internal_error_no_abort("f_type(UNKNOWN)");
+	    n = -1;
+	    break;
     }
     rettv->vval.v_number = n;
 }

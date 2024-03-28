@@ -41548,6 +41548,8 @@ Vim9 script
 Add support for internal builtin functions with vim9 objects, see
 |builtin-object-methods|
 
+Enum support for Vim9 script |:enum|
+
 Other improvements				*new-other-9.2*
 ------------------
 
