@@ -1,4 +1,9 @@
+# vi:set ts=8 sts=4 sw=4 et fdm=marker:
+#
 # turkish.nsi: Turkish language strings for gvim NSIS installer.
+#
+# Locale ID    : 1055
+# Locale Name  : tr
 # fileencoding : UTF-8
 # Author       : Emir SARI
 
@@ -10,6 +15,22 @@ LangString ^SetupCaption     ${LANG_TURKISH} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_TURKISH} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_TURKISH} "${VIMRT}\doc\uganda.nsis.trx"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_TURKISH} "README.trx.txt"
+
+##############################################################################
 
 LangString str_show_readme          ${LANG_TURKISH} \
     "Kurulum bittikten sonra README dosyasını aç"

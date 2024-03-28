@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2024 Mar 18
+# Last Change:	2024 Mar 20
 
 Unicode true
 
@@ -157,9 +157,9 @@ RequestExecutionLevel highest
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_LICENSEPAGE_CHECKBOX
-!define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_FUNCTION        LaunchApplication
-!define MUI_FINISHPAGE_RUN_TEXT            $(str_show_readme)
+!define MUI_FINISHPAGE_SHOWREADME
+!define MUI_FINISHPAGE_SHOWREADME_TEXT	    $(str_show_readme)
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION  LaunchApplication
 
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
@@ -183,7 +183,7 @@ SilentInstall normal
 
 # Installer pages
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "${VIMRT}\doc\uganda.nsis.txt"
+!insertmacro MUI_PAGE_LICENSE $(page_lic_file)
 !insertmacro MUI_PAGE_COMPONENTS
 Page custom SetCustom ValidateCustom
 #!define MUI_PAGE_CUSTOMFUNCTION_LEAVE VimFinalCheck
@@ -365,7 +365,7 @@ FunctionEnd
 
 Function LaunchApplication
    SetOutPath $0
-   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
+   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\$(vim_readme_file)"'
 FunctionEnd
 
 ##########################################################
@@ -615,6 +615,110 @@ SectionGroupEnd
 Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
 
+#; FIXME: When adding new translations, do not forget to make changes here.
+	SetOutPath $0
+!if /FileExists ..\README.dax.txt
+    ${If} $Language = ${LANG_DANISH}
+	File ..\README.dax.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.nlx.txt
+    ${If} $Language = ${LANG_DUTCH}
+	File ..\README.nlx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.dex.txt
+    ${If} $Language = ${LANG_GERMAN}
+	File ..\README.dex.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.itx.txt
+    ${If} $Language = ${LANG_ITALIAN}
+	File ..\README.itx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.jax.txt
+    ${If} $Language = ${LANG_JAPANESE}
+	File ..\README.jax.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.rux.txt
+    ${If} $Language = ${LANG_RUSSIAN}
+	File ..\README.rux.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.srx.txt
+    ${If} $Language = ${LANG_SERBIAN}
+	File ..\README.srx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.cnx.txt
+    ${If} $Language = ${LANG_SIMPCHINESE}
+	File ..\README.cnx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.twx.txt
+    ${If} $Language = ${LANG_TRADCHINESE}
+	File ..\README.twx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.trx.txt
+    ${OrIf} $Language = ${LANG_TURKISH}
+	File ..\README.trx.txt
+    ${EndIf}
+!endif
+#; FIXME: When adding new translations, do not forget to make changes here.
+	SetOutPath $0\doc
+!if /FileExists "${VIMRT}\doc\uganda.dax"
+    ${If} $Language = ${LANG_DANISH}
+	File ${VIMRT}\doc\uganda.dax
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.nlx"
+    ${If} $Language = ${LANG_DUTCH}
+	File ${VIMRT}\doc\uganda.nlx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.dex"
+    ${If} $Language = ${LANG_GERMAN}
+	File ${VIMRT}\doc\uganda.dex
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.itx"
+    ${If} $Language = ${LANG_ITALIAN}
+	File ${VIMRT}\doc\uganda.itx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.jax"
+    ${If} $Language = ${LANG_JAPANESE}
+	File ${VIMRT}\doc\uganda.jax
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.rux"
+    ${If} $Language = ${LANG_RUSSIAN}
+	File ${VIMRT}\doc\uganda.rux
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.srx"
+    ${If} $Language = ${LANG_SERBIAN}
+	File ${VIMRT}\doc\uganda.srx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.cnx"
+    ${If} $Language = ${LANG_SIMPCHINESE}
+	File ${VIMRT}\doc\uganda.cnx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.twx"
+    ${If} $Language = ${LANG_TRADCHINESE}
+	File ${VIMRT}\doc\uganda.twx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.trx"
+    ${If} $Language = ${LANG_TURKISH}
+	File ${VIMRT}\doc\uganda.trx
+    ${EndIf}
+!endif
 	SetOutPath $0\lang
 	File /r /x Makefile ${VIMRT}\lang\*.*
 	SetOutPath $0

@@ -1,7 +1,7 @@
 #
 # Makefile for the Vim documentation on Windows
 #
-# 17.11.23, Restorer, <restorer@mail2k.ru>
+# 20.03.24, Restorer, <restorer@mail2k.ru>
 
 # Common components
 !INCLUDE Make_all.mak
@@ -23,7 +23,7 @@ ICONV_PATH = D:\Programs\GetText\bin
 # If the "touch" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("touch.exe")
-TOUCH = "touch.exe" %1
+TOUCH = touch.exe %1
 !ELSE
 TOUCH = if exist %1 ( copy /b %1+,, ) else ( type nul >%1 )
 !ENDIF
@@ -33,7 +33,7 @@ TOUCH = if exist %1 ( copy /b %1+,, ) else ( type nul >%1 )
 # If the "iconv" program is installed on the system, but it is not registered
 # in the %PATH% environment variable, then specify the full path to this file.
 !IF EXIST ("iconv.exe")
-ICONV = "iconv.exe"
+ICONV = iconv.exe
 !ELSEIF EXIST ("$(ICONV_PATH)\iconv.exe")
 ICONV = "$(ICONV_PATH)\iconv.exe"
 !ENDIF
@@ -53,8 +53,8 @@ all : tags perlhtml $(CONVERTED)
 tags : doctags $(DOCS)
 	doctags.exe $(DOCS) | sort /L C /O tags
 	$(PS) $(PSFLAGS) \
-		(Get-Content -Raw tags ^| Get-Unique ^| %%{$$_ -replace \"`r\", \"\"})\
-		^| New-Item -Force -Path . -ItemType file -Name tags
+		(Get-Content -Raw tags ^| Get-Unique ^| %%{$$_ -replace \"`r\", \"\"}) \
+		^| New-Item -Path . -Force -ItemType file -Name tags
 
 doctags : doctags.c
 	$(CC) doctags.c
@@ -67,13 +67,12 @@ vimtags : $(DOCS)
 
 
 uganda.nsis.txt : uganda.???
-	!@$(PS) $(PSFLAGS) $$ext=(Get-Item $?).Extension; (Get-Content $? ^| \
-		%%{$$_ -replace '\s*\*[-a-zA-Z0-9.]*\*', '' -replace 'vim:tw=78:.*', ''})\
-		^| Set-Content $*$$ext
-	!@$(PS) $(PSFLAGS) $$ext=(Get-Item $?).Extension; \
-		(Get-Content -Raw $(@B)$$ext).Trim() -replace '(\r\n){3,}', '$$1$$1' \
-		^| Set-Content $(@B)$$ext
-
+	! $(PS) $(PSFLAGS) (Get-Content $? -Encoding UTF8 \
+		^| %%{$$_ -replace '[\t\s]*\*.*\*', '' -replace 'vim:tw=\d\d:.*', ''}) \
+		^| Set-Content \"$(@B)$$((Get-Item $?).Extension)\" -Encoding Unicode
+	! $(PS) $(PSFLAGS)\
+		(Get-Content $(@B)$$((Get-Item $?).Extension) -Raw).Trim() -replace '(\r\n){3,}', '$$1$$1' \
+		^| Set-Content \"$(@B)$$((Get-Item $?).Extension)\" -Encoding Unicode
 
 # TODO:
 #html: noerrors tags $(HTMLS)

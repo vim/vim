@@ -3,7 +3,7 @@
 # russian.nsi: Russian language strings for gvim NSIS installer.
 #
 # Locale ID    : 1049
-# Locale name  : ru-RU
+# Locale name  : ru
 # fileencoding : UTF-8
 # Author       : Restorer
 
@@ -16,6 +16,18 @@ LangString ^SetupCaption     ${LANG_RUSSIAN} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_RUSSIAN} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file ${LANG_RUSSIAN} "${VIMRT}\doc\uganda.nsis.rux"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file ${LANG_RUSSIAN} "README.rux.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1
