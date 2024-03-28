@@ -1357,7 +1357,7 @@ win_lbr_chartabsize(
 		    cts->cts_bri_size = get_breakindent_win(wp, line);
 		head_mid += cts->cts_bri_size;
 	    }
-	    if (head_mid > 0 && wcol + size > wp->w_width)
+	    if (head_mid > 0)
 	    {
 		// Calculate effective window width.
 		int prev_rem = wp->w_width - wcol;
