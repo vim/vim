@@ -57,15 +57,16 @@ echo -0b11111111
 echo -0B11111111
 
 " Float
-123.456
-+0.0001
-55.0
--0.123
-1.234e03
-1.0E-6
--3.1416e+88
+echo 123.456
+echo +0.0001
+echo 55.0
+echo -0.123
+echo 1.234e03
+echo 1.0E-6
+echo -3.1416e+88
 
 " Blob
+echo 0z
 echo 0zFF00ED015DAF
 echo 0zFF00.ED01.5DAF
 echo 0zFF.00.ED.01.5D.AF
