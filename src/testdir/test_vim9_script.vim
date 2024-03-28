@@ -4906,7 +4906,7 @@ def Test_for_stmt_space_before_type()
   v9.CheckSourceFailure(lines, 'E1059: No white space allowed before colon: :number in range(10)', 2)
 enddef
 
-" This test used to cause an use-after-free memory access
+" This test used to cause a use-after-free memory access
 def Test_for_empty_line_after_lambda()
   var lines =<< trim END
     vim9script

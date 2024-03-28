@@ -3782,7 +3782,7 @@ object_call_builtin_method(
 }
 
 /*
- * Calls the object "empty()" method and returns the method retun value.  In
+ * Calls the object "empty()" method and returns the method return value.  In
  * case of an error, returns TRUE.
  */
     int
