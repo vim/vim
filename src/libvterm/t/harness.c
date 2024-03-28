@@ -590,7 +590,7 @@ static int screen_damage(VTermRect rect, void *user UNUSED)
 }
 
 static int want_screen_scrollback = 0;
-static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user UNUSED)
+static int screen_sb_pushline(int cols, const VTermScreenCell *cells, const VTermLineInfo *lineinfo, void *user UNUSED)
 {
   int eol;
   int c;
@@ -602,7 +602,7 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
   while(eol && !cells[eol-1].chars[0])
     eol--;
 
-  printf("sb_pushline %d =", cols);
+  printf("sb_pushline %d %s=", cols, lineinfo->continuation ? "cont " : "");
   for(c = 0; c < eol; c++)
     printf(" %02X", cells[c].chars[0]);
   printf("\n");

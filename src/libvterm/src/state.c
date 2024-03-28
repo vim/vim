@@ -48,10 +48,12 @@ static void erase(VTermState *state, VTermRect rect, int selective)
   if(rect.end_col == state->cols) {
     int row;
     /* If we're erasing the final cells of any lines, cancel the continuation
-     * marker on the subsequent line
+     * marker on the subsequent line, and similarly the marker of a fully erased line
      */
     for(row = rect.start_row + 1; row < rect.end_row + 1 && row < state->rows; row++)
       state->lineinfo[row].continuation = 0;
+	if (rect.start_col == 0)
+      state->lineinfo[rect.start_row].continuation = 0;
   }
 
   if(state->callbacks && state->callbacks->erase)
@@ -118,6 +120,7 @@ static void scroll(VTermState *state, VTermRect rect, int downward, int rightwar
 {
   int rows;
   int cols;
+  int state_scrollrect_success;
   if(!downward && !rightward)
     return;
 
@@ -133,6 +136,15 @@ static void scroll(VTermState *state, VTermRect rect, int downward, int rightwar
   else if(rightward < -cols)
     rightward = -cols;
 
+  if(state->callbacks && state->callbacks->scrollrect)
+	state_scrollrect_success = (*state->callbacks->scrollrect)(rect, downward, rightward, state->cbdata);
+  else if (state->callbacks)
+    state_scrollrect_success = 0;
+
+  if(state->callbacks && !state_scrollrect_success)
+    vterm_scroll_rect(rect, downward, rightward,
+        state->callbacks->moverect, state->callbacks->erase, state->cbdata);
+
   // Update lineinfo if full line
   if(rect.start_col == 0 && rect.end_col == state->cols && rightward == 0) {
     int height = rect.end_row - rect.start_row - abs(downward);
@@ -143,25 +155,23 @@ static void scroll(VTermState *state, VTermRect rect, int downward, int rightwar
       memmove(state->lineinfo + rect.start_row,
               state->lineinfo + rect.start_row + downward,
               height * sizeof(state->lineinfo[0]));
-      for(row = rect.end_row - downward; row < rect.end_row; row++)
+      for(row = rect.end_row - downward; row < rect.end_row; row++) {
+        if(state->callbacks && state->callbacks->setlineinfo)
+          (*state->callbacks->setlineinfo)(row, &zeroLineInfo, state->lineinfo + row, state->cbdata);
         state->lineinfo[row] = zeroLineInfo;
+      }
     }
     else {
       memmove(state->lineinfo + rect.start_row - downward,
               state->lineinfo + rect.start_row,
               height * sizeof(state->lineinfo[0]));
-      for(row = rect.start_row; row < rect.start_row - downward; row++)
+      for(row = rect.start_row; row < rect.start_row - downward; row++) {
+        if(state->callbacks && state->callbacks->setlineinfo)
+          (*state->callbacks->setlineinfo)(row, &zeroLineInfo, state->lineinfo + row, state->cbdata);
         state->lineinfo[row] = zeroLineInfo;
+      }
     }
   }
-
-  if(state->callbacks && state->callbacks->scrollrect)
-    if((*state->callbacks->scrollrect)(rect, downward, rightward, state->cbdata))
-      return;
-
-  if(state->callbacks)
-    vterm_scroll_rect(rect, downward, rightward,
-        state->callbacks->moverect, state->callbacks->erase, state->cbdata);
 }
 
 static void linefeed(VTermState *state)

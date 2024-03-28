@@ -1,0 +1,18 @@
+INIT
+RESIZE 5,10
+WANTSTATE
+WANTSCREEN b
+
+RESET
+
+!Spillover text marks continuation on second line
+PUSH "A"x15
+PUSH "\r\n"
+  ?lineinfo 0 =
+  ?lineinfo 1 = cont
+
+!Continuation mark sent to sb_pushline
+PUSH "\n"x3
+  sb_pushline 10 = 41 41 41 41 41 41 41 41 41 41
+PUSH "\n"
+  sb_pushline 10 cont = 41 41 41 41 41
