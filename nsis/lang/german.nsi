@@ -21,7 +21,7 @@ LangString ^UninstallCaption ${LANG_GERMAN} \
 # Translated license file for the license page                            {{{1
 ##############################################################################
 
-LicenseLangString page_lic_file 0 "uganda.nsis.txt"
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
 #LicenseLangString page_lic_file ${LANG_GERMAN} "${VIMRT}\doc\uganda.nsis.dex"
 
 ##############################################################################
