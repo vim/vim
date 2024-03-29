@@ -3,7 +3,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2024 Mar 29
+# Last Change:        2024 Mar 29 by Enno Nagel
 
 if exists("g:current_compiler")
   finish
@@ -19,8 +19,8 @@ g:current_compiler = 'context'
 
 if get(b:, 'context_ignore_makefile', get(g:, 'context_ignore_makefile', 0)) ||
   (!filereadable('Makefile') && !filereadable('makefile'))
-  &l:makeprg =  join(context.ConTeXtCmd(shellescape(expand('%:p:t'))), ' ')
-  execute 'CompilerSet makeprg='. escape(&l:makeprg, ' ')
+  var makeprg =  join(context.ConTeXtCmd(shellescape(expand('%:p:t'))), ' ')
+  execute 'CompilerSet makeprg=' .. escape(makeprg, ' ')
 else
   g:current_compiler = 'make'
 endif

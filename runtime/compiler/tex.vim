@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     TeX
 " Maintainer:   Artem Chuprina <ran@ran.pp.ru>
-" Last Change:  2024 Mar 29
+" Last Change:  2024 Mar 29 by Enno Nagel
 
 if exists("current_compiler")
 	finish
