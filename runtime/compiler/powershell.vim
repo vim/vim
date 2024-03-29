@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:	powershell
 " URL: https://github.com/PProvost/vim-ps1
-" Last Change: 2020 Mar 30
+" Last Change: 2024 Mar 29
 
 if exists("current_compiler")
   finish
@@ -49,6 +49,8 @@ let &l:makeprg = g:ps1_makeprg_cmd .' %:p:S'
 "     +     ~~~~~~~~~~~
 "         + CategoryInfo          : ObjectNotFound: (Write-Ouput:String) [], CommandNotFoundException
 "         + FullyQualifiedErrorId : CommandNotFoundException
+
+execute 'CompilerSet makeprg='. escape(&l:makeprg, ' ')
 
 " Showing error in context with underlining.
 CompilerSet errorformat=%+G+%m

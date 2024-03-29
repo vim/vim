@@ -2,7 +2,7 @@
 " Compiler:    Mono C# Compiler
 " Maintainer:  Jarek Sobiecki <harijari@go2.pl>
 " Last Updated By: Peter Collingbourne
-" Latest Revision: 2012 Jul 19
+" Latest Revision: 2024 Mar 29
 
 if exists("current_compiler")
   finish
@@ -12,7 +12,12 @@ let current_compiler = "mcs"
 let s:cpo_save = &cpo
 set cpo-=C
 
-setlocal errorformat=
+if exists(":CompilerSet") != 2 # Older Vim always used :setlocal
+  command -nargs=* CompilerSet setlocal <args>
+endif
+
+CompilerSet makeprg=mcs
+CompilerSet errorformat=
          \%D%.%#Project\ \"%f/%[%^/\"]%#\"%.%#,
          \%X%.%#Done\ building\ project\ \"%f/%[%^/\"]%#\"%.%#,
          \%-G%\\s%.%#,

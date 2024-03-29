@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     TeX
 " Maintainer:   Artem Chuprina <ran@ran.pp.ru>
-" Last Change:  2012 Apr 30
+" Last Change:  2024 Mar 29
 
 if exists("current_compiler")
 	finish
@@ -28,6 +28,7 @@ if exists('b:tex_ignore_makefile') || exists('g:tex_ignore_makefile') ||
 		let current_compiler = "latex"
 	endif
 	let &l:makeprg=current_compiler.' -interaction=nonstopmode'
+	execute 'CompilerSet makeprg='. escape(&l:makeprg, ' ')
 else
 	let current_compiler = 'make'
 endif
