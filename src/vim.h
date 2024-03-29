@@ -1515,6 +1515,7 @@ typedef enum
     , HLF_QFL	    // quickfix window line currently selected
     , HLF_ST	    // status lines of terminal windows
     , HLF_STNC	    // status lines of not-current terminal windows
+    , HLF_MSG	    // message area
     , HLF_COUNT	    // MUST be the last one
 } hlf_T;
 
@@ -1526,7 +1527,7 @@ typedef enum
 		  'B', 'P', 'R', 'L', \
 		  '+', '=', '[', ']', '{', '}', 'x', 'X', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
-		  'z', 'Z'}
+		  'z', 'Z', 'g'}
 
 /*
  * Boolean constants

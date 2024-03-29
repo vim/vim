@@ -5496,6 +5496,8 @@ MessageWindow	Messages popup window used by `:echowindow`.  If not defined
 		|hl-WarningMsg| is used.
 							*hl-ModeMsg*
 ModeMsg		'showmode' message (e.g., "-- INSERT --").
+							*hl-MsgArea*
+MsgArea		Area for messages and cmdline.
 							*hl-MoreMsg*
 MoreMsg		|more-prompt|
 							*hl-NonText*

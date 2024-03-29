@@ -1637,6 +1637,9 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
     // Only quit when got_int was set in here.
     got_int = FALSE;
 
+    if (attr == 0)
+	attr = HL_ATTR(HLF_MSG);
+
     // if MSG_HIST flag set, add message to history
     if (attr & MSG_HIST)
     {
@@ -2230,6 +2233,9 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
     if (msg_silent != 0)
 	return;
 
+    if (attr == 0)
+	attr = HL_ATTR(HLF_MSG);
+
     // if MSG_HIST flag set, add message to history
     if ((attr & MSG_HIST) && maxlen < 0)
     {
@@ -2678,13 +2684,15 @@ msg_scroll_up(void)
 	// Scrolling up doesn't result in the right background.  Set the
 	// background here.  It's not efficient, but avoids that we have to do
 	// it all over the code.
-	screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
+		' ', ' ', HL_ATTR(HLF_MSG));
 
 	// Also clear the last char of the last but one line if it was not
 	// cleared before to avoid a scroll-up.
 	if (ScreenAttrs[LineOffset[Rows - 2] + Columns - 1] == (sattr_T)-1)
 	    screen_fill((int)Rows - 2, (int)Rows - 1,
-				 (int)Columns - 1, (int)Columns, ' ', ' ', 0);
+				 (int)Columns - 1, (int)Columns,
+				 ' ', ' ', HL_ATTR(HLF_MSG));
     }
 }
 
@@ -2963,7 +2971,8 @@ disp_sb_line(int row, msgchunk_T *smp, int clear_to_eol)
 	// If clearing the screen did not work (e.g. because of a background
 	// color and t_ut isn't set) clear until the last column here.
 	if (clear_to_eol)
-	    screen_fill(row, row + 1, msg_col, (int)Columns, ' ', ' ', 0);
+	    screen_fill(row, row + 1, msg_col, (int)Columns,
+		    ' ', ' ', HL_ATTR(HLF_MSG));
 
 	if (mp->sb_eol || mp->sb_next == NULL)
 	    break;
@@ -3340,8 +3349,8 @@ do_more_prompt(int typed_char)
 		    // scroll up, display line at bottom
 		    msg_scroll_up();
 		    inc_msg_scrolled();
-		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
-						   (int)Columns, ' ', ' ', 0);
+		    screen_fill((int)Rows - 2, (int)Rows - 1, 0, (int)Columns,
+			    ' ', ' ', HL_ATTR(HLF_MSG));
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last, FALSE);
 		    --toscroll;
 		}
@@ -3350,8 +3359,8 @@ do_more_prompt(int typed_char)
 	    if (toscroll <= 0)
 	    {
 		// displayed the requested text, more prompt again
-		screen_fill((int)Rows - 1, (int)Rows, 0,
-						   (int)Columns, ' ', ' ', 0);
+		screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
+			' ', ' ', HL_ATTR(HLF_MSG));
 		msg_moremsg(FALSE);
 		continue;
 	    }
@@ -3364,7 +3373,8 @@ do_more_prompt(int typed_char)
     }
 
     // clear the --more-- message
-    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
+	    ' ', ' ', HL_ATTR(HLF_MSG));
     State = oldState;
     setmouse();
     if (quit_more)
@@ -3713,15 +3723,18 @@ msg_clr_eos_force(void)
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
 	{
-	    screen_fill(msg_row, msg_row + 1, 0, msg_col + 1, ' ', ' ', 0);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+	    screen_fill(msg_row, msg_row + 1, 0, msg_col + 1,
+		    ' ', ' ', HL_ATTR(HLF_MSG));
+	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns,
+		    ' ', ' ', HL_ATTR(HLF_MSG));
 	}
 	else
 #endif
 	{
 	    screen_fill(msg_row, msg_row + 1, msg_col, (int)Columns,
-								 ' ', ' ', 0);
-	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
+		    ' ', ' ', HL_ATTR(HLF_MSG));
+	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns,
+		    ' ', ' ', HL_ATTR(HLF_MSG));
 	}
     }
 }
