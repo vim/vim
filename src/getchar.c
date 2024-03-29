@@ -1283,35 +1283,72 @@ del_typebuf(int len, int offset)
 
 /*
  * Write typed characters to script file.
- * If recording is on put the character in the recordbuffer.
+ * If recording is on put the character in the record buffer.
  */
     static void
 gotchars(char_u *chars, int len)
 {
     char_u		*s = chars;
-    int			i;
-    static char_u	buf[4];
-    static int		buflen = 0;
+    size_t		i;
+    int			c = NUL;
+    static int		prev_c = NUL;
+    static char_u	buf[MB_MAXBYTES * 3 + 4];
+    static size_t	buflen = 0;
+    static unsigned	pending = 0;
+    static int		in_special = FALSE;
+    static int		in_mbyte = FALSE;
     int			todo = len;
 
-    while (todo--)
+    for (; todo--; prev_c = c)
     {
-	buf[buflen++] = *s++;
+	c = buf[buflen++] = *s++;
+	if (pending > 0)
+	    pending--;
 
 	// When receiving a special key sequence, store it until we have all
 	// the bytes and we can decide what to do with it.
-	if (buflen == 1 && buf[0] == K_SPECIAL)
-	    continue;
-	if (buflen == 2)
-	    continue;
-	if (buflen == 3 && buf[1] == KS_EXTRA
-		       && (buf[2] == KE_FOCUSGAINED || buf[2] == KE_FOCUSLOST))
+	if ((pending == 0 || in_mbyte)
+		&& (c == K_SPECIAL
+#ifdef FEAT_GUI
+		    || c == CSI
+#endif
+		   ))
 	{
-	    // Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful in a
-	    // recording.
-	    buflen = 0;
-	    continue;
+	    pending += 2;
+	    if (!in_mbyte)
+		in_special = TRUE;
 	}
+
+	if (pending > 0)
+	    continue;
+
+	if (!in_mbyte)
+	{
+	    if (in_special)
+	    {
+		in_special = FALSE;
+		if (prev_c == KS_MODIFIER)
+		    // When receiving a modifier, wait for the modified key.
+		    continue;
+		c = TO_SPECIAL(prev_c, c);
+		if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		    // Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful
+		    // in a recording.
+		    buflen = 0;
+	    }
+	    // When receiving a multibyte character, store it until we have all
+	    // the bytes, so that it won't be split between two buffer blocks,
+	    // and delete_buff_tail() will work properly.
+	    pending = MB_BYTE2LEN_CHECK(c) - 1;
+	    if (pending > 0)
+	    {
+		in_mbyte = TRUE;
+		continue;
+	    }
+	}
+	else
+	    // Stored all bytes of a multibyte character.
+	    in_mbyte = FALSE;
 
 	// Handle one byte at a time; no translation to be done.
 	for (i = 0; i < buflen; ++i)
@@ -1326,6 +1363,7 @@ gotchars(char_u *chars, int len)
 	}
 	buflen = 0;
     }
+
     may_sync_undo();
 
 #ifdef FEAT_EVAL
