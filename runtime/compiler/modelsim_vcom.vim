@@ -1,7 +1,8 @@
 " Vim Compiler File
 " Compiler:	Modelsim Vcom
 " Maintainer:	Paul Baleme <pbaleme@mail.com>
-" Last Change:	2024 Mar 29 by Enno Nagel
+" Contributors: Enno Nagel
+" Last Change:	2024 Mar 29
 " Thanks to:    allanherriman@hotmail.com
 
 if exists("current_compiler")

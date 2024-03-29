@@ -1,7 +1,8 @@
 " Vim compiler file
-" Compiler:    Mono C# Compiler
-" Maintainer:  Jarek Sobiecki <harijari@go2.pl>
-" Last Change: 2024 Mar 29 by Enno Nagel
+" Compiler:     Mono C# Compiler
+" Maintainer:   Jarek Sobiecki <harijari@go2.pl>
+" Contributors: Peter Collingbourne and Enno Nagel
+" Last Change:  2024 Mar 29
 
 if exists("current_compiler")
   finish

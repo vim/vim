@@ -1,7 +1,8 @@
 " Vim compiler file
 " Compiler:	powershell
 " URL: https://github.com/PProvost/vim-ps1
-" Last Change: 2024 Mar 29 by Enno Nagel
+" Contributors: Enno Nagel
+" Last Change: 2024 Mar 29
 
 if exists("current_compiler")
   finish
