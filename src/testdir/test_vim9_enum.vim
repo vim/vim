@@ -964,7 +964,7 @@ def Test_enum_refcount()
 
     enum Star
       Gemini,
-      Orion,
+      Orion
     endenum
     assert_equal(3, test_refcount(Star))
     assert_equal(2, test_refcount(Star.Gemini))
@@ -1469,6 +1469,19 @@ def Test_enum_eval()
     var e = eval(s)
     assert_equal(Color.Blue, e)
     assert_equal(1, e.ordinal)
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+" Test for using "values" in an enum class variable
+def Test_use_enum_values_in_class_variable()
+  var lines =<< trim END
+    vim9script
+    enum Dir
+      North, South
+      static const dirs: list<Dir> = Dir.values
+    endenum
+    assert_equal([Dir.North, Dir.South], Dir.dirs)
   END
   v9.CheckSourceSuccess(lines)
 enddef

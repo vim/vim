@@ -2056,6 +2056,11 @@ early_ret:
 	    if (enum_parse_values(eap, cl, line, &classmembers,
 					&num_enum_values, &enum_end) == FAIL)
 		break;
+
+	    if (enum_end)
+		// Add the enum "values" class variable.
+		enum_add_values_member(cl, &classmembers, num_enum_values,
+							&type_list);
 	    continue;
 	}
 
@@ -2368,9 +2373,9 @@ early_ret:
 
     vim_free(theline);
 
-    if (success && is_enum)
-	// Add the enum "values" class variable.
-	enum_add_values_member(cl, &classmembers, num_enum_values, &type_list);
+    if (success && is_enum && num_enum_values == 0)
+	// Empty enum statement. Add an empty "values" class variable
+	enum_add_values_member(cl, &classmembers, 0, &type_list);
 
     /*
      * Check a few things
