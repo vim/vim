@@ -574,8 +574,7 @@ changed_common(
 			    && wp->w_topline < lnume
 			    && win_linetabsize(wp, wp->w_topline,
 					ml_get(wp->w_topline), (colnr_T)MAXCOL)
-				    <= wp->w_skipcol + sms_marker_overlap(wp,
-					win_col_off(wp) - win_col_off2(wp)))))
+				    <= wp->w_skipcol + sms_marker_overlap(wp, -1))))
 		wp->w_skipcol = 0;
 
 	    // Check if a change in the buffer has invalidated the cached
