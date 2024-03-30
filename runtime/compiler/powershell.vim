@@ -38,7 +38,7 @@ let g:ps1_efm_show_error_categories = get(g:, 'ps1_efm_show_error_categories', 0
 
 " Use absolute path because powershell requires explicit relative paths
 " (./file.ps1 is okay, but # expands to file.ps1)
-let &l:makeprg = g:ps1_makeprg_cmd .' %:p:S'
+let makeprg = g:ps1_makeprg_cmd .. ' %:p:S'
 
 " Parse file, line, char from callstacks:
 "     Write-Ouput : The term 'Write-Ouput' is not recognized as the name of a
@@ -51,7 +51,7 @@ let &l:makeprg = g:ps1_makeprg_cmd .' %:p:S'
 "         + CategoryInfo          : ObjectNotFound: (Write-Ouput:String) [], CommandNotFoundException
 "         + FullyQualifiedErrorId : CommandNotFoundException
 
-execute 'CompilerSet makeprg='. escape(&l:makeprg, ' ')
+execute 'CompilerSet makeprg=' .. escape(makeprg, ' ')
 
 " Showing error in context with underlining.
 CompilerSet errorformat=%+G+%m
