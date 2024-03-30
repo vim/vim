@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Mar 28
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Apr 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -328,10 +328,27 @@ variables but they have no access to the object variables, they cannot use the
 	   enddef
 	endclass
 
-Inside the class the class method can be called by name directly, outside the
-class the class name must be prefixed: `OtherThing.ClearTotalSize()`.  To use
-a class method from a parent class in a child class, the class name must be
-prefixed.
+Inside the class, the class method can be called by name directly, outside the
+class, the class name must be prefixed: `OtherThing.ClearTotalSize()`.  Also,
+the name prefix must be used for public class methods in the special contexts
+of class variable initializers and of lambda expressions and nested functions:
+>
+    class OtherThing
+	static var name: string = OtherThing.GiveName()
+
+	static def GiveName(): string
+	    def DoGiveName(): string
+		return OtherThing.NameAny()
+	    enddef
+
+	    return DoGiveName()
+	enddef
+
+	static def NameAny(): string
+	    return "any"
+	enddef
+    endclass
+<
 
 Just like object methods the access can be made protected by using an
 underscore as the first character in the method name: >
@@ -972,8 +989,8 @@ The following example shows an enum with object variables and methods: >
     echo Planet.Earth.has_rings
 <
 						*E1421* *E1423* *E1424* *E1425*
-Enums and their values are immutable. They cannot be modified after
-declaration and cannot be utilized as numerical or string types.
+Enums and their values are immutable.  They cannot be utilized as numerical or
+string types.  Enum values can declare mutable instance variables.
 
 						*enum-name*
 Each enum value object has a "name" instance variable which contains the name

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 29
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Apr 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2307,7 +2307,8 @@ eval({string})	Evaluate {string} and return the result.  Especially useful to
 		turn the result of |string()| back into the original value.
 		This works for Numbers, Floats, Strings, Blobs and composites
 		of them.  Also works for |Funcref|s that refer to existing
-		functions.
+		functions.  In |Vim9| script, it can be used to obtain |enum|
+		values from their fully qualified names.
 
 		Can also be used as a |method|: >
 			argv->join()->eval()
