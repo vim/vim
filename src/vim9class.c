@@ -3844,16 +3844,18 @@ object_string(
 	class_T *cl = obj == NULL ? NULL : obj->obj_class;
 	if (cl != NULL && IS_ENUM(cl))
 	{
+	    ga_concat(&ga, (char_u *)"enum ");
 	    ga_concat(&ga, cl->class_name);
-	    char_u *name = ((typval_T *)(obj + 1))->vval.v_string;
+	    char_u *enum_name = ((typval_T *)(obj + 1))->vval.v_string;
 	    ga_concat(&ga, (char_u *)".");
-	    ga_concat(&ga, name);
-	    return ga.ga_data;
+	    ga_concat(&ga, enum_name);
 	}
-
-	ga_concat(&ga, (char_u *)"object of ");
-	ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
-		: cl->class_name);
+	else
+	{
+	    ga_concat(&ga, (char_u *)"object of ");
+	    ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
+		    : cl->class_name);
+	}
 	if (cl != NULL)
 	{
 	    ga_concat(&ga, (char_u *)" {");

@@ -913,7 +913,23 @@ def Test_enum_string()
       Ford
     endenum
     assert_equal("enum Car", string(Car))
-    assert_equal("Car.Honda", string(Car.Honda))
+    assert_equal("enum Car.Honda {name: 'Honda', ordinal: 0}", string(Car.Honda))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # customized string function
+  lines =<< trim END
+    vim9script
+    enum Dir
+      North,
+      South
+
+      def string(): string
+        return $'Dir.{this.name}'
+      enddef
+    endenum
+    assert_equal('Dir.North', string(Dir.North))
+    assert_equal('Dir.South', string(Dir.South))
   END
   v9.CheckSourceSuccess(lines)
 enddef
@@ -938,7 +954,7 @@ def Test_enum_import()
     assert_equal(true, s1 == mod.Star.Orion)
     assert_equal(2, mod.Star.Pisces.ordinal)
     var l1: list<mod.Star> = mod.Star.values
-    assert_equal("Star.Orion", string(l1[1]))
+    assert_equal("enum Star.Orion {name: 'Orion', ordinal: 1}", string(l1[1]))
     assert_equal(s1, l1[1])
 
     def Fn()
@@ -946,7 +962,7 @@ def Test_enum_import()
       assert_equal(true, s2 == mod.Star.Orion)
       assert_equal(2, mod.Star.Pisces.ordinal)
       var l2: list<mod.Star> = mod.Star.values
-      assert_equal("Star.Orion", string(l2[1]))
+      assert_equal("enum Star.Orion {name: 'Orion', ordinal: 1}", string(l2[1]))
       assert_equal(s2, l2[1])
     enddef
     Fn()
@@ -1251,9 +1267,9 @@ def Test_enum_this_in_constructor()
   var lines =<< trim END
     vim9script
     enum A
-      Red("A.Red"),
-      Blue("A.Blue"),
-      Green("A.Green")
+      Red("enum A.Red {name: 'Red', ordinal: 0}"),
+      Blue("enum A.Blue {name: 'Blue', ordinal: 1}"),
+      Green("enum A.Green {name: 'Green', ordinal: 2}")
 
       def new(s: string)
         assert_equal(s, string(this))
@@ -1457,7 +1473,7 @@ def Test_enum_class_variable()
   v9.CheckSourceSuccess(lines)
 enddef
 
-" Test for converting an enum value to a string and then back to an enum value
+" Test for converting a string to an enum value
 def Test_enum_eval()
   var lines =<< trim END
     vim9script
@@ -1465,10 +1481,11 @@ def Test_enum_eval()
       Red,
       Blue
     endenum
-    var s: string = string(Color.Blue)
-    var e = eval(s)
+    var e = eval('Color.Blue')
     assert_equal(Color.Blue, e)
     assert_equal(1, e.ordinal)
+    assert_fails("eval('Color.Green')", 'E1422: Enum value "Green" not found in enum "Color"')
+    assert_fails("var x = eval('Color')", 'E1421: Enum "Color" cannot be used as a value')
   END
   v9.CheckSourceSuccess(lines)
 enddef
