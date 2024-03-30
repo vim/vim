@@ -3,7 +3,7 @@
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
 " URL:	   https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	   2024 Mar 28
+" Last Change:	   2024 Mar 31
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -286,7 +286,7 @@ syn match	vimDef	"\<def\>"		skipwhite nextgroup=vimCmdSep,vimComment,vimFuncPatt
 
 syn match	vimFunction	"\<fu\%[nction]\>!\=\s*\%(<[sS][iI][dD]>\|[sg]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)\+"	contains=@vimFuncList skipwhite nextgroup=vimFuncParams
 syn match	vimDef	"\<def\s\+new\%(\i\|{.\{-1,}}\)\+"				contains=@vimDefList            nextgroup=vimDefParams
-syn match	vimDef	"\<def\>!\=\s*\%(<[sS][iI][dD]>\|[sg]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)\+"		contains=@vimDefList            nextgroup=vimDefParams
+syn match	vimDef	"\<def\>!\=\s*\%(<[sS][iI][dD]>\|[sg]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)\+"		contains=@vimDefList,vimMethodName            nextgroup=vimDefParams
 
 syn match	vimFuncComment	contained	+".*+ skipwhite skipnl nextgroup=vimFuncBody,vimEndfunction
 syn match	vimDefComment	contained	"#.*" skipwhite skipnl nextgroup=vimDefBody,vimEnddef
@@ -296,6 +296,7 @@ syn match	vimFuncSID	contained	"\c<sid>"
 syn match	vimFuncSID	contained	"\<[sg]:"
 syn keyword	vimFuncKey	contained	fu[nction]
 syn keyword	vimDefKey	contained	def
+syn keyword	vimMethodName	contained	empty len string
 
 syn region	vimFuncParams	contained	matchgroup=Delimiter start="(" skip=+\n\s*\\\|\n\s*"\\ + end=")" skipwhite skipnl nextgroup=vimFuncBody,vimFuncComment,vimEndfunction,vimFuncMod contains=vimFuncParam,@vimContinue
 syn region	vimDefParams	contained	matchgroup=Delimiter start="("		   end=")" skipwhite skipnl nextgroup=vimDefBody,vimDefComment,vimEnddef,vimReturnType	 contains=vimDefParam,vim9Comment
@@ -623,7 +624,7 @@ syn case match
 " (following Gautam Iyer's suggestion)
 " ==========================
 syn match	vimFunc              	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\ze\s*("                	contains=vimFuncEcho,vimFuncName,vimUserFunc,vimExecute
-syn match	vimUserFunc	contained        	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\|\<\u[a-zA-Z0-9.]*\>\|\<if\>"	contains=vimNotation
+syn match	vimUserFunc	contained        	"\%(\%([sSgGbBwWtTlL]:\|<[sS][iI][dD]>\)\=\%(\w\+\.\)*\I[a-zA-Z0-9_.]*\)\|\<\u[a-zA-Z0-9.]*\>\|\<if\>"	contains=vimNotation,vimMethodName
 syn keyword	vimFuncEcho	contained      	ec ech echo
 
 " User Command Highlighting: {{{2
@@ -633,7 +634,9 @@ syn match vimUsrCmd	'^\s*\zs\u\%(\w*\)\@>\%([(#[]\|\s\+\%([-+*/%]\=\|\.\.\)=\)\@
 " ====================
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_novimfunctionerror")
  " TODO: The new-prefix exception should only apply to constructor definitions.
- syn match	vimFunctionError	"\s\zs\%(new\)\@![a-z0-9]\i\{-}\ze\s*("		contained contains=vimFuncKey,vimFuncBlank
+ " TODO: The |builtin-object-methods| exception should only apply to method
+ " definitions.
+ syn match	vimFunctionError	"\s\zs\%(empty\|len\|new\|string\)\@![a-z0-9]\i\{-}\ze\s*("		contained contains=vimFuncKey,vimFuncBlank
  syn match	vimFunctionError	"\s\zs\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\d\i\{-}\ze\s*("	contained contains=vimFuncKey,vimFuncBlank
  syn match	vimElseIfErr	"\<else\s\+if\>"
  syn match	vimBufnrWarn	/\<bufnr\s*(\s*["']\.['"]\s*)/
@@ -1135,6 +1138,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimMenuPriority	Number
  hi def link vimMenuStatus	Special
  hi def link vimMenutranslateComment	vimComment
+ hi def link vimMethodName	vimFuncName
  hi def link vimMtchComment	vimComment
  hi def link vimNorm	vimCommand
  hi def link vimNotation	Special
