@@ -10463,4 +10463,32 @@ def Test_current_class_object_class_member()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for updating a base class variable from a base class method without the
+" class name.  This used to crash Vim (Github issue #14352).
+def Test_use_base_class_variable_from_base_class_method()
+  var lines =<< trim END
+    vim9script
+
+    class DictKeyClass
+      static var _obj_id_count = 1
+      def _GenerateKey()
+        _obj_id_count += 1
+      enddef
+      static def GetIdCount(): number
+        return _obj_id_count
+      enddef
+    endclass
+
+    class C extends DictKeyClass
+      def F()
+        this._GenerateKey()
+      enddef
+    endclass
+
+    C.new().F()
+    assert_equal(2, DictKeyClass.GetIdCount())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
