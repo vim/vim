@@ -2944,6 +2944,9 @@ au filetypedetect BufNewFile,BufRead,StdinReadPost *
 	\   setf FALLBACK conf |
 	\ endif
 
+" Yarn lock
+au BufNewFile,BufRead yarn.lock			setf yaml
+
 
 " If the GUI is already running, may still need to install the Syntax menu.
 " Don't do it when the 'M' flag is included in 'guioptions'.
