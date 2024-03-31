@@ -280,6 +280,9 @@ endif
 " Busted (Lua unit testing framework - configuration files)
 au BufNewFile,BufRead .busted			setf lua
 
+" Bundle config
+au BufNewFile,BufRead */.bundle/config			setf yaml
+
 " C or lpc
 au BufNewFile,BufRead *.c			call dist#ft#FTlpc()
 au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
