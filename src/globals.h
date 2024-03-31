@@ -796,20 +796,6 @@ EXTERN int	autocmd_no_enter INIT(= FALSE); // Buf/WinEnter autocmds disabled
 EXTERN int	autocmd_no_leave INIT(= FALSE); // Buf/WinLeave autocmds disabled
 EXTERN int	tabpage_move_disallowed INIT(= FALSE);  // moving tabpages around disallowed
 
-EXTERN int	modified_was_set;		// did ":set modified"
-EXTERN int	did_filetype INIT(= FALSE);	// FileType event found
-EXTERN int	keep_filetype INIT(= FALSE);	// value for did_filetype when
-						// starting to execute
-						// autocommands
-
-// Set by the apply_autocmds_group function if the given event is equal to
-// EVENT_FILETYPE. Used by the readfile function in order to determine if
-// EVENT_BUFREADPOST triggered the EVENT_FILETYPE.
-//
-// Relying on this value requires one to reset it prior calling
-// apply_autocmds_group.
-EXTERN int	au_did_filetype INIT(= FALSE);
-
 // When deleting the current buffer, another one must be loaded.  If we know
 // which one is preferred, au_new_curbuf is set to it
 EXTERN bufref_T	au_new_curbuf INIT3(NULL, 0, 0);

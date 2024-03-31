@@ -3678,7 +3678,7 @@ did_set_modified(optset_T *args)
     if (!args->os_newval.boolean)
 	save_file_ff(curbuf);	// Buffer is unchanged
     redraw_titles();
-    modified_was_set = args->os_newval.boolean;
+    curbuf->b_modified_was_set = args->os_newval.boolean;
     return NULL;
 }
 

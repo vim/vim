@@ -3920,7 +3920,7 @@ f_deepcopy(typval_T *argvars, typval_T *rettv)
     static void
 f_did_filetype(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    rettv->vval.v_number = did_filetype;
+    rettv->vval.v_number = curbuf->b_did_filetype;
 }
 
 /*
