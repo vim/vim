@@ -1241,8 +1241,8 @@ au BufNewFile,BufRead *.lot,*.lotos		setf lotos
 " Lout (also: *.lt)
 au BufNewFile,BufRead *.lou,*.lout		setf lout
 
-" Lua
-au BufNewFile,BufRead *.lua			setf lua
+" Lua, Texlua
+au BufNewFile,BufRead *.lua,*.tlu		setf lua
 
 " Luau
 au BufNewFile,BufRead *.luau		setf luau
