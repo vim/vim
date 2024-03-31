@@ -9599,7 +9599,7 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 			Class		class SomeName
 			Object		object of SomeName {lnum: 1, col: 3}
 			Enum		enum EnumName
-			EnumValue	enum.value
+			EnumValue	enum name.value {name: str, ordinal: nr}
 
 		When a |List| or |Dictionary| has a recursive reference it is
 		replaced by "[...]" or "{...}".  Using eval() on the result
