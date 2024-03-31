@@ -409,6 +409,9 @@ au BufNewFile,BufRead .clang-format		setf yaml
 " Clang-tidy
 au BufNewFile,BufRead .clang-tidy		setf yaml
 
+" Matplotlib style
+au BufNewFile,BufRead *.mplstyle		setf yaml
+
 " Clean
 au BufNewFile,BufRead *.dcl,*.icl		setf clean
 
