@@ -1098,8 +1098,11 @@ au BufNewFile,BufRead *.json-patch		setf json
 " Geojson is also json
 au BufNewFile,BufRead *.geojson			setf json
 
-" Jupyter Notebook is also json
-au BufNewFile,BufRead *.ipynb			setf json
+" Jupyter Notebook and jupyterlab config is also json
+au BufNewFile,BufRead *.ipynb,*.jupyterlab-settings	setf json
+
+" Sublime config
+au BufNewFile,BufRead *.sublime-project,*.sublime-settings,*.sublime-workspace	setf json
 
 " Other files that look like json
 au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
