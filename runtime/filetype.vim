@@ -938,7 +938,7 @@ au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
 au BufRead,BufNewFile *.heex			setf heex
 
 " HEX (Intel)
-au BufNewFile,BufRead *.hex,*.h32		setf hex
+au BufNewFile,BufRead *.hex,*.ihex,*.int,*.ihe,*.ihx,*.mcs,*.h32,*.h80,*.h86,*.a43,*.a90	setf hex
 
 " Hjson
 au BufNewFile,BufRead *.hjson			setf hjson
