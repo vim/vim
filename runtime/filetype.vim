@@ -1501,7 +1501,7 @@ au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli
 au BufNewFile,BufRead *.occ			setf occam
 
 " Octave
-au BufNewFile,BufRead octave.conf,.octaverc,octaverc	setf octave
+au BufNewFile,BufRead octave.conf,.octaverc,octaverc,*/octave/history	setf octave
 
 " Odin
 au BufNewFile,BufRead *.odin			setf odin
