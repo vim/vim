@@ -12,7 +12,7 @@ let current_compiler = "mcs"
 let s:cpo_save = &cpo
 set cpo-=C
 
-if exists(":CompilerSet") != 2 # Older Vim always used :setlocal
+if exists(":CompilerSet") != 2 " Older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
 endif
 

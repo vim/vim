@@ -3,7 +3,7 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-" Contributors:       Enno Nagel
+# Contributors:       Enno Nagel
 # Last Change:        2024 Mar 29
 
 if exists("g:current_compiler")
