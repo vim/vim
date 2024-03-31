@@ -523,6 +523,10 @@ au BufNewFile,BufRead *.lrc			setf lyrics
 au BufNewFile,BufRead *.quake,cm3.cfg		setf m3quake
 au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 
+" Many Python tools use dosini as their config, like setuptools, pudb, coverage
+" (must be before *.cfg)
+au BufNewFile,BufRead setup.cfg,pudb.cfg,.coveragerc	setf dosini
+
 " Quake
 au BufNewFile,BufRead *baseq[2-3]/*.cfg,*id1/*.cfg	setf quake
 au BufNewFile,BufRead *quake[1-3]/*.cfg			setf quake
@@ -1045,9 +1049,6 @@ au BufNewFile,BufRead *.4gl,*.4gh,*.m4gl	setf fgl
 " .INI file for MSDOS
 au BufNewFile,BufRead *.ini,*.INI		setf dosini
 
-" Many python tools use dosini as their config, such as setuptools, pudb, coverage
-au BufNewFile,BufRead setup.cfg,pudb.cfg,.coveragerc	setf dosini
-
 " SysV Inittab
 au BufNewFile,BufRead inittab			setf inittab
 
@@ -1182,6 +1183,9 @@ au BufNewFile,BufRead *.sig			call dist#ft#FTsig()
 " LDAP LDIF
 au BufNewFile,BufRead *.ldif			setf ldif
 
+" Luadoc, Ldoc (must be before *.ld)
+au BufNewFile,BufRead config.ld			setf lua
+
 " Ld loader
 au BufNewFile,BufRead *.ld,*/ldscripts/*	setf ld
 
@@ -1270,9 +1274,6 @@ au BufNewFile,BufRead .luacheckrc		setf lua
 
 " Luarocks
 au BufNewFile,BufRead *.rockspec,rock_manifest	setf lua
-
-" Luadoc, Ldoc
-au BufNewFile,BufRead config.ld			setf lua
 
 " Linden Scripting Language (Second Life)
 au BufNewFile,BufRead *.lsl			call dist#ft#FTlsl()
