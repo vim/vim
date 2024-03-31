@@ -1168,7 +1168,7 @@ au BufNewFile,BufRead *.sig			call dist#ft#FTsig()
 au BufNewFile,BufRead *.ldif			setf ldif
 
 " Ld loader
-au BufNewFile,BufRead *.ld			setf ld
+au BufNewFile,BufRead *.ld,*/ldscripts/*	setf ld
 
 " Lean
 au BufNewFile,BufRead *.lean			setf lean
