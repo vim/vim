@@ -1269,7 +1269,10 @@ au BufNewFile,BufRead .luaurc		setf jsonc
 au BufNewFile,BufRead .luacheckrc		setf lua
 
 " Luarocks
-au BufNewFile,BufRead *.rockspec		setf lua
+au BufNewFile,BufRead *.rockspec,rock_manifest	setf lua
+
+" Luadoc, Ldoc
+au BufNewFile,BufRead config.ld			setf lua
 
 " Linden Scripting Language (Second Life)
 au BufNewFile,BufRead *.lsl			call dist#ft#FTlsl()

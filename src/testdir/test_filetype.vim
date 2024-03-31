@@ -396,7 +396,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     lpc: ['file.lpc', 'file.ulpc'],
     lsl: ['file.lsl'],
     lss: ['file.lss'],
-    lua: ['file.lua', 'file.tlu', 'file.rockspec', 'file.nse', '.luacheckrc', '.busted'],
+    lua: ['file.lua', 'file.tlu', 'file.rockspec', 'file.nse', '.luacheckrc', '.busted', 'rock_manifest', 'config.ld'],
     luau: ['file.luau'],
     lynx: ['lynx.cfg'],
     lyrics: ['file.lrc'],
