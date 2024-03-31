@@ -1039,6 +1039,9 @@ au BufNewFile,BufRead *.4gl,*.4gh,*.m4gl	setf fgl
 " .INI file for MSDOS
 au BufNewFile,BufRead *.ini,*.INI		setf dosini
 
+" Many python tools use dosini as their config, such as setuptools, pudb, coverage
+au BufNewFile,BufRead setup.cfg,pudb.cfg,.coveragerc	setf dosini
+
 " SysV Inittab
 au BufNewFile,BufRead inittab			setf inittab
 
