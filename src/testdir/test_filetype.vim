@@ -481,7 +481,7 @@ def s:GetFilenameChecks(): dict<list<string>>
              'any/.muttng/muttrc', 'any/.muttng/muttrc-file',
              'any/etc/Muttrc.d/file', 'muttngrc', 'muttngrc-file', 'muttrc',
              'muttrc-file'],
-    mysql: ['file.mysql'],
+    mysql: ['file.mysql', '.mysql_history'],
     n1ql: ['file.n1ql', 'file.nql'],
     named: ['namedfile.conf', 'rndcfile.conf', 'named-file.conf', 'named.conf', 'rndc-file.conf', 'rndc-file.key', 'rndc.conf', 'rndc.key'],
     nanorc: ['/etc/nanorc', 'file.nanorc', 'any/etc/nanorc'],

@@ -1389,7 +1389,7 @@ au BufNewFile,BufRead mrxvtrc,.mrxvtrc		setf mrxvtrc
 au BufNewFile,BufRead *.msql			setf msql
 
 " Mysql
-au BufNewFile,BufRead *.mysql			setf mysql
+au BufNewFile,BufRead *.mysql,.mysql_history	setf mysql
 
 " Tcl Shell RC file
 au BufNewFile,BufRead tclsh.rc			setf tcl
