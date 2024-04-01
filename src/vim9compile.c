@@ -1790,10 +1790,11 @@ compile_lhs(
 		    return FAIL;
 
 		lhs->lhs_dest = dest_class_member;
-		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
-		lhs->lhs_type =
-		    oc_member_type_by_idx(cctx->ctx_ufunc->uf_class,
-					FALSE, lhs->lhs_classmember_idx);
+		// The class variable is defined either in the current class or
+		// in one of the parent class in the hierarchy.
+		lhs->lhs_class = defcl;
+		lhs->lhs_type = oc_member_type_by_idx(defcl, FALSE,
+						lhs->lhs_classmember_idx);
 	    }
 	    else
 	    {
