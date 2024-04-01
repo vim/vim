@@ -847,7 +847,7 @@ doESCkey:
 		// ins_redraw() triggers TextChangedI only when no characters
 		// are in the typeahead buffer, so reset curbuf->b_last_changedtick only
 		// if the TextChangedI was not blocked by char_avail() (e.g. using :norm!)
-		// and the TextChangeDI autocommand has been trigered
+		// and the TextChangedI autocommand has been triggered.
 		if (!char_avail() && curbuf->b_last_changedtick_i == CHANGEDTICK(curbuf))
 		    curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 		return (c == Ctrl_O);
