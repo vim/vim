@@ -756,6 +756,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     typescript: ['file.mts', 'file.cts'],
     'typescript.glimmer': ['file.gts'],
     typescriptreact: ['file.tsx'],
+    typespec: ['file.tsp'],
     ungrammar: ['file.ungram'],
     uc: ['file.uc'],
     udevconf: ['/etc/udev/udev.conf', 'any/etc/udev/udev.conf'],

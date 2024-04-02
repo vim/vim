@@ -2373,6 +2373,9 @@ au BufNewFile,BufRead *.mts,*.cts		setf typescript
 " TypeScript with React
 au BufNewFile,BufRead *.tsx			setf typescriptreact
 
+" TypeSpec files
+au BufNewFile,BufRead *.tsp			setf typespec
+
 " Motif UIT/UIL files
 au BufNewFile,BufRead *.uit,*.uil		setf uil
 
