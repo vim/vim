@@ -3068,6 +3068,43 @@ func Test_props_with_text_after_below_trunc()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_props_with_text_truncated_just_before_after()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      set showbreak=+++
+      set list listchars=extends:>
+      set nowrap
+
+      setline(1, [
+        'here is text long enough to fill the row',
+        'second line',
+      ])
+
+      prop_type_add("test", {"highlight": "Error"})
+      prop_add(1, 0, {type: "test", text_align: "right", text: "right text"})
+      def g:AddPropBelow()
+        prop_add(1, 0, {type: "test", text_align: "below", text: "below text"})
+      enddef
+      def g:AddPropAfter()
+        prop_add(1, 0, {type: "test", text: "after text", text_padding_left: 1})
+      enddef
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsWithTextTruncatedJustBeforeAfter', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextTruncatedJustBeforeAfter', #{rows: 8, cols: 40})
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_1', {})
+
+  call term_sendkeys(buf, ":call AddPropBelow()\<CR>")
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
+
+  call term_sendkeys(buf, ":call AddPropAfter()\<CR>:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_below_after_empty()
   CheckRunVimInTerminal
 

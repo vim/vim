@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 03
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41548,11 +41548,16 @@ Vim9 script
 Add support for internal builtin functions with vim9 objects, see
 |builtin-object-methods|
 
+Enum support for Vim9 script |:enum|
+
 Other improvements				*new-other-9.2*
 ------------------
 
 Changed						*changed-9.2*
 -------
+
+- use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
+- use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
 
 Added						*added-9.2*
 -----
@@ -41570,6 +41575,7 @@ Functions: ~
 
 Autocommands: ~
 
+|SessionWritePost|	after writing the session file |:mksession|
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
 |WinNewPre|		before creating a new window

@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 23
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2265,8 +2265,8 @@ empty({expr})						*empty()*
 		- A |Job| is empty when it failed to start.
 		- A |Channel| is empty when it is closed.
 		- A |Blob| is empty when its length is zero.
-		- An |Object| is empty, when the |empty()| builtin method in
-		  the object (if present) returns true.
+		- An |Object| is empty, when the empty() method in the object
+		  (if present) returns true. |object-empty()|
 
 		For a long |List| this is much faster than comparing the
 		length with zero.
@@ -5485,9 +5485,9 @@ len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
-		When {expr} is an |Object|, invokes the |len()| method in the
-		object (if present) to get the length.  Otherwise returns
-		zero.
+		When {expr} is an |Object|, invokes the len() method in the
+		object (if present) to get the length (|object-len()|).
+		Otherwise returns zero.
 
 		Can also be used as a |method|: >
 			mylist->len()
@@ -9598,14 +9598,16 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 			Dictionary	{key: value, key: value}
 			Class		class SomeName
 			Object		object of SomeName {lnum: 1, col: 3}
+			Enum		enum EnumName
+			EnumValue	enum name.value {name: str, ordinal: nr}
 
 		When a |List| or |Dictionary| has a recursive reference it is
 		replaced by "[...]" or "{...}".  Using eval() on the result
 		will then fail.
 
-		For an object, invokes the |string()| method to get a textual
+		For an object, invokes the string() method to get a textual
 		representation of the object.  If the method is not present,
-		then the default representation is used.
+		then the default representation is used. |object-string()|
 
 		Can also be used as a |method|: >
 			mylist->string()
@@ -10461,6 +10463,8 @@ type({expr})	The result is a Number representing the type of {expr}.
 			Class:	   12  |v:t_class|
 			Object:	   13  |v:t_object|
 			Typealias: 14  |v:t_typealias|
+			Enum:	   15  |v:t_enum|
+			EnumValue: 16  |v:t_enumvalue|
 		For backward compatibility, this method can be used: >
 			:if type(myvar) == type(0)
 			:if type(myvar) == type("")

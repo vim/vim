@@ -1129,7 +1129,7 @@ do_mousescroll(cmdarg_T *cap)
 	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
 	{
 	    // whole page up or down
-	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
+	    pagescroll(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L, FALSE);
 	}
 	else
 	{

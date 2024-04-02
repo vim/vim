@@ -2326,7 +2326,7 @@ apply_autocmds_group(
 	    saveRedobuff(&save_redo);
 	    did_save_redobuff = TRUE;
 	}
-	did_filetype = keep_filetype;
+	curbuf->b_did_filetype = curbuf->b_keep_filetype;
     }
 
     /*
@@ -2338,7 +2338,7 @@ apply_autocmds_group(
 
     // Remember that FileType was triggered.  Used for did_filetype().
     if (event == EVENT_FILETYPE)
-	did_filetype = TRUE;
+	curbuf->b_did_filetype = TRUE;
 
     tail = gettail(fname);
 
@@ -2447,7 +2447,7 @@ apply_autocmds_group(
 	restore_search_patterns();
 	if (did_save_redobuff)
 	    restoreRedobuff(&save_redo);
-	did_filetype = FALSE;
+	curbuf->b_did_filetype = FALSE;
 	while (au_pending_free_buf != NULL)
 	{
 	    buf_T *b = au_pending_free_buf->b_next;
@@ -2489,7 +2489,7 @@ BYPASS_AU:
 	aubuflocal_remove(buf);
 
     if (retval == OK && event == EVENT_FILETYPE)
-	au_did_filetype = TRUE;
+	curbuf->b_au_did_filetype = TRUE;
 
     return retval;
 }

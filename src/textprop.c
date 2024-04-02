@@ -672,16 +672,10 @@ prop_count_above_below(buf_T *buf, linenr_T lnum)
 	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
 	if (prop.tp_col == MAXCOL && text_prop_type_valid(buf, &prop))
 	{
-	    if ((prop.tp_flags & TP_FLAG_ALIGN_BELOW)
+	    if ((prop.tp_flags & (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW))
 		    || (next_right_goes_below
 				     && (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)))
 	    {
-		next_right_goes_below = TRUE;
-		++result;
-	    }
-	    else if (prop.tp_flags & TP_FLAG_ALIGN_ABOVE)
-	    {
-		next_right_goes_below = FALSE;
 		++result;
 	    }
 	    else if (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)

@@ -6,10 +6,9 @@ WHAT IS VIM?
 Vim is a greatly improved version of the good old UNIX editor Vi.  Many new
 features have been added: multi-level undo, syntax highlighting, command line
 history, on-line help, spell checking, filename completion, block operations,
-script language, etc.  There is also a Graphical User Interface (GUI)
-available.  Still, Vi compatibility is maintained, those who have Vi "in the
-fingers" will feel at home.  See "runtime/doc/vi_diff.txt" for differences with
-Vi.
+script language, etc.  There is also a Graphical User Interface (GUI) available.
+Still, Vi compatibility is maintained, those who have Vi "in the fingers" will
+feel at home.  See "runtime/doc/vi_diff.txt" for differences with Vi.
 
 This editor is very useful for editing programs and other plain text files.
 All commands are given with normal keyboard characters, so those who can type
@@ -60,9 +59,10 @@ README_ami.txt		Amiga
 README_unix.txt		Unix
 README_dos.txt		MS-DOS and MS-Windows
 README_mac.txt		Macintosh
+README_haiku.txt	Haiku
 README_vms.txt		VMS
 
-There are more README_*.txt files, depending on the distribution you used.
+There are other README_*.txt files, depending on the distribution you used.
 
 
 DOCUMENTATION
@@ -71,9 +71,9 @@ The Vim tutor is a one hour training course for beginners.  Often it can be
 started as "vimtutor".  See ":help tutor" for more information.
 
 The best is to use ":help" in Vim.  If you don't have an executable yet, read
-"runtime/doc/help.txt".  It contains pointers to the other documentation
-files.  The User Manual reads like a book and is recommended to learn to use
-Vim.  See ":help user-manual".
+"runtime/doc/help.txt".  It contains pointers to the other documentation files.
+The User Manual reads like a book and is recommended to learn to use Vim.  See
+":help user-manual".
 
 
 COPYING
@@ -92,15 +92,14 @@ distribute it.
 SPONSORING
 
 Fixing bugs and adding new features takes a lot of time and effort.  To show
-your appreciation for the work and motivate Bram and others to continue
-working on Vim please send a donation.
+your appreciation for the work and motivate developers to continue working on
+Vim please send a donation.
 
-Since Bram is back to a paid job the money will now be used to help children
-in Uganda.  See runtime/doc/uganda.txt.  But at the same time donations
-increase Bram's motivation to keep working on Vim!
+The money you donated will be mainly used to help children in Uganda.  See
+"runtime/doc/uganda.txt".  But at the same time donations increase the
+development team motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
-
 	https://www.vim.org/sponsor/
 
 
@@ -111,6 +110,8 @@ If you would like to help make Vim better, see the CONTRIBUTING.md file.
 
 INFORMATION
 
+If you are on macOS, you can use MacVim: https://macvim.org
+
 The latest news about Vim can be found on the Vim home page:
 	https://www.vim.org/
 
@@ -118,8 +119,8 @@ If you have problems, have a look at the Vim documentation or tips:
 	https://www.vim.org/docs.php
 	https://vim.fandom.com/wiki/Vim_Tips_Wiki
 
-If you still have problems or any other questions, use one of the mailing
-lists to discuss them with Vim users and developers:
+If you still have problems or any other questions, use one of the mailing lists
+to discuss them with Vim users and developers:
 	https://www.vim.org/maillist.php
 
 If nothing else works, report bugs directly to the vim-dev mailing list:
@@ -128,8 +129,7 @@ If nothing else works, report bugs directly to the vim-dev mailing list:
 
 MAIN AUTHOR
 
-Most of Vim was created by Bram Moolenaar <Bram@vim.org> |Bram-Moolenaar|
+Most of Vim was created by Bram Moolenaar <Bram@vim.org>, ":help Bram-Moolenaar"
 
-Send any other comments, patches, flowers and suggestions to the vim-dev mailing list:
-
-	<vim-dev@vim.org>
+Send any other comments, patches, flowers and suggestions to the vim-dev
+mailing list: <vim-dev@vim.org>

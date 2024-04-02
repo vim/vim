@@ -446,7 +446,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_obj_methods[m_idx];
-	    // Private methods are not accessible outside the class
+	    // Private object methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
@@ -488,7 +488,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_class_functions[m_idx];
-	    // Private methods are not accessible outside the class
+	    // Private class methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
@@ -2462,7 +2462,8 @@ compile_subscript(
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    if ((type = get_type_on_stack(cctx, 0)) != &t_unknown
+	    type = get_type_on_stack(cctx, 0);
+	    if (type != &t_unknown
 		    && (type->tt_type == VAR_CLASS
 					       || type->tt_type == VAR_OBJECT))
 	    {

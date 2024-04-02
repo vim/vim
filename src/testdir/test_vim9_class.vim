@@ -2275,6 +2275,18 @@ def Test_interface_basics()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for using string() with an interface
+def Test_interface_to_string()
+  var lines =<< trim END
+    vim9script
+    interface Intf
+      def Method(nr: number)
+    endinterface
+    assert_equal("interface Intf", string(Intf))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_class_implements_interface()
   var lines =<< trim END
     vim9script
@@ -3109,6 +3121,28 @@ def Test_class_import()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for importing a class into a legacy script and calling the class method
+def Test_class_method_from_legacy_script()
+  var lines =<< trim END
+    vim9script
+    export class A
+      static var name: string = 'a'
+      static def SetName(n: string)
+        name = n
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xvim9export.vim', 'D')
+
+  lines =<< trim END
+    import './Xvim9export.vim' as vim9
+
+    call s:vim9.A.SetName('b')
+    call assert_equal('b', s:vim9.A.name)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for implementing an imported interface
 def Test_implement_imported_interface()
   var lines =<< trim END
@@ -3208,6 +3242,23 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1359: Cannot define a "new" method in an abstract class', 4)
+
+  # extending an abstract class with class methods and variables
+  lines =<< trim END
+    vim9script
+    abstract class A
+      static var s: string = 'vim'
+      static def Fn(): list<number>
+        return [10]
+      enddef
+    endclass
+    class B extends A
+    endclass
+    var b = B.new()
+    assert_equal('vim', A.s)
+    assert_equal([10], A.Fn())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_closure_in_class()
@@ -3729,7 +3780,7 @@ def Test_stack_expansion_with_methods()
     endclass
 
     def F0()
-      assert_match('<SNR>\d\+_F\[1\]\.\.C\.M1\[1\]\.\.<SNR>\d\+_F0\[1\]$', expand('<stack>'))
+      assert_match('<SNR>\d\+_F\[1\]\.\.<SNR>\d\+_C\.M1\[1\]\.\.<SNR>\d\+_F0\[1\]$', expand('<stack>'))
     enddef
 
     def F()
@@ -10391,6 +10442,23 @@ def Test_compound_op_in_objmethod_lambda()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for using test_refcount() with a class and an object
+def Test_class_object_refcount()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var a: A = A.new()
+    assert_equal(2, test_refcount(A))
+    assert_equal(1, test_refcount(a))
+    var b = a
+    assert_equal(2, test_refcount(A))
+    assert_equal(2, test_refcount(a))
+    assert_equal(2, test_refcount(b))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " call a lambda function in one object from another object
 def Test_lambda_invocation_across_classes()
   var lines =<< trim END
@@ -10416,6 +10484,48 @@ def Test_lambda_invocation_across_classes()
     var b = B.new()
     var Fn = b.GetFn()
     assert_equal("foo", Fn())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using a class member which is an object of the current class
+def Test_current_class_object_class_member()
+  var lines =<< trim END
+    vim9script
+    class A
+      public static var obj1: A = A.new(10)
+      var n: number
+    endclass
+    defcompile
+    assert_equal(10, A.obj1.n)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for updating a base class variable from a base class method without the
+" class name.  This used to crash Vim (Github issue #14352).
+def Test_use_base_class_variable_from_base_class_method()
+  var lines =<< trim END
+    vim9script
+
+    class DictKeyClass
+      static var _obj_id_count = 1
+      def _GenerateKey()
+        _obj_id_count += 1
+      enddef
+      static def GetIdCount(): number
+        return _obj_id_count
+      enddef
+    endclass
+
+    class C extends DictKeyClass
+      def F()
+        this._GenerateKey()
+      enddef
+    endclass
+
+    C.new().F()
+    assert_equal(2, DictKeyClass.GetIdCount())
   END
   v9.CheckScriptSuccess(lines)
 enddef

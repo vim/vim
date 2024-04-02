@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Mar 03
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -144,7 +144,6 @@ Further Vim9 improvements:
   - More efficient way for interface member index than iterating over list?
   - a variant of type() that returns a different type for each class?
       list<number> and list<string> should also differ.
-- implement :enum
 - Promise class, could be used to wait on a popup close callback?
 - class local to a function
 - Use Vim9 for more runtime files.

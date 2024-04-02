@@ -50,9 +50,15 @@ vimtutor.man: vimtutor.1
 xxd.man: xxd.1
 	nroff -man $< | sed -e s/.//g > $@
 
-uganda.nsis.txt: uganda.txt
-	sed -e 's/[ 	]*\*[-a-zA-Z0-9.]*\*//g' -e 's/vim:tw=78:.*//' \
-		uganda.txt | uniq >uganda.nsis.txt
+uganda.nsis.txt : uganda.???
+	for dpn in $?; do \
+	  trg=$@; \
+          sed -e 's/[ 	]*\*.*\*//g' -e 's/vim:tw=[[:digit:]][[:digit:]]:.*//' \
+            $${dpn} | uniq > $${trg%txt}$${dpn##*.}; \
+	done
+# This files needs to be in dos fileformat for NSIS.
+	$(VIMEXE) -e -X -u NONE --cmd "set notitle noicon nocp noml viminfo=" \
+	  -c "argdo write ++ff=dos" -c "qa" uganda.nsis.???
 
 # Awk version of .txt to .html conversion.
 html: noerrors tags $(HTMLS)

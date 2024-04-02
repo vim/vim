@@ -54,8 +54,8 @@ To build the installable .exe file:
 
 7.  On MS Windows do "nmake.exe -f Make_mvc.mak uganda.nsis.txt" in runtime/doc.
     On Unix-like system do "make runtime/doc/uganda.nsis.txt" in top directory
-    or "make uganda.nsis.txt" in runtime/doc, and be sure to convert the file
-    "uganda.nsis.txt" to DOS file format.
+    or "make uganda.nsis.txt" in runtime/doc.  The created files
+    "uganda.nsis.???" will be automatically converted to DOS file format.
 
 8.  Get gettext and iconv DLLs from the following site:
 	https://github.com/mlocati/gettext-iconv-windows/releases

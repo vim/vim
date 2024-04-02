@@ -159,6 +159,8 @@ static struct vimvar
     {VV_NAME("maxcol",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("python3_version",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_enum",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
@@ -262,6 +264,8 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_CLASS,   VAR_TYPE_CLASS);
     set_vim_var_nr(VV_TYPE_OBJECT,  VAR_TYPE_OBJECT);
     set_vim_var_nr(VV_TYPE_TYPEALIAS,  VAR_TYPE_TYPEALIAS);
+    set_vim_var_nr(VV_TYPE_ENUM,  VAR_TYPE_ENUM);
+    set_vim_var_nr(VV_TYPE_ENUMVALUE,  VAR_TYPE_ENUMVALUE);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 

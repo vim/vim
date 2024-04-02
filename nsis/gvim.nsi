@@ -1,6 +1,6 @@
 # NSIS file to create a self-installing exe for Vim.
 # It requires NSIS version 3.0 or later.
-# Last Change:	2024 Mar 18
+# Last Change:	2024 Mar 20
 
 Unicode true
 
@@ -138,6 +138,8 @@ RequestExecutionLevel highest
 
 # Show all languages, despite user's codepage:
 !define MUI_LANGDLL_ALLLANGUAGES
+# Always show dialog choice language
+#!define MUI_LANGDLL_ALWAYSSHOW
 !define MUI_LANGDLL_REGISTRY_ROOT       "HKCU"
 !define MUI_LANGDLL_REGISTRY_KEY        "Software\Vim"
 !define MUI_LANGDLL_REGISTRY_VALUENAME  "Installer Language"
@@ -155,9 +157,9 @@ RequestExecutionLevel highest
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_LICENSEPAGE_CHECKBOX
-!define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_FUNCTION        LaunchApplication
-!define MUI_FINISHPAGE_RUN_TEXT            $(str_show_readme)
+!define MUI_FINISHPAGE_SHOWREADME
+!define MUI_FINISHPAGE_SHOWREADME_TEXT	    $(str_show_readme)
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION  LaunchApplication
 
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
@@ -181,7 +183,7 @@ SilentInstall normal
 
 # Installer pages
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "${VIMRT}\doc\uganda.nsis.txt"
+!insertmacro MUI_PAGE_LICENSE $(page_lic_file)
 !insertmacro MUI_PAGE_COMPONENTS
 Page custom SetCustom ValidateCustom
 #!define MUI_PAGE_CUSTOMFUNCTION_LEAVE VimFinalCheck
@@ -363,7 +365,7 @@ FunctionEnd
 
 Function LaunchApplication
    SetOutPath $0
-   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
+   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\$(vim_readme_file)"'
 FunctionEnd
 
 ##########################################################
@@ -613,6 +615,110 @@ SectionGroupEnd
 Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
 
+#; FIXME: When adding new translations, do not forget to make changes here.
+	SetOutPath $0
+!if /FileExists ..\README.dax.txt
+    ${If} $Language = ${LANG_DANISH}
+	File ..\README.dax.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.nlx.txt
+    ${If} $Language = ${LANG_DUTCH}
+	File ..\README.nlx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.dex.txt
+    ${If} $Language = ${LANG_GERMAN}
+	File ..\README.dex.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.itx.txt
+    ${If} $Language = ${LANG_ITALIAN}
+	File ..\README.itx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.jax.txt
+    ${If} $Language = ${LANG_JAPANESE}
+	File ..\README.jax.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.rux.txt
+    ${If} $Language = ${LANG_RUSSIAN}
+	File ..\README.rux.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.srx.txt
+    ${If} $Language = ${LANG_SERBIAN}
+	File ..\README.srx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.cnx.txt
+    ${If} $Language = ${LANG_SIMPCHINESE}
+	File ..\README.cnx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.twx.txt
+    ${If} $Language = ${LANG_TRADCHINESE}
+	File ..\README.twx.txt
+    ${EndIf}
+!endif
+!if /FileExists ..\README.trx.txt
+    ${OrIf} $Language = ${LANG_TURKISH}
+	File ..\README.trx.txt
+    ${EndIf}
+!endif
+#; FIXME: When adding new translations, do not forget to make changes here.
+	SetOutPath $0\doc
+!if /FileExists "${VIMRT}\doc\uganda.dax"
+    ${If} $Language = ${LANG_DANISH}
+	File ${VIMRT}\doc\uganda.dax
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.nlx"
+    ${If} $Language = ${LANG_DUTCH}
+	File ${VIMRT}\doc\uganda.nlx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.dex"
+    ${If} $Language = ${LANG_GERMAN}
+	File ${VIMRT}\doc\uganda.dex
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.itx"
+    ${If} $Language = ${LANG_ITALIAN}
+	File ${VIMRT}\doc\uganda.itx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.jax"
+    ${If} $Language = ${LANG_JAPANESE}
+	File ${VIMRT}\doc\uganda.jax
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.rux"
+    ${If} $Language = ${LANG_RUSSIAN}
+	File ${VIMRT}\doc\uganda.rux
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.srx"
+    ${If} $Language = ${LANG_SERBIAN}
+	File ${VIMRT}\doc\uganda.srx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.cnx"
+    ${If} $Language = ${LANG_SIMPCHINESE}
+	File ${VIMRT}\doc\uganda.cnx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.twx"
+    ${If} $Language = ${LANG_TRADCHINESE}
+	File ${VIMRT}\doc\uganda.twx
+    ${EndIf}
+!endif
+!if /FileExists "${VIMRT}\doc\uganda.trx"
+    ${If} $Language = ${LANG_TURKISH}
+	File ${VIMRT}\doc\uganda.trx
+    ${EndIf}
+!endif
 	SetOutPath $0\lang
 	File /r /x Makefile ${VIMRT}\lang\*.*
 	SetOutPath $0
@@ -858,12 +964,12 @@ Function SetCustom
 
 
 	# 1st group - Compatibility
-	${NSD_CreateGroupBox} 0 0 100% 32% $(str_msg_compat_title)
+	${NSD_CreateGroupBox} 0u 0u 296u 44u $(str_msg_compat_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 10% 35% 8% $(str_msg_compat_desc)
+	${NSD_CreateLabel} 16u 14u 269u 10u $(str_msg_compat_desc)
 	Pop $3
-	${NSD_CreateDropList} 18% 19% 75% 8% ""
+	${NSD_CreateDropList} 42u 26u 237u 13u ""
 	Pop $vim_nsd_compat
 	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vi)
 	${NSD_CB_AddString} $vim_nsd_compat $(str_msg_compat_vim)
@@ -883,12 +989,12 @@ Function SetCustom
 
 
 	# 2nd group - Key remapping
-	${NSD_CreateGroupBox} 0 35% 100% 31% $(str_msg_keymap_title)
+	${NSD_CreateGroupBox} 0u 48u 296u 44u $(str_msg_keymap_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 45% 90% 8% $(str_msg_keymap_desc)
+	${NSD_CreateLabel} 16u 62u 269u 10u $(str_msg_keymap_desc)
 	Pop $3
-	${NSD_CreateDropList} 38% 54% 55% 8% ""
+	${NSD_CreateDropList} 42u 74u 236u 13u ""
 	Pop $vim_nsd_keymap
 	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_default)
 	${NSD_CB_AddString} $vim_nsd_keymap $(str_msg_keymap_windows)
@@ -902,12 +1008,12 @@ Function SetCustom
 
 
 	# 3rd group - Mouse behavior
-	${NSD_CreateGroupBox} 0 69% 100% 31% $(str_msg_mouse_title)
+	${NSD_CreateGroupBox} 0u 95u 296u 44u $(str_msg_mouse_title)
 	Pop $3
 
-	${NSD_CreateLabel} 5% 79% 90% 8% $(str_msg_mouse_desc)
+	${NSD_CreateLabel} 16u 108u 269u 10u $(str_msg_mouse_desc)
 	Pop $3
-	${NSD_CreateDropList} 23% 87% 70% 8% ""
+	${NSD_CreateDropList} 42u 121u 237u 13u ""
 	Pop $vim_nsd_mouse
 	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_default)
 	${NSD_CB_AddString} $vim_nsd_mouse $(str_msg_mouse_windows)

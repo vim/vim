@@ -3,6 +3,7 @@
 # italian.nsi : Italian language strings for gvim NSIS installer.
 #
 # Locale ID    : 1040
+# Locale Name  : it
 # fileencoding : UTF-8
 # Author       : Antonio Colombo, bovirus - revision: 12.05.2023
 
@@ -15,6 +16,20 @@ LangString ^SetupCaption     ${LANG_ITALIAN} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_ITALIAN} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# Translated license file for the license page                            {{{1
+##############################################################################
+
+LicenseLangString page_lic_file 0 "${VIMRT}\doc\uganda.nsis.txt"
+#LicenseLangString page_lic_file ${LANG_ITALIAN} "${VIMRT}\doc\uganda.nsis.itx"
+
+##############################################################################
+# Translated README.txt file, which is opened after installation          {{{1
+##############################################################################
+
+LangString vim_readme_file 0 "README.txt"
+#LangString vim_readme_file ${LANG_ITALIAN} "README.itx.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1

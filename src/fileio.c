@@ -225,7 +225,7 @@ readfile(
     int		may_need_lseek = FALSE;
 #endif
 
-    au_did_filetype = FALSE; // reset before triggering any autocommands
+    curbuf->b_au_did_filetype = FALSE; // reset before triggering any autocommands
 
     curbuf->b_no_eol_lnum = 0;	// in case it was set by the previous read
 
@@ -2696,7 +2696,7 @@ failed:
 	{
 	    apply_autocmds_exarg(EVENT_BUFREADPOST, NULL, sfname,
 							  FALSE, curbuf, eap);
-	    if (!au_did_filetype && *curbuf->b_p_ft != NUL)
+	    if (!curbuf->b_au_did_filetype && *curbuf->b_p_ft != NUL)
 		/*
 		 * EVENT_FILETYPE was not triggered but the buffer already has a
 		 * filetype. Trigger EVENT_FILETYPE using the existing filetype.
@@ -4492,7 +4492,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 	    int old_msg_silent = msg_silent;
 
 	    curbuf->b_flags |= BF_CHECK_RO;	// check for RO again
-	    keep_filetype = TRUE;		// don't detect 'filetype'
+	    curbuf->b_keep_filetype = TRUE;	// don't detect 'filetype'
 
 	    if (shortmess(SHM_FILEINFO))
 		msg_silent = 1;
@@ -4549,7 +4549,7 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
 	curwin->w_cursor = old_cursor;
 	check_cursor();
 	update_topline();
-	keep_filetype = FALSE;
+	curbuf->b_keep_filetype = FALSE;
 #ifdef FEAT_FOLDING
 	{
 	    win_T	*wp;

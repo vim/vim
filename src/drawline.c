@@ -2072,26 +2072,34 @@ win_line(
 		    // not on the next char yet, don't start another prop
 		    --bcol;
 # endif
-		int display_text_first = FALSE;
-
 		// Add any text property that starts in this column.
-		// With 'nowrap' and not in the first screen line only "below"
-		// text prop can show.
-		while (text_prop_next < text_prop_count
-			   && (text_props[text_prop_next].tp_col == MAXCOL
-			      ? ((*ptr == NUL
-				  && (wp->w_p_wrap
-				      || wlv.row == startrow
-				      || (text_props[text_prop_next].tp_flags
-						       & TP_FLAG_ALIGN_BELOW)))
-			       || (bcol == 0
-					&& (text_props[text_prop_next].tp_flags
-						       & TP_FLAG_ALIGN_ABOVE)))
-			      : bcol >= text_props[text_prop_next].tp_col - 1))
+		while (text_prop_next < text_prop_count)
 		{
-		    if (text_props[text_prop_next].tp_col == MAXCOL
-			    || bcol <= text_props[text_prop_next].tp_col - 1
-					   + text_props[text_prop_next].tp_len)
+		    int active;
+		    textprop_T *tp = &text_props[text_prop_next];
+		    if (tp->tp_col == MAXCOL)
+		    {
+			if (bcol == 0 && (tp->tp_flags & TP_FLAG_ALIGN_ABOVE))
+			    active = TRUE;
+			else if (*ptr != NUL)
+			    break;
+			else
+			{
+			    // With 'nowrap' and not in the first screen line only "below"
+			    // text prop can show.
+			    active = wp->w_p_wrap
+				  || wlv.row == startrow
+				  || (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+			}
+		    }
+		    else
+		    {
+			if (bcol < tp->tp_col - 1)
+			    break;
+			active = bcol <= tp->tp_col - 1 + tp->tp_len;
+		    }
+
+		    if (active)
 			text_prop_idxs[text_props_active++] = text_prop_next;
 		    ++text_prop_next;
 		}
@@ -2109,8 +2117,7 @@ win_line(
 		    text_prop_id = 0;
 		    reset_extra_attr = FALSE;
 		}
-		if (text_props_active > 0 && wlv.n_extra == 0
-							&& !display_text_first)
+		if (text_props_active > 0 && wlv.n_extra == 0)
 		{
 		    int used_tpi = -1;
 		    int used_attr = 0;
@@ -2157,8 +2164,6 @@ win_line(
 				// skip this prop, first display the '$' after
 				// the line or display an empty line
 				text_prop_follows = TRUE;
-				if (used_tpi < 0)
-				    display_text_first = TRUE;
 				continue;
 			    }
 
@@ -2172,7 +2177,6 @@ win_line(
 			    text_prop_flags = pt->pt_flags;
 			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;
-			    display_text_first = FALSE;
 			}
 		    }
 		    if (text_prop_id < 0 && used_tpi >= 0
@@ -2327,17 +2331,29 @@ win_line(
 		    }
 		}
 		else if (text_prop_next < text_prop_count
-			   && text_props[text_prop_next].tp_col == MAXCOL
 			   && ((*ptr != NUL && ptr[mb_ptr2len(ptr)] == NUL)
-			       || (!wp->w_p_wrap
-				       && wlv.col == wp->w_width - 1
-				       && (text_props[text_prop_next].tp_flags
-						      & TP_FLAG_ALIGN_BELOW))))
+			       || (!wp->w_p_wrap && wlv.col == wp->w_width - 1)))
+		{
 		    // When at last-but-one character and a text property
 		    // follows after it, we may need to flush the line after
 		    // displaying that character.
 		    // Or when not wrapping and at the rightmost column.
-		    text_prop_follows = TRUE;
+
+		    int only_below_follows = !wp->w_p_wrap && wlv.col == wp->w_width - 1;
+		    // TODO: Store "after"/"right"/"below" text properties in order
+		    //       in the buffer so only `text_props[text_prop_count - 1]`
+		    //       needs to be checked for following "below" virtual text
+		    for (int i = text_prop_next; i < text_prop_count; ++i)
+		    {
+			if (text_props[i].tp_col == MAXCOL
+				&& (!only_below_follows
+				    || (text_props[i].tp_flags & TP_FLAG_ALIGN_BELOW)))
+			{
+			    text_prop_follows = TRUE;
+			    break;
+			}
+		    }
+		}
 	    }
 
 	    if (wlv.start_extra_for_textprop)
