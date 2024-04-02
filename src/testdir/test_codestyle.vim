@@ -7,13 +7,17 @@ def s:ReportError(fname: string, lnum: number, msg: string)
 enddef
 
 def s:PerformCheck(fname: string, pattern: string, msg: string, skip: string)
+  var prev_lnum = 1
   var lnum = 1
   while (lnum > 0)
     cursor(lnum, 1)
     lnum = search(pattern, 'W', 0, 0, skip)
-    ReportError(fname, lnum, msg)
+    if (prev_lnum == lnum)
+      break
+    endif
+    prev_lnum = lnum
     if (lnum > 0)
-      lnum += 1
+      ReportError(fname, lnum, msg)
     endif
   endwhile
 enddef
