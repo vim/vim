@@ -164,6 +164,8 @@ dialog_changed(
     int		ret;
     buf_T	*buf2;
     exarg_T     ea;
+    int		empty_buf;
+    char_u	cwd[MAXPATHL];
 
     dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
@@ -181,10 +183,30 @@ dialog_changed(
 	// May get file name, when there is none
 	browse_save_fname(buf);
 #endif
-	if (buf->b_fname != NULL && check_overwrite(&ea, buf,
-				    buf->b_fname, buf->b_ffname, FALSE) == OK)
+	empty_buf = buf->b_fname == NULL ? TRUE : FALSE;
+	if (empty_buf == TRUE)
+	{
+	    buf->b_fname = vim_strsave((char_u *)"Untitled");
+	    if (mch_dirname(cwd, MAXPATHL) == OK)
+	    {
+		buf->b_ffname = concat_fnames(vim_strsave(cwd), buf->b_fname, TRUE);
+	    }
+	}
+	if (check_overwrite(&ea, buf, buf->b_fname, buf->b_ffname, FALSE) == OK)
+	{
 	    // didn't hit Cancel
-	    (void)buf_write_all(buf, FALSE);
+	    if (buf_write_all(buf, FALSE) == OK)
+		return;
+	}
+
+	// restore to empty when write failed
+	if (empty_buf == TRUE)
+	{
+	    vim_free(buf->b_fname);
+	    buf->b_fname = NULL;
+	    vim_free(buf->b_ffname);
+	    buf->b_ffname = NULL;
+	}
     }
     else if (ret == VIM_NO)
     {

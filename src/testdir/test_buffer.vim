@@ -270,6 +270,20 @@ func Test_goto_buf_with_confirm()
   close!
 endfunc
 
+func Test_confirm_write_unamed()
+  CheckUnix
+  CheckNotGui
+  call writefile(['foo'], 'Xfoo', 'D')
+  enew
+  call setline(1, 'test')
+  call feedkeys('y', 'L')
+  confirm edit Xfoo
+  call assert_equal('Xfoo', @%)
+  bprevious
+  call assert_equal('Untitled', @%)
+  close!
+endfunc
+
 " Test for splitting buffer with 'switchbuf'
 func Test_buffer_switchbuf()
   new Xswitchbuf
