@@ -197,13 +197,15 @@ redraw_for_cursorcolumn(win_T *wp)
  * Calculates how much the 'listchars' "precedes" or 'smoothscroll' "<<<"
  * marker overlaps with buffer text for window "wp".
  * Parameter "extra2" should be the padding on the 2nd line, not the first
- * line.
+ * line. When "extra2" is -1 calculate the padding.
  * Returns the number of columns of overlap with buffer text, excluding the
  * extra padding on the ledge.
  */
      int
 sms_marker_overlap(win_T *wp, int extra2)
 {
+    if (extra2 == -1)
+	extra2 = win_col_off(wp) - win_col_off2(wp);
 #if defined(FEAT_LINEBREAK)
     // There is no marker overlap when in showbreak mode, thus no need to
     // account for it.  See wlv_screen_line().
@@ -340,12 +342,12 @@ update_topline(void)
 				 && curwin->w_cursor.lnum == curwin->w_topline)
 	    {
 		colnr_T vcol;
+		int overlap;
 
 		// Check that the cursor position is visible.  Add columns for
 		// the marker displayed in the top-left if needed.
 		getvvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
-		int overlap = sms_marker_overlap(curwin, curwin_col_off()
-							- curwin_col_off2());
+		overlap = sms_marker_overlap(curwin, -1);
 		if (curwin->w_skipcol + overlap > vcol)
 		    check_topline = TRUE;
 	    }
@@ -1854,6 +1856,9 @@ scrollup(
 		    curwin->w_topfill = diff_check_fill(curwin, lnum);
 # endif
 		    curwin->w_skipcol = 0;
+		    // Adjusting the cursor later should not adjust skipcol:
+		    // bring it to the first screenline on this new topline.
+		    curwin->w_curswant %= width1;
 		    if (todo > 1 && do_sms)
 			size = linetabsize(curwin, curwin->w_topline);
 		}
@@ -1971,8 +1976,7 @@ adjust_skipcol(void)
     }
 
     validate_virtcol();
-    int overlap = sms_marker_overlap(curwin,
-					 curwin_col_off() - curwin_col_off2());
+    int overlap = sms_marker_overlap(curwin, -1);
     while (curwin->w_skipcol > 0
 	    && curwin->w_virtcol < curwin->w_skipcol + overlap + scrolloff_cols)
     {
@@ -2486,6 +2490,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 		    {
 			int plines_offset = used + loff.height
 							    - curwin->w_height;
+			int overlap = sms_marker_overlap(curwin, -1);
 			used = curwin->w_height;
 #ifdef FEAT_DIFF
 			curwin->w_topfill = loff.fill;
@@ -2493,6 +2498,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 			curwin->w_topline = loff.lnum;
 			curwin->w_skipcol = skipcol_from_plines(
 							curwin, plines_offset);
+			curwin->w_cursor.col = curwin->w_skipcol + overlap;
 			set_skipcol = TRUE;
 		    }
 		}
@@ -2503,6 +2509,8 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	    curwin->w_topfill = loff.fill;
 #endif
 	}
+	if (curwin->w_topline > curbuf->b_ml.ml_line_count)
+	    curwin->w_topline = curbuf->b_ml.ml_line_count;
 	set_empty_rows(curwin, used);
 	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 	if (curwin->w_topline != old_topline
@@ -3087,19 +3095,66 @@ static int get_scroll_overlap(int dir)
 }
 
 /*
- * Move screen "count" pages up ("dir" is BACKWARD) or down ("dir" is FORWARD)
- * and update the screen.
+ * Scroll "count" lines with 'smoothscroll' in direction "dir". Adjust "count"
+ * when scrolling more than "count" and return TRUE when scrolling happened.
+ */
+static int scroll_with_sms(int dir, long *count)
+{
+    int		prev_sms = curwin->w_p_sms;
+    colnr_T	prev_skipcol = curwin->w_skipcol;
+    linenr_T	prev_topline = curwin->w_topline;
+#ifdef FEAT_DIFF
+    int		prev_topfill = curwin->w_topfill;
+#endif
+
+    curwin->w_p_sms = TRUE;
+    scroll_redraw(dir == FORWARD, *count);
+
+    // Not actually smoothscrolling but ended up with partially visible line.
+    // Continue scrolling and update "count" so that cursor can be moved
+    // accordingly for half-page scrolling.
+    if (!prev_sms && curwin->w_skipcol > 0)
+    {
+	int fixdir = dir;
+	// Reverse the scroll direction when topline already changed. One line
+	// extra for scrolling backward so that consuming skipcol is symmetric.
+	if (labs(curwin->w_topline - prev_topline) > (dir == BACKWARD))
+	    fixdir = dir * -1;
+	validate_cursor();
+	while (curwin->w_skipcol > 0
+	    && curwin->w_topline < curbuf->b_ml.ml_line_count)
+	{
+	    scroll_redraw(fixdir == FORWARD, 1);
+	    *count += (fixdir == dir ? 1 : -1);
+	}
+    }
+    curwin->w_p_sms = prev_sms;
+
+    return curwin->w_topline == prev_topline
+#ifdef FEAT_DIFF
+	&& curwin->w_topfill == prev_topfill
+#endif
+	&& curwin->w_skipcol == prev_skipcol;
+}
+
+/*
+ * Move screen "count" (half) pages up ("dir" is BACKWARD) or down ("dir" is
+ * FORWARD) and update the screen. Handle moving the cursor and not scrolling
+ * to reveal end of buffer lines for half-page scrolling with CTRL-D and CTRL-U.
  *
  * Return FAIL for failure, OK otherwise.
  */
     int
 pagescroll(int dir, long count, int half)
 {
-#ifdef FEAT_DIFF
-    int		prev_topfill = curwin->w_topfill;
-#endif
-    linenr_T	prev_topline = curwin->w_topline;
-    colnr_T	prev_skipcol = curwin->w_skipcol;
+    int		nochange = TRUE;
+    int		buflen = curbuf->b_ml.ml_line_count;
+    colnr_T	prev_col = curwin->w_cursor.col;
+    colnr_T	prev_curswant = curwin->w_curswant;
+    linenr_T	prev_lnum = curwin->w_cursor.lnum;
+    oparg_T	oa = { 0 };
+    cmdarg_T	ca = { 0 };
+    ca.oap = &oa;
 
     if (half)
     {
@@ -3107,54 +3162,61 @@ pagescroll(int dir, long count, int half)
 	if (count)
 	    curwin->w_p_scr = MIN(curwin->w_height, count);
 	count = MIN(curwin->w_height, curwin->w_p_scr);
-    }
-    else
-	// Scroll 'window' or current window height lines.
-	count *= ((ONE_WINDOW && p_window > 0 && p_window < Rows - 1) ?
-					    p_window - 2 : get_scroll_overlap(dir));
 
-    if (curwin->w_p_sms)
-	scroll_redraw(dir == FORWARD, count);
-    else
-    {
-	// Scroll at least one full line without 'smoothscroll'.
-#ifdef FEAT_DIFF
-	count -= plines_nofill(curwin->w_topline);
-#else
-	count -= plines(curwin->w_topline);
-#endif
-	scroll_redraw(dir == FORWARD, 1);
+	// Don't scroll if we already know that it will reveal end of buffer lines.
+	if (dir == BACKWARD
+	    || (curwin->w_botline - 1 < buflen)
+	    || (curwin->w_p_sms && curwin->w_botline - 1 == buflen
+		&& curwin->w_skipcol < linetabsize(curwin, buflen)))
+	{
+	    nochange = scroll_with_sms(dir, &count);
+	    validate_botline();
+	    // Hide any potentially revealed end of buffer lines.
+	    if (!nochange && curwin->w_botline - 1 == buflen)
+	    {
+		curwin->w_cursor.lnum = buflen;
+		scroll_cursor_bot(0, TRUE);
+	    }
+	}
 
-	// Temporarily set 'smoothscroll' so that scrolling count lines
-	// does not skip over parts of the buffer with wrapped lines.
-	curwin->w_p_sms = TRUE;
-	if (count > 0)
-	    scroll_redraw(dir == FORWARD, count);
-	curwin->w_p_sms = FALSE;
-    }
+	// Move the cursor "count" screen lines.
+	curwin->w_curswant = MAXCOL;
+	curwin->w_cursor.col = prev_col;
+	curwin->w_cursor.lnum = prev_lnum;
+	if (curwin->w_p_wrap)
+	    nv_screengo(&oa, dir, count);
+	else if (dir == FORWARD)
+	    cursor_down_inner(curwin, count);
+	else
+	    cursor_up_inner(curwin, count);
+	curwin->w_curswant = prev_curswant;
+
+	if (get_scrolloff_value())
+	    cursor_correct();
 #ifdef FEAT_FOLDING
 	// Move cursor to first line of closed fold.
 	foldAdjustCursor();
 #endif
 
-    int nochange = curwin->w_topline == prev_topline
-#ifdef FEAT_DIFF
-	&& curwin->w_topfill == prev_topfill
-#endif
-	&& curwin->w_skipcol == prev_skipcol;
-
-    // Error if the viewport did not change and the cursor is already
-    // at the boundary.
-    if (nochange)
-    {
-	int prev_cursor = curwin->w_cursor.lnum;
-	curwin->w_cursor.lnum += (count + 1) * (dir == FORWARD ? 1 : -1);
-	check_cursor();
-	if (curwin->w_cursor.lnum == prev_cursor)
-	    beep_flush();
+	nochange = nochange
+	    && prev_col == curwin->w_cursor.col
+	    && prev_lnum == curwin->w_cursor.lnum;
     }
-    else if (!curwin->w_p_sms || curwin->w_skipcol == prev_skipcol)
+    else
+    {
+	// Scroll [count] times 'window' or current window height lines.
+	count *= ((ONE_WINDOW && p_window > 0 && p_window < Rows - 1) ?
+				MAX(1, p_window - 2) : get_scroll_overlap(dir));
+	nochange = scroll_with_sms(dir, &count);
+    }
+
+    // Error if both the viewport and cursor did not change.
+    if (nochange)
+	beep_flush();
+    else if (!curwin->w_p_sms)
 	beginline(BL_SOL | BL_FIX);
+    else if (p_sol)
+	nv_g_home_m_cmd(&ca);
 
     return nochange;
 }
