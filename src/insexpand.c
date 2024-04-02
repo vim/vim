@@ -2741,6 +2741,7 @@ expand_by_function(int type, char_u *base)
     --textlock;
 
     curwin->w_cursor = pos;	// restore the cursor position
+    check_cursor();  // make sure cursor position is valid, just in case
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
     {
@@ -4606,6 +4607,7 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
 
     State = save_State;
     curwin->w_cursor = pos;	// restore the cursor position
+    check_cursor();  // make sure cursor position is valid, just in case
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
     {
