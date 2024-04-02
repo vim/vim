@@ -261,26 +261,10 @@ func Test_goto_buf_with_confirm()
   call assert_equal(1, &modified)
   call assert_equal('', @%)
   call feedkeys('y', 'L')
-  call assert_fails('confirm b XgotoConf', ['', 'E37:'])
-  call assert_equal(1, &modified)
-  call assert_equal('', @%)
-  call feedkeys('n', 'L')
   confirm b XgotoConf
   call assert_equal('XgotoConf', @%)
-  close!
-endfunc
-
-func Test_confirm_write_unamed()
-  CheckUnix
-  CheckNotGui
-  call writefile(['foo'], 'Xfoo', 'D')
-  enew
-  call setline(1, 'test')
-  call feedkeys('y', 'L')
-  confirm edit Xfoo
-  call assert_equal('Xfoo', @%)
-  bprevious
-  call assert_equal('Untitled', @%)
+  call assert_equal(['test'], readfile('Untitled'))
+  call delete('Untitled')
   close!
 endfunc
 
