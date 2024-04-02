@@ -95,6 +95,9 @@ au BufNewFile,BufRead *.aidl			setf aidl
 " AMPL
 au BufNewFile,BufRead *.run			setf ampl
 
+" Android rc
+au BufNewFile,BufRead *.rc			setf androidrc
+
 " Ant
 au BufNewFile,BufRead build.xml			setf ant
 
@@ -266,6 +269,9 @@ au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/
 
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
+
+" Blueprint
+au BufNewFile,BufRead *.bp				setf blueprint
 
 " BSDL
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
@@ -908,6 +914,9 @@ au BufNewFile,BufRead *.gyp,*.gypi		setf gyp
 
 " Hack
 au BufRead,BufNewFile *.hack,*.hackpartial			setf hack
+
+" Hal
+au BufRead,BufNewFile *.hal					setf hal
 
 " Haml
 au BufNewFile,BufRead *.haml			setf haml
