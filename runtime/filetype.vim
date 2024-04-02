@@ -449,6 +449,9 @@ au BufNewFile,BufRead *.clj,*.cljs,*.cljx,*.cljc		setf clojure
 " Cmake
 au BufNewFile,BufRead CMakeLists.txt,*.cmake,*.cmake.in		setf cmake
 
+" CmakeCache
+autocmd BufRead,BufNewFile CMakeCache.txt			setf cmakecache
+
 " Cmusrc
 au BufNewFile,BufRead */.cmus/{autosave,rc,command-history,*.theme} setf cmusrc
 au BufNewFile,BufRead */cmus/{rc,*.theme}			setf cmusrc
