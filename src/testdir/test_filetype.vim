@@ -764,6 +764,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     typespec: ['file.tsp'],
     ungrammar: ['file.ungram'],
     uc: ['file.uc'],
+    uci: ['any/etc/config/file'],
     udevconf: ['/etc/udev/udev.conf', 'any/etc/udev/udev.conf'],
     udevperm: ['/etc/udev/permissions.d/file.permissions', 'any/etc/udev/permissions.d/file.permissions'],
     udevrules: ['/etc/udev/rules.d/file.rules', '/usr/lib/udev/rules.d/file.rules', '/lib/udev/rules.d/file.rules'],

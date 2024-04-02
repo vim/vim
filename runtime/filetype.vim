@@ -2980,6 +2980,9 @@ au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
 " Universal Scene Description
 au BufNewFile,BufRead *.usda,*.usd		setf usd
 
+" Uci
+au BufNewFile,BufRead */etc/config/*		call s:StarSetf('uci')
+
 " VHDL
 au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
