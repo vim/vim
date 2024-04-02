@@ -229,6 +229,9 @@ au BufNewFile,BufRead *.sys\c			call dist#ft#FTsys()
 " Batch file for 4DOS
 au BufNewFile,BufRead *.btm			call dist#ft#FTbtm()
 
+" BBCode
+au BufNewFile,BufRead *.bbcode			setf bbcode
+
 " BC calculator
 au BufNewFile,BufRead *.bc			setf bc
 
