@@ -1146,6 +1146,91 @@ get_lval_check_access(
 }
 
 /*
+ * Get lval information for a variable imported from script "imp_sid".  On
+ * success, updates "lp" with the variable name, type, script ID and typval.
+ * The variable name starts at or after "p".
+ * If "rettv" is not NULL it points to the value to be assigned.  This used to
+ * match the rhs and lhs types.
+ * Returns a pointer to the character after the variable name if the imported
+ * variable is valid and writable.
+ * Returns NULL if the variable is not exported or typval is not found or the
+ * rhs type doesn't match the lhs type or the variable is not writable.
+ */
+    static char_u *
+get_lval_imported(
+    lval_T	*lp,
+    typval_T	*rettv,
+    scid_T	imp_sid,
+    char_u	*p,
+    dictitem_T	**dip,
+    int		fne_flags,
+    int		vim9script)
+{
+    ufunc_T	*ufunc;
+    type_T	*type = NULL;
+    int		cc;
+    int		rc = FAIL;
+
+    p = skipwhite(p);
+
+    import_check_sourced_sid(&imp_sid);
+    lp->ll_sid = imp_sid;
+    lp->ll_name = p;
+    p = find_name_end(lp->ll_name, NULL, NULL, fne_flags);
+    lp->ll_name_end = p;
+
+    // check the item is exported
+    cc = *p;
+    *p = NUL;
+    if (find_exported(imp_sid, lp->ll_name, &ufunc, &type, NULL, NULL,
+								TRUE) == -1)
+	goto failed;
+
+    if (vim9script && type != NULL)
+    {
+	where_T	    where = WHERE_INIT;
+
+	// In a vim9 script, do type check and make sure the variable is
+	// writable.
+	if (check_typval_type(type, rettv, where) == FAIL)
+	    goto failed;
+    }
+
+    // Get the typval for the exported item
+    hashtab_T *ht = &SCRIPT_VARS(imp_sid);
+    if (ht == NULL)
+	goto failed;
+
+    dictitem_T *di = find_var_in_ht(ht, 0, lp->ll_name, TRUE);
+    if (di == NULL)
+	// variable is not found
+	goto success;
+
+    *dip = di;
+
+    // Check whether the variable is writable.
+    svar_T *sv = find_typval_in_script(&di->di_tv, imp_sid, FALSE);
+    if (sv != NULL && sv->sv_const != 0)
+    {
+	semsg(_(e_cannot_change_readonly_variable_str), lp->ll_name);
+	goto failed;
+    }
+
+    // check whether variable is locked
+    if (value_check_lock(di->di_tv.v_lock, lp->ll_name, FALSE))
+	goto failed;
+
+    lp->ll_tv = &di->di_tv;
+
+success:
+    rc = OK;
+
+failed:
+    *p = cc;
+    return rc == OK ? p : NULL;
+}
+
+/*
  * Get an lval: variable, Dict item or List item that can be assigned a value
  * to: "name", "na{me}", "name[expr]", "name[expr:expr]", "name[expr][expr]",
  * "name.key", "name.key[expr]" etc.
@@ -1177,7 +1262,7 @@ get_lval(
     char_u	*p;
     char_u	*expr_start, *expr_end;
     int		cc;
-    dictitem_T	*v;
+    dictitem_T	*v = NULL;
     typval_T	var1;
     typval_T	var2;
     int		empty1 = FALSE;
@@ -1311,28 +1396,13 @@ get_lval(
     if (*p == '.')
     {
 	imported_T *import = find_imported(lp->ll_name, p - lp->ll_name, TRUE);
-
 	if (import != NULL)
 	{
-	    ufunc_T *ufunc;
-	    type_T *type;
-
-	    import_check_sourced_sid(&import->imp_sid);
-	    lp->ll_sid = import->imp_sid;
-	    lp->ll_name = skipwhite(p + 1);
-	    p = find_name_end(lp->ll_name, NULL, NULL, fne_flags);
-	    lp->ll_name_end = p;
-
-	    // check the item is exported
-	    cc = *p;
-	    *p = NUL;
-	    if (find_exported(import->imp_sid, lp->ll_name, &ufunc, &type,
-						       NULL, NULL, TRUE) == -1)
-	    {
-		*p = cc;
+	    p++;	// skip '.'
+	    p = get_lval_imported(lp, rettv, import->imp_sid, p, &v,
+						fne_flags, vim9script);
+	    if (p == NULL)
 		return NULL;
-	    }
-	    *p = cc;
 	}
     }
 
@@ -1352,7 +1422,7 @@ get_lval(
 	lp->ll_tv = lval_root->lr_tv;
 	v = NULL;
     }
-    else
+    else if (lp->ll_tv == NULL)
     {
 	cc = *p;
 	*p = NUL;

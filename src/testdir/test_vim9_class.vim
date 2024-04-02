@@ -3121,6 +3121,28 @@ def Test_class_import()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for importing a class into a legacy script and calling the class method
+def Test_class_method_from_legacy_script()
+  var lines =<< trim END
+    vim9script
+    export class A
+      static var name: string = 'a'
+      static def SetName(n: string)
+        name = n
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xvim9export.vim', 'D')
+
+  lines =<< trim END
+    import './Xvim9export.vim' as vim9
+
+    call s:vim9.A.SetName('b')
+    call assert_equal('b', s:vim9.A.name)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for implementing an imported interface
 def Test_implement_imported_interface()
   var lines =<< trim END
@@ -3220,6 +3242,23 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1359: Cannot define a "new" method in an abstract class', 4)
+
+  # extending an abstract class with class methods and variables
+  lines =<< trim END
+    vim9script
+    abstract class A
+      static var s: string = 'vim'
+      static def Fn(): list<number>
+        return [10]
+      enddef
+    endclass
+    class B extends A
+    endclass
+    var b = B.new()
+    assert_equal('vim', A.s)
+    assert_equal([10], A.Fn())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_closure_in_class()
