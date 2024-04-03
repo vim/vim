@@ -1098,7 +1098,7 @@ is_safe_now(void)
 }
 
 /*
- * Trigger SafeState if currently in s safe state, that is "safe" is TRUE and
+ * Trigger SafeState if currently in a safe state, that is "safe" is TRUE and
  * there is no typeahead.
  */
     void
