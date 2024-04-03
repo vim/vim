@@ -181,3 +181,43 @@ delfunction foo.bar
 delfunction! Foo
 delfunction foo.bar
 
+
+" fold-region ending
+
+function Foo()
+  " endfunction
+endfunction
+
+function Foo()
+  echo "endfunction"
+endfunction
+
+function Foo()
+  let x =<< END
+    endfunction
+  END
+
+endfunction
+
+function Foo()
+  append
+    endfunction
+.
+endfunction
+
+function Foo()
+  change
+    endfunction
+.
+
+endfunction
+
+function Foo()
+  insert
+    endfunction
+.
+endfunction
+
+:function Foo()
+:endfunction
+
