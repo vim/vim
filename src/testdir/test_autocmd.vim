@@ -4486,7 +4486,7 @@ func Test_Changed_ChangedI()
       au TextChangedI <buffer> :call TextChangedAutocmd('I')
 
       nnoremap <CR> o<Esc>
-      call writefile([''], 'XTextChangedI3')
+      autocmd SafeState * ++once call writefile([''], 'XTextChangedI3')
   END
 
   call writefile(before, 'Xinit', 'D')
@@ -4495,6 +4495,7 @@ func Test_Changed_ChangedI()
         \ {'term_rows': 10})
   call assert_equal('running', term_getstatus(buf))
   call WaitForAssert({-> assert_true(filereadable('XTextChangedI3'))})
+  call WaitForAssert({-> assert_equal([''], readfile('XTextChangedI3'))})
 
   " TextChanged should trigger if a mapping enters and leaves Insert mode.
   call term_sendkeys(buf, "\<CR>")
