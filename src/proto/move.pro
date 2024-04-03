@@ -37,6 +37,7 @@ void f_screenpos(typval_T *argvars, typval_T *rettv);
 void f_virtcol2col(typval_T *argvars, typval_T *rettv);
 void scrolldown(long line_count, int byfold);
 void scrollup(long line_count, int byfold);
+void scroll_redraw(int up, long count);
 void adjust_skipcol(void);
 void check_topfill(win_T *wp, int down);
 void scrolldown_clamp(void);
