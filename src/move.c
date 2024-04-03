@@ -1663,6 +1663,9 @@ scrolldown(
 #ifdef FEAT_DIFF
 		curwin->w_topfill = 0;
 #endif
+		// Adjusting the cursor later should not adjust skipcol.
+		if (do_sms)
+		    curwin->w_curswant = MAXCOL;
 #ifdef FEAT_FOLDING
 		// A sequence of folded lines only counts for one logical line
 		if (hasFolding(curwin->w_topline, &first, NULL))
@@ -1856,9 +1859,9 @@ scrollup(
 		    curwin->w_topfill = diff_check_fill(curwin, lnum);
 # endif
 		    curwin->w_skipcol = 0;
-		    // Adjusting the cursor later should not adjust skipcol:
-		    // bring it to the first screenline on this new topline.
-		    curwin->w_curswant %= width1;
+		    // Adjusting the cursor later should not adjust skipcol.
+		    if (do_sms)
+			curwin->w_curswant = 0;
 		    if (todo > 1 && do_sms)
 			size = linetabsize(curwin, curwin->w_topline);
 		}
@@ -2464,18 +2467,14 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     cln = curwin->w_cursor.lnum;
     if (set_topbot)
     {
-	int set_skipcol = FALSE;
-
 	used = 0;
 	curwin->w_botline = cln + 1;
+	loff.lnum = cln + 1;
 #ifdef FEAT_DIFF
 	loff.fill = 0;
 #endif
-	for (curwin->w_topline = curwin->w_botline;
-		curwin->w_topline > 1;
-		curwin->w_topline = loff.lnum)
+	while (TRUE)
 	{
-	    loff.lnum = curwin->w_topline;
 	    topline_back_winheight(&loff, FALSE);
 	    if (loff.height == MAXCOL)
 		break;
@@ -2499,29 +2498,28 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 			curwin->w_skipcol = skipcol_from_plines(
 							curwin, plines_offset);
 			curwin->w_cursor.col = curwin->w_skipcol + overlap;
-			set_skipcol = TRUE;
 		    }
 		}
 		break;
 	    }
-	    used += loff.height;
 #ifdef FEAT_DIFF
 	    curwin->w_topfill = loff.fill;
 #endif
+	    curwin->w_topline = loff.lnum;
+	    used += loff.height;
 	}
-	if (curwin->w_topline > curbuf->b_ml.ml_line_count)
-	    curwin->w_topline = curbuf->b_ml.ml_line_count;
+
 	set_empty_rows(curwin, used);
 	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 	if (curwin->w_topline != old_topline
 #ifdef FEAT_DIFF
 		|| curwin->w_topfill != old_topfill
 #endif
-		|| set_skipcol
+		|| curwin->w_skipcol != old_skipcol
 		|| curwin->w_skipcol != 0)
 	{
 	    curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
-	    if (set_skipcol)
+	    if (curwin->w_skipcol != old_skipcol)
 		redraw_later(UPD_NOT_VALID);
 	    else
 		reset_skipcol();
@@ -3051,7 +3049,8 @@ static int get_scroll_overlap(int dir)
     int	    min_height = curwin->w_height - 2;
 
     validate_botline();
-    if (dir == FORWARD && curwin->w_botline > curbuf->b_ml.ml_line_count)
+    if ((dir == BACKWARD && curwin->w_topline == 1)
+	|| (dir == FORWARD && curwin->w_botline > curbuf->b_ml.ml_line_count))
 	return min_height + 2;  // no overlap, still handle 'smoothscroll'
 
     loff.lnum = dir == FORWARD ? curwin->w_botline : curwin->w_topline - 1;
@@ -3189,7 +3188,6 @@ pagescroll(int dir, long count, int half)
 	    cursor_down_inner(curwin, count);
 	else
 	    cursor_up_inner(curwin, count);
-	curwin->w_curswant = prev_curswant;
 
 	if (get_scrolloff_value())
 	    cursor_correct();
@@ -3210,12 +3208,13 @@ pagescroll(int dir, long count, int half)
 	nochange = scroll_with_sms(dir, &count);
     }
 
+    curwin->w_curswant = prev_curswant;
     // Error if both the viewport and cursor did not change.
     if (nochange)
 	beep_flush();
     else if (!curwin->w_p_sms)
 	beginline(BL_SOL | BL_FIX);
-    else if (p_sol)
+    else if (p_sol || curwin->w_skipcol)
 	nv_g_home_m_cmd(&ca);
 
     return nochange;
