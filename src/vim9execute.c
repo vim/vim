@@ -4573,6 +4573,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			iemsg("ufunc unexpectedly NULL for FUNCREF");
+			vim_free(pt);
 			goto theend;
 		    }
 		    if (fill_partial_and_closure(pt, ufunc,
