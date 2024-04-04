@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Apr 03
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Apr 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1771,7 +1771,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		made.  It returns the number of the choice.  For the first
 		choice this is 1.
 		Note: confirm() is only supported when compiled with dialog
-		support, see |+dialog_con| and |+dialog_gui|.
+		support, see |+dialog_con| |+dialog_con_gui| and |+dialog_gui|.
 
 		{msg} is displayed in a |dialog| with {choices} as the
 		alternatives.  When {choices} is missing or empty, "&OK" is
@@ -11200,6 +11200,7 @@ cscope			Compiled with |cscope| support.
 cursorbind		Compiled with |'cursorbind'| (always true)
 debug			Compiled with "DEBUG" defined.
 dialog_con		Compiled with console dialog support.
+dialog_con_gui		Compiled with console and GUI dialog support.
 dialog_gui		Compiled with GUI dialog support.
 diff			Compiled with |vimdiff| and 'diff' support.
 digraphs		Compiled with support for digraphs.
