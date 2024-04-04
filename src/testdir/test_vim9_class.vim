@@ -10530,4 +10530,34 @@ def Test_use_base_class_variable_from_base_class_method()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for using lambda block in classes
+def Test_lambda_block_in_class()
+  # This used to crash Vim
+  var lines =<< trim END
+    vim9script
+    class IdClass1
+      const Id: func(number): number = (num: number): number => {
+        # Return a ID
+        return num * 10
+      }
+    endclass
+    var id = IdClass1.new()
+    assert_equal(20, id.Id(2))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # This used to crash Vim
+  lines =<< trim END
+    vim9script
+    class IdClass2
+      static const Id: func(number): number = (num: number): number => {
+        # Return a ID
+        return num * 2
+      }
+    endclass
+    assert_equal(16, IdClass2.Id(8))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
