@@ -570,10 +570,16 @@ parse_argument_types(
 		fp->uf_arg_types[i] = type;
 		if (i < fp->uf_args.ga_len
 			&& (type->tt_type == VAR_FUNC
-			    || type->tt_type == VAR_PARTIAL)
-			&& var_wrong_func_name(
-				    ((char_u **)fp->uf_args.ga_data)[i], TRUE))
-		    return FAIL;
+			    || type->tt_type == VAR_PARTIAL))
+		{
+		    char_u *name = ((char_u **)fp->uf_args.ga_data)[i];
+		    if (obj_members != NULL && *name == '_')
+			// protected object method
+			name++;
+
+		    if (var_wrong_func_name(name, TRUE))
+			return FAIL;
+		}
 	    }
 	}
     }

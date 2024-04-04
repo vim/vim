@@ -3794,6 +3794,43 @@ func Test_funcref_to_string()
   call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
 endfunc
 
+" A funcref cannot start with an underscore (except when used as a protected
+" class or object variable)
+func Test_funcref_with_underscore()
+  " at script level
+  let lines =<< trim END
+    vim9script
+    var _Fn = () => 10
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn')
+
+  " inside a function
+  let lines =<< trim END
+    vim9script
+    def Func()
+      var _Fn = () => 10
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn', 1)
+
+  " as a function argument
+  let lines =<< trim END
+    vim9script
+    def Func(_Fn: func)
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn', 2)
+
+  " as a lambda argument
+  let lines =<< trim END
+    vim9script
+    var Fn = (_Farg: func) => 10
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Farg', 2)
+endfunc
+
 " Test for isabsolutepath()
 func Test_isabsolutepath()
   call assert_false(isabsolutepath(''))

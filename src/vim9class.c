@@ -2835,6 +2835,14 @@ call_oc_method(
 	    return FAIL;
 	}
 
+	if (*name == '_')
+	{
+	    // Protected object or class funcref variable
+	    semsg(_(e_cannot_access_protected_variable_str), ocm->ocm_name,
+		    cl->class_name);
+	    return FAIL;
+	}
+
 	if (rettv->v_type == VAR_OBJECT)
 	{
 	    // funcref object variable
