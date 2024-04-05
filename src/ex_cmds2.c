@@ -164,7 +164,6 @@ dialog_changed(
     int		ret;
     buf_T	*buf2;
     exarg_T	ea;
-    int		empty_buf = buf->b_fname == NULL ? TRUE : FALSE;
 
     dialog_msg(buff, _("Save changes to \"%s\"?"), buf->b_fname);
     if (checkall)
@@ -178,11 +177,14 @@ dialog_changed(
 
     if (ret == VIM_YES)
     {
+	int	empty_bufname;
+
 #ifdef FEAT_BROWSE
 	// May get file name, when there is none
 	browse_save_fname(buf);
 #endif
-	if (empty_buf)
+	empty_bufname = buf->b_fname == NULL ? TRUE : FALSE;
+	if (empty_bufname)
 	    buf_set_name(buf->b_fnum, (char_u *)"Untitled");
 
 	if (check_overwrite(&ea, buf, buf->b_fname, buf->b_ffname, FALSE) == OK)
@@ -193,14 +195,11 @@ dialog_changed(
 	}
 
 	// restore to empty when write failed
-	if (empty_buf)
+	if (empty_bufname)
 	{
-	    vim_free(buf->b_fname);
-	    buf->b_fname = NULL;
-	    vim_free(buf->b_ffname);
-	    buf->b_ffname = NULL;
-	    vim_free(buf->b_sfname);
-	    buf->b_sfname = NULL;
+	    VIM_CLEAR(buf->b_fname);
+	    VIM_CLEAR(buf->b_ffname);
+	    VIM_CLEAR(buf->b_sfname);
 	    unchanged(buf, TRUE, FALSE);
 	}
     }
