@@ -4931,6 +4931,16 @@ def Test_for_empty_line_after_lambda()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for evaluating a lambda block from a string
+def Test_eval_lambda_block()
+  var lines =<< trim END
+    vim9script
+    var Fn = eval("(x: number): number => {\nreturn x * 2\n}")
+    assert_equal(6, Fn(3))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

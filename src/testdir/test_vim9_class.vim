@@ -10530,4 +10530,57 @@ def Test_use_base_class_variable_from_base_class_method()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for accessing protected funcref object and class variables
+def Test_protected_funcref()
+  # protected funcref object variable
+  var lines =<< trim END
+    vim9script
+    class Test1
+      const _Id: func(any): any = (v) => v
+    endclass
+    var n = Test1.new()._Id(1)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_Id" in class "Test1"', 5)
+
+  # protected funcref class variable
+  lines =<< trim END
+    vim9script
+    class Test2
+      static const _Id: func(any): any = (v) => v
+    endclass
+    var n = Test2._Id(2)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_Id" in class "Test2"', 5)
+enddef
+
+" Test for using lambda block in classes
+def Test_lambda_block_in_class()
+  # This used to crash Vim
+  var lines =<< trim END
+    vim9script
+    class IdClass1
+      const Id: func(number): number = (num: number): number => {
+        # Return a ID
+        return num * 10
+      }
+    endclass
+    var id = IdClass1.new()
+    assert_equal(20, id.Id(2))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # This used to crash Vim
+  lines =<< trim END
+    vim9script
+    class IdClass2
+      static const Id: func(number): number = (num: number): number => {
+        # Return a ID
+        return num * 2
+      }
+    endclass
+    assert_equal(16, IdClass2.Id(8))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

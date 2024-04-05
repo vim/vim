@@ -2993,4 +2993,30 @@ def Test_import_autloaded_script()
   &rtp = save_rtp
 enddef
 
+" Test for autoloading an imported dict func
+def Test_autoload_import_dict_func()
+  mkdir('Xdir/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export var al_exported_nr: number = 33
+    def Al_AddNum(n: number)
+      al_exported_nr += n
+    enddef
+    export var al_exportedDict: dict<func> = {Fn: Al_AddNum}
+  END
+  writefile(lines, 'Xdir/autoload/Xdictfunc.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  lines =<< trim END
+    import './Xdir/autoload/Xdictfunc.vim'
+    call Xdictfunc#al_exportedDict.Fn(5)
+    call assert_equal(38, Xdictfunc#al_exported_nr)
+    call call(Xdictfunc#al_exportedDict.Fn, [3])
+    call assert_equal(41, Xdictfunc#al_exported_nr)
+  END
+  v9.CheckScriptSuccess(lines)
+  &rtp = save_rtp
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

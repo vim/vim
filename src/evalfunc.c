@@ -6129,6 +6129,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"dialog_con_gui",
+#if defined(FEAT_CON_DIALOG) && defined(FEAT_GUI_DIALOG)
+		1
+#else
+		0
+#endif
+		},
 	{"dialog_gui",
 #ifdef FEAT_GUI_DIALOG
 		1

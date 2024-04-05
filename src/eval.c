@@ -549,6 +549,7 @@ skip_expr_concatenate(
 				    ((char_u **)gap->ga_data)[gap->ga_len - 1];
 		((char_u **)gap->ga_data)[gap->ga_len - 1] = NULL;
 		ga_clear_strings(gap);
+		ga_clear(freegap);
 	    }
 	    else
 	    {
@@ -1203,7 +1204,7 @@ get_lval_imported(
 
     dictitem_T *di = find_var_in_ht(ht, 0, lp->ll_name, TRUE);
     if (di == NULL)
-	// variable is not found
+	// script is autoloaded.  So variable will be found later
 	goto success;
 
     *dip = di;

@@ -5,16 +5,13 @@ vim9script
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
 # Contributors:       Enno Nagel
 # Last Change:        2024 Mar 29
+#                     2024 Apr 03 by The Vim Project (removed :CompilerSet definition)
 
 if exists("g:current_compiler")
   finish
 endif
 
 import autoload '../autoload/context.vim'
-
-if exists(":CompilerSet") != 2 # Older Vim always used :setlocal
-  command -nargs=* CompilerSet setlocal <args>
-endif
 
 g:current_compiler = 'context'
 
