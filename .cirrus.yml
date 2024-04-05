@@ -5,9 +5,9 @@ env:
 freebsd_task:
   name: FreeBSD
   matrix:
-    - name: FreeBSD 14.0
+    - name: FreeBSD 14.1
       freebsd_instance:
-        image_family: freebsd-14-0
+        image_family: freebsd-14-1
   timeout_in: 20m
   install_script:
     - pkg install -y gettext
