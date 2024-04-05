@@ -665,6 +665,9 @@ au BufNewFile,BufRead *.dtd			setf dtd
 " DTS/DSTI/DTSO (device tree files)
 au BufNewFile,BufRead *.dts,*.dtsi,*.dtso,*.its	setf dts
 
+" Earthfile
+au BufNewFile,BufRead Earthfile			setf earthfile
+
 " EDIF (*.edf,*.edif,*.edn,*.edo) or edn
 au BufNewFile,BufRead *.ed\(f\|if\|o\)		setf edif
 au BufNewFile,BufRead *.edn

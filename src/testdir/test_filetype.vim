@@ -220,6 +220,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     dylan: ['file.dylan'],
     dylanintr: ['file.intr'],
     dylanlid: ['file.lid'],
+    earthfile: ['Earthfile'],
     ecd: ['file.ecd'],
     edif: ['file.edf', 'file.edif', 'file.edo'],
     editorconfig: ['.editorconfig'],
