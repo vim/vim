@@ -5556,7 +5556,10 @@ ml_encrypt_data(
 
     new_data = alloc(size);
     if (new_data == NULL)
+    {
+	crypt_free_state(state);
 	return NULL;
+    }
     head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
     text_start = (char_u *)dp + dp->db_txt_start;
     text_len = size - dp->db_txt_start;

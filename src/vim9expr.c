@@ -1561,7 +1561,10 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (d == NULL)
 	return FAIL;
     if (generate_ppconst(cctx, ppconst) == FAIL)
+    {
+	dict_unref(d);
 	return FAIL;
+    }
     for (;;)
     {
 	char_u	    *key = NULL;
