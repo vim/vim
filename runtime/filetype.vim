@@ -663,7 +663,7 @@ au BufNewFile,BufRead *.dsl
 au BufNewFile,BufRead *.dtd			setf dtd
 
 " DTS/DSTI/DTSO (device tree files)
-au BufNewFile,BufRead *.dts,*.dtsi,*.dtso,*.its	setf dts
+au BufNewFile,BufRead *.dts,*.dtsi,*.dtso,*.its,*.keymap	setf dts
 
 " Earthfile
 au BufNewFile,BufRead Earthfile			setf earthfile
