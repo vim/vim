@@ -55,8 +55,8 @@ func Test_colorscheme()
 
   let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
   " FIXME: temporarily check less while the colorscheme changes
-  " call assert_match("\nSearch         xxx term=inverse cterm=inverse ctermfg=196 ctermbg=16 gui=inverse guifg=#ff0000 guibg=#000000", a)
-  call assert_match("\nSearch         xxx term=inverse ", a)
+  " call assert_match("\nSearch         xxx term=reverse cterm=reverse ctermfg=196 ctermbg=16 gui=reverse guifg=#ff0000 guibg=#000000", a)
+  call assert_match("\nSearch         xxx term=reverse ", a)
 
   call assert_fails('colorscheme does_not_exist', 'E185:')
   call assert_equal('does_not_exist', g:color_pre)

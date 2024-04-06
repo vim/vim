@@ -27,19 +27,37 @@
 // must be sorted by the 'value' field because it is used by bsearch()!
 // note: inverse and reverse use the same key
 static keyvalue_T highlight_tab[] = {
-    KEYVALUE_ENTRY(HL_BOLD, "bold"),
-    KEYVALUE_ENTRY(HL_INVERSE, "inverse"),
-    KEYVALUE_ENTRY(HL_ITALIC, "italic"),
-    KEYVALUE_ENTRY(HL_NOCOMBINE, "nocombine"),
-    KEYVALUE_ENTRY(HL_NORMAL, "NONE"),
-    KEYVALUE_ENTRY(HL_INVERSE, "reverse"),
-    KEYVALUE_ENTRY(HL_STANDOUT, "standout"),
-    KEYVALUE_ENTRY(HL_STRIKETHROUGH, "strikethrough"),
-    KEYVALUE_ENTRY(HL_UNDERCURL, "undercurl"),
-    KEYVALUE_ENTRY(HL_UNDERDASHED, "underdashed"),
-    KEYVALUE_ENTRY(HL_UNDERDOTTED, "underdotted"),
-    KEYVALUE_ENTRY(HL_UNDERDOUBLE, "underdouble"),
-    KEYVALUE_ENTRY(HL_UNDERLINE, "underline")
+    KEYVALUE_ENTRY(HL_BOLD, "bold"),			    // index 0
+    KEYVALUE_ENTRY(HL_INVERSE, "inverse"),		    // index 1
+    KEYVALUE_ENTRY(HL_ITALIC, "italic"),		    // index 2
+    KEYVALUE_ENTRY(HL_NOCOMBINE, "nocombine"),		    // index 3
+    KEYVALUE_ENTRY(HL_NORMAL, "NONE"),			    // index 4
+    KEYVALUE_ENTRY(HL_INVERSE, "reverse"),		    // index 5
+    KEYVALUE_ENTRY(HL_STANDOUT, "standout"),		    // index 6
+    KEYVALUE_ENTRY(HL_STRIKETHROUGH, "strikethrough"),	    // index 7
+    KEYVALUE_ENTRY(HL_UNDERCURL, "undercurl"),		    // index 8
+    KEYVALUE_ENTRY(HL_UNDERDASHED, "underdashed"),	    // index 9
+    KEYVALUE_ENTRY(HL_UNDERDOTTED, "underdotted"),	    // index 10
+    KEYVALUE_ENTRY(HL_UNDERDOUBLE, "underdouble"),	    // index 11
+    KEYVALUE_ENTRY(HL_UNDERLINE, "underline")		    // index 12
+};
+
+// this table is used to display highlight names in the "correct" sequence.
+// keep this in sync with highlight_tab[].
+static keyvalue_T *highlight_index_tab[] = {
+    &highlight_tab[0],					    // HL_BOLD
+    &highlight_tab[6],					    // HL_STANDOUT
+    &highlight_tab[12],					    // HL_UNDERLINE
+    &highlight_tab[8],					    // HL_UNDERCURL
+    &highlight_tab[11],					    // HL_UNDERDOUBLE
+    &highlight_tab[10],					    // HL_UNDERDOTTED
+    &highlight_tab[9],					    // HL_UNDERDASHED
+    &highlight_tab[2],					    // HL_ITALIC
+    &highlight_tab[5],					    // HL_REVERSE
+    &highlight_tab[1],					    // HL_INVERSE
+    &highlight_tab[3],					    // HL_NOCOMBINE
+    &highlight_tab[7],					    // HL_STRIKETHROUGH
+    &highlight_tab[4]					    // HL_NORMAL
 };
 
 // length of all attribute names, plus commas, together (and a bit more)
@@ -3112,18 +3130,18 @@ highlight_list_arg(
 
 	buf[0] = NUL;
 	buflen = 0;
-	for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(highlight_index_tab); ++i)
 	{
-	    if (iarg & highlight_tab[i].key)
+	    if (iarg & highlight_index_tab[i]->key)
 	    {
 		if (buflen > 0)
 		{
 		    STRCPY(buf + buflen, (char_u *)",");
 		    ++buflen;
 		}
-		STRCPY(buf + buflen, (char_u *)highlight_tab[i].value);
-		buflen += highlight_tab[i].length;
-		iarg &= ~highlight_tab[i].key;	    // don't want "inverse"/"reverse"
+		STRCPY(buf + buflen, (char_u *)highlight_index_tab[i]->value);
+		buflen += highlight_index_tab[i]->length;
+		iarg &= ~highlight_index_tab[i]->key;	    // don't want "inverse"/"reverse"
 	    }
 	}
     }
@@ -4214,12 +4232,12 @@ highlight_get_attr_dict(int hlattr)
     if (dict == NULL)
 	return NULL;
 
-    for (i = 0; i < (int)ARRAY_LENGTH(highlight_tab); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(highlight_index_tab); ++i)
     {
-	if (hlattr & highlight_tab[i].key)
+	if (hlattr & highlight_index_tab[i]->key)
 	{
-	    dict_add_bool(dict, highlight_tab[i].value, VVAL_TRUE);
-	    hlattr &= ~highlight_tab[i].key;	// don't want "inverse"/"reverse"
+	    dict_add_bool(dict, highlight_index_tab[i]->value, VVAL_TRUE);
+	    hlattr &= ~highlight_index_tab[i]->key;	// don't want "inverse"/"reverse"
 	}
     }
 
