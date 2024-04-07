@@ -37,8 +37,8 @@ static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
-static void f_cursor_off(typval_T *argsvars, typval_T *rettv);
-static void f_cursor_on(typval_T *argsvars, typval_T *rettv);
+static void f_cursor_off(typval_T *argsvars UNUSED, typval_T *rettv UNUSED);
+static void f_cursor_on(typval_T *argsvars UNUSED, typval_T *rettv UNUSED);
 #ifdef MSWIN
 static void f_debugbreak(typval_T *argvars, typval_T *rettv);
 #endif
