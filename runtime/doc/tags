@@ -6706,6 +6706,8 @@ cursor-right	intro.txt	/*cursor-right*
 cursor-up	intro.txt	/*cursor-up*
 cursor_down	intro.txt	/*cursor_down*
 cursor_left	intro.txt	/*cursor_left*
+cursor_off()	builtin.txt	/*cursor_off()*
+cursor_on()	builtin.txt	/*cursor_on()*
 cursor_right	intro.txt	/*cursor_right*
 cursor_up	intro.txt	/*cursor_up*
 cw	change.txt	/*cw*
