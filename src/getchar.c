@@ -81,7 +81,7 @@ static int	KeyNoremap = 0;	    // remapping flags
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
-static int	last_recorded_len = 0;	// number of last recorded chars
+static size_t	last_recorded_len = 0;	// number of last recorded chars
 
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
@@ -163,7 +163,7 @@ get_recorded(void)
      * (possibly mapped) characters that stopped the recording.
      */
     len = STRLEN(p);
-    if ((int)len >= last_recorded_len)
+    if (len >= last_recorded_len)
     {
 	len -= last_recorded_len;
 	p[len] = NUL;
@@ -1789,7 +1789,7 @@ vgetc(void)
     else
     {
 	// number of characters recorded from the last vgetc() call
-	static int	last_vgetc_recorded_len = 0;
+	static size_t	last_vgetc_recorded_len = 0;
 
 	mod_mask = 0;
 	vgetc_mod_mask = 0;
