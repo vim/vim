@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Apr 04
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -220,12 +220,12 @@ getbufvar({buf}, {varname} [, {def}])
 				any	variable {varname} in buffer {buf}
 getcellwidths()			List	get character cell width overrides
 getchangelist([{buf}])		List	list of change list items
-getchar([expr])			Number or String
+getchar([{expr}])		Number or String
 					get one character from the user
 getcharmod()			Number	modifiers for the last typed character
 getcharpos({expr})		List	position of cursor, mark, etc.
 getcharsearch()			Dict	last character search
-getcharstr([expr])		String	get one character from the user
+getcharstr([{expr}])		String	get one character from the user
 getcmdcompltype()		String	return the type of the current
 					command-line completion
 getcmdline()			String	return the current command-line
@@ -398,7 +398,7 @@ menu_info({name} [, {mode}])	Dict	get menu item information
 min({expr})			Number	minimum value of items in {expr}
 mkdir({name} [, {flags} [, {prot}]])
 				Number	create directory {name}
-mode([expr])			String	current editing mode
+mode([{expr}])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
 nextnonblank({lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF-8 value {expr}
@@ -699,7 +699,7 @@ test_override({expr}, {val})	none	test with Vim internal overrides
 test_refcount({expr})		Number	get the reference count of {expr}
 test_setmouse({row}, {col})	none	set the mouse position for testing
 test_settime({expr})		none	set current time for testing
-test_srand_seed([seed])		none	set seed for testing srand()
+test_srand_seed([{seed}])	none	set seed for testing srand()
 test_unknown()			any	unknown value for testing
 test_void()			any	void value for testing
 timer_info([{id}])		List	information about timers
@@ -729,7 +729,7 @@ virtcol({expr} [, {list} [, {winid}])
 					screen column of cursor or mark
 virtcol2col({winid}, {lnum}, {col})
 				Number  byte index of a character on screen
-visualmode([expr])		String	last visual mode used
+visualmode([{expr}])		String	last visual mode used
 wildmenumode()			Number	whether 'wildmenu' mode is active
 win_execute({id}, {command} [, {silent}])
 				String	execute {command} in window {id}
@@ -3455,16 +3455,16 @@ getchangelist([{buf}])					*getchangelist()*
 		Can also be used as a |method|: >
 			GetBufnr()->getchangelist()
 
-getchar([expr])						*getchar()*
+getchar([{expr}])					*getchar()*
 		Get a single character from the user or input stream.
-		If [expr] is omitted, wait until a character is available.
-		If [expr] is 0, only get a character when one is available.
+		If {expr} is omitted, wait until a character is available.
+		If {expr} is 0, only get a character when one is available.
 			Return zero otherwise.
-		If [expr] is 1, only check if a character is available, it is
+		If {expr} is 1, only check if a character is available, it is
 			not consumed.  Return zero if no character available.
 		If you prefer always getting a string use |getcharstr()|.
 
-		Without [expr] and when [expr] is 0 a whole character or
+		Without {expr} and when {expr} is 0 a whole character or
 		special key is returned.  If it is a single character, the
 		result is a Number.  Use |nr2char()| to convert it to a String.
 		Otherwise a String is returned with the encoded character.
@@ -3474,11 +3474,11 @@ getchar([expr])						*getchar()*
 		also a String when a modifier (shift, control, alt) was used
 		that is not included in the character.
 
-		When [expr] is 0 and Esc is typed, there will be a short delay
+		When {expr} is 0 and Esc is typed, there will be a short delay
 		while Vim waits to see if this is the start of an escape
 		sequence.
 
-		When [expr] is 1 only the first byte is returned.  For a
+		When {expr} is 1 only the first byte is returned.  For a
 		one-byte character it is the character itself as a number.
 		Use nr2char() to convert it to a String.
 
@@ -3589,13 +3589,13 @@ getcharsearch()						*getcharsearch()*
 <		Also see |setcharsearch()|.
 
 
-getcharstr([expr])					*getcharstr()*
+getcharstr([{expr}])					*getcharstr()*
 		Get a single character from the user or input stream as a
 		string.
-		If [expr] is omitted, wait until a character is available.
-		If [expr] is 0 or false, only get a character when one is
+		If {expr} is omitted, wait until a character is available.
+		If {expr} is 0 or false, only get a character when one is
 			available.  Return an empty string otherwise.
-		If [expr] is 1 or true, only check if a character is
+		If {expr} is 1 or true, only check if a character is
 			available, it is not consumed.  Return an empty string
 			if no character is available.
 		Otherwise this works like |getchar()|, except that a number
@@ -6648,8 +6648,8 @@ mkdir({name} [, {flags} [, {prot}]])
 			GetName()->mkdir()
 <
 							*mode()*
-mode([expr])	Return a string that indicates the current mode.
-		If [expr] is supplied and it evaluates to a non-zero Number or
+mode([{expr}])	Return a string that indicates the current mode.
+		If {expr} is supplied and it evaluates to a non-zero Number or
 		a non-empty String (|non-zero-arg|), then the full mode is
 		returned, otherwise only the first letter is returned.
 		Also see |state()|.
