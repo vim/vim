@@ -3868,7 +3868,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
  * Returns 0 when the position could be set, -1 otherwise.
  */
     static void
-f_cursor(typval_T *argvars, typval_T *rettv)
+f_cursor(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     set_cursorpos(argvars, rettv, FALSE);
 }
@@ -3879,7 +3879,7 @@ f_cursor(typval_T *argvars, typval_T *rettv)
  * Disable cursor.
  */
     static void
-f_cursor_off(typval_T *argvars, typval_T *rettv)
+f_cursor_off(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     cursor_sleep();
 }
