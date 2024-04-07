@@ -1660,6 +1660,11 @@ aucmd_prepbuf(
 
 	win_init_popup_win(auc_win, buf);
 
+	// Make sure tp_localdir and globaldir are NULL to avoid a
+	// chdir() in win_enter_ext().
+	// win_init_popup_win() has already set w_localdir to NULL.
+	aco->tp_localdir = curtab->tp_localdir;
+	curtab->tp_localdir = NULL;
 	aco->globaldir = globaldir;
 	globaldir = NULL;
 
@@ -1773,6 +1778,12 @@ win_found:
 	vars_clear(&awp->w_vars->dv_hashtab);  // free all w: variables
 	hash_init(&awp->w_vars->dv_hashtab);   // re-use the hashtab
 #endif
+	// If :lcd has been used in the autocommand window, correct current
+	// directory before restoring tp_localdir and globaldir.
+	if (awp->w_localdir != NULL)
+	    win_fix_current_dir();
+	vim_free(curtab->tp_localdir);
+	curtab->tp_localdir = aco->tp_localdir;
 	vim_free(globaldir);
 	globaldir = aco->globaldir;
 
