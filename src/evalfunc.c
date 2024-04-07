@@ -37,6 +37,8 @@ static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
+static void f_cursor_off(typval_T *argsvars, typval_T *rettv);
+static void f_cursor_on(typval_T *argsvars, typval_T *rettv);
 #ifdef MSWIN
 static void f_debugbreak(typval_T *argvars, typval_T *rettv);
 #endif
@@ -1938,6 +1940,10 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_cscope_connection},
     {"cursor",		1, 3, FEARG_1,	    arg13_cursor,
 			ret_number,	    f_cursor},
+    {"cursor_off",	0, 0, 0,	    NULL,
+			ret_void,	    f_cursor_off},
+    {"cursor_on",	0, 0, 0,	    NULL,
+			ret_void,	    f_cursor_on},
     {"debugbreak",	1, 1, FEARG_1,	    arg1_number,
 			ret_number,
 #ifdef MSWIN
@@ -3865,6 +3871,28 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 f_cursor(typval_T *argvars, typval_T *rettv)
 {
     set_cursorpos(argvars, rettv, FALSE);
+}
+
+/*
+ * "cursor_off()" function
+ *
+ * Disable cursor.
+ */
+    static void
+f_cursor_off(typval_T *argvars, typval_T *rettv)
+{
+    cursor_sleep();
+}
+
+/*
+ * "cursor_on()" function
+ *
+ * Enable cursor.
+ */
+    static void
+f_cursor_on(typval_T *argvars, typval_T *rettv)
+{
+    cursor_unsleep();
 }
 
 #ifdef MSWIN
