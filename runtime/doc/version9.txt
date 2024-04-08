@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 28
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41580,6 +41580,10 @@ Autocommands: ~
 			received
 |WinNewPre|		before creating a new window
 
+
+Highlighting: ~
+
+|hl-MsgArea|		highlighting of the Command-line and messages area.
 
 Commands: ~
 

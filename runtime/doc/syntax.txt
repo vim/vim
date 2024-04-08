@@ -2485,7 +2485,7 @@ To specify elements that should not be concealed, set the following variable: >
 
 This is a list of the rules wich can be used here:
 
-  - titleblock 
+  - titleblock
   - image
   - block
   - subscript
@@ -5585,6 +5585,9 @@ MessageWindow	Messages popup window used by `:echowindow`.  If not defined
 		|hl-WarningMsg| is used.
 							*hl-ModeMsg*
 ModeMsg		'showmode' message (e.g., "-- INSERT --").
+							*hl-MsgArea*
+MsgArea		Command-line area, also used for outputting messages, see also
+		'cmdheight'
 							*hl-MoreMsg*
 MoreMsg		|more-prompt|
 							*hl-NonText*

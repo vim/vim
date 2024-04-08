@@ -8050,6 +8050,7 @@ hl-Menu	syntax.txt	/*hl-Menu*
 hl-MessageWindow	syntax.txt	/*hl-MessageWindow*
 hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
 hl-MoreMsg	syntax.txt	/*hl-MoreMsg*
+hl-MsgArea	syntax.txt	/*hl-MsgArea*
 hl-NonText	syntax.txt	/*hl-NonText*
 hl-Normal	syntax.txt	/*hl-Normal*
 hl-Pmenu	syntax.txt	/*hl-Pmenu*
