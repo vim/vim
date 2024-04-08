@@ -7322,6 +7322,7 @@ ft-nasm-syntax	syntax.txt	/*ft-nasm-syntax*
 ft-ncf-syntax	syntax.txt	/*ft-ncf-syntax*
 ft-nroff-syntax	syntax.txt	/*ft-nroff-syntax*
 ft-ocaml-syntax	syntax.txt	/*ft-ocaml-syntax*
+ft-pandoc-syntax	syntax.txt	/*ft-pandoc-syntax*
 ft-papp-syntax	syntax.txt	/*ft-papp-syntax*
 ft-pascal-syntax	syntax.txt	/*ft-pascal-syntax*
 ft-pdf-plugin	filetype.txt	/*ft-pdf-plugin*
