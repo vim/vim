@@ -597,6 +597,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     rpgle: ['file.rpgle', 'file.rpgleinc'],
     robot: ['file.robot', 'file.resource'],
     robots: ['robots.txt'],
+    roc: ['file.roc'],
     ron: ['file.ron'],
     routeros: ['file.rsc'],
     rpcgen: ['file.x'],

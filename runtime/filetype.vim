@@ -1888,6 +1888,9 @@ au BufNewFile,BufRead *.robot,*.resource	setf robot
 " Robots.txt
 au BufNewFile,BufRead robots.txt		setf robots
 
+" Roc
+au BufNewFile,BufRead *.roc			setf roc
+
 " RON (Rusty Object Notation)
 au BufNewFile,BufRead *.ron			setf ron
 
