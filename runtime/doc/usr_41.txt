@@ -906,8 +906,8 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	wincol()		window column number of the cursor
 	winline()		window line number of the cursor
 	cursor()		position the cursor at a line/column
-	cursor_off()		disable cursor
-	cursor_on()		enable cursor
+	cursor_off()		hide cursor
+	cursor_on()		unhide cursor
 	screencol()		get screen column of the cursor
 	screenrow()		get screen row of the cursor
 	screenpos()		screen row and col of a text character

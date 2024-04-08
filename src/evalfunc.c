@@ -3876,7 +3876,7 @@ f_cursor(typval_T *argvars, typval_T *rettv)
 /*
  * "cursor_off()" function
  *
- * Disable cursor.
+ * Hide cursor.
  */
     static void
 f_cursor_off(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
@@ -3887,7 +3887,7 @@ f_cursor_off(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 /*
  * "cursor_on()" function
  *
- * Enable cursor.
+ * Unhide cursor.
  */
     static void
 f_cursor_on(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
