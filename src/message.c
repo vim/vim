@@ -3140,6 +3140,9 @@ do_more_prompt(int typed_char)
     msgchunk_T	*mp_last = NULL;
     msgchunk_T	*mp;
     int		i;
+    int		msg_attr;
+
+    msg_attr = HL_ATTR(HLF_MSG);
 
     // We get called recursively when a timer callback outputs a message. In
     // that case don't show another prompt. Also when at the hit-Enter prompt
@@ -3350,7 +3353,7 @@ do_more_prompt(int typed_char)
 		    msg_scroll_up();
 		    inc_msg_scrolled();
 		    screen_fill((int)Rows - 2, (int)Rows - 1, 0, (int)Columns,
-			    ' ', ' ', HL_ATTR(HLF_MSG));
+			    ' ', ' ', msg_attr);
 		    mp_last = disp_sb_line((int)Rows - 2, mp_last, FALSE);
 		    --toscroll;
 		}
@@ -3360,7 +3363,7 @@ do_more_prompt(int typed_char)
 	    {
 		// displayed the requested text, more prompt again
 		screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
-			' ', ' ', HL_ATTR(HLF_MSG));
+			' ', ' ', msg_attr);
 		msg_moremsg(FALSE);
 		continue;
 	    }
@@ -3373,8 +3376,7 @@ do_more_prompt(int typed_char)
     }
 
     // clear the --more-- message
-    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns,
-	    ' ', ' ', HL_ATTR(HLF_MSG));
+    screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', msg_attr);
     State = oldState;
     setmouse();
     if (quit_more)
@@ -3720,21 +3722,25 @@ msg_clr_eos_force(void)
     }
     else
     {
+	int msg_attr;
+
+	msg_attr = HL_ATTR(HLF_MSG);
+
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
 	{
 	    screen_fill(msg_row, msg_row + 1, 0, msg_col + 1,
-		    ' ', ' ', HL_ATTR(HLF_MSG));
+		    ' ', ' ', msg_attr);
 	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns,
-		    ' ', ' ', HL_ATTR(HLF_MSG));
+		    ' ', ' ', msg_attr);
 	}
 	else
 #endif
 	{
 	    screen_fill(msg_row, msg_row + 1, msg_col, (int)Columns,
-		    ' ', ' ', HL_ATTR(HLF_MSG));
+		    ' ', ' ', msg_attr);
 	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns,
-		    ' ', ' ', HL_ATTR(HLF_MSG));
+		    ' ', ' ', msg_attr);
 	}
     }
 }
