@@ -1841,7 +1841,7 @@ else
 endif
 
 " R profile file
-au BufNewFile,BufRead .Rprofile,Rprofile,Rprofile.site	setf r
+au BufNewFile,BufRead .Rhistory,.Rprofile,Rprofile,Rprofile.site	setf r
 
 " RSS looks like XML
 au BufNewFile,BufRead *.rss				setf xml
