@@ -519,6 +519,8 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last, int limit_winheight)
 #endif
 	{
 #ifdef FEAT_DIFF
+	    if (first == wp->w_buffer->b_ml.ml_line_count)
+		count += diff_check_fill(wp, first + 1);
 	    if (first == wp->w_topline)
 		count += plines_win_nofill(wp, first, limit_winheight)
 							       + wp->w_topfill;
