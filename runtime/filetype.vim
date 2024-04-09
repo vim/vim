@@ -535,12 +535,20 @@ au BufNewFile,BufRead mimeapps.list	setf dosini
 " (must be before *.cfg)
 au BufNewFile,BufRead setup.cfg,pudb.cfg,.coveragerc	setf dosini
 
+" LXQt's programs use dosini as their config
+au BufNewFile,BufRead */{lxqt,screengrab}/*.conf	setf dosini
+
 " Quake
 au BufNewFile,BufRead *baseq[2-3]/*.cfg,*id1/*.cfg	setf quake
 au BufNewFile,BufRead *quake[1-3]/*.cfg			setf quake
 
 " Quake C
 au BufNewFile,BufRead *.qc			setf c
+
+" LaTeX packages use LaTeX as their configuration, such as:
+" ~/.texlive/texmf-config/tex/latex/hyperref/hyperref.cfg
+" ~/.texlive/texmf-config/tex/latex/docstrip/docstrip.cfg
+au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
 
 " Configure files
 au BufNewFile,BufRead *.cfg\c			call dist#ft#FTcfg()
@@ -2332,11 +2340,6 @@ au BufRead,BufNewFile *.tfvars			setf terraform-vars
 " TeX
 au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
 au BufNewFile,BufRead *.tex			call dist#ft#FTtex()
-
-" LaTeX packages use LaTeX as their configuration, such as:
-" ~/.texlive/texmf-config/tex/latex/hyperref/hyperref.cfg
-" ~/.texlive/texmf-config/tex/latex/docstrip/docstrip.cfg
-au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
 
 " LaTeX packages will generate some medium LaTeX files during compiling
 " They should be ignored by .gitignore https://github.com/github/gitignore/blob/main/TeX.gitignore
