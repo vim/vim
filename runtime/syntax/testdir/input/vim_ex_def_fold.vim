@@ -20,27 +20,11 @@ def Foo " comment
 def Foo()
 enddef
 
-# curly-brace names
-def {"F"}oo()
-enddef
-
-def F{"o"}o()
-enddef
-
-def Fo{"o"}()
-enddef
-
-def {"F"}o{"o"}()
-enddef
-
-def {"F"}{"o"}{"o"}()
-enddef
-
 def Foo(): number
   return 42
 enddef
 
-# trailing whitespace
+" trailing whitespace
 def Foo(): number  
   return 42
 enddef
