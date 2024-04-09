@@ -1227,12 +1227,20 @@ get_function_body(
 			|| checkforcmd(&arg, "const", 5)
 			|| vim9_function)
 		{
-		    while (vim_strchr((char_u *)"$@&", *arg) != NULL)
-			++arg;
-		    arg = skipwhite(find_name_end(arg, NULL, NULL,
-					       FNE_INCL_BR | FNE_ALLOW_CURLY));
-		    if (vim9_function && *arg == ':')
-			arg = skipwhite(skip_type(skipwhite(arg + 1), FALSE));
+		    int		save_sc_version = current_sctx.sc_version;
+		    int		var_count = 0;
+		    int		semicolon = 0;
+		    char_u	*argend;
+
+		    current_sctx.sc_version
+				     = vim9_function ? SCRIPT_VERSION_VIM9 : 1;
+		    argend = skip_var_list(arg, TRUE, &var_count, &semicolon,
+									 TRUE);
+		    if (argend == NULL)
+			// Invalid list assignment: skip to closing bracket.
+			argend = find_name_end(arg, NULL, NULL, FNE_INCL_BR);
+		    arg = skipwhite(argend);
+		    current_sctx.sc_version = save_sc_version;
 		    if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<')
 		    {
 			p = skipwhite(arg + 3);

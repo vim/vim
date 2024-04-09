@@ -6894,7 +6894,7 @@ find_name_end(
     int		br_nest = 0;
     char_u	*p;
     int		len;
-    int		allow_curly = (flags & FNE_ALLOW_CURLY) || !in_vim9script();
+    int		allow_curly = !in_vim9script();
 
     if (expr_start != NULL)
     {
