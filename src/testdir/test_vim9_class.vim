@@ -10583,4 +10583,46 @@ def Test_lambda_block_in_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for defcompiling an abstract method
+def Test_abstract_method_defcompile()
+  # Compile an abstract class with abstract object methods
+  var lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): string
+      abstract def Bar(): list<string>
+    endclass
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Compile a concrete object method in an abstract class
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): string
+      abstract def Bar(): list<string>
+      def Baz(): string
+        pass
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: pass', 1)
+
+  # Compile a concrete class method in an abstract class
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): string
+      abstract def Bar(): list<string>
+      static def Baz(): string
+        pass
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: pass', 1)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -3723,7 +3723,9 @@ defcompile_class(class_T *cl)
 	{
 	    ufunc_T *ufunc = loop == 1 ? cl->class_class_functions[i]
 						: cl->class_obj_methods[i];
-	    defcompile_function(ufunc, cl);
+	    // Don't compile abstract methods
+	    if (!IS_ABSTRACT_METHOD(ufunc))
+		defcompile_function(ufunc, cl);
 	}
     }
 }
