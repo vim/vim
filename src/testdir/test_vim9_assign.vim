@@ -1997,6 +1997,17 @@ def Test_heredoc()
   END
   v9.CheckScriptSuccess(lines)
 
+  # commented out heredoc assignment without space after '#'
+  lines =<< trim END
+      vim9script
+      def Func()
+        #x =<< trim [CODE]
+        #[CODE]
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+
   v9.CheckDefFailure(['var lines =<< trim END X', 'END'], 'E488:')
   v9.CheckDefFailure(['var lines =<< trim END " comment', 'END'], 'E488:')
 
