@@ -1759,7 +1759,7 @@ au BufNewFile,BufRead *.psl			setf psl
 
 " Google protocol buffers
 au BufNewFile,BufRead *.proto			setf proto
-au BufNewFile,BufRead *.pbtxt			setf pbtxt
+au BufNewFile,BufRead *.txtpb,*.textproto,*.textpb,*.pbtxt setf pbtxt
 
 " Poke
 au BufNewFile,BufRead *.pk			setf poke
