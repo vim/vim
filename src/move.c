@@ -3210,7 +3210,7 @@ pagescroll(int dir, long count, int half)
 	{
 	    int n = plines_correct_topline(curwin, curwin->w_topline, FALSE);
 	    if (n - count < curwin->w_height && curwin->w_topline < buflen)
-		n += plines_m_win(curwin, curwin->w_topline + 1, buflen, TRUE);
+		n += plines_m_win(curwin, curwin->w_topline + 1, buflen, FALSE);
 	    if (n - count < curwin->w_height)
 		count = n - curwin->w_height;
 	}

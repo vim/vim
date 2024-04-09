@@ -654,7 +654,7 @@ popup_show_curline(win_T *wp)
 	    wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
 	while (wp->w_topline < wp->w_cursor.lnum
 		&& wp->w_topline < wp->w_buffer->b_ml.ml_line_count
-		&& plines_m_win(wp, wp->w_topline, wp->w_cursor.lnum, TRUE)
+		&& plines_m_win(wp, wp->w_topline, wp->w_cursor.lnum, FALSE)
 								> wp->w_height)
 	    ++wp->w_topline;
     }
