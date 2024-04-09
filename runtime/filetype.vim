@@ -527,6 +527,9 @@ au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 " (must be before *.cfg)
 au BufNewFile,BufRead setup.cfg,pudb.cfg,.coveragerc	setf dosini
 
+" LXQt's programs use dosini as their config
+au BufNewFile,BufRead */{lxqt,screengrab}/*.conf	setf dosini
+
 " Quake
 au BufNewFile,BufRead *baseq[2-3]/*.cfg,*id1/*.cfg	setf quake
 au BufNewFile,BufRead *quake[1-3]/*.cfg			setf quake
