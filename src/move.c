@@ -3165,7 +3165,6 @@ static int scroll_with_sms(int dir, long count)
 	// extra for scrolling backward so that consuming skipcol is symmetric.
 	if (labs(curwin->w_topline - prev_topline) > (dir == BACKWARD))
 	    fixdir = dir * -1;
-	validate_cursor();
 	while (curwin->w_skipcol > 0
 	    && curwin->w_topline < curbuf->b_ml.ml_line_count)
 	    scroll_redraw(fixdir == FORWARD, 1);
@@ -3192,6 +3191,7 @@ pagescroll(int dir, long count, int half)
     int		nochange = TRUE;
     int		buflen = curbuf->b_ml.ml_line_count;
     colnr_T	prev_col = curwin->w_cursor.col;
+    colnr_T	prev_curswant = curwin->w_curswant;
     linenr_T	prev_lnum = curwin->w_cursor.lnum;
     oparg_T	oa = { 0 };
     cmdarg_T	ca = { 0 };
@@ -3215,34 +3215,24 @@ pagescroll(int dir, long count, int half)
 		count = n - curwin->w_height;
 	}
 
-	// Scroll the window and determine number of lines to move the cursor.
+	// (Try to) scroll the window unless already at the end of the buffer.
 	if (count > 0)
 	{
-	    validate_cursor();
-	    int prev_wrow = curwin->w_wrow;
 	    nochange = scroll_with_sms(dir, count);
-	    if (!nochange)
-	    {
-		validate_cursor();
-		curscount = abs(prev_wrow - curwin->w_wrow);
-		dir = prev_wrow > curwin->w_wrow ? FORWARD : BACKWARD;
-	    }
+	    curwin->w_cursor.lnum = prev_lnum;
+	    curwin->w_cursor.col = prev_col;
+	    curwin->w_curswant = prev_curswant;
 	}
 
-	int so = get_scrolloff_value();
-	// Move the cursor the same amount of screen lines except if
-	// 'scrolloff' is set and cursor was at start or end of buffer.
-	if (so == 0 || (prev_lnum != 1 && prev_lnum != buflen))
-	{
-	    if (curwin->w_p_wrap)
-		nv_screengo(&oa, dir, curscount);
-	    else if (dir == FORWARD)
-		cursor_down_inner(curwin, curscount);
-	    else
-		cursor_up_inner(curwin, curscount);
-	}
+	// Move the cursor the same amount of screen lines.
+	if (curwin->w_p_wrap)
+	    nv_screengo(&oa, dir, curscount);
+	else if (dir == FORWARD)
+	    cursor_down_inner(curwin, curscount);
+	else
+	    cursor_up_inner(curwin, curscount);
 
-	if (so > 0)
+	if (get_scrolloff_value() > 0)
 	    cursor_correct();
 #ifdef FEAT_FOLDING
 	// Move cursor to first line of closed fold.
