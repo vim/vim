@@ -305,8 +305,9 @@ au BufNewFile,BufRead *.csdl			setf csdl
 " Cabal
 au BufNewFile,BufRead *.cabal			setf cabal
 
-" Cdrdao TOC
-au BufNewFile,BufRead *.toc			setf cdrtoc
+" Cdrdao TOC or LaTeX \tableofcontents files
+au BufNewFile,BufRead *.toc
+	\ if getline(1) =~# '\\contentsline' |setf tex|else|setf cdrtoc|endif
 
 " Cdrdao config
 au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,.cdrdao	setf cdrdaoconf
@@ -1258,7 +1259,11 @@ au BufNewFile,BufRead */etc/login.defs		setf logindefs
 au BufNewFile,BufRead *.lgt			setf logtalk
 
 " LOTOS
-au BufNewFile,BufRead *.lot,*.lotos		setf lotos
+au BufNewFile,BufRead *.lotos		setf lotos
+
+" LOTOS or LaTeX \listoftables files
+au BufNewFile,BufRead *.lot
+	\ if getline(1) =~# '\\contentsline' |setf tex|else|setf lotos|endif
 
 " Lout (also: *.lt)
 au BufNewFile,BufRead *.lou,*.lout		setf lout
@@ -2312,6 +2317,16 @@ au BufRead,BufNewFile *.tfvars			setf terraform-vars
 " TeX
 au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
 au BufNewFile,BufRead *.tex			call dist#ft#FTtex()
+
+" LaTeX packages use LaTeX as their configuration, such as:
+" ~/.texlive/texmf-config/tex/latex/hyperref/hyperref.cfg
+" ~/.texlive/texmf-config/tex/latex/docstrip/docstrip.cfg
+au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
+
+" LaTeX packages will generate some medium LaTeX files during compiling
+" They should be ignored by .gitignore https://github.com/github/gitignore/blob/main/TeX.gitignore
+" Sometime we need to view its content for debugging
+au BufNewFile,BufRead *.{pgf,nlo,nls,out,thm,eps_tex,pygtex,pygstyle,clo,aux,brf,ind,lof,loe,nav,vrb,ins,tikz,bbx,cbx,beamer}	setf tex
 
 " ConTeXt
 au BufNewFile,BufRead *.mkii,*.mkiv,*.mkvi,*.mkxl,*.mklx   setf context
