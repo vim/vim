@@ -523,6 +523,9 @@ au BufNewFile,BufRead *.lrc			setf lyrics
 au BufNewFile,BufRead *.quake,cm3.cfg		setf m3quake
 au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 
+" XDG mimeapps.list
+au BufNewFile,BufRead mimeapps.list	setf dosini
+
 " Many Python tools use dosini as their config, like setuptools, pudb, coverage
 " (must be before *.cfg)
 au BufNewFile,BufRead setup.cfg,pudb.cfg,.coveragerc	setf dosini
