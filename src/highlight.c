@@ -2543,9 +2543,7 @@ gui_get_color_cmn(char_u *name)
     target.length = 0;		// not used, see cmp_keyvalue_value_i()
     entry = (keyvalue_T *)bsearch(&target, &rgb_tab, ARRAY_LENGTH(rgb_tab), sizeof(rgb_tab[0]), cmp_keyvalue_value_i);
     if (entry != NULL)
-    {
 	return gui_adjust_rgb((guicolor_T)entry->key);
-    }
 
 #if defined(FEAT_EVAL)
     /*

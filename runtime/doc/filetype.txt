@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 Apr 08
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -174,7 +174,6 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.typ		g:filetype_typ
 	*.v		g:filetype_v
 	*.w		g:filetype_w		|ft-cweb-syntax|
-	*.md		g:pandoc#filetypes#pandoc_markdown
 
 For a few filetypes the global variable is used only when the filetype could
 not be detected:

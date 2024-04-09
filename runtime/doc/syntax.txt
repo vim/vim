@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 08
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2532,7 +2532,7 @@ can use the "PANDOC=VIM" syntax. For example: >
 
 To use italics and strong in emphases. Default = 1 >
 
-	:let *g:pandoc#syntax#style#emphases = 1
+	:let g:pandoc#syntax#style#emphases = 1
 
 "0" will add "block" to g:pandoc#syntax#conceal#blacklist, because otherwise
 you couldn't tell where the styles are applied.
