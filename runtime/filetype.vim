@@ -513,6 +513,10 @@ au BufNewFile,BufRead s6-*                              setf execline
 " Fontconfig config files
 au BufNewFile,BufRead fonts.conf			setf xml
 
+" Libreoffice config files
+au BufNewFile,BufRead *.xcu,*.xlb,*.xlc,*.xba		setf xml
+au BufNewFile,BufRead psprint.conf,sofficerc		setf dosini
+
 " Lynx config files
 au BufNewFile,BufRead lynx.cfg			setf lynx
 
