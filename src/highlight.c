@@ -860,7 +860,7 @@ highlight_reset_all(void)
 highlight_set_termgui_attr(int idx, char_u *key, char_u *arg, int init)
 {
     int		attr;
-    int		off;
+    size_t	off;
     keyvalue_T	target;
     keyvalue_T	*entry;
 
