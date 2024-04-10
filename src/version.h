@@ -31,7 +31,19 @@
 #ifndef VIM_VERSION_PATCHLEVEL
 # define VIM_VERSION_PATCHLEVEL		0
 #endif
-#define VIM_VERSION_PATCHLEVEL_STR	VIM_TOSTR(VIM_VERSION_PATCHLEVEL)
+
+// Patchlevel with leading zeros
+#if VIM_VERSION_PATCHLEVEL < 10
+#define LEADZERO(x) 000 ## x
+#elif VIM_VERSION_PATCHLEVEL < 100
+#define LEADZERO(x) 00 ## x
+#elif VIM_VERSION_PATCHLEVEL < 1000
+#define LEADZERO(x) 0 ## x
+#else
+#define LEADZERO(x) x
+#endif
+
+#define VIM_VERSION_PATCHLEVEL_STR	VIM_TOSTR(LEADZERO(VIM_VERSION_PATCHLEVEL))
 // Used by MacOS port; should be one of: development, alpha, beta, final
 #define VIM_VERSION_RELEASE		final
 
