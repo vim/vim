@@ -2008,6 +2008,20 @@ def Test_heredoc()
   END
   v9.CheckScriptSuccess(lines)
 
+  # heredoc start should not be recognized in string
+  lines =<< trim END
+      vim9script
+      def Func()
+        new
+        @" = 'bar'
+        ['foo', @"]->setline("]=<<"->count('='))
+        assert_equal(['foo', 'bar'], getline(1, '$'))
+        bwipe!
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+
   v9.CheckDefFailure(['var lines =<< trim END X', 'END'], 'E488:')
   v9.CheckDefFailure(['var lines =<< trim END " comment', 'END'], 'E488:')
 
