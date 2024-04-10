@@ -132,9 +132,8 @@ There are three ways to report bugs:
 3. Send bug reports to: Vim Developers <vim-dev@vim.org>
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
-   issue, please contact any of the current Vim maintainers
-   https://github.com/orgs/vim/people (but not the vim-dev ML).
-   In the future, a proper process for handling security issues will be setup.
+   issue, please contact of the current Vim maintainer at the e-mail address
+   <vim-security@googlegroups.com>.
 
 Please be brief; all the time that is spent on answering mail is subtracted
 from the time that is spent on improving Vim!  Always give a reproducible
