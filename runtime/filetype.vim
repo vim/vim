@@ -296,6 +296,9 @@ au BufNewFile,BufRead calendar			setf calendar
 " Cap'n Proto
 au BufNewFile,BufRead *.capnp			setf capnp
 
+" Cgdb config file
+au BufNewFile,BufRead cgdbrc			setf cgdbrc
+
 " C#
 au BufNewFile,BufRead *.cs,*.csx		setf cs
 
