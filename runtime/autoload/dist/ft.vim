@@ -1191,7 +1191,7 @@ export def FTdat()
   endif
 enddef
 
-# Determne if a *.l file is Lex or PicoLisp
+# Determine if a *.l file is Lex or PicoLisp
 export def FTl()
   " Default to Lex
   set ft=lex
