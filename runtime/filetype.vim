@@ -2998,6 +2998,9 @@ au BufNewFile,BufRead *.txt
 " Blueprint markup files
 au BufNewFile,BufRead *.blp			setf blueprint
 
+" Blueprint build system file
+au BufNewFile,BufRead *.bp			setf bp
+
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
 runtime! ftdetect/*.vim
