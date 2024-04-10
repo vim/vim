@@ -21,10 +21,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: RuVim_0.9010059.260124\n"
+"Project-Id-Version: RuVim_0.9010225.290324\n"
 "Report-Msgid-Bugs-To: The Vim Project, <vim-dev@vim.org>\n"
-"POT-Creation-Date: 2024-01-26 14:54+0300\n"
-"PO-Revision-Date: 2024-01-26 14:57+0300\n"
+"POT-Creation-Date: 2024-03-29 13:02+0300\n"
+"PO-Revision-Date: 2024-03-29 13:57+0300\n"
 "Last-Translator: Restorer, <restorer@mail2k.ru>\n"
 "Language-Team: RuVim, https://github.com/RestorerZ/RuVim\n"
 "Language: ru_RU\n"
@@ -691,7 +691,7 @@ msgstr "Чжуинь (бопомофо)"
 
 # :!~ Restorer
 msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr "Сборка мусора прервана! Недостаточно памяти для установки ссылок"
+msgstr "Сбор мусора прерван! Недостаточно памяти для установки ссылок"
 
 # #Restorer: выводится при значении 'verbose'>0
 # :!~ Restorer
@@ -2482,11 +2482,11 @@ msgstr "--ttyfail\t\tЗавершить работу при отсутствии
 
 # :!~ Restorer
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
-msgstr "-u <файл>\t\tПрименить вместо файлов .vimrc указанный <файл>"
+msgstr "-u <файл>\t\tИспользовать вместо файлов .vimrc указанный <файл>"
 
 # :!~ Restorer
 msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
-msgstr "-U <файл>\t\tПрименить вместо файлов .gvimrc указанный <файл>"
+msgstr "-U <файл>\t\tИспользовать вместо файлов .gvimrc указанный <файл>"
 
 # :!~ Restorer
 msgid "--noplugin\t\tDon't load plugin scripts"
@@ -2503,7 +2503,7 @@ msgstr ""
 # :!~ Restorer
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr ""
-"-o[N]\t\tСоздать окна для N файлов (по умолчанию создаётся\n"
+"-o[N]\t\tСоздание окон для N файлов (по умолчанию создаётся\n"
 "\t\t\t   по одному окну на каждый файл)"
 
 # :!~ Restorer
@@ -2520,19 +2520,19 @@ msgstr "+<номер>\t\tУстановка каретки на <номер> с�
 
 # :!~ Restorer
 msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
-msgstr "--cmd <команда>\tВыполнение <команды> перед обработкой файла .vimrc"
+msgstr "--cmd <команда>\tИсполнение <команды> перед обработкой файла .vimrc"
 
 # ~!: earlier
 msgid "-c <command>\t\tExecute <command> after loading the first file"
-msgstr "-c <команда>\t\tВыполнение <команды> после загрузки первого файла"
+msgstr "-c <команда>\t\tИсполнение <команды> после считывания первого файла"
 
 # :!~ Restorer
 msgid "-S <session>\t\tSource file <session> after loading the first file"
-msgstr "-S <сеанс>\t\tВыполнение файла <сеанса> после загрузки первого файла"
+msgstr "-S <сеанс>\t\tЗапуск файла <сеанса> после считывания первого файла"
 
 # :!~ Restorer
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
-msgstr "-s <сценарий>\tСчитать команды режима команд из файла <сценария>"
+msgstr "-s <сценарий>\tСчитывание команд режима команд из файла <сценария>"
 
 # :!~ Restorer
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
@@ -2548,8 +2548,7 @@ msgstr "-x\t\t\tИспользовать шифрование при считы�
 
 # :!~ Restorer
 msgid "-display <display>\tConnect Vim to this particular X-server"
-msgstr ""
-"-display <display>\tВыполнить подключение программы к указанному X-серверу"
+msgstr "-display <display>\tПодключение программы к указанному X-серверу"
 
 # :!~ Restorer
 msgid "-X\t\t\tDo not connect to X server"
@@ -2608,7 +2607,7 @@ msgstr "--log <файл>\t\tЗапись протокола работы с эт
 
 # :!~ Restorer
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
-msgstr "-i <файл>\t\tИспользование вместо файла .viminfo указанного <файла>"
+msgstr "-i <файл>\t\tИспользовать вместо файла .viminfo указанный <файл>"
 
 # \n\t\t.. для умещения в 80 столбцов (С. Алёшин)
 # :!~ Restorer
@@ -6067,6 +6066,11 @@ msgstr "E104: Не допускается указание клавиши <ESC> 
 # :!~ Restorer
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Команда :loadkeymap указана вне командного файла"
+
+# :!~ Restorer
+#, c-format
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: Указанный формат результата сравнения не поддерживается %s"
 
 # :!~ Restorer
 #, c-format
@@ -9627,6 +9631,11 @@ msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr "E876: НКА. Недостаточно памяти для сохранения всех состояний механизма"
 
 # :!~ Restorer
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: НКА. Не удалось распознать символьный класс %d"
+
+# :!~ Restorer
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr "E878: НКА. Не удалось выделить память для обхода ветви!"
 
@@ -12183,6 +12192,88 @@ msgstr "E1411: Не указан символ точки после наимен
 
 # :!~ Restorer
 #, c-format
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: Не поддерживается встроенный метод объекта \"%s\""
+
+# :!~ Restorer
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: В классе не доступны встроенные методы"
+
+# :!~ Restorer
+msgid "E1414: Enum can only be defined in Vim9 script"
+msgstr ""
+"E1414: Тип данных Enum может быть определён только в командных файлах Vim9"
+
+# :!~ Restorer
+#, c-format
+msgid "E1415: Enum name must start with an uppercase letter: %s"
+msgstr "E1415: Наименование типа Enum должно начинаться с прописной буквы %s"
+
+# :!~ Restorer
+msgid "E1416: Enum cannot extend a class or enum"
+msgstr "E1416: Тип Enum не может наследоваться в классах или других типах Enum"
+
+# :!~ Restorer
+msgid "E1417: Abstract cannot be used in an Enum"
+msgstr "E1417: Интерфейсы не поддерживают типы данных Enum"
+
+# :!~ Restorer
+#, c-format
+msgid "E1418: Invalid enum value declaration: %s"
+msgstr "E1418: Недопустимое объявление переменной типа данных Enum %s"
+
+# :!~ Restorer
+#, c-format
+msgid "E1419: Not a valid command in an Enum: %s"
+msgstr "E1419: Недопустимая команда в объявлении типа данных Enum %s"
+
+# :!~ Restorer
+msgid "E1420: Missing :endenum"
+msgstr "E1420: Не указана команда :endenum"
+
+# :!~ Restorer
+#, c-format
+msgid "E1421: Enum \"%s\" cannot be used as a value"
+msgstr "E1421: Не допускается в качестве значения указывать тип Enum \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
+msgstr "E1422: У типа данных Enum \"%2$s\" отсутствует переменная \"%1$s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1423: Enum value \"%s.%s\" cannot be modified"
+msgstr "E1423: Не допускается изменение значения типа Enum \"%s.%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1424: Using an Enum \"%s\" as a Number"
+msgstr "E1424: Ожидался тип данных Number, а получен тип данных Enum \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1425: Using an Enum \"%s\" as a String"
+msgstr "E1425: Ожидался тип данных String, а получен тип данных Enum \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1426: Enum \"%s\" ordinal value cannot be modified"
+msgstr ""
+"E1426: Не допускается изменение порядка значений в типе данных Enum \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1427: Enum \"%s\" name cannot be modified"
+msgstr "E1427: Не допускается изменение наименования типа данных Enum \"%s\""
+
+# :!~ Restorer
+#, c-format
+msgid "E1428: Duplicate enum value: %s"
+msgstr "E1428: Повтор значения %s"
+
+# :!~ Restorer
+#, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr "E1500: Указаны как позиционные, так и не позиционные спецификаторы %s"
 
@@ -12247,6 +12338,10 @@ msgstr "E1511: В данном поле указано недопустимое 
 #, c-format
 msgid "E1512: Wrong character width for field \"%s\""
 msgstr "E1512: В данном поле не поддерживаются полноширинные символы \"%s\""
+
+# :!~ Restorer
+msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Не удалось сменить буфер. Установлен параметр 'winfixbuf'"
 
 # #Restorer: выводится, например, по команде `CTRL+g`, `g CTRL+g` и т. п.
 # :!~ Restorer
@@ -13233,6 +13328,10 @@ msgstr "минимальное количество строк для актив
 # :!~ Restorer
 msgid "minimal number of lines used for any window"
 msgstr "минимальное количество строк для всех окон"
+
+# :!~ Restorer
+msgid "keep window focused on a single buffer"
+msgstr "закрепить за окном один буфер"
 
 # :!~ Restorer
 msgid "keep the height of the window"
