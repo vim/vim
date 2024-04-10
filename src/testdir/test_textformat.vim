@@ -1303,4 +1303,13 @@ func Test_correct_cursor_position()
   set encoding=utf8
 endfunc
 
+" This was crashing Vim
+func Test_textwdith_overflow()
+  new
+  setl tw=999999999
+  normal 10ig
+  call feedkeys('a ab cd ef', 'xt')
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
