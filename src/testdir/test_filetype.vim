@@ -528,6 +528,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     pf: ['pf.conf'],
     pfmain: ['main.cf', 'main.cf.proto'],
     php: ['file.php', 'file.php9', 'file.phtml', 'file.ctp', 'file.phpt', 'file.theme'],
+    picolisp: ['file.l'],
     pike: ['file.pike', 'file.pmod'],
     pilrc: ['file.rcp'],
     pine: ['.pinerc', 'pinerc', '.pinercex', 'pinercex'],
