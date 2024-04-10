@@ -222,6 +222,7 @@ runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
 runtime/ftplugin/unison.vim		@chuwy
 runtime/ftplugin/vdf.vim		@ObserverOfTime
+runtime/ftplugin/vim.vim		@dkearns
 runtime/ftplugin/wast.vim		@rhysd
 runtime/ftplugin/wget.vim		@dkearns
 runtime/ftplugin/wget2.vim		@dkearns
