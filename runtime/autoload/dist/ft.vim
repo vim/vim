@@ -1191,27 +1191,31 @@ export def FTdat()
   endif
 enddef
 
-# Determine if a *.l file is Lex or PicoLisp
+# Determine if a *.l file is Lex or PicoLisp (default to Lex)
 export def FTl()
-  " Default to Lex
-  setf lex
+  if exists("g:filetype_l")
+    exe "setf " .. g:filetype_l
+    return
+  endif
   for i in range(1, line("$"))
-    let l:line = trim(getline(i))
-    " PicoLisp uses # comments
-    if l:line =~ "^#\.*$"
-      set ft=picolisp
+    var line = trim(getline(i))
+    if line =~ "^%{.*$"
+      setf lex
       return
-    " Lex uses // comments
-    elseif (l:line =~ "//" && l:line !~ "([^)]*//") || l:line =~ "/\\*" || l:line =~ "\\*/"
-      set ft=lex
+    elseif line =~ "^%%.*$"
+      setf lex
       return
-    " PicoLisp uses Lisp syntax
-    elseif l:line =~ "^("
-      set ft=picolisp
+    elseif line =~ "^#.*$"
+      setf picolisp
+      return
+    elseif line =~ "^\(.*$"
+      setf picolisp
       return
     endif
   endfor
-enddef
+  setf lex
+  return
+enddef 
 
 export def FTlsl()
   if exists("g:filetype_lsl")
