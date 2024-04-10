@@ -126,6 +126,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     blade: ['file.blade.php'],
     blank: ['file.bl'],
     blueprint: ['file.blp'],
+    bp: ['Android.bp'],
     bsdl: ['file.bsd', 'file.bsdl'],
     bst: ['file.bst'],
     bzl: ['file.bazel', 'file.bzl', 'WORKSPACE', 'WORKSPACE.bzlmod'],
