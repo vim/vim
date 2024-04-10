@@ -44,7 +44,9 @@ VIM = ..\vim.exe
 
 # Correct the following line for the directory where gettext et al is
 # installed.  Please do not put the path in quotes.
+!IFNDEF GETTEXT_PATH
 GETTEXT_PATH = D:\Programs\GetText\bin
+!ENDIF
 
 # Starting from version 0.22, msgfmt forcibly converts text to UTF-8 regardless
 # of the value of the "charset" field.
