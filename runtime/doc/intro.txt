@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.1.  Last change: 2024 Jan 25
+*intro.txt*     For Vim version 9.1.  Last change: 2024 Apr 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -132,9 +132,9 @@ There are three ways to report bugs:
 3. Send bug reports to: Vim Developers <vim-dev@vim.org>
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
-   issue, please contact any of the current Vim maintainers
-   https://github.com/orgs/vim/people (but not Bram or the vim-dev ML).
-   In the future, a proper process for handling security issues will be setup.
+   issue, please contact the current Vim maintainers at the e-mail address
+   <vim-security@googlegroups.com> or create a security advisary at Github:
+   https://github.com/vim/vim/security/advisories
 
 Please be brief; all the time that is spent on answering mail is subtracted
 from the time that is spent on improving Vim!  Always give a reproducible
@@ -145,7 +145,7 @@ Preferably start Vim with: >
 Where reproduce.vim is a script that reproduces the problem.  Try different
 machines, if relevant (is this an MS-Windows specific bug perhaps?).
 
-Send me patches if you can!  If you create a pull request on
+Send patches if you can!  If you create a pull request on
 https://github.com/vim/vim then the automated checks will run and report any
 obvious problems.  But you can also send the patch by email (use an attachment
 to avoid white space changes).

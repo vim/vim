@@ -11242,7 +11242,6 @@ vms-problems	os_vms.txt	/*vms-problems*
 vms-started	os_vms.txt	/*vms-started*
 vms-usage	os_vms.txt	/*vms-usage*
 vote-for-features	sponsor.txt	/*vote-for-features*
-votes-counted	sponsor.txt	/*votes-counted*
 votes-for-changes	todo.txt	/*votes-for-changes*
 vreplace-mode	insert.txt	/*vreplace-mode*
 vt100-cursor-keys	term.txt	/*vt100-cursor-keys*

@@ -8,11 +8,12 @@
 SPONSOR VIM DEVELOPMENT						*sponsor*
 
 Fixing bugs and adding new features takes a lot of time and effort.  To show
-your appreciation for the work and motivate Bram and others to continue
-working on Vim please send a donation.
+your appreciation for the work and motivate developers to continue working on
+Vim please send a donation.
 
-Since Bram does not need the money it will be used to help children in Uganda,
-see |uganda|.  Donations increase Bram's motivation to keep working on Vim!
+The money you donated will be mainly used to help children in Uganda.  See
+|uganda|.  But at the same time donations increase the development team
+motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 
@@ -33,22 +34,12 @@ More explanations can be found in the |register-faq|.
 
 VOTE FOR FEATURES					*vote-for-features*
 
-To give registered Vim users and sponsors an advantage over lurkers they can
-vote for the items Bram should work on.  How does this voting work?
+Note: Voting for features has been discontinued since the passing of |Bram| in
+2023. The following two links still work, but they are no longer updated. So
+they now only provide a historic view as of summer 2023.
 
-1.  You send at least 10 euro.  See below for ways to transfer money
-    |send-money|.
-
-2.  You will be e-mailed a registration key.  Enter this key on your account
-    page on the Vim website.  You can easily create an account if you don't
-    have one yet.
-
-3.  You can enter your votes on the voting page.  There is a link to that page
-    on your account page after entering a registration key.  Your votes will
-    be counted for two years.
-
-4.  The voting results appear on the results page, which is visible for
-    everybody:  http://www.vim.org/sponsor/vote_results.php
+The voting results appear on the results page, which is visible for everybody:
+http://www.vim.org/sponsor/vote_results.php
 
 Additionally, once you have sent 100 euro or more in total, your name appears
 in the "Vim hall of honour":   http://www.vim.org/sponsor/hall_of_honour.php
@@ -78,8 +69,9 @@ QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
 
 Why should I give money?
 
-If you do not show your appreciation for Vim then Bram will be less motivated
-to fix bugs and add new features.  He will do something else instead.
+If you do not show your appreciation for Vim, the development team will be
+less motivated to fix bugs and add new features.  They will do something else
+instead.
 
 
 How much money should I send?
@@ -88,18 +80,6 @@ That is up to you.  The more you give, the more children will be helped.
 An indication for individuals that use Vim at home: 10 Euro per year.  For
 professional use: 30 Euro per year per person.  Send at least 10 euro to be
 able to vote for features.
-
-
-What do I get in return?
-
-Each registered Vim user and sponsor who donates at least 10 euro will be able
-to vote for new features.  These votes will give priority to the work on Vim.
-The votes are valid for two years.  The more money you send the more your
-votes count |votes-counted|.
-
-If you send 100 Euro or more in total you will be mentioned on the "Vim hall
-of honour" page on the Vim web site.  But only if you enable this on your
-account page.  You can also select whether the amount will be visible.
 
 
 How do I become a Vim sponsor or registered Vim user?
@@ -146,29 +126,6 @@ No, suggestions for improving Vim can always be given.  For improvements use
 the developer |maillist|, for reporting bugs see |bugs|.
 
 
-How are my votes counted?				*votes-counted*
-
-You may vote when you send 10 euro or more.  You can enter up to ten votes.
-You can select the same item several times to give it more points.  You can
-also enter three counter votes, these count as negative points.
-
-When you send 30 euro or more the points are doubled.  Above 100 euro they
-count four times, above 300 euro they count six times, above 1000 euro ten
-times.
-
-
-Can I change my votes?
-
-You can change your votes any time you like, up to two years after you
-sent money.  The points will be counted right away.
-
-
-Can I add an item to vote on?
-
-Not directly.  You can suggest items to vote on to Bram.  He will consider
-fitting your item into the list.
-
-
 How about Charityware?
 
 Currently the Vim donations go to |uganda| anyway.  Thus it doesn't matter if
@@ -178,18 +135,17 @@ for features.
 
 I donated $$$, now please add feature XYZ!
 
-There is no direct relation between your donation and the work Bram does.
-Otherwise you would be paying for work and we would have to pay tax over the
-donation.  If you want to hire Bram for specific work, contact him directly,
-don't use the donation system.
+There is no direct relation between your donation and the work developers
+does. Otherwise you would be paying for work and we would have to pay tax
+over the donation.  If you want to hire one of the developers for specific
+work, contact them directly, don't use the donation system.
 
 
 Are the donations tax deductible?
 
 That depends on your country.  The donations to help the children in |Uganda|
 are tax deductible in Holland, Germany, Canada and in the USA.  See the ICCF
-website http://iccf-holland.org/donate.html.  You must send an e-mail to Bram
-to let him know that the donation is done because of the use of Vim.
+website http://iccf-holland.org/donate.html.
 
 
 Can you send me a bill?
