@@ -418,6 +418,36 @@ type_any_or_unknown(type_T *type)
 }
 
 /*
+ * Get a type_T for a partial typval in "tv".
+ */
+    static type_T *
+partial_typval2type(typval_T *tv, ufunc_T *ufunc, garray_T *type_gap)
+{
+    partial_T *pt = tv->vval.v_partial;
+    type_T  *type;
+
+    type = get_type_ptr(type_gap);
+    if (type == NULL)
+	return NULL;
+
+    *type = *ufunc->uf_func_type;
+    if (type->tt_argcount >= 0 && pt->pt_argc > 0)
+    {
+	type->tt_argcount -= pt->pt_argc;
+	type->tt_min_argcount -= pt->pt_argc;
+	if (type->tt_argcount > 0 && func_type_add_arg_types(type,
+		    type->tt_argcount, type_gap) == OK)
+	    for (int i = 0; i < type->tt_argcount; ++i)
+		type->tt_args[i] =
+		    ufunc->uf_func_type->tt_args[i + pt->pt_argc];
+    }
+    if (pt->pt_func != NULL)
+	type->tt_member = pt->pt_func->uf_ret_type;
+
+    return type;
+}
+
+/*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
  * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
@@ -569,27 +599,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		set_function_type(ufunc);
 	    if (ufunc->uf_func_type != NULL)
 	    {
-		if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
-					    && tv->vval.v_partial->pt_argc > 0)
-		{
-		    type = get_type_ptr(type_gap);
-		    if (type == NULL)
-			return NULL;
-		    *type = *ufunc->uf_func_type;
-		    if (type->tt_argcount >= 0)
-		    {
-			type->tt_argcount -= tv->vval.v_partial->pt_argc;
-			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-			if (type->tt_argcount > 0
-				&& func_type_add_arg_types(type,
-					    type->tt_argcount, type_gap) == OK)
-			    for (int i = 0; i < type->tt_argcount; ++i)
-				type->tt_args[i] =
-					ufunc->uf_func_type->tt_args[
-					      i + tv->vval.v_partial->pt_argc];
-		    }
-		    return type;
-		}
+		if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
+		    return partial_typval2type(tv, ufunc, type_gap);
 		return ufunc->uf_func_type;
 	    }
 	}
@@ -737,12 +748,14 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     {
 	res = check_type_maybe(expected, actual_type, TRUE, where);
 	if (res == MAYBE && !(actual_type->tt_type == VAR_FUNC
-				      && actual_type->tt_member == &t_unknown))
+				      && (actual_type->tt_member == &t_unknown
+					  || actual_type->tt_member == NULL)))
 	{
 	    // If a type check is needed that means assigning "any" or
 	    // "unknown" to a more specific type, which fails here.
 	    // Except when it looks like a lambda, since they have an
-	    // incomplete type.
+	    // incomplete type.  A legacy lambda function has a NULL return
+	    // type.
 	    type_mismatch_where(expected, actual_type, where);
 	    res = FAIL;
 	}
