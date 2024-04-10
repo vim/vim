@@ -3801,15 +3801,6 @@ utf_strnicmp(
  * two characters otherwise.
  */
     int
-mb_strnicmp2(char_u *s1, char_u *s2, int n1, int n2)
-{
-    if (n1 == n2 || !enc_utf8)
-	return mb_strnicmp(s1, s2, n1);
-    else
-	return utf_strnicmp(s1, s2, n1, n2);
-}
-
-    int
 mb_strnicmp(char_u *s1, char_u *s2, size_t nn)
 {
     int		i, l;
