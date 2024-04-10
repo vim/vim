@@ -1104,6 +1104,27 @@ def Test_assignment_partial()
       Ref(0)
   END
   v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got number')
+
+  lines =<< trim END
+    var Fn1 = () => {
+        return 10
+      }
+    assert_equal('func(): number', typename(Fn1))
+    var Fn2 = () => {
+        return "a"
+      }
+    assert_equal('func(): string', typename(Fn2))
+    var Fn3 = () => {
+        return {a: [1]}
+      }
+    assert_equal('func(): dict<list<number>>', typename(Fn3))
+    var Fn4 = (...l: list<string>) => {
+        return []
+      }
+    assert_equal('func(...list<string>): list<any>', typename(Fn4))
+  END
+  v9.CheckSourceSuccess(['vim9script'] + lines)
+  v9.CheckSourceSuccess(['def Xfunc()'] + lines + ['enddef', 'defcompile'])
 enddef
 
 def Test_assignment_list_any_index()
