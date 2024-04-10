@@ -1194,7 +1194,7 @@ enddef
 # Determine if a *.l file is Lex or PicoLisp
 export def FTl()
   " Default to Lex
-  set ft=lex
+  setf lex
   for i in range(1, line("$"))
     let l:line = trim(getline(i))
     " PicoLisp uses # comments
