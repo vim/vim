@@ -409,10 +409,16 @@ func Test_let_heredoc_fails()
   endtry
 
   try
+    let [] =<< trim TEXT
+    TEXT
+    call assert_report('No exception thrown')
+  catch /E475:/
+  catch
+    call assert_report('Caught exception: ' .. v:exception)
+  endtry
+
+  try
     let [a b c] =<< trim TEXT
-      change
-      insert
-      append
     TEXT
     call assert_report('No exception thrown')
   catch /E475:/
@@ -422,9 +428,6 @@ func Test_let_heredoc_fails()
 
   try
     let [a; b; c] =<< trim TEXT
-      change
-      insert
-      append
     TEXT
     call assert_report('No exception thrown')
   catch /E452:/
