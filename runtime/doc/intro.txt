@@ -133,7 +133,7 @@ There are three ways to report bugs:
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
    issue, please contact any of the current Vim maintainers
-   https://github.com/orgs/vim/people (but not Bram or the vim-dev ML).
+   https://github.com/orgs/vim/people (but not the vim-dev ML).
    In the future, a proper process for handling security issues will be setup.
 
 Please be brief; all the time that is spent on answering mail is subtracted
