@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.1.  Last change: 2024 Apr 10
+*intro.txt*     For Vim version 9.1.  Last change: 2024 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -133,7 +133,7 @@ There are three ways to report bugs:
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
    issue, please contact the current Vim maintainers at the e-mail address
-   <vim-security@googlegroups.com> or create a security advisary at Github:
+   <vim-security@googlegroups.com> or create a security advisory at Github:
    https://github.com/vim/vim/security/advisories
 
 Please be brief; all the time that is spent on answering mail is subtracted
