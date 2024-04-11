@@ -1824,6 +1824,9 @@ au BufNewFile,BufRead *.rego			setf rego
 " Rexx
 au BufNewFile,BufRead *.rex,*.orx,*.rxo,*.rxj,*.jrexx,*.rexxj,*.rexx,*.testGroup,*.testUnit	setf rexx
 
+" Ripgrep rc
+au BufNewFile,BufRead {.,}ripgreprc			setf conf
+
 " R Help file
 if has("fname_case")
   au BufNewFile,BufRead *.rd,*.Rd		setf rhelp
