@@ -308,6 +308,9 @@ au BufNewFile,BufRead *.cs,*.csx		setf cs
 " CSDL
 au BufNewFile,BufRead *.csdl			setf csdl
 
+" Ctags
+au BufNewFile,BufRead *.ctags			setf conf
+
 " Cabal
 au BufNewFile,BufRead *.cabal			setf cabal
 
