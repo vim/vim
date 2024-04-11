@@ -329,6 +329,7 @@ NEW_TESTS = \
 	test_wnext \
 	test_wordcount \
 	test_writefile \
+	test_xdg \
 	test_xxd \
 	test_alot_latin \
 	test_alot_utf8 \
@@ -561,6 +562,7 @@ NEW_TESTS_RES = \
 	test_winfixbuf.res \
 	test_wordcount.res \
 	test_writefile.res \
+	test_xdg.res \
 	test_xxd.res \
 	test_alot_latin.res \
 	test_alot_utf8.res \
