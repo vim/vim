@@ -2512,6 +2512,9 @@ au BufNewFile,BufRead *.vroom			setf vroom
 " Vue.js Single File Component
 au BufNewFile,BufRead *.vue			setf vue
 
+" Wakatime config
+au BufNewFile,BufRead .wakatime.cfg		setf dosini
+
 " WebAssembly
 au BufNewFile,BufRead *.wat,*.wast		setf wat
 
