@@ -1499,6 +1499,9 @@ au BufNewFile,BufRead Neomuttrc			setf neomuttrc
 " Netrc
 au BufNewFile,BufRead .netrc			setf netrc
 
+" Neofetch
+au BufNewFile,BufRead */neofetch/config.conf	setf sh
+
 " Nginx
 au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/etc/nginx/*,*/usr/local/nginx/conf/*,*/nginx/*.conf			setf nginx
 
