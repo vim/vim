@@ -1609,6 +1609,9 @@ else
 endif
 au BufNewFile,BufRead *.plx,*.al,*.psgi			setf perl
 
+" Perl Reply
+au BufNewFile,BufRead .replyrc				setf dosini
+
 " Perl, XPM or XPM2
 au BufNewFile,BufRead *.pm
 	\ if getline(1) =~ "XPM2" |
