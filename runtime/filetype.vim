@@ -327,6 +327,9 @@ au BufRead,BufNewFile *.chai			setf chaiscript
 " Chatito
 au BufNewFile,BufRead *.chatito			setf chatito
 
+" Chktex
+au BufRead,BufNewFile .chktexrc			setf conf
+
 " Chuck
 au BufNewFile,BufRead *.ck			setf chuck
 
