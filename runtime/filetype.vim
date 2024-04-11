@@ -2355,6 +2355,7 @@ au BufRead,BufNewFile *.tfvars			setf terraform-vars
 " TeX
 au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
 au BufNewFile,BufRead *.tex			call dist#ft#FTtex()
+au BufNewFile,BufRead texdoc.cnf		setf conf
 
 " LaTeX packages will generate some medium LaTeX files during compiling
 " They should be ignored by .gitignore https://github.com/github/gitignore/blob/main/TeX.gitignore
