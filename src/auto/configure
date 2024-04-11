@@ -15965,16 +15965,16 @@ printf "%s\n" "yes" >&6; }
 printf "%s\n" "no" >&6; }
       fi
 
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if msgfmt supports --no-convert" >&5
-printf %s "checking if msgfmt supports --no-convert... " >&6; }
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $MSGFMT supports --no-convert" >&5
+printf %s "checking if $MSGFMT supports --no-convert... " >&6; }
       if "$MSGFMT" --help | grep -q --  '--no-convert' >/dev/null; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        MSGFMTCMD="OLD_PO_FILE_INPUT=yes msgfmt --no-convert -v"
+        MSGFMTCMD="OLD_PO_FILE_INPUT=yes $MSGFMT --no-convert -v"
       else
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        MSGFMTCMD="OLD_PO_FILE_INPUT=yes msgfmt -v"
+        MSGFMTCMD="OLD_PO_FILE_INPUT=yes $MSGFMT -v"
       fi
 
     fi
