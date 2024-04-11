@@ -3406,7 +3406,10 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 		event_dict = dict_alloc();
 		if (event_dict == NULL
 			|| list_append_dict(event_list, event_dict) == FAIL)
+		{
+		    vim_free(pat);
 		    return;
+		}
 
 		if (dict_add_string(event_dict, "event", event_name) == FAIL
 			|| dict_add_string(event_dict, "group",
@@ -3421,7 +3424,10 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 			|| dict_add_bool(event_dict, "once", ac->once) == FAIL
 			|| dict_add_bool(event_dict, "nested",
 							   ac->nested) == FAIL)
+		{
+		    vim_free(pat);
 		    return;
+		}
 	    }
 	}
     }
