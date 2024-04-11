@@ -746,6 +746,9 @@ au BufNewFile,BufRead *.fir			setf firrtl
 " Fish shell
 au BufNewFile,BufRead *.fish			setf fish
 
+" Flatpak config
+au BufNewFile,BufRead */flatpak/repo/config	setf dosini
+
 " FlexWiki - disabled, because it has side effects when a .wiki file
 " is not actually FlexWiki
 "au BufNewFile,BufRead *.wiki			setf flexwiki
