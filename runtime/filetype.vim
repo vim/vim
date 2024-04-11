@@ -2631,6 +2631,9 @@ au BufNewFile,BufRead *.xhtml,*.xht		setf xhtml
 " X11vnc
 au BufNewFile,BufRead .x11vncrc			setf conf
 
+" Xprofile
+au BufNewFile,BufRead .xprofile			setf sh
+
 " X Pixmap (dynamically sets colors, this used to trigger on BufEnter to make
 " it work better, but that breaks setting 'filetype' manually)
 au BufNewFile,BufRead *.xpm
