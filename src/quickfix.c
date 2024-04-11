@@ -115,6 +115,7 @@ struct qf_info_S
     qf_list_T	qf_lists[LISTCOUNT];
     qfltype_T	qfl_type;	    // type of list
     int		qf_bufnr;	    // quickfix window buffer number
+    int		qf_copyID;	    // used by garbage collection
 };
 
 static qf_info_T ql_info;	// global quickfix list
@@ -7949,12 +7950,14 @@ mark_quickfix_ctx(qf_info_T *qi, int copyID)
 
     for (i = 0; i < LISTCOUNT && !abort; ++i)
     {
-	ctx = qi->qf_lists[i].qf_ctx;
+	qf_list_T *qfl = &qi->qf_lists[i];
+
+	ctx = qfl->qf_ctx;
 	if (ctx != NULL && ctx->v_type != VAR_NUMBER
 		&& ctx->v_type != VAR_STRING && ctx->v_type != VAR_FLOAT)
 	    abort = abort || set_ref_in_item(ctx, copyID, NULL, NULL);
 
-	cb = &qi->qf_lists[i].qf_qftf_cb;
+	cb = &qfl->qf_qftf_cb;
 	abort = abort || set_ref_in_callback(cb, copyID);
     }
 
@@ -7972,22 +7975,29 @@ set_ref_in_quickfix(int copyID)
     tabpage_T	*tp;
     win_T	*win;
 
-    abort = mark_quickfix_ctx(&ql_info, copyID);
-    if (abort)
-	return abort;
+    if (ql_info.qf_copyID != copyID)
+    {
+	ql_info.qf_copyID = copyID;
 
-    abort = mark_quickfix_user_data(&ql_info, copyID);
-    if (abort)
-	return abort;
+	abort = mark_quickfix_ctx(&ql_info, copyID);
+	if (abort)
+	    return abort;
 
-    abort = set_ref_in_callback(&qftf_cb, copyID);
-    if (abort)
-	return abort;
+	abort = mark_quickfix_user_data(&ql_info, copyID);
+	if (abort)
+	    return abort;
+
+	abort = set_ref_in_callback(&qftf_cb, copyID);
+	if (abort)
+	    return abort;
+    }
 
     FOR_ALL_TAB_WINDOWS(tp, win)
     {
-	if (win->w_llist != NULL)
+	if (win->w_llist != NULL && win->w_llist->qf_copyID != copyID)
 	{
+	    win->w_llist->qf_copyID = copyID;
+
 	    abort = mark_quickfix_ctx(win->w_llist, copyID);
 	    if (abort)
 		return abort;
@@ -7996,11 +8006,14 @@ set_ref_in_quickfix(int copyID)
 	    if (abort)
 		return abort;
 	}
-	if (IS_LL_WINDOW(win) && (win->w_llist_ref->qf_refcount == 1))
+
+	if (IS_LL_WINDOW(win) && (win->w_llist_ref->qf_refcount == 1)
+				&& (win->w_llist_ref->qf_copyID != copyID))
 	{
 	    // In a location list window and none of the other windows is
 	    // referring to this location list. Mark the location list
 	    // context as still in use.
+	    win->w_llist_ref->qf_copyID = copyID;
 	    abort = mark_quickfix_ctx(win->w_llist_ref, copyID);
 	    if (abort)
 		return abort;
