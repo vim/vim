@@ -546,9 +546,18 @@ au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 " XDG mimeapps.list
 au BufNewFile,BufRead mimeapps.list	setf dosini
 
-" Many Python tools use dosini as their config, like pip, setuptools, pudb, coverage
+" Many tools written in Python use dosini as their config
+" like setuptools, pudb, coverage, pypi, gitlint, oelint-adv, pylint, bpython, mypy
 " (must be before *.cfg)
-au BufNewFile,BufRead pip.conf,setup.cfg,pudb.cfg,.coveragerc	setf dosini
+au BufNewFile,BufRead pip.conf,setup.cfg,pudb.cfg,.coveragerc,.pypirc,.gitlint,.oelint.cfg	setf dosini
+au BufNewFile,BufRead {.,}pylintrc,*/bpython/config,*/mypy/config			setf dosini
+
+" Many tools written in Python use toml as their config, like black
+au BufNewFile,BufRead .black	setf toml
+au BufNewFile,BufRead black
+	\  if getline(1) =~ 'tool.back'
+	\|   setf toml
+	\| endif
 
 " LXQt's programs use dosini as their config
 au BufNewFile,BufRead */{lxqt,screengrab}/*.conf	setf dosini
