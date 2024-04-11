@@ -101,6 +101,9 @@ au BufNewFile,BufRead build.xml			setf ant
 " Arduino
 au BufNewFile,BufRead *.ino,*.pde		setf arduino
 
+" Ash of busybox
+au BufNewFile,BufRead .ash_history		setf sh
+
 " Apache config file
 au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
 au BufNewFile,BufRead */etc/apache2/sites-*/*.com		setf apache
@@ -427,6 +430,9 @@ au BufNewFile,BufRead *.eni			setf cl
 
 " Clever or dtd
 au BufNewFile,BufRead *.ent			call dist#ft#FTent()
+
+" Cling
+au BufNewFile,BufRead .cling_history		setf cpp
 
 " Clipper, FoxPro, ABB RAPID or eviews
 au BufNewFile,BufRead *.prg\c			call dist#ft#FTprg()
@@ -1097,6 +1103,7 @@ au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript, ES module script, CommonJS script
 au BufNewFile,BufRead *.js,*.jsm,*.javascript,*.es,*.mjs,*.cjs   setf javascript
+au BufNewFile,BufRead .node_repl_history	setf javascript
 
 " JavaScript with React
 au BufNewFile,BufRead *.jsx			setf javascriptreact
@@ -1287,7 +1294,7 @@ au BufNewFile,BufRead *.lot
 au BufNewFile,BufRead *.lou,*.lout		setf lout
 
 " Lua, Texlua
-au BufNewFile,BufRead *.lua,*.tlu		setf lua
+au BufNewFile,BufRead *.lua,*.tlu,.lua_history	setf lua
 
 " Luau
 au BufNewFile,BufRead *.luau		setf luau
@@ -1310,6 +1317,7 @@ au BufNewFile,BufRead *.lss			setf lss
 " M4
 au BufNewFile,BufRead *.m4
 	\ if expand("<afile>") !~? 'html.m4$\|fvwm2rc' | setf m4 | endif
+au BufNewFile,BufRead .m4_history		setf m4
 
 " MaGic Point
 au BufNewFile,BufRead *.mgp			setf mgp
@@ -1809,7 +1817,7 @@ au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 
 " Python, Python Shell Startup and Python Stub Files
 " Quixote (Python-based web framework)
-au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc  setf python
+au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,.python_history,.jline-jython.history	setf python
 au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 
 " QL
@@ -1938,7 +1946,7 @@ au BufNewFile,BufRead *.rst			setf rst
 au BufNewFile,BufRead *.rtf			setf rtf
 
 " Interactive Ruby shell
-au BufNewFile,BufRead .irbrc,irbrc		setf ruby
+au BufNewFile,BufRead .irbrc,irbrc,.irb_history,irb_history	setf ruby
 
 " Ruby
 au BufNewFile,BufRead *.rb,*.rbw		setf ruby
@@ -2211,6 +2219,7 @@ au BufNewFile,BufRead *.typ			call dist#ft#FTtyp()
 
 " SQL
 au BufNewFile,BufRead *.sql			call dist#ft#SQL()
+au BufNewFile,BufRead .sqlite_history		setf sql
 
 " SQLJ
 au BufNewFile,BufRead *.sqlj			setf sqlj
@@ -2315,7 +2324,10 @@ au BufRead,BufNewFile {pending,completed,undo}.data  setf taskdata
 au BufRead,BufNewFile *.task			setf taskedit
 
 " Tcl (JACL too)
-au BufNewFile,BufRead *.tcl,*.tm,*.tk,*.itcl,*.itk,*.jacl,.tclshrc,.wishrc	setf tcl
+au BufNewFile,BufRead *.tcl,*.tm,*.tk,*.itcl,*.itk,*.jacl,.tclshrc,.wishrc,.tclsh-history	setf tcl
+
+" Xilinx's xsct and xsdb use tcl
+au BufNewFile,BufRead .xsctcmdhistory,.xsdbcmdhistory	setf tcl
 
 " Teal
 au BufRead,BufNewFile *.tl			setf teal
@@ -2413,6 +2425,7 @@ au BufNewFile,BufReadPost *.ts
 	\ else |
 	\   setf typescript |
 	\ endif
+au BufNewFile,BufRead .ts_node_repl_history	setf typescript
 
 " TypeScript module and common
 au BufNewFile,BufRead *.mts,*.cts		setf typescript
