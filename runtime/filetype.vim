@@ -2625,6 +2625,9 @@ au BufNewFile,BufRead *.web
 " Windows Scripting Host and Windows Script Component
 au BufNewFile,BufRead *.ws[fc]			setf wsh
 
+" Xdg-user-dirs
+au BufNewFile,BufRead user-dirs.dirs,user-dirs.defaults		setf sh
+
 " XHTML
 au BufNewFile,BufRead *.xhtml,*.xht		setf xhtml
 
