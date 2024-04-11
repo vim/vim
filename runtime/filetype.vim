@@ -574,6 +574,9 @@ au BufNewFile,BufRead *.qc			setf c
 " ~/.texlive/texmf-config/tex/latex/docstrip/docstrip.cfg
 au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
 
+" Wakatime config
+au BufNewFile,BufRead .wakatime.cfg		setf dosini
+
 " Configure files
 au BufNewFile,BufRead *.cfg\c			call dist#ft#FTcfg()
 
