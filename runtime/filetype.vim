@@ -1592,15 +1592,19 @@ au BufNewFile,BufRead *.org,*.org_archive		setf org
 au BufNewFile,BufRead pf.conf				setf pf
 
 " ini style config files, using # comments
-au BufNewFile,BufRead */etc/pacman.conf,mpv.conf	setf confini
+au BufNewFile,BufRead pacman.conf,mpv.conf		setf confini
 au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
 au BufNewFile,BufRead *.nmconnection			setf confini
+au BufNewFile,BufRead paru.conf				setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
 	\ if getline(1) == '[Trigger]' |
 	\   setf confini |
 	\ endif
+
+" Pacman makepkg
+au BufNewFile,BufRead {.,}makepkg.conf			setf sh
 
 " Pacman log
 au BufNewFile,BufRead pacman.log			setf pacmanlog
