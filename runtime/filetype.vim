@@ -308,6 +308,9 @@ au BufNewFile,BufRead *.cs,*.csx		setf cs
 " CSDL
 au BufNewFile,BufRead *.csdl			setf csdl
 
+" Ctags
+au BufNewFile,BufRead *.ctags			setf conf
+
 " Cabal
 au BufNewFile,BufRead *.cabal			setf cabal
 
@@ -326,6 +329,9 @@ au BufRead,BufNewFile *.chai			setf chaiscript
 
 " Chatito
 au BufNewFile,BufRead *.chatito			setf chatito
+
+" Chktex
+au BufRead,BufNewFile .chktexrc			setf conf
 
 " Chuck
 au BufNewFile,BufRead *.ck			setf chuck
@@ -1862,6 +1868,9 @@ au BufNewFile,BufRead *.rego			setf rego
 
 " Rexx
 au BufNewFile,BufRead *.rex,*.orx,*.rxo,*.rxj,*.jrexx,*.rexxj,*.rexx,*.testGroup,*.testUnit	setf rexx
+
+" Ripgrep rc
+au BufNewFile,BufRead {.,}ripgreprc			setf conf
 
 " R Help file
 if has("fname_case")
