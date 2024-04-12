@@ -3102,7 +3102,7 @@ static int get_scroll_overlap(int dir)
 
     loff.lnum = dir == FORWARD ? curwin->w_botline : curwin->w_topline - 1;
 #ifdef FEAT_DIFF
-    loff.fill = diff_check_fill(curwin, loff.lnum + dir == BACKWARD)
+    loff.fill = diff_check_fill(curwin, loff.lnum + (dir == BACKWARD))
 		- (dir == FORWARD ? curwin->w_filler_rows : curwin->w_topfill);
     loff.height = loff.fill > 0 ? 1 : plines_nofill(loff.lnum);
 #else
