@@ -20,6 +20,8 @@ setlocal commentstring=<!--%s-->
 " https://groups.google.com/d/msg/vim_dev/x4GT-nqa0Kg/jvtRnEbtAnMJ
 setlocal comments=s:<!--,e:-->
 
+" https://github.com/LineageOS/android/blob/aa01966efc6b81db9e8301b24cff64ade113a684/default.xml#L1136-L1137
+setlocal include=<include\\s*name=
 setlocal formatoptions-=t
 setlocal formatoptions+=croql
 setlocal formatexpr=xmlformat#Format()
@@ -62,7 +64,7 @@ if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
 endif
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal commentstring< comments< formatoptions< formatexpr< " .
+let b:undo_ftplugin = "setlocal commentstring< comments< inc< formatoptions< formatexpr< " .
     \     " | unlet! b:match_ignorecase b:match_words b:browsefilter"
 
 " Restore the saved compatibility options.
