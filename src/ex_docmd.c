@@ -4058,7 +4058,7 @@ cmp_cmdmod_info(const void *a, const void *b)
  * Return length of a command modifier (including optional count).
  * Return zero when it's not a modifier.
  */
-int
+    int
 modifier_len(char_u *cmd)
 {
     char_u	*p = cmd;
@@ -9386,23 +9386,15 @@ find_cmdline_var(char_u *src, int *usedlen)
     };
     keyvalue_T target;
     keyvalue_T *entry;
-FILE *out;
-
-out = fopen("d:\\tmp\\trace.txt", "a");
-fprintf(out, "src '%s'\n", src);
 
     switch (*src)
     {
     case '%':
 	*usedlen = 1;
-fprintf(out, "SPEC_PERC %d\n", *usedlen);
-fclose(out);
 	return SPEC_PERC;
 
     case '#':
 	*usedlen = 1;
-fprintf(out, "SPEC_HASH %d\n", *usedlen);
-fclose(out);
 	return SPEC_HASH;
 
     case '<':
@@ -9410,23 +9402,17 @@ fclose(out);
 	target.value = (char *)src + 1;	    // skip over '<'
 	target.length = 0;		    // not used, see cmp_keyvalue_value_n()
 
-fprintf(out, "target '%s'\n", target.value);
-
 	entry = (keyvalue_T *)bsearch(&target, &spec_str_tab, ARRAY_LENGTH(spec_str_tab), sizeof(spec_str_tab[0]), cmp_keyvalue_value_n);
 	if (entry == NULL)
 	    return -1;
 
 	*usedlen = entry->length + 1;
-fprintf(out, "found '%s' %d\n", entry->value, *usedlen);
-fclose(out);
 	return entry->key;
 
     default:
 	break;
     }
 
-fprintf(out, "not found\n");
-fclose(out);
     return -1;
 }
 
