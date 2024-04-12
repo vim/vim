@@ -1378,6 +1378,10 @@ au BufNewFile,BufRead *.nb			setf mma
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
 
+" mbsync
+" TODO: just for generic syntax for now
+au BufNewFile,BufRead .mbsyncrc			setf conf
+
 " Mercurial (hg) commit file
 au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 
@@ -1409,6 +1413,10 @@ au BufNewFile,BufRead *.mix,*.mixal		setf mix
 
 " MMIX or VMS makefile
 au BufNewFile,BufRead *.mms			call dist#ft#FTmms()
+
+" msmtp
+" TODO: just for generic syntax for now
+au BufNewFile,BufRead .msmtprc			setf conf
 
 " Symbian meta-makefile definition (MMP)
 au BufNewFile,BufRead *.mmp			setf mmp
@@ -1533,6 +1541,9 @@ au BufNewFile,BufRead *.mm			call dist#ft#FTmm()
 
 " Not Quite C
 au BufNewFile,BufRead *.nqc			setf nqc
+
+" notmuch
+au BufNewFile,BufRead .notmuch-config		setf dosini
 
 " NSE - Nmap Script Engine - uses Lua syntax
 au BufNewFile,BufRead *.nse			setf lua
@@ -3080,3 +3091,5 @@ endfunc
 " Restore 'cpoptions'
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+" vim: ts=8
