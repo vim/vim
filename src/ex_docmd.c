@@ -4042,7 +4042,7 @@ static cmdmod_info_T cmdmod_info_tab[] = {
     {"verbose", 4, TRUE},
     {"vertical", 4, FALSE},
     {"vim9cmd", 4, FALSE}
-};
+};	// cmdmod_info_tab
 
 // compare two cmdmod_info_T structs by case sensitive name with length
     static int
