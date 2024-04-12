@@ -9,8 +9,9 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+setlocal include=^\\s*\\%(inherit\\\|include\\\|require\\)\\>
 setlocal commentstring=#%s
 setlocal comments=:#
 setlocal suffixesadd=.bb,.bbclass
 
-let b:undo_ftplugin = "setl cms< com< sua<"
+let b:undo_ftplugin = "setl inc< cms< com< sua<"
