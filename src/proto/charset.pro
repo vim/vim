@@ -61,6 +61,7 @@ int vim_isalpha(int c);
 int vim_toupper(int c);
 int vim_tolower(int c);
 char_u *skiptowhite(char_u *p);
+char_u *skiptowhite_or_nl(char_u *p);
 char_u *skiptowhite_esc(char_u *p);
 long getdigits(char_u **pp);
 long getdigits_quoted(char_u **pp);

@@ -458,7 +458,7 @@ func s:InvokeSomeCommand()
   SomeCommand
 endfunc
 
-def Test_autocommand_block()
+def Test_command_block()
   com SomeCommand {
       g:someVar = 'some'
     }
@@ -469,7 +469,105 @@ def Test_autocommand_block()
   unlet g:someVar
 enddef
 
-def Test_command_block()
+" Test for using heredoc in a :command command block
+def Test_command_block_heredoc()
+  var lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END
+          aaa
+          bbb
+        END
+      }
+    SomeCommand
+    assert_equal(['aaa', 'bbb'], g:someVar)
+    def Foo()
+      g:someVar = []
+      SomeCommand
+      assert_equal(['aaa', 'bbb'], g:someVar)
+    enddef
+    Foo()
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess( lines)
+
+  # Execute a command with heredoc in a block
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END
+          aaa
+          bbb
+        END
+      }
+    execute('SomeCommand')
+    assert_equal(['aaa', 'bbb'], g:someVar)
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # heredoc evaluation
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        var suffix = '---'
+        g:someVar =<< trim eval END
+          ccc{suffix}
+          ddd
+        END
+      }
+    SomeCommand
+    assert_equal(['ccc---', 'ddd'], g:someVar)
+    def Foo()
+      g:someVar = []
+      SomeCommand
+      assert_equal(['ccc---', 'ddd'], g:someVar)
+    enddef
+    Foo()
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # command following heredoc
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        var l =<< trim END
+          eee
+          fff
+        END
+        g:someVar = l
+      }
+    SomeCommand
+    assert_equal(['eee', 'fff'], g:someVar)
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
+  # Error in heredoc
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END
+          eee
+          fff
+      }
+    try
+      SomeCommand
+    catch
+      assert_match("E990: Missing end marker 'END'", v:exception)
+    endtry
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+enddef
+
+def Test_autocommand_block()
   au BufNew *.xml {
       g:otherVar = 'other'
     }
