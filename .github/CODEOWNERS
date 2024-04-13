@@ -156,6 +156,7 @@ runtime/ftplugin/icon.vim		@dkearns
 runtime/ftplugin/indent.vim		@dkearns
 runtime/ftplugin/ishd.vim		@dkearns
 runtime/ftplugin/j.vim			@glts
+runtime/ftplugin/java.vim		@zzzyxwvut
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/json.vim		@dbarnett
@@ -397,7 +398,7 @@ runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns
 runtime/syntax/j.vim			@glts
 runtime/syntax/jargon.vim		@h3xx
-runtime/syntax/java.vim			@fleiner
+runtime/syntax/java.vim			@zzzyxwvut
 runtime/syntax/javascript.vim		@fleiner
 runtime/syntax/jsonc.vim		@izhakjakov
 runtime/syntax/julia.vim		@carlobaldassi

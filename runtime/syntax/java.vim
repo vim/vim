@@ -1,8 +1,9 @@
 " Vim syntax file
-" Language:	Java
-" Maintainer:	Claudio Fleiner <claudio@fleiner.com>
-" URL:          https://github.com/fleiner/vim/blob/master/runtime/syntax/java.vim
-" Last Change:	2024 Apr 11
+" Language:		Java
+" Maintainer:		Aliaksei Budavei <0x000c70 AT gmail DOT com>
+" Former Maintainer:	Claudio Fleiner <claudio@fleiner.com>
+" Repository:		https://github.com/zzzyxwvut/java-vim.git
+" Last Change:		2024 Apr 13
 
 " Please check :help java.vim for comments on some of the options available.
 
