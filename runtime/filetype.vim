@@ -1017,6 +1017,9 @@ au BufRead,BufNewFile *.hoon			setf hoon
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
 
+" Translate shell
+au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
+
 " HTML (.shtml and .stm for server side)
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
 au BufNewFile,BufRead *.cshtml			setf html
