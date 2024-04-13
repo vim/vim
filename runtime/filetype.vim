@@ -546,9 +546,18 @@ au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 " XDG mimeapps.list
 au BufNewFile,BufRead mimeapps.list	setf dosini
 
-" Many Python tools use dosini as their config, like pip, setuptools, pudb, coverage
+" Many tools written in Python use dosini as their config
+" like setuptools, pudb, coverage, pypi, gitlint, oelint-adv, pylint, bpython, mypy
 " (must be before *.cfg)
-au BufNewFile,BufRead pip.conf,setup.cfg,pudb.cfg,.coveragerc	setf dosini
+au BufNewFile,BufRead pip.conf,setup.cfg,pudb.cfg,.coveragerc,.pypirc,.gitlint,.oelint.cfg	setf dosini
+au BufNewFile,BufRead {.,}pylintrc,*/bpython/config,*/mypy/config			setf dosini
+
+" Many tools written in Python use toml as their config, like black
+au BufNewFile,BufRead .black	setf toml
+au BufNewFile,BufRead black
+	\  if getline(1) =~ 'tool.back'
+	\|   setf toml
+	\| endif
 
 " LXQt's programs use dosini as their config
 au BufNewFile,BufRead */{lxqt,screengrab}/*.conf	setf dosini
@@ -564,6 +573,9 @@ au BufNewFile,BufRead *.qc			setf c
 " ~/.texlive/texmf-config/tex/latex/hyperref/hyperref.cfg
 " ~/.texlive/texmf-config/tex/latex/docstrip/docstrip.cfg
 au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
+
+" Wakatime config
+au BufNewFile,BufRead .wakatime.cfg		setf dosini
 
 " Configure files
 au BufNewFile,BufRead *.cfg\c			call dist#ft#FTcfg()
@@ -776,6 +788,9 @@ au BufNewFile,BufRead *.fir			setf firrtl
 
 " Fish shell
 au BufNewFile,BufRead *.fish			setf fish
+
+" Flatpak config
+au BufNewFile,BufRead */flatpak/repo/config	setf dosini
 
 " FlexWiki - disabled, because it has side effects when a .wiki file
 " is not actually FlexWiki
@@ -1653,6 +1668,9 @@ else
   au BufNewFile,BufRead *.pl				call dist#ft#FTpl()
 endif
 au BufNewFile,BufRead *.plx,*.al,*.psgi			setf perl
+
+" Perl Reply
+au BufNewFile,BufRead .replyrc				setf dosini
 
 " Perl, XPM or XPM2
 au BufNewFile,BufRead *.pm
@@ -2924,6 +2942,9 @@ au BufNewFile,BufRead mutt{ng,}rc*,Mutt{ng,}rc*		call s:StarSetf('muttrc')
 " Neomutt setup file
 au BufNewFile,BufRead .neomuttrc*,*/.neomutt/neomuttrc*	call s:StarSetf('neomuttrc')
 au BufNewFile,BufRead neomuttrc*,Neomuttrc*		call s:StarSetf('neomuttrc')
+
+" Nfs
+au BufNewFile,BufRead nfs.conf,nfsmount.conf		setf dosini
 
 " Nroff macros
 au BufNewFile,BufRead tmac.*			call s:StarSetf('nroff')
