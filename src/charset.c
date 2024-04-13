@@ -2089,17 +2089,6 @@ skiptowhite(char_u *p)
 }
 
 /*
- * skiptowhite: skip over text until ' ' or '\t' or newline or NUL.
- */
-    char_u *
-skiptowhite_or_nl(char_u *p)
-{
-    while (*p != ' ' && *p != '\t' && *p != NL && *p != NUL)
-	++p;
-    return p;
-}
-
-/*
  * skiptowhite_esc: Like skiptowhite(), but also skip escaped chars
  */
     char_u *
