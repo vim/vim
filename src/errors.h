@@ -3412,9 +3412,9 @@ EXTERN char e_invalid_class_variable_declaration_str[]
 EXTERN char e_invalid_type_for_object_variable_str[]
 	INIT(= N_("E1330: Invalid type for object variable: %s"));
 EXTERN char e_public_must_be_followed_by_var_static_final_or_const[]
-	INIT(= N_("E1331: Public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
+	INIT(= N_("E1331: public must be followed by \"var\" or \"static\" or \"final\" or \"const\""));
 EXTERN char e_public_variable_name_cannot_start_with_underscore_str[]
-	INIT(= N_("E1332: Public variable name cannot start with underscore: %s"));
+	INIT(= N_("E1332: public variable name cannot start with underscore: %s"));
 EXTERN char e_cannot_access_protected_variable_str[]
 	INIT(= N_("E1333: Cannot access protected variable \"%s\" in class \"%s\""));
 // E1334 unused
@@ -3532,9 +3532,9 @@ EXTERN char e_class_method_str_accessible_only_using_class_str[]
 EXTERN char e_object_method_str_accessible_only_using_object_str[]
 	INIT(= N_("E1386: Object method \"%s\" accessible only using class \"%s\" object"));
 EXTERN char e_public_variable_not_supported_in_interface[]
-	INIT(= N_("E1387: Public variable not supported in an interface"));
+	INIT(= N_("E1387: public variable not supported in an interface"));
 EXTERN char e_public_keyword_not_supported_for_method[]
-	INIT(= N_("E1388: Public keyword not supported for a method"));
+	INIT(= N_("E1388: public keyword not supported for a method"));
 EXTERN char e_missing_name_after_implements[]
 	INIT(= N_("E1389: Missing name after implements"));
 EXTERN char e_cannot_use_an_object_variable_except_with_the_new_method_str[]
@@ -3615,6 +3615,8 @@ EXTERN char e_enum_str_name_cannot_be_modified[]
 	INIT(= N_("E1427: Enum \"%s\" name cannot be modified"));
 EXTERN char e_duplicate_enum_str[]
 	INIT(= N_("E1428: Duplicate enum value: %s"));
+EXTERN char e_class_can_only_be_used_in_script[]
+	INIT(= N_("E1429: Class can only be used in a script"));
 #endif
 // E1429 - E1499 unused (reserved for Vim9 class support)
 EXTERN char e_cannot_mix_positional_and_non_positional_str[]
