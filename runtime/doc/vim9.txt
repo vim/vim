@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2024 Apr 12
+*vim9.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1521,7 +1521,6 @@ Custom types can be defined with `:type`: >
 	:type MyList list<string>
 Custom types must start with a capital letter, to avoid name clashes with
 builtin types added later, similarly to user functions.
-{not implemented yet}
 
 And classes and interfaces can be used as types: >
 	:class MyClass

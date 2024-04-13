@@ -4028,10 +4028,13 @@ compile_def_function(
 		    line = (char_u *)"";
 		    break;
 
+	    case CMD_class:
+		    emsg(_(e_class_can_only_be_used_in_script));
+		    goto erret;
+
 	    case CMD_type:
 		    emsg(_(e_type_can_only_be_used_in_script));
 		    goto erret;
-		    break;
 
 	    case CMD_global:
 		    if (check_global_and_subst(ea.cmd, p) == FAIL)
