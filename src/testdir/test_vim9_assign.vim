@@ -2984,6 +2984,16 @@ def Test_heredoc_expr()
   CODE
   v9.CheckDefAndScriptSuccess(lines)
 
+  # Evaluate a dictionary
+  lines =<< trim CODE
+    var d1 = {'a': 10, 'b': [1, 2]}
+    var code =<< trim eval END
+      var d2 = {d1}
+    END
+    assert_equal(["var d2 = {'a': 10, 'b': [1, 2]}"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
   lines =<< trim CODE
     var code =<< eval trim END
       var s = "{$SOME_ENV_VAR}"

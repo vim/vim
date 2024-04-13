@@ -575,7 +575,8 @@ skip_expr_concatenate(
 
 /*
  * Convert "tv" to a string.
- * When "convert" is TRUE convert a List into a sequence of lines.
+ * When "convert" is TRUE convert a List into a sequence of lines and a Dict
+ * into a textual representation of the Dict.
  * Returns an allocated string (NULL when out of memory).
  */
     char_u *
@@ -596,6 +597,8 @@ typval2string(typval_T *tv, int convert)
 	ga_append(&ga, NUL);
 	retval = (char_u *)ga.ga_data;
     }
+    else if (convert && tv->v_type == VAR_DICT)
+	retval = dict2string(tv, get_copyID(), FALSE);
     else
 	retval = vim_strsave(tv_get_string(tv));
     return retval;
