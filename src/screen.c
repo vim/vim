@@ -1981,7 +1981,24 @@ screen_char(unsigned off, int row, int col)
     {
 	char_u	    buf[MB_MAXBYTES + 1];
 
-	if (utf_ambiguous_width(ScreenLinesUC[off]))
+	if (get_cellwidth(ScreenLinesUC[off]) > 1)
+	{
+	    // If the width is set to 2 with `setcellwidths`
+
+#ifdef FEAT_GUI
+	    if (!gui.in_use)
+	    {
+#endif
+		// Clear the two screen cells. If the character is actually
+		// single width it won't change the second cell.
+		out_str((char_u *)"  ");
+		term_windgoto(row, col);
+		screen_cur_col = 9999;
+#ifdef FEAT_GUI
+	    }
+#endif
+	}
+	else if (utf_ambiguous_width(ScreenLinesUC[off]))
 	{
 	    if (*p_ambw == 'd'
 #ifdef FEAT_GUI

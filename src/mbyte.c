@@ -140,6 +140,7 @@ static int dbcs_head_off(char_u *base, char_u *p);
 #ifdef FEAT_EVAL
 static int cw_value(int c);
 #endif
+int get_cellwidth(int c);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -5540,6 +5541,20 @@ string_convert_ext(
     }
 
     return retval;
+}
+
+/*
+ * Return 1 or 2 when "c" is in the cellwidth table.
+ * Return 0 if not.
+ */
+    int
+get_cellwidth(int c)
+{
+#ifdef FEAT_EVAL
+    return cw_value(c);
+#else
+    return 0;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
