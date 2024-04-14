@@ -187,7 +187,7 @@ MINOR=		1
 !ENDIF
 
 !IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\patchlvl.tmp' -InputObject \
-	\"PATCHLEVEL=$$(((Get-Content -Path '.\version.c' \
+	\"PATCHLEVEL=$$([decimal^]((Get-Content -Path '.\version.c' \
 	-TotalCount ((Select-String -Pattern 'static int included_patches' \
 	-Path '.\version.c').LineNumber+3))[-1^]).Trim().TrimEnd(','))\"} \
 	catch{exit 1}]

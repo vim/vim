@@ -33,6 +33,9 @@
 #endif
 
 // Patchlevel with leading zeros
+// For compatibility with the installer from "vim-win32-installer" and WinGet.
+// For details see https://github.com/vim/vim-win32-installer/pull/277
+// and https://github.com/vim/vim-win32-installer/pull/285
 #if VIM_VERSION_PATCHLEVEL < 10
 #define LEADZERO(x) 000 ## x
 #elif VIM_VERSION_PATCHLEVEL < 100
