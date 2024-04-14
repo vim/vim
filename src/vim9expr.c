@@ -546,6 +546,9 @@ compile_load_scriptvar(
 	int	done = FALSE;
 	int	res = OK;
 
+	check_script_symlink(import->imp_sid);
+	import_check_sourced_sid(&import->imp_sid);
+
 	// Need to lookup the member.
 	if (*p != '.')
 	{
