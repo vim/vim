@@ -170,6 +170,7 @@ func Test_screenchar_utf8()
 endfunc
 
 func Test_setcellwidths()
+  new
   call setcellwidths([
         \ [0x1330, 0x1330, 2],
         \ [9999, 10000, 1],
@@ -212,6 +213,18 @@ func Test_setcellwidths()
     " Ambiguous width chars
     call assert_equal(2, strwidth("\u00A1"))
     call assert_equal(2, strwidth("\u2010"))
+
+    call setcellwidths([])
+    call setline(1, repeat("\u2103", 10))
+    normal! $
+    redraw
+    call assert_equal((aw == 'single') ? 10 : 19, wincol())
+    call setcellwidths([[0x2103, 0x2103, 1]])
+    redraw
+    call assert_equal(10, wincol())
+    call setcellwidths([[0x2103, 0x2103, 2]])
+    redraw
+    call assert_equal(19, wincol())
   endfor
   set ambiwidth& isprint&
 
@@ -245,6 +258,7 @@ func Test_setcellwidths()
   set listchars&
   set fillchars&
   call setcellwidths([])
+  bwipe!
 endfunc
 
 func Test_getcellwidths()

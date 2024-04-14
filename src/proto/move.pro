@@ -9,6 +9,7 @@ void check_cursor_moved(win_T *wp);
 void changed_window_setting(void);
 void changed_window_setting_win(win_T *wp);
 void changed_window_setting_buf(buf_T *buf);
+void changed_window_setting_all(void);
 void set_topline(win_T *wp, linenr_T lnum);
 void changed_cline_bef_curs(void);
 void changed_cline_bef_curs_win(win_T *wp);

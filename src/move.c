@@ -678,6 +678,19 @@ changed_window_setting_buf(buf_T *buf)
 #endif
 
 /*
+ * Call changed_window_setting_win() for every window.
+ */
+    void
+changed_window_setting_all(void)
+{
+    tabpage_T	*tp;
+    win_T	*wp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	changed_window_setting_win(wp);
+}
+
+/*
  * Set wp->w_topline to a certain number.
  */
     void
