@@ -236,7 +236,7 @@ typedef struct dsc$descriptor   DESC;
 # ifdef VMS
 # define USR_VIMRC_FILE  "sys$login:.vimrc"
 # else
-#  define USR_VIMRC_FILE "~/.vimrc"
+#  define USR_VIMRC_FILE "$HOME/.vimrc"
 # endif
 #endif
 
