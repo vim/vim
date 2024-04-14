@@ -12,6 +12,7 @@ $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*
 $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
+$XDG_CONFIG_HOME	starting.txt	/*$XDG_CONFIG_HOME*
 $quote	eval.txt	/*$quote*
 %	motion.txt	/*%*
 %:.	cmdline.txt	/*%:.*
@@ -11371,6 +11372,9 @@ x11-clientserver	remote.txt	/*x11-clientserver*
 x11-cut-buffer	gui_x11.txt	/*x11-cut-buffer*
 x11-selection	gui_x11.txt	/*x11-selection*
 xattr	editing.txt	/*xattr*
+xdg-base-dir	starting.txt	/*xdg-base-dir*
+xdg-runtime	starting.txt	/*xdg-runtime*
+xdg-vimrc	starting.txt	/*xdg-vimrc*
 xf86conf.vim	syntax.txt	/*xf86conf.vim*
 xfontset	mbyte.txt	/*xfontset*
 xfree-xterm	syntax.txt	/*xfree-xterm*

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Mar 13
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -811,7 +811,8 @@ accordingly.  Vim proceeds in this order:
 	name.  Also see |vimrc-intro|.
 
 	Places for your personal initializations:
-		Unix		$HOME/.vimrc or $HOME/.vim/vimrc
+		Unix		$HOME/.vimrc, $HOME/.vim/vimrc
+                                or $XDG_CONFIG_HOME/vim/vimrc
 		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
@@ -853,15 +854,16 @@ accordingly.  Vim proceeds in this order:
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
 	    The value of $VIMINIT is used as an Ex command line.
 	II  The user vimrc file(s):
-		    "$HOME/.vimrc"	   (for Unix) (*)
-		    "$HOME/.vim/vimrc"	   (for Unix) (*)
-		    "s:.vimrc"		   (for Amiga) (*)
-		    "home:.vimrc"	   (for Amiga) (*)
-		    "home:vimfiles:vimrc"  (for Amiga) (*)
-		    "$VIM/.vimrc"	   (for Amiga) (*)
-		    "$HOME/_vimrc"	   (for Win32) (*)
-		    "$HOME/vimfiles/vimrc" (for Win32) (*)
-		    "$VIM/_vimrc"	   (for Win32) (*)
+		    "$HOME/.vimrc"		(for Unix) (*)
+		    "$HOME/.vim/vimrc"		(for Unix) (*)
+		    "$HOME/.config/vim/vimrc"	(for Unix) (*)
+		    "s:.vimrc"			(for Amiga) (*)
+		    "home:.vimrc"		(for Amiga) (*)
+		    "home:vimfiles:vimrc"	(for Amiga) (*)
+		    "$VIM/.vimrc"		(for Amiga) (*)
+		    "$HOME/_vimrc"		(for Win32) (*)
+		    "$HOME/vimfiles/vimrc"	(for Win32) (*)
+		    "$VIM/_vimrc"		(for Win32) (*)
 		    "$HOME/config/settings/vim/vimrc"	(for Haiku) (*)
 
 		Note: For Unix and Amiga, when ".vimrc" does not exist,
@@ -1084,6 +1086,44 @@ set the "skip_defaults_vim" variable.  If this was set and you want to load
 defaults.vim from your .vimrc, first unlet skip_defaults_vim, as in the
 example above.
 
+
+					*xdg-base-dir* *$XDG_CONFIG_HOME*
+XDG Base Directory Specification ~
+
+The XDG Base Directory Specification aims to define a standard location for
+configuration files used by applications.  This is mainly done to prevent
+the legacy behavior of dumping everything into the users home directory.
+The specification can be found online at
+https://specifications.freedesktop.org/basedir-spec/latest/
+
+The location of this standard configuration directory is configurable by the
+user, using environment variable but should also give fallback in case those
+variables weren't set.
+
+This is a not an exhaustive list of those directories:
+   Environment var	default location	Description ~
+  `$XDG_CACHE_HOME`	$HOME/.cache		Ephemiral data files
+  `$XDG_CONFIG_HOME`	$HOME/.config		Configuration files
+  `$XDG_DATA_HOME`	$HOME/.local/share	Persistent data files
+  `$XDG_STATE_HOME`	$HOME/.local/state	State data files
+
+Vim will only care of the `$XDG_CONFIG_HOME` directory, the others are not
+(yet) used for its various configuration and state files.
+
+							*xdg-vimrc*
+Vim, on Unix systems, will look at `$XDG_CONFIG_HOME/vim/vimrc` for its
+configuration (see |vimrc|) but it will source it only if no other
+initialization file is found in `$HOME` or `$HOME/.vim` (thus making this
+feature backward compatible). However, if you want to migrate to use
+`$XDG_CONFIG_HOME/vim/` directory, you will have to move away your `~/.vimrc`
+and `~/.vim/vimrc` file.
+
+							*xdg-runtime*
+When the |xdg-vimrc| is used the |'runtimepath'| will be modified accordingly
+to respect the |xdg-base-dir|: >
+
+    "$XDG_CONFIG_HOME/vim,$VIMRUNTIME,/after,$XDG_CONFIG_HOME/vim/after"
+<
 
 Avoiding trojan horses ~
 							*trojan-horse*

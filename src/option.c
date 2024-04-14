@@ -364,6 +364,66 @@ set_init_clean_rtp(void)
 }
 #endif
 
+#ifdef UNIX
+/*
+ * Change 'runtimepath' and 'packdir' to '$XDG_CONFIG_HOME/vim' if the only
+ * vimrc found is located in '$XDG_CONFIG_HOME/vim/vimrc'.
+ * In case the '$XDG_CONFIG_HOME' variable is not set, '$HOME/.config' is used
+ * as a fallback as is defined in the XDG base dir specification:
+ * <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+ */
+    static void
+set_init_xdg_rtp(void)
+{
+    int		opt_idx;
+    int		has_xdg_env = TRUE;
+    int		should_free_xdg_dir = FALSE;
+    char_u	*vimrc1 = NULL;
+    char_u	*vimrc2 = NULL;
+    char_u	*xdg_dir = NULL;
+    char_u	*xdg_rtp = NULL;
+    char_u	*vimrc_xdg = NULL;
+
+    vimrc1 = expand_env_save((char_u *)USR_VIMRC_FILE);
+    vimrc2 = expand_env_save((char_u *)USR_VIMRC_FILE2);
+
+    xdg_dir = mch_getenv("XDG_CONFIG_HOME");
+    if (!xdg_dir)
+    {
+	xdg_dir = expand_env_save((char_u *)"~/.config");
+	should_free_xdg_dir = TRUE;
+	has_xdg_env = FALSE;
+    }
+    vimrc_xdg = concat_fnames(xdg_dir, (char_u *)"vim/vimrc", TRUE);
+
+    if (file_is_readable(vimrc1) || file_is_readable(vimrc2) ||
+	    !file_is_readable(vimrc_xdg))
+	goto theend;
+
+    xdg_rtp = has_xdg_env ? (char_u *)XDG_RUNTIMEPATH
+	: (char_u *)XDG_RUNTIMEPATH_FB;
+
+    if ((opt_idx = findoption((char_u *)"runtimepath")) < 0)
+	goto theend;
+
+    options[opt_idx].def_val[VI_DEFAULT] = xdg_rtp;
+    p_rtp = xdg_rtp;
+
+    if ((opt_idx = findoption((char_u *)"packpath")) < 0)
+	goto theend;
+
+    options[opt_idx].def_val[VI_DEFAULT] = xdg_rtp;
+    p_pp = xdg_rtp;
+
+theend:
+    vim_free(vimrc1);
+    vim_free(vimrc2);
+    vim_free(vimrc_xdg);
+    if (should_free_xdg_dir)
+	vim_free(xdg_dir);
+}
+#endif
+
 /*
  * Expand environment variables and things like "~" for the defaults.
  * If option_expand() returns non-NULL the variable is expanded.  This can
@@ -588,6 +648,7 @@ set_init_1(int clean_arg)
     set_options_default(0);
 
 #ifdef UNIX
+    set_init_xdg_rtp();
     set_init_restricted_mode();
 #endif
 
