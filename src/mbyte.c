@@ -5733,6 +5733,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(cw_table_save);
+    changed_window_setting_all();
     redraw_all_later(UPD_CLEAR);
 }
 
