@@ -108,3 +108,23 @@ def Foo()
   "useless string"
 enddef
 
+
+" fold-region ending
+
+def Foo()
+  # enddef
+enddef
+
+def Foo()
+  echo "enddef"
+enddef
+
+def Foo()
+  let x =<< END
+    endfunction
+  END
+enddef
+
+:def Foo()
+:enddef
+
