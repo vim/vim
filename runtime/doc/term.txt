@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.1.  Last change: 2024 Feb 28
+*term.txt*      For Vim version 9.1.  Last change: 2024 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -382,7 +382,7 @@ The options are listed below.  The associated termcap code is always equal to
 the last two characters of the option name.  Only one termcap code is
 required: Cursor motion, 't_cm'.
 
-The options 't_da', 't_db', 't_ms', 't_xs', 't_xn' represent flags in the
+The options 't_da', 't_db', 't_ms', 't_xs', 't_xn', 't_xo' represent flags in the
 termcap.  When the termcap flag is present, the option will be set to "y".
 But any non-empty string means that the flag is set.  An empty string means
 that the flag is not set.  't_CS' works like this too, but it isn't a termcap
@@ -441,6 +441,11 @@ OUTPUT CODES						*terminal-output-codes*
 								*t_xn* *'t_xn'*
 	t_xn	if non-empty, writing a character at the last screen cell
 		does not cause scrolling
+								*t_xo* *'t_xo'*
+	t_xo	if non-empty, terminal uses xon/xoff handshaking, mapping
+		CTRL-S will not be possible then, since it is used for flow
+		control (used by vt420 terminal).  Setting this flag has only
+		an effect when starting Vim.
 	t_ZH	italics mode					*t_ZH* *'t_ZH'*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 

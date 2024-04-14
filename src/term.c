@@ -1798,6 +1798,8 @@ get_term_entries(int *height, int *width)
 	T_DA = (char_u *)"y";
     if ((T_UT == NULL || T_UT == empty_option) && tgetflag("ut") > 0)
 	T_UT = (char_u *)"y";
+    if ((T_XON == NULL || T_XON == empty_option) && tgetflag("xo") > 0)
+	T_XON = (char_u *)"y";
 
     /*
      * get key codes

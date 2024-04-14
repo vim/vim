@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 08
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41591,6 +41591,7 @@ Commands: ~
 Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
+'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420).
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-9.2*

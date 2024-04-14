@@ -931,5 +931,25 @@ func Test_terminal_term_start_error()
   delfunc s:term_start_error
 endfunc
 
+func Test_terminal_vt420()
+  CheckRunVimInTerminal
+  " For Termcap
+  CheckUnix
+  let rows=15
+  call writefile([':set term=vt420'], 'Xterm420', 'D')
+
+  let buf = RunVimInTerminal('-S Xterm420', #{rows: rows})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":set t_xo?\<CR>")
+  call WaitForAssert({-> assert_match('t_xo=y', term_getline(buf, rows))})
+  call StopVimInTerminal(buf)
+
+  call writefile([''], 'Xterm420')
+  let buf = RunVimInTerminal('-S Xterm420', #{rows: rows})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":set t_xo?\<CR>")
+  call WaitForAssert({-> assert_match('t_xo=\s\+', term_getline(buf, rows))})
+  call StopVimInTerminal(buf)
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

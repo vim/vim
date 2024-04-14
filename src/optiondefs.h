@@ -3014,6 +3014,7 @@ static struct vimoption options[] =
     p_term("t_8f", T_8F)
     p_term("t_8b", T_8B)
     p_term("t_8u", T_8U)
+    p_term("t_xo", T_XON)
 
 // terminal key codes are not in here
 
