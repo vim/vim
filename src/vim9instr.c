@@ -222,6 +222,7 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 
 	// conversion possible when tolerant
 	case VAR_LIST:
+	case VAR_DICT:
 			 if (tolerant)
 			 {
 			     isntype = ISN_2STRING_ANY;
@@ -234,7 +235,6 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 	case VAR_BLOB:
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	case VAR_DICT:
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
