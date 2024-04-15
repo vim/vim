@@ -312,6 +312,8 @@ func Test_matchaddpos_error()
   call assert_fails("call matchaddpos('Search', [[{}]])", 'E728:')
   call assert_fails("call matchaddpos('Search', [[2, {}]])", 'E728:')
   call assert_fails("call matchaddpos('Search', [[3, 4, {}]])", 'E728:')
+  call assert_equal(-1, matchaddpos('Error', test_null_list()))
+  call assert_equal(-1, matchaddpos('Error', []))
 endfunc
 
 func OtherWindowCommon()
@@ -432,6 +434,5 @@ func Test_match_tab_with_linebreak()
 
   call StopVimInTerminal(buf)
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab
