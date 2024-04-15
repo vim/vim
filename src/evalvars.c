@@ -662,7 +662,7 @@ eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate)
     if (evaluate)
     {
 	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE, FALSE);
+	expr_val = eval_to_string(block_start, FALSE, FALSE);
 	*block_end = '}';
 	if (expr_val == NULL)
 	    return NULL;

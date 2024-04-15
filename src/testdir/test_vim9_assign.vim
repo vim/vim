@@ -2994,6 +2994,56 @@ def Test_heredoc_expr()
   CODE
   v9.CheckDefAndScriptSuccess(lines)
 
+  # Evaluate an empty dictionary
+  lines =<< trim CODE
+    var d1 = {}
+    var code =<< trim eval END
+      var d2 = {d1}
+    END
+    assert_equal(["var d2 = {}"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a null dictionary
+  lines =<< trim CODE
+    var d1 = test_null_dict()
+    var code =<< trim eval END
+      var d2 = {d1}
+    END
+    assert_equal(["var d2 = {}"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a List
+  lines =<< trim CODE
+    var l1 = ['a', 'b', 'c']
+    var code =<< trim eval END
+      var l2 = {l1}
+    END
+    assert_equal(["var l2 = ['a', 'b', 'c']"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate an empty List
+  lines =<< trim CODE
+    var l1 = []
+    var code =<< trim eval END
+      var l2 = {l1}
+    END
+    assert_equal(["var l2 = []"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a null List
+  lines =<< trim CODE
+    var l1 = test_null_list()
+    var code =<< trim eval END
+      var l2 = {l1}
+    END
+    assert_equal(["var l2 = []"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
   lines =<< trim CODE
     var code =<< eval trim END
       var s = "{$SOME_ENV_VAR}"

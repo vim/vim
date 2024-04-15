@@ -7,7 +7,7 @@ int generate_CONSTRUCT(cctx_T *cctx, class_T *cl);
 int generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type);
 int generate_GET_ITF_MEMBER(cctx_T *cctx, class_T *itf, int idx, type_T *type);
 int generate_STORE_THIS(cctx_T *cctx, int idx);
-int may_generate_2STRING(int offset, int tolerant, cctx_T *cctx);
+int may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx);
 int generate_add_instr(cctx_T *cctx, vartype_T vartype, type_T *type1, type_T *type2, exprtype_T expr_type);
 vartype_T operator_type(type_T *type1, type_T *type2);
 int generate_two_op(cctx_T *cctx, char_u *op);
