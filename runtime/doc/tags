@@ -6528,6 +6528,7 @@ compiler-gcc	quickfix.txt	/*compiler-gcc*
 compiler-gnat	ft_ada.txt	/*compiler-gnat*
 compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-manx	quickfix.txt	/*compiler-manx*
+compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
 compiler-select	quickfix.txt	/*compiler-select*
@@ -9561,6 +9562,7 @@ quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-index	quickfix.txt	/*quickfix-index*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
+quickfix-pandoc	quickfix.txt	/*quickfix-pandoc*
 quickfix-parse	quickfix.txt	/*quickfix-parse*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
 quickfix-size	quickfix.txt	/*quickfix-size*

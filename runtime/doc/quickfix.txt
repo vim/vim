@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 9.1.  Last change: 2023 Jan 18
+*quickfix.txt*  For Vim version 9.1.  Last change: 2023 Apr 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1321,6 +1321,15 @@ If Vim was started from the compiler, the :sh and some :!  commands will not
 work, because Vim is then running in the same process as the compiler and
 stdin (standard input) will not be interactive.
 
+PANDOC					*quickfix-pandoc* *compiler-pandoc*
+
+The Pandoc compiler plugin expects that an output file type extension is
+passed to make, say :make html or :make pdf.
+
+Additional arguments can be passed to pandoc:
+
+- either by appending them to make, say `:make html --self-contained` .
+- or setting them in `b:pandoc_compiler_args` or `g:pandoc_compiler_args`
 
 PERL					*quickfix-perl* *compiler-perl*
 
