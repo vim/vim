@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 14
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1100,9 +1100,9 @@ The location of this standard configuration directory is configurable by the
 user, using environment variable but should also give fallback in case those
 variables weren't set.
 
-This is a not an exhaustive list of those directories:
+This is not an exhaustive list of those directories:
    Environment var	default location	Description ~
-  `$XDG_CACHE_HOME`	$HOME/.cache		Ephemiral data files
+  `$XDG_CACHE_HOME`	$HOME/.cache		Ephemeral data files
   `$XDG_CONFIG_HOME`	$HOME/.config		Configuration files
   `$XDG_DATA_HOME`	$HOME/.local/share	Persistent data files
   `$XDG_STATE_HOME`	$HOME/.local/state	State data files
