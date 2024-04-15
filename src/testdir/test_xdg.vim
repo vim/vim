@@ -54,7 +54,7 @@ func Test_xdg_runtime_files()
   let rc4=expand('~/xdg/vim/vimrc')
 
   " g:rc_one|two|three|four is to verify, that the other
-  " init files are not source
+  " init files are not sourced
   " g:rc is to verify which rc file has been loaded.
   let file1 =<< trim CODE
     let g:rc_one = 'one'
