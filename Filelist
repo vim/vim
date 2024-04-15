@@ -795,6 +795,7 @@ RT_SCRIPTS =	\
 		runtime/makemenu.vim \
 		runtime/autoload/*.vim \
 		runtime/autoload/README.txt \
+		runtime/autoload/astro/*.vim \
 		runtime/autoload/cargo/*.vim \
 		runtime/autoload/dist/*.vim \
 		runtime/autoload/rust/*.vim \
