@@ -575,17 +575,16 @@ skip_expr_concatenate(
 
 /*
  * Convert "tv" to a string.
- * When "convert" is TRUE convert a List into a sequence of lines and a Dict
- * into a textual representation of the Dict.
+ * When "join_list" is TRUE convert a List into a sequence of lines.
  * Returns an allocated string (NULL when out of memory).
  */
     char_u *
-typval2string(typval_T *tv, int convert)
+typval2string(typval_T *tv, int join_list)
 {
     garray_T	ga;
     char_u	*retval;
 
-    if (convert && tv->v_type == VAR_LIST)
+    if (join_list && tv->v_type == VAR_LIST)
     {
 	ga_init2(&ga, sizeof(char), 80);
 	if (tv->vval.v_list != NULL)
@@ -597,8 +596,16 @@ typval2string(typval_T *tv, int convert)
 	ga_append(&ga, NUL);
 	retval = (char_u *)ga.ga_data;
     }
-    else if (convert && tv->v_type == VAR_DICT)
-	retval = dict2string(tv, get_copyID(), FALSE);
+    else if (tv->v_type == VAR_LIST || tv->v_type == VAR_DICT)
+    {
+	char_u	*tofree;
+	char_u	numbuf[NUMBUFLEN];
+
+	retval = tv2string(tv, &tofree, numbuf, 0);
+	// Make a copy if we have a value but it's not in allocated memory.
+	if (retval != NULL && tofree == NULL)
+	    retval = vim_strsave(retval);
+    }
     else
 	retval = vim_strsave(tv_get_string(tv));
     return retval;
@@ -607,13 +614,13 @@ typval2string(typval_T *tv, int convert)
 /*
  * Top level evaluation function, returning a string.  Does not handle line
  * breaks.
- * When "convert" is TRUE convert a List into a sequence of lines.
+ * When "join_list" is TRUE convert a List into a sequence of lines.
  * Return pointer to allocated memory, or NULL for failure.
  */
     char_u *
 eval_to_string_eap(
     char_u	*arg,
-    int		convert,
+    int		join_list,
     exarg_T	*eap,
     int		use_simple_function)
 {
@@ -631,7 +638,7 @@ eval_to_string_eap(
 	retval = NULL;
     else
     {
-	retval = typval2string(&tv, convert);
+	retval = typval2string(&tv, join_list);
 	clear_tv(&tv);
     }
     clear_evalarg(&evalarg, NULL);
@@ -642,10 +649,10 @@ eval_to_string_eap(
     char_u *
 eval_to_string(
     char_u	*arg,
-    int		convert,
+    int		join_list,
     int		use_simple_function)
 {
-    return eval_to_string_eap(arg, convert, NULL, use_simple_function);
+    return eval_to_string_eap(arg, join_list, NULL, use_simple_function);
 }
 
 /*

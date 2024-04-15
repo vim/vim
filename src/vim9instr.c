@@ -191,10 +191,12 @@ generate_STORE_THIS(cctx_T *cctx, int idx)
 /*
  * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
  * But only for simple types.
- * When "tolerant" is TRUE convert most types to string, e.g. a List.
+ * When tostring_flags has TOSTRING_TOLERANT, convert a List to a series of
+ * strings.  When tostring_flags has TOSTRING_INTERPOLATE, convert a List or a
+ * Dict to the corresponding textual representation.
  */
     int
-may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
+may_generate_2STRING(int offset, int tostring_flags, cctx_T *cctx)
 {
     isn_T	*isn;
     isntype_T	isntype = ISN_2STRING;
@@ -223,11 +225,13 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 	// conversion possible when tolerant
 	case VAR_LIST:
 	case VAR_DICT:
-			 if (tolerant)
+			 if (tostring_flags & TOSTRING_TOLERANT)
 			 {
 			     isntype = ISN_2STRING_ANY;
 			     break;
 			 }
+			 if (tostring_flags & TOSTRING_INTERPOLATE)
+			     break;
 			 // FALLTHROUGH
 
 	// conversion not possible
@@ -249,7 +253,7 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
     if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
     isn->isn_arg.tostring.offset = offset;
-    isn->isn_arg.tostring.tolerant = tolerant;
+    isn->isn_arg.tostring.flags = tostring_flags;
 
     return OK;
 }

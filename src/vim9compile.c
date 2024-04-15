@@ -1222,7 +1222,7 @@ compile_one_expr_in_str(char_u *p, cctx_T *cctx)
     }
     if (compile_expr0(&block_start, cctx) == FAIL)
 	return NULL;
-    may_generate_2STRING(-1, TRUE, cctx);
+    may_generate_2STRING(-1, TOSTRING_INTERPOLATE, cctx);
 
     return block_end + 1;
 }
@@ -2421,7 +2421,7 @@ compile_assign_unlet(
 	    return FAIL;
 	}
 	if (dest_type == VAR_DICT
-			      && may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		&& may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	    return FAIL;
 	if (dest_type == VAR_LIST || dest_type == VAR_BLOB)
 	{
@@ -2975,7 +2975,7 @@ compile_assignment(
 
 	    if (*op == '.')
 	    {
-		if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		    goto theend;
 	    }
 	    else

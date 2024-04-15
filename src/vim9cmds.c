@@ -1931,7 +1931,7 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 	return NULL;
     if (cctx->ctx_skip == SKIP_YES)
 	return p;
-    if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+    if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	return NULL;
     if (generate_instr_drop(cctx, ISN_THROW, 1) == NULL)
 	return NULL;
@@ -2359,7 +2359,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	    p += 2;
 	    if (compile_expr0(&p, cctx) == FAIL)
 		return NULL;
-	    may_generate_2STRING(-1, TRUE, cctx);
+	    may_generate_2STRING(-1, TOSTRING_TOLERANT, cctx);
 	    ++count;
 	    p = skipwhite(p);
 	    if (*p != '`')
