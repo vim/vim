@@ -87,7 +87,7 @@ match_add(
     m = ALLOC_CLEAR_ONE(matchitem_T);
     if (m == NULL)
 	return -1;
-    if (pos_list != NULL)
+    if (pos_list != NULL && pos_list->lv_len > 0)
     {
 	m->mit_pos_array = ALLOC_CLEAR_MULT(llpos_T, pos_list->lv_len);
 	if (m->mit_pos_array == NULL)
@@ -1294,7 +1294,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
     }
     l = argvars[1].vval.v_list;
-    if (l == NULL)
+    if (l == NULL || l->lv_len == 0)
 	return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)

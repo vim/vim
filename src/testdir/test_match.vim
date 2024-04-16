@@ -307,6 +307,7 @@ func Test_matchaddpos_error()
   " Why doesn't the following error have an error code E...?
   call assert_fails("call matchaddpos('Error', [{}])", 'E290:')
   call assert_equal(-1, matchaddpos('Error', test_null_list()))
+  call assert_equal(-1, matchaddpos('Error', []))
   call assert_fails("call matchaddpos('Error', [1], [], 1)", 'E745:')
   call assert_equal(-1, matchaddpos('Search', [[]]))
   call assert_fails("call matchaddpos('Search', [[{}]])", 'E728:')
@@ -432,6 +433,5 @@ func Test_match_tab_with_linebreak()
 
   call StopVimInTerminal(buf)
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab
