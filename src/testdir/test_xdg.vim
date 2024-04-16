@@ -105,6 +105,9 @@ func Test_xdg_runtime_files()
 
   call delete(rc2)
 
+  " XDG_CONFIG_HOME is set in Github CI runners
+  unlet $XDG_CONFIG_HOME
+
   " Test for ~/.config/vim/vimrc
   let lines =<< trim END
     let msg = $'HOME="{$HOME}", ~="{expand("~")}"'
