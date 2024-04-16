@@ -1300,12 +1300,18 @@ dict_extend_func(
 
 	action = tv_get_string_chk(&argvars[2]);
 	if (action == NULL)
+	{
+	    if (is_new)
+		dict_unref(d1);
 	    return;
+	}
 	for (i = 0; i < 3; ++i)
 	    if (STRCMP(action, av[i]) == 0)
 		break;
 	if (i == 3)
 	{
+	    if (is_new)
+		dict_unref(d1);
 	    semsg(_(e_invalid_argument_str), action);
 	    return;
 	}
