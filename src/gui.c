@@ -579,6 +579,10 @@ gui_init(void)
 		 && do_source((char_u *)USR_GVIMRC_FILE3, TRUE,
 						     DOSO_GVIMRC, NULL) == FAIL
 #endif
+#ifdef XDG_GVIMRC_FILE
+		 && do_source((char_u *)XDG_GVIMRC_FILE, TRUE,
+						     DOSO_GVIMRC, NULL) == FAIL
+#endif
 				)
 	    {
 #ifdef USR_GVIMRC_FILE4

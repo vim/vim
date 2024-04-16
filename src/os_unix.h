@@ -281,6 +281,12 @@ typedef struct dsc$descriptor   DESC;
 # endif
 #endif
 
+#ifndef XDG_GVIMRC_FILE
+# define XDG_GVIMRC_FILE mch_getenv("XDG_CONFIG_HOME") \
+	? (char_u *)"$XDG_CONFIG_HOME/vim/gvimrc" \
+	: (char_u *)"~/.config/vim/gvimrc"
+#endif
+
 #ifndef VIM_DEFAULTS_FILE
 # define VIM_DEFAULTS_FILE "$VIMRUNTIME/defaults.vim"
 #endif
