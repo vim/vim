@@ -107,7 +107,8 @@ func Test_xdg_runtime_files()
 
   " Test for ~/.config/vim/vimrc
   let lines =<< trim END
-    call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC)
+    let msg = $'HOME="{$HOME}", ~="{expand("~")}"'
+    call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc'}, g:)
     call writefile(v:errors, 'Xresult')
@@ -122,7 +123,8 @@ func Test_xdg_runtime_files()
   " Test for ~/xdg/vim/vimrc
   let $XDG_CONFIG_HOME=expand('~/xdg/')
   let lines =<< trim END
-    call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC)
+    let msg = $'HOME="{$HOME}", XDG_CONFIG_HOME="{$XDG_CONFIG_HOME}"'
+    call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc'}, g:)
     call writefile(v:errors, 'Xresult')
