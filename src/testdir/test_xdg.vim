@@ -137,4 +137,21 @@ func Test_xdg_runtime_files()
   unlet $XDG_CONFIG_HOME
 endfunc
 
+func Test_xdg_version()
+  CheckUnix
+  let $HOME = getcwd() .. '/XfakeHOME'
+  unlet $XDG_CONFIG_HOME
+  let a = execute(':version')->split('\n')
+  let a = filter(a, { _, val -> val =~ '\.config\|XDG_CONFIG_HOME' })
+  call assert_equal(1, len(a))
+  call assert_match('\~/.config/vim/vimrc', a[0])
+
+  let $XDG_CONFIG_HOME = expand('~/.xdg')
+  let a = execute(':version')->split('\n')
+  let a = filter(a, { _, val -> val =~ '\.config\|XDG_CONFIG_HOME' })
+  call assert_equal(1, len(a))
+  call assert_match('XDG_CONFIG_HOME/vim/vimrc', a[0])
+  unlet $XDG_CONFIG_HOME
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
