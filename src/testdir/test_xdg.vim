@@ -77,63 +77,65 @@ func Test_xdg_runtime_files()
   call writefile(file3, rc3)
   call writefile(file4, rc4)
 
-  let rows = 20
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/\.vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_1', {})
-  call StopVimInTerminal(buf)
+  " Get the Vim command to run without the '-u NONE' arugment
+  let vimcmd = substitute(GetVimCommand(), '-u \f\+', '', '')
+
+  " Test for ~/.vimrc
+  let lines =<< trim END
+    call assert_match('XfakeHOME/\.vimrc', $MYVIMRC)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_one: 'one', rc: '.vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc1)
-  bw
 
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/\.vim/vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_2', {})
-  call StopVimInTerminal(buf)
+  " Test for ~/.vim/vimrc
+  let lines =<< trim END
+    call assert_match('XfakeHOME/\.vim/vimrc', $MYVIMRC)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_two: 'two', rc: '.vim/vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc2)
-  bw
 
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/\.config/vim/vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_3', {})
-  call StopVimInTerminal(buf)
+  " Test for ~/.config/vim/vimrc
+  let lines =<< trim END
+    call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc3)
-  bw
 
+  " Test for ~/xdg/vim/vimrc
   let $XDG_CONFIG_HOME=expand('~/xdg/')
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/xdg/vim/vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_4', {})
-  call StopVimInTerminal(buf)
+  let lines =<< trim END
+    call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc4)
-  bw
   unlet $XDG_CONFIG_HOME
 endfunc
 
