@@ -100,7 +100,7 @@ func Test_tagfiles()
 
   help
   let tf = tagfiles()
-  call assert_equal(1, len(tf))
+  call assert_notequal(0, len(tf))
   call assert_equal(fnamemodify(expand('$VIMRUNTIME/doc/tags'), ':p:gs?\\?/?'),
 	\           fnamemodify(tf[0], ':p:gs?\\?/?'))
   helpclose

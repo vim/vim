@@ -2355,9 +2355,13 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(VIMTARGET) $(DEST_RT) \
 	# thus use the executable in the current directory.
 	-@BUILD_DIR="`pwd`"; cd $(HELPSOURCE); if test -z "$(CROSS_COMPILING)"; then \
 		$(MAKE) VIMEXE="$$BUILD_DIR/$(VIMTARGET)" vimtags; fi
+	# TODO: Make a check for the language.
+	# TODO: Copy "uganda.??x" and "tags-??" depending on the language.
 	cd $(HELPSOURCE); \
 		files=`ls *.txt tags`; \
+		if test `find -maxdepth 1 -type f -name '*.??x' ! -name 'uganda.??x' | wc -l` -gt 0 ; then \
 		files="$$files `ls *.??x tags-?? 2>/dev/null || true`"; \
+		fi; \
 		$(INSTALL_DATA) $$files  $(DEST_HELP); \
 		cd $(DEST_HELP); \
 		chmod $(HELPMOD) $$files
