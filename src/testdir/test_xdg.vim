@@ -74,8 +74,8 @@ func Test_xdg_runtime_files()
   call writefile(file3, rc3)
   call writefile(file4, rc4)
 
-  " Get the Vim command to run without the '-u NONE' arugment
-  let vimcmd = substitute(GetVimCommand(), '-u \f\+', '', '')
+  " Get the Vim command to run without the '-u NONE' argument
+  let vimcmd = substitute(GetVimCommand(), '-u NONE', '', '')
 
   " Test for ~/.vimrc
   let lines =<< trim END
@@ -120,7 +120,7 @@ func Test_xdg_runtime_files()
   call delete(rc3)
 
   " Test for ~/xdg/vim/vimrc
-  let env_pfx = $"XDG_CONFIG_HOME={expand('~/xdg/')}"
+  let $XDG_CONFIG_HOME=expand('~/xdg/')
   let lines =<< trim END
     call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
@@ -129,7 +129,7 @@ func Test_xdg_runtime_files()
     quit
   END
   call writefile(lines, 'Xscript', 'D')
-  call system($'{env_pfx} {vimcmd} -S Xscript')
+  call system($'{vimcmd} -S Xscript')
   call assert_equal([], readfile('Xresult'))
 
   call delete(rc4)
