@@ -853,7 +853,10 @@ set_string_default_esc(char *name, char_u *val, int escape)
 
     opt_idx = findoption((char_u *)name);
     if (opt_idx < 0)
+    {
+	vim_free(p);
 	return;
+    }
 
     if (options[opt_idx].flags & P_DEF_ALLOCED)
 	vim_free(options[opt_idx].def_val[VI_DEFAULT]);

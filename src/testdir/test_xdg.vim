@@ -1,12 +1,9 @@
 " Tests for the XDG feature
 
 source check.vim
-CheckFeature terminal
 
 source shared.vim
-source screendump.vim
 source mouse.vim
-source term_util.vim
 
 func s:get_rcs()
   let rcs = {
@@ -77,63 +74,87 @@ func Test_xdg_runtime_files()
   call writefile(file3, rc3)
   call writefile(file4, rc4)
 
-  let rows = 20
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/\.vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_1', {})
-  call StopVimInTerminal(buf)
+  " Get the Vim command to run without the '-u NONE' argument
+  let vimcmd = substitute(GetVimCommand(), '-u NONE', '', '')
+
+  " Test for ~/.vimrc
+  let lines =<< trim END
+    call assert_match('XfakeHOME/\.vimrc', $MYVIMRC)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_one: 'one', rc: '.vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc1)
-  bw
 
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/\.vim/vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_2', {})
-  call StopVimInTerminal(buf)
+  " Test for ~/.vim/vimrc
+  let lines =<< trim END
+    call assert_match('XfakeHOME/\.vim/vimrc', $MYVIMRC)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_two: 'two', rc: '.vim/vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc2)
-  bw
 
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/\.config/vim/vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_3', {})
-  call StopVimInTerminal(buf)
+  " XDG_CONFIG_HOME is set in Github CI runners
+  unlet $XDG_CONFIG_HOME
+
+  " Test for ~/.config/vim/vimrc
+  let lines =<< trim END
+    let msg = $'HOME="{$HOME}", ~="{expand("~")}"'
+    call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC, msg)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc3)
-  bw
 
+  " Test for ~/xdg/vim/vimrc
   let $XDG_CONFIG_HOME=expand('~/xdg/')
-  let buf = RunVimInTerminal('', #{rows: rows, no_clean: 1})
-  call TermWait(buf)
-  call term_sendkeys(buf, ":redraw!\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":echo \$MYVIMRC[-30:]\<cr>")
-  call WaitForAssert({-> assert_match('XfakeHOME/xdg/vim/vimrc', term_getline(buf, rows))})
-  call term_sendkeys(buf, ":call filter(g:, {idx, _ -> idx =~ '^rc'})\<cr>")
-  call TermWait(buf)
-  call term_sendkeys(buf, ":let g:\<cr>")
-  call VerifyScreenDump(buf, 'Test_xdg_4', {})
-  call StopVimInTerminal(buf)
+  let lines =<< trim END
+    let msg = $'HOME="{$HOME}", XDG_CONFIG_HOME="{$XDG_CONFIG_HOME}"'
+    call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC, msg)
+    call filter(g:, {idx, _ -> idx =~ '^rc'})
+    call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc'}, g:)
+    call writefile(v:errors, 'Xresult')
+    quit
+  END
+  call writefile(lines, 'Xscript', 'D')
+  call system($'{vimcmd} -S Xscript')
+  call assert_equal([], readfile('Xresult'))
+
   call delete(rc4)
-  bw
+  unlet $XDG_CONFIG_HOME
+endfunc
+
+func Test_xdg_version()
+  CheckUnix
+  let $HOME = getcwd() .. '/XfakeHOME'
+  unlet $XDG_CONFIG_HOME
+  let a = execute(':version')->split('\n')
+  let a = filter(a, { _, val -> val =~ '\.config\|XDG_CONFIG_HOME' })
+  call assert_equal(1, len(a))
+  call assert_match('\~/.config/vim/vimrc', a[0])
+
+  let $XDG_CONFIG_HOME = expand('~/.xdg')
+  let a = execute(':version')->split('\n')
+  let a = filter(a, { _, val -> val =~ '\.config\|XDG_CONFIG_HOME' })
+  call assert_equal(1, len(a))
+  call assert_match('XDG_CONFIG_HOME/vim/vimrc', a[0])
   unlet $XDG_CONFIG_HOME
 endfunc
 
