@@ -99,8 +99,11 @@ func Test_tagfiles()
   call assert_equal(['Xtags1', 'Xtags2'], tagfiles())
 
   help
-  let tf = tagfiles()
-  call assert_equal(1, len(tf))
+  let hplang = &helplang
+  set helplang=en  " May other 'tags-xx' (e.g 'tags-ru') exist
+  let tf = tagfiles()->filter("v:val =~ 'tags\\%(-' .. &helplang .. '\\)\\?$'")
+  call assert_equal((&helplang != '' && &helplang != 'en') ? 2 : 1, len(tf))
+  let &helplang = hplang | unlet hplang
   call assert_equal(fnamemodify(expand('$VIMRUNTIME/doc/tags'), ':p:gs?\\?/?'),
 	\           fnamemodify(tf[0], ':p:gs?\\?/?'))
   helpclose
