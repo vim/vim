@@ -1,12 +1,9 @@
 " Tests for the XDG feature
 
 source check.vim
-CheckFeature terminal
 
 source shared.vim
-source screendump.vim
 source mouse.vim
-source term_util.vim
 
 func s:get_rcs()
   let rcs = {
@@ -123,7 +120,7 @@ func Test_xdg_runtime_files()
   call delete(rc3)
 
   " Test for ~/xdg/vim/vimrc
-  let $XDG_CONFIG_HOME=expand('~/xdg/')
+  let env_pfx = $"XDG_CONFIG_HOME={expand('~/xdg/')}"
   let lines =<< trim END
     call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
@@ -132,7 +129,7 @@ func Test_xdg_runtime_files()
     quit
   END
   call writefile(lines, 'Xscript', 'D')
-  call system($'{vimcmd} -S Xscript')
+  call system($'{env_pfx} {vimcmd} -S Xscript')
   call assert_equal([], readfile('Xresult'))
 
   call delete(rc4)
