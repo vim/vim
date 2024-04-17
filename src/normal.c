@@ -1708,6 +1708,7 @@ add_to_showcmd(int c)
     int		extra_len;
     int		overflow;
     int		i;
+    char_u	mbyte_buf[MB_MAXBYTES];
     static int	ignore[] =
     {
 #ifdef FEAT_GUI
@@ -1739,9 +1740,17 @@ add_to_showcmd(int c)
 	    if (ignore[i] == c)
 		return FALSE;
 
-    p = transchar(c);
-    if (*p == ' ')
-	STRCPY(p, "<20>");
+    if (c <= 0x7f || !vim_isprintc(c))
+    {
+	p = transchar(c);
+	if (*p == ' ')
+	    STRCPY(p, "<20>");
+    }
+    else
+    {
+	mbyte_buf[(*mb_char2bytes)(c, mbyte_buf)] = NUL;
+	p = mbyte_buf;
+    }
     old_len = (int)STRLEN(showcmd_buf);
     extra_len = (int)STRLEN(p);
     overflow = old_len + extra_len - SHOWCMD_COLS;
@@ -1810,7 +1819,7 @@ pop_showcmd(void)
     static void
 display_showcmd(void)
 {
-    int	    len = (int)STRLEN(showcmd_buf);
+    int	    len = vim_strsize(showcmd_buf);
 
     showcmd_is_clear = (len == 0);
     cursor_off();
