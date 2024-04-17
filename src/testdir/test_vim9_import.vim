@@ -1140,6 +1140,31 @@ def Test_autoload_import_relative()
   v9.CheckScriptFailure(lines, 'E484:')
 enddef
 
+def Test_autoload_import_relative_compiled()
+  # autoload relative, access from compiled function. #14565
+  var lines =<< trim END
+    vim9script
+
+    export def F1(): string
+        return 'InFile.vim'
+    enddef
+  END
+  writefile(lines, 'xfile.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './xfile.vim'
+
+    def F(): string
+      return xfile.F1()
+    enddef
+    assert_equal('InFile.vim', F())
+  END
+  new
+  setline(1, lines)
+  :source
+enddef
+
 def Test_autoload_import_relative_autoload_dir()
   mkdir('autoload', 'pR')
   var lines =<< trim END
