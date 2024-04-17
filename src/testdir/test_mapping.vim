@@ -1807,6 +1807,48 @@ func Test_map_after_timed_out_nop()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test 'showcmd' behavior with a partial mapping
+func Test_showcmd_part_map()
+  CheckRunVimInTerminal
+
+  let lines =<< trim eval END
+    set notimeout showcmd
+    nnoremap ,a <Ignore>
+    nnoremap ;a <Ignore>
+    nnoremap Àa <Ignore>
+    nnoremap Ëa <Ignore>
+    nnoremap βa <Ignore>
+    nnoremap ωa <Ignore>
+    nnoremap …a <Ignore>
+    nnoremap <C-W>a <Ignore>
+  END
+  call writefile(lines, 'Xtest_showcmd_part_map', 'D')
+  let buf = RunVimInTerminal('-S Xtest_showcmd_part_map', #{rows: 6})
+
+  call term_sendkeys(buf, ":set noruler | echo\<CR>")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 6))})
+
+  for c in [',', ';', 'À', 'Ë', 'β', 'ω', '…']
+    call term_sendkeys(buf, c)
+    call WaitForAssert({-> assert_equal(c, trim(term_getline(buf, 6)))})
+    call term_sendkeys(buf, "\<C-C>:echo\<CR>")
+    call WaitForAssert({-> assert_equal('', term_getline(buf, 6))})
+  endfor
+
+  call term_sendkeys(buf, "\<C-W>")
+  call WaitForAssert({-> assert_equal('^W', trim(term_getline(buf, 6)))})
+  call term_sendkeys(buf, "\<C-C>:echo\<CR>")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 6))})
+
+  " Use feedkeys() as terminal buffer cannot forward this
+  call term_sendkeys(buf, ':call feedkeys("\<*C-W>", "m")' .. " | echo\<CR>")
+  call WaitForAssert({-> assert_equal('^W', trim(term_getline(buf, 6)))})
+  call term_sendkeys(buf, "\<C-C>:echo\<CR>")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 6))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_using_past_typeahead()
   nnoremap :00 0
   exe "norm :set \x80\xfb0=0\<CR>"
