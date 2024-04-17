@@ -5547,7 +5547,7 @@ string_convert_ext(
  * Return 0 if not.
  */
     int
-get_cellwidth(int c)
+get_cellwidth(int c UNUSED)
 {
 #ifdef FEAT_EVAL
     return cw_value(c);
