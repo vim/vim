@@ -140,7 +140,6 @@ static int dbcs_head_off(char_u *base, char_u *p);
 #ifdef FEAT_EVAL
 static int cw_value(int c);
 #endif
-int get_cellwidth(int c);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
