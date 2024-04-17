@@ -1298,9 +1298,9 @@ export def FTvba()
   endif
 enddef
 
-export def Detect_UCI_statements()
-  " Match a config or package statement at the start of the line.
-  let pattern = '^\s*\(\(c\|config\)\|\(p\|package\)\)\s\+\S'
+export def Detect_UCI_statements(): bool
+  # Match a config or package statement at the start of the line.
+  const pattern = '^\s*\(\(c\|config\)\|\(p\|package\)\)\s\+\S'
   return getline(1) =~# pattern || getline(2) =~# pattern || getline(3) =~# pattern
 enddef
 
