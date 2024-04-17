@@ -279,6 +279,12 @@ typedef struct dsc$descriptor   DESC;
 # ifndef USR_GVIMRC_FILE3
 #  define USR_GVIMRC_FILE3  "sys$login:_gvimrc"
 # endif
+#else
+# ifndef USR_GVIMRC_FILE3
+#  define USR_GVIMRC_FILE3 (mch_getenv("XDG_CONFIG_HOME") \
+	? "$XDG_CONFIG_HOME/vim/gvimrc" \
+	: "~/.config/vim/gvimrc")
+# endif
 #endif
 
 #ifndef VIM_DEFAULTS_FILE
