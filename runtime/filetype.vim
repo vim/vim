@@ -3030,6 +3030,12 @@ au BufNewFile,BufRead {.,}tmux*.conf*		setf tmux
 " Universal Scene Description
 au BufNewFile,BufRead *.usda,*.usd		setf usd
 
+" UCI
+" UCI files are normally in /etc/config, but that might be mounted over sshfs or similar, so we match more loosely.
+" There was some concern[1] that this pattern would match too much, so now we check the file content as well.
+" [1]: https://github.com/vim/vim/pull/14385#discussion_r1558878741
+au BufNewFile,BufRead */etc/config/*		if dist#ft#Detect_UCI_statements() | call s:StarSetf('uci') | endif
+
 " VHDL
 au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
