@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 09
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3764,12 +3764,15 @@ Some folding is now supported with syntax/vim.vim: >
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
    g:vimsyn_folding =~ 'a' : augroups
    g:vimsyn_folding =~ 'f' : fold functions
+   g:vimsyn_folding =~ 'h' : fold heredocs
+   g:vimsyn_folding =~ 'H' : fold Vim9-script legacy headers
    g:vimsyn_folding =~ 'l' : fold lua      script
    g:vimsyn_folding =~ 'm' : fold mzscheme script
    g:vimsyn_folding =~ 'p' : fold perl     script
    g:vimsyn_folding =~ 'P' : fold python   script
    g:vimsyn_folding =~ 'r' : fold ruby     script
    g:vimsyn_folding =~ 't' : fold tcl      script
+let g:vimsyn_folding = 'acfhlmpPrt'
 <
 							*g:vimsyn_noerror*
 Not all error highlighting that syntax/vim.vim does may be correct; Vim script

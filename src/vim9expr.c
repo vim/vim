@@ -142,7 +142,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    typep->type_curr = &t_any;
 	    typep->type_decl = &t_any;
 	}
-	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL
+	if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL
 		|| generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
 	if (keeping_dict != NULL)
@@ -545,6 +545,9 @@ compile_load_scriptvar(
 	type_T	*type;
 	int	done = FALSE;
 	int	res = OK;
+
+	check_script_symlink(import->imp_sid);
+	import_check_sourced_sid(&import->imp_sid);
 
 	// Need to lookup the member.
 	if (*p != '.')
@@ -1598,7 +1601,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    }
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
-	    else if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+	    else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		return FAIL;
 	    *arg = skipwhite(*arg);
 	    if (**arg != ']')
@@ -3014,8 +3017,8 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ppconst->pp_is_const = FALSE;
 	    if (*op == '.')
 	    {
-		if (may_generate_2STRING(-2, FALSE, cctx) == FAIL
-			|| may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		if (may_generate_2STRING(-2, TOSTRING_NONE, cctx) == FAIL
+			|| may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		    return FAIL;
 		if (generate_CONCAT(cctx, 2) == FAIL)
 		    return FAIL;

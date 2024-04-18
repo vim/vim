@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2023 Apr 29
+*gui.txt*       For Vim version 9.1.  Last change: 2024 Apr 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -70,6 +70,8 @@ When the GUI starts up initializations are carried out, in this order:
   - For Win32, $HOME is set by Vim if needed, see |$HOME-windows|.
   - When a "_gvimrc" file is not found, ".gvimrc" is tried too.  And vice
     versa.
+  - On Unix, if "~/.config/vim/gvimrc" or "$XDG_CONFIG_HOME/vim/gvimrc"
+    exists, it is sourced.  You can check this with ":version".
   The name of the first file found is stored in $MYGVIMRC, unless it was
   already set.
 - If the 'exrc' option is set (which is NOT the default) the file ./.gvimrc

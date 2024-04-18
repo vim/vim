@@ -425,8 +425,8 @@ au BufNewFile,BufRead .clang-format		setf yaml
 " Clang-tidy
 au BufNewFile,BufRead .clang-tidy		setf yaml
 
-" Matplotlib style
-au BufNewFile,BufRead *.mplstyle		setf yaml
+" Matplotlib
+au BufNewFile,BufRead *.mplstyle,matplotlibrc	setf yaml
 
 " Clean
 au BufNewFile,BufRead *.dcl,*.icl		setf clean
@@ -448,6 +448,9 @@ au BufNewFile,BufRead *.clj,*.cljs,*.cljx,*.cljc		setf clojure
 
 " Cmake
 au BufNewFile,BufRead CMakeLists.txt,*.cmake,*.cmake.in		setf cmake
+
+" CmakeCache
+autocmd BufRead,BufNewFile CMakeCache.txt			setf cmakecache
 
 " Cmusrc
 au BufNewFile,BufRead */.cmus/{autosave,rc,command-history,*.theme} setf cmusrc
@@ -546,9 +549,18 @@ au BufNewFile,BufRead m3makefile,m3overrides	setf m3build
 " XDG mimeapps.list
 au BufNewFile,BufRead mimeapps.list	setf dosini
 
-" Many Python tools use dosini as their config, like pip, setuptools, pudb, coverage
+" Many tools written in Python use dosini as their config
+" like setuptools, pudb, coverage, pypi, gitlint, oelint-adv, pylint, bpython, mypy
 " (must be before *.cfg)
-au BufNewFile,BufRead pip.conf,setup.cfg,pudb.cfg,.coveragerc	setf dosini
+au BufNewFile,BufRead pip.conf,setup.cfg,pudb.cfg,.coveragerc,.pypirc,.gitlint,.oelint.cfg	setf dosini
+au BufNewFile,BufRead {.,}pylintrc,*/bpython/config,*/mypy/config			setf dosini
+
+" Many tools written in Python use toml as their config, like black
+au BufNewFile,BufRead .black	setf toml
+au BufNewFile,BufRead black
+	\  if getline(1) =~ 'tool.back'
+	\|   setf toml
+	\| endif
 
 " LXQt's programs use dosini as their config
 au BufNewFile,BufRead */{lxqt,screengrab}/*.conf	setf dosini
@@ -564,6 +576,9 @@ au BufNewFile,BufRead *.qc			setf c
 " ~/.texlive/texmf-config/tex/latex/hyperref/hyperref.cfg
 " ~/.texlive/texmf-config/tex/latex/docstrip/docstrip.cfg
 au BufNewFile,BufRead */tex/latex/**.cfg		setf tex
+
+" Wakatime config
+au BufNewFile,BufRead .wakatime.cfg		setf dosini
 
 " Configure files
 au BufNewFile,BufRead *.cfg\c			call dist#ft#FTcfg()
@@ -777,6 +792,9 @@ au BufNewFile,BufRead *.fir			setf firrtl
 " Fish shell
 au BufNewFile,BufRead *.fish			setf fish
 
+" Flatpak config
+au BufNewFile,BufRead */flatpak/repo/config	setf dosini
+
 " FlexWiki - disabled, because it has side effects when a .wiki file
 " is not actually FlexWiki
 "au BufNewFile,BufRead *.wiki			setf flexwiki
@@ -960,11 +978,7 @@ au BufNewFile,BufRead *.hs,*.hsc,*.hs-boot,*.hsig setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
 au BufNewFile,BufRead cabal.project		setf cabalproject
-au BufNewFile,BufRead $HOME/.cabal/config	setf cabalconfig
-if exists('$XDG_CONFIG_HOME')
-  au BufNewFile,BufRead $XDG_CONFIG_HOME/cabal/config setf cabalconfig
-endif
-au BufNewFile,BufRead $HOME/.config/cabal/config setf cabalconfig
+au BufNewFile,BufRead */{.,}cabal/config	setf cabalconfig
 au BufNewFile,BufRead cabal.config		setf cabalconfig
 au BufNewFile,BufRead *.persistentmodels	setf haskellpersistent
 
@@ -1001,6 +1015,9 @@ au BufRead,BufNewFile *.hoon			setf hoon
 
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
+
+" Translate shell
+au BufNewFile,BufRead init.trans,*/etc/translate-shell,.trans	setf clojure
 
 " HTML (.shtml and .stm for server side)
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
@@ -1154,7 +1171,7 @@ au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
 " JSONC (JSON with comments)
 au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc	setf jsonc
-au BufNewFile,BufRead .jshintrc,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
+au BufNewFile,BufRead .jshintrc,.jscsrc,.vsconfig,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
 
 " JSON
 au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
@@ -1378,6 +1395,9 @@ au BufNewFile,BufRead *.nb			setf mma
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
 
+" mbsync
+au BufNewFile,BufRead .mbsyncrc			setf conf
+
 " Mercurial (hg) commit file
 au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 
@@ -1409,6 +1429,9 @@ au BufNewFile,BufRead *.mix,*.mixal		setf mix
 
 " MMIX or VMS makefile
 au BufNewFile,BufRead *.mms			call dist#ft#FTmms()
+
+" msmtp
+au BufNewFile,BufRead .msmtprc			setf msmtp
 
 " Symbian meta-makefile definition (MMP)
 au BufNewFile,BufRead *.mmp			setf mmp
@@ -1499,6 +1522,9 @@ au BufNewFile,BufRead Neomuttrc			setf neomuttrc
 " Netrc
 au BufNewFile,BufRead .netrc			setf netrc
 
+" Neofetch
+au BufNewFile,BufRead */neofetch/config.conf	setf sh
+
 " Nginx
 au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/etc/nginx/*,*/usr/local/nginx/conf/*,*/nginx/*.conf			setf nginx
 
@@ -1533,6 +1559,9 @@ au BufNewFile,BufRead *.mm			call dist#ft#FTmm()
 
 " Not Quite C
 au BufNewFile,BufRead *.nqc			setf nqc
+
+" notmuch
+au BufNewFile,BufRead .notmuch-config		setf dosini
 
 " NSE - Nmap Script Engine - uses Lua syntax
 au BufNewFile,BufRead *.nse			setf lua
@@ -1589,15 +1618,19 @@ au BufNewFile,BufRead *.org,*.org_archive		setf org
 au BufNewFile,BufRead pf.conf				setf pf
 
 " ini style config files, using # comments
-au BufNewFile,BufRead */etc/pacman.conf,mpv.conf	setf confini
+au BufNewFile,BufRead pacman.conf,mpv.conf		setf confini
 au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
 au BufNewFile,BufRead *.nmconnection			setf confini
+au BufNewFile,BufRead paru.conf				setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
 	\ if getline(1) == '[Trigger]' |
 	\   setf confini |
 	\ endif
+
+" Pacman makepkg
+au BufNewFile,BufRead {.,}makepkg.conf			setf sh
 
 " Pacman log
 au BufNewFile,BufRead pacman.log			setf pacmanlog
@@ -1654,6 +1687,9 @@ else
 endif
 au BufNewFile,BufRead *.plx,*.al,*.psgi			setf perl
 
+" Perl Reply
+au BufNewFile,BufRead .replyrc				setf dosini
+
 " Perl, XPM or XPM2
 au BufNewFile,BufRead *.pm
 	\ if getline(1) =~ "XPM2" |
@@ -1693,6 +1729,11 @@ au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
 " Pip requirements
 au BufNewFile,BufRead *.pip			setf requirements
 au BufNewFile,BufRead requirements.txt		setf requirements
+au BufNewFile,BufRead *-requirements.txt	setf requirements
+au BufNewFile,BufRead constraints.txt		setf requirements
+au BufNewFile,BufRead requirements.in		setf requirements
+au BufNewFile,BufRead requirements/*.txt	setf requirements
+au BufNewFile,BufRead requires/*.txt		setf requirements
 
 " Pipenv Pipfiles
 au BufNewFile,BufRead Pipfile			setf toml
@@ -2622,11 +2663,17 @@ au BufNewFile,BufRead *.web
 " Windows Scripting Host and Windows Script Component
 au BufNewFile,BufRead *.ws[fc]			setf wsh
 
+" Xdg-user-dirs
+au BufNewFile,BufRead user-dirs.dirs,user-dirs.defaults		setf sh
+
 " XHTML
 au BufNewFile,BufRead *.xhtml,*.xht		setf xhtml
 
 " X11vnc
 au BufNewFile,BufRead .x11vncrc			setf conf
+
+" Xprofile
+au BufNewFile,BufRead .xprofile			setf sh
 
 " X Pixmap (dynamically sets colors, this used to trigger on BufEnter to make
 " it work better, but that breaks setting 'filetype' manually)
@@ -2925,6 +2972,9 @@ au BufNewFile,BufRead mutt{ng,}rc*,Mutt{ng,}rc*		call s:StarSetf('muttrc')
 au BufNewFile,BufRead .neomuttrc*,*/.neomutt/neomuttrc*	call s:StarSetf('neomuttrc')
 au BufNewFile,BufRead neomuttrc*,Neomuttrc*		call s:StarSetf('neomuttrc')
 
+" Nfs
+au BufNewFile,BufRead nfs.conf,nfsmount.conf		setf dosini
+
 " Nroff macros
 au BufNewFile,BufRead tmac.*			call s:StarSetf('nroff')
 
@@ -3080,3 +3130,5 @@ endfunc
 " Restore 'cpoptions'
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+" vim: ts=8

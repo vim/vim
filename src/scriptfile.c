@@ -405,6 +405,43 @@ get_new_scriptitem_for_fname(int *error, char_u *fname)
     return sid;
 }
 
+/*
+ * If the script for "sid" is a symlink and "sn_source_sid" is not set
+ * then initialize it. A new script_item is created if needed.
+ */
+    void
+check_script_symlink(int sid)
+{
+    scriptitem_T *si = SCRIPT_ITEM(sid);
+    if (si->sn_syml_checked || si->sn_sourced_sid > 0)
+	return;
+    si->sn_syml_checked = TRUE;
+
+    // If fname is a symbolic link, create an script_item for the real file.
+
+    char_u *real_fname = fix_fname(si->sn_name);
+    if (real_fname != NULL && STRCMP(real_fname, si->sn_name) != 0)
+    {
+	int real_sid = find_script_by_name(real_fname);
+	int error2 = OK;
+	int new_sid = FALSE;
+	if (real_sid < 0)
+	{
+	    real_sid = get_new_scriptitem_for_fname(&error2, real_fname);
+	    new_sid = TRUE;
+	}
+	if (error2 == OK)
+	{
+	    si = SCRIPT_ITEM(sid);
+	    si->sn_sourced_sid = real_sid;
+	    if (new_sid)
+		SCRIPT_ITEM(real_sid)->sn_import_autoload
+						    = si->sn_import_autoload;
+	}
+    }
+    vim_free(real_fname);
+}
+
     static void
 find_script_callback(char_u *fname, void *cookie)
 {

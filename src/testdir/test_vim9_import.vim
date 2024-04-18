@@ -1140,6 +1140,31 @@ def Test_autoload_import_relative()
   v9.CheckScriptFailure(lines, 'E484:')
 enddef
 
+def Test_autoload_import_relative_compiled()
+  # autoload relative, access from compiled function. #14565
+  var lines =<< trim END
+    vim9script
+
+    export def F1(): string
+        return 'InFile.vim'
+    enddef
+  END
+  writefile(lines, 'xfile.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './xfile.vim'
+
+    def F(): string
+      return xfile.F1()
+    enddef
+    assert_equal('InFile.vim', F())
+  END
+  new
+  setline(1, lines)
+  :source
+enddef
+
 def Test_autoload_import_relative_autoload_dir()
   mkdir('autoload', 'pR')
   var lines =<< trim END
@@ -2930,6 +2955,33 @@ def Test_vim9_import_symlink()
     unlet g:resultValue
     &rtp = save_rtp
     delete('Xfrom', 'rf')
+
+    # Access item from :def imported through symbolic linked directory. #14536
+    mkdir('Xto/real_dir', 'pR')
+    lines =<< trim END
+        vim9script
+        export const val = 17
+        export def F(): number
+          return 23
+        enddef
+    END
+    writefile(lines, 'Xto/real_dir/real_file.vim')
+    system('ln -s real_dir Xto/syml_dir')
+    defer delete('Xto/syml_dir')
+    lines =<< trim END
+      vim9script
+      import autoload './Xto/syml_dir/real_file.vim'
+
+      def Fmain()
+        assert_equal(17, real_file.val)
+      enddef
+      def F2()
+        assert_equal(23, real_file.F())
+      enddef
+      Fmain()
+      F2()
+    END
+    v9.CheckScriptSuccess(lines)
   endif
 enddef
 

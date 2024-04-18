@@ -418,7 +418,127 @@ type_any_or_unknown(type_T *type)
 }
 
 /*
- * Get a type_T for a partial typval in "tv".
+ * Get a type_T for a "special" typval in "tv".
+ */
+    static type_T *
+special_typval2type(typval_T *tv)
+{
+    switch (tv->vval.v_number)
+    {
+	case VVAL_NULL:
+	    return &t_null;
+
+	case VVAL_NONE:
+	    return &t_none;
+
+	case VVAL_TRUE:
+	case VVAL_FALSE:
+	    return &t_bool;
+
+	default:
+	    return &t_unknown;
+    }
+}
+
+/*
+ * Get a type_T for a List typval in "tv".
+ * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
+ * "any".
+ * When "flags" has TVTT_MORE_SPECIFIC get the more specific member type if it
+ * is "any".
+ */
+    static type_T *
+list_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
+{
+    list_T	*l = tv->vval.v_list;
+    listitem_T	*li;
+    type_T	*member_type = NULL;
+
+    // An empty list has type list<unknown>, unless the type was specified
+    // and is not list<any>.  This matters when assigning to a variable
+    // with a specific list type.
+    if (l == NULL || (l->lv_first == NULL
+		&& (l->lv_type == NULL || l->lv_type->tt_member == &t_any)))
+	return &t_list_empty;
+
+    if ((flags & TVTT_DO_MEMBER) == 0)
+	return &t_list_any;
+
+    // If the type is list<any> go through the members, it may end up a
+    // more specific type.
+    if (l->lv_type != NULL && (l->lv_first == NULL
+		|| (flags & TVTT_MORE_SPECIFIC) == 0
+		|| l->lv_type->tt_member != &t_any))
+	// make a copy, lv_type may be freed if the list is freed
+	return copy_type_deep(l->lv_type, type_gap);
+
+    if (l->lv_first == &range_list_item)
+	return &t_list_number;
+
+    if (l->lv_copyID == copyID)
+	// avoid recursion
+	return &t_list_any;
+
+    l->lv_copyID = copyID;
+
+    // Use the common type of all members.
+    member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap,
+							TVTT_DO_MEMBER);
+    for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
+	common_type(typval2type(&li->li_tv, copyID, type_gap, TVTT_DO_MEMBER),
+					member_type, &member_type, type_gap);
+
+    return get_list_type(member_type, type_gap);
+}
+
+/*
+ * Get a type_T for a Dict typval in "tv".
+ * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
+ * "any".
+ * When "flags" has TVTT_MORE_SPECIFIC get the more specific member type if it
+ * is "any".
+ */
+    static type_T *
+dict_typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
+{
+    dict_iterator_T	iter;
+    typval_T		*value;
+    dict_T		*d = tv->vval.v_dict;
+    type_T		*member_type = NULL;
+
+    if (d == NULL || (d->dv_hashtab.ht_used == 0 && d->dv_type == NULL))
+	return &t_dict_empty;
+
+    if ((flags & TVTT_DO_MEMBER) == 0)
+	return &t_dict_any;
+
+    // If the type is dict<any> go through the members, it may end up a
+    // more specific type.
+    if (d->dv_type != NULL && (d->dv_hashtab.ht_used == 0
+		|| (flags & TVTT_MORE_SPECIFIC) == 0
+		|| d->dv_type->tt_member != &t_any))
+	return d->dv_type;
+
+    if (d->dv_copyID == copyID)
+	// avoid recursion
+	return &t_dict_any;
+
+    d->dv_copyID = copyID;
+
+    // Use the common type of all values.
+    dict_iterate_start(tv, &iter);
+    dict_iterate_next(&iter, &value);
+    member_type = typval2type(value, copyID, type_gap, TVTT_DO_MEMBER);
+
+    while (dict_iterate_next(&iter, &value) != NULL)
+	common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
+					member_type, &member_type, type_gap);
+
+    return get_dict_type(member_type, type_gap);
+}
+
+/*
+ * Get a type_T for a "partial" typval in "tv".
  */
     static type_T *
 partial_typval2type(typval_T *tv, ufunc_T *ufunc, garray_T *type_gap)
@@ -448,6 +568,102 @@ partial_typval2type(typval_T *tv, ufunc_T *ufunc, garray_T *type_gap)
 }
 
 /*
+ * Get a type_T for a "class" or an "object" typval in "tv".
+ */
+    static type_T *
+oc_typval2type(typval_T *tv)
+{
+    if (tv->v_type == VAR_CLASS)
+    {
+	if (tv->vval.v_class == NULL)
+	    return &t_class;
+
+	return &tv->vval.v_class->class_type;
+    }
+
+    if (tv->vval.v_object != NULL)
+	return &tv->vval.v_object->obj_class->class_object_type;
+
+    return &t_object;
+}
+
+/*
+ * Get a type_T for a "function" or a "partial"
+ */
+    static type_T *
+fp_typval2type(typval_T *tv, garray_T *type_gap)
+{
+    char_u	*name = NULL;
+    ufunc_T	*ufunc = NULL;
+    type_T	*type;
+    type_T	*member_type = NULL;
+    int		argcount = 0;
+    int		min_argcount = 0;
+
+    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
+    {
+	if (tv->vval.v_partial->pt_func != NULL)
+	    ufunc = tv->vval.v_partial->pt_func;
+	else
+	    name = tv->vval.v_partial->pt_name;
+    }
+    else
+	name = tv->vval.v_string;
+
+    if (name == NULL && ufunc == NULL)
+	return &t_func_unknown;
+
+    if (name != NULL)
+    {
+	int idx = find_internal_func(name);
+
+	if (idx >= 0)
+	{
+	    type_T *decl_type;  // unused
+
+	    internal_func_get_argcount(idx, &argcount, &min_argcount);
+	    member_type = internal_func_ret_type(idx, 0, NULL, &decl_type,
+		    type_gap);
+	}
+	else
+	    ufunc = find_func(name, FALSE);
+    }
+    if (ufunc != NULL)
+    {
+	// May need to get the argument types from default values by
+	// compiling the function.
+	if (ufunc->uf_def_status == UF_TO_BE_COMPILED
+		&& compile_def_function(ufunc, TRUE, CT_NONE, NULL)
+		== FAIL)
+	    return NULL;
+	if (ufunc->uf_func_type == NULL)
+	    set_function_type(ufunc);
+	if (ufunc->uf_func_type != NULL)
+	{
+	    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
+		return partial_typval2type(tv, ufunc, type_gap);
+	    return ufunc->uf_func_type;
+	}
+    }
+
+    type = get_type_ptr(type_gap);
+    if (type == NULL)
+	return NULL;
+    type->tt_type = tv->v_type;
+    type->tt_argcount = argcount;
+    type->tt_min_argcount = min_argcount;
+    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
+					&& tv->vval.v_partial->pt_argc > 0)
+    {
+	type->tt_argcount -= tv->vval.v_partial->pt_argc;
+	type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
+    }
+    type->tt_member = member_type;
+
+    return type;
+}
+
+/*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
  * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
@@ -458,175 +674,66 @@ partial_typval2type(typval_T *tv, ufunc_T *ufunc, garray_T *type_gap)
     static type_T *
 typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
-    type_T  *type;
-    type_T  *member_type = NULL;
-    class_T *class_type = NULL;
-    int	    argcount = 0;
-    int	    min_argcount = 0;
-
-    if (tv->v_type == VAR_NUMBER)
-	return &t_number;
-    if (tv->v_type == VAR_BOOL)
-	return &t_bool;
-    if (tv->v_type == VAR_SPECIAL)
+    switch (tv->v_type)
     {
-	if (tv->vval.v_number == VVAL_NULL)
-	    return &t_null;
-	if (tv->vval.v_number == VVAL_NONE)
-	    return &t_none;
-	if (tv->vval.v_number == VVAL_TRUE
-		|| tv->vval.v_number == VVAL_FALSE)
+	case VAR_UNKNOWN:
+	    return &t_unknown;
+
+	case VAR_ANY:
+	    return &t_any;
+
+	case VAR_VOID:
+	    return &t_void;
+
+	case VAR_BOOL:
 	    return &t_bool;
-	return &t_unknown;
-    }
-    if (tv->v_type == VAR_STRING)
-	return &t_string;
-    if (tv->v_type == VAR_BLOB)
-    {
-	if (tv->vval.v_blob == NULL)
-	    return &t_blob_null;
-	return &t_blob;
-    }
 
-    if (tv->v_type == VAR_LIST)
-    {
-	list_T	    *l = tv->vval.v_list;
-	listitem_T  *li;
+	case VAR_SPECIAL:
+	    return special_typval2type(tv);
 
-	// An empty list has type list<unknown>, unless the type was specified
-	// and is not list<any>.  This matters when assigning to a variable
-	// with a specific list type.
-	if (l == NULL || (l->lv_first == NULL
-		   && (l->lv_type == NULL || l->lv_type->tt_member == &t_any)))
-	    return &t_list_empty;
-	if ((flags & TVTT_DO_MEMBER) == 0)
-	    return &t_list_any;
-	// If the type is list<any> go through the members, it may end up a
-	// more specific type.
-	if (l->lv_type != NULL && (l->lv_first == NULL
-					   || (flags & TVTT_MORE_SPECIFIC) == 0
-					   || l->lv_type->tt_member != &t_any))
-	    // make a copy, lv_type may be freed if the list is freed
-	    return copy_type_deep(l->lv_type, type_gap);
-	if (l->lv_first == &range_list_item)
-	    return &t_list_number;
-	if (l->lv_copyID == copyID)
-	    // avoid recursion
-	    return &t_list_any;
-	l->lv_copyID = copyID;
+	case VAR_NUMBER:
+	    return &t_number;
 
-	// Use the common type of all members.
-	member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap,
-							       TVTT_DO_MEMBER);
-	for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
-	    common_type(typval2type(&li->li_tv, copyID, type_gap,
-							       TVTT_DO_MEMBER),
-					  member_type, &member_type, type_gap);
-	return get_list_type(member_type, type_gap);
+	case VAR_FLOAT:
+	    return &t_float;
+
+	case VAR_STRING:
+	    return &t_string;
+
+	case VAR_BLOB:
+	    if (tv->vval.v_blob == NULL)
+		return &t_blob_null;
+	    return &t_blob;
+
+	case VAR_LIST:
+	    return list_typval2type(tv, copyID, type_gap, flags);
+
+	case VAR_DICT:
+	    return dict_typval2type(tv, copyID, type_gap, flags);
+
+	case VAR_JOB:
+	    return &t_job;
+
+	case VAR_CHANNEL:
+	    return &t_channel;
+
+	case VAR_CLASS:
+	case VAR_OBJECT:
+	    return oc_typval2type(tv);
+
+	case VAR_TYPEALIAS:
+	    return &t_typealias;
+
+	case VAR_FUNC:
+	case VAR_PARTIAL:
+	    return fp_typval2type(tv, type_gap);
+
+	case VAR_INSTR:
+	default:
+	    break;
     }
 
-    if (tv->v_type == VAR_DICT)
-    {
-	dict_iterator_T iter;
-	typval_T	*value;
-	dict_T		*d = tv->vval.v_dict;
-
-	if (d == NULL || (d->dv_hashtab.ht_used == 0 && d->dv_type == NULL))
-	    return &t_dict_empty;
-	if ((flags & TVTT_DO_MEMBER) == 0)
-	    return &t_dict_any;
-	// If the type is dict<any> go through the members, it may end up a
-	// more specific type.
-	if (d->dv_type != NULL && (d->dv_hashtab.ht_used == 0
-					   || (flags & TVTT_MORE_SPECIFIC) == 0
-					   || d->dv_type->tt_member != &t_any))
-	    return d->dv_type;
-	if (d->dv_copyID == copyID)
-	    // avoid recursion
-	    return &t_dict_any;
-	d->dv_copyID = copyID;
-
-	// Use the common type of all values.
-	dict_iterate_start(tv, &iter);
-	dict_iterate_next(&iter, &value);
-	member_type = typval2type(value, copyID, type_gap, TVTT_DO_MEMBER);
-	while (dict_iterate_next(&iter, &value) != NULL)
-	    common_type(typval2type(value, copyID, type_gap, TVTT_DO_MEMBER),
-					  member_type, &member_type, type_gap);
-	return get_dict_type(member_type, type_gap);
-    }
-
-    if (tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
-    {
-	char_u	*name = NULL;
-	ufunc_T *ufunc = NULL;
-
-	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
-	{
-	    if (tv->vval.v_partial->pt_func != NULL)
-		ufunc = tv->vval.v_partial->pt_func;
-	    else
-		name = tv->vval.v_partial->pt_name;
-	}
-	else
-	    name = tv->vval.v_string;
-	if (name == NULL && ufunc == NULL)
-	    return &t_func_unknown;
-	if (name != NULL)
-	{
-	    int idx = find_internal_func(name);
-
-	    if (idx >= 0)
-	    {
-		type_T *decl_type;  // unused
-
-		internal_func_get_argcount(idx, &argcount, &min_argcount);
-		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type,
-								     type_gap);
-	    }
-	    else
-		ufunc = find_func(name, FALSE);
-	}
-	if (ufunc != NULL)
-	{
-	    // May need to get the argument types from default values by
-	    // compiling the function.
-	    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
-			    && compile_def_function(ufunc, TRUE, CT_NONE, NULL)
-								       == FAIL)
-		return NULL;
-	    if (ufunc->uf_func_type == NULL)
-		set_function_type(ufunc);
-	    if (ufunc->uf_func_type != NULL)
-	    {
-		if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
-		    return partial_typval2type(tv, ufunc, type_gap);
-		return ufunc->uf_func_type;
-	    }
-	}
-    }
-
-    if (tv->v_type == VAR_CLASS)
-	class_type = tv->vval.v_class;
-    else if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL)
-	class_type = tv->vval.v_object->obj_class;
-
-    type = get_type_ptr(type_gap);
-    if (type == NULL)
-	return NULL;
-    type->tt_type = tv->v_type;
-    type->tt_argcount = argcount;
-    type->tt_min_argcount = min_argcount;
-    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
-					    && tv->vval.v_partial->pt_argc > 0)
-    {
-	type->tt_argcount -= tv->vval.v_partial->pt_argc;
-	type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-    }
-    type->tt_member = member_type;
-    type->tt_class = class_type;
-
-    return type;
+    return NULL;
 }
 
 /*

@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Apr 04
+*vim9class.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -593,7 +593,7 @@ A class is defined between `:class` and `:endclass`.  The whole class is
 defined in one script file.  It is not possible to add to a class later.
 
 A class can only be defined in a |Vim9| script file.  *E1316*
-A class cannot be defined inside a function.
+A class cannot be defined inside a function.  *E1429*
 
 It is possible to define more than one class in a script file.  Although it
 usually is better to export only one main class.  It can be useful to define

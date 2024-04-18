@@ -313,7 +313,7 @@ jobs:
       fail-fast: false
       matrix:
         features: [tiny, normal, huge]
-        runner: [macos-latest, macos-14]
+        runner: [macos-12, macos-14]
 
     steps:
       - name: Checkout repository from github

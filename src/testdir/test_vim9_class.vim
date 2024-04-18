@@ -400,7 +400,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "var" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using the "public" keyword when defining a class method
   lines =<< trim END
@@ -410,7 +410,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using the "public" keyword when defining an object protected method
   lines =<< trim END
@@ -420,7 +420,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "var" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using the "public" keyword when defining a class protected method
   lines =<< trim END
@@ -430,7 +430,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using a "def" keyword without an object method name
   lines =<< trim END
@@ -1191,7 +1191,7 @@ def Test_instance_variable_access()
       public var _val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1332: Public variable name cannot start with underscore: public var _val = 10', 3)
+  v9.CheckSourceFailure(lines, 'E1332: public variable name cannot start with underscore: public var _val = 10', 3)
 
   lines =<< trim END
     vim9script
@@ -1287,7 +1287,7 @@ def Test_instance_variable_access()
       public val = 1
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "var" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1331: public must be followed by "var" or "static"', 3)
 
   # Modify a instance variable using the class name in the script context
   lines =<< trim END
@@ -6537,7 +6537,7 @@ def Test_interface_with_unsupported_members()
       public static var num: number
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1387: Public variable not supported in an interface', 3)
+  v9.CheckSourceFailure(lines, 'E1387: public variable not supported in an interface', 3)
 
   lines =<< trim END
     vim9script
@@ -6545,7 +6545,7 @@ def Test_interface_with_unsupported_members()
       public static var num: number
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1387: Public variable not supported in an interface', 3)
+  v9.CheckSourceFailure(lines, 'E1387: public variable not supported in an interface', 3)
 
   lines =<< trim END
     vim9script
@@ -10623,6 +10623,19 @@ def Test_abstract_method_defcompile()
     defcompile
   END
   v9.CheckScriptFailure(lines, 'E476: Invalid command: pass', 1)
+enddef
+
+" Test for defining a class in a function
+def Test_class_definition_in_a_function()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      class A
+      endclass
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1429: Class can only be used in a script', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

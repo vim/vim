@@ -508,6 +508,22 @@ def Test_command_block_heredoc()
   CODE
   v9.CheckSourceSuccess(lines)
 
+  # Heredoc with comment
+  lines =<< trim CODE
+    vim9script
+    com SomeCommand {
+        g:someVar =<< trim END # comment
+          aaa
+          bbb
+        END
+      }
+    execute('SomeCommand')
+    assert_equal(['aaa', 'bbb'], g:someVar)
+    delcommand SomeCommand
+    unlet g:someVar
+  CODE
+  v9.CheckSourceSuccess(lines)
+
   # heredoc evaluation
   lines =<< trim CODE
     vim9script

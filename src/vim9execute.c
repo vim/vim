@@ -1638,7 +1638,7 @@ store_var(char_u *name, typval_T *tv)
  * Return FAIL if not allowed.
  */
     static int
-do_2string(typval_T *tv, int is_2string_any, int tolerant)
+do_2string(typval_T *tv, int is_2string_any, int tostring_flags)
 {
     if (tv->v_type == VAR_STRING)
 	return OK;
@@ -1653,10 +1653,11 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 	    case VAR_BOOL:
 	    case VAR_NUMBER:
 	    case VAR_FLOAT:
+	    case VAR_DICT:
 	    case VAR_BLOB:	break;
 
 	    case VAR_LIST:
-				if (tolerant)
+				if (tostring_flags & TOSTRING_TOLERANT)
 				{
 				    char_u	*s, *e, *p;
 				    garray_T	ga;
@@ -1689,6 +1690,8 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    tv->vval.v_string = ga.ga_data;
 				    return OK;
 				}
+				if (tostring_flags & TOSTRING_INTERPOLATE)
+				    break;
 				// FALLTHROUGH
 	    default:	to_string_error(tv->v_type);
 			return FAIL;
@@ -5684,7 +5687,7 @@ exec_instructions(ectx_T *ectx)
 		SOURCING_LNUM = iptr->isn_lnum;
 		if (do_2string(STACK_TV_BOT(iptr->isn_arg.tostring.offset),
 				iptr->isn_type == ISN_2STRING_ANY,
-				      iptr->isn_arg.tostring.tolerant) == FAIL)
+				      iptr->isn_arg.tostring.flags) == FAIL)
 			    goto on_error;
 		break;
 

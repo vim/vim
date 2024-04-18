@@ -2080,6 +2080,12 @@ early_ret:
 	    has_public = TRUE;
 	    p = skipwhite(line + 6);
 
+	    if (STRNCMP(p, "def", 3) == 0)
+	    {
+		emsg(_(e_public_keyword_not_supported_for_method));
+		break;
+	    }
+
 	    if (STRNCMP(p, "var", 3) != 0 && STRNCMP(p, "static", 6) != 0
 		&& STRNCMP(p, "final", 5) != 0 && STRNCMP(p, "const", 5) != 0)
 	    {

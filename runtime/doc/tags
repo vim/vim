@@ -12,6 +12,7 @@ $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*
 $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
+$XDG_CONFIG_HOME	starting.txt	/*$XDG_CONFIG_HOME*
 $quote	eval.txt	/*$quote*
 %	motion.txt	/*%*
 %:.	cmdline.txt	/*%:.*
@@ -1157,6 +1158,7 @@ $quote	eval.txt	/*$quote*
 't_vi'	term.txt	/*'t_vi'*
 't_vs'	term.txt	/*'t_vs'*
 't_xn'	term.txt	/*'t_xn'*
+'t_xo'	term.txt	/*'t_xo'*
 't_xs'	term.txt	/*'t_xs'*
 'ta'	options.txt	/*'ta'*
 'tabline'	options.txt	/*'tabline'*
@@ -4534,6 +4536,7 @@ E1423	vim9class.txt	/*E1423*
 E1424	vim9class.txt	/*E1424*
 E1425	vim9class.txt	/*E1425*
 E1426	vim9class.txt	/*E1426*
+E1429	vim9class.txt	/*E1429*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
 E145	starting.txt	/*E145*
@@ -6525,6 +6528,7 @@ compiler-gcc	quickfix.txt	/*compiler-gcc*
 compiler-gnat	ft_ada.txt	/*compiler-gnat*
 compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-manx	quickfix.txt	/*compiler-manx*
+compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
 compiler-select	quickfix.txt	/*compiler-select*
@@ -9558,6 +9562,7 @@ quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-index	quickfix.txt	/*quickfix-index*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
+quickfix-pandoc	quickfix.txt	/*quickfix-pandoc*
 quickfix-parse	quickfix.txt	/*quickfix-parse*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
 quickfix-size	quickfix.txt	/*quickfix-size*
@@ -10402,6 +10407,7 @@ t_ve	term.txt	/*t_ve*
 t_vi	term.txt	/*t_vi*
 t_vs	term.txt	/*t_vs*
 t_xn	term.txt	/*t_xn*
+t_xo	term.txt	/*t_xo*
 t_xs	term.txt	/*t_xs*
 tab	intro.txt	/*tab*
 tab-page	tabpage.txt	/*tab-page*
@@ -11368,6 +11374,9 @@ x11-clientserver	remote.txt	/*x11-clientserver*
 x11-cut-buffer	gui_x11.txt	/*x11-cut-buffer*
 x11-selection	gui_x11.txt	/*x11-selection*
 xattr	editing.txt	/*xattr*
+xdg-base-dir	starting.txt	/*xdg-base-dir*
+xdg-runtime	starting.txt	/*xdg-runtime*
+xdg-vimrc	starting.txt	/*xdg-vimrc*
 xf86conf.vim	syntax.txt	/*xf86conf.vim*
 xfontset	mbyte.txt	/*xfontset*
 xfree-xterm	syntax.txt	/*xfree-xterm*

@@ -662,7 +662,7 @@ eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate)
     if (evaluate)
     {
 	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE, FALSE);
+	expr_val = eval_to_string(block_start, FALSE, FALSE);
 	*block_end = '}';
 	if (expr_val == NULL)
 	    return NULL;
@@ -781,8 +781,15 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
     int		count = 0;
     int		heredoc_in_string = FALSE;
     char_u	*line_arg = NULL;
+    char_u	*nl_ptr = vim_strchr(cmd, '\n');
 
-    if (eap->ea_getline == NULL && vim_strchr(cmd, '\n') == NULL)
+    if (nl_ptr != NULL)
+    {
+	heredoc_in_string = TRUE;
+	line_arg = nl_ptr + 1;
+	*nl_ptr = NUL;
+    }
+    else if (eap->ea_getline == NULL)
     {
 	emsg(_(e_cannot_use_heredoc_here));
 	return NULL;
@@ -826,14 +833,8 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
     if (*cmd != NUL && *cmd != comment_char)
     {
 	marker = skipwhite(cmd);
-	p = skiptowhite_or_nl(marker);
-	if (*p == NL)
-	{
-	    // heredoc in a string
-	    line_arg = p + 1;
-	    heredoc_in_string = TRUE;
-	}
-	else if (*skipwhite(p) != NUL && *skipwhite(p) != comment_char)
+	p = skiptowhite(marker);
+	if (*skipwhite(p) != NUL && *skipwhite(p) != comment_char)
 	{
 	    semsg(_(e_trailing_characters_str), p);
 	    return NULL;

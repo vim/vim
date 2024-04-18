@@ -2110,6 +2110,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	if (buf == NULL)
 	{
 	    vim_free(p);
+	    vim_free(remain);
 	    goto fail;
 	}
 

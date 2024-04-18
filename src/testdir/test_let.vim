@@ -536,6 +536,13 @@ END
   XX
   call assert_equal(['Line1'], var1)
 
+  let var1 =<< trim XX " comment
+    Line1
+      Line2
+    Line3
+  XX
+  call assert_equal(['Line1', '  Line2', 'Line3'], var1)
+
   " ignore "endfunc"
   let var1 =<< END
 something
@@ -682,6 +689,48 @@ END
   END
   call assert_equal(['let a = {abc}', 'let b = X', 'let c = {'], code)
 
+  " Evaluate a dictionary
+  let d1 = #{a: 10, b: 'ss', c: {}}
+  let code =<< eval trim END
+    let d2 = {d1}
+  END
+  call assert_equal(["let d2 = {'a': 10, 'b': 'ss', 'c': {}}"], code)
+
+  " Empty dictionary
+  let d1 = {}
+  let code =<< eval trim END
+    let d2 = {d1}
+  END
+  call assert_equal(["let d2 = {}"], code)
+
+  " null dictionary
+  let d1 = test_null_dict()
+  let code =<< eval trim END
+    let d2 = {d1}
+  END
+  call assert_equal(["let d2 = {}"], code)
+
+  " Evaluate a List
+  let l1 = ['a', 'b', 'c']
+  let code =<< eval trim END
+    let l2 = {l1}
+  END
+  call assert_equal(["let l2 = ['a', 'b', 'c']"], code)
+
+  " Empty List
+  let l1 = []
+  let code =<< eval trim END
+    let l2 = {l1}
+  END
+  call assert_equal(["let l2 = []"], code)
+
+  " Null List
+  let l1 = test_null_list()
+  let code =<< eval trim END
+    let l2 = {l1}
+  END
+  call assert_equal(["let l2 = []"], code)
+
   let code = 'xxx'
   let code =<< eval trim END
     let n = {5 +
@@ -715,19 +764,33 @@ END
   LINES
   call v9.CheckScriptFailure(lines, 'E15:')
 
-  " Test for using heredoc in a single string using execute()
-  call assert_equal(["['one', 'two']"],
-    \ execute("let x =<< trim END\n  one\n  two\nEND\necho x")->split("\n"))
-  call assert_equal(["['  one', '  two']"],
-    \ execute("let x =<< END\n  one\n  two\nEND\necho x")->split("\n"))
-  let cmd = 'execute("let x =<< END\n  one\n  two\necho x")'
-  call assert_fails(cmd, "E990: Missing end marker 'END'")
-  let cmd = 'execute("let x =<<\n  one\n  two\necho x")'
-  call assert_fails(cmd, "E990: Missing end marker ''")
-  let cmd = 'execute("let x =<< trim\n  one\n  two\necho x")'
-  call assert_fails(cmd, "E221: Marker cannot start with lower case letter")
-  let cmd = 'execute("let x =<< eval END\n  one\n  two{y}\nEND\necho x")'
-  call assert_fails(cmd, 'E121: Undefined variable: y')
+  " Test for using heredoc in a single string using :execute or execute()
+  for [cmd, res] in items({
+      \ "let x =<< trim END\n  one\n  two\nEND": ['one', 'two'],
+      \ "let x =<< trim END\n  one\n    two\nEND": ['one', '  two'],
+      \ "  let x =<< trim END\n    one\n    two\n  END": ['one', 'two'],
+      \ "  let x =<< trim END\n    one\n      two\n  END": ['one', '  two'],
+      \ "let x =<< END\n  one\n  two\nEND": ['  one', '  two'],
+      \ "let x =<< END\none\ntwo\nEND": ['one', 'two'],
+      \ "let x =<< END \" comment\none\ntwo\nEND": ['one', 'two'],
+      \ })
+    execute cmd
+    call assert_equal(res, x)
+    unlet x
+    call assert_equal($"\n{string(res)}", execute($"{cmd}\necho x"))
+    unlet x
+  endfor
+  for [cmd, err] in items({
+      \ "let x =<<\none\ntwo": "E172:",
+      \ "let x =<< trim\n  one\n  two": "E172:",
+      \ "let x =<< end\none\ntwo\nend": "E221:",
+      \ "let x =<< END\none\ntwo": "E990: Missing end marker 'END'",
+      \ "let x =<< END !\none\ntwo\nEND": "E488: Trailing characters:  !",
+      \ "let x =<< eval END\none\ntwo{y}\nEND": "E121: Undefined variable: y",
+      \ })
+    call assert_fails('execute cmd', err)
+    call assert_fails('call execute(cmd)', err)
+  endfor
 
   " skipped heredoc
   if 0
