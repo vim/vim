@@ -2152,6 +2152,9 @@ scroll_event(GtkWidget *widget,
 		    FALSE, vim_modifiers);
 	}
     }
+    else if (event->direction == GDK_SCROLL_SMOOTH && display_type == DT_X11)
+	// for X11 we deal with unsmooth events, and so ignore the smooth ones
+	;
     else
 #undef DT_X11
 #undef DT_WAYLAND
