@@ -4783,6 +4783,8 @@ def Test_typename()
   if has('channel')
     assert_equal('channel', test_null_channel()->typename())
   endif
+  assert_equal('class<Unknown>', typename(null_class))
+  assert_equal('object<Unknown>', typename(null_object))
 enddef
 
 def Test_undofile()
