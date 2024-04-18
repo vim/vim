@@ -1281,6 +1281,9 @@ del_typebuf(int len, int offset)
 	typebuf.tb_change_cnt = 1;
 }
 
+/*
+ * State for adding bytes to a recording or 'showcmd'.
+ */
 typedef struct
 {
     int		prev_c;
