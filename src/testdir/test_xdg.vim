@@ -38,7 +38,7 @@ endfunc
 func Test_xdg_runtime_files()
   " This tests, that the initialization file from
   " ~/.vimrc, ~/.vim/vimrc and ~/.config/vim/vimrc (or
-  " $XDG_HOMECONFIG/vim/vimrc) are sourced in that order
+  " $XDG_CONFIG_HOME/vim/vimrc) are sourced in that order
   CheckUnix
   call mkdir(expand('~/.vim/'), 'pD')
   call mkdir(expand('~/.config/vim/'), 'pD')
@@ -178,7 +178,7 @@ func Test_zzz_xdg_runtime_files()
 
   " This tests, that the initialization file from
   " ~/.vimrc, ~/.vim/vimrc and ~/.config/vim/vimrc (or
-  " $XDG_HOMECONFIG/vim/vimrc) are sourced in that order
+  " $XDG_CONFIG_HOME/vim/vimrc) are sourced in that order
   call mkdir(expand('~/.vim/'), 'pD')
   call mkdir(expand('~/.config/vim/'), 'pD')
   call mkdir(expand('~/xdg/vim/'), 'pD')
