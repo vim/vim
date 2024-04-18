@@ -1030,7 +1030,7 @@ def Test_disassemble_closure_in_loop()
 
         'endif\_s*' ..
         'g:Ref = () => ii\_s*' ..
-        '\d\+ FUNCREF <lambda>4 vars  $3-$3\_s*' ..
+        '\d\+ FUNCREF <lambda>\d\+ vars  $3-$3\_s*' ..
         '\d\+ STOREG g:Ref\_s*' ..
 
         'continue\_s*' ..
