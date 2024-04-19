@@ -608,7 +608,7 @@ build_drop_cmd(
 
     // Call inputsave() so that a prompt for an encryption key works.
     ga_concat(&ga, (char_u *)
-		       "<CR>:if exists('*inputsave')|call inputsave()|endif|");
+	    "<CR><C-\\><C-N>:if exists('*inputsave')|call inputsave()|endif|");
     if (tabs)
 	ga_concat(&ga, (char_u *)"tab ");
     ga_concat(&ga, (char_u *)"drop");
@@ -652,7 +652,13 @@ build_drop_cmd(
     //    endif
     //  endif
     ga_concat(&ga, (char_u *)":if !exists('+acd')||!&acd|if haslocaldir()|");
+#ifdef MSWIN
+    // in case :set shellslash is set, need to normalize the directory separators
+    // '/' is not valid in a filename so replacing '/' by '\\' should be safe
+    ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd()->tr('/','\\') ==# '");
+#else
     ga_concat(&ga, (char_u *)"cd -|lcd -|elseif getcwd() ==# '");
+#endif
     ga_concat(&ga, cdp);
     ga_concat(&ga, (char_u *)"'|cd -|endif|endif<CR>");
     vim_free(cdp);
