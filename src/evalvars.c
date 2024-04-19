@@ -159,6 +159,8 @@ static struct vimvar
     {VV_NAME("maxcol",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("python3_version",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_typealias",	 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_enum",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_enumvalue",	 VAR_NUMBER), NULL, VV_RO},
 };
 
 // shorthand
@@ -262,6 +264,8 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_CLASS,   VAR_TYPE_CLASS);
     set_vim_var_nr(VV_TYPE_OBJECT,  VAR_TYPE_OBJECT);
     set_vim_var_nr(VV_TYPE_TYPEALIAS,  VAR_TYPE_TYPEALIAS);
+    set_vim_var_nr(VV_TYPE_ENUM,  VAR_TYPE_ENUM);
+    set_vim_var_nr(VV_TYPE_ENUMVALUE,  VAR_TYPE_ENUMVALUE);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
@@ -658,7 +662,7 @@ eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate)
     if (evaluate)
     {
 	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE, FALSE);
+	expr_val = eval_to_string(block_start, FALSE, FALSE);
 	*block_end = '}';
 	if (expr_val == NULL)
 	    return NULL;
@@ -775,8 +779,17 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
     int		eval_failed = FALSE;
     cctx_T	*cctx = vim9compile ? eap->cookie : NULL;
     int		count = 0;
+    int		heredoc_in_string = FALSE;
+    char_u	*line_arg = NULL;
+    char_u	*nl_ptr = vim_strchr(cmd, '\n');
 
-    if (eap->ea_getline == NULL)
+    if (nl_ptr != NULL)
+    {
+	heredoc_in_string = TRUE;
+	line_arg = nl_ptr + 1;
+	*nl_ptr = NUL;
+    }
+    else if (eap->ea_getline == NULL)
     {
 	emsg(_(e_cannot_use_heredoc_here));
 	return NULL;
@@ -855,12 +868,38 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	int	mi = 0;
 	int	ti = 0;
 
-	vim_free(theline);
-	theline = eap->ea_getline(NUL, eap->cookie, 0, FALSE);
-	if (theline == NULL)
+	if (heredoc_in_string)
 	{
-	    semsg(_(e_missing_end_marker_str), marker);
-	    break;
+	    char_u	*next_line;
+
+	    // heredoc in a string separated by newlines.  Get the next line
+	    // from the string.
+
+	    if (*line_arg == NUL)
+	    {
+		semsg(_(e_missing_end_marker_str), marker);
+		break;
+	    }
+
+	    theline = line_arg;
+	    next_line = vim_strchr(theline, '\n');
+	    if (next_line == NULL)
+		line_arg += STRLEN(line_arg);
+	    else
+	    {
+		*next_line = NUL;
+		line_arg = next_line + 1;
+	    }
+	}
+	else
+	{
+	    vim_free(theline);
+	    theline = eap->ea_getline(NUL, eap->cookie, 0, FALSE);
+	    if (theline == NULL)
+	    {
+		semsg(_(e_missing_end_marker_str), marker);
+		break;
+	    }
 	}
 
 	// with "trim": skip the indent matching the :let line to find the
@@ -907,6 +946,8 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 	}
 	else
 	{
+	    int	    free_str = FALSE;
+
 	    if (evalstr && !eap->skip)
 	    {
 		str = eval_all_expr_in_str(str);
@@ -916,15 +957,20 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile)
 		    eval_failed = TRUE;
 		    continue;
 		}
-		vim_free(theline);
-		theline = str;
+		free_str = TRUE;
 	    }
 
 	    if (list_append_string(l, str, -1) == FAIL)
 		break;
+	    if (free_str)
+		vim_free(str);
 	}
     }
-    vim_free(theline);
+    if (heredoc_in_string)
+	// Next command follows the heredoc in the string.
+	eap->nextcmd = line_arg;
+    else
+	vim_free(theline);
     vim_free(text_indent);
 
     if (vim9compile && cctx->ctx_skip != SKIP_YES && !eval_failed)

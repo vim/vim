@@ -81,7 +81,7 @@ static int	KeyNoremap = 0;	    // remapping flags
 static char_u	typebuf_init[TYPELEN_INIT];	// initial typebuf.tb_buf
 static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
-static int	last_recorded_len = 0;	// number of last recorded chars
+static size_t	last_recorded_len = 0;	// number of last recorded chars
 
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
@@ -163,7 +163,7 @@ get_recorded(void)
      * (possibly mapped) characters that stopped the recording.
      */
     len = STRLEN(p);
-    if ((int)len >= last_recorded_len)
+    if (len >= last_recorded_len)
     {
 	len -= last_recorded_len;
 	p[len] = NUL;
@@ -1282,50 +1282,113 @@ del_typebuf(int len, int offset)
 }
 
 /*
+ * State for adding bytes to a recording or 'showcmd'.
+ */
+typedef struct
+{
+    int		prev_c;
+    char_u	buf[MB_MAXBYTES * 3 + 4];
+    size_t	buflen;
+    unsigned	pending;
+    int		in_special;
+    int		in_mbyte;
+} gotchars_state_T;
+
+/*
+ * Add a single byte to a recording or 'showcmd'.
+ * Return TRUE if a full key has been received, FALSE otherwise.
+ */
+    static int
+gotchars_add_byte(gotchars_state_T *state, char_u byte)
+{
+    int		c = state->buf[state->buflen++] = byte;
+    int		retval = FALSE;
+
+    if (state->pending > 0)
+	state->pending--;
+
+    // When receiving a special key sequence, store it until we have all
+    // the bytes and we can decide what to do with it.
+    if ((state->pending == 0 || state->in_mbyte)
+	    && (c == K_SPECIAL
+#ifdef FEAT_GUI
+		|| c == CSI
+#endif
+	       ))
+    {
+	state->pending += 2;
+	if (!state->in_mbyte)
+	    state->in_special = TRUE;
+    }
+
+    if (state->pending > 0)
+	goto ret_false;
+
+    if (!state->in_mbyte)
+    {
+	if (state->in_special)
+	{
+	    state->in_special = FALSE;
+	    if (state->prev_c == KS_MODIFIER)
+		// When receiving a modifier, wait for the modified key.
+		goto ret_false;
+	    c = TO_SPECIAL(state->prev_c, c);
+	    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+		// Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful
+		// in a recording.
+		state->buflen = 0;
+	}
+	// When receiving a multibyte character, store it until we have all
+	// the bytes, so that it won't be split between two buffer blocks,
+	// and delete_buff_tail() will work properly.
+	state->pending = MB_BYTE2LEN_CHECK(c) - 1;
+	if (state->pending > 0)
+	{
+	    state->in_mbyte = TRUE;
+	    goto ret_false;
+	}
+    }
+    else
+	// Stored all bytes of a multibyte character.
+	state->in_mbyte = FALSE;
+
+    retval = TRUE;
+ret_false:
+    state->prev_c = c;
+    return retval;
+}
+
+/*
  * Write typed characters to script file.
- * If recording is on put the character in the recordbuffer.
+ * If recording is on put the character in the record buffer.
  */
     static void
 gotchars(char_u *chars, int len)
 {
     char_u		*s = chars;
-    int			i;
-    static char_u	buf[4];
-    static int		buflen = 0;
+    size_t		i;
     int			todo = len;
+    static gotchars_state_T state;
 
-    while (todo--)
+    while (todo-- > 0)
     {
-	buf[buflen++] = *s++;
-
-	// When receiving a special key sequence, store it until we have all
-	// the bytes and we can decide what to do with it.
-	if (buflen == 1 && buf[0] == K_SPECIAL)
+	if (!gotchars_add_byte(&state, *s++))
 	    continue;
-	if (buflen == 2)
-	    continue;
-	if (buflen == 3 && buf[1] == KS_EXTRA
-		       && (buf[2] == KE_FOCUSGAINED || buf[2] == KE_FOCUSLOST))
-	{
-	    // Drop K_FOCUSGAINED and K_FOCUSLOST, they are not useful in a
-	    // recording.
-	    buflen = 0;
-	    continue;
-	}
 
 	// Handle one byte at a time; no translation to be done.
-	for (i = 0; i < buflen; ++i)
-	    updatescript(buf[i]);
+	for (i = 0; i < state.buflen; ++i)
+	    updatescript(state.buf[i]);
 
 	if (reg_recording != 0)
 	{
-	    buf[buflen] = NUL;
-	    add_buff(&recordbuff, buf, (long)buflen);
+	    state.buf[state.buflen] = NUL;
+	    add_buff(&recordbuff, state.buf, (long)state.buflen);
 	    // remember how many chars were last recorded
-	    last_recorded_len += buflen;
+	    last_recorded_len += state.buflen;
 	}
-	buflen = 0;
+	state.buflen = 0;
     }
+
     may_sync_undo();
 
 #ifdef FEAT_EVAL
@@ -1713,6 +1776,67 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
 }
 
 /*
+ * Add a single byte to 'showcmd' for a partially matched mapping.
+ * Call add_to_showcmd() if a full key has been received.
+ */
+    static void
+add_byte_to_showcmd(char_u byte)
+{
+    static gotchars_state_T state;
+    char_u	*ptr;
+    int		modifiers = 0;
+    int		c = NUL;
+
+    if (!p_sc || msg_silent != 0)
+	return;
+
+    if (!gotchars_add_byte(&state, byte))
+	return;
+
+    state.buf[state.buflen] = NUL;
+    state.buflen = 0;
+
+    ptr = state.buf;
+    if (ptr[0] == K_SPECIAL && ptr[1] == KS_MODIFIER && ptr[2] != NUL)
+    {
+	modifiers = ptr[2];
+	ptr += 3;
+    }
+
+    if (*ptr != NUL)
+    {
+	char_u		*mb_ptr = mb_unescape(&ptr);
+
+	c = mb_ptr != NULL ? (*mb_ptr2char)(mb_ptr) : *ptr++;
+	if (c <= 0x7f)
+	{
+	    // Merge modifiers into the key to make the result more readable.
+	    int		modifiers_after = modifiers;
+	    int		mod_c = merge_modifyOtherKeys(c, &modifiers_after);
+
+	    if (modifiers_after == 0)
+	    {
+		modifiers = 0;
+		c = mod_c;
+	    }
+	}
+    }
+
+    // TODO: is there a more readable and yet compact representation of
+    // modifiers and special keys?
+    if (modifiers != 0)
+    {
+	add_to_showcmd(K_SPECIAL);
+	add_to_showcmd(KS_MODIFIER);
+	add_to_showcmd(modifiers);
+    }
+    if (c != NUL)
+	add_to_showcmd(c);
+    while (*ptr != NUL)
+	add_to_showcmd(*ptr++);
+}
+
+/*
  * Get the next input character.
  * Can return a special key or a multi-byte character.
  * Can return NUL when called recursively, use safe_vgetc() if that's not
@@ -1751,7 +1875,7 @@ vgetc(void)
     else
     {
 	// number of characters recorded from the last vgetc() call
-	static int	last_vgetc_recorded_len = 0;
+	static size_t	last_vgetc_recorded_len = 0;
 
 	mod_mask = 0;
 	vgetc_mod_mask = 0;
@@ -3544,7 +3668,7 @@ vgetorpeek(int advance)
 			if (typebuf.tb_len > SHOWCMD_COLS)
 			    showcmd_idx = typebuf.tb_len - SHOWCMD_COLS;
 			while (showcmd_idx < typebuf.tb_len)
-			    (void)add_to_showcmd(
+			    add_byte_to_showcmd(
 			       typebuf.tb_buf[typebuf.tb_off + showcmd_idx++]);
 			curwin->w_wcol = old_wcol;
 			curwin->w_wrow = old_wrow;

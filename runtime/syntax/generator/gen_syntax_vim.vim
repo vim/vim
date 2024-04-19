@@ -2,8 +2,8 @@
 " Language: Vim script
 " Maintainer: Hirohito Higashi (h_east)
 " URL: https://github.com/vim-jp/syntax-vim-ex
-" Last Change: 2024 Mar 14
-" Version: 2.0.6
+" Last Change: 2024 Apr 07
+" Version: 2.1.1
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -269,7 +269,9 @@ function! s:get_vim_command_type(cmd_name)
 	"   4: map
 	"   5: mapclear
 	"   6: unmap
+	"   7: abclear
 	"   99: (Exclude registration of "syn keyword")
+	let ab_prefix   = '^[ci]\?'
 	let menu_prefix = '^\%([acinostvx]\?\|tl\)'
 	let map_prefix  = '^[acilnostvx]\?'
 	let exclude_list = [
@@ -279,10 +281,12 @@ function! s:get_vim_command_type(cmd_name)
 	\	'autocmd', 'augroup', 'doautocmd', 'doautoall',
 	\	'echo', 'echoconsole', 'echoerr', 'echohl', 'echomsg', 'echon', 'echowindow',
 	\	'execute',
+	\ 'function', 'endfunction', 'def', 'enddef',
 	\	'behave', 'augroup', 'normal', 'syntax',
 	\	'append', 'insert',
 	\	'Next', 'Print', 'X',
 	\	'new', 'popup',
+	\	'vim9script',
 	\ ]
 	" Required for original behavior
 	" \	'global', 'vglobal'
@@ -291,6 +295,8 @@ function! s:get_vim_command_type(cmd_name)
 		let ret = 99
 	elseif a:cmd_name =~# '^\%(\%(un\)\?abbreviate\|noreabbrev\|\l\%(nore\|un\)\?abbrev\)$'
 		let ret = 2
+	elseif a:cmd_name =~# ab_prefix . 'abclear$'
+		let ret = 7
 	elseif a:cmd_name =~# menu_prefix . '\%(nore\|un\)\?menu$'
 		let ret = 3
 	elseif a:cmd_name =~# map_prefix . '\%(nore\)\?map$'
@@ -341,14 +347,14 @@ function! s:parse_vim_event(li)
 		new
 		exec 'read ' . file_name
 		norm! gg
-		exec '/^}\s*event_names\[\]\s*=\s*$/+1;/^};/-1yank'
+		exec '/^static keyvalue_T event_tab\[] = {$/+1;/^};$/-1yank'
 		%delete _
 
 		put
-		g!/^\s*{\s*"\w\+"\s*,.*$/d
+		g!/^\s*KEYVALUE_ENTRY(/d
 
 		for line in getline(1, line('$'))
-			let list = matchlist(line, '^\s*{\s*"\(\w\+\)"\s*,')
+			let list = matchlist(line, '^\s*KEYVALUE_ENTRY(EVENT_\w\+,\s*"\(\w\+\)"')
 			let item.name = list[1]
 			call add(a:li, copy(item))
 		endfor
@@ -617,6 +623,8 @@ function! s:update_syntax_vim_file(vim_info)
 		let li = a:vim_info.cmd
 		let lnum = s:search_and_check(kword . ' abbrev', base_fname, str_info)
 		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 2)
+		let lnum = s:search_and_check(kword . ' abclear', base_fname, str_info)
+		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 7)
 		" vimCommand - map
 		let lnum = s:search_and_check(kword . ' map', base_fname, str_info)
 		let lnum = s:append_syn_vimcmd(lnum, str_info, li, 4)

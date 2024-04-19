@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2024 Feb 18
+*testing.txt*	For Vim version 9.1.  Last change: 2024 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -438,8 +438,8 @@ test_settime({expr})					*test_settime()*
 			GetTime()->test_settime()
 
 
-test_srand_seed([seed])					*test_srand_seed()*
-		When [seed] is given this sets the seed value used by
+test_srand_seed([{seed}])				*test_srand_seed()*
+		When {seed} is given this sets the seed value used by
 		`srand()`.  When omitted the test seed is removed.
 
 

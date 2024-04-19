@@ -157,9 +157,54 @@
 # you can set DEFINES on the command line, e.g.,
 #	nmake -f Make_mvc.mvc "DEFINES=-DEMACS_TAGS"
 
+RM=		del /f /q
+PS=		powershell.exe
+
+PSFLAGS=	-NoLogo -NoProfile -Command
+
+!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\major.tmp' -InputObject \
+	\"MAJOR=$$(((Select-String -Pattern 'VIM_VERSION_MAJOR\s+\d{1,2}' \
+	-Path '.\version.h').Line[-2..-1^]-join '').Trim())\"} \
+	catch{exit 1}]
+! INCLUDE .\major.tmp
+! IF [$(RM) .\major.tmp]
+! ENDIF
+!ELSE
+# Change this value for the new version
+MAJOR=		9
+!ENDIF
+
+!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\minor.tmp' -InputObject \
+	\"MINOR=$$(((Select-String -Pattern 'VIM_VERSION_MINOR\s+\d{1,2}' \
+	-Path '.\version.h').Line[-2..-1^]-join '').Trim())\"} \
+	catch{exit 1}]
+! INCLUDE .\minor.tmp
+! IF [$(RM) .\minor.tmp]
+! ENDIF
+!ELSE
+# Change this value for the new version
+MINOR=		1
+!ENDIF
+
+!IF ![$(PS) $(PSFLAGS) try{Out-File -FilePath '.\patchlvl.tmp' -InputObject \
+	\"PATCHLEVEL=$$(((Get-Content -Path '.\version.c' \
+	-TotalCount ((Select-String -Pattern 'static int included_patches' \
+	-Path '.\version.c').LineNumber+3))[-1^]).Trim().TrimEnd(','))\"} \
+	catch{exit 1}]
+! INCLUDE .\patchlvl.tmp
+! IF [$(RM) .\patchlvl.tmp]
+! ENDIF
+!ENDIF
+
+
 # Build on Windows NT/XP
 
 TARGETOS = WINNT
+
+!IFDEF PATCHLEVEL
+RCFLAGS=	-DVIM_VERSION_PATCHLEVEL=$(PATCHLEVEL)
+!ENDIF
+
 
 !if "$(VIMDLL)" == "yes"
 GUI = yes
@@ -374,9 +419,9 @@ DYNAMIC_SODIUM = yes
 
 !if "$(SODIUM)" != "no"
 ! if "$(CPU)" == "AMD64"
-SOD_LIB		= $(SODIUM)\x64\Release\v140\dynamic
+SOD_LIB		= $(SODIUM)\x64\Release\v143\dynamic
 ! elseif "$(CPU)" == "i386"
-SOD_LIB		= $(SODIUM)\Win32\Release\v140\dynamic
+SOD_LIB		= $(SODIUM)\Win32\Release\v143\dynamic
 ! else
 SODIUM = no
 ! endif
@@ -591,7 +636,7 @@ OPTFLAG = $(OPTFLAG) /GL
 ! endif
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
-RCFLAGS = -DNDEBUG
+RCFLAGS = $(RCFLAGS) -DNDEBUG
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
@@ -607,7 +652,7 @@ VIM = vimd
 DEBUGINFO = /ZI
 ! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
-RCFLAGS = -D_DEBUG -DDEBUG
+RCFLAGS = $(RCFLAGS) -D_DEBUG -DDEBUG
 # The /fixed:no is needed for Quantify.
 LIBC = /fixed:no
 ! ifdef USE_MSVCRT
@@ -621,7 +666,7 @@ LIBC = $(LIBC) libcmtd.lib
 !endif # DEBUG
 
 # Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+CFLAGS_DEPR = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
 
 !include Make_all.mak

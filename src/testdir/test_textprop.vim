@@ -2690,6 +2690,48 @@ func Test_prop_inserts_text_normal_gj_gk()
   call Run_test_prop_inserts_text_normal_gj_gk('set virtualedit=all')
 endfunc
 
+func Test_prop_normal_gj_gk_gM_with_outer_virtual_text()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setlocal number
+      setline(1, ['First line fits on screen line.', '', 'Third line fits on screen line.'])
+
+      var vt = 'test'
+      prop_type_add(vt, {highlight: 'ToDo'})
+      for ln in range(1, line('$'))
+        prop_add(ln, 0, {type: vt, text: 'Above', text_align: 'above'})
+        prop_add(ln, 0, {type: vt, text: 'After text wraps to next line.', text_align: 'after', text_wrap: 'wrap'})
+        prop_add(ln, 0, {type: vt, text: 'Right text wraps to next line.', text_align: 'right', text_wrap: 'wrap'})
+        prop_add(ln, 0, {type: vt, text: 'Below', text_align: 'below'})
+      endfor
+      normal 3l
+  END
+  call writefile(lines, 'XscriptPropsNormal_gj_gk_gM_with_outer_text', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsNormal_gj_gk_gM_with_outer_text', #{rows: 16, cols: 40})
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_1', {})
+
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_2', {})
+  call term_sendkeys(buf, "gj")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_3', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_2', {})
+  call term_sendkeys(buf, "gk")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_1', {})
+
+  call term_sendkeys(buf, "2gj")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_3', {})
+  call term_sendkeys(buf, "2gk")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_1', {})
+
+  call term_sendkeys(buf, "gM")
+  call VerifyScreenDump(buf, 'Test_prop_normal_gj_gk_gM_with_outer_virtual_text_4', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_inserts_text_visual_block()
   CheckRunVimInTerminal
 
@@ -3026,6 +3068,43 @@ func Test_props_with_text_after_below_trunc()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_props_with_text_truncated_just_before_after()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      set showbreak=+++
+      set list listchars=extends:>
+      set nowrap
+
+      setline(1, [
+        'here is text long enough to fill the row',
+        'second line',
+      ])
+
+      prop_type_add("test", {"highlight": "Error"})
+      prop_add(1, 0, {type: "test", text_align: "right", text: "right text"})
+      def g:AddPropBelow()
+        prop_add(1, 0, {type: "test", text_align: "below", text: "below text"})
+      enddef
+      def g:AddPropAfter()
+        prop_add(1, 0, {type: "test", text: "after text", text_padding_left: 1})
+      enddef
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsWithTextTruncatedJustBeforeAfter', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextTruncatedJustBeforeAfter', #{rows: 8, cols: 40})
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_1', {})
+
+  call term_sendkeys(buf, ":call AddPropBelow()\<CR>")
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
+
+  call term_sendkeys(buf, ":call AddPropAfter()\<CR>:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_props_with_text_truncated_just_before_after_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_below_after_empty()
   CheckRunVimInTerminal
 
@@ -3080,6 +3159,12 @@ func Test_prop_with_text_above_below_empty()
         call prop_add(ln, 0, {'type': vt, 'text': '+', 'text_align': 'below'})
       endfor
       normal G
+
+      func AddMore()
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+        call prop_add(5, 0, {'type': g:vt, 'text': '!', 'text_align': 'above'})
+      endfunc
   END
   call writefile(lines, 'XscriptPropAboveBelowEmpty', 'D')
   let buf = RunVimInTerminal('-S XscriptPropAboveBelowEmpty', #{rows: 16, cols: 60})
@@ -3100,6 +3185,12 @@ func Test_prop_with_text_above_below_empty()
 
   call term_sendkeys(buf, "kk")
   call VerifyScreenDump(buf, 'Test_prop_above_below_empty_5', {})
+
+  " This was drawing line number over cmdline and leaking memory.
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call term_sendkeys(buf, "gg")
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_above_below_empty_6', {})
 
   call StopVimInTerminal(buf)
 endfunc

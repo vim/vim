@@ -1222,7 +1222,7 @@ compile_one_expr_in_str(char_u *p, cctx_T *cctx)
     }
     if (compile_expr0(&block_start, cctx) == FAIL)
 	return NULL;
-    may_generate_2STRING(-1, TRUE, cctx);
+    may_generate_2STRING(-1, TOSTRING_INTERPOLATE, cctx);
 
     return block_end + 1;
 }
@@ -1614,6 +1614,13 @@ lhs_class_member_modifiable(lhs_T *lhs, char_u	*var_start, cctx_T *cctx)
 	return FALSE;
     }
 
+    if (IS_ENUM(cl))
+    {
+	semsg(_(e_enumvalue_str_cannot_be_modified), cl->class_name,
+		m->ocm_name);
+	return FALSE;
+    }
+
     // If it is private member variable, then accessing it outside the
     // class is not allowed.
     // If it is a read only class variable, then it can be modified
@@ -1783,10 +1790,11 @@ compile_lhs(
 		    return FAIL;
 
 		lhs->lhs_dest = dest_class_member;
-		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
-		lhs->lhs_type =
-		    oc_member_type_by_idx(cctx->ctx_ufunc->uf_class,
-					FALSE, lhs->lhs_classmember_idx);
+		// The class variable is defined either in the current class or
+		// in one of the parent class in the hierarchy.
+		lhs->lhs_class = defcl;
+		lhs->lhs_type = oc_member_type_by_idx(defcl, FALSE,
+						lhs->lhs_classmember_idx);
 	    }
 	    else
 	    {
@@ -2037,6 +2045,25 @@ compile_lhs(
 		return FAIL;
 	    }
 
+	    if (IS_ENUM(cl))
+	    {
+		if (!inside_class(cctx, cl))
+		{
+		    semsg(_(e_enumvalue_str_cannot_be_modified),
+			    cl->class_name, m->ocm_name);
+		    return FALSE;
+		}
+		if (lhs->lhs_type->tt_type == VAR_OBJECT &&
+			lhs->lhs_member_idx < 2)
+		{
+		    char *msg = lhs->lhs_member_idx == 0 ?
+			e_enum_str_name_cannot_be_modified :
+			e_enum_str_ordinal_cannot_be_modified;
+		    semsg(_(msg), cl->class_name);
+		    return FALSE;
+		}
+	    }
+
 	    // If it is private member variable, then accessing it outside the
 	    // class is not allowed.
 	    // If it is a read only class variable, then it can be modified
@@ -2285,7 +2312,17 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	if (dot - var_start == 4 && STRNCMP(var_start, "this", 4) == 0)
 	{
 	    // load "this"
-	    if (generate_LOAD(cctx, ISN_LOAD, 0, NULL, lhs->lhs_type) == FAIL)
+	    lvar_T  *lvar = lhs->lhs_lvar;
+	    int	    rc;
+
+	    if (lvar->lv_from_outer > 0)
+		rc = generate_LOADOUTER(cctx, lvar->lv_idx,
+			lvar->lv_from_outer, lvar->lv_loop_depth,
+			lvar->lv_loop_idx, type);
+	    else
+		rc = generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
+
+	    if (rc == FAIL)
 		return FAIL;
 	}
 	else
@@ -2294,7 +2331,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 	    if (compile_load_lhs(lhs, var_start, lhs->lhs_type, cctx) == FAIL)
 		return FAIL;
 	}
-	if (cl->class_flags & CLASS_INTERFACE)
+	if (IS_INTERFACE(cl))
 	    return generate_GET_ITF_MEMBER(cctx, cl, lhs->lhs_member_idx, type);
 	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
     }
@@ -2384,7 +2421,7 @@ compile_assign_unlet(
 	    return FAIL;
 	}
 	if (dest_type == VAR_DICT
-			      && may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		&& may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 	    return FAIL;
 	if (dest_type == VAR_LIST || dest_type == VAR_BLOB)
 	{
@@ -2443,7 +2480,7 @@ compile_assign_unlet(
 		{
 		    class_T *cl = lhs->lhs_type->tt_class;
 
-		    if (cl->class_flags & CLASS_INTERFACE)
+		    if (IS_INTERFACE(cl))
 		    {
 			// "this.value": load "this" object and get the value
 			// at index for an object or class member get the type
@@ -2938,7 +2975,7 @@ compile_assignment(
 
 	    if (*op == '.')
 	    {
-		if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		    goto theend;
 	    }
 	    else
@@ -3365,6 +3402,14 @@ compile_def_function(
 	    for (int i = 0; i < ufunc->uf_class->class_obj_member_count; ++i)
 	    {
 		ocmember_T *m = &ufunc->uf_class->class_obj_members[i];
+
+		if (i < 2 && IS_ENUM(ufunc->uf_class))
+		    // The first two object variables in an enum are the name
+		    // and the ordinal.  These are set by the ISN_CONSTRUCT
+		    // instruction.  So don't generate instructions to set
+		    // these variables.
+		    continue;
+
 		if (m->ocm_init != NULL)
 		{
 		    char_u *expr = m->ocm_init;
@@ -3471,8 +3516,7 @@ compile_def_function(
 
     // Compiling a function in an interface is done to get the function type.
     // No code is actually compiled.
-    if (ufunc->uf_class != NULL
-			   && (ufunc->uf_class->class_flags & CLASS_INTERFACE))
+    if (ufunc->uf_class != NULL && IS_INTERFACE(ufunc->uf_class))
     {
 	ufunc->uf_def_status = UF_NOT_COMPILED;
 	ret = OK;
@@ -3984,10 +4028,13 @@ compile_def_function(
 		    line = (char_u *)"";
 		    break;
 
+	    case CMD_class:
+		    emsg(_(e_class_can_only_be_used_in_script));
+		    goto erret;
+
 	    case CMD_type:
 		    emsg(_(e_type_can_only_be_used_in_script));
 		    goto erret;
-		    break;
 
 	    case CMD_global:
 		    if (check_global_and_subst(ea.cmd, p) == FAIL)

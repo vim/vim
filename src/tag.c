@@ -289,17 +289,6 @@ do_tag(
     static char_u	**matches = NULL;
     static int		flags;
 
-    if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
-        return FALSE;
-
-#ifdef FEAT_EVAL
-    if (tfu_in_use)
-    {
-	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
-	return FALSE;
-    }
-#endif
-
 #ifdef EXITFREE
     if (type == DT_FREE)
     {
@@ -312,6 +301,17 @@ do_tag(
 	return FALSE;
     }
 #endif
+
+#ifdef FEAT_EVAL
+    if (tfu_in_use)
+    {
+	emsg(_(e_cannot_modify_tag_stack_within_tagfunc));
+	return FALSE;
+    }
+#endif
+
+    if (postponed_split == 0 && !check_can_set_curbuf_forceit(forceit))
+        return FALSE;
 
     if (type == DT_HELP)
     {

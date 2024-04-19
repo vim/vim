@@ -40,6 +40,7 @@ TEST_VIM9 = \
 	test_vim9_class \
 	test_vim9_cmd \
 	test_vim9_disassemble \
+	test_vim9_enum \
 	test_vim9_expr \
 	test_vim9_fails \
 	test_vim9_func \
@@ -53,6 +54,7 @@ TEST_VIM9_RES = \
 	test_vim9_class.res \
 	test_vim9_cmd.res \
 	test_vim9_disassemble.res \
+	test_vim9_enum.res \
 	test_vim9_expr.res \
 	test_vim9_fails.res \
 	test_vim9_func.res \
@@ -332,6 +334,7 @@ NEW_TESTS = \
 	test_wnext \
 	test_wordcount \
 	test_writefile \
+	test_xdg \
 	test_xxd \
 	test_alot_latin \
 	test_alot_utf8 \
@@ -462,6 +465,7 @@ NEW_TESTS_RES = \
 	test_matchadd_conceal.res \
 	test_matchadd_conceal_utf8.res \
 	test_matchfuzzy.res \
+	test_matchparen.res \
 	test_memory_usage.res \
 	test_menu.res \
 	test_messages.res \
@@ -564,6 +568,7 @@ NEW_TESTS_RES = \
 	test_winfixbuf.res \
 	test_wordcount.res \
 	test_writefile.res \
+	test_xdg.res \
 	test_xxd.res \
 	test_alot_latin.res \
 	test_alot_utf8.res \

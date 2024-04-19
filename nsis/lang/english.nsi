@@ -3,6 +3,7 @@
 # english.nsi: English language strings for gvim NSIS installer.
 #
 # Locale ID    : 1033
+# Locale Name  : en
 # fileencoding : UTF-8
 # Author       : Guopeng Wen, Ken Takata
 
@@ -15,6 +16,18 @@ LangString ^SetupCaption     ${LANG_ENGLISH} \
         "$(^Name) Setup"
 LangString ^UninstallCaption ${LANG_ENGLISH} \
         "$(^Name) Uninstall"
+
+##############################################################################
+# License file for the license page                                       {{{1
+##############################################################################
+
+LicenseLangString page_lic_file ${LANG_ENGLISH} "${VIMRT}\doc\uganda.nsis.txt"
+
+##############################################################################
+# README.txt file, which is opened after installation                     {{{1
+##############################################################################
+
+LangString vim_readme_file ${LANG_ENGLISH} "README.txt"
 
 ##############################################################################
 # MUI Configuration Strings                                               {{{1

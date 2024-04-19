@@ -12,6 +12,7 @@ $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*
 $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
+$XDG_CONFIG_HOME	starting.txt	/*$XDG_CONFIG_HOME*
 $quote	eval.txt	/*$quote*
 %	motion.txt	/*%*
 %:.	cmdline.txt	/*%:.*
@@ -1157,6 +1158,7 @@ $quote	eval.txt	/*$quote*
 't_vi'	term.txt	/*'t_vi'*
 't_vs'	term.txt	/*'t_vs'*
 't_xn'	term.txt	/*'t_xn'*
+'t_xo'	term.txt	/*'t_xo'*
 't_xs'	term.txt	/*'t_xs'*
 'ta'	options.txt	/*'ta'*
 'tabline'	options.txt	/*'tabline'*
@@ -4520,7 +4522,21 @@ E1410	vim9class.txt	/*E1410*
 E1411	vim9class.txt	/*E1411*
 E1412	vim9class.txt	/*E1412*
 E1413	vim9class.txt	/*E1413*
+E1414	vim9class.txt	/*E1414*
+E1415	vim9class.txt	/*E1415*
+E1416	vim9class.txt	/*E1416*
+E1417	vim9class.txt	/*E1417*
+E1418	vim9class.txt	/*E1418*
+E1419	vim9class.txt	/*E1419*
 E142	message.txt	/*E142*
+E1420	vim9class.txt	/*E1420*
+E1421	vim9class.txt	/*E1421*
+E1422	vim9class.txt	/*E1422*
+E1423	vim9class.txt	/*E1423*
+E1424	vim9class.txt	/*E1424*
+E1425	vim9class.txt	/*E1425*
+E1426	vim9class.txt	/*E1426*
+E1429	vim9class.txt	/*E1429*
 E143	autocmd.txt	/*E143*
 E144	various.txt	/*E144*
 E145	starting.txt	/*E145*
@@ -5682,6 +5698,7 @@ Select-mode-mapping	visual.txt	/*Select-mode-mapping*
 Session	starting.txt	/*Session*
 SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
+SessionWritePost	autocmd.txt	/*SessionWritePost*
 ShellCmdPost	autocmd.txt	/*ShellCmdPost*
 ShellFilterPost	autocmd.txt	/*ShellFilterPost*
 SigUSR1	autocmd.txt	/*SigUSR1*
@@ -6512,6 +6529,7 @@ compiler-gcc	quickfix.txt	/*compiler-gcc*
 compiler-gnat	ft_ada.txt	/*compiler-gnat*
 compiler-hpada	ft_ada.txt	/*compiler-hpada*
 compiler-manx	quickfix.txt	/*compiler-manx*
+compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*
 compiler-pyunit	quickfix.txt	/*compiler-pyunit*
 compiler-select	quickfix.txt	/*compiler-select*
@@ -6874,6 +6892,12 @@ encryption	editing.txt	/*encryption*
 end	intro.txt	/*end*
 end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
+enum	vim9class.txt	/*enum*
+enum-constructor	vim9class.txt	/*enum-constructor*
+enum-name	vim9class.txt	/*enum-name*
+enum-ordinal	vim9class.txt	/*enum-ordinal*
+enum-values	vim9class.txt	/*enum-values*
+enumvalue	vim9class.txt	/*enumvalue*
 environ()	builtin.txt	/*environ()*
 eol-and-eof	editing.txt	/*eol-and-eof*
 erlang.vim	syntax.txt	/*erlang.vim*
@@ -7263,6 +7287,7 @@ ft-html-syntax	syntax.txt	/*ft-html-syntax*
 ft-htmlos-syntax	syntax.txt	/*ft-htmlos-syntax*
 ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
+ft-java-plugin	filetype.txt	/*ft-java-plugin*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
 ft-json-plugin	filetype.txt	/*ft-json-plugin*
@@ -7303,6 +7328,7 @@ ft-nasm-syntax	syntax.txt	/*ft-nasm-syntax*
 ft-ncf-syntax	syntax.txt	/*ft-ncf-syntax*
 ft-nroff-syntax	syntax.txt	/*ft-nroff-syntax*
 ft-ocaml-syntax	syntax.txt	/*ft-ocaml-syntax*
+ft-pandoc-syntax	syntax.txt	/*ft-pandoc-syntax*
 ft-papp-syntax	syntax.txt	/*ft-papp-syntax*
 ft-pascal-syntax	syntax.txt	/*ft-pascal-syntax*
 ft-pdf-plugin	filetype.txt	/*ft-pdf-plugin*
@@ -8030,6 +8056,7 @@ hl-Menu	syntax.txt	/*hl-Menu*
 hl-MessageWindow	syntax.txt	/*hl-MessageWindow*
 hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
 hl-MoreMsg	syntax.txt	/*hl-MoreMsg*
+hl-MsgArea	syntax.txt	/*hl-MsgArea*
 hl-NonText	syntax.txt	/*hl-NonText*
 hl-Normal	syntax.txt	/*hl-Normal*
 hl-Pmenu	syntax.txt	/*hl-Pmenu*
@@ -9538,6 +9565,7 @@ quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-index	quickfix.txt	/*quickfix-index*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
+quickfix-pandoc	quickfix.txt	/*quickfix-pandoc*
 quickfix-parse	quickfix.txt	/*quickfix-parse*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
 quickfix-size	quickfix.txt	/*quickfix-size*
@@ -10291,6 +10319,8 @@ t_dl	term.txt	/*t_dl*
 t_ds	term.txt	/*t_ds*
 t_ed	version4.txt	/*t_ed*
 t_el	version4.txt	/*t_el*
+t_enum-variable	eval.txt	/*t_enum-variable*
+t_enumvalue-variable	eval.txt	/*t_enumvalue-variable*
 t_f1	version4.txt	/*t_f1*
 t_f10	version4.txt	/*t_f10*
 t_f2	version4.txt	/*t_f2*
@@ -10380,6 +10410,7 @@ t_ve	term.txt	/*t_ve*
 t_vi	term.txt	/*t_vi*
 t_vs	term.txt	/*t_vs*
 t_xn	term.txt	/*t_xn*
+t_xo	term.txt	/*t_xo*
 t_xs	term.txt	/*t_xs*
 tab	intro.txt	/*tab*
 tab-page	tabpage.txt	/*tab-page*
@@ -10864,6 +10895,8 @@ v:t_bool	eval.txt	/*v:t_bool*
 v:t_channel	eval.txt	/*v:t_channel*
 v:t_class	eval.txt	/*v:t_class*
 v:t_dict	eval.txt	/*v:t_dict*
+v:t_enum	eval.txt	/*v:t_enum*
+v:t_enumvalue	eval.txt	/*v:t_enumvalue*
 v:t_float	eval.txt	/*v:t_float*
 v:t_func	eval.txt	/*v:t_func*
 v:t_job	eval.txt	/*v:t_job*
@@ -11218,7 +11251,6 @@ vms-problems	os_vms.txt	/*vms-problems*
 vms-started	os_vms.txt	/*vms-started*
 vms-usage	os_vms.txt	/*vms-usage*
 vote-for-features	sponsor.txt	/*vote-for-features*
-votes-counted	sponsor.txt	/*votes-counted*
 votes-for-changes	todo.txt	/*votes-for-changes*
 vreplace-mode	insert.txt	/*vreplace-mode*
 vt100-cursor-keys	term.txt	/*vt100-cursor-keys*
@@ -11345,6 +11377,9 @@ x11-clientserver	remote.txt	/*x11-clientserver*
 x11-cut-buffer	gui_x11.txt	/*x11-cut-buffer*
 x11-selection	gui_x11.txt	/*x11-selection*
 xattr	editing.txt	/*xattr*
+xdg-base-dir	starting.txt	/*xdg-base-dir*
+xdg-runtime	starting.txt	/*xdg-runtime*
+xdg-vimrc	starting.txt	/*xdg-vimrc*
 xf86conf.vim	syntax.txt	/*xf86conf.vim*
 xfontset	mbyte.txt	/*xfontset*
 xfree-xterm	syntax.txt	/*xfree-xterm*

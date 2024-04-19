@@ -502,7 +502,7 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last, int limit_winheight)
 {
     int		count = 0;
 
-    while (first <= last)
+    while (first <= last && (!limit_winheight || count < wp->w_height))
     {
 #ifdef FEAT_FOLDING
 	int	x;
@@ -520,14 +520,19 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last, int limit_winheight)
 	{
 #ifdef FEAT_DIFF
 	    if (first == wp->w_topline)
-		count += plines_win_nofill(wp, first, limit_winheight)
-							       + wp->w_topfill;
+		count += plines_win_nofill(wp, first, FALSE) + wp->w_topfill;
 	    else
 #endif
-		count += plines_win(wp, first, limit_winheight);
+		count += plines_win(wp, first, FALSE);
 	    ++first;
 	}
     }
+#ifdef FEAT_DIFF
+    if (first == wp->w_buffer->b_ml.ml_line_count + 1)
+	count += diff_check_fill(wp, first);
+#endif
+    if (limit_winheight && count > wp->w_height)
+	return wp->w_height;
     return (count);
 }
 
@@ -2092,7 +2097,7 @@ add_user(char_u *user, int need_copy)
     if (user_copy == NULL || *user_copy == NUL || ga_grow(&ga_users, 1) == FAIL)
     {
 	if (need_copy)
-	    vim_free(user);
+	    vim_free(user_copy);
 	return;
     }
     ((char_u **)(ga_users.ga_data))[ga_users.ga_len++] = user_copy;
@@ -2172,7 +2177,7 @@ init_users(void)
 }
 
 /*
- * Function given to ExpandGeneric() to obtain an user names.
+ * Function given to ExpandGeneric() to obtain user names.
  */
     char_u*
 get_users(expand_T *xp UNUSED, int idx)

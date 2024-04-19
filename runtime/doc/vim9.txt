@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2024 Jan 12
+*vim9.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -640,6 +640,14 @@ No command can follow the "{", only a comment can be used there.
 						*command-block* *E1026*
 The block can also be used for defining a user command.  Inside the block Vim9
 syntax will be used.
+
+This is an example of using here-docs: >
+    com SomeCommand {
+        g:someVar =<< trim eval END
+          ccc
+          ddd
+        END
+      }
 
 If the statements include a dictionary, its closing bracket must not be
 written at the start of a line.  Otherwise, it would be parsed as the end of
@@ -1513,7 +1521,6 @@ Custom types can be defined with `:type`: >
 	:type MyList list<string>
 Custom types must start with a capital letter, to avoid name clashes with
 builtin types added later, similarly to user functions.
-{not implemented yet}
 
 And classes and interfaces can be used as types: >
 	:class MyClass

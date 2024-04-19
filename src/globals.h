@@ -540,7 +540,10 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_class			(static_types[84])
 #define t_const_class		(static_types[85])
 
-EXTERN type_T static_types[86]
+#define t_typealias		(static_types[86])
+#define t_const_typealias	(static_types[87])
+
+EXTERN type_T static_types[88]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
@@ -714,6 +717,10 @@ EXTERN type_T static_types[86]
     // 84: t_class
     {VAR_CLASS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
     {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
+
+    // 86: t_typealias
+    {VAR_TYPEALIAS, 0, 0, TTFLAG_STATIC, NULL, NULL, NULL},
+    {VAR_TYPEALIAS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, NULL, NULL, NULL},
 }
 #endif
 ;
@@ -795,20 +802,6 @@ EXTERN int	autocmd_busy INIT(= FALSE);	// Is apply_autocmds() busy?
 EXTERN int	autocmd_no_enter INIT(= FALSE); // Buf/WinEnter autocmds disabled
 EXTERN int	autocmd_no_leave INIT(= FALSE); // Buf/WinLeave autocmds disabled
 EXTERN int	tabpage_move_disallowed INIT(= FALSE);  // moving tabpages around disallowed
-
-EXTERN int	modified_was_set;		// did ":set modified"
-EXTERN int	did_filetype INIT(= FALSE);	// FileType event found
-EXTERN int	keep_filetype INIT(= FALSE);	// value for did_filetype when
-						// starting to execute
-						// autocommands
-
-// Set by the apply_autocmds_group function if the given event is equal to
-// EVENT_FILETYPE. Used by the readfile function in order to determine if
-// EVENT_BUFREADPOST triggered the EVENT_FILETYPE.
-//
-// Relying on this value requires one to reset it prior calling
-// apply_autocmds_group.
-EXTERN int	au_did_filetype INIT(= FALSE);
 
 // When deleting the current buffer, another one must be loaded.  If we know
 // which one is preferred, au_new_curbuf is set to it

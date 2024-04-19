@@ -2732,7 +2732,10 @@ gui_mch_dialog(
     // Motif.
     label = XmStringCreateLtoR((char *)message, STRING_TAG);
     if (label == NULL)
+    {
+	vim_free(buttons);
 	return -1;
+    }
     w = XtVaCreateManagedWidget("dialogMessage",
 				xmLabelGadgetClass, form,
 				XmNlabelString, label,

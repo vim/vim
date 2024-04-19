@@ -1140,6 +1140,37 @@ def Test_autoload_import_relative()
   v9.CheckScriptFailure(lines, 'E484:')
 enddef
 
+def Test_autoload_import_relative_compiled_buffer()
+  if !has('unix')
+    # temporary, until it's discovered why the test fails on Windows.
+    CheckUnix
+    return
+  endif
+  # autoload relative, access from compiled function. #14565, #14579
+  var lines =<< trim END
+    vim9script
+
+    export def F1(): string
+        return 'InFile.vim'
+    enddef
+  END
+  writefile(lines, 'Ximportrelativebuffer.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Ximportrelativebuffer.vim' as xfile
+
+    def F(): string
+      return xfile.F1()
+    enddef
+    assert_equal('InFile.vim', F())
+  END
+  new
+  setline(1, lines)
+  :source
+  :bw!
+enddef
+
 def Test_autoload_import_relative_autoload_dir()
   mkdir('autoload', 'pR')
   var lines =<< trim END
@@ -2054,6 +2085,13 @@ def Test_import_vim9_from_legacy()
     export def GetText(): string
        return 'text'
     enddef
+    export var exported_nr: number = 22
+    def AddNum(n: number)
+      exported_nr += n
+    enddef
+    export var exportedDict: dict<func> = {Fn: AddNum}
+    export const CONST = 10
+    export final finalVar = 'abc'
   END
   writefile(vim9_lines, 'Xvim9_export.vim', 'D')
 
@@ -2072,6 +2110,13 @@ def Test_import_vim9_from_legacy()
     " imported symbol is script-local
     call assert_equal('exported', s:vim9.exported)
     call assert_equal('text', s:vim9.GetText())
+    call s:vim9.exportedDict.Fn(5)
+    call assert_equal(27, s:vim9.exported_nr)
+    call call(s:vim9.exportedDict.Fn, [3])
+    call assert_equal(30, s:vim9.exported_nr)
+    call assert_fails('let s:vim9.CONST = 20', 'E46: Cannot change read-only variable "CONST"')
+    call assert_fails('let s:vim9.finalVar = ""', 'E46: Cannot change read-only variable "finalVar"')
+    call assert_fails('let s:vim9.non_existing_var = 20', 'E1048: Item not found in script: non_existing_var')
   END
   writefile(legacy_lines, 'Xlegacy_script.vim', 'D')
 
@@ -2916,6 +2961,33 @@ def Test_vim9_import_symlink()
     unlet g:resultValue
     &rtp = save_rtp
     delete('Xfrom', 'rf')
+
+    # Access item from :def imported through symbolic linked directory. #14536
+    mkdir('Xto/real_dir', 'pR')
+    lines =<< trim END
+        vim9script
+        export const val = 17
+        export def F(): number
+          return 23
+        enddef
+    END
+    writefile(lines, 'Xto/real_dir/real_file.vim')
+    system('ln -s real_dir Xto/syml_dir')
+    defer delete('Xto/syml_dir')
+    lines =<< trim END
+      vim9script
+      import autoload './Xto/syml_dir/real_file.vim'
+
+      def Fmain()
+        assert_equal(17, real_file.val)
+      enddef
+      def F2()
+        assert_equal(23, real_file.F())
+      enddef
+      Fmain()
+      F2()
+    END
+    v9.CheckScriptSuccess(lines)
   endif
 enddef
 
@@ -2976,6 +3048,32 @@ def Test_import_autloaded_script()
   END
   v9.CheckScriptSuccess(lines)
 
+  &rtp = save_rtp
+enddef
+
+" Test for autoloading an imported dict func
+def Test_autoload_import_dict_func()
+  mkdir('Xdir/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export var al_exported_nr: number = 33
+    def Al_AddNum(n: number)
+      al_exported_nr += n
+    enddef
+    export var al_exportedDict: dict<func> = {Fn: Al_AddNum}
+  END
+  writefile(lines, 'Xdir/autoload/Xdictfunc.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  lines =<< trim END
+    import './Xdir/autoload/Xdictfunc.vim'
+    call Xdictfunc#al_exportedDict.Fn(5)
+    call assert_equal(38, Xdictfunc#al_exported_nr)
+    call call(Xdictfunc#al_exportedDict.Fn, [3])
+    call assert_equal(41, Xdictfunc#al_exported_nr)
+  END
+  v9.CheckScriptSuccess(lines)
   &rtp = save_rtp
 enddef
 

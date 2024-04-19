@@ -89,7 +89,7 @@ RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u un
 # Delete files that may interfere with running tests.  This includes some files
 # that may result from working on the tests, not only from running them.
 clean:
-	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind
+	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind failed
 	-rm -f opt_test.vim test_result.log $(CLEANUP_FILES)
 	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*

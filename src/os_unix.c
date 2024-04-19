@@ -3766,7 +3766,8 @@ mch_settmode(tmode_T tmode)
     {
 	// ~ICRNL enables typing ^V^M
 	// ~IXON disables CTRL-S stopping output, so that it can be mapped.
-	tnew.c_iflag &= ~(ICRNL | IXON);
+	tnew.c_iflag &= ~(ICRNL |
+		(T_XON == NULL || *T_XON == NUL ? IXON : 0));
 	tnew.c_lflag &= ~(ICANON | ECHO | ISIG | ECHOE
 # if defined(IEXTEN)
 		    | IEXTEN	    // IEXTEN enables typing ^V on SOLARIS
@@ -7494,7 +7495,19 @@ gpm_open(void)
 	return 1; // succeed
     }
     if (gpm_fd == -2)
+    {
 	Gpm_Close(); // We don't want to talk to xterm via gpm
+
+        // Gpm_Close fails to properly restore the WINCH and TSTP handlers,
+        // leading to Vim ignoring resize signals. We have to re-initialize
+        // these handlers again here.
+# ifdef SIGWINCH
+	mch_signal(SIGWINCH, sig_winch);
+# endif
+# ifdef SIGTSTP
+	mch_signal(SIGTSTP, restricted ? SIG_IGN : sig_tstp);
+# endif
+    }
     return 0;
 }
 

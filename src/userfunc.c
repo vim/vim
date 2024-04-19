@@ -555,7 +555,9 @@ parse_argument_types(
 			type = &t_any;
 			for (int om = 0; om < obj_member_count; ++om)
 			{
-			    if (STRCMP(aname, obj_members[om].ocm_name) == 0)
+			    if (obj_members != NULL
+				    && STRCMP(aname,
+					obj_members[om].ocm_name) == 0)
 			    {
 				type = obj_members[om].ocm_type;
 				break;
@@ -570,10 +572,16 @@ parse_argument_types(
 		fp->uf_arg_types[i] = type;
 		if (i < fp->uf_args.ga_len
 			&& (type->tt_type == VAR_FUNC
-			    || type->tt_type == VAR_PARTIAL)
-			&& var_wrong_func_name(
-				    ((char_u **)fp->uf_args.ga_data)[i], TRUE))
-		    return FAIL;
+			    || type->tt_type == VAR_PARTIAL))
+		{
+		    char_u *name = ((char_u **)fp->uf_args.ga_data)[i];
+		    if (obj_members != NULL && *name == '_')
+			// protected object method
+			name++;
+
+		    if (var_wrong_func_name(name, TRUE))
+			return FAIL;
+		}
 	    }
 	}
     }
@@ -1219,13 +1227,18 @@ get_function_body(
 			|| checkforcmd(&arg, "const", 5)
 			|| vim9_function)
 		{
-		    while (vim_strchr((char_u *)"$@&", *arg) != NULL)
-			++arg;
-		    arg = skipwhite(find_name_end(arg, NULL, NULL,
-					       FNE_INCL_BR | FNE_ALLOW_CURLY));
-		    if (vim9_function && *arg == ':')
-			arg = skipwhite(skip_type(skipwhite(arg + 1), FALSE));
-		    if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<')
+		    int		save_sc_version = current_sctx.sc_version;
+		    int		var_count = 0;
+		    int		semicolon = 0;
+
+		    current_sctx.sc_version
+				     = vim9_function ? SCRIPT_VERSION_VIM9 : 1;
+		    arg = skip_var_list(arg, TRUE, &var_count, &semicolon,
+									 TRUE);
+		    if (arg != NULL)
+			arg = skipwhite(arg);
+		    current_sctx.sc_version = save_sc_version;
+		    if (arg != NULL && STRNCMP(arg, "=<<", 3) == 0)
 		    {
 			p = skipwhite(arg + 3);
 			while (TRUE)
@@ -1329,6 +1342,7 @@ lambda_function_body(
     char_u	*name;
     int		lnum_save = -1;
     linenr_T	sourcing_lnum_top = SOURCING_LNUM;
+    char_u	*line_arg = NULL;
 
     *arg = skipwhite(*arg + 1);
     if (**arg == '|' || !ends_excmd2(start, *arg))
@@ -1336,6 +1350,12 @@ lambda_function_body(
 	semsg(_(e_trailing_characters_str), *arg);
 	return FAIL;
     }
+
+    // When there is a line break use what follows for the lambda body.
+    // Makes lambda body initializers work for object and enum member
+    // variables.
+    if (**arg == '\n')
+	line_arg = *arg + 1;
 
     CLEAR_FIELD(eap);
     eap.cmdidx = CMD_block;
@@ -1351,7 +1371,7 @@ lambda_function_body(
     }
 
     ga_init2(&newlines, sizeof(char_u *), 10);
-    if (get_function_body(&eap, &newlines, NULL,
+    if (get_function_body(&eap, &newlines, line_arg,
 					     &evalarg->eval_tofree_ga) == FAIL)
 	goto erret;
 
@@ -1366,7 +1386,12 @@ lambda_function_body(
 
 	for (idx = 0; idx < newlines.ga_len; ++idx)
 	{
-	    char_u  *p = skipwhite(((char_u **)newlines.ga_data)[idx]);
+	    char_u  *p = ((char_u **)newlines.ga_data)[idx];
+	    if (p == NULL)
+		// comment line in the lambda body
+		continue;
+
+	    p = skipwhite(p);
 
 	    if (ga_grow(gap, 1) == FAIL || ga_grow(freegap, 1) == FAIL)
 		goto erret;

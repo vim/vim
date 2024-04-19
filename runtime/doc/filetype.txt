@@ -1,4 +1,4 @@
-*filetype.txt*	For Vim version 9.1.  Last change: 2024 Feb 14
+*filetype.txt*	For Vim version 9.1.  Last change: 2024 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -157,6 +157,8 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.inc		g:filetype_inc
 	*.lsl		g:filetype_lsl
 	*.m		g:filetype_m		|ft-mathematica-syntax|
+	*.markdown,*.mdown,*.mkd,*.mkdn,*.mdwn,*.md
+			g:filetype_md		|ft-pandoc-syntax|
 	*.mod		g:filetype_mod
 	*.p		g:filetype_p		|ft-pascal-syntax|
 	*.pl		g:filetype_pl
@@ -437,6 +439,19 @@ So to enable this only for ruby, set the following variable: >
 If both, the global `plugin_exec` and the `<filetype>_exec` specific variable
 are set, the filetype specific variable should have precedent.
 
+
+ASCIIDOC						*ft-asciidoc-plugin*
+
+To enable |folding| use this: >
+	let g:asciidoc_folding = 1
+
+To disable nesting of folded headers use this: >
+	let g:asciidoc_foldnested = 0
+
+To disable folding everything under the title use this: >
+	let asciidoc_fold_under_title = 0
+
+
 AWK							*ft-awk-plugin*
 
 Support for features specific to GNU Awk, like @include, can be enabled by
@@ -564,18 +579,6 @@ under it.  If not found, a new entry and item is prepended to the beginning of
 the Changelog.
 
 
-ASCIIDOC						*ft-asciidoc-plugin*
-
-To enable |folding| use this: >
-	let g:asciidoc_folding = 1
-
-To disable nesting of folded headers use this: >
-	let g:asciidoc_foldnested = 0
-
-To disable folding everything under the title use this: >
-	let asciidoc_fold_under_title = 0
-
-
 FORTRAN							*ft-fortran-plugin*
 
 Options:
@@ -623,6 +626,37 @@ to the details of that function in the call graph.
 The mapping can be disabled with: >
 	let g:no_gprof_maps = 1
 
+
+JAVA							*ft-java-plugin*
+
+Whenever the variable "g:ftplugin_java_source_path" is defined and its value
+is a filename whose extension is either ".jar" or ".zip", e.g.: >
+	let g:ftplugin_java_source_path = '/path/to/src.jar'
+	let g:ftplugin_java_source_path = '/path/to/src.zip'
+<
+and the |zip| plugin has already been sourced, the |gf| command can be used to
+open the archive and the |n| command can be used to look for the selected type
+and the <Return> key can be used to load a listed file.
+
+Note that the effect of using the "gf" command WITHIN a buffer loaded with the
+Zip plugin depends on the version of the Zip plugin.  For the Zip plugin
+versions that do not support Jar type archives, consider creating symbolic
+links with the ".zip" extension for each Jar archive of interest and assigning
+any such file to the variable from now on.
+
+Otherwise, for the defined variable "g:ftplugin_java_source_path", the local
+value of the 'path' option will be further modified by prefixing the value of
+the variable, e.g.: >
+	let g:ftplugin_java_source_path = $JDK_SRC_PATH
+	let &l:path = g:ftplugin_java_source_path . ',' . &l:path
+<
+and the "gf" command can be used on a fully-qualified type to look for a file
+in the "path" and to try to load it.
+
+Remember to manually trigger the |FileType| event from a buffer with a Java
+file loaded in it each time after assigning a new value to the variable: >
+	doautocmd FileType
+<
 
 JSON-FORMAT						*ft-json-plugin*
 

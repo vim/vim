@@ -1030,7 +1030,7 @@ def Test_disassemble_closure_in_loop()
 
         'endif\_s*' ..
         'g:Ref = () => ii\_s*' ..
-        '\d\+ FUNCREF <lambda>4 vars  $3-$3\_s*' ..
+        '\d\+ FUNCREF <lambda>\d\+ vars  $3-$3\_s*' ..
         '\d\+ STOREG g:Ref\_s*' ..
 
         'continue\_s*' ..
@@ -3433,6 +3433,38 @@ def Test_disassemble_object_len()
     '3 BCALL len(argc 1)\_s*' ..
     '4 STORE $1\_s*' ..
     '5 RETURN void', g:instr)
+  unlet g:instr
+enddef
+
+" Disassemble instructions for using a compound operator in a closure
+def Test_disassemble_compound_op_in_closure()
+  var lines =<< trim END
+    vim9script
+    class A
+      var foo: number = 1
+      def Foo(): func
+        var Fn = () => {
+          this.foo += 1
+        }
+        return Fn
+      enddef
+    endclass
+    var a = A.new()
+    var Lambda = a.Foo()
+    var num = matchstr(string(Lambda), '\d\+')
+    g:instr = execute($'disassemble <lambda>{num}')
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_match('<lambda>\d\+\_s*' ..
+    'this.foo += 1\_s*' ..
+    '0 LOADOUTER level 0 $0\_s*' ..
+    '1 OBJ_MEMBER 0\_s*' ..
+    '2 PUSHNR 1\_s*' ..
+    '3 OPNR +\_s*' ..
+    '4 PUSHNR 0\_s*' ..
+    '5 LOADOUTER level 0 $0\_s*' ..
+    '6 STOREINDEX object\_s*' ..
+    '7 RETURN void', g:instr)
   unlet g:instr
 enddef
 

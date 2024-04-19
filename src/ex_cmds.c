@@ -2961,7 +2961,7 @@ do_ecmd(
     // Since we are starting to edit a file, consider the filetype to be
     // unset.  Helps for when an autocommand changes files and expects syntax
     // highlighting to work in the other file.
-    did_filetype = FALSE;
+    curbuf->b_did_filetype = FALSE;
 
 /*
  * other_file	oldbuf
@@ -5503,7 +5503,8 @@ ex_drop(exarg_T *eap)
 		buf_check_timestamp(curbuf, FALSE);
 		curbuf->b_p_ar = save_ar;
 	    }
-	    ex_rewind(eap);
+	    if (curbuf->b_ml.ml_flags & ML_EMPTY)
+		ex_rewind(eap);
 	    return;
 	}
     }

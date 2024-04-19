@@ -3789,6 +3789,43 @@ func Test_funcref_to_string()
   call assert_equal("function('g:Test_funcref_to_string')", string(Fn))
 endfunc
 
+" A funcref cannot start with an underscore (except when used as a protected
+" class or object variable)
+func Test_funcref_with_underscore()
+  " at script level
+  let lines =<< trim END
+    vim9script
+    var _Fn = () => 10
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn')
+
+  " inside a function
+  let lines =<< trim END
+    vim9script
+    def Func()
+      var _Fn = () => 10
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn', 1)
+
+  " as a function argument
+  let lines =<< trim END
+    vim9script
+    def Func(_Fn: func)
+    enddef
+    defcompile
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Fn', 2)
+
+  " as a lambda argument
+  let lines =<< trim END
+    vim9script
+    var Fn = (_Farg: func) => 10
+  END
+  call v9.CheckSourceFailure(lines, 'E704: Funcref variable name must start with a capital: _Farg', 2)
+endfunc
+
 " Test for isabsolutepath()
 func Test_isabsolutepath()
   call assert_false(isabsolutepath(''))
@@ -3946,6 +3983,57 @@ func Test_glob_extended_mswin()
   let expected = ['Xtestglob/foo/bar/src/foo.cpp', 'Xtestglob/foo/bar/src/foo.h', 'Xtestglob/foo/bar/src/foo.sh']
   call assert_equal(expected, sort(glob('Xtestglob/**/foo.*', 0, 1)))
   call delete('Xtestglob', 'rf')
+endfunc
+
+" Tests for the slice() function.
+func Test_slice()
+  let lines =<< trim END
+    call assert_equal([1, 2, 3, 4, 5], slice(range(6), 1))
+    call assert_equal([2, 3, 4, 5], slice(range(6), 2))
+    call assert_equal([2, 3], slice(range(6), 2, 4))
+    call assert_equal([0, 1, 2, 3], slice(range(6), 0, 4))
+    call assert_equal([1, 2, 3], slice(range(6), 1, 4))
+    call assert_equal([1, 2, 3, 4], slice(range(6), 1, -1))
+    call assert_equal([1, 2], slice(range(6), 1, -3))
+    call assert_equal([1], slice(range(6), 1, -4))
+    call assert_equal([], slice(range(6), 1, -5))
+    call assert_equal([], slice(range(6), 1, -6))
+
+    call assert_equal(0z1122334455, slice(0z001122334455, 1))
+    call assert_equal(0z22334455, slice(0z001122334455, 2))
+    call assert_equal(0z2233, slice(0z001122334455, 2, 4))
+    call assert_equal(0z00112233, slice(0z001122334455, 0, 4))
+    call assert_equal(0z112233, slice(0z001122334455, 1, 4))
+    call assert_equal(0z11223344, slice(0z001122334455, 1, -1))
+    call assert_equal(0z1122, slice(0z001122334455, 1, -3))
+    call assert_equal(0z11, slice(0z001122334455, 1, -4))
+    call assert_equal(0z, slice(0z001122334455, 1, -5))
+    call assert_equal(0z, slice(0z001122334455, 1, -6))
+
+    call assert_equal('12345', slice('012345', 1))
+    call assert_equal('2345', slice('012345', 2))
+    call assert_equal('23', slice('012345', 2, 4))
+    call assert_equal('0123', slice('012345', 0, 4))
+    call assert_equal('123', slice('012345', 1, 4))
+    call assert_equal('1234', slice('012345', 1, -1))
+    call assert_equal('12', slice('012345', 1, -3))
+    call assert_equal('1', slice('012345', 1, -4))
+    call assert_equal('', slice('012345', 1, -5))
+    call assert_equal('', slice('012345', 1, -6))
+
+    #" Composing chars are treated as a part of the preceding base char.
+    call assert_equal('β̳́γ̳̂δ̳̃ε̳̄ζ̳̅', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1))
+    call assert_equal('γ̳̂δ̳̃ε̳̄ζ̳̅', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(2))
+    call assert_equal('γ̳̂δ̳̃', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(2, 4))
+    call assert_equal('ὰ̳β̳́γ̳̂δ̳̃', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(0, 4))
+    call assert_equal('β̳́γ̳̂δ̳̃', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, 4))
+    call assert_equal('β̳́γ̳̂δ̳̃ε̳̄', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -1))
+    call assert_equal('β̳́γ̳̂', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -3))
+    call assert_equal('β̳́', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -4))
+    call assert_equal('', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -5))
+    call assert_equal('', 'ὰ̳β̳́γ̳̂δ̳̃ε̳̄ζ̳̅'->slice(1, -6))
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

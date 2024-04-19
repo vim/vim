@@ -400,7 +400,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "var" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using the "public" keyword when defining a class method
   lines =<< trim END
@@ -410,7 +410,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using the "public" keyword when defining an object protected method
   lines =<< trim END
@@ -420,7 +420,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "var" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using the "public" keyword when defining a class protected method
   lines =<< trim END
@@ -430,7 +430,7 @@ def Test_class_def_method()
       enddef
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1388: Public keyword not supported for a method', 3)
+  v9.CheckSourceFailure(lines, 'E1388: public keyword not supported for a method', 3)
 
   # Using a "def" keyword without an object method name
   lines =<< trim END
@@ -1191,7 +1191,7 @@ def Test_instance_variable_access()
       public var _val = 10
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1332: Public variable name cannot start with underscore: public var _val = 10', 3)
+  v9.CheckSourceFailure(lines, 'E1332: public variable name cannot start with underscore: public var _val = 10', 3)
 
   lines =<< trim END
     vim9script
@@ -1287,7 +1287,7 @@ def Test_instance_variable_access()
       public val = 1
     endclass
   END
-  v9.CheckSourceFailure(lines, 'E1331: Public must be followed by "var" or "static"', 3)
+  v9.CheckSourceFailure(lines, 'E1331: public must be followed by "var" or "static"', 3)
 
   # Modify a instance variable using the class name in the script context
   lines =<< trim END
@@ -2275,6 +2275,18 @@ def Test_interface_basics()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for using string() with an interface
+def Test_interface_to_string()
+  var lines =<< trim END
+    vim9script
+    interface Intf
+      def Method(nr: number)
+    endinterface
+    assert_equal("interface Intf", string(Intf))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
 def Test_class_implements_interface()
   var lines =<< trim END
     vim9script
@@ -3109,6 +3121,28 @@ def Test_class_import()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for importing a class into a legacy script and calling the class method
+def Test_class_method_from_legacy_script()
+  var lines =<< trim END
+    vim9script
+    export class A
+      static var name: string = 'a'
+      static def SetName(n: string)
+        name = n
+      enddef
+    endclass
+  END
+  writefile(lines, 'Xvim9export.vim', 'D')
+
+  lines =<< trim END
+    import './Xvim9export.vim' as vim9
+
+    call s:vim9.A.SetName('b')
+    call assert_equal('b', s:vim9.A.name)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for implementing an imported interface
 def Test_implement_imported_interface()
   var lines =<< trim END
@@ -3208,6 +3242,23 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1359: Cannot define a "new" method in an abstract class', 4)
+
+  # extending an abstract class with class methods and variables
+  lines =<< trim END
+    vim9script
+    abstract class A
+      static var s: string = 'vim'
+      static def Fn(): list<number>
+        return [10]
+      enddef
+    endclass
+    class B extends A
+    endclass
+    var b = B.new()
+    assert_equal('vim', A.s)
+    assert_equal([10], A.Fn())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_closure_in_class()
@@ -3729,7 +3780,7 @@ def Test_stack_expansion_with_methods()
     endclass
 
     def F0()
-      assert_match('<SNR>\d\+_F\[1\]\.\.C\.M1\[1\]\.\.<SNR>\d\+_F0\[1\]$', expand('<stack>'))
+      assert_match('<SNR>\d\+_F\[1\]\.\.<SNR>\d\+_C\.M1\[1\]\.\.<SNR>\d\+_F0\[1\]$', expand('<stack>'))
     enddef
 
     def F()
@@ -6486,7 +6537,7 @@ def Test_interface_with_unsupported_members()
       public static var num: number
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1387: Public variable not supported in an interface', 3)
+  v9.CheckSourceFailure(lines, 'E1387: public variable not supported in an interface', 3)
 
   lines =<< trim END
     vim9script
@@ -6494,7 +6545,7 @@ def Test_interface_with_unsupported_members()
       public static var num: number
     endinterface
   END
-  v9.CheckSourceFailure(lines, 'E1387: Public variable not supported in an interface', 3)
+  v9.CheckSourceFailure(lines, 'E1387: public variable not supported in an interface', 3)
 
   lines =<< trim END
     vim9script
@@ -10347,6 +10398,244 @@ def Test_Ref_Class_Within_Same_Class()
     endclass
   END
   v9.CheckScriptFailure(lines, 'E1347: Not a valid interface: A', 3)
+enddef
+
+" Test for using a compound operator from a lambda function in an object method
+def Test_compound_op_in_objmethod_lambda()
+  # Test using the "+=" operator
+  var lines =<< trim END
+    vim9script
+    class A
+      var n: number = 10
+      def Foo()
+        var Fn = () => {
+          this.n += 1
+        }
+        Fn()
+      enddef
+    endclass
+
+    var a = A.new()
+    a.Foo()
+    assert_equal(11, a.n)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Test using the "..=" operator
+  lines =<< trim END
+    vim9script
+    class A
+      var s: string = "a"
+      def Foo()
+        var Fn = () => {
+          this.s ..= "a"
+        }
+        Fn()
+      enddef
+    endclass
+
+    var a = A.new()
+    a.Foo()
+    a.Foo()
+    assert_equal("aaa", a.s)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using test_refcount() with a class and an object
+def Test_class_object_refcount()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var a: A = A.new()
+    assert_equal(2, test_refcount(A))
+    assert_equal(1, test_refcount(a))
+    var b = a
+    assert_equal(2, test_refcount(A))
+    assert_equal(2, test_refcount(a))
+    assert_equal(2, test_refcount(b))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" call a lambda function in one object from another object
+def Test_lambda_invocation_across_classes()
+  var lines =<< trim END
+    vim9script
+    class A
+      var s: string = "foo"
+      def GetFn(): func
+        var Fn = (): string => {
+          return this.s
+        }
+        return Fn
+      enddef
+    endclass
+
+    class B
+      var s: string = "bar"
+      def GetFn(): func
+        var a = A.new()
+        return a.GetFn()
+      enddef
+    endclass
+
+    var b = B.new()
+    var Fn = b.GetFn()
+    assert_equal("foo", Fn())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using a class member which is an object of the current class
+def Test_current_class_object_class_member()
+  var lines =<< trim END
+    vim9script
+    class A
+      public static var obj1: A = A.new(10)
+      var n: number
+    endclass
+    defcompile
+    assert_equal(10, A.obj1.n)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for updating a base class variable from a base class method without the
+" class name.  This used to crash Vim (Github issue #14352).
+def Test_use_base_class_variable_from_base_class_method()
+  var lines =<< trim END
+    vim9script
+
+    class DictKeyClass
+      static var _obj_id_count = 1
+      def _GenerateKey()
+        _obj_id_count += 1
+      enddef
+      static def GetIdCount(): number
+        return _obj_id_count
+      enddef
+    endclass
+
+    class C extends DictKeyClass
+      def F()
+        this._GenerateKey()
+      enddef
+    endclass
+
+    C.new().F()
+    assert_equal(2, DictKeyClass.GetIdCount())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for accessing protected funcref object and class variables
+def Test_protected_funcref()
+  # protected funcref object variable
+  var lines =<< trim END
+    vim9script
+    class Test1
+      const _Id: func(any): any = (v) => v
+    endclass
+    var n = Test1.new()._Id(1)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_Id" in class "Test1"', 5)
+
+  # protected funcref class variable
+  lines =<< trim END
+    vim9script
+    class Test2
+      static const _Id: func(any): any = (v) => v
+    endclass
+    var n = Test2._Id(2)
+  END
+  v9.CheckScriptFailure(lines, 'E1333: Cannot access protected variable "_Id" in class "Test2"', 5)
+enddef
+
+" Test for using lambda block in classes
+def Test_lambda_block_in_class()
+  # This used to crash Vim
+  var lines =<< trim END
+    vim9script
+    class IdClass1
+      const Id: func(number): number = (num: number): number => {
+        # Return a ID
+        return num * 10
+      }
+    endclass
+    var id = IdClass1.new()
+    assert_equal(20, id.Id(2))
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # This used to crash Vim
+  lines =<< trim END
+    vim9script
+    class IdClass2
+      static const Id: func(number): number = (num: number): number => {
+        # Return a ID
+        return num * 2
+      }
+    endclass
+    assert_equal(16, IdClass2.Id(8))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for defcompiling an abstract method
+def Test_abstract_method_defcompile()
+  # Compile an abstract class with abstract object methods
+  var lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): string
+      abstract def Bar(): list<string>
+    endclass
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Compile a concrete object method in an abstract class
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): string
+      abstract def Bar(): list<string>
+      def Baz(): string
+        pass
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: pass', 1)
+
+  # Compile a concrete class method in an abstract class
+  lines =<< trim END
+    vim9script
+    abstract class A
+      abstract def Foo(): string
+      abstract def Bar(): list<string>
+      static def Baz(): string
+        pass
+      enddef
+    endclass
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: pass', 1)
+enddef
+
+" Test for defining a class in a function
+def Test_class_definition_in_a_function()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      class A
+      endclass
+    enddef
+    defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1429: Class can only be used in a script', 1)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

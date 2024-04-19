@@ -1104,6 +1104,27 @@ def Test_assignment_partial()
       Ref(0)
   END
   v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected string but got number')
+
+  lines =<< trim END
+    var Fn1 = () => {
+        return 10
+      }
+    assert_equal('func(): number', typename(Fn1))
+    var Fn2 = () => {
+        return "a"
+      }
+    assert_equal('func(): string', typename(Fn2))
+    var Fn3 = () => {
+        return {a: [1]}
+      }
+    assert_equal('func(): dict<list<number>>', typename(Fn3))
+    var Fn4 = (...l: list<string>) => {
+        return []
+      }
+    assert_equal('func(...list<string>): list<any>', typename(Fn4))
+  END
+  v9.CheckSourceSuccess(['vim9script'] + lines)
+  v9.CheckSourceSuccess(['def Xfunc()'] + lines + ['enddef', 'defcompile'])
 enddef
 
 def Test_assignment_list_any_index()
@@ -1993,6 +2014,31 @@ def Test_heredoc()
         TEXT
         call assert_equal(['var foo =<< trim FOO'], foo_3_bar)
       endfunc
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # commented out heredoc assignment without space after '#'
+  lines =<< trim END
+      vim9script
+      def Func()
+        #x =<< trim [CODE]
+        #[CODE]
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # heredoc start should not be recognized in string
+  lines =<< trim END
+      vim9script
+      def Func()
+        new
+        @" = 'bar'
+        ['foo', @"]->setline("]=<<"->count('='))
+        assert_equal(['foo', 'bar'], getline(1, '$'))
+        bwipe!
+      enddef
       Func()
   END
   v9.CheckScriptSuccess(lines)
@@ -2935,6 +2981,66 @@ def Test_heredoc_expr()
       var d = x{a1}x{a2}x{a3}x{a4}
     END
     assert_equal(['var a = 15', 'var b = 6 + 6', 'var c = "local"', 'var d = x1x2x3x'], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a dictionary
+  lines =<< trim CODE
+    var d1 = {'a': 10, 'b': [1, 2]}
+    var code =<< trim eval END
+      var d2 = {d1}
+    END
+    assert_equal(["var d2 = {'a': 10, 'b': [1, 2]}"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate an empty dictionary
+  lines =<< trim CODE
+    var d1 = {}
+    var code =<< trim eval END
+      var d2 = {d1}
+    END
+    assert_equal(["var d2 = {}"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a null dictionary
+  lines =<< trim CODE
+    var d1 = test_null_dict()
+    var code =<< trim eval END
+      var d2 = {d1}
+    END
+    assert_equal(["var d2 = {}"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a List
+  lines =<< trim CODE
+    var l1 = ['a', 'b', 'c']
+    var code =<< trim eval END
+      var l2 = {l1}
+    END
+    assert_equal(["var l2 = ['a', 'b', 'c']"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate an empty List
+  lines =<< trim CODE
+    var l1 = []
+    var code =<< trim eval END
+      var l2 = {l1}
+    END
+    assert_equal(["var l2 = []"], code)
+  CODE
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # Evaluate a null List
+  lines =<< trim CODE
+    var l1 = test_null_list()
+    var code =<< trim eval END
+      var l2 = {l1}
+    END
+    assert_equal(["var l2 = []"], code)
   CODE
   v9.CheckDefAndScriptSuccess(lines)
 

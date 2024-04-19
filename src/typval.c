@@ -266,7 +266,13 @@ tv_get_bool_or_number_chk(
 	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
-	    emsg(_(e_using_object_as_number));
+	    {
+		class_T *cl = varp->vval.v_object->obj_class;
+		if (cl != NULL && IS_ENUM(cl))
+		    semsg(_(e_using_enum_str_as_number), cl->class_name);
+		else
+		    emsg(_(e_using_object_as_number));
+	    }
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -1139,7 +1145,13 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    check_typval_is_value(varp);
 	    break;
 	case VAR_OBJECT:
-	    emsg(_(e_using_object_as_string));
+	    {
+		class_T *cl = varp->vval.v_object->obj_class;
+		if (cl != NULL && IS_ENUM(cl))
+		    semsg(_(e_using_enum_str_as_string), cl->class_name);
+		else
+		    emsg(_(e_using_object_as_string));
+	    }
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL

@@ -856,6 +856,15 @@ func Test_highlight_User()
   hi clear
 endfunc
 
+" Test for MsgArea highlighting
+func Test_highlight_MsgArea()
+  CheckNotGui
+  hi MsgArea ctermfg=20
+  redraw!
+  call assert_equal('20', synIDattr(synIDtrans(hlID('MsgArea')), 'fg'))
+  hi clear
+endfunc
+
 " Test for using RGB color values in a highlight group
 func Test_xxlast_highlight_RGB_color()
   CheckCanRunGui

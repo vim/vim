@@ -260,7 +260,10 @@ exe_newdict(int count, ectx_T *ectx)
     if (count > 0)
 	ectx->ec_stack.ga_len -= 2 * count - 1;
     else if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+    {
+	dict_unref(dict);
 	return FAIL;
+    }
     else
 	++ectx->ec_stack.ga_len;
     tv = STACK_TV_BOT(-1);
@@ -1635,7 +1638,7 @@ store_var(char_u *name, typval_T *tv)
  * Return FAIL if not allowed.
  */
     static int
-do_2string(typval_T *tv, int is_2string_any, int tolerant)
+do_2string(typval_T *tv, int is_2string_any, int tostring_flags)
 {
     if (tv->v_type == VAR_STRING)
 	return OK;
@@ -1650,10 +1653,11 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 	    case VAR_BOOL:
 	    case VAR_NUMBER:
 	    case VAR_FLOAT:
+	    case VAR_DICT:
 	    case VAR_BLOB:	break;
 
 	    case VAR_LIST:
-				if (tolerant)
+				if (tostring_flags & TOSTRING_TOLERANT)
 				{
 				    char_u	*s, *e, *p;
 				    garray_T	ga;
@@ -1686,6 +1690,8 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    tv->vval.v_string = ga.ga_data;
 				    return OK;
 				}
+				if (tostring_flags & TOSTRING_INTERPOLATE)
+				    break;
 				// FALLTHROUGH
 	    default:	to_string_error(tv->v_type);
 			return FAIL;
@@ -3255,6 +3261,12 @@ exec_instructions(ectx_T *ectx)
 		++tv->vval.v_object->obj_class->class_refcount;
 		tv->vval.v_object->obj_refcount = 1;
 		object_created(tv->vval.v_object);
+
+		// When creating an enum value object, initialize the name and
+		// ordinal object variables.
+		class_T *en = tv->vval.v_object->obj_class;
+		if (IS_ENUM(en))
+		    enum_set_internal_obj_vars(en, tv->vval.v_object);
 		break;
 
 	    // execute Ex command line
@@ -4564,6 +4576,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			iemsg("ufunc unexpectedly NULL for FUNCREF");
+			vim_free(pt);
 			goto theend;
 		    }
 		    if (fill_partial_and_closure(pt, ufunc,
@@ -5674,7 +5687,7 @@ exec_instructions(ectx_T *ectx)
 		SOURCING_LNUM = iptr->isn_lnum;
 		if (do_2string(STACK_TV_BOT(iptr->isn_arg.tostring.offset),
 				iptr->isn_type == ISN_2STRING_ANY,
-				      iptr->isn_arg.tostring.tolerant) == FAIL)
+				      iptr->isn_arg.tostring.flags) == FAIL)
 			    goto on_error;
 		break;
 

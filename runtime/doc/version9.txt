@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Mar 03
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41543,16 +41543,23 @@ and is a work in progress.
 
 Support for Wayland UI.
 
+Support for the XDG Desktop Specification |xdg-base-dir|
+
 Vim9 script
 -----------
 Add support for internal builtin functions with vim9 objects, see
 |builtin-object-methods|
+
+Enum support for Vim9 script |:enum|
 
 Other improvements				*new-other-9.2*
 ------------------
 
 Changed						*changed-9.2*
 -------
+
+- use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
+- use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
 
 Added						*added-9.2*
 -----
@@ -41570,10 +41577,15 @@ Functions: ~
 
 Autocommands: ~
 
+|SessionWritePost|	after writing the session file |:mksession|
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
 |WinNewPre|		before creating a new window
 
+
+Highlighting: ~
+
+|hl-MsgArea|		highlighting of the Command-line and messages area.
 
 Commands: ~
 
@@ -41581,6 +41593,7 @@ Commands: ~
 Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
+'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420).
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-9.2*

@@ -460,7 +460,7 @@ typedef struct {
 // arguments to ISN_2STRING and ISN_2STRING_ANY
 typedef struct {
     int		offset;
-    int		tolerant;
+    int		flags;
 } tostring_T;
 
 // arguments to ISN_2BOOL
@@ -880,3 +880,10 @@ typedef enum {
 
 // flags for call_def_function()
 #define DEF_USE_PT_ARGV	    1	// use the partial arguments
+
+// Flag used for conversion to string by may_generate_2STRING()
+#define TOSTRING_NONE		0x0
+// Convert a List to series of values separated by newline
+#define TOSTRING_INTERPOLATE	0x1
+// Convert a List to a textual representation of the list "[...]"
+#define TOSTRING_TOLERANT	0x2

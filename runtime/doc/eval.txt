@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Feb 08
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2076,6 +2076,10 @@ v:colornames    A dictionary that maps color names to hex color strings. These
 		both automatically load all `colors/lists/default.vim` color
 		scripts.
 
+		You can make changes to that file, but make sure to add new
+		keys instead of updating existing ones, otherwise Vim will skip
+		loading the file (thinking is hasn't been changed).
+
 				*v:completed_item* *completed_item-variable*
 v:completed_item
 		|Dictionary| containing the |complete-items| for the most
@@ -2597,6 +2601,10 @@ v:t_class	Value of |class| type.  Read-only.  See: |type()|
 v:t_object	Value of |object| type.  Read-only.  See: |type()|
 					*v:t_typealias* *t_typealias-variable*
 v:t_typealias	Value of |typealias| type.  Read-only.  See: |type()|
+					*v:t_enum* *t_enum-variable*
+v:t_enum	Value of |enum| type.  Read-only.  See: |type()|
+					*v:t_enumvalue* *t_enumvalue-variable*
+v:t_enumvalue	Value of |enumvalue| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|

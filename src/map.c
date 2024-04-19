@@ -2574,7 +2574,10 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		if ((d = dict_alloc()) == NULL)
 		    return;
 		if (list_append_dict(rettv->vval.v_list, d) == FAIL)
+		{
+		    dict_unref(d);
 		    return;
+		}
 
 		keys_buf = NULL;
 		did_simplify = FALSE;

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jan 25
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -427,6 +427,9 @@ Name			triggered by ~
 |QuickFixCmdPost|	after a quickfix command is run
 
 |SessionLoadPost|	after loading a session file
+
+|SessionWritePost|	After writing the session file using
+			the |:mksession| command.
 
 |MenuPopup|		just before showing the popup menu
 |CompleteChanged|	after Insert mode completion menu changed
@@ -1114,6 +1117,9 @@ SafeStateAgain			Like SafeState but after processing any
 
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
+				the |:mksession| command.
+							*SessionWritePost*
+SessionWritePost		After writing a session file by calling
 				the |:mksession| command.
 							*ShellCmdPost*
 ShellCmdPost			After executing a shell command with |:!cmd|,

@@ -142,7 +142,7 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    typep->type_curr = &t_any;
 	    typep->type_decl = &t_any;
 	}
-	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL
+	if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL
 		|| generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
 	if (keeping_dict != NULL)
@@ -446,7 +446,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_obj_methods[m_idx];
-	    // Private methods are not accessible outside the class
+	    // Private object methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
@@ -488,7 +488,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	if (m_idx >= 0)
 	{
 	    ufunc_T *fp = cl->class_class_functions[m_idx];
-	    // Private methods are not accessible outside the class
+	    // Private class methods are not accessible outside the class
 	    if (*name == '_' && !inside_class(cctx, cl))
 	    {
 		semsg(_(e_cannot_access_protected_method_str), fp->uf_name);
@@ -545,6 +545,9 @@ compile_load_scriptvar(
 	type_T	*type;
 	int	done = FALSE;
 	int	res = OK;
+
+	check_script_symlink(import->imp_sid);
+	import_check_sourced_sid(&import->imp_sid);
 
 	// Need to lookup the member.
 	if (*p != '.')
@@ -1561,7 +1564,10 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (d == NULL)
 	return FAIL;
     if (generate_ppconst(cctx, ppconst) == FAIL)
+    {
+	dict_unref(d);
 	return FAIL;
+    }
     for (;;)
     {
 	char_u	    *key = NULL;
@@ -1595,7 +1601,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    }
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
-	    else if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+	    else if (may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		return FAIL;
 	    *arg = skipwhite(*arg);
 	    if (**arg != ']')
@@ -2462,7 +2468,8 @@ compile_subscript(
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    if ((type = get_type_on_stack(cctx, 0)) != &t_unknown
+	    type = get_type_on_stack(cctx, 0);
+	    if (type != &t_unknown
 		    && (type->tt_type == VAR_CLASS
 					       || type->tt_type == VAR_OBJECT))
 	    {
@@ -2779,7 +2786,7 @@ compile_expr9(
     if (compile_subscript(arg, cctx, start_leader, &end_leader,
 							     ppconst) == FAIL)
 	return FAIL;
-    if (ppconst->pp_used > 0)
+    if ((ppconst->pp_used > 0) && (cctx->ctx_skip != SKIP_YES))
     {
 	// apply the '!', '-' and '+' before the constant
 	rettv = &ppconst->pp_tv[ppconst->pp_used - 1];
@@ -3010,8 +3017,8 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ppconst->pp_is_const = FALSE;
 	    if (*op == '.')
 	    {
-		if (may_generate_2STRING(-2, FALSE, cctx) == FAIL
-			|| may_generate_2STRING(-1, FALSE, cctx) == FAIL)
+		if (may_generate_2STRING(-2, TOSTRING_NONE, cctx) == FAIL
+			|| may_generate_2STRING(-1, TOSTRING_NONE, cctx) == FAIL)
 		    return FAIL;
 		if (generate_CONCAT(cctx, 2) == FAIL)
 		    return FAIL;

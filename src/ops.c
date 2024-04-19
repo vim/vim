@@ -1593,12 +1593,12 @@ op_insert(oparg_T *oap, long count1)
 
     if (oap->block_mode)
     {
-	long			ins_len;
+	size_t			ins_len;
 	char_u			*firstline, *ins_text;
 	struct block_def	bd2;
 	int			did_indent = FALSE;
 	size_t			len;
-	int			add;
+	size_t			add;
 	// offset when cursor was moved in insert mode
 	int			offset = 0;
 
@@ -1703,7 +1703,7 @@ op_insert(oparg_T *oap, long count1)
 		    return;
 	    }
 	}
-	if ((size_t)add > len)
+	if (add > len)
 	    add = len;  // short line, point to the NUL
 	firstline += add;
 	len -= add;

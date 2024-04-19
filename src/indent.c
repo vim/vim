@@ -163,7 +163,7 @@ tabstop_start(colnr_T col, int ts, int *vts)
     int		excess;
 
     if (vts == NULL || vts[0] == 0)
-	return (col / ts) * ts;
+	return col - col % ts;
 
     tabcount = vts[0];
     for (t = 1; t <= tabcount; ++t)
@@ -174,7 +174,7 @@ tabstop_start(colnr_T col, int ts, int *vts)
     }
 
     excess = tabcol % vts[tabcount];
-    return excess + ((col - excess) / vts[tabcount]) * vts[tabcount];
+    return col - (col - excess) % vts[tabcount];
 }
 
 /*

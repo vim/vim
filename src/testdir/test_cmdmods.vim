@@ -8,10 +8,10 @@ def Test_cmdmods_array()
   # :hide is both a command and a modifier
   cmds->extend(['hide'])
 
-  # Get the entries of cmdmods[] in ex_docmd.c
+  # Get the entries of cmdmod_info_tab[] in ex_docmd.c
   edit ../ex_docmd.c
-  var top = search('^} cmdmods[') + 1
-  var bot = search('^};') - 1
+  var top = search('^static cmdmod_info_T cmdmod_info_tab[') + 1
+  var bot = search('^};.*\/\/ cmdmod_info_tab') - 1
   lines = getline(top, bot)
   var mods = lines->map((_, v) => substitute(v, '.*"\(\k*\)".*', '\1', ''))
 
