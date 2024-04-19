@@ -313,7 +313,7 @@ shift_block(oparg_T *oap, int amount)
     if (!left)
     {
 	int		tabs = 0, spaces = 0;
-	size_t		taillen;	// length of string being shifted
+	size_t		shiftedlen;	// length of string being shifted
 	chartabsize_T	cts;
 
 	/*
@@ -372,8 +372,8 @@ shift_block(oparg_T *oap, int amount)
 	// if we're splitting a TAB, allow for it
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
 
-	taillen = oldlen - (bd.textstart - oldp);
-	new_line_len = bd.textcol + tabs + spaces + taillen;
+	shiftedlen = oldlen - (bd.textstart - oldp);
+	new_line_len = bd.textcol + tabs + spaces + shiftedlen;
 	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
@@ -382,7 +382,7 @@ shift_block(oparg_T *oap, int amount)
 	vim_memset(newp + newlen, TAB, (size_t)tabs);
 	newlen += tabs;
 	vim_memset(newp + newlen, ' ', (size_t)spaces);
-	vim_strncpy(newp + newlen + spaces, bd.textstart, taillen);
+	vim_strncpy(newp + newlen + spaces, bd.textstart, shiftedlen);
     }
     else // left
     {
@@ -397,9 +397,9 @@ shift_block(oparg_T *oap, int amount)
 	size_t	    shift_amount;
 	char_u	    *non_white = bd.textstart;
 	colnr_T	    non_white_col;
-	size_t	    headlen;		// length of string left of the shift
+	size_t	    fixedlen;		// length of string left of the shift
 					// position (ie the string not being shifted)
-	size_t	    taillen;		// length of string being shifted
+	size_t	    shiftedlen;		// length of string being shifted
 	chartabsize_T cts;
 
 	/*
@@ -471,17 +471,17 @@ shift_block(oparg_T *oap, int amount)
 	// - the beginning of the original line up to "verbatim_copy_end",
 	// - "fill" number of spaces,
 	// - the rest of the line, pointed to by non_white.
-	headlen = verbatim_copy_end - oldp;
-	taillen = oldlen - (non_white - oldp);
-	new_line_len = headlen + fill + taillen;
+	fixedlen = verbatim_copy_end - oldp;
+	shiftedlen = oldlen - (non_white - oldp);
+	new_line_len = fixedlen + fill + shiftedlen;
 
 	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
-	mch_memmove(newp, oldp, headlen);
-	newlen = headlen;
+	mch_memmove(newp, oldp, fixedlen);
+	newlen = fixedlen;
 	vim_memset(newp + newlen, ' ', (size_t)fill);
-	vim_strncpy(newp + newlen + fill, non_white, taillen);
+	vim_strncpy(newp + newlen + fill, non_white, shiftedlen);
     }
     // replace the line
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
