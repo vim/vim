@@ -1298,5 +1298,21 @@ export def FTvba()
   endif
 enddef
 
+export def Detect_UCI_statements(): bool
+  # Match a config or package statement at the start of the line.
+  const config_or_package_statement = '^\s*\(\(c\|config\)\|\(p\|package\)\)\s\+\S'
+  # Match a line that is either all blank or blank followed by a comment
+  const comment_or_blank = '^\s*\(#.*\)\?$'
+
+  # Return true iff the file has a config or package statement near the
+  # top of the file and all preceding lines were comments or blank.
+  return getline(1) =~# config_or_package_statement
+  \   || getline(1) =~# comment_or_blank
+  \      && (   getline(2) =~# config_or_package_statement
+  \          || getline(2) =~# comment_or_blank
+  \             && getline(3) =~# config_or_package_statement
+  \         )
+enddef
+
 # Uncomment this line to check for compilation errors early
 # defcompile

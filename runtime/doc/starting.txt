@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 15
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1092,7 +1092,7 @@ XDG Base Directory Specification ~
 
 The XDG Base Directory Specification aims to define a standard location for
 configuration files used by applications.  This is mainly done to prevent
-the legacy behavior of dumping everything into the users home directory.
+the legacy behavior of dumping everything into the user's home directory.
 The specification can be found online at
 https://specifications.freedesktop.org/basedir-spec/latest/
 
@@ -1101,13 +1101,13 @@ user, using environment variable but should also give fallback in case those
 variables weren't set.
 
 This is not an exhaustive list of those directories:
-   Environment var	default location	Description ~
+  Environment var	Default location	Description ~
   `$XDG_CACHE_HOME`	$HOME/.cache		Ephemeral data files
   `$XDG_CONFIG_HOME`	$HOME/.config		Configuration files
   `$XDG_DATA_HOME`	$HOME/.local/share	Persistent data files
   `$XDG_STATE_HOME`	$HOME/.local/state	State data files
 
-Vim will only care of the `$XDG_CONFIG_HOME` directory, the others are not
+Vim will only use the `$XDG_CONFIG_HOME` directory, the others are not
 (yet) used for its various configuration and state files.
 
 							*xdg-vimrc*

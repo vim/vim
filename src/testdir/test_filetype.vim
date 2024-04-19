@@ -361,7 +361,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     jq: ['file.jq'],
     jovial: ['file.jov', 'file.j73', 'file.jovial'],
     jproperties: ['file.properties', 'file.properties_xx', 'file.properties_xx_xx', 'some.properties_xx_xx_file', 'org.eclipse.xyz.prefs'],
-    json: ['file.json', 'file.jsonp', 'file.json-patch', 'file.geojson', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', 'file.jupyterlab-settings', '.prettierrc', '.firebaserc', '.stylelintrc', 'file.slnf', 'file.sublime-project', 'file.sublime-settings', 'file.sublime-workspace', 'file.bd', 'file.bda', 'file.xci'],
+    json: ['file.json', 'file.jsonp', 'file.json-patch', 'file.geojson', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', 'file.jupyterlab-settings', '.prettierrc', '.firebaserc', '.stylelintrc', 'file.slnf', 'file.sublime-project', 'file.sublime-settings', 'file.sublime-workspace', 'file.bd', 'file.bda', 'file.xci', 'flake.lock'],
     json5: ['file.json5'],
     jsonc: ['file.jsonc', '.babelrc', '.eslintrc', '.jsfmtrc', '.jshintrc', '.jscsrc', '.vsconfig', '.hintrc', '.swrc', 'jsconfig.json', 'tsconfig.json', 'tsconfig.test.json', 'tsconfig-test.json', '.luaurc'],
     jsonl: ['file.jsonl'],
@@ -2436,6 +2436,28 @@ func Test_def_file()
   split Xfile.def
   call assert_equal('modula2', &filetype)
   call assert_equal('pim', b:modula2.dialect)
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_uci_file()
+  filetype on
+
+  call mkdir('any/etc/config', 'pR')
+  call writefile(['config firewall'], 'any/etc/config/firewall', 'D')
+  split any/etc/config/firewall
+  call assert_equal('uci', &filetype)
+  bwipe!
+
+  call writefile(['# config for nginx here'], 'any/etc/config/firewall', 'D')
+  split any/etc/config/firewall
+  call assert_notequal('uci', &filetype)
+  bwipe!
+
+  call writefile(['# Copyright Cool Cats 1997', 'config firewall'], 'any/etc/config/firewall', 'D')
+  split any/etc/config/firewall
+  call assert_equal('uci', &filetype)
   bwipe!
 
   filetype off
