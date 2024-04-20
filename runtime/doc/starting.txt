@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 19
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -93,20 +93,20 @@ filename	One or more file names.  The first one will be the current
 
 The startup mode can be changed by using another name instead of "vim", which
 is equal to giving options:
-ex	vim -e	    Start in Ex mode (see |Ex-mode|).		    *ex*
-exim	vim -E	    Start in improved Ex mode (see |Ex-mode|).	    *exim*
-			(normally not installed)
-view	vim -R	    Start in read-only mode (see |-R|).		    *view*
-gvim	vim -g	    Start the GUI (see |gui|).			    *gvim*
-gex	vim -eg	    Start the GUI in Ex mode.			  *gex*
-gview	vim -Rg	    Start the GUI in read-only mode.		  *gview*
-rvim	vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
-rview	vim -RZ	    Like "view", but in restricted mode.	  *rview*
-rgvim	vim -gZ	    Like "gvim", but in restricted mode.	  *rgvim*
-rgview	vim -RgZ    Like "gview", but in restricted mode.	  *rgview*
-evim    vim -y      Easy Vim: set 'insertmode' (see |-y|)	    *evim*
-eview   vim -yR     Like "evim" in read-only mode		  *eview*
-vimdiff vim -d	    Start in diff mode |diff-mode|
+ex	 vim -e	    Start in Ex mode (see |Ex-mode|).		  *ex*
+exim	 vim -E	    Start in improved Ex mode (see |Ex-mode|).	  *exim*
+		    (normally not installed)
+view	 vim -R	    Start in read-only mode (see |-R|).		  *view*
+gvim	 vim -g	    Start the GUI (see |gui|).			  *gvim*
+gex	 vim -eg    Start the GUI in Ex mode.			  *gex*
+gview	 vim -Rg    Start the GUI in read-only mode.		  *gview*
+rvim	 vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
+rview	 vim -RZ    Like "view", but in restricted mode.	  *rview*
+rgvim	 vim -gZ    Like "gvim", but in restricted mode.	  *rgvim*
+rgview	 vim -RgZ   Like "gview", but in restricted mode.	  *rgview*
+evim     vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
+eview    vim -yR    Like "evim" in read-only mode		  *eview*
+vimdiff  vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
 Additional characters may follow, they are ignored.  For example, you can have
