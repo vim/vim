@@ -1430,8 +1430,13 @@ do_source_buffer_init(source_cookie_T *sp, exarg_T *eap)
 	return NULL;
 
     // Use ":source buffer=<num>" as the script name
-    vim_snprintf((char *)IObuff, IOSIZE, ":source buffer=%d", curbuf->b_fnum);
-    fname = vim_strsave(IObuff);
+    if (curbuf->b_ffname != NULL)
+	fname = vim_strsave(curbuf->b_ffname);
+    else
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, ":source buffer=%d", curbuf->b_fnum);
+	fname = vim_strsave(IObuff);
+    }
     if (fname == NULL)
 	return NULL;
 

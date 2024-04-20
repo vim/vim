@@ -1140,13 +1140,9 @@ def Test_autoload_import_relative()
   v9.CheckScriptFailure(lines, 'E484:')
 enddef
 
+" autoload relative, access from compiled function.
+" Github issues: #14565, #14579
 def Test_autoload_import_relative_compiled_buffer()
-  if !has('unix')
-    # temporary, until it's discovered why the test fails on Windows.
-    CheckUnix
-    return
-  endif
-  # autoload relative, access from compiled function. #14565, #14579
   var lines =<< trim END
     vim9script
 
@@ -1167,6 +1163,40 @@ def Test_autoload_import_relative_compiled_buffer()
   END
   new
   setline(1, lines)
+  :source
+  # source one more time to detect issues with clearing the script state and
+  # variables
+  :source
+  :bw!
+enddef
+
+" Test for relative import when sourcing a buffer in another directory
+def Test_autoload_import_relative_from_buffer_in_dir()
+  mkdir('Ximportrelative/dir1/dir2', 'pR')
+  var lines =<< trim END
+    vim9script
+
+    export def F1(): string
+        return 'InFile.vim'
+    enddef
+  END
+  writefile(lines, 'Ximportrelative/dir1/dir2/Ximport.vim')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Ximport.vim' as xfile
+
+    def F(): string
+      return xfile.F1()
+    enddef
+    assert_equal('InFile.vim', F())
+  END
+  writefile(lines, 'Ximportrelative/dir1/dir2/Xrelative.vim')
+
+  split Ximportrelative/dir1/dir2/Xrelative.vim
+  :source
+  # source one more time to detect issues with clearing the script state and
+  # variables
   :source
   :bw!
 enddef
