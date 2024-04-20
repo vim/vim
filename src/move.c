@@ -3244,17 +3244,6 @@ pagescroll(int dir, long count, int half)
 	    cursor_down_inner(curwin, curscount);
 	else
 	    cursor_up_inner(curwin, curscount);
-
-	if (get_scrolloff_value() > 0)
-	    cursor_correct();
-#ifdef FEAT_FOLDING
-	// Move cursor to first line of closed fold.
-	foldAdjustCursor();
-#endif
-
-	nochange = nochange
-	    && prev_col == curwin->w_cursor.col
-	    && prev_lnum == curwin->w_cursor.lnum;
     }
     else
     {
@@ -3262,7 +3251,22 @@ pagescroll(int dir, long count, int half)
 	count *= ((ONE_WINDOW && p_window > 0 && p_window < Rows - 1) ?
 				MAX(1, p_window - 2) : get_scroll_overlap(dir));
 	nochange = scroll_with_sms(dir, count);
+
+	// Place cursor at top or bottom of window.
+	validate_botline();
+	curwin->w_cursor.lnum = (dir == FORWARD ? curwin->w_topline
+						    : curwin->w_botline - 1);
     }
+
+    if (get_scrolloff_value() > 0)
+	cursor_correct();
+#ifdef FEAT_FOLDING
+    // Move cursor to first line of closed fold.
+    foldAdjustCursor();
+#endif
+    nochange = nochange
+	&& prev_col == curwin->w_cursor.col
+	&& prev_lnum == curwin->w_cursor.lnum;
 
     // Error if both the viewport and cursor did not change.
     if (nochange)
