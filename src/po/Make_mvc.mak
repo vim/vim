@@ -446,7 +446,7 @@ ko.po: ko.UTF-8.po
 # Convert ru.po to create ru.cp1251.po.
 ru.cp1251.po: ru.po
 	-$(RM) $@
-!IF EXIST ("msgconv.exe")
+!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
 	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP1251 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
