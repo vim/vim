@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Slovak translation of vim
 # Lubomir Host 'rajo' <rajo AT platon.sk>
 # 2005 - Platon Group, http://platon.sk/
@@ -58,7 +59,6 @@ msgstr "%d bufferov odstránených"
 msgid "E84: No modified buffer found"
 msgstr "E84: Nebol nájdený ¾iadny zmenený buffer"
 
-#. back where we started, didn't find anything.
 msgid "E85: There is no listed buffer"
 msgstr "E85: Nena¹iel som ¾iadny buffer"
 
@@ -129,7 +129,6 @@ msgstr "riadok %ld z %ld --%d%%-- ståpec"
 msgid "[No Name]"
 msgstr "[Bez mena]"
 
-#. must be a help buffer
 msgid "help"
 msgstr "pomocník"
 
@@ -217,7 +216,6 @@ msgstr "E105: Pou¾itý príkaz :loadkeymap v súbore, ktorý nie je interpretovaný"
 msgid " Keyword completion (^N^P)"
 msgstr " Doplòovanie kµúèových slov (^N^P)"
 
-#. ctrl_x_mode == 0, ^P/^N compl.
 msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
 msgstr " ^X re¾im (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
 
@@ -311,7 +309,6 @@ msgstr "zhoda %d"
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Neoèekávané znaky v :let"
 
-# TODO: Capitalise first word of message?
 msgid "E684: List index out of range: %ld"
 msgstr "E684: index v zozname je mimo rozsah: %ld"
 
@@ -406,7 +403,6 @@ msgstr "E107: Chýbajú zátvorky: %s"
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: Premenná \"%s\" neexistuje"
 
-# TODO: Capitalise first word of message?
 msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: premenná je príli¹ vnorená na (od)blokovanie"
 
@@ -420,13 +416,16 @@ msgid "E692: Invalid operation for List"
 msgstr "E692: Neplatná operácia pre Zoznamy (List)"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "E735: Porovnáva» mo¾no iba Slovník so Slovníkom (Dictionary with Dictionary)"
+msgstr ""
+"E735: Porovnáva» mo¾no iba Slovník so Slovníkom (Dictionary with Dictionary)"
 
 msgid "E736: Invalid operation for Dictionary"
 msgstr "E736: Neplatná operácia pre Slovník"
 
 msgid "E693: Can only compare Funcref with Funcref"
-msgstr "E693: Porovnáva» mo¾no iba odkaz na Funkciu s odkazom na Funkciu (Funcref with Funcref)"
+msgstr ""
+"E693: Porovnáva» mo¾no iba odkaz na Funkciu s odkazom na Funkciu (Funcref "
+"with Funcref)"
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Neplatná operácia pre odkazy na Funkcie (Funcrefs)"
@@ -472,7 +471,6 @@ msgstr "E722: Chýba èiarka v Slovníku (Dictionary): %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: Chýba koniec Slovníka (Dictionary) '}': %s"
 
-# TODO: Capitalise first word of message?
 msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: premenná je vnorená príli¹ hlboko pre zobrazenie"
 
@@ -562,7 +560,9 @@ msgid "E731: using Dictionary as a String"
 msgstr "E731: Slovník (Dictionary) pou¾itý ako Re»azec (String)"
 
 msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "E704: Premenná typu odkaz na Funkciu (Funcref) musí zaèína» s veµkým písmenom: %s"
+msgstr ""
+"E704: Premenná typu odkaz na Funkciu (Funcref) musí zaèína» s veµkým "
+"písmenom: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
@@ -581,7 +581,6 @@ msgstr "Neznámy"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: Nemo¾no zmeni» hodnotu %s"
 
-# TODO: Capitalise first word of message?
 msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: premenná je vnorená príli¹ hlboko pre skopírovanie"
 
@@ -603,7 +602,9 @@ msgid "E129: Function name required"
 msgstr "E129: Je vy¾adované meno funkcie"
 
 msgid "E128: Function name must start with a capital or contain a colon: %s"
-msgstr "E128: Názov funkcie musí zaèína» veµkým písmenom alebo obsahova» dvojbodku: %s"
+msgstr ""
+"E128: Názov funkcie musí zaèína» veµkým písmenom alebo obsahova» dvojbodku: "
+"%s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
@@ -768,7 +769,6 @@ msgstr "Upravova» súbor"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Automatické príkazy neoèakávane zmazali nový buffer %s"
 
-# TODO: Capitalise first word of message?
 msgid "E144: Non-numeric argument to :z"
 msgstr "E144: neèíselný argument pre :z"
 
@@ -948,7 +948,6 @@ msgstr "E164: Nedá sa preskoèi» pred prvý súbor"
 msgid "E165: Cannot go beyond last file"
 msgstr "E165: Nedá sa preskoèi» za posledný súbor"
 
-# TODO: Capitalise first word of message?
 msgid "E666: Compiler not supported: %s"
 msgstr "E666: prekladaè nie je podporovaný: %s"
 
@@ -1086,7 +1085,6 @@ msgstr "E177: Poèet nemô¾e by» zadaný dvakrát"
 msgid "E178: Invalid default value for count"
 msgstr "E178: Chybná implicitná hodnota pre poèet"
 
-# TODO: Capitalise first word of message?
 msgid "E179: Argument required for -complete"
 msgstr "E179: pre doplnenie (-complete) je potrebný argument"
 
@@ -1109,7 +1107,8 @@ msgid "E180: Invalid complete value: %s"
 msgstr "E180: Chybná hodnota doplnenia: %s"
 
 msgid "E468: Completion argument only allowed for custom completion"
-msgstr "E468: Argument doplnenia je povolený iba pre vlastné dopåòania (completion)"
+msgstr ""
+"E468: Argument doplnenia je povolený iba pre vlastné dopåòania (completion)"
 
 msgid "E467: Custom completion requires a function argument"
 msgstr "E467: Vlastné doplnenia vy¾adujú meno funkcie ako argument"
@@ -1131,7 +1130,9 @@ msgid "Append File"
 msgstr "Pripoji» súbor"
 
 msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
-msgstr "E747: Nemo¾no zmeni» adresár, buffer je modifikovaný (pou¾ite ! pre vynútenie)"
+msgstr ""
+"E747: Nemo¾no zmeni» adresár, buffer je modifikovaný (pou¾ite ! pre "
+"vynútenie)"
 
 msgid "E186: No previous directory"
 msgstr "E186: ®iadny predchádzajúci adresár"
@@ -1174,7 +1175,6 @@ msgstr "E189: \"%s\" existuje (pou¾ite ! pre vynútenie)"
 msgid "E190: Cannot open \"%s\" for writing"
 msgstr "E190: \"%s\" sa nedá otvori» pre zápis"
 
-#. set mark
 msgid "E191: Argument must be a letter or forward/backward quote"
 msgstr "E191: Argumentem mô¾e by» iba písmeno alebo pravý èi µavý apostrof"
 
@@ -1185,21 +1185,17 @@ msgid "E194: No alternate file name to substitute for '#'"
 msgstr ""
 "E194: ®iadny alternatívny názov súboru, ktorým by bolo mo¾né nahradi» '#'"
 
-# TODO: Capitalise first word of message?
 msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: ¾iadny názov súboru, ktorým by bolo mo¾né nahradi» \"<afile>\""
 
-# TODO: Capitalise first word of message?
 msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: ¾iadne èíslo bufferu, ktorým by bolo mo¾né nahradi» \"<abuf>\""
 
-# TODO: Capitalise first word of message?
 msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr ""
-"E497: ¾iadna zhoda automatických príkazov, ktorou by bolo mo¾né nahradi» \"<amatch>"
-"\""
+"E497: ¾iadna zhoda automatických príkazov, ktorou by bolo mo¾né nahradi» "
+"\"<amatch>\""
 
-# TODO: Capitalise first word of message?
 msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: ¾iadny :source súbor, ktorým by bolo mo¾né nahradi» \"<sfile>\""
 
@@ -1233,7 +1229,6 @@ msgstr "Výnimka zahodená: %s"
 msgid "%s, line %ld"
 msgstr "%s, riadok %ld"
 
-#. always scroll up, don't overwrite
 msgid "Exception caught: %s"
 msgstr "Zachytená výnimka: %s"
 
@@ -1257,11 +1252,9 @@ msgstr "Chyba a preru¹ené"
 msgid "Error"
 msgstr "Chyba"
 
-#. if (pending & CSTP_INTERRUPT)
 msgid "Interrupt"
 msgstr "Preru¹ené"
 
-# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: vnorenie :if je príli¹ hlboké"
 
@@ -1274,7 +1267,6 @@ msgstr "E581: :else bez zodpovedajúceho :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif bez zodpovedajúceho :if"
 
-# TODO: Capitalise first word of message?
 msgid "E583: Multiple :else"
 msgstr "E583: viacnásobné :else"
 
@@ -1302,15 +1294,12 @@ msgstr "E601: vnorenie :try je príli¹ hlboké"
 msgid "E603: :catch without :try"
 msgstr "E603: :catch bez :try"
 
-#. * Just parse.
 msgid "E604: :catch after :finally"
 msgstr "E604: :catch nasleduje po :finally"
 
 msgid "E606: :finally without :try"
 msgstr "E606: :finally bez :try"
 
-#. Give up for a multiple ":finally" and ignore it.
-# TODO: Capitalise first word of message?
 msgid "E607: Multiple :finally"
 msgstr "E607: viacnásobné pou¾ité :finally"
 
@@ -1382,7 +1371,6 @@ msgstr "Vim: èítam zo ¹tandardného vstupu...\n"
 msgid "Reading from stdin..."
 msgstr "Èítam zo ¹tandardného vstupu..."
 
-#. Re-opening the original file failed!
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: Po konverzii je súbor neèitateµný!"
 
@@ -1491,11 +1479,11 @@ msgstr "E667: Fsync zlyhal"
 msgid "E512: Close failed"
 msgstr "E512: Zatvorenie zlyhalo"
 
-# TODO: Capitalise first word of message?
 msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
-msgstr "E513: chyba pri zápise, konverzia sa nepodarila (nastavte voµbu 'fenc' na prázdnu pre vynútenie)"
+msgstr ""
+"E513: chyba pri zápise, konverzia sa nepodarila (nastavte voµbu 'fenc' na "
+"prázdnu pre vynútenie)"
 
-# TODO: Capitalise first word of message?
 msgid "E514: Write error (file system full?)"
 msgstr "E514: chyba pri ukladaní (plný disk?)"
 
@@ -1523,7 +1511,6 @@ msgstr " ulo¾ený"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: patchmode: nedá sa ulo¾i» pôvodný súbor"
 
-# TODO: Capitalise first word of message?
 msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: patchmode: nedá sa zapisova» do prázdneho pôvodného súboru"
 
@@ -1578,7 +1565,6 @@ msgstr "[bez znaku konca riadku]"
 msgid "[Incomplete last line]"
 msgstr "[neúplný posledný riadok]"
 
-#. don't use emsg() here, don't want to flush the buffers
 msgid "WARNING: The file has been changed since reading it!!!"
 msgstr "VAROVANIE: Súbor bol zmenený od jeho naèítania!!!"
 
@@ -1672,7 +1658,6 @@ msgstr "E216: Udalos» %s neexistuje"
 msgid "E216: No such group or event: %s"
 msgstr "E216: Udalos» alebo skupina %s neexistuje"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Autocommands ---"
@@ -1689,7 +1674,6 @@ msgstr "E217: Automatické príkazy sa nedajú spusti» pre V©ETKY udalosti"
 msgid "No matching autocommands"
 msgstr "®iadne vyhovujúce automatické príkazy"
 
-# TODO: Capitalise first word of message?
 msgid "E218: Autocommand nesting too deep"
 msgstr "E218: vnorenia automatického príkazu sú príli¹ hlboké"
 
@@ -1727,27 +1711,22 @@ msgstr "+--%3ld riadkov zahnutých "
 msgid "E222: Add to read buffer"
 msgstr "E222: Prida» do bufferu pre èítanie"
 
-# TODO: Capitalise first word of message?
 msgid "E223: Recursive mapping"
 msgstr "E223: rekurzívne mapovanie"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: pre %s u¾ globálna skratka existuje"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E225: Global mapping already exists for %s"
 msgstr "E225: pre %s u¾ globálne mapovanie existuje"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: pre %s u¾ skratka existuje"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E227: Mapping already exists for %s"
 msgstr "E227: pre %s u¾ mapovanie existuje"
 
@@ -1768,7 +1747,9 @@ msgid "E230: Cannot read from \"%s\""
 msgstr "E230: Nedá sa èíta» z \"%s\""
 
 msgid "E665: Cannot start GUI, no valid font found"
-msgstr "E665: Nemo¾no na¹tartova» grafické rozhranie, nenájdený ¾iaden pou¾itelný font"
+msgstr ""
+"E665: Nemo¾no na¹tartova» grafické rozhranie, nenájdený ¾iaden pou¾itelný "
+"font"
 
 msgid "E231: 'guifontwide' invalid"
 msgstr ""
@@ -1842,18 +1823,15 @@ msgstr "Vyhµada»:"
 msgid "Replace with:"
 msgstr "Nahradi» s:"
 
-#. whole word only button
 msgid "Match whole word only"
 msgstr "Hµada» len celé slová"
 
-#. match case button
 msgid "Match case"
 msgstr "Zhoda veµkosti písmen"
 
 msgid "Direction"
 msgstr "Smer"
 
-#. 'Up' and 'Down' buttons
 msgid "Up"
 msgstr "Hore"
 
@@ -1936,7 +1914,6 @@ msgstr "Nájs» re»azec (pou¾ite '\\\\' ak chete nájs» '\\')"
 msgid "Find & Replace (use '\\\\' to find  a '\\')"
 msgstr "Nájs» a Nahradi» (pou¾ite '\\\\' ak chcete nájs» '\\')"
 
-#. * file name that won't be used.
 msgid "Not Used"
 msgstr "[neupravovaný]"
 
@@ -2002,7 +1979,6 @@ msgstr "Vim - Výber písma"
 msgid "Name:"
 msgstr "Meno:"
 
-#. create toggle button
 msgid "Show size in Points"
 msgstr "Ukazuj veµkos» v bodoch"
 
@@ -2027,7 +2003,6 @@ msgstr "E550: Chýba dvojbodka"
 msgid "E551: Illegal component"
 msgstr "E551: Neprípustný komponent"
 
-# TODO: Capitalise first word of message?
 msgid "E552: Digit expected"
 msgstr "E552: oèakávaná èíslica"
 
@@ -2063,11 +2038,9 @@ msgstr "E624: Nedá sa otvori» súbor \"%s\""
 msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Nedá sa èíta» PostScriptový súbor \"%s\""
 
-# TODO: Capitalise first word of message?
 msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: súbor \"%s\" nie je vo formáte PostScript"
 
-# TODO: Capitalise first word of message?
 msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: súbor \"%s\" nie je podporvaný PostScriptový súbor"
 
@@ -2079,7 +2052,8 @@ msgid "E673: Incompatible multi-byte encoding and character set."
 msgstr "E673: nekompatibilné viacbajtové kódovanie a znaková sada."
 
 msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: voµba printmbcharset nemô¾e by» prázdna pri viacbajtovom kódovaní."
+msgstr ""
+"E674: voµba printmbcharset nemô¾e by» prázdna pri viacbajtovom kódovaní."
 
 msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Nie je ¹pecifikované ¾iadne písmo pre viacbajtové tlaèenie."
@@ -2140,7 +2114,6 @@ msgstr "Tento cscope príkaz nepodporuje rozdeµovanie okna.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Pou¾itie: cstag <odsadenie>"
 
-# TODO: Capitalise first word of message?
 msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tag nenájdený"
 
@@ -2157,11 +2130,9 @@ msgstr "E564: %s nie je ani adresárom ani správnou cscope databázou"
 msgid "Added cscope database %s"
 msgstr "Pridaná cscope databáza %s"
 
-# TODO: Capitalise first word of message?
 msgid "E262: Error reading cscope connection %ld"
 msgstr "E262: chyba pri èítaní cscope spojenia %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E561: Unknown cscope search type"
 msgstr "E561: neznámy typ cscope hµadania"
 
@@ -2183,17 +2154,14 @@ msgstr "cs_create_connection: volanie fdopen pre to_fp zlyhalo"
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: volanie fdopen pre fr_fp zlyhalo"
 
-# TODO: Capitalise first word of message?
 msgid "E567: No cscope connections"
 msgstr "E567: ¾iadne cscope spojenia"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: cscope hµadanie %s vo vzore %s nena¹lo ¾iadnu zhodu"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: chybný cscopequickfix príznak %c pre %c"
 
@@ -2203,15 +2171,12 @@ msgstr "príkazy cscope:\n"
 msgid "%-5s: %-30s (Usage: %s)"
 msgstr "%-5s: %-30s (Pou¾itie: %s)"
 
-# TODO: Capitalise first word of message?
 msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: nemo¾no otvori» cscope databázu: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E626: Cannot get cscope database information"
 msgstr "E626: nemo¾no získa» cscope databázové informácie"
 
-# TODO: Capitalise first word of message?
 msgid "E568: Duplicate cscope database not added"
 msgstr "E568: duplicitná cscope databáza nebola pridaná"
 
@@ -2219,15 +2184,12 @@ msgid "E569: maximum number of cscope connections reached"
 msgstr "E569: dosiahnutý maximálny poèet cscope spojení"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E261: Cscope connection %s not found"
 msgstr "E261: cscope spojenie %s nenájdené"
 
 msgid "cscope connection %s closed"
 msgstr "cscope spojenie %s ukonèené"
 
-#. should not reach here
-# TODO: Capitalise first word of message?
 msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: vá¾na chyba v cs_manage_matches"
 
@@ -2259,7 +2221,9 @@ msgstr " # pid    názov databázy                      predpona cesty\n"
 msgid ""
 "???: Sorry, this command is disabled, the MzScheme library could not be "
 "loaded."
-msgstr "???: Prepáète, tento príkaz je vypnutý, MzScheme kni¾nica nemô¾e by» naèítaná."
+msgstr ""
+"???: Prepáète, tento príkaz je vypnutý, MzScheme kni¾nica nemô¾e by» "
+"naèítaná."
 
 msgid "invalid expression"
 msgstr "chybný výraz"
@@ -2382,7 +2346,6 @@ msgstr ""
 "E266: Prepáète, tento príkaz je vypnutý, Ruby kni¾nica nemô¾e by» naèítaná."
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E273: Unknown longjmp status %d"
 msgstr "E273: Neznámy 'longjmp' stav %d"
 
@@ -2452,7 +2415,6 @@ msgstr "chybné èíslo bufferu"
 msgid "not implemented yet"
 msgstr "nie je e¹te podporované"
 
-#. ???
 msgid "cannot set line(s)"
 msgstr "nedajú sa nastavi» riadky"
 
@@ -2483,7 +2445,6 @@ msgid ""
 msgstr ""
 "nedá sa zaregistrova» príkaz spätného volania: buffer/okno u¾ bol vymazaný"
 
-#. This should never happen.  Famous last word?
 msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
 "org"
@@ -2507,7 +2468,6 @@ msgstr ""
 "chybu na vim-dev@vim.org"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E572: Exit code %d"
 msgstr "E572: návratový kód %d"
 
@@ -2539,7 +2499,8 @@ msgid "Garbage after option argument"
 msgstr "Chyby za parametrom voµby"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
-msgstr "Príli¹ mnoho \"+príkaz\", \"-c príkaz\" alebo \"--cmd príkaz\" argumentov"
+msgstr ""
+"Príli¹ mnoho \"+príkaz\", \"-c príkaz\" alebo \"--cmd príkaz\" argumentov"
 
 msgid "Invalid argument for"
 msgstr "Chybný argument pre"
@@ -2569,7 +2530,6 @@ msgstr "Vim: Varovanie: Výstup nesmeruje na terminál\n"
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Varovanie: Vstup nepochádza z terminálu\n"
 
-#. just in case..
 msgid "pre-vimrc command line"
 msgstr "pre-vimrc príkazový riadok"
 
@@ -2615,9 +2575,10 @@ msgstr ""
 "\n"
 "   alebo:"
 
-#. TODO: is translation correct?
 msgid "where case is ignored prepend / to make flag upper case"
-msgstr "v prípade, ¾e je ignorovaná veµkos» písmen, pou¾ite znak '/' na zaèiatku, aby mal príznak význam veµkého písmena"
+msgstr ""
+"v prípade, ¾e je ignorovaná veµkos» písmen, pou¾ite znak '/' na zaèiatku, "
+"aby mal príznak význam veµkého písmena"
 
 msgid ""
 "\n"
@@ -2645,7 +2606,8 @@ msgstr "-g\t\t\tSpusti» v grafickom (GUI) móde (rovnaké ako \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr ""
-"-f  alebo  --nofork\tPopredie: Pri spustení grafického (GUI) módu sa nepresunie do pozadia"
+"-f  alebo  --nofork\tPopredie: Pri spustení grafického (GUI) módu sa "
+"nepresunie do pozadia"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tVi mód (rovnaké ako \"vi\")"
@@ -2775,7 +2737,8 @@ msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <súbory>\tUpravi» <súbory> na Vim servri ak je to mo¾né"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <súbory>\tTo isté, ale nes»a¾uj si, ak neexistuje server"
+msgstr ""
+"--remote-silent <súbory>\tTo isté, ale nes»a¾uj si, ak neexistuje server"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
@@ -2784,7 +2747,8 @@ msgstr ""
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-wait-silent <súbory>\tTo isté, ale nes»a¾uj si, ak neexistuje server"
+msgstr ""
+"--remote-wait-silent <súbory>\tTo isté, ale nes»a¾uj si, ak neexistuje server"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <voµby>\tOdo¹le <voµby> na Vim server a skonèí"
@@ -2931,11 +2895,9 @@ msgstr "-P <titulok rodièa>\tOtvor Vim vnútri materskej aplikácie"
 msgid "No display"
 msgstr "Bez grafického rozhrania"
 
-#. Failed to send, abort.
 msgid ": Send failed.\n"
 msgstr ": Odoslanie zlyhalo.\n"
 
-#. Let vim start normally.
 msgid ": Send failed. Trying to execute locally\n"
 msgstr ": Odoslanie zlyhalo. Pokú¹am sa spusti» lokálne\n"
 
@@ -2956,7 +2918,6 @@ msgstr "Nie sú nastavené ¾iadne znaèky"
 msgid "E283: No marks matching \"%s\""
 msgstr "E283:\"%s\" nevyhovujú ¾iadne znaèky"
 
-#. Highlight title
 msgid ""
 "\n"
 "mark line  col file/text"
@@ -2964,7 +2925,6 @@ msgstr ""
 "\n"
 "znaèka riadok  ståpec súbor/text"
 
-#. Highlight title
 msgid ""
 "\n"
 " jump line  col file/text"
@@ -2972,7 +2932,6 @@ msgstr ""
 "\n"
 " skok riadok ståpec súbor/text"
 
-#. Highlight title
 msgid ""
 "\n"
 "change line  col text"
@@ -3022,18 +2981,15 @@ msgstr "E286: Nepodarilo sa otvori» vstupnú metódu"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Varovanie: likvidaèné spätné volanie sa nedá nastavi» na IM"
 
-# TODO: Capitalise first word of message?
 msgid "E288: Input method doesn't support any style"
 msgstr "E288: vstupná metóda nepodporuje ¾iadny ¹týl"
 
-# TODO: Capitalise first word of message?
 msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: vstupná metóda nepodporuje môj 'preedit' typ"
 
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Máte GTK+ verziu star¹iu ne¾ 1.2.3. Stavová plocha vypnutá."
 
-# TODO: Capitalise first word of message?
 msgid "E293: Block was not locked"
 msgstr "E293: blok nebol zamknutý"
 
@@ -3061,7 +3017,6 @@ msgstr "E298: Nedá sa získa» blok 1?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Nedá sa získa» blok 2?"
 
-#. could not (re)open the swap file, what can we do????
 msgid "E301: Oops, lost the swap file!!!"
 msgstr "E301: Ups, odkladací súbor bol stratený!!!"
 
@@ -3190,10 +3145,10 @@ msgstr "a pomocou programu diff zistite zmeny oproti pôvodnému súboru)\n"
 msgid ""
 "Delete the .swp file afterwards.\n"
 "\n"
-msgstr "Potom vyma¾te odkladací súbor s príponou .swp.\n"
+msgstr ""
+"Potom vyma¾te odkladací súbor s príponou .swp.\n"
 "\n"
 
-#. use msg() to start the scrolling properly
 msgid "Swap files found:"
 msgstr "Nájdené odkladacie súbory:"
 
@@ -3297,16 +3252,13 @@ msgid "E314: Preserve failed"
 msgstr "E314: Uchovanie sa nepodarilo"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: chybné èíslo riadku: %ld"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: nedá sa nájs» riadok %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong 3"
 msgstr "E317: chybné èíslo ukazovateµa na blok 3"
 
@@ -3316,7 +3268,6 @@ msgstr "stack_idx by mal ma» hodnotu 3"
 msgid "E318: Updated too many blocks?"
 msgstr "E318: Aktualizovaných príli¹ veµa blokov?"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong 4"
 msgstr "E317: chybné èíslo ukazovateµa na blok 4"
 
@@ -3327,7 +3278,6 @@ msgstr "vymazaný blok 1?"
 msgid "E320: Cannot find line %ld"
 msgstr "E320: Nedá sa nájs» riadok %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong"
 msgstr "E317: chybné èíslo ukazovateµa na blok"
 
@@ -3335,19 +3285,16 @@ msgid "pe_line_count is zero"
 msgstr "pe_line_count má nulovú hodnotu"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: èíslo riadku je mimo rozsah: %ld (za koncom)"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E323: Line count wrong in block %ld"
 msgstr "E323: chybný poèet riadkov v bloku %ld"
 
 msgid "Stack size increases"
 msgstr "Nárast veµkosti zásobníku"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong 2"
 msgstr "E317: chybný èíslo ukazovateµa na blok 2"
 
@@ -3367,7 +3314,6 @@ msgstr "Pri otváraní súboru \""
 msgid "      NEWER than swap file!\n"
 msgstr "      NOV©Í ako odkladací súbor!\n"
 
-#. * other languages.
 msgid ""
 "\n"
 "(1) Another program may be editing the same file.\n"
@@ -3470,7 +3416,6 @@ msgstr "E331: Polo¾ky ponuky sa nejdú pridáva» priamo na li¹tu"
 msgid "E332: Separator cannot be part of a menu path"
 msgstr "E332: Oddeµovaè nesmie by» èas»ou cesty ponuky"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Menus ---"
@@ -3600,7 +3545,6 @@ msgstr "Piip!"
 msgid "Vim: preserving files...\n"
 msgstr "Vim: zachovávam súbory...\n"
 
-#. close all memfiles, without deleting
 msgid "Vim: Finished.\n"
 msgstr "Vim: ukonèený\n"
 
@@ -3614,7 +3558,8 @@ msgid ""
 "[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
 msgstr ""
 "\n"
-"[bajtov] celkom uvolnené-alokované %lu-%lu, vyu¾ité %lu, maximálne vyu¾itie %lu\n"
+"[bajtov] celkom uvolnené-alokované %lu-%lu, vyu¾ité %lu, maximálne vyu¾itie "
+"%lu\n"
 
 #, c-format
 msgid ""
@@ -3648,7 +3593,6 @@ msgstr "E546: Neprípustný mód"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Chybný tvar my¹i"
 
-# TODO: Capitalise first word of message?
 msgid "E548: Digit expected"
 msgstr "E548: oèakávaná èíslica"
 
@@ -3688,7 +3632,6 @@ msgstr "E346: ®iadny ïal¹í adresár \"%s\" nebol v cdpath nájdený"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: ®iadny ïal¹í súbor \"%s\" nebol v ceste nájdený"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Nedá sa pripoji» na Netbeans #2"
 
@@ -3697,7 +3640,9 @@ msgstr "Nedá sa pripoji» na Netbeans"
 
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668: Zlé prístupové práva pre súbor s informáciami pre NetBeans spojenie: \"%s\""
+msgstr ""
+"E668: Zlé prístupové práva pre súbor s informáciami pre NetBeans spojenie: "
+"\"%s\""
 
 msgid "read from Netbeans socket"
 msgstr "èítanie z Netbeans soketu"
@@ -3720,7 +3665,6 @@ msgstr "E349: Pod kurzorom nie je ¾iadny identifikátor"
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: Pomocou 'foldmethod' sa nedá vymaza» vnorenie"
 
-# TODO: Capitalise first word of message?
 msgid "E664: Changelist is empty"
 msgstr "E664: zoznam zmien je prázdny"
 
@@ -3763,7 +3707,6 @@ msgstr "%ld riadkov odsadených "
 msgid "E748: No previously used register"
 msgstr "E748: ®iadny predtým pou¾ívaný register"
 
-#. must display the prompt
 msgid "cannot yank; delete anyway"
 msgstr "nedá sa kopírova»; napriek tomu vymazané"
 
@@ -3795,7 +3738,6 @@ msgstr "%ld skopírovaných riadkov"
 msgid "E353: Nothing in register %s"
 msgstr "E353: Register %s je prázdny"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Registers ---"
@@ -3828,7 +3770,9 @@ msgstr "Vybraných %s%ld z %ld Riadkov; %ld zo %ld Slov; %ld z %ld Bajtov"
 msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
-msgstr "Vybraných %s%ld z %ld Riadkov; %ld zo %ld Slov; %ld z %ld Znakov; %ld z %ld Bajtov"
+msgstr ""
+"Vybraných %s%ld z %ld Riadkov; %ld zo %ld Slov; %ld z %ld Znakov; %ld z %ld "
+"Bajtov"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -3838,7 +3782,9 @@ msgstr "Ståpec %s z %s; Riadok %ld z %ld; Slovo %ld z %ld; Bajt %ld z %ld"
 msgid ""
 "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
 "%ld"
-msgstr "Ståpec %s z %s; Riadok %ld z %ld; Slovo %ld z %ld; Znak %ld z %ld; Bajt %ld z %ld"
+msgstr ""
+"Ståpec %s z %s; Riadok %ld z %ld; Slovo %ld z %ld; Znak %ld z %ld; Bajt %ld "
+"z %ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -3906,14 +3852,12 @@ msgstr "E595: obsahuje netlaèiteµné znaky"
 msgid "E596: Invalid font(s)"
 msgstr "E596: Chybné písma"
 
-# TODO: Capitalise first word of message?
 msgid "E597: Can't select fontset"
 msgstr "E597: nedá sa vybra» sada písiem"
 
 msgid "E598: Invalid fontset"
 msgstr "E598: Chybná sada písiem"
 
-# TODO: Capitalise first word of message?
 msgid "E533: Can't select wide font"
 msgstr "E533: nedá sa vybra» ¹iroký font"
 
@@ -3924,13 +3868,13 @@ msgstr "E534: Chybné ¹iroké písmo"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Neprípustný znak po <%c>"
 
-# TODO: Capitalise first word of message?
 msgid "E536: Comma required"
 msgstr "E536: je nutná èiarka"
 
 #, c-format
 msgid "E537: 'commentstring' must be empty or contain %s"
-msgstr "E537: 'commentstring' (komentár) musí by» prázdny alebo musí obsahova» %s"
+msgstr ""
+"E537: 'commentstring' (komentár) musí by» prázdny alebo musí obsahova» %s"
 
 msgid "E538: No mouse support"
 msgstr "E538: Bez podpory my¹i"
@@ -3938,8 +3882,6 @@ msgstr "E538: Bez podpory my¹i"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Neuzatvorené zoskupenie výrazov"
 
-
-# TODO: Capitalise first word of message?
 msgid "E542: Unbalanced groups"
 msgstr "E542: nevyvá¾ené skupiny"
 
@@ -3947,7 +3889,9 @@ msgid "E590: A preview window already exists"
 msgstr "E590: Okno náhµadu u¾ existuje"
 
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
-msgstr "W17: Mód Arabic vy¾aduje kódovanie UTF-8, nastavte to príkazom ':set encoding=utf-8'"
+msgstr ""
+"W17: Mód Arabic vy¾aduje kódovanie UTF-8, nastavte to príkazom ':set "
+"encoding=utf-8'"
 
 #, c-format
 msgid "E593: Need at least %d lines"
@@ -4029,7 +3973,6 @@ msgstr "nemô¾em zmeni» konzolový mód ?!\n"
 msgid "mch_get_shellsize: not a console??\n"
 msgstr "mch_get_shellsize: nie je konzolou??\n"
 
-#. if Vim opened a window: Executing a shell may cause crashes
 msgid "E360: Cannot execute shell with -f option"
 msgstr "E360: Nedá sa spusti» shell s -f voµbou"
 
@@ -4096,7 +4039,6 @@ msgstr "Vim: Zachytený smrtiaci signál\n"
 msgid "Opening the X display took %ld msec"
 msgstr "Otvorenie X displej zabralo %ld msec"
 
-#. KDE sometimes produces X error that we want to ignore
 msgid ""
 "\n"
 "Vim: Got X error but we continue...\n"
@@ -4289,7 +4231,6 @@ msgid "E681: Buffer is not loaded"
 msgstr "E681: Buffer nie je naèítaný"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: chybná polo¾ka v %s%%[]"
 
@@ -4319,7 +4260,6 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: Nespárované %s)"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E59: Invalid character after %s@"
 msgstr "E59: Neprípustný znak po %s@"
 
@@ -4335,7 +4275,6 @@ msgstr "E61: Vnorený %s*"
 msgid "E62: Nested %s%c"
 msgstr "E62: Vnorený %s%c"
 
-# TODO: Capitalise first word of message?
 msgid "E63: Invalid use of \\_"
 msgstr "E63: Chybne pou¾ité \\_"
 
@@ -4355,7 +4294,7 @@ msgstr "E67: \\z1 a spol. tu nie je povolené"
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Neprípustný znak po \\z"
 
-#,  c-format
+#, c-format
 msgid "E69: Missing ] after %s%%["
 msgstr "E69: Chýbajúca ] po %s%%["
 
@@ -4441,12 +4380,10 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Neprípustný hµadaný re»azec: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: hµadanie dosiahlo zaèiatok bez nájdenia %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: hµadanie dosiahlo koniec bez nájdenia %s"
 
@@ -4456,7 +4393,6 @@ msgstr "E386: Po ';' oèakávam '?' alebo '/'"
 msgid " (includes previously listed match)"
 msgstr " (vrátane u¾ vypísaných zhôd)"
 
-#. cursor at status line
 msgid "--- Included files "
 msgstr "--- Vlo¾ené súbory"
 
@@ -4506,10 +4442,13 @@ msgid "Affix name too long in %s line %d: %s"
 msgstr "Prípona príli¶ dlhá v %s riadok %d: %s"
 
 msgid "E761: Format error in affix file FOL, LOW or UPP"
-msgstr "E761: Chyba formátovania v súbore prípon FOL, LOW alebo UPP (NASLEDUJE, MALÉ alebo VE¥KÉ)"
+msgstr ""
+"E761: Chyba formátovania v súbore prípon FOL, LOW alebo UPP (NASLEDUJE, MALÉ "
+"alebo VE¥KÉ)"
 
 msgid "E762: Character in FOL, LOW or UPP is out of range"
-msgstr "E762: Znak v FOL, LOW alebo UPP (NASLEDUJE, MALÉ alebo VE¥KÉ) je mimo rozsah"
+msgstr ""
+"E762: Znak v FOL, LOW alebo UPP (NASLEDUJE, MALÉ alebo VE¥KÉ) je mimo rozsah"
 
 msgid "Compressing word tree..."
 msgstr "Robím kompresiu stromu slov..."
@@ -4519,7 +4458,8 @@ msgstr "E756: Kontrola pravopisu nie je zapnutá"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
-msgstr "Varovanie: Nemo¾no nájs» zoznam slov \"%s.%s.spl\" alebo \"%s.ascii.spl\""
+msgstr ""
+"Varovanie: Nemo¾no nájs» zoznam slov \"%s.%s.spl\" alebo \"%s.ascii.spl\""
 
 #, c-format
 msgid "Reading spell file \"%s\""
@@ -4583,7 +4523,8 @@ msgstr "Zlá hodnota COMPOUNDSYLMAX v %s riadok %d: %s"
 
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
-msgstr "Rozdielna kombinácia príznakov v nasledujúcom bloku prípon v %s riadok %d: %s"
+msgstr ""
+"Rozdielna kombinácia príznakov v nasledujúcom bloku prípon v %s riadok %d: %s"
 
 #, c-format
 msgid "Duplicate affix in %s line %d: %s"
@@ -4776,8 +4717,6 @@ msgstr "E752: ®iadny predchádzajúce nahradenie podµa slovníka"
 msgid "E753: Not found: %s"
 msgstr "E753: Nenájdené: %s"
 
-#. * file.
-# TODO: Capitalise first word of message?
 msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: duplicitný znak v MAP polo¾ke"
 
@@ -4841,7 +4780,6 @@ msgstr "; zhoda "
 msgid " line breaks"
 msgstr " zalomení riadkov"
 
-# TODO: Capitalise first word of message?
 msgid "E395: Contains argument not accepted here"
 msgstr "E395: obsahuje argumenty, ktoré tu nie sú povolené"
 
@@ -4881,7 +4819,6 @@ msgstr "E401: Oddeµovaè vzoru %s nenájdený"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Chyba za vzorom: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: synchronizácia syntaxe: vzor pokraèovania riadkov zadaný dvakrát"
 
@@ -4913,12 +4850,10 @@ msgstr "E409: Neznámy názov skupiny: %s"
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Chybný podradený príkaz :syntax : %s "
 
-# TODO: Capitalise first word of message?
 msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: rekurzívna sluèka pri naèítavaní syncolor.vim"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E411: Highlight group not found: %s"
 msgstr "E411: skupina zvýraznenia %s nebola nájdená"
 
@@ -4930,22 +4865,18 @@ msgstr "E412: Príli¹ málo argumentov: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Príli¹ mnoho argumentov: \":highlight link %s\""
 
-# TODO: Capitalise first word of message?
 msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: skupina je nastavená, odkaz na zvýrazòovaciu skupinu ignorovaný"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: neoèakávané znamienko rovná sa: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E416: Missing equal sign: %s"
 msgstr "E416: chýba znamienko rovná sa: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E417: Missing argument: %s"
 msgstr "E417: chýba argument: %s"
 
@@ -4964,7 +4895,6 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Názov alebo èíslo farby nebolo rozpoznané: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E422: Terminal code too long: %s"
 msgstr "E422: terminálový kód je príli¹ dlhý: %s"
 
@@ -4981,11 +4911,9 @@ msgstr "E669: Netlaèitelný znak v mene skupiny"
 msgid "W18: Invalid character in group name"
 msgstr "W18: Chybný znak v mene skupiny"
 
-# TODO: Capitalise first word of message?
 msgid "E555: At bottom of tag stack"
 msgstr "E555: na konci zoznamu tagov"
 
-# TODO: Capitalise first word of message?
 msgid "E556: At top of tag stack"
 msgstr "E556: na zaèiatku zoznamu tagov"
 
@@ -4993,7 +4921,6 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Nedá sa skoèi» pred prvý vyhovujúci tag"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E426: Tag not found: %s"
 msgstr "E426: tag %s nenájdený"
 
@@ -5027,7 +4954,6 @@ msgstr "  Pou¾ívam tag s písmom inej veµkosti!"
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Súbor \"%s\" neexistuje"
 
-#. Highlight title
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
@@ -5055,7 +4981,6 @@ msgstr "Pred bajtom %ld"
 msgid "E432: Tags file not sorted: %s"
 msgstr "E432: Obsah súboru tagov %s nie je zoradený"
 
-#. never opened any tags file
 msgid "E433: No tags file"
 msgstr "E433: ®iadny súbor tagov"
 
@@ -5084,11 +5009,9 @@ msgstr "E559: Termcap neobsahuje polo¾ku pre tento terminál"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Termcap neobsahuje polo¾ku \"%s\""
 
-# TODO: Capitalise first word of message?
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: Terminál musí ma» schopnos» \"cm\" (schopnos» pohybu kurzora)"
 
-#. Highlight title
 msgid ""
 "\n"
 "--- Terminal keys ---"
@@ -5102,11 +5025,9 @@ msgstr "spustený nový shell\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Chyba pri èítaní vstupu, konèím...\n"
 
-#. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "Odstránenie zmien nie je mo¾né; chcete napriek tomu pokraèova»"
 
-# TODO: Capitalise first word of message?
 msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: èísla riadkov sú chybné"
 
@@ -5117,15 +5038,12 @@ msgstr "1 zmena"
 msgid "%ld changes"
 msgstr "%ld zmien"
 
-# TODO: Capitalise first word of message?
 msgid "E439: Undo list corrupt"
 msgstr "E439: záznam o zmenách po¹kodený"
 
-# TODO: Capitalise first word of message?
 msgid "E440: Undo line missing"
 msgstr "E440: chýba opravný riadok"
 
-#. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
 "MS-Windows 16/32-bit GUI version"
@@ -5463,7 +5381,9 @@ msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr "Prepáète, tento príkaz je vypnutý, Perl kni¾nica nemô¾e by» naèítaná."
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr "E299: Vykonanie kódu v jazyku Perl nie je mo¾né v bezpeènostnej schránke bez bezpeènostného modulu"
+msgstr ""
+"E299: Vykonanie kódu v jazyku Perl nie je mo¾né v bezpeènostnej schránke bez "
+"bezpeènostného modulu"
 
 msgid "Edit with &multiple Vims"
 msgstr "Upravi» s viacerý&mi Vimmi"
@@ -5477,7 +5397,6 @@ msgstr "Porovna» &Vimom"
 msgid "Edit with &Vim"
 msgstr "Upravi» s &Vimom"
 
-#. Now concatenate
 msgid "Edit with existing Vim - "
 msgstr "Upravi» s existujúcim Vimom - "
 
@@ -5563,7 +5482,7 @@ msgstr "E14: Chybná adresa"
 msgid "E474: Invalid argument"
 msgstr "E474: Chybný argument"
 
-#,  c-format
+#, c-format
 msgid "E475: Invalid argument: %s"
 msgstr "E475: Chybný argument: %s"
 
@@ -5621,7 +5540,8 @@ msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
 msgstr "E27: Nedá sa pou¾í» farsi re¾im: nebol zapnutý pri preklade programu\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
-msgstr "E800: Nedá sa pou¾í» arabic re¾im: nebol zapnutý pri preklade programu\n"
+msgstr ""
+"E800: Nedá sa pou¾í» arabic re¾im: nebol zapnutý pri preklade programu\n"
 
 #, c-format
 msgid "E28: No such highlight group name: %s"
@@ -5662,7 +5582,6 @@ msgid "E36: Not enough room"
 msgstr "E36: Nedostatok miesta"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E247: No registered server named \"%s\""
 msgstr "E247: ¾iaden registrovaný server pomenovaný \"%s\""
 
@@ -5694,7 +5613,6 @@ msgstr "E39: Oèakávané èíslo"
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: Nedá sa otvori» chybový súbor %s"
 
-# TODO: Capitalise first word of message?
 msgid "E233: Cannot open display"
 msgstr "E233: nedá sa otvori» displej"
 
@@ -5760,7 +5678,6 @@ msgstr "E255: Chyba -- nedájú sa preèíta» oznaèovacie dáta!"
 msgid "E72: Close error on swap file"
 msgstr "E72: Chyba pri uzatváraní odkladacieho súboru"
 
-# TODO: Capitalise first word of message?
 msgid "E73: Tag stack empty"
 msgstr "E73: zoznam tagov je prázdny"
 
@@ -5787,11 +5704,13 @@ msgstr "E79: Nemo¾no expandova» ¾olíkové znaky (wildcards)"
 
 msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
 msgstr ""
-"E591: hodnota voµby 'winheight' (vý¹ka okna) nesmie by» men¹ia ne¾ hodnota voµby 'winminheight' (minimálna vý¹ka okna)"
+"E591: hodnota voµby 'winheight' (vý¹ka okna) nesmie by» men¹ia ne¾ hodnota "
+"voµby 'winminheight' (minimálna vý¹ka okna)"
 
 msgid "E592: 'winwidth' cannot be smaller than 'winminwidth'"
 msgstr ""
-"E592: hodnota voµby 'winwidth' (¹írka okna) nesmie by» men¹ia ne¾ hodnota volµy 'winminwidth' (minimálna ¹írka okna)"
+"E592: hodnota voµby 'winwidth' (¹írka okna) nesmie by» men¹ia ne¾ hodnota "
+"volµy 'winminwidth' (minimálna ¹írka okna)"
 
 msgid "E80: Error while writing"
 msgstr "E80: Chyba pri ukladaní"
@@ -5815,11 +5734,9 @@ msgstr "E744: NetBeans nepovoµuje zmeny v súboroch len na èítanie"
 msgid "E685: Internal error: %s"
 msgstr "E685: Vnútorná chyba: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: vzor pou¾íva viac pamäte ako 'maxmempattern'"
 
-# TODO: Capitalise first word of message?
 msgid "E749: Empty buffer"
 msgstr "E749: prázdny buffer"
 

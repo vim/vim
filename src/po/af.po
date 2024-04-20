@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Afrikaans translation for Vim
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
@@ -23,6 +24,9 @@
 # exception - uitsondering
 # abandon - weg gegooi
 # socket - WEET NIE
+#
+# Original translations.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 8.2\n"
@@ -1498,8 +1502,7 @@ msgstr ""
 "    van dieselfde lêer te sit wanneer veranderinge gemaak word nie.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
-msgstr ""
-"(2) 'n Bewerkingsessie van hierdie lêer het ineengestort.\n"
+msgstr "(2) 'n Bewerkingsessie van hierdie lêer het ineengestort.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Indien wel, gebruik \":recover\" of \"vim -r"
@@ -1639,9 +1642,7 @@ msgid "%ld Cols; "
 msgstr "%ld Kolomme; "
 
 # njj: Karakters kan meerdere grepe wees, sien ':h multibyte'
-
 # njj: Karakters kan meerdere grepe wees, sien ':h multibyte'
-
 msgid "(+%lld for BOM)"
 msgstr "(+%lld vir 'BOM')"
 
@@ -2091,7 +2092,6 @@ msgid "(Invalid)"
 msgstr "(Ongeldig)"
 
 #, no-c-format
-
 msgid "new shell started\n"
 msgstr "nuwe dop begin\n"
 
@@ -4345,11 +4345,10 @@ msgid ""
 "E815: Sorry, this command is disabled, the MzScheme libraries could not be "
 "loaded."
 msgstr ""
-"E815: Jammer, hierdie bevel is afgeskakel, die MzScheme biblioteek kon nie gelaai "
-"word nie."
+"E815: Jammer, hierdie bevel is afgeskakel, die MzScheme biblioteek kon nie "
+"gelaai word nie."
 
 #, no-c-format
-
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: Ongeldige handeling: '%s'"
 

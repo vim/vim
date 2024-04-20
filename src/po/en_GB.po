@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # UK English Translation for Vim
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
@@ -22,6 +23,8 @@
 #
 # As with all guides, they should be followed unless there is a reason why they
 # should not be for a particular message.
+#
+# Original translations.
 #
 msgid ""
 msgstr ""

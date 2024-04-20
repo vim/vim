@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Vim7/src/po/vim.pot translation to Spanish.
 #
 # Translation project homepage:
@@ -8,6 +9,9 @@
 #
 # Pedro A. López-Valencia <vorbote@users.sourceforge.net>, 2003-06,2009.
 # victorhck <victorhck@mailbox.org>, 2022.
+#
+# Original translations.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
@@ -128,12 +132,6 @@ msgstr "[RO]"
 
 msgid "[readonly]"
 msgstr "[Sólo lectura]"
-
-#, fuzzy, c-format
-#~ msgid "%ld line --%d%%--"
-#~ msgid_plural "%ld lines --%d%%--"
-#~ msgstr[0] "%ld línea --%d%%--"
-#~ msgstr[1] "%ld líneas --%d%%--"
 
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
@@ -435,21 +433,9 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "Se invocó \"inputrestore()\" más veces que \"inputsave()\""
 
-#, fuzzy, c-format
-#~ msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
-#~ msgstr "<%s>%s%s  %d,  Hex %02x,  Octal %03o, Digr %s"
-
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
-
-#, fuzzy, c-format
-#~ msgid "> %d, Hex %04x, Oct %o, Digr %s"
-#~ msgstr "> %d, Hex %04x, Octal %o, Digr %s"
-
-#, fuzzy, c-format
-#~ msgid "> %d, Hex %08x, Oct %o, Digr %s"
-#~ msgstr "> %d, Hex %08x, Octal %o, Digr %s"
 
 #, c-format
 msgid "> %d, Hex %04x, Octal %o"
@@ -458,12 +444,6 @@ msgstr "> %d, Hex %04x, Octal %o"
 #, c-format
 msgid "> %d, Hex %08x, Octal %o"
 msgstr "> %d, Hex %08x, Octal %o"
-
-#, fuzzy, c-format
-#~ msgid "%ld line moved"
-#~ msgid_plural "%ld lines moved"
-#~ msgstr[0] "%ld línea movida"
-#~ msgstr[1] "%ld líneas movidas"
 
 #, c-format
 msgid "%ld lines filtered"
@@ -10219,3 +10199,12 @@ msgstr "nombre de la biblioteca dinámica MzScheme"
 msgid "name of the MzScheme GC dynamic library"
 msgstr "nombre de la biblioteca dinámica MzScheme GC"
 
+#, fuzzy, c-format
+
+#, fuzzy, c-format
+
+#, fuzzy, c-format
+
+#, fuzzy, c-format
+
+#, fuzzy, c-format

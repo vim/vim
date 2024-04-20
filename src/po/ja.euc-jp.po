@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Japanese translation for Vim
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
@@ -5184,9 +5185,6 @@ msgstr "E417: 引数がありません: %s"
 msgid "E418: Illegal value: %s"
 msgstr "E418: 不正な値です: %s"
 
-#~ msgid "E418: I'm a teapot"
-#~ msgstr ""
-
 msgid "E419: FG color unknown"
 msgstr "E419: 未知の前景色です"
 
@@ -5491,9 +5489,6 @@ msgstr "はファイルでも書込み可能デバイスでもありません"
 #, c-format
 msgid "E503: \"%s\" is not a file or writable device"
 msgstr "E503: \"%s\" はファイルでも書込み可能デバイスでもありません"
-
-#~ msgid "E503: Coffee is currently not available"
-#~ msgstr ""
 
 msgid "is read-only (cannot override: \"W\" in 'cpoptions')"
 msgstr "は読込専用です (\"W\" が 'cpoptions' にあるため、強制書込できません)"
@@ -9045,10 +9040,6 @@ msgstr ""
 "C++ソース (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vimファイル (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
-# No need to translate this.
-#~ msgid "GVim"
-#~ msgstr ""
-
 msgid "Text Editor"
 msgstr "テキストエディタ"
 
@@ -9057,10 +9048,6 @@ msgstr "テキストファイルを編集します"
 
 msgid "Text;editor;"
 msgstr "テキスト;エディタ;"
-
-# No need to translate this.
-#~ msgid "Vim"
-#~ msgstr ""
 
 msgid "(local to window)"
 msgstr "(ウィンドウについてローカル)"

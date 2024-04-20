@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Serbian Cyrillic translation for Vim
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
@@ -5,6 +6,8 @@
 # Copyright (C) 2024
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR Ivan Pešić <ivan.pesic@gmail.com>, 2017.
+#
+# Original translations.
 #
 msgid ""
 msgstr ""
@@ -18,8 +21,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgid "ERROR: "
 msgstr "ГРЕШКА: "
@@ -8584,8 +8587,8 @@ msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
 msgstr "E1367: Ниво приступа променљиве „%s” интерфејса „%s” се разликује"
 
 msgid ""
-"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
-"\"const\""
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const"
+"\""
 msgstr ""
 "E1368: Након static мора да следи „var” или „def” или „final” или „const”"
 

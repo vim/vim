@@ -1,4 +1,4 @@
-#
+# vim:tw=79:ts=8:ft=po:
 # Ukrainian translation for Vim
 #
 # Generated from uk.po, DO NOT EDIT
@@ -8703,14 +8703,13 @@ msgstr "E1330: Некоректний тип для змінної об’єкта: %s"
 msgid ""
 "E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
 "\"const\""
-msgstr ""
-"E1331: За public має йти «var» або «static» або «final» або "
-"«const»"
+msgstr "E1331: За public має йти «var» або «static» або «final» або «const»"
 
 #, c-format
 msgid "E1332: Public variable name cannot start with underscore: %s"
 msgstr ""
-"E1332: Назва відкритої (public) змінної класу не може починатися із підкреслення: %s"
+"E1332: Назва відкритої (public) змінної класу не може починатися із "
+"підкреслення: %s"
 
 #, c-format
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
@@ -8835,9 +8834,7 @@ msgstr "E1367: Рівень доступу змінної «%s» інтерфейсу «%s» інший"
 msgid ""
 "E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
 "\"const\""
-msgstr ""
-"E1368: За static має йти «var» або «def» або «final» або "
-"«const»"
+msgstr "E1368: За static має йти «var» або «def» або «final» або «const»"
 
 #, c-format
 msgid "E1369: Duplicate variable: %s"
@@ -8919,8 +8916,9 @@ msgstr "E1389: Бракує назви після implements"
 msgid ""
 "E1390: Cannot use an object variable \"this.%s\" except with the \"new\" "
 "method"
-msgstr "E1365: Неможливо вжити тип повернення у функції «new»"
-"E1390: Неможливо вжити змінну об’єкту «this.%s», хіба що з методом «new»"
+msgstr ""
+"E1365: Неможливо вжити тип повернення у функції «new»E1390: Неможливо вжити "
+"змінну об’єкту «this.%s», хіба що з методом «new»"
 
 #, c-format
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
@@ -9015,8 +9013,8 @@ msgid ""
 "E1502: Positional argument %d used as field width reused as different type: "
 "%s/%s"
 msgstr ""
-"E1502: Позиційний аргумент %d, що задає ширину поля, вжито повторно з іншим типом: %s/"
-"%s"
+"E1502: Позиційний аргумент %d, що задає ширину поля, вжито повторно з іншим "
+"типом: %s/%s"
 
 #, c-format
 msgid "E1503: Positional argument %d out of bounds: %s"
@@ -9037,7 +9035,8 @@ msgid ""
 "E1508: Size of the extended attribute value is larger than the maximum size "
 "allowed"
 msgstr ""
-"E1508: Розмір значення розширеного атрибуту більший, ніж максимальний дозволений розмір"
+"E1508: Розмір значення розширеного атрибуту більший, ніж максимальний "
+"дозволений розмір"
 
 msgid "E1509: Error occurred when reading or writing extended attribute"
 msgstr "E1509: Сталася помилка читання або запису розширеного атрибуту"

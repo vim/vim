@@ -65,14 +65,18 @@ PO_INPUTLIST = \
 
 first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
-	$(XGETTEXT) --default-domain=$(LANGUAGE) \
+	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
+		--default-domain=$(LANGUAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
-	$(XGETTEXT) --default-domain=$(PACKAGE) \
+	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
+		--default-domain=$(PACKAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
@@ -83,7 +87,7 @@ $(LANGUAGES):
 	@$(MAKE) -f Make_cyg.mak $(PACKAGE).pot GETTEXT_PATH=$(GETTEXT_PATH)
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
-	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
+	$(MSGMERGE) --width=79 -o $@.po $@.po.old $(PACKAGE).pot
 	$(RM) $@.po.old
 
 install: $(MOFILES) $(MOCONVERTED)

@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Chinese (simplified) Translation for Vim
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
@@ -10,6 +11,7 @@
 #   Ada (Haowen) Yu <me@yuhaowen.com>
 #
 # Generated from zh_CN.UTF-8.po, DO NOT EDIT.
+#
 #   Edyfox <edyfox@gmail.com>
 #   Yuheng Xie <elephant@linux.net.cn>
 #
@@ -23,7 +25,7 @@ msgstr ""
 "Language-Team: Simplified Chinese\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=gb2312\n"
+"Content-Type: text/plain; charset=GB2312\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
@@ -560,7 +562,8 @@ msgstr "使用了逆向的范围，确定交换吗"
 
 msgid ""
 "INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
-msgstr "内部信息：不能使用 EX_DFLALL 与 ADDR_NONE, ADDR_UNSIGNED 或 ADDR_QUICKFIX"
+msgstr ""
+"内部信息：不能使用 EX_DFLALL 与 ADDR_NONE, ADDR_UNSIGNED 或 ADDR_QUICKFIX"
 
 #, c-format
 msgid "%d more file to edit.  Quit anyway?"
@@ -3607,9 +3610,6 @@ msgstr "窗口"
 
 msgid "tab"
 msgstr "标签页"
-
-#~ msgid "[end of lines]"
-#~ msgstr ""
 
 msgid ""
 "\n"
@@ -7818,11 +7818,6 @@ msgstr "E1203: 点只能用于字典：%s"
 msgid "E1204: No Number allowed after .: '\\%%%c'"
 msgstr "E1204: . 后不能加整数: '\\%%%c'"
 
-# FIXME: impossible to reorder correctly!
-#, fuzzy
-#~ msgid "E1205: No white space allowed between option and"
-#~ msgstr "E1205: 选项和之间不允许有空格"
-
 #, c-format
 msgid "E1206: Dictionary required for argument %d"
 msgstr "E1206: 参数 %d 需要字典"
@@ -9731,8 +9726,7 @@ msgstr "杂项"
 msgid ""
 "when to use virtual editing: \"block\", \"insert\", \"all\"\n"
 "and/or \"onemore\""
-msgstr ""
-"何时使用虚拟编辑：\"block\", \"insert\", \"all\" 和/或 \"onemore\""
+msgstr "何时使用虚拟编辑：\"block\", \"insert\", \"all\" 和/或 \"onemore\""
 
 msgid "list of autocommand events which are to be ignored"
 msgstr "要忽略的自动命令事件列表"

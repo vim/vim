@@ -123,22 +123,24 @@ ja.sjis.po: ja.po
 	@$(MAKE) -nologo -f Make_mvc.mak sjiscorr
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t CP932 $? | .\sjiscorr.exe > $@
+	"$(GETTEXT_PATH)\msgconv.exe" -w 79 -t CP932 $? | .\sjiscorr.exe > $@
 !ELSEIF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP932 $? | .\sjiscorr.exe > $@
 !ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(932))
 	type $@ | .\sjiscorr.exe > tmp.$@
 	@$(MV) tmp.$@ $@
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(932)) \
 		-replace \"`r`n\", \"`n\"; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(932))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 sjiscorr: sjiscorr.c
 	$(CC) sjiscorr.c
@@ -147,159 +149,171 @@ sjiscorr: sjiscorr.c
 ja.euc-jp.po: ja.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t EUC-JP -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t EUC-JP -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-JP $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(20932))
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(20932)) -replace \
 		'charset=utf-8', 'charset=EUC-JP'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(20932))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(20932)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(20932))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert cs.po to create cs.cp1250.po.
 cs.cp1250.po: cs.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP1250 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(28592)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'charset=iso-8859-2', 'charset=CP1250'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert pl.po to create pl.cp1250.po.
 pl.cp1250.po: pl.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP1250 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(28592)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'charset=iso-8859-2', 'charset=CP1250'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert pl.po to create pl.UTF-8.po.
 pl.UTF-8.po: pl.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t UTF-8 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t UTF-8 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t UTF-8 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(28592)))
 ! ENDIF
-	$(PS) $(PSFLAGS) (Get-Content -Raw -Encoding UTF8 $@ \
+	$(PS) $(PSFLAGS) (Get-Content -Path '$@' -Raw \
 		^| % {$$_-replace 'charset=iso-8859-2', 'charset=UTF-8'}) \
-		^| 1>nul New-Item -Force -Path . -ItemType file -Name $@
+		^| 1>nul New-Item -Path . -Name $@ -ItemType file -Force
 !ENDIF
-	$(PS) $(PSFLAGS) (Get-Content -Raw -Encoding UTF8 $@ \
+	$(PS) $(PSFLAGS) (Get-Content -Path '$@' -Raw \
 		^| % {$$_-replace '# Original translations', \
 		'# Generated from $?, DO NOT EDIT'}) \
-		^| 1>nul New-Item -Force -Path . -ItemType file -Name $@
+		^| 1>nul New-Item -Path . -Name $@ -ItemType file -Force
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert sk.po to create sk.cp1250.po.
 sk.cp1250.po: sk.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t CP1250 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP1250 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f ISO-8859-2 -t CP1250 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(28592)), \
 		[System.Text.Encoding]::GetEncoding(1250))
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'charset=iso-8859-2', 'charset=CP1250'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1250)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1250))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert zh_CN.UTF-8.po to create zh_CN.po.
 zh_CN.po: zh_CN.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t GB2312 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t GB2312 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t GB2312 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(936))
 
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(936)) -replace \
 		'charset=UTF-8', 'charset=GB2312'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(936))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(936)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(936))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert zh_CN.UTF-8.po to create zh_CN.cp936.po.
 # Set 'charset' to gbk to avoid that msfmt generates a warning.
@@ -309,47 +323,51 @@ zh_CN.cp936.po: zh_CN.UTF-8.po
 !IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP936 $? > $@
 !ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(20936))
 
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(20936)) \
 		-replace 'charset=UTF-8', 'charset=GBK'\
 		-replace '# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(20936))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert zh_TW.UTF-8.po to create zh_TW.po.
 zh_TW.po: zh_TW.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t BIG5 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t BIG5 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t BIG5 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(950))
 
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(950)) -replace \
 		'charset=UTF-8', 'charset=BIG5'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(950)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(950))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert zh_TW.UTF-8.po to create zh_TW.po with backslash characters.
 # Requires doubling backslashes in the second byte.  Don't depend on big5corr,
@@ -372,22 +390,24 @@ zh_TW.po: zh_TW.UTF-8.po
 #	@$(MAKE) -nologo -f Make_mvc.mak big5corr
 #	-$(RM) $@
 #!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-#	"$(GETTEXT_PATH)\msgconv.exe" -t BIG5 $? | .\big5corr.exe > $@
+#	"$(GETTEXT_PATH)\msgconv.exe" -w 79 -t BIG5 $? | .\big5corr.exe > $@
 #!ELSEIF DEFINED (ICONV)
 #	$(ICONV) -f UTF-8 -t BIG5 $? | .\big5corr.exe > $@
 #!ELSE
-#	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-#		[System.IO.File]::ReadAllText(\"$?\", \
+#	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+#		[System.IO.File]::ReadAllText('$?', \
 #		[System.Text.Encoding]::GetEncoding(65001)), \
 #		[System.Text.Encoding]::GetEncoding(950))
 #	type $@ | .\big5corr.exe > tmp.$@
 #	@$(MV) tmp.$@ $@
 #!ENDIF
-#	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+#	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 #		[System.Text.Encoding]::GetEncoding(950)) \
 #		-replace \"`r`n\", \"`n\"; \
-#		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+#		[System.IO.File]::WriteAllText('$@', $$out, \
 #		[System.Text.Encoding]::GetEncoding(950))
+#	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+#		-Value (Get-Date -Format 'o')
 
 # See above in the zh_TW.po conversion section for backslashes.
 #big5corr: big5corr.c
@@ -397,85 +417,91 @@ zh_TW.po: zh_TW.UTF-8.po
 ko.po: ko.UTF-8.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t EUC-KR -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t EUC-KR -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t EUC-KR $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(51949))
 
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(51949)) -replace \
 		'charset=UTF-8', 'charset=EUC-KR'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(51949))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(51949)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(51949))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert ru.po to create ru.cp1251.po.
 ru.cp1251.po: ru.po
 	-$(RM) $@
-!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t CP1251 -o $@ $?
+!IF EXIST ("msgconv.exe")
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP1251 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
 
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'charset=UTF-8', 'charset=CP1251'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 # Convert uk.po to create uk.cp1251.po.
 uk.cp1251.po: uk.po
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -t CP1251 -o $@ $?
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP1251 -o $@ $?
 !ELSE
 ! IF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP1251 $? > $@
 ! ELSE
-	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText(\"$@\", \
-		[System.IO.File]::ReadAllText(\"$?\", \
+	$(PS) $(PSFLAGS) [System.IO.File]::WriteAllText('$@', \
+		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(65001)), \
 		[System.Text.Encoding]::GetEncoding(1251))
 
 ! ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'charset=UTF-8', 'charset=CP1251'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
 !ENDIF
-	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText(\"$@\", \
+	$(PS) $(PSFLAGS) $$out = [System.IO.File]::ReadAllText('$@', \
 		[System.Text.Encoding]::GetEncoding(1251)) -replace \
 		'# Original translations', \
 		'# Generated from $?, DO NOT EDIT'; \
-		[System.IO.File]::WriteAllText(\"$@\", $$out, \
+		[System.IO.File]::WriteAllText('$@', $$out, \
 		[System.Text.Encoding]::GetEncoding(1251))
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 .po.mo:
 	set OLD_PO_FILE_INPUT=yes
@@ -500,7 +526,10 @@ first_time: files
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
+	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
+		--default-domain=$(LANGUAGE) \
+		--add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
 	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
@@ -511,7 +540,10 @@ $(PACKAGE).pot: files
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) \
+	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
+		--default-domain=$(PACKAGE) \
+		--add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
@@ -524,11 +556,13 @@ update-po: $(MOFILES:.mo=)
 
 # Don't add a dependency here, we only want to update the .po files manually.
 $(LANGUAGES):
-	@$(MAKE) -nologo -f Make_mvc.mak GETTEXT_PATH="$(GETTEXT_PATH)" $(PACKAGE).pot
+	@$(MAKE) -l -f Make_mvc.mak "GETTEXT_PATH=$(GETTEXT_PATH)" $(PACKAGE).pot
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
-	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
+	$(MSGMERGE) --width=79 -o $@.po $@.po.old $(PACKAGE).pot
 	$(RM) $@.po.old
+	$(PS) $(PSFLAGS) Set-ItemProperty -Path '$@.po' -Name LastWriteTime \
+		-Value (Get-Date -Format 'o')
 
 install: $(LANGUAGE).mo
 	if not exist "$(INSTALLDIR)" $(MKD) "$(INSTALLDIR)"
