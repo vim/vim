@@ -16,7 +16,7 @@ func Test_play_event()
     throw 'Skipped: Playing event with callback is not supported on Windows'
   endif
   " FIXME Test_play_event() is flaky on macos 12
-  if (has('mac') && ($(sw_vers | sed -n "2p" | cut -c18,19) == 12))
+  if system('uname -s') =~ "Darwin" && system('uname -r') =~ "^21"
     let g:test_is_flaky = 1
   endif
   let g:result = 0
