@@ -1097,7 +1097,7 @@ The specification can be found online at
 https://specifications.freedesktop.org/basedir-spec/latest/
 
 The location of this standard configuration directory is configurable by the
-user, using environment variable but should also give fallback in case those
+user, using an environment variable but should also give fallback in case those
 variables weren't set.
 
 This is not an exhaustive list of those directories:
