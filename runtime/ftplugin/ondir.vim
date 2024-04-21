@@ -9,9 +9,9 @@ endif
 let s:cpo_save = &cpoptions
 set cpoptions&vim
 
-setlocal commentstring=#\ %s
+setlocal comments=:# commentstring=#\ %s
 
-let b:undo_ftplugin = 'setl commentstring<'
+let b:undo_ftplugin = 'setl comments< commentstring<'
 
 let &cpoptions = s:cpo_save
 unlet s:cpo_save
