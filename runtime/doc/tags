@@ -6051,6 +6051,7 @@ assert_notequal()	testing.txt	/*assert_notequal()*
 assert_notmatch()	testing.txt	/*assert_notmatch()*
 assert_report()	testing.txt	/*assert_report()*
 assert_true()	testing.txt	/*assert_true()*
+astro.vim	syntax.txt	/*astro.vim*
 at	motion.txt	/*at*
 atan()	builtin.txt	/*atan()*
 atan2()	builtin.txt	/*atan2()*
@@ -7230,6 +7231,7 @@ ft-asm68k-syntax	syntax.txt	/*ft-asm68k-syntax*
 ft-asmh8300-syntax	syntax.txt	/*ft-asmh8300-syntax*
 ft-aspperl-syntax	syntax.txt	/*ft-aspperl-syntax*
 ft-aspvbs-syntax	syntax.txt	/*ft-aspvbs-syntax*
+ft-astro-syntax	syntax.txt	/*ft-astro-syntax*
 ft-awk-plugin	filetype.txt	/*ft-awk-plugin*
 ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
