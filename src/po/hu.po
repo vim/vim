@@ -303,7 +303,6 @@ msgstr "Címkék átvizsgálása."
 msgid " Adding"
 msgstr " Hozzáadás"
 
-#.
 msgid "-- Searching..."
 msgstr "-- Keresés..."
 
@@ -522,7 +521,6 @@ msgstr "E699: Túl sok argumentum"
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: A complete() csak Beszúrás módban használható"
 
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -4906,7 +4904,6 @@ msgstr "Összetömörített %d a %d csomópontból; %d (%d%%) maradt"
 msgid "Reading back spell file..."
 msgstr "Visszaolvasás a helyesírás fájlból..."
 
-#.
 msgid "Performing soundfolding..."
 msgstr "Hangalakítás végrehajtása..."
 
@@ -5748,7 +5745,6 @@ msgstr "Az útvonal hossza túl hosszú!"
 msgid "--No lines in buffer--"
 msgstr "--Nincs sor a pufferben--"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Parancs megszakítva"
 

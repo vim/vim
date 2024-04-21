@@ -123,7 +123,7 @@ ja.sjis.po: ja.po
 	@$(MAKE) -nologo -f Make_mvc.mak sjiscorr
 	-$(RM) $@
 !IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-	"$(GETTEXT_PATH)\msgconv.exe" -w 79 -t CP932 $? | .\sjiscorr.exe > $@
+	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t CP932 $? | .\sjiscorr.exe > $@
 !ELSEIF DEFINED (ICONV)
 	$(ICONV) -f UTF-8 -t CP932 $? | .\sjiscorr.exe > $@
 !ELSE
@@ -245,11 +245,11 @@ pl.UTF-8.po: pl.po
 		[System.IO.File]::ReadAllText('$?', \
 		[System.Text.Encoding]::GetEncoding(28592)))
 ! ENDIF
-	$(PS) $(PSFLAGS) (Get-Content -Path '$@' -Raw \
+	$(PS) $(PSFLAGS) (Get-Content -Path '$@' -Raw -Encoding UTF8 \
 		^| % {$$_-replace 'charset=iso-8859-2', 'charset=UTF-8'}) \
 		^| 1>nul New-Item -Path . -Name $@ -ItemType file -Force
 !ENDIF
-	$(PS) $(PSFLAGS) (Get-Content -Path '$@' -Raw \
+	$(PS) $(PSFLAGS) (Get-Content -Path '$@' -Raw -Encoding UTF8 \
 		^| % {$$_-replace '# Original translations', \
 		'# Generated from $?, DO NOT EDIT'}) \
 		^| 1>nul New-Item -Path . -Name $@ -ItemType file -Force
@@ -390,7 +390,7 @@ zh_TW.po: zh_TW.UTF-8.po
 #	@$(MAKE) -nologo -f Make_mvc.mak big5corr
 #	-$(RM) $@
 #!IF EXIST ("$(GETTEXT_PATH)\msgconv.exe")
-#	"$(GETTEXT_PATH)\msgconv.exe" -w 79 -t BIG5 $? | .\big5corr.exe > $@
+#	"$(GETTEXT_PATH)\msgconv.exe" --width=79 -t BIG5 $? | .\big5corr.exe > $@
 #!ELSEIF DEFINED (ICONV)
 #	$(ICONV) -f UTF-8 -t BIG5 $? | .\big5corr.exe > $@
 #!ELSE
@@ -526,7 +526,7 @@ first_time: files
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+	$(XGETTEXT) --width=79 --package-name="Vim" \
 		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
 		--default-domain=$(LANGUAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) \
@@ -540,7 +540,7 @@ $(PACKAGE).pot: files
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+	$(XGETTEXT) --width=79 --package-name="Vim" \
 		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
 		--default-domain=$(PACKAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) \

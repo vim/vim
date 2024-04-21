@@ -10198,13 +10198,3 @@ msgstr "nombre de la biblioteca dinámica MzScheme"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "nombre de la biblioteca dinámica MzScheme GC"
-
-#, fuzzy, c-format
-
-#, fuzzy, c-format
-
-#, fuzzy, c-format
-
-#, fuzzy, c-format
-
-#, fuzzy, c-format

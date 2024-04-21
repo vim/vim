@@ -322,7 +322,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript.
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	# Create vim.pot.
-	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+	$(XGETTEXT) --width=79 --package-name="Vim" \
 		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
 		--default-domain=$(PACKAGE) --add-comments \
 		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)

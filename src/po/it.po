@@ -426,7 +426,6 @@ msgstr ""
 "\n"
 "\tImpostata l'ultima volta da "
 
-#.
 msgid "&Ok"
 msgstr "&OK"
 
@@ -2907,7 +2906,6 @@ msgstr "Compressi %s: %ld di %ld nodi; ne restano %ld (%ld%%)"
 msgid "Reading back spell file..."
 msgstr "Rilettura file ortografico..."
 
-#.
 msgid "Performing soundfolding..."
 msgstr "Eseguo soundfolding..."
 
@@ -8076,7 +8074,6 @@ msgstr "stringa"
 msgid "float"
 msgstr "numero a virgola mobile"
 
-#.
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
 

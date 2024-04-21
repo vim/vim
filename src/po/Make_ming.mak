@@ -78,7 +78,7 @@ PO_INPUTLIST = \
 
 first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
-	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+	$(XGETTEXT) --width=79 --package-name="Vim" \
 		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
 		--default-domain=$(LANGUAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
@@ -87,7 +87,7 @@ first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
-	$(XGETTEXT) --width=79 --package-name="Vim" --package-version="9.1" \
+	$(XGETTEXT) --width=79 --package-name="Vim" \
 		--msgid-bugs-address="The Vim Project, <vim-dev@vim.org>" \
 		--default-domain=$(PACKAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)

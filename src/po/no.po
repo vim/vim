@@ -309,7 +309,6 @@ msgstr "Leter gjennom tagger."
 msgid " Adding"
 msgstr " Legger til"
 
-#.
 msgid "-- Searching..."
 msgstr "-- Søker ..."
 
@@ -528,7 +527,6 @@ msgstr "E699: For mange parametere"
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() kan bare brukes i innsettingsmodus"
 
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -5607,7 +5605,6 @@ msgstr "Lengden på stien er for lang!"
 msgid "--No lines in buffer--"
 msgstr "--Ingen linjer i bufferen--"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Kommandoen avbrutt"
 
@@ -5942,25 +5939,3 @@ msgstr "Søket traff TOPPEN, fortsetter fra BUNNEN"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "Søket traff BUNNEN, fortsetter fra TOPPEN"
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy, c-format
-
-#, fuzzy
-
-#, fuzzy
-
-#, fuzzy

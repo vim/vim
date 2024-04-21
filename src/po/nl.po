@@ -327,7 +327,6 @@ msgstr "Doorzoeken tags."
 msgid " Adding"
 msgstr " toevoegen"
 
-#.
 msgid "-- Searching..."
 msgstr "-- doorzoeken..."
 
@@ -560,7 +559,6 @@ msgstr "E699:teveel argumenten"
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() kan alleen in Invoegmodus worden gebruikt"
 
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -4104,7 +4102,6 @@ msgstr "E370: laden van bibliotheek %s is mislukt"
 msgid "--No lines in buffer--"
 msgstr "-- geen regels in buffer --"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: opdracht afgebroken"
 

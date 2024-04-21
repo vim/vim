@@ -623,7 +623,6 @@ msgstr ""
 
 # #Restorer: используется в функции confirm() если не заданы аргумент buttons
 # #Restorer: используется как кнопка по умолчанию в окнах сообщений ГИП
-#.
 msgid "&Ok"
 msgstr "&OK"
 
@@ -3864,7 +3863,6 @@ msgstr "Сжато узлов %s: %ld из %ld. Осталось %ld (%ld%%)"
 msgid "Reading back spell file..."
 msgstr "Считывание записанного файла правил написания..."
 
-#.
 msgid "Performing soundfolding..."
 msgstr "Построение префиксного «дерева» омофонов..."
 
@@ -10287,7 +10285,6 @@ msgstr "string"
 msgid "float"
 msgstr "float"
 
-#.
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Поиск будет продолжен от НИЖНЕЙ ГРАНИЦЫ документа"
 

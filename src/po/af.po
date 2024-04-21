@@ -4348,7 +4348,7 @@ msgstr ""
 "E815: Jammer, hierdie bevel is afgeskakel, die MzScheme biblioteek kon nie "
 "gelaai word nie."
 
-#, no-c-format
+#, c-format
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: Ongeldige handeling: '%s'"
 

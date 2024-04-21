@@ -285,7 +285,6 @@ msgstr "Prehµadávam tagy."
 msgid " Adding"
 msgstr " Pridávam"
 
-#.
 msgid "-- Searching..."
 msgstr "-- Hµadám..."
 
@@ -477,7 +476,6 @@ msgstr "E724: premenná je vnorená príli¹ hlboko pre zobrazenie"
 msgid "E699: Too many arguments"
 msgstr "E699: Príli¹ mnoho argumentov"
 
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -5415,7 +5413,6 @@ msgstr "Príli¹ dlhá cesta!"
 msgid "--No lines in buffer--"
 msgstr "--Buffer neobsahuje ¾iadne riadky--"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Príkaz preru¹ený"
 

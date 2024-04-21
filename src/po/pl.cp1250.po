@@ -337,7 +337,6 @@ msgstr "Przegl¹dam znaczniki."
 msgid " Adding"
 msgstr " Dodajê"
 
-#.
 msgid "-- Searching..."
 msgstr "-- Szukam..."
 
@@ -576,7 +575,6 @@ msgstr "E699: Za du¿o argumentów"
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() mo¿e byæ u¿yte tylko w trybie Wprowadzania"
 
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -5172,7 +5170,6 @@ msgstr "Skompresowano %d z %d wêz³ów; pozostaje %d (%d%%)"
 msgid "Reading back spell file..."
 msgstr "Odczytujê plik sprawdzania pisowni..."
 
-#.
 msgid "Performing soundfolding..."
 msgstr "Wykonujê kompresjê dŸwiêkow¹..."
 
@@ -6122,7 +6119,6 @@ msgstr "Za d³uga œcie¿ka!"
 msgid "--No lines in buffer--"
 msgstr "--Brak wierszy w buforze--"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Przerwanie komendy"
 

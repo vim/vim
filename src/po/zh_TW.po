@@ -318,7 +318,6 @@ msgstr "掃瞄標籤."
 msgid " Adding"
 msgstr " 增加"
 
-#.
 msgid "-- Searching..."
 msgstr "-- 搜尋中..."
 
@@ -396,7 +395,6 @@ msgstr "E119: 函式 %s 的引數太少"
 msgid "E120: Using <SID> not in a script context: %s"
 msgstr "E120: <SID> 不能在 script 本文外使用: %s"
 
-#.
 msgid "&Ok"
 msgstr "確定(&O)"
 
@@ -4283,7 +4281,6 @@ msgstr "  # pri kind tag"
 msgid "file\n"
 msgstr "檔案\n"
 
-#.
 msgid "Enter nr of choice (<CR> to abort): "
 msgstr "輸入 nr 或選擇 (<CR> 離開): "
 
@@ -4768,7 +4765,6 @@ msgstr "路徑長度太長!"
 msgid "--No lines in buffer--"
 msgstr "--緩衝區無資料--"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: 命令被強制中斷執行 "
 

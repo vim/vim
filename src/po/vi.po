@@ -277,7 +277,6 @@ msgstr "Tìm kiếm trong số thẻ đánh dấu."
 msgid " Adding"
 msgstr " Thêm"
 
-#.
 msgid "-- Searching..."
 msgstr "-- Tìm kiếm..."
 
@@ -355,7 +354,6 @@ msgstr "E119: Không đủ tham số cho hàm: %s"
 msgid "E120: Using <SID> not in a script context: %s"
 msgstr "E120: Sử dụng <SID> ngoài script: %s"
 
-#.
 msgid "&Ok"
 msgstr "&Ok"
 
@@ -4295,7 +4293,6 @@ msgstr "  # pri loại thẻ ghi"
 msgid "file\n"
 msgstr "tập tin\n"
 
-#.
 msgid "Enter nr of choice (<CR> to abort): "
 msgstr "Hãy chọn số cần thiết (<CR> để dừng):"
 
@@ -4785,7 +4782,6 @@ msgstr "Đường dẫn quá dài!"
 msgid "--No lines in buffer--"
 msgstr "-- Không có dòng nào trong bộ đệm --"
 
-#.
 msgid "E470: Command aborted"
 msgstr "E470: Câu lệnh bị dừng"
 

@@ -9817,6 +9817,3 @@ msgstr "MzScheme 动态库的名字"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "MzScheme GC 动态库的名字"
-
-# FIXME: impossible to reorder correctly!
-#, fuzzy
