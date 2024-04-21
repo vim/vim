@@ -1201,6 +1201,71 @@ def Test_autoload_import_relative_from_buffer_in_dir()
   :bw!
 enddef
 
+" Test modifying exported autoload variable. Github issue: #14591
+def Test_autoload_export_variables()
+  mkdir('Xautoload_vars/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export var val = 11
+    val = 42
+  END
+
+  # Test that the imported script, above, can modify the exported variable;
+  # and test that the importing script, below, can modify the variable.
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f2.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f2.vim' as f2
+
+    def F(): number
+      return f2.val
+    enddef
+    assert_equal(42, F())
+    assert_equal(42, f2.val)
+    f2.val = 17
+    assert_equal(17, f2.val)
+
+    def G()
+      f2.val = 19
+    enddef
+    G()
+    assert_equal(19, f2.val)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Test const var is not modifiable.
+  lines =<< trim END
+    vim9script
+    export const val = 11
+    val = 42
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f3.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f3.vim' as f3
+
+    var x = f3.val
+  END
+  v9.CheckScriptFailure(lines, 'E46:')
+
+  # Test const var is not modifiable from importing script.
+  lines =<< trim END
+    vim9script
+    export const val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f4.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f4.vim' as f4
+
+    f4.val = 13
+  END
+  v9.CheckScriptFailure(lines, 'E46:')
+enddef
+
 def Test_autoload_import_relative_autoload_dir()
   mkdir('autoload', 'pR')
   var lines =<< trim END
