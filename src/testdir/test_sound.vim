@@ -15,7 +15,7 @@ func Test_play_event()
   if has('win32')
     throw 'Skipped: Playing event with callback is not supported on Windows'
   endif
-  if has('$(sw_vers | sed -n "2p" | cut -c18,19)')
+  if ($(sw_vers | sed -n "2p" | cut -c18,19) == 12)
     let g:test_is_flaky = 1
   endif
   let g:result = 0
