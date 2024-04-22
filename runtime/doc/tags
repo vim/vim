@@ -7798,6 +7798,7 @@ getqflist-examples	quickfix.txt	/*getqflist-examples*
 getreg()	builtin.txt	/*getreg()*
 getreginfo()	builtin.txt	/*getreginfo()*
 getregion()	builtin.txt	/*getregion()*
+getregionpos()	builtin.txt	/*getregionpos()*
 getregion-notes	builtin.txt	/*getregion-notes*
 getregtype()	builtin.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
