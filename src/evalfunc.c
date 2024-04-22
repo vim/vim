@@ -5486,13 +5486,13 @@ block_def2str(struct block_def *bd)
 
     static int
 getregionpos(
-    typval_T *argvars,
-    typval_T *rettv,
-    pos_T *p1, pos_T *p2,
-    int *inclusive,
-    int *region_type,
-    oparg_T *oa,
-    int *fnum)
+    typval_T	*argvars,
+    typval_T	*rettv,
+    pos_T	*p1, pos_T *p2,
+    int		*inclusive,
+    int		*region_type,
+    oparg_T	*oa,
+    int		*fnum)
 {
     int		fnum1 = -1, fnum2 = -1;
     char_u	*type;
@@ -5672,7 +5672,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     if (getregionpos(argvars, rettv,
 		&p1, &p2, &inclusive, &region_type, &oa, &fnum) == FAIL)
 	return;
- 
+
      for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
      {
 	int ret = 0;
