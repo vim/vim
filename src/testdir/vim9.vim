@@ -110,46 +110,6 @@ export def CheckScriptSuccess(lines: list<string>)
   endtry
 enddef
 
-# :source a list of "lines" and check whether it fails with "error"
-export def CheckSourceFailure(lines: list<string>, error: string, lnum = -3)
-  var cwd = getcwd()
-  new
-  setline(1, lines)
-  try
-    assert_fails('source', error, lines, lnum)
-  finally
-    chdir(cwd)
-    bw!
-  endtry
-enddef
-
-# :source a list of "lines" and check whether it fails with the list of
-# "errors"
-export def CheckSourceFailureList(lines: list<string>, errors: list<string>, lnum = -3)
-  var cwd = getcwd()
-  new
-  setline(1, lines)
-  try
-    assert_fails('source', errors, lines, lnum)
-  finally
-    chdir(cwd)
-    bw!
-  endtry
-enddef
-
-# :source a list of "lines" and check whether it succeeds
-export def CheckSourceSuccess(lines: list<string>)
-  var cwd = getcwd()
-  new
-  setline(1, lines)
-  try
-    :source
-  finally
-    chdir(cwd)
-    bw!
-  endtry
-enddef
-
 export def CheckDefAndScriptSuccess(lines: list<string>)
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
@@ -313,3 +273,177 @@ export def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
   CheckDefExecFailure(vim9lines, defError)
   CheckScriptFailure(['vim9script'] + vim9lines, scriptError)
 enddef
+
+# :source a list of "lines" and check whether it fails with "error"
+export def CheckSourceScriptFailure(lines: list<string>, error: string, lnum = -3)
+  var cwd = getcwd()
+  new
+  setline(1, lines)
+  var bnr = bufnr()
+  try
+    assert_fails('source', error, lines, lnum)
+  finally
+    chdir(cwd)
+    exe $':bw! {bnr}'
+  endtry
+enddef
+
+# :source a list of "lines" and check whether it fails with the list of
+# "errors"
+export def CheckSourceScriptFailureList(lines: list<string>, errors: list<string>, lnum = -3)
+  var cwd = getcwd()
+  new
+  var bnr = bufnr()
+  setline(1, lines)
+  try
+    assert_fails('source', errors, lines, lnum)
+  finally
+    chdir(cwd)
+    exe $':bw! {bnr}'
+  endtry
+enddef
+
+# :source a list of "lines" and check whether it succeeds
+export def CheckSourceScriptSuccess(lines: list<string>)
+  var cwd = getcwd()
+  new
+  var bnr = bufnr()
+  setline(1, lines)
+  try
+    :source
+  finally
+    chdir(cwd)
+    exe $':bw! {bnr}'
+  endtry
+enddef
+
+export def CheckSourceSuccess(lines: list<string>)
+  CheckSourceScriptSuccess(lines)
+enddef
+
+export def CheckSourceFailure(lines: list<string>, error: string, lnum = -3)
+  CheckSourceScriptFailure(lines, error, lnum)
+enddef
+
+export def CheckSourceFailureList(lines: list<string>, errors: list<string>, lnum = -3)
+  CheckSourceScriptFailureList(lines, errors, lnum)
+enddef
+
+# :source a List of "lines" inside a ":def" function and check that no error
+# occurs when called.
+export func CheckSourceDefSuccess(lines)
+  let cwd = getcwd()
+  new
+  let bnr = bufnr()
+  call setline(1, ['def Func()'] + a:lines + ['enddef', 'defcompile'])
+  try
+    source
+    call Func()
+  finally
+    call chdir(cwd)
+    delfunc! Func
+    exe $'bw! {bnr}'
+  endtry
+endfunc
+
+export def CheckSourceDefAndScriptSuccess(lines: list<string>)
+  CheckSourceDefSuccess(lines)
+  CheckSourceScriptSuccess(['vim9script'] + lines)
+enddef
+
+# Check that "lines" inside a ":def" function has no error when compiled.
+export func CheckSourceDefCompileSuccess(lines)
+  let cwd = getcwd()
+  new
+  let bnr = bufnr()
+  call setline(1, ['def Func()', '# comment'] + a:lines + ['#comment', 'enddef', 'defcompile'])
+  try
+    source
+  finally
+    call chdir(cwd)
+    delfunc! Func
+    exe $':bw! {bnr}'
+  endtry
+endfunc
+
+# Check that "lines" inside ":def" results in an "error" message.
+# If "lnum" is given check that the error is reported for this line.
+# Add a line before and after to make it less likely that the line number is
+# accidentally correct.
+export func CheckSourceDefFailure(lines, error, lnum = -3)
+  let cwd = getcwd()
+  new
+  let bnr = bufnr()
+  call setline(1, ['def Func()', '# comment'] + a:lines + ['#comment', 'enddef', 'defcompile'])
+  try
+    call assert_fails('source', a:error, a:lines, a:lnum + 1)
+  finally
+    call chdir(cwd)
+    delfunc! Func
+    exe $':bw! {bnr}'
+  endtry
+endfunc
+
+# Check that "lines" inside ":def" results in an "error" message when executed.
+# If "lnum" is given check that the error is reported for this line.
+# Add a line before and after to make it less likely that the line number is
+# accidentally correct.
+export func CheckSourceDefExecFailure(lines, error, lnum = -3)
+  let cwd = getcwd()
+  new
+  let bnr = bufnr()
+  call setline(1, ['def Func()', '# comment'] + a:lines + ['#comment', 'enddef'])
+  try
+    source
+    call assert_fails('call Func()', a:error, a:lines, a:lnum + 1)
+  finally
+    call chdir(cwd)
+    delfunc! Func
+    exe $':bw! {bnr}'
+  endtry
+endfunc
+
+# Check that a command fails when used in a :def function and when used in
+# Vim9 script.
+# When "error" is a string, both with the same error.
+# When "error" is a list, the :def function fails with "error[0]" , the script
+# fails with "error[1]".
+export def CheckSourceDefAndScriptFailure(lines: list<string>, error: any, lnum = -3)
+  var errorDef: string
+  var errorScript: string
+  if type(error) == v:t_string
+    errorDef = error
+    errorScript = error
+  elseif type(error) == v:t_list && len(error) == 2
+    errorDef = error[0]
+    errorScript = error[1]
+  else
+    echoerr 'error argument must be a string or a list with two items'
+    return
+  endif
+  CheckSourceDefFailure(lines, errorDef, lnum)
+  CheckSourceScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
+enddef
+
+# Check that a command fails when executed in a :def function and when used in
+# Vim9 script.
+# When "error" is a string, both with the same error.
+# When "error" is a list, the :def function fails with "error[0]" , the script
+# fails with "error[1]".
+export def CheckSourceDefExecAndScriptFailure(lines: list<string>, error: any, lnum = -3)
+  var errorDef: string
+  var errorScript: string
+  if type(error) == v:t_string
+    errorDef = error
+    errorScript = error
+  elseif type(error) == v:t_list && len(error) == 2
+    errorDef = error[0]
+    errorScript = error[1]
+  else
+    echoerr 'error argument must be a string or a list with two items'
+    return
+  endif
+  CheckSourceDefExecFailure(lines, errorDef, lnum)
+  CheckSourceScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
+enddef
+
