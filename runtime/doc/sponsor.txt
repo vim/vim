@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 9.1.  Last change: 2023 Mar 24
+*sponsor.txt*   For Vim version 9.1.  Last change: 2024 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -60,9 +60,7 @@ Credit card	Through PayPal, see the PayPal site for information:
 
 Other methods	See |iccf-donations|.
 		Include "Vim sponsor" or "Vim registration" in the comment of
-		your money transfer.  Send me an e-mail that mentions the
-		amount you transferred if you want to vote for features and
-		show others you are a registered Vim user or sponsor.
+		your money transfer.
 
 
 QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
