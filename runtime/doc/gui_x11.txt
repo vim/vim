@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Jan 30
+*gui_x11.txt*   For Vim version 9.1.  Last change: 2024 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -636,8 +636,8 @@ that version.
 For Motif, you need at least Motif version 1.2 and/or X11R5.  Motif 2.0 and
 X11R6 are OK.  Motif 1.1 and X11R4 might work, no guarantee (there may be a
 few problems, but you might make it compile and run with a bit of work, please
-send me the patches if you do).  The newest releases of LessTif have been
-reported to work fine too.
+send patches if you do).  The newest releases of LessTif have been reported to
+work fine too.
 
 					    *gui-x11-athena* *gui-x11-neXtaw*
 Support for the Athena GUI and neXtaw was removed in patch 8.2.4677.
