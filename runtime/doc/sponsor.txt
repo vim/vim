@@ -133,10 +133,10 @@ for features.
 
 I donated $$$, now please add feature XYZ!
 
-There is no direct relation between your donation and the work developers
-does. Otherwise you would be paying for work and we would have to pay tax
-over the donation.  If you want to hire one of the developers for specific
-work, contact them directly, don't use the donation system.
+There is no direct relation between your donation and the work developers do.
+Otherwise you would be paying for work and we would have to pay tax over the
+donation.  If you want to hire one of the developers for specific work,
+contact them directly, don't use the donation system.
 
 
 Are the donations tax deductible?
