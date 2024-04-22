@@ -7,7 +7,6 @@ if exists('b:did_ftplugin')
 endif
 
 let s:cpo_save = &cpoptions
-set cpoptions&vim
 
 setlocal comments=:# commentstring=#\ %s
 
