@@ -1367,6 +1367,7 @@ generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 	    generate_LOAD(cctx, ISN_LOADT, 0, name + 2, type);
 	    break;
 	case dest_script:
+	case dest_script_v9:
 	    res = compile_load_scriptvar(cctx,
 				  name + (name[1] == ':' ? 2 : 0), NULL, NULL);
 	    break;
@@ -1838,7 +1839,8 @@ compile_lhs(
 			return FAIL;
 		    }
 
-		    lhs->lhs_dest = dest_script;
+		    lhs->lhs_dest = current_script_is_vim9()
+			      ? dest_script_v9 : dest_script;
 
 		    // existing script-local variables should have a type
 		    lhs->lhs_scriptvar_sid = current_sctx.sc_sid;
@@ -3026,8 +3028,9 @@ compile_assignment(
 	else
 	{
 	    if (is_decl && cmdidx == CMD_const && (lhs.lhs_dest == dest_script
-						|| lhs.lhs_dest == dest_global
-						|| lhs.lhs_dest == dest_local))
+					    || lhs.lhs_dest == dest_script_v9
+					    || lhs.lhs_dest == dest_global
+					    || lhs.lhs_dest == dest_local))
 		// ":const var": lock the value, but not referenced variables
 		generate_LOCKCONST(cctx);
 
