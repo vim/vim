@@ -5739,7 +5739,8 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
 
-    if (region_type == MBLOCK) {
+    if (region_type == MBLOCK)
+    {
 	int lnum;
 
 	for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
@@ -5751,9 +5752,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 
 	    l1 = list_alloc();
 	    if (l1 == NULL)
-	    {
 		break;
-	    }
 
 	    if (list_append_list(rettv->vval.v_list, l1) == FAIL)
 	    {
@@ -5763,9 +5762,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 
 	    l2 = list_alloc();
 	    if (l2 == NULL)
-	    {
 		break;
-	    }
 
 	    if (list_append_list(l1, l2) == FAIL)
 	    {
@@ -5782,9 +5779,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 
 	    l3 = list_alloc();
 	    if (l3 == NULL)
-	    {
 		break;
-	    }
 
 	    if (list_append_list(l1, l3) == FAIL)
 	    {
@@ -5799,7 +5794,9 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 			MAXCOL : bd.end_vcol + 1));
 	    list_append_number(l3, p1.coladd);
 	}
-    } else {
+    }
+    else
+    {
 	list_T *l1, *l2;
 
 	l1 = list_alloc();
@@ -5813,9 +5810,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 
 	l2 = list_alloc();
 	if (l2 == NULL)
-	{
 	    return;
-	}
 	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
 	{
 	    vim_free(l2);
