@@ -1642,16 +1642,31 @@ func Test_visual_getregion()
     call feedkeys("\<ESC>vjl", 'tx')
     call assert_equal(['one', 'tw'],
           \ 'v'->getpos()->getregion(getpos('.')))
+    call assert_equal([[bufnr('%'), 1, 1, 0], [bufnr('%'), 2, 2, 0]],
+          \ 'v'->getpos()->getregionpos(getpos('.')))
     call assert_equal(['one', 'tw'],
           \ '.'->getpos()->getregion(getpos('v')))
+    call assert_equal([[bufnr('%'), 1, 1, 0], [bufnr('%'), 2, 2, 0]],
+          \ '.'->getpos()->getregionpos(getpos('v')))
     call assert_equal(['o'],
           \ 'v'->getpos()->getregion(getpos('v')))
+    call assert_equal([[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 1, 0]],
+          \ 'v'->getpos()->getregionpos(getpos('v')))
     call assert_equal(['w'],
           \ '.'->getpos()->getregion(getpos('.'), {'type': 'v' }))
+    call assert_equal([[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 0]],
+          \ '.'->getpos()->getregionpos(getpos('.'), {'type': 'v' }))
     call assert_equal(['one', 'two'],
           \ getpos('.')->getregion(getpos('v'), {'type': 'V' }))
+    call assert_equal([[bufnr('%'), 1, 1, 0], [bufnr('%'), 2, 2, 0]],
+          \ getpos('.')->getregionpos(getpos('v'), {'type': 'V' }))
     call assert_equal(['on', 'tw'],
           \ getpos('.')->getregion(getpos('v'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \ ],
+          \ getpos('.')->getregionpos(getpos('v'), {'type': "\<C-v>" }))
 
     #" Line visual mode
     call cursor(1, 1)
