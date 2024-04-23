@@ -3271,6 +3271,564 @@ add_def_function(ufunc_T *ufunc)
 }
 
 /*
+ * Compile def function body.  Loop over all the lines in the function and
+ * generate instructions.
+ */
+    static int
+compile_def_function_body(
+    cctx_T	*cctx,
+    int		last_func_lnum,
+    int		check_return_type,
+    garray_T	*lines_to_free,
+    char	**errormsg)
+{
+    char_u	*line = NULL;
+    char_u	*p;
+    int		did_emsg_before = did_emsg;
+#ifdef FEAT_PROFILE
+    int		prof_lnum = -1;
+#endif
+    int		debug_lnum = -1;
+
+    for (;;)
+    {
+	exarg_T	    ea;
+	int	    starts_with_colon = FALSE;
+	char_u	    *cmd;
+	cmdmod_T    local_cmdmod;
+
+	// Bail out on the first error to avoid a flood of errors and report
+	// the right line number when inside try/catch.
+	if (did_emsg_before != did_emsg)
+	    return FAIL;
+
+	if (line != NULL && *line == '|')
+	    // the line continues after a '|'
+	    ++line;
+	else if (line != NULL && *skipwhite(line) != NUL
+		&& !(*line == '#' && (line == cctx->ctx_line_start
+						    || VIM_ISWHITE(line[-1]))))
+	{
+	    semsg(_(e_trailing_characters_str), line);
+	    return FAIL;
+	}
+	else if (line != NULL && vim9_bad_comment(skipwhite(line)))
+	    return FAIL;
+	else
+	{
+	    line = next_line_from_context(cctx, FALSE);
+	    if (cctx->ctx_lnum >= last_func_lnum)
+	    {
+		// beyond the last line
+#ifdef FEAT_PROFILE
+		if (cctx->ctx_skip != SKIP_YES)
+		    may_generate_prof_end(cctx, prof_lnum);
+#endif
+		break;
+	    }
+	    // Make a copy, splitting off nextcmd and removing trailing spaces
+	    // may change it.
+	    if (line != NULL)
+	    {
+		line = vim_strsave(line);
+		if (ga_add_string(lines_to_free, line) == FAIL)
+		    return FAIL;
+	    }
+	}
+
+	CLEAR_FIELD(ea);
+	ea.cmdlinep = &line;
+	ea.cmd = skipwhite(line);
+	ea.skip = cctx->ctx_skip == SKIP_YES;
+
+	if (*ea.cmd == '#')
+	{
+	    // "#" starts a comment, but "#{" is an error
+	    if (vim9_bad_comment(ea.cmd))
+		return FAIL;
+	    line = (char_u *)"";
+	    continue;
+	}
+
+#ifdef FEAT_PROFILE
+	if (cctx->ctx_compile_type == CT_PROFILE && cctx->ctx_lnum != prof_lnum
+						  && cctx->ctx_skip != SKIP_YES)
+	{
+	    may_generate_prof_end(cctx, prof_lnum);
+
+	    prof_lnum = cctx->ctx_lnum;
+	    generate_instr(cctx, ISN_PROF_START);
+	}
+#endif
+	if (cctx->ctx_compile_type == CT_DEBUG && cctx->ctx_lnum != debug_lnum
+						  && cctx->ctx_skip != SKIP_YES)
+	{
+	    debug_lnum = cctx->ctx_lnum;
+	    generate_instr_debug(cctx);
+	}
+	cctx->ctx_prev_lnum = cctx->ctx_lnum + 1;
+
+	// Some things can be recognized by the first character.
+	switch (*ea.cmd)
+	{
+	    case '}':
+		{
+		    // "}" ends a block scope
+		    scopetype_T stype = cctx->ctx_scope == NULL
+					  ? NO_SCOPE : cctx->ctx_scope->se_type;
+
+		    if (stype == BLOCK_SCOPE)
+		    {
+			compile_endblock(cctx);
+			line = ea.cmd;
+		    }
+		    else
+		    {
+			emsg(_(e_using_rcurly_outside_if_block_scope));
+			return FAIL;
+		    }
+		    if (line != NULL)
+			line = skipwhite(ea.cmd + 1);
+		    continue;
+		}
+
+	    case '{':
+		// "{" starts a block scope
+		// "{'a': 1}->func() is something else
+		if (ends_excmd(*skipwhite(ea.cmd + 1)))
+		{
+		    line = compile_block(ea.cmd, cctx);
+		    continue;
+		}
+		break;
+	}
+
+	/*
+	 * COMMAND MODIFIERS
+	 */
+	cctx->ctx_has_cmdmod = FALSE;
+	if (parse_command_modifiers(&ea, errormsg, &local_cmdmod, FALSE)
+								       == FAIL)
+	    return FAIL;
+	generate_cmdmods(cctx, &local_cmdmod);
+	undo_cmdmod(&local_cmdmod);
+
+	// Check if there was a colon after the last command modifier or before
+	// the current position.
+	for (p = ea.cmd; p >= line; --p)
+	{
+	    if (*p == ':')
+		starts_with_colon = TRUE;
+	    if (p < ea.cmd && !VIM_ISWHITE(*p))
+		break;
+	}
+
+	// Skip ":call" to get to the function name, unless using :legacy
+	p = ea.cmd;
+	if (!(local_cmdmod.cmod_flags & CMOD_LEGACY))
+	{
+	    if (checkforcmd(&ea.cmd, "call", 3))
+	    {
+		if (*ea.cmd == '(')
+		    // not for "call()"
+		    ea.cmd = p;
+		else
+		    ea.cmd = skipwhite(ea.cmd);
+	    }
+
+	    if (!starts_with_colon)
+	    {
+		int	    assign;
+
+		// Check for assignment after command modifiers.
+		assign = may_compile_assignment(&ea, &line, cctx);
+		if (assign == OK)
+		    goto nextline;
+		if (assign == FAIL)
+		    return FAIL;
+	    }
+	}
+
+	/*
+	 * COMMAND after range
+	 * 'text'->func() should not be confused with 'a mark
+	 * 0z1234->func() should not be confused with a zero line number
+	 * "++nr" and "--nr" are eval commands
+	 * in "$ENV->func()" the "$" is not a range
+	 * "123->func()" is a method call
+	 */
+	cmd = ea.cmd;
+	if ((*cmd != '$' || starts_with_colon)
+		&& (starts_with_colon
+		    || !(*cmd == '\''
+			|| (cmd[0] == '0' && cmd[1] == 'z')
+			|| (cmd[0] != NUL && cmd[0] == cmd[1]
+					    && (*cmd == '+' || *cmd == '-'))
+			|| number_method(cmd))))
+	{
+	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
+	    if (ea.cmd > cmd)
+	    {
+		if (!starts_with_colon
+				   && !(local_cmdmod.cmod_flags & CMOD_LEGACY))
+		{
+		    semsg(_(e_colon_required_before_range_str), cmd);
+		    return FAIL;
+		}
+		ea.addr_count = 1;
+		if (ends_excmd2(line, ea.cmd))
+		{
+		    // A range without a command: jump to the line.
+		    generate_EXEC(cctx, ISN_EXECRANGE,
+					      vim_strnsave(cmd, ea.cmd - cmd));
+		    line = ea.cmd;
+		    goto nextline;
+		}
+	    }
+	}
+	p = find_ex_command(&ea, NULL,
+		starts_with_colon || (local_cmdmod.cmod_flags & CMOD_LEGACY)
+						  ? NULL : item_exists, cctx);
+
+	if (p == NULL)
+	{
+	    if (cctx->ctx_skip != SKIP_YES)
+		semsg(_(e_ambiguous_use_of_user_defined_command_str), ea.cmd);
+	    return FAIL;
+	}
+
+	// When using ":legacy cmd" always use compile_exec().
+	if (local_cmdmod.cmod_flags & CMOD_LEGACY)
+	{
+	    char_u *start = ea.cmd;
+
+	    switch (ea.cmdidx)
+	    {
+		case CMD_if:
+		case CMD_elseif:
+		case CMD_else:
+		case CMD_endif:
+		case CMD_for:
+		case CMD_endfor:
+		case CMD_continue:
+		case CMD_break:
+		case CMD_while:
+		case CMD_endwhile:
+		case CMD_try:
+		case CMD_catch:
+		case CMD_finally:
+		case CMD_endtry:
+			semsg(_(e_cannot_use_legacy_with_command_str), ea.cmd);
+			return FAIL;
+		default: break;
+	    }
+
+	    // ":legacy return expr" needs to be handled differently.
+	    if (checkforcmd(&start, "return", 4))
+		ea.cmdidx = CMD_return;
+	    else
+		ea.cmdidx = CMD_legacy;
+	}
+
+	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
+	{
+	    // "eval" is used for "val->func()" and "var" for "var = val", then
+	    // "p" is equal to "ea.cmd" for a valid command.
+	    if (ea.cmdidx == CMD_eval || ea.cmdidx == CMD_var)
+		;
+	    else if (cctx->ctx_skip == SKIP_YES)
+	    {
+		line += STRLEN(line);
+		goto nextline;
+	    }
+	    else
+	    {
+		semsg(_(e_command_not_recognized_str), ea.cmd);
+		return FAIL;
+	    }
+	}
+
+	if ((cctx->ctx_had_return || cctx->ctx_had_throw)
+		&& ea.cmdidx != CMD_elseif
+		&& ea.cmdidx != CMD_else
+		&& ea.cmdidx != CMD_endif
+		&& ea.cmdidx != CMD_endfor
+		&& ea.cmdidx != CMD_endwhile
+		&& ea.cmdidx != CMD_catch
+		&& ea.cmdidx != CMD_finally
+		&& ea.cmdidx != CMD_endtry
+		&& !ignore_unreachable_code_for_testing)
+	{
+	    semsg(_(e_unreachable_code_after_str),
+				     cctx->ctx_had_return ? "return" : "throw");
+	    return FAIL;
+	}
+	cctx->ctx_had_throw = FALSE;
+
+	p = skipwhite(p);
+	if (ea.cmdidx != CMD_SIZE
+			    && ea.cmdidx != CMD_write && ea.cmdidx != CMD_read)
+	{
+	    if (ea.cmdidx >= 0)
+		ea.argt = excmd_get_argt(ea.cmdidx);
+	    if ((ea.argt & EX_BANG) && *p == '!')
+	    {
+		ea.forceit = TRUE;
+		p = skipwhite(p + 1);
+	    }
+	    if ((ea.argt & EX_RANGE) == 0 && ea.addr_count > 0)
+	    {
+		emsg(_(e_no_range_allowed));
+		return FAIL;
+	    }
+	}
+
+	switch (ea.cmdidx)
+	{
+	    case CMD_def:
+	    case CMD_function:
+		    ea.arg = p;
+		    line = compile_nested_function(&ea, cctx, lines_to_free);
+		    break;
+
+	    case CMD_return:
+		    line = compile_return(p, check_return_type,
+				 local_cmdmod.cmod_flags & CMOD_LEGACY, cctx);
+		    cctx->ctx_had_return = TRUE;
+		    break;
+
+	    case CMD_let:
+		    emsg(_(e_cannot_use_let_in_vim9_script));
+		    break;
+	    case CMD_var:
+	    case CMD_final:
+	    case CMD_const:
+	    case CMD_increment:
+	    case CMD_decrement:
+		    line = compile_assignment(p, &ea, ea.cmdidx, cctx);
+		    if (line == p)
+		    {
+			emsg(_(e_invalid_assignment));
+			line = NULL;
+		    }
+		    break;
+
+	    case CMD_unlet:
+	    case CMD_unlockvar:
+	    case CMD_lockvar:
+		    line = compile_unletlock(p, &ea, cctx);
+		    break;
+
+	    case CMD_import:
+		    emsg(_(e_import_can_only_be_used_in_script));
+		    line = NULL;
+		    break;
+
+	    case CMD_if:
+		    line = compile_if(p, cctx);
+		    break;
+	    case CMD_elseif:
+		    line = compile_elseif(p, cctx);
+		    cctx->ctx_had_return = FALSE;
+		    break;
+	    case CMD_else:
+		    line = compile_else(p, cctx);
+		    cctx->ctx_had_return = FALSE;
+		    break;
+	    case CMD_endif:
+		    line = compile_endif(p, cctx);
+		    break;
+
+	    case CMD_while:
+		    line = compile_while(p, cctx);
+		    break;
+	    case CMD_endwhile:
+		    line = compile_endwhile(p, cctx);
+		    cctx->ctx_had_return = FALSE;
+		    break;
+
+	    case CMD_for:
+		    line = compile_for(p, cctx);
+		    break;
+	    case CMD_endfor:
+		    line = compile_endfor(p, cctx);
+		    cctx->ctx_had_return = FALSE;
+		    break;
+	    case CMD_continue:
+		    line = compile_continue(p, cctx);
+		    break;
+	    case CMD_break:
+		    line = compile_break(p, cctx);
+		    break;
+
+	    case CMD_try:
+		    line = compile_try(p, cctx);
+		    break;
+	    case CMD_catch:
+		    line = compile_catch(p, cctx);
+		    cctx->ctx_had_return = FALSE;
+		    break;
+	    case CMD_finally:
+		    line = compile_finally(p, cctx);
+		    cctx->ctx_had_return = FALSE;
+		    break;
+	    case CMD_endtry:
+		    line = compile_endtry(p, cctx);
+		    break;
+	    case CMD_throw:
+		    line = compile_throw(p, cctx);
+		    cctx->ctx_had_throw = TRUE;
+		    break;
+
+	    case CMD_eval:
+		    line = compile_eval(p, cctx);
+		    break;
+
+	    case CMD_defer:
+		    line = compile_defer(p, cctx);
+		    break;
+
+#ifdef HAS_MESSAGE_WINDOW
+	    case CMD_echowindow:
+		    {
+			long cmd_count = get_cmd_count(line, &ea);
+			if (cmd_count < 0)
+			    line = NULL;
+			else
+			    line = compile_mult_expr(p, ea.cmdidx,
+							     cmd_count, cctx);
+		    }
+		    break;
+#endif
+	    case CMD_echo:
+	    case CMD_echon:
+	    case CMD_echoconsole:
+	    case CMD_echoerr:
+	    case CMD_echomsg:
+	    case CMD_execute:
+		    line = compile_mult_expr(p, ea.cmdidx, 0, cctx);
+		    break;
+
+	    case CMD_put:
+		    ea.cmd = cmd;
+		    line = compile_put(p, &ea, cctx);
+		    break;
+
+	    case CMD_substitute:
+		    if (check_global_and_subst(ea.cmd, p) == FAIL)
+			return FAIL;
+		    if (cctx->ctx_skip == SKIP_YES)
+			line = (char_u *)"";
+		    else
+		    {
+			ea.arg = p;
+			line = compile_substitute(line, &ea, cctx);
+		    }
+		    break;
+
+	    case CMD_redir:
+		    ea.arg = p;
+		    line = compile_redir(line, &ea, cctx);
+		    break;
+
+	    case CMD_cexpr:
+	    case CMD_lexpr:
+	    case CMD_caddexpr:
+	    case CMD_laddexpr:
+	    case CMD_cgetexpr:
+	    case CMD_lgetexpr:
+#ifdef FEAT_QUICKFIX
+		    ea.arg = p;
+		    line = compile_cexpr(line, &ea, cctx);
+#else
+		    ex_ni(&ea);
+		    line = NULL;
+#endif
+		    break;
+
+	    case CMD_append:
+	    case CMD_change:
+	    case CMD_insert:
+	    case CMD_k:
+	    case CMD_t:
+	    case CMD_xit:
+		    not_in_vim9(&ea);
+		    return FAIL;
+
+	    case CMD_SIZE:
+		    if (cctx->ctx_skip != SKIP_YES)
+		    {
+			semsg(_(e_invalid_command_str), ea.cmd);
+			return FAIL;
+		    }
+		    // We don't check for a next command here.
+		    line = (char_u *)"";
+		    break;
+
+	    case CMD_lua:
+	    case CMD_mzscheme:
+	    case CMD_perl:
+	    case CMD_py3:
+	    case CMD_python3:
+	    case CMD_python:
+	    case CMD_pythonx:
+	    case CMD_ruby:
+	    case CMD_tcl:
+		    ea.arg = p;
+		    if (vim_strchr(line, '\n') == NULL)
+			line = compile_exec(line, &ea, cctx);
+		    else
+			// heredoc lines have been concatenated with NL
+			// characters in get_function_body()
+			line = compile_script(line, cctx);
+		    break;
+
+	    case CMD_vim9script:
+		    if (cctx->ctx_skip != SKIP_YES)
+		    {
+			emsg(_(e_vim9script_can_only_be_used_in_script));
+			return FAIL;
+		    }
+		    line = (char_u *)"";
+		    break;
+
+	    case CMD_class:
+		    emsg(_(e_class_can_only_be_used_in_script));
+		    return FAIL;
+
+	    case CMD_type:
+		    emsg(_(e_type_can_only_be_used_in_script));
+		    return FAIL;
+
+	    case CMD_global:
+		    if (check_global_and_subst(ea.cmd, p) == FAIL)
+			return FAIL;
+		    // FALLTHROUGH
+	    default:
+		    // Not recognized, execute with do_cmdline_cmd().
+		    ea.arg = p;
+		    line = compile_exec(line, &ea, cctx);
+		    break;
+	}
+nextline:
+	if (line == NULL)
+	    return FAIL;
+	line = skipwhite(line);
+
+	// Undo any command modifiers.
+	generate_undo_cmdmods(cctx);
+
+	if (cctx->ctx_type_stack.ga_len < 0)
+	{
+	    iemsg("Type stack underflow");
+	    return FAIL;
+	}
+    } // END of the loop over all the function body lines.
+
+    return OK;
+}
+
+/*
  * After ex_function() has collected all the function lines: parse and compile
  * the lines into instructions.
  * Adds the function to "def_functions".
@@ -3290,9 +3848,7 @@ compile_def_function(
 	compiletype_T   compile_type,
 	cctx_T		*outer_cctx)
 {
-    char_u	*line = NULL;
     garray_T	lines_to_free;
-    char_u	*p;
     char	*errormsg = NULL;	// error message
     cctx_T	cctx;
     garray_T	*instr;
@@ -3304,10 +3860,6 @@ compile_def_function(
     int		save_cmod_flags = cmdmod.cmod_flags;
     int		do_estack_push;
     int		new_def_function = FALSE;
-#ifdef FEAT_PROFILE
-    int		prof_lnum = -1;
-#endif
-    int		debug_lnum = -1;
 
     // allocated lines are freed at the end
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
@@ -3523,543 +4075,9 @@ compile_def_function(
 	goto erret;
     }
 
-    /*
-     * Loop over all the lines of the function and generate instructions.
-     */
-    for (;;)
-    {
-	exarg_T	    ea;
-	int	    starts_with_colon = FALSE;
-	char_u	    *cmd;
-	cmdmod_T    local_cmdmod;
-
-	// Bail out on the first error to avoid a flood of errors and report
-	// the right line number when inside try/catch.
-	if (did_emsg_before != did_emsg)
-	    goto erret;
-
-	if (line != NULL && *line == '|')
-	    // the line continues after a '|'
-	    ++line;
-	else if (line != NULL && *skipwhite(line) != NUL
-		&& !(*line == '#' && (line == cctx.ctx_line_start
-						    || VIM_ISWHITE(line[-1]))))
-	{
-	    semsg(_(e_trailing_characters_str), line);
-	    goto erret;
-	}
-	else if (line != NULL && vim9_bad_comment(skipwhite(line)))
-	    goto erret;
-	else
-	{
-	    line = next_line_from_context(&cctx, FALSE);
-	    if (cctx.ctx_lnum >= ufunc->uf_lines.ga_len)
-	    {
-		// beyond the last line
-#ifdef FEAT_PROFILE
-		if (cctx.ctx_skip != SKIP_YES)
-		    may_generate_prof_end(&cctx, prof_lnum);
-#endif
-		break;
-	    }
-	    // Make a copy, splitting off nextcmd and removing trailing spaces
-	    // may change it.
-	    if (line != NULL)
-	    {
-		line = vim_strsave(line);
-		if (ga_add_string(&lines_to_free, line) == FAIL)
-		    goto erret;
-	    }
-	}
-
-	CLEAR_FIELD(ea);
-	ea.cmdlinep = &line;
-	ea.cmd = skipwhite(line);
-	ea.skip = cctx.ctx_skip == SKIP_YES;
-
-	if (*ea.cmd == '#')
-	{
-	    // "#" starts a comment, but "#{" is an error
-	    if (vim9_bad_comment(ea.cmd))
-		goto erret;
-	    line = (char_u *)"";
-	    continue;
-	}
-
-#ifdef FEAT_PROFILE
-	if (cctx.ctx_compile_type == CT_PROFILE && cctx.ctx_lnum != prof_lnum
-						  && cctx.ctx_skip != SKIP_YES)
-	{
-	    may_generate_prof_end(&cctx, prof_lnum);
-
-	    prof_lnum = cctx.ctx_lnum;
-	    generate_instr(&cctx, ISN_PROF_START);
-	}
-#endif
-	if (cctx.ctx_compile_type == CT_DEBUG && cctx.ctx_lnum != debug_lnum
-						  && cctx.ctx_skip != SKIP_YES)
-	{
-	    debug_lnum = cctx.ctx_lnum;
-	    generate_instr_debug(&cctx);
-	}
-	cctx.ctx_prev_lnum = cctx.ctx_lnum + 1;
-
-	// Some things can be recognized by the first character.
-	switch (*ea.cmd)
-	{
-	    case '}':
-		{
-		    // "}" ends a block scope
-		    scopetype_T stype = cctx.ctx_scope == NULL
-					  ? NO_SCOPE : cctx.ctx_scope->se_type;
-
-		    if (stype == BLOCK_SCOPE)
-		    {
-			compile_endblock(&cctx);
-			line = ea.cmd;
-		    }
-		    else
-		    {
-			emsg(_(e_using_rcurly_outside_if_block_scope));
-			goto erret;
-		    }
-		    if (line != NULL)
-			line = skipwhite(ea.cmd + 1);
-		    continue;
-		}
-
-	    case '{':
-		// "{" starts a block scope
-		// "{'a': 1}->func() is something else
-		if (ends_excmd(*skipwhite(ea.cmd + 1)))
-		{
-		    line = compile_block(ea.cmd, &cctx);
-		    continue;
-		}
-		break;
-	}
-
-	/*
-	 * COMMAND MODIFIERS
-	 */
-	cctx.ctx_has_cmdmod = FALSE;
-	if (parse_command_modifiers(&ea, &errormsg, &local_cmdmod, FALSE)
-								       == FAIL)
-	    goto erret;
-	generate_cmdmods(&cctx, &local_cmdmod);
-	undo_cmdmod(&local_cmdmod);
-
-	// Check if there was a colon after the last command modifier or before
-	// the current position.
-	for (p = ea.cmd; p >= line; --p)
-	{
-	    if (*p == ':')
-		starts_with_colon = TRUE;
-	    if (p < ea.cmd && !VIM_ISWHITE(*p))
-		break;
-	}
-
-	// Skip ":call" to get to the function name, unless using :legacy
-	p = ea.cmd;
-	if (!(local_cmdmod.cmod_flags & CMOD_LEGACY))
-	{
-	    if (checkforcmd(&ea.cmd, "call", 3))
-	    {
-		if (*ea.cmd == '(')
-		    // not for "call()"
-		    ea.cmd = p;
-		else
-		    ea.cmd = skipwhite(ea.cmd);
-	    }
-
-	    if (!starts_with_colon)
-	    {
-		int	    assign;
-
-		// Check for assignment after command modifiers.
-		assign = may_compile_assignment(&ea, &line, &cctx);
-		if (assign == OK)
-		    goto nextline;
-		if (assign == FAIL)
-		    goto erret;
-	    }
-	}
-
-	/*
-	 * COMMAND after range
-	 * 'text'->func() should not be confused with 'a mark
-	 * 0z1234->func() should not be confused with a zero line number
-	 * "++nr" and "--nr" are eval commands
-	 * in "$ENV->func()" the "$" is not a range
-	 * "123->func()" is a method call
-	 */
-	cmd = ea.cmd;
-	if ((*cmd != '$' || starts_with_colon)
-		&& (starts_with_colon
-		    || !(*cmd == '\''
-			|| (cmd[0] == '0' && cmd[1] == 'z')
-			|| (cmd[0] != NUL && cmd[0] == cmd[1]
-					    && (*cmd == '+' || *cmd == '-'))
-			|| number_method(cmd))))
-	{
-	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
-	    if (ea.cmd > cmd)
-	    {
-		if (!starts_with_colon
-				   && !(local_cmdmod.cmod_flags & CMOD_LEGACY))
-		{
-		    semsg(_(e_colon_required_before_range_str), cmd);
-		    goto erret;
-		}
-		ea.addr_count = 1;
-		if (ends_excmd2(line, ea.cmd))
-		{
-		    // A range without a command: jump to the line.
-		    generate_EXEC(&cctx, ISN_EXECRANGE,
-					      vim_strnsave(cmd, ea.cmd - cmd));
-		    line = ea.cmd;
-		    goto nextline;
-		}
-	    }
-	}
-	p = find_ex_command(&ea, NULL,
-		starts_with_colon || (local_cmdmod.cmod_flags & CMOD_LEGACY)
-						  ? NULL : item_exists, &cctx);
-
-	if (p == NULL)
-	{
-	    if (cctx.ctx_skip != SKIP_YES)
-		semsg(_(e_ambiguous_use_of_user_defined_command_str), ea.cmd);
-	    goto erret;
-	}
-
-	// When using ":legacy cmd" always use compile_exec().
-	if (local_cmdmod.cmod_flags & CMOD_LEGACY)
-	{
-	    char_u *start = ea.cmd;
-
-	    switch (ea.cmdidx)
-	    {
-		case CMD_if:
-		case CMD_elseif:
-		case CMD_else:
-		case CMD_endif:
-		case CMD_for:
-		case CMD_endfor:
-		case CMD_continue:
-		case CMD_break:
-		case CMD_while:
-		case CMD_endwhile:
-		case CMD_try:
-		case CMD_catch:
-		case CMD_finally:
-		case CMD_endtry:
-			semsg(_(e_cannot_use_legacy_with_command_str), ea.cmd);
-			goto erret;
-		default: break;
-	    }
-
-	    // ":legacy return expr" needs to be handled differently.
-	    if (checkforcmd(&start, "return", 4))
-		ea.cmdidx = CMD_return;
-	    else
-		ea.cmdidx = CMD_legacy;
-	}
-
-	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
-	{
-	    // "eval" is used for "val->func()" and "var" for "var = val", then
-	    // "p" is equal to "ea.cmd" for a valid command.
-	    if (ea.cmdidx == CMD_eval || ea.cmdidx == CMD_var)
-		;
-	    else if (cctx.ctx_skip == SKIP_YES)
-	    {
-		line += STRLEN(line);
-		goto nextline;
-	    }
-	    else
-	    {
-		semsg(_(e_command_not_recognized_str), ea.cmd);
-		goto erret;
-	    }
-	}
-
-	if ((cctx.ctx_had_return || cctx.ctx_had_throw)
-		&& ea.cmdidx != CMD_elseif
-		&& ea.cmdidx != CMD_else
-		&& ea.cmdidx != CMD_endif
-		&& ea.cmdidx != CMD_endfor
-		&& ea.cmdidx != CMD_endwhile
-		&& ea.cmdidx != CMD_catch
-		&& ea.cmdidx != CMD_finally
-		&& ea.cmdidx != CMD_endtry
-		&& !ignore_unreachable_code_for_testing)
-	{
-	    semsg(_(e_unreachable_code_after_str),
-				     cctx.ctx_had_return ? "return" : "throw");
-	    goto erret;
-	}
-	cctx.ctx_had_throw = FALSE;
-
-	p = skipwhite(p);
-	if (ea.cmdidx != CMD_SIZE
-			    && ea.cmdidx != CMD_write && ea.cmdidx != CMD_read)
-	{
-	    if (ea.cmdidx >= 0)
-		ea.argt = excmd_get_argt(ea.cmdidx);
-	    if ((ea.argt & EX_BANG) && *p == '!')
-	    {
-		ea.forceit = TRUE;
-		p = skipwhite(p + 1);
-	    }
-	    if ((ea.argt & EX_RANGE) == 0 && ea.addr_count > 0)
-	    {
-		emsg(_(e_no_range_allowed));
-		goto erret;
-	    }
-	}
-
-	switch (ea.cmdidx)
-	{
-	    case CMD_def:
-	    case CMD_function:
-		    ea.arg = p;
-		    line = compile_nested_function(&ea, &cctx, &lines_to_free);
-		    break;
-
-	    case CMD_return:
-		    line = compile_return(p, check_return_type,
-				 local_cmdmod.cmod_flags & CMOD_LEGACY, &cctx);
-		    cctx.ctx_had_return = TRUE;
-		    break;
-
-	    case CMD_let:
-		    emsg(_(e_cannot_use_let_in_vim9_script));
-		    break;
-	    case CMD_var:
-	    case CMD_final:
-	    case CMD_const:
-	    case CMD_increment:
-	    case CMD_decrement:
-		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
-		    if (line == p)
-		    {
-			emsg(_(e_invalid_assignment));
-			line = NULL;
-		    }
-		    break;
-
-	    case CMD_unlet:
-	    case CMD_unlockvar:
-	    case CMD_lockvar:
-		    line = compile_unletlock(p, &ea, &cctx);
-		    break;
-
-	    case CMD_import:
-		    emsg(_(e_import_can_only_be_used_in_script));
-		    line = NULL;
-		    break;
-
-	    case CMD_if:
-		    line = compile_if(p, &cctx);
-		    break;
-	    case CMD_elseif:
-		    line = compile_elseif(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
-		    break;
-	    case CMD_else:
-		    line = compile_else(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
-		    break;
-	    case CMD_endif:
-		    line = compile_endif(p, &cctx);
-		    break;
-
-	    case CMD_while:
-		    line = compile_while(p, &cctx);
-		    break;
-	    case CMD_endwhile:
-		    line = compile_endwhile(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
-		    break;
-
-	    case CMD_for:
-		    line = compile_for(p, &cctx);
-		    break;
-	    case CMD_endfor:
-		    line = compile_endfor(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
-		    break;
-	    case CMD_continue:
-		    line = compile_continue(p, &cctx);
-		    break;
-	    case CMD_break:
-		    line = compile_break(p, &cctx);
-		    break;
-
-	    case CMD_try:
-		    line = compile_try(p, &cctx);
-		    break;
-	    case CMD_catch:
-		    line = compile_catch(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
-		    break;
-	    case CMD_finally:
-		    line = compile_finally(p, &cctx);
-		    cctx.ctx_had_return = FALSE;
-		    break;
-	    case CMD_endtry:
-		    line = compile_endtry(p, &cctx);
-		    break;
-	    case CMD_throw:
-		    line = compile_throw(p, &cctx);
-		    cctx.ctx_had_throw = TRUE;
-		    break;
-
-	    case CMD_eval:
-		    line = compile_eval(p, &cctx);
-		    break;
-
-	    case CMD_defer:
-		    line = compile_defer(p, &cctx);
-		    break;
-
-#ifdef HAS_MESSAGE_WINDOW
-	    case CMD_echowindow:
-		    {
-			long cmd_count = get_cmd_count(line, &ea);
-			if (cmd_count < 0)
-			    line = NULL;
-			else
-			    line = compile_mult_expr(p, ea.cmdidx,
-							     cmd_count, &cctx);
-		    }
-		    break;
-#endif
-	    case CMD_echo:
-	    case CMD_echon:
-	    case CMD_echoconsole:
-	    case CMD_echoerr:
-	    case CMD_echomsg:
-	    case CMD_execute:
-		    line = compile_mult_expr(p, ea.cmdidx, 0, &cctx);
-		    break;
-
-	    case CMD_put:
-		    ea.cmd = cmd;
-		    line = compile_put(p, &ea, &cctx);
-		    break;
-
-	    case CMD_substitute:
-		    if (check_global_and_subst(ea.cmd, p) == FAIL)
-			goto erret;
-		    if (cctx.ctx_skip == SKIP_YES)
-			line = (char_u *)"";
-		    else
-		    {
-			ea.arg = p;
-			line = compile_substitute(line, &ea, &cctx);
-		    }
-		    break;
-
-	    case CMD_redir:
-		    ea.arg = p;
-		    line = compile_redir(line, &ea, &cctx);
-		    break;
-
-	    case CMD_cexpr:
-	    case CMD_lexpr:
-	    case CMD_caddexpr:
-	    case CMD_laddexpr:
-	    case CMD_cgetexpr:
-	    case CMD_lgetexpr:
-#ifdef FEAT_QUICKFIX
-		    ea.arg = p;
-		    line = compile_cexpr(line, &ea, &cctx);
-#else
-		    ex_ni(&ea);
-		    line = NULL;
-#endif
-		    break;
-
-	    case CMD_append:
-	    case CMD_change:
-	    case CMD_insert:
-	    case CMD_k:
-	    case CMD_t:
-	    case CMD_xit:
-		    not_in_vim9(&ea);
-		    goto erret;
-
-	    case CMD_SIZE:
-		    if (cctx.ctx_skip != SKIP_YES)
-		    {
-			semsg(_(e_invalid_command_str), ea.cmd);
-			goto erret;
-		    }
-		    // We don't check for a next command here.
-		    line = (char_u *)"";
-		    break;
-
-	    case CMD_lua:
-	    case CMD_mzscheme:
-	    case CMD_perl:
-	    case CMD_py3:
-	    case CMD_python3:
-	    case CMD_python:
-	    case CMD_pythonx:
-	    case CMD_ruby:
-	    case CMD_tcl:
-		    ea.arg = p;
-		    if (vim_strchr(line, '\n') == NULL)
-			line = compile_exec(line, &ea, &cctx);
-		    else
-			// heredoc lines have been concatenated with NL
-			// characters in get_function_body()
-			line = compile_script(line, &cctx);
-		    break;
-
-	    case CMD_vim9script:
-		    if (cctx.ctx_skip != SKIP_YES)
-		    {
-			emsg(_(e_vim9script_can_only_be_used_in_script));
-			goto erret;
-		    }
-		    line = (char_u *)"";
-		    break;
-
-	    case CMD_class:
-		    emsg(_(e_class_can_only_be_used_in_script));
-		    goto erret;
-
-	    case CMD_type:
-		    emsg(_(e_type_can_only_be_used_in_script));
-		    goto erret;
-
-	    case CMD_global:
-		    if (check_global_and_subst(ea.cmd, p) == FAIL)
-			goto erret;
-		    // FALLTHROUGH
-	    default:
-		    // Not recognized, execute with do_cmdline_cmd().
-		    ea.arg = p;
-		    line = compile_exec(line, &ea, &cctx);
-		    break;
-	}
-nextline:
-	if (line == NULL)
-	    goto erret;
-	line = skipwhite(line);
-
-	// Undo any command modifiers.
-	generate_undo_cmdmods(&cctx);
-
-	if (cctx.ctx_type_stack.ga_len < 0)
-	{
-	    iemsg("Type stack underflow");
-	    goto erret;
-	}
-    } // END of the loop over all the function body lines.
+    if (compile_def_function_body(&cctx, ufunc->uf_lines.ga_len,
+		check_return_type, &lines_to_free, &errormsg) == FAIL)
+	goto erret;
 
     if (cctx.ctx_scope != NULL)
     {
