@@ -4785,6 +4785,8 @@ def Test_typename()
   endif
   assert_equal('class<Unknown>', typename(null_class))
   assert_equal('object<Unknown>', typename(null_object))
+  var l: list<func(list<number>): number> = [function('min')]
+  assert_equal('list<func(list<number>): number>', typename(l))
 enddef
 
 def Test_undofile()

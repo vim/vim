@@ -1894,14 +1894,12 @@ type_name_list_or_dict(char *name, type_T *type, char **tofree)
 
     size_t len = STRLEN(name) + STRLEN(member_name) + 3;
     *tofree = alloc(len);
-    if (*tofree != NULL)
-    {
-	vim_snprintf(*tofree, len, "%s<%s>", name, member_name);
-	vim_free(member_free);
-	return *tofree;
-    }
+    if (*tofree == NULL)
+	return name;
 
-    return name;
+    vim_snprintf(*tofree, len, "%s<%s>", name, member_name);
+    vim_free(member_free);
+    return *tofree;
 }
 
 /*
@@ -1924,17 +1922,15 @@ type_name_class_or_obj(char *name, type_T *type, char **tofree)
 
     size_t len = STRLEN(name) + STRLEN(class_name) + 3;
     *tofree = alloc(len);
-    if (*tofree != NULL)
-    {
-	vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
-	return *tofree;
-    }
+    if (*tofree == NULL)
+	return name;
 
-    return name;
+    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+    return *tofree;
 }
 
 /*
- * Return the type name of a functio.
+ * Return the type name of a function.
  * The result may be in allocated memory, in which case "tofree" is set.
  */
     static char *
