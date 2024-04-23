@@ -780,12 +780,6 @@ You only need to do this once. After this call, you can use: >
 to get the text "Hello" translated to the user's preferred language (if the
 plugin messages have been translated to this language).
 
-If you need to use the message in a different encoding from the current one,
-you can use (for instance) >
-	:echo gettext("Hello", "foo", "utf-8")
-<or >
-	:echo gettext("Hello", "foo", "cp1251")
-
 To create the foo.po file, you need to create a foo.pot file first. The
 entries in this file need to be translated to the language(s) you want to be
 supported by your plugin.

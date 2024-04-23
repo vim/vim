@@ -2151,12 +2151,7 @@ static funcentry_T global_functions[] =
 			ret_any,	    f_gettabwinvar},
     {"gettagstack",	0, 1, FEARG_1,	    arg1_number,
 			ret_dict_any,	    f_gettagstack},
-    {"gettext",
-#if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
-	1, 3, FEARG_1,	    arg3_string,
-#else
-	1, 2, FEARG_1,	    arg2_string,
-#endif
+    {"gettext",		1, 2, FEARG_1,	    arg2_string,
 			ret_string,	    f_gettext},
     {"getwininfo",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_dict_any,  f_getwininfo},
@@ -5874,13 +5869,8 @@ f_gettext(typval_T *argvars, typval_T *rettv)
     char *prev = NULL;
 #endif
 
-    if ((check_for_nonempty_string_arg(argvars, 0) == FAIL
-	|| (check_for_opt_string_arg(argvars, 1) == FAIL
-#if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
-	    || (argvars[1].v_type != VAR_UNKNOWN
-		&& check_for_opt_string_arg(argvars, 2) == FAIL)
-#endif
-	    )))
+    if (check_for_nonempty_string_arg(argvars, 0) == FAIL
+	|| check_for_opt_string_arg(argvars, 1) == FAIL)
 	return;
 
     rettv->v_type = VAR_STRING;
@@ -5890,12 +5880,7 @@ f_gettext(typval_T *argvars, typval_T *rettv)
 	    *(argvars[1].vval.v_string) != NUL)
     {
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
-	if (argvars[2].v_type == VAR_STRING &&
-		argvars[2].vval.v_string != NULL &&
-		*(argvars[2].vval.v_string) != NUL)
-	{
-	    prev = bind_textdomain_codeset((const char *)argvars[1].vval.v_string, (const char *)argvars[2].vval.v_string);
-	}
+	prev = bind_textdomain_codeset((const char *)argvars[1].vval.v_string, (char *)p_enc);
 #endif
 
 #if defined(HAVE_DGETTEXT)

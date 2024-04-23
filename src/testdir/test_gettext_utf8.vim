@@ -3,9 +3,10 @@ source check.vim
 " Test for gettext()
 func Test_gettext()
   if has('bind_codeset')
+    set encoding=utf-8
     call bindtextdomain("__PACKAGE__", getcwd())
     language ru_RU
-    call assert_equal('ОШИБКА: ', gettext("ERROR: ", "__PACKAGE__", "utf8"))
+    call assert_equal('ОШИБКА: ', gettext("ERROR: ", "__PACKAGE__"))
   endif
 endfunc
 

@@ -275,7 +275,7 @@ gettabvar({nr}, {varname} [, {def}])
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
 gettagstack([{nr}])		Dict	get the tag stack of window {nr}
-gettext({text} [, {package} [, {encoding}]])
+gettext({text} [, {package}])
 				String	lookup translation of {text}
 getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of Vim window
@@ -4484,7 +4484,7 @@ gettagstack([{winnr}])					*gettagstack()*
 			GetWinnr()->gettagstack()
 
 
-gettext({text} [, {package} [, {encoding}]])		*gettext()*
+gettext({text} [, {package}])				*gettext()*
 		Translate String {text} if possible.
 		This is mainly for use in the distributed Vim scripts.  When
 		generating message translations the {text} is extracted by
@@ -4497,8 +4497,6 @@ gettext({text} [, {package} [, {encoding}]])		*gettext()*
 		When the {package} is specified, the translation is looked up
 		for that specific package. You need to specify the path to
 		look for translations with the |bindtextdomain()| function.
-		When {encoding} is specified, the encoding is passed on
-		to the gettext library, else the current encoding is used.
 
 
 getwininfo([{winid}])					*getwininfo()*

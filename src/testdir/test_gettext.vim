@@ -9,7 +9,7 @@ func Test_gettext()
   call assert_equal('xxxTESTxxx', gettext("xxxTESTxxx", "__PACKAGE__"))
   call assert_equal('ERROR: ', gettext("ERROR: ", "__PACKAGE__"))
   if !has('bind_codeset')
-    call assert_fails('call gettext("vim", "test", "utf-8")', 'E118:')
+    call assert_fails('call gettext("vim", "test")', 'E118:')
   endif
 endfunc
 
