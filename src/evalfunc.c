@@ -5673,8 +5673,8 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 		&p1, &p2, &inclusive, &region_type, &oa, &fnum) == FAIL)
 	return;
 
-     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
-     {
+    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
+    {
 	int ret = 0;
 
 	if (region_type == MLINE)
@@ -5726,7 +5726,6 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 
     buf_T	*save_curbuf;
     int		save_virtual;
-    list_T *l1, *l2;
 
     save_curbuf = curbuf;
     save_virtual = virtual_op;
@@ -5740,42 +5739,93 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
 
-    l1 = list_alloc();
-    if (l1 == NULL)
-	return;
-    if (list_append_list(rettv->vval.v_list, l1) == FAIL)
-    {
-	vim_free(l1);
-	return;
+    if (region_type == MBLOCK) {
+	int lnum;
+
+	for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
+	{
+	    struct block_def	bd;
+	    list_T *l1, *l2;
+
+	    block_prep(&oa, &bd, lnum, FALSE);
+
+	    l1 = list_alloc();
+	    if (l1 == NULL)
+	    {
+		vim_free(l1);
+		break;
+	    }
+
+	    if (list_append_list(rettv->vval.v_list, l1) == FAIL)
+	    {
+		vim_free(l1);
+		break;
+	    }
+
+	    list_append_number(l1, fnum);
+	    list_append_number(l1, lnum);
+	    list_append_number(l1,
+		    (varnumber_T)(bd.start_vcol == MAXCOL ?
+			MAXCOL : bd.start_vcol + 1));
+	    list_append_number(l1, p1.coladd);
+
+	    l2 = list_alloc();
+	    if (l1 == NULL)
+	    {
+		vim_free(l1);
+		break;
+	    }
+
+	    if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	    {
+		vim_free(l1);
+		vim_free(l2);
+		break;
+	    }
+
+	    list_append_number(l2, fnum);
+	    list_append_number(l2, lnum);
+	    list_append_number(l2,
+		    (varnumber_T)(bd.end_vcol == MAXCOL ?
+			MAXCOL : bd.end_vcol + 1));
+	    list_append_number(l1, p1.coladd);
+	}
+    } else {
+	list_T *l1, *l2;
+
+	l1 = list_alloc();
+	if (l1 == NULL)
+	    return;
+	if (list_append_list(rettv->vval.v_list, l1) == FAIL)
+	{
+	    vim_free(l1);
+	    return;
+	}
+
+	l2 = list_alloc();
+	if (l2 == NULL)
+	{
+	    vim_free(l1);
+	    return;
+	}
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    return;
+	}
+
+	list_append_number(l1, fnum);
+	list_append_number(l1, p1.lnum);
+	list_append_number(l1,
+		(varnumber_T)(p1.col == MAXCOL ? MAXCOL : p1.col + 1));
+	list_append_number(l1, p1.coladd);
+
+	list_append_number(l2, fnum);
+	list_append_number(l2, p2.lnum);
+	list_append_number(l2,
+		(varnumber_T)(p2.col == MAXCOL ? MAXCOL : p2.col + 1));
+	list_append_number(l2, p2.coladd);
     }
-
-    l2 = list_alloc();
-    if (l2 == NULL)
-    {
-	vim_free(l1);
-	return;
-    }
-    if (list_append_list(rettv->vval.v_list, l2) == FAIL)
-    {
-	vim_free(l1);
-	vim_free(l2);
-	return;
-    }
-
-    list_append_number(l1, fnum);
-    list_append_number(l1, p1.lnum);
-    list_append_number(l1,
-	    (varnumber_T)(p1.col == MAXCOL ? MAXCOL : p1.col + 1));
-    list_append_number(l1, p1.coladd);
-
-    list_append_number(l2, fnum);
-    list_append_number(l2, p2.lnum);
-    list_append_number(l2,
-	    (varnumber_T)(p2.col == MAXCOL ? MAXCOL : p2.col + 1));
-    list_append_number(l2, p2.coladd);
-
-    vim_free(l1);
-    vim_free(l2);
  }
 
 /*
