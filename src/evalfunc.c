@@ -5745,14 +5745,13 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
 	{
 	    struct block_def	bd;
-	    list_T *l1, *l2;
+	    list_T *l1, *l2, *l3;
 
 	    block_prep(&oa, &bd, lnum, FALSE);
 
 	    l1 = list_alloc();
 	    if (l1 == NULL)
 	    {
-		vim_free(l1);
 		break;
 	    }
 
@@ -5762,23 +5761,14 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		break;
 	    }
 
-	    list_append_number(l1, fnum);
-	    list_append_number(l1, lnum);
-	    list_append_number(l1,
-		    (varnumber_T)(bd.start_vcol == MAXCOL ?
-			MAXCOL : bd.start_vcol + 1));
-	    list_append_number(l1, p1.coladd);
-
 	    l2 = list_alloc();
-	    if (l1 == NULL)
+	    if (l2 == NULL)
 	    {
-		vim_free(l1);
 		break;
 	    }
 
-	    if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	    if (list_append_list(l1, l2) == FAIL)
 	    {
-		vim_free(l1);
 		vim_free(l2);
 		break;
 	    }
@@ -5786,9 +5776,28 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	    list_append_number(l2, fnum);
 	    list_append_number(l2, lnum);
 	    list_append_number(l2,
+		    (varnumber_T)(bd.start_vcol == MAXCOL ?
+			MAXCOL : bd.start_vcol + 1));
+	    list_append_number(l2, p1.coladd);
+
+	    l3 = list_alloc();
+	    if (l3 == NULL)
+	    {
+		break;
+	    }
+
+	    if (list_append_list(l1, l3) == FAIL)
+	    {
+		vim_free(l3);
+		break;
+	    }
+
+	    list_append_number(l3, fnum);
+	    list_append_number(l3, lnum);
+	    list_append_number(l3,
 		    (varnumber_T)(bd.end_vcol == MAXCOL ?
 			MAXCOL : bd.end_vcol + 1));
-	    list_append_number(l1, p1.coladd);
+	    list_append_number(l3, p1.coladd);
 	}
     } else {
 	list_T *l1, *l2;
@@ -5805,7 +5814,6 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	l2 = list_alloc();
 	if (l2 == NULL)
 	{
-	    vim_free(l1);
 	    return;
 	}
 	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
