@@ -5542,7 +5542,7 @@ getregionpos(
     }
 
     findbuf = fnum1 != 0 ? buflist_findnr(fnum1) : curbuf;
-    *fnum = fnum1;
+    *fnum = fnum1 != 0 ? fnum1 : curbuf->b_fnum;
     if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
     {
 	emsg(_(e_buffer_is_not_loaded));

@@ -4338,8 +4338,7 @@ getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 
 		The position is a |List| with four numbers:
 		    [bufnum, lnum, col, off]
-		"bufnum" is zero, unless a mark like '0 or 'A is used, then it
-		is the buffer number of the mark.
+		"bufnum" is the buffer number.
 		"lnum" and "col" are the position in the buffer.  The first
 		column is 1.
 		The "off" number is zero, unless 'virtualedit' is used.  Then
