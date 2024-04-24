@@ -1761,9 +1761,13 @@ func Test_visual_getregion()
     call assert_fails("call getregion(1, 2)", 'E1211:')
     call assert_fails("call getregion(getpos('.'), {})", 'E1211:')
     call assert_fails(':echo "."->getpos()->getregion("$", [])', 'E1211:')
+    call assert_fails("call getregionpos(1, 2)", 'E1211:')
+    call assert_fails("call getregionpos(getpos('.'), {})", 'E1211:')
+    call assert_fails(':echo "."->getpos()->getregionpos("$", [])', 'E1211:')
 
     #" using invalid value for "type"
     call assert_fails("call getregion(getpos('.'), getpos('.'), {'type': '' })", 'E475:')
+    call assert_fails("call getregionpos(getpos('.'), getpos('.'), {'type': '' })", 'E475:')
 
     #" using a mark from another buffer to current buffer
     new
@@ -1774,13 +1778,18 @@ func Test_visual_getregion()
     call assert_equal([g:buf, 10, 1, 0], getpos("'A"))
     call assert_equal([], getregion(getpos('.'), getpos("'A"), {'type': 'v' }))
     call assert_equal([], getregion(getpos("'A"), getpos('.'), {'type': 'v' }))
+    call assert_equal([], getregionpos(getpos('.'), getpos("'A"), {'type': 'v' }))
+    call assert_equal([], getregionpos(getpos("'A"), getpos('.'), {'type': 'v' }))
 
     #" using two marks from another buffer
     wincmd p
     normal! GmB
     wincmd p
     call assert_equal([g:buf, 10, 1, 0], getpos("'B"))
-    call assert_equal(['9'], getregion(getpos("'B"), getpos("'A"), {'type': 'v' }))
+    call assert_equal(['9'],
+          \ getregion(getpos("'B"), getpos("'A"), {'type': 'v' }))
+    call assert_equal([[g:buf, 10, 1, 0], [g:buf, 10, 1, 0]],
+          \ getregionpos(getpos("'B"), getpos("'A"), {'type': 'v' }))
 
     #" using two positions from another buffer
     for type in ['v', 'V', "\<C-V>"]
