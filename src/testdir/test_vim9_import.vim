@@ -1206,6 +1206,7 @@ def Test_autoload_export_variables()
   mkdir('Xautoload_vars/autoload', 'pR')
   var lines =<< trim END
     vim9script
+    g:Xautoload_vars_autoload = true
     export var val = 11
     val = 42
   END
@@ -1215,13 +1216,24 @@ def Test_autoload_export_variables()
   writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f2.vim', 'D')
   lines =<< trim END
     vim9script
+    g:Xautoload_vars_autoload = false
 
     import autoload './Xautoload_vars/autoload/Xauto_vars_f2.vim' as f2
+    # Verify that the import statement does not load the file.
+    assert_equal(false, g:Xautoload_vars_autoload)
 
     def F(): number
       return f2.val
     enddef
+    # Verify compile does not load the file.
+    defcompile F
+    assert_equal(false, g:Xautoload_vars_autoload)
+
+    # load the file by accessing the exported variable
     assert_equal(42, F())
+    assert_equal(true, g:Xautoload_vars_autoload)
+    unlet g:Xautoload_vars_autoload
+
     assert_equal(42, f2.val)
     f2.val = 17
     assert_equal(17, f2.val)
@@ -1264,6 +1276,44 @@ def Test_autoload_export_variables()
     f4.val = 13
   END
   v9.CheckScriptFailure(lines, 'E46:')
+
+  # Test const var is not modifiable from importing script from :def.
+  # Github issue: #14606
+  lines =<< trim END
+    vim9script
+    export const val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f5.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f5.vim' as f5
+
+    def F()
+      f5.val = 13
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E741:')
+
+  # Still part of Github issue: #14606
+  lines =<< trim END
+    vim9script
+    export var val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f6.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f6.vim' as f6
+
+    def F()
+      f6.val = 13
+    enddef
+    F()
+    assert_equal(13, f6.val)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_autoload_import_relative_autoload_dir()

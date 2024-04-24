@@ -780,6 +780,7 @@ typedef enum {
     dest_vimvar,
     dest_class_member,
     dest_script,
+    dest_script_v9,
     dest_reg,
     dest_expr,
 } assign_dest_T;

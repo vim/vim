@@ -3842,11 +3842,19 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_STOREEXPORT:
 		{
 		    int		sid = iptr->isn_arg.loadstore.ls_sid;
-		    hashtab_T	*ht = &SCRIPT_VARS(sid);
 		    char_u	*name = iptr->isn_arg.loadstore.ls_name;
-		    dictitem_T	*di = find_var_in_ht(ht, 0,
-					    iptr->isn_type == ISN_STORES
+		    dictitem_T	*di = NULL;
+		    // First check for a variable from an exported autoload
+		    // with an autoload_prefix; it would be in globals.
+		    if (iptr->isn_type == ISN_STOREEXPORT)
+			di = find_var_autoload_prefix(name, sid, NULL, NULL);
+		    // Then look for a variable in the script's variables.
+		    if (di == NULL)
+		    {
+			hashtab_T	*ht = &SCRIPT_VARS(sid);
+			di = find_var_in_ht(ht, 0, STRNCMP("s:", name, 2) == 0
 						     ? name + 2 : name, TRUE);
+		    }
 
 		    --ectx->ec_stack.ga_len;
 		    SOURCING_LNUM = iptr->isn_lnum;

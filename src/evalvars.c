@@ -4235,6 +4235,7 @@ failed:
  * - Whether the variable is read-only
  * - Whether the variable value is locked
  * - Whether the variable is locked
+ * NOTE: "name" is only used for error messages.
  */
     int
 var_check_permission(dictitem_T *di, char_u *name)

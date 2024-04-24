@@ -166,6 +166,37 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+" Check that in a legacy script a :def accesses the correct script variables.
+" Github issue: #14615.
+def Test_access_var_from_legacy_def()
+  # Access a script variable by name WITH "s:" prefix.
+  var lines =<< trim END
+    let s:foo = 'init'
+    let s:xxfoo = 'init'
+    def! AccessVarFromLegacyDef()
+        s:xxfoo = 'CHANGED'
+    enddef
+    call AccessVarFromLegacyDef()
+    call assert_equal('init', s:foo)
+    call assert_equal('CHANGED', s:xxfoo)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Access a script variable by name WITHOUT "s:" prefix;
+  # previously this accessed "foo" and not "xxfoo"
+  lines =<< trim END
+    let s:foo = 'init'
+    let s:xxfoo = 'init'
+    def! AccessVarFromLegacyDef()
+        xxfoo = 'CHANGED'
+    enddef
+    call AccessVarFromLegacyDef()
+    call assert_equal('init', s:foo)
+    call assert_equal('CHANGED', s:xxfoo)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_listing_function_error()
   var lines =<< trim END
       var filler = 123
