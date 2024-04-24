@@ -96,6 +96,8 @@ jobs:
 
       - name: Install packages
         run: |
+          # This is added by default, and it is often broken, but we don't need anything from it
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           PKGS=( \
             gettext \
             libgtk2.0-dev:${{ matrix.architecture }} \
