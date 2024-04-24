@@ -5712,6 +5712,60 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     virtual_op = save_virtual;
 }
 
+    static void
+add_regionpos_range(
+    typval_T	*rettv,
+    int		bufnr,
+    int		lnum1,
+    int		col1,
+    int		coladd1,
+    int		lnum2,
+    int		col2,
+    int		coladd2)
+{
+    list_T *l1, *l2, *l3;
+
+    l1 = list_alloc();
+    if (l1 == NULL)
+	return;
+
+    if (list_append_list(rettv->vval.v_list, l1) == FAIL)
+    {
+	vim_free(l1);
+	return;
+    }
+
+    l2 = list_alloc();
+    if (l2 == NULL)
+	return;
+
+    if (list_append_list(l1, l2) == FAIL)
+    {
+	vim_free(l2);
+	return;
+    }
+
+    l3 = list_alloc();
+    if (l3 == NULL)
+	return;
+
+    if (list_append_list(l1, l3) == FAIL)
+    {
+	vim_free(l3);
+	return;
+    }
+
+    list_append_number(l2, bufnr);
+    list_append_number(l2, lnum1);
+    list_append_number(l2, col1);
+    list_append_number(l2, coladd1);
+
+    list_append_number(l3, bufnr);
+    list_append_number(l3, lnum2);
+    list_append_number(l3, col2);
+    list_append_number(l3, coladd2);
+}
+
 /*
  * "getregionpos()" function
  */
@@ -5746,102 +5800,33 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
 	{
 	    struct block_def	bd;
-	    list_T *l1, *l2, *l3;
 
 	    block_prep(&oa, &bd, lnum, FALSE);
 
-	    l1 = list_alloc();
-	    if (l1 == NULL)
-		return;
-
-	    if (list_append_list(rettv->vval.v_list, l1) == FAIL)
-	    {
-		vim_free(l1);
-		return;
-	    }
-
-	    l2 = list_alloc();
-	    if (l2 == NULL)
-		return;
-
-	    if (list_append_list(l1, l2) == FAIL)
-	    {
-		vim_free(l2);
-		return;
-	    }
-
-	    l3 = list_alloc();
-	    if (l3 == NULL)
-		return;
-
-	    if (list_append_list(l1, l3) == FAIL)
-	    {
-		vim_free(l3);
-		return;
-	    }
-
-	    list_append_number(l2, fnum);
-	    list_append_number(l2, lnum);
-	    list_append_number(l2,
+	    add_regionpos_range(
+		    rettv,
+		    fnum,
+		    lnum,
 		    (varnumber_T)(bd.start_vcol == MAXCOL ?
-			MAXCOL : bd.start_vcol + 1));
-	    list_append_number(l2, p1.coladd);
-
-	    list_append_number(l3, fnum);
-	    list_append_number(l3, lnum);
-	    list_append_number(l3,
+			MAXCOL : bd.start_vcol + 1),
+		    p1.coladd,
+		    lnum,
 		    (varnumber_T)(bd.end_vcol == MAXCOL ?
-			MAXCOL : bd.end_vcol + 1));
-	    list_append_number(l3, p1.coladd);
+			MAXCOL : bd.end_vcol + 1),
+		    p2.coladd);
 	}
     }
     else
-    {
-	list_T *l1, *l2, *l3;
-
-	l1 = list_alloc();
-	if (l1 == NULL)
-	    return;
-
-	if (list_append_list(rettv->vval.v_list, l1) == FAIL)
-	{
-	    vim_free(l1);
-	    return;
-	}
-
-	l2 = list_alloc();
-	if (l2 == NULL)
-	    return;
-
-	if (list_append_list(l1, l2) == FAIL)
-	{
-	    vim_free(l2);
-	    return;
-	}
-
-	l3 = list_alloc();
-	if (l3 == NULL)
-	    return;
-
-	if (list_append_list(l1, l3) == FAIL)
-	{
-	    vim_free(l3);
-	    return;
-	}
-
-	list_append_number(l2, fnum);
-	list_append_number(l2, p1.lnum);
-	list_append_number(l2,
-		(varnumber_T)(p1.col == MAXCOL ? MAXCOL : p1.col + 1));
-	list_append_number(l2, p1.coladd);
-
-	list_append_number(l3, fnum);
-	list_append_number(l3, p2.lnum);
-	list_append_number(l3,
-		(varnumber_T)(p2.col == MAXCOL ? MAXCOL : p2.col + 1));
-	list_append_number(l3, p2.coladd);
-    }
- }
+	add_regionpos_range(
+		rettv,
+		fnum,
+		p1.lnum,
+		(varnumber_T)(p1.col == MAXCOL ? MAXCOL : p1.col + 1),
+		p1.coladd,
+		p2.lnum,
+		(varnumber_T)(p2.col == MAXCOL ? MAXCOL : p2.col + 1),
+		p2.coladd);
+}
 
 /*
  * Common between getreg(), getreginfo() and getregtype(): get the register
