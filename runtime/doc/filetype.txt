@@ -581,22 +581,18 @@ the Changelog.
 
 COMMENT							*ft-comment-plugin*
 
-To be able to toggle comments add following lines to your configuration
-(for example, ~/.vimrc assuming it is in vim9script): >
+Load the plugin with this command: >
+    packadd comment
+<
+This way you can use the plugin with the default key bindings `gc` and similar
+for commenting (which is a well-established mapping in the Vim community).
 
-	vim9script
-	import autoload 'dist/comment.vim'
-	nnoremap <silent> <expr> gc comment.Toggle()
-	xnoremap <silent> <expr> gc comment.Toggle()
-	nnoremap <silent> <expr> gcc comment.Toggle() .. '_'
+For example:
 
-This adds 'gc' operator for comment toggling using vim motions or text
-objects:
-
-    - gcc to comment/uncomment current line
-    - gcip to comment/uncomment current paragraph
-    - gcG to comment/uncomment from current line till the end of a buffer
-    - visually select lines and gc would comment/uncomment it.
+    - `gcc` to comment/uncomment current line
+    - `gcip` to comment/uncomment current paragraph
+    - `gcG` to comment/uncomment from current line till the end of a buffer
+    - visually select lines and `gc` would comment/uncomment it.
 
 Whether it would comment or uncomment depends on the first line of the range.
 
