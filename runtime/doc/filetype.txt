@@ -579,6 +579,41 @@ under it.  If not found, a new entry and item is prepended to the beginning of
 the Changelog.
 
 
+COMMENT							*ft-comment-plugin*
+
+To be able to toggle comments add following lines to your configuration
+(for example, ~/.vimrc assuming it is in vim9script): >
+
+	vim9script
+	import autoload 'dist/comment.vim'
+	nnoremap <silent> <expr> gc comment.Toggle()
+	xnoremap <silent> <expr> gc comment.Toggle()
+	nnoremap <silent> <expr> gcc comment.Toggle() .. '_'
+
+This adds 'gc' operator for comment toggling using vim motions or text
+objects:
+
+    - gcc to comment/uncomment current line
+    - gcip to comment/uncomment current paragraph
+    - gcG to comment/uncomment from current line till the end of a buffer
+    - visually select lines and gc would comment/uncomment it.
+
+Whether it would comment or uncomment depends on the first line of the range.
+
+Options:
+
+*g:comment_first_col*
+*b:comment_first_col*
+    By default comment chars are added in front of the line, i.e. if the line
+    was indented, commented line would stay indented as well.
+
+    However some filetypes require comment char on the first column, use this option
+    to change default behaviour.
+
+    Use g:comment_first_col to change it globally or b:comment_first_col to
+    target specific filetype(s).
+
+
 FORTRAN							*ft-fortran-plugin*
 
 Options:
