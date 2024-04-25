@@ -3274,6 +3274,166 @@ add_def_function(ufunc_T *ufunc)
 }
 
 /*
+ * For an object constructor, generate instruction to setup "this" (the first
+ * local variable) and to initialize the object variables.
+ */
+    static int
+obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
+{
+    generate_CONSTRUCT(cctx, ufunc->uf_class);
+
+    for (int i = 0; i < ufunc->uf_class->class_obj_member_count; ++i)
+    {
+	ocmember_T *m = &ufunc->uf_class->class_obj_members[i];
+
+	if (i < 2 && IS_ENUM(ufunc->uf_class))
+	    // The first two object variables in an enum are the name
+	    // and the ordinal.  These are set by the ISN_CONSTRUCT
+	    // instruction.  So don't generate instructions to set
+	    // these variables.
+	    continue;
+
+	if (m->ocm_init != NULL)
+	{
+	    char_u *expr = m->ocm_init;
+
+	    if (compile_expr0(&expr, cctx) == FAIL)
+		return FAIL;
+
+	    if (!ends_excmd2(m->ocm_init, expr))
+	    {
+		semsg(_(e_trailing_characters_str), expr);
+		return FAIL;
+	    }
+
+	    type_T	*type = get_type_on_stack(cctx, 0);
+	    if (m->ocm_type->tt_type == VAR_ANY
+		    && !(m->ocm_flags & OCMFLAG_HAS_TYPE)
+		    && type->tt_type != VAR_SPECIAL)
+	    {
+		// If the member variable type is not yet set, then use
+		// the initialization expression type.
+		m->ocm_type = type;
+	    }
+	    else if (m->ocm_type->tt_type != type->tt_type)
+	    {
+		// The type of the member initialization expression is
+		// determined at run time.  Add a runtime type check.
+		where_T	where = WHERE_INIT;
+		where.wt_kind = WT_MEMBER;
+		where.wt_func_name = (char *)m->ocm_name;
+		if (need_type_where(type, m->ocm_type, FALSE, -1,
+					where, cctx, FALSE, FALSE) == FAIL)
+		    return FAIL;
+	    }
+	}
+	else
+	    push_default_value(cctx, m->ocm_type->tt_type, FALSE, NULL);
+
+	generate_STORE_THIS(cctx, i);
+    }
+
+    return OK;
+}
+
+/*
+ * For an object method and an constructor, generate instruction to setup
+ * "this" (the first local variable).  For a constructor, generate instructions
+ * to initialize the object variables.
+ */
+    static int
+obj_method_prologue(ufunc_T *ufunc, cctx_T *cctx)
+{
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+
+    if (GA_GROW_FAILS(&dfunc->df_var_names, 1))
+	return FAIL;
+
+    ((char_u **)dfunc->df_var_names.ga_data)[0] =
+						vim_strsave((char_u *)"this");
+    ++dfunc->df_var_names.ga_len;
+
+    // In the constructor allocate memory for the object and initialize the
+    // object members.
+    if (IS_CONSTRUCTOR_METHOD(ufunc))
+	return obj_constructor_prologue(ufunc, cctx);
+
+    return OK;
+}
+
+/*
+ * Produce instructions for the default values of optional arguments.
+ */
+    static int
+compile_def_function_default_args(
+    ufunc_T	*ufunc,
+    cctx_T	*cctx,
+    garray_T	*instr)
+{
+    int	count = ufunc->uf_def_args.ga_len;
+    int	first_def_arg = ufunc->uf_args.ga_len - count;
+    int	i;
+    int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
+    int	did_set_arg_type = FALSE;
+
+    // Produce instructions for the default values of optional arguments.
+    SOURCING_LNUM = 0;  // line number unknown
+    for (i = 0; i < count; ++i)
+    {
+	char_u *arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
+	if (STRCMP(arg, "v:none") == 0)
+	    // "arg = v:none" means the argument is optional without
+	    // setting a value when the argument is missing.
+	    continue;
+
+	type_T	*val_type;
+	int		arg_idx = first_def_arg + i;
+	where_T	where = WHERE_INIT;
+	int		jump_instr_idx = instr->ga_len;
+	isn_T	*isn;
+
+	// Use a JUMP_IF_ARG_SET instruction to skip if the value was given.
+	if (generate_JUMP_IF_ARG(cctx, ISN_JUMP_IF_ARG_SET,
+						i - count - off) == FAIL)
+	    return FAIL;
+
+	// Make sure later arguments are not found.
+	ufunc->uf_args_visible = arg_idx;
+
+	int r = compile_expr0(&arg, cctx);
+	if (r == FAIL)
+	    return FAIL;
+
+	// If no type specified use the type of the default value.
+	// Otherwise check that the default value type matches the
+	// specified type.
+	val_type = get_type_on_stack(cctx, 0);
+	where.wt_index = arg_idx + 1;
+	where.wt_kind = WT_ARGUMENT;
+	if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
+	{
+	    did_set_arg_type = TRUE;
+	    ufunc->uf_arg_types[arg_idx] = val_type;
+	}
+	else if (need_type_where(val_type, ufunc->uf_arg_types[arg_idx],
+		    FALSE, -1, where, cctx, FALSE, FALSE) == FAIL)
+	    return FAIL;
+
+	if (generate_STORE(cctx, ISN_STORE, i - count - off, NULL) == FAIL)
+	    return FAIL;
+
+	// set instruction index in JUMP_IF_ARG_SET to here
+	isn = ((isn_T *)instr->ga_data) + jump_instr_idx;
+	isn->isn_arg.jumparg.jump_where = instr->ga_len;
+    }
+
+    if (did_set_arg_type)
+	set_function_type(ufunc);
+
+    return OK;
+}
+
+/*
  * Compile def function body.  Loop over all the lines in the function and
  * generate instructions.
  */
@@ -3937,136 +4097,15 @@ compile_def_function(
     if (check_args_shadowing(ufunc, &cctx) == FAIL)
 	goto erret;
 
-    // For an object method and constructor "this" is the first local variable.
+    // For an object method and a constructor generate instructions to
+    // initialize "this" and the object variables.
     if (ufunc->uf_flags & (FC_OBJECT|FC_NEW))
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
-	if (GA_GROW_FAILS(&dfunc->df_var_names, 1))
+	if (obj_method_prologue(ufunc, &cctx) == FAIL)
 	    goto erret;
-	((char_u **)dfunc->df_var_names.ga_data)[0] =
-						 vim_strsave((char_u *)"this");
-	++dfunc->df_var_names.ga_len;
-
-	// In the constructor allocate memory for the object and initialize the
-	// object members.
-	if (IS_CONSTRUCTOR_METHOD(ufunc))
-	{
-	    generate_CONSTRUCT(&cctx, ufunc->uf_class);
-
-	    for (int i = 0; i < ufunc->uf_class->class_obj_member_count; ++i)
-	    {
-		ocmember_T *m = &ufunc->uf_class->class_obj_members[i];
-
-		if (i < 2 && IS_ENUM(ufunc->uf_class))
-		    // The first two object variables in an enum are the name
-		    // and the ordinal.  These are set by the ISN_CONSTRUCT
-		    // instruction.  So don't generate instructions to set
-		    // these variables.
-		    continue;
-
-		if (m->ocm_init != NULL)
-		{
-		    char_u *expr = m->ocm_init;
-		    if (compile_expr0(&expr, &cctx) == FAIL)
-			goto erret;
-		    if (!ends_excmd2(m->ocm_init, expr))
-		    {
-			semsg(_(e_trailing_characters_str), expr);
-			goto erret;
-		    }
-
-		    type_T	*type = get_type_on_stack(&cctx, 0);
-		    if (m->ocm_type->tt_type == VAR_ANY
-			    && !(m->ocm_flags & OCMFLAG_HAS_TYPE)
-			    && type->tt_type != VAR_SPECIAL)
-		    {
-			// If the member variable type is not yet set, then use
-			// the initialization expression type.
-			m->ocm_type = type;
-		    }
-		    else if (m->ocm_type->tt_type != type->tt_type)
-		    {
-			// The type of the member initialization expression is
-			// determined at run time.  Add a runtime type check.
-			where_T	where = WHERE_INIT;
-			where.wt_kind = WT_MEMBER;
-			where.wt_func_name = (char *)m->ocm_name;
-			if (need_type_where(type, m->ocm_type, FALSE, -1,
-				    where, &cctx, FALSE, FALSE) == FAIL)
-			    goto erret;
-		    }
-		}
-		else
-		    push_default_value(&cctx, m->ocm_type->tt_type,
-								  FALSE, NULL);
-		generate_STORE_THIS(&cctx, i);
-	    }
-	}
-    }
 
     if (ufunc->uf_def_args.ga_len > 0)
-    {
-	int	count = ufunc->uf_def_args.ga_len;
-	int	first_def_arg = ufunc->uf_args.ga_len - count;
-	int	i;
-	int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
-	int	did_set_arg_type = FALSE;
-
-	// Produce instructions for the default values of optional arguments.
-	SOURCING_LNUM = 0;  // line number unknown
-	for (i = 0; i < count; ++i)
-	{
-	    char_u *arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
-	    if (STRCMP(arg, "v:none") == 0)
-		// "arg = v:none" means the argument is optional without
-		// setting a value when the argument is missing.
-		continue;
-
-	    type_T	*val_type;
-	    int		arg_idx = first_def_arg + i;
-	    where_T	where = WHERE_INIT;
-	    int		jump_instr_idx = instr->ga_len;
-	    isn_T	*isn;
-
-	    // Use a JUMP_IF_ARG_SET instruction to skip if the value was given.
-	    if (generate_JUMP_IF_ARG(&cctx, ISN_JUMP_IF_ARG_SET,
-						      i - count - off) == FAIL)
-		goto erret;
-
-	    // Make sure later arguments are not found.
-	    ufunc->uf_args_visible = arg_idx;
-
-	    int r = compile_expr0(&arg, &cctx);
-	    if (r == FAIL)
-		goto erret;
-
-	    // If no type specified use the type of the default value.
-	    // Otherwise check that the default value type matches the
-	    // specified type.
-	    val_type = get_type_on_stack(&cctx, 0);
-	    where.wt_index = arg_idx + 1;
-	    where.wt_kind = WT_ARGUMENT;
-	    if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
-	    {
-		did_set_arg_type = TRUE;
-		ufunc->uf_arg_types[arg_idx] = val_type;
-	    }
-	    else if (need_type_where(val_type, ufunc->uf_arg_types[arg_idx],
-				FALSE, -1, where, &cctx, FALSE, FALSE) == FAIL)
-		goto erret;
-
-	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
-		goto erret;
-
-	    // set instruction index in JUMP_IF_ARG_SET to here
-	    isn = ((isn_T *)instr->ga_data) + jump_instr_idx;
-	    isn->isn_arg.jumparg.jump_where = instr->ga_len;
-	}
-
-	if (did_set_arg_type)
-	    set_function_type(ufunc);
-    }
+	if (compile_def_function_default_args(ufunc, &cctx, instr) == FAIL)
+	    goto erret;
     ufunc->uf_args_visible = ufunc->uf_args.ga_len;
 
     // Compiling a function in an interface is done to get the function type.
@@ -4078,6 +4117,7 @@ compile_def_function(
 	goto erret;
     }
 
+    // compile the function body
     if (compile_def_function_body(&cctx, ufunc->uf_lines.ga_len,
 		check_return_type, &lines_to_free, &errormsg) == FAIL)
 	goto erret;
