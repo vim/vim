@@ -518,6 +518,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     octave: ['octaverc', '.octaverc', 'octave.conf', 'any/.local/share/octave/history'],
     odin: ['file.odin'],
     omnimark: ['file.xom', 'file.xin'],
+    ondir: ['.ondirrc'],
     opam: ['opam', 'file.opam', 'file.opam.template'],
     openroad: ['file.or'],
     openscad: ['file.scad'],

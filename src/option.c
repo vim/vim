@@ -384,6 +384,8 @@ set_init_xdg_rtp(void)
     char_u	*xdg_rtp = NULL;
     char_u	*vimrc_xdg = NULL;
 
+    // initialize chartab, so we can expand $HOME
+    (void)init_chartab();
     vimrc1 = expand_env_save((char_u *)USR_VIMRC_FILE);
     vimrc2 = expand_env_save((char_u *)USR_VIMRC_FILE2);
 

@@ -1593,6 +1593,9 @@ au BufNewFile,BufRead *.odin			setf odin
 " Omnimark
 au BufNewFile,BufRead *.xom,*.xin		setf omnimark
 
+" ondir
+au BufNewFile,BufRead .ondirrc			setf ondir
+
 " OPAM
 au BufNewFile,BufRead opam,*.opam,*.opam.template setf opam
 

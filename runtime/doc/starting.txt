@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 15
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -93,20 +93,20 @@ filename	One or more file names.  The first one will be the current
 
 The startup mode can be changed by using another name instead of "vim", which
 is equal to giving options:
-ex	vim -e	    Start in Ex mode (see |Ex-mode|).		    *ex*
-exim	vim -E	    Start in improved Ex mode (see |Ex-mode|).	    *exim*
-			(normally not installed)
-view	vim -R	    Start in read-only mode (see |-R|).		    *view*
-gvim	vim -g	    Start the GUI (see |gui|).			    *gvim*
-gex	vim -eg	    Start the GUI in Ex mode.			  *gex*
-gview	vim -Rg	    Start the GUI in read-only mode.		  *gview*
-rvim	vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
-rview	vim -RZ	    Like "view", but in restricted mode.	  *rview*
-rgvim	vim -gZ	    Like "gvim", but in restricted mode.	  *rgvim*
-rgview	vim -RgZ    Like "gview", but in restricted mode.	  *rgview*
-evim    vim -y      Easy Vim: set 'insertmode' (see |-y|)	    *evim*
-eview   vim -yR     Like "evim" in read-only mode		  *eview*
-vimdiff vim -d	    Start in diff mode |diff-mode|
+ex	 vim -e	    Start in Ex mode (see |Ex-mode|).		  *ex*
+exim	 vim -E	    Start in improved Ex mode (see |Ex-mode|).	  *exim*
+		    (normally not installed)
+view	 vim -R	    Start in read-only mode (see |-R|).		  *view*
+gvim	 vim -g	    Start the GUI (see |gui|).			  *gvim*
+gex	 vim -eg    Start the GUI in Ex mode.			  *gex*
+gview	 vim -Rg    Start the GUI in read-only mode.		  *gview*
+rvim	 vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
+rview	 vim -RZ    Like "view", but in restricted mode.	  *rview*
+rgvim	 vim -gZ    Like "gvim", but in restricted mode.	  *rgvim*
+rgview	 vim -RgZ   Like "gview", but in restricted mode.	  *rgview*
+evim     vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
+eview    vim -yR    Like "evim" in read-only mode		  *eview*
+vimdiff  vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
 Additional characters may follow, they are ignored.  For example, you can have
@@ -1092,22 +1092,22 @@ XDG Base Directory Specification ~
 
 The XDG Base Directory Specification aims to define a standard location for
 configuration files used by applications.  This is mainly done to prevent
-the legacy behavior of dumping everything into the users home directory.
+the legacy behavior of dumping everything into the user's home directory.
 The specification can be found online at
 https://specifications.freedesktop.org/basedir-spec/latest/
 
 The location of this standard configuration directory is configurable by the
-user, using environment variable but should also give fallback in case those
+user, using an environment variable but should also give fallback in case those
 variables weren't set.
 
 This is not an exhaustive list of those directories:
-   Environment var	default location	Description ~
+  Environment var	Default location	Description ~
   `$XDG_CACHE_HOME`	$HOME/.cache		Ephemeral data files
   `$XDG_CONFIG_HOME`	$HOME/.config		Configuration files
   `$XDG_DATA_HOME`	$HOME/.local/share	Persistent data files
   `$XDG_STATE_HOME`	$HOME/.local/state	State data files
 
-Vim will only care of the `$XDG_CONFIG_HOME` directory, the others are not
+Vim will only use the `$XDG_CONFIG_HOME` directory, the others are not
 (yet) used for its various configuration and state files.
 
 							*xdg-vimrc*

@@ -456,15 +456,24 @@ handle_import(
 	scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
 	char_u		*tail = gettail(si->sn_name);
 	char_u		*from_name;
+	int		sourced_from_nofile_buf = FALSE;
 
-	// Relative to current script: "./name.vim", "../../name.vim".
-	len = STRLEN(si->sn_name) - STRLEN(tail) + STRLEN(tv.vval.v_string) + 2;
-	from_name = alloc((int)len);
-	if (from_name == NULL)
-	    goto erret;
-	vim_strncpy(from_name, si->sn_name, tail - si->sn_name);
-	add_pathsep(from_name);
-	STRCAT(from_name, tv.vval.v_string);
+	if (STRNCMP(si->sn_name, ":source buffer=", 15) == 0)
+	    sourced_from_nofile_buf = TRUE;
+
+	if (!sourced_from_nofile_buf)
+	{
+	    // Relative to current script: "./name.vim", "../../name.vim".
+	    len = STRLEN(si->sn_name) - STRLEN(tail) + STRLEN(tv.vval.v_string) + 2;
+	    from_name = alloc((int)len);
+	    if (from_name == NULL)
+		goto erret;
+	    vim_strncpy(from_name, si->sn_name, tail - si->sn_name);
+	    add_pathsep(from_name);
+	    STRCAT(from_name, tv.vval.v_string);
+	}
+	else
+	    from_name = vim_strsave(tv.vval.v_string);
 	simplify_filename(from_name);
 
 	res = handle_import_fname(from_name, is_autoload, &sid);

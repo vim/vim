@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 9.1.  Last change: 2023 Mar 24
+*sponsor.txt*   For Vim version 9.1.  Last change: 2024 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -60,9 +60,7 @@ Credit card	Through PayPal, see the PayPal site for information:
 
 Other methods	See |iccf-donations|.
 		Include "Vim sponsor" or "Vim registration" in the comment of
-		your money transfer.  Send me an e-mail that mentions the
-		amount you transferred if you want to vote for features and
-		show others you are a registered Vim user or sponsor.
+		your money transfer.
 
 
 QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
@@ -135,10 +133,10 @@ for features.
 
 I donated $$$, now please add feature XYZ!
 
-There is no direct relation between your donation and the work developers
-does. Otherwise you would be paying for work and we would have to pay tax
-over the donation.  If you want to hire one of the developers for specific
-work, contact them directly, don't use the donation system.
+There is no direct relation between your donation and the work developers do.
+Otherwise you would be paying for work and we would have to pay tax over the
+donation.  If you want to hire one of the developers for specific work,
+contact them directly, don't use the donation system.
 
 
 Are the donations tax deductible?

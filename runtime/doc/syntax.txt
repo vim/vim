@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -929,6 +929,21 @@ nasm_loose_syntax	unofficial parser allowed syntax not as Error
 			  (parser dependent; not recommended)
 nasm_ctx_outside_macro	contexts outside macro not as Error
 nasm_no_warn		potentially risky syntax not as ToDo
+
+ASTRO						*astro.vim* *ft-astro-syntax*
+
+Configuration
+
+The following variables control certain syntax highlighting features.
+You can add them to your .vimrc: >
+	let g:astro_typescript = "enable"
+<
+Enables TypeScript and TSX for ".astro" files. Default Value: "disable" >
+	let g:astro_stylus = "enable"
+<
+Enables Stylus for ".astro" files. Default Value: "disable"
+
+NOTE: You need to install an external plugin to support stylus in astro files.
 
 
 ASPPERL and ASPVBS			*ft-aspperl-syntax* *ft-aspvbs-syntax*
@@ -2670,8 +2685,8 @@ perl_string_as_statement, it will be highlighted as in the second line.
 The syncing has 3 options.  The first two switch off some triggering of
 synchronization and should only be needed in case it fails to work properly.
 If while scrolling all of a sudden the whole screen changes color completely
-then you should try and switch off one of those.  Let me know if you can
-figure out the line that causes the mistake.
+then you should try and switch off one of those.  Let the developer know if
+you can figure out the line that causes the mistake.
 
 One triggers on "^\s*sub\s*" and the other on "^[$@%]" more or less. >
 
