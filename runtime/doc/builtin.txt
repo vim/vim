@@ -1174,7 +1174,7 @@ balloon_split({msg})					*balloon_split()*
 
 bindtextdomain({package} [, {path}])			*bindtextdomain()*
 		Bind a specific {package} to a {path} so that the
-		|gettext| function can be used to get language-specific
+		|gettext()| function can be used to get language-specific
 		translations for a package.
 
 		When {path} is omitted, the Vim runtime path is used.
