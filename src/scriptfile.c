@@ -1273,7 +1273,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 	    emsg(_(e_argument_required));
 	else
 	    // source ex commands from the current buffer
-	    do_source_ext(NULL, FALSE, FALSE, NULL, eap, clearvars);
+	    do_source_ext(NULL, FALSE, DOSO_NONE, NULL, eap, clearvars);
     }
     else if (eap != NULL && eap->forceit)
 	// ":source!": read Normal mode commands
@@ -1424,8 +1424,6 @@ do_source_buffer_init(source_cookie_T *sp, exarg_T *eap)
     char_u	*line = NULL;
     char_u	*fname;
 
-    CLEAR_FIELD(*sp);
-
     if (curbuf == NULL)
 	return NULL;
 
@@ -1453,6 +1451,8 @@ do_source_buffer_init(source_cookie_T *sp, exarg_T *eap)
     }
     sp->buf_lnum = 0;
     sp->source_from_buf = TRUE;
+    // When sourcing a range of lines from a buffer, use buffer line number.
+    sp->sourcing_lnum = eap->line1 - 1;
 
     return fname;
 
@@ -1640,13 +1640,6 @@ do_source_ext(
     else
 	cookie.fileformat = EOL_UNKNOWN;
 #endif
-
-    if (fname == NULL)
-	// When sourcing a range of lines from a buffer, use the buffer line
-	// number.
-	cookie.sourcing_lnum = eap->line1 - 1;
-    else
-	cookie.sourcing_lnum = 0;
 
 #ifdef FEAT_EVAL
     // Check if this script has a breakpoint.
