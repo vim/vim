@@ -59,9 +59,11 @@ internal_format(
     int		safe_tw = trim_to_int(8 * (vimlong_T)textwidth);
 #ifdef FEAT_LINEBREAK
     int		has_lbr = curwin->w_p_lbr;
+    int		has_bri = curwin->w_p_bri;
 
     // make sure win_lbr_chartabsize() counts correctly
     curwin->w_p_lbr = FALSE;
+    curwin->w_p_bri = FALSE;
 #endif
 
     // When 'ai' is off we don't want a space under the cursor to be
@@ -475,6 +477,7 @@ internal_format(
 
 #ifdef FEAT_LINEBREAK
     curwin->w_p_lbr = has_lbr;
+    curwin->w_p_bri = has_bri;
 #endif
     if (!format_only && haveto_redraw)
     {
