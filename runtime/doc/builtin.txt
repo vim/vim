@@ -4331,7 +4331,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 <
 getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 		Returns a list of positions describing the buffer text
-		segments bound by {pos1} to {pos2} buffer.
+		segments bound by {pos1} and {pos2}.
 		See |getregion()| for the arguments and notes.
 		Note: When the selection is blockwise, it returns a pair of
 		positions for every line:
