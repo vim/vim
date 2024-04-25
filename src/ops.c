@@ -313,7 +313,6 @@ shift_block(oparg_T *oap, int amount)
     if (!left)
     {
 	int		tabs = 0, spaces = 0;
-	size_t		shiftedlen;	// length of string being shifted
 	chartabsize_T	cts;
 
 	/*
@@ -372,8 +371,7 @@ shift_block(oparg_T *oap, int amount)
 	// if we're splitting a TAB, allow for it
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
 
-	shiftedlen = oldlen - (bd.textstart - oldp);
-	new_line_len = bd.textcol + tabs + spaces + shiftedlen;
+	new_line_len = bd.textcol + tabs + spaces + (oldlen - (bd.textstart - oldp));
 	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
@@ -382,7 +380,7 @@ shift_block(oparg_T *oap, int amount)
 	vim_memset(newp + newlen, TAB, (size_t)tabs);
 	newlen += tabs;
 	vim_memset(newp + newlen, ' ', (size_t)spaces);
-	vim_strncpy(newp + newlen + spaces, bd.textstart, shiftedlen);
+	STRCPY(newp + newlen + spaces, bd.textstart);
     }
     else // left
     {
@@ -399,7 +397,6 @@ shift_block(oparg_T *oap, int amount)
 	colnr_T	    non_white_col;
 	size_t	    fixedlen;		// length of string left of the shift
 					// position (ie the string not being shifted)
-	size_t	    shiftedlen;		// length of string being shifted
 	chartabsize_T cts;
 
 	/*
@@ -472,8 +469,7 @@ shift_block(oparg_T *oap, int amount)
 	// - "fill" number of spaces,
 	// - the rest of the line, pointed to by non_white.
 	fixedlen = verbatim_copy_end - oldp;
-	shiftedlen = oldlen - (non_white - oldp);
-	new_line_len = fixedlen + fill + shiftedlen;
+	new_line_len = fixedlen + fill + (oldlen - (non_white - oldp));
 
 	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
@@ -481,7 +477,7 @@ shift_block(oparg_T *oap, int amount)
 	mch_memmove(newp, oldp, fixedlen);
 	newlen = fixedlen;
 	vim_memset(newp + newlen, ' ', (size_t)fill);
-	vim_strncpy(newp + newlen + fill, non_white, shiftedlen);
+	STRCPY(newp + newlen + fill, non_white);
     }
     // replace the line
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
@@ -519,7 +515,6 @@ block_insert(
     colnr_T	offset;		// pointer along new line
     colnr_T	startcol;	// column where insert starts
     char_u	*newp, *oldp;	// new, old lines
-    size_t	oldlen;
     linenr_T	lnum;		// loop var
     int		oldstate = State;
 
@@ -532,7 +527,6 @@ block_insert(
 	    continue;	// OP_INSERT, line ends before block start
 
 	oldp = ml_get(lnum);
-	oldlen = ml_get_len(lnum);
 
 	if (b_insert)
 	{
@@ -570,7 +564,7 @@ block_insert(
 	    spaces = 0;
 
 	// Make sure the allocated size matches what is actually copied below.
-	newp = alloc(oldlen + spaces + slen
+	newp = alloc(ml_get_len(lnum) + spaces + slen
 		    + (spaces > 0 && !bdp->is_short ? ts_val - spaces : 0)
 								  + count + 1);
 	if (newp == NULL)
@@ -579,7 +573,6 @@ block_insert(
 	// copy up to shifted part
 	mch_memmove(newp, oldp, (size_t)offset);
 	oldp += offset;
-	oldlen -= offset;
 
 	// insert pre-padding
 	vim_memset(newp + offset, ' ', (size_t)spaces);
@@ -598,7 +591,6 @@ block_insert(
 						    (size_t)(ts_val - spaces));
 		// we're splitting a TAB, don't copy it
 		oldp++;
-		oldlen--;
 		// We allowed for that TAB, remember this now
 		count++;
 	    }
@@ -609,7 +601,7 @@ block_insert(
 
 	if (spaces > 0)
 	    offset += count;
-	vim_strncpy(newp + offset, oldp, oldlen);
+	STRCPY(newp + offset, oldp);
 
 	ml_replace(lnum, newp, FALSE);
 
@@ -802,8 +794,6 @@ op_delete(oparg_T *oap)
 
 	for (lnum = curwin->w_cursor.lnum; lnum <= oap->end.lnum; ++lnum)
 	{
-	    size_t oldlen;
-
 	    block_prep(oap, &bd, lnum, TRUE);
 	    if (bd.textlen == 0)	// nothing to delete
 		continue;
@@ -820,8 +810,7 @@ op_delete(oparg_T *oap)
 	    // Thus the number of characters may increase!
 	    n = bd.textlen - bd.startspaces - bd.endspaces;
 	    oldp = ml_get(lnum);
-	    oldlen = ml_get_len(lnum);
-	    newp = alloc(oldlen + 1 - n);
+	    newp = alloc(ml_get_len(lnum) + 1 - n);
 	    if (newp == NULL)
 		continue;
 	    // copy up to deleted part
@@ -830,9 +819,8 @@ op_delete(oparg_T *oap)
 	    vim_memset(newp + bd.textcol, ' ',
 				     (size_t)(bd.startspaces + bd.endspaces));
 	    // copy the part after the deleted part
-	    vim_strncpy(newp + bd.textcol + bd.startspaces + bd.endspaces,
-				    oldp + bd.textcol + bd.textlen,
-				    oldlen - (bd.textcol + bd.textlen));
+	    STRCPY(newp + bd.textcol + bd.startspaces + bd.endspaces,
+				    oldp + bd.textcol + bd.textlen);
 	    // replace the line
 	    ml_replace(lnum, newp, FALSE);
 
@@ -1168,9 +1156,8 @@ op_replace(oparg_T *oap, int c)
 		    // insert post-spaces
 		    vim_memset(newp + newlen, ' ', (size_t)bd.endspaces);
 		    // copy the part after the changed part
-		    vim_strncpy(newp + newlen + bd.endspaces,
-				oldp + bd.textcol + bd.textlen,
-				oldlen - (bd.textcol + bd.textlen));
+		    STRCPY(newp + newlen + bd.endspaces,
+				oldp + bd.textcol + bd.textlen);
 		}
 	    }
 	    else
@@ -1178,8 +1165,7 @@ op_replace(oparg_T *oap, int c)
 		// Replacing with \r or \n means splitting the line.
 		after_p = alloc(oldlen + 1 + n - newlen);
 		if (after_p != NULL)
-		    vim_strncpy(after_p, oldp + bd.textcol + bd.textlen,
-				oldlen - (bd.textcol + bd.textlen));
+		    STRCPY(after_p, oldp + bd.textcol + bd.textlen);
 	    }
 
 	    // replace the line
@@ -1853,7 +1839,7 @@ op_change(oparg_T *oap)
 		    if (!bd.is_short || virtual_op)
 		    {
 			pos_T vpos;
-			size_t oldlen, newlen;
+			size_t newlen;
 
 			// If the block starts in virtual space, count the
 			// initial coladd offset as part of "startspaces"
@@ -1865,8 +1851,7 @@ op_change(oparg_T *oap)
 			else
 			    vpos.coladd = 0;
 			oldp = ml_get(linenr);
-			oldlen = ml_get_len(linenr);
-			newp = alloc(oldlen + vpos.coladd + ins_len + 1);
+			newp = alloc(ml_get_len(linenr) + vpos.coladd + ins_len + 1);
 			if (newp == NULL)
 			    continue;
 			// copy up to block start
@@ -1875,7 +1860,7 @@ op_change(oparg_T *oap)
 			vim_memset(newp + newlen, ' ', (size_t)vpos.coladd);
 			newlen += vpos.coladd;
 			mch_memmove(newp + newlen, ins_text, ins_len);
-			vim_strncpy(newp + newlen + ins_len, oldp + bd.textcol, oldlen - bd.textcol);
+			STRCPY(newp + newlen + ins_len, oldp + bd.textcol);
 			ml_replace(linenr, newp, FALSE);
 #ifdef FEAT_PROP_POPUP
 			// Shift the properties for linenr as edit() would do.
