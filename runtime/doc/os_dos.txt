@@ -1,4 +1,4 @@
-*os_dos.txt*    For Vim version 9.1.  Last change: 2006 Mar 30
+*os_dos.txt*    For Vim version 9.1.  Last change: 2024 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -329,6 +329,11 @@ following values:
 'shellxquote'	"
 'shellpipe'	>%s 2>&1
 'shellredir'	>%s 2>&1
+
+Note: those options are only set after reading the |.vimrc| file, in
+particular setting the 'shell' option via |-c| is too late to take effect for
+the other shell related settings.  Consider using |--cmd| to override this
+option via the command line.
 
 If you find that PowerShell commands are taking a long time to run then try
 with "-NoProfile" at the beginning of the 'shellcmdflag'.  Note this will
