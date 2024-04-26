@@ -126,10 +126,5 @@ hi def link jqMacro                  Macro
 hi def link jqError                  Error
 hi def link jqString                 String
 hi def link jqInterpolationDelimiter Delimiter
-"hi def link jqStatement              Statement
 hi def link jqConditional            Conditional
-"hi def link jqRepeat                 Repeat
-"hi def link jqException              Exception
-"hi def link jqInclude                Include
-"hi def link jqDecorator              Define
 hi def link jqNumber                 Number

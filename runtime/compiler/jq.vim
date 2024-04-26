@@ -12,9 +12,6 @@ let b:current_compiler = 'jq'
 let s:save_cpoptions = &cpoptions
 set cpoptions&vim
 
-if exists(':CompilerSet') != 2
-  command -nargs=* CompilerSet setlocal <args>
-endif
 if has('unix')
   CompilerSet makeprg=jq\ -f\ %:S\ /dev/null
 else
