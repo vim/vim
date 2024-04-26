@@ -1,5 +1,8 @@
 vim9script
 
+# Maintainer: Maxim Kim <habamax@gmail.com>
+# Last Update: 2024-04-26
+#
 # Toggle comments
 # Usage:
 #   Add following mappings to vimrc:
