@@ -131,6 +131,7 @@ jobs:
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
+          # ubuntu-toolchain-r/test PPA for gcc-13 compiler
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
           sudo apt-get update -y
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
