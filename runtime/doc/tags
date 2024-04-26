@@ -7292,6 +7292,7 @@ ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-plugin	filetype.txt	/*ft-java-plugin*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-jq-syntax	syntax.txt	/*ft-jq-syntax*
 ft-json-plugin	filetype.txt	/*ft-json-plugin*
 ft-json-syntax	syntax.txt	/*ft-json-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
@@ -8409,6 +8410,8 @@ job_start()	channel.txt	/*job_start()*
 job_status()	channel.txt	/*job_status()*
 job_stop()	channel.txt	/*job_stop()*
 join()	builtin.txt	/*join()*
+jq.vim	syntax.txt	/*jq.vim*
+jq_quote_highlight	syntax.txt	/*jq_quote_highlight*
 js_decode()	builtin.txt	/*js_decode()*
 js_encode()	builtin.txt	/*js_encode()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
