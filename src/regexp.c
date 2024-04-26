@@ -2615,7 +2615,7 @@ reg_submatch(int no)
 		    s = reg_getline_submatch(lnum);
 		    if (round == 2)
 			STRCPY(retval + len, s);
-		    len = (int)reg_getline_submatchlen(lnum);
+		    len += (int)reg_getline_submatchlen(lnum);
 		    if (round == 2)
 			retval[len] = '\n';
 		    ++len;
