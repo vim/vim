@@ -436,6 +436,39 @@ when Vim starts, add the following line to your vimrc file: >
 After restarting your Vim, the plugin is active and you can read about it at: >
 	:h editorconfig.txt
 
+
+Adding comment package					*comment-install*
+
+Load the plugin with this command: >
+    packadd comment
+<
+							*comment-gc*
+This way you can use the plugin with the default key bindings `gc` and similar
+for commenting (which is a well-established mapping in the Vim community).
+
+For example:
+
+    - `gcc` to comment/uncomment current line
+    - `gcip` to comment/uncomment current paragraph
+    - `gcG` to comment/uncomment from current line till the end of a buffer
+    - visually select lines and `gc` would comment/uncomment it.
+
+Whether it would comment or uncomment depends on the first line of the range.
+
+Options:
+
+*g:comment_first_col*
+*b:comment_first_col*
+    By default comment chars are added in front of the line, i.e. if the line
+    was indented, commented line would stay indented as well.
+
+    However some filetypes require comment char on the first column, use this option
+    to change default behaviour.
+
+    Use g:comment_first_col to change it globally or b:comment_first_col to
+    target specific filetype(s).
+
+
 More information about packages can be found here: |packages|.
 
 ==============================================================================
