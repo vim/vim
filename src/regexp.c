@@ -161,6 +161,7 @@ re_multi_type(int c)
 }
 
 static char_u		*reg_prev_sub = NULL;
+static size_t		reg_prev_sublen = 0;
 
 /*
  * REGEXP_INRANGE contains all characters which are always special in a []
@@ -197,6 +198,30 @@ backslash_trans(int c)
     return c;
 }
 
+enum
+{
+    CLASS_ALNUM = 0,
+    CLASS_ALPHA,
+    CLASS_BLANK,
+    CLASS_CNTRL,
+    CLASS_DIGIT,
+    CLASS_GRAPH,
+    CLASS_LOWER,
+    CLASS_PRINT,
+    CLASS_PUNCT,
+    CLASS_SPACE,
+    CLASS_UPPER,
+    CLASS_XDIGIT,
+    CLASS_TAB,
+    CLASS_RETURN,
+    CLASS_BACKSPACE,
+    CLASS_ESCAPE,
+    CLASS_IDENT,
+    CLASS_KEYWORD,
+    CLASS_FNAME,
+    CLASS_NONE = 99
+};
+
 /*
  * Check for a character class name "[:name:]".  "pp" points to the '['.
  * Returns one of the CLASS_ items. CLASS_NONE means that no item was
@@ -205,58 +230,56 @@ backslash_trans(int c)
     static int
 get_char_class(char_u **pp)
 {
-    static const char *(class_names[]) =
+    // must be sorted by the 'value' field because it is used by bsearch()!
+    static keyvalue_T char_class_tab[] =
     {
-	"alnum:]",
-#define CLASS_ALNUM 0
-	"alpha:]",
-#define CLASS_ALPHA 1
-	"blank:]",
-#define CLASS_BLANK 2
-	"cntrl:]",
-#define CLASS_CNTRL 3
-	"digit:]",
-#define CLASS_DIGIT 4
-	"graph:]",
-#define CLASS_GRAPH 5
-	"lower:]",
-#define CLASS_LOWER 6
-	"print:]",
-#define CLASS_PRINT 7
-	"punct:]",
-#define CLASS_PUNCT 8
-	"space:]",
-#define CLASS_SPACE 9
-	"upper:]",
-#define CLASS_UPPER 10
-	"xdigit:]",
-#define CLASS_XDIGIT 11
-	"tab:]",
-#define CLASS_TAB 12
-	"return:]",
-#define CLASS_RETURN 13
-	"backspace:]",
-#define CLASS_BACKSPACE 14
-	"escape:]",
-#define CLASS_ESCAPE 15
-	"ident:]",
-#define CLASS_IDENT 16
-	"keyword:]",
-#define CLASS_KEYWORD 17
-	"fname:]",
-#define CLASS_FNAME 18
+	KEYVALUE_ENTRY(CLASS_ALNUM, "alnum:]"),
+	KEYVALUE_ENTRY(CLASS_ALPHA, "alpha:]"),
+	KEYVALUE_ENTRY(CLASS_BACKSPACE, "backspace:]"),
+	KEYVALUE_ENTRY(CLASS_BLANK, "blank:]"),
+	KEYVALUE_ENTRY(CLASS_CNTRL, "cntrl:]"),
+	KEYVALUE_ENTRY(CLASS_DIGIT, "digit:]"),
+	KEYVALUE_ENTRY(CLASS_ESCAPE, "escape:]"),
+	KEYVALUE_ENTRY(CLASS_FNAME, "fname:]"),
+	KEYVALUE_ENTRY(CLASS_GRAPH, "graph:]"),
+	KEYVALUE_ENTRY(CLASS_IDENT, "ident:]"),
+	KEYVALUE_ENTRY(CLASS_KEYWORD, "keyword:]"),
+	KEYVALUE_ENTRY(CLASS_LOWER, "lower:]"),
+	KEYVALUE_ENTRY(CLASS_PRINT, "print:]"),
+	KEYVALUE_ENTRY(CLASS_PUNCT, "punct:]"),
+	KEYVALUE_ENTRY(CLASS_RETURN, "return:]"),
+	KEYVALUE_ENTRY(CLASS_SPACE, "space:]"),
+	KEYVALUE_ENTRY(CLASS_TAB, "tab:]"),
+	KEYVALUE_ENTRY(CLASS_UPPER, "upper:]"),
+	KEYVALUE_ENTRY(CLASS_XDIGIT, "xdigit:]")
     };
-#define CLASS_NONE 99
-    int i;
 
-    if ((*pp)[1] == ':')
+    // check that the value of "pp" has a chance of matching
+    if ((*pp)[1] == ':' && ASCII_ISLOWER((*pp)[2])
+			&& ASCII_ISLOWER((*pp)[3]) && ASCII_ISLOWER((*pp)[4]))
     {
-	for (i = 0; i < (int)ARRAY_LENGTH(class_names); ++i)
-	    if (STRNCMP(*pp + 2, class_names[i], STRLEN(class_names[i])) == 0)
-	    {
-		*pp += STRLEN(class_names[i]) + 2;
-		return i;
-	    }
+	keyvalue_T target;
+	keyvalue_T *entry;
+	// this function can be called repeatedly with the same value for "pp"
+	// so we cache the last found entry.
+	static keyvalue_T *last_entry = NULL;
+
+	target.key = 0;
+	target.value = (char *)*pp + 2;
+	target.length = 0;		    // not used, see cmp_keyvalue_value_n()
+
+	if (last_entry != NULL && cmp_keyvalue_value_n(&target, last_entry) == 0)
+	    entry = last_entry;
+	else
+	    entry = (keyvalue_T *)bsearch(&target, &char_class_tab,
+					ARRAY_LENGTH(char_class_tab),
+					sizeof(char_class_tab[0]), cmp_keyvalue_value_n);
+	if (entry != NULL)
+	{
+	    last_entry = entry;
+	    *pp += entry->length + 2;
+	    return entry->key;
+	}
     }
     return CLASS_NONE;
 }
@@ -619,17 +642,20 @@ skip_regexp_ex(
 	{
 	    if (dirc == '?' && newp != NULL && p[1] == '?')
 	    {
+		size_t	startplen;
+
 		// change "\?" to "?", make a copy first.
 		if (*newp == NULL)
 		{
-		    *newp = vim_strsave(startp);
+		    startplen = STRLEN(startp);
+		    *newp = vim_strnsave(startp, startplen);
 		    if (*newp != NULL)
 			p = *newp + (p - startp);
 		}
 		if (dropped != NULL)
 		    ++*dropped;
 		if (*newp != NULL)
-		    STRMOVE(p, p + 1);
+		    mch_memmove(p, p + 1, (startplen - ((p + 1) - *newp)) + 1);
 		else
 		    ++p;
 	    }
@@ -1205,6 +1231,21 @@ reg_getline(linenr_T lnum)
     return ml_get_buf(rex.reg_buf, rex.reg_firstlnum + lnum, FALSE);
 }
 
+/*
+ * Get length of line "lnum", which is relative to "reg_firstlnum".
+ */
+    static colnr_T
+reg_getlinelen(linenr_T lnum)
+{
+    char_u *line;
+
+    line = reg_getline(lnum);
+    if (line == NULL || *line == NUL)
+	return 0;
+
+    return ml_get_buf_len(rex.reg_buf, rex.reg_firstlnum + lnum);
+}
+
 #ifdef FEAT_SYN_HL
 static char_u	*reg_startzp[NSUBEXP];	// Workspace to mark beginning
 static char_u	*reg_endzp[NSUBEXP];	//   and end of \z(...\) matches
@@ -1484,7 +1525,7 @@ match_with_backref(
 	if (clnum == end_lnum)
 	    len = end_col - ccol;
 	else
-	    len = (int)STRLEN(p + ccol);
+	    len = (int)reg_getlinelen(clnum) - ccol;
 
 	if (cstrncmp(p + ccol, rex.input, &len) != 0)
 	    return RA_NOMATCH;  // doesn't match
@@ -1745,49 +1786,55 @@ regtilde(char_u *source, int magic)
 {
     char_u	*newsub = source;
     char_u	*p;
+    int		have_newsublen = FALSE;
+    size_t	newsublen = 0;
 
     for (p = newsub; *p; ++p)
     {
 	if ((*p == '~' && magic) || (*p == '\\' && *(p + 1) == '~' && !magic))
 	{
+	    if (!have_newsublen)
+	    {
+		newsublen = STRLEN(newsub);
+		have_newsublen = TRUE;
+	    }
+
 	    if (reg_prev_sub != NULL)
 	    {
 		// length = len(newsub) - 1 + len(prev_sub) + 1
 		// Avoid making the text longer than MAXCOL, it will cause
 		// trouble at some point.
-		size_t	prevsublen = STRLEN(reg_prev_sub);
-		size_t  newsublen = STRLEN(newsub);
-		if (prevsublen > MAXCOL || newsublen > MAXCOL
-					    || newsublen + prevsublen > MAXCOL)
+		if (reg_prev_sublen > MAXCOL || newsublen > MAXCOL
+					    || newsublen + reg_prev_sublen > MAXCOL)
 		{
 		    emsg(_(e_resulting_text_too_long));
 		    break;
 		}
 
-		char_u *tmpsub = alloc(newsublen + prevsublen);
+		char_u *tmpsub = alloc(newsublen + reg_prev_sublen);
 		if (tmpsub != NULL)
 		{
 		    // copy prefix
-		    size_t prefixlen = p - newsub;	// not including ~
+		    size_t prefixlen = p - newsub;	// not including '~'
 		    mch_memmove(tmpsub, newsub, prefixlen);
 		    // interpret tilde
 		    mch_memmove(tmpsub + prefixlen, reg_prev_sub,
-							       prevsublen);
+							       reg_prev_sublen);
 		    // copy postfix
 		    if (!magic)
 			++p;			// back off backslash
-		    STRCPY(tmpsub + prefixlen + prevsublen, p + 1);
+		    STRCPY(tmpsub + prefixlen + reg_prev_sublen, p + 1);
 
 		    if (newsub != source)	// allocated newsub before
 			vim_free(newsub);
 		    newsub = tmpsub;
-		    p = newsub + prefixlen + prevsublen;
+		    p = newsub + prefixlen + reg_prev_sublen;
 		}
 	    }
 	    else if (magic)
-		STRMOVE(p, p + 1);	// remove '~'
+		mch_memmove(p, p + 1, (newsublen - ((p + 1) - newsub)) + 1);	    // remove '~'
 	    else
-		STRMOVE(p, p + 2);	// remove '\~'
+		mch_memmove(p, p + 2, (newsublen - ((p + 2) - newsub)) + 1);	    // remove '\~'
 	    --p;
 	}
 	else
@@ -1802,7 +1849,8 @@ regtilde(char_u *source, int magic)
     // Store a copy of newsub  in reg_prev_sub.  It is always allocated,
     // because recursive calls may make the returned string invalid.
     vim_free(reg_prev_sub);
-    reg_prev_sub = vim_strsave(newsub);
+    reg_prev_sublen = p - newsub;
+    reg_prev_sub = vim_strnsave(newsub, reg_prev_sublen);
 
     return newsub;
 }
@@ -2028,12 +2076,16 @@ vim_regsub_both(
 	// "flags & REGSUB_COPY" != 0.
 	if (copy)
 	{
-	    if (eval_result[nested] != NULL &&
-		    (int)STRLEN(eval_result[nested]) < destlen)
+	    if (eval_result[nested] != NULL)
 	    {
-		STRCPY(dest, eval_result[nested]);
-		dst += STRLEN(eval_result[nested]);
-		VIM_CLEAR(eval_result[nested]);
+		int len = (int)STRLEN(eval_result[nested]);
+
+		if (len < destlen)
+		{
+		    STRCPY(dest, eval_result[nested]);
+		    dst += len;
+		    VIM_CLEAR(eval_result[nested]);
+		}
 	    }
 	}
 	else
@@ -2325,7 +2377,7 @@ vim_regsub_both(
 			len = rex.reg_mmatch->endpos[no].col
 					    - rex.reg_mmatch->startpos[no].col;
 		    else
-			len = (int)STRLEN(s);
+			len = (int)reg_getlinelen(clnum) - rex.reg_mmatch->startpos[no].col;
 		}
 	    }
 	    else
@@ -2360,7 +2412,7 @@ vim_regsub_both(
 			    if (rex.reg_mmatch->endpos[no].lnum == clnum)
 				len = rex.reg_mmatch->endpos[no].col;
 			    else
-				len = (int)STRLEN(s);
+				len = (int)reg_getlinelen(clnum);
 			}
 			else
 			    break;
@@ -2487,6 +2539,23 @@ reg_getline_submatch(linenr_T lnum)
     return s;
 }
 
+    static colnr_T
+reg_getline_submatchlen(linenr_T lnum)
+{
+    colnr_T len;
+    linenr_T save_first = rex.reg_firstlnum;
+    linenr_T save_max = rex.reg_maxline;
+
+    rex.reg_firstlnum = rsm.sm_firstlnum;
+    rex.reg_maxline = rsm.sm_maxline;
+
+    len = reg_getlinelen(lnum);
+
+    rex.reg_firstlnum = save_first;
+    rex.reg_maxline = save_max;
+    return len;
+}
+
 /*
  * Used for the submatch() function: get the string from the n'th submatch in
  * allocated memory.
@@ -2533,7 +2602,7 @@ reg_submatch(int no)
 	    {
 		// Multiple lines: take start line from start col, middle
 		// lines completely and end line up to end col.
-		len = (int)STRLEN(s);
+		len = (int)reg_getline_submatchlen(lnum) - rsm.sm_mmatch->startpos[no].col;
 		if (round == 2)
 		{
 		    STRCPY(retval, s);
@@ -2543,13 +2612,14 @@ reg_submatch(int no)
 		++lnum;
 		while (lnum < rsm.sm_mmatch->endpos[no].lnum)
 		{
-		    s = reg_getline_submatch(lnum++);
+		    s = reg_getline_submatch(lnum);
 		    if (round == 2)
 			STRCPY(retval + len, s);
-		    len += (int)STRLEN(s);
+		    len = (int)reg_getline_submatchlen(lnum);
 		    if (round == 2)
 			retval[len] = '\n';
 		    ++len;
+		    ++lnum;
 		}
 		if (round == 2)
 		    STRNCPY(retval + len, reg_getline_submatch(lnum),
