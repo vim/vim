@@ -11,7 +11,7 @@ let g:debSharedSupportedVersions = [
       \ 'oldstable', 'stable', 'testing', 'unstable', 'experimental', 'sid', 'rc-buggy',
       \ 'bullseye', 'bookworm', 'trixie', 'forky',
       \
-      \ 'trusty', 'xenial', 'bionic', 'focal', 'jammy', 'mantic', 'noble',
+      \ 'trusty', 'xenial', 'bionic', 'focal', 'jammy', 'mantic', 'noble', 'oracular',
       \ 'devel'
       \ ]
 let g:debSharedUnsupportedVersions = [
