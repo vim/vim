@@ -755,6 +755,10 @@ RT_ALL =	\
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
 		runtime/pack/dist/opt/cfilter/plugin/cfilter.vim \
+		runtime/pack/dist/opt/comment/plugin/comment.vim \
+		runtime/pack/dist/opt/comment/doc/comment.txt \
+		runtime/pack/dist/opt/comment/doc/tags \
+		runtime/pack/dist/opt/comment/autoload/comment.vim \
 		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \

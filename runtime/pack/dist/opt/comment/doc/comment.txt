@@ -1,0 +1,59 @@
+*comment.txt*   For Vim version 9.1.  Last change:  2024 Apr 26
+
+
+		  VIM REFERENCE MANUAL
+
+Commenting and un-commenting text.
+
+==============================================================================
+
+The comment.vim package, allows to toggle comments for a single line, a range
+of lines or a selected text object.  It defines the following mappings:
+
+							*gcc*
+gcc		to comment/uncomment current line
+							*o_gc*
+gc{motion}	to toggle comments for the selected motion
+							*gcip*
+gcip		to comment/uncomment current paragraph
+							*gcG*
+gcG		to comment/uncomment from current line till the end of a buffer
+							*v_gc*
+{Visual}gc	to comment/uncomment the highlighted lines.
+
+The plugin uses the buffer-local 'commentstring' option value to add or remove
+comment markers to the selected lines.  Whether it will comment or un-comment
+depends on the first line of the range of lines to act upon.  When it matches
+a comment marker, the line will be un-commented, if it doesn't, the line will
+be commented out.  Blank and empty lines are not touched.
+  
+If the mapping does not seem to work, chances are high, that this particular
+filetype is either not detected by Vim or the filetype plugin does not set the
+'commentstring' option.
+
+You can simply configure this using the following autocommand (e.g. for legacy
+Vim script): >
+
+	autocmd Filetype vim :setlocal commentstring="\ %s
+
+This example sets the " as start of a comment for legacy Vim Script.  For Vim9
+script, you would instead use the "#" char: >
+
+	autocmd Filetype vim :setlocal commentstring=#\ %s
+
+==============================================================================
+Options:
+
+*g:comment_first_col*
+*b:comment_first_col*
+    By default comment chars are added in front of the line, i.e. if the line
+    was indented, commented line would stay indented as well.
+
+    However some filetypes require a comment char on the first column, use this option
+    to change default behaviour.
+
+    Use g:comment_first_col to change it globally or b:comment_first_col to
+    target specific filetype(s).
+
+==============================================================================
+vim:tw=78:ts=8:fo=tcq2:ft=help:

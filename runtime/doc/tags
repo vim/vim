@@ -6515,6 +6515,7 @@ command-block	vim9.txt	/*command-block*
 command-line-functions	usr_41.txt	/*command-line-functions*
 command-line-window	cmdline.txt	/*command-line-window*
 command-mode	intro.txt	/*command-mode*
+comment-install	usr_05.txt	/*comment-install*
 compatible-default	starting.txt	/*compatible-default*
 compile-changes-5	version5.txt	/*compile-changes-5*
 compile-changes-6	version6.txt	/*compile-changes-6*

@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 14
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41554,6 +41554,7 @@ Enum support for Vim9 script |:enum|
 
 Other improvements				*new-other-9.2*
 ------------------
+The comment plugin |comment-install| is included.
 
 Changed						*changed-9.2*
 -------
