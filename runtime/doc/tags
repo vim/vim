@@ -10186,6 +10186,7 @@ syntax-latex	syntax.txt	/*syntax-latex*
 syntax-loading	syntax.txt	/*syntax-loading*
 syntax-printing	usr_06.txt	/*syntax-printing*
 syntax-tex	syntax.txt	/*syntax-tex*
+syntax-vs-match	pattern.txt	/*syntax-vs-match*
 syntax.txt	syntax.txt	/*syntax.txt*
 syntax_cmd	syntax.txt	/*syntax_cmd*
 sys-file-list	help.txt	/*sys-file-list*

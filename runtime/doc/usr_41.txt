@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Apr 26
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1096,7 +1096,7 @@ Syntax and highlighting:	  *syntax-functions* *highlighting-functions*
 	synIDattr()		get a specific attribute of a syntax ID
 	synIDtrans()		get translated syntax ID
 	synstack()		get list of syntax IDs at a specific position
-	synconcealed()		get info about concealing
+	synconcealed()		get info about (synax) concealing
 	diff_hlID()		get highlight ID for diff mode at a position
 	matchadd()		define a pattern to highlight (a "match")
 	matchaddpos()		define a list of positions to highlight
