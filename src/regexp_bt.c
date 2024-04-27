@@ -2570,11 +2570,14 @@ bt_regcomp(char_u *expr, int re_flags)
 	    len = 0;
 	    for (; scan != NULL; scan = regnext(scan))
 	    {
-		scanlen = STRLEN(OPERAND(scan));
-		if (OP(scan) == EXACTLY && scanlen >= (size_t)len)
+		if (OP(scan) == EXACTLY)
 		{
-		    longest = OPERAND(scan);
-		    len = (int)scanlen;
+		    scanlen = STRLEN(OPERAND(scan));
+		    if (scanlen >= (size_t)len)
+		    {
+			longest = OPERAND(scan);
+			len = (int)scanlen;
+		    }
 		}
 	    }
 	    r->regmust = longest;
