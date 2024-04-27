@@ -137,7 +137,7 @@ parse_member(
 	(void)skip_expr_concatenate(&init_arg, &expr_start, &expr_end, &evalarg);
 
 	init_arg = skipwhite(init_arg);
-	if (*init_arg != NUL)
+	if (*init_arg != NUL && !vim9_comment_start(init_arg))
 	{
 	    semsg(_(e_trailing_characters_str), init_arg);
 	    return FAIL;

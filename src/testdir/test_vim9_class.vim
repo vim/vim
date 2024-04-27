@@ -103,6 +103,18 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
 
+  # Comments are allowed after an inline block
+  lines =<< trim END
+    vim9script
+    class Foo
+      static const bar = { # {{{
+        baz: 'qux'
+      } # }}}
+    endclass
+    assert_equal({baz: 'qux'}, Foo.bar)
+  END
+  v9.CheckSourceSuccess(lines)
+
   # Try to define a class with the same name as an existing variable
   lines =<< trim END
     vim9script
