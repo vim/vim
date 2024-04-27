@@ -172,6 +172,14 @@ def Test_typealias()
   END
   v9.CheckSourceSuccess(lines)
 
+  # another command follows a type alias
+  lines =<< trim END
+    vim9script
+    type MyType = number | var x = 20
+    assert_equal(20, x)
+  END
+  v9.CheckSourceSuccess(lines)
+
   # Sourcing a script twice (which will free script local variables)
   # Uses "lines" from the previous test
   new
