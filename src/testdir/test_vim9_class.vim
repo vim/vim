@@ -67,6 +67,42 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | echo 'done'", 3)
 
+  # Additional command after "class name"
+  lines =<< trim END
+    vim9script
+    class Something | var x = 10
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = 10", 2)
+
+  # Additional command after "object variable"
+  lines =<< trim END
+    vim9script
+    class Something
+      var l: list<number> = [] | var y = 10
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
+
+  # Additional command after "class variable"
+  lines =<< trim END
+    vim9script
+    class Something
+      static var d = {a: 10} | var y = 10
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
+
+  # Additional command after "object method"
+  lines =<< trim END
+    vim9script
+    class Something
+      def Foo() | var y = 10
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
+
   # Try to define a class with the same name as an existing variable
   lines =<< trim END
     vim9script
@@ -2237,6 +2273,14 @@ def Test_interface_basics()
   END
   v9.CheckSourceFailure(lines, 'E1345: Not a valid command in an interface: return 5', 6)
 
+  # Additional commands after "interface name"
+  lines =<< trim END
+    vim9script
+    interface Something | var x = 10 | var y = 20
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = 10", 2)
+
   lines =<< trim END
     vim9script
     export interface EnterExit
@@ -3232,6 +3276,14 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1316: Class can only be defined in Vim9 script', 1)
+
+  # Additional commands after "abstract class"
+  lines =<< trim END
+    vim9script
+    abstract class Something | var x = []
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = []", 2)
 
   # Abstract class cannot have a "new" function
   lines =<< trim END
