@@ -1801,33 +1801,42 @@ regtilde(char_u *source, int magic)
 
 	    if (reg_prev_sub != NULL)
 	    {
-		// length = len(newsub) - 1 + len(prev_sub) + 1
+		size_t prefixlen;
+		size_t postfixlen;
+		size_t tmpsublen;
+		char_u *tmpsub;
+
+		prefixlen = p - newsub;		// not including the '~'
+		postfixlen = newsublen - (prefixlen + 1);
+		if (!magic)
+		{
+		    ++p;			// back off backslash
+		    --postfixlen;
+		}
+		tmpsublen = prefixlen + reg_prev_sublen + postfixlen;
+
 		// Avoid making the text longer than MAXCOL, it will cause
 		// trouble at some point.
-		if (reg_prev_sublen > MAXCOL || newsublen > MAXCOL
-					    || newsublen + reg_prev_sublen > MAXCOL)
+		if (tmpsublen > MAXCOL)
 		{
 		    emsg(_(e_resulting_text_too_long));
 		    break;
 		}
 
-		char_u *tmpsub = alloc(newsublen + reg_prev_sublen);
+		tmpsub = alloc(tmpsublen + 1);
 		if (tmpsub != NULL)
 		{
 		    // copy prefix
-		    size_t prefixlen = p - newsub;	// not including '~'
 		    mch_memmove(tmpsub, newsub, prefixlen);
 		    // interpret tilde
-		    mch_memmove(tmpsub + prefixlen, reg_prev_sub,
-							       reg_prev_sublen);
+		    mch_memmove(tmpsub + prefixlen, reg_prev_sub, reg_prev_sublen);
 		    // copy postfix
-		    if (!magic)
-			++p;			// back off backslash
 		    STRCPY(tmpsub + prefixlen + reg_prev_sublen, p + 1);
 
 		    if (newsub != source)	// allocated newsub before
 			vim_free(newsub);
 		    newsub = tmpsub;
+		    newsublen = tmpsublen;
 		    p = newsub + prefixlen + reg_prev_sublen;
 		}
 	    }
