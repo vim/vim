@@ -650,7 +650,7 @@ followed by another Vim command:
     :[range]!
     a user defined command without the "-bar" argument |:command|
 
-    and the following |Vim9-script| keywords: 
+    and the following |Vim9-script| keywords:
     :abstract
     :class
     :enum
