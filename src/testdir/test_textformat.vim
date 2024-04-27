@@ -1312,4 +1312,28 @@ func Test_textwdith_overflow()
   bw!
 endfunc
 
+func Test_breakindent_reformat()
+  " Make sure textformatting uses the full width
+  " of the textwidth and does not consider the indent
+  " from breakindent into account when calculating the
+  " line length. Should break at tw 78 and not at 70
+  CheckOption breakindent
+  new
+  80vnew
+  39vnew
+  setl ai breakindent tw=78
+  let lorem = [
+  \  '	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam luctus',
+  \  '	lectus sodales, dictum augue vel, molestie augue. Duis sit amet',
+  \  '	rhoncus justo. Nullam posuere risus semper magna commodo scelerisque.',
+  \  '	Duis et venenatis sem. In rhoncus augue sed tempor mattis. Mauris id',
+  \  '	aliquet odio.']
+  call setline(1, lorem)
+  norm! gqap
+  call assert_equal(lorem, getline(1, '$'))
+  bw!
+  bw!
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
