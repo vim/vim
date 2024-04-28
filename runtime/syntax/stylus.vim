@@ -1,6 +1,8 @@
 " Vim syntax file
-" Language:	CSS3
-" Maintainer:	Hsiaoming Yang <lepture@me.com>
+" Language:	Stylus, CSS3
+" Maintainer:	Hsiaoming Yang <lepture@me.com>, Marc Harter
+" Filenames: *.styl, *.stylus
+" Based On: Tim Pope (sass.vim)
 " URL: http://lepture.me/work/css3/
 " Created:	Dec 14, 2011
 " Modified:	Sep 4, 2012
@@ -263,12 +265,6 @@ endif
 if main_syntax == 'css'
   unlet main_syntax
 endif
-
-" Vim syntax file
-" Language: Stylus
-" Maintainer: Marc Harter
-" Filenames: *.styl, *.stylus
-" Based On: Tim Pope (sass.vim)
 
 syn case ignore
 
