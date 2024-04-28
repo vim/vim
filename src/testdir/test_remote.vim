@@ -12,7 +12,7 @@ source term_util.vim
 let s:remote_works = 0
 let s:skip = 'Skipped: --remote feature is not possible'
 
-" nees to be run as first test to verify, that vim --servername works
+" needs to be run as first test to verify, that vim --servername works
 func Verify_remote_feature_works()
   CheckRunVimInTerminal
   enew

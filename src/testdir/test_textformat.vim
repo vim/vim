@@ -1304,7 +1304,7 @@ func Test_correct_cursor_position()
 endfunc
 
 " This was crashing Vim
-func Test_textwdith_overflow()
+func Test_textwidth_overflow()
   new
   setl tw=999999999
   normal 10ig
