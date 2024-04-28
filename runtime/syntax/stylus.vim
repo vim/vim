@@ -258,58 +258,6 @@ if main_syntax == "css"
   syn sync minlines=10
 endif
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_css_syn_inits")
-  if version < 508
-    let did_css_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  HiLink cssString String
-  HiLink cssComment Comment
-  HiLink cssTagName Statement
-  HiLink cssSelector Function
-  HiLink cssProp StorageClass
-  HiLink cssBackgroundProp StorageClass
-  HiLink cssTableProp StorageClass
-  HiLink cssBorderProp StorageClass
-  HiLink cssFontProp StorageClass
-  HiLink cssColorProp StorageClass
-  HiLink cssBoxProp StorageClass
-  HiLink cssTextProp StorageClass
-  HiLink cssListProp StorageClass
-  HiLink cssVisualProp StorageClass
-  HiLink cssAdvancedProp StorageClass
-  HiLink cssCommonProp StorageClass
-  HiLink cssSpecialProp Special
-  HiLink cssImportant Special
-  HiLink cssRuleProp PreProc
-  HiLink cssPseudo PreProc
-
-  HiLink cssColorVal Constant
-  HiLink cssCommonVal Type
-  HiLink cssFontVal Type
-  HiLink cssListVal Type
-  HiLink cssTextVal Type
-  HiLink cssVisualVal Type
-  HiLink cssBorderVal Type
-  HiLink cssBackgroundVal Type
-  HiLink cssFuncVal Function
-  HiLink cssAdvancedVal Function
-
-  HiLink cssValueLength Number
-  HiLink cssValueInteger Number
-  HiLink cssValueNumber Number
-  HiLink cssValueAngle Number
-  HiLink cssValueTime Number
-  HiLink cssValueFrequency Number
-  delcommand HiLink
-endif
-
 " let b:current_syntax = "css"
 "
 if main_syntax == 'css'

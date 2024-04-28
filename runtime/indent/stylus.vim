@@ -13,6 +13,8 @@ let b:did_indent = 1
 setlocal indentexpr=GetStylusIndent()
 setlocal indentkeys=o,O,*<Return>,},],0),!^F
 setlocal formatoptions+=r
+unlet! b:undo_indent
+let b:undo_indent = 1
 
 if exists("*GetStylusIndent")  " only define once
   finish
@@ -111,9 +113,6 @@ function! GetStylusIndent()
   endif
 
   let group = synIDattr(synID(lnum,lastcol,1),'name')
-
-  " for debugging only
-  echo group
 
   " if group !~? 'css.*' && line =~? ')\s*$' " match user functions
   "   return increase
