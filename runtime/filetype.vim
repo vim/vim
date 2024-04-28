@@ -3140,4 +3140,8 @@ endfunc
 let &cpo = s:cpo_save
 unlet s:cpo_save
 
+" Stylus
+autocmd BufNewFile,BufReadPost *.styl set filetype=stylus
+autocmd BufNewFile,BufReadPost *.stylus set filetype=stylus
+
 " vim: ts=8

@@ -38,11 +38,6 @@ if has("gui_win32")
   let b:browsefilter="Stylus Files (*.styl)\t*.styl\n" . s:browsefilter
 endif
 
-" Load the combined list of match_words for matchit.vim
-if exists("loaded_matchit")
-  let b:match_words = s:match_words
-endif
-
 setlocal comments= commentstring=//\ %s
 
 setlocal suffixesadd=.styl
@@ -60,8 +55,6 @@ let &cpo = s:save_cpo
 " Add a Stylus command (to see if it's valid)
 command! Stylus !clear; cat % | stylus
 
-" Stylus
-autocmd BufNewFile,BufReadPost *.styl set filetype=stylus
-autocmd BufNewFile,BufReadPost *.stylus set filetype=stylus
+setlocal formatoptions+=r
 
 " vim:set sw=2:

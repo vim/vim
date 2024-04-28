@@ -12,7 +12,6 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetStylusIndent()
 setlocal indentkeys=o,O,*<Return>,},],0),!^F
-setlocal formatoptions+=r
 unlet! b:undo_indent
 let b:undo_indent = 1
 
