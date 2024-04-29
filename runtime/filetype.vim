@@ -3010,6 +3010,10 @@ au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 " SGML catalog file
 au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
+" Stylus
+au BufNewFile,BufReadPost *.styl	setf stylus
+au BufNewFile,BufReadPost *.stylus	setf stylus
+
 " avoid doc files being recognized a shell files
 au BufNewFile,BufRead */doc/{,.}bash[_-]completion{,.d,.sh}{,/*} setf text
 
@@ -3139,9 +3143,5 @@ endfunc
 " Restore 'cpoptions'
 let &cpo = s:cpo_save
 unlet s:cpo_save
-
-" Stylus
-autocmd BufNewFile,BufReadPost *.styl set filetype=stylus
-autocmd BufNewFile,BufReadPost *.stylus set filetype=stylus
 
 " vim: ts=8

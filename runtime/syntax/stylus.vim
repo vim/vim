@@ -1,8 +1,11 @@
 " Vim syntax file
-" Language: Stylus
-" Maintainer: Marc Harter
+" Language:	Stylus, CSS3
+" Maintainer:	Hsiaoming Yang <lepture@me.com>, Marc Harter
 " Filenames: *.styl, *.stylus
 " Based On: Tim Pope (sass.vim)
+" URL: http://lepture.me/work/css3/
+" Created:	Dec 14, 2011
+" Modified:	Apr 29, 2024
 
 
 syn case ignore
@@ -24,6 +27,7 @@ syn match cssTagName "\*"
 syn match cssTagName /\<table\>/
 syn match cssTagName /\<small\>/
 syn match cssTagName /\<center\>/
+
 " HTML5 tags
 syn keyword cssTagName article aside audio bb canvas command datagrid
 syn keyword cssTagName datalist details dialog embed figure footer figcaption
@@ -39,7 +43,6 @@ syn region cssSelector start='\[' end='\]' contains=cssString
 syn region cssDefineBlock start="{" end="}" transparent contains=TOP
 
 syn keyword cssCommonVal inherit initial auto both normal hidden none medium contained
-
 
 " Comment
 syn keyword cssTodo FIXME TODO contained
