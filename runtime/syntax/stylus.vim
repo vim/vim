@@ -1,22 +1,9 @@
 " Vim syntax file
-" Language:	Stylus, CSS3
-" Maintainer:	Hsiaoming Yang <lepture@me.com>, Marc Harter
+" Language: Stylus
+" Maintainer: Marc Harter
 " Filenames: *.styl, *.stylus
 " Based On: Tim Pope (sass.vim)
-" URL: http://lepture.me/work/css3/
-" Created:	Dec 14, 2011
-" Modified:	Sep 4, 2012
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if !exists("main_syntax")
-  if version < 600
-    syntax clear
-  elseif exists("b:current_syntax")
-    finish
-  endif
-  let main_syntax = 'css'
-endif
 
 syn case ignore
 syn region cssString start='"' end='"' contained
@@ -305,19 +292,6 @@ syn match stylusId         "[[:alnum:]_-]\+" contained
 syn match stylusIdChar     "#[[:alnum:]_-]\@=" nextgroup=stylusId
 
 syn region stylusComment    start="//" end="$" contains=cssTodo,@Spell fold
-
-hi def link stylusComment               Comment
-hi def link stylusVariable              Identifier
-hi def link stylusControl               PreProc
-hi def link stylusFunction              Function
-hi def link stylusInterpolation         Delimiter
-
-hi def link stylusAmpersand             Character
-hi def link stylusClass                 Type
-hi def link stylusClassChar             Special
-hi def link stylusEscape                Special
-hi def link stylusId                    Identifier
-hi def link stylusIdChar                Special
 
 let b:current_syntax = "stylus"
 
