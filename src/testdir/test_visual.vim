@@ -1820,10 +1820,6 @@ func Test_visual_getregion()
     call assert_fails('call getregion([g:buf, 10, 2, 0], [g:buf, 0, 1, 0])', 'E966:')
     call assert_fails('call getregion([g:buf, 1, 1, 0], [g:buf, 11, 2, 0])', 'E966:')
     call assert_fails('call getregion([g:buf, 11, 2, 0], [g:buf, 1, 1, 0])', 'E966:')
-    call assert_fails('call getregion([g:buf, 1, 1, 0], [g:buf, 10, 0, 0])', 'E964:')
-    call assert_fails('call getregion([g:buf, 10, 0, 0], [g:buf, 1, 1, 0])', 'E964:')
-    call assert_fails('call getregion([g:buf, 1, 1, 0], [g:buf, 10, 3, 0])', 'E964:')
-    call assert_fails('call getregion([g:buf, 10, 3, 0], [g:buf, 1, 1, 0])', 'E964:')
 
     #" using invalid buffer
     call assert_fails('call getregion([10000, 10, 1, 0], [10000, 10, 1, 0])', 'E681:')
@@ -1991,6 +1987,21 @@ func Test_getregion_invalid_buf()
   " close the help window
   q
   call assert_fails("call getregion(getpos(\"'A\"), getpos(\"'B\"))", 'E681:')
+  bwipe!
+endfunc
+
+func Test_getregion_maxcol()
+  new
+  set shortmess=I
+  autocmd TextYankPost *
+        \ : if v:event.operator ==? 'y'
+        \ | call assert_equal(getregionpos(getpos("'["), getpos("']")),
+        \                     [[[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 5, 0]]])
+        \ | call assert_equal(getregion(getpos("'["), getpos("']")),
+        \                     ['abcd'])
+        \ | endif
+  call setline(1, ['abcd', 'efghij'])
+  normal yy
   bwipe!
 endfunc
 

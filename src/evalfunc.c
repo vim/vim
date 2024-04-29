@@ -5495,6 +5495,7 @@ getregionpos(
     int		*fnum)
 {
     int		fnum1 = -1, fnum2 = -1;
+    int		max_col1, max_col2;
     char_u	*type;
     buf_T	*findbuf;
     char_u	default_type[] = "v";
@@ -5723,7 +5724,9 @@ add_regionpos_range(
     int		col2,
     int		coladd2)
 {
-    list_T *l1, *l2, *l3;
+    list_T	*l1, *l2, *l3;
+    buf_T	*findbuf;
+    int		max_col1, max_col2;
 
     l1 = list_alloc();
     if (l1 == NULL)
@@ -5755,14 +5758,18 @@ add_regionpos_range(
 	return;
     }
 
+    findbuf = bufnr != 0 ? buflist_findnr(bufnr) : curbuf;
+
+    max_col1 = ml_get_buf_len(findbuf, lnum1) + 1;
     list_append_number(l2, bufnr);
     list_append_number(l2, lnum1);
-    list_append_number(l2, col1);
+    list_append_number(l2, col1 > max_col1 ? max_col1 : col1);
     list_append_number(l2, coladd1);
 
+    max_col2 = ml_get_buf_len(findbuf, lnum2) + 1;
     list_append_number(l3, bufnr);
     list_append_number(l3, lnum2);
-    list_append_number(l3, col2);
+    list_append_number(l3, col2 > max_col2 ? max_col2 : col2);
     list_append_number(l3, coladd2);
 }
 
@@ -5807,12 +5814,10 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		    rettv,
 		    fnum,
 		    lnum,
-		    (varnumber_T)(bd.start_vcol == MAXCOL ?
-			MAXCOL : bd.start_vcol + 1),
+		    (varnumber_T)(bd.start_vcol + 1),
 		    p1.coladd,
 		    lnum,
-		    (varnumber_T)(bd.end_vcol == MAXCOL ?
-			MAXCOL : bd.end_vcol + 1),
+		    (varnumber_T)(bd.end_vcol + 1),
 		    p2.coladd);
 	}
     }
@@ -5821,10 +5826,10 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		rettv,
 		fnum,
 		p1.lnum,
-		(varnumber_T)(p1.col == MAXCOL ? MAXCOL : p1.col + 1),
+		(varnumber_T)(p1.col + 1),
 		p1.coladd,
 		p2.lnum,
-		(varnumber_T)(p2.col == MAXCOL ? MAXCOL : p2.col + 1),
+		(varnumber_T)(p2.col + 1),
 		p2.coladd);
 }
 
