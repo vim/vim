@@ -12,8 +12,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetStylusIndent()
 setlocal indentkeys=o,O,*<Return>,},],0),!^F
-unlet! b:undo_indent
-let b:undo_indent = 1
+let b:undo_indent = "indentexpr< indentkeys<"
 
 if exists("*GetStylusIndent")  " only define once
   finish
