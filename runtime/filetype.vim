@@ -3011,7 +3011,7 @@ au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Stylus
-au BufNewFile,BufReadPost *.styl, *.stylus	setf stylus
+au BufNewFile,BufReadPost *.styl,*.stylus	setf stylus
 
 " avoid doc files being recognized a shell files
 au BufNewFile,BufRead */doc/{,.}bash[_-]completion{,.d,.sh}{,/*} setf text
