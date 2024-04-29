@@ -11,8 +11,6 @@ let b:did_ftplugin = 1
 
 let b:undo_ftplugin = 'setl commentstring<'
 
+setlocal include=^\\s*\\%(import\\\|include\\)
 setlocal commentstring=#%s
 compiler jq
-
-let &cpoptions = s:save_cpoptions
-unlet s:save_cpoptions
