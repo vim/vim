@@ -40,28 +40,19 @@ endif
 
 setlocal comments= commentstring=//\ %s
 
-let b:undo_ftplugin = "setlocal comments< commentstring< "
-      \ " | unlet! b:browsefilter b:match_words | " . s:undo_ftplugin
-
 setlocal suffixesadd=.styl
-
-let b:undo_ftplugin = "setlocal suffixesadd< "
-      \ " | unlet! b:browsefilter b:match_words | " . s:undo_ftplugin
 
 " Add '-' and '#' to the what makes up a keyword.
 " This means that 'e' and 'w' work properly now, for properties
 " and valid variable names.
 setl iskeyword+=#,-
 
-let b:undo_ftplugin = "setl cms< com< "
-      \ " | unlet! b:browsefilter b:match_words | " . s:undo_ftplugin
-
 " Add a Stylus command (to see if it's valid)
 command! Stylus !clear; cat % | stylus
 
 setlocal formatoptions+=r
 
-let b:undo_ftplugin = "setlocal formatoptions< "
+let b:undo_ftplugin = "setl suf< isk< for< cms< com< "
       \ " | unlet! b:browsefilter b:match_words | " . s:undo_ftplugin
 
 let &cpo = s:save_cpo
