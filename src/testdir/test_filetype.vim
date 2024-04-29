@@ -2466,11 +2466,9 @@ endfunc
 
 " Stylus Test
 
-@import "nib"
-@require "../../lib/*"
+" To test this file, first load the plugin by...
 
-// To test this file, first load the plugin by...
-// ...
+au BufNewFile,BufReadPost *.styl,*.stylus	setf stylus
 
 padding-overloaded = true;
 padding = 2px;
