@@ -1,6 +1,6 @@
 " Menu Translations:	Ukrainian
 " Maintainer:		Bohdan Vlasyuk <bohdan@vstu.edu.ua>
-" Last Change:		11 Oct 2001
+" Last Change:		2024 May 2
 " Original translations
 
 "
@@ -31,6 +31,7 @@ menutrans &Version		&Версія
 menutrans &About		Про\ &програму
 
 " File menu
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Відкри&ти\ у\ новій\ вкладці\.\.\.<Tab>:tabnew
 menutrans &File				&Файл
 menutrans &Open\.\.\.<Tab>:e	    &Відкрити\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp &Розділити\ вікно\.\.\.<Tab>:sp
@@ -45,6 +46,16 @@ menutrans Sa&ve-Exit<Tab>:wqa		Записати\ і\ ви&йти<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Вихід<Tab>:qa
 
 " Edit menu
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Регистронезалежний\ пошук<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Підсвітка\ парних\ елементів<Tab>:set\ sm!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		Сумісність\ з\ редактором\ Vi<Tab>:set\ cp!
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Показ\ відносної\ нумерації\ рядків<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Разбивка\ рядків\ по\ границі\ вікна<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Разбивка\ рядків\ по\ границі\ слів<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Заміна\ символів\ &табуляції\ на\ пробіли<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Встановлення\ відступу\ як\ у\ поточному\ рядку<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Встановлення\ відступу\ як\ у\ язику\ С<Tab>:set\ cin!
+menutrans Startup\ &Settings		Параметри\ запуску
 menutrans &Edit				&Редагувати
 menutrans &Undo<Tab>u			&Відмінити<Tab>u
 menutrans &Redo<Tab>^R			&Повернути<Tab>^R
@@ -118,7 +129,7 @@ menutrans O&pen\ more\ folds<Tab>zr				Відкрити\ б&ільше\ згор
 menutrans Create\ &Fold<Tab>zf				С&творити\ згорток<Tab>zf
 menutrans &Delete\ Fold<Tab>zd				&Видалити\ згорток<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD		Видалит&и\ усі\ згортки<Tab>zD
-menutrans Fold\ column\ &width				&Товщина\ рядка\ згортків
+menutrans Fold\ col&umn\ width			Товщина\ рядка\ згортків
 menutrans Fold\ Met&hod		&Метод\ згортання
 menutrans M&anual			&Ручний
 menutrans I&ndent			&Відступ
@@ -230,6 +241,7 @@ endif
 
 " Syntax menu
 menutrans &Syntax &Синтаксис
+menutrans &Show\ File\ Types\ in\ menu		Показати\ меню\ вибору\ типу\ файла
 menutrans Set\ '&syntax'\ only	Встановлювати\ лише\ '&syntax'
 menutrans Set\ '&filetype'\ too	Встановлювати\ '&filetype'\ також
 menutrans &Off			&Вимкнено
@@ -247,6 +259,27 @@ let g:menutrans_path_dialog = "Вкажіть шлях пошуку файлів
 let g:menutrans_tags_dialog = "Вкажіть назви файлів поміток\nРозділяйте назви комами."
 let g:menutrans_textwidth_dialog = "Вкажіть нову ширину тексту (0 для відміни фоматування)"
 let g:menutrans_fileformat_dialog = "Виберіть формат файлу"
+
+menutrans &Spelling	Правопис
+">>>---------------- Tools/Spelling
+menutrans &Spell\ Check\ On			Робити\ перевірку
+menutrans Spell\ Check\ &Off			Не\ робити\ перевірку
+menutrans To\ &Next\ error<Tab>]s		Наступна\ помилка<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		Попередня\ помилка<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		Варіанти\ написання<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	Змінити\ все<Tab>:spellrepall
+"-------------------
+menutrans Set\ language\ to\ "en"		Перевірка\ для\ мови\ "en"
+menutrans Set\ language\ to\ "en_au"		Перевірка\ для\ мови\ "en_au"
+menutrans Set\ language\ to\ "en_ca"		Перевірка\ для\ мови\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"		Перевірка\ для\ мови\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"		Перевірка\ для\ мови\ "en_nz"
+menutrans Set\ language\ to\ "en_us"		Перевірка\ для\ мови\ "en_us"
+menutrans &Find\ More\ Languages		Знайти\ для\ інших\ мов
+let g:menutrans_set_lang_to =			'Перевірка для мови'
+
+menutrans Se&T\ Compiler			Вибрати\ компілятор
+menutrans &Sponsor/Register		Спонсорування\ та\ регістрація
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
