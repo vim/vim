@@ -1,6 +1,6 @@
 " Menu Translations:	Vietnamese
 " Maintainer:		Phan Vinh Thinh <teppi@vnlinux.org>
-" Last Change:		12 Mar 2005
+" Last Change:		2024 May 2
 " Original translations
 " URL:			http://iatp.vspu.ac.ru/phan/vietvim/lang/menu_vi_vn.vim
 "
@@ -330,6 +330,36 @@ let g:menutrans_fileformat_dialog = "Hãy chọn định dạng tập tin."
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Hủy bỏ"
 "
 let menutrans_no_file = "[không có tập tin]"
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	tab\ mở\.\.\.<Tab>:tabnew
+menutrans Startup\ &Settings	cài\ đặt\ khởi\ động
+menutrans &Spelling	chính\ tả
+">>>---------------- Tools/Spelling
+menutrans &Spell\ Check\ On			thực\ hiện\ kiểm\ tra
+menutrans Spell\ Check\ &Off			không\ kiểm\ tra
+menutrans To\ &Next\ error<Tab>]s		lỗi\ tiếp\ theo<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		lỗi\ trước\ đó<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		đề\ nghị\ sửa\ chữa<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	thay\ thế\ tất\ cả<Tab>:spellrepall
+"-------------------
+menutrans Set\ language\ to\ "en"		kiểm\ tra\ ngôn\ ngữ\ "en"
+menutrans Set\ language\ to\ "en_au"		kiểm\ tra\ ngôn\ ngữ\ "en_au"
+menutrans Set\ language\ to\ "en_ca"		kiểm\ tra\ ngôn\ ngữ\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"		kiểm\ tra\ ngôn\ ngữ\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"		kiểm\ tra\ ngôn\ ngữ\ "en_nz"
+menutrans Set\ language\ to\ "en_us"		kiểm\ tra\ ngôn\ ngữ\ "en_us"
+menutrans &Find\ More\ Languages		tìm\ thêm\ ngôn\ ngữ
+let g:menutrans_set_lang_to =			'kiểm tra ngôn ngữ'
+menutrans Se&T\ Compiler			thiết\ lập\ trình\ biên\ dịch
+menutrans &Show\ File\ Types\ in\ menu		hiển\ thị\ các\ loại\ tập\ tin\ trong\ menu
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!			chuyển\ đổi\ trường\ hợp\ bỏ\ qua<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	chuyển\ đổi\ hiển\ thị\ các\ cặp\ phù\ hợp<Tab>:set\ sm!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		chuyển\ đổi\ khả\ năng\ tương\ thích\ Vi<Tab>:set\ cp!
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	chuyển\ đổi\ đánh\ số\ dòng\ tương\ đối<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		chuyển\ đổi\ gói\ dòng<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		chuyển\ đổi\ gói\ trong\ word<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			chuyển\ đổi\ mở\ rộng\ tab<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		chuyển\ đổi\ tự\ động\ thụt\ lề<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		chuyển\ đổi\ thụt\ lề\ kiểu\ C<Tab>:set\ cin!
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
