@@ -935,7 +935,14 @@ func Test_terminal_vt420()
   CheckRunVimInTerminal
   " For Termcap
   CheckUnix
-  let rows=15
+  CheckExecutable infocmp
+  let a = system('infocmp vt420')
+  if v:shell_error
+     " reset v:shell_error
+     let a = system('true')
+     throw 'Skipped: vt420 terminfo not available'
+  endif
+  let rows = 15
   call writefile([':set term=vt420'], 'Xterm420', 'D')
 
   let buf = RunVimInTerminal('-S Xterm420', #{rows: rows})
