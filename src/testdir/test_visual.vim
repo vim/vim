@@ -1856,6 +1856,12 @@ func Test_visual_getregion()
     call feedkeys("\<Esc>\<C-v>jj", 'xt')
     call assert_equal(['e', ' ', '5'],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 10, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 22, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
     call cursor(1, 1)
     call feedkeys("\<Esc>vj", 'xt')
     call assert_equal(['abcdefghijk«', "\U0001f1e6"],
