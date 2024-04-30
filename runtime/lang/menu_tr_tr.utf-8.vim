@@ -1,5 +1,6 @@
 " Menu Translations:	Turkish
 " Maintainer:		Emir SARI <bitigchi@me.com>
+" Last Change:		2024 May 2
 " Original translations
 
 if exists("did_menu_trans")
@@ -109,7 +110,7 @@ menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	&Göreceli\ Satır\ 
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!			Gö&rünmeyen\ Karakterleri\ Aç/Kapat<Tab>:set\ list!
 menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Sa&tır\ Kaydırmayı\ Aç/Kapat<Tab>:set\ wrap!
 menutrans Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr!		Sö&zcük\ Kaydırmayı\ Aç/Kapat<Tab>:set\ lbr!
-menutrans Toggle\ Tab\ &Expanding-tab<Tab>:set\ et!		S&ekmeleri\ Boşluklara\ Dönüştürmeyi\ Aç/Kapat<Tab>:set\ et!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!		S&ekmeleri\ Boşluklara\ Dönüştürmeyi\ Aç/Kapat<Tab>:set\ et!
 menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		&Otomatik\ Girintilemeyi\ Aç/Kapat<Tab>:set\ ai!
 menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		&C\ Tarzı\ Girintilemeyi\ Aç/Kapat<Tab>:set\ cin!
 ">>>---
