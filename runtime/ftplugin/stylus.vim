@@ -14,7 +14,6 @@ set cpo-=C
 " Define some defaults in case the included ftplugins don't set them.
 let s:undo_ftplugin = ""
 let s:browsefilter = "All Files (*.*)\t*.*\n"
-let s:match_words = ""
 
 runtime! ftplugin/html.vim ftplugin/html_*.vim ftplugin/html/*.vim
 unlet! b:did_ftplugin
@@ -28,10 +27,7 @@ if exists("b:browsefilter")
   let s:browsefilter = b:browsefilter
   unlet b:browsefilter
 endif
-if exists("b:match_words")
   let s:match_words = b:match_words
-  unlet b:match_words
-endif
 
 " Change the browse dialog on Win32 to show mainly Styl-related files
 if has("gui_win32")
@@ -48,7 +44,7 @@ setlocal suffixesadd=.styl
 setl iskeyword+=#,-
 
 " Add a Stylus command (to see if it's valid)
-command! Stylus !clear; cat % | stylus
+:au! Stylus !clear; cat % | stylus
 
 setlocal formatoptions+=r
 

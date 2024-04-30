@@ -72,10 +72,6 @@ endfunction
 "   if pnum == 0
 "     return 0
 "   endif
-" 
-"   return indent(pnum) + s:count_braces(pnum, 1) * &sw
-"         \ - s:count_braces(v:lnum, 0) * &sw
-" endfunction
 
 function! GetStylusIndent()
   let line = getline(v:lnum)

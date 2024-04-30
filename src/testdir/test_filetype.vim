@@ -686,6 +686,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     starlark: ['file.ipd', 'file.star', 'file.starlark'],
     stata: ['file.ado', 'file.do', 'file.imata', 'file.mata'],
     stp: ['file.stp'],
+    stylus: ['a.styl', 'file.stylus'],
     sudoers: ['any/etc/sudoers', 'sudoers.tmp', '/etc/sudoers', 'any/etc/sudoers.d/file'],
     supercollider: ['file.quark'],
     surface: ['file.sface'],
@@ -2463,95 +2464,5 @@ func Test_uci_file()
 
   filetype off
 endfunc
-
-" Stylus Test
-
-" To test this file, first load the plugin by...
-
-au BufNewFile,BufReadPost *.styl,*.stylus	setf stylus
-
-padding-overloaded = true;
-padding = 2px;
-primary-color = red;
-$hello = world;
-
-if padding-overloaded
-  padding(x,y)
-    margin 15px
-
-border-radius()
-  -webkit-border-radius arguments // comment test
-  -moz-border-radius arguments //comment test
-  border-radius arguments
-  pointer-events arguments
-
-#myid {
-  -moz-transform: scale(1.2);
-  font-family: arial;
-}
-
-.a-class
-  border-radius border-radius()
-  -moz-transform scale(1.2)
-
-body a:hover
-  font 12px/1.4 "Lucida Grande", Arial, sans-serif
-  background black !important
-  text-shadow 2px 2px 2px #fff
-  td a:hover
-    font 12px
-  td
-    font 12px
-
-[name="myprop"]
-  background rgba(255,255,255,0.5)
-
-#container
-  user-select none
-  border-radius 5px
-  color #000
-  float left
-  display: block
-  background url('http://i.imgur.com/Q4RObrY.jpg')
-
-#myid
-  font 12px/1.4 "Lucida Grande", Arial, sans-serif
-
-h1 {
-  color: red;
-}
-
-body a:hover
-  font 12px/1.4 "Lucida Grande", Arial, sans-serif
-  background black !important
-  background rgb(255,255,0)
-  border-top 1px solid rgb(255,255,0)
-  text-shadow 2px 2px #000
-  color #ccc
-
-#butter.gump tr
-  border min(2px)
-  min-width min(2px)
-  color red(10) lighten(he) border-radius() image-size()
-  border-radius border-radius()
-
-  &:hover
-    color black // Tests indent from the line above
-
-div
-  display flex
-  justify-content center
-  align-items center
-
-form input {
-  padding: 5px;
-  border: 1px solid;
-  border-radius: 5px;
-}
-
-vendor(prop, args)
-  {prop} args
-  -moz-{prop} args
-  -webkit-{prop} args
 
 " vim: shiftwidth=2 sts=2 expandtab
