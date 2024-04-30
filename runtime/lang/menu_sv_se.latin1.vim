@@ -1,6 +1,6 @@
 " Menu Translations:    Swedish
 " Maintainer:		Johan Svedberg <johan@svedberg.com>
-" Last Change:		2020 Apr 22
+" Last Change:		2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -92,11 +92,11 @@ menutrans None						Ingen
 " Edit.File Settings
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Växla\ radnumrering<Tab>:set\ nu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Växla\ listläge<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		Växla\ radbrytning<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Växla\ radbrytning\ vid\ ord<tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		Växla\ tab-expandering<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Växla\ auto-indentering<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Växla\ C-indentering<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Växla\ radbrytning<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	Växla\ radbrytning\ vid\ ord<tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!		Växla\ tab-expandering<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Växla\ auto-indentering<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Växla\ C-indentering<Tab>:set\ cin!
 menutrans &Shiftwidth					Shiftbredd
 menutrans Soft\ &Tabstop				Mjuk\ tab-stopp
 menutrans Te&xt\ Width\.\.\.				Textbredd\.\.\.
@@ -125,11 +125,19 @@ menutrans Se&T\ Compiler		Sätt\ &kompilerare
 " Tools.Spelling
 menutrans &Spelling				&Stavning
 menutrans &Spell\ Check\ On			&Stavningskontroll\ på
-menutrans &Spell\ Check\ Off			Stavningskontroll\ &av
+menutrans Spell\ Check\ &Off			Stavningskontroll\ &av
 menutrans To\ &Next\ error<Tab>]s		Till\ &nästa\ fel
 menutrans To\ &Previous\ error<Tab>[s		Till\ &föregående\ fel
 menutrans Suggest\ &Corrections<Tab>z=		Föreslå\ &korrigeringar
 menutrans &Repeat\ correction<Tab>:spellrepall	&Upprepa\ korrigering
+menutrans Set\ language\ to\ "en"		språkkontroll\ för\ "en"
+menutrans Set\ language\ to\ "en_au"		språkkontroll\ för\ "en_au"
+menutrans Set\ language\ to\ "en_ca"		språkkontroll\ för\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"		språkkontroll\ för\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"		språkkontroll\ för\ "en_nz"
+menutrans Set\ language\ to\ "en_us"		språkkontroll\ för\ "en_us"
+menutrans &Find\ More\ Languages		annat\ språk
+let g:menutrans_set_lang_to =			'språkkontroll för'
 
 " Tools.Folding
 menutrans &Enable/Disable\ folds<Tab>zi	Växla\ veck<Tab>zi
@@ -235,7 +243,7 @@ endif
 
 " Syntax menu
 menutrans &Syntax			&Syntax
-menutrans &Show\ filetypes\ in\ menu	&Visa\ filtyper\ i\ meny
+menutrans &Show\ File\ Types\ in\ menu	&Visa\ filtyper\ i\ meny
 menutrans &Off				&Av
 menutrans &Manual			&Manuellt
 menutrans A&utomatic			Automatiskt
@@ -251,6 +259,11 @@ let g:menutrans_path_dialog = "Skriv in sökväg för filer.\nSeparera katalognamn 
 let g:menutrans_tags_dialog = "Skriv in namn på taggfiler.\nSeparera namn med komma."
 let g:menutrans_textwidth_dialog = "Välj ny textbredd (0 för att förhindra formatering): "
 let g:menutrans_fileformat_dialog = "Välj filformat som filen ska sparas med"
+menutrans Startup\ &Settings	startinställningar
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!			ignorerar\ fallet<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	visar\ matchade\ par<Tab>:set\ sm!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		vi\ kompatibilitet<Tab>:set\ cp!
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	relativ\ radnumrering<Tab>:set\ nru!
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
