@@ -1784,42 +1784,49 @@ do_lower(int *d, int c)
     char_u *
 regtilde(char_u *source, int magic)
 {
-    char_u	*newsub = source;
     char_u	*p;
+    char_u	*newsub = source;
+    size_t	newsublen;
     int		have_newsublen = FALSE;
-    size_t	newsublen = 0;
+    char_u	tilde[3] = {'~', NUL, NUL};
+    size_t	tildelen = 1;
+
+    if (!magic)
+    {
+	tilde[0] = '\\';
+	tilde[1] = '~';
+	tilde[2] = NUL;
+	tildelen = 2;
+    }
 
     for (p = newsub; *p; ++p)
     {
-	if ((*p == '~' && magic) || (*p == '\\' && *(p + 1) == '~' && !magic))
+	if (STRNCMP(p, tilde, tildelen) == 0)
 	{
+	    size_t prefixlen = p - newsub;		// not including the tilde
+	    char_u *postfix = p + tildelen;
+	    size_t postfixlen;
+	    size_t tmpsublen;
+
 	    if (!have_newsublen)
 	    {
 		newsublen = STRLEN(newsub);
 		have_newsublen = TRUE;
 	    }
+	    newsublen -= tildelen;
+	    postfixlen = newsublen - prefixlen;
+	    tmpsublen = prefixlen + reg_prev_sublen + postfixlen;
 
-	    if (reg_prev_sub != NULL)
+	    if (tmpsublen > 0 && reg_prev_sub != NULL)
 	    {
-		size_t prefixlen;
-		size_t postfixlen;
-		size_t tmpsublen;
 		char_u *tmpsub;
-
-		prefixlen = p - newsub;		// not including the '~'
-		postfixlen = newsublen - (prefixlen + 1);
-		if (!magic)
-		{
-		    ++p;			// back off backslash
-		    --postfixlen;
-		}
-		tmpsublen = prefixlen + reg_prev_sublen + postfixlen;
 
 		// Avoid making the text longer than MAXCOL, it will cause
 		// trouble at some point.
 		if (tmpsublen > MAXCOL)
 		{
 		    emsg(_(e_resulting_text_too_long));
+		    p = newsub;			// so we don't store a copy of this newsub
 		    break;
 		}
 
@@ -1831,7 +1838,7 @@ regtilde(char_u *source, int magic)
 		    // interpret tilde
 		    mch_memmove(tmpsub + prefixlen, reg_prev_sub, reg_prev_sublen);
 		    // copy postfix
-		    STRCPY(tmpsub + prefixlen + reg_prev_sublen, p + 1);
+		    STRCPY(tmpsub + prefixlen + reg_prev_sublen, postfix);
 
 		    if (newsub != source)	// allocated newsub before
 			vim_free(newsub);
@@ -1840,10 +1847,9 @@ regtilde(char_u *source, int magic)
 		    p = newsub + prefixlen + reg_prev_sublen;
 		}
 	    }
-	    else if (magic)
-		mch_memmove(p, p + 1, (newsublen - ((p + 1) - newsub)) + 1);	    // remove '~'
 	    else
-		mch_memmove(p, p + 2, (newsublen - ((p + 2) - newsub)) + 1);	    // remove '\~'
+		mch_memmove(p, postfix, postfixlen + 1);	// remove the tilde (+1 for the NUL)
+
 	    --p;
 	}
 	else
@@ -1857,9 +1863,22 @@ regtilde(char_u *source, int magic)
 
     // Store a copy of newsub  in reg_prev_sub.  It is always allocated,
     // because recursive calls may make the returned string invalid.
-    vim_free(reg_prev_sub);
-    reg_prev_sublen = p - newsub;
-    reg_prev_sub = vim_strnsave(newsub, reg_prev_sublen);
+    // Only store it if there is something to store.
+    newsublen = p - newsub;
+    if (newsublen == 0)
+    {
+	VIM_CLEAR(reg_prev_sub);
+    }
+    else
+    {
+	vim_free(reg_prev_sub);
+	reg_prev_sub = vim_strnsave(newsub, newsublen);
+    }
+
+    if (reg_prev_sub == NULL)
+	reg_prev_sublen = 0;
+    else
+	reg_prev_sublen = newsublen;
 
     return newsub;
 }
