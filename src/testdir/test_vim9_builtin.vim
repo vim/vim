@@ -5196,7 +5196,7 @@ def Test_getregion()
       getregion(getpos('.'), getpos('.'))
   )
   assert_equal(
-      [[[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 1, 0]]],
+      [[[bufnr('%'), 1, 0, 0], [bufnr('%'), 1, 0, 0]]],
       getregionpos(getpos('.'), getpos('.'))
   )
   v9.CheckSourceDefExecFailure(['getregion(getpos("a"), getpos("."))'], 'E1209:')
