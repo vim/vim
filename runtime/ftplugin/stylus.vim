@@ -27,7 +27,8 @@ if exists("b:browsefilter")
   let s:browsefilter = b:browsefilter
   unlet b:browsefilter
 endif
-  let s:match_words = b:match_words
+  
+  b:match_words
 
 " Change the browse dialog on Win32 to show mainly Styl-related files
 if has("gui_win32")
@@ -44,7 +45,7 @@ setlocal suffixesadd=.styl
 setl iskeyword+=#,-
 
 " Add a Stylus command (to see if it's valid)
-:au! Stylus !clear; cat % | stylus
+command -buffer Stylus !clear; cat % |stylus
 
 setlocal formatoptions+=r
 
