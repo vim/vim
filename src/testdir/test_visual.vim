@@ -1820,6 +1820,8 @@ func Test_visual_getregion()
     call assert_fails('call getregion([g:buf, 10, 2, 0], [g:buf, 0, 1, 0])', 'E966:')
     call assert_fails('call getregion([g:buf, 1, 1, 0], [g:buf, 11, 2, 0])', 'E966:')
     call assert_fails('call getregion([g:buf, 11, 2, 0], [g:buf, 1, 1, 0])', 'E966:')
+    call assert_fails('call getregion([g:buf, 1, 0, 0], [g:buf, 1, 1, 0])', 'E964:')
+    call assert_fails('call getregion([g:buf, 1, 1, 0], [g:buf, 1, 0, 0])', 'E964:')
 
     #" using invalid buffer
     call assert_fails('call getregion([10000, 10, 1, 0], [10000, 10, 1, 0])', 'E681:')
@@ -1998,6 +2000,10 @@ func Test_getregion_maxcol()
         \ | call assert_equal(getregionpos(getpos("'["), getpos("']")),
         \                     [[[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 5, 0]]])
         \ | call assert_equal(getregion(getpos("'["), getpos("']")),
+        \                     ['abcd'])
+        \ | call assert_equal(getregionpos(getpos("']"), getpos("'[")),
+        \                     [[[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 5, 0]]])
+        \ | call assert_equal(getregion(getpos("']"), getpos("'[")),
         \                     ['abcd'])
         \ | endif
   call setline(1, ['abcd', 'efghij'])
