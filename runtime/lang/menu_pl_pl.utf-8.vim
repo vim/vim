@@ -1,7 +1,7 @@
 " Menu Translations:	Polish
 " Maintainer:		Mikolaj Machowski ( mikmach AT wp DOT pl )
 " Initial Translation:	Marcin Dalecki <martin@dalecki.de>
-" Last Change: 17 May  2010
+" Last Change: 		2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -64,13 +64,13 @@ menutrans Settings\ &Window		Ustawienia
 menutrans &Global\ Settings		Ustawienia\ &globalne
 menutrans Startup\ &Settings	Ustawienia\ &startowe
 menutrans F&ile\ Settings		Ustawienia\ dla\ pliku
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!			&Numerowanie\ wierszy<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!					Tryb\ &listowania<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!			Za&wijanie\ wierszy<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!			Łamanie\ wie&rsza<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!			Rozwijani&e\ tabulatorów<Tab>:set\ et!
-menutrans Toggle\ &auto-indent<Tab>:set\ ai!			&Automatyczne\ wcięcia<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!			Wcięcia\ &C<Tab>:set\ cin!
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!		Przełącz\ &Numerowanie\ wierszy<Tab>:set\ nu!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list!			Przełącz\ Tryb\ &listowania<Tab>:set\ list!
+menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!			Przełącz\ Za&wijanie\ wierszy<Tab>:set\ wrap!
+menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!		Przełącz\ Łamanie\ wie&rsza<Tab>:set\ lbr!
+menutrans Toggle\ &expand-tab<Tab>:set\ et!			Przełącz\ Rozwijani&e\ tabulatorów<Tab>:set\ et!
+menutrans Toggle\ &auto-indent<Tab>:set\ ai!			Przełącz\ &Automatyczne\ wcięcia<Tab>:set\ ai!
+menutrans Toggle\ &C-indenting<Tab>:set\ cin!			Przełącz\ Wcięcia\ &C<Tab>:set\ cin!
 menutrans &Shiftwidth				&Szerokość\ wcięcia
 menutrans Te&xt\ Width\.\.\.			Długość\ linii\.\.\.
 menutrans &File\ Format\.\.\.			&Format\ pliku\.\.\.
@@ -84,10 +84,9 @@ menutrans hebrewp			hebrajski\ p
 menutrans russian-jcuken		rosyjski-jcuken
 menutrans russian-jcukenwin		rosyjski-jcukenwin
 
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Podświetlanie\ &wzorców<Tab>:set\ hls!
-
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	&Ignorowanie\ wielkości<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		&Pokazywanie\ pasujących<Tab>:set\ sm!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!		Przełącz\ Podświetlanie\ &wzorców<Tab>:set\ hls!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!			Przełącz\ &Ignorowanie\ wielkości<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Przełącz\ &Pokazywanie\ pasujących<Tab>:set\ sm!
 
 menutrans &Context\ lines	Wiersze\ &kontekstowe
 menutrans &Virtual\ Edit	Edycja\ &wirtualna
@@ -95,21 +94,21 @@ menutrans &Virtual\ Edit	Edycja\ &wirtualna
 menutrans Never			Nigdy
 menutrans Block\ Selection	Zaznaczanie\ blokowe
 menutrans Insert\ mode		Tryb\ wprowadzania
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Tryb\ zg&odności\ z\ Vi<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Przełącz\ Tryb\ zg&odności\ z\ Vi<Tab>:set\ cp!
 menutrans Block\ and\ Insert	Blokowe\ i\ wprowadzanie
 menutrans Always		Zawsze
 
-menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Tryb\ wprowadzania<Tab>:set\ im!
+menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Przełącz\ Tryb\ wprowadzania<Tab>:set\ im!
 menutrans Search\ &Path\.\.\.	Scieżka\ poszukiwania\.\.\.
 menutrans Ta&g\ Files\.\.\.	Pliki\ tagów\.\.\.
 
 
 "
 " GUI options
-menutrans Toggle\ &Toolbar		Pasek\ narzędzi
-menutrans Toggle\ &Bottom\ Scrollbar	Dolny\ przewijacz
-menutrans Toggle\ &Left\ Scrollbar	&Lewy\ przewijacz
-menutrans Toggle\ &Right\ Scrollbar	P&rawy\ przewijacz
+menutrans Toggle\ &Toolbar		Przełącz\ Pasek\ narzędzi
+menutrans Toggle\ &Bottom\ Scrollbar	Przełącz\ Dolny\ przewijacz
+menutrans Toggle\ &Left\ Scrollbar	Przełącz\ &Lewy\ przewijacz
+menutrans Toggle\ &Right\ Scrollbar	Przełącz\ P&rawy\ przewijacz
 
 " Programming menu
 menutrans &Tools			&Narzędzia
@@ -160,7 +159,7 @@ menutrans &Get\ Block			&Pobierz\ blok
 menutrans &Put\ Block			&Wstaw\ blok
 
 " Make and stuff...
-menutrans &Make<Tab>:make		M&ake<Tab>:make
+menutrans &Make<Tab>:make		Robić<Tab>:make
 menutrans &List\ Errors<Tab>:cl		&Pokaż\ błędy<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	W&ylicz\ powiadomienia<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		&Następny\ błąd<Tab>:cn
@@ -288,6 +287,15 @@ let g:menutrans_tags_dialog = "Podaj nazwy plików tagów.\nProszę rozdzielać 
 let g:menutrans_textwidth_dialog = "Wprowadź nową szerokość tekstu (0 wyłącza przewijanie): "
 let g:menutrans_fileformat_dialog = "Wybierz format w którym ten plik ma być zapisany"
 let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Anuluj"
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Przełącz\ Względna\ numeracja\ linii<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Przełącz\ Zawijanie\ linii<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Przełącz\ pakowanie\ słowem<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Przełącz\ Tab\ rozszerzający\ się<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Przełącz\ Automatyczne\ wcięcie<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Przełącz\ Wcięcie\ w\ stylu\ C<Tab>:set\ cin!
+menutrans Fold\ col&umn\ width			Złóż\ szerokość\ kolumny
+menutrans &Diff					Rozróżnij
+menutrans &Show\ File\ Types\ in\ menu		Pokaż\ typy\ plików\ w\ menu
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
