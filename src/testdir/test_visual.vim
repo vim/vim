@@ -1997,7 +1997,6 @@ endfunc
 
 func Test_getregion_maxcol()
   new
-  set shortmess=I
   autocmd TextYankPost *
         \ : if v:event.operator ==? 'y'
         \ | call assert_equal([
