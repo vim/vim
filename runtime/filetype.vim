@@ -2413,7 +2413,7 @@ au BufNewFile,BufRead texdoc.cnf		setf conf
 " LaTeX packages will generate some medium LaTeX files during compiling
 " They should be ignored by .gitignore https://github.com/github/gitignore/blob/main/TeX.gitignore
 " Sometime we need to view its content for debugging
-au BufNewFile,BufRead *.{pgf,nlo,nls,out,thm,eps_tex,pygtex,pygstyle,clo,aux,brf,ind,lof,loe,nav,vrb,ins,tikz,bbx,cbx,beamer}	setf tex
+au BufNewFile,BufRead *.{pgf,nlo,nls,thm,eps_tex,pygtex,pygstyle,clo,aux,brf,ind,lof,loe,nav,vrb,ins,tikz,bbx,cbx,beamer}	setf tex
 
 " ConTeXt
 au BufNewFile,BufRead *.mkii,*.mkiv,*.mkvi,*.mkxl,*.mklx   setf context
