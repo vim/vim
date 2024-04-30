@@ -1356,6 +1356,7 @@ au BufNewFile,BufRead .mailcap,mailcap		setf mailcap
 
 " Makefile
 au BufNewFile,BufRead *[mM]akefile,*.mk,*.mak,*.dsp setf make
+au BufNewFile,BufRead Kbuild setf make
 
 " MakeIndex
 au BufNewFile,BufRead *.ist,*.mst		setf ist
