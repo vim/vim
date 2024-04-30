@@ -1643,13 +1643,15 @@ func Test_visual_getregion()
     call assert_equal(['one', 'tw'],
           \ 'v'->getpos()->getregion(getpos('.')))
     call assert_equal([
-          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 2, 2, 0]],
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 2, 0]]
           \ ],
           \ 'v'->getpos()->getregionpos(getpos('.')))
     call assert_equal(['one', 'tw'],
           \ '.'->getpos()->getregion(getpos('v')))
     call assert_equal([
-          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 2, 2, 0]],
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 2, 0]]
           \ ],
           \ '.'->getpos()->getregionpos(getpos('v')))
     call assert_equal(['o'],
@@ -1661,20 +1663,21 @@ func Test_visual_getregion()
     call assert_equal(['w'],
           \ '.'->getpos()->getregion(getpos('.'), {'type': 'v' }))
     call assert_equal([
-          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 1, 0]],
           \ ],
           \ '.'->getpos()->getregionpos(getpos('.'), {'type': 'v' }))
     call assert_equal(['one', 'two'],
           \ getpos('.')->getregion(getpos('v'), {'type': 'V' }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 2, 2, 0]],
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
           \ ],
           \ getpos('.')->getregionpos(getpos('v'), {'type': 'V' }))
     call assert_equal(['on', 'tw'],
           \ getpos('.')->getregion(getpos('v'), {'type': "\<C-v>" }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
-          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 2, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 2, 0]],
           \ ],
           \ getpos('.')->getregionpos(getpos('v'), {'type': "\<C-v>" }))
 
@@ -1865,7 +1868,7 @@ func Test_visual_getregion()
     call setpos("'c", [0, 2, 0, 0])
     call cursor(1, 1)
     call assert_equal(['ghijk', '🇨«🇩'],
-          \ getregion(getpos("'a"), getpos("'b"), {'type': "\<c-v>" }))
+          \ getregion(getpos("'a"), getpos("'b"), {'type': "\<C-v>" }))
     call assert_equal(['k«', '🇦«🇧«🇨'],
           \ getregion(getpos("'a"), getpos("'b"), {'type': 'v' }))
     call assert_equal(['k«'],
@@ -1997,14 +2000,22 @@ func Test_getregion_maxcol()
   set shortmess=I
   autocmd TextYankPost *
         \ : if v:event.operator ==? 'y'
-        \ | call assert_equal(getregionpos(getpos("'["), getpos("']")),
-        \                     [[[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 5, 0]]])
-        \ | call assert_equal(getregion(getpos("'["), getpos("']")),
-        \                     ['abcd'])
-        \ | call assert_equal(getregionpos(getpos("']"), getpos("'[")),
-        \                     [[[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 5, 0]]])
-        \ | call assert_equal(getregion(getpos("']"), getpos("'[")),
-        \                     ['abcd'])
+        \ | call assert_equal([
+        \                       [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
+        \                     ],
+        \                     getregionpos(getpos("'["), getpos("']"),
+        \                                  #{ mode: visualmode() }))
+        \ | call assert_equal(['abcd'],
+        \                     getregion(getpos("'["), getpos("']"),
+        \                               #{ mode: visualmode() }))
+        \ | call assert_equal([
+        \                       [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
+        \                     ],
+        \                     getregionpos(getpos("']"), getpos("'["),
+        \                                  #{ mode: visualmode() }))
+        \ | call assert_equal(['abcd'],
+        \                     getregion(getpos("']"), getpos("'["),
+        \                               #{ mode: visualmode() }))
         \ | endif
   call setline(1, ['abcd', 'efghij'])
   normal yy
