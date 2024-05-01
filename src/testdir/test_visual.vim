@@ -1663,7 +1663,7 @@ func Test_visual_getregion()
     call assert_equal(['w'],
           \ '.'->getpos()->getregion(getpos('.'), {'type': 'v' }))
     call assert_equal([
-          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 1, 0]],
+          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 0]],
           \ ],
           \ '.'->getpos()->getregionpos(getpos('.'), {'type': 'v' }))
     call assert_equal(['one', 'two'],
@@ -1857,7 +1857,7 @@ func Test_visual_getregion()
     call assert_equal(['e', ' ', '5'],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 10, 0]],
+          \   [[bufnr('%'), 1, 5, 0], [bufnr('%'), 1, 13, 0]],
           \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 22, 0]],
           \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
           \ ],
