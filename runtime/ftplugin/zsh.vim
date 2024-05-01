@@ -24,7 +24,7 @@ if executable('zsh') && &shell !~# '/\%(nologin\|false\)$'
   elseif has('terminal')
     command! -buffer -nargs=1 ZshKeywordPrg silent exe ':term zsh -c "autoload -Uz run-help; run-help <args>"'
   else
-    command! -buffer -nargs=1 ZshKeywordPrg echo system('zsh -c "autoload -Uz run-help; run-help <args> 2>/dev/null"')
+    command! -buffer -nargs=1 ZshKeywordPrg echo system('MANPAGER= zsh -c "autoload -Uz run-help; run-help <args> 2>/dev/null"')
   endif
   if !exists('current_compiler')
     compiler zsh

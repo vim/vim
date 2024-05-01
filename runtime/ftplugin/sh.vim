@@ -46,11 +46,11 @@ endif
 
 if get(b:, "is_bash", 0)
   if !has("gui_running") && executable("less")
-    command! -buffer -nargs=1 ShKeywordPrg silent exe '!bash -c "{ help "<args>" 2>/dev/null || man "<args>"; } | LESS= less"' | redraw!
+    command! -buffer -nargs=1 ShKeywordPrg silent exe '!bash -c "{ help "<args>" 2>/dev/null || MANPAGER= man "<args>"; } | LESS= less"' | redraw!
   elseif has("terminal")
     command! -buffer -nargs=1 ShKeywordPrg silent exe ':term bash -c "help "<args>" 2>/dev/null || man "<args>""'
   else
-    command! -buffer -nargs=1 ShKeywordPrg echo system('bash -c "help <args>" 2>/dev/null || man "<args>"')
+    command! -buffer -nargs=1 ShKeywordPrg echo system('bash -c "help <args>" 2>/dev/null || MANPAGER= man "<args>"')
   endif
   setlocal keywordprg=:ShKeywordPrg
   let b:undo_ftplugin ..= " | setl kp< | sil! delc -buffer ShKeywordPrg"
