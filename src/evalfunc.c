@@ -11497,7 +11497,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;
-		if (IS_ENUM(cl))
+		if (cl && IS_ENUM(cl))
 		    n = VAR_TYPE_ENUM;
 		else
 		    n = VAR_TYPE_CLASS;
@@ -11505,11 +11505,18 @@ f_type(typval_T *argvars, typval_T *rettv)
 	    }
 	case VAR_OBJECT:
 	    {
-		class_T *cl = argvars[0].vval.v_object->obj_class;
-		if (IS_ENUM(cl))
-		    n = VAR_TYPE_ENUMVALUE;
-		else
+		object_T *obj = argvars[0].vval.v_object;
+
+		if (obj == NULL)
 		    n = VAR_TYPE_OBJECT;
+		else
+		{
+		    class_T *cl = argvars[0].vval.v_object->obj_class;
+		    if (IS_ENUM(cl))
+			n = VAR_TYPE_ENUMVALUE;
+		    else
+			n = VAR_TYPE_OBJECT;
+		}
 		break;
 	    }
 	case VAR_UNKNOWN:
