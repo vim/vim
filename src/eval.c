@@ -6403,9 +6403,9 @@ echo_string_core(
 	    {
 		class_T *cl = tv->vval.v_class;
 		char *s = "class";
-		if (IS_INTERFACE(cl))
+		if (cl && IS_INTERFACE(cl))
 		    s = "interface";
-		else if (IS_ENUM(cl))
+		else if (cl && IS_ENUM(cl))
 		    s = "enum";
 		size_t len = STRLEN(s) + 1 +
 		    (cl == NULL ? 9 : STRLEN(cl->class_name)) + 1;

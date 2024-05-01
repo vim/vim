@@ -545,6 +545,52 @@ def Test_using_null_class()
     @_ = null_class.member
   END
   v9.CheckDefExecAndScriptFailure(lines, ['E715: Dictionary required', 'E1363: Incomplete type'])
+
+  # Test for using a null class as a value
+  lines =<< trim END
+    vim9script
+    echo empty(null_class)
+  END
+  v9.CheckSourceFailure(lines, 'E1405: Class "" cannot be used as a value', 2)
+
+  # Test for using a null class with string()
+  lines =<< trim END
+    vim9script
+    assert_equal('class [unknown]', string(null_class))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using a null class with string()
+  lines =<< trim END
+    vim9script
+    assert_equal(12, type(null_class))
+    assert_equal('class<Unknown>', typename(null_class))
+  END
+  v9.CheckSourceSuccess(lines)
+enddef
+
+def Test_using_null_object()
+  # Test for using a null object as a value
+  var lines =<< trim END
+    vim9script
+    assert_equal(1, empty(null_object))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using a null object with string()
+  lines =<< trim END
+    vim9script
+    assert_equal('object of [unknown]', string(null_object))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using a null object with string()
+  lines =<< trim END
+    vim9script
+    assert_equal(13, type(null_object))
+    assert_equal('object<Unknown>', typename(null_object))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_class_interface_wrong_end()

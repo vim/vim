@@ -2091,10 +2091,12 @@ check_typval_is_value(typval_T *tv)
 	case VAR_CLASS:
 	    {
 		class_T *cl = tv->vval.v_class;
-		if (IS_ENUM(cl))
-		    semsg(_(e_using_enum_as_value_str), cl->class_name);
+		char_u *class_name = (cl == NULL) ? (char_u *)""
+							: cl->class_name;
+		if (cl && IS_ENUM(cl))
+		    semsg(_(e_using_enum_as_value_str), class_name);
 		else
-		    semsg(_(e_using_class_as_value_str), cl->class_name);
+		    semsg(_(e_using_class_as_value_str), class_name);
 	    }
 	    return FAIL;
 
