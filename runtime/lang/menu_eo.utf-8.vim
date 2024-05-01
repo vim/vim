@@ -1,6 +1,6 @@
 " Menu Translations:	Esperanto
 " Maintainer:		Dominique PELLE <dominique.pelle@free.fr>
-" Last Change:		2012 May 01
+" Last Change:		1 May 2024
 " Original translations
 " 
 " Quit when menu translations have already been done.
@@ -75,8 +75,8 @@ menutrans Startup\ &Settings	                Agordoj\ de\ prav&aloroj
 menutrans &Global\ Settings			Mallo&kaj\ agordoj
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Baskuli\ emfazon\ de\ ŝa&blono<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Baskuli\ kongruon\ de\ uskle&co<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Baskuli\ kongruon\ de\ kram&poj<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Baskuligi\ kongruon\ de\ uskle&co<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Baskuligi\ kongruon\ de\ kram&poj<Tab>:set\ sm!
 
 menutrans &Context\ lines				Linioj\ de\ &kunteksto
 
@@ -88,7 +88,7 @@ menutrans Block\ and\ Insert					Blo&ko\ kaj\ enmeto
 menutrans Always						Ĉia&m
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Baskuli\ &enmetan\ reĝimon<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		Baskuli\ kongruon\ kun\ &Vi<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		Baskuli\ kongruon\ kun\ &Vi<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.				&Serĉvojo\ de\ dosieroj\.\.\.
 menutrans Ta&g\ Files\.\.\.				Dosiero\ de\ etike&doj\.\.\.
 " -SEP1-
@@ -459,5 +459,12 @@ menutrans Co&lor\ test				Testo\ de\ &koloroj
 menutrans &Highlight\ test			Testo\ de\ &emfazo
 menutrans &Convert\ to\ HTML			Konverti\ al\ &HTML
 
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Baskuligi\ numeradon\ de\ relativa\ linio<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Baskuligi\ linifaldon<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Baskuligi\ envolvante\ ĉe\ vorto<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Baskuligi\ langeto\ ekspansiiĝanta<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Baskuligi\ aŭtomatan\ krommarĝenon<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Baskuligi\ C-stila\ indentado<Tab>:set\ cin!
+menutrans &Show\ File\ Types\ in\ menu				Montru\ dosiertipojn\ en\ menuo
 let &cpo = s:keepcpo
 unlet s:keepcpo
