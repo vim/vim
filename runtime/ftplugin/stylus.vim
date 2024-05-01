@@ -27,8 +27,6 @@ if exists("b:browsefilter")
   let s:browsefilter = b:browsefilter
   unlet b:browsefilter
 endif
-  
-  b:match_words
 
 " Change the browse dialog on Win32 to show mainly Styl-related files
 if has("gui_win32")
