@@ -4551,7 +4551,9 @@ def Run_Test_debug_with_lambda()
       Func()
   END
   writefile(lines, 'XdebugFunc', 'D')
-  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
+  # test result may be flaky if cols was too small
+  # refer 'https://github.com/vim/vim/issues/14596'
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, cols: 200, wait_for_ruler: 0})
   g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
 
   term_sendkeys(buf, "cont\<CR>")
@@ -4586,7 +4588,9 @@ def Run_Test_debug_running_out_of_lines()
       Crash()
   END
   writefile(lines, 'XdebugFunc', 'D')
-  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
+  # test result may be flaky if cols was too small
+  # refer 'https://github.com/vim/vim/issues/14596'
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, cols: 200, wait_for_ruler: 0})
   g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
 
   term_sendkeys(buf, "next\<CR>")
