@@ -30,6 +30,7 @@ int ins_compl_long_shown_match(void);
 unsigned int get_cot_flags(void);
 int pum_wanted(void);
 void ins_compl_show_pum(void);
+char_u *ins_compl_leader(void);
 char_u *find_word_start(char_u *ptr);
 char_u *find_word_end(char_u *ptr);
 void ins_compl_clear(void);

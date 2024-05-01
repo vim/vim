@@ -5092,6 +5092,125 @@ fuzzy_match_str(char_u *str, char_u *pat)
 }
 
 /*
+ * Fuzzy match the position of string 'pat' in string 'str'.
+ * Returns a dynamic array of matching positions. If there is no match,
+ * returns NULL.
+ */
+    garray_T *
+fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
+{
+#ifdef FEAT_SEARCH_EXTRA
+    int		    score = 0;
+    garray_T	    *match_positions = ALLOC_ONE(garray_T);
+    typval_T	    tv_str;
+    list_T	    *l = NULL;
+    list_T	    *retlist = NULL;
+    list_T	    *match_str_list = NULL;
+    list_T	    *match_pos_list = NULL;
+    list_T	    *match_score_list = NULL;
+    listitem_T	    *score_item = NULL;
+    listitem_T	    *positions_item = NULL;
+    list_T	    *positions_outer_list = NULL;
+    listitem_T	    *outer_li = NULL;
+    list_T	    *positions_inner_list = NULL;
+
+    if (match_positions == NULL)
+        return NULL;
+    ga_init2(match_positions, sizeof(int), 10);
+    if (str == NULL || pat == NULL)
+    {
+        ga_clear(match_positions);
+        return NULL;
+    }
+    l = list_alloc();
+    if (l == NULL)
+    {
+        ga_clear(match_positions);
+        return NULL;
+    }
+
+    tv_str.v_type = VAR_STRING;
+    tv_str.vval.v_string = vim_strsave(str);
+    if (tv_str.vval.v_string == NULL || list_append_tv(l, &tv_str) == FAIL)
+        goto cleanup;
+
+    retlist = list_alloc();
+    if (retlist == NULL)
+        goto cleanup;
+
+    match_str_list = list_alloc();
+    match_pos_list = list_alloc();
+    match_score_list = list_alloc();
+    if (match_str_list == NULL || match_pos_list == NULL || match_score_list == NULL)
+        goto cleanup;
+
+    list_append_list(retlist, match_str_list);
+    list_append_list(retlist, match_pos_list);
+    list_append_list(retlist, match_score_list);
+
+    fuzzy_match_in_list(l, pat, FALSE, NULL, NULL, TRUE, retlist, 1);
+
+    if (retlist->lv_len != 3)
+        goto cleanup;
+
+    score_item = list_find(retlist, 2);
+    if (score_item != NULL && score_item->li_tv.v_type == VAR_LIST)
+    {
+        list_T *score_list = score_item->li_tv.vval.v_list;
+        if (score_list->lv_len > 0)
+        {
+            listitem_T *first_score_item = score_list->lv_first;
+            if (first_score_item != NULL && first_score_item->li_tv.v_type == VAR_NUMBER)
+                score = first_score_item->li_tv.vval.v_number;
+        }
+    }
+    if (score == 0)
+        goto cleanup;
+
+    positions_item = list_find(retlist, 1);
+    if (positions_item != NULL && positions_item->li_tv.v_type == VAR_LIST)
+    {
+        positions_outer_list = positions_item->li_tv.vval.v_list;
+        if (positions_outer_list->lv_len > 0)
+        {
+            outer_li = positions_outer_list->lv_first;
+            if (outer_li != NULL && outer_li->li_tv.v_type == VAR_LIST)
+            {
+                positions_inner_list = outer_li->li_tv.vval.v_list;
+                for (listitem_T *li = positions_inner_list->lv_first; li != NULL; li = li->li_next)
+                {
+                    if (li->li_tv.v_type == VAR_NUMBER)
+                    {
+                        int pos = li->li_tv.vval.v_number;
+                        ga_grow(match_positions, 1);
+                        ((int *)match_positions->ga_data)[match_positions->ga_len] = pos;
+                        match_positions->ga_len++;
+                    }
+                }
+            }
+        }
+    }
+
+    vim_free(tv_str.vval.v_string);
+    list_free(retlist);
+    list_free(l);
+    return match_positions;
+
+cleanup:
+    vim_free(tv_str.vval.v_string);
+    list_free(match_str_list);
+    list_free(match_pos_list);
+    list_free(match_score_list);
+    list_free(retlist);
+    list_free(l);
+    ga_clear(match_positions);
+    return NULL;
+#else
+    return NULL;
+#endif
+}
+
+/*
  * Free an array of fuzzy string matches "fuzmatch[count]".
  */
     void

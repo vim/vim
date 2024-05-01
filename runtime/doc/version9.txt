@@ -41596,6 +41596,10 @@ Autocommands: ~
 Highlighting: ~
 
 |hl-MsgArea|		highlighting of the Command-line and messages area
+|hl-PmenuMatch|		Popup menu: highlighting of matched text only work
+			when completeopt include fuzzy
+|hl-PmenuMatchSel|     	Popup menu: highlighting of matched text in selected
+			line only work when completeopt include fuzzy
 
 Commands: ~
 
