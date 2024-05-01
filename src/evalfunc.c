@@ -5799,7 +5799,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
 	struct block_def	bd;
-	int start_col, end_col;
+	int			start_col, end_col;
 
 	if (region_type == MLINE)
 	{
@@ -5819,9 +5819,8 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	}
 	else
 	{
-	    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
-	    start_col = bd.startspaces + 1;
-	    end_col = bd.endspaces + bd.textlen;
+	    start_col = p1.lnum == lnum ? p1.col + 1 : 1;
+	    end_col = p2.lnum == lnum ? p2.col + 1 : MAXCOL;
 	}
 
 	add_regionpos_range(
