@@ -1,6 +1,6 @@
 " Menu Translations:	Nederlands
 " Maintainer:		The Vim Project <https://github.com/vim/vim>
-" Last Change:		2023 Aug 13
+" Last Change:		2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -24,8 +24,8 @@ menutrans &User\ Manual		Gebruikershandleiding
 menutrans &How-to\ links	&Hoe-doe-ik\ lijst
 "menutrans &GUI			&GUI
 menutrans &Credits		&Met\ dank\ aan
-menutrans Co&pying		&Copyright
-menutrans &Sponsor/Register	&Sponsor/Registreer
+menutrans Co&pying		Auteursrechten
+menutrans &Sponsor/Register	Sponsoren/inschrijven
 menutrans O&rphans		&Weeskinderen
 menutrans &Version		&Versie
 menutrans &About		&Introductiescherm
@@ -69,8 +69,8 @@ menutrans &Keymap			Toetsenbordindeling
 
 " Edit.Global Settings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Flip\ Patroonkleuring<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	Flip\ Negeren\ hoofd/kleine\ letters<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!	Flip\ Showmatch<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!	Flip\ Negeren\ hoofd/kleine\ letters<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Flip\ Showmatch<Tab>:set\ sm!
 menutrans &Context\ lines		Contextregels
 menutrans &Virtual\ Edit		Virtueel\ positioneren
 menutrans Never				Nooit
@@ -79,7 +79,7 @@ menutrans Insert\ mode			In\ Invoegmode
 menutrans Block\ and\ Insert		Bij\ Blokselectie\ en\ Invoegmode
 menutrans Always			Altijd
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Flip\ Invoegmode<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Flip\ Vi\ Compatibiliteit<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Flip\ Vi\ Compatibiliteit<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Zoekpad\.\.\.
 menutrans Ta&g\ Files\.\.\.		Tag\ Bestanden\.\.\.
 menutrans Toggle\ &Toolbar		Toon/verberg\ Knoppenbalk
@@ -117,7 +117,7 @@ menutrans &Open<Tab>:copen		&Openen<Tab>:copen
 menutrans &Close<Tab>:cclose		&Sluiten<Tab>:cclose
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converteer\ naar\ HEX<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Converteer\ terug<Tab>:%!xxd\ -r
-menutrans &Set\ Compiler		Kies\ Compiler
+menutrans Se&T\ Compiler		Kies\ Compiler
 
 " Tools.Folding
 menutrans &Enable/Disable\ folds<Tab>zi	Flip\ tonen\ folds<Tab>zi
@@ -131,13 +131,13 @@ menutrans Fold\ Met&hod			Foldwijze
 menutrans M&anual			Handmatig
 menutrans I&ndent			Inspringing
 menutrans E&xpression			Expressie
-menutrans S&yntax			Syntax
+menutrans S&yntax			Syntaxis
 menutrans &Diff				Verschillen
 menutrans Ma&rker			Markeringen
 menutrans Create\ &Fold<Tab>zf		maak\ Fold<Tab>zf
 menutrans &Delete\ Fold<Tab>zd		verwijder\ Fold<Tab>zd
 menutrans Delete\ &All\ Folds<Tab>zD	verwijder\ alle\ Folds<Tab>zD
-menutrans Fold\ column\ &width		Fold\ kolom\ breedte
+menutrans Fold\ col&umn\ width		Fold\ kolom\ breedte
 
 " Tools.Diff
 menutrans &Update		Verversen
@@ -221,7 +221,7 @@ if has("toolbar")
 endif
 
 " Syntax menu
-menutrans &Syntax		&Syntax
+menutrans &Syntax		&Syntaxis
 menutrans &Show\ filetypes\ in\ menu  Toon\ filetypes\ in\ menu
 menutrans Set\ '&syntax'\ only	Alleen\ 'syntax'\ wijzigen
 menutrans Set\ '&filetype'\ too	Ook\ 'filetype'\ wijzigen
@@ -241,6 +241,34 @@ let g:menutrans_path_dialog = "Typ het zoekpad voor bestanden.\nGebruik commas t
 let g:menutrans_tags_dialog = "Typ namen van tag bestanden.\nGebruik commas tussen de namen."
 let g:menutrans_textwidth_dialog = "Typ de nieuwe tekst breedte (0 om formatteren uit the schakelen): "
 let g:menutrans_fileformat_dialog = "Selecteer formaat voor het schrijven van het bestand"
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Tabblad\ openen\.\.\.<Tab>:tabnew
+menutrans Startup\ &Settings		Opstartinstellingen
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Schakel\ Relatieve\ lijnnummering\ in\ of\ uit<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Schakel\ Regelterugloop\ in\ of\ uit<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Schakel\ terugloop\ bij\ Word\ in\ of\ uit<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Schakel\ het\ uitbreiden\ van\ tabbladen\ in\ of\ uit<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Schakel\ Automatisch\ inspringen\ in<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Schakel\ Inspringen\ in\ C-stijl\ in\ of\ uit<Tab>:set\ cin!
+menutrans &Shiftwidth						Verschuivingsbreedte
+menutrans Soft\ &Tabstop					Zachte\ tabstop
+menutrans &Spelling						Spelling
+menutrans &Spell\ Check\ On					Spellingcontrole\ ingeschakeld
+menutrans Spell\ Check\ &Off					Spellingcontrole\ uitgeschakeld
+menutrans To\ &Next\ error<Tab>]s				Naar\ volgende\ fout<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s				Naar\ vorige\ fout<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=				Correcties\ voorstellen<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall			Herhaal\ correctie<Tab>:spellrepall
+"-------------------
+menutrans Set\ language\ to\ "en"				Taal\ instellen\ op\ "en"
+menutrans Set\ language\ to\ "en_au"				Taal\ instellen\ op\ "en_au"
+menutrans Set\ language\ to\ "en_ca"				Taal\ instellen\ op\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"				Taal\ instellen\ op\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"				Taal\ instellen\ op\ "en_nz"
+menutrans Set\ language\ to\ "en_us"				Taal\ instellen\ op\ "en_us"
+menutrans &Find\ More\ Languages				Vind\ meer\ talen
+let g:menutrans_set_lang_to =					'Taal instellen op'
+menutrans &Folding						Vouwen
+menutrans &Show\ File\ Types\ in\ menu				Bestandstypen\ weergeven\ in\ het\ menu
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
