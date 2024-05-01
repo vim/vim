@@ -1,7 +1,7 @@
 " Menu Translations:	Hungarian (Magyar)
 " Original Translation:	Zoltán Árpádffy
 " Maintained By:	Kontra Gergely <kgergely@mcl.hu>
-" Last Change:		2020 Apr 23
+" Last Change:		1 May 2024
 "
 " This file was converted from menu_hu_hu.iso_8859-2.vim.  See there for
 " remarks.
@@ -67,8 +67,8 @@ menutrans &Keymap			Billent&yűzetkiosztás
 
 " Edit.Global Settings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Minta\ kiemelés\ BE/KI<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	&Kis/nagybetű\ azonos/különböző<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!	&Zárójelpár\ mutatása\ BE/KI<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!	&Kis/nagybetű\ azonos/különböző<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	&Zárójelpár\ mutatása\ BE/KI<Tab>:set\ sm!
 menutrans &Context\ lines		&Kurzor\ ablak\ szélétől
 menutrans &Virtual\ Edit		&Virtuális\ szerkesztés
 menutrans Never				&Soha
@@ -77,7 +77,7 @@ menutrans Insert\ mode			S&zöveg\ bevitelekor
 menutrans Block\ and\ Insert		Bl&okk\ kijelölésekor\ és\ szöveg\ bevitelekor
 menutrans Always			&Mindig
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	&Szövegbeviteli\ mód\ BE/KI<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	&Vi\ kompatíbilis\ mód\ BE/Ki<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	&Vi\ kompatíbilis\ mód\ BE/Ki<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Ke&resési\ útvonal\.\.\.
 menutrans Ta&g\ Files\.\.\.		&Tag\ fájl\.\.\.
 menutrans Toggle\ &Toolbar		&Eszköztár\ BE/KI
@@ -118,7 +118,7 @@ menutrans &Open<Tab>:copen		M&egnyitás<Tab>:copen
 menutrans &Close<Tab>:cclose		Be&zárás<Tab>:cclose
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Normál->HEX\ nézet<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	HEX->Normál\ nézet<Tab>:%!xxd\ -r
-menutrans &Set\ Compiler		Fordító\ &megadása
+menutrans Se&T\ Compiler		Fordító\ &megadása
 
 " Tools.Folding
 menutrans &Enable/Disable\ folds<Tab>zi	Behajtások\ BE&/KI<Tab>zi
@@ -243,6 +243,32 @@ let g:menutrans_path_dialog = "Írd be a keresett fájl lehetséges elérési ú
 let g:menutrans_tags_dialog = "Írd be a tag fájl lehetséges elérési útjait, vesszővel elválasztva"
 let g:menutrans_textwidth_dialog = "Írd be a szöveg szélességét (0 = formázás kikapcsolva)"
 let g:menutrans_fileformat_dialog = "Válaszd ki a fájl formátumát"
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Lap\ megnyitása<Tab>:tabnew
+menutrans Startup\ &Settings		Indítási\ beállítások
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Kapcsolja\ be\ a\ relatív\ sorszámozást<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Kapcsolja\ be\ a\ Vonaltördelést<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Kapcsolja\ be\ a\ Csomagolást\ Wordben<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Kapcsolja\ be\ a\ lap\ kibontását<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Kapcsolja\ be\ az\ automatikus\ behúzást<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Kapcsolja\ be\ a\ C-stílusú\ behúzást<Tab>:set\ cin!
+menutrans &Spelling						Helyesírás
+menutrans &Spell\ Check\ On					Helyesírás-ellenőrzés\ bekapcsolva
+menutrans Spell\ Check\ &Off					Helyesírás-ellenőrzés\ kikapcsolva
+menutrans To\ &Next\ error<Tab>]s				A\ következő\ hibához<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s				Előző\ hibához<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=				Javaslat\ javítások<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall			Ismételje\ meg\ a\ javítást<Tab>:spellrepall
+"-------------------
+menutrans Set\ language\ to\ "en"				Nyelv\ beállítása\ en
+menutrans Set\ language\ to\ "en_au"				Nyelv\ beállítása\ en_au
+menutrans Set\ language\ to\ "en_ca"				Nyelv\ beállítása\ en_ca
+menutrans Set\ language\ to\ "en_gb"				Nyelv\ beállítása\ en_gb
+menutrans Set\ language\ to\ "en_nz"				Nyelv\ beállítása\ en_nz
+menutrans Set\ language\ to\ "en_us"				Nyelv\ beállítása\ en_us
+menutrans &Find\ More\ Languages				További\ nyelvek\ keresése
+let g:menutrans_set_lang_to =					'Nyelv beállítása en_us'
+menutrans &Show\ File\ Types\ in\ menu				Fájltípusok\ megjelenítése\ a\ menüben
+menutrans &Sponsor/Register					Szponzor/Regisztráció
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
