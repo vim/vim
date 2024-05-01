@@ -1790,6 +1790,7 @@ regtilde(char_u *source, int magic)
     int		have_newsublen = FALSE;
     char_u	tilde[3] = {'~', NUL, NUL};
     size_t	tildelen = 1;
+    int		error = FALSE;
 
     if (!magic)
     {
@@ -1826,26 +1827,30 @@ regtilde(char_u *source, int magic)
 		if (tmpsublen > MAXCOL)
 		{
 		    emsg(_(e_resulting_text_too_long));
-		    p = newsub;			// so we don't store a copy of this newsub
+		    error = TRUE;
 		    break;
 		}
 
 		tmpsub = alloc(tmpsublen + 1);
-		if (tmpsub != NULL)
+		if (tmpsub == NULL)
 		{
-		    // copy prefix
-		    mch_memmove(tmpsub, newsub, prefixlen);
-		    // interpret tilde
-		    mch_memmove(tmpsub + prefixlen, reg_prev_sub, reg_prev_sublen);
-		    // copy postfix
-		    STRCPY(tmpsub + prefixlen + reg_prev_sublen, postfix);
-
-		    if (newsub != source)	// allocated newsub before
-			vim_free(newsub);
-		    newsub = tmpsub;
-		    newsublen = tmpsublen;
-		    p = newsub + prefixlen + reg_prev_sublen;
+		    emsg(_(e_out_of_memory));
+		    error = TRUE;
+		    break;
 		}
+
+		// copy prefix
+		mch_memmove(tmpsub, newsub, prefixlen);
+		// interpret tilde
+		mch_memmove(tmpsub + prefixlen, reg_prev_sub, reg_prev_sublen);
+		// copy postfix
+		STRCPY(tmpsub + prefixlen + reg_prev_sublen, postfix);
+
+		if (newsub != source)	// allocated newsub before
+		    vim_free(newsub);
+		newsub = tmpsub;
+		newsublen = tmpsublen;
+		p = newsub + prefixlen + reg_prev_sublen;
 	    }
 	    else
 		mch_memmove(p, postfix, postfixlen + 1);	// remove the tilde (+1 for the NUL)
@@ -1861,14 +1866,19 @@ regtilde(char_u *source, int magic)
 	}
     }
 
+    if (error)
+    {
+	if (newsub != source)
+	    vim_free(newsub);
+	return source;
+    }
+
     // Store a copy of newsub  in reg_prev_sub.  It is always allocated,
     // because recursive calls may make the returned string invalid.
-    // Only store it if there is something to store.
+    // Only store it if there something to store.
     newsublen = p - newsub;
     if (newsublen == 0)
-    {
 	VIM_CLEAR(reg_prev_sub);
-    }
     else
     {
 	vim_free(reg_prev_sub);
