@@ -1,6 +1,6 @@
 " Menu Translations:	Finnish
 " Maintainer:		Flammie Pirinen <flammie@iki.fi>
-" Last Change:		2020 Apr 23
+" Last Change:		2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -64,8 +64,8 @@ menutrans &Global\ Settings			&Yleiset\ asetukset
 " Submenu:
 " Accels: KOSHVYIATLEPR
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Korostus<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		&Ohita\ kirjaintaso<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		&Suljekorostus<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		&Ohita\ kirjaintaso<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		&Suljekorostus<Tab>:set\ sm!
 
 menutrans &Context\ lines				&Huomioitavat\ kontekstirivit
 " Subsubmenu:
@@ -78,7 +78,7 @@ menutrans Block\ and\ Insert					L&ohkosyöttötila
 menutrans Always						&Aina
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		S&yöttötila<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		V&i-tila<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!		V&i-tila<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.				H&akupolku\.\.\.
 menutrans Ta&g\ Files\.\.\.				&Tägitiedostot\.\.\.
 " -SEP1-
@@ -473,6 +473,13 @@ fun! Do_toolbar_tmenu()
   tmenu ToolBar.FindHelp			Etsi ohjeesta
 endfun
 
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Vaihda\ Suhteellinen\ rivinumerointi<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Vaihda\ rivitys<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Vaihda\ rivittäminen\ sanojen\ kohdalta<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Vaihda\ sarkainten\ laajennusta<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Vaihda\ Automaattinen\ sisennys<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Vaihda\ C-tyylinen\ sisennys<Tab>:set\ cin!
+menutrans &Show\ File\ Types\ in\ menu				Näytä\ tiedostotyypit\ valikossa
 let &cpo = s:keepcpo
 unlet s:keepcpo
 
