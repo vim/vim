@@ -80,6 +80,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/\.vimrc', $MYVIMRC)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_one: 'one', rc: '.vimrc'}, g:)
+    call assert_match('XfakeHOME/\.vim/view', &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
   END
@@ -94,6 +95,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/\.vim/vimrc', $MYVIMRC)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_two: 'two', rc: '.vim/vimrc'}, g:)
+    call assert_match('XfakeHOME/\.vim/view', &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
   END
@@ -112,6 +114,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/\.config/vim/vimrc', $MYVIMRC, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_three: 'three', rc: '.config/vim/vimrc'}, g:)
+    call assert_match('XfakeHOME/\.config/vim/view', &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
   END
@@ -128,6 +131,7 @@ func Test_xdg_runtime_files()
     call assert_match('XfakeHOME/xdg/vim/vimrc', $MYVIMRC, msg)
     call filter(g:, {idx, _ -> idx =~ '^rc'})
     call assert_equal(#{rc_four: 'four', rc: 'xdg/vim/vimrc'}, g:)
+    call assert_match('XfakeHOME/xdg/vim/view, &viewdir)
     call writefile(v:errors, 'Xresult')
     quit
   END

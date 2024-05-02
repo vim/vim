@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 21
+*starting.txt*  For Vim version 9.1.  Last change: 2024 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1119,8 +1119,8 @@ feature backward compatible). However, if you want to migrate to use
 and `~/.vim/vimrc` file.
 
 							*xdg-runtime*
-When the |xdg-vimrc| is used the |'runtimepath'| will be modified accordingly
-to respect the |xdg-base-dir|: >
+When the |xdg-vimrc| is used the 'runtimepath' and 'packpath' options will be
+modified accordingly to respect the |xdg-base-dir|: >
 
     "$XDG_CONFIG_HOME/vim,$VIMRUNTIME,/after,$XDG_CONFIG_HOME/vim/after"
 <
