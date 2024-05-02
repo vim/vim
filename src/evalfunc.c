@@ -3840,8 +3840,9 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	return;		// type error; errmsg already given
     if (lnum > 0)
 	curwin->w_cursor.lnum = lnum;
-    if (col > 0)
-	curwin->w_cursor.col = col - 1;
+    if (col != MAXCOL && --col < 0)
+	col = 0;
+    curwin->w_cursor.col = col;
     curwin->w_cursor.coladd = coladd;
 
     // Make sure the cursor is in a valid position.
@@ -5554,17 +5555,22 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	semsg(_(e_invalid_line_number_nr), p1.lnum);
 	return;
     }
-    if (p1.col < 1 || p1.col > ml_get_buf_len(findbuf, p1.lnum) + 1)
+    if (p1.col == MAXCOL)
+	p1.col = ml_get_buf_len(findbuf, p1.lnum) + 1;
+    else if (p1.col < 1 || p1.col > ml_get_buf_len(findbuf, p1.lnum) + 1)
     {
 	semsg(_(e_invalid_column_number_nr), p1.col);
 	return;
     }
+
     if (p2.lnum < 1 || p2.lnum > findbuf->b_ml.ml_line_count)
     {
 	semsg(_(e_invalid_line_number_nr), p2.lnum);
 	return;
     }
-    if (p2.col < 1 || p2.col > ml_get_buf_len(findbuf, p2.lnum) + 1)
+    if (p2.col == MAXCOL)
+	p2.col = ml_get_buf_len(findbuf, p2.lnum) + 1;
+    else if (p2.col < 1 || p2.col > ml_get_buf_len(findbuf, p2.lnum) + 1)
     {
 	semsg(_(e_invalid_column_number_nr), p2.col);
 	return;
