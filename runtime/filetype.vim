@@ -1103,6 +1103,9 @@ au BufNewFile,BufRead *.ini,*.INI		setf dosini
 " SysV Inittab
 au BufNewFile,BufRead inittab			setf inittab
 
+" Inko
+au BufNewFile,BufRead *.inko			setf inko
+
 " Inno Setup
 au BufNewFile,BufRead *.iss			setf iss
 

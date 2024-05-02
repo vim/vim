@@ -344,6 +344,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     inform: ['file.inf', 'file.INF'],
     initng: ['/etc/initng/any/file.i', 'file.ii', 'any/etc/initng/any/file.i'],
     inittab: ['inittab'],
+    inko: ['file.inko'],
     ipfilter: ['ipf.conf', 'ipf6.conf', 'ipf.rules'],
     iss: ['file.iss'],
     ist: ['file.ist', 'file.mst'],
