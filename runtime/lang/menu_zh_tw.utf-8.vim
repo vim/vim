@@ -1,6 +1,6 @@
 " Menu Translations:	Traditional Chinese
 " Translated By:	Hung-Te Lin	<piaip@csie.ntu.edu.tw>
-" Last Change:		2012 May 01
+" Last Change:		2024 May 2
 " Original translations
 
 " {{{ Quit when menu translations have already been done.
@@ -97,9 +97,9 @@ menutrans &File\ Format\.\.\.			    設定檔案格式(對應作業系統)(&F)\.
 
 " {{{ Edit.GlobalSettings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! 切換高亮度搜尋字串(&H)<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	     切換忽略大小寫(&I)<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!	     切換顯示對應括號(&S)<Tab>:set\ sm!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	     切換傳統Vi相容模式(&O)<Tab>:set\ cp!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!	     切換忽略大小寫(&I)<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	     切換顯示對應括號(&S)<Tab>:set\ sm!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	     切換傳統Vi相容模式(&O)<Tab>:set\ cp!
 menutrans &Context\ lines			     本文前後保留行數(scrolloff)(&C)
 menutrans &Virtual\ Edit			     游標任意移動(virtualedit)(&V)
     " {{{ Edit.GlobalSettings.VirtualEdit
@@ -149,7 +149,7 @@ menutrans &Folding			覆疊(Fold)設定(&F)
     menutrans &Delete\ Fold<Tab>zd		    刪除\ Fold(&D)<Tab>zd
     menutrans Delete\ &All\ Folds<Tab>zD	    刪除所有\ Fold(&A)<Tab>zD
     " ------------------------------------------------------------------------
-    menutrans Fold\ column\ &width		    設定\ Fold欄寬(&W)
+    menutrans Fold\ col&umn\ width		    設定\ Fold欄寬(&U)
     " }}}
 menutrans &Diff				Diff(&D)
     " {{{ Tools.Diff
@@ -171,7 +171,7 @@ menutrans Error\ &Window		錯誤訊息視窗(&W)
     menutrans &Open<Tab>:copen		開啟(&O)<Tab>:copen
     menutrans &Close<Tab>:cclose	關閉(&C)<Tab>:cclose
     " }}}
-menutrans &Set\ Compiler		設定編譯器Compiler(&S)
+menutrans Se&T\ Compiler		設定編譯器Compiler(&T)
 " ------------------------------------------------------------------------
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	轉換成16進位碼(&C)<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	從16進位碼轉換回文字(&R)<Tab>:%!xxd\ -r
@@ -285,6 +285,32 @@ if has("toolbar")
   endfun
 endif
 " }}}
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	打開選項卡(&T)\.\.\.<Tab>:tabnew
+menutrans Startup\ &Settings		啟動設定(&S)
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	切換相對行編號(&V)<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		切換換行(&W)<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		切換在單字處換行(&R)<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			切換選項卡展開(&E)<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		切換自動縮排(&A)<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		切換C\ 風格縮排(&C)<Tab>:set\ cin!
+menutrans &Spelling						拼字(&S)
+">>>---------------- Tools/Spelling
+menutrans &Spell\ Check\ On			拼字檢查打開(&S)
+menutrans Spell\ Check\ &Off			拼字檢查關閉(&O)
+menutrans To\ &Next\ error<Tab>]s		到下一個錯誤(&N)<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		到上一個錯誤(&P)<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		更正建議(&C)<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	重複更正(&R)<Tab>:spellrepall
+"-------------------
+menutrans Set\ language\ to\ "en"		將語言設定為\ "en"
+menutrans Set\ language\ to\ "en_au"		將語言設定為\ "en_au"
+menutrans Set\ language\ to\ "en_ca"		將語言設定為\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"		將語言設定為\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"		將語言設定為\ "en_nz"
+menutrans Set\ language\ to\ "en_us"		將語言設定為\ "en_us"
+menutrans &Find\ More\ Languages		尋找更多語言(&F)
+let g:menutrans_set_lang_to =			'將語言設定為'
+menutrans &Show\ File\ Types\ in\ menu		在選單中顯示文件類型(&S)
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
