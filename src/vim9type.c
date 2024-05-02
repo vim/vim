@@ -2093,7 +2093,7 @@ check_typval_is_value(typval_T *tv)
 		class_T *cl = tv->vval.v_class;
 		char_u *class_name = (cl == NULL) ? (char_u *)""
 							: cl->class_name;
-		if (cl && IS_ENUM(cl))
+		if (cl != NULL && IS_ENUM(cl))
 		    semsg(_(e_using_enum_as_value_str), class_name);
 		else
 		    semsg(_(e_using_class_as_value_str), class_name);

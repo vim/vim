@@ -3958,7 +3958,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 					  || *argvars[0].vval.v_string == NUL;
 	    break;
 	case VAR_PARTIAL:
-	    n = FALSE;
+	    n = argvars[0].vval.v_partial == NULL;
 	    break;
 	case VAR_NUMBER:
 	    n = argvars[0].vval.v_number == 0;
@@ -11497,7 +11497,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;
-		if (cl && IS_ENUM(cl))
+		if (cl != NULL && IS_ENUM(cl))
 		    n = VAR_TYPE_ENUM;
 		else
 		    n = VAR_TYPE_CLASS;
