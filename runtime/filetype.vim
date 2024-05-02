@@ -2383,6 +2383,9 @@ au BufNewFile,BufRead *.tcl,*.tm,*.tk,*.itcl,*.itk,*.jacl,.tclshrc,.wishrc,.tcls
 " Xilinx's xsct and xsdb use tcl
 au BufNewFile,BufRead .xsctcmdhistory,.xsdbcmdhistory	setf tcl
 
+" templ 
+au BufNewFile,BufRead *.templ			setf templ
+
 " Teal
 au BufRead,BufNewFile *.tl			setf teal
 
