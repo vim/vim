@@ -1,6 +1,6 @@
 " Menu Translations:	Danish
 " Maintainer:		scootergrisen
-" Last Change:		2022 Nov 17
+" Last Change:		2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -18,7 +18,7 @@ menut &Help	Hjælp
 
 menut &Overview<Tab><F1>	Overblik<Tab><F1>
 menut &User\ Manual	Brugermanual
-menut &How-to\ links	How-to-links
+menut &How-to\ links	hvordan-til-links
 menut &Find\.\.\.	Find\.\.\.
 " -SEP1-
 menut &Credits	Anerkendelser
@@ -239,7 +239,7 @@ menut &Get\ Block	Hent\ blok\ (get)
 menut &Put\ Block	Indsæt\ blok\ (put)
 
 " -SEP2-
-menut &Make<Tab>:make	&Make<Tab>:make
+menut &Make<Tab>:make	ægtefælle<Tab>:make
 
 menut &List\ Errors<Tab>:cl	Oplist\ fejl<Tab>:cl
 menut L&ist\ Messages<Tab>:cl!	Oplist\ meddelelser<Tab>:cl!
