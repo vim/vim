@@ -5055,6 +5055,34 @@ def Test_eval_lambda_block()
   v9.CheckSourceSuccess(lines)
 enddef
 
+" Test for using various null values
+def Test_null_values()
+  var lines =<< trim END
+    var nullValues = [
+      [null, 1, 'null', 7, 'special'],
+      [null_blob, 1, '0z', 10, 'blob'],
+      [null_channel, 1, 'channel fail', 9, 'channel'],
+      [null_dict, 1, '{}', 4, 'dict<any>'],
+      [null_function, 1, "function('')", 2, 'func(...): unknown'],
+      [null_job, 1, 'no process', 8, 'job'],
+      [null_list, 1, '[]', 3, 'list<any>'],
+      [null_object, 1, 'object of [unknown]', 13, 'object<Unknown>'],
+      [null_partial, 1, "function('')", 2, 'func(...): unknown'],
+      [null_string, 1, "''", 1, 'string']
+    ]
+
+    for [Val, emptyExp, stringExp, typeExp, typenameExp] in nullValues
+      assert_equal(emptyExp, empty(Val))
+      assert_equal(stringExp, string(Val))
+      assert_equal(typeExp, type(Val))
+      assert_equal(typenameExp, typename(Val))
+      assert_equal(Val, copy(Val))
+      assert_equal(-1, test_refcount(Val))
+    endfor
+  END
+  v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
