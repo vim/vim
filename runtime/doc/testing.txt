@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2024 Apr 07
+*testing.txt*	For Vim version 9.1.  Last change: 2024 May 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -369,6 +369,9 @@ test_override({name}, {val})				*test_override()*
 		autoload     `import autoload` will load the script right
 			     away, not postponed until an item is used
 		char_avail   disable the char_avail() function
+		defcompile   all the |:def| functions in a sourced script are
+			     compiled when defined.  This is similar to using
+			     the |:defcompile| command in a script.
 		nfa_fail     makes the NFA regexp engine fail to force a
 			     fallback to the old engine
 		no_query_mouse  do not query the mouse position for "dec"

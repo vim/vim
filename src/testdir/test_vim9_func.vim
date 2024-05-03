@@ -4633,6 +4633,19 @@ def Run_Test_keytyped_in_nested_function()
   g:StopVimInTerminal(buf)
 enddef
 
+" Test for test_override('defcompile')
+def Test_test_override_defcompile()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      xxx
+    enddef
+  END
+  test_override('defcompile', 1)
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: xxx')
+  test_override('defcompile', 0)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()
