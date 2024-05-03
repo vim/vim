@@ -5495,7 +5495,6 @@ getregionpos(
     int		*fnum)
 {
     int		fnum1 = -1, fnum2 = -1;
-    int		max_col1, max_col2;
     char_u	*type;
     buf_T	*findbuf;
     char_u	default_type[] = "v";
