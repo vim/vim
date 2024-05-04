@@ -382,8 +382,8 @@ The options are listed below.  The associated termcap code is always equal to
 the last two characters of the option name.  Only one termcap code is
 required: Cursor motion, 't_cm'.
 
-The options 't_da', 't_db', 't_ms', 't_xs', 't_xn', 't_xo' represent flags in the
-termcap.  When the termcap flag is present, the option will be set to "y".
+The options 't_da', 't_db', 't_ms', 't_xs', 't_xn', 't_xo' represent flags in
+the termcap.  When the termcap flag is present, the option will be set to "y".
 But any non-empty string means that the flag is set.  An empty string means
 that the flag is not set.  't_CS' works like this too, but it isn't a termcap
 flag.

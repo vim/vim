@@ -32090,7 +32090,7 @@ Solution:   Store the text column when drawing text.
 
 Patch 9.0.0049
 Problem:    Csv and tsv files are not recognized.
-Solution:   Add patterns fo csv and tsv files. (Leandro Lourenci,
+Solution:   Add patterns for csv and tsv files. (Leandro Lourenci,
             closes #10680)
 
 Patch 9.0.0050
@@ -40641,7 +40641,7 @@ Solution:   Use the class-related grow array for storing the
 
 Patch 9.0.1989
 Problem:    Vim9: double error message given
-Solution:   Only give second error message, if ther
+Solution:   Only give second error message, if there
              wasn't one given before
 
 Patch 9.0.1990
@@ -40687,7 +40687,7 @@ Solution:   Mention the defining class for variable access error message
 
 Patch 9.0.2000
 Problem:    Vim9: use-after-free in deep call stack
-Solution:   Get the objct pointer from execution stack
+Solution:   Get the object pointer from execution stack
 
 Patch 9.0.2001
 Problem:    Vim9: segfault with islocked()

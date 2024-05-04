@@ -2544,7 +2544,7 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 		not start with '%', '#' or '<', see below.
 
 		For a |:terminal| window '%' expands to a '!' followed by
-		the command or shell that is run |terminal-bufname|
+		the command or shell that is run.  |terminal-bufname|
 
 		When {string} starts with '%', '#' or '<', the expansion is
 		done like for the |cmdline-special| variables with their
