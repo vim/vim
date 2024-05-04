@@ -370,7 +370,7 @@ test_override({name}, {val})				*test_override()*
 			     away, not postponed until an item is used
 		char_avail   disable the char_avail() function
 		defcompile   all the |:def| functions in a sourced script are
-			     compiled when defined.  This is similar to using
+			     compiled when defined.  This is similar to use
 			     the |:defcompile| command in a script.
 		nfa_fail     makes the NFA regexp engine fail to force a
 			     fallback to the old engine
