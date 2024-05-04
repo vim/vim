@@ -4551,11 +4551,11 @@ def Run_Test_debug_with_lambda()
       Func()
   END
   writefile(lines, 'XdebugFunc', 'D')
-  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
-  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 10, wait_for_ruler: 0})
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 10)))
 
   term_sendkeys(buf, "cont\<CR>")
-  g:WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 5)))
+  g:WaitForAssert(() => assert_match('\[0\]', term_getline(buf, 9)))
 
   g:StopVimInTerminal(buf)
 enddef
@@ -4586,12 +4586,12 @@ def Run_Test_debug_running_out_of_lines()
       Crash()
   END
   writefile(lines, 'XdebugFunc', 'D')
-  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 6, wait_for_ruler: 0})
-  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  var buf = g:RunVimInTerminal('-S XdebugFunc', {rows: 10, wait_for_ruler: 0})
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 10)))
 
   term_sendkeys(buf, "next\<CR>")
   g:TermWait(buf)
-  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 6)))
+  g:WaitForAssert(() => assert_match('^>', term_getline(buf, 10)))
 
   term_sendkeys(buf, "cont\<CR>")
   g:TermWait(buf)
