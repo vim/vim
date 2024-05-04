@@ -365,32 +365,32 @@ test_override({name}, {val})				*test_override()*
 		{name}	     effect when {val} is non-zero ~
 		alloc_lines  make a copy of every buffer line into allocated
 			     memory, so that memory access errors can be found
-			     by valgrind
+			     by valgrind.
 		autoload     `import autoload` will load the script right
-			     away, not postponed until an item is used
-		char_avail   disable the char_avail() function
+			     away, not postponed until an item is used.
+		char_avail   disable the char_avail() function.
 		defcompile   all the |:def| functions in a sourced script are
 			     compiled when defined.  This is similar to use
 			     the |:defcompile| command in a script.
 		nfa_fail     makes the NFA regexp engine fail to force a
-			     fallback to the old engine
+			     fallback to the old engine.
 		no_query_mouse  do not query the mouse position for "dec"
-				terminals
+				terminals.
 		no_wait_return	set the "no_wait_return" flag.  Not restored
 				with "ALL".
-		redraw       disable the redrawing() function
-		redraw_flag  ignore the RedrawingDisabled flag
-		starting     reset the "starting" variable, see below
+		redraw       disable the redrawing() function.
+		redraw_flag  ignore the RedrawingDisabled flag.
+		starting     reset the "starting" variable, see below.
 		term_props   reset all terminal properties when the version
-			     string is detected
+			     string is detected.
 		ui_delay     time in msec to use in ui_delay(); overrules a
-			     wait time of up to 3 seconds for messages
-		unreachable  no error for code after `:throw` and `:return`
-		uptime	     overrules sysinfo.uptime
+			     wait time of up to 3 seconds for messages.
+		unreachable  no error for code after `:throw` and `:return`.
+		uptime	     overrules sysinfo.uptime.
 		vterm_title  setting the window title by a job running in a
-			     terminal window
+			     terminal window.
 		ALL	     clear all overrides, except alloc_lines ({val} is
-			     not used)
+			     not used).
 
 		"starting" is to be used when a test should behave like
 		startup was done.  Since the tests are run by sourcing a
