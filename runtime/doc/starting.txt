@@ -104,8 +104,8 @@ rvim	 vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
 rview	 vim -RZ    Like "view", but in restricted mode.	  *rview*
 rgvim	 vim -gZ    Like "gvim", but in restricted mode.	  *rgvim*
 rgview	 vim -RgZ   Like "gview", but in restricted mode.	  *rgview*
-evim	vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
-eview	vim -yR    Like "evim" in read-only mode		  *eview*
+evim	 vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
+eview	 vim -yR    Like "evim" in read-only mode		  *eview*
 vimdiff	 vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
