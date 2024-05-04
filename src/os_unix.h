@@ -347,6 +347,8 @@ typedef struct dsc$descriptor   DESC;
 #  define DFLT_VDIR    "sys$login:vimfiles/view"
 # else
 #  define DFLT_VDIR    "$HOME/.vim/view"       // default for 'viewdir'
+#  define XDG_VDIR     (mch_getenv("XDG_CONFIG_HOME") ? \
+	"$XDG_CONFIG_HOME/vim/view" : "~/.config/vim/view")
 # endif
 #endif
 

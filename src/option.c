@@ -417,6 +417,14 @@ set_init_xdg_rtp(void)
     options[opt_idx].def_val[VI_DEFAULT] = xdg_rtp;
     p_pp = xdg_rtp;
 
+#if defined(XDG_VDIR) && defined(FEAT_SESSION)
+    if ((opt_idx = findoption((char_u *)"viewdir")) < 0)
+	goto theend;
+
+    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)XDG_VDIR;
+    p_vdir = (char_u *)XDG_VDIR;
+#endif
+
 theend:
     vim_free(vimrc1);
     vim_free(vimrc2);
