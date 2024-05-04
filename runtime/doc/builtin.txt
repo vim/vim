@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Apr 07
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4382,7 +4382,7 @@ getscriptinfo([{opts}])					*getscriptinfo()*
 
 		Examples: >
 			:echo getscriptinfo({'name': 'myscript'})
-			:echo getscriptinfo({'sid': 15}).variables
+			:echo getscriptinfo({'sid': 15})[0].variables
 <
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
