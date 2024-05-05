@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 May 04
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2544,7 +2544,7 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 		not start with '%', '#' or '<', see below.
 
 		For a |:terminal| window '%' expands to a '!' followed by
-		the command or shell that is run |terminal-bufname|
+		the command or shell that is run.  |terminal-bufname|
 
 		When {string} starts with '%', '#' or '<', the expansion is
 		done like for the |cmdline-special| variables with their

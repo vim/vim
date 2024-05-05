@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 Mar 28
+*eval.txt*	For Vim version 9.1.  Last change: 2024 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3099,7 +3099,7 @@ text...
 :cons[t] {var-name} = {expr1}
 :cons[t] [{name1}, {name2}, ...] = {expr1}
 :cons[t] [{name}, ..., ; {lastname}] = {expr1}
-:cons[t] {var-name} =<< [trim] {marker}
+:cons[t] {var-name} =<< [trim] [eval] {marker}
 text...
 text...
 {marker}

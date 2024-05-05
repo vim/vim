@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 May 02
+*starting.txt*  For Vim version 9.1.  Last change: 2024 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -104,9 +104,9 @@ rvim	 vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
 rview	 vim -RZ    Like "view", but in restricted mode.	  *rview*
 rgvim	 vim -gZ    Like "gvim", but in restricted mode.	  *rgvim*
 rgview	 vim -RgZ   Like "gview", but in restricted mode.	  *rgview*
-evim     vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
-eview    vim -yR    Like "evim" in read-only mode		  *eview*
-vimdiff  vim -d	    Start in diff mode |diff-mode|
+evim	 vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
+eview	 vim -yR    Like "evim" in read-only mode		  *eview*
+vimdiff	 vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
 Additional characters may follow, they are ignored.  For example, you can have
@@ -812,7 +812,7 @@ accordingly.  Vim proceeds in this order:
 
 	Places for your personal initializations:
 		Unix		$HOME/.vimrc, $HOME/.vim/vimrc
-                                or $XDG_CONFIG_HOME/vim/vimrc
+				or $XDG_CONFIG_HOME/vim/vimrc
 		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc

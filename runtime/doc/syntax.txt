@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 28
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -946,7 +946,8 @@ Enables Stylus for ".astro" files. Default Value: "disable"
 NOTE: You need to install an external plugin to support stylus in astro files.
 
 
-ASPPERL and ASPVBS			*ft-aspperl-syntax* *ft-aspvbs-syntax*
+ASPPERL							*ft-aspperl-syntax*
+ASPVBS							*ft-aspvbs-syntax*
 
 *.asp and *.asa files could be either Perl or Visual Basic script.  Since it's
 hard to detect this you can set two global variables to tell Vim what you are
