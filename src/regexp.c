@@ -1215,35 +1215,114 @@ reg_iswordc(int c)
     return vim_iswordc_buf(c, rex.reg_buf);
 }
 
+#ifdef FEAT_EVAL
+static int can_f_submatch = FALSE;	// TRUE when submatch() can be used
+
+// This struct is used for reg_submatch(). Needed for when the
+// substitution string is an expression that contains a call to substitute()
+// and submatch().
+typedef struct {
+    regmatch_T	*sm_match;
+    regmmatch_T	*sm_mmatch;
+    linenr_T	sm_firstlnum;
+    linenr_T	sm_maxline;
+    int		sm_line_lbr;
+} regsubmatch_T;
+
+static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
+#endif
+
+typedef enum
+{
+    RGLF_LINE = 0x01,
+    RGLF_LENGTH = 0x02
+#ifdef FEAT_EVAL
+    ,
+    RGLF_SUBMATCH = 0x04
+#endif
+} reg_getline_flags_T;
+
+//
+// common code for reg_getline(), reg_getline_len(), reg_getline_submatch() and
+// reg_getline_submatch_len().
+// the flags argument (which is a bitmask) controls what info is to be returned and whether
+// or not submatch is in effect.
+// note:
+//     submatch is available only if FEAT_EVAL is defined.
+    static void
+reg_getline_common(linenr_T lnum, reg_getline_flags_T flags, char_u **line, colnr_T *length)
+{
+    int get_line = flags & RGLF_LINE;
+    int get_length = flags & RGLF_LENGTH;
+    linenr_T firstlnum;
+    linenr_T maxline;
+
+#ifdef FEAT_EVAL
+    if (flags & RGLF_SUBMATCH)
+    {
+	firstlnum = rsm.sm_firstlnum + lnum;
+	maxline = rsm.sm_maxline;
+    }
+    else
+#endif
+    {
+	firstlnum = rex.reg_firstlnum + lnum;
+	maxline = rex.reg_maxline;
+    }
+
+    // when looking behind for a match/no-match lnum is negative. but we
+    // can't go before line 1.
+    if (firstlnum < 1)
+    {
+	if (get_line)
+	    *line = NULL;
+	if (get_length)
+	    *length = 0;
+
+	return;
+    }
+
+    if (lnum > maxline)
+    {
+	// must have matched the "\n" in the last line.
+	if (get_line)
+	    *line = (char_u *)"";
+	if (get_length)
+	    *length = 0;
+
+	return;
+    }
+
+    if (get_line)
+	*line = ml_get_buf(rex.reg_buf, firstlnum, FALSE);
+    if (get_length)
+	*length = ml_get_buf_len(rex.reg_buf, firstlnum);
+}
+
 /*
  * Get pointer to the line "lnum", which is relative to "reg_firstlnum".
  */
     static char_u *
 reg_getline(linenr_T lnum)
 {
-    // when looking behind for a match/no-match lnum is negative.  But we
-    // can't go before line 1
-    if (rex.reg_firstlnum + lnum < 1)
-	return NULL;
-    if (lnum > rex.reg_maxline)
-	// Must have matched the "\n" in the last line.
-	return (char_u *)"";
-    return ml_get_buf(rex.reg_buf, rex.reg_firstlnum + lnum, FALSE);
+    char_u *line;
+
+    reg_getline_common(lnum, RGLF_LINE, &line, NULL);
+
+    return line;
 }
 
 /*
  * Get length of line "lnum", which is relative to "reg_firstlnum".
  */
     static colnr_T
-reg_getlinelen(linenr_T lnum)
+reg_getline_len(linenr_T lnum)
 {
-    char_u *line;
+    colnr_T length;
 
-    line = reg_getline(lnum);
-    if (line == NULL || *line == NUL)
-	return 0;
+    reg_getline_common(lnum, RGLF_LENGTH, NULL, &length);
 
-    return ml_get_buf_len(rex.reg_buf, rex.reg_firstlnum + lnum);
+    return length;
 }
 
 #ifdef FEAT_SYN_HL
@@ -1525,7 +1604,7 @@ match_with_backref(
 	if (clnum == end_lnum)
 	    len = end_col - ccol;
 	else
-	    len = (int)reg_getlinelen(clnum) - ccol;
+	    len = (int)reg_getline_len(clnum) - ccol;
 
 	if (cstrncmp(p + ccol, rex.input, &len) != 0)
 	    return RA_NOMATCH;  // doesn't match
@@ -1784,10 +1863,9 @@ do_lower(int *d, int c)
     char_u *
 regtilde(char_u *source, int magic)
 {
-    char_u	*p;
     char_u	*newsub = source;
-    size_t	newsublen;
-    int		have_newsublen = FALSE;
+    char_u	*p;
+    size_t	newsublen = 0;
     char_u	tilde[3] = {'~', NUL, NUL};
     size_t	tildelen = 1;
     int		error = FALSE;
@@ -1809,11 +1887,8 @@ regtilde(char_u *source, int magic)
 	    size_t postfixlen;
 	    size_t tmpsublen;
 
-	    if (!have_newsublen)
-	    {
+	    if (newsublen == 0)
 		newsublen = STRLEN(newsub);
-		have_newsublen = TRUE;
-	    }
 	    newsublen -= tildelen;
 	    postfixlen = newsublen - prefixlen;
 	    tmpsublen = prefixlen + reg_prev_sublen + postfixlen;
@@ -1892,23 +1967,6 @@ regtilde(char_u *source, int magic)
 
     return newsub;
 }
-
-#ifdef FEAT_EVAL
-static int can_f_submatch = FALSE;	// TRUE when submatch() can be used
-
-// These pointers are used for reg_submatch().  Needed for when the
-// substitution string is an expression that contains a call to substitute()
-// and submatch().
-typedef struct {
-    regmatch_T	*sm_match;
-    regmmatch_T	*sm_mmatch;
-    linenr_T	sm_firstlnum;
-    linenr_T	sm_maxline;
-    int		sm_line_lbr;
-} regsubmatch_T;
-
-static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
-#endif
 
 #ifdef FEAT_EVAL
 
@@ -2415,7 +2473,7 @@ vim_regsub_both(
 			len = rex.reg_mmatch->endpos[no].col
 					    - rex.reg_mmatch->startpos[no].col;
 		    else
-			len = (int)reg_getlinelen(clnum) - rex.reg_mmatch->startpos[no].col;
+			len = (int)reg_getline_len(clnum) - rex.reg_mmatch->startpos[no].col;
 		}
 	    }
 	    else
@@ -2450,7 +2508,7 @@ vim_regsub_both(
 			    if (rex.reg_mmatch->endpos[no].lnum == clnum)
 				len = rex.reg_mmatch->endpos[no].col;
 			    else
-				len = (int)reg_getlinelen(clnum);
+				len = (int)reg_getline_len(clnum);
 			}
 			else
 			    break;
@@ -2555,43 +2613,25 @@ exit:
 }
 
 #ifdef FEAT_EVAL
-/*
- * Call reg_getline() with the line numbers from the submatch.  If a
- * substitute() was used the reg_maxline and other values have been
- * overwritten.
- */
+
     static char_u *
 reg_getline_submatch(linenr_T lnum)
 {
-    char_u *s;
-    linenr_T save_first = rex.reg_firstlnum;
-    linenr_T save_max = rex.reg_maxline;
+    char_u *line;
 
-    rex.reg_firstlnum = rsm.sm_firstlnum;
-    rex.reg_maxline = rsm.sm_maxline;
+    reg_getline_common(lnum, RGLF_LINE | RGLF_SUBMATCH, &line, NULL);
 
-    s = reg_getline(lnum);
-
-    rex.reg_firstlnum = save_first;
-    rex.reg_maxline = save_max;
-    return s;
+    return line;
 }
 
     static colnr_T
-reg_getline_submatchlen(linenr_T lnum)
+reg_getline_submatch_len(linenr_T lnum)
 {
-    colnr_T len;
-    linenr_T save_first = rex.reg_firstlnum;
-    linenr_T save_max = rex.reg_maxline;
+    colnr_T length;
 
-    rex.reg_firstlnum = rsm.sm_firstlnum;
-    rex.reg_maxline = rsm.sm_maxline;
+    reg_getline_common(lnum, RGLF_LENGTH | RGLF_SUBMATCH, NULL, &length);
 
-    len = reg_getlinelen(lnum);
-
-    rex.reg_firstlnum = save_first;
-    rex.reg_maxline = save_max;
-    return len;
+    return length;
 }
 
 /*
@@ -2640,7 +2680,7 @@ reg_submatch(int no)
 	    {
 		// Multiple lines: take start line from start col, middle
 		// lines completely and end line up to end col.
-		len = (int)reg_getline_submatchlen(lnum) - rsm.sm_mmatch->startpos[no].col;
+		len = (int)reg_getline_submatch_len(lnum) - rsm.sm_mmatch->startpos[no].col;
 		if (round == 2)
 		{
 		    STRCPY(retval, s);
@@ -2653,7 +2693,7 @@ reg_submatch(int no)
 		    s = reg_getline_submatch(lnum);
 		    if (round == 2)
 			STRCPY(retval + len, s);
-		    len += (int)reg_getline_submatchlen(lnum);
+		    len += (int)reg_getline_submatch_len(lnum);
 		    if (round == 2)
 			retval[len] = '\n';
 		    ++len;
@@ -2732,9 +2772,11 @@ reg_submatch_list(int no)
 	}
 	else
 	{
+	    int max_lnum = elnum - slnum;
+
 	    if (list_append_string(list, s, -1) == FAIL)
 		error = TRUE;
-	    for (i = 1; i < elnum - slnum; i++)
+	    for (i = 1; i < max_lnum; i++)
 	    {
 		s = reg_getline_submatch(slnum + i);
 		if (list_append_string(list, s, -1) == FAIL)
