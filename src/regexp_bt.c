@@ -3414,7 +3414,7 @@ regmatch(
 		{
 		    colnr_T pos_col = pos->lnum == rex.lnum + rex.reg_firstlnum
 							  && pos->col == MAXCOL
-				      ? reg_getline_submatch_len(pos->lnum - rex.reg_firstlnum)
+				      ? reg_getline_len(pos->lnum - rex.reg_firstlnum)
 				      : pos->col;
 
 		    if ((pos->lnum == rex.lnum + rex.reg_firstlnum
@@ -4702,7 +4702,7 @@ regmatch(
 				// right.
 				if (rex.line == NULL)
 				    break;
-				rex.input = rex.line + reg_getline_submatch_len(rex.lnum);
+				rex.input = rex.line + reg_getline_len(rex.lnum);
 				fast_breakcheck();
 			    }
 			    else
