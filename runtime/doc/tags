@@ -7799,6 +7799,7 @@ getreg()	builtin.txt	/*getreg()*
 getreginfo()	builtin.txt	/*getreginfo()*
 getregion()	builtin.txt	/*getregion()*
 getregion-notes	builtin.txt	/*getregion-notes*
+getregionpos()	builtin.txt	/*getregionpos()*
 getregtype()	builtin.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
 getscript-autoinstall	pi_getscript.txt	/*getscript-autoinstall*

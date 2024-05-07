@@ -41574,6 +41574,7 @@ Functions: ~
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |getregion()|		get a region of text from a buffer
+|getregionpos()|	get a list of positions for a region
 
 
 Autocommands: ~
