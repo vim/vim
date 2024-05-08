@@ -1608,7 +1608,7 @@ op_insert(oparg_T *oap, long count1)
 
     if (oap->block_mode)
     {
-	size_t			ins_len;
+	int			ins_len;
 	char_u			*firstline, *ins_text;
 	struct block_def	bd2;
 	int			did_indent = FALSE;
