@@ -1170,12 +1170,10 @@ get_lval_check_access(
     static char_u *
 get_lval_imported(
     lval_T	*lp,
-    typval_T	*rettv,
     scid_T	imp_sid,
     char_u	*p,
     dictitem_T	**dip,
-    int		fne_flags,
-    int		vim9script)
+    int		fne_flags)
 {
     ufunc_T	*ufunc;
     type_T	*type = NULL;
@@ -1196,16 +1194,6 @@ get_lval_imported(
     if (find_exported(imp_sid, lp->ll_name, &ufunc, &type, NULL, NULL,
 								TRUE) == -1)
 	goto failed;
-
-    if (vim9script && type != NULL)
-    {
-	where_T	    where = WHERE_INIT;
-
-	// In a vim9 script, do type check and make sure the variable is
-	// writable.
-	if (check_typval_type(type, rettv, where) == FAIL)
-	    goto failed;
-    }
 
     // Get the typval for the exported item
     hashtab_T *ht = &SCRIPT_VARS(imp_sid);
@@ -1232,6 +1220,7 @@ get_lval_imported(
 	goto failed;
 
     lp->ll_tv = &di->di_tv;
+    lp->ll_valtype = type;
 
 success:
     rc = OK;
@@ -1410,8 +1399,7 @@ get_lval(
 	if (import != NULL)
 	{
 	    p++;	// skip '.'
-	    p = get_lval_imported(lp, rettv, import->imp_sid, p, &v,
-						fne_flags, vim9script);
+	    p = get_lval_imported(lp, import->imp_sid, p, &v, fne_flags);
 	    if (p == NULL)
 		return NULL;
 	}
@@ -1754,6 +1742,12 @@ get_lval(
 								       == FAIL)
 		    return NULL;
 	    }
+
+	    if (!lp->ll_range)
+		// Indexing a single byte in a blob.  So the rhs type is a
+		// number.
+		lp->ll_valtype = &t_number;
+
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;
 	    break;
@@ -1782,7 +1776,7 @@ get_lval(
 		return NULL;
 	    }
 
-	    if (lp->ll_valtype != NULL)
+	    if (lp->ll_valtype != NULL && !lp->ll_range)
 		// use the type of the member
 		lp->ll_valtype = lp->ll_valtype->tt_member;
 
@@ -1895,6 +1889,17 @@ get_lval(
 	    }
 	}
     }
+
+    if (vim9script && lp->ll_valtype != NULL && rettv != NULL)
+    {
+	where_T	    where = WHERE_INIT;
+
+	// In a vim9 script, do type check and make sure the variable is
+	// writable.
+	if (check_typval_type(lp->ll_valtype, rettv, where) == FAIL)
+	    return NULL;
+    }
+
 
     clear_tv(&var1);
     lp->ll_name_end = p;

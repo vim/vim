@@ -97,6 +97,18 @@ func Test_blob_assign()
 
   let lines =<< trim END
       VAR b = 0zDEADBEEF
+      LET b[0 : 1] = 0x1122
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, ['E709:', 'E1012:', 'E709:'])
+
+  let lines =<< trim END
+      VAR b = 0zDEADBEEF
+      LET b[0] = 0z11
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, ['E974:', 'E974:', 'E1012:'])
+
+  let lines =<< trim END
+      VAR b = 0zDEADBEEF
       LET b ..= 0z33
   END
   call v9.CheckLegacyAndVim9Failure(lines, ['E734:', 'E1019:', 'E734:'])
