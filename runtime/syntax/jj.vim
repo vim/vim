@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	jj description
-" Maintainer:	Gregory Anders
+" Maintainer:	Gregory Anders <greg@gpanders.com>
 " Last Change:	2024 May 8
 
 if exists('b:current_syntax')
