@@ -3222,4 +3222,65 @@ def Test_autoload_import_dict_func()
   &rtp = save_rtp
 enddef
 
+" Test for changing the value of an imported Dict item
+def Test_set_imported_dict_item()
+  var lines =<< trim END
+    vim9script
+    export var dict1: dict<bool> = {bflag: false}
+    export var dict2: dict<dict<bool>> = {x: {bflag: false}}
+  END
+  writefile(lines, 'XimportedDict.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportedDict.vim'
+    assert_equal(XimportedDict.dict1.bflag, false)
+    XimportedDict.dict1.bflag = true
+    assert_equal(XimportedDict.dict1.bflag, true)
+    XimportedDict.dict2.x.bflag = true
+    assert_equal(XimportedDict.dict2.x.bflag, true)
+    assert_equal('bool', typename(XimportedDict.dict1.bflag))
+    assert_equal('bool', typename(XimportedDict.dict2.x.bflag))
+    assert_equal('bool', typename(XimportedDict.dict2['x'].bflag))
+    assert_equal('bool', typename(XimportedDict.dict2.x['bflag']))
+
+    assert_equal(XimportedDict.dict1['bflag'], true)
+    XimportedDict.dict1['bflag'] = false
+    assert_equal(XimportedDict.dict1.bflag, false)
+    XimportedDict.dict2['x']['bflag'] = false
+    assert_equal(XimportedDict.dict2['x'].bflag, false)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    import './XimportedDict.vim'
+    XimportedDict.dict2.x.bflag = []
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected bool but got list<any>', 3)
+enddef
+
+" Test for changing the value of an imported class member
+def Test_set_imported_class_member()
+  var lines =<< trim END
+    vim9script
+    export class Config
+      public static var option = false
+    endclass
+  END
+  writefile(lines, 'XimportedClass.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportedClass.vim' as foo
+    type FooConfig = foo.Config
+    assert_equal(false, FooConfig.option)
+    assert_equal(false, foo.Config.option)
+    foo.Config.option = true
+    assert_equal(true, foo.Config.option)
+    assert_equal(true, FooConfig.option)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

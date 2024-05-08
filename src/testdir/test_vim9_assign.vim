@@ -650,7 +650,7 @@ def Test_assign_index()
       var bl = 0z11
       bl[1] = g:val
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1030: Using a String as a Number: "22"')
+  v9.CheckDefExecAndScriptFailure(lines, ['E1030: Using a String as a Number: "22"', 'E1012: Type mismatch; expected number but got string'])
 
   # should not read the next line when generating "a.b"
   var a = {}
