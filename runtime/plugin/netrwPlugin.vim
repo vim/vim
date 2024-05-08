@@ -35,7 +35,7 @@ augroup FileExplorer
  au BufLeave *  if &ft != "netrw"|let w:netrw_prvfile= expand("%:p")|endif
  au BufEnter *	sil call s:LocalBrowse(expand("<amatch>"))
  au VimEnter *	sil call s:VimEnter(expand("<amatch>"))
- if has("win32") || has("win95") || has("win64") || has("win16")
+ if has("win32")
   au BufEnter .* sil call s:LocalBrowse(expand("<amatch>"))
  endif
 augroup END
