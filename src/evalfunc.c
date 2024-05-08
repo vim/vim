@@ -5727,6 +5727,10 @@ add_regionpos_range(
     buf_T	*findbuf;
     int		max_col1, max_col2;
 
+    findbuf = bufnr != 0 ? buflist_findnr(bufnr) : curbuf;
+    if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
+	return;
+
     l1 = list_alloc();
     if (l1 == NULL)
 	return;
@@ -5739,25 +5743,34 @@ add_regionpos_range(
 
     l2 = list_alloc();
     if (l2 == NULL)
+    {
+	vim_free(l1);
 	return;
+    }
 
     if (list_append_list(l1, l2) == FAIL)
     {
+	vim_free(l1);
 	vim_free(l2);
 	return;
     }
 
     l3 = list_alloc();
     if (l3 == NULL)
+    {
+	vim_free(l1);
+	vim_free(l2);
 	return;
+    }
 
     if (list_append_list(l1, l3) == FAIL)
     {
+	vim_free(l1);
+	vim_free(l2);
 	vim_free(l3);
 	return;
     }
 
-    findbuf = bufnr != 0 ? buflist_findnr(bufnr) : curbuf;
 
     max_col1 = ml_get_buf_len(findbuf, lnum1);
     list_append_number(l2, bufnr);
