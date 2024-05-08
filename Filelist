@@ -5,7 +5,7 @@
 SRC_ALL =	\
 		.cirrus.yml \
 		.gitattributes \
-		.github/CODEOWNERS \
+		.github/MAINTAINERS \
 		.github/ISSUE_TEMPLATE/bug_report.yml \
 		.github/ISSUE_TEMPLATE/feature_request.md \
 		.github/workflows/ci.yml \

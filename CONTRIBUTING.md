@@ -46,16 +46,29 @@ Or open [the todo file][todo list] on GitHub to see the latest version.
 # Syntax, indent and other runtime files
 
 The latest version of these files can be obtained from the repository.
-They are usually not updated with numbered patches.
+They are usually not updated with numbered patches. However, they may 
+or may not work with older Vim releases (since they may contain new features).
 
 If you find a problem with one of these files or have a suggestion for
 improvement, please first try to contact the maintainer directly.
-Look in the header of the file for the name and email address.
+Look in the header of the file for the name, email address, github handle and/or
+upstream repository.  You may also check the [MAINTAINERS][11] file.
 
 The maintainer will take care of issues and send updates to the Vim project for
 distribution with Vim.
 
 If the maintainer does not respond, contact the [vim-dev][0] mailing list.
+
+## Contributing new runtime files
+
+If you want to contribute new runtime files for Vim or Neovim, please create a
+PR with your changes against this repository here. For new filetypes, do not forget:
+* to add a new [filetype test][12] (keep it similar to the other filetype tests).
+* all configuration switches should be documented
+  (check [filetype.txt][13] and/or [syntax.txt][14] for filetype and syntax plugins)
+* add yourself as Maintainer to the top of file (again, keep the header similar to
+  other runtime files)
+* add yourself to the [MAINTAINERS][11] file.
 
 # Translations
 
@@ -96,3 +109,7 @@ mailing list. For other questions please use the [Vi Stack Exchange][8] website,
 [8]: https://vi.stackexchange.com
 [9]: http://www.vim.org/maillist.php#vim-use
 [10]: https://github.com/vim/vim/discussions
+[11]: https://github.com/vim/vim/blob/master/.github/MAINTAINERS
+[12]: https://github.com/vim/vim/blob/master/src/testdir/test_filetype.vim
+[13]: https://github.com/vim/vim/blob/master/runtime/doc/filetype.txt
+[14]: https://github.com/vim/vim/blob/master/runtime/doc/syntax.txt
