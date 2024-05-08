@@ -12663,7 +12663,7 @@ endfun
 " ---------------------------------------------------------------------
 " s:ShellEscape: shellescape(), or special windows handling {{{2
 fun! s:ShellEscape(s, ...)
-  if (has('win32')) && $SHELL == '' && &shellslash
+  if has('win32') && $SHELL == '' && &shellslash
     return printf('"%s"', substitute(a:s, '"', '""', 'g'))
   endif 
   let f = a:0 > 0 ? a:1 : 0
