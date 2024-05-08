@@ -4952,7 +4952,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
     }
 
     // correct cursor position
-    check_lnums(TRUE);
+    check_lnums(TRUE, TRUE);
 
     if (old_last == NULL)
     {

@@ -3200,7 +3200,7 @@ do_ecmd(
     }
 
     // Check if cursors in other windows on the same buffer are still valid
-    check_lnums(FALSE);
+    check_lnums(FALSE, TRUE);
 
     /*
      * Did not read the file, need to show some info about the file.

@@ -961,6 +961,33 @@ func Test_smoothscroll_insert_bottom()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_smoothscroll_in_qf_window()
+  CheckScreendump
+
+  let lines =<< trim END
+    set nocompatible display=lastline
+    copen
+    setlocal number smoothscroll
+    let g:l = [{'text': 'foo'}]
+          \ + repeat([{'text': join(range(30))}], 10)
+          \ + [{'text': 'bar'}]
+    call setqflist(g:l, 'r')
+    normal! G
+    wincmd t
+  END
+  call writefile(lines, 'XSmoothScrollInQfWindow', 'D')
+  let buf = RunVimInTerminal('-u NONE -S XSmoothScrollInQfWindow', #{rows: 20, cols: 60})
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_1', {})
+
+  call term_sendkeys(buf, ":call setqflist([], 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_2', {})
+
+  call term_sendkeys(buf, ":call setqflist(g:l, 'r')\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_in_qf_window_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_smoothscroll_in_zero_width_window()
   set cpo+=n number smoothscroll
   set winwidth=99999 winminwidth=0

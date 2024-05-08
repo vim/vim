@@ -90,7 +90,7 @@ int tabline_height(void);
 int last_stl_height(int morewin);
 int min_rows(void);
 int only_one_window(void);
-void check_lnums(int do_curwin);
+void check_lnums(int do_curwin, int adjust_skipcol);
 void check_lnums_nested(int do_curwin);
 void reset_lnums(void);
 int make_snapshot(int idx);

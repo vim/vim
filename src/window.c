@@ -7540,7 +7540,7 @@ only_one_window(void)
  * Implementation of check_lnums() and check_lnums_nested().
  */
     static void
-check_lnums_both(int do_curwin, int nested)
+check_lnums_both(int do_curwin, int nested, int adjust_skipcol)
 {
     win_T	*wp;
     tabpage_T	*tp;
@@ -7566,7 +7566,11 @@ check_lnums_both(int do_curwin, int nested)
 
 	    need_adjust = wp->w_topline > curbuf->b_ml.ml_line_count;
 	    if (need_adjust)
+	    {
 		wp->w_topline = curbuf->b_ml.ml_line_count;
+		if (adjust_skipcol)
+		    wp->w_skipcol = 0;
+	    }
 	    if (need_adjust || !nested)
 		// save the (corrected) topline
 		wp->w_save_cursor.w_topline_corr = wp->w_topline;
@@ -7577,11 +7581,12 @@ check_lnums_both(int do_curwin, int nested)
  * Correct the cursor line number in other windows.  Used after changing the
  * current buffer, and before applying autocommands.
  * When "do_curwin" is TRUE, also check current window.
+ * When "adjust_skipcol" is TRUE, reset w_skipcol if w_topline changes.
  */
     void
-check_lnums(int do_curwin)
+check_lnums(int do_curwin, int adjust_skipcol)
 {
-    check_lnums_both(do_curwin, FALSE);
+    check_lnums_both(do_curwin, FALSE, adjust_skipcol);
 }
 
 /*
@@ -7590,7 +7595,7 @@ check_lnums(int do_curwin)
     void
 check_lnums_nested(int do_curwin)
 {
-    check_lnums_both(do_curwin, TRUE);
+    check_lnums_both(do_curwin, TRUE, FALSE);
 }
 
 /*

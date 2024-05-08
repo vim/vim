@@ -319,6 +319,7 @@ update_topline(void)
 	    redraw_later(UPD_NOT_VALID);
 	curwin->w_topline = 1;
 	curwin->w_botline = 2;
+	curwin->w_skipcol = 0;
 	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 	curwin->w_scbind_pos = 1;
     }

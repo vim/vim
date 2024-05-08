@@ -2393,7 +2393,7 @@ apply_autocmds_group(
 	// values are saved, restored by reset_lnums().  When nested only the
 	// values are corrected when needed.
 	if (nesting == 1)
-	    check_lnums(TRUE);
+	    check_lnums(TRUE, FALSE);
 	else
 	    check_lnums_nested(TRUE);
 
