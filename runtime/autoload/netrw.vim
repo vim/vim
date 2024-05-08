@@ -311,12 +311,8 @@ endif
 " Default values for netrw's global variables {{{2
 " Cygwin Detection ------- {{{3
 if !exists("g:netrw_cygwin")
- if has("win32")
-  if  has("win32unix") && &shell =~ '\%(\<bash\>\|\<zsh\>\)\%(\.exe\)\=$'
-   let g:netrw_cygwin= 1
-  else
-   let g:netrw_cygwin= 0
-  endif
+ if has("win32unix") && &shell =~ '\%(\<bash\>\|\<zsh\>\)\%(\.exe\)\=$'
+  let g:netrw_cygwin= 1
  else
   let g:netrw_cygwin= 0
  endif
