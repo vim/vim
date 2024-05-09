@@ -131,7 +131,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     bst: ['file.bst'],
     bzl: ['file.bazel', 'file.bzl', 'WORKSPACE', 'WORKSPACE.bzlmod'],
     bzr: ['bzr_log.any', 'bzr_log.file'],
-    c: ['enlightenment/file.cfg', 'file.qc', 'file.c', 'some-enlightenment/file.cfg'],
+    c: ['enlightenment/file.cfg', 'file.qc', 'file.c', 'some-enlightenment/file.cfg', 'file.mdh', 'file.epro'],
     cabal: ['file.cabal'],
     cabalconfig: ['cabal.config', expand("$HOME/.config/cabal/config")] + WhenConfigHome('$XDG_CONFIG_HOME/cabal/config'),
     cabalproject: ['cabal.project', 'cabal.project.local'],
@@ -855,7 +855,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     zsh: ['.zprofile', '/etc/zprofile', '.zfbfmarks', 'file.zsh', 'file.zsh-theme', 'file.zunit',
           '.zcompdump', '.zlogin', '.zlogout', '.zshenv', '.zshrc', '.zsh_history',
           '.zcompdump-file', '.zlog', '.zlog-file', '.zsh', '.zsh-file',
-          'any/etc/zprofile', 'zlog', 'zlog-file', 'zsh', 'zsh-file'],
+          'any/etc/zprofile', 'zlog', 'zlog-file', 'zsh', 'zsh-file', 'file.mdd'],
 
     help: [$VIMRUNTIME .. '/doc/help.txt'],
     }
