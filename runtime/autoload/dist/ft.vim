@@ -406,14 +406,18 @@ export def FTidl()
   setf idl
 enddef
 
-# Distinguish between "default", Prolog and Cproto prototype file.
+# Distinguish between "default", Prolog, zsh module's C and Cproto prototype file.
 export def ProtoCheck(default: string)
+  # zsh modules use '#include "*.pro"'
+  # https://github.com/zsh-users/zsh/blob/63f086d167960a27ecdbcb762179e2c2bf8a29f5/Src/Modules/example.c#L31
+  if getline(1) =~ '/* Generated automatically */'
+    setf c
   # Cproto files have a comment in the first line and a function prototype in
   # the second line, it always ends in ";".  Indent files may also have
   # comments, thus we can't match comments to see the difference.
   # IDL files can have a single ';' in the second line, require at least one
   # chacter before the ';'.
-  if getline(2) =~ '.;$'
+  elseif getline(2) =~ '.;$'
     setf cpp
   else
     # recognize Prolog by specific text in the first non-empty line
