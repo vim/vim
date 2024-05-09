@@ -363,7 +363,7 @@ def Test_typealias_import()
 
     var myNum: A.SomeType = 10
   END
-  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: A.SomeType = 10', 4)
+  v9.CheckScriptFailure(lines, 'E1010: Type not recognized: A.SomeType', 4)
 
   # Use a type alias that is not exported
   lines =<< trim END
