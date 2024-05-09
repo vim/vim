@@ -1466,7 +1466,14 @@ parse_type_user_defined(
     }
 
     if (give_error && (did_emsg == did_emsg_before))
+    {
+	char_u	*p = skip_type(*arg, FALSE);
+	char	cc = *p;
+
+	*p = NUL;
 	semsg(_(e_type_not_recognized_str), *arg);
+	*p = cc;
+    }
 
     return NULL;
 }

@@ -5002,7 +5002,7 @@ def Test_invalid_type_in_for()
     enddef
     defcompile
   END
-  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: x in range(10)', 1)
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: x', 1)
 enddef
 
 " Test for using a line break between the variable name and the type in a for
@@ -5081,6 +5081,21 @@ def Test_null_values()
     endfor
   END
   v9.CheckSourceDefAndScriptSuccess(lines)
+enddef
+
+" Test for using an unknown type in a typecast
+def Test_unknown_type_in_typecast()
+  var lines =<< trim END
+    vim9script
+    var a = <MyType>b
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: MyType', 2)
+
+  lines =<< trim END
+    vim9script
+    var Fn = <funcx(number, number): number>b
+  END
+  v9.CheckSourceFailure(lines, 'E1010: Type not recognized: funcx(number, number): number', 2)
 enddef
 
 " Keep this last, it messes up highlighting.
