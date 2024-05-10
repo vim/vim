@@ -11456,7 +11456,7 @@ fun! s:NetrwLocalRmFile(path,fname,all)
    if !all
     echohl Statement
     call inputsave()
-    let ok= input("Confirm deletion of directory<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
+    let ok= input("Confirm *recursive* deletion of directory<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
     call inputrestore()
     let ok= substitute(ok,'\[{y(es)},n(o),a(ll),q(uit)]\s*','','e')
     if ok == ""
