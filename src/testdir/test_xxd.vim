@@ -411,6 +411,19 @@ func Test_xxd_max_cols()
   endfor
 endfunc
 
+
+" Try to trigger a buffer overflow (#14738)
+func Test_xxd_buffer_overflow()
+  CheckUnix
+  new
+  let input = repeat('A', 256)
+  call writefile(['-9223372036854775808: ' . repeat("\e[1;32m41\e[0m ", 256) . ' ' . repeat("\e[1;32mA\e[0m", 256)], 'Xxdexpected', 'D')
+  exe 'r! printf ' . input . '| ' . s:xxd_cmd . ' -Ralways -g1 -c256 -d -o 9223372036854775808 > Xxdout'
+  call assert_equalfile('Xxdexpected', 'Xxdout')
+  call delete('Xxdout')
+  bwipe!
+endfunc
+
 " -c0 selects the format specific default column value, as if no -c was given
 " except for -ps, where it disables extra newlines
 func Test_xxd_c0_is_def_cols()

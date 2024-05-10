@@ -49,6 +49,8 @@ OPTIONS
               Capitalize  variable  names  in C include file style, when using
               -i.
 
+       -d     show offset in decimal instead of hex.
+
        -E | -EBCDIC
               Change the character encoding in the righthand column from ASCII
               to EBCDIC.  This does not change the hexadecimal representation.
@@ -97,15 +99,15 @@ OPTIONS
               truncating it. Use the combination -r -p to read plain hexadeci‐
               mal dumps without line number information and without a particu‐
               lar column layout. Additional whitespace and line breaks are al‐
-              lowed anywhere.  Use the combination -r -b to read a  bits  dump
+              lowed  anywhere.  Use  the combination -r -b to read a bits dump
               instead of a hex dump.
 
        -R when
-              In  output the hex-value and the value are both colored with the
-              same color depending on the hex-value. Mostly helping to differ‐
-              entiate  printable and non-printable characters.  when is never,
-              always, or auto.  When the  $NO_COLOR  environment  variable  is
-              set, colorization will be disabled.
+              In the output the hex-value and the value are both colored  with
+              the  same  color  depending  on the hex-value. Mostly helping to
+              differentiate printable and non-printable characters.   when  is
+              never,  always, or auto (default: auto).  When the $NO_COLOR en‐
+              vironment variable is set, colorization will be disabled.
 
        -seek offset
               When used after -r: revert with <offset> added to file positions
@@ -113,9 +115,9 @@ OPTIONS
 
        -s [+][-]seek
               Start at <seek> bytes abs. (or rel.) infile offset.  + indicates
-              that  the  seek  is  relative to the current stdin file position
+              that the seek is relative to the  current  stdin  file  position
               (meaningless when not reading from stdin).  - indicates that the
-              seek  should  be  that many characters from the end of the input
+              seek should be that many characters from the end  of  the  input
               (or if combined with +: before the current stdin file position).
               Without -s option, xxd starts at the current file position.
 
@@ -125,20 +127,20 @@ OPTIONS
               Show version string.
 
 CAVEATS
-       xxd  -r  has  some built-in magic while evaluating line number informa‐
-       tion.  If the output file is seekable, then the  line  numbers  at  the
-       start  of each hex dump line may be out of order, lines may be missing,
-       or overlapping. In these cases xxd will lseek(2) to the next  position.
-       If  the  output file is not seekable, only gaps are allowed, which will
+       xxd -r has some built-in magic while evaluating  line  number  informa‐
+       tion.   If  the  output  file is seekable, then the line numbers at the
+       start of each hex dump line may be out of order, lines may be  missing,
+       or  overlapping. In these cases xxd will lseek(2) to the next position.
+       If the output file is not seekable, only gaps are allowed,  which  will
        be filled by null-bytes.
 
        xxd -r never generates parse errors. Garbage is silently skipped.
 
        When editing hex dumps, please note that xxd -r skips everything on the
        input line after reading enough columns of hexadecimal data (see option
-       -c). This also means that changes to the printable  ASCII  (or  EBCDIC)
+       -c).  This  also  means that changes to the printable ASCII (or EBCDIC)
        columns are always ignored. Reverting a plain (or PostScript) style hex
-       dump with xxd -r -p does not depend on the correct number  of  columns.
+       dump  with  xxd -r -p does not depend on the correct number of columns.
        Here, anything that looks like a pair of hex digits is interpreted.
 
        Note the difference between
@@ -146,28 +148,28 @@ CAVEATS
        and
        % xxd -i < file
 
-       xxd  -s +seek may be different from xxd -s seek, as lseek(2) is used to
+       xxd -s +seek may be different from xxd -s seek, as lseek(2) is used  to
        "rewind" input.  A '+' makes a difference if the input source is stdin,
-       and  if  stdin's  file  position is not at the start of the file by the
-       time xxd is started and given its input.  The  following  examples  may
+       and if stdin's file position is not at the start of  the  file  by  the
+       time  xxd  is  started and given its input.  The following examples may
        help to clarify (or further confuse!):
 
-       Rewind  stdin before reading; needed because the `cat' has already read
+       Rewind stdin before reading; needed because the `cat' has already  read
        to the end of stdin.
        % sh -c "cat > plain_copy; xxd -s 0 > hex_copy" < file
 
-       Hex dump from file position 0x480 (=1024+128) onwards.   The  `+'  sign
+       Hex  dump  from  file position 0x480 (=1024+128) onwards.  The `+' sign
        means "relative to the current position", thus the `128' adds to the 1k
        where dd left off.
-       % sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +128 >  hex_snippet"
+       %  sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +128 > hex_snippet"
        < file
 
        Hex dump from file position 0x100 (=1024-768) onwards.
        % sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +-768 > hex_snippet"
        < file
 
-       However, this is a rare situation and the use of `+' is rarely  needed.
-       The  author  prefers  to  monitor  the  effect of xxd with strace(1) or
+       However,  this is a rare situation and the use of `+' is rarely needed.
+       The author prefers to monitor the  effect  of  xxd  with  strace(1)  or
        truss(1), whenever -s is used.
 
 EXAMPLES
@@ -211,7 +213,7 @@ EXAMPLES
        % xxd -s 0x36 -l 13 -c 13 xxd.1
        0000036: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 
-       Create a 65537 byte file with all bytes 0x00, except for the  last  one
+       Create  a  65537 byte file with all bytes 0x00, except for the last one
        which is 'A' (hex 0x41).
        % echo "010000: 41" | xxd -r > file
 
@@ -222,11 +224,11 @@ EXAMPLES
        000fffc: 0000 0000 40                   ....A
 
        Create a 1 byte file containing a single 'A' character.  The number af‐
-       ter '-r -s' adds to the line numbers found in the file; in effect,  the
+       ter  '-r -s' adds to the line numbers found in the file; in effect, the
        leading bytes are suppressed.
        % echo "010000: 41" | xxd -r -s -0x10000 > file
 
-       Use  xxd  as a filter within an editor such as vim(1) to hex dump a re‐
+       Use xxd as a filter within an editor such as vim(1) to hex dump  a  re‐
        gion marked between `a' and `z'.
        :'a,'z!xxd
 
