@@ -3094,12 +3094,14 @@ au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 
 " Zsh module
+" mdd: https://github.com/zsh-users/zsh/blob/57248b88830ce56adc243a40c7773fb3825cab34/Etc/zsh-development-guide#L285-L288
+" mdh, pro: https://github.com/zsh-users/zsh/blob/57248b88830ce56adc243a40c7773fb3825cab34/Etc/zsh-development-guide#L268-L271
 " *.mdd will generate *.mdh, *.pro and *.epro.
 " module's *.c will #include *.mdh containing module dependency information and
 " *.pro containing all static declarations of *.c
 " *.epro contains all external declarations of *.c
 au BufNewFile,BufRead *.mdh,*.epro		setf c
-au BufNewFile,BufRead *.mdd			setf zsh
+au BufNewFile,BufRead *.mdd			setf sh
 
 " Help files match *.txt but should have a last line that is a modeline.
 au BufNewFile,BufRead *.txt
