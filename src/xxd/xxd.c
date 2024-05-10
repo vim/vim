@@ -208,13 +208,13 @@ char osver[] = "";
  * (11 bytes for each character).
  */
 #define LLEN \
-    39             /* addr: ⌈log10(ULONG_MAX)⌉ if "-d" flag given. We assume ULONG_MAX = 2**128 */ \
+    (39            /* addr: ⌈log10(ULONG_MAX)⌉ if "-d" flag given. We assume ULONG_MAX = 2**128 */ \
     + 2            /* ": " */ \
     + 13 * COLS    /* hex dump with colors */ \
     + (COLS - 1)   /* whitespace between groups if "-g1" option given and "-c" maxed out */ \
     + 2            /* whitespace */ \
     + 12 * COLS    /* ASCII dump with colors */ \
-    + 2            /* "\n\0" */
+    + 2)           /* "\n\0" */
 
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
