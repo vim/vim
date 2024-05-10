@@ -3283,4 +3283,32 @@ def Test_set_imported_class_member()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for using an imported function from the vimrc file.  The function is
+" defined in the 'start' directory of a package.
+def Test_import_from_vimrc()
+  mkdir('Ximport/pack/foobar/start/foo/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export def Foo()
+      writefile(['Foo called'], 'Xoutput.log')
+    enddef
+  END
+  writefile(lines, 'Ximport/pack/foobar/start/foo/autoload/foo.vim')
+  lines =<< trim END
+    vim9script
+    set packpath+=./Ximport
+    try
+      import autoload 'foo.vim'
+      foo.Foo()
+    catch
+      writefile(['Failed to import foo.vim'], 'Xoutput.log')
+    endtry
+    qall!
+  END
+  writefile(lines, 'Xvimrc', 'D')
+  g:RunVim([], [], '-u Xvimrc')
+  assert_equal(['Foo called'], readfile('Xoutput.log'))
+  delete('Xoutput.log')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
