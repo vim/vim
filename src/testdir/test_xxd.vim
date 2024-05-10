@@ -412,9 +412,12 @@ func Test_xxd_max_cols()
 endfunc
 
 
-" Try to trigger a buffer overflow (#14738)
+" This used to trigger a buffer overflow (#14738)
 func Test_xxd_buffer_overflow()
   CheckUnix
+  if system('file ' .. s:xxd_cmd) =~ '32-bit'
+    throw 'Skipped: test only works on 64-bit architecture'
+  endif
   new
   let input = repeat('A', 256)
   call writefile(['-9223372036854775808: ' . repeat("\e[1;32m41\e[0m ", 256) . ' ' . repeat("\e[1;32mA\e[0m", 256)], 'Xxdexpected', 'D')
