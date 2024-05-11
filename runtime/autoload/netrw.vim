@@ -11454,24 +11454,29 @@ fun! s:NetrwLocalRmFile(path,fname,all)
 
   else
    " attempt to remove directory
+   let rmfile= substitute(rmfile,'[\/]$','','e')
    if !all
     echohl Statement
     call inputsave()
-    let ok= input("Confirm *recursive* deletion of directory<".rmfile."> ","[{y(es)},n(o),a(ll),q(uit)] ")
+    " make it be a bit harder to make mistake by inputting upper case
+    let ok= input("Confirm *recursive* deletion of directory<".rmfile."> ","[{Y(ES)},n(o),A(LL),q(uit)] ")
     call inputrestore()
-    let ok= substitute(ok,'\[{y(es)},n(o),a(ll),q(uit)]\s*','','e')
+    let ok= substitute(ok,'\[{Y(ES)},n(o),A(LL),q(uit)]\s*','','e')
     if ok == ""
      let ok="no"
     endif
-    if ok =~# 'a\%[ll]'
+    if ok =~# 'a\%[ll]'->toupper()
      let all= 1
     endif
-   endif
-   let rmfile= substitute(rmfile,'[\/]$','','e')
-
-   if all || ok =~# 'y\%[es]' || ok == ""
-    if delete(rmfile,"rf")
-     call netrw#ErrorMsg(s:ERROR,"unable to delete directory <".rmfile.">!",103)
+    if all || ok =~# 'y\%[es]'->toupper()
+     if delete(rmfile,"rf")
+      call netrw#ErrorMsg(s:ERROR,"failed to *recursive* delete directory <".rmfile.">!",103)
+     endif
+    endif
+    let ok = ok->tolower()
+   else
+    if delete(rmfile,"d")
+     call netrw#ErrorMsg(s:ERROR,"unable to delete directory <".rmfile."> -- is it empty?",103)
     endif
    endif
   endif
