@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 9.1.  Last change: 2023 Dec 04
+*os_win32.txt*  For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -250,8 +250,7 @@ A. Basically what you need is to put a tee program that will copy its input
    copy of tee (and a number of other GNU tools) at
    http://gnuwin32.sourceforge.net or http://unxutils.sourceforge.net
    Alternatively, try the more recent Cygnus version of the GNU tools at
-   http://www.cygwin.com  Other Unix-style tools for Win32 are listed at
-   http://directory.google.com/Top/Computers/Software/Operating_Systems/Unix/Win32/
+   http://www.cygwin.com
    When you do get a copy of tee, you'll need to add >
 	:set shellpipe=\|\ tee
 <  to your _vimrc.

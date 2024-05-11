@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2024 May 01
+*gui.txt*       For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1238,7 +1238,8 @@ This section describes other features which are related to the GUI.
 	endif
 
 A recommended Japanese font is MS Mincho.  You can find info here:
-http://www.lexikan.com/mincho.htm
+https://learn.microsoft.com/en-us/typography/font-list/ms-mincho
+It should be distributed with Windows.
 
 ==============================================================================
 8. Shell Commands					*gui-shell*

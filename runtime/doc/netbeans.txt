@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 9.1.  Last change: 2023 Nov 26
+*netbeans.txt*  For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -77,8 +77,8 @@ Initially just a Java IDE, NetBeans has had C, C++, and Fortran support added
 in recent releases.
 
 For more information visit the main NetBeans web site http://www.netbeans.org.
-The External Editor is now, unfortunately, declared obsolete.  See
- http://externaleditor.netbeans.org.
+The External Editor is now, unfortunately, declared obsolete.  See (link seems
+dead): http://externaleditor.netbeans.org.
 
 Sun Microsystems, Inc. also ships NetBeans under the name Sun ONE Studio.
 Visit http://www.sun.com for more information regarding the Sun ONE Studio
@@ -147,8 +147,9 @@ On MS-Windows:
 The Win32 support is now in beta stage.
 
 To use XPM signs on Win32 (e.g. when using with NetBeans) you can compile
-XPM by yourself or use precompiled libraries from http://iamphet.nm.ru/misc/
-(for MS Visual C++) or http://gnuwin32.sourceforge.net (for MinGW).
+XPM by yourself or use precompiled libraries from (link seems dead):
+http://iamphet.nm.ru/misc/ (for MS Visual C++) or
+http://gnuwin32.sourceforge.net (for MinGW).
 
 Enable debugging:
 -----------------
@@ -946,7 +947,8 @@ for details on downloading this module if your NetBeans release does not have
 it.
 
 For C, C++, and Fortran support you will also need the cpp module.  See
-http://cpp.netbeans.org for information regarding this module.
+http://cpp.netbeans.org (link seems dead) for information regarding this
+module.
 
 You can also download Sun ONE Studio from Sun Microsystems, Inc for a 30 day
 free trial.  See http://www.sun.com for further details.

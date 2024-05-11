@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 May 05
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1483,9 +1483,9 @@ Two syntax highlighting files exist for Euphoria. One for Euphoria
 version 3.1.1, which is the default syntax highlighting file, and one for
 Euphoria version 4.0.5 or later.
 
-Euphoria version 3.1.1 (http://www.rapideuphoria.com/) is still necessary
-for developing applications for the DOS platform, which Euphoria version 4
-(http://www.openeuphoria.org/) does not support.
+Euphoria version 3.1.1 (http://www.rapideuphoria.com/ link seems dead) is
+still necessary for developing applications for the DOS platform, which
+Euphoria version 4 (http://www.openeuphoria.org/) does not support.
 
 The following file extensions are auto-detected as Euphoria file type:
 
@@ -1542,7 +1542,8 @@ Elixir.
 
 FLEXWIKI				*flexwiki.vim* *ft-flexwiki-syntax*
 
-FlexWiki is an ASP.NET-based wiki package available at http://www.flexwiki.com
+FlexWiki is an ASP.NET-based wiki package which used to be available at
+http://www.flexwiki.com
 NOTE: This site currently doesn't work, on Wikipedia is mentioned that
 development stopped in 2009.
 

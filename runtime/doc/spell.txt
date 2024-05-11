@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.1.  Last change: 2023 May 25
+*spell.txt*	For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -903,7 +903,7 @@ right encoding.
 				*spell-AUTHOR* *spell-EMAIL* *spell-COPYRIGHT*
 	NAME		Name of the language
 	VERSION		1.0.1  with fixes
-	HOME		http://www.myhome.eu
+	HOME		<URL>
 	AUTHOR		John Doe
 	EMAIL		john AT Doe DOT net
 	COPYRIGHT	LGPL

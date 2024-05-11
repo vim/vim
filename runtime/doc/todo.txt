@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Mar 28
+*todo.txt*      For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1710,7 +1710,8 @@ Also Vundle: https://github.com/gmarik/vundle
 Or minpac: https://github.com/k-takata/minpac, since it leverages the builtin
 package feature.
 Long message about this from ZyX, 2014 Mar 23.  And following replies.
-Also see http://vim-wiki.mawercer.de/wiki/topic/vim%20plugin%20managment.html
+Also see (link seems dead):
+http://vim-wiki.mawercer.de/wiki/topic/vim%20plugin%20managment.html
 User view:
 - Support multiple sources, basically any http:// URL. Or a central place that
   will work for everybody (github?  redirects from vim.org?).
@@ -2441,7 +2442,7 @@ Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Winn, 2007 Oct
 Would be more consistent when an existing tab is re-used. (Tony Mechelynck)
 
 Using Aap to build Vim: add remarks about how to set personal preferences.
-Example on http://www.calmar.ws/tmp/aap.html
+Example on http://www.calmar.ws/tmp/aap.html (link seems dead)
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
@@ -2472,7 +2473,7 @@ Asked about latest version: 0.77.1 is on www.vim.org.
 More AmigaOS4 patches. (Peter Bengtsson, Nov 9)
 
 Amiga patches with vbcc. (Adrien Destugues, 2010 Aug 30)
-http://pulkomandy.ath.cx/drop/vim73_vbcc_amiga.diff
+(link seems dead): http://pulkomandy.ath.cx/drop/vim73_vbcc_amiga.diff
 
 Problem with compound words?  (Bert, 2008 May 6)
 No warning for when flags are defined after they are used in an affix.
@@ -2542,8 +2543,9 @@ Win32: Patch for cscope external command. (Mike Williams, 2007 Aug 7)
 
 Win32: XPM support only works with path without spaces.  Patch by Mathias
 Michaelis, 2006 Jun 9.  Another patch for more path names, 2006 May 31.
-New version: http://members.tcnet.ch/michaelis/vim/patches.zip (also for other
-patches by Mathias, see mail Feb 22)
+New version (link seems dead):
+http://members.tcnet.ch/michaelis/vim/patches.zip
+(also for other patches by Mathias, see mail Feb 22)
 
 Win32: compiling with normal features and OLE fails.  Patch by Mathias
 Michaelis, 2006 Jun 4.
@@ -3068,7 +3070,7 @@ Win32 GUI known bugs:
     the screen.
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
-    Tutorial: http://win32assembly.online.fr/tut32.html
+    Tutorial (link seems dead): http://win32assembly.online.fr/tut32.html
 6   Win32 GUI: With "-u NONE -U NONE" and doing "CTRL-W v" "CTRL-W o", the ":"
     of ":only" is highlighted like the cursor.  (Lipelis)
 8   When 'encoding' is "utf-8", should use 'guifont' for both normal and wide
@@ -3470,7 +3472,7 @@ Macintosh:
     way to avoid using the builtin termcap.
 8   Xterm sends ^[[H for <Home> and ^[[F for <End> in some mode.  Also
     recognize these keys?  Mostly useful for xterm simulators, like gnometerm.
-    See http://dickey.his.com/xterm/xterm.faq.html#xterm_pc_style.
+    See https://invisible-island.net/xterm/xterm.faq.html#xterm_pc_style
 8   '[ and '] should be set to start/end of line when using a linewise operator
     (e.g., ":w").
 8   CTRL-A can't handle big "long" numbers, they become negative.  Check for
@@ -3759,8 +3761,8 @@ Spell checking:
     What does MAXNGRAMSUGS do?
     Is COMPLEXPREFIXES necessary when we have flags for affixes?
 -   There is no Finnish spell checking file.  For openoffice Voikko is now
-    used, which is based on Malaga: http://home.arcor.de/bjoern-beutel/malaga/
-    (Teemu Likonen)
+    used, which is based on Malaga (link seems dead):
+    http://home.arcor.de/bjoern-beutel/malaga/ (Teemu Likonen)
 8   ":mkspell" still takes much too long in Hungarian dictionary from
     hunspell.  Only solution appears to be to postpone secondary suffixes.
 8   Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
@@ -3816,7 +3818,7 @@ Spell checking:
     syntax items (to add @Spell).
     Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
     cluster" but change the contains list directly for matching syntax items.
--   References: MySpell library (in OpenOffice.org).
+-   References: MySpell library (in OpenOffice.org), (links seem dead):
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
       author: Kevin Hendricks <kevin.hendricks@sympatico.ca>
@@ -3974,8 +3976,9 @@ Multi-byte characters:
     could be entered.  E.g., for "f" command.  But not in Normal mode.  Sort
     of opposite of 'langmap'.  Use ":amap" command?
 -   When breaking a line, take properties of multibyte characters into
-    account.  The "linebreak" program from Bruno Haible can do it:
-    ftp://ftp.ilog.fr/pub/Users/haible/gnu/linebreak-0.1.tar.gz
+    account.  The "linebreak" program from Bruno Haible can do it, this
+    is now part of gnulib module unilbrk:
+    https://www.gnu.org/software/gnulib/MODULES.html
     But it's very complicated...
 -   Problem with 'langmap' being used on the rhs of a mapping. (Nikolai
     Weibull, 2008 May 14).
@@ -4773,10 +4776,10 @@ Omni completion:
 		ctags -f $allTagsFile --fields=+aiKmnsSz --language-force=C++ --C++-kinds=+cefgmnpsut-dlux -u $files
 	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
 	IComplete: http://www.vim.org/scripts/script.php?script_id=1265
-	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
-	Emacs: http://www.xref-tech.com/xrefactory/more_c_completion.html
+	Emacs (link seems dead):
+	http://www.xref-tech.com/xrefactory/more_c_completion.html
 	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 -   Pre-expand abbreviations, show which abbrevs would match?
 

@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 9.1.  Last change: 2019 May 07
+*debug.txt*     For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -160,7 +160,7 @@ In WinDbg: choose Open Crash Dump on the File menu. Follow the instructions in
 3.5 Obtaining Microsoft Debugging Tools ~
 
 The Debugging Tools for Windows (including WinDbg) can be downloaded from
-    http://www.microsoft.com/whdc/devtools/debugging/default.mspx
+    https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools
 This includes the WinDbg debugger.
 
 Visual C++ 2005 Express Edition can be downloaded for free from:

@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 9.1.  Last change: 2022 Oct 01
+*print.txt*     For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -497,10 +497,11 @@ No CJK fonts are supplied with Vim.  There are some free Korean, Japanese, and
 Traditional Chinese fonts available at:
 
   http://examples.oreilly.com/cjkvinfo/adobe/samples/
+  https://resources.oreilly.com/examples/9781565922242/
 
 You can find descriptions of the various fonts in the read me file at
 
-  http://examples.oreilly.de/english_examples/cjkvinfo/adobe/00README
+  https://resources.oreilly.com/examples/9781565922242/-/blob/master/00README
 
 Please read your printer documentation on how to install new fonts.
 
@@ -591,7 +592,7 @@ There are three available versions:
 - GNU Ghostscript which is available under the GNU General Public License.  It
   can be obtained from:
 
-    ftp://mirror.cs.wisc.edu/pub/mirrors/ghost/gnu/
+    https://www.gnu.org/software/ghostscript
 
 - A commercial version for inclusion in commercial products.
 
@@ -616,10 +617,7 @@ X11
 - Ghostview.  Obtainable from:
 
     http://www.cs.wisc.edu/~ghost/gv/
-
-- gv.  Derived from Ghostview.  Obtainable from:
-
-    http://wwwthep.physik.uni-mainz.de/~plass/gv/
+    https://www.gnu.org/software/gv/
 
   Copies (possibly not the most recent) can be found at:
 
@@ -627,7 +625,8 @@ X11
 
 OpenVMS
 
-- Is apparently supported in the main code now (untested).  See:
+- Is apparently supported in the main code now (untested).
+  See (link seems dead):
 
     http://wwwthep.physik.uni-mainz.de/~plass/gv/
 
@@ -643,12 +642,6 @@ Linux
   Obtainable from:
 
     http://www.cs.wisc.edu/~ghost/gsview/
-
-- BMV.  Different from Ghostview and gv in that it doesn't use X but svgalib.
-  Obtainable from:
-
-    ftp://sunsite.unc.edu/pub/Linux/apps/graphics/viewers/svga/bmv-1.2.tgz
-
 
 7.3 PSUtils
 
