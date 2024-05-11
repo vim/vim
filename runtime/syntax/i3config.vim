@@ -46,7 +46,7 @@ syn match i3ConfigIncludeCommand /`[^`]*`/ contained contains=@i3ConfigSh
 syn region i3ConfigParamLine matchgroup=i3ConfigKeyword start=/include / end=/$/ contained contains=@i3ConfigStrVar,i3ConfigIncludeCommand,i3ConfigShOper keepend
 
 " 4.2 Comments
-syn match i3ConfigComment /^\s*#.*$/ contained contains=i3ConfigTodo
+syn match i3ConfigComment /#.*$/ contained contains=i3ConfigTodo
 
 " 4.3 Fonts
 syn match i3ConfigFontSize / \d\+\(px\)\?$/ contained
