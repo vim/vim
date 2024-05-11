@@ -6502,11 +6502,13 @@ printf "%s\n" "$vi_cv_perl_xsubpp" >&6; }
 		-e 's/-flto\(=auto\)\? //' \
 		-e 's/-W[^ ]*//g' \
 		-e 's/-D_FORTIFY_SOURCE=.//g'`
-            perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
+                  perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
+			-e 's/-specs=[^ ]*//g' \
 			-e 's/-bE:perl.exp//' -e 's/-lc //'`
-                  perlldflags=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed \
-		-e 'ccdlflags' | sed -e 's/-bE:perl.exp//'`
+                        perlldflags=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed \
+		-e 'ccdlflags' | sed -e 's/-bE:perl.exp//' \
+		-e 's/-specs=[^ ]*//g' `
 
                   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if compile and link flags for Perl are sane" >&5
 printf %s "checking if compile and link flags for Perl are sane... " >&6; }
