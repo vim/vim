@@ -35,7 +35,7 @@ syn region i3ConfigBindCombo matchgroup=i3ConfigParen start=/{$/ end=/^\s*}$/ co
 syn region i3ConfigExec start=/ {$/ end=/^}$/ contained contains=i3ConfigExecAction,@i3ConfigSh,i3ConfigComment fold keepend extend
 
 syn keyword swayConfigFloatingModifierOpts normal inverse contained
-syn match i3ConfigKeyword /^floating_modifier [$a-zA-Z0-9+]\+ \(normal\|inverse\)$/ contains=i3ConfigVariable,i3ConfigBindModkey,swayConfigFloatingModifierOpts
+syn match i3ConfigKeyword /^\s*floating_modifier [$a-zA-Z0-9+]\+ \(normal\|inverse\)$/ contains=i3ConfigVariable,i3ConfigBindModkey,swayConfigFloatingModifierOpts
 
 syn match swayConfigI3Param /--i3/ contains=i3ConfigShParam skipwhite nextgroup=i3ConfigEdgeOpts
 syn keyword i3ConfigKeyword hide_edge_borders contained skipwhite nextgroup=swayConfigI3Param,i3ConfigEdgeOpts
@@ -75,7 +75,7 @@ syn keyword i3ConfigBindKeyword bindgesture contained skipwhite nextgroup=swayCo
 " Tiling drag threshold
 " Titlebar commands
 syn keyword i3ConfigKeyword tiling_drag_threshold titlebar_border_thickness contained skipwhite nextgroup=@i3ConfigNumVar
-syn match i3ConfigKeyword /^titlebar_padding \(\d\+\|\$\S\+\)\( \d\+\)\?$/ contains=@i3ConfigNumVar
+syn match i3ConfigKeyword /^\s*titlebar_padding \(\d\+\|\$\S\+\)\( \d\+\)\?$/ contains=@i3ConfigNumVar
 
 syn match swayConfigDeviceOper /[*:;!]/ contained
 
