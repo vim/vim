@@ -260,7 +260,7 @@ syn match i3ConfigMarkOpt /--\(add\|replace\)\( --toggle\)\?/ contained contains
 syn keyword i3ConfigActionKeyword mark contained skipwhite nextgroup=i3ConfigMarkOpt,i3ConfigOutputIdent
 
 " Commands usable for direct config calls - for enforcing start of line for Commands
-syn match i3ConfigTopLevelDirective /^/ skipwhite nextgroup=i3ConfigComment,i3ConfigKeyword,i3ConfigCommand,i3ConfigBindKeyword,i3ConfigParamLine,i3ConfigModeBlock,i3ConfigBarBlock,i3ConfigError
+syn match i3ConfigTopLevelDirective /^\s*/ skipwhite nextgroup=i3ConfigComment,i3ConfigKeyword,i3ConfigCommand,i3ConfigBindKeyword,i3ConfigParamLine,i3ConfigModeBlock,i3ConfigBarBlock,i3ConfigError
 
 " Commands useable in keybinds
 syn keyword i3ConfigActionKeyword mode append_layout kill open fullscreen sticky split floating swap unmark title_window_icon title_format border restart reload exit scratchpad nop bar contained skipwhite nextgroup=i3ConfigOption,@i3ConfigValue
