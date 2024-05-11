@@ -161,6 +161,7 @@ re_multi_type(int c)
 }
 
 static char_u		*reg_prev_sub = NULL;
+static size_t		reg_prev_sublen = 0;
 
 /*
  * REGEXP_INRANGE contains all characters which are always special in a []
@@ -197,6 +198,30 @@ backslash_trans(int c)
     return c;
 }
 
+enum
+{
+    CLASS_ALNUM = 0,
+    CLASS_ALPHA,
+    CLASS_BLANK,
+    CLASS_CNTRL,
+    CLASS_DIGIT,
+    CLASS_GRAPH,
+    CLASS_LOWER,
+    CLASS_PRINT,
+    CLASS_PUNCT,
+    CLASS_SPACE,
+    CLASS_UPPER,
+    CLASS_XDIGIT,
+    CLASS_TAB,
+    CLASS_RETURN,
+    CLASS_BACKSPACE,
+    CLASS_ESCAPE,
+    CLASS_IDENT,
+    CLASS_KEYWORD,
+    CLASS_FNAME,
+    CLASS_NONE = 99
+};
+
 /*
  * Check for a character class name "[:name:]".  "pp" points to the '['.
  * Returns one of the CLASS_ items. CLASS_NONE means that no item was
@@ -205,58 +230,56 @@ backslash_trans(int c)
     static int
 get_char_class(char_u **pp)
 {
-    static const char *(class_names[]) =
+    // must be sorted by the 'value' field because it is used by bsearch()!
+    static keyvalue_T char_class_tab[] =
     {
-	"alnum:]",
-#define CLASS_ALNUM 0
-	"alpha:]",
-#define CLASS_ALPHA 1
-	"blank:]",
-#define CLASS_BLANK 2
-	"cntrl:]",
-#define CLASS_CNTRL 3
-	"digit:]",
-#define CLASS_DIGIT 4
-	"graph:]",
-#define CLASS_GRAPH 5
-	"lower:]",
-#define CLASS_LOWER 6
-	"print:]",
-#define CLASS_PRINT 7
-	"punct:]",
-#define CLASS_PUNCT 8
-	"space:]",
-#define CLASS_SPACE 9
-	"upper:]",
-#define CLASS_UPPER 10
-	"xdigit:]",
-#define CLASS_XDIGIT 11
-	"tab:]",
-#define CLASS_TAB 12
-	"return:]",
-#define CLASS_RETURN 13
-	"backspace:]",
-#define CLASS_BACKSPACE 14
-	"escape:]",
-#define CLASS_ESCAPE 15
-	"ident:]",
-#define CLASS_IDENT 16
-	"keyword:]",
-#define CLASS_KEYWORD 17
-	"fname:]",
-#define CLASS_FNAME 18
+	KEYVALUE_ENTRY(CLASS_ALNUM, "alnum:]"),
+	KEYVALUE_ENTRY(CLASS_ALPHA, "alpha:]"),
+	KEYVALUE_ENTRY(CLASS_BACKSPACE, "backspace:]"),
+	KEYVALUE_ENTRY(CLASS_BLANK, "blank:]"),
+	KEYVALUE_ENTRY(CLASS_CNTRL, "cntrl:]"),
+	KEYVALUE_ENTRY(CLASS_DIGIT, "digit:]"),
+	KEYVALUE_ENTRY(CLASS_ESCAPE, "escape:]"),
+	KEYVALUE_ENTRY(CLASS_FNAME, "fname:]"),
+	KEYVALUE_ENTRY(CLASS_GRAPH, "graph:]"),
+	KEYVALUE_ENTRY(CLASS_IDENT, "ident:]"),
+	KEYVALUE_ENTRY(CLASS_KEYWORD, "keyword:]"),
+	KEYVALUE_ENTRY(CLASS_LOWER, "lower:]"),
+	KEYVALUE_ENTRY(CLASS_PRINT, "print:]"),
+	KEYVALUE_ENTRY(CLASS_PUNCT, "punct:]"),
+	KEYVALUE_ENTRY(CLASS_RETURN, "return:]"),
+	KEYVALUE_ENTRY(CLASS_SPACE, "space:]"),
+	KEYVALUE_ENTRY(CLASS_TAB, "tab:]"),
+	KEYVALUE_ENTRY(CLASS_UPPER, "upper:]"),
+	KEYVALUE_ENTRY(CLASS_XDIGIT, "xdigit:]")
     };
-#define CLASS_NONE 99
-    int i;
 
-    if ((*pp)[1] == ':')
+    // check that the value of "pp" has a chance of matching
+    if ((*pp)[1] == ':' && ASCII_ISLOWER((*pp)[2])
+			&& ASCII_ISLOWER((*pp)[3]) && ASCII_ISLOWER((*pp)[4]))
     {
-	for (i = 0; i < (int)ARRAY_LENGTH(class_names); ++i)
-	    if (STRNCMP(*pp + 2, class_names[i], STRLEN(class_names[i])) == 0)
-	    {
-		*pp += STRLEN(class_names[i]) + 2;
-		return i;
-	    }
+	keyvalue_T target;
+	keyvalue_T *entry;
+	// this function can be called repeatedly with the same value for "pp"
+	// so we cache the last found entry.
+	static keyvalue_T *last_entry = NULL;
+
+	target.key = 0;
+	target.value = (char *)*pp + 2;
+	target.length = 0;		    // not used, see cmp_keyvalue_value_n()
+
+	if (last_entry != NULL && cmp_keyvalue_value_n(&target, last_entry) == 0)
+	    entry = last_entry;
+	else
+	    entry = (keyvalue_T *)bsearch(&target, &char_class_tab,
+					ARRAY_LENGTH(char_class_tab),
+					sizeof(char_class_tab[0]), cmp_keyvalue_value_n);
+	if (entry != NULL)
+	{
+	    last_entry = entry;
+	    *pp += entry->length + 2;
+	    return entry->key;
+	}
     }
     return CLASS_NONE;
 }
@@ -619,17 +642,20 @@ skip_regexp_ex(
 	{
 	    if (dirc == '?' && newp != NULL && p[1] == '?')
 	    {
+		size_t	startplen;
+
 		// change "\?" to "?", make a copy first.
 		if (*newp == NULL)
 		{
-		    *newp = vim_strsave(startp);
+		    startplen = STRLEN(startp);
+		    *newp = vim_strnsave(startp, startplen);
 		    if (*newp != NULL)
 			p = *newp + (p - startp);
 		}
 		if (dropped != NULL)
 		    ++*dropped;
 		if (*newp != NULL)
-		    STRMOVE(p, p + 1);
+		    mch_memmove(p, p + 1, (startplen - ((p + 1) - *newp)) + 1);
 		else
 		    ++p;
 	    }
@@ -1189,20 +1215,114 @@ reg_iswordc(int c)
     return vim_iswordc_buf(c, rex.reg_buf);
 }
 
+#ifdef FEAT_EVAL
+static int can_f_submatch = FALSE;	// TRUE when submatch() can be used
+
+// This struct is used for reg_submatch(). Needed for when the
+// substitution string is an expression that contains a call to substitute()
+// and submatch().
+typedef struct {
+    regmatch_T	*sm_match;
+    regmmatch_T	*sm_mmatch;
+    linenr_T	sm_firstlnum;
+    linenr_T	sm_maxline;
+    int		sm_line_lbr;
+} regsubmatch_T;
+
+static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
+#endif
+
+typedef enum
+{
+    RGLF_LINE = 0x01,
+    RGLF_LENGTH = 0x02
+#ifdef FEAT_EVAL
+    ,
+    RGLF_SUBMATCH = 0x04
+#endif
+} reg_getline_flags_T;
+
+//
+// common code for reg_getline(), reg_getline_len(), reg_getline_submatch() and
+// reg_getline_submatch_len().
+// the flags argument (which is a bitmask) controls what info is to be returned and whether
+// or not submatch is in effect.
+// note:
+//     submatch is available only if FEAT_EVAL is defined.
+    static void
+reg_getline_common(linenr_T lnum, reg_getline_flags_T flags, char_u **line, colnr_T *length)
+{
+    int get_line = flags & RGLF_LINE;
+    int get_length = flags & RGLF_LENGTH;
+    linenr_T firstlnum;
+    linenr_T maxline;
+
+#ifdef FEAT_EVAL
+    if (flags & RGLF_SUBMATCH)
+    {
+	firstlnum = rsm.sm_firstlnum + lnum;
+	maxline = rsm.sm_maxline;
+    }
+    else
+#endif
+    {
+	firstlnum = rex.reg_firstlnum + lnum;
+	maxline = rex.reg_maxline;
+    }
+
+    // when looking behind for a match/no-match lnum is negative. but we
+    // can't go before line 1.
+    if (firstlnum < 1)
+    {
+	if (get_line)
+	    *line = NULL;
+	if (get_length)
+	    *length = 0;
+
+	return;
+    }
+
+    if (lnum > maxline)
+    {
+	// must have matched the "\n" in the last line.
+	if (get_line)
+	    *line = (char_u *)"";
+	if (get_length)
+	    *length = 0;
+
+	return;
+    }
+
+    if (get_line)
+	*line = ml_get_buf(rex.reg_buf, firstlnum, FALSE);
+    if (get_length)
+	*length = ml_get_buf_len(rex.reg_buf, firstlnum);
+}
+
 /*
  * Get pointer to the line "lnum", which is relative to "reg_firstlnum".
  */
     static char_u *
 reg_getline(linenr_T lnum)
 {
-    // when looking behind for a match/no-match lnum is negative.  But we
-    // can't go before line 1
-    if (rex.reg_firstlnum + lnum < 1)
-	return NULL;
-    if (lnum > rex.reg_maxline)
-	// Must have matched the "\n" in the last line.
-	return (char_u *)"";
-    return ml_get_buf(rex.reg_buf, rex.reg_firstlnum + lnum, FALSE);
+    char_u *line;
+
+    reg_getline_common(lnum, RGLF_LINE, &line, NULL);
+
+    return line;
+}
+
+/*
+ * Get length of line "lnum", which is relative to "reg_firstlnum".
+ */
+    static colnr_T
+reg_getline_len(linenr_T lnum)
+{
+    colnr_T length;
+
+    reg_getline_common(lnum, RGLF_LENGTH, NULL, &length);
+
+    return length;
 }
 
 #ifdef FEAT_SYN_HL
@@ -1484,7 +1604,7 @@ match_with_backref(
 	if (clnum == end_lnum)
 	    len = end_col - ccol;
 	else
-	    len = (int)STRLEN(p + ccol);
+	    len = (int)reg_getline_len(clnum) - ccol;
 
 	if (cstrncmp(p + ccol, rex.input, &len) != 0)
 	    return RA_NOMATCH;  // doesn't match
@@ -1745,49 +1865,71 @@ regtilde(char_u *source, int magic)
 {
     char_u	*newsub = source;
     char_u	*p;
+    size_t	newsublen = 0;
+    char_u	tilde[3] = {'~', NUL, NUL};
+    size_t	tildelen = 1;
+    int		error = FALSE;
+
+    if (!magic)
+    {
+	tilde[0] = '\\';
+	tilde[1] = '~';
+	tilde[2] = NUL;
+	tildelen = 2;
+    }
 
     for (p = newsub; *p; ++p)
     {
-	if ((*p == '~' && magic) || (*p == '\\' && *(p + 1) == '~' && !magic))
+	if (STRNCMP(p, tilde, tildelen) == 0)
 	{
-	    if (reg_prev_sub != NULL)
+	    size_t prefixlen = p - newsub;		// not including the tilde
+	    char_u *postfix = p + tildelen;
+	    size_t postfixlen;
+	    size_t tmpsublen;
+
+	    if (newsublen == 0)
+		newsublen = STRLEN(newsub);
+	    newsublen -= tildelen;
+	    postfixlen = newsublen - prefixlen;
+	    tmpsublen = prefixlen + reg_prev_sublen + postfixlen;
+
+	    if (tmpsublen > 0 && reg_prev_sub != NULL)
 	    {
-		// length = len(newsub) - 1 + len(prev_sub) + 1
+		char_u *tmpsub;
+
 		// Avoid making the text longer than MAXCOL, it will cause
 		// trouble at some point.
-		size_t	prevsublen = STRLEN(reg_prev_sub);
-		size_t  newsublen = STRLEN(newsub);
-		if (prevsublen > MAXCOL || newsublen > MAXCOL
-					    || newsublen + prevsublen > MAXCOL)
+		if (tmpsublen > MAXCOL)
 		{
 		    emsg(_(e_resulting_text_too_long));
+		    error = TRUE;
 		    break;
 		}
 
-		char_u *tmpsub = alloc(newsublen + prevsublen);
-		if (tmpsub != NULL)
+		tmpsub = alloc(tmpsublen + 1);
+		if (tmpsub == NULL)
 		{
-		    // copy prefix
-		    size_t prefixlen = p - newsub;	// not including ~
-		    mch_memmove(tmpsub, newsub, prefixlen);
-		    // interpret tilde
-		    mch_memmove(tmpsub + prefixlen, reg_prev_sub,
-							       prevsublen);
-		    // copy postfix
-		    if (!magic)
-			++p;			// back off backslash
-		    STRCPY(tmpsub + prefixlen + prevsublen, p + 1);
-
-		    if (newsub != source)	// allocated newsub before
-			vim_free(newsub);
-		    newsub = tmpsub;
-		    p = newsub + prefixlen + prevsublen;
+		    emsg(_(e_out_of_memory));
+		    error = TRUE;
+		    break;
 		}
+
+		// copy prefix
+		mch_memmove(tmpsub, newsub, prefixlen);
+		// interpret tilde
+		mch_memmove(tmpsub + prefixlen, reg_prev_sub, reg_prev_sublen);
+		// copy postfix
+		STRCPY(tmpsub + prefixlen + reg_prev_sublen, postfix);
+
+		if (newsub != source)	// allocated newsub before
+		    vim_free(newsub);
+		newsub = tmpsub;
+		newsublen = tmpsublen;
+		p = newsub + prefixlen + reg_prev_sublen;
 	    }
-	    else if (magic)
-		STRMOVE(p, p + 1);	// remove '~'
 	    else
-		STRMOVE(p, p + 2);	// remove '\~'
+		mch_memmove(p, postfix, postfixlen + 1);	// remove the tilde (+1 for the NUL)
+
 	    --p;
 	}
 	else
@@ -1799,30 +1941,32 @@ regtilde(char_u *source, int magic)
 	}
     }
 
+    if (error)
+    {
+	if (newsub != source)
+	    vim_free(newsub);
+	return source;
+    }
+
     // Store a copy of newsub  in reg_prev_sub.  It is always allocated,
     // because recursive calls may make the returned string invalid.
-    vim_free(reg_prev_sub);
-    reg_prev_sub = vim_strsave(newsub);
+    // Only store it if there something to store.
+    newsublen = p - newsub;
+    if (newsublen == 0)
+	VIM_CLEAR(reg_prev_sub);
+    else
+    {
+	vim_free(reg_prev_sub);
+	reg_prev_sub = vim_strnsave(newsub, newsublen);
+    }
+
+    if (reg_prev_sub == NULL)
+	reg_prev_sublen = 0;
+    else
+	reg_prev_sublen = newsublen;
 
     return newsub;
 }
-
-#ifdef FEAT_EVAL
-static int can_f_submatch = FALSE;	// TRUE when submatch() can be used
-
-// These pointers are used for reg_submatch().  Needed for when the
-// substitution string is an expression that contains a call to substitute()
-// and submatch().
-typedef struct {
-    regmatch_T	*sm_match;
-    regmmatch_T	*sm_mmatch;
-    linenr_T	sm_firstlnum;
-    linenr_T	sm_maxline;
-    int		sm_line_lbr;
-} regsubmatch_T;
-
-static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
-#endif
 
 #ifdef FEAT_EVAL
 
@@ -2028,12 +2172,16 @@ vim_regsub_both(
 	// "flags & REGSUB_COPY" != 0.
 	if (copy)
 	{
-	    if (eval_result[nested] != NULL &&
-		    (int)STRLEN(eval_result[nested]) < destlen)
+	    if (eval_result[nested] != NULL)
 	    {
-		STRCPY(dest, eval_result[nested]);
-		dst += STRLEN(eval_result[nested]);
-		VIM_CLEAR(eval_result[nested]);
+		int eval_len = (int)STRLEN(eval_result[nested]);
+
+		if (eval_len < destlen)
+		{
+		    STRCPY(dest, eval_result[nested]);
+		    dst += eval_len;
+		    VIM_CLEAR(eval_result[nested]);
+		}
 	    }
 	}
 	else
@@ -2325,7 +2473,7 @@ vim_regsub_both(
 			len = rex.reg_mmatch->endpos[no].col
 					    - rex.reg_mmatch->startpos[no].col;
 		    else
-			len = (int)STRLEN(s);
+			len = (int)reg_getline_len(clnum) - rex.reg_mmatch->startpos[no].col;
 		}
 	    }
 	    else
@@ -2360,7 +2508,7 @@ vim_regsub_both(
 			    if (rex.reg_mmatch->endpos[no].lnum == clnum)
 				len = rex.reg_mmatch->endpos[no].col;
 			    else
-				len = (int)STRLEN(s);
+				len = (int)reg_getline_len(clnum);
 			}
 			else
 			    break;
@@ -2465,26 +2613,25 @@ exit:
 }
 
 #ifdef FEAT_EVAL
-/*
- * Call reg_getline() with the line numbers from the submatch.  If a
- * substitute() was used the reg_maxline and other values have been
- * overwritten.
- */
+
     static char_u *
 reg_getline_submatch(linenr_T lnum)
 {
-    char_u *s;
-    linenr_T save_first = rex.reg_firstlnum;
-    linenr_T save_max = rex.reg_maxline;
+    char_u *line;
 
-    rex.reg_firstlnum = rsm.sm_firstlnum;
-    rex.reg_maxline = rsm.sm_maxline;
+    reg_getline_common(lnum, RGLF_LINE | RGLF_SUBMATCH, &line, NULL);
 
-    s = reg_getline(lnum);
+    return line;
+}
 
-    rex.reg_firstlnum = save_first;
-    rex.reg_maxline = save_max;
-    return s;
+    static colnr_T
+reg_getline_submatch_len(linenr_T lnum)
+{
+    colnr_T length;
+
+    reg_getline_common(lnum, RGLF_LENGTH | RGLF_SUBMATCH, NULL, &length);
+
+    return length;
 }
 
 /*
@@ -2533,7 +2680,7 @@ reg_submatch(int no)
 	    {
 		// Multiple lines: take start line from start col, middle
 		// lines completely and end line up to end col.
-		len = (int)STRLEN(s);
+		len = (int)reg_getline_submatch_len(lnum) - rsm.sm_mmatch->startpos[no].col;
 		if (round == 2)
 		{
 		    STRCPY(retval, s);
@@ -2543,13 +2690,14 @@ reg_submatch(int no)
 		++lnum;
 		while (lnum < rsm.sm_mmatch->endpos[no].lnum)
 		{
-		    s = reg_getline_submatch(lnum++);
+		    s = reg_getline_submatch(lnum);
 		    if (round == 2)
 			STRCPY(retval + len, s);
-		    len += (int)STRLEN(s);
+		    len += (int)reg_getline_submatch_len(lnum);
 		    if (round == 2)
 			retval[len] = '\n';
 		    ++len;
+		    ++lnum;
 		}
 		if (round == 2)
 		    STRNCPY(retval + len, reg_getline_submatch(lnum),
@@ -2624,9 +2772,11 @@ reg_submatch_list(int no)
 	}
 	else
 	{
+	    int max_lnum = elnum - slnum;
+
 	    if (list_append_string(list, s, -1) == FAIL)
 		error = TRUE;
-	    for (i = 1; i < elnum - slnum; i++)
+	    for (i = 1; i < max_lnum; i++)
 	    {
 		s = reg_getline_submatch(slnum + i);
 		if (list_append_string(list, s, -1) == FAIL)
