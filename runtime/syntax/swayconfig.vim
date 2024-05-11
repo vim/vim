@@ -31,8 +31,6 @@ syn match i3ConfigBindArgument /--\(locked\|to-code\|no-repeat\|input-device=[^ 
 syn region i3ConfigBindArgument start=/--input-device=['"]/ end=/\s/ contained contains=@i3ConfigIdent,i3ConfigShOper,i3ConfigString nextgroup=i3ConfigBindArgument,i3ConfigBindCombo
 
 syn region i3ConfigBindCombo matchgroup=i3ConfigParen start=/{$/ end=/^\s*}$/ contained contains=i3ConfigBindArgument,i3ConfigBindCombo,i3ConfigComment fold keepend extend
-" hack for blocks with start outside parsing range
-syn region swayConfigBlockOrphan start=/^\s\+\(--[a-z-]\+ \)*[$a-zA-Z0-9_+]\+ [a-z[]/ skip=/\\$\|$\n^\s*}$/ end=/$/ contains=i3ConfigBindArgument,i3ConfigBindCombo,i3ConfigParen keepend extend
 
 syn region i3ConfigExec start=/ {$/ end=/^}$/ contained contains=i3ConfigExecAction,@i3ConfigSh,i3ConfigComment fold keepend extend
 
@@ -65,8 +63,6 @@ syn keyword swayConfigBindswitchState toggle contained
 syn match swayConfigBindswitchCombo /:\(on\|off\|toggle\) / contained contains=i3ConfigColonOperator,swayConfigBindswitchState,i3ConfigBoolean nextgroup=i3ConfigBind
 syn region swayConfigBindswitchType matchgroup=i3ConfigParen start=/{$/ end=/^\s*}$/ contained contains=swayConfigBindswitchArgument,swayConfigBindswitchType,i3ConfigComment fold keepend extend
 syn keyword i3ConfigBindKeyword bindswitch contained skipwhite nextgroup=swayConfigBindswitchArgument,swayConfigBindswitchType
-" hack for blocks with start outside parsing range
-syn region swayConfigBlockOrphan start=/^\s\+\(lid\|tablet\):/ skip=/\\$\|$\n^\s*}$/ end=/$/ contains=swayConfigBindswitchArgument,swayConfigBindswitchType,i3ConfigParen keepend extend
 
 " Bindgesture
 syn match swayConfigBindgestureArgument /--\(exact\|input-device=[:0-9a-zA-Z_/-]\+\|no-warn\) / contained nextgroup=swayConfigBindgestureArgument,swayConfigBindgestureCombo
@@ -75,8 +71,6 @@ syn keyword swayConfigBindgestureDir up down left right inward outward clockwise
 syn match swayConfigBindgestureCombo /\(hold\(:[1-5]\)\?\|swipe\(:[3-5]\)\?\(:up\|:down\|:left\|:right\)\?\|pinch\(:[2-5]\)\?:\(+\?\(inward\|outward\|clockwise\|counterclockwise\|up\|down\|left\|right\)\)\+\) / contained contains=i3ConfigNumber,swayConfigBindgestureType,i3ConfigColonOperator,swayConfigBindgestureDir,i3ConfigBindModifier nextgroup=swayConfigBindgestureCombo,i3ConfigBind
 syn region swayConfigBindgestureCombo matchgroup=i3ConfigParen start=/{$/ end=/^\s*}$/ contained contains=swayConfigBindgestureArgument,swayConfigBindgestureCombo,i3ConfigComment fold keepend extend
 syn keyword i3ConfigBindKeyword bindgesture contained skipwhite nextgroup=swayConfigBindgestureArgument,swayConfigBindgestureCombo
-" hack for blocks with start outside parsing range
-syn region swayConfigBlockOrphan start=/^\s\+\(--[a-z-]\+ \)*\(hold\|swipe\|pinch\):/ skip=/\\$\|$\n^\s*}$/ end=/$/ contains=swayConfigBindgestureArgument,swayConfigBindgestureCombo,i3ConfigParen keepend extend
 
 " Tiling drag threshold
 " Titlebar commands
