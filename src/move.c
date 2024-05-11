@@ -2617,12 +2617,14 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 			    plines_win
 #endif
 					(curwin, curwin->w_topline, FALSE);
-	    int skip_lines = 0;
 	    int width1 = curwin->w_width - curwin_col_off();
+
 	    if (width1 > 0)
 	    {
 		int width2 = width1 + curwin_col_off2();
-		// similar formula is used in curs_columns()
+		int skip_lines = 0;
+
+		// A similar formula is used in curs_columns().
 		if (curwin->w_skipcol > width1)
 		    skip_lines += (curwin->w_skipcol - width1) / width2 + 1;
 		else if (curwin->w_skipcol > 0)
