@@ -250,6 +250,122 @@ eval_expr_get_funccal(typval_T *expr, typval_T *rettv)
 }
 
 /*
+ * Evaluate a partial.
+ * Pass arguments "argv[argc]".
+ * "fc_arg" is from eval_expr_get_funccal() or NULL;
+ * Return the result in "rettv" and OK or FAIL.
+ */
+    static int
+eval_expr_partial(
+    typval_T	*expr,
+    typval_T	*argv,
+    int		argc,
+    funccall_T	*fc_arg,
+    typval_T	*rettv)
+{
+    partial_T	*partial = expr->vval.v_partial;
+
+    if (partial == NULL)
+	return FAIL;
+
+    if (partial->pt_func != NULL
+			&& partial->pt_func->uf_def_status != UF_NOT_COMPILED)
+    {
+	funccall_T	*fc = fc_arg != NULL ? fc_arg
+				: create_funccal(partial->pt_func, rettv);
+	int		r;
+
+	if (fc == NULL)
+	    return FAIL;
+
+	// Shortcut to call a compiled function with minimal overhead.
+	r = call_def_function(partial->pt_func, argc, argv, DEF_USE_PT_ARGV,
+						partial, NULL, fc, rettv);
+	if (fc_arg == NULL)
+	    remove_funccal();
+	if (r == FAIL)
+	    return FAIL;
+    }
+    else
+    {
+	char_u		*s = partial_name(partial);
+	funcexe_T	funcexe;
+
+	if (s == NULL || *s == NUL)
+	    return FAIL;
+
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+	funcexe.fe_partial = partial;
+	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	    return FAIL;
+    }
+
+    return OK;
+}
+
+/*
+ * Evaluate an expression which is a function.
+ * Pass arguments "argv[argc]".
+ * Return the result in "rettv" and OK or FAIL.
+ */
+    static int
+eval_expr_func(
+    typval_T	*expr,
+    typval_T	*argv,
+    int		argc,
+    typval_T	*rettv)
+{
+    funcexe_T	funcexe;
+    char_u	buf[NUMBUFLEN];
+    char_u	*s;
+
+    if (expr->v_type == VAR_FUNC)
+	s = expr->vval.v_string;
+    else
+	s = tv_get_string_buf_chk_strict(expr, buf, in_vim9script());
+    if (s == NULL || *s == NUL)
+	return FAIL;
+
+    CLEAR_FIELD(funcexe);
+    funcexe.fe_evaluate = TRUE;
+    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Evaluate an expression, which is a string.
+ * Return the result in "rettv" and OK or FAIL.
+ */
+    static int
+eval_expr_string(
+    typval_T	*expr,
+    typval_T	*rettv)
+{
+    char_u	*s;
+    char_u	buf[NUMBUFLEN];
+
+    s = tv_get_string_buf_chk_strict(expr, buf, in_vim9script());
+    if (s == NULL)
+	return FAIL;
+
+    s = skipwhite(s);
+    if (eval1_emsg(&s, rettv, NULL) == FAIL)
+	return FAIL;
+
+    if (*skipwhite(s) != NUL)  // check for trailing chars after expr
+    {
+	clear_tv(rettv);
+	semsg(_(e_invalid_expression_str), s);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+/*
  * Evaluate an expression, which can be a function, partial or string.
  * Pass arguments "argv[argc]".
  * If "want_func" is TRUE treat a string as a function name, not an expression.
@@ -265,78 +381,15 @@ eval_expr_typval(
 	funccall_T  *fc_arg,
 	typval_T    *rettv)
 {
-    char_u	*s;
-    char_u	buf[NUMBUFLEN];
-    funcexe_T	funcexe;
-
     if (expr->v_type == VAR_PARTIAL)
-    {
-	partial_T   *partial = expr->vval.v_partial;
-
-	if (partial == NULL)
-	    return FAIL;
-
-	if (partial->pt_func != NULL
-			  && partial->pt_func->uf_def_status != UF_NOT_COMPILED)
-	{
-	    funccall_T	*fc = fc_arg != NULL ? fc_arg
-				     : create_funccal(partial->pt_func, rettv);
-	    int		r;
-
-	    if (fc == NULL)
-		return FAIL;
-
-	    // Shortcut to call a compiled function with minimal overhead.
-	    r = call_def_function(partial->pt_func, argc, argv,
-				    DEF_USE_PT_ARGV, partial, NULL, fc, rettv);
-	    if (fc_arg == NULL)
-		remove_funccal();
-	    if (r == FAIL)
-		return FAIL;
-	}
-	else
-	{
-	    s = partial_name(partial);
-	    if (s == NULL || *s == NUL)
-		return FAIL;
-	    CLEAR_FIELD(funcexe);
-	    funcexe.fe_evaluate = TRUE;
-	    funcexe.fe_partial = partial;
-	    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
-		return FAIL;
-	}
-    }
+	return eval_expr_partial(expr, argv, argc, fc_arg, rettv);
     else if (expr->v_type == VAR_INSTR)
-    {
 	return exe_typval_instr(expr, rettv);
-    }
     else if (expr->v_type == VAR_FUNC || want_func)
-    {
-	s = expr->v_type == VAR_FUNC
-		? expr->vval.v_string
-		: tv_get_string_buf_chk_strict(expr, buf, in_vim9script());
-	if (s == NULL || *s == NUL)
-	    return FAIL;
-	CLEAR_FIELD(funcexe);
-	funcexe.fe_evaluate = TRUE;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
-	    return FAIL;
-    }
+	return eval_expr_func(expr, argv, argc, rettv);
     else
-    {
-	s = tv_get_string_buf_chk_strict(expr, buf, in_vim9script());
-	if (s == NULL)
-	    return FAIL;
-	s = skipwhite(s);
-	if (eval1_emsg(&s, rettv, NULL) == FAIL)
-	    return FAIL;
-	if (*skipwhite(s) != NUL)  // check for trailing chars after expr
-	{
-	    clear_tv(rettv);
-	    semsg(_(e_invalid_expression_str), s);
-	    return FAIL;
-	}
-    }
+	return eval_expr_string(expr, rettv);
+
     return OK;
 }
 
@@ -1117,41 +1170,40 @@ get_lval_check_access(
     ch_log(NULL, "LKVAR: get_lval_check_access(), cl_exec %p, cl %p, %c",
 						(void*)cl_exec, (void*)cl, *p);
 #endif
-    if (cl_exec == NULL || cl_exec != cl)
+    if (cl_exec != NULL && cl_exec == cl)
+	return OK;
+
+    char *msg = NULL;
+    switch (om->ocm_access)
     {
-	char *msg = NULL;
-	switch (om->ocm_access)
-	{
-	    case VIM_ACCESS_PRIVATE:
-		msg = e_cannot_access_protected_variable_str;
+	case VIM_ACCESS_PRIVATE:
+	    msg = e_cannot_access_protected_variable_str;
+	    break;
+	case VIM_ACCESS_READ:
+	    // If [idx] or .key following, read only OK.
+	    if (*p == '[' || *p == '.')
 		break;
-	    case VIM_ACCESS_READ:
-		// If [idx] or .key following, read only OK.
-		if (*p == '[' || *p == '.')
-		    break;
-		if ((flags & GLV_READ_ONLY) == 0)
+	    if ((flags & GLV_READ_ONLY) == 0)
+	    {
+		if (IS_ENUM(cl))
 		{
-		    if (IS_ENUM(cl))
-		    {
-			if (om->ocm_type->tt_type == VAR_OBJECT)
-			    semsg(_(e_enumvalue_str_cannot_be_modified),
-				    cl->class_name, om->ocm_name);
-			else
-			    msg = e_variable_is_not_writable_str;
-		    }
+		    if (om->ocm_type->tt_type == VAR_OBJECT)
+			semsg(_(e_enumvalue_str_cannot_be_modified),
+				cl->class_name, om->ocm_name);
 		    else
 			msg = e_variable_is_not_writable_str;
 		}
-		break;
-	    case VIM_ACCESS_ALL:
-		break;
-	}
-	if (msg != NULL)
-	{
-	    emsg_var_cl_define(msg, om->ocm_name, 0, cl);
-	    return FAIL;
-	}
-
+		else
+		    msg = e_variable_is_not_writable_str;
+	    }
+	    break;
+	case VIM_ACCESS_ALL:
+	    break;
+    }
+    if (msg != NULL)
+    {
+	emsg_var_cl_define(msg, om->ocm_name, 0, cl);
+	return FAIL;
     }
     return OK;
 }
@@ -1228,6 +1280,382 @@ success:
 failed:
     *p = cc;
     return rc == OK ? p : NULL;
+}
+
+typedef enum {
+    GLV_FAIL,
+    GLV_OK,
+    GLV_STOP
+} glv_status_T;
+
+/*
+ * Get an Dict lval variable that can be assigned a value to: "name",
+ * "name[expr]", "name[expr][expr]", "name.key", "name.key[expr]" etc.
+ * "name" points to the start of the name.
+ * If "rettv" is not NULL it points to the value to be assigned.
+ * "unlet" is TRUE for ":unlet": slightly different behavior when something is
+ * wrong; must end in space or cmd separator.
+ *
+ * flags:
+ *  GLV_QUIET:       do not give error messages
+ *  GLV_READ_ONLY:   will not change the variable
+ *  GLV_NO_AUTOLOAD: do not use script autoloading
+ *
+ * The Dict is returned in 'lp'.  Returns GLV_OK on success and GLV_FAIL on
+ * failure.  Returns GLV_STOP to stop processing the characters following
+ * 'key_end'.
+ */
+    static int
+get_lval_dict_item(
+    char_u	*name,
+    lval_T	*lp,
+    char_u	*key,
+    int		len,
+    char_u	**key_end,
+    typval_T	*var1,
+    int		flags,
+    int		unlet,
+    typval_T	*rettv)
+{
+    int		quiet = flags & GLV_QUIET;
+    char_u	*p = *key_end;
+
+    if (len == -1)
+    {
+	// "[key]": get key from "var1"
+	key = tv_get_string_chk(var1);	// is number or string
+	if (key == NULL)
+	{
+	    clear_tv(var1);
+	    return GLV_FAIL;
+	}
+    }
+    lp->ll_list = NULL;
+    lp->ll_object = NULL;
+    lp->ll_class = NULL;
+
+    // a NULL dict is equivalent with an empty dict
+    if (lp->ll_tv->vval.v_dict == NULL)
+    {
+	lp->ll_tv->vval.v_dict = dict_alloc();
+	if (lp->ll_tv->vval.v_dict == NULL)
+	{
+	    clear_tv(var1);
+	    return GLV_FAIL;
+	}
+	++lp->ll_tv->vval.v_dict->dv_refcount;
+    }
+    lp->ll_dict = lp->ll_tv->vval.v_dict;
+
+    lp->ll_di = dict_find(lp->ll_dict, key, len);
+
+    // When assigning to a scope dictionary check that a function and
+    // variable name is valid (only variable name unless it is l: or
+    // g: dictionary). Disallow overwriting a builtin function.
+    if (rettv != NULL && lp->ll_dict->dv_scope != 0)
+    {
+	int prevval;
+
+	if (len != -1)
+	{
+	    prevval = key[len];
+	    key[len] = NUL;
+	}
+	else
+	    prevval = 0; // avoid compiler warning
+	int wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
+		&& (rettv->v_type == VAR_FUNC
+		    || rettv->v_type == VAR_PARTIAL)
+		&& var_wrong_func_name(key, lp->ll_di == NULL))
+	    || !valid_varname(key, -1, TRUE);
+	if (len != -1)
+	    key[len] = prevval;
+	if (wrong)
+	{
+	    clear_tv(var1);
+	    return GLV_FAIL;
+	}
+    }
+
+    if (lp->ll_valtype != NULL)
+	// use the type of the member
+	lp->ll_valtype = lp->ll_valtype->tt_member;
+
+    if (lp->ll_di == NULL)
+    {
+	// Can't add "v:" or "a:" variable.
+	if (lp->ll_dict == get_vimvar_dict()
+		|| &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
+	{
+	    semsg(_(e_illegal_variable_name_str), name);
+	    clear_tv(var1);
+	    return GLV_FAIL;
+	}
+
+	// Key does not exist in dict: may need to add it.
+	if (*p == '[' || *p == '.' || unlet)
+	{
+	    if (!quiet)
+		semsg(_(e_key_not_present_in_dictionary_str), key);
+	    clear_tv(var1);
+	    return GLV_FAIL;
+	}
+	if (len == -1)
+	    lp->ll_newkey = vim_strsave(key);
+	else
+	    lp->ll_newkey = vim_strnsave(key, len);
+	clear_tv(var1);
+	if (lp->ll_newkey == NULL)
+	    p = NULL;
+
+	*key_end = p;
+	return GLV_STOP;
+    }
+    // existing variable, need to check if it can be changed
+    else if ((flags & GLV_READ_ONLY) == 0
+	    && (var_check_ro(lp->ll_di->di_flags, name, FALSE)
+		|| var_check_lock(lp->ll_di->di_flags, name, FALSE)))
+    {
+	clear_tv(var1);
+	return GLV_FAIL;
+    }
+
+    clear_tv(var1);
+    lp->ll_tv = &lp->ll_di->di_tv;
+
+    return GLV_OK;
+}
+
+/*
+ * Get an blob lval variable that can be assigned a value to: "name",
+ * "na{me}", "name[expr]", "name[expr:expr]", "name[expr][expr]", etc.
+ *
+ * 'var1' specifies the starting blob index and 'var2' specifies the ending
+ * blob index.  If the first index is not specified in a range, then 'empty1'
+ * is TRUE.  If 'quiet' is TRUE, then error messages are not displayed for
+ * invalid indexes.
+ *
+ * The blob is returned in 'lp'.  Returns OK on success and FAIL on failure.
+ */
+    static int
+get_lval_blob(
+    lval_T	*lp,
+    typval_T	*var1,
+    typval_T	*var2,
+    int		empty1,
+    int		quiet)
+{
+    long	bloblen = blob_len(lp->ll_tv->vval.v_blob);
+
+    // Get the number and item for the only or first index of the List.
+    if (empty1)
+	lp->ll_n1 = 0;
+    else
+	// is number or string
+	lp->ll_n1 = (long)tv_get_number(var1);
+    clear_tv(var1);
+
+    if (check_blob_index(bloblen, lp->ll_n1, quiet) == FAIL)
+    {
+	clear_tv(var2);
+	return FAIL;
+    }
+    if (lp->ll_range && !lp->ll_empty2)
+    {
+	lp->ll_n2 = (long)tv_get_number(var2);
+	clear_tv(var2);
+	if (check_blob_range(bloblen, lp->ll_n1, lp->ll_n2, quiet) == FAIL)
+	    return FAIL;
+    }
+
+    if (!lp->ll_range)
+	// Indexing a single byte in a blob.  So the rhs type is a
+	// number.
+	lp->ll_valtype = &t_number;
+
+    lp->ll_blob = lp->ll_tv->vval.v_blob;
+    lp->ll_tv = NULL;
+
+    return OK;
+}
+
+/*
+ * Get a List lval variable that can be assigned a value to: "name",
+ * "na{me}", "name[expr]", "name[expr:expr]", "name[expr][expr]", etc.
+ *
+ * 'var1' specifies the starting List index and 'var2' specifies the ending
+ * List index.  If the first index is not specified in a range, then 'empty1'
+ * is TRUE.  If 'quiet' is TRUE, then error messages are not displayed for
+ * invalid indexes.
+ *
+ * The List is returned in 'lp'.  Returns OK on success and FAIL on failure.
+ */
+    static int
+get_lval_list(
+    lval_T	*lp,
+    typval_T	*var1,
+    typval_T	*var2,
+    int		empty1,
+    int		flags,
+    int		quiet)
+{
+    /*
+     * Get the number and item for the only or first index of the List.
+     */
+    if (empty1)
+	lp->ll_n1 = 0;
+    else
+	// is number or string
+	lp->ll_n1 = (long)tv_get_number(var1);
+    clear_tv(var1);
+
+    lp->ll_dict = NULL;
+    lp->ll_object = NULL;
+    lp->ll_class = NULL;
+    lp->ll_list = lp->ll_tv->vval.v_list;
+    lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1,
+				(flags & GLV_ASSIGN_WITH_OP) == 0, quiet);
+    if (lp->ll_li == NULL)
+    {
+	clear_tv(var2);
+	return FAIL;
+    }
+
+    if (lp->ll_valtype != NULL && !lp->ll_range)
+	// use the type of the member
+	lp->ll_valtype = lp->ll_valtype->tt_member;
+
+    /*
+     * May need to find the item or absolute index for the second
+     * index of a range.
+     * When no index given: "lp->ll_empty2" is TRUE.
+     * Otherwise "lp->ll_n2" is set to the second index.
+     */
+    if (lp->ll_range && !lp->ll_empty2)
+    {
+	lp->ll_n2 = (long)tv_get_number(var2);
+	// is number or string
+	clear_tv(var2);
+	if (check_range_index_two(lp->ll_list,
+			&lp->ll_n1, lp->ll_li, &lp->ll_n2, quiet) == FAIL)
+	    return FAIL;
+    }
+
+    lp->ll_tv = &lp->ll_li->li_tv;
+
+    return OK;
+}
+
+/*
+ * Get a Class or Object lval variable that can be assigned a value to:
+ * "name", "name.key", "name.key[expr]" etc.
+ *
+ * 'cl_exec' is the class that is executing, or NULL. 'v_type' is VAR_CLASS or
+ * VAR_OBJECT.  'key' points to the member variable name and 'key_end' points
+ * to the character after 'key'.  If 'quiet' is TRUE, then error messages
+ * are not displayed for invalid indexes.
+ *
+ * The Class or Object is returned in 'lp'.  Returns OK on success and FAIL on
+ * failure.
+ */
+    static int
+get_lval_class_or_obj(
+    class_T	*cl_exec,
+    vartype_T	v_type,
+    lval_T	*lp,
+    char_u	*key,
+    char_u	*key_end,
+    int		flags,
+    int		quiet)
+{
+    lp->ll_dict = NULL;
+    lp->ll_list = NULL;
+
+    class_T *cl;
+    if (v_type == VAR_OBJECT)
+    {
+	if (lp->ll_tv->vval.v_object == NULL)
+	{
+	    if (!quiet)
+		emsg(_(e_using_null_object));
+	    return FAIL;
+	}
+	cl = lp->ll_tv->vval.v_object->obj_class;
+	lp->ll_object = lp->ll_tv->vval.v_object;
+    }
+    else
+    {
+	cl = lp->ll_tv->vval.v_class;
+	lp->ll_object = NULL;
+    }
+    lp->ll_class = cl;
+
+    // TODO: what if class is NULL?
+    if (cl != NULL)
+    {
+	lp->ll_valtype = NULL;
+
+	if (flags & GLV_PREFER_FUNC)
+	{
+	    // First look for a function with this name.
+	    // round 1: class functions (skipped for an object)
+	    // round 2: object methods
+	    for (int round = v_type == VAR_OBJECT ? 2 : 1;
+		    round <= 2; ++round)
+	    {
+		int	m_idx;
+		ufunc_T	*fp;
+
+		fp = method_lookup(cl,
+			round == 1 ? VAR_CLASS : VAR_OBJECT,
+			key, key_end - key, &m_idx);
+		lp->ll_oi = m_idx;
+		if (fp != NULL)
+		{
+		    lp->ll_ufunc = fp;
+		    lp->ll_valtype = fp->uf_func_type;
+		    break;
+		}
+	    }
+	}
+
+	if (lp->ll_valtype == NULL)
+	{
+	    int		m_idx;
+	    ocmember_T	*om
+		= member_lookup(cl, v_type, key, key_end - key, &m_idx);
+	    lp->ll_oi = m_idx;
+	    if (om != NULL)
+	    {
+		if (get_lval_check_access(cl_exec, cl, om,
+			    key_end, flags) == FAIL)
+		    return FAIL;
+
+		// When lhs is used to modify the variable, check it is
+		// not a read-only variable.
+		if ((flags & GLV_READ_ONLY) == 0
+			&& (*key_end != '.' && *key_end != '[')
+			&& oc_var_check_ro(cl, om))
+		    return FAIL;
+
+		lp->ll_valtype = om->ocm_type;
+
+		if (v_type == VAR_OBJECT)
+		    lp->ll_tv = ((typval_T *)(
+				lp->ll_tv->vval.v_object + 1)) + m_idx;
+		else
+		    lp->ll_tv = &cl->class_members_tv[m_idx];
+	    }
+	}
+
+	if (lp->ll_valtype == NULL)
+	{
+	    member_not_found_msg(cl, v_type, key, key_end - key);
+	    return FAIL;
+	}
+    }
+
+    return OK;
 }
 
 /*
@@ -1614,279 +2042,32 @@ get_lval(
 
 	if (v_type == VAR_DICT)
 	{
-	    if (len == -1)
-	    {
-		// "[key]": get key from "var1"
-		key = tv_get_string_chk(&var1);	// is number or string
-		if (key == NULL)
-		{
-		    clear_tv(&var1);
-		    return NULL;
-		}
-	    }
-	    lp->ll_list = NULL;
-	    lp->ll_object = NULL;
-	    lp->ll_class = NULL;
+	    glv_status_T glv_status;
 
-	    // a NULL dict is equivalent with an empty dict
-	    if (lp->ll_tv->vval.v_dict == NULL)
-	    {
-		lp->ll_tv->vval.v_dict = dict_alloc();
-		if (lp->ll_tv->vval.v_dict == NULL)
-		{
-		    clear_tv(&var1);
-		    return NULL;
-		}
-		++lp->ll_tv->vval.v_dict->dv_refcount;
-	    }
-	    lp->ll_dict = lp->ll_tv->vval.v_dict;
-
-	    lp->ll_di = dict_find(lp->ll_dict, key, len);
-
-	    // When assigning to a scope dictionary check that a function and
-	    // variable name is valid (only variable name unless it is l: or
-	    // g: dictionary). Disallow overwriting a builtin function.
-	    if (rettv != NULL && lp->ll_dict->dv_scope != 0)
-	    {
-		int prevval;
-
-		if (len != -1)
-		{
-		    prevval = key[len];
-		    key[len] = NUL;
-		}
-		else
-		    prevval = 0; // avoid compiler warning
-		int wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
-			       && (rettv->v_type == VAR_FUNC
-					    || rettv->v_type == VAR_PARTIAL)
-			       && var_wrong_func_name(key, lp->ll_di == NULL))
-			|| !valid_varname(key, -1, TRUE);
-		if (len != -1)
-		    key[len] = prevval;
-		if (wrong)
-		{
-		    clear_tv(&var1);
-		    return NULL;
-		}
-	    }
-
-	    if (lp->ll_valtype != NULL)
-		// use the type of the member
-		lp->ll_valtype = lp->ll_valtype->tt_member;
-
-	    if (lp->ll_di == NULL)
-	    {
-		// Can't add "v:" or "a:" variable.
-		if (lp->ll_dict == get_vimvar_dict()
-			 || &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
-		{
-		    semsg(_(e_illegal_variable_name_str), name);
-		    clear_tv(&var1);
-		    return NULL;
-		}
-
-		// Key does not exist in dict: may need to add it.
-		if (*p == '[' || *p == '.' || unlet)
-		{
-		    if (!quiet)
-			semsg(_(e_key_not_present_in_dictionary_str), key);
-		    clear_tv(&var1);
-		    return NULL;
-		}
-		if (len == -1)
-		    lp->ll_newkey = vim_strsave(key);
-		else
-		    lp->ll_newkey = vim_strnsave(key, len);
-		clear_tv(&var1);
-		if (lp->ll_newkey == NULL)
-		    p = NULL;
-		break;
-	    }
-	    // existing variable, need to check if it can be changed
-	    else if ((flags & GLV_READ_ONLY) == 0
-			&& (var_check_ro(lp->ll_di->di_flags, name, FALSE)
-			  || var_check_lock(lp->ll_di->di_flags, name, FALSE)))
-	    {
-		clear_tv(&var1);
+	    glv_status = get_lval_dict_item(name, lp, key, len, &p, &var1,
+							flags, unlet, rettv);
+	    if (glv_status == GLV_FAIL)
 		return NULL;
-	    }
-
-	    clear_tv(&var1);
-	    lp->ll_tv = &lp->ll_di->di_tv;
+	    if (glv_status == GLV_STOP)
+		break;
 	}
 	else if (v_type == VAR_BLOB)
 	{
-	    long bloblen = blob_len(lp->ll_tv->vval.v_blob);
-
-	    /*
-	     * Get the number and item for the only or first index of the List.
-	     */
-	    if (empty1)
-		lp->ll_n1 = 0;
-	    else
-		// is number or string
-		lp->ll_n1 = (long)tv_get_number(&var1);
-	    clear_tv(&var1);
-
-	    if (check_blob_index(bloblen, lp->ll_n1, quiet) == FAIL)
-	    {
-		clear_tv(&var2);
+	    if (get_lval_blob(lp, &var1, &var2, empty1, quiet) == FAIL)
 		return NULL;
-	    }
-	    if (lp->ll_range && !lp->ll_empty2)
-	    {
-		lp->ll_n2 = (long)tv_get_number(&var2);
-		clear_tv(&var2);
-		if (check_blob_range(bloblen, lp->ll_n1, lp->ll_n2, quiet)
-								       == FAIL)
-		    return NULL;
-	    }
 
-	    if (!lp->ll_range)
-		// Indexing a single byte in a blob.  So the rhs type is a
-		// number.
-		lp->ll_valtype = &t_number;
-
-	    lp->ll_blob = lp->ll_tv->vval.v_blob;
-	    lp->ll_tv = NULL;
 	    break;
 	}
 	else if (v_type == VAR_LIST)
 	{
-	    /*
-	     * Get the number and item for the only or first index of the List.
-	     */
-	    if (empty1)
-		lp->ll_n1 = 0;
-	    else
-		// is number or string
-		lp->ll_n1 = (long)tv_get_number(&var1);
-	    clear_tv(&var1);
-
-	    lp->ll_dict = NULL;
-	    lp->ll_object = NULL;
-	    lp->ll_class = NULL;
-	    lp->ll_list = lp->ll_tv->vval.v_list;
-	    lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1,
-				     (flags & GLV_ASSIGN_WITH_OP) == 0, quiet);
-	    if (lp->ll_li == NULL)
-	    {
-		clear_tv(&var2);
+	    if (get_lval_list(lp, &var1, &var2, empty1, flags, quiet) == FAIL)
 		return NULL;
-	    }
-
-	    if (lp->ll_valtype != NULL && !lp->ll_range)
-		// use the type of the member
-		lp->ll_valtype = lp->ll_valtype->tt_member;
-
-	    /*
-	     * May need to find the item or absolute index for the second
-	     * index of a range.
-	     * When no index given: "lp->ll_empty2" is TRUE.
-	     * Otherwise "lp->ll_n2" is set to the second index.
-	     */
-	    if (lp->ll_range && !lp->ll_empty2)
-	    {
-		lp->ll_n2 = (long)tv_get_number(&var2);
-						    // is number or string
-		clear_tv(&var2);
-		if (check_range_index_two(lp->ll_list,
-					    &lp->ll_n1, lp->ll_li,
-					    &lp->ll_n2, quiet) == FAIL)
-		    return NULL;
-	    }
-
-	    lp->ll_tv = &lp->ll_li->li_tv;
 	}
 	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
-	    lp->ll_dict = NULL;
-	    lp->ll_list = NULL;
-
-	    class_T *cl;
-	    if (v_type == VAR_OBJECT)
-	    {
-		if (lp->ll_tv->vval.v_object == NULL)
-		{
-		    if (!quiet)
-			emsg(_(e_using_null_object));
-		    return NULL;
-		}
-	        cl = lp->ll_tv->vval.v_object->obj_class;
-	        lp->ll_object = lp->ll_tv->vval.v_object;
-	    }
-	    else
-	    {
-	        cl = lp->ll_tv->vval.v_class;
-	        lp->ll_object = NULL;
-	    }
-	    lp->ll_class = cl;
-
-	    // TODO: what if class is NULL?
-	    if (cl != NULL)
-	    {
-		lp->ll_valtype = NULL;
-
-		if (flags & GLV_PREFER_FUNC)
-		{
-		    // First look for a function with this name.
-		    // round 1: class functions (skipped for an object)
-		    // round 2: object methods
-		    for (int round = v_type == VAR_OBJECT ? 2 : 1;
-							round <= 2; ++round)
-		    {
-			int	m_idx;
-			ufunc_T	*fp;
-
-			fp = method_lookup(cl,
-				round == 1 ? VAR_CLASS : VAR_OBJECT,
-				key, p - key, &m_idx);
-			lp->ll_oi = m_idx;
-			if (fp != NULL)
-			{
-			    lp->ll_ufunc = fp;
-			    lp->ll_valtype = fp->uf_func_type;
-			    break;
-			}
-		    }
-		}
-
-		if (lp->ll_valtype == NULL)
-		{
-		    int		m_idx;
-		    ocmember_T	*om
-			    = member_lookup(cl, v_type, key, p - key, &m_idx);
-		    lp->ll_oi = m_idx;
-		    if (om != NULL)
-		    {
-			if (get_lval_check_access(cl_exec, cl, om,
-							  p, flags) == FAIL)
-			    return NULL;
-
-			// When lhs is used to modify the variable, check it is
-			// not a read-only variable.
-			if ((flags & GLV_READ_ONLY) == 0
-				&& (*p != '.' && *p != '[')
-				&& oc_var_check_ro(cl, om))
-			    return NULL;
-
-			lp->ll_valtype = om->ocm_type;
-
-			if (v_type == VAR_OBJECT)
-			    lp->ll_tv = ((typval_T *)(
-					lp->ll_tv->vval.v_object + 1)) + m_idx;
-			else
-			    lp->ll_tv = &cl->class_members_tv[m_idx];
-		    }
-		}
-
-		if (lp->ll_valtype == NULL)
-		{
-		    member_not_found_msg(cl, v_type, key, p - key);
-		    return NULL;
-		}
-	    }
+	    if (get_lval_class_or_obj(cl_exec, v_type, lp, key, p, flags,
+							quiet) == FAIL)
+		return FAIL;
 	}
     }
 
@@ -2090,6 +2271,173 @@ set_var_lval(
 }
 
 /*
+ * Handle "blob1 += blob2".
+ * Returns OK or FAIL.
+ */
+    static int
+tv_op_blob(typval_T *tv1, typval_T *tv2, char_u *op)
+{
+    if (*op != '+' || tv2->v_type != VAR_BLOB)
+	return FAIL;
+
+    // Blob += Blob
+    if (tv1->vval.v_blob == NULL || tv2->vval.v_blob == NULL)
+	return OK;
+
+    blob_T	*b1 = tv1->vval.v_blob;
+    blob_T	*b2 = tv2->vval.v_blob;
+    int		len = blob_len(b2);
+
+    for (int i = 0; i < len; i++)
+	ga_append(&b1->bv_ga, blob_get(b2, i));
+
+    return OK;
+}
+
+/*
+ * Handle "list1 += list2".
+ * Returns OK or FAIL.
+ */
+    static int
+tv_op_list(typval_T *tv1, typval_T *tv2, char_u *op)
+{
+    if (*op != '+' || tv2->v_type != VAR_LIST)
+	return FAIL;
+
+    // List += List
+    if (tv2->vval.v_list == NULL)
+	return OK;
+
+    if (tv1->vval.v_list == NULL)
+    {
+	tv1->vval.v_list = tv2->vval.v_list;
+	++tv1->vval.v_list->lv_refcount;
+    }
+    else
+	list_extend(tv1->vval.v_list, tv2->vval.v_list, NULL);
+
+    return OK;
+}
+
+/*
+ * Handle number operations:
+ *	nr += nr , nr -= nr , nr *=nr , nr /= nr , nr %= nr
+ *
+ * Returns OK or FAIL.
+ */
+    static int
+tv_op_number(typval_T *tv1, typval_T *tv2, char_u *op)
+{
+    varnumber_T	n;
+    int		failed = FALSE;
+
+    n = tv_get_number(tv1);
+    if (tv2->v_type == VAR_FLOAT)
+    {
+	float_T f = n;
+
+	if (*op == '%')
+	    return FAIL;
+	switch (*op)
+	{
+	    case '+': f += tv2->vval.v_float; break;
+	    case '-': f -= tv2->vval.v_float; break;
+	    case '*': f *= tv2->vval.v_float; break;
+	    case '/': f /= tv2->vval.v_float; break;
+	}
+	clear_tv(tv1);
+	tv1->v_type = VAR_FLOAT;
+	tv1->vval.v_float = f;
+    }
+    else
+    {
+	switch (*op)
+	{
+	    case '+': n += tv_get_number(tv2); break;
+	    case '-': n -= tv_get_number(tv2); break;
+	    case '*': n *= tv_get_number(tv2); break;
+	    case '/': n = num_divide(n, tv_get_number(tv2), &failed); break;
+	    case '%': n = num_modulus(n, tv_get_number(tv2), &failed); break;
+	}
+	clear_tv(tv1);
+	tv1->v_type = VAR_NUMBER;
+	tv1->vval.v_number = n;
+    }
+
+    return failed ? FAIL : OK;
+}
+
+/*
+ * Handle "str1 .= str2"
+ * Returns OK or FAIL.
+ */
+    static int
+tv_op_string(typval_T *tv1, typval_T *tv2, char_u *op UNUSED)
+{
+    char_u	numbuf[NUMBUFLEN];
+    char_u	*s;
+
+    if (tv2->v_type == VAR_FLOAT)
+	return FAIL;
+
+    // str .= str
+    s = tv_get_string(tv1);
+    s = concat_str(s, tv_get_string_buf(tv2, numbuf));
+    clear_tv(tv1);
+    tv1->v_type = VAR_STRING;
+    tv1->vval.v_string = s;
+
+    return OK;
+}
+
+/*
+ * Handle "tv1 += tv2", "tv1 -= tv2", "tv1 *= tv2", "tv1 /= tv2", "tv1 %= tv2"
+ * and "tv1 .= tv2"
+ * Returns OK or FAIL.
+ */
+    static int
+tv_op_nr_or_string(typval_T *tv1, typval_T *tv2, char_u *op)
+{
+    if (tv2->v_type == VAR_LIST)
+	return FAIL;
+
+    if (vim_strchr((char_u *)"+-*/%", *op) != NULL)
+	return tv_op_number(tv1, tv2, op);
+
+    return tv_op_string(tv1, tv2, op);
+}
+
+/*
+ * Handle "f1 += f2", "f1 -= f2", "f1 *= f2", "f1 /= f2".
+ * Returns OK or FAIL.
+ */
+    static int
+tv_op_float(typval_T *tv1, typval_T *tv2, char_u *op)
+{
+    float_T f;
+
+    if (*op == '%' || *op == '.'
+	    || (tv2->v_type != VAR_FLOAT
+		&& tv2->v_type != VAR_NUMBER
+		&& tv2->v_type != VAR_STRING))
+	return FAIL;
+
+    if (tv2->v_type == VAR_FLOAT)
+	f = tv2->vval.v_float;
+    else
+	f = tv_get_number(tv2);
+    switch (*op)
+    {
+	case '+': tv1->vval.v_float += f; break;
+	case '-': tv1->vval.v_float -= f; break;
+	case '*': tv1->vval.v_float *= f; break;
+	case '/': tv1->vval.v_float /= f; break;
+    }
+
+    return OK;
+}
+
+/*
  * Handle "tv1 += tv2", "tv1 -= tv2", "tv1 *= tv2", "tv1 /= tv2", "tv1 %= tv2"
  * and "tv1 .= tv2"
  * Returns OK or FAIL.
@@ -2097,152 +2445,66 @@ set_var_lval(
     int
 tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 {
-    varnumber_T	n;
-    char_u	numbuf[NUMBUFLEN];
-    char_u	*s;
-    int		failed = FALSE;
-
-    // Can't do anything with a Funcref or Dict or Type on the right.
+    // Can't do anything with a Funcref or Dict on the right.
     // v:true and friends only work with "..=".
-    if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT
-		    && tv2->v_type != VAR_CLASS && tv2->v_type != VAR_TYPEALIAS
-		    && ((tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)
-								|| *op == '.'))
+    if (tv2->v_type == VAR_FUNC || tv2->v_type == VAR_DICT
+		|| ((tv2->v_type == VAR_BOOL || tv2->v_type == VAR_SPECIAL)
+							&& *op != '.'))
     {
-	switch (tv1->v_type)
-	{
-	    case VAR_UNKNOWN:
-	    case VAR_ANY:
-	    case VAR_VOID:
-	    case VAR_DICT:
-	    case VAR_FUNC:
-	    case VAR_PARTIAL:
-	    case VAR_BOOL:
-	    case VAR_SPECIAL:
-	    case VAR_JOB:
-	    case VAR_CHANNEL:
-	    case VAR_INSTR:
-	    case VAR_OBJECT:
-		break;
-	    case VAR_CLASS:
-	    case VAR_TYPEALIAS:
-		check_typval_is_value(tv1);
-		return FAIL;
-
-	    case VAR_BLOB:
-		if (*op != '+' || tv2->v_type != VAR_BLOB)
-		    break;
-		// BLOB += BLOB
-		if (tv1->vval.v_blob != NULL && tv2->vval.v_blob != NULL)
-		{
-		    blob_T  *b1 = tv1->vval.v_blob;
-		    blob_T  *b2 = tv2->vval.v_blob;
-		    int	i, len = blob_len(b2);
-		    for (i = 0; i < len; i++)
-			ga_append(&b1->bv_ga, blob_get(b2, i));
-		}
-		return OK;
-
-	    case VAR_LIST:
-		if (*op != '+' || tv2->v_type != VAR_LIST)
-		    break;
-		// List += List
-		if (tv2->vval.v_list != NULL)
-		{
-		    if (tv1->vval.v_list == NULL)
-		    {
-			tv1->vval.v_list = tv2->vval.v_list;
-			++tv1->vval.v_list->lv_refcount;
-		    }
-		    else
-			list_extend(tv1->vval.v_list, tv2->vval.v_list, NULL);
-		}
-		return OK;
-
-	    case VAR_NUMBER:
-	    case VAR_STRING:
-		if (tv2->v_type == VAR_LIST)
-		    break;
-		if (vim_strchr((char_u *)"+-*/%", *op) != NULL)
-		{
-		    // nr += nr , nr -= nr , nr *=nr , nr /= nr , nr %= nr
-		    n = tv_get_number(tv1);
-		    if (tv2->v_type == VAR_FLOAT)
-		    {
-			float_T f = n;
-
-			if (*op == '%')
-			    break;
-			switch (*op)
-			{
-			    case '+': f += tv2->vval.v_float; break;
-			    case '-': f -= tv2->vval.v_float; break;
-			    case '*': f *= tv2->vval.v_float; break;
-			    case '/': f /= tv2->vval.v_float; break;
-			}
-			clear_tv(tv1);
-			tv1->v_type = VAR_FLOAT;
-			tv1->vval.v_float = f;
-		    }
-		    else
-		    {
-			switch (*op)
-			{
-			    case '+': n += tv_get_number(tv2); break;
-			    case '-': n -= tv_get_number(tv2); break;
-			    case '*': n *= tv_get_number(tv2); break;
-			    case '/': n = num_divide(n, tv_get_number(tv2),
-							       &failed); break;
-			    case '%': n = num_modulus(n, tv_get_number(tv2),
-							       &failed); break;
-			}
-			clear_tv(tv1);
-			tv1->v_type = VAR_NUMBER;
-			tv1->vval.v_number = n;
-		    }
-		}
-		else
-		{
-		    if (tv2->v_type == VAR_FLOAT)
-			break;
-
-		    // str .= str
-		    s = tv_get_string(tv1);
-		    s = concat_str(s, tv_get_string_buf(tv2, numbuf));
-		    clear_tv(tv1);
-		    tv1->v_type = VAR_STRING;
-		    tv1->vval.v_string = s;
-		}
-		return failed ? FAIL : OK;
-
-	    case VAR_FLOAT:
-		{
-		    float_T f;
-
-		    if (*op == '%' || *op == '.'
-				   || (tv2->v_type != VAR_FLOAT
-				    && tv2->v_type != VAR_NUMBER
-				    && tv2->v_type != VAR_STRING))
-			break;
-		    if (tv2->v_type == VAR_FLOAT)
-			f = tv2->vval.v_float;
-		    else
-			f = tv_get_number(tv2);
-		    switch (*op)
-		    {
-			case '+': tv1->vval.v_float += f; break;
-			case '-': tv1->vval.v_float -= f; break;
-			case '*': tv1->vval.v_float *= f; break;
-			case '/': tv1->vval.v_float /= f; break;
-		    }
-		}
-		return OK;
-	}
+	semsg(_(e_wrong_variable_type_for_str_equal), op);
+	return FAIL;
     }
 
-    if (check_typval_is_value(tv2) == OK)
+    if (tv2->v_type == VAR_CLASS || tv2->v_type == VAR_TYPEALIAS)
+    {
+	check_typval_is_value(tv2);
+	return FAIL;
+    }
+
+    int retval = FAIL;
+    switch (tv1->v_type)
+    {
+	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
+	case VAR_DICT:
+	case VAR_FUNC:
+	case VAR_PARTIAL:
+	case VAR_BOOL:
+	case VAR_SPECIAL:
+	case VAR_JOB:
+	case VAR_CHANNEL:
+	case VAR_INSTR:
+	case VAR_OBJECT:
+	    break;
+
+	case VAR_CLASS:
+	case VAR_TYPEALIAS:
+	    check_typval_is_value(tv1);
+	    return FAIL;
+
+	case VAR_BLOB:
+	    retval = tv_op_blob(tv1, tv2, op);
+	    break;
+
+	case VAR_LIST:
+	    retval = tv_op_list(tv1, tv2, op);
+	    break;
+
+	case VAR_NUMBER:
+	case VAR_STRING:
+	    retval = tv_op_nr_or_string(tv1, tv2, op);
+	    break;
+
+	case VAR_FLOAT:
+	    retval = tv_op_float(tv1, tv2, op);
+	    break;
+    }
+
+    if (retval != OK)
 	semsg(_(e_wrong_variable_type_for_str_equal), op);
-    return FAIL;
+
+    return retval;
 }
 
 /*
