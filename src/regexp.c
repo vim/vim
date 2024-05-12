@@ -642,7 +642,7 @@ skip_regexp_ex(
 	{
 	    if (dirc == '?' && newp != NULL && p[1] == '?')
 	    {
-		size_t	startplen;
+		size_t	startplen = 0;
 
 		// change "\?" to "?", make a copy first.
 		if (*newp == NULL)
