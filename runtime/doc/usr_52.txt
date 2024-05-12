@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 9.1.  Last change: 2022 Jun 04
+*usr_52.txt*	For Vim version 9.1.  Last change: 2024 May 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -155,7 +155,7 @@ AUTOLOAD DIRECTORY
 
 Another form is to use autoload with a script name that is not an absolute or
 relative path: >
-	import autload "monthlib.vim"
+	import autoload "monthlib.vim"
 
 This will search for the script "monthlib.vim" in the autoload directories of
 'runtimepath'.  With Unix one of the directories often is "~/.vim/autoload".
