@@ -12,6 +12,7 @@
 "   2024 May 08 by Vim Project: cleanup legacy Win9X checks
 "   2024 May 09 by Vim Project: remove hard-coded private.ppk
 "   2024 May 10 by Vim Project: recursively delete directories by default
+"   2024 May 13 by Vim Project: prefer scp over pscp
 " Former Maintainer:	Charles E Campbell
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 2016 Charles E. Campbell {{{1
@@ -283,13 +284,14 @@ call s:NetrwInit("g:netrw_rcp_cmd"  , "rcp")
 call s:NetrwInit("g:netrw_rsync_cmd", "rsync")
 call s:NetrwInit("g:netrw_rsync_sep", "/")
 if !exists("g:netrw_scp_cmd")
- if executable("pscp")
+ if executable("scp")
+  call s:NetrwInit("g:netrw_scp_cmd" , "scp -q")
+ elseif executable("pscp")
   call s:NetrwInit("g:netrw_scp_cmd", 'pscp -q')
  else
   call s:NetrwInit("g:netrw_scp_cmd" , "scp -q")
  endif
 endif
-
 call s:NetrwInit("g:netrw_sftp_cmd" , "sftp")
 call s:NetrwInit("g:netrw_ssh_cmd"  , "ssh")
 
