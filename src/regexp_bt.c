@@ -5570,7 +5570,7 @@ regprop(char_u *op)
       case ZREF + 7:
       case ZREF + 8:
       case ZREF + 9:
-	bulen += sprintf(buf + buflen, "ZREF%d", OP(op) - ZREF);
+	buflen += sprintf(buf + buflen, "ZREF%d", OP(op) - ZREF);
 	p = NULL;
 	break;
 #endif
