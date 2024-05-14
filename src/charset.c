@@ -765,10 +765,22 @@ linetabsize_str(char_u *s)
 linetabsize_col(int startcol, char_u *s)
 {
     chartabsize_T cts;
+    vimlong_T vcol;
 
     init_chartabsize_arg(&cts, curwin, 0, startcol, s, s);
+    vcol = cts.cts_vcol;
+
     while (*cts.cts_ptr != NUL)
-	cts.cts_vcol += lbr_chartabsize_adv(&cts);
+    {
+	vcol += lbr_chartabsize_adv(&cts);
+	if (vcol > MAXCOL)
+	{
+	    cts.cts_vcol = MAXCOL;
+	    break;
+	}
+	else
+	    cts.cts_vcol = (int)vcol;
+    }
     clear_chartabsize_arg(&cts);
     return (int)cts.cts_vcol;
 }
@@ -840,12 +852,22 @@ linetabsize_no_outer(win_T *wp, linenr_T lnum)
     void
 win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
 {
+    vimlong_T vcol = cts->cts_vcol;
 #ifdef FEAT_PROP_POPUP
     cts->cts_with_trailing = len == MAXCOL;
 #endif
     for ( ; *cts->cts_ptr != NUL && (len == MAXCOL || cts->cts_ptr < cts->cts_line + len);
 						      MB_PTR_ADV(cts->cts_ptr))
-	cts->cts_vcol += win_lbr_chartabsize(cts, NULL);
+    {
+	vcol += win_lbr_chartabsize(cts, NULL);
+	if (vcol > MAXCOL)
+	{
+	    cts->cts_vcol = MAXCOL;
+	    break;
+	}
+	else
+	    cts->cts_vcol = (int)vcol;
+    }
 #ifdef FEAT_PROP_POPUP
     // check for a virtual text at the end of a line or on an empty line
     if (len == MAXCOL && cts->cts_has_prop_with_text && *cts->cts_ptr == NUL)
