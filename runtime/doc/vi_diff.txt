@@ -49,7 +49,7 @@ printed.
 
 autoprint (ap)		boolean	(default on)		*'autoprint'* *'ap'*
 beautify (bf)		boolean	(default off)		*'beautify'* *'bf'*
-flash (fl)		boolean	(default ??)		*'flash'* *'fl'*
+flash (fl)		boolean	(default on)		*'flash'* *'fl'*
 graphic (gr)		boolean	(default off)		*'graphic'* *'gr'*
 hardtabs (ht)		number	(default 8)		*'hardtabs'* *'ht'*
 	number of spaces that a <Tab> moves on the display
