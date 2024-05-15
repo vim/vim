@@ -9518,6 +9518,7 @@ python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
 python-fchdir	if_pyth.txt	/*python-fchdir*
 python-find_module	if_pyth.txt	/*python-find_module*
+python-find_spec	if_pyth.txt	/*python-find_spec*
 python-foreach_rtp	if_pyth.txt	/*python-foreach_rtp*
 python-input	if_pyth.txt	/*python-input*
 python-options	if_pyth.txt	/*python-options*
