@@ -4,8 +4,6 @@
 source check.vim
 CheckFeature spell
 
-source screendump.vim
-
 func TearDown()
   set nospell
   call delete('Xtest.aff')
