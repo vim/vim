@@ -75,7 +75,7 @@ void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
 int vtp_printf(char *format, ...);
-void get_default_console_color(int *cterm_fg, int *cterm_bg, long *gui_fg, long *gui_bg);
+void get_default_console_color(int *cterm_fg, int *cterm_bg, guicolor_T *gui_fg, guicolor_T *gui_bg);
 void control_console_color_rgb(void);
 int use_vtp(void);
 int is_term_win32(void);
