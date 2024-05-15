@@ -270,6 +270,9 @@ jobs:
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
+      - if: ${{ !cancelled() }}
+        uses: ./.github/actions/screendump
+
       - name: Vim tags
         if: contains(matrix.extra, 'vimtags')
         run: |
@@ -395,6 +398,9 @@ jobs:
         timeout-minutes: 20
         run: |
           make ${TEST}
+
+      - if: ${{ !cancelled() }}
+        uses: ./.github/actions/screendump
 
   windows:
     runs-on: windows-2022
@@ -690,6 +696,9 @@ jobs:
             @rem Run only tiny tests.
             nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
+
+      - if: ${{ !cancelled() }}
+        uses: ./.github/actions/screendump
 
       - name: Generate gcov files
         if: matrix.coverage
