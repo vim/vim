@@ -512,7 +512,7 @@ spell_suggest(int count)
 	    badlen = ml_get_curline_len() - (int)curwin->w_cursor.col;
     }
     // Find the start of the badly spelled word.
-    else if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
+    else if (spell_move_to(curwin, FORWARD, TRUE, FALSE, TRUE, NULL) == 0
 	    || curwin->w_cursor.col > prev_cursor.col)
     {
 	// No bad word or it starts after the cursor: use the word under the

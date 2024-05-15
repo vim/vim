@@ -22,7 +22,6 @@ void pop_showcmd(void);
 void do_check_scrollbind(int check);
 void check_scrollbind(linenr_T topline_diff, long leftcol_diff);
 int find_decl(char_u *ptr, int len, int locally, int thisblock, int flags_arg);
-void nv_g_home_m_cmd(cmdarg_T *cap);
 int nv_screengo(oparg_T *oap, int dir, long dist);
 void nv_scroll_line(cmdarg_T *cap);
 void handle_tabmenu(void);
@@ -30,6 +29,7 @@ void do_nv_ident(int c1, int c2);
 int get_visual_text(cmdarg_T *cap, char_u **pp, int *lenp);
 void start_selection(void);
 void may_start_select(int c);
+void nv_g_home_m_cmd(cmdarg_T *cap);
 int unadjust_for_sel(void);
 void set_cursor_for_append_to_line(void);
 /* vim: set ft=c : */

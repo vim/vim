@@ -6,7 +6,7 @@ int match_compoundrule(slang_T *slang, char_u *compflags);
 int valid_word_prefix(int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req);
 int spell_valid_case(int wordflags, int treeflags);
 int spell_check_window(win_T *wp);
-int spell_move_to(win_T *wp, int dir, int allwords, int curline, hlf_T *attrp);
+int spell_move_to(win_T *wp, int dir, int allwords, int rare, int curline, hlf_T *attrp);
 void spell_cat_line(char_u *buf, char_u *line, int maxlen);
 char_u *spell_enc(void);
 slang_T *slang_alloc(char_u *lang);

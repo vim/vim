@@ -1337,6 +1337,7 @@ spell_move_to(
     win_T	*wp,
     int		dir,		// FORWARD or BACKWARD
     int		allwords,	// TRUE for "[s"/"]s", FALSE for "[S"/"]S"
+    int		rare,		// TRUE for "[r"/"]r", FALSE otherwise
     int		curline,
     hlf_T	*attrp)		// return: attributes of bad word or NULL
 				// (only when "dir" is FORWARD)
@@ -1441,7 +1442,9 @@ spell_move_to(
 	    if (attr != HLF_COUNT)
 	    {
 		// We found a bad word.  Check the attribute.
-		if (allwords || attr == HLF_SPB)
+		if (allwords
+				|| !rare && attr == HLF_SPB
+				|| rare && attr == HLF_SPR)
 		{
 		    // When searching forward only accept a bad word after
 		    // the cursor.

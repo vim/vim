@@ -278,6 +278,7 @@ NEW_TESTS = \
 	test_spell \
 	test_spell_utf8 \
 	test_spellfile \
+	test_spellrare \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
