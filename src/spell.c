@@ -1443,8 +1443,8 @@ spell_move_to(
 	    {
 		// We found a bad word.  Check the attribute.
 		if (allwords
-				|| !rare && attr == HLF_SPB
-				|| rare && attr == HLF_SPR)
+				|| (!rare && attr == HLF_SPB)
+				|| (rare && attr == HLF_SPR))
 		{
 		    // When searching forward only accept a bad word after
 		    // the cursor.
