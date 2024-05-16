@@ -1,22 +1,16 @@
 " Test spell checking
-" Note: this file uses latin1 encoding, but is used with utf-8 encoding.
 
 source check.vim
 CheckFeature spell
 
 func TearDown()
   set nospell
-  call delete('Xtest.aff')
-  call delete('Xtest.dic')
-  call delete('Xtest.latin1.add')
-  call delete('Xtest.latin1.add.spl')
-  call delete('Xtest.latin1.spl')
-  call delete('Xtest.latin1.sug')
   " set 'encoding' to clear the word list
   set encoding=utf-8
 endfunc
 
-" Test spellbadword() with argument
+" Test spellbadword() with argument, specifically to move to "rare" words
+" in normal mode.
 func Test_spellrareword()
   set spell
 
