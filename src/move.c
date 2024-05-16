@@ -2059,8 +2059,20 @@ adjust_skipcol(void)
 	return;  // don't scroll in the other direction now
     }
 
-    int col = curwin->w_virtcol - curwin->w_skipcol + scrolloff_cols;
     int row = 0;
+    int col = curwin->w_virtcol + scrolloff_cols;
+
+    // Avoid adjusting for 'scrolloff' beyond the text line height.
+    if (scrolloff_cols > 0)
+    {
+	int size = win_linetabsize(curwin, curwin->w_topline,
+				    ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+	size = width1 + width2 * ((size - width1 + width2 - 1) / width2);
+	while (col > size)
+	    col -= width2;
+    }
+    col -= curwin->w_skipcol;
+
     if (col >= width1)
     {
 	col -= width1;
@@ -2785,7 +2797,9 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     }
     curwin->w_valid |= VALID_TOPLINE;
 
-    cursor_correct_sms();
+    // Make sure cursor is still visible after adjusting skipcol for "zb".
+    if (set_topbot)
+	cursor_correct_sms();
 }
 
 /*
