@@ -3,12 +3,6 @@
 source check.vim
 CheckFeature spell
 
-func TearDown()
-  set nospell
-  " set 'encoding' to clear the word list
-  set encoding=utf-8
-endfunc
-
 " Test spellbadword() with argument, specifically to move to "rare" words
 " in normal mode.
 func Test_spellrareword()
@@ -16,13 +10,13 @@ func Test_spellrareword()
 
   " Create a small word list to test that spellbadword('...')
   " can return ['...', 'rare'].
-  e Xwords
-  insert
-foo
-foobar/?
-foobara/?
-.
-   w!
+  let lines =<< trim END
+     foo
+     foobar/?
+     foobara/?
+END
+   call writefile(lines, 'Xwords', 'D')
+
    mkspell! Xwords.spl Xwords
    set spelllang=Xwords.spl
    call assert_equal(['foobar', 'rare'], spellbadword('foo foobar'))
@@ -57,9 +51,11 @@ foobara/?
   set nospell
 
   call delete('Xwords.spl')
-  call delete('Xwords')
   set spelllang&
   set spell&
+
+  " set 'encoding' to clear the word list
+  set encoding=utf-8
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
