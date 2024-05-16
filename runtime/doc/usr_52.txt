@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 9.1.  Last change: 2024 May 05
+*usr_52.txt*	For Vim version 9.1.  Last change: 2024 May 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -45,7 +45,7 @@ private function: >
 	def GetReply(nr: number): string
 	  if nr == 42
 	     return 'yes'
-	  elseif nr = 22
+	  elseif nr == 22
 	     return 'maybe'
 	  else
 	     return 'no'
