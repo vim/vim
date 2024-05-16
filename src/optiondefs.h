@@ -2769,7 +2769,7 @@ static struct vimoption options[] =
 			    {(char_u *)"",
 				 (char_u *)"'100,<50,s10,h,rdf0:,rdf1:,rdf2:"}
 #else
-			    {(char_u *)"", (char_u *)"'100,<50,s10,h"}
+			    {(char_u *)"", (char_u *)"'100,<500,s100,h"}
 #endif
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,

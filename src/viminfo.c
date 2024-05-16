@@ -1815,7 +1815,7 @@ handle_viminfo_register(garray_T *values, int force)
     }
 }
 
-    static void
+    static int
 write_viminfo_registers(FILE *fp)
 {
     int		i, j;
@@ -1827,6 +1827,8 @@ write_viminfo_registers(FILE *fp)
     long	len;
     yankreg_T	*y_ptr;
     yankreg_T	*y_regs_p = get_y_regs();;
+    // Signifies partial write
+    int		part_write = OK;
 
     fputs(_("\n# Registers:\n"), fp);
 
@@ -1835,10 +1837,10 @@ write_viminfo_registers(FILE *fp)
     if (max_num_lines < 0)
 	max_num_lines = get_viminfo_parameter('"');
     if (max_num_lines == 0)
-	return;
+	return FAIL;
     max_kbyte = get_viminfo_parameter('s');
     if (max_kbyte == 0)
-	return;
+	return FAIL;
 
     for (i = 0; i < NUM_REGISTERS; i++)
     {
@@ -1877,8 +1879,10 @@ write_viminfo_registers(FILE *fp)
 	    len = 0;
 	    for (j = 0; j < num_lines; j++)
 		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
-	    if (len > (long)max_kbyte * 1024L)
+	    if (len > (long)max_kbyte * 1024L) {
+		part_write = FAIL;
 		continue;
+	    }
 	}
 
 	switch (y_ptr->y_type)
@@ -1906,8 +1910,10 @@ write_viminfo_registers(FILE *fp)
 	fprintf(fp, "\t%s\t%d\n", type, (int)y_ptr->y_width);
 
 	// If max_num_lines < 0, then we save ALL the lines in the register
-	if (max_num_lines > 0 && num_lines > max_num_lines)
+	if (max_num_lines > 0 && num_lines > max_num_lines) {
 	    num_lines = max_num_lines;
+	    part_write = FAIL;
+	}
 	for (j = 0; j < num_lines; j++)
 	{
 	    putc('\t', fp);
@@ -1942,6 +1948,8 @@ write_viminfo_registers(FILE *fp)
 	    putc('\n', fp);
 	}
     }
+
+   return part_write;
 }
 
 /*
@@ -2895,7 +2903,7 @@ read_viminfo_up_to_marks(
 /*
  * do_viminfo() -- Should only be called from read_viminfo() & write_viminfo().
  */
-    static void
+    static int
 do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 {
     int		eof = FALSE;
@@ -2903,9 +2911,10 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     int		merge = FALSE;
     int		do_copy_marks = FALSE;
     garray_T	buflist;
+    int		retval = OK;
 
     if ((vir.vir_line = alloc(LSIZE)) == NULL)
-	return;
+	return OK;
     vir.vir_fd = fp_in;
     vir.vir_conv.vc_type = CONV_NONE;
     ga_init2(&vir.vir_barlines, sizeof(char_u *), 100);
@@ -2949,7 +2958,12 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	write_viminfo_search_pattern(fp_out);
 	write_viminfo_sub_string(fp_out);
 	write_viminfo_history(fp_out, merge);
-	write_viminfo_registers(fp_out);
+
+	if(write_viminfo_registers(fp_out) == FAIL) {
+		emsg(_(e_warning_registers_partially_written_to_viminfo));
+		retval = FAIL;
+	}
+
 	finish_viminfo_registers();
 #ifdef FEAT_EVAL
 	write_viminfo_varlist(fp_out);
@@ -2975,6 +2989,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
     if (vir.vir_conv.vc_type != CONV_NONE)
 	convert_setup(&vir.vir_conv, NULL, NULL);
     ga_clear_strings(&vir.vir_barlines);
+
+    return retval;
 }
 
 /*
