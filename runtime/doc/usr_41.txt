@@ -1399,7 +1399,8 @@ Various:					*various-functions*
 	eventhandler()		check if invoked by an event handler
 	getcellpixels()		get List of cell pixel size
 	getpid()		get process ID of Vim
-	getscriptinfo()		get list of sourced vim scripts
+	getscriptinfo()		get list of sourced Vim scripts
+	getstacktrace()		get current stack trace of Vim scripts
 	getimstatus()		check if IME status is active
 	interrupt()		interrupt script execution
 	windowsversion()	get MS-Windows version

@@ -2172,7 +2172,8 @@ v:event		Dictionary containing information about the current
 <
 					*v:exception* *exception-variable*
 v:exception	The value of the exception most recently caught and not
-		finished.  See also |v:throwpoint| and |throw-variables|.
+		finished.  See also |v:stacktrace|, |v:throwpoint|, and
+		|throw-variables|.
 		Example: >
 	:try
 	:  throw "oops"
@@ -2548,17 +2549,14 @@ v:sizeofpointer	Number of bytes in a pointer.  Depends on how Vim was compiled.
 		This is only useful for deciding whether a test will give the
 		expected result.
 
+					*v:stacktrace* *stacktrace-variable*
+v:stacktrace	The stack trace where the exception most recently caught and
+		not finished.  Refer to |getstacktrace()| for the structure of
+		stack trace.  See also |v:exception|, |v:throwpoint|, and
+		|throw-variables|.
+
 					*v:statusmsg* *statusmsg-variable*
 v:statusmsg	Last given status message.  It's allowed to set this variable.
-
-					*v:stacktrace* *stacktrace-variable*
-v:stacktrace	Contains the stack trace whitch is a list of dictionaries.
-		This dictionary has following member:
-			'funcref'	The funcref of current function.
-			'lnum'		If this function was defined in a script,
-					contains the current line number.
-			'filepath'	If this function was defined in a script,
-					contains the current filepath.
 
 					*v:swapname* *swapname-variable*
 v:swapname	Only valid when executing |SwapExists| autocommands: Name of
@@ -2685,7 +2683,7 @@ v:this_session	Full filename of the last loaded or saved session file.  See
 					*v:throwpoint* *throwpoint-variable*
 v:throwpoint	The point where the exception most recently caught and not
 		finished was thrown.  Not set when commands are typed.  See
-		also |v:exception| and |throw-variables|.
+		also |v:exception|, |v:stacktrace|, and |throw-variables|.
 		Example: >
 	:try
 	:  throw "oops"
@@ -3865,7 +3863,8 @@ in the variable |v:exception|: >
 	:    echo "Number thrown.  Value is" v:exception
 
 You may also be interested where an exception was thrown.  This is stored in
-|v:throwpoint|.  Note that "v:exception" and "v:throwpoint" are valid for the
+|v:throwpoint|.  And you can obtain the stack trace from |v:stacktrace|.
+Note that "v:exception", "v:stacktrace" and "v:throwpoint" are valid for the
 exception most recently caught as long it is not finished.
    Example: >
 

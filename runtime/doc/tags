@@ -7908,6 +7908,7 @@ getscript-history	pi_getscript.txt	/*getscript-history*
 getscript-plugins	pi_getscript.txt	/*getscript-plugins*
 getscript-start	pi_getscript.txt	/*getscript-start*
 getscriptinfo()	builtin.txt	/*getscriptinfo()*
+getstacktrace()	builtin.txt	/*getstacktrace()*
 gettabinfo()	builtin.txt	/*gettabinfo()*
 gettabvar()	builtin.txt	/*gettabvar()*
 gettabwinvar()	builtin.txt	/*gettabwinvar()*
@@ -10218,6 +10219,7 @@ sqrt()	builtin.txt	/*sqrt()*
 squirrel.vim	syntax.txt	/*squirrel.vim*
 srand()	builtin.txt	/*srand()*
 sscanf	eval.txt	/*sscanf*
+stacktrace-variable	eval.txt	/*stacktrace-variable*
 standard-plugin	usr_05.txt	/*standard-plugin*
 standard-plugin-list	help.txt	/*standard-plugin-list*
 standout	syntax.txt	/*standout*
@@ -11038,6 +11040,7 @@ v:shell_error	eval.txt	/*v:shell_error*
 v:sizeofint	eval.txt	/*v:sizeofint*
 v:sizeoflong	eval.txt	/*v:sizeoflong*
 v:sizeofpointer	eval.txt	/*v:sizeofpointer*
+v:stacktrace	eval.txt	/*v:stacktrace*
 v:statusmsg	eval.txt	/*v:statusmsg*
 v:swapchoice	eval.txt	/*v:swapchoice*
 v:swapcommand	eval.txt	/*v:swapcommand*
