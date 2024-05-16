@@ -2593,7 +2593,7 @@ nv_zg_zw(cmdarg_T *cap, int nchar)
 	// off this fails and find_ident_under_cursor() is
 	// used below.
 	emsg_off++;
-	len = spell_move_to(curwin, FORWARD, TRUE, FALSE, TRUE, NULL);
+	len = spell_move_to(curwin, FORWARD, SMT_ALL, TRUE, NULL);
 	emsg_off--;
 	if (len != 0 && curwin->w_cursor.col <= pos.col)
 	    ptr = ml_get_pos(&curwin->w_cursor);
@@ -4535,8 +4535,9 @@ nv_brackets(cmdarg_T *cap)
 	setpcmark();
 	for (n = 0; n < cap->count1; ++n)
 	    if (spell_move_to(curwin, cap->cmdchar == ']' ? FORWARD : BACKWARD,
-			  cap->nchar == 's' ? TRUE : FALSE,
-			  cap->nchar == 'r' ? TRUE : FALSE, FALSE, NULL) == 0)
+			  cap->nchar == 's' ? SMT_ALL :
+			  cap->nchar == 'r' ? SMT_RARE :
+			  SMT_BAD, FALSE, NULL) == 0)
 	    {
 		clearopbeep(cap->oap);
 		break;
