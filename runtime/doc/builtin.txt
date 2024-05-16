@@ -8993,9 +8993,9 @@ shellescape({string} [, {special}])			*shellescape()*
 
 		The {special} argument adds additional escaping of keywords
 		used in Vim commands. When it is not omitted and a non-zero
-		number or a non-empty String (|non-zero-arg|), then special 
-		items such as "!", "%", "#" and "<cword>" (as listed in 
-		|expand()|) will be preceded by a backslash. 
+		number or a non-empty String (|non-zero-arg|), then special
+		items such as "!", "%", "#" and "<cword>" (as listed in
+		|expand()|) will be preceded by a backslash.
 		This backslash will be removed again by the |:!| command.
 
 		The "!" character will be escaped (again with a |non-zero-arg|
