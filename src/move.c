@@ -1630,6 +1630,7 @@ static void cursor_correct_sms(void)
     int	    width2 = width1 + curwin_col_off2();
     int	    so_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
     int	    space_cols = (curwin->w_height - 1) * width2;
+    int	    overlap, top, bot;
     int	    size = so == 0 ? 0 : win_linetabsize(curwin, curwin->w_topline,
 				    ml_get(curwin->w_topline), (colnr_T)MAXCOL);
 
@@ -1639,16 +1640,16 @@ static void cursor_correct_sms(void)
 	so_cols = space_cols / 2;  // Not enough room: put cursor in the middle.
 
     // Not enough screen lines in topline: ignore 'scrolloff'.
-    while (so_cols > size && so_cols - width2 >= width1)
+    while (so_cols > size && so_cols - width2 >= width1 && width1 > 0)
 	so_cols -= width2;
     if (so_cols >= width1 && so_cols > size)
 	so_cols -= width1;
 
     // If there is no marker or we have non-zero scrolloff, just ignore it.
-    int overlap = (curwin->w_skipcol == 0 || so_cols != 0) ? 0
+    overlap = (curwin->w_skipcol == 0 || so_cols != 0) ? 0
 					    : sms_marker_overlap(curwin, -1);
-    int top = curwin->w_skipcol + overlap + so_cols;
-    int bot = curwin->w_skipcol + width1 + (curwin->w_height - 1) * width2
+    top = curwin->w_skipcol + overlap + so_cols;
+    bot = curwin->w_skipcol + width1 + (curwin->w_height - 1) * width2
 								    - so_cols;
     validate_virtcol();
     colnr_T col = curwin->w_virtcol;
