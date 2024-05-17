@@ -10959,7 +10959,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// Find the start and length of the badly spelled word.
-	len = spell_move_to(curwin, FORWARD, TRUE, TRUE, &attr);
+	len = spell_move_to(curwin, FORWARD, SMT_ALL, TRUE, &attr);
 	if (len != 0)
 	{
 	    word = ml_get_cursor();
