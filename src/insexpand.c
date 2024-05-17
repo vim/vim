@@ -4415,7 +4415,7 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
     else if (compl_status_adding())
     {
 	char_u	    *prefix = (char_u *)"\\<";
-	size_t	    prefixlen = 2;
+	size_t	    prefixlen = STRLEN_LITERAL("\\<");
 
 	// we need up to 2 extra chars for the prefix
 	compl_pattern = alloc(quote_meta(NULL, line + compl_col,
