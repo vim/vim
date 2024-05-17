@@ -2955,6 +2955,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*frompat;
+    size_t	frompatlen;
     char_u	*line;
     char_u	*p;
     int		save_ws = p_ws;
@@ -2972,7 +2973,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     frompat = alloc(repl_from_len + 7);
     if (frompat == NULL)
 	return;
-    sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
+    frompatlen = vim_snprintf((char *)frompat, repl_from_len + 7, "\\V\\<%s\\>", repl_from);
     p_ws = FALSE;
 
     sub_nsubs = 0;
@@ -2980,7 +2981,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     curwin->w_cursor.lnum = 0;
     while (!got_int)
     {
-	if (do_search(NULL, '/', '/', frompat, 1L, SEARCH_KEEP, NULL) == 0
+	if (do_search(NULL, '/', '/', frompat, frompatlen, 1L, SEARCH_KEEP, NULL) == 0
 						   || u_save_cursor() == FAIL)
 	    break;
 

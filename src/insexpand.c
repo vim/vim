@@ -176,6 +176,7 @@ static int	  ctrl_x_mode = CTRL_X_NORMAL;
 
 static int	  compl_matches = 0;	    // number of completion matches
 static char_u	  *compl_pattern = NULL;
+static size_t	  compl_patternlen = 0;
 static int	  compl_direction = FORWARD;
 static int	  compl_shows_dir = FORWARD;
 static int	  compl_pending = 0;	    // > 1 for postponed CTRL-N
@@ -1708,6 +1709,7 @@ ins_compl_free(void)
     int	    i;
 
     VIM_CLEAR(compl_pattern);
+    compl_patternlen = 0;
     VIM_CLEAR(compl_leader);
 
     if (compl_first_match == NULL)
@@ -1747,6 +1749,7 @@ ins_compl_clear(void)
     compl_started = FALSE;
     compl_matches = 0;
     VIM_CLEAR(compl_pattern);
+    compl_patternlen = 0;
     VIM_CLEAR(compl_leader);
     edit_submode_extra = NULL;
     VIM_CLEAR(compl_orig_text);
@@ -3374,7 +3377,7 @@ done:
 get_next_include_file_completion(int compl_type)
 {
     find_pattern_in_path(compl_pattern, compl_direction,
-	    (int)STRLEN(compl_pattern), FALSE, FALSE,
+	    compl_patternlen, FALSE, FALSE,
 	    (compl_type == CTRL_X_PATH_DEFINES
 	     && !(compl_cont_status & CONT_SOL))
 	    ? FIND_DEFINE : FIND_ANY, 1L, ACTION_EXPAND,
@@ -3478,8 +3481,7 @@ get_next_cmdline_completion(void)
     int		num_matches;
 
     if (expand_cmdline(&compl_xp, compl_pattern,
-		(int)STRLEN(compl_pattern),
-		&num_matches, &matches) == EXPAND_OK)
+		compl_patternlen, &num_matches, &matches) == EXPAND_OK)
 	ins_compl_add_matches(num_matches, matches, FALSE);
 }
 
@@ -3644,8 +3646,8 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 			    st->cur_match_pos, compl_direction, compl_pattern);
 	else
 	    found_new_match = searchit(NULL, st->ins_buf, st->cur_match_pos,
-				NULL, compl_direction, compl_pattern, 1L,
-				SEARCH_KEEP + SEARCH_NFMSG, RE_LAST, NULL);
+				NULL, compl_direction, compl_pattern, compl_patternlen,
+				1L, SEARCH_KEEP + SEARCH_NFMSG, RE_LAST, NULL);
 	--msg_silent;
 	if (!compl_started || st->set_match_pos)
 	{
@@ -4383,7 +4385,8 @@ ins_compl_use_match(int c)
 /*
  * Get the pattern, column and length for normal completion (CTRL-N CTRL-P
  * completion)
- * Sets the global variables: compl_col, compl_length and compl_pattern.
+ * Sets the global variables: compl_col, compl_length, compl_pattern and
+ * compl_patternlen.
  * Uses the global variables: compl_cont_status and ctrl_x_mode
  */
     static int
@@ -4404,32 +4407,45 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 	else
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	if (compl_pattern == NULL)
+	{
+	    compl_patternlen = 0;
 	    return FAIL;
+	}
     }
     else if (compl_status_adding())
     {
 	char_u	    *prefix = (char_u *)"\\<";
+	size_t	    prefixlen = 2;
 
 	// we need up to 2 extra chars for the prefix
 	compl_pattern = alloc(quote_meta(NULL, line + compl_col,
-		    compl_length) + 2);
+		    compl_length) + prefixlen);
 	if (compl_pattern == NULL)
+	{
+	    compl_patternlen = 0;
 	    return FAIL;
+	}
 	if (!vim_iswordp(line + compl_col)
 		|| (compl_col > 0
 		    && (vim_iswordp(mb_prevptr(line, line + compl_col)))))
+	{
 	    prefix = (char_u *)"";
+	    prefixlen = 0;
+	}
 	STRCPY((char *)compl_pattern, prefix);
-	(void)quote_meta(compl_pattern + STRLEN(prefix),
+	(void)quote_meta(compl_pattern + prefixlen,
 		line + compl_col, compl_length);
     }
     else if (--startcol < 0
 	    || !vim_iswordp(mb_prevptr(line, line + startcol + 1)))
     {
 	// Match any word of at least two chars
-	compl_pattern = vim_strsave((char_u *)"\\<\\k\\k");
+	compl_pattern = vim_strnsave((char_u *)"\\<\\k\\k", STRLEN_LITERAL("\\<\\k\\k"));
 	if (compl_pattern == NULL)
+	{
+	    compl_patternlen = 0;
 	    return FAIL;
+	}
 	compl_col += curs_col;
 	compl_length = 0;
     }
@@ -4465,7 +4481,10 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 	    // alloc(7) is enough  -- Acevedo
 	    compl_pattern = alloc(7);
 	    if (compl_pattern == NULL)
+	    {
+		compl_patternlen = 0;
 		return FAIL;
+	    }
 	    STRCPY((char *)compl_pattern, "\\<");
 	    (void)quote_meta(compl_pattern + 2, line + compl_col, 1);
 	    STRCAT((char *)compl_pattern, "\\k");
@@ -4475,12 +4494,17 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 	    compl_pattern = alloc(quote_meta(NULL, line + compl_col,
 			compl_length) + 2);
 	    if (compl_pattern == NULL)
+	    {
+		compl_patternlen = 0;
 		return FAIL;
+	    }
 	    STRCPY((char *)compl_pattern, "\\<");
 	    (void)quote_meta(compl_pattern + 2, line + compl_col,
 		    compl_length);
 	}
     }
+
+    compl_patternlen = STRLEN(compl_pattern);
 
     return OK;
 }
@@ -4503,7 +4527,12 @@ get_wholeline_compl_info(char_u *line, colnr_T curs_col)
     else
 	compl_pattern = vim_strnsave(line + compl_col, compl_length);
     if (compl_pattern == NULL)
+    {
+	compl_patternlen = 0;
 	return FAIL;
+    }
+
+    compl_patternlen = STRLEN(compl_pattern);
 
     return OK;
 }
@@ -4533,7 +4562,12 @@ get_filename_compl_info(char_u *line, int startcol, colnr_T curs_col)
     compl_length = (int)curs_col - startcol;
     compl_pattern = addstar(line + compl_col, compl_length, EXPAND_FILES);
     if (compl_pattern == NULL)
+    {
+	compl_patternlen = 0;
 	return FAIL;
+    }
+
+    compl_patternlen = STRLEN(compl_pattern);
 
     return OK;
 }
@@ -4547,9 +4581,13 @@ get_cmdline_compl_info(char_u *line, colnr_T curs_col)
 {
     compl_pattern = vim_strnsave(line, curs_col);
     if (compl_pattern == NULL)
+    {
+	compl_patternlen = 0;
 	return FAIL;
+    }
+    compl_patternlen = curs_col;
     set_cmd_context(&compl_xp, compl_pattern,
-	    (int)STRLEN(compl_pattern), curs_col, FALSE);
+	    compl_patternlen, curs_col, FALSE);
     if (compl_xp.xp_context == EXPAND_UNSUCCESSFUL
 	    || compl_xp.xp_context == EXPAND_NOTHING)
 	// No completion possible, use an empty pattern to get a
@@ -4647,8 +4685,12 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
     compl_length = curs_col - compl_col;
     compl_pattern = vim_strnsave(line + compl_col, compl_length);
     if (compl_pattern == NULL)
+    {
+	compl_patternlen = 0;
 	return FAIL;
+    }
 
+    compl_patternlen = compl_length;
     ret = OK;
 #endif
 
@@ -4685,8 +4727,12 @@ get_spell_compl_info(int startcol UNUSED, colnr_T curs_col UNUSED)
     line = ml_get(curwin->w_cursor.lnum);
     compl_pattern = vim_strnsave(line + compl_col, compl_length);
     if (compl_pattern == NULL)
+    {
+	compl_patternlen = 0;
 	return FAIL;
+    }
 
+    compl_patternlen = compl_length;
     ret = OK;
 #endif
 
@@ -4907,6 +4953,7 @@ ins_compl_start(void)
 		-1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
     {
 	VIM_CLEAR(compl_pattern);
+	compl_patternlen = 0;
 	VIM_CLEAR(compl_orig_text);
 	return FAIL;
     }

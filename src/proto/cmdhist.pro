@@ -9,7 +9,7 @@ char_u *get_history_arg(expand_T *xp, int idx);
 void init_history(void);
 void clear_hist_entry(histentry_T *hisptr);
 int in_history(int type, char_u *str, int move_to_front, int sep, int writing);
-void add_to_history(int histype, char_u *new_entry, int in_map, int sep);
+void add_to_history(int histype, char_u *new_entry, size_t new_entrylen, int in_map, int sep);
 void f_histadd(typval_T *argvars, typval_T *rettv);
 void f_histdel(typval_T *argvars, typval_T *rettv);
 void f_histget(typval_T *argvars, typval_T *rettv);

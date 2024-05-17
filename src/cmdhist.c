@@ -297,11 +297,11 @@ static int	last_maptick = -1;	// last seen maptick
 add_to_history(
     int		histype,
     char_u	*new_entry,
+    size_t	new_entrylen,
     int		in_map,		// consider maptick when inside a mapping
     int		sep)		// separator character used (search hist)
 {
     histentry_T	*hisptr;
-    int		len;
 
     if (hislen == 0)		// no history
 	return;
@@ -336,10 +336,9 @@ add_to_history(
     vim_free(hisptr->hisstr);
 
     // Store the separator after the NUL of the string.
-    len = (int)STRLEN(new_entry);
-    hisptr->hisstr = vim_strnsave(new_entry, len + 2);
+    hisptr->hisstr = vim_strnsave(new_entry, new_entrylen + 2);
     if (hisptr->hisstr != NULL)
-	hisptr->hisstr[len + 1] = sep;
+	hisptr->hisstr[new_entrylen + 1] = sep;
 
     hisptr->hisnum = ++hisnum[histype];
     hisptr->viminfo = FALSE;
@@ -566,7 +565,7 @@ f_histadd(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     init_history();
-    add_to_history(histype, str, FALSE, NUL);
+    add_to_history(histype, str, STRLEN(str), FALSE, NUL);
     rettv->vval.v_number = TRUE;
 }
 

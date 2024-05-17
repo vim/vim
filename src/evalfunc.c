@@ -9715,6 +9715,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 {
     int		flags;
     char_u	*pat;
+    size_t	patlen;
     pos_T	pos;
     pos_T	save_cursor;
     int		save_p_ws = p_ws;
@@ -9789,10 +9790,12 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     sia.sa_tm = time_limit;
 #endif
 
+    patlen = STRLEN(pat);
+
     // Repeat until {skip} returns FALSE.
     for (;;)
     {
-	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, patlen, 1L,
 						     options, RE_SEARCH, &sia);
 	// finding the first match again means there is no match where {skip}
 	// evaluates to zero.
@@ -10205,6 +10208,13 @@ do_searchpair(
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
+    size_t	patlen;
+    size_t	spatlen;
+    size_t	epatlen;
+    size_t	pat2size;
+    size_t	pat2len;
+    size_t	pat3size;
+    size_t	pat3len;
     long	retval = 0;
     pos_T	pos;
     pos_T	firstpos;
@@ -10224,15 +10234,24 @@ do_searchpair(
 
     // Make two search patterns: start/end (pat2, for in nested pairs) and
     // start/middle/end (pat3, for the top pair).
-    pat2 = alloc(STRLEN(spat) + STRLEN(epat) + 17);
-    pat3 = alloc(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 25);
-    if (pat2 == NULL || pat3 == NULL)
+    spatlen = STRLEN(spat);
+    epatlen = STRLEN(epat);
+    pat2size = spatlen + epatlen + 17;
+    pat2 = alloc(pat2size);
+    if (pat2 == NULL)
 	goto theend;
-    sprintf((char *)pat2, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
+    pat3size = spatlen + STRLEN(mpat) + epatlen + 25;
+    pat3 = alloc(pat3size);
+    if (pat3 == NULL)
+	goto theend;
+    pat2len = vim_snprintf((char *)pat2, pat2size, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
     if (*mpat == NUL)
+    {
 	STRCPY(pat3, pat2);
+	pat3len = pat2len;
+    }
     else
-	sprintf((char *)pat3, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
+	pat3len = vim_snprintf((char *)pat3, pat3size, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
 							    spat, epat, mpat);
     if (flags & SP_START)
 	options |= SEARCH_START;
@@ -10249,13 +10268,14 @@ do_searchpair(
     CLEAR_POS(&firstpos);
     CLEAR_POS(&foundpos);
     pat = pat3;
+    patlen = pat3len;
     for (;;)
     {
 	searchit_arg_T sia;
 
 	CLEAR_FIELD(sia);
 	sia.sa_stop_lnum = lnum_stop;
-	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, patlen, 1L,
 						     options, RE_SEARCH, &sia);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
 	    // didn't find it or found the first match again: FAIL
