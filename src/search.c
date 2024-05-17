@@ -17,7 +17,10 @@ static void set_vv_searchforward(void);
 static int first_submatch(regmmatch_T *rp);
 #endif
 #ifdef FEAT_FIND_ID
+<<<<<<< HEAD
 static char_u *get_line_and_copy(linenr_T lnum, char_u *buf);
+=======
+>>>>>>> 039fb978c (Refactor to remove STRLEN() part 6)
 static void show_pat_in_path(char_u *, int, int, int, FILE *, linenr_T *, long);
 #endif
 
@@ -32,23 +35,38 @@ typedef struct searchstat
     int	    last_maxcount;  // the max count of the last search
 } searchstat_T;
 
+<<<<<<< HEAD
 #ifdef FEAT_SEARCH_EXTRA
 static void save_incsearch_state(void);
 static void restore_incsearch_state(void);
 #endif
+=======
+static void save_incsearch_state(void);
+static void restore_incsearch_state(void);
+>>>>>>> 039fb978c (Refactor to remove STRLEN() part 6)
 static int check_prevcol(char_u *linep, int col, int ch, int *prevcol);
 static int find_rawstring_end(char_u *linep, pos_T *startpos, pos_T *endpos);
 static void find_mps_values(int *initc, int *findc, int *backwards, int switchit);
 static int is_zero_width(char_u *pattern, size_t patternlen, int move, pos_T *cur, int direction);
+<<<<<<< HEAD
+=======
+static char_u *get_line_and_copy(linenr_T lnum, char_u *buf);
+>>>>>>> 039fb978c (Refactor to remove STRLEN() part 6)
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, size_t msgbuflen, int recompute, int maxcount, long timeout);
 static void update_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, searchstat_T *stat, int recompute, int maxcount, long timeout);
 static int fuzzy_match_compute_score(char_u *str, int strSz, int_u *matches, int numMatches);
 static int fuzzy_match_recursive(char_u *fuzpat, char_u *str, int_u strIdx, int *outScore, char_u *strBegin, int strLen, int_u *srcMatches, int_u *matches, int maxMatches, int nextMatch, int *recursionCount);
+<<<<<<< HEAD
 #if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 static int fuzzy_match_item_compare(const void *s1, const void *s2);
 static void fuzzy_match_in_list(list_T *l, char_u *str, int matchseq, char_u *key, callback_T *item_cb, int retmatchpos, list_T *fmatchlist, long max_matches);
 static void do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos);
 #endif
+=======
+static int fuzzy_match_item_compare(const void *s1, const void *s2);
+static void fuzzy_match_in_list(list_T *l, char_u *str, int matchseq, char_u *key, callback_T *item_cb, int retmatchpos, list_T *fmatchlist, long max_matches);
+static void do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos);
+>>>>>>> 039fb978c (Refactor to remove STRLEN() part 6)
 static int fuzzy_match_str_compare(const void *s1, const void *s2);
 static void fuzzy_match_str_sort(fuzmatch_str_T *fm, int sz);
 static int fuzzy_match_func_compare(const void *s1, const void *s2);
