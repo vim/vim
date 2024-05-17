@@ -2512,6 +2512,13 @@ def Test_for_loop()
       assert_equal(['x', 'x', 'x'], reslist)
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    for i : number : [1, 2]
+      echo i
+    endfor
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1059: No white space allowed before colon: : [1, 2]', 1)
 enddef
 
 def Test_for_loop_list_of_lists()
@@ -5096,6 +5103,13 @@ def Test_unknown_type_in_typecast()
     var Fn = <funcx(number, number): number>b
   END
   v9.CheckSourceFailure(lines, 'E1010: Type not recognized: funcx(number, number): number', 2)
+
+  # Wrong type in a type cast
+  lines =<< trim END
+    vim9script
+    var i: number = <number>true
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got bool', 2)
 enddef
 
 " Keep this last, it messes up highlighting.
