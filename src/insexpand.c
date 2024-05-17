@@ -4422,10 +4422,14 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
     {
 	char_u	    *prefix = (char_u *)"\\<";
 <<<<<<< HEAD
+<<<<<<< HEAD
 	size_t	    prefixlen = STRLEN_LITERAL("\\<");
 =======
 	size_t	    prefixlen = 2;
 >>>>>>> 039fb978c (Refactor to remove STRLEN() part 6)
+=======
+	size_t	    prefixlen = STRLEN_LITERAL("\\<");
+>>>>>>> cd4fa95b5 (Set prefixlen consistently)
 
 	// we need up to 2 extra chars for the prefix
 	compl_pattern = alloc(quote_meta(NULL, line + compl_col,
