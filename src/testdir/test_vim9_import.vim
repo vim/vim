@@ -3311,4 +3311,20 @@ def Test_import_from_vimrc()
   delete('Xoutput.log')
 enddef
 
+" Test for changing a locked imported variable
+def Test_import_locked_var()
+  var lines =<< trim END
+    vim9script
+    export var Foo: number = 10
+    lockvar Foo
+  END
+  writefile(lines, 'Ximportlockedvar.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Ximportlockedvar.vim' as Bar
+    Bar.Foo = 20
+  END
+  v9.CheckScriptFailure(lines, 'E741: Value is locked: Foo', 3)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -7533,6 +7533,7 @@ indexof_blob(blob_T *b, long startidx, typval_T *expr)
     set_vim_var_type(VV_KEY, VAR_NUMBER);
     set_vim_var_type(VV_VAL, VAR_NUMBER);
 
+    int		called_emsg_start = called_emsg;
     for (idx = startidx; idx < blob_len(b); ++idx)
     {
 	set_vim_var_nr(VV_KEY, idx);
@@ -7540,6 +7541,9 @@ indexof_blob(blob_T *b, long startidx, typval_T *expr)
 
 	if (indexof_eval_expr(expr))
 	    return idx;
+
+	if (called_emsg != called_emsg_start)
+	    return -1;
     }
 
     return -1;
@@ -7575,6 +7579,7 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    int		called_emsg_start = called_emsg;
     for ( ; item != NULL; item = item->li_next, ++idx)
     {
 	set_vim_var_nr(VV_KEY, idx);
@@ -7585,6 +7590,9 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
 	if (found)
 	    return idx;
+
+	if (called_emsg != called_emsg_start)
+	    return -1;
     }
 
     return -1;
@@ -7608,7 +7616,9 @@ f_indexof(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if ((argvars[1].v_type == VAR_STRING && argvars[1].vval.v_string == NULL)
+    if ((argvars[1].v_type == VAR_STRING &&
+		(argvars[1].vval.v_string == NULL
+		 || *argvars[1].vval.v_string == NUL))
 	    || (argvars[1].v_type == VAR_FUNC
 		&& argvars[1].vval.v_partial == NULL))
 	return;

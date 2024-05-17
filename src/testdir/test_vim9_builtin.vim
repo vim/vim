@@ -2195,6 +2195,7 @@ def Test_indexof()
   indexof(l, (i, v) => v.color == 'blue')->assert_equal(1)
   indexof(l, (i, v) => v.color == 'blue', {startidx: 1})->assert_equal(1)
   indexof(l, (i, v) => v.color == 'blue', {startidx: 2})->assert_equal(3)
+  indexof(l, "")->assert_equal(-1)
   var b = 0zdeadbeef
   indexof(b, "v:val == 0xef")->assert_equal(3)
 

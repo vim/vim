@@ -2281,8 +2281,15 @@ tv_op_blob(typval_T *tv1, typval_T *tv2, char_u *op)
 	return FAIL;
 
     // Blob += Blob
-    if (tv1->vval.v_blob == NULL || tv2->vval.v_blob == NULL)
+    if (tv2->vval.v_blob == NULL)
 	return OK;
+
+    if (tv1->vval.v_blob == NULL)
+    {
+	tv1->vval.v_blob = tv2->vval.v_blob;
+	++tv1->vval.v_blob->bv_refcount;
+	return OK;
+    }
 
     blob_T	*b1 = tv1->vval.v_blob;
     blob_T	*b2 = tv2->vval.v_blob;
@@ -2455,12 +2462,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	return FAIL;
     }
 
-    if (tv2->v_type == VAR_CLASS || tv2->v_type == VAR_TYPEALIAS)
-    {
-	check_typval_is_value(tv2);
-	return FAIL;
-    }
-
     int retval = FAIL;
     switch (tv1->v_type)
     {
@@ -2476,12 +2477,9 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	case VAR_CHANNEL:
 	case VAR_INSTR:
 	case VAR_OBJECT:
-	    break;
-
 	case VAR_CLASS:
 	case VAR_TYPEALIAS:
-	    check_typval_is_value(tv1);
-	    return FAIL;
+	    break;
 
 	case VAR_BLOB:
 	    retval = tv_op_blob(tv1, tv2, op);
@@ -5162,7 +5160,7 @@ eval_method(
 	{
 	    *arg = name;
 
-	    // Truncate the name a the "(".  Avoid trying to get another line
+	    // Truncate the name at the "(".  Avoid trying to get another line
 	    // by making "getline" NULL.
 	    *paren = NUL;
 	    char_u	*(*getline)(int, void *, int, getline_opt_T) = NULL;
@@ -5216,6 +5214,9 @@ eval_method(
     if (evaluate)
 	clear_tv(&base);
     vim_free(tofree);
+
+    if (alias != NULL)
+	vim_free(alias);
 
     return ret;
 }
@@ -5434,7 +5435,7 @@ f_slice(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_number_arg(argvars, 2) == FAIL))
 	return;
 
-    if (check_can_index(argvars, TRUE, FALSE) != OK)
+    if (check_can_index(&argvars[0], TRUE, FALSE) != OK)
 	return;
 
     copy_tv(argvars, rettv);
