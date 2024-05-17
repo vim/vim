@@ -415,7 +415,13 @@ func s:StartDebug_prompt(dict)
   let s:promptbuf = bufnr('')
   call prompt_setprompt(s:promptbuf, 'gdb> ')
   set buftype=prompt
-  file gdb
+
+  if empty(glob('gdb'))
+    file gdb
+  else
+    file Termdebug-gdb-console
+  endif
+
   call prompt_setcallback(s:promptbuf, function('s:PromptCallback'))
   call prompt_setinterrupt(s:promptbuf, function('s:PromptInterrupt'))
 
