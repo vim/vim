@@ -2979,7 +2979,7 @@ newline_skip_comments(char_u *arg)
 	    char_u *nl = vim_strchr(p, NL);
 
 	    if (nl == NULL)
-		    break;
+		break;
 	    p = nl;
 	}
 	if (*p != NL)
@@ -4509,18 +4509,21 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 	case 9:
 		if (STRNCMP(s, "null_", 5) != 0)
 		    break;
+		// null_list
 		if (STRNCMP(s + 5, "list", 4) == 0)
 		{
 		    rettv->v_type = VAR_LIST;
 		    rettv->vval.v_list = NULL;
 		    return OK;
 		}
+		// null_dict
 		if (STRNCMP(s + 5, "dict", 4) == 0)
 		{
 		    rettv->v_type = VAR_DICT;
 		    rettv->vval.v_dict = NULL;
 		    return OK;
 		}
+		// null_blob
 		if (STRNCMP(s + 5, "blob", 4) == 0)
 		{
 		    rettv->v_type = VAR_BLOB;

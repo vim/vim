@@ -2510,6 +2510,11 @@ def Test_for_loop()
         reslist->add('x')
       endfor
       assert_equal(['x', 'x', 'x'], reslist)
+
+      # Test for trying to use the loop variable "_" inside the loop
+      for _ in "a"
+        assert_fails('echo _', 'E1181: Cannot use an underscore here')
+      endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
 
