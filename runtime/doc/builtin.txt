@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 May 15
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 May 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10243,7 +10243,9 @@ tempname()					*tempname()* *temp-file-name*
 		is different for at least 26 consecutive calls.  Example: >
 			:let tmpfile = tempname()
 			:exe "redir > " .. tmpfile
-<		For Unix, the file will be in a private directory |tempfile|.
+<		For Unix, the file will be in a private directory |tempfile|
+		that is recursively deleted when Vim exits, on other systems
+		temporary files are not cleaned up automatically on exit.
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set, or when 'shellcmdflag' starts with '-' and
 		'shell' does not contain powershell or pwsh.
