@@ -2118,6 +2118,12 @@ def Test_expr9_number()
       Test()
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    eval("10\n")
+  END
+  v9.CheckSourceScriptFailure(lines, "E488: Trailing characters: \n")
 enddef
 
 def Test_expr9_float()

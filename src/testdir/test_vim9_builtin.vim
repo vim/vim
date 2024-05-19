@@ -960,6 +960,8 @@ def Test_execute()
   assert_equal("\nhello", res)
   res = execute(["echo 'here'", "echo 'there'"])
   assert_equal("\nhere\nthere", res)
+  res = execute("echo 'hi'\n# foo")
+  assert_equal("\nhi", res)
 
   v9.CheckSourceDefAndScriptFailure(['execute(123)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckSourceDefFailure(['execute([123])'], 'E1013: Argument 1: type mismatch, expected list<string> but got list<number>')
