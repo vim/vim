@@ -144,6 +144,7 @@ runtime/ftplugin/gitconfig.vim		@tpope
 runtime/ftplugin/gitignore.vim		@ObserverOfTime
 runtime/ftplugin/gitrebase.vim		@tpope
 runtime/ftplugin/gitsendemail.vim	@tpope
+runtime/ftplugin/graphql.vim	@ribru17
 runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/gprof.vim		@dpelle
