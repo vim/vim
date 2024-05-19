@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 May 07
+*options.txt*	For Vim version 9.1.  Last change: 2024 May 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1915,7 +1915,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	A template for a comment.  The "%s" in the value is replaced with the
 	comment text.  Currently only used to add markers for folding, see
-	|fold-marker|.
+	|fold-marker|.  Also used by comment plugins |comment-install|.
 
 			*'compatible'* *'cp'* *'nocompatible'* *'nocp'*
 'compatible' 'cp'	boolean	(default on, off when a |vimrc| or |gvimrc|
