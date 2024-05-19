@@ -3,7 +3,7 @@
 " Version:     12.0
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
 " Last Change: 2017 Mar 07
-"              2024 Jan 14 by Vim Project (browsefilter)
+"              2024 May 18 by Vim Project (browsefilter)
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -104,6 +104,8 @@ set cpo&vim
 "       leader automatically.
 setlocal formatoptions-=t
 setlocal formatoptions+=c
+
+setl comments=:-- commentstring=--\ %s
 
 " Functions/Commands to allow the user to change SQL syntax dialects
 " through the use of :SQLSetType <tab> for completion.
@@ -266,7 +268,7 @@ if exists("b:did_ftplugin") && exists("b:current_ftplugin") && b:current_ftplugi
     finish
 endif
 
-let b:undo_ftplugin = "setl comments< formatoptions< define< omnifunc<" .
+let b:undo_ftplugin = "setl comments< cms< formatoptions< define< omnifunc<" .
             \ " | unlet! b:browsefilter b:match_words"
 
 " Don't load another plugin for this buffer
