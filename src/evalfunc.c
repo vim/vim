@@ -5488,11 +5488,11 @@ block_def2str(struct block_def *bd)
 getregionpos(
     typval_T	*argvars,
     typval_T	*rettv,
-    pos_T	*p1, pos_T *p2,
+    pos_T	*p1,
+    pos_T	*p2,
     int		*inclusive,
     int		*region_type,
-    oparg_T	*oa,
-    int		*fnum)
+    oparg_T	*oa)
 {
     int		fnum1 = -1, fnum2 = -1;
     char_u	*type;
@@ -5542,7 +5542,6 @@ getregionpos(
     }
 
     findbuf = fnum1 != 0 ? buflist_findnr(fnum1) : curbuf;
-    *fnum = fnum1 != 0 ? fnum1 : curbuf->b_fnum;
     if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
     {
 	emsg(_(e_buffer_is_not_loaded));
@@ -5658,7 +5657,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			inclusive = TRUE;
     int			region_type = -1;
     oparg_T		oa;
-    int			fnum;
 
     buf_T		*save_curbuf;
     int			save_virtual;
@@ -5669,7 +5667,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     save_virtual = virtual_op;
 
     if (getregionpos(argvars, rettv,
-		&p1, &p2, &inclusive, &region_type, &oa, &fnum) == FAIL)
+		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
 	return;
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
@@ -5706,30 +5704,17 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    // getregionpos() breaks curbuf and virtual_op
+    // getregionpos() may change curbuf and virtual_op
     curbuf = save_curbuf;
     curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
 }
 
     static void
-add_regionpos_range(
-    typval_T	*rettv,
-    int		bufnr,
-    int		lnum1,
-    int		col1,
-    int		coladd1,
-    int		lnum2,
-    int		col2,
-    int		coladd2)
+add_regionpos_range(typval_T *rettv, pos_T p1, pos_T p2)
 {
     list_T	*l1, *l2, *l3;
-    buf_T	*findbuf;
     int		max_col1, max_col2;
-
-    findbuf = bufnr != 0 ? buflist_findnr(bufnr) : curbuf;
-    if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
-	return;
 
     l1 = list_alloc();
     if (l1 == NULL)
@@ -5771,18 +5756,17 @@ add_regionpos_range(
 	return;
     }
 
+    max_col1 = ml_get_len(p1.lnum);
+    list_append_number(l2, curbuf->b_fnum);
+    list_append_number(l2, p1.lnum);
+    list_append_number(l2, p1.col > max_col1 ? max_col1 : p1.col);
+    list_append_number(l2, p1.coladd);
 
-    max_col1 = ml_get_buf_len(findbuf, lnum1);
-    list_append_number(l2, bufnr);
-    list_append_number(l2, lnum1);
-    list_append_number(l2, col1 > max_col1 ? max_col1 : col1);
-    list_append_number(l2, coladd1);
-
-    max_col2 = ml_get_buf_len(findbuf, lnum2);
-    list_append_number(l3, bufnr);
-    list_append_number(l3, lnum2);
-    list_append_number(l3, col2 > max_col2 ? max_col2 : col2);
-    list_append_number(l3, coladd2);
+    max_col2 = ml_get_len(p2.lnum);
+    list_append_number(l3, curbuf->b_fnum);
+    list_append_number(l3, p2.lnum);
+    list_append_number(l3, p2.col > max_col2 ? max_col2 : p2.col);
+    list_append_number(l3, p2.coladd);
 }
 
 /*
@@ -5795,7 +5779,6 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     int		inclusive = TRUE;
     int		region_type = -1;
     oparg_T	oa;
-    int		fnum;
     int		lnum;
 
     buf_T	*save_curbuf;
@@ -5805,38 +5788,52 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     save_virtual = virtual_op;
 
     if (getregionpos(argvars, rettv,
-		&p1, &p2, &inclusive, &region_type, &oa, &fnum) == FAIL)
+		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
 	return;
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
 	struct block_def	bd;
-	int			start_col, end_col;
+	pos_T			ret_p1, ret_p2;
 
 	if (region_type == MLINE)
 	{
-	    start_col = 1;
-	    end_col = MAXCOL;
-	}
-	else if (region_type == MBLOCK)
-	{
-	    block_prep(&oa, &bd, lnum, FALSE);
-	    start_col = bd.start_vcol + 1;
-	    end_col = bd.end_vcol;
-	}
-	else if (p1.lnum < lnum && lnum < p2.lnum)
-	{
-	    start_col = 1;
-	    end_col = MAXCOL;
+	    ret_p1.col = 1;
+	    ret_p1.coladd = 0;
+	    ret_p2.col = MAXCOL;
+	    ret_p2.coladd = 0;
 	}
 	else
 	{
-	    start_col = p1.lnum == lnum ? p1.col + 1 : 1;
-	    end_col = p2.lnum == lnum ? p2.col + 1 : MAXCOL;
+	    if (region_type == MBLOCK)
+		block_prep(&oa, &bd, lnum, FALSE);
+	    else
+		charwise_block_prep(p1, p2, &bd, lnum, inclusive);
+	    if (bd.startspaces > 0)
+	    {
+		ret_p1.col = bd.textcol;
+		ret_p1.coladd = bd.start_char_vcols - bd.startspaces;
+	    }
+	    else
+	    {
+		ret_p1.col = bd.textcol + 1;
+		ret_p1.coladd = 0;
+	    }
+	    if (bd.endspaces > 0)
+	    {
+		ret_p2.col = bd.textcol + bd.textlen + 1;
+		ret_p2.coladd = bd.endspaces;
+	    }
+	    else
+	    {
+		ret_p2.col = bd.textcol + bd.textlen;
+		ret_p2.coladd = 0;
+	    }
 	}
 
-	add_regionpos_range(rettv, fnum, lnum, start_col,
-		p1.coladd, lnum, end_col, p2.coladd);
+	ret_p1.lnum = lnum;
+	ret_p2.lnum = lnum;
+	add_regionpos_range(rettv, ret_p1, ret_p2);
     }
 
     // getregionpos() may change curbuf and virtual_op
