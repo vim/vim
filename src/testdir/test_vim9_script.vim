@@ -2159,6 +2159,18 @@ def Test_echo_cmd()
   assert_match('^two$', g:Screenline(&lines))
 
   v9.CheckDefFailure(['echo "xxx"# comment'], 'E488:')
+
+  # Test for echoing a script local function name
+  var lines =<< trim END
+    vim9script
+    def ScriptLocalEcho()
+    enddef
+    echo ScriptLocalEcho
+  END
+  new
+  setline(1, lines)
+  assert_match('<SNR>\d\+_ScriptLocalEcho', execute('source')->split("\n")[0])
+  bw!
 enddef
 
 def Test_echomsg_cmd()
