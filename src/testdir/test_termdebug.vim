@@ -304,7 +304,7 @@ func Test_termdebug_bufnames()
   " Test if user has filename/folders named gdb, Termdebug-gdb-console,
   " etc. in the current directory
   let filename = 'gdb'
-  let replacement_filename =  'Termdebug-gdb-console'
+  let replacement_filename = 'Termdebug-gdb-console'
 
   call writefile(['This', 'is', 'a', 'test'], filename)
   " Throw away the file once the test has done.
