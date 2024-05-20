@@ -307,7 +307,7 @@ func RunTest()
 
       " Clear the shell info if there are not enough lines to cause a scroll
       if filetype == 'sh' && IsWinNumOneAtEOF(in_name_and_out_name)
-	call term_sendkeys(buf, ":redraw\<CR>")
+	call term_sendkeys(buf, ":redraw!\<CR>")
       endif
 
       " Make a Screendump every 18 lines of the file: failed/root_NN.dump
