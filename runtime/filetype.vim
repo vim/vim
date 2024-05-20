@@ -2060,6 +2060,9 @@ au BufNewFile,BufRead *.scala			setf scala
 " SBT - Scala Build Tool
 au BufNewFile,BufRead *.sbt			setf sbt
 
+" Slint
+au BufNewFile,BufRead *.slint			setf slint
+
 " SuperCollider
 au BufNewFile,BufRead *.sc			call dist#ft#FTsc()
 
