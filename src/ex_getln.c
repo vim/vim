@@ -493,7 +493,7 @@ may_do_incsearch_highlighting(
 	sia.sa_tm = 500;
 #endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
-				 ccline.cmdbuff + skiplen, count, search_flags,
+				 ccline.cmdbuff + skiplen, patlen, count, search_flags,
 #ifdef FEAT_RELTIME
 		&sia
 #else
@@ -654,7 +654,7 @@ may_adjust_incsearch_highlighting(
     pat[patlen] = NUL;
     i = searchit(curwin, curbuf, &t, NULL,
 		 c == Ctrl_G ? FORWARD : BACKWARD,
-		 pat, count, search_flags, RE_SEARCH, NULL);
+		 pat, patlen, count, search_flags, RE_SEARCH, NULL);
     --emsg_off;
     pat[patlen] = save;
     if (i)
@@ -2539,12 +2539,14 @@ returncmd:
 	if (ccline.cmdlen && firstc != NUL
 		&& (some_key_typed || histype == HIST_SEARCH))
 	{
-	    add_to_history(histype, ccline.cmdbuff, TRUE,
+	    size_t cmdbufflen = STRLEN(ccline.cmdbuff);
+
+	    add_to_history(histype, ccline.cmdbuff, cmdbufflen, TRUE,
 				       histype == HIST_SEARCH ? firstc : NUL);
 	    if (firstc == ':')
 	    {
 		vim_free(new_last_cmdline);
-		new_last_cmdline = vim_strsave(ccline.cmdbuff);
+		new_last_cmdline = vim_strnsave(ccline.cmdbuff, cmdbufflen);
 	    }
 	}
 
