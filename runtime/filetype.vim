@@ -1866,6 +1866,9 @@ au BufNewFile,BufRead *.pk			setf poke
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols
 
+" Purescript
+au BufNewFile,BufRead *.purs			setf purescript
+
 " PyPA manifest files
 au BufNewFile,BufRead MANIFEST.in		setf pymanifest
 
