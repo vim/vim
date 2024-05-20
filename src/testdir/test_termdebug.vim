@@ -300,4 +300,22 @@ func Test_termdebug_mapping()
   %bw!
 endfunc
 
+func Test_termdebug_bufnames()
+  " Test if user has filename/folders named gdb, Termdebug-gdb-console,
+  " etc. in the current directory
+  let filename = 'gdb'
+  let replacement_filename =  'Termdebug-gdb-console'
+
+  call writefile(['This', 'is', 'a', 'test'], filename)
+  " Throw away the file once the test has done.
+  execute 'defer ' .. filename
+  execute 'Termdebug'
+  " A file named filename already exists in the working directory,
+  " hence you must call the newly created buffer differently
+  call WaitForAssert({-> assert_false(bufexists(bufnr(filename)))})
+  call WaitForAssert({-> assert_true(bufexists(bufnr(replacement_filename)))})
+  quit!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
