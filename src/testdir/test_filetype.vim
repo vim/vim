@@ -654,6 +654,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     slang: ['file.sl'],
     sage: ['file.sage'],
     slice: ['file.ice'],
+    slint: ['file.slint'],
     slpconf: ['/etc/slp.conf', 'any/etc/slp.conf'],
     slpreg: ['/etc/slp.reg', 'any/etc/slp.reg'],
     slpspi: ['/etc/slp.spi', 'any/etc/slp.spi'],
