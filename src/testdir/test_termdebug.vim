@@ -315,7 +315,7 @@ func Test_termdebug_bufnames()
   " A file named filename already exists in the working directory,
   " hence you must call the newly created buffer differently
   call WaitForAssert({-> assert_false(bufexists(filename))})
-  call WaitForAssert({-> assert_true(bufexists(bureplacement_filename))})
+  call WaitForAssert({-> assert_true(bufexists(replacement_filename))})
   %bw!
 
   " Check if error message is in :message
