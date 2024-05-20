@@ -1299,4 +1299,34 @@ func Test_viminfo_merge_old_jumplist()
   bw!
 endfunc
 
+func Test_viminfo_oldfiles_filter()
+  let v:oldfiles = []
+  let _viminfofile = &viminfofile
+  let &viminfofile=''
+  let lines = [
+	\ '# comment line',
+	\ '*encoding=utf-8',
+	\ "> /tmp/vimrc_one.vim",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ "> /tmp/foobar.txt",
+	\ "\t\"\t11\t0",
+	\ "",
+	\ ]
+  call writefile(lines, 'Xviminfo1', 'D')
+  rviminfo! Xviminfo1
+  new
+  " filter returns a single item
+  let a = execute('filter /vim/ oldfiles')->split('\n')
+  call assert_equal(1, len(a))
+  " filter returns more than a single match
+  let a = execute('filter #tmp# oldfiles')->split('\n')
+  call assert_equal(2, len(a))
+  " don't get prompted for the file, but directly open it
+  filter /vim/ browse oldfiles
+  call assert_equal("/tmp/vimrc_one.vim", expand("%"))
+  bw
+  let &viminfofile = _viminfofile
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -106,6 +106,7 @@ runtime/compiler/zsh.vim		@dkearns
 runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/abaqus.vim		@costerwi
 runtime/ftplugin/apache.vim		@dubgeiser 
+runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
@@ -117,6 +118,7 @@ runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/dart.vim	@ribru17
 runtime/ftplugin/deb822sources.vim	@jamessan
 runtime/ftplugin/debchangelog.vim	@jamessan
 runtime/ftplugin/debcontrol.vim		@jamessan
@@ -144,6 +146,7 @@ runtime/ftplugin/gitconfig.vim		@tpope
 runtime/ftplugin/gitignore.vim		@ObserverOfTime
 runtime/ftplugin/gitrebase.vim		@tpope
 runtime/ftplugin/gitsendemail.vim	@tpope
+runtime/ftplugin/graphql.vim	@ribru17
 runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/gprof.vim		@dpelle
@@ -153,6 +156,7 @@ runtime/ftplugin/heex.vim		@cvincent
 runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/hog.vim		@wtfbbqhax
 runtime/ftplugin/html.vim		@dkearns
+runtime/ftplugin/hyprlang.vim		@ribru17
 runtime/ftplugin/i3config.vim		@hiqua
 runtime/ftplugin/icon.vim		@dkearns
 runtime/ftplugin/indent.vim		@dkearns
@@ -180,6 +184,7 @@ runtime/ftplugin/meson.vim		@Liambeguin
 runtime/ftplugin/modula2.vim		@dkearns
 runtime/ftplugin/modula3.vim		@dkearns
 runtime/ftplugin/nginx.vim		@chr4
+runtime/ftplugin/nim.vim		@ribru17
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/octave.vim		@dkearns
@@ -192,8 +197,10 @@ runtime/ftplugin/php.vim		@dkearns
 runtime/ftplugin/pod.vim		@petdance @dkearns
 runtime/ftplugin/poefilter.vim		@ObserverOfTime
 runtime/ftplugin/postscr.vim		@mrdubya
+runtime/ftplugin/prisma.vim		@ribru17
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
+runtime/ftplugin/purescript.vim		@ribru17
 runtime/ftplugin/pymanifest.vim		@ObserverOfTime
 runtime/ftplugin/python.vim		@tpict
 runtime/ftplugin/qb64.vim		@dkearns
@@ -210,6 +217,7 @@ runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/sed.vim		@dkearns
 runtime/ftplugin/sh.vim			@dkearns
+runtime/ftplugin/slint.vim		@ribru17
 runtime/ftplugin/solidity.vim		@cothi
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
@@ -226,7 +234,9 @@ runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/tt2html.vim		@petdance
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
+runtime/ftplugin/typst.vim		@ribru17
 runtime/ftplugin/unison.vim		@chuwy
+runtime/ftplugin/v.vim			@ribru17
 runtime/ftplugin/vdf.vim		@ObserverOfTime
 runtime/ftplugin/vim.vim		@dkearns
 runtime/ftplugin/wast.vim		@rhysd
@@ -237,6 +247,7 @@ runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/xs.vim			@petdance
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/import/dist/vimhighlight.vim	@lacygoill
+runtime/indent/arduino.vim		@k-takata
 runtime/indent/astro.vim		@wuelnerdotexe
 runtime/indent/basic.vim		@dkearns
 runtime/indent/bst.vim			@tpope

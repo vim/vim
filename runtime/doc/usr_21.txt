@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 9.1.  Last change: 2019 Apr 25
+*usr_21.txt*	For Vim version 9.1.  Last change: 2024 May 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -206,6 +206,23 @@ You get the same list of files as with |:oldfiles|.  If you want to edit
 	Type number and <Enter> (empty cancels): ~
 
 Type "2" and press <Enter> to edit the second file.
+
+If you know that the filename contains a pattern, you can also |:filter| the
+list of files: >
+
+	:filter /resume/ :browse oldfiles
+<
+Since there is only one single matching filename, Vim will directly edit that
+file without prompting.  If the filter matches several files, you'll get
+prompted for the list of matching files instead: >
+
+	:filter! /resume/ browse oldfiles
+<	1: ~/.viminfo ~
+	3: /tmp/draft ~
+	Type number and <Enter> (q or empty cancels): ~
+
+Note: this time we filtered out all files NOT matching resume.
+
 
 More info at |:oldfiles|, |v:oldfiles| and |c_#<|.
 

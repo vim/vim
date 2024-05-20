@@ -2451,6 +2451,7 @@ charwise_block_prep(
     p = ml_get(lnum);
     bdp->startspaces = 0;
     bdp->endspaces = 0;
+    bdp->start_char_vcols = 0;
 
     if (lnum == start.lnum)
     {
@@ -2462,8 +2463,8 @@ charwise_block_prep(
 	    {
 		// Part of a tab selected -- but don't
 		// double-count it.
-		bdp->startspaces = (ce - cs + 1)
-		    - start.coladd;
+		bdp->start_char_vcols = ce - cs + 1;
+		bdp->startspaces = bdp->start_char_vcols - start.coladd;
 		if (bdp->startspaces < 0)
 		    bdp->startspaces = 0;
 		startcol++;
@@ -2483,19 +2484,16 @@ charwise_block_prep(
 			// of multi-byte char.
 			&& (*mb_head_off)(p, p + endcol) == 0))
 	    {
-		if (start.lnum == end.lnum
-			&& start.col == end.col)
+		if (start.lnum == end.lnum && start.col == end.col)
 		{
 		    // Special case: inside a single char
 		    is_oneChar = TRUE;
-		    bdp->startspaces = end.coladd
-			- start.coladd + inclusive;
+		    bdp->startspaces = end.coladd - start.coladd + inclusive;
 		    endcol = startcol;
 		}
 		else
 		{
-		    bdp->endspaces = end.coladd
-			+ inclusive;
+		    bdp->endspaces = end.coladd + inclusive;
 		    endcol -= inclusive;
 		}
 	    }
@@ -2507,6 +2505,7 @@ charwise_block_prep(
 	bdp->textlen = 0;
     else
 	bdp->textlen = endcol - startcol + inclusive;
+    bdp->textcol = startcol;
     bdp->textstart = p + startcol;
 }
 

@@ -26,5 +26,4 @@ func Test_autoload_vim9script()
   call assert_equal(49, auto9#Add42(7))
 endfunc
 
-
 " vim: shiftwidth=2 sts=2 expandtab

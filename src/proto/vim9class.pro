@@ -40,7 +40,7 @@ int is_class_name(char_u *name, typval_T *rettv);
 void protected_method_access_errmsg(char_u *method_name);
 int object_empty(object_T *obj);
 int object_len(object_T *obj);
-char_u *object_string(object_T *obj, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int composite_val);
+char_u *object2string(object_T *obj, char_u *numbuf, int copyID, int echo_style, int restore_copyID, int composite_val);
 int class_instance_of(class_T *cl, class_T *other_cl);
 void f_instanceof(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

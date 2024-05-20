@@ -5629,6 +5629,9 @@ ex_oldfiles(exarg_T *eap UNUSED)
     listitem_T	*li;
     int		nr = 0;
     char_u	*fname;
+    // for a single filtered match, remember the number
+    // so we can jump directly to it without prompting
+    int		matches = -1;
 
     if (l == NULL)
     {
@@ -5644,6 +5647,10 @@ ex_oldfiles(exarg_T *eap UNUSED)
 	fname = tv_get_string(&li->li_tv);
 	if (!message_filtered(fname))
 	{
+	    if (matches < 0)
+		matches = nr;
+	    else
+		matches = 0;
 	    msg_outnum((long)nr);
 	    msg_puts(": ");
 	    msg_outtrans(fname);
@@ -5661,7 +5668,15 @@ ex_oldfiles(exarg_T *eap UNUSED)
     if (cmdmod.cmod_flags & CMOD_BROWSE)
     {
 	quit_more = FALSE;
-	nr = prompt_for_number(FALSE);
+	// we only need to prompt if there is more than 1 match
+	if (matches > 0)
+	{
+	    nr = matches;
+	    // msg_putchar above sets needs_wait_return
+	    need_wait_return = FALSE;
+	}
+	else
+	    nr = prompt_for_number(FALSE);
 	msg_starthere();
 	if (nr > 0)
 	{
