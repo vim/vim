@@ -27,12 +27,12 @@ Creating a syntax plugin test
 
 Create a source file in the language you want to test in the "input"
 directory.  Use the filetype name as the base and a file name extension
-matching the filetype.  Let's use Java as an example. The file would then be
+matching the filetype.  Let's use Java as an example.  The file would then be
 "input/java.java".
 
 Make sure to include some interesting constructs with plenty of complicated
 highlighting.  Optionally, pre-configure the testing environment by including
-setup commands at the top of the input file. The format for these lines is:
+setup commands at the top of the input file.  The format for these lines is:
 
 	VIM_TEST_SETUP {command}
 
@@ -60,6 +60,8 @@ an "input/setup/java.vim" script file with the following lines:
 
 Both inline setup commands and setup scripts may be used at the same time, the
 script file will be sourced before any VIM_TEST_SETUP commands are executed.
+
+Every line of a source file must not be longer than 1425 (19 x 75) characters.
 
 If there is no further setup required, you can now run the tests:
 

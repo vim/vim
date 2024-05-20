@@ -85,6 +85,28 @@ func HandleSwapExists()
   endif
 endfunc
 
+def IsWinNumOneAtEOF(in_name_and_out_name: string): bool
+  # Expect defaults from term_util#RunVimInTerminal().
+  if winwidth(1) != 75 || winheight(1) != 20
+    ch_log(printf('Aborting for %s: (75 x 20) != (%d x %d)',
+      in_name_and_out_name,
+      winwidth(1),
+      winheight(1)))
+    return true
+  endif
+  # A two-fold role: (1) redraw whenever the first test file is of 19 lines or
+  # less long (not applicable to c.c); (2) redraw in case the terminal buffer
+  # cannot redraw itself just yet (else expect extra files generated).
+  redraw
+  const pos: string = join([
+    screenstring(20, 71),
+    screenstring(20, 72),
+    screenstring(20, 73),
+    screenstring(20, 74),
+    screenstring(20, 75)], '')
+  return (pos == ' All ' || pos == ' Bot ')
+enddef
+
 func RunTest()
   let ok_count = 0
   let failed_tests = []
@@ -100,7 +122,6 @@ func RunTest()
       continue
     endif
 
-    let linecount = readfile(fname)->len()
     let root = fnamemodify(fname, ':t:r')
     let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
     let failed_root = 'failed/' .. root
@@ -160,11 +181,93 @@ func RunTest()
 	  call cursor(1, 1)
 	  " BEGIN [runtime/defaults.vim]
 	  " Also, disable italic highlighting to avoid issues on some terminals.
-	  set display=truncate ruler scrolloff=5 t_ZH= t_ZR=
+	  set display=lastline ruler scrolloff=5 t_ZH= t_ZR=
 	  syntax on
 	  " END [runtime/defaults.vim]
 	  redraw!
 	endfunc
+
+	def ScrollToSecondPage(estate: number, op_wh: number, op_so: number)
+	  if line('.') != 1 || line('w$') >= line('$')
+	    return
+	  endif
+	  try
+	    set scrolloff=0
+	    # Advance mark "c"[ursor] along with the cursor.
+	    norm! Lmc
+	    if foldclosed('.') < 0 &&
+		(strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
+	      # Make for an exit for a screenful long line.
+	      norm! j^
+	      return
+	    else
+	      # Place the cursor on the actually last visible line.
+	      while winline() < op_wh
+		const lastnum: number = winline()
+		norm! gjmc
+		if lastnum > winline()
+		  break
+		endif
+	      endwhile
+	      norm! zt
+	    endif
+	  finally
+	    # COMPATIBILITY: Scroll up around "scrolloff" lines.
+	    &scrolloff = max([1, op_so])
+	  endtry
+	  norm! ^
+	enddef
+
+	def ScrollToNextPage(estate: number, op_wh: number, op_so: number)
+	  if line('.') == 1 || line('w$') >= line('$')
+	    return
+	  endif
+	  try
+	    set scrolloff=0
+	    # Advance mark "c"[ursor] along with the cursor.
+	    norm! Lmc
+	    if foldclosed('.') < 0 &&
+		(strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
+	      # Make for an exit for a screenful long line.
+	      norm! j^
+	      return
+	    else
+	      # Place the cursor on the actually last visible line.
+	      while winline() < op_wh
+		const lastnum: number = winline()
+		norm! gjmc
+		if lastnum > winline()
+		  break
+		endif
+	      endwhile
+	    endif
+	  finally
+	    # COMPATIBILITY: Scroll up/down around "scrolloff" lines.
+	    &scrolloff = max([1, op_so])
+	  endtry
+	  norm! zt
+	  const marknum: number = line("'c")
+	  # Eschew &smoothscroll since line("`c") is not supported.
+	  # Remember that "w0" can point to the first line of a _closed_ fold
+	  # whereas the last line of a _closed_ fold can be marked.
+	  if line('w0') > marknum
+	    while line('w0') > marknum
+	      exe "norm! \<C-y>"
+	    endwhile
+	    if line('w0') != marknum
+	      exe "norm! \<C-e>H"
+	    endif
+	  # Handle non-wrapped lines.
+	  elseif line('w0') < marknum
+	    while line('w0') < marknum
+	      exe "norm! \<C-e>"
+	    endwhile
+	    if line('w0') != marknum
+	      exe "norm! \<C-y>H"
+	    endif
+	  endif
+	  norm! ^
+	enddef
       END
       call writefile(lines, 'Xtestscript')
 
@@ -198,25 +301,37 @@ func RunTest()
 
       " Screendump at the start of the file: failed/root_00.dump
       let root_00 = root .. '_00'
-      call ch_log('First screendump for ' .. fname .. ': failed/' .. root_00 .. '.dump')
+      let in_name_and_out_name = fname .. ': failed/' .. root_00 .. '.dump'
+      call ch_log('First screendump for ' .. in_name_and_out_name)
       let fail = VerifyScreenDump(buf, root_00, {})
 
-      " clear the shell info if there are not enough lines to cause a scroll
-      if filetype == 'sh' && linecount <= 19
+      " Clear the shell info if there are not enough lines to cause a scroll
+      if filetype == 'sh' && IsWinNumOneAtEOF(in_name_and_out_name)
 	call term_sendkeys(buf, ":redraw\<CR>")
       endif
 
       " Make a Screendump every 18 lines of the file: failed/root_NN.dump
-      let topline = 1
       let nr = 1
-      while linecount - topline > 20
-	let topline += 18
-	call term_sendkeys(buf, printf("%dGzt", topline))
-	let root_next = root .. printf('_%02d', nr)
-	call ch_log('Next screendump for ' .. fname .. ': failed/' .. root_next .. '.dump')
+      let root_next = printf('%s_%02d', root, nr)
+      let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
+
+      if !IsWinNumOneAtEOF(in_name_and_out_name)
+	call term_sendkeys(buf, ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
+	call ch_log('Next screendump for ' .. in_name_and_out_name)
 	let fail += VerifyScreenDump(buf, root_next, {})
 	let nr += 1
-      endwhile
+	let root_next = printf('%s_%02d', root, nr)
+	let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
+
+	while !IsWinNumOneAtEOF(in_name_and_out_name)
+	  call term_sendkeys(buf, ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
+	  call ch_log('Next screendump for ' .. in_name_and_out_name)
+	  let fail += VerifyScreenDump(buf, root_next, {})
+	  let nr += 1
+	  let root_next = printf('%s_%02d', root, nr)
+	  let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
+	endwhile
+      endif
 
       " Screendump at the end of the file: failed/root_99.dump
       call term_sendkeys(buf, 'Gzb')
