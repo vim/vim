@@ -3845,7 +3845,7 @@ object_len(object_T *obj)
  * Return a textual representation of object "obj"
  */
     char_u *
-object_string(
+object2string(
     object_T	*obj,
     char_u	*numbuf,
     int		copyID,
