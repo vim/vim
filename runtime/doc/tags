@@ -7228,6 +7228,7 @@ ft-ada-syntax	ft_ada.txt	/*ft-ada-syntax*
 ft-ada-variables	ft_ada.txt	/*ft-ada-variables*
 ft-ant-syntax	syntax.txt	/*ft-ant-syntax*
 ft-apache-syntax	syntax.txt	/*ft-apache-syntax*
+ft-arduino-plugin	filetype.txt	/*ft-arduino-plugin*
 ft-asciidoc-plugin	filetype.txt	/*ft-asciidoc-plugin*
 ft-asm-syntax	syntax.txt	/*ft-asm-syntax*
 ft-asm68k-syntax	syntax.txt	/*ft-asm68k-syntax*
