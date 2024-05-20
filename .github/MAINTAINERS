@@ -106,6 +106,7 @@ runtime/compiler/zsh.vim		@dkearns
 runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/abaqus.vim		@costerwi
 runtime/ftplugin/apache.vim		@dubgeiser 
+runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
@@ -240,6 +241,7 @@ runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/xs.vim			@petdance
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/import/dist/vimhighlight.vim	@lacygoill
+runtime/indent/arduino.vim		@k-takata
 runtime/indent/astro.vim		@wuelnerdotexe
 runtime/indent/basic.vim		@dkearns
 runtime/indent/bst.vim			@tpope
