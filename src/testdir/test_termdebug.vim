@@ -306,9 +306,8 @@ func Test_termdebug_bufnames()
   let filename = 'gdb'
   let replacement_filename = 'Termdebug-gdb-console'
 
-  call writefile(['This', 'is', 'a', 'test'], filename)
+  call writefile(['This', 'is', 'a', 'test'], filename, 'D')
   " Throw away the file once the test has done.
-  execute 'defer delete(filename)'
   execute 'Termdebug'
   " A file named filename already exists in the working directory,
   " hence you must call the newly created buffer differently

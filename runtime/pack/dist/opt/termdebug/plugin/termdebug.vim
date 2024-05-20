@@ -418,12 +418,12 @@ func s:StartDebug_prompt(dict)
 
   if empty(glob('gdb'))
     file gdb
-  elseif empty(glob(' Termdebug-gdb-console'))
-     file Termdebug-gdb-console
+  elseif empty(glob('Termdebug-gdb-console'))
+    file Termdebug-gdb-console
   else
-    Echoerr("You have a file/folder named 'gdb'
+    call s:Echoerr("You have a file/folder named 'gdb'
           \ or 'Termdebug-gdb-console'.
-          \ Termdebug cannot start. Please rename them. ")
+          \ Termdebug cannot start. Please rename them.")
   endif
 
   call prompt_setcallback(s:promptbuf, function('s:PromptCallback'))
@@ -1477,8 +1477,8 @@ func s:GotoAsmwinOrCreateIt()
       silent file Termdebug-asm-listing
       let s:asmbuf = bufnr('Termdebug-asm-listing')
     else
-      Echoerr("You have a file/folder named Termdebug-asm-listing'.
-          \ Termdebug cannot start. Please rename such a file/folder. ")
+      call s:Echoerr("You have a file/folder named Termdebug-asm-listing'.
+          \ Termdebug cannot start. Please rename such a file/folder.")
     endif
 
     if mdf != 'vert' && s:GetDisasmWindowHeight() > 0
@@ -1549,8 +1549,8 @@ func s:GotoVariableswinOrCreateIt()
       silent file Termdebug-variables-listing
       let s:varbuf = bufnr('Termdebug-variables-listing')
     else
-      Echoerr("You have a file/folder named Termdebug-variables-listing'.
-          \ Termdebug cannot start. Please rename such a file/folder. ")
+      call s:Echoerr("You have a file/folder named Termdebug-variables-listing'.
+          \ Termdebug cannot start. Please rename such a file/folder.")
     endif
 
     if mdf != 'vert' && s:GetVariablesWindowHeight() > 0
