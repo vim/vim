@@ -195,6 +195,7 @@ runtime/ftplugin/php.vim		@dkearns
 runtime/ftplugin/pod.vim		@petdance @dkearns
 runtime/ftplugin/poefilter.vim		@ObserverOfTime
 runtime/ftplugin/postscr.vim		@mrdubya
+runtime/ftplugin/prisma.vim		@ribru17
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
 runtime/ftplugin/pymanifest.vim		@ObserverOfTime
