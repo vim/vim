@@ -1,5 +1,5 @@
 /* XPM */
-static char * vim48x48[] = {
+static const char * vim48x48[] = {
 "48 48 8 1",
 " 	c None",
 ".	c #000000",

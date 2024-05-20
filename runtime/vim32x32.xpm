@@ -1,5 +1,5 @@
 /* XPM */
-static char * vim32x32[] = {
+static const char * vim32x32[] = {
 "32 32 8 1",
 " 	c None",
 ".	c #000000",

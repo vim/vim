@@ -1363,20 +1363,9 @@ gui_mch_init(void)
 #else
 // Use Pixmaps, looking much nicer.
 
-// If you get an error message here, you still need to unpack the runtime
-// archive!
-# ifdef magick
-#  undef magick
-# endif
-# define magick vim32x32
 # include "../runtime/vim32x32.xpm"
-# undef magick
-# define magick vim16x16
 # include "../runtime/vim16x16.xpm"
-# undef magick
-# define magick vim48x48
 # include "../runtime/vim48x48.xpm"
-# undef magick
 
     static Pixmap	icon = 0;
     static Pixmap	icon_mask = 0;
