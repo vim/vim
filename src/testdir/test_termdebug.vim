@@ -303,17 +303,38 @@ endfunc
 func Test_termdebug_bufnames()
   " Test if user has filename/folders named gdb, Termdebug-gdb-console,
   " etc. in the current directory
+  let g:termdebug_config = {}
+  let g:termdebug_config['use_prompt'] = 1
   let filename = 'gdb'
   let replacement_filename = 'Termdebug-gdb-console'
 
   call writefile(['This', 'is', 'a', 'test'], filename, 'D')
   " Throw away the file once the test has done.
   execute 'Termdebug'
+  sleep 2
   " A file named filename already exists in the working directory,
   " hence you must call the newly created buffer differently
   call WaitForAssert({-> assert_false(bufexists(filename))})
   call WaitForAssert({-> assert_true(bufexists(bureplacement_filename))})
-  quit!
+  %bw!
+
+  " Check if error message is in :message
+  " Delay for securing that Termdebug is shutoff
+  sleep 1
+  let g:termdebug_config['disasm_window'] = 1
+  let filename = 'Termdebug-asm-listing'
+  call writefile(['This', 'is', 'a', 'test'], filename, 'D')
+  " Check only the head of the error message
+  let error_message = "You have a file/folder named '" .. filename .. "'"
+  execute 'Termdebug'
+  sleep 2
+  call WaitForAssert({->assert_true(stridx(execute('messages'), error_message) != -1 )})
+  %bw!
+
+  unlet g:termdebug_config
+  unlet filename
+  unlet replacement_filename
+  unlet error_message
 endfunc
 
 
