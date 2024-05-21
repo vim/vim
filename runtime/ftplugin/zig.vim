@@ -39,16 +39,6 @@ if has('find_in_path')
     let b:undo_ftplugin .= ' | setl inex< inc<'
 endif
 
-" Safety check: don't execute zig from current directory
-if !exists('g:zig_std_dir') && exists('*json_decode') &&
-    \  executable('zig') && dist#vim#IsSafeExecutable('zig', 'zig')
-    silent let s:env = system('zig env')
-    if v:shell_error == 0
-        let g:zig_std_dir = json_decode(s:env)['std_dir']
-    endif
-    unlet! s:env
-endif
-
 if exists('g:zig_std_dir')
     let &l:path .= ',' . g:zig_std_dir
     let b:undo_ftplugin .= ' | setl pa<'

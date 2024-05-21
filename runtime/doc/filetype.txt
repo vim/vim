@@ -835,6 +835,16 @@ ZIG							*ft-zig-plugin*
 The Zig |ftplugin| sets options according to Zig's recommended style. This can
 be disabled by setting |g:zig_recommended_style| to 0.
 
+						*g:zig_std_dir*
+The path to the zig standard library. The Zig |ftplugin| reads g:zig_std_dir
+and appends it to the path for zig files. Where the zig standard path is
+located is system and installation method dependant.
+
+One can automatically read the std_dir using zig env
+	`let g:zig_std_dir = json_decode(system('zig env'))['std_dir']`
+
+This can, for example, be put in a FileType |autocmd| to only load when a zig file is opened.
+
 
 ZIMBU							*ft-zimbu-plugin*
 
