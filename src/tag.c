@@ -3945,7 +3945,7 @@ jumpto_tag(
 			// Guess again: "^char * \<func  ("
 			pbuflen = vim_snprintf((char *)pbuf, LSIZE, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
 								tagp.tagname);
-			if (!do_search(NULL, '/', '/', pbuf, len, (long)1,
+			if (!do_search(NULL, '/', '/', pbuf, pbuflen, (long)1,
 							 search_options, NULL))
 			    found = 0;
 		    }
