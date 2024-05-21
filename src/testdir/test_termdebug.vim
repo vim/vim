@@ -311,7 +311,7 @@ func Test_termdebug_bufnames()
   call writefile(['This', 'is', 'a', 'test'], filename, 'D')
   " Throw away the file once the test has done.
   Termdebug
-  sleep 2
+  call WaitForAssert({-> assert_equal(3, winnr('$'))}
   " A file named filename already exists in the working directory,
   " hence you must call the newly created buffer differently
   call WaitForAssert({-> assert_false(bufexists(filename))})
