@@ -317,10 +317,9 @@ func Test_termdebug_bufnames()
   call WaitForAssert({-> assert_false(bufexists(filename))})
   call WaitForAssert({-> assert_true(bufexists(replacement_filename))})
   quit!
+  call WaitForAssert({-> assert_equal(1, winnr('$'))}
 
   " Check if error message is in :message
-  " Delay for securing that Termdebug is shutoff
-  sleep 1
   let g:termdebug_config['disasm_window'] = 1
   let filename = 'Termdebug-asm-listing'
   call writefile(['This', 'is', 'a', 'test'], filename, 'D')
@@ -328,10 +327,11 @@ func Test_termdebug_bufnames()
   let error_message = "You have a file/folder named '" .. filename .. "'"
   Termdebug
   sleep 2
-  call WaitForAssert({->assert_notequal(-1, stridx(execute('messages'), error_message))})
+  call WaitForAssert({-> assert_notequal(-1, stridx(execute('messages'), error_message))})
   quit!
-  wincmd t
+  wincmd b
   wincmd q
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
 
   unlet g:termdebug_config
 endfunc
