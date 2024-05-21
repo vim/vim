@@ -2960,7 +2960,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	write_viminfo_sub_string(fp_out);
 	write_viminfo_history(fp_out, merge);
 
-	if(write_viminfo_registers(fp_out) == FAIL) {
+	if (write_viminfo_registers(fp_out) == FAIL)
+	{
 		emsg(_(e_warning_registers_partially_written_to_viminfo));
 		retval = FAIL;
 	}
