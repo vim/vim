@@ -316,7 +316,7 @@ func Test_termdebug_bufnames()
   " hence you must call the newly created buffer differently
   call WaitForAssert({-> assert_false(bufexists(filename))})
   call WaitForAssert({-> assert_true(bufexists(replacement_filename))})
-  %bw!
+  quit!
 
   " Check if error message is in :message
   " Delay for securing that Termdebug is shutoff
@@ -329,7 +329,9 @@ func Test_termdebug_bufnames()
   execute 'Termdebug'
   sleep 2
   call WaitForAssert({->assert_true(stridx(execute('messages'), error_message) != -1 )})
-  %bw!
+  quit!
+  wincmd t 
+  wincmd q
 
   unlet g:termdebug_config
   unlet filename
