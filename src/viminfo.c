@@ -1911,7 +1911,7 @@ write_viminfo_registers(FILE *fp)
 	fprintf(fp, "\t%s\t%d\n", type, (int)y_ptr->y_width);
 
 	// If max_num_lines < 0, then we save ALL the lines in the register
-	if (max_num_lines > 0 && num_lines > max_num_lines) 
+	if (max_num_lines > 0 && num_lines > max_num_lines)
 	{
 	    num_lines = max_num_lines;
 	    part_write = FAIL;
