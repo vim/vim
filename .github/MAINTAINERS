@@ -207,6 +207,7 @@ runtime/ftplugin/qb64.vim		@dkearns
 runtime/ftplugin/qml.vim		@ChaseKnowlden
 runtime/ftplugin/racket.vim		@benknoble
 runtime/ftplugin/readline.vim		@dkearns
+runtime/ftplugin/rescript.vim		@ribru17
 runtime/ftplugin/routeros.vim		@zainin
 runtime/ftplugin/rst.vim		@marshallward
 runtime/ftplugin/ruby.vim		@tpope @dkearns
