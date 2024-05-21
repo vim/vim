@@ -310,7 +310,7 @@ func Test_termdebug_bufnames()
 
   call writefile(['This', 'is', 'a', 'test'], filename, 'D')
   " Throw away the file once the test has done.
-  execute 'Termdebug'
+  Termdebug
   sleep 2
   " A file named filename already exists in the working directory,
   " hence you must call the newly created buffer differently
@@ -326,7 +326,7 @@ func Test_termdebug_bufnames()
   call writefile(['This', 'is', 'a', 'test'], filename, 'D')
   " Check only the head of the error message
   let error_message = "You have a file/folder named '" .. filename .. "'"
-  execute 'Termdebug'
+  Termdebug
   sleep 2
   call WaitForAssert({->assert_notequal(-1, stridx(execute('messages'), error_message))})
   quit!
