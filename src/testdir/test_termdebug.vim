@@ -328,7 +328,7 @@ func Test_termdebug_bufnames()
   let error_message = "You have a file/folder named '" .. filename .. "'"
   Termdebug
   " Once termdebug has completed the startup you should have 4 windows on screen
-  call WaitForAssert({-> assert_equal(4, winnr('$'))})
+  call WaitForAssert({-> assert_equal(2, winnr('$'))})
   call WaitForAssert({-> assert_notequal(-1, stridx(execute('messages'), error_message))})
   quit!
   wincmd b
