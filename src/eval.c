@@ -6499,7 +6499,7 @@ func_tv2string(typval_T *tv, char_u **tofree, int echo_style)
 	r = tv->vval.v_string == NULL ? (char_u *)"function()"
 				: make_ufunc_name_readable(tv->vval.v_string,
 						buf, MAX_FUNC_NAME_LEN);
-	if (r == buf)
+	if (r == buf && tv->vval.v_string != NULL)
 	{
 	    r = vim_strsave(buf);
 	    *tofree = r;
@@ -6616,7 +6616,9 @@ list_tv2string(
     }
     else
     {
-	int old_copyID = tv->vval.v_list->lv_copyID;
+	int old_copyID;
+	if (restore_copyID)
+	    old_copyID = tv->vval.v_list->lv_copyID;
 
 	tv->vval.v_list->lv_copyID = copyID;
 	*tofree = list2string(tv, copyID, restore_copyID);
@@ -6658,7 +6660,9 @@ dict_tv2string(
     }
     else
     {
-	int old_copyID = tv->vval.v_dict->dv_copyID;
+	int old_copyID;
+	if (restore_copyID)
+	    old_copyID = tv->vval.v_dict->dv_copyID;
 
 	tv->vval.v_dict->dv_copyID = copyID;
 	*tofree = dict2string(tv, copyID, restore_copyID);
