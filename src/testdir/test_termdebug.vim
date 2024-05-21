@@ -328,15 +328,12 @@ func Test_termdebug_bufnames()
   let error_message = "You have a file/folder named '" .. filename .. "'"
   execute 'Termdebug'
   sleep 2
-  call WaitForAssert({->assert_true(stridx(execute('messages'), error_message) != -1 )})
+  call WaitForAssert({->assert_notequal(-1, stridx(execute('messages'), error_message))})
   quit!
-  wincmd t 
+  wincmd t
   wincmd q
 
   unlet g:termdebug_config
-  unlet filename
-  unlet replacement_filename
-  unlet error_message
 endfunc
 
 
