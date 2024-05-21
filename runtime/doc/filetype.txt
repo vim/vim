@@ -829,6 +829,13 @@ The mappings can be disabled with: >
 	let g:no_vim_maps = 1
 
 
+ZIG							*ft-zig-plugin*
+
+						*g:zig_recommended_style*
+The Zig |ftplugin| sets options according to Zig's recommended style. This can
+be disabled by setting |g:zig_recommended_style| to 0.
+
+
 ZIMBU							*ft-zimbu-plugin*
 
 The Zimbu filetype plugin defines mappings to move to the start and end of
