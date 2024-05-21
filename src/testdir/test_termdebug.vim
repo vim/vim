@@ -317,7 +317,7 @@ func Test_termdebug_bufnames()
   call WaitForAssert({-> assert_false(bufexists(filename))})
   call WaitForAssert({-> assert_true(bufexists(replacement_filename))})
   quit!
-  call WaitForAssert({-> assert_equal(1, winnr('$'))}
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
 
   " Check if error message is in :message
   let g:termdebug_config['disasm_window'] = 1
