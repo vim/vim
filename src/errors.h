@@ -2296,8 +2296,6 @@ EXTERN char e_not_possible_to_change_sign_str[]
 #ifdef FEAT_VIMINFO
 EXTERN char e_cant_rename_viminfo_file_to_str[]
 	INIT(= N_("E886: Can't rename viminfo file to %s!"));
-EXTERN char e_warning_registers_partially_written_to_viminfo[]
-	INIT(= N_("E2000: Warning: registers only partially written to viminfo, increase viminfo size"));
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 EXTERN char e_sorry_this_command_is_disabled_python_side_module_could_not_be_loaded[]

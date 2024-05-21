@@ -315,6 +315,13 @@ func Test_cmdline_history_order()
   call delete('Xviminfo')
 endfunc
 
+func Force_write_viminfo()
+  redir => res
+  silent! wviminfo Xviminfo
+  redir END
+  call assert_match('W23:', res)
+endfunc
+
 func Test_viminfo_registers()
   call test_settime(8)
   call setreg('a', "eight", 'c')
@@ -366,26 +373,28 @@ func Test_viminfo_registers()
   endwhile
 
   " If the maximum number of lines saved for a register ('<' in 'viminfo') is
-  " zero, then register values should not be saved.
+  " zero, then register values should not be saved and a warning should be returned.
   let @a = 'abc'
   set viminfo='100,<0,s10,h,!,nviminfo
-  wviminfo Xviminfo
+  call Force_write_viminfo()
   let @a = 'xyz'
   rviminfo! Xviminfo
   call assert_equal('xyz', @a)
   " repeat the test with '"' instead of '<'
   let @b = 'def'
   set viminfo='100,\"0,s10,h,!,nviminfo
-  wviminfo Xviminfo
+  call Force_write_viminfo()
+
   let @b = 'rst'
   rviminfo! Xviminfo
   call assert_equal('rst', @b)
 
   " If the maximum size of an item ('s' in 'viminfo') is zero, then register
-  " values should not be saved.
+  " values should not be saved and a warning should be returned.
+
   let @c = '123'
   set viminfo='100,<20,s0,h,!,nviminfo
-  wviminfo Xviminfo
+  call Force_write_viminfo()
   let @c = '456'
   rviminfo! Xviminfo
   call assert_equal('456', @c)
