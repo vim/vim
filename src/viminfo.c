@@ -1879,7 +1879,8 @@ write_viminfo_registers(FILE *fp)
 	    len = 0;
 	    for (j = 0; j < num_lines; j++)
 		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
-	    if (len > (long)max_kbyte * 1024L) {
+	    if (len > (long)max_kbyte * 1024L)
+	    {
 		part_write = FAIL;
 		continue;
 	    }
