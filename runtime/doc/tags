@@ -7404,6 +7404,7 @@ ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ft-yaml-indent	indent.txt	/*ft-yaml-indent*
 ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
+ft-zig-plugin	filetype.txt	/*ft-zig-plugin*
 ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
 ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
@@ -7702,6 +7703,8 @@ g:vimsyn_maxlines	syntax.txt	/*g:vimsyn_maxlines*
 g:vimsyn_minlines	syntax.txt	/*g:vimsyn_minlines*
 g:vimsyn_noerror	syntax.txt	/*g:vimsyn_noerror*
 g:yaml_schema	syntax.txt	/*g:yaml_schema*
+g:zig_recommended_style	filetype.txt	/*g:zig_recommended_style*
+g:zig_std_dir	filetype.txt	/*g:zig_std_dir*
 g:zipPlugin_ext	pi_zip.txt	/*g:zipPlugin_ext*
 g:zip_exec	pi_zip.txt	/*g:zip_exec*
 g:zip_extractcmd	pi_zip.txt	/*g:zip_extractcmd*
