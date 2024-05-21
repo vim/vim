@@ -1,5 +1,7 @@
 " Vim filetype plugin file
-" Language: Zig
+" Language:     Zig
+" Maintainer:   Mathias Lindgren <math.lindgren@gmail.com>
+" Based on:     https://github.com/ziglang/zig.vim
 
 if exists("b:did_ftplugin")
   finish
