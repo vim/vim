@@ -5793,7 +5793,6 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	struct block_def	bd;
 	pos_T			ret_p1, ret_p2;
 
 	if (region_type == MLINE)
@@ -5805,11 +5804,28 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	}
 	else
 	{
+	    struct block_def	bd;
+
 	    if (region_type == MBLOCK)
 		block_prep(&oa, &bd, lnum, FALSE);
 	    else
 		charwise_block_prep(p1, p2, &bd, lnum, inclusive);
-	    if (bd.startspaces > 0)
+
+	    if (bd.is_oneChar)  // selection entirely inside one char
+	    {
+		if (region_type == MBLOCK)
+		{
+		    ret_p1.col = bd.textcol;
+		    ret_p1.coladd = bd.start_char_vcols
+					     - (bd.start_vcol - oa.start_vcol);
+		}
+		else
+		{
+		    ret_p1.col = p1.col + 1;
+		    ret_p1.coladd = p1.coladd;
+		}
+	    }
+	    else if (bd.startspaces > 0)
 	    {
 		ret_p1.col = bd.textcol;
 		ret_p1.coladd = bd.start_char_vcols - bd.startspaces;
@@ -5819,7 +5835,13 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		ret_p1.col = bd.textcol + 1;
 		ret_p1.coladd = 0;
 	    }
-	    if (bd.endspaces > 0)
+
+	    if (bd.is_oneChar)  // selection entirely inside one char
+	    {
+		ret_p2.col = ret_p1.col;
+		ret_p2.coladd = ret_p1.coladd + bd.startspaces;
+	    }
+	    else if (bd.endspaces > 0)
 	    {
 		ret_p2.col = bd.textcol + bd.textlen + 1;
 		ret_p2.coladd = bd.endspaces;

@@ -2444,13 +2444,13 @@ charwise_block_prep(
     int			inclusive)
 {
     colnr_T startcol = 0, endcol = MAXCOL;
-    int	    is_oneChar = FALSE;
     colnr_T cs, ce;
     char_u *p;
 
     p = ml_get(lnum);
     bdp->startspaces = 0;
     bdp->endspaces = 0;
+    bdp->is_oneChar = FALSE;
     bdp->start_char_vcols = 0;
 
     if (lnum == start.lnum)
@@ -2487,7 +2487,7 @@ charwise_block_prep(
 		if (start.lnum == end.lnum && start.col == end.col)
 		{
 		    // Special case: inside a single char
-		    is_oneChar = TRUE;
+		    bdp->is_oneChar = TRUE;
 		    bdp->startspaces = end.coladd - start.coladd + inclusive;
 		    endcol = startcol;
 		}
@@ -2501,7 +2501,7 @@ charwise_block_prep(
     }
     if (endcol == MAXCOL)
 	endcol = ml_get_len(lnum);
-    if (startcol > endcol || is_oneChar)
+    if (startcol > endcol || bdp->is_oneChar)
 	bdp->textlen = 0;
     else
 	bdp->textlen = endcol - startcol + inclusive;

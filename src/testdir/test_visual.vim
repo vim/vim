@@ -1889,7 +1889,7 @@ func Test_visual_getregion()
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
     call assert_equal([
           \   [[bufnr('%'), 1, 5, 0], [bufnr('%'), 1, 5, 0]],
-          \   [[bufnr('%'), 2, 10, 1], [bufnr('%'), 2, 10, 0]],
+          \   [[bufnr('%'), 2, 10, 1], [bufnr('%'), 2, 10, 2]],
           \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 5, 0]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
@@ -1900,6 +1900,7 @@ func Test_visual_getregion()
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
 
+    #" characterwise selection with multibyte chars
     call cursor(1, 1)
     call feedkeys("\<Esc>vj", 'xt')
     call assert_equal(['abcdefghijk«', "\U0001f1e6"],
@@ -1910,8 +1911,17 @@ func Test_visual_getregion()
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
 
+    set selection=exclusive
+    call feedkeys('l', 'xt')
+    call assert_equal(['abcdefghijk«', "\U0001f1e6"],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 13, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
     #" marks on multibyte chars
-    :set selection=exclusive
     call setpos("'a", [0, 1, 11, 0])
     call setpos("'b", [0, 2, 16, 0])
     call setpos("'c", [0, 2, 0, 0])
@@ -1997,6 +2007,7 @@ func Test_visual_getregion()
     call assert_equal(["c", "x\tz"],
           \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
     set selection&
+    bwipe!
 
     #" Exclusive selection 2
     new
@@ -2033,7 +2044,24 @@ func Test_visual_getregion()
     set virtualedit=all
 
     call cursor(1, 1)
-    call feedkeys("\<Esc>2lv2lj", 'xt')
+    call feedkeys("\<Esc>lv2l", 'xt')
+    call assert_equal(['  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>2lv2l", 'xt')
+    call assert_equal(['  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 3]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call feedkeys('j', 'xt')
     call assert_equal(['      c', 'x   '],
           \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
     call assert_equal([
@@ -2043,12 +2071,33 @@ func Test_visual_getregion()
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
 
     call cursor(1, 1)
+    call feedkeys("\<Esc>6l\<C-v>2lj", 'xt')
+    call assert_equal(['  ', '  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 2, 7]],
+          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 2, 7]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>l\<C-v>2l2j", 'xt')
+    call assert_equal(['  ', '  ', '  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 2]],
+          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 2]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+
+    call cursor(1, 1)
     call feedkeys("\<Esc>2l\<C-v>2l2j", 'xt')
     call assert_equal(['  ', '  ', '  '],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 2, 0]],
-          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 2, 0]],
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 3]],
+          \   [[bufnr('%'), 2, 2, 1], [bufnr('%'), 2, 2, 3]],
           \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 2]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
