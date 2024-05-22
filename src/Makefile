@@ -1520,6 +1520,7 @@ BASIC_SRC = \
 	float.c \
 	fold.c \
 	getchar.c \
+	gc.c \
 	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
@@ -1682,6 +1683,7 @@ OBJ_COMMON = \
 	objects/float.o \
 	objects/fold.o \
 	objects/getchar.o \
+	objects/gc.o \
 	objects/gui_xim.o \
 	objects/hardcopy.o \
 	objects/hashtab.o \
@@ -1860,6 +1862,7 @@ PRO_AUTO = \
 	float.pro \
 	fold.pro \
 	getchar.pro \
+	gc.pro \
 	gui_xim.pro \
 	gui_beval.pro \
 	hardcopy.pro \
@@ -3224,6 +3227,9 @@ objects/fold.o: fold.c
 objects/getchar.o: getchar.c
 	$(CCC) -o $@ getchar.c
 
+objects/gc.o: gc.c
+	$(CCC) -o $@ gc.c
+
 objects/hardcopy.o: hardcopy.c
 	$(CCC) -o $@ hardcopy.c
 
@@ -3871,6 +3877,11 @@ objects/fold.o: fold.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
  globals.h errors.h
 objects/getchar.o: getchar.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
+ libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
+ globals.h errors.h
+objects/gc.o: gc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \

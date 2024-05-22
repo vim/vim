@@ -73,6 +73,7 @@ SRC_ALL =	\
 		src/float.c \
 		src/fold.c \
 		src/getchar.c \
+		src/gc.c \
 		src/globals.h \
 		src/gui.c \
 		src/gui.h \
@@ -264,6 +265,7 @@ SRC_ALL =	\
 		src/proto/float.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
+		src/proto/gc.pro \
 		src/proto/gui.pro \
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
