@@ -1828,7 +1828,7 @@ write_viminfo_registers(FILE *fp)
     yankreg_T	*y_ptr;
     yankreg_T	*y_regs_p = get_y_regs();;
     // Signifies partial write
-    int		part_write = OK;
+    int		retval = OK;
 
     fputs(_("\n# Registers:\n"), fp);
 
