@@ -2764,7 +2764,7 @@ static struct vimoption options[] =
 #ifdef FEAT_VIMINFO
 			    (char_u *)&p_viminfo, PV_NONE, did_set_viminfo, NULL,
 #if defined(MSWIN)
-			    {(char_u *)"", (char_u *)"'100,<50,s10,h,rA:,rB:"}
+			    {(char_u *)"", (char_u *)"'100,<500,s100,h,rA:,rB:"}
 #elif defined(AMIGA)
 			    {(char_u *)"",
 				 (char_u *)"'100,<50,s10,h,rdf0:,rdf1:,rdf2:"}

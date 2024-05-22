@@ -316,9 +316,7 @@ func Test_cmdline_history_order()
 endfunc
 
 func Force_write_viminfo()
-  redir => res
-  silent! wviminfo Xviminfo
-  redir END
+  let res = execute('silent! wviminfo Xviminfo')
   call assert_match('W23:', res)
 endfunc
 
