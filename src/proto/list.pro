@@ -65,4 +65,5 @@ void f_insert(typval_T *argvars, typval_T *rettv);
 void f_remove(typval_T *argvars, typval_T *rettv);
 void f_reverse(typval_T *argvars, typval_T *rettv);
 void f_reduce(typval_T *argvars, typval_T *rettv);
+void f_slice(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
