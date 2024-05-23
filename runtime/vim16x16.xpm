@@ -1,5 +1,5 @@
 /* XPM */
-static const char * vim16x16[] = {
+static char * vim16x16[] = {
 "16 16 8 1",
 " 	c None",
 ".	c #000000",

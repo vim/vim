@@ -2727,9 +2727,9 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	 */
 	GList *icons = NULL;
 
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data(vim16x16));
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data(vim32x32));
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data(vim48x48));
+	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim16x16));
+	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim32x32));
+	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim48x48));
 
 	gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
 
