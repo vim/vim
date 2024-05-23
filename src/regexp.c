@@ -620,7 +620,7 @@ skip_regexp_ex(
 {
     magic_T	mymagic;
     char_u	*p = startp;
-    size_t	startplen = STRLEN(startp);
+    size_t	startplen = 0;
 
     if (magic)
 	mymagic = MAGIC_ON;
@@ -644,16 +644,21 @@ skip_regexp_ex(
 	    if (dirc == '?' && newp != NULL && p[1] == '?')
 	    {
 		// change "\?" to "?", make a copy first.
+		if (startplen == 0)
+		    startplen = STRLEN(startp);
 		if (*newp == NULL)
 		{
 		    *newp = vim_strnsave(startp, startplen);
 		    if (*newp != NULL)
+		    {
 			p = *newp + (p - startp);
+			startp = *newp;
+		    }
 		}
 		if (dropped != NULL)
 		    ++*dropped;
 		if (*newp != NULL)
-		    mch_memmove(p, p + 1, (startplen - ((p + 1) - *newp)) + 1);
+		    mch_memmove(p, p + 1, startplen - ((p + 1) - startp) + 1);
 		else
 		    ++p;
 	    }
