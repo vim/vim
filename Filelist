@@ -806,7 +806,6 @@ RT_SCRIPTS =	\
 		runtime/autoload/dist/*.vim \
 		runtime/autoload/rust/*.vim \
 		runtime/autoload/xml/*.vim \
-		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/colors/lists/*.vim \
