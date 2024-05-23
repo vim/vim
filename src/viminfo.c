@@ -1881,7 +1881,7 @@ write_viminfo_registers(FILE *fp)
 		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
 	    if (len > (long)max_kbyte * 1024L)
 	    {
-		part_write = FAIL;
+		retval = FAIL;
 		continue;
 	    }
 	}
@@ -1914,7 +1914,7 @@ write_viminfo_registers(FILE *fp)
 	if (max_num_lines > 0 && num_lines > max_num_lines)
 	{
 	    num_lines = max_num_lines;
-	    part_write = FAIL;
+	    retval = FAIL;
 	}
 	for (j = 0; j < num_lines; j++)
 	{
@@ -1951,7 +1951,7 @@ write_viminfo_registers(FILE *fp)
 	}
     }
 
-   return part_write;
+   return retval;
 }
 
 /*
