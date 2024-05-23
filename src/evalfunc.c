@@ -5594,31 +5594,12 @@ getregionpos(
 
     if (*region_type == MCHAR)
     {
-	// handle 'selection' == "exclusive"
+	// Handle 'selection' == "exclusive".
 	if (is_select_exclusive && !EQUAL_POS(*p1, *p2))
-	{
-	    if (p2->coladd > 0)
-		p2->coladd--;
-	    else if (p2->col > 0)
-	    {
-		p2->col--;
-
-		mb_adjustpos(curbuf, p2);
-	    }
-	    else if (p2->lnum > 1)
-	    {
-		p2->lnum--;
-		p2->col = ml_get_len(p2->lnum);
-		if (p2->col > 0)
-		{
-		    p2->col--;
-
-		    mb_adjustpos(curbuf, p2);
-		}
-	    }
-	}
-	// if fp2 is on NUL (empty line) inclusive becomes false
-	if (*ml_get_pos(p2) == NUL && !virtual_op)
+	    // When backing up to previous line, inclusive becomes false.
+	    *inclusive = !unadjust_for_sel_inner(p2);
+	// If p2 is on NUL (end of line), inclusive becomes false.
+	if (*inclusive && !virtual_op && *ml_get_pos(p2) == NUL)
 	    *inclusive = FALSE;
     }
     else if (*region_type == MBLOCK)
