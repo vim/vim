@@ -7285,6 +7285,7 @@ ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
+ft-hare	filetype.txt	/*ft-hare*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
 ft-html-indent	indent.txt	/*ft-html-indent*
 ft-html-omni	insert.txt	/*ft-html-omni*
@@ -7409,6 +7410,7 @@ ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
 ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
 ft_context.txt	ft_context.txt	/*ft_context.txt*
+ft_hare.txt	ft_hare.txt	/*ft_hare.txt*
 ft_mp.txt	ft_mp.txt	/*ft_mp.txt*
 ft_ps1.txt	ft_ps1.txt	/*ft_ps1.txt*
 ft_raku.txt	ft_raku.txt	/*ft_raku.txt*
@@ -7496,6 +7498,7 @@ g:decada.Make_Command	ft_ada.txt	/*g:decada.Make_Command*
 g:decada.Unit_Name()	ft_ada.txt	/*g:decada.Unit_Name()*
 g:do_no_lazyload_menus	gui.txt	/*g:do_no_lazyload_menus*
 g:filetype_csh	syntax.txt	/*g:filetype_csh*
+g:filetype_haredoc	ft_hare.txt	/*g:filetype_haredoc*
 g:filetype_r	syntax.txt	/*g:filetype_r*
 g:ftplugin_rust_source_path	ft_rust.txt	/*g:ftplugin_rust_source_path*
 g:gnat	ft_ada.txt	/*g:gnat*
@@ -7511,6 +7514,9 @@ g:gnat.Set_Project_File()	ft_ada.txt	/*g:gnat.Set_Project_File()*
 g:gnat.Tags()	ft_ada.txt	/*g:gnat.Tags()*
 g:gnat.Tags_Command	ft_ada.txt	/*g:gnat.Tags_Command*
 g:gzip_exec	pi_gzip.txt	/*g:gzip_exec*
+g:hare_recommended_style	ft_hare.txt	/*g:hare_recommended_style*
+g:hare_space_error	ft_hare.txt	/*g:hare_space_error*
+g:haredoc_search_depth	ft_hare.txt	/*g:haredoc_search_depth*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
 g:html_dynamic_folds	syntax.txt	/*g:html_dynamic_folds*
@@ -7975,6 +7981,10 @@ haiku-user-settings-dir	os_haiku.txt	/*haiku-user-settings-dir*
 haiku-vimdir	os_haiku.txt	/*haiku-vimdir*
 hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
+hare	ft_hare.txt	/*hare*
+hare-intro	ft_hare.txt	/*hare-intro*
+hare-plugin	ft_hare.txt	/*hare-plugin*
+hare-settings	ft_hare.txt	/*hare-settings*
 has()	builtin.txt	/*has()*
 has-patch	builtin.txt	/*has-patch*
 has-python	if_pyth.txt	/*has-python*

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Dec 06
+" Last Change:	2024 May 23
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -972,6 +972,7 @@ au BufNewFile,BufRead *.hbs			setf handlebars
 
 " Hare
 au BufNewFile,BufRead *.ha			setf hare
+au BufNewFile,BufRead README			call dist#ft#FTharedoc()
 
 " Haskell
 au BufNewFile,BufRead *.hs,*.hsc,*.hs-boot,*.hsig setf haskell
