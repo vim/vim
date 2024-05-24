@@ -7392,6 +7392,8 @@ ft-termcap-syntax	syntax.txt	/*ft-termcap-syntax*
 ft-tex-plugin	filetype.txt	/*ft-tex-plugin*
 ft-tex-syntax	syntax.txt	/*ft-tex-syntax*
 ft-tf-syntax	syntax.txt	/*ft-tf-syntax*
+ft-typescript-syntax	syntax.txt	/*ft-typescript-syntax*
+ft-typescriptreact-syntax	syntax.txt	/*ft-typescriptreact-syntax*
 ft-vb-syntax	syntax.txt	/*ft-vb-syntax*
 ft-verilog-indent	indent.txt	/*ft-verilog-indent*
 ft-vhdl-indent	indent.txt	/*ft-vhdl-indent*
@@ -7698,6 +7700,7 @@ g:tex_stylish	syntax.txt	/*g:tex_stylish*
 g:tex_subscripts	syntax.txt	/*g:tex_subscripts*
 g:tex_superscripts	syntax.txt	/*g:tex_superscripts*
 g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
+g:typescript_host_keyword	syntax.txt	/*g:typescript_host_keyword*
 g:var	eval.txt	/*g:var*
 g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
@@ -10745,6 +10748,8 @@ type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
+typescript.vim	syntax.txt	/*typescript.vim*
+typescriptreact.vim	syntax.txt	/*typescriptreact.vim*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*
 uganda.txt	uganda.txt	/*uganda.txt*
