@@ -1,6 +1,7 @@
 " scdoc filetype plugin
 " Maintainer: Gregory Anders <contact@gpanders.com>
 " Last Updated: 2022-05-09
+"               2024-05-23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 " Upstream: https://github.com/gpanders/vim-scdoc
 
 " Only do this when not done yet for this buffer
@@ -12,7 +13,7 @@ endif
 let b:did_ftplugin = 1
 
 setlocal comments=b:;
-setlocal commentstring=;%s
+setlocal commentstring=;\ %s
 setlocal formatoptions+=t
 setlocal noexpandtab
 setlocal shiftwidth=0

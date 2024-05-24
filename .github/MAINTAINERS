@@ -176,6 +176,7 @@ runtime/ftplugin/kotlin.vim		@udalov
 runtime/ftplugin/less.vim		@genoma
 runtime/ftplugin/liquid.vim		@tpope
 runtime/ftplugin/lua.vim		@dkearns
+runtime/ftplugin/lc.vim			@ribru17
 runtime/ftplugin/lynx.vim		@dkearns
 runtime/ftplugin/m3build.vim		@dkearns
 runtime/ftplugin/m3quake.vim		@dkearns

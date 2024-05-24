@@ -1,6 +1,7 @@
 " Vim filetype plugin file
 " Language: Scheme (R7RS)
 " Last Change: 2019-11-19
+"              2024-05-23 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 " Author: Evan Hanson <evhan@foldling.org>
 " Maintainer: Evan Hanson <evhan@foldling.org>
 " Previous Maintainer: Sergey Khorev <sergey.khorev@gmail.com>
@@ -16,7 +17,7 @@ set cpo&vim
 
 setl lisp
 setl comments=:;;;;,:;;;,:;;,:;,sr:#\|,mb:\|,ex:\|#
-setl commentstring=;%s
+setl commentstring=;\ %s
 setl define=^\\s*(def\\k*
 setl iskeyword=33,35-39,42-43,45-58,60-90,94,95,97-122,126
 

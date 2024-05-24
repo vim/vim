@@ -1914,8 +1914,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+folding|
 			feature}
 	A template for a comment.  The "%s" in the value is replaced with the
-	comment text.  Currently only used to add markers for folding, see
-	|fold-marker|.  Also used by comment plugins |comment-install|.
+	comment text, and should be padded with a space when possible.
+	Currently only used to add markers for folding, see |fold-marker|.
+	Also used by comment plugins |comment-install|.
 
 			*'compatible'* *'cp'* *'nocompatible'* *'nocp'*
 'compatible' 'cp'	boolean	(default on, off when a |vimrc| or |gvimrc|

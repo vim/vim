@@ -4,6 +4,7 @@
 " Maintainer:  Kat <katisntgood@gmail.com>
 " Created:     August 08, 2021
 " Last Change: 13 November 2022
+"              23 May 2024 by Riley Bruins <ribru17@gmail.com> ('commentstring')
 
 if exists("b:did_ftplugin")
   finish
@@ -20,7 +21,7 @@ noremap <script> <buffer> <silent> ]] <nop>
 noremap <script> <buffer> <silent> [] <nop>
 noremap <script> <buffer> <silent> ][ <nop>
 
-setlocal commentstring=;%s
+setlocal commentstring=;\ %s
 setlocal comments=:;
 
 function s:NextSection(type, backwards, visual)
