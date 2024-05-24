@@ -342,14 +342,9 @@ syntax region  typescriptTypeBlock
   \ fold
 
 "Program Keywords
-exec 'syntax keyword typescriptNull null '.(exists('g:typescript_conceal_null') ? 'conceal cchar='.g:typescript_conceal_null : '').' nextgroup=@typescriptSymbols skipwhite skipempty'
-exec 'syntax keyword typescriptNull undefined '.(exists('g:typescript_conceal_undefined') ? 'conceal cchar='.g:typescript_conceal_undefined : '').' nextgroup=@typescriptSymbols skipwhite skipempty'
-"this
-exec 'syntax keyword typescriptIdentifier this '.(exists('g:typescript_conceal_this') ? 'conceal cchar='.g:typescript_conceal_this : '').' nextgroup=@afterIdentifier'
-exec 'syntax keyword typescriptIdentifier super '.(exists('g:typescript_conceal_super') ? 'conceal cchar='.g:typescript_conceal_super : '').' nextgroup=@afterIdentifier'
-"JavaScript Prototype
-exec 'syntax keyword typescriptPrototype prototype '.(exists('g:typescript_conceal_prototype') ? 'conceal cchar='.g:typescript_conceal_prototype : '').' nextgroup=@afterIdentifier'
-exec 'syntax keyword typescriptStatementKeyword return '.(exists('g:typescript_conceal_return') ? 'conceal cchar='.g:typescript_conceal_return : '').' skipwhite contained nextgroup=@typescriptValue containedin=typescriptBlock'
+syntax keyword typescriptNull null undefined nextgroup=@typescriptSymbols skipwhite skipempty
+syntax keyword typescriptIdentifier this super prototype nextgroup=@afterIdentifier
+syntax keyword typescriptStatementKeyword return skipwhite contained nextgroup=@typescriptValue containedin=typescriptBlock
 
 "Syntax coloring for Node.js shebang line
 syntax match   shellbang "^#!.*node\>"
@@ -1936,7 +1931,7 @@ syntax keyword typescriptAsyncFuncKeyword      await
   \ nextgroup=@typescriptValue,typescriptUsing
   \ skipwhite
 
-exec 'syntax keyword typescriptFuncKeyword '.(exists('g:typescript_conceal_function') ? 'conceal cchar='.g:typescript_conceal_function : '').' function nextgroup=typescriptAsyncFunc,typescriptFuncName,@typescriptCallSignature skipwhite skipempty'
+syntax keyword typescriptFuncKeyword function nextgroup=typescriptAsyncFunc,typescriptFuncName,@typescriptCallSignature skipwhite skipempty
 
 syntax match   typescriptAsyncFunc             contained /*/
   \ nextgroup=typescriptFuncName,@typescriptCallSignature
