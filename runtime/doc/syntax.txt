@@ -3764,6 +3764,17 @@ set "tf_minlines" to the value you desire.  Example: >
 
 	:let tf_minlines = your choice
 <
+TYPESCRIPT				*typescript.vim* *ft-typescript-syntax*
+				*typescriptreact.vim* *ft-typescriptreact-syntax*
+
+There is an option to control the syntax highlighting for TypeScript.
+
+						*g:typescript_host_keyword*
+When `1` is set to this variable, host-specific APIs such as `addEventListener`
+are highlighted. To disable, add the following line to your .vimrc: >
+	let g:typescript_host_keyword = 0
+The default value is `1`.
+
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
 There is a trade-off between more accurate syntax highlighting versus screen
