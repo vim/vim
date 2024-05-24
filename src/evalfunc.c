@@ -5695,7 +5695,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 add_regionpos_range(typval_T *rettv, pos_T p1, pos_T p2)
 {
     list_T	*l1, *l2, *l3;
-    int		max_col1, max_col2;
 
     l1 = list_alloc();
     if (l1 == NULL)
@@ -5737,16 +5736,14 @@ add_regionpos_range(typval_T *rettv, pos_T p1, pos_T p2)
 	return;
     }
 
-    max_col1 = ml_get_len(p1.lnum);
     list_append_number(l2, curbuf->b_fnum);
     list_append_number(l2, p1.lnum);
-    list_append_number(l2, p1.col > max_col1 ? max_col1 : p1.col);
+    list_append_number(l2, p1.col);
     list_append_number(l2, p1.coladd);
 
-    max_col2 = ml_get_len(p2.lnum);
     list_append_number(l3, curbuf->b_fnum);
     list_append_number(l3, p2.lnum);
-    list_append_number(l3, p2.col > max_col2 ? max_col2 : p2.col);
+    list_append_number(l3, p2.col);
     list_append_number(l3, p2.coladd);
 }
 
@@ -5759,6 +5756,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     pos_T	p1, p2;
     int		inclusive = TRUE;
     int		region_type = -1;
+    int		allow_eol = FALSE;
     oparg_T	oa;
     int		lnum;
 
@@ -5772,9 +5770,13 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
 	return;
 
+    if (argvars[2].v_type == VAR_DICT)
+	allow_eol = dict_get_bool(argvars[2].vval.v_dict, "eol", FALSE);
+
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	pos_T			ret_p1, ret_p2;
+	pos_T		ret_p1, ret_p2;
+	colnr_T		line_len = ml_get_len(lnum);
 
 	if (region_type == MLINE)
 	{
@@ -5806,6 +5808,13 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		    ret_p1.coladd = p1.coladd;
 		}
 	    }
+	    else if (region_type == MBLOCK && oa.start_vcol > bd.start_vcol)
+	    {
+		// blockwise selection entirely beyond end of line
+		ret_p1.col = MAXCOL;
+		ret_p1.coladd = oa.start_vcol - bd.start_vcol;
+		bd.is_oneChar = TRUE;
+	    }
 	    else if (bd.startspaces > 0)
 	    {
 		ret_p1.col = bd.textcol;
@@ -5820,7 +5829,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	    if (bd.is_oneChar)  // selection entirely inside one char
 	    {
 		ret_p2.col = ret_p1.col;
-		ret_p2.coladd = ret_p1.coladd + bd.startspaces;
+		ret_p2.coladd = ret_p1.coladd + bd.startspaces + bd.endspaces;
 	    }
 	    else if (bd.endspaces > 0)
 	    {
@@ -5833,6 +5842,22 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 		ret_p2.coladd = 0;
 	    }
 	}
+
+	if (!allow_eol && ret_p1.col > line_len)
+	{
+	    ret_p1.col = 0;
+	    ret_p1.coladd = 0;
+	}
+	else if (ret_p1.col > line_len + 1)
+	    ret_p1.col = line_len + 1;
+
+	if (!allow_eol && ret_p2.col > line_len)
+	{
+	    ret_p2.col = ret_p1.col == 0 ? 0 : line_len;
+	    ret_p2.coladd = 0;
+	}
+	else if (ret_p2.col > line_len + 1)
+	    ret_p2.col = line_len + 1;
 
 	ret_p1.lnum = lnum;
 	ret_p2.lnum = lnum;
