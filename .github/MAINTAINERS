@@ -516,9 +516,9 @@ runtime/syntax/toml.vim			@averms
 runtime/syntax/tt2.vim			@petdance
 runtime/syntax/tt2html.vim		@petdance
 runtime/syntax/tt2js.vim		@petdance
-runtime/syntax/typescript.vim		@HerringtonDarkholme
-runtime/syntax/typescriptcommon.vim	@HerringtonDarkholme
-runtime/syntax/typescriptreact.vim	@HerringtonDarkholme
+runtime/syntax/typescript.vim		@HerringtonDarkholme @rhysd
+runtime/syntax/typescriptreact.vim	@HerringtonDarkholme @rhysd
+runtime/syntax/shared/typescriptcommon.vim	@HerringtonDarkholme @rhysd
 runtime/syntax/unison.vim		@chuwy
 runtime/syntax/vdf.vim			@ObserverOfTime
 runtime/syntax/vroom.vim		@dbarnett
