@@ -5492,12 +5492,13 @@ getregionpos(
     pos_T	*p2,
     int		*inclusive,
     int		*region_type,
-    oparg_T	*oa)
+    oparg_T	*oap)
 {
     int		fnum1 = -1, fnum2 = -1;
     char_u	*type;
     buf_T	*findbuf;
     char_u	default_type[] = "v";
+    int		block_width = 0;
     int		is_select_exclusive;
     int		l;
 
@@ -5533,8 +5534,17 @@ getregionpos(
 	*region_type = MCHAR;
     else if (type[0] == 'V' && type[1] == NUL)
 	*region_type = MLINE;
-    else if (type[0] == Ctrl_V && type[1] == NUL)
+    else if (type[0] == Ctrl_V)
+    {
+	char_u *p = type + 1;
+
+	if (*p != NUL && ((block_width = getdigits(&p)) <= 0 || *p != NUL))
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "type", type);
+	    return FAIL;
+	}
 	*region_type = MBLOCK;
+    }
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "type", type);
@@ -5608,16 +5618,18 @@ getregionpos(
 
 	getvvcol(curwin, p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, p2, &sc2, NULL, &ec2);
-	oa->motion_type = MBLOCK;
-	oa->inclusive = TRUE;
-	oa->op_type = OP_NOP;
-	oa->start = *p1;
-	oa->end = *p2;
-	oa->start_vcol = MIN(sc1, sc2);
-	if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
-	    oa->end_vcol = sc2 - 1;
+	oap->motion_type = MBLOCK;
+	oap->inclusive = TRUE;
+	oap->op_type = OP_NOP;
+	oap->start = *p1;
+	oap->end = *p2;
+	oap->start_vcol = MIN(sc1, sc2);
+	if (block_width > 0)
+	    oap->end_vcol = oap->start_vcol + block_width - 1;
+	else if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+	    oap->end_vcol = sc2 - 1;
 	else
-	    oa->end_vcol = MAX(ec1, ec2);
+	    oap->end_vcol = MAX(ec1, ec2);
     }
 
     // Include the trailing byte of a multi-byte char.
