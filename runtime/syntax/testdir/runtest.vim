@@ -116,13 +116,17 @@ func RunTest()
   let setup = glob('input/setup/*.vim', 1, 1)
     \ ->reduce({d, f -> extend(d, {fnamemodify(f, ':t:r'): f})}, {})
 
-  for fname in glob('input/*.*', 1, 1)
-    if fname =~ '\~$'
-      " backup file, skip
-      continue
-    endif
+  if exists("$VIM_SYNTAX_SELF_TESTING")
+    let dirpath = 'input/selftestdir/'
+    let fnames = readdir(dirpath, {fname -> fname !~ '^README.txt$'})
+  else
+    let dirpath = 'input/'
+    let fnames = readdir(dirpath, {fname -> fname !~ '\~$' && fname =~ '^.\+\..\+$'})
+  endif
 
-    let root = fnamemodify(fname, ':t:r')
+  for fname in fnames
+    let root = fnamemodify(fname, ':r')
+    let fname = dirpath .. fname
     let filetype = substitute(root, '\([^_.]*\)[_.].*', '\1', '')
     let failed_root = 'failed/' .. root
 
