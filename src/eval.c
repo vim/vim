@@ -1317,10 +1317,7 @@ get_lval_dict_item(
 	// "[key]": get key from "var1"
 	key = tv_get_string_chk(var1);	// is number or string
 	if (key == NULL)
-	{
-	    clear_tv(var1);
 	    return GLV_FAIL;
-	}
     }
     lp->ll_list = NULL;
     lp->ll_object = NULL;
@@ -1331,10 +1328,7 @@ get_lval_dict_item(
     {
 	lp->ll_tv->vval.v_dict = dict_alloc();
 	if (lp->ll_tv->vval.v_dict == NULL)
-	{
-	    clear_tv(var1);
 	    return GLV_FAIL;
-	}
 	++lp->ll_tv->vval.v_dict->dv_refcount;
     }
     lp->ll_dict = lp->ll_tv->vval.v_dict;
@@ -1363,10 +1357,7 @@ get_lval_dict_item(
 	if (len != -1)
 	    key[len] = prevval;
 	if (wrong)
-	{
-	    clear_tv(var1);
 	    return GLV_FAIL;
-	}
     }
 
     if (lp->ll_valtype != NULL)
@@ -1380,7 +1371,6 @@ get_lval_dict_item(
 		|| &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
 	{
 	    semsg(_(e_illegal_variable_name_str), name);
-	    clear_tv(var1);
 	    return GLV_FAIL;
 	}
 
@@ -1389,14 +1379,12 @@ get_lval_dict_item(
 	{
 	    if (!quiet)
 		semsg(_(e_key_not_present_in_dictionary_str), key);
-	    clear_tv(var1);
 	    return GLV_FAIL;
 	}
 	if (len == -1)
 	    lp->ll_newkey = vim_strsave(key);
 	else
 	    lp->ll_newkey = vim_strnsave(key, len);
-	clear_tv(var1);
 	if (lp->ll_newkey == NULL)
 	    p = NULL;
 
@@ -1407,12 +1395,8 @@ get_lval_dict_item(
     else if ((flags & GLV_READ_ONLY) == 0
 	    && (var_check_ro(lp->ll_di->di_flags, name, FALSE)
 		|| var_check_lock(lp->ll_di->di_flags, name, FALSE)))
-    {
-	clear_tv(var1);
 	return GLV_FAIL;
-    }
 
-    clear_tv(var1);
     lp->ll_tv = &lp->ll_di->di_tv;
 
     return GLV_OK;
@@ -1445,17 +1429,12 @@ get_lval_blob(
     else
 	// is number or string
 	lp->ll_n1 = (long)tv_get_number(var1);
-    clear_tv(var1);
 
     if (check_blob_index(bloblen, lp->ll_n1, quiet) == FAIL)
-    {
-	clear_tv(var2);
 	return FAIL;
-    }
     if (lp->ll_range && !lp->ll_empty2)
     {
 	lp->ll_n2 = (long)tv_get_number(var2);
-	clear_tv(var2);
 	if (check_blob_range(bloblen, lp->ll_n1, lp->ll_n2, quiet) == FAIL)
 	    return FAIL;
     }
@@ -1499,7 +1478,6 @@ get_lval_list(
     else
 	// is number or string
 	lp->ll_n1 = (long)tv_get_number(var1);
-    clear_tv(var1);
 
     lp->ll_dict = NULL;
     lp->ll_object = NULL;
@@ -1508,10 +1486,7 @@ get_lval_list(
     lp->ll_li = check_range_index_one(lp->ll_list, &lp->ll_n1,
 				(flags & GLV_ASSIGN_WITH_OP) == 0, quiet);
     if (lp->ll_li == NULL)
-    {
-	clear_tv(var2);
 	return FAIL;
-    }
 
     if (lp->ll_valtype != NULL && !lp->ll_range)
 	// use the type of the member
@@ -1527,7 +1502,6 @@ get_lval_list(
     {
 	lp->ll_n2 = (long)tv_get_number(var2);
 	// is number or string
-	clear_tv(var2);
 	if (check_range_index_two(lp->ll_list,
 			&lp->ll_n1, lp->ll_li, &lp->ll_n2, quiet) == FAIL)
 	    return FAIL;
@@ -1651,8 +1625,69 @@ get_lval_class_or_obj(
 }
 
 /*
+ * Check whether dot (".") is allowed after the variable "name" with type
+ * "v_type".  Only Dict, Class and Object types support a dot after the name.
+ * Returns TRUE if dot is allowed after the name.
+ */
+    static int
+dot_allowed_after_type(char_u *name, vartype_T v_type, int quiet)
+{
+    if (v_type != VAR_DICT && v_type != VAR_OBJECT && v_type != VAR_CLASS)
+    {
+	if (!quiet)
+	    semsg(_(e_dot_not_allowed_after_str_str),
+		    vartype_name(v_type), name);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Check whether left bracket ("[") is allowed after the variable "name" with
+ * type "v_type".  Only Dict, List and Blob types support a bracket after the
+ * variable name.  Returns TRUE if bracket is allowed after the name.
+ */
+    static int
+bracket_allowed_after_type(char_u *name, vartype_T v_type, int quiet)
+{
+    if (v_type == VAR_CLASS || v_type == VAR_OBJECT)
+    {
+	if (!quiet)
+	    semsg(_(e_index_not_allowed_after_str_str),
+		    vartype_name(v_type), name);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Check whether the variable "name" with type "v_type" can be followed by an
+ * index.  Only Dict, List, Blob, Object and Class types support indexing.
+ * Returns TRUE if indexing is allowed after the name.
+ */
+    static int
+index_allowed_after_type(char_u *name, vartype_T v_type, int quiet)
+{
+    if (v_type != VAR_LIST && v_type != VAR_DICT && v_type != VAR_BLOB &&
+	    v_type != VAR_OBJECT && v_type != VAR_CLASS)
+    {
+	if (!quiet)
+	    semsg(_(e_index_not_allowed_after_str_str),
+		    vartype_name(v_type), name);
+	return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
  * Get the lval of a list/dict/blob/object/class subitem starting at "p". Loop
  * until no more [idx] or .key is following.
+ *
+ * If "rettv" is not NULL it points to the value to be assigned.
+ * "unlet" is TRUE for ":unlet".
  *
  * Returns a pointer to the character after the subscript on success or NULL on
  * failure.
@@ -1676,6 +1711,7 @@ get_lval_subscript(
     typval_T	var1;
     typval_T	var2;
     int		empty1 = FALSE;
+    int		rc = FAIL;
 
     /*
      * Loop until no more [idx] or .key is following.
@@ -1687,26 +1723,14 @@ get_lval_subscript(
     {
 	vartype_T v_type = lp->ll_tv->v_type;
 
-	if (*p == '.' && v_type != VAR_DICT
-		&& v_type != VAR_OBJECT
-		&& v_type != VAR_CLASS)
-	{
-	    if (!quiet)
-		semsg(_(e_dot_not_allowed_after_str_str),
-			vartype_name(v_type), name);
-	    return NULL;
-	}
-	if (v_type != VAR_LIST
-		&& v_type != VAR_DICT
-		&& v_type != VAR_BLOB
-		&& v_type != VAR_OBJECT
-		&& v_type != VAR_CLASS)
-	{
-	    if (!quiet)
-		semsg(_(e_index_not_allowed_after_str_str),
-			vartype_name(v_type), name);
-	    return NULL;
-	}
+	if (*p == '.' && !dot_allowed_after_type(name, v_type, quiet))
+	    goto done;
+
+	if (*p == '[' && !bracket_allowed_after_type(name, v_type, quiet))
+	    goto done;
+
+	if (!index_allowed_after_type(name, v_type, quiet))
+	    goto done;
 
 	// A NULL list/blob works like an empty list/blob, allocate one now.
 	int r = OK;
@@ -1715,13 +1739,13 @@ get_lval_subscript(
 	else if (v_type == VAR_BLOB && lp->ll_tv->vval.v_blob == NULL)
 	    r = rettv_blob_alloc(lp->ll_tv);
 	if (r == FAIL)
-	    return NULL;
+	    goto done;
 
 	if (lp->ll_range)
 	{
 	    if (!quiet)
 		emsg(_(e_slice_must_come_last));
-	    return NULL;
+	    goto done;
 	}
 #ifdef LOG_LOCKVAR
 	ch_log(NULL, "LKVAR: get_lval() loop: p: %s, type: %s", p,
@@ -1757,7 +1781,7 @@ get_lval_subscript(
 	    {
 		if (!quiet)
 		    emsg(_(e_cannot_use_empty_key_for_dictionary));
-		return NULL;
+		goto done;
 	    }
 	    p = key + len;
 	}
@@ -1771,13 +1795,10 @@ get_lval_subscript(
 	    {
 		empty1 = FALSE;
 		if (eval1(&p, &var1, &EVALARG_EVALUATE) == FAIL)  // recursive!
-		    return NULL;
+		    goto done;
 		if (tv_get_string_chk(&var1) == NULL)
-		{
 		    // not a number or string
-		    clear_tv(&var1);
-		    return NULL;
-		}
+		    goto done;
 		p = skipwhite(p);
 	    }
 
@@ -1788,8 +1809,7 @@ get_lval_subscript(
 		{
 		    if (!quiet)
 			emsg(_(e_cannot_slice_dictionary));
-		    clear_tv(&var1);
-		    return NULL;
+		    goto done;
 		}
 		if (rettv != NULL
 			&& !(rettv->v_type == VAR_LIST
@@ -1799,8 +1819,7 @@ get_lval_subscript(
 		{
 		    if (!quiet)
 			emsg(_(e_slice_requires_list_or_blob_value));
-		    clear_tv(&var1);
-		    return NULL;
+		    goto done;
 		}
 		p = skipwhite(p + 1);
 		if (*p == ']')
@@ -1810,17 +1829,10 @@ get_lval_subscript(
 		    lp->ll_empty2 = FALSE;
 		    // recursive!
 		    if (eval1(&p, &var2, &EVALARG_EVALUATE) == FAIL)
-		    {
-			clear_tv(&var1);
-			return NULL;
-		    }
+			goto done;
 		    if (tv_get_string_chk(&var2) == NULL)
-		    {
 			// not a number or string
-			clear_tv(&var1);
-			clear_tv(&var2);
-			return NULL;
-		    }
+			goto done;
 		}
 		lp->ll_range = TRUE;
 	    }
@@ -1831,9 +1843,7 @@ get_lval_subscript(
 	    {
 		if (!quiet)
 		    emsg(_(e_missing_closing_square_brace));
-		clear_tv(&var1);
-		clear_tv(&var2);
-		return NULL;
+		goto done;
 	    }
 
 	    // Skip to past ']'.
@@ -1854,32 +1864,41 @@ get_lval_subscript(
 	    glv_status = get_lval_dict_item(name, lp, key, len, &p, &var1,
 							flags, unlet, rettv);
 	    if (glv_status == GLV_FAIL)
-		return NULL;
+		goto done;
 	    if (glv_status == GLV_STOP)
 		break;
 	}
 	else if (v_type == VAR_BLOB)
 	{
 	    if (get_lval_blob(lp, &var1, &var2, empty1, quiet) == FAIL)
-		return NULL;
+		goto done;
 
 	    break;
 	}
 	else if (v_type == VAR_LIST)
 	{
 	    if (get_lval_list(lp, &var1, &var2, empty1, flags, quiet) == FAIL)
-		return NULL;
+		goto done;
 	}
 	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
 	    if (get_lval_class_or_obj(cl_exec, v_type, lp, key, p, flags,
 			quiet) == FAIL)
-		return NULL;
+		goto done;
 	}
+
+	clear_tv(&var1);
+	clear_tv(&var2);
+	var1.v_type = VAR_UNKNOWN;
+	var2.v_type = VAR_UNKNOWN;
     }
 
+    rc = OK;
+
+done:
     clear_tv(&var1);
-    return p;
+    clear_tv(&var2);
+    return rc == OK ? p : NULL;
 }
 
 /*
