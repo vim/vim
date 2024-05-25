@@ -10724,4 +10724,24 @@ def Test_class_definition_in_a_function()
   v9.CheckScriptFailure(lines, 'E1429: Class can only be used in a script', 1)
 enddef
 
+" Test for using [] with a class and an object
+def Test_class_object_index()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    A[10] = 1
+  END
+  v9.CheckScriptFailure(lines, 'E689: Index not allowed after a class: A[10] = 1', 4)
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var a = A.new()
+    a[10] = 1
+  END
+  v9.CheckScriptFailure(lines, 'E689: Index not allowed after a object: a[10] = 1', 5)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
