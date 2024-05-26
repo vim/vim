@@ -1631,6 +1631,22 @@ func Test_visual_substitute_visual()
   bwipe!
 endfunc
 
+func Test_virtualedit_exclusive_selection()
+  new
+  set virtualedit=all selection=exclusive
+
+  call setline(1, "a\tb")
+  normal! 0v8ly
+  call assert_equal("a\t", getreg('"'))
+  normal! 0v6ly
+  call assert_equal('a     ', getreg('"'))
+  normal! 06lv2ly
+  call assert_equal('  ', getreg('"'))
+
+  set virtualedit& selection&
+  bwipe!
+endfunc
+
 func Test_visual_getregion()
   let lines =<< trim END
     new
@@ -1754,24 +1770,185 @@ func Test_visual_getregion()
     call feedkeys("\<ESC>Vjj", 'tx')
     call assert_equal(['one', 'two', 'three'],
           \ getregion(getpos('v'), getpos('.'), {'type': 'V' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'V' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 6, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'V', 'eol': v:true }))
 
     #" Multiline with block visual mode
     call cursor(1, 1)
     call feedkeys("\<ESC>\<C-v>jj", 'tx')
     call assert_equal(['o', 't', 't'],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 1, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 1, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 1, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
 
     call cursor(1, 1)
     call feedkeys("\<ESC>\<C-v>jj$", 'tx')
     call assert_equal(['one', 'two', 'three'],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", 'eol': v:true }))
 
     #" 'virtualedit'
     set virtualedit=all
+
     call cursor(1, 1)
     call feedkeys("\<ESC>\<C-v>10ljj$", 'tx')
     call assert_equal(['one   ', 'two   ', 'three '],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 3]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 3]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 6, 1]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", 'eol': v:true }))
+
+    call cursor(3, 5)
+    call feedkeys("\<ESC>\<C-v>hkk", 'tx')
+    call assert_equal(['  ', '  ', 'ee'],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 0, 0], [bufnr('%'), 1, 0, 0]],
+          \   [[bufnr('%'), 2, 0, 0], [bufnr('%'), 2, 0, 0]],
+          \   [[bufnr('%'), 3, 4, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 4, 0], [bufnr('%'), 1, 4, 2]],
+          \   [[bufnr('%'), 2, 4, 0], [bufnr('%'), 2, 4, 2]],
+          \   [[bufnr('%'), 3, 4, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", 'eol': v:true }))
+
+    call cursor(3, 5)
+    call feedkeys("\<ESC>\<C-v>kk", 'tx')
+    call assert_equal([' ', ' ', 'e'],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 0, 0], [bufnr('%'), 1, 0, 0]],
+          \   [[bufnr('%'), 2, 0, 0], [bufnr('%'), 2, 0, 0]],
+          \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 4, 1], [bufnr('%'), 1, 4, 2]],
+          \   [[bufnr('%'), 2, 4, 1], [bufnr('%'), 2, 4, 2]],
+          \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", 'eol': v:true }))
+
+    call cursor(1, 3)
+    call feedkeys("\<ESC>vjj4l", 'tx')
+    call assert_equal(['e', 'two', 'three  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 3, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 3, 0], [bufnr('%'), 1, 4, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 6, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'v', 'eol': v:true }))
+
+    call cursor(1, 3)
+    call feedkeys("\<ESC>lvjj3l", 'tx')
+    call assert_equal(['', 'two', 'three  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 0, 0], [bufnr('%'), 1, 0, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 4, 0], [bufnr('%'), 1, 4, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 6, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'v', 'eol': v:true }))
+
+    call cursor(3, 5)
+    call feedkeys("\<ESC>v3l", 'tx')
+    call assert_equal(['e   '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 5, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 6, 3]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'v', 'eol': v:true }))
+
+    call cursor(3, 5)
+    call feedkeys("\<ESC>lv3l", 'tx')
+    call assert_equal(['    '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 3, 6, 0], [bufnr('%'), 3, 6, 4]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'v', 'eol': v:true }))
+
+    call cursor(3, 5)
+    call feedkeys("\<ESC>3lv3l", 'tx')
+    call assert_equal(['    '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 3, 6, 2], [bufnr('%'), 3, 6, 6]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'v', 'eol': v:true }))
+
     set virtualedit&
 
     #" using wrong types for positions
@@ -1787,6 +1964,14 @@ func Test_visual_getregion()
     #" using invalid value for "type"
     call assert_fails("call getregion(getpos('.'), getpos('.'), {'type': '' })", 'E475:')
     call assert_fails("call getregionpos(getpos('.'), getpos('.'), {'type': '' })", 'E475:')
+    call assert_fails("call getregion(getpos('.'), getpos('.'), {'type': 'v0' })", 'E475:')
+    call assert_fails("call getregionpos(getpos('.'), getpos('.'), {'type': 'v0' })", 'E475:')
+    call assert_fails("call getregion(getpos('.'), getpos('.'), {'type': 'V0' })", 'E475:')
+    call assert_fails("call getregionpos(getpos('.'), getpos('.'), {'type': 'V0' })", 'E475:')
+    call assert_fails("call getregion(getpos('.'), getpos('.'), {'type': '\<C-v>0' })", 'E475:')
+    call assert_fails("call getregionpos(getpos('.'), getpos('.'), {'type': '\<C-v>0' })", 'E475:')
+    call assert_fails("call getregion(getpos('.'), getpos('.'), {'type': '\<C-v>1:' })", 'E475:')
+    call assert_fails("call getregionpos(getpos('.'), getpos('.'), {'type': '\<C-v>1:' })", 'E475:')
 
     #" using a mark from another buffer to current buffer
     new
@@ -1847,10 +2032,9 @@ func Test_visual_getregion()
 
     exe $':{g:buf}bwipe!'
     unlet g:buf
+    bwipe!
   END
   call v9.CheckLegacyAndVim9Success(lines)
-
-  bwipe!
 
   let lines =<< trim END
     #" Selection in starts or ends in the middle of a multibyte character
@@ -1889,10 +2073,12 @@ func Test_visual_getregion()
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
     call assert_equal([
           \   [[bufnr('%'), 1, 5, 0], [bufnr('%'), 1, 5, 0]],
-          \   [[bufnr('%'), 2, 10, 1], [bufnr('%'), 2, 10, 0]],
+          \   [[bufnr('%'), 2, 7, 1], [bufnr('%'), 2, 7, 2]],
           \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 5, 0]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal(['efghijk«', '🇦«🇧«🇨«🇩', '12345'],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
     call assert_equal([
           \   [[bufnr('%'), 1, 5, 0], [bufnr('%'), 1, 13, 0]],
           \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 22, 0]],
@@ -1900,6 +2086,29 @@ func Test_visual_getregion()
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
 
+    call cursor(1, 5)
+    call feedkeys("\<Esc>\<C-v>5l2j", 'xt')
+    call assert_equal(['efghij', ' «🇨« ', '567890'],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 5, 0], [bufnr('%'), 1, 10, 0]],
+          \   [[bufnr('%'), 2, 7, 1], [bufnr('%'), 2, 19, 1]],
+          \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 10, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+
+    call cursor(1, 4)
+    call feedkeys("\<Esc>\<C-v>02j", 'xt')
+    call assert_equal(['abcd', '🇦« ', '1234'],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 7, 1]],
+          \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 4, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+
+    #" characterwise selection with multibyte chars
     call cursor(1, 1)
     call feedkeys("\<Esc>vj", 'xt')
     call assert_equal(['abcdefghijk«', "\U0001f1e6"],
@@ -1910,8 +2119,17 @@ func Test_visual_getregion()
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
 
+    set selection=exclusive
+    call feedkeys('l', 'xt')
+    call assert_equal(['abcdefghijk«', "\U0001f1e6"],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 13, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 4, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
     #" marks on multibyte chars
-    :set selection=exclusive
     call setpos("'a", [0, 1, 11, 0])
     call setpos("'b", [0, 2, 16, 0])
     call setpos("'c", [0, 2, 0, 0])
@@ -1961,11 +2179,11 @@ func Test_visual_getregion()
     call assert_equal(['abcdefghijk«'],
           \ getregion(getpos("'a"), getpos("'b"),
           \ {'type': 'V', 'exclusive': 1 }))
-    :set selection&
+
+    set selection&
+    bwipe!
   END
   call v9.CheckLegacyAndVim9Success(lines)
-
-  bwipe!
 
   let lines =<< trim END
     #" Exclusive selection
@@ -1997,43 +2215,137 @@ func Test_visual_getregion()
     call assert_equal(["c", "x\tz"],
           \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
     set selection&
+    bwipe!
 
     #" Exclusive selection 2
     new
     call setline(1, ["a\tc", "x\tz", '', ''])
+
     call cursor(1, 1)
     call feedkeys("\<Esc>v2l", 'xt')
     call assert_equal(["a\t"],
           \ getregion(getpos('v'), getpos('.'), {'exclusive': v:true }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 2, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'exclusive': v:true }))
+
     call cursor(1, 1)
     call feedkeys("\<Esc>v$G", 'xt')
     call assert_equal(["a\tc", "x\tz", ''],
           \ getregion(getpos('v'), getpos('.'), {'exclusive': v:true }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'exclusive': v:true }))
+
     call cursor(1, 1)
     call feedkeys("\<Esc>v$j", 'xt')
     call assert_equal(["a\tc", "x\tz"],
           \ getregion(getpos('v'), getpos('.'), {'exclusive': v:true }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'exclusive': v:true }))
+
     call cursor(1, 1)
     call feedkeys("\<Esc>\<C-v>$j", 'xt')
     call assert_equal(["a\tc", "x\tz"],
           \ getregion(getpos('v'), getpos('.'),
           \           {'exclusive': v:true, 'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'exclusive': v:true, 'type': "\<C-v>" }))
+
     call cursor(1, 1)
     call feedkeys("\<Esc>\<C-v>$G", 'xt')
     call assert_equal(["a", "x", '', ''],
           \ getregion(getpos('v'), getpos('.'),
           \           {'exclusive': v:true, 'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 1, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 1, 0]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \   [[bufnr('%'), 4, 0, 0], [bufnr('%'), 4, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'exclusive': v:true, 'type': "\<C-v>" }))
+
     call cursor(1, 1)
     call feedkeys("\<Esc>wv2j", 'xt')
     call assert_equal(["c", "x\tz"],
           \ getregion(getpos('v'), getpos('.'), {'exclusive': v:true }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 3, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'exclusive': v:true }))
 
-    #" virtualedit
+    #" 'virtualedit' with exclusive selection
     set selection=exclusive
     set virtualedit=all
 
     call cursor(1, 1)
-    call feedkeys("\<Esc>2lv2lj", 'xt')
+    call feedkeys("\<Esc>vj", 'xt')
+    call assert_equal(["a\tc"],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>v8l", 'xt')
+    call assert_equal(["a\t"],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 2, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>v6l", 'xt')
+    call assert_equal(['a     '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 2, 5]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>6lv2l", 'xt')
+    call assert_equal(['  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 2, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>lv2l", 'xt')
+    call assert_equal(['  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>2lv2l", 'xt')
+    call assert_equal(['  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 3]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call feedkeys('j', 'xt')
     call assert_equal(['      c', 'x   '],
           \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
     call assert_equal([
@@ -2043,19 +2355,206 @@ func Test_visual_getregion()
           \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
 
     call cursor(1, 1)
+    call feedkeys("\<Esc>6l\<C-v>2lj", 'xt')
+    call assert_equal(['  ', '  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 2, 7]],
+          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 2, 7]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>l\<C-v>2l2j", 'xt')
+    call assert_equal(['  ', '  ', '  '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 2]],
+          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 2]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 2]],
+          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 2]],
+          \   [[bufnr('%'), 3, 1, 1], [bufnr('%'), 3, 1, 3]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", "eol": v:true }))
+
+    call cursor(1, 1)
     call feedkeys("\<Esc>2l\<C-v>2l2j", 'xt')
     call assert_equal(['  ', '  ', '  '],
           \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
     call assert_equal([
-          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 2, 0]],
-          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 2, 0]],
-          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 2]],
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 3]],
+          \   [[bufnr('%'), 2, 2, 1], [bufnr('%'), 2, 2, 3]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 3]],
+          \   [[bufnr('%'), 2, 2, 1], [bufnr('%'), 2, 2, 3]],
+          \   [[bufnr('%'), 3, 1, 2], [bufnr('%'), 3, 1, 4]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", "eol": v:true }))
+
+    #" 'virtualedit' with inclusive selection
+    set selection&
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>vj", 'xt')
+    call assert_equal(["a\tc", 'x'],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 1, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>v8l", 'xt')
+    call assert_equal(["a\tc"],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>v6l", 'xt')
+    call assert_equal(['a      '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 2, 6]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>6lv2l", 'xt')
+    call assert_equal(['  c'],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>lv2l", 'xt')
+    call assert_equal(['   '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 3]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>2lv2l", 'xt')
+    call assert_equal(['   '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 4]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call feedkeys('j', 'xt')
+    call assert_equal(['      c', 'x    '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 2, 4]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+
+    call cursor(1, 1)
+    call feedkeys("\<Esc>6l\<C-v>2lj", 'xt')
+    call assert_equal(['  c', '  z'],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 5], [bufnr('%'), 1, 3, 0]],
+          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 3, 0]],
           \ ],
           \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
 
-    set virtualedit&
-    set selection&
+    call cursor(1, 1)
+    call feedkeys("\<Esc>l\<C-v>2l2j", 'xt')
+    call assert_equal(['   ', '   ', '   '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 3]],
+          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 3]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 2, 3]],
+          \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 2, 3]],
+          \   [[bufnr('%'), 3, 1, 1], [bufnr('%'), 3, 1, 4]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", "eol": v:true }))
 
+    call cursor(1, 1)
+    call feedkeys("\<Esc>2l\<C-v>2l2j", 'xt')
+    call assert_equal(['   ', '   ', '   '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 4]],
+          \   [[bufnr('%'), 2, 2, 1], [bufnr('%'), 2, 2, 4]],
+          \   [[bufnr('%'), 3, 0, 0], [bufnr('%'), 3, 0, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 2, 1], [bufnr('%'), 1, 2, 4]],
+          \   [[bufnr('%'), 2, 2, 1], [bufnr('%'), 2, 2, 4]],
+          \   [[bufnr('%'), 3, 1, 2], [bufnr('%'), 3, 1, 5]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", "eol": v:true }))
+
+    set virtualedit&
+    bwipe!
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    #" 'virtualedit' with TABs at end of line
+    new
+    set virtualedit=all
+    call setline(1, ["\t", "a\t", "aa\t"])
+
+    call feedkeys("gg06l\<C-v>3l2j", 'xt')
+    call assert_equal(['    ', '    ', '    '],
+          \ getregion(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 6], [bufnr('%'), 1, 1, 0]],
+          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 2, 0]],
+          \   [[bufnr('%'), 3, 3, 4], [bufnr('%'), 3, 3, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': "\<C-v>" }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 6], [bufnr('%'), 1, 2, 2]],
+          \   [[bufnr('%'), 2, 2, 5], [bufnr('%'), 2, 3, 2]],
+          \   [[bufnr('%'), 3, 3, 4], [bufnr('%'), 3, 4, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': "\<C-v>", "eol": v:true }))
+
+    call feedkeys("gg06lv3l", 'xt')
+    call assert_equal(['    '],
+          \ getregion(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 6], [bufnr('%'), 1, 1, 0]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'), {'type': 'v' }))
+    call assert_equal([
+          \   [[bufnr('%'), 1, 1, 6], [bufnr('%'), 1, 2, 2]],
+          \ ],
+          \ getregionpos(getpos('v'), getpos('.'),
+          \              {'type': 'v', "eol": v:true }))
+
+    set virtualedit&
     bwipe!
   END
   call v9.CheckLegacyAndVim9Success(lines)
@@ -2075,30 +2574,127 @@ func Test_getregion_invalid_buf()
   bwipe!
 endfunc
 
-func Test_getregion_maxcol()
-  new
+func Test_getregion_after_yank()
+  func! Check_Results(type)
+    call assert_equal(g:expected_region,
+          \ getregion(getpos("'["), getpos("']"), #{ type: a:type }))
+    call assert_equal(g:expected_regionpos,
+          \ getregionpos(getpos("'["), getpos("']"), #{ type: a:type }))
+    call assert_equal(g:expected_region,
+          \ getregion(getpos("']"), getpos("'["), #{ type: a:type }))
+    call assert_equal(g:expected_regionpos,
+          \ getregionpos(getpos("']"), getpos("'["), #{ type: a:type }))
+    let g:checked = 1
+  endfunc
+
   autocmd TextYankPost *
         \ : if v:event.operator ==? 'y'
-        \ | call assert_equal([
-        \                       [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
-        \                     ],
-        \                     getregionpos(getpos("'["), getpos("']"),
-        \                                  #{ mode: visualmode() }))
-        \ | call assert_equal(['abcd'],
-        \                     getregion(getpos("'["), getpos("']"),
-        \                               #{ mode: visualmode() }))
-        \ | call assert_equal([
-        \                       [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
-        \                     ],
-        \                     getregionpos(getpos("']"), getpos("'["),
-        \                                  #{ mode: visualmode() }))
-        \ | call assert_equal(['abcd'],
-        \                     getregion(getpos("']"), getpos("'["),
-        \                               #{ mode: visualmode() }))
+        \ | call Check_Results(v:event.regtype)
         \ | endif
-  call setline(1, ['abcd', 'efghij'])
+
+  new
+  call setline(1, ['abcd', 'efghijk', 'lmn'])
+
+  let g:expected_region = ['abcd']
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
+        \ ]
+  let g:checked = 0
   normal yy
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+
+  let g:expected_region = ['cd', 'ghijk', 'n']
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 1, 3, 0], [bufnr('%'), 1, 4, 0]],
+        \   [[bufnr('%'), 2, 3, 0], [bufnr('%'), 2, 7, 0]],
+        \   [[bufnr('%'), 3, 3, 0], [bufnr('%'), 3, 3, 0]],
+        \ ]
+  let g:checked = 0
+  call feedkeys("gg0ll\<C-V>jj$y", 'tx')
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+  call assert_equal(g:expected_region, getreg('"', v:true, v:true))
+
+  let g:expected_region = ['bc', 'fg', 'mn']
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 1, 2, 0], [bufnr('%'), 1, 3, 0]],
+        \   [[bufnr('%'), 2, 2, 0], [bufnr('%'), 2, 3, 0]],
+        \   [[bufnr('%'), 3, 2, 0], [bufnr('%'), 3, 3, 0]],
+        \ ]
+  let g:checked = 0
+  call feedkeys("gg0l\<C-V>jjly", 'tx')
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+  call assert_equal(g:expected_region, getreg('"', v:true, v:true))
+
   bwipe!
+
+  new
+  let lines = ['asdfghjkl', '«口=口»', 'qwertyuiop', '口口=口口', 'zxcvbnm']
+  call setline(1, lines)
+
+  let g:expected_region = lines
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 9, 0]],
+        \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 11, 0]],
+        \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 10, 0]],
+        \   [[bufnr('%'), 4, 1, 0], [bufnr('%'), 4, 13, 0]],
+        \   [[bufnr('%'), 5, 1, 0], [bufnr('%'), 5, 7, 0]],
+        \ ]
+  let g:checked = 0
+  call feedkeys('ggyG', 'tx')
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+  call assert_equal(g:expected_region, getreg('"', v:true, v:true))
+
+  let g:expected_region = ['=口»', 'qwertyuiop', '口口=口']
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 2, 6, 0], [bufnr('%'), 2, 11, 0]],
+        \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 10, 0]],
+        \   [[bufnr('%'), 4, 1, 0], [bufnr('%'), 4, 10, 0]],
+        \ ]
+  let g:checked = 0
+  call feedkeys('2gg02lv2j2ly', 'tx')
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+  call assert_equal(g:expected_region, getreg('"', v:true, v:true))
+
+  let g:expected_region = ['asdf', '«口=', 'qwer', '口口', 'zxcv']
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 1, 1, 0], [bufnr('%'), 1, 4, 0]],
+        \   [[bufnr('%'), 2, 1, 0], [bufnr('%'), 2, 6, 0]],
+        \   [[bufnr('%'), 3, 1, 0], [bufnr('%'), 3, 4, 0]],
+        \   [[bufnr('%'), 4, 1, 0], [bufnr('%'), 4, 6, 0]],
+        \   [[bufnr('%'), 5, 1, 0], [bufnr('%'), 5, 4, 0]],
+        \ ]
+  let g:checked = 0
+  call feedkeys("G0\<C-V>3l4ky", 'tx')
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+  call assert_equal(g:expected_region, getreg('"', v:true, v:true))
+
+  let g:expected_region = ['ghjkl', '口»', 'tyuiop', '=口口', 'bnm']
+  let g:expected_regionpos = [
+        \   [[bufnr('%'), 1, 5, 0], [bufnr('%'), 1, 9, 0]],
+        \   [[bufnr('%'), 2, 7, 0], [bufnr('%'), 2, 11, 0]],
+        \   [[bufnr('%'), 3, 5, 0], [bufnr('%'), 3, 10, 0]],
+        \   [[bufnr('%'), 4, 7, 0], [bufnr('%'), 4, 13, 0]],
+        \   [[bufnr('%'), 5, 5, 0], [bufnr('%'), 5, 7, 0]],
+        \ ]
+  let g:checked = 0
+  call feedkeys("G04l\<C-V>$4ky", 'tx')
+  call assert_equal(1, g:checked)
+  call Check_Results(getregtype('"'))
+  call assert_equal(g:expected_region, getreg('"', v:true, v:true))
+
+  bwipe!
+
+  unlet g:expected_region
+  unlet g:expected_regionpos
+  unlet g:checked
+  autocmd! TextYankPost
+  delfunc Check_Results
 endfunc
 
 func Test_visual_block_cursor_delete()

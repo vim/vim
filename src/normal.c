@@ -6696,29 +6696,40 @@ adjust_for_sel(cmdarg_T *cap)
     int
 unadjust_for_sel(void)
 {
-    pos_T	*pp;
-
     if (*p_sel == 'e' && !EQUAL_POS(VIsual, curwin->w_cursor))
+	return unadjust_for_sel_inner(LT_POS(VIsual, curwin->w_cursor)
+					? &curwin->w_cursor : &VIsual);
+    return FALSE;
+}
+
+/*
+ * Move position "*pp" back one character for 'selection' == "exclusive".
+ * Returns TRUE when backed up to the previous line.
+ */
+    int
+unadjust_for_sel_inner(pos_T *pp)
+{
+    colnr_T	cs, ce;
+
+    if (pp->coladd > 0)
+	--pp->coladd;
+    else if (pp->col > 0)
     {
-	if (LT_POS(VIsual, curwin->w_cursor))
-	    pp = &curwin->w_cursor;
-	else
-	    pp = &VIsual;
-	if (pp->coladd > 0)
-	    --pp->coladd;
-	else
-	if (pp->col > 0)
+	--pp->col;
+	mb_adjustpos(curbuf, pp);
+	if (virtual_active())
 	{
-	    --pp->col;
-	    mb_adjustpos(curbuf, pp);
-	}
-	else if (pp->lnum > 1)
-	{
-	    --pp->lnum;
-	    pp->col = ml_get_len(pp->lnum);
-	    return TRUE;
+	    getvcol(curwin, pp, &cs, NULL, &ce);
+	    pp->coladd = ce - cs;
 	}
     }
+    else if (pp->lnum > 1)
+    {
+	--pp->lnum;
+	pp->col = ml_get_len(pp->lnum);
+	return TRUE;
+    }
+
     return FALSE;
 }
 

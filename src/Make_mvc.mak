@@ -718,6 +718,7 @@ OBJ = \
 	$(OUTDIR)\float.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
+	$(OUTDIR)\gc.obj \
 	$(OUTDIR)\gui_xim.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
@@ -1575,6 +1576,8 @@ $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
 
 $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 
+$(OUTDIR)/gc.obj:	$(OUTDIR) gc.c  $(INCL)
+
 $(OUTDIR)/gui_xim.obj:	$(OUTDIR) gui_xim.c  $(INCL)
 
 $(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL) version.h
@@ -1915,6 +1918,7 @@ proto.h: \
 	proto/findfile.pro \
 	proto/float.pro \
 	proto/getchar.pro \
+	proto/gc.pro \
 	proto/gui_xim.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \

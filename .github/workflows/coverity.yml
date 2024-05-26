@@ -63,6 +63,9 @@ jobs:
           # Append various warning flags to CFLAGS.
           sed -i -f ci/config.mk.sed src/auto/config.mk
           sed -i -f ci/config.mk.${CC}.sed src/auto/config.mk
+          # -O2 gives false warning and turns it into an error:
+          # warning: function may return address of local variable [-Wreturn-local-addr]
+          sed -i 's/-O2 \?//' src/auto/config.mk
 
       - name: Build/scan vim
         if: env.TOKEN

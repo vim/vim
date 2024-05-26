@@ -2704,23 +2704,9 @@ global_event_filter(GdkXEvent *xev,
     static void
 mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
-// If you get an error message here, you still need to unpack the runtime
-// archive!
-#ifdef magick
-# undef magick
-#endif
-  // A bit hackish, but avoids casting later and allows optimization
-# define static static const
-#define magick vim32x32
 #include "../runtime/vim32x32.xpm"
-#undef magick
-#define magick vim16x16
 #include "../runtime/vim16x16.xpm"
-#undef magick
-#define magick vim48x48
 #include "../runtime/vim48x48.xpm"
-#undef magick
-# undef static
 
     GdkWindow * const mainwin_win = gtk_widget_get_window(gui.mainwin);
 
@@ -2741,9 +2727,9 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	 */
 	GList *icons = NULL;
 
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data(vim16x16));
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data(vim32x32));
-	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data(vim48x48));
+	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim16x16));
+	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim32x32));
+	icons = g_list_prepend(icons, gdk_pixbuf_new_from_xpm_data((const char **)vim48x48));
 
 	gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
 

@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2023 Sep 27
+*various.txt*   For Vim version 9.1.  Last change: 2024 May 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -608,6 +608,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			   |:command|    - filter by command name
 			   |:files|      - filter by file name
 			   |:highlight|  - filter by highlight group
+			   |:history|    - filter by history commands
 			   |:jumps|      - filter by file name
 			   |:let|        - filter by variable name
 			   |:list|       - filter whole line
