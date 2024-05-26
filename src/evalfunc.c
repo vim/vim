@@ -5788,6 +5788,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
 	pos_T		ret_p1, ret_p2;
+	char_u		*line = ml_get(lnum);
 	colnr_T		line_len = ml_get_len(lnum);
 
 	if (region_type == MLINE)
@@ -5810,7 +5811,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	    {
 		if (region_type == MBLOCK)
 		{
-		    ret_p1.col = bd.textcol;
+		    ret_p1.col = mb_prevptr(line, bd.textstart) - line + 1;
 		    ret_p1.coladd = bd.start_char_vcols
 					     - (bd.start_vcol - oa.start_vcol);
 		}
@@ -5829,7 +5830,7 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
 	    }
 	    else if (bd.startspaces > 0)
 	    {
-		ret_p1.col = bd.textcol;
+		ret_p1.col = mb_prevptr(line, bd.textstart) - line + 1;
 		ret_p1.coladd = bd.start_char_vcols - bd.startspaces;
 	    }
 	    else
