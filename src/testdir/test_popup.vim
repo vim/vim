@@ -1175,6 +1175,8 @@ func Test_CompleteChanged()
   set completeopt=menu,menuone
   call feedkeys("i\<C-X>\<C-O>\<BS>\<BS>\<BS>f", 'tx')
   call assert_equal('five', g:word)
+  call feedkeys("i\<C-X>\<C-O>\<BS>\<BS>\<BS>f\<BS>", 'tx')
+  call assert_equal('one', g:word)
 
   autocmd! AAAAA_Group
   set complete& completeopt&
