@@ -7,6 +7,7 @@
 "               lua_subversion = 0 (for 4.0 or 5.0)
 "                               or 1, 2, 3 (for 5.1, 5.2 or 5.3)
 "               the default is 5.3
+"               lua_unamed_function_to_lambda = 0 or 1
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -63,7 +64,14 @@ syn match  luaError "}"
 syn match  luaError "\<\%(end\|else\|elseif\|then\|until\|in\)\>"
 
 " Function declaration
-syn region luaFunctionBlock transparent matchgroup=luaFunction start="\<function\>" end="\<end\>" contains=TOP
+if exists('lua_unamed_function_to_lambda') && lua_unamed_function_to_lambda
+  syn region luaFunctionBlock transparent matchgroup=luaFunction start="\v<function>%(\([^)\n\-]*\)\s*return>)@!" end="\<end\>"     contains=TOP
+  syn match  luaUnamedFunction        nextgroup=luaUnamedFunctionParam          /\v<function>%(\([^()\n\-]*\)\s*return>)@=/ conceal cchar=λ
+  syn region luaUnamedFunctionParam   matchgroup=luaUnamedFunctionParamDelimiter  contained start='(' end=')\s*'            oneline cchar=. concealends nextgroup=luaUnamedFunctionReturn
+  syn region luaUnamedFunctionReturn  matchgroup=luaUnamedFunctionReturnDelimiter contained start=/\<return\>\s*/ end=/\s*\<end\>/  cchar=; concealends contains=TOP
+else
+  syn region luaFunctionBlock transparent matchgroup=luaFunction start="\<function\>" end="\<end\>" contains=TOP
+endif
 
 " else
 syn keyword luaCondElse matchgroup=luaCond contained containedin=luaCondEnd else
@@ -433,6 +441,11 @@ hi def link luaParenError       Error
 hi def link luaSpecial          SpecialChar
 hi def link luaFunc             Identifier
 hi def link luaLabel            Label
+hi def link luaUnamedFunction                 luaFunction
+hi def link luaUnamedFunctionParam            NONE
+hi def link luaUnamedFunctionParamDelimiter   NONE
+hi def link luaUnamedFunctionReturn           NONE
+hi def link luaUnamedFunctionReturnDelimiter  luaStatement
 
 
 let b:current_syntax = "lua"
