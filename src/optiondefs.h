@@ -642,7 +642,7 @@ static struct vimoption options[] =
 			    {(char_u *)TRUE, (char_u *)FALSE} SCTX_INIT},
     {"complete",    "cpt",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_cpt, PV_CPT, did_set_complete, expand_set_complete,
-			    {(char_u *)".,w,b,u,t,i", (char_u *)0L}
+			    {(char_u *)".,w,b,u,t", (char_u *)0L}
 			    SCTX_INIT},
     {"completefunc", "cfu", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE|P_FUNC,
 #ifdef FEAT_COMPL_FUNC

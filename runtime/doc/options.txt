@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.1.  Last change: 2024 May 19
+*options.txt*	For Vim version 9.1.  Last change: 2024 May 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2042,7 +2042,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'writebackup'	+ on or off	depends on the |+writebackup| feature
 
 						*'complete'* *'cpt'* *E535*
-'complete' 'cpt'	string	(default: ".,w,b,u,t,i")
+'complete' 'cpt'	string	(default: ".,w,b,u,t")
 			local to buffer
 	This option specifies how keyword completion |ins-completion| works
 	when CTRL-P or CTRL-N are used.  It is also used for whole-line
