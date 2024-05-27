@@ -70,6 +70,7 @@ syn keyword vimGroup contained	Comment Constant String Character Number Boolean 
 
 " Default highlighting groups {{{2
 " GEN_SYN_VIM: vimHLGroup, START_STR='syn keyword vimHLGroup contained', END_STR=''
+syn match vimHLGroup contained "\<Conceal\>"
 syn case match
 
 " Function Names {{{2
