@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 9.1.  Last change: 2022 Dec 03
+*help.txt*	For Vim version 9.1.  Last change: 2024 May 27
 
 			VIM - main help file
 									 k
@@ -162,7 +162,8 @@ Programming language support ~
 |filetype.txt|	settings done specifically for a type of file
 |quickfix.txt|	commands for a quick edit-compile-fix cycle
 |ft_ada.txt|	Ada (the programming language) support
-|ft_context.txt|	Filetype plugin for ConTeXt
+|ft_context.txt|  Filetype plugin for ConTeXt
+|ft_hare.txt|	Filetype plugin for Hare
 |ft_mp.txt|	Filetype plugin for METAFONT and MetaPost
 |ft_ps1.txt|	Filetype plugin for Windows PowerShell
 |ft_raku.txt|	Filetype plugin for Raku
