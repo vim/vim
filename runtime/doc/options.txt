@@ -2143,6 +2143,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    select one from the menu. Only works in combination with
 		    "menu" or "menuone".
 
+	   fuzzy    Enable fuzzy matching for completion candidates. This
+		    allows for more flexible and intuitive matching, where
+		    characters can be skipped and matches can be found even
+		    if the exact sequence is not typed.
+
 					*'completepopup'* *'cpp'*
 'completepopup' 'cpp'	string (default empty)
 			global
