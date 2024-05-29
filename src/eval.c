@@ -5761,22 +5761,31 @@ func_tv2string(typval_T *tv, char_u **tofree, int echo_style)
 
     if (echo_style)
     {
-	r = tv->vval.v_string == NULL ? (char_u *)"function()"
-				: make_ufunc_name_readable(tv->vval.v_string,
-						buf, MAX_FUNC_NAME_LEN);
-	if (r == buf && tv->vval.v_string != NULL)
+	if (tv->vval.v_string == NULL)
 	{
-	    r = vim_strsave(buf);
-	    *tofree = r;
+	    r = (char_u *)"function()";
+	    *tofree = NULL;
 	}
 	else
-	    *tofree = NULL;
+	{
+	    r = make_ufunc_name_readable(tv->vval.v_string, buf,
+							MAX_FUNC_NAME_LEN);
+	    if (r == buf)
+	    {
+		r = vim_strsave(buf);
+		*tofree = r;
+	    }
+	    else
+		*tofree = NULL;
+	}
     }
     else
     {
-	*tofree = string_quote(tv->vval.v_string == NULL ? NULL
-				: make_ufunc_name_readable(tv->vval.v_string,
-					buf, MAX_FUNC_NAME_LEN), TRUE);
+	if (tv->vval.v_string == NULL)
+	    *tofree = string_quote(NULL, TRUE);
+	else
+	    *tofree = string_quote(make_ufunc_name_readable(tv->vval.v_string,
+						buf, MAX_FUNC_NAME_LEN), TRUE);
 	r = *tofree;
     }
 
