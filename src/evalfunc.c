@@ -4458,7 +4458,7 @@ f_exists_compiled(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_expand(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s;
-    int		len;
+    size_t	len;
     int		options = WILD_SILENT|WILD_USE_NL|WILD_LIST_NOTFOUND;
     expand_T	xpc;
     int		error = FALSE;

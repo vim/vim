@@ -5077,7 +5077,7 @@ expand_filename(
 {
     int		has_wildcards;	// need to expand wildcards
     char_u	*repl;
-    int		srclen;
+    size_t	srclen;
     char_u	*p;
     int		n;
     int		escaped;
@@ -5201,7 +5201,7 @@ expand_filename(
 	    }
 	}
 
-	p = repl_cmdline(eap, p, (size_t)srclen, repl, cmdlinep);
+	p = repl_cmdline(eap, p, srclen, repl, cmdlinep);
 	vim_free(repl);
 	if (p == NULL)
 	    return FAIL;
@@ -9363,7 +9363,7 @@ enum {
  * the variable.  Otherwise return -1 and "*usedlen" is unchanged.
  */
     int
-find_cmdline_var(char_u *src, int *usedlen)
+find_cmdline_var(char_u *src, size_t *usedlen)
 {
     // must be sorted by the 'value' field because it is used by bsearch()!
     static keyvalue_T spec_str_tab[] = {
@@ -9444,7 +9444,7 @@ find_cmdline_var(char_u *src, int *usedlen)
 eval_vars(
     char_u	*src,		// pointer into commandline
     char_u	*srcstart,	// beginning of valid memory for src
-    int		*usedlen,	// characters after src that are used
+    size_t	*usedlen,	// characters after src that are used
     linenr_T	*lnump,		// line number for :e command, or NULL
     char	**errormsg,	// pointer to error message
     int		*escaped,	// return value has escaped white space (can
@@ -9514,7 +9514,7 @@ eval_vars(
      */
     else
     {
-	int off = 0;
+	size_t off = 0;
 
 	switch (spec_idx)
 	{
@@ -9781,7 +9781,7 @@ expand_sfile(char_u *arg)
     size_t	len;
     char_u	*repl;
     size_t	repllen;
-    int		srclen;
+    size_t	srclen;
     char_u	*p;
 
     resultlen = STRLEN(arg);
