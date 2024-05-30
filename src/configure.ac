@@ -3307,13 +3307,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <stdio.h>], [int x __attribute__((u
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ATTRIBUTE_UNUSED),
 	AC_MSG_RESULT(no))
 
-dnl Checks for header files.
-AC_CHECK_HEADER(elf.h, HAS_ELF=1)
-dnl AC_CHECK_HEADER(dwarf.h, SVR4=1)
-if test "$HAS_ELF" = 1; then
-  AC_CHECK_LIB(elf, main)
-fi
-
 AC_HEADER_DIRENT
 
 dnl If sys/wait.h is not found it might still exist but not be POSIX
