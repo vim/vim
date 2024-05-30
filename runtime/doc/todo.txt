@@ -4402,7 +4402,6 @@ Code size:
     left out.
 8   When compiled with a GUI-only version, the termcap entries for terminals
     can be removed.
-8   Can the check for libelf in configure.ac be removed?
 
 
 Messages:

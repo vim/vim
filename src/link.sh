@@ -53,7 +53,7 @@ else
   if sh link_$PROG.cmd; then
     touch auto/link.sed
     cp link_$PROG.cmd linkit_$PROG.sh
-    for libname in SM ICE nsl dnet dnet_stub inet socket dir elf iconv Xt Xmu Xp Xpm X11 Xdmcp x w perl dl pthread thread readline m crypt attr; do
+    for libname in SM ICE nsl dnet dnet_stub inet socket dir iconv Xt Xmu Xp Xpm X11 Xdmcp x w perl dl pthread thread readline m crypt attr; do
       cont=yes
       while test -n "$cont"; do
         if grep "l$libname " linkit_$PROG.sh >/dev/null; then
