@@ -435,8 +435,13 @@ check_script_symlink(int sid)
 	    si = SCRIPT_ITEM(sid);
 	    si->sn_sourced_sid = real_sid;
 	    if (new_sid)
+	    {
 		SCRIPT_ITEM(real_sid)->sn_import_autoload
 						    = si->sn_import_autoload;
+		if (si->sn_autoload_prefix != NULL)
+			SCRIPT_ITEM(real_sid)->sn_autoload_prefix =
+				vim_strsave(si->sn_autoload_prefix);
+	    }
 	}
     }
     vim_free(real_fname);
