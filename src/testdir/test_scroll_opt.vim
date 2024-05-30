@@ -1158,12 +1158,12 @@ func Test_smooth_long_scrolloff()
 
   let lines =<< trim END
     set smoothscroll scrolloff=3
-    call setline(1, ['one', 'two long'->repeat(100), 'three', 'four', 'five', 'six'])
+    call setline(1, ['one', 'two long '->repeat(100), 'three', 'four', 'five', 'six'])
   END
   call writefile(lines, 'XSmoothLongScrolloff', 'D')
   let buf = RunVimInTerminal('-u NONE -S XSmoothLongScrolloff', #{rows: 8, cols: 40})
   "FIXME: empty screen due to reset_skipcol()/curs_columns() shenanigans
-  call term_sendkeys(buf, ":norm j601|\<CR>")
+  call term_sendkeys(buf, ":norm j721|\<CR>")
   call VerifyScreenDump(buf, 'Test_smooth_long_scrolloff_1', {})
 
   call term_sendkeys(buf, "gj")

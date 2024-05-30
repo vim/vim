@@ -19,6 +19,7 @@ DOCS = \
 	fold.txt \
 	ft_ada.txt \
 	ft_context.txt \
+	ft_hare.txt \
 	ft_mp.txt \
 	ft_ps1.txt \
 	ft_raku.txt \
@@ -172,6 +173,7 @@ HTMLS = \
 	fold.html \
 	ft_ada.html \
 	ft_context.html \
+	ft_hare.html \
 	ft_mp.html \
 	ft_ps1.html \
 	ft_raku.html \

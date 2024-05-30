@@ -2159,6 +2159,18 @@ def Test_echo_cmd()
   assert_match('^two$', g:Screenline(&lines))
 
   v9.CheckDefFailure(['echo "xxx"# comment'], 'E488:')
+
+  # Test for echoing a script local function name
+  var lines =<< trim END
+    vim9script
+    def ScriptLocalEcho()
+    enddef
+    echo ScriptLocalEcho
+  END
+  new
+  setline(1, lines)
+  assert_match('<SNR>\d\+_ScriptLocalEcho', execute('source')->split("\n")[0])
+  bw!
 enddef
 
 def Test_echomsg_cmd()
@@ -2510,8 +2522,20 @@ def Test_for_loop()
         reslist->add('x')
       endfor
       assert_equal(['x', 'x', 'x'], reslist)
+
+      # Test for trying to use the loop variable "_" inside the loop
+      for _ in "a"
+        assert_fails('echo _', 'E1181: Cannot use an underscore here')
+      endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    for i : number : [1, 2]
+      echo i
+    endfor
+  END
+  v9.CheckSourceDefAndScriptFailure(lines, 'E1059: No white space allowed before colon: : [1, 2]', 1)
 enddef
 
 def Test_for_loop_list_of_lists()
@@ -5096,6 +5120,13 @@ def Test_unknown_type_in_typecast()
     var Fn = <funcx(number, number): number>b
   END
   v9.CheckSourceFailure(lines, 'E1010: Type not recognized: funcx(number, number): number', 2)
+
+  # Wrong type in a type cast
+  lines =<< trim END
+    vim9script
+    var i: number = <number>true
+  END
+  v9.CheckSourceFailure(lines, 'E1012: Type mismatch; expected number but got bool', 2)
 enddef
 
 " Keep this last, it messes up highlighting.

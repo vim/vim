@@ -3901,6 +3901,8 @@ jumpto_tag(
 	    str = skip_regexp(pbuf + 1, pbuf[0], FALSE) + 1;
 	if (str > pbuf_end - 1)	// search command with nothing following
 	{
+	    size_t pbuflen = pbuf_end - pbuf;
+
 	    save_p_ws = p_ws;
 	    save_p_ic = p_ic;
 	    save_p_scs = p_scs;
@@ -3914,7 +3916,7 @@ jumpto_tag(
 	    else
 		// start search before first line
 		curwin->w_cursor.lnum = 0;
-	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
+	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, pbuflen - 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
 	    else
@@ -3926,7 +3928,7 @@ jumpto_tag(
 		 * try again, ignore case now
 		 */
 		p_ic = TRUE;
-		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
+		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, pbuflen - 1, (long)1,
 							 search_options, NULL))
 		{
 		    /*
@@ -3936,14 +3938,14 @@ jumpto_tag(
 		    (void)test_for_static(&tagp);
 		    cc = *tagp.tagname_end;
 		    *tagp.tagname_end = NUL;
-		    sprintf((char *)pbuf, "^%s\\s\\*(", tagp.tagname);
-		    if (!do_search(NULL, '/', '/', pbuf, (long)1,
+		    pbuflen = vim_snprintf((char *)pbuf, LSIZE, "^%s\\s\\*(", tagp.tagname);
+		    if (!do_search(NULL, '/', '/', pbuf, pbuflen, (long)1,
 							 search_options, NULL))
 		    {
 			// Guess again: "^char * \<func  ("
-			sprintf((char *)pbuf, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
+			pbuflen = vim_snprintf((char *)pbuf, LSIZE, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
 								tagp.tagname);
-			if (!do_search(NULL, '/', '/', pbuf, (long)1,
+			if (!do_search(NULL, '/', '/', pbuf, pbuflen, (long)1,
 							 search_options, NULL))
 			    found = 0;
 		    }

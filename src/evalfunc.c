@@ -4458,7 +4458,7 @@ f_exists_compiled(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_expand(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s;
-    int		len;
+    size_t	len;
     int		options = WILD_SILENT|WILD_USE_NL|WILD_LIST_NOTFOUND;
     expand_T	xpc;
     int		error = FALSE;
@@ -5488,16 +5488,17 @@ block_def2str(struct block_def *bd)
 getregionpos(
     typval_T	*argvars,
     typval_T	*rettv,
-    pos_T	*p1, pos_T *p2,
+    pos_T	*p1,
+    pos_T	*p2,
     int		*inclusive,
     int		*region_type,
-    oparg_T	*oa,
-    int		*fnum)
+    oparg_T	*oap)
 {
     int		fnum1 = -1, fnum2 = -1;
     char_u	*type;
     buf_T	*findbuf;
     char_u	default_type[] = "v";
+    int		block_width = 0;
     int		is_select_exclusive;
     int		l;
 
@@ -5533,8 +5534,17 @@ getregionpos(
 	*region_type = MCHAR;
     else if (type[0] == 'V' && type[1] == NUL)
 	*region_type = MLINE;
-    else if (type[0] == Ctrl_V && type[1] == NUL)
+    else if (type[0] == Ctrl_V)
+    {
+	char_u *p = type + 1;
+
+	if (*p != NUL && ((block_width = getdigits(&p)) <= 0 || *p != NUL))
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "type", type);
+	    return FAIL;
+	}
 	*region_type = MBLOCK;
+    }
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "type", type);
@@ -5542,7 +5552,6 @@ getregionpos(
     }
 
     findbuf = fnum1 != 0 ? buflist_findnr(fnum1) : curbuf;
-    *fnum = fnum1 != 0 ? fnum1 : curbuf->b_fnum;
     if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
     {
 	emsg(_(e_buffer_is_not_loaded));
@@ -5595,31 +5604,12 @@ getregionpos(
 
     if (*region_type == MCHAR)
     {
-	// handle 'selection' == "exclusive"
+	// Handle 'selection' == "exclusive".
 	if (is_select_exclusive && !EQUAL_POS(*p1, *p2))
-	{
-	    if (p2->coladd > 0)
-		p2->coladd--;
-	    else if (p2->col > 0)
-	    {
-		p2->col--;
-
-		mb_adjustpos(curbuf, p2);
-	    }
-	    else if (p2->lnum > 1)
-	    {
-		p2->lnum--;
-		p2->col = ml_get_len(p2->lnum);
-		if (p2->col > 0)
-		{
-		    p2->col--;
-
-		    mb_adjustpos(curbuf, p2);
-		}
-	    }
-	}
-	// if fp2 is on NUL (empty line) inclusive becomes false
-	if (*ml_get_pos(p2) == NUL && !virtual_op)
+	    // When backing up to previous line, inclusive becomes false.
+	    *inclusive = !unadjust_for_sel_inner(p2);
+	// If p2 is on NUL (end of line), inclusive becomes false.
+	if (*inclusive && !virtual_op && *ml_get_pos(p2) == NUL)
 	    *inclusive = FALSE;
     }
     else if (*region_type == MBLOCK)
@@ -5628,16 +5618,18 @@ getregionpos(
 
 	getvvcol(curwin, p1, &sc1, NULL, &ec1);
 	getvvcol(curwin, p2, &sc2, NULL, &ec2);
-	oa->motion_type = MBLOCK;
-	oa->inclusive = TRUE;
-	oa->op_type = OP_NOP;
-	oa->start = *p1;
-	oa->end = *p2;
-	oa->start_vcol = MIN(sc1, sc2);
-	if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
-	    oa->end_vcol = sc2 - 1;
+	oap->motion_type = MBLOCK;
+	oap->inclusive = TRUE;
+	oap->op_type = OP_NOP;
+	oap->start = *p1;
+	oap->end = *p2;
+	oap->start_vcol = MIN(sc1, sc2);
+	if (block_width > 0)
+	    oap->end_vcol = oap->start_vcol + block_width - 1;
+	else if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+	    oap->end_vcol = sc2 - 1;
 	else
-	    oa->end_vcol = MAX(ec1, ec2);
+	    oap->end_vcol = MAX(ec1, ec2);
     }
 
     // Include the trailing byte of a multi-byte char.
@@ -5658,7 +5650,6 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     int			inclusive = TRUE;
     int			region_type = -1;
     oparg_T		oa;
-    int			fnum;
 
     buf_T		*save_curbuf;
     int			save_virtual;
@@ -5669,7 +5660,7 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     save_virtual = virtual_op;
 
     if (getregionpos(argvars, rettv,
-		&p1, &p2, &inclusive, &region_type, &oa, &fnum) == FAIL)
+		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
 	return;
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
@@ -5706,30 +5697,16 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    // getregionpos() breaks curbuf and virtual_op
+    // getregionpos() may change curbuf and virtual_op
     curbuf = save_curbuf;
     curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
 }
 
     static void
-add_regionpos_range(
-    typval_T	*rettv,
-    int		bufnr,
-    int		lnum1,
-    int		col1,
-    int		coladd1,
-    int		lnum2,
-    int		col2,
-    int		coladd2)
+add_regionpos_range(typval_T *rettv, pos_T p1, pos_T p2)
 {
     list_T	*l1, *l2, *l3;
-    buf_T	*findbuf;
-    int		max_col1, max_col2;
-
-    findbuf = bufnr != 0 ? buflist_findnr(bufnr) : curbuf;
-    if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
-	return;
 
     l1 = list_alloc();
     if (l1 == NULL)
@@ -5771,18 +5748,15 @@ add_regionpos_range(
 	return;
     }
 
+    list_append_number(l2, curbuf->b_fnum);
+    list_append_number(l2, p1.lnum);
+    list_append_number(l2, p1.col);
+    list_append_number(l2, p1.coladd);
 
-    max_col1 = ml_get_buf_len(findbuf, lnum1);
-    list_append_number(l2, bufnr);
-    list_append_number(l2, lnum1);
-    list_append_number(l2, col1 > max_col1 ? max_col1 : col1);
-    list_append_number(l2, coladd1);
-
-    max_col2 = ml_get_buf_len(findbuf, lnum2);
-    list_append_number(l3, bufnr);
-    list_append_number(l3, lnum2);
-    list_append_number(l3, col2 > max_col2 ? max_col2 : col2);
-    list_append_number(l3, coladd2);
+    list_append_number(l3, curbuf->b_fnum);
+    list_append_number(l3, p2.lnum);
+    list_append_number(l3, p2.col);
+    list_append_number(l3, p2.coladd);
 }
 
 /*
@@ -5794,8 +5768,8 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     pos_T	p1, p2;
     int		inclusive = TRUE;
     int		region_type = -1;
+    int		allow_eol = FALSE;
     oparg_T	oa;
-    int		fnum;
     int		lnum;
 
     buf_T	*save_curbuf;
@@ -5805,38 +5779,102 @@ f_getregionpos(typval_T *argvars, typval_T *rettv)
     save_virtual = virtual_op;
 
     if (getregionpos(argvars, rettv,
-		&p1, &p2, &inclusive, &region_type, &oa, &fnum) == FAIL)
+		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
 	return;
+
+    if (argvars[2].v_type == VAR_DICT)
+	allow_eol = dict_get_bool(argvars[2].vval.v_dict, "eol", FALSE);
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
-	struct block_def	bd;
-	int			start_col, end_col;
+	pos_T		ret_p1, ret_p2;
+	char_u		*line = ml_get(lnum);
+	colnr_T		line_len = ml_get_len(lnum);
 
 	if (region_type == MLINE)
 	{
-	    start_col = 1;
-	    end_col = MAXCOL;
-	}
-	else if (region_type == MBLOCK)
-	{
-	    block_prep(&oa, &bd, lnum, FALSE);
-	    start_col = bd.start_vcol + 1;
-	    end_col = bd.end_vcol;
-	}
-	else if (p1.lnum < lnum && lnum < p2.lnum)
-	{
-	    start_col = 1;
-	    end_col = MAXCOL;
+	    ret_p1.col = 1;
+	    ret_p1.coladd = 0;
+	    ret_p2.col = MAXCOL;
+	    ret_p2.coladd = 0;
 	}
 	else
 	{
-	    start_col = p1.lnum == lnum ? p1.col + 1 : 1;
-	    end_col = p2.lnum == lnum ? p2.col + 1 : MAXCOL;
+	    struct block_def	bd;
+
+	    if (region_type == MBLOCK)
+		block_prep(&oa, &bd, lnum, FALSE);
+	    else
+		charwise_block_prep(p1, p2, &bd, lnum, inclusive);
+
+	    if (bd.is_oneChar)  // selection entirely inside one char
+	    {
+		if (region_type == MBLOCK)
+		{
+		    ret_p1.col = mb_prevptr(line, bd.textstart) - line + 1;
+		    ret_p1.coladd = bd.start_char_vcols
+					     - (bd.start_vcol - oa.start_vcol);
+		}
+		else
+		{
+		    ret_p1.col = p1.col + 1;
+		    ret_p1.coladd = p1.coladd;
+		}
+	    }
+	    else if (region_type == MBLOCK && oa.start_vcol > bd.start_vcol)
+	    {
+		// blockwise selection entirely beyond end of line
+		ret_p1.col = MAXCOL;
+		ret_p1.coladd = oa.start_vcol - bd.start_vcol;
+		bd.is_oneChar = TRUE;
+	    }
+	    else if (bd.startspaces > 0)
+	    {
+		ret_p1.col = mb_prevptr(line, bd.textstart) - line + 1;
+		ret_p1.coladd = bd.start_char_vcols - bd.startspaces;
+	    }
+	    else
+	    {
+		ret_p1.col = bd.textcol + 1;
+		ret_p1.coladd = 0;
+	    }
+
+	    if (bd.is_oneChar)  // selection entirely inside one char
+	    {
+		ret_p2.col = ret_p1.col;
+		ret_p2.coladd = ret_p1.coladd + bd.startspaces + bd.endspaces;
+	    }
+	    else if (bd.endspaces > 0)
+	    {
+		ret_p2.col = bd.textcol + bd.textlen + 1;
+		ret_p2.coladd = bd.endspaces;
+	    }
+	    else
+	    {
+		ret_p2.col = bd.textcol + bd.textlen;
+		ret_p2.coladd = 0;
+	    }
 	}
 
-	add_regionpos_range(rettv, fnum, lnum, start_col,
-		p1.coladd, lnum, end_col, p2.coladd);
+	if (!allow_eol && ret_p1.col > line_len)
+	{
+	    ret_p1.col = 0;
+	    ret_p1.coladd = 0;
+	}
+	else if (ret_p1.col > line_len + 1)
+	    ret_p1.col = line_len + 1;
+
+	if (!allow_eol && ret_p2.col > line_len)
+	{
+	    ret_p2.col = ret_p1.col == 0 ? 0 : line_len;
+	    ret_p2.coladd = 0;
+	}
+	else if (ret_p2.col > line_len + 1)
+	    ret_p2.col = line_len + 1;
+
+	ret_p1.lnum = lnum;
+	ret_p2.lnum = lnum;
+	add_regionpos_range(rettv, ret_p1, ret_p2);
     }
 
     // getregionpos() may change curbuf and virtual_op
@@ -7533,6 +7571,7 @@ indexof_blob(blob_T *b, long startidx, typval_T *expr)
     set_vim_var_type(VV_KEY, VAR_NUMBER);
     set_vim_var_type(VV_VAL, VAR_NUMBER);
 
+    int		called_emsg_start = called_emsg;
     for (idx = startidx; idx < blob_len(b); ++idx)
     {
 	set_vim_var_nr(VV_KEY, idx);
@@ -7540,6 +7579,9 @@ indexof_blob(blob_T *b, long startidx, typval_T *expr)
 
 	if (indexof_eval_expr(expr))
 	    return idx;
+
+	if (called_emsg != called_emsg_start)
+	    return -1;
     }
 
     return -1;
@@ -7575,6 +7617,7 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    int		called_emsg_start = called_emsg;
     for ( ; item != NULL; item = item->li_next, ++idx)
     {
 	set_vim_var_nr(VV_KEY, idx);
@@ -7585,6 +7628,9 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
 	if (found)
 	    return idx;
+
+	if (called_emsg != called_emsg_start)
+	    return -1;
     }
 
     return -1;
@@ -7608,7 +7654,9 @@ f_indexof(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if ((argvars[1].v_type == VAR_STRING && argvars[1].vval.v_string == NULL)
+    if ((argvars[1].v_type == VAR_STRING &&
+		(argvars[1].vval.v_string == NULL
+		 || *argvars[1].vval.v_string == NUL))
 	    || (argvars[1].v_type == VAR_FUNC
 		&& argvars[1].vval.v_partial == NULL))
 	return;
@@ -9705,6 +9753,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 {
     int		flags;
     char_u	*pat;
+    size_t	patlen;
     pos_T	pos;
     pos_T	save_cursor;
     int		save_p_ws = p_ws;
@@ -9779,10 +9828,12 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     sia.sa_tm = time_limit;
 #endif
 
+    patlen = STRLEN(pat);
+
     // Repeat until {skip} returns FALSE.
     for (;;)
     {
-	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, patlen, 1L,
 						     options, RE_SEARCH, &sia);
 	// finding the first match again means there is no match where {skip}
 	// evaluates to zero.
@@ -10195,6 +10246,13 @@ do_searchpair(
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
+    size_t	patlen;
+    size_t	spatlen;
+    size_t	epatlen;
+    size_t	pat2size;
+    size_t	pat2len;
+    size_t	pat3size;
+    size_t	pat3len;
     long	retval = 0;
     pos_T	pos;
     pos_T	firstpos;
@@ -10214,15 +10272,24 @@ do_searchpair(
 
     // Make two search patterns: start/end (pat2, for in nested pairs) and
     // start/middle/end (pat3, for the top pair).
-    pat2 = alloc(STRLEN(spat) + STRLEN(epat) + 17);
-    pat3 = alloc(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 25);
-    if (pat2 == NULL || pat3 == NULL)
+    spatlen = STRLEN(spat);
+    epatlen = STRLEN(epat);
+    pat2size = spatlen + epatlen + 17;
+    pat2 = alloc(pat2size);
+    if (pat2 == NULL)
 	goto theend;
-    sprintf((char *)pat2, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
+    pat3size = spatlen + STRLEN(mpat) + epatlen + 25;
+    pat3 = alloc(pat3size);
+    if (pat3 == NULL)
+	goto theend;
+    pat2len = vim_snprintf((char *)pat2, pat2size, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
     if (*mpat == NUL)
+    {
 	STRCPY(pat3, pat2);
+	pat3len = pat2len;
+    }
     else
-	sprintf((char *)pat3, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
+	pat3len = vim_snprintf((char *)pat3, pat3size, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
 							    spat, epat, mpat);
     if (flags & SP_START)
 	options |= SEARCH_START;
@@ -10239,13 +10306,14 @@ do_searchpair(
     CLEAR_POS(&firstpos);
     CLEAR_POS(&foundpos);
     pat = pat3;
+    patlen = pat3len;
     for (;;)
     {
 	searchit_arg_T sia;
 
 	CLEAR_FIELD(sia);
 	sia.sa_stop_lnum = lnum_stop;
-	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, patlen, 1L,
 						     options, RE_SEARCH, &sia);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
 	    // didn't find it or found the first match again: FAIL
@@ -10949,7 +11017,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// Find the start and length of the badly spelled word.
-	len = spell_move_to(curwin, FORWARD, TRUE, TRUE, &attr);
+	len = spell_move_to(curwin, FORWARD, SMT_ALL, TRUE, &attr);
 	if (len != 0)
 	{
 	    word = ml_get_cursor();

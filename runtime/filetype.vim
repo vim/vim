@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Dec 06
+" Last Change:	2024 May 23
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " Listen very carefully, I will say this only once
@@ -972,6 +972,7 @@ au BufNewFile,BufRead *.hbs			setf handlebars
 
 " Hare
 au BufNewFile,BufRead *.ha			setf hare
+au BufNewFile,BufRead README			call dist#ft#FTharedoc()
 
 " Haskell
 au BufNewFile,BufRead *.hs,*.hsc,*.hs-boot,*.hsig setf haskell
@@ -1043,6 +1044,9 @@ au BufRead,BufNewFile *.hurl			setf hurl
 
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
+
+" Hyprlang
+au BufNewFile,BufRead hypr\(land\|paper\|idle\|lock\).conf	setf hyprlang
 
 " Httest
 au BufNewFile,BufRead *.htt,*.htb		setf httest
@@ -1863,6 +1867,9 @@ au BufNewFile,BufRead *.pk			setf poke
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols
 
+" Purescript
+au BufNewFile,BufRead *.purs			setf purescript
+
 " PyPA manifest files
 au BufNewFile,BufRead MANIFEST.in		setf pymanifest
 
@@ -2057,6 +2064,9 @@ au BufNewFile,BufRead *.scala			setf scala
 " SBT - Scala Build Tool
 au BufNewFile,BufRead *.sbt			setf sbt
 
+" Slint
+au BufNewFile,BufRead *.slint			setf slint
+
 " SuperCollider
 au BufNewFile,BufRead *.sc			call dist#ft#FTsc()
 
@@ -2140,7 +2150,7 @@ au BufNewFile,BufRead catalog			setf catalog
 " Gentoo ebuilds, Arch Linux PKGBUILDs and Alpine Linux APKBUILDs are actually
 " bash scripts.
 " NOTE: Patterns ending in a star are further down, these have lower priority.
-au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,.bash[_-]history,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD,*.bats call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,.bash[_-]history,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD,*.bats,*.cygport call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
 

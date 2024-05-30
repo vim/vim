@@ -151,7 +151,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     char_u	*p;
     char_u	*d;
     char_u	*escaped_string;
-    int		l;
+    size_t	l;
     int		csh_like;
     int		fish_like;
     char_u	*shname;
@@ -269,11 +269,12 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 		*d++ = *p++;
 		continue;
 	    }
-	    if (do_special && find_cmdline_var(p, &l) >= 0)
+	    if (do_special && find_cmdline_var(p, &l) >= 0 && l > 0)
 	    {
 		*d++ = '\\';		// insert backslash
-		while (--l >= 0)	// copy the var
+		do			// copy the var
 		    *d++ = *p++;
+		while (--l > 0);
 		continue;
 	    }
 	    if (*p == '\\' && fish_like)

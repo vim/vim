@@ -1801,7 +1801,7 @@ win_line(
 	    pos = wp->w_cursor;
 	    wp->w_cursor.lnum = lnum;
 	    wp->w_cursor.col = linecol;
-	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_hlf);
+	    len = spell_move_to(wp, FORWARD, SMT_ALL, TRUE, &spell_hlf);
 
 	    // spell_move_to() may call ml_get() and make "line" invalid
 	    line = ml_get_buf(wp->w_buffer, lnum, FALSE);

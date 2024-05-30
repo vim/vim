@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2024 Feb 18
+# Last Change:		2024 May 23
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -373,6 +373,32 @@ export def FTfs()
     setf forth
   else
     setf fsharp
+  endif
+enddef
+
+# Recursively search for Hare source files in a directory and any
+# subdirectories, up to a given depth.
+def IsHareModule(dir: string, depth: number): bool
+  if depth <= 0
+    return !empty(glob(dir .. '/*.ha'))
+  endif
+
+  return reduce(sort(glob(dir .. '/*', true, true),
+    (a, b) => isdirectory(a) - isdirectory(b)),
+    (acc, n) => acc
+      || n =~ '\.ha$'
+      || isdirectory(n)
+      && IsHareModule(n, depth - 1),
+    false)
+enddef
+
+# Determine if a README file exists within a Hare module and should be given the
+# Haredoc filetype.
+export def FTharedoc()
+  if exists('g:filetype_haredoc')
+    if IsHareModule('<afile>:h', get(g:, 'haredoc_search_depth', 1))
+      setf haredoc
+    endif
   endif
 enddef
 

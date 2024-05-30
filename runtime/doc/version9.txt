@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 May 05
+*version9.txt*  For Vim version 9.1.  Last change: 2024 May 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41587,15 +41587,17 @@ Autocommands: ~
 
 Highlighting: ~
 
-|hl-MsgArea|		highlighting of the Command-line and messages area.
+|hl-MsgArea|		highlighting of the Command-line and messages area
 
 Commands: ~
+
+|[r| and |]r|		to move the cursor to previous/next rare word
 
 
 Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
-'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420).
+'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-9.2*

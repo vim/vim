@@ -797,6 +797,7 @@ OBJ = \
 	$(OUTDIR)/float.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
+	$(OUTDIR)/gc.o \
 	$(OUTDIR)/gui_xim.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \

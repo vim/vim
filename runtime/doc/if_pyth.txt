@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 9.1.  Last change: 2023 Oct 25
+*if_pyth.txt*   For Vim version 9.1.  Last change: 2024 May 16
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -343,7 +343,8 @@ In python vim.VIM_SPECIAL_PATH special directory is used as a replacement for
 the list of paths found in 'runtimepath': with this directory in sys.path and
 vim.path_hooks in sys.path_hooks python will try to load module from
 {rtp}/python2 (or python3) and {rtp}/pythonx (for both python versions) for
-each {rtp} found in 'runtimepath'.
+each {rtp} found in 'runtimepath' (Note: find_module() has been removed from
+imp module around Python 3.12.0a7).
 
 Implementation is similar to the following, but written in C: >
 
@@ -404,10 +405,12 @@ vim.VIM_SPECIAL_PATH					*python-VIM_SPECIAL_PATH*
 
 vim.find_module(...)					*python-find_module*
 vim.path_hook(path)					*python-path_hook*
+vim.find_spec(...)					*python-find_spec*
 	Methods or objects used to implement path loading as described above.
 	You should not be using any of these directly except for vim.path_hook
-	in case you need to do something with sys.meta_path. It is not
-	guaranteed that any of the objects will exist in the future vim
+	in case you need to do something with sys.meta_path, vim.find_spec()
+	is available starting with Python 3.7.
+	It is not guaranteed that any of the objects will exist in future vim
 	versions.
 
 vim._get_paths						*python-_get_paths*
