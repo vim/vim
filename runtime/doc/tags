@@ -7359,6 +7359,7 @@ ft-qf-plugin	filetype.txt	/*ft-qf-plugin*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
 ft-r-syntax	syntax.txt	/*ft-r-syntax*
+ft-rasi-syntax	syntax.txt	/*ft-rasi-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
@@ -9643,6 +9644,7 @@ raku-unicode	ft_raku.txt	/*raku-unicode*
 rand()	builtin.txt	/*rand()*
 random	builtin.txt	/*random*
 range()	builtin.txt	/*range()*
+rasi.vim	syntax.txt	/*rasi.vim*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
 read-in-close-cb	channel.txt	/*read-in-close-cb*
