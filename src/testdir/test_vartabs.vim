@@ -509,6 +509,8 @@ func Test_vartabstop_shift_right_left()
   norm! <<
   let expect = "word"
   call assert_equal(expect, getline(1))
+
+  bwipeout!
 endfunc
 
 
