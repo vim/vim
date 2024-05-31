@@ -1552,7 +1552,9 @@ $quote	eval.txt	/*$quote*
 --gui-dialog-file	starting.txt	/*--gui-dialog-file*
 --help	starting.txt	/*--help*
 --literal	starting.txt	/*--literal*
+--load-defaults	starting.txt	/*--load-defaults*
 --log	starting.txt	/*--log*
+--no-load-defaults	starting.txt	/*--no-load-defaults*
 --nofork	starting.txt	/*--nofork*
 --noplugin	starting.txt	/*--noplugin*
 --not-a-term	starting.txt	/*--not-a-term*

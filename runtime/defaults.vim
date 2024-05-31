@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2025 Apr 10
+" Last Change:	2025 May 09
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 "
 " This is loaded if no vimrc file was found.
@@ -19,6 +19,13 @@ endif
 if exists('skip_defaults_vim')
   finish
 endif
+
+" We cannot bail out if $VIM_NO_SOURCE_DEFAULTS is set, 
+" because this would cause only defaults.vim being sourced (and finished)
+" but not all depending runtime files
+" if exists("$VIM_NO_SOURCE_DEFAULTS")
+"   finish
+" endif
 
 " Use Vim settings, rather than Vi settings (much better!).
 " This must be first, because it changes other options as a side effect.
