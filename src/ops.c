@@ -231,7 +231,7 @@ shift_line(
 {
     vimlong_T	count;
     int		i, j;
-    int		sw_val = trim_to_int(get_sw_value_indent(curbuf));
+    int		sw_val = trim_to_int(get_sw_value_indent(curbuf, left));
 
     count = get_indent();	// get current indent
 
@@ -283,7 +283,7 @@ shift_block(oparg_T *oap, int amount)
     char_u		*newp, *oldp;
     size_t		newlen, oldlen;
     int			oldcol = curwin->w_cursor.col;
-    int			sw_val = (int)get_sw_value_indent(curbuf);
+    int			sw_val = (int)get_sw_value_indent(curbuf, left);
     int			ts_val = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
@@ -1258,8 +1258,8 @@ op_replace(oparg_T *oap, int c)
 		       replace_character(c);
 		    else
 			PBYTE(curwin->w_cursor, c);
-		   if (inc(&curwin->w_cursor) == -1)
-		       break;
+		    if (inc(&curwin->w_cursor) == -1)
+			break;
 		}
 	    }
 
@@ -2523,11 +2523,11 @@ op_addsub(
     int			change_cnt = 0;
     linenr_T		amount = Prenum1;
 
-   // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
-   // buffer is not completely updated yet. Postpone updating folds until before
-   // the call to changed_lines().
+    // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
+    // buffer is not completely updated yet. Postpone updating folds until before
+    // the call to changed_lines().
 #ifdef FEAT_FOLDING
-   disable_fold_update++;
+    disable_fold_update++;
 #endif
 
     if (!VIsual_active)
