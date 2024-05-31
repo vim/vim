@@ -380,7 +380,7 @@ get_sw_value_indent(buf_T *buf, int left)
  * Idem, using virtual column "col".
  */
     long
-get_sw_value_col(buf_T *buf, colnr_T col UNUSED, int left)
+get_sw_value_col(buf_T *buf, colnr_T col UNUSED, int left UNUSED)
 {
     return buf->b_p_sw ? buf->b_p_sw :
 #ifdef FEAT_VARTABS
