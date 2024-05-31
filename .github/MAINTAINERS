@@ -209,6 +209,7 @@ runtime/ftplugin/python.vim		@tpict
 runtime/ftplugin/qb64.vim		@dkearns
 runtime/ftplugin/qml.vim		@ChaseKnowlden
 runtime/ftplugin/racket.vim		@benknoble
+runtime/ftplugin/rasi.vim		@fymyte
 runtime/ftplugin/readline.vim		@dkearns
 runtime/ftplugin/rescript.vim		@ribru17
 runtime/ftplugin/routeros.vim		@zainin
@@ -479,6 +480,7 @@ runtime/syntax/racket.vim		@benknoble
 runtime/syntax/raml.vim			@in3d
 runtime/syntax/rapid.vim		@KnoP-01
 runtime/syntax/ratpoison.vim		@trapd00r
+runtime/syntax/rasi.vim			@fymyte
 runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/rcs.vim			@hdima
 runtime/syntax/rebol.vim		@mrdubya

@@ -2015,6 +2015,7 @@ $quote	eval.txt	/*$quote*
 52.3	usr_52.txt	/*52.3*
 52.4	usr_52.txt	/*52.4*
 52.5	usr_52.txt	/*52.5*
+52.6	usr_52.txt	/*52.6*
 8g8	various.txt	/*8g8*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
@@ -7359,6 +7360,7 @@ ft-qf-plugin	filetype.txt	/*ft-qf-plugin*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
 ft-r-syntax	syntax.txt	/*ft-r-syntax*
+ft-rasi-syntax	syntax.txt	/*ft-rasi-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
@@ -9643,6 +9645,7 @@ raku-unicode	ft_raku.txt	/*raku-unicode*
 rand()	builtin.txt	/*rand()*
 random	builtin.txt	/*random*
 range()	builtin.txt	/*range()*
+rasi.vim	syntax.txt	/*rasi.vim*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
 read-in-close-cb	channel.txt	/*read-in-close-cb*

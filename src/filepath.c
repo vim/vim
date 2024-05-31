@@ -292,7 +292,7 @@ shortpath_for_partial(
 modify_fname(
     char_u	*src,		// string with modifiers
     int		tilde_file,	// "~" is a file name, not $HOME
-    int		*usedlen,	// characters after src that are used
+    size_t	*usedlen,	// characters after src that are used
     char_u	**fnamep,	// file name so far
     char_u	**bufp,		// buffer for allocated file name or NULL
     int		*fnamelen)	// length of fnamep
@@ -668,7 +668,7 @@ repeat:
 			str = vim_strnsave(*fnamep, *fnamelen);
 			if (sub != NULL && str != NULL)
 			{
-			    *usedlen = (int)(p + 1 - src);
+			    *usedlen = p + 1 - src;
 			    s = do_string_sub(str, pat, sub, NULL, flags);
 			    if (s != NULL)
 			    {
@@ -1038,7 +1038,7 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
 {
     char_u	*fname;
     char_u	*mods;
-    int		usedlen = 0;
+    size_t	usedlen = 0;
     int		len = 0;
     char_u	*fbuf = NULL;
     char_u	buf[NUMBUFLEN];
@@ -2707,7 +2707,7 @@ home_replace(
 
     if (homedir_env != NULL && *homedir_env == '~')
     {
-	int	usedlen = 0;
+	size_t	usedlen = 0;
 	int	flen;
 	char_u	*fbuf = NULL;
 
@@ -3170,7 +3170,7 @@ expand_wildcards_eval(
     char_u	*eval_pat = NULL;
     char_u	*exp_pat = *pat;
     char	*ignored_msg;
-    int		usedlen;
+    size_t	usedlen;
     int		is_cur_alt_file = *exp_pat == '%' || *exp_pat == '#';
     int		star_follows = FALSE;
 

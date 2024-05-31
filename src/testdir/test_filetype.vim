@@ -592,6 +592,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     radiance: ['file.rad', 'file.mat'],
     raku: ['file.pm6', 'file.p6', 'file.t6', 'file.pod6', 'file.raku', 'file.rakumod', 'file.rakudoc', 'file.rakutest'],
     raml: ['file.raml'],
+    rasi: ['file.rasi'],
     ratpoison: ['.ratpoisonrc', 'ratpoisonrc'],
     rbs: ['file.rbs'],
     rc: ['file.rc', 'file.rch'],

@@ -11407,55 +11407,6 @@ printf "%s\n" "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
-ac_fn_c_check_header_compile "$LINENO" "elf.h" "ac_cv_header_elf_h" "$ac_includes_default"
-if test "x$ac_cv_header_elf_h" = xyes
-then :
-  HAS_ELF=1
-fi
-
-if test "$HAS_ELF" = 1; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lelf" >&5
-printf %s "checking for main in -lelf... " >&6; }
-if test ${ac_cv_lib_elf_main+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lelf  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main (void)
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_elf_main=yes
-else $as_nop
-  ac_cv_lib_elf_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_elf_main" >&5
-printf "%s\n" "$ac_cv_lib_elf_main" >&6; }
-if test "x$ac_cv_lib_elf_main" = xyes
-then :
-  printf "%s\n" "#define HAVE_LIBELF 1" >>confdefs.h
-
-  LIBS="-lelf $LIBS"
-
-fi
-
-fi
-
 ac_header_dirent=no
 for ac_hdr in dirent.h sys/ndir.h sys/dir.h ndir.h; do
   as_ac_Header=`printf "%s\n" "ac_cv_header_dirent_$ac_hdr" | $as_tr_sh`

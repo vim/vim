@@ -1255,6 +1255,12 @@ ins_compl_build_pum(void)
     if (match_at_original_text(compl_shown_match))
 	shown_match_ok = TRUE;
 
+    if (compl_leader != NULL
+	    && STRCMP(compl_leader, compl_orig_text) == 0
+	    && shown_match_ok == FALSE)
+	compl_shown_match = compl_no_select ? compl_first_match
+					    : compl_first_match->cp_next;
+
     i = 0;
     compl = compl_first_match;
     do
