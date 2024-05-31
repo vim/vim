@@ -3383,7 +3383,7 @@ done:
 get_next_include_file_completion(int compl_type)
 {
     find_pattern_in_path(compl_pattern, compl_direction,
-	    compl_patternlen, FALSE, FALSE,
+	    (int)compl_patternlen, FALSE, FALSE,
 	    (compl_type == CTRL_X_PATH_DEFINES
 	     && !(compl_cont_status & CONT_SOL))
 	    ? FIND_DEFINE : FIND_ANY, 1L, ACTION_EXPAND,
@@ -3487,7 +3487,7 @@ get_next_cmdline_completion(void)
     int		num_matches;
 
     if (expand_cmdline(&compl_xp, compl_pattern,
-		compl_patternlen, &num_matches, &matches) == EXPAND_OK)
+		(int)compl_patternlen, &num_matches, &matches) == EXPAND_OK)
 	ins_compl_add_matches(num_matches, matches, FALSE);
 }
 
@@ -4593,7 +4593,7 @@ get_cmdline_compl_info(char_u *line, colnr_T curs_col)
     }
     compl_patternlen = curs_col;
     set_cmd_context(&compl_xp, compl_pattern,
-	    compl_patternlen, curs_col, FALSE);
+	    (int)compl_patternlen, curs_col, FALSE);
     if (compl_xp.xp_context == EXPAND_UNSUCCESSFUL
 	    || compl_xp.xp_context == EXPAND_NOTHING)
 	// No completion possible, use an empty pattern to get a
