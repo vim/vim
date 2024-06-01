@@ -126,8 +126,8 @@ tabstop_padding(colnr_T col, int ts_arg, int *vts)
  *
  * If this is being called as part of a shift operation, col is not the cursor
  * column but is the column number to the left of the first non-whitespace
- * character in the line.  If the shift is to the left (left = 1), then return
- * the size of the tab interval to the left of the column.
+ * character in the line.  If the shift is to the left (left = TRUE), then
+ * return the size of the tab interval to the left of the column.
  */
     int
 tabstop_at(colnr_T col, int ts, int *vts, int left)
