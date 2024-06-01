@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.1.  Last change: 2024 May 05
+*eval.txt*	For Vim version 9.1.  Last change: 2024 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2727,7 +2727,7 @@ v:vim_did_enter	Zero until most of startup is done.  It is set to one just
 v:warningmsg	Last given warning message.  It's allowed to set this variable.
 
 					*v:windowid* *windowid-variable*
-v:windowid	When any X11 based GUI is running or when running in a
+v:windowid	When any X11/Wayland based GUI is running or when running in a
 		terminal and Vim connects to the X server (|-X|) this will be
 		set to the window ID.
 		When an MS-Windows GUI is running this will be set to the
