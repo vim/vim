@@ -10948,7 +10948,7 @@ f_shiftwidth(typval_T *argvars UNUSED, typval_T *rettv)
 	if (col < 0)
 	    return;	// type error; errmsg already given
 #ifdef FEAT_VARTABS
-	rettv->vval.v_number = get_sw_value_col(curbuf, col, 0);
+	rettv->vval.v_number = get_sw_value_col(curbuf, col, FALSE);
 	return;
 #endif
     }

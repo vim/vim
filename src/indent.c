@@ -346,7 +346,7 @@ tabstop_first(int *ts)
     long
 get_sw_value(buf_T *buf)
 {
-    return get_sw_value_col(buf, 0, 0);
+    return get_sw_value_col(buf, 0, FALSE);
 }
 
 /*

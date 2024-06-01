@@ -521,7 +521,8 @@ edit(
 #ifdef FEAT_VARTABS
 		curwin->w_wcol < mincol - tabstop_at(get_nolist_virtcol(),
 						     curbuf->b_p_ts,
-						     curbuf->b_p_vts_array, 0)
+						     curbuf->b_p_vts_array,
+						     FALSE)
 #else
 		(int)curwin->w_wcol < mincol - curbuf->b_p_ts
 #endif
