@@ -580,7 +580,7 @@ block_insert(
 
 	// copy the new text
 	mch_memmove(newp + startcol, s, slen);
-	offset += slen;
+	offset += (int)slen;
 
 	if (spaces > 0 && !bdp->is_short)
 	{
@@ -607,7 +607,7 @@ block_insert(
 
 	if (b_insert)
 	    // correct any text properties
-	    inserted_bytes(lnum, startcol, slen);
+	    inserted_bytes(lnum, startcol, (int)slen);
 
 	if (lnum == oap->end.lnum)
 	{
@@ -1722,7 +1722,7 @@ op_insert(oparg_T *oap, long count1)
 	    add = len;  // short line, point to the NUL
 	firstline += add;
 	len -= add;
-	if (pre_textlen >= 0 && (ins_len = len - pre_textlen - offset) > 0)
+	if (pre_textlen >= 0 && (ins_len = (int)len - pre_textlen - offset) > 0)
 	{
 	    ins_text = vim_strnsave(firstline, ins_len);
 	    if (ins_text != NULL)
@@ -1866,7 +1866,7 @@ op_change(oparg_T *oap)
 			// Shift the properties for linenr as edit() would do.
 			if (curbuf->b_has_textprop)
 			    adjust_prop_columns(linenr, bd.textcol,
-						     vpos.coladd + ins_len, 0);
+						     vpos.coladd + (int)ins_len, 0);
 #endif
 		    }
 		}
