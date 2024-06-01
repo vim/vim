@@ -457,7 +457,7 @@ au BufNewFile,BufRead */.cmus/{autosave,rc,command-history,*.theme} setf cmusrc
 au BufNewFile,BufRead */cmus/{rc,*.theme}			setf cmusrc
 
 " Cobol
-au BufNewFile,BufRead *.cbl,*.cob,*.lib	setf cobol
+au BufNewFile,BufRead *.cbl,*.cob	setf cobol
 "   cobol or zope form controller python script? (heuristic)
 au BufNewFile,BufRead *.cpy
 	\ if getline(1) =~ '^##' |
@@ -531,6 +531,10 @@ au BufNewFile,BufRead s6-*                              setf execline
 
 " Fontconfig config files
 au BufNewFile,BufRead fonts.conf			setf xml
+
+" Faust
+au BufNewFile,BufRead *.lib				setf faust
+au BufNewFile,BufRead *.dsp				call dist#ft#FTdsp()
 
 " Libreoffice config files
 au BufNewFile,BufRead *.xcu,*.xlb,*.xlc,*.xba		setf xml
@@ -1365,8 +1369,8 @@ au BufNewFile,BufRead */etc/mail/aliases,*/etc/aliases	setf mailaliases
 au BufNewFile,BufRead .mailcap,mailcap		setf mailcap
 
 " Makefile
-au BufNewFile,BufRead *[mM]akefile,*.mk,*.mak,*.dsp setf make
-au BufNewFile,BufRead Kbuild setf make
+au BufNewFile,BufRead *[mM]akefile,*.mk,*.mak	setf make
+au BufNewFile,BufRead Kbuild			setf make
 
 " MakeIndex
 au BufNewFile,BufRead *.ist,*.mst		setf ist
