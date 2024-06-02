@@ -233,6 +233,9 @@ shift_line(
     int		i, j;
     int		sw_val = trim_to_int(get_sw_value_indent(curbuf, left));
 
+    if (sw_val == 0)
+	sw_val = 1;		// shouldn't happen, just in case
+
     count = get_indent();	// get current indent
 
     if (round)			// round off indent
