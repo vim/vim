@@ -629,7 +629,7 @@ static struct vimoption options[] =
     {"commentstring", "cms", P_STRING|P_ALLOCED|P_VI_DEF|P_CURSWANT,
 #ifdef FEAT_FOLDING
 			    (char_u *)&p_cms, PV_CMS, did_set_commentstring, NULL,
-			    {(char_u *)"/*%s*/", (char_u *)0L}
+			    {(char_u *)"/* %s */", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL, NULL,
 			    {(char_u *)0L, (char_u *)0L}

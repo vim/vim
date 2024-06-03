@@ -41565,6 +41565,8 @@ Changed~
 -------
 - use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
 - use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
+- the default for 'commentstring' contains whitespace padding to have
+  automatic comments look nicer |comment-install|
 
 							*added-9.2*
 Added ~

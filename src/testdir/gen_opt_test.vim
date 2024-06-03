@@ -76,7 +76,7 @@ let test_values = {
       \ 'clipboard': [['', 'unnamed', 'autoselect,unnamed', 'html', 'exclude:vimdisplay'], ['xxx', '\ze*', 'exclude:\\%(']],
       \ 'colorcolumn': [['', '8', '+2'], ['xxx']],
       \ 'comments': [['', 'b:#'], ['xxx']],
-      \ 'commentstring': [['', '/*%s*/'], ['xxx']],
+      \ 'commentstring': [['', '/*\ %s\ */'], ['xxx']],
       \ 'complete': [['', 'w,b'], ['xxx']],
       \ 'concealcursor': [['', 'n', 'nvic'], ['xxx']],
       \ 'completeopt': [['', 'menu', 'menu,longest'], ['xxx', 'menu,,,longest,']],
