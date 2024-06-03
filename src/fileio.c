@@ -3898,7 +3898,7 @@ vim_rename(char_u *from, char_u *to)
      */
     ret = vim_copyfile(from, to);
     if (ret != OK)
-	return ret;
+	return -1;
 
     /*
      * Remove copied original file
