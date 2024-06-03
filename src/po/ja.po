@@ -9096,7 +9096,7 @@ msgid "\" Hit <Enter> on an index line to jump there."
 msgstr "\" インデックス行で <Enter> を打つと、そこにジャンプします。"
 
 msgid "\" Hit <Space> on a \"set\" line to refresh it."
-msgstr "\" \"set\" 行で <Spece> を打つと、最新の値が読込まれます。"
+msgstr "\" \"set\" 行で <Space> を打つと、最新の値が読込まれます。"
 
 msgid "important"
 msgstr "重要"
