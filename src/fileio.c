@@ -3936,7 +3936,7 @@ vim_copyfile(char_u *from, char_u *to)
     ret = mch_lstat((char *)from, &st);
     if (ret >= 0 && S_ISLNK(st.st_mode))
     {
-        ret = -1;
+        ret = FAIL;
 
 	len = readlink((char *)from, linkbuf, MAXPATHL);
 	if (len > 0)
@@ -3962,7 +3962,7 @@ vim_copyfile(char_u *from, char_u *to)
 #ifdef HAVE_ACL
 	mch_free_acl(acl);
 #endif
-	return -1;
+	return FAIL;
     }
 
     // Create the new file with same permissions as the original.
@@ -3974,7 +3974,7 @@ vim_copyfile(char_u *from, char_u *to)
 #ifdef HAVE_ACL
 	mch_free_acl(acl);
 #endif
-	return -1;
+	return FAIL;
     }
 
     buffer = alloc(WRITEBUFSIZE);
@@ -3985,7 +3985,7 @@ vim_copyfile(char_u *from, char_u *to)
 #ifdef HAVE_ACL
 	mch_free_acl(acl);
 #endif
-	return -1;
+	return FAIL;
     }
 
     while ((n = read_eintr(fd_in, buffer, WRITEBUFSIZE)) > 0)
@@ -4017,9 +4017,9 @@ vim_copyfile(char_u *from, char_u *to)
     if (errmsg != NULL)
     {
 	semsg(errmsg, to);
-	return -1;
+	return FAIL;
     }
-    return 0;
+    return OK;
 }
 
 static int already_warned = FALSE;

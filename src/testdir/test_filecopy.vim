@@ -13,7 +13,7 @@ func Test_copy_file_to_file()
   " When the destination file already exists, it should not be overwritten.
   call writefile(['foo'], 'Xcopy1')
   call writefile(['bar'], 'Xcopy2', 'D')
-  call assert_equal(-1, filecopy('Xcopy1', 'Xcopy2'))
+  call assert_notequal(0, filecopy('Xcopy1', 'Xcopy2'))
   call assert_equal(['bar'], readfile('Xcopy2'))
 
   call delete('Xcopy2')
@@ -31,7 +31,7 @@ func Test_copy_symbolic_link()
   call assert_equal(['text'], readfile('Xtestlink2'))
 
   " When the destination file already exists, it should not be overwritten.
-  call assert_equal(-1, filecopy('Xtestlink', 'Xtestlink2'))
+  call assert_notequal(0, filecopy('Xtestlink', 'Xtestlink2'))
 
   call delete('Xtestlink2')
   call delete('Xtestlink')
@@ -44,7 +44,7 @@ func Test_copy_dir_to_dir()
   call mkdir('Xcopydir2')
 
   " Directory copy is not supported
-  call assert_equal(-1, filecopy('Xcopydir1', 'Xcopydir2'))
+  call assert_notequal(0, filecopy('Xcopydir1', 'Xcopydir2'))
 
   call delete('Xcopydir2', 'rf')
   call delete('Xcopydir1', 'rf')
