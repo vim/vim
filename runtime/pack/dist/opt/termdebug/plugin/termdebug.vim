@@ -178,7 +178,6 @@ def GetCommand(): list<string>
     cmd = g:termdebugger
   endif
 
-  # Sweet!
   return type(cmd) == v:t_list ? copy(cmd) : [cmd]
 enddef
 
@@ -972,7 +971,7 @@ enddef
 
 # Handle a message received from gdb on the GDB/MI interface.
 def CommOutput(chan: channel, message: string)
-  # UBA: we may use the standard MI message formats? See #10300 that cites
+  # We may use the standard MI message formats? See #10300 on github that mentions
   # the following links:
   # https://sourceware.org/gdb/current/onlinedocs/gdb.html/GDB_002fMI-Input-Syntax.html#GDB_002fMI-Input-Syntax
   # https://sourceware.org/gdb/current/onlinedocs/gdb.html/GDB_002fMI-Output-Syntax.html#GDB_002fMI-Output-Syntax
@@ -1518,8 +1517,6 @@ def GetDisasmWindowHeight(): number
   return 0
 enddef
 
-
-
 def GotoAsmwinOrCreateIt()
   var mdf = ''
   if !win_gotoid(asmwin)
@@ -1902,7 +1899,4 @@ enddef
 InitHighlight()
 InitAutocmd()
 
-
-#
-#
 # vim: sw=2 sts=2 et
