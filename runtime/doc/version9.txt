@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 May 17
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31711,12 +31711,12 @@ in |vim9-class|.  The following features are supported:
 
 Support for creating a type alias for an existing type is added.
 
-Virtual text
+Virtual text ~
 ------------
 Support for adding |virtual-text| to a buffer is added.  This is useful for
 language server features (e.g. inlay hints)
 
-Smooth Scroll
+Smooth Scroll ~
 -------------
 Support for scrolling text using screen lines instead of file lines is added.
 Refer to the 'smoothscroll' option.
@@ -31726,7 +31726,8 @@ The EditorConfig (|editorconfig-install|) and the JSON formatting
 
 OpenVMS x86_64 platform port: http://www.polarhome.com/vim/
 
-Other improvements				*new-other-9.1*
+						*new-other-9.1*
+Other improvements ~
 ------------------
 - Support for undercurl (|t_Ce|), double underline (|t_Us|), dotted underline
   (|t_ds|) and dashed underline (|t_Ds|) termcap entries and
@@ -31783,7 +31784,8 @@ Other improvements				*new-other-9.1*
 - xxd: reversing a bit dump (xxd -r).
 - xxd: customize the variable name used in the C include output (xxd -n).
 
-Changed						*changed-9.1*
+							*changed-9.1*
+Changed ~
 -------
 - The features |++builtin_terms|, |+cmdline_info|, |+cmdwin|, |+file_in_path|,
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
@@ -31815,7 +31817,8 @@ Changed						*changed-9.1*
 - Migrate to autoconf 2.71.
 - Start using C99 feature (declare variable in for loops).
 
-Added						*added-9.1*
+						*added-9.1*
+Added ~
 -----
 
 Various syntax, indent and other plugins were added.
@@ -41541,30 +41544,31 @@ VERSION 9.2				*version-9.2* *version9.2* *vim-9.2*
 This section is about improvements made between version 9.1 and 9.2
 and is a work in progress.
 
-Support for Wayland UI.
-
-Support for the XDG Desktop Specification |xdg-base-dir|
-
-Vim9 script
+Vim9 script ~
 -----------
 Add support for internal builtin functions with vim9 objects, see
 |builtin-object-methods|
 
 Enum support for Vim9 script |:enum|
 
-Other improvements				*new-other-9.2*
+							*new-other-9.2*
+Other new features ~
 ------------------
 The comment plugin |comment-install| is included.
 
-Changed						*changed-9.2*
--------
+Support for Wayland UI.
 
+Support for the XDG Desktop Specification |xdg-base-dir|
+
+							*changed-9.2*
+Changed~
+-------
 - use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
 - use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
 
-Added						*added-9.2*
+							*added-9.2*
+Added ~
 -----
-
 Various syntax, indent and other plugins were added.
 
 Functions: ~
@@ -41598,6 +41602,7 @@ Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
+'t_CF'			Support for alternate font highlighting terminal code
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-9.2*
@@ -41606,13 +41611,11 @@ Improved/Different MS-Windows mapping support
 |w32-experimental-keycode-trans-strategy|
 
 ==============================================================================
-IMPROVEMENTS					*improvements-9.2*
+IMPROVEMENTS						*improvements-9.2*
 
 Support for command-line completion of 'keymap' option values.
 
 Support for compiling all the methods in a Vim9 class using |:defcompile|.
-
-Support for alternate font highlighting using |t_CF| terminal code.
 
 Support for Super key mappings in GTK using <D-Key>.
 
@@ -41620,8 +41623,10 @@ Improved visual highlighting.
 
 Python3 support in OpenVMS.
 
+Support |fuzzy-matching| during |ins-completion| with "fuzzy" item for 'completeopt'
+
 ==============================================================================
-COMPILE TIME CHANGES				*compile-changes-9.2*
+COMPILE TIME CHANGES					*compile-changes-9.2*
 
 Support for building with Ruby 3.3.
 

@@ -113,6 +113,7 @@ struct compl_S
 				// cp_flags has CP_FREE_FNAME
     int		cp_flags;	// CP_ values
     int		cp_number;	// sequence number
+    int		cp_score;	// fuzzy match score
 };
 
 // values for cp_flags
@@ -153,6 +154,7 @@ static int	  compl_no_select = FALSE;	// FALSE: select & insert
 						// TRUE: noselect
 static int	  compl_longest = FALSE;	// FALSE: insert full match
 						// TRUE: insert longest prefix
+static int	  compl_fuzzy_match = FALSE;	// True: fuzzy match enabled
 
 // Selected one of the matches.  When FALSE the match was edited or using the
 // longest common string.
@@ -206,6 +208,8 @@ static int	  compl_cont_status = 0;
 
 static int	  compl_opt_refresh_always = FALSE;
 static int	  compl_opt_suppress_empty = FALSE;
+
+static int	  compl_selected_item = -1;
 
 static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup);
 static void ins_compl_longest_match(compl_T *match);
@@ -1059,12 +1063,15 @@ completeopt_was_set(void)
     compl_no_insert = FALSE;
     compl_no_select = FALSE;
     compl_longest = FALSE;
+    compl_fuzzy_match = FALSE;
     if (strstr((char *)p_cot, "noselect") != NULL)
 	compl_no_select = TRUE;
     if (strstr((char *)p_cot, "noinsert") != NULL)
 	compl_no_insert = TRUE;
     if (strstr((char *)p_cot, "longest") != NULL)
 	compl_longest = TRUE;
+    if (strstr((char *)p_cot, "fuzzy") != NULL)
+	compl_fuzzy_match = TRUE;
 }
 
 
@@ -1213,6 +1220,17 @@ trigger_complete_changed_event(int cur)
 #endif
 
 /*
+ * pumitem qsort compare func
+ */
+    static int
+ins_compl_fuzzy_sort(const void *a, const void *b)
+{
+    const int sa = (*(pumitem_T *)a).pum_score;
+    const int sb = (*(pumitem_T *)b).pum_score;
+    return sa == sb ? 0 : sa < sb ? 1 : -1;
+}
+
+/*
  * Build a popup menu to show the completion matches.
  * Returns the popup menu entry that should be selected. Returns -1 if nothing
  * should be selected.
@@ -1227,6 +1245,7 @@ ins_compl_build_pum(void)
     int		i;
     int		cur = -1;
     int		lead_len = 0;
+    int		max_fuzzy_score = 0;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -1236,9 +1255,15 @@ ins_compl_build_pum(void)
 
     do
     {
+	// when completeopt include fuzzy option and leader is not null or empty
+	// set the cp_score for after compare.
+	if (compl_fuzzy_match && compl_leader != NULL && lead_len > 0)
+	    compl->cp_score = fuzzy_match_str(compl->cp_str, compl_leader);
+
 	if (!match_at_original_text(compl)
 		&& (compl_leader == NULL
-		    || ins_compl_equal(compl, compl_leader, lead_len)))
+		    || ins_compl_equal(compl, compl_leader, lead_len)
+		    || (compl_fuzzy_match && compl->cp_score > 0)))
 	    ++compl_match_arraysize;
 	compl = compl->cp_next;
     } while (compl != NULL && !is_first_match(compl));
@@ -1267,9 +1292,10 @@ ins_compl_build_pum(void)
     {
 	if (!match_at_original_text(compl)
 		&& (compl_leader == NULL
-		    || ins_compl_equal(compl, compl_leader, lead_len)))
+		    || ins_compl_equal(compl, compl_leader, lead_len)
+		    || (compl_fuzzy_match && compl->cp_score > 0)))
 	{
-	    if (!shown_match_ok)
+	    if (!shown_match_ok && !compl_fuzzy_match)
 	    {
 		if (compl == compl_shown_match || did_find_shown_match)
 		{
@@ -1285,6 +1311,24 @@ ins_compl_build_pum(void)
 		    shown_compl = compl;
 		cur = i;
 	    }
+	    else if (compl_fuzzy_match)
+	    {
+		if (compl->cp_score > max_fuzzy_score)
+		{
+		    did_find_shown_match = TRUE;
+		    max_fuzzy_score = compl->cp_score;
+		    compl_shown_match = compl;
+		    shown_match_ok = TRUE;
+		}
+
+		if (!compl_no_select
+			&& (max_fuzzy_score > 0
+				|| (compl_leader == NULL || lead_len == 0)))
+		{
+		    shown_match_ok = TRUE;
+		    cur = 0;
+		}
+	    }
 
 	    if (compl->cp_text[CPT_ABBR] != NULL)
 		compl_match_array[i].pum_text =
@@ -1293,6 +1337,7 @@ ins_compl_build_pum(void)
 		compl_match_array[i].pum_text = compl->cp_str;
 	    compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
 	    compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
+	    compl_match_array[i].pum_score = compl->cp_score;
 	    if (compl->cp_text[CPT_MENU] != NULL)
 		compl_match_array[i++].pum_extra =
 		    compl->cp_text[CPT_MENU];
@@ -1300,7 +1345,7 @@ ins_compl_build_pum(void)
 		compl_match_array[i++].pum_extra = compl->cp_fname;
 	}
 
-	if (compl == compl_shown_match)
+	if (compl == compl_shown_match && !compl_fuzzy_match)
 	{
 	    did_find_shown_match = TRUE;
 
@@ -1319,6 +1364,10 @@ ins_compl_build_pum(void)
 	}
 	compl = compl->cp_next;
     } while (compl != NULL && !is_first_match(compl));
+
+    if (compl_fuzzy_match && compl_leader != NULL && lead_len > 0)
+	// sort by the largest score of fuzzy match
+	qsort(compl_match_array, (size_t)compl_match_arraysize, sizeof(pumitem_T), ins_compl_fuzzy_sort);
 
     if (!shown_match_ok)    // no displayed match at all
 	cur = -1;
@@ -1376,6 +1425,7 @@ ins_compl_show_pum(void)
     // Use the cursor to get all wrapping and other settings right.
     col = curwin->w_cursor.col;
     curwin->w_cursor.col = compl_col;
+    compl_selected_item = cur;
     pum_display(compl_match_array, compl_match_arraysize, cur);
     curwin->w_cursor.col = col;
 
@@ -4025,6 +4075,40 @@ ins_compl_show_filename(void)
     redraw_cmdline = FALSE;	    // don't overwrite!
 }
 
+    static compl_T *
+find_comp_when_fuzzy(void)
+{
+    int		score;
+    char_u*	str;
+    int		target_idx = -1;
+    int		is_forward = compl_shows_dir_forward();
+    int		is_backward = compl_shows_dir_backward();
+    compl_T	*comp = NULL;
+
+    if (compl_match_array == NULL ||
+	    (is_forward && compl_selected_item == compl_match_arraysize - 1)
+	    || (is_backward && compl_selected_item == 0))
+	return compl_first_match;
+
+    if (is_forward)
+	target_idx = compl_selected_item + 1;
+    else if (is_backward)
+      target_idx = compl_selected_item == -1 ? compl_match_arraysize - 1
+					    : compl_selected_item - 1;
+
+    score = compl_match_array[target_idx].pum_score;
+    str = compl_match_array[target_idx].pum_text;
+
+    comp = compl_first_match;
+    do {
+      if (comp->cp_score == score && (str == comp->cp_str || str == comp->cp_text[CPT_ABBR]))
+	  return comp;
+      comp = comp->cp_next;
+    } while (comp != NULL && !is_first_match(comp));
+
+    return NULL;
+}
+
 /*
  * Find the next set of matches for completion. Repeat the completion "todo"
  * times.  The number of matches found is returned in 'num_matches'.
@@ -4052,7 +4136,8 @@ find_next_completion_match(
     {
 	if (compl_shows_dir_forward() && compl_shown_match->cp_next != NULL)
 	{
-	    compl_shown_match = compl_shown_match->cp_next;
+	    compl_shown_match = !compl_fuzzy_match ? compl_shown_match->cp_next
+						: find_comp_when_fuzzy();
 	    found_end = (compl_first_match != NULL
 		    && (is_first_match(compl_shown_match->cp_next)
 			|| is_first_match(compl_shown_match)));
@@ -4061,7 +4146,8 @@ find_next_completion_match(
 		&& compl_shown_match->cp_prev != NULL)
 	{
 	    found_end = is_first_match(compl_shown_match);
-	    compl_shown_match = compl_shown_match->cp_prev;
+	    compl_shown_match = !compl_fuzzy_match ? compl_shown_match->cp_prev
+						   : find_comp_when_fuzzy();
 	    found_end |= is_first_match(compl_shown_match);
 	}
 	else
@@ -4111,7 +4197,8 @@ find_next_completion_match(
 	if (!match_at_original_text(compl_shown_match)
 		&& compl_leader != NULL
 		&& !ins_compl_equal(compl_shown_match,
-		    compl_leader, (int)STRLEN(compl_leader)))
+		    compl_leader, (int)STRLEN(compl_leader))
+		&& !(compl_fuzzy_match && compl_shown_match->cp_score > 0))
 	    ++todo;
 	else
 	    // Remember a matching item.
@@ -4167,7 +4254,9 @@ ins_compl_next(
     if (compl_shown_match == NULL)
 	return -1;
 
-    if (compl_leader != NULL && !match_at_original_text(compl_shown_match))
+    if (compl_leader != NULL
+	    && !match_at_original_text(compl_shown_match)
+	    && !compl_fuzzy_match)
 	// Update "compl_shown_match" to the actually shown match
 	ins_compl_update_shown_match();
 
