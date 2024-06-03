@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 May 11
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,8 +81,6 @@ Improve profiling by caching matching functions:  PR  #12192
 With 'smoothscroll' set and "lastline" in 'display', moving the cursor to a
 wrapping line that makes the display scroll up may scroll much more than
 needed, thus jump-scrolling. (part of issue 12411)
-
-Add filecopy() ?  #12346
 
 Implement foreach()  PR  #12166
 
@@ -4242,7 +4240,6 @@ Vim script language:
 	base64enc()		base 64 encoding
 	base64dec()		base 64 decoding
 	attributes()		return file protection flags "drwxrwxrwx"
-	filecopy(from, to)	Copy a file
 	shorten(fname)		shorten a file name, like home_replace()
 	perl(cmd)		call Perl and return string
 	inputrl()		like input() but right-to-left

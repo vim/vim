@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 May 07
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Jun 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -993,6 +993,7 @@ System functions and manipulation of files:
 	readdir()		get a List of file names in a directory
 	readdirex()		get a List of file information in a directory
 	writefile()		write a List of lines or Blob into a file
+	filecopy()		copy a file {from} to {to}
 
 Date and Time:				*date-functions* *time-functions*
 	getftime()		get last modification time of a file

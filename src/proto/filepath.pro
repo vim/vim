@@ -6,6 +6,7 @@ void f_chdir(typval_T *argvars, typval_T *rettv);
 void f_delete(typval_T *argvars, typval_T *rettv);
 void f_executable(typval_T *argvars, typval_T *rettv);
 void f_exepath(typval_T *argvars, typval_T *rettv);
+void f_filecopy(typval_T *argvars, typval_T *rettv);
 void f_filereadable(typval_T *argvars, typval_T *rettv);
 void f_filewritable(typval_T *argvars, typval_T *rettv);
 void f_finddir(typval_T *argvars, typval_T *rettv);

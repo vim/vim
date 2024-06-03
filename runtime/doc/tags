@@ -7091,6 +7091,7 @@ file-searching	editing.txt	/*file-searching*
 file-type	filetype.txt	/*file-type*
 file-types	filetype.txt	/*file-types*
 file_readable()	builtin.txt	/*file_readable()*
+filecopy()	builtin.txt	/*filecopy()*
 fileencoding-changed	version6.txt	/*fileencoding-changed*
 filename-backslash	cmdline.txt	/*filename-backslash*
 filename-modifiers	cmdline.txt	/*filename-modifiers*

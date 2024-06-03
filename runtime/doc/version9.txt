@@ -41576,11 +41576,12 @@ Various syntax, indent and other plugins were added.
 Functions: ~
 
 |diff()|		diff two Lists of strings
+|filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
-|matchbufline()|	all the matches of a pattern in a buffer
-|matchstrlist()|	all the matches of a pattern in a List of strings
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
+|matchbufline()|	all the matches of a pattern in a buffer
+|matchstrlist()|	all the matches of a pattern in a List of strings
 
 
 Autocommands: ~
@@ -41607,7 +41608,7 @@ Options: ~
 't_CF'			Support for alternate font highlighting terminal code
 
 ==============================================================================
-INCOMPATIBLE CHANGES				*incompatible-9.2*
+INCOMPATIBLE CHANGES					*incompatible-9.2*
 
 Improved/Different MS-Windows mapping support
 |w32-experimental-keycode-trans-strategy|

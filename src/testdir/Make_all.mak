@@ -143,6 +143,7 @@ NEW_TESTS = \
 	test_file_perm \
 	test_file_size \
 	test_filechanged \
+	test_filecopy \
 	test_fileformat \
 	test_filetype \
 	test_filter_cmd \
@@ -404,6 +405,7 @@ NEW_TESTS_RES = \
 	test_expr.res \
 	test_file_size.res \
 	test_filechanged.res \
+	test_filecopy.res \
 	test_fileformat.res \
 	test_filetype.res \
 	test_filter_cmd.res \
