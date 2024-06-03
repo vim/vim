@@ -2760,7 +2760,7 @@ filecopy({from}, {to})					*filecopy()*
 		Copy the file by the name {from} to the name {to}.  The
 		result is a Number, which is 0 if the file was copied
 		successfully, and non-zero when the copy failed.
-		If {to} exists, it is failed.
+		If {to} exists, it will fail.
 
 		This function is not available in the |sandbox|.
 
