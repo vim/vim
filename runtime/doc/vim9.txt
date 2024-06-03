@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.1.  Last change: 2024 Apr 13
+*vim9.txt*	For Vim version 9.1.  Last change: 2024 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -67,6 +67,7 @@ rewrite old scripts, they keep working as before.  You may want to use a few
 		Note that {cmd} cannot use local variables, since it is parsed
 		with legacy expression syntax.
 
+See some examples of Vim9 script at |52.6|.
 ==============================================================================
 
 2. Differences from legacy Vim script			*vim9-differences*

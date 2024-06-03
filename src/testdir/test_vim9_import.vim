@@ -3068,7 +3068,10 @@ def Test_vim9_import_symlink()
     var lines =<< trim END
         vim9script
         import autoload 'bar.vim'
-        g:resultFunc = bar.Func()
+        def FooFunc(): string
+          return bar.Func()
+        enddef
+        g:resultFunc = FooFunc()
         g:resultValue = bar.value
     END
     writefile(lines, 'Xto/plugin/foo.vim')

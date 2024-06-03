@@ -231,7 +231,10 @@ shift_line(
 {
     vimlong_T	count;
     int		i, j;
-    int		sw_val = trim_to_int(get_sw_value_indent(curbuf));
+    int		sw_val = trim_to_int(get_sw_value_indent(curbuf, left));
+
+    if (sw_val == 0)
+	sw_val = 1;		// shouldn't happen, just in case
 
     count = get_indent();	// get current indent
 
@@ -283,7 +286,7 @@ shift_block(oparg_T *oap, int amount)
     char_u		*newp, *oldp;
     size_t		newlen, oldlen;
     int			oldcol = curwin->w_cursor.col;
-    int			sw_val = (int)get_sw_value_indent(curbuf);
+    int			sw_val = (int)get_sw_value_indent(curbuf, left);
     int			ts_val = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
@@ -580,7 +583,7 @@ block_insert(
 
 	// copy the new text
 	mch_memmove(newp + startcol, s, slen);
-	offset += slen;
+	offset += (int)slen;
 
 	if (spaces > 0 && !bdp->is_short)
 	{
@@ -607,7 +610,7 @@ block_insert(
 
 	if (b_insert)
 	    // correct any text properties
-	    inserted_bytes(lnum, startcol, slen);
+	    inserted_bytes(lnum, startcol, (int)slen);
 
 	if (lnum == oap->end.lnum)
 	{
@@ -1258,8 +1261,8 @@ op_replace(oparg_T *oap, int c)
 		       replace_character(c);
 		    else
 			PBYTE(curwin->w_cursor, c);
-		   if (inc(&curwin->w_cursor) == -1)
-		       break;
+		    if (inc(&curwin->w_cursor) == -1)
+			break;
 		}
 	    }
 
@@ -1722,7 +1725,7 @@ op_insert(oparg_T *oap, long count1)
 	    add = len;  // short line, point to the NUL
 	firstline += add;
 	len -= add;
-	if (pre_textlen >= 0 && (ins_len = len - pre_textlen - offset) > 0)
+	if (pre_textlen >= 0 && (ins_len = (int)len - pre_textlen - offset) > 0)
 	{
 	    ins_text = vim_strnsave(firstline, ins_len);
 	    if (ins_text != NULL)
@@ -1866,7 +1869,7 @@ op_change(oparg_T *oap)
 			// Shift the properties for linenr as edit() would do.
 			if (curbuf->b_has_textprop)
 			    adjust_prop_columns(linenr, bd.textcol,
-						     vpos.coladd + ins_len, 0);
+						     vpos.coladd + (int)ins_len, 0);
 #endif
 		    }
 		}
@@ -2523,11 +2526,11 @@ op_addsub(
     int			change_cnt = 0;
     linenr_T		amount = Prenum1;
 
-   // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
-   // buffer is not completely updated yet. Postpone updating folds until before
-   // the call to changed_lines().
+    // do_addsub() might trigger re-evaluation of 'foldexpr' halfway, when the
+    // buffer is not completely updated yet. Postpone updating folds until before
+    // the call to changed_lines().
 #ifdef FEAT_FOLDING
-   disable_fold_update++;
+    disable_fold_update++;
 #endif
 
     if (!VIsual_active)

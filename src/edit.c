@@ -519,9 +519,10 @@ edit(
 
 	    if (
 #ifdef FEAT_VARTABS
-		curwin->w_wcol < mincol - tabstop_at(
-					  get_nolist_virtcol(), curbuf->b_p_ts,
-							 curbuf->b_p_vts_array)
+		curwin->w_wcol < mincol - tabstop_at(get_nolist_virtcol(),
+						     curbuf->b_p_ts,
+						     curbuf->b_p_vts_array,
+						     FALSE)
 #else
 		(int)curwin->w_wcol < mincol - curbuf->b_p_ts
 #endif
@@ -1310,7 +1311,7 @@ docomplete:
 	    c = ins_ctrl_ey(c);
 	    break;
 
-	  default:
+	default:
 #ifdef UNIX
 	    if (c == intr_char)		// special interrupt char
 		goto do_intr;
@@ -1842,7 +1843,7 @@ backspace_until_column(int col)
  * Only matters when there are composing characters.
  * Return TRUE when something was deleted.
  */
-   static int
+    static int
 del_char_after_col(int limit_col UNUSED)
 {
     if (enc_utf8 && limit_col >= 0)

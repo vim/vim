@@ -1,15 +1,15 @@
 /* indent.c */
 int tabstop_set(char_u *var, int **array);
 int tabstop_padding(colnr_T col, int ts_arg, int *vts);
-int tabstop_at(colnr_T col, int ts, int *vts);
+int tabstop_at(colnr_T col, int ts, int *vts, int left);
 colnr_T tabstop_start(colnr_T col, int ts, int *vts);
 void tabstop_fromto(colnr_T start_col, colnr_T end_col, int ts_arg, int *vts, int *ntabs, int *nspcs);
 int *tabstop_copy(int *oldts);
 int tabstop_count(int *ts);
 int tabstop_first(int *ts);
 long get_sw_value(buf_T *buf);
-long get_sw_value_indent(buf_T *buf);
-long get_sw_value_col(buf_T *buf, colnr_T col);
+long get_sw_value_indent(buf_T *buf, int left);
+long get_sw_value_col(buf_T *buf, colnr_T col, int left);
 long get_sts_value(void);
 int get_indent(void);
 int get_indent_lnum(linenr_T lnum);
