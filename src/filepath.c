@@ -2661,7 +2661,7 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = 1;
 
     if (check_restricted() || check_secure()
-	||check_for_string_arg(argvars, 0) == FAIL
+	|| check_for_string_arg(argvars, 0) == FAIL
 	|| check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
