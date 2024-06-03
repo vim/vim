@@ -2661,16 +2661,16 @@ f_filecopy(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = -1;
 
     if (check_restricted() || check_secure()
-	    ||check_for_string_arg(argvars, 0) == FAIL
-	    || check_for_string_arg(argvars, 1) == FAIL)
+	||check_for_string_arg(argvars, 0) == FAIL
+	|| check_for_string_arg(argvars, 1) == FAIL)
 	return;
 
     from = tv_get_string(&argvars[0]);
 
     if (mch_lstat((char *)from, &st) >= 0
-	    && (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode)))
-	rettv->vval.v_number = vim_copyfile(tv_get_string(&argvars[0]),
-		tv_get_string(&argvars[1]));
+	&& (S_ISREG(st.st_mode) || S_ISLNK(st.st_mode)))
+	rettv->vval.v_number = vim_copyfile(
+	    tv_get_string(&argvars[0]), tv_get_string(&argvars[1]));
 }
 
 #endif // FEAT_EVAL
