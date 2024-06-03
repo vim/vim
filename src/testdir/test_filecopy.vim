@@ -44,7 +44,7 @@ func Test_copy_dir_to_dir()
   call mkdir('Xcopydir2')
 
   " Directory copy is not supported
-  call assert_notequal(0, filecopy('Xcopydir1', 'Xcopydir2'))
+  call assert_equal(-1, filecopy('Xcopydir1', 'Xcopydir2'))
 
   call delete('Xcopydir2', 'rf')
   call delete('Xcopydir1', 'rf')
