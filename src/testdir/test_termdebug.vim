@@ -330,11 +330,16 @@ func Test_termdebug_bufnames()
   " Once termdebug has completed the startup you should have 4 windows on screen
   call WaitForAssert({-> assert_equal(4, winnr('$'))})
   call WaitForAssert({-> assert_notequal(-1, stridx(execute('messages'), error_message))})
-  quit!
+  " quit Asm
   wincmd b
   wincmd q
+  " quit Termdebug
+  wincmd t
+  quit!
+  redraw!
   call WaitForAssert({-> assert_equal(1, winnr('$'))})
 
+  execute(":%bw!")
   unlet g:termdebug_config
 endfunc
 
