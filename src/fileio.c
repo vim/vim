@@ -3897,7 +3897,7 @@ vim_rename(char_u *from, char_u *to)
      * Rename() failed, try copying the file.
      */
     ret = vim_copyfile(from, to);
-    if (ret != 0)
+    if (ret != OK)
 	return ret;
 
     /*
@@ -3947,7 +3947,7 @@ vim_copyfile(char_u *from, char_u *to)
 	    ret = symlink(linkbuf, (char *)to);
 	}
 
-	return ret == 0 ? ret : -1;
+	return ret == 0 ? OK : FAIL;
     }
 #endif
 
