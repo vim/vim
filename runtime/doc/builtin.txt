@@ -2761,6 +2761,7 @@ filecopy({from}, {to})					*filecopy()*
 		result is a Number, which is 0 if the file was copied
 		successfully, and non-zero when the copy failed.
 		If {to} exists, it will fail.
+		Note It can not copy directories.
 
 		This function is not available in the |sandbox|.
 
