@@ -51,9 +51,9 @@ func Test_copy_dir_to_dir()
 endfunc
 
 func Test_copy_fails()
-    CheckUnix
-  
-    call writefile(['foo'], 'Xfilecopy', 'D')
+  CheckUnix
+
+  call writefile(['foo'], 'Xfilecopy', 'D')
 
   " Can't copy into a non-existing directory.
   call assert_notequal(0, filecopy('Xfilecopy', 'Xdoesnotexist/Xfilecopy'))
