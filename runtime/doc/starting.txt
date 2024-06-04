@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 May 18
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -428,8 +428,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --not-a-term	Tells Vim that the user knows that the input and/or output is
 		not connected to a terminal.  This will avoid the warning and
 		the two second delay that would happen.
-		Also avoids the "Reading from stdin..." message.
-		Also avoids the "N files to edit" message.
+		Also avoids the "Reading from stdin..." as well as the
+		"N files to edit" message.
 
 --gui-dialog-file {name}				*--gui-dialog-file*
 		When using the GUI, instead of showing a dialog, write the
