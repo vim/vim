@@ -1,4 +1,4 @@
-*comment.txt*   For Vim version 9.1.  Last change:  2024 Apr 26
+*comment.txt*   For Vim version 9.1.  Last change:  2024 Jun 04
 
 
 		  VIM REFERENCE MANUAL
@@ -6,6 +6,8 @@
 Commenting and un-commenting text.
 
 ==============================================================================
+
+See |comment-install| on how to activate this package.
 
 The comment.vim package, allows to toggle comments for a single line, a range
 of lines or a selected text object.  It defines the following mappings:
@@ -21,20 +23,25 @@ gcG		to comment/uncomment from current line till the end of a buffer
 							*v_gc*
 {Visual}gc	to comment/uncomment the highlighted lines.
 
-The plugin uses the buffer-local 'commentstring' option value to add or remove
+This plugin uses the buffer-local 'commentstring' option value to add or remove
 comment markers to the selected lines.  Whether it will comment or un-comment
 depends on the first line of the range of lines to act upon.  When it matches
 a comment marker, the line will be un-commented, if it doesn't, the line will
-be commented out.  Blank and empty lines are not touched.
-  
-If the mapping does not seem to work, chances are high, that this particular
-filetype is either not detected by Vim or the filetype plugin does not set the
-'commentstring' option.
+be commented out.  Blank and empty lines are ignored.
+
+The comment marker will always be padded with blanks whether or not the
+'commentstring' value contains whitespace around "%s".
+
+If the mapping does not seem to work (or uses wrong comment markers), it might
+be because of several reasons:
+- the filetype is not detected by Vim, see |new-filetype|,
+- filetype plugins are not enabled, see |:filetype-plugin-on| or
+- the filetype plugin does not set the (correct) 'commentstring' option.
 
 You can simply configure this using the following autocommand (e.g. for legacy
 Vim script): >
 
-	autocmd Filetype vim :setlocal commentstring="\ %s
+	autocmd Filetype vim :setlocal commentstring="%s
 
 This example sets the " as start of a comment for legacy Vim Script.  For Vim9
 script, you would instead use the "#" char: >
