@@ -139,7 +139,7 @@ int reset_option_was_set(char_u *name);
 int can_bs(int what);
 long get_scrolloff_value(void);
 long get_sidescrolloff_value(void);
-unsigned int get_bkc_value(buf_T *buf);
+unsigned int get_bkc_flags(buf_T *buf);
 char_u *get_flp_value(buf_T *buf);
 unsigned int get_ve_flags(void);
 char_u *get_showbreak_value(win_T *win);

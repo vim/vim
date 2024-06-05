@@ -27,7 +27,7 @@ int ins_compl_accept_char(int c);
 int ins_compl_add_infercase(char_u *str_arg, int len, int icase, char_u *fname, int dir, int cont_s_ipos);
 int ins_compl_has_shown_match(void);
 int ins_compl_long_shown_match(void);
-unsigned get_cot_flags(void);
+unsigned int get_cot_flags(void);
 int pum_wanted(void);
 void ins_compl_show_pum(void);
 char_u *find_word_start(char_u *ptr);
