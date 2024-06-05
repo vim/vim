@@ -78,6 +78,7 @@ func Test_ColonEight()
 endfunc
 
 func Test_ColonEight_MultiByte()
+  let g:test_is_flaky = 1
   let dir = 'Xtest'
 
   let file = dir . '/日本語のファイル.txt'
