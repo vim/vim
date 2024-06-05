@@ -6224,6 +6224,10 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_inc);
 	    break;
 # endif
+	case PV_COT:
+	    clear_string_option(&buf->b_p_cot);
+	    buf->b_cot_flags = 0;
+	    break;
 	case PV_DICT:
 	    clear_string_option(&buf->b_p_dict);
 	    break;
@@ -6333,6 +6337,7 @@ get_varp_scope(struct vimoption *p, int scope)
 	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
 	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
 #endif
+	    case PV_COT:  return (char_u *)&(curbuf->b_p_cot);
 	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
 	    case PV_TSR:  return (char_u *)&(curbuf->b_p_tsr);
 #ifdef FEAT_COMPL_FUNC
@@ -6413,6 +6418,8 @@ get_varp(struct vimoption *p)
 	case PV_INC:	return *curbuf->b_p_inc != NUL
 				    ? (char_u *)&(curbuf->b_p_inc) : p->var;
 #endif
+	case PV_COT:	return *curbuf->b_p_cot != NUL
+				    ? (char_u *)&(curbuf->b_p_cot) : p->var;
 	case PV_DICT:	return *curbuf->b_p_dict != NUL
 				    ? (char_u *)&(curbuf->b_p_dict) : p->var;
 	case PV_TSR:	return *curbuf->b_p_tsr != NUL
@@ -7205,6 +7212,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_INEX);
 # endif
 #endif
+	    buf->b_p_cot = empty_option;
+	    buf->b_cot_flags = 0;
 	    buf->b_p_dict = empty_option;
 	    buf->b_p_tsr = empty_option;
 #ifdef FEAT_COMPL_FUNC

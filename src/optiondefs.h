@@ -50,6 +50,7 @@
 # define PV_CMS		OPT_BUF(BV_CMS)
 #endif
 #define PV_COM		OPT_BUF(BV_COM)
+#define PV_COT		OPT_BOTH(OPT_BUF(BV_COT))
 #define PV_CPT		OPT_BUF(BV_CPT)
 #define PV_DICT		OPT_BOTH(OPT_BUF(BV_DICT))
 #define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
@@ -654,7 +655,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"completeopt",   "cot",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_cot, PV_NONE, did_set_completeopt, expand_set_completeopt,
+			    (char_u *)&p_cot, PV_COT, did_set_completeopt, expand_set_completeopt,
 			    {(char_u *)"menu,preview", (char_u *)0L}
 			    SCTX_INIT},
     {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP|P_COLON,

@@ -148,14 +148,6 @@ static char_u	  *compl_leader = NULL;
 static int	  compl_get_longest = FALSE;	// put longest common string
 						// in compl_leader
 
-static int	  compl_no_insert = FALSE;	// FALSE: select & insert
-						// TRUE: noinsert
-static int	  compl_no_select = FALSE;	// FALSE: select & insert
-						// TRUE: noselect
-static int	  compl_longest = FALSE;	// FALSE: insert full match
-						// TRUE: insert longest prefix
-static int	  compl_fuzzy_match = FALSE;	// True: fuzzy match enabled
-
 // Selected one of the matches.  When FALSE the match was edited or using the
 // longest common string.
 static int	  compl_used_match;
@@ -1054,24 +1046,12 @@ ins_compl_long_shown_match(void)
 }
 
 /*
- * Set variables that store noselect and noinsert behavior from the
- * 'completeopt' value.
+ * Get the local or global value of 'completeopt' flags.
  */
-    void
-completeopt_was_set(void)
+    unsigned int
+get_cot_flags(void)
 {
-    compl_no_insert = FALSE;
-    compl_no_select = FALSE;
-    compl_longest = FALSE;
-    compl_fuzzy_match = FALSE;
-    if (strstr((char *)p_cot, "noselect") != NULL)
-	compl_no_select = TRUE;
-    if (strstr((char *)p_cot, "noinsert") != NULL)
-	compl_no_insert = TRUE;
-    if (strstr((char *)p_cot, "longest") != NULL)
-	compl_longest = TRUE;
-    if (strstr((char *)p_cot, "fuzzy") != NULL)
-	compl_fuzzy_match = TRUE;
+    return curbuf->b_cot_flags != 0 ? curbuf->b_cot_flags : cot_flags;
 }
 
 
@@ -1118,7 +1098,7 @@ ins_compl_del_pum(void)
 pum_wanted(void)
 {
     // 'completeopt' must contain "menu" or "menuone"
-    if (vim_strchr(p_cot, 'm') == NULL)
+    if ((get_cot_flags() & COT_ANY_MENU) == 0)
 	return FALSE;
 
     // The display looks bad on a B&W display.
@@ -1152,7 +1132,7 @@ pum_enough_matches(void)
 	compl = compl->cp_next;
     } while (!is_first_match(compl));
 
-    if (strstr((char *)p_cot, "menuone") != NULL)
+    if (get_cot_flags() & COT_MENUONE)
 	return (i >= 1);
     return (i >= 2);
 }
@@ -1246,6 +1226,9 @@ ins_compl_build_pum(void)
     int		cur = -1;
     int		lead_len = 0;
     int		max_fuzzy_score = 0;
+    int		cur_cot_flags = get_cot_flags();
+    int		compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
+    int		compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
 
     // Need to build the popup menu list.
     compl_match_arraysize = 0;
@@ -2469,9 +2452,8 @@ ins_compl_prep(int c)
     if (ctrl_x_mode_not_defined_yet()
 			   || (ctrl_x_mode_normal() && !compl_started))
     {
-	compl_get_longest = compl_longest;
+	compl_get_longest = (get_cot_flags() & COT_LONGEST) != 0;
 	compl_used_match = TRUE;
-
     }
 
     if (ctrl_x_mode_not_defined_yet())
@@ -2943,6 +2925,10 @@ set_completion(colnr_T startcol, list_T *list)
     int save_w_wrow = curwin->w_wrow;
     int save_w_leftcol = curwin->w_leftcol;
     int flags = CP_ORIGINAL_TEXT;
+    int cur_cot_flags = get_cot_flags();
+    int compl_longest = (cur_cot_flags & COT_LONGEST) != 0;
+    int compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
+    int compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
 
     // If already doing completions stop it.
     if (ctrl_x_mode_not_default())
@@ -4140,6 +4126,9 @@ find_next_completion_match(
 {
     int	    found_end = FALSE;
     compl_T *found_compl = NULL;
+    int	    cur_cot_flags = get_cot_flags();
+    int	    compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
+    int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
 
     while (--todo >= 0)
     {
@@ -4257,6 +4246,9 @@ ins_compl_next(
     int	    advance;
     int	    started = compl_started;
     buf_T   *orig_curbuf = curbuf;
+    int	    cur_cot_flags = get_cot_flags();
+    int	    compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
+    int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
 
     // When user complete function return -1 for findstart which is next
     // time of 'always', compl_shown_match become NULL.
@@ -4411,7 +4403,7 @@ ins_compl_check_keys(int frequency, int in_compl_func)
 	    }
 	}
     }
-    if (compl_pending != 0 && !got_int && !compl_no_insert)
+    if (compl_pending != 0 && !got_int && !(cot_flags & COT_NOINSERT))
     {
 	int todo = compl_pending > 0 ? compl_pending : -compl_pending;
 

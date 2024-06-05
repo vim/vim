@@ -144,6 +144,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
     (void)opt_strings_flags(p_bkc, p_bkc_values, &bkc_flags, TRUE);
     (void)opt_strings_flags(p_bo, p_bo_values, &bo_flags, TRUE);
+    (void)opt_strings_flags(p_cot, p_cot_values, &cot_flags, TRUE);
 #ifdef FEAT_SESSION
     (void)opt_strings_flags(p_ssop, p_ssop_values, &ssop_flags, TRUE);
     (void)opt_strings_flags(p_vop, p_ssop_values, &vop_flags, TRUE);
@@ -301,6 +302,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_lop);
     check_string_option(&buf->b_p_ft);
     check_string_option(&buf->b_p_cinw);
+    check_string_option(&buf->b_p_cot);
     check_string_option(&buf->b_p_cpt);
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
@@ -1601,10 +1603,21 @@ expand_set_complete(optexpand_T *args, int *numMatches, char_u ***matches)
     char *
 did_set_completeopt(optset_T *args UNUSED)
 {
-    if (check_opt_strings(p_cot, p_cot_values, TRUE) != OK)
+    char_u	*cot = p_cot;
+    unsigned	*flags = &cot_flags;
+
+    if (args->os_flags & OPT_LOCAL)
+    {
+	cot = curbuf->b_p_cot;
+	flags = &curbuf->b_cot_flags;
+    }
+
+    if (check_opt_strings(cot, p_cot_values, TRUE) != OK)
 	return e_invalid_argument;
 
-    completeopt_was_set();
+    if (opt_strings_flags(cot, p_cot_values, flags, TRUE) != OK)
+	return e_invalid_argument;
+
     return NULL;
 }
 
