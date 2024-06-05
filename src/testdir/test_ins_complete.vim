@@ -2468,6 +2468,7 @@ func Test_complete_fuzzy_match()
     endif
     return [#{word: "foo"}, #{word: "foobar"}, #{word: "fooBaz"}, #{word: "foobala"}]
   endfunc
+
   new
   set omnifunc=Omni_test
   set completeopt+=noinsert,fuzzy
@@ -2480,13 +2481,13 @@ func Test_complete_fuzzy_match()
   " select next
   call feedkeys("S\<C-x>\<C-o>fb\<C-n>", 'tx')
   call assert_equal('foobar', g:word)
-  " can circly select next
+  " can cyclically select next
   call feedkeys("S\<C-x>\<C-o>fb\<C-n>\<C-n>\<C-n>", 'tx')
   call assert_equal(v:null, g:word)
   " select prev
   call feedkeys("S\<C-x>\<C-o>fb\<C-p>", 'tx')
   call assert_equal(v:null, g:word)
-  " can circly select prev
+  " can cyclically select prev
   call feedkeys("S\<C-x>\<C-o>fb\<C-p>\<C-p>\<C-p>\<C-p>", 'tx')
   call assert_equal('fooBaz', g:word)
 
@@ -2505,6 +2506,8 @@ func Test_complete_fuzzy_match()
   augroup! AAAAA_Group
   delfunc OnPumChange
   delfunc Omni_test
+  unlet g:item
+  unlet g:word
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab nofoldenable
