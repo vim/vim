@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Mar 17
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jun 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1332,8 +1332,8 @@ Put focus on the gdb window to type commands there.  Some common ones are:
 						*:Run* *:Arguments*
 In the window showing the source code these commands can be used to control
 gdb:
- `:Run` [args]	    run the program with [args] or the previous arguments
- `:Arguments` {args}  set arguments for the next `:Run`
+ :Run [args]	    run the program with [args] or the previous arguments
+ :Arguments {args}  set arguments for the next `:Run`
 
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
@@ -1379,10 +1379,10 @@ breakpoint, or use the "Clear breakpoint" right-click menu entry.
 
 Inspecting variables ~
 					*termdebug-variables* *:Evaluate*
- `:Evaluate`	    evaluate the expression under the cursor
- `K`		    same (see |termdebug_map_K| to disable)
- `:Evaluate` {expr}   evaluate {expr}
- `:'<,'>Evaluate`     evaluate the Visually selected text
+ :Evaluate	    evaluate the expression under the cursor
+ K		    same (see |termdebug_map_K| to disable)
+ :Evaluate {expr}   evaluate {expr}
+ :'<,'>Evaluate     evaluate the Visually selected text
 
 This is similar to using "print" in the gdb window.
 You can usually shorten `:Evaluate` to `:Ev`.
@@ -1390,14 +1390,14 @@ You can usually shorten `:Evaluate` to `:Ev`.
 
 Navigating stack frames ~
 				*termdebug-frames* *:Frame* *:Up* *:Down*
- `:Frame` [frame]	select frame [frame], which is a frame number,
+ :Frame [frame]	select frame [frame], which is a frame number,
 			address, or function name (default: current frame)
- `:Up` [count]		go up [count] frames (default: 1; the frame that
+ :Up [count]		go up [count] frames (default: 1; the frame that
 			called the current)
- `+`			same (see |termdebug_map_plus| to disable)
- `:Down` [count]	go down [count] frames (default: 1; the frame called
+ +			same (see |termdebug_map_plus| to disable)
+ :Down [count]	go down [count] frames (default: 1; the frame called
 			by the current)
- `-`			same (see |termdebug_map_minus| to disable)
+ -			same (see |termdebug_map_minus| to disable)
 
 
 Other commands ~
