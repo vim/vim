@@ -1255,8 +1255,8 @@ ins_compl_build_pum(void)
 
     do
     {
-	// when completeopt include fuzzy option and leader is not null or empty
-	// set the cp_score for after compare.
+	// When 'completeopt' contains "fuzzy" and leader is not NULL or empty,
+	// set the cp_score for later comparisons.
 	if (compl_fuzzy_match && compl_leader != NULL && lead_len > 0)
 	    compl->cp_score = fuzzy_match_str(compl->cp_str, compl_leader);
 
@@ -4082,7 +4082,7 @@ ins_compl_show_filename(void)
 }
 
 /*
- * find a completion item in when completeopt include fuzzy option
+ * Find a completion item when 'completeopt' contains "fuzzy".
  */
     static compl_T *
 find_comp_when_fuzzy(void)
