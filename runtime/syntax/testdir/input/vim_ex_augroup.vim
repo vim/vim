@@ -17,3 +17,9 @@ augroup! !@#$%^&*()_+
 " list groups
 augroup
 
+" bang is an error for doautocmd and doautoall
+augroup! foobar
+autocmd! foobar
+
+doautocmd! FileType,BufEnter
+doautoall! BufWinEnter,WinEnter
