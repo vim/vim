@@ -760,6 +760,7 @@ pum_set_selected(int n, int repeat UNUSED)
     int	    context = pum_height / 2;
 #ifdef FEAT_QUICKFIX
     int	    prev_selected = pum_selected;
+    unsigned	cur_cot_flags = get_cot_flags();
 #endif
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     int	    has_info = FALSE;
@@ -831,7 +832,7 @@ pum_set_selected(int n, int repeat UNUSED)
 	if (pum_array[pum_selected].pum_info != NULL
 		&& Rows > 10
 		&& repeat <= 1
-		&& vim_strchr(p_cot, 'p') != NULL)
+		&& (cur_cot_flags & COT_ANY_PREVIEW))
 	{
 	    win_T	*curwin_save = curwin;
 	    tabpage_T   *curtab_save = curtab;
@@ -842,9 +843,9 @@ pum_set_selected(int n, int repeat UNUSED)
 # endif
 # ifdef FEAT_PROP_POPUP
 	    has_info = TRUE;
-	    if (strstr((char *)p_cot, "popuphidden") != NULL)
+	    if (cur_cot_flags & COT_POPUPHIDDEN)
 		use_popup = USEPOPUP_HIDDEN;
-	    else if (strstr((char *)p_cot, "popup") != NULL)
+	    else if (cur_cot_flags & COT_POPUP)
 		use_popup = USEPOPUP_NORMAL;
 	    else
 		use_popup = USEPOPUP_NONE;
