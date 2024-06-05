@@ -73,6 +73,64 @@ s{/{//{ " comment
 s}/}//} " comment
 s~/~//~ " comment
 
+s !/!//! " comment
+" s "/"//" " comment (works but disallowed)
+s #/#//# " comment
+s $/$//$ " comment
+s %/%//% " comment
+s &/&//& " comment
+s '/'//' " comment
+" FIXME - matches vimUserFunc
+" s (/(//( " comment
+s )/)//) " comment
+s */*//* " comment
+s +/+//+ " comment
+s ,/,//, " comment
+s -/-//- " comment
+s ././/. " comment
+s /X/XX/ " comment
+s :/://: " comment
+s ;/;//; " comment
+s </<//< " comment
+s =/=//= " comment
+s >/>//> " comment
+s ?/?//? " comment
+s @/@//@ " comment
+s [/[//[ " comment
+" s \/\//\ " comment (disallowed)
+s ]/]//] " comment
+s ^/^//^ " comment
+s _/_//_ " comment
+s `/`//` " comment
+s {/{//{ " comment
+" s |/|//| " comment (disallowed)
+s }/}//} " comment
+s ~/~//~ " comment
+
+s//{string}/
+s //{string}/
+
+
+" Vi compatibility
+
+s\/{string}/
+s\?{string}?
+s\&{string}&
+
+s \/{string}/
+s \?{string}?
+s \&{string}&
+
+
+" Trailing comment and bar
+
+" FIXME: trailing comment, no whitespace
+s" comment
+s| echo "Foo"
+
+s " comment
+s | echo "Foo"
+
 
 " Issue #13883
 
