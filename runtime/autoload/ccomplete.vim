@@ -210,7 +210,7 @@ export def Complete(findstart: bool, abase: string): any # {{{1
     # Find the variable in the tags file(s)
     var diclist: list<dict<any>> = taglist('^' .. items[0] .. '$')
       # Remove members, these can't appear without something in front.
-      ->filter((_, v: dict<string>): bool =>
+      ->filter((_, v: dict<any>): bool =>
                 v->has_key('kind') ? v.kind != 'm' : true)
 
     res = []
