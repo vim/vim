@@ -3802,19 +3802,18 @@ The g:vimsyn_embed option allows users to select what, if any, types of
 embedded script highlighting they wish to have. >
 
    g:vimsyn_embed == 0   : don't support any embedded scripts
-   g:vimsyn_embed =~ 'l' : support embedded lua
-   g:vimsyn_embed =~ 'm' : support embedded mzscheme
-   g:vimsyn_embed =~ 'p' : support embedded perl
-   g:vimsyn_embed =~ 'P' : support embedded python
-   g:vimsyn_embed =~ 'r' : support embedded ruby
-   g:vimsyn_embed =~ 't' : support embedded tcl
+   g:vimsyn_embed =~ 'l' : support embedded Lua
+   g:vimsyn_embed =~ 'm' : support embedded MzScheme
+   g:vimsyn_embed =~ 'p' : support embedded Perl
+   g:vimsyn_embed =~ 'P' : support embedded Python
+   g:vimsyn_embed =~ 'r' : support embedded Ruby
+   g:vimsyn_embed =~ 't' : support embedded Tcl
 <
 By default, g:vimsyn_embed is a string supporting interpreters that your vim
 itself supports.  Concatenate the indicated characters to support multiple
-types of embedded interpreters; ie. g:vimsyn_embed = "mp" supports embedded
-mzscheme and embedded perl.
+types of embedded interpreters (e.g., g:vimsyn_embed = "mp" supports embedded
+mzscheme and embedded perl).
 						*g:vimsyn_folding*
-
 Some folding is now supported with when 'foldmethod' is set to "syntax": >
 
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
@@ -3822,19 +3821,23 @@ Some folding is now supported with when 'foldmethod' is set to "syntax": >
    g:vimsyn_folding =~ 'f' : fold functions
    g:vimsyn_folding =~ 'h' : fold heredocs
    g:vimsyn_folding =~ 'H' : fold Vim9-script legacy headers
-   g:vimsyn_folding =~ 'l' : fold lua      script
-   g:vimsyn_folding =~ 'm' : fold mzscheme script
-   g:vimsyn_folding =~ 'p' : fold perl     script
-   g:vimsyn_folding =~ 'P' : fold python   script
-   g:vimsyn_folding =~ 'r' : fold ruby     script
-   g:vimsyn_folding =~ 't' : fold tcl      script
+   g:vimsyn_folding =~ 'l' : fold Lua      script
+   g:vimsyn_folding =~ 'm' : fold MzScheme script
+   g:vimsyn_folding =~ 'p' : fold Perl     script
+   g:vimsyn_folding =~ 'P' : fold Python   script
+   g:vimsyn_folding =~ 'r' : fold Ruby     script
+   g:vimsyn_folding =~ 't' : fold Tcl      script
 <
 
 By default, g:vimsyn_folding is unset.  Concatenate the indicated characters
-to support folding of multiple syntax constructs; i.e.
-g:vimsyn_folding = "fh" will enable folding of both functions and heredocs.
+to support folding of multiple syntax constructs (e.g.,
+g:vimsyn_folding = "fh" will enable folding of both functions and heredocs).
 
-							*g:vimsyn_noerror*
+						*g:vimsyn_comment_strings*
+By default, strings are highlighted inside comments.  This may be disabled by
+setting g:vimsyn_comment_strings to false.
+
+						*g:vimsyn_noerror*
 Not all error highlighting that syntax/vim.vim does may be correct; Vim script
 is a difficult language to highlight correctly.  A way to suppress error
 highlighting is to put the following line in your |vimrc|: >
