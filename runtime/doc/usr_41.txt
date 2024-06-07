@@ -1897,7 +1897,7 @@ mapping.  For these commands, any character until the end-of-line or '|' is
 included.  As a consequence of this behavior, you don't always see that
 trailing whitespace is included: >
 
-	map <F4> o#include 
+	map <F4> o#include  
 
 Here it is intended, in other cases it might be accidental.  To spot these
 problems, you can highlight trailing spaces: >
