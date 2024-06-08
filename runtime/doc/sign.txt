@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 9.1.  Last change: 2023 Feb 21
+*sign.txt*      For Vim version 9.1.  Last change: 2024 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -435,6 +435,9 @@ sign_define({list})
 <
 		Can also be used as a |method|: >
 			GetSignList()->sign_define()
+<
+		Return type: |Number|
+
 
 sign_getdefined([{name}])				*sign_getdefined()*
 		Get a list of defined signs and their attributes.
@@ -473,6 +476,9 @@ sign_getdefined([{name}])				*sign_getdefined()*
 <
 		Can also be used as a |method|: >
 			GetSignList()->sign_getdefined()
+<
+		Return type: list<dict<string>> or list<any>
+
 
 sign_getplaced([{buf} [, {dict}]])			*sign_getplaced()*
 		Return a list of signs placed in a buffer or all the buffers.
@@ -537,8 +543,10 @@ sign_getplaced([{buf} [, {dict}]])			*sign_getplaced()*
 		Can also be used as a |method|: >
 			GetBufname()->sign_getplaced()
 <
-							*sign_jump()*
-sign_jump({id}, {group}, {buf})
+		Return type: list<dict<any>>
+
+
+sign_jump({id}, {group}, {buf})				*sign_jump()*
 		Open the buffer {buf} or jump to the window that contains
 		{buf} and position the cursor at sign {id} in group {group}.
 		This is similar to the |:sign-jump| command.
@@ -556,6 +564,9 @@ sign_jump({id}, {group}, {buf})
 		Can also be used as a |method|: >
 			GetSignid()->sign_jump()
 <
+		Return type: |Number|
+
+
 							*sign_place()*
 sign_place({id}, {group}, {name}, {buf} [, {dict}])
 		Place the sign defined as {name} at line {lnum} in file or
@@ -608,8 +619,10 @@ sign_place({id}, {group}, {name}, {buf} [, {dict}])
 		Can also be used as a |method|: >
 			GetSignid()->sign_place(group, name, expr)
 <
-							*sign_placelist()*
-sign_placelist({list})
+		Return type: |Number|
+
+
+sign_placelist({list})				*sign_placelist()*
 		Place one or more signs.  This is similar to the
 		|sign_place()| function.  The {list} argument specifies the
 		List of signs to place. Each list item is a dict with the
@@ -669,6 +682,9 @@ sign_placelist({list})
 <
 		Can also be used as a |method|: >
 			GetSignlist()->sign_placelist()
+<
+		Return type: |Number|
+
 
 sign_undefine([{name}])					*sign_undefine()*
 sign_undefine({list})
@@ -695,6 +711,9 @@ sign_undefine({list})
 <
 		Can also be used as a |method|: >
 			GetSignlist()->sign_undefine()
+<
+		Return type: |Number|
+
 
 sign_unplace({group} [, {dict}])			*sign_unplace()*
 		Remove a previously placed sign in one or more buffers.  This
@@ -741,6 +760,9 @@ sign_unplace({group} [, {dict}])			*sign_unplace()*
 <		Can also be used as a |method|: >
 			GetSigngroup()->sign_unplace()
 <
+		Return type: |Number|
+
+
 sign_unplacelist({list})				*sign_unplacelist()*
 		Remove previously placed signs from one or more buffers.  This
 		is similar to the |sign_unplace()| function.
@@ -772,5 +794,6 @@ sign_unplacelist({list})				*sign_unplacelist()*
 		Can also be used as a |method|: >
 			GetSignlist()->sign_unplacelist()
 <
+		Return type: list<number> or list<any>
 
  vim:tw=78:ts=8:noet:ft=help:norl:

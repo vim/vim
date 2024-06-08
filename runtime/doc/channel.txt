@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.1.  Last change: 2023 Aug 15
+*channel.txt*      For Vim version 9.1.  Last change: 2024 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -502,6 +502,8 @@ ch_canread({handle})						*ch_canread()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_canread()
+<
+		Return type: |Number|
 
 ch_close({handle})						*ch_close()*
 		Close {handle}.  See |channel-close|.
@@ -510,6 +512,8 @@ ch_close({handle})						*ch_close()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_close()
+<
+		Return type: |Number|
 
 ch_close_in({handle})						*ch_close_in()*
 		Close the "in" part of {handle}.  See |channel-close-in|.
@@ -518,6 +522,8 @@ ch_close_in({handle})						*ch_close_in()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_close_in()
+<
+		Return type: |Number|
 
 
 ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
@@ -541,6 +547,8 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_evalexpr(expr)
+<
+		Return type: dict<any> or |String|
 
 
 ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
@@ -559,6 +567,8 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_evalraw(rawstring)
+<
+		Return type: dict<any> or |String|
 
 ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
 		Get the buffer number that {handle} is using for String {what}.
@@ -569,6 +579,8 @@ ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_getbufnr(what)
+<
+		Return type: |Number|
 
 ch_getjob({channel})						*ch_getjob()*
 		Get the Job associated with {channel}.
@@ -577,7 +589,8 @@ ch_getjob({channel})						*ch_getjob()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_getjob()
-
+<
+		Return type: |job| or |String|
 
 ch_info({handle})						*ch_info()*
 		Returns a Dictionary with information about {handle}.  The
@@ -613,7 +626,8 @@ ch_info({handle})						*ch_info()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_info()
-
+<
+		Return type: dict<any>
 
 ch_log({msg} [, {handle}])					*ch_log()*
 		Write String {msg} in the channel log file, if it was opened
@@ -628,7 +642,8 @@ ch_log({msg} [, {handle}])					*ch_log()*
 
 		Can also be used as a |method|: >
 			'did something'->ch_log()
-
+<
+		Return type: dict<any>
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
@@ -655,7 +670,8 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 
 		Can also be used as a |method|: >
 			'logfile'->ch_logfile('w')
-
+<
+		Return type: |Number|
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -669,7 +685,8 @@ ch_open({address} [, {options}])				*ch_open()*
 
 		Can also be used as a |method|: >
 			GetAddress()->ch_open()
-
+<
+		Return type: |channel|
 
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
@@ -680,7 +697,8 @@ ch_read({handle} [, {options}])					*ch_read()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_read()
-
+<
+		Return type: |String|
 
 ch_readblob({handle} [, {options}])			*ch_readblob()*
 		Like ch_read() but reads binary data and returns a |Blob|.
@@ -688,7 +706,8 @@ ch_readblob({handle} [, {options}])			*ch_readblob()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_readblob()
-
+<
+		Return type: |Blob|
 
 ch_readraw({handle} [, {options}])			*ch_readraw()*
 		Like ch_read() but for a JS and JSON channel does not decode
@@ -698,7 +717,8 @@ ch_readraw({handle} [, {options}])			*ch_readraw()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_readraw()
-
+<
+		Return type: |String|
 
 ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		Send {expr} over {handle}.  The {expr} is encoded
@@ -720,6 +740,8 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendexpr(expr)
+<
+		Return type: dict<any> or |String|
 
 
 ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
@@ -733,7 +755,8 @@ ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendraw(rawexpr)
-
+<
+		Return type: dict<any> or |String|
 
 ch_setoptions({handle}, {options})			*ch_setoptions()*
 		Set options on {handle}:
@@ -751,7 +774,8 @@ ch_setoptions({handle}, {options})			*ch_setoptions()*
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_setoptions(options)
-
+<
+		Return type: |Number|
 
 ch_status({handle} [, {options}])				*ch_status()*
 		Return the status of {handle}:
@@ -770,6 +794,8 @@ ch_status({handle} [, {options}])				*ch_status()*
 <
 		Can also be used as a |method|: >
 			GetChannel()->ch_status()
+<
+		Return type: |String|
 
 ==============================================================================
 9. Starting a job with a channel			*job-start* *job*
@@ -900,6 +926,8 @@ job_getchannel({job})					 *job_getchannel()*
 <
 		Can also be used as a |method|: >
 			GetJob()->job_getchannel()
+<
+		Return type: |channel|
 
 job_info([{job}])					*job_info()*
 		Returns a Dictionary with information about {job}:
@@ -927,6 +955,9 @@ job_info([{job}])					*job_info()*
 
 		Can also be used as a |method|: >
 			GetJob()->job_info()
+<
+		Return type: dict<any> or list<any> depending on whether {job}
+		was given
 
 
 job_setoptions({job}, {options})			*job_setoptions()*
@@ -936,6 +967,8 @@ job_setoptions({job}, {options})			*job_setoptions()*
 
 		Can also be used as a |method|: >
 			GetJob()->job_setoptions(options)
+<
+		Return type: |Number|
 
 
 job_start({command} [, {options}])			*job_start()*
@@ -997,6 +1030,8 @@ job_start({command} [, {options}])			*job_start()*
 
 		Can also be used as a |method|: >
 			BuildCommand()->job_start()
+<
+		Return type: |Number|
 
 
 job_status({job})					*job_status()* *E916*
@@ -1020,6 +1055,8 @@ job_status({job})					*job_status()* *E916*
 
 		Can also be used as a |method|: >
 			GetJob()->job_status()
+<
+		Return type: |job|
 
 
 job_stop({job} [, {how}])					*job_stop()*
@@ -1066,6 +1103,8 @@ job_stop({job} [, {how}])					*job_stop()*
 
 		Can also be used as a |method|: >
 			GetJob()->job_stop()
+<
+		Return type: |Number|
 
 
 ==============================================================================

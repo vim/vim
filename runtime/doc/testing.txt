@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2024 May 05
+*testing.txt*	For Vim version 9.1.  Last change: 2024 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -45,11 +45,15 @@ test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 
 		Can also be used as a |method|: >
 			GetAllocId()->test_alloc_fail()
+<
+		Return type: |Number|
 
 
 test_autochdir()					*test_autochdir()*
 		Set a flag to enable the effect of 'autochdir' before Vim
 		startup has finished.
+
+		Return type: |Number|
 
 
 test_feedinput({string})				*test_feedinput()*
@@ -59,6 +63,8 @@ test_feedinput({string})				*test_feedinput()*
 
 		Can also be used as a |method|: >
 			GetText()->test_feedinput()
+<
+		Return type: |Number|
 
 
 test_garbagecollect_now()			 *test_garbagecollect_now()*
@@ -69,11 +75,13 @@ test_garbagecollect_now()			 *test_garbagecollect_now()*
 		This will not work when called from a :def function, because
 		variables on the stack will be freed.
 
+		Return type: |Number|
 
 test_garbagecollect_soon()			 *test_garbagecollect_soon()*
 		Set the flag to call the garbagecollector as if in the main
 		loop.  Only to be used in tests.
 
+		Return type: |Number|
 
 test_getvalue({name})					*test_getvalue()*
 		Get the value of an internal variable.  These values for
@@ -83,6 +91,8 @@ test_getvalue({name})					*test_getvalue()*
 		Can also be used as a |method|: >
 			GetName()->test_getvalue()
 <
+		Return type: |Number|
+
 						*test_gui_event()*
 test_gui_event({event}, {args})
 		Generate a GUI {event} with arguments {args} for testing Vim
@@ -212,6 +222,8 @@ test_gui_event({event}, {args})
 		Can also be used as a |method|: >
 			GetEvent()->test_gui_event({args})
 <
+		Return type: |vim9-boolean|
+
 test_ignore_error({expr})			 *test_ignore_error()*
 		Ignore any error containing {expr}.  A normal message is given
 		instead.
@@ -224,7 +236,8 @@ test_ignore_error({expr})			 *test_ignore_error()*
 
 		Can also be used as a |method|: >
 			GetErrorText()->test_ignore_error()
-
+<
+		Return type: |Number|
 
 test_mswin_event({event}, {args})		*test_mswin_event()*
 		Generate a low-level MS-Windows {event} with arguments {args}
@@ -307,40 +320,49 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 		Can also be used as a |method|: >
 			GetEvent()->test_mswin_event({args})
 <
+		Return type: |vim9-boolean|
 
 test_null_blob()					*test_null_blob()*
 		Return a |Blob| that is null. Only useful for testing.
 
+		Return type: |Blob|
 
 test_null_channel()					*test_null_channel()*
 		Return a |Channel| that is null. Only useful for testing.
 		{only available when compiled with the +channel feature}
 
+		Return type: |Channel|
 
 test_null_dict()					*test_null_dict()*
 		Return a |Dict| that is null. Only useful for testing.
 
+		Return type: dict<any>
 
 test_null_function()					*test_null_function()*
 		Return a |Funcref| that is null. Only useful for testing.
 
+		Return type: func(...): unknown
 
 test_null_job()						*test_null_job()*
 		Return a |Job| that is null. Only useful for testing.
 		{only available when compiled with the +job feature}
 
+		Return type: |job|
 
 test_null_list()					*test_null_list()*
 		Return a |List| that is null. Only useful for testing.
 
+		Return type: list<any>
 
 test_null_partial()					*test_null_partial()*
 		Return a |Partial| that is null. Only useful for testing.
 
+		Return type: func(...): unknown
 
 test_null_string()					*test_null_string()*
 		Return a |String| that is null. Only useful for testing.
 
+		Return type: |String|
 
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it
@@ -353,7 +375,8 @@ test_option_not_set({name})				*test_option_not_set()*
 
 		Can also be used as a |method|: >
 			GetOptionName()->test_option_not_set()
-
+<
+		Return type: |Number|
 
 test_override({name}, {val})				*test_override()*
 		Overrides certain parts of Vim's internal processing to be able
@@ -409,7 +432,8 @@ test_override({name}, {val})				*test_override()*
 
 <		Can also be used as a |method|: >
 			GetOverrideVal()-> test_override('starting')
-
+<
+		Return type: |Number|
 
 test_refcount({expr})					*test_refcount()*
 		Return the reference count of {expr}.  When {expr} is of a
@@ -418,7 +442,8 @@ test_refcount({expr})					*test_refcount()*
 
 		Can also be used as a |method|: >
 			GetVarname()->test_refcount()
-
+<
+		Return type: |Number|
 
 test_setmouse({row}, {col})				*test_setmouse()*
 		Set the mouse position to be used for the next mouse action.
@@ -426,6 +451,8 @@ test_setmouse({row}, {col})				*test_setmouse()*
 		For example: >
 			call test_setmouse(4, 20)
 			call feedkeys("\<LeftMouse>", "xt")
+<
+		Return type: |Number|
 
 
 test_settime({expr})					*test_settime()*
@@ -439,19 +466,24 @@ test_settime({expr})					*test_settime()*
 
 		Can also be used as a |method|: >
 			GetTime()->test_settime()
-
+<
+		Return type: |Number|
 
 test_srand_seed([{seed}])				*test_srand_seed()*
 		When {seed} is given this sets the seed value used by
 		`srand()`.  When omitted the test seed is removed.
 
+		Return type: |Number|
 
 test_unknown()						*test_unknown()*
 		Return a value with unknown type. Only useful for testing.
 
+		Return type: unknown
 
 test_void()						*test_void()*
 		Return a value with void type. Only useful for testing.
+
+		Return type: unknown
 
 ==============================================================================
 3. Assert functions				*assert-functions-details*
@@ -466,6 +498,7 @@ assert_beeps({cmd})					*assert_beeps()*
 		Can also be used as a |method|: >
 			GetCmd()->assert_beeps()
 <
+		Return type: |Number|
 							*assert_equal()*
 assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
@@ -486,6 +519,8 @@ assert_equal({expected}, {actual} [, {msg}])
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			mylist->assert_equal([1, 2, 3])
+<
+		Return type: |Number|
 
 <							*assert_equalfile()*
 assert_equalfile({fname-one}, {fname-two} [, {msg}])
@@ -498,6 +533,8 @@ assert_equalfile({fname-one}, {fname-two} [, {msg}])
 
 		Can also be used as a |method|: >
 			GetLog()->assert_equalfile('expected.log')
+<
+		Return type: |Number|
 
 assert_exception({error} [, {msg}])			*assert_exception()*
 		When v:exception does not contain the string {error} an error
@@ -512,6 +549,7 @@ assert_exception({error} [, {msg}])			*assert_exception()*
 			  call assert_exception('E492:')
 			endtry
 <
+		Return type: |Number|
 							*assert_fails()*
 assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 		Run {cmd} and add an error message to |v:errors| if it does
@@ -552,6 +590,8 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 
 		Can also be used as a |method|: >
 			GetCmd()->assert_fails('E99:')
+<
+		Return type: |Number|
 
 assert_false({actual} [, {msg}])			*assert_false()*
 		When {actual} is not false an error message is added to
@@ -565,6 +605,8 @@ assert_false({actual} [, {msg}])			*assert_false()*
 
 		Can also be used as a |method|: >
 			GetResult()->assert_false()
+<
+		Return type: |Number|
 
 assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
 		This asserts number and |Float| values.  When {actual}  is lower
@@ -573,6 +615,8 @@ assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
 		The error is in the form "Expected range {lower} - {upper},
 		but got {actual}".  When {msg} is present it is prefixed to
 		that.
+
+		Return type: |Number|
 
 								*assert_match()*
 assert_match({pattern}, {actual} [, {msg}])
@@ -597,6 +641,8 @@ assert_match({pattern}, {actual} [, {msg}])
 		Can also be used as a |method|: >
 			getFile()->assert_match('foo.*')
 <
+		Return type: |Number|
+
 assert_nobeep({cmd})					*assert_nobeep()*
 		Run {cmd} and add an error message to |v:errors| if it
 		produces a beep or visual bell.
@@ -605,6 +651,8 @@ assert_nobeep({cmd})					*assert_nobeep()*
 		Can also be used as a |method|: >
 			GetCmd()->assert_nobeep()
 <
+		Return type: |Number|
+
 							*assert_notequal()*
 assert_notequal({expected}, {actual} [, {msg}])
 		The opposite of `assert_equal()`: add an error message to
@@ -613,8 +661,10 @@ assert_notequal({expected}, {actual} [, {msg}])
 
 		Can also be used as a |method|: >
 			mylist->assert_notequal([1, 2, 3])
+<
+		Return type: |Number|
 
-<							*assert_notmatch()*
+							*assert_notmatch()*
 assert_notmatch({pattern}, {actual} [, {msg}])
 		The opposite of `assert_match()`: add an error message to
 		|v:errors| when {pattern} matches {actual}.
@@ -622,7 +672,8 @@ assert_notmatch({pattern}, {actual} [, {msg}])
 
 		Can also be used as a |method|: >
 			getFile()->assert_notmatch('bar.*')
-
+<
+		Return type: |Number|
 
 assert_report({msg})					*assert_report()*
 		Report a test failure directly, using String {msg}.
@@ -630,6 +681,8 @@ assert_report({msg})					*assert_report()*
 
 		Can also be used as a |method|: >
 			GetMessage()->assert_report()
+<
+		Return type: |Number|
 
 
 assert_true({actual} [, {msg}])				*assert_true()*
@@ -643,5 +696,7 @@ assert_true({actual} [, {msg}])				*assert_true()*
 		Can also be used as a |method|: >
 			GetResult()->assert_true()
 <
+		Return type: |Number|
+
 
  vim:tw=78:ts=8:noet:ft=help:norl:

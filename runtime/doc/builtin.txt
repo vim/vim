@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 03
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -769,6 +769,7 @@ xor({expr}, {expr})		Number	bitwise XOR
 
 Not all functions are here, some have been moved to a help file covering the
 specific functionality.
+Return type specifies the type for |Vim9-script|, see |vim9-types|
 
 abs({expr})							*abs()*
 		Return the absolute value of {expr}.  When {expr} evaluates to
@@ -785,6 +786,8 @@ abs({expr})							*abs()*
 
 		Can also be used as a |method|: >
 			Compute()->abs()
+<
+		Return type: |Number| or |Float| depending on {expr}
 
 
 acos({expr})							*acos()*
@@ -800,6 +803,8 @@ acos({expr})							*acos()*
 
 		Can also be used as a |method|: >
 			Compute()->acos()
+<
+		Return type: |Float|
 
 
 add({object}, {expr})					*add()*
@@ -815,6 +820,9 @@ add({object}, {expr})					*add()*
 
 		Can also be used as a |method|: >
 			mylist->add(val1)->add(val2)
+<
+		Return type: list<{type}> (depending on the given |List|) or
+		|Blob|
 
 
 and({expr}, {expr})					*and()*
@@ -825,6 +833,8 @@ and({expr}, {expr})					*and()*
 			:let flag = and(bits, 0x80)
 <		Can also be used as a |method|: >
 			:let flag = bits->and(0x80)
+<
+		Return type: |Number|
 
 
 append({lnum}, {text})					*append()*
@@ -846,6 +856,8 @@ append({lnum}, {text})					*append()*
 <		Can also be used as a |method| after a List, the base is
 		passed as the second argument: >
 			mylist->append(lnum)
+<
+		Return type: |Number|
 
 
 appendbufline({buf}, {lnum}, {text})			*appendbufline()*
@@ -873,6 +885,8 @@ appendbufline({buf}, {lnum}, {text})			*appendbufline()*
 		Can also be used as a |method| after a List, the base is
 		passed as the second argument: >
 			mylist->appendbufline(buf, lnum)
+<
+		Return type: |Number|
 
 
 argc([{winid}])					*argc()*
@@ -885,9 +899,13 @@ argc([{winid}])					*argc()*
 		list is used: either the window number or the window ID.
 		Returns -1 if the {winid} argument is invalid.
 
+		Return type: |Number|
+
 							*argidx()*
 argidx()	The result is the current index in the argument list.  0 is
 		the first file.  argc() - 1 is the last one.  See |arglist|.
+
+		Return type: |Number|
 
 							*arglistid()*
 arglistid([{winnr} [, {tabnr}]])
@@ -901,6 +919,8 @@ arglistid([{winnr} [, {tabnr}]])
 		With {winnr} and {tabnr} use the window in the specified tab
 		page.
 		{winnr} can be the window number or the |window-ID|.
+
+		Return type: |Number|
 
 							*argv()*
 argv([{nr} [, {winid}]])
@@ -922,6 +942,9 @@ argv([{nr} [, {winid}]])
 		the argument list.  Returns an empty List if the {winid}
 		argument is invalid.
 
+		Return type: |String|
+
+
 asin({expr})						*asin()*
 		Return the arc sine of {expr} measured in radians, as a |Float|
 		in the range of [-pi/2, pi/2].
@@ -937,10 +960,10 @@ asin({expr})						*asin()*
 
 		Can also be used as a |method|: >
 			Compute()->asin()
-
+<
+		Return type: |Float|
 
 assert_ functions are documented here: |assert-functions-details|
-
 
 
 atan({expr})						*atan()*
@@ -956,6 +979,8 @@ atan({expr})						*atan()*
 
 		Can also be used as a |method|: >
 			Compute()->atan()
+<
+		Return type: |Float|
 
 
 atan2({expr1}, {expr2})					*atan2()*
@@ -972,6 +997,8 @@ atan2({expr1}, {expr2})					*atan2()*
 
 		Can also be used as a |method|: >
 			Compute()->atan2(1)
+<
+		Return type: |Float|
 
 
 autocmd_add({acmds})					*autocmd_add()*
@@ -1019,6 +1046,9 @@ autocmd_add({acmds})					*autocmd_add()*
 		Can also be used as a |method|: >
 			GetAutocmdList()->autocmd_add()
 <
+		Return type: |vim9-boolean|
+
+
 autocmd_delete({acmds})					*autocmd_delete()*
 		Deletes a List of autocmds and autocmd groups.
 
@@ -1067,6 +1097,9 @@ autocmd_delete({acmds})					*autocmd_delete()*
 <
 		Can also be used as a |method|: >
 			GetAutocmdList()->autocmd_delete()
+<
+		Return type: |vim9-boolean|
+
 
 autocmd_get([{opts}])					*autocmd_get()*
 		Returns a |List| of autocmds. If {opts} is not supplied, then
@@ -1125,10 +1158,16 @@ autocmd_get([{opts}])					*autocmd_get()*
 		Can also be used as a |method|: >
 			Getopts()->autocmd_get()
 <
+		Return type: list<dict<any>>
+
+
 balloon_gettext()					*balloon_gettext()*
 		Return the current text in the balloon.  Only for the string,
 		not used for the List.  Returns an empty string if balloon
 		is not present.
+
+		Return type: |String|
+
 
 balloon_show({expr})					*balloon_show()*
 		Show {expr} inside the balloon.  For the GUI {expr} is used as
@@ -1161,6 +1200,9 @@ balloon_show({expr})					*balloon_show()*
 		{only available when compiled with the |+balloon_eval| or
 		|+balloon_eval_term| feature}
 
+		Return type: |Number|
+
+
 balloon_split({msg})					*balloon_split()*
 		Split String {msg} into lines to be displayed in a balloon.
 		The splits are made for the current window size and optimize
@@ -1173,6 +1215,9 @@ balloon_split({msg})					*balloon_split()*
 <		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
+		Return type: list<any> or list<string>
+
+
 blob2list({blob})					*blob2list()*
 		Return a List containing the number value of each byte in Blob
 		{blob}.  Examples: >
@@ -1184,6 +1229,8 @@ blob2list({blob})					*blob2list()*
 		Can also be used as a |method|: >
 			GetBlob()->blob2list()
 <
+		Return type: list<any> or list<number>
+
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"
@@ -1196,8 +1243,10 @@ browse({save}, {title}, {initdir}, {default})
 		An empty string is returned when the "Cancel" button is hit,
 		something went wrong, or browsing is not possible.
 
-							*browsedir()*
-browsedir({title}, {initdir})
+		Return type: |String|
+
+
+browsedir({title}, {initdir})				*browsedir()*
 		Put up a directory requester.  This only works when
 		"has("browse")" returns |TRUE| (only in some GUI versions).
 		On systems where a directory browser is not supported a file
@@ -1208,6 +1257,9 @@ browsedir({title}, {initdir})
 		    {initdir}	directory to start browsing in
 		When the "Cancel" button is hit, something went wrong, or
 		browsing is not possible, an empty string is returned.
+
+		Return type: |String|
+
 
 bufadd({name})						*bufadd()*
 		Add a buffer to the buffer list with name {name} (must be a
@@ -1224,6 +1276,9 @@ bufadd({name})						*bufadd()*
 <		Returns 0 on error.
 		Can also be used as a |method|: >
 			let bufnr = 'somename'->bufadd()
+<
+		Return type: |Number|
+
 
 bufexists({buf})					*bufexists()*
 		The result is a Number, which is |TRUE| if a buffer called
@@ -1250,7 +1305,10 @@ bufexists({buf})					*bufexists()*
 		Can also be used as a |method|: >
 			let exists = 'somename'->bufexists()
 <
+		Return type: |Number|
+
 		Obsolete name: buffer_exists().		*buffer_exists()*
+
 
 buflisted({buf})					*buflisted()*
 		The result is a Number, which is |TRUE| if a buffer called
@@ -1259,6 +1317,9 @@ buflisted({buf})					*buflisted()*
 
 		Can also be used as a |method|: >
 			let listed = 'somename'->buflisted()
+<
+		Return type: |Number|
+
 
 bufload({buf})						*bufload()*
 		Ensure the buffer {buf} is loaded.  When the buffer name
@@ -1272,6 +1333,9 @@ bufload({buf})						*bufload()*
 
 		Can also be used as a |method|: >
 			eval 'somename'->bufload()
+<
+		Return type: |Number|
+
 
 bufloaded({buf})					*bufloaded()*
 		The result is a Number, which is |TRUE| if a buffer called
@@ -1280,6 +1344,9 @@ bufloaded({buf})					*bufloaded()*
 
 		Can also be used as a |method|: >
 			let loaded = 'somename'->bufloaded()
+<
+		Return type: |Number|
+
 
 bufname([{buf}])					*bufname()*
 		The result is the name of a buffer.  Mostly as it is displayed
@@ -1313,11 +1380,13 @@ bufname([{buf}])					*bufname()*
 	bufname(3)		name of buffer 3
 	bufname("%")		name of current buffer
 	bufname("file2")	name of buffer where "file2" matches.
-<							*buffer_name()*
+<
+		Return type: |String|
+							*buffer_name()*
 		Obsolete name: buffer_name().
 
-							*bufnr()*
-bufnr([{buf} [, {create}]])
+
+bufnr([{buf} [, {create}]])				*bufnr()*
 		The result is the number of a buffer, as it is displayed by
 		the `:ls` command.  For the use of {buf}, see |bufname()|
 		above.
@@ -1339,9 +1408,12 @@ bufnr([{buf} [, {create}]])
 		Can also be used as a |method|: >
 			echo bufref->bufnr()
 <
+		Return type: |Number|
+
 		Obsolete name: buffer_number().		*buffer_number()*
 							*last_buffer_nr()*
 		Obsolete name for bufnr("$"): last_buffer_nr().
+
 
 bufwinid({buf})						*bufwinid()*
 		The result is a Number, which is the |window-ID| of the first
@@ -1356,6 +1428,9 @@ bufwinid({buf})						*bufwinid()*
 
 		Can also be used as a |method|: >
 			FindBuffer()->bufwinid()
+<
+		Return type: |Number|
+
 
 bufwinnr({buf})						*bufwinnr()*
 		Like |bufwinid()| but return the window number instead of the
@@ -1370,6 +1445,9 @@ bufwinnr({buf})						*bufwinnr()*
 
 		Can also be used as a |method|: >
 			FindBuffer()->bufwinnr()
+<
+		Return type: |Number|
+
 
 byte2line({byte})					*byte2line()*
 		Return the line number that contains the character at byte
@@ -1383,9 +1461,12 @@ byte2line({byte})					*byte2line()*
 
 		Can also be used as a |method|: >
 			GetOffset()->byte2line()
+<
+		Return type: |Number|
 
-<		{not available when compiled without the |+byte_offset|
+		{not available when compiled without the |+byte_offset|
 		feature}
+
 
 byteidx({expr}, {nr} [, {utf16}])			*byteidx()*
 		Return byte index of the {nr}'th character in the String
@@ -1424,6 +1505,9 @@ byteidx({expr}, {nr} [, {utf16}])			*byteidx()*
 <
 		Can also be used as a |method|: >
 			GetName()->byteidx(idx)
+<
+		Return type: |Number|
+
 
 byteidxcomp({expr}, {nr} [, {utf16}])			*byteidxcomp()*
 		Like byteidx(), except that a composing character is counted
@@ -1440,6 +1524,9 @@ byteidxcomp({expr}, {nr} [, {utf16}])			*byteidxcomp()*
 
 		Can also be used as a |method|: >
 			GetName()->byteidxcomp(idx)
+<
+		Return type: |Number|
+
 
 call({func}, {arglist} [, {dict}])			*call()* *E699*
 		Call function {func} with the items in |List| {arglist} as
@@ -1452,6 +1539,9 @@ call({func}, {arglist} [, {dict}])			*call()* *E699*
 
 		Can also be used as a |method|: >
 			GetFunc()->call([arg, arg], dict)
+<
+		Return type: any, depending on {func}
+
 
 ceil({expr})							*ceil()*
 		Return the smallest integral value greater than or equal to
@@ -1469,6 +1559,8 @@ ceil({expr})							*ceil()*
 
 		Can also be used as a |method|: >
 			Compute()->ceil()
+<
+		Return type: |Float|
 
 
 ch_ functions are documented here: |channel-functions-details|
@@ -1482,6 +1574,9 @@ changenr()						*changenr()*
 		redo it is the number of the redone change.  After undo it is
 		one less than the number of the undone change.
 		Returns 0 if the undo list is empty.
+
+		Return type: |Number|
+
 
 char2nr({string} [, {utf8}])					*char2nr()*
 		Return Number value of the first char in {string}.
@@ -1504,6 +1599,9 @@ char2nr({string} [, {utf8}])					*char2nr()*
 
 		Can also be used as a |method|: >
 			GetChar()->char2nr()
+<
+		Return type: |Number|
+
 
 charclass({string})					*charclass()*
 		Return the character class of the first character in {string}.
@@ -1515,6 +1613,8 @@ charclass({string})					*charclass()*
 			other	specific Unicode class
 		The class is used in patterns and word motions.
 		Returns 0 if {string} is not a |String|.
+
+		Return type: |Number|
 
 
 charcol({expr} [, {winid}])				*charcol()*
@@ -1529,6 +1629,8 @@ charcol({expr} [, {winid}])				*charcol()*
 <		Can also be used as a |method|: >
 			GetPos()->col()
 <
+		Return type: |Number|
+
 							*charidx()*
 charidx({string}, {idx} [, {countcc} [, {utf16}]])
 		Return the character index of the byte at {idx} in {string}.
@@ -1565,6 +1667,9 @@ charidx({string}, {idx} [, {countcc} [, {utf16}]])
 <
 		Can also be used as a |method|: >
 			GetName()->charidx(idx)
+<
+		Return type: |Number|
+
 
 chdir({dir})						*chdir()*
 		Change the current working directory to {dir}.  The scope of
@@ -1591,6 +1696,9 @@ chdir({dir})						*chdir()*
 <		Can also be used as a |method|: >
 			GetDir()->chdir()
 <
+		Return type: |String|
+
+
 cindent({lnum})						*cindent()*
 		Get the amount of indent for line {lnum} according the C
 		indenting rules, as with 'cindent'.
@@ -1601,6 +1709,9 @@ cindent({lnum})						*cindent()*
 
 		Can also be used as a |method|: >
 			GetLnum()->cindent()
+<
+		Return type: |Number|
+
 
 clearmatches([{win}])					*clearmatches()*
 		Clears all matches previously defined for the current window
@@ -1611,6 +1722,9 @@ clearmatches([{win}])					*clearmatches()*
 		Can also be used as a |method|: >
 			GetWin()->clearmatches()
 <
+		Return type: |Number|
+
+
 col({expr} [, {winid}])					*col()*
 		The result is a Number, which is the byte index of the column
 		position given with {expr}.  The accepted positions are:
@@ -1652,6 +1766,8 @@ col({expr} [, {winid}])					*col()*
 <		Can also be used as a |method|: >
 			GetPos()->col()
 <
+		Return type: |Number|
+
 
 complete({startcol}, {matches})			*complete()* *E785*
 		Set the matches for Insert mode completion.
@@ -1686,6 +1802,9 @@ complete({startcol}, {matches})			*complete()* *E785*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetMatches()->complete(col('.'))
+<
+		Return type: |Number|
+
 
 complete_add({expr})				*complete_add()*
 		Add {expr} to the list of matches.  Only to be used by the
@@ -1698,6 +1817,9 @@ complete_add({expr})				*complete_add()*
 
 		Can also be used as a |method|: >
 			GetMoreMatches()->complete_add()
+<
+		Return type: |Number|
+
 
 complete_check()				*complete_check()*
 		Check for a key typed while looking for completion matches.
@@ -1706,6 +1828,8 @@ complete_check()				*complete_check()*
 		zero otherwise.
 		Only to be used by the function specified with the
 		'completefunc' option.
+
+		Return type: |Number|
 
 
 complete_info([{what}])				*complete_info()*
@@ -1769,6 +1893,8 @@ complete_info([{what}])				*complete_info()*
 <		Can also be used as a |method|: >
 			GetItems()->complete_info()
 <
+		Return type: dict<any>
+
 						*confirm()*
 confirm({msg} [, {choices} [, {default} [, {type}]]])
 		confirm() offers the user a dialog, from which a choice can be
@@ -1828,8 +1954,11 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		Can also be used as a |method|in: >
 			BuildMessage()->confirm("&Yes\n&No")
 <
-							*copy()*
-copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
+		Return type: |Number|
+
+
+copy({expr})							*copy()*
+		Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
 		When {expr} is a |List| a shallow copy is created.  This means
 		that the original |List| can be changed without changing the
@@ -1839,6 +1968,9 @@ copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		Also see |deepcopy()|.
 		Can also be used as a |method|: >
 			mylist->copy()
+<
+		Return type: any, depending on {expr}
+
 
 cos({expr})						*cos()*
 		Return the cosine of {expr}, measured in radians, as a |Float|.
@@ -1852,6 +1984,8 @@ cos({expr})						*cos()*
 
 		Can also be used as a |method|: >
 			Compute()->cos()
+<
+		Return type: |Float|
 
 
 cosh({expr})						*cosh()*
@@ -1867,6 +2001,8 @@ cosh({expr})						*cosh()*
 
 		Can also be used as a |method|: >
 			Compute()->cosh()
+<
+		Return type: |Float|
 
 
 count({comp}, {expr} [, {ic} [, {start}]])		*count()* *E706*
@@ -1885,6 +2021,8 @@ count({comp}, {expr} [, {ic} [, {start}]])		*count()* *E706*
 		Can also be used as a |method|: >
 			mylist->count(val)
 <
+		Return type: |Number|
+
 							*cscope_connection()*
 cscope_connection([{num} , {dbpath} [, {prepend}]])
 		Checks for the existence of a |cscope| connection.  If no
@@ -1926,6 +2064,9 @@ cscope_connection([{num} , {dbpath} [, {prepend}]])
 		cscope_connection(4, "out", "local")			0
 		cscope_connection(4, "cscope.out", "/usr/local")	1
 <
+		Return type: |Number|
+
+
 cursor({lnum}, {col} [, {off}])				*cursor()*
 cursor({list})
 		Positions the cursor at the column (byte count) {col} in the
@@ -1961,6 +2102,9 @@ cursor({list})
 
 		Can also be used as a |method|: >
 			GetCursorPos()->cursor()
+<
+		Return type: |Number|
+
 
 debugbreak({pid})					*debugbreak()*
 		Specifically used to interrupt a program being debugged.  It
@@ -1973,6 +2117,9 @@ debugbreak({pid})					*debugbreak()*
 
 		Can also be used as a |method|: >
 			GetPid()->debugbreak()
+<
+		Return type: |Number|
+
 
 deepcopy({expr} [, {noref}])				*deepcopy()* *E698*
 		Make a copy of {expr}.  For Numbers and Strings this isn't
@@ -1998,6 +2145,9 @@ deepcopy({expr} [, {noref}])				*deepcopy()* *E698*
 
 		Can also be used as a |method|: >
 			GetObject()->deepcopy()
+<
+		Return type: any, depending on {expr}
+
 
 delete({fname} [, {flags}])				*delete()*
 		Without {flags} or with {flags} empty: Deletes the file by the
@@ -2024,6 +2174,9 @@ delete({fname} [, {flags}])				*delete()*
 
 		Can also be used as a |method|: >
 			GetName()->delete()
+<
+		Return type: |Number|
+
 
 deletebufline({buf}, {first} [, {last}])		*deletebufline()*
 		Delete lines {first} to {last} (inclusive) from buffer {buf}.
@@ -2042,6 +2195,8 @@ deletebufline({buf}, {first} [, {last}])		*deletebufline()*
 		Can also be used as a |method|: >
 			GetBuffer()->deletebufline(1)
 <
+		Return type: |Number|
+
 							*did_filetype()*
 did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		FileType event has been triggered at least once.  Can be used
@@ -2053,6 +2208,9 @@ did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		current buffer.  This allows an autocommand that starts
 		editing another buffer to set 'filetype' and load a syntax
 		file.
+
+		Return type: |Number|
+
 
 diff({fromlist}, {tolist} [, {options}])		*diff()*
 		Returns a String or a List containing the diff between the
@@ -2120,6 +2278,10 @@ diff({fromlist}, {tolist} [, {options}])		*diff()*
 		Can also be used as a |method|: >
 			GetFromList->diff(to_list)
 <
+		Return type: |String| or list<dict<number>> or list<any>
+		depending on {options}
+
+
 diff_filler({lnum})					*diff_filler()*
 		Returns the number of filler lines above line {lnum}.
 		These are the lines that were inserted at this point in
@@ -2131,6 +2293,9 @@ diff_filler({lnum})					*diff_filler()*
 
 		Can also be used as a |method|: >
 			GetLnum()->diff_filler()
+<
+		Return type: |Number|
+
 
 diff_hlID({lnum}, {col})				*diff_hlID()*
 		Returns the highlight ID for diff mode at line {lnum} column
@@ -2146,6 +2311,8 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
 <
+		Return type: |Number|
+
 
 digraph_get({chars})					*digraph_get()* *E1214*
 		Return the digraph of {chars}.  This should be a string with
@@ -2170,6 +2337,8 @@ digraph_get({chars})					*digraph_get()* *E1214*
 		Can also be used as a |method|: >
 			GetChars()->digraph_get()
 <
+		Return type: |String|
+
 		This function works only when compiled with the |+digraphs|
 		feature.  If this feature is disabled, this function will
 		display an error message.
@@ -2196,6 +2365,8 @@ digraph_getlist([{listall}])				*digraph_getlist()*
 		Can also be used as a |method|: >
 			GetNumber()->digraph_getlist()
 <
+		Return type: list<list<string>>
+
 		This function works only when compiled with the |+digraphs|
 		feature.  If this feature is disabled, this function will
 		display an error message.
@@ -2209,7 +2380,7 @@ digraph_set({chars}, {digraph})				*digraph_set()*
 		function is similar to |:digraphs| command, but useful to add
 		digraphs start with a white space.
 
-		The function result is v:true if |digraph| is registered.  If
+		The function returns v:true if |digraph| is registered.  If
 		this fails an error message is given and v:false is returned.
 
 		If you want to define multiple digraphs at once, you can use
@@ -2221,6 +2392,8 @@ digraph_set({chars}, {digraph})				*digraph_set()*
 		Can be used as a |method|: >
 			GetString()->digraph_set('あ')
 <
+		Return type: |vim9-boolean|
+
 		This function works only when compiled with the |+digraphs|
 		feature.  If this feature is disabled, this function will
 		display an error message.
@@ -2244,6 +2417,8 @@ digraph_setlist({digraphlist})				*digraph_setlist()*
 		Can be used as a |method|: >
 		    GetList()->digraph_setlist()
 <
+		Return type: |vim9-boolean|
+
 		This function works only when compiled with the |+digraphs|
 		feature.  If this feature is disabled, this function will
 		display an error message.
@@ -2257,6 +2432,8 @@ echoraw({string})					*echoraw()*
 <		and to enable it again: >
 			call echoraw(&t_TI)
 <		Use with care, you can mess up the terminal this way.
+
+		Return type: |Number|
 
 
 empty({expr})						*empty()*
@@ -2277,6 +2454,9 @@ empty({expr})						*empty()*
 
 		Can also be used as a |method|: >
 			mylist->empty()
+<
+		Return type: |Number|
+
 
 environ()						*environ()*
 		Return all of environment variables as dictionary. You can
@@ -2285,6 +2465,8 @@ environ()						*environ()*
 <		Note that the variable name may be CamelCase; to ignore case
 		use this: >
 			:echo index(keys(environ()), 'HOME', 0, 1) != -1
+<
+		Return type: dict<string>
 
 
 err_teapot([{expr}])					*err_teapot()*
@@ -2293,6 +2475,8 @@ err_teapot([{expr}])					*err_teapot()*
 		If {expr} is present and it is TRUE error 503 is given,
 		indicating that coffee is temporarily not available.
 		If {expr} is present it must be a String.
+
+		Return type: |Number|
 
 
 escape({string}, {chars})				*escape()*
@@ -2306,6 +2490,8 @@ escape({string}, {chars})				*escape()*
 		Can also be used as a |method|: >
 			GetText()->escape(' \')
 <
+		Return type: |String|
+
 							*eval()*
 eval({string})	Evaluate {string} and return the result.  Especially useful to
 		turn the result of |string()| back into the original value.
@@ -2316,12 +2502,18 @@ eval({string})	Evaluate {string} and return the result.  Especially useful to
 
 		Can also be used as a |method|: >
 			argv->join()->eval()
+<
+		Return type: any, depending on {string}
+
 
 eventhandler()						*eventhandler()*
 		Returns 1 when inside an event handler.  That is that Vim got
 		interrupted while waiting for the user to type a character,
 		e.g., when dropping a file on Vim.  This means interactive
 		commands cannot be used.  Otherwise zero is returned.
+
+		Return type: |Number|
+
 
 executable({expr})					*executable()*
 		This function checks if an executable with the name {expr}
@@ -2351,6 +2543,9 @@ executable({expr})					*executable()*
 
 		Can also be used as a |method|: >
 			GetCommand()->executable()
+<
+		Return type: |Number|
+
 
 execute({command} [, {silent}])					*execute()*
 		Execute an Ex command or commands and return the output as a
@@ -2384,6 +2579,9 @@ execute({command} [, {silent}])					*execute()*
 
 		Can also be used as a |method|: >
 			GetCommand()->execute()
+<
+		Return type: |Number|
+
 
 exepath({expr})						*exepath()*
 		If {expr} is an executable and is either an absolute path, a
@@ -2397,8 +2595,11 @@ exepath({expr})						*exepath()*
 		Can also be used as a |method|: >
 			GetCommand()->exepath()
 <
-							*exists()*
-exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
+		Return type: |String|
+
+
+exists({expr})							*exists()*
+		The result is a Number, which is |TRUE| if {expr} is defined,
 		zero otherwise.
 
 		Note: In a compiled |:def| function the evaluation is done at
@@ -2502,6 +2703,8 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 		Can also be used as a |method|: >
 			Varname()->exists()
 <
+		Return type: |String|
+
 
 exists_compiled({expr})					*exists_compiled()*
 		Like `exists()` but evaluated at compile time.  This is useful
@@ -2517,6 +2720,8 @@ exists_compiled({expr})					*exists_compiled()*
 		Can only be used in a |:def| function. *E1233*
 		This does not work to check for arguments or local variables.
 
+		Return type: |String|
+
 
 exp({expr})							*exp()*
 		Return the exponential of {expr} as a |Float| in the range
@@ -2531,6 +2736,8 @@ exp({expr})							*exp()*
 
 		Can also be used as a |method|: >
 			Compute()->exp()
+<
+		Return type: |Float|
 
 
 expand({string} [, {nosuf} [, {list}]])				*expand()*
@@ -2631,6 +2838,9 @@ expand({string} [, {nosuf} [, {list}]])				*expand()*
 
 		Can also be used as a |method|: >
 			Getpattern()->expand()
+<
+		Return type: |String| or list<string> depending on {list}
+
 
 expandcmd({string} [, {options}])			*expandcmd()*
 		Expand special items in String {string} like what is done for
@@ -2656,6 +2866,8 @@ expandcmd({string} [, {options}])			*expandcmd()*
 		Can also be used as a |method|: >
 			GetCommand()->expandcmd()
 <
+		Return type: |String| or list<string> depending on {list}
+
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		{expr1} and {expr2} must be both |Lists| or both
 		|Dictionaries|.
@@ -2694,12 +2906,18 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 
 		Can also be used as a |method|: >
 			mylist->extend(otherlist)
+<
+		Return type: list<{type}> or dict<{type}> depending on {expr1}
+		and {expr2}, in case of error: |Number|
 
 
 extendnew({expr1}, {expr2} [, {expr3}])			*extendnew()*
 		Like |extend()| but instead of adding items to {expr1} a new
 		List or Dictionary is created and returned.  {expr1} remains
 		unchanged.
+
+		Return type: list<{type}> or dict<{type}> depending on {expr1}
+		and {expr2}, in case of error: |Number|
 
 
 feedkeys({string} [, {mode}])				*feedkeys()*
@@ -2758,6 +2976,9 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 
 		Can also be used as a |method|: >
 			GetInput()->feedkeys()
+<
+		Return type: |String| or list<string> depending on {list}
+
 
 filecopy({from}, {to})					*filecopy()*
 		Copy the file pointed to by the name {from} to {to}. The
@@ -2770,6 +2991,9 @@ filecopy({from}, {to})					*filecopy()*
 
 		Can also be used as a |method|: >
 			GetOldName()->filecopy(newname)
+<
+		Return type: |Number|
+
 
 filereadable({file})					*filereadable()*
 		The result is a Number, which is |TRUE| when a file with the
@@ -2786,7 +3010,10 @@ filereadable({file})					*filereadable()*
 
 <		Can also be used as a |method|: >
 			GetName()->filereadable()
-<							*file_readable()*
+<
+		Return type: |Number|
+
+							*file_readable()*
 		Obsolete name: file_readable().
 
 
@@ -2798,6 +3025,8 @@ filewritable({file})					*filewritable()*
 
 		Can also be used as a |method|: >
 			GetName()->filewritable()
+<
+		Return type: |Number|
 
 
 filter({expr1}, {expr2})				*filter()*
@@ -2860,6 +3089,10 @@ filter({expr1}, {expr2})				*filter()*
 
 		Can also be used as a |method|: >
 			mylist->filter(expr2)
+<
+		Return type: |String|, |Blob|, list<{type}> or dict<{type}>
+		depending on {expr1}
+
 
 finddir({name} [, {path} [, {count}]])				*finddir()*
 		Find directory {name} in {path}.  Supports both downwards and
@@ -2881,6 +3114,9 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 
 		Can also be used as a |method|: >
 			GetName()->finddir()
+<
+		Return type: |String|
+
 
 findfile({name} [, {path} [, {count}]])				*findfile()*
 		Just like |finddir()|, but find a file instead of a directory.
@@ -2892,6 +3128,9 @@ findfile({name} [, {path} [, {count}]])				*findfile()*
 
 		Can also be used as a |method|: >
 			GetName()->findfile()
+<
+		Return type: |String|
+
 
 flatten({list} [, {maxdepth}])					*flatten()*
 		Flatten {list} up to {maxdepth} levels.  Without {maxdepth}
@@ -2917,8 +3156,13 @@ flatten({list} [, {maxdepth}])					*flatten()*
 		Can also be used as a |method|: >
 			mylist->flatten()
 <
+		Return type: list<{type}>
+
+
 flattennew({list} [, {maxdepth}])			*flattennew()*
 		Like |flatten()| but first make a copy of {list}.
+
+		Return type: list<{type}>
 
 
 float2nr({expr})					*float2nr()*
@@ -2945,6 +3189,8 @@ float2nr({expr})					*float2nr()*
 
 		Can also be used as a |method|: >
 			Compute()->float2nr()
+<
+		Return type: |Number|
 
 
 floor({expr})							*floor()*
@@ -2962,6 +3208,8 @@ floor({expr})							*floor()*
 
 		Can also be used as a |method|: >
 			Compute()->floor()
+<
+		Return type: |Float|
 
 
 fmod({expr1}, {expr2})					*fmod()*
@@ -2982,6 +3230,8 @@ fmod({expr1}, {expr2})					*fmod()*
 
 		Can also be used as a |method|: >
 			Compute()->fmod(1.22)
+<
+		Return type: |Float|
 
 
 fnameescape({string})					*fnameescape()*
@@ -3002,6 +3252,9 @@ fnameescape({string})					*fnameescape()*
 <
 		Can also be used as a |method|: >
 			GetName()->fnameescape()
+<
+		Return type: |String|
+
 
 fnamemodify({fname}, {mods})				*fnamemodify()*
 		Modify file name {fname} according to {mods}.  {mods} is a
@@ -3022,6 +3275,9 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 
 		Can also be used as a |method|: >
 			GetName()->fnamemodify(':p:h')
+<
+		Return type: |String|
+
 
 foldclosed({lnum})					*foldclosed()*
 		The result is a Number.  If the line {lnum} is in a closed
@@ -3032,6 +3288,9 @@ foldclosed({lnum})					*foldclosed()*
 
 		Can also be used as a |method|: >
 			GetLnum()->foldclosed()
+<
+		Return type: |Number|
+
 
 foldclosedend({lnum})					*foldclosedend()*
 		The result is a Number.  If the line {lnum} is in a closed
@@ -3042,6 +3301,9 @@ foldclosedend({lnum})					*foldclosedend()*
 
 		Can also be used as a |method|: >
 			GetLnum()->foldclosedend()
+<
+		Return type: |Number|
+
 
 foldlevel({lnum})					*foldlevel()*
 		The result is a Number, which is the foldlevel of line {lnum}
@@ -3058,6 +3320,8 @@ foldlevel({lnum})					*foldlevel()*
 		Can also be used as a |method|: >
 			GetLnum()->foldlevel()
 <
+		Return type: |Number|
+
 							*foldtext()*
 foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		the default function used for the 'foldtext' option and should
@@ -3074,7 +3338,10 @@ foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		will be filled with the fold char from the 'fillchars'
 		setting.
 		Returns an empty string when there is no fold.
+
+		Return type: |String|
 		{not available when compiled without the |+folding| feature}
+
 
 foldtextresult({lnum})					*foldtextresult()*
 		Returns the text that is displayed for the closed fold at line
@@ -3089,6 +3356,9 @@ foldtextresult({lnum})					*foldtextresult()*
 
 		Can also be used as a |method|: >
 			GetLnum()->foldtextresult()
+<
+		Return type: |String|
+
 
 foreach({expr1}, {expr2})					*foreach()*
 		{expr1} must be a |List|, |String|, |Blob| or |Dictionary|.
@@ -3129,12 +3399,17 @@ foreach({expr1}, {expr2})					*foreach()*
 		Can also be used as a |method|: >
 			mylist->foreach(expr2)
 <
+		Return type: |String|, |Blob| list<{type}> or dict<{type}>
+		depending on {expr1}
+
 							*foreground()*
 foreground()	Move the Vim window to the foreground.  Useful when sent from
 		a client to a Vim server. |remote_send()|
 		On Win32 systems this might not work, the OS does not always
 		allow a window to bring itself to the foreground.  Use
 		|remote_foreground()| instead.
+
+		Return type: |Number|
 		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
 
@@ -3159,8 +3434,10 @@ fullcommand({name} [, {vim9}])				*fullcommand()*
 		Can also be used as a |method|: >
 			GetName()->fullcommand()
 <
-						*funcref()*
-funcref({name} [, {arglist}] [, {dict}])
+		Return type: |String|
+
+
+funcref({name} [, {arglist}] [, {dict}])		*funcref()*
 		Just like |function()|, but the returned Funcref will lookup
 		the function by reference, not by name.  This matters when the
 		function {name} is redefined later.
@@ -3175,6 +3452,8 @@ funcref({name} [, {arglist}] [, {dict}])
 		Can also be used as a |method|: >
 			GetFuncname()->funcref([arg])
 <
+		Return type: func(...): any or |Number| on error
+
 				*function()* *partial* *E700* *E923*
 function({name} [, {arglist}] [, {dict}])
 		Return a |Funcref| variable that refers to function {name}.
@@ -3257,6 +3536,9 @@ function({name} [, {arglist}] [, {dict}])
 		Can also be used as a |method|: >
 			GetFuncname()->function([arg])
 
+<
+		Return type: func(...): any or |Number| on error
+
 
 garbagecollect([{atexit}])				*garbagecollect()*
 		Cleanup unused |Lists|, |Dictionaries|, |Channels| and |Jobs|
@@ -3279,18 +3561,27 @@ garbagecollect([{atexit}])				*garbagecollect()*
 		type a character.  To force garbage collection immediately use
 		|test_garbagecollect_now()|.
 
+		Return type: |String|
+
+
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not
 		available return {default}.  Return zero when {default} is
 		omitted.
 		Preferably used as a |method|: >
 			mylist->get(idx)
+<
+		Return type: any, depending on {list}
+
 get({blob}, {idx} [, {default}])
 		Get byte {idx} from |Blob| {blob}.  When this byte is not
 		available return {default}.  Return -1 when {default} is
 		omitted.
 		Preferably used as a |method|: >
 			myblob->get(idx)
+<
+		Return type: |Number|
+
 get({dict}, {key} [, {default}])
 		Get item with key {key} from |Dictionary| {dict}.  When this
 		item is not available return {default}.  Return zero when
@@ -3300,6 +3591,9 @@ get({dict}, {key} [, {default}])
 		'default' when it does not exist.
 		Preferably used as a |method|: >
 			mydict->get(key)
+<
+		Return type: any, depending on {list}
+
 get({func}, {what})
 		Get item {what} from Funcref {func}.  Possible values for
 		{what} are:
@@ -3311,6 +3605,8 @@ get({func}, {what})
 		Preferably used as a |method|: >
 			myfunc->get(what)
 <
+		Return type: any, depending on {func}
+
 							*getbufinfo()*
 getbufinfo([{buf}])
 getbufinfo([{dict}])
@@ -3386,6 +3682,8 @@ getbufinfo([{dict}])
 		Can also be used as a |method|: >
 			GetBufnr()->getbufinfo()
 <
+		Return type: list<dict<any>>
+
 
 							*getbufline()*
 getbufline({buf}, {lnum} [, {end}])
@@ -3416,10 +3714,15 @@ getbufline({buf}, {lnum} [, {end}])
 <		Can also be used as a |method|: >
 			GetBufnr()->getbufline(lnum)
 <
+		Return type: list<string>
+
 							*getbufoneline()*
 getbufoneline({buf}, {lnum})
 		Just like `getbufline()` but only get one line and return it
 		as a string.
+
+		Return type: |String|
+
 
 getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 		The result is the value of option or local buffer variable
@@ -3445,11 +3748,16 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 <		Can also be used as a |method|: >
 			GetBufnr()->getbufvar(varname)
 <
+		Return type: any, depending on {varname}
+
+
 getcellwidths()						*getcellwidths()*
 		Returns a |List| of cell widths of character ranges overridden
 		by |setcellwidths()|.  The format is equal to the argument of
 		|setcellwidths()|.  If no character ranges have their cell
 		widths overridden, an empty List is returned.
+<
+		Return type: list<any>
 
 
 getchangelist([{buf}])					*getchangelist()*
@@ -3470,6 +3778,9 @@ getchangelist([{buf}])					*getchangelist()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->getchangelist()
+<
+		Return type: list<any>
+
 
 getchar([{expr}])					*getchar()*
 		Get a single character from the user or input stream.
@@ -3550,6 +3861,9 @@ getchar([{expr}])					*getchar()*
 			:  endwhile
 			:  return c
 			:endfunction
+<
+		Return type: |Number| or |String|
+
 
 getcharmod()						*getcharmod()*
 		The result is a Number which is the state of the modifiers for
@@ -3567,8 +3881,10 @@ getcharmod()						*getcharmod()*
 		character itself are obtained.  Thus Shift-a results in "A"
 		without a modifier.  Returns 0 if no modifiers are used.
 
-							*getcharpos()*
-getcharpos({expr})
+		Return type: |Number|
+
+
+getcharpos({expr})					*getcharpos()*
 		Get the position for String {expr}. Same as |getpos()| but the
 		column number in the returned List is a character index
 		instead of a byte index.
@@ -3583,6 +3899,9 @@ getcharpos({expr})
 <
 		Can also be used as a |method|: >
 			GetMark()->getcharpos()
+<
+		Return type: list<number>
+
 
 getcharsearch()						*getcharsearch()*
 		Return the current character search information as a {dict}
@@ -3604,6 +3923,8 @@ getcharsearch()						*getcharsearch()*
 			:nnoremap <expr> , getcharsearch().forward ? ',' : ';'
 <		Also see |setcharsearch()|.
 
+		Return type: dict<any>
+
 
 getcharstr([{expr}])					*getcharstr()*
 		Get a single character from the user or input stream as a
@@ -3617,6 +3938,9 @@ getcharstr([{expr}])					*getcharstr()*
 		Otherwise this works like |getchar()|, except that a number
 		result is converted to a string.
 
+		Return type: |String|
+
+
 getcmdcompltype()					*getcmdcompltype()*
 		Return the type of the current command-line completion.
 		Only works when the command line is being edited, thus
@@ -3625,6 +3949,9 @@ getcmdcompltype()					*getcmdcompltype()*
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
 		|setcmdline()|.
 		Returns an empty string when completion is not defined.
+
+		Return type: |String|
+
 
 getcmdline()						*getcmdline()*
 		Return the current command-line.  Only works when the command
@@ -3637,6 +3964,9 @@ getcmdline()						*getcmdline()*
 		Returns an empty string when entering a password or using
 		|inputsecret()|.
 
+		Return type: |String|
+
+
 getcmdpos()						*getcmdpos()*
 		Return the position of the cursor in the command line as a
 		byte count.  The first column is 1.
@@ -3645,6 +3975,9 @@ getcmdpos()						*getcmdpos()*
 		Returns 0 otherwise.
 		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
 		|setcmdline()|.
+
+		Return type: |Number|
+
 
 getcmdscreenpos()					*getcmdscreenpos()*
 		Return the screen position of the cursor in the command line
@@ -3655,6 +3988,9 @@ getcmdscreenpos()					*getcmdscreenpos()*
 		Returns 0 otherwise.
 		Also see |getcmdpos()|, |setcmdpos()|, |getcmdline()| and
 		|setcmdline()|.
+
+		Return type: |Number|
+
 
 getcmdtype()						*getcmdtype()*
 		Return the current command-line type. Possible return values
@@ -3671,10 +4007,16 @@ getcmdtype()						*getcmdtype()*
 		Returns an empty string otherwise.
 		Also see |getcmdpos()|, |setcmdpos()| and |getcmdline()|.
 
+		Return type: |String|
+
+
 getcmdwintype()						*getcmdwintype()*
 		Return the current |command-line-window| type. Possible return
 		values are the same as |getcmdtype()|. Returns an empty string
 		when not in the command-line window.
+
+		Return type: |String|
+
 
 getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		Return a list of command-line completion matches. The String
@@ -3750,6 +4092,8 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		Can also be used as a |method|: >
 			GetPattern()->getcompletion('color')
 <
+		Return type: list<string>
+
 							*getcurpos()*
 getcurpos([{winid}])
 		Get the position of the cursor.  This is like getpos('.'), but
@@ -3779,8 +4123,10 @@ getcurpos([{winid}])
 		Can also be used as a |method|: >
 			GetWinid()->getcurpos()
 <
-							*getcursorcharpos()*
-getcursorcharpos([{winid}])
+		Return type: list<number>
+
+
+getcursorcharpos([{winid}])			*getcursorcharpos()*
 		Same as |getcurpos()| but the column number in the returned
 		List is a character index instead of a byte index.
 
@@ -3791,9 +4137,11 @@ getcursorcharpos([{winid}])
 <
 		Can also be used as a |method|: >
 			GetWinid()->getcursorcharpos()
+<
+		Return type: list<number>
 
-<							*getcwd()*
-getcwd([{winnr} [, {tabnr}]])
+
+getcwd([{winnr} [, {tabnr}]])				*getcwd()*
 		The result is a String, which is the name of the current
 		working directory.  'autochdir' is ignored.
 
@@ -3828,6 +4176,8 @@ getcwd([{winnr} [, {tabnr}]])
 
 <		Can also be used as a |method|: >
 			GetWinnr()->getcwd()
+<
+		Return type: |String|
 
 getenv({name})						*getenv()*
 		Return the value of environment variable {name}.  The {name}
@@ -3841,6 +4191,9 @@ getenv({name})						*getenv()*
 
 		Can also be used as a |method|: >
 			GetVarname()->getenv()
+<
+		Return type: |String| or |Number|
+
 
 getfontname([{name}])					*getfontname()*
 		Without an argument returns the name of the normal font being
@@ -3855,6 +4208,9 @@ getfontname([{name}])					*getfontname()*
 		function just after the GUI has started.
 		Note that the GTK GUI accepts any font name, thus checking for
 		a valid name does not work.
+
+		Return type: |String|
+
 
 getfperm({fname})					*getfperm()*
 		The result is a String, which is the read, write, and execute
@@ -3874,7 +4230,10 @@ getfperm({fname})					*getfperm()*
 		Can also be used as a |method|: >
 			GetFilename()->getfperm()
 <
+		Return type: |String|
+
 		For setting permissions use |setfperm()|.
+
 
 getfsize({fname})					*getfsize()*
 		The result is a Number, which is the size in bytes of the
@@ -3886,6 +4245,9 @@ getfsize({fname})					*getfsize()*
 
 		Can also be used as a |method|: >
 			GetFilename()->getfsize()
+<
+		Return type: |Number|
+
 
 getftime({fname})					*getftime()*
 		The result is a Number, which is the last modification time of
@@ -3896,6 +4258,9 @@ getftime({fname})					*getftime()*
 
 		Can also be used as a |method|: >
 			GetFilename()->getftime()
+<
+		Return type: |Number|
+
 
 getftype({fname})					*getftype()*
 		The result is a String, which is a description of the kind of
@@ -3920,11 +4285,16 @@ getftype({fname})					*getftype()*
 
 		Can also be used as a |method|: >
 			GetFilename()->getftype()
+<
+		Return type: |String|
 
 getimstatus()						*getimstatus()*
 		The result is a Number, which is |TRUE| when the IME status is
 		active and |FALSE| otherwise.
 		See 'imstatusfunc'.
+
+		Return type: |Number|
+
 
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
@@ -3948,8 +4318,10 @@ getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->getjumplist()
+<
+		Return type: list<any>
 
-<							*getline()*
+							*getline()*
 getline({lnum} [, {end}])
 		Without {end} the result is a String, which is line {lnum}
 		from the current buffer.  Example: >
@@ -3974,8 +4346,10 @@ getline({lnum} [, {end}])
 
 <		Can also be used as a |method|: >
 			ComputeLnum()->getline()
+<
+		Return type: list<string> or |String| depending on {end}
 
-<		To get lines from another buffer see |getbufline()| and
+		To get lines from another buffer see |getbufline()| and
 		|getbufoneline()|
 
 getloclist({nr} [, {what}])				*getloclist()*
@@ -4008,6 +4382,8 @@ getloclist({nr} [, {what}])				*getloclist()*
 		Examples (See also |getqflist-examples|): >
 			:echo getloclist(3, {'all': 0})
 			:echo getloclist(5, {'filewinid': 0})
+<
+		Return type: list<dict<any>> or list<any>
 
 
 getmarklist([{buf}])					*getmarklist()*
@@ -4031,6 +4407,9 @@ getmarklist([{buf}])					*getmarklist()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->getmarklist()
+<
+		Return type: list<dict<any>> or list<any>
+
 
 getmatches([{win}])					*getmatches()*
 		Returns a |List| with all matches previously defined for the
@@ -4057,6 +4436,9 @@ getmatches([{win}])					*getmatches()*
 			'pattern': 'FIXME', 'priority': 10, 'id': 2}] >
 			:unlet m
 <
+		Return type: list<dict<any>> or list<any>
+
+
 getmousepos()						*getmousepos()*
 		Returns a |Dictionary| with the last known position of the
 		mouse.  This can be used in a mapping for a mouse click or in
@@ -4087,19 +4469,28 @@ getmousepos()						*getmousepos()*
 		When using |getchar()| the Vim variables |v:mouse_lnum|,
 		|v:mouse_col| and |v:mouse_winid| also provide these values.
 
+		Return type: dict<number>
+
+
 getmouseshape()						*getmouseshape()*
 		Returns the name of the currently showing mouse pointer.
 		When the |+mouseshape| feature is not supported or the shape
 		is unknown an empty string is returned.
 		This function is mainly intended for testing.
 
-							*getpid()*
-getpid()	Return a Number which is the process ID of the Vim process.
+		Return type: |String|
+
+
+getpid()							*getpid()*
+		Return a Number which is the process ID of the Vim process.
 		On Unix and MS-Windows this is a unique number, until Vim
 		exits.
 
-							*getpos()*
-getpos({expr})	Get the position for String {expr}.  For possible values of
+		Return type: |Number|
+
+
+getpos({expr})							*getpos()*
+		Get the position for String {expr}.  For possible values of
 		{expr} see |line()|.  For getting the cursor position see
 		|getcurpos()|.
 		The result is a |List| with four numbers:
@@ -4129,6 +4520,9 @@ getpos({expr})	Get the position for String {expr}.  For possible values of
 
 		Can also be used as a |method|: >
 			GetMark()->getpos()
+<
+		Return type: list<number>
+
 
 getqflist([{what}])					*getqflist()*
 		Returns a |List| with all the current quickfix errors.  Each
@@ -4144,7 +4538,7 @@ getqflist([{what}])					*getqflist()*
 			vcol	|TRUE|: "col" is visual column
 				|FALSE|: "col" is byte index
 			nr	error number
-			pattern	search pattern used to locate the error
+			pattern	search list<number>
 			text	description of the error
 			type	type of the error, 'E', '1', etc.
 			valid	|TRUE|: recognized error message
@@ -4233,6 +4627,9 @@ getqflist([{what}])					*getqflist()*
 			:echo getqflist({'nr': 2, 'title': 1})
 			:echo getqflist({'lines' : ["F1:10:L10"]})
 <
+		Return type: list<dict<any>> or list<any>
+
+
 getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 		The result is a String, which is the contents of register
 		{regname}.  Example: >
@@ -4260,6 +4657,9 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 
 		Can also be used as a |method|: >
 			GetRegname()->getreg()
+<
+		Return type: |String|
+
 
 getreginfo([{regname}])					*getreginfo()*
 		Returns detailed information about register {regname} as a
@@ -4289,6 +4689,9 @@ getreginfo([{regname}])					*getreginfo()*
 
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
+<
+		Return type: dict<any>
+
 
 getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 		Returns the list of strings from {pos1} to {pos2} from a
@@ -4342,6 +4745,7 @@ getregion({pos1}, {pos2} [, {opts}])			*getregion()*
 <
 		Can also be used as a |method|: >
 			getpos('.')->getregion(getpos("'a"))
+
 <
 getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 		Same as |getregion()|, but returns a list of positions
@@ -4378,6 +4782,9 @@ getregionpos({pos1}, {pos2} [, {opts}])            *getregionpos()*
 		Can also be used as a |method|: >
 			getpos('.')->getregionpos(getpos("'a"))
 <
+		Return type: list<string>
+
+
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
 		The value will be one of:
@@ -4393,6 +4800,8 @@ getregtype([{regname}])					*getregtype()*
 
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
+<
+		Return type: |String|
 
 getscriptinfo([{opts}])					*getscriptinfo()*
 		Returns a |List| with information about all the sourced Vim
@@ -4435,6 +4844,9 @@ getscriptinfo([{opts}])					*getscriptinfo()*
 			:echo getscriptinfo({'name': 'myscript'})
 			:echo getscriptinfo({'sid': 15})[0].variables
 <
+		Return type: list<dict<any>>
+
+
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
 		tab pages is returned as a |List|. Each List item is a
@@ -4450,6 +4862,9 @@ gettabinfo([{tabnr}])					*gettabinfo()*
 
 		Can also be used as a |method|: >
 			GetTabnr()->gettabinfo()
+<
+		Return type: list<dict<any>>
+
 
 gettabvar({tabnr}, {varname} [, {def}])				*gettabvar()*
 		Get the value of a tab-local variable {varname} in tab page
@@ -4463,6 +4878,9 @@ gettabvar({tabnr}, {varname} [, {def}])				*gettabvar()*
 
 		Can also be used as a |method|: >
 			GetTabnr()->gettabvar(varname)
+<
+		Return type: any, depending on {varname}
+
 
 gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 		Get the value of window-local variable {varname} in window
@@ -4492,6 +4910,9 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 
 <		Can also be used as a |method|: >
 			GetTabnr()->gettabwinvar(winnr, varname)
+<
+		Return type: any, depending on {varname}
+
 
 gettagstack([{winnr}])					*gettagstack()*
 		The result is a Dict, which is the tag stack of window {winnr}.
@@ -4523,6 +4944,8 @@ gettagstack([{winnr}])					*gettagstack()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->gettagstack()
+<
+		Return type: dict<any>
 
 
 gettext({text})						*gettext()*
@@ -4535,6 +4958,8 @@ gettext({text})						*gettext()*
 		For {text} double quoted strings are preferred, because
 		xgettext does not understand escaping in single quoted
 		strings.
+
+		Return type: |String|
 
 
 getwininfo([{winid}])					*getwininfo()*
@@ -4576,6 +5001,9 @@ getwininfo([{winid}])					*getwininfo()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->getwininfo()
+<
+		Return type: list<dict<any>>
+
 
 getwinpos([{timeout}])					*getwinpos()*
 		The result is a |List| with two numbers, the result of
@@ -4600,21 +5028,30 @@ getwinpos([{timeout}])					*getwinpos()*
 		Can also be used as a |method|: >
 			GetTimeout()->getwinpos()
 <
-							*getwinposx()*
-getwinposx()	The result is a Number, which is the X coordinate in pixels of
+		Return type: list<number>
+
+
+getwinposx()						*getwinposx()*
+		The result is a Number, which is the X coordinate in pixels of
 		the left hand side of the GUI Vim window. Also works for an
 		xterm (uses a timeout of 100 msec).
 		The result will be -1 if the information is not available
 		(e.g. on the Wayland backend).
 		The value can be used with `:winpos`.
 
-							*getwinposy()*
-getwinposy()	The result is a Number, which is the Y coordinate in pixels of
+		Return type: |Number|
+
+
+getwinposy()						*getwinposy()*
+		The result is a Number, which is the Y coordinate in pixels of
 		the top of the GUI Vim window.  Also works for an xterm (uses
 		a timeout of 100 msec).
 		The result will be -1 if the information is not available
 		(e.g. on the Wayland backend).
 		The value can be used with `:winpos`.
+
+		Return type: |Number|
+
 
 getwinvar({winnr}, {varname} [, {def}])				*getwinvar()*
 		Like |gettabwinvar()| for the current tabpage.
@@ -4625,6 +5062,9 @@ getwinvar({winnr}, {varname} [, {def}])				*getwinvar()*
 <		Can also be used as a |method|: >
 			GetWinnr()->getwinvar(varname)
 <
+		Return type: any, depending on {varname}
+
+
 glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 		Expand the file wildcards in {expr}.  See |wildcards| for the
 		use of special characters.
@@ -4663,6 +5103,10 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])		*glob()*
 
 		Can also be used as a |method|: >
 			GetExpr()->glob()
+<
+		Return type: |String| or list<string> or list<any> depending
+		on {list}
+
 
 glob2regpat({string})					 *glob2regpat()*
 		Convert a file pattern, as used by glob(), into a search
@@ -4678,7 +5122,10 @@ glob2regpat({string})					 *glob2regpat()*
 
 		Can also be used as a |method|: >
 			GetExpr()->glob2regpat()
-<								*globpath()*
+<
+		Return type: |String|
+
+								*globpath()*
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 		Perform glob() for String {expr} on all directories in {path}
 		and concatenate the results.  Example: >
@@ -4718,8 +5165,11 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 		second argument: >
 			GetExpr()->globpath(&rtp)
 <
-							*has()*
-has({feature} [, {check}])
+		Return type: |String| or list<string> or list<any> depending
+		on {list}
+
+
+has({feature} [, {check}])					*has()*
 		When {check} is omitted or is zero: The result is a Number,
 		which is 1 if the feature {feature} is supported, zero
 		otherwise.  The {feature} argument is a string, case is
@@ -4745,6 +5195,8 @@ has({feature} [, {check}])
 <		If the `endif` would be moved to the second line as "| endif" it
 		would not be found.
 
+		Return type: |Number|
+
 
 has_key({dict}, {key})					*has_key()*
 		The result is a Number, which is TRUE if |Dictionary| {dict}
@@ -4756,6 +5208,9 @@ has_key({dict}, {key})					*has_key()*
 
 		Can also be used as a |method|: >
 			mydict->has_key(key)
+<
+		Return type: |Number|
+
 
 haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 		The result is a Number:
@@ -4793,6 +5248,9 @@ haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 <
 		Can also be used as a |method|: >
 			GetWinnr()->haslocaldir()
+<
+		Return type: |Number|
+
 
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is TRUE if there is a mapping
@@ -4827,6 +5285,9 @@ hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 
 		Can also be used as a |method|: >
 			GetRHS()->hasmapto()
+<
+		Return type: |Number|
+
 
 histadd({history}, {item})				*histadd()*
 		Add the String {item} to the history {history} which can be
@@ -4852,6 +5313,9 @@ histadd({history}, {item})				*histadd()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetHistory()->histadd('search')
+<
+		Return type: |Number|
+
 
 histdel({history} [, {item}])				*histdel()*
 		Clear {history}, i.e. delete all its entries.  See |hist-names|
@@ -4887,6 +5351,9 @@ histdel({history} [, {item}])				*histdel()*
 <
 		Can also be used as a |method|: >
 			GetHistory()->histdel()
+<
+		Return type: |Number|
+
 
 histget({history} [, {index}])				*histget()*
 		The result is a String, the entry with Number {index} from
@@ -4905,6 +5372,9 @@ histget({history} [, {index}])				*histget()*
 <
 		Can also be used as a |method|: >
 			GetHistory()->histget()
+<
+		Return type: |String|
+
 
 histnr({history})					*histnr()*
 		The result is the Number of the current entry in {history}.
@@ -4917,6 +5387,8 @@ histnr({history})					*histnr()*
 <		Can also be used as a |method|: >
 			GetHistory()->histnr()
 <
+		Return type: |Number|
+
 hlexists({name})					*hlexists()*
 		The result is a Number, which is TRUE if a highlight group
 		called {name} exists.  This is when the group has been
@@ -4929,6 +5401,9 @@ hlexists({name})					*hlexists()*
 		Can also be used as a |method|: >
 			GetName()->hlexists()
 <
+		Return type: |Number|
+
+
 hlget([{name} [, {resolve}]])				*hlget()*
 		Returns a List of all the highlight group attributes.  If the
 		optional {name} is specified, then returns a List with only
@@ -4980,6 +5455,9 @@ hlget([{name} [, {resolve}]])				*hlget()*
 		Can also be used as a |method|: >
 			GetName()->hlget()
 <
+		Return type: list<dict<any>>
+
+
 hlset({list})						*hlset()*
 		Creates or modifies the attributes of a List of highlight
 		groups.  Each item in {list} is a dictionary containing the
@@ -5031,8 +5509,10 @@ hlset({list})						*hlset()*
 		Can also be used as a |method|: >
 			GetAttrList()->hlset()
 <
-							*hlID()*
-hlID({name})	The result is a Number, which is the ID of the highlight group
+		Return type: |Number|
+
+hlID({name})							*hlID()*
+		The result is a Number, which is the ID of the highlight group
 		with name {name}.  When the highlight group doesn't exist,
 		zero is returned.
 		This can be used to retrieve information about the highlight
@@ -5044,11 +5524,17 @@ hlID({name})	The result is a Number, which is the ID of the highlight group
 
 		Can also be used as a |method|: >
 			GetName()->hlID()
+<
+		Return type: |Number|
+
 
 hostname()						*hostname()*
 		The result is a String, which is the name of the machine on
 		which Vim is currently running.  Machine names greater than
 		256 characters long are truncated.
+
+		Return type: |String|
+
 
 iconv({string}, {from}, {to})				*iconv()*
 		The result is a String, which is the text {string} converted
@@ -5072,8 +5558,11 @@ iconv({string}, {from}, {to})				*iconv()*
 		Can also be used as a |method|: >
 			GetText()->iconv('latin1', 'utf-8')
 <
-							*indent()*
-indent({lnum})	The result is a Number, which is indent of line {lnum} in the
+		Return type: |String|
+
+
+indent({lnum})							*indent()*
+		The result is a Number, which is indent of line {lnum} in the
 		current buffer.  The indent is counted in spaces, the value
 		of 'tabstop' is relevant.  {lnum} is used just like in
 		|getline()|.
@@ -5082,6 +5571,9 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 
 		Can also be used as a |method|: >
 			GetLnum()->indent()
+<
+		Return type: |Number|
+
 
 index({object}, {expr} [, {start} [, {ic}]])			*index()*
 		Find {expr} in {object} and return its index.  See
@@ -5110,6 +5602,9 @@ index({object}, {expr} [, {start} [, {ic}]])			*index()*
 
 <		Can also be used as a |method|: >
 			GetObject()->index(what)
+<
+		Return type: |Number|
+
 
 indexof({object}, {expr} [, {opts}])			*indexof()*
 		Returns the index of an item in {object} where {expr} is
@@ -5151,6 +5646,9 @@ indexof({object}, {expr} [, {opts}])			*indexof()*
 
 <		Can also be used as a |method|: >
 			mylist->indexof(expr)
+<
+		Return type: |Number|
+
 
 input({prompt} [, {text} [, {completion}]])		*input()*
 		The result is a String, which is whatever the user typed on
@@ -5199,6 +5697,9 @@ input({prompt} [, {text} [, {completion}]])		*input()*
 
 <		Can also be used as a |method|: >
 			GetPrompt()->input()
+<
+		Return type: |String|
+
 
 inputdialog({prompt} [, {text} [, {cancelreturn}]])		*inputdialog()*
 		Like |input()|, but when the GUI is running and text dialogs
@@ -5216,6 +5717,9 @@ inputdialog({prompt} [, {text} [, {cancelreturn}]])		*inputdialog()*
 
 		Can also be used as a |method|: >
 			GetPrompt()->inputdialog()
+<
+		Return type: |String|
+
 
 inputlist({textlist})					*inputlist()*
 		{textlist} must be a |List| of strings.  This |List| is
@@ -5236,12 +5740,18 @@ inputlist({textlist})					*inputlist()*
 
 <		Can also be used as a |method|: >
 			GetChoices()->inputlist()
+<
+		Return type: |Number|
+
 
 inputrestore()						*inputrestore()*
 		Restore typeahead that was saved with a previous |inputsave()|.
 		Should be called the same number of times inputsave() is
 		called.  Calling it more often is harmless though.
 		Returns TRUE when there is nothing to restore, FALSE otherwise.
+
+		Return type: |Number|
+
 
 inputsave()						*inputsave()*
 		Preserve typeahead (also from mappings) and clear it, so that
@@ -5250,6 +5760,9 @@ inputsave()						*inputsave()*
 		be used several times, in which case there must be just as
 		many inputrestore() calls.
 		Returns TRUE when out of memory, FALSE otherwise.
+
+		Return type: |Number|
+
 
 inputsecret({prompt} [, {text}])			*inputsecret()*
 		This function acts much like the |input()| function with but
@@ -5264,6 +5777,9 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 
 		Can also be used as a |method|: >
 			GetPrompt()->inputsecret()
+<
+		Return type: |String|
+
 
 insert({object}, {item} [, {idx}])			*insert()*
 		When {object} is a |List| or a |Blob| insert {item} at the start
@@ -5285,6 +5801,9 @@ insert({object}, {item} [, {idx}])			*insert()*
 		Can also be used as a |method|: >
 			mylist->insert(item)
 <
+		Return type: |Number|
+
+
 					*instanceof()* *E614* *E616* *E693*
 instanceof({object}, {class})
 		The result is a Number, which is |TRUE| when the {object}
@@ -5297,6 +5816,8 @@ instanceof({object}, {class})
 
 <		Can also be used as a |method|: >
 			myobj->instanceof(mytype)
+<
+		Return type: |Number|
 
 interrupt()						*interrupt()*
 		Interrupt script execution.  It works more or less like the
@@ -5310,6 +5831,8 @@ interrupt()						*interrupt()*
 		:   endif
 		:endfunction
 		:au BufWritePre * call s:check_typoname(expand('<amatch>'))
+<
+		Return type: void
 
 invert({expr})						*invert()*
 		Bitwise invert.  The argument is converted to a number.  A
@@ -5317,6 +5840,9 @@ invert({expr})						*invert()*
 			:let bits = invert(bits)
 <		Can also be used as a |method|: >
 			:let bits = bits->invert()
+<
+		Return type: |Number|
+
 
 isabsolutepath({path})					*isabsolutepath()*
 		The result is a Number, which is |TRUE| when {path} is an
@@ -5334,6 +5860,8 @@ isabsolutepath({path})					*isabsolutepath()*
 <
 		Can also be used as a |method|: >
 			GetName()->isabsolutepath()
+<
+		Return type: |Number|
 
 
 isdirectory({directory})				*isdirectory()*
@@ -5344,6 +5872,9 @@ isdirectory({directory})				*isdirectory()*
 
 		Can also be used as a |method|: >
 			GetName()->isdirectory()
+<
+		Return type: |Number|
+
 
 isinf({expr})						*isinf()*
 		Return 1 if {expr} is a positive infinity, or -1 a negative
@@ -5355,6 +5886,9 @@ isinf({expr})						*isinf()*
 
 		Can also be used as a |method|: >
 			Compute()->isinf()
+<
+		Return type: |Number|
+
 
 islocked({expr})					*islocked()* *E786*
 		The result is a Number, which is |TRUE| when {expr} is the
@@ -5375,6 +5909,9 @@ islocked({expr})					*islocked()* *E786*
 
 		Can also be used as a |method|: >
 			GetName()->islocked()
+<
+		Return type: |Number|
+
 
 isnan({expr})						*isnan()*
 		Return |TRUE| if {expr} is a float with value NaN. >
@@ -5383,6 +5920,9 @@ isnan({expr})						*isnan()*
 
 		Can also be used as a |method|: >
 			Compute()->isnan()
+<
+		Return type: |Number|
+
 
 items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each
@@ -5400,6 +5940,9 @@ items({dict})						*items()*
 
 		Can also be used as a |method|: >
 			mydict->items()
+<
+		Return type: list<list<any>> or list<any>
+
 
 job_ functions are documented here: |job-functions-details|
 
@@ -5417,6 +5960,9 @@ join({list} [, {sep}])					*join()*
 
 		Can also be used as a |method|: >
 			mylist->join()
+<
+		Return type: |String|
+
 
 js_decode({string})					*js_decode()*
 		This is similar to |json_decode()| with these differences:
@@ -5427,6 +5973,9 @@ js_decode({string})					*js_decode()*
 
 		Can also be used as a |method|: >
 			ReadObject()->js_decode()
+<
+		Return type: any, depending on {varname}
+
 
 js_encode({expr})					*js_encode()*
 		This is similar to |json_encode()| with these differences:
@@ -5444,6 +5993,9 @@ js_encode({expr})					*js_encode()*
 
 		Can also be used as a |method|: >
 			GetObject()->js_encode()
+<
+		Return type: |String|
+
 
 json_decode({string})				*json_decode()* *E491*
 		This parses a JSON formatted string and returns the equivalent
@@ -5480,6 +6032,9 @@ json_decode({string})				*json_decode()* *E491*
 
 		Can also be used as a |method|: >
 			ReadObject()->json_decode()
+<
+		Return type: any, depending on {varname}
+
 
 json_encode({expr})					*json_encode()*
 		Encode {expr} as JSON and return this as a string.
@@ -5510,6 +6065,9 @@ json_encode({expr})					*json_encode()*
 
 		Can also be used as a |method|: >
 			GetObject()->json_encode()
+<
+		Return type: |String|
+
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
@@ -5517,6 +6075,9 @@ keys({dict})						*keys()*
 
 		Can also be used as a |method|: >
 			mydict->keys()
+<
+		Return type: list<string>
+
 
 keytrans({string})					*keytrans()*
 		Turn the internal byte representation of keys into a form that
@@ -5527,9 +6088,12 @@ keytrans({string})					*keytrans()*
 
 		Can also be used as a |method|: >
 			"\<C-Home>"->keytrans()
+<
+		Return type: |String|
 
-<							*len()* *E701*
-len({expr})	The result is a Number, which is the length of the argument.
+
+len({expr})						*len()* *E701*
+		The result is a Number, which is the length of the argument.
 		When {expr} is a String or a Number the length in bytes is
 		used, as with |strlen()|.
 		When {expr} is a |List| the number of items in the |List| is
@@ -5543,8 +6107,11 @@ len({expr})	The result is a Number, which is the length of the argument.
 
 		Can also be used as a |method|: >
 			mylist->len()
+<
+		Return type: |Number|
 
-<						*libcall()* *E364* *E368*
+
+						*libcall()* *E364* *E368*
 libcall({libname}, {funcname}, {argument})
 		Call function {funcname} in the run-time library {libname}
 		with single argument {argument}.
@@ -5609,6 +6176,8 @@ libcallnr({libname}, {funcname}, {argument})
 		third argument: >
 			GetValue()->libcallnr("libc.so", "printf")
 <
+		Return type: |String|
+
 
 line({expr} [, {winid}])				*line()*
 		The result is a Number, which is the line number of the file
@@ -5644,6 +6213,9 @@ line({expr} [, {winid}])				*line()*
 
 		Can also be used as a |method|: >
 			GetValue()->line()
+<
+		Return type: |Number|
+
 
 line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
@@ -5661,6 +6233,9 @@ line2byte({lnum})					*line2byte()*
 
 		Can also be used as a |method|: >
 			GetLnum()->line2byte()
+<
+		Return type: |Number|
+
 
 lispindent({lnum})					*lispindent()*
 		Get the amount of indent for line {lnum} according the lisp
@@ -5672,6 +6247,9 @@ lispindent({lnum})					*lispindent()*
 
 		Can also be used as a |method|: >
 			GetLnum()->lispindent()
+<
+		Return type: |Number|
+
 
 list2blob({list})					*list2blob()*
 		Return a Blob concatenating all the number values in {list}.
@@ -5685,10 +6263,13 @@ list2blob({list})					*list2blob()*
 
 		Can also be used as a |method|: >
 			GetList()->list2blob()
+<
+		Return type: |Blob|
+
 
 list2str({list} [, {utf8}])				*list2str()*
-		Convert each number in {list} to a character string can
-		concatenate them all.  Examples: >
+		Convert each number in {list} to a character string and
+		concatenates them all.  Examples: >
 			list2str([32])		returns " "
 			list2str([65, 66, 67])	returns "ABC"
 <		The same can be done (slowly) with: >
@@ -5704,6 +6285,9 @@ list2str({list} [, {utf8}])				*list2str()*
 
 		Can also be used as a |method|: >
 			GetList()->list2str()
+<
+		Return type: |String|
+
 
 listener_add({callback} [, {buf}])			*listener_add()*
 		Add a callback function that will be invoked when changes have
@@ -5780,6 +6364,9 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetBuffer()->listener_add(callback)
+<
+		Return type: |Number|
+
 
 listener_flush([{buf}])					*listener_flush()*
 		Invoke listener callbacks for buffer {buf}.  If there are no
@@ -5791,6 +6378,9 @@ listener_flush([{buf}])					*listener_flush()*
 
 		Can also be used as a |method|: >
 			GetBuffer()->listener_flush()
+<
+		Return type: |Number|
+
 
 listener_remove({id})					*listener_remove()*
 		Remove a listener previously added with listener_add().
@@ -5799,10 +6389,15 @@ listener_remove({id})					*listener_remove()*
 
 		Can also be used as a |method|: >
 			GetListenerId()->listener_remove()
+<
+		Return type: |Number|
+
 
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
 		1970.  See also |strftime()|, |strptime()| and |getftime()|.
+
+		Return type: |Number|
 
 
 log({expr})						*log()*
@@ -5818,6 +6413,8 @@ log({expr})						*log()*
 
 		Can also be used as a |method|: >
 			Compute()->log()
+<
+		Return type: |Float|
 
 
 log10({expr})						*log10()*
@@ -5832,6 +6429,9 @@ log10({expr})						*log10()*
 
 		Can also be used as a |method|: >
 			Compute()->log10()
+<
+		Return type: |Float|
+
 
 luaeval({expr} [, {expr}])					*luaeval()*
 		Evaluate Lua expression {expr} and return its result converted
@@ -5849,8 +6449,11 @@ luaeval({expr} [, {expr}])					*luaeval()*
 
 		Can also be used as a |method|: >
 			GetExpr()->luaeval()
+<
+		Return type: any, depending on {expr}
 
-<		{only available when compiled with the |+lua| feature}
+		{only available when compiled with the |+lua| feature}
+
 
 map({expr1}, {expr2})					*map()*
 		{expr1} must be a |List|, |String|, |Blob| or |Dictionary|.
@@ -5913,6 +6516,9 @@ map({expr1}, {expr2})					*map()*
 
 		Can also be used as a |method|: >
 			mylist->map(expr2)
+<
+		Return type: |String|, |Blob|, list<{type}> or dict<{type}>
+		depending on {expr1}
 
 
 maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
@@ -5989,6 +6595,9 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 
 <		Can also be used as a |method|: >
 			GetKey()->maparg('n')
+<
+		Return type: |String| or dict<any> depending on {dict}
+
 
 mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 		Check if there is a mapping that matches with {name} in mode
@@ -6025,6 +6634,8 @@ mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 
 		Can also be used as a |method|: >
 			GetKey()->mapcheck('n')
+<
+		Return type: |String|
 
 
 maplist([{abbr}])					*maplist()*
@@ -6059,6 +6670,8 @@ maplist([{abbr}])					*maplist()*
 			    (_, m) => m.lhs == 'xyzzy')[0].mode_bits
 			ounmap xyzzy
 			echo printf("Operator-pending mode bit: 0x%x", op_bit)
+<
+		Return type: list<dict<any>>
 
 
 mapnew({expr1}, {expr2})					*mapnew()*
@@ -6066,6 +6679,9 @@ mapnew({expr1}, {expr2})					*mapnew()*
 		List or Dictionary is created and returned.  {expr1} remains
 		unchanged.  Items can still be changed by {expr2}, if you
 		don't want that use |deepcopy()| first.
+
+		Return type: |String|, |Blob|, list<{type}> or dict<{type}>
+		depending on {expr1}
 
 
 mapset({mode}, {abbr}, {dict})					*mapset()*
@@ -6105,6 +6721,8 @@ mapset({dict})
 			for d in save_maps
 			    mapset(d)
 			endfor
+<
+		Return type: |Number|
 
 
 match({expr}, {pat} [, {start} [, {count}]])			*match()*
@@ -6174,6 +6792,9 @@ match({expr}, {pat} [, {start} [, {count}]])			*match()*
 			GetText()->match('word')
 			GetList()->match('word')
 <
+		Return type: |Number|
+
+
 				*matchadd()* *E290* *E798* *E799* *E801* *E957*
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		Defines a pattern to be highlighted in the current window (a
@@ -6236,6 +6857,9 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		Can also be used as a |method|: >
 			GetGroup()->matchadd('TODO')
 <
+		Return type: |Number|
+
+
 							*matchaddpos()*
 matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		Same as |matchadd()|, but requires a list of positions {pos}
@@ -6272,6 +6896,9 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 
 		Can also be used as a |method|: >
 			GetGroup()->matchaddpos([23, 11])
+<
+		Return type: |Number|
+
 
 matcharg({nr})							*matcharg()*
 		Selects the {nr} match item, as set with a |:match|,
@@ -6288,6 +6915,8 @@ matcharg({nr})							*matcharg()*
 		Can also be used as a |method|: >
 			GetMatch()->matcharg()
 <
+		Return type: list<string>
+
 							*matchbufline()*
 matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 		Returns the |List| of matches in lines from {lnum} to {end} in
@@ -6335,6 +6964,9 @@ matchbufline({buf}, {pat}, {lnum}, {end}, [, {dict}])
 
 		Can also be used as a |method|: >
 			GetBuffer()->matchbufline('mypat', 1, '$')
+<
+		Return type: list<dict<any>> or list<any>
+
 
 matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
 		Deletes a match with ID {id} previously defined by |matchadd()|
@@ -6346,6 +6978,9 @@ matchdelete({id} [, {win})		       *matchdelete()* *E802* *E803*
 
 		Can also be used as a |method|: >
 			GetMatch()->matchdelete()
+<
+		Return type: |Number|
+
 
 matchend({expr}, {pat} [, {start} [, {count}]])			*matchend()*
 		Same as |match()|, but return the index of first character
@@ -6368,6 +7003,8 @@ matchend({expr}, {pat} [, {start} [, {count}]])			*matchend()*
 
 		Can also be used as a |method|: >
 			GetText()->matchend('word')
+<
+		Return type: |Number|
 
 
 matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
@@ -6433,6 +7070,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 						\ {'matchseq': 1})
 <		results in ['two one'].
 
+		Return type: list<string> or list<any>
+
+
 matchfuzzypos({list}, {str} [, {dict}])			*matchfuzzypos()*
 		Same as |matchfuzzy()|, but returns the list of matched
 		strings, the list of character positions where characters
@@ -6454,6 +7094,9 @@ matchfuzzypos({list}, {str} [, {dict}])			*matchfuzzypos()*
 			:echo [{'text': 'hello', 'id' : 10}]->matchfuzzypos('ll', {'key' : 'text'})
 <		results in [[{'id': 10, 'text': 'hello'}], [[2, 3]], [127]]
 
+		Return type: list<list<any>>
+
+
 matchlist({expr}, {pat} [, {start} [, {count}]])		*matchlist()*
 		Same as |match()|, but return a |List|.  The first item in the
 		list is the matched string, same as what matchstr() would
@@ -6469,6 +7112,8 @@ matchlist({expr}, {pat} [, {start} [, {count}]])		*matchlist()*
 		Can also be used as a |method|: >
 			GetText()->matchlist('word')
 <
+		Return type: list<string> or list<any>
+
 						*matchstrlist()*
 matchstrlist({list}, {pat} [, {dict}])
 		Returns the |List| of matches in {list} where {pat} matches.
@@ -6505,6 +7150,9 @@ matchstrlist({list}, {pat} [, {dict}])
 
 		Can also be used as a |method|: >
 			GetListOfStrings()->matchstrlist('mypat')
+<
+		Return type: list<dict<any>> or list<any>
+
 
 matchstr({expr}, {pat} [, {start} [, {count}]])			*matchstr()*
 		Same as |match()|, but return the matched string.  Example: >
@@ -6521,6 +7169,9 @@ matchstr({expr}, {pat} [, {start} [, {count}]])			*matchstr()*
 
 		Can also be used as a |method|: >
 			GetText()->matchstr('word')
+<
+		Return type: |String|
+
 
 matchstrpos({expr}, {pat} [, {start} [, {count}]])		*matchstrpos()*
 		Same as |matchstr()|, but return the matched string, the start
@@ -6543,9 +7194,11 @@ matchstrpos({expr}, {pat} [, {start} [, {count}]])		*matchstrpos()*
 		Can also be used as a |method|: >
 			GetText()->matchstrpos('word')
 <
+		Return type: list<any>
 
-							*max()*
-max({expr})	Return the maximum value of all items in {expr}. Example: >
+
+max({expr})							*max()*
+		Return the maximum value of all items in {expr}. Example: >
 			echo max([apples, pears, oranges])
 
 <		{expr} can be a |List| or a |Dictionary|.  For a Dictionary,
@@ -6556,6 +7209,8 @@ max({expr})	Return the maximum value of all items in {expr}. Example: >
 
 		Can also be used as a |method|: >
 			mylist->max()
+<
+		Return type: |Number|
 
 
 menu_info({name} [, {mode}])				*menu_info()*
@@ -6630,10 +7285,11 @@ menu_info({name} [, {mode}])				*menu_info()*
 <
 		Can also be used as a |method|: >
 			GetMenuName()->menu_info('v')
+<
+		Return type: dict<any>
 
-
-<							*min()*
-min({expr})	Return the minimum value of all items in {expr}. Example:  >
+min({expr})							*min()*
+		Return the minimum value of all items in {expr}. Example:  >
 			echo min([apples, pears, oranges])
 
 <		{expr} can be a |List| or a |Dictionary|.  For a Dictionary,
@@ -6644,9 +7300,11 @@ min({expr})	Return the minimum value of all items in {expr}. Example:  >
 
 		Can also be used as a |method|: >
 			mylist->min()
+<
+		Return type: |Number|
 
-<							*mkdir()* *E739*
-mkdir({name} [, {flags} [, {prot}]])
+
+mkdir({name} [, {flags} [, {prot}]])			*mkdir()* *E739*
 		Create directory {name}.
 
 		When {flags} is present it must be a string.  An empty string
@@ -6698,8 +7356,11 @@ mkdir({name} [, {flags} [, {prot}]])
 <		Can also be used as a |method|: >
 			GetName()->mkdir()
 <
-							*mode()*
-mode([{expr}])	Return a string that indicates the current mode.
+		Return type: |Number|
+
+
+mode([{expr}])							*mode()*
+		Return a string that indicates the current mode.
 		If {expr} is supplied and it evaluates to a non-zero Number or
 		a non-empty String (|non-zero-arg|), then the full mode is
 		returned, otherwise only the first letter is returned.
@@ -6755,6 +7416,9 @@ mode([{expr}])	Return a string that indicates the current mode.
 
 		Can also be used as a |method|: >
 			DoFull()->mode()
+<
+		Return type: |String|
+
 
 mzeval({expr})							*mzeval()*
 		Evaluate MzScheme expression {expr} and return its result
@@ -6777,7 +7441,10 @@ mzeval({expr})							*mzeval()*
 		Can also be used as a |method|: >
 			GetExpr()->mzeval()
 <
+		Return type: any, depending on {expr}
+
 		{only available when compiled with the |+mzscheme| feature}
+
 
 nextnonblank({lnum})					*nextnonblank()*
 		Return the line number of the first line at or below {lnum}
@@ -6790,6 +7457,9 @@ nextnonblank({lnum})					*nextnonblank()*
 
 		Can also be used as a |method|: >
 			GetLnum()->nextnonblank()
+<
+		Return type: |Number|
+
 
 nr2char({expr} [, {utf8}])				*nr2char()*
 		Return a string with a single character, which has the number
@@ -6811,6 +7481,9 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 
 		Can also be used as a |method|: >
 			GetNumber()->nr2char()
+<
+		Return type: |String|
+
 
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
@@ -6825,6 +7498,8 @@ or({expr}, {expr})					*or()*
 		character like many languages, is that Vi has always used "|"
 		to separate commands.  In many places it would not be clear if
 		"|" is an operator or a command separator.
+
+		Return type: |Number|
 
 
 pathshorten({path} [, {len}])				*pathshorten()*
@@ -6843,6 +7518,9 @@ pathshorten({path} [, {len}])				*pathshorten()*
 
 		Can also be used as a |method|: >
 			GetDirectories()->pathshorten()
+<
+		Return type: |String|
+
 
 perleval({expr})					*perleval()*
 		Evaluate Perl expression {expr} in scalar context and return
@@ -6859,8 +7537,10 @@ perleval({expr})					*perleval()*
 
 		Can also be used as a |method|: >
 			GetExpr()->perleval()
+<
+		Return type: any, depending on {expr}
 
-<		{only available when compiled with the |+perl| feature}
+		{only available when compiled with the |+perl| feature}
 
 
 popup_ functions are documented here: |popup-functions|
@@ -6880,6 +7560,9 @@ pow({x}, {y})						*pow()*
 
 		Can also be used as a |method|: >
 			Compute()->pow(3)
+<
+		Return type: |Number|
+
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
@@ -6892,6 +7575,9 @@ prevnonblank({lnum})					*prevnonblank()*
 
 		Can also be used as a |method|: >
 			GetLnum()->prevnonblank()
+<
+		Return type: |Number|
+
 
 printf({fmt}, {expr1} ...)				*printf()*
 		Return a String with {fmt}, where "%" items are replaced by
@@ -7218,6 +7904,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 		into this, copying the exact format string and parameters that
 		were used.
 
+		Return type: |String|
+
 
 prompt_getprompt({buf})					*prompt_getprompt()*
 		Returns the effective prompt text for buffer {buf}.  {buf} can
@@ -7228,8 +7916,10 @@ prompt_getprompt({buf})					*prompt_getprompt()*
 
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_getprompt()
+<
+		Return type: |String|
 
-<		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+channel| feature}
 
 
 prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
@@ -7280,8 +7970,10 @@ prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setinterrupt(callback)
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+channel| feature}
 
 prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Set prompt for buffer {buf} to {text}.  You most likely want
@@ -7292,8 +7984,10 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 <
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setprompt('command: ')
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+channel| feature}
+		{only available when compiled with the |+channel| feature}
 
 prop_ functions are documented here: |text-prop-functions|
 
@@ -7311,11 +8005,17 @@ pum_getpos()						*pum_getpos()*
 		The values are the same as in |v:event| during
 		|CompleteChanged|.
 
+		Return type: dict<any>
+
+
 pumvisible()						*pumvisible()*
 		Returns non-zero when the popup menu is visible, zero
 		otherwise.  See |ins-completion-menu|.
 		This can be used to avoid some things that would remove the
 		popup menu.
+
+		Return type: |Number|
+
 
 py3eval({expr})						*py3eval()*
 		Evaluate Python expression {expr} and return its result
@@ -7331,8 +8031,10 @@ py3eval({expr})						*py3eval()*
 
 		Can also be used as a |method|: >
 			GetExpr()->py3eval()
+<
+		Return type: any, depending on {expr}
 
-<		{only available when compiled with the |+python3| feature}
+		{only available when compiled with the |+python3| feature}
 
 							*E858* *E859*
 pyeval({expr})						*pyeval()*
@@ -7348,8 +8050,10 @@ pyeval({expr})						*pyeval()*
 
 		Can also be used as a |method|: >
 			GetExpr()->pyeval()
+<
+		Return type: any, depending on {expr}
 
-<		{only available when compiled with the |+python| feature}
+		{only available when compiled with the |+python| feature}
 
 pyxeval({expr})						*pyxeval()*
 		Evaluate Python expression {expr} and return its result
@@ -7358,9 +8062,11 @@ pyxeval({expr})						*pyxeval()*
 		See also: |pyeval()|, |py3eval()|
 
 		Can also be used as a |method|: >
-			GetExpr()->pyxeval()
+	<		GetExpr()->pyxeval()
+<
+		Return type: any, depending on {expr}
 
-<		{only available when compiled with the |+python| or the
+		{only available when compiled with the |+python| or the
 		|+python3| feature}
 
 rand([{expr}])						*rand()* *random*
@@ -7378,6 +8084,7 @@ rand([{expr}])						*rand()* *random*
 			:echo rand(seed)
 			:echo rand(seed) % 16  " random number 0 - 15
 <
+		Return type: |Number|
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
@@ -7401,6 +8108,8 @@ range({expr} [, {max} [, {stride}]])				*range()*
 		Can also be used as a |method|: >
 			GetExpr()->range()
 <
+		Return type: list<number>
+
 
 readblob({fname} [, {offset} [, {size}]])			*readblob()*
 		Read file {fname} in binary mode and return a |Blob|.
@@ -7425,6 +8134,8 @@ readblob({fname} [, {offset} [, {size}]])			*readblob()*
 		When trying to read more bytes than are available the result
 		is truncated.
 		Also see |readfile()| and |writefile()|.
+
+		Return type: |Blob|
 
 
 readdir({directory} [, {expr} [, {dict}]])			*readdir()*
@@ -7483,6 +8194,9 @@ readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		Can also be used as a |method|: >
 			GetDirName()->readdir()
 <
+		Return type: list<string> or list<any>
+
+
 readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		Extended version of |readdir()|.
 		Return a list of Dictionaries with file and directory
@@ -7542,6 +8256,8 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		Can also be used as a |method|: >
 			GetDirName()->readdirex()
 <
+		Return type: list<dict<any>> or list<any>
+
 
 							*readfile()*
 readfile({fname} [, {type} [, {max}]])
@@ -7580,6 +8296,8 @@ readfile({fname} [, {type} [, {max}]])
 
 		Can also be used as a |method|: >
 			GetFileName()->readfile()
+<
+		Return type: list<string> or list<any>
 
 reduce({object}, {func} [, {initial}])			*reduce()* *E998*
 		{func} is called for every item in {object}, which can be a
@@ -7600,6 +8318,9 @@ reduce({object}, {func} [, {initial}])			*reduce()* *E998*
 <
 		Can also be used as a |method|: >
 			echo mylist->reduce({ acc, val -> acc + val }, 0)
+<
+		Return type: |String|, |Blob|, list<{type}> or dict<{type}>
+		depending on {object} and {func}
 
 
 reg_executing()						*reg_executing()*
@@ -7607,13 +8328,19 @@ reg_executing()						*reg_executing()*
 		Returns an empty string when no register is being executed.
 		See |@|.
 
+		Return type: |String|
+
+
 reg_recording()						*reg_recording()*
 		Returns the single letter name of the register being recorded.
 		Returns an empty string when not recording.  See |q|.
 
-reltime()
+		Return type: |String|
+
+
+reltime()						*reltime()*
 reltime({start})
-reltime({start}, {end})					*reltime()*
+reltime({start}, {end})
 		Return an item that represents a time value.  The item is a
 		list with items that depend on the system.  In Vim 9 script
 		the type list<any> can be used.
@@ -7639,7 +8366,10 @@ reltime({start}, {end})					*reltime()*
 		Can also be used as a |method|: >
 			GetStart()->reltime()
 <
+		Return type: list<number>
+
 		{only available when compiled with the |+reltime| feature}
+
 
 reltimefloat({time})				*reltimefloat()*
 		Return a Float that represents the time value of {time}.
@@ -7654,8 +8384,11 @@ reltimefloat({time})				*reltimefloat()*
 
 		Can also be used as a |method|: >
 			reltime(start)->reltimefloat()
+<
+		Return type: |Float|
 
-<		{only available when compiled with the |+reltime| feature}
+		{only available when compiled with the |+reltime| feature}
+
 
 reltimestr({time})				*reltimestr()*
 		Return a String that represents the time value of {time}.
@@ -7676,8 +8409,10 @@ reltimestr({time})				*reltimestr()*
 
 		Can also be used as a |method|: >
 			reltime(start)->reltimestr()
+<
+		Return type: |String|
 
-<		{only available when compiled with the |+reltime| feature}
+		{only available when compiled with the |+reltime| feature}
 
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar} [, {timeout}]])
@@ -7714,6 +8449,9 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 <
 		Can also be used as a |method|: >
 			ServerName()->remote_expr(expr)
+<
+		Return type: |String| or list<{type}>
+
 
 remote_foreground({server})				*remote_foreground()*
 		Move the Vim server with the name {server} to the foreground.
@@ -7729,8 +8467,10 @@ remote_foreground({server})				*remote_foreground()*
 
 		Can also be used as a |method|: >
 			ServerName()->remote_foreground()
+<
+		Return type: |Number|
 
-<		{only in the Win32, Motif and GTK GUI versions and the
+		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
 
 
@@ -7750,6 +8490,9 @@ remote_peek({serverid} [, {retvar}])		*remote_peek()*
 
 <		Can also be used as a |method|: >
 			ServerId()->remote_peek()
+<
+		Return type: |Number|
+
 
 remote_read({serverid}, [{timeout}])			*remote_read()*
 		Return the oldest available reply from {serverid} and consume
@@ -7765,8 +8508,10 @@ remote_read({serverid}, [{timeout}])			*remote_read()*
 <		Can also be used as a |method|: >
 			ServerId()->remote_read()
 <
-							*remote_send()* *E241*
-remote_send({server}, {string} [, {idvar}])
+		Return type: |String|
+
+
+remote_send({server}, {string} [, {idvar}])		*remote_send()* *E241*
 		Send the {string} to {server}.  The {server} argument is a
 		string, also see |{server}|.
 
@@ -7796,19 +8541,24 @@ remote_send({server}, {string} [, {idvar}])
 		Can also be used as a |method|: >
 			ServerName()->remote_send(keys)
 <
-					*remote_startserver()* *E941* *E942*
-remote_startserver({name})
+		Return type: |String|
+
+
+remote_startserver({name})		*remote_startserver()* *E941* *E942*
 		Become the server {name}.  {name} must be a non-empty string.
 		This fails if already running as a server, when |v:servername|
 		is not empty.
 
 		Can also be used as a |method|: >
 			ServerName()->remote_startserver()
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+clientserver| feature}
+		{only available when compiled with the |+clientserver| feature}
 
-remove({list}, {idx})
-remove({list}, {idx}, {end})				*remove()*
+
+remove({list}, {idx})						*remove()*
+remove({list}, {idx}, {end})
 		Without {end}: Remove the item at {idx} from |List| {list} and
 		return the item.
 		With {end}: Remove items from {idx} to {end} (inclusive) and
@@ -7825,6 +8575,9 @@ remove({list}, {idx}, {end})				*remove()*
 
 		Can also be used as a |method|: >
 			mylist->remove(idx)
+<
+		Return type: any, depending on {list}
+
 
 remove({blob}, {idx})
 remove({blob}, {idx}, {end})
@@ -7838,6 +8591,8 @@ remove({blob}, {idx}, {end})
 		Example: >
 			:echo "last byte: " .. remove(myblob, -1)
 			:call remove(mylist, 0, 9)
+<
+		Return type: |Number|
 
 remove({dict}, {key})
 		Remove the entry from {dict} with key {key} and return it.
@@ -7845,6 +8600,9 @@ remove({dict}, {key})
 			:echo "removed " .. remove(dict, "one")
 <		If there is no {key} in {dict} this is an error.
 		Returns zero on error.
+
+		Return type: any, depending on {dict}
+
 
 rename({from}, {to})					*rename()*
 		Rename the file by the name {from} to the name {to}.  This
@@ -7856,6 +8614,9 @@ rename({from}, {to})					*rename()*
 
 		Can also be used as a |method|: >
 			GetOldName()->rename(newname)
+<
+		Return type: |Number|
+
 
 repeat({expr}, {count})					*repeat()*
 		Repeat {expr} {count} times and return the concatenated
@@ -7869,6 +8630,10 @@ repeat({expr}, {count})					*repeat()*
 
 		Can also be used as a |method|: >
 			mylist->repeat(count)
+<
+		Return type: |String|, |Blob| or list<{type}> depending on
+		{expr}
+
 
 resolve({filename})					*resolve()* *E655*
 		On MS-Windows, when {filename} is a shortcut (a .lnk file),
@@ -7888,6 +8653,9 @@ resolve({filename})					*resolve()* *E655*
 
 		Can also be used as a |method|: >
 			GetName()->resolve()
+<
+		Return type: |String|
+
 
 reverse({object})					*reverse()*
 		Reverse the order of items in {object}.  {object} can be a
@@ -7900,6 +8668,10 @@ reverse({object})					*reverse()*
 			:let revlist = reverse(copy(mylist))
 <		Can also be used as a |method|: >
 			mylist->reverse()
+<
+		Return type: |String|, |Blob| or list<{type}> depending on
+		{object}
+
 
 round({expr})							*round()*
 		Round off {expr} to the nearest integral value and return it
@@ -7917,6 +8689,9 @@ round({expr})							*round()*
 
 		Can also be used as a |method|: >
 			Compute()->round()
+<
+		Return type: |Float|
+
 
 rubyeval({expr})					*rubyeval()*
 		Evaluate Ruby expression {expr} and return its result
@@ -7932,8 +8707,10 @@ rubyeval({expr})					*rubyeval()*
 
 		Can also be used as a |method|: >
 			GetRubyExpr()->rubyeval()
+<
+		Return type: any, depending on {expr}
 
-<		{only available when compiled with the |+ruby| feature}
+		{only available when compiled with the |+ruby| feature}
 
 screenattr({row}, {col})					*screenattr()*
 		Like |screenchar()|, but return the attribute.  This is a rather
@@ -7943,6 +8720,9 @@ screenattr({row}, {col})					*screenattr()*
 
 		Can also be used as a |method|: >
 			GetRow()->screenattr(col)
+<
+		Return type: |Number|
+
 
 screenchar({row}, {col})					*screenchar()*
 		The result is a Number, which is the character at position
@@ -7956,6 +8736,9 @@ screenchar({row}, {col})					*screenchar()*
 
 		Can also be used as a |method|: >
 			GetRow()->screenchar(col)
+<
+		Return type: |Number|
+
 
 screenchars({row}, {col})					*screenchars()*
 		The result is a |List| of Numbers.  The first number is the same
@@ -7966,6 +8749,9 @@ screenchars({row}, {col})					*screenchars()*
 
 		Can also be used as a |method|: >
 			GetRow()->screenchars(col)
+<
+		Return type: list<number> or list<any>
+
 
 screencol()							*screencol()*
 		The result is a Number, which is the current screen column of
@@ -7981,6 +8767,9 @@ screencol()							*screencol()*
 			nnoremap <silent> GG :echom screencol()<CR>
 			nnoremap GG <Cmd>echom screencol()<CR>
 <
+		Return type: |Number|
+
+
 screenpos({winid}, {lnum}, {col})				*screenpos()*
 		The result is a Dict with the screen position of the text
 		character in window {winid} at buffer line {lnum} and column
@@ -8007,6 +8796,9 @@ screenpos({winid}, {lnum}, {col})				*screenpos()*
 
 		Can also be used as a |method|: >
 			GetWinid()->screenpos(lnum, col)
+<
+		Return type: dict<number> or dict<any>
+
 
 screenrow()							*screenrow()*
 		The result is a Number, which is the current screen row of the
@@ -8015,6 +8807,9 @@ screenrow()							*screenrow()*
 		Alternatively you can use |winline()|.
 
 		Note: Same restrictions as with |screencol()|.
+
+		Return type: |Number|
+
 
 screenstring({row}, {col})					*screenstring()*
 		The result is a String that contains the base character and
@@ -8027,6 +8822,8 @@ screenstring({row}, {col})					*screenstring()*
 		Can also be used as a |method|: >
 			GetRow()->screenstring(col)
 <
+		Return type: |String|
+
 								*search()*
 search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		Search for regexp pattern {pattern}.  The search starts at the
@@ -8133,6 +8930,9 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 
 		Can also be used as a |method|: >
 			GetPattern()->search()
+<
+		Return type: |Number|
+
 
 searchcount([{options}])					*searchcount()*
 		Get or update the last search count, like what is displayed
@@ -8259,6 +9059,9 @@ searchcount([{options}])					*searchcount()*
 		Can also be used as a |method|: >
 			GetSearchOpts()->searchcount()
 <
+		Return type: dict<number>
+
+
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
 
@@ -8280,6 +9083,8 @@ searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Can also be used as a |method|: >
 			GetName()->searchdecl()
 <
+		Return type: |Number|
+
 							*searchpair()*
 searchpair({start}, {middle}, {end} [, {flags} [, {skip}
 				[, {stopline} [, {timeout}]]]])
@@ -8368,6 +9173,8 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}
 	:echo searchpair('{', '', '}', 'bW',
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"')
 <
+		Return type: |Number|
+
 							*searchpairpos()*
 searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}
 				[, {stopline} [, {timeout}]]]])
@@ -8380,6 +9187,8 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}
 			:let [lnum,col] = searchpairpos('{', '', '}', 'n')
 <
 		See |match-parens| for a bigger and more useful example.
+
+		Return type: list<number>
 
 							*searchpos()*
 searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
@@ -8399,6 +9208,9 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 
 		Can also be used as a |method|: >
 			GetPattern()->searchpos()
+<
+		Return type: list<number>
+
 
 server2client({clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}
@@ -8416,6 +9228,9 @@ server2client({clientid}, {string})			*server2client()*
 <		Can also be used as a |method|: >
 			GetClientId()->server2client(string)
 <
+		Return type: |Number|
+
+
 serverlist()					*serverlist()*
 		Return a list of available server names, one per line.
 		When there are no servers or the information is not available
@@ -8424,6 +9239,9 @@ serverlist()					*serverlist()*
 		Example: >
 			:echo serverlist()
 <
+		Return type: |String|
+
+
 setbufline({buf}, {lnum}, {text})			*setbufline()*
 		Set line {lnum} to {text} in buffer {buf}.  This works like
 		|setline()| for the specified buffer.
@@ -8454,6 +9272,9 @@ setbufline({buf}, {lnum}, {text})			*setbufline()*
 		Can also be used as a |method|, the base is passed as the
 		third argument: >
 			GetText()->setbufline(buf, lnum)
+<
+		Return type: |Number|
+
 
 setbufvar({buf}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {buf} to
@@ -8472,6 +9293,8 @@ setbufvar({buf}, {varname}, {val})			*setbufvar()*
 		Can also be used as a |method|, the base is passed as the
 		third argument: >
 			GetValue()->setbufvar(buf, varname)
+<
+		Return type: |Number|
 
 
 setcellwidths({list})					*setcellwidths()*
@@ -8508,6 +9331,8 @@ setcellwidths({list})					*setcellwidths()*
 		match with what Vim knows about each emoji.  If it doesn't
 		look right you need to adjust the {list} argument.
 
+		Return type: |Number|
+
 
 setcharpos({expr}, {list})				*setcharpos()*
 		Same as |setpos()| but uses the specified column number as the
@@ -8522,6 +9347,9 @@ setcharpos({expr}, {list})				*setcharpos()*
 
 		Can also be used as a |method|: >
 			GetPosition()->setcharpos('.')
+<
+		Return type: |Number|
+
 
 setcharsearch({dict})					*setcharsearch()*
 		Set the current character search information to {dict},
@@ -8545,6 +9373,9 @@ setcharsearch({dict})					*setcharsearch()*
 
 		Can also be used as a |method|: >
 			SavedSearch()->setcharsearch()
+<
+		Return type: dict<any>
+
 
 setcmdline({str} [, {pos}])					*setcmdline()*
 		Set the command line to {str} and set the cursor position to
@@ -8555,6 +9386,9 @@ setcmdline({str} [, {pos}])					*setcmdline()*
 
 		Can also be used as a |method|: >
 			GetText()->setcmdline()
+<
+		Return type: |Number|
+
 
 setcmdpos({pos})					*setcmdpos()*
 		Set the cursor position in the command line to byte position
@@ -8573,6 +9407,9 @@ setcmdpos({pos})					*setcmdpos()*
 
 		Can also be used as a |method|: >
 			GetPos()->setcmdpos()
+<
+		Return type: |Number|
+
 
 setcursorcharpos({lnum}, {col} [, {off}])		*setcursorcharpos()*
 setcursorcharpos({list})
@@ -8588,6 +9425,8 @@ setcursorcharpos({list})
 
 		Can also be used as a |method|: >
 			GetCursorPos()->setcursorcharpos()
+<
+		Return type: |Number|
 
 
 setenv({name}, {val})						*setenv()*
@@ -8600,6 +9439,9 @@ setenv({name}, {val})						*setenv()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetPath()->setenv('PATH')
+<
+		Return type: |Number|
+
 
 setfperm({fname}, {mode})				*setfperm()* *chmod*
 		Set the file permissions for {fname} to {mode}.
@@ -8620,6 +9462,8 @@ setfperm({fname}, {mode})				*setfperm()* *chmod*
 			GetFilename()->setfperm(mode)
 <
 		To read permissions see |getfperm()|.
+
+		Return type: |Number|
 
 
 setline({lnum}, {text})					*setline()*
@@ -8654,6 +9498,9 @@ setline({lnum}, {text})					*setline()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetText()->setline(lnum)
+<
+		Return type: |Number|
+
 
 setloclist({nr}, {list} [, {action} [, {what}]])		*setloclist()*
 		Create or replace or add to the location list for window {nr}.
@@ -8674,6 +9521,9 @@ setloclist({nr}, {list} [, {action} [, {what}]])		*setloclist()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetLoclist()->setloclist(winnr)
+<
+		Return type: |Number|
+
 
 setmatches({list} [, {win}])				*setmatches()*
 		Restores a list of matches saved by |getmatches()| for the
@@ -8686,8 +9536,10 @@ setmatches({list} [, {win}])				*setmatches()*
 		Can also be used as a |method|: >
 			GetMatches()->setmatches()
 <
-							*setpos()*
-setpos({expr}, {list})
+		Return type: |Number|
+
+
+setpos({expr}, {list})					*setpos()*
 		Set the position for String {expr}.  Possible values:
 			.	the cursor
 			'x	mark x
@@ -8738,6 +9590,9 @@ setpos({expr}, {list})
 
 		Can also be used as a |method|: >
 			GetPosition()->setpos('.')
+<
+		Return type: |Number|
+
 
 setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		Create or replace or add to the quickfix list.
@@ -8856,8 +9711,10 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		second argument: >
 			GetErrorlist()->setqflist()
 <
-							*setreg()*
-setreg({regname}, {value} [, {options}])
+		Return type: |Number|
+
+
+setreg({regname}, {value} [, {options}])			*setreg()*
 		Set the register {regname} to {value}.
 		If {regname} is "" or "@", the unnamed register '"' is used.
 		The {regname} argument is a string.  In |Vim9-script|
@@ -8915,6 +9772,9 @@ setreg({regname}, {value} [, {options}])
 <		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetText()->setreg('a')
+<
+		Return type: |Number|
+
 
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Set tab-local variable {varname} to {val} in tab page {tabnr}.
@@ -8929,6 +9789,9 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Can also be used as a |method|, the base is passed as the
 		third argument: >
 			GetValue()->settabvar(tab, name)
+<
+		Return type: |Number|
+
 
 settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		Set option or local variable {varname} in window {winnr} to
@@ -8951,6 +9814,9 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		Can also be used as a |method|, the base is passed as the
 		fourth argument: >
 			GetValue()->settabwinvar(tab, winnr, name)
+<
+		Return type: |Number|
+
 
 settagstack({nr}, {dict} [, {action}])			*settagstack()*
 		Modify the tag stack of the window {nr} using {dict}.
@@ -8988,6 +9854,9 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetStack()->settagstack(winnr)
+<
+		Return type: |Number|
+
 
 setwinvar({winnr}, {varname}, {val})			*setwinvar()*
 		Like |settabwinvar()| for the current tab page.
@@ -8998,6 +9867,9 @@ setwinvar({winnr}, {varname}, {val})			*setwinvar()*
 <		Can also be used as a |method|, the base is passed as the
 		third argument: >
 			GetValue()->setwinvar(winnr, name)
+<
+		Return type: |Number|
+
 
 sha256({string})						*sha256()*
 		Returns a String with 64 hex characters, which is the SHA256
@@ -9005,8 +9877,10 @@ sha256({string})						*sha256()*
 
 		Can also be used as a |method|: >
 			GetText()->sha256()
+<
+		Return type: |String|
 
-<		{only available when compiled with the |+cryptv| feature}
+		{only available when compiled with the |+cryptv| feature}
 
 shellescape({string} [, {special}])			*shellescape()*
 		Escape {string} for use as a shell command argument.
@@ -9049,6 +9923,9 @@ shellescape({string} [, {special}])			*shellescape()*
 
 		Can also be used as a |method|: >
 			GetCommand()->shellescape()
+<
+		Return type: |String|
+
 
 shiftwidth([{col}])						*shiftwidth()*
 		Returns the effective value of 'shiftwidth'. This is the
@@ -9064,6 +9941,8 @@ shiftwidth([{col}])						*shiftwidth()*
 
 		Can also be used as a |method|: >
 			GetColumn()->shiftwidth()
+<
+		Return type: |Number|
 
 sign_ functions are documented here: |sign-functions-details|
 
@@ -9087,6 +9966,9 @@ simplify({filename})					*simplify()*
 
 		Can also be used as a |method|: >
 			GetName()->simplify()
+<
+		Return type: |String|
+
 
 sin({expr})						*sin()*
 		Return the sine of {expr}, measured in radians, as a |Float|.
@@ -9100,6 +9982,8 @@ sin({expr})						*sin()*
 
 		Can also be used as a |method|: >
 			Compute()->sin()
+<
+		Return type: |Float|
 
 
 sinh({expr})						*sinh()*
@@ -9115,6 +9999,8 @@ sinh({expr})						*sinh()*
 
 		Can also be used as a |method|: >
 			Compute()->sinh()
+<
+		Return type: |Float|
 
 
 slice({expr}, {start} [, {end}])			*slice()*
@@ -9129,6 +10015,8 @@ slice({expr}, {start} [, {end}])			*slice()*
 
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
+<
+		Return type: list<{type}>
 
 
 sort({list} [, {how} [, {dict}]])			*sort()* *E702*
@@ -9208,11 +10096,16 @@ sort({list} [, {how} [, {dict}]])			*sort()* *E702*
 <		For a simple expression you can use a lambda: >
 			eval mylist->sort({i1, i2 -> i1 - i2})
 <
+		Return type: list<{type}>
+
+
 sound_clear()						*sound_clear()*
 		Stop playing all sounds.
 
 		On some Linux systems you may need the libcanberra-pulse
 		package, otherwise sound may not stop.
+
+		Return type: |Number|
 
 		{only available when compiled with the |+sound| feature}
 
@@ -9249,8 +10142,10 @@ sound_playevent({name} [, {callback}])
 
 		Can also be used as a |method|: >
 			GetSoundName()->sound_playevent()
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+sound| feature}
+		{only available when compiled with the |+sound| feature}
 
 							*sound_playfile()*
 sound_playfile({path} [, {callback}])
@@ -9261,8 +10156,10 @@ sound_playfile({path} [, {callback}])
 
 <		Can also be used as a |method|: >
 			GetSoundPath()->sound_playfile()
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+sound| feature}
+		{only available when compiled with the |+sound| feature}
 
 
 sound_stop({id})					*sound_stop()*
@@ -9277,8 +10174,10 @@ sound_stop({id})					*sound_stop()*
 
 		Can also be used as a |method|: >
 			soundid->sound_stop()
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+sound| feature}
+		{only available when compiled with the |+sound| feature}
 
 							*soundfold()*
 soundfold({word})
@@ -9292,8 +10191,10 @@ soundfold({word})
 		Can also be used as a |method|: >
 			GetWord()->soundfold()
 <
-							*spellbadword()*
-spellbadword([{sentence}])
+		Return type: |String|
+
+
+spellbadword([{sentence}])				*spellbadword()*
 		Without argument: The result is the badly spelled word under
 		or after the cursor.  The cursor is moved to the start of the
 		bad word.  When no bad word is found in the cursor line the
@@ -9320,8 +10221,10 @@ spellbadword([{sentence}])
 		Can also be used as a |method|: >
 			GetText()->spellbadword()
 <
-							*spellsuggest()*
-spellsuggest({word} [, {max} [, {capital}]])
+		Return type: list<string>
+
+
+spellsuggest({word} [, {max} [, {capital}]])		*spellsuggest()*
 		Return a |List| with spelling suggestions to replace {word}.
 		When {max} is given up to this number of suggestions are
 		returned.  Otherwise up to 25 suggestions are returned.
@@ -9344,6 +10247,9 @@ spellsuggest({word} [, {max} [, {capital}]])
 
 		Can also be used as a |method|: >
 			GetWord()->spellsuggest()
+<
+		Return type: list<string> or list<any>
+
 
 split({string} [, {pattern} [, {keepempty}]])			*split()*
 		Make a |List| out of {string}.  When {pattern} is omitted or
@@ -9370,6 +10276,8 @@ split({string} [, {pattern} [, {keepempty}]])			*split()*
 
 		Can also be used as a |method|: >
 			GetString()->split()
+<
+		Return type: list<string>
 
 sqrt({expr})						*sqrt()*
 		Return the non-negative square root of Float {expr} as a
@@ -9386,6 +10294,8 @@ sqrt({expr})						*sqrt()*
 
 		Can also be used as a |method|: >
 			Compute()->sqrt()
+<
+		Return type: |Float|
 
 
 srand([{expr}])						*srand()*
@@ -9401,6 +10311,9 @@ srand([{expr}])						*srand()*
 			:let seed = srand()
 			:let seed = srand(userinput)
 			:echo rand(seed)
+<
+		Return type: list<number>
+
 
 state([{what}])						*state()*
 		Return a string which contains characters indicating the
@@ -9438,6 +10351,9 @@ state([{what}])						*state()*
 			recursiveness up to "ccc")
 		    s	screen has scrolled for messages
 
+		Return type: |String|
+
+
 str2float({string} [, {quoted}])				*str2float()*
 		Convert String {string} to a Float.  This mostly works the
 		same as when using a floating point number in an expression,
@@ -9459,6 +10375,9 @@ str2float({string} [, {quoted}])				*str2float()*
 
 		Can also be used as a |method|: >
 			let f = text->substitute(',', '', 'g')->str2float()
+<
+		Return type: |Float|
+
 
 str2list({string} [, {utf8}])					*str2list()*
 		Return a list containing the number values which represent
@@ -9475,6 +10394,8 @@ str2list({string} [, {utf8}])					*str2list()*
 
 <		Can also be used as a |method|: >
 			GetString()->str2list()
+<
+		Return type: list<number>
 
 
 str2nr({string} [, {base} [, {quoted}]])			*str2nr()*
@@ -9498,6 +10419,8 @@ str2nr({string} [, {base} [, {quoted}]])			*str2nr()*
 
 		Can also be used as a |method|: >
 			GetText()->str2nr()
+<
+		Return type: |Number|
 
 
 strcharlen({string})					*strcharlen()*
@@ -9512,6 +10435,8 @@ strcharlen({string})					*strcharlen()*
 
 		Can also be used as a |method|: >
 			GetText()->strcharlen()
+<
+		Return type: |Number|
 
 
 strcharpart({src}, {start} [, {len} [, {skipcc}]])		*strcharpart()*
@@ -9531,6 +10456,8 @@ strcharpart({src}, {start} [, {len} [, {skipcc}]])		*strcharpart()*
 
 		Can also be used as a |method|: >
 			GetText()->strcharpart(5)
+<
+		Return type: |String|
 
 
 strchars({string} [, {skipcc}])					*strchars()*
@@ -9563,6 +10490,9 @@ strchars({string} [, {skipcc}])					*strchars()*
 <
 		Can also be used as a |method|: >
 			GetText()->strchars()
+<
+		Return type: |Number|
+
 
 strdisplaywidth({string} [, {col}])			*strdisplaywidth()*
 		The result is a Number, which is the number of display cells
@@ -9580,6 +10510,9 @@ strdisplaywidth({string} [, {col}])			*strdisplaywidth()*
 
 		Can also be used as a |method|: >
 			GetText()->strdisplaywidth()
+<
+		Return type: |Number|
+
 
 strftime({format} [, {time}])				*strftime()*
 		The result is a String, which is a formatted date and time, as
@@ -9602,6 +10535,9 @@ strftime({format} [, {time}])				*strftime()*
 
 <		Can also be used as a |method|: >
 			GetFormat()->strftime()
+<
+		Return type: |String|
+
 
 strgetchar({str}, {index})				*strgetchar()*
 		Get a Number corresponding to the character at {index} in
@@ -9614,6 +10550,9 @@ strgetchar({str}, {index})				*strgetchar()*
 
 		Can also be used as a |method|: >
 			GetText()->strgetchar(5)
+<
+		Return type: |Number|
+
 
 stridx({haystack}, {needle} [, {start}])		*stridx()*
 		The result is a Number, which gives the byte index in
@@ -9637,8 +10576,11 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 		Can also be used as a |method|: >
 			GetHaystack()->stridx(needle)
 <
-							*string()*
-string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
+		Return type: |Number|
+
+
+string({expr})							*string()*
+		Return {expr} converted to a String.  If {expr} is a Number,
 		Float, String, Blob or a composition of them, then the result
 		can be parsed back with |eval()|.
 			{expr} type	result ~
@@ -9667,6 +10609,8 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 
 <		Also see |strtrans()|.
 
+		Return type: |String|
+
 
 strlen({string})						*strlen()*
 		The result is a Number, which is the length of the String
@@ -9679,6 +10623,9 @@ strlen({string})						*strlen()*
 
 		Can also be used as a |method|: >
 			GetString()->strlen()
+<
+		Return type: |Number|
+
 
 strpart({src}, {start} [, {len} [, {chars}]])			*strpart()*
 		The result is a String, which is part of {src}, starting from
@@ -9707,6 +10654,9 @@ strpart({src}, {start} [, {len} [, {chars}]])			*strpart()*
 
 		Can also be used as a |method|: >
 			GetText()->strpart(5)
+<
+		Return type: |String|
+
 
 strptime({format}, {timestring})				*strptime()*
 		The result is a Number, which is a unix timestamp representing
@@ -9737,6 +10687,9 @@ strptime({format}, {timestring})				*strptime()*
 <
 		Not available on all systems.  To check use: >
 			:if exists("*strptime")
+<
+		Return type: |Number|
+
 
 strridx({haystack}, {needle} [, {start}])			*strridx()*
 		The result is a Number, which gives the byte index in
@@ -9758,6 +10711,9 @@ strridx({haystack}, {needle} [, {start}])			*strridx()*
 
 		Can also be used as a |method|: >
 			GetHaystack()->strridx(needle)
+<
+		Return type: |Number|
+
 
 strtrans({string})					*strtrans()*
 		The result is a String, which is {string} with all unprintable
@@ -9771,6 +10727,9 @@ strtrans({string})					*strtrans()*
 
 		Can also be used as a |method|: >
 			GetString()->strtrans()
+<
+		Return type: |String|
+
 
 strutf16len({string} [, {countcc}])			*strutf16len()*
 		The result is a Number, which is the number of UTF-16 code
@@ -9794,6 +10753,9 @@ strutf16len({string} [, {countcc}])			*strutf16len()*
 		Can also be used as a |method|: >
 			GetText()->strutf16len()
 <
+		Return type: |Number|
+
+
 strwidth({string})					*strwidth()*
 		The result is a Number, which is the number of display cells
 		String {string} occupies.  A Tab character is counted as one
@@ -9805,6 +10767,9 @@ strwidth({string})					*strwidth()*
 
 		Can also be used as a |method|: >
 			GetString()->strwidth()
+<
+		Return type: |Number|
+
 
 submatch({nr} [, {list}])			*submatch()* *E935*
 		Only for an expression in a |:substitute| command or
@@ -9836,6 +10801,9 @@ submatch({nr} [, {list}])			*submatch()* *E935*
 
 		Can also be used as a |method|: >
 			GetNr()->submatch()
+<
+		Return type: |String| or list<string> depending on {list}
+
 
 substitute({string}, {pat}, {sub}, {flags})		*substitute()*
 		The result is a String, which is a copy of {string}, in which
@@ -9882,6 +10850,9 @@ substitute({string}, {pat}, {sub}, {flags})		*substitute()*
 
 		Can also be used as a |method|: >
 			GetString()->substitute(pat, sub, flags)
+<
+		Return type: |String|
+
 
 swapfilelist()						*swapfilelist()*
 		Returns a list of swap file names, like what "vim -r" shows.
@@ -9893,6 +10864,9 @@ swapfilelist()						*swapfilelist()*
 			let &directory = '.'
 			let swapfiles = swapfilelist()
 			let &directory = save_dir
+<
+		Return type: list<string>
+
 
 swapinfo({fname})					*swapinfo()*
 		The result is a dictionary, which holds information about the
@@ -9915,6 +10889,9 @@ swapinfo({fname})					*swapinfo()*
 
 		Can also be used as a |method|: >
 			GetFilename()->swapinfo()
+<
+		Return type: dict<any> or dict<string>
+
 
 swapname({buf})						*swapname()*
 		The result is the swap file path of the buffer {expr}.
@@ -9925,6 +10902,9 @@ swapname({buf})						*swapname()*
 
 		Can also be used as a |method|: >
 			GetBufname()->swapname()
+<
+		Return type: |String|
+
 
 synID({lnum}, {col}, {trans})				*synID()*
 		The result is a Number, which is the syntax ID at the position
@@ -9951,6 +10931,8 @@ synID({lnum}, {col}, {trans})				*synID()*
 		Example (echoes the name of the syntax item under the cursor): >
 			:echo synIDattr(synID(line("."), col("."), 1), "name")
 <
+		Return type: |Number|
+
 
 synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		The result is a String, which is the {what} attribute of
@@ -9994,6 +10976,8 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 <
 		Can also be used as a |method|: >
 	:echo synID(line("."), col("."), 1)->synIDtrans()->synIDattr("fg")
+<
+		Return type: |String|
 
 
 synIDtrans({synID})					*synIDtrans()*
@@ -10006,6 +10990,9 @@ synIDtrans({synID})					*synIDtrans()*
 
 		Can also be used as a |method|: >
 	:echo synID(line("."), col("."), 1)->synIDtrans()->synIDattr("fg")
+<
+		Return type: |Number|
+
 
 synconcealed({lnum}, {col})				*synconcealed()*
 		The result is a |List| with currently three items:
@@ -10035,6 +11022,8 @@ synconcealed({lnum}, {col})				*synconcealed()*
 		Note: Doesn't consider |matchadd()| highlighting items,
 		since syntax and matching highlighting are two different
 		mechanisms |syntax-vs-match|.
+<
+		Return type: list<any>
 
 
 synstack({lnum}, {col})					*synstack()*
@@ -10055,6 +11044,9 @@ synstack({lnum}, {col})					*synstack()*
 		an empty List is returned.  The position just after the last
 		character in a line and the first column in an empty line are
 		valid positions.
+
+		Return type: list<number> or list<any>
+
 
 system({expr} [, {input}])				*system()* *E677*
 		Get the output of the shell command {expr} as a |String|.  See
@@ -10118,6 +11110,8 @@ system({expr} [, {input}])				*system()* *E677*
 
 		Can also be used as a |method|: >
 			:echo GetCmd()->system()
+<
+		Return type: |String|
 
 
 systemlist({expr} [, {input}])				*systemlist()*
@@ -10136,6 +11130,8 @@ systemlist({expr} [, {input}])				*systemlist()*
 
 		Can also be used as a |method|: >
 			:echo GetCmd()->systemlist()
+<
+		Return type: list<string>
 
 
 tabpagebuflist([{arg}])					*tabpagebuflist()*
@@ -10153,6 +11149,9 @@ tabpagebuflist([{arg}])					*tabpagebuflist()*
 
 		Can also be used as a |method|: >
 			GetTabpage()->tabpagebuflist()
+<
+		Return type: list<number>
+
 
 tabpagenr([{arg}])					*tabpagenr()*
 		The result is a Number, which is the number of the current
@@ -10167,6 +11166,8 @@ tabpagenr([{arg}])					*tabpagenr()*
 		The number can be used with the |:tab| command.
 
 		Returns zero on error.
+
+		Return type: |Number|
 
 
 tabpagewinnr({tabarg} [, {arg}])			*tabpagewinnr()*
@@ -10185,9 +11186,14 @@ tabpagewinnr({tabarg} [, {arg}])			*tabpagewinnr()*
 		Can also be used as a |method|: >
 			GetTabpage()->tabpagewinnr()
 <
-							*tagfiles()*
-tagfiles()	Returns a |List| with the file names used to search for tags
+		Return type: |Number|
+
+
+tagfiles()						*tagfiles()*
+		Returns a |List| with the file names used to search for tags
 		for the current buffer.  This is the 'tags' option expanded.
+
+		Return type: list<string> or list<any>
 
 
 taglist({expr} [, {filename}])				*taglist()*
@@ -10235,6 +11241,9 @@ taglist({expr} [, {filename}])				*taglist()*
 
 		Can also be used as a |method|: >
 			GetTagpattern()->taglist()
+<
+		Return type: list<dict<any>> or list<any>
+
 
 tan({expr})						*tan()*
 		Return the tangent of {expr}, measured in radians, as a |Float|
@@ -10249,6 +11258,8 @@ tan({expr})						*tan()*
 
 		Can also be used as a |method|: >
 			Compute()->tan()
+<
+		Return type: |Float|
 
 
 tanh({expr})						*tanh()*
@@ -10264,6 +11275,8 @@ tanh({expr})						*tanh()*
 
 		Can also be used as a |method|: >
 			Compute()->tanh()
+<
+		Return type: |Float|
 
 
 tempname()					*tempname()* *temp-file-name*
@@ -10278,6 +11291,8 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set, or when 'shellcmdflag' starts with '-' and
 		'shell' does not contain powershell or pwsh.
+
+		Return type: |String|
 
 
 term_ functions are documented here: |terminal-function-details|
@@ -10317,6 +11332,8 @@ terminalprops()						*terminalprops()*
 		- |v:termstyleresp| and |v:termblinkresp| for the response to
 		  |t_RS| and |t_RC|.
 
+		Return type: dict<string>
+
 
 test_ functions are documented here: |test-functions-details|
 
@@ -10341,8 +11358,11 @@ timer_info([{id}])
 
 		Can also be used as a |method|: >
 			GetTimer()->timer_info()
+<
+		Return type: list<dict<any>> or list<any>
 
-<		{only available when compiled with the |+timers| feature}
+		{only available when compiled with the |+timers| feature}
+
 
 timer_pause({timer}, {paused})				*timer_pause()*
 		Pause or unpause a timer.  A paused timer does not invoke its
@@ -10359,8 +11379,11 @@ timer_pause({timer}, {paused})				*timer_pause()*
 
 		Can also be used as a |method|: >
 			GetTimer()->timer_pause(1)
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+timers| feature}
+		{only available when compiled with the |+timers| feature}
+
 
 						*timer_start()* *timer* *timers*
 timer_start({time}, {callback} [, {options}])
@@ -10403,7 +11426,11 @@ timer_start({time}, {callback} [, {options}])
 			GetMsec()->timer_start(callback)
 
 <		Not available in the |sandbox|.
+
+		Return type: |Number|
+
 		{only available when compiled with the |+timers| feature}
+
 
 timer_stop({timer})					*timer_stop()*
 		Stop a timer.  The timer callback will no longer be invoked.
@@ -10412,15 +11439,21 @@ timer_stop({timer})					*timer_stop()*
 
 		Can also be used as a |method|: >
 			GetTimer()->timer_stop()
+<
+		Return type: |Number|
 
-<		{only available when compiled with the |+timers| feature}
+		{only available when compiled with the |+timers| feature}
+
 
 timer_stopall()						*timer_stopall()*
 		Stop all timers.  The timer callbacks will no longer be
 		invoked.  Useful if a timer is misbehaving.  If there are no
 		timers there is no error.
 
+		Return type: |Number|
+
 		{only available when compiled with the |+timers| feature}
+
 
 tolower({expr})						*tolower()*
 		The result is a copy of the String given, with all uppercase
@@ -10429,6 +11462,9 @@ tolower({expr})						*tolower()*
 
 		Can also be used as a |method|: >
 			GetText()->tolower()
+<
+		Return type: |String|
+
 
 toupper({expr})						*toupper()*
 		The result is a copy of the String given, with all lowercase
@@ -10437,6 +11473,9 @@ toupper({expr})						*toupper()*
 
 		Can also be used as a |method|: >
 			GetText()->toupper()
+<
+		Return type: |String|
+
 
 tr({src}, {fromstr}, {tostr})				*tr()*
 		The result is a copy of the {src} string with all characters
@@ -10456,6 +11495,9 @@ tr({src}, {fromstr}, {tostr})				*tr()*
 
 		Can also be used as a |method|: >
 			GetText()->tr(from, to)
+<
+		Return type: |String|
+
 
 trim({text} [, {mask} [, {dir}]])				*trim()*
 		Return {text} as a String where any character in {mask} is
@@ -10487,6 +11529,9 @@ trim({text} [, {mask} [, {dir}]])				*trim()*
 
 		Can also be used as a |method|: >
 			GetText()->trim()
+<
+		Return type: |String|
+
 
 trunc({expr})							*trunc()*
 		Return the largest integral value with magnitude less than or
@@ -10504,6 +11549,9 @@ trunc({expr})							*trunc()*
 		Can also be used as a |method|: >
 			Compute()->trunc()
 <
+		Return type: |Float|
+
+
 							*type()*
 type({expr})	The result is a Number representing the type of {expr}.
 		Instead of using the number directly, it is better to use the
@@ -10538,6 +11586,8 @@ type({expr})	The result is a Number representing the type of {expr}.
 
 <		Can also be used as a |method|: >
 			mylist->type()
+<
+		Return type: |Number|
 
 
 typename({expr})					*typename()*
@@ -10545,6 +11595,8 @@ typename({expr})					*typename()*
 		Example: >
 			echo typename([1, 2, 3])
 <			list<number> ~
+
+		Return type: |String|
 
 
 undofile({name})					*undofile()*
@@ -10562,6 +11614,9 @@ undofile({name})					*undofile()*
 
 		Can also be used as a |method|: >
 			GetFilename()->undofile()
+<
+		Return type: |String|
+
 
 undotree([{buf}])					*undotree()*
 		Return the current state of the undo tree for the current
@@ -10607,6 +11662,9 @@ undotree([{buf}])					*undotree()*
 				blocks.  Each item may again have an "alt"
 				item.
 
+		Return type: dict<any>
+
+
 uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 		Remove second and succeeding copies of repeated adjacent
 		{list} items in-place.  Returns {list}.  If you want a list
@@ -10620,6 +11678,9 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 		Can also be used as a |method|: >
 			mylist->uniq()
 <
+		Return type: list<{type}>
+
+
 							*utf16idx()*
 utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 		Same as |charidx()| but returns the UTF-16 code unit index of
@@ -10650,6 +11711,8 @@ utf16idx({string}, {idx} [, {countcc} [, {charidx}]])
 <
 		Can also be used as a |method|: >
 			GetName()->utf16idx(idx)
+<
+		Return type: |Number|
 
 
 values({dict})						*values()*
@@ -10659,6 +11722,9 @@ values({dict})						*values()*
 
 		Can also be used as a |method|: >
 			mydict->values()
+<
+		Return type: list<any>
+
 
 virtcol({expr} [, {list} [, {winid}]])			*virtcol()*
 		The result is a Number, which is the screen column of the file
@@ -10717,6 +11783,9 @@ virtcol({expr} [, {list} [, {winid}]])			*virtcol()*
 
 <		Can also be used as a |method|: >
 			GetPos()->virtcol()
+<
+		Return type: |Number|
+
 
 virtcol2col({winid}, {lnum}, {col})			*virtcol2col()*
 		The result is a Number, which is the byte index of the
@@ -10742,6 +11811,9 @@ virtcol2col({winid}, {lnum}, {col})			*virtcol2col()*
 
 		Can also be used as a |method|: >
 			GetWinid()->virtcol2col(lnum, col)
+<
+		Return type: |Number|
+
 
 visualmode([{expr}])						*visualmode()*
 		The result is a String, which describes the last Visual mode
@@ -10761,6 +11833,9 @@ visualmode([{expr}])						*visualmode()*
 		a non-empty String, then the Visual mode will be cleared and
 		the old value is returned.  See |non-zero-arg|.
 
+		Return type: |String|
+
+
 wildmenumode()					*wildmenumode()*
 		Returns |TRUE| when the wildmenu is active and |FALSE|
 		otherwise.  See 'wildmenu' and 'wildmode'.
@@ -10771,6 +11846,9 @@ wildmenumode()					*wildmenumode()*
     :cnoremap <expr> <C-j> wildmenumode() ? "\<Down>\<Tab>" : "\<c-j>"
 <
 		(Note, this needs the 'wildcharm' option set appropriately).
+
+		Return type: |Number|
+
 
 win_execute({id}, {command} [, {silent}])		*win_execute()*
 		Like `execute()` but in the context of window {id}.
@@ -10790,6 +11868,9 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetCommand()->win_execute(winid)
+<
+		Return type: |String|
+
 
 win_findbuf({bufnr})					*win_findbuf()*
 		Returns a |List| with |window-ID|s for windows that contain
@@ -10797,6 +11878,9 @@ win_findbuf({bufnr})					*win_findbuf()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->win_findbuf()
+<
+		Return type: list<number> or list<any>
+
 
 win_getid([{win} [, {tab}]])				*win_getid()*
 		Get the |window-ID| for the specified window.
@@ -10809,6 +11893,8 @@ win_getid([{win} [, {tab}]])				*win_getid()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->win_getid()
+<
+		Return type: |Number|
 
 
 win_gettype([{nr}])					*win_gettype()*
@@ -10834,6 +11920,9 @@ win_gettype([{nr}])					*win_gettype()*
 		Can also be used as a |method|: >
 			GetWinid()->win_gettype()
 <
+		Return type: |String|
+
+
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
 		tabpage.
@@ -10841,6 +11930,9 @@ win_gotoid({expr})					*win_gotoid()*
 
 		Can also be used as a |method|: >
 			GetWinid()->win_gotoid()
+<
+		Return type: |Number|
+
 
 win_id2tabwin({expr})					*win_id2tabwin()*
 		Return a list with the tab number and window number of window
@@ -10849,6 +11941,9 @@ win_id2tabwin({expr})					*win_id2tabwin()*
 
 		Can also be used as a |method|: >
 			GetWinid()->win_id2tabwin()
+<
+		Return type: list<number>
+
 
 win_id2win({expr})					*win_id2win()*
 		Return the window number of window with ID {expr}.
@@ -10856,6 +11951,9 @@ win_id2win({expr})					*win_id2win()*
 
 		Can also be used as a |method|: >
 			GetWinid()->win_id2win()
+<
+		Return type: |Number|
+
 
 win_move_separator({nr}, {offset})			*win_move_separator()*
 		Move window {nr}'s vertical separator (i.e., the right border)
@@ -10874,6 +11972,9 @@ win_move_separator({nr}, {offset})			*win_move_separator()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->win_move_separator(offset)
+<
+		Return type: |Number|
+
 
 win_move_statusline({nr}, {offset})			*win_move_statusline()*
 		Move window {nr}'s status line (i.e., the bottom border) by
@@ -10889,6 +11990,9 @@ win_move_statusline({nr}, {offset})			*win_move_statusline()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->win_move_statusline(offset)
+<
+		Return type: |Number|
+
 
 win_screenpos({nr})					*win_screenpos()*
 		Return the screen position of window {nr} as a list with two
@@ -10901,6 +12005,9 @@ win_screenpos({nr})					*win_screenpos()*
 		Can also be used as a |method|: >
 			GetWinid()->win_screenpos()
 <
+		Return type: list<number>
+
+
 win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
 		Temporarily switch to window {target}, then move window {nr}
 		to a new split adjacent to {target}.
@@ -10924,6 +12031,8 @@ win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
 		Can also be used as a |method|: >
 			GetWinid()->win_splitmove(target)
 <
+		Return type: |Number|
+
 
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
@@ -10938,10 +12047,16 @@ winbufnr({nr})	The result is a Number, which is the number of the buffer
 		Can also be used as a |method|: >
 			FindWindow()->winbufnr()->bufname()
 <
+		Return type: |Number|
+
+
 							*wincol()*
 wincol()	The result is a Number, which is the virtual column of the
 		cursor in the window.  This is counting screen cells from the
 		left side of the window.  The leftmost column is one.
+
+		Return type: |Number|
+
 
 							*windowsversion()*
 windowsversion()
@@ -10949,6 +12064,8 @@ windowsversion()
 		version.  E.g, Windows 10 is "10.0", Windows 8 is "6.2",
 		Windows XP is "5.1".  For non-MS-Windows systems the result is
 		an empty string.
+
+		Return type: |String|
 
 winheight({nr})						*winheight()*
 		The result is a Number, which is the height of window {nr}.
@@ -10963,6 +12080,9 @@ winheight({nr})						*winheight()*
 <		Can also be used as a |method|: >
 			GetWinid()->winheight()
 <
+		Return type: |Number|
+
+
 winlayout([{tabnr}])					*winlayout()*
 		The result is a nested List containing the layout of windows
 		in a tabpage.
@@ -10996,15 +12116,21 @@ winlayout([{tabnr}])					*winlayout()*
 		Can also be used as a |method|: >
 			GetTabnr()->winlayout()
 <
-							*winline()*
-winline()	The result is a Number, which is the screen line of the cursor
+		Return type: list<any>
+
+
+winline()							*winline()*
+		The result is a Number, which is the screen line of the cursor
 		in the window.  This is counting screen lines from the top of
 		the window.  The first line is one.
 		If the cursor was moved the view on the file will be updated
 		first, this may cause a scroll.
 
-							*winnr()*
-winnr([{arg}])	The result is a Number, which is the number of the current
+		Return type: |Number|
+
+
+winnr([{arg}])							*winnr()*
+		The result is a Number, which is the number of the current
 		window.  The top window has number 1.
 		Returns zero for a popup window.
 
@@ -11037,8 +12163,11 @@ winnr([{arg}])	The result is a Number, which is the number of the current
 <		Can also be used as a |method|: >
 			GetWinval()->winnr()
 <
-							*winrestcmd()*
-winrestcmd()	Returns a sequence of |:resize| commands that should restore
+		Return type: |Number|
+
+
+winrestcmd()							*winrestcmd()*
+		Returns a sequence of |:resize| commands that should restore
 		the current window sizes.  Only works properly when no windows
 		are opened or closed and the current window and tab page is
 		unchanged.
@@ -11047,8 +12176,10 @@ winrestcmd()	Returns a sequence of |:resize| commands that should restore
 			:call MessWithWindowSizes()
 			:exe cmd
 <
-							*winrestview()*
-winrestview({dict})
+		Return type: |String|
+
+
+winrestview({dict})						*winrestview()*
 		Uses the |Dictionary| returned by |winsaveview()| to restore
 		the view of the current window.
 		Note: The {dict} does not have to contain all values, that are
@@ -11067,8 +12198,11 @@ winrestview({dict})
 		Can also be used as a |method|: >
 			GetView()->winrestview()
 <
-							*winsaveview()*
-winsaveview()	Returns a |Dictionary| that contains information to restore
+		Return type: |Number|
+
+
+winsaveview()							*winsaveview()*
+		Returns a |Dictionary| that contains information to restore
 		the view of the current window.  Use |winrestview()| to
 		restore the view.
 		This is useful if you have a mapping that jumps around in the
@@ -11094,6 +12228,8 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 			skipcol		columns skipped
 		Note that no option values are saved.
 
+		Return type: dict<number>
+
 
 winwidth({nr})						*winwidth()*
 		The result is a Number, which is the width of window {nr}.
@@ -11111,6 +12247,8 @@ winwidth({nr})						*winwidth()*
 
 		Can also be used as a |method|: >
 			GetWinid()->winwidth()
+<
+		Return type: |Number|
 
 
 wordcount()						*wordcount()*
@@ -11134,9 +12272,10 @@ wordcount()						*wordcount()*
 			visual_words    Number of words visually selected
 					(only in Visual mode)
 
+		Return type: dict<number>
 
-							*writefile()*
-writefile({object}, {fname} [, {flags}])
+
+writefile({object}, {fname} [, {flags}])			*writefile()*
 		When {object} is a |List| write it to file {fname}.  Each list
 		item is separated with a NL.  Each list item must be a String
 		or Number.
@@ -11184,6 +12323,8 @@ writefile({object}, {fname} [, {flags}])
 
 <		Can also be used as a |method|: >
 			GetText()->writefile("thefile")
+<
+		Return type: |Number|
 
 
 xor({expr}, {expr})					*xor()*
@@ -11196,6 +12337,7 @@ xor({expr}, {expr})					*xor()*
 		Can also be used as a |method|: >
 			:let bits = bits->xor(0x80)
 <
+		Return type: |Number|
 
 ==============================================================================
 3. Feature list						*feature-list*
