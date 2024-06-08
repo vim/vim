@@ -801,7 +801,7 @@ is suitable for complex input, such as CJK.
   number of Hira-gana characters are 76.  So, first, we pre-input text as
   pronounced in Hira-gana, second, we convert Hira-gana to Kanji or Kata-Kana,
   if needed.  There are some Kana-Kanji conversion server: jserver
-  (distributed with Wnn, see below) and canna.Canna can be found at:
+  (distributed with Wnn, see below) and canna.  Canna can be found at:
   https://osdn.net/projects/canna/
 
 There is a good input system: Wnn4.2.  Wnn 4.2 contains,
@@ -1356,7 +1356,7 @@ You might also want to select the font used for the menus.  Unfortunately this
 doesn't always work.  See the system specific remarks below, and 'langmenu'.
 
 
-USING UTF-8 IN X-Windows				*utf-8-in-xwindows*
+USING UTF-8 IN X-WINDOWS				*utf-8-in-xwindows*
 
 Note: This section does not apply to the GTK+ 2 GUI.
 
