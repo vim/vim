@@ -109,7 +109,7 @@ var winbar_winids = []
 var plus_map_saved = {}
 var minus_map_saved = {}
 var k_map_saved = {}
-var saved_mousemodel = ''
+var saved_mousemodel = null_string
 
 
 # Need either the +terminal feature or +channel and the prompt buffer.
@@ -1220,7 +1220,7 @@ def DeleteCommands()
     win_gotoid(curwinid)
     winbar_winids = []
 
-    if saved_mousemodel != ''
+    if saved_mousemodel isnot null_string
       &mousemodel = saved_mousemodel
       saved_mousemodel = null_string
       try
