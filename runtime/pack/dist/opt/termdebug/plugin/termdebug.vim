@@ -193,7 +193,7 @@ enddef
 
 def StartDebugCommand(bang: bool, ...args: list<string>)
   # First argument is the command to debug, rest are run arguments.
-  StartDebug_internal({'gdb_args': [args[0]], 'proc_args': args[1:], 'bang': bang})
+  StartDebug_internal({'gdb_args': [args[0]], 'proc_args': args[1 : ], 'bang': bang})
 enddef
 
 
@@ -618,6 +618,27 @@ def SendCommand(cmd: string)
   endif
 enddef
 
+# Interrupt or stop the program
+def StopCommand()
+  if way == 'prompt'
+    PromptInterrupt()
+  else
+    SendCommand('-exec-interrupt')
+  endif
+enddef
+
+# Continue the program
+def ContinueCommand()
+  if way == 'prompt'
+    SendCommand('continue')
+  else
+    # using -exec-continue results in CTRL-C in the gdb window not working,
+    # communicating via commbuf (= use of SendCommand) has the same result
+    SendCommand('-exec-continue')
+    # command Continue  term_sendkeys(gdbbuf, "continue\r")
+  endif
+enddef
+
 # This is global so that a user can create their mappings with this.
 def TermDebugSendCommand(cmd: string)
   if way == 'prompt'
@@ -626,13 +647,13 @@ def TermDebugSendCommand(cmd: string)
     var do_continue = 0
     if !stopped
       do_continue = 1
-      Stop
+      StopCommand()
       sleep 10m
     endif
     # TODO: should we prepend CTRL-U to clear the command?
     term_sendkeys(gdbbuf, cmd .. "\r")
     if do_continue
-      Continue
+      ContinueCommand()
     endif
   endif
 enddef
@@ -1037,17 +1058,8 @@ def InstallCommands()
   command Finish  SendResumingCommand('-exec-finish')
   command -nargs=* Run  Run(<q-args>)
   command -nargs=* Arguments  SendResumingCommand('-exec-arguments ' .. <q-args>)
-
-  if way == 'prompt'
-    command Stop  PromptInterrupt()
-    command Continue  SendCommand('continue')
-  else
-    command Stop  SendCommand('-exec-interrupt')
-    # using -exec-continue results in CTRL-C in the gdb window not working,
-    # communicating via commbuf (= use of SendCommand) has the same result
-    command Continue   SendCommand('-exec-continue')
-    # command Continue  term_sendkeys(gdbbuf, "continue\r")
-  endif
+  command Stop StopCommand()
+  command Continue ContinueCommand()
 
   command -nargs=* Frame  Frame(<q-args>)
   command -count=1 Up  Up(<count>)
@@ -1211,11 +1223,15 @@ def DeleteCommands()
     if exists('saved_mousemodel')
       &mousemodel = saved_mousemodel
       saved_mousemodel = null_string
-      aunmenu PopUp.-SEP3-
-      aunmenu PopUp.Set\ breakpoint
-      aunmenu PopUp.Clear\ breakpoint
-      aunmenu PopUp.Run\ until
-      aunmenu PopUp.Evaluate
+      try
+        aunmenu PopUp.-SEP3-
+        aunmenu PopUp.Set\ breakpoint
+        aunmenu PopUp.Clear\ breakpoint
+        aunmenu PopUp.Run\ until
+        aunmenu PopUp.Evaluate
+      catch
+        # ignore any errors in removing the PopUp menu
+      endtry
     endif
   endif
 
@@ -1253,7 +1269,7 @@ def SetBreakpoint(at: string, tbreak=false)
   var do_continue = 0
   if !stopped
     do_continue = 1
-    Stop
+    StopCommand()
     sleep 10m
   endif
 
@@ -1270,7 +1286,7 @@ def SetBreakpoint(at: string, tbreak=false)
   # echom "cmsd: " .. cmd
   SendCommand(cmd)
   if do_continue
-    Continue
+    ContinueCommand()
   endif
 enddef
 
@@ -1327,13 +1343,13 @@ def Frame(arg: string)
   # already parsed and allows for more formats
   if arg =~ '^\d\+$' || arg == ''
     # specify frame by number
-    SendCommand('-interpreter-exec mi "frame ' .. arg ..'"')
+    SendCommand('-interpreter-exec mi "frame ' .. arg .. '"')
   elseif arg =~ '^0x[0-9a-fA-F]\+$'
     # specify frame by stack address
-    SendCommand('-interpreter-exec mi "frame address ' .. arg ..'"')
+    SendCommand('-interpreter-exec mi "frame address ' .. arg .. '"')
   else
     # specify frame by function name
-    SendCommand('-interpreter-exec mi "frame function ' .. arg ..'"')
+    SendCommand('-interpreter-exec mi "frame function ' .. arg .. '"')
   endif
 enddef
 
