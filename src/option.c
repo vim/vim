@@ -8364,10 +8364,10 @@ get_sidescrolloff_value(void)
 }
 
 /*
- * Get the local or global value of 'backupcopy'.
+ * Get the local or global value of 'backupcopy' flags.
  */
     unsigned int
-get_bkc_value(buf_T *buf)
+get_bkc_flags(buf_T *buf)
 {
     return buf->b_bkc_flags ? buf->b_bkc_flags : bkc_flags;
 }
@@ -8386,7 +8386,7 @@ get_flp_value(buf_T *buf)
 #endif
 
 /*
- * Get the local or global value of the 'virtualedit' flags.
+ * Get the local or global value of 'virtualedit' flags.
  */
     unsigned int
 get_ve_flags(void)

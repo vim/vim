@@ -690,7 +690,7 @@ buf_write(
     int		    write_undo_file = FALSE;
     context_sha256_T sha_ctx;
 #endif
-    unsigned int    bkc = get_bkc_value(buf);
+    unsigned int    bkc = get_bkc_flags(buf);
     pos_T	    orig_start = buf->b_op_start;
     pos_T	    orig_end = buf->b_op_end;
 
