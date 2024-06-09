@@ -4,8 +4,9 @@
 import java.lang.annotation.ElementType;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-class LambdaExpressionsTests
+class LambdaExpressionsTests	// JDK 21+.
 {
 	<I1, C1, C2, T1, T2, T3, Z1, Z2, Z3, S1, S2, S3> void test()
 	{	// Schönfinkel's functions.
@@ -101,4 +102,53 @@ class LambdaExpressionsTests
 				Function<Function<A1, Function<A2, A3>>,
 					Function<Function<A1, A2>,
 					Function<A1, A3>>> { }
+
+	static void echo(Object o) { System.out.println(o); }
+
+	static {
+		enum Letters { OTHER, ALPHA, BETA }
+
+		Letters other = Letters.OTHER;
+
+		switch (other) {
+		case Letters alpha when Letters.ALPHA == alpha:
+						{ echo(alpha); break; }
+		case Letters beta when Letters.BETA == beta:
+						{ echo(beta); break; }
+		default:			{ echo(other); }
+		}
+
+		echo(switch (other) {
+			case Letters alpha when Letters.ALPHA == alpha
+						-> alpha;
+			case Letters beta when Letters.BETA == beta
+						-> beta;
+			default			-> other;
+		});
+
+		switch (null) {
+		case String str when !"<empty>".equals(switch (str) {
+			case String str_ when
+					Predicate.<String>not(text ->
+							!text.isEmpty())
+						.test(str_)
+							-> "<empty>";
+			case String str_		-> str_;
+			}):			{ echo(str); break; }
+		case null: default:		{ echo("Other"); }
+		};
+
+		echo(switch (null) {
+			case String str when !"<empty>".equals(
+							switch (str) {
+				case String str_ when
+					Predicate.<String>not(text ->
+							!text.isEmpty())
+						.test(str_)
+							-> "<empty>";
+				case String str_	-> str_;
+				})		-> str;
+			case null, default	-> "Other";
+		});
+	}
 }
