@@ -1220,7 +1220,7 @@ def DeleteCommands()
     win_gotoid(curwinid)
     winbar_winids = []
 
-    if exists('saved_mousemodel')
+    if saved_mousemodel != ''
       &mousemodel = saved_mousemodel
       saved_mousemodel = null_string
       try
