@@ -229,6 +229,7 @@ runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/ssa.vim		@ObserverOfTime
 runtime/ftplugin/sshdconfig.vim		@jiangyinzuo
+runtime/ftplugin/svelte.vim		@igorlfs
 runtime/ftplugin/swayconfig.vim		@jamespeapen
 runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/swig.vim		@jmarrec
