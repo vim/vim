@@ -16,18 +16,14 @@ func TestIt(file, bits, expected)
   endif
 endfunc
 
-func Test_ColonEight()
-  let save_dir = getcwd()
-
-  " This could change for CygWin to //cygdrive/c .
-  let dir1 = 'c:/x.x.y'
+func s:SetupDir(dir)
   let trycount = 5
   while 1
-    if !filereadable(dir1) && !isdirectory(dir1)
+    if !filereadable(a:dir) && !isdirectory(a:dir)
       break
     endif
     if trycount == 1
-      call assert_report("Fatal: '" . dir1 . "' exists, cannot run this test")
+      call assert_report("Fatal: '" . a:dir . "' exists, cannot run this test")
       return
     endif
     " When tests run in parallel the directory may exist, wait a bit until it
@@ -35,6 +31,15 @@ func Test_ColonEight()
     sleep 5
     let trycount -= 1
   endwhile
+endfunc
+
+
+func Test_ColonEight()
+  let save_dir = getcwd()
+
+  " This could change for CygWin to //cygdrive/c .
+  let dir1 = 'c:/x.x.y'
+  call s:SetupDir(dir1)
 
   let file1 = dir1 . '/zz.y.txt'
   let nofile1 = dir1 . '/z.y.txt'
@@ -78,8 +83,8 @@ func Test_ColonEight()
 endfunc
 
 func Test_ColonEight_MultiByte()
-  let g:test_is_flaky = 1
-  let dir = 'Xtest'
+  let dir = 'c:/Xtest_C8MB'
+  call s:SetupDir(dir)
 
   let file = dir . '/日本語のファイル.txt'
 
