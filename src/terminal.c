@@ -538,9 +538,15 @@ term_start(
 	    split_ea.addr_count = 1;
 	}
 
+	int cmod_split_modified = FALSE;
 	if (vertical)
+	{
 	    cmdmod.cmod_split |= WSP_VERT;
+	    cmod_split_modified = TRUE;
+	}
 	ex_splitview(&split_ea);
+	if (vertical && cmod_split_modified)
+	    cmdmod.cmod_split &= ~WSP_VERT;
 	if (curwin == old_curwin)
 	{
 	    // split failed
