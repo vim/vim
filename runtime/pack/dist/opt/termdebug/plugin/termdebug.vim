@@ -302,9 +302,8 @@ enddef
 # Open a terminal window without a job, to run the debugged program in.
 def StartDebug_term(dict: dict<any>)
   ptybuf = term_start('NONE', {
-        \ 'term_name': 'debugged program',
-        \ 'vertical': vvertical,
-        \ })
+    term_name: 'debugged program',
+    vertical: vvertical})
   if ptybuf == 0
     Echoerr('Failed to open the program terminal window')
     return
@@ -323,10 +322,10 @@ def StartDebug_term(dict: dict<any>)
 
   # Create a hidden terminal window to communicate with gdb
   commbuf = term_start('NONE', {
-        \ 'term_name': 'gdb communication',
-        \ 'out_cb': function('CommOutput'),
-        \ 'hidden': 1,
-        \ })
+    term_name: 'gdb communication',
+    out_cb: function('CommOutput'),
+    hidden: 1
+  })
   if commbuf == 0
     Echoerr('Failed to open the communication terminal window')
     exe 'bwipe! ' .. ptybuf
@@ -366,9 +365,9 @@ def StartDebug_term(dict: dict<any>)
 
   ch_log('executing "' .. join(gdb_cmd) .. '"')
   gdbbuf = term_start(gdb_cmd, {
-        \ 'term_name': 'gdb',
-        \ 'term_finish': 'close',
-        \ })
+    term_name: 'gdb',
+    term_finish: 'close',
+  })
   if gdbbuf == 0
     Echoerr('Failed to open the gdb terminal window')
     CloseBuffers()
@@ -482,9 +481,10 @@ def StartDebug_prompt(dict: dict<any>)
   elseif empty(glob('Termdebug-gdb-console'))
     file Termdebug-gdb-console
   else
-    Echoerr("You have a file/folder named 'gdb'
-          \ or 'Termdebug-gdb-console'.
-          \ Please exit and rename them because Termdebug may not work as expected.")
+    Echoerr("You have a file/folder named 'gdb' " ..
+            "or 'Termdebug-gdb-console'.  " ..
+            "Please exit and rename them because Termdebug may not work " ..
+            "as expected.")
   endif
 
   prompt_setcallback(promptbuf, function('PromptCallback'))
@@ -516,16 +516,16 @@ def StartDebug_prompt(dict: dict<any>)
 
   ch_log('executing "' .. join(gdb_cmd) .. '"')
   gdbjob = job_start(gdb_cmd, {
-        \ 'exit_cb': function('EndPromptDebug'),
-        \ 'out_cb': function('GdbOutCallback'),
-        \ })
+    exit_cb: function('EndPromptDebug'),
+    out_cb: function('GdbOutCallback'),
+  })
   if job_status(gdbjob) != "run"
     Echoerr('Failed to start gdb')
     exe 'bwipe! ' .. promptbuf
     return
   endif
   exe $'au BufUnload <buffer={promptbuf}> ++once ' ..
-        \ 'call job_stop(gdbjob, ''kill'')'
+       'call job_stop(gdbjob, ''kill'')'
   # Mark the buffer modified so that it's not easy to close.
   set modified
   gdb_channel = job_getchannel(gdbjob)
@@ -538,8 +538,8 @@ def StartDebug_prompt(dict: dict<any>)
     # Unix: Run the debugged program in a terminal window.  Open it below the
     # gdb window.
     belowright ptybuf = term_start('NONE', {
-          \ 'term_name': 'debugged program',
-          \ })
+      term_name: 'debugged program',
+    })
     if ptybuf == 0
       Echoerr('Failed to open the program terminal window')
       job_stop(gdbjob)
@@ -707,7 +707,7 @@ def GdbOutCallback(channel: channel, text: string)
   # Drop the gdb prompt, we have our own.
   # Drop status and echo'd commands.
   if text == '(gdb) ' || text == '^done' ||
-        \ (text[0] == '&' && text !~ '^&"disassemble')
+        (text[0] == '&' && text !~ '^&"disassemble')
     return
   endif
 
@@ -765,8 +765,8 @@ def DecodeMessage(quotedText: string, literal: bool): string
         \ ->substitute(NullRepl, '\\000', 'g')
   if !literal
     return msg
-          \ ->substitute('\\t', "\t", 'g')
-          \ ->substitute('\\n', '', 'g')
+      ->substitute('\\t', "\t", 'g')
+      ->substitute('\\n', '', 'g')
   else
     return msg
   endif
@@ -967,10 +967,7 @@ def HandleVariablesMsg(msg: string)
     silent! :%delete _
     var spaceBuffer = 20
     setline(1, 'Type' ..
-          \ repeat(' ', 16) ..
-          \ 'Name' ..
-          \ repeat(' ', 16) ..
-          \ 'Value')
+          repeat(' ', 16) ..  'Name' ..  repeat(' ', 16) ..  'Value')
     var cnt = 1
     var capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
     var varinfo = matchstr(msg, capture, 0, cnt)
@@ -978,10 +975,10 @@ def HandleVariablesMsg(msg: string)
     while varinfo != ''
       var vardict = ParseVarinfo(varinfo)
       setline(cnt + 1, vardict['type'] ..
-            \ repeat(' ', max([20 - len(vardict['type']), 1])) ..
-            \ vardict['name'] ..
-            \ repeat(' ', max([20 - len(vardict['name']), 1])) ..
-            \ vardict['value'])
+        repeat(' ', max([20 - len(vardict['type']), 1])) ..
+        vardict['name'] ..
+        repeat(' ', max([20 - len(vardict['name']), 1])) ..
+        vardict['value'])
       cnt += 1
       varinfo = matchstr(msg, capture, 0, cnt)
     endwhile
@@ -1255,7 +1252,7 @@ def Until(at: string)
 
     # Use the fname:lnum format
     var AT = empty(at) ?
-          \ fnameescape(expand('%:p')) .. ':' .. line('.') : at
+          fnameescape(expand('%:p')) .. ':' .. line('.') : at
     SendCommand('-exec-until ' .. AT)
   else
     ch_log('dropping command, program is running: exec-until')
@@ -1275,7 +1272,7 @@ def SetBreakpoint(at: string, tbreak=false)
 
   # Use the fname:lnum format, older gdb can't handle --source.
   var AT = empty(at) ?
-        \ fnameescape(expand('%:p')) .. ':' .. line('.') : at
+    fnameescape(expand('%:p')) .. ':' .. line('.') : at
   var cmd = ''
   if tbreak
     cmd = '-break-insert -t ' .. AT
@@ -1303,7 +1300,7 @@ def ClearBreakpoint()
         SendCommand('-break-delete ' .. id)
         for subid in keys(breakpoints[id])
           sign_unplace('TermDebug',
-                \ {'id': Breakpoint2SignNumber(id, str2nr(subid))})
+            {id: Breakpoint2SignNumber(id, str2nr(subid))})
         endfor
         remove(breakpoints, id)
         remove(breakpoint_locations[bploc], idx)
@@ -1374,8 +1371,8 @@ def SendEval(expr: string)
 
   # encoding expression to prevent bad errors
   var expr_escaped = expr
-        \ ->substitute('\\', '\\\\', 'g')
-        \ ->substitute('"', '\\"', 'g')
+    ->substitute('\\', '\\\\', 'g')
+    ->substitute('"', '\\"', 'g')
   SendCommand('-data-evaluate-expression "' .. expr_escaped .. '"')
   evalexpr = exprLHS
 enddef
@@ -1564,8 +1561,9 @@ def GotoAsmwinOrCreateIt()
       silent file Termdebug-asm-listing
       asmbuf = bufnr('Termdebug-asm-listing')
     else
-      Echoerr("You have a file/folder named 'Termdebug-asm-listing'.
-          \ Please exit and rename it because Termdebug may not work as expected.")
+      Echoerr("You have a file/folder named 'Termdebug-asm-listing'. " ..
+              "Please exit and rename it because Termdebug may not work " ..
+              "as expected.")
     endif
 
     if mdf != 'vert' && GetDisasmWindowHeight() > 0
@@ -1637,8 +1635,9 @@ def GotoVariableswinOrCreateIt()
       silent file Termdebug-variables-listing
       varbuf = bufnr('Termdebug-variables-listing')
     else
-      Echoerr("You have a file/folder named 'Termdebug-variables-listing'.
-          \ Please exit and rename it because Termdebug may not work as expected.")
+      Echoerr("You have a file/folder named 'Termdebug-variables-listing'. " ..
+              "Please exit and rename it because Termdebug may not work " ..
+              "as expected.")
     endif
 
     if mdf != 'vert' && GetVariablesWindowHeight() > 0
@@ -1709,9 +1708,9 @@ def HandleCursor(msg: string)
           # prompt, since it is unlikely we want to edit the file.
           # The file may be changed but not saved, warn for that.
           au SwapExists * echohl WarningMsg
-                \ | echo 'Warning: file is being edited elsewhere'
-                \ | echohl None
-                \ | let v:swapchoice = 'o'
+            | echo 'Warning: file is being edited elsewhere'
+            | echohl None
+            | let v:swapchoice = 'o'
         augroup END
         if &modified
           # TODO: find existing window
@@ -1729,7 +1728,7 @@ def HandleCursor(msg: string)
       normal! zv
       sign_unplace('TermDebug', {'id': pc_id})
       sign_place(pc_id, 'TermDebug', 'debugPC', fname,
-            \ {'lnum': str2nr(lnum), priority: 110})
+            {lnum: str2nr(lnum), priority: 110})
       if !exists('b:save_signcolumn')
         b:save_signcolumn = &signcolumn
         add(signcolumn_buflist, bufnr())
@@ -1764,8 +1763,8 @@ def CreateBreakpoint(id: number, subid: number, enabled: string)
       endif
     endif
     sign_define('debugBreakpoint' .. nr,
-          \ {'text': slice(label, 0, 2),
-          \ 'texthl': hiName})
+      {text: slice(label, 0, 2),
+        texthl: hiName})
   endif
 enddef
 
@@ -1852,8 +1851,8 @@ enddef
 def PlaceSign(id: number, subid: number, entry: dict<any>)
   var nr = printf('%d.%d', id, subid)
   sign_place(Breakpoint2SignNumber(id, subid), 'TermDebug',
-        \ 'debugBreakpoint' .. nr, entry['fname'],
-        \ {'lnum': entry['lnum'], priority: 110})
+    'debugBreakpoint' .. nr, entry['fname'],
+    {lnum: entry['lnum'], priority: 110})
   entry['placed'] = 1
 enddef
 
@@ -1868,7 +1867,7 @@ def HandleBreakpointDelete(msg: string)
     for [subid, entry] in items(breakpoints[id])
       if has_key(entry, 'placed')
         sign_unplace('TermDebug',
-              \ {'id': Breakpoint2SignNumber(str2nr(id), str2nr(subid))})
+          {'id': Breakpoint2SignNumber(str2nr(id), str2nr(subid))})
         remove(entry, 'placed')
       endif
     endfor
