@@ -1500,6 +1500,8 @@ typedef enum
     , HLF_SPL	    // SpellLocal
     , HLF_PNI	    // popup menu normal item
     , HLF_PSI	    // popup menu selected item
+    , HLF_PMNI	    // popup menu matched text in normal item
+    , HLF_PMSI	    // popup menu matched text in selected item
     , HLF_PNK	    // popup menu normal item "kind"
     , HLF_PSK	    // popup menu selected item "kind"
     , HLF_PNX	    // popup menu normal item "menu" (extra text)
@@ -1525,7 +1527,7 @@ typedef enum
 		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', '[', ']', '{', '}', 'x', 'X', \
+		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z', 'g'}
 

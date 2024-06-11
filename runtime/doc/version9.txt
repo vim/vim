@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 05
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41596,6 +41596,9 @@ Autocommands: ~
 Highlighting: ~
 
 |hl-MsgArea|		highlighting of the Command-line and messages area
+|hl-PmenuMatch|		Popup menu: highlighting of matched text
+|hl-PmenuMatchSel|     	Popup menu: highlighting of matched text in selected
+			line
 
 Commands: ~
 

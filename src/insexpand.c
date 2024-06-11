@@ -1432,6 +1432,15 @@ ins_compl_show_pum(void)
 #define DICT_EXACT	(2)	// "dict" is the exact name of a file
 
 /*
+ * Get current completion leader
+ */
+    char_u *
+ins_compl_leader(void)
+{
+    return compl_leader;
+}
+
+/*
  * Add any identifiers that match the given pattern "pat" in the list of
  * dictionary files "dict_start" to the list of completions.
  */
