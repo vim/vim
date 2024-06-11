@@ -666,6 +666,9 @@ au BufNewFile,BufRead *.rul
 	\   setf diva |
 	\ endif
 
+" Djot
+au BufNewFile,BufRead *.dj			setf djot
+
 " DCL (Digital Command Language - vms) or DNS zone file
 au BufNewFile,BufRead *.com			call dist#ft#BindzoneCheck('dcl')
 
