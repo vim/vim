@@ -1814,7 +1814,7 @@ op_change(oparg_T *oap)
      */
     if (oap->block_mode && oap->start.lnum != oap->end.lnum && !got_int)
     {
-	size_t	ins_len;
+	int	ins_len;
 
 	// Auto-indenting may have changed the indent.  If the cursor was past
 	// the indent, exclude that indent change from the inserted text.
@@ -1827,7 +1827,7 @@ op_change(oparg_T *oap)
 	    bd.textcol += new_indent - pre_indent;
 	}
 
-	ins_len = ml_get_len(oap->start.lnum) - pre_textlen;
+	ins_len = (int)ml_get_len(oap->start.lnum) - pre_textlen;
 	if (ins_len > 0)
 	{
 	    // Subsequent calls to ml_get() flush the firstline data - take a
