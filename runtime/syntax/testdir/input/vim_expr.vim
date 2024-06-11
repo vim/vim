@@ -4,6 +4,7 @@ echo 'It''s a string'
 echo 'tab: \t, new line: \n, backslash: \\'
 echo "tab: \t, new line: \n, backslash: \\"
 
+
 " String escape sequences
 
 echo "\316 - \31 - \3 - \x1f - \xf - \X1F - \XF - \u02a4 - \U000002a4 - \b - \e - \f - \n - \r - \t - \\ - \" - \<C-W>"
@@ -30,6 +31,7 @@ echo 'foo''bar'
 " https://github.com/tpope/vim-unimpaired/blob/6d44a6dc2ec34607c41ec78acf81657248580bf1/plugin/unimpaired.vim#L232
 let cmd = 'put!=repeat(nr2char(10), v:count1)|silent '']+'
 
+
 " String interpolation
 
 echo 'Don''t highlight interpolation: {{ {1 + 2} }}'
@@ -39,10 +41,55 @@ echo $'Highlight interpolation:\t{{ { $'nested: {{ {1 + 2} }}' } }}'
 echo $"Highlight interpolation:\t{{ { string({"foo": "bar"}) } }}"
 echo $"Highlight interpolation:\t{{ { $"nested: {{ {1 + 2} }}" } }}"
 
-echo $''''
-echo $'''foo'
-echo $'foo'''
-echo $'foo''bar'
+
+" Continued string
+
+let s = "
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \" " tail comment
+
+let s = "
+      \ part 1
+      "\ escape sequence
+      \\" part 2
+      \" " tail comment
+
+let s = '
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \' " tail comment
+
+let s = $"
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \" " tail comment
+
+let s = $'
+      "\ comment
+      \ part 1
+      "\ comment
+      \ part 2
+      "\ comment
+      \' " tail comment
+
+call strlen("part 1
+      "\ comment
+      \ part 2")
+
+call append(0, "part 1
+      "\ comment
+      \ part 2")
+
 
 " Number
 
@@ -87,5 +134,6 @@ echo 0zFF.00.ED.01.5D.AF
 
 
 " Issue #16221 (vimString becomes vimVar when preceded by !)
+
 let bar = !'g:bar'->exists()
 

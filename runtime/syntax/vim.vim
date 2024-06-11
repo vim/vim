@@ -2,7 +2,7 @@
 " Language:	   Vim script
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
-" Last Change:	   2025 Jan 09
+" Last Change:	   2025 Jan 12
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -95,7 +95,7 @@ syn keyword vimGroup contained	Comment Constant String Character Number Boolean 
 
 " Default highlighting groups {{{2
 " GEN_SYN_VIM: vimHLGroup, START_STR='syn keyword vimHLGroup contained', END_STR=''
-syn keyword vimHLGroup contained ErrorMsg IncSearch ModeMsg NonText StatusLine StatusLineNC EndOfBuffer VertSplit VisualNOS DiffText PmenuSbar TabLineSel TabLineFill Cursor lCursor QuickFixLine CursorLineSign CursorLineFold CurSearch PmenuKind PmenuKindSel PmenuMatch PmenuMatchSel PmenuExtra PmenuExtraSel ComplMatchIns Normal Directory LineNr CursorLineNr MoreMsg Question Search SpellBad SpellCap SpellRare SpellLocal PmenuThumb Pmenu PmenuSel SpecialKey Title WarningMsg WildMenu Folded FoldColumn SignColumn Visual DiffAdd DiffChange DiffDelete TabLine CursorColumn CursorLine ColorColumn MatchParen StatusLineTerm StatusLineTermNC ToolbarLine ToolbarButton Menu Tooltip Scrollbar CursorIM LineNrAbove LineNrBelow
+syn keyword vimHLGroup contained ErrorMsg IncSearch ModeMsg NonText StatusLine StatusLineNC EndOfBuffer VertSplit VisualNOS DiffText PmenuSbar TabLineSel TabLineFill Cursor lCursor QuickFixLine CursorLineSign CursorLineFold CurSearch PmenuKind PmenuKindSel PmenuMatch PmenuMatchSel PmenuExtra PmenuExtraSel Normal Directory LineNr CursorLineNr MoreMsg Question Search SpellBad SpellCap SpellRare SpellLocal PmenuThumb Pmenu PmenuSel SpecialKey Title WarningMsg WildMenu Folded FoldColumn SignColumn Visual DiffAdd DiffChange DiffDelete TabLine CursorColumn CursorLine ColorColumn MatchParen StatusLineTerm StatusLineTermNC ToolbarLine ToolbarButton Menu Tooltip Scrollbar CursorIM LineNrAbove LineNrBelow
 syn match vimHLGroup contained "\<Conceal\>"
 syn case match
 
@@ -318,11 +318,11 @@ syn keyword vimAugroupKey	contained aug[roup]  skipwhite nextgroup=vimAugroupBan
 
 " Operators: {{{2
 " =========
-syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vimNull
-syn match	vimOper	"\a\@<!!"				skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"||\|&&\|[-+*/%.]"			skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\%#=1\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\|!\~#\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimSpecFile
-syn match	vimOper	"\(\<is\|\<isnot\)[?#]\{0,2}\>"			skipwhite nextgroup=vimString,vimSpecFile
+syn cluster	vimOperGroup	contains=vimEnvvar,vimFunc,vimFuncVar,vimOper,vimOperParen,vimNumber,vimString,vimContinueString,vimRegister,@vimContinue,vim9Comment,vimVar,vimBoolean,vimNull
+syn match	vimOper	"\a\@<!!"				skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
+syn match	vimOper	"||\|&&\|[-+*/%.]"			skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
+syn match	vimOper	"\%#=1\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\|!\~#\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
+syn match	vimOper	"\(\<is\|\<isnot\)[?#]\{0,2}\>"			skipwhite nextgroup=vimString,vimContinueString,vimSpecFile
 syn region	vimOperParen 	matchgroup=vimParenSep	start="(" end=")" contains=@vimOperGroup
 syn region	vimOperParen	matchgroup=vimSep		start="#\={" end="}" contains=@vimOperGroup nextgroup=vimVar,vimFuncVar
 if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_noopererror")
@@ -591,7 +591,7 @@ syn match	vimEnvvar	"\${\I\i*}"
 " In-String Specials: {{{2
 " Try to catch strings, if nothing else matches (therefore it must precede the others!)
 "  vimEscapeBrace handles ["]  []"] (ie. "s don't terminate string inside [])
-syn region	vimEscapeBrace	oneline   contained transparent start="[^\\]\(\\\\\)*\[\zs\^\=\]\=" skip="\\\\\|\\\]" end="]"me=e-1
+" syn region	vimEscapeBrace	oneline   contained transparent start="[^\\]\(\\\\\)*\[\zs\^\=\]\=" skip="\\\\\|\\\]" end="]"me=e-1
 syn match	vimPatSepErr	contained	"\\)"
 syn match	vimPatSep	contained	"\\|"
 syn region	vimPatSepZone	oneline   contained   matchgroup=vimPatSepZ start="\\%\=\ze(" skip="\\\\" end="\\)\|[^\\]['"]"	contains=@vimStringGroup
@@ -601,8 +601,6 @@ syn cluster	vimStringGroup	contains=vimEscape,vimEscapeBrace,vimPatSep,vimNotPat
 syn region	vimString	oneline keepend	matchgroup=vimString start=+[^a-zA-Z>\\@]"+lc=1 skip=+\\\\\|\\"+ matchgroup=vimStringEnd end=+"+	contains=@vimStringGroup extend
 syn region	vimString	oneline	matchgroup=vimString start=+[^a-zA-Z>\\@]'+lc=1 end=+'+ contains=vimQuoteEscape extend
 "syn region	vimString	oneline	start="\s/\s*\A"lc=1 skip="\\\\\|\\+" end="/"	contains=@vimStringGroup  " see tst45.vim
-syn match	vimString	contained	+"[^"]*\\$+	skipnl nextgroup=vimStringCont
-syn match	vimStringCont	contained	+\(\\\\\|.\)\{-}[^\\]"+
 
 syn match	vimEscape	contained	"\\."
 " syn match	vimEscape	contained	+\\[befnrt\"]+
@@ -617,6 +615,11 @@ syn region	vimStringInterpolationExpr  oneline contained matchgroup=vimSep start
 syn match	vimStringInterpolationBrace contained "{{"
 syn match	vimStringInterpolationBrace contained "}}"
 syn cluster	vimStringInterpolation contains=vimStringInterpolationExpr,vimStringInterpolationBrace
+
+syn region	vimContinueString	contained	matchgroup=vimString start=+"+  skip=+\\\\\|\\"\|\s*"\\ + end=+"+ skipwhite nextgroup=vimComment contains=@vimContinue,@vimStringGroup
+syn region	vimContinueString	contained	matchgroup=vimString start=+'+  skip=+''+	    end=+'+ skipwhite nextgroup=vimComment contains=@vimContinue,vimQuoteEscape
+syn region	vimContinueString	contained	matchgroup=vimString start=+$"+ skip=+\\\\\|\\"\|\s*"\\ + end=+"+ skipwhite nextgroup=vimComment contains=@vimContinue,@vimStringGroup,@vimStringInterpolation
+syn region	vimContinueString	contained	matchgroup=vimString start=+$'+ skip=+''+	    end=+'+ skipwhite nextgroup=vimComment contains=@vimContinue,vimQuoteEscape,@vimStringInterpolation
 
 " Substitutions: {{{2
 " =============
@@ -1339,6 +1342,7 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimConst	vimCommand
  hi def link vimContinue	Special
  hi def link vimContinueComment	vimComment
+ hi def link vimContinueString	vimString
  hi def link vimCtrlChar	SpecialChar
  hi def link vimDefComment	vim9Comment
  hi def link vimDefKey	vimCommand
