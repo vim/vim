@@ -275,11 +275,13 @@ function s:get_vim_command_type(cmd_name)
 		echomsg
 		echon
 		echowindow
+		else
 		elseif
 		endclass
 		enddef
 		endenum
 		endfunction
+		endif
 		endinterface
 		enum
 		execute

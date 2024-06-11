@@ -34,6 +34,10 @@ autocmd BufNewFile * {
   \ continuing comment
   \ continuing comment
 
+var foo = 42 # commment
+  \ continuing comment
+  \ continuing comment
+
 # :Foo
       \ arg1
       #\ comment
