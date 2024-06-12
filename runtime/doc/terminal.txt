@@ -1282,6 +1282,8 @@ When the debugger ends, typically by typing "quit" in the gdb window, the two
 opened windows are closed.
 
 Only one debugger can be active at a time.
+If your gdb program is slow at startup, you may want to increase the
+|termdebug-timeout| value.
 							*:TermdebugCommand*
 If you want to give specific commands to the command being debugged, you can
 use the `:TermdebugCommand` command followed by the command name and
@@ -1503,6 +1505,21 @@ deprecated global variable names are mentioned for completeness.  If you are
 switching over to using g:termdebug_config you can find the old variable name
 and take over the value, then delete the deprecated variable.
 
+Startup time ~
+						*termdebug-timeout*
+The startup time of GDB programs depends on the number of arguments passed to
+them. To ensure the correct behavior of Termdebug, it is important that the
+startup process of your GDB program completes successfully. However, if the
+startup process of your GDB program gets stuck, it may cause Termdebug to
+freeze.
+
+To prevent this, there is a timeout after which the Termdebug startup process
+will be aborted. If the startup time of your GDB program is long, you may want
+to increase the timeout value. This value is a multiple of a fixed time period
+of 10 ms. For example: >
+	let g:termdebug_config['timeout'] = 500  " 500 * 10 ms = 5000 ms
+
+The default value is set to 300 (=3000ms).
 
 Prompt mode ~
 						*termdebug-prompt*
