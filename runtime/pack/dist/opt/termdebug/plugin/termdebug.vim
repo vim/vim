@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Jun 03
+# Last Change: 2024 Jun 12
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -48,11 +48,14 @@ if !has('vim9script') ||  v:version < 900
     finish
 endif
 
+# Variables to keep their status among multiple instanced of Termdebug
 # if exists('g:termdebug_loaded')
 #     Echoerr('Termdebug already loaded.')
 #     finish
 # endif
 # g:termdebug_loaded = true
+g:termdebug_is_running = false
+
 
 # The command that starts debugging, e.g. ":Termdebug vim".
 # To end type "quit" in the gdb window.
@@ -132,7 +135,7 @@ var plus_map_saved: dict<any>
 var minus_map_saved: dict<any>
 
 
-def InitScriptVars()
+def InitScriptVariables()
   if exists('g:termdebug_config') && has_key(g:termdebug_config, 'use_prompt')
     way = g:termdebug_config['use_prompt'] ? 'prompt' : 'terminal'
   elseif exists('g:termdebug_use_prompt')
@@ -215,6 +218,8 @@ def InitScriptVars()
 enddef
 
 def SanityCheck(): bool
+  # CHECKME: This is checked after InitScriptVariables(). Perhaps we need a
+  # check also before initialization?
   var gdb_cmd = GetCommand()[0]
   var is_check_ok = true
   # Need either the +terminal feature or +channel and the prompt buffer.
@@ -229,8 +234,6 @@ def SanityCheck(): bool
     err = $"You have a file/folder named '{asmbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
   elseif !empty(glob(varbufname))
     err = $"You have a file/folder named '{varbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
-  elseif gdbwin > 0
-    err  = 'Terminal debugger already running, cannot run two'
   elseif !executable(gdb_cmd)
     err = $"Cannot execute debugger program '{gdb_cmd}'"
   endif
@@ -290,7 +293,12 @@ def GetCommand(): list<string>
 enddef
 
 def StartDebug(bang: bool, ...gdb_args: list<string>)
-  InitScriptVars()
+  if g:termdebug_is_running == true
+    Echoerr('Terminal debugger already running, cannot run two')
+    return
+  endif
+
+  InitScriptVariables()
   if !SanityCheck()
     return
   endif
@@ -357,11 +365,12 @@ def StartDebug_internal(dict: dict<any>)
   if exists('#User#TermdebugStartPost')
     doauto <nomodeline> User TermdebugStartPost
   endif
+  g:termdebug_is_running = true
 enddef
 
 # Use when debugger didn't start or ended.
 def CloseBuffers()
-  var bufnames = ['debugged program', 'gdb communication', asmbufname, varbufname]
+  var bufnames = ['debugged\ program', 'gdb communication', asmbufname, varbufname]
   for bufname in bufnames
     if bufnr(bufname) > 0 && bufexists(bufnr(bufname))
       exe $'bwipe! {bufname}'
@@ -372,11 +381,11 @@ def CloseBuffers()
   gdbwin = 0
 enddef
 
-def IsGdbRunning(): bool
+def IsGdbStarted(): bool
   # CHECKME: check this implementation
   var gdbproc_status = job_status(term_getjob(gdbbufnr))
+  var cmd_name = string(GetCommand()[0])
   if gdbproc_status !=# 'run'
-    var cmd_name = string(GetCommand()[0])
     Echoerr($'{cmd_name} exited unexpectedly')
     CloseBuffers()
     return false
@@ -474,7 +483,7 @@ def StartDebug_term(dict: dict<any>)
 
   var success = false
   while success == false && counter < counter_max
-    if IsGdbRunning() == false
+    if IsGdbStarted() == false
       CloseBuffers()
       return
     endif
@@ -511,7 +520,7 @@ def StartDebug_term(dict: dict<any>)
   counter = 0
   success = false
   while success == false && counter < counter_max
-    if IsGdbRunning() == false
+    if IsGdbStarted() == false
       return
     endif
 
@@ -951,6 +960,7 @@ def EndDebugCommon()
   endif
 
   au! TermDebug
+  g:termdebug_is_running = false
 enddef
 
 def EndPromptDebug(job: any, status: any)
