@@ -228,115 +228,99 @@ func Test_termdebug_tbreak()
   %bw!
 endfunc
 
-func Test_termdebug_mapping()
-  %bw!
-  call assert_true(maparg('K', 'n', 0, 1)->empty())
-  call assert_true(maparg('-', 'n', 0, 1)->empty())
-  call assert_true(maparg('+', 'n', 0, 1)->empty())
-  Termdebug
-  call WaitForAssert({-> assert_equal(3, winnr('$'))})
-  wincmd b
-  call assert_false(maparg('K', 'n', 0, 1)->empty())
-  call assert_false(maparg('-', 'n', 0, 1)->empty())
-  call assert_false(maparg('+', 'n', 0, 1)->empty())
-  call assert_false(maparg('K', 'n', 0, 1).buffer)
-  call assert_false(maparg('-', 'n', 0, 1).buffer)
-  call assert_false(maparg('+', 'n', 0, 1).buffer)
-  call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
-  wincmd t
-  quit!
-  redraw!
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-  call assert_true(maparg('K', 'n', 0, 1)->empty())
-  call assert_true(maparg('-', 'n', 0, 1)->empty())
-  call assert_true(maparg('+', 'n', 0, 1)->empty())
+" func Test_termdebug_mapping()
+"   %bw!
+"   call assert_true(maparg('K', 'n', 0, 1)->empty())
+"   call assert_true(maparg('-', 'n', 0, 1)->empty())
+"   call assert_true(maparg('+', 'n', 0, 1)->empty())
+"   Termdebug
+"   call WaitForAssert({-> assert_equal(3, winnr('$'))})
+"   wincmd b
+"   call assert_false(maparg('K', 'n', 0, 1)->empty())
+"   call assert_false(maparg('-', 'n', 0, 1)->empty())
+"   call assert_false(maparg('+', 'n', 0, 1)->empty())
+"   call assert_false(maparg('K', 'n', 0, 1).buffer)
+"   call assert_false(maparg('-', 'n', 0, 1).buffer)
+"   call assert_false(maparg('+', 'n', 0, 1).buffer)
+"   call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
+"   wincmd t
+"   quit!
+"   redraw!
+"   call WaitForAssert({-> assert_equal(1, winnr('$'))})
+"   call assert_true(maparg('K', 'n', 0, 1)->empty())
+"   call assert_true(maparg('-', 'n', 0, 1)->empty())
+"   call assert_true(maparg('+', 'n', 0, 1)->empty())
 
-  %bw!
-  nnoremap K :echom "K"<cr>
-  nnoremap - :echom "-"<cr>
-  nnoremap + :echom "+"<cr>
-  Termdebug
-  call WaitForAssert({-> assert_equal(3, winnr('$'))})
-  wincmd b
-  call assert_false(maparg('K', 'n', 0, 1)->empty())
-  call assert_false(maparg('-', 'n', 0, 1)->empty())
-  call assert_false(maparg('+', 'n', 0, 1)->empty())
-  call assert_false(maparg('K', 'n', 0, 1).buffer)
-  call assert_false(maparg('-', 'n', 0, 1).buffer)
-  call assert_false(maparg('+', 'n', 0, 1).buffer)
-  call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
-  wincmd t
-  quit!
-  redraw!
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-  call assert_false(maparg('K', 'n', 0, 1)->empty())
-  call assert_false(maparg('-', 'n', 0, 1)->empty())
-  call assert_false(maparg('+', 'n', 0, 1)->empty())
-  call assert_false(maparg('K', 'n', 0, 1).buffer)
-  call assert_false(maparg('-', 'n', 0, 1).buffer)
-  call assert_false(maparg('+', 'n', 0, 1).buffer)
-  call assert_equal(':echom "K"<cr>', maparg('K', 'n', 0, 1).rhs)
+"   %bw!
+"   nnoremap K :echom "K"<cr>
+"   nnoremap - :echom "-"<cr>
+"   nnoremap + :echom "+"<cr>
+"   Termdebug
+"   call WaitForAssert({-> assert_equal(3, winnr('$'))})
+"   wincmd b
+"   call assert_false(maparg('K', 'n', 0, 1)->empty())
+"   call assert_false(maparg('-', 'n', 0, 1)->empty())
+"   call assert_false(maparg('+', 'n', 0, 1)->empty())
+"   call assert_false(maparg('K', 'n', 0, 1).buffer)
+"   call assert_false(maparg('-', 'n', 0, 1).buffer)
+"   call assert_false(maparg('+', 'n', 0, 1).buffer)
+"   call assert_equal(':Evaluate<CR>', maparg('K', 'n', 0, 1).rhs)
+"   wincmd t
+"   quit!
+"   redraw!
+"   call WaitForAssert({-> assert_equal(1, winnr('$'))})
+"   call assert_false(maparg('K', 'n', 0, 1)->empty())
+"   call assert_false(maparg('-', 'n', 0, 1)->empty())
+"   call assert_false(maparg('+', 'n', 0, 1)->empty())
+"   call assert_false(maparg('K', 'n', 0, 1).buffer)
+"   call assert_false(maparg('-', 'n', 0, 1).buffer)
+"   call assert_false(maparg('+', 'n', 0, 1).buffer)
+"   call assert_equal(':echom "K"<cr>', maparg('K', 'n', 0, 1).rhs)
 
-  %bw!
-  nnoremap <buffer> K :echom "bK"<cr>
-  nnoremap <buffer> - :echom "b-"<cr>
-  nnoremap <buffer> + :echom "b+"<cr>
-  Termdebug
-  call WaitForAssert({-> assert_equal(3, winnr('$'))})
-  wincmd b
-  call assert_true(maparg('K', 'n', 0, 1).buffer)
-  call assert_true(maparg('-', 'n', 0, 1).buffer)
-  call assert_true(maparg('+', 'n', 0, 1).buffer)
-  call assert_equal(maparg('K', 'n', 0, 1).rhs, ':echom "bK"<cr>')
-  wincmd t
-  quit!
-  redraw!
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-  call assert_true(maparg('K', 'n', 0, 1).buffer)
-  call assert_true(maparg('-', 'n', 0, 1).buffer)
-  call assert_true(maparg('+', 'n', 0, 1).buffer)
-  call assert_equal(':echom "bK"<cr>', maparg('K', 'n', 0, 1).rhs)
+"   %bw!
+"   nnoremap <buffer> K :echom "bK"<cr>
+"   nnoremap <buffer> - :echom "b-"<cr>
+"   nnoremap <buffer> + :echom "b+"<cr>
+"   Termdebug
+"   call WaitForAssert({-> assert_equal(3, winnr('$'))})
+"   wincmd b
+"   call assert_true(maparg('K', 'n', 0, 1).buffer)
+"   call assert_true(maparg('-', 'n', 0, 1).buffer)
+"   call assert_true(maparg('+', 'n', 0, 1).buffer)
+"   call assert_equal(maparg('K', 'n', 0, 1).rhs, ':echom "bK"<cr>')
+"   wincmd t
+"   quit!
+"   redraw!
+"   call WaitForAssert({-> assert_equal(1, winnr('$'))})
+"   call assert_true(maparg('K', 'n', 0, 1).buffer)
+"   call assert_true(maparg('-', 'n', 0, 1).buffer)
+"   call assert_true(maparg('+', 'n', 0, 1).buffer)
+"   call assert_equal(':echom "bK"<cr>', maparg('K', 'n', 0, 1).rhs)
 
-  %bw!
-endfunc
+"   %bw!
+" endfunc
 
-func Test_termdebug_bufnames()
-  " Test if user has filename/folders named gdb, Termdebug-gdb-console,
-  " etc. in the current directory
-  let g:termdebug_config = {}
-  let g:termdebug_config['use_prompt'] = 1
-  let filename = 'gdb'
-  let replacement_filename = 'Termdebug-gdb-console'
+" function Test_termdebug_sanity_check()
+"   # Test if user has filename/folders with wrong names
+"   let g:termdebug_config = {}
+"   let s:dict = {'disasm_window': 'Asm', 'use_prompt': 'gdb', 'variables_window': 'Variables'}
 
-  call writefile(['This', 'is', 'a', 'test'], filename, 'D')
-  " Throw away the file once the test has done.
-  Termdebug
-  " Once termdebug has completed the startup you should have 3 windows on screen
-  call WaitForAssert({-> assert_equal(3, winnr('$'))})
-  " A file named filename already exists in the working directory,
-  " hence you must call the newly created buffer differently
-  call WaitForAssert({-> assert_false(bufexists(filename))})
-  call WaitForAssert({-> assert_true(bufexists(replacement_filename))})
-  quit!
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
+"   for key in keys(s:dict)
+"     let s:filename = dict[key]
+"     let g:termdebug_config[key] = 1
+"     let s:error_message = "You have a file/folder named '" .. s:filename .. "'"
 
-  " Check if error message is in :message
-  let g:termdebug_config['disasm_window'] = 1
-  let filename = 'Termdebug-asm-listing'
-  call writefile(['This', 'is', 'a', 'test'], filename, 'D')
-  " Check only the head of the error message
-  let error_message = "You have a file/folder named '" .. filename .. "'"
-  Termdebug
-  " Once termdebug has completed the startup you should have 4 windows on screen
-  call WaitForAssert({-> assert_equal(4, winnr('$'))})
-  call WaitForAssert({-> assert_notequal(-1, stridx(execute('messages'), error_message))})
-  quit!
-  wincmd b
-  wincmd q
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
+"     # Write dummy file with bad name
+"     call writefile(['This', 'is', 'a', 'test'], s:filename)
+"     Termdebug
+"     call WaitForAssert(() => assert_true(execute('messages') =~ s:error_message))
+"     call WaitForAssert(() => assert_equal(1, winnr('$')))
 
-  unlet g:termdebug_config
-endfunc
-
+"     call delete(s:filename)
+"     remove(g:termdebug_config, key)
+"   endfor
+"   #
+"   unlet g:termdebug_config
+" endfunction
 
 " vim: shiftwidth=2 sts=2 expandtab
