@@ -1310,7 +1310,8 @@ def DeleteCommands()
     # If the user has changed mousemodel during the debug session, we leave
     # what he/she wanted to have. Otherwise, we restore the saved mousemodel
     # value
-    if stridx(&mousemodel, 'popup_setpos') == -1
+    # if &mousemodel ==# 'popup_setpos'
+      echom saved_mousemodel
       &mousemodel = saved_mousemodel
       try
         aunmenu PopUp.-SEP3-
@@ -1321,7 +1322,7 @@ def DeleteCommands()
       catch
         # ignore any errors in removing the PopUp menu
       endtry
-    endif
+    # endif
   endif
 
   sign_unplace('TermDebug')
