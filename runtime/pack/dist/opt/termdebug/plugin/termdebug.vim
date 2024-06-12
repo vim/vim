@@ -49,6 +49,7 @@ if !has('vim9script') ||  v:version < 900
 endif
 
 # Variables to keep their status among multiple instanced of Termdebug
+# Avoid to source the script twice.
 # if exists('g:termdebug_loaded')
 #     Echoerr('Termdebug already loaded.')
 #     finish
@@ -62,7 +63,8 @@ g:termdebug_is_running = false
 command -nargs=* -complete=file -bang Termdebug StartDebug(<bang>0, <f-args>)
 command -nargs=+ -complete=file -bang TermdebugCommand StartDebugCommand(<bang>0, <f-args>)
 
-# Script variables declaration
+# Script variables declaration. These variables are re-initialized at every
+# Termdebug instance
 var way: string
 var err: string
 

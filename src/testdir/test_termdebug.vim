@@ -330,6 +330,7 @@ function Test_termdebug_save_restore_variables()
   call WaitForAssert({-> assert_equal(3, winnr('$'))})
   wincmd t
   quit!
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
   call WaitForAssert({-> assert_true(empty(&mousemodel))})
 endfunction
 
