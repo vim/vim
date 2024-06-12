@@ -314,8 +314,8 @@ function Test_termdebug_sanity_check()
     " Write dummy file with bad name
     call writefile(['This', 'is', 'a', 'test'], s:filename)
     Termdebug
-    call WaitForAssert(() => assert_true(execute('messages') =~ s:error_message))
-    call WaitForAssert(() => assert_equal(1, winnr('$')))
+    call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
+    call WaitForAssert({-> assert_equal(1, winnr('$'))})
 
     call delete(s:filename)
     call remove(g:termdebug_config, key)
