@@ -5198,11 +5198,16 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
 
 cleanup:
     vim_free(tv_str.vval.v_string);
-    list_free(match_str_list);
-    list_free(match_pos_list);
-    list_free(match_score_list);
-    list_free(retlist);
-    list_free(l);
+    if (match_str_list != NULL)
+        list_free(match_str_list);
+    if (match_pos_list != NULL)
+        list_free(match_pos_list);
+    if (match_score_list != NULL)
+        list_free(match_score_list);
+    if (retlist != NULL)
+        list_free(retlist);
+    if (l != NULL)
+        list_free(l);
     ga_clear(match_positions);
     return NULL;
 #else
