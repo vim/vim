@@ -158,9 +158,9 @@ def InitScriptVars()
   gdbbufnr = 0
   gdbbufname = 'gdb'
   varbufnr = 0
-  varbufname = 'Variables'
+  varbufname = 'Termdebug-variables-listing'
   asmbufnr = 0
-  asmbufname = 'Asm'
+  asmbufname = 'Termdebug-asm-listing'
   promptbuf = 0
   # This is for the "debugged program" thing
   ptybufnr = 0

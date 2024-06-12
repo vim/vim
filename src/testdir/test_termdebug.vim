@@ -304,7 +304,7 @@ endfunc
 function Test_termdebug_sanity_check()
   " Test if user has filename/folders with wrong names
   let g:termdebug_config = {}
-  let s:dict = {'disasm_window': 'Asm', 'use_prompt': 'gdb', 'variables_window': 'Variables'}
+  let s:dict = {'disasm_window': 'Termdebug-asm-listing', 'use_prompt': 'gdb', 'variables_window': 'Termdebug-variables-listing'}
 
   for key in keys(s:dict)
     let s:filename = s:dict[key]
