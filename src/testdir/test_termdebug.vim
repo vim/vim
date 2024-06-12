@@ -348,4 +348,5 @@ function Test_termdebug_save_restore_variables()
   call WaitForAssert({-> assert_true(empty(&mousemodel))})
 endfunction
 
+
 " vim: shiftwidth=2 sts=2 expandtab
