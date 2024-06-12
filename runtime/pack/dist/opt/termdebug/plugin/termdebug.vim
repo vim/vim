@@ -50,11 +50,11 @@ endif
 
 # Variables to keep their status among multiple instanced of Termdebug
 # Avoid to source the script twice.
-# if exists('g:termdebug_loaded')
-#     Echoerr('Termdebug already loaded.')
-#     finish
-# endif
-# g:termdebug_loaded = true
+if exists('g:termdebug_loaded')
+    Echoerr('Termdebug already loaded.')
+    finish
+endif
+g:termdebug_loaded = true
 g:termdebug_is_running = false
 
 
