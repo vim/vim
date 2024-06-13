@@ -50,7 +50,7 @@ abstract class Indent4MethodsTests
     @Tɐggablɘ @Tɐggablɘ abstract void ascii$0_(////////////////
                                                                 );
     @Tɐggablɘ @Tɐggablɘ abstract <α, β> Τʬ<α> μʭʭ$0_(
-                        /* TODO: @SuppressWarnings("bespoke")*/ β b);
+                                @SuppressWarnings("bespoke") β b);
 
     @Tɐggablɘ private native void ascii$1_(/*////////////*/);
     @Tɐggablɘ private native <α, β> Τʬ<α>[] μʭʭ$1_(
