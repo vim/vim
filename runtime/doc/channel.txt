@@ -956,7 +956,7 @@ job_info([{job}])					*job_info()*
 		Can also be used as a |method|: >
 			GetJob()->job_info()
 <
-		Return type: dict<any> or list<any> depending on whether {job}
+		Return type: dict<any> or list<job> depending on whether {job}
 		was given
 
 
