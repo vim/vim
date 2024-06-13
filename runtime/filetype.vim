@@ -2243,6 +2243,9 @@ au BufNewFile,BufRead *.smt,*.smith		setf smith
 " Smithy
 au BufNewFile,BufRead *.smithy			setf smithy
 
+" Snakemake
+au BufNewFile,BufRead Snakemake,*.smk		setf snakemake
+
 " Snobol4 and spitbol
 au BufNewFile,BufRead *.sno,*.spt		setf snobol4
 
