@@ -463,8 +463,8 @@ pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, int attr)
             // Handle fuzzy matching
             for (i = 0; i < ga->ga_len; i++)
             {
-                int *match_pos = ((int *)ga->ga_data) + i;
-                int actual_char_pos = 0;
+                int_u *match_pos = ((int_u *)ga->ga_data) + i;
+                int_u actual_char_pos = 0;
                 char_u *temp_ptr = text;
                 while (temp_ptr < ptr)
                 {
