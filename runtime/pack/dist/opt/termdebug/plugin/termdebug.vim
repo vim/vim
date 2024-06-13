@@ -342,7 +342,6 @@ enddef
 
 # IsGdbRunning(): bool may be a better name?
 def IsGdbStarted(): bool
-  # CHECKME: check this implementation
   var gdbproc_status = job_status(term_getjob(gdbbufnr))
   var cmd_name = string(GetCommand()[0])
   if gdbproc_status !=# 'run'
