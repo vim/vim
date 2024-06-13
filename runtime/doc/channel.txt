@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 9.1.  Last change: 2024 Jun 06
+*channel.txt*      For Vim version 9.1.  Last change: 2024 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1031,7 +1031,7 @@ job_start({command} [, {options}])			*job_start()*
 		Can also be used as a |method|: >
 			BuildCommand()->job_start()
 <
-		Return type: |Number|
+		Return type: |job|
 
 
 job_status({job})					*job_status()* *E916*
@@ -1056,7 +1056,7 @@ job_status({job})					*job_status()* *E916*
 		Can also be used as a |method|: >
 			GetJob()->job_status()
 <
-		Return type: |job|
+		Return type: |String|
 
 
 job_stop({job} [, {how}])					*job_stop()*
