@@ -4557,6 +4557,7 @@ enddef
 def Test_term_getjob()
   CheckRunVimInTerminal
   v9.CheckSourceDefAndScriptFailure(['term_getjob(0z10)'], ['E1013: Argument 1: type mismatch, expected string but got blob', 'E1220: String or Number required for argument 1'])
+  v9.CheckSourceDefAndScriptSuccess(['assert_true(term_getjob(0) == null_job)'])
 enddef
 
 def Test_term_getline()
