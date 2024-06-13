@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jun 08
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -647,7 +647,8 @@ term_getcursor({buf})					*term_getcursor()*
 term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
-		Returns |v:null| when there is no job.
+		Returns |v:null| when there is no job. In Vim9 script, return
+		null_job when there is no job.
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getjob()
