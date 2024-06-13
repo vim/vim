@@ -850,6 +850,17 @@ arg_job(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a job or a null.
+ */
+    static int
+arg_job_or_null(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+{
+    if (type->tt_type == VAR_SPECIAL)
+	return OK;
+    return check_arg_type(&t_job, type, context);
+}
+
+/*
  * Check "type" is a channel or a job.
  */
     static int
@@ -1093,6 +1104,7 @@ static argcheck_T arg1_dict_any[] = {arg_dict_any};
 static argcheck_T arg1_dict_or_string[] = {arg_dict_any_or_string};
 static argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 static argcheck_T arg1_job[] = {arg_job};
+static argcheck_T arg1_job_or_null[] = {arg_job_or_null};
 static argcheck_T arg1_list_any[] = {arg_list_any};
 static argcheck_T arg1_list_number[] = {arg_list_number};
 static argcheck_T arg1_string_or_list_or_blob_mod[] = {arg_string_list_or_blob_mod};
@@ -2249,7 +2261,7 @@ static funcentry_T global_functions[] =
 			ret_void,	    JOB_FUNC(f_job_setoptions)},
     {"job_start",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
 			ret_job,	    JOB_FUNC(f_job_start)},
-    {"job_status",	1, 1, FEARG_1,	    arg1_job,
+    {"job_status",	1, 1, FEARG_1,	    arg1_job_or_null,
 			ret_string,	    JOB_FUNC(f_job_status)},
     {"job_stop",	1, 2, FEARG_1,	    arg2_job_string_or_number,
 			ret_number_bool,    JOB_FUNC(f_job_stop)},

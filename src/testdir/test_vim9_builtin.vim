@@ -2435,6 +2435,10 @@ def Test_job_status()
   else
     v9.CheckSourceDefAndScriptFailure(['job_status("a")'], ['E1013: Argument 1: type mismatch, expected job but got string', 'E1218: Job required for argument 1'])
     assert_equal('fail', job_status(test_null_job()))
+    assert_equal('fail', job_status(null_job))
+    assert_equal('fail', job_status(null))
+    assert_equal('fail', job_status(term_getjob(0)))
+    v9.CheckSourceDefAndScriptFailure(['job_status(null_channel)'], ['E1013: Argument 1: type mismatch, expected job but got channel', 'E1218: Job required for argument 1'])
   endif
 enddef
 

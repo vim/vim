@@ -1962,10 +1962,12 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     void
 f_job_status(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_job_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && argvars[0].v_type != VAR_SPECIAL
+			&& check_for_job_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type == VAR_JOB && argvars[0].vval.v_job == NULL)
+    if (argvars[0].v_type == VAR_SPECIAL
+	|| (argvars[0].v_type == VAR_JOB && argvars[0].vval.v_job == NULL))
     {
 	// A job that never started returns "fail".
 	rettv->v_type = VAR_STRING;
