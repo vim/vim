@@ -43,7 +43,7 @@ def Echoerr(msg: string)
 enddef
 
 
-# Variables to keep their status among multiple instanced of Termdebug
+# Variables to keep their status among multiple instances of Termdebug
 # Avoid to source the script twice.
 if exists('g:termdebug_loaded')
     Echoerr('Termdebug already loaded.')
@@ -437,8 +437,8 @@ def StartDebug_term(dict: dict<any>)
   var counter = 0
   var counter_max = 300
   var success = false
-  while success == false && counter < counter_max
-    if IsGdbStarted() == false
+  while !success && counter < counter_max
+    if !IsGdbStarted()
       CloseBuffers()
       return
     endif
@@ -454,7 +454,7 @@ def StartDebug_term(dict: dict<any>)
     sleep 10m
   endwhile
 
-  if success == false
+  if !success
     Echoerr('Failed to startup the gdb program.')
     CloseBuffers()
     return
@@ -475,8 +475,8 @@ def StartDebug_term(dict: dict<any>)
   counter = 0
   counter_max = 300
   success = false
-  while success == false && counter < counter_max
-    if IsGdbStarted() == false
+  while !success && counter < counter_max
+    if !IsGdbStarted()
       return
     endif
 
@@ -509,7 +509,7 @@ def StartDebug_term(dict: dict<any>)
     sleep 10m
   endwhile
 
-  if success == false
+  if !success
     Echoerr('Cannot check if your gdb works, continuing anyway')
     return
   endif
@@ -548,7 +548,7 @@ def StartDebug_prompt(dict: dict<any>)
   prompt_setcallback(promptbuf, function('PromptCallback'))
   prompt_setinterrupt(promptbuf, function('PromptInterrupt'))
 
-  if vvertical == true
+  if vvertical
     # Assuming the source code window will get a signcolumn, use two more
     # columns for that, thus one less for the terminal window.
     exe $":{(&columns / 2 - 1)}wincmd |"
@@ -704,7 +704,7 @@ def TermDebugSendCommand(cmd: string)
     ch_sendraw(gdb_channel, $"{cmd}\n")
   else
     var do_continue = 0
-    if stopped == false
+    if !stopped
       do_continue = 1
       StopCommand()
       sleep 10m
@@ -823,7 +823,7 @@ def DecodeMessage(quotedText: string, literal: bool): string
         #\ \ ->substitute('\\0x00', NullRepl, 'g')
         ->substitute('\\\\', '\', 'g')
         ->substitute(NullRepl, '\\000', 'g')
-  if literal == false
+  if !literal
     return msg
       ->substitute('\\t', "\t", 'g')
       ->substitute('\\n', '', 'g')
@@ -1533,7 +1533,7 @@ def TermDebugBalloonExpr(): string
   if v:beval_winid != sourcewin
     return ''
   endif
-  if stopped == false
+  if !stopped
     # Only evaluate when stopped, otherwise setting a breakpoint using the
     # mouse triggers a balloon.
     return ''
