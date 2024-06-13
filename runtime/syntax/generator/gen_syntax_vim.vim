@@ -287,6 +287,7 @@ function! s:get_vim_command_type(cmd_name)
 	\	'Next', 'Print', 'X',
 	\	'new', 'popup',
 	\	'vim9script',
+	\	'catch', 'throw',
 	\ ]
 	" Required for original behavior
 	" \	'global', 'vglobal'
