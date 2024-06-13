@@ -5120,12 +5120,14 @@ fuzzy_match_str_with_pos(char_u *str UNUSED, char_u *pat UNUSED)
     if (str == NULL || pat == NULL)
     {
         ga_clear(match_positions);
+	vim_free(match_positions);
         return NULL;
     }
     l = list_alloc();
     if (l == NULL)
     {
         ga_clear(match_positions);
+	vim_free(match_positions);
         return NULL;
     }
 
@@ -5209,6 +5211,7 @@ cleanup:
     if (l != NULL)
         list_free(l);
     ga_clear(match_positions);
+    vim_free(match_positions);
     return NULL;
 #else
     return NULL;
