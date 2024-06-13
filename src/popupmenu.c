@@ -434,21 +434,22 @@ pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, int attr)
     char_u	*leader = ins_compl_leader();
     int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
 
-    if ((highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI] &&
-         highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
+    if (leader == NULL || *leader == NUL ||
+	    (highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI] &&
+			highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
     {
         screen_puts_len(text, textlen, row, col, attr);
         return;
     }
 
 #ifdef FEAT_RIGHTLEFT
-    if (leader != NULL && curwin->w_p_rl)
+    if (curwin->w_p_rl)
         rt_leader = reverse_text(leader);
 #endif
     match_leader = rt_leader != NULL ? rt_leader : leader;
-    leader_len = match_leader ? (int)STRLEN(match_leader) : 0;
+    leader_len = (int)STRLEN(match_leader);
 
-    if (match_leader != NULL && leader_len > 0 && in_fuzzy)
+    if (in_fuzzy)
         ga = fuzzy_match_str_with_pos(text, match_leader);
 
     // Render text with proper attributes
