@@ -42,11 +42,6 @@ def Echoerr(msg: string)
   echohl ErrorMsg | echom $'[termdebug] {msg}' | echohl None
 enddef
 
-if !has('vim9script') ||  v:version < 900
-    # Needs Vim version 9.0 and above
-    Echoerr("You need at least Vim 9.0")
-    finish
-endif
 
 # Variables to keep their status among multiple instanced of Termdebug
 # Avoid to source the script twice.
