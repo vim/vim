@@ -55,7 +55,7 @@ an overview of currently available distributions.
 
 Some popular places to get the latest Vim:
 * Check out the git repository from [GitHub](https://github.com/vim/vim).
-* Get the source code as an [archive](https://github.com/vim/vim/releases).
+* Get the source code as an [archive](https://github.com/vim/vim/tags).
 * Get a Windows executable from the
 [vim-win32-installer](https://github.com/vim/vim-win32-installer/releases) repository.
 

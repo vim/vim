@@ -48,7 +48,7 @@ MS Windows 95/98/Me/NT/2000/XP/Vista, AmigaDOS, Atari MiNT, BeOS и RISC OS.
 
 Несколько полезных мест, где можно получить последнюю версию редактора Vim:
 * Посмотрите в git-хранилище на GitHub: https://github.com/vim/vim.
-* Получить исходный код в виде архива: https://github.com/vim/vim/releases.
+* Получить исходный код в виде архива: https://github.com/vim/vim/tags.
 * Получить исполняемый файл для ОС Windows из хранилища vim-win32-installer:
 https://github.com/vim/vim-win32-installer/releases.
 
