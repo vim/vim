@@ -328,14 +328,14 @@ enddef
 
 # Use when debugger didn't start or ended.
 def CloseBuffers()
-  exe $'bwipe! {ptybufnr}'
-  exe $'bwipe! {commbufnr}'
-  if asmbufnr > 0 && bufexists(asmbufnr)
-    exe $'bwipe! {asmbufnr}'
-  endif
-  if varbufnr > 0 && bufexists(varbufnr)
-    exe $'bwipe! {varbufnr}'
-  endif
+  var bufnames = ['debugged\ program', 'gdb\ communication', asmbufname, varbufname]
+  for bufname in bufnames
+    var buf_nr = bufnr(bufname)
+    if buf_nr > 0 && bufexists(buf_nr)
+      exe $'bwipe! {bufname}'
+    endif
+  endfor
+
   running = 0
   gdbwin = 0
 enddef
