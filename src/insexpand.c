@@ -1222,6 +1222,7 @@ ins_compl_build_pum(void)
 {
     compl_T     *compl;
     compl_T     *shown_compl = NULL;
+    compl_T     *after_first_compl = NULL;
     int		did_find_shown_match = FALSE;
     int		shown_match_ok = FALSE;
     int		i;
@@ -1298,6 +1299,8 @@ ins_compl_build_pum(void)
 	    }
 	    else if (compl_fuzzy_match)
 	    {
+		if (i == 0)
+		    after_first_compl = compl;
 		// Update the maximum fuzzy score and the shown match
 		// if the current item's score is higher
 		if (compl->cp_score > max_fuzzy_score)
@@ -1318,6 +1321,8 @@ ins_compl_build_pum(void)
 		{
 		    shown_match_ok = TRUE;
 		    cur = 0;
+		    if (match_at_original_text(compl_shown_match))
+		      compl_shown_match = after_first_compl;
 		}
 	    }
 
