@@ -4470,7 +4470,8 @@ typedef struct
     char_u	*pum_kind;	// extra kind text (may be truncated)
     char_u	*pum_extra;	// extra menu text (may be truncated)
     char_u	*pum_info;	// extra info
-    int		 pum_score;	// fuzzy match score
+    int		pum_score;	// fuzzy match score
+    int		pum_idx;	// index of item before sorting by score
 } pumitem_T;
 
 /*
