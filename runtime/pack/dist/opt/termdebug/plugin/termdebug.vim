@@ -717,7 +717,7 @@ def ContinueCommand()
 enddef
 
 # This is global so that a user can create their mappings with this.
-def TermDebugSendCommand(cmd: string)
+def g:TermDebugSendCommand(cmd: string)
   if way == 'prompt'
     ch_sendraw(gdb_channel, $"{cmd}\n")
   else
