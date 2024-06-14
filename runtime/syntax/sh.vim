@@ -482,10 +482,10 @@ if !exists("b:is_posix")
 endif
 
 if exists("b:is_bash")
- ShFoldFunctions syn region shFunctionOne	matchgroup=shFunction start="^\s*[A-Za-z_0-9:][-a-zA-Z_0-9:]*\s*()\_s*{"		end="}"	contains=@shFunctionList		 skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
- ShFoldFunctions syn region shFunctionTwo	matchgroup=shFunction start="\%(do\)\@!\&\<[A-Za-z_0-9:][-a-zA-Z_0-9:]*\>\s*\%(()\)\=\_s*{"	end="}"	contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
- ShFoldFunctions syn region shFunctionThree	matchgroup=shFunction start="^\s*[A-Za-z_0-9:][-a-zA-Z_0-9:]*\s*()\_s*("		end=")"	contains=@shFunctionList		 skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
- ShFoldFunctions syn region shFunctionFour	matchgroup=shFunction start="\%(do\)\@!\&\<[A-Za-z_0-9:][-a-zA-Z_0-9:]*\>\s*\%(()\)\=\_s*)"	end=")"	contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
+ ShFoldFunctions syn region shFunctionOne   matchgroup=shFunction           start="^\s*[][,:+?./^@*=A-Za-z_0-9-][][,:+?./^@*!a-zA-Z_0-9-]*\s*(\s*)\_s*{"        end="}" contains=@shFunctionList                         skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
+ ShFoldFunctions syn region shFunctionTwo   matchgroup=shFunction start="\%(do\)\@!\&\<[][,:+?./^@*=A-Za-z_0-9-][][,:+?./^@*!a-zA-Z_0-9-]*\>\s*\%(()\)\=\_s*{"  end="}" contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
+ ShFoldFunctions syn region shFunctionThree matchgroup=shFunction           start="^\s*[][,:+?./^@*=A-Za-z_0-9-][][,:+?./^@*!a-zA-Z_0-9-]*\s*(\s*)\_s*("        end=")" contains=@shFunctionList                         skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
+ ShFoldFunctions syn region shFunctionFour  matchgroup=shFunction start="\%(do\)\@!\&\<[][,:+?./^@*=A-Za-z_0-9-][][,:+?./^@*!a-zA-Z_0-9-]*\>\s*\%(()\)\=\_s*)"  end=")" contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
 else
  ShFoldFunctions syn region shFunctionOne	matchgroup=shFunction start="^\s*\h\w*\s*()\_s*{"			end="}"	contains=@shFunctionList		 skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
  ShFoldFunctions syn region shFunctionTwo	matchgroup=shFunction start="\%(do\)\@!\&\<\h\w*\>\s*\%(()\)\=\_s*{"		end="}"	contains=shFunctionKey,@shFunctionList contained skipwhite skipnl nextgroup=shFunctionStart,shQuickComment
