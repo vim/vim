@@ -3,7 +3,7 @@
 " Maintainer:	   Hirohito Higashi <h.east.727 ATMARK gmail.com>
 "	   Doug Kearns <dougkearns@gmail.com>
 " URL:	   https://github.com/vim-jp/syntax-vim-ex
-" Last Change:	   2024 Jun 13
+" Last Change:	   2024 Jun 15
 " Former Maintainer: Charles E. Campbell
 
 " DO NOT CHANGE DIRECTLY.
@@ -32,7 +32,7 @@ syn keyword vimCommand contained abo[veleft] abs[tract] al[l] ar[gs] arga[dd] ar
 syn keyword vimCommand contained con[tinue] conf[irm] cons[t] cope[n] cp[revious] cpf[ile] cq[uit] cr[ewind] cs[cope] cst[ag] cw[indow] d[elete] delm[arks] deb[ug] debugg[reedy] defc[ompile] defe[r] delc[ommand] delf[unction] di[splay] dif[fupdate] diffg[et] diffo[ff] diffp[atch] diffpu[t] diffs[plit] difft[his] dig[raphs] disa[ssemble] dj[ump] dli[st] dr[op] ds[earch] dsp[lit] e[dit] ea[rlier] el[se] elsei[f] em[enu] en[dif] endin[terface] endc[lass] ende[num] endfo[r] endt[ry] endw[hile] ene[w] enu[m] ev[al] ex exi[t] exp[ort] exu[sage] f[ile] files filet[ype] filt[er] fin[d] fina[l] finall[y] fini[sh] fir[st] fix[del] fo[ld] foldc[lose] foldd[oopen] folddoc[losed] foldo[pen] for g[lobal] go[to] gr[ep] grepa[dd] gu[i] gv[im] h[elp] helpc[lose] helpf[ind] helpg[rep]
 syn keyword vimCommand contained helpt[ags] ha[rdcopy] hi[ghlight] hid[e] his[tory] ho[rizontal] if ij[ump] il[ist] imp[ort] int[ro] inte[rface] is[earch] isp[lit] j[oin] ju[mps] k kee[pmarks] keepj[umps] keepp[atterns] keepa[lt] l[ist] lN[ext] lNf[ile] la[st] lab[ove] lan[guage] lad[dexpr] laddb[uffer] laddf[ile] laf[ter] lat[er] lb[uffer] lbe[fore] lbel[ow] lbo[ttom] lc[d] lch[dir] lcl[ose] lcs[cope] ld[o] le[ft] lefta[bove] let lex[pr] leg[acy] lf[ile] lfd[o] lfir[st] lg[etfile] lgetb[uffer] lgete[xpr] lgr[ep] lgrepa[dd] lh[elpgrep] lhi[story] ll lla[st] lli[st] lmak[e] lne[xt] lnew[er] lnf[ile] lo[adview] loadk[eymap] loc[kmarks] lockv[ar] lol[der] lop[en] lp[revious] lpf[ile] lr[ewind] lt[ag] lua luad[o] luaf[ile] lv[imgrep] lvimgrepa[dd] lw[indow] ls m[ove]
 syn keyword vimCommand contained ma[rk] mak[e] marks mat[ch] menut[ranslate] mes[sages] mk[exrc] mks[ession] mksp[ell] mkv[imrc] mkvie[w] mod[e] mz[scheme] mzf[ile] n[ext] nb[key] nbc[lose] nbs[tart] noa[utocmd] noh[lsearch] nos[wapfile] nu[mber] o[pen] ol[dfiles] on[ly] opt[ions] ow[nsyntax] p[rint] pa[ckadd] packl[oadall] pc[lose] pe[rl] perld[o] ped[it] po[p] pp[op] pre[serve] prev[ious] pro[mptfind] promptr[epl] prof[ile] profd[el] ps[earch] pt[ag] ptN[ext] ptf[irst] ptj[ump] ptl[ast] ptn[ext] ptp[revious] ptr[ewind] pts[elect] pu[t] pub[lic] pw[d] py[thon] pyd[o] pyf[ile] py3 py3d[o] python3 py3f[ile] pyx pyxd[o] pythonx pyxf[ile] q[uit] quita[ll] qa[ll] r[ead] rec[over] red[o] redi[r] redr[aw] redraws[tatus] redrawt[abline] reg[isters] res[ize] ret[ab] retu[rn]
-syn keyword vimCommand contained rew[ind] ri[ght] rightb[elow] ru[ntime] rub[y] rubyd[o] rubyf[ile] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] san[dbox] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] sc[riptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] si[malt] sig[n] sil[ent] sl[eep] sla[st] sn[ext] so[urce] sor[t] sp[lit] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sr[ewind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stat[ic] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sw[apname] synti[me] sync[bind] smi[le] t tN[ext] ta[g] tags tab tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st]
+syn keyword vimCommand contained rew[ind] ri[ght] rightb[elow] ru[ntime] rub[y] rubyd[o] rubyf[ile] rund[o] rv[iminfo] sN[ext] sa[rgument] sal[l] san[dbox] sav[eas] sb[uffer] sbN[ext] sba[ll] sbf[irst] sbl[ast] sbm[odified] sbn[ext] sbp[revious] sbr[ewind] sc[riptnames] scripte[ncoding] scriptv[ersion] scs[cope] setf[iletype] sf[ind] sfir[st] sh[ell] si[malt] sig[n] sil[ent] sla[st] sn[ext] so[urce] sor[t] sp[lit] spe[llgood] spelld[ump] spelli[nfo] spellr[epall] spellra[re] spellu[ndo] spellw[rong] spr[evious] sr[ewind] st[op] sta[g] star[tinsert] startg[replace] startr[eplace] stat[ic] stopi[nsert] stj[ump] sts[elect] sun[hide] sus[pend] sv[iew] sw[apname] synti[me] sync[bind] smi[le] t tN[ext] ta[g] tags tab tabc[lose] tabd[o] tabe[dit] tabf[ind] tabfir[st]
 syn keyword vimCommand contained tabm[ove] tabl[ast] tabn[ext] tabnew tabo[nly] tabp[revious] tabN[ext] tabr[ewind] tabs tc[d] tch[dir] tcl tcld[o] tclf[ile] te[aroff] ter[minal] tf[irst] thi[s] tj[ump] tl[ast] tn[ext] to[pleft] tp[revious] tr[ewind] try ts[elect] ty[pe] u[ndo] undoj[oin] undol[ist] unh[ide] unl[et] unlo[ckvar] uns[ilent] up[date] v[global] ve[rsion] verb[ose] vert[ical] vi[sual] vie[w] vim[grep] vimgrepa[dd] vim9[cmd] viu[sage] vne[w] vs[plit] w[rite] wN[ext] wa[ll] wh[ile] wi[nsize] winc[md] wind[o] winp[os] wn[ext] wp[revious] wq wqa[ll] wu[ndo] wv[iminfo] x[it] xa[ll] xr[estore] y[ank] z dl dell delel deletl deletel dp dep delp delep deletp deletep a i
 
 syn keyword vimCommand contained	2mat[ch] 3mat[ch]
@@ -213,7 +213,7 @@ syn match	vimNumber	'\%(^\|\A\)\zs#\x\{6}'		skipwhite nextgroup=vimGlobal,vimSub
 syn case match
 
 " All vimCommands are contained by vimIsCommand. {{{2
-syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCatch,vimDef,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimGlobal,vimHighlight,vimLet,vimMap,vimMark,vimNotFunc,vimNorm,vimSet,vimSyntax,vimThrow,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate
+syn cluster vimCmdList	contains=vimAbb,vimAddress,vimAutoCmd,vimAugroup,vimBehave,vimCatch,vimDef,@vimEcho,vimEnddef,vimEndfunction,vimExecute,vimIsCommand,vimExtCmd,vimFor,vimFunction,vimGlobal,vimHighlight,vimLet,vimMap,vimMark,vimNotFunc,vimNorm,vimSet,vimSleep,vimSyntax,vimThrow,vimUnlet,vimUnmap,vimUserCmd,vimMenu,vimMenutranslate
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=@vimCmdList,vimSubst1
 syn match vimIsCommand	"\<\%(\h\w*\|[23]mat\%[ch]\)\>"	contains=vimCommand
 syn match vimVar	      contained	"\<\h[a-zA-Z0-9#_]*\>"
@@ -698,6 +698,12 @@ syn match vimNotFunc	"\<if\>\|\<el\%[seif]\>\|\<retu\%[rn]\>\|\<while\>"	skipwhi
 " ====
 syn match	vimNorm		"\<norm\%[al]!\=" skipwhite nextgroup=vimNormCmds
 syn match	vimNormCmds contained	".*$"
+
+" Sleep: {{{2
+" =====
+syn keyword	vimSleep		sl[eep]		skipwhite nextgroup=vimSleepBang,vimSleepArg
+syn match	vimSleepBang	contained	"\a\@1<=!"		skipwhite nextgroup=vimSleepArg
+syn match	vimSleepArg	contained	"\<\%(\d\+\)\=m\=\>"
 
 " Syntax: {{{2
 "=======
@@ -1237,6 +1243,9 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimSetSep	Statement
  hi def link vimSetString	vimString
  hi def link vim9Vim9Script	vimCommand
+ hi def link vimSleep	vimCommand
+ hi def link vimSleepArg	Constant
+ hi def link vimSleepBang	vimBang
  hi def link vimSpecFile	Identifier
  hi def link vimSpecFileMod	vimSpecFile
  hi def link vimSpecial	Type
