@@ -420,7 +420,7 @@ pum_under_menu(int row, int col, int only_redrawing)
  * displays text on the popup menu with specific attributes.
  */
     static void
-pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, int attr)
+pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, hlf_T hlf)
 {
     int		i;
     int		leader_len;
@@ -434,69 +434,68 @@ pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, int attr)
     char_u	*leader = ins_compl_leader();
     int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
 
-    if (leader == NULL || *leader == NUL ||
-	    (highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI] &&
-			highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
+    if (leader == NULL || *leader == NUL || (hlf != HLF_PSI && hlf != HLF_PNI)
+	    || (highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI]
+		&& highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
     {
-        screen_puts_len(text, textlen, row, col, attr);
-        return;
+	screen_puts_len(text, textlen, row, col, highlight_attr[hlf]);
+	return;
     }
 
 #ifdef FEAT_RIGHTLEFT
     if (curwin->w_p_rl)
-        rt_leader = reverse_text(leader);
+	rt_leader = reverse_text(leader);
 #endif
     match_leader = rt_leader != NULL ? rt_leader : leader;
     leader_len = (int)STRLEN(match_leader);
 
     if (in_fuzzy)
-        ga = fuzzy_match_str_with_pos(text, match_leader);
+	ga = fuzzy_match_str_with_pos(text, match_leader);
 
     // Render text with proper attributes
     while (*ptr != NUL && ptr < text + textlen)
     {
-        char_len = mb_ptr2len(ptr);
-        cells = mb_ptr2cells(ptr);
-        new_attr = attr;
+	char_len = mb_ptr2len(ptr);
+	cells = mb_ptr2cells(ptr);
+	new_attr = highlight_attr[hlf];
 
-        if (ga != NULL)
-        {
-            // Handle fuzzy matching
-            for (i = 0; i < ga->ga_len; i++)
-            {
-                int_u *match_pos = ((int_u *)ga->ga_data) + i;
-                int_u actual_char_pos = 0;
-                char_u *temp_ptr = text;
-                while (temp_ptr < ptr)
-                {
-                    temp_ptr += mb_ptr2len(temp_ptr);
-                    actual_char_pos++;
-                }
-                if (actual_char_pos == match_pos[0])
-                {
-                    new_attr = highlight_attr[(attr == highlight_attr[HLF_PSI]
-							? HLF_PMSI : HLF_PMNI)];
-                    break;
-                }
-            }
-        }
-        else if (!in_fuzzy && (ptr - text < leader_len) &&
-				(STRNCMP(text, match_leader, leader_len) == 0))
-                new_attr = highlight_attr[(attr == highlight_attr[HLF_PSI]
-						    ? HLF_PMSI : HLF_PMNI)];
+	if (ga != NULL)
+	{
+	    // Handle fuzzy matching
+	    for (i = 0; i < ga->ga_len; i++)
+	    {
+		int_u *match_pos = ((int_u *)ga->ga_data) + i;
+		int_u actual_char_pos = 0;
+		char_u *temp_ptr = text;
+		while (temp_ptr < ptr)
+		{
+		    temp_ptr += mb_ptr2len(temp_ptr);
+		    actual_char_pos++;
+		}
+		if (actual_char_pos == match_pos[0])
+		{
+		    new_attr = highlight_attr[hlf == HLF_PSI
+							? HLF_PMSI : HLF_PMNI];
+		    break;
+		}
+	    }
+	}
+	else if (!in_fuzzy && (ptr - text < leader_len)
+			     && (STRNCMP(text, match_leader, leader_len) == 0))
+	    new_attr = highlight_attr[hlf == HLF_PSI ? HLF_PMSI : HLF_PMNI];
 
-        screen_puts_len(ptr, char_len, row, col, new_attr);
-        col += cells;
-        ptr += char_len;
+	screen_puts_len(ptr, char_len, row, col, new_attr);
+	col += cells;
+	ptr += char_len;
     }
 
     if (ga != NULL)
     {
-        ga_clear(ga);
-        vim_free(ga);
+	ga_clear(ga);
+	vim_free(ga);
     }
     if (rt_leader)
-        vim_free(rt_leader);
+	vim_free(rt_leader);
 }
 
 /*
@@ -509,8 +508,9 @@ pum_redraw(void)
     int		col;
     int		attr_scroll = highlight_attr[HLF_PSB];
     int		attr_thumb = highlight_attr[HLF_PST];
+    hlf_T	*hlfs; // array used for highlights
+    hlf_T	hlf;
     int		attr;
-    int		*attrs; // array used for highlights
     int		i;
     int		idx;
     char_u	*s;
@@ -521,17 +521,17 @@ pum_redraw(void)
     int		round;
     int		n;
 
-    int		attrsNorm[3];
-    int		attrsSel[3];
+    hlf_T	hlfsNorm[3];
+    hlf_T	hlfsSel[3];
     // "word"
-    attrsNorm[0] = highlight_attr[HLF_PNI];
-    attrsSel[0] = highlight_attr[HLF_PSI];
+    hlfsNorm[0] = HLF_PNI;
+    hlfsSel[0] = HLF_PSI;
     // "kind"
-    attrsNorm[1] = highlight_attr[HLF_PNK];
-    attrsSel[1] = highlight_attr[HLF_PSK];
+    hlfsNorm[1] = HLF_PNK;
+    hlfsSel[1] = HLF_PSK;
     // "extra text"
-    attrsNorm[2] = highlight_attr[HLF_PNX];
-    attrsSel[2] = highlight_attr[HLF_PSX];
+    hlfsNorm[2] = HLF_PNX;
+    hlfsSel[2] = HLF_PSX;
 
     if (call_update_screen)
     {
@@ -566,8 +566,9 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
-	attrs = (idx == pum_selected) ? attrsSel : attrsNorm;
-	attr = attrs[0]; // start with "word" highlight
+	hlfs = (idx == pum_selected) ? hlfsSel : hlfsNorm;
+	hlf = hlfs[0]; // start with "word" highlight
+	attr = highlight_attr[hlf];
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
@@ -590,7 +591,8 @@ pum_redraw(void)
 	totwidth = 0;
 	for (round = 0; round < 3; ++round)
 	{
-	    attr = attrs[round];
+	    hlf = hlfs[round];
+	    attr = highlight_attr[hlf];
 	    width = 0;
 	    s = NULL;
 	    switch (round)
@@ -650,7 +652,7 @@ pum_redraw(void)
 					    size++;
 					}
 				    }
-				    pum_screen_put_with_attr(row, col -size + 1, rt, (int)STRLEN(rt), attr);
+				    pum_screen_put_with_attr(row, col - size + 1, rt, (int)STRLEN(rt), hlf);
 				    vim_free(rt_start);
 				}
 				vim_free(st);
@@ -678,7 +680,7 @@ pum_redraw(void)
 				    else
 					--cells;
 				}
-				pum_screen_put_with_attr(row, col, st, size, attr);
+				pum_screen_put_with_attr(row, col, st, size, hlf);
 				vim_free(st);
 			    }
 			    col += width;
