@@ -229,6 +229,10 @@ export def Exe2filetype(name: string, line1: string): string
   elseif name =~ '^execlineb\>'
     return 'execline'
 
+    # Miranda script
+  elseif name =~ '^mira\>'
+    return 'miranda'
+
   endif
 
   return ''
