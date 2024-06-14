@@ -354,23 +354,32 @@ enddef
 
 # Open a terminal window without a job, to run the debugged program in.
 def StartDebug_term(dict: dict<any>)
-  ptybufnr = term_start('NONE', {
-    term_name: 'debugged program',
-    vertical: vvertical})
-  if ptybufnr == 0
-    Echoerr('Failed to open the program terminal window')
-    return
-  endif
-  var pty = job_info(term_getjob(ptybufnr))['tty_out']
-  ptywin = win_getid()
+  var create_pty: bool = true
+  var pty = ""
 
-  if vvertical
-    # Assuming the source code window will get a signcolumn, use two more
-    # columns for that, thus one less for the terminal window.
-    exe $":{(&columns / 2 - 1)}wincmd |"
-    if allleft
-      # use the whole left column
-      wincmd H
+  if exists('g:termdebug_config') && get(g:termdebug_config, 'no_tty', 0) != 0
+    create_pty = false
+  endif
+
+  if create_pty
+    ptybufnr = term_start('NONE', {
+      term_name: 'debugged program',
+      vertical: vvertical})
+    if ptybufnr == 0
+      Echoerr('Failed to open the program terminal window')
+      return
+    endif
+    pty = job_info(term_getjob(ptybufnr))['tty_out']
+    ptywin = win_getid()
+
+    if vvertical
+      # Assuming the source code window will get a signcolumn, use two more
+      # columns for that, thus one less for the terminal window.
+      exe $":{(&columns / 2 - 1)}wincmd |"
+      if allleft
+        # use the whole left column
+        wincmd H
+      endif
     endif
   endif
 
@@ -395,7 +404,7 @@ def StartDebug_term(dict: dict<any>)
 
   gdbbufname = gdb_cmd[0]
 
-  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_add_args')
+  if ptybufnr != 0 && exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_add_args')
     gdb_cmd = g:termdebug_config.command_add_args(gdb_cmd, pty)
   else
     # Add -quiet to avoid the intro message causing a hit-enter prompt.
@@ -406,8 +415,10 @@ def StartDebug_term(dict: dict<any>)
     # be exec-interrupt, since many commands don't work properly while the
     # target is running (so execute during startup).
     gdb_cmd += ['-iex', 'set mi-async on']
-    # Open a terminal window to run the debugger.
-    gdb_cmd += ['-tty', pty]
+    if ptybufnr > 0
+      # Open a terminal window to run the debugger.
+      gdb_cmd += ['-tty', pty]
+    endif
     # Command executed _after_ startup is done, provides us with the necessary
     # feedback
     gdb_cmd += ['-ex', 'echo startupdone\n']
@@ -587,37 +598,45 @@ def StartDebug_prompt(dict: dict<any>)
   set modified
   gdb_channel = job_getchannel(gdbjob)
 
-  ptybufnr = 0
-  if has('win32')
-    # MS-Windows: run in a new console window for maximum compatibility
-    SendCommand('set new-console on')
-  elseif has('terminal')
-    # Unix: Run the debugged program in a terminal window.  Open it below the
-    # gdb window.
-    belowright ptybufnr = term_start('NONE', {
-      term_name: 'debugged program',
-      vertical: vvertical
-    })
-    if ptybufnr == 0
-      Echoerr('Failed to open the program terminal window')
-      job_stop(gdbjob)
-      return
-    endif
-    ptywin = win_getid()
-    var pty = job_info(term_getjob(ptybufnr))['tty_out']
-    SendCommand($'tty {pty}')
+  var create_pty: bool = true
 
-    # Since GDB runs in a prompt window, the environment has not been set to
-    # match a terminal window, need to do that now.
-    SendCommand('set env TERM = xterm-color')
-    SendCommand($'set env ROWS = {winheight(ptywin)}')
-    SendCommand($'set env LINES = {winheight(ptywin)}')
-    SendCommand($'set env COLUMNS = {winwidth(ptywin)}')
-    SendCommand($'set env COLORS = {&t_Co}')
-    SendCommand($'set env VIM_TERMINAL = {v:version}')
-  else
-    # TODO: open a new terminal, get the tty name, pass on to gdb
-    SendCommand('show inferior-tty')
+  if exists('g:termdebug_config') && get(g:termdebug_config, 'no_tty', 0) != 0
+    create_pty = false
+  endif
+
+  if create_pty
+    ptybufnr = 0
+    if has('win32')
+      # MS-Windows: run in a new console window for maximum compatibility
+      SendCommand('set new-console on')
+    elseif has('terminal')
+      # Unix: Run the debugged program in a terminal window.  Open it below the
+      # gdb window.
+      belowright ptybufnr = term_start('NONE', {
+        term_name: 'debugged program',
+        vertical: vvertical
+      })
+      if ptybufnr == 0
+        Echoerr('Failed to open the program terminal window')
+        job_stop(gdbjob)
+        return
+      endif
+      ptywin = win_getid()
+      var pty = job_info(term_getjob(ptybufnr))['tty_out']
+      SendCommand($'tty {pty}')
+
+      # Since GDB runs in a prompt window, the environment has not been set to
+      # match a terminal window, need to do that now.
+      SendCommand('set env TERM = xterm-color')
+      SendCommand($'set env ROWS = {winheight(ptywin)}')
+      SendCommand($'set env LINES = {winheight(ptywin)}')
+      SendCommand($'set env COLUMNS = {winwidth(ptywin)}')
+      SendCommand($'set env COLORS = {&t_Co}')
+      SendCommand($'set env VIM_TERMINAL = {v:version}')
+    else
+      # TODO: open a new terminal, get the tty name, pass on to gdb
+      SendCommand('show inferior-tty')
+    endif
   endif
   SendCommand('set print pretty on')
   SendCommand('set breakpoint pending on')

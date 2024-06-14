@@ -1661,6 +1661,14 @@ If there is no g:terminal_config yet you can use: >
 After this, breakpoints will be displayed as `>>` in the signcolumn.
 
 
+Program window ~
+							*termdebug_no_tty*
+
+The program I/O window can be hidden by setting the 'no_tty' configuration to
+true.
+	let g:termdebug_config['no_tty'] = 1
+
+
 Window toolbar ~
 							*termdebug_winbar*
 By default the Termdebug plugin creates a window toolbar if the mouse is
