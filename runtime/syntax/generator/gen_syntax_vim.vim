@@ -274,21 +274,48 @@ function! s:get_vim_command_type(cmd_name)
 	let ab_prefix   = '^[ci]\?'
 	let menu_prefix = '^\%([acinostvx]\?\|tl\)'
 	let map_prefix  = '^[acilnostvx]\?'
-	let exclude_list = [
-	\	'map', 'mapclear',
-	\	'substitute', 'smagic', 'snomagic',
-	\	'setlocal', 'setglobal', 'set', 'var',
-	\	'autocmd', 'augroup', 'doautocmd', 'doautoall',
-	\	'echo', 'echoconsole', 'echoerr', 'echohl', 'echomsg', 'echon', 'echowindow',
-	\	'execute',
-	\ 'function', 'endfunction', 'def', 'enddef',
-	\	'behave', 'augroup', 'normal', 'syntax',
-	\	'append', 'insert',
-	\	'Next', 'Print', 'X',
-	\	'new', 'popup',
-	\	'vim9script',
-	\	'catch', 'throw',
-	\ ]
+	let exclude_list =<< trim EOL
+		Next
+		Print
+		X
+		append
+		augroup
+		augroup
+		autocmd
+		behave
+		catch
+		def
+		doautoall
+		doautocmd
+		echo
+		echoconsole
+		echoerr
+		echohl
+		echomsg
+		echon
+		echowindow
+		enddef
+		endfunction
+		execute
+		function
+		insert
+		map
+		mapclear
+		new
+		normal
+		popup
+		set
+		setglobal
+		setlocal
+		sleep
+		smagic
+		snomagic
+		substitute
+		syntax
+		throw
+		var
+		vim9script
+	EOL
 	" Required for original behavior
 	" \	'global', 'vglobal'
 
