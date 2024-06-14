@@ -5801,7 +5801,7 @@ fun! s:NetrwGlob(direntry,expr,pare)
    let w:netrw_liststyle= keep_liststyle
   else
    let path= s:ComposePath(fnameescape(a:direntry),a:expr) 
-    if has("win64")
+    if has("win32")
      " escape [ so it is not detected as wildcard character, see :h wildcard
      let path= substitute(path, '[', '[[]', 'g')
     endif
