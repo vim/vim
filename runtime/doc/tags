@@ -6532,6 +6532,7 @@ compiler-dotnet	quickfix.txt	/*compiler-dotnet*
 compiler-gcc	quickfix.txt	/*compiler-gcc*
 compiler-gnat	ft_ada.txt	/*compiler-gnat*
 compiler-hpada	ft_ada.txt	/*compiler-hpada*
+compiler-javac	quickfix.txt	/*compiler-javac*
 compiler-manx	quickfix.txt	/*compiler-manx*
 compiler-pandoc	quickfix.txt	/*compiler-pandoc*
 compiler-perl	quickfix.txt	/*compiler-perl*

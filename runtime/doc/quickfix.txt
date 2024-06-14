@@ -1303,6 +1303,14 @@ g:compiler_gcc_ignore_unmatched_lines
 				positives.
 
 
+JAVAC							*compiler-javac*
+
+Commonly used compiler options can be added to 'makeprg' by setting the
+g:javac_makeprg_params variable.  For example: >
+
+	let g:javac_makeprg_params = "-Xlint:all -encoding utf-8"
+<
+
 MANX AZTEC C				*quickfix-manx* *compiler-manx*
 
 To use Vim with Manx's Aztec C compiler on the Amiga you should do the
