@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Jun 13
+# Last Change: 2024 Jun 14
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -698,7 +698,7 @@ def ContinueCommand()
 enddef
 
 # This is global so that a user can create their mappings with this.
-def TermDebugSendCommand(cmd: string)
+def g:TermDebugSendCommand(cmd: string)
   if way == 'prompt'
     ch_sendraw(gdb_channel, $"{cmd}\n")
   else
