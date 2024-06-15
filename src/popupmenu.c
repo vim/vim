@@ -728,7 +728,7 @@ pum_redraw(void)
 	    {
 		screen_fill(row, row + 1, pum_col - pum_base_width - n + 1,
 						    col + 1, ' ', ' ', attr);
-		col = pum_col - pum_base_width - n + 1;
+		col = pum_col - pum_base_width - n;
 	    }
 	    else
 #endif
