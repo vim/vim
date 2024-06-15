@@ -520,7 +520,7 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
 mswin_lstat(const WCHAR *name, stat_T *stp)
 {
     int			n;
-    int	    		fd;
+    int			fd;
     BOOL		is_symlink = FALSE;
     HANDLE		hFind, h;
     DWORD		attr = 0;
