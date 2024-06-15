@@ -1949,7 +1949,7 @@ def BufRead()
   for [id, entries] in items(breakpoints)
     for [subid, entry] in items(entries)
       if entry['fname'] == fname
-        PlaceSign(id, subid, entry)
+        PlaceSign(str2nr(id), str2nr(subid), entry)
       endif
     endfor
   endfor
