@@ -538,7 +538,7 @@ mswin_lstat(const WCHAR *name, stat_T *stp)
 
     // Use the plain old stat() whenever it's possible.
     if (!is_symlink)
-	return wstat_symlink_aware(name, stp);
+	return _wstat(name, stp);
 
     h = CreateFileW(name, FILE_READ_ATTRIBUTES, 0, NULL, OPEN_EXISTING,
 	    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
@@ -548,6 +548,8 @@ mswin_lstat(const WCHAR *name, stat_T *stp)
 
     fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
     n = _fstat(fd, (struct _stat *)stp);
+    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
+	stp->st_mode = (stp->st_mode & ~S_IFMT) | S_IFDIR;
     _close(fd);
 
     return n;
