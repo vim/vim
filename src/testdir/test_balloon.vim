@@ -64,4 +64,29 @@ func Test_balloon_eval_term_visual()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_balloon_eval_term_rightleft()
+  CheckFeature rightleft
+
+  " Use <Ignore> after <MouseMove> to return from vgetc() without removing
+  " the balloon.
+  let xtra_lines =<< trim [CODE]
+    set rightleft
+    func Trigger()
+      call test_setmouse(2, 50 + 1 - 6)
+      call feedkeys("\<MouseMove>\<Ignore>", "xt")
+    endfunc
+  [CODE]
+  call writefile(s:common_script + xtra_lines, 'XTest_beval_rl', 'D')
+
+  " Check that the balloon shows up after a mouse move
+  let buf = RunVimInTerminal('-S XTest_beval_rl', {'rows': 10, 'cols': 50})
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, 'll')
+  call term_sendkeys(buf, ":call Trigger()\<CR>")
+  call VerifyScreenDump(buf, 'Test_balloon_eval_term_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

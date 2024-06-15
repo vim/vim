@@ -26,6 +26,9 @@ static int pum_base_width;		// width of pum items base
 static int pum_kind_width;		// width of pum items kind column
 static int pum_extra_width;		// width of extra stuff
 static int pum_scrollbar;		// TRUE when scrollbar present
+#ifdef FEAT_RIGHTLEFT
+static int pum_rl;			// TRUE when pum is drawn 'rightleft'
+#endif
 
 static int pum_row;			// top row of pum
 static int pum_col;			// left column of pum
@@ -101,8 +104,9 @@ pum_display(
 #if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
 #endif
+
 #ifdef FEAT_RIGHTLEFT
-    int		right_left = State == MODE_CMDLINE ? FALSE : curwin->w_p_rl;
+    pum_rl = State != MODE_CMDLINE && curwin->w_p_rl;
 #endif
 
     do
@@ -243,7 +247,7 @@ pum_display(
 	    // w_wcol includes virtual text "above"
 	    int wcol = curwin->w_wcol % curwin->w_width;
 #ifdef FEAT_RIGHTLEFT
-	    if (right_left)
+	    if (pum_rl)
 		cursor_col = curwin->w_wincol + curwin->w_width - wcol - 1;
 	    else
 #endif
@@ -264,8 +268,8 @@ pum_display(
 
 	if (((cursor_col < Columns - p_pw || cursor_col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
-		    && !right_left)
-	       || (right_left && (cursor_col > p_pw || cursor_col > max_width)
+		    && !pum_rl)
+	       || (pum_rl && (cursor_col > p_pw || cursor_col > max_width)
 #endif
 	   ))
 	{
@@ -274,7 +278,7 @@ pum_display(
 
 	    // start with the maximum space available
 #ifdef FEAT_RIGHTLEFT
-	    if (right_left)
+	    if (pum_rl)
 		pum_width = pum_col - pum_scrollbar + 1;
 	    else
 #endif
@@ -291,22 +295,22 @@ pum_display(
 	    }
 	    else if (((cursor_col > p_pw || cursor_col > max_width)
 #ifdef FEAT_RIGHTLEFT
-			&& !right_left)
-		|| (right_left && (cursor_col < Columns - p_pw
+			&& !pum_rl)
+		|| (pum_rl && (cursor_col < Columns - p_pw
 			|| cursor_col < Columns - max_width)
 #endif
 		    ))
 	    {
 		// align pum edge with "cursor_col"
 #ifdef FEAT_RIGHTLEFT
-		if (right_left
+		if (pum_rl
 			&& W_ENDCOL(curwin) < max_width + pum_scrollbar + 1)
 		{
 		    pum_col = cursor_col + max_width + pum_scrollbar + 1;
 		    if (pum_col >= Columns)
 			pum_col = Columns - 1;
 		}
-		else if (!right_left)
+		else if (!pum_rl)
 #endif
 		{
 		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar
@@ -320,7 +324,7 @@ pum_display(
 		}
 
 #ifdef FEAT_RIGHTLEFT
-		if (right_left)
+		if (pum_rl)
 		    pum_width = pum_col - pum_scrollbar + 1;
 		else
 #endif
@@ -330,7 +334,7 @@ pum_display(
 		{
 		    pum_width = p_pw;
 #ifdef FEAT_RIGHTLEFT
-		    if (right_left)
+		    if (pum_rl)
 		    {
 			if (pum_width > pum_col)
 			    pum_width = pum_col;
@@ -358,7 +362,7 @@ pum_display(
 	{
 	    // not enough room, will use what we have
 #ifdef FEAT_RIGHTLEFT
-	    if (right_left)
+	    if (pum_rl)
 		pum_col = Columns - 1;
 	    else
 #endif
@@ -370,7 +374,7 @@ pum_display(
 	    if (max_width > p_pw)
 		max_width = p_pw;	// truncate
 #ifdef FEAT_RIGHTLEFT
-	    if (right_left)
+	    if (pum_rl)
 		pum_col = max_width - 1;
 	    else
 #endif
@@ -443,7 +447,7 @@ pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, hlf_T hlf)
     }
 
 #ifdef FEAT_RIGHTLEFT
-    if (curwin->w_p_rl)
+    if (pum_rl)
 	rt_leader = reverse_text(leader);
 #endif
     match_leader = rt_leader != NULL ? rt_leader : leader;
@@ -572,7 +576,7 @@ pum_redraw(void)
 
 	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
+	if (pum_rl)
 	{
 	    if (pum_col < curwin->w_wincol + curwin->w_width - 1)
 		screen_putchar(' ', row, pum_col + 1, attr);
@@ -620,7 +624,7 @@ pum_redraw(void)
 			if (saved != NUL)
 			    *p = saved;
 #ifdef FEAT_RIGHTLEFT
-			if (curwin->w_p_rl)
+			if (pum_rl)
 			{
 			    if (st != NULL)
 			    {
@@ -691,7 +695,7 @@ pum_redraw(void)
 
 			// Display two spaces for a Tab.
 #ifdef FEAT_RIGHTLEFT
-			if (curwin->w_p_rl)
+			if (pum_rl)
 			{
 			    screen_puts_len((char_u *)"  ", 2, row, col - 1,
 									attr);
@@ -724,7 +728,7 @@ pum_redraw(void)
 		    || pum_base_width + n >= pum_width)
 		break;
 #ifdef FEAT_RIGHTLEFT
-	    if (curwin->w_p_rl)
+	    if (pum_rl)
 	    {
 		screen_fill(row, row + 1, pum_col - pum_base_width - n + 1,
 						    col + 1, ' ', ' ', attr);
@@ -741,7 +745,7 @@ pum_redraw(void)
 	}
 
 #ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
+	if (pum_rl)
 	    screen_fill(row, row + 1, pum_col - pum_width + 1, col + 1, ' ',
 								    ' ', attr);
 	else
@@ -751,7 +755,7 @@ pum_redraw(void)
 	if (pum_scrollbar > 0)
 	{
 #ifdef FEAT_RIGHTLEFT
-	    if (curwin->w_p_rl)
+	    if (pum_rl)
 		screen_putchar(' ', row, pum_col - pum_width,
 			i >= thumb_pos && i < thumb_pos + thumb_height
 						  ? attr_thumb : attr_scroll);
@@ -1296,16 +1300,34 @@ pum_position_at_mouse(int min_width)
 	    pum_row = 0;
 	}
     }
-    if (Columns - mouse_col >= pum_base_width
-	    || Columns - mouse_col > min_width)
-	// Enough space to show at mouse column.
-	pum_col = mouse_col;
-    else
-	// Not enough space, right align with window.
-	pum_col = Columns - (pum_base_width > min_width
-						 ? min_width : pum_base_width);
 
-    pum_width = Columns - pum_col;
+# ifdef FEAT_RIGHTLEFT
+    if (pum_rl)
+    {
+	if (mouse_col + 1 >= pum_base_width
+		|| mouse_col + 1 > min_width)
+	    // Enough space to show at mouse column.
+	    pum_col = mouse_col;
+	else
+	    // Not enough space, left align with window.
+	    pum_col = (pum_base_width > min_width
+					     ? min_width : pum_base_width) - 1;
+	pum_width = pum_col + 1;
+    }
+    else
+# endif
+    {
+	if (Columns - mouse_col >= pum_base_width
+		|| Columns - mouse_col > min_width)
+	    // Enough space to show at mouse column.
+	    pum_col = mouse_col;
+	else
+	    // Not enough space, right align with window.
+	    pum_col = Columns - (pum_base_width > min_width
+						 ? min_width : pum_base_width);
+	pum_width = Columns - pum_col;
+    }
+
     if (pum_width > pum_base_width + 1)
 	pum_width = pum_base_width + 1;
 
@@ -1529,6 +1551,9 @@ ui_post_balloon(char_u *mesg, list_T *list)
     pum_compute_size();
     pum_scrollbar = 0;
     pum_height = balloon_arraysize;
+# ifdef FEAT_RIGHTLEFT
+    pum_rl = curwin->w_p_rl;
+# endif
 
     pum_position_at_mouse(BALLOON_MIN_WIDTH);
     pum_selected = -1;
@@ -1639,6 +1664,9 @@ pum_show_popupmenu(vimmenu_T *menu)
     pum_compute_size();
     pum_scrollbar = 0;
     pum_height = pum_size;
+# ifdef FEAT_RIGHTLEFT
+    pum_rl = curwin->w_p_rl;
+# endif
     pum_position_at_mouse(20);
 
     pum_selected = -1;
@@ -1734,7 +1762,11 @@ pum_make_popup(char_u *path_name, int use_mouse_pos)
 	// Hack: set mouse position at the cursor so that the menu pops up
 	// around there.
 	mouse_row = W_WINROW(curwin) + curwin->w_wrow;
-	mouse_col = curwin->w_wincol + curwin->w_wcol;
+	mouse_col =
+# ifdef FEAT_RIGHTLEFT
+	    curwin->w_p_rl ? W_ENDCOL(curwin) - curwin->w_wcol - 1 :
+# endif
+	    curwin->w_wincol + curwin->w_wcol;
     }
 
     menu = gui_find_menu(path_name);
