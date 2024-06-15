@@ -513,6 +513,46 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
     return _wstat(name, (struct _stat *)stp);
 }
 
+/*
+ * Implements lstat(), a version of stat() that doesn't resolve symlinks.
+ */
+    static int
+mswin_lstat(const WCHAR *name, stat_T *stp)
+{
+    int			n;
+    int	    		fd;
+    BOOL		is_symlink = FALSE;
+    HANDLE		hFind, h;
+    DWORD		attr = 0;
+    WIN32_FIND_DATAW	findDataW;
+
+    hFind = FindFirstFileW(name, &findDataW);
+    if (hFind == INVALID_HANDLE_VALUE)
+	return -1;
+
+    attr = findDataW.dwFileAttributes;
+    if ((attr & FILE_ATTRIBUTE_REPARSE_POINT)
+	    && (findDataW.dwReserved0 == IO_REPARSE_TAG_SYMLINK))
+	is_symlink = TRUE;
+    FindClose(hFind);
+
+    // Use the plain old stat() whenever it's possible.
+    if (!is_symlink)
+	return wstat_symlink_aware(name, stp);
+
+    h = CreateFileW(name, FILE_READ_ATTRIBUTES, 0, NULL, OPEN_EXISTING,
+	    FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+	    NULL);
+    if (h == INVALID_HANDLE_VALUE)
+	return -1;
+
+    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
+    n = _fstat(fd, (struct _stat *)stp);
+    _close(fd);
+
+    return n;
+}
+
     char_u *
 resolve_appexeclink(char_u *fname)
 {
@@ -570,9 +610,10 @@ resolve_appexeclink(char_u *fname)
 
 /*
  * stat() can't handle a trailing '/' or '\', remove it first.
+ * When 'resolve' is true behave as lstat() wrt symlinks.
  */
-    int
-vim_stat(const char *name, stat_T *stp)
+    static int
+stat_impl(const char *name, stat_T *stp, const int resolve)
 {
     // WinNT and later can use _MAX_PATH wide characters for a pathname, which
     // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
@@ -607,9 +648,21 @@ vim_stat(const char *name, stat_T *stp)
     if (wp == NULL)
 	return -1;
 
-    n = wstat_symlink_aware(wp, stp);
+    n = resolve ? wstat_symlink_aware(wp, stp) : mswin_lstat(wp, stp);
     vim_free(wp);
     return n;
+}
+
+    int
+vim_lstat(const char *name, stat_T *stp)
+{
+    return stat_impl(name, stp, FALSE);
+}
+
+    int
+vim_stat(const char *name, stat_T *stp)
+{
+    return stat_impl(name, stp, TRUE);
 }
 
 #if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)
