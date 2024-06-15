@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.1.  Last change: 2024 May 23
+*various.txt*   For Vim version 9.1.  Last change: 2024 Jun 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,7 +138,7 @@ g8			Print the hex values of the bytes used in the
 :[range]# [count] [flags]
 			synonym for :number.
 
-							*:#!*
+							*:#!* *vim-shebang*
 :#!{anything}		Ignored, so that you can start a Vim script with: >
 				#!vim -S
 				echo "this is a Vim script"
