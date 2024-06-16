@@ -785,6 +785,7 @@ RT_ALL =	\
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 		runtime/pack/dist/opt/termdebug/plugin/termdebug.vim \
+		runtime/pack/dist/opt/termdebug8/plugin/termdebug8.vim \
 
 # Runtime files for all distributions without CR/LF translation.
 RT_ALL_BIN =	\

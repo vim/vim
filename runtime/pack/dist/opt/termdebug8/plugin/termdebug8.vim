@@ -36,7 +36,7 @@
 " https://sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI.html
 
 " In case this gets sourced twice.
-if exists(':Termdebug')
+if exists(':Termdebug8')
   finish
 endif
 
@@ -52,18 +52,18 @@ else
   else
     let s:err = 'Cannot debug, +channel feature is not supported'
   endif
-  command -nargs=* -complete=file -bang Termdebug echoerr s:err
-  command -nargs=+ -complete=file -bang TermdebugCommand echoerr s:err
+  command -nargs=* -complete=file -bang Termdebug8 echoerr s:err
+  command -nargs=+ -complete=file -bang TermdebugCommand8 echoerr s:err
   finish
 endif
 
 let s:keepcpo = &cpo
 set cpo&vim
 
-" The command that starts debugging, e.g. ":Termdebug vim".
+" The command that starts debugging, e.g. ":Termdebug8 vim".
 " To end type "quit" in the gdb window.
-command -nargs=* -complete=file -bang Termdebug call s:StartDebug(<bang>0, <f-args>)
-command -nargs=+ -complete=file -bang TermdebugCommand call s:StartDebugCommand(<bang>0, <f-args>)
+command -nargs=* -complete=file -bang Termdebug8 call s:StartDebug(<bang>0, <f-args>)
+command -nargs=+ -complete=file -bang TermdebugCommand8 call s:StartDebugCommand(<bang>0, <f-args>)
 
 let s:pc_id = 12
 let s:asm_id = 13
@@ -123,7 +123,7 @@ func s:GetCommand()
 endfunc
 
 func s:Echoerr(msg)
-  echohl ErrorMsg | echom '[termdebug] ' .. a:msg | echohl None
+  echohl ErrorMsg | echom '[termdebug8] ' .. a:msg | echohl None
 endfunc
 
 func s:StartDebug(bang, ...)
