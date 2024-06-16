@@ -153,8 +153,8 @@ diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
 digraph_get({chars})		String	get the |digraph| of {chars}
 digraph_getlist([{listall}])	List	get all |digraph|s
-digraph_set({chars}, {digraph})	Boolean	register |digraph|
-digraph_setlist({digraphlist})	Boolean	register multiple |digraph|s
+digraph_set({chars}, {digraph})	Bool	register |digraph|
+digraph_setlist({digraphlist})	Bool	register multiple |digraph|s
 echoraw({expr})			none	output {expr} as-is
 empty({expr})			Number	|TRUE| if {expr} is empty
 environ()			Dict	return environment variables
@@ -429,6 +429,7 @@ popup_menu({what}, {options})	Number	create a popup window used as a menu
 popup_move({id}, {options})	none	set position of popup window {id}
 popup_notification({what}, {options})
 				Number	create a notification popup window
+popup_setbuf({id}, {buf})	Bool	set the buffer for the popup window {id}
 popup_setoptions({id}, {options})
 				none	set options for popup window {id}
 popup_settext({id}, {text})	none	set the text of popup window {id}

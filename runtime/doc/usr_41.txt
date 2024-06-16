@@ -1319,6 +1319,7 @@ Popup window:					*popup-window-functions*
 	popup_move()		change the position and size of a popup
 	popup_setoptions()	override options of a popup
 	popup_settext()		replace the popup buffer contents
+	popup_setbuf()		set the popup buffer
 	popup_close()		close one popup
 	popup_clear()		close all popups
 	popup_filter_menu()	select from a list of items

@@ -9431,6 +9431,7 @@ popup_menu()	popup.txt	/*popup_menu()*
 popup_menu-shortcut-example	popup.txt	/*popup_menu-shortcut-example*
 popup_move()	popup.txt	/*popup_move()*
 popup_notification()	popup.txt	/*popup_notification()*
+popup_setbuf()	popup.txt	/*popup_setbuf()*
 popup_setoptions()	popup.txt	/*popup_setoptions()*
 popup_settext()	popup.txt	/*popup_settext()*
 popup_show()	popup.txt	/*popup_show()*

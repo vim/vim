@@ -2499,6 +2499,88 @@ func Test_popup_settext_null()
   call popup_close(id)
 endfunc
 
+func Test_popup_setbuf()
+  CheckScreendump
+
+  let lines =<< trim END
+    let opts = #{wrap: 0}
+    let p = popup_create('test', opts)
+    let buf = bufnr('%')
+  END
+
+  call writefile(lines, 'XtestPopupSetBuf', 'D')
+  let buf = RunVimInTerminal('-S XtestPopupSetBuf', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_01', {})
+
+  " Setting to an non-existing buffer doesn't do anything
+  call term_sendkeys(buf, ":call popup_setbuf(p, 'foobar.txt')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_02', {})
+
+  " Error
+  call term_sendkeys(buf, ":call popup_setbuf(p, ['a','b','c'])\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_03', {})
+
+  " Set to help window
+  call term_sendkeys(buf, ":help\<CR>")
+  call term_sendkeys(buf, ":call popup_setbuf(p, 'help.txt')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_04', {})
+
+  " Setting back to original buffer
+  call term_sendkeys(buf, ":call popup_setbuf(p, buf)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_05', {})
+
+  " use method
+  call term_sendkeys(buf, ":echo p->popup_setbuf('help.txt')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_06', {})
+
+  call term_sendkeys(buf, ":echo p->popup_setbuf(buf)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_setbuf_05', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_popup_setbuf_terminal()
+  CheckFeature terminal
+
+  " Check Terminal Feature
+  let termbuf = term_start(&shell, #{hidden: 1})
+  " Wait for shell to start
+  call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
+
+  let popup = popup_create('test', {})
+  call assert_true(popup->popup_setbuf(termbuf))
+  call popup_close(popup)
+
+  let popup1 = popup_create(termbuf, #{minwidth: 40, minheight: 10, border: []})
+
+  let popup = popup_create('test', {})
+  try
+    call assert_fails(call popup_setbuf(popup, termbuf))
+  catch
+  endtry
+  call popup_close(popup)
+  call popup_close(popup1)
+  call assert_equal([], popup_list())
+  " Close the terminal
+  call term_sendkeys(termbuf, "exit\<CR>")
+  " Wait for shell to exit
+  call WaitForAssert({-> assert_equal("dead", job_status(term_getjob(termbuf)))})
+endfunc
+
+func Test_popup_setbuf_null()
+  let id = popup_create('', {})
+  call assert_false(popup_setbuf(id, -1))
+  call popup_close(id)
+
+  let id = popup_create('', {})
+  call assert_true(popup_setbuf(id, test_null_string()))
+  call assert_true(popup_setbuf(id, ''))
+  call popup_close(id)
+
+  call assert_false(popup_setbuf(id, 0))
+endfunc
+
 func Test_popup_hidden()
   new
 

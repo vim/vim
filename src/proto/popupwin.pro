@@ -34,6 +34,7 @@ void f_popup_hide(typval_T *argvars, typval_T *rettv);
 void popup_show(win_T *wp);
 void f_popup_show(typval_T *argvars, typval_T *rettv);
 void f_popup_settext(typval_T *argvars, typval_T *rettv);
+void f_popup_setbuf(typval_T *argvars, typval_T *rettv);
 int error_if_popup_window(int also_with_term);
 int popup_close(int id, int force);
 int popup_close_tabpage(tabpage_T *tp, int id, int force);

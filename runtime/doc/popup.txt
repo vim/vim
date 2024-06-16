@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 9.1.  Last change: 2024 Jun 08
+*popup.txt*  For Vim version 9.1.  Last change: 2024 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -186,6 +186,7 @@ Manipulating a popup window:
 	|popup_move()|		change the position and size of a popup
 	|popup_setoptions()|	override options of a popup
 	|popup_settext()|	replace the popup buffer contents
+	|popup_setbuf()|	replace the popup buffer contents
 
 Closing popup windows:
 	|popup_close()|		close one popup
@@ -572,6 +573,18 @@ popup_notification({what}, {options})			 *popup_notification()*
 			GetText()->popup_notification({})
 <
 		Return type: |Number|
+
+
+popup_setbuf({id}, {buf})				*popup_setbuf()*
+		Set buffer {buf} to be displayed in popup win {id}.  For the
+		use of {buf}, see |bufname()| function.
+		May change window size or position to adjust for the size
+		of the buffer text.
+
+		Can also be used as a |method|: >
+			GetPopup()->popup_setbuf(bufnr('foobar'))
+<
+		Return type: |vim9-boolean|
 
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
