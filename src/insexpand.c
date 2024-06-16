@@ -1448,7 +1448,7 @@ ins_compl_show_pum(void)
     char_u *
 ins_compl_leader(void)
 {
-    return compl_leader;
+    return compl_leader != NULL ? compl_leader : compl_orig_text;
 }
 
 /*

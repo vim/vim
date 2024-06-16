@@ -454,7 +454,7 @@ pum_compute_text_attrs(char_u *text, hlf_T hlf)
     if (in_fuzzy)
 	ga = fuzzy_match_str_with_pos(text, leader);
     else
-	matched_start = STRNCMP(text, leader, leader_len) == 0;
+	matched_start = MB_STRNICMP(text, leader, leader_len) == 0;
 
     while (*ptr != NUL)
     {
