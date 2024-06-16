@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Jun 14
+# Last Change: 2024 Jun 16
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -194,9 +194,9 @@ def InitScriptVariables()
 
   winbar_winids = []
 
-  k_map_saved = {}
-  plus_map_saved = {}
-  minus_map_saved = {}
+  k_map_saved = null_dict
+  plus_map_saved = null_dict
+  minus_map_saved = null_dict
 
   if has('menu')
     saved_mousemodel = null_string
@@ -1232,32 +1232,38 @@ def DeleteCommands()
   delcommand Var
   delcommand Winbar
 
-  if exists('k_map_saved')
-    if !empty(k_map_saved) && !k_map_saved.buffer
+  if k_map_saved isnot null_dict
+    if !empty(k_map_saved) && k_map_saved.buffer
+      # pass
+    elseif !empty(k_map_saved) && !k_map_saved.buffer
       nunmap K
       mapset(k_map_saved)
     elseif empty(k_map_saved)
-      nunmap K
+      silent! nunmap K
     endif
-    k_map_saved = {}
+    k_map_saved = null_dict
   endif
-  if exists('plus_map_saved')
-    if !empty(plus_map_saved) && !plus_map_saved.buffer
+  if plus_map_saved isnot null_dict
+    if !empty(plus_map_saved) && plus_map_saved.buffer
+      # pass
+    elseif !empty(plus_map_saved) && !plus_map_saved.buffer
       nunmap +
       mapset(plus_map_saved)
     elseif empty(plus_map_saved)
-      nunmap +
+      silent! nunmap +
     endif
-    plus_map_saved = {}
+    plus_map_saved = null_dict
   endif
-  if exists('minus_map_saved')
-    if !empty(minus_map_saved) && !minus_map_saved.buffer
+  if minus_map_saved isnot null_dict
+    if !empty(minus_map_saved) && minus_map_saved.buffer
+      # pass
+    elseif !empty(minus_map_saved) && !minus_map_saved.buffer
       nunmap -
       mapset(minus_map_saved)
     elseif empty(minus_map_saved)
-      nunmap -
+      silent! nunmap -
     endif
-    minus_map_saved = {}
+    minus_map_saved = null_dict
   endif
 
   if has('menu')
