@@ -3645,11 +3645,15 @@ dos_expandpath(
 	    }
 	    else
 	    {
+		stat_T  sb;
+
 		// no more wildcards, check if there is a match
 		// remove backslashes for the remaining components only
 		if (*path_end != 0)
 		    backslash_halve(buf + len + 1);
-		if (mch_getperm(buf) >= 0)	// add existing file
+		// add existing file
+		if ((flags & EW_ALLLINKS) ? mch_lstat((char *)buf, &sb) >= 0
+			: mch_getperm(buf) >= 0)
 		    addfile(gap, buf, flags);
 	    }
 	}
