@@ -3482,9 +3482,6 @@ get_buf_arg(typval_T *arg)
     static void
 f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    int	mustfree = FALSE;
-    char_u	*p;
-
     if (check_for_nonempty_string_arg(argvars, 0) == FAIL
 	    || check_for_nonempty_string_arg(argvars, 1) == FAIL)
 	return;
