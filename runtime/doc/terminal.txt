@@ -1531,16 +1531,21 @@ mapping to K already exists.  If you do not want this use: >
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_map_K = 0
 <
+The K map is reset to its original value when a termdebug session concludes.
+
 						*termdebug_map_minus*
 The - key is normally mapped to |:Down| unless a buffer local mapping to the -
 key already exists.  If you do not want this use: >
 	let g:termdebug_config['map_minus'] = 0
 <
+The - map is reset to its original value when a termdebug session concludes.
 						*termdebug_map_plus*
 The + key is normally mapped to |:Up| unless a buffer local mapping to the +
 key already exists.  If you do not want this use: >
 	let g:termdebug_config['map_plus'] = 0
 <
+The + map is reset to its original value when a termdebug session concludes.
+
 						*termdebug_disasm_window*
 If you want the Asm window shown by default, set the "disasm_window" flag to
 1.  The "disasm_window_height" entry can be used to set the window height: >
