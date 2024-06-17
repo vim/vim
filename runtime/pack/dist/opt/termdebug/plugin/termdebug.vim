@@ -204,7 +204,6 @@ def InitScriptVariables()
 
   if has('menu')
     saved_mousemodel = &mousemodel
-    echom "mousemodel to be saved:" .. saved_mousemodel
   endif
 enddef
 # The command that starts debugging, e.g. ":Termdebug vim".
@@ -1258,10 +1257,7 @@ def DeleteCommands()
     win_gotoid(curwinid)
     # winbar_winids = []
 
-    echom "restoring mousemodel:" .. saved_mousemodel
     &mousemodel = saved_mousemodel
-    echom "mousemodel before leaving:" .. saved_mousemodel
-    echom "&mousemodel before leaving:" .. &mousemodel
     try
       aunmenu PopUp.-SEP3-
       aunmenu PopUp.Set\ breakpoint
