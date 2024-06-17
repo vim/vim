@@ -3591,7 +3591,7 @@ get({dict}, {key} [, {default}])
 		Preferably used as a |method|: >
 			mydict->get(key)
 <
-		Return type: any, depending on {list}
+		Return type: any, depending on {dict}
 
 get({func}, {what})
 		Get item {what} from Funcref {func}.  Possible values for
@@ -3755,7 +3755,7 @@ getcellwidths()						*getcellwidths()*
 		by |setcellwidths()|.  The format is equal to the argument of
 		|setcellwidths()|.  If no character ranges have their cell
 		widths overridden, an empty List is returned.
-<
+
 		Return type: list<any>
 
 
@@ -4567,7 +4567,7 @@ getqflist([{what}])					*getqflist()*
 			vcol	|TRUE|: "col" is visual column
 				|FALSE|: "col" is byte index
 			nr	error number
-			pattern	search list<number>
+			pattern	search pattern used to locate the error
 			text	description of the error
 			type	type of the error, 'E', '1', etc.
 			valid	|TRUE|: recognized error message

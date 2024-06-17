@@ -1915,7 +1915,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	A template for a comment.  The "%s" in the value is replaced with the
 	comment text, and should be padded with a space when possible.
-	Currently used to add markers for folding, see |fold-marker| also
+	Currently used to add markers for folding, see |fold-marker|.  Also
 	commonly used by commenting plugins (e.g. |comment-install|).
 
 			*'compatible'* *'cp'* *'nocompatible'* *'nocp'*
