@@ -75,6 +75,9 @@ Non c'è un valore massimo per \-ps; se si specifica 0 viene scritta un'unica lu
 .IR \-C " | " \-capitalize
 Mette in maiuscolo i nomi di variabili nello stile delle `include' C, se si usa \-i.
 .TP
+.I \-d
+Mostra spostamenti usando numeri decimali invece che esadecimali.
+.TP
 .IR \-E " | " \-EBCDIC
 Cambia la codifica della colonna di destra da ASCII a EBCDIC.
 Questo non modifica la rappresentazione esadecimale. Non ha senso
@@ -143,7 +146,7 @@ lo stesso colore, a seconda del valore esadecimale. Utile soprattutto a
 distinguere i caratteri stampabili da quelli non stampabili.
 .I quando
 può assumere i valori
-.BR never ", " always ", o " auto .
+.BR never ", " always ", o " auto " (default: auto).
 Quando la variabile d'ambiente
 .BR $NO_COLOR
 è impostata, la colorazione viene disabilitata.

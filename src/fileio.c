@@ -3770,19 +3770,12 @@ vim_fgets(char_u *buf, int size, FILE *fp)
     int
 vim_rename(char_u *from, char_u *to)
 {
-    int		fd_in;
-    int		fd_out;
     int		n;
-    char	*errmsg = NULL;
-    char	*buffer;
+    int		ret;
 #ifdef AMIGA
     BPTR	flock;
 #endif
     stat_T	st;
-    long	perm;
-#ifdef HAVE_ACL
-    vim_acl_T	acl;		// ACL from original file
-#endif
     int		use_tmp_file = FALSE;
 
     /*
@@ -3903,6 +3896,61 @@ vim_rename(char_u *from, char_u *to)
     /*
      * Rename() failed, try copying the file.
      */
+    ret = vim_copyfile(from, to);
+    if (ret != OK)
+	return -1;
+
+    /*
+     * Remove copied original file
+     */
+    if (mch_stat((char *)from, &st) >= 0)
+	mch_remove(from);
+
+    return 0;
+}
+
+
+/*
+ * Create the new file with same permissions as the original.
+ * Return -1 for failure, 0 for success.
+ */
+    int
+vim_copyfile(char_u *from, char_u *to)
+{
+    int		fd_in;
+    int		fd_out;
+    int		n;
+    char	*errmsg = NULL;
+    char	*buffer;
+    long	perm;
+#ifdef HAVE_ACL
+    vim_acl_T	acl;		// ACL from original file
+#endif
+
+#ifdef HAVE_READLINK
+    int		ret;
+    int		len;
+    stat_T	st;
+    char	linkbuf[MAXPATHL + 1];
+
+    ret = mch_lstat((char *)from, &st);
+    if (ret >= 0 && S_ISLNK(st.st_mode))
+    {
+        ret = FAIL;
+
+	len = readlink((char *)from, linkbuf, MAXPATHL);
+	if (len > 0)
+	{
+	    linkbuf[len] = NUL;
+
+	    // Create link
+	    ret = symlink(linkbuf, (char *)to);
+	}
+
+	return ret == 0 ? OK : FAIL;
+    }
+#endif
+
     perm = mch_getperm(from);
 #ifdef HAVE_ACL
     // For systems that support ACL: get the ACL from the original file.
@@ -3914,7 +3962,7 @@ vim_rename(char_u *from, char_u *to)
 #ifdef HAVE_ACL
 	mch_free_acl(acl);
 #endif
-	return -1;
+	return FAIL;
     }
 
     // Create the new file with same permissions as the original.
@@ -3926,7 +3974,7 @@ vim_rename(char_u *from, char_u *to)
 #ifdef HAVE_ACL
 	mch_free_acl(acl);
 #endif
-	return -1;
+	return FAIL;
     }
 
     buffer = alloc(WRITEBUFSIZE);
@@ -3937,7 +3985,7 @@ vim_rename(char_u *from, char_u *to)
 #ifdef HAVE_ACL
 	mch_free_acl(acl);
 #endif
-	return -1;
+	return FAIL;
     }
 
     while ((n = read_eintr(fd_in, buffer, WRITEBUFSIZE)) > 0)
@@ -3969,10 +4017,9 @@ vim_rename(char_u *from, char_u *to)
     if (errmsg != NULL)
     {
 	semsg(errmsg, to);
-	return -1;
+	return FAIL;
     }
-    mch_remove(from);
-    return 0;
+    return OK;
 }
 
 static int already_warned = FALSE;

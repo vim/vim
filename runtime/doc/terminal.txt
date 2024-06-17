@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Mar 17
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jun 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -536,8 +536,10 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		Can also be used as a |method|: >
 			GetFilename()->term_dumpdiff(otherfile)
 <
-							*term_dumpload()*
-term_dumpload({filename} [, {options}])
+		Return type: |Number|
+
+
+term_dumpload({filename} [, {options}])			*term_dumpload()*
 		Open a new window displaying the contents of {filename}
 		The file must have been created with |term_dumpwrite()|.
 		Returns the buffer number or zero when it fails.
@@ -548,8 +550,10 @@ term_dumpload({filename} [, {options}])
 		Can also be used as a |method|: >
 			GetFilename()->term_dumpload()
 <
-							*term_dumpwrite()*
-term_dumpwrite({buf}, {filename} [, {options}])
+		Return type: |Number|
+
+
+term_dumpwrite({buf}, {filename} [, {options}])		*term_dumpwrite()*
 		Dump the contents of the terminal screen of {buf} in the file
 		{filename}.  This uses a format that can be used with
 		|term_dumpload()| and |term_dumpdiff()|.
@@ -565,6 +569,9 @@ term_dumpwrite({buf}, {filename} [, {options}])
 		Can also be used as a |method|, the base is used for the file
 		name: >
 			GetFilename()->term_dumpwrite(bufnr)
+<
+		Return type: |Number|
+
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -573,6 +580,8 @@ term_getaltscreen({buf})				*term_getaltscreen()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getaltscreen()
+<
+		Return type: |Number|
 
 
 term_getansicolors({buf})				*term_getansicolors()*
@@ -587,8 +596,10 @@ term_getansicolors({buf})				*term_getansicolors()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getansicolors()
+<
+		Return type: list<string> or list<any>
 
-<		{only available when compiled with GUI enabled and/or the
+		{only available when compiled with GUI enabled and/or the
 		|+termguicolors| feature}
 
 term_getattr({attr}, {what})				*term_getattr()*
@@ -602,6 +613,8 @@ term_getattr({attr}, {what})				*term_getattr()*
 
 		Can also be used as a |method|: >
 			GetAttr()->term_getattr()
+<
+		Return type: |Number|
 
 
 term_getcursor({buf})					*term_getcursor()*
@@ -627,6 +640,9 @@ term_getcursor({buf})					*term_getcursor()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getcursor()
+<
+		Return type: list<any>
+
 
 term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
@@ -635,6 +651,8 @@ term_getjob({buf})					*term_getjob()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getjob()
+<
+		Return type: |job|
 
 
 term_getline({buf}, {row})				*term_getline()*
@@ -649,6 +667,8 @@ term_getline({buf}, {row})				*term_getline()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getline(row)
+<
+		Return type: |String|
 
 
 term_getscrolled({buf})					*term_getscrolled()*
@@ -664,6 +684,8 @@ term_getscrolled({buf})					*term_getscrolled()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getscrolled()
+<
+		Return type: |Number|
 
 
 term_getsize({buf})					*term_getsize()*
@@ -677,6 +699,8 @@ term_getsize({buf})					*term_getsize()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getsize()
+<
+		Return type: list<number> or list<any>
 
 
 term_getstatus({buf})					*term_getstatus()*
@@ -693,6 +717,8 @@ term_getstatus({buf})					*term_getstatus()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getstatus()
+<
+		Return type: |String|
 
 
 term_gettitle({buf})					*term_gettitle()*
@@ -705,6 +731,8 @@ term_gettitle({buf})					*term_gettitle()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_gettitle()
+<
+		Return type: |String|
 
 
 term_gettty({buf} [, {input}])				*term_gettty()*
@@ -717,11 +745,15 @@ term_gettty({buf} [, {input}])				*term_gettty()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_gettty()
+<
+		Return type: |String|
 
 
 term_list()						*term_list()*
 		Return a list with the buffer numbers of all buffers for
 		terminal windows.
+
+		Return type: list<number> or list<any>
 
 
 term_scrape({buf}, {row})				*term_scrape()*
@@ -744,6 +776,8 @@ term_scrape({buf}, {row})				*term_scrape()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_scrape(row)
+<
+		Return type: list<dict<any>> or list<any>
 
 
 term_sendkeys({buf}, {keys})				*term_sendkeys()*
@@ -755,6 +789,8 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_sendkeys(keys)
+<
+		Return type: |Number|
 
 
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
@@ -788,8 +824,10 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_setansicolors(colors)
+<
+		Return type: |Number|
 
-<		{only available with GUI enabled and/or the |+termguicolors|
+		{only available with GUI enabled and/or the |+termguicolors|
 		feature}
 
 
@@ -804,6 +842,8 @@ term_setapi({buf}, {expr})				*term_setapi()*
 
 		When used as a method the base is used for {buf}: >
 			GetBufnr()->term_setapi({expr})
+<
+		Return type: |Number|
 
 
 term_setkill({buf}, {how})				*term_setkill()*
@@ -820,6 +860,8 @@ term_setkill({buf}, {how})				*term_setkill()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_setkill(how)
+<
+		Return type: |Number|
 
 
 term_setrestore({buf}, {command})			*term_setrestore()*
@@ -833,6 +875,8 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_setrestore(command)
+<
+		Return type: |Number|
 
 
 term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
@@ -847,6 +891,8 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_setsize(rows, cols)
+<
+		Return type: |Number|
 
 
 term_start({cmd} [, {options}])			*term_start()*
@@ -922,6 +968,8 @@ term_start({cmd} [, {options}])			*term_start()*
 
 		Can also be used as a |method|: >
 			GetCommand()->term_start()
+<
+		Return type: |Number|
 
 
 term_wait({buf} [, {time}])					*term_wait()*
@@ -932,6 +980,8 @@ term_wait({buf} [, {time}])					*term_wait()*
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_wait()
+<
+		Return type: |Number|
 
 ==============================================================================
 3. Terminal communication			 *terminal-communication*
@@ -1332,8 +1382,8 @@ Put focus on the gdb window to type commands there.  Some common ones are:
 						*:Run* *:Arguments*
 In the window showing the source code these commands can be used to control
 gdb:
- `:Run` [args]	    run the program with [args] or the previous arguments
- `:Arguments` {args}  set arguments for the next `:Run`
+ :Run [args]	    run the program with [args] or the previous arguments
+ :Arguments {args}  set arguments for the next `:Run`
 
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
@@ -1379,10 +1429,10 @@ breakpoint, or use the "Clear breakpoint" right-click menu entry.
 
 Inspecting variables ~
 					*termdebug-variables* *:Evaluate*
- `:Evaluate`	    evaluate the expression under the cursor
- `K`		    same (see |termdebug_map_K| to disable)
- `:Evaluate` {expr}   evaluate {expr}
- `:'<,'>Evaluate`     evaluate the Visually selected text
+ :Evaluate	    evaluate the expression under the cursor
+ K		    same (see |termdebug_map_K| to disable)
+ :Evaluate {expr}   evaluate {expr}
+ :'<,'>Evaluate     evaluate the Visually selected text
 
 This is similar to using "print" in the gdb window.
 You can usually shorten `:Evaluate` to `:Ev`.
@@ -1390,14 +1440,14 @@ You can usually shorten `:Evaluate` to `:Ev`.
 
 Navigating stack frames ~
 				*termdebug-frames* *:Frame* *:Up* *:Down*
- `:Frame` [frame]	select frame [frame], which is a frame number,
+ :Frame [frame]	select frame [frame], which is a frame number,
 			address, or function name (default: current frame)
- `:Up` [count]		go up [count] frames (default: 1; the frame that
+ :Up [count]		go up [count] frames (default: 1; the frame that
 			called the current)
- `+`			same (see |termdebug_map_plus| to disable)
- `:Down` [count]	go down [count] frames (default: 1; the frame called
+ +			same (see |termdebug_map_plus| to disable)
+ :Down [count]	go down [count] frames (default: 1; the frame called
 			by the current)
- `-`			same (see |termdebug_map_minus| to disable)
+ -			same (see |termdebug_map_minus| to disable)
 
 
 Other commands ~

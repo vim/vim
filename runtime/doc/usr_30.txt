@@ -1,4 +1,4 @@
-*usr_30.txt*	For Vim version 9.1.  Last change: 2007 Nov 10
+*usr_30.txt*	For Vim version 9.1.  Last change: 2024 Apr 29
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -246,7 +246,7 @@ code block the cursor is in: >
 
 	=a{
 
-I you have really badly indented code, you can re-indent the whole file with:
+If you have really badly indented code, you can re-indent the whole file with:
 >
 	gg=G
 

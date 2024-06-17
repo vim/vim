@@ -97,7 +97,16 @@ def Test_enum_parse()
     vim9script
     enum Something | endenum
   END
-  v9.CheckSourceFailure(lines, 'E1420: Missing :endenum', 3)
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: | endenum', 2)
+
+  # another command follows the enum name
+  lines =<< trim END
+    vim9script
+    enum Something | var x = 10
+      Foo
+    endenum
+  END
+  v9.CheckSourceFailure(lines, 'E488: Trailing characters: | var x = 10', 2)
 
   # Try to define an enum with the same name as an existing variable
   lines =<< trim END

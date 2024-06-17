@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 9.1.  Last change: 2023 May 25
+*spell.txt*	For Vim version 9.1.  Last change: 2024 May 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -61,6 +61,17 @@ To search for the next misspelled word:
 
 							*[S*
 [S			Like "]S" but search backwards.
+
+							*]r*
+]r			Move to next "rare" word after the cursor.
+			A count before the command can be used to repeat.
+			'wrapscan' applies.
+
+							*[r*
+[r			Like "]r" but search backwards, find the "rare"
+			word before the cursor.  Doesn't recognize words
+			split over two lines, thus may stop at words that are
+			not highlighted as rare.
 
 
 To add words to your own word list:
@@ -903,7 +914,7 @@ right encoding.
 				*spell-AUTHOR* *spell-EMAIL* *spell-COPYRIGHT*
 	NAME		Name of the language
 	VERSION		1.0.1  with fixes
-	HOME		http://www.myhome.eu
+	HOME		<URL>
 	AUTHOR		John Doe
 	EMAIL		john AT Doe DOT net
 	COPYRIGHT	LGPL

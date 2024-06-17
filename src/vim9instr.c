@@ -2394,6 +2394,7 @@ generate_store_var(
 	case dest_vimvar:
 	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
 	case dest_script:
+	case dest_script_v9:
 	    {
 		int	    scriptvar_idx = lhs->lhs_scriptvar_idx;
 		int	    scriptvar_sid = lhs->lhs_scriptvar_sid;
@@ -2401,10 +2402,14 @@ generate_store_var(
 		{
 		    isntype_T   isn_type = ISN_STORES;
 
+		    // If "sn_import_autoload", generate ISN_STOREEXPORT (not
+		    // ISN_STORES) if destination is in a vim9script or if
+		    // there is no "sn_autoload_prefix".
 		    if (SCRIPT_ID_VALID(scriptvar_sid)
 			     && SCRIPT_ITEM(scriptvar_sid)->sn_import_autoload
-			     && SCRIPT_ITEM(scriptvar_sid)->sn_autoload_prefix
-								       == NULL)
+			     && ((SCRIPT_ITEM(scriptvar_sid)
+						  ->sn_autoload_prefix == NULL)
+				|| lhs->lhs_dest == dest_script_v9))
 		    {
 			// "import autoload './dir/script.vim'" - load script
 			// first

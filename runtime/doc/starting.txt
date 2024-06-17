@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 9.1.  Last change: 2024 Apr 21
+*starting.txt*  For Vim version 9.1.  Last change: 2024 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -104,9 +104,9 @@ rvim	 vim -Z	    Like "vim", but in restricted mode (see |-Z|)   *rvim*
 rview	 vim -RZ    Like "view", but in restricted mode.	  *rview*
 rgvim	 vim -gZ    Like "gvim", but in restricted mode.	  *rgvim*
 rgview	 vim -RgZ   Like "gview", but in restricted mode.	  *rgview*
-evim     vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
-eview    vim -yR    Like "evim" in read-only mode		  *eview*
-vimdiff  vim -d	    Start in diff mode |diff-mode|
+evim	 vim -y     Easy Vim: set 'insertmode' (see |-y|)	  *evim*
+eview	 vim -yR    Like "evim" in read-only mode		  *eview*
+vimdiff	 vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
 Additional characters may follow, they are ignored.  For example, you can have
@@ -428,8 +428,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --not-a-term	Tells Vim that the user knows that the input and/or output is
 		not connected to a terminal.  This will avoid the warning and
 		the two second delay that would happen.
-		Also avoids the "Reading from stdin..." message.
-		Also avoids the "N files to edit" message.
+		Also avoids the "Reading from stdin..." as well as the
+		"N files to edit" message.
 
 --gui-dialog-file {name}				*--gui-dialog-file*
 		When using the GUI, instead of showing a dialog, write the
@@ -812,7 +812,7 @@ accordingly.  Vim proceeds in this order:
 
 	Places for your personal initializations:
 		Unix		$HOME/.vimrc, $HOME/.vim/vimrc
-                                or $XDG_CONFIG_HOME/vim/vimrc
+				or $XDG_CONFIG_HOME/vim/vimrc
 		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
@@ -1119,8 +1119,8 @@ feature backward compatible). However, if you want to migrate to use
 and `~/.vim/vimrc` file.
 
 							*xdg-runtime*
-When the |xdg-vimrc| is used the |'runtimepath'| will be modified accordingly
-to respect the |xdg-base-dir|: >
+When the |xdg-vimrc| is used the 'runtimepath' and 'packpath' options will be
+modified accordingly to respect the |xdg-base-dir|: >
 
     "$XDG_CONFIG_HOME/vim,$VIMRUNTIME,/after,$XDG_CONFIG_HOME/vim/after"
 <
@@ -1712,7 +1712,8 @@ most of the information will be restored).
 			|viminfo-file-name| above).
 			If [!] is given, then any information that is
 			already set (registers, marks, |v:oldfiles|, etc.)
-			will be overwritten.
+			will be overwritten.  "E195" may be given, when
+			'viminfofile' has been set to "NONE".
 
 			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see

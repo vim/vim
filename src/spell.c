@@ -1336,7 +1336,7 @@ no_spell_checking(win_T *wp)
 spell_move_to(
     win_T	*wp,
     int		dir,		// FORWARD or BACKWARD
-    int		allwords,	// TRUE for "[s"/"]s", FALSE for "[S"/"]S"
+    smt_T	behaviour,	// Behaviour of the function
     int		curline,
     hlf_T	*attrp)		// return: attributes of bad word or NULL
 				// (only when "dir" is FORWARD)
@@ -1441,7 +1441,9 @@ spell_move_to(
 	    if (attr != HLF_COUNT)
 	    {
 		// We found a bad word.  Check the attribute.
-		if (allwords || attr == HLF_SPB)
+		if (behaviour == SMT_ALL
+				|| (behaviour == SMT_BAD && attr == HLF_SPB)
+				|| (behaviour == SMT_RARE && attr == HLF_SPR))
 		{
 		    // When searching forward only accept a bad word after
 		    // the cursor.
@@ -2953,6 +2955,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*frompat;
+    size_t	frompatlen;
     char_u	*line;
     char_u	*p;
     int		save_ws = p_ws;
@@ -2970,7 +2973,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     frompat = alloc(repl_from_len + 7);
     if (frompat == NULL)
 	return;
-    sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
+    frompatlen = vim_snprintf((char *)frompat, repl_from_len + 7, "\\V\\<%s\\>", repl_from);
     p_ws = FALSE;
 
     sub_nsubs = 0;
@@ -2978,7 +2981,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     curwin->w_cursor.lnum = 0;
     while (!got_int)
     {
-	if (do_search(NULL, '/', '/', frompat, 1L, SEARCH_KEEP, NULL) == 0
+	if (do_search(NULL, '/', '/', frompat, frompatlen, 1L, SEARCH_KEEP, NULL) == 0
 						   || u_save_cursor() == FAIL)
 	    break;
 

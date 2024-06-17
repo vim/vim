@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 9.1.  Last change: 2023 Dec 09
+*cmdline.txt*   For Vim version 9.1.  Last change: 2024 Apr 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -649,6 +649,12 @@ followed by another Vim command:
     :write !
     :[range]!
     a user defined command without the "-bar" argument |:command|
+
+    and the following |Vim9-script| keywords:
+    :abstract
+    :class
+    :enum
+    :interface
 
 Note that this is confusing (inherited from Vi): With ":g" the '|' is included
 in the command, with ":s" it is not.

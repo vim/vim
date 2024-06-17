@@ -67,6 +67,54 @@ def Test_class_basic()
   END
   v9.CheckSourceFailure(lines, "E488: Trailing characters: | echo 'done'", 3)
 
+  # Additional command after "class name"
+  lines =<< trim END
+    vim9script
+    class Something | var x = 10
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = 10", 2)
+
+  # Additional command after "object variable"
+  lines =<< trim END
+    vim9script
+    class Something
+      var l: list<number> = [] | var y = 10
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
+
+  # Additional command after "class variable"
+  lines =<< trim END
+    vim9script
+    class Something
+      static var d = {a: 10} | var y = 10
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
+
+  # Additional command after "object method"
+  lines =<< trim END
+    vim9script
+    class Something
+      def Foo() | var y = 10
+      enddef
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var y = 10", 3)
+
+  # Comments are allowed after an inline block
+  lines =<< trim END
+    vim9script
+    class Foo
+      static const bar = { # {{{
+        baz: 'qux'
+      } # }}}
+    endclass
+    assert_equal({baz: 'qux'}, Foo.bar)
+  END
+  v9.CheckSourceSuccess(lines)
+
   # Try to define a class with the same name as an existing variable
   lines =<< trim END
     vim9script
@@ -497,6 +545,28 @@ def Test_using_null_class()
     @_ = null_class.member
   END
   v9.CheckDefExecAndScriptFailure(lines, ['E715: Dictionary required', 'E1363: Incomplete type'])
+
+  # Test for using a null class as a value
+  lines =<< trim END
+    vim9script
+    echo empty(null_class)
+  END
+  v9.CheckSourceFailure(lines, 'E1405: Class "" cannot be used as a value', 2)
+
+  # Test for using a null class with string()
+  lines =<< trim END
+    vim9script
+    assert_equal('class [unknown]', string(null_class))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  # Test for using a null class with type() and typename()
+  lines =<< trim END
+    vim9script
+    assert_equal(12, type(null_class))
+    assert_equal('class<Unknown>', typename(null_class))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_class_interface_wrong_end()
@@ -2237,6 +2307,14 @@ def Test_interface_basics()
   END
   v9.CheckSourceFailure(lines, 'E1345: Not a valid command in an interface: return 5', 6)
 
+  # Additional commands after "interface name"
+  lines =<< trim END
+    vim9script
+    interface Something | var x = 10 | var y = 20
+    endinterface
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = 10", 2)
+
   lines =<< trim END
     vim9script
     export interface EnterExit
@@ -3232,6 +3310,14 @@ def Test_abstract_class()
     endclass
   END
   v9.CheckSourceFailure(lines, 'E1316: Class can only be defined in Vim9 script', 1)
+
+  # Additional commands after "abstract class"
+  lines =<< trim END
+    vim9script
+    abstract class Something | var x = []
+    endclass
+  END
+  v9.CheckSourceFailure(lines, "E488: Trailing characters: | var x = []", 2)
 
   # Abstract class cannot have a "new" function
   lines =<< trim END
@@ -10636,6 +10722,26 @@ def Test_class_definition_in_a_function()
     defcompile
   END
   v9.CheckScriptFailure(lines, 'E1429: Class can only be used in a script', 1)
+enddef
+
+" Test for using [] with a class and an object
+def Test_class_object_index()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    A[10] = 1
+  END
+  v9.CheckScriptFailure(lines, 'E689: Index not allowed after a class: A[10] = 1', 4)
+
+  lines =<< trim END
+    vim9script
+    class A
+    endclass
+    var a = A.new()
+    a[10] = 1
+  END
+  v9.CheckScriptFailure(lines, 'E689: Index not allowed after a object: a[10] = 1', 5)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

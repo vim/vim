@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2024 Mar 25
+*tabpage.txt*   For Vim version 9.1.  Last change: 2024 May 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -225,8 +225,9 @@ gT		Go to the previous tab page.  Wraps around from the first one
 							*:tabl* *:tablast*
 :tabl[ast]	Go to the last tab page.
 
-					*g<Tab>* *CTRL-W_g<Tab>* *<C-Tab>*
-g<Tab>		Go to the last accessed tab page.
+<C-Tab>					*g<Tab>* *CTRL-W_g<Tab>* *<C-Tab>*
+g<Tab>
+CTRL-W g<Tab>	Go to the last accessed tab page.
 
 Other commands:
 							*:tabs*

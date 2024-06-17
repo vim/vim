@@ -74,6 +74,7 @@ static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getreginfo(typval_T *argvars, typval_T *rettv);
 static void f_getregion(typval_T *argvars, typval_T *rettv);
+static void f_getregionpos(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
 static void f_gettext(typval_T *argvars, typval_T *rettv);
@@ -1823,7 +1824,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"bindtextdomain",	1, 2, 0,	    arg1_string,
+    {"bindtextdomain",	2, 2, 0,	    arg2_string,
 			ret_void,	    f_bindtextdomain},
     {"blob2list",	1, 1, FEARG_1,	    arg1_blob,
 			ret_list_number,    f_blob2list},
@@ -2009,6 +2010,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_feedkeys},
     {"file_readable",	1, 1, FEARG_1,	    arg1_string,	// obsolete
 			ret_number_bool,    f_filereadable},
+    {"filecopy",	2, 2, FEARG_1,	    arg2_string,
+			ret_number_bool,    f_filecopy},
     {"filereadable",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_filereadable},
     {"filewritable",	1, 1, FEARG_1,	    arg1_string,
@@ -2139,6 +2142,8 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_getreginfo},
     {"getregion",	2, 3, FEARG_1,	    arg3_list_list_dict,
 			ret_list_string,    f_getregion},
+    {"getregionpos",   2, 3, FEARG_1,      arg3_list_list_dict,
+			ret_list_string,    f_getregionpos},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
     {"getscriptinfo",	0, 1, 0,	    arg1_dict_any,
@@ -3481,29 +3486,13 @@ f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     char_u	*p;
 
     if (check_for_nonempty_string_arg(argvars, 0) == FAIL
-	    || check_for_opt_string_arg(argvars, 1) == FAIL)
+	    || check_for_nonempty_string_arg(argvars, 1) == FAIL)
 	return;
 
-    if (argvars[1].v_type == VAR_UNKNOWN)
-    {
-	p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
-	if (p != NULL && *p != NUL)
-	{
-	    vim_snprintf((char *)NameBuff, MAXPATHL, "%s/lang", p);
-	    bindtextdomain((const char *)argvars[0].vval.v_string, (char *)NameBuff);
-	}
-	if (mustfree)
-	    vim_free(p);
-    }
+    if (strcmp((const char *)argvars[0].vval.v_string, VIMPACKAGE) == 0)
+	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
     else
-    {
-	if (strcmp((const char *)argvars[0].vval.v_string, VIMPACKAGE) == 0)
-	{
-	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
-	}
-
 	bindtextdomain((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string);
-    }
 
     return;
 }
@@ -3880,8 +3869,9 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	return;		// type error; errmsg already given
     if (lnum > 0)
 	curwin->w_cursor.lnum = lnum;
-    if (col > 0)
-	curwin->w_cursor.col = col - 1;
+    if (col != MAXCOL && --col < 0)
+	col = 0;
+    curwin->w_cursor.col = col;
     curwin->w_cursor.coladd = coladd;
 
     // Make sure the cursor is in a valid position.
@@ -3998,7 +3988,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 					  || *argvars[0].vval.v_string == NUL;
 	    break;
 	case VAR_PARTIAL:
-	    n = FALSE;
+	    n = argvars[0].vval.v_partial == NULL;
 	    break;
 	case VAR_NUMBER:
 	    n = argvars[0].vval.v_number == 0;
@@ -4494,7 +4484,7 @@ f_exists_compiled(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_expand(typval_T *argvars, typval_T *rettv)
 {
     char_u	*s;
-    int		len;
+    size_t	len;
     int		options = WILD_SILENT|WILD_USE_NL|WILD_LIST_NOTFOUND;
     expand_T	xpc;
     int		error = FALSE;
@@ -5500,7 +5490,7 @@ f_getpos(typval_T *argvars, typval_T *rettv)
 /*
  * Convert from block_def to string
  */
-   static char_u *
+    static char_u *
 block_def2str(struct block_def *bd)
 {
     char_u *p, *ret;
@@ -5520,40 +5510,36 @@ block_def2str(struct block_def *bd)
     return ret;
 }
 
-/*
- * "getregion()" function
- */
-    static void
-f_getregion(typval_T *argvars, typval_T *rettv)
+    static int
+getregionpos(
+    typval_T	*argvars,
+    typval_T	*rettv,
+    pos_T	*p1,
+    pos_T	*p2,
+    int		*inclusive,
+    int		*region_type,
+    oparg_T	*oap)
 {
-    linenr_T		lnum;
-    oparg_T		oa;
-    struct block_def	bd;
-    char_u		*akt = NULL;
-    int			inclusive = TRUE;
-    int			fnum1 = -1, fnum2 = -1;
-    pos_T		p1, p2;
-    char_u		*type;
-    buf_T		*save_curbuf;
-    buf_T		*findbuf;
-    char_u		default_type[] = "v";
-    int			save_virtual;
-    int			l;
-    int			region_type = -1;
-    int			is_select_exclusive;
+    int		fnum1 = -1, fnum2 = -1;
+    char_u	*type;
+    buf_T	*findbuf;
+    char_u	default_type[] = "v";
+    int		block_width = 0;
+    int		is_select_exclusive;
+    int		l;
 
     if (rettv_list_alloc(rettv) == FAIL)
-	return;
+	return FAIL;
 
     if (check_for_list_arg(argvars, 0) == FAIL
 	    || check_for_list_arg(argvars, 1) == FAIL
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
-	return;
+	return FAIL;
 
-    if (list2fpos(&argvars[0], &p1, &fnum1, NULL, FALSE) != OK
-	    || list2fpos(&argvars[1], &p2, &fnum2, NULL, FALSE) != OK
+    if (list2fpos(&argvars[0], p1, &fnum1, NULL, FALSE) != OK
+	    || list2fpos(&argvars[1], p2, &fnum2, NULL, FALSE) != OK
 	    || fnum1 != fnum2)
-	return;
+	return FAIL;
 
     if (argvars[2].v_type == VAR_DICT)
     {
@@ -5571,120 +5557,142 @@ f_getregion(typval_T *argvars, typval_T *rettv)
     }
 
     if (type[0] == 'v' && type[1] == NUL)
-	region_type = MCHAR;
+	*region_type = MCHAR;
     else if (type[0] == 'V' && type[1] == NUL)
-	region_type = MLINE;
-    else if (type[0] == Ctrl_V && type[1] == NUL)
-	region_type = MBLOCK;
+	*region_type = MLINE;
+    else if (type[0] == Ctrl_V)
+    {
+	char_u *p = type + 1;
+
+	if (*p != NUL && ((block_width = getdigits(&p)) <= 0 || *p != NUL))
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "type", type);
+	    return FAIL;
+	}
+	*region_type = MBLOCK;
+    }
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "type", type);
-	return;
+	return FAIL;
     }
 
     findbuf = fnum1 != 0 ? buflist_findnr(fnum1) : curbuf;
     if (findbuf == NULL || findbuf->b_ml.ml_mfp == NULL)
     {
 	emsg(_(e_buffer_is_not_loaded));
-	return;
+	return FAIL;
     }
 
-    if (p1.lnum < 1 || p1.lnum > findbuf->b_ml.ml_line_count)
+    if (p1->lnum < 1 || p1->lnum > findbuf->b_ml.ml_line_count)
     {
-	semsg(_(e_invalid_line_number_nr), p1.lnum);
-	return;
+	semsg(_(e_invalid_line_number_nr), p1->lnum);
+	return FAIL;
     }
-    if (p1.col < 1 || p1.col > ml_get_buf_len(findbuf, p1.lnum) + 1)
+    if (p1->col == MAXCOL)
+	p1->col = ml_get_buf_len(findbuf, p1->lnum) + 1;
+    else if (p1->col < 1 || p1->col > ml_get_buf_len(findbuf, p1->lnum) + 1)
     {
-	semsg(_(e_invalid_column_number_nr), p1.col);
-	return;
-    }
-    if (p2.lnum < 1 || p2.lnum > findbuf->b_ml.ml_line_count)
-    {
-	semsg(_(e_invalid_line_number_nr), p2.lnum);
-	return;
-    }
-    if (p2.col < 1 || p2.col > ml_get_buf_len(findbuf, p2.lnum) + 1)
-    {
-	semsg(_(e_invalid_column_number_nr), p2.col);
-	return;
+	semsg(_(e_invalid_column_number_nr), p1->col);
+	return FAIL;
     }
 
-    save_curbuf = curbuf;
+    if (p2->lnum < 1 || p2->lnum > findbuf->b_ml.ml_line_count)
+    {
+	semsg(_(e_invalid_line_number_nr), p2->lnum);
+	return FAIL;
+    }
+    if (p2->col == MAXCOL)
+	p2->col = ml_get_buf_len(findbuf, p2->lnum) + 1;
+    else if (p2->col < 1 || p2->col > ml_get_buf_len(findbuf, p2->lnum) + 1)
+    {
+	semsg(_(e_invalid_column_number_nr), p2->col);
+	return FAIL;
+    }
+
     curbuf = findbuf;
     curwin->w_buffer = curbuf;
-    save_virtual = virtual_op;
     virtual_op = virtual_active();
 
-    // NOTE: Adjust is needed.
-    p1.col--;
-    p2.col--;
+    // NOTE: Adjustment is needed.
+    p1->col--;
+    p2->col--;
 
-    if (!LT_POS(p1, p2))
+    if (!LT_POS(*p1, *p2))
     {
 	// swap position
 	pos_T p;
 
-	p = p1;
-	p1 = p2;
-	p2 = p;
+	p = *p1;
+	*p1 = *p2;
+	*p2 = p;
     }
 
-    if (region_type == MCHAR)
+    if (*region_type == MCHAR)
     {
-	// handle 'selection' == "exclusive"
-	if (is_select_exclusive && !EQUAL_POS(p1, p2))
-	{
-	    if (p2.coladd > 0)
-		p2.coladd--;
-	    else if (p2.col > 0)
-	    {
-		p2.col--;
-
-		mb_adjustpos(curbuf, &p2);
-	    }
-	    else if (p2.lnum > 1)
-	    {
-		p2.lnum--;
-		p2.col = ml_get_len(p2.lnum);
-		if (p2.col > 0)
-		{
-		    p2.col--;
-
-		    mb_adjustpos(curbuf, &p2);
-		}
-	    }
-	}
-	// if fp2 is on NUL (empty line) inclusive becomes false
-	if (*ml_get_pos(&p2) == NUL && !virtual_op)
-	    inclusive = FALSE;
+	// Handle 'selection' == "exclusive".
+	if (is_select_exclusive && !EQUAL_POS(*p1, *p2))
+	    // When backing up to previous line, inclusive becomes false.
+	    *inclusive = !unadjust_for_sel_inner(p2);
+	// If p2 is on NUL (end of line), inclusive becomes false.
+	if (*inclusive && !virtual_op && *ml_get_pos(p2) == NUL)
+	    *inclusive = FALSE;
     }
-    else if (region_type == MBLOCK)
+    else if (*region_type == MBLOCK)
     {
 	colnr_T sc1, ec1, sc2, ec2;
 
-	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
-	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
-	oa.motion_type = MBLOCK;
-	oa.inclusive = TRUE;
-	oa.op_type = OP_NOP;
-	oa.start = p1;
-	oa.end = p2;
-	oa.start_vcol = MIN(sc1, sc2);
-	if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
-	    oa.end_vcol = sc2 - 1;
+	getvvcol(curwin, p1, &sc1, NULL, &ec1);
+	getvvcol(curwin, p2, &sc2, NULL, &ec2);
+	oap->motion_type = MBLOCK;
+	oap->inclusive = TRUE;
+	oap->op_type = OP_NOP;
+	oap->start = *p1;
+	oap->end = *p2;
+	oap->start_vcol = MIN(sc1, sc2);
+	if (block_width > 0)
+	    oap->end_vcol = oap->start_vcol + block_width - 1;
+	else if (is_select_exclusive && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+	    oap->end_vcol = sc2 - 1;
 	else
-	    oa.end_vcol = MAX(ec1, ec2);
+	    oap->end_vcol = MAX(ec1, ec2);
     }
 
     // Include the trailing byte of a multi-byte char.
-    l = utfc_ptr2len((char_u *)ml_get_pos(&p2));
+    l = mb_ptr2len((char_u *)ml_get_pos(p2));
     if (l > 1)
-	p2.col += l - 1;
+	p2->col += l - 1;
+
+    return OK;
+}
+
+/*
+ * "getregion()" function
+ */
+    static void
+f_getregion(typval_T *argvars, typval_T *rettv)
+{
+    pos_T		p1, p2;
+    int			inclusive = TRUE;
+    int			region_type = -1;
+    oparg_T		oa;
+
+    buf_T		*save_curbuf;
+    int			save_virtual;
+    char_u		*akt = NULL;
+    linenr_T		lnum;
+
+    save_curbuf = curbuf;
+    save_virtual = virtual_op;
+
+    if (getregionpos(argvars, rettv,
+		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
+	return;
 
     for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
     {
 	int ret = 0;
+	struct block_def	bd;
 
 	if (region_type == MLINE)
 	    akt = vim_strsave(ml_get(lnum));
@@ -5715,6 +5723,187 @@ f_getregion(typval_T *argvars, typval_T *rettv)
 	}
     }
 
+    // getregionpos() may change curbuf and virtual_op
+    curbuf = save_curbuf;
+    curwin->w_buffer = curbuf;
+    virtual_op = save_virtual;
+}
+
+    static void
+add_regionpos_range(typval_T *rettv, pos_T p1, pos_T p2)
+{
+    list_T	*l1, *l2, *l3;
+
+    l1 = list_alloc();
+    if (l1 == NULL)
+	return;
+
+    if (list_append_list(rettv->vval.v_list, l1) == FAIL)
+    {
+	vim_free(l1);
+	return;
+    }
+
+    l2 = list_alloc();
+    if (l2 == NULL)
+    {
+	vim_free(l1);
+	return;
+    }
+
+    if (list_append_list(l1, l2) == FAIL)
+    {
+	vim_free(l1);
+	vim_free(l2);
+	return;
+    }
+
+    l3 = list_alloc();
+    if (l3 == NULL)
+    {
+	vim_free(l1);
+	vim_free(l2);
+	return;
+    }
+
+    if (list_append_list(l1, l3) == FAIL)
+    {
+	vim_free(l1);
+	vim_free(l2);
+	vim_free(l3);
+	return;
+    }
+
+    list_append_number(l2, curbuf->b_fnum);
+    list_append_number(l2, p1.lnum);
+    list_append_number(l2, p1.col);
+    list_append_number(l2, p1.coladd);
+
+    list_append_number(l3, curbuf->b_fnum);
+    list_append_number(l3, p2.lnum);
+    list_append_number(l3, p2.col);
+    list_append_number(l3, p2.coladd);
+}
+
+/*
+ * "getregionpos()" function
+ */
+    static void
+f_getregionpos(typval_T *argvars, typval_T *rettv)
+{
+    pos_T	p1, p2;
+    int		inclusive = TRUE;
+    int		region_type = -1;
+    int		allow_eol = FALSE;
+    oparg_T	oa;
+    int		lnum;
+
+    buf_T	*save_curbuf;
+    int		save_virtual;
+
+    save_curbuf = curbuf;
+    save_virtual = virtual_op;
+
+    if (getregionpos(argvars, rettv,
+		&p1, &p2, &inclusive, &region_type, &oa) == FAIL)
+	return;
+
+    if (argvars[2].v_type == VAR_DICT)
+	allow_eol = dict_get_bool(argvars[2].vval.v_dict, "eol", FALSE);
+
+    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++)
+    {
+	pos_T		ret_p1, ret_p2;
+	char_u		*line = ml_get(lnum);
+	colnr_T		line_len = ml_get_len(lnum);
+
+	if (region_type == MLINE)
+	{
+	    ret_p1.col = 1;
+	    ret_p1.coladd = 0;
+	    ret_p2.col = MAXCOL;
+	    ret_p2.coladd = 0;
+	}
+	else
+	{
+	    struct block_def	bd;
+
+	    if (region_type == MBLOCK)
+		block_prep(&oa, &bd, lnum, FALSE);
+	    else
+		charwise_block_prep(p1, p2, &bd, lnum, inclusive);
+
+	    if (bd.is_oneChar)  // selection entirely inside one char
+	    {
+		if (region_type == MBLOCK)
+		{
+		    ret_p1.col = mb_prevptr(line, bd.textstart) - line + 1;
+		    ret_p1.coladd = bd.start_char_vcols
+					     - (bd.start_vcol - oa.start_vcol);
+		}
+		else
+		{
+		    ret_p1.col = p1.col + 1;
+		    ret_p1.coladd = p1.coladd;
+		}
+	    }
+	    else if (region_type == MBLOCK && oa.start_vcol > bd.start_vcol)
+	    {
+		// blockwise selection entirely beyond end of line
+		ret_p1.col = MAXCOL;
+		ret_p1.coladd = oa.start_vcol - bd.start_vcol;
+		bd.is_oneChar = TRUE;
+	    }
+	    else if (bd.startspaces > 0)
+	    {
+		ret_p1.col = mb_prevptr(line, bd.textstart) - line + 1;
+		ret_p1.coladd = bd.start_char_vcols - bd.startspaces;
+	    }
+	    else
+	    {
+		ret_p1.col = bd.textcol + 1;
+		ret_p1.coladd = 0;
+	    }
+
+	    if (bd.is_oneChar)  // selection entirely inside one char
+	    {
+		ret_p2.col = ret_p1.col;
+		ret_p2.coladd = ret_p1.coladd + bd.startspaces + bd.endspaces;
+	    }
+	    else if (bd.endspaces > 0)
+	    {
+		ret_p2.col = bd.textcol + bd.textlen + 1;
+		ret_p2.coladd = bd.endspaces;
+	    }
+	    else
+	    {
+		ret_p2.col = bd.textcol + bd.textlen;
+		ret_p2.coladd = 0;
+	    }
+	}
+
+	if (!allow_eol && ret_p1.col > line_len)
+	{
+	    ret_p1.col = 0;
+	    ret_p1.coladd = 0;
+	}
+	else if (ret_p1.col > line_len + 1)
+	    ret_p1.col = line_len + 1;
+
+	if (!allow_eol && ret_p2.col > line_len)
+	{
+	    ret_p2.col = ret_p1.col == 0 ? 0 : line_len;
+	    ret_p2.coladd = 0;
+	}
+	else if (ret_p2.col > line_len + 1)
+	    ret_p2.col = line_len + 1;
+
+	ret_p1.lnum = lnum;
+	ret_p2.lnum = lnum;
+	add_regionpos_range(rettv, ret_p1, ret_p2);
+    }
+
+    // getregionpos() may change curbuf and virtual_op
     curbuf = save_curbuf;
     curwin->w_buffer = curbuf;
     virtual_op = save_virtual;
@@ -5893,15 +6082,11 @@ f_gettext(typval_T *argvars, typval_T *rettv)
 
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET)
 	if (prev != NULL)
-	{
 	    bind_textdomain_codeset((const char *)argvars[1].vval.v_string, prev);
-	}
 #endif
     }
     else
-    {
 	rettv->vval.v_string = vim_strsave((char_u *)_(argvars[0].vval.v_string));
-    }
 }
 
 // for VIM_VERSION_ defines
@@ -6299,13 +6484,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"gettext",
 #ifdef FEAT_GETTEXT
-		1
-#else
-		0
-#endif
-		},
-	{"bind_codeset",
-#ifdef HAVE_BIND_TEXTDOMAIN_CODESET
 		1
 #else
 		0
@@ -7447,6 +7625,7 @@ indexof_blob(blob_T *b, long startidx, typval_T *expr)
     set_vim_var_type(VV_KEY, VAR_NUMBER);
     set_vim_var_type(VV_VAL, VAR_NUMBER);
 
+    int		called_emsg_start = called_emsg;
     for (idx = startidx; idx < blob_len(b); ++idx)
     {
 	set_vim_var_nr(VV_KEY, idx);
@@ -7454,6 +7633,9 @@ indexof_blob(blob_T *b, long startidx, typval_T *expr)
 
 	if (indexof_eval_expr(expr))
 	    return idx;
+
+	if (called_emsg != called_emsg_start)
+	    return -1;
     }
 
     return -1;
@@ -7489,6 +7671,7 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    int		called_emsg_start = called_emsg;
     for ( ; item != NULL; item = item->li_next, ++idx)
     {
 	set_vim_var_nr(VV_KEY, idx);
@@ -7499,6 +7682,9 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 
 	if (found)
 	    return idx;
+
+	if (called_emsg != called_emsg_start)
+	    return -1;
     }
 
     return -1;
@@ -7522,7 +7708,9 @@ f_indexof(typval_T *argvars, typval_T *rettv)
 	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
 	return;
 
-    if ((argvars[1].v_type == VAR_STRING && argvars[1].vval.v_string == NULL)
+    if ((argvars[1].v_type == VAR_STRING &&
+		(argvars[1].vval.v_string == NULL
+		 || *argvars[1].vval.v_string == NUL))
 	    || (argvars[1].v_type == VAR_FUNC
 		&& argvars[1].vval.v_partial == NULL))
 	return;
@@ -9619,6 +9807,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 {
     int		flags;
     char_u	*pat;
+    size_t	patlen;
     pos_T	pos;
     pos_T	save_cursor;
     int		save_p_ws = p_ws;
@@ -9693,10 +9882,12 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     sia.sa_tm = time_limit;
 #endif
 
+    patlen = STRLEN(pat);
+
     // Repeat until {skip} returns FALSE.
     for (;;)
     {
-	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, patlen, 1L,
 						     options, RE_SEARCH, &sia);
 	// finding the first match again means there is no match where {skip}
 	// evaluates to zero.
@@ -10109,6 +10300,13 @@ do_searchpair(
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
+    size_t	patlen;
+    size_t	spatlen;
+    size_t	epatlen;
+    size_t	pat2size;
+    size_t	pat2len;
+    size_t	pat3size;
+    size_t	pat3len;
     long	retval = 0;
     pos_T	pos;
     pos_T	firstpos;
@@ -10128,15 +10326,24 @@ do_searchpair(
 
     // Make two search patterns: start/end (pat2, for in nested pairs) and
     // start/middle/end (pat3, for the top pair).
-    pat2 = alloc(STRLEN(spat) + STRLEN(epat) + 17);
-    pat3 = alloc(STRLEN(spat) + STRLEN(mpat) + STRLEN(epat) + 25);
-    if (pat2 == NULL || pat3 == NULL)
+    spatlen = STRLEN(spat);
+    epatlen = STRLEN(epat);
+    pat2size = spatlen + epatlen + 17;
+    pat2 = alloc(pat2size);
+    if (pat2 == NULL)
 	goto theend;
-    sprintf((char *)pat2, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
+    pat3size = spatlen + STRLEN(mpat) + epatlen + 25;
+    pat3 = alloc(pat3size);
+    if (pat3 == NULL)
+	goto theend;
+    pat2len = vim_snprintf((char *)pat2, pat2size, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)", spat, epat);
     if (*mpat == NUL)
+    {
 	STRCPY(pat3, pat2);
+	pat3len = pat2len;
+    }
     else
-	sprintf((char *)pat3, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
+	pat3len = vim_snprintf((char *)pat3, pat3size, "\\m\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
 							    spat, epat, mpat);
     if (flags & SP_START)
 	options |= SEARCH_START;
@@ -10153,13 +10360,14 @@ do_searchpair(
     CLEAR_POS(&firstpos);
     CLEAR_POS(&foundpos);
     pat = pat3;
+    patlen = pat3len;
     for (;;)
     {
 	searchit_arg_T sia;
 
 	CLEAR_FIELD(sia);
 	sia.sa_stop_lnum = lnum_stop;
-	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, patlen, 1L,
 						     options, RE_SEARCH, &sia);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
 	    // didn't find it or found the first match again: FAIL
@@ -10794,7 +11002,7 @@ f_shiftwidth(typval_T *argvars UNUSED, typval_T *rettv)
 	if (col < 0)
 	    return;	// type error; errmsg already given
 #ifdef FEAT_VARTABS
-	rettv->vval.v_number = get_sw_value_col(curbuf, col);
+	rettv->vval.v_number = get_sw_value_col(curbuf, col, FALSE);
 	return;
 #endif
     }
@@ -10863,7 +11071,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// Find the start and length of the badly spelled word.
-	len = spell_move_to(curwin, FORWARD, TRUE, TRUE, &attr);
+	len = spell_move_to(curwin, FORWARD, SMT_ALL, TRUE, &attr);
 	if (len != 0)
 	{
 	    word = ml_get_cursor();
@@ -11576,7 +11784,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_CLASS:
 	    {
 		class_T *cl = argvars[0].vval.v_class;
-		if (IS_ENUM(cl))
+		if (cl != NULL && IS_ENUM(cl))
 		    n = VAR_TYPE_ENUM;
 		else
 		    n = VAR_TYPE_CLASS;
@@ -11584,11 +11792,18 @@ f_type(typval_T *argvars, typval_T *rettv)
 	    }
 	case VAR_OBJECT:
 	    {
-		class_T *cl = argvars[0].vval.v_object->obj_class;
-		if (IS_ENUM(cl))
-		    n = VAR_TYPE_ENUMVALUE;
-		else
+		object_T *obj = argvars[0].vval.v_object;
+
+		if (obj == NULL)
 		    n = VAR_TYPE_OBJECT;
+		else
+		{
+		    class_T *cl = argvars[0].vval.v_object->obj_class;
+		    if (IS_ENUM(cl))
+			n = VAR_TYPE_ENUMVALUE;
+		    else
+			n = VAR_TYPE_OBJECT;
+		}
 		break;
 	    }
 	case VAR_UNKNOWN:

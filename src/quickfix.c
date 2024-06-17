@@ -3388,7 +3388,7 @@ qf_jump_goto_line(
 	// Move the cursor to the first line in the buffer
 	save_cursor = curwin->w_cursor;
 	curwin->w_cursor.lnum = 0;
-	if (!do_search(NULL, '/', '/', qf_pattern, (long)1, SEARCH_KEEP, NULL))
+	if (!do_search(NULL, '/', '/', qf_pattern, STRLEN(qf_pattern), (long)1, SEARCH_KEEP, NULL))
 	    curwin->w_cursor = save_cursor;
     }
 }
@@ -4867,6 +4867,9 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 
     if (old_last == NULL)
     {
+	win_T		*wp;
+	tabpage_T	*tp;
+
 	if (buf != curbuf)
 	{
 	    internal_error("qf_fill_buffer()");
@@ -4882,6 +4885,10 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	// otherwise autocommands may invalidate the undo stack
 	while ((curbuf->b_ml.ml_flags & ML_EMPTY) == 0)
 	    (void)ml_delete((linenr_T)1);
+
+	FOR_ALL_TAB_WINDOWS(tp, wp)
+	    if (wp->w_buffer == curbuf)
+		wp->w_skipcol = 0;
 
 	// Remove all undo information
 	u_clearallandblockfree(curbuf);

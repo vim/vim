@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 9.1.  Last change: 2022 Apr 03
+*mbyte.txt*     For Vim version 9.1.  Last change: 2024 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -451,18 +451,19 @@ Useful utilities for converting the charset:
     Chinese:	    hc
 	Hc is "Hanzi Converter".  Hc convert a GB file to a Big5 file, or Big5
 	file to GB file.  Hc can be found at:
+	https://www.freshports.org/chinese/hc
 	ftp://ftp.cuhk.hk/pub/chinese/ifcss/software/unix/convert/hc-30.tar.gz
 
     Korean:	    hmconv
 	Hmconv is Korean code conversion utility especially for E-mail.  It can
 	convert between EUC-KR and ISO-2022-KR.  Hmconv can be found at:
-	ftp://ftp.kaist.ac.kr/pub/hangul/code/hmconv/
+	https://www.freshports.org/korean/hmconv/
 
     Multilingual:   lv
 	Lv is a Powerful Multilingual File Viewer.  And it can be worked as
 	|charset| converter.  Supported |charset|: ISO-2022-CN, ISO-2022-JP,
 	ISO-2022-KR, EUC-CN, EUC-JP, EUC-KR, EUC-TW, UTF-7, UTF-8, ISO-8859
-	series, Shift_JIS, Big5 and HZ.  Lv can be found at:
+	series, Shift_JIS, Big5 and HZ.  Lv can be found at (link seems dead):
 	http://www.ff.iij4u.or.jp/~nrt/lv/index.html
 
 
@@ -777,13 +778,13 @@ is suitable for complex input, such as CJK.
 
   For example, there are xwnmo and kinput2 Japanese |IM-server|, both are
   FrontEnd system.  Xwnmo is distributed with Wnn (see below), kinput2 can be
-  found at: ftp://ftp.sra.co.jp/pub/x11/kinput2/
+  found at (link seems dead): ftp://ftp.sra.co.jp/pub/x11/kinput2/
 
   For Chinese, there's a great XIM server named "xcin", you can input both
   Traditional and Simplified Chinese characters.  And it can accept other
-  locale if you make a correct input table.  Xcin can be found at:
-  http://cle.linux.org.tw/xcin/
-  Others are scim: http://scim.freedesktop.org/ and fcitx:
+  locale if you make a correct input table.  Xcin can be found at (link seems
+  dead): http://cle.linux.org.tw/xcin/
+  Others are scim: https://www.freedesktop.org/wiki/Software/scim/  and fcitx:
   http://www.fcitx.org/
 
 - Conversion Server
@@ -801,7 +802,7 @@ is suitable for complex input, such as CJK.
   pronounced in Hira-gana, second, we convert Hira-gana to Kanji or Kata-Kana,
   if needed.  There are some Kana-Kanji conversion server: jserver
   (distributed with Wnn, see below) and canna.  Canna can be found at:
-  http://canna.sourceforge.jp/
+  https://osdn.net/projects/canna/
 
 There is a good input system: Wnn4.2.  Wnn 4.2 contains,
     xwnmo (|IM-server|)
@@ -1355,7 +1356,7 @@ You might also want to select the font used for the menus.  Unfortunately this
 doesn't always work.  See the system specific remarks below, and 'langmenu'.
 
 
-USING UTF-8 IN X-Windows				*utf-8-in-xwindows*
+USING UTF-8 IN X-WINDOWS				*utf-8-in-xwindows*
 
 Note: This section does not apply to the GTK+ 2 GUI.
 

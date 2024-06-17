@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Feb 25
+*usr_41.txt*	For Vim version 9.1.  Last change: 2024 Jun 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -28,6 +28,22 @@ Table of contents: |usr_toc.txt|
 
 ==============================================================================
 *41.1*	Introduction				*vim-script-intro* *script*
+
+Let's start with some nomenclature. A Vim script is any file that Vim can
+interpret and execute. This includes files written in Vim's scripting language
+like for example .vim files or configuration files like .vimrc and .gvimrc.
+These scripts may define functions, commands and settings that Vim uses to
+customize and extend its behavior.
+
+With a slight abuse of nomenclature, we will use "Vim script" to refer to the
+Vim scripting language throughout this documentation. This shorthand helps to
+streamline explanations and discussions about scripting with Vim.
+
+A Vim plugin is a collection of one or more Vim scripts, along with additional
+files like help documentation, configuration files, and other resources,
+designed to add specific features or functionalities to Vim. A plugin can
+provide new commands, enhance existing capabilities, and integrate external
+tools or services into the Vim environment.
 
 Your first experience with Vim scripts is the vimrc file.  Vim reads it when
 it starts up and executes the commands.  You can set options to the values you
@@ -931,6 +947,7 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
 	getregion()		get a region of text from the buffer
+	getregionpos()		get a list of positions for a region
 	setline()		replace a line in the buffer
 	append()		append line or list of lines in the buffer
 	indent()		indent of a specific line
@@ -993,6 +1010,7 @@ System functions and manipulation of files:
 	readdir()		get a List of file names in a directory
 	readdirex()		get a List of file information in a directory
 	writefile()		write a List of lines or Blob into a file
+	filecopy()		copy a file {from} to {to}
 
 Date and Time:				*date-functions* *time-functions*
 	getftime()		get last modification time of a file
@@ -1097,7 +1115,7 @@ Syntax and highlighting:	  *syntax-functions* *highlighting-functions*
 	synIDattr()		get a specific attribute of a syntax ID
 	synIDtrans()		get translated syntax ID
 	synstack()		get list of syntax IDs at a specific position
-	synconcealed()		get info about concealing
+	synconcealed()		get info about (syntax) concealing
 	diff_hlID()		get highlight ID for diff mode at a position
 	matchadd()		define a pattern to highlight (a "match")
 	matchaddpos()		define a list of positions to highlight

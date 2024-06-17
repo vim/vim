@@ -7,7 +7,7 @@ int plines_nofill(linenr_T lnum);
 int plines_win_nofill(win_T *wp, linenr_T lnum, int limit_winheight);
 int plines_win_nofold(win_T *wp, linenr_T lnum);
 int plines_win_col(win_T *wp, linenr_T lnum, long column);
-int plines_m_win(win_T *wp, linenr_T first, linenr_T last, int limit_winheight);
+int plines_m_win(win_T *wp, linenr_T first, linenr_T last, int max);
 int gchar_pos(pos_T *pos);
 int gchar_cursor(void);
 void pchar_cursor(int c);

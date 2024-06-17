@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.1.  Last change: 2024 Jan 25
+*map.txt*       For Vim version 9.1.  Last change: 2024 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -986,11 +986,11 @@ For the Meta modifier the "T" character is used.  For example, to map Meta-b
 in Insert mode: >
 	:imap <T-b> terrible
 
-1.12 MAPPING SUPER-KEYS or COMMAND-KEYS		*:map-super-keys* *:map-cmd-key*
+1.12 MAPPING SUPER-KEYS or COMMAND-KEYS	     *:map-super-keys* *:map-cmd-key*
 
-The Super modifier is available in GUI mode (when |gui_running| is 1) for
-GVim on Linux and MacVim on Mac OS. If you're on a Mac, this represents the
-Command key, on Linux with the GTK GUI it represents the Super key.
+The Super modifier is available in GUI mode (when |gui_running| is 1) for gVim
+on Linux and MacVim on Mac OS. If you're on a Mac, this represents the Command
+key, on Linux with the GTK GUI it represents the Super key.
 The character "D" is used for the Super / Command modifier.
 
 For example, to map Command-b in Insert mode: >

@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:		The Vim Project <https://github.com/vim/vim>
-# Last Change:		2024 Feb 18
+# Last Change:		2024 May 23
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -376,6 +376,32 @@ export def FTfs()
   endif
 enddef
 
+# Recursively search for Hare source files in a directory and any
+# subdirectories, up to a given depth.
+def IsHareModule(dir: string, depth: number): bool
+  if depth <= 0
+    return !empty(glob(dir .. '/*.ha'))
+  endif
+
+  return reduce(sort(glob(dir .. '/*', true, true),
+    (a, b) => isdirectory(a) - isdirectory(b)),
+    (acc, n) => acc
+      || n =~ '\.ha$'
+      || isdirectory(n)
+      && IsHareModule(n, depth - 1),
+    false)
+enddef
+
+# Determine if a README file exists within a Hare module and should be given the
+# Haredoc filetype.
+export def FTharedoc()
+  if exists('g:filetype_haredoc')
+    if IsHareModule('<afile>:h', get(g:, 'haredoc_search_depth', 1))
+      setf haredoc
+    endif
+  endif
+enddef
+
 # Distinguish between HTML, XHTML and Django
 export def FThtml()
   var n = 1
@@ -406,14 +432,18 @@ export def FTidl()
   setf idl
 enddef
 
-# Distinguish between "default", Prolog and Cproto prototype file.
+# Distinguish between "default", Prolog, zsh module's C and Cproto prototype file.
 export def ProtoCheck(default: string)
+  # zsh modules use '#include "*.pro"'
+  # https://github.com/zsh-users/zsh/blob/63f086d167960a27ecdbcb762179e2c2bf8a29f5/Src/Modules/example.c#L31
+  if getline(1) =~ '/* Generated automatically */'
+    setf c
   # Cproto files have a comment in the first line and a function prototype in
   # the second line, it always ends in ";".  Indent files may also have
   # comments, thus we can't match comments to see the difference.
   # IDL files can have a single ';' in the second line, require at least one
   # chacter before the ';'.
-  if getline(2) =~ '.;$'
+  elseif getline(2) =~ '.;$'
     setf cpp
   else
     # recognize Prolog by specific text in the first non-empty line

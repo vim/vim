@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Mar 26
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -428,8 +428,8 @@ Name			triggered by ~
 
 |SessionLoadPost|	after loading a session file
 
-|SessionWritePost|	After writing the session file using
-			the |:mksession| command.
+|SessionWritePost|	after writing the session file using
+			the |:mksession| command
 
 |MenuPopup|		just before showing the popup menu
 |CompleteChanged|	after Insert mode completion menu changed

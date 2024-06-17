@@ -123,14 +123,22 @@ tabstop_padding(colnr_T col, int ts_arg, int *vts)
 
 /*
  * Find the size of the tab that covers a particular column.
+ *
+ * If this is being called as part of a shift operation, col is not the cursor
+ * column but is the column number to the left of the first non-whitespace
+ * character in the line.  If the shift is to the left (left = TRUE), then
+ * return the size of the tab interval to the left of the column.
  */
     int
-tabstop_at(colnr_T col, int ts, int *vts)
+tabstop_at(colnr_T col, int ts, int *vts, int left)
 {
-    int		tabcount;
-    colnr_T	tabcol = 0;
-    int		t;
-    int		tab_size = 0;
+    int		tabcount;	// Number of tab stops in the list of variable
+				// tab stops.
+    colnr_T	tabcol = 0;	// Column of the tab stop under consideration.
+    int		t;		// Tabstop index in the list of variable tab
+				// stops.
+    int		tab_size = 0;	// Size of the tab stop interval to the right
+				// or left of the col.
 
     if (vts == 0 || vts[0] == 0)
 	return ts;
@@ -141,11 +149,22 @@ tabstop_at(colnr_T col, int ts, int *vts)
 	tabcol += vts[t];
 	if (tabcol > col)
 	{
-	    tab_size = vts[t];
+	    // If shifting left (left != 0), and if the column to the left of
+	    // the first first non-blank character (col) in the line is
+	    // already to the left of the first tabstop, set the shift amount
+	    // (tab_size) to just enough to shift the line to the left margin.
+	    // The value doesn't seem to matter as long as it is at least that
+	    // distance.
+	    if (left && (t == 1))
+		tab_size = col;
+	    else
+		tab_size = vts[t - (left ? 1 : 0)];
 	    break;
 	}
     }
-    if (t > tabcount)
+    if (t > tabcount)		// If the value of the index t is beyond the
+				// end of the list, use the tab stop value at
+				// the end of the list.
 	tab_size = vts[tabcount];
 
     return tab_size;
@@ -327,20 +346,20 @@ tabstop_first(int *ts)
     long
 get_sw_value(buf_T *buf)
 {
-    return get_sw_value_col(buf, 0);
+    return get_sw_value_col(buf, 0, FALSE);
 }
 
 /*
  * Idem, using "pos".
  */
     static long
-get_sw_value_pos(buf_T *buf, pos_T *pos)
+get_sw_value_pos(buf_T *buf, pos_T *pos, int left)
 {
     pos_T save_cursor = curwin->w_cursor;
     long sw_value;
 
     curwin->w_cursor = *pos;
-    sw_value = get_sw_value_col(buf, get_nolist_virtcol());
+    sw_value = get_sw_value_col(buf, get_nolist_virtcol(), left);
     curwin->w_cursor = save_cursor;
     return sw_value;
 }
@@ -349,23 +368,23 @@ get_sw_value_pos(buf_T *buf, pos_T *pos)
  * Idem, using the first non-black in the current line.
  */
     long
-get_sw_value_indent(buf_T *buf)
+get_sw_value_indent(buf_T *buf, int left)
 {
     pos_T pos = curwin->w_cursor;
 
     pos.col = getwhitecols_curline();
-    return get_sw_value_pos(buf, &pos);
+    return get_sw_value_pos(buf, &pos, left);
 }
 
 /*
  * Idem, using virtual column "col".
  */
     long
-get_sw_value_col(buf_T *buf, colnr_T col UNUSED)
+get_sw_value_col(buf_T *buf, colnr_T col UNUSED, int left UNUSED)
 {
     return buf->b_p_sw ? buf->b_p_sw :
 #ifdef FEAT_VARTABS
-	tabstop_at(col, buf->b_p_ts, buf->b_p_vts_array);
+	tabstop_at(col, buf->b_p_ts, buf->b_p_vts_array, left);
 #else
 	buf->b_p_ts;
 #endif

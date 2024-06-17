@@ -5,11 +5,12 @@
 SRC_ALL =	\
 		.cirrus.yml \
 		.gitattributes \
-		.github/CODEOWNERS \
+		.github/MAINTAINERS \
 		.github/ISSUE_TEMPLATE/bug_report.yml \
 		.github/ISSUE_TEMPLATE/feature_request.md \
 		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
+		.github/actions/screendump/action.yml \
 		.github/workflows/coverity.yml \
 		.github/dependabot.yml \
 		.gitignore \
@@ -72,6 +73,7 @@ SRC_ALL =	\
 		src/float.c \
 		src/fold.c \
 		src/getchar.c \
+		src/gc.c \
 		src/globals.h \
 		src/gui.c \
 		src/gui.h \
@@ -264,6 +266,7 @@ SRC_ALL =	\
 		src/proto/float.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
+		src/proto/gc.pro \
 		src/proto/gui.pro \
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
@@ -756,6 +759,10 @@ RT_ALL =	\
 		runtime/tutor/tutor.vim \
 		runtime/vimrc_example.vim \
 		runtime/pack/dist/opt/cfilter/plugin/cfilter.vim \
+		runtime/pack/dist/opt/comment/plugin/comment.vim \
+		runtime/pack/dist/opt/comment/doc/comment.txt \
+		runtime/pack/dist/opt/comment/doc/tags \
+		runtime/pack/dist/opt/comment/autoload/comment.vim \
 		runtime/pack/dist/opt/dvorak/plugin/dvorak.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/enable.vim \
 		runtime/pack/dist/opt/dvorak/dvorak/disable.vim \
@@ -800,7 +807,6 @@ RT_SCRIPTS =	\
 		runtime/autoload/dist/*.vim \
 		runtime/autoload/rust/*.vim \
 		runtime/autoload/xml/*.vim \
-		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/colors/lists/*.vim \
@@ -831,6 +837,7 @@ RT_SCRIPTS =	\
 		runtime/syntax/testdir/input/*.* \
 		runtime/syntax/testdir/input/setup/*.* \
 		runtime/syntax/testdir/dumps/*.dump \
+		runtime/syntax/testdir/dumps/*.vim \
 		runtime/syntax/generator/Makefile \
 		runtime/syntax/generator/README.md \
 		runtime/syntax/generator/gen_syntax_vim.vim \

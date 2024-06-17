@@ -464,6 +464,10 @@ function! s:parse_vim_hlgroup(li)
 		let item.type = 'both'
 		call add(a:li, copy(item))
 
+		" "Conceal" is an option and cannot be used as keyword, so remove it.
+		" (Separately specified as 'syn match' in vim.vim.base).
+		call filter(a:li, {idx, val -> val.name !=# 'Conceal'})
+
 		quit!
 
 		if empty(a:li)

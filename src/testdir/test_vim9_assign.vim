@@ -650,7 +650,7 @@ def Test_assign_index()
       var bl = 0z11
       bl[1] = g:val
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1030: Using a String as a Number: "22"')
+  v9.CheckDefExecAndScriptFailure(lines, ['E1030: Using a String as a Number: "22"', 'E1012: Type mismatch; expected number but got string'])
 
   # should not read the next line when generating "a.b"
   var a = {}
@@ -3685,6 +3685,18 @@ def Test_final_var_with_blob_value()
     assert_equal(0z1020304050, blobB)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for overwriting a script-local function using the s: dictionary
+def Test_override_script_local_func()
+  var lines =<< trim END
+    vim9script
+    def MyFunc()
+    enddef
+    var d: dict<any> = s:
+    d.MyFunc = function('min')
+  END
+  v9.CheckScriptFailure(lines, 'E705: Variable name conflicts with existing function: MyFunc', 5)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

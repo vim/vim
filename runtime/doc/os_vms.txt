@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.1.  Last change: 2023 Dec 14
+*os_vms.txt*    For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL
@@ -40,7 +40,6 @@ Or use one of the mirrors:
 
 You can download precompiled executables from:
 	http://www.polarhome.com/vim/
-	ftp://ftp.polarhome.com/pub/vim/
 
 To use the precompiled binary version, you need one of these archives:
 

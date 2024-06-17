@@ -417,6 +417,88 @@ pum_under_menu(int row, int col, int only_redrawing)
 }
 
 /*
+ * displays text on the popup menu with specific attributes.
+ */
+    static void
+pum_screen_put_with_attr(int row, int col, char_u *text, int textlen, int attr)
+{
+    int		i;
+    int		leader_len;
+    int		char_len;
+    int		cells;
+    int		new_attr;
+    char_u	*rt_leader = NULL;
+    char_u	*match_leader = NULL;
+    char_u	*ptr = text;
+    garray_T	*ga = NULL;
+    char_u	*leader = ins_compl_leader();
+    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
+
+    if ((highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI] &&
+         highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
+    {
+        screen_puts_len(text, textlen, row, col, attr);
+        return;
+    }
+
+#ifdef FEAT_RIGHTLEFT
+    if (leader != NULL && curwin->w_p_rl)
+        rt_leader = reverse_text(leader);
+#endif
+    match_leader = rt_leader != NULL ? rt_leader : leader;
+    leader_len = match_leader ? (int)STRLEN(match_leader) : 0;
+
+    if (match_leader != NULL && leader_len > 0 && in_fuzzy)
+        ga = fuzzy_match_str_with_pos(text, match_leader);
+
+    // Render text with proper attributes
+    while (*ptr != NUL && ptr < text + textlen)
+    {
+        char_len = mb_ptr2len(ptr);
+        cells = mb_ptr2cells(ptr);
+        new_attr = attr;
+
+        if (ga != NULL)
+        {
+            // Handle fuzzy matching
+            for (i = 0; i < ga->ga_len; i++)
+            {
+                int *match_pos = ((int *)ga->ga_data) + i;
+                int actual_char_pos = 0;
+                char_u *temp_ptr = text;
+                while (temp_ptr < ptr)
+                {
+                    temp_ptr += mb_ptr2len(temp_ptr);
+                    actual_char_pos++;
+                }
+                if (actual_char_pos == match_pos[0])
+                {
+                    new_attr = highlight_attr[(attr == highlight_attr[HLF_PSI]
+							? HLF_PMSI : HLF_PMNI)];
+                    break;
+                }
+            }
+        }
+        else if (!in_fuzzy && (ptr - text < leader_len) &&
+				(STRNCMP(text, match_leader, leader_len) == 0))
+                new_attr = highlight_attr[(attr == highlight_attr[HLF_PSI]
+						    ? HLF_PMSI : HLF_PMNI)];
+
+        screen_puts_len(ptr, char_len, row, col, new_attr);
+        col += cells;
+        ptr += char_len;
+    }
+
+    if (ga != NULL)
+    {
+        ga_clear(ga);
+        vim_free(ga);
+    }
+    if (rt_leader)
+        vim_free(rt_leader);
+}
+
+/*
  * Redraw the popup menu, using "pum_first" and "pum_selected".
  */
     void
@@ -567,8 +649,7 @@ pum_redraw(void)
 					    size++;
 					}
 				    }
-				    screen_puts_len(rt, (int)STRLEN(rt),
-						   row, col - size + 1, attr);
+				    pum_screen_put_with_attr(row, col -size + 1, rt, (int)STRLEN(rt), attr);
 				    vim_free(rt_start);
 				}
 				vim_free(st);
@@ -596,7 +677,7 @@ pum_redraw(void)
 				    else
 					--cells;
 				}
-				screen_puts_len(st, size, row, col, attr);
+				pum_screen_put_with_attr(row, col, st, size, attr);
 				vim_free(st);
 			    }
 			    col += width;
@@ -760,6 +841,7 @@ pum_set_selected(int n, int repeat UNUSED)
     int	    context = pum_height / 2;
 #ifdef FEAT_QUICKFIX
     int	    prev_selected = pum_selected;
+    unsigned	cur_cot_flags = get_cot_flags();
 #endif
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     int	    has_info = FALSE;
@@ -831,7 +913,7 @@ pum_set_selected(int n, int repeat UNUSED)
 	if (pum_array[pum_selected].pum_info != NULL
 		&& Rows > 10
 		&& repeat <= 1
-		&& vim_strchr(p_cot, 'p') != NULL)
+		&& (cur_cot_flags & COT_ANY_PREVIEW))
 	{
 	    win_T	*curwin_save = curwin;
 	    tabpage_T   *curtab_save = curtab;
@@ -842,9 +924,9 @@ pum_set_selected(int n, int repeat UNUSED)
 # endif
 # ifdef FEAT_PROP_POPUP
 	    has_info = TRUE;
-	    if (strstr((char *)p_cot, "popuphidden") != NULL)
+	    if (cur_cot_flags & COT_POPUPHIDDEN)
 		use_popup = USEPOPUP_HIDDEN;
-	    else if (strstr((char *)p_cot, "popup") != NULL)
+	    else if (cur_cot_flags & COT_POPUP)
 		use_popup = USEPOPUP_NORMAL;
 	    else
 		use_popup = USEPOPUP_NONE;

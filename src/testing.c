@@ -1051,6 +1051,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	ml_get_alloc_lines = val;
     else if (STRCMP(name, (char_u *)"autoload") == 0)
 	override_autoload = val;
+    else if (STRCMP(name, (char_u *)"defcompile") == 0)
+	override_defcompile = val;
     else if (STRCMP(name, (char_u *)"ALL") == 0)
     {
 	disable_char_avail_for_testing = FALSE;

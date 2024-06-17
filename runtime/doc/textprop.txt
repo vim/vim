@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.1.  Last change: 2023 Apr 23
+*textprop.txt*  For Vim version 9.1.  Last change: 2024 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -118,6 +118,8 @@ prop_list({lnum} [, {props}])		text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 					remove a text property
 
+						*text-prop-functions-details*
+
 						*prop_add()* *E965*
 prop_add({lnum}, {col}, {props})
 		Attach a text property at position {lnum}, {col}.  {col} is
@@ -234,8 +236,10 @@ prop_add({lnum}, {col}, {props})
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
 <
-						*prop_add_list()*
-prop_add_list({props}, [{item}, ...])
+		Return type: |Number|
+
+
+prop_add_list({props}, [{item}, ...])			*prop_add_list()*
 		Similar to prop_add(), but attaches a text property at
 		multiple positions in a buffer.
 
@@ -284,8 +288,10 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		Can also be used as a |method|: >
 			GetLnum()->prop_clear()
 <
-							*prop_find()*
-prop_find({props} [, {direction}])
+		Return type: |Number|
+
+
+prop_find({props} [, {direction}])			*prop_find()*
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
@@ -309,6 +315,8 @@ prop_find({props} [, {direction}])
 		If a match is found then a Dict is returned with the entries
 		as with prop_list(), and additionally an "lnum" entry.
 		If no match is found then an empty Dict is returned.
+
+		Return type: dict<any>
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
@@ -380,6 +388,8 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
+		Return type: list<dict<any>> or list<any>
+
 						*prop_remove()* *E968* *E860*
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Remove a matching text property from line {lnum}.  When
@@ -409,6 +419,8 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 
 		Can also be used as a |method|: >
 			GetProps()->prop_remove()
+<
+		Return type: |Number|
 
 
 prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
@@ -436,6 +448,9 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_add(props)
+<
+		Return type: |Number|
+
 
 prop_type_change({name}, {props})			*prop_type_change()*
 		Change properties of an existing text property type.  If a
@@ -444,6 +459,9 @@ prop_type_change({name}, {props})			*prop_type_change()*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_change(props)
+<
+		Return type: |Number|
+
 
 prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Remove the text property type {name}.  When text properties
@@ -458,6 +476,9 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
+<
+		Return type: |Number|
+
 
 prop_type_get({name} [, {props}])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
@@ -471,12 +492,17 @@ prop_type_get({name} [, {props}])			*prop_type_get()*
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_get()
+<
+		Return type: dict<any>
+
 
 prop_type_list([{props}])				*prop_type_list()*
 		Returns a list with all property type names.
 
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
+
+		Return type: list<string> or list<any>
 
 
 ==============================================================================

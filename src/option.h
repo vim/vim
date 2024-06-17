@@ -513,6 +513,20 @@ EXTERN int	p_confirm;	// 'confirm'
 #endif
 EXTERN int	p_cp;		// 'compatible'
 EXTERN char_u	*p_cot;		// 'completeopt'
+EXTERN unsigned	cot_flags;	// flags from 'completeopt'
+// Keep in sync with p_cot_values in optionstr.c
+#define COT_MENU	0x001
+#define COT_MENUONE	0x002
+#define COT_ANY_MENU	0x003	// combination of menu flags
+#define COT_LONGEST	0x004	// FALSE: insert full match,
+				// TRUE: insert longest prefix
+#define COT_PREVIEW	0x008
+#define COT_POPUP	0x010
+#define COT_POPUPHIDDEN	0x020
+#define COT_ANY_PREVIEW	0x038	// combination of preview flags
+#define COT_NOINSERT	0x040	// FALSE: select & insert, TRUE: noinsert
+#define COT_NOSELECT	0x080	// FALSE: select & insert, TRUE: noselect
+#define COT_FUZZY	0x100	// TRUE: fuzzy match enabled
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
 #endif
@@ -1127,6 +1141,7 @@ enum
     , BV_CMS
 #endif
     , BV_COM
+    , BV_COT
     , BV_CPT
     , BV_DICT
     , BV_TSR

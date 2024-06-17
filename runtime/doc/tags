@@ -2015,6 +2015,7 @@ $quote	eval.txt	/*$quote*
 52.3	usr_52.txt	/*52.3*
 52.4	usr_52.txt	/*52.4*
 52.5	usr_52.txt	/*52.5*
+52.6	usr_52.txt	/*52.6*
 8g8	various.txt	/*8g8*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
@@ -5876,6 +5877,7 @@ ZZ	editing.txt	/*ZZ*
 [p	change.txt	/*[p*
 [pattern]	pattern.txt	/*[pattern]*
 [quotex]	intro.txt	/*[quotex]*
+[r	spell.txt	/*[r*
 [range]	cmdline.txt	/*[range]*
 [s	spell.txt	/*[s*
 [star	motion.txt	/*[star*
@@ -5904,6 +5906,7 @@ ZZ	editing.txt	/*ZZ*
 ]i	tagsrch.txt	/*]i*
 ]m	motion.txt	/*]m*
 ]p	change.txt	/*]p*
+]r	spell.txt	/*]r*
 ]s	spell.txt	/*]s*
 ]star	motion.txt	/*]star*
 ]z	fold.txt	/*]z*
@@ -6516,6 +6519,7 @@ command-block	vim9.txt	/*command-block*
 command-line-functions	usr_41.txt	/*command-line-functions*
 command-line-window	cmdline.txt	/*command-line-window*
 command-mode	intro.txt	/*command-mode*
+comment-install	usr_05.txt	/*comment-install*
 compatible-default	starting.txt	/*compatible-default*
 compile-changes-5	version5.txt	/*compile-changes-5*
 compile-changes-6	version6.txt	/*compile-changes-6*
@@ -7088,6 +7092,7 @@ file-searching	editing.txt	/*file-searching*
 file-type	filetype.txt	/*file-type*
 file-types	filetype.txt	/*file-types*
 file_readable()	builtin.txt	/*file_readable()*
+filecopy()	builtin.txt	/*filecopy()*
 fileencoding-changed	version6.txt	/*fileencoding-changed*
 filename-backslash	cmdline.txt	/*filename-backslash*
 filename-modifiers	cmdline.txt	/*filename-modifiers*
@@ -7226,6 +7231,7 @@ ft-ada-syntax	ft_ada.txt	/*ft-ada-syntax*
 ft-ada-variables	ft_ada.txt	/*ft-ada-variables*
 ft-ant-syntax	syntax.txt	/*ft-ant-syntax*
 ft-apache-syntax	syntax.txt	/*ft-apache-syntax*
+ft-arduino-plugin	filetype.txt	/*ft-arduino-plugin*
 ft-asciidoc-plugin	filetype.txt	/*ft-asciidoc-plugin*
 ft-asm-syntax	syntax.txt	/*ft-asm-syntax*
 ft-asm68k-syntax	syntax.txt	/*ft-asm68k-syntax*
@@ -7282,6 +7288,7 @@ ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
 ft-groff-syntax	syntax.txt	/*ft-groff-syntax*
 ft-gsp-syntax	syntax.txt	/*ft-gsp-syntax*
+ft-hare	filetype.txt	/*ft-hare*
 ft-haskell-syntax	syntax.txt	/*ft-haskell-syntax*
 ft-html-indent	indent.txt	/*ft-html-indent*
 ft-html-omni	insert.txt	/*ft-html-omni*
@@ -7292,6 +7299,7 @@ ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-plugin	filetype.txt	/*ft-java-plugin*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-jq-syntax	syntax.txt	/*ft-jq-syntax*
 ft-json-plugin	filetype.txt	/*ft-json-plugin*
 ft-json-syntax	syntax.txt	/*ft-json-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
@@ -7354,6 +7362,7 @@ ft-qf-plugin	filetype.txt	/*ft-qf-plugin*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
 ft-r-syntax	syntax.txt	/*ft-r-syntax*
+ft-rasi-syntax	syntax.txt	/*ft-rasi-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
@@ -7387,6 +7396,8 @@ ft-termcap-syntax	syntax.txt	/*ft-termcap-syntax*
 ft-tex-plugin	filetype.txt	/*ft-tex-plugin*
 ft-tex-syntax	syntax.txt	/*ft-tex-syntax*
 ft-tf-syntax	syntax.txt	/*ft-tf-syntax*
+ft-typescript-syntax	syntax.txt	/*ft-typescript-syntax*
+ft-typescriptreact-syntax	syntax.txt	/*ft-typescriptreact-syntax*
 ft-vb-syntax	syntax.txt	/*ft-vb-syntax*
 ft-verilog-indent	indent.txt	/*ft-verilog-indent*
 ft-vhdl-indent	indent.txt	/*ft-vhdl-indent*
@@ -7400,10 +7411,12 @@ ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ft-yaml-indent	indent.txt	/*ft-yaml-indent*
 ft-yaml-syntax	syntax.txt	/*ft-yaml-syntax*
+ft-zig-plugin	filetype.txt	/*ft-zig-plugin*
 ft-zimbu-plugin	filetype.txt	/*ft-zimbu-plugin*
 ft-zsh-syntax	syntax.txt	/*ft-zsh-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
 ft_context.txt	ft_context.txt	/*ft_context.txt*
+ft_hare.txt	ft_hare.txt	/*ft_hare.txt*
 ft_mp.txt	ft_mp.txt	/*ft_mp.txt*
 ft_ps1.txt	ft_ps1.txt	/*ft_ps1.txt*
 ft_raku.txt	ft_raku.txt	/*ft_raku.txt*
@@ -7489,7 +7502,9 @@ g:decada.Error_Format	ft_ada.txt	/*g:decada.Error_Format*
 g:decada.Make()	ft_ada.txt	/*g:decada.Make()*
 g:decada.Make_Command	ft_ada.txt	/*g:decada.Make_Command*
 g:decada.Unit_Name()	ft_ada.txt	/*g:decada.Unit_Name()*
+g:do_no_lazyload_menus	gui.txt	/*g:do_no_lazyload_menus*
 g:filetype_csh	syntax.txt	/*g:filetype_csh*
+g:filetype_haredoc	ft_hare.txt	/*g:filetype_haredoc*
 g:filetype_r	syntax.txt	/*g:filetype_r*
 g:ftplugin_rust_source_path	ft_rust.txt	/*g:ftplugin_rust_source_path*
 g:gnat	ft_ada.txt	/*g:gnat*
@@ -7505,6 +7520,9 @@ g:gnat.Set_Project_File()	ft_ada.txt	/*g:gnat.Set_Project_File()*
 g:gnat.Tags()	ft_ada.txt	/*g:gnat.Tags()*
 g:gnat.Tags_Command	ft_ada.txt	/*g:gnat.Tags_Command*
 g:gzip_exec	pi_gzip.txt	/*g:gzip_exec*
+g:hare_recommended_style	ft_hare.txt	/*g:hare_recommended_style*
+g:hare_space_error	ft_hare.txt	/*g:hare_space_error*
+g:haredoc_search_depth	ft_hare.txt	/*g:haredoc_search_depth*
 g:html_charset_override	syntax.txt	/*g:html_charset_override*
 g:html_diff_one_file	syntax.txt	/*g:html_diff_one_file*
 g:html_dynamic_folds	syntax.txt	/*g:html_dynamic_folds*
@@ -7629,7 +7647,6 @@ g:netrw_use_errorwindow	pi_netrw.txt	/*g:netrw_use_errorwindow*
 g:netrw_use_noswf	pi_netrw.txt	/*g:netrw_use_noswf*
 g:netrw_use_nt_rcp	pi_netrw.txt	/*g:netrw_use_nt_rcp*
 g:netrw_usetab	pi_netrw.txt	/*g:netrw_usetab*
-g:netrw_win95ftp	pi_netrw.txt	/*g:netrw_win95ftp*
 g:netrw_winsize	pi_netrw.txt	/*g:netrw_winsize*
 g:netrw_wiw	pi_netrw.txt	/*g:netrw_wiw*
 g:netrw_xstrlen	pi_netrw.txt	/*g:netrw_xstrlen*
@@ -7687,17 +7704,21 @@ g:tex_stylish	syntax.txt	/*g:tex_stylish*
 g:tex_subscripts	syntax.txt	/*g:tex_subscripts*
 g:tex_superscripts	syntax.txt	/*g:tex_superscripts*
 g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
+g:typescript_host_keyword	syntax.txt	/*g:typescript_host_keyword*
 g:var	eval.txt	/*g:var*
 g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
+g:vimsyn_comment_strings	syntax.txt	/*g:vimsyn_comment_strings*
 g:vimsyn_embed	syntax.txt	/*g:vimsyn_embed*
 g:vimsyn_folding	syntax.txt	/*g:vimsyn_folding*
 g:vimsyn_maxlines	syntax.txt	/*g:vimsyn_maxlines*
 g:vimsyn_minlines	syntax.txt	/*g:vimsyn_minlines*
 g:vimsyn_noerror	syntax.txt	/*g:vimsyn_noerror*
 g:yaml_schema	syntax.txt	/*g:yaml_schema*
+g:zig_recommended_style	filetype.txt	/*g:zig_recommended_style*
+g:zig_std_dir	filetype.txt	/*g:zig_std_dir*
 g:zipPlugin_ext	pi_zip.txt	/*g:zipPlugin_ext*
 g:zip_exec	pi_zip.txt	/*g:zip_exec*
 g:zip_extractcmd	pi_zip.txt	/*g:zip_extractcmd*
@@ -7797,6 +7818,7 @@ getreg()	builtin.txt	/*getreg()*
 getreginfo()	builtin.txt	/*getreginfo()*
 getregion()	builtin.txt	/*getregion()*
 getregion-notes	builtin.txt	/*getregion-notes*
+getregionpos()	builtin.txt	/*getregionpos()*
 getregtype()	builtin.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
 getscript-autoinstall	pi_getscript.txt	/*getscript-autoinstall*
@@ -7967,6 +7989,10 @@ haiku-user-settings-dir	os_haiku.txt	/*haiku-user-settings-dir*
 haiku-vimdir	os_haiku.txt	/*haiku-vimdir*
 hangul	hangulin.txt	/*hangul*
 hangulin.txt	hangulin.txt	/*hangulin.txt*
+hare	ft_hare.txt	/*hare*
+hare-intro	ft_hare.txt	/*hare-intro*
+hare-plugin	ft_hare.txt	/*hare-plugin*
+hare-settings	ft_hare.txt	/*hare-settings*
 has()	builtin.txt	/*has()*
 has-patch	builtin.txt	/*has-patch*
 has-python	if_pyth.txt	/*has-python*
@@ -8066,6 +8092,8 @@ hl-PmenuExtra	syntax.txt	/*hl-PmenuExtra*
 hl-PmenuExtraSel	syntax.txt	/*hl-PmenuExtraSel*
 hl-PmenuKind	syntax.txt	/*hl-PmenuKind*
 hl-PmenuKindSel	syntax.txt	/*hl-PmenuKindSel*
+hl-PmenuMatch	syntax.txt	/*hl-PmenuMatch*
+hl-PmenuMatchSel	syntax.txt	/*hl-PmenuMatchSel*
 hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
 hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
 hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*
@@ -8409,6 +8437,8 @@ job_start()	channel.txt	/*job_start()*
 job_status()	channel.txt	/*job_status()*
 job_stop()	channel.txt	/*job_stop()*
 join()	builtin.txt	/*join()*
+jq.vim	syntax.txt	/*jq.vim*
+jq_quote_highlight	syntax.txt	/*jq_quote_highlight*
 js_decode()	builtin.txt	/*js_decode()*
 js_encode()	builtin.txt	/*js_encode()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
@@ -8689,6 +8719,7 @@ mbyte-utf8	mbyte.txt	/*mbyte-utf8*
 mbyte.txt	mbyte.txt	/*mbyte.txt*
 menu-changes-5.4	version5.txt	/*menu-changes-5.4*
 menu-examples	gui.txt	/*menu-examples*
+menu-lazyload	gui.txt	/*menu-lazyload*
 menu-priority	gui.txt	/*menu-priority*
 menu-separator	gui.txt	/*menu-separator*
 menu-shortcut	gui.txt	/*menu-shortcut*
@@ -8834,11 +8865,11 @@ netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-I	pi_netrw.txt	/*netrw-I*
 netrw-O	pi_netrw.txt	/*netrw-O*
 netrw-P	pi_netrw.txt	/*netrw-P*
+netrw-P17	pi_netrw.txt	/*netrw-P17*
 netrw-P18	pi_netrw.txt	/*netrw-P18*
 netrw-P19	pi_netrw.txt	/*netrw-P19*
 netrw-P20	pi_netrw.txt	/*netrw-P20*
 netrw-P21	pi_netrw.txt	/*netrw-P21*
-netrw-P22	pi_netrw.txt	/*netrw-P22*
 netrw-R	pi_netrw.txt	/*netrw-R*
 netrw-S	pi_netrw.txt	/*netrw-S*
 netrw-Tb	pi_netrw.txt	/*netrw-Tb*
@@ -8968,7 +8999,6 @@ netrw-p13	pi_netrw.txt	/*netrw-p13*
 netrw-p14	pi_netrw.txt	/*netrw-p14*
 netrw-p15	pi_netrw.txt	/*netrw-p15*
 netrw-p16	pi_netrw.txt	/*netrw-p16*
-netrw-p17	pi_netrw.txt	/*netrw-p17*
 netrw-p2	pi_netrw.txt	/*netrw-p2*
 netrw-p3	pi_netrw.txt	/*netrw-p3*
 netrw-p4	pi_netrw.txt	/*netrw-p4*
@@ -9515,6 +9545,7 @@ python-eval	if_pyth.txt	/*python-eval*
 python-examples	if_pyth.txt	/*python-examples*
 python-fchdir	if_pyth.txt	/*python-fchdir*
 python-find_module	if_pyth.txt	/*python-find_module*
+python-find_spec	if_pyth.txt	/*python-find_spec*
 python-foreach_rtp	if_pyth.txt	/*python-foreach_rtp*
 python-input	if_pyth.txt	/*python-input*
 python-options	if_pyth.txt	/*python-options*
@@ -9620,6 +9651,7 @@ raku-unicode	ft_raku.txt	/*raku-unicode*
 rand()	builtin.txt	/*rand()*
 random	builtin.txt	/*random*
 range()	builtin.txt	/*range()*
+rasi.vim	syntax.txt	/*rasi.vim*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
 read-in-close-cb	channel.txt	/*read-in-close-cb*
@@ -10188,6 +10220,7 @@ syntax-latex	syntax.txt	/*syntax-latex*
 syntax-loading	syntax.txt	/*syntax-loading*
 syntax-printing	usr_06.txt	/*syntax-printing*
 syntax-tex	syntax.txt	/*syntax-tex*
+syntax-vs-match	pattern.txt	/*syntax-vs-match*
 syntax.txt	syntax.txt	/*syntax.txt*
 syntax_cmd	syntax.txt	/*syntax_cmd*
 sys-file-list	help.txt	/*sys-file-list*
@@ -10667,6 +10700,7 @@ text-objects	motion.txt	/*text-objects*
 text-objects-changed	version5.txt	/*text-objects-changed*
 text-prop-changes	textprop.txt	/*text-prop-changes*
 text-prop-functions	textprop.txt	/*text-prop-functions*
+text-prop-functions-details	textprop.txt	/*text-prop-functions-details*
 text-prop-intro	textprop.txt	/*text-prop-intro*
 text-properties	textprop.txt	/*text-properties*
 text-property-functions	usr_41.txt	/*text-property-functions*
@@ -10724,6 +10758,8 @@ type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typealias	vim9class.txt	/*typealias*
 typename()	builtin.txt	/*typename()*
+typescript.vim	syntax.txt	/*typescript.vim*
+typescriptreact.vim	syntax.txt	/*typescriptreact.vim*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*
 uganda.txt	uganda.txt	/*uganda.txt*

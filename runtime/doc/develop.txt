@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.1.  Last change: 2022 Sep 20
+*develop.txt*   For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -152,7 +152,7 @@ VIM IS... NOT						*design-not*
   everything but the kitchen sink, but some people say that you can clean one
   with it.  ;-)"
   To use Vim with gdb see |terminal-debugger|.  Other (older) tools can be
-  found at http://www.agide.org and http://clewn.sf.net.
+  found at http://www.agide.org (link seems dead)  and http://clewn.sf.net.
 - Vim is not a fancy GUI editor that tries to look nice at the cost of
   being less consistent over all platforms.  But functional GUI features are
   welcomed.

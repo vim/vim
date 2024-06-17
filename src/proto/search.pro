@@ -1,7 +1,7 @@
 /* search.c */
-int search_regcomp(char_u *pat, char_u **used_pat, int pat_save, int pat_use, int options, regmmatch_T *regmatch);
+int search_regcomp(char_u *pat, size_t patlen, char_u **used_pat, int pat_save, int pat_use, int options, regmmatch_T *regmatch);
 char_u *get_search_pat(void);
-void save_re_pat(int idx, char_u *pat, int magic);
+void save_re_pat(int idx, char_u *pat, size_t patlen, int magic);
 void save_search_patterns(void);
 void restore_search_patterns(void);
 void free_search_patterns(void);
@@ -21,9 +21,9 @@ char_u *last_search_pat(void);
 void reset_search_dir(void);
 void set_last_search_pat(char_u *s, int idx, int magic, int setlast);
 void last_pat_prog(regmmatch_T *regmatch);
-int searchit(win_T *win, buf_T *buf, pos_T *pos, pos_T *end_pos, int dir, char_u *pat, long count, int options, int pat_use, searchit_arg_T *extra_arg);
+int searchit(win_T *win, buf_T *buf, pos_T *pos, pos_T *end_pos, int dir, char_u *pat, size_t patlen, long count, int options, int pat_use, searchit_arg_T *extra_arg);
 void set_search_direction(int cdir);
-int do_search(oparg_T *oap, int dirc, int search_delim, char_u *pat, long count, int options, searchit_arg_T *sia);
+int do_search(oparg_T *oap, int dirc, int search_delim, char_u *pat, size_t patlen, long count, int options, searchit_arg_T *sia);
 int search_for_exact_line(buf_T *buf, pos_T *pos, int dir, char_u *pat);
 int searchc(cmdarg_T *cap, int t_cmd);
 pos_T *findmatch(oparg_T *oap, int initc);
@@ -40,6 +40,7 @@ int fuzzy_match(char_u *str, char_u *pat_arg, int matchseq, int *outScore, int_u
 void f_matchfuzzy(typval_T *argvars, typval_T *rettv);
 void f_matchfuzzypos(typval_T *argvars, typval_T *rettv);
 int fuzzy_match_str(char_u *str, char_u *pat);
+garray_T *fuzzy_match_str_with_pos(char_u *str, char_u *pat);
 void fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count);
 int fuzzymatches_to_strmatches(fuzmatch_str_T *fuzmatch, char_u ***matches, int count, int funcsort);
 /* vim: set ft=c : */

@@ -96,6 +96,8 @@ jobs:
 
       - name: Install packages
         run: |
+          # This is added by default, and it is often broken, but we don't need anything from it
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           PKGS=( \
             gettext \
             libgtk2.0-dev:${{ matrix.architecture }} \
@@ -129,6 +131,9 @@ jobs:
       - name: Install gcc-${{ env.GCC_VER }}
         if:  matrix.compiler == 'gcc'
         run: |
+          # ubuntu-toolchain-r/test PPA for gcc-13 compiler
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+          sudo apt-get update -y
           sudo apt-get install -y gcc-${{ env.GCC_VER }}:${{ matrix.architecture }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${{ env.GCC_VER }} 100
           sudo update-alternatives --set gcc /usr/bin/gcc-${{ env.GCC_VER }}
@@ -265,6 +270,9 @@ jobs:
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
+      - if: ${{ !cancelled() }}
+        uses: ./.github/actions/screendump
+
       - name: Vim tags
         if: contains(matrix.extra, 'vimtags')
         run: |
@@ -325,8 +333,16 @@ jobs:
           brew install lua libtool
           echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
+      - name: Install blackhole-2ch for macos-12
+        if: matrix.features == 'huge' && matrix.runner == 'macos-12'
+        run: |
+          # Install audio device for playing sound since some of macos-12 machines have no audio device installed.
+          if system_profiler -json SPAudioDataType | jq -er '.SPAudioDataType[]._items == []'; then
+            brew install blackhole-2ch
+          fi
+
       - name: Grant microphone access for macos-14
-        if: matrix.runner == 'macos-14'
+        if: matrix.features == 'huge' && matrix.runner == 'macos-14'
         run: |
           # Temporary fix to fix microphone permission issues for macos-14 when playing sound.
           sqlite3 $HOME/Library/Application\ Support/com.apple.TCC/TCC.db "INSERT OR IGNORE INTO access VALUES ('kTCCServiceMicrophone','/usr/local/opt/runner/provisioner/provisioner',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1687786159,NULL,NULL,'UNUSED',1687786159);"
@@ -382,6 +398,9 @@ jobs:
         timeout-minutes: 20
         run: |
           make ${TEST}
+
+      - if: ${{ !cancelled() }}
+        uses: ./.github/actions/screendump
 
   windows:
     runs-on: windows-2022
@@ -677,6 +696,9 @@ jobs:
             @rem Run only tiny tests.
             nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
+
+      - if: ${{ !cancelled() }}
+        uses: ./.github/actions/screendump
 
       - name: Generate gcov files
         if: matrix.coverage

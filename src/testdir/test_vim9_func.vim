@@ -166,6 +166,37 @@ def Test_wrong_function_name()
   delfunc g:Define
 enddef
 
+" Check that in a legacy script a :def accesses the correct script variables.
+" Github issue: #14615.
+def Test_access_var_from_legacy_def()
+  # Access a script variable by name WITH "s:" prefix.
+  var lines =<< trim END
+    let s:foo = 'init'
+    let s:xxfoo = 'init'
+    def! AccessVarFromLegacyDef()
+        s:xxfoo = 'CHANGED'
+    enddef
+    call AccessVarFromLegacyDef()
+    call assert_equal('init', s:foo)
+    call assert_equal('CHANGED', s:xxfoo)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # Access a script variable by name WITHOUT "s:" prefix;
+  # previously this accessed "foo" and not "xxfoo"
+  lines =<< trim END
+    let s:foo = 'init'
+    let s:xxfoo = 'init'
+    def! AccessVarFromLegacyDef()
+        xxfoo = 'CHANGED'
+    enddef
+    call AccessVarFromLegacyDef()
+    call assert_equal('init', s:foo)
+    call assert_equal('CHANGED', s:xxfoo)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_listing_function_error()
   var lines =<< trim END
       var filler = 123
@@ -4600,6 +4631,19 @@ def Run_Test_keytyped_in_nested_function()
   # clean up
   term_sendkeys(buf, "\<Esc>")
   g:StopVimInTerminal(buf)
+enddef
+
+" Test for test_override('defcompile')
+def Test_test_override_defcompile()
+  var lines =<< trim END
+    vim9script
+    def Foo()
+      xxx
+    enddef
+  END
+  test_override('defcompile', 1)
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: xxx')
+  test_override('defcompile', 0)
 enddef
 
 " The following messes up syntax highlight, keep near the end.

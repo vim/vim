@@ -391,7 +391,6 @@
  * +multi_lang		Multi language support. ":menutrans", ":language", etc.
  * +gettext		Message translations (requires +multi_lang)
  *			(only when "lang" archive unpacked)
- * +bind_codeset	Message translations code set binding
  */
 #ifdef FEAT_NORMAL
 # define FEAT_MULTI_LANG

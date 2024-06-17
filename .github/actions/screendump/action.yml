@@ -1,0 +1,26 @@
+name: 'screendump'
+description: "Upload failed syntax tests"
+runs:
+  using: "composite"
+  steps:
+    - name: Upload failed syntax tests
+      uses: actions/upload-artifact@v4
+      with:
+        # Name of the artifact to upload.
+        name: ${{ github.workflow }}-${{ github.job }}-${{ join(matrix.*, '-') }}-failed-syntax-tests
+
+        # A file, directory or wildcard pattern that describes what
+        # to upload.
+        path: |
+         ${{ github.workspace }}/runtime/syntax/testdir/failed/*
+         ${{ github.workspace }}/src/testdir/failed/*
+        # The desired behavior if no files are found using the
+        # provided path.
+        if-no-files-found: ignore
+
+        # Duration after which artifact will expire in days. 0 means
+        # using repository settings.
+        retention-days: 0
+
+        # If true, an artifact with a matching name will be deleted
+        overwrite: true

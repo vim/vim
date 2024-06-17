@@ -10,6 +10,8 @@ source screendump.vim
 source mouse.vim
 source term_util.vim
 
+import './vim9.vim' as v9
+
 let $PROMPT_COMMAND=''
 
 func Test_terminal_altscreen()
@@ -935,7 +937,14 @@ func Test_terminal_vt420()
   CheckRunVimInTerminal
   " For Termcap
   CheckUnix
-  let rows=15
+  CheckExecutable infocmp
+  let a = system('infocmp vt420')
+  if v:shell_error
+     " reset v:shell_error
+     let a = system('true')
+     throw 'Skipped: vt420 terminfo not available'
+  endif
+  let rows = 15
   call writefile([':set term=vt420'], 'Xterm420', 'D')
 
   let buf = RunVimInTerminal('-S Xterm420', #{rows: rows})
@@ -950,6 +959,20 @@ func Test_terminal_vt420()
   call term_sendkeys(buf, ":set t_xo?\<CR>")
   call WaitForAssert({-> assert_match('t_xo=\s\+', term_getline(buf, rows))})
   call StopVimInTerminal(buf)
+endfunc
+
+" Test for using 'vertical' with term_start(). If a following term_start(),
+" doesn't have the 'vertical' attribute, then it should be split horizontally.
+func Test_terminal_vertical()
+  let lines =<< trim END
+    call term_start("NONE", {'vertical': 1})
+    call term_start("NONE")
+    VAR layout = winlayout()
+    call assert_equal('row', layout[0], string(layout))
+    call assert_equal('col', layout[1][0][0], string(layout))
+    :%bw!
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

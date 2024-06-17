@@ -1781,7 +1781,7 @@ win_update(win_T *wp)
 	    if (j < wp->w_height - 2)		// not too far off
 	    {
 		i = plines_m_win(wp, wp->w_topline, wp->w_lines[0].wl_lnum - 1,
-									 TRUE);
+								wp->w_height);
 #ifdef FEAT_DIFF
 		// insert extra lines for previously invisible filler lines
 		if (wp->w_lines[0].wl_lnum != wp->w_topline)

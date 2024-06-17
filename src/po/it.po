@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-06 09:13+0100\n"
+"POT-Creation-Date: 2024-05-28 09:50+0200\n"
 "PO-Revision-Date: 2024-03-06 15:00+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
@@ -421,9 +421,6 @@ msgstr "Katakana"
 msgid "Bopomofo"
 msgstr "Bopomofo"
 
-msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr "Memoria insufficiente per impostarlo, recupero memoria fallito!"
-
 msgid ""
 "\n"
 "\tLast set from "
@@ -809,6 +806,9 @@ msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld riga: "
 msgstr[1] "+-%s%3ld righe: "
+
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr "Memoria insufficiente per impostarlo, recupero memoria fallito!"
 
 msgid "No match at cursor, finding next"
 msgstr "Nessuna corrispondenza al cursore, cerco la prossima"
@@ -3418,6 +3418,9 @@ msgstr "    II file vimrc utente: \""
 
 msgid " 3rd user vimrc file: \""
 msgstr "   III file vimrc utente: \""
+
+msgid " 4th user vimrc file: \""
+msgstr "    IV file vimrc utente: \""
 
 msgid "      user exrc file: \""
 msgstr "        file exrc utente: \""
@@ -6351,6 +6354,9 @@ msgstr ""
 "E876: (Espressione regolare NFA) Non c'è spazio sufficiente a immagazzinare "
 "l'intero NFA"
 
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (Espressione regolare NFA) Classe di caratteri non valida: %d"
+
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr ""
 "E878: (Espressione regolare NFA) Non posso allocare memoria per lo zigzag di "
@@ -7780,13 +7786,15 @@ msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Tipo non valido per variabile Object: %s"
 
 msgid ""
-"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
 "\"const\""
-msgstr "E1331: Public dev'essere seguito da \"var\" o \"static\" o \"const\""
-
-msgid "E1332: Public variable name cannot start with underscore: %s"
 msgstr ""
-"E1332: Il nome di un elemento Pubblico non può iniziare con un trattino "
+"E1331: public dev'essere seguito da \"var\" o \"static\" o \"final\" o "
+"\"const\""
+
+msgid "E1332: public variable name cannot start with underscore: %s"
+msgstr ""
+"E1332: Il nome di un elemento public non può iniziare con il trattino "
 "basso: %s"
 
 msgid "E1333: Cannot access protected variable \"%s\" in class \"%s\""
@@ -7967,10 +7975,10 @@ msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
 msgstr ""
 "E1386: Metodo Object \"%s\" accessibile solo usando la Classe \"%s\" object"
 
-msgid "E1387: Public variable not supported in an interface"
-msgstr "E1387: Variabile pubblica non supportata in un'Interfaccia"
+msgid "E1387: public variable not supported in an interface"
+msgstr "E1387: Variabile public non supportata in un'Interfaccia"
 
-msgid "E1388: Public keyword not supported for a method"
+msgid "E1388: public keyword not supported for a method"
 msgstr "E1388: Attributo public non supportato per un Metodo"
 
 msgid "E1389: Missing name after implements"
@@ -8054,6 +8062,54 @@ msgstr "E1412: Metodo Object predefinito \"%s\" non supportato"
 msgid "E1413: Builtin class method not supported"
 msgstr "E1413: Metodo Classe predefinito non supportato"
 
+msgid "E1414: Enum can only be defined in Vim9 script"
+msgstr "E1414: Enum può essere usato solo negli script Vim9"
+
+msgid "E1415: Enum name must start with an uppercase letter: %s"
+msgstr "E1415: Il nome di Enum deve iniziare con una lettera maiuscola: %s"
+
+msgid "E1416: Enum cannot extend a class or enum"
+msgstr "E1416: Enum non può estendere una Classe o un Enum"
+
+msgid "E1417: Abstract cannot be used in an Enum"
+msgstr "E1417: Impossibile usare Abstract in un Enum"
+
+msgid "E1418: Invalid enum value declaration: %s"
+msgstr "E1418: Dichiarazione di variabile Enum non valida: %s"
+
+msgid "E1419: Not a valid command in an Enum: %s"
+msgstr "E1419: Comando non valido in un Enum: %s"
+
+msgid "E1420: Missing :endenum"
+msgstr "E1420: Manca :endenum"
+
+msgid "E1421: Enum \"%s\" cannot be used as a value"
+msgstr "E1421: Impossibile usare come valore Enum \"%s\""
+
+msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
+msgstr "E1422: Valore Enum \"%s\" non trovato in Enum \"%s\""
+
+msgid "E1423: Enum value \"%s.%s\" cannot be modified"
+msgstr "E1423: Valore Enum \"%s.%s\" non può essere modificato"
+
+msgid "E1424: Using an Enum \"%s\" as a Number"
+msgstr "E1424: Uso dell'Enum \"%s\" come un Numero"
+
+msgid "E1425: Using an Enum \"%s\" as a String"
+msgstr "E1425: Uso di un Enum \"%s\" come una Stringa"
+
+msgid "E1426: Enum \"%s\" ordinal value cannot be modified"
+msgstr "E1426: Il valore ordinale di Enum \"%s\" non può essere modificato"
+
+msgid "E1427: Enum \"%s\" name cannot be modified"
+msgstr "E1427: Il nome di Enum \"%s\" non può essere modificato"
+
+msgid "E1428: Duplicate enum value: %s"
+msgstr "E1428: Valore di Enum duplicato: %s"
+
+msgid "E1429: Class can only be used in a script"
+msgstr "E1429: Class si può usare solo in uno script"
+
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
 msgstr ""
 "E1500: Non si possono mischiare argomenti posizionali e non posizionali: %s"
@@ -8101,8 +8157,9 @@ msgstr "E1511: Numero caratteri errato per campo \"%s\""
 msgid "E1512: Wrong character width for field \"%s\""
 msgstr "E1512: Larghezza carattere errata per campo \"%s\""
 
-msgid "E1513: Cannot edit buffer. 'winfixbuf' is enabled"
-msgstr "E1513: Non riesco a modificare il buffer. Opzione 'winfixbuf' attiva"
+msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Non riesco a passare a un altro buffer. Opzione "
+"'winfixbuf' attiva"
 
 #. type of cmdline window or 0
 #. result of cmdline window or 0

@@ -1,0 +1,565 @@
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+# You can use github users with @user or email addresses
+
+# These owners will be the default owners for everything in the repo.
+#*       @brammool
+
+# Order is important. The last matching pattern has the most precedence.
+# So if a pull request only touches javascript files, only these owners
+# will be requested to review.
+
+nsis/lang/russian.nsi			@RestorerZ
+runtime/autoload/freebasic.vim		@dkearns
+runtime/autoload/hare.vim		@selenebun
+runtime/autoload/haskell.vim		@alx741
+runtime/autoload/javascript.vim		@jsit
+runtime/autoload/modula2.vim		@dkearns
+runtime/autoload/php.vim		@david-szabo97
+runtime/autoload/rubycomplete.vim	@segfault @dkearns
+runtime/autoload/rust.vim		@lilyball
+runtime/autoload/xmlformat.vim		@chrisbra
+runtime/autoload/dist/json.vim		@habamax
+runtime/colors/blue.vim			@habamax @romainl @neutaaaaan
+runtime/colors/darkblue.vim		@habamax @romainl @neutaaaaan
+runtime/colors/default.vim		@habamax @romainl @neutaaaaan
+runtime/colors/delek.vim		@habamax @romainl @neutaaaaan
+runtime/colors/desert.vim		@habamax @romainl @neutaaaaan
+runtime/colors/elflord.vim		@habamax @romainl @neutaaaaan
+runtime/colors/evening.vim		@habamax @romainl @neutaaaaan
+runtime/colors/habamax.vim		@habamax @romainl @neutaaaaan
+runtime/colors/industry.vim		@habamax @romainl @neutaaaaan
+runtime/colors/koehler.vim		@habamax @romainl @neutaaaaan
+runtime/colors/lunaperche.vim		@habamax @romainl @neutaaaaan
+runtime/colors/morning.vim		@habamax @romainl @neutaaaaan
+runtime/colors/murphy.vim		@habamax @romainl @neutaaaaan
+runtime/colors/pablo.vim		@habamax @romainl @neutaaaaan
+runtime/colors/peachpuff.vim		@habamax @romainl @neutaaaaan
+runtime/colors/quiet.vim		@habamax @romainl @neutaaaaan
+runtime/colors/retrobox.vim		@habamax @romainl @neutaaaaan
+runtime/colors/ron.vim			@habamax @romainl @neutaaaaan
+runtime/colors/shine.vim		@habamax @romainl @neutaaaaan
+runtime/colors/slate.vim		@habamax @romainl @neutaaaaan
+runtime/colors/sorbet.vim		@habamax @romainl @neutaaaaan
+runtime/colors/tools			@habamax @romainl @neutaaaaan
+runtime/colors/torte.vim		@habamax @romainl @neutaaaaan
+runtime/colors/wildcharm.vim		@habamax @romainl @neutaaaaan
+runtime/colors/zaibatsu.vim		@habamax @romainl @neutaaaaan
+runtime/colors/zellner.vim		@habamax @romainl @neutaaaaan
+runtime/compiler/checkstyle.vim		@dkearns
+runtime/compiler/cm3.vim		@dkearns
+runtime/compiler/cucumber.vim		@tpope
+runtime/compiler/dart.vim		@dkearns
+runtime/compiler/dart2js.vim		@dkearns
+runtime/compiler/dart2native.vim	@dkearns
+runtime/compiler/dartanalyser.vim	@dkearns
+runtime/compiler/dartdevc.vim		@dkearns
+runtime/compiler/dartdoc.vim		@dkearns
+runtime/compiler/dartfmt.vim		@dkearns
+runtime/compiler/dotnet.vim		@nickspoons
+runtime/compiler/eruby.vim		@dkearns
+runtime/compiler/fbc.vim		@dkearns
+runtime/compiler/gawk.vim		@dkearns
+runtime/compiler/gjs.vim		@dkearns
+runtime/compiler/gm2.vim		@dkearns
+runtime/compiler/go.vim			@dbarnett
+runtime/compiler/haml.vim		@tpope
+runtime/compiler/hare.vim		@selenebun
+runtime/compiler/icon.vim		@dkearns
+runtime/compiler/javac.vim		@dkearns
+runtime/compiler/jest.vim		@dkearns
+runtime/compiler/jjs.vim		@dkearns
+runtime/compiler/jshint.vim		@dkearns
+runtime/compiler/jsonlint.vim		@dkearns
+runtime/compiler/jq.vim                 @vito-c
+runtime/compiler/lazbuild.vim		@dkearns
+runtime/compiler/perl.vim		@petdance @heptite
+runtime/compiler/perlcritic.vim		@petdance @dkearns
+runtime/compiler/php.vim		@dkearns
+runtime/compiler/podchecker.vim		@petdance @dkearns
+runtime/compiler/powershell.vim		@heaths
+runtime/compiler/raco.vim		@benknoble
+runtime/compiler/racomake.vim		@benknoble
+runtime/compiler/racosetup.vim		@benknoble
+runtime/compiler/racotest.vim		@benknoble
+runtime/compiler/rake.vim		@tpope @dkearns
+runtime/compiler/rhino.vim		@dkearns
+runtime/compiler/rspec.vim		@tpope @dkearns
+runtime/compiler/rubocop.vim		@dkearns
+runtime/compiler/ruby.vim		@tpope @dkearns
+runtime/compiler/rubyunit.vim		@dkearns
+runtime/compiler/sass.vim		@tpope
+runtime/compiler/sdoc.vim		@gpanders
+runtime/compiler/se.vim			@dkearns
+runtime/compiler/shellcheck.vim		@dkearns
+runtime/compiler/sml.vim		@dkearns
+runtime/compiler/spectral.vim		@romainl
+runtime/compiler/stylelint.vim		@dkearns
+runtime/compiler/tcl.vim		@dkearns
+runtime/compiler/tidy.vim		@dkearns
+runtime/compiler/ts-node.vim		@dkearns
+runtime/compiler/tsc.vim		@dkearns
+runtime/compiler/typedoc.vim		@dkearns
+runtime/compiler/xmllint.vim		@dkearns
+runtime/compiler/xo.vim			@dkearns
+runtime/compiler/yamllint.vim		@romainl
+runtime/compiler/zsh.vim		@dkearns
+runtime/doc/ft_hare.txt			@selenebun
+runtime/doc/ps1.txt			@heaths
+runtime/ftplugin/abaqus.vim		@costerwi
+runtime/ftplugin/apache.vim		@dubgeiser 
+runtime/ftplugin/arduino.vim		@k-takata
+runtime/ftplugin/astro.vim		@romainl
+runtime/ftplugin/awk.vim		@dkearns
+runtime/ftplugin/basic.vim		@dkearns
+runtime/ftplugin/bst.vim		@tpope
+runtime/ftplugin/cfg.vim		@chrisbra
+runtime/ftplugin/chatito.vim		@ObserverOfTime
+runtime/ftplugin/clojure.vim		@axvr
+runtime/ftplugin/cs.vim			@nickspoons
+runtime/ftplugin/csh.vim		@dkearns
+runtime/ftplugin/css.vim		@dkearns
+runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/dart.vim	@ribru17
+runtime/ftplugin/deb822sources.vim	@jamessan
+runtime/ftplugin/debchangelog.vim	@jamessan
+runtime/ftplugin/debcontrol.vim		@jamessan
+runtime/ftplugin/debsources.vim		@jamessan
+runtime/ftplugin/desktop.vim		@e-kwsm
+runtime/ftplugin/dosbatch.vim		@mrdubya
+runtime/ftplugin/eiffel.vim		@dkearns
+runtime/ftplugin/elixir.vim		@mhanberg
+runtime/ftplugin/erlang.vim		@hcs42
+runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/expect.vim		@dkearns
+runtime/ftplugin/fennel.vim		@gpanders
+runtime/ftplugin/fetchmail.vim		@dkearns
+runtime/ftplugin/forth.vim		@jkotlinski
+runtime/ftplugin/fpcmake.vim		@dkearns
+runtime/ftplugin/freebasic.vim		@dkearns
+runtime/ftplugin/fstab.vim		@rid9
+runtime/ftplugin/gdb.vim		@xeyownt
+runtime/ftplugin/gdscript.vim		@habamax
+runtime/ftplugin/gdshader.vim		@habamax
+runtime/ftplugin/git.vim		@tpope
+runtime/ftplugin/gitattributes.vim	@ObserverOfTime
+runtime/ftplugin/gitcommit.vim		@tpope
+runtime/ftplugin/gitconfig.vim		@tpope
+runtime/ftplugin/gitignore.vim		@ObserverOfTime
+runtime/ftplugin/gitrebase.vim		@tpope
+runtime/ftplugin/gitsendemail.vim	@tpope
+runtime/ftplugin/graphql.vim	@ribru17
+runtime/ftplugin/gyp.vim		@ObserverOfTime
+runtime/ftplugin/go.vim			@dbarnett
+runtime/ftplugin/gprof.vim		@dpelle
+runtime/ftplugin/haml.vim		@tpope
+runtime/ftplugin/hare.vim		@selenebun
+runtime/ftplugin/haredoc.vim		@selenebun
+runtime/ftplugin/heex.vim		@cvincent
+runtime/ftplugin/hgcommit.vim		@k-takata
+runtime/ftplugin/hog.vim		@wtfbbqhax
+runtime/ftplugin/html.vim		@dkearns
+runtime/ftplugin/hyprlang.vim		@ribru17
+runtime/ftplugin/i3config.vim		@hiqua
+runtime/ftplugin/icon.vim		@dkearns
+runtime/ftplugin/indent.vim		@dkearns
+runtime/ftplugin/ishd.vim		@dkearns
+runtime/ftplugin/j.vim			@glts
+runtime/ftplugin/java.vim		@zzzyxwvut
+runtime/ftplugin/javascript.vim		@dkearns
+runtime/ftplugin/javascriptreact.vim	@dkearns
+runtime/ftplugin/jj.vim			@gpanders
+runtime/ftplugin/json.vim		@dbarnett
+runtime/ftplugin/json5.vim		@dkearns
+runtime/ftplugin/jsonc.vim		@izhakjakov
+runtime/ftplugin/julia.vim		@carlobaldassi
+runtime/ftplugin/jq.vim	    	        @vito-c
+runtime/ftplugin/kconfig.vim		@chrisbra
+runtime/ftplugin/kdl.vim		@imsnif @jiangyinzuo
+runtime/ftplugin/kotlin.vim		@udalov
+runtime/ftplugin/less.vim		@genoma
+runtime/ftplugin/liquid.vim		@tpope
+runtime/ftplugin/lua.vim		@dkearns
+runtime/ftplugin/lc.vim			@ribru17
+runtime/ftplugin/lynx.vim		@dkearns
+runtime/ftplugin/m3build.vim		@dkearns
+runtime/ftplugin/m3quake.vim		@dkearns
+runtime/ftplugin/markdown.vim		@tpope
+runtime/ftplugin/meson.vim		@Liambeguin
+runtime/ftplugin/modula2.vim		@dkearns
+runtime/ftplugin/modula3.vim		@dkearns
+runtime/ftplugin/nginx.vim		@chr4
+runtime/ftplugin/nim.vim		@ribru17
+runtime/ftplugin/nroff.vim		@a-vrma
+runtime/ftplugin/nsis.vim		@k-takata
+runtime/ftplugin/octave.vim		@dkearns
+runtime/ftplugin/openvpn.vim		@ObserverOfTime
+runtime/ftplugin/pascal.vim		@dkearns
+runtime/ftplugin/pbtxt.vim		@lakshayg
+runtime/ftplugin/pdf.vim		@tpope
+runtime/ftplugin/perl.vim		@petdance @dkearns
+runtime/ftplugin/php.vim		@dkearns
+runtime/ftplugin/pod.vim		@petdance @dkearns
+runtime/ftplugin/poefilter.vim		@ObserverOfTime
+runtime/ftplugin/postscr.vim		@mrdubya
+runtime/ftplugin/prisma.vim		@ribru17
+runtime/ftplugin/ps1.vim		@heaths
+runtime/ftplugin/ps1xml.vim		@heaths
+runtime/ftplugin/purescript.vim		@ribru17
+runtime/ftplugin/pymanifest.vim		@ObserverOfTime
+runtime/ftplugin/python.vim		@tpict
+runtime/ftplugin/qb64.vim		@dkearns
+runtime/ftplugin/qml.vim		@ChaseKnowlden
+runtime/ftplugin/racket.vim		@benknoble
+runtime/ftplugin/rasi.vim		@fymyte
+runtime/ftplugin/readline.vim		@dkearns
+runtime/ftplugin/rescript.vim		@ribru17
+runtime/ftplugin/routeros.vim		@zainin
+runtime/ftplugin/rst.vim		@marshallward
+runtime/ftplugin/ruby.vim		@tpope @dkearns
+runtime/ftplugin/rust.vim		@lilyball
+runtime/ftplugin/sass.vim		@tpope
+runtime/ftplugin/scala.vim		@derekwyatt
+runtime/ftplugin/scss.vim		@tpope
+runtime/ftplugin/sdoc.vim		@gpanders
+runtime/ftplugin/sed.vim		@dkearns
+runtime/ftplugin/sh.vim			@dkearns
+runtime/ftplugin/slint.vim		@ribru17
+runtime/ftplugin/solidity.vim		@cothi
+runtime/ftplugin/solution.vim		@dkearns
+runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/ssa.vim		@ObserverOfTime
+runtime/ftplugin/sshdconfig.vim		@jiangyinzuo
+runtime/ftplugin/svelte.vim		@igorlfs
+runtime/ftplugin/swayconfig.vim		@jamespeapen
+runtime/ftplugin/systemverilog.vim	@Kocha
+runtime/ftplugin/swig.vim		@jmarrec
+runtime/ftplugin/tap.vim		@petdance
+runtime/ftplugin/tcsh.vim		@dkearns
+runtime/ftplugin/tidy.vim		@dkearns
+runtime/ftplugin/tmux.vim		@ericpruitt
+runtime/ftplugin/toml.vim		@averms
+runtime/ftplugin/tt2html.vim		@petdance
+runtime/ftplugin/typescript.vim		@dkearns
+runtime/ftplugin/typescriptreact.vim	@dkearns
+runtime/ftplugin/typst.vim		@ribru17
+runtime/ftplugin/unison.vim		@chuwy
+runtime/ftplugin/v.vim			@ribru17
+runtime/ftplugin/vdf.vim		@ObserverOfTime
+runtime/ftplugin/vim.vim		@dkearns
+runtime/ftplugin/wast.vim		@rhysd
+runtime/ftplugin/wget.vim		@dkearns
+runtime/ftplugin/wget2.vim		@dkearns
+runtime/ftplugin/xcompose.vim		@ObserverOfTime
+runtime/ftplugin/xml.vim		@chrisbra
+runtime/ftplugin/xs.vim			@petdance
+runtime/ftplugin/zsh.vim		@chrisbra
+runtime/import/dist/vimhighlight.vim	@lacygoill
+runtime/indent/arduino.vim		@k-takata
+runtime/indent/astro.vim		@wuelnerdotexe
+runtime/indent/basic.vim		@dkearns
+runtime/indent/bst.vim			@tpope
+runtime/indent/cdl.vim			@dkearns
+runtime/indent/chatito.vim		@ObserverOfTime
+runtime/indent/clojure.vim		@axvr
+runtime/indent/config.vim		@dkearns
+runtime/indent/cs.vim			@nickspoons
+runtime/indent/css.vim			@dkearns
+runtime/indent/cucumber.vim		@tpope
+runtime/indent/d.vim			@dkearns
+runtime/indent/dosbatch.vim		@k-takata
+runtime/indent/dtd.vim			@dkearns
+runtime/indent/dylan.vim		@dkearns
+runtime/indent/eiffel.vim		@jocelyn
+runtime/indent/elm.vim			@andys8
+runtime/indent/erlang.vim		@hcs42
+runtime/indent/eruby.vim		@tpope @dkearns
+runtime/indent/eterm.vim		@dkearns
+runtime/indent/falcon.vim		@steveno
+runtime/indent/framescript.vim		@dkearns
+runtime/indent/freebasic.vim		@dkearns
+runtime/indent/gdscript.vim		@habamax
+runtime/indent/gitconfig.vim		@tpope
+runtime/indent/gitolite.vim		@sitaramc
+runtime/indent/go.vim			@dbarnett
+runtime/indent/gyp.vim			@ObserverOfTime
+runtime/indent/haml.vim			@tpope
+runtime/indent/hare.vim			@selenebun
+runtime/indent/hog.vim			@wtfbbqhax
+runtime/indent/idlang.vim		@dkearns
+runtime/indent/j.vim			@glts
+runtime/indent/java.vim			@xuhdev
+runtime/indent/javascript.vim		@bounceme
+runtime/indent/json.vim			@elzr
+runtime/indent/jsonc.vim		@izhakjakov
+runtime/indent/julia.vim		@carlobaldassi
+runtime/indent/kdl.vim			@imsnif @jiangyinzuo
+runtime/indent/kotlin.vim		@udalov
+runtime/indent/krl.vim			@KnoP-01
+runtime/indent/ld.vim			@dkearns
+runtime/indent/less.vim			@genoma
+runtime/indent/liquid.vim		@tpope
+runtime/indent/lua.vim			@marcuscf
+runtime/indent/make.vim			@dkearns
+runtime/indent/meson.vim		@Liambeguin
+runtime/indent/mma.vim			@dkearns
+runtime/indent/nginx.vim		@chr4
+runtime/indent/nsis.vim			@k-takata
+runtime/indent/occam.vim		@dkearns
+runtime/indent/perl.vim			@petdance
+runtime/indent/php.vim			@2072
+runtime/indent/postscr.vim		@mrdubya
+runtime/indent/prolog.vim		@dkearns
+runtime/indent/ps1.vim			@heaths
+runtime/indent/qb64.vim			@dkearns
+runtime/indent/qml.vim			@ChaseKnowlden
+runtime/indent/racket.vim		@benknoble
+runtime/indent/rapid.vim		@KnoP-01
+runtime/indent/readline.vim		@dkearns
+runtime/indent/ruby.vim			@AndrewRadev @dkearns
+runtime/indent/sass.vim			@tpope
+runtime/indent/scala.vim		@derekwyatt
+runtime/indent/scss.vim			@tpope
+runtime/indent/sh.vim			@chrisbra
+runtime/indent/solidity.vim		@cothi
+runtime/indent/systemverilog.vim	@Kocha
+runtime/indent/tcl.vim			@dkearns
+runtime/indent/tcsh.vim			@dkearns
+runtime/indent/teraterm.vim		@k-takata
+runtime/indent/typescript.vim		@HerringtonDarkholme
+runtime/indent/vroom.vim		@dbarnett
+runtime/indent/wast.vim			@rhysd
+runtime/indent/xml.vim			@chrisbra
+runtime/indent/zsh.vim			@chrisbra
+runtime/keymap/armenian-eastern_utf-8.vim	@blinskey
+runtime/keymap/armenian-western_utf-8.vim	@blinskey
+runtime/keymap/russian-typograph.vim	@RestorerZ
+runtime/keymap/tamil_tscii.vim		@yegappan
+runtime/lang/menu_en_gb.latin1.vim	@mrdubya
+runtime/lang/menu_ru_ru.cp1251.vim	@RestorerZ
+runtime/lang/menu_ru_ru.koi8-r.vim	@RestorerZ
+runtime/lang/menu_ru_ru.utf-8.vim	@RestorerZ
+runtime/pack/dist/opt/cfilter/plugin/cfilter.vim	@yegappan
+runtime/pack/dist/opt/comment/	@habamax
+runtime/pack/dist/opt/matchit/		@chrisbra
+runtime/plugin/manpager.vim		@Konfekt
+runtime/syntax/shared/hgcommitDiff.vim	@vegerot
+runtime/syntax/abaqus.vim		@costerwi
+runtime/syntax/aidl.vim			@dpelle
+runtime/syntax/ant.vim			@dkearns
+runtime/syntax/arduino.vim		@johshoff
+runtime/syntax/asciidoc.vim		@aerostitch
+runtime/syntax/asm.vim			@dkearns
+runtime/syntax/asmh8300.vim		@dkearns
+runtime/syntax/asterisk.vim		@jaunis
+runtime/syntax/astro.vim		@wuelnerdotexe
+runtime/syntax/autohotkey.vim		@mmikeww
+runtime/syntax/awk.vim			@dkearns
+runtime/syntax/basic.vim		@dkearns
+runtime/syntax/bst.vim			@tpope
+runtime/syntax/bzl.vim			@dbarnett
+runtime/syntax/bzr.vim			@hdima
+runtime/syntax/cabal.vim		@coot
+runtime/syntax/cabalconfig.vim		@coot
+runtime/syntax/cabalproject.vim		@coot
+runtime/syntax/cf.vim			@ernstvanderlinden
+runtime/syntax/chatito.vim		@ObserverOfTime
+runtime/syntax/chuck.vim		@gacallea
+runtime/syntax/clojure.vim		@axvr
+runtime/syntax/cs.vim			@nickspoons
+runtime/syntax/cucumber.vim		@tpope
+runtime/syntax/d.vim			@JesseKPhillips
+runtime/syntax/dart.vim			@pr3d4t0r
+runtime/syntax/datascript.vim		@dpelle
+runtime/syntax/deb822sources.vim	@jamessan
+runtime/syntax/debchangelog.vim		@jamessan
+runtime/syntax/debcontrol.vim		@jamessan
+runtime/syntax/debcopyright.vim		@jamessan
+runtime/syntax/debsources.vim		@jamessan
+runtime/syntax/dep3patch.vim		@jamessan
+runtime/syntax/desktop.vim		@e-kwsm
+runtime/syntax/dosbatch.vim		@mrdubya
+runtime/syntax/dosini.vim		@xuhdev
+runtime/syntax/dot.vim			@mmottl
+runtime/syntax/doxygen.vim		@frogonwheels
+runtime/syntax/dtd.vim			@chrisbra
+runtime/syntax/dts.vim			@zonque
+runtime/syntax/editorconfig.vim		@gpanders
+runtime/syntax/eiffel.vim		@jocelyn
+runtime/syntax/erlang.vim		@hcs42
+runtime/syntax/eruby.vim		@tpope @dkearns
+runtime/syntax/expect.vim		@dkearns
+runtime/syntax/falcon.vim		@steveno
+runtime/syntax/fennel.vim		@gpanders
+runtime/syntax/fetchmail.vim		@dkearns
+runtime/syntax/forth.vim		@jkotlinski
+runtime/syntax/fpcmake.vim		@dkearns
+runtime/syntax/freebasic.vim		@dkearns
+runtime/syntax/fstab.vim		@rid9
+runtime/syntax/gdresource.vim		@habamax
+runtime/syntax/gdscript.vim		@habamax
+runtime/syntax/gdshader.vim		@habamax
+runtime/syntax/git.vim			@tpope
+runtime/syntax/gitattributes.vim	@ObserverOfTime
+runtime/syntax/gitcommit.vim		@tpope
+runtime/syntax/gitconfig.vim		@tpope
+runtime/syntax/gitignore.vim		@ObserverOfTime
+runtime/syntax/gitolite.vim		@sitaramc
+runtime/syntax/gitrebase.vim		@tpope
+runtime/syntax/go.vim			@bhcleek
+runtime/syntax/godoc.vim		@dbarnett
+runtime/syntax/gp.vim			@KBelabas
+runtime/syntax/gprof.vim		@dpelle
+runtime/syntax/groff.vim		@jmarshall
+runtime/syntax/gyp.vim			@ObserverOfTime
+runtime/syntax/haml.vim			@tpope
+runtime/syntax/hare.vim			@selenebun
+runtime/syntax/haredoc.vim		@selenebun
+runtime/syntax/haskell.vim		@coot
+runtime/syntax/help_ru.vim		@RestorerZ
+runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/hitest.vim		@lacygoill
+runtime/syntax/hog.vim			@wtfbbqhax
+runtime/syntax/hollywood.vim		@sodero
+runtime/syntax/html.vim			@dkearns
+runtime/syntax/i3config.vim		@hiqua
+runtime/syntax/icon.vim			@dkearns
+runtime/syntax/indent.vim		@dkearns
+runtime/syntax/j.vim			@glts
+runtime/syntax/jargon.vim		@h3xx
+runtime/syntax/java.vim			@zzzyxwvut
+runtime/syntax/javascript.vim		@fleiner
+runtime/syntax/jj.vim			@gpanders
+runtime/syntax/json.vim		        @vito-c
+runtime/syntax/jsonc.vim		@izhakjakov
+runtime/syntax/julia.vim		@carlobaldassi
+runtime/syntax/jq.vim		        @vito-c
+runtime/syntax/kconfig.vim		@chrisbra
+runtime/syntax/kotlin.vim		@udalov
+runtime/syntax/kdl.vim			@imsnif @jiangyinzuo
+runtime/syntax/krl.vim			@KnoP-01
+runtime/syntax/less.vim			@genoma
+runtime/syntax/liquid.vim		@tpope
+runtime/syntax/lua.vim			@marcuscf
+runtime/syntax/lyrics.vim		@ObserverOfTime
+runtime/syntax/lynx.vim			@dkearns
+runtime/syntax/m3build.vim		@dkearns
+runtime/syntax/m3quake.vim		@dkearns
+runtime/syntax/mailcap.vim		@dkearns
+runtime/syntax/make.vim			@rohieb
+runtime/syntax/mallard.vim		@jhradilek
+runtime/syntax/markdown.vim		@tpope
+runtime/syntax/mason.vim		@petdance
+runtime/syntax/meson.vim		@Liambeguin
+runtime/syntax/modula2.vim		@dkearns
+runtime/syntax/modula2/opt/iso.vim	@trijezdci
+runtime/syntax/modula2/opt/pim.vim	@trijezdci
+runtime/syntax/modula2/opt/r10.vim	@trijezdci
+runtime/syntax/modula3.vim		@dkearns
+runtime/syntax/n1ql.vim			@pr3d4t0r
+runtime/syntax/nginx.vim		@chr4
+runtime/syntax/ninja.vim		@nico
+runtime/syntax/nix.vim			@equill
+runtime/syntax/nroff.vim		@jmarshall
+runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/openvpn.vim		@ObserverOfTime
+runtime/syntax/pacmanlog.vim		@rpigott
+runtime/syntax/pascal.vim		@dkearns
+runtime/syntax/pbtxt.vim		@lakshayg
+runtime/syntax/pdf.vim			@tpope
+runtime/syntax/perl.vim			@petdance
+runtime/syntax/php.vim			@TysonAndre
+runtime/syntax/plsql.vim		@lee-lindley
+runtime/syntax/pod.vim			@petdance
+runtime/syntax/poefilter.vim		@ObserverOfTime
+runtime/syntax/postscr.vim		@mrdubya
+runtime/syntax/privoxy.vim		@dkearns
+runtime/syntax/prolog.vim		@XVilka
+runtime/syntax/ps1.vim			@heaths
+runtime/syntax/ps1xml.vim		@heaths
+runtime/syntax/psl.vim			@danielkho
+runtime/syntax/pymanifest.vim		@ObserverOfTime
+runtime/syntax/qb64.vim			@dkearns
+runtime/syntax/qml.vim			@ChaseKnowlden
+runtime/syntax/racket.vim		@benknoble
+runtime/syntax/raml.vim			@in3d
+runtime/syntax/rapid.vim		@KnoP-01
+runtime/syntax/ratpoison.vim		@trapd00r
+runtime/syntax/rasi.vim			@fymyte
+runtime/syntax/rc.vim			@chrisbra
+runtime/syntax/rcs.vim			@hdima
+runtime/syntax/rebol.vim		@mrdubya
+runtime/syntax/rego.vim			@zenmatic
+runtime/syntax/resolv.vim		@rid9
+runtime/syntax/rng.vim			@jhradilek
+runtime/syntax/routeros.vim		@zainin
+runtime/syntax/rst.vim			@marshallward
+runtime/syntax/ruby.vim			@dkearns
+runtime/syntax/sass.vim			@tpope
+runtime/syntax/scala.vim		@derekwyatt
+runtime/syntax/scss.vim			@tpope
+runtime/syntax/sdoc.vim			@gpanders
+runtime/syntax/sed.vim			@dkearns
+runtime/syntax/shared/debversions.vim	@jamessan
+runtime/syntax/solidity.vim		@cothi
+runtime/syntax/spec.vim			@ignatenkobrain
+runtime/syntax/sqloracle.vim		@chrisbra
+runtime/syntax/squirrel.vim		@zenmatic
+runtime/syntax/srt.vim			@ObserverOfTime
+runtime/syntax/ssa.vim			@ObserverOfTime
+runtime/syntax/sshconfig.vim		@Jakuje
+runtime/syntax/sshdconfig.vim		@Jakuje
+runtime/syntax/sudoers.vim		@e-kwsm
+runtime/syntax/svn.vim			@hdima
+runtime/syntax/swayconfig.vim		@jamespeapen
+runtime/syntax/swig.vim			@jmarrec
+runtime/syntax/systemverilog.vim	@Kocha
+runtime/syntax/tap.vim			@petdance
+runtime/syntax/tcsh.vim			@dkearns
+runtime/syntax/teraterm.vim		@k-takata
+runtime/syntax/tidy.vim			@dkearns
+runtime/syntax/tmux.vim			@ericpruitt
+runtime/syntax/toml.vim			@averms
+runtime/syntax/tt2.vim			@petdance
+runtime/syntax/tt2html.vim		@petdance
+runtime/syntax/tt2js.vim		@petdance
+runtime/syntax/typescript.vim		@HerringtonDarkholme @rhysd
+runtime/syntax/typescriptreact.vim	@HerringtonDarkholme @rhysd
+runtime/syntax/shared/typescriptcommon.vim	@HerringtonDarkholme @rhysd
+runtime/syntax/unison.vim		@chuwy
+runtime/syntax/vdf.vim			@ObserverOfTime
+runtime/syntax/vroom.vim		@dbarnett
+runtime/syntax/wast.vim			@rhysd
+runtime/syntax/wdl.vim			@zenmatic
+runtime/syntax/wget.vim			@dkearns
+runtime/syntax/wget2.vim		@dkearns
+runtime/syntax/xbl.vim			@dkearns
+runtime/syntax/xcompose.vim		@ObserverOfTime
+runtime/syntax/xml.vim			@chrisbra
+runtime/syntax/xs.vim			@petdance
+runtime/syntax/xslt.vim			@Boobies
+runtime/syntax/zserio.vim		@dpelle
+runtime/syntax/zsh.vim			@chrisbra
+runtime/tutor/tutor.eo			@dpelle
+runtime/tutor/tutor.eo.utf-8		@dpelle
+runtime/tutor/tutor.fr			@dpelle
+runtime/tutor/tutor.fr.utf-8		@dpelle
+runtime/tutor/tutor.ru			@RestorerZ
+runtime/tutor/tutor.ru.cp1251		@RestorerZ
+runtime/tutor/tutor.ru.utf-8		@RestorerZ
+src/iscygpty.*				@k-takata
+src/libvterm/				@leonerd
+src/po/ca.po				@nfdisco
+src/po/de.po				@chrisbra
+src/po/eo.po				@dpelle
+src/po/es.po				@victorhck
+src/po/fi.po				@flammie
+src/po/fr.po				@dpelle
+src/po/ga.po				@kscanne
+src/po/it.po				@azc100
+src/po/ja.po				@k-takata
+src/po/ru.po				@RestorerZ
+src/po/sr.po				@eevan78
+src/po/tr.po				@bitigchi
+src/po/uk.po				@sakhnik
+src/xxd/				@jnweiger

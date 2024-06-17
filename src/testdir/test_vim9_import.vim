@@ -1206,6 +1206,7 @@ def Test_autoload_export_variables()
   mkdir('Xautoload_vars/autoload', 'pR')
   var lines =<< trim END
     vim9script
+    g:Xautoload_vars_autoload = true
     export var val = 11
     val = 42
   END
@@ -1215,13 +1216,24 @@ def Test_autoload_export_variables()
   writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f2.vim', 'D')
   lines =<< trim END
     vim9script
+    g:Xautoload_vars_autoload = false
 
     import autoload './Xautoload_vars/autoload/Xauto_vars_f2.vim' as f2
+    # Verify that the import statement does not load the file.
+    assert_equal(false, g:Xautoload_vars_autoload)
 
     def F(): number
       return f2.val
     enddef
+    # Verify compile does not load the file.
+    defcompile F
+    assert_equal(false, g:Xautoload_vars_autoload)
+
+    # load the file by accessing the exported variable
     assert_equal(42, F())
+    assert_equal(true, g:Xautoload_vars_autoload)
+    unlet g:Xautoload_vars_autoload
+
     assert_equal(42, f2.val)
     f2.val = 17
     assert_equal(17, f2.val)
@@ -1264,6 +1276,44 @@ def Test_autoload_export_variables()
     f4.val = 13
   END
   v9.CheckScriptFailure(lines, 'E46:')
+
+  # Test const var is not modifiable from importing script from :def.
+  # Github issue: #14606
+  lines =<< trim END
+    vim9script
+    export const val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f5.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f5.vim' as f5
+
+    def F()
+      f5.val = 13
+    enddef
+    F()
+  END
+  v9.CheckScriptFailure(lines, 'E741:')
+
+  # Still part of Github issue: #14606
+  lines =<< trim END
+    vim9script
+    export var val = 11
+  END
+  writefile(lines, 'Xautoload_vars/autoload/Xauto_vars_f6.vim', 'D')
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xautoload_vars/autoload/Xauto_vars_f6.vim' as f6
+
+    def F()
+      f6.val = 13
+    enddef
+    F()
+    assert_equal(13, f6.val)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_autoload_import_relative_autoload_dir()
@@ -3018,7 +3068,10 @@ def Test_vim9_import_symlink()
     var lines =<< trim END
         vim9script
         import autoload 'bar.vim'
-        g:resultFunc = bar.Func()
+        def FooFunc(): string
+          return bar.Func()
+        enddef
+        g:resultFunc = FooFunc()
         g:resultValue = bar.value
     END
     writefile(lines, 'Xto/plugin/foo.vim')
@@ -3170,6 +3223,111 @@ def Test_autoload_import_dict_func()
   END
   v9.CheckScriptSuccess(lines)
   &rtp = save_rtp
+enddef
+
+" Test for changing the value of an imported Dict item
+def Test_set_imported_dict_item()
+  var lines =<< trim END
+    vim9script
+    export var dict1: dict<bool> = {bflag: false}
+    export var dict2: dict<dict<bool>> = {x: {bflag: false}}
+  END
+  writefile(lines, 'XimportedDict.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportedDict.vim'
+    assert_equal(XimportedDict.dict1.bflag, false)
+    XimportedDict.dict1.bflag = true
+    assert_equal(XimportedDict.dict1.bflag, true)
+    XimportedDict.dict2.x.bflag = true
+    assert_equal(XimportedDict.dict2.x.bflag, true)
+    assert_equal('bool', typename(XimportedDict.dict1.bflag))
+    assert_equal('bool', typename(XimportedDict.dict2.x.bflag))
+    assert_equal('bool', typename(XimportedDict.dict2['x'].bflag))
+    assert_equal('bool', typename(XimportedDict.dict2.x['bflag']))
+
+    assert_equal(XimportedDict.dict1['bflag'], true)
+    XimportedDict.dict1['bflag'] = false
+    assert_equal(XimportedDict.dict1.bflag, false)
+    XimportedDict.dict2['x']['bflag'] = false
+    assert_equal(XimportedDict.dict2['x'].bflag, false)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    import './XimportedDict.vim'
+    XimportedDict.dict2.x.bflag = []
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected bool but got list<any>', 3)
+enddef
+
+" Test for changing the value of an imported class member
+def Test_set_imported_class_member()
+  var lines =<< trim END
+    vim9script
+    export class Config
+      public static var option = false
+    endclass
+  END
+  writefile(lines, 'XimportedClass.vim', 'D')
+
+  lines =<< trim END
+    vim9script
+    import './XimportedClass.vim' as foo
+    type FooConfig = foo.Config
+    assert_equal(false, FooConfig.option)
+    assert_equal(false, foo.Config.option)
+    foo.Config.option = true
+    assert_equal(true, foo.Config.option)
+    assert_equal(true, FooConfig.option)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+" Test for using an imported function from the vimrc file.  The function is
+" defined in the 'start' directory of a package.
+def Test_import_from_vimrc()
+  mkdir('Ximport/pack/foobar/start/foo/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export def Foo()
+      writefile(['Foo called'], 'Xoutput.log')
+    enddef
+  END
+  writefile(lines, 'Ximport/pack/foobar/start/foo/autoload/foo.vim')
+  lines =<< trim END
+    vim9script
+    set packpath+=./Ximport
+    try
+      import autoload 'foo.vim'
+      foo.Foo()
+    catch
+      writefile(['Failed to import foo.vim'], 'Xoutput.log')
+    endtry
+    qall!
+  END
+  writefile(lines, 'Xvimrc', 'D')
+  g:RunVim([], [], '-u Xvimrc')
+  assert_equal(['Foo called'], readfile('Xoutput.log'))
+  delete('Xoutput.log')
+enddef
+
+" Test for changing a locked imported variable
+def Test_import_locked_var()
+  var lines =<< trim END
+    vim9script
+    export var Foo: number = 10
+    lockvar Foo
+  END
+  writefile(lines, 'Ximportlockedvar.vim', 'D')
+  lines =<< trim END
+    vim9script
+    import './Ximportlockedvar.vim' as Bar
+    Bar.Foo = 20
+  END
+  v9.CheckScriptFailure(lines, 'E741: Value is locked: Foo', 3)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

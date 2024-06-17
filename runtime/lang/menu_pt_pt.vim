@@ -1,6 +1,7 @@
 " Menu Translations: Português
 " adaptado de pt_br.
 " Maintainer: Duarte Henriques <duarte_henriques@myrealbox.com>
+" Last Change: 2024 May 2
 " Original translations
 
 " Quit when menu translations have already been done.
@@ -66,8 +67,8 @@ menutrans Settings\ &Window		Op&ções
 menutrans &Global\ Settings		Opções\ &Globais
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Activar/Desactivar\ &Realce\ de\ Padrões<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Activar/Desactivar\ &Ignorar\ maiúsculas<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Activar/Desactivar\ &coincidências<Tab>:set\ sm!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		Activar/Desactivar\ &Ignorar\ maiúsculas<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!		Activar/Desactivar\ &coincidências<Tab>:set\ sm!
 
 menutrans &Context\ lines		Linhas\ de\ C&ontexto
 
@@ -79,7 +80,7 @@ menutrans Block\ and\ Insert		Bloco\ e\ inserção
 menutrans Always			Sempre
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im! Activar/Desactivar\ Modo\ de\ In&serção<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp! Activar/Desactivar\ Co&mpatibilidade\ com\ Vi<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp! Activar/Desactivar\ Co&mpatibilidade\ com\ Vi<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Camin&ho\ de\ Busca\.\.\.
 menutrans Ta&g\ Files\.\.\.		Arquivos\ de\ Tags\.\.\.
 
@@ -128,7 +129,7 @@ menutrans &Jump\ to\ this\ tag<Tab>g^]	Saltar\ para\ esta\ &tag<Tab>g^]
 menutrans Jump\ &back<Tab>^T		&Voltar<Tab>^T
 menutrans Build\ &Tags\ File		&Construir\ Arquivo\ de\ tags
 menutrans &Folding			&Dobra
-menutrans &Make<Tab>:make		&Make<Tab>:make
+menutrans &Make<Tab>:make		Fazer<Tab>:make
 menutrans &List\ Errors<Tab>:cl		&Lista\ de\ erros<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	Li&sta\ de\ mensagens<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		P&róximo\ erro<Tab>:cn
@@ -136,7 +137,7 @@ menutrans &Previous\ Error<Tab>:cp	&Erro\ anterior<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Listar\ erros\ &antigos<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	Listar\ erros\ &novos<Tab>:cnew
 menutrans Error\ &Window		&Janela\ de\ erros
-menutrans &Set\ Compiler		Def&inir\ Compilador
+menutrans Se&T\ Compiler		Def&inir\ Compilador
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converter\ para\ hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Conver&ter\ de\ volta<Tab>:%!xxd\ -r
 
@@ -265,6 +266,38 @@ menutrans &Convert\ to\ HTML		&Converter\ para\ HTML
 
 " Find Help dialog text
 let g:menutrans_help_dialog = "Digite um comando ou palavra para obter ajuda;\n\nAnteponha i_ para comandos de entrada (ex.: i_CTRL-X)\nAnteponha c_ para comandos da linha de comandos (ex.: c_<Del>)\nAnteponha ` para um nome de opção (ex.: `shiftwidth`)"
+menutrans Open\ &Tab\.\.\.<Tab>:tabnew	Aba\ aberta\.\.\.<Tab>:tabnew
+menutrans Startup\ &Settings			Configurações\ de\ inicialização
+menutrans Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	Numeração\ relativa\ de\ linha<Tab>:set\ nru!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Quebra\ de\ linha<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!		Envolvendo\ a\ palavra<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Gastos\ de\ tabulação<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Recuo\ automático<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!		Recuo\ estilo\ C<Tab>:set\ cin!
+menutrans &Spelling				Ortografia
+menutrans &Spell\ Check\ On			Correção\ ortográfica\ ativada
+menutrans Spell\ Check\ &Off			Correção\ ortográfica\ desativada
+menutrans To\ &Next\ error<Tab>]s		Próximo\ erro<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		erro\ anterior<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		Sugerir\ correções<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	repetir\ correção<Tab>:spellrepall
+"-------------------
+menutrans Set\ language\ to\ "en"		Definir\ idioma\ para\ "en"
+menutrans Set\ language\ to\ "en_au"		Definir\ idioma\ para\ "en_au"
+menutrans Set\ language\ to\ "en_ca"		Definir\ idioma\ para\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"		Definir\ idioma\ para\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"		Definir\ idioma\ para\ "en_nz"
+menutrans Set\ language\ to\ "en_us"		Definir\ idioma\ para\ "en_us"
+menutrans &Find\ More\ Languages		Encontre\ mais\ idiomas
+let g:menutrans_set_lang_to =			'Definir idioma para'
+menutrans M&anual				Manual
+menutrans I&ndent				Recuar
+menutrans E&xpression				Expressão
+menutrans S&yntax				Sintaxe
+menutrans &Diff					Diferença
+menutrans Ma&rker				Marcador
+menutrans &Show\ File\ Types\ in\ menu		Mostrar\ tipos\ de\ arquivo\ no\ menu
+menutrans &Sponsor/Register		Patrocinador/Registro
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

@@ -136,6 +136,13 @@ parse_member(
 	fill_evalarg_from_eap(&evalarg, eap, FALSE);
 	(void)skip_expr_concatenate(&init_arg, &expr_start, &expr_end, &evalarg);
 
+	init_arg = skipwhite(init_arg);
+	if (*init_arg != NUL && !vim9_comment_start(init_arg))
+	{
+	    semsg(_(e_trailing_characters_str), init_arg);
+	    return FAIL;
+	}
+
 	// No type specified for the member.  Set it to "any" and the correct
 	// type will be set when the object is instantiated.
 	if (type == NULL)
@@ -3838,7 +3845,7 @@ object_len(object_T *obj)
  * Return a textual representation of object "obj"
  */
     char_u *
-object_string(
+object2string(
     object_T	*obj,
     char_u	*numbuf,
     int		copyID,

@@ -6502,11 +6502,13 @@ printf "%s\n" "$vi_cv_perl_xsubpp" >&6; }
 		-e 's/-flto\(=auto\)\? //' \
 		-e 's/-W[^ ]*//g' \
 		-e 's/-D_FORTIFY_SOURCE=.//g'`
-            perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
+                  perllibs=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed -e 'ldopts' | \
 		sed -e '/Warning/d' -e '/Note (probably harmless)/d' \
+			-e 's/-specs=[^ ]*//g' \
 			-e 's/-bE:perl.exp//' -e 's/-lc //'`
-                  perlldflags=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed \
-		-e 'ccdlflags' | sed -e 's/-bE:perl.exp//'`
+                        perlldflags=`cd $srcdir; $vi_cv_path_perl -MExtUtils::Embed \
+		-e 'ccdlflags' | sed -e 's/-bE:perl.exp//' \
+		-e 's/-specs=[^ ]*//g' `
 
                   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if compile and link flags for Perl are sane" >&5
 printf %s "checking if compile and link flags for Perl are sane... " >&6; }
@@ -11404,55 +11406,6 @@ else $as_nop
 printf "%s\n" "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-
-ac_fn_c_check_header_compile "$LINENO" "elf.h" "ac_cv_header_elf_h" "$ac_includes_default"
-if test "x$ac_cv_header_elf_h" = xyes
-then :
-  HAS_ELF=1
-fi
-
-if test "$HAS_ELF" = 1; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lelf" >&5
-printf %s "checking for main in -lelf... " >&6; }
-if test ${ac_cv_lib_elf_main+y}
-then :
-  printf %s "(cached) " >&6
-else $as_nop
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lelf  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-int
-main (void)
-{
-return main ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"
-then :
-  ac_cv_lib_elf_main=yes
-else $as_nop
-  ac_cv_lib_elf_main=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_elf_main" >&5
-printf "%s\n" "$ac_cv_lib_elf_main" >&6; }
-if test "x$ac_cv_lib_elf_main" = xyes
-then :
-  printf "%s\n" "#define HAVE_LIBELF 1" >>confdefs.h
-
-  LIBS="-lelf $LIBS"
-
-fi
-
-fi
 
 ac_header_dirent=no
 for ac_hdr in dirent.h sys/ndir.h sys/dir.h ndir.h; do

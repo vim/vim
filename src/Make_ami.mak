@@ -114,6 +114,7 @@ SRC += \
 	float.c \
 	fold.c \
 	getchar.c \
+	gc.c \
 	hardcopy.c \
 	hashtab.c \
 	help.c \

@@ -139,7 +139,8 @@ OPTIONS
                    name arguments.  Vim will open all the files and show  dif‐
                    ferences between them.  Works like vimdiff(1).
 
-       -d {device} Open  {device}  for  use as a terminal.  Only on the Amiga.
+       -d {device}, -dev {device}
+                   Open  {device}  for  use as a terminal.  Only on the Amiga.
                    Example: "-d con:20/30/600/150".
 
        -D          Debugging.  Go to debugging mode when executing  the  first
@@ -171,7 +172,15 @@ OPTIONS
                    ables the GUI.  If no GUI support was compiled in, an error
                    message is given and Vim aborts.
 
-       -h          Give a bit of help about the command line arguments and op‐
+       --gui-dialog-file {name}
+                   When  using the GUI, instead of showing a dialog, write the
+                   title and message of the dialog to file {name}.   The  file
+                   is  created  or  appended  to.  Only useful for testing, to
+                   avoid that the test gets stuck on a dialog  that  can't  be
+                   seen.  Without the GUI the argument is ignored.
+
+       --help, -h, -?
+                   Give a bit of help about the command line arguments and op‐
                    tions.  After this Vim exits.
 
        -H          If Vim has been compiled with RIGHTLEFT support for editing
@@ -220,6 +229,15 @@ OPTIONS
        -p[N]       Open N tab pages.  When N is omitted, open one tab page for
                    each file.
 
+       -P {parent-title}
+                   Win32  GUI  only:  Specify the title of the parent applica‐
+                   tion.  When possible, Vim will run in an MDI window  inside
+                   the  application.  {parent-title} must appear in the window
+                   title of the parent application.  Make sure that it is spe‐
+                   cific  enough. Note that the implementation is still primi‐
+                   tive.  It won't work with all  applications  and  the  menu
+                   doesn't work.
+
        -R          Read-only  mode.   The  'readonly' option will be set.  You
                    can still edit the buffer, but will be prevented from acci‐
                    dentally overwriting a file.  If you do want to overwrite a
@@ -252,25 +270,46 @@ OPTIONS
                    terminal known to Vim (builtin) or defined in  the  termcap
                    or terminfo file.
 
-       -u {vimrc}  Use  the  commands in the file {vimrc} for initializations.
-                   All the other initializations are  skipped.   Use  this  to
-                   edit  a special kind of files.  It can also be used to skip
-                   all initializations by giving the name "NONE".  See  ":help
+       --not-a-term
+                   Tells  Vim that the user knows that the input and/or output
+                   is not connected to a terminal.  This will avoid the  warn‐
+                   ing and the two second delay that would happen.
+
+       --ttyfail   When  stdin  or  stdout is not a a terminal (tty) then exit
+                   right away.
+
+       -u {vimrc}  Use the commands in the file {vimrc}  for  initializations.
+                   All  the  other  initializations  are skipped.  Use this to
+                   edit a special kind of files.  It can also be used to  skip
+                   all  initializations by giving the name "NONE".  See ":help
                    initialization" within vim for more details.
 
-       -U {gvimrc} Use  the  commands in the file {gvimrc} for GUI initializa‐
-                   tions.  All the other GUI initializations are skipped.   It
-                   can  also be used to skip all GUI initializations by giving
-                   the name "NONE".  See ":help gui-init" within vim for  more
+       -U {gvimrc} Use the commands in the file {gvimrc} for  GUI  initializa‐
+                   tions.   All the other GUI initializations are skipped.  It
+                   can also be used to skip all GUI initializations by  giving
+                   the  name "NONE".  See ":help gui-init" within vim for more
                    details.
 
-       -V[N]       Verbose.   Give  messages about which files are sourced and
-                   for reading and writing a viminfo file.  The optional  num‐
+       -V[N]       Verbose.  Give messages about which files are  sourced  and
+                   for  reading and writing a viminfo file.  The optional num‐
                    ber N is the value for 'verbose'.  Default is 10.
+
+       -V[N]{filename}
+                   Like -V and set 'verbosefile' to {filename}.  The result is
+                   that  messages  are  not  displayed but written to the file
+                   {filename}.  {filename} must not start with a digit.
+
+       --log {filename}
+                   If Vim has been compiled with  eval  and  channel  feature,
+                   start  logging  and write entries to {filename}. This works
+                   like calling ch_logfile({filename}, 'ao') very early during
+                   startup.
 
        -v          Start  Vim  in Vi mode, just like the executable was called
                    "vi".  This only has effect when the executable  is  called
                    "ex".
+
+       -w{number}  Set the 'window' option to {number}.
 
        -w {scriptout}
                    All  the  characters that you type are recorded in the file
@@ -305,8 +344,6 @@ OPTIONS
                    Vim setup.
 
        --echo-wid  GTK GUI only: Echo the Window ID on stdout.
-
-       --help      Give a help message and exit, just like "-h".
 
        --literal   Take  file  name  arguments  literally, do not expand wild‐
                    cards.  This has no effect on Unix where the shell  expands
@@ -354,58 +391,67 @@ OPTIONS
 
        --version   Print version information and exit.
 
+       --windowid {id}
+                   Win32 GUI only: Make gvim try to use the window {id}  as  a
+                   parent, so that it runs inside that window.
+
 ON-LINE HELP
-       Type ":help" in Vim to get started.  Type ":help subject" to  get  help
-       on  a  specific  subject.   For example: ":help ZZ" to get help for the
-       "ZZ" command.  Use <Tab> and CTRL-D to complete subjects  (":help  cmd‐
-       line-completion").   Tags are present to jump from one place to another
+       Type  ":help"  in Vim to get started.  Type ":help subject" to get help
+       on a specific subject.  For example: ":help ZZ" to  get  help  for  the
+       "ZZ"  command.   Use <Tab> and CTRL-D to complete subjects (":help cmd‐
+       line-completion").  Tags are present to jump from one place to  another
        (sort of hypertext links, see ":help").  All documentation files can be
        viewed in this way, for example ":help syntax.txt".
 
 FILES
-       /usr/local/lib/vim/doc/*.txt
-                      The  Vim documentation files.  Use ":help doc-file-list"
+       /usr/local/share/vim/vim??/doc/*.txt
+                      The Vim documentation files.  Use ":help  doc-file-list"
                       to get the complete list.
+                      vim??  is short version number, like vim91 for Vim 9.1
 
-       /usr/local/lib/vim/doc/tags
-                      The tags file used for finding information in the  docu‐
+       /usr/local/share/vim/vim??/doc/tags
+                      The  tags file used for finding information in the docu‐
                       mentation files.
 
-       /usr/local/lib/vim/syntax/syntax.vim
+       /usr/local/share/vim/vim??/syntax/syntax.vim
                       System wide syntax initializations.
 
-       /usr/local/lib/vim/syntax/*.vim
+       /usr/local/share/vim/vim??/syntax/*.vim
                       Syntax files for various languages.
 
-       /usr/local/lib/vim/vimrc
+       /usr/local/share/vim/vimrc
                       System wide Vim initializations.
 
-       ~/.vimrc       Your personal Vim initializations.
+       ~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
+                      Your personal Vim initializations (first  one  found  is
+                      used).
 
-       /usr/local/lib/vim/gvimrc
+       /usr/local/share/vim/gvimrc
                       System wide gvim initializations.
 
-       ~/.gvimrc      Your personal gvim initializations.
+       ~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
+                      Your  personal  gvim initializations (first one found is
+                      used).
 
-       /usr/local/lib/vim/optwin.vim
-                      Script  used  for  the ":options" command, a nice way to
+       /usr/local/share/vim/vim??/optwin.vim
+                      Script used for the ":options" command, a  nice  way  to
                       view and set options.
 
-       /usr/local/lib/vim/menu.vim
+       /usr/local/share/vim/vim??/menu.vim
                       System wide menu initializations for gvim.
 
-       /usr/local/lib/vim/bugreport.vim
+       /usr/local/share/vim/vim??/bugreport.vim
                       Script to generate a bug report.  See ":help bugs".
 
-       /usr/local/lib/vim/filetype.vim
-                      Script to detect the type of a file by  its  name.   See
+       /usr/local/share/vim/vim??/filetype.vim
+                      Script  to  detect  the type of a file by its name.  See
                       ":help 'filetype'".
 
-       /usr/local/lib/vim/scripts.vim
-                      Script  to  detect  the  type of a file by its contents.
+       /usr/local/share/vim/vim??/scripts.vim
+                      Script to detect the type of a  file  by  its  contents.
                       See ":help 'filetype'".
 
-       /usr/local/lib/vim/print/*.ps
+       /usr/local/share/vim/vim??/print/*.ps
                       Files used for PostScript printing.
 
        For recent info read the VIM home page:
@@ -417,19 +463,19 @@ SEE ALSO
 AUTHOR
        Most of Vim was made by Bram Moolenaar, with a lot of help from others.
        See ":help credits" in Vim.
-       Vim  is  based  on Stevie, worked on by: Tim Thompson, Tony Andrews and
+       Vim is based on Stevie, worked on by: Tim Thompson,  Tony  Andrews  and
        G.R. (Fred) Walter.  Although hardly any of the original code remains.
 
 BUGS
        Probably.  See ":help todo" for a list of known problems.
 
-       Note that a number of things that may be regarded as bugs by some,  are
-       in  fact  caused by a too-faithful reproduction of Vi's behaviour.  And
-       if you think other things are bugs "because Vi  does  it  differently",
-       you  should  take  a closer look at the vi_diff.txt file (or type :help
-       vi_diff.txt when in Vim).  Also have a look  at  the  'compatible'  and
+       Note  that a number of things that may be regarded as bugs by some, are
+       in fact caused by a too-faithful reproduction of Vi's  behaviour.   And
+       if  you  think  other things are bugs "because Vi does it differently",
+       you should take a closer look at the vi_diff.txt file  (or  type  :help
+       vi_diff.txt  when  in  Vim).   Also have a look at the 'compatible' and
        'cpoptions' options.
 
 
 
-                                  2021 Jun 13                           VIM(1)
+                                  2024 Jun 04                           VIM(1)

@@ -656,8 +656,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VALID_VIRTCOL	0x04	// w_virtcol (file col) is valid
 #define VALID_CHEIGHT	0x08	// w_cline_height and w_cline_folded valid
 #define VALID_CROW	0x10	// w_cline_row is valid
-#define VALID_BOTLINE	0x20	// w_botine and w_empty_rows are valid
-#define VALID_BOTLINE_AP 0x40	// w_botine is approximated
+#define VALID_BOTLINE	0x20	// w_botline and w_empty_rows are valid
+#define VALID_BOTLINE_AP 0x40	// w_botline is approximated
 #define VALID_TOPLINE	0x80	// w_topline is valid (for cursor position)
 
 // Values for w_popup_flags.
@@ -1500,6 +1500,8 @@ typedef enum
     , HLF_SPL	    // SpellLocal
     , HLF_PNI	    // popup menu normal item
     , HLF_PSI	    // popup menu selected item
+    , HLF_PMNI	    // popup menu matched text in normal item
+    , HLF_PMSI	    // popup menu matched text in selected item
     , HLF_PNK	    // popup menu normal item "kind"
     , HLF_PSK	    // popup menu selected item "kind"
     , HLF_PNX	    // popup menu normal item "menu" (extra text)
@@ -1525,10 +1527,19 @@ typedef enum
 		  'n', 'a', 'b', 'N', 'G', 'O', 'r', 's', 'S', 'c', 't', 'v', 'V', \
 		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', '[', ']', '{', '}', 'x', 'X', \
+		  '+', '=', 'k', '<','[', ']', '{', '}', 'x', 'X', \
 		  '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z', 'g'}
 
+/*
+ * Values for behaviour in spell_move_to
+ */
+typedef enum
+{
+    SMT_ALL = 0		    // Move to "all" words
+    , SMT_BAD		    // Move to "bad" words only
+    , SMT_RARE		    // Move to "rare" words only
+} smt_T;
 /*
  * Boolean constants
  */

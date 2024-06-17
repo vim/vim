@@ -3029,16 +3029,22 @@ mouse_comp_pos(
 
 	if (win->w_skipcol > 0 && lnum == win->w_topline)
 	{
-	    // Adjust for 'smoothscroll' clipping the top screen lines.
-	    // A similar formula is used in curs_columns().
 	    int width1 = win->w_width - win_col_off(win);
-	    int skip_lines = 0;
-	    if (win->w_skipcol > width1)
-		skip_lines = (win->w_skipcol - width1)
+
+	    if (width1 > 0)
+	    {
+		int skip_lines = 0;
+
+		// Adjust for 'smoothscroll' clipping the top screen lines.
+		// A similar formula is used in curs_columns().
+		if (win->w_skipcol > width1)
+		    skip_lines = (win->w_skipcol - width1)
 					    / (width1 + win_col_off2(win)) + 1;
-	    else if (win->w_skipcol > 0)
-		skip_lines = 1;
-	    count -= skip_lines;
+		else if (win->w_skipcol > 0)
+		    skip_lines = 1;
+
+		count -= skip_lines;
+	    }
 	}
 
 	if (count > row)

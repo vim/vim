@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.1.  Last change: 2024 Apr 17
+*gui.txt*       For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -498,14 +498,14 @@ Starting off with the default set is a good idea.  You can add more items, or,
 if you don't like the defaults at all, start with removing all menus
 |:unmenu-all|.  You can also avoid the default menus being loaded by adding
 this line to your .vimrc file (NOT your .gvimrc file!): >
-	:let did_install_default_menus = 1
+	:let g:did_install_default_menus = 1
 If you also want to avoid the Syntax menu: >
-	:let did_install_syntax_menu = 1
+	:let g:did_install_syntax_menu = 1
 The first item in the Syntax menu can be used to show all available filetypes
 in the menu (which can take a bit of time to load).  If you want to have all
 filetypes already present at startup, add: >
-	:let do_syntax_sel_menu = 1
-
+	:let g:do_syntax_sel_menu = 1
+<				    *menu-lazyload* *g:do_no_lazyload_menus*
 The following menuitems show all available color schemes, keymaps and compiler
 settings:
 	Edit > Color Scheme ~
@@ -515,7 +515,7 @@ However, they can also take a bit of time to load, because they search all
 related files from the directories in 'runtimepath'.  Therefore they are
 loaded lazily (by the |CursorHold| event), or you can also load them manually.
 If you want to have all these items already present at startup, add: >
-	:let do_no_lazyload_menus = 1
+	:let g:do_no_lazyload_menus = 1
 
 Note that the menu.vim is sourced when `:syntax on` or `:filetype on` is
 executed or after your .vimrc file is sourced.  This means that the 'encoding'
@@ -1238,7 +1238,8 @@ This section describes other features which are related to the GUI.
 	endif
 
 A recommended Japanese font is MS Mincho.  You can find info here:
-http://www.lexikan.com/mincho.htm
+https://learn.microsoft.com/en-us/typography/font-list/ms-mincho
+It should be distributed with Windows.
 
 ==============================================================================
 8. Shell Commands					*gui-shell*

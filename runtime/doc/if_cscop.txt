@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 9.1.  Last change: 2022 Jan 08
+*if_cscop.txt*  For Vim version 9.1.  Last change: 2024 May 11
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -358,7 +358,7 @@ system calls: fork(), pipe(), execl(), waitpid().  This means it is mostly
 limited to Unix systems.
 
 Additionally Cscope support works for Win32.  For more information and a
-cscope version for Win32 see:
+cscope version for Win32 see (link seems dead):
 
 	http://iamphet.nm.ru/cscope/index.html
 

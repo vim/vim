@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	The Vim Project <https://github.com/vim/vim>
-" Last Change:	2023 Aug 31
+" Last Change:	2024 Jun 05
 " Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 " If there already is an option window, jump to that one.
@@ -846,7 +846,7 @@ if has("insert_expand")
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("cpt")
   call <SID>AddOption("completeopt", gettext("whether to use a popup menu for Insert mode completion"))
-  call <SID>OptionG("cot", &cot)
+  call <SID>OptionL("cot")
   if exists("+completepopup")
     call <SID>AddOption("completepopup", gettext("options for the Insert mode completion info popup"))
     call <SID>OptionG("cpp", &cpp)

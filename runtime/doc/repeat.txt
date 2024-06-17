@@ -737,7 +737,8 @@ Your directory layout would be like this:
    start/foobar/doc/tags		" help tags
    start/foobar/lang/<lang_id>/LC_MESSAGES/foo.po
 					" messages for the plugin in the
-					" <lang_id> language
+					" <lang_id> language.  These files are
+					" optional.
    opt/fooextra/plugin/extra.vim	" optional plugin, defines commands
    opt/fooextra/autoload/extra.vim	" loaded when extra command used
    opt/fooextra/doc/extra.txt		" help for extra.vim
@@ -772,7 +773,8 @@ file. See |multilang| on how to specify languages.
 
 In your plugin, you need to call the |bindtextdomain()| function as follows.
 This assumes that the directory structure is as above: >
-	:call bindtextdomain("foo", getcwd()~"../lang")
+	:call bindtextdomain("foo", fnamemodify(expand("<script>"),
+	  ':p:h') .. '/../lang/')
 <
 You only need to do this once. After this call, you can use: >
 	:echo gettext("Hello", "foo")

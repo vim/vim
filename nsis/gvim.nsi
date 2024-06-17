@@ -225,7 +225,7 @@ Page custom SetCustom ValidateCustom
 # Version resources
 
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Vim"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Vim Developers"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The Vim Project"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "Vi Improved - A Text Editor"

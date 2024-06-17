@@ -1,4 +1,4 @@
-.TH VIM 1 "2021 Jun 13"
+.TH VIM 1 "2024 Jun 04"
 .SH NAME
 vim \- Vi IMproved, a programmer's text editor
 .SH SYNOPSIS
@@ -191,7 +191,7 @@ There should between two to eight file name arguments.
 will open all the files and show differences between them.
 Works like vimdiff(1).
 .TP
-\-d {device}
+\-d {device}, \-dev {device}
 Open {device} for use as a terminal.
 Only on the Amiga.
 Example:
@@ -248,7 +248,13 @@ If no GUI support was compiled in, an error message is given and
 .B Vim
 aborts.
 .TP
-\-h
+\-\-gui-dialog-file {name}
+When using the GUI, instead of showing a dialog, write the title and message of
+the dialog to file {name}.  The file is created or appended to.  Only useful
+for testing, to avoid that the test gets stuck on a dialog that can't be seen.
+Without the GUI the argument is ignored.
+.TP
+\-\-help, \-h, \-?
 Give a bit of help about the command line arguments and options.
 After this
 .B Vim
@@ -317,6 +323,13 @@ When N is omitted, open one window for each file.
 Open N tab pages.
 When N is omitted, open one tab page for each file.
 .TP
+\-P {parent-title}
+Win32 GUI only: Specify the title of the parent application.  When possible, Vim
+will run in an MDI window inside the application. {parent-title} must appear in
+the window title of the parent application.  Make sure that it is specific
+enough. Note that the implementation is still primitive.  It won't work with
+all applications and the menu doesn't work.
+.TP
 \-R
 Read-only mode.
 The 'readonly' option will be set.
@@ -358,6 +371,16 @@ Should be a terminal known to
 .B Vim
 (builtin) or defined in the termcap or terminfo file.
 .TP
+\-\-not-a-term
+Tells
+.B Vim
+that the user knows that the input and/or output is not connected to a
+terminal.  This will avoid the warning and the two second delay that would
+happen.
+.TP
+\-\-ttyfail
+When stdin or stdout is not a a terminal (tty) then exit right away.
+.TP
 \-u {vimrc}
 Use the commands in the file {vimrc} for initializations.
 All the other initializations are skipped.
@@ -376,11 +399,27 @@ Verbose.  Give messages about which files are sourced and for reading and
 writing a viminfo file.  The optional number N is the value for 'verbose'.
 Default is 10.
 .TP
+\-V[N]{filename}
+Like \-V and set 'verbosefile' to {filename}.  The result is that messages are
+not displayed but written to the file {filename}.  {filename} must not start
+with a digit.
+.TP
+\-\-log {filename}
+If
+.B Vim
+has been compiled with eval and channel feature, start logging and write
+entries to {filename}. This works like calling
+.I ch_logfile({filename}, 'ao')
+very early during startup.
+.TP
 \-v
 Start
 .B Vim
 in Vi mode, just like the executable was called "vi".  This only has effect
 when the executable is called "ex".
+.TP
+\-w{number}
+Set the 'window' option to {number}.
 .TP
 \-w {scriptout}
 All the characters that you type are recorded in the file
@@ -422,9 +461,6 @@ a problem reproduces with a clean Vim setup.
 .TP
 \-\-echo\-wid
 GTK GUI only: Echo the Window ID on stdout.
-.TP
-\-\-help
-Give a help message and exit, just like "\-h".
 .TP
 \-\-literal
 Take file name arguments literally, do not expand wildcards.  This has no
@@ -468,6 +504,10 @@ During startup write timing messages to the file {fname}.
 .TP
 \-\-version
 Print version information and exit.
+.TP
+\-\-windowid {id}
+Win32 GUI only: Make gvim try to use the window {id} as a parent, so that it
+runs inside that window.
 .SH ON-LINE HELP
 Type ":help" in
 .B Vim
@@ -481,53 +521,57 @@ All documentation files can be viewed in this way, for example
 ":help syntax.txt".
 .SH FILES
 .TP 15
-/usr/local/lib/vim/doc/*.txt
+/usr/local/share/vim/vim??/doc/*.txt
 The
 .B Vim
 documentation files.
 Use ":help doc\-file\-list" to get the complete list.
+.br
+.I vim??
+is short version number, like vim91 for
+.B Vim 9.1
 .TP
-/usr/local/lib/vim/doc/tags
+/usr/local/share/vim/vim??/doc/tags
 The tags file used for finding information in the documentation files.
 .TP
-/usr/local/lib/vim/syntax/syntax.vim
+/usr/local/share/vim/vim??/syntax/syntax.vim
 System wide syntax initializations.
 .TP
-/usr/local/lib/vim/syntax/*.vim
+/usr/local/share/vim/vim??/syntax/*.vim
 Syntax files for various languages.
 .TP
-/usr/local/lib/vim/vimrc
+/usr/local/share/vim/vimrc
 System wide
 .B Vim
 initializations.
 .TP
-~/.vimrc
+~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
 Your personal
 .B Vim
-initializations.
+initializations (first one found is used).
 .TP
-/usr/local/lib/vim/gvimrc
+/usr/local/share/vim/gvimrc
 System wide gvim initializations.
 .TP
-~/.gvimrc
-Your personal gvim initializations.
+~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
+Your personal gvim initializations (first one found is used).
 .TP
-/usr/local/lib/vim/optwin.vim
+/usr/local/share/vim/vim??/optwin.vim
 Script used for the ":options" command, a nice way to view and set options.
 .TP
-/usr/local/lib/vim/menu.vim
+/usr/local/share/vim/vim??/menu.vim
 System wide menu initializations for gvim.
 .TP
-/usr/local/lib/vim/bugreport.vim
+/usr/local/share/vim/vim??/bugreport.vim
 Script to generate a bug report.  See ":help bugs".
 .TP
-/usr/local/lib/vim/filetype.vim
+/usr/local/share/vim/vim??/filetype.vim
 Script to detect the type of a file by its name.  See ":help 'filetype'".
 .TP
-/usr/local/lib/vim/scripts.vim
+/usr/local/share/vim/vim??/scripts.vim
 Script to detect the type of a file by its contents.  See ":help 'filetype'".
 .TP
-/usr/local/lib/vim/print/*.ps
+/usr/local/share/vim/vim??/print/*.ps
 Files used for PostScript printing.
 .PP
 For recent info read the VIM home page:

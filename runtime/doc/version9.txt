@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Apr 14
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31711,12 +31711,12 @@ in |vim9-class|.  The following features are supported:
 
 Support for creating a type alias for an existing type is added.
 
-Virtual text
+Virtual text ~
 ------------
 Support for adding |virtual-text| to a buffer is added.  This is useful for
 language server features (e.g. inlay hints)
 
-Smooth Scroll
+Smooth Scroll ~
 -------------
 Support for scrolling text using screen lines instead of file lines is added.
 Refer to the 'smoothscroll' option.
@@ -31726,7 +31726,8 @@ The EditorConfig (|editorconfig-install|) and the JSON formatting
 
 OpenVMS x86_64 platform port: http://www.polarhome.com/vim/
 
-Other improvements				*new-other-9.1*
+						*new-other-9.1*
+Other improvements ~
 ------------------
 - Support for undercurl (|t_Ce|), double underline (|t_Us|), dotted underline
   (|t_ds|) and dashed underline (|t_Ds|) termcap entries and
@@ -31783,7 +31784,8 @@ Other improvements				*new-other-9.1*
 - xxd: reversing a bit dump (xxd -r).
 - xxd: customize the variable name used in the C include output (xxd -n).
 
-Changed						*changed-9.1*
+							*changed-9.1*
+Changed ~
 -------
 - The features |++builtin_terms|, |+cmdline_info|, |+cmdwin|, |+file_in_path|,
   |+float|, |+path_extra|, |+textobjects|, |+wildignore| and |+wildmenu| are
@@ -31815,7 +31817,8 @@ Changed						*changed-9.1*
 - Migrate to autoconf 2.71.
 - Start using C99 feature (declare variable in for loops).
 
-Added						*added-9.1*
+						*added-9.1*
+Added ~
 -----
 
 Various syntax, indent and other plugins were added.
@@ -32090,7 +32093,7 @@ Solution:   Store the text column when drawing text.
 
 Patch 9.0.0049
 Problem:    Csv and tsv files are not recognized.
-Solution:   Add patterns fo csv and tsv files. (Leandro Lourenci,
+Solution:   Add patterns for csv and tsv files. (Leandro Lourenci,
             closes #10680)
 
 Patch 9.0.0050
@@ -40641,7 +40644,7 @@ Solution:   Use the class-related grow array for storing the
 
 Patch 9.0.1989
 Problem:    Vim9: double error message given
-Solution:   Only give second error message, if ther
+Solution:   Only give second error message, if there
              wasn't one given before
 
 Patch 9.0.1990
@@ -40687,7 +40690,7 @@ Solution:   Mention the defining class for variable access error message
 
 Patch 9.0.2000
 Problem:    Vim9: use-after-free in deep call stack
-Solution:   Get the objct pointer from execution stack
+Solution:   Get the object pointer from execution stack
 
 Patch 9.0.2001
 Problem:    Vim9: segfault with islocked()
@@ -41541,38 +41544,45 @@ VERSION 9.2				*version-9.2* *version9.2* *vim-9.2*
 This section is about improvements made between version 9.1 and 9.2
 and is a work in progress.
 
-Support for Wayland UI.
-
-Support for the XDG Desktop Specification |xdg-base-dir|
-
-Vim9 script
+Vim9 script ~
 -----------
 Add support for internal builtin functions with vim9 objects, see
 |builtin-object-methods|
 
 Enum support for Vim9 script |:enum|
 
-Other improvements				*new-other-9.2*
+							*new-other-9.2*
+Other new features ~
 ------------------
+The comment plugin |comment-install| is included.
 
-Changed						*changed-9.2*
+Support for Wayland UI.
+
+Support for the XDG Desktop Specification |xdg-base-dir|
+
+							*changed-9.2*
+Changed~
 -------
-
 - use 'smoothscroll' logic for CTRL-F and CTRL-B for pagewise scrolling
 - use 'smoothscroll' logic for CTRL-D and CTRL-U for half-pagewise scrolling
+- the default for 'commentstring' contains whitespace padding to have
+  automatic comments look nicer |comment-install|
+- 'completeopt' is now a |global-local| option.
 
-Added						*added-9.2*
+							*added-9.2*
+Added ~
 -----
-
 Various syntax, indent and other plugins were added.
 
 Functions: ~
 
 |diff()|		diff two Lists of strings
+|filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items
+|getregion()|		get a region of text from a buffer
+|getregionpos()|	get a list of positions for a region
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
-|getregion()|		get a region of text from a buffer
 
 
 Autocommands: ~
@@ -41585,30 +41595,34 @@ Autocommands: ~
 
 Highlighting: ~
 
-|hl-MsgArea|		highlighting of the Command-line and messages area.
+|hl-MsgArea|		highlighting of the Command-line and messages area
+|hl-PmenuMatch|		Popup menu: highlighting of matched text
+|hl-PmenuMatchSel|     	Popup menu: highlighting of matched text in selected
+			line
 
 Commands: ~
+
+|[r| and |]r|		to move the cursor to previous/next rare word
 
 
 Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
-'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420).
+'t_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
+'t_CF'			Support for alternate font highlighting terminal code
 
 ==============================================================================
-INCOMPATIBLE CHANGES				*incompatible-9.2*
+INCOMPATIBLE CHANGES					*incompatible-9.2*
 
 Improved/Different MS-Windows mapping support
 |w32-experimental-keycode-trans-strategy|
 
 ==============================================================================
-IMPROVEMENTS					*improvements-9.2*
+IMPROVEMENTS						*improvements-9.2*
 
 Support for command-line completion of 'keymap' option values.
 
 Support for compiling all the methods in a Vim9 class using |:defcompile|.
-
-Support for alternate font highlighting using |t_CF| terminal code.
 
 Support for Super key mappings in GTK using <D-Key>.
 
@@ -41616,8 +41630,10 @@ Improved visual highlighting.
 
 Python3 support in OpenVMS.
 
+Support |fuzzy-matching| during |ins-completion| with "fuzzy" item for 'completeopt'
+
 ==============================================================================
-COMPILE TIME CHANGES				*compile-changes-9.2*
+COMPILE TIME CHANGES					*compile-changes-9.2*
 
 Support for building with Ruby 3.3.
 

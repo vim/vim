@@ -1,4 +1,4 @@
-.TH VIM 1 "13 giugno 2022"
+.TH VIM 1 "4 giugno 2024"
 .SH NOME
 vim \- VI Migliorato, un editor di testi per programmatori
 .SH SINTASSI
@@ -42,9 +42,9 @@ Vedere ":help vi_diff.txt" per un sommario delle differenze fra
 .B Vim
 e Vi.
 .PP
-Mentre usate
+Mentre si usa
 .B Vim
-potete ricevere molto aiuto dal sistema di help online, col comando
+si può ricevere molto aiuto dal sistema di help online, col comando
 ":help".
 Vedere qui sotto la sezione AIUTO ONLINE.
 .PP
@@ -68,18 +68,18 @@ nome_file ..
 Una lista di nomi di file.
 Il primo di questi sarà il file corrente, e verrà letto nel buffer.
 Il cursore sarà posizionato sulla prima linea del buffer.
-Potete arrivare agli altri file col comando ":next".
+Si può arrivare agli altri file col comando ":next".
 Per editare un file il cui nome inizia per "\-" premettete "\-\-" alla lista_file.
 .TP
 \-
-Il file da editare è letto dallo "stdin"-
-I comandi sono letti da "stderr", che dovrebbe essere un terminale [tty].
+Il file da editare è letto dallo stdin.
+I comandi sono letti da stderr, che dovrebbe essere un terminale [tty].
 .TP
 \-t {tag}
 Il file da editare e la posizione iniziale del cursore dipendono da "tag",
 una specie di "etichetta" a cui saltare.
 {tag} viene cercata nel file "tags", e il file a essa associato diventa
-quello corrente, ed il comando ad essa associato viene eseguito.
+quello corrente, e il comando a essa associato viene eseguito.
 Di solito si usa per programmi C, nel qual caso {tag} potrebbe essere un
 nome di funzione.
 L'effetto è che il file contenente quella funzione diventa il file corrente
@@ -97,10 +97,10 @@ Vedere ":help quickfix".
 .PP
 .B Vim
 si comporta in modo diverso se invocato con nomi differenti (il programma
-eseguibile "sottostante" può essere sempre lo stesso).
+eseguibile "soggiacente" può essere sempre lo stesso).
 .TP 10
 vim
-Modo Normal, comportamento normale.
+Modo Normal, comportamento predefinito.
 .TP
 ex
 Inizia in Modo "Ex".
@@ -108,7 +108,7 @@ Si può passare in Modo Normal col comando ":vi".
 Si può invocare il Modo "Ex" anche con l'argomento "\-e".
 .TP
 view
-Inizia in Modo Read-only (Sola Lettura).  Non potete modificare i file.
+Inizia in Modo Read-only (Sola Lettura).  Non si possono modificare i file.
 Si può invocare il Modo Read-only anche con l'argomento "\-R".
 .TP
 gvim gview
@@ -131,11 +131,11 @@ Le opzioni possono essere in un ordine qualsiasi, prima o dopo i nomi di file.
 Opzioni che non hanno un argomento si possono specificare dietro a un solo "\-".
 .TP 12
 +[numero]
-Per il primo file il cursore sarà posizionato sulla linea "numero".
+Nel primo file il cursore sarà posizionato sulla linea "numero".
 Se "numero" manca, il cursore sarà posizionato sull'ultima linea del file.
 .TP
 +/{espressione}
-Per il primo file il cursore sarà posizionato alla
+Nel primo file il cursore sarà posizionato alla
 prima occorrenza di {espressione}.
 Vedere ":help search\-pattern" per come specificare l'espressione.
 .TP
@@ -166,7 +166,7 @@ Si possono usare fino a 10 di questi comandi, indipendentemente dai comandi "\-c
 Se
 .B Vim
 è stato compilato con supporto ARABIC per editare file con orientamento
-destra-sinistra e tastiera con mappatura araba, questa opzione inizia
+destra-sinistra e tastiera con mappatura araba, quest'opzione inizia
 .B Vim
 in Modo Arabic, cioè impostando 'arabic'.
 Altrimenti viene dato un messaggio di errore e
@@ -176,7 +176,7 @@ termina in modo anormale.
 \-b
 Modo Binary (binario).
 Vengono impostate alcune opzioni che permettono di modificare un file
-binario o un programma eseguibile.
+binario o un file che contiene un programma eseguibile.
 .TP
 \-C
 Compatibile.  Imposta l'opzione 'compatible'.
@@ -186,12 +186,12 @@ ha quasi lo stesso comportamento di Vi, anche in presenza di un file .vimrc.
 .TP
 \-d
 Inizia in Modo Diff [differenze].
-Dovrebbero esserci come argomenti due o tre o quattro nomi di file.
+Dovrebbero esserci come argomenti da due o otto nomi di file.
 .B Vim
 aprirà tutti i file evidenziando le differenze fra gli stessi.
 Funziona come vimdiff(1).
 .TP
-\-d {dispositivo}
+\-d {dispositivo}, \-dev {dispositivo}
 Apre {dispositivo} per usarlo come terminale.
 Solo per l'Amiga.
 Esempio:
@@ -221,7 +221,7 @@ non è fatto ripartire per aprire una nuova finestra.
 Opzione da usare quando
 .B Vim
 è eseguito da un programma che attende la fine della
-sessione di edit (ad es. mail).
+sessione di edit (p.es., mail).
 Sull'Amiga i comandi ":sh" e ":!" non sono disponibili.
 .TP
 \-\-nofork
@@ -233,7 +233,7 @@ non crea [fork] una nuova finestra, indipendente dalla shell di invocazione.
 Se
 .B Vim
 è stato compilato con supporto FKMAP per editare file con orientamento
-destra-sinistra e tastiera con mappatura Farsi, questa opzione inizia
+destra-sinistra e tastiera con mappatura Farsi, quest'opzione inizia
 .B Vim
 in Modo Farsi, cioè impostando 'fkmap' e 'rightleft'.
 Altrimenti viene dato un messaggio di errore e
@@ -243,12 +243,19 @@ termina in modo anormale.
 \-g
 Se
 .B Vim
-è stato compilato con supporto GUI, questa opzione chiede di usarla.
+è stato compilato con supporto GUI, quest'opzione chiede di usarla.
 Se Vim è stato compilato senza supporto GUI viene dato un messaggio di errore e
 .B Vim
 termina in modo anormale.
 .TP
-\-h
+\-\-gui-dialog-file {nome}
+Quando si usa la GUI, invece di visualizzare un dialogo, il titolo e il
+messaggio del dialogo sono scritti sul file {nome}.  Il file viene creato o,
+se già esistente, viene esteso.  Quest'opzione serve solo in fase di test,
+per evitare di restare bloccati da un dialogo che non si riesce a visualizzare.
+Se si sta lavorando senza la GUI l'argomento viene ignorato.
+.TP
+\-\-help, \-h, \-?
 Un po' di aiuto su opzioni e argomenti che si possono dare invocando Vim.
 Subito dopo
 .B Vim
@@ -258,7 +265,7 @@ esce.
 Se
 .B Vim
 è stato compilato col supporto RIGHTLEFT per editare file con orientamento
-destra-sinistra e tastiera con mappatura Ebraica, questa opzione inizia
+destra-sinistra e tastiera con mappatura Ebraica, quest'opzione inizia
 .B Vim
 in Modo Ebraico, cioè impostando 'hkmap' e 'rightleft'.
 Altrimenti viene dato un messaggio di errore e
@@ -266,7 +273,7 @@ Altrimenti viene dato un messaggio di errore e
 termina in modo anormale.
 .TP
 \-i {viminfo}
-Se è abilitato l'uso di un file viminfo, questa opzione indica il nome
+Se è abilitato l'uso di un file viminfo, quest'opzione indica il nome
 del file da usare invece di quello predefinito "~/.viminfo".
 Si può anche evitare l'uso di un file .viminfo, dando come nome
 "NONE".
@@ -292,13 +299,13 @@ opzioni possono essere abilitate in seguito, permettendo così modifiche.
 Modo "Non-compatibile".  Annulla l'opzione 'compatible'.
 Così
 .B Vim
-va un po' meglio, ma è meno compatibile con Vi, anche in assenza di un
+si comporta un po' meglio, ma è meno compatibile con Vi, anche in assenza di un
 file .vimrc.
 .TP
 \-n
 Inibisce l'uso di un file di swap.
 Il recupero dopo una caduta di macchina diventa impossibile.
-Utile per editare un file su un supporto molto lento (ad es. floppy).
+Utile per editare un file su un supporto molto lento (p.es., floppy).
 Il comando ":set uc=0" ha lo stesso effetto.
 Per abilitare il recupero usare ":set uc=200".
 .TP
@@ -306,16 +313,23 @@ Per abilitare il recupero usare ":set uc=200".
 Diviene un Editor server per NetBeans.  Vedere la documentazione per dettagli.
 .TP
 \-o[N]
-Apri N finestre in orizzontale.
-Se N manca, apri una finestra per ciascun file.
+Apre N finestre in orizzontale.
+Se N manca, apre una finestra per ciascun file.
 .TP
 \-O[N]
-Apri N finestre, in verticale.
-Se N manca, apri una finestra per ciascun file.
+Apre N finestre, in verticale.
+Se N manca, apre una finestra per ciascun file.
 .TP
 \-p[N]
-Apri N pagine di linguette.
-Quando N è omesso, apri una pagine di linguette per ciascun file.
+Apre N pagine di linguette.
+Quando N è omesso, apre una pagine di linguette per ciascun file.
+.TP
+\-P {titolo-padre}
+Solo per GUI Win32: Specifica il titolo dell'applicazione-padre.  Se possibile,
+Vim viene eseguito in una finestra MDI (Multiple-Document Interface).
+{titolo-padre} deve apparire nel titolo della applicazione-padre.  Accertatevi
+che sia sufficientemente esplicativo.  Notare che l'implementazione è ancora
+rudimentale.  Non funziona per tutte le applicazioni, e il menù non funziona.
 .TP
 \-R
 Modo Read-only (Sola Lettura).
@@ -324,7 +338,7 @@ Si può ancora modificare il buffer, ma il file è protetto da una riscrittura
 involontaria.
 Se si vuole davvero riscrivere il file, occorre aggiungere un punto esclamativo
 al comando Ex, come in ":w!".
-L'opzione \-R implica anche l'opzione \-n (vedere sotto).
+L'opzione \-R implica anche l'opzione \-n (vedere sopra).
 L'opzione 'readonly' può essere annullata con ":set noro".
 Vedere ":help 'readonly'".
 .TP
@@ -342,10 +356,10 @@ Vedere ":help recovery".
 Modo silenzioso.  Solo quando invocato come "Ex" o quando l'opzione
 "\-e" è stata data prima dell'opzione "\-s".
 .TP
-\-s {scriptin}
-Lo script file {scriptin} è letto.
+\-s {script_in_input}
+Lo script file {script_in_input} è letto.
 I caratteri nel file sono interpretati come se immessi da terminale.
-Lo stesso risultato si può ottenere col comando ":source! {scriptin}".
+Lo stesso risultato si può ottenere col comando ":source! {script_in_input}".
 Se la fine del file di input viene raggiunta prima che Vim termini,
 l'ulteriore input verrà preso dalla tastiera.
 .TP
@@ -356,12 +370,22 @@ quale tipo di terminale state usando.
 Utile solo se il terminale non viene riconosciuto correttamente da Vim.
 Dovrebbe essere un terminale noto a
 .B Vim
-(internamente) o definito nei file termcap o terminfo.
+(predefinito) o definito nei file termcap o terminfo.
+.TP
+\-\-not-a-term
+Da usare per specifica a
+.B Vim
+che l'utente è consapevole che l'input e l'output non avvengono con un terminale
+vero e proprio.  Ciò serve per evitare il messaggio di avvertimento e il ritardo
+di due secondi che avverrebbero in assenza di questo argomento.
+.TP
+\-\-ttyfail
+Quando stdin o stdout non sono un terminale (tty) esci subito da Vim.
 .TP
 \-u {vimrc}
 Usa i comandi nel file {vimrc} per inizializzazioni.
 Tutte le altre inizializzazioni non sono eseguite.
-Usate questa opzione per editare qualche file di tipo speciale.
+Usare quest'opzione per editare qualche file di tipo speciale.
 Si possono anche omettere tutte le inizializzazioni dando come nome "NONE".
 Vedere ":help initialization" da vim per ulteriori dettagli.
 .TP
@@ -376,21 +400,37 @@ Verboso.  Vim manda messaggi relativi ai file di script che esegue
 e quando legge o scrive un file viminfo.  Il numero opzionale N è il valore
 dell'opzione 'verbose'.  Il valore predefinito è 10.
 .TP
+\-V[N]{nome_file}
+Comw \-V  imposta 'verbosefile' a {nome_file}.  Il risultato è che i messaggi
+non sono visualizzati, ma scritti sul file {nome_file}.  Il {nome_file} non
+deve iniziare con un numero.
+.TP
+\-\-log {nome_file}
+Se
+.B Vim
+è stato compilato con le funzionalità eval e channel, inizia a registrare
+e scrive le registrazioni a {nome_file}.  Ciò equivale a chiamare
+.I ch_logfile({nome_file}, 'ao')
+in una fase molto iniziale dell'avvio del programma.
+.TP
 \-v
 Inizia
 .B Vim
 in Modo Vi, come se il programma eseguibile fosse "vi".  Questo ha
 effetto solo quando Vim viene invocato con il nome "ex".
 .TP
-\-w {scriptout}
-Ogni carattere immesso viene registrato nel file {scriptout},
+\-w{numero}
+Imposta l'opzione 'window' a {numero}.
+.TP
+\-w {script_file}
+Ogni carattere immesso viene registrato nel file {script_file},
 finché non si esce da
 .B Vim.
 Utile se si vuole creare uno script file da usare con "vim \-s" o
 ":source!".
-Se il file {scriptout} esiste, quel che immettete viene aggiunto in fondo.
+Se il file {script_file} esiste, il testo immesso viene aggiunto in fondo.
 .TP
-\-W {scriptout}
+\-W {script_file}
 Come \-w, ma uno script file esistente viene sovrascritto.
 .TP
 \-x
@@ -421,10 +461,7 @@ Richiede di non usare alcun file di personalizzazione (vimrc, plugin, etc.).
 Utile per verificare se un problema persiste invocando Vim "originale".
 .TP
 \-\-echo\-wid
-Solo per GUI GTK: Visualizza Window ID su "stdout".
-.TP
-\-\-help
-Vim dà un messaggio ed esce, come con l'argomento "\-h".
+Solo per GUI GTK: Visualizza ID di Window su stdout.
 .TP
 \-\-literal
 Considera i nomi passati come argomenti letterali, senza espandere metacaratteri.
@@ -439,7 +476,7 @@ argomenti.  Se non si trova un server viene dato un messaggio e i file sono
 editati nel Vim corrente.
 .TP
 \-\-remote\-expr {expr}
-Connettersi a un server Vim, valutare {expr} e stampare il risultato su "stdout".
+Connettersi a un server Vim, valutare {expr} e stampare il risultato su stdout.
 .TP
 \-\-remote\-send {chiavi}
 Connettersi a un server Vim e spedirgli {chiavi}.
@@ -467,7 +504,11 @@ Solo per GUI GTK: Usa meccanismo GtkPlug per eseguire gvim in un'altra finestra.
 Durante la fase iniziale, scrive messaggi di log al file {nome_file}.
 .TP
 \-\-version
-Stampa la versione di Vim ed esci.
+Stampa la versione di Vim ed esce.
+.TP
+\-\-windowid {id}
+Solo per GUI Win32: Chiede a gvim di provare a user l'ID di window {id}
+come padre, in modo da venir eseguito all'interno della finestra specificata.
 .SH AIUTO ONLINE
 Battere ":help" in
 .B Vim
@@ -481,53 +522,57 @@ Tutti i file di documentazione possono essere navigati così.  Ad es.:
 ":help syntax.txt".
 .SH FILE
 .TP 15
-/usr/local/lib/vim/doc/*.txt
+/usr/local/share/vim/vim??/doc/*.txt
 I file di documentazione di
 .B Vim
 .
 Usare ":help doc\-file\-list" per avere la lista completa.
+.br
+.I vim??
+è il numero di versione corto, p.es., vim91 per indicare
+.B Vim 9.1
 .TP
-/usr/local/lib/vim/doc/tags
+/usr/local/share/vim/vim??/doc/tags
 Il file di tags usato per trovare informazioni nei file di documentazione.
 .TP
-/usr/local/lib/vim/syntax/syntax.vim
+/usr/local/share/vim/vim??/syntax/syntax.vim
 Inizializzazioni sintattiche a livello di sistema.
 .TP
-/usr/local/lib/vim/syntax/*.vim
+/usr/local/share/vim/vim??/syntax/*.vim
 File di colorazione sintattica per vari linguaggi.
 .TP
-/usr/local/lib/vim/vimrc
+/usr/local/share/vim/vimrc
 Inizializzazioni
 .B Vim
 a livello di sistema.
 .TP
-~/.vimrc
+~/.vimrc, ~/.vim/vimrc, $XDG_CONFIG_HOME/vim/vimrc
 Inizializzazioni personali di
 .B Vim
-.
+(viene utilizzata la prima trovata).
 .TP
-/usr/local/lib/vim/gvimrc
+/usr/local/share/vim/gvimrc
 Inizializzazioni gvim a livello di sistema.
 .TP
-~/.gvimrc
-Inizializzazioni personali di
+~/.gvimrc, ~/.vim/gvimrc, $XDG_CONFIG_HOME/vim/gvimrc
+Inizializzazioni personali di gvim (viene utilizzata la prima trovata).
 .TP
-/usr/local/lib/vim/optwin.vim
-Script Vim usato dal comando ":options", da usare per visualizzare e impostare opzioni.
+/usr/local/share/vim/optwin.vim
+Script Vim usato dal comando ":options", maniera elegante per visualizzare e impostare opzioni.
 .TP
-/usr/local/lib/vim/menu.vim
+/usr/local/share/vim/vim??/menu.vim
 Inizializzazioni del menù gvim a livello di sistema.
 .TP
-/usr/local/lib/vim/bugreport.vim
+/usr/local/share/vim/vim??/bugreport.vim
 Script Vim per generare una segnalazione di errore.  Vedere ":help bugs".
 .TP
-/usr/local/lib/vim/filetype.vim
+/usr/local/share/vim/vim??/filetype.vim
 Script Vim per determinare il tipo di un file dal suo nome. Vedere ":help 'filetype'".
 .TP
-/usr/local/lib/vim/scripts.vim
+/usr/local/share/vim/vim??/scripts.vim
 Script Vim per determinare il tipo di un file dal suo contenuto. Vedere ":help 'filetype'".
 .TP
-/usr/local/lib/vim/print/*.ps
+/usr/local/share/vim/vim??/print/*.ps
 File usati per stampa PostScript.
 .PP
 Per informazioni aggiornate [in inglese \- NdT] vedere la home page di Vim:
@@ -546,8 +591,8 @@ Vedere ":help credits" in
 è basato su Stevie, scritto da: Tim Thompson,
 Tony Andrews e G.R. (Fred) Walter.
 In verità, poco o nulla è rimasto del loro codice originale.
-.SH BACHI
-Probabili.
+.SH BUG
+Probabilmente.
 Vedere ":help todo" per una lista di problemi noti.
 .PP
 Si noti che un certo numero di comportamenti che possono essere considerati errori

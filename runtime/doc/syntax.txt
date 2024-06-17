@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.1.  Last change: 2024 Apr 22
+*syntax.txt*	For Vim version 9.1.  Last change: 2024 Jun 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -935,18 +935,19 @@ ASTRO						*astro.vim* *ft-astro-syntax*
 Configuration
 
 The following variables control certain syntax highlighting features.
-You can add them to your .vimrc: >
+You can add them to your .vimrc.
+
+To enable TypeScript and TSX for ".astro" files (default "disable"): >
 	let g:astro_typescript = "enable"
 <
-Enables TypeScript and TSX for ".astro" files. Default Value: "disable" >
+To enable Stylus for ".astro" files (default "disable"): >
 	let g:astro_stylus = "enable"
 <
-Enables Stylus for ".astro" files. Default Value: "disable"
-
 NOTE: You need to install an external plugin to support stylus in astro files.
 
 
-ASPPERL and ASPVBS			*ft-aspperl-syntax* *ft-aspvbs-syntax*
+ASPPERL							*ft-aspperl-syntax*
+ASPVBS							*ft-aspvbs-syntax*
 
 *.asp and *.asa files could be either Perl or Visual Basic script.  Since it's
 hard to detect this you can set two global variables to tell Vim what you are
@@ -1482,9 +1483,9 @@ Two syntax highlighting files exist for Euphoria. One for Euphoria
 version 3.1.1, which is the default syntax highlighting file, and one for
 Euphoria version 4.0.5 or later.
 
-Euphoria version 3.1.1 (http://www.rapideuphoria.com/) is still necessary
-for developing applications for the DOS platform, which Euphoria version 4
-(http://www.openeuphoria.org/) does not support.
+Euphoria version 3.1.1 (http://www.rapideuphoria.com/ link seems dead) is
+still necessary for developing applications for the DOS platform, which
+Euphoria version 4 (http://www.openeuphoria.org/) does not support.
 
 The following file extensions are auto-detected as Euphoria file type:
 
@@ -1541,7 +1542,8 @@ Elixir.
 
 FLEXWIKI				*flexwiki.vim* *ft-flexwiki-syntax*
 
-FlexWiki is an ASP.NET-based wiki package available at http://www.flexwiki.com
+FlexWiki is an ASP.NET-based wiki package which used to be available at
+http://www.flexwiki.com
 NOTE: This site currently doesn't work, on Wikipedia is mentioned that
 development stopped in 2009.
 
@@ -1907,7 +1909,7 @@ Note: Syntax folding might slow down syntax highlighting significantly,
 especially for large files.
 
 
-HTML/OS (by Aestiva)				*htmlos.vim* *ft-htmlos-syntax*
+HTML/OS (BY AESTIVA)				*htmlos.vim* *ft-htmlos-syntax*
 
 The coloring scheme for HTML/OS works as follows:
 
@@ -2014,15 +2016,25 @@ Function names are not highlighted, as the way to find functions depends on
 how you write Java code.  The syntax file knows two possible ways to highlight
 functions:
 
-If you write function declarations that are always indented by either
-a tab, 8 spaces or 2 spaces you may want to set >
+If you write function declarations that are consistently indented by either
+a tab, or a space . . . or eight space character(s), you may want to set >
 	:let java_highlight_functions="indent"
+	:let java_highlight_functions="indent1"
+	:let java_highlight_functions="indent2"
+	:let java_highlight_functions="indent3"
+	:let java_highlight_functions="indent4"
+	:let java_highlight_functions="indent5"
+	:let java_highlight_functions="indent6"
+	:let java_highlight_functions="indent7"
+	:let java_highlight_functions="indent8"
+Note that in terms of 'shiftwidth', this is the leftmost step of indentation.
 However, if you follow the Java guidelines about how functions and classes are
-supposed to be named (with respect to upper and lowercase), use >
+supposed to be named (with respect to upper- and lowercase) and there is any
+amount of indentation, you may want to set >
 	:let java_highlight_functions="style"
-If both options do not work for you, but you would still want function
-declarations to be highlighted create your own definitions by changing the
-definitions in java.vim or by creating your own java.vim which includes the
+If neither setting does work for you, but you would still want function
+declarations to be highlighted, create your own definitions by changing the
+definitions in java.vim or by creating your own java.vim that includes the
 original one and then adds the code to highlight functions.
 
 In Java 1.1 the functions System.out.println() and System.err.println() should
@@ -2084,6 +2096,15 @@ default. To disable concealment: >
 
 To disable syntax highlighting of errors: >
 	let g:vim_json_warnings = 0
+
+
+JQ				*jq.vim* *jq_quote_highlight* *ft-jq-syntax*
+
+To disable numbers having their own color add the following to your vimrc: >
+	hi link jqNumber Normal
+
+If you want quotes to have different highlighting than strings >
+	let g:jq_quote_highlight = 1
 
 
 LACE						*lace.vim* *ft-lace-syntax*
@@ -3027,6 +3048,13 @@ To highlight R code in knitr chunk headers, add to your |vimrc|: >
 	let rrst_syn_hl_chunk = 1
 
 
+RASI					*rasi.vim* *ft-rasi-syntax*
+
+Rasi stands for Rofi Advanced Style Information. It is used by the program
+rofi to style the rendering of the search window. The language is heavily
+inspired by CSS stylesheet. Files with the following extensions are recognized
+as rasi files: .rasi.
+
 READLINE				*readline.vim* *ft-readline-syntax*
 
 The readline library is primarily used by the BASH shell, which adds quite a
@@ -3743,6 +3771,19 @@ set "tf_minlines" to the value you desire.  Example: >
 
 	:let tf_minlines = your choice
 <
+TYPESCRIPT				*typescript.vim* *ft-typescript-syntax*
+				*typescriptreact.vim* *ft-typescriptreact-syntax*
+
+There is one option to control the TypeScript syntax highlighting.
+
+						*g:typescript_host_keyword*
+When this variable is set to 1, host-specific APIs such as `addEventListener`
+are highlighted. To disable set it to zero in your .vimrc: >
+
+	let g:typescript_host_keyword = 0
+<
+The default value is 1.
+
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
 There is a trade-off between more accurate syntax highlighting versus screen
@@ -3761,35 +3802,42 @@ The g:vimsyn_embed option allows users to select what, if any, types of
 embedded script highlighting they wish to have. >
 
    g:vimsyn_embed == 0   : don't support any embedded scripts
-   g:vimsyn_embed =~ 'l' : support embedded lua
-   g:vimsyn_embed =~ 'm' : support embedded mzscheme
-   g:vimsyn_embed =~ 'p' : support embedded perl
-   g:vimsyn_embed =~ 'P' : support embedded python
-   g:vimsyn_embed =~ 'r' : support embedded ruby
-   g:vimsyn_embed =~ 't' : support embedded tcl
+   g:vimsyn_embed =~ 'l' : support embedded Lua
+   g:vimsyn_embed =~ 'm' : support embedded MzScheme
+   g:vimsyn_embed =~ 'p' : support embedded Perl
+   g:vimsyn_embed =~ 'P' : support embedded Python
+   g:vimsyn_embed =~ 'r' : support embedded Ruby
+   g:vimsyn_embed =~ 't' : support embedded Tcl
 <
 By default, g:vimsyn_embed is a string supporting interpreters that your vim
-itself supports.  Concatenate multiple characters to support multiple types
-of embedded interpreters; ie. g:vimsyn_embed= "mp" supports embedded mzscheme
-and embedded perl.
+itself supports.  Concatenate the indicated characters to support multiple
+types of embedded interpreters (e.g., g:vimsyn_embed = "mp" supports embedded
+mzscheme and embedded perl).
 						*g:vimsyn_folding*
-
-Some folding is now supported with syntax/vim.vim: >
+Some folding is now supported with when 'foldmethod' is set to "syntax": >
 
    g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
    g:vimsyn_folding =~ 'a' : augroups
    g:vimsyn_folding =~ 'f' : fold functions
    g:vimsyn_folding =~ 'h' : fold heredocs
    g:vimsyn_folding =~ 'H' : fold Vim9-script legacy headers
-   g:vimsyn_folding =~ 'l' : fold lua      script
-   g:vimsyn_folding =~ 'm' : fold mzscheme script
-   g:vimsyn_folding =~ 'p' : fold perl     script
-   g:vimsyn_folding =~ 'P' : fold python   script
-   g:vimsyn_folding =~ 'r' : fold ruby     script
-   g:vimsyn_folding =~ 't' : fold tcl      script
-let g:vimsyn_folding = 'acfhlmpPrt'
+   g:vimsyn_folding =~ 'l' : fold Lua      script
+   g:vimsyn_folding =~ 'm' : fold MzScheme script
+   g:vimsyn_folding =~ 'p' : fold Perl     script
+   g:vimsyn_folding =~ 'P' : fold Python   script
+   g:vimsyn_folding =~ 'r' : fold Ruby     script
+   g:vimsyn_folding =~ 't' : fold Tcl      script
 <
-							*g:vimsyn_noerror*
+
+By default, g:vimsyn_folding is unset.  Concatenate the indicated characters
+to support folding of multiple syntax constructs (e.g.,
+g:vimsyn_folding = "fh" will enable folding of both functions and heredocs).
+
+						*g:vimsyn_comment_strings*
+By default, strings are highlighted inside comments.  This may be disabled by
+setting g:vimsyn_comment_strings to false.
+
+						*g:vimsyn_noerror*
 Not all error highlighting that syntax/vim.vim does may be correct; Vim script
 is a difficult language to highlight correctly.  A way to suppress error
 highlighting is to put the following line in your |vimrc|: >
@@ -4314,7 +4362,9 @@ Whether or not it is actually concealed depends on the value of the
 'conceallevel' option.  The 'concealcursor' option is used to decide whether
 concealable items in the current line are displayed unconcealed to be able to
 edit the line.
-Another way to conceal text is with |matchadd()|.
+
+Another way to conceal text is with |matchadd()|, but internally this works a
+bit differently |syntax-vs-match|.
 
 concealends						*:syn-concealends*
 
@@ -4322,7 +4372,9 @@ When the "concealends" argument is given, the start and end matches of
 the region, but not the contents of the region, are marked as concealable.
 Whether or not they are actually concealed depends on the setting on the
 'conceallevel' option. The ends of a region can only be concealed separately
-in this way when they have their own highlighting via "matchgroup"
+in this way when they have their own highlighting via "matchgroup".  The
+|synconcealed()| function can be used to retrieve information about conealed
+items.
 
 cchar							*:syn-cchar*
 							*E844*
@@ -5632,6 +5684,11 @@ PmenuExtraSel	Popup menu: Selected item "extra text".
 PmenuSbar	Popup menu: Scrollbar.
 							*hl-PmenuThumb*
 PmenuThumb	Popup menu: Thumb of the scrollbar.
+							*hl-PmenuMatch*
+PmenuMatch	Popup menu: Matched text in normal item
+							*hl-PmenuMatchSel*
+PmenuMatchSel	Popup menu: Matched text in selected item
+
 							*hl-PopupNotification*
 PopupNotification
 		Popup window created with |popup_notification()|.  If not

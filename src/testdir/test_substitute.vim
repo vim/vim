@@ -173,6 +173,16 @@ func Test_substitute_repeat()
   call feedkeys("Qsc\<CR>y", 'tx')
   bwipe!
 endfunc
+
+" Test :s with ? as delimiter.
+func Test_substitute_question_delimiter()
+  new
+  call setline(1, '??:??')
+  %s?\?\??!!?g
+  call assert_equal('!!:!!', getline(1))
+  bwipe!
+endfunc
+
 " Test %s/\n// which is implemented as a special case to use a
 " more efficient join rather than doing a regular substitution.
 func Test_substitute_join()
@@ -1496,6 +1506,20 @@ func Test_substitute_expr_recursive()
   delfunc R
   delfunc Q
   exe bufnr .. "bw!"
+endfunc
+
+" Test for changing 'cpo' in a substitute expression
+func Test_substitute_expr_cpo()
+  func XSubExpr()
+    set cpo=
+    return 'x'
+  endfunc
+
+  let save_cpo = &cpo
+  call assert_equal('xxx', substitute('abc', '.', '\=XSubExpr()', 'g'))
+  call assert_equal(save_cpo, &cpo)
+
+  delfunc XSubExpr
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

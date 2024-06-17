@@ -75,6 +75,9 @@ No maximum for \-ps. With \-ps, 0 results in one long line of output.
 .IR \-C " | " \-capitalize
 Capitalize variable names in C include file style, when using \-i.
 .TP
+.I \-d
+show offset in decimal instead of hex.
+.TP
 .IR \-E " | " \-EBCDIC
 Change the character encoding in the righthand column from ASCII to EBCDIC.
 This does not change the hexadecimal representation. The option is
@@ -138,12 +141,12 @@ anywhere. Use the combination
 to read a bits dump instead of a hex dump.
 .TP
 .IR \-R " " when
-In output the hex-value and the value are both colored with the same color
+In the output the hex-value and the value are both colored with the same color
 depending on the hex-value. Mostly helping to differentiate printable and
 non-printable characters.
 .I \fIwhen\fP
 is
-.BR never ", " always ", or " auto .
+.BR never ", " always ", or " auto " (default: auto).
 When the 
 .BR $NO_COLOR
 environment variable is set, colorization will be disabled.

@@ -3391,6 +3391,9 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	{
 	    char_u	*group_name;
 
+	    if (ap->pat == NULL)		// pattern has been removed
+		continue;
+
 	    if (group != AUGROUP_ALL && group != ap->group)
 		continue;
 

@@ -1663,7 +1663,7 @@ install_registry(void)
 	uninstall_string,
 	icon_string,
 	version_string,
-	"Bram Moolenaar et al.");
+	"The Vim Project");
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
 

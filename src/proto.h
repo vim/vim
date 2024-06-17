@@ -94,6 +94,7 @@ extern int _stricoll(char *a, char *b);
 # include "float.pro"
 # include "fold.pro"
 # include "getchar.pro"
+# include "gc.pro"
 # include "gui_xim.pro"
 # include "hardcopy.pro"
 # include "hashtab.pro"

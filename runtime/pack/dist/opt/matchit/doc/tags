@@ -1,4 +1,6 @@
 :MatchDebug	matchit.txt	/*:MatchDebug*
+:MatchDisable	matchit.txt	/*:MatchDisable*
+:MatchEnable	matchit.txt	/*:MatchEnable*
 MatchError	matchit.txt	/*MatchError*
 [%	matchit.txt	/*[%*
 ]%	matchit.txt	/*]%*
@@ -26,6 +28,7 @@ matchit-choose	matchit.txt	/*matchit-choose*
 matchit-configure	matchit.txt	/*matchit-configure*
 matchit-debug	matchit.txt	/*matchit-debug*
 matchit-details	matchit.txt	/*matchit-details*
+matchit-disable	matchit.txt	/*matchit-disable*
 matchit-highlight	matchit.txt	/*matchit-highlight*
 matchit-hl	matchit.txt	/*matchit-hl*
 matchit-intro	matchit.txt	/*matchit-intro*

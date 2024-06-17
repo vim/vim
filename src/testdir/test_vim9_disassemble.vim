@@ -381,6 +381,34 @@ def Test_disassemble_import_autoload()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_disassemble_import_autoload_autoload()
+  mkdir('Xauto_auto/autoload', 'pR')
+  var lines =<< trim END
+    vim9script
+    export const val = 11
+  END
+  writefile(lines, 'Xauto_auto/autoload/Xauto_vars_f1.vim')
+
+  lines =<< trim END
+    vim9script
+
+    import autoload './Xauto_auto/autoload/Xauto_vars_f1.vim' as f1
+    def F()
+        f1.val = 13
+    enddef
+    var res = execute('disass F')
+
+    assert_match('<SNR>\d*_F.*' ..
+      'f1.val = 13\_s*' ..
+      '\d PUSHNR 13\_s*' ..
+      '\d SOURCE .*/Xauto_auto/autoload/Xauto_vars_f1.vim\_s*' ..
+      '\d STOREEXPORT val in .*/Xauto_auto/autoload/Xauto_vars_f1.vim\_s*' ..
+      '\d RETURN void',
+      res)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def s:ScriptFuncStore()
   var localnr = 1
   localnr = 2

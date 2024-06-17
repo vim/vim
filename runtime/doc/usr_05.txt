@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 9.1.  Last change: 2023 Sep 12
+*usr_05.txt*	For Vim version 9.1.  Last change: 2024 May 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -435,6 +435,19 @@ when Vim starts, add the following line to your vimrc file: >
 
 After restarting your Vim, the plugin is active and you can read about it at: >
 	:h editorconfig.txt
+
+
+Adding comment package					*comment-install*
+
+Load the plugin with this command: >
+    packadd comment
+<
+This way you can use the plugin with the default key bindings `gc` and similar
+for commenting (which is a well-established mapping in the Vim community).
+
+If you add this line to your vimrc file, then you need to restart Vim to have
+the package loaded. Once the package is loaded, read about it at: >
+	:h comment.txt
 
 More information about packages can be found here: |packages|.
 
