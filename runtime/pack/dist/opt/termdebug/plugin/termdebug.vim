@@ -45,11 +45,11 @@ enddef
 
 # Variables to keep their status among multiple instances of Termdebug
 # Avoid to source the script twice.
-if exists('g:termdebug_loaded')
-    Echoerr('Termdebug already loaded.')
-    finish
-endif
-g:termdebug_loaded = true
+# if exists('g:termdebug_loaded')
+#     Echoerr('Termdebug already loaded.')
+#     finish
+# endif
+# g:termdebug_loaded = true
 
 # Script variables declaration. These variables are re-initialized at every
 # Termdebug instance
@@ -190,16 +190,17 @@ def InitScriptVariables()
   # Remember the old value of 'signcolumn' for each buffer that it's set in, so
   # that we can restore the value for all buffers.
   signcolumn_buflist = [bufnr()]
-  save_columns = 0
+  save_columns = &columns
 
   winbar_winids = []
 
-  k_map_saved = null_dict
-  plus_map_saved = null_dict
-  minus_map_saved = null_dict
+  k_map_saved = maparg('K', 'n', 0, 1)
+  plus_map_saved = maparg('+', 'n', 0, 1)
+  minus_map_saved = maparg('-', 'n', 0, 1)
 
   if has('menu')
-    saved_mousemodel = null_string
+    saved_mousemodel = &mousemodel
+    echom "mousemodel to be saved:" .. saved_mousemodel
   endif
 enddef
 # The command that starts debugging, e.g. ":Termdebug vim".
@@ -292,7 +293,6 @@ def StartDebug_internal(dict: dict<any>)
   endif
   if wide > 0
     if &columns < wide
-      save_columns = &columns
       &columns = wide
       # If we make the Vim window wider, use the whole left half for the debug
       # windows.
@@ -904,9 +904,7 @@ def EndDebugCommon()
 
   win_gotoid(curwinid)
 
-  if save_columns > 0
-    &columns = save_columns
-  endif
+  &columns = save_columns
 
   if has("balloon_eval") || has("balloon_eval_term")
     set balloonexpr=
@@ -1137,7 +1135,6 @@ def InstallCommands()
   endif
 
   if map
-    k_map_saved = maparg('K', 'n', 0, 1)
     if !empty(k_map_saved) && !k_map_saved.buffer || empty(k_map_saved)
       nnoremap K :Evaluate<CR>
     endif
@@ -1148,7 +1145,6 @@ def InstallCommands()
     map = get(g:termdebug_config, 'map_plus', 1)
   endif
   if map
-    plus_map_saved = maparg('+', 'n', 0, 1)
     if !empty(plus_map_saved) && !plus_map_saved.buffer || empty(plus_map_saved)
       nnoremap <expr> + $'<Cmd>{v:count1}Up<CR>'
     endif
@@ -1159,7 +1155,6 @@ def InstallCommands()
     map = get(g:termdebug_config, 'map_minus', 1)
   endif
   if map
-    minus_map_saved = maparg('-', 'n', 0, 1)
     if !empty(minus_map_saved) && !minus_map_saved.buffer || empty(minus_map_saved)
       nnoremap <expr> - $'<Cmd>{v:count1}Down<CR>'
     endif
@@ -1177,7 +1172,6 @@ def InstallCommands()
     endif
 
     if pup
-      saved_mousemodel = &mousemodel
       &mousemodel = 'popup_setpos'
       an 1.200 PopUp.-SEP3-	<Nop>
       an 1.210 PopUp.Set\ breakpoint	:Break<CR>
@@ -1232,38 +1226,22 @@ def DeleteCommands()
   delcommand Var
   delcommand Winbar
 
-  if k_map_saved isnot null_dict
-    if !empty(k_map_saved) && k_map_saved.buffer
-      # pass
-    elseif !empty(k_map_saved) && !k_map_saved.buffer
-      nunmap K
-      mapset(k_map_saved)
-    elseif empty(k_map_saved)
-      silent! nunmap K
-    endif
-    k_map_saved = null_dict
+  if !empty(k_map_saved)
+    mapset(k_map_saved)
+  else
+    silent! nunmap K
   endif
-  if plus_map_saved isnot null_dict
-    if !empty(plus_map_saved) && plus_map_saved.buffer
-      # pass
-    elseif !empty(plus_map_saved) && !plus_map_saved.buffer
-      nunmap +
-      mapset(plus_map_saved)
-    elseif empty(plus_map_saved)
-      silent! nunmap +
-    endif
-    plus_map_saved = null_dict
+
+  if !empty(plus_map_saved)
+    mapset(plus_map_saved)
+  else
+    silent! nunmap +
   endif
-  if minus_map_saved isnot null_dict
-    if !empty(minus_map_saved) && minus_map_saved.buffer
-      # pass
-    elseif !empty(minus_map_saved) && !minus_map_saved.buffer
-      nunmap -
-      mapset(minus_map_saved)
-    elseif empty(minus_map_saved)
-      silent! nunmap -
-    endif
-    minus_map_saved = null_dict
+
+  if !empty(minus_map_saved)
+    mapset(minus_map_saved)
+  else
+    silent! nunmap -
   endif
 
   if has('menu')
@@ -1280,21 +1258,21 @@ def DeleteCommands()
       endif
     endfor
     win_gotoid(curwinid)
-    winbar_winids = []
+    # winbar_winids = []
 
-    if saved_mousemodel isnot null_string
-      &mousemodel = saved_mousemodel
-      saved_mousemodel = null_string
-      try
-        aunmenu PopUp.-SEP3-
-        aunmenu PopUp.Set\ breakpoint
-        aunmenu PopUp.Clear\ breakpoint
-        aunmenu PopUp.Run\ until
-        aunmenu PopUp.Evaluate
-      catch
-        # ignore any errors in removing the PopUp menu
-      endtry
-    endif
+    echom "restoring mousemodel:" .. saved_mousemodel
+    &mousemodel = saved_mousemodel
+    echom "mousemodel before leaving:" .. saved_mousemodel
+    echom "&mousemodel before leaving:" .. &mousemodel
+    try
+      aunmenu PopUp.-SEP3-
+      aunmenu PopUp.Set\ breakpoint
+      aunmenu PopUp.Clear\ breakpoint
+      aunmenu PopUp.Run\ until
+      aunmenu PopUp.Evaluate
+    catch
+      # ignore any errors in removing the PopUp menu
+    endtry
   endif
 
   sign_unplace('TermDebug')
@@ -1342,8 +1320,6 @@ def SetBreakpoint(at: string, tbreak=false)
   else
     cmd = $'-break-insert {AT}'
   endif
-  # OK
-  # echom $"cmsd: {cmd}"
   SendCommand(cmd)
   if do_continue
     ContinueCommand()
