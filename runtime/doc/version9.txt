@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 10
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -31694,7 +31694,7 @@ The release 9.1 is dedicated to Vim's Benevolent dictator for life
 This release has hundreds of bug fixes, there are a few new features and there
 are many minor improvements.
 
-Vim9 classes
+Vim9 classes ~
 ------------
 Support for classes and objects in a Vim9 script are added.  This is described
 in |vim9-class|.  The following features are supported:
@@ -41597,7 +41597,7 @@ Highlighting: ~
 
 |hl-MsgArea|		highlighting of the Command-line and messages area
 |hl-PmenuMatch|		Popup menu: highlighting of matched text
-|hl-PmenuMatchSel|     	Popup menu: highlighting of matched text in selected
+|hl-PmenuMatchSel|	Popup menu: highlighting of matched text in selected
 			line
 
 Commands: ~

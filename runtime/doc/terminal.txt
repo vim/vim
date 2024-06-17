@@ -648,7 +648,7 @@ term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
 		Returns |v:null| when there is no job. In Vim9 script, return
-		null_job when there is no job.
+		|null_job| when there is no job.
 
 		Can also be used as a |method|: >
 			GetBufnr()->term_getjob()

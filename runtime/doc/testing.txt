@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.1.  Last change: 2024 Jun 06
+*testing.txt*	For Vim version 9.1.  Last change: 2024 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -483,7 +483,7 @@ test_unknown()						*test_unknown()*
 test_void()						*test_void()*
 		Return a value with void type. Only useful for testing.
 
-		Return type: unknown
+		Return type: void
 
 ==============================================================================
 3. Assert functions				*assert-functions-details*
@@ -499,6 +499,7 @@ assert_beeps({cmd})					*assert_beeps()*
 			GetCmd()->assert_beeps()
 <
 		Return type: |Number|
+
 							*assert_equal()*
 assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
@@ -522,7 +523,7 @@ assert_equal({expected}, {actual} [, {msg}])
 <
 		Return type: |Number|
 
-<							*assert_equalfile()*
+							*assert_equalfile()*
 assert_equalfile({fname-one}, {fname-two} [, {msg}])
 		When the files {fname-one} and {fname-two} do not contain
 		exactly the same text an error message is added to |v:errors|.
@@ -550,6 +551,7 @@ assert_exception({error} [, {msg}])			*assert_exception()*
 			endtry
 <
 		Return type: |Number|
+
 							*assert_fails()*
 assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 		Run {cmd} and add an error message to |v:errors| if it does
