@@ -3832,8 +3832,8 @@ func Test_glob_symlinks()
     endif
     silent !mklink XglobOk Xglob1
   else
-    silent !ln -s XglobBad DoesNotExist
-    silent !ln -s XglobOk Xglob1
+    silent !ln -s DoesNotExist XglobBad
+    silent !ln -s Xglob1 XglobOk
   endif
 
   " The broken symlink is excluded when alllinks is false.
