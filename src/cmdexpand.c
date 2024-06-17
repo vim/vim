@@ -438,6 +438,28 @@ cmdline_compl_startcol(void)
 }
 
 /*
+ * Returns the current cmdline completion pattern.
+ */
+    char_u *
+cmdline_compl_pattern(void)
+{
+    expand_T	*xp = get_cmdline_info()->xpc;
+
+    return xp == NULL ? NULL : xp->xp_orig;
+}
+
+/*
+ * Returns TRUE if fuzzy cmdline completion is active, FALSE otherwise.
+ */
+    int
+cmdline_compl_is_fuzzy(void)
+{
+    expand_T	*xp = get_cmdline_info()->xpc;
+
+    return xp != NULL && cmdline_fuzzy_completion_supported(xp);
+}
+
+/*
  * Return the number of characters that should be skipped in a status match.
  * These are backslashes used for escaping.  Do show backslashes in help tags.
  */

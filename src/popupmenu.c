@@ -428,28 +428,35 @@ pum_under_menu(int row, int col, int only_redrawing)
 pum_compute_text_attrs(char_u *text, hlf_T hlf)
 {
     int		i;
-    int		leader_len;
+    size_t	leader_len;
     int		char_cells;
     int		new_attr;
     char_u	*ptr = text;
     int		cell_idx = 0;
     garray_T	*ga = NULL;
     int		*attrs = NULL;
-    char_u	*leader = ins_compl_leader();
-    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
+    char_u	*leader = NULL;
+    int		in_fuzzy;
     int		matched_start = FALSE;
     int_u	char_pos = 0;
 
-    if (leader == NULL || *leader == NUL || (hlf != HLF_PSI && hlf != HLF_PNI)
+    if ((hlf != HLF_PSI && hlf != HLF_PNI)
 	    || (highlight_attr[HLF_PMSI] == highlight_attr[HLF_PSI]
 		&& highlight_attr[HLF_PMNI] == highlight_attr[HLF_PNI]))
+	return NULL;
+
+    leader = State == MODE_CMDLINE ? cmdline_compl_pattern()
+							  : ins_compl_leader();
+    if (leader == NULL || *leader == NUL)
 	return NULL;
 
     attrs = ALLOC_MULT(int, vim_strsize(text));
     if (attrs == NULL)
 	return NULL;
 
-    leader_len = (int)STRLEN(leader);
+    in_fuzzy = State == MODE_CMDLINE ? cmdline_compl_is_fuzzy()
+					  : (get_cot_flags() & COT_FUZZY) != 0;
+    leader_len = STRLEN(leader);
 
     if (in_fuzzy)
 	ga = fuzzy_match_str_with_pos(text, leader);

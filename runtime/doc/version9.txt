@@ -41560,6 +41560,9 @@ Support for Wayland UI.
 
 Support for the XDG Desktop Specification |xdg-base-dir|
 
+Support highlighting the matched text for insert-mode completion and
+command-line completion in |ins-completion-menu|.
+
 							*changed-9.2*
 Changed~
 -------
