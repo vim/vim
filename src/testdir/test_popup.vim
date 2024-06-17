@@ -1400,6 +1400,20 @@ func Test_pum_highlights_match()
             \ { 'word': '你可好吗' },
             \]}
     endfunc
+
+    func Comp()
+      let col = col('.')
+      if getline('.') == 'f'
+        let col -= 1
+      endif
+      call complete(col, [
+            \ #{word: "foo", icase: 1},
+            \ #{word: "Foobar", icase: 1},
+            \ #{word: "fooBaz", icase: 1},
+            \])
+      return ''
+    endfunc
+
     set omnifunc=Omni_test
     set completeopt=menu,noinsert,fuzzy
     hi PmenuMatchSel  ctermfg=6 ctermbg=7
@@ -1463,7 +1477,14 @@ func Test_pum_highlights_match()
     call term_sendkeys(buf, ":set norightleft\<CR>")
   endif
 
+  call term_sendkeys(buf, "S\<C-R>=Comp()\<CR>f")
+  call VerifyScreenDump(buf, 'Test_pum_highlights_09', {})
+  call term_sendkeys(buf, "o\<BS>\<C-R>=Comp()\<CR>")
+  call VerifyScreenDump(buf, 'Test_pum_highlights_09', {})
+
+  call term_sendkeys(buf, "\<C-E>\<Esc>")
   call TermWait(buf)
+
   call StopVimInTerminal(buf)
 endfunc
 
