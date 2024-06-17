@@ -75,9 +75,11 @@ var varbufname: string
 var asmbufnr: number
 var asmbufname: string
 var promptbuf: number
-# This is for the "debugged program" thing
+# This is for the "debugged-program" thing
 var ptybufnr: number
+var ptybufname: string
 var commbufnr: number
+var commbufname: string
 
 var gdbjob: job
 var gdb_channel: channel
@@ -110,7 +112,7 @@ var evalexpr: string
 # Remember the old value of 'signcolumn' for each buffer that it's set in, so
 # that we can restore the value for all buffers.
 var signcolumn_buflist: list<number>
-var save_columns: number
+var saved_columns: number
 
 var allleft: bool
 # This was s:vertical but I cannot use vertical as variable name
@@ -120,9 +122,9 @@ var winbar_winids: list<number>
 
 var saved_mousemodel: string
 
-var k_map_saved: dict<any>
-var plus_map_saved: dict<any>
-var minus_map_saved: dict<any>
+var saved_k_map: dict<any>
+var saved_plus_map: dict<any>
+var saved_minus_map: dict<any>
 
 
 def InitScriptVariables()
@@ -155,8 +157,10 @@ def InitScriptVariables()
   asmbufnr = 0
   asmbufname = 'Termdebug-asm-listing'
   promptbuf = 0
-  # This is for the "debugged program" thing
+  # This is for the "debugged-program" thing
+  ptybufname = "debugged-program"
   ptybufnr = 0
+  commbufname = "gdb-communication"
   commbufnr = 0
 
   gdbjob = null_job
@@ -190,13 +194,13 @@ def InitScriptVariables()
   # Remember the old value of 'signcolumn' for each buffer that it's set in, so
   # that we can restore the value for all buffers.
   signcolumn_buflist = [bufnr()]
-  save_columns = &columns
+  saved_columns = &columns
 
   winbar_winids = []
 
-  k_map_saved = maparg('K', 'n', 0, 1)
-  plus_map_saved = maparg('+', 'n', 0, 1)
-  minus_map_saved = maparg('-', 'n', 0, 1)
+  saved_k_map = maparg('K', 'n', 0, 1)
+  saved_plus_map = maparg('+', 'n', 0, 1)
+  saved_minus_map = maparg('-', 'n', 0, 1)
 
   if has('menu')
     saved_mousemodel = &mousemodel
@@ -328,11 +332,10 @@ enddef
 
 # Use when debugger didn't start or ended.
 def CloseBuffers()
-  var bufnames = ['debugged\ program', 'gdb\ communication', asmbufname, varbufname]
-  for bufname in bufnames
-    var buf_nr = bufnr(bufname)
+  var buf_numbers = [ptybufnr, commbufnr, asmbufnr, varbufnr]
+  for buf_nr in buf_numbers
     if buf_nr > 0 && bufexists(buf_nr)
-      exe $'bwipe! {bufname}'
+      exe $'bwipe! {buf_nr}'
     endif
   endfor
 
@@ -340,7 +343,6 @@ def CloseBuffers()
   gdbwin = 0
 enddef
 
-# IsGdbRunning(): bool may be a better name?
 def IsGdbStarted(): bool
   var gdbproc_status = job_status(term_getjob(gdbbufnr))
   if gdbproc_status !=# 'run'
@@ -355,7 +357,7 @@ enddef
 # Open a terminal window without a job, to run the debugged program in.
 def StartDebug_term(dict: dict<any>)
   ptybufnr = term_start('NONE', {
-    term_name: 'debugged program',
+    term_name: ptybufname,
     vertical: vvertical})
   if ptybufnr == 0
     Echoerr('Failed to open the program terminal window')
@@ -376,7 +378,7 @@ def StartDebug_term(dict: dict<any>)
 
   # Create a hidden terminal window to communicate with gdb
   commbufnr = term_start('NONE', {
-    term_name: 'gdb communication',
+    term_name: commbufname,
     out_cb: function('CommOutput'),
     hidden: 1
   })
@@ -872,16 +874,12 @@ enddef
 
 def EndDebugCommon()
   var curwinid = win_getid()
-
-  if ptybufnr > 0 && bufexists(ptybufnr)
-    exe $'bwipe! {ptybufnr}'
-  endif
-  if asmbufnr > 0 && bufexists(asmbufnr)
-    exe $'bwipe! {asmbufnr}'
-  endif
-  if varbufnr > 0 && bufexists(varbufnr)
-    exe $'bwipe! {varbufnr}'
-  endif
+  var buf_numbers = [ptybufnr, asmbufnr, varbufnr]
+  for buf_nr in buf_numbers
+    if buf_nr > 0 && bufexists(buf_nr)
+      exe $'bwipe! {buf_nr}'
+    endif
+  endfor
   running = false
 
   # Restore 'signcolumn' in all buffers for which it was set.
@@ -904,7 +902,7 @@ def EndDebugCommon()
 
   win_gotoid(curwinid)
 
-  &columns = save_columns
+  &columns = saved_columns
 
   if has("balloon_eval") || has("balloon_eval_term")
     set balloonexpr=
@@ -1135,7 +1133,7 @@ def InstallCommands()
   endif
 
   if map
-    if !empty(k_map_saved) && !k_map_saved.buffer || empty(k_map_saved)
+    if !empty(saved_k_map) && !saved_k_map.buffer || empty(saved_k_map)
       nnoremap K :Evaluate<CR>
     endif
   endif
@@ -1145,7 +1143,7 @@ def InstallCommands()
     map = get(g:termdebug_config, 'map_plus', 1)
   endif
   if map
-    if !empty(plus_map_saved) && !plus_map_saved.buffer || empty(plus_map_saved)
+    if !empty(saved_plus_map) && !saved_plus_map.buffer || empty(saved_plus_map)
       nnoremap <expr> + $'<Cmd>{v:count1}Up<CR>'
     endif
   endif
@@ -1155,7 +1153,7 @@ def InstallCommands()
     map = get(g:termdebug_config, 'map_minus', 1)
   endif
   if map
-    if !empty(minus_map_saved) && !minus_map_saved.buffer || empty(minus_map_saved)
+    if !empty(saved_minus_map) && !saved_minus_map.buffer || empty(saved_minus_map)
       nnoremap <expr> - $'<Cmd>{v:count1}Down<CR>'
     endif
   endif
@@ -1226,20 +1224,20 @@ def DeleteCommands()
   delcommand Var
   delcommand Winbar
 
-  if !empty(k_map_saved)
-    mapset(k_map_saved)
+  if !empty(saved_k_map)
+    mapset(saved_k_map)
   else
     silent! nunmap K
   endif
 
-  if !empty(plus_map_saved)
-    mapset(plus_map_saved)
+  if !empty(saved_plus_map)
+    mapset(saved_plus_map)
   else
     silent! nunmap +
   endif
 
-  if !empty(minus_map_saved)
-    mapset(minus_map_saved)
+  if !empty(saved_minus_map)
+    mapset(saved_minus_map)
   else
     silent! nunmap -
   endif
