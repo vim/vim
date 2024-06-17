@@ -530,7 +530,7 @@ callback update spelling mistakes in the changed text.  Vim will move the
 properties below the changed text, so that they still highlight the same text,
 thus you don't need to update these.
 
-
+							*text-prop-cleared*
 Text property columns are not updated or copied: ~
 
 - When setting the line with |setline()| or through an interface, such as Lua,

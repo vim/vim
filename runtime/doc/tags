@@ -10698,6 +10698,7 @@ text-functions	usr_41.txt	/*text-functions*
 text-objects	motion.txt	/*text-objects*
 text-objects-changed	version5.txt	/*text-objects-changed*
 text-prop-changes	textprop.txt	/*text-prop-changes*
+text-prop-cleared	textprop.txt	/*text-prop-cleared*
 text-prop-functions	textprop.txt	/*text-prop-functions*
 text-prop-functions-details	textprop.txt	/*text-prop-functions-details*
 text-prop-intro	textprop.txt	/*text-prop-intro*

@@ -1413,6 +1413,8 @@ The next three commands always work on whole lines.
 :[range]m[ove] {address}			*:m* *:mo* *:move* *E134*
 			Move the lines given by [range] to below the line
 			given by {address}.
+			Any text properties in [range] are cleared
+			|text-prop-cleared|.
 
 ==============================================================================
 6. Formatting text					*formatting*

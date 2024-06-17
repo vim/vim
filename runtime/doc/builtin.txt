@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 14
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -9485,7 +9485,8 @@ setfperm({fname}, {mode})				*setfperm()* *chmod*
 setline({lnum}, {text})					*setline()*
 		Set line {lnum} of the current buffer to {text}.  To insert
 		lines use |append()|. To set lines in another buffer use
-		|setbufline()|.  Any text properties in {lnum} are cleared.
+		|setbufline()|.
+		Any text properties in {lnum} are cleared |text-prop-cleared|.
 
 		{lnum} is used like with |getline()|.
 		When {lnum} is just below the last line the {text} will be
