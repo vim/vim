@@ -4176,6 +4176,7 @@ get_cmdline_completion(void)
 {
     cmdline_info_T *p;
     char_u	*buffer;
+    int		xp_context;
 
     if (cmdline_star > 0)
 	return NULL;
@@ -4184,15 +4185,21 @@ get_cmdline_completion(void)
     if (p == NULL || p->xpc == NULL)
 	return NULL;
 
-    set_expand_context(p->xpc);
-    if (p->xpc->xp_context == EXPAND_UNSUCCESSFUL)
+    xp_context = p->xpc->xp_context;
+    if (xp_context == EXPAND_NOTHING)
+    {
+	set_expand_context(p->xpc);
+	xp_context = p->xpc->xp_context;
+	p->xpc->xp_context = EXPAND_NOTHING;
+    }
+    if (xp_context == EXPAND_UNSUCCESSFUL)
 	return NULL;
 
-    char_u *cmd_compl = cmdcomplete_type_to_str(p->xpc->xp_context);
+    char_u *cmd_compl = cmdcomplete_type_to_str(xp_context);
     if (cmd_compl == NULL)
 	return NULL;
 
-    if (p->xpc->xp_context == EXPAND_USER_LIST || p->xpc->xp_context == EXPAND_USER_DEFINED)
+    if (xp_context == EXPAND_USER_LIST || xp_context == EXPAND_USER_DEFINED)
     {
 	buffer = alloc(STRLEN(cmd_compl) + STRLEN(p->xpc->xp_arg) + 2);
 	if (buffer == NULL)
