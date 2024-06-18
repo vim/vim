@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-17 12:57+0300\n"
-"PO-Revision-Date: 2023-12-17 17:00+0300\n"
+"POT-Creation-Date: 2024-06-18 13:41+0300\n"
+"PO-Revision-Date: 2024-06-18 17:00+0300\n"
 "Last-Translator: Emir SARI <emir_sari@icloud.com>\n"
 "Language-Team: Turkish <https://github.com/bitigchi/vim>\n"
 "Language: tr\n"
@@ -172,6 +172,9 @@ msgstr " (dosya %d/%d)"
 #, c-format
 msgid " (file (%d) of %d)"
 msgstr " (dosya (%d)/%d)"
+
+msgid "[Command Line]"
+msgstr "[Komut Satırı]"
 
 msgid "[Prompt]"
 msgstr "[İstem]"
@@ -444,9 +447,6 @@ msgstr "Katakana"
 msgid "Bopomofo"
 msgstr "Bopomofo"
 
-msgid "Not enough memory to set references, garbage collection aborted!"
-msgstr "Referansları ayarlamak için yetersiz bellek, atık toplama durduruldu"
-
 msgid ""
 "\n"
 "\tLast set from "
@@ -697,9 +697,6 @@ msgstr "Hata"
 msgid "Interrupt"
 msgstr "Yarıda Kesilme"
 
-msgid "[Command Line]"
-msgstr "[Komut Satırı]"
-
 msgid "is a directory"
 msgstr "bir dizin"
 
@@ -867,6 +864,9 @@ msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld satır: "
 msgstr[1] "+-%s%3ld satır: "
+
+msgid "Not enough memory to set references, garbage collection aborted!"
+msgstr "Referansları ayarlamak için yetersiz bellek, atık toplama durduruldu"
 
 msgid "No match at cursor, finding next"
 msgstr "İmleç konumunda eşleşme bulunamadı, sonraki bulunuyor"
@@ -1426,6 +1426,9 @@ msgstr "mapnew() argümanı"
 
 msgid "filter() argument"
 msgstr "filter() argümanı"
+
+msgid "foreach() argument"
+msgstr "foreach() argümanı"
 
 msgid "extendnew() argument"
 msgstr "extendnew() argümanı"
@@ -2473,6 +2476,9 @@ msgstr "%s, %s üzerinde"
 msgid "Printing '%s'"
 msgstr "'%s' yazdırılıyor"
 
+#~ msgid "DefaultFontNameForWindows"
+#~ msgstr ""
+
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "X ekranını açma %ld milisaniye sürdü"
@@ -3414,8 +3420,8 @@ msgid "%s returning %s"
 msgstr "%s, %s döndürüyor"
 
 #, c-format
-msgid "Function %s does not need compiling"
-msgstr "%s işlevini derlemeye gerek yok "
+msgid "Function %s%s%s does not need compiling"
+msgstr "%s%s%s işlevini derlemeye gerek yok "
 
 #, c-format
 msgid "%s (%s, compiled %s)"
@@ -3573,6 +3579,10 @@ msgstr "  kullanıcı 2. vimrc dosyası: \""
 
 msgid " 3rd user vimrc file: \""
 msgstr "  kullanıcı 3. vimrc dosyası: \""
+
+msgid " 4th user vimrc file: \""
+msgstr "  kullanıcı 4. vimrc dosyası: \""
+
 
 msgid "      user exrc file: \""
 msgstr "      kullanıcı exrc dosyası: \""
@@ -4181,6 +4191,10 @@ msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: :loadkeymap kaynak alınmayan bir dosyada kullanılıyor"
 
 #, c-format
+msgid "E106: Unsupported diff output format: %s"
+msgstr "E106: Desteklenmeyen diff çıktısı biçimi: %s"
+
+#, c-format
 msgid "E107: Missing parentheses: %s"
 msgstr "E107: Ayraç eksik: %s"
 
@@ -4509,8 +4523,8 @@ msgstr "E196: Bu sürümde ikili harfler bulunmamaktadır"
 msgid "E197: Cannot set language to \"%s\""
 msgstr "E197: \"%s\" diline ayarlanamıyor"
 
-msgid "E199: Active window or buffer deleted"
-msgstr "E199: Etkin pencere veya arabellek silinmiş"
+msgid "E199: Active window or buffer changed or deleted"
+msgstr "E199: Etkin pencere veya arabellek değiştirilmiş veya silinmiş"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
 msgstr "E200: *ReadPre otokomutları dosyayı okunamaz hale getirdi"
@@ -6771,6 +6785,10 @@ msgstr ""
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr "E876: (BSO düzenli ifadesi) Tüm BSO'yu depolamak için yeterli alan yok"
 
+#, c-format
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (BSO düzenli ifadesi) Geçersiz karakter sınıfı: %d"
+
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
 msgstr "E878: (BSO düzenli ifadesi) Dal gezinmesi için bellek ayrılamadı!"
 
@@ -8383,13 +8401,14 @@ msgid "E1330: Invalid type for object variable: %s"
 msgstr "E1330: Nesne değişkeni için geçersiz tür: %s"
 
 msgid ""
-"E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
+"E1331: public must be followed by \"var\" or \"static\" or \"final\" or "
 "\"const\""
-msgstr "E1331: Public sonrası \"var\", \"static\", \"final\" veya \"const\" "
+msgstr ""
+"E1331: public sonrası \"var\", \"static\", \"final\" veya \"const\" "
 "gelmelidir"
 
 #, c-format
-msgid "E1332: Public variable name cannot start with underscore: %s"
+msgid "E1332: public variable name cannot start with underscore: %s"
 msgstr "E1332: Genel değişken adı bir alt çizgiyle başlayamaz: %s"
 
 #, c-format
@@ -8512,8 +8531,8 @@ msgstr "E1367: \"%2$s\" arayüzünün \"%1$s\" değişkeninin erişim düzeyi fa
 msgid ""
 "E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
 "\"const\""
-msgstr "E1368: Static sonrası \"var\", \"def\", \"final\" veya \"const\" "
-"gelmelidir"
+msgstr ""
+"E1368: Static sonrası \"var\", \"def\", \"final\" veya \"const\" gelmelidir"
 
 #, c-format
 msgid "E1369: Duplicate variable: %s"
@@ -8535,18 +8554,21 @@ msgstr "E1373: Soyut yöntem \"%s\" gerçeklenmemiş"
 
 #, c-format
 msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
-msgstr "E1374: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfının içinde "
+msgstr ""
+"E1374: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfının içinde "
 "erişilebilirdir"
 
 #, c-format
 msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
-msgstr "E1375: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
+msgstr ""
+"E1375: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
 "erişilebilirdir"
 
 #, c-format
 msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
-msgstr "E1376: Nesne değişkeni \"%s\", yalnızca sınıf \"%s\" nesnesi "
-"kullanılarak erişilebilirdir"
+msgstr ""
+"E1376: Nesne değişkeni \"%s\", yalnızca sınıf \"%s\" nesnesi kullanılarak "
+"erişilebilirdir"
 
 #, c-format
 msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
@@ -8576,23 +8598,25 @@ msgstr ""
 
 #, c-format
 msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
-msgstr "E1384: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfının içinde "
-"erişilebilirdir"
+msgstr ""
+"E1384: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfının içinde erişilebilirdir"
 
 #, c-format
 msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
-msgstr "E1385: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
+msgstr ""
+"E1385: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
 "erişilebilirdir"
 
 #, c-format
 msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
-msgstr "E1386: Nesne yöntemi \"%s\", yalnızca sınıf \"%s\" nesnesi "
-"kullanılarak erişilebilirdir"
+msgstr ""
+"E1386: Nesne yöntemi \"%s\", yalnızca sınıf \"%s\" nesnesi kullanılarak "
+"erişilebilirdir"
 
-msgid "E1387: Public variable not supported in an interface"
+msgid "E1387: public variable not supported in an interface"
 msgstr "E1387: Bir arayüzde genel değişken desteklenmiyor"
 
-msgid "E1388: Public keyword not supported for a method"
+msgid "E1388: public keyword not supported for a method"
 msgstr "E1388: Bir yöntem için genel anahtar sözcük desteklenmiyor"
 
 msgid "E1389: Missing name after implements"
@@ -8607,12 +8631,14 @@ msgstr ""
 
 #, c-format
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
-msgstr "E1391: \"%2$s\" sınıfındaki \"%1$s\" değişkeni kilitlenemiyor/açılamıyor"
+msgstr ""
+"E1391: \"%2$s\" sınıfındaki \"%1$s\" değişkeni kilitlenemiyor/açılamıyor"
 
 #, c-format
 msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
-msgstr "E1392: \"%2$s\" sınıfındaki \"%1$s\" sınıf değişkeni "
-"kilitlenemiyor/açılamıyor"
+msgstr ""
+"E1392: \"%2$s\" sınıfındaki \"%1$s\" sınıf değişkeni kilitlenemiyor/"
+"açılamıyor"
 
 msgid "E1393: Type can only be defined in Vim9 script"
 msgstr "E1393: Tür, yalnızca Vim9 betiğinde tanımlanabilir"
@@ -8672,11 +8698,81 @@ msgstr "E1408: Final değişkeni bir arayüzde desteklenmiyor"
 
 #, c-format
 msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
-msgstr "E1409: \"%2$s\" sınıfındaki \"%1$s\" saltokunur değişken "
-"değiştirilemiyor"
+msgstr ""
+"E1409: \"%2$s\" sınıfındaki \"%1$s\" saltokunur değişken değiştirilemiyor"
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: Bir arayüzde bir bir Const değişken desteklenmiyor"
+
+#, c-format
+msgid "E1411: Missing dot after object \"%s\""
+msgstr "E1411: \"%s\" nesnesi sonrası nokta eksik"
+
+#, c-format
+msgid "E1412: Builtin object method \"%s\" not supported"
+msgstr "E1412: Yerleşik nesne yöntemi \"%s\" desteklenmiyor"
+
+msgid "E1413: Builtin class method not supported"
+msgstr "E1413: Yerleşik sınıf yöntemi desteklenmiyor"
+
+msgid "E1414: Enum can only be defined in Vim9 script"
+msgstr "E1414: Enümerasyon, yalnızca Vim9 betiğinde kullanılabilir"
+
+#, c-format
+msgid "E1415: Enum name must start with an uppercase letter: %s"
+msgstr "E1415: Enümerasyon adı bir BÜYÜK harfle başlamalıdır: %s"
+
+msgid "E1416: Enum cannot extend a class or enum"
+msgstr "E1416: Enümerasyon, bir sınıfı veya enümerasyonu genişletemez"
+
+msgid "E1417: Abstract cannot be used in an Enum"
+msgstr "E1417: Abstract yalnızca bir enümerasyonda kullanılabilir"
+
+#, c-format
+msgid "E1418: Invalid enum value declaration: %s"
+msgstr "E1418: Geçersiz enümerasyon değeri beyanı: %s"
+
+#, c-format
+msgid "E1419: Not a valid command in an Enum: %s"
+msgstr "E1419: Bir enümerasyonda geçerli olmayan bir komut: %s"
+
+msgid "E1420: Missing :endenum"
+msgstr "E1420: :endenum eksik"
+
+#, c-format
+msgid "E1421: Enum \"%s\" cannot be used as a value"
+msgstr "E1421: \"%s\" enümerasyonu yalnızca bir değer olarak kullanılabilir"
+
+#, c-format
+msgid "E1422: Enum value \"%s\" not found in enum \"%s\""
+msgstr "E1422: \"%2$s\" enümerasyonunda \"%1$s\" değeri bulunamadı"
+
+#, c-format
+msgid "E1423: Enum value \"%s.%s\" cannot be modified"
+msgstr "E1423: Enümerasyon değeri \"%s.%s\" değiştirilemiyor"
+
+#, c-format
+msgid "E1424: Using an Enum \"%s\" as a Number"
+msgstr "E1424: Enümerasyon \"%s\", sayı olarak kullanılıyor"
+
+#, c-format
+msgid "E1425: Using an Enum \"%s\" as a String"
+msgstr "E1425: Enümerasyon \"%s\", dizi olarak kullanılıyor"
+
+#, c-format
+msgid "E1426: Enum \"%s\" ordinal value cannot be modified"
+msgstr "E1426: Enümerasyon sıralı değeri \"%s\" değiştirilemiyor"
+
+#, c-format
+msgid "E1427: Enum \"%s\" name cannot be modified"
+msgstr "E1427: Enümerasyon adı \"%s\" değiştirilemiyor"
+
+#, c-format
+msgid "E1428: Duplicate enum value: %s"
+msgstr "E1428: Yinelenen enümerasyon değeri: %s"
+
+msgid "E1429: Class can only be used in a script"
+msgstr "E1429: Sınıf yalnızca bir betikte kullanılabilir"
 
 #, c-format
 msgid "E1500: Cannot mix positional and non-positional arguments: %s"
@@ -8723,6 +8819,17 @@ msgstr "E1509: Genişletilmiş öznitelik okunurken veya yazılırken hata oluş
 #, c-format
 msgid "E1510: Value too large: %s"
 msgstr "E1510: Değer pek büyük: %s"
+
+#, c-format
+msgid "E1511: Wrong number of characters for field \"%s\""
+msgstr "E1511: \"%s\" alanı için yanlış karakter sayısı"
+
+#, c-format
+msgid "E1512: Wrong character width for field \"%s\""
+msgstr "E1512: \"%s\" alanı için yanlış karakter genişliği"
+
+msgid "E1513: Cannot switch buffer. 'winfixbuf' is enabled"
+msgstr "E1513: Arabellek değiştirilemiyor. 'winfixbuf' etkinleştirilmiş"
 
 msgid "--No lines in buffer--"
 msgstr "--Arabellek içinde satır yok--"
@@ -9441,6 +9548,9 @@ msgstr "geçerli pencere için kullanılan en az satır sayısı"
 
 msgid "minimal number of lines used for any window"
 msgstr "herhangi bir pencere için kullanılan en az satır sayısı"
+
+msgid "keep window focused on a single buffer"
+msgstr "pencereyi tek bir arabelleğe odaklı tut"
 
 msgid "keep the height of the window"
 msgstr "pencerenin yüksekliğini tut"
