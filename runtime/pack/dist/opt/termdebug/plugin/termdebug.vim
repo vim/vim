@@ -122,7 +122,7 @@ var winbar_winids: list<number>
 
 var saved_mousemodel: string
 
-var saved_k_map: dict<any>
+var saved_K_map: dict<any>
 var saved_plus_map: dict<any>
 var saved_minus_map: dict<any>
 
@@ -198,7 +198,7 @@ def InitScriptVariables()
 
   winbar_winids = []
 
-  saved_k_map = maparg('K', 'n', 0, 1)
+  saved_K_map = maparg('K', 'n', 0, 1)
   saved_plus_map = maparg('+', 'n', 0, 1)
   saved_minus_map = maparg('-', 'n', 0, 1)
 
@@ -1132,7 +1132,7 @@ def InstallCommands()
   endif
 
   if map
-    if !empty(saved_k_map) && !saved_k_map.buffer || empty(saved_k_map)
+    if !empty(saved_K_map) && !saved_K_map.buffer || empty(saved_K_map)
       nnoremap K :Evaluate<CR>
     endif
   endif
@@ -1223,21 +1223,31 @@ def DeleteCommands()
   delcommand Var
   delcommand Winbar
 
-  if !empty(saved_k_map)
-    mapset(saved_k_map)
-  else
+
+  if !empty(saved_K_map) && saved_K_map.buffer
+    # pass
+  elseif !empty(saved_K_map) && !saved_K_map.buffer
+    nunmap K
+    mapset(saved_K_map)
+  elseif empty(saved_K_map)
     silent! nunmap K
   endif
 
-  if !empty(saved_plus_map)
+  if !empty(saved_plus_map) && saved_plus_map.buffer
+    # pass
+  elseif !empty(saved_plus_map) && !saved_plus_map.buffer
+    nunmap +
     mapset(saved_plus_map)
-  else
+  elseif empty(saved_plus_map)
     silent! nunmap +
   endif
 
-  if !empty(saved_minus_map)
+  if !empty(saved_minus_map) && saved_minus_map.buffer
+    # pass
+  elseif !empty(saved_minus_map) && !saved_minus_map.buffer
+    nunmap -
     mapset(saved_minus_map)
-  else
+  elseif empty(saved_minus_map)
     silent! nunmap -
   endif
 
