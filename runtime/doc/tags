@@ -9178,6 +9178,8 @@ no_buffers_menu	gui.txt	/*no_buffers_menu*
 no_mail_maps	filetype.txt	/*no_mail_maps*
 no_plugin_maps	filetype.txt	/*no_plugin_maps*
 nocombine	syntax.txt	/*nocombine*
+nohlsearch-auto	pattern.txt	/*nohlsearch-auto*
+nohlsearch-install	usr_05.txt	/*nohlsearch-install*
 non-greedy	pattern.txt	/*non-greedy*
 non-zero-arg	eval.txt	/*non-zero-arg*
 none-function_argument	userfunc.txt	/*none-function_argument*
