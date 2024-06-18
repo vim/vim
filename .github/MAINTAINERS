@@ -343,6 +343,7 @@ runtime/lang/menu_ru_ru.utf-8.vim	@RestorerZ
 runtime/pack/dist/opt/cfilter/plugin/cfilter.vim	@yegappan
 runtime/pack/dist/opt/comment/	@habamax
 runtime/pack/dist/opt/matchit/		@chrisbra
+runtime/pack/dist/opt/nohlsearch/		@habamax
 runtime/plugin/manpager.vim		@Konfekt
 runtime/syntax/shared/hgcommitDiff.vim	@vegerot
 runtime/syntax/abaqus.vim		@costerwi
