@@ -3823,12 +3823,6 @@ func Test_glob2()
 endfunc
 
 func Test_glob_symlinks()
-  " Symlinks on Windows are emulated in a number of ways, including by copying the source
-  " file over. Since we cannot detect that skip the test when running on those platforms.
-  if has('win32') && executable('uname') && system('uname -s') =~ '^MSYS\|MINGW\|CYGWIN'
-    throw 'Skipped: does not work on MinGW/Cygwin/Msys'
-  endif
-
   call writefile([], 'Xglob1')
 
   if has("win32")
