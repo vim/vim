@@ -405,7 +405,7 @@ enddef
 # Distinguish between HTML, XHTML and Django
 export def FThtml()
   var n = 1
-  while n < 10 && n <= line("$")
+  while n < 40 && n <= line("$")
     if getline(n) =~ '\<DTD\s\+XHTML\s'
       setf xhtml
       return
