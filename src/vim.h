@@ -1350,6 +1350,7 @@ enum auto_event
     EVENT_CMDLINECHANGED,	// command line was modified
     EVENT_CMDLINEENTER,		// after entering the command line
     EVENT_CMDLINELEAVE,		// before leaving the command line
+    EVENT_CMDLINEMOVED,		// command line cursor was moved
     EVENT_CMDUNDEFINED,		// command undefined
     EVENT_CMDWINENTER,		// after entering the cmdline window
     EVENT_CMDWINLEAVE,		// before leaving the cmdline window

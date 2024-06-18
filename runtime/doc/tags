@@ -4046,6 +4046,7 @@ Cmdline-mode	cmdline.txt	/*Cmdline-mode*
 CmdlineChanged	autocmd.txt	/*CmdlineChanged*
 CmdlineEnter	autocmd.txt	/*CmdlineEnter*
 CmdlineLeave	autocmd.txt	/*CmdlineLeave*
+CmdlineMoved	autocmd.txt	/*CmdlineMoved*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
 ColorScheme	autocmd.txt	/*ColorScheme*

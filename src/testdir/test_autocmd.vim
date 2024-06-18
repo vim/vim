@@ -2096,6 +2096,14 @@ func Test_Cmdline()
   au! CmdlineEnter
   au! CmdlineLeave
   let &shellslash = save_shellslash
+
+  au! CmdlineMoved : let g:pos = getcmdpos()
+  let g:pos = 0
+  call feedkeys(":hello\<Left>\<ESC>", 'xt')
+  call assert_equal(5, g:pos)
+  call feedkeys(":12345678\<C-R>=setcmdpos(3)\<CR>\<ESC>", 'xt')
+  call assert_equal(3, g:pos)
+  au! CmdlineMoved
 endfunc
 
 " Test for BufWritePre autocommand that deletes or unloads the buffer.

@@ -1586,6 +1586,7 @@ getcmdline_int(
     int		res;
     int		save_msg_scroll = msg_scroll;
     int		save_State = State;	// remember State when called
+    int		save_cmdspos = ccline.cmdspos;
     int		some_key_typed = FALSE;	// one of the keys was typed
     // mouse drag and release events are ignored, unless they are
     // preceded with a mouse down event
@@ -2473,6 +2474,11 @@ getcmdline_int(
  * (Sorry for the goto's, I know it is ugly).
  */
 cmdline_not_changed:
+	 if (ccline.cmdspos != save_cmdspos) {
+	    // Trigger CmdlineMoved autocommands.
+	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINEMOVED);
+	 }
+
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
 	    continue;
@@ -4308,6 +4314,10 @@ set_cmdline_pos(
 	new_cmdpos = 0;
     else
 	new_cmdpos = pos;
+
+    // Trigger CmdlineMoved autocommands.
+    trigger_cmd_autocmd(get_cmdline_type(), EVENT_CMDLINEMOVED);
+
     return 0;
 }
 
