@@ -449,6 +449,17 @@ If you add this line to your vimrc file, then you need to restart Vim to have
 the package loaded. Once the package is loaded, read about it at: >
 	:h comment.txt
 
+
+Adding nohlsearch package				*nohlsearch-install*
+
+Load the plugin with this command: >
+    packadd nohlsearch
+<
+Automatically execute |:nohlseach| after |'updatetime'| or getting into |Insert| mode.
+Thus assuming default updatetime, hlsearch would be suspended/turned off after
+4 seconds of idle time.
+
+
 More information about packages can be found here: |packages|.
 
 ==============================================================================
