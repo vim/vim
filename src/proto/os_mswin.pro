@@ -11,6 +11,7 @@ int mch_isFullName(char_u *fname);
 void slash_adjust(char_u *p);
 char_u *resolve_appexeclink(char_u *fname);
 int vim_stat(const char *name, stat_T *stp);
+int vim_lstat(const char *name, stat_T *stp);
 void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);

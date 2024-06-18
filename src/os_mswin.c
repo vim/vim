@@ -430,16 +430,6 @@ slash_adjust(char_u *p)
     }
 }
 
-// Use 64-bit stat functions.
-#undef stat
-#undef _stat
-#undef _wstat
-#undef _fstat
-#define stat _stat64
-#define _stat _stat64
-#define _wstat _wstat64
-#define _fstat _fstat64
-
     static int
 read_reparse_point(const WCHAR *name, char_u *buf, DWORD *buf_len)
 {
@@ -459,58 +449,6 @@ read_reparse_point(const WCHAR *name, char_u *buf, DWORD *buf_len)
     CloseHandle(h);
 
     return ok ? OK : FAIL;
-}
-
-    static int
-wstat_symlink_aware(const WCHAR *name, stat_T *stp)
-{
-#if (defined(_MSC_VER) && (_MSC_VER < 1900)) || defined(__MINGW32__)
-    // Work around for VC12 or earlier (and MinGW). _wstat() can't handle
-    // symlinks properly.
-    // VC9 or earlier: _wstat() doesn't support a symlink at all. It retrieves
-    // status of a symlink itself.
-    // VC10: _wstat() supports a symlink to a normal file, but it doesn't
-    // support a symlink to a directory (always returns an error).
-    // VC11 and VC12: _wstat() doesn't return an error for a symlink to a
-    // directory, but it doesn't set S_IFDIR flag.
-    // MinGW: Same as VC9.
-    int			n;
-    BOOL		is_symlink = FALSE;
-    HANDLE		hFind, h;
-    DWORD		attr = 0;
-    WIN32_FIND_DATAW	findDataW;
-
-    hFind = FindFirstFileW(name, &findDataW);
-    if (hFind != INVALID_HANDLE_VALUE)
-    {
-	attr = findDataW.dwFileAttributes;
-	if ((attr & FILE_ATTRIBUTE_REPARSE_POINT)
-		&& (findDataW.dwReserved0 == IO_REPARSE_TAG_SYMLINK))
-	    is_symlink = TRUE;
-	FindClose(hFind);
-    }
-    if (is_symlink)
-    {
-	h = CreateFileW(name, FILE_READ_ATTRIBUTES,
-		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
-		OPEN_EXISTING,
-		(attr & FILE_ATTRIBUTE_DIRECTORY)
-					    ? FILE_FLAG_BACKUP_SEMANTICS : 0,
-		NULL);
-	if (h != INVALID_HANDLE_VALUE)
-	{
-	    int	    fd;
-
-	    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
-	    n = _fstat(fd, (struct _stat *)stp);
-	    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
-		stp->st_mode = (stp->st_mode & ~S_IFREG) | S_IFDIR;
-	    _close(fd);
-	    return n;
-	}
-    }
-#endif
-    return _wstat(name, (struct _stat *)stp);
 }
 
     char_u *
@@ -568,11 +506,76 @@ resolve_appexeclink(char_u *fname)
     return utf16_to_enc(p, NULL);
 }
 
+// Use 64-bit stat functions.
+#undef stat
+#undef _stat
+#undef _wstat
+#undef _fstat
+#define stat _stat64
+#define _stat _stat64
+#define _wstat _wstat64
+#define _fstat _fstat64
+
+/*
+ * Implements lstat() and stat() that can handle symlinks properly.
+ */
+    static int
+mswin_stat_impl(const WCHAR *name, stat_T *stp, const int resolve)
+{
+    int			n;
+    int			fd;
+    BOOL		is_symlink = FALSE;
+    HANDLE		hFind, h;
+    DWORD		attr = 0;
+    DWORD		flag = 0;
+    WIN32_FIND_DATAW    findDataW;
+
+#ifdef _UCRT
+    if (resolve)
+	// Universal CRT can handle symlinks properly.
+	return _wstat(name, stp);
+#endif
+
+    hFind = FindFirstFileW(name, &findDataW);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+	attr = findDataW.dwFileAttributes;
+	if ((attr & FILE_ATTRIBUTE_REPARSE_POINT)
+		&& (findDataW.dwReserved0 == IO_REPARSE_TAG_SYMLINK))
+	    is_symlink = TRUE;
+	FindClose(hFind);
+    }
+
+    // Use the plain old stat() whenever it's possible.
+    if (!is_symlink)
+	return _wstat(name, stp);
+
+    if (!resolve && is_symlink)
+	flag = FILE_FLAG_OPEN_REPARSE_POINT;
+    if (attr & FILE_ATTRIBUTE_DIRECTORY)
+	flag |= FILE_FLAG_BACKUP_SEMANTICS;
+
+    h = CreateFileW(name, FILE_READ_ATTRIBUTES,
+	    FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, flag,
+	    NULL);
+    if (h == INVALID_HANDLE_VALUE)
+	return -1;
+
+    fd = _open_osfhandle((intptr_t)h, _O_RDONLY);
+    n = _fstat(fd, (struct _stat *)stp);
+    if ((n == 0) && (attr & FILE_ATTRIBUTE_DIRECTORY))
+	stp->st_mode = (stp->st_mode & ~S_IFMT) | S_IFDIR;
+    _close(fd);
+
+    return n;
+}
+
 /*
  * stat() can't handle a trailing '/' or '\', remove it first.
+ * When 'resolve' is true behave as lstat() wrt symlinks.
  */
-    int
-vim_stat(const char *name, stat_T *stp)
+    static int
+stat_impl(const char *name, stat_T *stp, const int resolve)
 {
     // WinNT and later can use _MAX_PATH wide characters for a pathname, which
     // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
@@ -607,9 +610,21 @@ vim_stat(const char *name, stat_T *stp)
     if (wp == NULL)
 	return -1;
 
-    n = wstat_symlink_aware(wp, stp);
+    n = mswin_stat_impl(wp, stp, resolve);
     vim_free(wp);
     return n;
+}
+
+    int
+vim_lstat(const char *name, stat_T *stp)
+{
+    return stat_impl(name, stp, FALSE);
+}
+
+    int
+vim_stat(const char *name, stat_T *stp)
+{
+    return stat_impl(name, stp, TRUE);
 }
 
 #if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)

@@ -194,7 +194,11 @@
 #ifdef HAVE_LSTAT
 # define mch_lstat(n, p)	lstat((n), (p))
 #else
-# define mch_lstat(n, p)	mch_stat((n), (p))
+# ifdef MSWIN
+#  define mch_lstat(n, p)	vim_lstat((n), (p))
+# else
+#  define mch_lstat(n, p)	mch_stat((n), (p))
+# endif
 #endif
 
 #ifdef VMS
