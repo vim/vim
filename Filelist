@@ -782,6 +782,7 @@ RT_ALL =	\
 		runtime/pack/dist/opt/matchit/doc/matchit.txt \
 		runtime/pack/dist/opt/matchit/doc/tags \
 		runtime/pack/dist/opt/matchit/autoload/*.vim \
+		runtime/pack/dist/opt/nohlsearch/plugin/nohlsearch.vim \
 		runtime/pack/dist/opt/shellmenu/plugin/shellmenu.vim \
 		runtime/pack/dist/opt/swapmouse/plugin/swapmouse.vim \
 		runtime/pack/dist/opt/termdebug/plugin/termdebug.vim \
