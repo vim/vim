@@ -119,6 +119,7 @@ runtime/ftplugin/clojure.vim		@axvr
 runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
+runtime/ftplugin/csv.vim		@habamax
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/dart.vim	@ribru17
 runtime/ftplugin/deb822sources.vim	@jamessan
@@ -369,6 +370,7 @@ runtime/syntax/chatito.vim		@ObserverOfTime
 runtime/syntax/chuck.vim		@gacallea
 runtime/syntax/clojure.vim		@axvr
 runtime/syntax/cs.vim			@nickspoons
+runtime/syntax/csv.vim		@habamax
 runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/d.vim			@JesseKPhillips
 runtime/syntax/dart.vim			@pr3d4t0r
