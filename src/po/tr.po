@@ -1,8 +1,11 @@
+# vim:tw=79:ts=8:ft=po:
 # Turkish translations for Vim
 # Vim Türkçe çevirileri
 # Copyright (C) 2019-2023 Emir SARI <emir_sari@icloud.com>
 # This file is distributed under the same license as the Vim package.
 # Emir SARI <emir_sari@icloud.com>, 2019-2023
+#
+# Original translations.
 #
 msgid ""
 msgstr ""
@@ -8385,7 +8388,8 @@ msgstr "E1330: Nesne değişkeni için geçersiz tür: %s"
 msgid ""
 "E1331: Public must be followed by \"var\" or \"static\" or \"final\" or "
 "\"const\""
-msgstr "E1331: Public sonrası \"var\", \"static\", \"final\" veya \"const\" "
+msgstr ""
+"E1331: Public sonrası \"var\", \"static\", \"final\" veya \"const\" "
 "gelmelidir"
 
 #, c-format
@@ -8510,10 +8514,10 @@ msgid "E1367: Access level of variable \"%s\" of interface \"%s\" is different"
 msgstr "E1367: \"%2$s\" arayüzünün \"%1$s\" değişkeninin erişim düzeyi farklı"
 
 msgid ""
-"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or "
-"\"const\""
-msgstr "E1368: Static sonrası \"var\", \"def\", \"final\" veya \"const\" "
-"gelmelidir"
+"E1368: Static must be followed by \"var\" or \"def\" or \"final\" or \"const"
+"\""
+msgstr ""
+"E1368: Static sonrası \"var\", \"def\", \"final\" veya \"const\" gelmelidir"
 
 #, c-format
 msgid "E1369: Duplicate variable: %s"
@@ -8535,18 +8539,21 @@ msgstr "E1373: Soyut yöntem \"%s\" gerçeklenmemiş"
 
 #, c-format
 msgid "E1374: Class variable \"%s\" accessible only inside class \"%s\""
-msgstr "E1374: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfının içinde "
+msgstr ""
+"E1374: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfının içinde "
 "erişilebilirdir"
 
 #, c-format
 msgid "E1375: Class variable \"%s\" accessible only using class \"%s\""
-msgstr "E1375: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
+msgstr ""
+"E1375: Sınıf değişkeni \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
 "erişilebilirdir"
 
 #, c-format
 msgid "E1376: Object variable \"%s\" accessible only using class \"%s\" object"
-msgstr "E1376: Nesne değişkeni \"%s\", yalnızca sınıf \"%s\" nesnesi "
-"kullanılarak erişilebilirdir"
+msgstr ""
+"E1376: Nesne değişkeni \"%s\", yalnızca sınıf \"%s\" nesnesi kullanılarak "
+"erişilebilirdir"
 
 #, c-format
 msgid "E1377: Access level of method \"%s\" is different in class \"%s\""
@@ -8576,18 +8583,20 @@ msgstr ""
 
 #, c-format
 msgid "E1384: Class method \"%s\" accessible only inside class \"%s\""
-msgstr "E1384: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfının içinde "
-"erişilebilirdir"
+msgstr ""
+"E1384: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfının içinde erişilebilirdir"
 
 #, c-format
 msgid "E1385: Class method \"%s\" accessible only using class \"%s\""
-msgstr "E1385: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
+msgstr ""
+"E1385: Sınıf yöntemi \"%s\", yalnızca \"%s\" sınıfı kullanılarak "
 "erişilebilirdir"
 
 #, c-format
 msgid "E1386: Object method \"%s\" accessible only using class \"%s\" object"
-msgstr "E1386: Nesne yöntemi \"%s\", yalnızca sınıf \"%s\" nesnesi "
-"kullanılarak erişilebilirdir"
+msgstr ""
+"E1386: Nesne yöntemi \"%s\", yalnızca sınıf \"%s\" nesnesi kullanılarak "
+"erişilebilirdir"
 
 msgid "E1387: Public variable not supported in an interface"
 msgstr "E1387: Bir arayüzde genel değişken desteklenmiyor"
@@ -8607,12 +8616,14 @@ msgstr ""
 
 #, c-format
 msgid "E1391: Cannot (un)lock variable \"%s\" in class \"%s\""
-msgstr "E1391: \"%2$s\" sınıfındaki \"%1$s\" değişkeni kilitlenemiyor/açılamıyor"
+msgstr ""
+"E1391: \"%2$s\" sınıfındaki \"%1$s\" değişkeni kilitlenemiyor/açılamıyor"
 
 #, c-format
 msgid "E1392: Cannot (un)lock class variable \"%s\" in class \"%s\""
-msgstr "E1392: \"%2$s\" sınıfındaki \"%1$s\" sınıf değişkeni "
-"kilitlenemiyor/açılamıyor"
+msgstr ""
+"E1392: \"%2$s\" sınıfındaki \"%1$s\" sınıf değişkeni kilitlenemiyor/"
+"açılamıyor"
 
 msgid "E1393: Type can only be defined in Vim9 script"
 msgstr "E1393: Tür, yalnızca Vim9 betiğinde tanımlanabilir"
@@ -8672,8 +8683,8 @@ msgstr "E1408: Final değişkeni bir arayüzde desteklenmiyor"
 
 #, c-format
 msgid "E1409: Cannot change read-only variable \"%s\" in class \"%s\""
-msgstr "E1409: \"%2$s\" sınıfındaki \"%1$s\" saltokunur değişken "
-"değiştirilemiyor"
+msgstr ""
+"E1409: \"%2$s\" sınıfındaki \"%1$s\" saltokunur değişken değiştirilemiyor"
 
 msgid "E1410: Const variable not supported in an interface"
 msgstr "E1410: Bir arayüzde bir bir Const değişken desteklenmiyor"

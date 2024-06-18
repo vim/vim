@@ -1,6 +1,9 @@
+# vim:tw=79:ts=8:ft=po:
 # Catalan messages for vim.
 # Copyright (C) 2003-2022 Ernest Adrogué <eadrogue@gmx.net>.
 # This file is distributed under the Vim License.
+#
+# Original translations.
 #
 msgid ""
 msgstr ""
@@ -12,7 +15,7 @@ msgstr ""
 "Language-Team: Catalan <ca@dodds.net>\n"
 "Language: ca\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
@@ -3530,7 +3533,9 @@ msgstr ""
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
-msgstr "\nVersió per a macOS sense funcionalitat darwin"
+msgstr ""
+"\n"
+"Versió per a macOS sense funcionalitat darwin"
 
 msgid ""
 "\n"
@@ -3569,7 +3574,9 @@ msgstr "per "
 msgid ""
 "\n"
 "Huge version "
-msgstr "\nVersió molt completa "
+msgstr ""
+"\n"
+"Versió molt completa "
 
 msgid ""
 "\n"
@@ -8386,7 +8393,9 @@ msgid "E1292: Command-line window is already open"
 msgstr "E1292: La finstra de la línia d'ordres ja està oberta"
 
 msgid "E1293: Cannot use a negative id after adding a textprop with text"
-msgstr "E1293: No es permet emprar una id negativa després d'afegir una textprop amb text"
+msgstr ""
+"E1293: No es permet emprar una id negativa després d'afegir una textprop amb "
+"text"
 
 msgid "E1294: Can only use text_align when column is zero"
 msgstr "E1294: Només es pot fer servir 'text_align' quan la columna és zero"
@@ -8428,7 +8437,8 @@ msgstr "E1304: No es pot emprar un tipus amb aquesta variable %s"
 
 msgid ""
 "E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""
-msgstr "E1305: No es pot emprar \"length\", \"end_col\" ni \"end_lnum\" amb \"text\""
+msgstr ""
+"E1305: No es pot emprar \"length\", \"end_col\" ni \"end_lnum\" amb \"text\""
 
 msgid "E1306: Loop nesting too deep"
 msgstr "E1306: Iteració imbricada amb massa profunditat"

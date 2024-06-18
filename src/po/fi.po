@@ -1,3 +1,4 @@
+# vim:tw=79:ts=8:ft=po:
 # Finnish translation for Vim.
 # Copyright (C) 2003-2006 Free Software Foundation, Inc.
 # 2007-2018, Flammie Pirinen <flammie@iki.fi>
@@ -11,6 +12,8 @@
 #   analogian mukaan
 # * source, v. lataa tiedoston, kuten bash-komento source (tai .)
 # * dictionary (dict) on vaihtelevasti sanakirja tai tietorakenne
+#
+# Original translations.
 #
 msgid ""
 msgstr ""
@@ -769,7 +772,8 @@ msgstr "[Vajaa viimeinen rivi]"
 
 #, c-format
 msgid ""
-"W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as well"
+"W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
+"well"
 msgstr ""
 "W12: Varoitus: Tiedostoa %s on muutettu ja Vimin puskurissa on muutoksia "
 "tiedostoon"
@@ -1267,7 +1271,8 @@ msgstr "näppäimistökeskeytys"
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "ei voi luoda puskuri- tai ikkunakomentoa, olio on poistumassa"
 
-msgid "cannot register callback command: buffer/window is already being deleted"
+msgid ""
+"cannot register callback command: buffer/window is already being deleted"
 msgstr "callbackia ei voi rekisteröidä: puskuri tai ikkuna on poistettu"
 
 msgid "cannot register callback command: buffer/window reference not found"
@@ -1512,7 +1517,8 @@ msgid ""
 "Where case is ignored prepend / to make flag upper case"
 msgstr ""
 "\n"
-"Jos aakkoslaji on ohitettu, lisää alkuun / tehdäksesi asetuksesta suuraakkosia"
+"Jos aakkoslaji on ohitettu, lisää alkuun / tehdäksesi asetuksesta "
+"suuraakkosia"
 
 msgid ""
 "\n"
@@ -1584,7 +1590,8 @@ msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tEi Vi-yhteensopivuutta: nocompatible"
 
 msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
-msgstr "-V[N][tnimi]\t\tMonisanainen tuloste [Taso N] [kirjoita tuloste tnimeen]"
+msgstr ""
+"-V[N][tnimi]\t\tMonisanainen tuloste [Taso N] [kirjoita tuloste tnimeen]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tVianetsintätila"
@@ -1681,14 +1688,17 @@ msgstr ""
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-silent <tiedostoja>\tSama, mutta älä ilmoita puuttuvasta palvelimesta"
+"--remote-silent <tiedostoja>\tSama, mutta älä ilmoita puuttuvasta "
+"palvelimesta"
 
-msgid "--remote-wait <files>  As --remote but wait for files to have been edited"
+msgid ""
+"--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
 "--remote-wait <tiedostoja>  Kuten --remote, mutta odota tiedostojen "
 "muokkaamista"
 
-msgid "--remote-wait-silent <files>  Same, don't complain if there is no server"
+msgid ""
+"--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
 "--remote-wait-silent <tiedostoja>  Sama, mutta älä ilmoita puuttuvasta "
 "palvelimesta"
@@ -1720,7 +1730,8 @@ msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tKäytä <viminfo>-tiedostoa .viminfon sijaan"
 
 msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
-msgstr "--clean\t\t'nocompatible', Vimin oletukset,ei liitännäisiä tai viminfoa"
+msgstr ""
+"--clean\t\t'nocompatible', Vimin oletukset,ei liitännäisiä tai viminfoa"
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h tai --help\tTulosta ohje (tämä viesti) ja lopeta"
@@ -1771,13 +1782,15 @@ msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr "-italicfont <fontti>\tKäytä <fonttia> kursivoidussa tekstissä"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
-msgstr "-geometry <geom>\tKäytä mittoja <geom> ikkunan asetteluun (myös: -geom)"
+msgstr ""
+"-geometry <geom>\tKäytä mittoja <geom> ikkunan asetteluun (myös: -geom)"
 
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
 msgstr "-borderwidt <leveys>\tKäytä <leveyttä> reunuksissa (myös: -bw)"
 
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
-msgstr "-scrollbarwidth <leveys>  Käytä <leveyttä> vierityspalkissa (myös: -sw)"
+msgstr ""
+"-scrollbarwidth <leveys>  Käytä <leveyttä> vierityspalkissa (myös: -sw)"
 
 msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
 msgstr "-menuheight <korkeus>\tKäytä <korkeutta> valikossa (myös: -mh)"
@@ -2336,8 +2349,8 @@ msgstr "Sarake %s/%s, Rivi %ld/%ld, sana %lld/%lld, tavu %lld/%lld"
 
 #, c-format
 msgid ""
-"Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte %lld "
-"of %lld"
+"Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte "
+"%lld of %lld"
 msgstr ""
 "Sarake %s/%s, rivi %ld/%ld, sana %lld/%lld, merkki %lld/%lld, tavu %lld/%lld"
 
@@ -2870,14 +2883,16 @@ msgstr "FLAG kohteessa %s lippujen jälkeen rivillä %d: %s"
 
 #, c-format
 msgid ""
-"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
 msgstr ""
 "COMPOUNDFORBIDFLAG PFX:n jälkeen voi antaa vääriä tuloksia kohteessa %s "
 "rivillä %d"
 
 #, c-format
 msgid ""
-"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
 msgstr ""
 "COMPOUNDPERMITFLAG PFX:n jälkeen voi antaa vääriä tuloksia kohteessa %s "
 "rivillä %d"
@@ -3325,7 +3340,8 @@ msgid "Reading undo file: %s"
 msgstr "Luetaan kumoustiedostoa: %s"
 
 msgid "File contents changed, cannot use undo info"
-msgstr "Tiedoston sisältö on muuttunut, joen kumoustiedot ovat käyttökelvottomia"
+msgstr ""
+"Tiedoston sisältö on muuttunut, joen kumoustiedot ovat käyttökelvottomia"
 
 #, c-format
 msgid "Finished reading undo file %s"
@@ -3888,7 +3904,8 @@ msgstr "E11: Virheellinen komentorivi-ikkuna, <CR> suorittaa, Ctrl C lopettaa"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Komentoa ei tueta exrc:ssä tai vimrc:ssä tässä hakemistossa tai tägihaussa"
+"E12: Komentoa ei tueta exrc:ssä tai vimrc:ssä tässä hakemistossa tai "
+"tägihaussa"
 
 msgid "E13: File exists (add ! to override)"
 msgstr "E13: Tiedosto on jo olemassa (lisää ! ohittaaksesi)"
@@ -4138,7 +4155,8 @@ msgstr "E88: Ensimmäisen puskurin ohi ei voi edetä"
 #, c-format
 msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: Puskurin %d muutoksia ei ole tallennettu (lisää komentoon ! ohittaaksesi)"
+"E89: Puskurin %d muutoksia ei ole tallennettu (lisää komentoon ! "
+"ohittaaksesi)"
 
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: Ei voi vapauttaa viimeistä puskuria"
@@ -4530,7 +4548,8 @@ msgid "E199: Active window or buffer deleted"
 msgstr "E199: Aktiivinen ikkuna tai puskuri poistettu"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
-msgstr "E200: *ReadPre-autocommand-komennot tekivät tiedostosta lukukelvottoman"
+msgstr ""
+"E200: *ReadPre-autocommand-komennot tekivät tiedostosta lukukelvottoman"
 
 msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr "E201: *ReadPre-autocommand-komennot eivät saa muuttaa puskuria"
@@ -4575,7 +4594,8 @@ msgid "E212: Can't open file for writing"
 msgstr "E212: Tiedoston avaus kirjoittamista varten ei onnistu"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
-msgstr "E213: Muunnos ei onnistu (lisää komentoon ! kirjoittaaksesi muuntamatta)"
+msgstr ""
+"E213: Muunnos ei onnistu (lisää komentoon ! kirjoittaaksesi muuntamatta)"
 
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Ei voi löytää väliaikaistiedostoa kirjoitettavaksi"
@@ -4751,7 +4771,8 @@ msgid "E262: Error reading cscope connection %d"
 msgstr "E262: Virhe luettaessa cscope-yhteyttä %d"
 
 msgid ""
-"E263: Sorry, this command is disabled, the Python library could not be loaded."
+"E263: Sorry, this command is disabled, the Python library could not be "
+"loaded."
 msgstr "E263: Komento ei toimi, Python-kirjaston lataaminen ei onnistunut."
 
 msgid "E264: Python: Error initialising I/O objects"
@@ -4803,10 +4824,11 @@ msgid "E279: Sorry, ++shell is not supported on this system"
 msgstr "E279: ++shell ei toimi tällä järjestelmällä"
 
 msgid ""
-"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"
+"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
+"org"
 msgstr ""
-"E280: Kriittinen TCL-virhe: reflist hajalla? Ilmoita asiasta postituslistalle "
-"vim-dev@vim.org"
+"E280: Kriittinen TCL-virhe: reflist hajalla? Ilmoita asiasta "
+"postituslistalle vim-dev@vim.org"
 
 #, c-format
 msgid "E282: Cannot read from \"%s\""
@@ -4826,7 +4848,8 @@ msgid "E286: Failed to open input method"
 msgstr "E286: Syötemetodin avaus ei onnistu"
 
 msgid "E287: Warning: Could not set destroy callback to IM"
-msgstr "E287: Varoitus: Ei voitu asettaa destroy-kutsua syötemetodipalvelimelle"
+msgstr ""
+"E287: Varoitus: Ei voitu asettaa destroy-kutsua syötemetodipalvelimelle"
 
 msgid "E288: Input method doesn't support any style"
 msgstr "E288: Syötemetodi ei tue tyylejä"
@@ -4907,7 +4930,8 @@ msgstr "E310: Lohon 1 tunniste väärä (%s ei ole .swp-tiedosto?)"
 msgid "E311: Recovery Interrupted"
 msgstr "E311: Palautus keskeytetty"
 
-msgid "E312: Errors detected while recovering; look for lines starting with ???"
+msgid ""
+"E312: Errors detected while recovering; look for lines starting with ???"
 msgstr "E312: Palautuksessa oli virheitä, etsi rivejä, jotka alkavat ???"
 
 msgid "E313: Cannot preserve, there is no swap file"
@@ -5018,8 +5042,8 @@ msgstr "E342: Muisti loppui. (varattaessa %lu tavua)"
 
 #, c-format
 msgid ""
-"E343: Invalid path: '**[number]' must be at the end of the path or be followed "
-"by '%s'."
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
 msgstr ""
 "E343: Virheellinen polku: '**[numero]' kuuluu polun loppuun tai ennen kohtaa "
 "%s."
@@ -5603,7 +5627,8 @@ msgstr "E505: %s on kirjoitussuojattu (lisää komentoon ! ohittaaksesi)"
 
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr ""
-"E506: Ei voi kirjoittaa varmuuskopiotiedostoon (lisää komentoon ! ohittaaksesi)"
+"E506: Ei voi kirjoittaa varmuuskopiotiedostoon (lisää komentoon ! "
+"ohittaaksesi)"
 
 msgid "E507: Close error for backup file (add ! to write anyway)"
 msgstr ""
@@ -5636,7 +5661,8 @@ msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Kirjoitusvirhe, muunnos epäonnistui rivillä %ld(tyhjää fenc ohittaaksesi)"
+"E513: Kirjoitusvirhe, muunnos epäonnistui rivillä %ld(tyhjää fenc "
+"ohittaaksesi)"
 
 msgid "E514: Write error (file system full?)"
 msgstr "E514: Kirjoitusvirhe (tiedostojärjestelmä täysi?)"
@@ -6623,7 +6649,8 @@ msgid "E832: Non-encrypted file has encrypted undo file: %s"
 msgstr "E832: Salaamattomalla tiedostolla on salattu kumoustiedosto: %s"
 
 #, c-format
-msgid "E833: %s is encrypted and this version of Vim does not support encryption"
+msgid ""
+"E833: %s is encrypted and this version of Vim does not support encryption"
 msgstr "E833: %s on salattu eikä tämä Vim tue salausta"
 
 msgid "E834: Conflicts with value of 'listchars'"
@@ -6724,8 +6751,8 @@ msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used"
 msgstr ""
-"E864: \\%#=-merkkien perään voi tulla vain 0, 1 tai 2. Käytetään automaattista "
-"masiinaa"
+"E864: \\%#=-merkkien perään voi tulla vain 0, 1 tai 2. Käytetään "
+"automaattista masiinaa"
 
 msgid "E865: (NFA) Regexp end encountered prematurely"
 msgstr "E865: (NFA) Säännöllisen ilmauksen ennenaikainen loppu"
@@ -6768,8 +6795,8 @@ msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
 "left on stack"
 msgstr ""
-"E875: (NFA regexp) (Muunnettaessa postfixistä NFA:ksi), liikaa tiloja jäljellä "
-"pinossa"
+"E875: (NFA regexp) (Muunnettaessa postfixistä NFA:ksi), liikaa tiloja "
+"jäljellä pinossa"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA"
 msgstr "E876: (NFA regexp) Tila ei riitä NFA:n tallentamiseen"
@@ -6794,9 +6821,11 @@ msgid "E882: Uniq compare function failed"
 msgstr "E882: Uniqin vertausfunktio ei onnistunut"
 
 msgid ""
-"E883: search pattern and expression register may not contain two or more lines"
+"E883: search pattern and expression register may not contain two or more "
+"lines"
 msgstr ""
-"E883: hakulauseke- ja -ilmausrekisteri ei voi sisältää kahta tai useampaa riviä"
+"E883: hakulauseke- ja -ilmausrekisteri ei voi sisältää kahta tai useampaa "
+"riviä"
 
 #, c-format
 msgid "E884: Function name cannot contain a colon: %s"
@@ -6840,8 +6869,8 @@ msgid "E894: Using a Dictionary as a Float"
 msgstr "E894: Sanakirja ei käy Floatista"
 
 msgid ""
-"E895: Sorry, this command is disabled, the MzScheme's racket/base module could "
-"not be loaded."
+"E895: Sorry, this command is disabled, the MzScheme's racket/base module "
+"could not be loaded."
 msgstr "E895: Komento ei toimi, MzScheme-moduulia racket/base ei voitu ladata."
 
 # datarakenteita
@@ -7021,7 +7050,8 @@ msgid "E945: Range too large in character class"
 msgstr "E945: Liian laaja valikoima merkkiluokassa"
 
 msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr "E946: Terminaalia jossa suoritetaan komentoa ei voi tehdä muokattavaksi"
+msgstr ""
+"E946: Terminaalia jossa suoritetaan komentoa ei voi tehdä muokattavaksi"
 
 #, c-format
 msgid "E947: Job still running in buffer \"%s\""
@@ -7261,7 +7291,8 @@ msgstr "E1012: Tyyppivirhe: odotettiin tyyppiä %s saatiin %s"
 
 #, c-format
 msgid "E1012: Type mismatch; expected %s but got %s in %s"
-msgstr "E1012: Tyyppivirhe: odotettiin tyyppiä %s mutta saatiin %s kohteessa %s"
+msgstr ""
+"E1012: Tyyppivirhe: odotettiin tyyppiä %s mutta saatiin %s kohteessa %s"
 
 #, c-format
 msgid "E1013: Argument %d: type mismatch, expected %s but got %s"
@@ -7270,8 +7301,8 @@ msgstr "E1013: Argumentti %d: tyyppivirhe, odotettiin tyyppiä %s saatiin %s"
 #, c-format
 msgid "E1013: Argument %d: type mismatch, expected %s but got %s in %s"
 msgstr ""
-"E1013: Argumentti %d: tyyppivirhe, odotettiin tyyppiä %s saatiin %s kohteessa "
-"%s"
+"E1013: Argumentti %d: tyyppivirhe, odotettiin tyyppiä %s saatiin %s "
+"kohteessa %s"
 
 #, c-format
 msgid "E1014: Invalid key: %s"
@@ -7719,8 +7750,8 @@ msgstr "E1148: Kohdetta %s ei voi indeksoida"
 #, c-format
 msgid "E1149: Script variable is invalid after reload in function %s"
 msgstr ""
-"E1149: Skriptimuuttuja on käyttökelvoton uudelleenlatauksen jälkeen funktiossa "
-"%s"
+"E1149: Skriptimuuttuja on käyttökelvoton uudelleenlatauksen jälkeen "
+"funktiossa %s"
 
 msgid "E1150: Script variable type changed"
 msgstr "E1150: Skriptimuuttujan tyyppi muuttui"
@@ -7828,8 +7859,8 @@ msgstr "E1178: Ei voi lukita tai avata paikallista muuttujaa"
 
 #, c-format
 msgid ""
-"E1179: Failed to extract PWD from %s, check your shell's config related to OSC "
-"7"
+"E1179: Failed to extract PWD from %s, check your shell's config related to "
+"OSC 7"
 msgstr ""
 "E1179: Ei saatu PWD:tä kohteesta %s, koeta tarkistaa komentoriviasetukset "
 "liittyen OSC 7:ään"
@@ -7966,7 +7997,8 @@ msgstr "E1214: Digraafin on oltava tasan kaksi merkkiä: %s"
 msgid "E1215: Digraph must be one character: %s"
 msgstr "E1215: Digraafin pitää olla yksi merkki: %s"
 
-msgid "E1216: digraph_setlist() argument must be a list of lists with two items"
+msgid ""
+"E1216: digraph_setlist() argument must be a list of lists with two items"
 msgstr ""
 "E1216: digraph_setlist()-funktion argumentin pitää olla lista kaksikohtaisia "
 "listoja"
@@ -8123,8 +8155,8 @@ msgstr "E1256: Merkkijono tai funktio tarvitaan argumentiksi %d"
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
 msgstr ""
-"E1257: Tuodun skriptin pitää käyttää komentoa as tai loppua merkkijonoon .vim: "
-"%s"
+"E1257: Tuodun skriptin pitää käyttää komentoa as tai loppua merkkijonoon ."
+"vim: %s"
 
 #, c-format
 msgid "E1258: No '.' after imported name: %s"
@@ -8146,12 +8178,14 @@ msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: Ei voida tuoda samaa skriptiä kahdesti: %s"
 
 msgid "E1263: Using autoload in a script not under an autoload directory"
-msgstr "E1263: Käytetään autoloadia skriptissä joka ei ole autoload-hakemistossa"
+msgstr ""
+"E1263: Käytetään autoloadia skriptissä joka ei ole autoload-hakemistossa"
 
 #, c-format
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
 msgstr ""
-"E1264: Autoload-tuonti ei voi käyttää absoluuttista tai suhteellista polkua: %s"
+"E1264: Autoload-tuonti ei voi käyttää absoluuttista tai suhteellista polkua: "
+"%s"
 
 msgid "E1265: Cannot use a partial here"
 msgstr "E1265: Partial ei toimi tässä"
@@ -8201,8 +8235,8 @@ msgstr "odotettiin instanssia tyypeistä bytes() tai str(), ei %s"
 msgid ""
 "expected int(), long() or something supporting coercing to long(), but got %s"
 msgstr ""
-"odotettiin instanssia tyypeistä int(), long() tai mitä tahansa joka muuntuisi "
-"tyyppiin long(), ei %s"
+"odotettiin instanssia tyypeistä int(), long() tai mitä tahansa joka "
+"muuntuisi tyyppiin long(), ei %s"
 
 #, c-format
 msgid "expected int() or something supporting coercing to int(), but got %s"
@@ -8289,7 +8323,8 @@ msgstr "sisäinen virhe: ei voitu lisätä kohtaa listaan"
 
 #, c-format
 msgid "attempt to assign sequence of size %d to extended slice of size %d"
-msgstr "yritettiin asettaa sekvenssiä jonka koko on %d sliceen jonka koko on %d"
+msgstr ""
+"yritettiin asettaa sekvenssiä jonka koko on %d sliceen jonka koko on %d"
 
 msgid "failed to add item to list"
 msgstr "ei voitu lisätä kohtaa listaan"
@@ -8488,7 +8523,8 @@ msgstr "(paikallinen puskurille)"
 msgid "(global or local to buffer)"
 msgstr "(globaali tai paikallinen puskuri"
 
-msgid "\" Each \"set\" line shows the current value of an option (on the left)."
+msgid ""
+"\" Each \"set\" line shows the current value of an option (on the left)."
 msgstr "\" jokainen \"set\"-rivi näyttää asetuksen arvon (vasemmalla)."
 
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
@@ -8498,7 +8534,8 @@ msgid "\"            A boolean option will be toggled."
 msgstr "\"            totuusarvoa muutetaan."
 
 msgid ""
-"\"            For other options you can edit the value before hitting <Enter>."
+"\"            For other options you can edit the value before hitting "
+"<Enter>."
 msgstr ""
 "\"            Muita asetuksia voi muokata ennen <Enter>-napin painamista."
 
@@ -9032,7 +9069,8 @@ msgid "use a pseudo-tty for I/O to external commands"
 msgstr "käytä pseudo-tty:tä ulkoisten komentojen syötteeseen ja tulosteeseen"
 
 msgid ""
-"\"last\", \"buffer\" or \"current\": which directory used for the file browser"
+"\"last\", \"buffer\" or \"current\": which directory used for the file "
+"browser"
 msgstr "last, buffer tai current, mitä hakemistoa käytetään tiedostoselaimessa"
 
 msgid "language to be used for the menus"
@@ -9707,10 +9745,12 @@ msgid "input method style, 0: on-the-spot, 1: over-the-spot"
 msgstr "syöttötilatyyli 0: on-the-spot, 1: over-the-spot"
 
 msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
-msgstr "hakukuvion syöttö: 1 käytä :lmap-asetusta, 2 käytä IM:ää, 0 ei kumpikaan"
+msgstr ""
+"hakukuvion syöttö: 1 käytä :lmap-asetusta, 2 käytä IM:ää, 0 ei kumpikaan"
 
 msgid "when set always use IM when starting to edit a command line"
-msgstr "kun asetettu, käytetään aina IM:ää kun aloitetaan komentorivin muokkaus"
+msgstr ""
+"kun asetettu, käytetään aina IM:ää kun aloitetaan komentorivin muokkaus"
 
 msgid "function to obtain IME status"
 msgstr "funktio joka hakee IME-tilan"
