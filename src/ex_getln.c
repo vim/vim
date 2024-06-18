@@ -2474,10 +2474,9 @@ getcmdline_int(
  * (Sorry for the goto's, I know it is ugly).
  */
 cmdline_not_changed:
-	 if (ccline.cmdspos != save_cmdspos) {
-	    // Trigger CmdlineMoved autocommands.
+	 // Trigger CmdlineMoved autocommands.
+	 if (ccline.cmdspos != save_cmdspos)
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINEMOVED);
-	 }
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
@@ -2490,8 +2489,8 @@ cmdline_changed:
 	if (is_state.winid != curwin->w_id)
 	    init_incsearch_state(&is_state);
 #endif
+	// Trigger CmdlineChanged autocommands.
 	if (trigger_cmdlinechanged)
-	    // Trigger CmdlineChanged autocommands.
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 #ifdef FEAT_SEARCH_EXTRA
