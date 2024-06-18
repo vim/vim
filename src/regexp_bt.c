@@ -3823,6 +3823,14 @@ regmatch(
 			}
 		    }
 		}
+		else if (enc_utf8)
+		{
+		    if (cstrncmp(opnd, rex.input, &len) != 0)
+		    {
+			status = RA_NOMATCH;
+			break;
+		    }
+		}
 		else
 		    for (i = 0; i < len; ++i)
 			if (opnd[i] != rex.input[i])

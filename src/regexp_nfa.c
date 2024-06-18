@@ -5666,7 +5666,12 @@ find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
     for (;;)
     {
 	match = TRUE;
-	len2 = MB_CHAR2LEN(regstart); // skip regstart
+	// skip regstart
+	len2 = MB_CHAR2LEN(regstart);
+	if (enc_utf8 && len2 > 1 && MB_CHAR2LEN(PTR2CHAR(rex.line + col)) != len2)
+	    // because of case-folding of the previously matched text, we may need
+	    // to skip fewer bytes than mb_char2len(regstart)
+	    len2 = mb_char2len(utf_fold(regstart));
 	for (len1 = 0; match_text[len1] != NUL; len1 += MB_CHAR2LEN(c1))
 	{
 	    c1 = PTR2CHAR(match_text + len1);
@@ -7502,7 +7507,7 @@ nfa_regexec_both(
 
 	// If match_text is set it contains the full text that must match.
 	// Nothing else to try. Doesn't handle combining chars well.
-	if (prog->match_text != NULL && !rex.reg_icombine)
+	if (prog->match_text != NULL && *prog->match_text != NUL && !rex.reg_icombine)
 	{
 	    retval = find_match_text(&col, prog->regstart, prog->match_text);
 	    if (REG_MULTI)
