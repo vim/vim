@@ -1133,6 +1133,7 @@ static argcheck_T arg2_number_bool[] = {arg_number, arg_bool};
 static argcheck_T arg2_number_dict_any[] = {arg_number, arg_dict_any};
 static argcheck_T arg2_number_list[] = {arg_number, arg_list_any};
 static argcheck_T arg2_number_string[] = {arg_number, arg_string};
+static argcheck_T arg2_number_buffer[] = {arg_number, arg_buffer};
 static argcheck_T arg2_number_string_or_list[] = {arg_number, arg_string_or_list_any};
 static argcheck_T arg2_str_or_nr_or_list_dict[] = {arg_str_or_nr_or_list, arg_dict_any};
 static argcheck_T arg2_string[] = {arg_string, arg_string};
@@ -2421,6 +2422,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    PROP_FUNC(f_popup_move)},
     {"popup_notification", 2, 2, FEARG_1,   arg2_str_or_nr_or_list_dict,
 			ret_number,	    PROP_FUNC(f_popup_notification)},
+    {"popup_setbuf",	2, 2, FEARG_1,	    arg2_number_buffer,
+			ret_number_bool,    PROP_FUNC(f_popup_setbuf)},
     {"popup_setoptions", 2, 2, FEARG_1,	    arg2_number_dict_any,
 			ret_void,	    PROP_FUNC(f_popup_setoptions)},
     {"popup_settext",	2, 2, FEARG_1,	    arg2_number_string_or_list,

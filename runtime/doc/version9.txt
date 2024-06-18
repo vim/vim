@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 17
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41586,6 +41586,7 @@ Functions: ~
 |getregionpos()|	get a list of positions for a region
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
+|popup_setbuf()|	switch to a different buffer in a popup
 
 
 Autocommands: ~

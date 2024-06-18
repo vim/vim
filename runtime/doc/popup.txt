@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 9.1.  Last change: 2024 Jun 08
+*popup.txt*  For Vim version 9.1.  Last change: 2024 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -186,6 +186,7 @@ Manipulating a popup window:
 	|popup_move()|		change the position and size of a popup
 	|popup_setoptions()|	override options of a popup
 	|popup_settext()|	replace the popup buffer contents
+	|popup_setbuf()|	set the buffer for the popup window
 
 Closing popup windows:
 	|popup_close()|		close one popup
@@ -574,6 +575,18 @@ popup_notification({what}, {options})			 *popup_notification()*
 		Return type: |Number|
 
 
+popup_setbuf({id}, {buf})				*popup_setbuf()*
+		Set buffer {buf} to be displayed in popup win {id}.  For the
+		use of {buf}, see |bufname()| function.
+		May change window size or position to adjust for the size
+		of the buffer text.
+
+		Can also be used as a |method|: >
+			GetPopup()->popup_setbuf(bufnr('foobar'))
+<
+		Return type: |vim9-boolean|
+
+
 popup_setoptions({id}, {options})			*popup_setoptions()*
 		Override options in popup {id} with entries in {options}.
 		These options can be set:
@@ -613,9 +626,8 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 
 
 popup_settext({id}, {text})				*popup_settext()*
-		Set the text of the buffer in popup win {id}. {text} is the
-		same as supplied to |popup_create()|, except that a buffer
-		number is not allowed.
+		Set the text of the buffer in popup win {id}. {text} is
+		a string or a list of strings to be displayed in the popup.
 		Does not change the window size or position, other than caused
 		by the different text.
 
