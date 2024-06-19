@@ -2580,7 +2580,7 @@ execute({command} [, {silent}])					*execute()*
 		Can also be used as a |method|: >
 			GetCommand()->execute()
 <
-		Return type: |Number|
+		Return type: |String|
 
 
 exepath({expr})						*exepath()*
