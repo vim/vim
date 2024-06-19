@@ -34,52 +34,14 @@
 #ifndef PROTO
 # include <process.h>
 # include <winternl.h>
-#endif
-
-#undef chdir
-#ifdef __GNUC__
-# ifndef __MINGW32__
-#  include <dirent.h>
-# endif
-#else
 # include <direct.h>
-#endif
 
-#ifndef PROTO
 # if !defined(FEAT_GUI_MSWIN)
 #  include <shellapi.h>
 # endif
-#endif
 
-#ifdef FEAT_JOB_CHANNEL
-# include <tlhelp32.h>
-#endif
-
-#ifdef __MINGW32__
-# ifndef FROM_LEFT_1ST_BUTTON_PRESSED
-#  define FROM_LEFT_1ST_BUTTON_PRESSED    0x0001
-# endif
-# ifndef RIGHTMOST_BUTTON_PRESSED
-#  define RIGHTMOST_BUTTON_PRESSED	  0x0002
-# endif
-# ifndef FROM_LEFT_2ND_BUTTON_PRESSED
-#  define FROM_LEFT_2ND_BUTTON_PRESSED    0x0004
-# endif
-# ifndef FROM_LEFT_3RD_BUTTON_PRESSED
-#  define FROM_LEFT_3RD_BUTTON_PRESSED    0x0008
-# endif
-# ifndef FROM_LEFT_4TH_BUTTON_PRESSED
-#  define FROM_LEFT_4TH_BUTTON_PRESSED    0x0010
-# endif
-
-/*
- * EventFlags
- */
-# ifndef MOUSE_MOVED
-#  define MOUSE_MOVED   0x0001
-# endif
-# ifndef DOUBLE_CLICK
-#  define DOUBLE_CLICK  0x0002
+# ifdef FEAT_JOB_CHANNEL
+#  include <tlhelp32.h>
 # endif
 #endif
 
@@ -2761,12 +2723,6 @@ theend:
     return 0;
 #endif // FEAT_GUI_MSWIN
 }
-
-#ifndef PROTO
-# ifndef __MINGW32__
-#  include <shellapi.h>	// required for FindExecutable()
-# endif
-#endif
 
 /*
  * Return TRUE if "name" is an executable file, FALSE if not or it doesn't exist.
@@ -5529,11 +5485,7 @@ mch_call_shell(
      * CTRL-C, Ctrl-Break or illegal instruction  might otherwise kill us.
      */
     mch_signal(SIGINT, SIG_IGN);
-#if defined(__GNUC__) && !defined(__MINGW32__)
-    mch_signal(SIGKILL, SIG_IGN);
-#else
     mch_signal(SIGBREAK, SIG_IGN);
-#endif
     mch_signal(SIGILL, SIG_IGN);
     mch_signal(SIGFPE, SIG_IGN);
     mch_signal(SIGSEGV, SIG_IGN);
@@ -5768,11 +5720,7 @@ mch_call_shell(
     resettitle();
 
     mch_signal(SIGINT, SIG_DFL);
-#if defined(__GNUC__) && !defined(__MINGW32__)
-    mch_signal(SIGKILL, SIG_DFL);
-#else
     mch_signal(SIGBREAK, SIG_DFL);
-#endif
     mch_signal(SIGILL, SIG_DFL);
     mch_signal(SIGFPE, SIG_DFL);
     mch_signal(SIGSEGV, SIG_DFL);

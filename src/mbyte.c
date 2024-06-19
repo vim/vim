@@ -102,7 +102,7 @@
 # define WINBYTE BYTE
 #endif
 
-#if (defined(MSWIN) || defined(WIN32UNIX)) && !defined(__MINGW32__)
+#if defined(MSWIN) || defined(WIN32UNIX)
 # include <winnls.h>
 #endif
 

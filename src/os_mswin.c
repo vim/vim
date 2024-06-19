@@ -18,20 +18,12 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
+
+// cproto fails on missing include files
 #ifndef PROTO
 # include <process.h>
-#endif
-
-#undef chdir
-#ifdef __GNUC__
-# ifndef __MINGW32__
-#  include <dirent.h>
-# endif
-#else
 # include <direct.h>
-#endif
 
-#ifndef PROTO
 # if !defined(FEAT_GUI_MSWIN)
 #  include <shellapi.h>
 # endif
@@ -41,36 +33,7 @@
 #  include <winspool.h>
 #  include <commdlg.h>
 # endif
-
 #endif // PROTO
-
-#ifdef __MINGW32__
-# ifndef FROM_LEFT_1ST_BUTTON_PRESSED
-#  define FROM_LEFT_1ST_BUTTON_PRESSED    0x0001
-# endif
-# ifndef RIGHTMOST_BUTTON_PRESSED
-#  define RIGHTMOST_BUTTON_PRESSED	  0x0002
-# endif
-# ifndef FROM_LEFT_2ND_BUTTON_PRESSED
-#  define FROM_LEFT_2ND_BUTTON_PRESSED    0x0004
-# endif
-# ifndef FROM_LEFT_3RD_BUTTON_PRESSED
-#  define FROM_LEFT_3RD_BUTTON_PRESSED    0x0008
-# endif
-# ifndef FROM_LEFT_4TH_BUTTON_PRESSED
-#  define FROM_LEFT_4TH_BUTTON_PRESSED    0x0010
-# endif
-
-/*
- * EventFlags
- */
-# ifndef MOUSE_MOVED
-#  define MOUSE_MOVED   0x0001
-# endif
-# ifndef DOUBLE_CLICK
-#  define DOUBLE_CLICK  0x0002
-# endif
-#endif
 
 /*
  * When generating prototypes for Win32 on Unix, these lines make the syntax
@@ -142,37 +105,6 @@ static HWND s_hwnd = 0;	    // console window handle, set by GetConsoleHwnd()
 
 #ifdef FEAT_JOB_CHANNEL
 int WSInitialized = FALSE; // WinSock is initialized
-#endif
-
-// Don't generate prototypes here, because some systems do have these
-// functions.
-#if defined(__GNUC__) && !defined(PROTO)
-# ifndef __MINGW32__
-int _stricoll(char *a, char *b)
-{
-    // the ANSI-ish correct way is to use strxfrm():
-    char a_buff[512], b_buff[512];  // file names, so this is enough on Win32
-    strxfrm(a_buff, a, 512);
-    strxfrm(b_buff, b, 512);
-    return strcoll(a_buff, b_buff);
-}
-
-char * _fullpath(char *buf, char *fname, int len)
-{
-    LPTSTR toss;
-
-    return (char *)GetFullPathName(fname, len, buf, &toss);
-}
-# endif
-
-# if !defined(__MINGW32__) || (__GNUC__ < 4)
-int _chdrive(int drive)
-{
-    char temp [3] = "-:";
-    temp[0] = drive + 'A' - 1;
-    return !SetCurrentDirectory(temp);
-}
-# endif
 #endif
 
 

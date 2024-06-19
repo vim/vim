@@ -1638,7 +1638,6 @@ $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(TCL_INC) if_tcl.c
 
 $(OUTDIR)/iscygpty.obj:	$(OUTDIR) iscygpty.c $(CUI_INCL)
-	$(CC) $(CFLAGS_OUTDIR) iscygpty.c
 
 $(OUTDIR)/job.obj:	$(OUTDIR) job.c $(INCL)
 
