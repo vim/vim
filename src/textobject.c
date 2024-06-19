@@ -1426,15 +1426,22 @@ again:
 
     if (!do_include)
     {
-	// Exclude the start tag.
+	// Exclude the start tag,
+	// but skip over '>' if it appears in quotes
+	int in_quotes = FALSE;
 	curwin->w_cursor = start_pos;
 	while (inc_cursor() >= 0)
-	    if (*ml_get_cursor() == '>')
+	{
+	    p = ml_get_cursor();
+	    if (*p == '>' && !in_quotes)
 	    {
 		inc_cursor();
 		start_pos = curwin->w_cursor;
 		break;
 	    }
+	    else if (*p == '"' || *p == '\'')
+		in_quotes = !in_quotes;
+	}
 	curwin->w_cursor = end_pos;
 
 	// If we are in Visual mode and now have the same text as before set
