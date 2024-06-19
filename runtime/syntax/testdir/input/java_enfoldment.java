@@ -1,5 +1,5 @@
 // VIM_TEST_SETUP setlocal foldenable foldcolumn=2 foldmethod=syntax
-// VIM_TEST_SETUP let g:java_mark_braces_in_parens_as_errors = 1
+
 
 	@SuppressWarnings({
 	"""
@@ -50,6 +50,18 @@ out: {
 				break out;
 		} while (false);
 }
+	}
+/*\\\*/	{
+		(new java.util.function.Function<Object, Object>() {
+			/**
+			 * {@inheritDoc} */
+			public Object apply(Object o) { return o; };
+		}).apply(
+		(new java.util.function.Function<Object, Object>() {
+			/** {@inheritDoc}
+			 */
+			public Object apply(Object o) { return o; };
+		}));
 	}
 
 	/**
