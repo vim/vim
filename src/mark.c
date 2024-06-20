@@ -156,6 +156,22 @@ setpcmark(void)
 	    curwin->w_jumplistlen = curwin->w_jumplistidx + 1;
     }
 
+#ifdef JUMPLIST_STACK_STYLE
+    /*
+     * Similar with JUMPLIST_ROTATE except that the entrys from last used 
+     * entry to the top will be delete, but not rotating.
+     */
+
+    // JUMPLIST_ROTATE is prior to JUMPLIST_STACK_STYLE
+    if (curwin->w_jumplistidx < curwin->w_jumplistlen)
+        ++curwin->w_jumplistidx;
+    while(curwin->w_jumplistlen > curwin->w_jumplistidx) {
+        vim_free(curwin->w_jumplist[curwin->w_jumplistlen-1].fname);
+        --curwin->w_jumplistlen;
+    }
+
+#endif
+
     // If jumplist is full: remove oldest entry
     if (++curwin->w_jumplistlen > JUMPLISTSIZE)
     {
