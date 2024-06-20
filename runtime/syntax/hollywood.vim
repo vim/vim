@@ -2,7 +2,7 @@
 " Language:     Hollywood 10.0
 " Maintainer:   Ola Söder <rolfkopman@gmail.com>
 " First Author: Tom Crecelius <holly@net-eclipse.net>
-" Last Change:  2023 Mar 22
+" Last Change:  2024 Jun 20
 " Highlighting Issues:
 " Depending on your colour schema, Strings or Comments might be highlighted in
 " a way, you don't like. If so, try one of the following settings after
@@ -30,7 +30,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 if !exists("hw_version")
-  let hw_version = 9
+  let hw_version = 10
   let hw_subversion = 0
 elseif !exists("hw_subversion")
   let hw_subversion = 0
@@ -54,9 +54,9 @@ syn match  hwError "\<\%(If\|End\|Else\|ElseIf\|Then\|Until\|In\|EndIf\|EndSwitc
 syn region hwFunctionBlock transparent matchgroup=hwFunction start="\<Function\>" end="\<EndFunction\>" contains=ALLBUT,hwTodo,hwSpecial,hwElseIf,hwElse,hwIn,hwStep,hwFallThrough,hwLineStatement
 
 " If .. Then
-syn region hwIfThen transparent matchgroup=hwCond start="\<If\>" end="\<Then\>\{-}"me=e-4 skipwhite skipempty
+syn region hwIfThen transparent matchgroup=hwCond start="\<If\>" end="\<Then\>\{-}"me=e-4 oneline skipwhite skipempty
 " Then ... Else
-syn region hwThenElse transparent matchgroup=hwCond start="\<Then\>" end="$" end="\<Else\>" contains=ALLBUT,hwTodo,hwSpecial,hwIn,hwStep,hwLineStatement,hwIfEndIf,hwElseEndif,hwIfThen,hwThenElse skipwhite skipempty
+syn region hwThenElse transparent matchgroup=hwCond start="\<Then\>" end="$" end="\<Else\>" contains=hwFunction,hwUserFunction,hwElseIf containedin=hwIfThen oneline skipwhite skipempty
 
 " If .. EndIf
 syn region hwIfEndIf transparent matchgroup=hwCond start="\<If\>\(\(.\{-}Then.\{-}\)\@!\)" end="\<EndIf\>" contains=ALLBUT,hwTodo,hwSpecial,hwIn,hwStep,hwLineStatement skipwhite skipempty
@@ -97,6 +97,12 @@ syn region hwForTo transparent matchgroup=hwRepeat start="\<For\>" end="\<To\>"m
 
 " To .. Next
 syn region hwToNext transparent matchgroup=hwRepeat start="\<To\>" end="\<Next\>"   contains=ALLBUT,hwTodo,hwSpecial,hwElseIf,hwElse,hwIn,hwLineStatement skipwhite skipempty
+
+" For .. In
+syn region hwForIn transparent matchgroup=hwRepeat start="\<For\>\(\(.\{-}To.\{-}\)\@!\)" end="\<In\>"me=e-2, skipwhite skipempty nextgroup=hwInNext
+
+" In .. Next
+syn region hwInNext transparent matchgroup=hwRepeat start="\<In\>" end="\<Next\>"   contains=ALLBUT,hwTodo,hwSpecial,hwElseIf,hwElse,hwLineStatement skipwhite skipempty
 
 syn keyword hwStep contained Step
 syn keyword hwIn contained In
