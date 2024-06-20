@@ -1265,6 +1265,56 @@ export def FTtyp()
   setf typst
 enddef
 
+# Detect Microsoft Developer Studio Project files (Makefile) or Faust DSP
+# files.
+export def FTdsp()
+  if exists("g:filetype_dsp")
+    exe "setf " .. g:filetype_dsp
+    return
+  endif
+
+  # Test the filename
+  if expand('%:t') =~ '^[mM]akefile.*$'
+    setf make
+    return
+  endif
+
+  # Test the file contents
+  for line in getline(1, 200)
+    # Chech for comment style
+    if line =~ '^#.*'
+      setf make
+      return
+    endif
+
+    # Check for common lines
+    if line =~ '^.*Microsoft Developer Studio Project File.*$'
+      setf make
+      return
+    endif
+
+    if line =~ '^!MESSAGE This is not a valid makefile\..+$'
+      setf make
+      return
+    endif
+
+    # Check for keywords
+    if line =~ '^!(IF,ELSEIF,ENDIF).*$'
+      setf make
+      return
+    endif
+
+    # Check for common assignments
+    if line =~ '^SOURCE=.*$'
+      setf make
+      return
+    endif
+  endfor
+
+  # Otherwise, assume we have a Faust file
+  setf faust
+enddef
+
 # Set the filetype of a *.v file to Verilog, V or Cog based on the first 200
 # lines.
 export def FTv()

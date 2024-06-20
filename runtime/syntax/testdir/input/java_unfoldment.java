@@ -51,6 +51,18 @@ out: {
 		} while (false);
 }
 	}
+/*\\\*/	{
+		(new java.util.function.Function<Object, Object>() {
+			/**
+			 * {@inheritDoc} */
+			public Object apply(Object o) { return o; };
+		}).apply(
+		(new java.util.function.Function<Object, Object>() {
+			/** {@inheritDoc}
+			 */
+			public Object apply(Object o) { return o; };
+		}));
+	}
 
 	/**
 	 * No operation.

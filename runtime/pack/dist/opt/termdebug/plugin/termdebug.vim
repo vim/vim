@@ -1263,32 +1263,24 @@ def DeleteCommands()
   delcommand Winbar
 
 
-  if !empty(saved_K_map) && saved_K_map.buffer
-    # pass
-  elseif !empty(saved_K_map) && !saved_K_map.buffer
-    nunmap K
+  if !empty(saved_K_map) && !saved_K_map.buffer
     mapset(saved_K_map)
   elseif empty(saved_K_map)
     silent! nunmap K
   endif
 
-  if !empty(saved_plus_map) && saved_plus_map.buffer
-    # pass
-  elseif !empty(saved_plus_map) && !saved_plus_map.buffer
-    nunmap +
+  if !empty(saved_plus_map) && !saved_plus_map.buffer
     mapset(saved_plus_map)
   elseif empty(saved_plus_map)
     silent! nunmap +
   endif
 
-  if !empty(saved_minus_map) && saved_minus_map.buffer
-    # pass
-  elseif !empty(saved_minus_map) && !saved_minus_map.buffer
-    nunmap -
+  if !empty(saved_minus_map) && !saved_minus_map.buffer
     mapset(saved_minus_map)
   elseif empty(saved_minus_map)
     silent! nunmap -
   endif
+
 
   if has('menu')
     # Remove the WinBar entries from all windows where it was added.
