@@ -76,7 +76,7 @@ static int cause_abort = FALSE;
 
 /*
  * Return TRUE when immediately aborting on error, or when an interrupt
- * occurred or an exception was thrown but not caught.  Use for ":{range}call"
+ * occurred or an exception was thrown but not caught.  Use for ":[range]call"
  * to check whether an aborted function that does not handle a range itself
  * should be called again for the next line in the range.  Also used for
  * cancelling expression evaluation after a function call caused an immediate

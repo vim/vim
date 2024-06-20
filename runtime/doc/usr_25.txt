@@ -134,9 +134,9 @@ if your text can't be properly formatted with Vim's builtin command.  See the
 
 To center a range of lines, use the following command: >
 
-	:{range}center [width]
+	:[range]center [width]
 
-{range} is the usual command-line range.  [width] is an optional line width to
+[range] is the usual command-line range.  [width] is an optional line width to
 use for centering.  If [width] is not specified, it defaults to the value of
 'textwidth'.  (If 'textwidth' is 0, the default is 80.)
    For example: >
@@ -170,7 +170,7 @@ LEFT ALIGNMENT
 
 Finally there is this command: >
 
-	:{range}left [margin]
+	:[range]left [margin]
 
 Unlike ":center" and ":right", however, the argument to ":left" is not the
 length of the line.  Instead it is the left margin.  If it is omitted, the
