@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 19
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41591,6 +41591,7 @@ Functions: ~
 
 Autocommands: ~
 
+|CursorMovedC|		after the cursor was moved in the comamnd-line
 |SessionWritePost|	after writing the session file |:mksession|
 |TermResponseAll|	after the terminal response to |t_RV| and others is
 			received
