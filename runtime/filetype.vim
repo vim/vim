@@ -1265,7 +1265,10 @@ au BufRead,BufNewFile *.ldg,*.ledger,*.journal			setf ledger
 au BufNewFile,BufRead *.less			setf less
 
 " Lex
-au BufNewFile,BufRead *.lex,*.l,*.lxx,*.l++	setf lex
+au BufNewFile,BufRead *.lex,*.lxx,*.l++		setf lex
+
+" Lex and PicoLisp
+au BufNewFile,BufRead *.l			call dist#ft#FTl()
 
 " Libao
 au BufNewFile,BufRead */etc/libao.conf,*/.libao	setf libao
