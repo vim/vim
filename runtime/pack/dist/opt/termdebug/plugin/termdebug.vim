@@ -263,7 +263,7 @@ enddef
 
 # Define the default highlighting, using the current 'background' value.
 def InitHighlight()
-  Highlight(1, '', &background)
+  Highlight(true, '', &background)
   hi default debugBreakpoint term=reverse ctermbg=red guibg=red
   hi default debugBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 enddef
