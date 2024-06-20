@@ -272,8 +272,8 @@ static char *(highlight_init_light[]) = {
 	 "Directory term=bold ctermfg=DarkBlue guifg=Blue"),
     CENT("LineNr term=underline ctermfg=Brown",
 	 "LineNr term=underline ctermfg=Brown guifg=Brown"),
-    CENT("CursorLineNr term=bold cterm=underline ctermfg=Brown",
-	 "CursorLineNr term=bold cterm=underline ctermfg=Brown gui=bold guifg=Brown"),
+    CENT("CursorLineNr term=bold ctermfg=Brown",
+	 "CursorLineNr term=bold ctermfg=Brown gui=bold guifg=Brown"),
     CENT("MoreMsg term=bold ctermfg=DarkGreen",
 	 "MoreMsg term=bold ctermfg=DarkGreen gui=bold guifg=SeaGreen"),
     CENT("Question term=standout ctermfg=DarkGreen",
@@ -329,8 +329,8 @@ static char *(highlight_init_light[]) = {
 #ifdef FEAT_SYN_HL
     CENT("CursorColumn term=reverse ctermbg=LightGrey",
 	 "CursorColumn term=reverse ctermbg=LightGrey guibg=Grey90"),
-    CENT("CursorLine term=underline cterm=underline",
-	 "CursorLine term=underline cterm=underline guibg=Grey90"),
+    CENT("CursorLine term=underline ctermbg=LightGrey",
+	 "CursorLine term=underline ctermbg=LightGrey guibg=Grey90"),
     CENT("ColorColumn term=reverse ctermbg=LightRed",
 	 "ColorColumn term=reverse ctermbg=LightRed guibg=LightRed"),
 #endif
@@ -361,8 +361,8 @@ static char *(highlight_init_dark[]) = {
 	 "Directory term=bold ctermfg=LightCyan guifg=Cyan"),
     CENT("LineNr term=underline ctermfg=Yellow",
 	 "LineNr term=underline ctermfg=Yellow guifg=Yellow"),
-    CENT("CursorLineNr term=bold cterm=underline ctermfg=Yellow",
-	 "CursorLineNr term=bold cterm=underline ctermfg=Yellow gui=bold guifg=Yellow"),
+    CENT("CursorLineNr term=bold ctermfg=Yellow",
+	 "CursorLineNr term=bold ctermfg=Yellow gui=bold guifg=Yellow"),
     CENT("MoreMsg term=bold ctermfg=LightGreen",
 	 "MoreMsg term=bold ctermfg=LightGreen gui=bold guifg=SeaGreen"),
     CENT("Question term=standout ctermfg=LightGreen",
@@ -418,8 +418,8 @@ static char *(highlight_init_dark[]) = {
 #ifdef FEAT_SYN_HL
     CENT("CursorColumn term=reverse ctermbg=DarkGrey",
 	 "CursorColumn term=reverse ctermbg=DarkGrey guibg=Grey40"),
-    CENT("CursorLine term=underline cterm=underline",
-	 "CursorLine term=underline cterm=underline guibg=Grey40"),
+    CENT("CursorLine term=underline ctermbg=DarkGrey",
+	 "CursorLine term=underline ctermbg=DarkGrey guibg=Grey40"),
     CENT("ColorColumn term=reverse ctermbg=DarkRed",
 	 "ColorColumn term=reverse ctermbg=DarkRed guibg=DarkRed"),
 #endif
