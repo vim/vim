@@ -279,32 +279,30 @@ enddef
 
 # Get the command to execute the debugger as a list, defaults to ["gdb"].
 def GetCommand(): list<string>
-  var cmd = 'gdb'
+  var cmd: any
   if exists('g:termdebug_config')
     cmd = get(g:termdebug_config, 'command', 'gdb')
   elseif exists('g:termdebugger')
     cmd = g:termdebugger
+  else
+    cmd = 'gdb'
   endif
 
   return type(cmd) == v:t_list ? copy(cmd) : [cmd]
 enddef
 
 def StartDebug(bang: bool, ...gdb_args: list<string>)
-  if g:termdebug_is_running == true
-    Echoerr('Terminal debugger already running, cannot run two')
-    return
-  endif
-
-  InitScriptVariables()
-  if !SanityCheck()
-    return
-  endif
   # First argument is the command to debug, second core file or process ID.
   StartDebug_internal({gdb_args: gdb_args, bang: bang})
 enddef
 
 def StartDebugCommand(bang: bool, ...args: list<string>)
-  if g:termdebug_is_running == true
+  # First argument is the command to debug, rest are run arguments.
+  StartDebug_internal({gdb_args: [args[0]], proc_args: args[1 : ], bang: bang})
+enddef
+
+def StartDebug_internal(dict: dict<any>)
+  if g:termdebug_is_running
     Echoerr('Terminal debugger already running, cannot run two')
     return
   endif
@@ -313,11 +311,6 @@ def StartDebugCommand(bang: bool, ...args: list<string>)
   if !SanityCheck()
     return
   endif
-  # First argument is the command to debug, rest are run arguments.
-  StartDebug_internal({gdb_args: [args[0]], proc_args: args[1 : ], bang: bang})
-enddef
-
-def StartDebug_internal(dict: dict<any>)
 
   if exists('#User#TermdebugStartPre')
     doauto <nomodeline> User TermdebugStartPre
