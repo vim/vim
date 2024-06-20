@@ -41563,6 +41563,9 @@ Support for the XDG Desktop Specification |xdg-base-dir|
 Support highlighting the matched text for insert-mode completion and
 command-line completion in |ins-completion-menu|.
 
+Support for translating messages in Vim script plugins using the |gettext()|
+and |bindtextdomain()| functions.
+
 							*changed-9.2*
 Changed~
 -------
@@ -41579,6 +41582,7 @@ Various syntax, indent and other plugins were added.
 
 Functions: ~
 
+|bindtextdomain()|	set message lookup translation base path
 |diff()|		diff two Lists of strings
 |filecopy()|		copy a file {from} to {to}
 |foreach()|		apply function to List items

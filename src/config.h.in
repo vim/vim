@@ -222,7 +222,6 @@
 #undef HAVE_UNSETENV
 #undef HAVE_USLEEP
 #undef HAVE_UTIME
-#undef HAVE_BIND_TEXTDOMAIN_CODESET
 #undef HAVE_MBLEN
 #undef HAVE_TIMER_CREATE
 #undef HAVE_CLOCK_GETTIME
@@ -423,6 +422,12 @@
 
 /* Define if there is a working gettext(). */
 #undef HAVE_GETTEXT
+
+/* Define if there is a working bind_textdomain_codeset(). */
+#undef HAVE_BIND_TEXTDOMAIN_CODESET
+
+/* Define if there is a working dgettext(). */
+#undef HAVE_DGETTEXT
 
 /* Define if _nl_msg_cat_cntr is present. */
 #undef HAVE_NL_MSG_CAT_CNTR
