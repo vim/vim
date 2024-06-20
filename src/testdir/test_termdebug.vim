@@ -337,44 +337,6 @@ func Test_termdebug_mapping()
   %bw!
 endfunc
 
-func Test_termdebug_bufnames()
-  " Test if user has filename/folders named gdb, Termdebug-gdb-console,
-  " etc. in the current directory
-  let g:termdebug_config = {}
-  let g:termdebug_config['use_prompt'] = 1
-  let filename = 'gdb'
-  let replacement_filename = 'Termdebug-gdb-console'
-
-  call writefile(['This', 'is', 'a', 'test'], filename, 'D')
-  " Throw away the file once the test has done.
-  Termdebug
-  " Once termdebug has completed the startup you should have 3 windows on screen
-  call WaitForAssert({-> assert_equal(3, winnr('$'))})
-  " A file named filename already exists in the working directory,
-  " hence you must call the newly created buffer differently
-  call WaitForAssert({-> assert_false(bufexists(filename))})
-  call WaitForAssert({-> assert_true(bufexists(replacement_filename))})
-  quit!
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-
-  " Check if error message is in :message
-  let g:termdebug_config['disasm_window'] = 1
-  let filename = 'Termdebug-asm-listing'
-  call writefile(['This', 'is', 'a', 'test'], filename, 'D')
-  " Check only the head of the error message
-  let error_message = "You have a file/folder named '" .. filename .. "'"
-  Termdebug
-  " Once termdebug has completed the startup you should have 4 windows on screen
-  call WaitForAssert({-> assert_equal(4, winnr('$'))})
-  call WaitForAssert({-> assert_notequal(-1, stridx(execute('messages'), error_message))})
-  quit!
-  wincmd b
-  wincmd q
-  call WaitForAssert({-> assert_equal(1, winnr('$'))})
-
-  unlet g:termdebug_config
-endfunc
-
 function Test_termdebug_save_restore_variables()
   " saved mousemodel
   let &mousemodel=''
@@ -413,5 +375,39 @@ function Test_termdebug_save_restore_variables()
   unlet g:termdebug_config
 endfunction
 
+function Test_termdebug_sanity_check()
+  " Test if user has filename/folders with wrong names
+  let g:termdebug_config = {}
+  let s:dict = {'disasm_window': 'Termdebug-asm-listing', 'use_prompt': 'gdb', 'variables_window': 'Termdebug-variables-listing'}
+
+  for key in keys(s:dict)
+    let s:filename = s:dict[key]
+    let g:termdebug_config[key] = 1
+    let s:error_message = "You have a file/folder named '" .. s:filename .. "'"
+
+    " Write dummy file with bad name
+    call writefile(['This', 'is', 'a', 'test'], s:filename)
+    Termdebug
+    call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
+    call WaitForAssert({-> assert_equal(1, winnr('$'))})
+
+    call delete(s:filename)
+    call remove(g:termdebug_config, key)
+  endfor
+
+  unlet g:termdebug_config
+endfunction
+
+function Test_termdebug_double_termdebug_instances()
+  let s:error_message = 'Terminal debugger already running, cannot run two'
+  Termdebug
+  call WaitForAssert({-> assert_equal(3, winnr('$'))})
+  Termdebug
+  call WaitForAssert({-> assert_true(execute('messages') =~ s:error_message)})
+  wincmd t
+  quit!
+  call WaitForAssert({-> assert_equal(1, winnr('$'))})
+  :%bw!
+endfunction
 
 " vim: shiftwidth=2 sts=2 expandtab
