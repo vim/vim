@@ -50,6 +50,13 @@ if exists('g:termdebug_loaded')
     finish
 endif
 g:termdebug_loaded = true
+g:termdebug_is_running = false
+
+
+# The command that starts debugging, e.g. ":Termdebug vim".
+# To end type "quit" in the gdb window.
+command -nargs=* -complete=file -bang Termdebug StartDebug(<bang>0, <f-args>)
+command -nargs=+ -complete=file -bang TermdebugCommand StartDebugCommand(<bang>0, <f-args>)
 
 # Script variables declaration. These variables are re-initialized at every
 # Termdebug instance
@@ -206,10 +213,34 @@ def InitScriptVariables()
     saved_mousemodel = &mousemodel
   endif
 enddef
-# The command that starts debugging, e.g. ":Termdebug vim".
-# To end type "quit" in the gdb window.
-command -nargs=* -complete=file -bang Termdebug StartDebug(<bang>0, <f-args>)
-command -nargs=+ -complete=file -bang TermdebugCommand StartDebugCommand(<bang>0, <f-args>)
+
+def SanityCheck(): bool
+  # CHECKME: This is checked after InitScriptVariables(). Perhaps we need a
+  # check also before initialization?
+  var gdb_cmd = GetCommand()[0]
+  var is_check_ok = true
+  # Need either the +terminal feature or +channel and the prompt buffer.
+  # The terminal feature does not work with gdb on win32.
+  if (way ==# 'prompt') && !has('channel')
+    err = 'Cannot debug, +channel feature is not supported'
+  elseif way ==# 'prompt' && !exists('*prompt_setprompt')
+    err = 'Cannot debug, missing prompt buffer support'
+  elseif way ==# 'prompt' && !empty(glob(gdb_cmd))
+    err = $"You have a file/folder named '{gdb_cmd}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
+  elseif !empty(glob(asmbufname))
+    err = $"You have a file/folder named '{asmbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
+  elseif !empty(glob(varbufname))
+    err = $"You have a file/folder named '{varbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
+  elseif !executable(gdb_cmd)
+    err = $"Cannot execute debugger program '{gdb_cmd}'"
+  endif
+
+  if !empty(err)
+    Echoerr(err)
+    is_check_ok = false
+  endif
+  return is_check_ok
+enddef
 
 
 # Take a breakpoint number as used by GDB and turn it into an integer.
@@ -259,31 +290,41 @@ def GetCommand(): list<string>
 enddef
 
 def StartDebug(bang: bool, ...gdb_args: list<string>)
+  if g:termdebug_is_running == true
+    Echoerr('Terminal debugger already running, cannot run two')
+    return
+  endif
+
   InitScriptVariables()
+  if !SanityCheck()
+    return
+  endif
   # First argument is the command to debug, second core file or process ID.
   StartDebug_internal({gdb_args: gdb_args, bang: bang})
 enddef
 
 def StartDebugCommand(bang: bool, ...args: list<string>)
+  if g:termdebug_is_running == true
+    Echoerr('Terminal debugger already running, cannot run two')
+    return
+  endif
+
+  InitScriptVariables()
+  if !SanityCheck()
+    return
+  endif
   # First argument is the command to debug, rest are run arguments.
   StartDebug_internal({gdb_args: [args[0]], proc_args: args[1 : ], bang: bang})
 enddef
 
-
 def StartDebug_internal(dict: dict<any>)
-  if gdbwin > 0
-    Echoerr('Terminal debugger already running, cannot run two')
-    return
-  endif
-  var gdbcmd = GetCommand()
-  if !executable(gdbcmd[0])
-    Echoerr($'Cannot execute debugger program "{gdbcmd[0]}"')
-    return
-  endif
 
   if exists('#User#TermdebugStartPre')
     doauto <nomodeline> User TermdebugStartPre
   endif
+
+  # Uncomment this line to write logging in "debuglog".
+  # call ch_logfile('debuglog', 'w')
 
   # Assume current window is the source code window
   sourcewin = win_getid()
@@ -327,6 +368,7 @@ def StartDebug_internal(dict: dict<any>)
   if exists('#User#TermdebugStartPost')
     doauto <nomodeline> User TermdebugStartPost
   endif
+  g:termdebug_is_running = true
 enddef
 
 # Use when debugger didn't start or ended.
@@ -436,6 +478,10 @@ def StartDebug_term(dict: dict<any>)
   # Wait for the "startupdone" message before sending any commands.
   var counter = 0
   var counter_max = 300
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'timeout')
+    counter_max = g:termdebug_config['timeout']
+  endif
+
   var success = false
   while !success && counter < counter_max
     if !IsGdbStarted()
@@ -524,7 +570,10 @@ enddef
 
 # Open a window with a prompt buffer to run gdb in.
 def StartDebug_prompt(dict: dict<any>)
-  if vvertical
+  var gdb_cmd = GetCommand()
+  gdbbufname = gdb_cmd[0]
+
+  if vvertical == true
     vertical new
   else
     new
@@ -533,17 +582,7 @@ def StartDebug_prompt(dict: dict<any>)
   promptbuf = bufnr('')
   prompt_setprompt(promptbuf, 'gdb> ')
   set buftype=prompt
-
-  if empty(glob('gdb'))
-    file gdb
-  elseif empty(glob('Termdebug-gdb-console'))
-    file Termdebug-gdb-console
-  else
-    Echoerr("You have a file/folder named 'gdb' " ..
-            "or 'Termdebug-gdb-console'.  " ..
-            "Please exit and rename them because Termdebug may not work " ..
-            "as expected.")
-  endif
+  exe $"file {gdbbufname}"
 
   prompt_setcallback(promptbuf, function('PromptCallback'))
   prompt_setinterrupt(promptbuf, function('PromptInterrupt'))
@@ -557,7 +596,6 @@ def StartDebug_prompt(dict: dict<any>)
   var gdb_args = get(dict, 'gdb_args', [])
   var proc_args = get(dict, 'proc_args', [])
 
-  var gdb_cmd = GetCommand()
   # Add -quiet to avoid the intro message causing a hit-enter prompt.
   gdb_cmd += ['-quiet']
   # Disable pagination, it causes everything to stop at the gdb, needs to be run early
@@ -918,6 +956,7 @@ def EndDebugCommon()
   endif
 
   au! TermDebug
+  g:termdebug_is_running = false
 enddef
 
 def EndPromptDebug(job: any, status: any)
@@ -1599,13 +1638,9 @@ def GotoAsmwinOrCreateIt()
 
     if asmbufnr > 0 && bufexists(asmbufnr)
       exe $'buffer {asmbufnr}'
-    elseif empty(glob('Termdebug-asm-listing'))
-      silent file Termdebug-asm-listing
-      asmbufnr = bufnr('Termdebug-asm-listing')
     else
-      Echoerr("You have a file/folder named 'Termdebug-asm-listing'. " ..
-              "Please exit and rename it because Termdebug may not work " ..
-              "as expected.")
+      exe $"silent file {asmbufname}"
+      asmbufnr = bufnr(asmbufname)
     endif
 
     if mdf != 'vert' && GetDisasmWindowHeight() > 0
@@ -1671,15 +1706,12 @@ def GotoVariableswinOrCreateIt()
     setlocal signcolumn=no
     setlocal modifiable
 
+    # If exists, then open, otherwise create
     if varbufnr > 0 && bufexists(varbufnr)
       exe $'buffer {varbufnr}'
-    elseif empty(glob('Termdebug-variables-listing'))
-      silent file Termdebug-variables-listing
-      varbufnr = bufnr('Termdebug-variables-listing')
     else
-      Echoerr("You have a file/folder named 'Termdebug-variables-listing'. " ..
-              "Please exit and rename it because Termdebug may not work " ..
-              "as expected.")
+      exe $"silent file {varbufname}"
+      varbufnr = bufnr(varbufname)
     endif
 
     if mdf != 'vert' && GetVariablesWindowHeight() > 0
