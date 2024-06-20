@@ -1283,6 +1283,15 @@ When the debugger ends, typically by typing "quit" in the gdb window, the two
 opened windows are closed.
 
 Only one debugger can be active at a time.
+
+						*termdebug-timeout*
+Depending on how gdb is launched, termdebug startup time may vary.
+To avoid termdebug to get stuck if the startup process of gdb takes too long,
+a configurable timeout is included. Such time out is configurable in terms of
+multiple of 10ms: >
+    let g:termdebug_config['timeout'] = 500 # 500 * 10ms = 5 seconds.
+
+The default timeout is 3000 ms.
 							*:TermdebugCommand*
 If you want to give specific commands to the command being debugged, you can
 use the `:TermdebugCommand` command followed by the command name and
