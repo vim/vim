@@ -4508,9 +4508,9 @@ ins_compl_use_match(int c)
 get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 {
     int		i;
+    int		start;
     int		char_len;
-    size_t	fuzzy_len;
-    char_u	*fuzzy_pattern;
+    garray_T	fuzzy_ga;
 
     if ((compl_cont_status & CONT_SOL) || ctrl_x_mode_path_defines())
     {
@@ -4626,35 +4626,38 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 
     compl_patternlen = STRLEN(compl_pattern);
 
-    if ((get_cot_flags() & COT_FUZZYCOLLECT) != 0)
+    if ((get_cot_flags() & COT_FUZZYCOLLECT) != 0 && compl_length > 0)
     {
-	// Adjust size to avoid buffer overflow
-	fuzzy_len = (size_t)compl_length * 5 + 10;
-	// Allocate enough space
-	fuzzy_pattern = alloc(fuzzy_len);
-	if (fuzzy_pattern == NULL)
+	// Initialize the growable array
+	ga_init2(&fuzzy_ga, sizeof(char), 100);
+	ga_concat(&fuzzy_ga, (char_u *)"\\v\\S*");
+	// Adjust the start index based on different compl_pattern generation
+	if (STRNCMP(compl_pattern, "\\<\\k\\k", 6) == 0)
+	    i = 6; // Skip "\\<\\k\\k"
+	else if (STRNCMP(compl_pattern, "\\<", 2) == 0)
+	    i = 2; // Skip "\\<"
+	else
+	    i = 0; // No special prefix
+	start = i;
+	if (has_mbyte)
 	{
-	    compl_patternlen = 0;
-	    return FAIL;
+	    while (i < compl_length + start)
+	    {
+		// Get length of current multi-byte character
+		char_len = mb_ptr2len(compl_pattern + i);
+		// Move to the next character
+		i += char_len;
+	    }
+	    // Concatenate the characters safely
+	    ga_concat_len(&fuzzy_ga, compl_pattern + start, i - start);
 	}
-	// Use 'very magic' mode for simpler syntax
-	STRCPY(fuzzy_pattern, "\\v");
-	i = 2; // Start from 2 to skip "\\v"
-	while (i < compl_length + 2)
-	{
-	    // Append "\\k*" before each character
-	    STRNCAT(fuzzy_pattern, "\\k*", fuzzy_len - STRLEN(fuzzy_pattern) - 1);
-	    // Get length of current multi-byte character
-	    char_len = mb_ptr2len(compl_pattern + i);
-	    // Concatenate the character safely
-	    STRNCAT(fuzzy_pattern, compl_pattern + i, char_len);
-	    // Move to the next character
-	    i += char_len;
-	}
-	// Append "\\k*" at the end to match any characters after the pattern
-	STRNCAT(fuzzy_pattern, "\\k*", fuzzy_len - STRLEN(fuzzy_pattern) - 1);
+	else
+	    ga_concat_len(&fuzzy_ga, compl_pattern + start, compl_length);
+	// Append "\\S*" at the end to match any characters after the pattern
+	ga_concat(&fuzzy_ga, (char_u *)"\\S*");
 	vim_free(compl_pattern);
-	compl_pattern = fuzzy_pattern;
+	ga_append(&fuzzy_ga, NUL); // Null-terminate the string
+	compl_pattern = fuzzy_ga.ga_data;
 	compl_patternlen = STRLEN(compl_pattern);
     }
 

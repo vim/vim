@@ -2617,6 +2617,12 @@ func Test_complete_fuzzy_match()
   call assert_equal('one', g:word)
   call assert_equal('one two o', getline('.'))
 
+  set completeopt=fuzzycollect,menu,menuone
+  call setline(1, ['hello world', ''])
+  call cursor(2, 1)
+  call feedkeys("A\<C-X>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('hello', getline('.'))
+
   " clean up
   set omnifunc=
   bw!
