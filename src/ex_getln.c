@@ -2474,9 +2474,9 @@ getcmdline_int(
  * (Sorry for the goto's, I know it is ugly).
  */
 cmdline_not_changed:
-	 // Trigger CmdlineMoved autocommands.
+	 // Trigger CursorMovedC autocommands.
 	 if (ccline.cmdspos != save_cmdspos)
-	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINEMOVED);
+	    trigger_cmd_autocmd(cmdline_type, EVENT_CURSORMOVEDC);
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
@@ -4314,8 +4314,8 @@ set_cmdline_pos(
     else
 	new_cmdpos = pos;
 
-    // Trigger CmdlineMoved autocommands.
-    trigger_cmd_autocmd(get_cmdline_type(), EVENT_CMDLINEMOVED);
+    // Trigger CursorMovedC autocommands.
+    trigger_cmd_autocmd(get_cmdline_type(), EVENT_CURSORMOVEDC);
 
     return 0;
 }

@@ -4046,7 +4046,6 @@ Cmdline-mode	cmdline.txt	/*Cmdline-mode*
 CmdlineChanged	autocmd.txt	/*CmdlineChanged*
 CmdlineEnter	autocmd.txt	/*CmdlineEnter*
 CmdlineLeave	autocmd.txt	/*CmdlineLeave*
-CmdlineMoved	autocmd.txt	/*CmdlineMoved*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
 ColorScheme	autocmd.txt	/*ColorScheme*
@@ -4064,6 +4063,7 @@ CursorHold-example	windows.txt	/*CursorHold-example*
 CursorHoldI	autocmd.txt	/*CursorHoldI*
 CursorIM	mbyte.txt	/*CursorIM*
 CursorMoved	autocmd.txt	/*CursorMoved*
+CursorMovedC	autocmd.txt	/*CursorMovedC*
 CursorMovedI	autocmd.txt	/*CursorMovedI*
 D	change.txt	/*D*
 DOS	os_dos.txt	/*DOS*

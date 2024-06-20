@@ -1350,7 +1350,6 @@ enum auto_event
     EVENT_CMDLINECHANGED,	// command line was modified
     EVENT_CMDLINEENTER,		// after entering the command line
     EVENT_CMDLINELEAVE,		// before leaving the command line
-    EVENT_CMDLINEMOVED,		// command line cursor was moved
     EVENT_CMDUNDEFINED,		// command undefined
     EVENT_CMDWINENTER,		// after entering the cmdline window
     EVENT_CMDWINLEAVE,		// before leaving the cmdline window
@@ -1362,6 +1361,7 @@ enum auto_event
     EVENT_CURSORHOLD,		// cursor in same position for a while
     EVENT_CURSORHOLDI,		// idem, in Insert mode
     EVENT_CURSORMOVED,		// cursor was moved
+    EVENT_CURSORMOVEDC,		// cursor was moved in Command line mode
     EVENT_CURSORMOVEDI,		// cursor was moved in Insert mode
     EVENT_DIFFUPDATED,		// after diffs were updated
     EVENT_DIRCHANGED,		// after user changed directory
