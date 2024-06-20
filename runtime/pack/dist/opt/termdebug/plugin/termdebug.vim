@@ -205,9 +205,9 @@ def InitScriptVariables()
 
   winbar_winids = []
 
-  saved_K_map = maparg('K', 'n', 0, 1)
-  saved_plus_map = maparg('+', 'n', 0, 1)
-  saved_minus_map = maparg('-', 'n', 0, 1)
+  saved_K_map = maparg('K', 'n', false, true)
+  saved_plus_map = maparg('+', 'n', false, true)
+  saved_minus_map = maparg('-', 'n', false, true)
 
   if has('menu')
     saved_mousemodel = &mousemodel
@@ -380,7 +380,7 @@ def CloseBuffers()
     endif
   endfor
 
-  running = 0
+  running = false
   gdbwin = 0
 enddef
 
@@ -741,9 +741,9 @@ def g:TermDebugSendCommand(cmd: string)
   if way == 'prompt'
     ch_sendraw(gdb_channel, $"{cmd}\n")
   else
-    var do_continue = 0
+    var do_continue = false
     if !stopped
-      do_continue = 1
+      do_continue = true
       StopCommand()
       sleep 10m
     endif
@@ -1161,11 +1161,11 @@ def InstallCommands()
   command Source  GotoSourcewinOrCreateIt()
   command Asm  GotoAsmwinOrCreateIt()
   command Var  GotoVariableswinOrCreateIt()
-  command Winbar  InstallWinbar(1)
+  command Winbar  InstallWinbar(true)
 
-  var map = 1
+  var map = true
   if exists('g:termdebug_config')
-    map = get(g:termdebug_config, 'map_K', 1)
+    map = get(g:termdebug_config, 'map_K', true)
   elseif exists('g:termdebug_map_K')
     map = g:termdebug_map_K
   endif
@@ -1176,9 +1176,9 @@ def InstallCommands()
     endif
   endif
 
-  map = 1
+  map = true
   if exists('g:termdebug_config')
-    map = get(g:termdebug_config, 'map_plus', 1)
+    map = get(g:termdebug_config, 'map_plus', true)
   endif
   if map
     if !empty(saved_plus_map) && !saved_plus_map.buffer || empty(saved_plus_map)
@@ -1186,9 +1186,9 @@ def InstallCommands()
     endif
   endif
 
-  map = 1
+  map = true
   if exists('g:termdebug_config')
-    map = get(g:termdebug_config, 'map_minus', 1)
+    map = get(g:termdebug_config, 'map_minus', true)
   endif
   if map
     if !empty(saved_minus_map) && !saved_minus_map.buffer || empty(saved_minus_map)
@@ -1198,11 +1198,11 @@ def InstallCommands()
 
 
   if has('menu') && &mouse != ''
-    InstallWinbar(0)
+    InstallWinbar(false)
 
-    var pup = 1
+    var pup = true
     if exists('g:termdebug_config')
-      pup = get(g:termdebug_config, 'popup', 1)
+      pup = get(g:termdebug_config, 'popup', true)
     elseif exists('g:termdebug_popup')
       pup = g:termdebug_popup
     endif
@@ -1220,11 +1220,11 @@ def InstallCommands()
 enddef
 
 # Install the window toolbar in the current window.
-def InstallWinbar(force: number)
+def InstallWinbar(force: bool)
   # install the window toolbar by default, can be disabled in the config
-  var winbar = 1
+  var winbar = true
   if exists('g:termdebug_config')
-    winbar = get(g:termdebug_config, 'winbar', 1)
+    winbar = get(g:termdebug_config, 'winbar', true)
   endif
 
   if has('menu') && &mouse != '' && (winbar || force)
@@ -1340,9 +1340,9 @@ enddef
 def SetBreakpoint(at: string, tbreak=false)
   # Setting a breakpoint may not work while the program is running.
   # Interrupt to make it work.
-  var do_continue = 0
+  var do_continue = false
   if !stopped
-    do_continue = 1
+    do_continue = true
     StopCommand()
     sleep 10m
   endif
@@ -1578,7 +1578,7 @@ def GotoSourcewinOrCreateIt()
   if !win_gotoid(sourcewin)
     new
     sourcewin = win_getid()
-    InstallWinbar(0)
+    InstallWinbar(false)
   endif
 enddef
 
@@ -1723,7 +1723,7 @@ def HandleCursor(msg: string)
 
   if msg =~ '^\*stopped'
     ch_log('program stopped')
-    stopped = 1
+    stopped = true
     if msg =~ '^\*stopped,reason="exited-normally"'
       running = false
     endif
@@ -1782,7 +1782,7 @@ def HandleCursor(msg: string)
           # TODO: find existing window
           exe $'split {fnameescape(fname)}'
           sourcewin = win_getid()
-          InstallWinbar(0)
+          InstallWinbar(false)
         else
           exe $'edit {fnameescape(fname)}'
         endif

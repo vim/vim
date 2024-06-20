@@ -398,7 +398,6 @@ function Test_termdebug_sanity_check()
   unlet g:termdebug_config
 endfunction
 
-
 function Test_termdebug_double_termdebug_instances()
   let s:error_message = 'Terminal debugger already running, cannot run two'
   Termdebug
