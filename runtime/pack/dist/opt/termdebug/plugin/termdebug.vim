@@ -45,11 +45,11 @@ enddef
 
 # Variables to keep their status among multiple instances of Termdebug
 # Avoid to source the script twice.
-# if exists('g:termdebug_loaded')
-#     Echoerr('Termdebug already loaded.')
-#     finish
-# endif
-# g:termdebug_loaded = true
+if exists('g:termdebug_loaded')
+    Echoerr('Termdebug already loaded.')
+    finish
+endif
+g:termdebug_loaded = true
 g:termdebug_is_running = false
 
 
@@ -379,9 +379,6 @@ def CloseBuffers()
       exe $'bwipe! {buf_nr}'
     endif
   endfor
-
-  running = false
-  gdbwin = 0
 enddef
 
 def IsGdbStarted(): bool
@@ -511,9 +508,9 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
 
   # Wait for the response to show up, users may not notice the error and wonder
   # why the debugger doesn't work.
-   counter = 0
-   counter_max = 300
-   success = false
+  counter = 0
+  counter_max = 300
+  success = false
   while !success && counter < counter_max
     if !IsGdbStarted()
       return $'{gdbbufname} exited unexpectedly'
@@ -925,7 +922,7 @@ def EndDebug(job: any, status: any)
 
   var curwinid = win_getid()
   CloseBuffers()
-  running = false
+  # running = false
 
   # Restore 'signcolumn' in all buffers for which it was set.
   win_gotoid(sourcewin)
@@ -1304,12 +1301,8 @@ def DeleteCommands()
   endif
 
   sign_unplace('TermDebug')
-  breakpoints = {}
-  breakpoint_locations = {}
-
   sign_undefine('debugPC')
   sign_undefine(BreakpointSigns->map("'debugBreakpoint' .. v:val"))
-  BreakpointSigns = []
 enddef
 
 
