@@ -1586,7 +1586,7 @@ getcmdline_int(
     int		res;
     int		save_msg_scroll = msg_scroll;
     int		save_State = State;	// remember State when called
-    int		save_cmdspos = ccline.cmdspos;
+    int		prev_cmdpos = -1;
     int		some_key_typed = FALSE;	// one of the keys was typed
     // mouse drag and release events are ignored, unless they are
     // preceded with a mouse down event
@@ -2474,16 +2474,19 @@ getcmdline_int(
  * (Sorry for the goto's, I know it is ugly).
  */
 cmdline_not_changed:
-	 // Trigger CursorMovedC autocommands.
-	 if (ccline.cmdspos != save_cmdspos)
+	// Trigger CursorMovedC autocommands.
+	if (ccline.cmdpos != prev_cmdpos)
+	{
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CURSORMOVEDC);
-
+	    prev_cmdpos = ccline.cmdpos;
+	}
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
 	    continue;
 #endif
 
 cmdline_changed:
+	prev_cmdpos = ccline.cmdpos;
 #ifdef FEAT_SEARCH_EXTRA
 	// If the window changed incremental search state is not valid.
 	if (is_state.winid != curwin->w_id)
@@ -4320,9 +4323,6 @@ set_cmdline_pos(
 	new_cmdpos = 0;
     else
 	new_cmdpos = pos;
-
-    // Trigger CursorMovedC autocommands.
-    trigger_cmd_autocmd(get_cmdline_type(), EVENT_CURSORMOVEDC);
 
     return 0;
 }
