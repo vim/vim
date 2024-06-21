@@ -3848,8 +3848,7 @@ object_len(object_T *obj)
 object_equal(
 	object_T *o1,
 	object_T *o2,
-	int		ic,	// ignore case for strings
-	int		recursive)  // TRUE when used recursively
+	int	ic)	// ignore case for strings
 {
     class_T *cl1, *cl2;
 
@@ -3865,7 +3864,7 @@ object_equal(
 	return FALSE;
 
     for (int i = 0; i < cl1->class_obj_member_count; ++i)
-	if (!tv_equal((typval_T *)(o1 + 1) + i, (typval_T *)(o2 + 1) + i, ic, recursive))
+	if (!tv_equal((typval_T *)(o1 + 1) + i, (typval_T *)(o2 + 1) + i, ic))
 	    return FALSE;
 
     return TRUE;
