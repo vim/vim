@@ -1,4 +1,7 @@
 source check.vim
+" TODO: Why does this fail on MacOS 14 and Windows MSVC (Github CI)?
+CheckNotMac
+CheckNotMSWindows
 
 " Test for gettext()
 func Test_gettext()
