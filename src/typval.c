@@ -2114,7 +2114,9 @@ tv_equal(
 	    return tv1->vval.v_class == tv2->vval.v_class;
 
 	case VAR_OBJECT:
+	    ++recursive_cnt;
 	    (void)typval_compare_object(tv1, tv2, EXPR_EQUAL, ic, &r);
+	    --recursive_cnt;
 	    return r;
 
 	case VAR_PARTIAL:
