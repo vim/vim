@@ -320,7 +320,6 @@ if main_syntax == "html"
   syn sync match htmlHighlight groupthere NONE "<[/a-zA-Z]"
   syn sync match htmlHighlight groupthere javaScript "<script"
   syn sync match htmlHighlightSkip "^.*['\"].*$"
-  syn sync minlines=10
 endif
 
 " Folding
