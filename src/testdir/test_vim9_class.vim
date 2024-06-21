@@ -10486,6 +10486,24 @@ def Test_Ref_Class_Within_Same_Class()
   v9.CheckScriptFailure(lines, 'E1347: Not a valid interface: A', 3)
 enddef
 
+" Test for comparing a class referencing itself
+def Test_Object_Compare_With_Recursive_Class_Ref()
+  var lines =<< trim END
+    vim9script
+
+    class C
+    public var nest: C
+    endclass
+
+    var o1 = C.new()
+    o1.nest = o1
+
+    var result = o1 == o1
+    assert_equal(true, result)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for using a compound operator from a lambda function in an object method
 def Test_compound_op_in_objmethod_lambda()
   # Test using the "+=" operator
