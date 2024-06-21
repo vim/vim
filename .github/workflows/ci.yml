@@ -393,6 +393,9 @@ jobs:
         run: |
           # Apple diff is broken. Use GNU diff instead. See #14032.
           brew install diffutils
+          if [ $(sw_vers | sed -n "2p" | cut -c18,19) == '14' ]; then
+          brew install gettext
+          fi
 
       - name: Test
         timeout-minutes: 20

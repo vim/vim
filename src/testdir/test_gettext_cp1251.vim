@@ -1,6 +1,5 @@
 source check.vim
-" TODO: Why does this fail on MacOS 14 and Windows MSVC (Github CI)?
-CheckNotMac
+" TODO: Why does this fail on Windows MSVC (Github CI)?
 CheckNotMSWindows
 
 " Test for gettext()
