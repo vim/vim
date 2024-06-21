@@ -115,6 +115,7 @@ runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
 runtime/ftplugin/cfg.vim		@chrisbra
 runtime/ftplugin/chatito.vim		@ObserverOfTime
+runtime/ftplugin/chicken.vim		@evhan
 runtime/ftplugin/clojure.vim		@axvr
 runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
@@ -222,6 +223,7 @@ runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/rust.vim		@lilyball
 runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scala.vim		@derekwyatt
+runtime/ftplugin/scheme.vim		@evhan
 runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/sed.vim		@dkearns
@@ -322,6 +324,7 @@ runtime/indent/readline.vim		@dkearns
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
 runtime/indent/scala.vim		@derekwyatt
+runtime/indent/scheme.vim		@evhan
 runtime/indent/scss.vim			@tpope
 runtime/indent/sh.vim			@chrisbra
 runtime/indent/solidity.vim		@cothi
@@ -368,6 +371,7 @@ runtime/syntax/cabalconfig.vim		@coot
 runtime/syntax/cabalproject.vim		@coot
 runtime/syntax/cf.vim			@ernstvanderlinden
 runtime/syntax/chatito.vim		@ObserverOfTime
+runtime/syntax/chicken.vim		@evhan
 runtime/syntax/chuck.vim		@gacallea
 runtime/syntax/clojure.vim		@axvr
 runtime/syntax/cs.vim			@nickspoons
@@ -502,6 +506,7 @@ runtime/syntax/rst.vim			@marshallward
 runtime/syntax/ruby.vim			@dkearns
 runtime/syntax/sass.vim			@tpope
 runtime/syntax/scala.vim		@derekwyatt
+runtime/syntax/scheme.vim		@evhan
 runtime/syntax/scss.vim			@tpope
 runtime/syntax/sdoc.vim			@gpanders
 runtime/syntax/sed.vim			@dkearns
