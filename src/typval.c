@@ -1716,6 +1716,7 @@ typval_compare_class(
     return OK;
 }
 
+
 /*
  * Compare "tv1" to "tv2" as objects according to "type".
  * Put the result, false or true, in "res".
@@ -1742,14 +1743,6 @@ typval_compare_object(
 	return OK;
     }
 
-    class_T *cl1 = tv1->vval.v_object->obj_class;
-    class_T *cl2 = tv2->vval.v_object->obj_class;
-    if (cl1 != cl2 || cl1 == NULL || cl2 == NULL)
-    {
-	*res = !res_match;
-	return OK;
-    }
-
     object_T *obj1 = tv1->vval.v_object;
     object_T *obj2 = tv2->vval.v_object;
     if (type == EXPR_IS || type == EXPR_ISNOT)
@@ -1758,14 +1751,7 @@ typval_compare_object(
 	return OK;
     }
 
-    for (int i = 0; i < cl1->class_obj_member_count; ++i)
-	if (!tv_equal((typval_T *)(obj1 + 1) + i,
-				 (typval_T *)(obj2 + 1) + i, ic, TRUE))
-	{
-	    *res = !res_match;
-	    return OK;
-	}
-    *res = res_match;
+    *res = object_equal(obj1, obj2, ic, FALSE) ? res_match : !res_match;
     return OK;
 }
 
@@ -2115,7 +2101,7 @@ tv_equal(
 
 	case VAR_OBJECT:
 	    ++recursive_cnt;
-	    (void)typval_compare_object(tv1, tv2, EXPR_EQUAL, ic, &r);
+	    r = object_equal(tv1->vval.v_object, tv2->vval.v_object, ic, TRUE);
 	    --recursive_cnt;
 	    return r;
 
