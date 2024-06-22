@@ -85,7 +85,7 @@ def Foo()
 enddef | echo "Foo"
 
 def Foo()
-enddef " comment
+enddef # comment
 
 
 " parameters
