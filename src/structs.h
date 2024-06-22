@@ -4902,7 +4902,8 @@ typedef enum {
     WT_MEMBER,
     WT_METHOD,		// object method
     WT_METHOD_ARG,	// object method argument type
-    WT_METHOD_RETURN	// object method return type
+    WT_METHOD_RETURN,	// object method return type
+    WT_CAST,		// type cast
 } wherekind_T;
 
 // Struct used to pass the location of a type check.  Used in error messages to

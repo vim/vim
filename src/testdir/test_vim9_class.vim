@@ -10762,4 +10762,21 @@ def Test_class_object_index()
   v9.CheckScriptFailure(lines, 'E689: Index not allowed after a object: a[10] = 1', 5)
 enddef
 
+def Test_class_cast()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A
+      var mylen: number
+    endclass
+    def F(o: A): number
+      return (<B>o).mylen
+    enddef
+
+    defcompile F
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
