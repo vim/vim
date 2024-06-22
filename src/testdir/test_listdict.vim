@@ -1557,4 +1557,53 @@ func Test_extendnew_leak()
   for i in range(100) | silent! call extendnew({}, {}, {}) | endfor
 endfunc
 
+" Test for comparing deeply nested List/Dict values
+func Test_deep_nested_listdict_compare()
+  let lines =<< trim END
+    def GetNestedList(sz: number): list<any>
+      var l: list<any> = []
+      var x: list<any> = l
+      for i in range(sz)
+        var y: list<any> = [1]
+        add(x, y)
+        x = y
+      endfor
+      return l
+    enddef
+
+    VAR l1 = GetNestedList(1000)
+    VAR l2 = GetNestedList(999)
+    call assert_false(l1 == l2)
+
+    #" after 1000 nested items, the lists are considered to be equal
+    VAR l3 = GetNestedList(1001)
+    VAR l4 = GetNestedList(1002)
+    call assert_true(l3 == l4)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+
+  let lines =<< trim END
+    def GetNestedDict(sz: number): dict<any>
+      var d: dict<any> = {}
+      var x: dict<any> = d
+      for i in range(sz)
+        var y: dict<any> = {}
+        x['a'] = y
+        x = y
+      endfor
+      return d
+    enddef
+
+    VAR d1 = GetNestedDict(1000)
+    VAR d2 = GetNestedDict(999)
+    call assert_false(d1 == d2)
+
+    #" after 1000 nested items, the Dicts are considered to be equal
+    VAR d3 = GetNestedDict(1001)
+    VAR d4 = GetNestedDict(1002)
+    call assert_true(d3 == d4)
+  END
+  call v9.CheckLegacyAndVim9Success(lines)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
