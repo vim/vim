@@ -3865,11 +3865,6 @@ func Test_default_arg_value()
   call assert_equal('msg', HasDefault())
 endfunc
 
-" Test for gettext()
-func Test_gettext()
-  call assert_fails('call gettext(1)', 'E1174:')
-endfunc
-
 func Test_builtin_check()
   call assert_fails('let g:["trim"] = {x -> " " .. x}', 'E704:')
   call assert_fails('let g:.trim = {x -> " " .. x}', 'E704:')

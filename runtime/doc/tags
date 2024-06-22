@@ -4063,6 +4063,7 @@ CursorHold-example	windows.txt	/*CursorHold-example*
 CursorHoldI	autocmd.txt	/*CursorHoldI*
 CursorIM	mbyte.txt	/*CursorIM*
 CursorMoved	autocmd.txt	/*CursorMoved*
+CursorMovedC	autocmd.txt	/*CursorMovedC*
 CursorMovedI	autocmd.txt	/*CursorMovedI*
 D	change.txt	/*D*
 DOS	os_dos.txt	/*DOS*
@@ -6147,6 +6148,7 @@ beval_text-variable	eval.txt	/*beval_text-variable*
 beval_winid-variable	eval.txt	/*beval_winid-variable*
 beval_winnr-variable	eval.txt	/*beval_winnr-variable*
 binary-number	eval.txt	/*binary-number*
+bindtextdomain()	builtin.txt	/*bindtextdomain()*
 bitwise-function	usr_41.txt	/*bitwise-function*
 bitwise-shift	eval.txt	/*bitwise-shift*
 blob	eval.txt	/*blob*
@@ -10597,6 +10599,7 @@ termdebug-mappings	terminal.txt	/*termdebug-mappings*
 termdebug-prompt	terminal.txt	/*termdebug-prompt*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
+termdebug-timeout	terminal.txt	/*termdebug-timeout*
 termdebug-variables	terminal.txt	/*termdebug-variables*
 termdebug_disasm_window	terminal.txt	/*termdebug_disasm_window*
 termdebug_map_K	terminal.txt	/*termdebug_map_K*

@@ -3842,6 +3842,34 @@ object_len(object_T *obj)
 }
 
 /*
+ * Return TRUE when two objects have exactly the same values.
+ */
+    int
+object_equal(
+	object_T *o1,
+	object_T *o2,
+	int		ic,	// ignore case for strings
+	int		recursive)  // TRUE when used recursively
+{
+    class_T *cl1, *cl2;
+
+    if (o1 == o2)
+	return TRUE;
+
+    cl1 = o1->obj_class;
+    cl2 = o2->obj_class;
+
+    if (cl1 != cl2 || cl1 == NULL || cl2 == NULL)
+	return FALSE;
+
+    for (int i = 0; i < cl1->class_obj_member_count; ++i)
+	if (!tv_equal((typval_T *)(o1 + 1) + i, (typval_T *)(o2 + 1) + i, ic, recursive))
+	    return FALSE;
+
+    return TRUE;
+}
+
+/*
  * Return a textual representation of object "obj"
  */
     char_u *

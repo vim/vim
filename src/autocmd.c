@@ -120,6 +120,7 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_CURSORHOLD, "CursorHold"),
     KEYVALUE_ENTRY(EVENT_CURSORHOLDI, "CursorHoldI"),
     KEYVALUE_ENTRY(EVENT_CURSORMOVED, "CursorMoved"),
+    KEYVALUE_ENTRY(EVENT_CURSORMOVEDC, "CursorMovedC"),
     KEYVALUE_ENTRY(EVENT_CURSORMOVEDI, "CursorMovedI"),
     KEYVALUE_ENTRY(EVENT_DIFFUPDATED, "DiffUpdated"),
     KEYVALUE_ENTRY(EVENT_DIRCHANGED, "DirChanged"),
@@ -2250,6 +2251,7 @@ apply_autocmds_group(
 		|| event == EVENT_CMDLINECHANGED
 		|| event == EVENT_CMDLINEENTER
 		|| event == EVENT_CMDLINELEAVE
+		|| event == EVENT_CURSORMOVEDC
 		|| event == EVENT_CMDWINENTER
 		|| event == EVENT_CMDWINLEAVE
 		|| event == EVENT_CMDUNDEFINED

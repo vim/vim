@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.1.  Last change: 2023 May 26
+*repeat.txt*    For Vim version 9.1.  Last change: 2024 Jun 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -735,6 +735,10 @@ Your directory layout would be like this:
    start/foobar/autoload/foo.vim	" loaded when foo command used
    start/foobar/doc/foo.txt		" help for foo.vim
    start/foobar/doc/tags		" help tags
+   start/foobar/lang/<lang_id>/LC_MESSAGES/foo.po
+					" messages for the plugin in the
+					" <lang_id> language.  These files are
+					" optional.
    opt/fooextra/plugin/extra.vim	" optional plugin, defines commands
    opt/fooextra/autoload/extra.vim	" loaded when extra command used
    opt/fooextra/doc/extra.txt		" help for extra.vim
@@ -762,6 +766,35 @@ the command after changing the plugin help: >
 	:helptags path/start/foobar/doc
 	:helptags path/opt/fooextra/doc
 
+The messages that are in the lang/<lang_id>/LC_MESSAGES/foo.po file need to be
+translated to a format that the |gettext()| function understands by running the
+msgfmt program. This will result in a lang/<lang_id>/LC_MESSAGES/foo.mo
+file. See |multilang| on how to specify languages.
+
+In your plugin, you need to call the |bindtextdomain()| function as follows.
+This assumes that the directory structure is as above: >
+	:call bindtextdomain("foo", fnamemodify(expand("<script>"), ':p:h')
+	 .. '/../lang/')
+<
+You only need to do this once. After this call, you can use: >
+	:echo gettext("Hello", "foo")
+<
+to get the text "Hello" translated to the user's preferred language (if the
+plugin messages have been translated to this language).
+
+To create the foo.po file, you need to create a foo.pot file first. The
+entries in this file need to be translated to the language(s) you want to be
+supported by your plugin.
+
+To create the foo.pot file, run the following command: >
+	cd ~/.vim/pack/start/foobar
+	make -f ~/src/vim/src/po/Makefile PACKAGE=foo \
+	PO_BASEDIR=~/src/vim/src/po PO_INPUTLIST= \
+	PO_VIM_JSLIST="plugin__foo.js plugin__bar.js \
+	autoload__foo.js" \
+	PO_VIM_INPUTLIST="plugin/foo.vim plugin/bar.vim autoload/foo.vim" \
+	foo.pot
+<
 
 Dependencies between plugins ~
 							*packload-two-steps*

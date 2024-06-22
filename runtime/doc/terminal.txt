@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jun 18
+*terminal.txt*	For Vim version 9.1.  Last change: 2024 Jun 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

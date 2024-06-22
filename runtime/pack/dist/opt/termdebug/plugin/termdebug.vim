@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Jun 16
+# Last Change: 2024 Jun 22
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -58,9 +58,14 @@ g:termdebug_is_running = false
 command -nargs=* -complete=file -bang Termdebug StartDebug(<bang>0, <f-args>)
 command -nargs=+ -complete=file -bang TermdebugCommand StartDebugCommand(<bang>0, <f-args>)
 
+enum Way
+  Prompt,
+  Terminal
+endenum
+
 # Script variables declaration. These variables are re-initialized at every
 # Termdebug instance
-var way: string
+var way: Way
 var err: string
 
 var pc_id: number
@@ -133,16 +138,15 @@ var saved_K_map: dict<any>
 var saved_plus_map: dict<any>
 var saved_minus_map: dict<any>
 
-
 def InitScriptVariables()
   if exists('g:termdebug_config') && has_key(g:termdebug_config, 'use_prompt')
-    way = g:termdebug_config['use_prompt'] ? 'prompt' : 'terminal'
+    way = g:termdebug_config['use_prompt'] ? Way.Prompt : Way.Terminal
   elseif exists('g:termdebug_use_prompt')
-    way = g:termdebug_use_prompt
+    way = g:termdebug_use_prompt ? Way.Prompt : Way.Terminal
   elseif has('terminal') && !has('win32')
-    way = 'terminal'
+    way = Way.Terminal
   else
-    way = 'prompt'
+    way = Way.Prompt
   endif
   err = ''
 
@@ -215,17 +219,15 @@ def InitScriptVariables()
 enddef
 
 def SanityCheck(): bool
-  # CHECKME: This is checked after InitScriptVariables(). Perhaps we need a
-  # check also before initialization?
   var gdb_cmd = GetCommand()[0]
   var is_check_ok = true
   # Need either the +terminal feature or +channel and the prompt buffer.
   # The terminal feature does not work with gdb on win32.
-  if (way ==# 'prompt') && !has('channel')
+  if (way is Way.Prompt) && !has('channel')
     err = 'Cannot debug, +channel feature is not supported'
-  elseif way ==# 'prompt' && !exists('*prompt_setprompt')
+  elseif (way is Way.Prompt) && !exists('*prompt_setprompt')
     err = 'Cannot debug, missing prompt buffer support'
-  elseif way ==# 'prompt' && !empty(glob(gdb_cmd))
+  elseif (way is Way.Prompt) && !empty(glob(gdb_cmd))
     err = $"You have a file/folder named '{gdb_cmd}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
   elseif !empty(glob(asmbufname))
     err = $"You have a file/folder named '{asmbufname}' in the current directory Termdebug may not work properly. Please exit and rename such a file/folder."
@@ -340,7 +342,7 @@ def StartDebug_internal(dict: dict<any>)
     vvertical = false
   endif
 
-  if way == 'prompt'
+  if way is Way.Prompt
     StartDebug_prompt(dict)
   else
     StartDebug_term(dict)
@@ -580,7 +582,7 @@ def StartDebug_prompt(dict: dict<any>)
   var gdb_cmd = GetCommand()
   gdbbufname = gdb_cmd[0]
 
-  if vvertical == true
+  if vvertical
     vertical new
   else
     new
@@ -716,7 +718,7 @@ enddef
 # Send a command to gdb.  "cmd" is the string without line terminator.
 def SendCommand(cmd: string)
   ch_log($'sending to gdb: {cmd}')
-  if way == 'prompt'
+  if way is Way.Prompt
     ch_sendraw(gdb_channel, $"{cmd}\n")
   else
     term_sendkeys(commbufnr, $"{cmd}\r")
@@ -725,7 +727,7 @@ enddef
 
 # Interrupt or stop the program
 def StopCommand()
-  if way == 'prompt'
+  if way is Way.Prompt
     PromptInterrupt()
   else
     SendCommand('-exec-interrupt')
@@ -734,7 +736,7 @@ enddef
 
 # Continue the program
 def ContinueCommand()
-  if way == 'prompt'
+  if way is Way.Prompt
     SendCommand('continue')
   else
     # using -exec-continue results in CTRL-C in the gdb window not working,
@@ -746,7 +748,7 @@ enddef
 
 # This is global so that a user can create their mappings with this.
 def g:TermDebugSendCommand(cmd: string)
-  if way == 'prompt'
+  if way is Way.Prompt
     ch_sendraw(gdb_channel, $"{cmd}\n")
   else
     var do_continue = false
@@ -909,13 +911,12 @@ def EndDebug(job: any, status: any)
     doauto <nomodeline> User TermdebugStopPre
   endif
 
-  if way == 'prompt'
+  if way is Way.Prompt
     ch_log("Returning from EndDebug()")
   endif
 
   var curwinid = win_getid()
   CloseBuffers()
-  # running = false
 
   # Restore 'signcolumn' in all buffers for which it was set.
   win_gotoid(sourcewin)
