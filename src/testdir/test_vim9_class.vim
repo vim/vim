@@ -10502,6 +10502,20 @@ def Test_Object_Compare_With_Recursive_Class_Ref()
     assert_equal(true, result)
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class C
+        public var nest: C
+    endclass
+    var o1 = C.new()
+    var o2 = C.new(C.new())
+
+    var result = o1 == o2
+    assert_equal(false, result)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " Test for using a compound operator from a lambda function in an object method
