@@ -84,9 +84,21 @@ abstract class Indent4MethodsTests
 enum E4
 {
     @SuppressWarnings("bespoke") A("a"),
-    B("b"),
-    C("c"), D("d"),
-    E("e"), F("f"), G("g"), H("h");
+    B("b"
+        /*\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\*/),
+    C("c", new Thread(
+
+        () -> {
+    })), D("d", (java.util.function.BooleanSupplier) () -> true),
+    E("e", new char[] { 'a', 'b', 'c', 'd' }), F("f", new Object() {
+        transient String name = "";
+        @Override public String toString() { return this.name; }
+    }), //\//\//\//\//\//\//\//\//\//\//\//\//\//\//\//\//\//\//\//\//
+    G("g"), @Deprecated H("h");
+
     final String s;
     private E4(String s) { this.s = s; }
+    private <δ> E4(String s, δ dummy) { this(s); }
+
+    @Override public String toString() { return name().toUpperCase(); }
 }
