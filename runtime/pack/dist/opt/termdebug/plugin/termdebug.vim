@@ -621,7 +621,6 @@ def StartDebug_prompt(dict: dict<any>)
 
   ch_log($'executing "{join(gdb_cmd)}"')
   gdbjob = job_start(gdb_cmd, {
-    # exit_cb: function('EndPromptDebug'),
     exit_cb: function('EndDebug'),
     out_cb: function('GdbOutCallback'),
   })
@@ -867,8 +866,6 @@ def DecodeMessage(quotedText: string, literal: bool): string
         #\ Note: GDB docs also mention hex encodings - the translations below work
         #\       but we keep them out for performance-reasons until we actually see
         #\       those in mi-returns
-        #\ \ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
-        #\ \ ->substitute('\\0x00', NullRepl, 'g')
         ->substitute('\\\\', '\', 'g')
         ->substitute(NullRepl, '\\000', 'g')
   if !literal
@@ -1295,8 +1292,13 @@ def DeleteCommands()
   endif
 
   sign_unplace('TermDebug')
+  breakpoints = {}
+  breakpoint_locations = {}
+
   sign_undefine('debugPC')
   sign_undefine(BreakpointSigns->map("'debugBreakpoint' .. v:val"))
+  BreakpointSigns = []
+
 enddef
 
 
@@ -1499,8 +1501,6 @@ def HandleEvaluate(msg: string)
         #\ Note: GDB docs also mention hex encodings - the translations below work
         #\       but we keep them out for performance-reasons until we actually see
         #\       those in mi-returns
-        #\ ->substitute('\\0x00', NullRep, 'g')
-        #\ ->substitute('\\0x\(\x\x\)', {-> eval('"\x' .. submatch(1) .. '"')}, 'g')
         ->substitute(NullRepl, '\\000', 'g')
   if evalFromBalloonExpr
     if empty(evalFromBalloonExprResult)
