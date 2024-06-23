@@ -3855,6 +3855,8 @@ object_equal(
 
     if (o1 == o2)
 	return TRUE;
+    if (o1 == NULL || o2 == NULL)
+	return FALSE;
 
     cl1 = o1->obj_class;
     cl2 = o2->obj_class;
