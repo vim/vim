@@ -13,7 +13,8 @@ for name in argv()[1:]
   g/^\s*set .*"/s/.*//
 
   " Write as .js file, xgettext recognizes them
-  exe 'w! ' .. fnamemodify(name, ":r:gs?\\~?_?:gs?\\.?_?:gs?/?__?:gs?\\?__?") .. ".js"
+  exe 'w! ' .. fnamemodify(name, ":t:r") .. ".js"
+
 endfor
 
 quit

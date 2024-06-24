@@ -1,18 +1,17 @@
 # Makefile for the Vim message translations.
-PO_BASEDIR = .
 
 # Include stuff found by configure.
-include $(PO_BASEDIR)/../auto/config.mk
+include ../auto/config.mk
 
 # Get LANGUAGES, MOFILES, MOCONVERTED and others.
-include $(PO_BASEDIR)/Make_all.mak
+include Make_all.mak
 
 # Note: ja.sjis, *.cp1250 and zh_CN.cp936 are only for MS-Windows, they are
 # not installed on Unix.
 
 PACKAGE = vim
 SHELL = /bin/sh
-VIM = $(PO_BASEDIR)/../vim
+VIMPROG = ../vim
 
 # MacOS sed is locale aware, set $LANG to avoid problems.
 SED = LANG=C sed
@@ -41,8 +40,8 @@ converted: $(MOCONVERTED)
 	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
-	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
-		-c "if error == 0 | q | else | num 2 | cq | endif" $<
+	$(VIMPRG) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" \
+		-S check.vim -c "if error == 0 | q | else | num 2 | cq | endif" $<
 	touch $@
 
 check: $(CHECKFILES)
@@ -262,13 +261,15 @@ PO_INPUTLIST = \
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript.
-	$(VIM) -u NONE --not-a-term -S $(PO_BASEDIR)/tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPRG) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
+		$(PO_VIM_INPUTLIST)
 	# Create vim.pot.
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
 		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
 	# Fix Vim scripts names, so that "gf" works.
-	$(VIM) -u NONE --not-a-term -S $(PO_BASEDIR)/fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPRG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
+		$(PO_VIM_INPUTLIST)
 	# Delete the temporary files.
 	rm *.js
 
@@ -276,7 +277,8 @@ vim.desktop: vim.desktop.in $(POFILES)
 	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template vim.desktop.in -o tmp_vim.desktop
 	rm -f LINGUAS
-	if command -v desktop-file-validate; then desktop-file-validate tmp_vim.desktop; fi
+	if command -v desktop-file-validate; \
+		then desktop-file-validate tmp_vim.desktop; fi
 	mv tmp_vim.desktop vim.desktop
 
 # The dependency on vim.desktop is only to avoid the two targets are build at
@@ -285,7 +287,8 @@ gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
 	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
 	rm -f LINGUAS
-	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi
+	if command -v desktop-file-validate; \
+		then desktop-file-validate tmp_gvim.desktop; fi
 	mv tmp_gvim.desktop gvim.desktop
 
 # Only original translations with default encoding should be updated.
@@ -302,3 +305,28 @@ $(LANGUAGES):
 	else \
 	    echo "msgmerge for $@.po failed!"; mv $@.po.old $@.po; \
 	fi
+
+
+#######
+# For translations of plug-ins
+#######
+
+# Preparing the POT file of the plug-in package
+POT_PLUGPACKAGE_PATH != pwd
+$(PLUGPACKAGE).pot: $(PO_PLUG_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S tojavascript.vim \
+		$(PLUGPACKAGE).pot $?
+	$(XGETTEXT) --from-code=UTF-8 --default-domain=$(PLUGPACKAGE) \
+		--package-name=$(PLUGPACKAGE) \
+		--output-dir=$(POT_PLUGPACKAGE_PATH) \
+		--output=$(PLUGPACKAGE).pot $(?F:.vim=.js)
+	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim \
+		$(POT_PLUGPACKAGE_PATH)/$(PLUGPACKAGE).pot $?
+	rm -f $(?F:.vim=.js)
+
+# Converting the PO file of the plug-in package to the binary format of the MO file
+MO_PLUGPACKAGE_PATH != pwd
+$(PLUGPACKAGE).mo: $(PO_PLUGPACKAGE)
+	$(MSGFMTCMD) -o $(MO_PLUGPACKAGE_PATH)/$@ $<
+
+
