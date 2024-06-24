@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 20
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -28,9 +28,9 @@ acos({expr})			Float	arc cosine of {expr}
 add({object}, {item})		List/Blob   append {item} to {object}
 and({expr}, {expr})		Number	bitwise AND
 append({lnum}, {text})		Number	append {text} below line {lnum}
-appendbufline({expr}, {lnum}, {text})
+appendbufline({buf}, {lnum}, {text})
 				Number	append {text} below line {lnum}
-					in buffer {expr}
+					in buffer {buf}
 argc([{winid}])			Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
@@ -529,9 +529,9 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 server2client({clientid}, {string})
 				Number	send reply string
 serverlist()			String	get a list of available servers
-setbufline({expr}, {lnum}, {text})
+setbufline({buf}, {lnum}, {text})
 				Number	set line {lnum} to {text} in buffer
-					{expr}
+					{buf}
 setbufvar({buf}, {varname}, {val})
 				none	set {varname} in buffer {buf} to {val}
 setcellwidths({list})		none	set character cell width overrides
