@@ -9308,6 +9308,10 @@ out_timeout	channel.txt	/*out_timeout*
 p	change.txt	/*p*
 pack-add	repeat.txt	/*pack-add*
 package-create	repeat.txt	/*package-create*
+package-doc	repeat.txt	/*package-doc*
+package-documentation	repeat.txt	/*package-documentation*
+package-translate_example	repeat.txt	/*package-translate_example*
+package-translation	repeat.txt	/*package-translation*
 packages	repeat.txt	/*packages*
 packload-two-steps	repeat.txt	/*packload-two-steps*
 page-down	intro.txt	/*page-down*

@@ -1,15 +1,20 @@
 @echo off
 :: Batch file for building/testing Vim on AppVeyor
 set target=%1
+set "GETTEXT_PATH=c:\gettext64\bin"
 
 setlocal ENABLEDELAYEDEXPANSION
 cd %APPVEYOR_BUILD_FOLDER%
 
 :: Python3
-set PYTHON3_VER=311
-set PYTHON3_RELEASE=3.11.1
-set PYTHON3_URL=https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%-amd64.exe
-set PYTHON3_DIR=C:\python%PYTHON3_VER%-x64
+set "PYTHON3_VER=311"
+set "PYTHON3_RELEASE=3.11.1"
+set "PYTHON3_URL=https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%-amd64.exe"
+set "PYTHON3_DIR=C:\python%PYTHON3_VER%-x64"
+
+:: Gettext-tools, iconv and libraries
+set "GETTEXT64_URL=https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-64.zip"
+set "GETTEXT64_DIR=c:\gettext64"
 
 set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 
@@ -43,6 +48,18 @@ if not exist %PYTHON3_DIR% (
       AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 ^
       InstallLauncherAllUsers=0
 )
+:: GETTEXT
+if not exist %GETTEXT64_DIR% (
+  mkdir %GETTEXT64_DIR%
+  call :downloadfile %GETTEXT64_URL% downloads\gettext64.zip
+  cmd /c powershell.exe -NoLogo -NoProfile -Command ^
+    Add-Type -AssemblyName 'System.IO.Compression.FileSystem'; ^
+    [System.IO.Compression.ZipFile]::ExtractToDirectory^('downloads\gettext64.zip', ^
+    '%GETTEXT64_DIR%'^)
+    copy /y %GETTEXT64_DIR%\bin\libintl-8.dll C:\projects\vim\src\ || exit 1
+    copy /y %GETTEXT64_DIR%\bin\libiconv-2.dll C:\projects\vim\src\ || exit 1
+)
+
 @echo off
 goto :eof
 
@@ -52,7 +69,7 @@ goto :eof
 cd src
 
 echo "Building MSVC 64bit console Version"
-nmake -f Make_mvc.mak CPU=AMD64 ^
+nmake.exe -f Make_mvc.mak CPU=AMD64 ^
     OLE=no GUI=no IME=yes ICONV=yes DEBUG=no ^
     FEATURES=%FEATURE%
 if not exist vim.exe (
@@ -64,13 +81,13 @@ if not exist vim.exe (
 :: GUI needs to be last, so that testing works
 echo "Building MSVC 64bit GUI Version"
 if "%FEATURE%" == "HUGE" (
-    nmake -f Make_mvc.mak CPU=AMD64 ^
+    nmake.exe -f Make_mvc.mak CPU=AMD64 ^
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no POSTSCRIPT=yes ^
         PYTHON_VER=27 DYNAMIC_PYTHON=yes PYTHON=C:\Python27-x64 ^
         PYTHON3_VER=%PYTHON3_VER% DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR% ^
         FEATURES=%FEATURE%
 ) ELSE (
-    nmake -f Make_mvc.mak CPU=AMD64 ^
+    nmake.exe -f Make_mvc.mak CPU=AMD64 ^
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no ^
         FEATURES=%FEATURE%
 )
@@ -78,10 +95,10 @@ if not exist gvim.exe (
     echo Build failure.
     exit 1
 )
-.\gvim -u NONE -c "redir @a | ver |0put a | wq" ver_msvc.txt || exit 1
+.\gvim.exe -u NONE -c "redir @a | ver |0put a | wq" ver_msvc.txt || exit 1
 
 echo "version output MSVC console"
-.\vim --version || exit 1
+.\vim.exe --version || exit 1
 echo "version output MSVC GUI"
 type ver_msvc.txt || exit 1
 
@@ -92,11 +109,11 @@ goto :eof
 @echo on
 cd src/testdir
 :: Testing with MSVC gvim
-path %PYTHON3_DIR%;%PATH%
-nmake -f Make_mvc.mak VIMPROG=..\gvim
-nmake -f Make_mvc.mak clean
+path %PYTHON3_DIR%;%GETTEXT_PATH%;%PATH%
+nmake.exe -f Make_mvc.mak "VIMPROG=..\gvim.exe"
+nmake.exe -f Make_mvc.mak clean
 :: Testing with MSVC console version
-nmake -f Make_mvc.mak VIMPROG=..\vim
+nmake.exe -f Make_mvc.mak "VIMPROG=..\vim.exe"
 
 @echo off
 goto :eof

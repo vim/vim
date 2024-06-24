@@ -3,9 +3,11 @@
 
 set shortmess+=A
 
-for name in argv()[1:]
-  let jsname = fnamemodify(name, ":r:gs?\\~?_?:gs?\\.?_?:gs?/?__?:gs?\\?__?") .. ".js"
-  exe "%s+" .. jsname .. "+" .. substitute(name, '\\', '/', 'g') .. "+"
+let s:namenum = 0
+for s:name in argv()[1:]
+  let s:jsname = fnamemodify(s:name, ":t:r") .. s:namenum .. ".js"
+  exe "%s+" .. s:jsname .. "+" .. substitute(s:name, '\\', '/', 'g') .. "+ge"
+  let s:namenum +=1
 endfor
 
 write

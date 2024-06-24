@@ -428,12 +428,15 @@ jobs:
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
       # libsodium
       SODIUM_VER: '1.0.19'
-      # SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
+      #SODIUM_MSVC_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-msvc.zip
       SODIUM_MSVC_URL: https://github.com/jedisct1/libsodium/releases/download/%SODIUM_VER%-RELEASE/libsodium-%SODIUM_VER%-msvc.zip
       SODIUM_MSVC_VER: v143
-      # SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
+      #SODIUM_MINGW_URL: https://download.libsodium.org/libsodium/releases/libsodium-%SODIUM_VER%-stable-mingw.tar.gz
       SODIUM_MINGW_URL: https://github.com/jedisct1/libsodium/releases/download/%SODIUM_VER%-RELEASE/libsodium-%SODIUM_VER%-mingw.tar.gz
       SODIUM_MINGW_VER: 26
+      # Gettext-tools, iconv and libraries
+      GETTEXT32_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-32.zip
+      GETTEXT64_URL: https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-shared-64.zip
       # Escape sequences
       COL_RED: "\x1b[31m"
       COL_GREEN: "\x1b[32m"
@@ -501,6 +504,7 @@ jobs:
             echo "SODIUM_DIR_SLASH=${SODIUM_DIR_SLASH}" >> $GITHUB_ENV
           fi
           echo "SODIUM_DIR=${SODIUM_DIR}" >> $GITHUB_ENV
+          echo "GETTEXT_PATH=D:\gettext${{ matrix.arch == 'x64' && '64' || '32' }}" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
@@ -522,6 +526,8 @@ jobs:
           echo %LUA_RELEASE%>> urls.txt
           echo %WINPTY_URL%>> urls.txt
           echo %SODIUM_VER%>> urls.txt
+          echo %GETTEXT32_URL%>> urls.txt
+          echo %GETTEXT64_URL%>> urls.txt
 
       - name: Cache downloaded files
         uses: actions/cache@v4
@@ -554,6 +560,12 @@ jobs:
             7z x -y downloads\libsodium.tar.gz -so | 7z x -si -ttar -oD:\ > nul || exit 1
             mklink %SODIUM_LIB%\libsodium.dll %SODIUM_LIB%\libsodium-%SODIUM_MINGW_VER%.dll
           )
+
+          echo %COL_GREEN%Download Gettext%COL_RESET%
+          call :downloadfile %GETTEXT${{ env.BITS }}_URL% downloads\gettext${{ env.BITS }}.zip
+          7z e -y downloads\gettext${{ env.BITS }}.zip -oD:\gettext${{ env.BITS }} > nul || exit 1
+          copy /y D:\gettext${{ env.BITS }}\libintl-8.dll src\ || exit 1
+          copy /y D:\gettext${{ env.BITS }}\libiconv-2.dll src\ || exit 1
 
           goto :eof
 
@@ -673,10 +685,10 @@ jobs:
           echo %COL_GREEN%Test gVim:%COL_RESET%
           cd src\testdir
           if "${{ matrix.GUI }}"=="yes" (
-            nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
+            nmake.exe -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
           ) else (
             @rem Run only tiny tests.
-            nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
+            nmake.exe -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
           )
 
       - name: Test and show the result of testing Vim
@@ -689,12 +701,12 @@ jobs:
 
           echo %COL_GREEN%Test Vim:%COL_RESET%
           cd src\testdir
-          nmake -nologo -f Make_mvc.mak clean
+          nmake.exe -nologo -f Make_mvc.mak clean
           if "${{ matrix.GUI }}"=="no" (
-            nmake -nologo -f Make_mvc.mak VIMPROG=..\vim || exit 1
+            nmake.exe -nologo -f Make_mvc.mak VIMPROG=..\vim || exit 1
           ) else (
             @rem Run only tiny tests.
-            nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
+            nmake.exe -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
 
       - if: ${{ !cancelled() }}

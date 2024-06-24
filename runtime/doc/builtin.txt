@@ -1226,7 +1226,7 @@ bindtextdomain({package}, {path})			*bindtextdomain()*
 		Bind a specific {package} to a {path} so that the
 		|gettext()| function can be used to get language-specific
 		translations for a package.  {path} is the directory name
-		for the translations. See |package-create|.
+		for the translations. See |package-translation|.
 
 		Return type: none
 
@@ -5005,17 +5005,18 @@ gettagstack([{winnr}])					*gettagstack()*
 
 gettext({text} [, {package}])				*gettext()*
 		Translate String {text} if possible.
-		This is mainly for use in the distributed Vim scripts.  When
-		generating message translations the {text} is extracted by
-		xgettext, the translator can add the translated message in the
-		.po file and Vim will lookup the translation when gettext() is
-		called.
+		This is intended for use in both distributed and third-party
+		Vim scripts.  When generating message translations the {text}
+		is extracted by xgettext, the translator can add the
+		translated message in the .po file and Vim will lookup the
+		translation when gettext() is called.
 		For {text} double quoted strings are preferred, because
 		xgettext does not understand escaping in single quoted
 		strings.
 		When the {package} is specified, the translation is looked up
-		for that specific package. You need to specify the path to
-		look for translations with the |bindtextdomain()| function.
+		for that specific package.  This is mainly required only for
+		third-party Vim scripts.  You need to specify the path to look
+		for translations with the |bindtextdomain()| function.
 
 		Return type: |String|
 
