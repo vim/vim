@@ -4447,7 +4447,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     for (;;)
     {
 	// When the end is not defined read everything there is.
-	if (end == NULL && vpeekc() == NUL)
+	if (vpeekc() == NUL)
 	    break;
 	do
 	    c = vgetc();
