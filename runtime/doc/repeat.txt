@@ -1007,8 +1007,8 @@ The file "autoload\netrw.vim":
  if &cp || exists("g:loaded_netrw")
    finish
  endif
- call bindtextdomain("netrw", fnamemodify(expand("<script>"), ':p:h') .. '/../lang/') 
- 
+ call bindtextdomain("netrw", fnamemodify(expand("<script>"), ':p:h') .. '/../lang/')
+
  " Check that vim has patches that netrw requires.
  " Patches needed for v7.4: 1557, and 213.
  " (netrw will benefit from vim's having patch#656, too)
@@ -1031,7 +1031,7 @@ The file "autoload\netrwSettings.vim":
  if exists("g:loaded_netrwSettings") || &cp
    finish
  endif
- call bindtextdomain("netrw", fnamemodify(expand("<script>"), ':p:h') .. '/../lang/') 
+ call bindtextdomain("netrw", fnamemodify(expand("<script>"), ':p:h') .. '/../lang/')
  let g:loaded_netrwSettings = "v18"
  if v:version < 700
   echohl WarningMsg
@@ -1048,7 +1048,7 @@ Print the following commands:
 	"POT_PLUGPACKAGE_PATH=~/project/translate/plugins" \
 	"PO_PLUG_INPUTLIST=../../runtime/autoload/netrw.vim
 	../../runtime/autoload/netrwSettings.vim" \
-	netrw.pot	
+	netrw.pot
 <
 Go to the directory with the POT file and make the translation:
 >
@@ -1086,7 +1086,7 @@ Convert ja.po to a MO file:
 	make -f Makefile "PLUGPACKAGE=netrw" \
 	"PO_PLUGPACKAGE=~/project/translate/plugins/ja.po" \
 	"MO_PLUGPACKAGE_PATH=/usr/local/share/vim/vim91/lang/ja/LC_MESSAGES" \
-	netrw.mo	
+	netrw.mo
 <
 Here, in general, such simple actions will allow you to get translation of any
 third-party plug-in packages.
