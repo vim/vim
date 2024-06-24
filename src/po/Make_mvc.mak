@@ -40,7 +40,7 @@ VIMRUNTIME = ..\..\runtime
 PACKAGE = vim
 # Correct the following line for the where executeable file vim is
 # installed.  Please do not put the path in quotes.
-VIM = ..\vim.exe
+VIMPROG = ..\vim.exe
 
 # Correct the following line for the directory where gettext et al is
 # installed.  Please do not put the path in quotes.
@@ -102,7 +102,7 @@ originals : $(MOFILES)
 converted: $(MOCONVERTED)
 
 .po.ck:
-	"$(VIM)" -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+	"$(VIMPROG)" -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
 		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	$(TOUCH_TARGET)
 
@@ -496,25 +496,25 @@ files: $(PO_INPUTLIST)
 	$(LS) $(LSFLAGS) $(PO_INPUTLIST) > .\files
 
 first_time: files
-	"$(VIM)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
+	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
-	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
+	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
 $(PACKAGE).pot: files
-	"$(VIM)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
+	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) \
 		--files-from=.\files $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
-	"$(VIM)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
+	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
@@ -541,10 +541,10 @@ install-all: all
 		"$(VIMRUNTIME)\lang\%%l\LC_MESSAGES\$(PACKAGE).mo"
 
 cleanup-po: $(LANGUAGE).po
-	"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
+	"$(VIMPROG)" -u NONE -e -X -S cleanup.vim -c wq $(LANGUAGE).po
 
 cleanup-po-all: $(POFILES)
-	!"$(VIM)" -u NONE -e -X -S cleanup.vim -c wq $**
+	!"$(VIMPROG)" -u NONE -e -X -S cleanup.vim -c wq $**
 
 clean: checkclean
 	$(RM) *.mo
