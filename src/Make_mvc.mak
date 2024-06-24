@@ -1420,7 +1420,7 @@ test:
 
 testgvim testgui:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\gvim
+	$(MAKE) /NOLOGO -f Make_mvc.mak "VIMPROG=..\gvim.exe"
 	cd ..
 
 testtiny:
@@ -1430,7 +1430,7 @@ testtiny:
 
 testgvimtiny:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_mvc.mak tiny VIMPROG=..\gvim
+	$(MAKE) /NOLOGO -f Make_mvc.mak "VIMPROG=..\gvim.exe" tiny
 	cd ..
 
 testclean:

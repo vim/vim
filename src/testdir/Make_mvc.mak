@@ -5,9 +5,9 @@
 
 # Testing may be done with a debug build 
 !IF EXIST(..\\vimd.exe) && !EXIST(..\\vim.exe)
-VIMPROG = ..\\vimd
+VIMPROG = ..\\vimd.exe
 !ELSE
-VIMPROG = ..\\vim
+VIMPROG = ..\\vim.exe
 !ENDIF
 
 

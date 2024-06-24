@@ -56,7 +56,7 @@ VIM_FOR_INDENTTEST = ../../src/vim
 indenttest:
 	cd runtime/indent && \
 		$(MAKE) clean && \
-		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
+		$(MAKE) test VIMPROG="$(VIM_FOR_INDENTTEST)"
 
 # Executable used for running the syntax tests.
 VIM_FOR_SYNTAXTEST = ../../src/vim
@@ -248,9 +248,6 @@ VIMVER	= vim-$(MAJOR).$(MINOR)
 VERSION = $(MAJOR)$(MINOR)
 VDOT	= $(MAJOR).$(MINOR)
 VIMRTDIR = vim$(VERSION)
-
-# Vim used for conversion from "unix" to "dos"
-VIM	= vim
 
 # How to include Filelist depends on the version of "make" you have.
 # If the current choice doesn't work, try the other one.

@@ -84,7 +84,7 @@ test_vim9:
 
 RM_ON_RUN = test.out X* viminfo
 RM_ON_START = test.ok benchmark.out
-RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
+RUN_VIMPROG = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 # Delete files that may interfere with running tests.  This includes some files
 # that may result from working on the tests, not only from running them.
@@ -114,7 +114,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 	@# 200 msec is sufficient, but only modern sleep supports a fraction of
 	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
+	$(RUN_VIMPROG) $*.in $(REDIR_TEST_TO_NULL)
 
 	@# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then \

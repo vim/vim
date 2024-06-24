@@ -23,9 +23,9 @@ include Make_all.mak
 
 PACKAGE = vim
 ifeq (sh.exe, $(SHELL))
-VIM = ..\vim
+VIMPROG = ..\vim
 else
-VIM = ../vim
+VIMPROG = ../vim
 endif
 
 # Uncomment one of the lines below or modify it to put the path to your
@@ -77,18 +77,18 @@ PO_INPUTLIST = \
 	vim.desktop.in
 
 first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
-	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
 	$(XGETTEXT) --default-domain=$(LANGUAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
-	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
-	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
 		--add-comments $(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
-	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	$(RM) *.js
 
 # Don't add a dependency here, we only want to update the .po files manually

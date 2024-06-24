@@ -4,7 +4,7 @@
 
 .SUFFIXES:
 
-VIM = vim.exe
+VIMPROG = vim.exe
 VIMRUNTIME = ..
 
 # Run the tests that didn't run yet or failed previously.
@@ -12,7 +12,7 @@ VIMRUNTIME = ..
 # If a test fails a testdir\*.fail file will be written.
 test :
 	@ set "VIMRUNTIME=$(VIMRUNTIME)"
-	$(VIM) --clean --not-a-term -u testdir\runtest.vim
+	$(VIMPROG) --clean --not-a-term -u testdir\runtest.vim
 
 
 clean testclean :

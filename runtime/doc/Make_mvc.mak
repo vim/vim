@@ -12,7 +12,7 @@
 
 # Correct the following line for the where executeable file vim is installed.
 # Please do not put the path in quotes.
-VIMEXE = D:\Programs\Vim\vim90\vim.exe
+VIMPROG = D:\Programs\Vim\vim90\vim.exe
 
 # Correct the following line for the directory where iconv installed.
 # Please do not put the path in quotes.
@@ -63,7 +63,7 @@ doctags : doctags.c
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
 vimtags : $(DOCS)
-	@"$(VIMEXE)" --clean -esX -V1 -u doctags.vim
+	@"$(VIMPROG)" --clean -esX -V1 -u doctags.vim
 
 
 uganda.nsis.txt : uganda.???
@@ -105,7 +105,7 @@ perlhtml : tags $(DOCS)
 
 # Check URLs in the help with "curl" or "powershell".
 test_urls :
-	"$(VIMEXE)" --clean -S test_urls.vim
+	"$(VIMPROG)" --clean -S test_urls.vim
 
 clean :
 	$(RM) doctags.exe doctags.obj
