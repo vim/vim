@@ -1307,6 +1307,11 @@ ins_compl_build_pum(void)
 		    did_find_shown_match = TRUE;
 		    max_fuzzy_score = compl->cp_score;
 		    compl_shown_match = compl;
+		}
+
+		if (!shown_match_ok && compl == compl_shown_match && !compl_no_select)
+		{
+		    cur = i;
 		    shown_match_ok = TRUE;
 		}
 
@@ -1318,8 +1323,6 @@ ins_compl_build_pum(void)
 			&& (max_fuzzy_score > 0
 				|| (compl_leader == NULL || lead_len == 0)))
 		{
-		    shown_match_ok = TRUE;
-		    cur = 0;
 		    if (match_at_original_text(compl_shown_match))
 		      compl_shown_match = shown_compl;
 		}
@@ -1367,6 +1370,7 @@ ins_compl_build_pum(void)
 	// sort by the largest score of fuzzy match
 	qsort(compl_match_array, (size_t)compl_match_arraysize,
 				       sizeof(pumitem_T), ins_compl_fuzzy_cmp);
+	shown_match_ok = TRUE;
     }
 
     if (!shown_match_ok)    // no displayed match at all
@@ -4102,7 +4106,8 @@ find_comp_when_fuzzy(void)
 
     if ((is_forward && compl_selected_item == compl_match_arraysize - 1)
 	    || (is_backward && compl_selected_item == 0))
-	return compl_first_match;
+	return compl_first_match != compl_shown_match ? compl_first_match :
+	    (compl_first_match->cp_prev ? compl_first_match->cp_prev : NULL);
 
     if (is_forward)
 	target_idx = compl_selected_item + 1;
