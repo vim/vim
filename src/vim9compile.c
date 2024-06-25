@@ -522,6 +522,8 @@ use_typecheck(type_T *actual, type_T *expected)
 		    (actual->tt_member == &t_void)
 					 == (expected->tt_member == &t_void))))
 	return TRUE;
+    if (actual->tt_type == VAR_OBJECT && expected->tt_type == VAR_OBJECT)
+	return TRUE;
     if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
 				       && actual->tt_type == expected->tt_type)
 	// This takes care of a nested list or dict.
