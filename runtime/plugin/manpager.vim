@@ -20,9 +20,6 @@ function s:ManPager()
   endif
   syntax on
 
-  " Make this an unlisted, readonly scratch buffer
-  setlocal buftype=nofile noswapfile bufhidden=hide nobuflisted readonly
-
   " Ensure text width matches window width
   setlocal foldcolumn& nofoldenable nonumber norelativenumber
 
@@ -44,6 +41,9 @@ function s:ManPager()
 
   " Finished preprocessing the buffer, prevent any further modifications
   setlocal nomodified nomodifiable
+
+  " Make this an unlisted, readonly scratch buffer
+  setlocal buftype=nofile noswapfile bufhidden=hide nobuflisted readonly
 
   " Set filetype to man even if ftplugin is disabled
   setlocal filetype=man
