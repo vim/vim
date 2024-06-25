@@ -3261,6 +3261,7 @@ source_startup_scripts(mparm_T *parmp)
 	/*
 	 * Try to read initialization commands from the following places:
 	 * - environment variable VIMINIT
+	 * - defaults.vim unless $VIM_NO_SOURCE_DEFAULTS is set
 	 * - user vimrc file (s:.vimrc for Amiga, ~/.vimrc otherwise)
 	 * - second user vimrc file ($VIM/.vimrc for Dos)
 	 * - environment variable EXINIT
@@ -3268,8 +3269,12 @@ source_startup_scripts(mparm_T *parmp)
 	 * - second user exrc file ($VIM/.exrc for Dos)
 	 * The first that exists is used, the rest is ignored.
 	 */
+	int	loaded_defaults = NOTDONE;
 	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
 	{
+	    if (mch_getenv("VIM_NO_SOURCE_DEFAULTS") == NULL)
+		loaded_defaults = do_source((char_u *)VIM_DEFAULTS_FILE, FALSE,
+								DOSO_NONE, NULL);
 	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE,
 						      DOSO_VIMRC, NULL) == FAIL
 #ifdef USR_VIMRC_FILE2
@@ -3295,14 +3300,13 @@ source_startup_scripts(mparm_T *parmp)
 		&& do_source((char_u *)USR_EXRC_FILE2, FALSE,
 						       DOSO_NONE, NULL) == FAIL
 #endif
-		&& !has_dash_c_arg)
-	    {
-		// When no .vimrc file was found: source defaults.vim.
-		if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE,
-								 NULL) == FAIL)
-		    emsg(_(e_failed_to_source_defaults));
-	    }
+		&& !has_dash_c_arg && loaded_defaults == NOTDONE)
+		loaded_defaults = do_source((char_u *)VIM_DEFAULTS_FILE,
+						       FALSE, DOSO_NONE, NULL);
 	}
+	// When defaults.vim was not found
+	if (loaded_defaults == FAIL)
+	    emsg(_(e_failed_to_source_defaults));
 
 	/*
 	 * Read initialization commands from ".vimrc" or ".exrc" in current

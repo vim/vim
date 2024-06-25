@@ -60,10 +60,19 @@ endif
 " confusing.
 set nrformats-=octal
 
-" For Win32 GUI: remove 't' flag from 'guioptions': no tearoff menu entries.
+" For Win32 GUI:
+" remove 't' flag from 'guioptions': no tearoff menu entries.
+" add '!' flag to guioptions so external commands are run in a terminal
 if has('win32')
   set guioptions-=t
+  if has("terminal")
+    set guioptions+=!
+  endif
 endif
+
+" do not include 'i' in complete option, it may slow down Vim because it
+" has to scan all included files
+set complete-=i
 
 " Don't use Q for Ex mode, use it for formatting.  Except for Select mode.
 " Revert with ":unmap Q".
