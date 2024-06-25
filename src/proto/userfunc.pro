@@ -95,4 +95,5 @@ int set_ref_in_call_stack(int copyID);
 int set_ref_in_functions(int copyID);
 int set_ref_in_func_args(int copyID);
 int set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID);
+int get_func_arity(char_u *name, int *required, int *optional, int *varargs);
 /* vim: set ft=c : */
