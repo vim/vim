@@ -3496,4 +3496,26 @@ def Test_disassemble_compound_op_in_closure()
   unlet g:instr
 enddef
 
+def Test_disassemble_member_initializer()
+  var lines =<< trim END
+    vim9script
+    class A
+      var l: list<string> = []
+      var d: dict<string> = {}
+    endclass
+    g:instr = execute('disassemble A.new')
+  END
+  v9.CheckScriptSuccess(lines)
+  # Ensure SETTYPE is emitted and that matches the declared type.
+  assert_match('new\_s*' ..
+   '0 NEW A size 72\_s*' ..
+   '1 NEWLIST size 0\_s*' ..
+   '2 SETTYPE list<string>\_s*' ..
+   '3 STORE_THIS 0\_s*' ..
+   '4 NEWDICT size 0\_s*' ..
+   '5 SETTYPE dict<string>\_s*' ..
+   '6 STORE_THIS 1', g:instr)
+  unlet g:instr
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
