@@ -365,8 +365,7 @@ list_len(list_T *l)
 list_equal(
     list_T	*l1,
     list_T	*l2,
-    int		ic,	// ignore case for strings
-    int		recursive)  // TRUE when used recursively
+    int		ic)	// ignore case for strings
 {
     listitem_T	*item1, *item2;
 
@@ -386,7 +385,7 @@ list_equal(
     for (item1 = l1->lv_first, item2 = l2->lv_first;
 	    item1 != NULL && item2 != NULL;
 			       item1 = item1->li_next, item2 = item2->li_next)
-	if (!tv_equal(&item1->li_tv, &item2->li_tv, ic, recursive))
+	if (!tv_equal(&item1->li_tv, &item2->li_tv, ic))
 	    return FALSE;
     return item1 == NULL && item2 == NULL;
 }
@@ -2727,7 +2726,7 @@ list_count(list_T *l, typval_T *needle, long idx, int ic)
     }
 
     for ( ; li != NULL; li = li->li_next)
-	if (tv_equal(&li->li_tv, needle, ic, FALSE))
+	if (tv_equal(&li->li_tv, needle, ic))
 	    ++n;
 
     return n;

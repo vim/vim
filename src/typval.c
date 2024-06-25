@@ -1605,8 +1605,7 @@ typval_compare_list(
     }
     else
     {
-	val = list_equal(tv1->vval.v_list, tv2->vval.v_list,
-							ic, FALSE);
+	val = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
 	if (type == EXPR_NEQUAL)
 	    val = !val;
     }
@@ -1750,7 +1749,7 @@ typval_compare_object(
 	return OK;
     }
 
-    *res = object_equal(obj1, obj2, ic, FALSE) ? res_match : !res_match;
+    *res = object_equal(obj1, obj2, ic) ? res_match : !res_match;
     return OK;
 }
 
@@ -1787,7 +1786,7 @@ typval_compare_dict(
     }
     else
     {
-	val = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic, FALSE);
+	val = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
 	if (type == EXPR_NEQUAL)
 	    val = !val;
     }
@@ -1826,14 +1825,14 @@ typval_compare_func(
 	if (tv1->v_type == VAR_FUNC && tv2->v_type == VAR_FUNC)
 	    // strings are considered the same if their value is
 	    // the same
-	    val = tv_equal(tv1, tv2, ic, FALSE);
+	    val = tv_equal(tv1, tv2, ic);
 	else if (tv1->v_type == VAR_PARTIAL && tv2->v_type == VAR_PARTIAL)
 	    val = (tv1->vval.v_partial == tv2->vval.v_partial);
 	else
 	    val = FALSE;
     }
     else
-	val = tv_equal(tv1, tv2, ic, FALSE);
+	val = tv_equal(tv1, tv2, ic);
     if (type == EXPR_NEQUAL || type == EXPR_ISNOT)
 	val = !val;
     *res = val;
@@ -1988,7 +1987,7 @@ func_equal(
 	if (d1 != d2)
 	    return FALSE;
     }
-    else if (!dict_equal(d1, d2, ic, TRUE))
+    else if (!dict_equal(d1, d2, ic))
 	return FALSE;
 
     // empty list and no list considered the same
@@ -1998,7 +1997,7 @@ func_equal(
 	return FALSE;
     for (i = 0; i < a1; ++i)
 	if (!tv_equal(tv1->vval.v_partial->pt_argv + i,
-		      tv2->vval.v_partial->pt_argv + i, ic, TRUE))
+		      tv2->vval.v_partial->pt_argv + i, ic))
 	    return FALSE;
 
     return TRUE;
@@ -2013,8 +2012,7 @@ func_equal(
 tv_equal(
     typval_T *tv1,
     typval_T *tv2,
-    int	     ic,	    // ignore case
-    int	     recursive)	    // TRUE when used recursively
+    int	     ic)	    // ignore case
 {
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
     char_u	*s1, *s2;
@@ -2028,7 +2026,7 @@ tv_equal(
     // Reduce the limit every time running into it. That should work fine for
     // deeply linked structures that are not recursively linked and catch
     // recursiveness quickly.
-    if (!recursive)
+    if (recursive_cnt == 0)
 	tv_equal_recurse_limit = 1000;
     if (recursive_cnt >= tv_equal_recurse_limit)
     {
@@ -2058,13 +2056,13 @@ tv_equal(
     {
 	case VAR_LIST:
 	    ++recursive_cnt;
-	    r = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic, TRUE);
+	    r = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
 	    --recursive_cnt;
 	    return r;
 
 	case VAR_DICT:
 	    ++recursive_cnt;
-	    r = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic, TRUE);
+	    r = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
 	    --recursive_cnt;
 	    return r;
 
@@ -2100,7 +2098,7 @@ tv_equal(
 
 	case VAR_OBJECT:
 	    ++recursive_cnt;
-	    r = object_equal(tv1->vval.v_object, tv2->vval.v_object, ic, TRUE);
+	    r = object_equal(tv1->vval.v_object, tv2->vval.v_object, ic);
 	    --recursive_cnt;
 	    return r;
 

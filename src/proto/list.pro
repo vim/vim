@@ -16,7 +16,7 @@ listitem_T *listitem_alloc(void);
 void listitem_free(list_T *l, listitem_T *item);
 void listitem_remove(list_T *l, listitem_T *item);
 long list_len(list_T *l);
-int list_equal(list_T *l1, list_T *l2, int ic, int recursive);
+int list_equal(list_T *l1, list_T *l2, int ic);
 listitem_T *list_find(list_T *l, long n);
 long list_find_nr(list_T *l, long idx, int *errorp);
 char_u *list_find_str(list_T *l, long idx);

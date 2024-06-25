@@ -7535,7 +7535,7 @@ f_index(typval_T *argvars, typval_T *rettv)
 	{
 	    tv.v_type = VAR_NUMBER;
 	    tv.vval.v_number = blob_get(b, idx);
-	    if (tv_equal(&tv, &argvars[1], ic, FALSE))
+	    if (tv_equal(&tv, &argvars[1], ic))
 	    {
 		rettv->vval.v_number = idx;
 		return;
@@ -7568,7 +7568,7 @@ f_index(typval_T *argvars, typval_T *rettv)
     }
 
     for ( ; item != NULL; item = item->li_next, ++idx)
-	if (tv_equal(&item->li_tv, &argvars[1], ic, FALSE))
+	if (tv_equal(&item->li_tv, &argvars[1], ic))
 	{
 	    rettv->vval.v_number = idx;
 	    break;
