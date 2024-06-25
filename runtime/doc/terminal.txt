@@ -1531,7 +1531,10 @@ Prompt mode can be used even when the |+terminal| feature is present with: >
 	let g:termdebug_config['use_prompt'] = 1
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_use_prompt = 1
+
 <
+However, the latter form will be deprecated in future releases.
+
 Mappings ~
 The termdebug plugin enables a few default mappings.  All those mappings
 are reset to their original values once the termdebug session concludes.
@@ -1543,6 +1546,8 @@ mapping to K already exists.  If you do not want this use: >
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_map_K = 0
 <
+However, the latter form will be deprecated in future releases.
+
 						*termdebug_map_minus*
 The - key is normally mapped to |:Down| unless a buffer local mapping to the -
 key already exists.  If you do not want this use: >
@@ -1560,6 +1565,8 @@ If you want the Asm window shown by default, set the "disasm_window" flag to
 	let g:termdebug_config['disasm_window_height'] = 15
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_disasm_window = 15
+
+However, the latter form will be deprecated in future releases.
 Any value greater than 1 will set the Asm window height to that value.
 If the current window has enough horizontal space, it will be vertically split
 and the Asm window will be shown side by side with the source code window (and
@@ -1573,6 +1580,8 @@ height: >
 	let g:termdebug_config['variables_window_height'] = 15
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_variables_window = 15
+
+However, the latter form will be deprecated in future releases.
 Any value greater than 1 will set the Var window height to that value.
 If the current window has enough horizontal space, it will be vertically split
 and the Var window will be shown side by side with the source code window (and
@@ -1601,6 +1610,7 @@ g:termdebug_config or the "g:termdebugger" variable before invoking
 If there is no g:termdebug_config you can use: >
 	let g:termdebugger = "mygdb"
 
+However, the latter form will be deprecated in future releases.
 If the command needs an argument use a List: >
 	let g:termdebug_config['command'] = ['rr', 'replay', '--']
 If there is no g:termdebug_config you can use: >
@@ -1658,6 +1668,7 @@ If you don't want this then disable it with: >
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_popup = 0
 
+However, the latter form will be deprecated in future releases.
 
 Change default signs ~
 							*termdebug_signs*
@@ -1688,6 +1699,7 @@ split: >
 If there is no g:termdebug_config you can use: >
 	let g:termdebug_wide = 163
 
+However, the latter form will be deprecated in future releases.
 This will set 'columns' to 163 when `:Termdebug` is used.  The value is
 restored when quitting the debugger.
 
