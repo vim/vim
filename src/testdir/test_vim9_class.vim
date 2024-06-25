@@ -10776,4 +10776,37 @@ def Test_class_object_index()
   v9.CheckScriptFailure(lines, 'E689: Index not allowed after a object: a[10] = 1', 5)
 enddef
 
+def Test_class_member_init_typecheck()
+  # Ensure the class member is assigned its declared type.
+  var lines =<< trim END
+    vim9script
+    class S
+        static var l: list<string> = []
+    endclass
+    S.l->add(123)
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 5)
+
+  # Ensure the initializer value and the declared type match.
+  lines =<< trim END
+    vim9script
+    class S
+        var l: list<string> = [1, 2, 3]
+    endclass
+    var o = S.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1382: Variable "l": type mismatch, expected list<string> but got list<number>')
+
+  # Ensure the class member is assigned its declared type.
+  lines =<< trim END
+    vim9script
+    class S
+        var l: list<string> = []
+    endclass
+    var o = S.new()
+    o.l->add(123)
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 6)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
