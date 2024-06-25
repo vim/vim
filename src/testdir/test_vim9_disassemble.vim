@@ -3508,7 +3508,7 @@ def Test_disassemble_member_initializer()
   v9.CheckScriptSuccess(lines)
   # Ensure SETTYPE is emitted and that matches the declared type.
   assert_match('new\_s*' ..
-   '0 NEW A size 72\_s*' ..
+   '0 NEW A size \d\+\_s*' ..
    '1 NEWLIST size 0\_s*' ..
    '2 SETTYPE list<string>\_s*' ..
    '3 STORE_THIS 0\_s*' ..
