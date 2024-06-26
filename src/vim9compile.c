@@ -3295,9 +3295,13 @@ obj_constructor_prologue(ufunc_T *ufunc, cctx_T *cctx)
 
 	if (m->ocm_init != NULL)
 	{
-	    char_u *expr = m->ocm_init;
+	    char_u	*expr = m->ocm_init;
+	    sctx_T	save_current_sctx = current_sctx;
 
-	    if (compile_expr0(&expr, cctx) == FAIL)
+	    current_sctx = m->ocm_init_sctx;
+	    int r = compile_expr0(&expr, cctx);
+	    current_sctx = save_current_sctx;
+	    if (r == FAIL)
 		return FAIL;
 
 	    if (!ends_excmd2(m->ocm_init, expr))
