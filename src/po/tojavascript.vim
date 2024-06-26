@@ -3,8 +3,10 @@
 " Javascript is used because, like Vim, it accepts both single and double
 " quoted strings.
 
-set shortmess+=A
+let shortmess+=A
 
+let s:namenum = 0
+let s:fls = []
 for name in argv()[1:]
   exe 'edit ' .. fnameescape(name)
 
@@ -13,8 +15,11 @@ for name in argv()[1:]
   g/^\s*set .*"/s/.*//
 
   " Write as .js file, xgettext recognizes them
-  exe 'w! ' .. fnamemodify(name, ":t:r") .. ".js"
+  let s:fl = fnamemodify(name, ":t:r") .. s:namenum .. ".js"
 
+  exe 'w! ' .. s:fl
+  call add(s:fls, s:fl)
+  let s:namenum += 1
 endfor
-
+call writefile(s:fls, "vim_to_js")
 quit

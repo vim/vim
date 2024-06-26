@@ -271,7 +271,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	$(VIMPRG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	# Delete the temporary files.
-	rm *.js
+	rm -f *.js ./vim_to_js
 
 vim.desktop: vim.desktop.in $(POFILES)
 	echo $(LANGUAGES) | tr " " "\n" |$(SED) -e '/\./d' | sort > LINGUAS
@@ -319,10 +319,10 @@ $(PLUGPACKAGE).pot: $(PO_PLUG_INPUTLIST)
 	$(XGETTEXT) --from-code=UTF-8 --default-domain=$(PLUGPACKAGE) \
 		--package-name=$(PLUGPACKAGE) \
 		--output-dir=$(POT_PLUGPACKAGE_PATH) \
-		--output=$(PLUGPACKAGE).pot $(?F:.vim=.js)
+		--output=$(PLUGPACKAGE).pot --files-from=./vim_to_js
 	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim \
 		$(POT_PLUGPACKAGE_PATH)/$(PLUGPACKAGE).pot $?
-	rm -f $(?F:.vim=.js)
+	rm -f *.js ./vim_to_js
 
 # Converting the PO file of the plug-in package to the binary format of the MO file
 MO_PLUGPACKAGE_PATH != pwd

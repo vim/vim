@@ -504,7 +504,7 @@ first_time: files
 		--files-from=.\files $(PO_VIM_JSLIST)
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
-	$(RM) *.js
+	$(RM) *.js .\vim_to_js
 
 $(PACKAGE).pot: files
 	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
@@ -516,7 +516,7 @@ $(PACKAGE).pot: files
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
-	$(RM) *.js
+	$(RM) *.js .\vim_to_js
 
 # Only original translations with default encoding should be updated.
 # The files that are converted to a different encoding clearly state "DO NOT EDIT".
@@ -558,10 +558,10 @@ $(PLUGPACKAGE).pot : $(PO_PLUG_INPUTLIST)
 	$(XGETTEXT) --from-code=UTF-8 --default-domain=$(PLUGPACKAGE) \
 		--package-name=$(PLUGPACKAGE) \
 		--output-dir="$(POT_PLUGPACKAGE_PATH)" \
-		--output=$(PLUGPACKAGE).pot $(**F:.vim=.js)
+		--output=$(PLUGPACKAGE).pot --files-from=.\vim_to_js
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim \
 		"$(POT_PLUGPACKAGE_PATH)\$(PLUGPACKAGE).pot" $**
-	$(RM) $(**F:.vim=.js)
+	$(RM) *.js .\vim_to_js
 
 # Converting the PO file of the plug-in package to the binary format of the MO file
 MO_PLUGPACKAGE_PATH = $(MAKEDIR)
