@@ -149,10 +149,10 @@ gettext() function call for the strings you want to translate.
 The translation of these strings will be retrieved by gettext() from the MO
 file "vim.mo".
 
-For third-party plugins, it is necessary to specify a once call to the
-bindtextdomain() function in scripts containing translation strings, and for
-all message strings, the gettext() function. For more information, 
-see ":help package-translation".
+For third-party plugins, it is necessary to specify a one-time call to the
+bindtextdomain() function in scripts containing translation strings and for
+all message strings to add a {package} argument to the gettext() function. For
+more information, see ":help package-translation".
 
 
 vim:tw=78:

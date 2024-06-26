@@ -788,7 +788,7 @@ translation file is located.
 The directory structure where the message translation file is placed should be
 as follows: "lang/<lang_id>/LC_MESSAGES". To specify <lang_id>, i.e. the
 target language, see |multilang|.
-This function call is specified only once for the entire plug-in.
+This function call is needed only once for the entire plug-in.
 After that it is necessary to specify the |gettext()| function call in the
 following way for all messages that need to be translated:
 >
