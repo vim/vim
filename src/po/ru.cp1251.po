@@ -2045,7 +2045,7 @@ msgid " Omni completion (^O^N^P)"
 msgstr " Подстановка по контексту CTRL+O и CTRL+N или CTRL+P"
 
 # :!~ Restorer
-msgid " Spelling suggestion (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
 msgstr " Подстановка вариантов написания CTRL+S и CTRL+N или CTRL+P"
 
 # :!~ Restorer

@@ -287,8 +287,8 @@ msgstr " gebruikergedefinieerde voltooiing (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " omni-voltooiing (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " spellingsuggestie (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " spellingsuggestie (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " lokaal-trefwoordvoltooiing (^N^P)"
