@@ -1291,8 +1291,8 @@ msgstr " 用户自定义补全 (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " 全能补全 (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " 拼写建议 (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " 拼写建议 (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " 关键字局部补全 (^N^P)"

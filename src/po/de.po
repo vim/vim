@@ -1376,8 +1376,8 @@ msgstr " Benutzerdefinierte Vervollständigung (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omni-Vervollständigung (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Vorschlag der Rechtschreibprüfung (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Vorschlag der Rechtschreibprüfung (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokale Stichwort-Vervollständigung(^N^P)"

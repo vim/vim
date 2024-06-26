@@ -1287,8 +1287,8 @@ msgstr " Completamento definito dall'utente (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Completamento globale (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Suggerimento ortografico (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Suggerimento ortografico (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Completamento Parola Locale (^N^P)"
