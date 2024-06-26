@@ -1551,6 +1551,7 @@ typedef struct {
     type_T	*ocm_type;
     int		ocm_flags;
     char_u	*ocm_init;	// allocated
+    sctx_T	ocm_init_sctx;	// script context of the initializer expression
 } ocmember_T;
 
 // used for the lookup table of a class member index and object method index
