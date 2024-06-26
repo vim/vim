@@ -3,7 +3,7 @@
 " Javascript is used because, like Vim, it accepts both single and double
 " quoted strings.
 
-let shortmess+=A
+set shortmess+=A
 
 let s:namenum = 0
 let s:fls = []
@@ -16,7 +16,6 @@ for name in argv()[1:]
 
   " Write as .js file, xgettext recognizes them
   let s:fl = fnamemodify(name, ":t:r") .. s:namenum .. ".js"
-
   exe 'w! ' .. s:fl
   call add(s:fls, s:fl)
   let s:namenum += 1

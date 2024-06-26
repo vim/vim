@@ -40,7 +40,7 @@ converted: $(MOCONVERTED)
 	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
-	$(VIMPRG) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" \
+	$(VIMPROG) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" \
 		-S check.vim -c "if error == 0 | q | else | num 2 | cq | endif" $<
 	touch $@
 
@@ -241,6 +241,7 @@ prefixcheck:
 clean: checkclean
 	rm -f core core.* *.old.po *.mo *.pot sjiscorr
 	rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
+	rm -f ./allfiles
 #	rm -f big5corr
 
 distclean: clean
@@ -261,14 +262,15 @@ PO_INPUTLIST = \
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript.
-	$(VIMPRG) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
+	$(VIMPROG) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
+	@ echo ${PO_INPUTLIST} | tr ' ' '\n' > ./allfiles
+	@ cat ./vim_to_js >> ./allfiles
 	# Create vim.pot.
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
-		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
-	mv -f $(PACKAGE).po $(PACKAGE).pot
+	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
+		--add-comments $(XGETTEXT_KEYWORDS) --files-from=./allfiles
 	# Fix Vim scripts names, so that "gf" works.
-	$(VIMPRG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
+	$(VIMPROG) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	# Delete the temporary files.
 	rm -f *.js ./vim_to_js

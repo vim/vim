@@ -498,10 +498,11 @@ files: $(PO_INPUTLIST)
 first_time: files
 	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
+	@ copy /a .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
 	$(XGETTEXT) --default-domain=$(LANGUAGE) --add-comments $(XGETTEXT_KEYWORDS) \
-		--files-from=.\files $(PO_VIM_JSLIST)
+		--files-from=.\allfiles
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).po \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js .\vim_to_js
@@ -509,11 +510,11 @@ first_time: files
 $(PACKAGE).pot: files
 	"$(VIMPROG)" -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
+	@ copy /a .\files+.\vim_to_js .\allfiles
 	set OLD_PO_FILE_INPUT=yes
 	set OLD_PO_FILE_OUTPUT=yes
-	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments $(XGETTEXT_KEYWORDS) \
-		--files-from=.\files $(PO_VIM_JSLIST)
-	$(MV) $(PACKAGE).po $(PACKAGE).pot
+	$(XGETTEXT) --default-domain=$(PACKAGE) --output=$(PACKAGE).pot \
+		--add-comments $(XGETTEXT_KEYWORDS) --files-from=.\allfiles
 	"$(VIMPROG)" -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot \
 		$(PO_VIM_INPUTLIST)
 	$(RM) *.js .\vim_to_js
@@ -573,7 +574,7 @@ clean: checkclean
 	$(RM) *.mo
 	$(RM) *.pot
 	$(RM) *.orig
-	$(RM) files
+	$(RM) files allfiles
 	$(RM) sjiscorr.obj sjiscorr.exe
 #	$(RM) big5corr.obj big5corr.exe
 
