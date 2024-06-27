@@ -68,7 +68,7 @@ balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 bindtextdomain({package}, {path})
-				none	bind text domain to specied path
+				Bool	bind text domain to specified path
 blob2list({blob})		List	convert {blob} into a list of numbers
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
@@ -1227,7 +1227,10 @@ bindtextdomain({package}, {path})			*bindtextdomain()*
 		translations for a package.  {path} is the directory name
 		for the translations. See |package-create|.
 
-		Return type: none
+		Returns v:true on success and v:false on failure (out of
+		memory).
+
+		Return type: |vim9-boolean|
 
 blob2list({blob})					*blob2list()*
 		Return a List containing the number value of each byte in Blob

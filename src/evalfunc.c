@@ -1826,7 +1826,7 @@ static funcentry_T global_functions[] =
 #endif
 			},
     {"bindtextdomain",	2, 2, 0,	    arg2_string,
-			ret_void,	    f_bindtextdomain},
+			ret_bool,	    f_bindtextdomain},
     {"blob2list",	1, 1, FEARG_1,	    arg1_blob,
 			ret_list_number,    f_blob2list},
     {"browse",		4, 4, 0,	    arg4_browse,
@@ -3483,8 +3483,11 @@ get_buf_arg(typval_T *arg)
  * "bindtextdomain(package, path)" function
  */
     static void
-f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_bindtextdomain(typval_T *argvars, typval_T *rettv)
 {
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_TRUE;
+
     if (check_for_nonempty_string_arg(argvars, 0) == FAIL
 	    || check_for_nonempty_string_arg(argvars, 1) == FAIL)
 	return;
@@ -3492,7 +3495,13 @@ f_bindtextdomain(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (strcmp((const char *)argvars[0].vval.v_string, VIMPACKAGE) == 0)
 	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
     else
-	bindtextdomain((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string);
+    {
+	if (bindtextdomain((const char *)argvars[0].vval.v_string, (const char *)argvars[1].vval.v_string) == NULL)
+	{
+	    do_outofmem_msg((long)0);
+	    rettv->vval.v_number = VVAL_FALSE;
+	}
+    }
 
     return;
 }
