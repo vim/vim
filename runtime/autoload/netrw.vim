@@ -4497,7 +4497,15 @@ fun! s:NetrwGetWord()
     call cursor(line("."),filestart+1)
     NetrwKeepj norm! ma
    endif
-   let rega= @a
+
+   let dict={}
+   " save the unnamed register and register 0-9 and a
+   let dict.a=[getreg('a'), getregtype('a')]
+   for i in range(0, 9)
+     let dict[i] = [getreg(i), getregtype(i)]
+   endfor
+   let dict.unnamed = [getreg(''), getregtype('')]
+
    let eofname= filestart + b:netrw_cpf + 1
    if eofname <= col("$")
     call cursor(line("."),filestart+b:netrw_cpf+1)
@@ -4505,8 +4513,10 @@ fun! s:NetrwGetWord()
    else
     NetrwKeepj norm! "ay$
    endif
+
    let dirname = @a
-   let @a      = rega
+   call s:RestoreRegister(dict)
+
 "   call Decho("2: dirname<".dirname.">",'~'.expand("<slnum>"))
    let dirname= substitute(dirname,'\s\+$','','e')
 "   call Decho("3: dirname<".dirname.">",'~'.expand("<slnum>"))
