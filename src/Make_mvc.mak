@@ -384,15 +384,15 @@ TERMINAL = no
 !if "$(TERMINAL)" == "yes"
 TERM_OBJ = \
 	$(OBJDIR)/terminal.obj \
-	$(OBJDIR)/vterm_encoding.obj \
-	$(OBJDIR)/vterm_keyboard.obj \
-	$(OBJDIR)/vterm_mouse.obj \
-	$(OBJDIR)/vterm_parser.obj \
-	$(OBJDIR)/vterm_pen.obj \
-	$(OBJDIR)/vterm_screen.obj \
-	$(OBJDIR)/vterm_state.obj \
-	$(OBJDIR)/vterm_unicode.obj \
-	$(OBJDIR)/vterm_vterm.obj
+	$(OBJDIR)/libvterm/encoding.obj \
+	$(OBJDIR)/libvterm/keyboard.obj \
+	$(OBJDIR)/libvterm/mouse.obj \
+	$(OBJDIR)/libvterm/parser.obj \
+	$(OBJDIR)/libvterm/pen.obj \
+	$(OBJDIR)/libvterm/screen.obj \
+	$(OBJDIR)/libvterm/state.obj \
+	$(OBJDIR)/libvterm/unicode.obj \
+	$(OBJDIR)/libvterm/vterm.obj
 TERM_DEFS = -DFEAT_TERMINAL
 TERM_DEPS = \
 	libvterm/include/vterm.h \
@@ -1330,6 +1330,9 @@ $(VIM): $(VIM).exe
 $(OUTDIR):
 	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR:/=\)
 
+$(OUTDIR)/libvterm: $(OUTDIR)
+	if not exist $(OUTDIR)/libvterm/nul  mkdir $(OUTDIR:/=\)\libvterm
+
 CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) \
 	      -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 
@@ -1483,15 +1486,15 @@ test_vim9:
 ###########################################################################
 
 # Create a default rule for transforming .c files to .obj files in $(OUTDIR)
-.c{$(OUTDIR)/}.obj::
+.c{$(OUTDIR)}.obj::
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 # Create a default rule for xdiff.
-{xdiff/}.c{$(OUTDIR)/}.obj::
+{xdiff}.c{$(OUTDIR)}.obj::
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
-.cpp{$(OUTDIR)/}.obj::
+.cpp{$(OUTDIR)}.obj::
 	$(CC) $(CFLAGS_OUTDIR) $<
 
 $(OUTDIR)/alloc.obj:	$(OUTDIR) alloc.c  $(INCL)
@@ -1837,32 +1840,27 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type \
 	-D_CRT_SECURE_NO_WARNINGS
 
-$(OUTDIR)/vterm_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/encoding.c
+# Create a default rule for vterm.
+{libvterm/src}.c{$(OUTDIR)/libvterm}.obj::
+	$(CCCTERM) /Fo$(OUTDIR)/libvterm/ $<
 
-$(OUTDIR)/vterm_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/keyboard.c
+$(OUTDIR)/libvterm/encoding.obj: $(OUTDIR)/libvterm libvterm/src/encoding.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/mouse.c
+$(OUTDIR)/libvterm/keyboard.obj: $(OUTDIR)/libvterm libvterm/src/keyboard.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/parser.c
+$(OUTDIR)/libvterm/mouse.obj: $(OUTDIR)/libvterm libvterm/src/mouse.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/pen.c
+$(OUTDIR)/libvterm/parser.obj: $(OUTDIR)/libvterm libvterm/src/parser.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/screen.c
+$(OUTDIR)/libvterm/pen.obj: $(OUTDIR)/libvterm libvterm/src/pen.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/state.c
+$(OUTDIR)/libvterm/screen.obj: $(OUTDIR)/libvterm libvterm/src/screen.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/unicode.c
+$(OUTDIR)/libvterm/state.obj: $(OUTDIR)/libvterm libvterm/src/state.c $(TERM_DEPS)
 
-$(OUTDIR)/vterm_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ libvterm/src/vterm.c
+$(OUTDIR)/libvterm/unicode.obj: $(OUTDIR)/libvterm libvterm/src/unicode.c $(TERM_DEPS)
+
+$(OUTDIR)/libvterm/vterm.obj: $(OUTDIR)/libvterm libvterm/src/vterm.c $(TERM_DEPS)
 
 
 # $CFLAGS may contain backslashes, quotes and chevrons, escape them all.
