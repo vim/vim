@@ -23,9 +23,9 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 if &filetype == "man"
-  " Allow hyphen, plus, colon, dot, and commercial at in manual page name.
-  " Parentheses are not here but in dist#man#PreGetPage()
-  setlocal iskeyword=48-57,_,a-z,A-Z,-,+,:,.,@-@
+  " Allow hyphen, plus, colon, dot, parentheses and commercial at
+  " in manual page names.
+  setlocal iskeyword=48-57,_,a-z,A-Z,-,+,:,.,(,),@-@
   let b:undo_ftplugin = "setlocal iskeyword<"
 
   " Add mappings, unless the user didn't want this.
