@@ -236,7 +236,7 @@ Ahora continúe con la Lección 2.
 
   Muchos comandos que cambian texto están compuestos por un operador y un
   movimiento.
-  El formato para eliminar un comando con el operador de borrado  d  es el
+  El formato para comando eliminar con el operador de borrado  d  es el
   siguiente:
 
     d   movimiento
