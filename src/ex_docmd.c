@@ -1460,8 +1460,13 @@ handle_did_throw(void)
     current_exception->throw_name = NULL;
 
     discard_current_exception();	// uses IObuff if 'verbose'
-    suppress_errthrow = TRUE;
-    force_abort = TRUE;
+
+    // If "silent!" is active the uncaught exception is not fatal.
+    if (emsg_silent == 0)
+    {
+	suppress_errthrow = TRUE;
+	force_abort = TRUE;
+    }
 
     if (messages != NULL)
     {
