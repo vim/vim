@@ -9270,7 +9270,7 @@ init_srand(UINT32_T *x)
     struct {
 	union {
 	    UINT32_T number;
-	    char     bytes[sizeof(UINT32_T)];
+	    char_u   bytes[sizeof(UINT32_T)];
 	} contents;
     } buf;
 
