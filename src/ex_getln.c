@@ -2480,13 +2480,13 @@ cmdline_not_changed:
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CURSORMOVEDC);
 	    prev_cmdpos = ccline.cmdpos;
 	}
+
 #ifdef FEAT_SEARCH_EXTRA
 	if (!is_state.incsearch_postponed)
 	    continue;
 #endif
 
 cmdline_changed:
-	prev_cmdpos = ccline.cmdpos;
 #ifdef FEAT_SEARCH_EXTRA
 	// If the window changed incremental search state is not valid.
 	if (is_state.winid != curwin->w_id)
@@ -2495,6 +2495,13 @@ cmdline_changed:
 	// Trigger CmdlineChanged autocommands.
 	if (trigger_cmdlinechanged)
 	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+
+	// Trigger CursorMovedC autocommands.
+	if (ccline.cmdpos != prev_cmdpos)
+	{
+	    trigger_cmd_autocmd(cmdline_type, EVENT_CURSORMOVEDC);
+	    prev_cmdpos = ccline.cmdpos;
+	}
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (xpc.xp_context == EXPAND_NOTHING && (KeyTyped || vpeekc() == NUL))
