@@ -575,7 +575,7 @@ typedef struct {
   // A line was pushed off the top of the window.
   // "cells[cols]" contains the cells of that line.
   // Return value is unused.
-  int (*sb_pushline)(int cols, const VTermScreenCell *cells, void *user);
+  int (*sb_pushline)(int cols, const VTermScreenCell *cells, const VTermLineInfo *newinfo, void *user);
   int (*sb_popline)(int cols, VTermScreenCell *cells, void *user);
   int (*sb_clear)(void* user);
 } VTermScreenCallbacks;

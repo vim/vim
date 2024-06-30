@@ -212,11 +212,13 @@ static int putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 static void sb_pushline_from_row(VTermScreen *screen, int row)
 {
   VTermPos pos;
+  const VTermLineInfo *info;
   pos.row = row;
   for(pos.col = 0; pos.col < screen->cols; pos.col++)
     vterm_screen_get_cell(screen, pos, screen->sb_buffer + pos.col);
 
-  (screen->callbacks->sb_pushline)(screen->cols, screen->sb_buffer, screen->cbdata);
+  info = vterm_state_get_lineinfo(screen->state, row);
+  (screen->callbacks->sb_pushline)(screen->cols, screen->sb_buffer, info, screen->cbdata);
 }
 
 static int moverect_internal(VTermRect dest, VTermRect src, void *user)
