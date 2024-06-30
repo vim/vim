@@ -61,8 +61,8 @@ endif
 
 if exists(":Man") != 2
   com -nargs=+ -complete=shellcmd Man call dist#man#GetPage(<q-mods>, <f-args>)
-  nmap <Leader>K :call dist#man#PreGetPage(0)<CR>
-  nmap <Plug>ManPreGetPage :call dist#man#PreGetPage(0)<CR>
+  nnoremap <Leader>K :call dist#man#PreGetPage(0)<CR>
+  nnoremap <Plug>ManPreGetPage :call dist#man#PreGetPage(0)<CR>
 endif
 
 let &cpo = s:cpo_save
