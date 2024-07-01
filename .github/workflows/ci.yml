@@ -564,6 +564,7 @@ jobs:
             echo %COL_GREEN%Download Gettext%COL_RESET%
             call :downloadfile %GETTEXT${{ env.BITS }}_URL% downloads\gettext${{ env.BITS }}.zip
             7z e -y downloads\gettext${{ env.BITS }}.zip -oD:\gettext${{ env.BITS }} > nul || exit 1
+            copy /y D:\gettext${{ env.BITS }}\libintl-8.dll src\ || exit 1
           )
 
           goto :eof
@@ -679,7 +680,6 @@ jobs:
         timeout-minutes: 15
         run: |
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
-          copy /y D:\gettext${{ env.BITS }}\libintl-8.dll src\libintl-8.dll || exit 1
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
@@ -697,7 +697,6 @@ jobs:
         timeout-minutes: 15
         run: |
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%;%SODIUM_LIB%
-          copy /y D:\gettext${{ env.BITS }}\libintl-8.dll src\libintl-8.dll || exit 1
           call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test Vim:%COL_RESET%

@@ -1,5 +1,6 @@
 source check.vim
 CheckNotMSWindows
+CheckNotMac
 
 " Test for package translation Makefile
 func Test_gettext_makefile()
