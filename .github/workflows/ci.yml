@@ -564,13 +564,6 @@ jobs:
             echo %COL_GREEN%Download Gettext%COL_RESET%
             call :downloadfile %GETTEXT{{ env.BITS }}_URL% downloads\gettext{{ env.BITS }}.zip
             7z e -y downloads\gettext{{ env.BITS }}.zip -oD:\gettext{{ env.BITS }} > nul || exit 1
-#            if "${{ matrix.arch }}"=="x64" (
-#              call :downloadfile %GETTEXT64_URL% downloads\gettext64.zip
-#              7z e -y downloads\gettext64.zip -oD:\gettext64 > nul || exit 1
-#            ) else (
-#              call :downloadfile %GETTEXT32_URL% downloads\gettext32.zip
-#              7z e -y downloads\gettext32.zip -oD:\gettext32 > nul || exit 1
-#            )
           )
 
           goto :eof
