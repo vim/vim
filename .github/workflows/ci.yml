@@ -562,8 +562,8 @@ jobs:
 
           if "${{ matrix.toolchain }}"=="msvc" (
             echo %COL_GREEN%Download Gettext%COL_RESET%
-            call :downloadfile %GETTEXT{{ env.BITS }}_URL% downloads\gettext{{ env.BITS }}.zip
-            7z e -y downloads\gettext{{ env.BITS }}.zip -oD:\gettext{{ env.BITS }} > nul || exit 1
+            call :downloadfile %GETTEXT${{ env.BITS }}_URL% downloads\gettext${{ env.BITS }}.zip
+            7z e -y downloads\gettext${{ env.BITS }}.zip -oD:\gettext${{ env.BITS }} > nul || exit 1
           )
 
           goto :eof
