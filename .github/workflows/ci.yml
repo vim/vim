@@ -565,6 +565,7 @@ jobs:
             call :downloadfile %GETTEXT${{ env.BITS }}_URL% downloads\gettext${{ env.BITS }}.zip
             7z e -y downloads\gettext${{ env.BITS }}.zip -oD:\gettext${{ env.BITS }} > nul || exit 1
             copy /y D:\gettext${{ env.BITS }}\libintl-8.dll src\ || exit 1
+            copy /y D:\gettext${{ env.BITS }}\libiconv-2.dll src\ || exit 1
           )
 
           goto :eof
