@@ -4263,25 +4263,115 @@ get_list_line(
     int	    c UNUSED,
     void    *cookie,
     int	    indent UNUSED,
-    getline_opt_T options UNUSED)
+    getline_opt_T options)
 {
     listitem_T **p = (listitem_T **)cookie;
     listitem_T *item = *p;
     char_u	buf[NUMBUFLEN];
-    char_u	*s;
+    char_u	*line;
+    int		do_vim9_all = in_vim9script() && options == GETLINE_CONCAT_ALL;
+    int		do_bar_cont = do_vim9_all || options == GETLINE_CONCAT_CONTBAR;
 
     if (item == NULL)
 	return NULL;
-    s = tv_get_string_buf_chk(&item->li_tv, buf);
-    *p = item->li_next;
-    return s == NULL ? NULL : vim_strsave(s);
+    line = tv_get_string_buf_chk(&item->li_tv, buf);
+    line = line == NULL ? NULL : vim_strsave(line);
+    item = item->li_next;
+
+    // Only concatenate lines starting with a \ when 'cpoptions' doesn't
+    // contain the 'C' flag.  See getsourceline().
+    if (line != NULL && item != NULL && options != GETLINE_NONE
+				      && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
+    {
+	int comment_char = in_vim9script() ? '#' : '"';
+	char_u *nextline;
+	char_u *s;
+
+	// Get the next line and concatenate it when it starts with a
+	// backslash. We always need to read the next line, keep it in
+	// sp->nextline.
+	/* Also check for a comment in between continuation lines: "\ */
+	// Also check for a Vim9 comment, empty line, line starting with '|',
+	// but not "||".
+	nextline = tv_get_string_buf_chk(&item->li_tv, buf);
+	if (nextline != NULL
+		&& (*(s = skipwhite(nextline)) == '\\'
+			      || (s[0] == comment_char
+						&& s[1] == '\\' && s[2] == ' ')
+			      || (do_vim9_all && (*s == NUL
+						     || vim9_comment_start(s)))
+			      || (do_bar_cont && s[0] == '|' && s[1] != '|')))
+	{
+	    garray_T    ga;
+
+	    ga_init2(&ga, sizeof(char_u), 400);
+	    ga_concat(&ga, line);
+	    vim_free(line);
+	    if (*s == '\\')
+		ga_concat(&ga, s + 1);
+	    else if (*s == '|')
+	    {
+		ga_concat(&ga, (char_u *)" ");
+		ga_concat(&ga, s);
+	    }
+	    while ((item = item->li_next) != NULL)
+	    {
+		nextline = tv_get_string_buf_chk(&item->li_tv, buf);
+		if (nextline == NULL)
+		    break;
+		s = skipwhite(nextline);
+		if (*s == '\\' || (do_bar_cont && s[0] == '|' && s[1] != '|'))
+		{
+		    // Adjust the growsize to the current length to speed up
+		    // concatenating many lines.
+		    if (ga.ga_len > 400)
+		    {
+			if (ga.ga_len > 8000)
+			    ga.ga_growsize = 8000;
+			else
+			    ga.ga_growsize = ga.ga_len;
+		    }
+		    if (*s == '\\')
+			ga_concat(&ga, s + 1);
+		    else
+		    {
+			ga_concat(&ga, (char_u *)" ");
+			ga_concat(&ga, s);
+		    }
+		}
+		else if (!(s[0] == (comment_char)
+						&& s[1] == '\\' && s[2] == ' ')
+		     && !(do_vim9_all && (*s == NUL || vim9_comment_start(s))))
+		    break;
+		/* drop a # comment or "\ comment line */
+	    }
+	    ga_append(&ga, NUL);
+	    line = ga.ga_data;
+	}
+    }
+
+    *p = item;
+    return line;
+}
+
+/*
+ * Return the readahead line. Note that the pointer may become invalid when
+ * getting the next line, if it's concatenated with the next one.
+ */
+    char_u *
+get_list_nextline(void *cookie)
+{
+    static char_u	buf[NUMBUFLEN];
+    listitem_T		*item = *(listitem_T **)cookie;
+
+    return item == NULL ? NULL : tv_get_string_buf_chk(&item->li_tv, buf);
 }
 
 /*
  * "execute()" function
  */
     void
-execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
+execute_common(typval_T *argvars, typval_T *rettv)
 {
     char_u	*cmd = NULL;
     list_T	*list = NULL;
@@ -4298,32 +4388,31 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
 
-    if (argvars[arg_off].v_type == VAR_LIST)
+    if (argvars[0].v_type == VAR_LIST)
     {
-	list = argvars[arg_off].vval.v_list;
+	list = argvars[0].vval.v_list;
 	if (list == NULL || list->lv_len == 0)
 	    // empty list, no commands, empty output
 	    return;
 	++list->lv_refcount;
     }
-    else if (argvars[arg_off].v_type == VAR_JOB
-	    || argvars[arg_off].v_type == VAR_CHANNEL)
+    else if (argvars[0].v_type == VAR_JOB || argvars[0].v_type == VAR_CHANNEL)
     {
 	semsg(_(e_using_invalid_value_as_string_str),
-				       vartype_name(argvars[arg_off].v_type));
+					      vartype_name(argvars[0].v_type));
 	return;
     }
     else
     {
-	cmd = tv_get_string_chk(&argvars[arg_off]);
+	cmd = tv_get_string_chk(&argvars[0]);
 	if (cmd == NULL)
 	    return;
     }
 
-    if (argvars[arg_off + 1].v_type != VAR_UNKNOWN)
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char_u  *s = tv_get_string_buf_chk_strict(&argvars[arg_off + 1], buf,
+	char_u  *s = tv_get_string_buf_chk_strict(&argvars[1], buf,
 							      in_vim9script());
 
 	if (s == NULL)
@@ -4408,7 +4497,7 @@ f_execute(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
-    execute_common(argvars, rettv, 0);
+    execute_common(argvars, rettv);
 }
 
 /*

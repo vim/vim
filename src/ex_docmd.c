@@ -1641,6 +1641,8 @@ getline_peek(
     }
     if (gp == getsourceline)
 	return source_nextline(cp);
+    else if (gp == get_list_line)
+	return get_list_nextline(cp);
     return NULL;
 }
 #endif
