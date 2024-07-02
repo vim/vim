@@ -9,11 +9,12 @@ func Test_gettext_makefile()
   call writefile([curdir], '.\tst_gt_make.log', 'a')
   if has('win32')
     try
-      if has('win32unix') || executable('uname')
+      if 'msys2' ==? getenv('shell') || 'mingw' ==? getenv('toolchain') || '' != getenv('MSYSCON')
         throw 'Skipped: does not work in any MSYS and other Cygwin'
       endif
     endtry
     let gt_pt = 'D:\gettext' .. getenv('BITS')
+"    let gt_pt = 'D:\Programs\GetText\bin'
     let make = system('nmake.exe -f Make_mvc.mak VIMPROG=' .. getenv('VIMPROG') .. ' GETTEXT_PATH=' .. gt_pt .. ' PLUGPACKAGE=test_gettext "PO_PLUG_INPUTLIST=..\testdir\test_gettext_makefile_in1.vim ..\testdir\test_gettext_makefile_in2.vim ..\testdir\test_gettext_makefile_in3.vim ..\testdir\test_gettext_makefile_in4.vim" test_gettext.pot')
   else
 " Will it work on macOS?
