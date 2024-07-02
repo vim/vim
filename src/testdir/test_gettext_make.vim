@@ -5,11 +5,18 @@ CheckNotMac
 " Test for package translation Makefile
 func Test_gettext_makefile()
   cd ../po
+  let curdir = execute("verbose pwd")
+  call writefile([curdir], '.\tst_gt_make.log', 'a')
   if has('win32')
-    call system('nmake.exe -f Make_mvc.mak PLUGPACKAGE=test_gettext "PO_PLUG_INPUTLIST=..\testdir\test_gettext_makefile_in1.vim ..\testdir\test_gettext_makefile_in2.vim ..\testdir\test_gettext_makefile_in3.vim ..\testdir\test_gettext_makefile_in4.vim" test_gettext.pot')
+"    exe '!type .\tst_gt_make.log'
+    let make = system('nmake.exe -f Make_mvc.mak PLUGPACKAGE=test_gettext "PO_PLUG_INPUTLIST=..\testdir\test_gettext_makefile_in1.vim ..\testdir\test_gettext_makefile_in2.vim ..\testdir\test_gettext_makefile_in3.vim ..\testdir\test_gettext_makefile_in4.vim" test_gettext.pot')
   else
 " Will it work on macOS?
     call system("make -f Makefile PLUGPACKAGE=test_gettext PO_PLUG_INPUTLIST=\"../testdir/test_gettext_makefile_in1.vim ../testdir/test_gettext_makefile_in2.vim ../testdir/test_gettext_makefile_in3.vim ../testdir/test_gettext_makefile_in4.vim\" test_gettext.pot")
+  endif
+  if has('win32')
+    call writefile([make], '.\tst_gt_make.log', 'a')
+"    exe '!type .\tst_gt_make.log'
   endif
   let expected = [
           \  '# SOME DESCRIPTIVE TITLE.',

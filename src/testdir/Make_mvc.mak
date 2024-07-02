@@ -42,9 +42,19 @@ report:
 		else ( echo No failures reported > test_result.log )
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S summarize.vim messages
 	-if exist starttime del starttime
-	@echo.
+	@echo:
 	@echo Test results:
 	@cmd /c type test_result.log
+	if exist .\tst_gt_make.log (echo: && \
+		echo: result of test_gettext_make && \
+		cmd /c type tst_gt_make.log && del /q tst_gt_make.log \
+		) else ( \
+		cd ..\po && if exist .\tst_gt_make.log (echo: && \
+			echo: result of test_gettext_make && \
+			cmd /c type tst_gt_make.log && \
+			del /q tst_gt_make.log && cd ..\testdir \
+			) \
+		)
 	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
 		else ( echo ALL DONE )
 
@@ -56,8 +66,18 @@ $(NEW_TESTS):
 	-if exist test.log del test.log
 	-if exist messages del messages
 	-if exist starttime del starttime
-	@$(MAKE) -nologo -f Make_mvc.mak $@.res VIMPROG=$(VIMPROG)
+	@$(MAKE) -nologo -f Make_mvc.mak VIMPROG=$(VIMPROG) $@.res
 	@type messages
+#	if exist .\tst_gt_make.log (echo: && \
+#		echo: result of test_gettext_make && \
+#		cmd /c type tst_gt_make.log && del /q tst_gt_make.log \
+#		) else ( \
+#		cd ..\po && if exist .\tst_gt_make.log (echo: && \
+#			echo: result of test_gettext_make && \
+#			cmd /c type tst_gt_make.log && \
+#			del /q tst_gt_make.log && cd ..\testdir \
+#			) \
+#		)
 	@if exist test.log exit 1
 
 
@@ -139,6 +159,16 @@ newtestssilent: $(NEW_TESTS_RES)
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
+#	if exist .\tst_gt_make.log (echo: && \
+#		echo: result of test_gettext_make && \
+#		cmd /c type tst_gt_make.log && del /q tst_gt_make.log \
+#		) else ( \
+#		cd ..\po && if exist .\tst_gt_make.log (echo: && \
+#			echo: result of test_gettext_make && \
+#			cmd /c type tst_gt_make.log && \
+#			del /q tst_gt_make.log && cd ..\testdir \
+#			) \
+#		)
 	@del vimcmd
 
 test_gui.res: test_gui.vim
