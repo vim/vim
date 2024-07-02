@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         Rust
 " Author:           Chris Morgan <me@chrismorgan.info>
-" Last Change:      2023-09-11
+" Last Change:      2024-07-03
 " For bugs, patches and license go to https://github.com/rust-lang/rust.vim
 
 " Only load this indent file when no other was loaded.
@@ -179,7 +179,7 @@ function GetRustIndent(lnum)
     " A standalone 'where' adds a shift.
     let l:standalone_prevline_where = prevline =~# '\V\^\s\*where\s\*\$'
     if l:standalone_prevline_where
-        return indent(prevlinenum) + 4
+        return indent(prevlinenum) + shiftwidth()
     endif
 
     " Handle where clauses nicely: subsequent values should line up nicely.
@@ -197,7 +197,7 @@ function GetRustIndent(lnum)
         let l:scope_start = searchpair('{\|(', '', '}\|)', 'nbW',
                     \ 's:is_string_comment(line("."), col("."))')
         if l:scope_start != 0 && l:scope_start < a:lnum
-            return indent(l:scope_start) + 4
+            return indent(l:scope_start) + shiftwidth()
         endif
     endif
 
@@ -268,7 +268,7 @@ function GetRustIndent(lnum)
                     " It's the closing line, dedent it
                     return 0
                 else
-                    return &shiftwidth
+                    return shiftwidth()
                 endif
             endif
         endif
