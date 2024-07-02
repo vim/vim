@@ -1,5 +1,5 @@
 source check.vim
-" TODO: Why does this fail on MacOS 14 and Windows MSVC (Github CI)?
+" TODO: Why does this fail on MacOS 14 (Github CI)?
 CheckNotMac
 "CheckNotMSWindows
 

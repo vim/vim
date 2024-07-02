@@ -1,16 +1,16 @@
 source check.vim
-CheckNotMSWindows
+"CheckNotMSWindows
 CheckNotMac
 
 " Test for package translation Makefile
 func Test_gettext_makefile()
-"  if has('win32')
-    call system("nmake.exe -f Make_mvc.mak PLUGPACKAGE=test_gettext PO_PLUG_INPUTLIST=\"..\\testdir\\test_gettext_makefile_in1.vim ..\\testdir\\test_gettext_makefile_in2.vim ..\\testdir\\test_gettext_makefile_in3.vim ..\\testdir\\test_gettext_makefile_in4.vim\" test_gettext.pot")
-"  else
   cd ../po
+  if has('win32')
+    call system('nmake.exe -f Make_mvc.mak PLUGPACKAGE=test_gettext "PO_PLUG_INPUTLIST=..\testdir\test_gettext_makefile_in1.vim ..\testdir\test_gettext_makefile_in2.vim ..\testdir\test_gettext_makefile_in3.vim ..\testdir\test_gettext_makefile_in4.vim" test_gettext.pot')
+  else
 " Will it work on macOS?
     call system("make -f Makefile PLUGPACKAGE=test_gettext PO_PLUG_INPUTLIST=\"../testdir/test_gettext_makefile_in1.vim ../testdir/test_gettext_makefile_in2.vim ../testdir/test_gettext_makefile_in3.vim ../testdir/test_gettext_makefile_in4.vim\" test_gettext.pot")
-"  endif
+  endif
   let expected = [
           \  '# SOME DESCRIPTIVE TITLE.',
           \  '# Copyright (C) YEAR THE PACKAGE''S COPYRIGHT HOLDER',
