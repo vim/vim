@@ -1,20 +1,20 @@
 source check.vim
-" TODO: Why does this fail on MacOS 14 and Windows MSVC (Github CI)?
+" TODO: Why does this fail on MacOS 14 (Github CI)?
 CheckNotMac
-CheckNotMSWindows
+"CheckNotMSWindows
 
 " Test for gettext()
 func Test_gettext()
   set encoding=utf-8
   call bindtextdomain("__PACKAGE__", getcwd())
   try
-    language ru_RU
+    language messages ru_RU
     call assert_equal('ОШИБКА: ', gettext("ERROR: ", "__PACKAGE__"))
   catch /^Vim\%((\a\+)\)\=:E197:/
     throw "Skipped: not possible to set locale to ru (missing?)"
   endtry
   try
-    language en_GB.UTF-8
+    language messages en_GB.UTF-8
     call assert_equal('ERROR: ', gettext("ERROR: ", "__PACKAGE__"))
   catch /^Vim\%((\a\+)\)\=:E197:/
     throw "Skipped: not possible to set locale to en (missing?)"

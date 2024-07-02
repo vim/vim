@@ -137,4 +137,22 @@ command:
 
 	nmake.exe -f Make_mvc.mak clean
 
+
+TRANSLATION OF VIM THE EDITOR PLUG-INS
+
+Vim supports displaying plugin messages for various native languages.
+Translation is available both for plugins that are supplied as part of the Vim
+editor (e.g. "optwin.vim") and for third-party plugin packages.
+
+To translate the plugins supplied with the Vim editor, you must specify a
+gettext() function call for the strings you want to translate.
+The translation of these strings will be retrieved by gettext() from the MO
+file "vim.mo".
+
+For third-party plugins, it is necessary to specify a one-time call to the
+bindtextdomain() function in scripts containing translation strings and for
+all message strings to add a {package} argument to the gettext() function. For
+more information, see ":help package-translation".
+
+
 vim:tw=78:
