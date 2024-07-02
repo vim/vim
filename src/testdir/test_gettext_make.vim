@@ -9,7 +9,10 @@ func Test_gettext_makefile()
   call writefile([curdir], '.\tst_gt_make.log', 'a')
   if has('win32')
     try
-      if 'msys2' ==? getenv('shell') || 'mingw' ==? getenv('toolchain') || '' != getenv('MSYSCON')
+      if has('win32unix')
+"      if 'msys2' ==? getenv('shell')
+"      if 'mingw' ==? getenv('toolchain')
+"      if '' != getenv('MSYSCON')
         throw 'Skipped: does not work in any MSYS and other Cygwin'
       endif
     endtry
