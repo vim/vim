@@ -309,6 +309,7 @@ hlget([{name} [, {resolve}]])	List	get highlight group attributes
 hlset({list})			Number	set highlight group attributes
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
+id({item})			String	get address of item as a string
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
@@ -5600,6 +5601,34 @@ iconv({string}, {from}, {to})				*iconv()*
 
 		Can also be used as a |method|: >
 			GetText()->iconv('latin1', 'utf-8')
+<
+		Return type: |String|
+
+
+id({item})							    *id()*
+		The result is a unique String associated with the {item} and
+		not with the {item}'s contents. It is only valid while the
+		{item} exists and is referenced. It is valid only in the
+		instance of vim that produces the result. The whole idea is
+		that `id({item})` does not change if the contents of {item}
+		changes. This is useful as a `key` for creating an identity
+		dictionary, rather than one based on equals.
+
+		This operation does not reference {item} and there is no
+		function to convert the `id` to the {item}. It may be useful to
+		have a map of `id` to {item}. The following >
+		    var referenceMap: dict<any>
+		    var id = item->id()
+		    referenceMap[id] = item
+<		prevents {item} from being garbage collected and provides a
+		way to get the {item} from the `id`.
+
+		{item} may be a List, Dictionary, Object, Job, Channel or
+		Blob. If the item is not a permitted type, or it is a null
+		value, then an empty String is returned.
+
+		Can also be used as a |method|: >
+			GetItem()->id()
 <
 		Return type: |String|
 

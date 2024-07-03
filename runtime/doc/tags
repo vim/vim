@@ -8297,6 +8297,7 @@ iconise	starting.txt	/*iconise*
 iconize	starting.txt	/*iconize*
 iconv()	builtin.txt	/*iconv()*
 iconv-dynamic	mbyte.txt	/*iconv-dynamic*
+id()	builtin.txt	/*id()*
 ident-search	tips.txt	/*ident-search*
 idl-syntax	syntax.txt	/*idl-syntax*
 idl.vim	syntax.txt	/*idl.vim*

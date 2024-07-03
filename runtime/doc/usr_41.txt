@@ -1408,6 +1408,8 @@ Various:					*various-functions*
 
 	wordcount()		get byte/word/char count of buffer
 
+	id()			get unique string for item to use as a key
+
 	luaeval()		evaluate |Lua| expression
 	mzeval()		evaluate |MzScheme| expression
 	perleval()		evaluate Perl expression (|+perl|)
