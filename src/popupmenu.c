@@ -1332,9 +1332,10 @@ pum_set_event_info(dict_T *dict)
     static void
 pum_position_at_mouse(int min_width)
 {
-    if (Rows - mouse_row > pum_size)
+    if (Rows - mouse_row > pum_size || Rows - mouse_row > mouse_row)
     {
-	// Enough space below the mouse row.
+	// Enough space below the mouse row,
+	// or there is more space below the mouse row than above.
 	pum_row = mouse_row + 1;
 	if (pum_height > Rows - pum_row)
 	    pum_height = Rows - pum_row;
@@ -1633,7 +1634,7 @@ pum_select_mouse_pos(void)
 {
     int idx = mouse_row - pum_row;
 
-    if (idx < 0 || idx >= pum_size)
+    if (idx < 0 || idx >= pum_height)
 	pum_selected = -1;
     else if (*pum_array[idx].pum_text != NUL)
 	pum_selected = idx;
