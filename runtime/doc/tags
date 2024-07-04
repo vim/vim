@@ -7507,6 +7507,7 @@ g:decada.Unit_Name()	ft_ada.txt	/*g:decada.Unit_Name()*
 g:do_no_lazyload_menus	gui.txt	/*g:do_no_lazyload_menus*
 g:filetype_csh	syntax.txt	/*g:filetype_csh*
 g:filetype_haredoc	ft_hare.txt	/*g:filetype_haredoc*
+g:filetype_md	syntax.txt	/*g:filetype_md*
 g:filetype_r	syntax.txt	/*g:filetype_r*
 g:ftplugin_rust_source_path	ft_rust.txt	/*g:ftplugin_rust_source_path*
 g:gnat	ft_ada.txt	/*g:gnat*
