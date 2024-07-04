@@ -1280,6 +1280,7 @@ add_class_members(class_T *cl, exarg_T *eap, garray_T *type_list_gap)
 	    tv->v_type = m->ocm_type->tt_type;
 	    tv->vval.v_string = NULL;
 	}
+	set_tv_type(tv, m->ocm_type);
 	if (m->ocm_flags & OCMFLAG_CONST)
 	    item_lock(tv, DICT_MAXNEST, TRUE, TRUE);
     }
