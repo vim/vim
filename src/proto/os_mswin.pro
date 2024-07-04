@@ -23,6 +23,7 @@ int mch_has_wildcard(char_u *p);
 int mch_chdir(char *path);
 int mch_icon_load(HANDLE *iconp);
 int mch_libcall(char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result);
+int mch_get_random(char_u *buf, int len);
 void DumpPutS(const char *psz);
 int mch_get_winpos(int *x, int *y);
 void mch_set_winpos(int x, int y);

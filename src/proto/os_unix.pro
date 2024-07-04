@@ -76,6 +76,7 @@ int mch_rename(const char *src, const char *dest);
 int gpm_available(void);
 int gpm_enabled(void);
 int mch_libcall(char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result);
+int mch_get_random(char_u *buf, int len);
 void setup_term_clip(void);
 void start_xterm_trace(int button);
 void stop_xterm_trace(void);
