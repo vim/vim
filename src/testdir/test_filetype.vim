@@ -142,6 +142,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     cdl: ['file.cdl'],
     cdrdaoconf: ['/etc/cdrdao.conf', '/etc/defaults/cdrdao', '/etc/default/cdrdao', '.cdrdao', 'any/etc/cdrdao.conf', 'any/etc/default/cdrdao', 'any/etc/defaults/cdrdao'],
     cdrtoc: ['file.toc'],
+    cedar: ['file.cedar'],
     cf: ['file.cfm', 'file.cfi', 'file.cfc'],
     cfengine: ['cfengine.conf'],
     cfg: ['file.hgrc', 'filehgrc', 'hgrc', 'some-hgrc'],
