@@ -3281,10 +3281,13 @@ pagescroll(int dir, long count, int half)
 				MAX(1, p_window - 2) : get_scroll_overlap(dir));
 	nochange = scroll_with_sms(dir, count, &count);
 
-	// Place cursor at top or bottom of window.
-	validate_botline();
-	curwin->w_cursor.lnum = (dir == FORWARD ? curwin->w_topline
+	if (!nochange)
+	{
+	    // Place cursor at top or bottom of window.
+	    validate_botline();
+	    curwin->w_cursor.lnum = (dir == FORWARD ? curwin->w_topline
 						    : curwin->w_botline - 1);
+	}
     }
 
     if (get_scrolloff_value() > 0)
