@@ -4,7 +4,7 @@ vim9script
 
 # Author: Bram Moolenaar
 # Copyright: Vim license applies, see ":help license"
-# Last Change: 2024 Jun 22
+# Last Change: 2024 Jul 04
 # Converted to Vim9: Ubaldo Tiberi <ubaldo.tiberi@gmail.com>
 
 # WORK IN PROGRESS - The basics works stable, more to come
@@ -42,6 +42,9 @@ def Echoerr(msg: string)
   echohl ErrorMsg | echom $'[termdebug] {msg}' | echohl None
 enddef
 
+def Echowarn(msg: string)
+  echohl WarningMsg | echom $'[termdebug] {msg}' | echohl None
+enddef
 
 # Variables to keep their status among multiple instances of Termdebug
 # Avoid to source the script twice.
@@ -244,6 +247,31 @@ def SanityCheck(): bool
   return is_check_ok
 enddef
 
+def DeprecationWarnings()
+  # TODO Remove the deprecated features after 1 Jan 2025.
+  var config_param = ''
+  if exists('g:termdebug_wide')
+    config_param = 'g:termdebug_wide'
+  elseif exists('g:termdebug_popup')
+    config_param = 'g:termdebug_popup'
+  elseif exists('g:termdebugger')
+    config_param = 'g:termdebugger'
+  elseif exists('g:termdebug_variables_window')
+    config_param = 'g:termdebug_variables_window'
+  elseif exists('g:termdebug_disasm_window')
+    config_param = 'g:termdebug_disasm_window'
+  elseif exists('g:termdebug_map_K')
+    config_param = 'g:termdebug_map_K'
+  elseif exists('g:termdebug_use_prompt')
+    config_param = 'g:termdebug_use_prompt'
+  endif
+
+  if !empty(config_param)
+    Echowarn($"Deprecation Warning: '{config_param}' parameter
+          \ is deprecated and will be removed in the future. See ':h g:termdebug_config' for alternatives.")
+  endif
+
+enddef
 
 # Take a breakpoint number as used by GDB and turn it into an integer.
 # The breakpoint may contain a dot: 123.4 -> 123004
@@ -313,6 +341,7 @@ def StartDebug_internal(dict: dict<any>)
   if !SanityCheck()
     return
   endif
+  DeprecationWarnings()
 
   if exists('#User#TermdebugStartPre')
     doauto <nomodeline> User TermdebugStartPre
