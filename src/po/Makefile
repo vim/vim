@@ -12,7 +12,7 @@ include $(PO_BASEDIR)/Make_all.mak
 
 PACKAGE = vim
 SHELL = /bin/sh
-VIM = $(PO_BASEDIR)/../vim
+VIMPROG = $(PO_BASEDIR)/../vim
 
 # MacOS sed is locale aware, set $LANG to avoid problems.
 SED = LANG=C sed
@@ -41,7 +41,7 @@ converted: $(MOCONVERTED)
 	$(MSGFMTCMD) -o $@ $<
 
 .po.ck:
-	$(VIM) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
+	$(VIMPROG) -u NONE --noplugins -e -s -X --cmd "set enc=utf-8" -S check.vim \
 		-c "if error == 0 | q | else | num 2 | cq | endif" $<
 	touch $@
 
@@ -262,13 +262,13 @@ PO_INPUTLIST = \
 
 $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Convert the Vim scripts to (what looks like) Javascript.
-	$(VIM) -u NONE --not-a-term -S $(PO_BASEDIR)/tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S $(PO_BASEDIR)/tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	# Create vim.pot.
 	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
 		$(XGETTEXT_KEYWORDS) $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
 	# Fix Vim scripts names, so that "gf" works.
-	$(VIM) -u NONE --not-a-term -S $(PO_BASEDIR)/fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIMPROG) -u NONE --not-a-term -S $(PO_BASEDIR)/fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	# Delete the temporary files.
 	rm *.js
 
