@@ -10871,4 +10871,21 @@ def Test_class_member_init_typecheck()
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 6)
 enddef
 
+def Test_class_cast()
+  var lines =<< trim END
+    vim9script
+    class A
+    endclass
+    class B extends A
+      var mylen: number
+    endclass
+    def F(o: A): number
+      return (<B>o).mylen
+    enddef
+
+    defcompile F
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
