@@ -2246,6 +2246,47 @@ def Test_class_object_to_string()
     assert_equal("object of TextPosition {lnum: 1, col: 22}", string(pos))
   END
   v9.CheckSourceSuccess(lines)
+
+  # check string() with object nesting
+  lines =<< trim END
+    vim9script
+    class C
+        var nest1: C
+        var nest2: C
+        def Init(n1: C, n2: C)
+            this.nest1 = n1
+            this.nest2 = n2
+        enddef
+    endclass
+
+    var o1 = C.new()
+    var o2 = C.new()
+    o1.Init(o1, o2)
+    o2.Init(o2, o1)
+
+    # The following previously put's vim into an infinite loop.
+
+    var expect = "object of C {nest1: object of C {...}, nest2: object of C {nest1: object of C {...}, nest2: object of C {...}}}"
+    assert_equal(expect, string(o1))
+  END
+  v9.CheckSourceSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+
+    class B
+    endclass
+
+    class C
+        var b: B
+        var c: C
+    endclass
+
+    var o1 = C.new(B.new(), C.new(B.new()))
+    var expect = "object of C {b: object of B {}, c: object of C {b: object of B {}, c: object of [unknown]}}"
+    assert_equal(expect, string(o1))
+  END
+  v9.CheckSourceSuccess(lines)
 enddef
 
 def Test_interface_basics()
@@ -10514,6 +10555,27 @@ def Test_Object_Compare_With_Recursive_Class_Ref()
 
     var result = o1 == o2
     assert_equal(false, result)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class C
+        var nest1: C
+        var nest2: C
+        def Init(n1: C, n2: C)
+            this.nest1 = n1
+            this.nest2 = n2
+        enddef
+    endclass
+
+    var o1 = C.new()
+    var o2 = C.new()
+    o1.Init(o1, o2)
+    o2.Init(o2, o1)
+
+    var result = o1 == o2
+    assert_equal(true, result)
   END
   v9.CheckScriptSuccess(lines)
 enddef
