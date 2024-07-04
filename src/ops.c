@@ -2817,9 +2817,7 @@ do_addsub(
 		&& !do_unsigned)
 	{
 	    if (do_blank && col >= 2 && !VIM_ISWHITE(ptr[col - 2]))
-	    {
 		blank_unsigned = TRUE;
-	    }
 	    else
 	    {
 		negative = TRUE;
@@ -2886,9 +2884,7 @@ do_addsub(
 		&& !do_unsigned)
 	{
 	    if (do_blank && col >= 2 && !VIM_ISWHITE(ptr[col - 2]))
-	    {
 		blank_unsigned = TRUE;
-	    }
 	    else
 	    {
 		// negative number
