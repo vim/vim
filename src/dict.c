@@ -1222,8 +1222,7 @@ dict_lookup(hashitem_T *hi)
 dict_equal(
     dict_T	*d1,
     dict_T	*d2,
-    int		ic,	    // ignore case for strings
-    int		recursive)  // TRUE when used recursively
+    int		ic)	    // ignore case for strings
 {
     hashitem_T	*hi;
     dictitem_T	*item2;
@@ -1247,7 +1246,7 @@ dict_equal(
 	    item2 = dict_find(d2, hi->hi_key, -1);
 	    if (item2 == NULL)
 		return FALSE;
-	    if (!tv_equal(&HI2DI(hi)->di_tv, &item2->di_tv, ic, recursive))
+	    if (!tv_equal(&HI2DI(hi)->di_tv, &item2->di_tv, ic))
 		return FALSE;
 	    --todo;
 	}
@@ -1275,7 +1274,7 @@ dict_count(dict_T *d, typval_T *needle, int ic)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    --todo;
-	    if (tv_equal(&HI2DI(hi)->di_tv, needle, ic, FALSE))
+	    if (tv_equal(&HI2DI(hi)->di_tv, needle, ic))
 		++n;
 	}
     }
