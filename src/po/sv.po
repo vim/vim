@@ -261,8 +261,8 @@ msgstr " Användardefinierad komplettering (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omnikomplettering (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Stavningsförslag (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Stavningsförslag (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokal nyckelordskomplettering (^N^P)"

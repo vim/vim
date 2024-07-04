@@ -298,8 +298,8 @@ msgstr "Dope³nianie zdefiniowane przez u¿ytkownika (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omni uzupe³nianie (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr "Propozycja pisowni (^L^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr "Propozycja pisowni (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokalne dope³nianie s³ów kluczowych (^N^P)"

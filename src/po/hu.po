@@ -264,8 +264,8 @@ msgstr " Felhasználó által definiált kiegészítés (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omni kiegészítés (^O^N^P)"
 
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Helyesírási javaslat (s^N^P)"
+msgid " Spelling suggestion (^S^N^P)"
+msgstr " Helyesírási javaslat (^S^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Kulcsszó helyi kiegészítés (^N^P)"
