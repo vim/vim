@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Jun 03
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -511,10 +511,6 @@ Can we add highlighting to ":echowindow"?
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
 spread out.  Make a section with copy/paste examples of script and pointers to
 more information.
-
-Problem that a previous silent ":throw" causes a following try/catch not to
-work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
-Also see #8487 for an example.
 
 Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
