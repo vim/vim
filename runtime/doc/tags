@@ -3742,6 +3742,7 @@ $quote	eval.txt	/*$quote*
 <RightMouse>	visual.txt	/*<RightMouse>*
 <RightRelease>	term.txt	/*<RightRelease>*
 <S-	intro.txt	/*<S-*
+<S-CR>	scroll.txt	/*<S-CR>*
 <S-Del>	os_dos.txt	/*<S-Del>*
 <S-Down>	scroll.txt	/*<S-Down>*
 <S-End>	term.txt	/*<S-End>*
@@ -3761,6 +3762,9 @@ $quote	eval.txt	/*$quote*
 <S-Insert>	os_dos.txt	/*<S-Insert>*
 <S-Left>	motion.txt	/*<S-Left>*
 <S-LeftMouse>	term.txt	/*<S-LeftMouse>*
+<S-Minus>	scroll.txt	/*<S-Minus>*
+<S-NL>	scroll.txt	/*<S-NL>*
+<S-Plus>	scroll.txt	/*<S-Plus>*
 <S-Right>	motion.txt	/*<S-Right>*
 <S-RightMouse>	term.txt	/*<S-RightMouse>*
 <S-ScrollWheelDown>	scroll.txt	/*<S-ScrollWheelDown>*
@@ -3942,6 +3946,7 @@ CTRL-O	motion.txt	/*CTRL-O*
 CTRL-P	motion.txt	/*CTRL-P*
 CTRL-Q	gui_w32.txt	/*CTRL-Q*
 CTRL-R	undo.txt	/*CTRL-R*
+CTRL-SHIFT-CR	scroll.txt	/*CTRL-SHIFT-CR*
 CTRL-T	tagsrch.txt	/*CTRL-T*
 CTRL-U	scroll.txt	/*CTRL-U*
 CTRL-U-changed	version6.txt	/*CTRL-U-changed*
@@ -5690,6 +5695,8 @@ Ruby	if_ruby.txt	/*Ruby*
 Russian	russian.txt	/*Russian*
 S	change.txt	/*S*
 SHELL	starting.txt	/*SHELL*
+SHIFT-+	scroll.txt	/*SHIFT-+*
+SHIFT-MINUS	scroll.txt	/*SHIFT-MINUS*
 SQLGetType	ft_sql.txt	/*SQLGetType*
 SQLSetType	ft_sql.txt	/*SQLSetType*
 SafeState	autocmd.txt	/*SafeState*
