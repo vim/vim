@@ -321,6 +321,9 @@ au BufNewFile,BufRead *.toc
 " Cdrdao config
 au BufNewFile,BufRead */etc/cdrdao.conf,*/etc/defaults/cdrdao,*/etc/default/cdrdao,.cdrdao	setf cdrdaoconf
 
+" Cedar
+au BufNewFile,BufRead *.cedar			setf cedar
+
 " Cfengine
 au BufNewFile,BufRead cfengine.conf		setf cfengine
 
