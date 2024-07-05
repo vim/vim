@@ -143,6 +143,10 @@ func RunTest()
       call delete('done/' .. root)
 
       let lines =<< trim END
+	" Track the cursor progress through a syntax test file so that any
+	" degenerate input can be reported.  Each file will have its own cursor.
+	let s:cursor = 1
+
 	" extra info for shell variables
 	func ShellInfo()
 	  let msg = ''
@@ -191,9 +195,25 @@ func RunTest()
 	  redraw!
 	endfunc
 
-	def ScrollToSecondPage(estate: number, op_wh: number, op_so: number)
+	def s:AssertCursorForwardProgress(): bool
+	  const curnum: number = line('.')
+	  if curnum <= cursor
+	    # Use "actions/upload-artifact@v4" of ci.yml for delivery.
+	    writefile([printf('No cursor progress: %d <= %d (%s).  Please file an issue.',
+		  curnum,
+		  cursor,
+		  bufname('%'))],
+	      'failed/00-FIXME',
+	      'a')
+	    bwipeout!
+	  endif
+	  cursor = curnum
+	  return true
+	enddef
+
+	def ScrollToSecondPage(estate: number, op_wh: number, op_so: number): bool
 	  if line('.') != 1 || line('w$') >= line('$')
-	    return
+	    return AssertCursorForwardProgress()
 	  endif
 	  try
 	    set scrolloff=0
@@ -203,7 +223,7 @@ func RunTest()
 		(strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
 	      # Make for an exit for a screenful long line.
 	      norm! j^
-	      return
+	      return AssertCursorForwardProgress()
 	    else
 	      # Place the cursor on the actually last visible line.
 	      while winline() < op_wh
@@ -220,11 +240,12 @@ func RunTest()
 	    &scrolloff = max([1, op_so])
 	  endtry
 	  norm! ^
+	  return AssertCursorForwardProgress()
 	enddef
 
-	def ScrollToNextPage(estate: number, op_wh: number, op_so: number)
+	def ScrollToNextPage(estate: number, op_wh: number, op_so: number): bool
 	  if line('.') == 1 || line('w$') >= line('$')
-	    return
+	    return AssertCursorForwardProgress()
 	  endif
 	  try
 	    set scrolloff=0
@@ -234,7 +255,7 @@ func RunTest()
 		(strdisplaywidth(getline('.')) + &l:fdc * winheight(1)) >= estate
 	      # Make for an exit for a screenful long line.
 	      norm! j^
-	      return
+	      return AssertCursorForwardProgress()
 	    else
 	      # Place the cursor on the actually last visible line.
 	      while winline() < op_wh
@@ -271,6 +292,7 @@ func RunTest()
 	    endif
 	  endif
 	  norm! ^
+	  return AssertCursorForwardProgress()
 	enddef
       END
       call writefile(lines, 'Xtestscript')
@@ -319,32 +341,36 @@ func RunTest()
       let root_next = printf('%s_%02d', root, nr)
       let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
 
-      if !IsWinNumOneAtEOF(in_name_and_out_name)
-	call term_sendkeys(buf, ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
-	call ch_log('Next screendump for ' .. in_name_and_out_name)
-	let fail += VerifyScreenDump(buf, root_next, {})
-	let nr += 1
-	let root_next = printf('%s_%02d', root, nr)
-	let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
-
-	while !IsWinNumOneAtEOF(in_name_and_out_name)
-	  call term_sendkeys(buf, ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
+      " Accommodate the next code block to "buf"'s contingency for self
+      " wipe-out.
+      try
+	if !IsWinNumOneAtEOF(in_name_and_out_name)
+	  call term_sendkeys(buf, ":call ScrollToSecondPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
 	  call ch_log('Next screendump for ' .. in_name_and_out_name)
 	  let fail += VerifyScreenDump(buf, root_next, {})
 	  let nr += 1
 	  let root_next = printf('%s_%02d', root, nr)
 	  let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
-	endwhile
-      endif
 
-      " Screendump at the end of the file: failed/root_99.dump
-      call term_sendkeys(buf, 'Gzb')
-      let root_last = root .. '_99'
-      call ch_log('Last screendump for ' .. fname .. ': failed/' .. root_last .. '.dump')
-      let fail += VerifyScreenDump(buf, root_last, {})
+	  while !IsWinNumOneAtEOF(in_name_and_out_name)
+	    call term_sendkeys(buf, ":call ScrollToNextPage((18 * 75 + 1), 19, 5) | redraw!\<CR>")
+	    call ch_log('Next screendump for ' .. in_name_and_out_name)
+	    let fail += VerifyScreenDump(buf, root_next, {})
+	    let nr += 1
+	    let root_next = printf('%s_%02d', root, nr)
+	    let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
+	  endwhile
+	endif
 
-      call StopVimInTerminal(buf)
-      call delete('Xtestscript')
+	" Screendump at the end of the file: failed/root_99.dump
+	call term_sendkeys(buf, 'Gzb')
+	let root_last = root .. '_99'
+	call ch_log('Last screendump for ' .. fname .. ': failed/' .. root_last .. '.dump')
+	let fail += VerifyScreenDump(buf, root_last, {})
+	call StopVimInTerminal(buf)
+      finally
+	call delete('Xtestscript')
+      endtry
 
       " redraw here to avoid the following messages to get mixed up with screen
       " output.
