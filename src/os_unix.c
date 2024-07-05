@@ -7740,7 +7740,10 @@ mch_get_random(char_u *buf, int len)
     if (fd == -1)
 	dev_urandom_state = FAIL;
     else if (read(fd, buf, len) == len)
+    {
 	dev_urandom_state = OK;
+	close(fd);
+    }
     else
     {
 	dev_urandom_state = FAIL;
