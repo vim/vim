@@ -10580,6 +10580,103 @@ def Test_Object_Compare_With_Recursive_Class_Ref()
   v9.CheckScriptSuccess(lines)
 enddef
 
+" Test for comparing a class with nesting objects
+def Test_Object_Compare_With_Nesting_Objects()
+  # On a compare, after vim equal recurses 1000 times, not finding an unequal,
+  # return the compare is equal.
+  # Test that limit
+
+  var lines =<< trim END
+    vim9script
+    class C
+      public var n: number
+      public var nest: C
+
+      # Create a "C" that chains/nests to indicated depth.
+      # return {head: firstC, tail: lastC}
+      static def CreateNested(depth: number): dict<C>
+        var first = C.new(1, null_object)
+        var last = first
+        for i in range(2, depth)
+          last.nest = C.new(i, null_object)
+          last = last.nest
+        endfor
+        return {head: first, tail: last}
+      enddef
+
+      # Return pointer to nth item in chain.
+      def GetLink(depth: number): C
+        var count = 1
+        var p: C = this
+        while count < depth
+          p = p.nest
+          if p == null
+            throw "too deep"
+          endif
+          count += 1
+        endwhile
+        return p
+      enddef
+
+      # Return the length of the chain
+      def len(): number
+        var count = 1
+        var p: C = this
+        while p.nest != null
+          p = p.nest
+          count += 1
+        endwhile
+        return count
+      enddef
+    endclass
+
+    var chain = C.CreateNested(3)
+    var s = "object of C {n: 1, nest: object of C {n: 2, nest: object of C {n: 3, nest: object of [unknown]}}}"
+    assert_equal(s, string(chain.head))
+    assert_equal(3, chain.head->len())
+
+    var chain1 = C.CreateNested(100)
+    var chain2 = C.CreateNested(100)
+    assert_true(chain1.head == chain2.head)
+
+    # modify the tail of chain2, compare not equal
+    chain2.tail.n = 123456
+    assert_true(chain1.head != chain2.head)
+
+    # a tail of a different length compares not equal
+    chain2 = C.CreateNested(101)
+    assert_true(chain1.head != chain2.head)
+
+    chain1 = C.CreateNested(1000)
+    chain2 = C.CreateNested(1000)
+    assert_true(chain1.head == chain2.head)
+
+    # modify the tail of chain2, compare not equal
+    chain2.tail.n = 123456
+    assert_true(chain1.head != chain2.head)
+
+    # try a chain longer that the limit
+    chain1 = C.CreateNested(1001)
+    chain2 = C.CreateNested(1001)
+    assert_true(chain1.head == chain2.head)
+
+    # modify the tail, but still equal
+    chain2.tail.n = 123456
+    assert_true(chain1.head == chain2.head)
+
+    # remove 2 items from front, shorten the chain by two.
+    chain1.head = chain1.head.GetLink(3)
+    chain2.head = chain2.head.GetLink(3)
+    assert_equal(3, chain1.head.n)
+    assert_equal(3, chain2.head.n)
+    assert_equal(999, chain1.head->len())
+    assert_equal(999, chain2.head->len())
+    # Now less than the limit, compare not equal
+    assert_true(chain1.head != chain2.head)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Test for using a compound operator from a lambda function in an object method
 def Test_compound_op_in_objmethod_lambda()
   # Test using the "+=" operator
