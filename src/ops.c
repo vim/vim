@@ -2673,6 +2673,8 @@ do_addsub(
     int		do_bin;
     int		do_alpha;
     int		do_unsigned;
+    int		do_blank;
+    int		blank_unsigned = FALSE;	// blank: treat as unsigned?
     int		firstdigit;
     int		subtract;
     int		negative = FALSE;
@@ -2690,6 +2692,7 @@ do_addsub(
     do_bin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
     do_alpha = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
     do_unsigned = (vim_strchr(curbuf->b_p_nf, 'u') != NULL);	// "Unsigned"
+    do_blank = (vim_strchr(curbuf->b_p_nf, 'k') != NULL);	// "blanK"
 
     if (virtual_active())
     {
@@ -2813,8 +2816,13 @@ do_addsub(
 		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1))
 		&& !do_unsigned)
 	{
-	    negative = TRUE;
-	    was_positive = FALSE;
+	    if (do_blank && col >= 2 && !VIM_ISWHITE(ptr[col - 2]))
+		blank_unsigned = TRUE;
+	    else
+	    {
+		negative = TRUE;
+		was_positive = FALSE;
+	    }
 	}
     }
 
@@ -2875,10 +2883,16 @@ do_addsub(
 		&& !visual
 		&& !do_unsigned)
 	{
-	    // negative number
-	    --col;
-	    negative = TRUE;
+	    if (do_blank && col >= 2 && !VIM_ISWHITE(ptr[col - 2]))
+		blank_unsigned = TRUE;
+	    else
+	    {
+		// negative number
+		--col;
+		negative = TRUE;
+	    }
 	}
+
 	// get the number value (unsigned)
 	if (visual && VIsual_mode != 'V')
 	    maxlen = (curbuf->b_visual.vi_curswant == MAXCOL
@@ -2938,7 +2952,7 @@ do_addsub(
 		negative = FALSE;
 	}
 
-	if (do_unsigned && negative)
+	if ((do_unsigned || blank_unsigned) && negative)
 	{
 	    if (subtract)
 		// sticking at zero.

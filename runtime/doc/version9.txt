@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jun 20
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41574,6 +41574,8 @@ Changed~
 - the default for 'commentstring' contains whitespace padding to have
   automatic comments look nicer |comment-install|
 - 'completeopt' is now a |global-local| option.
+- 'nrformat' accepts the new "blank" suboption, to determine a signed or
+  unsigned number based on whitespace in front of a minus sign.
 
 							*added-9.2*
 Added ~
