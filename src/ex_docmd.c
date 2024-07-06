@@ -2341,12 +2341,7 @@ do_one_cmd(
     {
 	for (p = ea.arg; *p; ++p)
 	{
-	    // Remove one backslash before a newline, so that it's possible to
-	    // pass a newline to the shell and also a newline that is preceded
-	    // with a backslash.  This makes it impossible to end a shell
-	    // command in a backslash, but that doesn't appear useful.
-	    // Halving the number of backslashes is incompatible with previous
-	    // versions.
+	    // Remove one backslash before a newline
 	    if (*p == '\\' && p[1] == '\n')
 		STRMOVE(p, p + 1);
 	    else if (*p == '\n' && !(ea.argt & EX_EXPR_ARG))
