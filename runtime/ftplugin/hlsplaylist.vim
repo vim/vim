@@ -1,6 +1,7 @@
 " Vim filetype plugin
 " Language:     M3U Playlist
-" Last Change:  2024-07-06 by avidseeker7@protonmail.com
+" Maintainer:	AvidSeeker <avidseeker7@protonmail.com>
+" Last Change:  2024-07-06
 "
 
 if exists("b:did_ftplugin")
