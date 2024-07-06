@@ -256,6 +256,7 @@ au BufNewFile,BufRead named*.conf,rndc*.conf,rndc*.key	setf named
 
 " BIND zone
 au BufNewFile,BufRead named.root		setf bindzone
+au BufNewFile,BufRead *.zone			setf bindzone
 au BufNewFile,BufRead *.db			call dist#ft#BindzoneCheck('')
 
 " Blade

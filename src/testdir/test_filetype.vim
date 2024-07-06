@@ -121,7 +121,7 @@ def s:GetFilenameChecks(): dict<list<string>>
     beancount: ['file.beancount'],
     bib: ['file.bib'],
     bicep: ['file.bicep', 'file.bicepparam'],
-    bindzone: ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file'],
+    bindzone: ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file', 'foobar.zone'],
     bitbake: ['file.bb', 'file.bbappend', 'file.bbclass', 'build/conf/local.conf', 'meta/conf/layer.conf', 'build/conf/bbappend.conf', 'meta-layer/conf/distro/foo.conf'],
     blade: ['file.blade.php'],
     blank: ['file.bl'],
