@@ -182,6 +182,7 @@ runtime/ftplugin/kconfig.vim		@chrisbra
 runtime/ftplugin/kdl.vim		@imsnif @jiangyinzuo
 runtime/ftplugin/kotlin.vim		@udalov
 runtime/ftplugin/less.vim		@genoma
+runtime/ftplugin/lex.vim		@ribru17
 runtime/ftplugin/liquid.vim		@tpope
 runtime/ftplugin/lua.vim		@dkearns
 runtime/ftplugin/lc.vim			@ribru17
