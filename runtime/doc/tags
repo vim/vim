@@ -3946,7 +3946,6 @@ CTRL-O	motion.txt	/*CTRL-O*
 CTRL-P	motion.txt	/*CTRL-P*
 CTRL-Q	gui_w32.txt	/*CTRL-Q*
 CTRL-R	undo.txt	/*CTRL-R*
-CTRL-SHIFT-CR	scroll.txt	/*CTRL-SHIFT-CR*
 CTRL-T	tagsrch.txt	/*CTRL-T*
 CTRL-U	scroll.txt	/*CTRL-U*
 CTRL-U-changed	version6.txt	/*CTRL-U-changed*
