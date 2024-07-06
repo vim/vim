@@ -41576,6 +41576,7 @@ Changed~
 - 'completeopt' is now a |global-local| option.
 - 'nrformat' accepts the new "blank" suboption, to determine a signed or
   unsigned number based on whitespace in front of a minus sign.
+- allow to specify a priority when defining a new sign |:sign-define|
 
 							*added-9.2*
 Added ~
