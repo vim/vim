@@ -4,6 +4,7 @@
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
 " Last Change:	2024 Jun 06 (disabled the q mapping, #8210)
+" 		2024 Jul 06 (use nnoremap, #15130)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.

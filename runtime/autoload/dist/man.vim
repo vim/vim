@@ -4,6 +4,7 @@
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Autoload Split: Bram Moolenaar
 " Last Change: 	2024 Jan 17 (make it work on AIX, see #13847)
+" 		2024 Jul 06 (honor command modifiers, #15117)
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -165,7 +166,9 @@ func dist#man#GetPage(cmdmods, ...)
       endwhile
     endif
     if &filetype != "man"
-      if exists("g:ft_man_open_mode")
+      if a:cmdmods =~ '\<\(tab\|vertical\|horizontal\)\>'
+	let open_cmd = a:cmdmods . ' split'
+      elseif exists("g:ft_man_open_mode")
         if g:ft_man_open_mode == 'vert'
 	  let open_cmd = 'vsplit'
         elseif g:ft_man_open_mode == 'tab'
@@ -174,7 +177,7 @@ func dist#man#GetPage(cmdmods, ...)
 	  let open_cmd = 'split'
         endif
       else
-	let open_cmd = a:cmdmods . ' split'
+	let open_cmd = 'split'
       endif
     endif
   endif
