@@ -1390,7 +1390,6 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	{
 	    arg += 9;
 	    prio = atoi((char *)arg);
-	    arg = skiptowhite(arg);
 	}
 	else
 	{
