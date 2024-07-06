@@ -331,11 +331,6 @@ func RunTest()
       call ch_log('First screendump for ' .. in_name_and_out_name)
       let fail = VerifyScreenDump(buf, root_00, {})
 
-      " Clear the shell info if there are not enough lines to cause a scroll
-      if filetype == 'sh' && IsWinNumOneAtEOF(in_name_and_out_name)
-	call term_sendkeys(buf, ":redraw!\<CR>")
-      endif
-
       " Make a Screendump every 18 lines of the file: failed/root_NN.dump
       let nr = 1
       let root_next = printf('%s_%02d', root, nr)
@@ -361,12 +356,6 @@ func RunTest()
 	    let in_name_and_out_name = fname .. ': failed/' .. root_next .. '.dump'
 	  endwhile
 	endif
-
-	" Screendump at the end of the file: failed/root_99.dump
-	call term_sendkeys(buf, 'Gzb')
-	let root_last = root .. '_99'
-	call ch_log('Last screendump for ' .. fname .. ': failed/' .. root_last .. '.dump')
-	let fail += VerifyScreenDump(buf, root_last, {})
 	call StopVimInTerminal(buf)
       finally
 	call delete('Xtestscript')

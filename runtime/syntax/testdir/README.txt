@@ -6,9 +6,9 @@ highlighting enabled.  Screendumps are generated and compared with the
 expected screendumps in the "dumps" directory.  This will uncover any
 character attributes that differ.
 
-Without any further setup a screendump is made at the top of the file (using
-_00.dump) and another one at the end of the file (using _99.dump).  The dumps
-are normally 20 screen lines tall.
+The dumps are normally 20 screen lines tall.  Without any further setup
+a screendump is made at the top of the file (using _00.dump) and another
+screendump is made if there are more lines (using _01.dump), and so on.
 
 When the screendumps are OK an empty "done/{name}" file is created.  This
 avoids running the test again until "make clean" is used.  Thus you can run
@@ -18,7 +18,7 @@ again to only repeat the failing test.
 When a screendump differs it is stored in the "failed" directory.  This allows
 for comparing it with the expected screendump, using a command like:
 
-	let fname = '{name}_99.dump'
+	let fname = '{name}_00.dump'
 	call term_dumpdiff('failed/' .. fname, 'dumps/' .. fname)
 
 
@@ -74,14 +74,12 @@ newly created screendumps will be "failed/java_00.dump",
 	call term_dumpload('failed/java_00.dump')
 	call term_dumpload('failed/java_01.dump')
 	...
-	call term_dumpload('failed/java_99.dump')
 
 If they look OK, move them to the "dumps" directory:
 
 	:!mv failed/java_00.dump dumps
 	:!mv failed/java_01.dump dumps
 	...
-	:!mv failed/java_99.dump dumps
 
 If you now run the test again, it will succeed.
 
@@ -101,7 +99,7 @@ are covered by the test.  You can follow these steps:
    input file, carefully check that the changes in the screendump are
    intentional:
 
-	let fname = '{name}_99.dump'
+	let fname = '{name}_00.dump'
 	call term_dumpdiff('failed/' .. fname, 'dumps/' .. fname)
 
    Fix the syntax plugin until the result is good.
@@ -117,7 +115,9 @@ are covered by the test.  You can follow these steps:
 	- syntax plugin:    syntax/{name}.vim
 	- Vim setup file:   syntax/testdir/input/setup/{name}.vim (if any)
 	- test input file:  syntax/testdir/input/{name}.{ext}
-	- test dump files:  syntax/testdir/dumps/{name}_99.dump
+	- test dump files:  syntax/testdir/dumps/{name}_00.dump
+			    syntax/testdir/dumps/{name}_01.dump (if any)
+			    ...
 
 As an extra check you can temporarily put back the old syntax plugin and
 verify that the tests fail.  Then you know your changes are covered by the
