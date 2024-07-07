@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jun 21
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -915,12 +915,12 @@ FilterWritePre			Before writing a file for a filter command or
 							*FocusGained*
 FocusGained			When Vim got input focus.  Only for the GUI
 				version and a few console versions where this
-				can be detected.
+				can be detected. |xterm-focus-event|
 							*FocusLost*
 FocusLost			When Vim lost input focus.  Only for the GUI
 				version and a few console versions where this
-				can be detected.  May also happen when a
-				dialog pops up.
+				can be detected. |xterm-focus-event|
+				May also happen when a dialog pops up.
 							*FuncUndefined*
 FuncUndefined			When a user function is used but it isn't
 				defined.  Useful for defining a function only
