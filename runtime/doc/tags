@@ -7268,6 +7268,7 @@ ft-context-settings	ft_context.txt	/*ft-context-settings*
 ft-cpp-syntax	syntax.txt	/*ft-cpp-syntax*
 ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
+ft-csv-syntax	syntax.txt	/*ft-csv-syntax*
 ft-cweb-syntax	syntax.txt	/*ft-cweb-syntax*
 ft-cynlib-syntax	syntax.txt	/*ft-cynlib-syntax*
 ft-dart-syntax	syntax.txt	/*ft-dart-syntax*
