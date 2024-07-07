@@ -118,6 +118,7 @@ runtime/ftplugin/cfg.vim		@chrisbra
 runtime/ftplugin/chatito.vim		@ObserverOfTime
 runtime/ftplugin/chicken.vim		@evhan
 runtime/ftplugin/clojure.vim		@axvr
+runtime/ftplugin/cmakecache.vim		@ribru17
 runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
