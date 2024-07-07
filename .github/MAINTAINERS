@@ -239,6 +239,7 @@ runtime/ftplugin/snakemake.vim		@ribru17
 runtime/ftplugin/solidity.vim		@cothi
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/squirrel.vim		@ribru17
 runtime/ftplugin/ssa.vim		@ObserverOfTime
 runtime/ftplugin/sshdconfig.vim		@jiangyinzuo
 runtime/ftplugin/svelte.vim		@igorlfs
