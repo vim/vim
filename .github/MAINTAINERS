@@ -267,6 +267,7 @@ runtime/ftplugin/wget2.vim		@dkearns
 runtime/ftplugin/xcompose.vim		@ObserverOfTime
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/xs.vim			@petdance
+runtime/ftplugin/yacc.vim		@ribru17
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/import/dist/vimhighlight.vim	@lacygoill
 runtime/indent/arduino.vim		@k-takata
