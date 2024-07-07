@@ -346,4 +346,11 @@ func Test_backslash_multiline()
   call assert_equal(["", "enum"], getline(1, 2))
 endfunc
 
+" Test using backslash in ex-mode after patch 9.1.0535
+func Test_backslash_multiline2()
+  new
+  call feedkeys('QaX \\Y.', "xt")
+  call assert_equal(['X \\', "Y"], getline(1, 2))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
