@@ -5923,6 +5923,37 @@ func_tv2string(typval_T *tv, char_u **tofree, int echo_style)
 }
 
 /*
+ * Return a textual representation of the object method in "tv", a VAR_PARTIAL.
+ * If the memory is allocated "tofree" is set to it, otherwise NULL.
+ * When "echo_style" is FALSE, put quotes around the function name as
+ * "function()", otherwise does not put quotes around function name.
+ * May return NULL.
+ */
+    static char_u *
+method_tv2string(typval_T *tv, char_u **tofree, int echo_style)
+{
+    char_u	buf[MAX_FUNC_NAME_LEN];
+    partial_T	*pt = tv->vval.v_partial;
+
+    size_t len = vim_snprintf((char *)buf, sizeof(buf), "<SNR>%d_%s.%s",
+			   pt->pt_func->uf_script_ctx.sc_sid,
+			   pt->pt_func->uf_class->class_name,
+			   pt->pt_func->uf_name);
+    if (len >= sizeof(buf))
+    {
+	if (echo_style)
+	{
+	    *tofree = NULL;
+	    return (char_u *)"function()";
+	}
+	else
+	    return *tofree = string_quote((char_u*)"", TRUE);
+    }
+
+    return *tofree = echo_style ? vim_strsave(buf) : string_quote(buf, TRUE);
+}
+
+/*
  * Return a textual representation of a partial in "tv".
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.  May return NULL.
@@ -6241,7 +6272,11 @@ echo_string_core(
 	    break;
 
 	case VAR_PARTIAL:
-	    r = partial_tv2string(tv, tofree, numbuf, copyID);
+	    if (tv->vval.v_partial == NULL
+		    || tv->vval.v_partial->pt_obj == NULL)
+		r = partial_tv2string(tv, tofree, numbuf, copyID);
+	    else
+		r = method_tv2string(tv, tofree, echo_style);
 	    break;
 
 	case VAR_BLOB:

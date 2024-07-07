@@ -10466,6 +10466,20 @@ func Test_object_string()
   call v9.CheckSourceSuccess(lines)
 endfunc
 
+" Test for using the string() builtin method with an object's method
+def Test_method_string()
+  var lines =<< trim END
+    vim9script
+    class A
+      def F()
+      enddef
+    endclass
+    assert_match('function(''<SNR>\d\+_A\.F'')', string(A.new().F))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+
 " Test for using a class in the class definition
 def Test_Ref_Class_Within_Same_Class()
   var lines =<< trim END
