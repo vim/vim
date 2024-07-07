@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:     M3U Playlist
 " Maintainer:	AvidSeeker <avidseeker7@protonmail.com>
-" Last Change:  2024-07-06
+" Last Change:  2024 Jul 07
 "
 
 if exists("b:did_ftplugin")
@@ -9,6 +9,10 @@ if exists("b:did_ftplugin")
 endif
 
 setlocal commentstring=#%s
+
+if exists('b:undo_ftplugin')
+  let b:undo_ftplugin .= "|setl commentstring<"
+endif
 
 function! M3UFold() abort
   let line = getline(v:lnum)
@@ -30,4 +34,5 @@ if has("folding")
   setlocal foldexpr=M3UFold()
   setlocal foldmethod=expr
   setlocal foldtext=M3UFoldText()
+  let b:undo_ftplugin .= "|setl foldexpr< foldmethod< foldtext<"
 endif
