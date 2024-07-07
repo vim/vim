@@ -11,9 +11,7 @@ let g:did_ftplugin = 1
 
 setlocal commentstring=#%s
 
-if exists('b:undo_ftplugin')
-  let b:undo_ftplugin .= "|setl commentstring<"
-endif
+let b:undo_ftplugin = "setl commentstring<"
 
 function! M3UFold() abort
   let line = getline(v:lnum)
