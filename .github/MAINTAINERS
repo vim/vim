@@ -173,6 +173,7 @@ runtime/ftplugin/indent.vim		@dkearns
 runtime/ftplugin/ishd.vim		@dkearns
 runtime/ftplugin/j.vim			@glts
 runtime/ftplugin/java.vim		@zzzyxwvut
+runtime/ftplugin/javacc.vim		@ribru17
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/jj.vim			@gpanders
