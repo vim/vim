@@ -46,6 +46,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_COLORS
 	    && xp->xp_context != EXPAND_COMPILER
 	    && xp->xp_context != EXPAND_DIRECTORIES
+	    && xp->xp_context != EXPAND_DIRS_IN_CDPATH
 	    && xp->xp_context != EXPAND_FILES
 	    && xp->xp_context != EXPAND_FILES_IN_PATH
 	    && xp->xp_context != EXPAND_FILETYPE
@@ -107,7 +108,8 @@ wildescape(
 	    || xp->xp_context == EXPAND_FILES_IN_PATH
 	    || xp->xp_context == EXPAND_SHELLCMD
 	    || xp->xp_context == EXPAND_BUFFERS
-	    || xp->xp_context == EXPAND_DIRECTORIES)
+	    || xp->xp_context == EXPAND_DIRECTORIES
+	    || xp->xp_context == EXPAND_DIRS_IN_CDPATH)
     {
 	// Insert a backslash into a file name before a space, \, %, #
 	// and wildmatch characters, except '~'.
@@ -1404,7 +1406,8 @@ addstar(
     if (context != EXPAND_FILES
 	    && context != EXPAND_FILES_IN_PATH
 	    && context != EXPAND_SHELLCMD
-	    && context != EXPAND_DIRECTORIES)
+	    && context != EXPAND_DIRECTORIES
+	    && context != EXPAND_DIRS_IN_CDPATH)
     {
 	// Matching will be done internally (on something other than files).
 	// So we convert the file-matching-type wildcards into our kind for
@@ -2138,7 +2141,7 @@ set_context_by_cmdname(
 	case CMD_lcd:
 	case CMD_lchdir:
 	    if (xp->xp_context == EXPAND_FILES)
-		xp->xp_context = EXPAND_DIRECTORIES;
+		xp->xp_context = EXPAND_DIRS_IN_CDPATH;
 	    break;
 	case CMD_help:
 	    xp->xp_context = EXPAND_HELP;
@@ -2845,6 +2848,8 @@ expand_files_and_dirs(
 	flags |= EW_FILE;
     else if (xp->xp_context == EXPAND_FILES_IN_PATH)
 	flags |= (EW_FILE | EW_PATH);
+    else if (xp->xp_context == EXPAND_DIRS_IN_CDPATH)
+	flags = (flags | EW_DIR | EW_CDPATH) & ~EW_FILE;
     else
 	flags = (flags | EW_DIR) & ~EW_FILE;
     if (options & WILD_ICASE)
@@ -3098,7 +3103,8 @@ ExpandFromContext(
 
     if (xp->xp_context == EXPAND_FILES
 	    || xp->xp_context == EXPAND_DIRECTORIES
-	    || xp->xp_context == EXPAND_FILES_IN_PATH)
+	    || xp->xp_context == EXPAND_FILES_IN_PATH
+	    || xp->xp_context == EXPAND_DIRS_IN_CDPATH)
 	return expand_files_and_dirs(xp, pat, matches, numMatches, flags,
 								options);
 

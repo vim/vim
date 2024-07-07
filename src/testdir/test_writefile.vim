@@ -17,6 +17,11 @@ func Test_writefile()
   call assert_equal("morning", l[3])
   call assert_equal("vimmers", l[4])
 
+  call writefile(["hello"], "Xtest/foo", "p")
+  call assert_true(isdirectory("Xtest"))
+  call assert_equal(["hello"], readfile("Xtest/foo"))
+  call delete("Xtest", "rf")
+
   call assert_fails('call writefile("text", "Xwffile")', 'E475: Invalid argument: writefile() first argument must be a List or a Blob')
 endfunc
 

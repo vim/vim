@@ -12,7 +12,7 @@ char_u *file_name_at_cursor(int options, long count, linenr_T *file_lnum);
 char_u *file_name_in_line(char_u *line, int col, int options, long count, char_u *rel_fname, linenr_T *file_lnum);
 char_u *find_file_name_in_path(char_u *ptr, int len, int options, long count, char_u *rel_fname);
 int vim_ispathlistsep(int c);
-void uniquefy_paths(garray_T *gap, char_u *pattern);
+void uniquefy_paths(garray_T *gap, char_u *pattern, char_u *path_option);
 int expand_in_path(garray_T *gap, char_u *pattern, int flags);
 void simplify_filename(char_u *filename);
 void f_simplify(typval_T *argvars, typval_T *rettv);
