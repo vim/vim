@@ -20,7 +20,8 @@ SCRIPTS_TINY = \
 	test24 \
 	test25 \
 	test26 \
-	test27
+	test27 \
+	test28
 
 SCRIPTS_TINY_OUT = \
 	test10.out \
@@ -31,7 +32,8 @@ SCRIPTS_TINY_OUT = \
 	test24.out \
 	test25.out \
 	test26.out \
-	test27.out
+	test27.out \
+	test28.out
 
 # Tests for Vim9 script.
 TEST_VIM9 = \
