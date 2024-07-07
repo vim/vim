@@ -248,6 +248,7 @@ runtime/ftplugin/swig.vim		@jmarrec
 runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
 runtime/ftplugin/terraform.vim		@JannoTjarks
+runtime/ftplugin/tf.vim			@ribru17
 runtime/ftplugin/tidy.vim		@dkearns
 runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/toml.vim		@averms

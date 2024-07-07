@@ -2461,10 +2461,10 @@ au BufNewFile,BufRead *.thrift			setf thrift
 " Tidy config
 au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 
-" TF mud client
+" TF (TinyFugue) mud client
 au BufNewFile,BufRead .tfrc,tfrc		setf tf
 
-" TF mud client or terraform
+" TF (TinyFugue) mud client or terraform
 au BufNewFile,BufRead *.tf			call dist#ft#FTtf()
 
 " TLA+
