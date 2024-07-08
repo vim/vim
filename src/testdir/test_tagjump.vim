@@ -960,10 +960,10 @@ func Test_tag_stack()
 
   " References to wiped buffer are deleted.
   for i in range(10, 20)
-    enew! Xtest
+    edit Xtest
     exe "tag var" .. i
   endfor
-  enew! Xtest
+  edit Xtest
 
   let t = gettagstack()
   call assert_equal(11, t.length)
