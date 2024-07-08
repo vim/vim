@@ -3611,6 +3611,15 @@ get({func}, {what})
 			"func"	The function
 			"dict"	The dictionary
 			"args"	The list with arguments
+			"arity"	A dictionary with information about the number of
+				arguments accepted by the function with the following
+				fields:
+				    required	The number of positional arguments.
+				    optional	The number of optional arguments, in
+						addition to the required ones.
+				    varargs	|TRUE| if the function accepts a variable
+						number of arguments. See |...|.
+
 		Returns zero on error.
 		Preferably used as a |method|: >
 			myfunc->get(what)
