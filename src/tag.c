@@ -144,7 +144,6 @@ static void print_tag_list(int new_tag, int use_tagstack, int num_matches, char_
 #if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
 static int add_llist_tags(char_u *tag, int num_matches, char_u **matches);
 #endif
-static void tagstack_clear_entry(taggy_T *item);
 
 static char_u	*tagmatchname = NULL;	// name of last used tag
 
@@ -4233,7 +4232,7 @@ find_extra(char_u **pp)
 /*
  * Free a single entry in a tag stack
  */
-    static void
+    void
 tagstack_clear_entry(taggy_T *item)
 {
     VIM_CLEAR(item->tagname);
