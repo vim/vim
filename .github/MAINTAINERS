@@ -107,7 +107,7 @@ runtime/compiler/zsh.vim		@dkearns
 runtime/doc/ft_hare.txt			@selenebun
 runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/abaqus.vim		@costerwi
-runtime/ftplugin/apache.vim		@dubgeiser 
+runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
 runtime/ftplugin/awk.vim		@dkearns
@@ -165,6 +165,7 @@ runtime/ftplugin/hare.vim		@selenebun
 runtime/ftplugin/haredoc.vim		@selenebun
 runtime/ftplugin/heex.vim		@cvincent
 runtime/ftplugin/hgcommit.vim		@k-takata
+runtime/ftplugin/hlsplaylist.vim		@avidseeker
 runtime/ftplugin/hog.vim		@wtfbbqhax
 runtime/ftplugin/html.vim		@dkearns
 runtime/ftplugin/hyprlang.vim		@ribru17
