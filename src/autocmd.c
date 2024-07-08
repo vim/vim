@@ -155,6 +155,7 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_INSERTENTER, "InsertEnter"),
     KEYVALUE_ENTRY(EVENT_INSERTLEAVE, "InsertLeave"),
     KEYVALUE_ENTRY(EVENT_INSERTLEAVEPRE, "InsertLeavePre"),
+    KEYVALUE_ENTRY(EVENT_KEYINPUTPRE, "KeyInutPre"),
     KEYVALUE_ENTRY(EVENT_MENUPOPUP, "MenuPopup"),
     KEYVALUE_ENTRY(EVENT_MODECHANGED, "ModeChanged"),
     KEYVALUE_ENTRY(EVENT_OPTIONSET, "OptionSet"),
@@ -2019,6 +2020,15 @@ has_textchangedP(void)
 has_insertcharpre(void)
 {
     return (first_autopat[(int)EVENT_INSERTCHARPRE] != NULL);
+}
+
+/*
+ * Return TRUE when there is an KeyInputPre autocommand defined.
+ */
+    int
+has_keyinputpre(void)
+{
+    return (first_autopat[(int)EVENT_KEYINPUTPRE] != NULL);
 }
 
 /*

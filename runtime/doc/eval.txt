@@ -1995,7 +1995,8 @@ v:beval_winid	The |window-ID| of the window, over which the mouse pointer
 					*v:char* *char-variable*
 v:char		Argument for evaluating 'formatexpr' and used for the typed
 		character when using <expr> in an abbreviation |:map-<expr>|.
-		It is also used by the |InsertCharPre| and |InsertEnter| events.
+		It is also used by the |InsertCharPre|, |InsertEnter| and
+		|KeyInputPre| events.
 
 			*v:charconvert_from* *charconvert_from-variable*
 v:charconvert_from

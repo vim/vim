@@ -977,6 +977,14 @@ InsertLeavePre			Just before leaving Insert mode.  Also when
 							*InsertLeave*
 InsertLeave			Just after leaving Insert mode.  Also when
 				using CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.
+							*KeyInputPre*
+KeyInputPre			When a key is typed.
+				The |v:char| variable indicates the key typed
+				and can be changed during the event to input
+				a different key.  When |v:char| is not one
+				character, it is ignored.
+				It is not allowed to change the text
+				|textlock|.
 							*MenuPopup*
 MenuPopup			Just before showing the popup menu (under the
 				right mouse button).  Useful for adjusting the

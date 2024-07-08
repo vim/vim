@@ -5554,6 +5554,7 @@ Jobs	eval.txt	/*Jobs*
 K	various.txt	/*K*
 KDE	gui_x11.txt	/*KDE*
 KVim	gui_x11.txt	/*KVim*
+KeyInputPre	autocmd.txt	/*KeyInputPre*
 Kibaale	uganda.txt	/*Kibaale*
 Korean	mbyte.txt	/*Korean*
 L	motion.txt	/*L*

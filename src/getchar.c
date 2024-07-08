@@ -96,6 +96,9 @@ static void	closescript(void);
 static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
+#ifdef FEAT_EVAL
+static int	do_key_input_pre(int c);
+#endif
 
 /*
  * Free and clear a buffer.
@@ -2130,6 +2133,10 @@ vgetc(void)
     }
 #endif
 
+#ifdef FEAT_EVAL
+    c = do_key_input_pre(c);
+#endif
+
     // Need to process the character before we know it's safe to do something
     // else.
     if (c != K_IGNORE)
@@ -2137,6 +2144,56 @@ vgetc(void)
 
     return c;
 }
+
+#ifdef FEAT_EVAL
+/*
+ * Handle the InsertCharPre autocommand.
+ * "c" is the character that was typed.
+ * Return new input character.
+ */
+    static int
+do_key_input_pre(int c)
+{
+    int		res;
+    char_u	buf[MB_MAXBYTES + 1];
+    int		save_State = State;
+
+    // Return quickly when there is nothing to do.
+    if (!has_keyinputpre())
+	return c;
+
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+    else
+    {
+	buf[0] = c;
+	buf[1] = NUL;
+    }
+
+    // Lock the text to avoid weird things from happening.
+    ++textlock;
+    set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
+
+    res = c;
+    if (ins_apply_autocmds(EVENT_KEYINPUTPRE))
+    {
+	// Get the value of v:char.  It may be empty or more than one
+	// character.  Only use it when changed, otherwise continue with the
+	// original character to avoid breaking autoindent.
+	if (STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0
+	    && STRLEN(get_vim_var_str(VV_CHAR)) == 1)
+	    res = get_vim_var_str(VV_CHAR)[0];
+    }
+
+    set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
+    --textlock;
+
+    // Restore the State, it may have been changed.
+    State = save_State;
+
+    return res;
+}
+#endif
 
 /*
  * Like vgetc(), but never return a NUL when called recursively, get a key
