@@ -310,7 +310,7 @@ func Test_auto_partial_rebind()
   call assert_equal('dict1', dict2['f2']())
 endfunc
 
-func s:Qux(x, y, z=3,...)
+func s:Qux(x, y, z=3, w=1,...)
 endfunc
 
 func Test_get_partial_items()
@@ -335,13 +335,13 @@ func Test_get_partial_items()
   call assert_equal(dict, get(P, 'dict', dict))
   call assert_equal(0, get(l:P, 'dict'))
 
-  call assert_equal({'required': 2, 'optional': 1, 'varargs': v:true},
+  call assert_equal({'required': 2, 'optional': 2, 'varargs': v:true},
       \ get(funcref('s:Qux', []), 'arity'))
-  call assert_equal({'required': 1, 'optional': 1, 'varargs': v:true},
+  call assert_equal({'required': 1, 'optional': 2, 'varargs': v:true},
       \ get(funcref('s:Qux', [1]), 'arity'))
-  call assert_equal({'required': 0, 'optional': 1, 'varargs': v:true},
+  call assert_equal({'required': 0, 'optional': 2, 'varargs': v:true},
       \ get(funcref('s:Qux', [1, 2]), 'arity'))
-  call assert_equal({'required': 0, 'optional': 0, 'varargs': v:true},
+  call assert_equal({'required': 0, 'optional': 1, 'varargs': v:true},
       \ get(funcref('s:Qux', [1, 2, 3]), 'arity'))
   call assert_equal({'required': 0, 'optional': 0, 'varargs': v:true},
       \ get(funcref('s:Qux', [1, 2, 3, 4]), 'arity'))
