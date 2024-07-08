@@ -517,7 +517,7 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
   endwhile
 
   if !success
-    return 'Failed to startup the gdb program within '
+    return $'Failed to startup the gdb program within {counter_max}ms, consider increasing the timeout'
       .. counter_max .. ' x 10ms, may consider to increase timeout'
   endif
 
