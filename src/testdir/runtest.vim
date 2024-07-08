@@ -586,8 +586,20 @@ if $TEST_MAY_FAIL != ''
   let s:may_fail_list = split($TEST_MAY_FAIL, ',')->map({i, v -> v .. '()'})
 endif
 
-" Execute the tests in alphabetical order.
-for g:testfunc in sort(s:tests)
+if $TEST_RANDOMIZE != ''
+  " Execute the tests in random order, this helps to ensure tests are isolated from each
+  " other.
+  call add(s:messages, 'Running tests in random order')
+  for i in range(len(s:tests))
+    let j = rand() % len(s:tests)
+    let [s:tests[i], s:tests[j]] = [s:tests[j], s:tests[i]]
+  endfor
+else
+  " Execute the tests in alphabetical order.
+  let s:tests = sort(s:tests)
+endif
+
+for g:testfunc in s:tests
   if $TEST_SKIP_PAT != '' && g:testfunc =~ $TEST_SKIP_PAT
     call add(s:messages, g:testfunc .. ' matches $TEST_SKIP_PAT')
     let s:filtered += 1
