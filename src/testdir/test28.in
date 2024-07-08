@@ -1,0 +1,13 @@
+Test for using CTRL-A/CTRL-X in tiny mode
+
+STARTTEST
+/12352
+/12354
+:/^STARTHERE/+,$w! test.out
+:qa!
+ENDTEST
+
+STARTHERE
+12352
+
+12354
