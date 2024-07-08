@@ -1257,7 +1257,7 @@ To change it later, use a ":let" command like this: >
 In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
 greps in the help files) you might be able to use this: >
 
-	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
+	VIMRUNTIME=$(vim -es '+put=$VIMRUNTIME|print|quit!')
 
 Don't set $VIMRUNTIME to an empty value, some things may stop working.
 
