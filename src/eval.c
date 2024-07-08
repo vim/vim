@@ -6197,10 +6197,10 @@ object_tv2string(
     else if (copyID != 0 && obj->obj_copyID == copyID
             && obj->obj_class->class_obj_member_count != 0)
     {
-	int n = 25 + strlen((char*)obj->obj_class->class_name);
+	size_t n = 25 + strlen((char *)obj->obj_class->class_name);
 	r = alloc(n);
 	if (r != NULL)
-	    (void)vim_snprintf((char*)r, n, "object of %s {...}",
+	    (void)vim_snprintf((char *)r, n, "object of %s {...}",
 						obj->obj_class->class_name);
 	*tofree = r;
     }
