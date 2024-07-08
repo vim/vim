@@ -517,7 +517,8 @@ def CreateGdbConsole(dict: dict<any>, pty: string, commpty: string): string
   endwhile
 
   if !success
-    return 'Failed to startup the gdb program.'
+    return 'Failed to startup the gdb program within '
+      .. counter_max .. ' x 10ms, may consider to increase timeout'
   endif
 
   # ---- gdb started. Next, let's set the MI interface. ---
@@ -576,7 +577,6 @@ enddef
 
 # Open a terminal window without a job, to run the debugged program in.
 def StartDebug_term(dict: dict<any>)
-
   var programpty = CreateProgramPty()
   if programpty is null_string
     Echoerr('Failed to open the program terminal window')
