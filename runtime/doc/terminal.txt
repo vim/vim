@@ -1535,6 +1535,14 @@ If there is no g:termdebug_config you can use: >
 <
 However, the latter form will be deprecated in future releases.
 
+Startup timeout ~
+						*termdebug-timeout*
+The termdebug plugin waits debugger to startup for 3 seconds by default,
+however, if the debugger takes longer to launch, e.g. in a slow NFS, consider
+to increase the timeout with: >
+	let g:termdebug_config['timeout'] = 600
+This will set the timeout to 600 x 10 milliseconds = 6 seconds.
+
 Mappings ~
 The termdebug plugin enables a few default mappings.  All those mappings
 are reset to their original values once the termdebug session concludes.
