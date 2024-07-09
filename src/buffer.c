@@ -1358,9 +1358,8 @@ do_buffer_ext(
 	    // Don't count unlisted buffers.
 	    // Avoid non-help buffers if the starting point was a non-help buffer and
 	    // vice-versa.
-	    if (unload || (buf->b_p_bl &&
-			((flags & DOBUF_SKIPHELP) == 0 || (bp != buf &&
-			    buf->b_help == bp->b_help))))
+	    if (unload || (buf->b_p_bl
+			&& ((flags & DOBUF_SKIPHELP) == 0 || buf->b_help == bp->b_help)))
 	    {
 		 --count;
 		 bp = NULL;	// use this buffer as new starting point

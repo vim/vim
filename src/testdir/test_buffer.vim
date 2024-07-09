@@ -135,13 +135,13 @@ func Test_bnext_bprev_help()
   e Xbuf1
   let b2 = bufnr()
 
-  " There's only one buffer of each type, the commands should fail.
+  " There's only one buffer of each type.
   b XHelp1
-  call assert_fails('bnext', 'E85:')
-  call assert_fails('bprev', 'E85:')
+  bnext | call assert_equal(b1, bufnr())
+  bprev | call assert_equal(b1, bufnr())
   b Xbuf1
-  call assert_fails('bnext', 'E85:')
-  call assert_fails('bprev', 'E85:')
+  bnext | call assert_equal(b2, bufnr())
+  bprev | call assert_equal(b2, bufnr())
 
   " Add one more buffer of each type.
   e XHelp2 | set bt=help
