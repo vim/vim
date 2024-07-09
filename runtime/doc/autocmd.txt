@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jul 07
+*autocmd.txt*   For Vim version 9.1.  Last change: 2024 Jul 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -54,20 +54,20 @@ Recommended use:
   without the autocommand being repeated.
 
 Example in Vim9 script: >
-   autocmd_add({replace: true,
+   autocmd_add([{replace: true,
 		group:   'DemoGroup',
 		event:   'BufEnter',
 		pattern: '*.txt',
 		cmd:     'call DemoBufEnter()'
-		})
+		}])
 
 In legacy script: >
-   call autocmd_add(#{replace: v:true,
+   call autocmd_add([#{replace: v:true,
 		    \ group: 'DemoGroup',
 		    \ event: 'BufEnter',
 		    \ pattern: '*.txt',
 		    \ cmd: 'call DemoBufEnter()'
-		    \ })
+		    \ }])
 
 ==============================================================================
 2. Defining autocommands				*autocmd-define*
