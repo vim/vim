@@ -1427,6 +1427,9 @@ au BufNewFile,BufRead *.mel			setf mel
 " mbsync
 au BufNewFile,BufRead .mbsyncrc			setf conf
 
+" mcmeta
+au BufNewFile,BufRead *.mcmeta			setf json
+
 " Mercurial (hg) commit file
 au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 
