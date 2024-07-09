@@ -107,6 +107,7 @@ runtime/compiler/zsh.vim		@dkearns
 runtime/doc/ft_hare.txt			@selenebun
 runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/abaqus.vim		@costerwi
+runtime/ftplugin/antlr4.vim		@jiangyinzuo
 runtime/ftplugin/apache.vim		@dubgeiser
 runtime/ftplugin/arduino.vim		@k-takata
 runtime/ftplugin/astro.vim		@romainl
@@ -368,6 +369,7 @@ runtime/syntax/shared/hgcommitDiff.vim	@vegerot
 runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/ant.vim			@dkearns
+runtime/syntax/antlr4.vim		@jiangyinzuo
 runtime/syntax/arduino.vim		@johshoff
 runtime/syntax/asciidoc.vim		@aerostitch
 runtime/syntax/asm.vim			@dkearns
