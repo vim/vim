@@ -3322,7 +3322,8 @@ typedef struct
 process_next_cpt_value(
 	ins_compl_next_state_T *st,
 	int		*compl_type_arg,
-	pos_T		*start_match_pos)
+	pos_T		*start_match_pos,
+	int		in_fuzzy)
 {
     int	    compl_type = -1;
     int	    status = INS_COMPL_CPT_OK;
@@ -3338,7 +3339,7 @@ process_next_cpt_value(
 	st->first_match_pos = *start_match_pos;
 	// Move the cursor back one character so that ^N can match the
 	// word immediately after the cursor.
-	if (ctrl_x_mode_normal() && dec(&st->first_match_pos) < 0)
+	if (ctrl_x_mode_normal() && (!in_fuzzy && dec(&st->first_match_pos) < 0))
 	{
 	    // Move the cursor to after the last character in the
 	    // buffer, so that word at start of buffer is found
@@ -3687,8 +3688,10 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     int		save_p_scs;
     int		save_p_ws;
     int		looped_around = FALSE;
-    char_u	*ptr;
-    int		len;
+    char_u	*ptr = NULL;
+    int		len = 0;
+    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0 && compl_length > 0;
+    char_u	*leader = ins_compl_leader();
 
     // If 'infercase' is set, don't use 'smartcase' here
     save_p_scs = p_scs;
@@ -3702,7 +3705,7 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
     save_p_ws = p_ws;
     if (st->ins_buf != curbuf)
 	p_ws = FALSE;
-    else if (*st->e_cpt == '.')
+    else if (*st->e_cpt == '.' && !in_fuzzy)
 	p_ws = TRUE;
     looped_around = FALSE;
     for (;;)
@@ -3713,9 +3716,13 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 
 	// ctrl_x_mode_line_or_eval() || word-wise search that
 	// has added a word that was at the beginning of the line
-	if (ctrl_x_mode_line_or_eval() || (compl_cont_status & CONT_SOL))
+	if ((ctrl_x_mode_whole_line() && !in_fuzzy) || ctrl_x_mode_eval() || (compl_cont_status & CONT_SOL))
 	    found_new_match = search_for_exact_line(st->ins_buf,
 			    st->cur_match_pos, compl_direction, compl_pattern);
+	else if (in_fuzzy)
+	     found_new_match = search_for_fuzzy_match(st->ins_buf,
+			    st->cur_match_pos, leader, compl_direction,
+			    start_pos, &len, &ptr, ctrl_x_mode_whole_line());
 	else
 	    found_new_match = searchit(NULL, st->ins_buf, st->cur_match_pos,
 				NULL, compl_direction, compl_pattern, compl_patternlen,
@@ -3764,8 +3771,9 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 		&& start_pos->col  == st->cur_match_pos->col)
 	    continue;
 
-	ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
-							   &len, &cont_s_ipos);
+	if (!in_fuzzy)
+	    ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
+							       &len, &cont_s_ipos);
 	if (ptr == NULL)
 	    continue;
 
@@ -3864,6 +3872,7 @@ ins_compl_get_exp(pos_T *ini)
     int		i;
     int		found_new_match;
     int		type = ctrl_x_mode;
+    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
 
     if (!compl_started)
     {
@@ -3889,8 +3898,11 @@ ins_compl_get_exp(pos_T *ini)
 	st.ins_buf = curbuf;  // In case the buffer was wiped out.
 
     compl_old_match = compl_curr_match;	// remember the last current match
-    st.cur_match_pos = (compl_dir_forward())
-				? &st.last_match_pos : &st.first_match_pos;
+    if (in_fuzzy)
+	st.cur_match_pos = (compl_dir_forward())
+				    ? &st.last_match_pos : &st.first_match_pos;
+    else
+	st.cur_match_pos = &st.last_match_pos;
 
     // For ^N/^P loop over all the flags/windows/buffers in 'complete'.
     for (;;)
@@ -3904,7 +3916,7 @@ ins_compl_get_exp(pos_T *ini)
 	if ((ctrl_x_mode_normal() || ctrl_x_mode_line_or_eval())
 					&& (!compl_started || st.found_all))
 	{
-	    int status = process_next_cpt_value(&st, &type, ini);
+	    int status = process_next_cpt_value(&st, &type, ini, in_fuzzy);
 
 	    if (status == INS_COMPL_CPT_END)
 		break;
