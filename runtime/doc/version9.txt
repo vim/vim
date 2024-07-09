@@ -41579,6 +41579,7 @@ Changed~
 - allow to specify a priority when defining a new sign |:sign-define|
 - provide information about function arguments using the get(func, "arity")
   function |get()-func|
+- |:bwipe| also wipes jumplist and tagstack data
 
 							*added-9.2*
 Added ~

@@ -130,6 +130,40 @@ setmark_pos(int c, pos_T *pos, int fnum)
 }
 
 /*
+ * Delete every entry referring to file 'fnum' from both the jumplist and the
+ * tag stack.
+ */
+    void
+mark_forget_file(win_T *wp, int fnum)
+{
+    int		i;
+
+    for (i = 0; i < wp->w_jumplistlen; ++i)
+	if (wp->w_jumplist[i].fmark.fnum == fnum)
+	{
+	    vim_free(wp->w_jumplist[i].fname);
+	    mch_memmove(&wp->w_jumplist[i], &wp->w_jumplist[i + 1],
+		    (wp->w_jumplistlen - i - 1) * sizeof(xfmark_T));
+	    if (wp->w_jumplistidx > i)
+		--wp->w_jumplistidx;
+	    --wp->w_jumplistlen;
+	    --i;
+	}
+
+    for (i = 0; i < wp->w_tagstacklen; i++)
+	if (wp->w_tagstack[i].fmark.fnum == fnum)
+	{
+	    tagstack_clear_entry(&wp->w_tagstack[i]);
+	    mch_memmove(&wp->w_tagstack[i], &wp->w_tagstack[i + 1],
+		    (wp->w_tagstacklen - i - 1) * sizeof(taggy_T));
+	    if (wp->w_tagstackidx > i)
+		--wp->w_tagstackidx;
+	    --wp->w_tagstacklen;
+	    --i;
+	}
+}
+
+/*
  * Set the previous context mark to the current position and add it to the
  * jump list.
  */
