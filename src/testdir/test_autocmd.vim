@@ -4754,7 +4754,7 @@ endfunc
 
 func Test_KeyInputPre()
   let s:keys = []
-  au KeyInputPre * call add(s:keys, v:char)
+  au KeyInputPre n call add(s:keys, v:char)
 
   call feedkeys('jkjkjjj', 'ntx')
 

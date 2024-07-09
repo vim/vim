@@ -2156,6 +2156,7 @@ do_key_input_pre(int c)
 {
     int		res;
     char_u	buf[MB_MAXBYTES + 1];
+    char_u	curr_mode[MODE_MAX_LENGTH];
     int		save_State = State;
 
     // Return quickly when there is nothing to do.
@@ -2174,8 +2175,10 @@ do_key_input_pre(int c)
     ++textlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
+    get_mode(curr_mode);
+
     res = c;
-    if (ins_apply_autocmds(EVENT_KEYINPUTPRE))
+    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf))
     {
 	// Get the value of v:char.  It may be empty or more than one
 	// character.  Only use it when changed, otherwise continue with the
