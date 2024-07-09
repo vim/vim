@@ -2266,6 +2266,7 @@ apply_autocmds_group(
 		|| event == EVENT_CMDWINLEAVE
 		|| event == EVENT_CMDUNDEFINED
 		|| event == EVENT_FUNCUNDEFINED
+		|| event == EVENT_KEYINPUTPRE
 		|| event == EVENT_REMOTEREPLY
 		|| event == EVENT_SPELLFILEMISSING
 		|| event == EVENT_QUICKFIXCMDPRE
