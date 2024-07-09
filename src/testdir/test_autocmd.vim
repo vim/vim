@@ -4756,7 +4756,7 @@ func Test_KeyInputPre()
   let s:keys = []
   au KeyInputPre * call add(s:keys, v:char)
 
-  call feedkeys('jkjkjjj', 'n')
+  call feedkeys('jkjkjjj', 'ntx')
 
   call assert_equal(
         \ ['j', 'k', 'j', 'k', 'j', 'j', 'j'],
