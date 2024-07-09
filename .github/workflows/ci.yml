@@ -330,7 +330,7 @@ jobs:
       - name: Install packages
         if: matrix.features == 'huge'
         run: |
-          brew install lua libtool
+          brew install lua libtool kamilturek/python2/python@2
           echo "LUA_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
       - name: Install blackhole-2ch for macos-12
@@ -359,7 +359,7 @@ jobs:
           normal)
             ;;
           huge)
-            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
           ) >> $GITHUB_ENV
