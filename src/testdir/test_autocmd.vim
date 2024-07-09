@@ -4752,4 +4752,17 @@ func Test_BufEnter_botline()
   set hidden&vim
 endfunc
 
+func Test_KeyInputPre()
+  let s:keys = []
+  au KeyInputPre * call add(s:keys, v:char)
+
+  call feedkeys('jkjkjjj', 'n')
+
+  call assert_equal(
+        \ ['j', 'k', 'j', 'k', 'j', 'j', 'j'],
+        \ s:keys)
+
+  au! KeyInputPre
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
