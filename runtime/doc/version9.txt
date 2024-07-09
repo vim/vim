@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 06
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41577,6 +41577,8 @@ Changed~
 - 'nrformat' accepts the new "blank" suboption, to determine a signed or
   unsigned number based on whitespace in front of a minus sign.
 - allow to specify a priority when defining a new sign |:sign-define|
+- provide information about function arguments using the get(func, "arity")
+  function |get()-func|
 
 							*added-9.2*
 Added ~

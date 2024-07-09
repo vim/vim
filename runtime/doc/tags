@@ -7783,6 +7783,10 @@ gdb-version	terminal.txt	/*gdb-version*
 ge	motion.txt	/*ge*
 gender-neutral	helphelp.txt	/*gender-neutral*
 get()	builtin.txt	/*get()*
+get()-blob	builtin.txt	/*get()-blob*
+get()-dict	builtin.txt	/*get()-dict*
+get()-func	builtin.txt	/*get()-func*
+get()-list	builtin.txt	/*get()-list*
 get-ms-debuggers	debug.txt	/*get-ms-debuggers*
 getbufinfo()	builtin.txt	/*getbufinfo()*
 getbufline()	builtin.txt	/*getbufline()*

@@ -5134,6 +5134,36 @@ f_get(typval_T *argvars, typval_T *rettv)
 			list_append_tv(rettv->vval.v_list, &pt->pt_argv[i]);
 		}
 	    }
+	    else if (STRCMP(what, "arity") == 0)
+	    {
+		int required = 0, optional = 0, varargs = FALSE;
+		char_u *name = partial_name(pt);
+
+		get_func_arity(name, &required, &optional, &varargs);
+
+		rettv->v_type = VAR_DICT;
+		if (rettv_dict_alloc(rettv) == OK)
+		{
+		    dict_T *dict = rettv->vval.v_dict;
+
+		    // Take into account the arguments of the partial, if any.
+		    // Note that it is possible to supply more arguments than the function
+		    // accepts.
+		    if (pt->pt_argc >= required + optional)
+			required = optional = 0;
+		    else if (pt->pt_argc > required)
+		    {
+			optional -= pt->pt_argc - required;
+			required = 0;
+		    }
+		    else
+			required -= pt->pt_argc;
+
+		    dict_add_number(dict, "required", required);
+		    dict_add_number(dict, "optional", optional);
+		    dict_add_bool(dict, "varargs", varargs);
+		}
+	    }
 	    else
 		semsg(_(e_invalid_argument_str), what);
 
