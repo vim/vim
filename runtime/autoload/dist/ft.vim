@@ -402,14 +402,29 @@ export def FTharedoc()
   endif
 enddef
 
-# Distinguish between HTML, XHTML and Django
+# Distinguish between HTML, XHTML, Django and Angular
 export def FThtml()
   var n = 1
+
+  # Test if the filename follows the Angular component template convention
+  if expand('%:t') =~ '^.*\.component\.html$'
+    setf htmlangular
+    return
+  endif
+
   while n < 40 && n <= line("$")
+    # Check for Angular
+    if getline(n) =~ '@\(if\|for\|defer\|switch\)\|*\(ngIf\|ngFor\|ngSwitch\|ngTemplateOutlet\)\|ng-template\|ng-content\|{{.*}}'
+      setf htmlangular
+      return
+    endif
+
+    # Check for XHTML
     if getline(n) =~ '\<DTD\s\+XHTML\s'
       setf xhtml
       return
     endif
+    # Check for Django
     if getline(n) =~ '{%\s*\(autoescape\|block\|comment\|csrf_token\|cycle\|debug\|extends\|filter\|firstof\|for\|if\|ifchanged\|include\|load\|lorem\|now\|query_string\|regroup\|resetcycle\|spaceless\|templatetag\|url\|verbatim\|widthratio\|with\)\>\|{#\s\+'
       setf htmldjango
       return
