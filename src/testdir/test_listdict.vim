@@ -1619,4 +1619,34 @@ func Test_deep_nested_listdict_compare()
   call v9.CheckLegacyAndVim9Success(lines)
 endfunc
 
+" Test for using id()
+def Test_id_with_dict()
+  # demonstate a way that "id(item)" differs from "string(item)"
+  var d1 = {one: 1}
+  var d2 = {one: 1}
+  var d3 = {one: 1}
+  var idDict: dict<any>
+  idDict[id(d1)] = d1
+  idDict[id(d2)] = d2
+  idDict[id(d3)] = d3
+  assert_equal(3, idDict->len())
+
+  var stringDict: dict<any>
+  stringDict[string(d1)] = d1
+  stringDict[string(d2)] = d2
+  stringDict[string(d3)] = d3
+  assert_equal(1, stringDict->len())
+
+  assert_equal('', id(3))
+
+  assert_equal('', id(null))
+  assert_equal('', id(null_blob))
+  assert_equal('', id(null_dict))
+  assert_equal('', id(null_function))
+  assert_equal('', id(null_list))
+  assert_equal('', id(null_partial))
+  assert_equal('', id(null_string))
+  assert_equal('', id(null_channel))
+  assert_equal('', id(null_job))
+enddef
 " vim: shiftwidth=2 sts=2 expandtab

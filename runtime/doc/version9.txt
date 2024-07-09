@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 08
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41593,6 +41593,8 @@ Functions: ~
 |foreach()|		apply function to List items
 |getregion()|		get a region of text from a buffer
 |getregionpos()|	get a list of positions for a region
+|id()|			get unique identifier for a Dict, List, Object,
+			Channel or Blob variable
 |matchbufline()|	all the matches of a pattern in a buffer
 |matchstrlist()|	all the matches of a pattern in a List of strings
 |popup_setbuf()|	switch to a different buffer in a popup
