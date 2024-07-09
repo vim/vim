@@ -41642,8 +41642,8 @@ Improved visual highlighting.
 
 Python3 support in OpenVMS.
 
-Support for |fuzzy-matching| during |ins-completion| with the "fuzzy" and
-"fuzzycollect" values of the 'completeopt' setting
+Support for |fuzzy-matching| during |ins-completion| with the "fuzzy"
+values of the 'completeopt' setting
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-9.2*

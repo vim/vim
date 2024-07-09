@@ -4512,11 +4512,6 @@ ins_compl_use_match(int c)
     static int
 get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
 {
-    int		i;
-    int		char_len;
-    size_t	fuzzy_len;
-    char_u	*fuzzy_pattern;
-
     if ((compl_cont_status & CONT_SOL) || ctrl_x_mode_path_defines())
     {
 	if (!compl_status_adding())
@@ -4630,39 +4625,6 @@ get_normal_compl_info(char_u *line, int startcol, colnr_T curs_col)
     }
 
     compl_patternlen = STRLEN(compl_pattern);
-
-    if ((get_cot_flags() & COT_FUZZYCOLLECT) != 0)
-    {
-	// Adjust size to avoid buffer overflow
-	fuzzy_len = (size_t)compl_length * 5 + 10;
-	// Allocate enough space
-	fuzzy_pattern = alloc(fuzzy_len);
-	if (fuzzy_pattern == NULL)
-	{
-	    compl_patternlen = 0;
-	    return FAIL;
-	}
-	// Use 'very magic' mode for simpler syntax
-	STRCPY(fuzzy_pattern, "\\v");
-	i = 2; // Start from 2 to skip "\\v"
-	while (i < compl_length + 2)
-	{
-	    // Append "\\k*" before each character
-	    STRNCAT(fuzzy_pattern, "\\k*", fuzzy_len - STRLEN(fuzzy_pattern) - 1);
-	    // Get length of current multi-byte character
-	    char_len = mb_ptr2len(compl_pattern + i);
-	    // Concatenate the character safely
-	    STRNCAT(fuzzy_pattern, compl_pattern + i, char_len);
-	    // Move to the next character
-	    i += char_len;
-	}
-	// Append "\\k*" at the end to match any characters after the pattern
-	STRNCAT(fuzzy_pattern, "\\k*", fuzzy_len - STRLEN(fuzzy_pattern) - 1);
-	vim_free(compl_pattern);
-	compl_pattern = fuzzy_pattern;
-	compl_patternlen = STRLEN(compl_pattern);
-    }
-
     return OK;
 }
 
