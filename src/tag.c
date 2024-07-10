@@ -3412,6 +3412,11 @@ get_tagfname(
 	    // move the filename one char forward and truncate the
 	    // filepath with a NUL
 	    filename = gettail(buf);
+	    if (r_ptr != NULL)
+	    {
+		STRMOVE(r_ptr + 1, r_ptr);
+		++r_ptr;
+	    }
 	    STRMOVE(filename + 1, filename);
 	    *filename++ = NUL;
 
