@@ -2165,8 +2165,15 @@ do_key_input_pre(int c)
     if (!has_keyinputpre())
 	return res;
 
-    buf[0] = c;
-    buf[1] = NUL;
+    if (IS_SPECIAL(c))
+    {
+	buf[0] = K_SPECIAL;
+	buf[1] = KEY2TERMCAP0(c);
+	buf[2] = KEY2TERMCAP1(c);
+	buf[3] = NUL;
+    }
+    else
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
 
     get_mode(curr_mode);
 
