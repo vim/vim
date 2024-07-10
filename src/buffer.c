@@ -750,13 +750,14 @@ aucmd_abort:
      */
     if (wipe_buf)
     {
-	win_T	*wp;
+	tabpage_T	*tp;
+	win_T		*wp;
 
 	// Do not wipe out the buffer if it is used in a window.
 	if (buf->b_nwindows > 0)
 	    return FALSE;
 
-	FOR_ALL_WINDOWS(wp)
+	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    mark_forget_file(wp, buf->b_fnum);
 
 	if (action == DOBUF_WIPE_REUSE)
