@@ -981,7 +981,9 @@ InsertLeave			Just after leaving Insert mode.  Also when
 				using CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.
 							*KeyInputPre*
 KeyInputPre			Just before a key is processed. The pattern is
-				matched against |mode()|.
+				matched against a string that indicates the
+				current mode, which is the same as that is
+				returned by `mode(1)`.
 				The |v:char| variable indicates the key typed
 				and can be changed during the event to input
 				a different key.  When |v:char| is not single
