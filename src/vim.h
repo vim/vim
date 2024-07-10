@@ -1074,6 +1074,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 // Values for flags argument of do_buffer()
 #define DOBUF_FORCEIT	1	// :cmd!
 #define DOBUF_NOPOPUP	2	// skip popup window buffers
+#define DOBUF_SKIPHELP	4	// skip or keep help buffers depending on b_help of the
+				// starting buffer
 
 // Values for sub_cmd and which_pat argument for search_regcomp()
 // Also used for which_pat argument for searchit()

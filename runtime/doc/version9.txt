@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 09
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41580,6 +41580,9 @@ Changed~
 - provide information about function arguments using the get(func, "arity")
   function |get()-func|
 - |:bwipe| also wipes jumplist and tagstack data
+- moving in the buffer list using |:bnext| and similar commands, behaves as
+  documented and skips help buffers (if not run from a help buffer, else 
+  moves to the next/previous help buffer).
 
 							*added-9.2*
 Added ~
