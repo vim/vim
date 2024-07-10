@@ -407,10 +407,11 @@ export def FThtml()
   var n = 1
 
   # Test if the filename follows the Angular component template convention
-  if expand('%:t') =~ '^.*\.component\.html$'
-    setf htmlangular
-    return
-  endif
+  # Disabled for the reasons mentioned here: #13594
+  # if expand('%:t') =~ '^.*\.component\.html$'
+  #   setf htmlangular
+  #   return
+  # endif
 
   while n < 40 && n <= line("$")
     # Check for Angular
