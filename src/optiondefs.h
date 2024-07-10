@@ -2443,6 +2443,9 @@ static struct vimoption options[] =
     {"switchbuf",   "swb",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_swb, PV_NONE, did_set_switchbuf, expand_set_switchbuf,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"switchtab",   "swt",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_swt, PV_NONE, did_set_switchtab, expand_set_switchtab,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"synmaxcol",   "smc",  P_NUM|P_VI_DEF|P_RBUF,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_smc, PV_SMC, NULL, NULL,

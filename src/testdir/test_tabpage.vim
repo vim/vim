@@ -965,6 +965,64 @@ func Test_tabpage_alloc_failure()
   call assert_equal(1, tabpagenr('$'))
 endfunc
 
+func Test_tabpage_switchtab()
+  " Default behaviour, move to the right.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 4gt
+  setl swt=
+  tabclose
+  call assert_equal("n3", bufname())
+
+  " Move to the left.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 4gt
+  setl swt=left
+  tabclose
+  call assert_equal("n1", bufname())
+
+  " Move to the last used tab page.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 5gt
+  norm! 2gt
+  setl swt=uselast
+  tabclose
+  call assert_equal("n3", bufname())
+
+  " Same, but the last used tab page is invalid. Move to the right.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 5gt
+  norm! 3gt
+  setl swt=uselast
+  tabclose 5
+  tabclose!
+  call assert_equal("n2", bufname())
+
+  " Same, but the last used tab page is invalid. Move to the left.
+  call s:reconstruct_tabpage_for_test(6)
+  norm! 5gt
+  norm! 3gt
+  setl swt=uselast,left
+  tabclose 5
+  tabclose!
+  call assert_equal("n0", bufname())
+
+  " Move left when moving right is not possible.
+  call s:reconstruct_tabpage_for_test(6)
+  setl swt=
+  norm! 6gt
+  tabclose
+  call assert_equal("n3", bufname())
+
+  " Move right when moving left is not possible.
+  call s:reconstruct_tabpage_for_test(6)
+  setl swt=left
+  norm! 1gt
+  tabclose
+  call assert_equal("n0", bufname())
+
+  setl swt&
+endfunc
+
 " this was giving ml_get errors
 func Test_tabpage_last_line()
   enew

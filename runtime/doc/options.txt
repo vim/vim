@@ -8059,6 +8059,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If a window has 'winfixbuf' enabled, 'switchbuf' is currently not
 	applied to the split window.
 
+						*'switchtab'* *'swt'*
+'switchtab' 'swt'	string	(default "")
+			global
+	This option controls the behavior when switching tabs, for example when
+	closing one (e.g.  |:tabclose|).
+	Possible values (comma-separated list):
+	   left		If included, move to the previous tab page instead of the next
+			one.
+	   uselast	If included, jump to the previously used tab page if possible.
+
 						*'synmaxcol'* *'smc'*
 'synmaxcol' 'smc'	number	(default 3000)
 			local to buffer

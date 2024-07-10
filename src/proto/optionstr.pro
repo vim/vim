@@ -156,6 +156,8 @@ char *did_set_swapsync(optset_T *args);
 int expand_set_swapsync(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_switchbuf(optset_T *args);
 int expand_set_switchbuf(optexpand_T *args, int *numMatches, char_u ***matches);
+char *did_set_switchtab(optset_T *args);
+int expand_set_switchtab(optexpand_T *args, int *numMatches, char_u ***matches);
 char *did_set_tabline(optset_T *args);
 char *did_set_tagcase(optset_T *args);
 int expand_set_tagcase(optexpand_T *args, int *numMatches, char_u ***matches);
