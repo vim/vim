@@ -2179,7 +2179,7 @@ do_key_input_pre(int c)
     {
 	// Get the value of v:char.  It may be empty or more than one
 	// character.  Only use it when changed, otherwise continue with the
-	// original character to avoid breaking autoindent.
+	// original character.
 	char_u *v_char;
 
 	v_char = get_vim_var_str(VV_CHAR);
