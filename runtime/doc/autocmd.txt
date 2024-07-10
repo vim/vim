@@ -985,7 +985,7 @@ KeyInputPre			When a key is typed. The pattern is
 				The |v:char| variable indicates the key typed
 				and can be changed during the event to input
 				a different key.  When |v:char| is not one
-				character, it is ignored.
+				character or one special key, it is ignored.
 				It is not allowed to change the text
 				|textlock|.
 							*MenuPopup*

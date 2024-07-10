@@ -2159,33 +2159,36 @@ do_key_input_pre(int c)
     char_u	curr_mode[MODE_MAX_LENGTH];
     int		save_State = State;
 
+    res = c;
+
     // Return quickly when there is nothing to do.
     if (!has_keyinputpre())
-	return c;
+	return res;
 
-    if (has_mbyte)
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
-    else
-    {
-	buf[0] = c;
-	buf[1] = NUL;
-    }
+    buf[0] = c;
+    buf[1] = NUL;
+
+    get_mode(curr_mode);
 
     // Lock the text to avoid weird things from happening.
     ++textlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
-    get_mode(curr_mode);
-
-    res = c;
-    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf))
+    if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
+	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
     {
 	// Get the value of v:char.  It may be empty or more than one
 	// character.  Only use it when changed, otherwise continue with the
 	// original character to avoid breaking autoindent.
-	if (STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0
-	    && STRLEN(get_vim_var_str(VV_CHAR)) == 1)
-	    res = get_vim_var_str(VV_CHAR)[0];
+	char_u *v_char;
+
+	v_char = get_vim_var_str(VV_CHAR);
+
+	// Convert special bytes when it is special string.
+	if (STRLEN(v_char) == 3 && v_char[0] == K_SPECIAL)
+	    res = TERMCAP2KEY(v_char[1], v_char[2]);
+	else if (STRLEN(v_char) == 1)
+	    res = v_char[0];
     }
 
     set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char

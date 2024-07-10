@@ -4753,15 +4753,46 @@ func Test_BufEnter_botline()
 endfunc
 
 func Test_KeyInputPre()
+  " KeyInputPre can record input keys.
   let s:keys = []
   au KeyInputPre n call add(s:keys, v:char)
 
   call feedkeys('jkjkjjj', 'ntx')
-
   call assert_equal(
         \ ['j', 'k', 'j', 'k', 'j', 'j', 'j'],
         \ s:keys)
 
+  let s:keys = []
+  au! KeyInputPre
+
+  " KeyInputPre can change input keys.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = 'b' | endif
+  edit Xxx1
+
+  call feedkeys("iaabb\<ESC>", 'ntx')
+  call assert_equal(getline('.'), 'bbbb')
+
+  bwipe! Xxx1
+  au! KeyInputPre
+
+  " KeyInputPre ignores multiple characters.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = 'bbbbb' | endif
+  edit Xxx1
+
+  call feedkeys("iaabb\<ESC>", 'ntx')
+  call assert_equal(getline('.'), 'aabb')
+
+  bwipe! Xxx1
+  au! KeyInputPre
+
+  " KeyInputPre can use special keys.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = "\<Ignore>" | endif
+  edit Xxx1
+
+  call feedkeys("iaabb\<ESC>", 'ntx')
+  call assert_equal(getline('.'), 'bb')
+
+  bwipe! Xxx1
   au! KeyInputPre
 endfunc
 
