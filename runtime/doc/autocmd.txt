@@ -439,7 +439,7 @@ Name			triggered by ~
 |CompleteDone|		after Insert mode completion is done, after clearing
 			info
 
-|KeyInputPre|		when a key was typed
+|KeyInputPre|		just before a key is processed
 
 |User|			to be used in combination with ":doautocmd"
 |SigUSR1|		after the SIGUSR1 signal has been detected
@@ -980,12 +980,15 @@ InsertLeavePre			Just before leaving Insert mode.  Also when
 InsertLeave			Just after leaving Insert mode.  Also when
 				using CTRL-O |i_CTRL-O|.  But not for |i_CTRL-C|.
 							*KeyInputPre*
-KeyInputPre			When a key is typed. The pattern is
-				matched against `'current_mode'`.
+KeyInputPre			Just before a key is processed. The pattern is
+				matched against |mode()|.
 				The |v:char| variable indicates the key typed
 				and can be changed during the event to input
-				a different key.  When |v:char| is not one
-				character or one special key, it is ignored.
+				a different key.  When |v:char| is not single
+				character or one special key, it is the fist
+				character is used.
+				The following values of |v:event| are set:
+				   typed	The key is typed or not.
 				It is not allowed to change the text
 				|textlock|.
 							*MenuPopup*

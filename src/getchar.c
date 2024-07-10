@@ -2154,12 +2154,12 @@ vgetc(void)
     static int
 do_key_input_pre(int c)
 {
-    int		res;
+    int		res = c;
     char_u	buf[MB_MAXBYTES + 1];
     char_u	curr_mode[MODE_MAX_LENGTH];
     int		save_State = State;
-
-    res = c;
+    save_v_event_T save_v_event;
+    dict_T	*v_event;
 
     // Return quickly when there is nothing to do.
     if (!has_keyinputpre())
@@ -2181,6 +2181,9 @@ do_key_input_pre(int c)
     ++textlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
+    v_event = get_v_event(&save_v_event);
+    (void)dict_add_bool(v_event, "typed", KeyTyped);
+
     if (apply_autocmds(EVENT_KEYINPUTPRE, curr_mode, curr_mode, FALSE, curbuf)
 	&& STRCMP(buf, get_vim_var_str(VV_CHAR)) != 0)
     {
@@ -2194,9 +2197,11 @@ do_key_input_pre(int c)
 	// Convert special bytes when it is special string.
 	if (STRLEN(v_char) == 3 && v_char[0] == K_SPECIAL)
 	    res = TERMCAP2KEY(v_char[1], v_char[2]);
-	else if (STRLEN(v_char) == 1)
-	    res = v_char[0];
+	else
+	    res = PTR2CHAR(v_char);
     }
+
+    restore_v_event(v_event, &save_v_event);
 
     set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
     --textlock;

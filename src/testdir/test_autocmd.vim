@@ -4765,7 +4765,19 @@ func Test_KeyInputPre()
         \ ['j', 'k', 'j', 'k', 'j', 'j', 'j'],
         \ s:keys)
 
+  unlet s:keys
+  au! KeyInputPre
+
+  " KeyInputPre can handle multibyte.
   let s:keys = []
+  au KeyInputPre * call add(s:keys, v:char)
+  edit Xxx1
+
+  call feedkeys("iあ\<ESC>", 'ntx')
+  call assert_equal(['i', "あ", "\<ESC>"], s:keys)
+
+  bwipe! Xxx1
+  unlet s:keys
   au! KeyInputPre
 
   " KeyInputPre can change input keys.
@@ -4778,12 +4790,12 @@ func Test_KeyInputPre()
   bwipe! Xxx1
   au! KeyInputPre
 
-  " KeyInputPre ignores multiple characters.
-  au KeyInputPre i if v:char ==# 'a' | let v:char = 'bbbbb' | endif
+  " KeyInputPre returns multiple characters.
+  au KeyInputPre i if v:char ==# 'a' | let v:char = 'cccc' | endif
   edit Xxx1
 
   call feedkeys("iaabb\<ESC>", 'ntx')
-  call assert_equal(getline('.'), 'aabb')
+  call assert_equal(getline('.'), 'ccbb')
 
   bwipe! Xxx1
   au! KeyInputPre
@@ -4796,6 +4808,17 @@ func Test_KeyInputPre()
   call assert_equal(getline('.'), 'bb')
 
   bwipe! Xxx1
+  au! KeyInputPre
+
+  " Test for v:event.typed
+  au KeyInputPre n call assert_true(v:event.typed)
+  call feedkeys('j', 'ntx')
+
+  au! KeyInputPre
+
+  au KeyInputPre n call assert_false(v:event.typed)
+  call feedkeys('j', 'nx')
+
   au! KeyInputPre
 endfunc
 
