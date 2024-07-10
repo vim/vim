@@ -2197,7 +2197,7 @@ do_key_input_pre(int c)
 	// Convert special bytes when it is special string.
 	if (STRLEN(v_char) == 3 && v_char[0] == K_SPECIAL)
 	    res = TERMCAP2KEY(v_char[1], v_char[2]);
-	else
+	else if (STRLEN(v_char) > 0)
 	    res = PTR2CHAR(v_char);
     }
 
