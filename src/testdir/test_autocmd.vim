@@ -4753,6 +4753,9 @@ func Test_BufEnter_botline()
 endfunc
 
 func Test_KeyInputPre()
+  " Consume previous keys
+  call feedkeys('', 'ntx')
+
   " KeyInputPre can record input keys.
   let s:keys = []
   au KeyInputPre n call add(s:keys, v:char)
