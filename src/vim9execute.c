@@ -2313,7 +2313,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 					     e_cannot_change_locked_list_item))
 		    return FAIL;
 		// overwrite existing list item
-		list_set_item_move(list, li, tv);
+		if (list_set_item_move(list, li, tv) == FAIL)
+		    return FAIL;
 	    }
 	    else
 	    {
@@ -2347,7 +2348,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 						    e_cannot_change_dict_item))
 		    return FAIL;
 		// overwrite existing value
-		dict_set_item_move(dict, di, tv);
+		if (dict_set_item_move(dict, di, tv) == FAIL)
+		    return FAIL;
 	    }
 	    else
 	    {
