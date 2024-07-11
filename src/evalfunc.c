@@ -7537,7 +7537,8 @@ f_hostname(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_id(typval_T *argvars, typval_T *rettv)
 {
-    char_u	numbuf[NUMBUFLEN];
+    char    numbuf[NUMBUFLEN];
+    char    *p = numbuf;
 
     switch (argvars[0].v_type)
     {
@@ -7549,17 +7550,22 @@ f_id(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:
 	    // Assume pointer value in typval_T vval union at common location.
 	    if (argvars[0].vval.v_object != NULL)
-		vim_snprintf((char*)numbuf, sizeof(numbuf), "%p",
-					    (void *)argvars[0].vval.v_object);
-	    else
-		numbuf[0] = NUL;
-	    break;
+	    {
+		// "v" gets the address as an integer
+		uintptr_t v = (uintptr_t)(void *)argvars[0].vval.v_object;
+		// Build a hex string from the item's address; it is in
+		// reverse order. Ignore trailing zeros.
+		for (; p < numbuf + sizeof(uintptr_t) * 2 && v != 0;
+								++p, v >>= 4)
+		    *p = "0123456789abcdef"[v & 0xf];
+	    }
 	default:
-	    numbuf[0] = NUL;
+	    break;
     }
+    *p = NUL;
 
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = vim_strsave(numbuf);
+    rettv->vval.v_string = vim_strsave((char_u *)numbuf);
 }
 
 /*
