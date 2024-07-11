@@ -1078,11 +1078,13 @@ vim_findfile(void *search_ctx_arg)
 		&& search_ctx->ffsc_stopdirs_v != NULL && !got_int)
 	{
 	    ff_stack_T  *sptr;
+	    // path_end may point to the NUL or the previous path separator
+	    int plen = (path_end - search_ctx->ffsc_start_dir)
+							  + (*path_end != NUL);
 
 	    // is the last starting directory in the stop list?
 	    if (ff_path_in_stoplist(search_ctx->ffsc_start_dir,
-		       (int)(path_end - search_ctx->ffsc_start_dir),
-		       search_ctx->ffsc_stopdirs_v) == TRUE)
+				    plen, search_ctx->ffsc_stopdirs_v) == TRUE)
 		break;
 
 	    // cut of last dir
@@ -1521,22 +1523,14 @@ ff_path_in_stoplist(char_u *path, int path_len, char_u **stopdirs_v)
 	return TRUE;
 
     for (i = 0; stopdirs_v[i] != NULL; i++)
-    {
-	if ((int)STRLEN(stopdirs_v[i]) > path_len)
-	{
-	    // match for parent directory. So '/home' also matches
-	    // '/home/rks'. Check for PATHSEP in stopdirs_v[i], else
-	    // '/home/r' would also match '/home/rks'
-	    if (fnamencmp(stopdirs_v[i], path, path_len) == 0
-		    && vim_ispathsep(stopdirs_v[i][path_len]))
-		return TRUE;
-	}
-	else
-	{
-	    if (fnamecmp(stopdirs_v[i], path) == 0)
-		return TRUE;
-	}
-    }
+	// match for parent directory. So '/home' also matches
+	// '/home/rks'. Check for PATHSEP in stopdirs_v[i], else
+	// '/home/r' would also match '/home/rks'
+	if (fnamencmp(stopdirs_v[i], path, path_len) == 0
+		&& ((int)STRLEN(stopdirs_v[i]) <= path_len
+		    || vim_ispathsep(stopdirs_v[i][path_len])))
+	    return TRUE;
+
     return FALSE;
 }
 
