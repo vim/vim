@@ -79,10 +79,10 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
 #endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
-// Keep in sync with SWT_ flags in option.h
-static char *(p_swt_values[]) = {"left", "uselast", NULL};
 static char *(p_spk_values[]) = {"cursor", "screen", "topline", NULL};
 static char *(p_tc_values[]) = {"followic", "ignore", "match", "followscs", "smart", NULL};
+// Keep in sync with TCL_ flags in option.h
+static char *(p_tcl_values[]) = {"left", "uselast", NULL};
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL};
 #endif
@@ -168,7 +168,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_tbis, p_tbis_values, &tbis_flags, FALSE);
 #endif
     (void)opt_strings_flags(p_swb, p_swb_values, &swb_flags, TRUE);
-    (void)opt_strings_flags(p_swt, p_swt_values, &swt_flags, TRUE);
+    (void)opt_strings_flags(p_tcl, p_tcl_values, &tcl_flags, TRUE);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -3673,21 +3673,21 @@ expand_set_switchbuf(optexpand_T *args, int *numMatches, char_u ***matches)
 }
 
 /*
- * The 'switchtab' option is changed.
+ * The 'tabclose' option is changed.
  */
     char *
-did_set_switchtab(optset_T *args UNUSED)
+did_set_tabclose(optset_T *args UNUSED)
 {
-    return did_set_opt_flags(p_swt, p_swt_values, &swt_flags, TRUE);
+    return did_set_opt_flags(p_tcl, p_tcl_values, &tcl_flags, TRUE);
 }
 
     int
-expand_set_switchtab(optexpand_T *args, int *numMatches, char_u ***matches)
+expand_set_tabclose(optexpand_T *args, int *numMatches, char_u ***matches)
 {
     return expand_set_opt_string(
 	    args,
-	    p_swt_values,
-	    ARRAY_LENGTH(p_swt_values) - 1,
+	    p_tcl_values,
+	    ARRAY_LENGTH(p_tcl_values) - 1,
 	    numMatches,
 	    matches);
 }

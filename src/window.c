@@ -3786,12 +3786,12 @@ alt_tabpage(void)
     int		forward;
 
     // Use the last accessed tab page, if possible.
-    if ((swt_flags & SWT_USELAST) && valid_tabpage(lastused_tabpage))
+    if ((tcl_flags & TCL_USELAST) && valid_tabpage(lastused_tabpage))
 	return lastused_tabpage;
 
     // Use the previous tab page, if possible.
     forward = curtab->tp_next != NULL &&
-	    ((swt_flags & SWT_LEFT) == 0 || curtab == first_tabpage);
+	    ((tcl_flags & TCL_LEFT) == 0 || curtab == first_tabpage);
 
     if (forward)
 	tp = curtab->tp_next;

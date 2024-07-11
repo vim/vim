@@ -2443,9 +2443,6 @@ static struct vimoption options[] =
     {"switchbuf",   "swb",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_swb, PV_NONE, did_set_switchbuf, expand_set_switchbuf,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
-    {"switchtab",   "swt",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_swt, PV_NONE, did_set_switchtab, expand_set_switchtab,
-			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"synmaxcol",   "smc",  P_NUM|P_VI_DEF|P_RBUF,
 #ifdef FEAT_SYN_HL
 			    (char_u *)&p_smc, PV_SMC, NULL, NULL,
@@ -2465,6 +2462,9 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"tabclose",    "tcl",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_tcl, PV_NONE, did_set_tabclose, expand_set_tabclose,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"tabline",	    "tal",  P_STRING|P_VI_DEF|P_RALL|P_MLE,
 #ifdef FEAT_STL_OPT
 			    (char_u *)&p_tal, PV_NONE, did_set_tabline, NULL,

@@ -965,18 +965,18 @@ func Test_tabpage_alloc_failure()
   call assert_equal(1, tabpagenr('$'))
 endfunc
 
-func Test_tabpage_switchtab()
+func Test_tabpage_tabclose()
   " Default behaviour, move to the right.
   call s:reconstruct_tabpage_for_test(6)
   norm! 4gt
-  setl swt=
+  setl tcl=
   tabclose
   call assert_equal("n3", bufname())
 
   " Move to the left.
   call s:reconstruct_tabpage_for_test(6)
   norm! 4gt
-  setl swt=left
+  setl tcl=left
   tabclose
   call assert_equal("n1", bufname())
 
@@ -984,7 +984,7 @@ func Test_tabpage_switchtab()
   call s:reconstruct_tabpage_for_test(6)
   norm! 5gt
   norm! 2gt
-  setl swt=uselast
+  setl tcl=uselast
   tabclose
   call assert_equal("n3", bufname())
 
@@ -992,7 +992,7 @@ func Test_tabpage_switchtab()
   call s:reconstruct_tabpage_for_test(6)
   norm! 5gt
   norm! 3gt
-  setl swt=uselast
+  setl tcl=uselast
   tabclose 5
   tabclose!
   call assert_equal("n2", bufname())
@@ -1001,26 +1001,26 @@ func Test_tabpage_switchtab()
   call s:reconstruct_tabpage_for_test(6)
   norm! 5gt
   norm! 3gt
-  setl swt=uselast,left
+  setl tcl=uselast,left
   tabclose 5
   tabclose!
   call assert_equal("n0", bufname())
 
   " Move left when moving right is not possible.
   call s:reconstruct_tabpage_for_test(6)
-  setl swt=
+  setl tcl=
   norm! 6gt
   tabclose
   call assert_equal("n3", bufname())
 
   " Move right when moving left is not possible.
   call s:reconstruct_tabpage_for_test(6)
-  setl swt=left
+  setl tcl=left
   norm! 1gt
   tabclose
   call assert_equal("n0", bufname())
 
-  setl swt&
+  setl tcl&
 endfunc
 
 " this was giving ml_get errors
