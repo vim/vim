@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.1.  Last change: 2024 May 05
+*map.txt*       For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1631,6 +1631,7 @@ completion can be enabled:
 	-complete=compiler	compilers
 	-complete=cscope	|:cscope| suboptions
 	-complete=dir		directory names
+	-complete=dir_in_path	directory names in |'cdpath'|
 	-complete=environment	environment variable names
 	-complete=event		autocommand events
 	-complete=expression	Vim expression

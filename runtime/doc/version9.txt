@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 10
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41583,6 +41583,9 @@ Changed~
 - moving in the buffer list using |:bnext| and similar commands, behaves as
   documented and skips help buffers (if not run from a help buffer, else 
   moves to the next/previous help buffer).
+- allow to complete directories from 'cdpath' for |:cd| and similar commands,
+  add the "cd_in_path" completion type for e.g. |:command-complete| and
+  |getcompletion()|
 
 							*added-9.2*
 Added ~

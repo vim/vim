@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.1.  Last change: 2024 Jul 04
+*todo.txt*      For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -539,7 +539,6 @@ SpellCap doesn't show below a closed fold. #12420
 - Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 - Problem with 'cdpath' on MS-Windows when a directory is equal to $HOME.
   (2006 Jul 26, Gary Johnson)
-- Completion of ":cd" doesn't use 'cdpath'. #374.
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558

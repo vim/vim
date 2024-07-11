@@ -2211,10 +2211,11 @@ is_unique(char_u *maybe_unique, garray_T *gap, int i)
  * expanding each into their equivalent path(s).
  */
     static void
-expand_path_option(char_u *curdir, garray_T *gap)
+expand_path_option(
+	char_u		*curdir,
+	char_u		*path_option,	// p_path or p_cdpath
+	garray_T	*gap)
 {
-    char_u	*path_option = *curbuf->b_p_path == NUL
-						  ? p_path : curbuf->b_p_path;
     char_u	*buf;
     char_u	*p;
     int		len;
@@ -2329,7 +2330,10 @@ get_path_cutoff(char_u *fname, garray_T *gap)
  * that matches the pattern. Beware, this is at least O(n^2) wrt "gap->ga_len".
  */
     void
-uniquefy_paths(garray_T *gap, char_u *pattern)
+uniquefy_paths(
+	garray_T *gap,
+	char_u *pattern,
+	char_u *path_option)	// p_path or p_cdpath
 {
     int		i;
     int		len;
@@ -2372,7 +2376,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     if ((curdir = alloc(MAXPATHL)) == NULL)
 	goto theend;
     mch_dirname(curdir, MAXPATHL);
-    expand_path_option(curdir, &path_ga);
+    expand_path_option(curdir, path_option, &path_ga);
 
     in_curdir = ALLOC_CLEAR_MULT(char_u *, gap->ga_len);
     if (in_curdir == NULL)
@@ -2520,13 +2524,17 @@ expand_in_path(
     garray_T	path_ga;
     char_u	*paths = NULL;
     int		glob_flags = 0;
+    char_u	*path_option = *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path;
 
     if ((curdir = alloc(MAXPATHL)) == NULL)
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 
     ga_init2(&path_ga, sizeof(char_u *), 1);
-    expand_path_option(curdir, &path_ga);
+    if (flags & EW_CDPATH)
+	expand_path_option(curdir, p_cdpath, &path_ga);
+    else
+	expand_path_option(curdir, path_option, &path_ga);
     vim_free(curdir);
     if (path_ga.ga_len == 0)
 	return 0;
@@ -2540,7 +2548,7 @@ expand_in_path(
 	glob_flags |= WILD_ICASE;
     if (flags & EW_ADDSLASH)
 	glob_flags |= WILD_ADD_SLASH;
-    globpath(paths, pattern, gap, glob_flags, FALSE);
+    globpath(paths, pattern, gap, glob_flags, !!(flags & EW_CDPATH));
     vim_free(paths);
 
     return gap->ga_len;
