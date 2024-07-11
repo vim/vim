@@ -1397,6 +1397,7 @@ enum auto_event
     EVENT_INSERTENTER,		// when entering Insert mode
     EVENT_INSERTLEAVEPRE,	// just before leaving Insert mode
     EVENT_INSERTLEAVE,		// just after leaving Insert mode
+    EVENT_KEYINPUTPRE,		// before key input
     EVENT_MENUPOPUP,		// just before popup menu is displayed
     EVENT_MODECHANGED,		// after changing the mode
     EVENT_OPTIONSET,		// option was set

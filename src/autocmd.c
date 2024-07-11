@@ -155,6 +155,7 @@ static keyvalue_T event_tab[] = {
     KEYVALUE_ENTRY(EVENT_INSERTENTER, "InsertEnter"),
     KEYVALUE_ENTRY(EVENT_INSERTLEAVE, "InsertLeave"),
     KEYVALUE_ENTRY(EVENT_INSERTLEAVEPRE, "InsertLeavePre"),
+    KEYVALUE_ENTRY(EVENT_KEYINPUTPRE, "KeyInputPre"),
     KEYVALUE_ENTRY(EVENT_MENUPOPUP, "MenuPopup"),
     KEYVALUE_ENTRY(EVENT_MODECHANGED, "ModeChanged"),
     KEYVALUE_ENTRY(EVENT_OPTIONSET, "OptionSet"),
@@ -2022,6 +2023,15 @@ has_insertcharpre(void)
 }
 
 /*
+ * Return TRUE when there is an KeyInputPre autocommand defined.
+ */
+    int
+has_keyinputpre(void)
+{
+    return (first_autopat[(int)EVENT_KEYINPUTPRE] != NULL);
+}
+
+/*
  * Return TRUE when there is an CmdUndefined autocommand defined.
  */
     int
@@ -2256,6 +2266,7 @@ apply_autocmds_group(
 		|| event == EVENT_CMDWINLEAVE
 		|| event == EVENT_CMDUNDEFINED
 		|| event == EVENT_FUNCUNDEFINED
+		|| event == EVENT_KEYINPUTPRE
 		|| event == EVENT_REMOTEREPLY
 		|| event == EVENT_SPELLFILEMISSING
 		|| event == EVENT_QUICKFIXCMDPRE
