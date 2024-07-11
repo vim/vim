@@ -1689,8 +1689,10 @@ nb_do_cmd(
 	    if (streq((char *)args, "T") && buf->bufp != curbuf)
 	    {
 		exarg_T exarg;
+		CLEAR_FIELD(exarg);
 		exarg.cmd = (char_u *)"goto";
 		exarg.forceit = FALSE;
+		exarg.cmdidx = CMD_USER;
 		dosetvisible = TRUE;
 		goto_buffer(&exarg, DOBUF_FIRST, FORWARD, buf->bufp->b_fnum);
 		do_update = 1;
