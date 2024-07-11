@@ -2312,9 +2312,9 @@ set_var_lval(
 	    if (lp->ll_valtype != NULL)
 		typ = lp->ll_valtype;
 	    // Use the type infos available at runtime.
-	    else if (lp->ll_dict != NULL)
+	    else if (lp->ll_dict != NULL && lp->ll_dict->dv_type != NULL)
 		typ = lp->ll_dict->dv_type->tt_member;
-	    else if (lp->ll_list != NULL)
+	    else if (lp->ll_list != NULL && lp->ll_list->lv_type != NULL)
 		typ = lp->ll_list->lv_type->tt_member;
 
 	    if (typ != NULL && typ->tt_type != VAR_ANY
