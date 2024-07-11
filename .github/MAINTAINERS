@@ -202,6 +202,7 @@ runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/meson.vim		@Liambeguin
 runtime/ftplugin/modula2.vim		@dkearns
 runtime/ftplugin/modula3.vim		@dkearns
+runtime/ftplugin/mojo.vim		@ribru17
 runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nim.vim		@ribru17
 runtime/ftplugin/nroff.vim		@a-vrma
@@ -323,6 +324,7 @@ runtime/indent/lua.vim			@marcuscf
 runtime/indent/make.vim			@dkearns
 runtime/indent/meson.vim		@Liambeguin
 runtime/indent/mma.vim			@dkearns
+runtime/indent/mojo.vim			@ribru17
 runtime/indent/nginx.vim		@chr4
 runtime/indent/nsis.vim			@k-takata
 runtime/indent/occam.vim		@dkearns
