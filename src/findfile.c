@@ -418,6 +418,7 @@ vim_findfile_init(
 	    {
 		char_u	*helper;
 		void	*ptr;
+		size_t	len;
 
 		helper = walker;
 		ptr = vim_realloc(search_ctx->ffsc_stopdirs_v,
@@ -428,18 +429,21 @@ vim_findfile_init(
 		    // ignore, keep what we have and continue
 		    break;
 		walker = vim_strchr(walker, ';');
-		if (walker)
+		len = walker ? (size_t)(walker - helper) : STRLEN(helper);
+		// "" means ascent till top of directory tree.
+		if (*helper != NUL && !vim_isAbsName(helper)
+							 && len + 1 < MAXPATHL)
 		{
+		    // Make the stop dir an absolute path name.
+		    vim_strncpy(ff_expand_buffer, helper, len);
 		    search_ctx->ffsc_stopdirs_v[dircount-1] =
-					 vim_strnsave(helper, walker - helper);
-		    walker++;
+					FullName_save(ff_expand_buffer, FALSE);
 		}
 		else
-		    // this might be "", which means ascent till top
-		    // of directory tree.
 		    search_ctx->ffsc_stopdirs_v[dircount-1] =
-							  vim_strsave(helper);
-
+						     vim_strnsave(helper, len);
+		if (walker)
+		    walker++;
 		dircount++;
 
 	    } while (walker != NULL);
