@@ -2699,6 +2699,9 @@ mch_FullName(
     if ((force || !mch_isFullName(fname))
 	    && ((p = vim_strrchr(fname, '/')) == NULL || p != fname))
     {
+	if (p == NULL && STRCMP(fname, "..") == 0)
+	    // Handle ".." without path separators.
+	    p = fname + 2;
 	/*
 	 * If the file name has a path, change to that directory for a moment,
 	 * and then get the directory (and get back to where we were).
@@ -2707,7 +2710,7 @@ mch_FullName(
 	if (p != NULL)
 	{
 	    if (STRCMP(p, "/..") == 0)
-		// for "/path/dir/.." include the "/.."
+		// For "/path/dir/.." include the "/..".
 		p += 3;
 
 #ifdef HAVE_FCHDIR
