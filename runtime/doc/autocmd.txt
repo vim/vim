@@ -986,8 +986,8 @@ KeyInputPre			Just before a key is processed. The pattern is
 				returned by `mode(1)`.
 				The |v:char| variable indicates the key typed
 				and can be changed during the event to input
-				a different key.  When |v:char| is not single
-				character or one special key, it is the fist
+				a different key.  When |v:char| is not a
+				single character or one special key, the first
 				character is used.
 				The following values of |v:event| are set:
 				   typed	The key is typed or not.
