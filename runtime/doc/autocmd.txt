@@ -992,7 +992,7 @@ KeyInputPre			Just before a key is processed. The pattern is
 				The following values of |v:event| are set:
 				   typed	The key is typed or not.
 				It is not allowed to change the text
-				|textlock|.
+				|textlock| and the current mode.
 							*MenuPopup*
 MenuPopup			Just before showing the popup menu (under the
 				right mouse button).  Useful for adjusting the
