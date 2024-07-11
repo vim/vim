@@ -166,6 +166,7 @@ NEW_TESTS = \
 	test_gettext \
 	test_gettext_cp1251 \
 	test_gettext_utf8 \
+	test_gettext_make \
 	test_getvar \
 	test_gf \
 	test_glob2regpat \
@@ -428,6 +429,7 @@ NEW_TESTS_RES = \
 	test_gettext.res \
 	test_gettext_cp1251.res \
 	test_gettext_utf8.res \
+	test_gettext_make.res \
 	test_getvar.res \
 	test_gf.res \
 	test_gn.res \

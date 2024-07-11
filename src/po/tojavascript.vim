@@ -5,15 +5,20 @@
 
 set shortmess+=A
 
-for name in argv()[1:]
-  exe 'edit ' .. fnameescape(name)
+let s:namenum = 0
+let s:fls = []
+for s:name in argv()[1:]
+  exe 'edit ' .. fnameescape(s:name)
 
   " Strip comments, also after :set commands.
   g/^\s*"/s/.*//
   g/^\s*set .*"/s/.*//
 
   " Write as .js file, xgettext recognizes them
-  exe 'w! ' .. fnamemodify(name, ":r:gs?\\~?_?:gs?\\.?_?:gs?/?__?:gs?\\?__?") .. ".js"
+  let s:fl = fnamemodify(s:name, ":t:r") .. s:namenum .. ".js"
+  exe 'w! ' .. s:fl
+  call add(s:fls, s:fl)
+  let s:namenum += 1
 endfor
-
+call writefile(s:fls, "vim_to_js")
 quit

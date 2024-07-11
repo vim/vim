@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 09
+*builtin.txt*	For Vim version 9.1.  Last change: 2024 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1226,7 +1226,7 @@ bindtextdomain({package}, {path})			*bindtextdomain()*
 		Bind a specific {package} to a {path} so that the
 		|gettext()| function can be used to get language-specific
 		translations for a package.  {path} is the directory name
-		for the translations. See |package-create|.
+		for the translations. See |package-translation|.
 
 		Return type: none
 
@@ -5005,17 +5005,18 @@ gettagstack([{winnr}])					*gettagstack()*
 
 gettext({text} [, {package}])				*gettext()*
 		Translate String {text} if possible.
-		This is mainly for use in the distributed Vim scripts.  When
-		generating message translations the {text} is extracted by
-		xgettext, the translator can add the translated message in the
-		.po file and Vim will lookup the translation when gettext() is
-		called.
+		This is intended for use in Vim scripts.  When generating
+		message translations the {text} is extracted by `xgettext`,
+		the translator can add translated messages into the .po file
+		and Vim will lookup the translation when gettext() is called.
 		For {text} double quoted strings are preferred, because
-		xgettext does not understand escaping in single quoted
-		strings.
+		`xgettext` does not support single quoted escaped text.
+
 		When the {package} is specified, the translation is looked up
-		for that specific package. You need to specify the path to
-		look for translations with the |bindtextdomain()| function.
+		for that specific package.  This is mainly required for
+		third-party Vim scripts.  You need to specify a path to the
+		translations with the |bindtextdomain()| function before
+		using the gettext() function.
 
 		Return type: |String|
 
