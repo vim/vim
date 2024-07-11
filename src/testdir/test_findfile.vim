@@ -30,9 +30,7 @@ endfunc
 " Test findfile({name} [, {path} [, {count}]])
 func Test_findfile()
   let save_path = &path
-  let save_shellslash = &shellslash
   let save_dir = getcwd()
-  set shellslash
   call CreateFiles()
   cd Xfinddir1
   e Xdir2/foo
@@ -116,7 +114,6 @@ func Test_findfile()
   call chdir(save_dir)
   call CleanFiles()
   let &path = save_path
-  let &shellslash = save_shellslash
 endfunc
 
 func Test_findfile_error()
@@ -130,7 +127,6 @@ endfunc
 " Test finddir({name} [, {path} [, {count}]])
 func Test_finddir()
   let save_path = &path
-  let save_shellslash = &shellslash
   let save_dir = getcwd()
   set path=,,
   call CreateFiles()
@@ -173,7 +169,6 @@ func Test_finddir()
   call chdir(save_dir)
   call CleanFiles()
   let &path = save_path
-  let &shellslash = save_shellslash
 endfunc
 
 func Test_finddir_error()
