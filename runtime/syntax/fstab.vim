@@ -2,8 +2,8 @@
 " Language: fstab file
 " Maintainer: Radu Dineiu <radu.dineiu@gmail.com>
 " URL: https://raw.github.com/rid9/vim-fstab/master/syntax/fstab.vim
-" Last Change: 2023 Feb 19
-" Version: 1.6.3
+" Last Change: 2024 Jul 11
+" Version: 1.6.4
 "
 " Credits:
 "   David Necas (Yeti) <yeti@physics.muni.cz>
