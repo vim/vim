@@ -598,7 +598,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 # ifdef bindtextdomain
 #  undef bindtextdomain
 # endif
-# define bindtextdomain(x, y) (y)
+# define bindtextdomain(x, y) ""
 # ifdef bind_textdomain_codeset
 #  undef bind_textdomain_codeset
 # endif
