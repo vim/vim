@@ -1636,6 +1636,24 @@ dict_set_items_ro(dict_T *di)
 }
 
 /*
+ * Replaces the typval_T of dict item "di" to "tv".  "tv" is copied.
+ * Return FAIL when the type is wrong.
+ */
+    int
+dict_set_item_move(dict_T *d, dictitem_T *di, typval_T *tv)
+{
+    if (d->dv_type != NULL
+	    && d->dv_type->tt_member->tt_type != VAR_ANY
+	    && check_typval_arg_type(d->dv_type->tt_member, tv, NULL, 0) == FAIL)
+	return FAIL;
+
+    clear_tv(&di->di_tv);
+    di->di_tv = *tv;
+
+    return OK;
+}
+
+/*
  * "has_key()" function
  */
     void

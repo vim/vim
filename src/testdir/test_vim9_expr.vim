@@ -4200,4 +4200,24 @@ func Test_expr_fails()
   call v9.CheckDefAndScriptFailure(["echo doesnotexist()"], 'E117:', 1)
 endfunc
 
+def Test_expr_assign_typecheck()
+  # Ensure types are checked at runtime when assigning to a list or dict.
+
+  var lines =<< trim END
+      var x: list<list<number>> = [[1], [2], [3], [4]]
+      # Erase the type and then modify an item.
+      var proxy: list<any> = x
+      proxy[2][0] = 'abc'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012:', 4)
+
+  lines =<< trim END
+      var x: dict<list<number>> = {a: [1], b: [2], c: [3], d: [4]}
+      # Erase the type and then modify an item.
+      var proxy: dict<any> = x
+      proxy['c'][0] = 'abc'
+  END
+  v9.CheckDefExecAndScriptFailure(lines, 'E1012:', 4)
+enddef
+
 " vim: shiftwidth=2 sts=2 expandtab

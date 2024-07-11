@@ -620,6 +620,24 @@ list_append_tv(list_T *l, typval_T *tv)
 }
 
 /*
+ * Replaces the typval_T of list item "li" to "tv".  "tv" is copied.
+ * Return FAIL when the type is wrong.
+ */
+    int
+list_set_item_move(list_T *l, listitem_T *li, typval_T *tv)
+{
+    if (l->lv_type != NULL
+	    && l->lv_type->tt_member->tt_type != VAR_ANY
+	    && check_typval_arg_type(l->lv_type->tt_member, tv, NULL, 0) == FAIL)
+	return FAIL;
+
+    clear_tv(&li->li_tv);
+    li->li_tv = *tv;
+
+    return OK;
+}
+
+/*
  * As list_append_tv() but move the value instead of copying it.
  * Return FAIL when out of memory.
  */

@@ -2290,11 +2290,13 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	{
 	    list_T	    *list = tv_dest->vval.v_list;
 
+	    SOURCING_LNUM = iptr->isn_lnum;
 	    if (list == NULL)
 	    {
 		emsg(_(e_list_not_set));
 		return FAIL;
 	    }
+
 	    if (lidx < 0 && list->lv_len + lidx >= 0)
 		// negative index is relative to the end
 		lidx = list->lv_len + lidx;
@@ -2311,8 +2313,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 					     e_cannot_change_locked_list_item))
 		    return FAIL;
 		// overwrite existing list item
-		clear_tv(&li->li_tv);
-		li->li_tv = *tv;
+		list_set_item_move(list, li, tv);
 	    }
 	    else
 	    {
@@ -2336,6 +2337,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 		emsg(_(e_dictionary_not_set));
 		return FAIL;
 	    }
+
 	    if (key == NULL)
 		key = (char_u *)"";
 	    di = dict_find(dict, key, -1);
@@ -2345,8 +2347,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 						    e_cannot_change_dict_item))
 		    return FAIL;
 		// overwrite existing value
-		clear_tv(&di->di_tv);
-		di->di_tv = *tv;
+		dict_set_item_move(dict, di, tv);
 	    }
 	    else
 	    {

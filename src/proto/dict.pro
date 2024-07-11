@@ -49,5 +49,6 @@ void f_items(typval_T *argvars, typval_T *rettv);
 void f_keys(typval_T *argvars, typval_T *rettv);
 void f_values(typval_T *argvars, typval_T *rettv);
 void dict_set_items_ro(dict_T *di);
+int dict_set_item_move(dict_T *d, dictitem_T *di, typval_T *tv);
 void f_has_key(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -2304,10 +2304,23 @@ set_var_lval(
 	    return;
 	}
 
-	if (lp->ll_valtype != NULL
-		    && check_typval_arg_type(lp->ll_valtype, rettv,
-							      NULL, 0) == FAIL)
-	    return;
+	if (in_vim9script())
+	{
+	    type_T	*typ = NULL;
+
+	    // Use the declared type if available.
+	    if (lp->ll_valtype != NULL)
+		typ = lp->ll_valtype;
+	    // Use the type infos available at runtime.
+	    else if (lp->ll_dict != NULL)
+		typ = lp->ll_dict->dv_type;
+	    else if (lp->ll_list != NULL)
+		typ = lp->ll_list->lv_type;
+
+	    if (typ != NULL && typ->tt_type != VAR_ANY
+		    && check_typval_arg_type(typ, rettv, NULL, 0) == FAIL)
+		return;
+	}
 
 	if (lp->ll_newkey != NULL)
 	{
