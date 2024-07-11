@@ -2313,9 +2313,9 @@ set_var_lval(
 		typ = lp->ll_valtype;
 	    // Use the type infos available at runtime.
 	    else if (lp->ll_dict != NULL)
-		typ = lp->ll_dict->dv_type;
+		typ = lp->ll_dict->dv_type->tt_member;
 	    else if (lp->ll_list != NULL)
-		typ = lp->ll_list->lv_type;
+		typ = lp->ll_list->lv_type->tt_member;
 
 	    if (typ != NULL && typ->tt_type != VAR_ANY
 		    && check_typval_arg_type(typ, rettv, NULL, 0) == FAIL)
