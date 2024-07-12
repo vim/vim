@@ -1992,8 +1992,8 @@ too long when appending characters a line break is automatically inserted.
 			name.
 
 These two commands will keep on asking for lines, until you type a line
-containing only a ".".  Watch out for lines starting with a backslash, see
-|line-continuation|.
+containing only a ".".  Text typed after a "|" command separator is used first.
+Watch out for lines starting with a backslash, see |line-continuation|.
 
 NOTE: These commands cannot be used with |:global| or |:vglobal|.
 ":append" and ":insert" don't work properly in between ":if" and
