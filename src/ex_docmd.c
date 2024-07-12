@@ -2730,7 +2730,7 @@ ex_range_without_command(exarg_T *eap)
 {
     char *errormsg = NULL;
 
-    if ((*eap->cmd == '|' || (exmode_active && eap->line1 != eap->line2))
+    if ((*eap->cmd == '|' || exmode_active)
 #ifdef FEAT_EVAL
 	    && !in_vim9script()
 #endif
