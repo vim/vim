@@ -1065,28 +1065,24 @@ def ParseVarinfo(varinfo: string): dict<any>
 enddef
 
 def HandleVariablesMsg(msg: string)
-  var curwinid = win_getid()
-  if win_gotoid(varwin)
-    silent! :%delete _
-    var spaceBuffer = 20
-    var spaces = repeat(' ', 16)
-    setline(1, $'Type{spaces}Name{spaces}Value')
-    var cnt = 1
-    var capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
-    var varinfo = matchstr(msg, capture, 0, cnt)
+  deletebufline(varbufname, 1, '$')
+  var spaceBuffer = 20
+  var spaces = repeat(' ', 16)
+  setbufline(varbufnr, 1, $'Type{spaces}Name{spaces}Value')
+  var cnt = 1
+  var capture = '{name=".\{-}",\%(arg=".\{-}",\)\{0,1\}type=".\{-}"\%(,value=".\{-}"\)\{0,1\}}'
+  var varinfo = matchstr(msg, capture, 0, cnt)
 
-    while varinfo != ''
-      var vardict = ParseVarinfo(varinfo)
-      setline(cnt + 1, vardict['type'] ..
-        repeat(' ', max([20 - len(vardict['type']), 1])) ..
-        vardict['name'] ..
-        repeat(' ', max([20 - len(vardict['name']), 1])) ..
-        vardict['value'])
-      cnt += 1
-      varinfo = matchstr(msg, capture, 0, cnt)
-    endwhile
-  endif
-  win_gotoid(curwinid)
+  while varinfo != ''
+    var vardict = ParseVarinfo(varinfo)
+    setbufline(varbufnr, cnt + 1, vardict['type'] ..
+      repeat(' ', max([20 - len(vardict['type']), 1])) ..
+      vardict['name'] ..
+      repeat(' ', max([20 - len(vardict['name']), 1])) ..
+      vardict['value'])
+    cnt += 1
+    varinfo = matchstr(msg, capture, 0, cnt)
+  endwhile
 enddef
 
 
@@ -1704,7 +1700,8 @@ def GotoVariableswinOrCreateIt()
     setlocal nowrap
     setlocal noswapfile
     setlocal buftype=nofile
-    setlocal bufhidden=wipe
+    setlocal bufhidden=hide
+    setlocal nobuflisted
     setlocal signcolumn=no
     setlocal modifiable
 
