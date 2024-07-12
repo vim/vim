@@ -955,7 +955,6 @@ EXTERN int	p_sol;		// 'startofline'
 EXTERN char_u	*p_su;		// 'suffixes'
 EXTERN char_u	*p_sws;		// 'swapsync'
 EXTERN char_u	*p_swb;		// 'switchbuf'
-EXTERN char_u	*p_spk;		// 'splitkeep'
 EXTERN unsigned	swb_flags;
 // Keep in sync with p_swb_values in optionstr.c
 #define SWB_USEOPEN		0x001
@@ -964,9 +963,14 @@ EXTERN unsigned	swb_flags;
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
 #define SWB_USELAST		0x020
+EXTERN char_u	*p_spk;		// 'splitkeep'
 #ifdef FEAT_SYN_HL
 EXTERN char_u	*p_syn;		// 'syntax'
 #endif
+EXTERN char_u	*p_tcl;		// 'tabclose'
+EXTERN unsigned	tcl_flags;	// flags from 'tabclose'
+#define TCL_LEFT		0x001
+#define TCL_USELAST		0x002
 EXTERN long	p_ts;		// 'tabstop'
 EXTERN int	p_tbs;		// 'tagbsearch'
 EXTERN char_u	*p_tc;		// 'tagcase'

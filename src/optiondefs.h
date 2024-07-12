@@ -2462,6 +2462,9 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"tabclose",    "tcl",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_tcl, PV_NONE, did_set_tabclose, expand_set_tabclose,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"tabline",	    "tal",  P_STRING|P_VI_DEF|P_RALL|P_MLE,
 #ifdef FEAT_STL_OPT
 			    (char_u *)&p_tal, PV_NONE, did_set_tabline, NULL,

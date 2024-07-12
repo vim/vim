@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 11
+*version9.txt*  For Vim version 9.1.  Last change: 2024 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -41632,6 +41632,7 @@ Commands: ~
 Options: ~
 
 'winfixbuf'		Keep buffer focused in a window
+'tabclose'		Which tab page to focus after closing a tab page
 't_xo'			Terminal uses XON/XOFF handshaking (e.g. vt420)
 't_CF'			Support for alternate font highlighting terminal code
 

@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 9.1.  Last change: 2024 May 15
+*tabpage.txt*   For Vim version 9.1.  Last change: 2024 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -142,7 +142,8 @@ something else.
 		    :tabclose $	    " close the last tab page
 		    :tabclose #     " close the last accessed tab page
 
-When a tab is closed the next tab page will become the current one.
+When a tab is closed the next tab page will become the current one. This
+behaviour can be customized using the 'tabclose' option.
 
 							*:tabo* *:tabonly*
 :tabo[nly][!]	Close all other tab pages.

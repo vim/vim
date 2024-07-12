@@ -1161,6 +1161,7 @@ $quote	eval.txt	/*$quote*
 't_xo'	term.txt	/*'t_xo'*
 't_xs'	term.txt	/*'t_xs'*
 'ta'	options.txt	/*'ta'*
+'tabclose'	options.txt	/*'tabclose'*
 'tabline'	options.txt	/*'tabline'*
 'tabpagemax'	options.txt	/*'tabpagemax'*
 'tabstop'	options.txt	/*'tabstop'*
@@ -1179,6 +1180,7 @@ $quote	eval.txt	/*$quote*
 'tbis'	options.txt	/*'tbis'*
 'tbs'	options.txt	/*'tbs'*
 'tc'	options.txt	/*'tc'*
+'tcl'	options.txt	/*'tcl'*
 'tcldll'	options.txt	/*'tcldll'*
 'tenc'	options.txt	/*'tenc'*
 'term'	options.txt	/*'term'*
