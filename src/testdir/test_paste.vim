@@ -93,7 +93,7 @@ func Test_paste_ex_mode()
   call assert_equal("foo\rbar", foo)
 
   " pasting more than 40 bytes
-  exe "norm Q\<PasteStart>0000000000000000000000000000000000000000000000000000000000000000000000\<C-C>"
+  exe "norm Q\<PasteStart>s/.*/0000000000000000000000000000000000000000000000000000000000000000/\<C-C>"
 endfunc
 
 func Test_paste_onechar()
