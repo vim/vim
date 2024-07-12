@@ -8059,16 +8059,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If a window has 'winfixbuf' enabled, 'switchbuf' is currently not
 	applied to the split window.
 
-						*'switchtab'* *'swt'*
-'switchtab' 'swt'	string	(default "")
-			global
-	This option controls the behavior when switching tabs, for example when
-	closing one (e.g.  |:tabclose|).
-	Possible values (comma-separated list):
-	   left		If included, move to the previous tab page instead of the next
-			one.
-	   uselast	If included, jump to the previously used tab page if possible.
-
 						*'synmaxcol'* *'smc'*
 'synmaxcol' 'smc'	number	(default 3000)
 			local to buffer
@@ -8109,6 +8099,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option is not copied to another buffer, independent of the 's' or
 	'S' flag in 'cpoptions'.
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
+
+						*'tabclose'* *'tcl'*
+'tabclose' 'tcl'	string	(default "")
+			global
+	When non-empty This option controls the behavior when closing tab pages
+	(e.g., using |:tabclose|).  When empty Vim goes to the next tab page.
+
+	Possible values (comma-separated list):
+	   left		If included, go to the previous tab page instead of
+			the next one.
+	   uselast	If included, go to the previously used tab page if
+			possible.  This option takes precedence over the
+			others.
 
 						*'tabline'* *'tal'*
 'tabline' 'tal'		string	(default empty)
