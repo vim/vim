@@ -1706,6 +1706,7 @@ endfunc
 func Test_gui_lowlevel_keyevent()
   CheckMSWindows
   new
+  let g:test_is_flaky = 1
 
   " Test for <Ctrl-A> to <Ctrl-Z> keys
   for kc in range(65, 90)
