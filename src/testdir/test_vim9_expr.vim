@@ -4212,10 +4212,10 @@ def Test_expr_assign_typecheck()
   v9.CheckDefExecAndScriptFailure(lines, 'E1012:', 4)
 
   lines =<< trim END
-      var x: dict<list<number>> = {a: [1], b: [2], c: [3], d: [4]}
+      var x: dict<dict<number>> = {a: {a: 1}, b: {b: 2}, c: {c: 3}, d: {d: 4} }
       # Erase the type and then modify an item.
       var proxy: dict<any> = x
-      proxy['c'][0] = 'abc'
+      proxy['c']['c'] = 'abc'
   END
   v9.CheckDefExecAndScriptFailure(lines, 'E1012:', 4)
 enddef
