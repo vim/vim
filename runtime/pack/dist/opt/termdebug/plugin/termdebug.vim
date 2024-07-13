@@ -1718,7 +1718,7 @@ def GotoVariableswinOrCreateIt()
     win_gotoid(varwin)
   endif
 
-  if running && bufwinid(varbufname) > 0
+  if running && varwin > 0
     SendCommand('-stack-list-variables 2')
   endif
 enddef
