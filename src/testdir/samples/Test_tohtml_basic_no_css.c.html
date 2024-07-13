@@ -1,0 +1,40 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>/home/jiangyinzuo/vim/src/testdir/Test_tohtml_basic_no_css.c.html</title>
+<meta name="Generator" content="Vim/9.1">
+<meta name="plugin-version" content="vim9.0_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="no_pre,no_foldcolumn,expand_tabs,prevent_copy=,use_input_for_pc=none">
+<meta name="colorscheme" content="none">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<font face="monospace">
+#include &lt;stdio.h&gt;<br>
+#include &lt;stdlib.h&gt;<br>
+<br>
+int isprime(int n)<br>
+{<br>
+&nbsp;&nbsp;if (n &lt;= 1)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return 0;<br>
+<br>
+&nbsp;&nbsp;for (int i = 2; i &lt;= n / 2; i++)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (n % i == 0)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0;<br>
+<br>
+&nbsp;&nbsp;return 1;<br>
+}<br>
+<br>
+int main(int argc, char *argv[])<br>
+{<br>
+&nbsp;&nbsp;int n = 7;<br>
+<br>
+&nbsp;&nbsp;printf(&quot;%d is %s prime\n&quot;, n, isprime(n) ? &quot;a&quot; : &quot;not a&quot;);<br>
+<br>
+&nbsp;&nbsp;return 0;<br>
+}<br>
+</font>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>/home/jiangyinzuo/vim/src/testdir/Test_tohtml_basic.c.html</title>
+<meta name="Generator" content="Vim/9.1">
+<meta name="plugin-version" content="vim9.0_v2">
+<meta name="syntax" content="none">
+<meta name="settings" content="use_css,no_foldcolumn,pre_wrap,prevent_copy=,use_input_for_pc=none">
+<meta name="colorscheme" content="none">
+<style>
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffff; }
+body { font-family: monospace; color: #000000; background-color: #ffffff; }
+* { font-size: 1em; }
+-->
+</style>
+</head>
+<body>
+<pre id='vimCodeElement'>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int isprime(int n)
+{
+  if (n &lt;= 1)
+    return 0;
+
+  for (int i = 2; i &lt;= n / 2; i++)
+    if (n % i == 0)
+      return 0;
+
+  return 1;
+}
+
+int main(int argc, char *argv[])
+{
+  int n = 7;
+
+  printf(&quot;%d is %s prime\n&quot;, n, isprime(n) ? &quot;a&quot; : &quot;not a&quot;);
+
+  return 0;
+}
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->
