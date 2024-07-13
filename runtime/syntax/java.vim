@@ -562,7 +562,7 @@ hi def link javaStorageClass		StorageClass
 hi def link javaMethodDecl		javaStorageClass
 hi def link javaClassDecl		javaStorageClass
 hi def link javaScopeDecl		javaStorageClass
-hi def link javaConceptKind		NonText
+hi def link javaConceptKind		javaStorageClass
 
 hi def link javaBoolean		Boolean
 hi def link javaSpecial		Special
