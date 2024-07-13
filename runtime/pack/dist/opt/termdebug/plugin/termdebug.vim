@@ -1691,7 +1691,7 @@ def GotoVariableswinOrCreateIt()
         exe 'rightbelow split'
       endif
     else
-      exe 'spli'
+      exe 'split'
     endif
 
     # If exists, then open, otherwise create
@@ -1718,7 +1718,7 @@ def GotoVariableswinOrCreateIt()
     win_gotoid(varwin)
   endif
 
-  if running && !empty(win_findbuf(varbufnr))
+  if running && bufwinid(varbufname) > 0
     SendCommand('-stack-list-variables 2')
   endif
 enddef
