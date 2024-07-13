@@ -1697,20 +1697,20 @@ def GotoVariableswinOrCreateIt()
 
     varwin = win_getid()
 
-    setlocal nowrap
-    setlocal noswapfile
-    setlocal buftype=nofile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal signcolumn=no
-    setlocal modifiable
-
     # If exists, then open, otherwise create
     if varbufnr > 0 && bufexists(varbufnr)
       exe $'buffer {varbufnr}'
     else
       exe $"silent file {varbufname}"
       varbufnr = bufnr(varbufname)
+
+      setbufvar(varbufname, "&wrap", false)
+      setbufvar(varbufname, "&swapfile", false)
+      setbufvar(varbufname, "&bufhidden", 'hide')
+      setbufvar(varbufname, "&buflisted", false)
+      setbufvar(varbufname, "&buflisted", false)
+      setbufvar(varbufname, "&signcolumn", 'no')
+      setbufvar(varbufname, "&modifiable", true)
     endif
 
     if mdf != 'vert' && GetVariablesWindowHeight() > 0
