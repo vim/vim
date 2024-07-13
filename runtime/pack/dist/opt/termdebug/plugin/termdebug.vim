@@ -101,7 +101,6 @@ var gdb_channel: channel
 # These changes because they relate to windows
 var pid: number
 var gdbwin: number
-var varwin: number
 var asmwin: number
 var ptywin: number
 var sourcewin: number
@@ -182,7 +181,6 @@ def InitScriptVariables()
   # These changes because they relate to windows
   pid = 0
   gdbwin = 0
-  varwin = 0
   asmwin = 0
   ptywin = 0
   sourcewin = 0
@@ -1682,7 +1680,8 @@ enddef
 
 def GotoVariableswinOrCreateIt()
   var mdf = ''
-  if !win_gotoid(varwin)
+  var varwins = win_findbuf(varbufnr)
+  if empty(varwins)
     if win_gotoid(sourcewin)
       # 60 is approx spaceBuffer * 3
       if winwidth(0) > (78 + 60)
@@ -1694,8 +1693,6 @@ def GotoVariableswinOrCreateIt()
     else
       exe 'spli'
     endif
-
-    varwin = win_getid()
 
     # If exists, then open, otherwise create
     if varbufnr > 0 && bufexists(varbufnr)
@@ -1717,6 +1714,8 @@ def GotoVariableswinOrCreateIt()
     if mdf != 'vert' && GetVariablesWindowHeight() > 0
       exe $'resize {GetVariablesWindowHeight()}'
     endif
+  else
+    win_gotoid(varwins[0])
   endif
 
   if running && !empty(win_findbuf(varbufnr))
