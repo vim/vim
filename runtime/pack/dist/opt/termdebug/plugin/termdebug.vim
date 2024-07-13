@@ -1701,6 +1701,7 @@ def GotoVariableswinOrCreateIt()
     if varbufnr > 0 && bufexists(varbufnr)
       exe $'buffer {varbufnr}'
     else
+      enew
       exe $"silent file {varbufname}"
       varbufnr = bufnr(varbufname)
 
