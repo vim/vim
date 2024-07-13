@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 9.1.  Last change: 2024 May 11
+*pi_netrw.txt*  For Vim version 9.1.  Last change: 2024 Jul 13
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -15,7 +15,7 @@ Copyright: Copyright (C) 2017 Charles E Campbell    *netrw-copyright*
 	merchantability.  No guarantees of suitability for any purpose.  By
 	using this plugin, you agree that in no event will the copyright
 	holder be liable for any damages resulting from the use of this
-	software. Use at your own risk!
+	software. Use at your own risk!  For bug reports, see |bugs|.
 
 		*netrw*
 		*dav*    *ftp*    *netrw-file*  *rcp*    *scp*
@@ -3859,12 +3859,7 @@ netrw:
 	   thereby making it easier to associate which part of the
 	   debugging trace is due to which command.
 
-	   Please send that information to <netrw.vim>'s maintainer along
-	   with the o/s you're using and the vim version that you're using
-	   (see |:version|)  (remove the embedded NOSPAM first) >
-
-		NcampObell@SdrPchip.AorgM-NOSPAM
-<
+	   For bug reports, please see |bugs|.
 ==============================================================================
 12. History						*netrw-history* {{{1
 
