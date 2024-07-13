@@ -145,6 +145,12 @@ static int	  compl_enter_selects = FALSE;
 // are used.
 static char_u	  *compl_leader = NULL;
 
+// When "compl_leader_fuzzy" is not NULL, it's the part of "compl_orig_text"
+// that has been cut off from "compl_leader", plus a character that will be
+// deleted with ins_compl_bs(), to trigger the popup redraw with the new
+// characters.
+static char_u	  *compl_leader_fuzzy = NULL;
+
 static int	  compl_get_longest = FALSE;	// put longest common string
 						// in compl_leader
 
@@ -172,6 +178,7 @@ static int	  compl_matches = 0;	    // number of completion matches
 static char_u	  *compl_pattern = NULL;
 static size_t	  compl_patternlen = 0;
 static int	  compl_direction = FORWARD;
+static int	  compl_direction_fuzzy = FORWARD;
 static int	  compl_shows_dir = FORWARD;
 static int	  compl_pending = 0;	    // > 1 for postponed CTRL-N
 static pos_T	  compl_startpos;
@@ -4272,12 +4279,34 @@ ins_compl_next(
     buf_T   *orig_curbuf = curbuf;
     unsigned int cur_cot_flags = get_cot_flags();
     int	    compl_no_insert = (cur_cot_flags & COT_NOINSERT) != 0;
+    int	    compl_no_select = (cur_cot_flags & COT_NOSELECT) != 0;
     int	    compl_fuzzy_match = (cur_cot_flags & COT_FUZZY) != 0;
 
     // When user complete function return -1 for findstart which is next
     // time of 'always', compl_shown_match become NULL.
     if (compl_shown_match == NULL)
 	return -1;
+
+    if (allow_get_expansion && compl_fuzzy_match && compl_leader == NULL)
+    {
+	int len = STRLEN(compl_orig_text);
+	if (len > 0) {
+	    // When using fuzzy completion, we cut short the leader to a single
+	    // character, the rest of the original text goes into
+	    // complLeaderFuzzy, and will be inserted later. We also add
+	    // a spurious character that will be deleted with ins_compl_bs(),
+	    // so that the popup menu is updated with the fuzzy pattern.
+	    compl_leader = vim_strsave((char_u *)".");
+	    compl_leader[0] = compl_orig_text[0];
+	    compl_leader_fuzzy = vim_strnsave(compl_orig_text + 1, len);
+	    compl_leader_fuzzy[len - 1] = '_';
+	    // We also store the current direction, because it will be lost
+	    compl_direction_fuzzy = compl_direction;
+	    // We're done here, popup menu will be re-evaluated
+	    ins_compl_new_leader();
+	    return num_matches;
+	}
+    }
 
     if (compl_leader != NULL
 	    && !match_at_original_text(compl_shown_match)
@@ -4369,6 +4398,23 @@ ins_compl_next(
     // Show the file name for the match (if any)
     if (compl_shown_match->cp_fname != NULL)
 	ins_compl_show_filename();
+
+    if (compl_leader_fuzzy != NULL)
+    {
+	ins_bytes(compl_leader_fuzzy);
+	vim_free(compl_leader_fuzzy);
+	compl_leader_fuzzy = NULL;
+	ins_compl_bs();
+	compl_shown_match = compl_no_select
+	    ? compl_first_match
+	    : compl_first_match->cp_next;
+	if (!compl_no_select && !compl_no_insert)
+	    ins_complete(compl_direction_fuzzy == FORWARD ? Ctrl_N : Ctrl_P, FALSE);
+	else if (!compl_no_select && compl_no_insert) {
+	    int key = compl_direction_fuzzy == FORWARD ? K_DOWN : K_UP;
+	    ins_complete(key, FALSE);
+	}
+    }
 
     return num_matches;
 }
