@@ -3789,13 +3789,14 @@ alt_tabpage(void)
     if ((tcl_flags & TCL_USELAST) && valid_tabpage(lastused_tabpage))
 	return lastused_tabpage;
 
-    // Use the previous tab page, if possible.
+    // Use the next tab page, if possible.
     forward = curtab->tp_next != NULL &&
 	    ((tcl_flags & TCL_LEFT) == 0 || curtab == first_tabpage);
 
     if (forward)
 	tp = curtab->tp_next;
     else
+	// Use the previous tab page.
 	for (tp = first_tabpage; tp->tp_next != curtab; tp = tp->tp_next)
 	    ;
 
