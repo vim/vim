@@ -4698,6 +4698,7 @@ get_address(
 		if (n == MAXLNUM)
 		{
 		    emsg(_(e_line_number_out_of_range));
+		    cmd = NULL;
 		    goto error;
 		}
 	    }
@@ -4728,6 +4729,7 @@ get_address(
 		    if (lnum >= 0 && n >= LONG_MAX - lnum)
 		    {
 			emsg(_(e_line_number_out_of_range));
+			cmd = NULL;
 			goto error;
 		    }
 		    lnum += n;
