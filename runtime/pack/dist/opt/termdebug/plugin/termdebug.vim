@@ -1687,12 +1687,12 @@ def GotoVariableswinOrCreateIt()
       # 60 is approx spaceBuffer * 3
       if winwidth(0) > (78 + 60)
         mdf = 'vert'
-        exe $'{mdf} :60new'
+        exe $'{mdf} :60split'
       else
-        exe 'rightbelow new'
+        exe 'rightbelow split'
       endif
     else
-      exe 'new'
+      exe 'spli'
     endif
 
     varwin = win_getid()
