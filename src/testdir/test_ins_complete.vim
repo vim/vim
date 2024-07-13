@@ -2616,6 +2616,16 @@ func Test_complete_fuzzy_match()
   call feedkeys("Sy\<C-X>\<C-N>\<Esc>0", 'tx!')
   call assert_equal('xyz', getline('.'))
 
+  " fuzzy on file
+  write foobar
+  write fooBaz
+  call setline(1, ['fb'])
+  call cursor(1, 1)
+  call feedkeys("A\<C-X>\<C-f>\<Esc>0", 'tx!')
+  call assert_equal('foobar', getline('.'))
+  call feedkeys("Sfb\<C-X>\<C-f>\<C-N>\<Esc>0", 'tx!')
+  call assert_equal('fooBaz', getline('.'))
+
   " can get completion from other buffer
   set completeopt=fuzzy,menu,menuone
   vnew
@@ -2639,6 +2649,8 @@ func Test_complete_fuzzy_match()
   call assert_equal('no one can save me but you', getline('.'))
 
   " clean up
+  call delete('foobar')
+  call delete('fooBaz')
   set omnifunc=
   bw!
   bw!
