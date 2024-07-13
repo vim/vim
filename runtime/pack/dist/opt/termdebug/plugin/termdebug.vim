@@ -1719,7 +1719,7 @@ def GotoVariableswinOrCreateIt()
     endif
   endif
 
-  if running
+  if running && !empty(win_findbuf(varbufnr))
     SendCommand('-stack-list-variables 2')
   endif
 enddef
