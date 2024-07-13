@@ -644,7 +644,7 @@ export def FTpl()
     # recognize Prolog by specific text in the first non-empty line
     # require a blank after the '%' because Perl uses "%list" and "%translate"
     var line = getline(nextnonblank(1))
-    if line =~ '\<prolog\>' || line =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || line =~ ':-'
+    if line =~ '\<prolog\>' || line =~ '^\(:-\|%\|\/\*\)\|\.$'
       setf prolog
     else
       setf perl
