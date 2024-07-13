@@ -1999,6 +1999,43 @@ vgetc(void)
 #endif
 	    }
 
+	    // For a multi-byte character get all the bytes and return the
+	    // converted character.
+	    // Note: This will loop until enough bytes are received!
+	    if (has_mbyte && (n = MB_BYTE2LEN_CHECK(c)) > 1)
+	    {
+		++no_mapping;
+		buf[0] = c;
+		for (i = 1; i < n; ++i)
+		{
+		    buf[i] = vgetorpeek(TRUE);
+		    if (buf[i] == K_SPECIAL
+#ifdef FEAT_GUI
+			    || (buf[i] == CSI)
+#endif
+			    )
+		    {
+			// Must be a K_SPECIAL - KS_SPECIAL - KE_FILLER
+			// sequence, which represents a K_SPECIAL (0x80),
+			// or a CSI - KS_EXTRA - KE_CSI sequence, which
+			// represents a CSI (0x9B),
+			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
+			// too.
+			c = vgetorpeek(TRUE);
+			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
+			    buf[i] = CSI;
+		    }
+		}
+		--no_mapping;
+		c = (*mb_ptr2char)(buf);
+	    }
+
+	    if (vgetc_char == 0)
+	    {
+		vgetc_mod_mask = mod_mask;
+		vgetc_char = c;
+	    }
+
 	    // a keypad or special function key was not mapped, use it like
 	    // its ASCII equivalent
 	    switch (c)
@@ -2060,43 +2097,6 @@ vgetc(void)
 		case K_XDOWN:	c = K_DOWN; break;
 		case K_XLEFT:	c = K_LEFT; break;
 		case K_XRIGHT:	c = K_RIGHT; break;
-	    }
-
-	    // For a multi-byte character get all the bytes and return the
-	    // converted character.
-	    // Note: This will loop until enough bytes are received!
-	    if (has_mbyte && (n = MB_BYTE2LEN_CHECK(c)) > 1)
-	    {
-		++no_mapping;
-		buf[0] = c;
-		for (i = 1; i < n; ++i)
-		{
-		    buf[i] = vgetorpeek(TRUE);
-		    if (buf[i] == K_SPECIAL
-#ifdef FEAT_GUI
-			    || (buf[i] == CSI)
-#endif
-			    )
-		    {
-			// Must be a K_SPECIAL - KS_SPECIAL - KE_FILLER
-			// sequence, which represents a K_SPECIAL (0x80),
-			// or a CSI - KS_EXTRA - KE_CSI sequence, which
-			// represents a CSI (0x9B),
-			// or a K_SPECIAL - KS_EXTRA - KE_CSI, which is CSI
-			// too.
-			c = vgetorpeek(TRUE);
-			if (vgetorpeek(TRUE) == KE_CSI && c == KS_EXTRA)
-			    buf[i] = CSI;
-		    }
-		}
-		--no_mapping;
-		c = (*mb_ptr2char)(buf);
-	    }
-
-	    if (vgetc_char == 0)
-	    {
-		vgetc_mod_mask = mod_mask;
-		vgetc_char = c;
 	    }
 
 	    break;
