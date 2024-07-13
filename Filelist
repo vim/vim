@@ -214,6 +214,7 @@ SRC_ALL =	\
 		src/testdir/pyxfile/*.py \
 		src/testdir/dumps/*.dump \
 		src/testdir/dumps/*.vim \
+		src/testdir/samples/*.html \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/*.vim \
 		src/testdir/samples/test000 \

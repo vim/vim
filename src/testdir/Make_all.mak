@@ -315,6 +315,7 @@ NEW_TESTS = \
 	test_textobjects \
 	test_textprop \
 	test_timers \
+	test_tohtml \
 	test_true_false \
 	test_trycatch \
 	test_undo \
@@ -560,6 +561,7 @@ NEW_TESTS_RES = \
 	test_textobjects.res \
 	test_textprop.res \
 	test_timers.res \
+	test_tohtml.res \
 	test_true_false.res \
 	test_trycatch.res \
 	test_undo.res \
