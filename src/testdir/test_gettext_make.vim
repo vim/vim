@@ -6,7 +6,7 @@ CheckFeature gettext
 func Test_gettext_makefile()
   cd ../po
   if has('win32')
-    if getenv('GETTEXT_PATH') == ''
+    if getenv('GETTEXT_PATH') == v:null
       throw 'Skipped: %GETTEXT_PATH% is not set.'
     endif
     call system('nmake.exe -f Make_mvc.mak "VIMPROG=' .. getenv('VIMPROG') ..
