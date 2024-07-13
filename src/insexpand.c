@@ -203,6 +203,8 @@ static int	  compl_opt_suppress_empty = FALSE;
 
 static int	  compl_selected_item = -1;
 
+static int	  *compl_fuzzy_scores;
+
 static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
@@ -984,8 +986,7 @@ ins_compl_longest_match(compl_T *match)
 ins_compl_add_matches(
     int		num_matches,
     char_u	**matches,
-    int		icase,
-    int		skip_free)
+    int		icase)
 {
     int		i;
     int		add_r = OK;
@@ -996,8 +997,7 @@ ins_compl_add_matches(
 			       CP_FAST | (icase ? CP_ICASE : 0), FALSE)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
-    if (!skip_free)
-	FreeWild(num_matches, matches);
+    FreeWild(num_matches, matches);
 }
 
 /*
@@ -3503,9 +3503,21 @@ get_next_tag_completion(void)
 		TAG_REGEXP | TAG_NAMES | TAG_NOIC | TAG_INS_COMP
 		| (ctrl_x_mode_not_default() ? TAG_VERBOSE : 0),
 		TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
-	ins_compl_add_matches(num_matches, matches, p_ic, FALSE);
+	ins_compl_add_matches(num_matches, matches, p_ic);
     g_tag_at_cursor = FALSE;
     p_ic = save_p_ic;
+}
+
+/*
+ * Compare function for qsort
+ */
+static int compare_scores(const void *a, const void *b)
+{
+    int idx_a = *(const int *)a;
+    int idx_b = *(const int *)b;
+    int score_a = compl_fuzzy_scores[idx_a];
+    int score_b = compl_fuzzy_scores[idx_b];
+    return (score_a > score_b) ? -1 : (score_a < score_b) ? 1 : 0;
 }
 
 /*
@@ -3516,10 +3528,15 @@ get_next_filename_completion(void)
 {
     char_u	**matches;
     int		num_matches;
-    int		in_fuzzy = (get_cot_flags() & COT_FUZZY) != 0;
     char_u	*ptr;
-    garray_T	fuzzy_matches;
+    garray_T	fuzzy_indices;
     int		i;
+    int		score;
+    char_u	*leader = ins_compl_leader();
+    int		leader_len = STRLEN(leader);
+    int		in_fuzzy = ((get_cot_flags() & COT_FUZZY) != 0 && leader_len > 0);
+    char_u	**sorted_matches;
+    int		*fuzzy_indices_data;
 
     if (in_fuzzy)
     {
@@ -3539,7 +3556,6 @@ get_next_filename_completion(void)
 	for (i = 0; i < num_matches; ++i)
 	{
 	    ptr = matches[i];
-
 	    while (*ptr != NUL)
 	    {
 		if (curbuf->b_p_csl[0] == 's' && *ptr == '\\')
@@ -3554,29 +3570,39 @@ get_next_filename_completion(void)
 
     if (in_fuzzy)
     {
-	char_u *leader = ins_compl_leader();
-	ga_init2(&fuzzy_matches, sizeof(char_u *), 10);
-	for (i = 0; i < num_matches; ++i)
+	ga_init2(&fuzzy_indices, sizeof(int), 10);
+	compl_fuzzy_scores = (int *)alloc(sizeof(int) * num_matches);
+
+	for (i = 0; i < num_matches; i++)
 	{
 	    ptr = matches[i];
-	    if (fuzzy_match_str(ptr, leader) > 0)
+	    score = fuzzy_match_str(ptr, leader);
+	    if (score > 0)
 	    {
-		if (ga_grow(&fuzzy_matches, 1) == OK)
+		if (ga_grow(&fuzzy_indices, 1) == OK)
 		{
-		    ((char_u **)fuzzy_matches.ga_data)[fuzzy_matches.ga_len] = vim_strsave(ptr);
-		    fuzzy_matches.ga_len++;
+		    ((int *)fuzzy_indices.ga_data)[fuzzy_indices.ga_len] = i;
+		    compl_fuzzy_scores[i] = score;
+		    fuzzy_indices.ga_len++;
 		}
 	    }
 	}
+
+	fuzzy_indices_data = (int *)fuzzy_indices.ga_data;
+	qsort(fuzzy_indices_data, fuzzy_indices.ga_len, sizeof(int), compare_scores);
+
+	sorted_matches = (char_u **)alloc(sizeof(char_u *) * fuzzy_indices.ga_len);
+	for (i = 0; i < fuzzy_indices.ga_len; ++i)
+	    sorted_matches[i] = vim_strsave(matches[fuzzy_indices_data[i]]);
+
 	FreeWild(num_matches, matches);
-	matches = (char_u **)fuzzy_matches.ga_data;
-	num_matches = fuzzy_matches.ga_len;
+	matches = sorted_matches;
+	num_matches = fuzzy_indices.ga_len;
+	vim_free(compl_fuzzy_scores);
+	ga_clear(&fuzzy_indices);
     }
 
-    ins_compl_add_matches(num_matches, matches, p_fic || p_wic, in_fuzzy);
-
-    if (in_fuzzy)
-	ga_clear_strings(&fuzzy_matches);
+    ins_compl_add_matches(num_matches, matches, p_fic || p_wic);
 }
 
 /*
@@ -3590,7 +3616,7 @@ get_next_cmdline_completion(void)
 
     if (expand_cmdline(&compl_xp, compl_pattern,
 		(int)compl_patternlen, &num_matches, &matches) == EXPAND_OK)
-	ins_compl_add_matches(num_matches, matches, FALSE, FALSE);
+	ins_compl_add_matches(num_matches, matches, FALSE);
 }
 
 /*
@@ -3605,7 +3631,7 @@ get_next_spell_completion(linenr_T lnum UNUSED)
 
     num_matches = expand_spelling(lnum, compl_pattern, &matches);
     if (num_matches > 0)
-	ins_compl_add_matches(num_matches, matches, p_ic, FALSE);
+	ins_compl_add_matches(num_matches, matches, p_ic);
     else
 	vim_free(matches);
 #endif
