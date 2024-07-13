@@ -1680,8 +1680,8 @@ enddef
 
 def GotoVariableswinOrCreateIt()
   var mdf = ''
-  var varwins = win_findbuf(varbufnr)
-  if empty(varwins)
+  var varwin = bufwinid(varbufname)
+  if varwin < 0
     if win_gotoid(sourcewin)
       # 60 is approx spaceBuffer * 3
       if winwidth(0) > (78 + 60)
@@ -1715,7 +1715,7 @@ def GotoVariableswinOrCreateIt()
       exe $'resize {GetVariablesWindowHeight()}'
     endif
   else
-    win_gotoid(varwins[0])
+    win_gotoid(varwin)
   endif
 
   if running && !empty(win_findbuf(varbufnr))
